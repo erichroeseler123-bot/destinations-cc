@@ -127,13 +127,23 @@ function buildSotsLane(feed: SotsLiveDealsResponse | null): NetworkLaneCard {
   };
 }
 
-function buildWtaLane(): NetworkLaneCard {
+function buildJfdLane(): NetworkLaneCard {
   return {
-    href: "https://welcometoalaskatours.com",
-    eyebrow: "Juneau tours",
-    title: "Welcome To Alaska Tours",
-    body: "Live cruise-port helicopter, glacier, and excursion products for Juneau travelers.",
-    cta: "Open Juneau tours",
+    href: "https://juneauflightdeck.com/helicopter",
+    eyebrow: "Juneau flightseeing",
+    title: "Juneau Flight Deck",
+    body: "Owned specialist for Juneau helicopter tours, glacier landings, dog-sled flight comparisons, and weather-cancellation contingencies.",
+    cta: "Open Juneau Flight Deck",
+  };
+}
+
+function buildLastFrontierLane(): NetworkLaneCard {
+  return {
+    href: "https://www.lastfrontiershoreexcursions.com/ports/juneau",
+    eyebrow: "Alaska shore excursions",
+    title: "Last Frontier Shore Excursions",
+    body: "Owned specialist for Alaska shore excursions, Juneau whale watching, Mendenhall Glacier routing, and Skagway or Ketchikan port days.",
+    cta: "Open Last Frontier Shore Excursions",
   };
 }
 
@@ -174,6 +184,6 @@ export async function getNetworkLanes() {
     parr,
     fastPass,
     refreshedAt: new Date().toISOString(),
-    lanes: [buildParrLane(parr), buildFastPassLane(fastPass), buildSotsLane(sots), buildWtaLane()],
+    lanes: [buildParrLane(parr), buildFastPassLane(fastPass), buildSotsLane(sots), buildJfdLane(), buildLastFrontierLane()],
   };
 }

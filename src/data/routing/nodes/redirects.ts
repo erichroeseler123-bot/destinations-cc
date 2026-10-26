@@ -243,7 +243,7 @@ export const REDIRECT_NODES = [
     canonicalDestination: true,
     nextStepStatus: "partial",
     notes:
-      "Broad excursion comparison traffic should route into port-specific and excursion-type lanes more aggressively before handing to WTA.",
+      "Broad excursion comparison traffic should route into port-specific and excursion-type lanes more aggressively before handing to Last Frontier Shore Excursions or Juneau Flight Deck.",
   },
   {
     id: "redirect:legacy-posts",

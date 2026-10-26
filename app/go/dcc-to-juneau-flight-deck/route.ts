@@ -1,4 +1,3 @@
-import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
 
 function clean(value: string | null, max = 120) {
@@ -11,17 +10,22 @@ function slug(value: string | null) {
 
 export async function GET(request: Request) {
   const incoming = new URL(request.url);
-  const target = new URL("https://juneauflightdeck.com/handoff/dcc");
-  const ship = clean(incoming.searchParams.get("ship"), 120);
-  const portDate = clean(incoming.searchParams.get("port_date"), 10);
-  const partySize = clean(incoming.searchParams.get("party_size"), 3);
+  const portDate = clean(incoming.searchParams.get("date") || incoming.searchParams.get("port_date"), 10);
   const interest = slug(incoming.searchParams.get("interest"));
 
-  if (ship) target.searchParams.set("ship", ship);
-  if (/^\d{4}-\d{2}-\d{2}$/.test(portDate)) target.searchParams.set("port_date", portDate);
-  if (/^\d{1,2}$/.test(partySize)) target.searchParams.set("party_size", partySize);
-  if (interest) target.searchParams.set("interest", interest);
-  target.searchParams.set("dcc_handoff_id", `ho_${randomUUID()}`);
+  const path =
+    interest === "dogsled"
+      ? "/juneau-dogsled-helicopter-tours"
+      : interest === "compare-operators"
+        ? "/temsco-vs-coastal-vs-northstar-juneau"
+        : interest === "weather-backup"
+          ? "/juneau/what-to-do-if-helicopter-tour-canceled"
+          : "/helicopter";
+
+  const target = new URL(`https://juneauflightdeck.com${path}`);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(portDate) && path === "/helicopter") {
+    target.searchParams.set("date", portDate);
+  }
 
   return NextResponse.redirect(target, 302);
 }

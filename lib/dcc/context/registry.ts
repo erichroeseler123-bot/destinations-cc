@@ -34,12 +34,19 @@ export const DCC_SOURCE_SITES: Record<string, SourceSiteEntry> = {
     role: "feeder",
     specialty: "cruise_itinerary_and_passenger_planning",
   },
-  wta: {
-    id: "wta",
-    name: "Welcome to Alaska",
-    canonicalDomain: "welcometoalaskatours.com",
-    role: "feeder",
-    specialty: "alaska_destination_authority_and_seo",
+  lastfrontier: {
+    id: "lastfrontier",
+    name: "Last Frontier Shore Excursions",
+    canonicalDomain: "lastfrontiershoreexcursions.com",
+    role: "hybrid",
+    specialty: "alaska_shore_excursions_and_port_comparisons",
+  },
+  juneauflightdeck: {
+    id: "juneauflightdeck",
+    name: "Juneau Flight Deck",
+    canonicalDomain: "juneauflightdeck.com",
+    role: "hybrid",
+    specialty: "juneau_helicopter_and_flightseeing_comparisons",
   },
   wno: {
     id: "wno",
@@ -262,7 +269,6 @@ export function resolveAuthoritativeBuffer(
 
 export const ALLOWED_DCC_DOMAINS = [
   "cruisepromenade.com",
-  "welcometoalaskatours.com",
   "welcometoneworleanstours.com",
   "partyatredrocks.com",
   "bluehillsoutpost.com",

@@ -176,10 +176,10 @@ test("Context API Route & Staging Neon Concurrency Suite", async (t) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        origin: "https://welcometoalaskatours.com",
+        origin: "https://lastfrontiershoreexcursions.com",
       },
       body: JSON.stringify({
-        sourceSite: "wta",
+        sourceSite: "lastfrontier",
         destination: "juneau",
         targetOwner: "juneauflightdeck",
         schedule: { date: "2026-07-15", travelers: 1 },
@@ -188,7 +188,7 @@ test("Context API Route & Staging Neon Concurrency Suite", async (t) => {
 
     const trustedRes = await handleIssueContext(trustedReq);
     assert.equal(trustedRes.status, 201);
-    assert.equal(trustedRes.headers.get("access-control-allow-origin"), "https://welcometoalaskatours.com");
+    assert.equal(trustedRes.headers.get("access-control-allow-origin"), "https://lastfrontiershoreexcursions.com");
   });
 
   await t.test("5. POST /api/v1/context - Rate limiting rejects excessive issue requests with 429", async () => {

@@ -50,7 +50,7 @@ export default function PrivacyPage() {
         <section className="rounded-3xl border border-white/10 bg-white/[0.05] p-6 space-y-4 text-zinc-300">
           <h2 className="text-2xl font-bold text-white">External bookings and partner sites</h2>
           <p>
-            When you leave DCC for a connected site such as PartyAtRedRocks, Save On The Strip, or Welcome To Alaska Tours, that site may have its own privacy practices and terms. DCC may still receive attribution and lifecycle data tied to the handoff so the network can measure performance.
+            When you leave DCC for a connected site such as PartyAtRedRocks, Save On The Strip, Juneau Flight Deck, or Last Frontier Shore Excursions, that site may have its own privacy practices and terms. DCC may still receive attribution and lifecycle data tied to the handoff so the network can measure performance.
           </p>
         </section>
 

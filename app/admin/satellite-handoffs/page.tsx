@@ -39,7 +39,7 @@ export default async function SatelliteHandoffsAdminPage({
           <div>
             <h1 className="text-4xl font-black tracking-tight">Satellite Handoffs</h1>
             <p className="mt-2 text-zinc-300">
-              Recent two-way handoff state across PARR, GOSNO, WTA, and Save On The Strip.
+              Recent two-way handoff state across PARR, GOSNO, Juneau Flight Deck, Last Frontier, and Save On The Strip.
             </p>
           </div>
           <div className="flex gap-2">
@@ -83,7 +83,7 @@ export default async function SatelliteHandoffsAdminPage({
               { label: "Partner revenue", value: `$${snapshot.partnerRevenue.toLocaleString()}` },
               { label: "Forwards / accepts", value: `${snapshot.forwardedToPartner} / ${snapshot.acceptedFromPartner}` },
               { label: "Partner outcomes", value: `${snapshot.partnerCompleted} / ${snapshot.partnerFailed}` },
-              { label: "PARR / WTA / GOSNO / SOTS", value: `${snapshot.bySatellite.partyatredrocks} / ${snapshot.bySatellite["welcome-to-alaska"]} / ${snapshot.bySatellite.gosno} / ${snapshot.bySatellite.saveonthestrip}` },
+              { label: "PARR / JFD-LFSE / GOSNO / SOTS", value: `${snapshot.bySatellite.partyatredrocks} / ${snapshot.bySatellite["welcome-to-alaska"]} / ${snapshot.bySatellite.gosno} / ${snapshot.bySatellite.saveonthestrip}` },
               { label: "Urgent alerts", value: snapshot.urgentAlerts.length },
               { label: "Embed domains", value: snapshot.byEmbedDomain.length },
               { label: "Widget placements", value: snapshot.byWidgetPlacement.length },

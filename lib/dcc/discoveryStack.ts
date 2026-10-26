@@ -58,25 +58,33 @@ const GOVERNED_BY = "https://destinationcommandcenter.com";
 
 const EXTERNAL_GOVERNED_SURFACES: DiscoverySurfaceRecord[] = [
   {
-    id: "welcometoalaskatours",
+    id: "lastfrontiershoreexcursions",
     role: "satellite",
-    siteName: "Welcome to Alaska Tours",
-    domain: "https://welcometoalaskatours.com",
+    siteName: "Last Frontier Shore Excursions",
+    domain: "https://www.lastfrontiershoreexcursions.com",
     governedBy: GOVERNED_BY,
     capabilities: ["intent-narrowing", "decision-continuation"],
-    routes: ["/", "/plan"],
+    routes: [
+      "/",
+      "/ports/juneau",
+      "/ports/skagway",
+      "/ports/ketchikan",
+      "/juneau/whale-watching",
+      "/juneau/mendenhall-glacier-tours",
+      "/decision/whale-watching-vs-glacier-tour",
+    ],
     intents: {
       "whale-watching": {
         path: "/juneau/whale-watching",
         resolver: "fareharbor",
-        execution_surface: "https://welcometoalaskatours.com/plan",
+        execution_surface: "https://www.lastfrontiershoreexcursions.com/juneau/whale-watching",
         provider_mode: "vendor_api_execution",
         fallback_policy: "marketplace_inventory_only_when_explicit",
       },
-      "helicopter-tours": {
-        path: "/juneau/helicopter-tours",
+      "mendenhall-glacier-tours": {
+        path: "/juneau/mendenhall-glacier-tours",
         resolver: "fareharbor",
-        execution_surface: "https://welcometoalaskatours.com/plan",
+        execution_surface: "https://www.lastfrontiershoreexcursions.com/juneau/mendenhall-glacier-tours",
         provider_mode: "vendor_api_execution",
         fallback_policy: "marketplace_inventory_only_when_explicit",
       },
@@ -184,7 +192,7 @@ function inferIntentPlace(record: DiscoverySurfaceRecord, intent: string, intent
   const citySlug =
     firstSegment && firstSegment !== intent
       ? firstSegment
-      : record.id === "welcometoalaskatours"
+      : record.id === "lastfrontiershoreexcursions" || record.id === "juneauflightdeck"
         ? "juneau"
         : record.id === "welcometoneworleanstours"
           ? "new-orleans"

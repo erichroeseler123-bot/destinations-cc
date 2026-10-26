@@ -16,7 +16,6 @@
     {"handoff_id":"dcc:handoff:french-quarter-to-wtnot","status":"context_handoff","evidence":["destinations-cc:PR#48"]},
     {"handoff_id":"dcc:handoff:dcc-to-wts","status":"context_handoff","evidence":["destinations-cc:PR#39"]},
     {"handoff_id":"dcc:handoff:wts-to-wtnot","status":"context_handoff","evidence":["destinations-cc:PR#48"]},
-    {"handoff_id":"dcc:handoff:dcc-to-wta","status":"receiver_confirmed","evidence":["erichroeseler123-bot/wta-renderer:lib/handoff/dcc.ts"]},
     {"handoff_id":"dcc:handoff:dcc-to-last-frontier","status":"receiver_confirmed","evidence":["destinations-cc:PR#69","erichroeseler123-bot/last-frontier-shore-excursions:feature/dcc-context-receiver"]},
     {"handoff_id":"dcc:handoff:cruise-promenade-to-last-frontier","status":"context_handoff","evidence":["destinations-cc:app/go/cruise-promenade-to-last-frontier/route.ts","erichroeseler123-bot/last-frontier-shore-excursions:feature/dcc-context-receiver"]},
     {"handoff_id":"dcc:handoff:dcc-to-juneau-flight-deck","status":"receiver_confirmed","evidence":["destinations-cc:app/go/dcc-to-juneau-flight-deck/route.ts","destinations-cc:apps/juneauflightdeck/app/handoff/dcc/route.ts"]},

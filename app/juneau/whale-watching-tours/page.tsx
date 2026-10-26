@@ -1,4 +1,3 @@
-import { randomUUID } from "crypto";
 import type { Metadata } from "next";
 import Link from "next/link";
 import JsonLd from "@/app/components/dcc/JsonLd";
@@ -7,7 +6,6 @@ import {
   buildCollectionPageJsonLd,
   buildWebPageJsonLd,
 } from "@/lib/dcc/jsonld";
-import { buildWtaProductWidgetUrl } from "@/lib/wta/embed";
 
 export const metadata: Metadata = {
   title: "Juneau Whale Watching Tours | Best Options By Port Stop",
@@ -36,17 +34,17 @@ function JsonLdGraph() {
     {
       name: "First-time Juneau whale lane",
       description: "Best fit for most cruise visitors who want one clean marine-first decision.",
-      url: "/juneau/whale-watching?topic=whale-watching&port=juneau&context=first-time",
+      url: "https://www.lastfrontiershoreexcursions.com/juneau/whale-watching",
     },
     {
-      name: "Premium wildlife lane",
-      description: "Smaller-group whale options when intimacy and wildlife focus matter more than lowest price.",
-      url: "/juneau/whale-watching?topic=whale-watching&port=juneau&context=premium",
+      name: "Whale watching vs. glacier tour decision lane",
+      description: "Compare single-activity Auke Bay whale watching against combined Mendenhall Glacier and whale port-day blocks.",
+      url: "https://www.lastfrontiershoreexcursions.com/decision/whale-watching-vs-glacier-tour",
     },
     {
-      name: "Budget whale lane",
-      description: "Larger shared whale options when spend ceiling matters more than premium feel.",
-      url: "/juneau/whale-watching?topic=whale-watching&port=juneau&context=budget",
+      name: "Full Juneau cruise port excursion planner",
+      description: "Filter Juneau excursions by cruise ship port-window duration.",
+      url: "https://www.lastfrontiershoreexcursions.com/juneau/excursions-by-cruise-ship-time",
     },
   ];
 
@@ -60,11 +58,11 @@ function JsonLdGraph() {
             name: "Juneau Whale Watching Tours: Best Options by Port Stop",
             description:
               "DCC feeder page for Juneau whale-watching intent, narrowing cruise-port fit and boat style before downstream execution.",
-            dateModified: "2026-04-10",
-            isPartOfPath: "/command",
+            dateModified: "2026-10-25",
+            isPartOfPath: "/juneau",
           }),
           buildBreadcrumbJsonLd([
-            { name: "Command", item: "/command" },
+            { name: "Juneau", item: "/juneau" },
             { name: "Juneau Whale Watching Tours", item: "/juneau/whale-watching-tours" },
           ]),
           buildCollectionPageJsonLd({
@@ -81,24 +79,11 @@ function JsonLdGraph() {
 }
 
 export default function JuneauWhaleWatchingToursPage() {
-  const featuredWidgetHref = buildWtaProductWidgetUrl({
-    company: "alaska-galore-juneau-whale-watching",
-    item: "585907",
-    attribution: {
-      handoffId: randomUUID(),
-      source: "dcc",
-      sourceSlug: "dcc-juneau-whale-embed",
-      sourcePage: "/juneau/whale-watching-tours",
-      topicSlug: "whale-watching",
-      portSlug: "juneau-alaska",
-      productSlug: "outback-experience-whale-watch",
-      returnPath: "/juneau/whale-watching-tours",
-      embedDomain: "destinationcommandcenter.com",
-      embedPath: "/juneau/whale-watching-tours",
-      widgetPlacement: "inline-primary",
-      embedId: "juneau-whale-inline-primary",
-    },
-  });
+  const primarySpecialistUrl = "https://www.lastfrontiershoreexcursions.com/juneau/whale-watching";
+  const comboDecisionUrl =
+    "https://www.lastfrontiershoreexcursions.com/decision/whale-watching-vs-glacier-tour";
+  const portWindowUrl =
+    "https://www.lastfrontiershoreexcursions.com/juneau/excursions-by-cruise-ship-time";
 
   return (
     <main className="min-h-screen bg-[#05070b] px-6 py-10 text-white md:py-14">
@@ -119,17 +104,17 @@ export default function JuneauWhaleWatchingToursPage() {
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <Link
-              href="/juneau/helicopter-tours"
+              href="/juneau"
               className="rounded-full bg-[#f5b34b] px-5 py-3 text-sm font-black uppercase tracking-[0.16em] text-[#07111d] transition hover:bg-[#f7bf6a]"
+            >
+              Open Juneau Port-Day Planner
+            </Link>
+            <Link
+              href="/juneau/helicopter-tours"
+              className="rounded-full border border-white/12 bg-white/[0.03] px-5 py-3 text-sm font-semibold text-white/84 transition hover:bg-white/[0.06]"
             >
               Juneau helicopter corridor
             </Link>
-            <a
-              href={featuredWidgetHref}
-              className="rounded-full border border-white/12 bg-white/[0.03] px-5 py-3 text-sm font-semibold text-white/84 transition hover:bg-white/[0.06]"
-            >
-              Open whale execution
-            </a>
           </div>
         </header>
 
@@ -148,45 +133,79 @@ export default function JuneauWhaleWatchingToursPage() {
         <section className="grid gap-4 md:grid-cols-3">
           {OPTIONS.map((option) => (
             <article key={option.title} className="rounded-[1.7rem] border border-white/10 bg-[#0b1017] p-6">
-                <div className="text-[11px] uppercase tracking-[0.22em] text-[#f5b34b]">Decision lane</div>
-                <h2 className="mt-4 text-xl font-black uppercase leading-[1.02] tracking-[-0.03em] text-white">
-                  {option.title}
-                </h2>
-                <p className="mt-4 text-sm leading-7 text-white/68">{option.body}</p>
+              <div className="text-[11px] uppercase tracking-[0.22em] text-[#f5b34b]">Decision lane</div>
+              <h2 className="mt-4 text-xl font-black uppercase leading-[1.02] tracking-[-0.03em] text-white">
+                {option.title}
+              </h2>
+              <p className="mt-4 text-sm leading-7 text-white/68">{option.body}</p>
             </article>
           ))}
         </section>
 
-        <section className="rounded-[1.9rem] border border-white/10 bg-[#0b1017] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.28)] md:p-8">
+        <section className="rounded-[1.9rem] border border-white/10 bg-[#0b1017] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.28)] md:p-8 space-y-5">
           <div className="max-w-3xl">
-            <div className="text-[11px] uppercase tracking-[0.28em] text-[#f5b34b]">Contained action block</div>
+            <div className="text-[11px] uppercase tracking-[0.28em] text-[#f5b34b]">
+              Specialist &amp; Direct Execution Channels
+            </div>
             <h2 className="mt-3 text-3xl font-black uppercase tracking-[-0.04em] text-white">
-              One real Juneau whale option, loaded directly inside the page
+              Compare Juneau whale watching on Last Frontier Shore Excursions or book direct
             </h2>
             <p className="mt-3 text-sm leading-7 text-white/68">
-              This is the execution surface. It keeps the traveler inside the correct product instead of sending them back into a generic marketplace loop.
+              Once you have confirmed your ship&apos;s usable shore window (typically 3.5 to 4.5 hours door-to-door for single-activity Auke Bay whale watching, or 5.25+ hours for a whale + Mendenhall Glacier combination), use the owned specialist deep links or direct operator channels below.
             </p>
           </div>
-          <div className="mt-6 overflow-hidden rounded-[28px] border border-white/10 bg-white shadow-[0_24px_70px_rgba(0,0,0,0.34)]">
-            <iframe
-              src={featuredWidgetHref}
-              title="Juneau whale watching widget"
-              loading="lazy"
-              className="block h-[980px] w-full bg-white"
-              referrerPolicy="strict-origin-when-cross-origin"
-            />
-          </div>
-          <div className="mt-4 flex flex-wrap gap-3">
+
+          <div className="flex flex-wrap gap-3">
             <a
-              href={featuredWidgetHref}
+              href={primarySpecialistUrl}
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
+              className="rounded-full bg-[#f5b34b] px-5 py-3 text-sm font-black uppercase tracking-[0.14em] text-[#07111d] transition hover:bg-[#f7bf6a]"
+            >
+              Juneau Whale Watching (Last Frontier Shore Excursions) ↗
+            </a>
+            <a
+              href={comboDecisionUrl}
+              target="_blank"
+              rel="noopener noreferrer"
               className="rounded-full border border-white/12 bg-white/[0.03] px-5 py-3 text-sm font-semibold text-white/84 transition hover:bg-white/[0.06]"
             >
-              Open whale widget in a new tab
+              Whale Watching vs. Glacier Combo Guide ↗
             </a>
-            <p className="max-w-2xl text-sm leading-7 text-white/52">
-              Same attribution contract as the Juneau helicopter lane. That means whale and helicopter performance can be compared by corridor, placement, and downstream action without guessing.
+            <a
+              href={portWindowUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-full border border-white/12 bg-white/[0.03] px-5 py-3 text-sm font-semibold text-white/84 transition hover:bg-white/[0.06]"
+            >
+              Excursions by Cruise Ship Time ↗
+            </a>
+          </div>
+
+          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-xs leading-6 text-white/70 space-y-2">
+            <p>
+              <strong>Ownership disclosure:</strong> <strong>Last Frontier Shore Excursions</strong> (<code>https://www.lastfrontiershoreexcursions.com</code>) is a DCC owned specialist site for Alaska shore excursions, whale watching, Mendenhall Glacier combinations, and port-day planning. Owned-site status never changes DCC&apos;s time-fit math or rankings.
+            </p>
+            <p>
+              <strong>Direct operator &amp; regulatory references:</strong> You can also inspect direct operator schedules at{" "}
+              <a
+                href="https://allenmarinetours.com/juneau/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline text-[#f5b34b]"
+              >
+                Allen Marine Tours (Juneau)
+              </a>{" "}
+              and review federal 100-yard humpback whale approach rules at{" "}
+              <a
+                href="https://www.fisheries.noaa.gov/alaska/marine-life-viewing-guidelines/alaska-humpback-whale-approach-regulations"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline text-[#f5b34b]"
+              >
+                NOAA Fisheries Alaska
+              </a>
+              .
             </p>
           </div>
         </section>

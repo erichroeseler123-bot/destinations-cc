@@ -50,7 +50,7 @@ export const LIVE_CORRIDOR_CATALOG: CorridorCatalogEntry[] = [
     patternFamily: "jfd",
   },
   {
-    corridorId: "wta",
+    corridorId: "juneauflightdeck",
     corridorName: "Juneau Flight Deck",
     family: "decision-engine",
     appPath: "apps/juneauflightdeck",

@@ -891,11 +891,11 @@ export const DCC_CAPABILITY_TRUTH_MATRIX: CapabilityTruthItem[] = [
     category: "booking_commerce",
     status: "pilot_bounded_feed",
     actualImplementation:
-      "Two operator /.well-known/dcc feeds are registered (GoSno in CO Rockies, Vibe Around Town in USVI). Context-preserving link handoffs connect to specialist portals (Party at Red Rocks, Juneau Flight Deck, GoSno, Welcome to Alaska). OCTO Core v1.2 endpoints exist as a specification/onboarding layer; zero external OCTO suppliers are live-authorized in production.",
-    geographicScope: "Specific partner corridors (Juneau, Red Rocks, I-70/Breckenridge, USVI)",
+      "Two operator /.well-known/dcc feeds are registered (GoSno in CO Rockies, Vibe Around Town in USVI). Context-preserving link handoffs connect to DCC-owned specialist portals (Party at Red Rocks, Juneau Flight Deck, Last Frontier Shore Excursions, GoSno). OCTO Core v1.2 endpoints exist as a specification/onboarding layer; zero external OCTO suppliers are live-authorized in production.",
+    geographicScope: "Specific partner corridors (Juneau/Alaska, Red Rocks, I-70/Breckenridge, USVI)",
     commonMisconceptionToAvoid:
-      "DCC is not a universal global OTA checkout engine. Where specialist handoffs exist, DCC forwards known trip context (date, party size, port/venue) without inventing parameters.",
-    primarySources: ["DCC Endpoint Registry", "Party at Red Rocks", "Juneau Flight Deck", "GoSno"],
+      "DCC is not a universal global OTA checkout engine. Where specialist handoffs exist, DCC forwards only supported trip context (e.g., ?date=YYYY-MM-DD on Juneau Flight Deck, or working path deep links on Last Frontier Shore Excursions) without inventing parameters.",
+    primarySources: ["DCC Endpoint Registry", "Party at Red Rocks", "Juneau Flight Deck", "Last Frontier Shore Excursions", "GoSno"],
   },
 ];
 
@@ -1328,7 +1328,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
     specialistHandoffs: {
       sectionTitle: "Specialist Guides & Context-Preserving Excursion Handoffs",
       leadSummary:
-        "Once you understand how Juneau's geography, dock buffers, and weather ceilings work, you can either explore independently using the official resources above or carry your port-day context into DCC's Juneau excursion specialists.",
+        "Once you understand how Juneau's geography, dock buffers, and weather ceilings work, you can either explore independently using the official public resources above, book directly with local operators, or use DCC's owned specialist sites (Juneau Flight Deck for flightseeing and helicopter tours; Last Frontier Shore Excursions for general Alaska shore excursions, whale watching, and Mendenhall). Owned-site status never affects DCC's factual ranking or fit results.",
       contextControls: {
         supportsDate: true,
         supportsPartySize: true,
@@ -1344,41 +1344,35 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
       options: [
         {
           id: "handoff-juneau-flight-deck",
-          partnerName: "Juneau Flight Deck",
+          partnerName: "Juneau Flight Deck (DCC Owned Specialist Site)",
           partnerRole: "excursion_specialist",
           integrationMode: "context_handoff_link",
           description:
-            "Dedicated Juneau comparison specialist for helicopter glacier landings vs. Auke Bay whale watching, built around cruise-ship all-aboard windows and weather fallback logic.",
+            "Dedicated Juneau aviation specialist for helicopter glacier landings, icefield flightseeing, TEMSCO vs. Coastal vs. NorthStar comparisons, and weather-cancellation recovery plans.",
           whenItHelps:
-            "Best when you want to compare helicopter icefield landings and whale-watching departures that fit your exact ship call window.",
+            "Best when you want to compare Juneau helicopter tours, glacier landings, dog sledding flights, or weather-sensitive aviation options.",
           noPurchaseRequiredNote:
-            "Carries your selected date and party size into the Juneau Flight Deck planner. No purchase is required to compare routes.",
+            "DCC owned specialist site (Juneau Flight Deck). Carries your port date (?date=YYYY-MM-DD) when provided. No purchase is required to compare routes.",
           baseUrl: "https://juneauflightdeck.com/helicopter",
-          supportedContextParams: ["date", "partySize", "shipOrPort"],
-          defaultParams: {
-            source_surface: "dcc_juneau_reference",
-            destination: "juneau",
-          },
+          supportedContextParams: ["date"],
+          defaultParams: {},
           expectedProductMarkers: ["Juneau", "Helicopter", "Glacier"],
         },
         {
-          id: "handoff-welcome-to-alaska",
-          partnerName: "Welcome to Alaska Tours",
+          id: "handoff-last-frontier-shore-excursions",
+          partnerName: "Last Frontier Shore Excursions (DCC Owned Specialist Site)",
           partnerRole: "specialist_guide",
           integrationMode: "context_handoff_link",
           description:
-            "Multi-port Southeast Alaska shore-excursion guide covering Juneau, Skagway, and Ketchikan so you avoid booking duplicate glacier or wildlife tours across ports.",
+            "General Alaska shore-excursion specialist covering Juneau whale watching, Mendenhall Glacier shuttles, port-day combinations, and Skagway or Ketchikan excursion shopping.",
           whenItHelps:
-            "Best when deciding whether to do your glacier flight in Juneau vs. the White Pass railway in Skagway or floatplanes in Ketchikan.",
+            "Best when comparing Auke Bay whale watching, Mendenhall Glacier shuttles, whale-and-glacier combinations, or multi-port Alaska excursions across Juneau, Skagway, and Ketchikan.",
           noPurchaseRequiredNote:
-            "Forwards your travel date and party context so you can compare multi-port tradeoffs.",
-          baseUrl: "https://welcometoalaskatours.com/ports/juneau",
-          supportedContextParams: ["date", "partySize", "shipOrPort"],
-          defaultParams: {
-            source_surface: "dcc_juneau_reference",
-            port: "juneau",
-          },
-          expectedProductMarkers: ["Juneau", "Excursions", "Whale"],
+            "DCC owned specialist site (Last Frontier Shore Excursions). Routes directly to the Juneau shore-excursion port hub without invented query parameters.",
+          baseUrl: "https://www.lastfrontiershoreexcursions.com/ports/juneau",
+          supportedContextParams: [],
+          defaultParams: {},
+          expectedProductMarkers: ["Juneau", "Shore Excursions", "Whale"],
         },
       ],
     },
@@ -1621,44 +1615,44 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
       {
         id: "jun-operator-heli-icefield",
         entityId: "juneau:part135-heli-operators",
-        claimSummary: "Published FAA Part 135 helicopter glacier tour parameters: 3.0–3.25 hr dock-to-dock duration (comprising ~40 min round-trip JNU shuttle, 30 min mandatory pre-flight safety briefing/overboot fitting, and ~115 min flight + glacier walk), May–September operating season, 250 lb weight-balance surcharge threshold, and 100% weather-cancellation refund.",
-        sourceTitle: "TEMSCO Helicopters — Mendenhall Glacier & Icefield Excursion Specifications",
+        claimSummary: "TEMSCO Helicopters 'Mendenhall Glacier & Guided Walk' baseline specification (~2.0 hrs heliport/flight/ice time, ~3.0–3.25 hrs dock-to-dock with shuttle, May–September season, 250 lb weight-balance threshold), alongside JNU Part 135 corridor planning ranges across Coastal Helicopters and NorthStar Trekking (3.0–4.25 hrs dock-to-dock, 30–45 min check-in, 250–260 lb thresholds, and product-specific cancellation windows).",
+        sourceTitle: "TEMSCO Helicopters — Mendenhall Glacier & Guided Walk Specification (Baseline JNU Part 135 Reference)",
         sourceUrl: "https://temscoair.com/juneau-helicopter-tours/mendenhall-glacier/",
         issuingOrganization: "TEMSCO Helicopters (FAA Part 135 Operator, JNU Airport)",
-        authorityType: "official_rule",
+        authorityType: "operator_provided",
         integrationStatus: "curated_verified",
         geographicScope: "Juneau International Airport (JNU) Heliport & Juneau Icefield (Mendenhall / Herbert / Norris Glaciers)",
-        applicableTravelerContext: "Cruise and independent passengers booking helicopter glacier landings",
+        applicableTravelerContext: "Cruise and independent passengers comparing JNU helicopter glacier landing products",
         publishedOrUpdatedDate: "2026-04-15",
         lastCheckedAt: "2026-10-23",
         observedAt: "2026-04-15",
         retrievedAt: "2026-10-23T09:00:00.000Z",
         verifiedAt: "2026-10-23T09:10:00.000Z",
-        applicableDates: "May 1 – September 30 summer flightseeing season (closed October – April)",
-        conditionsAndExceptions: "Advertised 3.0–3.25 hr duration is dock-to-dock and already includes airport shuttle transfers and safety briefing; passengers exceeding 250 lbs fully clothed require a weight-balance seat surcharge; flights dispatch strictly under FAA Part 135 ceiling/visibility minimums.",
-        limitations: "Published base rates ($409–$549) and slot times do not establish real-time seat inventory on a specific ship date.",
+        applicableDates: "May 1 – September 30 summer flightseeing season (closed October – April; exact start/end dates vary by operator)",
+        conditionsAndExceptions: "TEMSCO's Mendenhall Walkabout (~3.0–3.25 hr dock-to-dock) is one specific product; other JNU Part 135 operators (Coastal Helicopters Icefield Excursion, NorthStar Trekking Level 1–3 glacier treks) run 3.0–4.25 hrs dock-to-dock with 30–45 min check-in lead times, 250–260 lb weight-balance surcharge thresholds, and differing traveler-initiated cancellation windows (24h to 7+ days).",
+        limitations: "Planning fare ranges ($399–$699+ depending on walkabout vs. extended trek), exact check-in cutoff, weight surcharge threshold, and customer cancellation terms must be confirmed on the specific operator product you book.",
         freshnessCategory: "pricing_and_booking_terms",
         expectedSourceTerms: ["Mendenhall", "Glacier", "Helicopter"],
       },
       {
         id: "jun-operator-auke-bay-whale",
         entityId: "juneau:auke-bay-whale-operators",
-        claimSummary: "Published Auke Bay whale watching excursion parameters: 3.5–3.75 hr dock-to-dock duration (comprising 50 min round-trip transfer between downtown Marine Park and Auke Bay Statter Harbor, 20 min dock check-in, and 135–150 min on-water viewing in Stephens Passage), April–October season, and heated cabin accessibility.",
+        claimSummary: "Allen Marine Tours Juneau whale watching baseline specification alongside Auke Bay Statter Harbor corridor planning ranges (~3.5–4.0 hr dock-to-dock duration including ~25–30 min each-way Egan Drive transfer, 15–30 min check-in, and ~2.0–2.5 hr on-water viewing in Stephens Passage, April–October season).",
         sourceTitle: "Allen Marine Tours — Juneau Whale Watching & Mendenhall Excursion Specifications",
         sourceUrl: "https://allenmarine.com/juneau/",
-        issuingOrganization: "Allen Marine Tours / Permitted Auke Bay Marine Operators",
-        authorityType: "official_rule",
+        issuingOrganization: "Allen Marine Tours (Auke Bay Statter Harbor Operator)",
+        authorityType: "operator_provided",
         integrationStatus: "curated_verified",
         geographicScope: "Auke Bay (Statter Harbor), Stephens Passage & Favorite Channel, Juneau, AK",
-        applicableTravelerContext: "Cruise and independent travelers booking single whale watching or Whale + Mendenhall combination tours",
+        applicableTravelerContext: "Cruise and independent travelers comparing single whale watching or Whale + Mendenhall combination tours",
         publishedOrUpdatedDate: "2026-04-10",
         lastCheckedAt: "2026-10-23",
         observedAt: "2026-04-10",
         retrievedAt: "2026-10-23T09:05:00.000Z",
         verifiedAt: "2026-10-23T09:15:00.000Z",
-        applicableDates: "April 15 – October 15 whale watching season",
-        conditionsAndExceptions: "Advertised 3.5–3.75 hr duration is dock-to-dock and includes the 25-min each-way motorcoach transfer between downtown and Auke Bay; extreme minus low tides at Statter Harbor increase boarding ramp slope.",
-        limitations: "Indicative rates ($169–$229 single; $219–$289 combo) vary by vessel size and date.",
+        applicableDates: "Mid-April – Mid-October whale watching season (exact start/end dates vary by operator)",
+        conditionsAndExceptions: "Advertised 3.5–4.0 hr duration is a dock-to-dock planning estimate that includes the ~25–30 min each-way motorcoach transfer between downtown and Auke Bay; extreme minus low tides at Statter Harbor increase boarding ramp slope, and wheelchair accessibility varies by vessel.",
+        limitations: "Indicative planning rates ($169–$229 single; $219–$289 combo), vessel cabin step-free access, and customer cancellation cutoffs vary across Allen Marine, Gastineau Guiding, Juneau Tours, and small-boat operators.",
         freshnessCategory: "pricing_and_booking_terms",
         expectedSourceTerms: ["Juneau", "Whale", "Mendenhall"],
       },
@@ -4145,8 +4139,9 @@ export function buildLegacyReferenceOverrideFindingId(nodeId: TravelReferenceNod
 const DISALLOWED_PRODUCTION_TEST_URLS = new Set([
   "https://juneauflightdeck.com/juneau-helicopters",
   "https://juneauflightdeck.com/best-excursions-in-juneau",
-  "https://welcometoalaskatours.com/juneau/cruise-port",
-  "https://welcometoalaskatours.com/juneau-shore-excursions",
+  "https://www.lastfrontiershoreexcursions.com/juneau-shore-excursions",
+  "https://lastfrontiershoreexcursions.com/juneau-shore-excursions",
+  "https:// gosno.co/denver-to-breckenridge-shuttle",
   "https://gosno.co/denver-to-breckenridge-shuttle",
   "/juneau-helicopters",
   "/juneau/cruise-port",
@@ -4178,7 +4173,13 @@ export async function readPublishedReferenceNodeOverrideFromDb(
       return null;
     }
     const handoffUrls = Object.values(override.specialistHandoffBaseUrls || {});
-    if (handoffUrls.some((u) => DISALLOWED_PRODUCTION_TEST_URLS.has(u.trim()))) {
+    if (
+      handoffUrls.some(
+        (u) =>
+          DISALLOWED_PRODUCTION_TEST_URLS.has(u.trim()) ||
+          u.toLowerCase().includes("welcometoalaskatours"),
+      )
+    ) {
       return null;
     }
   }

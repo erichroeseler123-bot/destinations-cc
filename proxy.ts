@@ -31,7 +31,7 @@ type DccSatelliteId =
   | "partyatredrocks"
   | "redrocksfastpass"
   | "welcometotheswamp"
-  | "welcome-to-alaska"
+  | "juneauflightdeck"
   | "saveonthestrip";
 
 const GONE_EXACT_PATHS = new Set([
@@ -521,7 +521,7 @@ function buildHandoffEventPayload(request: NextRequest, resolved: NonNullable<Re
         : isJuneauHeli
           ? resolved.routeId === "intent_dcc_juneau_whale_fallback"
             ? "dcc-juneau-whale-fallback"
-            : "wta-juneau-helicopter-fast-pass"
+            : "jfd-juneau-helicopter-planner"
           : isVegasDeals
             ? resolved.routeId === "intent_dcc_vegas_hub_fallback"
               ? "dcc-vegas-hub-fallback"
@@ -543,7 +543,7 @@ function buildHandoffEventPayload(request: NextRequest, resolved: NonNullable<Re
       : isNewOrleansSwamp
         ? "welcometotheswamp"
         : isJuneauHeli
-      ? "welcome-to-alaska"
+      ? "juneauflightdeck"
       : isVegasDeals
         ? "saveonthestrip"
         : "partyatredrocks",
@@ -621,7 +621,7 @@ function buildHandoffEventPayload(request: NextRequest, resolved: NonNullable<Re
 function resolveProxySatelliteId(pathname: string): DccSatelliteId {
   if (pathname === RED_ROCKS_FASTPASS_GO_PATH) return "redrocksfastpass";
   if (pathname === NEW_ORLEANS_SWAMP_GO_PATH) return "welcometotheswamp";
-  if (pathname === JUNEAU_HELICOPTER_GO_PATH) return "welcome-to-alaska";
+  if (pathname === JUNEAU_HELICOPTER_GO_PATH) return "juneauflightdeck";
   if (pathname === VEGAS_DEALS_GO_PATH) return "saveonthestrip";
   return "partyatredrocks";
 }
@@ -651,7 +651,7 @@ function resolveEdgeSafeSatelliteWebhookToken(satelliteId: DccSatelliteId) {
       || null;
   }
 
-  return process.env.DCC_WTA_WEBHOOK_TOKEN?.trim()
+  return process.env.DCC_JFD_WEBHOOK_TOKEN?.trim()
     || process.env.DCC_SATELLITE_WEBHOOK_TOKEN?.trim()
     || null;
 }

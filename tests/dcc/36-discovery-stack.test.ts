@@ -33,7 +33,9 @@ test("dcc root agent manifest exposes governed surfaces and handoff contract", (
 
   assert.equal(manifest.role, "dcc");
   assert.equal(manifest.handoff_protocol?.type, "decision_carriage");
-  assert.ok(manifest.governed_surfaces?.some((surface) => surface.id === "welcometoalaskatours"));
+  assert.ok(manifest.governed_surfaces?.some((surface) => surface.id === "lastfrontiershoreexcursions"));
+  assert.ok(manifest.governed_surfaces?.some((surface) => surface.id === "juneauflightdeck"));
+  assert.ok(!manifest.governed_surfaces?.some((surface) => surface.id === "welcometoalaskatours"));
 });
 
 test("dcc root llms text describes governance and machine-readable paths", () => {
@@ -41,4 +43,5 @@ test("dcc root llms text describes governance and machine-readable paths", () =>
 
   assert.match(text, /Role: dcc/);
   assert.match(text, /destinationcommandcenter\.com\/agent\.json/);
+  assert.doesNotMatch(text, /welcometoalaskatours/i);
 });

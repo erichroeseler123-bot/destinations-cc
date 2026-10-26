@@ -7,19 +7,22 @@ const DCC_WWW_HOST = "www.destinationcommandcenter.com";
  */
 export const SATELLITE_EDGE_ROUTES = [
   {
-    id: "wta-juneau-whale-watching",
+    id: "lfse-juneau-whale-watching",
     prefix: "/juneau-whale-watching",
-    targetOrigin: "https://welcome-to-alaska-tours.com",
+    targetOrigin: "https://www.lastfrontiershoreexcursions.com",
+    destinationPath: "/juneau/whale-watching",
   },
   {
-    id: "wta-juneau-shore-excursions",
+    id: "lfse-juneau-shore-excursions",
     prefix: "/juneau-shore-excursions",
-    targetOrigin: "https://welcome-to-alaska-tours.com",
+    targetOrigin: "https://www.lastfrontiershoreexcursions.com",
+    destinationPath: "/ports/juneau",
   },
   {
-    id: "wta-ketchikan-shore-excursions",
+    id: "lfse-ketchikan-shore-excursions",
     prefix: "/ketchikan-shore-excursions",
-    targetOrigin: "https://welcome-to-alaska-tours.com",
+    targetOrigin: "https://www.lastfrontiershoreexcursions.com",
+    destinationPath: "/ports/ketchikan",
   },
   {
     id: "gosno-ski-shuttle",
@@ -66,19 +69,20 @@ export function buildSatelliteRedirects(hosts = [DCC_CANONICAL_HOST, DCC_WWW_HOS
   for (const route of SATELLITE_EDGE_ROUTES) {
     const prefix = normalizeEdgePrefix(route.prefix);
     if (!prefix || !route.targetOrigin) continue;
+    const destPath = normalizeEdgePrefix(route.destinationPath) || prefix;
 
     for (const host of hosts) {
       redirects.push({
         source: prefix,
         has: [{ type: "header", key: "host", value: host }],
-        destination: `${route.targetOrigin}${prefix}`,
+        destination: `${route.targetOrigin}${destPath}`,
         permanent: false,
       });
 
       redirects.push({
         source: `${prefix}/:path*`,
         has: [{ type: "header", key: "host", value: host }],
-        destination: `${route.targetOrigin}${prefix}/:path*`,
+        destination: `${route.targetOrigin}${destPath}/:path*`,
         permanent: false,
       });
     }

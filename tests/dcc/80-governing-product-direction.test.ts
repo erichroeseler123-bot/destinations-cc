@@ -159,7 +159,7 @@ test("Proof 2: Juneau Port-Day Decision Engine changes recommendations when port
   );
   assert.ok(comboShort.timing.netMarginMinutes < 0);
 
-  // Scenario C: Low ceiling / fog / heavy rain shifts helicopter landing to tight_buffer while marine whale watching remains 'fits_comfortably'
+  // Scenario C: Low ceiling / fog / heavy rain keeps time fit distinct (fits_comfortably with 145m margin) while flagging traveler_low_ceiling_assumption and ranking marine whale watching ahead of flightseeing
   const lowCeilingCall = evaluateJuneauPortDayScenario(
     {
       ...DEFAULT_JUNEAU_SCENARIO_INPUT,
@@ -177,8 +177,17 @@ test("Proof 2: Juneau Port-Day Decision Engine changes recommendations when port
   const whaleLowCeiling = lowCeilingCall.options.find(
     (o) => o.optionId === "jun-opt-auke-bay-whale-direct",
   )!;
-  assert.equal(heliLowCeiling.fitStatus, "tight_buffer");
+  assert.equal(heliLowCeiling.fitStatus, "fits_comfortably");
+  assert.equal(
+    heliLowCeiling.statusDimensions.weatherAndDispatch.status,
+    "traveler_low_ceiling_assumption",
+  );
   assert.equal(whaleLowCeiling.fitStatus, "fits_comfortably");
+  assert.ok(
+    lowCeilingCall.options.indexOf(whaleLowCeiling) <
+      lowCeilingCall.options.indexOf(heliLowCeiling),
+    "Marine whale watch must rank ahead of ceiling-dependent flightseeing under low-ceiling assumption",
+  );
 
   // Scenario D: Step-free / wheelchair mobility disqualifies Capital Transit 3.0-mile walk while keeping direct shuttle and ADA whale boat viable
   const stepFreeCall = evaluateJuneauPortDayScenario(
@@ -198,9 +207,13 @@ test("Proof 2: Juneau Port-Day Decision Engine changes recommendations when port
     (o) => o.optionId === "jun-opt-usfs-mendenhall-shuttle",
   )!;
   assert.equal(busStepFree.fitStatus, "does_not_fit");
+  assert.equal(
+    busStepFree.statusDimensions.accessibility.status,
+    "does_not_match_mobility",
+  );
   assert.equal(shuttleStepFree.fitStatus, "fits_comfortably");
 
-  // Scenario E: Unspecified mobility does NOT silently assume 3-mile walking capability for Capital Transit
+  // Scenario E: Unspecified mobility keeps time fit distinct while flagging walking_requirement_unconfirmed for Capital Transit's 3-mile walk
   const unspecifiedMobilityCall = evaluateJuneauPortDayScenario(
     {
       ...DEFAULT_JUNEAU_SCENARIO_INPUT,
@@ -213,10 +226,11 @@ test("Proof 2: Juneau Port-Day Decision Engine changes recommendations when port
   const busUnspecified = unspecifiedMobilityCall.options.find(
     (o) => o.optionId === "jun-opt-capital-transit-diy",
   )!;
+  assert.equal(busUnspecified.fitStatus, "fits_comfortably");
   assert.equal(
-    busUnspecified.fitStatus,
-    "tight_buffer",
-    "Missing mobility input must not silently become an unqualified fits_comfortably assumption for a 3-mile walk option",
+    busUnspecified.statusDimensions.accessibility.status,
+    "walking_requirement_unconfirmed",
+    "Missing mobility input must explicitly flag walking_requirement_unconfirmed on a 3-mile walk option without conflating it into tight_buffer",
   );
 
   // Shareable URL roundtrip preserves non-sensitive scenario inputs and re-evaluates
@@ -369,8 +383,18 @@ test("Proof 5: A failed provider fetch produces an explicit verification-limitat
   )!;
   assert.equal(
     heliDegraded.fitStatus,
-    "tight_buffer",
-    "Flightseeing must not be an unqualified fits_comfortably when weather telemetry is unavailable",
+    "fits_comfortably",
+    "Unavailable weather feed must not become tight_buffer when 145 minutes of spare time remain",
+  );
+  assert.equal(
+    heliDegraded.statusDimensions.weatherAndDispatch.status,
+    "weather_feed_unavailable",
+    "Flightseeing must explicitly record weather_feed_unavailable in its weatherAndDispatch status dimension",
+  );
+  assert.ok(
+    heliDegraded.plainLanguageStatuses.includes(
+      "Weather feed unavailable; check official forecast and operator dispatch directly.",
+    ),
   );
 
   // 5b. Render JuneauPortDayPlanner with provider_telemetry_unavailable and verify alert banner
@@ -856,6 +880,20 @@ test("Proof 11: Factual-error reporting path validates inputs, blocks honeypot/c
     assert.equal(honeypotRes.error, "spam_detected_honeypot");
   }
 
+  // Clean up any leftover test reports from earlier runs
+  const existingReports = await listFactualErrorReports({
+    pagePath: "/juneau",
+    limit: 50,
+  });
+  for (const r of existingReports) {
+    if (
+      r.disputedClaim.startsWith("Route 3 weekend frequency check") ||
+      r.disputedClaim.startsWith("Steep Creek boardwalk maintenance window")
+    ) {
+      await deleteFactualErrorReportByIdForTests(r.reportId);
+    }
+  }
+
   // 11b. Valid submission via API route persists durably and survives simulated notification failure
   const uniqueClaim = `Route 3 weekend frequency check (${Date.now()})`;
   const postReq = new Request(
@@ -915,4 +953,265 @@ test("Proof 11: Factual-error reporting path validates inputs, blocks honeypot/c
     await deleteFactualErrorReportByIdForTests(resilientRes.report.reportId);
   }
 });
+
+test("Proof 12: Focused correction pass — Example Scenario initial state, separated status dimensions, plain-language results, accurate accessibility wording, and multi-operator planning ranges", async () => {
+  const juneauNode = getBaseTravelReferenceNodeById("juneau");
+
+  // 12a. Initial scenario has travelDate === null, isExampleScenario === true, and prompts the traveler for their trip date
+  assert.equal(DEFAULT_JUNEAU_SCENARIO_INPUT.travelDate, null);
+  const initialEval = evaluateJuneauPortDayScenario(DEFAULT_JUNEAU_SCENARIO_INPUT, {
+    node: juneauNode,
+    now: NOW,
+  });
+  assert.equal(initialEval.dateProvidedByTraveler, false);
+  assert.equal(initialEval.isExampleScenario, true);
+  assert.match(initialEval.exampleScenarioNotice || "", /Example Scenario/i);
+  assert.match(initialEval.conciseBottomLine, /^Example Scenario/);
+
+  // When a traveler supplies their trip date, isExampleScenario becomes false
+  const datedEval = evaluateJuneauPortDayScenario(
+    {
+      ...DEFAULT_JUNEAU_SCENARIO_INPUT,
+      travelDate: "2026-07-15",
+    },
+    { node: juneauNode, now: NOW },
+  );
+  assert.equal(datedEval.dateProvidedByTraveler, true);
+  assert.equal(datedEval.isExampleScenario, false);
+  assert.equal(datedEval.exampleScenarioNotice, null);
+  assert.doesNotMatch(datedEval.conciseBottomLine, /^Example Scenario/);
+
+  // 12b. Unknown dock with substantial time remaining does NOT become tight_buffer, and emits plain-language status bullets
+  const unknownDockLongWindow = evaluateJuneauPortDayScenario(
+    {
+      ...DEFAULT_JUNEAU_SCENARIO_INPUT,
+      travelDate: "2026-07-15",
+      shipArrivalTime: "08:00",
+      allAboardTime: "16:30",
+      arrivalDock: "unknown_dock",
+    },
+    { node: juneauNode, now: NOW },
+  );
+  const whaleUnknownLong = unknownDockLongWindow.options.find(
+    (o) => o.optionId === "jun-opt-auke-bay-whale-direct",
+  )!;
+  assert.equal(
+    whaleUnknownLong.fitStatus,
+    "fits_comfortably",
+    "Unknown dock must not become tight_buffer when >45 minutes of margin remain",
+  );
+  assert.ok(whaleUnknownLong.plainLanguageStatuses.includes("Fits your time budget."));
+  assert.ok(
+    whaleUnknownLong.plainLanguageStatuses.includes(
+      "Departure schedule still needs confirmation.",
+    ),
+  );
+  assert.ok(
+    whaleUnknownLong.plainLanguageStatuses.includes(
+      "Dock unknown; transfer allowance is an estimate.",
+    ),
+  );
+
+  // 12c. Single-activity options that fit the available time remain visible as alternatives when goalMode === "two_activity_combo"
+  const twoActivityLongEval = evaluateJuneauPortDayScenario(
+    {
+      ...DEFAULT_JUNEAU_SCENARIO_INPUT,
+      travelDate: "2026-07-15",
+      shipArrivalTime: "08:00",
+      allAboardTime: "16:30",
+      goalMode: "two_activity_combo",
+    },
+    { node: juneauNode, now: NOW },
+  );
+  const singleWhaleUnderCombo = twoActivityLongEval.options.find(
+    (o) => o.optionId === "jun-opt-auke-bay-whale-direct",
+  )!;
+  assert.equal(
+    singleWhaleUnderCombo.fitStatus,
+    "fits_comfortably",
+    "Single-activity option that fits the time budget must remain visible rather than marked does_not_fit under two_activity_combo",
+  );
+  assert.equal(
+    singleWhaleUnderCombo.statusDimensions.preferenceMatch.status,
+    "single_activity_alternative",
+  );
+  assert.ok(
+    singleWhaleUnderCombo.plainLanguageStatuses.includes(
+      "Single-activity alternative (fits your time window if you skip a two-activity combo).",
+    ),
+  );
+
+  // 12d. Accessibility language never says an option "requires 'step free wheelchair'"
+  const fullHtml = renderToStaticMarkup(
+    React.createElement(JuneauPortDayPlanner, { node: juneauNode }),
+  );
+  assert.doesNotMatch(
+    fullHtml,
+    /requires\s+(?:at\s+least\s+)?['"]?step[_\s-]free[_\s-]wheelchair/i,
+    "Page must never state that an option requires the traveler to use a wheelchair",
+  );
+  for (const opt of initialEval.options) {
+    assert.ok(opt.accessibilityDetails.walkingAndTerrain.length > 10);
+    assert.ok(opt.accessibilityDetails.boardingAndTransfer.length > 10);
+    assert.ok(opt.accessibilityDetails.wheelchairAndMobilitySupport.length > 10);
+    assert.ok(opt.accessibilityDetails.confirmationNote.length > 10);
+  }
+
+  // 12e. Multi-operator helicopter claims use operator_estimate / dcc_estimate planning ranges and preserve transfer/return uncertainty
+  const heliOpt = initialEval.options.find(
+    (o) => o.optionId === "jun-opt-heli-icefield-walkabout",
+  )!;
+  for (const key of [
+    "price",
+    "activity_duration",
+    "check_in_deadline",
+    "booking_and_cancellation",
+  ] as const) {
+    const field = heliOpt.inputAudit.find((f) => f.field === key)!;
+    assert.ok(field, `Expected inputAudit entry for ${key}`);
+    assert.notEqual(
+      field.basisType,
+      "sourced_fact",
+      "Multi-operator helicopter ranges across TEMSCO, Coastal, and NorthStar must not be labeled as a single verified sourced_fact",
+    );
+  }
+  const heliDurationField = heliOpt.inputAudit.find(
+    (f) => f.field === "activity_duration",
+  )!;
+  const heliCheckInField = heliOpt.inputAudit.find(
+    (f) => f.field === "check_in_deadline",
+  )!;
+  assert.match(heliDurationField.valueSummary, /180–255 min/);
+  assert.match(heliCheckInField.valueSummary, /30–45 min/);
+  assert.match(heliOpt.timing.durationAudit.decompositionNote, /^Planning estimate modeled on TEMSCO/);
+  assert.doesNotMatch(heliOpt.timing.durationAudit.decompositionNote, /^Verified decomposition:/);
+  assert.ok(heliOpt.timing.estimatedBackAtDockRangeText.includes("–"));
+});
+
+test("Proof 13: Alaska ownership correction routes flightseeing to Juneau Flight Deck and shore excursions to Last Frontier Shore Excursions with zero WTA commercial links", async () => {
+  const { buildDccRootAgentManifest, buildDccRootLlmsText, buildDccRootSitemapIndex } = await import(
+    "@/lib/dcc/discoveryStack"
+  );
+  const { getPublishedTravelReferenceNodeById } = await import("@/lib/dcc/travelReference");
+  const { resolveJuneauHelicopterGoRedirect } = await import("@/lib/dcc/routing/middleware");
+
+  const juneauNode = await getPublishedTravelReferenceNodeById("juneau");
+  const juneauTree = await TravelReferenceExperience({ node: juneauNode });
+  const juneauHtml = renderToStaticMarkup(juneauTree);
+
+  // 13a. Zero Welcome to Alaska Tours references in Juneau HTML (including JSON-LD), reference node, discovery stack, or location API
+  for (const surface of [
+    { name: "Juneau HTML & JSON-LD", text: juneauHtml },
+    { name: "Juneau TravelReferenceNode", text: JSON.stringify(juneauNode) },
+    { name: "agent.json", text: JSON.stringify(buildDccRootAgentManifest()) },
+    { name: "llms.txt", text: buildDccRootLlmsText() },
+    { name: "sitemap.xml", text: buildDccRootSitemapIndex() },
+  ]) {
+    assert.doesNotMatch(
+      surface.text,
+      /welcometoalaskatours|welcome-to-alaska|Welcome to Alaska Tours/i,
+      `${surface.name} must not contain any Welcome to Alaska Tours commercial handoff or network reference`,
+    );
+  }
+
+  const locReq = new NextRequest("https://www.destinationcommandcenter.com/api/location/58.30190/-134.41970?scope=core");
+  const locRes = await getLocationApi(locReq, {
+    params: Promise.resolve({ lat: "58.30190", lng: "-134.41970" }),
+  });
+  const locText = await locRes.text();
+  assert.doesNotMatch(locText, /welcometoalaskatours|Welcome to Alaska Tours/i);
+  assert.match(locText, /juneauflightdeck\.com\/helicopter/);
+  assert.match(locText, /www\.lastfrontiershoreexcursions\.com\/ports\/juneau/);
+
+  // 13b. Specialist handoffs and decision-engine channels use working owned specialist deep links and only supported parameters
+  const evalWithDate = evaluateJuneauPortDayScenario(
+    {
+      ...DEFAULT_JUNEAU_SCENARIO_INPUT,
+      travelDate: "2026-07-15",
+      dateProvidedByTraveler: true,
+      shipArrivalTime: "08:00",
+      allAboardTime: "16:30",
+      dockCode: "AS",
+      weatherOutlook: "mixed_ceiling",
+      mobilityLevel: "standard_walking",
+      budgetBand: "any",
+      goalMode: "two_activity_combo",
+      partySize: 2,
+    },
+    { node: juneauNode, now: NOW },
+  );
+
+  const allChannels = evalWithDate.options.flatMap((o) => o.bookingTransparency.channels);
+  assert.ok(
+    !allChannels.some(
+      (ch) => /welcometoalaskatours/i.test(ch.url) || /Welcome to Alaska/i.test(ch.operatorOrProviderName),
+    ),
+    "No option booking channel may route to Welcome to Alaska Tours",
+  );
+
+  // Flightseeing specialist channel uses https://juneauflightdeck.com/helicopter?date=2026-07-15
+  const heliSpecialist = evalWithDate.options
+    .find((o) => o.optionId === "jun-opt-heli-icefield-walkabout")!
+    .bookingTransparency.channels.find((ch) => ch.channelType === "specialist_comparison")!;
+  assert.equal(heliSpecialist.url, "https://juneauflightdeck.com/helicopter?date=2026-07-15");
+  assert.match(heliSpecialist.relationshipDisclosure, /DCC owned specialist site \(Juneau Flight Deck\)/);
+
+  // Shore-excursion specialist channels use working Last Frontier Shore Excursions deep links without invented query parameters
+  const whaleSpecialist = evalWithDate.options
+    .find((o) => o.optionId === "jun-opt-auke-bay-whale-direct")!
+    .bookingTransparency.channels.find((ch) => ch.channelType === "specialist_comparison")!;
+  assert.equal(whaleSpecialist.url, "https://www.lastfrontiershoreexcursions.com/juneau/whale-watching");
+  assert.match(whaleSpecialist.relationshipDisclosure, /DCC owned specialist site \(Last Frontier Shore Excursions\)/);
+
+  const mendenhallSpecialist = evalWithDate.options
+    .find((o) => o.optionId === "jun-opt-usfs-mendenhall-shuttle")!
+    .bookingTransparency.channels.find((ch) => ch.channelType === "specialist_comparison")!;
+  assert.equal(
+    mendenhallSpecialist.url,
+    "https://www.lastfrontiershoreexcursions.com/juneau/mendenhall-glacier-tours",
+  );
+
+  const comboSpecialist = evalWithDate.options
+    .find((o) => o.optionId === "jun-opt-combo-whale-and-mendenhall")!
+    .bookingTransparency.channels.find((ch) => ch.channelType === "specialist_comparison")!;
+  assert.equal(
+    comboSpecialist.url,
+    "https://www.lastfrontiershoreexcursions.com/decision/whale-watching-vs-glacier-tour",
+  );
+
+  const heliComboSpecialists = evalWithDate.options
+    .find((o) => o.optionId === "jun-opt-combo-heli-and-mendenhall")!
+    .bookingTransparency.channels.filter((ch) => ch.channelType === "specialist_comparison");
+  assert.equal(heliComboSpecialists.length, 2);
+  assert.equal(heliComboSpecialists[0].url, "https://juneauflightdeck.com/helicopter?date=2026-07-15");
+  assert.equal(
+    heliComboSpecialists[1].url,
+    "https://www.lastfrontiershoreexcursions.com/juneau/mendenhall-glacier-tours",
+  );
+
+  // 13c. /go/juneau/helicopter-tours resolves to https://juneauflightdeck.com/helicopter (with ?date when valid)
+  const { resolveGoRedirect } = await import("@/lib/dcc/routing/middleware");
+  const goRedirect = resolveGoRedirect({
+    pathname: "/go/juneau/helicopter-tours",
+    searchParams: new URLSearchParams("date=2026-07-15&port=juneau"),
+  });
+  assert.equal(goRedirect?.destinationUrl, "https://juneauflightdeck.com/helicopter?date=2026-07-15");
+
+  // 13d. Direct operators and public-agency evidence links remain intact and ranking remains commercially independent
+  assert.ok(evalWithDate.options.every((o) => o.rankingAudit.commercialWeight === 0));
+  assert.match(
+    evalWithDate.coverageDisclosures.commercialIndependenceStatement,
+    /Commercial or affiliate relationships never influence ranking/,
+  );
+  assert.ok(allChannels.every((ch) => ch.commissionInfluenceOnRanking === 0));
+  assert.ok(allChannels.some((ch) => ch.channelType === "direct_operator" && /temscoair\.com/.test(ch.url)));
+  assert.ok(allChannels.some((ch) => ch.channelType === "direct_operator" && /coastalhelicopters\.com/.test(ch.url)));
+  assert.ok(allChannels.some((ch) => ch.channelType === "direct_operator" && /northstartrekking\.com/.test(ch.url)));
+  assert.ok(allChannels.some((ch) => ch.channelType === "direct_operator" && /allenmarine\.com/.test(ch.url)));
+  assert.ok(allChannels.some((ch) => ch.channelType === "public_free" && /fs\.usda\.gov/.test(ch.url)));
+  assert.ok(allChannels.some((ch) => ch.channelType === "public_free" && /juneaucapitaltransit\.org/.test(ch.url)));
+});
+
+
+
 

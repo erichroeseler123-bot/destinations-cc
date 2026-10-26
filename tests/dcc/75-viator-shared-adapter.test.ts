@@ -98,7 +98,7 @@ const SAMPLE_JUNEAU_RECORD: VerifiedProductRecord = {
     internalProductId: "juneau-whale-small-group",
     viatorProductCode: "331813P1",
     defaultCampaign: "last-frontier-juneau-whale-small-group",
-    allowedSites: ["last-frontier-shore-excursions", "welcometoalaskatours", "cruisepromenade"],
+    allowedSites: ["last-frontier-shore-excursions", "cruisepromenade"],
     portSlug: "juneau",
     status: "active",
   },

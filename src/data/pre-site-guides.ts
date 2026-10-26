@@ -254,7 +254,7 @@ export const PRE_SITE_GUIDES: PreSiteGuide[] = [
       { label: "Stay close to port", body: "Lower logistical risk, but you may miss the experience that made the destination special." },
     ],
     questions: ["What can you only do in this port?", "What part is most weather-sensitive?", "How much travel time is involved?", "What is the backup if the anchor experience fails?"],
-    nextStep: { label: "Browse Alaska shore excursions", body: "Once the decision is narrowed, use the Alaska specialist site to compare the actual excursion choices.", href: "https://lastfrontiershoreexcursions.com" },
+    nextStep: { label: "Browse Alaska shore excursions", body: "Once the decision is narrowed, use the DCC owned specialist site (Last Frontier Shore Excursions) to compare the actual excursion choices.", href: "https://www.lastfrontiershoreexcursions.com/ports/juneau" },
   },
 ];
 

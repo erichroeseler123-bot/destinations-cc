@@ -99,13 +99,15 @@ function resolveWarehouseCorridorId(meta: MappingTelemetryMeta) {
   if (operatorId === "partyatredrocks") return "partyatredrocks";
   if (operatorId === "airport-420-pickup") return "airport-420-pickup";
   if (operatorId === "welcometotheswamp" || operatorId === "wts") return "welcometotheswamp";
-  if (operatorId === "wta" || operatorId === "juneauflightdeck") return "wta";
+  if (operatorId === "juneauflightdeck") return "juneauflightdeck";
+  if (operatorId === "lastfrontier" || operatorId === "last-frontier-shore-excursions") return "lastfrontier-alaska";
   if (operatorId === "saveonthestrip" || operatorId === "sots") return "saveonthestrip";
 
   const corridor = String(meta.corridor || "").toLowerCase();
   if (corridor.includes("swamp")) return "welcometotheswamp";
   if (corridor.includes("vegas")) return "saveonthestrip";
-  if (corridor.includes("alaska") || corridor.includes("juneau")) return "wta";
+  if (corridor.includes("helicopter") || corridor.includes("flight")) return "juneauflightdeck";
+  if (corridor.includes("alaska") || corridor.includes("juneau")) return "lastfrontier-alaska";
   if (corridor.includes("420")) return "airport-420-pickup";
   if (corridor.includes("red-rocks") || corridor.includes("red rocks")) return "partyatredrocks";
 

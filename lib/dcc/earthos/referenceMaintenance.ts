@@ -233,10 +233,20 @@ export const KNOWN_BROKEN_SPECIALIST_URLS: Record<
     reason:
       "Juneau Flight Deck route /best-excursions-in-juneau returned HTTP 404 in production; canonical helicopter & port-window comparison planner is /helicopter.",
   },
-  "https://welcometoalaskatours.com/juneau-shore-excursions": {
-    replacementUrl: "https://welcometoalaskatours.com/ports/juneau",
+  "https://www.lastfrontiershoreexcursions.com/juneau-shore-excursions": {
+    replacementUrl: "https://www.lastfrontiershoreexcursions.com/ports/juneau",
     reason:
-      "Welcome to Alaska Tours route /juneau-shore-excursions returned HTTP 404 in production; canonical Juneau port guide is /ports/juneau.",
+      "Last Frontier Shore Excursions route /juneau-shore-excursions returned HTTP 404 in production; canonical Juneau port guide is /ports/juneau.",
+  },
+  "https://welcometoalaskatours.com/juneau-shore-excursions": {
+    replacementUrl: "https://www.lastfrontiershoreexcursions.com/ports/juneau",
+    reason:
+      "Welcome to Alaska Tours is an external third-party site; DCC owned Alaska shore-excursion specialist route is https://www.lastfrontiershoreexcursions.com/ports/juneau.",
+  },
+  "https://welcometoalaskatours.com/ports/juneau": {
+    replacementUrl: "https://www.lastfrontiershoreexcursions.com/ports/juneau",
+    reason:
+      "Welcome to Alaska Tours is an external third-party site; DCC owned Alaska shore-excursion specialist route is https://www.lastfrontiershoreexcursions.com/ports/juneau.",
   },
   "https://gosno.co/denver-to-breckenridge-shuttle": {
     replacementUrl: "https://gosno.co/breckenridge",
@@ -248,8 +258,10 @@ export const KNOWN_BROKEN_SPECIALIST_URLS: Record<
 const SPECIALIST_HOST_DEFAULT_REPLACEMENT: Record<string, string> = {
   "juneauflightdeck.com": "https://juneauflightdeck.com/helicopter",
   "www.juneauflightdeck.com": "https://juneauflightdeck.com/helicopter",
-  "welcometoalaskatours.com": "https://welcometoalaskatours.com/ports/juneau",
-  "www.welcometoalaskatours.com": "https://welcometoalaskatours.com/ports/juneau",
+  "lastfrontiershoreexcursions.com": "https://www.lastfrontiershoreexcursions.com/ports/juneau",
+  "www.lastfrontiershoreexcursions.com": "https://www.lastfrontiershoreexcursions.com/ports/juneau",
+  "welcometoalaskatours.com": "https://www.lastfrontiershoreexcursions.com/ports/juneau",
+  "www.welcometoalaskatours.com": "https://www.lastfrontiershoreexcursions.com/ports/juneau",
   "partyatredrocks.com": "https://www.partyatredrocks.com/book/red-rocks-amphitheatre",
   "www.partyatredrocks.com": "https://www.partyatredrocks.com/book/red-rocks-amphitheatre",
   "gosno.co": "https://gosno.co/breckenridge",
@@ -336,6 +348,7 @@ export function verifyDestinationBookingFormPrefill(params: {
   sampleDate: string;
   samplePartySize: string;
   todayIso?: string;
+  supportedContextParams?: SpecialistHandoffOption["supportedContextParams"];
 }): {
   bookingFormPrefilled: boolean;
   prefilledDateMatched: boolean;
@@ -347,6 +360,9 @@ export function verifyDestinationBookingFormPrefill(params: {
 } {
   const { html, sampleDate, samplePartySize } = params;
   const todayIso = params.todayIso || "2026-10-24";
+  const supportedParams = params.supportedContextParams ?? ["date", "partySize"];
+  const requiresDate = supportedParams.includes("date");
+  const requiresParty = supportedParams.includes("partySize");
   const finalUrlObj =
     params.finalUrlObj ||
     new URL(params.finalUrl || "https://www.destinationcommandcenter.com");
@@ -393,6 +409,26 @@ export function verifyDestinationBookingFormPrefill(params: {
     }
   }
 
+  // Path-based specialist deep link that intentionally accepts zero query parameters (e.g. Last Frontier Shore Excursions)
+  if (!requiresDate && !requiresParty) {
+    const isWorkingDeepLink =
+      finalUrlObj.pathname !== "/" &&
+      finalUrlObj.pathname !== "" &&
+      (/href=["'][^"']*(\/juneau\/|\/ports\/|\/decision\/|\/calculator|viator\.com)/i.test(html) ||
+        html.includes("/_next/static/chunks/"));
+    if (isWorkingDeepLink) {
+      return {
+        bookingFormPrefilled: true,
+        prefilledDateMatched: true,
+        prefilledPartySizeMatched: true,
+        datePrefilledInForm: true,
+        partySizePrefilledInForm: true,
+        prefillMechanism: "ssr_booking_cta_links",
+        prefillEvidence: `Verified path-based specialist deep link on ${finalUrlObj.hostname}${finalUrlObj.pathname} without invented query parameters.`,
+      };
+    }
+  }
+
   // 1. Check SSR form controls (<input type="date" value="<sampleDate>"> + <select>/<input> party size)
   const escapedDate = sampleDate.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const escapedParty = samplePartySize.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -414,7 +450,7 @@ export function verifyDestinationBookingFormPrefill(params: {
   const ssrPartyMatch =
     html.match(ssrPartyOptionRegex) || html.match(ssrPartyInputRegex);
 
-  if (ssrDateMatch && ssrPartyMatch) {
+  if ((ssrDateMatch || !requiresDate) && (ssrPartyMatch || !requiresParty)) {
     return {
       bookingFormPrefilled: true,
       prefilledDateMatched: true,
@@ -422,28 +458,31 @@ export function verifyDestinationBookingFormPrefill(params: {
       datePrefilledInForm: true,
       partySizePrefilledInForm: true,
       prefillMechanism: "ssr_form_controls",
-      prefillEvidence: `SSR form controls prefilled: date input value="${sampleDate}" and party control selected/value="${samplePartySize}".`,
+      prefillEvidence: `SSR form controls prefilled: date=${sampleDate}${requiresParty ? ` and party=${samplePartySize}` : ""}.`,
     };
   }
 
-  // 2. Check SSR booking/planner CTA links (<a href="...">) that bind both date and party size/qty
+  // 2. Check SSR booking/planner CTA links (<a href="...">) that bind supported context
   const anchorHrefRegex = /<a\b[^>]*href=["']([^"']+)["'][^>]*>/gi;
   let anchorMatch: RegExpExecArray | null;
   const matchedBookingCtas: string[] = [];
   while ((anchorMatch = anchorHrefRegex.exec(html)) !== null) {
     const rawHref = anchorMatch[1].replace(/&amp;/g, "&");
     const isBookingOrPlannerPath =
-      /(\/book\b|\/plan\b|\/tours\b|\/shows\b|\/shuttle\b|fareharbor\.com|viator\.com|getyourguide\.com|partyatredrocks\.com|gosno\.co|welcometoalaskatours\.com|juneauflightdeck\.com|welcometoneworleanstours\.com|welcometotheswamp\.com|saveonthestrip\.com|\/grand-canyon|\/hoover-dam|\/red-rock-canyon|\/las-vegas\/helicopter-tours)/i.test(
+      /(\/book\b|\/plan\b|\/tours\b|\/shows\b|\/shuttle\b|\/juneau\b|\/ports\b|fareharbor\.com|viator\.com|getyourguide\.com|partyatredrocks\.com|gosno\.co|lastfrontiershoreexcursions\.com|juneauflightdeck\.com|welcometoneworleanstours\.com|welcometotheswamp\.com|saveonthestrip\.com|\/grand-canyon|\/hoover-dam|\/red-rock-canyon|\/las-vegas\/helicopter-tours)/i.test(
         rawHref,
       );
     if (!isBookingOrPlannerPath) continue;
     const hasDate =
+      !requiresDate ||
       rawHref.includes(`date=${sampleDate}`) ||
       rawHref.includes(`date=${encodeURIComponent(sampleDate)}`);
-    const hasParty = new RegExp(
-      `(?:[?&])(?:qty|party_size|travelers|passengerCount|passengers)=${escapedParty}(?:[&#]|$)`,
-      "i",
-    ).test(rawHref);
+    const hasParty =
+      !requiresParty ||
+      new RegExp(
+        `(?:[?&])(?:qty|party_size|travelers|passengerCount|passengers)=${escapedParty}(?:[&#]|$)`,
+        "i",
+      ).test(rawHref);
     if (hasDate && hasParty) {
       matchedBookingCtas.push(rawHref);
     }
@@ -457,16 +496,18 @@ export function verifyDestinationBookingFormPrefill(params: {
       datePrefilledInForm: true,
       partySizePrefilledInForm: true,
       prefillMechanism: "ssr_booking_cta_links",
-      prefillEvidence: `SSR booking/planner CTA links (${matchedBookingCtas.length}) bound date=${sampleDate} and party_size/qty=${samplePartySize} (e.g. ${matchedBookingCtas[0].slice(0, 120)}).`,
+      prefillEvidence: `SSR booking/planner CTA links (${matchedBookingCtas.length}) bound supported context (e.g. ${matchedBookingCtas[0].slice(0, 120)}).`,
     };
   }
 
   // 3. Check Next.js client-hydrated booking/planner shells where /_next/static/chunks/ hydrate URLSearchParams
   const hasNextHydrationChunks = html.includes("/_next/static/chunks/");
   const urlHasDate =
+    !requiresDate ||
     finalUrlObj.searchParams.get("date") === sampleDate ||
     finalUrlObj.searchParams.get("arrivalDate") === sampleDate;
   const urlHasParty =
+    !requiresParty ||
     finalUrlObj.searchParams.get("passengerCount") === samplePartySize ||
     finalUrlObj.searchParams.get("party_size") === samplePartySize ||
     finalUrlObj.searchParams.get("travelers") === samplePartySize ||
@@ -481,7 +522,7 @@ export function verifyDestinationBookingFormPrefill(params: {
       datePrefilledInForm: true,
       partySizePrefilledInForm: true,
       prefillMechanism: "client_hydration_verified",
-      prefillEvidence: `Verified Next.js client hydration bundle on ${finalUrlObj.hostname}${finalUrlObj.pathname} binds URLSearchParams date=${sampleDate} (>= today ${todayIso}) and party_size/passengerCount=${samplePartySize} into interactive planner/booking state.`,
+      prefillEvidence: `Verified Next.js client hydration bundle on ${finalUrlObj.hostname}${finalUrlObj.pathname} binds supported URLSearchParams (date=${sampleDate}${requiresParty ? `, party=${samplePartySize}` : ""}) into interactive planner/booking state.`,
     };
   }
 
@@ -492,7 +533,7 @@ export function verifyDestinationBookingFormPrefill(params: {
     datePrefilledInForm: Boolean(ssrDateMatch),
     partySizePrefilledInForm: Boolean(ssrPartyMatch),
     prefillMechanism: "none",
-    prefillEvidence: `Target page did not bind date=${sampleDate} and partySize=${samplePartySize} into SSR form controls, booking CTA links, or verified client form hydration.`,
+    prefillEvidence: `Target page did not bind date=${sampleDate}${requiresParty ? ` and partySize=${samplePartySize}` : ""} into SSR form controls, booking CTA links, or verified client form hydration.`,
   };
 }
 
@@ -513,6 +554,14 @@ export async function defaultSpecialistUrlProbe(
     ? { option: context.handoffOption, contextControls: context.contextControls }
     : findMatchingHandoffMetadata(trimmed);
 
+  const isDisallowedWtaHost = /^https?:\/\/(www\.)?welcometoalaskatours\.com(\/|$)/i.test(trimmed);
+  const inferredSupportedParams: SpecialistHandoffOption["supportedContextParams"] =
+    /^https?:\/\/(www\.)?juneauflightdeck\.com(\/|$)/i.test(trimmed)
+      ? ["date"]
+      : /^https?:\/\/(www\.)?lastfrontiershoreexcursions\.com(\/|$)/i.test(trimmed)
+        ? []
+        : ["date", "partySize"];
+
   const syntheticOption: SpecialistHandoffOption = matchedMeta.option
     ? { ...matchedMeta.option, baseUrl: trimmed }
     : {
@@ -524,10 +573,13 @@ export async function defaultSpecialistUrlProbe(
         whenItHelps: "",
         noPurchaseRequiredNote: "",
         baseUrl: trimmed,
-        supportedContextParams: ["date", "partySize"],
-        defaultParams: {
-          source_surface: "dcc_reference_probe",
-        },
+        supportedContextParams: inferredSupportedParams,
+        defaultParams:
+          inferredSupportedParams.length === 0
+            ? {}
+            : {
+                source_surface: "dcc_reference_probe",
+              },
       };
 
   const probeNow = context?.now || new Date();
@@ -645,6 +697,7 @@ export async function defaultSpecialistUrlProbe(
       sampleDate,
       samplePartySize,
       todayIso,
+      supportedContextParams: syntheticOption.supportedContextParams,
     });
 
     const expectedProductMarkers =
@@ -664,6 +717,7 @@ export async function defaultSpecialistUrlProbe(
 
     const statusOk = response.status >= 200 && response.status < 400;
     const ok =
+      !isDisallowedWtaHost &&
       statusOk &&
       !redirectedToGenericRoot &&
       contextPreserved &&
@@ -671,6 +725,11 @@ export async function defaultSpecialistUrlProbe(
       prefillResult.bookingFormPrefilled;
 
     const failureReasons: string[] = [];
+    if (isDisallowedWtaHost) {
+      failureReasons.push(
+        "Welcome to Alaska Tours is an external third-party site; DCC must route Alaska specialist handoffs to Juneau Flight Deck or Last Frontier Shore Excursions.",
+      );
+    }
     if (!statusOk) {
       failureReasons.push(`HTTP status ${response.status}`);
     }

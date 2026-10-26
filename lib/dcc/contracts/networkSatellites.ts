@@ -14,7 +14,6 @@ export type NetworkSatelliteId =
   | "partyatredrocks"
   | "shuttleya"
   | "welcometoneworleanstours"
-  | "welcometoalaskatours"
   | "cruisepromenade"
   | "vibearoundtown"
   | "lastfrontiershoreexcursions"
@@ -42,9 +41,9 @@ export const DCC_SOURCE_DOMAIN = "destinationcommandcenter.com";
 
 export const NETWORK_SATELLITES: Record<NetworkSatelliteId, NetworkSatellite> = {
   juneauflightdeck: {
-    id: "juneauflightdeck", name: "Juneau Flight Deck", origin: "https://juneauflightdeck.com", path: "/", corridor: "juneau-flightseeing",
+    id: "juneauflightdeck", name: "Juneau Flight Deck", origin: "https://juneauflightdeck.com", path: "/helicopter", corridor: "juneau-flightseeing",
     travelerProblem: "Cruise travelers need to decide whether flightseeing fits their port day and what to do if weather disrupts it.",
-    decisionCompressed: "Flight format, ship timing, weather exposure, and backup plan.", fulfillment: "Partner flightseeing and excursion booking paths.", revenueMode: "partner_booking",
+    decisionCompressed: "Flight format, ship timing, weather exposure, and backup plan.", fulfillment: "Owned specialist Juneau helicopter and flightseeing comparison and booking paths.", revenueMode: "partner_booking",
   },
   welcometotheswamp: {
     id: "welcometotheswamp", name: "Welcome to the Swamp", origin: "https://welcometotheswamp.com", path: "/", corridor: "new-orleans-orientation-and-tours",
@@ -71,11 +70,6 @@ export const NETWORK_SATELLITES: Record<NetworkSatelliteId, NetworkSatellite> = 
     travelerProblem: "Visitors need to choose the right New Orleans experience without sorting through a giant undifferentiated catalog.",
     decisionCompressed: "Group fit, duration, mobility, pickup, weather, and experience style.", fulfillment: "Partner/operator booking paths after recommendation.", revenueMode: "partner_booking",
   },
-  welcometoalaskatours: {
-    id: "welcometoalaskatours", name: "Welcome to Alaska Tours", origin: "https://welcometoalaskatours.com", path: "/", corridor: "alaska-tour-booking",
-    travelerProblem: "Alaska travelers and cruise guests need structured excursion inventory with timing and destination context.",
-    decisionCompressed: "Port, date, tour type, timing, and booking fit.", fulfillment: "Alaska partner/operator booking paths.", revenueMode: "partner_booking",
-  },
   cruisepromenade: {
     id: "cruisepromenade", name: "Cruise Promenade", origin: "https://cruisepromenade.com", path: "/", corridor: "cruise-group-planning",
     travelerProblem: "Cruise groups already have a group chat but still need one shared daily plan.",
@@ -87,9 +81,9 @@ export const NETWORK_SATELLITES: Record<NetworkSatelliteId, NetworkSatellite> = 
     decisionCompressed: "Port date/time, available driver, vehicle, group fit, style, and driver-set fare.", fulfillment: "Driver reservation-request marketplace.", revenueMode: "marketplace",
   },
   lastfrontiershoreexcursions: {
-    id: "lastfrontiershoreexcursions", name: "Last Frontier Shore Excursions", origin: "https://www.lastfrontiershoreexcursions.com", path: "/", corridor: "alaska-shore-excursion-discovery",
-    travelerProblem: "Cruise guests need Alaska port-day excursion ideas organized around real cruise-day constraints.",
-    decisionCompressed: "Port, available time, weather sensitivity, and excursion type.", fulfillment: "Affiliate/partner excursion handoffs.", revenueMode: "partner_booking",
+    id: "lastfrontiershoreexcursions", name: "Last Frontier Shore Excursions", origin: "https://www.lastfrontiershoreexcursions.com", path: "/ports/juneau", corridor: "alaska-shore-excursion-discovery",
+    travelerProblem: "Cruise guests need Alaska port-day excursion ideas organized around real cruise-day constraints across Juneau, Skagway, Ketchikan, Sitka, and Icy Strait Point.",
+    decisionCompressed: "Port, available time, weather sensitivity, and excursion type.", fulfillment: "Owned specialist Alaska shore-excursion handoffs.", revenueMode: "partner_booking",
   },
   welcometothedells: {
     id: "welcometothedells", name: "Welcome to the Dells", origin: "https://welcometothedells.com", path: "/", corridor: "wisconsin-dells-discovery",

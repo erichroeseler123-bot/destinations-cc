@@ -49,7 +49,7 @@
     "operatingDays": [
       "DAILY"
     ],
-    "lastVerifiedTimestamp": "2026-09-18T15:08:31.226Z",
+    "lastVerifiedTimestamp": "2026-10-25T23:59:23.698Z",
     "isLiveAvailability": true
   },
   "affiliate": {
@@ -58,7 +58,6 @@
     "defaultCampaign": "last-frontier-juneau-whale-small-group",
     "allowedSites": [
       "last-frontier-shore-excursions",
-      "welcometoalaskatours",
       "cruisepromenade"
     ],
     "portSlug": "juneau",

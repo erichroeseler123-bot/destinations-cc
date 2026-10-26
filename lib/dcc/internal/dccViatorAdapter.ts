@@ -60,7 +60,7 @@ const SITE_DOMAINS: Record<string, string> = {
   welcometotheswamp: "welcometotheswamp.com",
   welcometoneworleanstours: "welcometoneworleanstours.com",
   "last-frontier-shore-excursions": "lastfrontiershoreexcursions.com",
-  welcometoalaskatours: "welcometoalaskatours.com",
+  "juneau-flight-deck": "juneauflightdeck.com",
   cruisepromenade: "cruisepromenade.com",
   dcc: "destinationcommandcenter.com",
 };

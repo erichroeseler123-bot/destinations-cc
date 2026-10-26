@@ -12,6 +12,12 @@ const nextConfig = {
   turbopack: {
     root: __dirname,
   },
+  outputFileTracingIncludes: {
+    "/juneau": ["./data/viator-reviews/**/*"],
+    "/ports/juneau": ["./data/viator-reviews/**/*"],
+    "/alaska": ["./data/viator-reviews/**/*"],
+    "/api/location/[lat]/[lng]": ["./data/viator-reviews/**/*"],
+  },
   outputFileTracingExcludes: {
     "*": [
       "./scratch/**/*",

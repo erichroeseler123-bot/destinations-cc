@@ -26,12 +26,12 @@ function createSurface(
 export const USA_PROOF_PROMOTED_SURFACES: readonly RolloutSurface[] = [
   createSurface("root", "/western-wisconsin", "Western Wisconsin Weekend Trips", "western-wisconsin"),
   createSurface("root", "/new-orleans/swamp-tours", "New Orleans Swamp Tours", "welcometotheswamp"),
-  createSurface("root", "/juneau/whale-watching-tours", "Juneau Whale Watching Tours", "wta"),
+  createSurface("root", "/juneau/whale-watching-tours", "Juneau Whale Watching Tours", "lastfrontiershoreexcursions"),
   createSurface("root", "/sedona/jeep-tours", "Sedona Jeep Tours", "sedona-jeep"),
   createSurface("root", "/lake-tahoe/things-to-do", "Lake Tahoe Activities", "lake-tahoe-activities"),
   createSurface("root", "/red-rocks-transportation", "Red Rocks Transport", "partyatredrocks"),
   createSurface("root", "/denver/weed-airport-pickup", "Denver Weed Airport Pickup", "airport-420-pickup"),
-  createSurface("root", "/juneau/helicopter-tours", "Juneau Helicopter Tours", "wta"),
+  createSurface("root", "/juneau/helicopter-tours", "Juneau Helicopter Tours", "juneauflightdeck"),
 ] as const;
 
 export const USA_PROOF_INDEXABLE_SURFACES: readonly RolloutSurface[] = [
@@ -70,8 +70,8 @@ export const USA_PROOF_INDEXABLE_SURFACES: readonly RolloutSurface[] = [
   createSurface("welcometotheswamp", "/best-time", "Best Time", "welcometotheswamp"),
   createSurface("welcometotheswamp", "/worth-it", "Worth It", "welcometotheswamp"),
   createSurface("welcometotheswamp", "/transportation", "Transportation", "welcometotheswamp"),
-  createSurface("juneauflightdeck", "/tours/helicopter-glacier-landing", "Helicopter Glacier Landing", "wta"),
-  createSurface("juneauflightdeck", "/tours/icefield-flightseeing", "Icefield Flightseeing", "wta"),
+  createSurface("juneauflightdeck", "/tours/helicopter-glacier-landing", "Helicopter Glacier Landing", "juneauflightdeck"),
+  createSurface("juneauflightdeck", "/tours/icefield-flightseeing", "Icefield Flightseeing", "juneauflightdeck"),
 ] as const;
 
 export const USA_PROOF_LIVE_UNPROMOTED_SURFACES: readonly RolloutSurface[] = [
@@ -108,8 +108,8 @@ export const USA_PROOF_MEASURE_FIRST_SURFACES: readonly RolloutSurface[] = [
   createSurface("root", "/new-orleans/swamp-tours", "New Orleans Swamp Tours", "welcometotheswamp"),
   createSurface("welcometotheswamp", "/airboat-vs-boat", "Airboat vs Boat", "welcometotheswamp"),
   createSurface("welcometotheswamp", "/with-kids", "With Kids", "welcometotheswamp"),
-  createSurface("root", "/juneau/whale-watching-tours", "Juneau Whale Watching Tours", "wta"),
-  createSurface("juneauflightdeck", "/", "Juneau Flight Deck", "wta"),
+  createSurface("root", "/juneau/whale-watching-tours", "Juneau Whale Watching Tours", "lastfrontiershoreexcursions"),
+  createSurface("juneauflightdeck", "/", "Juneau Flight Deck", "juneauflightdeck"),
   createSurface("root", "/sedona/jeep-tours", "Sedona Jeep Tours", "sedona-jeep"),
   createSurface("root", "/lake-tahoe/things-to-do", "Lake Tahoe Activities", "lake-tahoe-activities"),
   createSurface("root", "/mighty-argo-shuttle", "Mighty Argo Shuttle", "argo-day-transport"),

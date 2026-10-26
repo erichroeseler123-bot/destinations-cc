@@ -1,7 +1,7 @@
 export type SiteProductMapping = {
   internalId: string;
   viatorCode: string;
-  siteId: "welcometotheswamp" | "welcometoneworleanstours" | "last-frontier-shore-excursions" | "welcometoalaskatours" | "cruisepromenade" | "dcc";
+  siteId: "welcometotheswamp" | "welcometoneworleanstours" | "last-frontier-shore-excursions" | "juneau-flight-deck" | "cruisepromenade" | "dcc";
   destination: string;
   portSlug?: string;
   defaultCampaign: string;
@@ -88,16 +88,16 @@ export const DCC_VIATOR_PRODUCT_MAPPINGS: readonly SiteProductMapping[] = [
   },
 
   // ==========================================
-  // Welcome to Alaska Tours (WAT)
+  // Juneau Flight Deck (JFD)
   // ==========================================
   {
-    internalId: "wat-juneau-whale-watching",
-    viatorCode: "331813P1",
-    siteId: "welcometoalaskatours",
+    internalId: "jfd-juneau-heli-glacier-walk",
+    viatorCode: "6251SHOREXICEWALK",
+    siteId: "juneau-flight-deck",
     destination: "Juneau",
     portSlug: "juneau",
-    defaultCampaign: "wat-juneau-discovery-whale",
-    preferredInventoryTier: "viator_secondary",
+    defaultCampaign: "jfd-juneau-heli-glacier-walk",
+    preferredInventoryTier: "viator_primary",
   },
 
   // ==========================================

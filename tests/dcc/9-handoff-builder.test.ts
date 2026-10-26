@@ -79,7 +79,7 @@ test("buildDccWtaHandoffHref returns absolute URL when router base is set", () =
   assert.equal(href.startsWith("https://wta.example.com/handoff/dcc?payload="), true);
 });
 
-test("buildDccWtaHandoffHref defaults to the live WTA origin when no router base is set", () => {
+test("buildDccWtaHandoffHref defaults to Last Frontier Shore Excursions origin when no router base is set", () => {
   const previous = process.env.DCC_ROUTER_URL;
   delete process.env.DCC_ROUTER_URL;
 
@@ -89,7 +89,7 @@ test("buildDccWtaHandoffHref defaults to the live WTA origin when no router base
     cruiseShip: "NCL Bliss",
   });
 
-  assert.equal(href.startsWith("https://welcometoalaskatours.com/handoff/dcc?payload="), true);
+  assert.equal(href.startsWith("https://www.lastfrontiershoreexcursions.com/handoff/dcc?payload="), true);
 
   if (previous) process.env.DCC_ROUTER_URL = previous;
   else delete process.env.DCC_ROUTER_URL;

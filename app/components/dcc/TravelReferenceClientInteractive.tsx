@@ -3,7 +3,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
-  computeFutureVerificationDate,
   type AuthorityType,
   type EntryScenarioRule,
   type EvidenceCitation,
@@ -268,12 +267,8 @@ export function SpecialistHandoffInteractive({
     customChoice?: string;
   };
 }) {
-  const defaultFutureDate = useMemo(
-    () => computeFutureVerificationDate(new Date(), nodeId),
-    [nodeId],
-  );
   const [travelDate, setTravelDate] = useState<string>(
-    initialContext?.date || defaultFutureDate,
+    initialContext?.date || "",
   );
   const [partySize, setPartySize] = useState<string>(
     initialContext?.partySize || "2",
@@ -349,7 +344,7 @@ export function SpecialistHandoffInteractive({
         <div className="flex flex-wrap items-center gap-2">
           <AuthorityBadge type="editorial_recommendation" />
           <span className="inline-flex items-center rounded-full border border-white/15 bg-zinc-800 px-2.5 py-0.5 text-[11px] font-medium text-zinc-300">
-            Optional Downstream Continuity — Reference Complete Without Purchase
+            Optional Booking — Complete Guide Works Without Purchase
           </span>
         </div>
         <h2 className="text-2xl font-black text-white">{config.sectionTitle}</h2>
@@ -362,10 +357,10 @@ export function SpecialistHandoffInteractive({
       <div className="rounded-xl border border-cyan-500/25 bg-cyan-950/20 p-4 space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="text-xs font-bold uppercase tracking-wider text-cyan-300">
-            Carry Known Trip Context Into Specialist Handoffs (Optional)
+            Pass Your Trip Date & Party Size to Booking Links (Optional)
           </p>
           <span className="text-[11px] text-zinc-400">
-            Only forwards verified parameters (date, party size, hub/mode)
+            Leave date blank until you know your sailing date
           </span>
         </div>
 
@@ -376,7 +371,7 @@ export function SpecialistHandoffInteractive({
                 htmlFor="handoff-date-input"
                 className="block text-[11px] font-semibold uppercase tracking-wider text-zinc-300 mb-1"
               >
-                Planned Visit Date
+                Planned Visit Date (Optional)
               </label>
               <input
                 id="handoff-date-input"

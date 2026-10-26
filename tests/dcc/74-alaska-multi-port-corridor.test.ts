@@ -50,12 +50,12 @@ test("DCC Multi-Port Alaska Corridor Protocol & Lifecycle Suite", async (t) => {
 
   // 3. Multi-Port Issue & Redemption Simulation
   await t.test(
-    "3. WTA ➔ LFSE Multi-Port Issuance & Redemption",
+    "3. Cruise Promenade ➔ LFSE Multi-Port Issuance & Redemption",
     { skip: !db ? "Requires DATABASE_URL (.env.test.local)" : false },
     async () => {
-    // 3a. WTA issues Ketchikan excursion context
+    // 3a. Cruise Promenade issues Ketchikan excursion context
     const ketchikanIssue = await issueContext({
-      sourceSite: "wta",
+      sourceSite: "cruisepromenade",
       destination: "ketchikan",
       targetOwner: "lastfrontier",
       targetIntent: "ketchikan-totem-bight-wildlife",
@@ -68,10 +68,10 @@ test("DCC Multi-Port Alaska Corridor Protocol & Lifecycle Suite", async (t) => {
         shipOrVenue: "Discovery Princess",
       },
       attribution: {
-        campaign: "wta-ketchikan-discovery",
-        referrerDomain: "welcometoalaskatours.com",
+        campaign: "cp-ketchikan-discovery",
+        referrerDomain: "cruisepromenade.com",
       },
-      idempotencyKey: `wta-ktn-${Date.now()}`,
+      idempotencyKey: `cp-ktn-${Date.now()}`,
     });
 
     assert.equal(ketchikanIssue.success, true);
@@ -102,7 +102,7 @@ test("DCC Multi-Port Alaska Corridor Protocol & Lifecycle Suite", async (t) => {
     { skip: !db ? "Requires DATABASE_URL (.env.test.local)" : false },
     async () => {
     const expiredContext = await issueContext({
-      sourceSite: "wta",
+      sourceSite: "cruisepromenade",
       destination: "skagway",
       targetOwner: "lastfrontier",
       schedule: {

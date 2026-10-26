@@ -1,5 +1,5 @@
 export const PAGE_LAYERS = ["understand", "choose", "act", "ops", "unclassified"] as const;
-export const PAGE_OWNERS = ["dcc", "wts", "wta", "parr", "somerset", "shuttleya", "wno", "internal"] as const;
+export const PAGE_OWNERS = ["dcc", "wts", "jfd", "lfse", "wta", "parr", "somerset", "shuttleya", "wno", "internal"] as const;
 export const PAGE_STATUSES = ["canonical", "keep", "review", "redirect_pending", "kill"] as const;
 export const PAGE_SURFACES = ["authority", "monetized", null] as const;
 export const PAGE_DISCOVERED_FROM = ["manual", "scanner"] as const;
@@ -4836,7 +4836,7 @@ export const pageRegistry: readonly PageRegistryEntry[] = definePageRegistry([
   {
     path: "/helicopter",
     layer: "choose",
-    owner: "wta",
+    owner: "jfd",
     status: "keep",
     discoveredFrom: "manual",
     successMetric: "booking_click",
@@ -4848,12 +4848,12 @@ export const pageRegistry: readonly PageRegistryEntry[] = definePageRegistry([
     notes: "Specialist choose/handoff surface for Juneau glacier flights.",
     cluster: "juneau-flightseeing",
     reviewOwner: "antigravity",
-    lastReviewedAt: "2026-10-24",
+    lastReviewedAt: "2026-10-25",
   },
   {
     path: "/juneau-flight-deck",
     layer: "choose",
-    owner: "wta",
+    owner: "jfd",
     status: "canonical",
     discoveredFrom: "manual",
     successMetric: "shortlist_click",
@@ -4864,12 +4864,12 @@ export const pageRegistry: readonly PageRegistryEntry[] = definePageRegistry([
     notes: "Specialist satellite entry for Juneau helicopter flightseeing.",
     cluster: "juneau-flightseeing",
     reviewOwner: "antigravity",
-    lastReviewedAt: "2026-10-24",
+    lastReviewedAt: "2026-10-25",
   },
   {
     path: "/juneau-flight-deck/helicopter",
     layer: "choose",
-    owner: "wta",
+    owner: "jfd",
     status: "canonical",
     discoveredFrom: "manual",
     successMetric: "booking_click",
@@ -4881,12 +4881,12 @@ export const pageRegistry: readonly PageRegistryEntry[] = definePageRegistry([
     notes: "Specialist choose/handoff surface for Juneau glacier flights.",
     cluster: "juneau-flightseeing",
     reviewOwner: "antigravity",
-    lastReviewedAt: "2026-10-24",
+    lastReviewedAt: "2026-10-25",
   },
   {
     path: "/juneau/helicopter",
     layer: "choose",
-    owner: "wta",
+    owner: "jfd",
     status: "redirect_pending",
     discoveredFrom: "manual",
     successMetric: "click-forward",
@@ -4898,12 +4898,12 @@ export const pageRegistry: readonly PageRegistryEntry[] = definePageRegistry([
     notes: "REDIRECT -> /helicopter on juneauflightdeck.com or /juneau/helicopter-tours on DCC.",
     cluster: "juneau-flightseeing",
     reviewOwner: "antigravity",
-    lastReviewedAt: "2026-10-24",
+    lastReviewedAt: "2026-10-25",
   },
   {
     path: "/juneau/helicopter-waitlist",
     layer: "act",
-    owner: "wta",
+    owner: "jfd",
     status: "keep",
     discoveredFrom: "manual",
     successMetric: "booking_waitlist_completion",
@@ -4914,12 +4914,12 @@ export const pageRegistry: readonly PageRegistryEntry[] = definePageRegistry([
     notes: "Specialist availability-watch utility for Juneau helicopter tours.",
     cluster: "juneau-flightseeing",
     reviewOwner: "antigravity",
-    lastReviewedAt: "2026-10-24",
+    lastReviewedAt: "2026-10-25",
   },
   {
     path: "/juneau/helicopter-watch/[id]",
     layer: "act",
-    owner: "wta",
+    owner: "jfd",
     status: "keep",
     discoveredFrom: "manual",
     successMetric: "booking_waitlist_completion",
@@ -4930,7 +4930,7 @@ export const pageRegistry: readonly PageRegistryEntry[] = definePageRegistry([
     notes: "Specialist availability-watch utility for Juneau helicopter tours.",
     cluster: "juneau-flightseeing",
     reviewOwner: "antigravity",
-    lastReviewedAt: "2026-10-24",
+    lastReviewedAt: "2026-10-25",
   },
   {
     path: "/",

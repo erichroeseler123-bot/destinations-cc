@@ -1,4 +1,3 @@
-import { randomUUID } from "crypto";
 import type { Metadata } from "next";
 import Link from "next/link";
 import JsonLd from "@/app/components/dcc/JsonLd";
@@ -10,7 +9,6 @@ import {
   JUNEAU_HELICOPTER_SIGNAL_SUBJECT_IDS,
   resolveGoRedirect,
 } from "@/lib/dcc/routing/middleware";
-import { buildWtaProductWidgetUrl } from "@/lib/wta/embed";
 
 const PAGE_URL = "https://destinationcommandcenter.com/juneau/helicopter-tours";
 
@@ -23,23 +21,26 @@ const EXPERIENCE_LANES = [
     title: "Glacier landing flights",
     body: "Best for cruise visitors who want the cleanest Juneau helicopter category and a strong one-day premium memory.",
     query: "glacier landing",
+    directHref: "https://juneauflightdeck.com/helicopter",
   },
   {
-    title: "Icefield explorer flights",
-    body: "A good lane when the buyer wants broad scenic value without overcomplicating the decision with operator research.",
+    title: "Operator comparison (TEMSCO vs. Coastal vs. NorthStar)",
+    body: "Compare check-in lead times, glacier landing zones, and trek vs. walkabout formats before selecting a flight.",
     query: "icefield explorer",
+    directHref: "https://juneauflightdeck.com/temsco-vs-coastal-vs-northstar-juneau",
   },
   {
     title: "Dog sled + helicopter",
-    body: "The higher-intensity premium lane for buyers who already know they want a signature Alaska-style add-on.",
+    body: "The higher-intensity premium lane for buyers who already know they want a signature snow-camp add-on.",
     query: "dog sled helicopter",
+    directHref: "https://juneauflightdeck.com/juneau-dogsled-helicopter-tours",
   },
 ];
 
 export const metadata: Metadata = {
-  title: "DCC Fast Pass | Juneau Helicopter Tours | Date-First Direct Bookings",
+  title: "Juneau Helicopter Tours | Port-Window Fit & Operator Comparison | DCC",
   description:
-    "DCC Fast Pass for Juneau helicopter tours. DCC explains the buying lane, then routes visitors into a date-first booking surface built for cruise-day planning and direct bookings.",
+    "Compare Juneau helicopter flight lanes, weather-backup protocols, and direct operator rules before continuing to Juneau Flight Deck or direct operators.",
   alternates: { canonical: "/juneau/helicopter-tours" },
   keywords: [
     "juneau helicopter tours",
@@ -48,9 +49,9 @@ export const metadata: Metadata = {
     "juneau helicopter tour availability",
   ],
   openGraph: {
-    title: "DCC Fast Pass | Juneau Helicopter Tours",
+    title: "Juneau Helicopter Tours | Destination Command Center",
     description:
-      "A DCC Fast Pass routing page for Juneau helicopter-tour intent, built around date-first cruise-day booking behavior.",
+      "Decision-first Juneau helicopter routing and operator comparison for cruise port days.",
     url: PAGE_URL,
     type: "website",
   },
@@ -66,12 +67,12 @@ function JsonLdGraph() {
             path: "/juneau/helicopter-tours",
             name: "Juneau Helicopter Tours",
             description:
-              "Decision-first DCC feeder for Juneau helicopter-tour buyers who need a date-first handoff into live availability.",
-            dateModified: "2026-04-10",
-            isPartOfPath: "/command",
+              "Decision-first DCC guide for Juneau helicopter-tour travelers comparing port-window fit, weather risk, and operator differences.",
+            dateModified: "2026-10-25",
+            isPartOfPath: "/juneau",
           }),
           buildBreadcrumbJsonLd([
-            { name: "Command", item: "/command" },
+            { name: "Juneau", item: "/juneau" },
             { name: "Juneau Helicopter Tours", item: "/juneau/helicopter-tours" },
           ]),
         ],
@@ -132,60 +133,37 @@ export default async function JuneauHelicopterToursPage({
     ),
     signalMap,
   });
-  const primaryCtaLabel = resolvedPrimary?.ctaText || (selectedDate ? `Get DCC Fast Pass for ${selectedDate}` : "Get DCC Fast Pass");
-  const widgetHandoffId = resolvedPrimary?.handoffId || randomUUID();
-  const featuredWidgetHref = buildWtaProductWidgetUrl({
-    company: "coastalhelicopters",
-    item: "413056",
-    attribution: {
-      handoffId: widgetHandoffId,
-      source: "dcc",
-      sourceSlug: "dcc-juneau-helicopter-embed",
-      sourcePage: "/juneau/helicopter-tours",
-      topicSlug: "helicopter-tours",
-      portSlug: "juneau-alaska",
-      productSlug: "icefield-excursion",
-      eventDate: selectedDate || undefined,
-      returnPath: "/juneau/helicopter-tours",
-      embedDomain: "destinationcommandcenter.com",
-      embedPath: "/juneau/helicopter-tours",
-      widgetPlacement: "inline-primary",
-      embedId: "juneau-helicopter-inline-primary",
-    },
-  });
-  const mobileHandoffQr = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(goHref)}`;
-  const liveStateCopy =
-    resolvedPrimary?.status === "fallback"
-      ? "Helicopter inventory is not the cleanest live lane right now. The go path will fall back to a safer Juneau decision lane."
-      : resolvedPrimary?.status === "warning"
-        ? "Live signals are active for the helicopter lane. The go path stays in the primary handoff, but the CTA reflects tighter live conditions."
-        : "The button routes through DCC first, then resolves into the live Juneau helicopter handoff.";
+  const primaryCtaLabel =
+    resolvedPrimary?.ctaText ||
+    (selectedDate
+      ? `Compare Juneau Flight Deck for ${selectedDate}`
+      : "Compare Juneau Helicopter Flights on Juneau Flight Deck");
 
   return (
     <main className="min-h-screen bg-[#07131d] text-white">
       <JsonLdGraph />
       <div className="mx-auto max-w-6xl space-y-8 px-6 py-16">
         <header className="rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(103,232,249,0.12),transparent_26%),radial-gradient(circle_at_bottom_right,rgba(96,165,250,0.10),transparent_24%),linear-gradient(180deg,rgba(9,17,24,0.97),rgba(5,8,22,0.99))] p-8 shadow-[0_28px_90px_rgba(0,0,0,0.45)] md:p-10">
-          <p className="text-xs uppercase tracking-[0.24em] text-cyan-300">Juneau Shore Excursions</p>
+          <p className="text-xs uppercase tracking-[0.24em] text-cyan-300">Juneau Aviation &amp; Port-Window Planning</p>
           <h1 className="mt-4 text-4xl font-black tracking-tight md:text-6xl">Juneau helicopter tours</h1>
           <p className="mt-4 text-base font-bold uppercase tracking-[0.18em] text-[#8df0cc]">
-            Guaranteed flight lane – Real-time availability & direct bookings
+            Check port-day buffer, ceiling &amp; visibility risk, and operator rules first
           </p>
           <p className="mt-4 max-w-3xl text-lg leading-8 text-white/82">
-            Most cruise visitors only have one day in port, so the cleanest booking path starts with the date you will actually be in Juneau and shows only that day&apos;s helicopter inventory.
-          </p>
-          <p className="mt-5 max-w-3xl text-sm leading-7 text-white/68">
-            Choose your helicopter flight lane below to check live availability for your chosen date and complete the reservation directly with the operator.
+            Most cruise visitors only have one port call in Juneau. Verify your ship window, JNU heliport check-in lead time (45–60 minutes before flight), and weather-backup plan before booking.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
-            <a
-              href={goHref}
-              className="rounded-2xl border border-[#67e8f9]/30 bg-[linear-gradient(180deg,#67e8f9,#60a5fa)] px-5 py-3 text-sm font-black uppercase tracking-[0.16em] text-[#071018] shadow-[0_18px_38px_rgba(96,165,250,0.12)] transition hover:scale-[1.02]"
+            <Link
+              href="/juneau"
+              className="rounded-2xl border border-white/12 bg-white/6 px-5 py-3 text-sm font-semibold text-white/88 hover:bg-white/10"
             >
-              {primaryCtaLabel}
-            </a>
-            <Link href="/juneau/whale-watching-tours" className="rounded-2xl border border-white/12 bg-white/6 px-5 py-3 text-sm text-white/88 hover:bg-white/10">
-              Juneau whale corridor
+              Open Juneau Port-Day Planner
+            </Link>
+            <Link
+              href="/juneau/whale-watching-tours"
+              className="rounded-2xl border border-white/12 bg-white/6 px-5 py-3 text-sm text-white/88 hover:bg-white/10"
+            >
+              Juneau whale backup corridor
             </Link>
           </div>
         </header>
@@ -194,46 +172,84 @@ export default async function JuneauHelicopterToursPage({
         <section className="rounded-3xl border border-cyan-400/20 bg-gradient-to-b from-cyan-950/20 to-[#07131d] p-6 md:p-8 space-y-6 shadow-[0_20px_60px_rgba(0,0,0,0.3)]">
           <div>
             <span className="text-xs uppercase tracking-[0.24em] text-cyan-300">FLIGHT PATH SELECTION</span>
-            <h2 className="mt-2 text-3xl font-black uppercase tracking-tight text-white">Segment by traveler intent</h2>
+            <h2 className="mt-2 text-3xl font-black uppercase tracking-tight text-white">Compare helicopter flight lanes</h2>
             <p className="mt-2 text-sm text-white/70">
-              Compare the three canonical Juneau helicopter flight lanes. Select your fit and view live real-time schedules.
+              Compare the three primary Juneau helicopter categories. Owned-network specialist links below route to <strong>Juneau Flight Deck</strong> (a DCC owned specialist site); direct FAA Part 135 operators are also listed so you can book directly.
             </p>
           </div>
 
           <div className="grid gap-6 md:grid-cols-3">
-            {EXPERIENCE_LANES.map((lane) => (
-              <article key={lane.title} className="rounded-2xl border border-white/10 bg-[#091724] p-5 flex flex-col justify-between">
-                <div>
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#8df0cc]">
-                    {lane.title === "Dog sled + helicopter" ? "Adventure Fit" : lane.title === "Glacier landing flights" ? "First-Time Fit" : "Scenic Fit"}
-                  </span>
-                  <h3 className="mt-2 text-xl font-bold text-white">{lane.title}</h3>
-                  <p className="mt-3 text-xs leading-6 text-white/70">{lane.body}</p>
-                </div>
-                <div className="mt-6">
-                  <a
-                    href={buildDccJuneauHelicopterGoUrl({
-                      date: selectedDate || undefined,
-                      port: "juneau",
-                      lane: "premium-helicopter",
-                      recommendationSlug: lane.query.replace(/\s+/g, "-"),
-                      sourcePage: "/juneau/helicopter-tours",
-                      cta: lane.query,
-                      q: lane.query,
-                    })}
-                    className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-[#67e8f9] px-4 text-xs font-black uppercase tracking-[0.16em] text-[#071018] transition hover:bg-[#60a5fa]"
-                  >
-                    View Live Availability
-                  </a>
-                </div>
-              </article>
-            ))}
+            {EXPERIENCE_LANES.map((lane) => {
+              const targetHref =
+                lane.directHref === "https://juneauflightdeck.com/helicopter" && selectedDate
+                  ? `${lane.directHref}?date=${encodeURIComponent(selectedDate)}`
+                  : lane.directHref;
+              return (
+                <article key={lane.title} className="rounded-2xl border border-white/10 bg-[#091724] p-5 flex flex-col justify-between">
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#8df0cc]">
+                      {lane.title === "Dog sled + helicopter" ? "Adventure Fit" : lane.title === "Glacier landing flights" ? "First-Time Fit" : "Operator Comparison"}
+                    </span>
+                    <h3 className="mt-2 text-xl font-bold text-white">{lane.title}</h3>
+                    <p className="mt-3 text-xs leading-6 text-white/70">{lane.body}</p>
+                  </div>
+                  <div className="mt-6 space-y-2">
+                    <a
+                      href={targetHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-[#67e8f9] px-4 text-xs font-black uppercase tracking-[0.16em] text-[#071018] transition hover:bg-[#60a5fa]"
+                    >
+                      Open on Juneau Flight Deck ↗
+                    </a>
+                    <p className="text-[11px] text-white/55">
+                      DCC owned specialist site (Juneau Flight Deck)
+                    </p>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+
+          <div className="pt-2 flex flex-wrap items-center gap-3">
+            <a
+              href={goHref}
+              className="rounded-2xl border border-[#67e8f9]/30 bg-[linear-gradient(180deg,#67e8f9,#60a5fa)] px-5 py-3 text-sm font-black uppercase tracking-[0.16em] text-[#071018] shadow-[0_18px_38px_rgba(96,165,250,0.12)] transition hover:scale-[1.02]"
+            >
+              {primaryCtaLabel}
+            </a>
+            <a
+              href="https://juneauflightdeck.com/juneau/what-to-do-if-helicopter-tour-canceled"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-2xl border border-white/12 bg-white/6 px-5 py-3 text-sm text-white/88 hover:bg-white/10"
+            >
+              What to do if your helicopter flight cancels (Juneau Flight Deck) ↗
+            </a>
           </div>
         </section>
 
-        <section className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 text-sm leading-7 text-white/78 animate-fade-in">
+        <section className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 text-sm leading-7 text-white/78 space-y-3">
+          <div className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-300">
+            Direct Operators &amp; Ownership Disclosure
+          </div>
           <p>
-            Bookings made through these links are processed directly with registered local operators via FareHarbor. Flight safety, weather protocols, and cancelation guarantees are managed directly by your operator. We recommend booking early, as Juneau helicopter inventory is tightly limited on cruise arrival days.
+            <strong>Juneau Flight Deck</strong> (<code>https://juneauflightdeck.com</code>) is a DCC owned specialist site for Juneau helicopter tours, glacier flights, and weather-sensitive aviation comparisons. Owned-site status never changes DCC&apos;s port-window math or fit conclusions.
+          </p>
+          <p>
+            You can also inspect and book directly with Juneau&apos;s authorized glacier helicopter operators:{" "}
+            <a href="https://temscoair.com/juneau-tours/" target="_blank" rel="noopener noreferrer" className="underline text-cyan-300">
+              TEMSCO Helicopters
+            </a>
+            ,{" "}
+            <a href="https://coastalhelicopters.com/tours/" target="_blank" rel="noopener noreferrer" className="underline text-cyan-300">
+              Coastal Helicopters
+            </a>
+            , and{" "}
+            <a href="https://www.northstartrekking.com/" target="_blank" rel="noopener noreferrer" className="underline text-cyan-300">
+              NorthStar Trekking
+            </a>
+            .
           </p>
         </section>
       </div>

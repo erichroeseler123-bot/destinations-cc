@@ -1251,74 +1251,66 @@ export function getRedRocksRecommendationActions(): RecommendationAction[] {
   return actions.sort((a, b) => b.score - a.score);
 }
 
+function resolveLfsePortDeepLink(portSlug: string): string | null {
+  const normalized = portSlug.toLowerCase();
+  if (normalized.startsWith("juneau")) return "https://www.lastfrontiershoreexcursions.com/ports/juneau";
+  if (normalized.startsWith("skagway")) return "https://www.lastfrontiershoreexcursions.com/ports/skagway";
+  if (normalized.startsWith("ketchikan")) return "https://www.lastfrontiershoreexcursions.com/ports/ketchikan";
+  if (normalized.startsWith("sitka")) return "https://www.lastfrontiershoreexcursions.com/ports/sitka";
+  if (normalized.startsWith("icy-strait")) return "https://www.lastfrontiershoreexcursions.com/ports/icy-strait-point";
+  return null;
+}
+
 export function getPortRecommendationActions(portSlug: string): RecommendationAction[] {
-  const summaries = listAllSatelliteHandoffSummaries(400);
-  const wtaScore = scoreContext(
-    summaries,
-    (summary) =>
-      summary.satelliteId === "welcome-to-alaska" && summary.booking.portSlug === portSlug
-  );
-  const wtaPenalty = penaltyForDegradedContext(
-    summaries,
-    (summary) =>
-      summary.satelliteId === "welcome-to-alaska" && summary.booking.portSlug === portSlug
-  );
-  const downstreamParrLoopScore = scorePartnerLoop(
-    summaries,
-    (summary) =>
-      summary.partner?.fromSite === "welcome-to-alaska" &&
-      summary.partner?.toSite === "partyatredrocks" &&
-      summary.booking.portSlug === portSlug
-  );
-  const brokenDownstreamLoops = countBrokenPartnerLoopsForContext(
-    summaries,
-    (summary) =>
-      summary.partner?.fromSite === "welcome-to-alaska" &&
-      summary.partner?.toSite === "partyatredrocks" &&
-      summary.booking.portSlug === portSlug
-  );
+  const lfseDeepLink = resolveLfsePortDeepLink(portSlug);
+  const isJuneau = portSlug.toLowerCase().startsWith("juneau");
   const actions: RecommendationAction[] = [
     {
       id: "port-guide",
-      label: "Cruise Port Guide",
-      href: `/cruises/port/${portSlug}`,
+      label: isJuneau ? "Juneau Port-Day Planner" : "Cruise Port Guide",
+      href: isJuneau ? "/juneau" : `/cruises/port/${portSlug}`,
       kind: "internal",
-      score: 1 + (wtaPenalty > 0 ? 3 : 0),
-      laneState: wtaPenalty > 0 ? "fallback" : "healthy",
-      reason:
-        wtaPenalty > 0
-          ? "Best fallback while WTA lane health is degraded for this port."
-          : "Keep the traveler on the authority layer until the shore-day decision is clear.",
+      score: 3,
+      laneState: "healthy",
+      reason: "Keep the traveler on the DCC authority layer until the shore-day window and buffer math are clear.",
     },
     {
       id: "shore-excursions",
       label: "Browse Shore Excursions",
       href: "/cruises/shore-excursions",
       kind: "internal",
-      score: 1 + (wtaPenalty > 0 ? 2 : 0),
-      laneState: wtaPenalty > 0 ? "fallback" : "healthy",
-      reason:
-        wtaPenalty > 0
-          ? "Best fallback when this port needs broader option coverage before a partner handoff."
-          : "Best when the traveler wants broader excursion fit before committing.",
-    },
-    {
-      id: "wta-execution",
-      label: "Continue to WTA Execution",
-      href: `/cruises/port/${portSlug}`,
-      kind: "internal",
-      score: wtaScore + downstreamParrLoopScore - wtaPenalty - brokenDownstreamLoops * 3,
-      laneState: wtaPenalty > 0 || brokenDownstreamLoops > 0 ? "degraded" : "healthy",
-      reason:
-        wtaPenalty > 0
-          ? "Execution is still available, but recent partner health signals suggest staying on the authority layer longer."
-          : brokenDownstreamLoops > 0
-            ? "Recent WTA to PARR forwards are not being fully accepted downstream, so keep travelers in DCC longer."
-          : downstreamParrLoopScore > 0
-            ? "Recent WTA to PARR downstream outcomes say this port lane is producing usable cross-network demand."
-          : "Recent partner outcomes say this is the strongest execution lane.",
+      score: 2,
+      laneState: "healthy",
+      reason: "Best when the traveler wants broader excursion fit before committing.",
     },
   ];
+
+  if (lfseDeepLink) {
+    actions.push({
+      id: "lfse-execution",
+      label: "Last Frontier Shore Excursions (DCC Owned Specialist)",
+      href: lfseDeepLink,
+      kind: "external",
+      score: 1,
+      laneState: "healthy",
+      reason:
+        "DCC owned specialist site for Alaska shore excursions, whale watching, Mendenhall Glacier, and port-day combinations.",
+    });
+  }
+
+  if (isJuneau) {
+    actions.push({
+      id: "jfd-execution",
+      label: "Juneau Flight Deck (DCC Owned Aviation Specialist)",
+      href: "https://juneauflightdeck.com/helicopter",
+      kind: "external",
+      score: 1,
+      laneState: "healthy",
+      reason:
+        "DCC owned specialist site for Juneau helicopter tours, glacier landings, and weather-sensitive flight comparisons.",
+    });
+  }
+
   return actions.sort((a, b) => b.score - a.score);
 }
 

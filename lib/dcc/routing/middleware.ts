@@ -14,7 +14,6 @@ import {
   type CanonicalProduct,
   type EdgeSignalMap,
 } from "@/lib/dcc/routing/schema";
-import { WTA_SITE_ORIGIN } from "@/lib/wta/embed";
 
 type SearchParamInput = URLSearchParams | Record<string, string | undefined>;
 
@@ -49,8 +48,8 @@ export const BRECKENRIDGE_SHARED_GO_PATH = "/go/denver/breckenridge/shared";
 export const DENVER_420_AIRPORT_PICKUP_GO_PATH = "/go/denver/420-airport-pickup";
 export const JUNEAU_HELICOPTER_GO_PATH = "/go/juneau/helicopter-tours";
 export const JUNEAU_HELICOPTER_SIGNAL_SUBJECT_IDS = [
-  "product_wta_juneau_helicopter_fast_pass",
-  "operator_wta",
+  "product_jfd_juneau_helicopter_planner",
+  "operator_jfd",
 ] as const;
 export const NEW_ORLEANS_SWAMP_GO_PATH = "/go/new-orleans/swamp-tours";
 export const NEW_ORLEANS_SWAMP_SIGNAL_SUBJECT_IDS = [
@@ -58,7 +57,7 @@ export const NEW_ORLEANS_SWAMP_SIGNAL_SUBJECT_IDS = [
 ] as const;
 
 const DCC_PUBLIC_BASE_URL = "https://destinationcommandcenter.com";
-const WTA_PUBLIC_BASE_URL = WTA_SITE_ORIGIN;
+const JFD_PUBLIC_BASE_URL = "https://juneauflightdeck.com";
 const SOTS_PUBLIC_BASE_URL = "https://www.saveonthestrip.com";
 const WTS_PUBLIC_BASE_URL = "https://welcometotheswamp.com";
 const RRFP_PUBLIC_BASE_URL = "https://redrocksfastpass.com";
@@ -179,12 +178,12 @@ const RED_ROCKS_PRIVATE_FALLBACK_ROUTE: CanonicalIntentRoute = {
   requiredContext: ["handoffId"],
 };
 
-const WTA_OPERATOR: CanonicalOperator = {
-  id: "operator_wta",
-  slug: "welcome-to-alaska",
-  name: "Welcome to Alaska Tours",
+const JFD_OPERATOR: CanonicalOperator = {
+  id: "operator_jfd",
+  slug: "juneau-flight-deck",
+  name: "Juneau Flight Deck",
   kind: "internal_brand",
-  domains: ["www.welcometoalaskatours.com", "welcometoalaskatours.com"],
+  domains: ["juneauflightdeck.com", "www.juneauflightdeck.com"],
   fulfillmentTypes: ["tour", "handoff"],
   status: "active",
 };
@@ -308,11 +307,11 @@ const VEGAS_DEALS_FALLBACK_ROUTE: CanonicalIntentRoute = {
 };
 
 const JUNEAU_HELICOPTER_FAST_PASS_PRODUCT: CanonicalProduct = {
-  id: "product_wta_juneau_helicopter_fast_pass",
-  slug: "juneau-helicopter-fast-pass",
-  name: "Juneau Helicopter Fast Pass",
+  id: "product_jfd_juneau_helicopter_planner",
+  slug: "juneau-helicopter-planner",
+  name: "Juneau Flight Deck Helicopter Planner",
   kind: "tour",
-  operatorId: "operator_wta",
+  operatorId: "operator_jfd",
   originPlaceId: "place_juneau_port",
   destinationPlaceId: "place_juneau_glacier_corridor",
   venuePlaceId: "place_juneau",
@@ -322,12 +321,12 @@ const JUNEAU_HELICOPTER_FAST_PASS_PRODUCT: CanonicalProduct = {
     pricingModel: "dynamic",
   },
   bookingMode: "handoff",
-  bookUrl: `${WTA_SITE_ORIGIN}/handoff/dcc`,
+  bookUrl: `${JFD_PUBLIC_BASE_URL}/helicopter`,
   tags: ["alaska", "helicopter", "juneau", "date_first"],
 };
 
 const JUNEAU_HELICOPTER_PRIMARY_ROUTE: CanonicalIntentRoute = {
-  id: "intent_wta_juneau_heli_primary",
+  id: "intent_jfd_juneau_heli_primary",
   slug: "go-juneau-helicopter-primary",
   intent: "juneau_helicopter_decided_primary",
   sourceSurface: "dcc",
@@ -335,11 +334,11 @@ const JUNEAU_HELICOPTER_PRIMARY_ROUTE: CanonicalIntentRoute = {
   destinationType: "operator_page",
   destinationRef: {
     type: "product",
-    idOrUrl: "product_wta_juneau_helicopter_fast_pass",
+    idOrUrl: "product_jfd_juneau_helicopter_planner",
   },
   handoffPolicy: "act",
   routeRole: "primary",
-  requiredContext: ["handoffId", "date"],
+  requiredContext: ["handoffId"],
 };
 
 const JUNEAU_HELICOPTER_FALLBACK_ROUTE: CanonicalIntentRoute = {
@@ -699,58 +698,11 @@ function buildDccReturnUrl(returnPath?: string, handoffId?: string) {
   return url.toString();
 }
 
-function buildEdgeSafeWtaHandoffUrl(input: {
-  portSlug: string;
-  topicSlug: string;
-  date?: string;
-  handoffId: string;
-  sourceSlug?: string;
-  sourcePage?: string;
-  lane?: string;
-  recommendationSlug?: string;
-  returnPath?: string;
-}) {
-  const payload = {
-    source: "dcc",
-    version: "1",
-    handoffId: input.handoffId,
-    createdAt: new Date().toISOString(),
-    destination: {
-      portSlug: input.portSlug,
-      date: input.date,
-    },
-    attribution: {
-      sourceSlug: input.sourceSlug || "dcc",
-      sourcePage: input.sourcePage,
-      topicSlug: input.topicSlug,
-    },
-    context: {
-      sourceSlug: input.sourceSlug || "dcc",
-      sourcePage: input.sourcePage,
-      authorityTopic: input.topicSlug,
-      lane: input.lane,
-      recommendationSlug: input.recommendationSlug,
-    },
-    booking: {
-      portSlug: input.portSlug,
-      date: input.date,
-      lane: input.lane,
-      recommendationSlug: input.recommendationSlug,
-    },
-  };
-
-  const url = new URL("/handoff/dcc", WTA_PUBLIC_BASE_URL);
-  url.searchParams.set("payload", encodeBase64Url(JSON.stringify(payload)));
-  url.searchParams.set("dcc_handoff_id", input.handoffId);
-  url.searchParams.set("source", "dcc");
-  if (input.sourceSlug) url.searchParams.set("source_slug", input.sourceSlug);
-  if (input.sourcePage) url.searchParams.set("source_page", input.sourcePage);
-  url.searchParams.set("topic", input.topicSlug);
-  url.searchParams.set("port", input.portSlug);
-  if (input.date) url.searchParams.set("date", input.date);
-  if (input.lane) url.searchParams.set("lane", input.lane);
-  if (input.recommendationSlug) url.searchParams.set("recommendation_slug", input.recommendationSlug);
-  url.searchParams.set("dcc_return", buildDccReturnUrl(input.returnPath, input.handoffId));
+function buildEdgeSafeJuneauFlightDeckUrl(input: { date?: string }) {
+  const url = new URL("/helicopter", JFD_PUBLIC_BASE_URL);
+  if (input.date && /^\d{4}-\d{2}-\d{2}$/.test(input.date.trim())) {
+    url.searchParams.set("date", input.date.trim());
+  }
   return url.toString();
 }
 
@@ -917,7 +869,7 @@ export function resolveGoRedirect(input: {
     const redirectDate = params.date;
     const resolved = resolveIntentPath({
       product: JUNEAU_HELICOPTER_FAST_PASS_PRODUCT,
-      operator: WTA_OPERATOR,
+      operator: JFD_OPERATOR,
       intentRoutes: [JUNEAU_HELICOPTER_PRIMARY_ROUTE, JUNEAU_HELICOPTER_FALLBACK_ROUTE],
       signalMap,
       nowIso: input.nowIso,
@@ -928,16 +880,8 @@ export function resolveGoRedirect(input: {
         ? `https://destinationcommandcenter.com/juneau/whale-watching-tours?dcc_handoff_id=${encodeURIComponent(
             handoffId
           )}${redirectDate ? `&date=${encodeURIComponent(redirectDate)}` : ""}`
-        : buildEdgeSafeWtaHandoffUrl({
-            topicSlug: "helicopter-tours",
-            portSlug: params.port || "juneau",
+        : buildEdgeSafeJuneauFlightDeckUrl({
             date: redirectDate,
-            handoffId,
-            sourceSlug: "dcc-juneau-heli-go",
-            sourcePage: params.sourcePage || "/juneau/helicopter-tours",
-            lane: params.lane || "premium-helicopter",
-            recommendationSlug: params.recommendationSlug || "date-first-primary",
-            returnPath: params.sourcePage || "/juneau/helicopter-tours",
           });
 
     return {
@@ -948,7 +892,7 @@ export function resolveGoRedirect(input: {
       ctaText:
         resolved.targetRoute?.id === JUNEAU_HELICOPTER_FALLBACK_ROUTE.id
           ? "See the cleaner Juneau backup lane"
-          : "Check Juneau helicopter availability",
+          : "Compare Juneau helicopter flights on Juneau Flight Deck",
       reasons: resolved.reasons,
       activeSignals: resolved.activeSignals,
     };

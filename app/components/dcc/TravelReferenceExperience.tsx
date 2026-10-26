@@ -103,69 +103,115 @@ export default async function TravelReferenceExperience({
     <div className="space-y-10 text-zinc-100">
       {/* HERO & CANONICAL IDENTITY */}
       {!isEmbedded && (
-        <header className="rounded-3xl border border-white/10 bg-gradient-to-br from-zinc-900 via-zinc-950 to-slate-950 p-6 md:p-10 space-y-6 shadow-2xl">
+        <header className="rounded-3xl border border-white/10 bg-gradient-to-br from-zinc-900 via-zinc-950 to-slate-950 p-6 md:p-8 space-y-4 shadow-2xl">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-wrap items-center gap-2">
               <span className="rounded-full border border-cyan-500/40 bg-cyan-500/15 px-3 py-1 text-xs font-bold uppercase tracking-widest text-cyan-300">
-                DCC Destination Reference & Decision Guide
+                DCC Destination Guide
               </span>
               <span className="rounded-full border border-white/15 bg-zinc-900 px-3 py-1 text-xs font-mono text-zinc-300">
-                Canonical Coordinate: {node.primaryCoordinate.lat.toFixed(5)},{" "}
+                Coordinates: {node.primaryCoordinate.lat.toFixed(5)},{" "}
                 {node.primaryCoordinate.lng.toFixed(5)}
               </span>
             </div>
             <div className="text-xs text-zinc-400 font-mono">
-              Substantively Verified: {node.lastReviewedAt} •{" "}
-              {node.evidenceRegistry.length} Attributable Sources
+              Reviewed: {node.lastReviewedAt} •{" "}
+              {node.evidenceRegistry.length} Verified Sources
             </div>
           </div>
 
-          <div className="space-y-3 max-w-4xl">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-white leading-[1.08]">
+          <div className="space-y-2 max-w-4xl">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-white leading-[1.1]">
               {node.title}
             </h1>
-            <p className="text-base md:text-lg font-semibold text-cyan-200/90">
+            <p className="text-sm md:text-base font-medium text-cyan-200/90">
               {node.subtitle}
             </p>
-            <p className="text-sm md:text-base text-zinc-300 leading-relaxed">
-              {node.heroSummary}
-            </p>
+            {node.id !== "juneau" && (
+              <p className="text-sm md:text-base text-zinc-300 leading-relaxed">
+                {node.heroSummary}
+              </p>
+            )}
           </div>
 
-          {/* At-a-Glance Evidence Strip */}
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 pt-2">
-            {node.atAGlance.map((fact) => (
-              <div
-                key={fact.label}
-                className="rounded-2xl border border-white/10 bg-zinc-950/80 p-4 flex flex-col justify-between space-y-2"
-              >
-                <div className="space-y-1">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 block">
-                    {fact.label}
-                  </span>
-                  <p className="text-sm font-bold text-white leading-snug">
-                    {fact.value}
-                  </p>
-                </div>
-                <div className="pt-1 flex flex-wrap items-center justify-between gap-1">
-                  <AuthorityBadge type={fact.authorityType} />
-                  {fact.citationIds?.length ? (
-                    <span className="inline-flex flex-wrap gap-1">
-                      {fact.citationIds.map((cid) => (
-                        <a
-                          key={cid}
-                          href={`#cite-${cid}`}
-                          className="text-[10px] font-mono text-cyan-300 hover:underline"
-                        >
-                          [{cid}]
-                        </a>
-                      ))}
-                    </span>
-                  ) : null}
-                </div>
+          {/* At-a-Glance Evidence Strip (expandable on Juneau so the port-day question & inputs lead immediately) */}
+          {node.id === "juneau" ? (
+            <details className="rounded-2xl border border-white/10 bg-zinc-950/60 p-3.5 text-xs">
+              <summary className="cursor-pointer font-bold text-zinc-200 hover:text-cyan-300">
+                Port Overview & Quick Reference Facts ({node.atAGlance.length} items)
+              </summary>
+              <p className="mt-2 text-xs text-zinc-300 leading-relaxed">
+                {node.heroSummary}
+              </p>
+              <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                {node.atAGlance.map((fact) => (
+                  <div
+                    key={fact.label}
+                    className="rounded-xl border border-white/10 bg-zinc-950/90 p-3 flex flex-col justify-between space-y-2"
+                  >
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block">
+                        {fact.label}
+                      </span>
+                      <p className="text-xs font-bold text-white leading-snug">
+                        {fact.value}
+                      </p>
+                    </div>
+                    <div className="pt-1 flex flex-wrap items-center justify-between gap-1">
+                      <AuthorityBadge type={fact.authorityType} />
+                      {fact.citationIds?.length ? (
+                        <span className="inline-flex flex-wrap gap-1">
+                          {fact.citationIds.map((cid) => (
+                            <a
+                              key={cid}
+                              href={`#cite-${cid}`}
+                              className="text-[10px] font-mono text-cyan-300 hover:underline"
+                            >
+                              [{cid}]
+                            </a>
+                          ))}
+                        </span>
+                      ) : null}
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </details>
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 pt-2">
+              {node.atAGlance.map((fact) => (
+                <div
+                  key={fact.label}
+                  className="rounded-2xl border border-white/10 bg-zinc-950/80 p-4 flex flex-col justify-between space-y-2"
+                >
+                  <div className="space-y-1">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 block">
+                      {fact.label}
+                    </span>
+                    <p className="text-sm font-bold text-white leading-snug">
+                      {fact.value}
+                    </p>
+                  </div>
+                  <div className="pt-1 flex flex-wrap items-center justify-between gap-1">
+                    <AuthorityBadge type={fact.authorityType} />
+                    {fact.citationIds?.length ? (
+                      <span className="inline-flex flex-wrap gap-1">
+                        {fact.citationIds.map((cid) => (
+                          <a
+                            key={cid}
+                            href={`#cite-${cid}`}
+                            className="text-[10px] font-mono text-cyan-300 hover:underline"
+                          >
+                            [{cid}]
+                          </a>
+                        ))}
+                      </span>
+                    ) : null}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Quick Section Jump Navigation */}
           <nav
@@ -180,7 +226,7 @@ export default async function TravelReferenceExperience({
                 href="#port-day-decision-engine"
                 className="rounded-lg border border-cyan-400/40 bg-cyan-500/15 hover:bg-cyan-500/25 px-3 py-1.5 text-cyan-200 transition"
               >
-                Port-Day Decision Engine
+                Port-Day Planner
               </a>
             )}
             <a
@@ -265,7 +311,7 @@ export default async function TravelReferenceExperience({
               href={node.primaryCoordinate.canonicalLocationPath}
               className="rounded-xl border border-cyan-500/40 bg-cyan-500/15 px-3.5 py-2 text-xs font-bold text-cyan-200 hover:bg-cyan-500/25 transition"
             >
-              Open Full Coordinate Terminal →
+              Full Weather & Map View →
             </Link>
             <a
               href={node.primaryCoordinate.canonicalApiPath}
@@ -309,7 +355,7 @@ export default async function TravelReferenceExperience({
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-3">
               <div>
                 <span className="text-[11px] font-bold uppercase tracking-wider text-cyan-400 block">
-                  Primary Coordinate Telemetry
+                  Local Weather & Alerts
                 </span>
                 <h3 className="text-base font-bold text-white">
                   {node.primaryCoordinate.label}
@@ -456,7 +502,7 @@ export default async function TravelReferenceExperience({
                 <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-3">
                   <div>
                     <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-400 block">
-                      Companion / Corridor Anchor ({node.secondaryCoordinates[0].elevationFt.toLocaleString()} ft)
+                      Nearby Comparison Point ({node.secondaryCoordinates[0].elevationFt.toLocaleString()} ft)
                     </span>
                     <h3 className="text-base font-bold text-white">
                       {node.secondaryCoordinates[0].label}
@@ -919,17 +965,16 @@ export default async function TravelReferenceExperience({
       >
         <div className="space-y-1">
           <span className="text-xs font-bold uppercase tracking-widest text-cyan-400">
-            Reusable Place & Coordinate Graph
+            Related Places & Routes
           </span>
           <h2
             id="heading-connected-graph"
             className="text-2xl font-black text-white"
           >
-            Connected Coordinates, Hubs, Ports, Venues & Corridors
+            Nearby Places, Ports, Venues & Corridors
           </h2>
           <p className="text-sm text-zinc-300">
-            Move between this travel reference and DCC&apos;s canonical coordinate
-            pages, regional hubs, and route nodes.
+            Explore related destination guides, regional hubs, and route pages.
           </p>
         </div>
 

@@ -67,10 +67,10 @@ export function mapAlaskaDecisionToDestination(
       }),
       fit: "exact_product",
       targetKind: "edge_redirect",
-      operatorId: "wta",
+      operatorId: "juneauflightdeck",
       routeKey: "alaska-juneau-helicopter",
       reason:
-        "Premium helicopter intent is already resolved, so the mapper should continue into the Juneau helicopter execution lane instead of reopening glacier comparison.",
+        "Premium helicopter intent is already resolved, so the mapper should continue into the Juneau Flight Deck helicopter execution lane instead of reopening glacier comparison.",
       campaign,
     };
   }
@@ -85,7 +85,7 @@ export function mapAlaskaDecisionToDestination(
     url: buildJuneauWhaleHref(whaleContext),
     fit: "tight_shortlist",
     targetKind: "operator_flow",
-    operatorId: "wta",
+    operatorId: "lastfrontiershoreexcursions",
     routeKey: `alaska-juneau-whale-${whaleContext}`,
     reason:
       "Whale intent is already narrowed enough to continue into the Juneau whale lane without restarting the Alaska port decision.",

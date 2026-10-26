@@ -19,7 +19,6 @@ import {
   listCruisePortSlugs,
   slugifyCruiseRoute,
 } from "@/lib/dcc/internal/cruisePayload";
-import { buildDccWtaHandoffHref } from "@/lib/dcc/internal/handoff";
 import { getViatorActionForPlace } from "@/lib/dcc/internal/viatorAction";
 import { isAlaskaCruisePortSlug } from "@/lib/dcc/cruise/shipRegistry";
 import { ACTION_LABELS } from "@/lib/dcc/actionLabels";
@@ -233,7 +232,7 @@ export default async function CruisePortPage({
         </div>
         {isAlaskaPortContext ? (
           <p className="text-sm text-cyan-300">
-            Alaska port context detected: WTA handoff links include canonical ship and port payload metadata.
+            Alaska port context detected: Owned specialist links below route to Last Frontier Shore Excursions (shore excursions, whale watching, Mendenhall, and port-day combinations) and Juneau Flight Deck (Juneau helicopter &amp; glacier flights). Owned-site status never changes schedule or fit rankings.
           </p>
         ) : null}
         <p className="text-sm text-zinc-500">
@@ -399,7 +398,7 @@ export default async function CruisePortPage({
         </div>
       </section>
 
-      <SatelliteHandoffStatusCard handoffId={handoffId} title="WTA Handoff Status" />
+      <SatelliteHandoffStatusCard handoffId={handoffId} title="Specialist Handoff Status" />
 
       <NextStepEngine
         title={`${portTitle} best next step`}
@@ -423,16 +422,27 @@ export default async function CruisePortPage({
 
         <div className="space-y-4">
           {payload.cruises.map((sailing) => {
-            const handoffHref = buildDccWtaHandoffHref({
-              sourceSlug: "dcc-cruises-port",
-              topicSlug: "shore-excursions",
-              portSlug: canonicalPortSlug,
-              cruiseShip: sailing.ship,
-              cruiseShipSlug: sailing.ship_slug,
-              date: fmtDate(sailing.departure_date),
-              source: "dcc",
-              version: "1",
-            });
+            const normalizedPort = canonicalPortSlug.toLowerCase();
+            const isJuneauPort = normalizedPort.startsWith("juneau");
+            const lfsePortHref = isJuneauPort
+              ? "https://www.lastfrontiershoreexcursions.com/ports/juneau"
+              : normalizedPort.startsWith("skagway")
+                ? "https://www.lastfrontiershoreexcursions.com/ports/skagway"
+                : normalizedPort.startsWith("ketchikan")
+                  ? "https://www.lastfrontiershoreexcursions.com/ports/ketchikan"
+                  : normalizedPort.startsWith("sitka")
+                    ? "https://www.lastfrontiershoreexcursions.com/ports/sitka"
+                    : normalizedPort.startsWith("icy-strait")
+                      ? "https://www.lastfrontiershoreexcursions.com/ports/icy-strait-point"
+                      : isAlaskaPortContext
+                        ? "https://www.lastfrontiershoreexcursions.com/tours"
+                        : null;
+            const sailingDateIso = fmtDate(sailing.departure_date);
+            const jfdHeliHref = isJuneauPort
+              ? /^\d{4}-\d{2}-\d{2}$/.test(sailingDateIso)
+                ? `https://juneauflightdeck.com/helicopter?date=${encodeURIComponent(sailingDateIso)}`
+                : "https://juneauflightdeck.com/helicopter"
+              : null;
             return (
               <article
                 key={sailing.sailing_id}
@@ -469,14 +479,26 @@ export default async function CruisePortPage({
                 >
                   Ship profile →
                 </Link>
-                <a
-                  href={handoffHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-cyan-300 hover:text-cyan-200 text-sm"
-                >
-                  WTA handoff →
-                </a>
+                {lfsePortHref ? (
+                  <a
+                    href={lfsePortHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-cyan-300 hover:text-cyan-200 text-sm"
+                  >
+                    Last Frontier Shore Excursions (DCC Owned Specialist) →
+                  </a>
+                ) : null}
+                {jfdHeliHref ? (
+                  <a
+                    href={jfdHeliHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-cyan-300 hover:text-cyan-200 text-sm"
+                  >
+                    Juneau Flight Deck (DCC Owned Aviation Specialist) →
+                  </a>
+                ) : null}
                 {sailing.external_booking_url ? (
                   <a
                     href={sailing.external_booking_url}

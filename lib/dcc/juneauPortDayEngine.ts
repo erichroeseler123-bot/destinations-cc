@@ -84,13 +84,82 @@ export type JuneauOptionFactAuditEntry = {
 
 export type JuneauDurationAudit = {
   advertisedDockToDockMinutes: number;
+  advertisedRangeMinutes: { min: number; max: number };
   onSiteOrOnWaterActivityMinutes: number;
   checkInLeadMinutes: number;
   outboundTransferMinutes: number;
+  outboundTransferRangeMinutes: { min: number; max: number };
   interActivityTransferMinutes: number;
   returnTransferMinutes: number;
+  returnTransferRangeMinutes: { min: number; max: number };
   doubleCountingStatus: "verified_not_double_counted";
+  decompositionLabel: "Planning estimate (transfers and activity separated)";
   decompositionNote: string;
+  transferAndReturnUncertaintyNote: string;
+};
+
+export type JuneauAccessibilityDetails = {
+  walkingAndTerrain: string;
+  boardingAndTransfer: string;
+  wheelchairAndMobilitySupport: string;
+  confirmationStatus:
+    | "confirmed_public_infrastructure"
+    | "operator_and_departure_confirmation_required"
+    | "not_step_free";
+  confirmationNote: string;
+};
+
+export type JuneauOptionStatusDimensions = {
+  timeFit: {
+    status:
+      | "fits_comfortably"
+      | "tight_buffer"
+      | "does_not_fit_time"
+      | "invalid_port_window";
+    summary: string;
+  };
+  operatingSchedule: {
+    status:
+      | "in_season_unconfirmed_departure"
+      | "example_date_unconfirmed"
+      | "out_of_season"
+      | "missing_schedule";
+    summary: string;
+  };
+  transferAndDock: {
+    status:
+      | "known_dock_estimate"
+      | "unknown_dock_estimate"
+      | "independent_no_ship_dock";
+    summary: string;
+  };
+  weatherAndDispatch: {
+    status:
+      | "normal_dispatch_uncertainty"
+      | "traveler_clear_assumption"
+      | "traveler_low_ceiling_assumption"
+      | "weather_feed_unavailable";
+    summary: string;
+  };
+  evidenceConfidence: {
+    status: "current" | "stale_qualified" | "withdrawn_or_conflicted";
+    summary: string;
+  };
+  accessibility: {
+    status:
+      | "confirmed_or_compatible"
+      | "operator_confirmation_required"
+      | "walking_requirement_unconfirmed"
+      | "does_not_match_mobility";
+    summary: string;
+  };
+  preferenceMatch: {
+    status:
+      | "matches_preference"
+      | "single_activity_alternative"
+      | "excluded_by_preference";
+    summary: string;
+  };
 };
 
 export type JuneauBookingChannelOption = {
@@ -160,6 +229,7 @@ export type JuneauTimingBreakdown = {
   earliestShoreReadyTime: string;
   latestCheckInTime: string;
   estimatedBackAtDockTime: string;
+  estimatedBackAtDockRangeText: string;
   targetAllAboardBufferCutoffTime: string;
   durationAudit: JuneauDurationAudit;
   mathematicalFeasibilityDisclaimer: string;
@@ -174,6 +244,9 @@ export type JuneauEvaluatedDecisionOption = {
   fitStatus: JuneauEvaluatedOptionFit;
   fitBadgeLabel: string;
   conciseVerdict: string;
+  plainLanguageStatuses: string[];
+  statusDimensions: JuneauOptionStatusDimensions;
+  accessibilityDetails: JuneauAccessibilityDetails;
   timing: JuneauTimingBreakdown;
   inputAudit: JuneauOptionFactAuditEntry[];
   operationalGuaranteeSeparation: {
@@ -211,6 +284,9 @@ export type JuneauEvaluatedDecisionOption = {
 
 export type JuneauPortDayEvaluationResult = {
   evaluatedAt: string;
+  isExampleScenario: boolean;
+  dateProvidedByTraveler: boolean;
+  exampleScenarioNotice: string | null;
   timezone: "America/Juneau";
   timezoneResolution: JuneauTimezoneResolution;
   inputValidationErrors: string[];
@@ -224,6 +300,7 @@ export type JuneauPortDayEvaluationResult = {
   conciseBottomLine: string;
   weatherAndTelemetryAdvisory: {
     inputState: JuneauWeatherInputState;
+    isTravelerScenarioAssumption: boolean;
     status:
       | "normal_uncertainty"
       | "low_ceiling_caution"
@@ -313,14 +390,19 @@ export type RawJuneauOptionDefinition = {
   corridor: string;
   viatorProductCode: string | null;
   advertisedDockToDockMinutes: number;
+  advertisedRangeMinutes: { min: number; max: number };
   checkInLeadMinutes: number;
   outboundTransferMinutes: number;
+  outboundTransferRangeMinutes: { min: number; max: number };
   activityDurationMinutes: number;
   interActivityTransferMinutes: number;
   returnTransferMinutes: number;
+  returnTransferRangeMinutes: { min: number; max: number };
   decompositionNote: string;
+  transferAndReturnUncertaintyNote: string;
   operatingMonths: number[];
   minimumMobility: Exclude<JuneauMobilityLevel, "unspecified">;
+  accessibilityDetails: JuneauAccessibilityDetails;
   weatherCeilingSensitive: boolean;
   dependsOnCitationIds: string[];
   inputAudit: JuneauOptionFactAuditEntry[];
@@ -345,15 +427,31 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
     corridor: "Mendenhall Valley (12 mi NW)",
     viatorProductCode: "5849JNU_MEND",
     advertisedDockToDockMinutes: 185,
+    advertisedRangeMinutes: { min: 150, max: 210 },
     checkInLeadMinutes: 15,
     outboundTransferMinutes: 25,
+    outboundTransferRangeMinutes: { min: 20, max: 35 },
     activityDurationMinutes: 120,
     interActivityTransferMinutes: 0,
     returnTransferMinutes: 25,
+    returnTransferRangeMinutes: { min: 20, max: 35 },
     decompositionNote:
-      "Total 185 min (3h 05m) dock-to-dock is decomposed into 15m dock kiosk boarding + 25m outbound Glacier Hwy transfer + 120m self-paced on-site USFS trail/Visitor Center time + 25m return transfer. Transfer and boarding time are excluded from the 120m on-site figure so they are never double-counted.",
+      "Planning estimate (185 min / 3h 05m total): 15m dock kiosk boarding + 25m outbound Glacier Hwy transfer (20–35m range) + 120m self-paced on-site USFS trail/Visitor Center time + 25m return transfer (20–35m range). Transfer and boarding time are separated from the 120m on-site allowance so they are not double-counted.",
+    transferAndReturnUncertaintyNote:
+      "Egan Drive / Glacier Highway transfer times vary between 20 and 35 minutes each way depending on multi-ship traffic, and return shuttle queues at the USFS Visitor Center lot can add 15–30 minutes at peak afternoon hours.",
     operatingMonths: [5, 6, 7, 8, 9, 10],
     minimumMobility: "step_free_wheelchair",
+    accessibilityDetails: {
+      walkingAndTerrain:
+        "Paved plaza and elevator access at the USFS Mendenhall Visitor Center; Steep Creek boardwalk (0.25 mi loop) is level and step-free; Photo Point (0.3 mi) has mild paved grades; Nugget Falls Trail (2.0 mi round-trip) is unpaved compacted gravel with uneven sections.",
+      boardingAndTransfer:
+        "Standard commercial shuttle coaches require climbing 2–3 bus steps unless a wheelchair-lift bus or accessible taxi is requested in advance.",
+      wheelchairAndMobilitySupport:
+        "USFS Visitor Center and Steep Creek boardwalk support wheelchairs and walkers; shuttle vehicle lift availability varies by operator and departure.",
+      confirmationStatus: "operator_and_departure_confirmation_required",
+      confirmationNote:
+        "On-site USFS Visitor Center and Steep Creek boardwalk accessibility is confirmed public infrastructure, but wheelchair-lift shuttle boarding must be confirmed directly with the shuttle or taxi operator for your departure.",
+    },
     weatherCeilingSensitive: false,
     dependsOnCitationIds: ["jun-usfs-mendenhall", "jun-cbj-harbors"],
     inputAudit: [
@@ -371,21 +469,21 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
         field: "activity_duration",
         label: "On-Site Activity Duration",
         valueSummary:
-          "120 min on-site (excludes 50m round-trip transfer and 15m kiosk boarding; 185 min total dock-to-dock)",
+          "120 min self-paced on-site planning baseline (excludes 40–70m round-trip transfer and 15m kiosk boarding; 150–210 min total dock-to-dock range)",
         basisType: "dcc_estimate",
         citationIds: ["jun-usfs-mendenhall"],
         verificationNote:
-          "120 min on-site allows Photo Point (0.3 mi), Steep Creek boardwalk (0.25 mi), or Nugget Falls (2.0 mi RT) without double-counting the 50m highway transfer.",
+          "120 min on-site allows Photo Point (0.3 mi), Steep Creek boardwalk (0.25 mi), or Nugget Falls (2.0 mi RT) without double-counting the highway transfer.",
       },
       {
         field: "transfers",
         label: "Corridor Transfer Time",
         valueSummary:
-          "25 min each way (12.0 miles via Egan Drive / Glacier Highway between downtown Marine Park and Mendenhall Visitor Center lot)",
+          "20–35 min each way (25 min planning baseline for 12.0 miles via Egan Drive / Glacier Highway between downtown Marine Park and Mendenhall Visitor Center lot)",
         basisType: "dcc_estimate",
         citationIds: ["jun-usfs-mendenhall", "jun-cbj-harbors"],
         verificationNote:
-          "Direct drop-off at the USFS commercial lot; avoids the 1.5-mile municipal bus walk gap.",
+          "Direct drop-off at the USFS commercial lot avoids the 1.5-mile municipal bus walk gap; actual road time varies with cruise traffic.",
       },
       {
         field: "meeting_point",
@@ -404,7 +502,7 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
         basisType: "operator_estimate",
         citationIds: ["jun-cbj-harbors"],
         verificationNote:
-          "Standard dock kiosk voucher exchange and motorcoach loading window.",
+          "Standard dock kiosk voucher exchange and motorcoach loading window; confirm exact departure schedule with your shuttle operator.",
       },
       {
         field: "operating_season",
@@ -418,13 +516,13 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
       },
       {
         field: "accessibility",
-        label: "Mobility & Accessibility",
+        label: "Walking, Boarding & Terrain Profile",
         valueSummary:
-          "Step-free wheelchair accessible at Visitor Center (elevator) and Steep Creek Boardwalk (0.25 mi); Nugget Falls (2.0 mi) is unpaved gravel",
+          "Step-free elevator access at USFS Visitor Center and Steep Creek Boardwalk (0.25 mi); Nugget Falls (2.0 mi) is unpaved gravel; wheelchair-lift bus boarding requires advance confirmation with the shuttle operator",
         basisType: "sourced_fact",
         citationIds: ["jun-usfs-mendenhall"],
         verificationNote:
-          "USFS maintains ADA access to the Visitor Center viewing plaza and Steep Creek salmon viewing boardwalk.",
+          "USFS maintains ADA access to the Visitor Center viewing plaza and Steep Creek boardwalk; vehicle lift availability must be confirmed per operator departure.",
       },
       {
         field: "booking_and_cancellation",
@@ -434,21 +532,22 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
         basisType: "operator_estimate",
         citationIds: ["jun-usfs-mendenhall"],
         verificationNote:
-          "USFS enforces annual/daily commercial visitor service caps in Mendenhall Glacier Recreation Area.",
+          "USFS enforces annual/daily commercial visitor service caps in Mendenhall Glacier Recreation Area; confirm refund terms with your chosen shuttle provider.",
       },
     ],
     supportedReasonsAndTradeoffs: [
-      "Direct 25-minute valley transfer drops you at the USFS Mendenhall Glacier Visitor Center lot without the 3-mile municipal bus road walk.",
+      "Direct 20–35 minute valley transfer drops you at the USFS Mendenhall Glacier Visitor Center lot without the 3-mile municipal bus road walk.",
       "Operates in low cloud ceilings and rain that ground helicopter icefield landings.",
       "Tradeoff: USFS commercial visitor permit caps can sell out permitted shuttle seats on 4–5 ship days, and you view the glacier from land/boardwalks rather than landing on the ice.",
     ],
     baseAssumptions: [
-      "25 min each way via Egan Drive / Glacier Highway between downtown docks and Mendenhall Visitor Center (DCC corridor estimate).",
+      "25 min each way planning baseline (20–35 min range) via Egan Drive / Glacier Highway between downtown docks and Mendenhall Visitor Center (DCC corridor estimate).",
       "120 min on-site for Photo Point (0.3 mi), Steep Creek Bear Boardwalk (0.25 mi step-free), or Nugget Falls Trail (2.0 mi round-trip).",
       "15 min kiosk check-in and return shuttle boarding allowance.",
     ],
     baseUncertainties: [
-      "Same-day USFS commercial shuttle seat availability depends on how many cruise ships are in port.",
+      "Same-day USFS commercial shuttle seat availability and exact departure headways depend on how many cruise ships are in port.",
+      "Return shuttle queues at the Visitor Center lot and Egan Drive traffic can shift your actual return time by 15–25 minutes.",
       "USFS rangers may temporarily close sections of Steep Creek Trail without advance web notice when black bears are actively feeding close to the boardwalk.",
     ],
     bookingTransparency: {
@@ -464,17 +563,17 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
         "Food or flavored beverages (strictly prohibited on USFS trails due to bear activity)",
       ],
       durationLabel:
-        "3 hr 05 min dock-to-dock (120 min on-site + 50 min round-trip transfer + 15 min boarding; transfers not double-counted)",
+        "3 hr 05 min planning estimate (150–210 min dock-to-dock range: 120 min on-site + 40–70 min round-trip transfer + 15 min boarding; transfers separated)",
       meetingArrangements:
         "Marine Park / Goldbelt Tramway plaza booths or pre-arranged taxi stand",
       priceBasis:
         "$5 USFS Visitor Center fee (sourced fact; trails free) + ~$45–$80 per person round-trip commercial shuttle or metered taxi (operator estimate)",
       indicativePriceRangePerPersonUsd: { min: 45, max: 80 },
       cancellationConditions:
-        "USFS pass is non-refundable; commercial shuttle operators typically allow 24-hour cancellation",
+        "USFS pass is non-refundable; commercial shuttle operators typically allow 24-hour cancellation (confirm exact operator terms)",
       detailsVerifiedAt: "2026-10-23",
       detailsFreshnessNote:
-        "Verified against USFS Tongass National Forest fee and access rules on 2026-10-23. Confirm live shuttle seat availability on your port date.",
+        "Verified against USFS Tongass National Forest fee and access rules on 2026-10-23. Confirm live shuttle seat availability and departure times on your port date.",
       channels: [
         {
           channelType: "public_free",
@@ -488,11 +587,12 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
         },
         {
           channelType: "specialist_comparison",
-          label: "Compare Juneau Port Shuttles & Combos (Welcome to Alaska Tours)",
-          operatorOrProviderName: "Welcome to Alaska Tours",
-          url: "https://welcometoalaskatours.com/ports/juneau",
+          label:
+            "Compare Mendenhall Glacier Tours & Shuttles (Last Frontier Shore Excursions)",
+          operatorOrProviderName: "Last Frontier Shore Excursions",
+          url: "https://www.lastfrontiershoreexcursions.com/juneau/mendenhall-glacier-tours",
           relationshipDisclosure:
-            "DCC network specialist site. Optional handoff; no purchase required.",
+            "DCC owned specialist site (Last Frontier Shore Excursions); commercial relationship does not affect option ranking or fit status.",
           isCommercialPartner: true,
           commissionInfluenceOnRanking: 0,
         },
@@ -508,15 +608,31 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
     corridor: "Auke Bay Harbor (13.5 mi NW)",
     viatorProductCode: "5849JNU_WHALE",
     advertisedDockToDockMinutes: 220,
+    advertisedRangeMinutes: { min: 210, max: 240 },
     checkInLeadMinutes: 20,
     outboundTransferMinutes: 25,
+    outboundTransferRangeMinutes: { min: 20, max: 35 },
     activityDurationMinutes: 150,
     interActivityTransferMinutes: 0,
     returnTransferMinutes: 25,
+    returnTransferRangeMinutes: { min: 20, max: 35 },
     decompositionNote:
-      "Operators advertise 3.5 to 3.75 hours (210–225 min) total dock-to-dock. DCC decomposes this into 20m dock check-in + 25m outbound transfer to Statter Harbor + 150m (2.5h) on-water cruise + 25m return transfer = 220m total. The 50m round-trip transfer and 20m check-in are separated from the 150m on-water duration so they are never double-counted.",
+      "Planning estimate (220 min / 3h 40m baseline; 210–240 min advertised range across operators): 20m dock check-in + 25m outbound transfer to Statter Harbor (20–35m range) + 150m (2.5h) on-water cruise (135–165m range) + 25m return transfer (20–35m range). The round-trip transfer and check-in are separated from on-water time so they are not double-counted.",
+    transferAndReturnUncertaintyNote:
+      "Road transfer between downtown docks and Auke Bay Statter Harbor takes 20–35 minutes each way depending on Egan Drive traffic, and harbor unloading plus return coach staging can shift dock return times by 15–20 minutes.",
     operatingMonths: [4, 5, 6, 7, 8, 9, 10],
     minimumMobility: "light_walking_1mi",
+    accessibilityDetails: {
+      walkingAndTerrain:
+        "Requires walking ~0.25–0.5 miles across flat paved parking lots and harbor piers, plus walking down/up the Statter Harbor floating dock ramp, which becomes steep during minus low tides (−3 to −5 ft MLLW).",
+      boardingAndTransfer:
+        "Requires boarding a motorcoach at Marine Park and stepping across a vessel threshold or gangway at Auke Bay.",
+      wheelchairAndMobilitySupport:
+        "Select large waterjet catamarans (e.g., specific Allen Marine vessels) can accommodate manual or collapsible wheelchairs with advance notice, whereas small 6–12 passenger boats typically cannot.",
+      confirmationStatus: "operator_and_departure_confirmation_required",
+      confirmationNote:
+        "Vessel wheelchair access, step-free threshold plates, and low-tide ramp assistance are not confirmed across all Auke Bay operators or departures — confirm vessel accessibility directly with the operator before booking.",
+    },
     weatherCeilingSensitive: false,
     dependsOnCitationIds: [
       "jun-operator-auke-bay-whale",
@@ -528,31 +644,31 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
         field: "price",
         label: "Adult Excursion Rate Range",
         valueSummary:
-          "$169–$229 per adult depending on vessel class (40-pax catamaran vs. 6-pack charter)",
+          "$169–$229 per adult planning range across Auke Bay operators (varies by 40-pax catamaran vs. 6-pack charter)",
         basisType: "operator_estimate",
         citationIds: ["jun-operator-auke-bay-whale"],
         verificationNote:
-          "Published 2026–2027 seasonal rate range across permitted Auke Bay whale watching operators.",
+          "Multi-operator planning range across Allen Marine, Gastineau Guiding, and permitted Auke Bay charter operators; confirm exact fare for your vessel and departure.",
       },
       {
         field: "activity_duration",
         label: "On-Water vs. Dock-to-Dock Duration",
         valueSummary:
-          "150 min (2.5 hr) on water; 220 min (3 hr 40 min) dock-to-dock including 50m transfers and 20m check-in",
-        basisType: "sourced_fact",
+          "135–165 min on water (150 min planning baseline based on Allen Marine Juneau Whale Watch); 210–240 min (3.5–4.0 hr) dock-to-dock including transfers and check-in",
+        basisType: "operator_estimate",
         citationIds: ["jun-operator-auke-bay-whale"],
         verificationNote:
-          "Verified against published Allen Marine / Auke Bay operator itineraries: advertised 3.5–3.75 hr total duration includes bus transfers, which are separated here to prevent double-counting.",
+          "Advertised 3.5–4.0 hr operator durations include ground transfers, which are separated here as a planning estimate so transfers are not double-counted; confirm exact water time on your chosen departure.",
       },
       {
         field: "transfers",
         label: "Downtown to Statter Harbor Transfer",
         valueSummary:
-          "25 min each way (13.5 miles via Egan Drive between Marine Park and Auke Bay Statter Harbor)",
+          "20–35 min each way (25 min planning baseline for 13.5 miles via Egan Drive between Marine Park and Auke Bay Statter Harbor)",
         basisType: "operator_estimate",
         citationIds: ["jun-operator-auke-bay-whale", "jun-cbj-harbors"],
         verificationNote:
-          "Included in operator excursion ticket; buses stage at Marine Park.",
+          "Included in operator excursion ticket; actual road transit and harbor loading vary by 10–15 minutes with traffic.",
       },
       {
         field: "meeting_point",
@@ -567,11 +683,11 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
       {
         field: "check_in_deadline",
         label: "Check-In Cutoff",
-        valueSummary: "20 min before scheduled bus departure at dock kiosk",
+        valueSummary: "15–30 min before scheduled bus departure at dock kiosk (20 min planning baseline)",
         basisType: "operator_estimate",
         citationIds: ["jun-operator-auke-bay-whale"],
         verificationNote:
-          "Required by operators to assign bus and vessel manifests prior to departure.",
+          "Required by operators to assign bus and vessel manifests prior to departure; confirm exact cutoff on your ticket.",
       },
       {
         field: "operating_season",
@@ -584,23 +700,23 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
       },
       {
         field: "accessibility",
-        label: "Harbor Ramp & Vessel Accessibility",
+        label: "Walking, Harbor Ramp & Vessel Boarding",
         valueSummary:
-          "Requires light walking (up to 0.25–0.5 mi) and navigating Statter Harbor gangway ramps, which steepen during minus low tides (−3 to −5 ft MLLW)",
-        basisType: "sourced_fact",
+          "Walking ~0.25–0.5 mi plus Statter Harbor gangway ramps that steepen during minus low tides (−3 to −5 ft MLLW); vessel wheelchair support varies by boat and requires advance operator confirmation",
+        basisType: "operator_estimate",
         citationIds: ["jun-operator-auke-bay-whale", "jun-noaa-tides"],
         verificationNote:
-          "Some catamarans accommodate manual wheelchairs with advance notice; tide-driven gangway slope at Statter Harbor is tracked via NOAA Station 9452210.",
+          "Select larger catamarans accommodate manual wheelchairs with advance notice, while smaller boats require stepping over gunwales; tide-driven ramp slope is tracked via NOAA Station 9452210.",
       },
       {
         field: "booking_and_cancellation",
         label: "Booking & Cancellation Policy",
         valueSummary:
-          "Typically 24-hour free cancellation; 100% refund if canceled by captain for marine weather",
+          "Full refund if canceled by captain for marine weather; customer cancellation cutoff is typically 24–72 hours depending on operator",
         basisType: "operator_estimate",
         citationIds: ["jun-operator-auke-bay-whale"],
         verificationNote:
-          "Standard operator terms; verify exact hour cutoff on your chosen operator's checkout page.",
+          "Customer cancellation windows vary across Auke Bay operators; verify the exact hour cutoff on your chosen operator's checkout page.",
       },
     ],
     supportedReasonsAndTradeoffs: [
@@ -609,13 +725,14 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
       "Tradeoff: Does not visit Mendenhall Glacier unless booked as a longer 5 hr 15 min combination.",
     ],
     baseAssumptions: [
-      "20 min dockside check-in before shuttle departure (operator requirement).",
-      "25 min each way ground transfer between downtown docks and Auke Bay Statter Harbor (13.5 mi).",
-      "150 min (2.5 hr) on-water marine wildlife viewing in Auke Bay / Stephens Passage (not double-counted with transfers).",
+      "20 min dockside check-in before shuttle departure (operator planning baseline; 15–30 min range).",
+      "25 min each way ground transfer between downtown docks and Auke Bay Statter Harbor (20–35 min planning range across 13.5 mi).",
+      "150 min (2.5 hr) on-water marine wildlife viewing baseline in Auke Bay / Stephens Passage (separated from transfers).",
     ],
     baseUncertainties: [
-      "Steep harbor ramp angles at Auke Bay during extreme minus low tides (−3 ft to −5 ft MLLW) can affect boarding for mobility-limited guests.",
-      "Open-channel wind waves in Favorite Channel vary by day; confirm cabin seating if prone to motion sickness.",
+      "Exact departure times and seat availability must be confirmed for your ship's date.",
+      "Steep harbor ramp angles at Auke Bay during extreme minus low tides (−3 ft to −5 ft MLLW) can affect boarding for mobility-limited guests, and wheelchair access depends on the specific vessel assigned.",
+      "Egan Drive traffic and harbor coach loading can shift your actual dock return time by 15–20 minutes.",
     ],
     bookingTransparency: {
       actualOperators: [
@@ -631,17 +748,17 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
         "Crew gratuities",
       ],
       durationLabel:
-        "3 hr 40 min dock-to-dock (150 min on water + 50 min round-trip transfer + 20 min check-in; transfers not double-counted)",
+        "3 hr 40 min planning estimate (210–240 min dock-to-dock range across operators: ~150 min on water + ~40–70 min round-trip transfer + ~20 min check-in; transfers separated)",
       meetingArrangements:
         "Marine Park / Mount Roberts Tramway parking lot kiosks",
       priceBasis:
-        "Published operator & partner rates typically $169–$229 per adult depending on vessel size (operator estimate)",
+        "Multi-operator planning range $169–$229 per adult depending on vessel size (operator estimate; confirm exact fare per departure)",
       indicativePriceRangePerPersonUsd: { min: 169, max: 229 },
       cancellationConditions:
-        "Typically 24-hour free customer cancellation; full refund if canceled by operator for marine weather",
+        "Full refund if canceled by operator for marine weather; customer cancellation cutoffs typically range from 24 to 72 hours by operator",
       detailsVerifiedAt: "2026-10-23",
       detailsFreshnessNote:
-        "Verified against published 2026–2027 Auke Bay operator specifications on 2026-10-23. Confirm live vessel seats and exact departure time before booking.",
+        "Checked against published 2026–2027 Auke Bay operator profiles on 2026-10-23. Confirm live vessel seats, accessibility, and exact departure time before booking.",
       channels: [
         {
           channelType: "direct_operator",
@@ -666,11 +783,11 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
         {
           channelType: "specialist_comparison",
           label:
-            "Compare Auke Bay Whale Watching Departures (Welcome to Alaska Tours)",
-          operatorOrProviderName: "Welcome to Alaska Tours",
-          url: "https://welcometoalaskatours.com/ports/juneau",
+            "Compare Auke Bay Whale Watching Departures (Last Frontier Shore Excursions)",
+          operatorOrProviderName: "Last Frontier Shore Excursions",
+          url: "https://www.lastfrontiershoreexcursions.com/juneau/whale-watching",
           relationshipDisclosure:
-            "DCC network specialist site; may include direct operator and Viator affiliate links.",
+            "DCC owned specialist site (Last Frontier Shore Excursions); commercial relationship does not affect option ranking or fit status.",
           isCommercialPartner: true,
           commissionInfluenceOnRanking: 0,
         },
@@ -686,15 +803,31 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
     corridor: "Juneau International Airport (JNU) & Juneau Icefield",
     viatorProductCode: "5849JNU_HELI",
     advertisedDockToDockMinutes: 185,
+    advertisedRangeMinutes: { min: 180, max: 255 },
     checkInLeadMinutes: 30,
     outboundTransferMinutes: 20,
+    outboundTransferRangeMinutes: { min: 20, max: 30 },
     activityDurationMinutes: 115,
     interActivityTransferMinutes: 0,
     returnTransferMinutes: 20,
+    returnTransferRangeMinutes: { min: 20, max: 30 },
     decompositionNote:
-      "Operators (TEMSCO, Coastal, NorthStar) advertise 3.0 to 3.25 hours (180–195 min) dock-to-dock. DCC decomposes this into 30m mandatory pre-flight briefing/overboot fitting + 20m outbound shuttle to JNU heliport + 115m flight and glacier landing + 20m return shuttle = 185m total. Shuttle transfers (40m RT) and check-in/briefing (30m) are separated from the 115m flight/ice window so they are never double-counted.",
+      "Planning estimate modeled on TEMSCO's Mendenhall Glacier & Guided Walk (185 min / 3h 05m baseline; multi-operator range across TEMSCO, Coastal Icefield Excursion, and NorthStar Glacier Walkabout is 180–255 min / 3.0–4.25 hr dock-to-dock): 30m pre-flight briefing/overboot fitting (30–45m operator range) + 20m outbound shuttle to JNU heliport (20–30m range) + 115m flight and glacier landing (90–150m product range) + 20m return shuttle (20–30m range). Shuttle transfers and check-in/briefing are separated from flight/ice time as a planning estimate so they are not double-counted.",
+    transferAndReturnUncertaintyNote:
+      "Shuttle transit between downtown docks and JNU Airport takes 20–30 minutes each way depending on Egan Drive traffic, and flight dispatch or return van staging can shift estimated dock return times by 15–30 minutes.",
     operatingMonths: [5, 6, 7, 8, 9],
     minimumMobility: "light_walking_1mi",
+    accessibilityDetails: {
+      walkingAndTerrain:
+        "Walking 0.25–0.75 miles on uneven, wet, and sloped glacial ice wearing provided traction overboots or crampons with guide assistance.",
+      boardingAndTransfer:
+        "Requires stepping up ~18–24 inches into an AS350 or Bell helicopter cabin (and boarding the airport shuttle van); collapsible wheelchairs generally cannot be carried inside the helicopter cabin on standard glacier landings.",
+      wheelchairAndMobilitySupport:
+        "Some operators can assist guests with limited walking onto the aircraft for flightseeing or short-step ice landings with advance notice, while extended treks (e.g., NorthStar 2-hour trek) require full agility.",
+      confirmationStatus: "operator_and_departure_confirmation_required",
+      confirmationNote:
+        "Helicopter boarding assistance, mobility accommodations, and exact weight-balance seat thresholds (250–260 lbs fully clothed) are not identical across TEMSCO, Coastal, and NorthStar and must be confirmed directly with the operator before booking.",
+    },
     weatherCeilingSensitive: true,
     dependsOnCitationIds: [
       "jun-operator-heli-icefield",
@@ -705,33 +838,33 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
     inputAudit: [
       {
         field: "price",
-        label: "Published Operator Base Rates",
+        label: "Multi-Operator Base Rate Planning Range",
         valueSummary:
-          "$409–$549 per person ($409 TEMSCO glacier landing; $429 Coastal icefield excursion; $499–$549 NorthStar walkabout)",
-        basisType: "sourced_fact",
+          "$409–$549 per person standard landing/walkabout planning range ($399–$699+ across all Juneau helicopter tours; e.g., ~$409 TEMSCO Mendenhall Glacier & Guided Walk, ~$429 Coastal Icefield Excursion, ~$499–$549 NorthStar Glacier Walkabout)",
+        basisType: "operator_estimate",
         citationIds: ["jun-operator-heli-icefield"],
         verificationNote:
-          "Verified against published 2026–2027 direct tariff pages for TEMSCO, Coastal, and NorthStar.",
+          "Planning range across TEMSCO, Coastal, and NorthStar rather than a single cross-provider tariff; exact price depends on operator, ice time, and weight-balance surcharge rules — confirm on your selected operator's checkout page.",
       },
       {
         field: "activity_duration",
-        label: "Flight/Glacier Time vs. Dock-to-Dock Duration",
+        label: "Flight/Glacier Time vs. Dock-to-Dock Planning Range",
         valueSummary:
-          "115 min flight + glacier walk; 185 min (3 hr 05 min) dock-to-dock including 40m round-trip JNU shuttle and 30m briefing/gear fitting",
-        basisType: "sourced_fact",
+          "115 min flight + glacier walk baseline (modeled on TEMSCO Mendenhall Glacier & Guided Walk; 90–150 min across products); 180–255 min (3.0–4.25 hr) dock-to-dock range across TEMSCO, Coastal, and NorthStar",
+        basisType: "operator_estimate",
         citationIds: ["jun-operator-heli-icefield"],
         verificationNote:
-          "Advertised 3.0–3.25 hr operator duration is dock-to-dock; DCC separates the 40m shuttle and 30m briefing from the 115m flight/ice window to prevent double-counting.",
+          "Operators advertise 3.0–4.25 hr dock-to-dock depending on product (e.g., standard landing vs. extended walkabout); DCC separates ~40–60m shuttle and ~30–45m briefing from the flight/ice window as a planning estimate so transfers are not double-counted.",
       },
       {
         field: "transfers",
-        label: "Downtown Dock to JNU Heliport Transfer",
+        label: "Downtown Dock to JNU Heliport Transfer Estimate",
         valueSummary:
-          "20 min each way (8.5 miles via Egan Drive between downtown cruise docks and JNU Airport helicopter ramp)",
-        basisType: "operator_estimate",
+          "20–30 min each way planning range (20 min baseline for 8.5 miles via Egan Drive between downtown cruise docks and JNU Airport helicopter ramp)",
+        basisType: "dcc_estimate",
         citationIds: ["jun-operator-heli-icefield", "jun-airport-official"],
         verificationNote:
-          "Included in operator ticket; operator vans pick up at downtown dock kiosks.",
+          "Included in operator ticket; actual road transfer and van staging vary with Egan Drive traffic and ship berth location.",
       },
       {
         field: "meeting_point",
@@ -745,13 +878,13 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
       },
       {
         field: "check_in_deadline",
-        label: "Mandatory Briefing & Gear Fitting Lead Time",
+        label: "Pre-Flight Briefing & Gear Fitting Lead Time",
         valueSummary:
-          "30 min pre-flight safety briefing, weight verification, and glacier overboot/crampon fitting",
-        basisType: "sourced_fact",
+          "30–45 min pre-flight safety briefing, weight verification, and glacier overboot/crampon fitting (30 min planning baseline)",
+        basisType: "operator_estimate",
         citationIds: ["jun-operator-heli-icefield"],
         verificationNote:
-          "Required by FAA Part 135 operators prior to boarding the aircraft.",
+          "Required by FAA Part 135 operators prior to boarding; exact check-in cutoff (30 vs. 45 min) varies across TEMSCO, Coastal, and NorthStar and must be confirmed on your voucher.",
       },
       {
         field: "operating_season",
@@ -765,44 +898,45 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
       },
       {
         field: "accessibility",
-        label: "Mobility & Weight-Balance Restrictions",
+        label: "Walking, Cabin Boarding & Weight-Balance Rules",
         valueSummary:
-          "Requires stepping into helicopter cabin and walking on uneven glacial ice with traction overboots; weight-balance surcharge applies above 250 lbs fully clothed",
-        basisType: "sourced_fact",
+          "Requires stepping into helicopter cabin and walking on uneven glacial ice with traction overboots; weight-balance surcharge thresholds (typically 250–260 lbs fully clothed) and boarding assistance vary by operator and require confirmation",
+        basisType: "operator_estimate",
         citationIds: ["jun-operator-heli-icefield"],
         verificationNote:
-          "FAA Part 135 weight-and-balance manifest rules require accurate passenger weights at booking.",
+          "FAA Part 135 weight-and-balance manifest rules and mobility accommodations vary across TEMSCO, Coastal, and NorthStar; confirm directly before booking.",
       },
       {
         field: "booking_and_cancellation",
-        label: "Weather Dispatch & Refund Policy",
+        label: "Weather Dispatch & Cancellation Policy Range",
         valueSummary:
-          "100% refund if canceled by operator due to ceiling/visibility weather minimums; customer cancellation cutoff varies 24h–7d by operator",
-        basisType: "sourced_fact",
+          "Full refund if canceled by operator due to ceiling/visibility weather minimums; customer-initiated cancellation cutoff varies from 24 hours to 7+ days by operator and booking channel",
+        basisType: "operator_estimate",
         citationIds: ["jun-operator-heli-icefield", "jun-noaa-aviation"],
         verificationNote:
-          "Only the licensed Part 135 operator can hold or cancel a flight based on icefield ceiling and flat-light contrast.",
+          "Only the licensed Part 135 operator can hold or cancel a flight based on icefield ceiling and flat-light contrast; confirm customer cancellation terms with your specific operator.",
       },
     ],
     supportedReasonsAndTradeoffs: [
       "Only way to physically land and walk on the upper Mendenhall, Herbert, or Norris glacier icefields away from road crowds.",
-      "Moderate total duration (3 hr 05 min dock-to-dock including airport transfers and gear briefing) fits standard 6+ hour port calls comfortably.",
-      "Tradeoff: Highest weather-cancellation sensitivity (FAA Part 135 cloud ceiling and flat-light minimums on the icefield) and highest per-person cost ($409–$549+).",
+      "Moderate total duration (3.0–4.25 hr dock-to-dock range across TEMSCO, Coastal, and NorthStar; 3 hr 05 min baseline) fits standard 6+ hour port calls comfortably.",
+      "Tradeoff: Highest weather-cancellation sensitivity (FAA Part 135 cloud ceiling and flat-light minimums on the icefield) and highest per-person cost ($409–$549+ walkabout range).",
     ],
     baseAssumptions: [
-      "30 min mandatory pre-flight safety briefing, weight check, and glacier overboot/crampon fitting (sourced operator rule).",
-      "20 min each way operator shuttle between downtown cruise docks and JNU Airport helicopter ramp (8.5 mi).",
-      "115 min flight + guided glacier landing window (separated from shuttle and briefing so transfers are not double-counted).",
+      "30 min pre-flight safety briefing, weight check, and glacier overboot/crampon fitting baseline (30–45 min operator range).",
+      "20 min each way operator shuttle baseline (20–30 min planning range) between downtown cruise docks and JNU Airport helicopter ramp (8.5 mi).",
+      "115 min flight + guided glacier landing planning baseline modeled on TEMSCO Mendenhall Glacier & Guided Walk (separated from shuttle and briefing so transfers are not double-counted).",
     ],
     baseUncertainties: [
-      "FAA Part 135 dispatch depends on real-time icefield ceiling, visibility, and flat-light contrast — surface weather at the cruise docks does not confirm flight operation.",
-      "Operators enforce per-seat and total aircraft weight balance limits (surcharges typically apply above 250 lbs fully clothed).",
+      "Exact duration (3.0–4.25 hr dock-to-dock), check-in cutoff (30–45 min), fare ($399–$699+), and customer cancellation window (24h to 7+ days) vary across TEMSCO, Coastal, and NorthStar and require confirmation for your chosen product.",
+      "FAA Part 135 dispatch depends on real-time icefield ceiling, visibility, and flat-light contrast — surface weather or traveler weather assumptions do not confirm flight operation.",
+      "Operators enforce per-seat and total aircraft weight balance limits (surcharges typically apply above 250–260 lbs fully clothed).",
     ],
     bookingTransparency: {
       actualOperators: [
-        "TEMSCO Helicopters (JNU Airport)",
-        "Coastal Helicopters (JNU North Ramp)",
-        "NorthStar Trekking (JNU Airport)",
+        "TEMSCO Helicopters (JNU Airport — e.g., Mendenhall Glacier & Guided Walk)",
+        "Coastal Helicopters (JNU North Ramp — e.g., Icefield Excursion)",
+        "NorthStar Trekking (JNU Airport — e.g., Glacier Walkabout)",
       ],
       inclusions: [
         "Round-trip shuttle between downtown cruise docks and JNU Airport heliport",
@@ -810,25 +944,25 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
         "Scenic flightseeing and guided walk on Mendenhall, Herbert, or Norris Glacier",
       ],
       exclusions: [
-        "Weight-balance seat surcharge (required by operators above 250 lbs)",
+        "Weight-balance seat surcharge (required by operators above 250–260 lbs)",
         "Pilot/guide gratuities",
       ],
       durationLabel:
-        "3 hr 05 min dock-to-dock (115 min flight/ice window + 40 min round-trip transfer + 30 min check-in/briefing; not double-counted)",
+        "3 hr 05 min planning baseline (180–255 min / 3.0–4.25 hr dock-to-dock range across TEMSCO, Coastal, and NorthStar; transfers and briefing separated)",
       meetingArrangements:
         "Downtown cruise dock pickup kiosk (operator shuttle to JNU Airport ramp)",
       priceBasis:
-        "Published 2026–2027 direct operator base rates: $409 (TEMSCO landing), $429 (Coastal landing), $499–$549 (NorthStar walkabout/trek)",
+        "Multi-operator planning range: ~$409 (TEMSCO Mendenhall landing), ~$429 (Coastal Icefield Excursion), ~$499–$549 (NorthStar Walkabout); $399–$699+ across all Juneau heli products (operator estimate — confirm exact tariff)",
       indicativePriceRangePerPersonUsd: { min: 409, max: 549 },
       cancellationConditions:
-        "100% refund if canceled by operator due to weather; customer cancellation windows vary by operator (24h to 7 days)",
+        "Full refund if canceled by operator due to weather; customer cancellation cutoffs vary across TEMSCO, Coastal, and NorthStar (24 hours to 7+ days — confirm before booking)",
       detailsVerifiedAt: "2026-10-23",
       detailsFreshnessNote:
-        "Checked against TEMSCO, Coastal, and NorthStar published profiles on 2026-10-23. Confirm exact departure slot and weight rules on checkout.",
+        "Planning ranges checked against TEMSCO, Coastal, and NorthStar product profiles on 2026-10-23. Confirm exact departure slot, duration, cancellation policy, and weight rules on checkout.",
       channels: [
         {
           channelType: "direct_operator",
-          label: "TEMSCO Helicopters (Official Operator Page)",
+          label: "TEMSCO Helicopters — Mendenhall Glacier & Guided Walk",
           operatorOrProviderName: "TEMSCO Helicopters",
           url: "https://temscoair.com/juneau-helicopter-tours/mendenhall-glacier/",
           relationshipDisclosure:
@@ -838,7 +972,7 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
         },
         {
           channelType: "direct_operator",
-          label: "Coastal Helicopters (Official Operator Page)",
+          label: "Coastal Helicopters — Icefield Excursion",
           operatorOrProviderName: "Coastal Helicopters",
           url: "https://coastalhelicopters.com/tours/icefield-excursion/",
           relationshipDisclosure:
@@ -848,7 +982,7 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
         },
         {
           channelType: "direct_operator",
-          label: "NorthStar Trekking (Official Operator Page)",
+          label: "NorthStar Trekking — Helicopter Glacier Walkabout",
           operatorOrProviderName: "NorthStar Trekking",
           url: "https://northstartrekking.com/adventures/helicopter-glacier-walkabout/",
           relationshipDisclosure:
@@ -862,7 +996,7 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
           operatorOrProviderName: "Juneau Flight Deck",
           url: "https://juneauflightdeck.com/helicopter",
           relationshipDisclosure:
-            "DCC network specialist site; links to direct FareHarbor operator calendars and Viator partner listings.",
+            "DCC owned specialist site (Juneau Flight Deck); commercial relationship does not affect option ranking or fit status.",
           isCommercialPartner: true,
           commissionInfluenceOnRanking: 0,
         },
@@ -878,15 +1012,31 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
     corridor: "Mendenhall Valley + Auke Bay Corridor (12–13.5 mi NW)",
     viatorProductCode: "5849JNU_COMBO",
     advertisedDockToDockMinutes: 315,
+    advertisedRangeMinutes: { min: 285, max: 330 },
     checkInLeadMinutes: 20,
     outboundTransferMinutes: 25,
+    outboundTransferRangeMinutes: { min: 20, max: 35 },
     activityDurationMinutes: 225, // 90m Mendenhall + 135m Whale Watching
     interActivityTransferMinutes: 15, // Direct Mendenhall -> Auke Bay transfer (4.5 mi)
     returnTransferMinutes: 30,
+    returnTransferRangeMinutes: { min: 25, max: 40 },
     decompositionNote:
-      "Bundled combo operators advertise 5.0 to 5.25 hours (300–315 min) dock-to-dock. DCC decomposes this into 20m dock check-in + 25m transfer to Mendenhall + 90m at Mendenhall + 15m direct 4.5-mile valley link to Auke Bay + 135m on-water whale watch + 30m return transfer to downtown = 315m (5h 15m). All transfers (70m total) and check-in (20m) are separated from the 225m combined activity time so nothing is double-counted.",
+      "Planning estimate (315 min / 5h 15m baseline; 285–330 min / 4.75–5.5 hr advertised combo range): 20m dock check-in + 25m transfer to Mendenhall (20–35m range) + 90m at Mendenhall + 15m direct 4.5-mile valley link to Auke Bay + 135m on-water whale watch + 30m return transfer to downtown (25–40m range). All transfers (70m baseline) and check-in (20m) are separated from the 225m combined activity time as a planning estimate so nothing is double-counted.",
+    transferAndReturnUncertaintyNote:
+      "Three-leg valley bus transfers (Downtown → Mendenhall → Auke Bay → Downtown) span ~65–90 minutes total depending on Egan Drive traffic and coach staging, so estimated return time at the dock carries a ±20 minute traffic tolerance.",
     operatingMonths: [5, 6, 7, 8, 9],
     minimumMobility: "light_walking_1mi",
+    accessibilityDetails: {
+      walkingAndTerrain:
+        "Walking 0.25–0.75 miles at Mendenhall Glacier (paved Visitor Center plaza and step-free Steep Creek boardwalk; 90m stop is tight for the 2.0-mile unpaved Nugget Falls trail) plus Statter Harbor pier and floating dock ramp (steep at minus low tides).",
+      boardingAndTransfer:
+        "Requires boarding transfer coaches across three valley legs (Downtown, Mendenhall, Auke Bay) and stepping aboard a whale watching vessel.",
+      wheelchairAndMobilitySupport:
+        "Mendenhall Visitor Center and Steep Creek boardwalk are step-free, but multi-stop combo motorcoaches and whale vessels require advance wheelchair-lift and vessel compatibility confirmation.",
+      confirmationStatus: "operator_and_departure_confirmation_required",
+      confirmationNote:
+        "Accessible coach lifts and step-free vessel boarding are not guaranteed across all combo departures — confirm both bus lift and boat boarding directly with the combo operator before booking.",
+    },
     weatherCeilingSensitive: false,
     dependsOnCitationIds: [
       "jun-operator-auke-bay-whale",
@@ -898,31 +1048,31 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
       {
         field: "price",
         label: "Bundled Combo Rate Range",
-        valueSummary: "$219–$289 per adult (includes USFS admission and all 3 bus legs)",
+        valueSummary: "$219–$289 per adult planning range (includes USFS admission and all 3 bus legs)",
         basisType: "operator_estimate",
         citationIds: ["jun-operator-auke-bay-whale", "jun-usfs-mendenhall"],
         verificationNote:
-          "Published 2026–2027 bundled combo range across Allen Marine / Gastineau Guiding / permitted valley combo operators.",
+          "Published 2026–2027 bundled combo range across Allen Marine / Gastineau Guiding / permitted valley combo operators; confirm exact fare on checkout.",
       },
       {
         field: "activity_duration",
         label: "Combined Activity vs. Dock-to-Dock Duration",
         valueSummary:
-          "225 min activity time (90m Mendenhall + 135m on-water whale watch); 315 min (5 hr 15 min) dock-to-dock including 70m transfers and 20m check-in",
+          "225 min combined activity baseline (90m Mendenhall + 135m on-water whale watch); 285–330 min (4.75–5.5 hr; 315 min baseline) dock-to-dock including transfers and check-in",
         basisType: "operator_estimate",
         citationIds: ["jun-operator-auke-bay-whale", "jun-usfs-mendenhall"],
         verificationNote:
-          "Decomposed from advertised 5.0–5.25 hr combo schedules so transfers are never double-counted; note that Mendenhall stop is capped at ~75–90 min.",
+          "Planning decomposition separates ~70m transfers and ~20m check-in from advertised 4.75–5.5 hr combo schedules so transfers are not double-counted; note that Mendenhall ground time is typically capped at 75–90 min.",
       },
       {
         field: "transfers",
         label: "Three-Leg Valley Loop Transfers",
         valueSummary:
-          "25m Downtown→Mendenhall + 15m Mendenhall→Auke Bay (4.5 mi direct) + 30m Auke Bay→Downtown (70 min total transit)",
+          "25m Downtown→Mendenhall (20–35m) + 15m Mendenhall→Auke Bay (4.5 mi direct) + 30m Auke Bay→Downtown (25–40m; ~70 min baseline transit)",
         basisType: "dcc_estimate",
         citationIds: ["jun-operator-auke-bay-whale", "jun-usfs-mendenhall"],
         verificationNote:
-          "Direct 4.5-mile valley link between Mendenhall and Statter Harbor saves ~35 minutes vs. backtracking through downtown.",
+          "Direct 4.5-mile valley link between Mendenhall and Statter Harbor saves ~35 minutes vs. backtracking through downtown; road times remain estimates subject to traffic.",
       },
       {
         field: "meeting_point",
@@ -936,11 +1086,11 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
       {
         field: "check_in_deadline",
         label: "Check-In Lead Time",
-        valueSummary: "20 min prior to combo coach departure",
+        valueSummary: "20 min prior to combo coach departure (15–30 min operator range)",
         basisType: "operator_estimate",
         citationIds: ["jun-operator-auke-bay-whale"],
         verificationNote:
-          "Required for multi-leg coach and vessel manifest check-in.",
+          "Required for multi-leg coach and vessel manifest check-in; confirm exact departure schedule with your operator.",
       },
       {
         field: "operating_season",
@@ -953,19 +1103,19 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
       },
       {
         field: "accessibility",
-        label: "Mobility & Trail/Ramp Constraints",
+        label: "Walking, Trail & Harbor Ramp Profile",
         valueSummary:
-          "Requires light walking (Steep Creek/Photo Point + Statter Harbor boarding ramp); 90m glacier stop is tight for the 2.0-mile Nugget Falls hike",
-        basisType: "sourced_fact",
+          "Walking 0.25–0.75 mi at Steep Creek/Photo Point plus Statter Harbor boarding ramp (steep at low tide); multi-leg bus lift and vessel accessibility require advance operator confirmation",
+        basisType: "operator_estimate",
         citationIds: ["jun-usfs-mendenhall", "jun-noaa-tides"],
         verificationNote:
-          "Harbor gangway slope varies with NOAA Station 9452210 tide height.",
+          "Harbor gangway slope varies with NOAA Station 9452210 tide height; coach and boat wheelchair support must be confirmed per operator.",
       },
       {
         field: "booking_and_cancellation",
         label: "Booking & Cancellation Policy",
         valueSummary:
-          "Typically 24-hour free cancellation; partial refund if one leg is modified by operator",
+          "Customer cancellation typically 24–72 hours depending on operator; partial refund if one leg is modified by operator",
         basisType: "operator_estimate",
         citationIds: ["jun-operator-auke-bay-whale"],
         verificationNote:
@@ -975,15 +1125,16 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
     supportedReasonsAndTradeoffs: [
       "Combines Juneau's two signature surface experiences in one northwest loop, using a 15-minute direct Mendenhall-to-Auke Bay transfer instead of backtracking 50 minutes through downtown.",
       "Operates reliably in rain and low ceilings.",
-      "Tradeoff: Requires 5 hr 15 min of activity/transfer time plus dock and return buffers (~7.5+ hours in port for a comfortable margin), leaving only ~90 minutes on the ground at Mendenhall Glacier (tight if you want to hike all the way to Nugget Falls and also visit Steep Creek).",
+      "Tradeoff: Requires ~5 hr 15 min of activity/transfer time plus dock and return buffers (~7.5+ hours in port for a comfortable margin), leaving only ~75–90 minutes on the ground at Mendenhall Glacier (tight for the 2.0-mile Nugget Falls hike).",
     ],
     baseAssumptions: [
-      "20 min dock check-in + 25 min transfer from downtown to Mendenhall Glacier.",
+      "20 min dock check-in + 25 min transfer baseline (20–35 min range) from downtown to Mendenhall Glacier.",
       "90 min at Mendenhall Glacier Visitor Center / Photo Point / Steep Creek.",
       "15 min direct valley transfer from Mendenhall Glacier to Auke Bay Statter Harbor (4.5 miles).",
-      "135 min on-water whale watching + 30 min return transfer to downtown cruise docks (transfers not double-counted).",
+      "135 min on-water whale watching + 30 min return transfer baseline (25–40 min range) to downtown cruise docks (transfers separated).",
     ],
     baseUncertainties: [
+      "Exact combo departure schedule and return coach timing depend on your chosen operator and multi-ship traffic.",
       "If booked as two separate independent tickets rather than an integrated combo or pre-booked private taxi, finding an on-demand taxi/Uber at Mendenhall Visitor Center to reach Auke Bay on time is high-risk due to weak cell signal and USFS commercial pickup zones.",
       "Short 5–6.5 hour port calls (or ships tendering in Gastineau Channel) do not have enough slack for this two-activity loop.",
     ],
@@ -1000,16 +1151,16 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
         "Meals (snacks/water usually provided on whale vessel; no food allowed on Mendenhall trails)",
       ],
       durationLabel:
-        "5 hr 15 min dock-to-dock (90m Mendenhall + 15m link + 135m Whale Watch + 55m transfers + 20m check-in; not double-counted)",
+        "5 hr 15 min planning baseline (285–330 min dock-to-dock range: ~90m Mendenhall + ~15m link + ~135m Whale Watch + ~55m transfers + ~20m check-in; transfers separated)",
       meetingArrangements: "Marine Park / Mount Roberts Tramway plaza kiosks",
       priceBasis:
         "Bundled combo tours typically $219–$289 per adult (operator estimate; or book separately ONLY with pre-arranged private transfer between Mendenhall and Auke Bay)",
       indicativePriceRangePerPersonUsd: { min: 219, max: 289 },
       cancellationConditions:
-        "Typically 24-hour free cancellation; partial refund if one leg is modified by operator",
+        "Customer cancellation typically 24–72 hours depending on operator; partial refund if one leg is modified by operator",
       detailsVerifiedAt: "2026-10-23",
       detailsFreshnessNote:
-        "Verified against 2026–2027 Juneau combo schedules on 2026-10-23.",
+        "Checked against 2026–2027 Juneau combo schedules on 2026-10-23. Confirm exact departure schedule and transfer inclusions before booking.",
       channels: [
         {
           channelType: "direct_operator",
@@ -1034,11 +1185,11 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
         {
           channelType: "specialist_comparison",
           label:
-            "Compare Juneau Whale + Mendenhall Combo Timings (Welcome to Alaska Tours)",
-          operatorOrProviderName: "Welcome to Alaska Tours",
-          url: "https://welcometoalaskatours.com/ports/juneau",
+            "Compare Juneau Whale + Mendenhall Combo Options (Last Frontier Shore Excursions)",
+          operatorOrProviderName: "Last Frontier Shore Excursions",
+          url: "https://www.lastfrontiershoreexcursions.com/decision/whale-watching-vs-glacier-tour",
           relationshipDisclosure:
-            "DCC network specialist site; may earn commission on partner bookings at no extra cost.",
+            "DCC owned specialist site (Last Frontier Shore Excursions); commercial relationship does not affect option ranking or fit status.",
           isCommercialPartner: true,
           commissionInfluenceOnRanking: 0,
         },
@@ -1054,15 +1205,31 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
     corridor: "JNU Airport (8.5 mi NW) + Mendenhall Valley (12 mi NW)",
     viatorProductCode: null,
     advertisedDockToDockMinutes: 300,
+    advertisedRangeMinutes: { min: 285, max: 360 },
     checkInLeadMinutes: 30,
     outboundTransferMinutes: 20,
+    outboundTransferRangeMinutes: { min: 20, max: 30 },
     activityDurationMinutes: 205, // 115m heli + 90m Mendenhall Visitor Center
     interActivityTransferMinutes: 20, // JNU Airport ramp -> Mendenhall Visitor Center (4.5 mi)
     returnTransferMinutes: 25,
+    returnTransferRangeMinutes: { min: 20, max: 35 },
     decompositionNote:
-      "Total 300 min (5h 00m) dock-to-dock is decomposed into 30m heliport briefing/gear fitting + 20m downtown-to-JNU shuttle + 115m helicopter flight/glacier landing + 20m direct 4.5-mile valley taxi/shuttle link from JNU to Mendenhall Visitor Center + 90m at Mendenhall + 25m return transfer to downtown docks. Return airport shuttle leg from the standalone helicopter tour (20m) is replaced by the 20m JNU→Mendenhall link + 25m Mendenhall→Downtown return so transfers are never double-counted.",
+      "Planning estimate (300 min / 5h 00m baseline; 285–360 min range depending on helicopter product and valley transfer wait): 30m heliport briefing/gear fitting (30–45m operator range) + 20m downtown-to-JNU shuttle (20–30m range) + 115m helicopter flight/glacier landing baseline + 20m direct 4.5-mile valley taxi/shuttle link from JNU to Mendenhall Visitor Center + 90m at Mendenhall + 25m return transfer to downtown docks (20–35m range). The standalone helicopter return shuttle leg is replaced by the valley link and Mendenhall return as a planning estimate so transfers are not double-counted.",
+    transferAndReturnUncertaintyNote:
+      "Requires a point-to-point 4.5-mile valley transfer between JNU Airport heliport and Mendenhall Visitor Center plus a return shuttle/taxi to downtown; taxi wait times and Egan Drive traffic can shift return timing by 15–30 minutes.",
     operatingMonths: [5, 6, 7, 8, 9],
     minimumMobility: "light_walking_1mi",
+    accessibilityDetails: {
+      walkingAndTerrain:
+        "Helicopter leg requires walking on uneven glacial ice in traction overboots; Mendenhall Visitor Center and Steep Creek boardwalk (0.25 mi) are paved/boardwalk step-free while Nugget Falls (2.0 mi) is unpaved gravel.",
+      boardingAndTransfer:
+        "Requires stepping up ~18–24 inches into the helicopter cabin, boarding the operator airport shuttle, and transferring via valley taxi/shuttle to Mendenhall.",
+      wheelchairAndMobilitySupport:
+        "Mendenhall Visitor Center is wheelchair accessible, but the helicopter glacier landing leg is not step-free and weight-balance / boarding rules vary across TEMSCO, Coastal, and NorthStar.",
+      confirmationStatus: "operator_and_departure_confirmation_required",
+      confirmationNote:
+        "Helicopter boarding assistance, weight-balance thresholds (250–260 lbs), and valley transfer vehicle accessibility must be confirmed directly with the operator before booking.",
+    },
     weatherCeilingSensitive: true,
     dependsOnCitationIds: [
       "jun-operator-heli-icefield",
@@ -1074,33 +1241,33 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
     inputAudit: [
       {
         field: "price",
-        label: "Combined Helicopter + Valley Transfer & Admission Cost",
+        label: "Combined Helicopter + Valley Transfer & Admission Planning Range",
         valueSummary:
-          "$440–$595 per person ($409–$549 helicopter base rate + $5 USFS fee + ~$25–$45 valley taxi/shuttle)",
+          "$440–$595+ per person planning range ($409–$549 standard helicopter walkabout range across TEMSCO, Coastal, and NorthStar + $5 USFS fee + ~$25–$45 valley taxi/shuttle)",
         basisType: "dcc_estimate",
         citationIds: ["jun-operator-heli-icefield", "jun-usfs-mendenhall"],
         verificationNote:
-          "Combines sourced helicopter base rates ($409–$549) and $5 USFS fee with a DCC estimate ($25–$45) for the 4.5-mile JNU-to-Mendenhall taxi/shuttle link.",
+          "Combines the multi-operator helicopter base rate range ($409–$549; $399–$699+ across all heli tours), the $5 sourced USFS Visitor Center fee, and a DCC estimate ($25–$45) for the 4.5-mile JNU-to-Mendenhall taxi/shuttle link.",
       },
       {
         field: "activity_duration",
-        label: "Combined Activity vs. Total Duration",
+        label: "Combined Activity vs. Total Planning Duration",
         valueSummary:
-          "205 min activity time (115m flight/ice + 90m Mendenhall Visitor Center); 300 min (5 hr 00 min) dock-to-dock",
+          "205 min combined activity baseline (115m flight/ice baseline + 90m Mendenhall Visitor Center); 285–360 min (5 hr 00 min baseline) dock-to-dock",
         basisType: "dcc_estimate",
         citationIds: ["jun-operator-heli-icefield", "jun-usfs-mendenhall"],
         verificationNote:
-          "Replaces the helicopter tour's 20m downtown return shuttle with a 20m valley link to Mendenhall + 90m visit + 25m return to docks (no double-counted transfers).",
+          "Planning estimate replaces the helicopter tour's 20m downtown return shuttle with a 20m valley link to Mendenhall + 90m visit + 25m return to docks (no double-counted transfers); confirm exact helicopter duration with TEMSCO, Coastal, or NorthStar.",
       },
       {
         field: "transfers",
-        label: "Three-Leg Valley Routing",
+        label: "Three-Leg Valley Routing Estimate",
         valueSummary:
-          "20m Downtown→JNU + 20m JNU→Mendenhall (4.5 mi) + 25m Mendenhall→Downtown (65 min total transit)",
+          "20–30m Downtown→JNU + 15–25m JNU→Mendenhall (4.5 mi) + 20–35m Mendenhall→Downtown (~65 min baseline transit)",
         basisType: "dcc_estimate",
         citationIds: ["jun-airport-official", "jun-usfs-mendenhall"],
         verificationNote:
-          "JNU Airport and Mendenhall Visitor Center are both in the Mendenhall Valley (4.5 miles apart).",
+          "JNU Airport and Mendenhall Visitor Center are both in the Mendenhall Valley (4.5 miles apart); transfer and taxi wait times are planning estimates.",
       },
       {
         field: "meeting_point",
@@ -1114,12 +1281,12 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
       },
       {
         field: "check_in_deadline",
-        label: "Heliport Check-In & Gear Fitting",
-        valueSummary: "30 min mandatory pre-flight briefing and overboot fitting",
-        basisType: "sourced_fact",
+        label: "Heliport Check-In & Gear Fitting Range",
+        valueSummary: "30–45 min pre-flight briefing and overboot fitting (30 min planning baseline)",
+        basisType: "operator_estimate",
         citationIds: ["jun-operator-heli-icefield"],
         verificationNote:
-          "FAA Part 135 operator requirement.",
+          "Check-in lead time varies between 30 and 45 minutes across TEMSCO, Coastal, and NorthStar; confirm on your flight voucher.",
       },
       {
         field: "operating_season",
@@ -1132,20 +1299,20 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
       },
       {
         field: "accessibility",
-        label: "Mobility & Weight-Balance Rules",
+        label: "Walking, Cabin Boarding & Weight-Balance Profile",
         valueSummary:
-          "Requires light walking on glacier ice with overboots and 250 lb weight-balance rule on helicopter leg; Mendenhall Visitor Center/Steep Creek is step-free",
-        basisType: "sourced_fact",
+          "Requires stepping into helicopter cabin and walking on glacier ice with overboots (250–260 lb weight-balance threshold varies by operator); Mendenhall Visitor Center/Steep Creek is step-free",
+        basisType: "operator_estimate",
         citationIds: ["jun-operator-heli-icefield", "jun-usfs-mendenhall"],
         verificationNote:
-          "Helicopter boarding and glacier walking govern the minimum mobility requirement.",
+          "Helicopter boarding and glacier walking govern the overall accessibility profile and must be confirmed with your selected helicopter operator.",
       },
       {
         field: "booking_and_cancellation",
-        label: "Booking & Weather Contingency",
+        label: "Booking & Weather Contingency Range",
         valueSummary:
-          "Helicopter leg 100% refundable if weather-canceled; keep Mendenhall ground leg flexible if flight slot is delayed",
-        basisType: "sourced_fact",
+          "Helicopter leg refundable if weather-canceled by operator (customer cancellation cutoff varies 24h–7+ days by operator); keep Mendenhall ground leg flexible if flight slot is delayed",
+        basisType: "operator_estimate",
         citationIds: ["jun-operator-heli-icefield"],
         verificationNote:
           "Drop the Mendenhall Visitor Center stop if a morning weather hold delays your flight departure by 45+ minutes.",
@@ -1157,13 +1324,14 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
       "Tradeoff: Requires a 7+ hour port call and pre-arranged valley taxi/shuttle coordination between the heliport and Visitor Center; helicopter leg remains subject to FAA Part 135 ceiling minimums.",
     ],
     baseAssumptions: [
-      "30 min heliport check-in & gear fitting + 20 min downtown-to-JNU shuttle.",
-      "115 min helicopter flight and guided glacier walk (transfers not double-counted).",
+      "30 min heliport check-in & gear fitting baseline (30–45 min operator range) + 20 min downtown-to-JNU shuttle (20–30 min range).",
+      "115 min helicopter flight and guided glacier walk planning baseline (transfers separated).",
       "20 min valley taxi/shuttle link between JNU Airport heliport and Mendenhall Visitor Center (4.5 mi).",
-      "90 min at Mendenhall Visitor Center + 25 min return transfer to downtown docks.",
+      "90 min at Mendenhall Visitor Center + 25 min return transfer baseline (20–35 min range) to downtown docks.",
     ],
     baseUncertainties: [
       "Standard helicopter operator shuttles run loop routes between downtown docks and JNU Airport — confirm in advance whether the operator or a pre-booked valley taxi will drop you at Mendenhall Visitor Center after your flight.",
+      "Helicopter duration (3.0–4.25 hr standalone), fare ($399–$699+), check-in cutoff (30–45 min), and cancellation window (24h–7+ days) vary across TEMSCO, Coastal, and NorthStar.",
       "If low ceilings delay your helicopter departure slot by 45–60 minutes, drop the Mendenhall Visitor Center leg immediately to protect your 90-minute ship return buffer.",
     ],
     bookingTransparency: {
@@ -1178,17 +1346,17 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
         "Point-to-point taxi between JNU heliport and Mendenhall Visitor Center (unless booked as an integrated package)",
       ],
       durationLabel:
-        "5 hr 00 min dock-to-dock (115m flight + 20m valley link + 90m Mendenhall + 45m transfers + 30m check-in; not double-counted)",
+        "5 hr 00 min planning baseline (285–360 min dock-to-dock range: ~115m flight + ~20m valley link + ~90m Mendenhall + ~45m transfers + ~30m check-in; transfers separated)",
       meetingArrangements:
         "Schedule helicopter flight for the earliest morning slot so any weather hold or backup decision happens early in your port window",
       priceBasis:
-        "$409–$549 helicopter base rate (sourced fact) + $5 USFS admission (sourced fact) + ~$25–$45 valley taxi/shuttle transfer (DCC estimate)",
+        "$409–$549 helicopter walkabout planning range across TEMSCO/Coastal/NorthStar (operator estimate) + $5 USFS admission (sourced fact) + ~$25–$45 valley taxi/shuttle transfer (DCC estimate)",
       indicativePriceRangePerPersonUsd: { min: 440, max: 595 },
       cancellationConditions:
-        "Helicopter leg 100% refundable if weather-canceled by operator; keep Mendenhall ground visit flexible until flight completes",
+        "Helicopter leg refundable if weather-canceled by operator (customer cancellation cutoff varies 24h–7+ days by operator); keep Mendenhall ground visit flexible until flight completes",
       detailsVerifiedAt: "2026-10-23",
       detailsFreshnessNote:
-        "Evaluated from verified JNU Airport and USFS Mendenhall transfer distances on 2026-10-23.",
+        "Evaluated from JNU Airport and USFS Mendenhall transfer distances and operator profiles on 2026-10-23. Confirm exact helicopter schedule and valley transfer before booking.",
       channels: [
         {
           channelType: "direct_operator",
@@ -1217,7 +1385,18 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
           operatorOrProviderName: "Juneau Flight Deck",
           url: "https://juneauflightdeck.com/helicopter",
           relationshipDisclosure:
-            "DCC network specialist site; optional comparison and booking links.",
+            "DCC owned specialist site (Juneau Flight Deck); commercial relationship does not affect option ranking or fit status.",
+          isCommercialPartner: true,
+          commissionInfluenceOnRanking: 0,
+        },
+        {
+          channelType: "specialist_comparison",
+          label:
+            "Compare Mendenhall Glacier Ground Tours & Shuttles (Last Frontier Shore Excursions)",
+          operatorOrProviderName: "Last Frontier Shore Excursions",
+          url: "https://www.lastfrontiershoreexcursions.com/juneau/mendenhall-glacier-tours",
+          relationshipDisclosure:
+            "DCC owned specialist site (Last Frontier Shore Excursions); commercial relationship does not affect option ranking or fit status.",
           isCommercialPartner: true,
           commissionInfluenceOnRanking: 0,
         },
@@ -1234,15 +1413,31 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
       "Downtown Transit Center → Mendenhall Loop Rd + 1.5-Mi Spur Walk Each Way",
     viatorProductCode: null,
     advertisedDockToDockMinutes: 260,
+    advertisedRangeMinutes: { min: 245, max: 300 },
     checkInLeadMinutes: 15,
     outboundTransferMinutes: 70, // 35m bus + 35m 1.5-mi walk from Mendenhall Loop Rd & Glacier Spur Rd
+    outboundTransferRangeMinutes: { min: 65, max: 90 },
     activityDurationMinutes: 90,
     interActivityTransferMinutes: 0,
     returnTransferMinutes: 85, // 35m 1.5-mi walk back + 15m hourly/half-hourly bus wait + 35m bus ride
+    returnTransferRangeMinutes: { min: 75, max: 115 },
     decompositionNote:
-      "Total 260 min (4h 20m) is decomposed into 15m walk/wait at Downtown Transit Center + 70m outbound transit (35m bus + 35m 1.5-mile walk along Glacier Spur Rd) + 90m at Mendenhall Glacier + 85m return transit (35m 1.5-mile walk + 15m bus headway wait + 35m bus ride). The 3.0-mile road walk is included in transfer time rather than on-site trail time so it is never hidden or double-counted.",
+      "Planning estimate (260 min / 4h 20m baseline; 245–300 min range depending on bus headway wait): 15m walk/wait at Downtown Transit Center + 70m outbound transit (35m bus + 35m 1.5-mile walk along Glacier Spur Rd) + 90m at Mendenhall Glacier + 85m return transit (35m 1.5-mile walk + 15–45m bus headway wait + 35m bus ride). The 3.0-mile road walk is included in transfer time rather than on-site trail time so it is not hidden or double-counted.",
+    transferAndReturnUncertaintyNote:
+      "Capital Transit Route 3/4 runs on 30-to-60 minute headways; missing a return bus at Mendenhall Loop Rd adds 30–60 minutes immediately.",
     operatingMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
     minimumMobility: "active_walking_3mi",
+    accessibilityDetails: {
+      walkingAndTerrain:
+        "Requires 3.0 miles of compulsory round-trip walking (1.5 miles each way) on the flat paved Glacier Spur Road pedestrian pathway between the Mendenhall Loop Rd bus stop and the USFS Visitor Center, plus 0.4 miles between the cruise docks and the Downtown Transit Center, before any glacier trail walking.",
+      boardingAndTransfer:
+        "Capital Transit municipal buses are equipped with low-floor ramps/kneeling access and ADA wheelchair securement spaces.",
+      wheelchairAndMobilitySupport:
+        "While the municipal bus itself and the paved path are wheelchair accessible, the 3.0+ mile compulsory road distance makes this unsuitable for travelers who cannot walk or roll 3+ miles outdoors.",
+      confirmationStatus: "not_step_free",
+      confirmationNote:
+        "Confirmed municipal bus ramp access and paved sidewalk geometry, but requires covering 3.0+ miles on foot or by long-range mobility device beyond the bus stop.",
+    },
     weatherCeilingSensitive: false,
     dependsOnCitationIds: ["jun-capital-transit", "jun-usfs-mendenhall"],
     inputAudit: [
@@ -1260,21 +1455,21 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
         field: "activity_duration",
         label: "On-Site Glacier Time",
         valueSummary:
-          "90 min at Mendenhall Recreation Area (excludes 155 min round-trip bus + 3.0-mile road walk)",
+          "90 min self-paced at Mendenhall Recreation Area (excludes 140–205 min round-trip bus + 3.0-mile road walk)",
         basisType: "dcc_estimate",
         citationIds: ["jun-usfs-mendenhall"],
         verificationNote:
-          "90 min on-site budget after completing the 1.5-mile walk from Mendenhall Loop Rd.",
+          "90 min on-site planning budget after completing the 1.5-mile walk from Mendenhall Loop Rd.",
       },
       {
         field: "transfers",
         label: "Bus Ride + 1.5-Mile Spur Walk Each Way",
         valueSummary:
-          "70 min outbound (35m bus + 35m 1.5-mi walk) and 85 min return (35m walk + 15m schedule wait + 35m bus)",
-        basisType: "sourced_fact",
+          "70 min outbound baseline (35m bus + 35m 1.5-mi walk) and 85 min return baseline (35m walk + 15–45m schedule wait + 35m bus)",
+        basisType: "dcc_estimate",
         citationIds: ["jun-capital-transit", "jun-usfs-mendenhall"],
         verificationNote:
-          "Capital Transit Route 3/4 stops at Mendenhall Loop Rd & Glacier Spur Rd, 1.5 miles from the Visitor Center.",
+          "Stop location (1.5 miles from Visitor Center at Mendenhall Loop Rd & Glacier Spur Rd) is a sourced fact; walking pace and bus headway wait are planning estimates.",
       },
       {
         field: "meeting_point",
@@ -1307,13 +1502,13 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
       },
       {
         field: "accessibility",
-        label: "Walking Distance Requirement",
+        label: "Walking Distance & Bus Ramp Profile",
         valueSummary:
-          "Requires active 3.0-mile round-trip walking on the paved Glacier Spur Rd pedestrian path BEFORE any trail hiking at the glacier",
+          "Buses have ADA boarding ramps, but route requires 3.0 miles of round-trip walking on the paved Glacier Spur Rd pathway (plus 0.8 mi round-trip to the Downtown Transit Center) before any glacier trail walking",
         basisType: "sourced_fact",
         citationIds: ["jun-capital-transit", "jun-usfs-mendenhall"],
         verificationNote:
-          "Buses are wheelchair lift-equipped, but the 1.5-mile each-way road gap makes this unsuitable for travelers seeking minimal walking.",
+          "The 1.5-mile each-way gap between the municipal bus stop and the Visitor Center is the governing physical requirement.",
       },
       {
         field: "booking_and_cancellation",
@@ -1333,7 +1528,7 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
     ],
     baseAssumptions: [
       "15 min walk/wait at Downtown Transit Center (4th & Marine Way).",
-      "35 min municipal bus ride + 35 min (1.5-mile) flat paved path walk along Glacier Spur Rd each way.",
+      "35 min municipal bus ride + 35 min (1.5-mile) flat paved path walk along Glacier Spur Rd each way (planning estimate).",
       "90 min at Mendenhall Glacier + 15 min schedule alignment buffer for return bus.",
     ],
     baseUncertainties: [
@@ -1354,7 +1549,7 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
         "$5 USFS Visitor Center building admission (optional; outdoor trails are free)",
       ],
       durationLabel:
-        "4 hr 20 min total (155 min bus + 3-mile walk round-trip + 90 min at glacier + 15 min wait; not double-counted)",
+        "4 hr 20 min planning estimate (245–300 min range: ~155 min bus + 3-mile walk round-trip + ~90 min at glacier + ~15 min wait; transfers separated)",
       meetingArrangements:
         "Downtown Transit Center at 4th Street & Marine Way (exact $2 cash fare per ride)",
       priceBasis:
@@ -1400,15 +1595,31 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
       "Downtown Juneau / South Franklin / Front Street (0–0.5 mi from docks)",
     viatorProductCode: null,
     advertisedDockToDockMinutes: 140,
+    advertisedRangeMinutes: { min: 60, max: 180 },
     checkInLeadMinutes: 0,
     outboundTransferMinutes: 10,
+    outboundTransferRangeMinutes: { min: 5, max: 15 },
     activityDurationMinutes: 120,
     interActivityTransferMinutes: 0,
     returnTransferMinutes: 10,
+    returnTransferRangeMinutes: { min: 5, max: 15 },
     decompositionNote:
-      "Total 140 min (2h 20m) self-paced downtown block comprises 10m walk from Marine Park to Front/Seward St + 120m self-paced cultural/seawalk/tram visit + 10m walk back to dock. No vehicle transfers or check-in lead times are double-counted.",
+      "Planning estimate (140 min / 2h 20m self-paced baseline; 60–180 min flexible range): 10m walk from Marine Park to Front/Seward St (5–15m range) + 120m self-paced cultural/seawalk/tram visit + 10m walk back to dock (5–15m range). No vehicle transfers or check-in lead times are double-counted.",
+    transferAndReturnUncertaintyNote:
+      "Immediate waterfront walk-off (0.2–0.5 miles from downtown berths); ships berthed at AJ Dock or tendering in Gastineau Channel still require the dock shuttle or tender queue included in the dock allowance.",
     operatingMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
     minimumMobility: "step_free_wheelchair",
+    accessibilityDetails: {
+      walkingAndTerrain:
+        "Level paved sidewalks and boardwalks along the CBJ Downtown Seawalk (0.2–0.5 miles from Marine Park) with curb cuts; smooth interior floors and elevator access inside the Walter Soboleff Center.",
+      boardingAndTransfer:
+        "No vehicle boarding required from downtown walk-off berths (AS/CTF/Franklin); AJ Dock and tendering ships depend on cruise-line shuttle/tender boarding.",
+      wheelchairAndMobilitySupport:
+        "Full step-free wheelchair and walker access along the Downtown Seawalk, inside the Walter Soboleff Center, and into the Goldbelt Tram cabins and upper viewing platform (upper mountain dirt trails have steps/roots).",
+      confirmationStatus: "confirmed_public_infrastructure",
+      confirmationNote:
+        "Step-free public seawalk and Walter Soboleff Center elevator access are confirmed year-round infrastructure; if your ship tenders or berths at AJ Dock, confirm gangway/shuttle lift assistance with your cruise line.",
+    },
     weatherCeilingSensitive: false,
     dependsOnCitationIds: ["jun-shi-heritage", "jun-cbj-harbors"],
     inputAudit: [
@@ -1426,21 +1637,21 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
         field: "activity_duration",
         label: "Self-Paced Activity Duration",
         valueSummary:
-          "120 min flexible on-site time (140 min including 10m walk each way from downtown berths)",
+          "120 min flexible on-site planning baseline (60–180 min self-paced range; 140 min baseline including 10m walk each way from downtown berths)",
         basisType: "dcc_estimate",
         citationIds: ["jun-shi-heritage", "jun-cbj-harbors"],
         verificationNote:
-          "Self-paced; visitors can return to downtown docks in 10 minutes at any point.",
+          "Self-paced; visitors can return to downtown docks in 5–15 minutes at any point.",
       },
       {
         field: "transfers",
         label: "Pedestrian Access",
         valueSummary:
-          "10 min level walk each way (0.2 mi from Marine Park to 105 S. Seward St; AJ Dock/Tender guests add dock shuttle/tender time)",
-        basisType: "sourced_fact",
+          "5–15 min level walk each way (10 min baseline for 0.2 mi from Marine Park to 105 S. Seward St; AJ Dock/Tender guests add dock shuttle/tender time)",
+        basisType: "dcc_estimate",
         citationIds: ["jun-cbj-harbors", "jun-shi-heritage"],
         verificationNote:
-          "Located in the immediate downtown waterfront core.",
+          "Located in the immediate downtown waterfront core; walk time is a planning estimate based on 0.2–0.5 mile dock distance.",
       },
       {
         field: "meeting_point",
@@ -1473,13 +1684,13 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
       },
       {
         field: "accessibility",
-        label: "Step-Free Accessibility",
+        label: "Walking, Surface & Step-Free Access",
         valueSummary:
-          "Step-free wheelchair accessible along the paved CBJ Downtown Seawalk and inside the Walter Soboleff Center (elevator & level galleries)",
+          "Step-free paved access along the CBJ Downtown Seawalk and inside the Walter Soboleff Center (elevator & level galleries); no tour bus boarding required from downtown berths",
         basisType: "sourced_fact",
         citationIds: ["jun-shi-heritage", "jun-cbj-harbors"],
         verificationNote:
-          "Best step-free option in Juneau with zero highway transfer risk.",
+          "Step-free downtown corridor with zero highway transfer risk.",
       },
       {
         field: "booking_and_cancellation",
@@ -1498,11 +1709,12 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
       "Wait to buy Goldbelt Tram tickets at the base kiosk only after you see with your own eyes that Mount Roberts (1,800 ft) is below the cloud deck.",
     ],
     baseAssumptions: [
-      "10 min walk between downtown seawalk/Marine Park and Front & Seward Street.",
+      "10 min walk baseline (5–15 min range) between downtown seawalk/Marine Park and Front & Seward Street.",
       "120 min self-paced visit (Walter Soboleff Center, Overstreet Park whale statue seawalk, or walk-up Goldbelt Tram).",
       "10 min walk back to ship dock.",
     ],
     baseUncertainties: [
+      "Exact museum gallery hours vary between summer cruise days and winter off-season schedules — confirm current opening hours with Sealaska Heritage Institute.",
       "Mount Roberts (1,800 ft) can be socked in by low marine stratus clouds even when downtown streets are dry — do not pre-pay non-refundable tram tickets before checking the upper terminal visibility.",
     ],
     bookingTransparency: {
@@ -1519,7 +1731,7 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
         "Optional walk-up Goldbelt Tram ticket (~$55–$60 adult, best purchased only if visibility is clear)",
       ],
       durationLabel:
-        "2 hr 20 min self-paced (120m visit + 20m round-trip walk; return to dock in 10 minutes at any time)",
+        "2 hr 20 min self-paced planning baseline (60–180 min flexible range: ~120m visit + ~10–30m round-trip walk; return to dock in 5–15 minutes at any time)",
       meetingArrangements:
         "Self-guided walk from Marine Park / South Franklin Street to 105 S. Seward Street",
       priceBasis:
@@ -1692,7 +1904,7 @@ export const DEFAULT_JUNEAU_SCENARIO_INPUT: JuneauPortDayScenarioInput = {
   arrivalDock: "downtown_walkoff",
   goalMode: "any_single_or_combo",
   travelMonth: 7,
-  travelDate: "2026-07-15",
+  travelDate: null,
   overnightPortCall: false,
   partySize: 2,
   mobilityLevel: "unspecified",
@@ -1819,7 +2031,7 @@ export function parseJuneauScenarioFromQuery(
     : "unknown_or_forecast_only";
 
   const dateRaw = getVal("date");
-  const travelDate = dateRaw ? dateRaw.trim() : undefined;
+  const travelDate = dateRaw && dateRaw.trim() !== "" ? dateRaw.trim() : null;
 
   const monthNum = Number(getVal("month"));
   let travelMonth =
@@ -1917,10 +2129,12 @@ export function evaluateJuneauPortDayScenario(
   const defaultBuffer = arrivalDock === "independent_air_ferry" ? 0 : 90;
 
   let resolvedTravelDate: string | null =
-    input.travelDate !== undefined ? input.travelDate : "2026-07-15";
+    input.travelDate !== undefined && input.travelDate !== null
+      ? input.travelDate.trim()
+      : null;
   let derivedMonthFromDate: number | null = null;
 
-  if (resolvedTravelDate !== null && resolvedTravelDate.trim() !== "") {
+  if (resolvedTravelDate !== null && resolvedTravelDate !== "") {
     const dateCheck = validateStrictIsoDate(resolvedTravelDate);
     if (!dateCheck.valid) {
       inputValidationErrors.push(dateCheck.reason);
@@ -1930,6 +2144,10 @@ export function evaluateJuneauPortDayScenario(
   } else {
     resolvedTravelDate = null;
   }
+
+  const dateProvidedByTraveler =
+    resolvedTravelDate !== null && derivedMonthFromDate !== null;
+  const isExampleScenario = !dateProvidedByTraveler;
 
   const hasValidMonthInput =
     typeof input.travelMonth === "number" &&
@@ -1944,9 +2162,8 @@ export function evaluateJuneauPortDayScenario(
     (!hasValidMonthInput || input.travelMonth === 7)
   ) {
     resolvedTravelMonth = derivedMonthFromDate;
-  } else if (hasValidMonthInput && input.travelMonth !== 7 && derivedMonthFromDate === 7) {
+  } else if (hasValidMonthInput && input.travelMonth !== 7 && derivedMonthFromDate === null) {
     resolvedTravelMonth = input.travelMonth!;
-    resolvedTravelDate = `2026-${String(resolvedTravelMonth).padStart(2, "0")}-15`;
   } else if (derivedMonthFromDate !== null) {
     resolvedTravelMonth = derivedMonthFromDate;
   } else if (hasValidMonthInput) {
@@ -2045,6 +2262,10 @@ export function evaluateJuneauPortDayScenario(
   const definitionsToEvaluate =
     options.optionDefinitionsOverride || JUNEAU_OPTION_DEFINITIONS;
 
+  const exampleScenarioNotice = isExampleScenario
+    ? "Example Scenario (Peak-Summer 08:00–16:30 Baseline): Enter your actual cruise date and ship hours above to get a personalized port-day verdict."
+    : null;
+
   const evaluatedOptions: JuneauEvaluatedDecisionOption[] =
     definitionsToEvaluate.map((def) => {
       const disembarkationAndDockMinutes = dockSpec.disembarkMinutes;
@@ -2081,18 +2302,30 @@ export function evaluateJuneauPortDayScenario(
         def.interActivityTransferMinutes +
         def.returnTransferMinutes +
         returnDockQueueMinutes;
+      const minTransferDelta =
+        (def.outboundTransferRangeMinutes.min - def.outboundTransferMinutes) +
+        (def.returnTransferRangeMinutes.min - def.returnTransferMinutes);
+      const maxTransferDelta =
+        (def.outboundTransferRangeMinutes.max - def.outboundTransferMinutes) +
+        (def.returnTransferRangeMinutes.max - def.returnTransferMinutes);
+      const estimatedBackAtDockRangeText = `${formatMinutesAsClock(estimatedBackAtDockMinutes + minTransferDelta)}–${formatMinutesAsClock(estimatedBackAtDockMinutes + maxTransferDelta)} ${timezoneResolution.tzAbbreviation}`;
       const targetAllAboardBufferCutoffMinutes =
         allAboardMinutes - requiredReturnBufferMinutes;
 
       const durationAudit: JuneauDurationAudit = {
         advertisedDockToDockMinutes: def.advertisedDockToDockMinutes,
+        advertisedRangeMinutes: def.advertisedRangeMinutes,
         onSiteOrOnWaterActivityMinutes: def.activityDurationMinutes,
         checkInLeadMinutes: def.checkInLeadMinutes,
         outboundTransferMinutes: def.outboundTransferMinutes,
+        outboundTransferRangeMinutes: def.outboundTransferRangeMinutes,
         interActivityTransferMinutes: def.interActivityTransferMinutes,
         returnTransferMinutes: def.returnTransferMinutes,
+        returnTransferRangeMinutes: def.returnTransferRangeMinutes,
         doubleCountingStatus: "verified_not_double_counted",
+        decompositionLabel: "Planning estimate (transfers and activity separated)",
         decompositionNote: def.decompositionNote,
+        transferAndReturnUncertaintyNote: def.transferAndReturnUncertaintyNote,
       };
 
       const timing: JuneauTimingBreakdown = {
@@ -2124,6 +2357,7 @@ export function evaluateJuneauPortDayScenario(
         estimatedBackAtDockTime: formatMinutesAsClock(
           estimatedBackAtDockMinutes,
         ),
+        estimatedBackAtDockRangeText,
         targetAllAboardBufferCutoffTime: formatMinutesAsClock(
           targetAllAboardBufferCutoffMinutes,
         ),
@@ -2149,40 +2383,48 @@ export function evaluateJuneauPortDayScenario(
         );
       }
 
+      const dateDisplayLabel = dateProvidedByTraveler
+        ? resolvedTravelDate!
+        : `example month ${normalizedInput.travelMonth}`;
+
       if (!def.operatingMonths.includes(normalizedInput.travelMonth)) {
         hardConstraintViolations.push(
-          `Seasonal closure: this option operates in months [${def.operatingMonths.join(", ")}], while your selected date/month is month ${normalizedInput.travelMonth} (${effectiveDateForTz}).`,
+          `Seasonal closure: this option operates in months [${def.operatingMonths.join(", ")}], while your selected date/month is month ${normalizedInput.travelMonth} (${dateDisplayLabel}).`,
         );
       }
 
+      let mobilityMismatch = false;
       if (normalizedInput.mobilityLevel !== "unspecified") {
         const travelerMobilityRank = MOBILITY_RANK[normalizedInput.mobilityLevel];
         const optionRequiredRank = MOBILITY_RANK[def.minimumMobility];
         if (travelerMobilityRank < optionRequiredRank) {
-          hardConstraintViolations.push(
-            `Does not meet supplied mobility constraint (${normalizedInput.mobilityLevel}): requires at least '${def.minimumMobility}'.`,
-          );
+          mobilityMismatch = true;
+          if (normalizedInput.mobilityLevel === "step_free_wheelchair") {
+            hardConstraintViolations.push(
+              `Does not match your selected step-free / wheelchair accessibility preference: ${def.accessibilityDetails.walkingAndTerrain} (${def.accessibilityDetails.boardingAndTransfer}).`,
+            );
+          } else {
+            hardConstraintViolations.push(
+              `Exceeds your selected walking distance preference (up to 1 mile): ${def.accessibilityDetails.walkingAndTerrain}`,
+            );
+          }
         }
       }
 
-      if (
+      const excludedByPublicFreeFilter =
         normalizedInput.goalMode === "public_or_free_only" &&
         def.category !== "public_free_or_municipal" &&
-        def.optionId !== "jun-opt-usfs-mendenhall-shuttle"
-      ) {
+        def.optionId !== "jun-opt-usfs-mendenhall-shuttle";
+
+      if (excludedByPublicFreeFilter) {
         hardConstraintViolations.push(
           `Excluded by your 'Public / Free / Independent Only' filter (this option is a commercial ${def.category.replace(/_/g, " ")}).`,
         );
       }
 
-      if (
+      const isSingleActivityAlternativeForComboGoal =
         normalizedInput.goalMode === "two_activity_combo" &&
-        def.category !== "two_activity_combo"
-      ) {
-        hardConstraintViolations.push(
-          `Single-activity option (your current filter requests two-activity combinations; shown below for comparison).`,
-        );
-      }
+        def.category !== "two_activity_combo";
 
       if (
         normalizedInput.budgetMaxPerPersonUsd !== null &&
@@ -2229,6 +2471,8 @@ export function evaluateJuneauPortDayScenario(
         evidenceQualificationNote = `Evidence qualification: supporting citation(s) [${staleCitations.map((c) => c.citationId).join(", ")}] are stale and due for re-verification.`;
       }
 
+      // Keep time fit distinct from dock uncertainty, weather assumptions, and two-activity preference:
+      // Unknown dock or unavailable weather feed must NOT become 'tight_buffer' when substantial time (netMarginMinutes >= 45) remains.
       let fitStatus: JuneauEvaluatedOptionFit;
       if (
         expiredOrConflictedCitations.length > 0 ||
@@ -2237,46 +2481,281 @@ export function evaluateJuneauPortDayScenario(
         fitStatus = "withdrawn_or_qualified_evidence";
       } else if (hardConstraintViolations.length > 0) {
         fitStatus = "does_not_fit";
-      } else if (
-        netMarginMinutes < 45 ||
-        normalizedInput.arrivalDock === "unknown_dock" ||
-        (normalizedInput.mobilityLevel === "unspecified" &&
-          def.minimumMobility === "active_walking_3mi") ||
-        (def.weatherCeilingSensitive &&
-          (normalizedInput.weatherCondition === "low_ceiling_rain_fog" ||
-            normalizedInput.weatherCondition ===
-              "provider_telemetry_unavailable"))
-      ) {
+      } else if (netMarginMinutes < 45) {
         fitStatus = "tight_buffer";
       } else {
         fitStatus = "fits_comfortably";
       }
 
+      const statusDimensions: JuneauOptionStatusDimensions = {
+        timeFit:
+          inputValidationErrors.length > 0
+            ? {
+                status: "invalid_port_window",
+                summary:
+                  "Port window cannot be calculated until arrival/all-aboard input errors are resolved.",
+              }
+            : netMarginMinutes < 0
+              ? {
+                  status: "does_not_fit_time",
+                  summary: `Exceeds your available time budget by ${Math.abs(netMarginMinutes)} min.`,
+                }
+              : netMarginMinutes < 45
+                ? {
+                    status: "tight_buffer",
+                    summary: `Fits your time budget, but return slack is tight (+${netMarginMinutes} min beyond your ${requiredReturnBufferMinutes} min buffer).`,
+                  }
+                : {
+                    status: "fits_comfortably",
+                    summary: `Fits your time budget (+${netMarginMinutes} min slack beyond your ${requiredReturnBufferMinutes} min return buffer).`,
+                  },
+        operatingSchedule: missingScheduleSet.has(def.optionId)
+          ? {
+              status: "missing_schedule",
+              summary:
+                "Operating schedule is missing or unconfirmed; no default departure is assumed.",
+            }
+          : !def.operatingMonths.includes(normalizedInput.travelMonth)
+            ? {
+                status: "out_of_season",
+                summary: `Closed for the season in month ${normalizedInput.travelMonth}.`,
+              }
+            : isExampleScenario
+              ? {
+                  status: "example_date_unconfirmed",
+                  summary:
+                    "Departure schedule still needs confirmation for your actual sailing date.",
+                }
+              : {
+                  status: "in_season_unconfirmed_departure",
+                  summary: "Departure schedule still needs confirmation.",
+                },
+        transferAndDock:
+          normalizedInput.arrivalDock === "unknown_dock"
+            ? {
+                status: "unknown_dock_estimate",
+                summary:
+                  "Dock unknown; transfer allowance is an estimate (using conservative 50m/40m tender/shuttle envelope).",
+              }
+            : normalizedInput.arrivalDock === "independent_air_ferry"
+              ? {
+                  status: "independent_no_ship_dock",
+                  summary: `Transfer and return times are planning estimates (${def.outboundTransferRangeMinutes.min}–${def.outboundTransferRangeMinutes.max} min outbound).`,
+                }
+              : {
+                  status: "known_dock_estimate",
+                  summary: `Dock and corridor transfers are planning estimates (${def.outboundTransferRangeMinutes.min}–${def.outboundTransferRangeMinutes.max} min outbound; est. back at dock ${estimatedBackAtDockRangeText}).`,
+                },
+        weatherAndDispatch:
+          normalizedInput.weatherCondition === "provider_telemetry_unavailable"
+            ? {
+                status: "weather_feed_unavailable",
+                summary:
+                  "Upstream weather feed unavailable; check official forecast and operator dispatch directly.",
+              }
+            : normalizedInput.weatherCondition === "low_ceiling_rain_fog"
+              ? def.weatherCeilingSensitive
+                ? {
+                    status: "traveler_low_ceiling_assumption",
+                    summary:
+                      "Traveler scenario assumption: low cloud ceiling / fog (high helicopter hold/cancellation risk; only the licensed operator cancels flights).",
+                  }
+                : {
+                    status: "normal_dispatch_uncertainty",
+                    summary:
+                      "Traveler scenario assumption: low cloud ceiling / rain (surface option typically operates in rain/fog).",
+                  }
+              : normalizedInput.weatherCondition === "clear_high_ceiling"
+                ? {
+                    status: "traveler_clear_assumption",
+                    summary:
+                      "Traveler scenario assumption: clear skies (does not confirm live weather or operator dispatch).",
+                  }
+                : {
+                    status: "normal_dispatch_uncertainty",
+                    summary: def.weatherCeilingSensitive
+                      ? "FAA Part 135 flight dispatch depends on live icefield ceiling and visibility on the morning of travel."
+                      : "Surface marine/valley operation; confirm day-of operator status.",
+                  },
+        evidenceConfidence:
+          expiredOrConflictedCitations.length > 0 ||
+          missingScheduleSet.has(def.optionId)
+            ? {
+                status: "withdrawn_or_conflicted",
+                summary:
+                  evidenceQualificationNote ||
+                  "Supporting evidence is expired or conflicted.",
+              }
+            : staleCitations.length > 0
+              ? {
+                  status: "stale_qualified",
+                  summary:
+                    evidenceQualificationNote ||
+                    "Supporting evidence is stale and due for re-verification.",
+                }
+              : {
+                  status: "current",
+                  summary: "Supporting source records are current.",
+                },
+        accessibility: mobilityMismatch
+          ? {
+              status: "does_not_match_mobility",
+              summary: `Does not match your selected accessibility/walking preference: ${def.accessibilityDetails.walkingAndTerrain}`,
+            }
+          : normalizedInput.mobilityLevel === "unspecified" &&
+              def.minimumMobility === "active_walking_3mi"
+            ? {
+                status: "walking_requirement_unconfirmed",
+                summary:
+                  "Requires 3.0 miles of round-trip walking on the paved Glacier Spur Rd pathway between the bus stop and Visitor Center.",
+              }
+            : def.accessibilityDetails.confirmationStatus ===
+                "operator_and_departure_confirmation_required"
+              ? {
+                  status: "operator_confirmation_required",
+                  summary: def.accessibilityDetails.confirmationNote,
+                }
+              : {
+                  status: "confirmed_or_compatible",
+                  summary: def.accessibilityDetails.confirmationNote,
+                },
+        preferenceMatch: excludedByPublicFreeFilter
+          ? {
+              status: "excluded_by_preference",
+              summary:
+                "Excluded by your 'Public / Free / Independent Only' filter.",
+            }
+          : isSingleActivityAlternativeForComboGoal
+            ? {
+                status: "single_activity_alternative",
+                summary:
+                  "Single-activity alternative (does not combine two activities, but remains visible because it fits your time budget).",
+              }
+            : {
+                status: "matches_preference",
+                summary: "Matches your selected activity filter.",
+              },
+      };
+
+      const plainLanguageStatuses: string[] = [];
+      if (statusDimensions.timeFit.status === "fits_comfortably") {
+        plainLanguageStatuses.push("Fits your time budget.");
+      } else if (statusDimensions.timeFit.status === "tight_buffer") {
+        plainLanguageStatuses.push(
+          `Fits your time budget (tight +${netMarginMinutes} min slack beyond return buffer).`,
+        );
+      } else if (statusDimensions.timeFit.status === "does_not_fit_time") {
+        plainLanguageStatuses.push(
+          `Does not fit your time budget (short by ${Math.abs(netMarginMinutes)} min).`,
+        );
+      } else {
+        plainLanguageStatuses.push(statusDimensions.timeFit.summary);
+      }
+
+      if (statusDimensions.operatingSchedule.status === "missing_schedule") {
+        plainLanguageStatuses.push(
+          "Operating schedule is missing or unconfirmed.",
+        );
+      } else if (
+        statusDimensions.operatingSchedule.status === "out_of_season"
+      ) {
+        plainLanguageStatuses.push(
+          `Closed for the season in month ${normalizedInput.travelMonth}.`,
+        );
+      } else {
+        plainLanguageStatuses.push("Departure schedule still needs confirmation.");
+      }
+
+      if (normalizedInput.arrivalDock === "unknown_dock") {
+        plainLanguageStatuses.push(
+          "Dock unknown; transfer allowance is an estimate.",
+        );
+      } else if (normalizedInput.arrivalDock !== "independent_air_ferry") {
+        plainLanguageStatuses.push(
+          `Transfer and return times are estimates (est. back at dock ${estimatedBackAtDockRangeText}).`,
+        );
+      }
+
+      if (isSingleActivityAlternativeForComboGoal && netMarginMinutes >= 0) {
+        plainLanguageStatuses.push(
+          "Single-activity alternative (fits your time window if you skip a two-activity combo).",
+        );
+      }
+
+      if (
+        normalizedInput.weatherCondition === "provider_telemetry_unavailable"
+      ) {
+        plainLanguageStatuses.push(
+          "Weather feed unavailable; check official forecast and operator dispatch directly.",
+        );
+      } else if (
+        normalizedInput.weatherCondition === "low_ceiling_rain_fog" &&
+        def.weatherCeilingSensitive
+      ) {
+        plainLanguageStatuses.push(
+          "Scenario assumption: low cloud ceiling (high helicopter weather-hold risk; only the operator cancels flights).",
+        );
+      }
+
+      if (mobilityMismatch) {
+        plainLanguageStatuses.push(
+          "Walking or boarding requirements exceed your selected accessibility preference.",
+        );
+      } else if (
+        def.accessibilityDetails.confirmationStatus ===
+        "operator_and_departure_confirmation_required"
+      ) {
+        plainLanguageStatuses.push(
+          "Accessibility and boarding assistance require operator confirmation.",
+        );
+      } else if (def.minimumMobility === "active_walking_3mi") {
+        plainLanguageStatuses.push(
+          "Requires 3.0-mile round-trip walk between the bus stop and Visitor Center.",
+        );
+      }
+
       const fitBadgeLabel =
         fitStatus === "fits_comfortably"
-          ? `Fits Time Budget (+${netMarginMinutes} min slack)`
+          ? isSingleActivityAlternativeForComboGoal
+            ? `Fits Time Budget — Single-Activity Alternative (+${netMarginMinutes} min slack)`
+            : `Fits Time Budget (+${netMarginMinutes} min slack)`
           : fitStatus === "tight_buffer"
-            ? `Conditional / Tight (+${netMarginMinutes} min slack)`
+            ? `Tight Time Buffer (+${netMarginMinutes} min slack)`
             : fitStatus === "withdrawn_or_qualified_evidence"
               ? "Evidence Expired / Conflicted — Verify Directly"
               : "Does Not Fit Current Constraints";
 
       const assumptionsUsed = [
         `${dockSpec.assumptionText} [Basis: ${dockSpec.basisType.replace(/_/g, " ")}]`,
-        `Date & Timezone: ${effectiveDateForTz} in ${timezoneResolution.timeZone} (${timezoneResolution.tzAbbreviation} UTC${timezoneResolution.utcOffsetString}).${timezoneResolution.dstTransitionNote ? ` ${timezoneResolution.dstTransitionNote}` : ""}`,
+        isExampleScenario
+          ? `Example Scenario Date & Timezone: Using peak-summer reference date ${effectiveDateForTz} in ${timezoneResolution.timeZone} (${timezoneResolution.tzAbbreviation} UTC${timezoneResolution.utcOffsetString}) because no trip date was entered yet.`
+          : `Date & Timezone: ${effectiveDateForTz} in ${timezoneResolution.timeZone} (${timezoneResolution.tzAbbreviation} UTC${timezoneResolution.utcOffsetString}).${timezoneResolution.dstTransitionNote ? ` ${timezoneResolution.dstTransitionNote}` : ""}`,
         `Traveler assumption — return buffer before all-aboard: ${requiredReturnBufferMinutes} minutes.`,
+        ...(normalizedInput.weatherCondition === "clear_high_ceiling" ||
+        normalizedInput.weatherCondition === "low_ceiling_rain_fog"
+          ? [
+              `Traveler weather assumption (${normalizedInput.weatherCondition.replace(/_/g, " ")}): Treated strictly as a planning scenario assumption, not a live weather observation or operator cancellation notice.`,
+            ]
+          : []),
         ...def.baseAssumptions,
       ];
 
       const uncertainOrNeedsConfirmation = [...def.baseUncertainties];
       if (normalizedInput.arrivalDock === "unknown_dock") {
         uncertainOrNeedsConfirmation.unshift(
-          "Cruise berth is unconfirmed: DCC applied the conservative 50 min outbound / 40 min return tender/shuttle allowance rather than assuming a fast downtown walk-off. Confirm your ship's assigned berth on the CBJ Docks & Harbors schedule.",
+          "Dock unknown; transfer allowance is an estimate: DCC applied the conservative 50 min outbound / 40 min return tender/shuttle allowance rather than assuming a fast downtown walk-off. Confirm your ship's assigned berth on the CBJ Docks & Harbors schedule.",
         );
       }
       if (normalizedInput.mobilityLevel === "unspecified") {
         uncertainOrNeedsConfirmation.push(
-          `Mobility preference was not specified: DCC did not assume step-free or long-distance walking ability. This option requires '${def.minimumMobility.replace(/_/g, " ")}'.`,
+          `Walking & boarding profile: ${def.accessibilityDetails.walkingAndTerrain} ${def.accessibilityDetails.confirmationNote}`,
+        );
+      } else if (
+        def.accessibilityDetails.confirmationStatus ===
+        "operator_and_departure_confirmation_required"
+      ) {
+        uncertainOrNeedsConfirmation.push(
+          def.accessibilityDetails.confirmationNote,
         );
       }
       if (normalizedInput.weatherCondition === "provider_telemetry_unavailable") {
@@ -2288,11 +2767,11 @@ export function evaluateJuneauPortDayScenario(
         normalizedInput.weatherCondition === "low_ceiling_rain_fog"
       ) {
         uncertainOrNeedsConfirmation.push(
-          `Low ceiling / rain / fog selected: FAA Part 135 helicopter operators frequently hold or cancel icefield landings under low ceilings or flat light. Have a surface backup (Auke Bay whale watching or Mendenhall shuttle) ready, but only the licensed operator can cancel a flight.`,
+          `Scenario assumption (low ceiling / rain / fog): FAA Part 135 helicopter operators frequently hold or cancel icefield landings under low ceilings or flat light. Have a surface backup (Auke Bay whale watching or Mendenhall shuttle) ready — traveler weather inputs do not confirm cancellation; only the licensed operator can cancel a flight.`,
         );
       } else if (def.weatherCeilingSensitive) {
         uncertainOrNeedsConfirmation.push(
-          `Surface weather or forecasts do not establish FAA Part 135 flight dispatch; confirm morning flight status directly with the helicopter operator.`,
+          `Surface weather or scenario assumptions do not establish FAA Part 135 flight dispatch; confirm morning flight status directly with the helicopter operator.`,
         );
       }
       if (evidenceQualificationNote) {
@@ -2372,8 +2851,10 @@ export function evaluateJuneauPortDayScenario(
           : fitStatus === "does_not_fit"
             ? `${def.shortLabel}: Does not fit current constraints (${hardConstraintViolations[0]}).`
             : fitStatus === "tight_buffer"
-              ? `${def.shortLabel}: Fits the time budget with +${netMarginMinutes} min slack beyond your ${requiredReturnBufferMinutes} min buffer, but requires confirming conditional factors (berth, ceiling, or tight transfer slack).`
-              : `${def.shortLabel}: Fits the time budget comfortably with +${netMarginMinutes} min slack beyond your ${requiredReturnBufferMinutes} min return buffer (estimated back at dock by ${timing.estimatedBackAtDockTime} ${timezoneResolution.tzAbbreviation}).`;
+              ? `${def.shortLabel}: Fits your time budget with a tight +${netMarginMinutes} min margin beyond your ${requiredReturnBufferMinutes} min return buffer (est. back at dock ${estimatedBackAtDockRangeText}).`
+              : isSingleActivityAlternativeForComboGoal
+                ? `${def.shortLabel}: Fits your time budget (+${netMarginMinutes} min slack; est. back at dock ${estimatedBackAtDockRangeText}) — shown as a single-activity alternative.`
+                : `${def.shortLabel}: Fits your time budget (+${netMarginMinutes} min slack; est. back at dock ${estimatedBackAtDockRangeText}). Departure schedule still needs confirmation.`;
 
       const fitTierScore =
         fitStatus === "fits_comfortably"
@@ -2390,13 +2871,30 @@ export function evaluateJuneauPortDayScenario(
         confirmedOperationGuaranteed: false as const,
         ticketAvailabilityGuaranteed: false as const,
         accessibilityConfirmedForTraveler:
+          def.accessibilityDetails.confirmationStatus ===
+            "confirmed_public_infrastructure" &&
           normalizedInput.mobilityLevel !== "unspecified" &&
           MOBILITY_RANK[normalizedInput.mobilityLevel] >=
             MOBILITY_RANK[def.minimumMobility],
         guaranteedShipReturn: false as const,
         separationStatement:
-          "Fitting the time budget means the activity, transfers, check-in, and return buffer fit within your supplied hours. It does NOT confirm live seat availability, weather/operator dispatch, individual accessibility, or a guaranteed return to the ship.",
+          "Fitting the time budget means the activity, estimated transfers, check-in, and return buffer fit within your supplied hours. It does NOT confirm live seat availability, weather/operator dispatch, individual accessibility, or a guaranteed return to the ship.",
       };
+
+      const resolvedBookingTransparency: JuneauOptionBookingTransparency =
+        dateProvidedByTraveler && resolvedTravelDate
+          ? {
+              ...def.bookingTransparency,
+              channels: def.bookingTransparency.channels.map((ch) =>
+                ch.url === "https://juneauflightdeck.com/helicopter"
+                  ? {
+                      ...ch,
+                      url: `https://juneauflightdeck.com/helicopter?date=${encodeURIComponent(resolvedTravelDate)}`,
+                    }
+                  : ch,
+              ),
+            }
+          : def.bookingTransparency;
 
       return {
         optionId: def.optionId,
@@ -2407,6 +2905,9 @@ export function evaluateJuneauPortDayScenario(
         fitStatus,
         fitBadgeLabel,
         conciseVerdict,
+        plainLanguageStatuses,
+        statusDimensions,
+        accessibilityDetails: def.accessibilityDetails,
         timing,
         inputAudit: def.inputAudit,
         operationalGuaranteeSeparation,
@@ -2419,18 +2920,18 @@ export function evaluateJuneauPortDayScenario(
         supportingCitations,
         evidenceQualificationNote,
         recentReviewSummary,
-        bookingTransparency: def.bookingTransparency,
+        bookingTransparency: resolvedBookingTransparency,
         rankingAudit: {
           fitTierScore,
           netMarginMinutes,
           commercialWeight: 0,
           rankingExplanation:
-            "Ranked strictly by constraint fit tier and time slack margin (affiliate status, ownership, and commission rates are ignored).",
+            "Ranked strictly by constraint fit tier, preference match, and time slack margin (affiliate status, ownership, and commission rates are ignored).",
         },
       };
     });
 
-  // Sort strictly by fitTierScore DESC, goal alignment, and netMarginMinutes DESC (never by commercial status)
+  // Sort strictly by fitTierScore DESC, preference match, weather/walking caution, and netMarginMinutes DESC (never by commercial status)
   evaluatedOptions.sort((a, b) => {
     if (b.rankingAudit.fitTierScore !== a.rankingAudit.fitTierScore) {
       return b.rankingAudit.fitTierScore - a.rankingAudit.fitTierScore;
@@ -2440,10 +2941,41 @@ export function evaluateJuneauPortDayScenario(
       const bCombo = b.category === "two_activity_combo" ? 1 : 0;
       if (bCombo !== aCombo) return bCombo - aCombo;
     }
+    if (normalizedInput.goalMode === "single_activity_focus") {
+      const aSingle = a.category !== "two_activity_combo" ? 1 : 0;
+      const bSingle = b.category !== "two_activity_combo" ? 1 : 0;
+      if (bSingle !== aSingle) return bSingle - aSingle;
+    }
     if (normalizedInput.goalMode === "public_or_free_only") {
       const aFree = a.category === "public_free_or_municipal" ? 1 : 0;
       const bFree = b.category === "public_free_or_municipal" ? 1 : 0;
       if (bFree !== aFree) return bFree - aFree;
+    }
+    const aWeatherCaution =
+      a.statusDimensions.weatherAndDispatch.status ===
+      "traveler_low_ceiling_assumption"
+        ? 1
+        : 0;
+    const bWeatherCaution =
+      b.statusDimensions.weatherAndDispatch.status ===
+      "traveler_low_ceiling_assumption"
+        ? 1
+        : 0;
+    if (aWeatherCaution !== bWeatherCaution) {
+      return aWeatherCaution - bWeatherCaution;
+    }
+    const aWalkCaution =
+      a.statusDimensions.accessibility.status ===
+      "walking_requirement_unconfirmed"
+        ? 1
+        : 0;
+    const bWalkCaution =
+      b.statusDimensions.accessibility.status ===
+      "walking_requirement_unconfirmed"
+        ? 1
+        : 0;
+    if (aWalkCaution !== bWalkCaution) {
+      return aWalkCaution - bWalkCaution;
     }
     return b.rankingAudit.netMarginMinutes - a.rankingAudit.netMarginMinutes;
   });
@@ -2456,6 +2988,11 @@ export function evaluateJuneauPortDayScenario(
       o.category === "two_activity_combo" &&
       (o.fitStatus === "fits_comfortably" || o.fitStatus === "tight_buffer"),
   );
+  const singleAlternatives = evaluatedOptions.filter(
+    (o) =>
+      o.category !== "two_activity_combo" &&
+      (o.fitStatus === "fits_comfortably" || o.fitStatus === "tight_buffer"),
+  );
 
   const portHoursLabel = (totalPortWindowMinutes / 60).toFixed(1);
   let conciseBottomLine: string;
@@ -2463,7 +3000,10 @@ export function evaluateJuneauPortDayScenario(
   if (inputValidationErrors.length > 0) {
     conciseBottomLine = `Cannot confirm port-day fit until input errors are corrected: ${inputValidationErrors.join(" ")}`;
   } else {
-    conciseBottomLine = `For a ${portHoursLabel}-hour Juneau call on ${effectiveDateForTz} (${formatMinutesAsClock(arrivalMinutes)}–${formatMinutesAsClock(allAboardMinutes)} ${timezoneResolution.tzAbbreviation}, UTC${timezoneResolution.utcOffsetString}${overnightPortCall ? ", overnight call" : ""}) at ${dockSpec.label} with a ${normalizedInput.returnBufferMinutes}-minute return buffer: `;
+    const scenarioPrefix = isExampleScenario
+      ? `Example Scenario (Peak-Summer ${portHoursLabel}-hr Call, ${formatMinutesAsClock(arrivalMinutes)}–${formatMinutesAsClock(allAboardMinutes)} ${timezoneResolution.tzAbbreviation} at ${dockSpec.label} — enter your trip date above for a personalized verdict): `
+      : `For your ${portHoursLabel}-hour Juneau call on ${effectiveDateForTz} (${formatMinutesAsClock(arrivalMinutes)}–${formatMinutesAsClock(allAboardMinutes)} ${timezoneResolution.tzAbbreviation}, UTC${timezoneResolution.utcOffsetString}${overnightPortCall ? ", overnight call" : ""}) at ${dockSpec.label} with a ${normalizedInput.returnBufferMinutes}-minute return buffer: `;
+    conciseBottomLine = scenarioPrefix;
     if (dependencyReport.hasWithdrawnOrConflictedClaims) {
       const affectedLabels = evaluatedOptions
         .filter((o) => o.fitStatus === "withdrawn_or_qualified_evidence")
@@ -2476,18 +3016,23 @@ export function evaluateJuneauPortDayScenario(
         .map((o) => o.shortLabel);
       conciseBottomLine += `Supporting evidence for [${affectedLabels.join(", ")}] is currently expired, conflicted, or unavailable and is qualified below, while ${unaffectedFitting.length} unaffected option(s) (${unaffectedFitting.join(", ")}) remain supported.`;
     } else if (comboFits.length > 0) {
-      conciseBottomLine += `You have enough port time for either a single primary excursion OR a linked two-activity combination (${comboFits.map((c) => c.shortLabel).join("; ")}) provided both activities connect directly in the Mendenhall/Auke Bay valley without backtracking downtown. Fitting the time budget does not guarantee ticket availability or weather dispatch.`;
+      conciseBottomLine += `Your time budget fits either a single excursion OR a linked two-activity valley combination (${comboFits.map((c) => c.shortLabel).join("; ")}). Departure schedules, seat availability, and weather dispatch still require confirmation.`;
     } else if (fittingCount > 0) {
-      conciseBottomLine += `Two-activity combinations exceed your safe time window once dock transfers and the ${normalizedInput.returnBufferMinutes}-minute all-aboard buffer are applied. Choose ONE primary activity (${evaluatedOptions.filter((o) => o.fitStatus === "fits_comfortably" || o.fitStatus === "tight_buffer").map((o) => o.shortLabel).join(", ")}).`;
+      conciseBottomLine += `Two-activity combinations exceed your time window once transfers and the ${normalizedInput.returnBufferMinutes}-minute return buffer are subtracted, but ${singleAlternatives.length} single-activity option(s) fit your time budget (${singleAlternatives.map((o) => o.shortLabel).join(", ")}).`;
     } else {
       conciseBottomLine += `Your current port window (${totalPortWindowMinutes} min) or seasonal date (${effectiveDateForTz}) does not fit valley excursions once disembarkation and the ${normalizedInput.returnBufferMinutes}-minute return buffer are subtracted; stay within the immediate downtown walk-off zone or adjust your date/window.`;
     }
   }
 
+  const isTravelerScenarioAssumption =
+    normalizedInput.weatherCondition === "clear_high_ceiling" ||
+    normalizedInput.weatherCondition === "low_ceiling_rain_fog";
+
   const weatherAndTelemetryAdvisory: JuneauPortDayEvaluationResult["weatherAndTelemetryAdvisory"] =
     normalizedInput.weatherCondition === "provider_telemetry_unavailable"
       ? {
           inputState: normalizedInput.weatherCondition,
+          isTravelerScenarioAssumption: false,
           status: "telemetry_unavailable_limitation",
           headline:
             "Verification Limitation: Upstream Weather/Sensor Feed Unavailable",
@@ -2499,25 +3044,43 @@ export function evaluateJuneauPortDayScenario(
       : normalizedInput.weatherCondition === "low_ceiling_rain_fog"
         ? {
             inputState: normalizedInput.weatherCondition,
+            isTravelerScenarioAssumption: true,
             status: "low_ceiling_caution",
-            headline: "Low Ceiling / Rain / Fog Scenario Active",
+            headline:
+              "Traveler Scenario Assumption: Low Cloud Ceiling / Rain / Fog",
             explanation:
-              "Low cloud ceilings (<1,500 ft) and flat light over the Juneau Icefield frequently ground FAA Part 135 helicopter landings while surface activities (Auke Bay whale watching and Mendenhall Glacier trails) continue operating normally.",
+              "This weather setting is a traveler scenario assumption, not a live weather observation or an operator cancellation notice. Low cloud ceilings (<1,500 ft) and flat light over the Juneau Icefield frequently ground FAA Part 135 helicopter landings while surface activities (Auke Bay whale watching and Mendenhall Glacier trails) continue operating.",
             neverAllClearRule:
-              "Weather observations do not establish flight cancellations or operating status; only your licensed operator can hold or cancel a departure.",
+              "Traveler weather assumptions and surface observations do not establish flight cancellations or operating status; only your licensed operator can hold or cancel a departure.",
           }
-        : {
-            inputState: normalizedInput.weatherCondition,
-            status: "normal_uncertainty",
-            headline: "Weather Observations ≠ Operational Dispatch Status",
-            explanation:
-              "Surface conditions at the downtown cruise docks often differ from ceiling visibility over the Juneau Icefield or wind waves in Stephens Passage.",
-            neverAllClearRule:
-              "Favorable weather observations never guarantee FAA Part 135 flight dispatch, USFS trail openings, or timely ship return.",
-          };
+        : normalizedInput.weatherCondition === "clear_high_ceiling"
+          ? {
+              inputState: normalizedInput.weatherCondition,
+              isTravelerScenarioAssumption: true,
+              status: "normal_uncertainty",
+              headline:
+                "Traveler Scenario Assumption: Clear Skies (Not a Live Observation)",
+              explanation:
+                "This weather setting is a traveler scenario assumption for planning, not a live weather observation or flight dispatch confirmation.",
+              neverAllClearRule:
+                "Assumed clear skies never guarantee FAA Part 135 flight dispatch, USFS trail openings, or timely ship return.",
+            }
+          : {
+              inputState: normalizedInput.weatherCondition,
+              isTravelerScenarioAssumption: false,
+              status: "normal_uncertainty",
+              headline: "Weather Assumptions ≠ Operational Dispatch Status",
+              explanation:
+                "Surface conditions at the downtown cruise docks often differ from ceiling visibility over the Juneau Icefield or wind waves in Stephens Passage.",
+              neverAllClearRule:
+                "Favorable weather forecasts never guarantee FAA Part 135 flight dispatch, USFS trail openings, or timely ship return.",
+            };
 
   return {
     evaluatedAt: now.toISOString(),
+    isExampleScenario,
+    dateProvidedByTraveler,
+    exampleScenarioNotice,
     timezone: "America/Juneau",
     timezoneResolution,
     inputValidationErrors,
@@ -2541,7 +3104,7 @@ export function evaluateJuneauPortDayScenario(
       ],
       coverageLimits: [
         "Does not cover every private charter boat, floatplane operator, or cruise-line proprietary excursion desk.",
-        "Indicative price ranges and transfer times are planning baselines verified on the stated date, not real-time seat inventory.",
+        "Indicative price ranges and transfer times are planning estimates verified on the stated date, not real-time seat inventory.",
       ],
       commercialIndependenceStatement:
         "Recommendations and option rankings are computed strictly from your time window, dock friction, mobility constraints, and claim evidence status. Commercial or affiliate relationships never influence ranking.",

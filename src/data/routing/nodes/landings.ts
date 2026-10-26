@@ -255,7 +255,7 @@ export const LANDING_NODES = [
     needsRedirect: false,
     needsDedicatedLandingPage: false,
     notes:
-      "Broad excursion comparison traffic should route into port-specific and excursion-type lanes more aggressively before handing to WTA.",
+      "Broad excursion comparison traffic should route into port-specific and excursion-type lanes more aggressively before handing to Last Frontier Shore Excursions or Juneau Flight Deck.",
   },
   {
     id: "landing:parr:guide",

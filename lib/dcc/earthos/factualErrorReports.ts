@@ -629,15 +629,22 @@ export function resetFactualErrorRateLimitsForTests(): void {
 export async function deleteFactualErrorReportByIdForTests(
   reportId: string,
 ): Promise<void> {
-  const findingId = `factual-error-report:${reportId}`;
+  const scope = resolveEarthosEnvironmentScope();
+  const candidateFindingIds = [
+    `control-map:factual-error-report:${scope}:${reportId}`,
+    `control-map:factual-error-report:nonprod:${reportId}`,
+    `factual-error-report:${reportId}`,
+  ];
   if (hasConfiguredDatabaseUrl()) {
     const db = await getRequiredEarthosDb();
-    await db
-      .delete(earthosControlMapFindingHistory)
-      .where(eq(earthosControlMapFindingHistory.findingId, findingId));
-    await db
-      .delete(earthosControlMapFindings)
-      .where(eq(earthosControlMapFindings.findingId, findingId));
+    for (const findingId of candidateFindingIds) {
+      await db
+        .delete(earthosControlMapFindingHistory)
+        .where(eq(earthosControlMapFindingHistory.findingId, findingId));
+      await db
+        .delete(earthosControlMapFindings)
+        .where(eq(earthosControlMapFindings.findingId, findingId));
+    }
   }
   try {
     if (fs.existsSync(LOCAL_FALLBACK_PATH)) {

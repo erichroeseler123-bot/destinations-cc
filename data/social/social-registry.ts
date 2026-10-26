@@ -99,14 +99,24 @@ export const socialRegistry: Record<string, BrandSocialProfile> = {
       hashtags: ["ColoradoSki", "SkiShuttle", "MountainTrips"],
     },
   },
-  wta: {
-    brandKey: "wta",
-    brandName: "Welcome to Alaska Tours",
+  lastfrontier: {
+    brandKey: "lastfrontier",
+    brandName: "Last Frontier Shore Excursions",
     mode: "inherit-dcc",
     sameAs: [],
     socials: [],
     shareDefaults: {
-      hashtags: ["AlaskaTravel", "AlaskaTours", "CruiseExcursions"],
+      hashtags: ["AlaskaTravel", "AlaskaShoreExcursions", "CruiseExcursions"],
+    },
+  },
+  juneauflightdeck: {
+    brandKey: "juneauflightdeck",
+    brandName: "Juneau Flight Deck",
+    mode: "inherit-dcc",
+    sameAs: [],
+    socials: [],
+    shareDefaults: {
+      hashtags: ["JuneauFlightseeing", "GlacierHelicopter", "AlaskaAviation"],
     },
   },
   mightyargo: {

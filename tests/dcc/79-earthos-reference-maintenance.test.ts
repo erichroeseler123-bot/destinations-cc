@@ -402,11 +402,16 @@ test("defaultSpecialistUrlProbe performs real HTTP checks and EarthOS maintenanc
     assert.equal(brokenWtaProbe.ok, false);
     assert.equal(brokenWtaProbe.statusCode, 404);
 
-    const liveWtaProbe = await defaultSpecialistUrlProbe(
+    const disallowedWtaProbe = await defaultSpecialistUrlProbe(
       "https://welcometoalaskatours.com/ports/juneau",
     );
-    assert.equal(liveWtaProbe.ok, true);
-    assert.equal(liveWtaProbe.statusCode, 200);
+    assert.equal(disallowedWtaProbe.ok, false);
+
+    const liveLfseProbe = await defaultSpecialistUrlProbe(
+      "https://www.lastfrontiershoreexcursions.com/ports/juneau",
+    );
+    assert.equal(liveLfseProbe.ok, true);
+    assert.equal(liveLfseProbe.statusCode, 200);
 
     // 2. Verify all 5 live production reference nodes pass real HTTP checks with 0 issues
     const liveIssues = await detectReferenceMaintenanceIssues({
@@ -518,7 +523,7 @@ test("defaultSpecialistUrlProbe performs real HTTP checks and EarthOS maintenanc
     );
     assert.equal(
       loopResult.remediatedNode.specialistHandoffs.options[1].baseUrl,
-      "https://welcometoalaskatours.com/ports/juneau",
+      "https://www.lastfrontiershoreexcursions.com/ports/juneau",
     );
     assert.equal(loopResult.remediatedNode.evidenceRegistry[0].lastCheckedAt, "2026-10-24");
 
@@ -606,7 +611,7 @@ test("Real cross-process execution against Neon Postgres: scheduled detection, p
           appliedBy: "regression-seed",
           specialistHandoffBaseUrls: {
             "handoff-juneau-flight-deck": "https://juneauflightdeck.com/best-excursions-in-juneau",
-            "handoff-welcome-to-alaska": "https://welcometoalaskatours.com/juneau-shore-excursions",
+            "handoff-last-frontier-shore-excursions": "https://www.lastfrontiershoreexcursions.com/juneau-shore-excursions",
           },
           evidenceReviews: {
             [firstCit.id]: {
@@ -770,12 +775,12 @@ test("Real cross-process execution against Neon Postgres: scheduled detection, p
     assert.equal(proc3Data.deployedPageStatusCode, 200);
     assert.equal(proc3Data.deployedPageUrl, `${server.baseUrl}/juneau`);
     assert.ok(proc3Data.publishedUrls.includes("https://juneauflightdeck.com/helicopter"));
-    assert.ok(proc3Data.publishedUrls.includes("https://welcometoalaskatours.com/ports/juneau"));
+    assert.ok(proc3Data.publishedUrls.includes("https://www.lastfrontiershoreexcursions.com/ports/juneau"));
     assert.ok(
       !proc3Data.publishedUrls.includes("https://juneauflightdeck.com/best-excursions-in-juneau"),
     );
     assert.ok(
-      !proc3Data.publishedUrls.includes("https://welcometoalaskatours.com/juneau-shore-excursions"),
+      !proc3Data.publishedUrls.includes("https://www.lastfrontiershoreexcursions.com/juneau-shore-excursions"),
     );
     assert.equal(proc3Data.publishedCheckedAt, "2026-10-24");
     assert.match(

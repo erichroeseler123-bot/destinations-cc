@@ -3,7 +3,7 @@ import { slugify } from "@/lib/dcc/slug";
 import { matchCruiseShip } from "@/lib/dcc/cruise/shipRegistry";
 import { buildDccReturnUrl } from "@/lib/dcc/satelliteHandoffs";
 
-const DEFAULT_WTA_ORIGIN = "https://welcometoalaskatours.com";
+const DEFAULT_WTA_ORIGIN = "https://www.lastfrontiershoreexcursions.com";
 
 export type DccHandoffInput = {
   sourceSlug?: string;

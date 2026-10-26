@@ -63,7 +63,12 @@ export default async function NetworkHealthPage() {
             parrStatus,
             sotsStatus,
             {
-              label: "Welcome To Alaska Tours",
+              label: "Juneau Flight Deck",
+              status: "static",
+              timestamp: null,
+            },
+            {
+              label: "Last Frontier Shore Excursions",
               status: "static",
               timestamp: null,
             },
