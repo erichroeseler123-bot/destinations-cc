@@ -1,4 +1,5 @@
 import { getPublicCorridorContracts, getPublicMachineReadablePaths } from "@/lib/dcc/publicCorridorContract";
+import { listDecisionEngines, serializeDecisionEngineSummary } from "@/lib/dcc/decisionEngines/registry";
 import { resolveViatorAction, type ViatorActionInput } from "@/lib/dcc/action/viator";
 import { normalizeViatorResolverProduct, normalizedProductSupportsIntent } from "@/lib/viator/normalize";
 import { inferViatorIntent, rankViatorActionProducts } from "@/lib/viator/resolver";
@@ -328,7 +329,7 @@ function getDccRootRecord(): DiscoverySurfaceRecord {
     siteName: SITE_IDENTITY.name,
     domain: SITE_IDENTITY.siteUrl,
     governedBy: null,
-    capabilities: ["travel-routing", "decision-governance", "handoff-contracts"],
+    capabilities: ["travel-routing", "decision-governance", "handoff-contracts", "category-decision-engines"],
     routes: getPublicMachineReadablePaths(),
     intents,
   };
@@ -410,6 +411,20 @@ function buildSurfaceLlmsText(record: DiscoverySurfaceRecord): string {
     }
   }
 
+  if (record.role === "dcc") {
+    const engines = listDecisionEngines();
+    lines.push(
+      "",
+      "## Category Decision Engines",
+      `- Index API: ${record.domain}/api/v1/decision-engines`,
+      ...engines.flatMap((engine) => [
+        `- ${engine.engineId} (Human Reference & Interactive): ${toAbsoluteUrl(record.domain, engine.canonicalPath)}`,
+        `- ${engine.engineId} (Definition API): ${record.domain}/api/v1/decision-engines/${engine.engineId}`,
+        `- ${engine.engineId} (Evaluate API): ${record.domain}/api/v1/decision-engines/${engine.engineId}/evaluate`,
+      ]),
+    );
+  }
+
   lines.push(
     "",
     "## Machine-readable entry points",
@@ -437,6 +452,11 @@ function buildSurfaceAgentJson(record: DiscoverySurfaceRecord, allRecords: Disco
     machine_readable: {
       llms: `${record.domain}/llms.txt`,
       sitemap: `${record.domain}/sitemap.xml`,
+      ...(record.role === "dcc"
+        ? {
+            decision_engines_index: `${record.domain}/api/v1/decision-engines`,
+          }
+        : {}),
     },
     intents: record.intents,
     handoff_protocol: {
@@ -450,6 +470,7 @@ function buildSurfaceAgentJson(record: DiscoverySurfaceRecord, allRecords: Disco
     },
     ...(record.role === "dcc"
       ? {
+          decision_engines: listDecisionEngines().map(serializeDecisionEngineSummary),
           governed_surfaces: allRecords
             .filter((item) => item.id !== record.id)
             .map((item) => ({

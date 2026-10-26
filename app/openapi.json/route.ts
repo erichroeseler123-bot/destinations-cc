@@ -232,6 +232,123 @@ export async function GET() {
           responses: { "200": { description: "Booking cancelled" } },
         },
       },
+      "/.well-known/dcc": {
+        get: {
+          operationId: "getDccMachineWellKnown",
+          summary: "Discover DCC Machine Layer v0.1 capabilities, schemas, and active engines",
+          responses: { "200": { description: "DCC Machine Layer v0.1 discovery manifest and JSON Schemas" } },
+        },
+      },
+      "/api/v1/entities/{id}": {
+        get: {
+          operationId: "getMachineEntityById",
+          summary: "Get canonical machine Entity by stable ID",
+          parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+          responses: { "200": { description: "Machine Entity record" }, "404": { description: "Entity not found" } },
+        },
+      },
+      "/api/v1/claims/{id}": {
+        get: {
+          operationId: "getMachineClaimById",
+          summary: "Get machine Claim, immutable version history, conflicts, and retractions",
+          parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+          responses: { "200": { description: "Machine Claim and version ledger" }, "404": { description: "Claim not found" } },
+        },
+      },
+      "/api/v1/sources/{id}": {
+        get: {
+          operationId: "getMachineSourceById",
+          summary: "Get authoritative Source, immutable SourceSnapshots, and EvidenceFragments",
+          parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+          responses: { "200": { description: "Machine Source, snapshots, and evidence fragments" }, "404": { description: "Source not found" } },
+        },
+      },
+      "/api/v1/rules/{id}": {
+        get: {
+          operationId: "getMachineRuleById",
+          summary: "Get compiled Decision IR Rule and its claim-version dependencies",
+          parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+          responses: { "200": { description: "Decision IR Rule" }, "404": { description: "Rule not found" } },
+        },
+      },
+      "/api/v1/engines/{id}": {
+        get: {
+          operationId: "getMachineEngineById",
+          summary: "Get Decision Engine metadata, active version pointer, available versions, and manifest",
+          parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+          responses: { "200": { description: "Machine Engine metadata" }, "404": { description: "Engine not found" } },
+        },
+      },
+      "/api/v1/bundles/{engineId}/{version}": {
+        get: {
+          operationId: "getMachineEngineBundle",
+          summary: "Get immutable compiled Decision IR bundle for an engine and version",
+          parameters: [
+            { name: "engineId", in: "path", required: true, schema: { type: "string" } },
+            { name: "version", in: "path", required: true, schema: { type: "string" } },
+          ],
+          responses: { "200": { description: "Compiled DecisionIrBundle" }, "404": { description: "Bundle not found" } },
+        },
+      },
+      "/api/v1/evaluate": {
+        post: {
+          operationId: "evaluateDecisionIr",
+          summary: "Deterministically evaluate a compiled DCC Decision IR bundle (compact or expanded provenance mode)",
+          responses: { "200": { description: "Deterministic Compact or Expanded Evaluation Response" }, "400": { description: "Invalid request" }, "404": { description: "Engine or version not found" } },
+        },
+      },
+      "/api/v1/evaluations:batch": {
+        post: {
+          operationId: "evaluateDecisionIrBatch",
+          summary: "Batch-evaluate up to 250 Decision IR requests in a single deterministic pass",
+          responses: { "200": { description: "Batch evaluation results" }, "400": { description: "Invalid batch request" } },
+        },
+      },
+      "/api/v1/changes": {
+        get: {
+          operationId: "getMachineChangesFeed",
+          summary: "Cursor-paginated epistemic change feed (published claims, supersessions, withdrawals, conflicts, bundle publications)",
+          parameters: [
+            { name: "since", in: "query", required: false, schema: { type: "integer", default: 0 } },
+            { name: "limit", in: "query", required: false, schema: { type: "integer", default: 100 } },
+          ],
+          responses: { "200": { description: "Ordered change events and nextCursor" } },
+        },
+      },
+      "/r/{id}": {
+        get: {
+          operationId: "resolveStableReference",
+          summary: "Resolve a stable DCC reference URI (/r/{id}) to its current verified version and canonical citation URI",
+          parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+          responses: { "200": { description: "Reference Resolution Envelope (JSON, JSON-LD, CSL-JSON, or HTML)" }, "404": { description: "Reference not found" } },
+        },
+        head: {
+          operationId: "headStableReference",
+          summary: "Verify existence, ETag, and Last-Modified of a stable DCC reference URI",
+          parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+          responses: { "200": { description: "Headers only" }, "404": { description: "Not found" } },
+        },
+      },
+      "/r/{id}/v/{version}": {
+        get: {
+          operationId: "resolveImmutableReferenceVersion",
+          summary: "Resolve an immutable versioned DCC reference URI (/r/{id}/v/{version}) with immutable cache semantics",
+          parameters: [
+            { name: "id", in: "path", required: true, schema: { type: "string" } },
+            { name: "version", in: "path", required: true, schema: { type: "string" } },
+          ],
+          responses: { "200": { description: "Immutable Reference Resolution Envelope" }, "404": { description: "Reference or version not found" } },
+        },
+        head: {
+          operationId: "headImmutableReferenceVersion",
+          summary: "Verify existence, ETag, and immutable Cache-Control of a versioned DCC reference URI",
+          parameters: [
+            { name: "id", in: "path", required: true, schema: { type: "string" } },
+            { name: "version", in: "path", required: true, schema: { type: "string" } },
+          ],
+          responses: { "200": { description: "Headers only" }, "404": { description: "Not found" } },
+        },
+      },
     },
     components: {
       schemas: {

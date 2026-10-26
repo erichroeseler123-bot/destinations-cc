@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import CategoryDecisionEngineExperience from "@/app/components/dcc/CategoryDecisionEngineExperience";
 import JsonLd from "@/app/components/dcc/JsonLd";
+import { JUNEAU_HELICOPTER_DECISION_ENGINE } from "@/lib/dcc/decisionEngines/juneauHelicopterEngine";
+import type { DecisionResult } from "@/lib/dcc/decisionEngines/types";
 import { buildBreadcrumbJsonLd, buildWebPageJsonLd } from "@/lib/dcc/jsonld";
 import { getEdgeSignalMapForSubjects } from "@/lib/dcc/routing/edge-signals";
 import {
@@ -92,6 +95,17 @@ export default async function JuneauHelicopterToursPage({
 }) {
   const sp = await searchParams;
   const selectedDate = isValidDate(sp.date) ? sp.date : null;
+  const initialEngineAnswers = selectedDate
+    ? {
+        ...JUNEAU_HELICOPTER_DECISION_ENGINE.defaultExampleInput,
+        date: selectedDate,
+        travelMonth: Number(selectedDate.slice(5, 7)),
+      }
+    : JUNEAU_HELICOPTER_DECISION_ENGINE.defaultExampleInput;
+  const initialEngineResult = JUNEAU_HELICOPTER_DECISION_ENGINE.evaluate(
+    initialEngineAnswers,
+  ) as unknown as DecisionResult<Record<string, unknown>>;
+
   const signalMap = await getEdgeSignalMapForSubjects([...JUNEAU_HELICOPTER_SIGNAL_SUBJECT_IDS]);
   const goHref = buildDccJuneauHelicopterGoUrl(
     selectedDate
@@ -165,8 +179,21 @@ export default async function JuneauHelicopterToursPage({
             >
               Juneau whale backup corridor
             </Link>
+            <Link
+              href="/hawaii/whale-watching"
+              className="rounded-2xl border border-cyan-400/30 bg-cyan-950/40 px-5 py-3 text-sm text-cyan-200 hover:bg-cyan-900/50"
+            >
+              Explore Hawaiʻi Whale Watching Engine
+            </Link>
           </div>
         </header>
+
+        {/* Shared DCC Category Decision Engine for Juneau Helicopter Tours */}
+        <CategoryDecisionEngineExperience
+          engineId="juneau-helicopter-tours"
+          initialAnswers={initialEngineAnswers as unknown as Record<string, unknown>}
+          initialResult={initialEngineResult}
+        />
 
         {/* Segment by Traveler Intent Cards */}
         <section className="rounded-3xl border border-cyan-400/20 bg-gradient-to-b from-cyan-950/20 to-[#07131d] p-6 md:p-8 space-y-6 shadow-[0_20px_60px_rgba(0,0,0,0.3)]">
