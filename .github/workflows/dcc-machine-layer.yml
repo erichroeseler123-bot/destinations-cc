@@ -40,5 +40,7 @@ jobs:
         run: npx tsx scripts/dcc/generate-verification-manifest.ts
 
       - name: Production Next.js Build
+        env:
+          SKIP_ENV_CHECK: "1"
         run: npm run build
 

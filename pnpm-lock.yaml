@@ -41,6 +41,9 @@ importers:
       '@workflow/world-vercel':
         specifier: ^4.1.2
         version: 4.1.2
+      canonicalize:
+        specifier: 2.0.0
+        version: 2.0.0
       dotenv:
         specifier: ^17.2.4
         version: 17.4.2
@@ -3207,6 +3210,9 @@ packages:
 
   caniuse-lite@1.0.30001790:
     resolution: {integrity: sha512-bOoxfJPyYo+ds6W0YfptaCWbFnJYjh2Y1Eow5lRv+vI2u8ganPZqNm1JwNh0t2ELQCqIWg4B3dWEusgAmsoyOw==}
+
+  canonicalize@2.0.0:
+    resolution: {integrity: sha512-ulDEYPv7asdKvqahuAY35c1selLdzDwHqugK92hfkzvlDCwXRRelDkR+Er33md/PtnpqHemgkuDPanZ4fiYZ8w==}
 
   cbor-extract@2.2.2:
     resolution: {integrity: sha512-hlSxxI9XO2yQfe9g6msd3g4xCfDqK5T5P0fRMLuaLHhxn4ViPrm+a+MUfhrvH2W962RGxcBwEGzLQyjbDG1gng==}
@@ -8638,7 +8644,7 @@ snapshots:
 
   '@types/node-fetch@2.6.13':
     dependencies:
-      '@types/node': 25.6.0
+      '@types/node': 20.19.43
       form-data: 4.0.5
 
   '@types/node@14.18.63': {}
@@ -9559,6 +9565,8 @@ snapshots:
   camelcase@8.0.0: {}
 
   caniuse-lite@1.0.30001790: {}
+
+  canonicalize@2.0.0: {}
 
   cbor-extract@2.2.2:
     dependencies:
