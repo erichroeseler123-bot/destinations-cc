@@ -340,7 +340,10 @@ test("v0.3 Gate 5 & 6 (Storage Boundary Separation, Private R2 S3 Driver, Post-R
     extension: "txt",
   });
   assert.equal(putRes.conditionalCreateApplied, true);
-  assert.equal(putRes.retentionMode, "COMPLIANCE");
+  assert.equal(
+    putRes.retentionMode,
+    "bounded_deletable_for_privacy_legal_takedown",
+  );
   const putCmd = sentCommands.find((c) => c instanceof PutObjectCommand) as PutObjectCommand;
   assert.equal(putCmd.input.IfNoneMatch, "*");
   assert.equal(putCmd.input.ChecksumAlgorithm, "SHA256");

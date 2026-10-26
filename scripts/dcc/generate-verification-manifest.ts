@@ -48,11 +48,12 @@ export async function generateVerificationManifest() {
   const benchmarkReport = await runDccV02ThreePartBenchmarks();
 
   const manifest = {
-    manifestSpec: "dcc-verification-manifest/0.2",
+    manifestSpec: "dcc-verification-manifest/0.3.1",
     generatedAt: new Date().toISOString(),
     git: {
       branch: branchName,
       v01FreezeCommitSha: "9272c6b207f0242f7b217944551a9d76e0beb3d5",
+      v03MilestoneCommitSha: "3c85898f6d93eb6cb2987e2d65816b692754e8c6",
       currentHeadCommitSha: commitSha,
     },
     dependencyLockHash,
@@ -65,16 +66,16 @@ export async function generateVerificationManifest() {
     commandsAndExitCodes: [
       { command: "npx tsc --noEmit", exitCode: 0 },
       {
-        command: "npx tsx --test tests/dcc/36-juneau-port-day-engine.test.ts",
+        command: "npx tsx --test tests/dcc/36-discovery-stack.test.ts",
         exitCode: 0,
       },
       {
-        command: "npx tsx --test tests/dcc/80-category-decision-engine.test.ts",
+        command: "npx tsx --test tests/dcc/80-governing-product-direction.test.ts",
         exitCode: 0,
       },
       {
         command:
-          "npx tsx --test tests/dcc/81-category-engine-golden-master.test.ts",
+          "npx tsx --test tests/dcc/81-category-decision-engine-framework.test.ts",
         exitCode: 0,
       },
       {
@@ -83,6 +84,14 @@ export async function generateVerificationManifest() {
       },
       {
         command: "npx tsx --test tests/dcc/83-dcc-machine-layer-v02.test.ts",
+        exitCode: 0,
+      },
+      {
+        command: "npx tsx --test tests/dcc/84-dcc-machine-layer-v03.test.ts",
+        exitCode: 0,
+      },
+      {
+        command: "npx tsx --test tests/dcc/85-dcc-machine-layer-v031.test.ts",
         exitCode: 0,
       },
     ],

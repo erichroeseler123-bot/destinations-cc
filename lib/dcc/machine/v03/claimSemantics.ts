@@ -39,7 +39,21 @@ export type V03LifecycleState = (typeof V03_LIFECYCLE_STATES)[number];
 export const V03_FRESHNESS_STATES = ["current", "stale", "expired"] as const;
 export type V03FreshnessState = (typeof V03_FRESHNESS_STATES)[number];
 
+export const V031_SOURCE_HIERARCHY = [
+  "operator_direct",
+  "government_regulatory",
+  "authorized_distributor",
+  "reseller",
+  "secondary_editorial",
+] as const;
+export type V031SourceHierarchyClass = (typeof V031_SOURCE_HIERARCHY)[number];
+
 export const V03_AUTHORITY_TIERS = [
+  "operator_direct",
+  "government_regulatory",
+  "authorized_distributor",
+  "reseller",
+  "secondary_editorial",
   "primary_regulator",
   "official_infrastructure",
   "direct_operator",
@@ -48,6 +62,85 @@ export const V03_AUTHORITY_TIERS = [
   "unverified_third_party",
 ] as const;
 export type V03AuthorityTier = (typeof V03_AUTHORITY_TIERS)[number];
+
+export function normalizeToV031SourceHierarchy(tier: V03AuthorityTier): V031SourceHierarchyClass {
+  switch (tier) {
+    case "operator_direct":
+    case "direct_operator":
+      return "operator_direct";
+    case "government_regulatory":
+    case "primary_regulator":
+    case "official_infrastructure":
+      return "government_regulatory";
+    case "authorized_distributor":
+      return "authorized_distributor";
+    case "reseller":
+    case "authorized_reseller":
+      return "reseller";
+    case "secondary_editorial":
+    case "independent_observer":
+    case "unverified_third_party":
+      return "secondary_editorial";
+  }
+}
+
+export function getV031SourceHierarchyRank(tier: V03AuthorityTier): number {
+  const normalized = normalizeToV031SourceHierarchy(tier);
+  return V031_SOURCE_HIERARCHY.indexOf(normalized) + 1;
+}
+
+/**
+ * Enforces Requirement 8:
+ * Source hierarchy:
+ * 1. `operator_direct`
+ * 2. `government_regulatory`
+ * 3. `authorized_distributor`
+ * 4. `reseller`
+ * 5. `secondary_editorial`
+ * A reseller (or secondary_editorial) claim may NOT override a direct operator policy claim
+ * without recording an explicit conflict event.
+ */
+export function evaluateSourceHierarchyOverridePolicy(params: {
+  existingClaimTier: V03AuthorityTier;
+  existingAssertionType: V03AssertionType;
+  incomingClaimTier: V03AuthorityTier;
+  incomingAssertionType: V03AssertionType;
+}): {
+  overrideAllowed: boolean;
+  requiresExplicitConflictRecord: boolean;
+  reasonCode: string;
+} {
+  const existingNorm = normalizeToV031SourceHierarchy(params.existingClaimTier);
+  const incomingNorm = normalizeToV031SourceHierarchy(params.incomingClaimTier);
+  const existingRank = getV031SourceHierarchyRank(params.existingClaimTier);
+  const incomingRank = getV031SourceHierarchyRank(params.incomingClaimTier);
+
+  if (
+    existingNorm === "operator_direct" &&
+    params.existingAssertionType === "policy" &&
+    (incomingNorm === "reseller" || incomingNorm === "secondary_editorial" || incomingNorm === "authorized_distributor")
+  ) {
+    return {
+      overrideAllowed: false,
+      requiresExplicitConflictRecord: true,
+      reasonCode: `RESELLER_CANNOT_OVERRIDE_OPERATOR_DIRECT_POLICY:${incomingNorm}_vs_${existingNorm}`,
+    };
+  }
+
+  if (incomingRank > existingRank) {
+    return {
+      overrideAllowed: false,
+      requiresExplicitConflictRecord: true,
+      reasonCode: `LOWER_AUTHORITY_TIER_CANNOT_SILENTLY_OVERRIDE:${incomingNorm}(rank=${incomingRank})_vs_${existingNorm}(rank=${existingRank})`,
+    };
+  }
+
+  return {
+    overrideAllowed: true,
+    requiresExplicitConflictRecord: false,
+    reasonCode: "HIERARCHY_OVERRIDE_PERMITTED",
+  };
+}
 
 export type V03CompetenceDomain =
   | "aviation_regulation"
@@ -59,6 +152,7 @@ export type V03CompetenceDomain =
   | "operator_safety_and_weight_policy"
   | "operator_vessel_and_boarding_policy"
   | "operator_pricing_and_schedule"
+  | "operator_cancellation_and_refund_policy"
   | "live_seat_inventory_availability"
   | "ground_shuttle_operations";
 

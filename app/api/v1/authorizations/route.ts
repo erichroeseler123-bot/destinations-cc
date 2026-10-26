@@ -1,9 +1,12 @@
 import {
   buildMachineJsonResponse,
+  checkDistributedRateLimitV03,
   enforceMachineLayerFeatureFlag,
   handleV03IssueShadowAuthorization,
+  PrivilegedSurfaceAccessError,
   SHADOW_COMMERCE_ADAPTERS,
   verifyShadowDecisionAuthorizationJws,
+  verifyV031SurfaceAccess,
   type CommerceAdapterTarget,
 } from "@/lib/dcc/machine";
 
@@ -12,6 +15,27 @@ export const dynamic = "force-dynamic";
 export async function POST(request: Request) {
   const flagBlocked = enforceMachineLayerFeatureFlag();
   if (flagBlocked) return flagBlocked;
+
+  const clientIp =
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local-client";
+  const rateDecision = await checkDistributedRateLimitV03({
+    clientKey: clientIp,
+    endpoint: "/api/v1/authorizations",
+  });
+  if (!rateDecision.allowed) {
+    return buildMachineJsonResponse(
+      {
+        ok: false,
+        error: {
+          code: "RATE_LIMIT_EXCEEDED",
+          message: "Distributed authorization rate limit exceeded.",
+          coordinationBackend: rateDecision.coordinationBackend,
+          resetAtEpochMs: rateDecision.resetAtEpochMs,
+        },
+      },
+      { status: 429, cacheControl: "no-store" },
+    );
+  }
 
   let body: Record<string, unknown>;
   try {
@@ -27,6 +51,33 @@ export async function POST(request: Request) {
       },
       { status: 400, cacheControl: "no-store" },
     );
+  }
+
+  try {
+    verifyV031SurfaceAccess({
+      surfaceClass: "privileged_authorization",
+      request,
+      endpoint: "/api/v1/authorizations",
+      explicitToken:
+        typeof body.authorizationToken === "string"
+          ? body.authorizationToken
+          : undefined,
+    });
+  } catch (err) {
+    if (err instanceof PrivilegedSurfaceAccessError) {
+      return buildMachineJsonResponse(
+        {
+          ok: false,
+          error: {
+            code: err.code,
+            message: err.message,
+            surfaceClass: err.surfaceClass,
+          },
+        },
+        { status: err.statusCode, cacheControl: "no-store" },
+      );
+    }
+    throw err;
   }
 
   const receiptId = String(body.receiptId ?? "");
@@ -83,10 +134,19 @@ export async function POST(request: Request) {
             mode: issued.signedAuthorization.payload.executionMode,
           },
         },
+        ledgerShadowOutcomeEvent: issued.ledgerShadowOutcomeEvent,
         signatureVerification: verification,
         dryRunDispatches,
       },
-      { status: 200, cacheControl: "no-store" },
+      {
+        status: 200,
+        cacheControl: "no-store",
+        extraHeaders: {
+          "X-DCC-Surface-Class": "privileged_authorization",
+          "X-DCC-RateLimit-Backend": rateDecision.coordinationBackend,
+          "X-DCC-RateLimit-Remaining": String(rateDecision.remaining),
+        },
+      },
     );
   } catch (err) {
     return buildMachineJsonResponse(

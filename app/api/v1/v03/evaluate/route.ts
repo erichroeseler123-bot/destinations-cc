@@ -105,6 +105,10 @@ export async function POST(request: Request) {
   const adminToken =
     request.headers.get("x-dcc-admin-simulation-token") ??
     (typeof parsed.adminAuthToken === "string" ? parsed.adminAuthToken : undefined);
+  const surfaceClass =
+    parsed.mode === "admin_simulation"
+      ? "privileged_simulation"
+      : "authenticated_evaluation";
 
   try {
     const evalRes = await handleV03EvaluateRequest(parsed, { adminToken });
@@ -121,6 +125,9 @@ export async function POST(request: Request) {
         cacheControl: "no-store",
         extraHeaders: {
           "X-DCC-Protocol-Version": "0.3.0",
+          "X-DCC-Surface-Class": surfaceClass,
+          "X-DCC-RateLimit-Backend": rateDecision.coordinationBackend,
+          "X-DCC-RateLimit-Remaining": String(rateDecision.remaining),
           "X-DCC-Engine-Id": evalRes.engineId,
           "X-DCC-Engine-Version": evalRes.engineVersion,
           "X-DCC-Receipt-Id": evalRes.receiptId,

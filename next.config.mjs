@@ -1,14 +1,80 @@
 import { withWorkflow } from "workflow/next";
 import { buildCitySatelliteRedirects, buildSatelliteRedirects } from "./src/data/edge-routing-rules.mjs";
 import { buildRuntimeRedirects } from "./src/data/runtime-redirects.mjs";
+import { execSync } from "node:child_process";
+import crypto from "node:crypto";
+import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+function resolveBuildProvenanceEnv() {
+  let gitCommit =
+    process.env.VERCEL_GIT_COMMIT_SHA?.trim() ||
+    process.env.GITHUB_SHA?.trim() ||
+    "";
+  let gitBranch =
+    process.env.VERCEL_GIT_COMMIT_REF?.trim() ||
+    process.env.GITHUB_REF_NAME?.trim() ||
+    "";
+  let dirtySourceStatus = "clean";
+  try {
+    if (!gitCommit) {
+      gitCommit = execSync("git rev-parse HEAD", {
+        cwd: __dirname,
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "ignore"],
+      }).trim();
+    }
+    if (!gitBranch) {
+      gitBranch = execSync("git rev-parse --abbrev-ref HEAD", {
+        cwd: __dirname,
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "ignore"],
+      }).trim();
+    }
+    const statusOut = execSync("git status --porcelain --untracked-files=no", {
+      cwd: __dirname,
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
+    dirtySourceStatus = statusOut.length === 0 ? "clean" : "dirty";
+  } catch {
+    // fallback if .git is not present
+  }
+
+  let dependencyLockHash = "";
+  try {
+    const lockPath = path.join(__dirname, "package-lock.json");
+    if (fs.existsSync(lockPath)) {
+      dependencyLockHash = crypto
+        .createHash("sha256")
+        .update(fs.readFileSync(lockPath))
+        .digest("hex");
+    }
+  } catch {
+    // ignore
+  }
+
+  const buildTime = new Date().toISOString();
+  const buildId = `build-${gitCommit ? gitCommit.slice(0, 12) : Date.now()}`;
+  return {
+    DCC_BUILD_GIT_COMMIT: gitCommit || "unknown",
+    DCC_BUILD_GIT_BRANCH: gitBranch || "unknown",
+    DCC_BUILD_DIRTY_STATUS: dirtySourceStatus,
+    DCC_BUILD_LOCK_HASH: dependencyLockHash || "unavailable",
+    DCC_BUILD_TIME: buildTime,
+    DCC_BUILD_ID: buildId,
+  };
+}
+
+const buildProvenanceEnv = resolveBuildProvenanceEnv();
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  env: buildProvenanceEnv,
   turbopack: {
     root: __dirname,
   },
@@ -45,7 +111,7 @@ const nextConfig = {
     ],
   },
   generateBuildId: async () => {
-    return "build-" + Date.now();
+    return buildProvenanceEnv.DCC_BUILD_ID;
   },
   images: {
     remotePatterns: [

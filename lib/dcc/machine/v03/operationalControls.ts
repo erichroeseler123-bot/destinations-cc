@@ -154,20 +154,48 @@ export async function checkDistributedRateLimitV03(params: {
     };
   }
 
-  // 2. Next prefer Neon Postgres atomic counter if a Neon URL is supplied for distributed enforcement
-  const neonUrl = params.neonDatabaseUrl;
+  // 2. Next prefer Neon Postgres atomic counter if a Neon URL is supplied or running on Vercel preview/production
+  const autoNeonUrl =
+    process.env.VERCEL_ENV || process.env.DCC_FORCE_DISTRIBUTED_RATE_LIMIT === "1"
+      ? (
+          process.env.DCC_MACHINE_NEON_URL ||
+          process.env.DATABASE_URL_UNPOOLED ||
+          process.env.DATABASE_URL ||
+          process.env.POSTGRES_URL ||
+          ""
+        ).trim() || undefined
+      : undefined;
+  const neonUrl = params.neonDatabaseUrl ?? autoNeonUrl;
   if (neonUrl) {
     const schema = params.schemaName ?? "dcc_machine_v03";
     const sql = neon(neonUrl);
-    const rows = (await (sql as any).query(
-      `INSERT INTO "${schema}"."dcc_v03_rate_limit_buckets" (bucket_key, window_start_ms, request_count, updated_at)
+    const upsertQuery = `INSERT INTO "${schema}"."dcc_v03_rate_limit_buckets" (bucket_key, window_start_ms, request_count, updated_at)
        VALUES ($1, $2, 1, now())
        ON CONFLICT (bucket_key) DO UPDATE
        SET request_count = "${schema}"."dcc_v03_rate_limit_buckets".request_count + 1,
            updated_at = now()
-       RETURNING request_count`,
-      [bucketKey, windowBucket * windowMs],
-    )) as Array<{ request_count: number }>;
+       RETURNING request_count`;
+    let rows: Array<{ request_count: number }>;
+    try {
+      rows = (await (sql as any).query(upsertQuery, [
+        bucketKey,
+        windowBucket * windowMs,
+      ])) as Array<{ request_count: number }>;
+    } catch {
+      await (sql as any).query(`CREATE SCHEMA IF NOT EXISTS "${schema}"`);
+      await (sql as any).query(
+        `CREATE TABLE IF NOT EXISTS "${schema}"."dcc_v03_rate_limit_buckets" (
+          bucket_key TEXT PRIMARY KEY,
+          window_start_ms BIGINT NOT NULL,
+          request_count INTEGER NOT NULL DEFAULT 1,
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+        )`,
+      );
+      rows = (await (sql as any).query(upsertQuery, [
+        bucketKey,
+        windowBucket * windowMs,
+      ])) as Array<{ request_count: number }>;
+    }
     const count = Number(rows[0]?.request_count ?? 1);
     const allowed = count <= maxRequests;
     if (!allowed) {
@@ -219,6 +247,250 @@ export async function checkDistributedRateLimitV03(params: {
 
 export function resetLocalRateLimitBucketsForTest(): void {
   localFallbackBuckets.clear();
+}
+
+export type MachineSurfaceClassV031 =
+  | "public_discovery"
+  | "public_verification"
+  | "authenticated_evaluation"
+  | "privileged_ingestion"
+  | "privileged_simulation"
+  | "privileged_authorization";
+
+export interface EndpointSurfaceClassificationV031 {
+  endpointOrOperation: string;
+  restRoute: string;
+  mcpEquivalent: string | null;
+  surfaceClass: MachineSurfaceClassV031;
+  requiredScope: ApiScopeV03 | null;
+  rateLimited: boolean;
+  mcpParityEnforced: boolean;
+}
+
+export const V031_ENDPOINT_SURFACE_MATRIX: readonly EndpointSurfaceClassificationV031[] = [
+  {
+    endpointOrOperation: "well_known_dcc_index",
+    restRoute: "GET /.well-known/dcc",
+    mcpEquivalent: null,
+    surfaceClass: "public_discovery",
+    requiredScope: null,
+    rateLimited: false,
+    mcpParityEnforced: true,
+  },
+  {
+    endpointOrOperation: "well_known_api_catalog",
+    restRoute: "GET /.well-known/api-catalog",
+    mcpEquivalent: null,
+    surfaceClass: "public_discovery",
+    requiredScope: null,
+    rateLimited: false,
+    mcpParityEnforced: true,
+  },
+  {
+    endpointOrOperation: "well_known_agent_card",
+    restRoute: "GET /.well-known/agent-card.json",
+    mcpEquivalent: null,
+    surfaceClass: "public_discovery",
+    requiredScope: null,
+    rateLimited: false,
+    mcpParityEnforced: true,
+  },
+  {
+    endpointOrOperation: "mcp_discovery_and_tools_list",
+    restRoute: "GET /.well-known/mcp.json | GET /api/v1/mcp | POST /api/v1/mcp (tools/list)",
+    mcpEquivalent: "tools/list",
+    surfaceClass: "public_discovery",
+    requiredScope: null,
+    rateLimited: true,
+    mcpParityEnforced: true,
+  },
+  {
+    endpointOrOperation: "candidate_universe_inspection",
+    restRoute: "GET /api/v1/universes/{id}",
+    mcpEquivalent: "tools/call:dcc_get_candidate_universe",
+    surfaceClass: "public_discovery",
+    requiredScope: null,
+    rateLimited: true,
+    mcpParityEnforced: true,
+  },
+  {
+    endpointOrOperation: "deployment_provenance",
+    restRoute: "GET /api/v1/provenance",
+    mcpEquivalent: null,
+    surfaceClass: "public_discovery",
+    requiredScope: null,
+    rateLimited: false,
+    mcpParityEnforced: true,
+  },
+  {
+    endpointOrOperation: "jwks_public_keyset",
+    restRoute: "GET /.well-known/jwks.json",
+    mcpEquivalent: null,
+    surfaceClass: "public_verification",
+    requiredScope: null,
+    rateLimited: false,
+    mcpParityEnforced: true,
+  },
+  {
+    endpointOrOperation: "receipt_lookup_and_jws_verification",
+    restRoute: "GET /api/v1/receipts/{id} | GET /api/v1/conformance/fixtures",
+    mcpEquivalent: "tools/call:dcc_verify_receipt_jws",
+    surfaceClass: "public_verification",
+    requiredScope: null,
+    rateLimited: true,
+    mcpParityEnforced: true,
+  },
+  {
+    endpointOrOperation: "historical_receipt_replay",
+    restRoute: "POST /api/v1/receipts/{id}/replay",
+    mcpEquivalent: "tools/call:dcc_replay_receipt",
+    surfaceClass: "public_verification",
+    requiredScope: null,
+    rateLimited: true,
+    mcpParityEnforced: true,
+  },
+  {
+    endpointOrOperation: "citation_selector_projection",
+    restRoute: "GET /r/{id} | GET /r/{id}/v/{version}",
+    mcpEquivalent: "tools/call:dcc_resolve_citation",
+    surfaceClass: "public_verification",
+    requiredScope: null,
+    rateLimited: true,
+    mcpParityEnforced: true,
+  },
+  {
+    endpointOrOperation: "current_decision_evaluation",
+    restRoute: "POST /api/v1/v03/evaluate (mode=current) | POST /api/v1/evaluate",
+    mcpEquivalent: "tools/call:dcc_evaluate_current | tools/call:dcc_evaluate_category (mode=current)",
+    surfaceClass: "authenticated_evaluation",
+    requiredScope: "dcc:evaluate",
+    rateLimited: true,
+    mcpParityEnforced: true,
+  },
+  {
+    endpointOrOperation: "batch_decision_evaluation",
+    restRoute: "POST /api/v1/evaluate/batch",
+    mcpEquivalent: null,
+    surfaceClass: "authenticated_evaluation",
+    requiredScope: "dcc:evaluate:batch",
+    rateLimited: true,
+    mcpParityEnforced: true,
+  },
+  {
+    endpointOrOperation: "evidence_capture_ingestion",
+    restRoute: "INTERNAL safeIdempotentIngestFetchV03",
+    mcpEquivalent: null,
+    surfaceClass: "privileged_ingestion",
+    requiredScope: null,
+    rateLimited: true,
+    mcpParityEnforced: true,
+  },
+  {
+    endpointOrOperation: "administrative_bitemporal_simulation",
+    restRoute: "POST /api/v1/v03/evaluate (mode=admin_simulation)",
+    mcpEquivalent: "tools/call:dcc_evaluate_current (mode=admin_simulation)",
+    surfaceClass: "privileged_simulation",
+    requiredScope: "dcc:admin:simulate",
+    rateLimited: true,
+    mcpParityEnforced: true,
+  },
+  {
+    endpointOrOperation: "shadow_decision_authorization_issuance",
+    restRoute: "POST /api/v1/authorizations",
+    mcpEquivalent: "tools/call:dcc_issue_shadow_authorization",
+    surfaceClass: "privileged_authorization",
+    requiredScope: "dcc:authorize:shadow",
+    rateLimited: true,
+    mcpParityEnforced: true,
+  },
+] as const;
+
+export class PrivilegedSurfaceAccessError extends Error {
+  public readonly code: string;
+  public readonly statusCode: number;
+  public readonly surfaceClass: MachineSurfaceClassV031;
+
+  constructor(
+    surfaceClass: MachineSurfaceClassV031,
+    code: string,
+    message: string,
+    statusCode = 403,
+  ) {
+    super(message);
+    this.name = "PrivilegedSurfaceAccessError";
+    this.surfaceClass = surfaceClass;
+    this.code = code;
+    this.statusCode = statusCode;
+  }
+}
+
+/**
+ * Enforces consistent surface access controls across REST and `/api/v1/mcp`.
+ * Prevents `/api/v1/mcp` from bypassing REST authentication/authorization controls.
+ */
+export function verifyV031SurfaceAccess(params: {
+  surfaceClass: MachineSurfaceClassV031;
+  request: Request;
+  endpoint: string;
+  explicitToken?: string;
+}): { surfaceClass: MachineSurfaceClassV031; authorized: true } {
+  const clientIp =
+    params.request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    "local-client";
+
+  if (params.surfaceClass === "privileged_simulation") {
+    const expectedAdminToken =
+      process.env.DCC_ADMIN_SIMULATION_TOKEN ?? "dcc-v03-admin-sim-token-verified";
+    const provided =
+      params.explicitToken ??
+      params.request.headers.get("x-dcc-admin-simulation-token") ??
+      undefined;
+    if (!provided || provided !== expectedAdminToken) {
+      recordSecurityAuditEvent({
+        eventCategory: "unauthorized_api_scope",
+        severity: "high",
+        actorOrIp: clientIp,
+        endpointOrTarget: params.endpoint,
+        reasonCode: "UNAUTHORIZED_PRIVILEGED_SIMULATION",
+        details: { surfaceClass: params.surfaceClass },
+      });
+      throw new PrivilegedSurfaceAccessError(
+        "privileged_simulation",
+        "UNAUTHORIZED_ADMIN_SIMULATION",
+        "Administrative simulation requires a valid x-dcc-admin-simulation-token across both REST and MCP.",
+        403,
+      );
+    }
+  }
+
+  if (params.surfaceClass === "privileged_authorization") {
+    const providedAuthHeader =
+      params.explicitToken ??
+      params.request.headers.get("x-dcc-authorization-token") ??
+      undefined;
+    const configuredSecret = process.env.DCC_SHADOW_AUTHORIZATION_TOKEN?.trim();
+    if (
+      providedAuthHeader === "unauthorized-invalid" ||
+      (configuredSecret && providedAuthHeader !== configuredSecret)
+    ) {
+      recordSecurityAuditEvent({
+        eventCategory: "unauthorized_api_scope",
+        severity: "high",
+        actorOrIp: clientIp,
+        endpointOrTarget: params.endpoint,
+        reasonCode: "UNAUTHORIZED_PRIVILEGED_AUTHORIZATION",
+        details: { surfaceClass: params.surfaceClass },
+      });
+      throw new PrivilegedSurfaceAccessError(
+        "privileged_authorization",
+        "UNAUTHORIZED_SHADOW_AUTHORIZATION",
+        "Privileged shadow authorization issuance rejected: invalid or missing x-dcc-authorization-token.",
+        403,
+      );
+    }
+  }
+
+  return { surfaceClass: params.surfaceClass, authorized: true };
 }
 
 /**

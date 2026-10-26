@@ -145,38 +145,47 @@ export function getV03SchemaHashes(): Record<string, string> {
 export function getDeploymentProvenanceV03() {
   let sourceCommitSha =
     process.env.VERCEL_GIT_COMMIT_SHA?.trim() ||
+    process.env.DCC_BUILD_GIT_COMMIT?.trim() ||
     process.env.GITHUB_SHA?.trim() ||
     "unknown";
   let branchName =
     process.env.VERCEL_GIT_COMMIT_REF?.trim() ||
+    process.env.DCC_BUILD_GIT_BRANCH?.trim() ||
     process.env.GITHUB_REF_NAME?.trim() ||
     "unknown";
-  let workingTreeState: "clean" | "dirty" | "serverless_packaged" = "serverless_packaged";
+  let workingTreeState: "clean" | "dirty" | "serverless_packaged" =
+    (process.env.DCC_BUILD_DIRTY_STATUS?.trim() as "clean" | "dirty") ||
+    "serverless_packaged";
 
-  if (sourceCommitSha === "unknown") {
-    try {
-      sourceCommitSha = execSync("git rev-parse HEAD", {
-        cwd: process.cwd(),
-        encoding: "utf8",
-        stdio: ["ignore", "pipe", "ignore"],
-      }).trim();
-      branchName = execSync("git rev-parse --abbrev-ref HEAD", {
-        cwd: process.cwd(),
-        encoding: "utf8",
-        stdio: ["ignore", "pipe", "ignore"],
-      }).trim();
-      const statusOut = execSync("git status --porcelain --untracked-files=no", {
-        cwd: process.cwd(),
-        encoding: "utf8",
-        stdio: ["ignore", "pipe", "ignore"],
-      }).trim();
-      workingTreeState = statusOut.length === 0 ? "clean" : "dirty";
-    } catch {
-      // Packaged serverless container without .git
+  try {
+    const liveHead = execSync("git rev-parse HEAD", {
+      cwd: process.cwd(),
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
+    if (liveHead && (sourceCommitSha === "unknown" || !process.env.VERCEL_ENV)) {
+      sourceCommitSha = liveHead;
     }
+    const liveBranch = execSync("git rev-parse --abbrev-ref HEAD", {
+      cwd: process.cwd(),
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
+    if (liveBranch && (branchName === "unknown" || !process.env.VERCEL_ENV)) {
+      branchName = liveBranch;
+    }
+    const statusOut = execSync("git status --porcelain --untracked-files=no", {
+      cwd: process.cwd(),
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
+    workingTreeState = statusOut.length === 0 ? "clean" : "dirty";
+  } catch {
+    // Packaged serverless container without .git — uses baked DCC_BUILD_* values
   }
 
-  let dependencyLockSha256 = "unavailable_in_packaged_runtime";
+  let dependencyLockSha256 =
+    process.env.DCC_BUILD_LOCK_HASH?.trim() || "unavailable_in_packaged_runtime";
   try {
     const lockPath = path.join(process.cwd(), "package-lock.json");
     if (fs.existsSync(lockPath)) {
@@ -187,10 +196,28 @@ export function getDeploymentProvenanceV03() {
   }
 
   const schemaHashes = getV03SchemaHashes();
+  const aggregateSchemaHash = sha256HexFull(rfc8785Canonicalize(schemaHashes));
   const r2Status = inspectR2CredentialsFromEnv();
+  const deploymentEnvironment =
+    process.env.VERCEL_ENV?.trim() || process.env.NODE_ENV?.trim() || "local";
+  const buildTime = process.env.DCC_BUILD_TIME?.trim() || new Date().toISOString();
+  const buildId =
+    process.env.DCC_BUILD_ID?.trim() ||
+    process.env.VERCEL_DEPLOYMENT_ID?.trim() ||
+    `build-${sourceCommitSha.slice(0, 12)}`;
 
   return {
-    provenanceSpec: "dcc-deployment-provenance/0.3",
+    provenanceSpec: "dcc-deployment-provenance/0.3.1",
+    gitCommit: sourceCommitSha,
+    gitBranch: branchName,
+    buildId,
+    dependencyLockHash: dependencyLockSha256,
+    schemaHash: aggregateSchemaHash,
+    compilerVersion: "dcc-ir-compiler/0.3.1",
+    runtimeVersion: `node/${process.version}`,
+    deploymentEnvironment,
+    dirtySourceStatus: workingTreeState === "dirty" ? "dirty" : "clean",
+    buildTime,
     generatedAt: new Date().toISOString(),
     sourceControl: {
       sourceCommitSha,
@@ -198,6 +225,7 @@ export function getDeploymentProvenanceV03() {
       workingTreeState,
       v01FreezeCommitSha: "9272c6b207f0242f7b217944551a9d76e0beb3d5",
       v02CompletedHeadCommitSha: "3016a030fba23457d2795d4374a1d8393aa59b3e",
+      v03MechanicsMilestoneCommitSha: "3c85898f6d93eb6cb2987e2d65816b692754e8c6",
     },
     dependencyLockSha256,
     runtimeVersions: {

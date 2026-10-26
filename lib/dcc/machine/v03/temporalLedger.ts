@@ -1,6 +1,7 @@
 import {
   computeV03FreshnessState,
   evaluateClaimSupportEligibility,
+  evaluateSourceHierarchyOverridePolicy,
   type V03AssertionType,
   type V03EpistemicState,
   type V03FreshnessState,
@@ -53,7 +54,9 @@ export type KnowledgeEventType =
   | "claim_corrected_retroactively"
   | "claim_disputed"
   | "claim_withdrawn"
-  | "claim_retracted";
+  | "claim_retracted"
+  | "reseller_conflict_recorded"
+  | "shadow_authorization_dry_run_recorded";
 
 export interface V03ClaimDefinition {
   claimId: string;
@@ -87,7 +90,7 @@ export interface V03KnowledgeEvent {
   readonly provenanceClass: "operational_evidence" | "synthetic_test_fixture" | "admin_simulation";
   readonly claimDefinition: V03ClaimDefinition | null;
   readonly reason: string;
-  readonly corroboratingSourceDccId?: string;
+  readonly corroboratingSourceDccId: string | null;
   readonly eventHash: string;
   readonly prevEventHash: string | null;
 }
@@ -165,7 +168,7 @@ export class AppendOnlyKnowledgeLedger {
           provenanceClass: ev.provenanceClass,
           claimDefinition: ev.claimDefinition,
           reason: ev.reason,
-          corroboratingSourceDccId: ev.corroboratingSourceDccId,
+          corroboratingSourceDccId: ev.corroboratingSourceDccId ?? null,
           prevEventHash: ev.prevEventHash,
         }),
       );
@@ -192,7 +195,7 @@ export class AppendOnlyKnowledgeLedger {
     provenanceClass?: V03KnowledgeEvent["provenanceClass"];
     claimDefinition?: V03ClaimDefinition | null;
     reason: string;
-    corroboratingSourceDccId?: string;
+    corroboratingSourceDccId?: string | null;
   }): V03KnowledgeEvent {
     const eventSeq = this.events.length + 1;
     const prevEventHash = eventSeq > 1 ? this.events[eventSeq - 2]!.eventHash : null;
@@ -210,6 +213,10 @@ export class AppendOnlyKnowledgeLedger {
     });
     const eventId = `kevt:${eventSeq}:${sha256HexFull(seedCore).slice(0, 24)}`;
 
+    const normalizedDef = params.claimDefinition
+      ? (JSON.parse(JSON.stringify(params.claimDefinition)) as V03ClaimDefinition)
+      : null;
+
     const hashCore = rfc8785Canonicalize({
       eventSeq,
       eventId,
@@ -221,16 +228,14 @@ export class AppendOnlyKnowledgeLedger {
       actorId: params.actorId,
       isSynthetic,
       provenanceClass,
-      claimDefinition: params.claimDefinition ?? null,
+      claimDefinition: normalizedDef,
       reason: params.reason,
-      corroboratingSourceDccId: params.corroboratingSourceDccId,
+      corroboratingSourceDccId: params.corroboratingSourceDccId ?? null,
       prevEventHash,
     });
     const eventHash = sha256HexFull(hashCore);
 
-    const frozenDef = params.claimDefinition
-      ? (Object.freeze(JSON.parse(JSON.stringify(params.claimDefinition))) as V03ClaimDefinition)
-      : null;
+    const frozenDef = normalizedDef ? Object.freeze(normalizedDef) : null;
 
     const ev: V03KnowledgeEvent = Object.freeze({
       eventSeq,
@@ -245,13 +250,85 @@ export class AppendOnlyKnowledgeLedger {
       provenanceClass,
       claimDefinition: frozenDef,
       reason: params.reason,
-      corroboratingSourceDccId: params.corroboratingSourceDccId,
+      corroboratingSourceDccId: params.corroboratingSourceDccId ?? null,
       eventHash,
       prevEventHash,
     });
 
     this.events.push(ev);
     return ev;
+  }
+
+  /**
+   * Enforces the v0.3.1 5-tier Source Hierarchy (`operator_direct` > `government_regulatory` >
+   * `authorized_distributor` > `reseller` > `secondary_editorial`):
+   * A reseller (or lower-authority) claim may NOT override a direct operator policy claim
+   * without recording an explicit conflict event (`reseller_conflict_recorded`).
+   */
+  attemptAppendClaimWithSourceHierarchyGuard(params: {
+    claimDefinition: V03ClaimDefinition;
+    targetPreviousVersionId?: string | null;
+    recordedAt: string;
+    actorId: string;
+    isSynthetic?: boolean;
+    reason: string;
+  }): {
+    overrodeExistingClaim: boolean;
+    conflictRecorded: boolean;
+    recordedEvent: V03KnowledgeEvent;
+    reasonCode: string;
+  } {
+    const proj = this.rebuildProjectionAtCutoff({
+      validAtIso: params.claimDefinition.validFrom,
+      knowledgeCutoffIso: params.recordedAt,
+      includeSynthetic: params.isSynthetic ?? false,
+    });
+    const existing = proj.effectiveClaimByClaimId.get(params.claimDefinition.claimId);
+    if (existing && existing.typedValue !== params.claimDefinition.typedValue) {
+      const policy = evaluateSourceHierarchyOverridePolicy({
+        existingClaimTier: existing.sourceAuthority.authorityTier,
+        existingAssertionType: existing.assertionType,
+        incomingClaimTier: params.claimDefinition.sourceAuthority.authorityTier,
+        incomingAssertionType: params.claimDefinition.assertionType,
+      });
+      if (!policy.overrideAllowed && policy.requiresExplicitConflictRecord) {
+        const conflictEvent = this.appendEvent({
+          eventType: "reseller_conflict_recorded",
+          claimId: params.claimDefinition.claimId,
+          claimVersionId: params.claimDefinition.claimVersionId,
+          targetPreviousVersionId: existing.claimVersionId,
+          recordedAt: params.recordedAt,
+          actorId: params.actorId,
+          isSynthetic: params.isSynthetic ?? false,
+          claimDefinition: params.claimDefinition,
+          reason: `${policy.reasonCode}: ${params.reason}`,
+        });
+        return {
+          overrodeExistingClaim: false,
+          conflictRecorded: true,
+          recordedEvent: conflictEvent,
+          reasonCode: policy.reasonCode,
+        };
+      }
+    }
+
+    const activatedEvent = this.appendEvent({
+      eventType: existing ? "claim_superseded" : "claim_approved_and_activated",
+      claimId: params.claimDefinition.claimId,
+      claimVersionId: params.claimDefinition.claimVersionId,
+      targetPreviousVersionId: existing?.claimVersionId ?? params.targetPreviousVersionId ?? null,
+      recordedAt: params.recordedAt,
+      actorId: params.actorId,
+      isSynthetic: params.isSynthetic ?? false,
+      claimDefinition: params.claimDefinition,
+      reason: params.reason,
+    });
+    return {
+      overrodeExistingClaim: true,
+      conflictRecorded: false,
+      recordedEvent: activatedEvent,
+      reasonCode: "HIERARCHY_OVERRIDE_PERMITTED",
+    };
   }
 
   /**

@@ -1,25 +1,30 @@
 import crypto from "node:crypto";
 import {
+  DEFAULT_VERCEL_KMS_ISSUER_ID,
   getActiveV03SigningKey,
+  getConfiguredVercelKmsIssuerId,
   jwsCompactSignEdDsa,
   jwsCompactVerifyEdDsa,
   rfc8785Canonicalize,
   sha256HexFull,
+  signJwsCompactViaVercelKmsEs256,
+  syncVercelKmsJwksToRegistry,
   verifyV03DecisionReceiptJws,
+  type SupportedJwsAlg,
   type V03SignedDecisionReceipt,
 } from "./rfc8785AndJws";
 
 /**
- * DCC Machine Layer v0.3 — Provider-Neutral DecisionAuthorization (Shadow Mode)
+ * DCC Machine Layer v0.3.1 — Provider-Neutral DecisionAuthorization (Shadow Mode)
  *
- * Implements Requirement 11:
+ * Implements Requirements 4, 5, and 9:
  * - Provider-neutral `DecisionAuthorization` schema binding:
  *   - `decisionReceipt` (`receiptId`, `jwsCompact`, `evaluationFingerprint`)
  *   - `permittedAction`
  *   - `providerProductReference` (DCC entity ID + versioned external aliases)
  *   - `maxPrice` & `currency`
  *   - `expiresAt`
- *   - `revalidationRequirements`
+ *   - `revalidationRequirements` (including live action-time revalidation of unknown states)
  *   - `consentMandateReference`
  *   - `idempotencyKey`
  *   - `requiredParameters`
@@ -54,6 +59,7 @@ export interface V03DecisionAuthorizationPayload {
   spec: "dcc-decision-authorization/0.3";
   authorizationId: string;
   executionMode: "shadow_only_no_side_effects";
+  deploymentEnvironment: "production" | "preview" | "local";
   decisionReceipt: {
     receiptId: string;
     evaluationFingerprint: string;
@@ -88,7 +94,7 @@ export interface V03DecisionAuthorizationPayload {
     passengerCount: number;
     pickupNodeCode: string;
     dropoffNodeCode: string;
-    luggageSkiBagCount?: number;
+    luggageSkiBagCount: number | null;
   };
   opaqueRouting: {
     targetAdapter: CommerceAdapterTarget;
@@ -118,7 +124,7 @@ export interface V03SignedDecisionAuthorization {
   authorizationId: string;
   executionMode: "shadow_only_no_side_effects";
   kid: string;
-  alg: "EdDSA";
+  alg: SupportedJwsAlg;
   jwsCompact: string;
   payload: V03DecisionAuthorizationPayload;
 }
@@ -187,7 +193,9 @@ function makeShadowAdapter(
 
 export const SHADOW_COMMERCE_ADAPTERS: Record<CommerceAdapterTarget, ShadowCommerceAdapter> = {
   octo: makeShadowAdapter("octo", "OCTO-Core/1.2-shadow", (a) => ({
-    productId: a.providerProductReference.externalAliases.octo_product_id ?? a.providerProductReference.candidateDccEntityId,
+    productId:
+      a.providerProductReference.externalAliases.octo_product_id ??
+      a.providerProductReference.candidateDccEntityId,
     availabilityDate: a.requiredParameters.serviceDate,
     units: [{ id: "pax-adult", quantity: a.requiredParameters.passengerCount }],
     maxTotalMinorUnits: a.maxPrice.amountMinorUnits,
@@ -207,12 +215,14 @@ export const SHADOW_COMMERCE_ADAPTERS: Record<CommerceAdapterTarget, ShadowComme
     revalidationGates: a.revalidationRequirements.map((r) => r.requirementCode),
   })),
   rezdy: makeShadowAdapter("rezdy", "Rezdy-Supplier-API/v1-shadow", (a) => ({
-    productCode: a.providerProductReference.externalAliases.rezdy_product_code ?? "SHADOW-REZDY-SKU",
+    productCode:
+      a.providerProductReference.externalAliases.rezdy_product_code ?? "SHADOW-REZDY-SKU",
     startTimeLocal: `${a.requiredParameters.serviceDate}T08:00:00`,
-    quantities: [{ optionLabel: "Shuttle Seat", value: a.requiredParameters.passengerCount }],
+    quantities: [{ optionLabel: "Shuttle Vehicle / Seat", value: a.requiredParameters.passengerCount }],
   })),
   square: makeShadowAdapter("square", "Square-Orders-DryRun/2026-shadow", (a) => ({
-    locationId: a.providerProductReference.externalAliases.square_location_id ?? "SHADOW-SQUARE-LOC",
+    locationId:
+      a.providerProductReference.externalAliases.square_location_id ?? "SHADOW-SQUARE-LOC",
     lineItems: [
       {
         name: a.providerProductReference.displayName,
@@ -231,10 +241,18 @@ export async function issueShadowDecisionAuthorization(params: {
   permittedAction: PermittedAuthorizationAction;
   providerProductReference: V03DecisionAuthorizationPayload["providerProductReference"];
   maxPriceUsdDecimal: number;
-  requiredParameters: V03DecisionAuthorizationPayload["requiredParameters"];
+  requiredParameters: {
+    serviceDate: string;
+    passengerCount: number;
+    pickupNodeCode: string;
+    dropoffNodeCode: string;
+    luggageSkiBagCount?: number | null;
+  };
   targetAdapter: CommerceAdapterTarget;
+  additionalRevalidationRequirements?: Array<V03RevalidationRequirement | string>;
   issuedAtIso?: string;
   ttlSeconds?: number;
+  deploymentEnvironment?: "production" | "preview" | "local";
 }): Promise<{
   signedAuthorization: V03SignedDecisionAuthorization;
   adapterDryRun: ShadowCommerceAdapterResult;
@@ -254,6 +272,14 @@ export async function issueShadowDecisionAuthorization(params: {
     );
   }
 
+  const normalizedRequiredParams: V03DecisionAuthorizationPayload["requiredParameters"] = {
+    serviceDate: params.requiredParameters.serviceDate,
+    passengerCount: params.requiredParameters.passengerCount,
+    pickupNodeCode: params.requiredParameters.pickupNodeCode,
+    dropoffNodeCode: params.requiredParameters.dropoffNodeCode,
+    luggageSkiBagCount: params.requiredParameters.luggageSkiBagCount ?? null,
+  };
+
   const issuedAt = params.issuedAtIso ?? new Date().toISOString();
   const expiresAt = new Date(
     Date.parse(issuedAt) + (params.ttlSeconds ?? 900) * 1000,
@@ -265,7 +291,7 @@ export async function issueShadowDecisionAuthorization(params: {
       receiptId: params.receipt.receiptId,
       permittedAction: params.permittedAction,
       candidateDccEntityId: params.providerProductReference.candidateDccEntityId,
-      requiredParameters: params.requiredParameters,
+      requiredParameters: normalizedRequiredParams,
       targetAdapter: params.targetAdapter,
     }),
   )}`;
@@ -275,7 +301,7 @@ export async function issueShadowDecisionAuthorization(params: {
       adapter: params.targetAdapter,
       idempotencyKey,
       providerProductReference: params.providerProductReference,
-      requiredParameters: params.requiredParameters,
+      requiredParameters: normalizedRequiredParams,
       amountMinorUnits,
     }),
   );
@@ -291,11 +317,52 @@ export async function issueShadowDecisionAuthorization(params: {
   );
   const authorizationId = `authz:sha256:${authCoreHash}`;
 
+  const envRaw = (process.env.VERCEL_ENV ?? "local").trim().toLowerCase();
+  const deploymentEnvironment: "production" | "preview" | "local" =
+    params.deploymentEnvironment ??
+    (envRaw === "production" ? "production" : envRaw === "preview" ? "preview" : "local");
+
+  const normalizedExtraRevalidations: V03RevalidationRequirement[] = (
+    params.additionalRevalidationRequirements ?? []
+  ).map((req) =>
+    typeof req === "string"
+      ? {
+          requirementCode: `REVALIDATE_${req.toUpperCase()}`,
+          predicate: req,
+          thresholdOrExpectedValue: true,
+          mustRevalidateWithinSeconds: 300,
+        }
+      : req,
+  );
+
+  const defaultRevalidationRequirements: V03RevalidationRequirement[] = [
+    {
+      requirementCode: "REVALIDATE_RECEIPT_NOT_REVOKED",
+      predicate: "signing_key_and_receipt_active",
+      thresholdOrExpectedValue: true,
+      mustRevalidateWithinSeconds: 60,
+    },
+    {
+      requirementCode: "REVALIDATE_CLAIMS_NOT_WITHDRAWN",
+      predicate: "pinned_claims_remain_active_in_ledger",
+      thresholdOrExpectedValue: true,
+      mustRevalidateWithinSeconds: 60,
+    },
+    {
+      requirementCode: "REVALIDATE_PRICE_CEILING",
+      predicate: "live_quote_minor_units_lte_max_price",
+      thresholdOrExpectedValue: amountMinorUnits,
+      mustRevalidateWithinSeconds: 300,
+    },
+    ...normalizedExtraRevalidations,
+  ];
+
   const payload: V03DecisionAuthorizationPayload = {
     objectType: "DecisionAuthorization",
     spec: "dcc-decision-authorization/0.3",
     authorizationId,
     executionMode: "shadow_only_no_side_effects",
+    deploymentEnvironment,
     decisionReceipt: {
       receiptId: params.receipt.receiptId,
       evaluationFingerprint: params.receipt.payload.evaluationFingerprint,
@@ -312,36 +379,17 @@ export async function issueShadowDecisionAuthorization(params: {
     },
     issuedAt,
     expiresAt,
-    revalidationRequirements: [
-      {
-        requirementCode: "REVALIDATE_RECEIPT_NOT_REVOKED",
-        predicate: "signing_key_and_receipt_active",
-        thresholdOrExpectedValue: true,
-        mustRevalidateWithinSeconds: 60,
-      },
-      {
-        requirementCode: "REVALIDATE_CLAIMS_NOT_WITHDRAWN",
-        predicate: "pinned_claims_remain_active_in_ledger",
-        thresholdOrExpectedValue: true,
-        mustRevalidateWithinSeconds: 60,
-      },
-      {
-        requirementCode: "REVALIDATE_PRICE_CEILING",
-        predicate: "live_quote_minor_units_lte_max_price",
-        thresholdOrExpectedValue: amountMinorUnits,
-        mustRevalidateWithinSeconds: 300,
-      },
-    ],
+    revalidationRequirements: defaultRevalidationRequirements,
     consentMandateReference: {
       mandateId: `mandate:sha256:${sha256HexFull(`consent:${idempotencyKey}`).slice(0, 32)}`,
       principalType: "autonomous_shadow_verifier",
       scopeDigestSha256: sha256HexFull(
-        rfc8785Canonicalize(params.requiredParameters),
+        rfc8785Canonicalize(normalizedRequiredParams),
       ),
       grantedAt: issuedAt,
     },
     idempotencyKey,
-    requiredParameters: params.requiredParameters,
+    requiredParameters: normalizedRequiredParams,
     opaqueRouting: {
       targetAdapter: params.targetAdapter,
       routingToken: `rtok:${sha256HexFull(`${authorizationId}:${params.targetAdapter}`).slice(0, 24)}`,
@@ -366,17 +414,35 @@ export async function issueShadowDecisionAuthorization(params: {
     },
   };
 
-  const activeKey = getActiveV03SigningKey();
   const canonicalPayload = rfc8785Canonicalize(payload);
-  const jwsCompact = jwsCompactSignEdDsa({
-    protectedHeader: {
-      alg: "EdDSA",
+  let kid: string;
+  let alg: SupportedJwsAlg;
+  let jwsCompact: string;
+
+  const kmsIssuerId = getConfiguredVercelKmsIssuerId();
+  if (kmsIssuerId) {
+    const kmsSigned = await signJwsCompactViaVercelKmsEs256({
+      issuerId: kmsIssuerId,
       typ: "application/dcc-decision-authorization+jws",
-      kid: activeKey.kid,
-    },
-    payloadUtf8: canonicalPayload,
-    privateKeyObject: activeKey.privateKeyObject!,
-  });
+      payloadUtf8: canonicalPayload,
+    });
+    kid = kmsSigned.kid;
+    alg = "ES256";
+    jwsCompact = kmsSigned.jwsCompact;
+  } else {
+    const activeKey = getActiveV03SigningKey();
+    kid = activeKey.kid;
+    alg = "EdDSA";
+    jwsCompact = jwsCompactSignEdDsa({
+      protectedHeader: {
+        alg: "EdDSA",
+        typ: "application/dcc-decision-authorization+jws",
+        kid: activeKey.kid,
+      },
+      payloadUtf8: canonicalPayload,
+      privateKeyObject: activeKey.privateKeyObject!,
+    });
+  }
 
   const adapter = SHADOW_COMMERCE_ADAPTERS[params.targetAdapter];
   const adapterDryRun = await adapter.validateAndSimulateShadowPayload(payload);
@@ -385,8 +451,8 @@ export async function issueShadowDecisionAuthorization(params: {
     signedAuthorization: {
       authorizationId,
       executionMode: "shadow_only_no_side_effects",
-      kid: activeKey.kid,
-      alg: "EdDSA",
+      kid,
+      alg,
       jwsCompact,
       payload,
     },
@@ -396,14 +462,54 @@ export async function issueShadowDecisionAuthorization(params: {
 
 export async function verifyShadowDecisionAuthorizationJws(
   jwsCompact: string,
+  options?: {
+    nowIso?: string;
+    expectedEnvironment?: "production" | "preview" | "local";
+  },
 ): Promise<{
   valid: boolean;
+  reason?: string;
   payload?: V03DecisionAuthorizationPayload;
 }> {
-  const sigCheck = jwsCompactVerifyEdDsa({ jwsCompact });
-  if (!sigCheck.valid || !sigCheck.decodedPayloadUtf8) {
-    return { valid: false };
+  let sigCheck = jwsCompactVerifyEdDsa({ jwsCompact });
+  if (!sigCheck.valid && sigCheck.reason?.startsWith("UNKNOWN_KID:")) {
+    await syncVercelKmsJwksToRegistry(
+      getConfiguredVercelKmsIssuerId() ?? DEFAULT_VERCEL_KMS_ISSUER_ID,
+      true,
+    );
+    sigCheck = jwsCompactVerifyEdDsa({ jwsCompact });
   }
-  const payload = JSON.parse(sigCheck.decodedPayloadUtf8) as V03DecisionAuthorizationPayload;
-  return { valid: true, payload };
+  if (!sigCheck.valid || !sigCheck.decodedPayloadUtf8) {
+    return { valid: false, reason: sigCheck.reason };
+  }
+  try {
+    const payload = JSON.parse(sigCheck.decodedPayloadUtf8) as V03DecisionAuthorizationPayload;
+    if (payload.revocation?.status === "revoked") {
+      return { valid: false, reason: "AUTHORIZATION_REVOKED" };
+    }
+    const nowMs = options?.nowIso ? Date.parse(options.nowIso) : Date.now();
+    const expMs = Date.parse(payload.expiresAt);
+    if (Number.isFinite(expMs) && nowMs > expMs) {
+      return {
+        valid: false,
+        reason: `AUTHORIZATION_EXPIRED: expiresAt=${payload.expiresAt} is in the past.`,
+      };
+    }
+    if (
+      options?.expectedEnvironment &&
+      payload.deploymentEnvironment &&
+      payload.deploymentEnvironment !== options.expectedEnvironment
+    ) {
+      return {
+        valid: false,
+        reason: `ENVIRONMENT_MISMATCH: Expected "${options.expectedEnvironment}", got "${payload.deploymentEnvironment}".`,
+      };
+    }
+    return { valid: true, payload };
+  } catch (err) {
+    return {
+      valid: false,
+      reason: err instanceof Error ? err.message : "Failed to parse authorization payload",
+    };
+  }
 }

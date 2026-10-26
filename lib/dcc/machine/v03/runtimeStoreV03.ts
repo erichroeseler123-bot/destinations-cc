@@ -389,9 +389,12 @@ export function getV03RuntimeStore(): V03RuntimeStore {
         bookingChannelClass: "dcc_owned_platform",
         wtaAttributionPresent: false,
         staticAttributes: {
-          basePriceUsd: 419,
+          basePriceUsd: 429,
           supportsWeightOverride: true,
           requestedFormat: "standard_glacier_walk",
+          minAgeYears: 2,
+          minPortWindowMinutes: 225,
+          comfortablePortWindowMinutes: 255,
         },
         requiredClaimIds: ["clm:jnu:standard-seat-weight-limit-lbs"],
       },
@@ -404,9 +407,12 @@ export function getV03RuntimeStore(): V03RuntimeStore {
         bookingChannelClass: "dcc_owned_platform",
         wtaAttributionPresent: false,
         staticAttributes: {
-          basePriceUsd: 439,
+          basePriceUsd: 449,
           supportsWeightOverride: false,
           requestedFormat: "standard_glacier_walk",
+          minAgeYears: 2,
+          minPortWindowMinutes: 225,
+          comfortablePortWindowMinutes: 255,
         },
         requiredClaimIds: ["clm:jnu:standard-seat-weight-limit-lbs"],
       },
@@ -419,9 +425,12 @@ export function getV03RuntimeStore(): V03RuntimeStore {
         bookingChannelClass: "verified_direct_operator",
         wtaAttributionPresent: false,
         staticAttributes: {
-          basePriceUsd: 569,
+          basePriceUsd: 549,
           supportsWeightOverride: true,
           requestedFormat: "extended_ice_trek",
+          minAgeYears: 12,
+          minPortWindowMinutes: 360,
+          comfortablePortWindowMinutes: 390,
         },
         requiredClaimIds: ["clm:jnu:standard-seat-weight-limit-lbs"],
       },
@@ -809,12 +818,37 @@ export async function handleV03IssueShadowAuthorization(params: {
       pickupNodeCode: "DEFAULT-PICKUP",
       dropoffNodeCode: "DEFAULT-DROPOFF",
     },
+    additionalRevalidationRequirements: [
+      "driver_availability",
+      "vehicle_availability",
+      "road_safety",
+      "weather_suitability",
+      "live_inventory_confirmation",
+    ],
     targetAdapter,
   });
   store.authorizationsById.set(
     issued.signedAuthorization.authorizationId,
     issued.signedAuthorization,
   );
-  return issued;
+  const outcomeEvent = store.knowledgeLedger.appendEvent({
+    eventType: "shadow_authorization_dry_run_recorded",
+    claimId: `shadow-outcome:${issued.signedAuthorization.authorizationId}`,
+    claimVersionId: `shadow-outcome:${issued.signedAuthorization.authorizationId}:v1`,
+    recordedAt: issued.signedAuthorization.payload.issuedAt,
+    actorId: "dcc-v031-shadow-commerce-auditor",
+    isSynthetic: false,
+    provenanceClass: "operational_evidence",
+    reason: `Shadow authorization ${issued.signedAuthorization.authorizationId} bound to receipt ${stored.receipt.receiptId} (resultHash=${stored.receipt.payload.resultHash}) validated via ${targetAdapter} shadow adapter with liveExternalCallsMade=0 and executionMode=shadow_only_no_side_effects.`,
+  });
+  return {
+    ...issued,
+    ledgerShadowOutcomeEvent: {
+      eventId: outcomeEvent.eventId,
+      eventHash: outcomeEvent.eventHash,
+      eventType: outcomeEvent.eventType,
+      recordedAt: outcomeEvent.recordedAt,
+    },
+  };
 }
 

@@ -371,6 +371,63 @@ async function executeDeterministicEvaluationCore(params: {
       }
     }
 
+    // Candidate-specific minimum age gate (when supplied)
+    const youngestAge = params.inputs.youngestPassengerAgeYears;
+    const minAge = cand.staticAttributes.minAgeYears;
+    if (typeof youngestAge === "number" && typeof minAge === "number") {
+      if (youngestAge < minAge) {
+        ineligible = true;
+        reasonCodes.push("MINIMUM_AGE_NOT_MET");
+      }
+    }
+
+    // Candidate-specific cruise port transfer window gate (when supplied)
+    const portWindowMin = params.inputs.cruisePortWindowMinutes;
+    const minPortMin = cand.staticAttributes.minPortWindowMinutes;
+    const comfortPortMin = cand.staticAttributes.comfortablePortWindowMinutes;
+    if (typeof portWindowMin === "number" && typeof minPortMin === "number") {
+      if (portWindowMin < minPortMin) {
+        ineligible = true;
+        reasonCodes.push("INSUFFICIENT_CRUISE_PORT_WINDOW");
+      } else if (typeof comfortPortMin === "number" && portWindowMin < comfortPortMin) {
+        qualified = true;
+        score -= 8;
+        reasonCodes.push("TIGHT_PORT_TRANSFER_BUFFER_QUALIFIED");
+      }
+    }
+
+    // Candidate-specific operator weight surcharge threshold (when distinct per operator)
+    const paxWeight = params.inputs.maxSinglePassengerWeightLbs;
+    const candWeightSurchargeLbs = cand.staticAttributes.weightSurchargeThresholdLbs;
+    const candHardWeightMaxLbs = cand.staticAttributes.hardMaxWeightLbs;
+    if (typeof paxWeight === "number" && typeof candWeightSurchargeLbs === "number") {
+      if (typeof candHardWeightMaxLbs === "number" && paxWeight > candHardWeightMaxLbs) {
+        ineligible = true;
+        reasonCodes.push("PASSENGER_WEIGHT_EXCEEDS_HARD_LIMIT");
+      } else if (paxWeight > candWeightSurchargeLbs) {
+        qualified = true;
+        score -= 10;
+        if (!reasonCodes.some((r) => r.includes("QUALIFIED_SURCHARGE_REQUIRED"))) {
+          reasonCodes.push("OPERATOR_WEIGHT_SURCHARGE_THRESHOLD_EXCEEDED_QUALIFIED");
+        }
+      }
+    }
+
+    // Explicit live-departure / day-of-weather confirmation check when requested by caller
+    if (params.inputs.requireLiveDepartureConfirmation === true) {
+      const liveInvClaimId = cand.staticAttributes.liveInventoryClaimId;
+      const weatherClaimId = cand.staticAttributes.dayOfWeatherClaimId;
+      for (const cid of [liveInvClaimId, weatherClaimId]) {
+        if (typeof cid === "string") {
+          const st = projection.effectiveClaimByClaimId.get(cid);
+          if (!st || !st.canSupportPositiveEligibility) {
+            indeterminate = true;
+            reasonCodes.push(`LIVE_CONFIRMATION_UNKNOWN:${cid}`);
+          }
+        }
+      }
+    }
+
     let disposition: V03CandidateDispositionState;
     if (ineligible) {
       disposition = "ineligible";

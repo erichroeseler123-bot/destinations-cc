@@ -1,18 +1,15 @@
-import {
-  buildMachineJsonResponse,
-  enforceMachineLayerFeatureFlag,
-  getDeploymentProvenanceV03,
-} from "@/lib/dcc/machine";
+import { NextResponse } from "next/server";
+import { getDeploymentProvenanceV03 } from "@/lib/dcc/machine/v03/discoveryAndMcp";
 
+export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const flagBlocked = enforceMachineLayerFeatureFlag();
-  if (flagBlocked) return flagBlocked;
-
   const provenance = getDeploymentProvenanceV03();
-
-  return buildMachineJsonResponse(provenance, {
-    cacheControl: "no-store",
+  return NextResponse.json(provenance, {
+    status: 200,
+    headers: {
+      "Cache-Control": "no-store",
+    },
   });
 }
