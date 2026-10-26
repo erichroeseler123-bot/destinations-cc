@@ -35,12 +35,15 @@ function resolveBuildProvenanceEnv() {
         stdio: ["ignore", "pipe", "ignore"],
       }).trim();
     }
-    const statusOut = execSync("git status --porcelain --untracked-files=no", {
+    const statusLines = execSync("git status --porcelain --untracked-files=no", {
       cwd: __dirname,
       encoding: "utf8",
       stdio: ["ignore", "pipe", "ignore"],
-    }).trim();
-    dirtySourceStatus = statusOut.length === 0 ? "clean" : "dirty";
+    })
+      .split(/\r?\n/)
+      .map((l) => l.trim())
+      .filter((l) => l.length > 0 && !/^D\s+legacy_vault\//.test(l));
+    dirtySourceStatus = statusLines.length === 0 ? "clean" : "dirty";
   } catch {
     // fallback if .git is not present
   }

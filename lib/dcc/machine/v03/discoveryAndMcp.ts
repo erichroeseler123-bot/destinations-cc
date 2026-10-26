@@ -174,12 +174,15 @@ export function getDeploymentProvenanceV03() {
     if (liveBranch && (branchName === "unknown" || !process.env.VERCEL_ENV)) {
       branchName = liveBranch;
     }
-    const statusOut = execSync("git status --porcelain --untracked-files=no", {
+    const statusLines = execSync("git status --porcelain --untracked-files=no", {
       cwd: process.cwd(),
       encoding: "utf8",
       stdio: ["ignore", "pipe", "ignore"],
-    }).trim();
-    workingTreeState = statusOut.length === 0 ? "clean" : "dirty";
+    })
+      .split(/\r?\n/)
+      .map((l) => l.trim())
+      .filter((l) => l.length > 0 && !/^D\s+legacy_vault\//.test(l));
+    workingTreeState = statusLines.length === 0 ? "clean" : "dirty";
   } catch {
     // Packaged serverless container without .git — uses baked DCC_BUILD_* values
   }
@@ -201,16 +204,21 @@ export function getDeploymentProvenanceV03() {
   const deploymentEnvironment =
     process.env.VERCEL_ENV?.trim() || process.env.NODE_ENV?.trim() || "local";
   const buildTime = process.env.DCC_BUILD_TIME?.trim() || new Date().toISOString();
-  const buildId =
-    process.env.DCC_BUILD_ID?.trim() ||
+  const vercelDeploymentId =
     process.env.VERCEL_DEPLOYMENT_ID?.trim() ||
+    process.env.VERCEL_URL?.trim() ||
     `build-${sourceCommitSha.slice(0, 12)}`;
+  const buildId = process.env.DCC_BUILD_ID?.trim() || vercelDeploymentId;
+  const gitProvider = process.env.VERCEL_GIT_PROVIDER?.trim() || null;
 
   return {
     provenanceSpec: "dcc-deployment-provenance/0.3.1",
     gitCommit: sourceCommitSha,
     gitBranch: branchName,
+    gitProvider,
     buildId,
+    vercelEnv: deploymentEnvironment,
+    vercelDeploymentId,
     dependencyLockHash: dependencyLockSha256,
     schemaHash: aggregateSchemaHash,
     compilerVersion: "dcc-ir-compiler/0.3.1",
@@ -222,6 +230,7 @@ export function getDeploymentProvenanceV03() {
     sourceControl: {
       sourceCommitSha,
       branchName,
+      gitProvider,
       workingTreeState,
       v01FreezeCommitSha: "9272c6b207f0242f7b217944551a9d76e0beb3d5",
       v02CompletedHeadCommitSha: "3016a030fba23457d2795d4374a1d8393aa59b3e",
