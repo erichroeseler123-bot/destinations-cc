@@ -1,4 +1,4 @@
-name: DCC Machine Layer Verification (v0.1 + v0.2 Canary)
+name: DCC Machine Layer Verification (v0.1 + v0.2 + v0.3 Canary)
 
 on:
   push:
@@ -31,11 +31,12 @@ jobs:
       - name: TypeScript typecheck
         run: npx tsc --noEmit
 
-      - name: Run Golden Master & Machine Layer Test Suite (Tests 36, 80, 81, 82, 83)
-        run: npx tsx --test tests/dcc/36-juneau-port-day-engine.test.ts tests/dcc/80-category-decision-engine.test.ts tests/dcc/81-category-engine-golden-master.test.ts tests/dcc/82-dcc-machine-layer-v01.test.ts tests/dcc/83-dcc-machine-layer-v02.test.ts
+      - name: Run Golden Master & Machine Layer Test Suite (Tests 36, 80, 81, 82, 83, 84)
+        run: npx tsx --test tests/dcc/36-discovery-stack.test.ts tests/dcc/80-governing-product-direction.test.ts tests/dcc/81-category-decision-engine-framework.test.ts tests/dcc/82-dcc-machine-layer-v01.test.ts tests/dcc/83-dcc-machine-layer-v02.test.ts tests/dcc/84-dcc-machine-layer-v03.test.ts
 
-      - name: Run 3-part Machine Layer v0.2 Benchmarks
-        run: npx tsx scripts/dcc/benchmark-machine-layer.ts
+      - name: Run 10-Operation Machine Layer v0.3 Benchmarks
+        run: npx tsx scripts/dcc/benchmark-machine-layer-v03.ts
 
       - name: Generate Machine-Readable Verification Manifest
         run: npx tsx scripts/dcc/generate-verification-manifest.ts
+

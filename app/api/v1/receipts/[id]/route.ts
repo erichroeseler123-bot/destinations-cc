@@ -2,7 +2,9 @@ import {
   buildMachineJsonResponse,
   enforceMachineLayerFeatureFlag,
   getMachineDecisionReceipt,
+  getV03RuntimeStore,
   verifyDecisionReceiptSignature,
+  verifyV03DecisionReceiptJws,
 } from "@/lib/dcc/machine";
 
 export const dynamic = "force-dynamic";
@@ -16,6 +18,30 @@ export async function GET(
 
   const { id } = await context.params;
   const decodedId = decodeURIComponent(id);
+
+  // Check v0.3 runtime store first if full 64-hex SHA-256 receipt ID
+  if (decodedId.startsWith("rcpt:sha256:") || decodedId.startsWith("rcpt:sim:sha256:")) {
+    const store = getV03RuntimeStore();
+    const stored = store.receiptsById.get(decodedId);
+    if (stored) {
+      const verification = await verifyV03DecisionReceiptJws({
+        jwsCompact: stored.receipt.jwsCompact,
+      });
+      return buildMachineJsonResponse(
+        {
+          ok: true,
+          protocolVersion: "0.3.0",
+          objectType: "DecisionReceiptV03",
+          receipt: stored.receipt,
+          signatureVerification: verification,
+        },
+        {
+          etag: `"sha256-${stored.receipt.rfc8785PayloadSha256}"`,
+          cacheControl: "public, max-age=31536000, immutable",
+        },
+      );
+    }
+  }
 
   const receipt = getMachineDecisionReceipt(decodedId);
   if (!receipt) {
