@@ -89,6 +89,8 @@ export interface BlackBoxVerificationReport {
   };
 }
 
+import { execSync } from "node:child_process";
+
 export async function runBlackBoxCanaryVerification(options?: {
   baseUrl?: string;
   fetchImpl?: typeof fetch;
@@ -104,6 +106,24 @@ export async function runBlackBoxCanaryVerification(options?: {
   if (process.env.VERCEL_AUTOMATION_BYPASS_SECRET) {
     extraHeaders["x-vercel-protection-bypass"] =
       process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
+  } else if (baseUrl.includes(".vercel.app") && !options?.fetchImpl) {
+    try {
+      const traceOut = execSync(
+        `npx.cmd vercel curl /.well-known/dcc --deployment ${baseUrl} -- -s -v -o NUL 2>&1`,
+        { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },
+      );
+      const bypassLine = traceOut
+        .split(/\r?\n/)
+        .find((l) => l.toLowerCase().startsWith("> x-vercel-protection-bypass:"));
+      if (bypassLine) {
+        const val = bypassLine.split(":").slice(1).join(":").trim();
+        if (val) {
+          extraHeaders["x-vercel-protection-bypass"] = val;
+        }
+      }
+    } catch {
+      // Fallback to unauthenticated fetch if vercel CLI is not present
+    }
   }
 
   const getJson = async (url: string, headers?: Record<string, string>) => {
