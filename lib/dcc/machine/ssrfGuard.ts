@@ -1,10 +1,11 @@
+import dns from "node:dns";
 import net from "node:net";
 import { sha256Hex, writeImmutableArtifact } from "./cryptoAndStorage";
 import type { EpistemicKind, GeographicScope, TypedClaimValue } from "./schemas";
 
 /**
- * DCC Machine Layer v0.1 — SSRF Guard, Safe Source Ingestion, Untrusted Extraction Quarantine,
- * Audit Log, and Rate Limit / Auth Controls.
+ * DCC Machine Layer v0.1 & v0.2 — SSRF Guard, DNS Rebinding Defense, Safe Source Ingestion,
+ * Untrusted Extraction Quarantine, Audit Log, and Rate Limit / Auth Controls.
  */
 
 const ALLOWED_PROTOCOLS = new Set(["https:"]);
@@ -120,6 +121,135 @@ function isBlockedIpv6(rawHost: string): boolean {
     return true; // IPv4-mapped IPv6 addresses
   }
   return false;
+}
+
+export type DnsLookupRecord = {
+  address: string;
+  family: number;
+};
+
+export type DnsLookupFunction = (
+  hostname: string,
+) => Promise<DnsLookupRecord[]>;
+
+const defaultDnsLookup: DnsLookupFunction = async (hostname: string) => {
+  const records = await dns.promises.lookup(hostname, { all: true, verbatim: true });
+  return records.map((r) => ({ address: r.address, family: r.family }));
+};
+
+/**
+ * Resolves all DNS A/AAAA records for `hostname` and verifies that none resolve to
+ * private, loopback, link-local, CGNAT, or cloud metadata IP addresses (DNS rebinding defense).
+ */
+export async function resolveAndValidateDnsAgainstRebinding(
+  hostnameOrUrl: string,
+  rawUrlOrLookupFn?: string | DnsLookupFunction,
+  maybeLookupFn?: DnsLookupFunction,
+): Promise<DnsLookupRecord[]> {
+  let hostname = hostnameOrUrl;
+  let rawUrl = typeof rawUrlOrLookupFn === "string" ? rawUrlOrLookupFn : hostnameOrUrl;
+  const dnsLookupFn: DnsLookupFunction =
+    typeof rawUrlOrLookupFn === "function"
+      ? rawUrlOrLookupFn
+      : (maybeLookupFn ?? defaultDnsLookup);
+
+  if (/^https?:\/\//i.test(hostnameOrUrl)) {
+    try {
+      const parsed = new URL(hostnameOrUrl);
+      hostname = parsed.hostname;
+      rawUrl = hostnameOrUrl;
+    } catch {
+      // fall through
+    }
+  }
+
+  const cleanHost = hostname.replace(/^\[|\]$/g, "").toLowerCase().replace(/\.$/, "");
+  if (net.isIPv4(cleanHost)) {
+    if (isBlockedIpv4(cleanHost)) {
+      throw new SsrfProtectionError(
+        "BLOCKED_PRIVATE_OR_METADATA_IPV4",
+        `IPv4 address ${cleanHost} is blocked`,
+        rawUrl,
+      );
+    }
+    return [{ address: cleanHost, family: 4 }];
+  }
+  if (net.isIPv6(cleanHost)) {
+    if (isBlockedIpv6(cleanHost)) {
+      throw new SsrfProtectionError(
+        "BLOCKED_PRIVATE_OR_METADATA_IPV6",
+        `IPv6 address ${cleanHost} is blocked`,
+        rawUrl,
+      );
+    }
+    return [{ address: cleanHost, family: 6 }];
+  }
+
+  let records: DnsLookupRecord[];
+  try {
+    records = await dnsLookupFn(cleanHost);
+  } catch (err) {
+    recordIngestionAuditEvent({
+      eventType: "source_ingestion_blocked_ssrf",
+      targetUrl: rawUrl,
+      actor: "ssrf_dns_guard",
+      detail: `DNS lookup failed for ${cleanHost}: ${err instanceof Error ? err.message : String(err)}`,
+    });
+    throw new SsrfProtectionError(
+      "DNS_RESOLUTION_FAILED",
+      `Failed to resolve hostname '${cleanHost}'`,
+      rawUrl,
+    );
+  }
+
+  if (!records || records.length === 0) {
+    throw new SsrfProtectionError(
+      "DNS_RESOLUTION_EMPTY",
+      `Hostname '${cleanHost}' resolved to zero IP records`,
+      rawUrl,
+    );
+  }
+
+  for (const rec of records) {
+    const addr = rec.address.trim();
+    if (rec.family === 4 || net.isIPv4(addr)) {
+      if (isBlockedIpv4(addr)) {
+        recordIngestionAuditEvent({
+          eventType: "source_ingestion_blocked_ssrf",
+          targetUrl: rawUrl,
+          actor: "ssrf_dns_guard",
+          detail: `DNS rebinding / private IPv4 resolution blocked for ${cleanHost} -> ${addr}`,
+        });
+        throw new SsrfProtectionError(
+          "DNS_REBINDING_PRIVATE_IPV4_BLOCKED",
+          `Hostname '${cleanHost}' resolved to disallowed private/loopback/metadata IPv4 '${addr}'`,
+          rawUrl,
+        );
+      }
+    } else if (rec.family === 6 || net.isIPv6(addr)) {
+      if (isBlockedIpv6(addr)) {
+        recordIngestionAuditEvent({
+          eventType: "source_ingestion_blocked_ssrf",
+          targetUrl: rawUrl,
+          actor: "ssrf_dns_guard",
+          detail: `DNS rebinding / private IPv6 resolution blocked for ${cleanHost} -> ${addr}`,
+        });
+        throw new SsrfProtectionError(
+          "DNS_REBINDING_PRIVATE_IPV6_BLOCKED",
+          `Hostname '${cleanHost}' resolved to disallowed private/loopback/link-local IPv6 '${addr}'`,
+          rawUrl,
+        );
+      }
+    } else {
+      throw new SsrfProtectionError(
+        "DNS_REBINDING_OR_PRIVATE_RESOLUTION",
+        `Hostname '${cleanHost}' resolved to unrecognized address format '${addr}'`,
+        rawUrl,
+      );
+    }
+  }
+
+  return records;
 }
 
 export function validateUrlAgainstSsrf(rawUrl: string): URL {
@@ -241,17 +371,21 @@ export type SafeIngestOptions = {
   maxRedirects?: number;
   allowedContentTypes?: string[];
   fetchImpl?: typeof fetch;
+  verifyDnsResolution?: boolean;
+  dnsLookupImpl?: DnsLookupFunction;
 };
 
 export type SafeIngestedArtifact = {
   canonicalUrl: string;
   finalUrl: string;
   redirectChain: string[];
+  resolvedDnsIps: string[];
   httpStatus: number;
   contentType: string;
   byteLength: number;
   contentHash: string;
   storageUri: string;
+  rawBodyText: string;
   retrievedAt: string;
 };
 
@@ -264,9 +398,14 @@ export async function ingestSourceArtifactSafely(
   const maxRedirects = options.maxRedirects ?? 3;
   const allowedTypes = options.allowedContentTypes ?? ALLOWED_CONTENT_TYPES;
   const fetchFn = options.fetchImpl ?? globalThis.fetch;
+  // When using real globalThis.fetch or when explicitly requested, perform DNS rebinding check
+  const shouldVerifyDns =
+    options.verifyDnsResolution ??
+    (Boolean(options.dnsLookupImpl) || !options.fetchImpl);
 
   let currentUrl = validateUrlAgainstSsrf(rawUrl).toString();
   const redirectChain: string[] = [];
+  let lastResolvedIps: string[] = [];
 
   recordIngestionAuditEvent({
     eventType: "source_ingestion_started",
@@ -277,6 +416,15 @@ export async function ingestSourceArtifactSafely(
 
   for (let hop = 0; hop <= maxRedirects; hop += 1) {
     const validatedUrl = validateUrlAgainstSsrf(currentUrl);
+    if (shouldVerifyDns) {
+      const dnsRecords = await resolveAndValidateDnsAgainstRebinding(
+        validatedUrl.hostname,
+        currentUrl,
+        options.dnsLookupImpl,
+      );
+      lastResolvedIps = dnsRecords.map((r) => r.address);
+    }
+
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -288,7 +436,7 @@ export async function ingestSourceArtifactSafely(
         signal: controller.signal,
         headers: {
           Accept: allowedTypes.join(", "),
-          "User-Agent": "DCC-Machine-Ingestion/0.1 (+https://www.destinationcommandcenter.com/.well-known/dcc)",
+          "User-Agent": "DCC-Machine-Ingestion/0.2 (+https://www.destinationcommandcenter.com/.well-known/dcc)",
         },
       });
     } catch (err) {
@@ -351,26 +499,56 @@ export async function ingestSourceArtifactSafely(
         detail: `Content-Length ${contentLengthHeader} exceeds maxBytes ${maxBytes}`,
       });
       throw new SsrfProtectionError(
-        "RESPONSE_TOO_LARGE",
+        "PAYLOAD_TOO_LARGE",
         `Response size ${contentLengthHeader} exceeds limit of ${maxBytes} bytes`,
         currentUrl,
       );
     }
 
-    const bodyText = await response.text();
-    const byteLength = Buffer.byteLength(bodyText, "utf8");
-    if (byteLength > maxBytes) {
-      recordIngestionAuditEvent({
-        eventType: "source_ingestion_rejected_content",
-        targetUrl: currentUrl,
-        actor: "ingestion_service",
-        detail: `Body size ${byteLength} exceeds maxBytes ${maxBytes}`,
-      });
-      throw new SsrfProtectionError(
-        "RESPONSE_TOO_LARGE",
-        `Body size ${byteLength} exceeds limit of ${maxBytes} bytes`,
-        currentUrl,
-      );
+    // Read response stream with strict decompressed byte ceiling (prevents gzip/brotli bombs)
+    let bodyText = "";
+    let byteLength = 0;
+    if (response.body && typeof response.body.getReader === "function") {
+      const reader = response.body.getReader();
+      const chunks: Buffer[] = [];
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const buf = Buffer.from(value);
+        byteLength += buf.byteLength;
+        if (byteLength > maxBytes) {
+          await reader.cancel().catch(() => undefined);
+          recordIngestionAuditEvent({
+            eventType: "source_ingestion_rejected_content",
+            targetUrl: currentUrl,
+            actor: "ingestion_service",
+            detail: `Streaming decompressed body size ${byteLength} exceeds maxBytes ${maxBytes}`,
+          });
+          throw new SsrfProtectionError(
+            "PAYLOAD_TOO_LARGE",
+            `Decompressed response stream size ${byteLength} exceeds limit of ${maxBytes} bytes`,
+            currentUrl,
+          );
+        }
+        chunks.push(buf);
+      }
+      bodyText = Buffer.concat(chunks).toString("utf8");
+    } else {
+      bodyText = await response.text();
+      byteLength = Buffer.byteLength(bodyText, "utf8");
+      if (byteLength > maxBytes) {
+        recordIngestionAuditEvent({
+          eventType: "source_ingestion_rejected_content",
+          targetUrl: currentUrl,
+          actor: "ingestion_service",
+          detail: `Body size ${byteLength} exceeds maxBytes ${maxBytes}`,
+        });
+        throw new SsrfProtectionError(
+          "PAYLOAD_TOO_LARGE",
+          `Body size ${byteLength} exceeds limit of ${maxBytes} bytes`,
+          currentUrl,
+        );
+      }
     }
 
     const contentHash = sha256Hex(bodyText);
@@ -393,11 +571,13 @@ export async function ingestSourceArtifactSafely(
       canonicalUrl: rawUrl,
       finalUrl: currentUrl,
       redirectChain,
+      resolvedDnsIps: lastResolvedIps,
       httpStatus: response.status,
       contentType: baseContentType,
       byteLength,
       contentHash,
       storageUri: artifact.storageUri,
+      rawBodyText: bodyText,
       retrievedAt,
     };
   }

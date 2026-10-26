@@ -1,9 +1,13 @@
+import crypto from "node:crypto";
 import { hashCanonicalJson } from "./cryptoAndStorage";
 import {
   COMPACT_EVALUATION_JSON_SCHEMA,
   EXPANDED_EVALUATION_JSON_SCHEMA,
+  SIGNED_RECEIPT_JSON_SCHEMA,
   validateAgainstJsonSchema,
+  type CandidateDisposition,
   type CandidateEvaluationSummary,
+  type CandidateUniverseDispositionRecord,
   type CompactEvaluationResponse,
   type DecisionIrBundle,
   type DecisionIrCandidate,
@@ -21,9 +25,14 @@ import {
   type MachineSourceSnapshot,
   type RuleExecutionRecord,
 } from "./schemas";
+import {
+  enforceBundleComplexityLimits,
+  enforceExecutionTimeBudget,
+} from "./securityLimits";
+import { signDecisionReceipt } from "./signing";
 
 /**
- * DCC Machine Layer v0.1 — Universal High-Speed Deterministic Decision IR Evaluator
+ * DCC Machine Layer v0.1 & v0.2 — Universal High-Speed Deterministic Decision IR Evaluator
  *
  * Strictly deterministic and external-call-free on the hot path.
  * Never performs web searches, scraping, LLM calls, live extraction, or third-party API calls.
@@ -44,6 +53,9 @@ export type RuntimeEpistemicOverrides = {
   sourceSnapshots?: Map<string, MachineSourceSnapshot>;
   evidenceFragments?: Map<string, MachineEvidenceFragment>;
   nowIso?: string;
+  validAt?: string;
+  knownAt?: string;
+  maxExecutionTimeMs?: number;
 };
 
 const safeEvaluationCache = new Map<
@@ -510,18 +522,78 @@ export function evaluateIrExpression(
   }
 }
 
+function projectClaimVersionAtKnownTime(
+  cv: MachineClaimVersion,
+  knownAt: string,
+): MachineClaimVersion {
+  let projected = cv;
+  if (
+    projected.status === "superseded" &&
+    projected.known_to &&
+    knownAt < projected.known_to
+  ) {
+    projected = {
+      ...projected,
+      status: "verified",
+      supersededByVersionId: null,
+      retractionId: null,
+    };
+  }
+  if (
+    projected.status === "withdrawn" &&
+    projected.withdrawalInfo?.withdrawnAt &&
+    knownAt < projected.withdrawalInfo.withdrawnAt
+  ) {
+    projected = {
+      ...projected,
+      status: "verified",
+      retractionId: null,
+      withdrawalInfo: null,
+    };
+  }
+  return projected;
+}
+
+function mapStatusToDisposition(
+  status: CandidateEvaluationSummary["status"],
+  hasUnknownHardRuleOutcome: boolean,
+): CandidateDisposition {
+  switch (status) {
+    case "recommended":
+    case "contingency_fallback":
+      return "eligible";
+    case "viable_qualified_unknown_or_stale":
+      return hasUnknownHardRuleOutcome ? "indeterminate" : "qualified";
+    case "conflict_blocked":
+      return "indeterminate";
+    case "excluded":
+      return "ineligible";
+  }
+}
+
 export function evaluateDecisionIrBundle(params: {
   bundle: DecisionIrBundle;
   input: Record<string, unknown>;
   mode?: "compact" | "expanded";
   pinnedVersionRequested?: boolean;
+  validAt?: string;
+  knownAt?: string;
   overrides?: RuntimeEpistemicOverrides;
   bypassCache?: boolean;
 }): CompactEvaluationResponse | ExpandedEvaluationResponse {
+  const startTimePerfMs = performance.now();
   const mode = params.mode ?? "compact";
   const pinnedVersionRequested = params.pinnedVersionRequested ?? false;
   const bundle = params.bundle;
   const overrides = params.overrides;
+
+  enforceBundleComplexityLimits({
+    candidateCount: bundle.candidates.length,
+    ruleCount: bundle.rules.length,
+  });
+
+  const evaluationRunId = `evalrun:${crypto.randomUUID()}`;
+  const traceRunId = `tracerun:${crypto.randomUUID()}`;
 
   const {
     normalizedInput,
@@ -534,43 +606,190 @@ export function evaluateDecisionIrBundle(params: {
     throw new Error(`Invalid input for engine '${bundle.engineId}': ${validationIssues.join(" ")}`);
   }
 
+  const evaluatedAt =
+    overrides?.nowIso ??
+    params.knownAt ??
+    overrides?.knownAt ??
+    "2026-04-20T00:00:00.000Z";
+  const validAt =
+    params.validAt ??
+    overrides?.validAt ??
+    overrides?.nowIso ??
+    "2026-04-20T00:00:00.000Z";
+  const knownAt =
+    params.knownAt ??
+    overrides?.knownAt ??
+    overrides?.nowIso ??
+    "2026-04-20T00:00:00.000Z";
+  const bitemporalExplicit = Boolean(
+    params.validAt || params.knownAt || overrides?.validAt || overrides?.knownAt,
+  );
+
   const normalizedInputHash = hashCanonicalJson(normalizedInput);
 
-  // Compute state signature of claims & conflicts so withdrawal/conflict changes immediately bust cache
+  // Index all known claim versions by parent claimId for bitemporal (validAt x knownAt) lookup
+  const versionsByClaimId = new Map<string, MachineClaimVersion[]>();
+  const registerVersionForClaim = (cv: MachineClaimVersion) => {
+    const list = versionsByClaimId.get(cv.claimId) ?? [];
+    const existingIdx = list.findIndex((existing) => existing.versionId === cv.versionId);
+    if (existingIdx >= 0) {
+      list[existingIdx] = cv;
+    } else {
+      list.push(cv);
+    }
+    list.sort((a, b) => a.versionNumber - b.versionNumber);
+    versionsByClaimId.set(cv.claimId, list);
+  };
+  for (const cv of Object.values(bundle.embeddedClaims)) {
+    registerVersionForClaim(cv);
+  }
+  if (overrides?.claimVersions) {
+    for (const cv of overrides.claimVersions.values()) {
+      registerVersionForClaim(cv);
+    }
+  }
+
   const claimLookup = (claimVersionId: string): MachineClaimVersion | undefined => {
-    return overrides?.claimVersions?.get(claimVersionId) ?? bundle.embeddedClaims[claimVersionId];
+    const rawCv =
+      overrides?.claimVersions?.get(claimVersionId) ??
+      bundle.embeddedClaims[claimVersionId];
+    if (!rawCv) return undefined;
+
+    const projectedRaw = projectClaimVersionAtKnownTime(rawCv, knownAt);
+
+    if (!bitemporalExplicit) {
+      return projectedRaw;
+    }
+
+    const allVersions = versionsByClaimId.get(rawCv.claimId) ?? [rawCv];
+    // Filter to versions that DCC actually possessed at or before knownAt
+    const knownVersions = allVersions
+      .filter((v) => (v.known_from ?? v.retrieved_at) <= knownAt)
+      .map((v) => projectClaimVersionAtKnownTime(v, knownAt));
+
+    if (knownVersions.length === 0) {
+      return undefined;
+    }
+
+    // Find versions that were active in DCC's knowledge at knownAt AND valid in the world at validAt
+    const activeAndValidVersions = knownVersions.filter((v) => {
+      const activeAtKnown = !v.known_to || knownAt < v.known_to;
+      const validInWorld =
+        v.valid_from <= validAt && (!v.valid_to || validAt <= v.valid_to);
+      return activeAtKnown && validInWorld && v.status !== "superseded";
+    });
+
+    if (activeAndValidVersions.length > 0) {
+      return activeAndValidVersions[activeAndValidVersions.length - 1];
+    }
+
+    // If rawCv was superseded by a non-retroactive future-dated version (v2.valid_from > validAt),
+    // and validAt still falls within rawCv's world validity window, use rawCv as verified for validAt
+    const rawValidInWorld =
+      rawCv.valid_from <= validAt && (!rawCv.valid_to || validAt <= rawCv.valid_to);
+    if (
+      rawValidInWorld &&
+      rawCv.status === "superseded" &&
+      knownVersions.some((v) => v.versionNumber > rawCv.versionNumber && v.valid_from > validAt)
+    ) {
+      return {
+        ...rawCv,
+        status: "verified",
+        supersededByVersionId: null,
+        retractionId: null,
+      };
+    }
+
+    return projectedRaw;
   };
 
   const activeConflictsMap = new Map<string, MachineClaimConflict>();
   for (const [cId, conf] of Object.entries(bundle.embeddedConflicts)) {
-    activeConflictsMap.set(cId, conf);
-  }
-  if (overrides?.conflicts) {
-    for (const [cId, conf] of overrides.conflicts.entries()) {
+    if (!bitemporalExplicit || conf.detected_at <= knownAt) {
       activeConflictsMap.set(cId, conf);
     }
   }
+  if (overrides?.conflicts) {
+    for (const [cId, conf] of overrides.conflicts.entries()) {
+      if (!bitemporalExplicit || conf.detected_at <= knownAt) {
+        activeConflictsMap.set(cId, conf);
+      }
+    }
+  }
+
+  const candidateUniverseId =
+    bundle.candidateUniverseId ??
+    bundle.manifest.candidateUniverseId ??
+    `univ:${bundle.engineId}`;
+  const candidateUniverseVersion =
+    bundle.candidateUniverseVersion ??
+    bundle.manifest.candidateUniverseVersion ??
+    bundle.version;
+  const candidateUniverseHash =
+    bundle.candidateUniverseHash ??
+    bundle.manifest.candidateUniverseHash ??
+    hashCanonicalJson({
+      universeId: candidateUniverseId,
+      version: candidateUniverseVersion,
+      includedCandidateIds: bundle.candidates.map((c) => c.candidateId),
+    });
 
   const epistemicStateSignature = hashCanonicalJson({
-    nowIso: overrides?.nowIso ?? null,
+    validAt,
+    knownAt,
     claims: Object.keys(bundle.embeddedClaims)
       .sort()
       .map((id) => {
         const cv = claimLookup(id);
-        return [id, cv?.status ?? "missing", cv?.supersededByVersionId ?? null, cv?.retractionId ?? null];
+        return [
+          id,
+          cv?.versionId ?? "missing",
+          cv?.evidenceHash ?? "missing",
+          cv?.status ?? "missing",
+          cv?.supersededByVersionId ?? null,
+          cv?.retractionId ?? null,
+        ];
       }),
     conflicts: Array.from(activeConflictsMap.values())
       .sort((a, b) => a.id.localeCompare(b.id))
       .map((c) => [c.id, c.status, c.resolutionPolicy]),
   });
 
-  // Safe cache key: engine_version + normalized_input_hash (+ state signature & mode)
-  const cacheKey = `${bundle.engineId}@${bundle.version}#${bundle.bundleHash}:${epistemicStateSignature}:${normalizedInputHash}:${mode}`;
+  const evaluationFingerprint = hashCanonicalJson({
+    engineId: bundle.engineId,
+    engineVersion: bundle.version,
+    bundleHash: bundle.bundleHash,
+    candidateUniverseHash,
+    normalizedInputHash,
+    validAt,
+    knownAt,
+    epistemicStateSignature,
+  });
+
+  // Safe cache key: engine_version + evaluationFingerprint + mode
+  const cacheKey = `${bundle.engineId}@${bundle.version}#${evaluationFingerprint}:${mode}`;
   if (!params.bypassCache && !containedSensitiveFields) {
     const cached = safeEvaluationCache.get(cacheKey);
     if (cached) {
+      const elapsedCachedMs = performance.now() - startTimePerfMs;
+      enforceExecutionTimeBudget(elapsedCachedMs, overrides?.maxExecutionTimeMs);
+      if (cached.mode === "expanded") {
+        return {
+          ...cached,
+          evaluationRunId,
+          traceRunId,
+          cacheHit: true,
+          trace: {
+            ...cached.trace,
+            evaluationRunId,
+            traceRunId,
+          },
+        };
+      }
       return {
         ...cached,
+        evaluationRunId,
+        traceRunId,
         cacheHit: true,
       };
     }
@@ -582,16 +801,19 @@ export function evaluateDecisionIrBundle(params: {
 
   const commercialSummaries: CandidateEvaluationSummary[] = [];
   const contingencySummaries: CandidateEvaluationSummary[] = [];
+  const candidateDispositions: CandidateUniverseDispositionRecord[] = [];
   const candidateTraces: MachineEvaluationTrace["candidateTraces"] = [];
 
   const allReferencedIds = new Set<string>([
     bundle.id,
     bundle.destinationEntityId,
     bundle.manifest.ruleSetId,
+    candidateUniverseId,
   ]);
   const allImmutableUris = new Set<string>([
     bundle.immutableReferenceUri,
     `/r/${bundle.manifest.ruleSetId}/v/${bundle.version}`,
+    `/r/${candidateUniverseId}/v/${candidateUniverseVersion}`,
   ]);
   const allResolvedClaimVersionIds = new Set<string>();
   const conflictsEncountered = new Set<string>();
@@ -612,7 +834,7 @@ export function evaluateDecisionIrBundle(params: {
     const reasonCodes = new Set<string>();
     const qualificationWarnings: string[] = [];
     const remediationHints: string[] = [];
-    const supportingClaimVersionIds = new Set<string>(candidate.claimVersionIds);
+    const supportingClaimVersionIds = new Set<string>();
     const candidateRefUris = new Set<string>([`/r/${candidate.entityId}/v/1.0.0`]);
 
     allReferencedIds.add(candidate.entityId);
@@ -621,17 +843,22 @@ export function evaluateDecisionIrBundle(params: {
     let hasWithdrawnDependency = false;
     let hasBlockingConflict = false;
     let hasStaleOrSupersededDependency = false;
+    let candidateSawUnknownHardRule = false;
 
     const inspectClaimDependencies = (cvIds: string[]) => {
-      for (const cvId of cvIds) {
-        supportingClaimVersionIds.add(cvId);
-        allResolvedClaimVersionIds.add(cvId);
-        const cv = claimLookup(cvId);
+      for (const requestedCvId of cvIds) {
+        const cv = claimLookup(requestedCvId);
         if (!cv) {
+          supportingClaimVersionIds.add(requestedCvId);
+          allResolvedClaimVersionIds.add(requestedCvId);
           hasWithdrawnDependency = true;
-          withdrawnClaimsEncountered.add(cvId);
+          withdrawnClaimsEncountered.add(requestedCvId);
           continue;
         }
+        const resolvedCvId = cv.versionId;
+        supportingClaimVersionIds.add(resolvedCvId);
+        allResolvedClaimVersionIds.add(resolvedCvId);
+
         allReferencedIds.add(cv.claimId);
         allReferencedIds.add(cv.versionId);
         allReferencedIds.add(cv.sourceId);
@@ -641,23 +868,25 @@ export function evaluateDecisionIrBundle(params: {
         candidateRefUris.add(cv.immutableReferenceUri);
 
         const isExpiredByTime = Boolean(
-          overrides?.nowIso && cv.valid_to && overrides.nowIso > cv.valid_to,
+          validAt &&
+            ((cv.valid_to && validAt > cv.valid_to) ||
+              (bitemporalExplicit && cv.valid_from && validAt < cv.valid_from)),
         );
 
         if (cv.status === "withdrawn") {
           hasWithdrawnDependency = true;
-          withdrawnClaimsEncountered.add(cvId);
+          withdrawnClaimsEncountered.add(resolvedCvId);
           reasonCodes.add("EVIDENCE_WITHDRAWN");
           remediationHints.push(
             `Supporting claim ${cv.claimId} (${cv.versionId}) has been withdrawn and cannot support a positive recommendation.`,
           );
         } else if (cv.status === "stale" || cv.status === "superseded" || isExpiredByTime) {
           hasStaleOrSupersededDependency = true;
-          staleClaimsEncountered.add(cvId);
+          staleClaimsEncountered.add(resolvedCvId);
           reasonCodes.add("EVIDENCE_STALE_OR_SUPERSEDED");
           qualificationWarnings.push(
             `Claim ${cv.claimId} (${cv.versionId}) is ${
-              isExpiredByTime ? `expired (valid_to ${cv.valid_to})` : `marked ${cv.status}`
+              isExpiredByTime ? `outside validity window (${cv.valid_from}..${cv.valid_to})` : `marked ${cv.status}`
             }${
               cv.supersededByVersionId ? ` (superseded by ${cv.supersededByVersionId})` : ""
             }.`,
@@ -670,7 +899,9 @@ export function evaluateDecisionIrBundle(params: {
         for (const conflict of activeConflictsMap.values()) {
           if (
             conflict.status === "disputed" &&
-            (conflict.claimId === cv.claimId || conflict.claimVersionIds.includes(cvId))
+            (conflict.claimId === cv.claimId ||
+              conflict.claimVersionIds.includes(resolvedCvId) ||
+              conflict.claimVersionIds.includes(requestedCvId))
           ) {
             conflictsEncountered.add(conflict.id);
             allReferencedIds.add(conflict.id);
@@ -698,11 +929,13 @@ export function evaluateDecisionIrBundle(params: {
           : typeof candidate.attributes.activityMinutes === "number"
             ? candidate.attributes.activityMinutes
             : null;
+      const evidenceDeps = Array.from(supportingClaimVersionIds).sort();
       const summary: CandidateEvaluationSummary = {
         candidateId: candidate.candidateId,
         entityId: candidate.entityId,
         title: candidate.title,
         candidateClass: candidate.candidateClass,
+        disposition: "eligible",
         status: "contingency_fallback",
         preferenceScore: 0,
         commercialWeightApplied: 0,
@@ -716,13 +949,23 @@ export function evaluateDecisionIrBundle(params: {
         matchedPreferenceRuleIds: [],
         qualificationWarnings,
         remediationHints: [],
-        supportingClaimVersionIds: Array.from(supportingClaimVersionIds).sort(),
+        supportingClaimVersionIds: evidenceDeps,
+        evidenceDependencies: evidenceDeps,
         referenceUris: Array.from(candidateRefUris).sort(),
         bookingHandoffs: candidate.bookingHandoffs,
       };
       contingencySummaries.push(summary);
+      candidateDispositions.push({
+        candidateId: candidate.candidateId,
+        candidateClass: candidate.candidateClass,
+        disposition: "eligible",
+        status: "contingency_fallback",
+        reasonCodes: summary.reasonCodes,
+        evidenceDependencies: evidenceDeps,
+      });
       candidateTraces.push({
         candidateId: candidate.candidateId,
+        disposition: "eligible",
         status: "contingency_fallback",
         preferenceScore: 0,
         ruleExecutions: [],
@@ -747,13 +990,13 @@ export function evaluateDecisionIrBundle(params: {
 
       let executionOutcome: RuleExecutionRecord["outcome"] = "passed";
       if (exprOutcome === true) {
-        // Hard exclusion condition triggered -> candidate is excluded
         executionOutcome = "triggered";
         failedHardRuleIds.push(rule.id);
         reasonCodes.add(rule.reasonCode);
         remediationHints.push(rule.remediationHint);
       } else if (exprOutcome === "unknown") {
         executionOutcome = "unknown";
+        candidateSawUnknownHardRule = true;
         if (rule.onUnknownResult === "exclude_as_unverified") {
           failedHardRuleIds.push(rule.id);
           reasonCodes.add(`${rule.reasonCode}_UNKNOWN_EXCLUDED`);
@@ -766,6 +1009,9 @@ export function evaluateDecisionIrBundle(params: {
         }
       }
 
+      const resolvedRuleCvIds = rule.claimVersionDependencies.map(
+        (id) => claimLookup(id)?.versionId ?? id,
+      );
       ruleExecutions.push({
         ruleId: rule.id,
         ruleVersion: rule.version,
@@ -773,7 +1019,7 @@ export function evaluateDecisionIrBundle(params: {
         reasonCode: rule.reasonCode,
         outcome: executionOutcome,
         scoreDelta: 0,
-        claimVersionIds: rule.claimVersionDependencies,
+        claimVersionIds: resolvedRuleCvIds,
         immutableRuleReferenceUri: rule.immutableReferenceUri,
         immutableClaimReferenceUris: rule.claimVersionDependencies.map(
           (id) => claimLookup(id)?.immutableReferenceUri ?? `/r/${id}`,
@@ -804,6 +1050,9 @@ export function evaluateDecisionIrBundle(params: {
         qualificationWarnings.push(rule.remediationHint);
       }
 
+      const resolvedRuleCvIds = rule.claimVersionDependencies.map(
+        (id) => claimLookup(id)?.versionId ?? id,
+      );
       ruleExecutions.push({
         ruleId: rule.id,
         ruleVersion: rule.version,
@@ -811,7 +1060,7 @@ export function evaluateDecisionIrBundle(params: {
         reasonCode: rule.reasonCode,
         outcome: exprOutcome === true ? "triggered" : exprOutcome === "unknown" ? "unknown" : "not_triggered",
         scoreDelta: 0,
-        claimVersionIds: rule.claimVersionDependencies,
+        claimVersionIds: resolvedRuleCvIds,
         immutableRuleReferenceUri: rule.immutableReferenceUri,
         immutableClaimReferenceUris: rule.claimVersionDependencies.map(
           (id) => claimLookup(id)?.immutableReferenceUri ?? `/r/${id}`,
@@ -846,6 +1095,9 @@ export function evaluateDecisionIrBundle(params: {
           reasonCodes.add(rule.reasonCode);
         }
 
+        const resolvedRuleCvIds = rule.claimVersionDependencies.map(
+          (id) => claimLookup(id)?.versionId ?? id,
+        );
         ruleExecutions.push({
           ruleId: rule.id,
           ruleVersion: rule.version,
@@ -858,7 +1110,7 @@ export function evaluateDecisionIrBundle(params: {
                 ? "unknown"
                 : "not_triggered",
           scoreDelta: delta,
-          claimVersionIds: rule.claimVersionDependencies,
+          claimVersionIds: resolvedRuleCvIds,
           immutableRuleReferenceUri: rule.immutableReferenceUri,
           immutableClaimReferenceUris: rule.claimVersionDependencies.map(
             (id) => claimLookup(id)?.immutableReferenceUri ?? `/r/${id}`,
@@ -885,6 +1137,11 @@ export function evaluateDecisionIrBundle(params: {
       candidateStatus = "recommended";
     }
 
+    const disposition = mapStatusToDisposition(
+      candidateStatus,
+      candidateSawUnknownHardRule,
+    );
+
     const totalDoorToDoorMinutes =
       typeof derivedInput.totalDoorToDoorMinutes === "number"
         ? derivedInput.totalDoorToDoorMinutes
@@ -897,29 +1154,43 @@ export function evaluateDecisionIrBundle(params: {
         ? candidate.attributes.priceFromUsd
         : null;
 
+    const evidenceDeps = Array.from(supportingClaimVersionIds).sort();
+    const sortedReasonCodes = Array.from(reasonCodes).sort();
+
     const summary: CandidateEvaluationSummary = {
       candidateId: candidate.candidateId,
       entityId: candidate.entityId,
       title: candidate.title,
       candidateClass: candidate.candidateClass,
+      disposition,
       status: candidateStatus,
       preferenceScore,
       commercialWeightApplied: 0,
       totalDoorToDoorMinutes,
       priceFromUsd,
-      reasonCodes: Array.from(reasonCodes).sort(),
+      reasonCodes: sortedReasonCodes,
       failedHardRuleIds,
       matchedPreferenceRuleIds,
       qualificationWarnings,
       remediationHints,
-      supportingClaimVersionIds: Array.from(supportingClaimVersionIds).sort(),
+      supportingClaimVersionIds: evidenceDeps,
+      evidenceDependencies: evidenceDeps,
       referenceUris: Array.from(candidateRefUris).sort(),
       bookingHandoffs: candidate.bookingHandoffs,
     };
 
     commercialSummaries.push(summary);
+    candidateDispositions.push({
+      candidateId: candidate.candidateId,
+      candidateClass: candidate.candidateClass,
+      disposition,
+      status: candidateStatus,
+      reasonCodes: sortedReasonCodes,
+      evidenceDependencies: evidenceDeps,
+    });
     candidateTraces.push({
       candidateId: candidate.candidateId,
+      disposition,
       status: candidateStatus,
       preferenceScore,
       ruleExecutions,
@@ -1013,16 +1284,21 @@ export function evaluateDecisionIrBundle(params: {
     engineId: bundle.engineId,
     engineVersion: bundle.version,
     bundleHash: bundle.bundleHash,
+    candidateUniverseHash,
     normalizedInputHash,
+    validAt,
+    knownAt,
     decisionState,
     recommendedCandidateId: bestCandidate?.candidateId ?? null,
     viableCandidateIds: viableCandidates.map((c) => ({
       id: c.candidateId,
+      disposition: c.disposition,
       status: c.status,
       score: c.preferenceScore,
     })),
     excludedCandidateIds: excludedCandidates.map((c) => ({
       id: c.candidateId,
+      disposition: c.disposition,
       status: c.status,
       failedRules: c.failedHardRuleIds,
     })),
@@ -1037,6 +1313,9 @@ export function evaluateDecisionIrBundle(params: {
     engineId: bundle.engineId,
     engineVersion: bundle.version,
     bundleHash: bundle.bundleHash,
+    candidateUniverseHash,
+    validAt,
+    knownAt,
     normalizedInput,
     derivedInput: representativeDerivedInput,
     unknownFields,
@@ -1051,38 +1330,87 @@ export function evaluateDecisionIrBundle(params: {
   const evaluationId = `eval:${bundle.engineId}:${bundle.version}:${resultHash.slice(0, 16)}`;
   const traceId = `trace:${bundle.engineId}:${bundle.version}:${traceHash.slice(0, 16)}`;
 
+  const epistemicScopeDisclaimer = `Evaluates only declared CandidateUniverse '${candidateUniverseId}@${candidateUniverseVersion}' (hash ${candidateUniverseHash.slice(0, 16)}). Does not claim that no other options exist in the world outside this declared universe.`;
+
+  const signedReceipt = signDecisionReceipt({
+    evaluationFingerprint,
+    engineId: bundle.engineId,
+    engineVersion: bundle.version,
+    bundleHash: bundle.bundleHash,
+    candidateUniverseId,
+    candidateUniverseVersion,
+    candidateUniverseHash,
+    normalizedInputHash,
+    validAt,
+    knownAt,
+    decisionState,
+    recommendedCandidateId: bestCandidate?.candidateId ?? null,
+    candidateDispositionSummary: candidateDispositions.map((cd) => ({
+      candidateId: cd.candidateId,
+      disposition: cd.disposition,
+      reasonCodes: cd.reasonCodes,
+      evidenceDependencies: cd.evidenceDependencies,
+    })),
+    resolvedClaimVersionIds: Array.from(allResolvedClaimVersionIds).sort(),
+    resultHash,
+    traceHash,
+    issuedAt: evaluatedAt,
+  });
+
+  const receiptSchemaCheck = validateAgainstJsonSchema(
+    signedReceipt,
+    SIGNED_RECEIPT_JSON_SCHEMA,
+  );
+  if (!receiptSchemaCheck.valid) {
+    throw new Error(
+      `SignedDecisionReceipt schema error: ${receiptSchemaCheck.errors.join("; ")}`,
+    );
+  }
+
   allReferencedIds.add(evaluationId);
   allReferencedIds.add(traceId);
+  allReferencedIds.add(signedReceipt.receiptId);
   allImmutableUris.add(`/r/${evaluationId}/v/1.0.0`);
   allImmutableUris.add(`/r/${traceId}/v/1.0.0`);
-
-  const evaluatedAt = overrides?.nowIso ?? "2026-04-20T00:00:00.000Z";
+  allImmutableUris.add(signedReceipt.immutableReferenceUri);
 
   const compactResponse: CompactEvaluationResponse = {
     ok: true,
     mode: "compact",
     evaluationId,
+    evaluationRunId,
+    evaluationFingerprint,
     traceId,
+    traceRunId,
+    receiptId: signedReceipt.receiptId,
     engineId: bundle.engineId,
     engineVersion: bundle.version,
     pinnedVersionRequested,
     bundleHash: bundle.bundleHash,
+    candidateUniverseId,
+    candidateUniverseVersion,
+    candidateUniverseHash,
     normalizedInputHash,
     resultHash,
     traceHash,
+    validAt,
+    knownAt,
     cacheHit: false,
     decisionState,
+    epistemicScopeDisclaimer,
     recommendedCandidateId: bestCandidate?.candidateId ?? null,
     recommendedCandidate: bestCandidate,
     viableCandidates,
     excludedCandidates,
     contingencyCandidates: contingencySummaries,
+    candidateDispositions,
     unknownFields,
     conflictIds: Array.from(conflictsEncountered).sort(),
     withdrawnClaimVersionIds: Array.from(withdrawnClaimsEncountered).sort(),
     reasonCodes: Array.from(topReasonCodes).sort(),
     referenceIds: Array.from(allReferencedIds).sort(),
     immutableReferenceUris: Array.from(allImmutableUris).sort(),
+    receipt: signedReceipt,
     evaluatedAt,
   };
 
@@ -1091,6 +1419,9 @@ export function evaluateDecisionIrBundle(params: {
     if (!schemaCheck.valid) {
       throw new Error(`Compact evaluation schema error: ${schemaCheck.errors.join("; ")}`);
     }
+    const elapsedMs = performance.now() - startTimePerfMs;
+    enforceExecutionTimeBudget(elapsedMs, overrides?.maxExecutionTimeMs);
+
     if (!containedSensitiveFields) {
       if (safeEvaluationCache.size >= MAX_CACHE_ENTRIES) {
         const firstKey = safeEvaluationCache.keys().next().value;
@@ -1105,10 +1436,18 @@ export function evaluateDecisionIrBundle(params: {
   const trace: MachineEvaluationTrace = {
     objectType: "EvaluationTrace",
     id: traceId,
+    traceRunId,
     evaluationId,
+    evaluationRunId,
+    evaluationFingerprint,
     engineId: bundle.engineId,
     engineVersion: bundle.version,
     bundleHash: bundle.bundleHash,
+    candidateUniverseId,
+    candidateUniverseVersion,
+    candidateUniverseHash,
+    validAt,
+    knownAt,
     normalizedInput,
     derivedInput: representativeDerivedInput,
     unknownFields,
@@ -1146,7 +1485,7 @@ export function evaluateDecisionIrBundle(params: {
   for (const cvId of allResolvedClaimVersionIds) {
     const cv = claimLookup(cvId);
     if (!cv) continue;
-    claimVersionsRecord[cvId] = cv;
+    claimVersionsRecord[cv.versionId] = cv;
     const frag = overrides?.evidenceFragments?.get(cv.evidenceFragmentId);
     if (frag) evidenceFragmentsRecord[frag.id] = frag;
     const snap = overrides?.sourceSnapshots?.get(cv.sourceSnapshotId);
@@ -1187,6 +1526,9 @@ export function evaluateDecisionIrBundle(params: {
     throw new Error(`Expanded evaluation schema error: ${expandedSchemaCheck.errors.join("; ")}`);
   }
 
+  const elapsedMs = performance.now() - startTimePerfMs;
+  enforceExecutionTimeBudget(elapsedMs, overrides?.maxExecutionTimeMs);
+
   if (!containedSensitiveFields) {
     if (safeEvaluationCache.size >= MAX_CACHE_ENTRIES) {
       const firstKey = safeEvaluationCache.keys().next().value;
@@ -1205,6 +1547,8 @@ export function evaluateDecisionIrBundleBatch(params: {
     input: Record<string, unknown>;
     mode?: "compact" | "expanded";
     pinnedVersionRequested?: boolean;
+    validAt?: string;
+    knownAt?: string;
   }>;
   overrides?: RuntimeEpistemicOverrides;
 }): {
@@ -1222,6 +1566,8 @@ export function evaluateDecisionIrBundleBatch(params: {
       input: item.input,
       mode: item.mode ?? "compact",
       pinnedVersionRequested: item.pinnedVersionRequested ?? false,
+      validAt: item.validAt,
+      knownAt: item.knownAt,
       overrides: params.overrides,
     }),
   }));

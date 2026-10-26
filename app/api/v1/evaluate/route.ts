@@ -1,7 +1,10 @@
 import {
+  MachineSecurityLimitError,
   buildMachineJsonResponse,
+  enforceEvaluationRequestSizeLimit,
   enforceMachineLayerFeatureFlag,
   evaluateMachineEngine,
+  verifyEvaluationAuthAndRateLimit,
 } from "@/lib/dcc/machine";
 
 export const dynamic = "force-dynamic";
@@ -10,9 +13,39 @@ export async function POST(request: Request) {
   const flagBlocked = enforceMachineLayerFeatureFlag();
   if (flagBlocked) return flagBlocked;
 
+  let rawText: string;
+  try {
+    rawText = await request.text();
+    enforceEvaluationRequestSizeLimit(rawText);
+    verifyEvaluationAuthAndRateLimit(request, "evaluate:single");
+  } catch (err) {
+    if (err instanceof MachineSecurityLimitError) {
+      return buildMachineJsonResponse(
+        {
+          ok: false,
+          error: {
+            code: err.code,
+            message: err.message,
+          },
+        },
+        { status: err.statusCode, cacheControl: "no-store" },
+      );
+    }
+    return buildMachineJsonResponse(
+      {
+        ok: false,
+        error: {
+          code: "INVALID_REQUEST_STREAM",
+          message: err instanceof Error ? err.message : "Failed to read request body.",
+        },
+      },
+      { status: 400, cacheControl: "no-store" },
+    );
+  }
+
   let body: unknown;
   try {
-    body = await request.json();
+    body = JSON.parse(rawText);
   } catch {
     return buildMachineJsonResponse(
       {
@@ -33,7 +66,7 @@ export async function POST(request: Request) {
         error: {
           code: "INVALID_EVALUATION_REQUEST",
           message:
-            "Request body must be an object with engineId (string), inputs (object), and optional engineVersion and mode ('compact' | 'expanded').",
+            "Request body must be an object with engineId (string), inputs (object), and optional engineVersion, mode ('compact' | 'expanded'), validAt, and knownAt.",
         },
       },
       { status: 400, cacheControl: "no-store" },
@@ -70,6 +103,10 @@ export async function POST(request: Request) {
       : "compact";
   const evaluatedAt =
     typeof payload.evaluatedAt === "string" ? payload.evaluatedAt : undefined;
+  const validAt =
+    typeof payload.validAt === "string" ? payload.validAt : undefined;
+  const knownAt =
+    typeof payload.knownAt === "string" ? payload.knownAt : undefined;
 
   const result = evaluateMachineEngine({
     engineId,
@@ -77,6 +114,8 @@ export async function POST(request: Request) {
     inputs,
     mode,
     evaluatedAt,
+    validAt,
+    knownAt,
   });
 
   if (!result.ok) {
@@ -108,6 +147,15 @@ export async function POST(request: Request) {
       "X-DCC-Result-Hash": result.response.resultHash,
       "X-DCC-Trace-Hash": result.response.traceHash,
       "X-DCC-Decision-State": result.response.decisionState,
+      ...(result.response.receiptId
+        ? { "X-DCC-Receipt-Id": result.response.receiptId }
+        : {}),
+      ...(result.response.evaluationRunId
+        ? { "X-DCC-Evaluation-Run-Id": result.response.evaluationRunId }
+        : {}),
+      ...(result.response.evaluationFingerprint
+        ? { "X-DCC-Evaluation-Fingerprint": result.response.evaluationFingerprint }
+        : {}),
     },
   });
 }

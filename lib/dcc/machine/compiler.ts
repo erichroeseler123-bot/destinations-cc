@@ -4,9 +4,12 @@ import {
   writeImmutableArtifact,
 } from "./cryptoAndStorage";
 import {
+  CANDIDATE_UNIVERSE_JSON_SCHEMA,
+  CandidateUniverseSchema,
   DECISION_IR_JSON_SCHEMA,
   DecisionIrBundleSchema,
   validateAgainstJsonSchema,
+  type CandidateUniverse,
   type DecisionIrBundle,
   type DecisionIrCandidate,
   type DecisionIrDerivedInput,
@@ -23,12 +26,14 @@ import {
   type MachineSource,
   type MachineSourceSnapshot,
 } from "./schemas";
+import { enforceBundleComplexityLimits } from "./securityLimits";
 
 /**
- * DCC Decision IR Compiler v0.1
+ * DCC Decision IR Compiler v0.2
  *
  * Compiles a declarative engine specification + evidence graph into a canonical,
- * immutable `DecisionIrBundle` (`EngineBundle`) with SHA-256 manifest verification.
+ * immutable `DecisionIrBundle` (`EngineBundle`) and a versioned, content-addressed
+ * `CandidateUniverse` artifact with SHA-256 manifest verification.
  */
 
 export class CompilerValidationError extends Error {
@@ -67,6 +72,22 @@ export type CompilerRuleDraft = {
   remediationHint: string;
 };
 
+export type CandidateUniverseDraftSpec = {
+  universeId?: string;
+  version?: string;
+  domainPackVersion?: string;
+  temporalScope?: {
+    validFrom: string;
+    validTo: string;
+  };
+  inclusionMethodology?: string;
+  knownExclusions?: CandidateUniverse["knownExclusions"];
+  unresolvedCoverageGaps?: CandidateUniverse["unresolvedCoverageGaps"];
+  refreshedAt?: string;
+  coverageStatus?: CandidateUniverse["coverageStatus"];
+  epistemicDisclaimer?: string;
+};
+
 export type EngineCompilationInput = {
   engineId: string;
   version: string;
@@ -77,6 +98,7 @@ export type EngineCompilationInput = {
   jurisdiction: string;
   timezone: string;
   createdAt?: string;
+  candidateUniverseSpec?: CandidateUniverseDraftSpec;
   inputSchema: DecisionIrInputField[];
   derivedInputs: DecisionIrDerivedInput[];
   candidates: DecisionIrCandidate[];
@@ -152,7 +174,13 @@ export function compileDecisionEngineBundle(
   bundle: DecisionIrBundle;
   ruleSet: MachineRuleSet;
   compiledRules: DecisionIrRule[];
+  candidateUniverse: CandidateUniverse;
 } {
+  enforceBundleComplexityLimits({
+    candidateCount: spec.candidates.length,
+    ruleCount: spec.rules.length,
+  });
+
   const validationErrors: string[] = [];
 
   if (!spec.engineId || !/^[a-z0-9-]+$/.test(spec.engineId)) {
@@ -193,6 +221,7 @@ export function compileDecisionEngineBundle(
   const embeddedClaims: Record<string, MachineClaimVersion> = {};
   const embeddedConflicts: Record<string, MachineClaimConflict> = {};
   const dependencyHashes: Record<string, string> = {};
+  const consultedSourceIds = new Set<string>();
 
   function resolveAndVerifyClaimVersion(claimVersionId: string, contextLabel: string): void {
     const claimVer = graph.claimVersions.get(claimVersionId);
@@ -219,6 +248,8 @@ export function compileDecisionEngineBundle(
       validationErrors.push(
         `ClaimVersion '${claimVersionId}' references missing Source '${claimVer.sourceId}'.`,
       );
+    } else {
+      consultedSourceIds.add(source.id);
     }
     if (!graph.entities.has(claimVer.subject)) {
       validationErrors.push(
@@ -367,6 +398,146 @@ export function compileDecisionEngineBundle(
     );
   }
 
+  const destinationEntity = graph.entities.get(spec.destinationEntityId)!;
+  const createdAt = spec.createdAt ?? "2026-04-20T00:00:00.000Z";
+
+  // Build versioned, content-addressed CandidateUniverse artifact
+  const universeId = spec.candidateUniverseSpec?.universeId ?? `univ:${spec.engineId}`;
+  const universeVersion = spec.candidateUniverseSpec?.version ?? spec.version;
+  const domainPackVersion = spec.candidateUniverseSpec?.domainPackVersion ?? spec.version;
+  const temporalScope = spec.candidateUniverseSpec?.temporalScope ?? {
+    validFrom: "2026-01-01T00:00:00.000Z",
+    validTo: "2027-06-30T23:59:59.000Z",
+  };
+  const inclusionMethodology =
+    spec.candidateUniverseSpec?.inclusionMethodology ??
+    `Permitted commercial operators and verified noncommercial/contingency alternatives in ${destinationEntity.canonicalName} (${spec.jurisdiction}) backed by primary regulatory and operator tariff snapshots.`;
+  const knownExclusions =
+    spec.candidateUniverseSpec?.knownExclusions ??
+    (spec.engineId === "juneau-helicopter-tours"
+      ? [
+          {
+            candidateOrOperator: "Welcome to Alaska Tours (WTA)",
+            reasonCode: "EXCLUDED_UNAPPROVED_RESELLER_POLICY",
+            explanation:
+              "Excluded by DCC governance policy: unowned reseller attribution and links are prohibited.",
+          },
+          {
+            candidateOrOperator: "Unpermitted Part 91 / Private Charter Flights",
+            reasonCode: "EXCLUDED_NO_USFS_ICEFIELD_LANDING_PERMIT",
+            explanation:
+              "Only USFS Tongass permitted commercial helicopter operators (TEMSCO, Coastal, NorthStar) may land commercially on the Juneau Icefield.",
+          },
+        ]
+      : [
+          {
+            candidateOrOperator: "Unpermitted Peer-to-Peer Boat Rentals",
+            reasonCode: "EXCLUDED_NO_DOBOR_COMMERCIAL_SLIP_PERMIT",
+            explanation:
+              "Excluded because vessels lack State of Hawaiʻi DLNR DOBOR commercial whale-watching permits and USCG inspected passenger certification.",
+          },
+        ]);
+  const unresolvedCoverageGaps =
+    spec.candidateUniverseSpec?.unresolvedCoverageGaps ??
+    (spec.engineId === "juneau-helicopter-tours"
+      ? [
+          {
+            gapId: "gap:jnu:same-day-ship-allotment-inventory",
+            description:
+              "Cruise-line shore-excursion desk holdbacks vs direct operator seat inventory fluctuate intraday.",
+            impactOnCompleteness:
+              "Evaluates structural, regulatory, weight, age, and port-window eligibility across all permitted Juneau Icefield operators, not live seat counts.",
+          },
+          {
+            gapId: "gap:jnu:private-bespoke-part135-charters",
+            description:
+              "Unpublished bespoke private Part 135 charter configurations outside USFS Tongass Icefield landing allocations are not enumerated.",
+            impactOnCompleteness:
+              "Commercial icefield landing coverage is complete (all 3 USFS-permitted operators included); bespoke non-icefield charters are outside scope.",
+          },
+        ]
+      : [
+          {
+            gapId: "gap:hi:small-harbor-private-six-pack-charters",
+            description:
+              "Independent 6-pack sportfishing boats offering ad-hoc whale watches from secondary slips are not comprehensively indexed.",
+            impactOnCompleteness:
+              "Universe covers verified primary DOBOR commercial catamaran, raft, and stabilized ship operators plus public NOAA shoreline lookouts.",
+          },
+          {
+            gapId: "gap:hi:live-swell-and-harbor-surge-closures",
+            description:
+              "Day-of-departure harbor master surge holds at Mala Wharf or Maʻalaea are evaluated structurally rather than via live buoy telemetry.",
+            impactOnCompleteness:
+              "Applies NOAA/NWS diurnal trade-wind and seasonal humpback presence rules across the declared vessel roster.",
+          },
+        ]);
+  const coverageStatus =
+    spec.candidateUniverseSpec?.coverageStatus ??
+    (spec.engineId === "juneau-helicopter-tours"
+      ? "comprehensive_permitted_roster"
+      : "declared_bounded_universe");
+  const epistemicDisclaimer =
+    spec.candidateUniverseSpec?.epistemicDisclaimer ??
+    `Evaluates only the declared CandidateUniverse '${universeId}@${universeVersion}' (${spec.candidates.length} candidates). This engine does NOT claim that these are the only valid options in the world outside this declared universe.`;
+
+  const universePreHash = {
+    objectType: "CandidateUniverse" as const,
+    universeId,
+    version: universeVersion,
+    domainPackVersion,
+    engineId: spec.engineId,
+    engineVersion: spec.version,
+    geographicScope: destinationEntity.geographicScope,
+    temporalScope,
+    inclusionMethodology,
+    sourcesConsulted: Array.from(consultedSourceIds).sort(),
+    includedCandidateIds: spec.candidates.map((c) => c.candidateId),
+    knownExclusions,
+    unresolvedCoverageGaps,
+    refreshedAt: spec.candidateUniverseSpec?.refreshedAt ?? createdAt,
+    coverageStatus,
+    epistemicDisclaimer,
+  };
+  const candidateUniverseHash = hashCanonicalJson(universePreHash);
+  const universeStorageUri = `dcc-storage://data/memory/snapshots/machine/universes/${universeId.replace(/:/g, "_")}__${universeVersion}__${candidateUniverseHash.slice(0, 16)}.json`;
+
+  const candidateUniverse: CandidateUniverse = {
+    ...universePreHash,
+    canonicalHash: candidateUniverseHash,
+    storageUri: universeStorageUri,
+    stableReferenceUri: `/r/${universeId}`,
+    immutableReferenceUri: `/r/${universeId}/v/${universeVersion}`,
+  };
+
+  const universeZodCheck = CandidateUniverseSchema.safeParse(candidateUniverse);
+  if (!universeZodCheck.success) {
+    throw new CompilerValidationError(
+      "UNIVERSE_SCHEMA_INVALID",
+      `CandidateUniverse failed validation: ${universeZodCheck.error.message}`,
+      universeZodCheck.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`),
+    );
+  }
+  const universeJsonCheck = validateAgainstJsonSchema(
+    candidateUniverse,
+    CANDIDATE_UNIVERSE_JSON_SCHEMA,
+  );
+  if (!universeJsonCheck.valid) {
+    throw new CompilerValidationError(
+      "UNIVERSE_JSON_SCHEMA_INVALID",
+      `CandidateUniverse failed JSON Schema validation: ${universeJsonCheck.errors.join("; ")}`,
+      universeJsonCheck.errors,
+    );
+  }
+
+  writeImmutableArtifact({
+    category: "universes",
+    filename: `${universeId.replace(/:/g, "_")}__${universeVersion}__${candidateUniverseHash.slice(0, 16)}.json`,
+    content: canonicalJsonStringify(candidateUniverse),
+  });
+
+  dependencyHashes[universeId] = candidateUniverseHash;
+
   const ruleSetId = `ruleset:${spec.engineId}:${spec.version}`;
   const sortedRuleIds = compiledRules.map((r) => r.id);
   const sortedRuleClaimDeps = Array.from(allRuleClaimDeps).sort();
@@ -386,7 +557,6 @@ export function compileDecisionEngineBundle(
     contentHash: ruleSetHash,
   };
 
-  const createdAt = spec.createdAt ?? "2026-04-20T00:00:00.000Z";
   const tieBreakers: DecisionIrBundle["tieBreakers"] = spec.tieBreakers ?? [
     { field: "preferenceScore", direction: "desc" },
     { field: "totalDoorToDoorMinutes", direction: "asc" },
@@ -406,6 +576,9 @@ export function compileDecisionEngineBundle(
     destinationEntityId: spec.destinationEntityId,
     jurisdiction: spec.jurisdiction,
     timezone: spec.timezone,
+    candidateUniverseId: universeId,
+    candidateUniverseVersion: universeVersion,
+    candidateUniverseHash,
     inputSchema: spec.inputSchema,
     derivedInputs: spec.derivedInputs,
     candidateSelection: {
@@ -428,6 +601,9 @@ export function compileDecisionEngineBundle(
     sourceRevision: spec.sourceRevision,
     ruleSetId,
     ruleSetHash,
+    candidateUniverseId: universeId,
+    candidateUniverseVersion: universeVersion,
+    candidateUniverseHash,
     dependencyHashes,
     conflictIds: Object.keys(embeddedConflicts).sort(),
     candidateCount: spec.candidates.length,
@@ -487,5 +663,6 @@ export function compileDecisionEngineBundle(
     bundle,
     ruleSet,
     compiledRules,
+    candidateUniverse,
   };
 }

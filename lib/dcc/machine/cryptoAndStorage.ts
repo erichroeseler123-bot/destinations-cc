@@ -5,7 +5,7 @@ import path from "node:path";
 /**
  * Deterministic canonical JSON serialization.
  * Sorts object keys recursively so SHA-256 hashes of bundles, manifests, inputs,
- * results, and traces are 100% platform- and key-order-independent.
+ * universes, receipts, results, and traces are 100% platform- and key-order-independent.
  */
 export function canonicalizeValue(value: unknown): unknown {
   if (value === null || value === undefined) {
@@ -44,14 +44,155 @@ export function hashCanonicalJson(value: unknown): string {
   return sha256Hex(canonicalJsonStringify(value));
 }
 
-/**
- * Uses the repository's existing snapshot storage directory (`data/memory/snapshots/machine`)
- * for immutable source snapshots and compiled engine bundles, avoiding any second storage vendor.
- */
+export type ArtifactCategory = "bundles" | "sources" | "universes" | "receipts" | "fragments";
+
+export class DurableStorageConfigurationError extends Error {
+  public readonly code: string;
+  constructor(code: string, message: string) {
+    super(message);
+    this.name = "DurableStorageConfigurationError";
+    this.code = code;
+  }
+}
+
+export const FailClosedStorageConfigurationError = DurableStorageConfigurationError;
+
+export function resolveMachineStorageConfig(
+  envOverride?: Record<string, string | undefined>,
+): {
+  mode: "local_fs" | "durable_neon_r2";
+  isProduction: boolean;
+  databaseUrl: string | null;
+} {
+  const env = envOverride ?? process.env;
+  const vercelEnv = (env.VERCEL_ENV ?? "").trim().toLowerCase();
+  const nodeEnv = (env.NODE_ENV ?? "").trim().toLowerCase();
+  const isProduction =
+    vercelEnv === "production" ||
+    (nodeEnv === "production" && vercelEnv !== "preview" && vercelEnv !== "development");
+
+  const rawMode = (
+    env.DCC_MACHINE_STORAGE_MODE ??
+    env.DCC_MACHINE_STORAGE_BACKEND ??
+    (isProduction ? "durable_neon_r2" : "local_fs")
+  )
+    .trim()
+    .toLowerCase();
+
+  const databaseUrl =
+    (
+      env.DCC_MACHINE_NEON_URL ||
+      env.DCC_NONPROD_DATABASE_URL ||
+      env.DCC_DATABASE_URL ||
+      env.DATABASE_URL ||
+      env.POSTGRES_URL ||
+      ""
+    ).trim() || null;
+
+  if (isProduction) {
+    if (rawMode === "local_fs") {
+      throw new FailClosedStorageConfigurationError(
+        "FAIL_CLOSED_LOCAL_FS_FORBIDDEN_IN_PROD",
+        "Production environment is configured with local_fs storage, which is forbidden. Durable storage (Neon Postgres / Cloudflare R2) is required in production.",
+      );
+    }
+    if (!databaseUrl) {
+      throw new FailClosedStorageConfigurationError(
+        "FAIL_CLOSED_MISSING_NEON_DATABASE_URL",
+        "Production environment requires DATABASE_URL / Neon Postgres connection string for durable storage. Failing closed.",
+      );
+    }
+    return {
+      mode: "durable_neon_r2",
+      isProduction: true,
+      databaseUrl,
+    };
+  }
+
+  return {
+    mode: rawMode === "durable_neon_r2" || rawMode === "durable_cloud" ? "durable_neon_r2" : "local_fs",
+    isProduction: false,
+    databaseUrl,
+  };
+}
+
+export class ImmutableArtifactMutationError extends Error {
+  public readonly code = "IMMUTABLE_ARTIFACT_MUTATION_FORBIDDEN";
+  constructor(message: string) {
+    super(message);
+    this.name = "ImmutableArtifactMutationError";
+  }
+}
+
+let runtimeStorageBackendOverride: "auto" | "local_fs" | "durable_cloud" | null = null;
+let runtimeSimulateProdEnvironment = false;
+
+export function setStorageBackendForTests(
+  backend: "auto" | "local_fs" | "durable_cloud" | null,
+  simulateProd = false,
+): void {
+  runtimeStorageBackendOverride = backend;
+  runtimeSimulateProdEnvironment = simulateProd;
+}
+
+export function isProductionExecutionEnvironment(): boolean {
+  if (runtimeSimulateProdEnvironment) return true;
+  const vercelEnv = (process.env.VERCEL_ENV ?? "").trim().toLowerCase();
+  const nodeEnv = (process.env.NODE_ENV ?? "").trim().toLowerCase();
+  if (vercelEnv === "production") return true;
+  if (nodeEnv === "production" && vercelEnv !== "preview" && vercelEnv !== "development") {
+    return true;
+  }
+  return false;
+}
+
+export function assertStorageBackendAllowed(): "local_fs_dev" | "durable_cloud" {
+  const configured =
+    runtimeStorageBackendOverride ??
+    ((process.env.DCC_MACHINE_STORAGE_BACKEND ?? "auto").trim().toLowerCase() as
+      | "auto"
+      | "local_fs"
+      | "durable_cloud");
+
+  const isProd = isProductionExecutionEnvironment();
+  const hasDurableDb = Boolean(
+    process.env.DCC_NONPROD_DATABASE_URL ||
+      process.env.DCC_DATABASE_URL ||
+      process.env.DATABASE_URL ||
+      process.env.POSTGRES_URL,
+  );
+  const hasR2 = Boolean(
+    process.env.DCC_MACHINE_R2_ENDPOINT &&
+      process.env.DCC_MACHINE_R2_ACCESS_KEY_ID &&
+      process.env.DCC_MACHINE_R2_SECRET_ACCESS_KEY &&
+      process.env.DCC_MACHINE_R2_BUCKET,
+  );
+
+  if (isProd) {
+    if (configured === "local_fs") {
+      throw new DurableStorageConfigurationError(
+        "FAIL_CLOSED_LOCAL_FS_FORBIDDEN_IN_PROD",
+        "Production environment is configured with local_fs storage, which is forbidden. Durable storage (Neon Postgres / Cloudflare R2) is required in production.",
+      );
+    }
+    if (!hasDurableDb && !hasR2) {
+      throw new DurableStorageConfigurationError(
+        "FAIL_CLOSED_DURABLE_STORAGE_MISSING_IN_PROD",
+        "Production environment lacks durable storage credentials (Neon Postgres or Cloudflare R2). Failing closed.",
+      );
+    }
+    return "durable_cloud";
+  }
+
+  if (configured === "durable_cloud") {
+    return "durable_cloud";
+  }
+
+  return "local_fs_dev";
+}
+
 const ROOT_DIR = process.cwd();
 const MACHINE_ARTIFACT_ROOT = path.join(ROOT_DIR, "data", "memory", "snapshots", "machine");
-const BUNDLE_ARTIFACT_DIR = path.join(MACHINE_ARTIFACT_ROOT, "bundles");
-const SNAPSHOT_ARTIFACT_DIR = path.join(MACHINE_ARTIFACT_ROOT, "sources");
 
 const inMemoryArtifactCache = new Map<string, { content: string; sha256: string }>();
 
@@ -65,7 +206,7 @@ function ensureDir(dirPath: string): boolean {
 }
 
 export function writeImmutableArtifact(params: {
-  category: "bundles" | "sources";
+  category: ArtifactCategory;
   filename: string;
   content: string;
 }): {
@@ -73,6 +214,7 @@ export function writeImmutableArtifact(params: {
   sha256: string;
   byteLength: number;
 } {
+  const mode = assertStorageBackendAllowed();
   const safeFilename = params.filename.replace(/[^a-zA-Z0-9._-]/g, "_");
   const sha256 = sha256Hex(params.content);
   const byteLength = Buffer.byteLength(params.content, "utf8");
@@ -80,33 +222,34 @@ export function writeImmutableArtifact(params: {
 
   const existing = inMemoryArtifactCache.get(storageUri);
   if (existing && existing.sha256 !== sha256) {
-    throw new Error(
+    throw new ImmutableArtifactMutationError(
       `Immutable artifact violation: ${storageUri} already exists with hash ${existing.sha256} (attempted ${sha256}).`,
     );
   }
 
   inMemoryArtifactCache.set(storageUri, { content: params.content, sha256 });
 
-  const targetDir = params.category === "bundles" ? BUNDLE_ARTIFACT_DIR : SNAPSHOT_ARTIFACT_DIR;
-  if (ensureDir(targetDir)) {
-    const fullPath = path.join(targetDir, safeFilename);
-    try {
-      if (fs.existsSync(fullPath)) {
-        const diskContent = fs.readFileSync(fullPath, "utf8");
-        const diskHash = sha256Hex(diskContent);
-        if (diskHash !== sha256) {
-          throw new Error(
-            `Immutable artifact disk violation: ${fullPath} has hash ${diskHash} != ${sha256}.`,
-          );
+  if (mode === "local_fs_dev") {
+    const targetDir = path.join(MACHINE_ARTIFACT_ROOT, params.category);
+    if (ensureDir(targetDir)) {
+      const fullPath = path.join(targetDir, safeFilename);
+      try {
+        if (fs.existsSync(fullPath)) {
+          const diskContent = fs.readFileSync(fullPath, "utf8");
+          const diskHash = sha256Hex(diskContent);
+          if (diskHash !== sha256) {
+            throw new ImmutableArtifactMutationError(
+              `Immutable artifact disk violation: ${fullPath} has hash ${diskHash} != ${sha256}.`,
+            );
+          }
+        } else {
+          fs.writeFileSync(fullPath, params.content, "utf8");
         }
-      } else {
-        fs.writeFileSync(fullPath, params.content, "utf8");
+      } catch (err) {
+        if (err instanceof ImmutableArtifactMutationError) {
+          throw err;
+        }
       }
-    } catch (err) {
-      if (err instanceof Error && err.message.includes("Immutable artifact")) {
-        throw err;
-      }
-      // Read-only serverless filesystem fallback uses inMemoryArtifactCache
     }
   }
 
@@ -121,6 +264,7 @@ export function readImmutableArtifact(
   storageUri: string,
   expectedSha256?: string,
 ): { content: string; sha256: string } | null {
+  assertStorageBackendAllowed();
   const cached = inMemoryArtifactCache.get(storageUri);
   if (cached) {
     if (expectedSha256 && cached.sha256 !== expectedSha256) {
@@ -157,4 +301,8 @@ export function readImmutableArtifact(
     }
     return null;
   }
+}
+
+export function clearInMemoryArtifactCacheForTests(): void {
+  inMemoryArtifactCache.clear();
 }

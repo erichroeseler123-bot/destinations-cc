@@ -16,6 +16,7 @@ import {
   type RuntimeEpistemicOverrides,
 } from "./irEvaluator";
 import {
+  type CandidateUniverse,
   type CompactEvaluationResponse,
   type DecisionIrBundle,
   type DecisionIrRule,
@@ -37,6 +38,7 @@ import {
   ReferenceResolutionEnvelopeSchema,
   type TypedClaimValue,
 } from "./schemas";
+import type { SignedDecisionReceipt } from "./signing";
 import { buildJuneauAndHawaiiMachineSeed } from "./seedJuneauAndHawaii";
 
 export interface CompilationFailure {
@@ -51,6 +53,7 @@ export type CompilationResult =
       bundle: DecisionIrBundle;
       ruleSet: MachineRuleSet;
       engineVersion: MachineEngineVersion;
+      candidateUniverse: CandidateUniverse;
     }
   | {
       ok: false;
@@ -60,7 +63,11 @@ export type CompilationResult =
 export interface MachineEvaluationRecord {
   objectType: "Evaluation";
   id: string;
+  evaluationRunId?: string;
+  evaluationFingerprint?: string;
+  receiptId?: string;
   traceId: string;
+  traceRunId?: string;
   engineId: string;
   engineVersion: string;
   bundleHash: string;
@@ -79,6 +86,8 @@ export interface MachineEvaluationRecord {
   referenceIds: string[];
   immutableReferenceUris: string[];
   evaluatedAt: string;
+  validAt?: string;
+  knownAt?: string;
   stableReferenceUri: string;
   immutableReferenceUri: string;
 }
@@ -134,8 +143,11 @@ interface MachineKnowledgeStore {
   engineVersionsByKey: Map<string, MachineEngineVersion>;
   bundlesById: Map<string, DecisionIrBundle>;
   bundlesByKey: Map<string, DecisionIrBundle>;
+  candidateUniversesById: Map<string, CandidateUniverse>;
+  candidateUniverseVersionsByKey: Map<string, CandidateUniverse>;
   evaluationsById: Map<string, MachineEvaluationRecord>;
   evaluationTracesById: Map<string, MachineEvaluationTrace>;
+  receiptsById: Map<string, SignedDecisionReceipt>;
   retractionsById: Map<string, MachineRetraction>;
   changeEvents: MachineChangeEvent[];
 }
@@ -172,7 +184,7 @@ function safeCompileEngineBundle(
   graph: KnowledgeGraphContext,
 ): CompilationResult {
   try {
-    const { bundle, ruleSet } = compileDecisionEngineBundle(spec, graph);
+    const { bundle, ruleSet, candidateUniverse } = compileDecisionEngineBundle(spec, graph);
     const engineVersion: MachineEngineVersion = {
       objectType: "EngineVersion",
       id: `engv:${spec.engineId}:${spec.version}`,
@@ -192,6 +204,7 @@ function safeCompileEngineBundle(
       bundle,
       ruleSet,
       engineVersion,
+      candidateUniverse,
     };
   } catch (err) {
     if (err instanceof CompilerValidationError) {
@@ -237,7 +250,7 @@ function registerCompiledBundleInStore(
   compiled: Extract<CompilationResult, { ok: true }>,
   setActive: boolean,
 ): void {
-  const { bundle, ruleSet, engineVersion } = compiled;
+  const { bundle, ruleSet, engineVersion, candidateUniverse } = compiled;
 
   for (const rule of bundle.rules) {
     store.rulesById.set(rule.id, rule);
@@ -252,6 +265,16 @@ function registerCompiledBundleInStore(
 
   store.bundlesById.set(bundle.id, bundle);
   store.bundlesByKey.set(`${spec.engineId}@${spec.version}`, bundle);
+
+  if (candidateUniverse) {
+    if (setActive || !store.candidateUniversesById.has(candidateUniverse.universeId)) {
+      store.candidateUniversesById.set(candidateUniverse.universeId, candidateUniverse);
+    }
+    store.candidateUniverseVersionsByKey.set(
+      `${candidateUniverse.universeId}@${candidateUniverse.version}`,
+      candidateUniverse,
+    );
+  }
 
   const existingEngine = store.enginesById.get(spec.engineId);
   if (!existingEngine) {
@@ -302,6 +325,8 @@ function registerCompiledBundleInStore(
       version: spec.version,
       bundleId: bundle.id,
       bundleHash: bundle.bundleHash,
+      universeId: candidateUniverse?.universeId,
+      universeCanonicalHash: candidateUniverse?.canonicalHash,
       setActive,
     },
     occurredAt: bundle.manifest.createdAt,
@@ -331,8 +356,11 @@ function initializeMachineStore(): MachineKnowledgeStore {
     engineVersionsByKey: new Map(),
     bundlesById: new Map(),
     bundlesByKey: new Map(),
+    candidateUniversesById: new Map(),
+    candidateUniverseVersionsByKey: new Map(),
     evaluationsById: new Map(),
     evaluationTracesById: new Map(),
+    receiptsById: new Map(),
     retractionsById: new Map(),
     changeEvents: [],
   };
@@ -427,7 +455,11 @@ export function resetMachineStoreForTests(): MachineKnowledgeStore {
   return globalMachineStore;
 }
 
-export function getRuntimeEpistemicOverrides(nowIso?: string): RuntimeEpistemicOverrides {
+export function getRuntimeEpistemicOverrides(
+  nowIso?: string,
+  validAt?: string,
+  knownAt?: string,
+): RuntimeEpistemicOverrides {
   const store = getMachineStore();
   return {
     claimVersions: store.claimVersionsById,
@@ -438,6 +470,8 @@ export function getRuntimeEpistemicOverrides(nowIso?: string): RuntimeEpistemicO
     sourceSnapshots: store.sourceSnapshotsById,
     evidenceFragments: store.evidenceFragmentsById,
     nowIso,
+    validAt,
+    knownAt,
   };
 }
 
@@ -533,6 +567,28 @@ export function getMachineBundle(engineId: string, version?: string): DecisionIr
   return store.bundlesByKey.get(`${engineId}@${resolvedVersion}`) ?? null;
 }
 
+export function getMachineCandidateUniverse(
+  universeIdOrEngineId: string,
+  version?: string,
+): CandidateUniverse | null {
+  const store = getMachineStore();
+  const normalizedId = universeIdOrEngineId.startsWith("univ:")
+    ? universeIdOrEngineId
+    : `univ:${universeIdOrEngineId}`;
+  if (version && version !== "active") {
+    return store.candidateUniverseVersionsByKey.get(`${normalizedId}@${version}`) ?? null;
+  }
+  return store.candidateUniversesById.get(normalizedId) ?? null;
+}
+
+export function listMachineCandidateUniverses(): CandidateUniverse[] {
+  return Array.from(getMachineStore().candidateUniversesById.values());
+}
+
+export function getMachineDecisionReceipt(receiptId: string): SignedDecisionReceipt | null {
+  return getMachineStore().receiptsById.get(receiptId) ?? null;
+}
+
 export function getMachineChangesSince(sinceCursor = 0, limit = 100): {
   sinceCursor: number;
   nextCursor: number;
@@ -553,7 +609,7 @@ export function getMachineChangesSince(sinceCursor = 0, limit = 100): {
 }
 
 // ============================================================================
-// Evaluation & Batch Evaluation Entrypoints (Persists Trace & Reference IDs)
+// Evaluation & Batch Evaluation Entrypoints (Persists Trace, Receipt & Reference IDs)
 // ============================================================================
 
 export function evaluateMachineEngine(params: {
@@ -562,6 +618,8 @@ export function evaluateMachineEngine(params: {
   inputs: Record<string, unknown>;
   mode?: "compact" | "expanded";
   evaluatedAt?: string;
+  validAt?: string;
+  knownAt?: string;
   bypassCache?: boolean;
 }):
   | { ok: true; response: CompactEvaluationResponse | ExpandedEvaluationResponse }
@@ -601,7 +659,11 @@ export function evaluateMachineEngine(params: {
       input: params.inputs,
       mode: "expanded",
       pinnedVersionRequested,
-      overrides: getRuntimeEpistemicOverrides(params.evaluatedAt),
+      overrides: getRuntimeEpistemicOverrides(
+        params.evaluatedAt,
+        params.validAt,
+        params.knownAt,
+      ),
       bypassCache: params.bypassCache,
     }) as ExpandedEvaluationResponse;
   } catch (err) {
@@ -616,7 +678,11 @@ export function evaluateMachineEngine(params: {
   const evalRecord: MachineEvaluationRecord = {
     objectType: "Evaluation",
     id: expanded.evaluationId,
+    evaluationRunId: expanded.evaluationRunId,
+    evaluationFingerprint: expanded.evaluationFingerprint,
+    receiptId: expanded.receiptId,
     traceId: expanded.traceId,
+    traceRunId: expanded.traceRunId,
     engineId: expanded.engineId,
     engineVersion: expanded.engineVersion,
     bundleHash: expanded.bundleHash,
@@ -635,12 +701,31 @@ export function evaluateMachineEngine(params: {
     referenceIds: expanded.referenceIds,
     immutableReferenceUris: expanded.immutableReferenceUris,
     evaluatedAt: expanded.evaluatedAt,
+    validAt: expanded.validAt,
+    knownAt: expanded.knownAt,
     stableReferenceUri: `/r/${expanded.evaluationId}`,
     immutableReferenceUri: `/r/${expanded.evaluationId}/v/1`,
   };
 
   store.evaluationsById.set(evalRecord.id, evalRecord);
+  if (expanded.evaluationRunId) {
+    store.evaluationsById.set(expanded.evaluationRunId, {
+      ...evalRecord,
+      id: expanded.evaluationRunId,
+      stableReferenceUri: `/r/${expanded.evaluationRunId}`,
+      immutableReferenceUri: `/r/${expanded.evaluationRunId}/v/1`,
+    });
+  }
   store.evaluationTracesById.set(expanded.trace.id, expanded.trace);
+  if (expanded.traceRunId) {
+    store.evaluationTracesById.set(expanded.traceRunId, {
+      ...expanded.trace,
+      id: expanded.traceRunId,
+    });
+  }
+  if (expanded.receipt) {
+    store.receiptsById.set(expanded.receipt.receiptId, expanded.receipt);
+  }
 
   if (params.mode === "expanded") {
     return { ok: true, response: expanded };
@@ -661,8 +746,12 @@ export function evaluateMachineEngineBatch(params: {
     engineVersion?: string;
     inputs: Record<string, unknown>;
     mode?: "compact" | "expanded";
+    validAt?: string;
+    knownAt?: string;
   }>;
   evaluatedAt?: string;
+  validAt?: string;
+  knownAt?: string;
 }): {
   ok: true;
   batchSize: number;
@@ -681,6 +770,8 @@ export function evaluateMachineEngineBatch(params: {
       inputs: item.inputs,
       mode: item.mode ?? "compact",
       evaluatedAt: params.evaluatedAt,
+      validAt: item.validAt ?? params.validAt,
+      knownAt: item.knownAt ?? params.knownAt,
     });
     if (!res.ok) {
       return {
@@ -767,6 +858,8 @@ export function supersedeMachineClaim(params: {
     valid_to: params.newValidTo !== undefined ? params.newValidTo : prevVersion.valid_to,
     observed_at: occurredAt,
     retrieved_at: occurredAt,
+    known_from: occurredAt,
+    known_to: null,
     status: "verified",
     supportingFragment: updatedSupportingFragment,
     evidenceHash,
@@ -801,6 +894,8 @@ export function supersedeMachineClaim(params: {
 
   const supersededPrevVersion: MachineClaimVersion = {
     ...prevVersion,
+    known_from: prevVersion.known_from ?? prevVersion.retrieved_at,
+    known_to: occurredAt,
     status: "superseded",
     supersededByVersionId: newVersionId,
     retractionId,
@@ -891,6 +986,8 @@ export function withdrawMachineClaimVersion(params: {
 
   const withdrawnVersion: MachineClaimVersion = {
     ...targetVersion,
+    known_from: targetVersion.known_from ?? targetVersion.retrieved_at,
+    known_to: occurredAt,
     status: "withdrawn",
     retractionId,
     withdrawalInfo: {
@@ -937,6 +1034,56 @@ export function withdrawMachineClaimVersion(params: {
     claim: updatedClaim,
     retraction,
   };
+}
+
+export function registerLiveIngestedSourceAndClaimInStore(params: {
+  source: MachineSource;
+  snapshot: MachineSourceSnapshot;
+  fragment: MachineEvidenceFragment;
+  claim: MachineClaim;
+  claimVersion: MachineClaimVersion;
+}): void {
+  const store = getMachineStore();
+  store.sourcesById.set(params.source.id, params.source);
+  store.sourceVersionsByKey.set(
+    `${params.source.id}@${params.source.version}`,
+    params.source,
+  );
+  store.sourceSnapshotsById.set(params.snapshot.id, params.snapshot);
+  store.evidenceFragmentsById.set(params.fragment.id, params.fragment);
+  store.claimsById.set(params.claim.id, params.claim);
+  store.claimVersionsById.set(params.claimVersion.versionId, params.claimVersion);
+
+  appendChangeEvent(store, {
+    eventType: "source_snapshot_ingested",
+    objectType: "SourceSnapshot",
+    objectId: params.snapshot.id,
+    versionId: params.snapshot.version,
+    summary: `Live-ingested authoritative source snapshot ${params.snapshot.id} (${params.source.canonicalUrl})`,
+    payload: {
+      sourceId: params.source.id,
+      contentHash: params.snapshot.contentHash,
+      provenanceOrigin: params.snapshot.provenanceOrigin ?? "live_authoritative_capture",
+    },
+    occurredAt: params.snapshot.retrieved_at,
+  });
+
+  appendChangeEvent(store, {
+    eventType: "claim_published",
+    objectType: "ClaimVersion",
+    objectId: params.claim.id,
+    versionId: params.claimVersion.versionId,
+    summary: `Published live-captured claim ${params.claim.id} -> ${params.claimVersion.versionId}`,
+    payload: {
+      claimId: params.claim.id,
+      versionId: params.claimVersion.versionId,
+      evidenceHash: params.claimVersion.evidenceHash,
+      provenanceOrigin: params.claimVersion.provenanceOrigin ?? "live_authoritative_capture",
+    },
+    occurredAt: params.claimVersion.retrieved_at,
+  });
+
+  clearSafeEvaluationCache();
 }
 
 export function openMachineClaimConflict(params: {
@@ -1313,6 +1460,8 @@ export function resolveMachineReference(
         valid_from: cv.valid_from,
         valid_to: cv.valid_to,
         observed_at: cv.observed_at,
+        known_from: cv.known_from ?? cv.retrieved_at,
+        known_to: cv.known_to ?? null,
       },
       retrievalDate: cv.retrieved_at,
       contentHash: cv.evidenceHash,
@@ -1434,6 +1583,8 @@ export function resolveMachineReference(
         valid_from: targetCv.valid_from,
         valid_to: targetCv.valid_to,
         observed_at: targetCv.observed_at,
+        known_from: targetCv.known_from ?? targetCv.retrieved_at,
+        known_to: targetCv.known_to ?? null,
       },
       retrievalDate: targetCv.retrieved_at,
       contentHash: targetCv.evidenceHash,
@@ -2273,6 +2424,145 @@ export function resolveMachineReference(
         })),
       ],
       payload: JSON.parse(canonicalJsonStringify(tr)) as Record<string, unknown>,
+    });
+  }
+
+  // 14. CandidateUniverse (`univ:...`)
+  if (store.candidateUniversesById.has(id)) {
+    const univ = version
+      ? store.candidateUniverseVersionsByKey.get(`${id}@${version}`)
+      : store.candidateUniversesById.get(id);
+    if (!univ) return null;
+    return buildProjectionsForEnvelope({
+      spec: "dcc-reference-envelope/0.1",
+      referenceId: univ.universeId,
+      resolutionMode,
+      objectType: "CandidateUniverse",
+      currentStatus: "verified",
+      immutableVersion: univ.version,
+      canonicalCitationUri: `/r/${univ.universeId}/v/${univ.version}`,
+      stableAliasUri: `/r/${univ.universeId}`,
+      sourceMetadata: {
+        sourceId: null,
+        organization: "DCC Candidate Universe Registry",
+        canonicalSourceUrl: null,
+        sourceSnapshotId: null,
+        artifactStorageUri: univ.storageUri ?? null,
+        licenseOrReuseStatus: "dcc_candidate_universe_v0.2",
+        retrievalMethod: "compiled_candidate_universe",
+      },
+      evidenceLocation: {
+        evidenceFragmentId: null,
+        locator: univ.universeId,
+        verbatimExcerpt: univ.epistemicDisclaimer,
+      },
+      validityDates: {
+        valid_from: univ.temporalScope.validFrom,
+        valid_to: univ.temporalScope.validTo,
+        observed_at: univ.refreshedAt,
+      },
+      retrievalDate: univ.refreshedAt,
+      contentHash: univ.canonicalHash,
+      supersessionOrWithdrawal: {
+        isSuperseded: false,
+        supersededByVersionId: null,
+        supersededByUri: null,
+        supersedesVersionId: null,
+        isWithdrawn: false,
+        retractionId: null,
+        withdrawalReason: null,
+        withdrawnAt: null,
+      },
+      connectedReferences: [
+        {
+          relation: "engine",
+          targetId: univ.engineId,
+          stableUri: `/r/${univ.engineId}`,
+          immutableUri: `/r/${univ.engineId}/v/${univ.engineVersion}`,
+        },
+        ...univ.sourcesConsulted.map((srcId) => ({
+          relation: "source_consulted",
+          targetId: srcId,
+          stableUri: `/r/${srcId}`,
+          immutableUri: `/r/${srcId}/v/1.0.0`,
+        })),
+        ...univ.includedCandidateIds.map((cid) => ({
+          relation: "included_candidate",
+          targetId: cid,
+          stableUri: `/r/${cid}`,
+        })),
+      ],
+      payload: univ as unknown as Record<string, unknown>,
+    });
+  }
+
+  // 15. DecisionReceipt (`rcpt:...`)
+  if (store.receiptsById.has(id)) {
+    const rcpt = store.receiptsById.get(id)!;
+    if (version && version !== "1" && version !== "1.0.0") return null;
+    return buildProjectionsForEnvelope({
+      spec: "dcc-reference-envelope/0.1",
+      referenceId: rcpt.receiptId,
+      resolutionMode,
+      objectType: "DecisionReceipt",
+      currentStatus: "verified",
+      immutableVersion: "1",
+      canonicalCitationUri: `/r/${rcpt.receiptId}/v/1`,
+      stableAliasUri: `/r/${rcpt.receiptId}`,
+      sourceMetadata: {
+        sourceId: null,
+        organization: "DCC Cryptographic Decision Receipt Signer",
+        canonicalSourceUrl: "/.well-known/dcc/keys.json",
+        sourceSnapshotId: null,
+        artifactStorageUri: null,
+        licenseOrReuseStatus: "dcc_signed_receipt_v0.2",
+        retrievalMethod: "ed25519_signed_receipt",
+      },
+      evidenceLocation: {
+        evidenceFragmentId: null,
+        locator: rcpt.keyId,
+        verbatimExcerpt: rcpt.canonicalPayload.epistemicLimitationStatement,
+      },
+      validityDates: {
+        valid_from: rcpt.canonicalPayload.validAt,
+        valid_to: null,
+        observed_at: rcpt.issuedAt,
+        known_from: rcpt.canonicalPayload.knownAt,
+        known_to: null,
+      },
+      retrievalDate: rcpt.issuedAt,
+      contentHash: rcpt.canonicalPayloadHash,
+      supersessionOrWithdrawal: {
+        isSuperseded: false,
+        supersededByVersionId: null,
+        supersededByUri: null,
+        supersedesVersionId: null,
+        isWithdrawn: false,
+        retractionId: null,
+        withdrawalReason: null,
+        withdrawnAt: null,
+      },
+      connectedReferences: [
+        {
+          relation: "candidate_universe",
+          targetId: rcpt.canonicalPayload.candidateUniverseId,
+          stableUri: `/r/${rcpt.canonicalPayload.candidateUniverseId}`,
+          immutableUri: `/r/${rcpt.canonicalPayload.candidateUniverseId}/v/${rcpt.canonicalPayload.candidateUniverseVersion}`,
+        },
+        {
+          relation: "engine",
+          targetId: rcpt.canonicalPayload.engineId,
+          stableUri: `/r/${rcpt.canonicalPayload.engineId}`,
+          immutableUri: `/r/${rcpt.canonicalPayload.engineId}/v/${rcpt.canonicalPayload.engineVersion}`,
+        },
+        ...rcpt.canonicalPayload.resolvedClaimVersionIds.map((cvId) => ({
+          relation: "resolved_claim_version",
+          targetId: cvId,
+          stableUri: `/r/${cvId}`,
+          immutableUri: `/r/${cvId}/v/1`,
+        })),
+      ],
+      payload: rcpt as unknown as Record<string, unknown>,
     });
   }
 

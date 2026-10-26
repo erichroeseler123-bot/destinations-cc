@@ -1,11 +1,13 @@
 import { performance } from "node:perf_hooks";
 import {
+  canonicalJsonStringify,
   clearSafeEvaluationCache,
   compileDecisionEngineBundle,
   evaluateDecisionIrBundle,
   evaluateDecisionIrBundleBatch,
   getMachineStore,
   readImmutableArtifact,
+  sha256Hex,
   type DecisionIrBundle,
   type DecisionIrCandidate,
   type EngineCompilationInput,
@@ -279,11 +281,201 @@ export function runDccMachineLayerBenchmarks(): BundleBenchmarkMetrics[] {
   ];
 }
 
+export interface LatencyDistributionMetrics {
+  benchmarkCategory:
+    | "1_uncached_evaluator_execution"
+    | "2_cache_hit_retrieval"
+    | "3_full_http_and_durable_storage_execution";
+  sampleCount: number;
+  distinctInputCount: number;
+  meanMs: number;
+  p50Ms: number;
+  p95Ms: number;
+  p99Ms: number;
+  notes: string;
+}
+
+export interface V02ThreePartBenchmarkReport {
+  benchmarkSpec: "dcc-machine-benchmark/0.2";
+  measuredAt: string;
+  uncachedEvaluatorExecution: LatencyDistributionMetrics;
+  cacheHitRetrieval: LatencyDistributionMetrics;
+  fullHttpAndDurableStorageExecution: LatencyDistributionMetrics;
+  tierBreakdowns: BundleBenchmarkMetrics[];
+}
+
+function buildVariedInputs(count: number): Array<Record<string, unknown>> {
+  const docks = ["CT", "AJD", "FKL", "AS"];
+  const mobilities = ["full_agility", "mild_uneven_ice_ok", "no_stairs_or_steep_ice", "wheelchair"];
+  const formats = ["standard_glacier_walk", "double_glacier_landing", "glacier_dogsled", "technical_crampon_trek"];
+  const weathers = ["clear_vfr", "marginal_ceiling_1200ft", "low_ifr_fog_hold"];
+
+  return Array.from({ length: count }, (_, i) => ({
+    date: `2026-07-${String((i % 28) + 1).padStart(2, "0")}`,
+    arrivalTime: i % 2 === 0 ? "07:30" : "08:00",
+    allAboardTime: i % 3 === 0 ? "16:00" : "17:30",
+    arrivalDock: docks[i % docks.length],
+    groupSize: (i % 6) + 1,
+    maxSinglePassengerWeightLbs: 165 + ((i * 7) % 130),
+    youngestChildAgeYears: 6 + (i % 25),
+    mobilityLevel: mobilities[i % mobilities.length],
+    weatherCondition: weathers[i % weathers.length],
+    requestedFormat: formats[i % formats.length],
+    maxBudgetPerPersonUsd: 400 + (i % 15) * 25,
+  }));
+}
+
+export async function runDccV02ThreePartBenchmarks(options?: {
+  httpEvaluateHandler?: (req: Request) => Promise<Response>;
+  durableRoundTripFn?: (payload: string, idx: number) => Promise<void>;
+}): Promise<V02ThreePartBenchmarkReport> {
+  const store = getMachineStore();
+  const bundle = store.bundlesByKey.get("juneau-helicopter-tours@1.0.0")!;
+  const varied50 = buildVariedInputs(50);
+
+  // 1. Uncached evaluator execution across 50 distinct varied inputs
+  clearSafeEvaluationCache();
+  const uncachedSamples: number[] = [];
+  for (let i = 0; i < varied50.length; i++) {
+    const t0 = performance.now();
+    evaluateDecisionIrBundle({
+      bundle,
+      input: varied50[i],
+      mode: "expanded",
+      overrides: {
+        nowIso: "2026-04-12T12:00:00.000Z",
+        validAt: "2026-07-15T12:00:00.000Z",
+        knownAt: "2026-04-12T12:00:00.000Z",
+      },
+      bypassCache: true,
+    });
+    uncachedSamples.push(performance.now() - t0);
+  }
+  uncachedSamples.sort((a, b) => a - b);
+
+  // 2. Cache-hit retrieval across the same 50 distinct varied inputs (no single repeated input!)
+  clearSafeEvaluationCache();
+  // Prime cache with all 50 distinct varied inputs
+  for (let i = 0; i < varied50.length; i++) {
+    evaluateDecisionIrBundle({
+      bundle,
+      input: varied50[i],
+      mode: "compact",
+      overrides: { nowIso: "2026-04-12T12:00:00.000Z" },
+      bypassCache: false,
+    });
+  }
+  const cacheHitSamples: number[] = [];
+  for (let i = 0; i < varied50.length; i++) {
+    const t0 = performance.now();
+    evaluateDecisionIrBundle({
+      bundle,
+      input: varied50[i],
+      mode: "compact",
+      overrides: { nowIso: "2026-04-12T12:00:00.000Z" },
+      bypassCache: false,
+    });
+    cacheHitSamples.push(performance.now() - t0);
+  }
+  cacheHitSamples.sort((a, b) => a - b);
+
+  // 3. Full HTTP + durable-storage execution across 25 distinct varied inputs
+  const varied25 = varied50.slice(0, 25);
+  const httpSamples: number[] = [];
+  const { POST: postEvaluateRoute } = await import("@/app/api/v1/evaluate/route");
+  const { setDccMachineV1RuntimeOverride, writeImmutableArtifact } = await import(
+    "@/lib/dcc/machine"
+  );
+  setDccMachineV1RuntimeOverride(true);
+  const handler = options?.httpEvaluateHandler ?? postEvaluateRoute;
+
+  for (let i = 0; i < varied25.length; i++) {
+    const reqBody = JSON.stringify({
+      engineId: "juneau-helicopter-tours",
+      engineVersion: "1.0.0",
+      mode: "expanded",
+      validAt: "2026-07-15T12:00:00.000Z",
+      knownAt: "2026-04-12T12:00:00.000Z",
+      inputs: varied25[i],
+    });
+    const t0 = performance.now();
+    const req = new Request("https://www.destinationcommandcenter.com/api/v1/evaluate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Forwarded-For": `198.51.100.${(i % 200) + 1}`,
+      },
+      body: reqBody,
+    });
+    const res = await handler(req);
+    const bodyText = await res.text();
+    if (options?.durableRoundTripFn) {
+      await options.durableRoundTripFn(bodyText, i);
+    } else {
+      const parsedBody = JSON.parse(bodyText) as { receipt?: unknown; receiptId?: string };
+      const receiptContent = canonicalJsonStringify(parsedBody.receipt ?? parsedBody);
+      const rcptHash = sha256Hex(receiptContent).slice(0, 16);
+      const saved = writeImmutableArtifact({
+        category: "receipts",
+        filename: `bench_receipt_${i + 1}__${rcptHash}.json`,
+        content: receiptContent,
+      });
+      readImmutableArtifact(saved.storageUri, saved.sha256);
+    }
+    httpSamples.push(performance.now() - t0);
+  }
+  httpSamples.sort((a, b) => a - b);
+
+  const avg = (arr: number[]) =>
+    Number((arr.reduce((acc, v) => acc + v, 0) / arr.length).toFixed(4));
+
+  return {
+    benchmarkSpec: "dcc-machine-benchmark/0.2",
+    measuredAt: new Date().toISOString(),
+    uncachedEvaluatorExecution: {
+      benchmarkCategory: "1_uncached_evaluator_execution",
+      sampleCount: uncachedSamples.length,
+      distinctInputCount: varied50.length,
+      meanMs: avg(uncachedSamples),
+      p50Ms: percentile(uncachedSamples, 50),
+      p95Ms: percentile(uncachedSamples, 95),
+      p99Ms: percentile(uncachedSamples, 99),
+      notes:
+        "Cold deterministic IR evaluation + Ed25519 receipt signing across 50 distinct varied inputs (bypassCache=true).",
+    },
+    cacheHitRetrieval: {
+      benchmarkCategory: "2_cache_hit_retrieval",
+      sampleCount: cacheHitSamples.length,
+      distinctInputCount: varied50.length,
+      meanMs: avg(cacheHitSamples),
+      p50Ms: percentile(cacheHitSamples, 50),
+      p95Ms: percentile(cacheHitSamples, 95),
+      p99Ms: percentile(cacheHitSamples, 99),
+      notes:
+        "Warm cache-hit retrieval across 50 distinct varied pre-warmed inputs (each generating a fresh evaluationRunId and traceRunId).",
+    },
+    fullHttpAndDurableStorageExecution: {
+      benchmarkCategory: "3_full_http_and_durable_storage_execution",
+      sampleCount: httpSamples.length,
+      distinctInputCount: varied25.length,
+      meanMs: avg(httpSamples),
+      p50Ms: percentile(httpSamples, 50),
+      p95Ms: percentile(httpSamples, 95),
+      p99Ms: percentile(httpSamples, 99),
+      notes: options?.durableRoundTripFn
+        ? "Full HTTP POST /api/v1/evaluate + Neon Postgres durable storage round-trip across 25 distinct varied inputs."
+        : "Full HTTP POST /api/v1/evaluate + immutable artifact storage persistence across 25 distinct varied inputs.",
+    },
+    tierBreakdowns: runDccMachineLayerBenchmarks(),
+  };
+}
+
 if (
   typeof process !== "undefined" &&
   Array.isArray(process.argv) &&
   process.argv.some((arg) => arg.includes("benchmark-machine-layer"))
 ) {
-  const results = runDccMachineLayerBenchmarks();
-  console.log(JSON.stringify({ benchmarkVersion: "0.1.0", results }, null, 2));
+  runDccV02ThreePartBenchmarks().then((report) => {
+    console.log(JSON.stringify(report, null, 2));
+  });
 }

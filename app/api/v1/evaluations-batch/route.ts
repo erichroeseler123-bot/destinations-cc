@@ -1,7 +1,11 @@
 import {
+  MachineSecurityLimitError,
   buildMachineJsonResponse,
+  enforceBatchItemCountLimit,
+  enforceEvaluationRequestSizeLimit,
   enforceMachineLayerFeatureFlag,
   evaluateMachineEngineBatch,
+  verifyEvaluationAuthAndRateLimit,
 } from "@/lib/dcc/machine";
 
 export const dynamic = "force-dynamic";
@@ -10,9 +14,39 @@ export async function POST(request: Request) {
   const flagBlocked = enforceMachineLayerFeatureFlag();
   if (flagBlocked) return flagBlocked;
 
+  let rawText: string;
+  try {
+    rawText = await request.text();
+    enforceEvaluationRequestSizeLimit(rawText);
+    verifyEvaluationAuthAndRateLimit(request, "evaluate:batch");
+  } catch (err) {
+    if (err instanceof MachineSecurityLimitError) {
+      return buildMachineJsonResponse(
+        {
+          ok: false,
+          error: {
+            code: err.code,
+            message: err.message,
+          },
+        },
+        { status: err.statusCode, cacheControl: "no-store" },
+      );
+    }
+    return buildMachineJsonResponse(
+      {
+        ok: false,
+        error: {
+          code: "INVALID_REQUEST_STREAM",
+          message: err instanceof Error ? err.message : "Failed to read request body.",
+        },
+      },
+      { status: 400, cacheControl: "no-store" },
+    );
+  }
+
   let body: unknown;
   try {
-    body = await request.json();
+    body = JSON.parse(rawText);
   } catch {
     return buildMachineJsonResponse(
       {
@@ -40,33 +74,25 @@ export async function POST(request: Request) {
   }
 
   const payload = body as Record<string, unknown>;
-  if (!Array.isArray(payload.items) || payload.items.length === 0) {
-    return buildMachineJsonResponse(
-      {
-        ok: false,
-        error: {
-          code: "EMPTY_BATCH_ITEMS",
-          message: "Field 'items' must be a non-empty array of evaluation requests.",
+  try {
+    enforceBatchItemCountLimit(payload.items as unknown[]);
+  } catch (err) {
+    if (err instanceof MachineSecurityLimitError) {
+      return buildMachineJsonResponse(
+        {
+          ok: false,
+          error: {
+            code: err.code,
+            message: err.message,
+          },
         },
-      },
-      { status: 400, cacheControl: "no-store" },
-    );
+        { status: err.statusCode, cacheControl: "no-store" },
+      );
+    }
   }
 
-  if (payload.items.length > 250) {
-    return buildMachineJsonResponse(
-      {
-        ok: false,
-        error: {
-          code: "BATCH_SIZE_EXCEEDED",
-          message: "Batch evaluation supports up to 250 items per request.",
-        },
-      },
-      { status: 400, cacheControl: "no-store" },
-    );
-  }
-
-  const normalizedItems = payload.items.map((raw, idx) => {
+  const itemsArray = payload.items as unknown[];
+  const normalizedItems = itemsArray.map((raw, idx) => {
     const obj =
       typeof raw === "object" && raw !== null ? (raw as Record<string, unknown>) : {};
     return {
@@ -84,15 +110,23 @@ export async function POST(request: Request) {
         obj.mode === "expanded" || obj.mode === "compact"
           ? (obj.mode as "compact" | "expanded")
           : ("compact" as const),
+      validAt: typeof obj.validAt === "string" ? obj.validAt : undefined,
+      knownAt: typeof obj.knownAt === "string" ? obj.knownAt : undefined,
     };
   });
 
   const evaluatedAt =
     typeof payload.evaluatedAt === "string" ? payload.evaluatedAt : undefined;
+  const validAt =
+    typeof payload.validAt === "string" ? payload.validAt : undefined;
+  const knownAt =
+    typeof payload.knownAt === "string" ? payload.knownAt : undefined;
 
   const batchResult = evaluateMachineEngineBatch({
     items: normalizedItems,
     evaluatedAt,
+    validAt,
+    knownAt,
   });
 
   return buildMachineJsonResponse(batchResult, {

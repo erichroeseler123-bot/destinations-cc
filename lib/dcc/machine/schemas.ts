@@ -96,6 +96,12 @@ export const MachineEntitySchema = z
   .strict();
 export type MachineEntity = z.infer<typeof MachineEntitySchema>;
 
+export const ProvenanceOriginSchema = z.enum([
+  "curated_seed_fixture",
+  "live_authoritative_capture",
+]);
+export type ProvenanceOrigin = z.infer<typeof ProvenanceOriginSchema>;
+
 export const MachineSourceSchema = z
   .object({
     objectType: z.literal("Source"),
@@ -115,6 +121,7 @@ export const MachineSourceSchema = z
     jurisdiction: z.string().nullable(),
     retrievalMethod: z.string().min(1),
     licenseOrReuseStatus: z.string().min(1),
+    provenanceOrigin: ProvenanceOriginSchema.optional(),
     status: EpistemicStatusSchema,
     latestSnapshotId: z.string().min(1),
     valid_from: z.string(),
@@ -143,6 +150,7 @@ export const MachineSourceSnapshotSchema = z
     contentType: z.string().min(1),
     retrievalMethod: z.string().min(1),
     licenseOrReuseStatus: z.string().min(1),
+    provenanceOrigin: ProvenanceOriginSchema.optional(),
     artifactStorageUri: z.string().min(1),
     contentHash: z.string().min(16),
     byteLength: z.number().int().nonnegative(),
@@ -173,6 +181,7 @@ export const MachineEvidenceFragmentSchema = z
     retrieved_at: z.string(),
     valid_from: z.string(),
     valid_to: z.string().nullable(),
+    provenanceOrigin: ProvenanceOriginSchema.optional(),
     status: EpistemicStatusSchema,
     stableReferenceUri: z.string(),
     immutableReferenceUri: z.string(),
@@ -195,8 +204,11 @@ export const MachineClaimVersionSchema = z
     jurisdiction: z.string().nullable(),
     valid_from: z.string(),
     valid_to: z.string().nullable(),
+    known_from: z.string().optional(),
+    known_to: z.string().nullable().optional(),
     observed_at: z.string(),
     retrieved_at: z.string(),
+    provenanceOrigin: ProvenanceOriginSchema.optional(),
     status: EpistemicStatusSchema,
     sourceId: z.string().min(1),
     sourceOrganization: z.string().min(1),
@@ -647,6 +659,132 @@ export const DecisionIrTieBreakFieldSchema = z
   })
   .strict();
 
+export const CandidateUniverseSchema = z
+  .object({
+    objectType: z.literal("CandidateUniverse"),
+    universeId: z.string().min(1),
+    version: z.string().min(1),
+    domainPackVersion: z.string().min(1),
+    engineId: z.string().min(1),
+    engineVersion: z.string().min(1),
+    geographicScope: GeographicScopeSchema,
+    temporalScope: z
+      .object({
+        validFrom: z.string(),
+        validTo: z.string(),
+      })
+      .strict(),
+    inclusionMethodology: z.string().min(1),
+    sourcesConsulted: z.array(z.string()).min(1),
+    includedCandidateIds: z.array(z.string()).min(1),
+    knownExclusions: z.array(
+      z
+        .object({
+          candidateOrOperator: z.string(),
+          reasonCode: z.string(),
+          explanation: z.string(),
+        })
+        .strict(),
+    ),
+    unresolvedCoverageGaps: z.array(
+      z
+        .object({
+          gapId: z.string(),
+          description: z.string(),
+          impactOnCompleteness: z.string(),
+        })
+        .strict(),
+    ),
+    refreshedAt: z.string(),
+    coverageStatus: z.enum([
+      "declared_bounded_universe",
+      "partial_known_gaps",
+      "comprehensive_permitted_roster",
+    ]),
+    epistemicDisclaimer: z.string().min(1),
+    canonicalHash: z.string().min(16),
+    storageUri: z.string().min(1),
+    stableReferenceUri: z.string(),
+    immutableReferenceUri: z.string(),
+  })
+  .strict();
+export type CandidateUniverse = z.infer<typeof CandidateUniverseSchema>;
+
+export const CandidateDispositionEnumSchema = z.enum([
+  "eligible",
+  "qualified",
+  "ineligible",
+  "indeterminate",
+]);
+export type CandidateDisposition = z.infer<typeof CandidateDispositionEnumSchema>;
+
+export const CandidateUniverseDispositionRecordSchema = z
+  .object({
+    candidateId: z.string(),
+    candidateClass: z.enum(["commercial_tour", "noncommercial_or_contingency"]),
+    disposition: CandidateDispositionEnumSchema,
+    status: z.string(),
+    reasonCodes: z.array(z.string()),
+    evidenceDependencies: z.array(z.string()),
+  })
+  .strict();
+export type CandidateUniverseDispositionRecord = z.infer<
+  typeof CandidateUniverseDispositionRecordSchema
+>;
+
+export const SignedDecisionReceiptPayloadSchema = z
+  .object({
+    spec: z.literal("dcc-decision-receipt/0.2"),
+    receiptId: z.string().min(1),
+    evaluationFingerprint: z.string().min(16),
+    engineId: z.string().min(1),
+    engineVersion: z.string().min(1),
+    bundleHash: z.string().min(16),
+    candidateUniverseId: z.string().min(1),
+    candidateUniverseVersion: z.string().min(1),
+    candidateUniverseHash: z.string().min(16),
+    normalizedInputHash: z.string().min(16),
+    validAt: z.string(),
+    knownAt: z.string(),
+    decisionState: z.string(),
+    recommendedCandidateId: z.string().nullable(),
+    candidateDispositionSummary: z.array(
+      z
+        .object({
+          candidateId: z.string(),
+          disposition: CandidateDispositionEnumSchema,
+          reasonCodes: z.array(z.string()),
+          evidenceDependencies: z.array(z.string()),
+        })
+        .strict(),
+    ),
+    resolvedClaimVersionIds: z.array(z.string()),
+    resultHash: z.string().min(16),
+    traceHash: z.string().min(16),
+    epistemicLimitationStatement: z.string().min(1),
+  })
+  .strict();
+
+export const SignedDecisionReceiptSchema = z
+  .object({
+    objectType: z.literal("DecisionReceipt"),
+    receiptId: z.string().min(1),
+    keyId: z.string().min(1),
+    algorithm: z.literal("Ed25519"),
+    issuedAt: z.string(),
+    canonicalPayloadHash: z.string().min(16),
+    signature: z.string().min(16),
+    signatureBase64Url: z.string().min(16),
+    publicKeyDiscoveryUri: z.literal("/.well-known/dcc/keys.json"),
+    immutableReferenceUri: z.string(),
+    stableReferenceUri: z.string(),
+    epistemicLimitationStatement: z.string(),
+    payload: SignedDecisionReceiptPayloadSchema,
+    canonicalPayload: SignedDecisionReceiptPayloadSchema,
+  })
+  .strict();
+export type SignedDecisionReceiptObject = z.infer<typeof SignedDecisionReceiptSchema>;
+
 export const DecisionIrManifestSchema = z
   .object({
     engineId: z.string().min(1),
@@ -655,6 +793,9 @@ export const DecisionIrManifestSchema = z
     sourceRevision: z.string().min(1),
     ruleSetId: z.string().min(1),
     ruleSetHash: z.string().min(16),
+    candidateUniverseId: z.string().min(1).optional(),
+    candidateUniverseVersion: z.string().min(1).optional(),
+    candidateUniverseHash: z.string().min(16).optional(),
     dependencyHashes: z.record(z.string(), z.string()),
     conflictIds: z.array(z.string()),
     candidateCount: z.number().int().positive(),
@@ -677,6 +818,9 @@ export const DecisionIrBundleSchema = z
     destinationEntityId: z.string().min(1),
     jurisdiction: z.string().min(1),
     timezone: z.string().min(1),
+    candidateUniverseId: z.string().min(1).optional(),
+    candidateUniverseVersion: z.string().min(1).optional(),
+    candidateUniverseHash: z.string().min(16).optional(),
     inputSchema: z.array(DecisionIrInputFieldSchema).min(1),
     derivedInputs: z.array(DecisionIrDerivedInputSchema),
     candidateSelection: z
@@ -762,6 +906,7 @@ export const CandidateEvaluationSummarySchema = z
     entityId: z.string(),
     title: z.string(),
     candidateClass: z.enum(["commercial_tour", "noncommercial_or_contingency"]),
+    disposition: CandidateDispositionEnumSchema.optional(),
     status: z.enum([
       "recommended",
       "viable_qualified_unknown_or_stale",
@@ -779,6 +924,7 @@ export const CandidateEvaluationSummarySchema = z
     qualificationWarnings: z.array(z.string()),
     remediationHints: z.array(z.string()),
     supportingClaimVersionIds: z.array(z.string()),
+    evidenceDependencies: z.array(z.string()).optional(),
     referenceUris: z.array(z.string()),
     bookingHandoffs: DecisionIrCandidateSchema.shape.bookingHandoffs,
   })
@@ -789,10 +935,18 @@ export const MachineEvaluationTraceSchema = z
   .object({
     objectType: z.literal("EvaluationTrace"),
     id: z.string(),
+    traceRunId: z.string().optional(),
     evaluationId: z.string(),
+    evaluationRunId: z.string().optional(),
+    evaluationFingerprint: z.string().optional(),
     engineId: z.string(),
     engineVersion: z.string(),
     bundleHash: z.string(),
+    candidateUniverseId: z.string().optional(),
+    candidateUniverseVersion: z.string().optional(),
+    candidateUniverseHash: z.string().optional(),
+    validAt: z.string().optional(),
+    knownAt: z.string().optional(),
     normalizedInput: z.record(z.string(), z.unknown()),
     derivedInput: z.record(z.string(), z.unknown()),
     unknownFields: z.array(z.string()),
@@ -803,6 +957,7 @@ export const MachineEvaluationTraceSchema = z
       z
         .object({
           candidateId: z.string(),
+          disposition: CandidateDispositionEnumSchema.optional(),
           status: z.string(),
           preferenceScore: z.number(),
           ruleExecutions: z.array(RuleExecutionRecordSchema),
@@ -822,14 +977,23 @@ export const CompactEvaluationResponseSchema = z
     ok: z.literal(true),
     mode: z.literal("compact"),
     evaluationId: z.string(),
+    evaluationRunId: z.string(),
+    evaluationFingerprint: z.string(),
     traceId: z.string(),
+    traceRunId: z.string(),
+    receiptId: z.string(),
     engineId: z.string(),
     engineVersion: z.string(),
     pinnedVersionRequested: z.boolean(),
     bundleHash: z.string(),
+    candidateUniverseId: z.string(),
+    candidateUniverseVersion: z.string(),
+    candidateUniverseHash: z.string(),
     normalizedInputHash: z.string(),
     resultHash: z.string(),
     traceHash: z.string(),
+    validAt: z.string(),
+    knownAt: z.string(),
     cacheHit: z.boolean(),
     decisionState: z.enum([
       "recommended",
@@ -838,17 +1002,20 @@ export const CompactEvaluationResponseSchema = z
       "unknown_insufficient_inputs",
       "no_viable_candidates",
     ]),
+    epistemicScopeDisclaimer: z.string(),
     recommendedCandidateId: z.string().nullable(),
     recommendedCandidate: CandidateEvaluationSummarySchema.nullable(),
     viableCandidates: z.array(CandidateEvaluationSummarySchema),
     excludedCandidates: z.array(CandidateEvaluationSummarySchema),
     contingencyCandidates: z.array(CandidateEvaluationSummarySchema),
+    candidateDispositions: z.array(CandidateUniverseDispositionRecordSchema),
     unknownFields: z.array(z.string()),
     conflictIds: z.array(z.string()),
     withdrawnClaimVersionIds: z.array(z.string()),
     reasonCodes: z.array(z.string()),
     referenceIds: z.array(z.string()),
     immutableReferenceUris: z.array(z.string()),
+    receipt: SignedDecisionReceiptSchema,
     evaluatedAt: z.string(),
   })
   .strict();
@@ -890,6 +1057,8 @@ export const ReferenceResolutionEnvelopeSchema = z
       "Engine",
       "EngineVersion",
       "EngineBundle",
+      "CandidateUniverse",
+      "DecisionReceipt",
       "Evaluation",
       "EvaluationTrace",
       "RetractionOrWithdrawal",
@@ -921,6 +1090,8 @@ export const ReferenceResolutionEnvelopeSchema = z
         valid_from: z.string().nullable(),
         valid_to: z.string().nullable(),
         observed_at: z.string().nullable(),
+        known_from: z.string().nullable().optional(),
+        known_to: z.string().nullable().optional(),
       })
       .strict(),
     retrievalDate: z.string(),
@@ -955,6 +1126,98 @@ export type ReferenceResolutionEnvelope = z.infer<typeof ReferenceResolutionEnve
 // ============================================================================
 // Published Canonical JSON Schemas (Draft 2020-12) & Structural Validator
 // ============================================================================
+
+export const CANDIDATE_UNIVERSE_JSON_SCHEMA = {
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "https://www.destinationcommandcenter.com/schemas/dcc-candidate-universe-v0.2.json",
+  title: "DCC CandidateUniverse v0.2",
+  type: "object",
+  required: [
+    "objectType",
+    "universeId",
+    "version",
+    "domainPackVersion",
+    "engineId",
+    "engineVersion",
+    "geographicScope",
+    "temporalScope",
+    "inclusionMethodology",
+    "sourcesConsulted",
+    "includedCandidateIds",
+    "knownExclusions",
+    "unresolvedCoverageGaps",
+    "refreshedAt",
+    "coverageStatus",
+    "epistemicDisclaimer",
+    "canonicalHash",
+    "storageUri",
+    "stableReferenceUri",
+    "immutableReferenceUri",
+  ],
+  properties: {
+    objectType: { const: "CandidateUniverse" },
+    universeId: { type: "string", minLength: 1 },
+    version: { type: "string", minLength: 1 },
+    domainPackVersion: { type: "string", minLength: 1 },
+    engineId: { type: "string", minLength: 1 },
+    engineVersion: { type: "string", minLength: 1 },
+    includedCandidateIds: { type: "array", minItems: 1 },
+    sourcesConsulted: { type: "array", minItems: 1 },
+    canonicalHash: { type: "string", minLength: 16 },
+  },
+} as const;
+
+export const SIGNED_RECEIPT_JSON_SCHEMA = {
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "https://www.destinationcommandcenter.com/schemas/dcc-signed-receipt-v0.2.json",
+  title: "DCC Signed Decision Receipt v0.2",
+  type: "object",
+  required: [
+    "objectType",
+    "receiptId",
+    "keyId",
+    "algorithm",
+    "issuedAt",
+    "canonicalPayloadHash",
+    "signature",
+    "publicKeyDiscoveryUri",
+    "immutableReferenceUri",
+    "payload",
+  ],
+  properties: {
+    objectType: { const: "DecisionReceipt" },
+    receiptId: { type: "string", minLength: 1 },
+    keyId: { type: "string", minLength: 1 },
+    algorithm: { const: "Ed25519" },
+    canonicalPayloadHash: { type: "string", minLength: 16 },
+    signature: { type: "string", minLength: 16 },
+    publicKeyDiscoveryUri: { const: "/.well-known/dcc/keys.json" },
+    payload: {
+      type: "object",
+      required: [
+        "spec",
+        "receiptId",
+        "evaluationFingerprint",
+        "engineId",
+        "engineVersion",
+        "bundleHash",
+        "candidateUniverseId",
+        "candidateUniverseVersion",
+        "candidateUniverseHash",
+        "normalizedInputHash",
+        "validAt",
+        "knownAt",
+        "decisionState",
+        "recommendedCandidateId",
+        "candidateDispositionSummary",
+        "resolvedClaimVersionIds",
+        "resultHash",
+        "traceHash",
+        "epistemicLimitationStatement",
+      ],
+    },
+  },
+} as const;
 
 export const DECISION_IR_JSON_SCHEMA = {
   $schema: "https://json-schema.org/draft/2020-12/schema",
@@ -1098,42 +1361,54 @@ export const REFERENCE_ENVELOPE_JSON_SCHEMA = {
 
 export const COMPACT_EVALUATION_JSON_SCHEMA = {
   $schema: "https://json-schema.org/draft/2020-12/schema",
-  $id: "https://www.destinationcommandcenter.com/schemas/dcc-evaluation-compact-v0.1.json",
-  title: "DCC Compact Evaluation Response v0.1",
+  $id: "https://www.destinationcommandcenter.com/schemas/dcc-evaluation-compact-v0.2.json",
+  title: "DCC Compact Evaluation Response v0.2",
   type: "object",
   required: [
     "ok",
     "mode",
     "evaluationId",
+    "evaluationRunId",
+    "evaluationFingerprint",
     "traceId",
+    "traceRunId",
+    "receiptId",
     "engineId",
     "engineVersion",
     "pinnedVersionRequested",
     "bundleHash",
+    "candidateUniverseId",
+    "candidateUniverseVersion",
+    "candidateUniverseHash",
     "normalizedInputHash",
     "resultHash",
     "traceHash",
+    "validAt",
+    "knownAt",
     "cacheHit",
     "decisionState",
+    "epistemicScopeDisclaimer",
     "recommendedCandidateId",
     "recommendedCandidate",
     "viableCandidates",
     "excludedCandidates",
     "contingencyCandidates",
+    "candidateDispositions",
     "unknownFields",
     "conflictIds",
     "withdrawnClaimVersionIds",
     "reasonCodes",
     "referenceIds",
     "immutableReferenceUris",
+    "receipt",
     "evaluatedAt",
   ],
 } as const;
 
 export const EXPANDED_EVALUATION_JSON_SCHEMA = {
   $schema: "https://json-schema.org/draft/2020-12/schema",
-  $id: "https://www.destinationcommandcenter.com/schemas/dcc-evaluation-expanded-v0.1.json",
-  title: "DCC Expanded Evaluation Response v0.1",
+  $id: "https://www.destinationcommandcenter.com/schemas/dcc-evaluation-expanded-v0.2.json",
+  title: "DCC Expanded Evaluation Response v0.2",
   type: "object",
   required: [
     ...COMPACT_EVALUATION_JSON_SCHEMA.required,
@@ -1145,6 +1420,8 @@ export const EXPANDED_EVALUATION_JSON_SCHEMA = {
 export const DCC_MACHINE_JSON_SCHEMAS = {
   DecisionIrBundle: DECISION_IR_JSON_SCHEMA,
   ClaimVersion: CLAIM_VERSION_JSON_SCHEMA,
+  CandidateUniverse: CANDIDATE_UNIVERSE_JSON_SCHEMA,
+  SignedDecisionReceipt: SIGNED_RECEIPT_JSON_SCHEMA,
   ReferenceResolutionEnvelope: REFERENCE_ENVELOPE_JSON_SCHEMA,
   CompactEvaluationResponse: COMPACT_EVALUATION_JSON_SCHEMA,
   ExpandedEvaluationResponse: EXPANDED_EVALUATION_JSON_SCHEMA,

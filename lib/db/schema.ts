@@ -1964,6 +1964,9 @@ export const dccMachineClaimVersions = pgTable(
     jurisdiction: text("jurisdiction"),
     validFrom: timestamp("valid_from", { withTimezone: true }).notNull(),
     validTo: timestamp("valid_to", { withTimezone: true }),
+    knownFrom: timestamp("known_from", { withTimezone: true }).notNull().defaultNow(),
+    knownTo: timestamp("known_to", { withTimezone: true }),
+    provenanceOrigin: text("provenance_origin").notNull().default("curated_seed_fixture"),
     observedAt: timestamp("observed_at", { withTimezone: true }).notNull(),
     retrievedAt: timestamp("retrieved_at", { withTimezone: true }).notNull(),
     status: dccMachineEpistemicStatusEnum("status").notNull().default("verified"),
@@ -1996,6 +1999,13 @@ export const dccMachineClaimVersions = pgTable(
   (table) => ({
     claimIdx: index("dcc_machine_claim_versions_claim_idx").on(table.claimId, table.versionNumber),
     statusIdx: index("dcc_machine_claim_versions_status_idx").on(table.status),
+    bitemporalIdx: index("dcc_machine_claim_versions_bitemporal_idx").on(
+      table.claimId,
+      table.knownFrom,
+      table.knownTo,
+      table.validFrom,
+      table.validTo,
+    ),
   }),
 );
 
@@ -2124,10 +2134,54 @@ export const dccMachineEngineBundles = pgTable(
   }),
 );
 
+export const dccMachineCandidateUniverses = pgTable(
+  "dcc_machine_candidate_universes",
+  {
+    id: text("id").primaryKey(),
+    universeId: text("universe_id").notNull(),
+    version: text("version").notNull(),
+    domainPackVersion: text("domain_pack_version").notNull(),
+    engineId: text("engine_id").notNull(),
+    engineVersion: text("engine_version").notNull(),
+    geographicScope: jsonb("geographic_scope").$type<Record<string, unknown>>().notNull(),
+    temporalScope: jsonb("temporal_scope").$type<Record<string, unknown>>().notNull(),
+    inclusionMethodology: text("inclusion_methodology").notNull(),
+    sourcesConsulted: jsonb("sources_consulted").$type<unknown[]>().notNull().default([]),
+    includedCandidateIds: jsonb("included_candidate_ids").$type<string[]>().notNull().default([]),
+    knownExclusions: jsonb("known_exclusions").$type<unknown[]>().notNull().default([]),
+    unresolvedCoverageGaps: jsonb("unresolved_coverage_gaps").$type<unknown[]>().notNull().default([]),
+    refreshedAt: timestamp("refreshed_at", { withTimezone: true }).notNull(),
+    coverageStatus: text("coverage_status").notNull(),
+    epistemicDisclaimer: text("epistemic_disclaimer").notNull(),
+    canonicalHash: text("canonical_hash").notNull(),
+    storageUri: text("storage_uri").notNull(),
+    payload: jsonb("payload").$type<Record<string, unknown>>().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    uidVerUniqueIdx: uniqueIndex("dcc_machine_candidate_universes_uid_ver_uidx").on(
+      table.universeId,
+      table.version,
+    ),
+    engineIdx: index("dcc_machine_candidate_universes_engine_idx").on(
+      table.engineId,
+      table.engineVersion,
+    ),
+  }),
+);
+
 export const dccMachineEvaluations = pgTable(
   "dcc_machine_evaluations",
   {
     id: text("id").primaryKey(),
+    evaluationRunId: text("evaluation_run_id"),
+    traceRunId: text("trace_run_id"),
+    evaluationFingerprint: text("evaluation_fingerprint"),
+    receiptId: text("receipt_id"),
+    universeId: text("universe_id"),
+    universeVersion: text("universe_version"),
+    validAt: timestamp("valid_at", { withTimezone: true }),
+    knownAt: timestamp("known_at", { withTimezone: true }),
     engineId: text("engine_id").notNull(),
     engineVersion: text("engine_version").notNull(),
     bundleHash: text("bundle_hash").notNull(),
@@ -2147,6 +2201,8 @@ export const dccMachineEvaluations = pgTable(
       table.engineVersion,
     ),
     resultHashIdx: index("dcc_machine_evaluations_result_hash_idx").on(table.resultHash),
+    fingerprintIdx: index("dcc_machine_evaluations_fingerprint_idx").on(table.evaluationFingerprint),
+    receiptIdx: index("dcc_machine_evaluations_receipt_idx").on(table.receiptId),
   }),
 );
 
@@ -2154,6 +2210,11 @@ export const dccMachineEvaluationTraces = pgTable(
   "dcc_machine_evaluation_traces",
   {
     id: text("id").primaryKey(),
+    traceRunId: text("trace_run_id"),
+    evaluationRunId: text("evaluation_run_id"),
+    evaluationFingerprint: text("evaluation_fingerprint"),
+    validAt: timestamp("valid_at", { withTimezone: true }),
+    knownAt: timestamp("known_at", { withTimezone: true }),
     evaluationId: text("evaluation_id")
       .notNull()
       .references(() => dccMachineEvaluations.id, { onDelete: "cascade" }),
@@ -2172,6 +2233,64 @@ export const dccMachineEvaluationTraces = pgTable(
   },
   (table) => ({
     evalIdx: index("dcc_machine_evaluation_traces_eval_idx").on(table.evaluationId),
+  }),
+);
+
+export const dccMachineSignedReceipts = pgTable(
+  "dcc_machine_signed_receipts",
+  {
+    receiptId: text("receipt_id").primaryKey(),
+    evaluationRunId: text("evaluation_run_id").notNull(),
+    traceRunId: text("trace_run_id").notNull(),
+    evaluationFingerprint: text("evaluation_fingerprint").notNull(),
+    engineId: text("engine_id").notNull(),
+    engineVersion: text("engine_version").notNull(),
+    bundleHash: text("bundle_hash").notNull(),
+    universeId: text("universe_id").notNull(),
+    universeVersion: text("universe_version").notNull(),
+    universeHash: text("universe_hash").notNull(),
+    validAt: timestamp("valid_at", { withTimezone: true }).notNull(),
+    knownAt: timestamp("known_at", { withTimezone: true }).notNull(),
+    normalizedInputHash: text("normalized_input_hash").notNull(),
+    resultHash: text("result_hash").notNull(),
+    traceHash: text("trace_hash").notNull(),
+    decisionState: text("decision_state").notNull(),
+    recommendedCandidateId: text("recommended_candidate_id"),
+    keyId: text("key_id").notNull(),
+    algorithm: text("algorithm").notNull(),
+    signature: text("signature").notNull(),
+    issuedAt: timestamp("issued_at", { withTimezone: true }).notNull(),
+    publicKeyDiscoveryUri: text("public_key_discovery_uri").notNull(),
+    epistemicLimitationStatement: text("epistemic_limitation_statement").notNull(),
+    canonicalPayload: jsonb("canonical_payload").$type<Record<string, unknown>>().notNull(),
+    receiptEnvelope: jsonb("receipt_envelope").$type<Record<string, unknown>>().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    engineIdx: index("dcc_machine_signed_receipts_engine_idx").on(
+      table.engineId,
+      table.engineVersion,
+      table.issuedAt,
+    ),
+    fingerprintIdx: index("dcc_machine_signed_receipts_fingerprint_idx").on(
+      table.evaluationFingerprint,
+    ),
+  }),
+);
+
+export const dccMachineImmutableObjects = pgTable(
+  "dcc_machine_immutable_objects",
+  {
+    objectUri: text("object_uri").primaryKey(),
+    category: text("category").notNull(),
+    sha256Hash: text("sha256_hash").notNull(),
+    contentType: text("content_type").notNull().default("application/json"),
+    sizeBytes: integer("size_bytes").notNull(),
+    bodyText: text("body_text").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    hashIdx: index("dcc_machine_immutable_objects_hash_idx").on(table.sha256Hash),
   }),
 );
 
@@ -2214,5 +2333,6 @@ export const dccMachineChangeEvents = pgTable(
     objectIdx: index("dcc_machine_change_events_object_idx").on(table.objectType, table.objectId),
   }),
 );
+
 
 

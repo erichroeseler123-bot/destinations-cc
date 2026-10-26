@@ -235,8 +235,15 @@ export async function GET() {
       "/.well-known/dcc": {
         get: {
           operationId: "getDccMachineWellKnown",
-          summary: "Discover DCC Machine Layer v0.1 capabilities, schemas, and active engines",
-          responses: { "200": { description: "DCC Machine Layer v0.1 discovery manifest and JSON Schemas" } },
+          summary: "Discover DCC Machine Layer capabilities, schemas, candidate universes, and active engines",
+          responses: { "200": { description: "DCC Machine Layer discovery manifest and JSON Schemas" } },
+        },
+      },
+      "/.well-known/dcc/keys.json": {
+        get: {
+          operationId: "getDccPublicSigningKeys",
+          summary: "Discover public Ed25519 verification keys for signed DCC decision receipts",
+          responses: { "200": { description: "Public signing key manifest (active, retired_verify_only, revoked)" } },
         },
       },
       "/api/v1/entities/{id}": {
@@ -290,10 +297,29 @@ export async function GET() {
           responses: { "200": { description: "Compiled DecisionIrBundle" }, "404": { description: "Bundle not found" } },
         },
       },
+      "/api/v1/universes/{id}": {
+        get: {
+          operationId: "getCandidateUniverseById",
+          summary: "Get declared, versioned, content-addressed CandidateUniverse artifact",
+          parameters: [
+            { name: "id", in: "path", required: true, schema: { type: "string" } },
+            { name: "version", in: "query", required: false, schema: { type: "string" } },
+          ],
+          responses: { "200": { description: "CandidateUniverse artifact" }, "404": { description: "CandidateUniverse not found" } },
+        },
+      },
+      "/api/v1/receipts/{id}": {
+        get: {
+          operationId: "getSignedDecisionReceiptById",
+          summary: "Get content-addressed SignedDecisionReceipt and Ed25519 signature verification status",
+          parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+          responses: { "200": { description: "SignedDecisionReceipt and verification result" }, "404": { description: "Receipt not found" } },
+        },
+      },
       "/api/v1/evaluate": {
         post: {
           operationId: "evaluateDecisionIr",
-          summary: "Deterministically evaluate a compiled DCC Decision IR bundle (compact or expanded provenance mode)",
+          summary: "Deterministically evaluate a compiled DCC Decision IR bundle (compact or expanded provenance mode, with optional validAt and knownAt bitemporal parameters)",
           responses: { "200": { description: "Deterministic Compact or Expanded Evaluation Response" }, "400": { description: "Invalid request" }, "404": { description: "Engine or version not found" } },
         },
       },
