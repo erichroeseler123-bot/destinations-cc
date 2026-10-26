@@ -11,4 +11,6 @@ export * from "./operationalControls";
 export * from "./juneauCanaryAndFixtures";
 export * from "./neonLedgerStore";
 export * from "./discoveryAndMcp";
+export * from "./preservedCapturesV031";
 export * from "./runtimeStoreV03";
+

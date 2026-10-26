@@ -43,47 +43,64 @@ function handleReferenceRequest(
   const decodedId = decodeURIComponent(id);
   if (decodedId.startsWith("evref:")) {
     const store = getV03RuntimeStore();
-    const evRef =
-      store.evidenceRefsById.get(decodedId) ??
-      Array.from(store.evidenceRefsById.values())[0];
-    if (evRef) {
-      const projection = toPublicCitationProjection(evRef);
-      const etag = `"sha256-${evRef.evidenceHash}"`;
-      if (request.headers.get("if-none-match") === etag) {
-        return new Response(null, {
-          status: 304,
-          headers: {
-            ETag: etag,
-            "Cache-Control": "public, max-age=31536000, immutable",
-          },
-        });
-      }
-      const res = buildMachineJsonResponse(
+    const evRef = store.evidenceRefsById.get(decodedId);
+    if (!evRef) {
+      return buildMachineJsonResponse(
         {
-          ok: true,
-          spec: "dcc-reference-envelope/0.3",
-          referenceId: decodedId,
-          objectType: "EvidenceReferenceProjection",
-          contentHash: evRef.evidenceHash,
-          canonicalCitationUri: `https://www.destinationcommandcenter.com/r/${encodeURIComponent(decodedId)}`,
-          payload: {
-            ...projection,
-            rawCaptureExposed: false,
+          ok: false,
+          error: {
+            code: "EVIDENCE_REFERENCE_NOT_FOUND",
+            message: `EvidenceReference "${decodedId}" was not found.`,
           },
         },
-        {
-          etag,
-          cacheControl: "public, max-age=31536000, immutable",
-        },
+        { status: 404, cacheControl: "no-store" },
       );
-      if (headOnly) {
-        return new Response(null, {
-          status: res.status,
-          headers: res.headers,
-        });
-      }
-      return res;
     }
+
+    const projection = toPublicCitationProjection(evRef);
+    const isWithdrawn = evRef.withdrawn === true || evRef.lifecycleState === "withdrawn";
+    const etag = `"sha256-${evRef.evidenceHash}"`;
+    if (!isWithdrawn && request.headers.get("if-none-match") === etag) {
+      return new Response(null, {
+        status: 304,
+        headers: {
+          ETag: etag,
+          "Cache-Control": "public, max-age=31536000, immutable",
+        },
+      });
+    }
+    const res = buildMachineJsonResponse(
+      {
+        ok: true,
+        spec: "dcc-reference-envelope/0.3",
+        referenceId: decodedId,
+        objectType: isWithdrawn
+          ? "WithdrawnEvidenceReferenceProjection"
+          : "EvidenceReferenceProjection",
+        verified: !isWithdrawn && evRef.isSynthetic !== true,
+        withdrawn: isWithdrawn,
+        lifecycleState: evRef.lifecycleState ?? (isWithdrawn ? "withdrawn" : "active"),
+        contentHash: evRef.evidenceHash,
+        canonicalCitationUri: `https://www.destinationcommandcenter.com/r/${encodeURIComponent(decodedId)}`,
+        payload: {
+          ...projection,
+          citationProjection: projection,
+          verified: !isWithdrawn && evRef.isSynthetic !== true,
+          rawCaptureExposed: false,
+        },
+      },
+      {
+        etag,
+        cacheControl: isWithdrawn ? "no-store" : "public, max-age=31536000, immutable",
+      },
+    );
+    if (headOnly) {
+      return new Response(null, {
+        status: res.status,
+        headers: res.headers,
+      });
+    }
+    return res;
   }
 
   const resolved = resolveMachineReference(decodedId);

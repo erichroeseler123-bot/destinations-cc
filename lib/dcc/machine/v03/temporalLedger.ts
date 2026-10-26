@@ -47,6 +47,7 @@ export class AppendOnlyLedgerMutationError extends Error {
 }
 
 export type KnowledgeEventType =
+  | "claim_created"
   | "claim_quarantined"
   | "claim_approved_and_activated"
   | "claim_corroborated"
@@ -87,7 +88,11 @@ export interface V03KnowledgeEvent {
   readonly recordedAt: string;
   readonly actorId: string;
   readonly isSynthetic: boolean;
-  readonly provenanceClass: "operational_evidence" | "synthetic_test_fixture" | "admin_simulation";
+  readonly provenanceClass:
+    | "operational_evidence"
+    | "synthetic_test_fixture"
+    | "admin_simulation"
+    | "withdrawn_unsupported";
   readonly claimDefinition: V03ClaimDefinition | null;
   readonly reason: string;
   readonly corroboratingSourceDccId: string | null;
@@ -130,6 +135,14 @@ export interface V03ProjectedClaimState {
 
 export class AppendOnlyKnowledgeLedger {
   private readonly events: V03KnowledgeEvent[] = [];
+
+  static fromEvents(events: readonly V03KnowledgeEvent[]): AppendOnlyKnowledgeLedger {
+    const ledger = new AppendOnlyKnowledgeLedger();
+    for (const ev of events) {
+      ledger.events.push(Object.freeze({ ...ev }));
+    }
+    return ledger;
+  }
 
   getEvents(): readonly V03KnowledgeEvent[] {
     return this.events;
@@ -366,7 +379,8 @@ export class AppendOnlyKnowledgeLedger {
       eventsAppliedCount++;
 
       if (
-        (ev.eventType === "claim_quarantined" ||
+        (ev.eventType === "claim_created" ||
+          ev.eventType === "claim_quarantined" ||
           ev.eventType === "claim_approved_and_activated" ||
           ev.eventType === "claim_superseded" ||
           ev.eventType === "claim_corrected_retroactively") &&
@@ -468,7 +482,10 @@ export class AppendOnlyKnowledgeLedger {
           target.latestMutatingEventHash = ev.eventHash;
         }
       } else if (ev.eventType === "claim_withdrawn" || ev.eventType === "claim_retracted") {
-        const target = versionsByVersionId.get(ev.claimVersionId);
+        const target =
+          (ev.targetPreviousVersionId
+            ? versionsByVersionId.get(ev.targetPreviousVersionId)
+            : undefined) ?? versionsByVersionId.get(ev.claimVersionId);
         if (target) {
           target.lifecycleState = "withdrawn";
           target.withdrawalEventId = ev.eventId;

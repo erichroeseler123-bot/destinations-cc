@@ -1,4 +1,6 @@
 import crypto from "node:crypto";
+import canonicalize from "canonicalize";
+
 
 /**
  * DCC Machine Layer v0.3.1 — Strict RFC 8785 JSON Canonicalization (JCS),
@@ -232,100 +234,18 @@ export interface Rfc8785ConformanceResult {
 }
 
 /**
- * Independent clean-room RFC 8785 reference serializer used ONLY for differential testing.
- * Shares zero helper functions with `rfc8785Canonicalize`: uses explicit UTF-16 code unit
- * array comparator and byte-level JSON string escaping.
+ * Maintained third-party RFC 8785 JCS serializer (`canonicalize@2.0.0` by RFC 8785 co-authors
+ * Samuel Erdtman & Anders Rundgren) used for independent differential verification.
  */
 export function independentJcsReferenceCanonicalize(input: unknown): string {
-  const compareUtf16CodeUnits = (left: string, right: string): number => {
-    const len = Math.min(left.length, right.length);
-    for (let idx = 0; idx < len; idx++) {
-      const d = left.charCodeAt(idx) - right.charCodeAt(idx);
-      if (d !== 0) return d;
-    }
-    return left.length - right.length;
-  };
-
-  const escapeStringJcs = (raw: string): string => {
-    const chunks: string[] = ['"'];
-    for (let idx = 0; idx < raw.length; idx++) {
-      const cu = raw.charCodeAt(idx);
-      if (cu >= 0xd800 && cu <= 0xdbff) {
-        const low = idx + 1 < raw.length ? raw.charCodeAt(idx + 1) : 0;
-        if (low < 0xdc00 || low > 0xdfff) {
-          throw new Error("Invalid lone high surrogate");
-        }
-        chunks.push(raw.slice(idx, idx + 2));
-        idx++;
-        continue;
-      }
-      if (cu >= 0xdc00 && cu <= 0xdfff) {
-        throw new Error("Invalid lone low surrogate");
-      }
-      switch (cu) {
-        case 0x22:
-          chunks.push('\\"');
-          break;
-        case 0x5c:
-          chunks.push("\\\\");
-          break;
-        case 0x08:
-          chunks.push("\\b");
-          break;
-        case 0x09:
-          chunks.push("\\t");
-          break;
-        case 0x0a:
-          chunks.push("\\n");
-          break;
-        case 0x0c:
-          chunks.push("\\f");
-          break;
-        case 0x0d:
-          chunks.push("\\r");
-          break;
-        default:
-          if (cu <= 0x1f) {
-            const hex = cu.toString(16);
-            chunks.push("\\u" + "0000".slice(hex.length) + hex);
-          } else {
-            chunks.push(raw.charAt(idx));
-          }
-      }
-    }
-    chunks.push('"');
-    return chunks.join("");
-  };
-
-  const walk = (node: unknown): string => {
-    if (node === null) return "null";
-    if (typeof node === "boolean") return node ? "true" : "false";
-    if (typeof node === "number") {
-      if (!Number.isFinite(node)) throw new Error("Non-finite number");
-      return node === 0 ? "0" : Number(node).toString();
-    }
-    if (typeof node === "string") return escapeStringJcs(node);
-    if (Array.isArray(node)) {
-      return "[" + node.map((el) => walk(el)).join(",") + "]";
-    }
-    if (typeof node === "object") {
-      const record = node as Record<string, unknown>;
-      const sortedKeys = Object.keys(record).sort(compareUtf16CodeUnits);
-      return (
-        "{" +
-        sortedKeys
-          .map((k) => {
-            if (record[k] === undefined) throw new Error("Undefined property not I-JSON");
-            return escapeStringJcs(k) + ":" + walk(record[k]);
-          })
-          .join(",") +
-        "}"
-      );
-    }
-    throw new Error("Unsupported non-JSON value");
-  };
-
-  return walk(input);
+  assertStrictIJsonValue(input);
+  const serialized = canonicalize(input);
+  if (typeof serialized !== "string") {
+    throw new Rfc8785NonIJsonError(
+      "Third-party RFC 8785 canonicalize() returned undefined for non-I-JSON input.",
+    );
+  }
+  return serialized;
 }
 
 /**

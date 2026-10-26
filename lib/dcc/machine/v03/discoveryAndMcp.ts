@@ -482,17 +482,17 @@ export function buildLanguageNeutralConformanceFixtures() {
     },
     w3cSelectorVector: {
       sourceText:
-        "GoSno Mountain Shuttle Tariff 2026: Denver Union Station / DEN to Winter Park Resort shared express shuttle operates up to 14 passengers per van.",
+        "GoSno is a private mountain transportation service in Colorado (no shared shuttles) offering SUVs (up to 6 passengers) and Vans (up to 10 passengers).",
       expectedTextQuoteSelector: {
         type: "TextQuoteSelector",
-        exact: "up to 14 passengers per van",
-        prefix: "Winter Park Resort shared express shuttle operates ",
+        exact: "SUVs (up to 6 passengers) and Vans (up to 10 passengers)",
+        prefix: "(no shared shuttles) offering ",
         suffix: ".",
       },
       expectedTextPositionSelector: {
         type: "TextPositionSelector",
-        start: 116,
-        end: 143,
+        start: 93,
+        end: 149,
       },
     },
   };

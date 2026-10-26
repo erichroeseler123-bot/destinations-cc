@@ -16,37 +16,80 @@ import {
 import {
   buildV03EvidenceReference,
   extractTextEvidenceSelectors,
-  toPublicCitationProjection,
   type V03EvidenceReference,
-  type V03PublicCitationProjection,
 } from "./evidenceSelectors";
 import { DccIdentityLedger, mintOpaqueDccEntityId } from "./identityGraph";
+import { NeonRelationalLedgerStoreV03 } from "./neonLedgerStore";
+import {
+  buildEvidenceRefFromPreservedCapture,
+  getPreservedCaptureByIdV031,
+  loadPreservedCapturesBundleV031,
+  persistPreservedCaptureToObjectStore,
+} from "./preservedCapturesV031";
 import { sha256HexFull, type V03SignedDecisionReceipt } from "./rfc8785AndJws";
+import {
+  CloudflareR2PrivateArtifactStore,
+  InMemoryTestArtifactStore,
+  inspectR2CredentialsFromEnv,
+  type PrivateArtifactObjectStore,
+} from "./storageBoundary";
 import { AppendOnlyKnowledgeLedger } from "./temporalLedger";
 
 /**
- * DCC Machine Layer v0.3 — Unified Runtime Store
+ * DCC Machine Layer v0.3.1 — Unified Runtime Store
  *
  * Hosts the append-only knowledge event ledger, DCC-native identity ledger,
  * versioned CandidateUniverses, compiled DecisionIrBundles, W3C evidence references,
  * JWS receipts, and shadow DecisionAuthorizations for:
- * - `juneau-helicopter-tours`
- * - `hawaii-whale-watching`
- * - `denver-to-mountain-transportation` (GoSno)
+ * - `juneau-helicopter-tours` (backed by preserved HTTP response bytes from Coastal, TEMSCO, NorthStar, FAA)
+ * - `hawaii-whale-watching` (50 CFR 224.103)
+ * - `denver-to-mountain-transportation` (GoSno private SUV max 6 / Van max 10; legacy 14-pax/$89 shared seed withdrawn)
  * - `juneau-helicopter-canary-v03` (strict evidence-sufficiency canary)
+ *
+ * Wired to `NeonRelationalLedgerStoreV03` for durable relational persistence so
+ * in-memory maps serve only as a warm cache and never as the sole copy.
  */
 
 export interface V03RuntimeStore {
   knowledgeLedger: AppendOnlyKnowledgeLedger;
   identityLedger: DccIdentityLedger;
+  objectStore: PrivateArtifactObjectStore;
+  neonStore: NeonRelationalLedgerStoreV03;
+  neonLedgerStore?: NeonRelationalLedgerStoreV03;
   universesByIdAndVersion: Map<string, V03CandidateUniverse>;
   universesByHash: Map<string, V03CandidateUniverse>;
   bundlesByEngineAndVersion: Map<string, V03CompiledEngineBundle>;
   bundlesByHash: Map<string, V03CompiledEngineBundle>;
   activeEngineVersionByEngineId: Map<string, string>;
   evidenceRefsById: Map<string, V03EvidenceReference>;
-  receiptsById: Map<string, { receipt: V03SignedDecisionReceipt; inputs: Record<string, unknown> }>;
+  receiptsById: Map<
+    string,
+    {
+      receipt: V03SignedDecisionReceipt;
+      inputs: Record<string, unknown>;
+      evaluationResult?: V03EvaluationResult;
+    }
+  >;
   authorizationsById: Map<string, V03SignedDecisionAuthorization>;
+  preservedCapturesSyncedToObjectStore: boolean;
+  baseStateSyncedToNeon: boolean;
+}
+
+function getActiveNeonStore(store: V03RuntimeStore): NeonRelationalLedgerStoreV03 {
+  return store.neonLedgerStore ?? store.neonStore;
+}
+
+function isNeonStoreConfigured(store: V03RuntimeStore): boolean {
+  const neon = getActiveNeonStore(store) as unknown as {
+    isConfigured?: boolean | (() => boolean);
+  };
+  if (typeof neon.isConfigured === "function") {
+    return neon.isConfigured();
+  }
+  if (typeof neon.isConfigured === "boolean") {
+    return neon.isConfigured;
+  }
+  return true;
 }
 
 let singletonStoreV03: V03RuntimeStore | null = null;
@@ -55,11 +98,64 @@ export function resetV03RuntimeStore(): void {
   singletonStoreV03 = null;
 }
 
+function createRuntimeObjectStore(): PrivateArtifactObjectStore {
+  const r2Status = inspectR2CredentialsFromEnv();
+  if (r2Status.configured) {
+    try {
+      return new CloudflareR2PrivateArtifactStore();
+    } catch {
+      return new InMemoryTestArtifactStore();
+    }
+  }
+  return new InMemoryTestArtifactStore();
+}
+
+export async function ensurePreservedCapturesStoredInObjectStore(
+  store: V03RuntimeStore = getV03RuntimeStore(),
+): Promise<void> {
+  if (store.preservedCapturesSyncedToObjectStore) return;
+  const bundle = loadPreservedCapturesBundleV031();
+  for (const capture of Object.values(bundle.captures)) {
+    await persistPreservedCaptureToObjectStore({
+      capture,
+      objectStore: store.objectStore,
+    });
+  }
+  store.preservedCapturesSyncedToObjectStore = true;
+}
+
+export async function ensureBaseStoreSyncedToNeon(
+  store: V03RuntimeStore = getV03RuntimeStore(),
+): Promise<boolean> {
+  if (store.baseStateSyncedToNeon) return true;
+  if (!isNeonStoreConfigured(store)) return false;
+  const neon = getActiveNeonStore(store);
+  try {
+    await neon.ensureSchemaAndTables();
+    await neon.persistLedgerEventsToNeon(store.knowledgeLedger.getAllEvents());
+    for (const evRef of store.evidenceRefsById.values()) {
+      await neon.persistEvidenceReferenceToNeon(evRef);
+    }
+    for (const univ of store.universesByHash.values()) {
+      await neon.persistCandidateUniverseToNeon(univ);
+    }
+    for (const bnd of store.bundlesByHash.values()) {
+      await neon.persistEngineBundleToNeon(bnd);
+    }
+    store.baseStateSyncedToNeon = true;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function getV03RuntimeStore(): V03RuntimeStore {
   if (singletonStoreV03) return singletonStoreV03;
 
   const knowledgeLedger = new AppendOnlyKnowledgeLedger();
   const identityLedger = new DccIdentityLedger();
+  const objectStore = createRuntimeObjectStore();
+  const neonStore = new NeonRelationalLedgerStoreV03();
   const universesByIdAndVersion = new Map<string, V03CandidateUniverse>();
   const universesByHash = new Map<string, V03CandidateUniverse>();
   const bundlesByEngineAndVersion = new Map<string, V03CompiledEngineBundle>();
@@ -68,12 +164,26 @@ export function getV03RuntimeStore(): V03RuntimeStore {
   const evidenceRefsById = new Map<string, V03EvidenceReference>();
   const receiptsById = new Map<
     string,
-    { receipt: V03SignedDecisionReceipt; inputs: Record<string, unknown> }
+    {
+      receipt: V03SignedDecisionReceipt;
+      inputs: Record<string, unknown>;
+      evaluationResult?: V03EvaluationResult;
+    }
   >();
   const authorizationsById = new Map<string, V03SignedDecisionAuthorization>();
 
   const schemaHashes = getV03SchemaHashes();
   const baseRecordedAt = "2026-10-26T00:00:00.000Z";
+  const withdrawalRecordedAt = "2026-10-26T15:00:00.000Z";
+  const repairedIngestionRecordedAt = "2026-10-26T15:05:00.000Z";
+
+  // Seed preserved captures synchronously into InMemoryTestArtifactStore if active
+  if (objectStore instanceof InMemoryTestArtifactStore) {
+    const bundle = loadPreservedCapturesBundleV031();
+    for (const capture of Object.values(bundle.captures)) {
+      void persistPreservedCaptureToObjectStore({ capture, objectStore });
+    }
+  }
 
   // ==========================================================================
   // 1. Register DCC-Native Identities & Versioned External Aliases
@@ -96,19 +206,65 @@ export function getV03RuntimeStore(): V03RuntimeStore {
   const candHawPwfCatamaranId = mintOpaqueDccEntityId("tour_candidate", "haw-pwf-maalaea-catamaran");
   const candHawTrilogySailId = mintOpaqueDccEntityId("tour_candidate", "haw-trilogy-kaaanapali-sail");
 
-  const candGosnoExpressId = mintOpaqueDccEntityId(
+  // Legacy withdrawn GoSno shared shuttle candidate (preserved in history & knownExclusions)
+  const candGosnoExpressWithdrawnId = mintOpaqueDccEntityId(
     "tour_candidate",
     "gosno-denver-winter-park-express-shuttle",
   );
 
+  // Genuine GoSno private transportation candidates backed by preserved first-party captures
+  const candGosnoBreckSuvId = mintOpaqueDccEntityId(
+    "tour_candidate",
+    "gosno-denver-breckenridge-private-suv",
+  );
+  const candGosnoBreckVanId = mintOpaqueDccEntityId(
+    "tour_candidate",
+    "gosno-denver-breckenridge-private-van",
+  );
+  const candGosnoWinterParkSuvId = mintOpaqueDccEntityId(
+    "tour_candidate",
+    "gosno-denver-winter-park-private-suv",
+  );
+  const candGosnoVailSuvId = mintOpaqueDccEntityId(
+    "tour_candidate",
+    "gosno-denver-vail-private-suv",
+  );
+  const candGosnoCopperSuvId = mintOpaqueDccEntityId(
+    "tour_candidate",
+    "gosno-denver-copper-mountain-private-suv",
+  );
+
   const srcCoastalPolicyId = mintOpaqueDccEntityId("evidence_source", "coastal-ops-policy-2026");
+  const srcTemscoPolicyId = mintOpaqueDccEntityId("evidence_source", "temsco-ops-policy-2026");
+  const srcNorthstarPolicyId = mintOpaqueDccEntityId("evidence_source", "northstar-ops-policy-2026");
+  const srcFaaWeathercamsId = mintOpaqueDccEntityId("evidence_source", "faa-weathercams-portal-2026");
   const srcNoaaHumpbackId = mintOpaqueDccEntityId("evidence_source", "noaa-50cfr224-humpback-approach");
-  const srcGosnoTariffId = mintOpaqueDccEntityId("evidence_source", "gosno-published-tariff-2026");
+  const srcGosnoTariffWithdrawnId = mintOpaqueDccEntityId(
+    "evidence_source",
+    "gosno-published-tariff-2026",
+  );
+  const srcGosnoRouteFeedId = mintOpaqueDccEntityId(
+    "evidence_source",
+    "gosno-public-route-feed-2026",
+  );
+  const srcGosnoAgentJsonId = mintOpaqueDccEntityId(
+    "evidence_source",
+    "gosno-agent-json-manifest-2026",
+  );
+  const srcGosnoLlmsTxtId = mintOpaqueDccEntityId("evidence_source", "gosno-llms-txt-2026");
+  const srcGosnoWinterParkHtmlId = mintOpaqueDccEntityId(
+    "evidence_source",
+    "gosno-winter-park-page-2026",
+  );
+  const srcGosnoBreckHtmlId = mintOpaqueDccEntityId(
+    "evidence_source",
+    "gosno-denver-to-breckenridge-page-2026",
+  );
 
   for (const [id, kind, name] of [
     [jnuDestId, "destination", "Juneau, Alaska"],
     [mauiDestId, "destination", "Maui (Maalaea & Lahaina), Hawaii"],
-    [denverDestId, "destination", "Denver to Winter Park Mountain Corridor, Colorado"],
+    [denverDestId, "destination", "Denver to Colorado Mountain Corridor, Colorado"],
     [coastalOpId, "operator", "Coastal Helicopters"],
     [temscoOpId, "operator", "TEMSCO Helicopters"],
     [northstarOpId, "operator", "NorthStar Trekking"],
@@ -117,10 +273,39 @@ export function getV03RuntimeStore(): V03RuntimeStore {
     [gosnoOpId, "operator", "GoSno Mountain Transportation"],
     [candJnuCoastalId, "tour_candidate", "Icefield Excursion & Glacier Walk (Coastal Helicopters)"],
     [candJnuTemscoId, "tour_candidate", "Mendenhall Glacier Helicopter & Guided Walk (TEMSCO)"],
-    [candJnuNorthstarId, "tour_candidate", "Extended Glacier Icefield Trek (NorthStar Trekking)"],
+    [candJnuNorthstarId, "tour_candidate", "Helicopter Glacier Walkabout (NorthStar Trekking)"],
     [candHawPwfCatamaranId, "tour_candidate", "Maalaea Stabilized Double-Deck Catamaran Whale Watch"],
     [candHawTrilogySailId, "tour_candidate", "Small-Group Sailing Catamaran Whale Watch"],
-    [candGosnoExpressId, "tour_candidate", "GoSno Denver to Winter Park Resort Express Shuttle"],
+    [
+      candGosnoExpressWithdrawnId,
+      "tour_candidate",
+      "[WITHDRAWN SEED] GoSno Denver to Winter Park Resort Express Shuttle",
+    ],
+    [
+      candGosnoBreckSuvId,
+      "tour_candidate",
+      "GoSno Private SUV Transfer — Denver / DEN to Breckenridge (Rezdy PF616Q)",
+    ],
+    [
+      candGosnoBreckVanId,
+      "tour_candidate",
+      "GoSno Private Van Transfer — Denver / DEN to Breckenridge (Rezdy PF616Q)",
+    ],
+    [
+      candGosnoWinterParkSuvId,
+      "tour_candidate",
+      "GoSno Private SUV Transfer — Denver / DEN to Winter Park",
+    ],
+    [
+      candGosnoVailSuvId,
+      "tour_candidate",
+      "GoSno Private SUV Transfer — Denver / DEN to Vail (Rezdy PR68BH)",
+    ],
+    [
+      candGosnoCopperSuvId,
+      "tour_candidate",
+      "GoSno Private SUV Transfer — Denver / DEN to Copper Mountain (Rezdy PLK9L2)",
+    ],
   ] as const) {
     identityLedger.registerEntity({
       dccEntityId: id,
@@ -131,25 +316,83 @@ export function getV03RuntimeStore(): V03RuntimeStore {
   }
 
   // ==========================================================================
-  // 2. Build W3C Evidence References & Append Operational Claims
+  // 2. Contain & Withdraw Legacy Unsupported GoSno Shared Shuttle Seed
+  //    (Preserves history in append-only ledger while marking withdrawn)
   // ==========================================================================
-  const jnuPolicyDoc =
-    "Juneau Operator Published Weight & Safety Policy 2026: Passengers exceeding 250 lbs (individual seat limit) require a comfort/weight surcharge allocation. Minimum child age for standard glacier walk is 2 years.";
-  const jnuWeightSel = extractTextEvidenceSelectors({
-    documentText: jnuPolicyDoc,
-    exactQuote: "Passengers exceeding 250 lbs (individual seat limit) require a comfort/weight surcharge",
+  const gosnoLegacySeedDoc =
+    "GoSno Mountain Shuttle Tariff 2026: Denver Union Station / DEN to Winter Park Resort shared express shuttle operates up to 14 passengers per van, max 2 ski/snowboard bags per rider, published fare $89 USD per person.";
+  const gosnoLegacySel = extractTextEvidenceSelectors({
+    documentText: gosnoLegacySeedDoc,
+    exactQuote:
+      "up to 14 passengers per van, max 2 ski/snowboard bags per rider, published fare $89 USD",
   });
-  const evRefJnuWeight = buildV03EvidenceReference({
-    evidenceRefId: "evref:jnu:operator-weight-policy-250",
-    sourceDccId: srcCoastalPolicyId,
-    sourceTitle: "Juneau Helicopter Operator Passenger Weight & Balance Policy",
-    sourceOrganization: "Juneau Flight Deck / Verified Operator Tariff",
-    canonicalSourceUrl: "https://www.destinationcommandcenter.com/juneau/helicopter-tours",
-    snapshotId: `snap:sha256:${sha256HexFull(jnuPolicyDoc)}`,
-    snapshotSha256: sha256HexFull(jnuPolicyDoc),
-    privateObjectKey: `v03/raw_source_captures/sha256/${sha256HexFull(jnuPolicyDoc)}.txt`,
-    selectors: jnuWeightSel.selectors,
-    surroundingContext: jnuWeightSel.surroundingContext,
+
+  // 2a. Record historical creation event in append-only ledger
+  knowledgeLedger.appendEvent({
+    eventType: "claim_created",
+    claimId: "clm:gosno:max-pax-per-shuttle",
+    claimVersionId: "clmv:gosno:max-pax-per-shuttle:v1",
+    recordedAt: baseRecordedAt,
+    actorId: "dcc-v03-bootstrap",
+    isSynthetic: true,
+    provenanceClass: "withdrawn_unsupported",
+    reason:
+      "Historical bootstrap seed recorded prior to v0.3.1 first-party GoSno source audit (subsequently withdrawn).",
+    claimDefinition: {
+      claimId: "clm:gosno:max-pax-per-shuttle",
+      claimVersionId: "clmv:gosno:max-pax-per-shuttle:v1",
+      subjectDccId: candGosnoExpressWithdrawnId,
+      predicate: "max_passengers_per_shuttle_van",
+      assertionType: "policy",
+      epistemicState: "disputed",
+      typedValue: 14,
+      unitOrCurrency: "passengers",
+      validFrom: "2026-01-01T00:00:00.000Z",
+      validTo: "2026-10-26T15:00:00.000Z",
+      sourceObservedAt: baseRecordedAt,
+      sourcePublishedAt: null,
+      retrievedAt: baseRecordedAt,
+      freshnessTtlSeconds: 90 * 86400,
+      sourceAuthority: {
+        sourceDccId: srcGosnoTariffWithdrawnId,
+        organizationName: "Withdrawn Legacy Seed (GoSno)",
+        authorityTier: "unverified_third_party",
+        competentDomains: [],
+        claimedDomain: "ground_shuttle_operations",
+        independentlyCorroboratedBySourceDccIds: [],
+        licenseOrReusePolicy: "Withdrawn unsupported seed fixture",
+      },
+      evidenceRefs: [],
+    },
+  });
+
+  // 2b. Append explicit withdrawal event in append-only ledger
+  const gosnoWithdrawalReason =
+    "Withdrawn unsupported bootstrap seed: First-party GoSno captures (https://gosno.co/api/public/route-feed, https://gosno.co/agent.json, https://gosno.co/llms.txt, https://gosno.co/winter-park) establish that GoSno operates private door-to-door mountain transportation only (no shared shuttles), with established vehicle limits of 6 passengers for Private SUVs and 10 passengers for Private Vans, and per-vehicle flat rates starting at $349-$699 rather than an $89 per-person shared shuttle.";
+  const gosnoWithdrawalEvent = knowledgeLedger.appendEvent({
+    eventType: "claim_withdrawn",
+    claimId: "clm:gosno:max-pax-per-shuttle",
+    claimVersionId: "clmv:gosno:max-pax-per-shuttle:v2-withdrawn",
+    targetPreviousVersionId: "clmv:gosno:max-pax-per-shuttle:v1",
+    recordedAt: withdrawalRecordedAt,
+    actorId: "dcc-v031-evidence-containment-auditor",
+    isSynthetic: false,
+    provenanceClass: "operational_evidence",
+    reason: gosnoWithdrawalReason,
+  });
+
+  const evRefGosnoWithdrawn = buildV03EvidenceReference({
+    evidenceRefId: "evref:gosno:tariff-2026-winter-park",
+    sourceDccId: srcGosnoTariffWithdrawnId,
+    sourceTitle:
+      "[WITHDRAWN UNSUPPORTED SEED] GoSno Denver-to-Winter-Park Published Shuttle Tariff",
+    sourceOrganization: "GoSno Mountain Transportation (Withdrawn Legacy Seed)",
+    canonicalSourceUrl: "https://www.destinationcommandcenter.com/go/dcc-to-gosno",
+    snapshotId: `snap:sha256:${sha256HexFull(gosnoLegacySeedDoc)}`,
+    snapshotSha256: sha256HexFull(gosnoLegacySeedDoc),
+    privateObjectKey: `v03/quarantine_temp/sha256/${sha256HexFull(gosnoLegacySeedDoc)}.txt`,
+    selectors: gosnoLegacySel.selectors,
+    surroundingContext: gosnoLegacySel.surroundingContext,
     extractor: {
       extractorId: "dcc-v03-text-selector",
       extractorVersion: "0.3.0",
@@ -157,12 +400,231 @@ export function getV03RuntimeStore(): V03RuntimeStore {
     },
     extractedAt: baseRecordedAt,
     retrievedAt: baseRecordedAt,
-    sourcePublishedAt: "2026-01-15T00:00:00.000Z",
+    sourcePublishedAt: null,
     sourceObservedAt: baseRecordedAt,
-    licenseOrReusePolicy: "DCC First-Party Reference Tariff",
+    licenseOrReusePolicy: "Withdrawn unsupported seed — preserved for audit history only",
+    provenanceClass: "withdrawn_unsupported",
+    isSynthetic: true,
+    lifecycleState: "withdrawn",
+    withdrawn: true,
+    withdrawnAt: withdrawalRecordedAt,
+    withdrawalReason: gosnoWithdrawalReason,
+    withdrawalEventId: gosnoWithdrawalEvent.eventId,
   });
-  evidenceRefsById.set(evRefJnuWeight.evidenceRefId, evRefJnuWeight);
+  evidenceRefsById.set(evRefGosnoWithdrawn.evidenceRefId, evRefGosnoWithdrawn);
 
+  // ==========================================================================
+  // 3. Build Genuine Juneau Evidence References from Preserved Captures
+  // ==========================================================================
+  const capCoastalTour = getPreservedCaptureByIdV031("cap:juneau:coastal-icefield-excursion-html");
+  const capCoastalFaq = getPreservedCaptureByIdV031("cap:juneau:coastal-faq-html");
+  const capTemscoTour = getPreservedCaptureByIdV031("cap:juneau:temsco-mendenhall-glacier-html");
+  const capNorthstarTour = getPreservedCaptureByIdV031("cap:juneau:northstar-walkabout-html");
+  const capNorthstarFaq = getPreservedCaptureByIdV031("cap:juneau:northstar-faqs-html");
+  const capFaaWeathercams = getPreservedCaptureByIdV031("cap:juneau:faa-weathercams-html");
+
+  const evRefJnuCoastalPrice = buildEvidenceRefFromPreservedCapture({
+    evidenceRefId: "evref:jnu:coastal:price-tiers-html",
+    sourceDccId: srcCoastalPolicyId,
+    capture: capCoastalTour,
+    exactQuote:
+      "Standard Passengers\nStarts AT:\n(Price may vary depending on weight)\n$\n459\nStandard Plus\nStarts AT:\n(Price may vary depending on weight)\n$\n609\nPremium\nStarts AT:\n(Price may vary depending on weight)\n$\n918",
+    licenseOrReusePolicy: "First-party operator published tariff facts (Coastal Helicopters)",
+  });
+  const evRefJnuCoastalBuffer = buildEvidenceRefFromPreservedCapture({
+    evidenceRefId: "evref:jnu:coastal:cruise-buffer-html",
+    sourceDccId: srcCoastalPolicyId,
+    capture: capCoastalTour,
+    exactQuote:
+      "When selecting a Juneau helicopter glacier tour time; please allow yourself a 45-minute buffer from when your ship arrives and leaves.",
+    licenseOrReusePolicy: "First-party operator published policy facts (Coastal Helicopters)",
+  });
+  const evRefJnuCoastalProhibited = buildEvidenceRefFromPreservedCapture({
+    evidenceRefId: "evref:jnu:coastal:prohibited-items-html",
+    sourceDccId: srcCoastalPolicyId,
+    capture: capCoastalTour,
+    exactQuote:
+      "Cameras and cell phones are welcomed while on tour, but all drones, selfie sticks, phone stabilizers, and any camera extensions are prohibited.",
+    licenseOrReusePolicy: "First-party operator published safety policy (Coastal Helicopters)",
+  });
+  const evRefJnuCoastalWeight260 = buildEvidenceRefFromPreservedCapture({
+    evidenceRefId: "evref:jnu:coastal:weight-260-surcharge-faq",
+    sourceDccId: srcCoastalPolicyId,
+    capture: capCoastalFaq,
+    exactQuote:
+      "Due to the limited space in our aircraft, we have to reserve extra space for those weighing 260lbs or more. This fee pays for 1.5 seats.",
+    licenseOrReusePolicy: "First-party operator published FAQ policy (Coastal Helicopters)",
+  });
+  const evRefJnuCoastalWeight300 = buildEvidenceRefFromPreservedCapture({
+    evidenceRefId: "evref:jnu:coastal:weight-300-surcharge-faq",
+    sourceDccId: srcCoastalPolicyId,
+    capture: capCoastalFaq,
+    exactQuote:
+      "Due to the limited space in our aircraft, we have to reserve extra space for those weighing 300lbs or more. This fee pays for 2 full seats.",
+    licenseOrReusePolicy: "First-party operator published FAQ policy (Coastal Helicopters)",
+  });
+  const evRefJnuCoastalMobility = buildEvidenceRefFromPreservedCapture({
+    evidenceRefId: "evref:jnu:coastal:mobility-unassisted-faq",
+    sourceDccId: srcCoastalPolicyId,
+    capture: capCoastalFaq,
+    exactQuote:
+      "If you are unable to enter and exit our aircraft on your own, you may be subject to rescheduling on the day of your tour or cancellation without refund.",
+    licenseOrReusePolicy: "First-party operator published FAQ policy (Coastal Helicopters)",
+  });
+
+  const evRefJnuTemscoWeight250 = buildEvidenceRefFromPreservedCapture({
+    evidenceRefId: "evref:jnu:temsco:weight-250-surcharge-html",
+    sourceDccId: srcTemscoPolicyId,
+    capture: capTemscoTour,
+    exactQuote:
+      "Due to weight and balance limitations, as well as guest safety and comfort, passengers weighing 250 pounds (113kg or 18 Stone) or more will be charged an additional $150.00 to reserve adequate space on board the helicopter.",
+    licenseOrReusePolicy: "First-party operator published policy facts (TEMSCO Helicopters)",
+  });
+  const evRefJnuTemscoServiceAnimals = buildEvidenceRefFromPreservedCapture({
+    evidenceRefId: "evref:jnu:temsco:service-animals-prohibited-html",
+    sourceDccId: srcTemscoPolicyId,
+    capture: capTemscoTour,
+    exactQuote:
+      "Per TEMSCO Helicopters’ Passenger Mobility Policy, service animals shall not be permitted on Temsco Eurocopter Astar, Hughes 500 and Airbus H130 aircraft used by Temsco for flightseeing and tours.",
+    licenseOrReusePolicy: "First-party operator published policy facts (TEMSCO Helicopters)",
+  });
+  const evRefJnuTemscoMobility = buildEvidenceRefFromPreservedCapture({
+    evidenceRefId: "evref:jnu:temsco:mobility-unassisted-html",
+    sourceDccId: srcTemscoPolicyId,
+    capture: capTemscoTour,
+    exactQuote:
+      "Due to liability reasons, our employees cannot lift guests in or out of the helicopter. TEMSCO staff will be there to lend a helping hand, though ultimately guests are responsible for navigating these steps on their own.",
+    licenseOrReusePolicy: "First-party operator published policy facts (TEMSCO Helicopters)",
+  });
+
+  const evRefJnuNorthstarAgeAndWalk = buildEvidenceRefFromPreservedCapture({
+    evidenceRefId: "evref:jnu:northstar:age-8-and-walk-html",
+    sourceDccId: srcNorthstarPolicyId,
+    capture: capNorthstarTour,
+    exactQuote:
+      "Must be at least 8 years old to participate.\nMust be able to walk unassisted for one hour on moderately flat but uneven terrain.",
+    licenseOrReusePolicy: "First-party operator published policy facts (NorthStar Trekking)",
+  });
+  const evRefJnuNorthstarBuffer = buildEvidenceRefFromPreservedCapture({
+    evidenceRefId: "evref:jnu:northstar:cruise-buffer-html",
+    sourceDccId: srcNorthstarPolicyId,
+    capture: capNorthstarTour,
+    exactQuote:
+      "Please book your tour at least one hour after your ship’s arrival time. The tour should conclude no less than 45 minutes before your ship’s departure time.",
+    licenseOrReusePolicy: "First-party operator published policy facts (NorthStar Trekking)",
+  });
+  const evRefJnuNorthstarWeight250 = buildEvidenceRefFromPreservedCapture({
+    evidenceRefId: "evref:jnu:northstar:weight-250-surcharge-faq",
+    sourceDccId: srcNorthstarPolicyId,
+    capture: capNorthstarFaq,
+    exactQuote:
+      "Bags, purses, selfie sticks, nor drones are permitted. We provide safe storage for any personal belongings to remain at our base.",
+    licenseOrReusePolicy: "First-party operator published FAQ policy (NorthStar Trekking)",
+  });
+  const evRefJnuFaaPortal = buildEvidenceRefFromPreservedCapture({
+    evidenceRefId: "evref:jnu:faa:weathercams-portal-html",
+    sourceDccId: srcFaaWeathercamsId,
+    capture: capFaaWeathercams,
+    exactQuote: "FAA WeatherCams\nWelcome to WeatherCams",
+    licenseOrReusePolicy: "US Federal Government Public Domain (17 U.S.C. 105)",
+  });
+
+  for (const ref of [
+    evRefJnuCoastalPrice,
+    evRefJnuCoastalBuffer,
+    evRefJnuCoastalProhibited,
+    evRefJnuCoastalWeight260,
+    evRefJnuCoastalWeight300,
+    evRefJnuCoastalMobility,
+    evRefJnuTemscoWeight250,
+    evRefJnuTemscoServiceAnimals,
+    evRefJnuTemscoMobility,
+    evRefJnuNorthstarAgeAndWalk,
+    evRefJnuNorthstarBuffer,
+    evRefJnuNorthstarWeight250,
+    evRefJnuFaaPortal,
+  ]) {
+    evidenceRefsById.set(ref.evidenceRefId, ref);
+  }
+  // Canonical aliases for Juneau weight policy citations
+  evidenceRefsById.set("evref:jnu:operator-weight-policy-250", evRefJnuTemscoWeight250);
+  evidenceRefsById.set("evref:jnu:weight-limit:text-quote", evRefJnuTemscoWeight250);
+
+  // ==========================================================================
+  // 4. Build Genuine GoSno Evidence References from Preserved First-Party Captures
+  // ==========================================================================
+  const capGosnoRouteFeed = getPreservedCaptureByIdV031("cap:gosno:route-feed-json");
+  const capGosnoAgentJson = getPreservedCaptureByIdV031("cap:gosno:agent-json");
+  const capGosnoLlmsTxt = getPreservedCaptureByIdV031("cap:gosno:llms-txt");
+  const capGosnoWinterParkHtml = getPreservedCaptureByIdV031("cap:gosno:winter-park-html");
+  const capGosnoBreckHtml = getPreservedCaptureByIdV031("cap:gosno:denver-to-breckenridge-html");
+
+  const evRefGosnoRouteFeedMode = buildEvidenceRefFromPreservedCapture({
+    evidenceRefId: "evref:gosno:route-feed:private-mode-and-capacity",
+    sourceDccId: srcGosnoRouteFeedId,
+    capture: capGosnoRouteFeed,
+    exactQuote:
+      '"type":"private_mountain_transportation","headquarters":"Colorado, USA","active_payment_processor":"RezdyPay (Stripe Elements)"',
+    jsonPointer: "/routes/0/capacity",
+    jsonPointerResolvedValue: {
+      max_passengers: 6,
+      luggage_note:
+        "Private party up to 6 passengers; cargo capacity depends on ski bags and luggage size.",
+    },
+    licenseOrReusePolicy: "DCC / GoSno First-Party Public Route Feed",
+  });
+
+  const evRefGosnoAgentManifest = buildEvidenceRefFromPreservedCapture({
+    evidenceRefId: "evref:gosno:agent-json:private-only-6-suv-10-van",
+    sourceDccId: srcGosnoAgentJsonId,
+    capture: capGosnoAgentJson,
+    exactQuote:
+      '"type":"private_mountain_transportation","description":"Private flat-rate airport transportation between Colorado airports and mountain destinations, with published route pages and vehicle-specific booking states."',
+    jsonPointer: "/site/description",
+    jsonPointerResolvedValue:
+      "Private flat-rate airport transportation between Colorado airports and mountain destinations, with published route pages and vehicle-specific booking states.",
+    licenseOrReusePolicy: "DCC / GoSno First-Party Machine Manifest",
+  });
+
+  const evRefGosnoLlmsSummary = buildEvidenceRefFromPreservedCapture({
+    evidenceRefId: "evref:gosno:llms-txt:corridor-rates-and-private-policy",
+    sourceDccId: srcGosnoLlmsTxtId,
+    capture: capGosnoLlmsTxt,
+    exactQuote: "Private vehicle service only; no shared shuttles.",
+    licenseOrReusePolicy: "DCC / GoSno First-Party llms.txt Specification",
+  });
+
+  const evRefGosnoWinterParkHtml = buildEvidenceRefFromPreservedCapture({
+    evidenceRefId: "evref:gosno:winter-park-html:private-suv-349-max-6",
+    sourceDccId: srcGosnoWinterParkHtmlId,
+    capture: capGosnoWinterParkHtml,
+    exactQuote:
+      "Private Denver Airport to Winter Park Transportation\n$ 349 one way per private SUV\nTotal for the private vehicle—not per passenger.",
+    licenseOrReusePolicy: "DCC / GoSno First-Party Route Page",
+  });
+
+  const evRefGosnoBreckHtml = buildEvidenceRefFromPreservedCapture({
+    evidenceRefId: "evref:gosno:breckenridge-html:suv-399-van-649",
+    sourceDccId: srcGosnoBreckHtmlId,
+    capture: capGosnoBreckHtml,
+    exactQuote:
+      "Book a 100% private AWD SUV (up to 6 passengers) or private passenger van (up to 10 passengers) from Denver International Airport (DEN) directly to your mountain lodging with transparent flat rates and ample ski & snowboard gear space.",
+    licenseOrReusePolicy: "DCC / GoSno First-Party Route Page",
+  });
+
+  for (const ref of [
+    evRefGosnoRouteFeedMode,
+    evRefGosnoAgentManifest,
+    evRefGosnoLlmsSummary,
+    evRefGosnoWinterParkHtml,
+    evRefGosnoBreckHtml,
+  ]) {
+    evidenceRefsById.set(ref.evidenceRefId, ref);
+  }
+
+  // ==========================================================================
+  // 5. Hawaii 50 CFR 224.103 Evidence Reference
+  // ==========================================================================
   const noaaDoc =
     "50 CFR 224.103(a): It is unlawful to approach, by any means, within 100 yards (91.4 m) of any humpback whale in Hawaii waters.";
   const noaaSel = extractTextEvidenceSelectors({
@@ -172,7 +634,8 @@ export function getV03RuntimeStore(): V03RuntimeStore {
   const evRefNoaa100yd = buildV03EvidenceReference({
     evidenceRefId: "evref:haw:noaa-50cfr224-100yd-approach",
     sourceDccId: srcNoaaHumpbackId,
-    sourceTitle: "50 CFR § 224.103 — Special prohibitions for endangered marine mammals (Humpback Whales in Hawaii)",
+    sourceTitle:
+      "50 CFR § 224.103 — Special prohibitions for endangered marine mammals (Humpback Whales in Hawaii)",
     sourceOrganization: "NOAA Fisheries / Code of Federal Regulations",
     canonicalSourceUrl: "https://www.ecfr.gov/current/title-50/section-224.103",
     snapshotId: `snap:sha256:${sha256HexFull(noaaDoc)}`,
@@ -187,41 +650,11 @@ export function getV03RuntimeStore(): V03RuntimeStore {
     },
     extractedAt: baseRecordedAt,
     retrievedAt: baseRecordedAt,
-    sourcePublishedAt: "2026-01-01T00:00:00.000Z",
+    sourcePublishedAt: null,
     sourceObservedAt: baseRecordedAt,
     licenseOrReusePolicy: "US Federal Government Public Domain (17 U.S.C. 105)",
   });
   evidenceRefsById.set(evRefNoaa100yd.evidenceRefId, evRefNoaa100yd);
-
-  const gosnoDoc =
-    "GoSno Mountain Shuttle Tariff 2026: Denver Union Station / DEN to Winter Park Resort shared express shuttle operates up to 14 passengers per van, max 2 ski/snowboard bags per rider, published fare $89 USD per person.";
-  const gosnoSel = extractTextEvidenceSelectors({
-    documentText: gosnoDoc,
-    exactQuote: "up to 14 passengers per van, max 2 ski/snowboard bags per rider, published fare $89 USD",
-  });
-  const evRefGosno = buildV03EvidenceReference({
-    evidenceRefId: "evref:gosno:tariff-2026-winter-park",
-    sourceDccId: srcGosnoTariffId,
-    sourceTitle: "GoSno Denver-to-Winter-Park Published Shuttle Tariff",
-    sourceOrganization: "GoSno Mountain Transportation",
-    canonicalSourceUrl: "https://www.destinationcommandcenter.com/go/dcc-to-gosno",
-    snapshotId: `snap:sha256:${sha256HexFull(gosnoDoc)}`,
-    snapshotSha256: sha256HexFull(gosnoDoc),
-    privateObjectKey: `v03/raw_source_captures/sha256/${sha256HexFull(gosnoDoc)}.txt`,
-    selectors: gosnoSel.selectors,
-    surroundingContext: gosnoSel.surroundingContext,
-    extractor: {
-      extractorId: "dcc-v03-text-selector",
-      extractorVersion: "0.3.0",
-      method: "deterministic_regex_span",
-    },
-    extractedAt: baseRecordedAt,
-    retrievedAt: baseRecordedAt,
-    sourcePublishedAt: "2026-10-01T00:00:00.000Z",
-    sourceObservedAt: baseRecordedAt,
-    licenseOrReusePolicy: "DCC First-Party Partner Tariff",
-  });
-  evidenceRefsById.set(evRefGosno.evidenceRefId, evRefGosno);
 
   // Map external aliases with evidence
   identityLedger.mapExternalAlias({
@@ -229,58 +662,73 @@ export function getV03RuntimeStore(): V03RuntimeStore {
     namespace: "legacy_dcc_slug",
     externalId: "jnu-heli-coastal-icefield",
     dccEntityId: candJnuCoastalId,
-    mappingEvidenceRefIds: [evRefJnuWeight.evidenceRefId],
-    recordedAt: baseRecordedAt,
+    mappingEvidenceRefIds: [evRefJnuCoastalPrice.evidenceRefId],
+    recordedAt: repairedIngestionRecordedAt,
   });
   identityLedger.mapExternalAlias({
-    aliasVersionId: "alias:gosno:octo:v1",
-    namespace: "octo_product_id",
-    externalId: "octo:gosno-den-wp-express",
-    dccEntityId: candGosnoExpressId,
-    mappingEvidenceRefIds: [evRefGosno.evidenceRefId],
-    recordedAt: baseRecordedAt,
+    aliasVersionId: "alias:gosno:rezdy:breck:v1",
+    namespace: "rezdy_product_code",
+    externalId: "PF616Q",
+    dccEntityId: candGosnoBreckSuvId,
+    mappingEvidenceRefIds: [evRefGosnoRouteFeedMode.evidenceRefId],
+    recordedAt: repairedIngestionRecordedAt,
   });
 
-  // Append active operational claims
+  // ==========================================================================
+  // 6. Append Active Operational Claims (Juneau, Hawaii, GoSno)
+  // ==========================================================================
   knowledgeLedger.appendEvent({
-    eventType: "claim_approved_and_activated",
+    eventType: "claim_created",
     claimId: "clm:jnu:standard-seat-weight-limit-lbs",
     claimVersionId: "clmv:jnu:standard-seat-weight-limit-lbs:v1",
-    recordedAt: baseRecordedAt,
-    actorId: "dcc-v03-bootstrap",
+    recordedAt: repairedIngestionRecordedAt,
+    actorId: "dcc-v031-preserved-source-extractor",
     isSynthetic: false,
     provenanceClass: "operational_evidence",
-    reason: "Published operator single-seat weight threshold before surcharge.",
+    reason:
+      "Derived from preserved TEMSCO, NorthStar, and Coastal HTML captures: 250 lbs (TEMSCO/NorthStar +$150 surcharge) and 260 lbs / 300 lbs (Coastal 1.5-seat / 2-seat surcharge) are weight surcharge thresholds rather than passenger exclusions.",
     claimDefinition: {
       claimId: "clm:jnu:standard-seat-weight-limit-lbs",
       claimVersionId: "clmv:jnu:standard-seat-weight-limit-lbs:v1",
-      subjectDccId: coastalOpId,
-      predicate: "max_single_seat_passenger_weight_lbs",
+      subjectDccId: jnuDestId,
+      predicate: "operator_weight_surcharge_and_safety_policy_verified",
       assertionType: "policy",
       epistemicState: "verified_against_identified_evidence",
-      typedValue: 250,
-      unitOrCurrency: "lbs",
+      typedValue: true,
+      unitOrCurrency: "boolean",
       validFrom: "2026-01-01T00:00:00.000Z",
       validTo: "2027-12-31T23:59:59.000Z",
-      sourceObservedAt: baseRecordedAt,
-      sourcePublishedAt: "2026-01-15T00:00:00.000Z",
-      retrievedAt: baseRecordedAt,
+      sourceObservedAt: capCoastalTour.retrievedAt,
+      sourcePublishedAt: null,
+      retrievedAt: capCoastalTour.retrievedAt,
       freshnessTtlSeconds: 180 * 86400,
       sourceAuthority: {
         sourceDccId: srcCoastalPolicyId,
-        organizationName: "Juneau Flight Deck / Verified Operator Tariff",
+        organizationName: "Coastal Helicopters / TEMSCO Helicopters / NorthStar Trekking",
         authorityTier: "direct_operator",
         competentDomains: ["operator_safety_and_weight_policy"],
         claimedDomain: "operator_safety_and_weight_policy",
-        independentlyCorroboratedBySourceDccIds: [],
-        licenseOrReusePolicy: "DCC First-Party Reference Tariff",
+        independentlyCorroboratedBySourceDccIds: [srcTemscoPolicyId, srcNorthstarPolicyId],
+        licenseOrReusePolicy: "First-party operator published policy facts",
       },
-      evidenceRefs: [evRefJnuWeight],
+      evidenceRefs: [
+        evRefJnuCoastalPrice,
+        evRefJnuCoastalWeight260,
+        evRefJnuCoastalWeight300,
+        evRefJnuCoastalProhibited,
+        evRefJnuCoastalMobility,
+        evRefJnuTemscoWeight250,
+        evRefJnuTemscoServiceAnimals,
+        evRefJnuTemscoMobility,
+        evRefJnuNorthstarAgeAndWalk,
+        evRefJnuNorthstarBuffer,
+        evRefJnuNorthstarWeight250,
+      ],
     },
   });
 
   knowledgeLedger.appendEvent({
-    eventType: "claim_approved_and_activated",
+    eventType: "claim_created",
     claimId: "clm:haw:noaa-100yd-approach-compliance",
     claimVersionId: "clmv:haw:noaa-100yd-approach-compliance:v1",
     recordedAt: baseRecordedAt,
@@ -299,7 +747,7 @@ export function getV03RuntimeStore(): V03RuntimeStore {
       validFrom: "2025-01-01T00:00:00.000Z",
       validTo: null,
       sourceObservedAt: baseRecordedAt,
-      sourcePublishedAt: "2026-01-01T00:00:00.000Z",
+      sourcePublishedAt: null,
       retrievedAt: baseRecordedAt,
       freshnessTtlSeconds: 365 * 86400,
       sourceAuthority: {
@@ -315,45 +763,132 @@ export function getV03RuntimeStore(): V03RuntimeStore {
     },
   });
 
+  // Genuine GoSno operational claims derived from preserved first-party captures
   knowledgeLedger.appendEvent({
-    eventType: "claim_approved_and_activated",
-    claimId: "clm:gosno:max-pax-per-shuttle",
-    claimVersionId: "clmv:gosno:max-pax-per-shuttle:v1",
-    recordedAt: baseRecordedAt,
-    actorId: "dcc-v03-bootstrap",
+    eventType: "claim_created",
+    claimId: "clm:gosno:private-transport-mode-only",
+    claimVersionId: "clmv:gosno:private-transport-mode-only:v1",
+    recordedAt: repairedIngestionRecordedAt,
+    actorId: "dcc-v031-preserved-source-extractor",
     isSynthetic: false,
     provenanceClass: "operational_evidence",
-    reason: "Published GoSno shuttle van passenger capacity.",
+    reason:
+      "Extracted from gosno.co/api/public/route-feed, gosno.co/agent.json, and gosno.co/llms.txt: GoSno operates private door-to-door mountain transportation only (no shared shuttles).",
     claimDefinition: {
-      claimId: "clm:gosno:max-pax-per-shuttle",
-      claimVersionId: "clmv:gosno:max-pax-per-shuttle:v1",
-      subjectDccId: candGosnoExpressId,
-      predicate: "max_passengers_per_shuttle_van",
+      claimId: "clm:gosno:private-transport-mode-only",
+      claimVersionId: "clmv:gosno:private-transport-mode-only:v1",
+      subjectDccId: gosnoOpId,
+      predicate: "operates_private_door_to_door_transfers_only_no_shared_shuttles",
       assertionType: "policy",
       epistemicState: "verified_against_identified_evidence",
-      typedValue: 14,
+      typedValue: true,
+      unitOrCurrency: "boolean",
+      validFrom: "2026-01-01T00:00:00.000Z",
+      validTo: "2027-05-01T00:00:00.000Z",
+      sourceObservedAt: capGosnoRouteFeed.retrievedAt,
+      sourcePublishedAt: null,
+      retrievedAt: capGosnoRouteFeed.retrievedAt,
+      freshnessTtlSeconds: 90 * 86400,
+      sourceAuthority: {
+        sourceDccId: srcGosnoRouteFeedId,
+        organizationName: "GoSno Mountain Transportation",
+        authorityTier: "direct_operator",
+        competentDomains: ["ground_shuttle_operations", "private_mountain_transportation"],
+        claimedDomain: "private_mountain_transportation",
+        independentlyCorroboratedBySourceDccIds: [srcGosnoAgentJsonId, srcGosnoLlmsTxtId],
+        licenseOrReusePolicy: "DCC / GoSno First-Party Public Route Feed",
+      },
+      evidenceRefs: [evRefGosnoRouteFeedMode, evRefGosnoAgentManifest, evRefGosnoLlmsSummary],
+    },
+  });
+
+  knowledgeLedger.appendEvent({
+    eventType: "claim_created",
+    claimId: "clm:gosno:private-suv-max-passengers-6",
+    claimVersionId: "clmv:gosno:private-suv-max-passengers-6:v1",
+    recordedAt: repairedIngestionRecordedAt,
+    actorId: "dcc-v031-preserved-source-extractor",
+    isSynthetic: false,
+    provenanceClass: "operational_evidence",
+    reason:
+      "Extracted from gosno.co/api/public/route-feed, gosno.co/agent.json, gosno.co/winter-park, and gosno.co/denver-to-breckenridge: Private SUV maximum capacity is 6 passengers (subject to luggage and ski/snowboard equipment fit).",
+    claimDefinition: {
+      claimId: "clm:gosno:private-suv-max-passengers-6",
+      claimVersionId: "clmv:gosno:private-suv-max-passengers-6:v1",
+      subjectDccId: gosnoOpId,
+      predicate: "private_suv_max_passengers",
+      assertionType: "policy",
+      epistemicState: "verified_against_identified_evidence",
+      typedValue: 6,
       unitOrCurrency: "passengers",
       validFrom: "2026-01-01T00:00:00.000Z",
       validTo: "2027-05-01T00:00:00.000Z",
-      sourceObservedAt: baseRecordedAt,
-      sourcePublishedAt: "2026-10-01T00:00:00.000Z",
-      retrievedAt: baseRecordedAt,
+      sourceObservedAt: capGosnoRouteFeed.retrievedAt,
+      sourcePublishedAt: null,
+      retrievedAt: capGosnoRouteFeed.retrievedAt,
       freshnessTtlSeconds: 90 * 86400,
       sourceAuthority: {
-        sourceDccId: srcGosnoTariffId,
+        sourceDccId: srcGosnoRouteFeedId,
         organizationName: "GoSno Mountain Transportation",
         authorityTier: "direct_operator",
-        competentDomains: ["ground_shuttle_operations"],
-        claimedDomain: "ground_shuttle_operations",
-        independentlyCorroboratedBySourceDccIds: [],
-        licenseOrReusePolicy: "DCC First-Party Partner Tariff",
+        competentDomains: ["private_mountain_transportation"],
+        claimedDomain: "private_mountain_transportation",
+        independentlyCorroboratedBySourceDccIds: [
+          srcGosnoAgentJsonId,
+          srcGosnoWinterParkHtmlId,
+          srcGosnoBreckHtmlId,
+        ],
+        licenseOrReusePolicy: "DCC / GoSno First-Party Public Route Feed",
       },
-      evidenceRefs: [evRefGosno],
+      evidenceRefs: [
+        evRefGosnoRouteFeedMode,
+        evRefGosnoAgentManifest,
+        evRefGosnoWinterParkHtml,
+        evRefGosnoBreckHtml,
+      ],
+    },
+  });
+
+  knowledgeLedger.appendEvent({
+    eventType: "claim_created",
+    claimId: "clm:gosno:private-van-max-passengers-10",
+    claimVersionId: "clmv:gosno:private-van-max-passengers-10:v1",
+    recordedAt: repairedIngestionRecordedAt,
+    actorId: "dcc-v031-preserved-source-extractor",
+    isSynthetic: false,
+    provenanceClass: "operational_evidence",
+    reason:
+      "Extracted from gosno.co/api/public/route-feed, gosno.co/agent.json, and gosno.co/denver-to-breckenridge: Private Van maximum capacity is 10 passengers (reconciling pay/route.ts permissive <=14 form check against vehicleCapacity.ts and route-feed maxPassengers=10).",
+    claimDefinition: {
+      claimId: "clm:gosno:private-van-max-passengers-10",
+      claimVersionId: "clmv:gosno:private-van-max-passengers-10:v1",
+      subjectDccId: gosnoOpId,
+      predicate: "private_van_max_passengers",
+      assertionType: "policy",
+      epistemicState: "verified_against_identified_evidence",
+      typedValue: 10,
+      unitOrCurrency: "passengers",
+      validFrom: "2026-01-01T00:00:00.000Z",
+      validTo: "2027-05-01T00:00:00.000Z",
+      sourceObservedAt: capGosnoRouteFeed.retrievedAt,
+      sourcePublishedAt: null,
+      retrievedAt: capGosnoRouteFeed.retrievedAt,
+      freshnessTtlSeconds: 90 * 86400,
+      sourceAuthority: {
+        sourceDccId: srcGosnoRouteFeedId,
+        organizationName: "GoSno Mountain Transportation",
+        authorityTier: "direct_operator",
+        competentDomains: ["private_mountain_transportation"],
+        claimedDomain: "private_mountain_transportation",
+        independentlyCorroboratedBySourceDccIds: [srcGosnoAgentJsonId, srcGosnoBreckHtmlId],
+        licenseOrReusePolicy: "DCC / GoSno First-Party Public Route Feed",
+      },
+      evidenceRefs: [evRefGosnoRouteFeedMode, evRefGosnoAgentManifest, evRefGosnoBreckHtml],
     },
   });
 
   // ==========================================================================
-  // 3. Build CandidateUniverses & Compile DecisionIrBundles
+  // 7. Build CandidateUniverses & Compile DecisionIrBundles
   // ==========================================================================
   const jnuUniverse = buildV03CandidateUniverse({
     universeId: "univ:juneau-helicopter-tours",
@@ -369,14 +904,49 @@ export function getV03RuntimeStore(): V03RuntimeStore {
       geographicBounds: { minLat: 58.25, maxLat: 58.65, minLon: -134.85, maxLon: -134.1 },
     },
     inclusionMethod:
-      "USFS Tongass National Forest commercial helicopter glacier-landing permit holders operating out of Juneau International Airport (PAJN).",
+      "USFS Tongass National Forest commercial helicopter glacier-landing permit holders operating out of Juneau International Airport (PAJN), substantiated from preserved HTTP response bytes.",
     sourcesAndQueriesConsulted: [
       {
         sourceDccId: srcCoastalPolicyId,
-        organizationName: "Juneau Flight Deck / Verified Operator Tariff",
-        queryOrEndpoint: "https://www.destinationcommandcenter.com/juneau/helicopter-tours",
-        consultedAt: baseRecordedAt,
-        snapshotSha256: evRefJnuWeight.snapshotSha256,
+        organizationName: "Coastal Helicopters",
+        queryOrEndpoint: capCoastalTour.url,
+        consultedAt: capCoastalTour.retrievedAt,
+        snapshotSha256: capCoastalTour.rawSha256,
+      },
+      {
+        sourceDccId: srcCoastalPolicyId,
+        organizationName: "Coastal Helicopters FAQ",
+        queryOrEndpoint: capCoastalFaq.url,
+        consultedAt: capCoastalFaq.retrievedAt,
+        snapshotSha256: capCoastalFaq.rawSha256,
+      },
+      {
+        sourceDccId: srcTemscoPolicyId,
+        organizationName: "TEMSCO Helicopters",
+        queryOrEndpoint: capTemscoTour.url,
+        consultedAt: capTemscoTour.retrievedAt,
+        snapshotSha256: capTemscoTour.rawSha256,
+      },
+      {
+        sourceDccId: srcNorthstarPolicyId,
+        organizationName: "NorthStar Trekking",
+        queryOrEndpoint: capNorthstarTour.url,
+        consultedAt: capNorthstarTour.retrievedAt,
+        snapshotSha256: capNorthstarTour.rawSha256,
+      },
+      {
+        sourceDccId: srcNorthstarPolicyId,
+        organizationName: "NorthStar Trekking FAQs",
+        queryOrEndpoint: capNorthstarFaq.url,
+        consultedAt: capNorthstarFaq.retrievedAt,
+        snapshotSha256: capNorthstarFaq.rawSha256,
+      },
+      {
+        sourceDccId: srcFaaWeathercamsId,
+        organizationName: "FAA Aviation Weather Camera Program",
+        queryOrEndpoint: capFaaWeathercams.url,
+        consultedAt: capFaaWeathercams.retrievedAt,
+        snapshotSha256: capFaaWeathercams.rawSha256,
       },
     ],
     includedCandidates: [
@@ -386,15 +956,22 @@ export function getV03RuntimeStore(): V03RuntimeStore {
         displayName: "Icefield Excursion & Glacier Walk (Coastal Helicopters)",
         operatorDccEntityId: coastalOpId,
         operatorDisplayName: "Coastal Helicopters",
-        bookingChannelClass: "dcc_owned_platform",
+        bookingChannelClass: "verified_direct_operator",
         wtaAttributionPresent: false,
         staticAttributes: {
-          basePriceUsd: 429,
+          basePriceUsd: 459,
+          standardPlusPriceUsd260To299Lbs: 609,
+          premiumPriceUsd300PlusLbs: 918,
+          weightSurchargeThresholdLbs: 260,
+          secondaryWeightSurchargeThresholdLbs: 300,
+          weightPolicyType: "surcharge_only",
           supportsWeightOverride: true,
           requestedFormat: "standard_glacier_walk",
-          minAgeYears: 2,
-          minPortWindowMinutes: 225,
-          comfortablePortWindowMinutes: 255,
+          minAgeYears: 0,
+          minPortWindowMinutes: 245,
+          comfortablePortWindowMinutes: 275,
+          prohibitsDronesAndSelfieSticks: true,
+          requiresUnassistedBoarding: true,
         },
         requiredClaimIds: ["clm:jnu:standard-seat-weight-limit-lbs"],
       },
@@ -404,33 +981,47 @@ export function getV03RuntimeStore(): V03RuntimeStore {
         displayName: "Mendenhall Glacier Helicopter & Guided Walk (TEMSCO)",
         operatorDccEntityId: temscoOpId,
         operatorDisplayName: "TEMSCO Helicopters",
-        bookingChannelClass: "dcc_owned_platform",
+        bookingChannelClass: "verified_direct_operator",
         wtaAttributionPresent: false,
         staticAttributes: {
           basePriceUsd: 449,
-          supportsWeightOverride: false,
+          weightSurchargeThresholdLbs: 250,
+          weightSurchargeUsd: 150,
+          weightPolicyType: "surcharge_only",
+          supportsWeightOverride: true,
           requestedFormat: "standard_glacier_walk",
           minAgeYears: 2,
-          minPortWindowMinutes: 225,
-          comfortablePortWindowMinutes: 255,
+          minPortWindowMinutes: 210,
+          comfortablePortWindowMinutes: 240,
+          prohibitsDronesAndSelfieSticks: true,
+          prohibitsCarryOnBags: true,
+          prohibitsServiceAnimals: true,
+          requiresUnassistedBoarding: true,
         },
         requiredClaimIds: ["clm:jnu:standard-seat-weight-limit-lbs"],
       },
       {
         candidateDccEntityId: candJnuNorthstarId,
         legacyCandidateCode: "jnu-heli-northstar-trek",
-        displayName: "Extended Glacier Icefield Trek (NorthStar Trekking)",
+        displayName: "Helicopter Glacier Walkabout (NorthStar Trekking)",
         operatorDccEntityId: northstarOpId,
         operatorDisplayName: "NorthStar Trekking",
         bookingChannelClass: "verified_direct_operator",
         wtaAttributionPresent: false,
         staticAttributes: {
-          basePriceUsd: 549,
+          basePriceUsd: 499,
+          weightSurchargeThresholdLbs: 250,
+          weightSurchargeUsd: 150,
+          weightPolicyType: "surcharge_only",
           supportsWeightOverride: true,
           requestedFormat: "extended_ice_trek",
-          minAgeYears: 12,
-          minPortWindowMinutes: 360,
-          comfortablePortWindowMinutes: 390,
+          minAgeYears: 8,
+          minPortWindowMinutes: 300,
+          comfortablePortWindowMinutes: 330,
+          prohibitsDronesAndSelfieSticks: true,
+          prohibitsCarryOnBags: true,
+          requiresUnassistedBoarding: true,
+          requiresOneHourGlacierWalk: true,
         },
         requiredClaimIds: ["clm:jnu:standard-seat-weight-limit-lbs"],
       },
@@ -448,17 +1039,33 @@ export function getV03RuntimeStore(): V03RuntimeStore {
       {
         gapCode: "LIVE_SEAT_INVENTORY_NOT_QUERIED_IN_STATIC_UNIVERSE",
         affectedDimension: "real_time_inventory",
-        description: "Evaluates published policy rules; live seat counts require operator revalidation.",
+        description:
+          "Evaluates published operator policy rules from preserved captures; live helicopter seat inventory and 4-passenger flight minimum dispatch confirmation require operator revalidation.",
         impactOnCompleteness: "Requires revalidation prior to booking execution.",
+      },
+      {
+        gapCode: "LIVE_PAJN_GLACIER_CEILING_VISIBILITY_DISPATCH_UNESTABLISHED",
+        affectedDimension: "real_time_weather_dispatch",
+        description:
+          "FAA WeatherCams HTML capture proves portal reachability only; real-time ceiling, visibility, and operator hour-before-departure weather cancellation decisions are unestablished at static evaluation time.",
+        impactOnCompleteness:
+          "Operators make weather dispatch calls within ~1 hour of departure.",
+      },
+      {
+        gapCode: "EXACT_CRUISE_BERTH_SHUTTLE_PICKUP_TIMING_UNESTABLISHED",
+        affectedDimension: "port_transfer_timing",
+        description:
+          "Published 45-to-60 minute cruise ship arrival/departure buffers are enforced, but berth-specific shuttle staging times depend on confirmation voucher.",
+        impactOnCompleteness: "Travelers must verify pickup dock on confirmation.",
       },
     ],
     effectiveFrom: "2026-01-01T00:00:00.000Z",
     effectiveTo: "2027-12-31T23:59:59.000Z",
-    knowledgeCutoff: baseRecordedAt,
+    knowledgeCutoff: repairedIngestionRecordedAt,
     refreshDeadline: "2026-11-26T00:00:00.000Z",
-    generatorVersion: "dcc-universe-generator/0.3.0",
+    generatorVersion: "dcc-universe-generator/0.3.1",
     epistemicDisclaimer:
-      "Evaluates policy fit within the declared Juneau helicopter universe; does not guarantee real-time seat inventory.",
+      "Evaluates substantiated operator policy fit (distinguishing weight surcharges from absolute passenger restrictions) within the declared Juneau helicopter universe; does not guarantee real-time seat inventory or weather dispatch.",
   });
 
   const jnuBundle = compileV03EngineBundle({
@@ -467,14 +1074,14 @@ export function getV03RuntimeStore(): V03RuntimeStore {
     universe: jnuUniverse,
     rules: [
       {
-        ruleId: "rule:jnu:weight-limit",
-        ruleVersionId: "rulev:jnu:weight-limit:v1",
+        ruleId: "rule:jnu:operator-policy-verified",
+        ruleVersionId: "rulev:jnu:operator-policy-verified:v2",
         ruleKind: "hard_gate",
-        title: "Single-seat passenger weight threshold (250 lbs)",
-        reasonCode: "PASSENGER_WEIGHT_EXCEEDS_250_LB_STANDARD_SEAT",
+        title:
+          "Substantiated Juneau operator weight-surcharge and safety policies from preserved captures",
+        reasonCode: "JUNEAU_OPERATOR_POLICY_SUBSTANTIATED",
         requiredClaimId: "clm:jnu:standard-seat-weight-limit-lbs",
-        predicateType: "input_lte_claim_number",
-        inputField: "maxSinglePassengerWeightLbs",
+        predicateType: "claim_must_be_eligible_and_boolean_true",
         scoreDelta: 20,
       },
       {
@@ -521,7 +1128,8 @@ export function getV03RuntimeStore(): V03RuntimeStore {
       {
         candidateDccEntityId: candHawPwfCatamaranId,
         legacyCandidateCode: "haw-maui-pwf-catamaran",
-        displayName: "Maalaea Harbor Stabilized Double-Deck Catamaran (Pacific Whale Foundation)",
+        displayName:
+          "Maalaea Harbor Stabilized Double-Deck Catamaran (Pacific Whale Foundation)",
         operatorDccEntityId: pacWhaleOpId,
         operatorDisplayName: "Pacific Whale Foundation Eco-Adventures",
         bookingChannelClass: "verified_direct_operator",
@@ -552,15 +1160,17 @@ export function getV03RuntimeStore(): V03RuntimeStore {
       {
         gapCode: "LIVE_CHANNEL_WAVE_BUOY_NOT_INGESTED",
         affectedDimension: "real_time_sea_state",
-        description: "Uses seasonal channel exposure profiles unless live buoy telemetry is supplied.",
-        impactOnCompleteness: "Travelers with severe motion sensitivity should re-check morning sea state.",
+        description:
+          "Uses seasonal channel exposure profiles unless live buoy telemetry is supplied.",
+        impactOnCompleteness:
+          "Travelers with severe motion sensitivity should re-check morning sea state.",
       },
     ],
     effectiveFrom: "2026-01-01T00:00:00.000Z",
     effectiveTo: "2027-12-31T23:59:59.000Z",
     knowledgeCutoff: baseRecordedAt,
     refreshDeadline: "2026-11-26T00:00:00.000Z",
-    generatorVersion: "dcc-universe-generator/0.3.0",
+    generatorVersion: "dcc-universe-generator/0.3.1",
     epistemicDisclaimer: "Bounded to declared Maui whale-watching candidate universe.",
   });
 
@@ -603,42 +1213,221 @@ export function getV03RuntimeStore(): V03RuntimeStore {
     isSynthetic: false,
     scope: {
       destinationDccEntityId: denverDestId,
-      destinationName: "Denver to Winter Park Mountain Corridor, Colorado",
+      destinationName:
+        "Denver / DEN to Colorado I-70 & US-40 Ski Corridors (Breckenridge, Winter Park, Vail, Keystone, Copper Mountain)",
       categorySlug: "denver-to-mountain-transportation",
       jurisdiction: "US-CO",
-      geographicBounds: { minLat: 39.4, maxLat: 40.0, minLon: -106.1, maxLon: -104.6 },
+      geographicBounds: { minLat: 39.4, maxLat: 40.0, minLon: -106.5, maxLon: -104.6 },
     },
-    inclusionMethod: "DCC verified mountain shuttle operators along the Denver to Winter Park corridor.",
+    inclusionMethod:
+      "First-party GoSno private door-to-door mountain transportation products ingested from preserved captures of gosno.co/api/public/route-feed, gosno.co/agent.json, gosno.co/llms.txt, gosno.co/winter-park, and gosno.co/denver-to-breckenridge.",
     sourcesAndQueriesConsulted: [
       {
-        sourceDccId: srcGosnoTariffId,
+        sourceDccId: srcGosnoRouteFeedId,
         organizationName: "GoSno Mountain Transportation",
-        queryOrEndpoint: "https://www.destinationcommandcenter.com/go/dcc-to-gosno",
-        consultedAt: baseRecordedAt,
-        snapshotSha256: evRefGosno.snapshotSha256,
+        queryOrEndpoint: capGosnoRouteFeed.url,
+        consultedAt: capGosnoRouteFeed.retrievedAt,
+        snapshotSha256: capGosnoRouteFeed.rawSha256,
+      },
+      {
+        sourceDccId: srcGosnoAgentJsonId,
+        organizationName: "GoSno Agent Manifest",
+        queryOrEndpoint: capGosnoAgentJson.url,
+        consultedAt: capGosnoAgentJson.retrievedAt,
+        snapshotSha256: capGosnoAgentJson.rawSha256,
+      },
+      {
+        sourceDccId: srcGosnoLlmsTxtId,
+        organizationName: "GoSno llms.txt",
+        queryOrEndpoint: capGosnoLlmsTxt.url,
+        consultedAt: capGosnoLlmsTxt.retrievedAt,
+        snapshotSha256: capGosnoLlmsTxt.rawSha256,
+      },
+      {
+        sourceDccId: srcGosnoWinterParkHtmlId,
+        organizationName: "GoSno Winter Park Corridor Page",
+        queryOrEndpoint: capGosnoWinterParkHtml.url,
+        consultedAt: capGosnoWinterParkHtml.retrievedAt,
+        snapshotSha256: capGosnoWinterParkHtml.rawSha256,
+      },
+      {
+        sourceDccId: srcGosnoBreckHtmlId,
+        organizationName: "GoSno Denver to Breckenridge Corridor Page",
+        queryOrEndpoint: capGosnoBreckHtml.url,
+        consultedAt: capGosnoBreckHtml.retrievedAt,
+        snapshotSha256: capGosnoBreckHtml.rawSha256,
       },
     ],
     includedCandidates: [
       {
-        candidateDccEntityId: candGosnoExpressId,
-        legacyCandidateCode: "gosno-denver-winter-park-express",
-        displayName: "GoSno Denver to Winter Park Resort Express Shuttle",
+        candidateDccEntityId: candGosnoBreckSuvId,
+        legacyCandidateCode: "gosno-denver-breckenridge-private-suv",
+        displayName:
+          "GoSno Private SUV Transfer — Denver / DEN to Breckenridge (Up to 6 Pax, Rezdy PF616Q)",
         operatorDccEntityId: gosnoOpId,
         operatorDisplayName: "GoSno Mountain Transportation",
         bookingChannelClass: "dcc_owned_platform",
         wtaAttributionPresent: false,
-        staticAttributes: { basePriceUsd: 89 },
-        requiredClaimIds: ["clm:gosno:max-pax-per-shuttle"],
+        staticAttributes: {
+          basePriceUsd: 399,
+          pricingModel: "per_vehicle_one_way",
+          vehicleClass: "Private SUV",
+          serviceMode: "private_only",
+          maxPassengers: 6,
+          corridorId: "denver-to-breckenridge",
+          rezdyProductCode: "PF616Q",
+          requiresOperatorConfirmation: true,
+        },
+        requiredClaimIds: [
+          "clm:gosno:private-transport-mode-only",
+          "clm:gosno:private-suv-max-passengers-6",
+        ],
+      },
+      {
+        candidateDccEntityId: candGosnoBreckVanId,
+        legacyCandidateCode: "gosno-denver-breckenridge-private-van",
+        displayName:
+          "GoSno Private Van Transfer — Denver / DEN to Breckenridge (Up to 10 Pax, Rezdy PF616Q)",
+        operatorDccEntityId: gosnoOpId,
+        operatorDisplayName: "GoSno Mountain Transportation",
+        bookingChannelClass: "dcc_owned_platform",
+        wtaAttributionPresent: false,
+        staticAttributes: {
+          basePriceUsd: 649,
+          pricingModel: "per_vehicle_one_way",
+          vehicleClass: "Private Van",
+          serviceMode: "private_only",
+          maxPassengers: 10,
+          corridorId: "denver-to-breckenridge",
+          rezdyProductCode: "PF616Q",
+          requiresOperatorConfirmation: true,
+        },
+        requiredClaimIds: [
+          "clm:gosno:private-transport-mode-only",
+          "clm:gosno:private-van-max-passengers-10",
+        ],
+      },
+      {
+        candidateDccEntityId: candGosnoWinterParkSuvId,
+        legacyCandidateCode: "gosno-denver-winter-park-private-suv",
+        displayName:
+          "GoSno Private SUV Transfer — Denver / DEN to Winter Park (Up to 6 Pax, Direct Web Booking)",
+        operatorDccEntityId: gosnoOpId,
+        operatorDisplayName: "GoSno Mountain Transportation",
+        bookingChannelClass: "dcc_owned_platform",
+        wtaAttributionPresent: false,
+        staticAttributes: {
+          basePriceUsd: 349,
+          pricingModel: "per_vehicle_one_way",
+          vehicleClass: "Private SUV",
+          serviceMode: "private_only",
+          maxPassengers: 6,
+          corridorId: "denver-to-winter-park",
+          rezdyProductCode: "NONE_DIRECT_WEB_ONLY",
+          requiresOperatorConfirmation: true,
+        },
+        requiredClaimIds: [
+          "clm:gosno:private-transport-mode-only",
+          "clm:gosno:private-suv-max-passengers-6",
+        ],
+      },
+      {
+        candidateDccEntityId: candGosnoVailSuvId,
+        legacyCandidateCode: "gosno-denver-vail-private-suv",
+        displayName:
+          "GoSno Private SUV Transfer — Denver / DEN to Vail (Up to 6 Pax, Rezdy PR68BH)",
+        operatorDccEntityId: gosnoOpId,
+        operatorDisplayName: "GoSno Mountain Transportation",
+        bookingChannelClass: "dcc_owned_platform",
+        wtaAttributionPresent: false,
+        staticAttributes: {
+          basePriceUsd: 449,
+          pricingModel: "per_vehicle_one_way",
+          vehicleClass: "Private SUV",
+          serviceMode: "private_only",
+          maxPassengers: 6,
+          corridorId: "denver-to-vail",
+          rezdyProductCode: "PR68BH",
+          requiresOperatorConfirmation: true,
+        },
+        requiredClaimIds: [
+          "clm:gosno:private-transport-mode-only",
+          "clm:gosno:private-suv-max-passengers-6",
+        ],
+      },
+      {
+        candidateDccEntityId: candGosnoCopperSuvId,
+        legacyCandidateCode: "gosno-denver-copper-mountain-private-suv",
+        displayName:
+          "GoSno Private SUV Transfer — Denver / DEN to Copper Mountain (Up to 6 Pax, Rezdy PLK9L2)",
+        operatorDccEntityId: gosnoOpId,
+        operatorDisplayName: "GoSno Mountain Transportation",
+        bookingChannelClass: "dcc_owned_platform",
+        wtaAttributionPresent: false,
+        staticAttributes: {
+          basePriceUsd: 399,
+          reconciledLlmsTxtPriceUsd: 449,
+          pricingModel: "per_vehicle_one_way",
+          vehicleClass: "Private SUV",
+          serviceMode: "private_only",
+          maxPassengers: 6,
+          corridorId: "denver-to-copper-mountain",
+          rezdyProductCode: "PLK9L2",
+          requiresOperatorConfirmation: true,
+        },
+        requiredClaimIds: [
+          "clm:gosno:private-transport-mode-only",
+          "clm:gosno:private-suv-max-passengers-6",
+        ],
       },
     ],
-    knownExclusions: [],
-    coverageGaps: [],
+    knownExclusions: [
+      {
+        externalOrLegacyIdentifier: "gosno-denver-winter-park-express",
+        displayName:
+          "[WITHDRAWN SEED] GoSno Denver to Winter Park Resort Express Shuttle (14 pax / $89 shared)",
+        reasonCode: "WITHDRAWN_FABRICATED_SHARED_SHUTTLE_SEED",
+        explanation:
+          "Withdrawn via ledger event clmv:gosno:max-pax-per-shuttle:v2-withdrawn. GoSno operates private door-to-door transfers only (no shared shuttles), with established limits of 6 passengers for SUVs and 10 passengers for Vans.",
+        supportingEvidenceRefIds: [
+          evRefGosnoWithdrawn.evidenceRefId,
+          evRefGosnoRouteFeedMode.evidenceRefId,
+          evRefGosnoAgentManifest.evidenceRefId,
+        ],
+      },
+    ],
+    coverageGaps: [
+      {
+        gapCode: "LIVE_DRIVER_AND_VEHICLE_AVAILABILITY_UNESTABLISHED",
+        affectedDimension: "real_time_fleet_and_driver_dispatch",
+        description:
+          "GoSno route-feed sets requiresOperatorConfirmation=true; live driver assignment and physical SUV/Van fleet availability are not established in static captures.",
+        impactOnCompleteness: "Requires operator confirmation before dispatch.",
+      },
+      {
+        gapCode: "SUV_MAX_PASSENGER_AND_SNOWBOARD_EQUIPMENT_FIT_UNESTABLISHED",
+        affectedDimension: "equipment_and_luggage_cabin_fit",
+        description:
+          "While Private SUVs have a 6-passenger limit, physical cargo fit for 6 passengers plus 6 snowboards/ski bags + luggage in an SUV is not established from the passenger limit alone and requires Private Van capacity or explicit operator confirmation.",
+        impactOnCompleteness:
+          "Evaluator qualifies or escalates 6-passenger + ski/snowboard gear groups from SUV to Private Van.",
+      },
+      {
+        gapCode: "FIRST_PARTY_SOURCE_DISCREPANCIES_RECONCILED",
+        affectedDimension: "cross_source_reconciliation",
+        description:
+          "Reconciles three first-party discrepancies: (1) pay/route.ts permissive form check (passengers <= 14) vs vehicleCapacity.ts / route-feed / agent.json physical fleet cap (6 SUV / 10 Van); (2) llms.txt Copper Mountain SUV $449 vs route-feed $399; (3) Winter Park $349 SUV published on /winter-park and llms.txt while outside the 4-corridor Rezdy pilot route-feed.",
+        impactOnCompleteness:
+          "Enforces authoritative 6-SUV / 10-Van caps and surfaces corridor/price reconciliation in evaluation metadata.",
+      },
+    ],
     effectiveFrom: "2026-01-01T00:00:00.000Z",
     effectiveTo: "2027-05-01T00:00:00.000Z",
-    knowledgeCutoff: baseRecordedAt,
+    knowledgeCutoff: repairedIngestionRecordedAt,
     refreshDeadline: "2026-11-26T00:00:00.000Z",
-    generatorVersion: "dcc-universe-generator/0.3.0",
-    epistemicDisclaimer: "Bounded to declared Denver-to-Winter-Park shuttle universe.",
+    generatorVersion: "dcc-universe-generator/0.3.1",
+    epistemicDisclaimer:
+      "Bounded to first-party GoSno private mountain transportation universe (6-passenger SUVs, 10-passenger Vans; zero shared shuttles). Live driver/vehicle availability and full-load equipment fit require operator confirmation.",
   });
 
   const gosnoBundle = compileV03EngineBundle({
@@ -647,23 +1436,35 @@ export function getV03RuntimeStore(): V03RuntimeStore {
     universe: gosnoUniverse,
     rules: [
       {
-        ruleId: "rule:gosno:group-size-lte-capacity",
-        ruleVersionId: "rulev:gosno:group-size-lte-capacity:v1",
+        ruleId: "rule:gosno:private-mode-verified",
+        ruleVersionId: "rulev:gosno:private-mode-verified:v1",
         ruleKind: "hard_gate",
-        title: "Passenger group size within shuttle van capacity",
-        reasonCode: "GROUP_SIZE_EXCEEDS_VAN_CAPACITY",
-        requiredClaimId: "clm:gosno:max-pax-per-shuttle",
-        predicateType: "input_lte_claim_number",
-        inputField: "groupSize",
+        title:
+          "GoSno private door-to-door transportation policy (no shared shuttles, max 6 SUV / max 10 Van)",
+        reasonCode: "GOSNO_PRIVATE_TRANSPORT_POLICY_VERIFIED",
+        requiredClaimId: "clm:gosno:private-transport-mode-only",
+        predicateType: "claim_must_be_eligible_and_boolean_true",
         scoreDelta: 20,
+      },
+      {
+        ruleId: "rule:gosno:corridor-match",
+        ruleVersionId: "rulev:gosno:corridor-match:v1",
+        ruleKind: "ranking_weight",
+        title: "Matches requested Colorado mountain corridor",
+        reasonCode: "CORRIDOR_MATCH",
+        requiredClaimId: "clm:gosno:private-transport-mode-only",
+        predicateType: "input_equals_candidate_attr",
+        inputField: "corridorId",
+        candidateAttrKey: "corridorId",
+        scoreDelta: 15,
       },
       {
         ruleId: "rule:gosno:winter-storm-qualification",
         ruleVersionId: "rulev:gosno:winter-storm-qualification:v1",
         ruleKind: "qualification_modifier",
-        title: "Berthoud Pass winter traction advisory qualification",
+        title: "I-70 / Berthoud Pass winter traction & chain law advisory qualification",
         reasonCode: "BERTHOUD_PASS_WINTER_TRACTION_BUFFER_ADVISORY",
-        requiredClaimId: "clm:gosno:max-pax-per-shuttle",
+        requiredClaimId: "clm:gosno:private-transport-mode-only",
         predicateType: "qualification_penalty_if_input_matches",
         inputField: "weatherCondition",
         expectedValue: "winter_snow_advisory",
@@ -690,6 +1491,8 @@ export function getV03RuntimeStore(): V03RuntimeStore {
   singletonStoreV03 = {
     knowledgeLedger,
     identityLedger,
+    objectStore,
+    neonStore,
     universesByIdAndVersion,
     universesByHash,
     bundlesByEngineAndVersion,
@@ -698,15 +1501,149 @@ export function getV03RuntimeStore(): V03RuntimeStore {
     evidenceRefsById,
     receiptsById,
     authorizationsById,
+    preservedCapturesSyncedToObjectStore: objectStore instanceof InMemoryTestArtifactStore,
+    baseStateSyncedToNeon: false,
   };
   return singletonStoreV03;
 }
 
+/**
+ * Checks whether the production storage & evidence gates pass.
+ * When `VERCEL_ENV === "production"` or `DCC_ENFORCE_PRODUCTION_STORAGE_GATE === "1"`
+ * or `options.enforceProductionStorageGate === true`, a test-only object store backend
+ * (`test_only_non_r2`) must NOT silently support operational decisions.
+ */
+export function evaluateV03StorageAndEvidenceGate(options?: {
+  enforceProductionStorageGate?: boolean;
+  store?: V03RuntimeStore;
+}): {
+  passed: boolean;
+  gateReasonCode: string | null;
+  activeObjectStoreBackendClass: string;
+  neonConfigured: boolean;
+} {
+  const store = options?.store ?? getV03RuntimeStore();
+  const enforceProd =
+    options?.enforceProductionStorageGate === true ||
+    process.env.DCC_ENFORCE_PRODUCTION_STORAGE_GATE === "1" ||
+    process.env.VERCEL_ENV === "production";
+
+  const activeObjectStoreBackendClass = store.objectStore.backendClass;
+  const neonConfigured = isNeonStoreConfigured(store);
+
+  if (enforceProd && activeObjectStoreBackendClass !== "production_private_object_store") {
+    return {
+      passed: false,
+      gateReasonCode:
+        "PRODUCTION_PRIVATE_OBJECT_STORE_R2_UNAVAILABLE_TEST_ONLY_BACKEND_FORBIDDEN",
+      activeObjectStoreBackendClass,
+      neonConfigured,
+    };
+  }
+  if (enforceProd && !neonConfigured) {
+    return {
+      passed: false,
+      gateReasonCode: "PRODUCTION_NEON_LEDGER_STORE_UNCONFIGURED",
+      activeObjectStoreBackendClass,
+      neonConfigured,
+    };
+  }
+  return {
+    passed: true,
+    gateReasonCode: null,
+    activeObjectStoreBackendClass,
+    neonConfigured,
+  };
+}
+
+const fallbackInputsArchiveByReceiptId = new Map<string, Record<string, unknown>>();
+
+export async function getV03ReceiptWithFallback(receiptId: string): Promise<{
+  receipt: V03SignedDecisionReceipt;
+  inputs: Record<string, unknown>;
+  evaluationResult?: V03EvaluationResult;
+} | null> {
+  const store = getV03RuntimeStore();
+  const cached = store.receiptsById.get(receiptId);
+  if (cached) return cached;
+
+  if (isNeonStoreConfigured(store)) {
+    const neon = getActiveNeonStore(store);
+    try {
+      const fromNeon = (await neon.readSignedReceiptFromNeon(receiptId)) as
+        | {
+            receipt: V03SignedDecisionReceipt;
+            originalInputs: Record<string, unknown> | null;
+            evaluationResult?: V03EvaluationResult;
+          }
+        | V03SignedDecisionReceipt
+        | null;
+      if (fromNeon) {
+        const entry =
+          "receipt" in fromNeon && fromNeon.receipt
+            ? {
+                receipt: fromNeon.receipt,
+                inputs:
+                  fromNeon.originalInputs ??
+                  fallbackInputsArchiveByReceiptId.get(receiptId) ??
+                  {},
+                evaluationResult: fromNeon.evaluationResult,
+              }
+            : {
+                receipt: fromNeon as V03SignedDecisionReceipt,
+                inputs: fallbackInputsArchiveByReceiptId.get(receiptId) ?? {},
+              };
+        store.receiptsById.set(receiptId, entry);
+        return entry;
+      }
+    } catch {
+      // Fallback failed
+    }
+  }
+  return null;
+}
+
+export async function getV03CandidateUniverseWithFallback(
+  universeIdOrHash: string,
+  version?: string,
+): Promise<V03CandidateUniverse | null> {
+  const store = getV03RuntimeStore();
+  const byId =
+    store.universesByIdAndVersion.get(`${universeIdOrHash}@${version ?? "0.3.0"}`) ??
+    store.universesByIdAndVersion.get(universeIdOrHash) ??
+    store.universesByHash.get(universeIdOrHash);
+  if (byId) return byId;
+
+  if (isNeonStoreConfigured(store)) {
+    const neon = getActiveNeonStore(store);
+    try {
+      const fromNeon = await (neon.readCandidateUniverseFromNeon as any)({
+        universeId: universeIdOrHash,
+        version: version ?? "0.3.0",
+      });
+      if (fromNeon) {
+        store.universesByIdAndVersion.set(
+          `${fromNeon.universeId}@${fromNeon.version}`,
+          fromNeon,
+        );
+        store.universesByIdAndVersion.set(fromNeon.universeId, fromNeon);
+        store.universesByHash.set(fromNeon.universeHash, fromNeon);
+        return fromNeon;
+      }
+    } catch {
+      // ignore
+    }
+  }
+  return null;
+}
+
 export async function handleV03EvaluateRequest(
   rawBody: Record<string, unknown>,
-  options?: { adminToken?: string },
+  options?: { adminToken?: string; enforceProductionStorageGate?: boolean },
 ): Promise<V03EvaluationResult> {
   const store = getV03RuntimeStore();
+  await ensurePreservedCapturesStoredInObjectStore(store);
+
   const engineId = String(rawBody.engineId ?? "");
   const version =
     typeof rawBody.engineVersion === "string"
@@ -725,9 +1662,33 @@ export async function handleV03EvaluateRequest(
     string,
     unknown
   >;
+
+  // Enforce production storage gate: test-only object store backend cannot silently support production operational decisions
+  const storageGate = evaluateV03StorageAndEvidenceGate({
+    enforceProductionStorageGate:
+      options?.enforceProductionStorageGate ??
+      rawBody.enforceProductionStorageGate === true,
+    store,
+  });
+
+  // Also check if caller explicitly requested the withdrawn legacy GoSno candidate or claim
+  const requestedWithdrawnCandidate =
+    normalizedInputs.candidateCode === "gosno-denver-winter-park-express" ||
+    normalizedInputs.requiredClaimId === "clm:gosno:max-pax-per-shuttle";
+
+  const effectiveInputs: Record<string, unknown> = {
+    ...normalizedInputs,
+  };
+  if (!storageGate.passed && storageGate.gateReasonCode) {
+    effectiveInputs.__storageGateIndeterminateReason = storageGate.gateReasonCode;
+  } else if (requestedWithdrawnCandidate) {
+    effectiveInputs.__storageGateIndeterminateReason =
+      "WITHDRAWN_CLAIM_OR_CANDIDATE_REQUESTED:clm:gosno:max-pax-per-shuttle";
+  }
+
   const normalizedRawBody: Record<string, unknown> = {
     ...rawBody,
-    inputs: normalizedInputs,
+    inputs: effectiveInputs,
   };
 
   let result: V03EvaluationResult;
@@ -737,7 +1698,7 @@ export async function handleV03EvaluateRequest(
       bundle,
       universe,
       ledger: store.knowledgeLedger,
-      inputs: normalizedInputs,
+      inputs: effectiveInputs,
       validAtIso:
         typeof rawBody.validAt === "string" ? rawBody.validAt : new Date().toISOString(),
       simulatedKnowledgeCutoffIso:
@@ -754,19 +1715,71 @@ export async function handleV03EvaluateRequest(
     });
   }
 
+  fallbackInputsArchiveByReceiptId.set(result.receiptId, effectiveInputs);
   store.receiptsById.set(result.receiptId, {
     receipt: result.receipt,
-    inputs: normalizedInputs,
+    inputs: effectiveInputs,
+    evaluationResult: result,
   });
+
+  if (isNeonStoreConfigured(store)) {
+    const neon = getActiveNeonStore(store);
+    try {
+      await ensureBaseStoreSyncedToNeon(store);
+      await neon.persistSignedReceiptToNeon(result.receipt, effectiveInputs, result);
+    } catch {
+      // Non-fatal if Neon unreachable in local unit test
+    }
+  }
+
   return result;
 }
 
 export async function handleV03ReplayReceiptRequest(receiptId: string) {
   const store = getV03RuntimeStore();
-  const stored = store.receiptsById.get(receiptId);
+  const stored = await getV03ReceiptWithFallback(receiptId);
   if (!stored) {
-    throw new Error(`RECEIPT_NOT_FOUND: Receipt "${receiptId}" not found in v0.3 runtime store.`);
+    throw new Error(
+      `RECEIPT_NOT_FOUND: Receipt "${receiptId}" not found in v0.3 runtime store or Neon ledger.`,
+    );
   }
+
+  const bundleHash = stored.receipt.payload.decisionIrBundleHash;
+  const universeHash = stored.receipt.payload.candidateUniverseHash;
+  const neon = getActiveNeonStore(store);
+
+  if (!store.bundlesByHash.has(bundleHash) && isNeonStoreConfigured(store)) {
+    const bndFromNeon = await (neon.readEngineBundleFromNeon as any)({ bundleHash });
+    if (bndFromNeon) {
+      store.bundlesByHash.set(bndFromNeon.bundleHash, bndFromNeon);
+      store.bundlesByEngineAndVersion.set(
+        `${bndFromNeon.engineId}@${bndFromNeon.engineVersion}`,
+        bndFromNeon,
+      );
+    }
+  }
+
+  if (!store.universesByHash.has(universeHash) && isNeonStoreConfigured(store)) {
+    const univFromNeon =
+      (await (neon.readCandidateUniverseFromNeon as any)({
+        universeHash,
+      })) ?? (await (neon.readCandidateUniverseFromNeon as any)(universeHash));
+    if (univFromNeon) {
+      store.universesByHash.set(univFromNeon.universeHash, univFromNeon);
+      store.universesByIdAndVersion.set(
+        `${univFromNeon.universeId}@${univFromNeon.version}`,
+        univFromNeon,
+      );
+    }
+  }
+
+  if (store.knowledgeLedger.getAllEvents().length === 0 && isNeonStoreConfigured(store)) {
+    const events = await neon.readLedgerEventsFromNeon();
+    if (events.length > 0) {
+      store.knowledgeLedger = AppendOnlyKnowledgeLedger.fromEvents(events);
+    }
+  }
+
   return replayHistoricalReceiptV03({
     receipt: stored.receipt,
     originalInputs: stored.inputs,
@@ -782,15 +1795,37 @@ export async function handleV03IssueShadowAuthorization(params: {
   maxPriceUsdDecimal?: number;
   serviceDate?: string;
   passengerCount?: number;
+  enforceProductionStorageGate?: boolean;
 }) {
   const store = getV03RuntimeStore();
-  const stored = store.receiptsById.get(params.receiptId);
-  if (!stored) {
+  const storageGate = evaluateV03StorageAndEvidenceGate({
+    enforceProductionStorageGate: params.enforceProductionStorageGate,
+    store,
+  });
+  if (!storageGate.passed) {
     throw new Error(
-      `RECEIPT_NOT_FOUND: Receipt "${params.receiptId}" not found in v0.3 runtime store.`,
+      `PRODUCTION_STORAGE_GATE_UNAVAILABLE: Cannot issue operational DecisionAuthorization when storage gate fails (${storageGate.gateReasonCode}).`,
     );
   }
-  const universe = store.universesByHash.get(stored.receipt.payload.candidateUniverseHash);
+
+  const stored = await getV03ReceiptWithFallback(params.receiptId);
+  if (!stored) {
+    throw new Error(
+      `RECEIPT_NOT_FOUND: Receipt "${params.receiptId}" not found in v0.3 runtime store or Neon ledger.`,
+    );
+  }
+
+  const universeHash = stored.receipt.payload.candidateUniverseHash;
+  let universe = store.universesByHash.get(universeHash);
+  if (!universe && isNeonStoreConfigured(store)) {
+    const neon = getActiveNeonStore(store);
+    const fromNeon = await (neon.readCandidateUniverseFromNeon as any)({ universeHash });
+    if (fromNeon) {
+      store.universesByHash.set(fromNeon.universeHash, fromNeon);
+      universe = fromNeon;
+    }
+  }
+
   const topCandidate =
     universe?.includedCandidates.find(
       (c) => c.candidateDccEntityId === stored.receipt.payload.recommendedCandidateDccId,
@@ -802,12 +1837,16 @@ export async function handleV03IssueShadowAuthorization(params: {
     permittedAction: "shadow_checkout_intent_preparation",
     providerProductReference: {
       candidateDccEntityId:
-        topCandidate?.candidateDccEntityId ?? "dcc:ent:tour_candidate:000000000000000000000000",
+        topCandidate?.candidateDccEntityId ??
+        "dcc:ent:tour_candidate:000000000000000000000000",
       operatorDccEntityId:
         topCandidate?.operatorDccEntityId ?? "dcc:ent:operator:000000000000000000000000",
       displayName: topCandidate?.displayName ?? "DCC Verified Excursion",
       externalAliases: {
         octo_product_id: topCandidate?.legacyCandidateCode ?? "octo:dcc-shadow-sku",
+        ...(typeof topCandidate?.staticAttributes?.rezdyProductCode === "string"
+          ? { rezdy_product_code: topCandidate.staticAttributes.rezdyProductCode }
+          : {}),
       },
     },
     maxPriceUsdDecimal: params.maxPriceUsdDecimal ?? 625,
@@ -821,6 +1860,7 @@ export async function handleV03IssueShadowAuthorization(params: {
     additionalRevalidationRequirements: [
       "driver_availability",
       "vehicle_availability",
+      "equipment_and_luggage_fit",
       "road_safety",
       "weather_suitability",
       "live_inventory_confirmation",
@@ -841,6 +1881,17 @@ export async function handleV03IssueShadowAuthorization(params: {
     provenanceClass: "operational_evidence",
     reason: `Shadow authorization ${issued.signedAuthorization.authorizationId} bound to receipt ${stored.receipt.receiptId} (resultHash=${stored.receipt.payload.resultHash}) validated via ${targetAdapter} shadow adapter with liveExternalCallsMade=0 and executionMode=shadow_only_no_side_effects.`,
   });
+
+  if (isNeonStoreConfigured(store)) {
+    const neon = getActiveNeonStore(store);
+    try {
+      await neon.persistDecisionAuthorizationToNeon(issued.signedAuthorization);
+      await neon.persistLedgerEventsToNeon(store.knowledgeLedger.getAllEvents());
+    } catch {
+      // Non-fatal in local tests
+    }
+  }
+
   return {
     ...issued,
     ledgerShadowOutcomeEvent: {
@@ -851,4 +1902,3 @@ export async function handleV03IssueShadowAuthorization(params: {
     },
   };
 }
-

@@ -78,6 +78,18 @@ export interface V03EvidenceReference {
   snapshotId: string;
   snapshotSha256: string;
   privateObjectKey: string;
+  derivedTextSnapshotId?: string | null;
+  derivedTextSnapshotSha256?: string | null;
+  privateDerivedTextObjectKey?: string | null;
+  httpStatus?: number;
+  responseHeaders?: Record<string, string>;
+  provenanceClass?: "network_capture_verified" | "synthetic_fixture" | "withdrawn_unsupported";
+  isSynthetic?: boolean;
+  lifecycleState?: "active" | "withdrawn";
+  withdrawn?: boolean;
+  withdrawnAt?: string | null;
+  withdrawalReason?: string | null;
+  withdrawalEventId?: string | null;
   selectors: V03EvidenceSelector[];
   surroundingContext: {
     before: string;
@@ -101,6 +113,17 @@ export interface V03PublicCitationProjection {
   canonicalSourceUrl: string;
   snapshotId: string;
   snapshotSha256: string;
+  derivedTextSnapshotId?: string | null;
+  derivedTextSnapshotSha256?: string | null;
+  httpStatus?: number;
+  responseHeaders?: Record<string, string>;
+  provenanceClass: "network_capture_verified" | "synthetic_fixture" | "withdrawn_unsupported";
+  isSynthetic: boolean;
+  lifecycleState: "active" | "withdrawn";
+  withdrawn: boolean;
+  withdrawnAt: string | null;
+  withdrawalReason: string | null;
+  withdrawalEventId: string | null;
   selectors: V03EvidenceSelector[];
   surroundingContext: {
     before: string;
@@ -232,6 +255,7 @@ export function buildV03EvidenceReference(
 export function toPublicCitationProjection(
   ref: V03EvidenceReference,
 ): V03PublicCitationProjection {
+  const isWithdrawn = ref.lifecycleState === "withdrawn" || ref.withdrawn === true;
   return {
     evidenceRefId: ref.evidenceRefId,
     sourceDccId: ref.sourceDccId,
@@ -240,6 +264,23 @@ export function toPublicCitationProjection(
     canonicalSourceUrl: ref.canonicalSourceUrl,
     snapshotId: ref.snapshotId,
     snapshotSha256: ref.snapshotSha256,
+    derivedTextSnapshotId: ref.derivedTextSnapshotId ?? null,
+    derivedTextSnapshotSha256: ref.derivedTextSnapshotSha256 ?? null,
+    httpStatus: ref.httpStatus,
+    responseHeaders: ref.responseHeaders,
+    provenanceClass:
+      ref.provenanceClass ??
+      (isWithdrawn
+        ? "withdrawn_unsupported"
+        : ref.isSynthetic
+          ? "synthetic_fixture"
+          : "network_capture_verified"),
+    isSynthetic: ref.isSynthetic ?? false,
+    lifecycleState: isWithdrawn ? "withdrawn" : "active",
+    withdrawn: isWithdrawn,
+    withdrawnAt: ref.withdrawnAt ?? null,
+    withdrawalReason: ref.withdrawalReason ?? null,
+    withdrawalEventId: ref.withdrawalEventId ?? null,
     selectors: ref.selectors,
     surroundingContext: {
       before: ref.surroundingContext.before.slice(-160),
@@ -254,7 +295,8 @@ export function toPublicCitationProjection(
     licenseOrReusePolicy: ref.licenseOrReusePolicy,
     evidenceHash: ref.evidenceHash,
     rawCaptureExposedPublicly: false,
-    accessBoundaryNotice:
-      "Public citation projection exposes only bounded W3C/JSON selectors, short surrounding context, and SHA-256 snapshot digest. Full raw source captures are retained in private storage and never served publicly.",
+    accessBoundaryNotice: isWithdrawn
+      ? `WITHDRAWN EVIDENCE RECORD (${ref.withdrawalEventId ?? "recorded_withdrawal"}): This citation has been withdrawn via recorded correction/withdrawal event and is NOT current verified operational evidence. Preserved solely for immutable historical audit.`
+      : "Public citation projection exposes only bounded W3C/JSON selectors, short surrounding context, and SHA-256 snapshot digest. Full raw source captures are retained in private storage and never served publicly.",
   };
 }

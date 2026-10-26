@@ -2,7 +2,7 @@ import {
   buildMachineJsonResponse,
   enforceMachineLayerFeatureFlag,
   getMachineDecisionReceipt,
-  getV03RuntimeStore,
+  getV03ReceiptWithFallback,
   verifyDecisionReceiptSignature,
   verifyV03DecisionReceiptJws,
 } from "@/lib/dcc/machine";
@@ -19,10 +19,9 @@ export async function GET(
   const { id } = await context.params;
   const decodedId = decodeURIComponent(id);
 
-  // Check v0.3 runtime store first if full 64-hex SHA-256 receipt ID
+  // Check v0.3 runtime store + Neon relational ledger if full 64-hex SHA-256 receipt ID
   if (decodedId.startsWith("rcpt:sha256:") || decodedId.startsWith("rcpt:sim:sha256:")) {
-    const store = getV03RuntimeStore();
-    const stored = store.receiptsById.get(decodedId);
+    const stored = await getV03ReceiptWithFallback(decodedId);
     if (stored) {
       const verification = await verifyV03DecisionReceiptJws({
         jwsCompact: stored.receipt.jwsCompact,

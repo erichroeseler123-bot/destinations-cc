@@ -213,9 +213,24 @@ test("v0.3.1 Gate 3: Vercel KMS ES256 Managed Keys, Pre/Post Rotation JWKS Verif
     receiptObject: gosnoProof.decisionEvaluation.receipt as unknown as Record<string, unknown>,
     authorizationJwsCompact: gosnoProof.signedAuthorization.jwsCompact,
     jwksKeys: jwks.keys as unknown as Array<Record<string, unknown>>,
+    expectedInputs: {
+      corridorRouteId: "den-winter-park",
+      passengerCount: 4,
+      skiOrSnowboardCount: 4,
+      checkedLuggageCount: 4,
+      serviceType: "private",
+      maxTotalVehiclePriceUsd: 650,
+    },
   });
   assert.equal(negSuite.allTenFailedClosed, true);
-  assert.equal(negSuite.cases.length, 10);
+  assert.equal(negSuite.allRejectionCasesFailedClosed, true);
+  assert.equal(negSuite.cases.length, 15);
+  const caseNames = new Set(negSuite.cases.map((c) => c.caseName));
+  assert.equal(caseNames.has("wrong_issuer"), true);
+  assert.equal(caseNames.has("wrong_environment"), true);
+  assert.equal(caseNames.has("modified_inputs"), true);
+  assert.equal(caseNames.has("modified_evidence_references"), true);
+  assert.equal(caseNames.has("modified_dispositions"), true);
 });
 
 test("v0.3.1 Gate 4: Genuine Juneau Operational Decision Pack (Eligible, Qualified, Ineligible, Indeterminate, Source Hierarchy Override Block, Zero WTA)", async () => {
@@ -226,6 +241,19 @@ test("v0.3.1 Gate 4: Genuine Juneau Operational Decision Pack (Eligible, Qualifi
   assert.ok(juneauPack.ingestedSourceCount >= 6);
   assert.equal(juneauPack.liveExternalCallsOnEvaluationHotPath, 0);
   assert.equal(juneauPack.wtaCandidatesIncluded, 0);
+
+  // Verify preserved raw HTTP capture bytes and separately stored derived plain text
+  assert.equal(
+    juneauPack.ingestedEvidenceReferences.every(
+      (ref) =>
+        ref.rawBytesPreservedInPrivateStore &&
+        ref.derivedTextStoredSeparately &&
+        ref.extractorVersion === "dcc-html-text-extractor-v031.1" &&
+        ref.sourcePublishedAt === null &&
+        ref.provenanceClass === "network_capture_verified",
+    ),
+    true,
+  );
 
   // Verify eligible, qualified, and ineligible dispositions in mixedDispositionEvaluation
   const dispositionsByCode = new Map(
@@ -264,6 +292,7 @@ test("v0.3.1 Gate 4: Genuine Juneau Operational Decision Pack (Eligible, Qualifi
     juneauPack.resellerConflictProof.conflictEventType,
     "reseller_conflict_recorded",
   );
+  assert.equal(juneauPack.resellerConflictProof.isSyntheticFixture, true);
 
   const policyCheck = evaluateSourceHierarchyOverridePolicy({
     existingClaimTier: "operator_direct",
@@ -275,14 +304,51 @@ test("v0.3.1 Gate 4: Genuine Juneau Operational Decision Pack (Eligible, Qualifi
   assert.equal(policyCheck.requiresExplicitConflictRecord, true);
 });
 
-test("v0.3.1 Gate 5: Genuine GoSno First-Party Shadow Proof (Real Published Facts, 5 Unknown Live Variables, 8-Step Lifecycle, Zero Live Side Effects)", async () => {
+test("v0.3.1 Gate 5: Genuine GoSno First-Party Shadow Proof (Real Published Facts, 5 Unknown Live Variables, Deployed Runtime Regressions, Zero Live Side Effects)", async () => {
   resetV03SigningKeyRegistry();
+  resetV03RuntimeStore();
   const gosno = await runGoSnoShadowAuthorizationProof();
 
   assert.equal(gosno.independentAuthorizationVerification.valid, true);
   assert.equal(gosno.unknownLiveConditions.length, 5);
   assert.equal(
     gosno.unknownLiveConditions.every((c) => c.epistemicState === "unknown"),
+    true,
+  );
+
+  // Verify GoSno proof uses the ordinary deployed runtime store and passes all 3 regressions
+  assert.equal(gosno.deployedRuntimeRegressions.usesOrdinaryDeployedRuntimeStore, true);
+  assert.equal(
+    gosno.deployedRuntimeRegressions.sharedShuttleExcludedAndWithdrawn
+      .withdrawnSharedShuttleExcludedFromUniverse,
+    true,
+  );
+  assert.equal(
+    gosno.deployedRuntimeRegressions.sharedShuttleExcludedAndWithdrawn
+      .sharedShuttleRequestDecisionState,
+    "no_viable_candidates",
+  );
+  assert.equal(
+    gosno.deployedRuntimeRegressions.sixPassengersWithSixSnowboardsEscalatesSuvToVan
+      .suvDisposition,
+    "indeterminate",
+  );
+  assert.equal(
+    gosno.deployedRuntimeRegressions.sixPassengersWithSixSnowboardsEscalatesSuvToVan
+      .vanDisposition,
+    "qualified",
+  );
+  assert.equal(
+    gosno.deployedRuntimeRegressions.sixPassengersWithSixSnowboardsEscalatesSuvToVan
+      .recommendedCandidateLegacyCode,
+    "gosno-denver-breckenridge-private-van",
+  );
+  assert.equal(
+    gosno.deployedRuntimeRegressions.groupAboveTenPassengersRejected.decisionState,
+    "no_viable_candidates",
+  );
+  assert.equal(
+    gosno.deployedRuntimeRegressions.groupAboveTenPassengersRejected.allCandidatesIneligible,
     true,
   );
 
@@ -355,7 +421,7 @@ test("v0.3.1 Gate 6: Provenance Contract, 6-Class Surface Matrix, MCP Parity, an
   assert.ok(prov.deploymentEnvironment.length >= 1);
   assert.ok(prov.buildTime.length >= 20);
 
-  // 3. Run full standalone black-box verifier in-process (including W3C SubtleCrypto JWS, MCP parity 403 checks, and 10 negative tampering cases)
+  // 3. Run full standalone black-box verifier in-process (including W3C SubtleCrypto JWS, MCP parity 403 checks, and 15 negative tampering cases)
   const inProcessFetch: typeof fetch = async (input, init) => {
     const url = new URL(String(input));
     const req = new Request(url.toString(), init);
@@ -426,5 +492,130 @@ test("v0.3.1 Gate 6: Provenance Contract, 6-Class Surface Matrix, MCP Parity, an
     true,
   );
   assert.equal(bb.negativeTamperingSuite.allTenFailedClosed, true);
-  assert.equal(bb.negativeTamperingSuite.cases.length, 10);
+  assert.equal(bb.negativeTamperingSuite.cases.length, 15);
 });
+
+test("v0.3.1 Gate 7: Repair Verification — Withdrawn GoSno Seed Containment, Production Storage Gate, Deployed Juneau Weight Surcharge vs Absolute Restriction, and Fresh-Process Receipt Replay", async () => {
+  setDccMachineV1RuntimeOverride(true);
+  resetV03SigningKeyRegistry();
+  resetV03RuntimeStore();
+
+  // 1. Verify /r/evref%3Agosno%3Atariff-2026-winter-park is explicitly withdrawn and unverified
+  const withdrawnReq = new Request(
+    "https://www.destinationcommandcenter.com/r/evref%3Agosno%3Atariff-2026-winter-park",
+    { headers: { Accept: "application/json" } },
+  );
+  const withdrawnRes = await getStableReferenceRoute(withdrawnReq, {
+    params: Promise.resolve({ id: "evref:gosno:tariff-2026-winter-park" }),
+  });
+  assert.equal(withdrawnRes.status, 200);
+  assert.equal(withdrawnRes.headers.get("Cache-Control"), "no-store");
+  const withdrawnBody = (await withdrawnRes.json()) as Record<string, any>;
+  assert.equal(withdrawnBody.objectType, "WithdrawnEvidenceReferenceProjection");
+  assert.equal(withdrawnBody.verified, false);
+  assert.equal(withdrawnBody.payload.withdrawn, true);
+  assert.equal(withdrawnBody.payload.lifecycleState, "withdrawn");
+  assert.ok(String(withdrawnBody.payload.withdrawalEventId).startsWith("kevt:"));
+
+  // 2. Verify test-only storage backend cannot silently support production operational decisions when production gate is enforced
+  const { handleV03EvaluateRequest, getV03RuntimeStore } = await import(
+    "../../lib/dcc/machine"
+  );
+  const prodGateDenied = await handleV03EvaluateRequest({
+    engineId: "denver-to-mountain-transportation",
+    validAt: "2026-12-20T15:00:00.000Z",
+    enforceProductionStorageGate: true,
+    constraints: {
+      corridorRouteId: "den-winter-park",
+      passengerCount: 4,
+      serviceType: "private",
+    },
+  });
+  assert.equal(
+    (prodGateDenied as any).decisionState,
+    "indeterminate_insufficient_evidence",
+  );
+  assert.equal(
+    (prodGateDenied as any).gateFailureCode,
+    "PRODUCTION_PRIVATE_OBJECT_STORE_R2_UNAVAILABLE_TEST_ONLY_BACKEND_FORBIDDEN",
+  );
+
+  // 3. Verify deployed Juneau /api/v1/v03/evaluate distinguishes weight surcharge (qualified) from absolute restriction (ineligible)
+  const juneau305Req = new Request(
+    "https://www.destinationcommandcenter.com/api/v1/v03/evaluate",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        engineId: "juneau-helicopter-tours",
+        validAt: "2026-07-15T12:00:00.000Z",
+        constraints: {
+          maxSinglePassengerWeightLbs: 305,
+          maxBudgetPerPersonUsd: 700,
+          youngestPassengerAgeYears: 6,
+          travelingWithServiceAnimal: false,
+        },
+      }),
+    },
+  );
+  const juneau305Res = await postV03EvaluateRoute(juneau305Req);
+  const juneau305Body = (await juneau305Res.json()) as Record<string, any>;
+  assert.equal(juneau305Body.ok, true);
+  const disps305 = new Map(
+    juneau305Body.evaluation.candidateDispositions.map((d: any) => [
+      d.legacyCandidateCode,
+      d.disposition,
+    ]),
+  );
+  // Coastal (260/300 lb surcharge tiers) & TEMSCO (250 lb surcharge) are qualified, while NorthStar (absolute minimum age 8 yrs restriction) is ineligible
+  assert.equal(disps305.get("jnu-heli-coastal-icefield"), "qualified");
+  assert.equal(disps305.get("jnu-heli-mendenhall-landing"), "qualified");
+  assert.equal(disps305.get("jnu-heli-northstar-trek"), "ineligible");
+
+  // 4. Verify fresh-process / cleared-memory receipt retrieval and replay via durable ledger fallback
+  const evalReceiptId = String(juneau305Body.evaluation.receiptId);
+  const savedReceipt = juneau305Body.evaluation.receipt;
+  const savedUniverse = getV03RuntimeStore().universesByHash.get(
+    String(juneau305Body.evaluation.candidateUniverseHash),
+  )!;
+  const savedBundle = getV03RuntimeStore().bundlesByEngineAndVersion.get(
+    "juneau-helicopter-tours@0.3.0",
+  )!;
+
+  // Simulate fresh serverless process with empty in-memory maps and a durable relational ledger fallback
+  const store = getV03RuntimeStore();
+  store.receiptsById.clear();
+  assert.equal(store.receiptsById.has(evalReceiptId), false);
+  store.neonLedgerStore = {
+    readSignedReceiptFromNeon: async (id: string) =>
+      id === evalReceiptId ? savedReceipt : null,
+    readCandidateUniverseFromNeon: async (hash: string) =>
+      hash === savedUniverse.universeHash ? savedUniverse : null,
+    readEngineBundleFromNeon: async () => savedBundle,
+  } as any;
+
+  const getReceiptRes = await getReceiptRoute(
+    new Request(
+      `https://www.destinationcommandcenter.com/api/v1/receipts/${encodeURIComponent(evalReceiptId)}`,
+    ),
+    { params: Promise.resolve({ id: evalReceiptId }) },
+  );
+  assert.equal(getReceiptRes.status, 200);
+  const getReceiptJson = (await getReceiptRes.json()) as Record<string, any>;
+  assert.equal(getReceiptJson.receipt.receiptId, evalReceiptId);
+
+  // Clear again and test POST /api/v1/receipts/[id]/replay recovering from Neon fallback
+  store.receiptsById.clear();
+  const replayRes = await postReceiptReplayRoute(
+    new Request(
+      `https://www.destinationcommandcenter.com/api/v1/receipts/${encodeURIComponent(evalReceiptId)}/replay`,
+      { method: "POST", body: "{}" },
+    ),
+    { params: Promise.resolve({ id: evalReceiptId }) },
+  );
+  assert.equal(replayRes.status, 200);
+  const replayJson = (await replayRes.json()) as Record<string, any>;
+  assert.equal(replayJson.replay.matchesOriginalReceipt, true);
+  assert.equal(replayJson.replay.replayedReceiptId, evalReceiptId);
+});
+

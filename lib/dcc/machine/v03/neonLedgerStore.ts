@@ -14,6 +14,10 @@ import {
   type V03KnowledgeEvent,
   type V03ProjectedClaimState,
 } from "./temporalLedger";
+import type { V03CandidateUniverse } from "./candidateUniverse";
+import type { V03CompiledEngineBundle } from "./evaluatorAndReplay";
+import type { V03SignedDecisionAuthorization } from "./decisionAuthorization";
+import type { V03EvidenceReference } from "./evidenceSelectors";
 
 /**
  * DCC Machine Layer v0.3 — Neon Postgres Append-Only Relational Ledger Store
@@ -107,15 +111,37 @@ function qualifyV03Sql(stmt: string, schemaName: string): string {
 
 export class NeonRelationalLedgerStoreV03 {
   public readonly schemaName: string;
-  private readonly sqlClient: ReturnType<typeof neon>;
+  public readonly isConfigured: boolean;
+  private readonly sqlClient: ReturnType<typeof neon> | null;
+  private schemaEnsured = false;
 
   constructor(options?: { connectionString?: string; schemaName?: string }) {
-    const conn = options?.connectionString ?? resolveNeonMigrationDatabaseUrl();
-    this.sqlClient = neon(conn);
     this.schemaName = options?.schemaName ?? "dcc_machine_v03";
+    let conn = options?.connectionString;
+    if (!conn) {
+      try {
+        conn = resolveNeonMigrationDatabaseUrl();
+      } catch {
+        conn = undefined;
+      }
+    }
+    if (conn) {
+      this.sqlClient = neon(conn);
+      this.isConfigured = true;
+    } else {
+      this.sqlClient = null;
+      this.isConfigured = false;
+    }
+  }
+
+  async ensureSchemaAndTables(): Promise<void> {
+    if (!this.isConfigured || this.schemaEnsured) return;
+    await this.runMigrationsUpV03();
+    this.schemaEnsured = true;
   }
 
   async execInSchema(statement: string, params: unknown[] = []): Promise<any[]> {
+    if (!this.sqlClient) return [];
     const qualified = qualifyV03Sql(statement, this.schemaName);
     const rows = await (this.sqlClient as any).query(qualified, params);
     return Array.isArray(rows) ? rows : (rows?.rows ?? []);
@@ -126,6 +152,9 @@ export class NeonRelationalLedgerStoreV03 {
     statementsExecuted: number;
     tablesCreated: string[];
   }> {
+    if (!this.sqlClient) {
+      return { schemaName: this.schemaName, statementsExecuted: 0, tablesCreated: [] };
+    }
     await (this.sqlClient as any).query(`CREATE SCHEMA IF NOT EXISTS "${this.schemaName}"`);
     const sqlPath = path.join(process.cwd(), "drizzle", "0007_dcc_machine_layer_v03.sql");
     const raw = fs.readFileSync(sqlPath, "utf8");
@@ -165,6 +194,7 @@ export class NeonRelationalLedgerStoreV03 {
   }
 
   async listTables(): Promise<string[]> {
+    if (!this.sqlClient) return [];
     const rows = await (this.sqlClient as any).query(
       `SELECT table_name FROM information_schema.tables WHERE table_schema = $1 ORDER BY table_name ASC`,
       [this.schemaName],
@@ -207,6 +237,33 @@ export class NeonRelationalLedgerStoreV03 {
       ],
     );
     return { elapsedMs: performance.now() - t0 };
+  }
+
+  async persistLedgerEventsToNeon(events: readonly V03KnowledgeEvent[]): Promise<void> {
+    if (!this.isConfigured) return;
+    for (const ev of events) {
+      await this.appendKnowledgeEventToNeon(ev);
+    }
+  }
+
+  async readLedgerEventsFromNeon(): Promise<V03KnowledgeEvent[]> {
+    const { events } = await this.readKnowledgeEventsFromNeon();
+    return events;
+  }
+
+  async persistEvidenceReferenceToNeon(evRef: V03EvidenceReference): Promise<void> {
+    if (!this.isConfigured) return;
+    await this.execInSchema(
+      `INSERT INTO "dcc_v03_allocated_identifiers" (
+        dcc_id, id_kind, allocated_at, allocated_by_event_id
+      ) VALUES ($1, 'evidence_reference', $2::timestamptz, $3)
+      ON CONFLICT (dcc_id) DO NOTHING`,
+      [
+        evRef.evidenceRefId,
+        evRef.retrievedAt,
+        `evref-init:${evRef.evidenceRefId}`,
+      ],
+    );
   }
 
   async readKnowledgeEventsFromNeon(): Promise<{
@@ -415,8 +472,175 @@ export class NeonRelationalLedgerStoreV03 {
     );
   }
 
-  async persistSignedReceiptToNeon(receipt: V03SignedDecisionReceipt): Promise<void> {
+  async persistCandidateUniverseToNeon(universe: V03CandidateUniverse): Promise<void> {
+    if (!this.isConfigured) return;
+    await this.execInSchema(
+      `DELETE FROM "dcc_v03_candidate_universes"
+       WHERE universe_id = $1 AND version = $2 AND universe_hash <> $3`,
+      [universe.universeId, universe.version, universe.universeHash],
+    );
+    await this.execInSchema(
+      `INSERT INTO "dcc_v03_candidate_universes" (
+        universe_hash, universe_id, version, engine_id, engine_version,
+        effective_from, effective_to, knowledge_cutoff, refresh_deadline,
+        generator_version, is_synthetic, payload
+      ) VALUES (
+        $1, $2, $3, $4, $5,
+        $6::timestamptz, $7::timestamptz, $8::timestamptz, $9::timestamptz,
+        $10, $11, $12::jsonb
+      ) ON CONFLICT (universe_hash) DO UPDATE SET
+        payload = EXCLUDED.payload`,
+      [
+        universe.universeHash,
+        universe.universeId,
+        universe.version,
+        universe.engineId,
+        universe.engineVersion,
+        universe.effectiveFrom,
+        universe.effectiveTo,
+        universe.knowledgeCutoff,
+        universe.refreshDeadline,
+        universe.generatorVersion,
+        universe.isSynthetic,
+        JSON.stringify(universe),
+      ],
+    );
+  }
+
+  async readCandidateUniverseFromNeon(
+    lookup:
+      | string
+      | { universeHash?: string; universeId?: string; version?: string },
+  ): Promise<V03CandidateUniverse | null> {
+    if (!this.isConfigured) return null;
+    if (typeof lookup === "object" && lookup !== null) {
+      if (lookup.universeHash) {
+        const rows = await this.execInSchema(
+          `SELECT payload FROM "dcc_v03_candidate_universes"
+           WHERE universe_hash = $1
+           LIMIT 1`,
+          [lookup.universeHash],
+        );
+        if (rows[0]?.payload) return rows[0].payload as V03CandidateUniverse;
+      }
+      if (lookup.universeId && lookup.version) {
+        const rows = await this.execInSchema(
+          `SELECT payload FROM "dcc_v03_candidate_universes"
+           WHERE universe_id = $1 AND version = $2
+           ORDER BY recorded_at DESC
+           LIMIT 1`,
+          [lookup.universeId, lookup.version],
+        );
+        if (rows[0]?.payload) return rows[0].payload as V03CandidateUniverse;
+      }
+      if (lookup.universeId) {
+        const rows = await this.execInSchema(
+          `SELECT payload FROM "dcc_v03_candidate_universes"
+           WHERE universe_id = $1
+           ORDER BY recorded_at DESC
+           LIMIT 1`,
+          [lookup.universeId],
+        );
+        if (rows[0]?.payload) return rows[0].payload as V03CandidateUniverse;
+      }
+      return null;
+    }
+    const rows = await this.execInSchema(
+      `SELECT payload FROM "dcc_v03_candidate_universes"
+       WHERE universe_hash = $1 OR universe_id = $1
+       ORDER BY recorded_at DESC
+       LIMIT 1`,
+      [lookup],
+    );
+    if (!rows[0]?.payload) return null;
+    return rows[0].payload as V03CandidateUniverse;
+  }
+
+  async persistEngineBundleToNeon(bundle: V03CompiledEngineBundle): Promise<void> {
+    if (!this.isConfigured) return;
+    await this.execInSchema(
+      `DELETE FROM "dcc_v03_engine_bundles"
+       WHERE engine_id = $1 AND engine_version = $2 AND bundle_hash <> $3`,
+      [bundle.engineId, bundle.engineVersion, bundle.bundleHash],
+    );
+    await this.execInSchema(
+      `INSERT INTO "dcc_v03_engine_bundles" (
+        bundle_hash, engine_id, engine_version, compiler_version,
+        universe_hash, knowledge_cutoff, is_synthetic, bundle_payload
+      ) VALUES (
+        $1, $2, $3, $4,
+        $5, $6::timestamptz, $7, $8::jsonb
+      ) ON CONFLICT (bundle_hash) DO UPDATE SET
+        bundle_payload = EXCLUDED.bundle_payload`,
+      [
+        bundle.bundleHash,
+        bundle.engineId,
+        bundle.engineVersion,
+        bundle.compilerVersion,
+        bundle.universeHash,
+        bundle.knowledgeCutoff,
+        bundle.isSynthetic,
+        JSON.stringify(bundle),
+      ],
+    );
+  }
+
+  async readEngineBundleFromNeon(
+    lookup:
+      | string
+      | { bundleHash?: string; engineId?: string; engineVersion?: string },
+  ): Promise<V03CompiledEngineBundle | null> {
+    if (!this.isConfigured) return null;
+    if (typeof lookup === "object" && lookup !== null) {
+      if (lookup.bundleHash) {
+        const rows = await this.execInSchema(
+          `SELECT bundle_payload FROM "dcc_v03_engine_bundles"
+           WHERE bundle_hash = $1
+           LIMIT 1`,
+          [lookup.bundleHash],
+        );
+        if (rows[0]?.bundle_payload) {
+          return rows[0].bundle_payload as V03CompiledEngineBundle;
+        }
+      }
+      if (lookup.engineId && lookup.engineVersion) {
+        const rows = await this.execInSchema(
+          `SELECT bundle_payload FROM "dcc_v03_engine_bundles"
+           WHERE engine_id = $1 AND engine_version = $2
+           ORDER BY recorded_at DESC
+           LIMIT 1`,
+          [lookup.engineId, lookup.engineVersion],
+        );
+        if (rows[0]?.bundle_payload) {
+          return rows[0].bundle_payload as V03CompiledEngineBundle;
+        }
+      }
+      return null;
+    }
+    const rows = await this.execInSchema(
+      `SELECT bundle_payload FROM "dcc_v03_engine_bundles"
+       WHERE bundle_hash = $1 OR engine_id = $1
+       ORDER BY recorded_at DESC
+       LIMIT 1`,
+      [lookup],
+    );
+    if (!rows[0]?.bundle_payload) return null;
+    return rows[0].bundle_payload as V03CompiledEngineBundle;
+  }
+
+  async persistSignedReceiptToNeon(
+    receipt: V03SignedDecisionReceipt,
+    originalInputs?: Record<string, unknown>,
+    evaluationResult?: unknown,
+  ): Promise<void> {
+    if (!this.isConfigured) return;
     const p = receipt.payload;
+    const traceEnvelope = {
+      candidateDispositionSummary: p.candidateDispositionSummary,
+      originalInputs: originalInputs ?? null,
+      evaluationResult: evaluationResult ?? null,
+      signedReceiptEnvelope: receipt,
+    };
     await this.execInSchema(
       `INSERT INTO "dcc_v03_signed_receipts" (
         receipt_id, evaluation_run_id, trace_run_id, evaluation_fingerprint,
@@ -430,7 +654,8 @@ export class NeonRelationalLedgerStoreV03 {
         $10, $11, $12, $13,
         $14::timestamptz, $15::timestamptz, $16::timestamptz, $17, $18,
         $19, $20, $21::jsonb, $22::jsonb
-      ) ON CONFLICT (receipt_id) DO NOTHING`,
+      ) ON CONFLICT (receipt_id) DO UPDATE SET
+        trace_payload = EXCLUDED.trace_payload`,
       [
         receipt.receiptId,
         p.evaluationRunId,
@@ -453,8 +678,126 @@ export class NeonRelationalLedgerStoreV03 {
         receipt.rfc8785PayloadSha256,
         receipt.jwsCompact,
         JSON.stringify(receipt.payload),
-        JSON.stringify(p.candidateDispositionSummary),
+        JSON.stringify(traceEnvelope),
       ],
     );
+  }
+
+  async readSignedReceiptFromNeon(receiptId: string): Promise<{
+    receipt: V03SignedDecisionReceipt;
+    originalInputs: Record<string, unknown> | null;
+    evaluationResult: unknown | null;
+  } | null> {
+    if (!this.isConfigured) return null;
+    const rows = await this.execInSchema(
+      `SELECT
+        receipt_id, execution_class, is_synthetic, issued_at, kid, alg,
+        rfc8785_payload_sha256, jws_compact, receipt_payload, trace_payload
+       FROM "dcc_v03_signed_receipts"
+       WHERE receipt_id = $1
+       LIMIT 1`,
+      [receiptId],
+    );
+    const row = rows[0];
+    if (!row) return null;
+
+    const trace = (row.trace_payload ?? {}) as Record<string, any>;
+    if (trace.signedReceiptEnvelope && typeof trace.signedReceiptEnvelope === "object") {
+      return {
+        receipt: trace.signedReceiptEnvelope as V03SignedDecisionReceipt,
+        originalInputs: (trace.originalInputs as Record<string, unknown>) ?? null,
+        evaluationResult: trace.evaluationResult ?? null,
+      };
+    }
+
+    const rebuiltReceipt: V03SignedDecisionReceipt = {
+      objectType: "DecisionReceipt",
+      spec: "dcc-decision-receipt/0.3",
+      receiptId: String(row.receipt_id),
+      alg: row.alg as "ES256" | "EdDSA",
+      kid: String(row.kid),
+      typ: "application/dcc-decision-receipt+jws",
+      jku: "https://www.destinationcommandcenter.com/.well-known/jwks.json",
+      issuedAt: new Date(row.issued_at).toISOString(),
+      executionClass: row.execution_class,
+      isSynthetic: Boolean(row.is_synthetic),
+      rfc8785CanonicalPayload: rfc8785Canonicalize(row.receipt_payload),
+      rfc8785PayloadSha256: String(row.rfc8785_payload_sha256),
+      jwsCompact: String(row.jws_compact),
+      payload: row.receipt_payload,
+    };
+
+    return {
+      receipt: rebuiltReceipt,
+      originalInputs: (trace.originalInputs as Record<string, unknown>) ?? null,
+      evaluationResult: trace.evaluationResult ?? null,
+    };
+  }
+
+  async persistDecisionAuthorizationToNeon(
+    auth: V03SignedDecisionAuthorization,
+  ): Promise<void> {
+    if (!this.isConfigured) return;
+    const p = auth.payload;
+    await this.execInSchema(
+      `INSERT INTO "dcc_v03_decision_authorizations" (
+        authorization_id, receipt_id, execution_mode, permitted_action,
+        candidate_dcc_entity_id, target_adapter, max_price_minor_units,
+        currency, idempotency_key, revocation_status, issued_at, expires_at,
+        authorization_jws, authorization_payload
+      ) VALUES (
+        $1, $2, $3, $4,
+        $5, $6, $7,
+        $8, $9, $10, $11::timestamptz, $12::timestamptz,
+        $13, $14::jsonb
+      ) ON CONFLICT (authorization_id) DO UPDATE SET
+        revocation_status = EXCLUDED.revocation_status,
+        authorization_payload = EXCLUDED.authorization_payload`,
+      [
+        auth.authorizationId,
+        p.decisionReceipt.receiptId,
+        p.executionMode,
+        p.permittedAction,
+        p.providerProductReference.candidateDccEntityId,
+        p.opaqueRouting.targetAdapter,
+        p.maxPrice.amountMinorUnits,
+        p.maxPrice.currency,
+        p.idempotencyKey,
+        p.revocation.status,
+        p.issuedAt,
+        p.expiresAt,
+        auth.jwsCompact,
+        JSON.stringify(auth),
+      ],
+    );
+  }
+
+  async readDecisionAuthorizationFromNeon(
+    authorizationId: string,
+  ): Promise<V03SignedDecisionAuthorization | null> {
+    if (!this.isConfigured) return null;
+    const rows = await this.execInSchema(
+      `SELECT authorization_payload FROM "dcc_v03_decision_authorizations"
+       WHERE authorization_id = $1
+       LIMIT 1`,
+      [authorizationId],
+    );
+    if (!rows[0]?.authorization_payload) return null;
+    return rows[0].authorization_payload as V03SignedDecisionAuthorization;
+  }
+
+  async readDecisionAuthorizationsFromNeon(
+    limit = 50,
+  ): Promise<V03SignedDecisionAuthorization[]> {
+    if (!this.isConfigured) return [];
+    const rows = await this.execInSchema(
+      `SELECT authorization_payload FROM "dcc_v03_decision_authorizations"
+       ORDER BY issued_at DESC
+       LIMIT $1`,
+      [limit],
+    );
+    return rows
+      .map((r: any) => r.authorization_payload as V03SignedDecisionAuthorization)
+      .filter(Boolean);
   }
 }

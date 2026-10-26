@@ -2,7 +2,7 @@ import {
   buildMachineJsonResponse,
   enforceMachineLayerFeatureFlag,
   getMachineCandidateUniverse,
-  getV03RuntimeStore,
+  getV03CandidateUniverseWithFallback,
 } from "@/lib/dcc/machine";
 
 export const dynamic = "force-dynamic";
@@ -19,11 +19,16 @@ export async function GET(
   const url = new URL(request.url);
   const versionParam = url.searchParams.get("version") ?? undefined;
 
-  if (versionParam === "0.3.0" || decodedId.startsWith("univ:v03:")) {
-    const store = getV03RuntimeStore();
-    const v03Universe =
-      store.universesByIdAndVersion.get(`${decodedId}@${versionParam ?? "0.3.0"}`) ??
-      store.universesByIdAndVersion.get(decodedId);
+  if (
+    versionParam === "0.3.0" ||
+    decodedId.startsWith("univ:gosno-") ||
+    decodedId.startsWith("univ:denver-") ||
+    /^[0-9a-f]{64}$/i.test(decodedId)
+  ) {
+    const v03Universe = await getV03CandidateUniverseWithFallback(
+      decodedId,
+      versionParam ?? "0.3.0",
+    );
     if (v03Universe) {
       return buildMachineJsonResponse(
         {
@@ -42,6 +47,24 @@ export async function GET(
 
   const universe = getMachineCandidateUniverse(decodedId, versionParam);
   if (!universe) {
+    const v03Fallback = await getV03CandidateUniverseWithFallback(
+      decodedId,
+      versionParam ?? "0.3.0",
+    );
+    if (v03Fallback) {
+      return buildMachineJsonResponse(
+        {
+          ok: true,
+          protocolVersion: "0.3.0",
+          objectType: "CandidateUniverseV03",
+          candidateUniverse: v03Fallback,
+        },
+        {
+          etag: `"sha256-${v03Fallback.universeHash}"`,
+          cacheControl: "public, max-age=31536000, immutable",
+        },
+      );
+    }
     return buildMachineJsonResponse(
       {
         ok: false,

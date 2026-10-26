@@ -1,43 +1,31 @@
 import crypto from "node:crypto";
 import { execSync } from "node:child_process";
+import canonicalize from "canonicalize";
 
 /**
- * DCC Machine Layer v0.3 — Standalone Black-Box Verification Client
+ * DCC Machine Layer v0.3.1 — Standalone Black-Box Verification Client
  *
  * ZERO internal DCC codebase imports.
- * Begins solely at `/.well-known/dcc`, discovers:
- * - `/.well-known/api-catalog` (RFC 9264 linkset)
- * - `/.well-known/jwks.json` (RFC 7517 JWKS with Ed25519 keys)
- * - `/.well-known/mcp.json` and `/api/v1/mcp` (MCP JSON-RPC 2.0)
- * - `/api/v1/conformance/fixtures` (RFC 8785 & JWS EdDSA conformance vectors)
- * - `/api/v1/provenance` (Non-self-referential build provenance)
- * - `/api/v1/docs/receipt-verification` & `/api/v1/docs/citation-verification`
- * - `/api/v1/v03/evaluate` (Evaluates Juneau & Hawaii, verifies server-established knowledgeCutoff,
- *   verifies client-supplied knownAt is rejected with HTTP 400 CLIENT_SUPPLIED_KNOWN_AT_FORBIDDEN)
- * - Verifies JWS Compact Serialization (alg=EdDSA) using standard RFC 8037 JWK public key from JWKS
- * - Verifies full 64-hex SHA-256 receiptId (`rcpt:sha256:<64-hex>`) and universeHash
- * - Replays receipt via `/api/v1/receipts/{id}/replay`
- * - Resolves W3C selector citations via `/r/{id}` and verifies `?raw=1` is rejected with HTTP 403
- * - Issues & verifies shadow-mode DecisionAuthorization via `/api/v1/authorizations` with zero side effects
+ * Uses the maintained third-party RFC 8785 implementation (`canonicalize` npm package
+ * by Samuel Erdtman & Anders Rundgren) + W3C WebCrypto SubtleCrypto.
  */
 
-/**
- * Independent iterative stack-based RFC 8785 JCS serializer with strict RFC 7493 I-JSON validation.
- * Shares zero code with DCC's internal recursive canonicalizer.
- */
-export function independentJcsStackCanonicalize(rootValue: unknown): string {
-  type Frame =
-    | { kind: "val"; val: unknown }
-    | { kind: "lit"; text: string };
-  const ancestorSet = new Set<object>();
-  const stack: Frame[] = [{ kind: "val", val: rootValue }];
-  const out: string[] = [];
-
-  const assertValidIJsonString = (str: string) => {
-    for (let i = 0; i < str.length; i++) {
-      const code = str.charCodeAt(i);
+function assertStrictIJsonForBlackBox(
+  value: unknown,
+  ancestors: Set<object> = new Set(),
+): void {
+  if (value === null || typeof value === "boolean") return;
+  if (typeof value === "number") {
+    if (!Number.isFinite(value)) {
+      throw new TypeError("RFC 8785 / I-JSON forbids NaN and Infinity");
+    }
+    return;
+  }
+  if (typeof value === "string") {
+    for (let i = 0; i < value.length; i++) {
+      const code = value.charCodeAt(i);
       if (code >= 0xd800 && code <= 0xdbff) {
-        const next = i + 1 < str.length ? str.charCodeAt(i + 1) : 0;
+        const next = i + 1 < value.length ? value.charCodeAt(i + 1) : 0;
         if (next >= 0xdc00 && next <= 0xdfff) {
           i++;
           continue;
@@ -48,79 +36,48 @@ export function independentJcsStackCanonicalize(rootValue: unknown): string {
         throw new TypeError("I-JSON forbids unpaired low surrogate");
       }
     }
-  };
-
-  const compareUtf16Units = (a: string, b: string): number => {
-    const len = Math.min(a.length, b.length);
-    for (let i = 0; i < len; i++) {
-      const d = a.charCodeAt(i) - b.charCodeAt(i);
-      if (d !== 0) return d;
-    }
-    return a.length - b.length;
-  };
-
-  while (stack.length > 0) {
-    const frame = stack.pop()!;
-    if (frame.kind === "lit") {
-      if (frame.text.startsWith("__EXIT_OBJ__")) {
-        // handled via closure below
-      } else {
-        out.push(frame.text);
-      }
-      continue;
-    }
-    const v = frame.val;
-    if (v === null) {
-      out.push("null");
-    } else if (typeof v === "boolean") {
-      out.push(v ? "true" : "false");
-    } else if (typeof v === "number") {
-      if (!Number.isFinite(v)) {
-        throw new TypeError("RFC 8785 / I-JSON forbids NaN and Infinity");
-      }
-      out.push(Object.is(v, -0) ? "0" : JSON.stringify(v));
-    } else if (typeof v === "string") {
-      assertValidIJsonString(v);
-      out.push(JSON.stringify(v));
-    } else if (Array.isArray(v)) {
-      if (ancestorSet.has(v)) throw new TypeError("Cyclic array");
-      for (let i = 0; i < v.length; i++) {
-        if (!(i in v) || v[i] === undefined) {
-          throw new TypeError("I-JSON forbids undefined in array");
-        }
-      }
-      out.push("[");
-      const elemFrames: Frame[] = [{ kind: "lit", text: "]" }];
-      for (let i = v.length - 1; i >= 0; i--) {
-        if (i < v.length - 1) elemFrames.push({ kind: "lit", text: "," });
-        elemFrames.push({ kind: "val", val: v[i] });
-      }
-      for (const ef of elemFrames) stack.push(ef);
-    } else if (typeof v === "object") {
-      if (ancestorSet.has(v as object)) throw new TypeError("Cyclic object");
-      const obj = v as Record<string, unknown>;
-      const keys = Object.keys(obj);
-      for (const k of keys) {
-        assertValidIJsonString(k);
-        if (obj[k] === undefined) {
-          throw new TypeError(`I-JSON forbids undefined property "${k}"`);
-        }
-      }
-      keys.sort(compareUtf16Units);
-      out.push("{");
-      const propFrames: Frame[] = [{ kind: "lit", text: "}" }];
-      for (let i = keys.length - 1; i >= 0; i--) {
-        const k = keys[i]!;
-        if (i < keys.length - 1) propFrames.push({ kind: "lit", text: "," });
-        propFrames.push({ kind: "val", val: obj[k] });
-        propFrames.push({ kind: "lit", text: `${JSON.stringify(k)}:` });
-      }
-      for (const pf of propFrames) stack.push(pf);
-    } else {
-      throw new TypeError(`Non-I-JSON value of type ${typeof v}`);
-    }
+    return;
   }
-  return out.join("");
+  if (Array.isArray(value)) {
+    if (ancestors.has(value)) throw new TypeError("Cyclic array");
+    ancestors.add(value);
+    for (let i = 0; i < value.length; i++) {
+      if (!(i in value) || value[i] === undefined) {
+        throw new TypeError("I-JSON forbids undefined in array");
+      }
+      assertStrictIJsonForBlackBox(value[i], ancestors);
+    }
+    ancestors.delete(value);
+    return;
+  }
+  if (typeof value === "object") {
+    const obj = value as Record<string, unknown>;
+    if (ancestors.has(obj)) throw new TypeError("Cyclic object");
+    ancestors.add(obj);
+    for (const k of Object.keys(obj)) {
+      assertStrictIJsonForBlackBox(k, ancestors);
+      if (obj[k] === undefined) {
+        throw new TypeError(`I-JSON forbids undefined property "${k}"`);
+      }
+      assertStrictIJsonForBlackBox(obj[k], ancestors);
+    }
+    ancestors.delete(obj);
+    return;
+  }
+  throw new TypeError(`Non-I-JSON value of type ${typeof value}`);
+}
+
+/**
+ * Independent RFC 8785 JCS canonicalizer backed by the maintained third-party `canonicalize` package
+ * after strict RFC 7493 I-JSON validation.
+ */
+export function independentJcsStackCanonicalize(rootValue: unknown): string {
+  assertStrictIJsonForBlackBox(rootValue);
+  const out = canonicalize(rootValue);
+  if (typeof out !== "string") {
+    throw new TypeError("Third-party canonicalize() rejected non-JSON value");
+  }
+  return out;
 }
 
 async function webCryptoSha256Hex(input: string): Promise<string> {
@@ -229,7 +186,12 @@ export interface NegativeTamperingCaseResult {
     | "mismatched_receipt_id"
     | "mismatched_result_hash"
     | "mismatched_candidate_universe_hash"
-    | "reordered_json_keys_before_canonicalization";
+    | "reordered_json_keys_before_canonicalization"
+    | "wrong_issuer"
+    | "wrong_environment"
+    | "modified_inputs"
+    | "modified_evidence_references"
+    | "modified_dispositions";
   failedClosed: boolean;
   failureReason: string;
 }
@@ -239,8 +201,13 @@ export async function runIndependentTenNegativeTamperingTests(params: {
   receiptObject: Record<string, unknown>;
   authorizationJwsCompact: string;
   jwksKeys: Array<Record<string, unknown>>;
+  expectedIssuer?: string;
+  expectedEnvironment?: string;
+  expectedInputs?: Record<string, unknown>;
 }): Promise<{
   allTenFailedClosed: boolean;
+  allFifteenFailedClosed: boolean;
+  allRejectionCasesFailedClosed: boolean;
   cases: NegativeTamperingCaseResult[];
 }> {
   const [hB64, pB64, sB64] = params.receiptJwsCompact.split(".") as [
@@ -264,9 +231,17 @@ export async function runIndependentTenNegativeTamperingTests(params: {
       receiptId: string;
       resultHash: string;
       candidateUniverseHash: string;
+      expectedIssuer?: string;
+      expectedEnvironment?: string;
+      expectedInputs?: Record<string, unknown>;
+      expectedPinnedEvidenceHashes?: Record<string, string>;
+      overrideDispositionSummary?: Array<Record<string, unknown>>;
     },
   ) => {
-    const { payloadText } = await verifyJwsCompactViaWebCryptoSubtle(candidateJws, keys);
+    const { protectedHeader, payloadText } = await verifyJwsCompactViaWebCryptoSubtle(
+      candidateJws,
+      keys,
+    );
     const parsed = JSON.parse(payloadText) as Record<string, unknown>;
     if (parsed.receiptId !== expectedMeta.receiptId) {
       throw new Error("MISMATCHED_RECEIPT_ID");
@@ -276,6 +251,71 @@ export async function runIndependentTenNegativeTamperingTests(params: {
     }
     if (parsed.candidateUniverseHash !== expectedMeta.candidateUniverseHash) {
       throw new Error("MISMATCHED_CANDIDATE_UNIVERSE_HASH");
+    }
+    if (expectedMeta.expectedIssuer) {
+      const actualIssuer = String(
+        params.receiptObject.issuer ??
+          (typeof protectedHeader.jku === "string"
+            ? new URL(protectedHeader.jku).origin
+            : ""),
+      );
+      if (actualIssuer !== expectedMeta.expectedIssuer) {
+        throw new Error(
+          `WRONG_ISSUER: expected ${expectedMeta.expectedIssuer}, got ${actualIssuer}`,
+        );
+      }
+    }
+    if (expectedMeta.expectedEnvironment) {
+      const keyEntry = keys.find((k) => k.kid === protectedHeader.kid);
+      const allowedEnvs = Array.isArray(keyEntry?.allowedEnvironments)
+        ? (keyEntry.allowedEnvironments as string[])
+        : [String(params.receiptObject.environment ?? "production")];
+      if (!allowedEnvs.includes(expectedMeta.expectedEnvironment)) {
+        throw new Error(
+          `WRONG_ENVIRONMENT: environment "${expectedMeta.expectedEnvironment}" not in key grant [${allowedEnvs.join(",")}]`,
+        );
+      }
+    }
+    if (expectedMeta.expectedInputs) {
+      const computedInputHash = await webCryptoSha256Hex(
+        independentJcsStackCanonicalize(expectedMeta.expectedInputs),
+      );
+      if (computedInputHash !== String(parsed.normalizedInputHash)) {
+        throw new Error(
+          `MODIFIED_INPUTS: expected normalizedInputHash ${String(parsed.normalizedInputHash)}, got ${computedInputHash}`,
+        );
+      }
+    }
+    if (expectedMeta.expectedPinnedEvidenceHashes) {
+      const actualEv = (parsed.pinnedEvidenceHashes ?? {}) as Record<string, string>;
+      for (const [evId, expectedEvHash] of Object.entries(
+        expectedMeta.expectedPinnedEvidenceHashes,
+      )) {
+        if (actualEv[evId] !== expectedEvHash) {
+          throw new Error(
+            `MODIFIED_EVIDENCE_REFERENCES: evidenceRef ${evId} hash mismatch (${String(actualEv[evId])} vs ${expectedEvHash})`,
+          );
+        }
+      }
+    }
+    const summaryList = (expectedMeta.overrideDispositionSummary ??
+      (parsed.candidateDispositionSummary as Array<Record<string, unknown>>) ??
+      []);
+    const recomputedResultCore = independentJcsStackCanonicalize({
+      decisionState: parsed.decisionState,
+      recommendedCandidateDccId: parsed.recommendedCandidateDccId ?? null,
+      dispositions: summaryList.map((d) => ({
+        candidateDccEntityId: d.candidateDccId,
+        disposition: d.disposition,
+        totalScore: d.totalScore,
+        reasonCodes: d.reasonCodes,
+      })),
+    });
+    const recomputedResultHash = await webCryptoSha256Hex(recomputedResultCore);
+    if (recomputedResultHash !== String(parsed.resultHash)) {
+      throw new Error(
+        `MODIFIED_DISPOSITIONS: recomputed resultHash ${recomputedResultHash} !== signed resultHash ${String(parsed.resultHash)}`,
+      );
     }
   };
 
@@ -435,7 +475,7 @@ export async function runIndependentTenNegativeTamperingTests(params: {
     });
   }
 
-  // 10. Reordered JSON keys before canonicalization (raw uncanonicalized JSON differs, JCS canonicalization normalizes identically, and raw-reordered JWS payload fails signature if not canonicalized)
+  // 10. Reordered JSON keys before canonicalization
   try {
     const reversedEntries = Object.entries(origPayload).reverse();
     const reorderedObj = Object.fromEntries(reversedEntries);
@@ -464,8 +504,126 @@ export async function runIndependentTenNegativeTamperingTests(params: {
     });
   }
 
+  // 11. Wrong issuer
+  try {
+    await verifyFullReceiptAndSemantics(params.receiptJwsCompact, params.jwksKeys, {
+      receiptId: String(origPayload.receiptId),
+      resultHash: String(origPayload.resultHash),
+      candidateUniverseHash: String(origPayload.candidateUniverseHash),
+      expectedIssuer: "https://untrusted-issuer.invalid",
+    });
+    cases.push({ caseName: "wrong_issuer", failedClosed: false, failureReason: "Did not fail" });
+  } catch (err) {
+    cases.push({
+      caseName: "wrong_issuer",
+      failedClosed: true,
+      failureReason: (err as Error).message,
+    });
+  }
+
+  // 12. Wrong environment grant
+  try {
+    const restrictedKeys = params.jwksKeys.map((k) =>
+      k.kid === origHeader.kid ? { ...k, allowedEnvironments: ["preview"] } : k,
+    );
+    await verifyFullReceiptAndSemantics(params.receiptJwsCompact, restrictedKeys, {
+      receiptId: String(origPayload.receiptId),
+      resultHash: String(origPayload.resultHash),
+      candidateUniverseHash: String(origPayload.candidateUniverseHash),
+      expectedEnvironment: "production",
+    });
+    cases.push({ caseName: "wrong_environment", failedClosed: false, failureReason: "Did not fail" });
+  } catch (err) {
+    cases.push({
+      caseName: "wrong_environment",
+      failedClosed: true,
+      failureReason: (err as Error).message,
+    });
+  }
+
+  // 13. Modified inputs (tampered caller constraints do not match signed normalizedInputHash)
+  try {
+    await verifyFullReceiptAndSemantics(params.receiptJwsCompact, params.jwksKeys, {
+      receiptId: String(origPayload.receiptId),
+      resultHash: String(origPayload.resultHash),
+      candidateUniverseHash: String(origPayload.candidateUniverseHash),
+      expectedInputs: {
+        ...(params.expectedInputs ?? {}),
+        maxSinglePassengerWeightLbs: 999,
+      },
+    });
+    cases.push({ caseName: "modified_inputs", failedClosed: false, failureReason: "Did not fail" });
+  } catch (err) {
+    cases.push({
+      caseName: "modified_inputs",
+      failedClosed: true,
+      failureReason: (err as Error).message,
+    });
+  }
+
+  // 14. Modified evidence references (tampered pinnedEvidenceHashes)
+  try {
+    const origPinnedEv = (origPayload.pinnedEvidenceHashes ?? {}) as Record<string, string>;
+    const firstEvKey = Object.keys(origPinnedEv)[0] ?? "evref:jnu:weight-limit:text-quote";
+    await verifyFullReceiptAndSemantics(params.receiptJwsCompact, params.jwksKeys, {
+      receiptId: String(origPayload.receiptId),
+      resultHash: String(origPayload.resultHash),
+      candidateUniverseHash: String(origPayload.candidateUniverseHash),
+      expectedPinnedEvidenceHashes: {
+        ...origPinnedEv,
+        [firstEvKey]: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      },
+    });
+    cases.push({
+      caseName: "modified_evidence_references",
+      failedClosed: false,
+      failureReason: "Did not fail",
+    });
+  } catch (err) {
+    cases.push({
+      caseName: "modified_evidence_references",
+      failedClosed: true,
+      failureReason: (err as Error).message,
+    });
+  }
+
+  // 15. Modified candidate dispositions
+  try {
+    const origDispositions =
+      (origPayload.candidateDispositionSummary as Array<Record<string, unknown>>) ?? [];
+    const mutatedDispositions = origDispositions.map((d, idx) =>
+      idx === 0
+        ? {
+            ...d,
+            disposition: d.disposition === "ineligible" ? "eligible" : "ineligible",
+            totalScore: d.totalScore === null ? 999 : null,
+          }
+        : d,
+    );
+    await verifyFullReceiptAndSemantics(params.receiptJwsCompact, params.jwksKeys, {
+      receiptId: String(origPayload.receiptId),
+      resultHash: String(origPayload.resultHash),
+      candidateUniverseHash: String(origPayload.candidateUniverseHash),
+      overrideDispositionSummary: mutatedDispositions,
+    });
+    cases.push({
+      caseName: "modified_dispositions",
+      failedClosed: false,
+      failureReason: "Did not fail",
+    });
+  } catch (err) {
+    cases.push({
+      caseName: "modified_dispositions",
+      failedClosed: true,
+      failureReason: (err as Error).message,
+    });
+  }
+
+  const allPassed = cases.length === 15 && cases.every((c) => c.failedClosed);
   return {
-    allTenFailedClosed: cases.length === 10 && cases.every((c) => c.failedClosed),
+    allTenFailedClosed: allPassed,
+    allFifteenFailedClosed: allPassed,
+    allRejectionCasesFailedClosed: allPassed,
     cases,
   };
 }
@@ -709,23 +867,20 @@ export async function runBlackBoxCanaryVerificationV03(options?: {
   }
 
   // 6. Evaluate Juneau twice to verify unique evaluationRunId vs deterministic fingerprint
+  const juneauConstraints = {
+    maxSinglePassengerWeightLbs: 245,
+    maxBudgetPerPersonUsd: 600,
+    weatherCondition: "clear_vfr",
+  };
   const juneauEval1 = await postJson(evaluateV03Url, {
     engineId: "juneau-helicopter-tours",
     validAt: "2026-07-15T12:00:00.000Z",
-    constraints: {
-      maxSinglePassengerWeightLbs: 245,
-      maxBudgetPerPersonUsd: 600,
-      weatherCondition: "clear_vfr",
-    },
+    constraints: juneauConstraints,
   });
   const juneauEval2 = await postJson(evaluateV03Url, {
     engineId: "juneau-helicopter-tours",
     validAt: "2026-07-15T12:00:00.000Z",
-    constraints: {
-      maxSinglePassengerWeightLbs: 245,
-      maxBudgetPerPersonUsd: 600,
-      weatherCondition: "clear_vfr",
-    },
+    constraints: juneauConstraints,
   });
   if (!juneauEval1.ok || !juneauEval2.ok) {
     throw new Error(`Juneau v0.3 evaluation failed: ${JSON.stringify(juneauEval1.body)}`);
@@ -755,6 +910,81 @@ export async function runBlackBoxCanaryVerificationV03(options?: {
     );
   }
 
+  // 6b. Independently verify normalizedInputHash, resultHash, candidateUniverseHash, and pinnedSchemaHashes
+  const expectedInputHash = await webCryptoSha256Hex(
+    independentJcsStackCanonicalize(juneauConstraints),
+  );
+  if (expectedInputHash !== String(verifiedPayloadObj.normalizedInputHash)) {
+    throw new Error(
+      `Independent normalizedInputHash mismatch: expected ${expectedInputHash}, got ${String(verifiedPayloadObj.normalizedInputHash)}`,
+    );
+  }
+
+  const summaryDispositions =
+    (verifiedPayloadObj.candidateDispositionSummary as Array<Record<string, unknown>>) ?? [];
+  const recomputedResultHash = await webCryptoSha256Hex(
+    independentJcsStackCanonicalize({
+      decisionState: verifiedPayloadObj.decisionState,
+      recommendedCandidateDccId: verifiedPayloadObj.recommendedCandidateDccId ?? null,
+      dispositions: summaryDispositions.map((d) => ({
+        candidateDccEntityId: d.candidateDccId,
+        disposition: d.disposition,
+        totalScore: d.totalScore,
+        reasonCodes: d.reasonCodes,
+      })),
+    }),
+  );
+  if (recomputedResultHash !== String(verifiedPayloadObj.resultHash)) {
+    throw new Error(
+      `Independent resultHash mismatch: expected ${recomputedResultHash}, got ${String(verifiedPayloadObj.resultHash)}`,
+    );
+  }
+
+  const universeEndpointTemplate =
+    endpoints.candidateUniverseById ?? `${baseUrl}/api/v1/universes/{id}`;
+  const universeUrl = `${resolvePathForTarget(
+    baseUrl,
+    universeEndpointTemplate.replace(
+      "{id}",
+      encodeURIComponent(String(verifiedPayloadObj.candidateUniverseId)),
+    ),
+  )}?version=${encodeURIComponent(String(verifiedPayloadObj.candidateUniverseVersion))}`;
+  const universeRes = await getJson(universeUrl);
+  const rawUniverseBody = (universeRes.body.candidateUniverse ??
+    universeRes.body.universe) as Record<string, unknown> | undefined;
+  if (!universeRes.ok || !rawUniverseBody) {
+    throw new Error(`GET candidate universe failed: ${universeRes.status}`);
+  }
+  const fetchedUniverse = {
+    ...rawUniverseBody,
+  };
+  const fetchedUniverseHash = String(fetchedUniverse.universeHash);
+  delete fetchedUniverse.universeHash;
+  const recomputedUniverseHash = await webCryptoSha256Hex(
+    independentJcsStackCanonicalize(fetchedUniverse),
+  );
+  if (
+    recomputedUniverseHash !== fetchedUniverseHash ||
+    recomputedUniverseHash !== String(verifiedPayloadObj.candidateUniverseHash)
+  ) {
+    throw new Error(
+      `Independent candidateUniverseHash mismatch: recomputed=${recomputedUniverseHash}, signed=${String(verifiedPayloadObj.candidateUniverseHash)}`,
+    );
+  }
+
+  const provSchemaHashes = (provRes.body.schemaHashes ?? {}) as Record<string, string>;
+  const receiptSchemaHashes = (verifiedPayloadObj.pinnedSchemaHashes ?? {}) as Record<
+    string,
+    string
+  >;
+  for (const [schemaKey, pinnedSchemaHash] of Object.entries(receiptSchemaHashes)) {
+    if (provSchemaHashes[schemaKey] && provSchemaHashes[schemaKey] !== pinnedSchemaHash) {
+      throw new Error(
+        `Pinned schema hash mismatch for ${schemaKey}: ${pinnedSchemaHash} vs ${provSchemaHashes[schemaKey]}`,
+      );
+    }
+  }
+
   // 7. Replay Juneau historical receipt via /api/v1/receipts/{id}/replay
   const replayUrl = resolvePathForTarget(
     baseUrl,
@@ -766,7 +996,7 @@ export async function runBlackBoxCanaryVerificationV03(options?: {
     throw new Error("Juneau receipt replay did not match original receipt");
   }
 
-  // 8. Verify citation projection at /r/{id} and verify ?raw=1 is rejected with HTTP 403
+  // 8. Verify citation projection at /r/{id}, verify pinnedEvidenceHashes, verify withdrawn GoSno citation, and verify ?raw=1 is rejected with HTTP 403
   const citeUrl = resolvePathForTarget(
     baseUrl,
     endpoints.stableReferenceResolver.replace(
@@ -778,6 +1008,55 @@ export async function runBlackBoxCanaryVerificationV03(options?: {
   const citePayload = citeRes.body.payload as Record<string, unknown>;
   if (!citeRes.ok || citePayload?.rawCaptureExposed !== false) {
     throw new Error("Public citation projection check failed");
+  }
+  const citeProj = citePayload.citationProjection as Record<string, unknown>;
+  const recomputedEvidenceHash = await webCryptoSha256Hex(
+    independentJcsStackCanonicalize({
+      evidenceRefId: citeProj.evidenceRefId,
+      sourceDccId: citeProj.sourceDccId,
+      canonicalSourceUrl: citeProj.canonicalSourceUrl,
+      snapshotId: citeProj.snapshotId,
+      snapshotSha256: citeProj.snapshotSha256,
+      selectors: citeProj.selectors,
+      surroundingContext: citeProj.surroundingContext,
+      extractor: citeProj.extractor,
+      extractedAt: citeProj.extractedAt,
+      retrievedAt: citeProj.retrievedAt,
+    }),
+  );
+  const pinnedEvHashes = (verifiedPayloadObj.pinnedEvidenceHashes ?? {}) as Record<
+    string,
+    string
+  >;
+  if (
+    recomputedEvidenceHash !== String(citeProj.evidenceHash) ||
+    (pinnedEvHashes["evref:jnu:weight-limit:text-quote"] &&
+      recomputedEvidenceHash !== pinnedEvHashes["evref:jnu:weight-limit:text-quote"])
+  ) {
+    throw new Error(
+      `Independent evidenceHash mismatch for evref:jnu:weight-limit:text-quote: recomputed=${recomputedEvidenceHash}, projection=${String(citeProj.evidenceHash)}`,
+    );
+  }
+
+  // 8b. Verify withdrawn GoSno citation (/r/evref%3Agosno%3Atariff-2026-winter-park) is marked withdrawn and unverified
+  const withdrawnGosnoUrl = resolvePathForTarget(
+    baseUrl,
+    endpoints.stableReferenceResolver.replace(
+      "{id}",
+      encodeURIComponent("evref:gosno:tariff-2026-winter-park"),
+    ),
+  );
+  const withdrawnGosnoRes = await getJson(withdrawnGosnoUrl);
+  const withdrawnGosnoPayload = withdrawnGosnoRes.body.payload as Record<string, unknown>;
+  if (
+    !withdrawnGosnoRes.ok ||
+    withdrawnGosnoRes.body.objectType !== "WithdrawnEvidenceReferenceProjection" ||
+    withdrawnGosnoRes.body.verified !== false ||
+    withdrawnGosnoPayload?.withdrawn !== true
+  ) {
+    throw new Error(
+      `Expected /r/evref%3Agosno%3Atariff-2026-winter-park to be WithdrawnEvidenceReferenceProjection (verified=false, withdrawn=true), got ${JSON.stringify(withdrawnGosnoRes.body)}`,
+    );
   }
 
   const rawForbiddenRes = await getJson(`${citeUrl}?raw=1`);
@@ -903,16 +1182,17 @@ export async function runBlackBoxCanaryVerificationV03(options?: {
   const dispatches = authRes.body.dryRunDispatches as Array<Record<string, unknown>>;
   await verifyJwsCompactViaWebCryptoSubtle(String(authObj.jwsCompact), jwksKeys);
 
-  // 12. Run all 10 negative tampering checks and verify all 10 fail closed
+  // 12. Run all 15 negative tampering checks and verify all 15 fail closed
   const negativeSuite = await runIndependentTenNegativeTamperingTests({
     receiptJwsCompact: jwsCompact,
     receiptObject: j1Receipt,
     authorizationJwsCompact: String(authObj.jwsCompact),
     jwksKeys,
+    expectedInputs: juneauConstraints,
   });
-  if (!negativeSuite.allTenFailedClosed) {
+  if (!negativeSuite.allTenFailedClosed || !negativeSuite.allRejectionCasesFailedClosed) {
     throw new Error(
-      `Negative tampering suite did not fail closed on all 10 cases: ${JSON.stringify(negativeSuite)}`,
+      `Negative tampering suite did not fail closed on all 15 cases: ${JSON.stringify(negativeSuite)}`,
     );
   }
 

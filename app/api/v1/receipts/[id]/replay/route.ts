@@ -25,6 +25,7 @@ export async function POST(
         replay: {
           ...replayResult,
           matchesOriginalReceipt: replayResult.matchesOriginalHashes,
+          replayedReceiptId: replayResult.replayResult.receiptId,
         },
       },
       {

@@ -166,6 +166,7 @@
     "@workflow/core": "^4.2.4",
     "@workflow/world": "^4.1.1",
     "@workflow/world-vercel": "^4.1.2",
+    "canonicalize": "2.0.0",
     "dotenv": "^17.2.4",
     "drizzle-orm": "^0.45.2",
     "haversine": "^1.1.1",

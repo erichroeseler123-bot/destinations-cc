@@ -154,7 +154,8 @@ export type V03CompetenceDomain =
   | "operator_pricing_and_schedule"
   | "operator_cancellation_and_refund_policy"
   | "live_seat_inventory_availability"
-  | "ground_shuttle_operations";
+  | "ground_shuttle_operations"
+  | "private_mountain_transportation";
 
 export interface V03SourceAuthority {
   sourceDccId: string;

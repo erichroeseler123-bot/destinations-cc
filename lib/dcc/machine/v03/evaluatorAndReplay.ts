@@ -165,6 +165,7 @@ export interface V03EvaluationResult {
   resultHash: string;
   traceHash: string;
   epistemicLimitationStatement: string;
+  gateFailureCode?: string | null;
   receipt: V03SignedDecisionReceipt;
 }
 
@@ -216,6 +217,14 @@ async function executeDeterministicEvaluationCore(params: {
     const reasonCodes: string[] = [];
     const evaluatedClaims: V03CandidateEvaluationDetail["evaluatedClaimVersions"] = [];
     const evidenceRefIds = new Set<string>();
+
+    if (
+      typeof params.inputs.__storageGateIndeterminateReason === "string" &&
+      params.inputs.__storageGateIndeterminateReason.length > 0
+    ) {
+      indeterminate = true;
+      reasonCodes.push(params.inputs.__storageGateIndeterminateReason);
+    }
 
     // 1. Check all candidate requiredClaimIds in the projection
     for (const reqClaimId of cand.requiredClaimIds) {
@@ -313,8 +322,26 @@ async function executeDeterministicEvaluationCore(params: {
           typeof claimState.typedValue === "number"
         ) {
           if (inputVal > claimState.typedValue) {
-            // Check if candidate has a special capability override (e.g., extra-seat policy)
-            if (cand.staticAttributes.supportsWeightOverride === true && inputVal <= 300) {
+            const candSurchargeThreshold =
+              typeof cand.staticAttributes.weightSurchargeThresholdLbs === "number"
+                ? cand.staticAttributes.weightSurchargeThresholdLbs
+                : claimState.typedValue;
+            const candHardMax =
+              typeof cand.staticAttributes.hardMaxWeightLbs === "number"
+                ? cand.staticAttributes.hardMaxWeightLbs
+                : null;
+            if (cand.staticAttributes.weightPolicyType === "surcharge_only") {
+              if (candHardMax !== null && inputVal > candHardMax) {
+                ineligible = true;
+                reasonCodes.push("PASSENGER_WEIGHT_EXCEEDS_HARD_LIMIT");
+              } else if (inputVal >= candSurchargeThreshold) {
+                qualified = true;
+                score -= 10;
+                reasonCodes.push(`${rule.reasonCode}_QUALIFIED_SURCHARGE_REQUIRED`);
+              } else {
+                score += rule.scoreDelta;
+              }
+            } else if (cand.staticAttributes.supportsWeightOverride === true && inputVal <= 300) {
               qualified = true;
               score -= 10;
               reasonCodes.push(`${rule.reasonCode}_QUALIFIED_SURCHARGE_REQUIRED`);
@@ -371,7 +398,108 @@ async function executeDeterministicEvaluationCore(params: {
       }
     }
 
-    // Candidate-specific minimum age gate (when supplied)
+    // Total vehicle price budget constraint (e.g. GoSno private vehicle flat rate)
+    const maxVehiclePriceUsd = params.inputs.maxTotalVehiclePriceUsd;
+    const candVehiclePriceUsd = cand.staticAttributes.flatVehicleRateUsd;
+    if (typeof maxVehiclePriceUsd === "number" && typeof candVehiclePriceUsd === "number") {
+      if (candVehiclePriceUsd > maxVehiclePriceUsd) {
+        ineligible = true;
+        reasonCodes.push("VEHICLE_FLAT_RATE_BUDGET_EXCEEDED");
+      }
+    }
+
+    // GoSno / Private Transportation service-mode hard gate: reject shared shuttle requests
+    const requestedServiceType =
+      params.inputs.serviceType ?? params.inputs.requestedServiceMode;
+    if (
+      cand.staticAttributes.serviceMode === "private_only" &&
+      (requestedServiceType === "shared_shuttle" ||
+        requestedServiceType === "shared" ||
+        params.inputs.allowSharedShuttleOnly === true)
+    ) {
+      ineligible = true;
+      reasonCodes.push("GOSNO_PRIVATE_ONLY_NO_SHARED_SHUTTLES");
+    }
+
+    // Candidate-specific vehicle passenger capacity hard gate (e.g. 6 for SUV, 10 for Van)
+    const paxCount =
+      typeof params.inputs.passengerCount === "number"
+        ? params.inputs.passengerCount
+        : typeof params.inputs.groupSize === "number"
+          ? params.inputs.groupSize
+          : undefined;
+    const candMaxPassengers = cand.staticAttributes.maxPassengers;
+    if (typeof paxCount === "number" && typeof candMaxPassengers === "number") {
+      if (paxCount <= 0) {
+        ineligible = true;
+        reasonCodes.push("INVALID_PASSENGER_COUNT");
+      } else if (paxCount > candMaxPassengers) {
+        ineligible = true;
+        reasonCodes.push(`PASSENGER_COUNT_EXCEEDS_VEHICLE_CAPACITY_${candMaxPassengers}`);
+      }
+    }
+
+    // GoSno equipment & luggage fit guard:
+    // Do NOT infer that 6 passengers and 6 snowboards/ski bags fit in a 6-passenger SUV
+    // solely from the passenger limit ("Private SUV: up to 6 passengers, subject to luggage and equipment fit").
+    const isPrivateSuv =
+      cand.staticAttributes.vehicleType === "private_suv" ||
+      cand.staticAttributes.vehicleClass === "Private SUV";
+    if (isPrivateSuv && typeof paxCount === "number") {
+      const skiOrSnowboardCount =
+        Number(params.inputs.skiOrSnowboardCount ?? 0) +
+        Number(params.inputs.snowboardCount ?? 0) +
+        Number(params.inputs.skiBagsCount ?? 0) +
+        Number(params.inputs.snowboardBagsCount ?? 0);
+      const checkedLuggageCount =
+        Number(params.inputs.checkedLuggageCount ?? 0) +
+        Number(params.inputs.luggageCount ?? 0);
+      if (
+        (paxCount >= 5 && skiOrSnowboardCount >= 5) ||
+        paxCount + skiOrSnowboardCount >= 11 ||
+        (paxCount === 6 && (skiOrSnowboardCount > 0 || checkedLuggageCount > 4))
+      ) {
+        indeterminate = true;
+        reasonCodes.push(
+          "SUV_EQUIPMENT_FIT_UNESTABLISHED_FOR_GROUP_AND_SKI_GEAR_REQUIRES_VAN_OR_CONFIRMATION",
+        );
+      }
+    }
+
+    // Route corridor / Rezdy feed / seating layout confirmation qualifications
+    const inputCorridor =
+      typeof params.inputs.corridorRouteId === "string"
+        ? params.inputs.corridorRouteId
+        : typeof params.inputs.corridorId === "string"
+          ? params.inputs.corridorId
+          : undefined;
+    const candCorridor =
+      typeof cand.staticAttributes.corridorRouteId === "string"
+        ? cand.staticAttributes.corridorRouteId
+        : typeof cand.staticAttributes.corridorId === "string"
+          ? cand.staticAttributes.corridorId
+          : undefined;
+    if (typeof inputCorridor === "string" && typeof candCorridor === "string") {
+      const normInput = inputCorridor.replace(/^den-/, "denver-to-");
+      const normCand = candCorridor.replace(/^den-/, "denver-to-");
+      if (normInput !== normCand) {
+        ineligible = true;
+        reasonCodes.push("CORRIDOR_ROUTE_MISMATCH");
+      }
+    }
+    if (cand.staticAttributes.requiresOperatorConfirmation === true) {
+      qualified = true;
+      score -= 6;
+      const confirmReason =
+        typeof cand.staticAttributes.operatorConfirmationReasonCode === "string"
+          ? cand.staticAttributes.operatorConfirmationReasonCode
+          : "OPERATOR_CONFIRMATION_REQUIRED_QUALIFIED";
+      if (!reasonCodes.includes(confirmReason)) {
+        reasonCodes.push(confirmReason);
+      }
+    }
+
+    // Candidate-specific minimum age gate (absolute passenger restriction when supplied)
     const youngestAge = params.inputs.youngestPassengerAgeYears;
     const minAge = cand.staticAttributes.minAgeYears;
     if (typeof youngestAge === "number" && typeof minAge === "number") {
@@ -379,6 +507,64 @@ async function executeDeterministicEvaluationCore(params: {
         ineligible = true;
         reasonCodes.push("MINIMUM_AGE_NOT_MET");
       }
+    }
+
+    // Candidate-specific lap child restriction (Coastal prohibits lap children; TEMSCO allows < 24 months)
+    if (
+      params.inputs.hasLapChildUnder2 === true &&
+      cand.staticAttributes.prohibitsLapChildren === true
+    ) {
+      ineligible = true;
+      reasonCodes.push("LAP_CHILDREN_PROHIBITED_FULL_FARE_SEAT_REQUIRED");
+    }
+
+    // Candidate-specific prohibited items (absolute passenger restrictions)
+    if (
+      params.inputs.carryingDrone === true &&
+      cand.staticAttributes.prohibitsDrones === true
+    ) {
+      ineligible = true;
+      reasonCodes.push("PROHIBITED_ITEM_DRONE");
+    }
+    if (
+      params.inputs.carryingSelfieStickOrExtension === true &&
+      cand.staticAttributes.prohibitsSelfieSticks === true
+    ) {
+      ineligible = true;
+      reasonCodes.push("PROHIBITED_ITEM_SELFIE_STICK_OR_EXTENSION");
+    }
+    if (
+      params.inputs.carryingBagsOrPursesOnFlight === true &&
+      cand.staticAttributes.prohibitsBagsOnAircraft === true
+    ) {
+      ineligible = true;
+      reasonCodes.push("PROHIBITED_ITEM_BAGS_ON_AIRCRAFT_LOCKER_REQUIRED");
+    }
+
+    // Candidate-specific service animal policy (Coastal & TEMSCO prohibit service animals due to emergency exit doors)
+    if (
+      (params.inputs.travelingWithServiceAnimal === true ||
+        params.inputs.hasServiceAnimal === true) &&
+      cand.staticAttributes.prohibitsServiceAnimals === true
+    ) {
+      ineligible = true;
+      reasonCodes.push("SERVICE_ANIMAL_PROHIBITED_EMERGENCY_EXIT_DOORS");
+    }
+
+    // Candidate-specific unassisted mobility gates (absolute passenger restrictions)
+    if (
+      params.inputs.requiresAssistedAircraftBoarding === true &&
+      cand.staticAttributes.requiresUnassistedAircraftBoarding === true
+    ) {
+      ineligible = true;
+      reasonCodes.push("UNASSISTED_AIRCRAFT_BOARDING_REQUIRED");
+    }
+    if (
+      params.inputs.canWalkUnassistedOneHourUnevenTerrain === false &&
+      cand.staticAttributes.requiresOneHourUnassistedGlacierWalk === true
+    ) {
+      ineligible = true;
+      reasonCodes.push("UNASSISTED_ONE_HOUR_GLACIER_WALK_REQUIRED");
     }
 
     // Candidate-specific cruise port transfer window gate (when supplied)
@@ -396,21 +582,37 @@ async function executeDeterministicEvaluationCore(params: {
       }
     }
 
-    // Candidate-specific operator weight surcharge threshold (when distinct per operator)
+    // Candidate-specific operator weight surcharge threshold (distinguished from absolute passenger restriction)
     const paxWeight = params.inputs.maxSinglePassengerWeightLbs;
     const candWeightSurchargeLbs = cand.staticAttributes.weightSurchargeThresholdLbs;
+    const candSecondTierSurchargeLbs = cand.staticAttributes.secondTierWeightSurchargeLbs;
     const candHardWeightMaxLbs = cand.staticAttributes.hardMaxWeightLbs;
     if (typeof paxWeight === "number" && typeof candWeightSurchargeLbs === "number") {
       if (typeof candHardWeightMaxLbs === "number" && paxWeight > candHardWeightMaxLbs) {
         ineligible = true;
         reasonCodes.push("PASSENGER_WEIGHT_EXCEEDS_HARD_LIMIT");
-      } else if (paxWeight > candWeightSurchargeLbs) {
+      } else if (paxWeight >= candWeightSurchargeLbs) {
         qualified = true;
         score -= 10;
         if (!reasonCodes.some((r) => r.includes("QUALIFIED_SURCHARGE_REQUIRED"))) {
           reasonCodes.push("OPERATOR_WEIGHT_SURCHARGE_THRESHOLD_EXCEEDED_QUALIFIED");
         }
+        if (
+          typeof candSecondTierSurchargeLbs === "number" &&
+          paxWeight >= candSecondTierSurchargeLbs
+        ) {
+          score -= 5;
+          reasonCodes.push("COASTAL_300LB_TWO_SEAT_SURCHARGE_QUALIFIED");
+        }
       }
+    }
+
+    // Flight minimum consolidation qualification (Coastal requires 4 total flight passengers)
+    const minFlightPax = cand.staticAttributes.minimumFlightPassengersRequired;
+    if (typeof paxCount === "number" && typeof minFlightPax === "number" && paxCount < minFlightPax) {
+      qualified = true;
+      score -= 4;
+      reasonCodes.push("FLIGHT_MINIMUM_4_PAX_CONSOLIDATION_REQUIRED_QUALIFIED");
     }
 
     // Explicit live-departure / day-of-weather confirmation check when requested by caller
@@ -589,6 +791,10 @@ async function executeDeterministicEvaluationCore(params: {
     resultHash,
     traceHash,
     epistemicLimitationStatement,
+    gateFailureCode:
+      typeof params.inputs.__storageGateIndeterminateReason === "string"
+        ? params.inputs.__storageGateIndeterminateReason
+        : null,
     receipt,
   };
 }
