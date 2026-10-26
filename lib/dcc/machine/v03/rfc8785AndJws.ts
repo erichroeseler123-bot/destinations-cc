@@ -1027,18 +1027,32 @@ export function revokeV03SigningKey(params: {
  * Never uses static private key material.
  */
 async function resolveVercelOidcTokenForKms(): Promise<string> {
+  const reqCtxSymbol = Symbol.for("@vercel/request-context");
+  const reqCtx = (
+    globalThis as unknown as Record<
+      symbol,
+      { get?: () => { headers?: Record<string, string | undefined> } }
+    >
+  )[reqCtxSymbol]?.get?.();
+  const ctxHeaderToken = reqCtx?.headers?.["x-vercel-oidc-token"]?.trim();
+  if (ctxHeaderToken) return ctxHeaderToken;
+
   const envToken = process.env.VERCEL_OIDC_TOKEN?.trim();
   if (envToken) return envToken;
+
   try {
-    const oidcMod = await import("@vercel/oidc");
-    if (typeof oidcMod.getVercelOidcToken === "function") {
-      return await oidcMod.getVercelOidcToken();
+    const nextHeadersMod = await import("next/headers");
+    if (typeof nextHeadersMod.headers === "function") {
+      const hdrs = await nextHeadersMod.headers();
+      const hdrToken = hdrs.get("x-vercel-oidc-token")?.trim();
+      if (hdrToken) return hdrToken;
     }
   } catch {
-    // fall through
+    // Not inside Next.js request scope; fall through
   }
+
   throw new FailClosedSigningConfigurationError(
-    "FAIL_CLOSED_SIGNING_KEY_MISSING: VERCEL_OIDC_TOKEN is required to sign with managed Vercel KMS issuer.",
+    "FAIL_CLOSED_SIGNING_KEY_MISSING: VERCEL_OIDC_TOKEN (or x-vercel-oidc-token request context) is required to sign with managed Vercel KMS issuer.",
   );
 }
 
