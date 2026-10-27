@@ -119,11 +119,9 @@ export function loadPreservedCapturesBundleV031(): PreservedCaptureBundleV031 {
 
   const publicMetadataPaths = [
     path.join(process.cwd(), "data", "machine", "v03", "preserved_capture_metadata_v031.json"),
-    path.resolve(__dirname, "../../../../data/machine/v03/preserved_capture_metadata_v031.json"),
   ];
   const privateVaultPaths = [
     path.join(process.cwd(), ".private-evidence-vault", "preserved_captures_v031.json"),
-    path.resolve(__dirname, "../../../../.private-evidence-vault/preserved_captures_v031.json"),
   ];
 
   let publicMetadata: {

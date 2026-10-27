@@ -157,29 +157,32 @@ export function getDeploymentProvenanceV03() {
     (process.env.DCC_BUILD_DIRTY_STATUS?.trim() as "clean" | "dirty") ||
     "serverless_packaged";
 
-  try {
-    const liveHead = execSync("git rev-parse HEAD", {
-      cwd: process.cwd(),
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "ignore"],
-    }).trim();
-    if (liveHead && (sourceCommitSha === "unknown" || !process.env.VERCEL_ENV)) {
-      sourceCommitSha = liveHead;
-    }
-    const liveBranch = execSync("git rev-parse --abbrev-ref HEAD", {
-      cwd: process.cwd(),
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "ignore"],
-    }).trim();
-    if (liveBranch && (branchName === "unknown" || !process.env.VERCEL_ENV)) {
-      branchName = liveBranch;
-    }
-    if (!process.env.VERCEL_ENV || !process.env.DCC_BUILD_DIRTY_STATUS) {
-      const statusLines = execSync("git status --porcelain --untracked-files=no", {
+  if (!process.env.VERCEL_ENV) {
+    try {
+      const liveHead = execSync("git rev-parse HEAD", {
         cwd: process.cwd(),
         encoding: "utf8",
         stdio: ["ignore", "pipe", "ignore"],
-      })
+      }).trim();
+      if (liveHead) {
+        sourceCommitSha = liveHead;
+      }
+      const liveBranch = execSync("git rev-parse --abbrev-ref HEAD", {
+        cwd: process.cwd(),
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "ignore"],
+      }).trim();
+      if (liveBranch) {
+        branchName = liveBranch;
+      }
+      const statusLines = execSync(
+        "git status --porcelain --untracked-files=no -- app components config data lib src types utils workflows",
+        {
+          cwd: process.cwd(),
+          encoding: "utf8",
+          stdio: ["ignore", "pipe", "ignore"],
+        },
+      )
         .split(/\r?\n/)
         .map((l) => l.trim())
         .filter(
@@ -190,9 +193,9 @@ export function getDeploymentProvenanceV03() {
             ),
         );
       workingTreeState = statusLines.length === 0 ? "clean" : "dirty";
+    } catch {
+      // Packaged serverless container without .git — uses baked DCC_BUILD_* values
     }
-  } catch {
-    // Packaged serverless container without .git — uses baked DCC_BUILD_* values
   }
 
   let dependencyLockSha256 =

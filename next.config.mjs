@@ -35,11 +35,14 @@ function resolveBuildProvenanceEnv() {
         stdio: ["ignore", "pipe", "ignore"],
       }).trim();
     }
-    const statusLines = execSync("git status --porcelain --untracked-files=no", {
-      cwd: __dirname,
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "ignore"],
-    })
+    const statusLines = execSync(
+      "git status --porcelain --untracked-files=no -- app components config data lib src types utils workflows",
+      {
+        cwd: __dirname,
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "ignore"],
+      },
+    )
       .split(/\r?\n/)
       .map((l) => l.trim())
       .filter(
