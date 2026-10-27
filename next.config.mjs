@@ -10,6 +10,73 @@ import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const CHECKED_BUILD_INPUT_PATHS = [
+  "package.json",
+  "package-lock.json",
+  "tsconfig.json",
+  "next.config.mjs",
+  "drizzle.config.ts",
+  "vercel.json",
+  "postcss.config.js",
+  "tailwind.config.js",
+  "eslint.config.mjs",
+  ".eslintrc.json",
+  ".npmrc",
+  ".nvmrc",
+  "proxy.ts",
+  "city-aliases.ts",
+  "canonicalize.mjs",
+  "validate.mjs",
+  "verify.mjs",
+  "drizzle",
+  "scripts",
+  "app",
+  "components",
+  "config",
+  "data",
+  "lib",
+  "src",
+  "types",
+  "utils",
+  "workflows",
+  "public",
+  "styles",
+  "tests",
+];
+
+function hashFilesDeterministic(baseDir, relPaths) {
+  const hash = crypto.createHash("sha256");
+  let count = 0;
+  for (const rel of [...relPaths].sort()) {
+    const full = path.join(baseDir, rel);
+    if (fs.existsSync(full) && fs.statSync(full).isFile()) {
+      hash.update(`${rel}\0`);
+      hash.update(fs.readFileSync(full));
+      hash.update("\0");
+      count += 1;
+    }
+  }
+  return count > 0 ? hash.digest("hex") : "unavailable";
+}
+
+function listFilesRecursiveRel(baseDir, subDir) {
+  const target = path.join(baseDir, subDir);
+  if (!fs.existsSync(target) || !fs.statSync(target).isDirectory()) return [];
+  const results = [];
+  const walk = (dir) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(full);
+      } else if (entry.isFile()) {
+        results.push(path.relative(baseDir, full).replace(/\\/g, "/"));
+      }
+    }
+  };
+  walk(target);
+  return results;
+}
+
 function resolveBuildProvenanceEnv() {
   let gitCommit =
     process.env.VERCEL_GIT_COMMIT_SHA?.trim() ||
@@ -19,14 +86,16 @@ function resolveBuildProvenanceEnv() {
     process.env.VERCEL_GIT_COMMIT_REF?.trim() ||
     process.env.GITHUB_REF_NAME?.trim() ||
     "";
-  let dirtySourceStatus = "clean";
+  let dirtySourceStatus = "unknown";
+  let sourceInspectionAvailable = "false";
   try {
-    if (!gitCommit) {
-      gitCommit = execSync("git rev-parse HEAD", {
-        cwd: __dirname,
-        encoding: "utf8",
-        stdio: ["ignore", "pipe", "ignore"],
-      }).trim();
+    const liveHead = execSync("git rev-parse HEAD", {
+      cwd: __dirname,
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
+    if (!gitCommit && liveHead) {
+      gitCommit = liveHead;
     }
     if (!gitBranch) {
       gitBranch = execSync("git rev-parse --abbrev-ref HEAD", {
@@ -35,8 +104,11 @@ function resolveBuildProvenanceEnv() {
         stdio: ["ignore", "pipe", "ignore"],
       }).trim();
     }
+    const existingBuildInputs = CHECKED_BUILD_INPUT_PATHS.filter((relPath) =>
+      fs.existsSync(path.join(__dirname, relPath)),
+    );
     const statusLines = execSync(
-      "git status --porcelain --untracked-files=no -- app components config data lib src types utils workflows",
+      `git status --porcelain --untracked-files=no -- ${existingBuildInputs.join(" ")}`,
       {
         cwd: __dirname,
         encoding: "utf8",
@@ -51,11 +123,16 @@ function resolveBuildProvenanceEnv() {
           !/^D\s+(legacy_vault|scratch|data\/sources\/geonames|\.open-next|\.wrangler)\//.test(l),
       );
     dirtySourceStatus = statusLines.length === 0 ? "clean" : "dirty";
+    sourceInspectionAvailable = "true";
   } catch {
-    // fallback if .git is not present
+    dirtySourceStatus = "unknown";
+    sourceInspectionAvailable = "false";
   }
 
-  let dependencyLockHash = "";
+  let dependencyLockHash = "unavailable";
+  let rootConfigHash = "unavailable";
+  let migrationsHash = "unavailable";
+  let scriptsHash = "unavailable";
   try {
     const lockPath = path.join(__dirname, "package-lock.json");
     if (fs.existsSync(lockPath)) {
@@ -64,6 +141,32 @@ function resolveBuildProvenanceEnv() {
         .update(fs.readFileSync(lockPath))
         .digest("hex");
     }
+    rootConfigHash = hashFilesDeterministic(__dirname, [
+      "package.json",
+      "tsconfig.json",
+      "next.config.mjs",
+      "drizzle.config.ts",
+      "vercel.json",
+      "postcss.config.js",
+      "tailwind.config.js",
+      "eslint.config.mjs",
+      ".eslintrc.json",
+      ".npmrc",
+      ".nvmrc",
+      "proxy.ts",
+      "city-aliases.ts",
+      "canonicalize.mjs",
+      "validate.mjs",
+      "verify.mjs",
+    ]);
+    migrationsHash = hashFilesDeterministic(
+      __dirname,
+      listFilesRecursiveRel(__dirname, "drizzle"),
+    );
+    scriptsHash = hashFilesDeterministic(
+      __dirname,
+      listFilesRecursiveRel(__dirname, "scripts/dcc"),
+    );
   } catch {
     // ignore
   }
@@ -74,7 +177,12 @@ function resolveBuildProvenanceEnv() {
     DCC_BUILD_GIT_COMMIT: gitCommit || "unknown",
     DCC_BUILD_GIT_BRANCH: gitBranch || "unknown",
     DCC_BUILD_DIRTY_STATUS: dirtySourceStatus,
+    DCC_BUILD_SOURCE_INSPECTION_AVAILABLE: sourceInspectionAvailable,
+    DCC_BUILD_CHECKED_INPUTS: CHECKED_BUILD_INPUT_PATHS.join(","),
     DCC_BUILD_LOCK_HASH: dependencyLockHash || "unavailable",
+    DCC_BUILD_ROOT_CONFIG_HASH: rootConfigHash || "unavailable",
+    DCC_BUILD_MIGRATIONS_HASH: migrationsHash || "unavailable",
+    DCC_BUILD_SCRIPTS_HASH: scriptsHash || "unavailable",
     DCC_BUILD_TIME: buildTime,
     DCC_BUILD_ID: buildId,
   };

@@ -172,28 +172,28 @@ export interface V03TemporalClaimBounds {
   validTo: string | null;
   sourceObservedAt: string | null;
   sourcePublishedAt: string | null;
-  retrievedAt: string;
-  recordedAt: string;
+  retrievedAt: string | null;
+  recordedAt: string | null;
   freshnessTtlSeconds: number;
 }
 
 /**
  * Computes `freshnessState` ("current" | "stale" | "expired") at `referenceTimeIso` (`validAt` / `knowledgeCutoff`):
  * - `expired`: `validTo` is present and `validAt > validTo`, OR `validAt < validFrom`.
- * - `stale`: `knowledgeCutoff - retrievedAt > freshnessTtlSeconds * 1000`.
+ * - `stale`: `retrievedAt` is null/unverified, OR `knowledgeCutoff - retrievedAt > freshnessTtlSeconds * 1000`.
  * - `current`: within validity window and within freshness TTL.
  */
 export function computeV03FreshnessState(params: {
   validFrom: string;
   validTo: string | null;
-  retrievedAt: string;
+  retrievedAt: string | null;
   freshnessTtlSeconds: number;
   validAtIso: string;
   knowledgeCutoffIso: string;
 }): V03FreshnessState {
   const validFromMs = Date.parse(params.validFrom);
   const validToMs = params.validTo ? Date.parse(params.validTo) : null;
-  const retrievedAtMs = Date.parse(params.retrievedAt);
+  const retrievedAtMs = params.retrievedAt ? Date.parse(params.retrievedAt) : Number.NaN;
   const validAtMs = Date.parse(params.validAtIso);
   const cutoffMs = Date.parse(params.knowledgeCutoffIso);
 
@@ -202,6 +202,9 @@ export function computeV03FreshnessState(params: {
   }
   if (validToMs !== null && validAtMs > validToMs) {
     return "expired";
+  }
+  if (Number.isNaN(retrievedAtMs)) {
+    return "stale";
   }
   const ageSeconds = (cutoffMs - retrievedAtMs) / 1000;
   if (ageSeconds > params.freshnessTtlSeconds) {
@@ -221,7 +224,8 @@ export function evaluateClaimSupportEligibility(params: {
   sourceAuthority: V03SourceAuthority;
   validFrom: string;
   validTo: string | null;
-  retrievedAt: string;
+  retrievedAt: string | null;
+  recordedAtVerified?: boolean;
   freshnessTtlSeconds: number;
   validAtIso: string;
   knowledgeCutoffIso: string;
@@ -250,6 +254,15 @@ export function evaluateClaimSupportEligibility(params: {
       freshnessState,
       sourceCompetentForDomain,
       disqualificationOrIndeterminateReason: `CLAIM_LIFECYCLE_${params.lifecycleState.toUpperCase()}`,
+    };
+  }
+
+  if (params.recordedAtVerified === false || params.retrievedAt === null) {
+    return {
+      canSupportEligibility: false,
+      freshnessState,
+      sourceCompetentForDomain,
+      disqualificationOrIndeterminateReason: "UNVERIFIED_LEGACY_RECORDING_TIME",
     };
   }
 

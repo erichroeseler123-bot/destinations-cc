@@ -203,6 +203,22 @@ export class NeonRelationalLedgerStoreV03 {
     return list.map((r: any) => String(r.table_name));
   }
 
+  /**
+   * Queries the authoritative database clock (`clock_timestamp()`) in Neon PostgreSQL
+   * to assign a genuine database admission timestamp once when admitting events.
+   */
+  async queryDatabaseClockIso(): Promise<string> {
+    if (!this.sqlClient) {
+      return new Date().toISOString();
+    }
+    const rows = await (this.sqlClient as any).query(
+      `SELECT clock_timestamp() AS now_iso`,
+    );
+    const list = Array.isArray(rows) ? rows : (rows?.rows ?? []);
+    const raw = list[0]?.now_iso;
+    return raw ? new Date(raw).toISOString() : new Date().toISOString();
+  }
+
   async appendKnowledgeEventToNeon(ev: V03KnowledgeEvent): Promise<{ elapsedMs: number }> {
     const t0 = performance.now();
     await this.execInSchema(
@@ -306,6 +322,8 @@ export class NeonRelationalLedgerStoreV03 {
         claimVersionId: ev.claimVersionId,
         targetPreviousVersionId: ev.targetPreviousVersionId,
         recordedAt: ev.recordedAt,
+        recordedAtVerified: ev.recordedAtVerified,
+        recordingTimeStatus: ev.recordingTimeStatus,
         actorId: ev.actorId,
         isSynthetic: ev.isSynthetic,
         provenanceClass: ev.provenanceClass,
@@ -556,6 +574,14 @@ export class NeonRelationalLedgerStoreV03 {
     return rows[0].payload as V03CandidateUniverse;
   }
 
+  async readAllCandidateUniversesFromNeon(): Promise<V03CandidateUniverse[]> {
+    if (!this.isConfigured) return [];
+    const rows = await this.execInSchema(
+      `SELECT payload FROM "dcc_v03_candidate_universes" ORDER BY recorded_at ASC`,
+    );
+    return rows.map((r: any) => r.payload as V03CandidateUniverse).filter(Boolean);
+  }
+
   async persistEngineBundleToNeon(bundle: V03CompiledEngineBundle): Promise<void> {
     if (!this.isConfigured) return;
     await this.execInSchema(
@@ -626,6 +652,14 @@ export class NeonRelationalLedgerStoreV03 {
     );
     if (!rows[0]?.bundle_payload) return null;
     return rows[0].bundle_payload as V03CompiledEngineBundle;
+  }
+
+  async readAllEngineBundlesFromNeon(): Promise<V03CompiledEngineBundle[]> {
+    if (!this.isConfigured) return [];
+    const rows = await this.execInSchema(
+      `SELECT bundle_payload FROM "dcc_v03_engine_bundles" ORDER BY recorded_at ASC`,
+    );
+    return rows.map((r: any) => r.bundle_payload as V03CompiledEngineBundle).filter(Boolean);
   }
 
   async persistSignedReceiptToNeon(

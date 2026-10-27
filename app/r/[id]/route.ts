@@ -1,6 +1,7 @@
 import {
   buildMachineJsonResponse,
   buildReferenceHttpResponse,
+  ensureRuntimeStoreHydratedFromNeon,
   getV03RuntimeStore,
   recordSecurityAuditEvent,
   resolveMachineReference,
@@ -9,11 +10,11 @@ import {
 
 export const dynamic = "force-dynamic";
 
-function handleReferenceRequest(
+async function handleReferenceRequest(
   request: Request,
   id: string,
   headOnly: boolean,
-): Response {
+): Promise<Response> {
   const url = new URL(request.url);
   if (
     url.searchParams.get("raw") === "1" ||
@@ -43,6 +44,7 @@ function handleReferenceRequest(
   const decodedId = decodeURIComponent(id);
   if (decodedId.startsWith("evref:")) {
     const store = getV03RuntimeStore();
+    await ensureRuntimeStoreHydratedFromNeon(store);
     const evRef = store.evidenceRefsById.get(decodedId);
     if (!evRef) {
       return buildMachineJsonResponse(

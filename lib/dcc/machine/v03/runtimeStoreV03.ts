@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import { buildV03CandidateUniverse, type V03CandidateUniverse } from "./candidateUniverse";
 import {
   issueShadowDecisionAuthorization,
@@ -33,7 +35,7 @@ import {
   inspectR2CredentialsFromEnv,
   type PrivateArtifactObjectStore,
 } from "./storageBoundary";
-import { AppendOnlyKnowledgeLedger } from "./temporalLedger";
+import { AppendOnlyKnowledgeLedger, type V03KnowledgeEvent } from "./temporalLedger";
 
 /**
  * DCC Machine Layer v0.3.1 — Unified Runtime Store
@@ -49,6 +51,50 @@ import { AppendOnlyKnowledgeLedger } from "./temporalLedger";
  * Wired to `NeonRelationalLedgerStoreV03` for durable relational persistence so
  * in-memory maps serve only as a warm cache and never as the sole copy.
  */
+
+export interface V03AdmittedLedgerTimestamps {
+  admissionId: string;
+  admittedByDatabaseClock: boolean;
+  databaseSchema: string;
+  withdrawalRecordedAt: string;
+  noaaRecordedAt: string;
+  juneauPolicyRecordedAt: string;
+  gosnoModeRecordedAt: string;
+  gosnoSuvRecordedAt: string;
+  gosnoVanRecordedAt: string;
+  gosnoUnknownConditionsRecordedAt: string;
+}
+
+export interface V03PersistedAdmissionSnapshot {
+  schemaVersion?: string;
+  spec?: "dcc-admitted-ledger-state/0.3.1";
+  admittedTimestamps: V03AdmittedLedgerTimestamps;
+  events: readonly V03KnowledgeEvent[];
+  evidenceRefs?: V03EvidenceReference[];
+}
+
+export const ADMITTED_LEDGER_STATE_PATH_V031 = path.join(
+  process.cwd(),
+  "data",
+  "machine",
+  "v03",
+  "admitted_ledger_state_v031.json",
+);
+
+export function loadPersistedAdmissionSnapshotV031(): V03PersistedAdmissionSnapshot | null {
+  try {
+    if (fs.existsSync(ADMITTED_LEDGER_STATE_PATH_V031)) {
+      const raw = fs.readFileSync(ADMITTED_LEDGER_STATE_PATH_V031, "utf8");
+      const parsed = JSON.parse(raw) as V03PersistedAdmissionSnapshot;
+      if (parsed && parsed.admittedTimestamps && Array.isArray(parsed.events)) {
+        return parsed;
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return null;
+}
 
 export interface V03RuntimeStore {
   knowledgeLedger: AppendOnlyKnowledgeLedger;
@@ -73,6 +119,8 @@ export interface V03RuntimeStore {
   authorizationsById: Map<string, V03SignedDecisionAuthorization>;
   preservedCapturesSyncedToObjectStore: boolean;
   baseStateSyncedToNeon: boolean;
+  hydratedFromNeon: boolean;
+  admittedTimestamps: V03AdmittedLedgerTimestamps;
 }
 
 function getActiveNeonStore(store: V03RuntimeStore): NeonRelationalLedgerStoreV03 {
@@ -149,10 +197,72 @@ export async function ensureBaseStoreSyncedToNeon(
   }
 }
 
-export function getV03RuntimeStore(): V03RuntimeStore {
-  if (singletonStoreV03) return singletonStoreV03;
+/**
+ * Reloads persisted knowledge events, candidate universes, and compiled engine bundles
+ * from Neon PostgreSQL (`dcc_machine_v03`) on restart / cold start so that recording times
+ * assigned once at database admission time are preserved across restarts without ever
+ * assigning new recording times on cold start.
+ */
+export async function ensureRuntimeStoreHydratedFromNeon(
+  store: V03RuntimeStore = getV03RuntimeStore(),
+): Promise<boolean> {
+  if (!isNeonStoreConfigured(store)) return false;
+  const neon = getActiveNeonStore(store);
+  try {
+    await neon.ensureSchemaAndTables();
+    const persistedEvents = await neon.readLedgerEventsFromNeon();
+    if (persistedEvents.length > 0) {
+      store.knowledgeLedger = AppendOnlyKnowledgeLedger.fromEvents(persistedEvents);
+      // Sync withdrawn evidenceRef metadata with the reloaded withdrawal event from Neon
+      const withdrawalEv = persistedEvents.find(
+        (e) =>
+          e.eventType === "claim_withdrawn" &&
+          e.claimId === "clm:gosno:max-pax-per-shuttle",
+      );
+      const withdrawnRef = store.evidenceRefsById.get("evref:gosno:tariff-2026-winter-park");
+      if (withdrawalEv && withdrawnRef) {
+        store.evidenceRefsById.set("evref:gosno:tariff-2026-winter-park", {
+          ...withdrawnRef,
+          withdrawnAt: withdrawalEv.recordedAt,
+          withdrawalEventId: withdrawalEv.eventId,
+        });
+      }
+      if (typeof neon.readAllCandidateUniversesFromNeon === "function") {
+        const universes = await neon.readAllCandidateUniversesFromNeon();
+        for (const u of universes) {
+          store.universesByHash.set(u.universeHash, u);
+          store.universesByIdAndVersion.set(`${u.universeId}@${u.version}`, u);
+          store.universesByIdAndVersion.set(u.universeId, u);
+        }
+      }
+      if (typeof neon.readAllEngineBundlesFromNeon === "function") {
+        const bundles = await neon.readAllEngineBundlesFromNeon();
+        for (const b of bundles) {
+          store.bundlesByHash.set(b.bundleHash, b);
+          store.bundlesByEngineAndVersion.set(`${b.engineId}@${b.engineVersion}`, b);
+          store.bundlesByEngineAndVersion.set(b.engineId, b);
+          store.activeEngineVersionByEngineId.set(b.engineId, b.engineVersion);
+        }
+      }
+      store.baseStateSyncedToNeon = true;
+      store.hydratedFromNeon = true;
+      return true;
+    } else {
+      await ensureBaseStoreSyncedToNeon(store);
+      store.hydratedFromNeon = true;
+      return true;
+    }
+  } catch {
+    return false;
+  }
+}
 
-  const knowledgeLedger = new AppendOnlyKnowledgeLedger();
+export function getV03RuntimeStore(options?: {
+  admittedTimestampsOverride?: V03AdmittedLedgerTimestamps;
+}): V03RuntimeStore {
+  if (singletonStoreV03 && !options?.admittedTimestampsOverride) return singletonStoreV03;
+
+  let knowledgeLedger = new AppendOnlyKnowledgeLedger();
   const identityLedger = new DccIdentityLedger();
   const objectStore = createRuntimeObjectStore();
   const neonStore = new NeonRelationalLedgerStoreV03();
@@ -173,9 +283,36 @@ export function getV03RuntimeStore(): V03RuntimeStore {
   const authorizationsById = new Map<string, V03SignedDecisionAuthorization>();
 
   const schemaHashes = getV03SchemaHashes();
-  const baseRecordedAt = "2026-10-26T00:00:00.000Z";
-  const withdrawalRecordedAt = "2026-10-26T21:15:00.000Z";
-  const repairedIngestionRecordedAt = "2026-10-26T21:16:00.000Z";
+  const persistedSnapshot = loadPersistedAdmissionSnapshotV031();
+  const capCoastalTourForClock = getPreservedCaptureByIdV031(
+    "cap:juneau:coastal-icefield-excursion-html",
+  );
+  const capGosnoRouteFeedForClock = getPreservedCaptureByIdV031("cap:gosno:route-feed-json");
+
+  const admittedTimestamps: V03AdmittedLedgerTimestamps =
+    options?.admittedTimestampsOverride ??
+    persistedSnapshot?.admittedTimestamps ?? {
+      admissionId: "bootstrap-pending-db-admission",
+      admittedByDatabaseClock: false,
+      databaseSchema: "dcc_machine_v03",
+      withdrawalRecordedAt: capGosnoRouteFeedForClock.retrievedAt,
+      noaaRecordedAt: capCoastalTourForClock.retrievedAt,
+      juneauPolicyRecordedAt: capCoastalTourForClock.retrievedAt,
+      gosnoModeRecordedAt: capGosnoRouteFeedForClock.retrievedAt,
+      gosnoSuvRecordedAt: capGosnoRouteFeedForClock.retrievedAt,
+      gosnoVanRecordedAt: capGosnoRouteFeedForClock.retrievedAt,
+      gosnoUnknownConditionsRecordedAt: capGosnoRouteFeedForClock.retrievedAt,
+    };
+
+  const withdrawalRecordedAt = admittedTimestamps.withdrawalRecordedAt;
+  const noaaRecordedAt = admittedTimestamps.noaaRecordedAt;
+  const juneauPolicyRecordedAt = admittedTimestamps.juneauPolicyRecordedAt;
+  const gosnoModeRecordedAt = admittedTimestamps.gosnoModeRecordedAt;
+  const gosnoSuvRecordedAt = admittedTimestamps.gosnoSuvRecordedAt;
+  const gosnoVanRecordedAt = admittedTimestamps.gosnoVanRecordedAt;
+  const gosnoUnknownConditionsRecordedAt =
+    admittedTimestamps.gosnoUnknownConditionsRecordedAt;
+  const repairedIngestionRecordedAt = gosnoVanRecordedAt;
 
   // Seed preserved captures synchronously into InMemoryTestArtifactStore if active
   if (objectStore instanceof InMemoryTestArtifactStore) {
@@ -311,13 +448,14 @@ export function getV03RuntimeStore(): V03RuntimeStore {
       dccEntityId: id,
       entityKind: kind,
       displayName: name,
-      recordedAt: baseRecordedAt,
+      recordedAt: withdrawalRecordedAt,
     });
   }
 
   // ==========================================================================
   // 2. Contain & Withdraw Legacy Unsupported GoSno Shared Shuttle Seed
-  //    (Preserves history in append-only ledger while marking withdrawn)
+  //    (Preserves history in append-only ledger while keeping legacy recording
+  //     time explicitly unverified and marking withdrawn)
   // ==========================================================================
   const gosnoLegacySeedDoc =
     "GoSno Mountain Shuttle Tariff 2026: Denver Union Station / DEN to Winter Park Resort shared express shuttle operates up to 14 passengers per van, max 2 ski/snowboard bags per rider, published fare $89 USD per person.";
@@ -327,17 +465,19 @@ export function getV03RuntimeStore(): V03RuntimeStore {
       "up to 14 passengers per van, max 2 ski/snowboard bags per rider, published fare $89 USD",
   });
 
-  // 2a. Record historical creation event in append-only ledger
+  // 2a. Record historical legacy seed in append-only ledger with explicitly unverified recording time
   knowledgeLedger.appendEvent({
     eventType: "claim_created",
     claimId: "clm:gosno:max-pax-per-shuttle",
     claimVersionId: "clmv:gosno:max-pax-per-shuttle:v1",
-    recordedAt: baseRecordedAt,
+    recordedAt: null,
+    recordedAtVerified: false,
+    recordingTimeStatus: "unverified_legacy_recording_time",
     actorId: "dcc-v03-bootstrap",
     isSynthetic: true,
     provenanceClass: "withdrawn_unsupported",
     reason:
-      "Historical bootstrap seed recorded prior to v0.3.1 first-party GoSno source audit (subsequently withdrawn).",
+      "Historical pre-v0.3.1 bootstrap seed with unverified legacy recording time (subsequently withdrawn after first-party GoSno source audit).",
     claimDefinition: {
       claimId: "clm:gosno:max-pax-per-shuttle",
       claimVersionId: "clmv:gosno:max-pax-per-shuttle:v1",
@@ -349,9 +489,9 @@ export function getV03RuntimeStore(): V03RuntimeStore {
       unitOrCurrency: "passengers",
       validFrom: "2026-01-01T00:00:00.000Z",
       validTo: withdrawalRecordedAt,
-      sourceObservedAt: baseRecordedAt,
+      sourceObservedAt: null,
       sourcePublishedAt: null,
-      retrievedAt: baseRecordedAt,
+      retrievedAt: null,
       freshnessTtlSeconds: 90 * 86400,
       sourceAuthority: {
         sourceDccId: srcGosnoTariffWithdrawnId,
@@ -366,7 +506,7 @@ export function getV03RuntimeStore(): V03RuntimeStore {
     },
   });
 
-  // 2b. Append explicit withdrawal event in append-only ledger
+  // 2b. Append explicit withdrawal event admitted with actual database admission time
   const gosnoWithdrawalReason =
     "Withdrawn unsupported bootstrap seed: First-party GoSno captures (https://gosno.co/api/public/route-feed, https://gosno.co/agent.json, https://gosno.co/llms.txt, https://gosno.co/winter-park) establish that GoSno operates private door-to-door mountain transportation only (no shared shuttles), with established vehicle limits of 6 passengers for Private SUVs and 10 passengers for Private Vans, and per-vehicle flat rates starting at $349-$699 rather than an $89 per-person shared shuttle.";
   const gosnoWithdrawalEvent = knowledgeLedger.appendEvent({
@@ -375,6 +515,8 @@ export function getV03RuntimeStore(): V03RuntimeStore {
     claimVersionId: "clmv:gosno:max-pax-per-shuttle:v2-withdrawn",
     targetPreviousVersionId: "clmv:gosno:max-pax-per-shuttle:v1",
     recordedAt: withdrawalRecordedAt,
+    recordedAtVerified: true,
+    recordingTimeStatus: "verified_database_admission",
     actorId: "dcc-v031-evidence-containment-auditor",
     isSynthetic: false,
     provenanceClass: "operational_evidence",
@@ -398,10 +540,12 @@ export function getV03RuntimeStore(): V03RuntimeStore {
       extractorVersion: "0.3.0",
       method: "deterministic_regex_span",
     },
-    extractedAt: baseRecordedAt,
-    retrievedAt: baseRecordedAt,
+    extractedAt: null,
+    retrievedAt: null,
+    recordingTimeVerified: false,
+    recordingTimeStatus: "unverified_legacy_recording_time",
     sourcePublishedAt: null,
-    sourceObservedAt: baseRecordedAt,
+    sourceObservedAt: null,
     licenseOrReusePolicy: "Withdrawn unsupported seed — preserved for audit history only",
     provenanceClass: "withdrawn_unsupported",
     isSynthetic: true,
@@ -648,10 +792,12 @@ export function getV03RuntimeStore(): V03RuntimeStore {
       extractorVersion: "0.3.0",
       method: "deterministic_regex_span",
     },
-    extractedAt: baseRecordedAt,
-    retrievedAt: baseRecordedAt,
+    extractedAt: noaaRecordedAt,
+    retrievedAt: noaaRecordedAt,
+    recordingTimeVerified: true,
+    recordingTimeStatus: "verified_database_admission",
     sourcePublishedAt: null,
-    sourceObservedAt: baseRecordedAt,
+    sourceObservedAt: noaaRecordedAt,
     licenseOrReusePolicy: "US Federal Government Public Domain (17 U.S.C. 105)",
   });
   evidenceRefsById.set(evRefNoaa100yd.evidenceRefId, evRefNoaa100yd);
@@ -663,7 +809,7 @@ export function getV03RuntimeStore(): V03RuntimeStore {
     externalId: "jnu-heli-coastal-icefield",
     dccEntityId: candJnuCoastalId,
     mappingEvidenceRefIds: [evRefJnuCoastalPrice.evidenceRefId],
-    recordedAt: repairedIngestionRecordedAt,
+    recordedAt: juneauPolicyRecordedAt,
   });
   identityLedger.mapExternalAlias({
     aliasVersionId: "alias:gosno:rezdy:breck:v1",
@@ -671,7 +817,7 @@ export function getV03RuntimeStore(): V03RuntimeStore {
     externalId: "PF616Q",
     dccEntityId: candGosnoBreckSuvId,
     mappingEvidenceRefIds: [evRefGosnoRouteFeedMode.evidenceRefId],
-    recordedAt: repairedIngestionRecordedAt,
+    recordedAt: gosnoModeRecordedAt,
   });
 
   // ==========================================================================
@@ -681,7 +827,9 @@ export function getV03RuntimeStore(): V03RuntimeStore {
     eventType: "claim_created",
     claimId: "clm:jnu:standard-seat-weight-limit-lbs",
     claimVersionId: "clmv:jnu:standard-seat-weight-limit-lbs:v1",
-    recordedAt: repairedIngestionRecordedAt,
+    recordedAt: juneauPolicyRecordedAt,
+    recordedAtVerified: true,
+    recordingTimeStatus: "verified_database_admission",
     actorId: "dcc-v031-preserved-source-extractor",
     isSynthetic: false,
     provenanceClass: "operational_evidence",
@@ -731,7 +879,9 @@ export function getV03RuntimeStore(): V03RuntimeStore {
     eventType: "claim_created",
     claimId: "clm:haw:noaa-100yd-approach-compliance",
     claimVersionId: "clmv:haw:noaa-100yd-approach-compliance:v1",
-    recordedAt: baseRecordedAt,
+    recordedAt: noaaRecordedAt,
+    recordedAtVerified: true,
+    recordingTimeStatus: "verified_database_admission",
     actorId: "dcc-v03-bootstrap",
     isSynthetic: false,
     provenanceClass: "operational_evidence",
@@ -746,9 +896,9 @@ export function getV03RuntimeStore(): V03RuntimeStore {
       typedValue: true,
       validFrom: "2025-01-01T00:00:00.000Z",
       validTo: null,
-      sourceObservedAt: baseRecordedAt,
+      sourceObservedAt: noaaRecordedAt,
       sourcePublishedAt: null,
-      retrievedAt: baseRecordedAt,
+      retrievedAt: noaaRecordedAt,
       freshnessTtlSeconds: 365 * 86400,
       sourceAuthority: {
         sourceDccId: srcNoaaHumpbackId,
@@ -768,7 +918,9 @@ export function getV03RuntimeStore(): V03RuntimeStore {
     eventType: "claim_created",
     claimId: "clm:gosno:private-transport-mode-only",
     claimVersionId: "clmv:gosno:private-transport-mode-only:v1",
-    recordedAt: repairedIngestionRecordedAt,
+    recordedAt: gosnoModeRecordedAt,
+    recordedAtVerified: true,
+    recordingTimeStatus: "verified_database_admission",
     actorId: "dcc-v031-preserved-source-extractor",
     isSynthetic: false,
     provenanceClass: "operational_evidence",
@@ -806,7 +958,9 @@ export function getV03RuntimeStore(): V03RuntimeStore {
     eventType: "claim_created",
     claimId: "clm:gosno:private-suv-max-passengers-6",
     claimVersionId: "clmv:gosno:private-suv-max-passengers-6:v1",
-    recordedAt: repairedIngestionRecordedAt,
+    recordedAt: gosnoSuvRecordedAt,
+    recordedAtVerified: true,
+    recordingTimeStatus: "verified_database_admission",
     actorId: "dcc-v031-preserved-source-extractor",
     isSynthetic: false,
     provenanceClass: "operational_evidence",
@@ -853,7 +1007,9 @@ export function getV03RuntimeStore(): V03RuntimeStore {
     eventType: "claim_created",
     claimId: "clm:gosno:private-van-max-passengers-10",
     claimVersionId: "clmv:gosno:private-van-max-passengers-10:v1",
-    recordedAt: repairedIngestionRecordedAt,
+    recordedAt: gosnoVanRecordedAt,
+    recordedAtVerified: true,
+    recordingTimeStatus: "verified_database_admission",
     actorId: "dcc-v031-preserved-source-extractor",
     isSynthetic: false,
     provenanceClass: "operational_evidence",
@@ -886,6 +1042,79 @@ export function getV03RuntimeStore(): V03RuntimeStore {
       evidenceRefs: [evRefGosnoRouteFeedMode, evRefGosnoAgentManifest, evRefGosnoBreckHtml],
     },
   });
+
+  // Explicitly admit the 5 GoSno unknown live operational conditions once
+  const gosnoUnknownConditionSpecs = [
+    {
+      claimId: "clm:gosno:live-driver-availability",
+      predicate: "driver_availability",
+      reason: "Live driver dispatch assignment is unknown until action-time dispatch check.",
+    },
+    {
+      claimId: "clm:gosno:live-vehicle-availability",
+      predicate: "vehicle_availability",
+      reason: "Live fleet SUV/Van unit availability is unknown until action-time inventory check.",
+    },
+    {
+      claimId: "clm:gosno:live-equipment-fit-at-capacity",
+      predicate: "equipment_and_luggage_fit",
+      reason:
+        "Physical cabin/cargo fit for 6 passengers + 6 snowboards/ski bags in an SUV is unestablished without operator confirmation or Van upgrade.",
+    },
+    {
+      claimId: "clm:gosno:live-road-safety",
+      predicate: "road_safety",
+      reason:
+        "Live CDOT I-70 / US-40 Berthoud Pass chain/traction/closure status is unknown until travel window.",
+    },
+    {
+      claimId: "clm:gosno:live-inventory-confirmation",
+      predicate: "live_inventory_confirmation",
+      reason:
+        "Rezdy/OCTO live booking slot confirmation (requiresOperatorConfirmation=true) is unknown until action-time revalidation.",
+    },
+  ] as const;
+
+  for (const spec of gosnoUnknownConditionSpecs) {
+    knowledgeLedger.appendEvent({
+      eventType: "claim_created",
+      claimId: spec.claimId,
+      claimVersionId: `${spec.claimId}:v1-unknown`,
+      recordedAt: gosnoUnknownConditionsRecordedAt,
+      recordedAtVerified: true,
+      recordingTimeStatus: "verified_database_admission",
+      actorId: "dcc-v031-gosno-epistemic-guard",
+      isSynthetic: false,
+      provenanceClass: "operational_evidence",
+      reason: spec.reason,
+      claimDefinition: {
+        claimId: spec.claimId,
+        claimVersionId: `${spec.claimId}:v1-unknown`,
+        subjectDccId: gosnoOpId,
+        predicate: spec.predicate,
+        assertionType: "observation",
+        epistemicState: "unknown",
+        typedValue: null,
+        unitOrCurrency: null,
+        validFrom: "2026-10-01T00:00:00.000Z",
+        validTo: null,
+        sourceObservedAt: null,
+        sourcePublishedAt: null,
+        retrievedAt: capGosnoRouteFeed.retrievedAt,
+        freshnessTtlSeconds: 300,
+        sourceAuthority: {
+          sourceDccId: srcGosnoRouteFeedId,
+          organizationName: "GoSno Mountain Transportation",
+          authorityTier: "operator_direct",
+          competentDomains: ["private_mountain_transportation"],
+          claimedDomain: "private_mountain_transportation",
+          independentlyCorroboratedBySourceDccIds: [],
+          licenseOrReusePolicy: "DCC / GoSno First-Party Public Route Feed",
+        },
+        evidenceRefs: [],
+      },
+    });
+  }
 
   // ==========================================================================
   // 7. Build CandidateUniverses & Compile DecisionIrBundles
@@ -1120,7 +1349,7 @@ export function getV03RuntimeStore(): V03RuntimeStore {
         sourceDccId: srcNoaaHumpbackId,
         organizationName: "NOAA Fisheries / Code of Federal Regulations",
         queryOrEndpoint: "https://www.ecfr.gov/current/title-50/section-224.103",
-        consultedAt: baseRecordedAt,
+        consultedAt: noaaRecordedAt,
         snapshotSha256: evRefNoaa100yd.snapshotSha256,
       },
     ],
@@ -1168,7 +1397,7 @@ export function getV03RuntimeStore(): V03RuntimeStore {
     ],
     effectiveFrom: "2026-01-01T00:00:00.000Z",
     effectiveTo: "2027-12-31T23:59:59.000Z",
-    knowledgeCutoff: baseRecordedAt,
+    knowledgeCutoff: noaaRecordedAt,
     refreshDeadline: "2026-11-26T00:00:00.000Z",
     generatorVersion: "dcc-universe-generator/0.3.1",
     epistemicDisclaimer: "Bounded to declared Maui whale-watching candidate universe.",
@@ -1488,7 +1717,27 @@ export function getV03RuntimeStore(): V03RuntimeStore {
     activeEngineVersionByEngineId.set(bnd.engineId, bnd.engineVersion);
   }
 
-  singletonStoreV03 = {
+  if (
+    !options?.admittedTimestampsOverride &&
+    persistedSnapshot?.events &&
+    persistedSnapshot.events.length > 0
+  ) {
+    knowledgeLedger = AppendOnlyKnowledgeLedger.fromEvents(persistedSnapshot.events);
+    const persistedWithdrawal = persistedSnapshot.events.find(
+      (ev) => ev.claimVersionId === "clmv:gosno:max-pax-per-shuttle:v2-withdrawn",
+    );
+    if (persistedWithdrawal && persistedWithdrawal.recordedAt) {
+      evRefGosnoWithdrawn.withdrawnAt = persistedWithdrawal.recordedAt;
+      evRefGosnoWithdrawn.withdrawalEventId = persistedWithdrawal.eventId;
+    }
+    if (Array.isArray(persistedSnapshot.evidenceRefs)) {
+      for (const ref of persistedSnapshot.evidenceRefs) {
+        evidenceRefsById.set(ref.evidenceRefId, ref);
+      }
+    }
+  }
+
+  const constructedStore: V03RuntimeStore = {
     knowledgeLedger,
     identityLedger,
     objectStore,
@@ -1503,8 +1752,109 @@ export function getV03RuntimeStore(): V03RuntimeStore {
     authorizationsById,
     preservedCapturesSyncedToObjectStore: objectStore instanceof InMemoryTestArtifactStore,
     baseStateSyncedToNeon: false,
+    hydratedFromNeon: false,
+    admittedTimestamps,
   };
-  return singletonStoreV03;
+
+  if (!options?.admittedTimestampsOverride) {
+    singletonStoreV03 = constructedStore;
+  }
+  return constructedStore;
+}
+
+/**
+ * Performs the one-time server/database admission of the v0.3.1 operational ledger
+ * using the live Neon PostgreSQL `clock_timestamp()`, persists all admitted events,
+ * evidence references, candidate universes, and engine bundles to Neon, and saves
+ * the persisted admission snapshot (`data/machine/v03/admitted_ledger_state_v031.json`)
+ * so restarts reload the exact database-admitted recording times without ever
+ * assigning new recording times on cold start.
+ */
+export async function admitOperationalLedgerToDatabaseOnceV031(options?: {
+  neonStore?: NeonRelationalLedgerStoreV03;
+  writeSnapshotToDisk?: boolean;
+}): Promise<V03PersistedAdmissionSnapshot> {
+  const neon = options?.neonStore ?? new NeonRelationalLedgerStoreV03();
+  if (!neon.isConfigured) {
+    throw new Error(
+      "NEON_DATABASE_UNCONFIGURED: Cannot perform database ledger admission without DATABASE_URL / NEON_DATABASE_URL.",
+    );
+  }
+
+  // Query live PostgreSQL clock_timestamp() sequentially for each distinct admission batch
+  const noaaRecordedAt = await neon.queryDatabaseClockIso();
+  const juneauPolicyRecordedAt = await neon.queryDatabaseClockIso();
+  const withdrawalRecordedAt = await neon.queryDatabaseClockIso();
+  const gosnoModeRecordedAt = await neon.queryDatabaseClockIso();
+  const gosnoSuvRecordedAt = await neon.queryDatabaseClockIso();
+  const gosnoVanRecordedAt = await neon.queryDatabaseClockIso();
+  const gosnoUnknownConditionsRecordedAt = await neon.queryDatabaseClockIso();
+
+  const admittedTimestamps: V03AdmittedLedgerTimestamps = {
+    admissionId: `db-admission-v031-${withdrawalRecordedAt}`,
+    admittedByDatabaseClock: true,
+    databaseSchema: "dcc_machine_v03",
+    withdrawalRecordedAt,
+    noaaRecordedAt,
+    juneauPolicyRecordedAt,
+    gosnoModeRecordedAt,
+    gosnoSuvRecordedAt,
+    gosnoVanRecordedAt,
+    gosnoUnknownConditionsRecordedAt,
+  };
+
+  // Build store using these exact database admission timestamps
+  const admittedStore = getV03RuntimeStore({
+    admittedTimestampsOverride: admittedTimestamps,
+  });
+
+  // Reset & migrate Neon schema cleanly and persist the admitted state
+  await neon.runMigrationsDownV03();
+  await neon.runMigrationsUpV03();
+
+  const events = admittedStore.knowledgeLedger.getAllEvents();
+  const evidenceRefs = Array.from(admittedStore.evidenceRefsById.values());
+  const universes = Array.from(admittedStore.universesByHash.values());
+  const bundles = Array.from(admittedStore.bundlesByHash.values());
+
+  await neon.persistLedgerEventsToNeon(events);
+  for (const ref of evidenceRefs) {
+    await neon.persistEvidenceReferenceToNeon(ref);
+  }
+  for (const univ of universes) {
+    await neon.persistCandidateUniverseToNeon(univ);
+  }
+  for (const bnd of bundles) {
+    await neon.persistEngineBundleToNeon(bnd);
+  }
+  await neon.truncateAndRebuildClaimProjectionsInNeon({
+    validAtIso: "2026-12-15T15:00:00.000Z",
+    knowledgeCutoffIso: gosnoUnknownConditionsRecordedAt,
+    includeSynthetic: false,
+  });
+
+  const snapshot: V03PersistedAdmissionSnapshot = {
+    schemaVersion: "0.3.1-db-admitted-v1",
+    admittedTimestamps,
+    events,
+    evidenceRefs,
+  };
+
+  if (options?.writeSnapshotToDisk !== false) {
+    const filePath = path.join(
+      process.cwd(),
+      "data",
+      "machine",
+      "v03",
+      "admitted_ledger_state_v031.json",
+    );
+    fs.writeFileSync(filePath, JSON.stringify(snapshot, null, 2) + "\n", "utf8");
+  }
+
+  admittedStore.baseStateSyncedToNeon = true;
+  admittedStore.hydratedFromNeon = true;
+  singletonStoreV03 = admittedStore;
+  return snapshot;
 }
 
 /**
@@ -1608,6 +1958,7 @@ export async function getV03CandidateUniverseWithFallback(
   version?: string,
 ): Promise<V03CandidateUniverse | null> {
   const store = getV03RuntimeStore();
+  await ensureRuntimeStoreHydratedFromNeon(store);
   const byId =
     store.universesByIdAndVersion.get(`${universeIdOrHash}@${version ?? "0.3.0"}`) ??
     store.universesByIdAndVersion.get(universeIdOrHash) ??
@@ -1642,6 +1993,7 @@ export async function handleV03EvaluateRequest(
   options?: { adminToken?: string; enforceProductionStorageGate?: boolean },
 ): Promise<V03EvaluationResult> {
   const store = getV03RuntimeStore();
+  await ensureRuntimeStoreHydratedFromNeon(store);
   await ensurePreservedCapturesStoredInObjectStore(store);
 
   const engineId = String(rawBody.engineId ?? "");
@@ -1737,6 +2089,7 @@ export async function handleV03EvaluateRequest(
 
 export async function handleV03ReplayReceiptRequest(receiptId: string) {
   const store = getV03RuntimeStore();
+  await ensureRuntimeStoreHydratedFromNeon(store);
   const stored = await getV03ReceiptWithFallback(receiptId);
   if (!stored) {
     throw new Error(
@@ -1798,6 +2151,7 @@ export async function handleV03IssueShadowAuthorization(params: {
   enforceProductionStorageGate?: boolean;
 }) {
   const store = getV03RuntimeStore();
+  await ensureRuntimeStoreHydratedFromNeon(store);
   const storageGate = evaluateV03StorageAndEvidenceGate({
     enforceProductionStorageGate: params.enforceProductionStorageGate,
     store,

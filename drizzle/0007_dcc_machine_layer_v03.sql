@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS "dcc_v03_knowledge_events" (
   "source_observed_at" timestamptz,
   "source_published_at" timestamptz,
   "retrieved_at" timestamptz,
-  "recorded_at" timestamptz NOT NULL DEFAULT now(),
+  "recorded_at" timestamptz,
   "actor_id" text NOT NULL,
   "is_synthetic" boolean NOT NULL DEFAULT false,
   "provenance_class" text NOT NULL DEFAULT 'operational',
@@ -67,7 +67,7 @@ CREATE TRIGGER "trg_dcc_v03_knowledge_events_append_only"
 CREATE TABLE IF NOT EXISTS "dcc_v03_allocated_identifiers" (
   "dcc_id" text PRIMARY KEY,
   "id_kind" text NOT NULL,
-  "allocated_at" timestamptz NOT NULL DEFAULT now(),
+  "allocated_at" timestamptz,
   "allocated_by_event_id" text NOT NULL,
   "retired_at" timestamptz
 );
@@ -105,8 +105,8 @@ CREATE TABLE IF NOT EXISTS "dcc_v03_claim_projections" (
   "valid_to" timestamptz,
   "source_observed_at" timestamptz,
   "source_published_at" timestamptz,
-  "retrieved_at" timestamptz NOT NULL,
-  "recorded_at" timestamptz NOT NULL,
+  "retrieved_at" timestamptz,
+  "recorded_at" timestamptz,
   "freshness_ttl_seconds" integer NOT NULL DEFAULT 86400,
   "source_authority" jsonb NOT NULL,
   "evidence_refs" jsonb NOT NULL DEFAULT '[]'::jsonb,

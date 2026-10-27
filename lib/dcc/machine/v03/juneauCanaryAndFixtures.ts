@@ -29,6 +29,7 @@ import {
 import { rfc8785Canonicalize, sha256HexFull } from "./rfc8785AndJws";
 import {
   ensurePreservedCapturesStoredInObjectStore,
+  ensureRuntimeStoreHydratedFromNeon,
   getV03RuntimeStore,
   handleV03EvaluateRequest,
 } from "./runtimeStoreV03";
@@ -1710,6 +1711,7 @@ export async function runGenuineJuneauOperationalPackV031() {
  */
 export async function runGoSnoShadowAuthorizationProof() {
   const store = getV03RuntimeStore();
+  await ensureRuntimeStoreHydratedFromNeon(store);
   await ensurePreservedCapturesStoredInObjectStore(store);
 
   const gosnoOpId = mintOpaqueDccEntityId("operator", "gosno-mountain-transportation-co");
@@ -1717,6 +1719,7 @@ export async function runGoSnoShadowAuthorizationProof() {
     "evidence_source",
     "gosno-public-route-feed-2026",
   );
+  const capGosnoRouteFeed = getPreservedCaptureByIdV031("cap:gosno:route-feed-json");
 
   // Ensure the 5 explicit `unknown` live operational conditions are recorded in the shared runtime ledger
   const unknownConditionSpecs = [
@@ -1763,7 +1766,11 @@ export async function runGoSnoShadowAuthorizationProof() {
         eventType: "claim_created",
         claimId: spec.claimId,
         claimVersionId: `${spec.claimId}:v1-unknown`,
-        recordedAt: "2026-10-26T21:17:00.000Z",
+        recordedAt: store.admittedTimestamps.gosnoUnknownConditionsRecordedAt,
+        recordedAtVerified: store.admittedTimestamps.admittedByDatabaseClock,
+        recordingTimeStatus: store.admittedTimestamps.admittedByDatabaseClock
+          ? "verified_database_admission"
+          : "verified_server_admission",
         actorId: "dcc-v031-gosno-epistemic-guard",
         isSynthetic: false,
         provenanceClass: "operational_evidence",
@@ -1781,7 +1788,7 @@ export async function runGoSnoShadowAuthorizationProof() {
           validTo: null,
           sourceObservedAt: null,
           sourcePublishedAt: null,
-          retrievedAt: "2026-10-26T21:17:00.000Z",
+          retrievedAt: capGosnoRouteFeed.retrievedAt,
           freshnessTtlSeconds: 300,
           sourceAuthority: {
             sourceDccId: srcGosnoRouteFeedId,
@@ -1878,6 +1885,8 @@ export async function runGoSnoShadowAuthorizationProof() {
     "live_inventory_confirmation",
   ];
 
+  const authIssuedAtIso = decisionEvaluation.receipt.payload.issuedAt;
+
   // Step 3 & 5: Issue signed DecisionAuthorization bound to receiptId & resultHash and run shadow adapters
   const squareAuth = await issueShadowDecisionAuthorization({
     receipt: decisionEvaluation.receipt,
@@ -1901,7 +1910,7 @@ export async function runGoSnoShadowAuthorizationProof() {
     },
     additionalRevalidationRequirements: requiredActionTimeRevalidations,
     targetAdapter: "square",
-    issuedAtIso: "2026-10-26T21:20:01.000Z",
+    issuedAtIso: authIssuedAtIso,
     ttlSeconds: 86_400 * 30,
   });
 
@@ -1927,7 +1936,7 @@ export async function runGoSnoShadowAuthorizationProof() {
     },
     additionalRevalidationRequirements: requiredActionTimeRevalidations,
     targetAdapter: "octo",
-    issuedAtIso: "2026-10-26T21:20:01.000Z",
+    issuedAtIso: authIssuedAtIso,
     ttlSeconds: 86_400 * 30,
   });
 
@@ -1967,7 +1976,9 @@ export async function runGoSnoShadowAuthorizationProof() {
     eventType: "shadow_authorization_dry_run_recorded",
     claimId: `shadow-outcome:${squareAuth.signedAuthorization.authorizationId}`,
     claimVersionId: `shadow-outcome:${squareAuth.signedAuthorization.authorizationId}:v1`,
-    recordedAt: "2026-10-26T21:20:02.000Z",
+    recordedAt: authIssuedAtIso,
+    recordedAtVerified: true,
+    recordingTimeStatus: "verified_server_admission",
     actorId: "dcc-v031-shadow-commerce-auditor",
     isSynthetic: false,
     provenanceClass: "operational_evidence",

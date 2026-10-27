@@ -97,8 +97,14 @@ export interface V03EvidenceReference {
     after: string;
   };
   extractor: V03ExtractorIdentity;
-  extractedAt: string;
-  retrievedAt: string;
+  extractedAt: string | null;
+  retrievedAt: string | null;
+  recordingTimeVerified?: boolean;
+  recordingTimeStatus?:
+    | "verified_network_capture"
+    | "verified_database_admission"
+    | "unverified_legacy_recording_time"
+    | "synthetic_fixture_clock";
   sourcePublishedAt: string | null;
   sourceObservedAt: string | null;
   licenseOrReusePolicy: string;
@@ -131,8 +137,14 @@ export interface V03PublicCitationProjection {
     after: string;
   };
   extractor: V03ExtractorIdentity;
-  extractedAt: string;
-  retrievedAt: string;
+  extractedAt: string | null;
+  retrievedAt: string | null;
+  recordingTimeVerified: boolean;
+  recordingTimeStatus:
+    | "verified_network_capture"
+    | "verified_database_admission"
+    | "unverified_legacy_recording_time"
+    | "synthetic_fixture_clock";
   sourcePublishedAt: string | null;
   sourceObservedAt: string | null;
   licenseOrReusePolicy: string;
@@ -290,6 +302,15 @@ export function toPublicCitationProjection(
     extractor: ref.extractor,
     extractedAt: ref.extractedAt,
     retrievedAt: ref.retrievedAt,
+    recordingTimeVerified:
+      ref.recordingTimeVerified ?? (ref.retrievedAt !== null && !ref.isSynthetic),
+    recordingTimeStatus:
+      ref.recordingTimeStatus ??
+      (ref.retrievedAt === null
+        ? "unverified_legacy_recording_time"
+        : ref.isSynthetic
+          ? "synthetic_fixture_clock"
+          : "verified_network_capture"),
     sourcePublishedAt: ref.sourcePublishedAt,
     sourceObservedAt: ref.sourceObservedAt,
     licenseOrReusePolicy: ref.licenseOrReusePolicy,

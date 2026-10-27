@@ -8,8 +8,11 @@ import { POST as postV03EvaluateRoute } from "@/app/api/v1/v03/evaluate/route";
 import { GET as getReceiptRoute } from "@/app/api/v1/receipts/[id]/route";
 import { POST as postReceiptReplayRoute } from "@/app/api/v1/receipts/[id]/replay/route";
 import {
+  ensureRuntimeStoreHydratedFromNeon,
   getV03RuntimeStore,
   setDccMachineV1RuntimeOverride,
+  sha256HexFull,
+  rfc8785Canonicalize,
 } from "@/lib/dcc/machine";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -37,9 +40,64 @@ function loadEnvLocal(): void {
   }
 }
 
+function summarizePersistedLedgerEvents(store: ReturnType<typeof getV03RuntimeStore>) {
+  const baseEvents = store.knowledgeLedger
+    .getAllEvents()
+    .filter((e) => !e.claimId.startsWith("shadow-outcome:"));
+  const legacySeed = baseEvents.find(
+    (e) => e.claimVersionId === "clmv:gosno:max-pax-per-shuttle:v1",
+  );
+  const withdrawalEvent = baseEvents.find(
+    (e) => e.claimVersionId === "clmv:gosno:max-pax-per-shuttle:v2-withdrawn",
+  );
+  assert.ok(legacySeed, "Legacy GoSno seed event must exist in ledger");
+  assert.equal(
+    legacySeed.recordedAt,
+    null,
+    "Uncertain legacy recording time must remain explicitly null (unverified)",
+  );
+  assert.equal(legacySeed.recordedAtVerified, false);
+  assert.equal(legacySeed.recordingTimeStatus, "unverified_legacy_recording_time");
+
+  assert.ok(withdrawalEvent, "Withdrawal event must exist in ledger");
+  assert.equal(withdrawalEvent.recordedAtVerified, true);
+  assert.equal(withdrawalEvent.recordingTimeStatus, "verified_database_admission");
+  assert.ok(
+    withdrawalEvent.recordedAt &&
+      Date.parse(withdrawalEvent.recordedAt) > Date.parse("2026-10-26T21:03:06.120Z"),
+    "Database admission timestamp must be strictly after supporting capture retrieval time",
+  );
+
+  const ledgerTimelineDigest = sha256HexFull(
+    rfc8785Canonicalize(
+      baseEvents.map((e) => ({
+        eventId: e.eventId,
+        eventHash: e.eventHash,
+        claimVersionId: e.claimVersionId,
+        recordedAt: e.recordedAt,
+        recordedAtVerified: e.recordedAtVerified,
+        recordingTimeStatus: e.recordingTimeStatus,
+      })),
+    ),
+  );
+
+  return {
+    baseEventCount: baseEvents.length,
+    ledgerTimelineDigest,
+    legacySeedRecordedAt: legacySeed.recordedAt,
+    legacySeedRecordingTimeStatus: legacySeed.recordingTimeStatus,
+    withdrawalRecordedAt: withdrawalEvent.recordedAt!,
+    withdrawalRecordingTimeStatus: withdrawalEvent.recordingTimeStatus,
+  };
+}
+
 async function runChildWriteStep() {
   loadEnvLocal();
   setDccMachineV1RuntimeOverride(true);
+
+  const store = getV03RuntimeStore();
+  await ensureRuntimeStoreHydratedFromNeon(store);
+  const ledgerSummary = summarizePersistedLedgerEvents(store);
 
   const evalReq = new Request(
     "https://www.destinationcommandcenter.com/api/v1/v03/evaluate",
@@ -71,6 +129,7 @@ async function runChildWriteStep() {
     originalResultHash: String(evalBody.evaluation.resultHash),
     originalTraceHash: String(evalBody.evaluation.traceHash),
     evaluationFingerprint: String(evalBody.evaluation.evaluationFingerprint),
+    ...ledgerSummary,
   };
   process.stdout.write(`__CHILD_JSON_START__${JSON.stringify(output)}__CHILD_JSON_END__\n`);
 }
@@ -87,6 +146,9 @@ async function runChildReadStep(receiptId: string) {
     "Fresh OS child process must start with zero in-memory receipts",
   );
   assert.equal(store.receiptsById.has(receiptId), false);
+
+  await ensureRuntimeStoreHydratedFromNeon(store);
+  const ledgerSummary = summarizePersistedLedgerEvents(store);
 
   const getRes = await getReceiptRoute(
     new Request(
@@ -105,6 +167,7 @@ async function runChildReadStep(receiptId: string) {
     retrievedReceiptId: String(getBody.receipt.receiptId),
     retrievedResultHash: String(getBody.receipt.payload.resultHash),
     retrievedTraceHash: String(getBody.receipt.payload.traceHash),
+    ...ledgerSummary,
   };
   process.stdout.write(`__CHILD_JSON_START__${JSON.stringify(output)}__CHILD_JSON_END__\n`);
 }
@@ -141,6 +204,8 @@ async function runChildReplayStep(
   assert.equal(replayBody.replay.replayResult.resultHash, expectedResultHash);
   assert.equal(replayBody.replay.replayResult.traceHash, expectedTraceHash);
 
+  const ledgerSummary = summarizePersistedLedgerEvents(store);
+
   const output = {
     step: "replay",
     pid: process.pid,
@@ -151,6 +216,7 @@ async function runChildReplayStep(
     matchesOriginalHashes: Boolean(replayBody.replay.matchesOriginalHashes),
     matchesOriginalReceipt: Boolean(replayBody.replay.matchesOriginalReceipt),
     jwsVerified: Boolean(replayBody.replay.jwsVerified),
+    ...ledgerSummary,
   };
   process.stdout.write(`__CHILD_JSON_START__${JSON.stringify(output)}__CHILD_JSON_END__\n`);
 }
@@ -187,6 +253,12 @@ export async function runLiveNeonPersistenceAndReplayProofV031() {
     originalResultHash: string;
     originalTraceHash: string;
     evaluationFingerprint: string;
+    baseEventCount: number;
+    ledgerTimelineDigest: string;
+    legacySeedRecordedAt: null;
+    legacySeedRecordingTimeStatus: string;
+    withdrawalRecordedAt: string;
+    withdrawalRecordingTimeStatus: string;
   }>(["--child-step=write"]);
 
   // 2. Spawn a genuinely separate OS Process B (fresh V8 heap, empty in-memory maps) to retrieve via GET /api/v1/receipts/[id]
@@ -197,6 +269,12 @@ export async function runLiveNeonPersistenceAndReplayProofV031() {
     retrievedReceiptId: string;
     retrievedResultHash: string;
     retrievedTraceHash: string;
+    baseEventCount: number;
+    ledgerTimelineDigest: string;
+    legacySeedRecordedAt: null;
+    legacySeedRecordingTimeStatus: string;
+    withdrawalRecordedAt: string;
+    withdrawalRecordingTimeStatus: string;
   }>(["--child-step=read", `--receipt-id=${writeResult.receiptId}`]);
 
   // 3. Spawn a third genuinely separate OS Process C (fresh V8 heap, empty in-memory maps) to replay via POST /api/v1/receipts/[id]/replay
@@ -210,6 +288,12 @@ export async function runLiveNeonPersistenceAndReplayProofV031() {
     matchesOriginalHashes: boolean;
     matchesOriginalReceipt: boolean;
     jwsVerified: boolean;
+    baseEventCount: number;
+    ledgerTimelineDigest: string;
+    legacySeedRecordedAt: null;
+    legacySeedRecordingTimeStatus: string;
+    withdrawalRecordedAt: string;
+    withdrawalRecordingTimeStatus: string;
   }>([
     "--child-step=replay",
     `--receipt-id=${writeResult.receiptId}`,
@@ -234,6 +318,25 @@ export async function runLiveNeonPersistenceAndReplayProofV031() {
   assert.equal(replayResult.matchesOriginalHashes, true);
   assert.equal(replayResult.matchesOriginalReceipt, true);
 
+  // Prove that persisted database admission timestamps reload identically across restarts with zero cold-start timestamp reassignment
+  assert.equal(
+    readResult.ledgerTimelineDigest,
+    writeResult.ledgerTimelineDigest,
+    "Reader process must reload identical persisted ledger recording timestamps from Neon without cold-start reassignment",
+  );
+  assert.equal(
+    replayResult.ledgerTimelineDigest,
+    writeResult.ledgerTimelineDigest,
+    "Replayer process must reload identical persisted ledger recording timestamps from Neon without cold-start reassignment",
+  );
+  assert.equal(readResult.withdrawalRecordedAt, writeResult.withdrawalRecordedAt);
+  assert.equal(replayResult.withdrawalRecordedAt, writeResult.withdrawalRecordedAt);
+  assert.equal(readResult.legacySeedRecordedAt, null);
+  assert.equal(
+    readResult.legacySeedRecordingTimeStatus,
+    "unverified_legacy_recording_time",
+  );
+
   return {
     verified: true,
     multiProcessIsolationVerified: true,
@@ -246,6 +349,15 @@ export async function runLiveNeonPersistenceAndReplayProofV031() {
       writeResult.pid !== readResult.pid &&
       writeResult.pid !== replayResult.pid &&
       readResult.pid !== replayResult.pid,
+    persistedTimestampReloadVerified: true,
+    noColdStartTimestampReassignment:
+      writeResult.ledgerTimelineDigest === readResult.ledgerTimelineDigest &&
+      writeResult.ledgerTimelineDigest === replayResult.ledgerTimelineDigest,
+    ledgerTimelineDigest: writeResult.ledgerTimelineDigest,
+    withdrawalRecordedAt: writeResult.withdrawalRecordedAt,
+    withdrawalRecordingTimeStatus: writeResult.withdrawalRecordingTimeStatus,
+    legacySeedRecordedAt: writeResult.legacySeedRecordedAt,
+    legacySeedRecordingTimeStatus: writeResult.legacySeedRecordingTimeStatus,
     receiptId: writeResult.receiptId,
     recommendedCandidateLegacyCode: writeResult.recommendedCandidateLegacyCode,
     originalResultHash: writeResult.originalResultHash,

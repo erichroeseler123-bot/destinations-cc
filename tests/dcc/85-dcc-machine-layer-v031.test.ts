@@ -618,11 +618,25 @@ test("v0.3.1 Gate 7: Repair Verification — Withdrawn GoSno Seed Containment, P
   assert.equal(replayJson.replay.matchesOriginalReceipt, true);
   assert.equal(replayJson.replay.replayedReceiptId, evalReceiptId);
 
-  // 5. Verify strict temporal causality: every ledger event has recordedAt >= retrievedAt (and withdrawal/ingestion >= 21:03Z captures)
-  for (const ev of store.knowledgeLedger.getAllEvents()) {
+  // 5. Verify database admission timestamps, unverified legacy recording time, and reload across restarts without cold-start reassignment
+  const allEventsBeforeRestart = store.knowledgeLedger.getAllEvents();
+  const legacySeedEv = allEventsBeforeRestart.find(
+    (e) => e.claimVersionId === "clmv:gosno:max-pax-per-shuttle:v1",
+  );
+  assert.ok(legacySeedEv);
+  assert.equal(legacySeedEv.recordedAt, null);
+  assert.equal(legacySeedEv.recordedAtVerified, false);
+  assert.equal(legacySeedEv.recordingTimeStatus, "unverified_legacy_recording_time");
+  assert.equal(legacySeedEv.claimDefinition?.retrievedAt, null);
+  assert.equal(legacySeedEv.claimDefinition?.sourceObservedAt, null);
+
+  for (const ev of allEventsBeforeRestart) {
+    if (ev.claimVersionId === "clmv:gosno:max-pax-per-shuttle:v1") continue;
+    assert.ok(ev.recordedAt, `Admitted event ${ev.claimVersionId} must have a persisted recordedAt`);
     const recMs = Date.parse(ev.recordedAt);
     assert.equal(Number.isNaN(recMs), false);
-    if (ev.claimDefinition) {
+    assert.equal(ev.recordedAtVerified, true);
+    if (ev.claimDefinition && ev.claimDefinition.retrievedAt) {
       const retMs = Date.parse(ev.claimDefinition.retrievedAt);
       assert.equal(
         recMs >= retMs,
@@ -630,19 +644,52 @@ test("v0.3.1 Gate 7: Repair Verification — Withdrawn GoSno Seed Containment, P
         `Event ${ev.claimVersionId} recordedAt (${ev.recordedAt}) must not precede retrievedAt (${ev.claimDefinition.retrievedAt})`,
       );
       for (const ref of ev.claimDefinition.evidenceRefs) {
-        assert.equal(
-          recMs >= Date.parse(ref.retrievedAt),
-          true,
-          `Event ${ev.claimVersionId} recordedAt (${ev.recordedAt}) must not precede evidenceRef retrievedAt (${ref.retrievedAt})`,
-        );
+        if (ref.retrievedAt) {
+          assert.equal(
+            recMs >= Date.parse(ref.retrievedAt),
+            true,
+            `Event ${ev.claimVersionId} recordedAt (${ev.recordedAt}) must not precede evidenceRef retrievedAt (${ref.retrievedAt})`,
+          );
+        }
       }
     }
   }
-  const withdrawalEv = store.knowledgeLedger
-    .getAllEvents()
-    .find((e) => e.claimVersionId === "clmv:gosno:max-pax-per-shuttle:v2-withdrawn");
+  const withdrawalEv = allEventsBeforeRestart.find(
+    (e) => e.claimVersionId === "clmv:gosno:max-pax-per-shuttle:v2-withdrawn",
+  );
   assert.ok(withdrawalEv);
-  assert.equal(withdrawalEv.recordedAt, "2026-10-26T21:15:00.000Z");
+  assert.equal(withdrawalEv.recordedAtVerified, true);
+  assert.equal(withdrawalEv.recordingTimeStatus, "verified_database_admission");
+  assert.ok(
+    withdrawalEv.recordedAt &&
+      Date.parse(withdrawalEv.recordedAt) > Date.parse("2026-10-26T21:03:06.120Z"),
+  );
+
+  // Simulate process restart (resetV03RuntimeStore) and verify identical recording timestamps reload without assigning new recording times on cold start
+  const snapshotTimestampsBefore = allEventsBeforeRestart
+    .filter((e) => !e.claimId.startsWith("shadow-outcome:"))
+    .map((e) => ({
+      eventId: e.eventId,
+      eventHash: e.eventHash,
+      recordedAt: e.recordedAt,
+      recordingTimeStatus: e.recordingTimeStatus,
+    }));
+  resetV03RuntimeStore();
+  const restartedStore = getV03RuntimeStore();
+  const snapshotTimestampsAfter = restartedStore.knowledgeLedger
+    .getAllEvents()
+    .filter((e) => !e.claimId.startsWith("shadow-outcome:"))
+    .map((e) => ({
+      eventId: e.eventId,
+      eventHash: e.eventHash,
+      recordedAt: e.recordedAt,
+      recordingTimeStatus: e.recordingTimeStatus,
+    }));
+  assert.deepEqual(
+    snapshotTimestampsAfter,
+    snapshotTimestampsBefore,
+    "Restarting runtime store must reload the exact persisted admission timestamps and never assign new recording times on cold start",
+  );
 
   // 6. Verify public Git data/machine/v03 contains only permitted metadata + bounded excerpts and zero raw capture bodies
   assert.equal(
@@ -657,6 +704,56 @@ test("v0.3.1 Gate 7: Repair Verification — Withdrawn GoSno Seed Containment, P
   assert.equal(pubMetaRaw.includes("rawBodyUtf8"), false);
   assert.equal(pubMetaRaw.includes("rawBodyBase64"), false);
   assert.equal(pubMetaRaw.includes("derivedTextUtf8"), false);
+
+  // 7. Verify provenance checks all relevant build inputs and reports "unknown" (never "clean") when source inspection is unavailable
+  const liveProv = getDeploymentProvenanceV03();
+  assert.ok(liveProv.buildInputsInspection);
+  for (const requiredInput of [
+    "package.json",
+    "package-lock.json",
+    "tsconfig.json",
+    "next.config.mjs",
+    "drizzle.config.ts",
+    "vercel.json",
+    "drizzle",
+    "scripts",
+    "app",
+    "lib",
+  ]) {
+    assert.equal(
+      liveProv.buildInputsInspection.checkedBuildInputs.includes(requiredInput),
+      true,
+      `Provenance must inspect build input: ${requiredInput}`,
+    );
+  }
+  assert.equal(liveProv.buildInputsInspection.rootConfigSha256.length, 64);
+  assert.equal(liveProv.buildInputsInspection.dependencyLockSha256.length, 64);
+  assert.equal(liveProv.buildInputsInspection.migrationsSha256.length, 64);
+  assert.equal(liveProv.buildInputsInspection.scriptsSha256.length, 64);
+
+  // Simulate an environment where source inspection is unavailable and no build-time git status env was injected
+  const savedDirtyEnv = process.env.DCC_BUILD_DIRTY_STATUS;
+  const savedSourceInspEnv = process.env.DCC_BUILD_SOURCE_INSPECTION_AVAILABLE;
+  delete process.env.DCC_BUILD_DIRTY_STATUS;
+  delete process.env.DCC_BUILD_SOURCE_INSPECTION_AVAILABLE;
+  try {
+    const uninspectedDir = fs.mkdtempSync(path.join(process.env.TEMP ?? "/tmp", "dcc-no-git-"));
+    const unknownProv = getDeploymentProvenanceV03({ cwd: uninspectedDir });
+    assert.equal(
+      unknownProv.dirtySourceStatus,
+      "unknown",
+      'When source inspection is unavailable, dirtySourceStatus must report "unknown", never "clean"',
+    );
+    assert.equal(unknownProv.buildInputsInspection.sourceInspectionAvailable, false);
+    assert.equal(unknownProv.buildInputsInspection.dirtySourceStatus, "unknown");
+    fs.rmSync(uninspectedDir, { recursive: true, force: true });
+  } finally {
+    if (savedDirtyEnv !== undefined) process.env.DCC_BUILD_DIRTY_STATUS = savedDirtyEnv;
+    if (savedSourceInspEnv !== undefined) {
+      process.env.DCC_BUILD_SOURCE_INSPECTION_AVAILABLE = savedSourceInspEnv;
+    }
+  }
 });
+
 
 

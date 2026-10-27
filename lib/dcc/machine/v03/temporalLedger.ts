@@ -59,6 +59,12 @@ export type KnowledgeEventType =
   | "reseller_conflict_recorded"
   | "shadow_authorization_dry_run_recorded";
 
+export type V03RecordingTimeStatus =
+  | "verified_database_admission"
+  | "verified_server_admission"
+  | "unverified_legacy_recording_time"
+  | "synthetic_fixture_clock";
+
 export interface V03ClaimDefinition {
   claimId: string;
   claimVersionId: string;
@@ -72,7 +78,7 @@ export interface V03ClaimDefinition {
   validTo: string | null;
   sourceObservedAt: string | null;
   sourcePublishedAt: string | null;
-  retrievedAt: string;
+  retrievedAt: string | null;
   freshnessTtlSeconds: number;
   sourceAuthority: V03SourceAuthority;
   evidenceRefs: V03EvidenceReference[];
@@ -85,7 +91,9 @@ export interface V03KnowledgeEvent {
   readonly claimId: string;
   readonly claimVersionId: string;
   readonly targetPreviousVersionId: string | null;
-  readonly recordedAt: string;
+  readonly recordedAt: string | null;
+  readonly recordedAtVerified?: boolean;
+  readonly recordingTimeStatus?: V03RecordingTimeStatus;
   readonly actorId: string;
   readonly isSynthetic: boolean;
   readonly provenanceClass:
@@ -117,8 +125,10 @@ export interface V03ProjectedClaimState {
   validTo: string | null;
   sourceObservedAt: string | null;
   sourcePublishedAt: string | null;
-  retrievedAt: string;
-  recordedAt: string;
+  retrievedAt: string | null;
+  recordedAt: string | null;
+  recordedAtVerified: boolean;
+  recordingTimeStatus: V03RecordingTimeStatus;
   freshnessTtlSeconds: number;
   sourceAuthority: V03SourceAuthority;
   evidenceRefs: V03EvidenceReference[];
@@ -202,7 +212,9 @@ export class AppendOnlyKnowledgeLedger {
     claimId: string;
     claimVersionId: string;
     targetPreviousVersionId?: string | null;
-    recordedAt: string;
+    recordedAt: string | null;
+    recordedAtVerified?: boolean;
+    recordingTimeStatus?: V03RecordingTimeStatus;
     actorId: string;
     isSynthetic?: boolean;
     provenanceClass?: V03KnowledgeEvent["provenanceClass"];
@@ -217,6 +229,69 @@ export class AppendOnlyKnowledgeLedger {
       params.provenanceClass ??
       (isSynthetic ? "synthetic_test_fixture" : "operational_evidence");
 
+    const isUnverifiedLegacy =
+      params.recordingTimeStatus === "unverified_legacy_recording_time" ||
+      params.recordedAtVerified === false ||
+      params.recordedAt === null;
+
+    const recordedAtVerified = isUnverifiedLegacy
+      ? false
+      : (params.recordedAtVerified ?? true);
+    const recordingTimeStatus: V03RecordingTimeStatus =
+      params.recordingTimeStatus ??
+      (isUnverifiedLegacy
+        ? "unverified_legacy_recording_time"
+        : isSynthetic
+          ? "synthetic_fixture_clock"
+          : "verified_database_admission");
+
+    if (params.recordedAt === null) {
+      if (!isUnverifiedLegacy) {
+        throw new AppendOnlyLedgerMutationError(
+          `TEMPORAL_CAUSALITY_VIOLATION: recordedAt cannot be null unless recordingTimeStatus is "unverified_legacy_recording_time".`,
+        );
+      }
+    } else {
+      const recordedAtMs = Date.parse(params.recordedAt);
+      if (Number.isNaN(recordedAtMs)) {
+        throw new AppendOnlyLedgerMutationError(
+          `TEMPORAL_CAUSALITY_VIOLATION: Invalid recordedAt timestamp "${params.recordedAt}".`,
+        );
+      }
+      if (params.claimDefinition) {
+        const retrievedAtMs = params.claimDefinition.retrievedAt
+          ? Date.parse(params.claimDefinition.retrievedAt)
+          : Number.NaN;
+        if (!Number.isNaN(retrievedAtMs) && recordedAtMs < retrievedAtMs) {
+          throw new AppendOnlyLedgerMutationError(
+            `TEMPORAL_CAUSALITY_VIOLATION: Event recordedAt (${params.recordedAt}) cannot precede claim retrievedAt (${params.claimDefinition.retrievedAt}) for claim ${params.claimId}.`,
+          );
+        }
+        for (const evRef of params.claimDefinition.evidenceRefs ?? []) {
+          const refRetrievedMs = evRef.retrievedAt ? Date.parse(evRef.retrievedAt) : Number.NaN;
+          if (!Number.isNaN(refRetrievedMs) && recordedAtMs < refRetrievedMs) {
+            throw new AppendOnlyLedgerMutationError(
+              `TEMPORAL_CAUSALITY_VIOLATION: Event recordedAt (${params.recordedAt}) cannot precede supporting evidenceRef retrievedAt (${evRef.retrievedAt}) for ${evRef.evidenceRefId}.`,
+            );
+          }
+        }
+      }
+      if (params.targetPreviousVersionId) {
+        const prevVerEvent = this.events.find(
+          (e) => e.claimVersionId === params.targetPreviousVersionId,
+        );
+        if (
+          prevVerEvent &&
+          prevVerEvent.recordedAt !== null &&
+          recordedAtMs < Date.parse(prevVerEvent.recordedAt)
+        ) {
+          throw new AppendOnlyLedgerMutationError(
+            `TEMPORAL_CAUSALITY_VIOLATION: Event recordedAt (${params.recordedAt}) cannot precede targetPreviousVersionId recordedAt (${prevVerEvent.recordedAt}) for ${params.targetPreviousVersionId}.`,
+          );
+        }
+      }
+    }
+
     const seedCore = rfc8785Canonicalize({
       eventSeq,
       eventType: params.eventType,
@@ -229,39 +304,6 @@ export class AppendOnlyKnowledgeLedger {
     const normalizedDef = params.claimDefinition
       ? (JSON.parse(JSON.stringify(params.claimDefinition)) as V03ClaimDefinition)
       : null;
-
-    const recordedAtMs = Date.parse(params.recordedAt);
-    if (Number.isNaN(recordedAtMs)) {
-      throw new AppendOnlyLedgerMutationError(
-        `TEMPORAL_CAUSALITY_VIOLATION: Invalid recordedAt timestamp "${params.recordedAt}".`,
-      );
-    }
-    if (normalizedDef) {
-      const retrievedAtMs = Date.parse(normalizedDef.retrievedAt);
-      if (!Number.isNaN(retrievedAtMs) && recordedAtMs < retrievedAtMs) {
-        throw new AppendOnlyLedgerMutationError(
-          `TEMPORAL_CAUSALITY_VIOLATION: Event recordedAt (${params.recordedAt}) cannot precede claim retrievedAt (${normalizedDef.retrievedAt}) for claim ${params.claimId}.`,
-        );
-      }
-      for (const evRef of normalizedDef.evidenceRefs ?? []) {
-        const refRetrievedMs = Date.parse(evRef.retrievedAt);
-        if (!Number.isNaN(refRetrievedMs) && recordedAtMs < refRetrievedMs) {
-          throw new AppendOnlyLedgerMutationError(
-            `TEMPORAL_CAUSALITY_VIOLATION: Event recordedAt (${params.recordedAt}) cannot precede supporting evidenceRef retrievedAt (${evRef.retrievedAt}) for ${evRef.evidenceRefId}.`,
-          );
-        }
-      }
-    }
-    if (params.targetPreviousVersionId) {
-      const prevVerEvent = this.events.find(
-        (e) => e.claimVersionId === params.targetPreviousVersionId,
-      );
-      if (prevVerEvent && recordedAtMs < Date.parse(prevVerEvent.recordedAt)) {
-        throw new AppendOnlyLedgerMutationError(
-          `TEMPORAL_CAUSALITY_VIOLATION: Event recordedAt (${params.recordedAt}) cannot precede targetPreviousVersionId recordedAt (${prevVerEvent.recordedAt}) for ${params.targetPreviousVersionId}.`,
-        );
-      }
-    }
 
     const hashCore = rfc8785Canonicalize({
       eventSeq,
@@ -291,6 +333,8 @@ export class AppendOnlyKnowledgeLedger {
       claimVersionId: params.claimVersionId,
       targetPreviousVersionId: params.targetPreviousVersionId ?? null,
       recordedAt: params.recordedAt,
+      recordedAtVerified,
+      recordingTimeStatus,
       actorId: params.actorId,
       isSynthetic,
       provenanceClass,
@@ -379,7 +423,8 @@ export class AppendOnlyKnowledgeLedger {
 
   /**
    * Rebuilds the complete claim projection from scratch using ONLY events with
-   * `recordedAt <= knowledgeCutoffIso`, and evaluates world applicability at `validAtIso`.
+   * `recordedAt <= knowledgeCutoffIso` (or legacy pre-cutoff seeds with `recordedAt === null`
+   * whose `validFrom <= knowledgeCutoffIso`), and evaluates world applicability at `validAtIso`.
    *
    * Zero historical events are ever mutated!
    */
@@ -401,7 +446,10 @@ export class AppendOnlyKnowledgeLedger {
     let eventsAppliedCount = 0;
 
     for (const ev of this.events) {
-      const recMs = Date.parse(ev.recordedAt);
+      const recMs =
+        ev.recordedAt !== null
+          ? Date.parse(ev.recordedAt)
+          : Date.parse(ev.claimDefinition?.validFrom ?? "1970-01-01T00:00:00.000Z");
       if (recMs > cutoffMs) {
         continue;
       }
@@ -445,6 +493,16 @@ export class AppendOnlyKnowledgeLedger {
           existing.latestMutatingEventId = ev.eventId;
           existing.latestMutatingEventHash = ev.eventHash;
         } else {
+          const recordedAtVerified =
+            ev.recordedAtVerified ?? (ev.recordedAt !== null);
+          const recordingTimeStatus: V03RecordingTimeStatus =
+            ev.recordingTimeStatus ??
+            (ev.recordedAt === null
+              ? "unverified_legacy_recording_time"
+              : ev.isSynthetic
+                ? "synthetic_fixture_clock"
+                : "verified_database_admission");
+
           versionsByVersionId.set(def.claimVersionId, {
             claimId: def.claimId,
             claimVersionId: def.claimVersionId,
@@ -464,6 +522,8 @@ export class AppendOnlyKnowledgeLedger {
             sourcePublishedAt: def.sourcePublishedAt,
             retrievedAt: def.retrievedAt,
             recordedAt: ev.recordedAt,
+            recordedAtVerified,
+            recordingTimeStatus,
             freshnessTtlSeconds: def.freshnessTtlSeconds,
             sourceAuthority: {
               ...def.sourceAuthority,
@@ -538,6 +598,7 @@ export class AppendOnlyKnowledgeLedger {
         validFrom: v.validFrom,
         validTo: v.validTo,
         retrievedAt: v.retrievedAt,
+        recordedAtVerified: v.recordedAtVerified,
         freshnessTtlSeconds: v.freshnessTtlSeconds,
         validAtIso: params.validAtIso,
         knowledgeCutoffIso: params.knowledgeCutoffIso,
@@ -570,7 +631,11 @@ export class AppendOnlyKnowledgeLedger {
         (v) => v.lifecycleState === "active" || v.lifecycleState === "withdrawn",
       );
       const selectedPool = activePool.length > 0 ? activePool : pool;
-      selectedPool.sort((a, b) => Date.parse(b.recordedAt) - Date.parse(a.recordedAt));
+      selectedPool.sort((a, b) => {
+        const recB = b.recordedAt ? Date.parse(b.recordedAt) : 0;
+        const recA = a.recordedAt ? Date.parse(a.recordedAt) : 0;
+        return recB - recA;
+      });
       effectiveClaimByClaimId.set(claimId, selectedPool[0]!);
     }
 

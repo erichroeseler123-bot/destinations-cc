@@ -137,12 +137,99 @@ export function getV03SchemaHashes(): Record<string, string> {
   return out;
 }
 
+export const V03_CHECKED_BUILD_INPUT_PATHS = [
+  "package.json",
+  "package-lock.json",
+  "tsconfig.json",
+  "next.config.mjs",
+  "drizzle.config.ts",
+  "vercel.json",
+  "postcss.config.js",
+  "tailwind.config.js",
+  "eslint.config.mjs",
+  ".eslintrc.json",
+  ".npmrc",
+  ".nvmrc",
+  "proxy.ts",
+  "city-aliases.ts",
+  "canonicalize.mjs",
+  "validate.mjs",
+  "verify.mjs",
+  "drizzle",
+  "scripts",
+  "app",
+  "components",
+  "config",
+  "data",
+  "lib",
+  "src",
+  "types",
+  "utils",
+  "workflows",
+  "public",
+  "styles",
+  "tests",
+] as const;
+
+const ROOT_CONFIG_INPUT_FILES = [
+  "package.json",
+  "tsconfig.json",
+  "next.config.mjs",
+  "drizzle.config.ts",
+  "vercel.json",
+  "postcss.config.js",
+  "tailwind.config.js",
+  "eslint.config.mjs",
+  ".eslintrc.json",
+  ".npmrc",
+  ".nvmrc",
+  "proxy.ts",
+  "city-aliases.ts",
+  "canonicalize.mjs",
+  "validate.mjs",
+  "verify.mjs",
+] as const;
+
+function hashFilesDeterministic(baseDir: string, relPaths: readonly string[]): string {
+  const pieces: string[] = [];
+  for (const rel of [...relPaths].sort()) {
+    const full = path.join(baseDir, rel);
+    if (fs.existsSync(full) && fs.statSync(full).isFile()) {
+      const fileDigest = sha256HexFull(fs.readFileSync(full));
+      pieces.push(`${rel}:${fileDigest}`);
+    }
+  }
+  return pieces.length > 0 ? sha256HexFull(pieces.join("\n")) : "unavailable_in_packaged_runtime";
+}
+
+function listFilesRecursiveRel(baseDir: string, subDir: string): string[] {
+  const target = path.join(baseDir, subDir);
+  if (!fs.existsSync(target) || !fs.statSync(target).isDirectory()) return [];
+  const results: string[] = [];
+  const walk = (dir: string) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(full);
+      } else if (entry.isFile()) {
+        results.push(path.relative(baseDir, full).replace(/\\/g, "/"));
+      }
+    }
+  };
+  walk(target);
+  return results;
+}
+
 /**
  * Generates non-self-referential build and runtime deployment provenance tied directly
  * to the actual source commit (`VERCEL_GIT_COMMIT_SHA` or `git rev-parse HEAD`),
- * working tree cleanliness, `package-lock.json` hash, runtime versions, and schema hashes.
+ * working tree cleanliness across all relevant build inputs (root configuration,
+ * dependency files, scripts, migrations, and source directories), `package-lock.json` hash,
+ * runtime versions, and schema hashes. Reports `"unknown"` (never `"clean"`) if source
+ * inspection is unavailable.
  */
-export function getDeploymentProvenanceV03() {
+export function getDeploymentProvenanceV03(options?: { cwd?: string }) {
+  const inspectCwd = options?.cwd ?? process.cwd();
   let sourceCommitSha =
     process.env.VERCEL_GIT_COMMIT_SHA?.trim() ||
     process.env.DCC_BUILD_GIT_COMMIT?.trim() ||
@@ -153,14 +240,21 @@ export function getDeploymentProvenanceV03() {
     process.env.DCC_BUILD_GIT_BRANCH?.trim() ||
     process.env.GITHUB_REF_NAME?.trim() ||
     "unknown";
-  let workingTreeState: "clean" | "dirty" | "serverless_packaged" =
-    (process.env.DCC_BUILD_DIRTY_STATUS?.trim() as "clean" | "dirty") ||
-    "serverless_packaged";
 
-  if (!process.env.VERCEL_ENV) {
+  const envDirtyRaw = process.env.DCC_BUILD_DIRTY_STATUS?.trim();
+  const envSourceInspected =
+    process.env.DCC_BUILD_SOURCE_INSPECTION_AVAILABLE?.trim() !== "false" &&
+    (envDirtyRaw === "clean" || envDirtyRaw === "dirty");
+
+  let workingTreeState: "clean" | "dirty" | "unknown" = envSourceInspected
+    ? (envDirtyRaw as "clean" | "dirty")
+    : "unknown";
+  let sourceInspectionAvailable = envSourceInspected;
+
+  if (!process.env.VERCEL_ENV || options?.cwd) {
     try {
       const liveHead = execSync("git rev-parse HEAD", {
-        cwd: process.cwd(),
+        cwd: inspectCwd,
         encoding: "utf8",
         stdio: ["ignore", "pipe", "ignore"],
       }).trim();
@@ -168,17 +262,23 @@ export function getDeploymentProvenanceV03() {
         sourceCommitSha = liveHead;
       }
       const liveBranch = execSync("git rev-parse --abbrev-ref HEAD", {
-        cwd: process.cwd(),
+        cwd: inspectCwd,
         encoding: "utf8",
         stdio: ["ignore", "pipe", "ignore"],
       }).trim();
       if (liveBranch) {
         branchName = liveBranch;
       }
+      const existingBuildInputs = V03_CHECKED_BUILD_INPUT_PATHS.filter((relPath) =>
+        fs.existsSync(path.join(inspectCwd, relPath)),
+      );
+      if (existingBuildInputs.length === 0) {
+        throw new Error("No build inputs found in inspection directory");
+      }
       const statusLines = execSync(
-        "git status --porcelain --untracked-files=no -- app components config data lib src types utils workflows",
+        `git status --porcelain --untracked-files=no -- ${existingBuildInputs.join(" ")}`,
         {
-          cwd: process.cwd(),
+          cwd: inspectCwd,
           encoding: "utf8",
           stdio: ["ignore", "pipe", "ignore"],
         },
@@ -193,21 +293,56 @@ export function getDeploymentProvenanceV03() {
             ),
         );
       workingTreeState = statusLines.length === 0 ? "clean" : "dirty";
+      sourceInspectionAvailable = true;
     } catch {
-      // Packaged serverless container without .git — uses baked DCC_BUILD_* values
+      if (!envSourceInspected || options?.cwd) {
+        workingTreeState = "unknown";
+        sourceInspectionAvailable = false;
+      }
     }
   }
 
   let dependencyLockSha256 =
     process.env.DCC_BUILD_LOCK_HASH?.trim() || "unavailable_in_packaged_runtime";
+  let rootConfigSha256 =
+    process.env.DCC_BUILD_ROOT_CONFIG_HASH?.trim() || "unavailable_in_packaged_runtime";
+  let migrationsSha256 =
+    process.env.DCC_BUILD_MIGRATIONS_HASH?.trim() || "unavailable_in_packaged_runtime";
+  let scriptsSha256 =
+    process.env.DCC_BUILD_SCRIPTS_HASH?.trim() || "unavailable_in_packaged_runtime";
+
   try {
-    const lockPath = path.join(process.cwd(), "package-lock.json");
+    const lockPath = path.join(inspectCwd, "package-lock.json");
     if (fs.existsSync(lockPath)) {
       dependencyLockSha256 = sha256HexFull(fs.readFileSync(lockPath));
+    }
+    const computedRootConfig = hashFilesDeterministic(inspectCwd, ROOT_CONFIG_INPUT_FILES);
+    if (computedRootConfig !== "unavailable_in_packaged_runtime") {
+      rootConfigSha256 = computedRootConfig;
+    }
+    const computedMigrations = hashFilesDeterministic(
+      inspectCwd,
+      listFilesRecursiveRel(inspectCwd, "drizzle"),
+    );
+    if (computedMigrations !== "unavailable_in_packaged_runtime") {
+      migrationsSha256 = computedMigrations;
+    }
+    const computedScripts = hashFilesDeterministic(
+      inspectCwd,
+      listFilesRecursiveRel(inspectCwd, "scripts/dcc"),
+    );
+    if (computedScripts !== "unavailable_in_packaged_runtime") {
+      scriptsSha256 = computedScripts;
     }
   } catch {
     // ignore
   }
+
+  const checkedBuildInputs = (
+    process.env.DCC_BUILD_CHECKED_INPUTS?.trim()
+      ? process.env.DCC_BUILD_CHECKED_INPUTS.trim().split(",")
+      : [...V03_CHECKED_BUILD_INPUT_PATHS]
+  ).filter(Boolean);
 
   const schemaHashes = getV03SchemaHashes();
   const aggregateSchemaHash = sha256HexFull(rfc8785Canonicalize(schemaHashes));
@@ -231,11 +366,15 @@ export function getDeploymentProvenanceV03() {
     vercelEnv: deploymentEnvironment,
     vercelDeploymentId,
     dependencyLockHash: dependencyLockSha256,
+    rootConfigHash: rootConfigSha256,
+    migrationsHash: migrationsSha256,
+    scriptsHash: scriptsSha256,
     schemaHash: aggregateSchemaHash,
     compilerVersion: "dcc-ir-compiler/0.3.1",
     runtimeVersion: `node/${process.version}`,
     deploymentEnvironment,
-    dirtySourceStatus: workingTreeState === "dirty" ? "dirty" : "clean",
+    dirtySourceStatus: workingTreeState,
+    sourceInspectionAvailable,
     buildTime,
     generatedAt: new Date().toISOString(),
     sourceControl: {
@@ -243,9 +382,21 @@ export function getDeploymentProvenanceV03() {
       branchName,
       gitProvider,
       workingTreeState,
+      sourceInspectionAvailable,
+      checkedBuildInputs,
       v01FreezeCommitSha: "9272c6b207f0242f7b217944551a9d76e0beb3d5",
       v02CompletedHeadCommitSha: "3016a030fba23457d2795d4374a1d8393aa59b3e",
       v03MechanicsMilestoneCommitSha: "3c85898f6d93eb6cb2987e2d65816b692754e8c6",
+    },
+    buildInputsInspection: {
+      sourceInspectionAvailable,
+      dirtySourceStatus: workingTreeState,
+      checkedBuildInputs,
+      rootConfigSha256,
+      dependencyLockSha256,
+      migrationsSha256,
+      scriptsSha256,
+      schemaSha256: aggregateSchemaHash,
     },
     dependencyLockSha256,
     runtimeVersions: {
