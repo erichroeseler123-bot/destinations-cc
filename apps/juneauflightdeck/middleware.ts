@@ -46,6 +46,7 @@ export async function middleware(request: NextRequest) {
       searchParams.get("dcc_ctx")?.trim() ||
       "";
     if (rawCtx.startsWith("dcc_ctx_")) {
+      const redeemResult = await redeemOpaqueContextEdge(rawCtx);
       const cleanUrl = request.nextUrl.clone();
       for (const param of [
         "ctx",
@@ -73,6 +74,12 @@ export async function middleware(request: NextRequest) {
       }
 
       const redirectRes = NextResponse.redirect(cleanUrl, 302);
+      if (!redeemResult.success) {
+        redirectRes.headers.set("x-dcc-ctx-redemption", "failed");
+        redirectRes.headers.set("x-dcc-ctx-error", redeemResult.errorCode || "REDEMPTION_FAILED");
+        return redirectRes;
+      }
+
       redirectRes.cookies.set(JFD_CHECKOUT_COOKIE_NAME, rawCtx, {
         httpOnly: true,
         secure: true,
@@ -80,6 +87,7 @@ export async function middleware(request: NextRequest) {
         path: "/",
         maxAge: 60 * 60 * 24,
       });
+      redirectRes.headers.set("x-dcc-ctx-redemption", "redeemed");
       return redirectRes;
     }
   }

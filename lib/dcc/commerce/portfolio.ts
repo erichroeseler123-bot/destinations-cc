@@ -264,9 +264,7 @@ export async function executePortfolioCrossSiteJourney(params: {
         travelers: partySize,
         shipOrVenue: params.shipOrVenue || "norwegian-bliss",
       },
-      safetyOverride: {
-        bufferMinutes: 120,
-      },
+      additionalPreferenceBufferMinutes: 30,
     });
 
     const inboundEntryUrlWithToken = `https://juneauflightdeck.com/calculator?ctx=${encodeURIComponent(issued.contextId)}`;
@@ -537,9 +535,7 @@ export async function executePortfolioCrossSiteJourney(params: {
         travelers: partySize,
         shipOrVenue: params.shipOrVenue || "DEN-to-Vail-Resort",
       },
-      safetyOverride: {
-        bufferMinutes: 90,
-      },
+      additionalPreferenceBufferMinutes: 30,
     });
 
     const inboundEntryUrlWithToken = `https://gosno.co/concierge/${encodeURIComponent(partnerId)}?ctx=${encodeURIComponent(issued.contextId)}`;
@@ -605,7 +601,7 @@ export async function executePortfolioCrossSiteJourney(params: {
     FEASTLY_SPREAD_MARKETS.find((m) => m.slug === marketSlug) ||
     FEASTLY_SPREAD_MARKETS[0];
   const feastlyBookingAuthority =
-    marketEntry.status === "active_market" ? "request_only" : "inquiry_only";
+    marketEntry.status === "existing_booking_path" ? "request_only" : "inquiry_only";
 
   const issued = await issueContext({
     sourceSite: "brinkberry.com",
@@ -633,12 +629,12 @@ export async function executePortfolioCrossSiteJourney(params: {
     targetSite: "feastlyspread.com",
     provider: "direct",
     productCode:
-      marketEntry.status === "active_market"
-        ? `FEASTLY_ACTIVE_${marketEntry.slug.toUpperCase().replace(/-/g, "_")}`
+      marketEntry.status === "existing_booking_path"
+        ? `FEASTLY_EXISTING_PATH_${marketEntry.slug.toUpperCase().replace(/-/g, "_")}`
         : `FEASTLY_COVERAGE_REQUEST_${marketEntry.slug.toUpperCase().replace(/-/g, "_")}`,
     productTitle:
-      marketEntry.status === "active_market"
-        ? `FeastlySpread Active Group Catering (${marketEntry.name}, ${marketEntry.state})`
+      marketEntry.status === "existing_booking_path"
+        ? `FeastlySpread Existing Booking Path Group Catering (${marketEntry.name}, ${marketEntry.state})`
         : `FeastlySpread Market Coverage Request (${marketEntry.name}, ${marketEntry.state})`,
     productDestinationUrl: cleanRedirectUrlAfterRedemption,
     campaign: `pm-to-feastly-${marketEntry.status}`,

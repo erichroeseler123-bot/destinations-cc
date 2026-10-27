@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyServiceRequestHeaders } from "@/lib/dcc/auth/hmac-service-auth";
-import { redeemContext } from "@/lib/dcc/context/service";
-import { DCC_CANONICAL_OWNERS } from "@/lib/dcc/context/registry";
+import { redeemContext, type DccContextReplayPolicy } from "@/lib/dcc/context/service";
+import { resolveCanonicalOwner } from "@/lib/dcc/context/registry";
 
 export const runtime = "nodejs";
 
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest, context: RouteParams) {
     );
   }
 
-  // 3. Resolve Claiming Owner
+  // 3. Resolve Claiming Owner (including alias-to-canonical matching)
   const claimingOwner =
     bodyJson.owner ||
     bodyJson.claimingOwner ||
@@ -105,7 +105,8 @@ export async function POST(request: NextRequest, context: RouteParams) {
     );
   }
 
-  if (!(claimingOwner in DCC_CANONICAL_OWNERS)) {
+  const resolvedOwner = resolveCanonicalOwner(claimingOwner);
+  if (!resolvedOwner) {
     return withCors(
       NextResponse.json(
         {
@@ -118,8 +119,20 @@ export async function POST(request: NextRequest, context: RouteParams) {
     );
   }
 
+  const replayPolicy: DccContextReplayPolicy =
+    bodyJson.replayPolicy === "strict_single_use"
+      ? "strict_single_use"
+      : "same_owner_idempotent_within_ttl";
+
+  const disabledOwners = Array.isArray(bodyJson.disabledOwners)
+    ? bodyJson.disabledOwners.filter((x: unknown): x is string => typeof x === "string")
+    : undefined;
+
   // 4. Atomic Database Redemption
-  const result = await redeemContext(contextId, claimingOwner);
+  const result = await redeemContext(contextId, claimingOwner, {
+    replayPolicy,
+    disabledOwners,
+  });
 
   if (!result.success) {
     return withCors(

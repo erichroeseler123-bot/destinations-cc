@@ -177,6 +177,12 @@ export async function POST(request: Request) {
     evaluationRunId:
       typeof body.evaluationRunId === "string" ? body.evaluationRunId : null,
     receiptId: typeof body.receiptId === "string" ? body.receiptId : null,
+    idempotencyKey:
+      typeof body.idempotencyKey === "string"
+        ? body.idempotencyKey
+        : typeof body.idempotency_key === "string"
+          ? body.idempotency_key
+          : null,
     intendedDate: typeof body.intendedDate === "string" ? body.intendedDate : null,
     intendedOption:
       typeof body.intendedOption === "string" ? body.intendedOption : null,
@@ -221,11 +227,12 @@ export async function POST(request: Request) {
       ok: true,
       client_id: callerClientId,
       handoff_id: record.handoffId,
+      duplicateSubmission: Boolean(record.duplicateSubmission),
       handoff: record,
       traceparent,
     },
     {
-      status: 201,
+      status: record.duplicateSubmission ? 200 : 201,
       cacheControl: "no-store",
       extraHeaders: {
         traceparent,

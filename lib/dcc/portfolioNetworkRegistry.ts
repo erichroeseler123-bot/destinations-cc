@@ -127,9 +127,9 @@ export interface DccSiteManifestV1 {
     exposes_commission_terms: false;
   };
   market_coverage?: {
-    active_markets_count: number;
+    existing_booking_path_markets_count: number;
     coverage_request_markets_count: number;
-    active_markets: readonly string[];
+    existing_booking_path_markets: readonly string[];
     coverage_request_markets: readonly string[];
   };
 }
@@ -174,16 +174,16 @@ export interface FeastlySpreadMarketDefinition {
   slug: string;
   name: string;
   state: string;
-  status: "active_market" | "coverage_request_market";
+  status: "existing_booking_path" | "coverage_request_market";
   checkoutPath: string;
-  acceptsLivePackageOrders: boolean;
+  hasExistingBookingPath: boolean;
   requiresCoverageInquiryOnly: boolean;
   disclosure: string;
 }
 
 /**
  * Feastly Spread 18-Location Catalog:
- * - 2 Active Markets (`wisconsin-dells`, `door-county`) with live package ordering (`/book?market=<slug>`)
+ * - 2 Existing Booking Path Markets (`wisconsin-dells`, `door-county`) with existing booking paths (`/book?market=<slug>`)
  * - 16 Coverage-Request Markets with explicit coverage-request/inquiry routing (never implying live checkout or confirmed fulfillment)
  */
 export const FEASTLY_SPREAD_MARKETS: readonly FeastlySpreadMarketDefinition[] = [
@@ -191,23 +191,23 @@ export const FEASTLY_SPREAD_MARKETS: readonly FeastlySpreadMarketDefinition[] = 
     slug: "wisconsin-dells",
     name: "Wisconsin Dells, WI",
     state: "WI",
-    status: "active_market",
+    status: "existing_booking_path",
     checkoutPath: "/book?market=wisconsin-dells",
-    acceptsLivePackageOrders: true,
+    hasExistingBookingPath: true,
     requiresCoverageInquiryOnly: false,
     disclosure:
-      "Active market: FeastlySpread offers published group catering packages for Wisconsin Dells vacation rentals with explicit traveler checkout confirmation.",
+      "Existing booking path: FeastlySpread offers a published group catering booking path for Wisconsin Dells vacation rentals with explicit traveler confirmation.",
   },
   {
     slug: "door-county",
     name: "Door County, WI",
     state: "WI",
-    status: "active_market",
+    status: "existing_booking_path",
     checkoutPath: "/book?market=door-county",
-    acceptsLivePackageOrders: true,
+    hasExistingBookingPath: true,
     requiresCoverageInquiryOnly: false,
     disclosure:
-      "Active market: FeastlySpread offers published group catering packages for Door County vacation rentals with explicit traveler checkout confirmation.",
+      "Existing booking path: FeastlySpread offers a published group catering booking path for Door County vacation rentals with explicit traveler confirmation.",
   },
   {
     slug: "gatlinburg",
@@ -215,10 +215,10 @@ export const FEASTLY_SPREAD_MARKETS: readonly FeastlySpreadMarketDefinition[] = 
     state: "TN",
     status: "coverage_request_market",
     checkoutPath: "/locations?request_market=gatlinburg#coverage-request",
-    acceptsLivePackageOrders: false,
+    hasExistingBookingPath: false,
     requiresCoverageInquiryOnly: true,
     disclosure:
-      "Coverage-request market only: live package checkout is not active in Gatlinburg / Pigeon Forge. Submitting a coverage request logs market demand and does not confirm catering fulfillment.",
+      "Coverage-request market only: an existing booking path is not available in Gatlinburg / Pigeon Forge. Submitting a coverage request logs market demand and does not confirm catering fulfillment.",
   },
   {
     slug: "lake-tahoe",
@@ -226,10 +226,10 @@ export const FEASTLY_SPREAD_MARKETS: readonly FeastlySpreadMarketDefinition[] = 
     state: "CA/NV",
     status: "coverage_request_market",
     checkoutPath: "/locations?request_market=lake-tahoe#coverage-request",
-    acceptsLivePackageOrders: false,
+    hasExistingBookingPath: false,
     requiresCoverageInquiryOnly: true,
     disclosure:
-      "Coverage-request market only: live package checkout is not active in Lake Tahoe. Submitting a coverage request logs market demand and does not confirm catering fulfillment.",
+      "Coverage-request market only: an existing booking path is not available in Lake Tahoe. Submitting a coverage request logs market demand and does not confirm catering fulfillment.",
   },
   {
     slug: "outer-banks",
@@ -237,10 +237,10 @@ export const FEASTLY_SPREAD_MARKETS: readonly FeastlySpreadMarketDefinition[] = 
     state: "NC",
     status: "coverage_request_market",
     checkoutPath: "/locations?request_market=outer-banks#coverage-request",
-    acceptsLivePackageOrders: false,
+    hasExistingBookingPath: false,
     requiresCoverageInquiryOnly: true,
     disclosure:
-      "Coverage-request market only: live package checkout is not active in Outer Banks. Submitting a coverage request logs market demand and does not confirm catering fulfillment.",
+      "Coverage-request market only: an existing booking path is not available in Outer Banks. Submitting a coverage request logs market demand and does not confirm catering fulfillment.",
   },
   {
     slug: "destin-panama-city-beach",
@@ -248,10 +248,10 @@ export const FEASTLY_SPREAD_MARKETS: readonly FeastlySpreadMarketDefinition[] = 
     state: "FL",
     status: "coverage_request_market",
     checkoutPath: "/locations?request_market=destin-panama-city-beach#coverage-request",
-    acceptsLivePackageOrders: false,
+    hasExistingBookingPath: false,
     requiresCoverageInquiryOnly: true,
     disclosure:
-      "Coverage-request market only: live package checkout is not active in Destin / Panama City Beach. Submitting a coverage request logs market demand and does not confirm catering fulfillment.",
+      "Coverage-request market only: an existing booking path is not available in Destin / Panama City Beach. Submitting a coverage request logs market demand and does not confirm catering fulfillment.",
   },
   {
     slug: "big-bear",
@@ -259,10 +259,10 @@ export const FEASTLY_SPREAD_MARKETS: readonly FeastlySpreadMarketDefinition[] = 
     state: "CA",
     status: "coverage_request_market",
     checkoutPath: "/locations?request_market=big-bear#coverage-request",
-    acceptsLivePackageOrders: false,
+    hasExistingBookingPath: false,
     requiresCoverageInquiryOnly: true,
     disclosure:
-      "Coverage-request market only: live package checkout is not active in Big Bear Lake. Submitting a coverage request logs market demand and does not confirm catering fulfillment.",
+      "Coverage-request market only: an existing booking path is not available in Big Bear Lake. Submitting a coverage request logs market demand and does not confirm catering fulfillment.",
   },
   {
     slug: "branson",
@@ -270,10 +270,10 @@ export const FEASTLY_SPREAD_MARKETS: readonly FeastlySpreadMarketDefinition[] = 
     state: "MO",
     status: "coverage_request_market",
     checkoutPath: "/locations?request_market=branson#coverage-request",
-    acceptsLivePackageOrders: false,
+    hasExistingBookingPath: false,
     requiresCoverageInquiryOnly: true,
     disclosure:
-      "Coverage-request market only: live package checkout is not active in Branson. Submitting a coverage request logs market demand and does not confirm catering fulfillment.",
+      "Coverage-request market only: an existing booking path is not available in Branson. Submitting a coverage request logs market demand and does not confirm catering fulfillment.",
   },
   {
     slug: "broken-bow",
@@ -281,10 +281,10 @@ export const FEASTLY_SPREAD_MARKETS: readonly FeastlySpreadMarketDefinition[] = 
     state: "OK",
     status: "coverage_request_market",
     checkoutPath: "/locations?request_market=broken-bow#coverage-request",
-    acceptsLivePackageOrders: false,
+    hasExistingBookingPath: false,
     requiresCoverageInquiryOnly: true,
     disclosure:
-      "Coverage-request market only: live package checkout is not active in Broken Bow. Submitting a coverage request logs market demand and does not confirm catering fulfillment.",
+      "Coverage-request market only: an existing booking path is not available in Broken Bow. Submitting a coverage request logs market demand and does not confirm catering fulfillment.",
   },
   {
     slug: "lake-of-the-ozarks",
@@ -292,10 +292,10 @@ export const FEASTLY_SPREAD_MARKETS: readonly FeastlySpreadMarketDefinition[] = 
     state: "MO",
     status: "coverage_request_market",
     checkoutPath: "/locations?request_market=lake-of-the-ozarks#coverage-request",
-    acceptsLivePackageOrders: false,
+    hasExistingBookingPath: false,
     requiresCoverageInquiryOnly: true,
     disclosure:
-      "Coverage-request market only: live package checkout is not active in Lake of the Ozarks. Submitting a coverage request logs market demand and does not confirm catering fulfillment.",
+      "Coverage-request market only: an existing booking path is not available in Lake of the Ozarks. Submitting a coverage request logs market demand and does not confirm catering fulfillment.",
   },
   {
     slug: "scottsdale",
@@ -303,10 +303,10 @@ export const FEASTLY_SPREAD_MARKETS: readonly FeastlySpreadMarketDefinition[] = 
     state: "AZ",
     status: "coverage_request_market",
     checkoutPath: "/locations?request_market=scottsdale#coverage-request",
-    acceptsLivePackageOrders: false,
+    hasExistingBookingPath: false,
     requiresCoverageInquiryOnly: true,
     disclosure:
-      "Coverage-request market only: live package checkout is not active in Scottsdale. Submitting a coverage request logs market demand and does not confirm catering fulfillment.",
+      "Coverage-request market only: an existing booking path is not available in Scottsdale. Submitting a coverage request logs market demand and does not confirm catering fulfillment.",
   },
   {
     slug: "nashville",
@@ -314,10 +314,10 @@ export const FEASTLY_SPREAD_MARKETS: readonly FeastlySpreadMarketDefinition[] = 
     state: "TN",
     status: "coverage_request_market",
     checkoutPath: "/locations?request_market=nashville#coverage-request",
-    acceptsLivePackageOrders: false,
+    hasExistingBookingPath: false,
     requiresCoverageInquiryOnly: true,
     disclosure:
-      "Coverage-request market only: live package checkout is not active in Nashville. Submitting a coverage request logs market demand and does not confirm catering fulfillment.",
+      "Coverage-request market only: an existing booking path is not available in Nashville. Submitting a coverage request logs market demand and does not confirm catering fulfillment.",
   },
   {
     slug: "hamptons",
@@ -325,10 +325,10 @@ export const FEASTLY_SPREAD_MARKETS: readonly FeastlySpreadMarketDefinition[] = 
     state: "NY",
     status: "coverage_request_market",
     checkoutPath: "/locations?request_market=hamptons#coverage-request",
-    acceptsLivePackageOrders: false,
+    hasExistingBookingPath: false,
     requiresCoverageInquiryOnly: true,
     disclosure:
-      "Coverage-request market only: live package checkout is not active in The Hamptons. Submitting a coverage request logs market demand and does not confirm catering fulfillment.",
+      "Coverage-request market only: an existing booking path is not available in The Hamptons. Submitting a coverage request logs market demand and does not confirm catering fulfillment.",
   },
   {
     slug: "lake-geneva",
@@ -336,10 +336,10 @@ export const FEASTLY_SPREAD_MARKETS: readonly FeastlySpreadMarketDefinition[] = 
     state: "WI",
     status: "coverage_request_market",
     checkoutPath: "/locations?request_market=lake-geneva#coverage-request",
-    acceptsLivePackageOrders: false,
+    hasExistingBookingPath: false,
     requiresCoverageInquiryOnly: true,
     disclosure:
-      "Coverage-request market only: live package checkout is not active in Lake Geneva. Submitting a coverage request logs market demand and does not confirm catering fulfillment.",
+      "Coverage-request market only: an existing booking path is not available in Lake Geneva. Submitting a coverage request logs market demand and does not confirm catering fulfillment.",
   },
   {
     slug: "minocqua",
@@ -347,10 +347,10 @@ export const FEASTLY_SPREAD_MARKETS: readonly FeastlySpreadMarketDefinition[] = 
     state: "WI",
     status: "coverage_request_market",
     checkoutPath: "/locations?request_market=minocqua#coverage-request",
-    acceptsLivePackageOrders: false,
+    hasExistingBookingPath: false,
     requiresCoverageInquiryOnly: true,
     disclosure:
-      "Coverage-request market only: live package checkout is not active in Minocqua / Northwoods. Submitting a coverage request logs market demand and does not confirm catering fulfillment.",
+      "Coverage-request market only: an existing booking path is not available in Minocqua / Northwoods. Submitting a coverage request logs market demand and does not confirm catering fulfillment.",
   },
   {
     slug: "gulf-shores",
@@ -358,10 +358,10 @@ export const FEASTLY_SPREAD_MARKETS: readonly FeastlySpreadMarketDefinition[] = 
     state: "AL",
     status: "coverage_request_market",
     checkoutPath: "/locations?request_market=gulf-shores#coverage-request",
-    acceptsLivePackageOrders: false,
+    hasExistingBookingPath: false,
     requiresCoverageInquiryOnly: true,
     disclosure:
-      "Coverage-request market only: live package checkout is not active in Gulf Shores / Orange Beach. Submitting a coverage request logs market demand and does not confirm catering fulfillment.",
+      "Coverage-request market only: an existing booking path is not available in Gulf Shores / Orange Beach. Submitting a coverage request logs market demand and does not confirm catering fulfillment.",
   },
   {
     slug: "myrtle-beach",
@@ -369,10 +369,10 @@ export const FEASTLY_SPREAD_MARKETS: readonly FeastlySpreadMarketDefinition[] = 
     state: "SC",
     status: "coverage_request_market",
     checkoutPath: "/locations?request_market=myrtle-beach#coverage-request",
-    acceptsLivePackageOrders: false,
+    hasExistingBookingPath: false,
     requiresCoverageInquiryOnly: true,
     disclosure:
-      "Coverage-request market only: live package checkout is not active in Myrtle Beach. Submitting a coverage request logs market demand and does not confirm catering fulfillment.",
+      "Coverage-request market only: an existing booking path is not available in Myrtle Beach. Submitting a coverage request logs market demand and does not confirm catering fulfillment.",
   },
   {
     slug: "park-city",
@@ -380,10 +380,10 @@ export const FEASTLY_SPREAD_MARKETS: readonly FeastlySpreadMarketDefinition[] = 
     state: "UT",
     status: "coverage_request_market",
     checkoutPath: "/locations?request_market=park-city#coverage-request",
-    acceptsLivePackageOrders: false,
+    hasExistingBookingPath: false,
     requiresCoverageInquiryOnly: true,
     disclosure:
-      "Coverage-request market only: live package checkout is not active in Park City. Submitting a coverage request logs market demand and does not confirm catering fulfillment.",
+      "Coverage-request market only: an existing booking path is not available in Park City. Submitting a coverage request logs market demand and does not confirm catering fulfillment.",
   },
 ] as const;
 
@@ -443,7 +443,7 @@ export const DCC_PORTFOLIO_NETWORK_SITES: readonly DccSiteManifestV1[] = [
       "schedule.departure",
       "schedule.travelers",
       "schedule.shipOrVenue",
-      "safetyOverride.bufferMinutes",
+      "additionalPreferenceBufferMinutes",
     ],
     emitted_context_fields: [
       "contextId",
@@ -1405,7 +1405,7 @@ export const DCC_PORTFOLIO_NETWORK_SITES: readonly DccSiteManifestV1[] = [
     canonical_domains: ["feastlyspread.com", "www.feastlyspread.com"],
     aliases: ["feastly", "feastly-spread", "v0-feastlyspread", "dcc:site:feastly-spread"],
     consumer_role:
-      "Vacation-rental group catering spread platform distinguishing 2 active package-ordering markets (Wisconsin Dells, Door County) from 16 coverage-request expansion markets",
+      "Vacation-rental group catering spread platform distinguishing 2 existing booking path markets (Wisconsin Dells, Door County) from 16 coverage-request expansion markets",
     dcc_universe_ids: ["univ:vacation-rental-catering-spreads:0.3.0"],
     accepted_context_fields: [
       "contextId",
@@ -1429,7 +1429,7 @@ export const DCC_PORTFOLIO_NETWORK_SITES: readonly DccSiteManifestV1[] = [
       decision_authorization_mode: "shadow_only_no_side_effects",
       universal_multi_provider_checkout: false,
       finality_statement:
-        "Active markets (Wisconsin Dells, Door County) support direct package ordering on FeastlySpread; the 16 coverage-request markets accept non-binding market coverage inquiries only and never imply confirmed fulfillment.",
+        "Markets with an existing booking path (Wisconsin Dells, Door County) support direct package ordering on FeastlySpread; the 16 coverage-request markets accept non-binding market coverage inquiries only and never imply confirmed fulfillment.",
     },
     natural_relationships: {
       inbound: [
@@ -1460,11 +1460,11 @@ export const DCC_PORTFOLIO_NETWORK_SITES: readonly DccSiteManifestV1[] = [
     },
     commercial_channels: [
       {
-        channel_id: "feastly-active-market-checkout",
+        channel_id: "feastly-existing-booking-path-checkout",
         provider: "direct_provider",
         attribution_parameter: "dcc_handoff_id,market",
         outcome_reporting: "direct_checkout_boundary",
-        notes: "Available only in active markets (wisconsin-dells, door-county).",
+        notes: "Available only in markets with an existing booking path (wisconsin-dells, door-county).",
       },
       {
         channel_id: "feastly-coverage-request-inquiry",
@@ -1491,11 +1491,11 @@ export const DCC_PORTFOLIO_NETWORK_SITES: readonly DccSiteManifestV1[] = [
       exposes_commission_terms: false,
     },
     market_coverage: {
-      active_markets_count: 2,
+      existing_booking_path_markets_count: 2,
       coverage_request_markets_count: 16,
-      active_markets: FEASTLY_SPREAD_MARKETS.filter((m) => m.status === "active_market").map(
-        (m) => m.slug
-      ),
+      existing_booking_path_markets: FEASTLY_SPREAD_MARKETS.filter(
+        (m) => m.status === "existing_booking_path"
+      ).map((m) => m.slug),
       coverage_request_markets: FEASTLY_SPREAD_MARKETS.filter(
         (m) => m.status === "coverage_request_market"
       ).map((m) => m.slug),

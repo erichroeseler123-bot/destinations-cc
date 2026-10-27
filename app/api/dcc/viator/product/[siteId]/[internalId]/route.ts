@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getVerifiedProductForSite } from "@/lib/dcc/internal/dccViatorAdapter";
+import { isValidDestination, resolveAuthoritativeBuffer } from "@/lib/dcc/context/registry";
 
 export const dynamic = "force-dynamic";
 
@@ -15,14 +16,22 @@ export async function GET(
 
   const arrivalHour = searchParams.get("arrivalHour");
   const departureHour = searchParams.get("departureHour");
+  const additionalPrefRaw = searchParams.get("additionalPreferenceBufferMinutes");
+  const additionalPref =
+    additionalPrefRaw && Number.isFinite(Number(additionalPrefRaw))
+      ? Math.max(0, Math.round(Number(additionalPrefRaw)))
+      : 0;
+  const portKey = targetPort?.trim().toLowerCase() || "juneau";
+  const authoritativeBufferMinutes = isValidDestination(portKey)
+    ? resolveAuthoritativeBuffer(portKey, additionalPref)
+    : 60 + additionalPref;
+
   const cruiseWindow =
     arrivalHour && departureHour
       ? {
           arrivalHour: Number(arrivalHour),
           departureHour: Number(departureHour),
-          allAboardBufferMinutes: searchParams.get("bufferMinutes")
-            ? Number(searchParams.get("bufferMinutes"))
-            : 60,
+          allAboardBufferMinutes: authoritativeBufferMinutes,
         }
       : undefined;
 

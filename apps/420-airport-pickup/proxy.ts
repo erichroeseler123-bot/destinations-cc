@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   if (
     request.method === "GET" &&
     !request.nextUrl.pathname.startsWith("/api/") &&
@@ -12,6 +12,31 @@ export function proxy(request: NextRequest) {
       request.nextUrl.searchParams.get("dcc_ctx")?.trim() ||
       "";
     if (rawCtx.startsWith("dcc_ctx_")) {
+      const dccBase = (
+        process.env.DCC_API_BASE_URL ||
+        process.env.NEXT_PUBLIC_DCC_API_URL ||
+        "https://www.destinationcommandcenter.com"
+      ).replace(/\/+$/, "");
+
+      let redeemed = false;
+      let errorCode = "REDEMPTION_FAILED";
+      try {
+        const res = await fetch(
+          `${dccBase}/api/v1/context/${encodeURIComponent(rawCtx)}/edge-redeem`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Accept: "application/json" },
+            body: JSON.stringify({ owner: "420friendlyairportpickup.com" }),
+            cache: "no-store",
+          }
+        );
+        const body = (await res.json().catch(() => ({}))) as { ok?: boolean; errorCode?: string };
+        redeemed = Boolean(res.ok && body.ok);
+        if (!redeemed && body.errorCode) errorCode = body.errorCode;
+      } catch {
+        errorCode = "DCC_UNREACHABLE_FAIL_CLOSED";
+      }
+
       const cleanUrl = request.nextUrl.clone();
       for (const param of [
         "ctx",
@@ -39,6 +64,12 @@ export function proxy(request: NextRequest) {
       }
 
       const redirectRes = NextResponse.redirect(cleanUrl, 302);
+      if (!redeemed) {
+        redirectRes.headers.set("x-dcc-ctx-redemption", "failed");
+        redirectRes.headers.set("x-dcc-ctx-error", errorCode);
+        return redirectRes;
+      }
+
       redirectRes.cookies.set("ap420_trip_ctx", rawCtx, {
         httpOnly: true,
         secure: true,
@@ -46,6 +77,7 @@ export function proxy(request: NextRequest) {
         path: "/",
         maxAge: 60 * 60 * 24,
       });
+      redirectRes.headers.set("x-dcc-ctx-redemption", "redeemed");
       return redirectRes;
     }
   }

@@ -21,6 +21,7 @@ export interface CanonicalOwnerEntry {
   allowedDestinations: string[]; // Strict destination binding
   productCategories: string[];
   aliases?: string[];
+  enabled?: boolean;
 }
 
 export interface PortSafetyProfile {
@@ -170,7 +171,8 @@ export const DCC_CANONICAL_OWNERS: Record<string, CanonicalOwnerEntry> = {
     canonicalDomain: "juneauflightdeck.com",
     allowedDestinations: ["juneau"],
     productCategories: ["helicopter", "flightseeing", "glacier_landing"],
-    aliases: ["juneau-flight-deck", "jfd"],
+    aliases: ["juneau-flight-deck", "juneau_flight_deck", "jfd"],
+    enabled: true,
   },
   lastfrontier: {
     id: "lastfrontier",
@@ -178,7 +180,13 @@ export const DCC_CANONICAL_OWNERS: Record<string, CanonicalOwnerEntry> = {
     canonicalDomain: "lastfrontiershoreexcursions.com",
     allowedDestinations: ["juneau", "skagway", "ketchikan", "sitka", "icy-strait-point"],
     productCategories: ["shore_excursions", "whale_watching", "custom_charter"],
-    aliases: ["lastfrontiershoreexcursions", "last-frontier-shore-excursions"],
+    aliases: [
+      "lastfrontiershoreexcursions",
+      "last-frontier-shore-excursions",
+      "last_frontier",
+      "last_frontier_shore_excursions",
+    ],
+    enabled: true,
   },
   cruisepromenade: {
     id: "cruisepromenade",
@@ -196,7 +204,8 @@ export const DCC_CANONICAL_OWNERS: Record<string, CanonicalOwnerEntry> = {
       "st-croix",
     ],
     productCategories: ["cruise_itinerary", "port_planning", "shared_cruise_plan"],
-    aliases: ["cruise-promenade"],
+    aliases: ["cruise-promenade", "cruise_promenade"],
+    enabled: true,
   },
   gosno: {
     id: "gosno",
@@ -212,7 +221,8 @@ export const DCC_CANONICAL_OWNERS: Record<string, CanonicalOwnerEntry> = {
       "big-sky",
     ],
     productCategories: ["mountain_shuttle", "airport_transfer", "flat_rate_corridor"],
-    aliases: ["gosno-production"],
+    aliases: ["gosno-production", "gosno_production"],
+    enabled: true,
   },
   partyatredrocks: {
     id: "partyatredrocks",
@@ -220,7 +230,8 @@ export const DCC_CANONICAL_OWNERS: Record<string, CanonicalOwnerEntry> = {
     canonicalDomain: "partyatredrocks.com",
     allowedDestinations: ["morrison", "denver"],
     productCategories: ["concert_shuttle", "venue_pass"],
-    aliases: ["parr", "party-at-red-rocks"],
+    aliases: ["parr", "party-at-red-rocks", "party_at_red_rocks"],
+    enabled: true,
   },
   welcometotheswamp: {
     id: "welcometotheswamp",
@@ -228,7 +239,8 @@ export const DCC_CANONICAL_OWNERS: Record<string, CanonicalOwnerEntry> = {
     canonicalDomain: "welcometotheswamp.com",
     allowedDestinations: ["new-orleans"],
     productCategories: ["bayou_airboat", "swamp_tour"],
-    aliases: ["welcome-to-the-swamp", "wts"],
+    aliases: ["welcome-to-the-swamp", "welcome_to_the_swamp", "wts"],
+    enabled: true,
   },
   wno: {
     id: "wno",
@@ -236,7 +248,13 @@ export const DCC_CANONICAL_OWNERS: Record<string, CanonicalOwnerEntry> = {
     canonicalDomain: "welcometoneworleanstours.com",
     allowedDestinations: ["new-orleans"],
     productCategories: ["city_tour", "swamp_tour", "riverboat_cruise", "walking_tour"],
-    aliases: ["welcometoneworleanstours", "wno-tours"],
+    aliases: [
+      "welcometoneworleanstours",
+      "wno-tours",
+      "welcome-to-new-orleans",
+      "welcome_to_new_orleans",
+    ],
+    enabled: true,
   },
   dcc: {
     id: "dcc",
@@ -264,7 +282,8 @@ export const DCC_CANONICAL_OWNERS: Record<string, CanonicalOwnerEntry> = {
       ...FEASTLY_DESTINATIONS,
     ],
     productCategories: ["helicopter", "shore_excursions", "swamp_tour", "mountain_shuttle"],
-    aliases: ["destinationcommandcenter", "destination-command-center"],
+    aliases: ["destinationcommandcenter", "destination-command-center", "destination_command_center"],
+    enabled: true,
   },
   "vibing-around": {
     id: "vibing-around",
@@ -284,7 +303,8 @@ export const DCC_CANONICAL_OWNERS: Record<string, CanonicalOwnerEntry> = {
       "wisconsin-dells",
     ],
     productCategories: ["private_driver", "micro_fleet", "custom_tour"],
-    aliases: ["vibearoundtown", "vibe-around-town"],
+    aliases: ["vibearoundtown", "vibe-around-town", "vibe_around_town", "vibing_around"],
+    enabled: true,
   },
   feastlyspread: {
     id: "feastlyspread",
@@ -292,7 +312,8 @@ export const DCC_CANONICAL_OWNERS: Record<string, CanonicalOwnerEntry> = {
     canonicalDomain: "feastlyspread.com",
     allowedDestinations: FEASTLY_DESTINATIONS,
     productCategories: ["vacation_rental_catering", "coverage_request_inquiry"],
-    aliases: ["feastly", "feastly-spread"],
+    aliases: ["feastly", "feastly-spread", "feastly_spread"],
+    enabled: true,
   },
   brinkberry: {
     id: "brinkberry",
@@ -307,6 +328,7 @@ export const DCC_CANONICAL_OWNERS: Record<string, CanonicalOwnerEntry> = {
       "denver",
     ],
     productCategories: ["regional_events", "concert_feeder", "group_stay_feeder"],
+    enabled: true,
   },
   "420friendlyairportpickup": {
     id: "420friendlyairportpickup",
@@ -321,7 +343,27 @@ export const DCC_CANONICAL_OWNERS: Record<string, CanonicalOwnerEntry> = {
       "breckenridge",
     ],
     productCategories: ["airport_transfer", "dispensary_stop_transfer"],
-    aliases: ["420-airport-pickup", "420-friendly-airport-pickup"],
+    aliases: [
+      "420-airport-pickup",
+      "420-friendly-airport-pickup",
+      "420_airport_pickup",
+      "420_friendly_airport_pickup",
+    ],
+    enabled: true,
+  },
+  disabled_portfolio_owner: {
+    id: "disabled_portfolio_owner",
+    name: "Disabled Portfolio Owner (Test/Suspended)",
+    canonicalDomain: "disabled-owner.destinationcommandcenter.invalid",
+    allowedDestinations: ["juneau", "denver", "new-orleans", "wisconsin-dells"],
+    productCategories: ["suspended_owner"],
+    aliases: [
+      "disabled-owner",
+      "disabled_owner",
+      "disabled-portfolio-owner",
+      "disabled-portfolio-owner.example.com",
+    ],
+    enabled: false,
   },
 };
 
@@ -551,6 +593,30 @@ export function isValidCanonicalOwner(identifier: string): boolean {
   return resolveCanonicalOwner(identifier) !== null;
 }
 
+export function isOwnerEnabled(
+  identifier: string,
+  runtimeDisabledOwners?: string[]
+): boolean {
+  const owner = resolveCanonicalOwner(identifier);
+  if (!owner) return false;
+  if (owner.enabled === false) return false;
+  const envDisabled = (process.env.DCC_DISABLED_OWNERS || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const allDisabled = [...envDisabled, ...(runtimeDisabledOwners || [])];
+  for (const disabledId of allDisabled) {
+    const resolvedDisabled = resolveCanonicalOwner(disabledId);
+    if (resolvedDisabled && resolvedDisabled.id === owner.id) {
+      return false;
+    }
+    if (disabledId.toLowerCase() === owner.id.toLowerCase()) {
+      return false;
+    }
+  }
+  return true;
+}
+
 export function isValidDestination(destination: string): boolean {
   if (!destination) return false;
   return destination.trim().toLowerCase() in DCC_SAFETY_PROFILES;
@@ -572,12 +638,13 @@ export function getAuthoritativeSafetyProfile(destination: string): PortSafetyPr
 
 /**
  * Calculates authoritative safety buffer.
- * Client override is ONLY permitted if it INCREASES safety (greater buffer).
- * Client attempts to reduce the buffer below the authoritative safety floor are strictly ignored and clamped.
+ * Authoritative minimum buffers come strictly from DCC (`DCC_SAFETY_PROFILES`).
+ * A client may request an additional preference buffer (`additionalPreferenceBufferMinutes >= 0`),
+ * which is added on top of the DCC minimum floor, and may NEVER reduce the DCC minimum.
  */
 export function resolveAuthoritativeBuffer(
   destination: string,
-  clientRequestedBuffer?: number | null,
+  additionalPreferenceBufferMinutes?: number | null,
   operatorModifierKey?: string | null
 ): number {
   const profile = getAuthoritativeSafetyProfile(destination);
@@ -587,8 +654,12 @@ export function resolveAuthoritativeBuffer(
     authoritativeFloor = profile.operatorModifiers[operatorModifierKey].bufferMinutes;
   }
 
-  if (typeof clientRequestedBuffer === "number" && clientRequestedBuffer > authoritativeFloor) {
-    return clientRequestedBuffer; // Client requested stricter safety
+  if (
+    typeof additionalPreferenceBufferMinutes === "number" &&
+    Number.isFinite(additionalPreferenceBufferMinutes) &&
+    additionalPreferenceBufferMinutes > 0
+  ) {
+    return authoritativeFloor + Math.min(240, Math.round(additionalPreferenceBufferMinutes));
   }
 
   return authoritativeFloor; // Enforce authoritative safety floor

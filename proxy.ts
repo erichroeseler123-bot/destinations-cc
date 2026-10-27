@@ -7,6 +7,7 @@ import { SOMERSET_BASE_PATH, SOMERSET_PAGE_PATHS } from "@/lib/dcc/corridors/som
 import { getEdgeSignalMapForSubjects } from "@/lib/dcc/routing/edge-signals";
 import { isIndexableSurfacePath } from "@/src/data/indexable-surface";
 import { verifyServiceRequestHeaders } from "@/lib/dcc/auth/hmac-service-auth";
+import { redeemContext, type DccContextReplayPolicy } from "@/lib/dcc/context/service";
 import {
   ADMIN_SESSION_COOKIE,
   isValidAdminAccessKey,
@@ -687,7 +688,7 @@ export async function proxy(request: NextRequest, event: NextFetchEvent) {
     return NextResponse.redirect(`https://www.lastfrontiershoreexcursions.com${request.nextUrl.pathname}${request.nextUrl.search}`, 308);
   }
 
-  // Opaque cross-domain trip-context redemption: store in Secure HttpOnly first-party cookie and 302 strip from URL
+  // Opaque cross-domain trip-context redemption: validate server-side, store ONLY opaque reference in Secure HttpOnly first-party cookie on success, and 302 strip from URL
   if (
     request.method === "GET" &&
     !request.nextUrl.pathname.startsWith("/api/") &&
@@ -712,10 +713,40 @@ export async function proxy(request: NextRequest, event: NextFetchEvent) {
                   ? "ap420_trip_ctx"
                   : "dcc_trip_ctx";
 
+      const defaultClaimingOwner =
+        normalizedHost === "welcometoneworleanstours.com"
+          ? "wno"
+          : normalizedHost === "lastfrontiershoreexcursions.com"
+            ? "lastfrontier"
+            : normalizedHost === "welcometotheswamp.com"
+              ? "welcometotheswamp"
+              : normalizedHost === "juneauflightdeck.com"
+                ? "juneauflightdeck"
+                : normalizedHost === "420friendlyairportpickup.com"
+                  ? "420friendlyairportpickup"
+                  : "dcc";
+
+      const claimingOwner =
+        request.nextUrl.searchParams.get("claim_owner")?.trim() || defaultClaimingOwner;
+      const replayPolicyRaw = request.nextUrl.searchParams.get("replay_policy")?.trim();
+      const replayPolicy: DccContextReplayPolicy =
+        replayPolicyRaw === "strict_single_use"
+          ? "strict_single_use"
+          : "same_owner_idempotent_within_ttl";
+      const disabledOwnerParam = request.nextUrl.searchParams.get("disabled_owner")?.trim();
+
+      const redeemResult = await redeemContext(rawCtx, claimingOwner, {
+        replayPolicy,
+        disabledOwners: disabledOwnerParam ? [disabledOwnerParam] : undefined,
+      });
+
       const cleanUrl = request.nextUrl.clone();
       for (const param of [
         "ctx",
         "dcc_ctx",
+        "claim_owner",
+        "replay_policy",
+        "disabled_owner",
         "name",
         "fullName",
         "firstName",
@@ -739,6 +770,13 @@ export async function proxy(request: NextRequest, event: NextFetchEvent) {
       }
 
       const redirectRes = NextResponse.redirect(cleanUrl, 302);
+      if (!redeemResult.success) {
+        redirectRes.headers.set("x-dcc-ctx-redemption", "failed");
+        redirectRes.headers.set("x-dcc-ctx-error", redeemResult.errorCode);
+        redirectRes.headers.set("x-dcc-ctx-status", String(redeemResult.statusCode));
+        return redirectRes;
+      }
+
       redirectRes.cookies.set(cookieName, rawCtx, {
         httpOnly: true,
         secure: true,
@@ -746,6 +784,9 @@ export async function proxy(request: NextRequest, event: NextFetchEvent) {
         path: "/",
         maxAge: 60 * 60 * 24,
       });
+      redirectRes.headers.set("x-dcc-ctx-redemption", "redeemed");
+      redirectRes.headers.set("x-dcc-ctx-owner", redeemResult.data.targetOwner);
+      redirectRes.headers.set("x-dcc-ctx-replay", String(Boolean(redeemResult.idempotencyReplay)));
       return redirectRes;
     }
   }

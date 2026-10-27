@@ -12,6 +12,7 @@ import {
 import {
   DCC_CANONICAL_OWNERS,
   getAuthoritativeSafetyProfile,
+  isOwnerEnabled,
   resolveAuthoritativeBuffer,
   resolveCanonicalOwner,
   resolveSourceSite,
@@ -19,6 +20,20 @@ import {
 
 export const DCC_CONTEXT_TTL_MS = 15 * 60 * 1000; // 15 minutes (900,000 ms) short-lived redemption token TTL
 export const DCC_TRIP_CONTEXT_RETENTION_MS = 7 * 24 * 60 * 60 * 1000; // 7 days longer-lived trip context retention
+
+export type DccContextReplayPolicy =
+  | "same_owner_idempotent_within_ttl"
+  | "strict_single_use";
+
+export const DCC_CONTEXT_REPLAY_POLICY_SPEC = {
+  defaultPolicy: "same_owner_idempotent_within_ttl" as const,
+  supportedPolicies: [
+    "same_owner_idempotent_within_ttl",
+    "strict_single_use",
+  ] as const,
+  description:
+    "Under 'same_owner_idempotent_within_ttl', the canonical target owner that first redeemed the token may re-verify it idempotently within its 15-minute TTL (supporting edge-to-SSR hydration), while any other owner is rejected with 403 OWNER_MISMATCH. Under 'strict_single_use', any second redemption attempt—even by the same canonical target owner—fails closed with 409 CONTEXT_ALREADY_REDEEMED.",
+} as const;
 
 const memoryContextsByHash = new Map<string, DccContextRow>();
 const memoryContextsByIdempotencyKey = new Map<string, DccContextRow>();
@@ -51,6 +66,7 @@ export type RedeemContextResult =
         | "CONTEXT_EXPIRED"
         | "CONTEXT_REVOKED"
         | "OWNER_MISMATCH"
+        | "OWNER_DISABLED"
         | "INVALID_OWNER"
         | "DATABASE_UNAVAILABLE";
       message: string;
@@ -168,7 +184,7 @@ export async function issueContext(
   const owner = resolveCanonicalOwner(input.targetOwner);
   const authoritativeBuffer = resolveAuthoritativeBuffer(
     input.destination,
-    input.safetyOverride?.bufferMinutes,
+    input.additionalPreferenceBufferMinutes,
     input.operatorModifier
   );
 
@@ -488,7 +504,12 @@ export async function inspectTripContext(
 export async function redeemContext(
   contextId: string,
   claimingOwner: string,
-  options?: { now?: number; dbOverride?: DccDb | null }
+  options?: {
+    now?: number;
+    dbOverride?: DccDb | null;
+    replayPolicy?: DccContextReplayPolicy;
+    disabledOwners?: string[];
+  }
 ): Promise<RedeemContextResult> {
   if (!contextId || !contextId.startsWith("dcc_ctx_")) {
     return {
@@ -509,6 +530,17 @@ export async function redeemContext(
     };
   }
 
+  if (!isOwnerEnabled(resolvedClaimingOwner.id, options?.disabledOwners)) {
+    return {
+      success: false,
+      statusCode: 403,
+      errorCode: "OWNER_DISABLED",
+      message: `Claiming owner '${resolvedClaimingOwner.id}' is currently disabled and cannot redeem trip contexts.`,
+    };
+  }
+
+  const replayPolicy: DccContextReplayPolicy =
+    options?.replayPolicy ?? DCC_CONTEXT_REPLAY_POLICY_SPEC.defaultPolicy;
   const now = options?.now ? new Date(options.now) : new Date();
   const contextHash = hashContextId(contextId);
   const normalizedClaimingId = resolvedClaimingOwner.id;
@@ -548,6 +580,14 @@ export async function redeemContext(
         message: `Context token expired at ${memRow.expiresAt.toISOString()}.`,
       };
     }
+    if (!isOwnerEnabled(memRow.targetOwner, options?.disabledOwners)) {
+      return {
+        success: false,
+        statusCode: 403,
+        errorCode: "OWNER_DISABLED",
+        message: `Target owner '${memRow.targetOwner}' is currently disabled.`,
+      };
+    }
     if (memRow.targetOwner !== normalizedClaimingId) {
       return {
         success: false,
@@ -557,7 +597,11 @@ export async function redeemContext(
       };
     }
     if (memRow.status === "redeemed") {
-      if (memRow.redeemedBy === normalizedClaimingId && memRow.targetOwner === normalizedClaimingId) {
+      if (
+        replayPolicy === "same_owner_idempotent_within_ttl" &&
+        memRow.redeemedBy === normalizedClaimingId &&
+        memRow.targetOwner === normalizedClaimingId
+      ) {
         return {
           success: true,
           data: formatRedeemedResponse(memRow),
@@ -568,7 +612,7 @@ export async function redeemContext(
         success: false,
         statusCode: 409,
         errorCode: "CONTEXT_ALREADY_REDEEMED",
-        message: `Context token was already redeemed at ${memRow.redeemedAt?.toISOString()} by '${memRow.redeemedBy}'. Replay attacks are prohibited.`,
+        message: `Context token was already redeemed at ${memRow.redeemedAt?.toISOString()} by '${memRow.redeemedBy}'. Replay policy '${replayPolicy}' prohibits re-redemption.`,
       };
     }
     const updatedMem: DccContextRow = {
@@ -649,6 +693,15 @@ export async function redeemContext(
     };
   }
 
+  if (!isOwnerEnabled(row.targetOwner, options?.disabledOwners)) {
+    return {
+      success: false,
+      statusCode: 403,
+      errorCode: "OWNER_DISABLED",
+      message: `Target owner '${row.targetOwner}' is currently disabled.`,
+    };
+  }
+
   if (row.targetOwner !== normalizedClaimingId) {
     return {
       success: false,
@@ -659,8 +712,11 @@ export async function redeemContext(
   }
 
   if (row.status === "redeemed") {
-    // If the claiming owner is the SAME owner that already redeemed it, and context is not expired/revoked:
-    if (row.redeemedBy === normalizedClaimingId && row.targetOwner === normalizedClaimingId) {
+    if (
+      replayPolicy === "same_owner_idempotent_within_ttl" &&
+      row.redeemedBy === normalizedClaimingId &&
+      row.targetOwner === normalizedClaimingId
+    ) {
       return {
         success: true,
         data: formatRedeemedResponse(row),
@@ -672,7 +728,7 @@ export async function redeemContext(
       success: false,
       statusCode: 409,
       errorCode: "CONTEXT_ALREADY_REDEEMED",
-      message: `Context token was already redeemed at ${row.redeemedAt?.toISOString()} by '${row.redeemedBy}'. Replay attacks are prohibited.`,
+      message: `Context token was already redeemed at ${row.redeemedAt?.toISOString()} by '${row.redeemedBy}'. Replay policy '${replayPolicy}' prohibits re-redemption.`,
     };
   }
 
@@ -733,45 +789,12 @@ export async function revokeContext(
         message: "Context token does not exist.",
       };
     }
-    if (memRow.status === "redeemed") {
-      return {
-        success: false,
-        statusCode: 400,
-        errorCode: "ALREADY_REDEEMED",
-        message: "Cannot revoke a context token that has already been redeemed.",
-      };
-    }
     const updatedMem: DccContextRow = {
       ...memRow,
       status: "revoked",
       updatedAt: now,
     };
     memoryContextsByHash.set(contextHash, updatedMem);
-    return {
-      success: true,
-      contextId,
-      status: "revoked",
-      revokedAt: now.getTime(),
-      revokedBy: requestedBy,
-    };
-  }
-
-  const updated = await db
-    .update(dccContexts)
-    .set({
-      status: "revoked",
-      updatedAt: now,
-    })
-    .where(
-      and(
-        eq(dccContexts.contextHash, contextHash),
-        eq(dccContexts.status, "issued")
-      )
-    )
-    .returning();
-
-  if (updated.length === 1) {
-    memoryContextsByHash.set(contextHash, updated[0]);
     return {
       success: true,
       contextId,
@@ -796,14 +819,17 @@ export async function revokeContext(
     };
   }
 
-  const row = existing[0];
-  if (row.status === "redeemed") {
-    return {
-      success: false,
-      statusCode: 400,
-      errorCode: "ALREADY_REDEEMED",
-      message: "Cannot revoke a context token that has already been redeemed.",
-    };
+  const updated = await db
+    .update(dccContexts)
+    .set({
+      status: "revoked",
+      updatedAt: now,
+    })
+    .where(eq(dccContexts.contextHash, contextHash))
+    .returning();
+
+  if (updated.length > 0) {
+    memoryContextsByHash.set(contextHash, updated[0]);
   }
 
   return {

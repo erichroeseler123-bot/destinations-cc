@@ -265,9 +265,9 @@ describe("87 — DCC Portfolio Network Registry, .well-known/dcc-site Manifests,
     assert.equal(j5.checkoutBoundary.requiresExplicitTravelerConfirmation, true);
     assert.equal(j5.checkoutBoundary.autonomousPaymentCapture, false);
 
-    // 6a. Feastly Spread active market (Wisconsin Dells & Door County)
+    // 6a. Feastly Spread existing booking path market (Wisconsin Dells & Door County)
     assert.equal(
-      FEASTLY_SPREAD_MARKETS.filter((m) => m.status === "active_market").length,
+      FEASTLY_SPREAD_MARKETS.filter((m) => m.status === "existing_booking_path").length,
       2,
     );
     assert.equal(
@@ -275,15 +275,18 @@ describe("87 — DCC Portfolio Network Registry, .well-known/dcc-site Manifests,
       16,
     );
 
-    const j6Active = await executePortfolioCrossSiteJourney({
+    const j6ExistingPath = await executePortfolioCrossSiteJourney({
       journeyId: "property_manager_to_feastly_spread",
       feastlyMarketSlug: "wisconsin-dells",
       partySize: 10,
     });
-    assert.equal(j6Active.feastlyMarketResolution?.status, "active_market");
-    assert.equal(j6Active.feastlyMarketResolution?.acceptsLivePackageOrders, true);
-    assert.equal(j6Active.checkoutBoundary.controllingBookingAuthority, "request_only");
-    assert.equal(j6Active.handoff.productCode, "FEASTLY_ACTIVE_WISCONSIN_DELLS");
+    assert.equal(j6ExistingPath.feastlyMarketResolution?.status, "existing_booking_path");
+    assert.equal(j6ExistingPath.feastlyMarketResolution?.hasExistingBookingPath, true);
+    assert.equal(j6ExistingPath.checkoutBoundary.controllingBookingAuthority, "request_only");
+    assert.equal(
+      j6ExistingPath.handoff.productCode,
+      "FEASTLY_EXISTING_PATH_WISCONSIN_DELLS",
+    );
 
     // 6b. Feastly Spread coverage-request market (e.g. Gatlinburg)
     const j6Coverage = await executePortfolioCrossSiteJourney({
@@ -303,7 +306,176 @@ describe("87 — DCC Portfolio Network Registry, .well-known/dcc-site Manifests,
     );
   });
 
-  it("keeps unknown provider outcomes explicitly unknown until a verified provider outcome is reported", async () => {
+  it("proves all 9 fail-closed context redemption cases and ensures no context cookie is issued on failed redemption", async () => {
+    const baseNow = Date.now();
+
+    // Case 1: Valid issued context -> redeemed, opaque cookie set
+    const validIssued = await issueContext({
+      sourceSite: "cruisepromenade.com",
+      destination: "juneau",
+      targetOwner: "lastfrontiershoreexcursions.com",
+      schedule: { date: "2026-08-10", travelers: 2 },
+    });
+    const validProxyRes = await rootProxy(
+      new NextRequest(
+        `https://www.lastfrontiershoreexcursions.com/ports/juneau?ctx=${validIssued.contextId}`,
+        { headers: { host: "www.lastfrontiershoreexcursions.com" } },
+      ),
+      { waitUntil: () => {} } as any,
+    );
+    assert.equal(validProxyRes.status, 302);
+    assert.equal(validProxyRes.headers.get("x-dcc-ctx-redemption"), "redeemed");
+    const validSetCookie = validProxyRes.headers.get("set-cookie") || "";
+    assert.equal(validSetCookie.includes(`lfse_trip_ctx=${validIssued.contextId}`), true);
+
+    // Case 2: Invented / unissued context -> 404 CONTEXT_NOT_FOUND, NO cookie issued
+    const inventedToken = "dcc_ctx_ffffffffffffffffffffffffffffffff";
+    const inventedRes = await redeemContext(inventedToken, "lastfrontiershoreexcursions.com");
+    assert.equal(inventedRes.success, false);
+    if (!inventedRes.success) {
+      assert.equal(inventedRes.statusCode, 404);
+      assert.equal(inventedRes.errorCode, "CONTEXT_NOT_FOUND");
+    }
+    const inventedProxyRes = await rootProxy(
+      new NextRequest(
+        `https://www.lastfrontiershoreexcursions.com/ports/juneau?ctx=${inventedToken}`,
+        { headers: { host: "www.lastfrontiershoreexcursions.com" } },
+      ),
+      { waitUntil: () => {} } as any,
+    );
+    assert.equal(inventedProxyRes.status, 302);
+    assert.equal(inventedProxyRes.headers.get("x-dcc-ctx-redemption"), "failed");
+    assert.equal(inventedProxyRes.headers.get("x-dcc-ctx-error"), "CONTEXT_NOT_FOUND");
+    assert.equal(inventedProxyRes.headers.get("set-cookie"), null);
+
+    // Case 3: Wrong target owner -> 403 OWNER_MISMATCH, NO cookie issued
+    const wrongOwnerIssued = await issueContext({
+      sourceSite: "cruisepromenade.com",
+      destination: "juneau",
+      targetOwner: "juneauflightdeck.com",
+      schedule: { date: "2026-08-11", travelers: 2 },
+    });
+    const wrongOwnerProxyRes = await rootProxy(
+      new NextRequest(
+        `https://www.welcometoneworleanstours.com/tours?ctx=${wrongOwnerIssued.contextId}`,
+        { headers: { host: "www.welcometoneworleanstours.com" } },
+      ),
+      { waitUntil: () => {} } as any,
+    );
+    assert.equal(wrongOwnerProxyRes.status, 302);
+    assert.equal(wrongOwnerProxyRes.headers.get("x-dcc-ctx-redemption"), "failed");
+    assert.equal(wrongOwnerProxyRes.headers.get("x-dcc-ctx-error"), "OWNER_MISMATCH");
+    assert.equal(wrongOwnerProxyRes.headers.get("set-cookie"), null);
+
+    // Case 4: Disabled owner -> 403 OWNER_DISABLED, NO cookie issued
+    const disabledOwnerRedeem = await redeemContext(
+      wrongOwnerIssued.contextId,
+      "disabled-portfolio-owner.example.com",
+    );
+    assert.equal(disabledOwnerRedeem.success, false);
+    if (!disabledOwnerRedeem.success) {
+      assert.equal(disabledOwnerRedeem.statusCode, 403);
+      assert.equal(disabledOwnerRedeem.errorCode, "OWNER_DISABLED");
+    }
+    const runtimeDisabledProxyRes = await rootProxy(
+      new NextRequest(
+        `https://www.juneauflightdeck.com/calculator?ctx=${wrongOwnerIssued.contextId}&disabled_owner=juneauflightdeck`,
+        { headers: { host: "www.juneauflightdeck.com" } },
+      ),
+      { waitUntil: () => {} } as any,
+    );
+    assert.equal(runtimeDisabledProxyRes.status, 302);
+    assert.equal(runtimeDisabledProxyRes.headers.get("x-dcc-ctx-redemption"), "failed");
+    assert.equal(runtimeDisabledProxyRes.headers.get("x-dcc-ctx-error"), "OWNER_DISABLED");
+    assert.equal(runtimeDisabledProxyRes.headers.get("set-cookie"), null);
+
+    // Case 5: Expired context -> 410 CONTEXT_EXPIRED, NO cookie issued
+    const expiredIssued = await issueContext(
+      {
+        sourceSite: "cruisepromenade.com",
+        destination: "juneau",
+        targetOwner: "lastfrontiershoreexcursions.com",
+        schedule: { date: "2026-08-12", travelers: 2 },
+      },
+      { now: baseNow - 20 * 60 * 1000 },
+    );
+    const expiredProxyRes = await rootProxy(
+      new NextRequest(
+        `https://www.lastfrontiershoreexcursions.com/ports/juneau?ctx=${expiredIssued.contextId}`,
+        { headers: { host: "www.lastfrontiershoreexcursions.com" } },
+      ),
+      { waitUntil: () => {} } as any,
+    );
+    assert.equal(expiredProxyRes.status, 302);
+    assert.equal(expiredProxyRes.headers.get("x-dcc-ctx-redemption"), "failed");
+    assert.equal(expiredProxyRes.headers.get("x-dcc-ctx-error"), "CONTEXT_EXPIRED");
+    assert.equal(expiredProxyRes.headers.get("set-cookie"), null);
+
+    // Case 6: Revoked context -> 410 CONTEXT_REVOKED, NO cookie issued
+    const revokedIssued = await issueContext({
+      sourceSite: "cruisepromenade.com",
+      destination: "juneau",
+      targetOwner: "lastfrontiershoreexcursions.com",
+      schedule: { date: "2026-08-13", travelers: 2 },
+    });
+    await revokeContext(revokedIssued.contextId, "cruisepromenade.com", "test_revoke");
+    const revokedProxyRes = await rootProxy(
+      new NextRequest(
+        `https://www.lastfrontiershoreexcursions.com/ports/juneau?ctx=${revokedIssued.contextId}`,
+        { headers: { host: "www.lastfrontiershoreexcursions.com" } },
+      ),
+      { waitUntil: () => {} } as any,
+    );
+    assert.equal(revokedProxyRes.status, 302);
+    assert.equal(revokedProxyRes.headers.get("x-dcc-ctx-redemption"), "failed");
+    assert.equal(revokedProxyRes.headers.get("x-dcc-ctx-error"), "CONTEXT_REVOKED");
+    assert.equal(revokedProxyRes.headers.get("set-cookie"), null);
+
+    // Case 7: Alias-to-canonical owner matching
+    const aliasIssued = await issueContext({
+      sourceSite: "cruise-promenade",
+      destination: "new-orleans",
+      targetOwner: "welcome-to-the-swamp",
+      schedule: { date: "2026-08-14", travelers: 3 },
+    });
+    const aliasRedeemed = await redeemContext(aliasIssued.contextId, "www.welcometotheswamp.com");
+    assert.equal(aliasRedeemed.success, true);
+    if (aliasRedeemed.success) {
+      assert.equal(aliasRedeemed.data.targetOwner, "welcometotheswamp");
+    }
+
+    // Case 8 & 9: Explicit Replay Policy (same_owner_idempotent_within_ttl vs strict_single_use)
+    const replaySameOwner = await redeemContext(aliasIssued.contextId, "wts", {
+      replayPolicy: "same_owner_idempotent_within_ttl",
+    });
+    assert.equal(replaySameOwner.success, true);
+    if (replaySameOwner.success) {
+      assert.equal(replaySameOwner.idempotencyReplay, true);
+    }
+
+    const replayStrictSingleUse = await redeemContext(aliasIssued.contextId, "wts", {
+      replayPolicy: "strict_single_use",
+    });
+    assert.equal(replayStrictSingleUse.success, false);
+    if (!replayStrictSingleUse.success) {
+      assert.equal(replayStrictSingleUse.statusCode, 409);
+      assert.equal(replayStrictSingleUse.errorCode, "CONTEXT_ALREADY_REDEEMED");
+    }
+
+    const replayStrictProxyRes = await rootProxy(
+      new NextRequest(
+        `https://www.welcometotheswamp.com/plan?ctx=${aliasIssued.contextId}&replay_policy=strict_single_use`,
+        { headers: { host: "www.welcometotheswamp.com" } },
+      ),
+      { waitUntil: () => {} } as any,
+    );
+    assert.equal(replayStrictProxyRes.status, 302);
+    assert.equal(replayStrictProxyRes.headers.get("x-dcc-ctx-redemption"), "failed");
+    assert.equal(replayStrictProxyRes.headers.get("x-dcc-ctx-error"), "CONTEXT_ALREADY_REDEEMED");
+    assert.equal(replayStrictProxyRes.headers.get("set-cookie"), null);
+  });
+
+  it("enforces commercial outcome transition rules: DCC decision receipts are rejected as provider confirmation and confirmed/cancelled/refunded/fulfilled require authenticated evidence", async () => {
     const handoff = await createCommercialHandoff({
       originatingSite: "cruisepromenade.com",
       targetSite: "getyourguide.com",
@@ -313,27 +485,67 @@ describe("87 — DCC Portfolio Network Registry, .well-known/dcc-site Manifests,
         "https://www.getyourguide.com/juneau-l1234/whale-t5678/",
       intendedDate: "2026-07-10",
       partySize: 2,
+      idempotencyKey: "cp_handoff_dedupe_test_1",
     });
 
-    const loadedBefore = await getCommercialHandoffById(handoff.handoffId);
-    assert.deepEqual(loadedBefore?.outcomeState, {
-      status: "click_recorded_outcome_unknown",
-      bookingOutcome: "unknown",
-      revenueReconciliation: "unknown",
-      commissionReconciliation: "unknown",
-      clickIsBooking: false,
-      reportingFeedAvailable: false,
-      lastOutcomeId: null,
-      lastUpdatedAt: null,
+    // Duplicate handoff submission with same idempotencyKey returns existing handoffId
+    const duplicateHandoff = await createCommercialHandoff({
+      originatingSite: "cruisepromenade.com",
+      targetSite: "getyourguide.com",
+      provider: "getyourguide",
+      productCode: "GYG_JUNEAU_WHALE",
+      productDestinationUrl:
+        "https://www.getyourguide.com/juneau-l1234/whale-t5678/",
+      intendedDate: "2026-07-10",
+      partySize: 2,
+      idempotencyKey: "cp_handoff_dedupe_test_1",
     });
+    assert.equal(duplicateHandoff.handoffId, handoff.handoffId);
+    assert.equal(duplicateHandoff.duplicateSubmission, true);
 
-    const outcome = await recordCommercialOutcome({
+    // 1. Submitting a DCC decision receipt as providerBookingRef MUST throw 422 DCC_RECEIPT_IS_NOT_PROVIDER_CONFIRMATION
+    await assert.rejects(
+      async () => {
+        await recordCommercialOutcome({
+          reporterClientId: "gyg_test_reporter",
+          reporterProvenance: "getyourguide_partner_adapter",
+          provider: "getyourguide",
+          providerBookingRef: "rcpt:sha256:portfolio_juneau-helicopter-tours",
+          eventType: "BOOKING_CONFIRMED",
+          providerEventTime: "2026-07-10T15:00:00Z",
+          handoffId: handoff.handoffId,
+        });
+      },
+      (err: any) => err.code === "DCC_RECEIPT_IS_NOT_PROVIDER_CONFIRMATION" && err.statusCode === 422,
+    );
+
+    // Outcome state on the handoff remains unknown after rejected DCC receipt
+    const afterRejectedReceipt = await getCommercialHandoffById(handoff.handoffId);
+    assert.equal(afterRejectedReceipt?.outcomeState.bookingOutcome, "unknown");
+    assert.equal(afterRejectedReceipt?.outcomeState.status, "click_recorded_outcome_unknown");
+
+    // 2. Unauthenticated / anonymous provenance cannot transition to confirmed, cancelled, refunded, or fulfilled
+    await recordCommercialOutcome({
+      reporterClientId: "public_traveler_browser",
+      reporterProvenance: "unverified_browser_ping",
+      provider: "getyourguide",
+      providerBookingRef: "UNVERIFIED-123",
+      eventType: "BOOKING_CONFIRMED",
+      providerEventTime: "2026-07-10T15:01:00Z",
+      handoffId: handoff.handoffId,
+    });
+    const afterUnverified = await getCommercialHandoffById(handoff.handoffId);
+    assert.equal(afterUnverified?.outcomeState.bookingOutcome, "unknown");
+    assert.equal(afterUnverified?.outcomeState.status, "click_recorded_outcome_unknown");
+
+    // 3. Authenticated provider evidence transitions to confirmed
+    const confirmedOutcome = await recordCommercialOutcome({
       reporterClientId: "gyg_test_reporter",
       reporterProvenance: "getyourguide_partner_adapter",
       provider: "getyourguide",
       providerBookingRef: "GYG-BOOK-9911",
       eventType: "BOOKING_CONFIRMED",
-      providerEventTime: "2026-07-10T15:00:00Z",
+      providerEventTime: "2026-07-10T15:05:00Z",
       handoffId: handoff.handoffId,
       bookedProductCode: "GYG_JUNEAU_WHALE",
       bookedDate: "2026-07-10",
@@ -344,17 +556,74 @@ describe("87 — DCC Portfolio Network Registry, .well-known/dcc-site Manifests,
       estimatedCommissionCurrency: "USD",
     });
 
-    const loadedAfter = await getCommercialHandoffById(handoff.handoffId);
-    assert.deepEqual(loadedAfter?.outcomeState, {
+    const loadedConfirmed = await getCommercialHandoffById(handoff.handoffId);
+    assert.deepEqual(loadedConfirmed?.outcomeState, {
       status: "outcome_reported",
       bookingOutcome: "confirmed",
       revenueReconciliation: "reported",
       commissionReconciliation: "estimated",
       clickIsBooking: false,
       reportingFeedAvailable: false,
-      lastOutcomeId: outcome.outcomeId,
-      lastUpdatedAt: outcome.dccRecordedAt,
+      lastOutcomeId: confirmedOutcome.outcomeId,
+      lastUpdatedAt: confirmedOutcome.dccRecordedAt,
     });
+
+    // 4. Authenticated operational evidence transitions to fulfilled
+    const fulfilledOutcome = await recordCommercialOutcome({
+      reporterClientId: "ops_fulfillment_verifier",
+      reporterProvenance: "authorized_operational_evidence",
+      provider: "getyourguide",
+      providerBookingRef: "GYG-BOOK-9911",
+      eventType: "BOOKING_FULFILLED",
+      providerEventTime: "2026-07-11T01:00:00Z",
+      handoffId: handoff.handoffId,
+      bookingValueAmount: 320,
+      paidCommissionAmount: 25.6,
+    });
+    const loadedFulfilled = await getCommercialHandoffById(handoff.handoffId);
+    assert.equal(loadedFulfilled?.outcomeState.bookingOutcome, "fulfilled");
+    assert.equal(loadedFulfilled?.outcomeState.commissionReconciliation, "paid");
+    assert.equal(loadedFulfilled?.outcomeState.lastOutcomeId, fulfilledOutcome.outcomeId);
+
+    // 5. Authenticated payment webhook transitions to refunded
+    const refundedOutcome = await recordCommercialOutcome({
+      reporterClientId: "payment_webhook_verifier",
+      reporterProvenance: "authenticated_payment_webhook",
+      provider: "getyourguide",
+      providerBookingRef: "GYG-BOOK-9911",
+      eventType: "BOOKING_REFUNDED",
+      providerEventTime: "2026-07-12T01:00:00Z",
+      handoffId: handoff.handoffId,
+      bookingValueAmount: 0,
+    });
+    const loadedRefunded = await getCommercialHandoffById(handoff.handoffId);
+    assert.equal(loadedRefunded?.outcomeState.bookingOutcome, "refunded");
+    assert.equal(loadedRefunded?.outcomeState.lastOutcomeId, refundedOutcome.outcomeId);
+  });
+
+  it("enforces authoritative DCC minimum buffers and only permits additive preference buffers", async () => {
+    // Juneau authoritative minimum buffer is 90m; client adds 30m preference -> 120m total
+    const additiveIssued = await issueContext({
+      sourceSite: "cruisepromenade.com",
+      destination: "juneau",
+      targetOwner: "juneauflightdeck.com",
+      schedule: {
+        date: "2026-08-20",
+        arrival: "08:00",
+        departure: "18:00",
+        travelers: 2,
+      },
+      additionalPreferenceBufferMinutes: 30,
+    });
+    const redeemedAdditive = await redeemContext(
+      additiveIssued.contextId,
+      "juneauflightdeck.com",
+    );
+    assert.equal(redeemedAdditive.success, true);
+    if (redeemedAdditive.success) {
+      assert.equal(redeemedAdditive.data.safetyConstraint.bufferMinutes, 120);
+      assert.equal(redeemedAdditive.data.safetyConstraint.latestSafeReturnTime, "16:00");
+    }
   });
 
   it("rejects URLs containing personal data, weights, accessibility notes, or cabin numbers", () => {

@@ -74,12 +74,7 @@ export const DccContextIssueRequestSchema = z
       })
       .strict(),
 
-    safetyOverride: z
-      .object({
-        bufferMinutes: z.number().int().min(0).max(360).optional(),
-      })
-      .strict()
-      .optional(),
+    additionalPreferenceBufferMinutes: z.number().int().min(0).max(240).optional(),
 
     attribution: z
       .object({

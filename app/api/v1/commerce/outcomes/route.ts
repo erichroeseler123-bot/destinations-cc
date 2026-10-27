@@ -7,6 +7,7 @@ import {
 } from "@/lib/dcc/machine";
 import {
   getPollerCheckpoint,
+  isDccInternalArtifactNotProviderConfirmation,
   listCommercialOutcomes,
   pollViatorModifiedSinceWithCheckpoint,
   recordCommercialOutcome,
@@ -174,6 +175,19 @@ export async function POST(request: Request) {
     );
   }
 
+  if (isDccInternalArtifactNotProviderConfirmation(providerBookingRef)) {
+    return buildMachineJsonResponse(
+      {
+        ok: false,
+        error: {
+          code: "DCC_RECEIPT_IS_NOT_PROVIDER_CONFIRMATION",
+          message: `A DCC decision receipt or internal artifact ('${providerBookingRef}') is not provider confirmation. Confirmed, cancelled, refunded, and fulfilled outcomes require an authenticated provider, payment, or authorized operational booking reference.`,
+        },
+      },
+      { status: 422, cacheControl: "no-store", extraHeaders: { traceparent } },
+    );
+  }
+
   if (provider === "getyourguide" && body.adapter === "getyourguide_partner_adapter") {
     const gygOutcome = await reportGetYourGuideOutcomeAdapter({
       reporterClientId,
@@ -226,9 +240,18 @@ export async function POST(request: Request) {
     );
   }
 
+  const requestedProvenance =
+    typeof body.reporterProvenance === "string" ? body.reporterProvenance.trim() : "";
+  const reporterProvenance =
+    requestedProvenance === "authenticated_payment_webhook" ||
+    requestedProvenance === "authorized_operational_evidence" ||
+    requestedProvenance === "fareharbor_webhook_adapter"
+      ? requestedProvenance
+      : "authenticated_api_reporter";
+
   const outcome = await recordCommercialOutcome({
     reporterClientId,
-    reporterProvenance: "authenticated_api_reporter",
+    reporterProvenance,
     provider,
     providerAccount:
       typeof body.providerAccount === "string" ? body.providerAccount : null,

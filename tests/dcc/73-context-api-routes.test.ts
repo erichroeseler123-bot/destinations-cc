@@ -248,6 +248,34 @@ test("Context API Route & Staging Neon Concurrency Suite", async (t) => {
     assert.equal(json.errorCode, "VALIDATION_FAILED");
   });
 
+  await t.test("6b. POST /api/v1/context - Ordinary-client safetyOverride.bufferMinutes is rejected with 400 ORDINARY_CLIENT_SAFETY_OVERRIDE_FORBIDDEN", async () => {
+    const req = new NextRequest("https://api.destinationcommandcenter.com/api/v1/context", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sourceSite: "cruisepromenade",
+        destination: "juneau",
+        targetOwner: "juneauflightdeck",
+        schedule: {
+          date: "2026-07-15",
+          arrival: "08:00",
+          departure: "18:00",
+          travelers: 2,
+        },
+        safetyOverride: {
+          bufferMinutes: 15,
+        },
+      }),
+    });
+
+    const res = await handleIssueContext(req);
+    const json = await res.json();
+
+    assert.equal(res.status, 400);
+    assert.equal(json.success, false);
+    assert.equal(json.errorCode, "ORDINARY_CLIENT_SAFETY_OVERRIDE_FORBIDDEN");
+  });
+
   await t.test("7. POST /api/v1/context/:id/redeem - Fails 401 without HMAC headers", async () => {
     const req = new NextRequest(
       `https://api.destinationcommandcenter.com/api/v1/context/${createdContextId}/redeem`,

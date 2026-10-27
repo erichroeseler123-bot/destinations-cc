@@ -106,7 +106,28 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // 3. Validate against strict schema
+  // 3. Reject ordinary-client attempts to pass safetyOverride.bufferMinutes
+  if (
+    body &&
+    typeof body === "object" &&
+    !Array.isArray(body) &&
+    "safetyOverride" in (body as Record<string, unknown>)
+  ) {
+    return withCors(
+      NextResponse.json(
+        {
+          success: false,
+          errorCode: "ORDINARY_CLIENT_SAFETY_OVERRIDE_FORBIDDEN",
+          message:
+            "Ordinary clients do not have authority over safetyOverride.bufferMinutes. Authoritative minimum buffers come from DCC; clients may only request additionalPreferenceBufferMinutes >= 0.",
+        },
+        { status: 400 }
+      ),
+      origin
+    );
+  }
+
+  // 4. Validate against strict schema
   const parsed = DccContextIssueRequestSchema.safeParse(body);
   if (!parsed.success) {
     return withCors(

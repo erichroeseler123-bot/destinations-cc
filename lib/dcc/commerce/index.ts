@@ -38,7 +38,14 @@ export interface ApprovedPartnerAttribution {
 
 export interface CommercialHandoffOutcomeState {
   status: "click_recorded_outcome_unknown" | "outcome_reported";
-  bookingOutcome: "unknown" | "confirmed" | "amended" | "cancelled" | "pending";
+  bookingOutcome:
+    | "unknown"
+    | "confirmed"
+    | "amended"
+    | "cancelled"
+    | "refunded"
+    | "fulfilled"
+    | "pending";
   revenueReconciliation: "unknown" | "reported";
   commissionReconciliation: "unknown" | "estimated" | "paid";
   clickIsBooking: false;
@@ -70,6 +77,7 @@ export interface CreateCommercialHandoffInput {
   contextId?: string | null;
   evaluationRunId?: string | null;
   receiptId?: string | null;
+  idempotencyKey?: string | null;
   intendedDate?: string | null;
   intendedOption?: string | null;
   partySize?: number | null;
@@ -113,6 +121,7 @@ export interface CommercialHandoffRecord {
   dccBookingAdapterMode: "shadow_only_no_side_effects";
   requiresDecisionAuthorization: false;
   createdAt: string;
+  duplicateSubmission?: boolean;
   metadata: Record<string, unknown>;
 }
 
@@ -142,11 +151,25 @@ export interface ReconciliationComparison {
 
 export interface RecordCommercialOutcomeInput {
   reporterClientId: string;
-  reporterProvenance: "authenticated_api_reporter" | "viator_modified_since_poller" | "getyourguide_partner_adapter" | "fareharbor_webhook_adapter";
+  reporterProvenance:
+    | "authenticated_api_reporter"
+    | "viator_modified_since_poller"
+    | "getyourguide_partner_adapter"
+    | "fareharbor_webhook_adapter"
+    | "authenticated_payment_webhook"
+    | "authorized_operational_evidence"
+    | string;
   provider: CommercialProvider;
   providerAccount?: string | null;
   providerBookingRef: string;
-  eventType: "BOOKING_CONFIRMED" | "BOOKING_AMENDED" | "BOOKING_CANCELLED" | "BOOKING_PENDING" | string;
+  eventType:
+    | "BOOKING_CONFIRMED"
+    | "BOOKING_AMENDED"
+    | "BOOKING_CANCELLED"
+    | "BOOKING_REFUNDED"
+    | "BOOKING_FULFILLED"
+    | "BOOKING_PENDING"
+    | string;
   providerEventTime: string | null;
   handoffId?: string | null;
   campaignOrRefValue?: string | null;
@@ -315,6 +338,69 @@ const SITE_DEFAULT_ACCOUNTS: Record<
   },
 };
 
+export const AUTHENTICATED_EVIDENCE_PROVENANCES = new Set<string>([
+  "authenticated_api_reporter",
+  "viator_modified_since_poller",
+  "getyourguide_partner_adapter",
+  "fareharbor_webhook_adapter",
+  "authenticated_payment_webhook",
+  "authorized_operational_evidence",
+]);
+
+/**
+ * Returns true if the supplied reference is a DCC internal artifact (decision receipt,
+ * evaluation run ID, context ID, or handoff ID) rather than a real provider booking reference.
+ * A DCC decision receipt is NEVER provider confirmation.
+ */
+export function isDccInternalArtifactNotProviderConfirmation(
+  ref?: string | null
+): boolean {
+  if (!ref || typeof ref !== "string") return false;
+  const normalized = ref.trim().toLowerCase();
+  if (!normalized) return false;
+  return (
+    normalized.startsWith("rcpt_") ||
+    normalized.startsWith("rcpt:") ||
+    normalized.startsWith("dcc_dec_") ||
+    normalized.startsWith("dcc_rcpt_") ||
+    normalized.startsWith("evalrun:") ||
+    normalized.startsWith("eval_") ||
+    normalized.startsWith("dcc_ctx_") ||
+    normalized.startsWith("hndf_")
+  );
+}
+
+/**
+ * Verifies whether an outcome carries authenticated provider, payment, or authorized
+ * operational evidence required to transition a commercial handoff to
+ * `confirmed`, `cancelled`, `refunded`, or `fulfilled`.
+ */
+export function hasAuthenticatedProviderPaymentOrOperationalEvidence(input: {
+  reporterClientId?: string | null;
+  reporterProvenance?: string | null;
+  providerBookingRef?: string | null;
+}): boolean {
+  const clientId = (input.reporterClientId ?? "").trim().toLowerCase();
+  if (
+    !clientId ||
+    clientId === "anonymous" ||
+    clientId === "unauthenticated" ||
+    clientId === "public_traveler_browser" ||
+    clientId === "client:public_traveler_browser"
+  ) {
+    return false;
+  }
+  const provenance = (input.reporterProvenance ?? "").trim();
+  if (!AUTHENTICATED_EVIDENCE_PROVENANCES.has(provenance)) {
+    return false;
+  }
+  const bookingRef = (input.providerBookingRef ?? "").trim();
+  if (!bookingRef || isDccInternalArtifactNotProviderConfirmation(bookingRef)) {
+    return false;
+  }
+  return true;
+}
+
 export function buildInitialHandoffOutcomeState(
   provider: CommercialProvider,
 ): CommercialHandoffOutcomeState {
@@ -335,30 +421,68 @@ export function deriveHandoffOutcomeStateFromOutcome(
   outcome: CommercialOutcomeRecord,
 ): CommercialHandoffOutcomeState {
   const evt = outcome.eventType.trim().toUpperCase();
-  const bookingOutcome: CommercialHandoffOutcomeState["bookingOutcome"] = evt.includes(
-    "CANCEL",
+  const candidateOutcome: CommercialHandoffOutcomeState["bookingOutcome"] = evt.includes(
+    "REFUND",
   )
-    ? "cancelled"
-    : evt.includes("AMEND")
-      ? "amended"
-      : evt.includes("PEND")
-        ? "pending"
-        : evt.includes("CONFIRM")
-          ? "confirmed"
-          : "unknown";
+    ? "refunded"
+    : evt.includes("FULFILL") || evt.includes("COMPLETED")
+      ? "fulfilled"
+      : evt.includes("CANCEL")
+        ? "cancelled"
+        : evt.includes("AMEND")
+          ? "amended"
+          : evt.includes("PEND")
+            ? "pending"
+            : evt.includes("CONFIRM")
+              ? "confirmed"
+              : "unknown";
+
+  const hasValidEvidence = hasAuthenticatedProviderPaymentOrOperationalEvidence({
+    reporterClientId: outcome.reporterClientId,
+    reporterProvenance: outcome.reporterProvenance,
+    providerBookingRef: outcome.providerBookingRef,
+  });
+
+  // Confirmed, cancelled, refunded, fulfilled (and amended) require authenticated provider,
+  // payment, or authorized operational evidence. Otherwise the outcome remains unknown.
+  if (
+    (candidateOutcome === "confirmed" ||
+      candidateOutcome === "cancelled" ||
+      candidateOutcome === "refunded" ||
+      candidateOutcome === "fulfilled" ||
+      candidateOutcome === "amended") &&
+    !hasValidEvidence
+  ) {
+    return {
+      status: "click_recorded_outcome_unknown",
+      bookingOutcome: "unknown",
+      revenueReconciliation: "unknown",
+      commissionReconciliation: "unknown",
+      clickIsBooking: false,
+      reportingFeedAvailable: provider === "viator",
+      lastOutcomeId: outcome.outcomeId,
+      lastUpdatedAt: outcome.dccRecordedAt,
+    };
+  }
+
+  const bookingOutcome = hasValidEvidence ? candidateOutcome : "unknown";
+  const status: CommercialHandoffOutcomeState["status"] =
+    bookingOutcome === "unknown" ? "click_recorded_outcome_unknown" : "outcome_reported";
 
   const revenueReconciliation: CommercialHandoffOutcomeState["revenueReconciliation"] =
-    outcome.bookingValue.amount !== null ? "reported" : "unknown";
+    hasValidEvidence && outcome.bookingValue.amount !== null ? "reported" : "unknown";
 
   const commissionReconciliation: CommercialHandoffOutcomeState["commissionReconciliation"] =
-    outcome.paidCommission.amount !== null
-      ? "paid"
-      : outcome.estimatedCommission.amount !== null
-        ? "estimated"
-        : "unknown";
+    !hasValidEvidence
+      ? "unknown"
+      : outcome.paidCommission.amount !== null
+        ? "paid"
+        : outcome.estimatedCommission.amount !== null
+          ? "estimated"
+          : "unknown";
 
   return {
-    status: "outcome_reported",
+    status,
     bookingOutcome,
     revenueReconciliation,
     commissionReconciliation,
@@ -675,8 +799,51 @@ export function buildProviderAffiliateHandoffUrl(params: {
 export async function createCommercialHandoff(
   input: CreateCommercialHandoffInput
 ): Promise<CommercialHandoffRecord> {
-  const handoffId = generateOpaqueHandoffId();
   const originatingSite = normalizeOriginatingSite(input.originatingSite);
+  const rawIdempotencyKey =
+    (typeof input.idempotencyKey === "string" && input.idempotencyKey.trim()) ||
+    (input.metadata &&
+    typeof input.metadata.idempotencyKey === "string" &&
+    input.metadata.idempotencyKey.trim()) ||
+    null;
+
+  if (rawIdempotencyKey) {
+    for (const existing of memoryHandoffs.values()) {
+      if (
+        existing.originatingSite === originatingSite &&
+        existing.metadata?.idempotencyKey === rawIdempotencyKey
+      ) {
+        return {
+          ...existing,
+          duplicateSubmission: true,
+        };
+      }
+    }
+
+    const poolCheck = getCommercePool();
+    const hasDbCheck = await ensureCommerceTables();
+    if (poolCheck && hasDbCheck) {
+      try {
+        const dupRes = await poolCheck.query<{ handoff_id: string }>(
+          `SELECT handoff_id FROM dcc_commercial_handoffs WHERE originating_site = $1 AND metadata_json->>'idempotencyKey' = $2 LIMIT 1`,
+          [originatingSite, rawIdempotencyKey]
+        );
+        if (dupRes.rows[0]?.handoff_id) {
+          const loaded = await getCommercialHandoffById(dupRes.rows[0].handoff_id);
+          if (loaded) {
+            return {
+              ...loaded,
+              duplicateSubmission: true,
+            };
+          }
+        }
+      } catch {
+        // Proceed with creation if lookup fails
+      }
+    }
+  }
+
+  const handoffId = generateOpaqueHandoffId();
   const urlBuilt = buildProviderAffiliateHandoffUrl({
     originatingSite,
     provider: input.provider,
@@ -716,8 +883,10 @@ export async function createCommercialHandoff(
 
   const enrichedMetadata: Record<string, unknown> = {
     ...(input.metadata ?? {}),
+    ...(rawIdempotencyKey ? { idempotencyKey: rawIdempotencyKey } : {}),
     ...(derivedTargetSite ? { targetSite: derivedTargetSite } : {}),
     ...(approvedPartnerAttribution ? { approvedPartnerAttribution } : {}),
+    outcomeState,
   };
 
   const partySize =
@@ -836,6 +1005,7 @@ export async function createCommercialHandoff(
     dccBookingAdapterMode: "shadow_only_no_side_effects",
     requiresDecisionAuthorization: false,
     createdAt: createdAtIso,
+    duplicateSubmission: false,
     metadata: enrichedMetadata,
   };
 
@@ -893,6 +1063,10 @@ export async function getCommercialHandoffById(
       typeof meta.approvedPartnerAttribution === "object"
         ? (meta.approvedPartnerAttribution as ApprovedPartnerAttribution)
         : null;
+    const outcomeStateFromMeta =
+      meta.outcomeState && typeof meta.outcomeState === "object"
+        ? (meta.outcomeState as CommercialHandoffOutcomeState)
+        : buildInitialHandoffOutcomeState(row.provider);
 
     const loaded: CommercialHandoffRecord = {
       handoffId: row.handoff_id,
@@ -917,12 +1091,13 @@ export async function getCommercialHandoffById(
         row.quoted_price_amount !== null ? Number(row.quoted_price_amount) : null,
       quotedPriceCurrency: row.quoted_price_currency,
       approvedPartnerAttribution: partnerAttrFromMeta,
-      outcomeState: buildInitialHandoffOutcomeState(row.provider),
+      outcomeState: outcomeStateFromMeta,
       callerClientId: row.caller_client_id,
       traceparent: row.traceparent,
       dccBookingAdapterMode: "shadow_only_no_side_effects",
       requiresDecisionAuthorization: false,
       createdAt: new Date(row.created_at).toISOString(),
+      duplicateSubmission: false,
       metadata: meta,
     };
     memoryHandoffs.set(loaded.handoffId, loaded);
@@ -1046,6 +1221,8 @@ export function computeOutcomeDedupeKey(input: {
 
 /**
  * Records a commercial outcome (from an authenticated reporter or provider poller).
+ * - Rejects DCC internal artifacts (decision receipts, evaluation runs, context IDs, handoff IDs)
+ *   submitted as `providerBookingRef` because a DCC decision receipt is NEVER provider confirmation.
  * - Deduplicates repeated deliveries of the same provider booking event.
  * - Preserves unmatched outcomes (`reconciliationStatus: "unmatched"`, `handoffId: null`).
  * - Compares actual booked details against evaluated/handoff details when reconciled.
@@ -1055,6 +1232,15 @@ export function computeOutcomeDedupeKey(input: {
 export async function recordCommercialOutcome(
   input: RecordCommercialOutcomeInput
 ): Promise<CommercialOutcomeRecord> {
+  if (isDccInternalArtifactNotProviderConfirmation(input.providerBookingRef)) {
+    const err = new Error(
+      `A DCC decision receipt or internal artifact ('${input.providerBookingRef}') is not provider confirmation. Confirmed, cancelled, refunded, and fulfilled outcomes require an authenticated provider, payment, or authorized operational booking reference.`
+    ) as Error & { code?: string; statusCode?: number };
+    err.code = "DCC_RECEIPT_IS_NOT_PROVIDER_CONFIRMATION";
+    err.statusCode = 422;
+    throw err;
+  }
+
   const resolvedHandoffId =
     extractHandoffIdFromTrackingValue(input.handoffId) ||
     extractHandoffIdFromTrackingValue(input.campaignOrRefValue) ||
@@ -1253,11 +1439,32 @@ export async function recordCommercialOutcome(
   };
 
   if (matchedHandoff) {
+    const nextOutcomeState = deriveHandoffOutcomeStateFromOutcome(
+      matchedHandoff.provider,
+      record
+    );
     const updatedHandoff: CommercialHandoffRecord = {
       ...matchedHandoff,
-      outcomeState: deriveHandoffOutcomeStateFromOutcome(matchedHandoff.provider, record),
+      outcomeState: nextOutcomeState,
+      metadata: {
+        ...matchedHandoff.metadata,
+        outcomeState: nextOutcomeState,
+      },
     };
     memoryHandoffs.set(matchedHandoff.handoffId, updatedHandoff);
+
+    if (pool && hasDb) {
+      try {
+        await pool.query(
+          `UPDATE dcc_commercial_handoffs
+           SET metadata_json = jsonb_set(COALESCE(metadata_json, '{}'::jsonb), '{outcomeState}', $2::jsonb, true)
+           WHERE handoff_id = $1`,
+          [matchedHandoff.handoffId, JSON.stringify(nextOutcomeState)]
+        );
+      } catch {
+        // Non-fatal
+      }
+    }
   }
 
   memoryOutcomesByDedupeKey.set(dedupeKey, { ...record, duplicateDelivery: false });

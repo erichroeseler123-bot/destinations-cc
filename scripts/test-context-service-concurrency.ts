@@ -138,9 +138,7 @@ async function runTests() {
       travelers: 4,
       shipOrVenue: "norwegian-jewel",
     },
-    safetyOverride: {
-      bufferMinutes: 0, // Client tries 0m buffer!
-    },
+    additionalPreferenceBufferMinutes: 0,
     idempotencyKey: "cart_user_9921",
   };
 
@@ -158,8 +156,16 @@ async function runTests() {
   // 3. CONCURRENT REDEMPTION RACE CONDITION TEST
   console.log("\n--- Executing Concurrent Redemption Race Condition (2 Simultaneous Calls) ---");
   const [redeemResult1, redeemResult2] = await Promise.all([
-    redeemContext(issued.contextId, "juneauflightdeck", { now: baseNow + 5000, dbOverride: mockDb }),
-    redeemContext(issued.contextId, "juneauflightdeck", { now: baseNow + 5000, dbOverride: mockDb }),
+    redeemContext(issued.contextId, "juneauflightdeck", {
+      now: baseNow + 5000,
+      dbOverride: mockDb,
+      replayPolicy: "strict_single_use",
+    }),
+    redeemContext(issued.contextId, "juneauflightdeck", {
+      now: baseNow + 5000,
+      dbOverride: mockDb,
+      replayPolicy: "strict_single_use",
+    }),
   ]);
 
   const winnerCount = (redeemResult1.success ? 1 : 0) + (redeemResult2.success ? 1 : 0);
