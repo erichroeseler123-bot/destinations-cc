@@ -14,137 +14,94 @@
   },
   "events": [
     {
-      "eventSeq": 1,
-      "eventId": "kevt:1:f2891cdf0c014c2b62bfc821",
-      "eventType": "claim_created",
-      "claimId": "clm:gosno:max-pax-per-shuttle",
-      "claimVersionId": "clmv:gosno:max-pax-per-shuttle:v1",
-      "targetPreviousVersionId": null,
-      "recordedAt": null,
-      "recordedAtVerified": false,
-      "recordingTimeStatus": "unverified_legacy_recording_time",
+      "reason": "Historical pre-v0.3.1 bootstrap seed with unverified legacy recording time (subsequently withdrawn after first-party GoSno source audit).",
       "actorId": "dcc-v03-bootstrap",
+      "claimId": "clm:gosno:max-pax-per-shuttle",
+      "eventId": "kevt:1:f2891cdf0c014c2b62bfc821",
+      "eventSeq": 1,
+      "eventHash": "ec33be3adb85dc95f1e2655d83a99035d1573060c432106d94d8e63a6fce89f4",
+      "eventType": "claim_created",
+      "recordedAt": null,
       "isSynthetic": true,
-      "provenanceClass": "withdrawn_unsupported",
+      "prevEventHash": null,
+      "claimVersionId": "clmv:gosno:max-pax-per-shuttle:v1",
       "claimDefinition": {
         "claimId": "clm:gosno:max-pax-per-shuttle",
-        "claimVersionId": "clmv:gosno:max-pax-per-shuttle:v1",
-        "subjectDccId": "dcc:ent:tour_candidate:faff88c170b55a0038781a36",
-        "predicate": "max_passengers_per_shuttle_van",
-        "assertionType": "policy",
-        "epistemicState": "disputed",
-        "typedValue": 14,
-        "unitOrCurrency": "passengers",
-        "validFrom": "2026-01-01T00:00:00.000Z",
         "validTo": "2026-10-27T10:52:33.853Z",
-        "sourceObservedAt": null,
-        "sourcePublishedAt": null,
+        "predicate": "max_passengers_per_shuttle_van",
+        "validFrom": "2026-01-01T00:00:00.000Z",
+        "typedValue": 14,
         "retrievedAt": null,
-        "freshnessTtlSeconds": 7776000,
+        "evidenceRefs": [],
+        "subjectDccId": "dcc:ent:tour_candidate:faff88c170b55a0038781a36",
+        "assertionType": "policy",
+        "claimVersionId": "clmv:gosno:max-pax-per-shuttle:v1",
+        "epistemicState": "disputed",
+        "unitOrCurrency": "passengers",
         "sourceAuthority": {
           "sourceDccId": "dcc:ent:evidence_source:1623a923a9231f09c111826d",
-          "organizationName": "Withdrawn Legacy Seed (GoSno)",
           "authorityTier": "unverified_third_party",
-          "competentDomains": [],
           "claimedDomain": "ground_shuttle_operations",
-          "independentlyCorroboratedBySourceDccIds": [],
-          "licenseOrReusePolicy": "Withdrawn unsupported seed fixture"
+          "competentDomains": [],
+          "organizationName": "Withdrawn Legacy Seed (GoSno)",
+          "licenseOrReusePolicy": "Withdrawn unsupported seed fixture",
+          "independentlyCorroboratedBySourceDccIds": []
         },
-        "evidenceRefs": []
+        "sourceObservedAt": null,
+        "sourcePublishedAt": null,
+        "freshnessTtlSeconds": 7776000
       },
-      "reason": "Historical pre-v0.3.1 bootstrap seed with unverified legacy recording time (subsequently withdrawn after first-party GoSno source audit).",
-      "corroboratingSourceDccId": null,
-      "eventHash": "ec33be3adb85dc95f1e2655d83a99035d1573060c432106d94d8e63a6fce89f4",
-      "prevEventHash": null
-    },
-    {
-      "eventSeq": 2,
-      "eventId": "kevt:2:892fc8b7e4aa86881fecefca",
-      "eventType": "claim_withdrawn",
-      "claimId": "clm:gosno:max-pax-per-shuttle",
-      "claimVersionId": "clmv:gosno:max-pax-per-shuttle:v2-withdrawn",
-      "targetPreviousVersionId": "clmv:gosno:max-pax-per-shuttle:v1",
-      "recordedAt": "2026-10-27T10:52:33.853Z",
-      "recordedAtVerified": true,
-      "recordingTimeStatus": "verified_database_admission",
-      "actorId": "dcc-v031-evidence-containment-auditor",
-      "isSynthetic": false,
-      "provenanceClass": "operational_evidence",
-      "claimDefinition": null,
-      "reason": "Withdrawn unsupported bootstrap seed: First-party GoSno captures (https://gosno.co/api/public/route-feed, https://gosno.co/agent.json, https://gosno.co/llms.txt, https://gosno.co/winter-park) establish that GoSno operates private door-to-door mountain transportation only (no shared shuttles), with established vehicle limits of 6 passengers for Private SUVs and 10 passengers for Private Vans, and per-vehicle flat rates starting at $349-$699 rather than an $89 per-person shared shuttle.",
-      "corroboratingSourceDccId": null,
-      "eventHash": "64767cf4fb3687aa0ea8d1c9f1053f8fbc5d05a81a3cb91efc3b15a858d44d94",
-      "prevEventHash": "ec33be3adb85dc95f1e2655d83a99035d1573060c432106d94d8e63a6fce89f4"
-    },
-    {
-      "eventSeq": 3,
-      "eventId": "kevt:3:729f779a5de488b907c1ba60",
-      "eventType": "claim_created",
-      "claimId": "clm:jnu:standard-seat-weight-limit-lbs",
-      "claimVersionId": "clmv:jnu:standard-seat-weight-limit-lbs:v1",
+      "provenanceClass": "withdrawn_unsupported",
+      "recordedAtVerified": false,
+      "recordingTimeStatus": "unverified_legacy_recording_time",
       "targetPreviousVersionId": null,
-      "recordedAt": "2026-10-27T10:52:33.795Z",
+      "corroboratingSourceDccId": null
+    },
+    {
+      "reason": "Withdrawn unsupported bootstrap seed: First-party GoSno captures (https://gosno.co/api/public/route-feed, https://gosno.co/agent.json, https://gosno.co/llms.txt, https://gosno.co/winter-park) establish that GoSno operates private door-to-door mountain transportation only (no shared shuttles), with established vehicle limits of 6 passengers for Private SUVs and 10 passengers for Private Vans, and per-vehicle flat rates starting at $349-$699 rather than an $89 per-person shared shuttle.",
+      "actorId": "dcc-v031-evidence-containment-auditor",
+      "claimId": "clm:gosno:max-pax-per-shuttle",
+      "eventId": "kevt:2:892fc8b7e4aa86881fecefca",
+      "eventSeq": 2,
+      "eventHash": "64767cf4fb3687aa0ea8d1c9f1053f8fbc5d05a81a3cb91efc3b15a858d44d94",
+      "eventType": "claim_withdrawn",
+      "recordedAt": "2026-10-27T10:52:33.853Z",
+      "isSynthetic": false,
+      "prevEventHash": "ec33be3adb85dc95f1e2655d83a99035d1573060c432106d94d8e63a6fce89f4",
+      "claimVersionId": "clmv:gosno:max-pax-per-shuttle:v2-withdrawn",
+      "claimDefinition": null,
+      "provenanceClass": "operational_evidence",
       "recordedAtVerified": true,
       "recordingTimeStatus": "verified_database_admission",
+      "targetPreviousVersionId": "clmv:gosno:max-pax-per-shuttle:v1",
+      "corroboratingSourceDccId": null
+    },
+    {
+      "reason": "Derived from preserved TEMSCO, NorthStar, and Coastal HTML captures: 250 lbs (TEMSCO/NorthStar +$150 surcharge) and 260 lbs / 300 lbs (Coastal 1.5-seat / 2-seat surcharge) are weight surcharge thresholds rather than passenger exclusions.",
       "actorId": "dcc-v031-preserved-source-extractor",
+      "claimId": "clm:jnu:standard-seat-weight-limit-lbs",
+      "eventId": "kevt:3:729f779a5de488b907c1ba60",
+      "eventSeq": 3,
+      "eventHash": "faa6eb51ee7614d51cc2e04dfa7839b87767355d2ea4c701603f9ea4285d46dc",
+      "eventType": "claim_created",
+      "recordedAt": "2026-10-27T10:52:33.795Z",
       "isSynthetic": false,
-      "provenanceClass": "operational_evidence",
+      "prevEventHash": "64767cf4fb3687aa0ea8d1c9f1053f8fbc5d05a81a3cb91efc3b15a858d44d94",
+      "claimVersionId": "clmv:jnu:standard-seat-weight-limit-lbs:v1",
       "claimDefinition": {
         "claimId": "clm:jnu:standard-seat-weight-limit-lbs",
-        "claimVersionId": "clmv:jnu:standard-seat-weight-limit-lbs:v1",
-        "subjectDccId": "dcc:ent:destination:eb96e3322ed5bdb8f38ed3bc",
-        "predicate": "operator_weight_surcharge_and_safety_policy_verified",
-        "assertionType": "policy",
-        "epistemicState": "verified_against_identified_evidence",
-        "typedValue": true,
-        "unitOrCurrency": "boolean",
-        "validFrom": "2026-01-01T00:00:00.000Z",
         "validTo": "2027-12-31T23:59:59.000Z",
-        "sourceObservedAt": "2026-10-26T21:14:33.152Z",
-        "sourcePublishedAt": null,
+        "predicate": "operator_weight_surcharge_and_safety_policy_verified",
+        "validFrom": "2026-01-01T00:00:00.000Z",
+        "typedValue": true,
         "retrievedAt": "2026-10-26T21:14:33.152Z",
-        "freshnessTtlSeconds": 15552000,
-        "sourceAuthority": {
-          "sourceDccId": "dcc:ent:evidence_source:6b6ceccc017b387699dfb3fc",
-          "organizationName": "Coastal Helicopters / TEMSCO Helicopters / NorthStar Trekking",
-          "authorityTier": "direct_operator",
-          "competentDomains": [
-            "operator_safety_and_weight_policy"
-          ],
-          "claimedDomain": "operator_safety_and_weight_policy",
-          "independentlyCorroboratedBySourceDccIds": [
-            "dcc:ent:evidence_source:4b8e4e1d16588d8e15cf0806",
-            "dcc:ent:evidence_source:39633ceb689bb3c38e2f2ccd"
-          ],
-          "licenseOrReusePolicy": "First-party operator published policy facts"
-        },
         "evidenceRefs": [
           {
-            "evidenceRefId": "evref:jnu:coastal:price-tiers-html",
-            "sourceDccId": "dcc:ent:evidence_source:6b6ceccc017b387699dfb3fc",
-            "sourceTitle": "Coastal Helicopters — Icefield Excursion Product & Policy Page",
-            "sourceOrganization": "Coastal Helicopters, Inc.",
-            "canonicalSourceUrl": "https://coastalhelicopters.com/tours/icefield-excursion/",
-            "snapshotId": "snap:cap:juneau:coastal-icefield-excursion-html",
-            "snapshotSha256": "37f43f31bd9890655bf550fef85193d116c378d0b8efeecdd19a9830f45f95e1",
-            "privateObjectKey": "v03/raw_source_captures/sha256/37f43f31bd9890655bf550fef85193d116c378d0b8efeecdd19a9830f45f95e1.html",
-            "derivedTextSnapshotId": "snap:derived:cap:juneau:coastal-icefield-excursion-html",
-            "derivedTextSnapshotSha256": "a3f8341c3fcc8c05aeec3517fc39c09919128196b6a3b4bcaae8a4bd24d232fb",
-            "privateDerivedTextObjectKey": "v03/raw_source_captures/sha256/a3f8341c3fcc8c05aeec3517fc39c09919128196b6a3b4bcaae8a4bd24d232fb.derived.txt",
-            "httpStatus": 200,
-            "responseHeaders": {
-              "cache-control": "max-age=300, must-revalidate",
-              "content-type": "text/html; charset=UTF-8",
-              "date": "Mon, 26 Oct 2026 21:14:33 GMT",
-              "server": "nginx"
+            "extractor": {
+              "method": "deterministic_dom_selector",
+              "extractorId": "dcc-preserved-capture-selector",
+              "extractorVersion": "dcc-html-text-extractor-v031.1"
             },
-            "provenanceClass": "network_capture_verified",
-            "isSynthetic": false,
-            "lifecycleState": "active",
-            "withdrawn": false,
-            "withdrawnAt": null,
-            "withdrawalReason": null,
-            "withdrawalEventId": null,
             "selectors": [
               {
                 "type": "TextQuoteSelector",
@@ -153,54 +110,54 @@
                 "suffix": "\nDiscover Alaska’s glacial landscape from two pe"
               },
               {
+                "end": 842,
                 "type": "TextPositionSelector",
-                "start": 639,
-                "end": 842
+                "start": 639
               }
             ],
-            "surroundingContext": {
-              "before": "ve and Explore Herbert Glacier on Foot\nBook Now\n",
-              "exactMatch": "Standard Passengers\nStarts AT:\n(Price may vary depending on weight)\n$\n459\nStandard Plus\nStarts AT:\n(Price may vary depending on weight)\n$\n609\nPremium\nStarts AT:\n(Price may vary depending on weight)\n$\n918",
-              "after": "\nDiscover Alaska’s glacial landscape from two pe"
-            },
-            "extractor": {
-              "extractorId": "dcc-preserved-capture-selector",
-              "extractorVersion": "dcc-html-text-extractor-v031.1",
-              "method": "deterministic_dom_selector"
-            },
+            "withdrawn": false,
+            "httpStatus": 200,
+            "snapshotId": "snap:cap:juneau:coastal-icefield-excursion-html",
             "extractedAt": "2026-10-26T21:14:33.152Z",
+            "isSynthetic": false,
             "retrievedAt": "2026-10-26T21:14:33.152Z",
-            "sourcePublishedAt": null,
+            "sourceDccId": "dcc:ent:evidence_source:6b6ceccc017b387699dfb3fc",
+            "sourceTitle": "Coastal Helicopters — Icefield Excursion Product & Policy Page",
+            "withdrawnAt": null,
+            "evidenceHash": "5723e2081bbc5c41025a89bdb9ebdf57606d59d4dcf2d30b80b6208cd439fadb",
+            "evidenceRefId": "evref:jnu:coastal:price-tiers-html",
+            "lifecycleState": "active",
+            "snapshotSha256": "37f43f31bd9890655bf550fef85193d116c378d0b8efeecdd19a9830f45f95e1",
+            "provenanceClass": "network_capture_verified",
+            "responseHeaders": {
+              "date": "Mon, 26 Oct 2026 21:14:33 GMT",
+              "server": "nginx",
+              "content-type": "text/html; charset=UTF-8",
+              "cache-control": "max-age=300, must-revalidate"
+            },
+            "privateObjectKey": "v03/raw_source_captures/sha256/37f43f31bd9890655bf550fef85193d116c378d0b8efeecdd19a9830f45f95e1.html",
             "sourceObservedAt": null,
+            "withdrawalReason": null,
+            "sourcePublishedAt": null,
+            "withdrawalEventId": null,
+            "canonicalSourceUrl": "https://coastalhelicopters.com/tours/icefield-excursion/",
+            "sourceOrganization": "Coastal Helicopters, Inc.",
+            "surroundingContext": {
+              "after": "\nDiscover Alaska’s glacial landscape from two pe",
+              "before": "ve and Explore Herbert Glacier on Foot\nBook Now\n",
+              "exactMatch": "Standard Passengers\nStarts AT:\n(Price may vary depending on weight)\n$\n459\nStandard Plus\nStarts AT:\n(Price may vary depending on weight)\n$\n609\nPremium\nStarts AT:\n(Price may vary depending on weight)\n$\n918"
+            },
             "licenseOrReusePolicy": "First-party operator published tariff facts (Coastal Helicopters)",
-            "evidenceHash": "5723e2081bbc5c41025a89bdb9ebdf57606d59d4dcf2d30b80b6208cd439fadb"
+            "derivedTextSnapshotId": "snap:derived:cap:juneau:coastal-icefield-excursion-html",
+            "derivedTextSnapshotSha256": "a3f8341c3fcc8c05aeec3517fc39c09919128196b6a3b4bcaae8a4bd24d232fb",
+            "privateDerivedTextObjectKey": "v03/raw_source_captures/sha256/a3f8341c3fcc8c05aeec3517fc39c09919128196b6a3b4bcaae8a4bd24d232fb.derived.txt"
           },
           {
-            "evidenceRefId": "evref:jnu:coastal:weight-260-surcharge-faq",
-            "sourceDccId": "dcc:ent:evidence_source:6b6ceccc017b387699dfb3fc",
-            "sourceTitle": "Coastal Helicopters — Passenger Weight, Safety & Mobility FAQs",
-            "sourceOrganization": "Coastal Helicopters, Inc.",
-            "canonicalSourceUrl": "https://coastalhelicopters.com/faq/",
-            "snapshotId": "snap:cap:juneau:coastal-faq-html",
-            "snapshotSha256": "724c5bb399830abfd5fdd58ea3dafbbcd0618732e894dbbbdf22eea784985789",
-            "privateObjectKey": "v03/raw_source_captures/sha256/724c5bb399830abfd5fdd58ea3dafbbcd0618732e894dbbbdf22eea784985789.html",
-            "derivedTextSnapshotId": "snap:derived:cap:juneau:coastal-faq-html",
-            "derivedTextSnapshotSha256": "0167f62bdbbd28dd3442abd03c660bae739e07cb35f96bd6b04a5a05083628b9",
-            "privateDerivedTextObjectKey": "v03/raw_source_captures/sha256/0167f62bdbbd28dd3442abd03c660bae739e07cb35f96bd6b04a5a05083628b9.derived.txt",
-            "httpStatus": 200,
-            "responseHeaders": {
-              "cache-control": "max-age=300, must-revalidate",
-              "content-type": "text/html; charset=UTF-8",
-              "date": "Mon, 26 Oct 2026 21:14:34 GMT",
-              "server": "nginx"
+            "extractor": {
+              "method": "deterministic_dom_selector",
+              "extractorId": "dcc-preserved-capture-selector",
+              "extractorVersion": "dcc-html-text-extractor-v031.1"
             },
-            "provenanceClass": "network_capture_verified",
-            "isSynthetic": false,
-            "lifecycleState": "active",
-            "withdrawn": false,
-            "withdrawnAt": null,
-            "withdrawalReason": null,
-            "withdrawalEventId": null,
             "selectors": [
               {
                 "type": "TextQuoteSelector",
@@ -209,54 +166,54 @@
                 "suffix": "\nI weigh 300+lbs, why do I have to pay more?\nDue"
               },
               {
+                "end": 7210,
                 "type": "TextPositionSelector",
-                "start": 7074,
-                "end": 7210
+                "start": 7074
               }
             ],
-            "surroundingContext": {
-              "before": "et.\nI weigh 260+lbs, why do I have to pay more?\n",
-              "exactMatch": "Due to the limited space in our aircraft, we have to reserve extra space for those weighing 260lbs or more. This fee pays for 1.5 seats.",
-              "after": "\nI weigh 300+lbs, why do I have to pay more?\nDue"
-            },
-            "extractor": {
-              "extractorId": "dcc-preserved-capture-selector",
-              "extractorVersion": "dcc-html-text-extractor-v031.1",
-              "method": "deterministic_dom_selector"
-            },
+            "withdrawn": false,
+            "httpStatus": 200,
+            "snapshotId": "snap:cap:juneau:coastal-faq-html",
             "extractedAt": "2026-10-26T21:14:33.493Z",
+            "isSynthetic": false,
             "retrievedAt": "2026-10-26T21:14:33.493Z",
-            "sourcePublishedAt": null,
-            "sourceObservedAt": null,
-            "licenseOrReusePolicy": "First-party operator published FAQ policy (Coastal Helicopters)",
-            "evidenceHash": "1029985802ee3c0ec5165d4fc5b2e918d4efa0d03cd8041906e3e7cce9b867bd"
-          },
-          {
-            "evidenceRefId": "evref:jnu:coastal:weight-300-surcharge-faq",
             "sourceDccId": "dcc:ent:evidence_source:6b6ceccc017b387699dfb3fc",
             "sourceTitle": "Coastal Helicopters — Passenger Weight, Safety & Mobility FAQs",
-            "sourceOrganization": "Coastal Helicopters, Inc.",
-            "canonicalSourceUrl": "https://coastalhelicopters.com/faq/",
-            "snapshotId": "snap:cap:juneau:coastal-faq-html",
+            "withdrawnAt": null,
+            "evidenceHash": "1029985802ee3c0ec5165d4fc5b2e918d4efa0d03cd8041906e3e7cce9b867bd",
+            "evidenceRefId": "evref:jnu:coastal:weight-260-surcharge-faq",
+            "lifecycleState": "active",
             "snapshotSha256": "724c5bb399830abfd5fdd58ea3dafbbcd0618732e894dbbbdf22eea784985789",
+            "provenanceClass": "network_capture_verified",
+            "responseHeaders": {
+              "date": "Mon, 26 Oct 2026 21:14:34 GMT",
+              "server": "nginx",
+              "content-type": "text/html; charset=UTF-8",
+              "cache-control": "max-age=300, must-revalidate"
+            },
             "privateObjectKey": "v03/raw_source_captures/sha256/724c5bb399830abfd5fdd58ea3dafbbcd0618732e894dbbbdf22eea784985789.html",
+            "sourceObservedAt": null,
+            "withdrawalReason": null,
+            "sourcePublishedAt": null,
+            "withdrawalEventId": null,
+            "canonicalSourceUrl": "https://coastalhelicopters.com/faq/",
+            "sourceOrganization": "Coastal Helicopters, Inc.",
+            "surroundingContext": {
+              "after": "\nI weigh 300+lbs, why do I have to pay more?\nDue",
+              "before": "et.\nI weigh 260+lbs, why do I have to pay more?\n",
+              "exactMatch": "Due to the limited space in our aircraft, we have to reserve extra space for those weighing 260lbs or more. This fee pays for 1.5 seats."
+            },
+            "licenseOrReusePolicy": "First-party operator published FAQ policy (Coastal Helicopters)",
             "derivedTextSnapshotId": "snap:derived:cap:juneau:coastal-faq-html",
             "derivedTextSnapshotSha256": "0167f62bdbbd28dd3442abd03c660bae739e07cb35f96bd6b04a5a05083628b9",
-            "privateDerivedTextObjectKey": "v03/raw_source_captures/sha256/0167f62bdbbd28dd3442abd03c660bae739e07cb35f96bd6b04a5a05083628b9.derived.txt",
-            "httpStatus": 200,
-            "responseHeaders": {
-              "cache-control": "max-age=300, must-revalidate",
-              "content-type": "text/html; charset=UTF-8",
-              "date": "Mon, 26 Oct 2026 21:14:34 GMT",
-              "server": "nginx"
+            "privateDerivedTextObjectKey": "v03/raw_source_captures/sha256/0167f62bdbbd28dd3442abd03c660bae739e07cb35f96bd6b04a5a05083628b9.derived.txt"
+          },
+          {
+            "extractor": {
+              "method": "deterministic_dom_selector",
+              "extractorId": "dcc-preserved-capture-selector",
+              "extractorVersion": "dcc-html-text-extractor-v031.1"
             },
-            "provenanceClass": "network_capture_verified",
-            "isSynthetic": false,
-            "lifecycleState": "active",
-            "withdrawn": false,
-            "withdrawnAt": null,
-            "withdrawalReason": null,
-            "withdrawalEventId": null,
             "selectors": [
               {
                 "type": "TextQuoteSelector",
@@ -265,54 +222,54 @@
                 "suffix": "\nDo you only operate out of Juneau?\nYes, our ope"
               },
               {
+                "end": 7394,
                 "type": "TextPositionSelector",
-                "start": 7255,
-                "end": 7394
+                "start": 7255
               }
             ],
-            "surroundingContext": {
-              "before": "ts.\nI weigh 300+lbs, why do I have to pay more?\n",
-              "exactMatch": "Due to the limited space in our aircraft, we have to reserve extra space for those weighing 300lbs or more. This fee pays for 2 full seats.",
-              "after": "\nDo you only operate out of Juneau?\nYes, our ope"
-            },
-            "extractor": {
-              "extractorId": "dcc-preserved-capture-selector",
-              "extractorVersion": "dcc-html-text-extractor-v031.1",
-              "method": "deterministic_dom_selector"
-            },
+            "withdrawn": false,
+            "httpStatus": 200,
+            "snapshotId": "snap:cap:juneau:coastal-faq-html",
             "extractedAt": "2026-10-26T21:14:33.493Z",
+            "isSynthetic": false,
             "retrievedAt": "2026-10-26T21:14:33.493Z",
-            "sourcePublishedAt": null,
+            "sourceDccId": "dcc:ent:evidence_source:6b6ceccc017b387699dfb3fc",
+            "sourceTitle": "Coastal Helicopters — Passenger Weight, Safety & Mobility FAQs",
+            "withdrawnAt": null,
+            "evidenceHash": "7ff678f1d2e34a8e3217cceebc0a3cf53ea462fcc7c0fa4dd65fd5981515a929",
+            "evidenceRefId": "evref:jnu:coastal:weight-300-surcharge-faq",
+            "lifecycleState": "active",
+            "snapshotSha256": "724c5bb399830abfd5fdd58ea3dafbbcd0618732e894dbbbdf22eea784985789",
+            "provenanceClass": "network_capture_verified",
+            "responseHeaders": {
+              "date": "Mon, 26 Oct 2026 21:14:34 GMT",
+              "server": "nginx",
+              "content-type": "text/html; charset=UTF-8",
+              "cache-control": "max-age=300, must-revalidate"
+            },
+            "privateObjectKey": "v03/raw_source_captures/sha256/724c5bb399830abfd5fdd58ea3dafbbcd0618732e894dbbbdf22eea784985789.html",
             "sourceObservedAt": null,
+            "withdrawalReason": null,
+            "sourcePublishedAt": null,
+            "withdrawalEventId": null,
+            "canonicalSourceUrl": "https://coastalhelicopters.com/faq/",
+            "sourceOrganization": "Coastal Helicopters, Inc.",
+            "surroundingContext": {
+              "after": "\nDo you only operate out of Juneau?\nYes, our ope",
+              "before": "ts.\nI weigh 300+lbs, why do I have to pay more?\n",
+              "exactMatch": "Due to the limited space in our aircraft, we have to reserve extra space for those weighing 300lbs or more. This fee pays for 2 full seats."
+            },
             "licenseOrReusePolicy": "First-party operator published FAQ policy (Coastal Helicopters)",
-            "evidenceHash": "7ff678f1d2e34a8e3217cceebc0a3cf53ea462fcc7c0fa4dd65fd5981515a929"
+            "derivedTextSnapshotId": "snap:derived:cap:juneau:coastal-faq-html",
+            "derivedTextSnapshotSha256": "0167f62bdbbd28dd3442abd03c660bae739e07cb35f96bd6b04a5a05083628b9",
+            "privateDerivedTextObjectKey": "v03/raw_source_captures/sha256/0167f62bdbbd28dd3442abd03c660bae739e07cb35f96bd6b04a5a05083628b9.derived.txt"
           },
           {
-            "evidenceRefId": "evref:jnu:coastal:prohibited-items-html",
-            "sourceDccId": "dcc:ent:evidence_source:6b6ceccc017b387699dfb3fc",
-            "sourceTitle": "Coastal Helicopters — Icefield Excursion Product & Policy Page",
-            "sourceOrganization": "Coastal Helicopters, Inc.",
-            "canonicalSourceUrl": "https://coastalhelicopters.com/tours/icefield-excursion/",
-            "snapshotId": "snap:cap:juneau:coastal-icefield-excursion-html",
-            "snapshotSha256": "37f43f31bd9890655bf550fef85193d116c378d0b8efeecdd19a9830f45f95e1",
-            "privateObjectKey": "v03/raw_source_captures/sha256/37f43f31bd9890655bf550fef85193d116c378d0b8efeecdd19a9830f45f95e1.html",
-            "derivedTextSnapshotId": "snap:derived:cap:juneau:coastal-icefield-excursion-html",
-            "derivedTextSnapshotSha256": "a3f8341c3fcc8c05aeec3517fc39c09919128196b6a3b4bcaae8a4bd24d232fb",
-            "privateDerivedTextObjectKey": "v03/raw_source_captures/sha256/a3f8341c3fcc8c05aeec3517fc39c09919128196b6a3b4bcaae8a4bd24d232fb.derived.txt",
-            "httpStatus": 200,
-            "responseHeaders": {
-              "cache-control": "max-age=300, must-revalidate",
-              "content-type": "text/html; charset=UTF-8",
-              "date": "Mon, 26 Oct 2026 21:14:33 GMT",
-              "server": "nginx"
+            "extractor": {
+              "method": "deterministic_dom_selector",
+              "extractorId": "dcc-preserved-capture-selector",
+              "extractorVersion": "dcc-html-text-extractor-v031.1"
             },
-            "provenanceClass": "network_capture_verified",
-            "isSynthetic": false,
-            "lifecycleState": "active",
-            "withdrawn": false,
-            "withdrawnAt": null,
-            "withdrawalReason": null,
-            "withdrawalEventId": null,
             "selectors": [
               {
                 "type": "TextQuoteSelector",
@@ -321,54 +278,54 @@
                 "suffix": "\nThe selected tour time is the pick-up time from"
               },
               {
+                "end": 3502,
                 "type": "TextPositionSelector",
-                "start": 3359,
-                "end": 3502
+                "start": 3359
               }
             ],
-            "surroundingContext": {
-              "before": " to book times that work with your cruise ship.\n",
-              "exactMatch": "Cameras and cell phones are welcomed while on tour, but all drones, selfie sticks, phone stabilizers, and any camera extensions are prohibited.",
-              "after": "\nThe selected tour time is the pick-up time from"
-            },
-            "extractor": {
-              "extractorId": "dcc-preserved-capture-selector",
-              "extractorVersion": "dcc-html-text-extractor-v031.1",
-              "method": "deterministic_dom_selector"
-            },
+            "withdrawn": false,
+            "httpStatus": 200,
+            "snapshotId": "snap:cap:juneau:coastal-icefield-excursion-html",
             "extractedAt": "2026-10-26T21:14:33.152Z",
+            "isSynthetic": false,
             "retrievedAt": "2026-10-26T21:14:33.152Z",
-            "sourcePublishedAt": null,
+            "sourceDccId": "dcc:ent:evidence_source:6b6ceccc017b387699dfb3fc",
+            "sourceTitle": "Coastal Helicopters — Icefield Excursion Product & Policy Page",
+            "withdrawnAt": null,
+            "evidenceHash": "37c9b2361c8286e1825894a0717dabd9d010654b459d0fb4328dbf0c00a3b41e",
+            "evidenceRefId": "evref:jnu:coastal:prohibited-items-html",
+            "lifecycleState": "active",
+            "snapshotSha256": "37f43f31bd9890655bf550fef85193d116c378d0b8efeecdd19a9830f45f95e1",
+            "provenanceClass": "network_capture_verified",
+            "responseHeaders": {
+              "date": "Mon, 26 Oct 2026 21:14:33 GMT",
+              "server": "nginx",
+              "content-type": "text/html; charset=UTF-8",
+              "cache-control": "max-age=300, must-revalidate"
+            },
+            "privateObjectKey": "v03/raw_source_captures/sha256/37f43f31bd9890655bf550fef85193d116c378d0b8efeecdd19a9830f45f95e1.html",
             "sourceObservedAt": null,
+            "withdrawalReason": null,
+            "sourcePublishedAt": null,
+            "withdrawalEventId": null,
+            "canonicalSourceUrl": "https://coastalhelicopters.com/tours/icefield-excursion/",
+            "sourceOrganization": "Coastal Helicopters, Inc.",
+            "surroundingContext": {
+              "after": "\nThe selected tour time is the pick-up time from",
+              "before": " to book times that work with your cruise ship.\n",
+              "exactMatch": "Cameras and cell phones are welcomed while on tour, but all drones, selfie sticks, phone stabilizers, and any camera extensions are prohibited."
+            },
             "licenseOrReusePolicy": "First-party operator published safety policy (Coastal Helicopters)",
-            "evidenceHash": "37c9b2361c8286e1825894a0717dabd9d010654b459d0fb4328dbf0c00a3b41e"
+            "derivedTextSnapshotId": "snap:derived:cap:juneau:coastal-icefield-excursion-html",
+            "derivedTextSnapshotSha256": "a3f8341c3fcc8c05aeec3517fc39c09919128196b6a3b4bcaae8a4bd24d232fb",
+            "privateDerivedTextObjectKey": "v03/raw_source_captures/sha256/a3f8341c3fcc8c05aeec3517fc39c09919128196b6a3b4bcaae8a4bd24d232fb.derived.txt"
           },
           {
-            "evidenceRefId": "evref:jnu:coastal:mobility-unassisted-faq",
-            "sourceDccId": "dcc:ent:evidence_source:6b6ceccc017b387699dfb3fc",
-            "sourceTitle": "Coastal Helicopters — Passenger Weight, Safety & Mobility FAQs",
-            "sourceOrganization": "Coastal Helicopters, Inc.",
-            "canonicalSourceUrl": "https://coastalhelicopters.com/faq/",
-            "snapshotId": "snap:cap:juneau:coastal-faq-html",
-            "snapshotSha256": "724c5bb399830abfd5fdd58ea3dafbbcd0618732e894dbbbdf22eea784985789",
-            "privateObjectKey": "v03/raw_source_captures/sha256/724c5bb399830abfd5fdd58ea3dafbbcd0618732e894dbbbdf22eea784985789.html",
-            "derivedTextSnapshotId": "snap:derived:cap:juneau:coastal-faq-html",
-            "derivedTextSnapshotSha256": "0167f62bdbbd28dd3442abd03c660bae739e07cb35f96bd6b04a5a05083628b9",
-            "privateDerivedTextObjectKey": "v03/raw_source_captures/sha256/0167f62bdbbd28dd3442abd03c660bae739e07cb35f96bd6b04a5a05083628b9.derived.txt",
-            "httpStatus": 200,
-            "responseHeaders": {
-              "cache-control": "max-age=300, must-revalidate",
-              "content-type": "text/html; charset=UTF-8",
-              "date": "Mon, 26 Oct 2026 21:14:34 GMT",
-              "server": "nginx"
+            "extractor": {
+              "method": "deterministic_dom_selector",
+              "extractorId": "dcc-preserved-capture-selector",
+              "extractorVersion": "dcc-html-text-extractor-v031.1"
             },
-            "provenanceClass": "network_capture_verified",
-            "isSynthetic": false,
-            "lifecycleState": "active",
-            "withdrawn": false,
-            "withdrawnAt": null,
-            "withdrawalReason": null,
-            "withdrawalEventId": null,
             "selectors": [
               {
                 "type": "TextQuoteSelector",
@@ -377,54 +334,54 @@
                 "suffix": " If you anticipate needing additional assistance"
               },
               {
+                "end": 8124,
                 "type": "TextPositionSelector",
-                "start": 7972,
-                "end": 8124
+                "start": 7972
               }
             ],
-            "surroundingContext": {
-              "before": "inging layers!\nWhat if I have limited mobility?\n",
-              "exactMatch": "If you are unable to enter and exit our aircraft on your own, you may be subject to rescheduling on the day of your tour or cancellation without refund.",
-              "after": " If you anticipate needing additional assistance"
-            },
-            "extractor": {
-              "extractorId": "dcc-preserved-capture-selector",
-              "extractorVersion": "dcc-html-text-extractor-v031.1",
-              "method": "deterministic_dom_selector"
-            },
+            "withdrawn": false,
+            "httpStatus": 200,
+            "snapshotId": "snap:cap:juneau:coastal-faq-html",
             "extractedAt": "2026-10-26T21:14:33.493Z",
+            "isSynthetic": false,
             "retrievedAt": "2026-10-26T21:14:33.493Z",
-            "sourcePublishedAt": null,
+            "sourceDccId": "dcc:ent:evidence_source:6b6ceccc017b387699dfb3fc",
+            "sourceTitle": "Coastal Helicopters — Passenger Weight, Safety & Mobility FAQs",
+            "withdrawnAt": null,
+            "evidenceHash": "fb199e4b7bac3fa32532dd28d0b23605e0c31efd7ca13dc01d604a65d97b83a8",
+            "evidenceRefId": "evref:jnu:coastal:mobility-unassisted-faq",
+            "lifecycleState": "active",
+            "snapshotSha256": "724c5bb399830abfd5fdd58ea3dafbbcd0618732e894dbbbdf22eea784985789",
+            "provenanceClass": "network_capture_verified",
+            "responseHeaders": {
+              "date": "Mon, 26 Oct 2026 21:14:34 GMT",
+              "server": "nginx",
+              "content-type": "text/html; charset=UTF-8",
+              "cache-control": "max-age=300, must-revalidate"
+            },
+            "privateObjectKey": "v03/raw_source_captures/sha256/724c5bb399830abfd5fdd58ea3dafbbcd0618732e894dbbbdf22eea784985789.html",
             "sourceObservedAt": null,
+            "withdrawalReason": null,
+            "sourcePublishedAt": null,
+            "withdrawalEventId": null,
+            "canonicalSourceUrl": "https://coastalhelicopters.com/faq/",
+            "sourceOrganization": "Coastal Helicopters, Inc.",
+            "surroundingContext": {
+              "after": " If you anticipate needing additional assistance",
+              "before": "inging layers!\nWhat if I have limited mobility?\n",
+              "exactMatch": "If you are unable to enter and exit our aircraft on your own, you may be subject to rescheduling on the day of your tour or cancellation without refund."
+            },
             "licenseOrReusePolicy": "First-party operator published FAQ policy (Coastal Helicopters)",
-            "evidenceHash": "fb199e4b7bac3fa32532dd28d0b23605e0c31efd7ca13dc01d604a65d97b83a8"
+            "derivedTextSnapshotId": "snap:derived:cap:juneau:coastal-faq-html",
+            "derivedTextSnapshotSha256": "0167f62bdbbd28dd3442abd03c660bae739e07cb35f96bd6b04a5a05083628b9",
+            "privateDerivedTextObjectKey": "v03/raw_source_captures/sha256/0167f62bdbbd28dd3442abd03c660bae739e07cb35f96bd6b04a5a05083628b9.derived.txt"
           },
           {
-            "evidenceRefId": "evref:jnu:temsco:weight-250-surcharge-html",
-            "sourceDccId": "dcc:ent:evidence_source:4b8e4e1d16588d8e15cf0806",
-            "sourceTitle": "TEMSCO Helicopters — Mendenhall Glacier Helicopter Tour & Passenger Policy Page",
-            "sourceOrganization": "TEMSCO Helicopters, Inc.",
-            "canonicalSourceUrl": "https://temscoair.com/juneau-helicopter-tours/mendenhall-glacier/",
-            "snapshotId": "snap:cap:juneau:temsco-mendenhall-glacier-html",
-            "snapshotSha256": "18fdb434bb60958189dd01ad52ad73238d3466af7c032a7d329852e4bfec126d",
-            "privateObjectKey": "v03/raw_source_captures/sha256/18fdb434bb60958189dd01ad52ad73238d3466af7c032a7d329852e4bfec126d.html",
-            "derivedTextSnapshotId": "snap:derived:cap:juneau:temsco-mendenhall-glacier-html",
-            "derivedTextSnapshotSha256": "b3f2f22224a1e58750cbdc8e54be5f13e495094b4bef52409283cdc64d5a2c80",
-            "privateDerivedTextObjectKey": "v03/raw_source_captures/sha256/b3f2f22224a1e58750cbdc8e54be5f13e495094b4bef52409283cdc64d5a2c80.derived.txt",
-            "httpStatus": 200,
-            "responseHeaders": {
-              "cache-control": "max-age=300, must-revalidate",
-              "content-type": "text/html; charset=UTF-8",
-              "date": "Mon, 26 Oct 2026 21:14:35 GMT",
-              "server": "nginx"
+            "extractor": {
+              "method": "deterministic_dom_selector",
+              "extractorId": "dcc-preserved-capture-selector",
+              "extractorVersion": "dcc-html-text-extractor-v031.1"
             },
-            "provenanceClass": "network_capture_verified",
-            "isSynthetic": false,
-            "lifecycleState": "active",
-            "withdrawn": false,
-            "withdrawnAt": null,
-            "withdrawalReason": null,
-            "withdrawalEventId": null,
             "selectors": [
               {
                 "type": "TextQuoteSelector",
@@ -433,54 +390,54 @@
                 "suffix": " Total weight includes shoes and clothing. Surch"
               },
               {
+                "end": 3452,
                 "type": "TextPositionSelector",
-                "start": 3229,
-                "end": 3452
+                "start": 3229
               }
             ],
-            "surroundingContext": {
-              "before": "o be located in an exit aisle.\nSurcharge Policy\n",
-              "exactMatch": "Due to weight and balance limitations, as well as guest safety and comfort, passengers weighing 250 pounds (113kg or 18 Stone) or more will be charged an additional $150.00 to reserve adequate space on board the helicopter.",
-              "after": " Total weight includes shoes and clothing. Surch"
-            },
-            "extractor": {
-              "extractorId": "dcc-preserved-capture-selector",
-              "extractorVersion": "dcc-html-text-extractor-v031.1",
-              "method": "deterministic_dom_selector"
-            },
+            "withdrawn": false,
+            "httpStatus": 200,
+            "snapshotId": "snap:cap:juneau:temsco-mendenhall-glacier-html",
             "extractedAt": "2026-10-26T21:14:34.066Z",
+            "isSynthetic": false,
             "retrievedAt": "2026-10-26T21:14:34.066Z",
-            "sourcePublishedAt": null,
-            "sourceObservedAt": null,
-            "licenseOrReusePolicy": "First-party operator published policy facts (TEMSCO Helicopters)",
-            "evidenceHash": "90d1e767342bf0747cdf4d7963e6d191d6e24cdd55c1ecff0ee69c68230bcd0c"
-          },
-          {
-            "evidenceRefId": "evref:jnu:temsco:service-animals-prohibited-html",
             "sourceDccId": "dcc:ent:evidence_source:4b8e4e1d16588d8e15cf0806",
             "sourceTitle": "TEMSCO Helicopters — Mendenhall Glacier Helicopter Tour & Passenger Policy Page",
-            "sourceOrganization": "TEMSCO Helicopters, Inc.",
-            "canonicalSourceUrl": "https://temscoair.com/juneau-helicopter-tours/mendenhall-glacier/",
-            "snapshotId": "snap:cap:juneau:temsco-mendenhall-glacier-html",
+            "withdrawnAt": null,
+            "evidenceHash": "90d1e767342bf0747cdf4d7963e6d191d6e24cdd55c1ecff0ee69c68230bcd0c",
+            "evidenceRefId": "evref:jnu:temsco:weight-250-surcharge-html",
+            "lifecycleState": "active",
             "snapshotSha256": "18fdb434bb60958189dd01ad52ad73238d3466af7c032a7d329852e4bfec126d",
+            "provenanceClass": "network_capture_verified",
+            "responseHeaders": {
+              "date": "Mon, 26 Oct 2026 21:14:35 GMT",
+              "server": "nginx",
+              "content-type": "text/html; charset=UTF-8",
+              "cache-control": "max-age=300, must-revalidate"
+            },
             "privateObjectKey": "v03/raw_source_captures/sha256/18fdb434bb60958189dd01ad52ad73238d3466af7c032a7d329852e4bfec126d.html",
+            "sourceObservedAt": null,
+            "withdrawalReason": null,
+            "sourcePublishedAt": null,
+            "withdrawalEventId": null,
+            "canonicalSourceUrl": "https://temscoair.com/juneau-helicopter-tours/mendenhall-glacier/",
+            "sourceOrganization": "TEMSCO Helicopters, Inc.",
+            "surroundingContext": {
+              "after": " Total weight includes shoes and clothing. Surch",
+              "before": "o be located in an exit aisle.\nSurcharge Policy\n",
+              "exactMatch": "Due to weight and balance limitations, as well as guest safety and comfort, passengers weighing 250 pounds (113kg or 18 Stone) or more will be charged an additional $150.00 to reserve adequate space on board the helicopter."
+            },
+            "licenseOrReusePolicy": "First-party operator published policy facts (TEMSCO Helicopters)",
             "derivedTextSnapshotId": "snap:derived:cap:juneau:temsco-mendenhall-glacier-html",
             "derivedTextSnapshotSha256": "b3f2f22224a1e58750cbdc8e54be5f13e495094b4bef52409283cdc64d5a2c80",
-            "privateDerivedTextObjectKey": "v03/raw_source_captures/sha256/b3f2f22224a1e58750cbdc8e54be5f13e495094b4bef52409283cdc64d5a2c80.derived.txt",
-            "httpStatus": 200,
-            "responseHeaders": {
-              "cache-control": "max-age=300, must-revalidate",
-              "content-type": "text/html; charset=UTF-8",
-              "date": "Mon, 26 Oct 2026 21:14:35 GMT",
-              "server": "nginx"
+            "privateDerivedTextObjectKey": "v03/raw_source_captures/sha256/b3f2f22224a1e58750cbdc8e54be5f13e495094b4bef52409283cdc64d5a2c80.derived.txt"
+          },
+          {
+            "extractor": {
+              "method": "deterministic_dom_selector",
+              "extractorId": "dcc-preserved-capture-selector",
+              "extractorVersion": "dcc-html-text-extractor-v031.1"
             },
-            "provenanceClass": "network_capture_verified",
-            "isSynthetic": false,
-            "lifecycleState": "active",
-            "withdrawn": false,
-            "withdrawnAt": null,
-            "withdrawalReason": null,
-            "withdrawalEventId": null,
             "selectors": [
               {
                 "type": "TextQuoteSelector",
@@ -489,54 +446,54 @@
                 "suffix": " Passenger seats in these aircraft are emergency"
               },
               {
+                "end": 2974,
                 "type": "TextPositionSelector",
-                "start": 2778,
-                "end": 2974
+                "start": 2778
               }
             ],
-            "surroundingContext": {
-              "before": "e.\nAdditional Information\nService Animal Policy\n",
-              "exactMatch": "Per TEMSCO Helicopters’ Passenger Mobility Policy, service animals shall not be permitted on Temsco Eurocopter Astar, Hughes 500 and Airbus H130 aircraft used by Temsco for flightseeing and tours.",
-              "after": " Passenger seats in these aircraft are emergency"
-            },
-            "extractor": {
-              "extractorId": "dcc-preserved-capture-selector",
-              "extractorVersion": "dcc-html-text-extractor-v031.1",
-              "method": "deterministic_dom_selector"
-            },
+            "withdrawn": false,
+            "httpStatus": 200,
+            "snapshotId": "snap:cap:juneau:temsco-mendenhall-glacier-html",
             "extractedAt": "2026-10-26T21:14:34.066Z",
+            "isSynthetic": false,
             "retrievedAt": "2026-10-26T21:14:34.066Z",
-            "sourcePublishedAt": null,
-            "sourceObservedAt": null,
-            "licenseOrReusePolicy": "First-party operator published policy facts (TEMSCO Helicopters)",
-            "evidenceHash": "a9a113bd8130db50158044f5590bccc7e53c6874f2242a7fd91fc4f5eb36866c"
-          },
-          {
-            "evidenceRefId": "evref:jnu:temsco:mobility-unassisted-html",
             "sourceDccId": "dcc:ent:evidence_source:4b8e4e1d16588d8e15cf0806",
             "sourceTitle": "TEMSCO Helicopters — Mendenhall Glacier Helicopter Tour & Passenger Policy Page",
-            "sourceOrganization": "TEMSCO Helicopters, Inc.",
-            "canonicalSourceUrl": "https://temscoair.com/juneau-helicopter-tours/mendenhall-glacier/",
-            "snapshotId": "snap:cap:juneau:temsco-mendenhall-glacier-html",
+            "withdrawnAt": null,
+            "evidenceHash": "a9a113bd8130db50158044f5590bccc7e53c6874f2242a7fd91fc4f5eb36866c",
+            "evidenceRefId": "evref:jnu:temsco:service-animals-prohibited-html",
+            "lifecycleState": "active",
             "snapshotSha256": "18fdb434bb60958189dd01ad52ad73238d3466af7c032a7d329852e4bfec126d",
+            "provenanceClass": "network_capture_verified",
+            "responseHeaders": {
+              "date": "Mon, 26 Oct 2026 21:14:35 GMT",
+              "server": "nginx",
+              "content-type": "text/html; charset=UTF-8",
+              "cache-control": "max-age=300, must-revalidate"
+            },
             "privateObjectKey": "v03/raw_source_captures/sha256/18fdb434bb60958189dd01ad52ad73238d3466af7c032a7d329852e4bfec126d.html",
+            "sourceObservedAt": null,
+            "withdrawalReason": null,
+            "sourcePublishedAt": null,
+            "withdrawalEventId": null,
+            "canonicalSourceUrl": "https://temscoair.com/juneau-helicopter-tours/mendenhall-glacier/",
+            "sourceOrganization": "TEMSCO Helicopters, Inc.",
+            "surroundingContext": {
+              "after": " Passenger seats in these aircraft are emergency",
+              "before": "e.\nAdditional Information\nService Animal Policy\n",
+              "exactMatch": "Per TEMSCO Helicopters’ Passenger Mobility Policy, service animals shall not be permitted on Temsco Eurocopter Astar, Hughes 500 and Airbus H130 aircraft used by Temsco for flightseeing and tours."
+            },
+            "licenseOrReusePolicy": "First-party operator published policy facts (TEMSCO Helicopters)",
             "derivedTextSnapshotId": "snap:derived:cap:juneau:temsco-mendenhall-glacier-html",
             "derivedTextSnapshotSha256": "b3f2f22224a1e58750cbdc8e54be5f13e495094b4bef52409283cdc64d5a2c80",
-            "privateDerivedTextObjectKey": "v03/raw_source_captures/sha256/b3f2f22224a1e58750cbdc8e54be5f13e495094b4bef52409283cdc64d5a2c80.derived.txt",
-            "httpStatus": 200,
-            "responseHeaders": {
-              "cache-control": "max-age=300, must-revalidate",
-              "content-type": "text/html; charset=UTF-8",
-              "date": "Mon, 26 Oct 2026 21:14:35 GMT",
-              "server": "nginx"
+            "privateDerivedTextObjectKey": "v03/raw_source_captures/sha256/b3f2f22224a1e58750cbdc8e54be5f13e495094b4bef52409283cdc64d5a2c80.derived.txt"
+          },
+          {
+            "extractor": {
+              "method": "deterministic_dom_selector",
+              "extractorId": "dcc-preserved-capture-selector",
+              "extractorVersion": "dcc-html-text-extractor-v031.1"
             },
-            "provenanceClass": "network_capture_verified",
-            "isSynthetic": false,
-            "lifecycleState": "active",
-            "withdrawn": false,
-            "withdrawnAt": null,
-            "withdrawalReason": null,
-            "withdrawalEventId": null,
             "selectors": [
               {
                 "type": "TextQuoteSelector",
@@ -545,55 +502,54 @@
                 "suffix": "\nAircraft Seating\nWe arrange seating based on th"
               },
               {
+                "end": 4747,
                 "type": "TextPositionSelector",
-                "start": 4527,
-                "end": 4747
+                "start": 4527
               }
             ],
-            "surroundingContext": {
-              "before": "urface of the glacier can be uneven and cracked\n",
-              "exactMatch": "Due to liability reasons, our employees cannot lift guests in or out of the helicopter. TEMSCO staff will be there to lend a helping hand, though ultimately guests are responsible for navigating these steps on their own.",
-              "after": "\nAircraft Seating\nWe arrange seating based on th"
-            },
-            "extractor": {
-              "extractorId": "dcc-preserved-capture-selector",
-              "extractorVersion": "dcc-html-text-extractor-v031.1",
-              "method": "deterministic_dom_selector"
-            },
+            "withdrawn": false,
+            "httpStatus": 200,
+            "snapshotId": "snap:cap:juneau:temsco-mendenhall-glacier-html",
             "extractedAt": "2026-10-26T21:14:34.066Z",
+            "isSynthetic": false,
             "retrievedAt": "2026-10-26T21:14:34.066Z",
-            "sourcePublishedAt": null,
+            "sourceDccId": "dcc:ent:evidence_source:4b8e4e1d16588d8e15cf0806",
+            "sourceTitle": "TEMSCO Helicopters — Mendenhall Glacier Helicopter Tour & Passenger Policy Page",
+            "withdrawnAt": null,
+            "evidenceHash": "0b161f516c0a32f33239ed04a5de418005745a04bf0f373b37a9877b991a01d2",
+            "evidenceRefId": "evref:jnu:temsco:mobility-unassisted-html",
+            "lifecycleState": "active",
+            "snapshotSha256": "18fdb434bb60958189dd01ad52ad73238d3466af7c032a7d329852e4bfec126d",
+            "provenanceClass": "network_capture_verified",
+            "responseHeaders": {
+              "date": "Mon, 26 Oct 2026 21:14:35 GMT",
+              "server": "nginx",
+              "content-type": "text/html; charset=UTF-8",
+              "cache-control": "max-age=300, must-revalidate"
+            },
+            "privateObjectKey": "v03/raw_source_captures/sha256/18fdb434bb60958189dd01ad52ad73238d3466af7c032a7d329852e4bfec126d.html",
             "sourceObservedAt": null,
+            "withdrawalReason": null,
+            "sourcePublishedAt": null,
+            "withdrawalEventId": null,
+            "canonicalSourceUrl": "https://temscoair.com/juneau-helicopter-tours/mendenhall-glacier/",
+            "sourceOrganization": "TEMSCO Helicopters, Inc.",
+            "surroundingContext": {
+              "after": "\nAircraft Seating\nWe arrange seating based on th",
+              "before": "urface of the glacier can be uneven and cracked\n",
+              "exactMatch": "Due to liability reasons, our employees cannot lift guests in or out of the helicopter. TEMSCO staff will be there to lend a helping hand, though ultimately guests are responsible for navigating these steps on their own."
+            },
             "licenseOrReusePolicy": "First-party operator published policy facts (TEMSCO Helicopters)",
-            "evidenceHash": "0b161f516c0a32f33239ed04a5de418005745a04bf0f373b37a9877b991a01d2"
+            "derivedTextSnapshotId": "snap:derived:cap:juneau:temsco-mendenhall-glacier-html",
+            "derivedTextSnapshotSha256": "b3f2f22224a1e58750cbdc8e54be5f13e495094b4bef52409283cdc64d5a2c80",
+            "privateDerivedTextObjectKey": "v03/raw_source_captures/sha256/b3f2f22224a1e58750cbdc8e54be5f13e495094b4bef52409283cdc64d5a2c80.derived.txt"
           },
           {
-            "evidenceRefId": "evref:jnu:northstar:age-8-and-walk-html",
-            "sourceDccId": "dcc:ent:evidence_source:39633ceb689bb3c38e2f2ccd",
-            "sourceTitle": "NorthStar Trekking — Glacier Walkabout Product & Requirements Page",
-            "sourceOrganization": "NorthStar Trekking",
-            "canonicalSourceUrl": "https://northstartrekking.com/adventures/helicopter-glacier-walkabout/",
-            "snapshotId": "snap:cap:juneau:northstar-walkabout-html",
-            "snapshotSha256": "94fb78aba84e92d9b2dde73275b6a4c88b1673cc7d0e7224afb857a34268f042",
-            "privateObjectKey": "v03/raw_source_captures/sha256/94fb78aba84e92d9b2dde73275b6a4c88b1673cc7d0e7224afb857a34268f042.html",
-            "derivedTextSnapshotId": "snap:derived:cap:juneau:northstar-walkabout-html",
-            "derivedTextSnapshotSha256": "9e6de86b7e97dd85983e7b3e005d8f2eb824575b59229c374a12fd69ca7dc945",
-            "privateDerivedTextObjectKey": "v03/raw_source_captures/sha256/9e6de86b7e97dd85983e7b3e005d8f2eb824575b59229c374a12fd69ca7dc945.derived.txt",
-            "httpStatus": 200,
-            "responseHeaders": {
-              "cache-control": "max-age=300, must-revalidate",
-              "cf-ray": "a50c78b47cdd2c99-DFW",
-              "content-type": "text/html; charset=UTF-8",
-              "date": "Mon, 26 Oct 2026 21:14:35 GMT",
-              "server": "cloudflare"
+            "extractor": {
+              "method": "deterministic_dom_selector",
+              "extractorId": "dcc-preserved-capture-selector",
+              "extractorVersion": "dcc-html-text-extractor-v031.1"
             },
-            "provenanceClass": "network_capture_verified",
-            "isSynthetic": false,
-            "lifecycleState": "active",
-            "withdrawn": false,
-            "withdrawnAt": null,
-            "withdrawalReason": null,
-            "withdrawalEventId": null,
             "selectors": [
               {
                 "type": "TextQuoteSelector",
@@ -602,55 +558,55 @@
                 "suffix": "\nWhat's included\nWe will provide:\nSturdy hiking "
               },
               {
+                "end": 2912,
                 "type": "TextPositionSelector",
-                "start": 2784,
-                "end": 2912
+                "start": 2784
               }
             ],
-            "surroundingContext": {
-              "before": " that are sure to last a lifetime.\nRequirements\n",
-              "exactMatch": "Must be at least 8 years old to participate.\nMust be able to walk unassisted for one hour on moderately flat but uneven terrain.",
-              "after": "\nWhat's included\nWe will provide:\nSturdy hiking "
-            },
-            "extractor": {
-              "extractorId": "dcc-preserved-capture-selector",
-              "extractorVersion": "dcc-html-text-extractor-v031.1",
-              "method": "deterministic_dom_selector"
-            },
+            "withdrawn": false,
+            "httpStatus": 200,
+            "snapshotId": "snap:cap:juneau:northstar-walkabout-html",
             "extractedAt": "2026-10-26T21:14:35.314Z",
+            "isSynthetic": false,
             "retrievedAt": "2026-10-26T21:14:35.314Z",
-            "sourcePublishedAt": null,
-            "sourceObservedAt": null,
-            "licenseOrReusePolicy": "First-party operator published policy facts (NorthStar Trekking)",
-            "evidenceHash": "0c7866f8dda19571c27f69df66f4f2fb9b9af98ea724651d92e2cc15fecb8614"
-          },
-          {
-            "evidenceRefId": "evref:jnu:northstar:cruise-buffer-html",
             "sourceDccId": "dcc:ent:evidence_source:39633ceb689bb3c38e2f2ccd",
             "sourceTitle": "NorthStar Trekking — Glacier Walkabout Product & Requirements Page",
-            "sourceOrganization": "NorthStar Trekking",
-            "canonicalSourceUrl": "https://northstartrekking.com/adventures/helicopter-glacier-walkabout/",
-            "snapshotId": "snap:cap:juneau:northstar-walkabout-html",
+            "withdrawnAt": null,
+            "evidenceHash": "0c7866f8dda19571c27f69df66f4f2fb9b9af98ea724651d92e2cc15fecb8614",
+            "evidenceRefId": "evref:jnu:northstar:age-8-and-walk-html",
+            "lifecycleState": "active",
             "snapshotSha256": "94fb78aba84e92d9b2dde73275b6a4c88b1673cc7d0e7224afb857a34268f042",
+            "provenanceClass": "network_capture_verified",
+            "responseHeaders": {
+              "date": "Mon, 26 Oct 2026 21:14:35 GMT",
+              "cf-ray": "a50c78b47cdd2c99-DFW",
+              "server": "cloudflare",
+              "content-type": "text/html; charset=UTF-8",
+              "cache-control": "max-age=300, must-revalidate"
+            },
             "privateObjectKey": "v03/raw_source_captures/sha256/94fb78aba84e92d9b2dde73275b6a4c88b1673cc7d0e7224afb857a34268f042.html",
+            "sourceObservedAt": null,
+            "withdrawalReason": null,
+            "sourcePublishedAt": null,
+            "withdrawalEventId": null,
+            "canonicalSourceUrl": "https://northstartrekking.com/adventures/helicopter-glacier-walkabout/",
+            "sourceOrganization": "NorthStar Trekking",
+            "surroundingContext": {
+              "after": "\nWhat's included\nWe will provide:\nSturdy hiking ",
+              "before": " that are sure to last a lifetime.\nRequirements\n",
+              "exactMatch": "Must be at least 8 years old to participate.\nMust be able to walk unassisted for one hour on moderately flat but uneven terrain."
+            },
+            "licenseOrReusePolicy": "First-party operator published policy facts (NorthStar Trekking)",
             "derivedTextSnapshotId": "snap:derived:cap:juneau:northstar-walkabout-html",
             "derivedTextSnapshotSha256": "9e6de86b7e97dd85983e7b3e005d8f2eb824575b59229c374a12fd69ca7dc945",
-            "privateDerivedTextObjectKey": "v03/raw_source_captures/sha256/9e6de86b7e97dd85983e7b3e005d8f2eb824575b59229c374a12fd69ca7dc945.derived.txt",
-            "httpStatus": 200,
-            "responseHeaders": {
-              "cache-control": "max-age=300, must-revalidate",
-              "cf-ray": "a50c78b47cdd2c99-DFW",
-              "content-type": "text/html; charset=UTF-8",
-              "date": "Mon, 26 Oct 2026 21:14:35 GMT",
-              "server": "cloudflare"
+            "privateDerivedTextObjectKey": "v03/raw_source_captures/sha256/9e6de86b7e97dd85983e7b3e005d8f2eb824575b59229c374a12fd69ca7dc945.derived.txt"
+          },
+          {
+            "extractor": {
+              "method": "deterministic_dom_selector",
+              "extractorId": "dcc-preserved-capture-selector",
+              "extractorVersion": "dcc-html-text-extractor-v031.1"
             },
-            "provenanceClass": "network_capture_verified",
-            "isSynthetic": false,
-            "lifecycleState": "active",
-            "withdrawn": false,
-            "withdrawnAt": null,
-            "withdrawalReason": null,
-            "withdrawalEventId": null,
             "selectors": [
               {
                 "type": "TextQuoteSelector",
@@ -659,55 +615,55 @@
                 "suffix": " If your ship’s port time changes after you have"
               },
               {
+                "end": 2217,
                 "type": "TextPositionSelector",
-                "start": 2062,
-                "end": 2217
+                "start": 2062
               }
             ],
-            "surroundingContext": {
-              "before": "es of helicopter time and 1 hour on the glacier\n",
-              "exactMatch": "Please book your tour at least one hour after your ship’s arrival time. The tour should conclude no less than 45 minutes before your ship’s departure time.",
-              "after": " If your ship’s port time changes after you have"
-            },
-            "extractor": {
-              "extractorId": "dcc-preserved-capture-selector",
-              "extractorVersion": "dcc-html-text-extractor-v031.1",
-              "method": "deterministic_dom_selector"
-            },
+            "withdrawn": false,
+            "httpStatus": 200,
+            "snapshotId": "snap:cap:juneau:northstar-walkabout-html",
             "extractedAt": "2026-10-26T21:14:35.314Z",
+            "isSynthetic": false,
             "retrievedAt": "2026-10-26T21:14:35.314Z",
-            "sourcePublishedAt": null,
+            "sourceDccId": "dcc:ent:evidence_source:39633ceb689bb3c38e2f2ccd",
+            "sourceTitle": "NorthStar Trekking — Glacier Walkabout Product & Requirements Page",
+            "withdrawnAt": null,
+            "evidenceHash": "d80f259706dd47478d12be7ca93c9cf13c4c4b692d9f2a47ba97b606db58132a",
+            "evidenceRefId": "evref:jnu:northstar:cruise-buffer-html",
+            "lifecycleState": "active",
+            "snapshotSha256": "94fb78aba84e92d9b2dde73275b6a4c88b1673cc7d0e7224afb857a34268f042",
+            "provenanceClass": "network_capture_verified",
+            "responseHeaders": {
+              "date": "Mon, 26 Oct 2026 21:14:35 GMT",
+              "cf-ray": "a50c78b47cdd2c99-DFW",
+              "server": "cloudflare",
+              "content-type": "text/html; charset=UTF-8",
+              "cache-control": "max-age=300, must-revalidate"
+            },
+            "privateObjectKey": "v03/raw_source_captures/sha256/94fb78aba84e92d9b2dde73275b6a4c88b1673cc7d0e7224afb857a34268f042.html",
             "sourceObservedAt": null,
+            "withdrawalReason": null,
+            "sourcePublishedAt": null,
+            "withdrawalEventId": null,
+            "canonicalSourceUrl": "https://northstartrekking.com/adventures/helicopter-glacier-walkabout/",
+            "sourceOrganization": "NorthStar Trekking",
+            "surroundingContext": {
+              "after": " If your ship’s port time changes after you have",
+              "before": "es of helicopter time and 1 hour on the glacier\n",
+              "exactMatch": "Please book your tour at least one hour after your ship’s arrival time. The tour should conclude no less than 45 minutes before your ship’s departure time."
+            },
             "licenseOrReusePolicy": "First-party operator published policy facts (NorthStar Trekking)",
-            "evidenceHash": "d80f259706dd47478d12be7ca93c9cf13c4c4b692d9f2a47ba97b606db58132a"
+            "derivedTextSnapshotId": "snap:derived:cap:juneau:northstar-walkabout-html",
+            "derivedTextSnapshotSha256": "9e6de86b7e97dd85983e7b3e005d8f2eb824575b59229c374a12fd69ca7dc945",
+            "privateDerivedTextObjectKey": "v03/raw_source_captures/sha256/9e6de86b7e97dd85983e7b3e005d8f2eb824575b59229c374a12fd69ca7dc945.derived.txt"
           },
           {
-            "evidenceRefId": "evref:jnu:northstar:weight-250-surcharge-faq",
-            "sourceDccId": "dcc:ent:evidence_source:39633ceb689bb3c38e2f2ccd",
-            "sourceTitle": "NorthStar Trekking — Weight, Gear & Glacier Trekking FAQs",
-            "sourceOrganization": "NorthStar Trekking",
-            "canonicalSourceUrl": "https://northstartrekking.com/faqs/",
-            "snapshotId": "snap:cap:juneau:northstar-faqs-html",
-            "snapshotSha256": "bea1205e0963664d59a9018a97541a10b38467d07d14fcaa5b3af84429f42d75",
-            "privateObjectKey": "v03/raw_source_captures/sha256/bea1205e0963664d59a9018a97541a10b38467d07d14fcaa5b3af84429f42d75.html",
-            "derivedTextSnapshotId": "snap:derived:cap:juneau:northstar-faqs-html",
-            "derivedTextSnapshotSha256": "02f23ba2af71bad07e6a7bf9a8f0f098334cc1871257252330f64c0d556165c1",
-            "privateDerivedTextObjectKey": "v03/raw_source_captures/sha256/02f23ba2af71bad07e6a7bf9a8f0f098334cc1871257252330f64c0d556165c1.derived.txt",
-            "httpStatus": 200,
-            "responseHeaders": {
-              "cache-control": "max-age=300, must-revalidate",
-              "cf-ray": "a50c78b54d9d2c99-DFW",
-              "content-type": "text/html; charset=UTF-8",
-              "date": "Mon, 26 Oct 2026 21:14:36 GMT",
-              "server": "cloudflare"
+            "extractor": {
+              "method": "deterministic_dom_selector",
+              "extractorId": "dcc-preserved-capture-selector",
+              "extractorVersion": "dcc-html-text-extractor-v031.1"
             },
-            "provenanceClass": "network_capture_verified",
-            "isSynthetic": false,
-            "lifecycleState": "active",
-            "withdrawn": false,
-            "withdrawnAt": null,
-            "withdrawalReason": null,
-            "withdrawalEventId": null,
             "selectors": [
               {
                 "type": "TextQuoteSelector",
@@ -716,83 +672,105 @@
                 "suffix": "\nHow many people will there be in my helicopter?"
               },
               {
+                "end": 1757,
                 "type": "TextPositionSelector",
-                "start": 1628,
-                "end": 1757
+                "start": 1628
               }
             ],
-            "surroundingContext": {
-              "before": "s, we recommend a neck-strap for easy carrying. ",
-              "exactMatch": "Bags, purses, selfie sticks, nor drones are permitted. We provide safe storage for any personal belongings to remain at our base.",
-              "after": "\nHow many people will there be in my helicopter?"
-            },
-            "extractor": {
-              "extractorId": "dcc-preserved-capture-selector",
-              "extractorVersion": "dcc-html-text-extractor-v031.1",
-              "method": "deterministic_dom_selector"
-            },
+            "withdrawn": false,
+            "httpStatus": 200,
+            "snapshotId": "snap:cap:juneau:northstar-faqs-html",
             "extractedAt": "2026-10-26T21:14:35.656Z",
+            "isSynthetic": false,
             "retrievedAt": "2026-10-26T21:14:35.656Z",
-            "sourcePublishedAt": null,
+            "sourceDccId": "dcc:ent:evidence_source:39633ceb689bb3c38e2f2ccd",
+            "sourceTitle": "NorthStar Trekking — Weight, Gear & Glacier Trekking FAQs",
+            "withdrawnAt": null,
+            "evidenceHash": "1e8380d7e9d3ef73e0878130d37f9e7e647c9dd3edc4ae35d791c1248aaa14a0",
+            "evidenceRefId": "evref:jnu:northstar:weight-250-surcharge-faq",
+            "lifecycleState": "active",
+            "snapshotSha256": "bea1205e0963664d59a9018a97541a10b38467d07d14fcaa5b3af84429f42d75",
+            "provenanceClass": "network_capture_verified",
+            "responseHeaders": {
+              "date": "Mon, 26 Oct 2026 21:14:36 GMT",
+              "cf-ray": "a50c78b54d9d2c99-DFW",
+              "server": "cloudflare",
+              "content-type": "text/html; charset=UTF-8",
+              "cache-control": "max-age=300, must-revalidate"
+            },
+            "privateObjectKey": "v03/raw_source_captures/sha256/bea1205e0963664d59a9018a97541a10b38467d07d14fcaa5b3af84429f42d75.html",
             "sourceObservedAt": null,
+            "withdrawalReason": null,
+            "sourcePublishedAt": null,
+            "withdrawalEventId": null,
+            "canonicalSourceUrl": "https://northstartrekking.com/faqs/",
+            "sourceOrganization": "NorthStar Trekking",
+            "surroundingContext": {
+              "after": "\nHow many people will there be in my helicopter?",
+              "before": "s, we recommend a neck-strap for easy carrying. ",
+              "exactMatch": "Bags, purses, selfie sticks, nor drones are permitted. We provide safe storage for any personal belongings to remain at our base."
+            },
             "licenseOrReusePolicy": "First-party operator published FAQ policy (NorthStar Trekking)",
-            "evidenceHash": "1e8380d7e9d3ef73e0878130d37f9e7e647c9dd3edc4ae35d791c1248aaa14a0"
+            "derivedTextSnapshotId": "snap:derived:cap:juneau:northstar-faqs-html",
+            "derivedTextSnapshotSha256": "02f23ba2af71bad07e6a7bf9a8f0f098334cc1871257252330f64c0d556165c1",
+            "privateDerivedTextObjectKey": "v03/raw_source_captures/sha256/02f23ba2af71bad07e6a7bf9a8f0f098334cc1871257252330f64c0d556165c1.derived.txt"
           }
-        ]
+        ],
+        "subjectDccId": "dcc:ent:destination:eb96e3322ed5bdb8f38ed3bc",
+        "assertionType": "policy",
+        "claimVersionId": "clmv:jnu:standard-seat-weight-limit-lbs:v1",
+        "epistemicState": "verified_against_identified_evidence",
+        "unitOrCurrency": "boolean",
+        "sourceAuthority": {
+          "sourceDccId": "dcc:ent:evidence_source:6b6ceccc017b387699dfb3fc",
+          "authorityTier": "direct_operator",
+          "claimedDomain": "operator_safety_and_weight_policy",
+          "competentDomains": [
+            "operator_safety_and_weight_policy"
+          ],
+          "organizationName": "Coastal Helicopters / TEMSCO Helicopters / NorthStar Trekking",
+          "licenseOrReusePolicy": "First-party operator published policy facts",
+          "independentlyCorroboratedBySourceDccIds": [
+            "dcc:ent:evidence_source:4b8e4e1d16588d8e15cf0806",
+            "dcc:ent:evidence_source:39633ceb689bb3c38e2f2ccd"
+          ]
+        },
+        "sourceObservedAt": "2026-10-26T21:14:33.152Z",
+        "sourcePublishedAt": null,
+        "freshnessTtlSeconds": 15552000
       },
-      "reason": "Derived from preserved TEMSCO, NorthStar, and Coastal HTML captures: 250 lbs (TEMSCO/NorthStar +$150 surcharge) and 260 lbs / 300 lbs (Coastal 1.5-seat / 2-seat surcharge) are weight surcharge thresholds rather than passenger exclusions.",
-      "corroboratingSourceDccId": null,
-      "eventHash": "faa6eb51ee7614d51cc2e04dfa7839b87767355d2ea4c701603f9ea4285d46dc",
-      "prevEventHash": "64767cf4fb3687aa0ea8d1c9f1053f8fbc5d05a81a3cb91efc3b15a858d44d94"
-    },
-    {
-      "eventSeq": 4,
-      "eventId": "kevt:4:5919f3cfaa821f3df7c257a5",
-      "eventType": "claim_created",
-      "claimId": "clm:haw:noaa-100yd-approach-compliance",
-      "claimVersionId": "clmv:haw:noaa-100yd-approach-compliance:v1",
-      "targetPreviousVersionId": null,
-      "recordedAt": "2026-10-27T10:52:33.660Z",
+      "provenanceClass": "operational_evidence",
       "recordedAtVerified": true,
       "recordingTimeStatus": "verified_database_admission",
+      "targetPreviousVersionId": null,
+      "corroboratingSourceDccId": null
+    },
+    {
+      "reason": "50 CFR 224.103(a) mandatory 100-yard humpback whale approach stand-off distance.",
       "actorId": "dcc-v03-bootstrap",
+      "claimId": "clm:haw:noaa-100yd-approach-compliance",
+      "eventId": "kevt:4:5919f3cfaa821f3df7c257a5",
+      "eventSeq": 4,
+      "eventHash": "df97006daab72015dc2827d5bd7e8fdad7b69a30be71a33b2f572e8a5adc0392",
+      "eventType": "claim_created",
+      "recordedAt": "2026-10-27T10:52:33.660Z",
       "isSynthetic": false,
-      "provenanceClass": "operational_evidence",
+      "prevEventHash": "faa6eb51ee7614d51cc2e04dfa7839b87767355d2ea4c701603f9ea4285d46dc",
+      "claimVersionId": "clmv:haw:noaa-100yd-approach-compliance:v1",
       "claimDefinition": {
         "claimId": "clm:haw:noaa-100yd-approach-compliance",
-        "claimVersionId": "clmv:haw:noaa-100yd-approach-compliance:v1",
-        "subjectDccId": "dcc:ent:destination:f2eb56976aad39819d18a08b",
-        "predicate": "noaa_100yd_humpback_standoff_enforced",
-        "assertionType": "policy",
-        "epistemicState": "verified_against_identified_evidence",
-        "typedValue": true,
-        "validFrom": "2025-01-01T00:00:00.000Z",
         "validTo": null,
-        "sourceObservedAt": "2026-10-27T10:52:33.660Z",
-        "sourcePublishedAt": null,
+        "predicate": "noaa_100yd_humpback_standoff_enforced",
+        "validFrom": "2025-01-01T00:00:00.000Z",
+        "typedValue": true,
         "retrievedAt": "2026-10-27T10:52:33.660Z",
-        "freshnessTtlSeconds": 31536000,
-        "sourceAuthority": {
-          "sourceDccId": "dcc:ent:evidence_source:81267c6ec04837b838d00aef",
-          "organizationName": "NOAA Fisheries / Code of Federal Regulations",
-          "authorityTier": "primary_regulator",
-          "competentDomains": [
-            "marine_wildlife_regulation"
-          ],
-          "claimedDomain": "marine_wildlife_regulation",
-          "independentlyCorroboratedBySourceDccIds": [],
-          "licenseOrReusePolicy": "US Federal Government Public Domain"
-        },
         "evidenceRefs": [
           {
-            "evidenceRefId": "evref:haw:noaa-50cfr224-100yd-approach",
-            "sourceDccId": "dcc:ent:evidence_source:81267c6ec04837b838d00aef",
-            "sourceTitle": "50 CFR § 224.103 — Special prohibitions for endangered marine mammals (Humpback Whales in Hawaii)",
-            "sourceOrganization": "NOAA Fisheries / Code of Federal Regulations",
-            "canonicalSourceUrl": "https://www.ecfr.gov/current/title-50/section-224.103",
-            "snapshotId": "snap:sha256:0c249bf745e483a06a49a420769190bda8bf8aa063f44e0e23ee59901d26e84c",
-            "snapshotSha256": "0c249bf745e483a06a49a420769190bda8bf8aa063f44e0e23ee59901d26e84c",
-            "privateObjectKey": "v03/raw_source_captures/sha256/0c249bf745e483a06a49a420769190bda8bf8aa063f44e0e23ee59901d26e84c.txt",
+            "extractor": {
+              "method": "deterministic_regex_span",
+              "extractorId": "dcc-v03-text-selector",
+              "extractorVersion": "0.3.0"
+            },
             "selectors": [
               {
                 "type": "TextQuoteSelector",
@@ -801,108 +779,85 @@
                 "suffix": "."
               },
               {
+                "end": 125,
                 "type": "TextPositionSelector",
-                "start": 61,
-                "end": 125
+                "start": 61
               }
             ],
-            "surroundingContext": {
-              "before": "3(a): It is unlawful to approach, by any means, ",
-              "exactMatch": "within 100 yards (91.4 m) of any humpback whale in Hawaii waters",
-              "after": "."
-            },
-            "extractor": {
-              "extractorId": "dcc-v03-text-selector",
-              "extractorVersion": "0.3.0",
-              "method": "deterministic_regex_span"
-            },
+            "snapshotId": "snap:sha256:0c249bf745e483a06a49a420769190bda8bf8aa063f44e0e23ee59901d26e84c",
             "extractedAt": "2026-10-27T10:52:33.660Z",
             "retrievedAt": "2026-10-27T10:52:33.660Z",
-            "recordingTimeVerified": true,
-            "recordingTimeStatus": "verified_database_admission",
-            "sourcePublishedAt": null,
+            "sourceDccId": "dcc:ent:evidence_source:81267c6ec04837b838d00aef",
+            "sourceTitle": "50 CFR § 224.103 — Special prohibitions for endangered marine mammals (Humpback Whales in Hawaii)",
+            "evidenceHash": "6dafc392004903b7697354a7a961024ded004ccecb8ee18e2480fa2b1074ac8f",
+            "evidenceRefId": "evref:haw:noaa-50cfr224-100yd-approach",
+            "snapshotSha256": "0c249bf745e483a06a49a420769190bda8bf8aa063f44e0e23ee59901d26e84c",
+            "privateObjectKey": "v03/raw_source_captures/sha256/0c249bf745e483a06a49a420769190bda8bf8aa063f44e0e23ee59901d26e84c.txt",
             "sourceObservedAt": "2026-10-27T10:52:33.660Z",
+            "sourcePublishedAt": null,
+            "canonicalSourceUrl": "https://www.ecfr.gov/current/title-50/section-224.103",
+            "sourceOrganization": "NOAA Fisheries / Code of Federal Regulations",
+            "surroundingContext": {
+              "after": ".",
+              "before": "3(a): It is unlawful to approach, by any means, ",
+              "exactMatch": "within 100 yards (91.4 m) of any humpback whale in Hawaii waters"
+            },
+            "recordingTimeStatus": "verified_database_admission",
             "licenseOrReusePolicy": "US Federal Government Public Domain (17 U.S.C. 105)",
-            "evidenceHash": "6dafc392004903b7697354a7a961024ded004ccecb8ee18e2480fa2b1074ac8f"
+            "recordingTimeVerified": true
           }
-        ]
+        ],
+        "subjectDccId": "dcc:ent:destination:f2eb56976aad39819d18a08b",
+        "assertionType": "policy",
+        "claimVersionId": "clmv:haw:noaa-100yd-approach-compliance:v1",
+        "epistemicState": "verified_against_identified_evidence",
+        "sourceAuthority": {
+          "sourceDccId": "dcc:ent:evidence_source:81267c6ec04837b838d00aef",
+          "authorityTier": "primary_regulator",
+          "claimedDomain": "marine_wildlife_regulation",
+          "competentDomains": [
+            "marine_wildlife_regulation"
+          ],
+          "organizationName": "NOAA Fisheries / Code of Federal Regulations",
+          "licenseOrReusePolicy": "US Federal Government Public Domain",
+          "independentlyCorroboratedBySourceDccIds": []
+        },
+        "sourceObservedAt": "2026-10-27T10:52:33.660Z",
+        "sourcePublishedAt": null,
+        "freshnessTtlSeconds": 31536000
       },
-      "reason": "50 CFR 224.103(a) mandatory 100-yard humpback whale approach stand-off distance.",
-      "corroboratingSourceDccId": null,
-      "eventHash": "df97006daab72015dc2827d5bd7e8fdad7b69a30be71a33b2f572e8a5adc0392",
-      "prevEventHash": "faa6eb51ee7614d51cc2e04dfa7839b87767355d2ea4c701603f9ea4285d46dc"
-    },
-    {
-      "eventSeq": 5,
-      "eventId": "kevt:5:22a150153d1d1252fc999a23",
-      "eventType": "claim_created",
-      "claimId": "clm:gosno:private-transport-mode-only",
-      "claimVersionId": "clmv:gosno:private-transport-mode-only:v1",
-      "targetPreviousVersionId": null,
-      "recordedAt": "2026-10-27T10:52:33.911Z",
+      "provenanceClass": "operational_evidence",
       "recordedAtVerified": true,
       "recordingTimeStatus": "verified_database_admission",
+      "targetPreviousVersionId": null,
+      "corroboratingSourceDccId": null
+    },
+    {
+      "reason": "Extracted from gosno.co/api/public/route-feed, gosno.co/agent.json, and gosno.co/llms.txt: GoSno operates private door-to-door mountain transportation only (no shared shuttles).",
       "actorId": "dcc-v031-preserved-source-extractor",
+      "claimId": "clm:gosno:private-transport-mode-only",
+      "eventId": "kevt:5:22a150153d1d1252fc999a23",
+      "eventSeq": 5,
+      "eventHash": "448bc6a12d8fe5e36acf8a8fc8aec0e6bcf149b9c6f4f3a299a261326c2597bf",
+      "eventType": "claim_created",
+      "recordedAt": "2026-10-27T10:52:33.911Z",
       "isSynthetic": false,
-      "provenanceClass": "operational_evidence",
+      "prevEventHash": "df97006daab72015dc2827d5bd7e8fdad7b69a30be71a33b2f572e8a5adc0392",
+      "claimVersionId": "clmv:gosno:private-transport-mode-only:v1",
       "claimDefinition": {
         "claimId": "clm:gosno:private-transport-mode-only",
-        "claimVersionId": "clmv:gosno:private-transport-mode-only:v1",
-        "subjectDccId": "dcc:ent:operator:b4019b6570bb4508b2995aeb",
-        "predicate": "operates_private_door_to_door_transfers_only_no_shared_shuttles",
-        "assertionType": "policy",
-        "epistemicState": "verified_against_identified_evidence",
-        "typedValue": true,
-        "unitOrCurrency": "boolean",
-        "validFrom": "2026-01-01T00:00:00.000Z",
         "validTo": "2027-05-01T00:00:00.000Z",
-        "sourceObservedAt": "2026-10-26T21:14:32.106Z",
-        "sourcePublishedAt": null,
+        "predicate": "operates_private_door_to_door_transfers_only_no_shared_shuttles",
+        "validFrom": "2026-01-01T00:00:00.000Z",
+        "typedValue": true,
         "retrievedAt": "2026-10-26T21:14:32.106Z",
-        "freshnessTtlSeconds": 7776000,
-        "sourceAuthority": {
-          "sourceDccId": "dcc:ent:evidence_source:95c41b25853b8996eb7e8f82",
-          "organizationName": "GoSno Mountain Transportation",
-          "authorityTier": "direct_operator",
-          "competentDomains": [
-            "ground_shuttle_operations",
-            "private_mountain_transportation"
-          ],
-          "claimedDomain": "private_mountain_transportation",
-          "independentlyCorroboratedBySourceDccIds": [
-            "dcc:ent:evidence_source:b4d331e26b16230ff877bbd8",
-            "dcc:ent:evidence_source:d7e3169467f7907ce7eaf6f2"
-          ],
-          "licenseOrReusePolicy": "DCC / GoSno First-Party Public Route Feed"
-        },
         "evidenceRefs": [
           {
-            "evidenceRefId": "evref:gosno:route-feed:private-mode-and-capacity",
-            "sourceDccId": "dcc:ent:evidence_source:95c41b25853b8996eb7e8f82",
-            "sourceTitle": "GoSno Public Route & Tariff Feed (/api/public/route-feed)",
-            "sourceOrganization": "GoSno Private Mountain Transportation",
-            "canonicalSourceUrl": "https://gosno.co/api/public/route-feed",
-            "snapshotId": "snap:cap:gosno:route-feed-json",
-            "snapshotSha256": "272b6f1872b41220a94b7942c585cff2b2f16ac42f231058a44f9dd4577ed4f1",
-            "privateObjectKey": "v03/raw_source_captures/sha256/272b6f1872b41220a94b7942c585cff2b2f16ac42f231058a44f9dd4577ed4f1.json",
-            "derivedTextSnapshotId": null,
-            "derivedTextSnapshotSha256": null,
-            "privateDerivedTextObjectKey": null,
-            "httpStatus": 200,
-            "responseHeaders": {
-              "cache-control": "public, max-age=300",
-              "content-type": "application/json",
-              "date": "Mon, 26 Oct 2026 21:03:01 GMT",
-              "server": "Vercel",
-              "x-vercel-id": "cle1::iad1::s9sh5-1793049272429-554596dc2ef0"
+            "extractor": {
+              "method": "deterministic_json_pointer",
+              "extractorId": "dcc-preserved-capture-selector",
+              "extractorVersion": "identity-utf8-v031.1"
             },
-            "provenanceClass": "network_capture_verified",
-            "isSynthetic": false,
-            "lifecycleState": "active",
-            "withdrawn": false,
-            "withdrawnAt": null,
-            "withdrawalReason": null,
-            "withdrawalEventId": null,
             "selectors": [
               {
                 "type": "TextQuoteSelector",
@@ -911,63 +866,63 @@
                 "suffix": ",\"legacy_processors\":{\"square\":\"Disabled (HTTP 4"
               },
               {
+                "end": 275,
                 "type": "TextPositionSelector",
-                "start": 148,
-                "end": 275
+                "start": 148
               },
               {
                 "type": "JsonPointerSelector",
                 "pointer": "/routes/0/capacity",
                 "resolvedValue": {
-                  "max_passengers": 6,
-                  "luggage_note": "Private party up to 6 passengers; cargo capacity depends on ski bags and luggage size."
+                  "luggage_note": "Private party up to 6 passengers; cargo capacity depends on ski bags and luggage size.",
+                  "max_passengers": 6
                 }
               }
             ],
-            "surroundingContext": {
-              "before": "\"gosno\",\"name\":\"GoSno\",\"url\":\"https://gosno.co\",",
-              "exactMatch": "\"type\":\"private_mountain_transportation\",\"headquarters\":\"Colorado, USA\",\"active_payment_processor\":\"RezdyPay (Stripe Elements)\"",
-              "after": ",\"legacy_processors\":{\"square\":\"Disabled (HTTP 4"
-            },
-            "extractor": {
-              "extractorId": "dcc-preserved-capture-selector",
-              "extractorVersion": "identity-utf8-v031.1",
-              "method": "deterministic_json_pointer"
-            },
+            "withdrawn": false,
+            "httpStatus": 200,
+            "snapshotId": "snap:cap:gosno:route-feed-json",
             "extractedAt": "2026-10-26T21:14:32.106Z",
+            "isSynthetic": false,
             "retrievedAt": "2026-10-26T21:14:32.106Z",
-            "sourcePublishedAt": null,
+            "sourceDccId": "dcc:ent:evidence_source:95c41b25853b8996eb7e8f82",
+            "sourceTitle": "GoSno Public Route & Tariff Feed (/api/public/route-feed)",
+            "withdrawnAt": null,
+            "evidenceHash": "cccb740e6d39abdc59e3880ccd161e07968bcf1bc30e2fc13f38fab12d1d6169",
+            "evidenceRefId": "evref:gosno:route-feed:private-mode-and-capacity",
+            "lifecycleState": "active",
+            "snapshotSha256": "272b6f1872b41220a94b7942c585cff2b2f16ac42f231058a44f9dd4577ed4f1",
+            "provenanceClass": "network_capture_verified",
+            "responseHeaders": {
+              "date": "Mon, 26 Oct 2026 21:03:01 GMT",
+              "server": "Vercel",
+              "x-vercel-id": "cle1::iad1::s9sh5-1793049272429-554596dc2ef0",
+              "content-type": "application/json",
+              "cache-control": "public, max-age=300"
+            },
+            "privateObjectKey": "v03/raw_source_captures/sha256/272b6f1872b41220a94b7942c585cff2b2f16ac42f231058a44f9dd4577ed4f1.json",
             "sourceObservedAt": null,
-            "licenseOrReusePolicy": "DCC / GoSno First-Party Public Route Feed",
-            "evidenceHash": "cccb740e6d39abdc59e3880ccd161e07968bcf1bc30e2fc13f38fab12d1d6169"
-          },
-          {
-            "evidenceRefId": "evref:gosno:agent-json:private-only-6-suv-10-van",
-            "sourceDccId": "dcc:ent:evidence_source:b4d331e26b16230ff877bbd8",
-            "sourceTitle": "GoSno Machine Agent Manifest (/agent.json)",
+            "withdrawalReason": null,
+            "sourcePublishedAt": null,
+            "withdrawalEventId": null,
+            "canonicalSourceUrl": "https://gosno.co/api/public/route-feed",
             "sourceOrganization": "GoSno Private Mountain Transportation",
-            "canonicalSourceUrl": "https://gosno.co/agent.json",
-            "snapshotId": "snap:cap:gosno:agent-json",
-            "snapshotSha256": "c989fad42818b510d11099cb3d3cb5e849cbe1c4f506aa077303670b341c25e3",
-            "privateObjectKey": "v03/raw_source_captures/sha256/c989fad42818b510d11099cb3d3cb5e849cbe1c4f506aa077303670b341c25e3.json",
+            "surroundingContext": {
+              "after": ",\"legacy_processors\":{\"square\":\"Disabled (HTTP 4",
+              "before": "\"gosno\",\"name\":\"GoSno\",\"url\":\"https://gosno.co\",",
+              "exactMatch": "\"type\":\"private_mountain_transportation\",\"headquarters\":\"Colorado, USA\",\"active_payment_processor\":\"RezdyPay (Stripe Elements)\""
+            },
+            "licenseOrReusePolicy": "DCC / GoSno First-Party Public Route Feed",
             "derivedTextSnapshotId": null,
             "derivedTextSnapshotSha256": null,
-            "privateDerivedTextObjectKey": null,
-            "httpStatus": 200,
-            "responseHeaders": {
-              "cache-control": "public, max-age=3600",
-              "content-type": "application/json",
-              "date": "Mon, 26 Oct 2026 21:14:32 GMT",
-              "server": "Vercel",
-              "x-vercel-id": "cle1::iad1::rrwn6-1793049272516-8d23eb75a9fa"
+            "privateDerivedTextObjectKey": null
+          },
+          {
+            "extractor": {
+              "method": "deterministic_json_pointer",
+              "extractorId": "dcc-preserved-capture-selector",
+              "extractorVersion": "identity-utf8-v031.1"
             },
-            "provenanceClass": "network_capture_verified",
-            "isSynthetic": false,
-            "lifecycleState": "active",
-            "withdrawn": false,
-            "withdrawnAt": null,
-            "withdrawalReason": null,
-            "withdrawalEventId": null,
             "selectors": [
               {
                 "type": "TextQuoteSelector",
@@ -976,9 +931,9 @@
                 "suffix": "},\"authority\":[\"published_service_routes\",\"publi"
               },
               {
+                "end": 375,
                 "type": "TextPositionSelector",
-                "start": 161,
-                "end": 375
+                "start": 161
               },
               {
                 "type": "JsonPointerSelector",
@@ -986,50 +941,50 @@
                 "resolvedValue": "Private flat-rate airport transportation between Colorado airports and mountain destinations, with published route pages and vehicle-specific booking states."
               }
             ],
-            "surroundingContext": {
-              "before": "\"gosno\",\"name\":\"GoSno\",\"url\":\"https://gosno.co\",",
-              "exactMatch": "\"type\":\"private_mountain_transportation\",\"description\":\"Private flat-rate airport transportation between Colorado airports and mountain destinations, with published route pages and vehicle-specific booking states.\"",
-              "after": "},\"authority\":[\"published_service_routes\",\"publi"
-            },
-            "extractor": {
-              "extractorId": "dcc-preserved-capture-selector",
-              "extractorVersion": "identity-utf8-v031.1",
-              "method": "deterministic_json_pointer"
-            },
-            "extractedAt": "2026-10-26T21:14:32.464Z",
-            "retrievedAt": "2026-10-26T21:14:32.464Z",
-            "sourcePublishedAt": null,
-            "sourceObservedAt": null,
-            "licenseOrReusePolicy": "DCC / GoSno First-Party Machine Manifest",
-            "evidenceHash": "29385659b959eb27959355c2a952e79277eddfb3d544341052352f908a9d0af5"
-          },
-          {
-            "evidenceRefId": "evref:gosno:llms-txt:corridor-rates-and-private-policy",
-            "sourceDccId": "dcc:ent:evidence_source:d7e3169467f7907ce7eaf6f2",
-            "sourceTitle": "GoSno LLMs Operational Specification (/llms.txt)",
-            "sourceOrganization": "GoSno Private Mountain Transportation",
-            "canonicalSourceUrl": "https://gosno.co/llms.txt",
-            "snapshotId": "snap:cap:gosno:llms-txt",
-            "snapshotSha256": "b066000863b8c2a05f9edbd675b4c77c6bd420fa606a138174ba3c0bb38c162e",
-            "privateObjectKey": "v03/raw_source_captures/sha256/b066000863b8c2a05f9edbd675b4c77c6bd420fa606a138174ba3c0bb38c162e.txt",
-            "derivedTextSnapshotId": null,
-            "derivedTextSnapshotSha256": null,
-            "privateDerivedTextObjectKey": null,
+            "withdrawn": false,
             "httpStatus": 200,
+            "snapshotId": "snap:cap:gosno:agent-json",
+            "extractedAt": "2026-10-26T21:14:32.464Z",
+            "isSynthetic": false,
+            "retrievedAt": "2026-10-26T21:14:32.464Z",
+            "sourceDccId": "dcc:ent:evidence_source:b4d331e26b16230ff877bbd8",
+            "sourceTitle": "GoSno Machine Agent Manifest (/agent.json)",
+            "withdrawnAt": null,
+            "evidenceHash": "29385659b959eb27959355c2a952e79277eddfb3d544341052352f908a9d0af5",
+            "evidenceRefId": "evref:gosno:agent-json:private-only-6-suv-10-van",
+            "lifecycleState": "active",
+            "snapshotSha256": "c989fad42818b510d11099cb3d3cb5e849cbe1c4f506aa077303670b341c25e3",
+            "provenanceClass": "network_capture_verified",
             "responseHeaders": {
-              "cache-control": "public, max-age=300",
-              "content-type": "text/plain; charset=utf-8",
               "date": "Mon, 26 Oct 2026 21:14:32 GMT",
               "server": "Vercel",
-              "x-vercel-id": "cle1::iad1::28vnw-1793049272673-5c575c6e492b"
+              "x-vercel-id": "cle1::iad1::rrwn6-1793049272516-8d23eb75a9fa",
+              "content-type": "application/json",
+              "cache-control": "public, max-age=3600"
             },
-            "provenanceClass": "network_capture_verified",
-            "isSynthetic": false,
-            "lifecycleState": "active",
-            "withdrawn": false,
-            "withdrawnAt": null,
+            "privateObjectKey": "v03/raw_source_captures/sha256/c989fad42818b510d11099cb3d3cb5e849cbe1c4f506aa077303670b341c25e3.json",
+            "sourceObservedAt": null,
             "withdrawalReason": null,
+            "sourcePublishedAt": null,
             "withdrawalEventId": null,
+            "canonicalSourceUrl": "https://gosno.co/agent.json",
+            "sourceOrganization": "GoSno Private Mountain Transportation",
+            "surroundingContext": {
+              "after": "},\"authority\":[\"published_service_routes\",\"publi",
+              "before": "\"gosno\",\"name\":\"GoSno\",\"url\":\"https://gosno.co\",",
+              "exactMatch": "\"type\":\"private_mountain_transportation\",\"description\":\"Private flat-rate airport transportation between Colorado airports and mountain destinations, with published route pages and vehicle-specific booking states.\""
+            },
+            "licenseOrReusePolicy": "DCC / GoSno First-Party Machine Manifest",
+            "derivedTextSnapshotId": null,
+            "derivedTextSnapshotSha256": null,
+            "privateDerivedTextObjectKey": null
+          },
+          {
+            "extractor": {
+              "method": "deterministic_dom_selector",
+              "extractorId": "dcc-preserved-capture-selector",
+              "extractorVersion": "identity-utf8-v031.1"
+            },
             "selectors": [
               {
                 "type": "TextQuoteSelector",
@@ -1038,106 +993,106 @@
                 "suffix": "\n\n## Supported Trip Types\n\n1. One-Way (Airport t"
               },
               {
+                "end": 807,
                 "type": "TextPositionSelector",
-                "start": 758,
-                "end": 807
+                "start": 758
               }
             ],
-            "surroundingContext": {
-              "before": " season and GoSno during the winter ski season. ",
-              "exactMatch": "Private vehicle service only; no shared shuttles.",
-              "after": "\n\n## Supported Trip Types\n\n1. One-Way (Airport t"
-            },
-            "extractor": {
-              "extractorId": "dcc-preserved-capture-selector",
-              "extractorVersion": "identity-utf8-v031.1",
-              "method": "deterministic_dom_selector"
-            },
+            "withdrawn": false,
+            "httpStatus": 200,
+            "snapshotId": "snap:cap:gosno:llms-txt",
             "extractedAt": "2026-10-26T21:14:32.610Z",
+            "isSynthetic": false,
             "retrievedAt": "2026-10-26T21:14:32.610Z",
-            "sourcePublishedAt": null,
+            "sourceDccId": "dcc:ent:evidence_source:d7e3169467f7907ce7eaf6f2",
+            "sourceTitle": "GoSno LLMs Operational Specification (/llms.txt)",
+            "withdrawnAt": null,
+            "evidenceHash": "51e147a9a39aa5ceeb8ea7a76d8b15b15315bb25bd2d2b3d4a7091b5bde81a54",
+            "evidenceRefId": "evref:gosno:llms-txt:corridor-rates-and-private-policy",
+            "lifecycleState": "active",
+            "snapshotSha256": "b066000863b8c2a05f9edbd675b4c77c6bd420fa606a138174ba3c0bb38c162e",
+            "provenanceClass": "network_capture_verified",
+            "responseHeaders": {
+              "date": "Mon, 26 Oct 2026 21:14:32 GMT",
+              "server": "Vercel",
+              "x-vercel-id": "cle1::iad1::28vnw-1793049272673-5c575c6e492b",
+              "content-type": "text/plain; charset=utf-8",
+              "cache-control": "public, max-age=300"
+            },
+            "privateObjectKey": "v03/raw_source_captures/sha256/b066000863b8c2a05f9edbd675b4c77c6bd420fa606a138174ba3c0bb38c162e.txt",
             "sourceObservedAt": null,
-            "licenseOrReusePolicy": "DCC / GoSno First-Party llms.txt Specification",
-            "evidenceHash": "51e147a9a39aa5ceeb8ea7a76d8b15b15315bb25bd2d2b3d4a7091b5bde81a54"
-          }
-        ]
-      },
-      "reason": "Extracted from gosno.co/api/public/route-feed, gosno.co/agent.json, and gosno.co/llms.txt: GoSno operates private door-to-door mountain transportation only (no shared shuttles).",
-      "corroboratingSourceDccId": null,
-      "eventHash": "448bc6a12d8fe5e36acf8a8fc8aec0e6bcf149b9c6f4f3a299a261326c2597bf",
-      "prevEventHash": "df97006daab72015dc2827d5bd7e8fdad7b69a30be71a33b2f572e8a5adc0392"
-    },
-    {
-      "eventSeq": 6,
-      "eventId": "kevt:6:414922d3add85e12777e2202",
-      "eventType": "claim_created",
-      "claimId": "clm:gosno:private-suv-max-passengers-6",
-      "claimVersionId": "clmv:gosno:private-suv-max-passengers-6:v1",
-      "targetPreviousVersionId": null,
-      "recordedAt": "2026-10-27T10:52:33.957Z",
-      "recordedAtVerified": true,
-      "recordingTimeStatus": "verified_database_admission",
-      "actorId": "dcc-v031-preserved-source-extractor",
-      "isSynthetic": false,
-      "provenanceClass": "operational_evidence",
-      "claimDefinition": {
-        "claimId": "clm:gosno:private-suv-max-passengers-6",
-        "claimVersionId": "clmv:gosno:private-suv-max-passengers-6:v1",
-        "subjectDccId": "dcc:ent:operator:b4019b6570bb4508b2995aeb",
-        "predicate": "private_suv_max_passengers",
-        "assertionType": "policy",
-        "epistemicState": "verified_against_identified_evidence",
-        "typedValue": 6,
-        "unitOrCurrency": "passengers",
-        "validFrom": "2026-01-01T00:00:00.000Z",
-        "validTo": "2027-05-01T00:00:00.000Z",
-        "sourceObservedAt": "2026-10-26T21:14:32.106Z",
-        "sourcePublishedAt": null,
-        "retrievedAt": "2026-10-26T21:14:32.106Z",
-        "freshnessTtlSeconds": 7776000,
-        "sourceAuthority": {
-          "sourceDccId": "dcc:ent:evidence_source:95c41b25853b8996eb7e8f82",
-          "organizationName": "GoSno Mountain Transportation",
-          "authorityTier": "direct_operator",
-          "competentDomains": [
-            "private_mountain_transportation"
-          ],
-          "claimedDomain": "private_mountain_transportation",
-          "independentlyCorroboratedBySourceDccIds": [
-            "dcc:ent:evidence_source:b4d331e26b16230ff877bbd8",
-            "dcc:ent:evidence_source:6d2cd785816797452df00c8a",
-            "dcc:ent:evidence_source:000343d5df171f731f658a8c"
-          ],
-          "licenseOrReusePolicy": "DCC / GoSno First-Party Public Route Feed"
-        },
-        "evidenceRefs": [
-          {
-            "evidenceRefId": "evref:gosno:route-feed:private-mode-and-capacity",
-            "sourceDccId": "dcc:ent:evidence_source:95c41b25853b8996eb7e8f82",
-            "sourceTitle": "GoSno Public Route & Tariff Feed (/api/public/route-feed)",
+            "withdrawalReason": null,
+            "sourcePublishedAt": null,
+            "withdrawalEventId": null,
+            "canonicalSourceUrl": "https://gosno.co/llms.txt",
             "sourceOrganization": "GoSno Private Mountain Transportation",
-            "canonicalSourceUrl": "https://gosno.co/api/public/route-feed",
-            "snapshotId": "snap:cap:gosno:route-feed-json",
-            "snapshotSha256": "272b6f1872b41220a94b7942c585cff2b2f16ac42f231058a44f9dd4577ed4f1",
-            "privateObjectKey": "v03/raw_source_captures/sha256/272b6f1872b41220a94b7942c585cff2b2f16ac42f231058a44f9dd4577ed4f1.json",
+            "surroundingContext": {
+              "after": "\n\n## Supported Trip Types\n\n1. One-Way (Airport t",
+              "before": " season and GoSno during the winter ski season. ",
+              "exactMatch": "Private vehicle service only; no shared shuttles."
+            },
+            "licenseOrReusePolicy": "DCC / GoSno First-Party llms.txt Specification",
             "derivedTextSnapshotId": null,
             "derivedTextSnapshotSha256": null,
-            "privateDerivedTextObjectKey": null,
-            "httpStatus": 200,
-            "responseHeaders": {
-              "cache-control": "public, max-age=300",
-              "content-type": "application/json",
-              "date": "Mon, 26 Oct 2026 21:03:01 GMT",
-              "server": "Vercel",
-              "x-vercel-id": "cle1::iad1::s9sh5-1793049272429-554596dc2ef0"
+            "privateDerivedTextObjectKey": null
+          }
+        ],
+        "subjectDccId": "dcc:ent:operator:b4019b6570bb4508b2995aeb",
+        "assertionType": "policy",
+        "claimVersionId": "clmv:gosno:private-transport-mode-only:v1",
+        "epistemicState": "verified_against_identified_evidence",
+        "unitOrCurrency": "boolean",
+        "sourceAuthority": {
+          "sourceDccId": "dcc:ent:evidence_source:95c41b25853b8996eb7e8f82",
+          "authorityTier": "direct_operator",
+          "claimedDomain": "private_mountain_transportation",
+          "competentDomains": [
+            "ground_shuttle_operations",
+            "private_mountain_transportation"
+          ],
+          "organizationName": "GoSno Mountain Transportation",
+          "licenseOrReusePolicy": "DCC / GoSno First-Party Public Route Feed",
+          "independentlyCorroboratedBySourceDccIds": [
+            "dcc:ent:evidence_source:b4d331e26b16230ff877bbd8",
+            "dcc:ent:evidence_source:d7e3169467f7907ce7eaf6f2"
+          ]
+        },
+        "sourceObservedAt": "2026-10-26T21:14:32.106Z",
+        "sourcePublishedAt": null,
+        "freshnessTtlSeconds": 7776000
+      },
+      "provenanceClass": "operational_evidence",
+      "recordedAtVerified": true,
+      "recordingTimeStatus": "verified_database_admission",
+      "targetPreviousVersionId": null,
+      "corroboratingSourceDccId": null
+    },
+    {
+      "reason": "Extracted from gosno.co/api/public/route-feed, gosno.co/agent.json, gosno.co/winter-park, and gosno.co/denver-to-breckenridge: Private SUV maximum capacity is 6 passengers (subject to luggage and ski/snowboard equipment fit).",
+      "actorId": "dcc-v031-preserved-source-extractor",
+      "claimId": "clm:gosno:private-suv-max-passengers-6",
+      "eventId": "kevt:6:414922d3add85e12777e2202",
+      "eventSeq": 6,
+      "eventHash": "5ebe56d183fc5fd8b4fb781ba0c8fbd1bd8a90d180dc93b90749d12023a91c21",
+      "eventType": "claim_created",
+      "recordedAt": "2026-10-27T10:52:33.957Z",
+      "isSynthetic": false,
+      "prevEventHash": "448bc6a12d8fe5e36acf8a8fc8aec0e6bcf149b9c6f4f3a299a261326c2597bf",
+      "claimVersionId": "clmv:gosno:private-suv-max-passengers-6:v1",
+      "claimDefinition": {
+        "claimId": "clm:gosno:private-suv-max-passengers-6",
+        "validTo": "2027-05-01T00:00:00.000Z",
+        "predicate": "private_suv_max_passengers",
+        "validFrom": "2026-01-01T00:00:00.000Z",
+        "typedValue": 6,
+        "retrievedAt": "2026-10-26T21:14:32.106Z",
+        "evidenceRefs": [
+          {
+            "extractor": {
+              "method": "deterministic_json_pointer",
+              "extractorId": "dcc-preserved-capture-selector",
+              "extractorVersion": "identity-utf8-v031.1"
             },
-            "provenanceClass": "network_capture_verified",
-            "isSynthetic": false,
-            "lifecycleState": "active",
-            "withdrawn": false,
-            "withdrawnAt": null,
-            "withdrawalReason": null,
-            "withdrawalEventId": null,
             "selectors": [
               {
                 "type": "TextQuoteSelector",
@@ -1146,63 +1101,63 @@
                 "suffix": ",\"legacy_processors\":{\"square\":\"Disabled (HTTP 4"
               },
               {
+                "end": 275,
                 "type": "TextPositionSelector",
-                "start": 148,
-                "end": 275
+                "start": 148
               },
               {
                 "type": "JsonPointerSelector",
                 "pointer": "/routes/0/capacity",
                 "resolvedValue": {
-                  "max_passengers": 6,
-                  "luggage_note": "Private party up to 6 passengers; cargo capacity depends on ski bags and luggage size."
+                  "luggage_note": "Private party up to 6 passengers; cargo capacity depends on ski bags and luggage size.",
+                  "max_passengers": 6
                 }
               }
             ],
-            "surroundingContext": {
-              "before": "\"gosno\",\"name\":\"GoSno\",\"url\":\"https://gosno.co\",",
-              "exactMatch": "\"type\":\"private_mountain_transportation\",\"headquarters\":\"Colorado, USA\",\"active_payment_processor\":\"RezdyPay (Stripe Elements)\"",
-              "after": ",\"legacy_processors\":{\"square\":\"Disabled (HTTP 4"
-            },
-            "extractor": {
-              "extractorId": "dcc-preserved-capture-selector",
-              "extractorVersion": "identity-utf8-v031.1",
-              "method": "deterministic_json_pointer"
-            },
+            "withdrawn": false,
+            "httpStatus": 200,
+            "snapshotId": "snap:cap:gosno:route-feed-json",
             "extractedAt": "2026-10-26T21:14:32.106Z",
+            "isSynthetic": false,
             "retrievedAt": "2026-10-26T21:14:32.106Z",
-            "sourcePublishedAt": null,
+            "sourceDccId": "dcc:ent:evidence_source:95c41b25853b8996eb7e8f82",
+            "sourceTitle": "GoSno Public Route & Tariff Feed (/api/public/route-feed)",
+            "withdrawnAt": null,
+            "evidenceHash": "cccb740e6d39abdc59e3880ccd161e07968bcf1bc30e2fc13f38fab12d1d6169",
+            "evidenceRefId": "evref:gosno:route-feed:private-mode-and-capacity",
+            "lifecycleState": "active",
+            "snapshotSha256": "272b6f1872b41220a94b7942c585cff2b2f16ac42f231058a44f9dd4577ed4f1",
+            "provenanceClass": "network_capture_verified",
+            "responseHeaders": {
+              "date": "Mon, 26 Oct 2026 21:03:01 GMT",
+              "server": "Vercel",
+              "x-vercel-id": "cle1::iad1::s9sh5-1793049272429-554596dc2ef0",
+              "content-type": "application/json",
+              "cache-control": "public, max-age=300"
+            },
+            "privateObjectKey": "v03/raw_source_captures/sha256/272b6f1872b41220a94b7942c585cff2b2f16ac42f231058a44f9dd4577ed4f1.json",
             "sourceObservedAt": null,
-            "licenseOrReusePolicy": "DCC / GoSno First-Party Public Route Feed",
-            "evidenceHash": "cccb740e6d39abdc59e3880ccd161e07968bcf1bc30e2fc13f38fab12d1d6169"
-          },
-          {
-            "evidenceRefId": "evref:gosno:agent-json:private-only-6-suv-10-van",
-            "sourceDccId": "dcc:ent:evidence_source:b4d331e26b16230ff877bbd8",
-            "sourceTitle": "GoSno Machine Agent Manifest (/agent.json)",
+            "withdrawalReason": null,
+            "sourcePublishedAt": null,
+            "withdrawalEventId": null,
+            "canonicalSourceUrl": "https://gosno.co/api/public/route-feed",
             "sourceOrganization": "GoSno Private Mountain Transportation",
-            "canonicalSourceUrl": "https://gosno.co/agent.json",
-            "snapshotId": "snap:cap:gosno:agent-json",
-            "snapshotSha256": "c989fad42818b510d11099cb3d3cb5e849cbe1c4f506aa077303670b341c25e3",
-            "privateObjectKey": "v03/raw_source_captures/sha256/c989fad42818b510d11099cb3d3cb5e849cbe1c4f506aa077303670b341c25e3.json",
+            "surroundingContext": {
+              "after": ",\"legacy_processors\":{\"square\":\"Disabled (HTTP 4",
+              "before": "\"gosno\",\"name\":\"GoSno\",\"url\":\"https://gosno.co\",",
+              "exactMatch": "\"type\":\"private_mountain_transportation\",\"headquarters\":\"Colorado, USA\",\"active_payment_processor\":\"RezdyPay (Stripe Elements)\""
+            },
+            "licenseOrReusePolicy": "DCC / GoSno First-Party Public Route Feed",
             "derivedTextSnapshotId": null,
             "derivedTextSnapshotSha256": null,
-            "privateDerivedTextObjectKey": null,
-            "httpStatus": 200,
-            "responseHeaders": {
-              "cache-control": "public, max-age=3600",
-              "content-type": "application/json",
-              "date": "Mon, 26 Oct 2026 21:14:32 GMT",
-              "server": "Vercel",
-              "x-vercel-id": "cle1::iad1::rrwn6-1793049272516-8d23eb75a9fa"
+            "privateDerivedTextObjectKey": null
+          },
+          {
+            "extractor": {
+              "method": "deterministic_json_pointer",
+              "extractorId": "dcc-preserved-capture-selector",
+              "extractorVersion": "identity-utf8-v031.1"
             },
-            "provenanceClass": "network_capture_verified",
-            "isSynthetic": false,
-            "lifecycleState": "active",
-            "withdrawn": false,
-            "withdrawnAt": null,
-            "withdrawalReason": null,
-            "withdrawalEventId": null,
             "selectors": [
               {
                 "type": "TextQuoteSelector",
@@ -1211,9 +1166,9 @@
                 "suffix": "},\"authority\":[\"published_service_routes\",\"publi"
               },
               {
+                "end": 375,
                 "type": "TextPositionSelector",
-                "start": 161,
-                "end": 375
+                "start": 161
               },
               {
                 "type": "JsonPointerSelector",
@@ -1221,50 +1176,50 @@
                 "resolvedValue": "Private flat-rate airport transportation between Colorado airports and mountain destinations, with published route pages and vehicle-specific booking states."
               }
             ],
-            "surroundingContext": {
-              "before": "\"gosno\",\"name\":\"GoSno\",\"url\":\"https://gosno.co\",",
-              "exactMatch": "\"type\":\"private_mountain_transportation\",\"description\":\"Private flat-rate airport transportation between Colorado airports and mountain destinations, with published route pages and vehicle-specific booking states.\"",
-              "after": "},\"authority\":[\"published_service_routes\",\"publi"
-            },
-            "extractor": {
-              "extractorId": "dcc-preserved-capture-selector",
-              "extractorVersion": "identity-utf8-v031.1",
-              "method": "deterministic_json_pointer"
-            },
-            "extractedAt": "2026-10-26T21:14:32.464Z",
-            "retrievedAt": "2026-10-26T21:14:32.464Z",
-            "sourcePublishedAt": null,
-            "sourceObservedAt": null,
-            "licenseOrReusePolicy": "DCC / GoSno First-Party Machine Manifest",
-            "evidenceHash": "29385659b959eb27959355c2a952e79277eddfb3d544341052352f908a9d0af5"
-          },
-          {
-            "evidenceRefId": "evref:gosno:winter-park-html:private-suv-349-max-6",
-            "sourceDccId": "dcc:ent:evidence_source:6d2cd785816797452df00c8a",
-            "sourceTitle": "GoSno Denver / DEN to Winter Park Private Transfer Page (/winter-park)",
-            "sourceOrganization": "GoSno Private Mountain Transportation",
-            "canonicalSourceUrl": "https://gosno.co/winter-park",
-            "snapshotId": "snap:cap:gosno:winter-park-html",
-            "snapshotSha256": "84b16928762a6f832be6b2aa31b93328a053ae2a4357df758eb9ef04db92e6ed",
-            "privateObjectKey": "v03/raw_source_captures/sha256/84b16928762a6f832be6b2aa31b93328a053ae2a4357df758eb9ef04db92e6ed.html",
-            "derivedTextSnapshotId": "snap:derived:cap:gosno:winter-park-html",
-            "derivedTextSnapshotSha256": "2b719e80f21707c44f5f92a10ea3e77560a0fc5c3752a4539aa03b7a21f8a84a",
-            "privateDerivedTextObjectKey": "v03/raw_source_captures/sha256/2b719e80f21707c44f5f92a10ea3e77560a0fc5c3752a4539aa03b7a21f8a84a.derived.txt",
+            "withdrawn": false,
             "httpStatus": 200,
+            "snapshotId": "snap:cap:gosno:agent-json",
+            "extractedAt": "2026-10-26T21:14:32.464Z",
+            "isSynthetic": false,
+            "retrievedAt": "2026-10-26T21:14:32.464Z",
+            "sourceDccId": "dcc:ent:evidence_source:b4d331e26b16230ff877bbd8",
+            "sourceTitle": "GoSno Machine Agent Manifest (/agent.json)",
+            "withdrawnAt": null,
+            "evidenceHash": "29385659b959eb27959355c2a952e79277eddfb3d544341052352f908a9d0af5",
+            "evidenceRefId": "evref:gosno:agent-json:private-only-6-suv-10-van",
+            "lifecycleState": "active",
+            "snapshotSha256": "c989fad42818b510d11099cb3d3cb5e849cbe1c4f506aa077303670b341c25e3",
+            "provenanceClass": "network_capture_verified",
             "responseHeaders": {
-              "cache-control": "private, no-cache, no-store, max-age=0, must-revalidate",
-              "content-type": "text/html; charset=utf-8",
               "date": "Mon, 26 Oct 2026 21:14:32 GMT",
               "server": "Vercel",
-              "x-vercel-id": "cle1::iad1::bfpfx-1793049272800-89ef0b42385d"
+              "x-vercel-id": "cle1::iad1::rrwn6-1793049272516-8d23eb75a9fa",
+              "content-type": "application/json",
+              "cache-control": "public, max-age=3600"
             },
-            "provenanceClass": "network_capture_verified",
-            "isSynthetic": false,
-            "lifecycleState": "active",
-            "withdrawn": false,
-            "withdrawnAt": null,
+            "privateObjectKey": "v03/raw_source_captures/sha256/c989fad42818b510d11099cb3d3cb5e849cbe1c4f506aa077303670b341c25e3.json",
+            "sourceObservedAt": null,
             "withdrawalReason": null,
+            "sourcePublishedAt": null,
             "withdrawalEventId": null,
+            "canonicalSourceUrl": "https://gosno.co/agent.json",
+            "sourceOrganization": "GoSno Private Mountain Transportation",
+            "surroundingContext": {
+              "after": "},\"authority\":[\"published_service_routes\",\"publi",
+              "before": "\"gosno\",\"name\":\"GoSno\",\"url\":\"https://gosno.co\",",
+              "exactMatch": "\"type\":\"private_mountain_transportation\",\"description\":\"Private flat-rate airport transportation between Colorado airports and mountain destinations, with published route pages and vehicle-specific booking states.\""
+            },
+            "licenseOrReusePolicy": "DCC / GoSno First-Party Machine Manifest",
+            "derivedTextSnapshotId": null,
+            "derivedTextSnapshotSha256": null,
+            "privateDerivedTextObjectKey": null
+          },
+          {
+            "extractor": {
+              "method": "deterministic_dom_selector",
+              "extractorId": "dcc-preserved-capture-selector",
+              "extractorVersion": "dcc-html-text-extractor-v031.1"
+            },
             "selectors": [
               {
                 "type": "TextQuoteSelector",
@@ -1273,55 +1228,55 @@
                 "suffix": "\nThe advertised flat rate includes all required "
               },
               {
+                "end": 297,
                 "type": "TextPositionSelector",
-                "start": 166,
-                "end": 297
+                "start": 166
               }
             ],
-            "surroundingContext": {
-              "before": "DO HUBBIG SKY (MT)GROUPSNEWSFLEET(720) 369-6292\n",
-              "exactMatch": "Private Denver Airport to Winter Park Transportation\n$ 349 one way per private SUV\nTotal for the private vehicle—not per passenger.",
-              "after": "\nThe advertised flat rate includes all required "
-            },
-            "extractor": {
-              "extractorId": "dcc-preserved-capture-selector",
-              "extractorVersion": "dcc-html-text-extractor-v031.1",
-              "method": "deterministic_dom_selector"
-            },
+            "withdrawn": false,
+            "httpStatus": 200,
+            "snapshotId": "snap:cap:gosno:winter-park-html",
             "extractedAt": "2026-10-26T21:14:32.742Z",
+            "isSynthetic": false,
             "retrievedAt": "2026-10-26T21:14:32.742Z",
-            "sourcePublishedAt": null,
+            "sourceDccId": "dcc:ent:evidence_source:6d2cd785816797452df00c8a",
+            "sourceTitle": "GoSno Denver / DEN to Winter Park Private Transfer Page (/winter-park)",
+            "withdrawnAt": null,
+            "evidenceHash": "c750d13f23e4b7900b41d3a028d158b4dd1b476d01619306b0ae6d77346036c7",
+            "evidenceRefId": "evref:gosno:winter-park-html:private-suv-349-max-6",
+            "lifecycleState": "active",
+            "snapshotSha256": "84b16928762a6f832be6b2aa31b93328a053ae2a4357df758eb9ef04db92e6ed",
+            "provenanceClass": "network_capture_verified",
+            "responseHeaders": {
+              "date": "Mon, 26 Oct 2026 21:14:32 GMT",
+              "server": "Vercel",
+              "x-vercel-id": "cle1::iad1::bfpfx-1793049272800-89ef0b42385d",
+              "content-type": "text/html; charset=utf-8",
+              "cache-control": "private, no-cache, no-store, max-age=0, must-revalidate"
+            },
+            "privateObjectKey": "v03/raw_source_captures/sha256/84b16928762a6f832be6b2aa31b93328a053ae2a4357df758eb9ef04db92e6ed.html",
             "sourceObservedAt": null,
+            "withdrawalReason": null,
+            "sourcePublishedAt": null,
+            "withdrawalEventId": null,
+            "canonicalSourceUrl": "https://gosno.co/winter-park",
+            "sourceOrganization": "GoSno Private Mountain Transportation",
+            "surroundingContext": {
+              "after": "\nThe advertised flat rate includes all required ",
+              "before": "DO HUBBIG SKY (MT)GROUPSNEWSFLEET(720) 369-6292\n",
+              "exactMatch": "Private Denver Airport to Winter Park Transportation\n$ 349 one way per private SUV\nTotal for the private vehicle—not per passenger."
+            },
             "licenseOrReusePolicy": "DCC / GoSno First-Party Route Page",
-            "evidenceHash": "c750d13f23e4b7900b41d3a028d158b4dd1b476d01619306b0ae6d77346036c7"
+            "derivedTextSnapshotId": "snap:derived:cap:gosno:winter-park-html",
+            "derivedTextSnapshotSha256": "2b719e80f21707c44f5f92a10ea3e77560a0fc5c3752a4539aa03b7a21f8a84a",
+            "privateDerivedTextObjectKey": "v03/raw_source_captures/sha256/2b719e80f21707c44f5f92a10ea3e77560a0fc5c3752a4539aa03b7a21f8a84a.derived.txt"
           },
           {
-            "evidenceRefId": "evref:gosno:breckenridge-html:suv-399-van-649",
-            "sourceDccId": "dcc:ent:evidence_source:000343d5df171f731f658a8c",
-            "sourceTitle": "GoSno Denver / DEN to Breckenridge Private Transfer Page (/denver-to-breckenridge)",
-            "sourceOrganization": "GoSno Private Mountain Transportation",
-            "canonicalSourceUrl": "https://gosno.co/denver-to-breckenridge",
-            "snapshotId": "snap:cap:gosno:denver-to-breckenridge-html",
-            "snapshotSha256": "f33930b6347513c6987e6e6e2ad8783d0b7e99160dd1de2cdd3c285dfe4326c1",
-            "privateObjectKey": "v03/raw_source_captures/sha256/f33930b6347513c6987e6e6e2ad8783d0b7e99160dd1de2cdd3c285dfe4326c1.html",
-            "derivedTextSnapshotId": "snap:derived:cap:gosno:denver-to-breckenridge-html",
-            "derivedTextSnapshotSha256": "659a193e19f196564a64de9f714dc383d4fbb5116e14d917a9f75d17d6a9c73a",
-            "privateDerivedTextObjectKey": "v03/raw_source_captures/sha256/659a193e19f196564a64de9f714dc383d4fbb5116e14d917a9f75d17d6a9c73a.derived.txt",
-            "httpStatus": 200,
-            "responseHeaders": {
-              "cache-control": "private, no-cache, no-store, max-age=0, must-revalidate",
-              "content-type": "text/html; charset=utf-8",
-              "date": "Mon, 26 Oct 2026 21:14:33 GMT",
-              "server": "Vercel",
-              "x-vercel-id": "cle1::iad1::9782p-1793049273077-859a839018eb"
+            "extractor": {
+              "method": "deterministic_dom_selector",
+              "extractorId": "dcc-preserved-capture-selector",
+              "extractorVersion": "dcc-html-text-extractor-v031.1"
             },
-            "provenanceClass": "network_capture_verified",
-            "isSynthetic": false,
-            "lifecycleState": "active",
-            "withdrawn": false,
-            "withdrawnAt": null,
-            "withdrawalReason": null,
-            "withdrawalEventId": null,
             "selectors": [
               {
                 "type": "TextQuoteSelector",
@@ -1330,105 +1285,106 @@
                 "suffix": "\n100% Private SUV & VanPublished Flat RatesSki &"
               },
               {
+                "end": 590,
                 "type": "TextPositionSelector",
-                "start": 355,
-                "end": 590
+                "start": 355
               }
             ],
-            "surroundingContext": {
-              "before": "olorado's dedicated ski transportation company. ",
-              "exactMatch": "Book a 100% private AWD SUV (up to 6 passengers) or private passenger van (up to 10 passengers) from Denver International Airport (DEN) directly to your mountain lodging with transparent flat rates and ample ski & snowboard gear space.",
-              "after": "\n100% Private SUV & VanPublished Flat RatesSki &"
-            },
-            "extractor": {
-              "extractorId": "dcc-preserved-capture-selector",
-              "extractorVersion": "dcc-html-text-extractor-v031.1",
-              "method": "deterministic_dom_selector"
-            },
+            "withdrawn": false,
+            "httpStatus": 200,
+            "snapshotId": "snap:cap:gosno:denver-to-breckenridge-html",
             "extractedAt": "2026-10-26T21:14:32.891Z",
+            "isSynthetic": false,
             "retrievedAt": "2026-10-26T21:14:32.891Z",
-            "sourcePublishedAt": null,
+            "sourceDccId": "dcc:ent:evidence_source:000343d5df171f731f658a8c",
+            "sourceTitle": "GoSno Denver / DEN to Breckenridge Private Transfer Page (/denver-to-breckenridge)",
+            "withdrawnAt": null,
+            "evidenceHash": "30f5964e6a1b208a67113bac4aefa38248678137f1b6ffe7636fa0f410e55dea",
+            "evidenceRefId": "evref:gosno:breckenridge-html:suv-399-van-649",
+            "lifecycleState": "active",
+            "snapshotSha256": "f33930b6347513c6987e6e6e2ad8783d0b7e99160dd1de2cdd3c285dfe4326c1",
+            "provenanceClass": "network_capture_verified",
+            "responseHeaders": {
+              "date": "Mon, 26 Oct 2026 21:14:33 GMT",
+              "server": "Vercel",
+              "x-vercel-id": "cle1::iad1::9782p-1793049273077-859a839018eb",
+              "content-type": "text/html; charset=utf-8",
+              "cache-control": "private, no-cache, no-store, max-age=0, must-revalidate"
+            },
+            "privateObjectKey": "v03/raw_source_captures/sha256/f33930b6347513c6987e6e6e2ad8783d0b7e99160dd1de2cdd3c285dfe4326c1.html",
             "sourceObservedAt": null,
+            "withdrawalReason": null,
+            "sourcePublishedAt": null,
+            "withdrawalEventId": null,
+            "canonicalSourceUrl": "https://gosno.co/denver-to-breckenridge",
+            "sourceOrganization": "GoSno Private Mountain Transportation",
+            "surroundingContext": {
+              "after": "\n100% Private SUV & VanPublished Flat RatesSki &",
+              "before": "olorado's dedicated ski transportation company. ",
+              "exactMatch": "Book a 100% private AWD SUV (up to 6 passengers) or private passenger van (up to 10 passengers) from Denver International Airport (DEN) directly to your mountain lodging with transparent flat rates and ample ski & snowboard gear space."
+            },
             "licenseOrReusePolicy": "DCC / GoSno First-Party Route Page",
-            "evidenceHash": "30f5964e6a1b208a67113bac4aefa38248678137f1b6ffe7636fa0f410e55dea"
+            "derivedTextSnapshotId": "snap:derived:cap:gosno:denver-to-breckenridge-html",
+            "derivedTextSnapshotSha256": "659a193e19f196564a64de9f714dc383d4fbb5116e14d917a9f75d17d6a9c73a",
+            "privateDerivedTextObjectKey": "v03/raw_source_captures/sha256/659a193e19f196564a64de9f714dc383d4fbb5116e14d917a9f75d17d6a9c73a.derived.txt"
           }
-        ]
-      },
-      "reason": "Extracted from gosno.co/api/public/route-feed, gosno.co/agent.json, gosno.co/winter-park, and gosno.co/denver-to-breckenridge: Private SUV maximum capacity is 6 passengers (subject to luggage and ski/snowboard equipment fit).",
-      "corroboratingSourceDccId": null,
-      "eventHash": "5ebe56d183fc5fd8b4fb781ba0c8fbd1bd8a90d180dc93b90749d12023a91c21",
-      "prevEventHash": "448bc6a12d8fe5e36acf8a8fc8aec0e6bcf149b9c6f4f3a299a261326c2597bf"
-    },
-    {
-      "eventSeq": 7,
-      "eventId": "kevt:7:b121ea216d64539e02f61ae3",
-      "eventType": "claim_created",
-      "claimId": "clm:gosno:private-van-max-passengers-10",
-      "claimVersionId": "clmv:gosno:private-van-max-passengers-10:v1",
-      "targetPreviousVersionId": null,
-      "recordedAt": "2026-10-27T10:52:34.006Z",
-      "recordedAtVerified": true,
-      "recordingTimeStatus": "verified_database_admission",
-      "actorId": "dcc-v031-preserved-source-extractor",
-      "isSynthetic": false,
-      "provenanceClass": "operational_evidence",
-      "claimDefinition": {
-        "claimId": "clm:gosno:private-van-max-passengers-10",
-        "claimVersionId": "clmv:gosno:private-van-max-passengers-10:v1",
+        ],
         "subjectDccId": "dcc:ent:operator:b4019b6570bb4508b2995aeb",
-        "predicate": "private_van_max_passengers",
         "assertionType": "policy",
+        "claimVersionId": "clmv:gosno:private-suv-max-passengers-6:v1",
         "epistemicState": "verified_against_identified_evidence",
-        "typedValue": 10,
         "unitOrCurrency": "passengers",
-        "validFrom": "2026-01-01T00:00:00.000Z",
-        "validTo": "2027-05-01T00:00:00.000Z",
-        "sourceObservedAt": "2026-10-26T21:14:32.106Z",
-        "sourcePublishedAt": null,
-        "retrievedAt": "2026-10-26T21:14:32.106Z",
-        "freshnessTtlSeconds": 7776000,
         "sourceAuthority": {
           "sourceDccId": "dcc:ent:evidence_source:95c41b25853b8996eb7e8f82",
-          "organizationName": "GoSno Mountain Transportation",
           "authorityTier": "direct_operator",
+          "claimedDomain": "private_mountain_transportation",
           "competentDomains": [
             "private_mountain_transportation"
           ],
-          "claimedDomain": "private_mountain_transportation",
+          "organizationName": "GoSno Mountain Transportation",
+          "licenseOrReusePolicy": "DCC / GoSno First-Party Public Route Feed",
           "independentlyCorroboratedBySourceDccIds": [
             "dcc:ent:evidence_source:b4d331e26b16230ff877bbd8",
+            "dcc:ent:evidence_source:6d2cd785816797452df00c8a",
             "dcc:ent:evidence_source:000343d5df171f731f658a8c"
-          ],
-          "licenseOrReusePolicy": "DCC / GoSno First-Party Public Route Feed"
+          ]
         },
+        "sourceObservedAt": "2026-10-26T21:14:32.106Z",
+        "sourcePublishedAt": null,
+        "freshnessTtlSeconds": 7776000
+      },
+      "provenanceClass": "operational_evidence",
+      "recordedAtVerified": true,
+      "recordingTimeStatus": "verified_database_admission",
+      "targetPreviousVersionId": null,
+      "corroboratingSourceDccId": null
+    },
+    {
+      "reason": "Extracted from gosno.co/api/public/route-feed, gosno.co/agent.json, and gosno.co/denver-to-breckenridge: Private Van maximum capacity is 10 passengers (reconciling pay/route.ts permissive <=14 form check against vehicleCapacity.ts and route-feed maxPassengers=10).",
+      "actorId": "dcc-v031-preserved-source-extractor",
+      "claimId": "clm:gosno:private-van-max-passengers-10",
+      "eventId": "kevt:7:b121ea216d64539e02f61ae3",
+      "eventSeq": 7,
+      "eventHash": "5d9db71f9b8c3ec7a77f22e431cc74601478c84e5c6d162c1d71ac9c5496238c",
+      "eventType": "claim_created",
+      "recordedAt": "2026-10-27T10:52:34.006Z",
+      "isSynthetic": false,
+      "prevEventHash": "5ebe56d183fc5fd8b4fb781ba0c8fbd1bd8a90d180dc93b90749d12023a91c21",
+      "claimVersionId": "clmv:gosno:private-van-max-passengers-10:v1",
+      "claimDefinition": {
+        "claimId": "clm:gosno:private-van-max-passengers-10",
+        "validTo": "2027-05-01T00:00:00.000Z",
+        "predicate": "private_van_max_passengers",
+        "validFrom": "2026-01-01T00:00:00.000Z",
+        "typedValue": 10,
+        "retrievedAt": "2026-10-26T21:14:32.106Z",
         "evidenceRefs": [
           {
-            "evidenceRefId": "evref:gosno:route-feed:private-mode-and-capacity",
-            "sourceDccId": "dcc:ent:evidence_source:95c41b25853b8996eb7e8f82",
-            "sourceTitle": "GoSno Public Route & Tariff Feed (/api/public/route-feed)",
-            "sourceOrganization": "GoSno Private Mountain Transportation",
-            "canonicalSourceUrl": "https://gosno.co/api/public/route-feed",
-            "snapshotId": "snap:cap:gosno:route-feed-json",
-            "snapshotSha256": "272b6f1872b41220a94b7942c585cff2b2f16ac42f231058a44f9dd4577ed4f1",
-            "privateObjectKey": "v03/raw_source_captures/sha256/272b6f1872b41220a94b7942c585cff2b2f16ac42f231058a44f9dd4577ed4f1.json",
-            "derivedTextSnapshotId": null,
-            "derivedTextSnapshotSha256": null,
-            "privateDerivedTextObjectKey": null,
-            "httpStatus": 200,
-            "responseHeaders": {
-              "cache-control": "public, max-age=300",
-              "content-type": "application/json",
-              "date": "Mon, 26 Oct 2026 21:03:01 GMT",
-              "server": "Vercel",
-              "x-vercel-id": "cle1::iad1::s9sh5-1793049272429-554596dc2ef0"
+            "extractor": {
+              "method": "deterministic_json_pointer",
+              "extractorId": "dcc-preserved-capture-selector",
+              "extractorVersion": "identity-utf8-v031.1"
             },
-            "provenanceClass": "network_capture_verified",
-            "isSynthetic": false,
-            "lifecycleState": "active",
-            "withdrawn": false,
-            "withdrawnAt": null,
-            "withdrawalReason": null,
-            "withdrawalEventId": null,
             "selectors": [
               {
                 "type": "TextQuoteSelector",
@@ -1437,63 +1393,63 @@
                 "suffix": ",\"legacy_processors\":{\"square\":\"Disabled (HTTP 4"
               },
               {
+                "end": 275,
                 "type": "TextPositionSelector",
-                "start": 148,
-                "end": 275
+                "start": 148
               },
               {
                 "type": "JsonPointerSelector",
                 "pointer": "/routes/0/capacity",
                 "resolvedValue": {
-                  "max_passengers": 6,
-                  "luggage_note": "Private party up to 6 passengers; cargo capacity depends on ski bags and luggage size."
+                  "luggage_note": "Private party up to 6 passengers; cargo capacity depends on ski bags and luggage size.",
+                  "max_passengers": 6
                 }
               }
             ],
-            "surroundingContext": {
-              "before": "\"gosno\",\"name\":\"GoSno\",\"url\":\"https://gosno.co\",",
-              "exactMatch": "\"type\":\"private_mountain_transportation\",\"headquarters\":\"Colorado, USA\",\"active_payment_processor\":\"RezdyPay (Stripe Elements)\"",
-              "after": ",\"legacy_processors\":{\"square\":\"Disabled (HTTP 4"
-            },
-            "extractor": {
-              "extractorId": "dcc-preserved-capture-selector",
-              "extractorVersion": "identity-utf8-v031.1",
-              "method": "deterministic_json_pointer"
-            },
+            "withdrawn": false,
+            "httpStatus": 200,
+            "snapshotId": "snap:cap:gosno:route-feed-json",
             "extractedAt": "2026-10-26T21:14:32.106Z",
+            "isSynthetic": false,
             "retrievedAt": "2026-10-26T21:14:32.106Z",
-            "sourcePublishedAt": null,
+            "sourceDccId": "dcc:ent:evidence_source:95c41b25853b8996eb7e8f82",
+            "sourceTitle": "GoSno Public Route & Tariff Feed (/api/public/route-feed)",
+            "withdrawnAt": null,
+            "evidenceHash": "cccb740e6d39abdc59e3880ccd161e07968bcf1bc30e2fc13f38fab12d1d6169",
+            "evidenceRefId": "evref:gosno:route-feed:private-mode-and-capacity",
+            "lifecycleState": "active",
+            "snapshotSha256": "272b6f1872b41220a94b7942c585cff2b2f16ac42f231058a44f9dd4577ed4f1",
+            "provenanceClass": "network_capture_verified",
+            "responseHeaders": {
+              "date": "Mon, 26 Oct 2026 21:03:01 GMT",
+              "server": "Vercel",
+              "x-vercel-id": "cle1::iad1::s9sh5-1793049272429-554596dc2ef0",
+              "content-type": "application/json",
+              "cache-control": "public, max-age=300"
+            },
+            "privateObjectKey": "v03/raw_source_captures/sha256/272b6f1872b41220a94b7942c585cff2b2f16ac42f231058a44f9dd4577ed4f1.json",
             "sourceObservedAt": null,
-            "licenseOrReusePolicy": "DCC / GoSno First-Party Public Route Feed",
-            "evidenceHash": "cccb740e6d39abdc59e3880ccd161e07968bcf1bc30e2fc13f38fab12d1d6169"
-          },
-          {
-            "evidenceRefId": "evref:gosno:agent-json:private-only-6-suv-10-van",
-            "sourceDccId": "dcc:ent:evidence_source:b4d331e26b16230ff877bbd8",
-            "sourceTitle": "GoSno Machine Agent Manifest (/agent.json)",
+            "withdrawalReason": null,
+            "sourcePublishedAt": null,
+            "withdrawalEventId": null,
+            "canonicalSourceUrl": "https://gosno.co/api/public/route-feed",
             "sourceOrganization": "GoSno Private Mountain Transportation",
-            "canonicalSourceUrl": "https://gosno.co/agent.json",
-            "snapshotId": "snap:cap:gosno:agent-json",
-            "snapshotSha256": "c989fad42818b510d11099cb3d3cb5e849cbe1c4f506aa077303670b341c25e3",
-            "privateObjectKey": "v03/raw_source_captures/sha256/c989fad42818b510d11099cb3d3cb5e849cbe1c4f506aa077303670b341c25e3.json",
+            "surroundingContext": {
+              "after": ",\"legacy_processors\":{\"square\":\"Disabled (HTTP 4",
+              "before": "\"gosno\",\"name\":\"GoSno\",\"url\":\"https://gosno.co\",",
+              "exactMatch": "\"type\":\"private_mountain_transportation\",\"headquarters\":\"Colorado, USA\",\"active_payment_processor\":\"RezdyPay (Stripe Elements)\""
+            },
+            "licenseOrReusePolicy": "DCC / GoSno First-Party Public Route Feed",
             "derivedTextSnapshotId": null,
             "derivedTextSnapshotSha256": null,
-            "privateDerivedTextObjectKey": null,
-            "httpStatus": 200,
-            "responseHeaders": {
-              "cache-control": "public, max-age=3600",
-              "content-type": "application/json",
-              "date": "Mon, 26 Oct 2026 21:14:32 GMT",
-              "server": "Vercel",
-              "x-vercel-id": "cle1::iad1::rrwn6-1793049272516-8d23eb75a9fa"
+            "privateDerivedTextObjectKey": null
+          },
+          {
+            "extractor": {
+              "method": "deterministic_json_pointer",
+              "extractorId": "dcc-preserved-capture-selector",
+              "extractorVersion": "identity-utf8-v031.1"
             },
-            "provenanceClass": "network_capture_verified",
-            "isSynthetic": false,
-            "lifecycleState": "active",
-            "withdrawn": false,
-            "withdrawnAt": null,
-            "withdrawalReason": null,
-            "withdrawalEventId": null,
             "selectors": [
               {
                 "type": "TextQuoteSelector",
@@ -1502,9 +1458,9 @@
                 "suffix": "},\"authority\":[\"published_service_routes\",\"publi"
               },
               {
+                "end": 375,
                 "type": "TextPositionSelector",
-                "start": 161,
-                "end": 375
+                "start": 161
               },
               {
                 "type": "JsonPointerSelector",
@@ -1512,50 +1468,50 @@
                 "resolvedValue": "Private flat-rate airport transportation between Colorado airports and mountain destinations, with published route pages and vehicle-specific booking states."
               }
             ],
-            "surroundingContext": {
-              "before": "\"gosno\",\"name\":\"GoSno\",\"url\":\"https://gosno.co\",",
-              "exactMatch": "\"type\":\"private_mountain_transportation\",\"description\":\"Private flat-rate airport transportation between Colorado airports and mountain destinations, with published route pages and vehicle-specific booking states.\"",
-              "after": "},\"authority\":[\"published_service_routes\",\"publi"
-            },
-            "extractor": {
-              "extractorId": "dcc-preserved-capture-selector",
-              "extractorVersion": "identity-utf8-v031.1",
-              "method": "deterministic_json_pointer"
-            },
+            "withdrawn": false,
+            "httpStatus": 200,
+            "snapshotId": "snap:cap:gosno:agent-json",
             "extractedAt": "2026-10-26T21:14:32.464Z",
+            "isSynthetic": false,
             "retrievedAt": "2026-10-26T21:14:32.464Z",
-            "sourcePublishedAt": null,
+            "sourceDccId": "dcc:ent:evidence_source:b4d331e26b16230ff877bbd8",
+            "sourceTitle": "GoSno Machine Agent Manifest (/agent.json)",
+            "withdrawnAt": null,
+            "evidenceHash": "29385659b959eb27959355c2a952e79277eddfb3d544341052352f908a9d0af5",
+            "evidenceRefId": "evref:gosno:agent-json:private-only-6-suv-10-van",
+            "lifecycleState": "active",
+            "snapshotSha256": "c989fad42818b510d11099cb3d3cb5e849cbe1c4f506aa077303670b341c25e3",
+            "provenanceClass": "network_capture_verified",
+            "responseHeaders": {
+              "date": "Mon, 26 Oct 2026 21:14:32 GMT",
+              "server": "Vercel",
+              "x-vercel-id": "cle1::iad1::rrwn6-1793049272516-8d23eb75a9fa",
+              "content-type": "application/json",
+              "cache-control": "public, max-age=3600"
+            },
+            "privateObjectKey": "v03/raw_source_captures/sha256/c989fad42818b510d11099cb3d3cb5e849cbe1c4f506aa077303670b341c25e3.json",
             "sourceObservedAt": null,
+            "withdrawalReason": null,
+            "sourcePublishedAt": null,
+            "withdrawalEventId": null,
+            "canonicalSourceUrl": "https://gosno.co/agent.json",
+            "sourceOrganization": "GoSno Private Mountain Transportation",
+            "surroundingContext": {
+              "after": "},\"authority\":[\"published_service_routes\",\"publi",
+              "before": "\"gosno\",\"name\":\"GoSno\",\"url\":\"https://gosno.co\",",
+              "exactMatch": "\"type\":\"private_mountain_transportation\",\"description\":\"Private flat-rate airport transportation between Colorado airports and mountain destinations, with published route pages and vehicle-specific booking states.\""
+            },
             "licenseOrReusePolicy": "DCC / GoSno First-Party Machine Manifest",
-            "evidenceHash": "29385659b959eb27959355c2a952e79277eddfb3d544341052352f908a9d0af5"
+            "derivedTextSnapshotId": null,
+            "derivedTextSnapshotSha256": null,
+            "privateDerivedTextObjectKey": null
           },
           {
-            "evidenceRefId": "evref:gosno:breckenridge-html:suv-399-van-649",
-            "sourceDccId": "dcc:ent:evidence_source:000343d5df171f731f658a8c",
-            "sourceTitle": "GoSno Denver / DEN to Breckenridge Private Transfer Page (/denver-to-breckenridge)",
-            "sourceOrganization": "GoSno Private Mountain Transportation",
-            "canonicalSourceUrl": "https://gosno.co/denver-to-breckenridge",
-            "snapshotId": "snap:cap:gosno:denver-to-breckenridge-html",
-            "snapshotSha256": "f33930b6347513c6987e6e6e2ad8783d0b7e99160dd1de2cdd3c285dfe4326c1",
-            "privateObjectKey": "v03/raw_source_captures/sha256/f33930b6347513c6987e6e6e2ad8783d0b7e99160dd1de2cdd3c285dfe4326c1.html",
-            "derivedTextSnapshotId": "snap:derived:cap:gosno:denver-to-breckenridge-html",
-            "derivedTextSnapshotSha256": "659a193e19f196564a64de9f714dc383d4fbb5116e14d917a9f75d17d6a9c73a",
-            "privateDerivedTextObjectKey": "v03/raw_source_captures/sha256/659a193e19f196564a64de9f714dc383d4fbb5116e14d917a9f75d17d6a9c73a.derived.txt",
-            "httpStatus": 200,
-            "responseHeaders": {
-              "cache-control": "private, no-cache, no-store, max-age=0, must-revalidate",
-              "content-type": "text/html; charset=utf-8",
-              "date": "Mon, 26 Oct 2026 21:14:33 GMT",
-              "server": "Vercel",
-              "x-vercel-id": "cle1::iad1::9782p-1793049273077-859a839018eb"
+            "extractor": {
+              "method": "deterministic_dom_selector",
+              "extractorId": "dcc-preserved-capture-selector",
+              "extractorVersion": "dcc-html-text-extractor-v031.1"
             },
-            "provenanceClass": "network_capture_verified",
-            "isSynthetic": false,
-            "lifecycleState": "active",
-            "withdrawn": false,
-            "withdrawnAt": null,
-            "withdrawalReason": null,
-            "withdrawalEventId": null,
             "selectors": [
               {
                 "type": "TextQuoteSelector",
@@ -1564,264 +1520,308 @@
                 "suffix": "\n100% Private SUV & VanPublished Flat RatesSki &"
               },
               {
+                "end": 590,
                 "type": "TextPositionSelector",
-                "start": 355,
-                "end": 590
+                "start": 355
               }
             ],
-            "surroundingContext": {
-              "before": "olorado's dedicated ski transportation company. ",
-              "exactMatch": "Book a 100% private AWD SUV (up to 6 passengers) or private passenger van (up to 10 passengers) from Denver International Airport (DEN) directly to your mountain lodging with transparent flat rates and ample ski & snowboard gear space.",
-              "after": "\n100% Private SUV & VanPublished Flat RatesSki &"
-            },
-            "extractor": {
-              "extractorId": "dcc-preserved-capture-selector",
-              "extractorVersion": "dcc-html-text-extractor-v031.1",
-              "method": "deterministic_dom_selector"
-            },
+            "withdrawn": false,
+            "httpStatus": 200,
+            "snapshotId": "snap:cap:gosno:denver-to-breckenridge-html",
             "extractedAt": "2026-10-26T21:14:32.891Z",
+            "isSynthetic": false,
             "retrievedAt": "2026-10-26T21:14:32.891Z",
-            "sourcePublishedAt": null,
+            "sourceDccId": "dcc:ent:evidence_source:000343d5df171f731f658a8c",
+            "sourceTitle": "GoSno Denver / DEN to Breckenridge Private Transfer Page (/denver-to-breckenridge)",
+            "withdrawnAt": null,
+            "evidenceHash": "30f5964e6a1b208a67113bac4aefa38248678137f1b6ffe7636fa0f410e55dea",
+            "evidenceRefId": "evref:gosno:breckenridge-html:suv-399-van-649",
+            "lifecycleState": "active",
+            "snapshotSha256": "f33930b6347513c6987e6e6e2ad8783d0b7e99160dd1de2cdd3c285dfe4326c1",
+            "provenanceClass": "network_capture_verified",
+            "responseHeaders": {
+              "date": "Mon, 26 Oct 2026 21:14:33 GMT",
+              "server": "Vercel",
+              "x-vercel-id": "cle1::iad1::9782p-1793049273077-859a839018eb",
+              "content-type": "text/html; charset=utf-8",
+              "cache-control": "private, no-cache, no-store, max-age=0, must-revalidate"
+            },
+            "privateObjectKey": "v03/raw_source_captures/sha256/f33930b6347513c6987e6e6e2ad8783d0b7e99160dd1de2cdd3c285dfe4326c1.html",
             "sourceObservedAt": null,
+            "withdrawalReason": null,
+            "sourcePublishedAt": null,
+            "withdrawalEventId": null,
+            "canonicalSourceUrl": "https://gosno.co/denver-to-breckenridge",
+            "sourceOrganization": "GoSno Private Mountain Transportation",
+            "surroundingContext": {
+              "after": "\n100% Private SUV & VanPublished Flat RatesSki &",
+              "before": "olorado's dedicated ski transportation company. ",
+              "exactMatch": "Book a 100% private AWD SUV (up to 6 passengers) or private passenger van (up to 10 passengers) from Denver International Airport (DEN) directly to your mountain lodging with transparent flat rates and ample ski & snowboard gear space."
+            },
             "licenseOrReusePolicy": "DCC / GoSno First-Party Route Page",
-            "evidenceHash": "30f5964e6a1b208a67113bac4aefa38248678137f1b6ffe7636fa0f410e55dea"
+            "derivedTextSnapshotId": "snap:derived:cap:gosno:denver-to-breckenridge-html",
+            "derivedTextSnapshotSha256": "659a193e19f196564a64de9f714dc383d4fbb5116e14d917a9f75d17d6a9c73a",
+            "privateDerivedTextObjectKey": "v03/raw_source_captures/sha256/659a193e19f196564a64de9f714dc383d4fbb5116e14d917a9f75d17d6a9c73a.derived.txt"
           }
-        ]
+        ],
+        "subjectDccId": "dcc:ent:operator:b4019b6570bb4508b2995aeb",
+        "assertionType": "policy",
+        "claimVersionId": "clmv:gosno:private-van-max-passengers-10:v1",
+        "epistemicState": "verified_against_identified_evidence",
+        "unitOrCurrency": "passengers",
+        "sourceAuthority": {
+          "sourceDccId": "dcc:ent:evidence_source:95c41b25853b8996eb7e8f82",
+          "authorityTier": "direct_operator",
+          "claimedDomain": "private_mountain_transportation",
+          "competentDomains": [
+            "private_mountain_transportation"
+          ],
+          "organizationName": "GoSno Mountain Transportation",
+          "licenseOrReusePolicy": "DCC / GoSno First-Party Public Route Feed",
+          "independentlyCorroboratedBySourceDccIds": [
+            "dcc:ent:evidence_source:b4d331e26b16230ff877bbd8",
+            "dcc:ent:evidence_source:000343d5df171f731f658a8c"
+          ]
+        },
+        "sourceObservedAt": "2026-10-26T21:14:32.106Z",
+        "sourcePublishedAt": null,
+        "freshnessTtlSeconds": 7776000
       },
-      "reason": "Extracted from gosno.co/api/public/route-feed, gosno.co/agent.json, and gosno.co/denver-to-breckenridge: Private Van maximum capacity is 10 passengers (reconciling pay/route.ts permissive <=14 form check against vehicleCapacity.ts and route-feed maxPassengers=10).",
-      "corroboratingSourceDccId": null,
-      "eventHash": "5d9db71f9b8c3ec7a77f22e431cc74601478c84e5c6d162c1d71ac9c5496238c",
-      "prevEventHash": "5ebe56d183fc5fd8b4fb781ba0c8fbd1bd8a90d180dc93b90749d12023a91c21"
-    },
-    {
-      "eventSeq": 8,
-      "eventId": "kevt:8:3f72689cdb7c12490776c743",
-      "eventType": "claim_created",
-      "claimId": "clm:gosno:live-driver-availability",
-      "claimVersionId": "clm:gosno:live-driver-availability:v1-unknown",
-      "targetPreviousVersionId": null,
-      "recordedAt": "2026-10-27T10:52:34.062Z",
+      "provenanceClass": "operational_evidence",
       "recordedAtVerified": true,
       "recordingTimeStatus": "verified_database_admission",
+      "targetPreviousVersionId": null,
+      "corroboratingSourceDccId": null
+    },
+    {
+      "reason": "Live driver dispatch assignment is unknown until action-time dispatch check.",
       "actorId": "dcc-v031-gosno-epistemic-guard",
+      "claimId": "clm:gosno:live-driver-availability",
+      "eventId": "kevt:8:3f72689cdb7c12490776c743",
+      "eventSeq": 8,
+      "eventHash": "d20f601ae36e86ad0827b48f85aebf71f9a1a4de80f3720c8782ee199a4dc8dd",
+      "eventType": "claim_created",
+      "recordedAt": "2026-10-27T10:52:34.062Z",
       "isSynthetic": false,
-      "provenanceClass": "operational_evidence",
+      "prevEventHash": "5d9db71f9b8c3ec7a77f22e431cc74601478c84e5c6d162c1d71ac9c5496238c",
+      "claimVersionId": "clm:gosno:live-driver-availability:v1-unknown",
       "claimDefinition": {
         "claimId": "clm:gosno:live-driver-availability",
-        "claimVersionId": "clm:gosno:live-driver-availability:v1-unknown",
-        "subjectDccId": "dcc:ent:operator:b4019b6570bb4508b2995aeb",
-        "predicate": "driver_availability",
-        "assertionType": "observation",
-        "epistemicState": "unknown",
-        "typedValue": null,
-        "unitOrCurrency": null,
-        "validFrom": "2026-10-01T00:00:00.000Z",
         "validTo": null,
-        "sourceObservedAt": null,
-        "sourcePublishedAt": null,
+        "predicate": "driver_availability",
+        "validFrom": "2026-10-01T00:00:00.000Z",
+        "typedValue": null,
         "retrievedAt": "2026-10-26T21:14:32.106Z",
-        "freshnessTtlSeconds": 300,
+        "evidenceRefs": [],
+        "subjectDccId": "dcc:ent:operator:b4019b6570bb4508b2995aeb",
+        "assertionType": "observation",
+        "claimVersionId": "clm:gosno:live-driver-availability:v1-unknown",
+        "epistemicState": "unknown",
+        "unitOrCurrency": null,
         "sourceAuthority": {
           "sourceDccId": "dcc:ent:evidence_source:95c41b25853b8996eb7e8f82",
-          "organizationName": "GoSno Mountain Transportation",
           "authorityTier": "operator_direct",
+          "claimedDomain": "private_mountain_transportation",
           "competentDomains": [
             "private_mountain_transportation"
           ],
-          "claimedDomain": "private_mountain_transportation",
-          "independentlyCorroboratedBySourceDccIds": [],
-          "licenseOrReusePolicy": "DCC / GoSno First-Party Public Route Feed"
+          "organizationName": "GoSno Mountain Transportation",
+          "licenseOrReusePolicy": "DCC / GoSno First-Party Public Route Feed",
+          "independentlyCorroboratedBySourceDccIds": []
         },
-        "evidenceRefs": []
+        "sourceObservedAt": null,
+        "sourcePublishedAt": null,
+        "freshnessTtlSeconds": 300
       },
-      "reason": "Live driver dispatch assignment is unknown until action-time dispatch check.",
-      "corroboratingSourceDccId": null,
-      "eventHash": "d20f601ae36e86ad0827b48f85aebf71f9a1a4de80f3720c8782ee199a4dc8dd",
-      "prevEventHash": "5d9db71f9b8c3ec7a77f22e431cc74601478c84e5c6d162c1d71ac9c5496238c"
-    },
-    {
-      "eventSeq": 9,
-      "eventId": "kevt:9:155c758729cbb2b36f19bb90",
-      "eventType": "claim_created",
-      "claimId": "clm:gosno:live-vehicle-availability",
-      "claimVersionId": "clm:gosno:live-vehicle-availability:v1-unknown",
-      "targetPreviousVersionId": null,
-      "recordedAt": "2026-10-27T10:52:34.062Z",
+      "provenanceClass": "operational_evidence",
       "recordedAtVerified": true,
       "recordingTimeStatus": "verified_database_admission",
+      "targetPreviousVersionId": null,
+      "corroboratingSourceDccId": null
+    },
+    {
+      "reason": "Live fleet SUV/Van unit availability is unknown until action-time inventory check.",
       "actorId": "dcc-v031-gosno-epistemic-guard",
+      "claimId": "clm:gosno:live-vehicle-availability",
+      "eventId": "kevt:9:155c758729cbb2b36f19bb90",
+      "eventSeq": 9,
+      "eventHash": "ce3bd032e05e23005f31c4c06f85263f057580f11541cfc6b78aafe389a8724b",
+      "eventType": "claim_created",
+      "recordedAt": "2026-10-27T10:52:34.062Z",
       "isSynthetic": false,
-      "provenanceClass": "operational_evidence",
+      "prevEventHash": "d20f601ae36e86ad0827b48f85aebf71f9a1a4de80f3720c8782ee199a4dc8dd",
+      "claimVersionId": "clm:gosno:live-vehicle-availability:v1-unknown",
       "claimDefinition": {
         "claimId": "clm:gosno:live-vehicle-availability",
-        "claimVersionId": "clm:gosno:live-vehicle-availability:v1-unknown",
-        "subjectDccId": "dcc:ent:operator:b4019b6570bb4508b2995aeb",
-        "predicate": "vehicle_availability",
-        "assertionType": "observation",
-        "epistemicState": "unknown",
-        "typedValue": null,
-        "unitOrCurrency": null,
-        "validFrom": "2026-10-01T00:00:00.000Z",
         "validTo": null,
-        "sourceObservedAt": null,
-        "sourcePublishedAt": null,
+        "predicate": "vehicle_availability",
+        "validFrom": "2026-10-01T00:00:00.000Z",
+        "typedValue": null,
         "retrievedAt": "2026-10-26T21:14:32.106Z",
-        "freshnessTtlSeconds": 300,
+        "evidenceRefs": [],
+        "subjectDccId": "dcc:ent:operator:b4019b6570bb4508b2995aeb",
+        "assertionType": "observation",
+        "claimVersionId": "clm:gosno:live-vehicle-availability:v1-unknown",
+        "epistemicState": "unknown",
+        "unitOrCurrency": null,
         "sourceAuthority": {
           "sourceDccId": "dcc:ent:evidence_source:95c41b25853b8996eb7e8f82",
-          "organizationName": "GoSno Mountain Transportation",
           "authorityTier": "operator_direct",
+          "claimedDomain": "private_mountain_transportation",
           "competentDomains": [
             "private_mountain_transportation"
           ],
-          "claimedDomain": "private_mountain_transportation",
-          "independentlyCorroboratedBySourceDccIds": [],
-          "licenseOrReusePolicy": "DCC / GoSno First-Party Public Route Feed"
+          "organizationName": "GoSno Mountain Transportation",
+          "licenseOrReusePolicy": "DCC / GoSno First-Party Public Route Feed",
+          "independentlyCorroboratedBySourceDccIds": []
         },
-        "evidenceRefs": []
+        "sourceObservedAt": null,
+        "sourcePublishedAt": null,
+        "freshnessTtlSeconds": 300
       },
-      "reason": "Live fleet SUV/Van unit availability is unknown until action-time inventory check.",
-      "corroboratingSourceDccId": null,
-      "eventHash": "ce3bd032e05e23005f31c4c06f85263f057580f11541cfc6b78aafe389a8724b",
-      "prevEventHash": "d20f601ae36e86ad0827b48f85aebf71f9a1a4de80f3720c8782ee199a4dc8dd"
-    },
-    {
-      "eventSeq": 10,
-      "eventId": "kevt:10:3a068ceb768a8f749d4eb75e",
-      "eventType": "claim_created",
-      "claimId": "clm:gosno:live-equipment-fit-at-capacity",
-      "claimVersionId": "clm:gosno:live-equipment-fit-at-capacity:v1-unknown",
-      "targetPreviousVersionId": null,
-      "recordedAt": "2026-10-27T10:52:34.062Z",
+      "provenanceClass": "operational_evidence",
       "recordedAtVerified": true,
       "recordingTimeStatus": "verified_database_admission",
+      "targetPreviousVersionId": null,
+      "corroboratingSourceDccId": null
+    },
+    {
+      "reason": "Physical cabin/cargo fit for 6 passengers + 6 snowboards/ski bags in an SUV is unestablished without operator confirmation or Van upgrade.",
       "actorId": "dcc-v031-gosno-epistemic-guard",
+      "claimId": "clm:gosno:live-equipment-fit-at-capacity",
+      "eventId": "kevt:10:3a068ceb768a8f749d4eb75e",
+      "eventSeq": 10,
+      "eventHash": "38febe82cffebed6873afe660074492c74133f6bb3f488ab837187dd61a68dbe",
+      "eventType": "claim_created",
+      "recordedAt": "2026-10-27T10:52:34.062Z",
       "isSynthetic": false,
-      "provenanceClass": "operational_evidence",
+      "prevEventHash": "ce3bd032e05e23005f31c4c06f85263f057580f11541cfc6b78aafe389a8724b",
+      "claimVersionId": "clm:gosno:live-equipment-fit-at-capacity:v1-unknown",
       "claimDefinition": {
         "claimId": "clm:gosno:live-equipment-fit-at-capacity",
-        "claimVersionId": "clm:gosno:live-equipment-fit-at-capacity:v1-unknown",
-        "subjectDccId": "dcc:ent:operator:b4019b6570bb4508b2995aeb",
-        "predicate": "equipment_and_luggage_fit",
-        "assertionType": "observation",
-        "epistemicState": "unknown",
-        "typedValue": null,
-        "unitOrCurrency": null,
-        "validFrom": "2026-10-01T00:00:00.000Z",
         "validTo": null,
-        "sourceObservedAt": null,
-        "sourcePublishedAt": null,
+        "predicate": "equipment_and_luggage_fit",
+        "validFrom": "2026-10-01T00:00:00.000Z",
+        "typedValue": null,
         "retrievedAt": "2026-10-26T21:14:32.106Z",
-        "freshnessTtlSeconds": 300,
+        "evidenceRefs": [],
+        "subjectDccId": "dcc:ent:operator:b4019b6570bb4508b2995aeb",
+        "assertionType": "observation",
+        "claimVersionId": "clm:gosno:live-equipment-fit-at-capacity:v1-unknown",
+        "epistemicState": "unknown",
+        "unitOrCurrency": null,
         "sourceAuthority": {
           "sourceDccId": "dcc:ent:evidence_source:95c41b25853b8996eb7e8f82",
-          "organizationName": "GoSno Mountain Transportation",
           "authorityTier": "operator_direct",
+          "claimedDomain": "private_mountain_transportation",
           "competentDomains": [
             "private_mountain_transportation"
           ],
-          "claimedDomain": "private_mountain_transportation",
-          "independentlyCorroboratedBySourceDccIds": [],
-          "licenseOrReusePolicy": "DCC / GoSno First-Party Public Route Feed"
+          "organizationName": "GoSno Mountain Transportation",
+          "licenseOrReusePolicy": "DCC / GoSno First-Party Public Route Feed",
+          "independentlyCorroboratedBySourceDccIds": []
         },
-        "evidenceRefs": []
+        "sourceObservedAt": null,
+        "sourcePublishedAt": null,
+        "freshnessTtlSeconds": 300
       },
-      "reason": "Physical cabin/cargo fit for 6 passengers + 6 snowboards/ski bags in an SUV is unestablished without operator confirmation or Van upgrade.",
-      "corroboratingSourceDccId": null,
-      "eventHash": "38febe82cffebed6873afe660074492c74133f6bb3f488ab837187dd61a68dbe",
-      "prevEventHash": "ce3bd032e05e23005f31c4c06f85263f057580f11541cfc6b78aafe389a8724b"
-    },
-    {
-      "eventSeq": 11,
-      "eventId": "kevt:11:ce528319889aa3da8153e5f7",
-      "eventType": "claim_created",
-      "claimId": "clm:gosno:live-road-safety",
-      "claimVersionId": "clm:gosno:live-road-safety:v1-unknown",
-      "targetPreviousVersionId": null,
-      "recordedAt": "2026-10-27T10:52:34.062Z",
+      "provenanceClass": "operational_evidence",
       "recordedAtVerified": true,
       "recordingTimeStatus": "verified_database_admission",
+      "targetPreviousVersionId": null,
+      "corroboratingSourceDccId": null
+    },
+    {
+      "reason": "Live CDOT I-70 / US-40 Berthoud Pass chain/traction/closure status is unknown until travel window.",
       "actorId": "dcc-v031-gosno-epistemic-guard",
+      "claimId": "clm:gosno:live-road-safety",
+      "eventId": "kevt:11:ce528319889aa3da8153e5f7",
+      "eventSeq": 11,
+      "eventHash": "ef41e0909d113a48ce4fef478aa2d6fbdaa9a09f76f5346e86464a0c070432be",
+      "eventType": "claim_created",
+      "recordedAt": "2026-10-27T10:52:34.062Z",
       "isSynthetic": false,
-      "provenanceClass": "operational_evidence",
+      "prevEventHash": "38febe82cffebed6873afe660074492c74133f6bb3f488ab837187dd61a68dbe",
+      "claimVersionId": "clm:gosno:live-road-safety:v1-unknown",
       "claimDefinition": {
         "claimId": "clm:gosno:live-road-safety",
-        "claimVersionId": "clm:gosno:live-road-safety:v1-unknown",
-        "subjectDccId": "dcc:ent:operator:b4019b6570bb4508b2995aeb",
-        "predicate": "road_safety",
-        "assertionType": "observation",
-        "epistemicState": "unknown",
-        "typedValue": null,
-        "unitOrCurrency": null,
-        "validFrom": "2026-10-01T00:00:00.000Z",
         "validTo": null,
-        "sourceObservedAt": null,
-        "sourcePublishedAt": null,
+        "predicate": "road_safety",
+        "validFrom": "2026-10-01T00:00:00.000Z",
+        "typedValue": null,
         "retrievedAt": "2026-10-26T21:14:32.106Z",
-        "freshnessTtlSeconds": 300,
+        "evidenceRefs": [],
+        "subjectDccId": "dcc:ent:operator:b4019b6570bb4508b2995aeb",
+        "assertionType": "observation",
+        "claimVersionId": "clm:gosno:live-road-safety:v1-unknown",
+        "epistemicState": "unknown",
+        "unitOrCurrency": null,
         "sourceAuthority": {
           "sourceDccId": "dcc:ent:evidence_source:95c41b25853b8996eb7e8f82",
-          "organizationName": "GoSno Mountain Transportation",
           "authorityTier": "operator_direct",
+          "claimedDomain": "private_mountain_transportation",
           "competentDomains": [
             "private_mountain_transportation"
           ],
-          "claimedDomain": "private_mountain_transportation",
-          "independentlyCorroboratedBySourceDccIds": [],
-          "licenseOrReusePolicy": "DCC / GoSno First-Party Public Route Feed"
+          "organizationName": "GoSno Mountain Transportation",
+          "licenseOrReusePolicy": "DCC / GoSno First-Party Public Route Feed",
+          "independentlyCorroboratedBySourceDccIds": []
         },
-        "evidenceRefs": []
+        "sourceObservedAt": null,
+        "sourcePublishedAt": null,
+        "freshnessTtlSeconds": 300
       },
-      "reason": "Live CDOT I-70 / US-40 Berthoud Pass chain/traction/closure status is unknown until travel window.",
-      "corroboratingSourceDccId": null,
-      "eventHash": "ef41e0909d113a48ce4fef478aa2d6fbdaa9a09f76f5346e86464a0c070432be",
-      "prevEventHash": "38febe82cffebed6873afe660074492c74133f6bb3f488ab837187dd61a68dbe"
-    },
-    {
-      "eventSeq": 12,
-      "eventId": "kevt:12:bf2846adab96b5cc4973195f",
-      "eventType": "claim_created",
-      "claimId": "clm:gosno:live-inventory-confirmation",
-      "claimVersionId": "clm:gosno:live-inventory-confirmation:v1-unknown",
-      "targetPreviousVersionId": null,
-      "recordedAt": "2026-10-27T10:52:34.062Z",
+      "provenanceClass": "operational_evidence",
       "recordedAtVerified": true,
       "recordingTimeStatus": "verified_database_admission",
+      "targetPreviousVersionId": null,
+      "corroboratingSourceDccId": null
+    },
+    {
+      "reason": "Rezdy/OCTO live booking slot confirmation (requiresOperatorConfirmation=true) is unknown until action-time revalidation.",
       "actorId": "dcc-v031-gosno-epistemic-guard",
+      "claimId": "clm:gosno:live-inventory-confirmation",
+      "eventId": "kevt:12:bf2846adab96b5cc4973195f",
+      "eventSeq": 12,
+      "eventHash": "3435aedb9cd65f3d52566d93b1d6f37495b27724c976fbf688631bd6f9e73b26",
+      "eventType": "claim_created",
+      "recordedAt": "2026-10-27T10:52:34.062Z",
       "isSynthetic": false,
-      "provenanceClass": "operational_evidence",
+      "prevEventHash": "ef41e0909d113a48ce4fef478aa2d6fbdaa9a09f76f5346e86464a0c070432be",
+      "claimVersionId": "clm:gosno:live-inventory-confirmation:v1-unknown",
       "claimDefinition": {
         "claimId": "clm:gosno:live-inventory-confirmation",
-        "claimVersionId": "clm:gosno:live-inventory-confirmation:v1-unknown",
-        "subjectDccId": "dcc:ent:operator:b4019b6570bb4508b2995aeb",
-        "predicate": "live_inventory_confirmation",
-        "assertionType": "observation",
-        "epistemicState": "unknown",
-        "typedValue": null,
-        "unitOrCurrency": null,
-        "validFrom": "2026-10-01T00:00:00.000Z",
         "validTo": null,
-        "sourceObservedAt": null,
-        "sourcePublishedAt": null,
+        "predicate": "live_inventory_confirmation",
+        "validFrom": "2026-10-01T00:00:00.000Z",
+        "typedValue": null,
         "retrievedAt": "2026-10-26T21:14:32.106Z",
-        "freshnessTtlSeconds": 300,
+        "evidenceRefs": [],
+        "subjectDccId": "dcc:ent:operator:b4019b6570bb4508b2995aeb",
+        "assertionType": "observation",
+        "claimVersionId": "clm:gosno:live-inventory-confirmation:v1-unknown",
+        "epistemicState": "unknown",
+        "unitOrCurrency": null,
         "sourceAuthority": {
           "sourceDccId": "dcc:ent:evidence_source:95c41b25853b8996eb7e8f82",
-          "organizationName": "GoSno Mountain Transportation",
           "authorityTier": "operator_direct",
+          "claimedDomain": "private_mountain_transportation",
           "competentDomains": [
             "private_mountain_transportation"
           ],
-          "claimedDomain": "private_mountain_transportation",
-          "independentlyCorroboratedBySourceDccIds": [],
-          "licenseOrReusePolicy": "DCC / GoSno First-Party Public Route Feed"
+          "organizationName": "GoSno Mountain Transportation",
+          "licenseOrReusePolicy": "DCC / GoSno First-Party Public Route Feed",
+          "independentlyCorroboratedBySourceDccIds": []
         },
-        "evidenceRefs": []
+        "sourceObservedAt": null,
+        "sourcePublishedAt": null,
+        "freshnessTtlSeconds": 300
       },
-      "reason": "Rezdy/OCTO live booking slot confirmation (requiresOperatorConfirmation=true) is unknown until action-time revalidation.",
-      "corroboratingSourceDccId": null,
-      "eventHash": "3435aedb9cd65f3d52566d93b1d6f37495b27724c976fbf688631bd6f9e73b26",
-      "prevEventHash": "ef41e0909d113a48ce4fef478aa2d6fbdaa9a09f76f5346e86464a0c070432be"
+      "provenanceClass": "operational_evidence",
+      "recordedAtVerified": true,
+      "recordingTimeStatus": "verified_database_admission",
+      "targetPreviousVersionId": null,
+      "corroboratingSourceDccId": null
     }
   ],
   "evidenceRefs": [
@@ -3057,5 +3057,8 @@
       "licenseOrReusePolicy": "US Federal Government Public Domain (17 U.S.C. 105)",
       "evidenceHash": "6dafc392004903b7697354a7a961024ded004ccecb8ee18e2480fa2b1074ac8f"
     }
-  ]
+  ],
+  "newlyAppendedEventsCount": 0,
+  "preservedExistingEventsCount": 12,
+  "preservedUnverifiedLegacyEventsCount": 1
 }

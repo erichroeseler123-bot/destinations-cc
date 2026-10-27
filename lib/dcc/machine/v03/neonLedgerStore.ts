@@ -164,6 +164,19 @@ export class NeonRelationalLedgerStoreV03 {
       await this.execInSchema(stmt);
       executed++;
     }
+    for (const alterStmt of [
+      `ALTER TABLE "dcc_v03_knowledge_events" ALTER COLUMN "recorded_at" DROP NOT NULL`,
+      `ALTER TABLE "dcc_v03_claim_projections" ALTER COLUMN "retrieved_at" DROP NOT NULL`,
+      `ALTER TABLE "dcc_v03_claim_projections" ALTER COLUMN "recorded_at" DROP NOT NULL`,
+      `ALTER TABLE "dcc_v03_candidate_universes" DROP CONSTRAINT IF EXISTS "dcc_v03_candidate_universes_uid_ver_uniq"`,
+      `ALTER TABLE "dcc_v03_engine_bundles" DROP CONSTRAINT IF EXISTS "dcc_v03_engine_bundles_eng_ver_uniq"`,
+    ]) {
+      try {
+        await this.execInSchema(alterStmt);
+      } catch {
+        // Non-fatal in mock/unit environments
+      }
+    }
     const tables = await this.listTables();
     return {
       schemaName: this.schemaName,
@@ -291,8 +304,10 @@ export class NeonRelationalLedgerStoreV03 {
       `SELECT payload FROM "dcc_v03_knowledge_events" ORDER BY event_seq ASC`,
     );
     const elapsedMs = performance.now() - t0;
+    const rawEvents = rows.map((r: any) => r.payload as V03KnowledgeEvent);
+    const normalizedEvents = [...AppendOnlyKnowledgeLedger.fromEvents(rawEvents).getAllEvents()];
     return {
-      events: rows.map((r: any) => r.payload as V03KnowledgeEvent),
+      events: normalizedEvents,
       elapsedMs,
     };
   }
@@ -314,24 +329,7 @@ export class NeonRelationalLedgerStoreV03 {
     await this.execInSchema(`TRUNCATE TABLE "dcc_v03_claim_projections"`);
     const { events } = await this.readKnowledgeEventsFromNeon();
 
-    const tempLedger = new AppendOnlyKnowledgeLedger();
-    for (const ev of events) {
-      tempLedger.appendEvent({
-        eventType: ev.eventType,
-        claimId: ev.claimId,
-        claimVersionId: ev.claimVersionId,
-        targetPreviousVersionId: ev.targetPreviousVersionId,
-        recordedAt: ev.recordedAt,
-        recordedAtVerified: ev.recordedAtVerified,
-        recordingTimeStatus: ev.recordingTimeStatus,
-        actorId: ev.actorId,
-        isSynthetic: ev.isSynthetic,
-        provenanceClass: ev.provenanceClass,
-        claimDefinition: ev.claimDefinition,
-        reason: ev.reason,
-        corroboratingSourceDccId: ev.corroboratingSourceDccId,
-      });
-    }
+    const tempLedger = AppendOnlyKnowledgeLedger.fromEvents(events);
 
     const rebuilt = tempLedger.rebuildProjectionAtCutoff({
       validAtIso: params.validAtIso,
@@ -493,11 +491,6 @@ export class NeonRelationalLedgerStoreV03 {
   async persistCandidateUniverseToNeon(universe: V03CandidateUniverse): Promise<void> {
     if (!this.isConfigured) return;
     await this.execInSchema(
-      `DELETE FROM "dcc_v03_candidate_universes"
-       WHERE universe_id = $1 AND version = $2 AND universe_hash <> $3`,
-      [universe.universeId, universe.version, universe.universeHash],
-    );
-    await this.execInSchema(
       `INSERT INTO "dcc_v03_candidate_universes" (
         universe_hash, universe_id, version, engine_id, engine_version,
         effective_from, effective_to, knowledge_cutoff, refresh_deadline,
@@ -584,11 +577,6 @@ export class NeonRelationalLedgerStoreV03 {
 
   async persistEngineBundleToNeon(bundle: V03CompiledEngineBundle): Promise<void> {
     if (!this.isConfigured) return;
-    await this.execInSchema(
-      `DELETE FROM "dcc_v03_engine_bundles"
-       WHERE engine_id = $1 AND engine_version = $2 AND bundle_hash <> $3`,
-      [bundle.engineId, bundle.engineVersion, bundle.bundleHash],
-    );
     await this.execInSchema(
       `INSERT INTO "dcc_v03_engine_bundles" (
         bundle_hash, engine_id, engine_version, compiler_version,

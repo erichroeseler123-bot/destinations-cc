@@ -44,19 +44,20 @@ const CHECKED_BUILD_INPUT_PATHS = [
   "tests",
 ];
 
+function sha256HexNode(bufOrStr) {
+  return crypto.createHash("sha256").update(bufOrStr).digest("hex");
+}
+
 function hashFilesDeterministic(baseDir, relPaths) {
-  const hash = crypto.createHash("sha256");
-  let count = 0;
+  const pieces = [];
   for (const rel of [...relPaths].sort()) {
     const full = path.join(baseDir, rel);
     if (fs.existsSync(full) && fs.statSync(full).isFile()) {
-      hash.update(`${rel}\0`);
-      hash.update(fs.readFileSync(full));
-      hash.update("\0");
-      count += 1;
+      const fileDigest = sha256HexNode(fs.readFileSync(full));
+      pieces.push(`${rel}:${fileDigest}`);
     }
   }
-  return count > 0 ? hash.digest("hex") : "unavailable";
+  return pieces.length > 0 ? sha256HexNode(pieces.join("\n")) : "unavailable_in_packaged_runtime";
 }
 
 function listFilesRecursiveRel(baseDir, subDir) {
@@ -80,10 +81,12 @@ function listFilesRecursiveRel(baseDir, subDir) {
 function resolveBuildProvenanceEnv() {
   let gitCommit =
     process.env.VERCEL_GIT_COMMIT_SHA?.trim() ||
+    process.env.DCC_BUILD_GIT_COMMIT?.trim() ||
     process.env.GITHUB_SHA?.trim() ||
     "";
   let gitBranch =
     process.env.VERCEL_GIT_COMMIT_REF?.trim() ||
+    process.env.DCC_BUILD_GIT_BRANCH?.trim() ||
     process.env.GITHUB_REF_NAME?.trim() ||
     "";
   let dirtySourceStatus = "unknown";
@@ -129,19 +132,20 @@ function resolveBuildProvenanceEnv() {
     sourceInspectionAvailable = "false";
   }
 
-  let dependencyLockHash = "unavailable";
-  let rootConfigHash = "unavailable";
-  let migrationsHash = "unavailable";
-  let scriptsHash = "unavailable";
+  let dependencyLockHash =
+    process.env.DCC_BUILD_LOCK_HASH?.trim() || "unavailable_in_packaged_runtime";
+  let rootConfigHash =
+    process.env.DCC_BUILD_ROOT_CONFIG_HASH?.trim() || "unavailable_in_packaged_runtime";
+  let migrationsHash =
+    process.env.DCC_BUILD_MIGRATIONS_HASH?.trim() || "unavailable_in_packaged_runtime";
+  let scriptsHash =
+    process.env.DCC_BUILD_SCRIPTS_HASH?.trim() || "unavailable_in_packaged_runtime";
   try {
     const lockPath = path.join(__dirname, "package-lock.json");
     if (fs.existsSync(lockPath)) {
-      dependencyLockHash = crypto
-        .createHash("sha256")
-        .update(fs.readFileSync(lockPath))
-        .digest("hex");
+      dependencyLockHash = sha256HexNode(fs.readFileSync(lockPath));
     }
-    rootConfigHash = hashFilesDeterministic(__dirname, [
+    const computedRoot = hashFilesDeterministic(__dirname, [
       "package.json",
       "tsconfig.json",
       "next.config.mjs",
@@ -159,14 +163,23 @@ function resolveBuildProvenanceEnv() {
       "validate.mjs",
       "verify.mjs",
     ]);
-    migrationsHash = hashFilesDeterministic(
+    if (computedRoot !== "unavailable_in_packaged_runtime") {
+      rootConfigHash = computedRoot;
+    }
+    const computedMigrations = hashFilesDeterministic(
       __dirname,
       listFilesRecursiveRel(__dirname, "drizzle"),
     );
-    scriptsHash = hashFilesDeterministic(
+    if (computedMigrations !== "unavailable_in_packaged_runtime") {
+      migrationsHash = computedMigrations;
+    }
+    const computedScripts = hashFilesDeterministic(
       __dirname,
       listFilesRecursiveRel(__dirname, "scripts/dcc"),
     );
+    if (computedScripts !== "unavailable_in_packaged_runtime") {
+      scriptsHash = computedScripts;
+    }
   } catch {
     // ignore
   }
@@ -179,10 +192,17 @@ function resolveBuildProvenanceEnv() {
     DCC_BUILD_DIRTY_STATUS: dirtySourceStatus,
     DCC_BUILD_SOURCE_INSPECTION_AVAILABLE: sourceInspectionAvailable,
     DCC_BUILD_CHECKED_INPUTS: CHECKED_BUILD_INPUT_PATHS.join(","),
-    DCC_BUILD_LOCK_HASH: dependencyLockHash || "unavailable",
-    DCC_BUILD_ROOT_CONFIG_HASH: rootConfigHash || "unavailable",
-    DCC_BUILD_MIGRATIONS_HASH: migrationsHash || "unavailable",
-    DCC_BUILD_SCRIPTS_HASH: scriptsHash || "unavailable",
+    DCC_BUILD_LOCK_HASH: dependencyLockHash || "unavailable_in_packaged_runtime",
+    DCC_BUILD_ROOT_CONFIG_HASH: rootConfigHash || "unavailable_in_packaged_runtime",
+    DCC_BUILD_MIGRATIONS_HASH: migrationsHash || "unavailable_in_packaged_runtime",
+    DCC_BUILD_SCRIPTS_HASH: scriptsHash || "unavailable_in_packaged_runtime",
+    DCC_CI_VERIFIED_COMMIT_SHA:
+      process.env.DCC_CI_VERIFIED_COMMIT_SHA?.trim() || gitCommit || "unknown",
+    DCC_CI_VERIFIED_RUN_ID: process.env.DCC_CI_VERIFIED_RUN_ID?.trim() || "",
+    DCC_CI_VERIFIED_LOCK_HASH:
+      process.env.DCC_CI_VERIFIED_LOCK_HASH?.trim() ||
+      dependencyLockHash ||
+      "unavailable_in_packaged_runtime",
     DCC_BUILD_TIME: buildTime,
     DCC_BUILD_ID: buildId,
   };

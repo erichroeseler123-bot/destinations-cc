@@ -356,6 +356,20 @@ export function getDeploymentProvenanceV03(options?: { cwd?: string }) {
     `build-${sourceCommitSha.slice(0, 12)}`;
   const buildId = process.env.DCC_BUILD_ID?.trim() || vercelDeploymentId;
   const gitProvider = process.env.VERCEL_GIT_PROVIDER?.trim() || null;
+  const ciVerifiedCommitSha =
+    process.env.DCC_CI_VERIFIED_COMMIT_SHA?.trim() || null;
+  const ciVerifiedRunId =
+    process.env.DCC_CI_VERIFIED_RUN_ID?.trim() || null;
+  const ciVerifiedLockHash =
+    process.env.DCC_CI_VERIFIED_LOCK_HASH?.trim() || null;
+  const commitMatchesHostedCi =
+    Boolean(ciVerifiedCommitSha) &&
+    sourceCommitSha !== "unknown" &&
+    ciVerifiedCommitSha === sourceCommitSha;
+  const dependencyLockHashMatchesHostedCi =
+    Boolean(ciVerifiedLockHash) &&
+    dependencyLockSha256 !== "unavailable_in_packaged_runtime" &&
+    ciVerifiedLockHash === dependencyLockSha256;
 
   return {
     provenanceSpec: "dcc-deployment-provenance/0.3.1",
@@ -377,6 +391,16 @@ export function getDeploymentProvenanceV03(options?: { cwd?: string }) {
     sourceInspectionAvailable,
     buildTime,
     generatedAt: new Date().toISOString(),
+    hostedCiVerification: {
+      verifiedAgainstHostedCi: Boolean(
+        ciVerifiedRunId && commitMatchesHostedCi && dependencyLockHashMatchesHostedCi,
+      ),
+      ciRunId: ciVerifiedRunId,
+      ciVerifiedCommitSha,
+      ciVerifiedLockHash,
+      commitMatchesHostedCi,
+      dependencyLockHashMatchesHostedCi,
+    },
     sourceControl: {
       sourceCommitSha,
       branchName,

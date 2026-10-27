@@ -119,6 +119,44 @@ async function main() {
   });
   assert.equal(cleanup.deleted, true);
 
+  // 6b. If separate read-only credentials (R2_READ_ACCESS_KEY_ID) are configured, verify that PUT with reader credentials fails closed with HTTP 403 AccessDenied
+  let readerWriteRejectedWithAccessDenied: boolean | "pending_separate_reader_token" =
+    "pending_separate_reader_token";
+  if (inspection.separateReadWritePermissionsConfigured) {
+    const { S3Client, PutObjectCommand } = await import(
+      "../../lib/dcc/machine/v03/storageBoundary"
+    );
+    const readOnlyS3Client = new S3Client({
+      region: "auto",
+      endpoint: `https://${inspection.accountId}.r2.cloudflarestorage.com`,
+      credentials: {
+        accessKeyId: process.env.R2_READ_ACCESS_KEY_ID!.trim(),
+        secretAccessKey: process.env.R2_READ_SECRET_ACCESS_KEY!.trim(),
+      },
+    });
+    let accessDeniedCaught = false;
+    try {
+      await readOnlyS3Client.send(
+        new PutObjectCommand({
+          Bucket: inspection.bucketName!,
+          Key: "v03/integration_tests/sha256/readonly-must-fail.json",
+          Body: "{}",
+          ContentType: "application/json",
+        }),
+      );
+    } catch (err: any) {
+      if (err?.name === "AccessDenied" || err?.$metadata?.httpStatusCode === 403) {
+        accessDeniedCaught = true;
+      }
+    }
+    assert.equal(
+      accessDeniedCaught,
+      true,
+      "Read-only R2 token (dcc-evidence-reader) must be rejected with HTTP 403 AccessDenied on PUT",
+    );
+    readerWriteRejectedWithAccessDenied = true;
+  }
+
   // 7. Verify runtime store uses CloudflareR2PrivateArtifactStore and passes enforceProductionStorageGate: true
   resetV03RuntimeStore();
   const runtimeStore = getV03RuntimeStore();
@@ -167,6 +205,7 @@ async function main() {
         accountId: inspection.accountId,
         separateReadWritePermissionsConfigured:
           inspection.separateReadWritePermissionsConfigured,
+        readerWriteRejectedWithAccessDenied,
         verifiedRawCapturesFromR2: verifiedCaptureCount,
         verifiedDerivedTextsFromR2: verifiedDerivedCount,
         totalVerifiedObjectsFromR2: verifiedCaptureCount + verifiedDerivedCount,

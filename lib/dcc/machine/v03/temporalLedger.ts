@@ -143,13 +143,56 @@ export interface V03ProjectedClaimState {
   isSynthetic: boolean;
 }
 
+const LEGACY_PRE_REPAIR_HARDCODED_TIMESTAMPS = new Set([
+  "2026-10-26T00:00:00.000Z",
+  "2026-10-26T15:00:00.000Z",
+  "2026-10-26T15:05:00.000Z",
+  "2026-10-26T21:15:00.000Z",
+  "2026-10-26T21:16:00.000Z",
+]);
+
+export function isUnverifiedLegacyEventRecord(ev: V03KnowledgeEvent): boolean {
+  if (
+    ev.recordedAt === null ||
+    ev.recordedAtVerified === false ||
+    ev.recordingTimeStatus === "unverified_legacy_recording_time"
+  ) {
+    return true;
+  }
+  if (LEGACY_PRE_REPAIR_HARDCODED_TIMESTAMPS.has(ev.recordedAt)) {
+    return true;
+  }
+  if (
+    !ev.isSynthetic &&
+    ev.claimDefinition?.retrievedAt &&
+    Date.parse(ev.recordedAt) < Date.parse(ev.claimDefinition.retrievedAt)
+  ) {
+    return true;
+  }
+  return false;
+}
+
 export class AppendOnlyKnowledgeLedger {
   private readonly events: V03KnowledgeEvent[] = [];
 
   static fromEvents(events: readonly V03KnowledgeEvent[]): AppendOnlyKnowledgeLedger {
     const ledger = new AppendOnlyKnowledgeLedger();
     for (const ev of events) {
-      ledger.events.push(Object.freeze({ ...ev }));
+      const unverifiedLegacy = isUnverifiedLegacyEventRecord(ev);
+      const recordedAtVerified = unverifiedLegacy
+        ? false
+        : (ev.recordedAtVerified ?? true);
+      const recordingTimeStatus: V03RecordingTimeStatus = unverifiedLegacy
+        ? "unverified_legacy_recording_time"
+        : (ev.recordingTimeStatus ??
+          (ev.isSynthetic ? "synthetic_fixture_clock" : "verified_database_admission"));
+      ledger.events.push(
+        Object.freeze({
+          ...ev,
+          recordedAtVerified,
+          recordingTimeStatus,
+        }),
+      );
     }
     return ledger;
   }
@@ -590,6 +633,9 @@ export class AppendOnlyKnowledgeLedger {
 
     // Compute freshnessState and support eligibility at (validAtIso, knowledgeCutoffIso)
     for (const v of versionsByVersionId.values()) {
+      const pinnedByHistoricalReceipt =
+        params.pinnedClaimEventHashes !== undefined &&
+        params.pinnedClaimEventHashes[v.claimVersionId] === v.latestMutatingEventHash;
       const supportCheck = evaluateClaimSupportEligibility({
         assertionType: v.assertionType,
         epistemicState: v.epistemicState,
@@ -598,7 +644,7 @@ export class AppendOnlyKnowledgeLedger {
         validFrom: v.validFrom,
         validTo: v.validTo,
         retrievedAt: v.retrievedAt,
-        recordedAtVerified: v.recordedAtVerified,
+        recordedAtVerified: v.recordedAtVerified || pinnedByHistoricalReceipt,
         freshnessTtlSeconds: v.freshnessTtlSeconds,
         validAtIso: params.validAtIso,
         knowledgeCutoffIso: params.knowledgeCutoffIso,

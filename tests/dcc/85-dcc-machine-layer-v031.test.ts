@@ -753,7 +753,167 @@ test("v0.3.1 Gate 7: Repair Verification — Withdrawn GoSno Seed Containment, P
       process.env.DCC_BUILD_SOURCE_INSPECTION_AVAILABLE = savedSourceInspEnv;
     }
   }
+
+  // 8. Verify additive idempotent admission on a pre-repair 7-event legacy ledger (such as production /neondb)
+  //    and verify nonproduction snapshot timestamps are never loaded when VERCEL_ENV === "production"
+  const {
+    admitOperationalLedgerAdditiveIdempotentV031,
+    loadPersistedAdmissionSnapshotV031,
+  } = await import("../../lib/dcc/machine/v03/runtimeStoreV03");
+  const { AppendOnlyKnowledgeLedger } = await import(
+    "../../lib/dcc/machine/v03/temporalLedger"
+  );
+
+  const savedVercelEnv = process.env.VERCEL_ENV;
+  process.env.VERCEL_ENV = "production";
+  try {
+    assert.equal(
+      loadPersistedAdmissionSnapshotV031(),
+      null,
+      "Nonproduction admission snapshot must never be loaded when VERCEL_ENV=production",
+    );
+  } finally {
+    if (savedVercelEnv === undefined) {
+      delete process.env.VERCEL_ENV;
+    } else {
+      process.env.VERCEL_ENV = savedVercelEnv;
+    }
+  }
+
+  const baseTemplate = getV03RuntimeStore();
+  const baseEvents = baseTemplate.knowledgeLedger.getAllEvents();
+  const preRepairLegacyLedger = new AppendOnlyKnowledgeLedger();
+  // Reconstruct the 7 pre-repair legacy events (00:00Z, 15:00Z, 15:05Z)
+  preRepairLegacyLedger.appendEvent({
+    eventType: "claim_created",
+    claimId: "clm:gosno:max-pax-per-shuttle",
+    claimVersionId: "clmv:gosno:max-pax-per-shuttle:v1",
+    recordedAt: "2026-10-26T00:00:00.000Z",
+    recordedAtVerified: false,
+    recordingTimeStatus: "unverified_legacy_recording_time",
+    actorId: "dcc-v03-bootstrap",
+    isSynthetic: true,
+    provenanceClass: "withdrawn_unsupported",
+    claimDefinition: baseEvents[0]!.claimDefinition,
+    reason: baseEvents[0]!.reason,
+  });
+  preRepairLegacyLedger.appendEvent({
+    eventType: "claim_withdrawn",
+    claimId: "clm:gosno:max-pax-per-shuttle",
+    claimVersionId: "clmv:gosno:max-pax-per-shuttle:v2-withdrawn",
+    targetPreviousVersionId: "clmv:gosno:max-pax-per-shuttle:v1",
+    recordedAt: "2026-10-26T15:00:00.000Z",
+    recordedAtVerified: false,
+    recordingTimeStatus: "unverified_legacy_recording_time",
+    actorId: "dcc-v031-evidence-containment-auditor",
+    isSynthetic: false,
+    provenanceClass: "operational_evidence",
+    reason: baseEvents[1]!.reason,
+  });
+  for (const activeClaimId of [
+    "clm:jnu:standard-seat-weight-limit-lbs",
+    "clm:haw:noaa-100yd-approach-compliance",
+    "clm:gosno:private-transport-mode-only",
+    "clm:gosno:private-suv-max-passengers-6",
+    "clm:gosno:private-van-max-passengers-10",
+  ]) {
+    const tmpl = baseEvents.find((e) => e.claimId === activeClaimId)!;
+    preRepairLegacyLedger.appendEvent({
+      eventType: "claim_created",
+      claimId: tmpl.claimId,
+      claimVersionId: tmpl.claimVersionId,
+      recordedAt: "2026-10-26T15:05:00.000Z",
+      recordedAtVerified: false,
+      recordingTimeStatus: "unverified_legacy_recording_time",
+      actorId: tmpl.actorId,
+      isSynthetic: false,
+      provenanceClass: "operational_evidence",
+      claimDefinition: {
+        ...tmpl.claimDefinition!,
+        retrievedAt: "2026-10-26T00:00:00.000Z",
+        evidenceRefs: [],
+      },
+      reason: tmpl.reason,
+    });
+  }
+
+  const simulatedProdDbEvents: any[] = [...preRepairLegacyLedger.getAllEvents()];
+  let mockProdClockCounter = 0;
+  const mockProdNeonStore = {
+    isConfigured: true,
+    schemaName: "dcc_machine_v03",
+    ensureSchemaAndTables: async () => {},
+    readLedgerEventsFromNeon: async () => [
+      ...AppendOnlyKnowledgeLedger.fromEvents(simulatedProdDbEvents).getAllEvents(),
+    ],
+    queryDatabaseClockIso: async () => {
+      mockProdClockCounter += 1;
+      return `2026-10-27T12:30:0${mockProdClockCounter}.000Z`;
+    },
+    persistLedgerEventsToNeon: async (newEvs: readonly any[]) => {
+      for (const ev of newEvs) {
+        if (!simulatedProdDbEvents.some((x) => x.eventId === ev.eventId)) {
+          simulatedProdDbEvents.push(ev);
+        }
+      }
+    },
+    persistEvidenceReferenceToNeon: async () => {},
+    persistCandidateUniverseToNeon: async () => {},
+    persistEngineBundleToNeon: async () => {},
+    readAllCandidateUniversesFromNeon: async () => [],
+    readAllEngineBundlesFromNeon: async () => [],
+    truncateAndRebuildClaimProjectionsInNeon: async () => ({
+      rebuiltClaimVersionCount: 16,
+      eventsReplayedCount: simulatedProdDbEvents.length,
+      projectionDigestSha256: "0".repeat(64),
+    }),
+  } as any;
+
+  const firstAdditiveRepair = await admitOperationalLedgerAdditiveIdempotentV031({
+    neonStore: mockProdNeonStore,
+    writeSnapshotToDisk: false,
+  });
+  assert.equal(firstAdditiveRepair.preservedExistingEventsCount, 7);
+  assert.equal(firstAdditiveRepair.preservedUnverifiedLegacyEventsCount, 7);
+  assert.equal(firstAdditiveRepair.newlyAppendedEventsCount, 11);
+  assert.equal(firstAdditiveRepair.events.length, 18);
+
+  // Verify the original 7 legacy events are preserved at eventSeq 1..7 as unverified_legacy_recording_time
+  for (let i = 0; i < 7; i++) {
+    const legacyEv = firstAdditiveRepair.events[i]!;
+    assert.equal(legacyEv.eventSeq, i + 1);
+    assert.equal(legacyEv.recordedAtVerified, false);
+    assert.equal(legacyEv.recordingTimeStatus, "unverified_legacy_recording_time");
+  }
+  // Verify eventSeq 8..18 are verified_database_admission and reference the earlier unverified records
+  const correctiveWithdrawal = firstAdditiveRepair.events[7]!;
+  assert.equal(
+    correctiveWithdrawal.claimVersionId,
+    "clmv:gosno:max-pax-per-shuttle:v3-withdrawn-db-admitted",
+  );
+  assert.equal(correctiveWithdrawal.recordedAtVerified, true);
+  assert.equal(correctiveWithdrawal.recordingTimeStatus, "verified_database_admission");
+  assert.equal(
+    correctiveWithdrawal.reason.includes(firstAdditiveRepair.events[1]!.eventId),
+    true,
+  );
+
+  // Second run must be 100% idempotent (0 newly appended events, identical records and timestamps)
+  const secondAdditiveRepair = await admitOperationalLedgerAdditiveIdempotentV031({
+    neonStore: mockProdNeonStore,
+    writeSnapshotToDisk: false,
+  });
+  assert.equal(secondAdditiveRepair.newlyAppendedEventsCount, 0);
+  assert.equal(secondAdditiveRepair.events.length, 18);
+  assert.deepEqual(
+    secondAdditiveRepair.admittedTimestamps,
+    firstAdditiveRepair.admittedTimestamps,
+  );
+
+  // Restore clean singleton runtime store for any subsequent checks
+  resetV03RuntimeStore();
 });
+
 
 
 

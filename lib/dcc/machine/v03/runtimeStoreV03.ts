@@ -71,6 +71,9 @@ export interface V03PersistedAdmissionSnapshot {
   admittedTimestamps: V03AdmittedLedgerTimestamps;
   events: readonly V03KnowledgeEvent[];
   evidenceRefs?: V03EvidenceReference[];
+  newlyAppendedEventsCount?: number;
+  preservedExistingEventsCount?: number;
+  preservedUnverifiedLegacyEventsCount?: number;
 }
 
 export const ADMITTED_LEDGER_STATE_PATH_V031 = path.join(
@@ -82,6 +85,10 @@ export const ADMITTED_LEDGER_STATE_PATH_V031 = path.join(
 );
 
 export function loadPersistedAdmissionSnapshotV031(): V03PersistedAdmissionSnapshot | null {
+  // Never present nonproduction admission snapshot timestamps as production recording times
+  if (process.env.VERCEL_ENV === "production") {
+    return null;
+  }
   try {
     if (fs.existsSync(ADMITTED_LEDGER_STATE_PATH_V031)) {
       const raw = fs.readFileSync(ADMITTED_LEDGER_STATE_PATH_V031, "utf8");
@@ -197,28 +204,108 @@ export async function ensureBaseStoreSyncedToNeon(
   }
 }
 
+const REQUIRED_VERIFIED_ACTIVE_CLAIM_IDS_V031 = [
+  "clm:jnu:standard-seat-weight-limit-lbs",
+  "clm:haw:noaa-100yd-approach-compliance",
+  "clm:gosno:private-transport-mode-only",
+  "clm:gosno:private-suv-max-passengers-6",
+  "clm:gosno:private-van-max-passengers-10",
+] as const;
+
+const REQUIRED_VERIFIED_UNKNOWN_CONDITION_CLAIM_IDS_V031 = [
+  "clm:gosno:live-driver-availability",
+  "clm:gosno:live-vehicle-availability",
+  "clm:gosno:live-equipment-fit-at-capacity",
+  "clm:gosno:live-road-safety",
+  "clm:gosno:live-inventory-confirmation",
+] as const;
+
+function ledgerHasAllVerifiedDatabaseAdmissions(
+  events: readonly V03KnowledgeEvent[],
+): boolean {
+  if (events.length === 0) return false;
+  const hasVerifiedWithdrawal = events.some(
+    (e) =>
+      e.claimId === "clm:gosno:max-pax-per-shuttle" &&
+      e.eventType === "claim_withdrawn" &&
+      e.recordedAtVerified === true &&
+      e.recordingTimeStatus === "verified_database_admission" &&
+      e.recordedAt !== null,
+  );
+  if (!hasVerifiedWithdrawal) return false;
+
+  for (const cid of [
+    ...REQUIRED_VERIFIED_ACTIVE_CLAIM_IDS_V031,
+    ...REQUIRED_VERIFIED_UNKNOWN_CONDITION_CLAIM_IDS_V031,
+  ]) {
+    const hasVerified = events.some(
+      (e) =>
+        e.claimId === cid &&
+        e.recordedAtVerified === true &&
+        e.recordingTimeStatus === "verified_database_admission" &&
+        e.recordedAt !== null,
+    );
+    if (!hasVerified) return false;
+  }
+  return true;
+}
+
 /**
  * Reloads persisted knowledge events, candidate universes, and compiled engine bundles
  * from Neon PostgreSQL (`dcc_machine_v03`) on restart / cold start so that recording times
  * assigned once at database admission time are preserved across restarts without ever
- * assigning new recording times on cold start.
+ * assigning new recording times on cold start. If the connected database contains
+ * pre-repair unverified legacy events without verified database-admitted replacements
+ * (such as production `/neondb` on first repair), performs additive idempotent admission
+ * using that database's own PostgreSQL `clock_timestamp()`.
  */
 export async function ensureRuntimeStoreHydratedFromNeon(
   store: V03RuntimeStore = getV03RuntimeStore(),
 ): Promise<boolean> {
   if (!isNeonStoreConfigured(store)) return false;
   const neon = getActiveNeonStore(store);
+  if (
+    typeof neon.ensureSchemaAndTables !== "function" ||
+    typeof neon.readLedgerEventsFromNeon !== "function"
+  ) {
+    return false;
+  }
   try {
     await neon.ensureSchemaAndTables();
     const persistedEvents = await neon.readLedgerEventsFromNeon();
+
+    if (
+      !ledgerHasAllVerifiedDatabaseAdmissions(persistedEvents) &&
+      typeof neon.queryDatabaseClockIso === "function"
+    ) {
+      await admitOperationalLedgerAdditiveIdempotentV031({
+        neonStore: neon,
+        store,
+        writeSnapshotToDisk: false,
+      });
+      return true;
+    }
+
     if (persistedEvents.length > 0) {
       store.knowledgeLedger = AppendOnlyKnowledgeLedger.fromEvents(persistedEvents);
-      // Sync withdrawn evidenceRef metadata with the reloaded withdrawal event from Neon
-      const withdrawalEv = persistedEvents.find(
-        (e) =>
-          e.eventType === "claim_withdrawn" &&
-          e.claimId === "clm:gosno:max-pax-per-shuttle",
-      );
+      const findLatestVerifiedEvent = (claimId: string, eventType?: string) => {
+        const matches = persistedEvents.filter(
+          (e) =>
+            e.claimId === claimId &&
+            (!eventType || e.eventType === eventType) &&
+            e.recordedAtVerified === true &&
+            e.recordedAt !== null,
+        );
+        return matches.length > 0 ? matches[matches.length - 1]! : null;
+      };
+
+      const withdrawalEv =
+        findLatestVerifiedEvent("clm:gosno:max-pax-per-shuttle", "claim_withdrawn") ??
+        persistedEvents.find(
+          (e) =>
+            e.eventType === "claim_withdrawn" &&
+            e.claimId === "clm:gosno:max-pax-per-shuttle",
+        );
       const withdrawnRef = store.evidenceRefsById.get("evref:gosno:tariff-2026-winter-park");
       if (withdrawalEv && withdrawnRef) {
         store.evidenceRefsById.set("evref:gosno:tariff-2026-winter-park", {
@@ -227,6 +314,46 @@ export async function ensureRuntimeStoreHydratedFromNeon(
           withdrawalEventId: withdrawalEv.eventId,
         });
       }
+
+      // Sync evidenceRefs from verified database-admitted events (e.g. evRefNoaa100yd)
+      for (const ev of persistedEvents) {
+        if (ev.recordedAtVerified && ev.claimDefinition?.evidenceRefs) {
+          for (const ref of ev.claimDefinition.evidenceRefs) {
+            store.evidenceRefsById.set(ref.evidenceRefId, ref);
+          }
+        }
+      }
+
+      const noaaEv = findLatestVerifiedEvent("clm:haw:noaa-100yd-approach-compliance");
+      const jnuEv = findLatestVerifiedEvent("clm:jnu:standard-seat-weight-limit-lbs");
+      const gosnoModeEv = findLatestVerifiedEvent("clm:gosno:private-transport-mode-only");
+      const gosnoSuvEv = findLatestVerifiedEvent("clm:gosno:private-suv-max-passengers-6");
+      const gosnoVanEv = findLatestVerifiedEvent("clm:gosno:private-van-max-passengers-10");
+      const gosnoUnkEv = findLatestVerifiedEvent("clm:gosno:live-driver-availability");
+
+      if (
+        withdrawalEv?.recordedAt &&
+        noaaEv?.recordedAt &&
+        jnuEv?.recordedAt &&
+        gosnoModeEv?.recordedAt &&
+        gosnoSuvEv?.recordedAt &&
+        gosnoVanEv?.recordedAt &&
+        gosnoUnkEv?.recordedAt
+      ) {
+        store.admittedTimestamps = {
+          admissionId: `db-admission-v031-${withdrawalEv.recordedAt}`,
+          admittedByDatabaseClock: true,
+          databaseSchema: neon.schemaName,
+          withdrawalRecordedAt: withdrawalEv.recordedAt,
+          noaaRecordedAt: noaaEv.recordedAt,
+          juneauPolicyRecordedAt: jnuEv.recordedAt,
+          gosnoModeRecordedAt: gosnoModeEv.recordedAt,
+          gosnoSuvRecordedAt: gosnoSuvEv.recordedAt,
+          gosnoVanRecordedAt: gosnoVanEv.recordedAt,
+          gosnoUnknownConditionsRecordedAt: gosnoUnkEv.recordedAt,
+        };
+      }
+
       if (typeof neon.readAllCandidateUniversesFromNeon === "function") {
         const universes = await neon.readAllCandidateUniversesFromNeon();
         for (const u of universes) {
@@ -1763,37 +1890,178 @@ export function getV03RuntimeStore(options?: {
 }
 
 /**
- * Performs the one-time server/database admission of the v0.3.1 operational ledger
- * using the live Neon PostgreSQL `clock_timestamp()`, persists all admitted events,
- * evidence references, candidate universes, and engine bundles to Neon, and saves
- * the persisted admission snapshot (`data/machine/v03/admitted_ledger_state_v031.json`)
- * so restarts reload the exact database-admitted recording times without ever
- * assigning new recording times on cold start.
+ * Performs additive, idempotent server/database admission of the v0.3.1 operational ledger
+ * using the connected database's live PostgreSQL `clock_timestamp()`:
+ * - Never drops, recreates, truncates, or overwrites `dcc_v03_knowledge_events`,
+ *   `dcc_v03_signed_receipts`, or `dcc_v03_decision_authorizations`.
+ * - Preserves uncertain pre-repair legacy recording times as `unverified_legacy_recording_time`
+ *   and appends superseding/corrective events referencing the earlier records.
+ * - Running admission twice preserves all existing records and timestamps with 0 new events appended.
  */
-export async function admitOperationalLedgerToDatabaseOnceV031(options?: {
+export async function admitOperationalLedgerAdditiveIdempotentV031(options?: {
   neonStore?: NeonRelationalLedgerStoreV03;
+  store?: V03RuntimeStore;
   writeSnapshotToDisk?: boolean;
 }): Promise<V03PersistedAdmissionSnapshot> {
-  const neon = options?.neonStore ?? new NeonRelationalLedgerStoreV03();
+  const neon =
+    options?.neonStore ??
+    (options?.store ? getActiveNeonStore(options.store) : new NeonRelationalLedgerStoreV03());
   if (!neon.isConfigured) {
     throw new Error(
       "NEON_DATABASE_UNCONFIGURED: Cannot perform database ledger admission without DATABASE_URL / NEON_DATABASE_URL.",
     );
   }
 
-  // Query live PostgreSQL clock_timestamp() sequentially for each distinct admission batch
-  const noaaRecordedAt = await neon.queryDatabaseClockIso();
-  const juneauPolicyRecordedAt = await neon.queryDatabaseClockIso();
-  const withdrawalRecordedAt = await neon.queryDatabaseClockIso();
-  const gosnoModeRecordedAt = await neon.queryDatabaseClockIso();
-  const gosnoSuvRecordedAt = await neon.queryDatabaseClockIso();
-  const gosnoVanRecordedAt = await neon.queryDatabaseClockIso();
-  const gosnoUnknownConditionsRecordedAt = await neon.queryDatabaseClockIso();
+  await neon.ensureSchemaAndTables();
+  const existingEvents = await neon.readLedgerEventsFromNeon();
+
+  if (existingEvents.length === 0) {
+    // Fresh empty ledger: admit all initial operational events once using this database's clock
+    const noaaRecordedAt = await neon.queryDatabaseClockIso();
+    const juneauPolicyRecordedAt = await neon.queryDatabaseClockIso();
+    const withdrawalRecordedAt = await neon.queryDatabaseClockIso();
+    const gosnoModeRecordedAt = await neon.queryDatabaseClockIso();
+    const gosnoSuvRecordedAt = await neon.queryDatabaseClockIso();
+    const gosnoVanRecordedAt = await neon.queryDatabaseClockIso();
+    const gosnoUnknownConditionsRecordedAt = await neon.queryDatabaseClockIso();
+
+    const admittedTimestamps: V03AdmittedLedgerTimestamps = {
+      admissionId: `db-admission-v031-${withdrawalRecordedAt}`,
+      admittedByDatabaseClock: true,
+      databaseSchema: neon.schemaName,
+      withdrawalRecordedAt,
+      noaaRecordedAt,
+      juneauPolicyRecordedAt,
+      gosnoModeRecordedAt,
+      gosnoSuvRecordedAt,
+      gosnoVanRecordedAt,
+      gosnoUnknownConditionsRecordedAt,
+    };
+
+    const admittedStore = getV03RuntimeStore({
+      admittedTimestampsOverride: admittedTimestamps,
+    });
+
+    const events = admittedStore.knowledgeLedger.getAllEvents();
+    const evidenceRefs = Array.from(admittedStore.evidenceRefsById.values());
+    const universes = Array.from(admittedStore.universesByHash.values());
+    const bundles = Array.from(admittedStore.bundlesByHash.values());
+
+    await neon.persistLedgerEventsToNeon(events);
+    for (const ref of evidenceRefs) {
+      await neon.persistEvidenceReferenceToNeon(ref);
+    }
+    for (const univ of universes) {
+      await neon.persistCandidateUniverseToNeon(univ);
+    }
+    for (const bnd of bundles) {
+      await neon.persistEngineBundleToNeon(bnd);
+    }
+    await neon.truncateAndRebuildClaimProjectionsInNeon({
+      validAtIso: "2026-12-15T15:00:00.000Z",
+      knowledgeCutoffIso: gosnoUnknownConditionsRecordedAt,
+      includeSynthetic: false,
+    });
+
+    const snapshot: V03PersistedAdmissionSnapshot = {
+      schemaVersion: "0.3.1-db-admitted-v1",
+      admittedTimestamps,
+      events,
+      evidenceRefs,
+      newlyAppendedEventsCount: events.length,
+      preservedExistingEventsCount: 0,
+      preservedUnverifiedLegacyEventsCount: events.filter((e) => !e.recordedAtVerified).length,
+    };
+
+    if (options?.writeSnapshotToDisk !== false && process.env.VERCEL_ENV !== "production") {
+      fs.writeFileSync(
+        ADMITTED_LEDGER_STATE_PATH_V031,
+        JSON.stringify(snapshot, null, 2) + "\n",
+        "utf8",
+      );
+    }
+
+    admittedStore.baseStateSyncedToNeon = true;
+    admittedStore.hydratedFromNeon = true;
+    if (options?.store) {
+      Object.assign(options.store, admittedStore);
+      singletonStoreV03 = options.store;
+    } else {
+      singletonStoreV03 = admittedStore;
+    }
+    return snapshot;
+  }
+
+  // Existing ledger has events: preserve all existing events and append only missing/corrective verified admissions
+  const ledger = AppendOnlyKnowledgeLedger.fromEvents(existingEvents);
+  const preservedExistingEventsCount = existingEvents.length;
+
+  const findLatestVerifiedEvent = (claimId: string, eventType?: string) => {
+    const matches = ledger
+      .getAllEvents()
+      .filter(
+        (e) =>
+          e.claimId === claimId &&
+          (!eventType || e.eventType === eventType) &&
+          e.recordedAtVerified === true &&
+          e.recordingTimeStatus === "verified_database_admission" &&
+          e.recordedAt !== null,
+      );
+    return matches.length > 0 ? matches[matches.length - 1]! : null;
+  };
+
+  const findLatestAnyEvent = (claimId: string, eventType?: string) => {
+    const matches = ledger
+      .getAllEvents()
+      .filter((e) => e.claimId === claimId && (!eventType || e.eventType === eventType));
+    return matches.length > 0 ? matches[matches.length - 1]! : null;
+  };
+
+  const existingWithdrawalVerified = findLatestVerifiedEvent(
+    "clm:gosno:max-pax-per-shuttle",
+    "claim_withdrawn",
+  );
+  const existingNoaaVerified = findLatestVerifiedEvent(
+    "clm:haw:noaa-100yd-approach-compliance",
+  );
+  const existingJnuVerified = findLatestVerifiedEvent(
+    "clm:jnu:standard-seat-weight-limit-lbs",
+  );
+  const existingGosnoModeVerified = findLatestVerifiedEvent(
+    "clm:gosno:private-transport-mode-only",
+  );
+  const existingGosnoSuvVerified = findLatestVerifiedEvent(
+    "clm:gosno:private-suv-max-passengers-6",
+  );
+  const existingGosnoVanVerified = findLatestVerifiedEvent(
+    "clm:gosno:private-van-max-passengers-10",
+  );
+  const allUnknownVerified = REQUIRED_VERIFIED_UNKNOWN_CONDITION_CLAIM_IDS_V031.every(
+    (cid) => findLatestVerifiedEvent(cid) !== null,
+  );
+  const existingUnknownVerified = allUnknownVerified
+    ? findLatestVerifiedEvent("clm:gosno:live-driver-availability")
+    : null;
+
+  const noaaRecordedAt =
+    existingNoaaVerified?.recordedAt ?? (await neon.queryDatabaseClockIso());
+  const juneauPolicyRecordedAt =
+    existingJnuVerified?.recordedAt ?? (await neon.queryDatabaseClockIso());
+  const withdrawalRecordedAt =
+    existingWithdrawalVerified?.recordedAt ?? (await neon.queryDatabaseClockIso());
+  const gosnoModeRecordedAt =
+    existingGosnoModeVerified?.recordedAt ?? (await neon.queryDatabaseClockIso());
+  const gosnoSuvRecordedAt =
+    existingGosnoSuvVerified?.recordedAt ?? (await neon.queryDatabaseClockIso());
+  const gosnoVanRecordedAt =
+    existingGosnoVanVerified?.recordedAt ?? (await neon.queryDatabaseClockIso());
+  const gosnoUnknownConditionsRecordedAt =
+    existingUnknownVerified?.recordedAt ?? (await neon.queryDatabaseClockIso());
 
   const admittedTimestamps: V03AdmittedLedgerTimestamps = {
     admissionId: `db-admission-v031-${withdrawalRecordedAt}`,
     admittedByDatabaseClock: true,
-    databaseSchema: "dcc_machine_v03",
+    databaseSchema: neon.schemaName,
     withdrawalRecordedAt,
     noaaRecordedAt,
     juneauPolicyRecordedAt,
@@ -1803,59 +2071,238 @@ export async function admitOperationalLedgerToDatabaseOnceV031(options?: {
     gosnoUnknownConditionsRecordedAt,
   };
 
-  // Build store using these exact database admission timestamps
-  const admittedStore = getV03RuntimeStore({
+  const templateStore = getV03RuntimeStore({
     admittedTimestampsOverride: admittedTimestamps,
   });
+  const templateEvents = templateStore.knowledgeLedger.getAllEvents();
+  const newlyAppendedEvents: V03KnowledgeEvent[] = [];
 
-  // Reset & migrate Neon schema cleanly and persist the admitted state
-  await neon.runMigrationsDownV03();
-  await neon.runMigrationsUpV03();
+  // 1. Ensure GoSno legacy seed withdrawal has a verified database-admitted event
+  if (!existingWithdrawalVerified) {
+    let seedEv = findLatestAnyEvent("clm:gosno:max-pax-per-shuttle", "claim_created");
+    if (!seedEv) {
+      const templateSeed = templateEvents.find(
+        (e) =>
+          e.claimId === "clm:gosno:max-pax-per-shuttle" && e.eventType === "claim_created",
+      )!;
+      seedEv = ledger.appendEvent({
+        eventType: "claim_created",
+        claimId: templateSeed.claimId,
+        claimVersionId: templateSeed.claimVersionId,
+        recordedAt: null,
+        recordedAtVerified: false,
+        recordingTimeStatus: "unverified_legacy_recording_time",
+        actorId: templateSeed.actorId,
+        isSynthetic: true,
+        provenanceClass: "withdrawn_unsupported",
+        claimDefinition: templateSeed.claimDefinition,
+        reason: templateSeed.reason,
+      });
+      newlyAppendedEvents.push(seedEv);
+    }
 
-  const events = admittedStore.knowledgeLedger.getAllEvents();
-  const evidenceRefs = Array.from(admittedStore.evidenceRefsById.values());
-  const universes = Array.from(admittedStore.universesByHash.values());
-  const bundles = Array.from(admittedStore.bundlesByHash.values());
+    const earlierWithdrawal = findLatestAnyEvent(
+      "clm:gosno:max-pax-per-shuttle",
+      "claim_withdrawn",
+    );
+    const templateWithdrawal = templateEvents.find(
+      (e) =>
+        e.claimId === "clm:gosno:max-pax-per-shuttle" &&
+        e.eventType === "claim_withdrawn",
+    )!;
+    const withdrawalVersionId = earlierWithdrawal
+      ? "clmv:gosno:max-pax-per-shuttle:v3-withdrawn-db-admitted"
+      : "clmv:gosno:max-pax-per-shuttle:v2-withdrawn";
 
-  await neon.persistLedgerEventsToNeon(events);
-  for (const ref of evidenceRefs) {
-    await neon.persistEvidenceReferenceToNeon(ref);
+    const appendedWithdrawal = ledger.appendEvent({
+      eventType: "claim_withdrawn",
+      claimId: "clm:gosno:max-pax-per-shuttle",
+      claimVersionId: withdrawalVersionId,
+      targetPreviousVersionId:
+        seedEv.claimVersionId ?? "clmv:gosno:max-pax-per-shuttle:v1",
+      recordedAt: withdrawalRecordedAt,
+      recordedAtVerified: true,
+      recordingTimeStatus: "verified_database_admission",
+      actorId: "dcc-v031-evidence-containment-auditor",
+      isSynthetic: false,
+      provenanceClass: "operational_evidence",
+      reason: earlierWithdrawal
+        ? `Additive database-clock admission correction referencing earlier unverified withdrawal record ${earlierWithdrawal.eventId} (version=${earlierWithdrawal.claimVersionId}, recordedAt=${earlierWithdrawal.recordedAt ?? "null"}, status=unverified_legacy_recording_time): ${templateWithdrawal.reason}`
+        : templateWithdrawal.reason,
+    });
+    newlyAppendedEvents.push(appendedWithdrawal);
   }
-  for (const univ of universes) {
-    await neon.persistCandidateUniverseToNeon(univ);
+
+  // 2. Ensure each of the 5 active operational claims has a verified database-admitted event
+  for (const claimId of REQUIRED_VERIFIED_ACTIVE_CLAIM_IDS_V031) {
+    if (!findLatestVerifiedEvent(claimId)) {
+      const earlierEv = findLatestAnyEvent(claimId);
+      const templateEv = templateEvents.find((e) => e.claimId === claimId)!;
+      const newVersionId = earlierEv
+        ? `${claimId.replace(/^clm:/, "clmv:")}:v2-db-admitted`
+        : templateEv.claimVersionId;
+      const newDef = {
+        ...templateEv.claimDefinition!,
+        claimVersionId: newVersionId,
+      };
+      const appendedClaimEv = ledger.appendEvent({
+        eventType: earlierEv ? "claim_superseded" : "claim_created",
+        claimId,
+        claimVersionId: newVersionId,
+        targetPreviousVersionId: earlierEv ? earlierEv.claimVersionId : null,
+        recordedAt: templateEv.recordedAt,
+        recordedAtVerified: true,
+        recordingTimeStatus: "verified_database_admission",
+        actorId: templateEv.actorId,
+        isSynthetic: false,
+        provenanceClass: "operational_evidence",
+        claimDefinition: newDef,
+        reason: earlierEv
+          ? `Additive database-clock admission superseding earlier unverified legacy record ${earlierEv.eventId} (version=${earlierEv.claimVersionId}, recordedAt=${earlierEv.recordedAt ?? "null"}, status=unverified_legacy_recording_time): ${templateEv.reason}`
+          : templateEv.reason,
+      });
+      newlyAppendedEvents.push(appendedClaimEv);
+    }
   }
-  for (const bnd of bundles) {
-    await neon.persistEngineBundleToNeon(bnd);
+
+  // 3. Ensure each of the 5 GoSno unknown live operational condition claims has a verified database-admitted event
+  for (const claimId of REQUIRED_VERIFIED_UNKNOWN_CONDITION_CLAIM_IDS_V031) {
+    if (!findLatestVerifiedEvent(claimId)) {
+      const earlierUnkEv = findLatestAnyEvent(claimId);
+      const templateUnkEv = templateEvents.find((e) => e.claimId === claimId)!;
+      const newUnkVersionId = earlierUnkEv
+        ? `${claimId}:v2-unknown-db-admitted`
+        : templateUnkEv.claimVersionId;
+      const newUnkDef = {
+        ...templateUnkEv.claimDefinition!,
+        claimVersionId: newUnkVersionId,
+      };
+      const appendedUnkEv = ledger.appendEvent({
+        eventType: earlierUnkEv ? "claim_superseded" : "claim_created",
+        claimId,
+        claimVersionId: newUnkVersionId,
+        targetPreviousVersionId: earlierUnkEv ? earlierUnkEv.claimVersionId : null,
+        recordedAt: gosnoUnknownConditionsRecordedAt,
+        recordedAtVerified: true,
+        recordingTimeStatus: "verified_database_admission",
+        actorId: templateUnkEv.actorId,
+        isSynthetic: false,
+        provenanceClass: "operational_evidence",
+        claimDefinition: newUnkDef,
+        reason: earlierUnkEv
+          ? `Additive database-clock admission superseding earlier unverified legacy record ${earlierUnkEv.eventId}: ${templateUnkEv.reason}`
+          : templateUnkEv.reason,
+      });
+      newlyAppendedEvents.push(appendedUnkEv);
+    }
   }
-  await neon.truncateAndRebuildClaimProjectionsInNeon({
-    validAtIso: "2026-12-15T15:00:00.000Z",
-    knowledgeCutoffIso: gosnoUnknownConditionsRecordedAt,
-    includeSynthetic: false,
-  });
+
+  templateStore.knowledgeLedger = ledger;
+  const effectiveWithdrawalEv = findLatestVerifiedEvent(
+    "clm:gosno:max-pax-per-shuttle",
+    "claim_withdrawn",
+  )!;
+  const withdrawnRef = templateStore.evidenceRefsById.get(
+    "evref:gosno:tariff-2026-winter-park",
+  );
+  if (effectiveWithdrawalEv && withdrawnRef) {
+    templateStore.evidenceRefsById.set("evref:gosno:tariff-2026-winter-park", {
+      ...withdrawnRef,
+      withdrawnAt: effectiveWithdrawalEv.recordedAt,
+      withdrawalEventId: effectiveWithdrawalEv.eventId,
+    });
+  }
+
+  const allEvents = ledger.getAllEvents();
+  const evidenceRefs = Array.from(templateStore.evidenceRefsById.values());
+  const currentUniverses = Array.from(templateStore.universesByHash.values());
+  const currentBundles = Array.from(templateStore.bundlesByHash.values());
+
+  // Preserve any older candidate universes and engine bundles from Neon in memory before registering the latest ones
+  if (typeof neon.readAllCandidateUniversesFromNeon === "function") {
+    const existingUniverses = await neon.readAllCandidateUniversesFromNeon();
+    for (const u of existingUniverses) {
+      templateStore.universesByHash.set(u.universeHash, u);
+    }
+  }
+  if (typeof neon.readAllEngineBundlesFromNeon === "function") {
+    const existingBundles = await neon.readAllEngineBundlesFromNeon();
+    for (const b of existingBundles) {
+      templateStore.bundlesByHash.set(b.bundleHash, b);
+    }
+  }
+  for (const u of currentUniverses) {
+    templateStore.universesByHash.set(u.universeHash, u);
+    templateStore.universesByIdAndVersion.set(`${u.universeId}@${u.version}`, u);
+    templateStore.universesByIdAndVersion.set(u.universeId, u);
+  }
+  for (const b of currentBundles) {
+    templateStore.bundlesByHash.set(b.bundleHash, b);
+    templateStore.bundlesByEngineAndVersion.set(`${b.engineId}@${b.engineVersion}`, b);
+    templateStore.bundlesByEngineAndVersion.set(b.engineId, b);
+    templateStore.activeEngineVersionByEngineId.set(b.engineId, b.engineVersion);
+  }
+
+  if (newlyAppendedEvents.length > 0) {
+    await neon.persistLedgerEventsToNeon(newlyAppendedEvents);
+    for (const ref of evidenceRefs) {
+      await neon.persistEvidenceReferenceToNeon(ref);
+    }
+    for (const univ of currentUniverses) {
+      await neon.persistCandidateUniverseToNeon(univ);
+    }
+    for (const bnd of currentBundles) {
+      await neon.persistEngineBundleToNeon(bnd);
+    }
+    await neon.truncateAndRebuildClaimProjectionsInNeon({
+      validAtIso: "2026-12-15T15:00:00.000Z",
+      knowledgeCutoffIso: gosnoUnknownConditionsRecordedAt,
+      includeSynthetic: false,
+    });
+  }
 
   const snapshot: V03PersistedAdmissionSnapshot = {
     schemaVersion: "0.3.1-db-admitted-v1",
     admittedTimestamps,
-    events,
+    events: allEvents,
     evidenceRefs,
+    newlyAppendedEventsCount: newlyAppendedEvents.length,
+    preservedExistingEventsCount,
+    preservedUnverifiedLegacyEventsCount: allEvents.filter((e) => !e.recordedAtVerified)
+      .length,
   };
 
-  if (options?.writeSnapshotToDisk !== false) {
-    const filePath = path.join(
-      process.cwd(),
-      "data",
-      "machine",
-      "v03",
-      "admitted_ledger_state_v031.json",
+  if (options?.writeSnapshotToDisk !== false && process.env.VERCEL_ENV !== "production") {
+    fs.writeFileSync(
+      ADMITTED_LEDGER_STATE_PATH_V031,
+      JSON.stringify(snapshot, null, 2) + "\n",
+      "utf8",
     );
-    fs.writeFileSync(filePath, JSON.stringify(snapshot, null, 2) + "\n", "utf8");
   }
 
-  admittedStore.baseStateSyncedToNeon = true;
-  admittedStore.hydratedFromNeon = true;
-  singletonStoreV03 = admittedStore;
+  templateStore.baseStateSyncedToNeon = true;
+  templateStore.hydratedFromNeon = true;
+  if (options?.store) {
+    options.store.knowledgeLedger = templateStore.knowledgeLedger;
+    options.store.universesByHash = templateStore.universesByHash;
+    options.store.universesByIdAndVersion = templateStore.universesByIdAndVersion;
+    options.store.bundlesByHash = templateStore.bundlesByHash;
+    options.store.bundlesByEngineAndVersion = templateStore.bundlesByEngineAndVersion;
+    options.store.activeEngineVersionByEngineId =
+      templateStore.activeEngineVersionByEngineId;
+    options.store.evidenceRefsById = templateStore.evidenceRefsById;
+    options.store.admittedTimestamps = templateStore.admittedTimestamps;
+    options.store.baseStateSyncedToNeon = true;
+    options.store.hydratedFromNeon = true;
+    singletonStoreV03 = options.store;
+  } else {
+    singletonStoreV03 = templateStore;
+  }
   return snapshot;
 }
+
+export const admitOperationalLedgerToDatabaseOnceV031 =
+  admitOperationalLedgerAdditiveIdempotentV031;
 
 /**
  * Checks whether the production storage & evidence gates pass.

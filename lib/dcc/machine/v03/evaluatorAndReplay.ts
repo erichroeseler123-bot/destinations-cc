@@ -186,6 +186,7 @@ async function executeDeterministicEvaluationCore(params: {
   validAtIso: string;
   knowledgeCutoffIso: string;
   issuedAtIso?: string;
+  pinnedClaimEventHashesFromReceipt?: Record<string, string>;
 }): Promise<V03EvaluationResult> {
   const evaluationRunId = `evalrun:${crypto.randomUUID()}`;
   const traceRunId = `tracerun:${crypto.randomUUID()}`;
@@ -197,6 +198,7 @@ async function executeDeterministicEvaluationCore(params: {
     validAtIso: params.validAtIso,
     knowledgeCutoffIso: params.knowledgeCutoffIso,
     includeSynthetic: params.isSynthetic || params.universe.isSynthetic,
+    pinnedClaimEventHashes: params.pinnedClaimEventHashesFromReceipt,
   });
 
   const pinnedRuleVersionHashes: Record<string, string> = {};
@@ -902,6 +904,7 @@ export async function replayHistoricalReceiptV03(params: {
     inputs: params.originalInputs,
     validAtIso: p.validAt,
     knowledgeCutoffIso: p.knowledgeCutoff,
+    pinnedClaimEventHashesFromReceipt: p.pinnedClaimEventHashes,
   });
 
   const matchesOriginalHashes =

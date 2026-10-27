@@ -47,19 +47,22 @@ function summarizePersistedLedgerEvents(store: ReturnType<typeof getV03RuntimeSt
   const legacySeed = baseEvents.find(
     (e) => e.claimVersionId === "clmv:gosno:max-pax-per-shuttle:v1",
   );
-  const withdrawalEvent = baseEvents.find(
-    (e) => e.claimVersionId === "clmv:gosno:max-pax-per-shuttle:v2-withdrawn",
+  const verifiedWithdrawals = baseEvents.filter(
+    (e) =>
+      e.claimId === "clm:gosno:max-pax-per-shuttle" &&
+      e.eventType === "claim_withdrawn" &&
+      e.recordedAtVerified === true,
   );
+  const withdrawalEvent = verifiedWithdrawals[verifiedWithdrawals.length - 1];
   assert.ok(legacySeed, "Legacy GoSno seed event must exist in ledger");
   assert.equal(
-    legacySeed.recordedAt,
-    null,
-    "Uncertain legacy recording time must remain explicitly null (unverified)",
+    legacySeed.recordedAtVerified,
+    false,
+    "Uncertain legacy recording time must remain explicitly unverified",
   );
-  assert.equal(legacySeed.recordedAtVerified, false);
   assert.equal(legacySeed.recordingTimeStatus, "unverified_legacy_recording_time");
 
-  assert.ok(withdrawalEvent, "Withdrawal event must exist in ledger");
+  assert.ok(withdrawalEvent, "Verified withdrawal event must exist in ledger");
   assert.equal(withdrawalEvent.recordedAtVerified, true);
   assert.equal(withdrawalEvent.recordingTimeStatus, "verified_database_admission");
   assert.ok(
