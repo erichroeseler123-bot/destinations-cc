@@ -48,6 +48,9 @@
       "@/lib/liveProductLinks": [
         "../../lib/liveProductLinks"
       ],
+      "@/lib/adminAccess": [
+        "../../lib/adminAccess"
+      ],
       "@/lib/getyourguide/*": [
         "../../lib/getyourguide/*"
       ],

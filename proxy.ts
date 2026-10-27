@@ -11,7 +11,7 @@ import {
   ADMIN_SESSION_COOKIE,
   isValidAdminAccessKey,
   isValidAdminSession,
-} from "@/lib/adminAccess";
+} from "./lib/adminAccess";
 import {
   BRECKENRIDGE_SHARED_GO_PATH,
   JUNEAU_HELICOPTER_GO_PATH,
