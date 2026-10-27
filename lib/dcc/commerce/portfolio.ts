@@ -274,7 +274,7 @@ export async function executePortfolioCrossSiteJourney(params: {
     const urlPrivacyCheck = validateUrlFreeOfPersonalData(inboundEntryUrlWithToken);
 
     const redeemed = await redeemContext(issued.contextId, "juneauflightdeck.com");
-    if (!redeemed.success) {
+    if (!("data" in redeemed)) {
       throw new Error(`Failed to redeem Alaska aviation context: ${redeemed.message}`);
     }
 
@@ -347,7 +347,7 @@ export async function executePortfolioCrossSiteJourney(params: {
     const urlPrivacyCheck = validateUrlFreeOfPersonalData(inboundEntryUrlWithToken);
 
     const redeemed = await redeemContext(issued.contextId, "welcometotheswamp.com");
-    if (!redeemed.success) {
+    if (!("data" in redeemed)) {
       throw new Error(`Failed to redeem Swamp Tour context: ${redeemed.message}`);
     }
 
@@ -421,7 +421,7 @@ export async function executePortfolioCrossSiteJourney(params: {
     const urlPrivacyCheck = validateUrlFreeOfPersonalData(inboundEntryUrlWithToken);
 
     const redeemed = await redeemContext(issued.contextId, "vibearoundtown.com");
-    if (!redeemed.success) {
+    if (!("data" in redeemed)) {
       throw new Error(`Failed to redeem Vibing Around context: ${redeemed.message}`);
     }
 
@@ -482,7 +482,7 @@ export async function executePortfolioCrossSiteJourney(params: {
     const urlPrivacyCheck = validateUrlFreeOfPersonalData(inboundEntryUrlWithToken);
 
     const redeemed = await redeemContext(issued.contextId, "partyatredrocks.com");
-    if (!redeemed.success) {
+    if (!("data" in redeemed)) {
       throw new Error(`Failed to redeem PARR context: ${redeemed.message}`);
     }
 
@@ -547,7 +547,7 @@ export async function executePortfolioCrossSiteJourney(params: {
     const urlPrivacyCheck = validateUrlFreeOfPersonalData(inboundEntryUrlWithToken);
 
     const redeemed = await redeemContext(issued.contextId, "gosno.co");
-    if (!redeemed.success) {
+    if (!("data" in redeemed)) {
       throw new Error(`Failed to redeem GoSno context: ${redeemed.message}`);
     }
 
@@ -624,7 +624,7 @@ export async function executePortfolioCrossSiteJourney(params: {
   const urlPrivacyCheck = validateUrlFreeOfPersonalData(inboundEntryUrlWithToken);
 
   const redeemed = await redeemContext(issued.contextId, "feastlyspread.com");
-  if (!redeemed.success) {
+  if (!("data" in redeemed)) {
     throw new Error(`Failed to redeem Feastly Spread context: ${redeemed.message}`);
   }
 
