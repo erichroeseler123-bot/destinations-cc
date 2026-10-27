@@ -17,7 +17,7 @@ export interface VerifiedCaptureExcerptV031 {
   exactQuote: string;
   jsonPointer: string | null;
   selectors: V03EvidenceReference["selectors"];
-  surroundingContext: string;
+  surroundingContext: V03EvidenceReference["surroundingContext"];
 }
 
 export interface PreservedHttpCaptureRecordV031 {
@@ -294,23 +294,35 @@ export async function persistPreservedCaptureToObjectStore(params: {
   const syntheticRawReceipt: ContentAddressedWriteResult = {
     objectKey: expectedRawKey,
     sha256Hex: capture.rawSha256,
+    sha256Base64: Buffer.from(capture.rawSha256, "hex").toString("base64"),
     byteLength: capture.rawByteLength,
     contentType: capture.contentType,
-    storedAt: capture.retrievedAt,
+    isPrivateCapture: true,
     conditionalCreateApplied: true,
-    deduplicatedExistingObject: true,
+    alreadyExistedIdempotent: true,
     retentionMode: "bounded_deletable_for_privacy_legal_takedown",
+    prefixRuleId: "dcc-v031-raw-captures-no-indefinite-lock",
+    retainUntilIso: null,
+    allowsLegalOrPrivacyTakedown: true,
+    backendName: objectStore.backendName,
+    backendClass: objectStore.backendClass,
   };
   const syntheticDerivedReceipt: ContentAddressedWriteResult | null = expectedDerivedKey
     ? {
         objectKey: expectedDerivedKey,
         sha256Hex: capture.derivedTextSha256,
+        sha256Base64: Buffer.from(capture.derivedTextSha256, "hex").toString("base64"),
         byteLength: capture.derivedTextByteLength,
         contentType: "text/plain; charset=utf-8",
-        storedAt: capture.retrievedAt,
+        isPrivateCapture: true,
         conditionalCreateApplied: true,
-        deduplicatedExistingObject: true,
+        alreadyExistedIdempotent: true,
         retentionMode: "bounded_deletable_for_privacy_legal_takedown",
+        prefixRuleId: "dcc-v031-raw-captures-no-indefinite-lock",
+        retainUntilIso: null,
+        allowsLegalOrPrivacyTakedown: true,
+        backendName: objectStore.backendName,
+        backendClass: objectStore.backendClass,
       }
     : null;
 
@@ -383,7 +395,7 @@ export function buildEvidenceRefFromPreservedCapture(params: {
     : null;
 
   let selectors: V03EvidenceReference["selectors"];
-  let surroundingContext: string;
+  let surroundingContext: V03EvidenceReference["surroundingContext"];
 
   const matchedExcerpt = capture.verifiedExcerpts?.find(
     (ex) =>
