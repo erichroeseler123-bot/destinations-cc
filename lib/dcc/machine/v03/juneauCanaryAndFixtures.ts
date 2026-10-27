@@ -1079,7 +1079,7 @@ export async function runGenuineJuneauOperationalPackV031() {
       rawResponseSha256: persisted.rawSha256,
       privateRawObjectKey: persisted.rawObjectKey,
       rawBytesPreservedInPrivateStore: true,
-      derivedTextByteLength: Buffer.byteLength(capture.derivedTextUtf8, "utf8"),
+      derivedTextByteLength: capture.derivedTextByteLength,
       derivedTextSha256: persisted.derivedTextSha256,
       privateDerivedTextObjectKey: persisted.derivedTextObjectKey,
       derivedTextStoredSeparately: true,
@@ -1222,11 +1222,12 @@ export async function runGenuineJuneauOperationalPackV031() {
     },
   });
 
+  const capNorthstarFaq = getPreservedCaptureByIdV031("cap:juneau:northstar-faqs-html");
   ledger.appendEvent({
     eventType: "claim_created",
     claimId: "clm:jnu:northstar:min-age-years",
     claimVersionId: "clmv:jnu:northstar:min-age-years:v1-8",
-    recordedAt: capNorthstarTour.retrievedAt,
+    recordedAt: capNorthstarFaq.retrievedAt,
     actorId: "dcc-v031-preserved-capture-extractor",
     isSynthetic: false,
     provenanceClass: "operational_evidence",
@@ -1243,9 +1244,9 @@ export async function runGenuineJuneauOperationalPackV031() {
       unitOrCurrency: "years",
       validFrom: "2026-01-01T00:00:00.000Z",
       validTo: "2027-12-31T23:59:59.000Z",
-      sourceObservedAt: capNorthstarTour.retrievedAt,
+      sourceObservedAt: capNorthstarFaq.retrievedAt,
       sourcePublishedAt: null,
-      retrievedAt: capNorthstarTour.retrievedAt,
+      retrievedAt: capNorthstarFaq.retrievedAt,
       freshnessTtlSeconds: 90 * 86400,
       sourceAuthority: {
         sourceDccId: northstarOpDccId,
@@ -1762,7 +1763,7 @@ export async function runGoSnoShadowAuthorizationProof() {
         eventType: "claim_created",
         claimId: spec.claimId,
         claimVersionId: `${spec.claimId}:v1-unknown`,
-        recordedAt: "2026-10-26T15:06:00.000Z",
+        recordedAt: "2026-10-26T21:17:00.000Z",
         actorId: "dcc-v031-gosno-epistemic-guard",
         isSynthetic: false,
         provenanceClass: "operational_evidence",
@@ -1780,7 +1781,7 @@ export async function runGoSnoShadowAuthorizationProof() {
           validTo: null,
           sourceObservedAt: null,
           sourcePublishedAt: null,
-          retrievedAt: "2026-10-26T15:06:00.000Z",
+          retrievedAt: "2026-10-26T21:17:00.000Z",
           freshnessTtlSeconds: 300,
           sourceAuthority: {
             sourceDccId: srcGosnoRouteFeedId,
@@ -1900,7 +1901,7 @@ export async function runGoSnoShadowAuthorizationProof() {
     },
     additionalRevalidationRequirements: requiredActionTimeRevalidations,
     targetAdapter: "square",
-    issuedAtIso: "2026-10-26T18:05:01.000Z",
+    issuedAtIso: "2026-10-26T21:20:01.000Z",
     ttlSeconds: 86_400 * 30,
   });
 
@@ -1926,7 +1927,7 @@ export async function runGoSnoShadowAuthorizationProof() {
     },
     additionalRevalidationRequirements: requiredActionTimeRevalidations,
     targetAdapter: "octo",
-    issuedAtIso: "2026-10-26T18:05:01.000Z",
+    issuedAtIso: "2026-10-26T21:20:01.000Z",
     ttlSeconds: 86_400 * 30,
   });
 
@@ -1966,7 +1967,7 @@ export async function runGoSnoShadowAuthorizationProof() {
     eventType: "shadow_authorization_dry_run_recorded",
     claimId: `shadow-outcome:${squareAuth.signedAuthorization.authorizationId}`,
     claimVersionId: `shadow-outcome:${squareAuth.signedAuthorization.authorizationId}:v1`,
-    recordedAt: "2026-10-26T18:05:02.000Z",
+    recordedAt: "2026-10-26T21:20:02.000Z",
     actorId: "dcc-v031-shadow-commerce-auditor",
     isSynthetic: false,
     provenanceClass: "operational_evidence",

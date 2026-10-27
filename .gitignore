@@ -23,3 +23,6 @@ scratch/*.mjs
 vercel_output*.txt
 dev.pid
 data/dcc/earthos/
+.private-evidence-vault/
+data/machine/v03/preserved_captures_v031.json
+

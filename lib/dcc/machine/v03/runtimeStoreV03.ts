@@ -174,8 +174,8 @@ export function getV03RuntimeStore(): V03RuntimeStore {
 
   const schemaHashes = getV03SchemaHashes();
   const baseRecordedAt = "2026-10-26T00:00:00.000Z";
-  const withdrawalRecordedAt = "2026-10-26T15:00:00.000Z";
-  const repairedIngestionRecordedAt = "2026-10-26T15:05:00.000Z";
+  const withdrawalRecordedAt = "2026-10-26T21:15:00.000Z";
+  const repairedIngestionRecordedAt = "2026-10-26T21:16:00.000Z";
 
   // Seed preserved captures synchronously into InMemoryTestArtifactStore if active
   if (objectStore instanceof InMemoryTestArtifactStore) {
@@ -348,7 +348,7 @@ export function getV03RuntimeStore(): V03RuntimeStore {
       typedValue: 14,
       unitOrCurrency: "passengers",
       validFrom: "2026-01-01T00:00:00.000Z",
-      validTo: "2026-10-26T15:00:00.000Z",
+      validTo: withdrawalRecordedAt,
       sourceObservedAt: baseRecordedAt,
       sourcePublishedAt: null,
       retrievedAt: baseRecordedAt,

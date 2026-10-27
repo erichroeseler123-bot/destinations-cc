@@ -617,5 +617,46 @@ test("v0.3.1 Gate 7: Repair Verification — Withdrawn GoSno Seed Containment, P
   const replayJson = (await replayRes.json()) as Record<string, any>;
   assert.equal(replayJson.replay.matchesOriginalReceipt, true);
   assert.equal(replayJson.replay.replayedReceiptId, evalReceiptId);
+
+  // 5. Verify strict temporal causality: every ledger event has recordedAt >= retrievedAt (and withdrawal/ingestion >= 21:03Z captures)
+  for (const ev of store.knowledgeLedger.getAllEvents()) {
+    const recMs = Date.parse(ev.recordedAt);
+    assert.equal(Number.isNaN(recMs), false);
+    if (ev.claimDefinition) {
+      const retMs = Date.parse(ev.claimDefinition.retrievedAt);
+      assert.equal(
+        recMs >= retMs,
+        true,
+        `Event ${ev.claimVersionId} recordedAt (${ev.recordedAt}) must not precede retrievedAt (${ev.claimDefinition.retrievedAt})`,
+      );
+      for (const ref of ev.claimDefinition.evidenceRefs) {
+        assert.equal(
+          recMs >= Date.parse(ref.retrievedAt),
+          true,
+          `Event ${ev.claimVersionId} recordedAt (${ev.recordedAt}) must not precede evidenceRef retrievedAt (${ref.retrievedAt})`,
+        );
+      }
+    }
+  }
+  const withdrawalEv = store.knowledgeLedger
+    .getAllEvents()
+    .find((e) => e.claimVersionId === "clmv:gosno:max-pax-per-shuttle:v2-withdrawn");
+  assert.ok(withdrawalEv);
+  assert.equal(withdrawalEv.recordedAt, "2026-10-26T21:15:00.000Z");
+
+  // 6. Verify public Git data/machine/v03 contains only permitted metadata + bounded excerpts and zero raw capture bodies
+  assert.equal(
+    fs.existsSync(path.join(process.cwd(), "data/machine/v03/preserved_captures_v031.json")),
+    false,
+    "Raw capture bundle must not exist in public data/machine/v03/",
+  );
+  const pubMetaRaw = fs.readFileSync(
+    path.join(process.cwd(), "data/machine/v03/preserved_capture_metadata_v031.json"),
+    "utf8",
+  );
+  assert.equal(pubMetaRaw.includes("rawBodyUtf8"), false);
+  assert.equal(pubMetaRaw.includes("rawBodyBase64"), false);
+  assert.equal(pubMetaRaw.includes("derivedTextUtf8"), false);
 });
+
 

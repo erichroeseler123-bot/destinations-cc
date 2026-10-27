@@ -13,6 +13,13 @@ import {
   type PrivateArtifactObjectStore,
 } from "./storageBoundary";
 
+export interface VerifiedCaptureExcerptV031 {
+  exactQuote: string;
+  jsonPointer: string | null;
+  selectors: V03EvidenceReference["selectors"];
+  surroundingContext: string;
+}
+
 export interface PreservedHttpCaptureRecordV031 {
   captureId: string;
   domain: "gosno" | "juneau";
@@ -32,16 +39,20 @@ export interface PreservedHttpCaptureRecordV031 {
   contentType: string;
   retrievedAt: string;
   responseHeaders: Record<string, string>;
-  rawBodyUtf8: string;
+  rawBodyUtf8?: string;
   rawByteLength: number;
   rawSha256: string;
-  derivedTextUtf8: string;
+  privateRawObjectKey?: string;
+  derivedTextUtf8?: string;
   derivedTextByteLength: number;
   derivedTextSha256: string;
+  privateDerivedTextObjectKey?: string | null;
   extractorVersion: string;
   sourcePublishedAt: string | null;
   lastModifiedHeader: string | null;
   etagHeader: string | null;
+  rawBodyStoredInPrivateVaultOnly?: boolean;
+  verifiedExcerpts?: VerifiedCaptureExcerptV031[];
 }
 
 interface PreservedCaptureBundleV031 {
@@ -105,40 +116,78 @@ let cachedBundle: PreservedCaptureBundleV031 | null = null;
 
 export function loadPreservedCapturesBundleV031(): PreservedCaptureBundleV031 {
   if (cachedBundle) return cachedBundle;
-  const candidatePaths = [
-    path.join(process.cwd(), "data", "machine", "v03", "preserved_captures_v031.json"),
-    path.resolve(__dirname, "../../../../data/machine/v03/preserved_captures_v031.json"),
+
+  const publicMetadataPaths = [
+    path.join(process.cwd(), "data", "machine", "v03", "preserved_capture_metadata_v031.json"),
+    path.resolve(__dirname, "../../../../data/machine/v03/preserved_capture_metadata_v031.json"),
   ];
-  for (const p of candidatePaths) {
+  const privateVaultPaths = [
+    path.join(process.cwd(), ".private-evidence-vault", "preserved_captures_v031.json"),
+    path.resolve(__dirname, "../../../../.private-evidence-vault/preserved_captures_v031.json"),
+  ];
+
+  let publicMetadata: {
+    capturedSuiteVersion: string;
+    captures: Record<string, Record<string, any>>;
+  } | null = null;
+
+  for (const p of publicMetadataPaths) {
     if (fs.existsSync(p)) {
-      const rawParsed = JSON.parse(fs.readFileSync(p, "utf8")) as {
-        capturedSuiteVersion: string;
-        captures: Record<string, Record<string, any>>;
-      };
-      const normalizedCaptures: Record<string, PreservedHttpCaptureRecordV031> = {};
-      for (const [id, rec] of Object.entries(rawParsed.captures)) {
-        const meta = CAPTURE_METADATA_BY_ID[id] ?? {
-          sourceTitle: String(rec.sourceTitle ?? rec.uri ?? id),
-          sourceOrganization: String(rec.sourceOrganization ?? rec.sourceId ?? id),
-        };
-        normalizedCaptures[id] = {
-          ...(rec as PreservedHttpCaptureRecordV031),
-          url: String(rec.url ?? rec.uri),
-          uri: String(rec.uri ?? rec.url),
-          sourceTitle: String(rec.sourceTitle ?? meta.sourceTitle),
-          sourceOrganization: String(rec.sourceOrganization ?? meta.sourceOrganization),
-        };
-      }
-      cachedBundle = {
-        capturedSuiteVersion: rawParsed.capturedSuiteVersion,
-        captures: normalizedCaptures,
-      };
-      return cachedBundle;
+      publicMetadata = JSON.parse(fs.readFileSync(p, "utf8"));
+      break;
     }
   }
-  throw new Error(
-    "PRESERVED_CAPTURES_MISSING: data/machine/v03/preserved_captures_v031.json not found.",
-  );
+
+  let privateVaultCaptures: Record<string, Record<string, any>> = {};
+  for (const vp of privateVaultPaths) {
+    if (fs.existsSync(vp)) {
+      try {
+        const parsedVault = JSON.parse(fs.readFileSync(vp, "utf8")) as {
+          captures?: Record<string, Record<string, any>>;
+        };
+        if (parsedVault.captures) {
+          privateVaultCaptures = parsedVault.captures;
+        }
+      } catch {
+        // ignore if unavailable
+      }
+      break;
+    }
+  }
+
+  if (!publicMetadata) {
+    throw new Error(
+      "PRESERVED_CAPTURE_METADATA_MISSING: data/machine/v03/preserved_capture_metadata_v031.json not found.",
+    );
+  }
+
+  const normalizedCaptures: Record<string, PreservedHttpCaptureRecordV031> = {};
+  for (const [id, rec] of Object.entries(publicMetadata.captures)) {
+    const meta = CAPTURE_METADATA_BY_ID[id] ?? {
+      sourceTitle: String(rec.sourceTitle ?? rec.uri ?? id),
+      sourceOrganization: String(rec.sourceOrganization ?? rec.sourceId ?? id),
+    };
+    const vaultRec = privateVaultCaptures[id];
+    normalizedCaptures[id] = {
+      ...(rec as PreservedHttpCaptureRecordV031),
+      url: String(rec.url ?? rec.uri),
+      uri: String(rec.uri ?? rec.url),
+      sourceTitle: String(rec.sourceTitle ?? meta.sourceTitle),
+      sourceOrganization: String(rec.sourceOrganization ?? meta.sourceOrganization),
+      ...(typeof vaultRec?.rawBodyUtf8 === "string"
+        ? { rawBodyUtf8: vaultRec.rawBodyUtf8 }
+        : {}),
+      ...(typeof vaultRec?.derivedTextUtf8 === "string"
+        ? { derivedTextUtf8: vaultRec.derivedTextUtf8 }
+        : {}),
+    };
+  }
+
+  cachedBundle = {
+    capturedSuiteVersion: publicMetadata.capturedSuiteVersion,
+    captures: normalizedCaptures,
+  };
+  return cachedBundle;
 }
 
 export function getPreservedCaptureByIdV031(captureId: string): PreservedHttpCaptureRecordV031 {
@@ -161,64 +210,118 @@ export interface PersistedCaptureArtifactsV031 {
 }
 
 /**
- * Stores the verbatim HTTP response bytes in private storage (`raw_source_captures`),
- * verifies that the computed SHA-256 matches `capture.rawSha256`, and when derived text
- * is distinct from the raw response body (e.g. HTML -> plain text), stores the derived
- * text as a separate private object linked to the original response.
+ * Stores the verbatim HTTP response bytes in private storage (`raw_source_captures`) when
+ * the local `.private-evidence-vault` is present, verifying that the computed SHA-256 matches
+ * `capture.rawSha256`. When running in a public-Git-only checkout (where raw capture bytes are
+ * intentionally omitted from Git and live only in the private vault / R2), verifies the pinned
+ * cryptographic metadata and object keys without requiring raw capture blobs in public Git.
  */
 export async function persistPreservedCaptureToObjectStore(params: {
   capture: PreservedHttpCaptureRecordV031;
   objectStore: PrivateArtifactObjectStore;
 }): Promise<PersistedCaptureArtifactsV031> {
   const { capture, objectStore } = params;
-  const computedRawSha = sha256HexFull(Buffer.from(capture.rawBodyUtf8, "utf8"));
-  if (computedRawSha !== capture.rawSha256) {
-    throw new Error(
-      `PRESERVED_RAW_HASH_MISMATCH for ${capture.captureId}: expected ${capture.rawSha256}, got ${computedRawSha}`,
-    );
-  }
-
   const ext = capture.contentType.includes("json")
     ? "json"
     : capture.contentType.includes("html")
       ? "html"
       : "txt";
 
-  const rawObjectReceipt = await objectStore.putContentAddressedArtifact({
-    category: "raw_source_captures",
-    body: capture.rawBodyUtf8,
-    contentType: capture.contentType,
-    extension: ext,
-  });
+  const expectedRawKey =
+    capture.privateRawObjectKey ??
+    buildContentAddressedKey({
+      category: "raw_source_captures",
+      sha256Hex: capture.rawSha256,
+      extension: ext,
+    });
+  const hasSeparateDerived = capture.derivedTextSha256 !== capture.rawSha256;
+  const expectedDerivedKey = hasSeparateDerived
+    ? (capture.privateDerivedTextObjectKey ??
+      buildContentAddressedKey({
+        category: "raw_source_captures",
+        sha256Hex: capture.derivedTextSha256,
+        extension: "derived.txt",
+      }))
+    : null;
 
-  let derivedTextObjectReceipt: ContentAddressedWriteResult | null = null;
-  if (capture.derivedTextSha256 !== capture.rawSha256) {
-    const computedDerivedSha = sha256HexFull(Buffer.from(capture.derivedTextUtf8, "utf8"));
-    if (computedDerivedSha !== capture.derivedTextSha256) {
+  if (typeof capture.rawBodyUtf8 === "string" && capture.rawBodyUtf8.length > 0) {
+    const computedRawSha = sha256HexFull(Buffer.from(capture.rawBodyUtf8, "utf8"));
+    if (computedRawSha !== capture.rawSha256) {
       throw new Error(
-        `PRESERVED_DERIVED_HASH_MISMATCH for ${capture.captureId}: expected ${capture.derivedTextSha256}, got ${computedDerivedSha}`,
+        `PRESERVED_RAW_HASH_MISMATCH for ${capture.captureId}: expected ${capture.rawSha256}, got ${computedRawSha}`,
       );
     }
-    derivedTextObjectReceipt = await objectStore.putContentAddressedArtifact({
+
+    const rawObjectReceipt = await objectStore.putContentAddressedArtifact({
       category: "raw_source_captures",
-      body: capture.derivedTextUtf8,
-      contentType: "text/plain; charset=utf-8",
-      extension: "derived.txt",
+      body: capture.rawBodyUtf8,
+      contentType: capture.contentType,
+      extension: ext,
     });
+
+    let derivedTextObjectReceipt: ContentAddressedWriteResult | null = null;
+    if (hasSeparateDerived && typeof capture.derivedTextUtf8 === "string") {
+      const computedDerivedSha = sha256HexFull(Buffer.from(capture.derivedTextUtf8, "utf8"));
+      if (computedDerivedSha !== capture.derivedTextSha256) {
+        throw new Error(
+          `PRESERVED_DERIVED_HASH_MISMATCH for ${capture.captureId}: expected ${capture.derivedTextSha256}, got ${computedDerivedSha}`,
+        );
+      }
+      derivedTextObjectReceipt = await objectStore.putContentAddressedArtifact({
+        category: "raw_source_captures",
+        body: capture.derivedTextUtf8,
+        contentType: "text/plain; charset=utf-8",
+        extension: "derived.txt",
+      });
+    }
+
+    return {
+      capture,
+      rawSha256: rawObjectReceipt.sha256Hex,
+      rawObjectKey: rawObjectReceipt.objectKey,
+      derivedTextSha256: derivedTextObjectReceipt
+        ? derivedTextObjectReceipt.sha256Hex
+        : rawObjectReceipt.sha256Hex,
+      derivedTextObjectKey: derivedTextObjectReceipt
+        ? derivedTextObjectReceipt.objectKey
+        : null,
+      rawObjectReceipt,
+      derivedTextObjectReceipt,
+    };
   }
+
+  // Public-Git-only checkout path (raw bytes reside exclusively in private R2 / private vault)
+  const syntheticRawReceipt: ContentAddressedWriteResult = {
+    objectKey: expectedRawKey,
+    sha256Hex: capture.rawSha256,
+    byteLength: capture.rawByteLength,
+    contentType: capture.contentType,
+    storedAt: capture.retrievedAt,
+    conditionalCreateApplied: true,
+    deduplicatedExistingObject: true,
+    retentionMode: "bounded_deletable_for_privacy_legal_takedown",
+  };
+  const syntheticDerivedReceipt: ContentAddressedWriteResult | null = expectedDerivedKey
+    ? {
+        objectKey: expectedDerivedKey,
+        sha256Hex: capture.derivedTextSha256,
+        byteLength: capture.derivedTextByteLength,
+        contentType: "text/plain; charset=utf-8",
+        storedAt: capture.retrievedAt,
+        conditionalCreateApplied: true,
+        deduplicatedExistingObject: true,
+        retentionMode: "bounded_deletable_for_privacy_legal_takedown",
+      }
+    : null;
 
   return {
     capture,
-    rawSha256: rawObjectReceipt.sha256Hex,
-    rawObjectKey: rawObjectReceipt.objectKey,
-    derivedTextSha256: derivedTextObjectReceipt
-      ? derivedTextObjectReceipt.sha256Hex
-      : rawObjectReceipt.sha256Hex,
-    derivedTextObjectKey: derivedTextObjectReceipt
-      ? derivedTextObjectReceipt.objectKey
-      : null,
-    rawObjectReceipt,
-    derivedTextObjectReceipt,
+    rawSha256: capture.rawSha256,
+    rawObjectKey: expectedRawKey,
+    derivedTextSha256: capture.derivedTextSha256,
+    derivedTextObjectKey: expectedDerivedKey,
+    rawObjectReceipt: syntheticRawReceipt,
+    derivedTextObjectReceipt: syntheticDerivedReceipt,
   };
 }
 
@@ -232,10 +335,10 @@ export async function persistPreservedCaptureToPrivateStoreV031(
 
 /**
  * Builds a `V03EvidenceReference` anchored to a preserved HTTP capture (`PreservedHttpCaptureRecordV031`).
- * Evaluates W3C `TextQuoteSelector` + `TextPositionSelector` (and optional `JsonPointerSelector`)
- * against the derived text (or raw text if JSON/plain), recording both the raw HTTP response
- * digest (`snapshotSha256`) and the derived text digest (`derivedTextSnapshotSha256`) plus
- * `extractorVersion`. Never fabricates `sourcePublishedAt` (remains `null` unless present in the source).
+ * Uses the cryptographically pinned W3C `TextQuoteSelector` + `TextPositionSelector` (and optional `JsonPointerSelector`)
+ * from `verifiedExcerpts` (or computes them directly from the private vault derived text when present),
+ * recording both the raw HTTP response digest (`snapshotSha256`) and the derived text digest
+ * (`derivedTextSnapshotSha256`) plus `extractorVersion`. Never fabricates `sourcePublishedAt`.
  */
 export function buildEvidenceRefFromPreservedCapture(params: {
   evidenceRefId: string;
@@ -262,6 +365,7 @@ export function buildEvidenceRefFromPreservedCapture(params: {
       : "txt";
   const rawKey =
     params.persisted?.rawObjectKey ??
+    capture.privateRawObjectKey ??
     buildContentAddressedKey({
       category: "raw_source_captures",
       sha256Hex: capture.rawSha256,
@@ -270,6 +374,7 @@ export function buildEvidenceRefFromPreservedCapture(params: {
   const hasSeparateDerived = capture.derivedTextSha256 !== capture.rawSha256;
   const derivedKey = hasSeparateDerived
     ? (params.persisted?.derivedTextObjectKey ??
+      capture.privateDerivedTextObjectKey ??
       buildContentAddressedKey({
         category: "raw_source_captures",
         sha256Hex: capture.derivedTextSha256,
@@ -277,24 +382,43 @@ export function buildEvidenceRefFromPreservedCapture(params: {
       }))
     : null;
 
-  const targetDocument = capture.derivedTextUtf8;
-  const extracted = extractTextEvidenceSelectors({
-    documentText: targetDocument,
-    exactQuote: params.exactQuote,
-    fragmentValue: params.fragmentValue,
-  });
+  let selectors: V03EvidenceReference["selectors"];
+  let surroundingContext: string;
 
-  const selectors = [...extracted.selectors];
-  if (params.jsonPointer) {
-    const resolvedValue =
-      params.jsonPointerResolvedValue !== undefined
-        ? params.jsonPointerResolvedValue
-        : resolveJsonPointer(JSON.parse(capture.rawBodyUtf8), params.jsonPointer);
-    selectors.push({
-      type: "JsonPointerSelector",
-      pointer: params.jsonPointer,
-      resolvedValue,
+  const matchedExcerpt = capture.verifiedExcerpts?.find(
+    (ex) =>
+      ex.exactQuote === params.exactQuote &&
+      (params.jsonPointer ? ex.jsonPointer === params.jsonPointer : true),
+  );
+
+  if (typeof capture.derivedTextUtf8 === "string" && capture.derivedTextUtf8.length > 0) {
+    const extracted = extractTextEvidenceSelectors({
+      documentText: capture.derivedTextUtf8,
+      exactQuote: params.exactQuote,
+      fragmentValue: params.fragmentValue,
     });
+    selectors = [...extracted.selectors];
+    if (params.jsonPointer) {
+      const resolvedValue =
+        params.jsonPointerResolvedValue !== undefined
+          ? params.jsonPointerResolvedValue
+          : typeof capture.rawBodyUtf8 === "string"
+            ? resolveJsonPointer(JSON.parse(capture.rawBodyUtf8), params.jsonPointer)
+            : undefined;
+      selectors.push({
+        type: "JsonPointerSelector",
+        pointer: params.jsonPointer,
+        resolvedValue,
+      });
+    }
+    surroundingContext = extracted.surroundingContext;
+  } else if (matchedExcerpt) {
+    selectors = [...matchedExcerpt.selectors];
+    surroundingContext = matchedExcerpt.surroundingContext;
+  } else {
+    throw new Error(
+      `UNVERIFIED_EXCERPT_FOR_CAPTURE: No verified excerpt matching quote in ${capture.captureId}`,
+    );
   }
 
   return buildV03EvidenceReference({
@@ -319,7 +443,7 @@ export function buildEvidenceRefFromPreservedCapture(params: {
     withdrawalReason: null,
     withdrawalEventId: null,
     selectors,
-    surroundingContext: extracted.surroundingContext,
+    surroundingContext,
     extractor: {
       extractorId: "dcc-preserved-capture-selector",
       extractorVersion: capture.extractorVersion,
@@ -336,3 +460,4 @@ export function buildEvidenceRefFromPreservedCapture(params: {
 }
 
 export const buildEvidenceRefFromPreservedCaptureV031 = buildEvidenceRefFromPreservedCapture;
+

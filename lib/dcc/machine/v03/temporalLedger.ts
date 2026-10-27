@@ -230,6 +230,39 @@ export class AppendOnlyKnowledgeLedger {
       ? (JSON.parse(JSON.stringify(params.claimDefinition)) as V03ClaimDefinition)
       : null;
 
+    const recordedAtMs = Date.parse(params.recordedAt);
+    if (Number.isNaN(recordedAtMs)) {
+      throw new AppendOnlyLedgerMutationError(
+        `TEMPORAL_CAUSALITY_VIOLATION: Invalid recordedAt timestamp "${params.recordedAt}".`,
+      );
+    }
+    if (normalizedDef) {
+      const retrievedAtMs = Date.parse(normalizedDef.retrievedAt);
+      if (!Number.isNaN(retrievedAtMs) && recordedAtMs < retrievedAtMs) {
+        throw new AppendOnlyLedgerMutationError(
+          `TEMPORAL_CAUSALITY_VIOLATION: Event recordedAt (${params.recordedAt}) cannot precede claim retrievedAt (${normalizedDef.retrievedAt}) for claim ${params.claimId}.`,
+        );
+      }
+      for (const evRef of normalizedDef.evidenceRefs ?? []) {
+        const refRetrievedMs = Date.parse(evRef.retrievedAt);
+        if (!Number.isNaN(refRetrievedMs) && recordedAtMs < refRetrievedMs) {
+          throw new AppendOnlyLedgerMutationError(
+            `TEMPORAL_CAUSALITY_VIOLATION: Event recordedAt (${params.recordedAt}) cannot precede supporting evidenceRef retrievedAt (${evRef.retrievedAt}) for ${evRef.evidenceRefId}.`,
+          );
+        }
+      }
+    }
+    if (params.targetPreviousVersionId) {
+      const prevVerEvent = this.events.find(
+        (e) => e.claimVersionId === params.targetPreviousVersionId,
+      );
+      if (prevVerEvent && recordedAtMs < Date.parse(prevVerEvent.recordedAt)) {
+        throw new AppendOnlyLedgerMutationError(
+          `TEMPORAL_CAUSALITY_VIOLATION: Event recordedAt (${params.recordedAt}) cannot precede targetPreviousVersionId recordedAt (${prevVerEvent.recordedAt}) for ${params.targetPreviousVersionId}.`,
+        );
+      }
+    }
+
     const hashCore = rfc8785Canonicalize({
       eventSeq,
       eventId,

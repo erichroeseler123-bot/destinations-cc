@@ -1,0 +1,837 @@
+{
+  "metadataSpec": "dcc-preserved-capture-metadata/0.3.1",
+  "capturedSuiteVersion": "0.3.1-repair",
+  "rawCapturesCommittedToPublicGit": false,
+  "privateVaultLocation": ".private-evidence-vault/preserved_captures_v031.json (gitignored) and Cloudflare R2 v03/raw_source_captures/sha256/*",
+  "captures": {
+    "cap:gosno:route-feed-json": {
+      "captureId": "cap:gosno:route-feed-json",
+      "domain": "gosno",
+      "sourceId": "src:gosno:route-feed-api",
+      "sourceTitle": "GoSno Public Route & Tariff Feed (/api/public/route-feed)",
+      "sourceOrganization": "GoSno Private Mountain Transportation",
+      "sourceClass": "first_party_operational_system",
+      "uri": "https://gosno.co/api/public/route-feed",
+      "url": "https://gosno.co/api/public/route-feed",
+      "finalUrl": "https://gosno.co/api/public/route-feed",
+      "httpMethod": "GET",
+      "httpStatus": 200,
+      "contentType": "application/json",
+      "retrievedAt": "2026-10-26T21:14:32.106Z",
+      "responseHeaders": {
+        "cache-control": "public, max-age=300",
+        "content-type": "application/json",
+        "date": "Mon, 26 Oct 2026 21:03:01 GMT",
+        "server": "Vercel",
+        "x-vercel-id": "cle1::iad1::s9sh5-1793049272429-554596dc2ef0"
+      },
+      "rawByteLength": 22488,
+      "rawSha256": "272b6f1872b41220a94b7942c585cff2b2f16ac42f231058a44f9dd4577ed4f1",
+      "privateRawObjectKey": "v03/raw_source_captures/sha256/272b6f1872b41220a94b7942c585cff2b2f16ac42f231058a44f9dd4577ed4f1.json",
+      "derivedTextByteLength": 22488,
+      "derivedTextSha256": "272b6f1872b41220a94b7942c585cff2b2f16ac42f231058a44f9dd4577ed4f1",
+      "privateDerivedTextObjectKey": null,
+      "extractorVersion": "identity-utf8-v031.1",
+      "sourcePublishedAt": null,
+      "lastModifiedHeader": null,
+      "etagHeader": null,
+      "rawBodyStoredInPrivateVaultOnly": true,
+      "verifiedExcerpts": [
+        {
+          "exactQuote": "\"type\":\"private_mountain_transportation\",\"headquarters\":\"Colorado, USA\",\"active_payment_processor\":\"RezdyPay (Stripe Elements)\"",
+          "jsonPointer": "/routes/0/capacity",
+          "selectors": [
+            {
+              "type": "TextQuoteSelector",
+              "exact": "\"type\":\"private_mountain_transportation\",\"headquarters\":\"Colorado, USA\",\"active_payment_processor\":\"RezdyPay (Stripe Elements)\"",
+              "prefix": "\"gosno\",\"name\":\"GoSno\",\"url\":\"https://gosno.co\",",
+              "suffix": ",\"legacy_processors\":{\"square\":\"Disabled (HTTP 4"
+            },
+            {
+              "type": "TextPositionSelector",
+              "start": 148,
+              "end": 275
+            },
+            {
+              "type": "JsonPointerSelector",
+              "pointer": "/routes/0/capacity",
+              "resolvedValue": {
+                "max_passengers": 6,
+                "luggage_note": "Private party up to 6 passengers; cargo capacity depends on ski bags and luggage size.",
+                "child_seats": {
+                  "provided_on_request": "Up to 1 booster seat + 1 forward-facing child seat",
+                  "infant_seats": "Rear-facing infant seats are not provided; guests must supply their own seat",
+                  "verification_state": "verified",
+                  "supporting_sources": [
+                    "src/app/fleet/page.tsx#L110-114",
+                    "src/lib/childSeats.ts#L1-15"
+                  ]
+                },
+                "verification_state": "verified",
+                "supporting_sources": [
+                  "src/app/fleet/page.tsx#L84",
+                  "src/lib/resorts.ts#L125",
+                  "src/lib/seoArticles.ts#L85"
+                ]
+              }
+            }
+          ],
+          "surroundingContext": {
+            "before": "\"gosno\",\"name\":\"GoSno\",\"url\":\"https://gosno.co\",",
+            "exactMatch": "\"type\":\"private_mountain_transportation\",\"headquarters\":\"Colorado, USA\",\"active_payment_processor\":\"RezdyPay (Stripe Elements)\"",
+            "after": ",\"legacy_processors\":{\"square\":\"Disabled (HTTP 4"
+          }
+        }
+      ]
+    },
+    "cap:gosno:agent-json": {
+      "captureId": "cap:gosno:agent-json",
+      "domain": "gosno",
+      "sourceId": "src:gosno:agent-manifest",
+      "sourceTitle": "GoSno Machine Agent Manifest (/agent.json)",
+      "sourceOrganization": "GoSno Private Mountain Transportation",
+      "sourceClass": "first_party_operational_system",
+      "uri": "https://gosno.co/agent.json",
+      "url": "https://gosno.co/agent.json",
+      "finalUrl": "https://gosno.co/agent.json",
+      "httpMethod": "GET",
+      "httpStatus": 200,
+      "contentType": "application/json",
+      "retrievedAt": "2026-10-26T21:14:32.464Z",
+      "responseHeaders": {
+        "cache-control": "public, max-age=3600",
+        "content-type": "application/json",
+        "date": "Mon, 26 Oct 2026 21:14:32 GMT",
+        "server": "Vercel",
+        "x-vercel-id": "cle1::iad1::rrwn6-1793049272516-8d23eb75a9fa"
+      },
+      "rawByteLength": 5056,
+      "rawSha256": "c989fad42818b510d11099cb3d3cb5e849cbe1c4f506aa077303670b341c25e3",
+      "privateRawObjectKey": "v03/raw_source_captures/sha256/c989fad42818b510d11099cb3d3cb5e849cbe1c4f506aa077303670b341c25e3.json",
+      "derivedTextByteLength": 5056,
+      "derivedTextSha256": "c989fad42818b510d11099cb3d3cb5e849cbe1c4f506aa077303670b341c25e3",
+      "privateDerivedTextObjectKey": null,
+      "extractorVersion": "identity-utf8-v031.1",
+      "sourcePublishedAt": null,
+      "lastModifiedHeader": null,
+      "etagHeader": null,
+      "rawBodyStoredInPrivateVaultOnly": true,
+      "verifiedExcerpts": [
+        {
+          "exactQuote": "\"type\":\"private_mountain_transportation\",\"description\":\"Private flat-rate airport transportation between Colorado airports and mountain destinations, with published route pages and vehicle-specific booking states.\"",
+          "jsonPointer": "/site/description",
+          "selectors": [
+            {
+              "type": "TextQuoteSelector",
+              "exact": "\"type\":\"private_mountain_transportation\",\"description\":\"Private flat-rate airport transportation between Colorado airports and mountain destinations, with published route pages and vehicle-specific booking states.\"",
+              "prefix": "\"gosno\",\"name\":\"GoSno\",\"url\":\"https://gosno.co\",",
+              "suffix": "},\"authority\":[\"published_service_routes\",\"publi"
+            },
+            {
+              "type": "TextPositionSelector",
+              "start": 161,
+              "end": 375
+            },
+            {
+              "type": "JsonPointerSelector",
+              "pointer": "/site/description",
+              "resolvedValue": "Private flat-rate airport transportation between Colorado airports and mountain destinations, with published route pages and vehicle-specific booking states."
+            }
+          ],
+          "surroundingContext": {
+            "before": "\"gosno\",\"name\":\"GoSno\",\"url\":\"https://gosno.co\",",
+            "exactMatch": "\"type\":\"private_mountain_transportation\",\"description\":\"Private flat-rate airport transportation between Colorado airports and mountain destinations, with published route pages and vehicle-specific booking states.\"",
+            "after": "},\"authority\":[\"published_service_routes\",\"publi"
+          }
+        }
+      ]
+    },
+    "cap:gosno:llms-txt": {
+      "captureId": "cap:gosno:llms-txt",
+      "domain": "gosno",
+      "sourceId": "src:gosno:llms-txt",
+      "sourceTitle": "GoSno LLMs Operational Specification (/llms.txt)",
+      "sourceOrganization": "GoSno Private Mountain Transportation",
+      "sourceClass": "operator_published_terms",
+      "uri": "https://gosno.co/llms.txt",
+      "url": "https://gosno.co/llms.txt",
+      "finalUrl": "https://gosno.co/llms.txt",
+      "httpMethod": "GET",
+      "httpStatus": 200,
+      "contentType": "text/plain; charset=utf-8",
+      "retrievedAt": "2026-10-26T21:14:32.610Z",
+      "responseHeaders": {
+        "cache-control": "public, max-age=300",
+        "content-type": "text/plain; charset=utf-8",
+        "date": "Mon, 26 Oct 2026 21:14:32 GMT",
+        "server": "Vercel",
+        "x-vercel-id": "cle1::iad1::28vnw-1793049272673-5c575c6e492b"
+      },
+      "rawByteLength": 3734,
+      "rawSha256": "b066000863b8c2a05f9edbd675b4c77c6bd420fa606a138174ba3c0bb38c162e",
+      "privateRawObjectKey": "v03/raw_source_captures/sha256/b066000863b8c2a05f9edbd675b4c77c6bd420fa606a138174ba3c0bb38c162e.txt",
+      "derivedTextByteLength": 3734,
+      "derivedTextSha256": "b066000863b8c2a05f9edbd675b4c77c6bd420fa606a138174ba3c0bb38c162e",
+      "privateDerivedTextObjectKey": null,
+      "extractorVersion": "identity-utf8-v031.1",
+      "sourcePublishedAt": null,
+      "lastModifiedHeader": null,
+      "etagHeader": null,
+      "rawBodyStoredInPrivateVaultOnly": true,
+      "verifiedExcerpts": [
+        {
+          "exactQuote": "Private vehicle service only; no shared shuttles.",
+          "jsonPointer": null,
+          "selectors": [
+            {
+              "type": "TextQuoteSelector",
+              "exact": "Private vehicle service only; no shared shuttles.",
+              "prefix": " season and GoSno during the winter ski season. ",
+              "suffix": "\n\n## Supported Trip Types\n\n1. One-Way (Airport t"
+            },
+            {
+              "type": "TextPositionSelector",
+              "start": 758,
+              "end": 807
+            }
+          ],
+          "surroundingContext": {
+            "before": " season and GoSno during the winter ski season. ",
+            "exactMatch": "Private vehicle service only; no shared shuttles.",
+            "after": "\n\n## Supported Trip Types\n\n1. One-Way (Airport t"
+          }
+        }
+      ]
+    },
+    "cap:gosno:winter-park-html": {
+      "captureId": "cap:gosno:winter-park-html",
+      "domain": "gosno",
+      "sourceId": "src:gosno:winter-park-page",
+      "sourceTitle": "GoSno Denver / DEN to Winter Park Private Transfer Page (/winter-park)",
+      "sourceOrganization": "GoSno Private Mountain Transportation",
+      "sourceClass": "operator_published_terms",
+      "uri": "https://gosno.co/winter-park",
+      "url": "https://gosno.co/winter-park",
+      "finalUrl": "https://gosno.co/winter-park",
+      "httpMethod": "GET",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=utf-8",
+      "retrievedAt": "2026-10-26T21:14:32.742Z",
+      "responseHeaders": {
+        "cache-control": "private, no-cache, no-store, max-age=0, must-revalidate",
+        "content-type": "text/html; charset=utf-8",
+        "date": "Mon, 26 Oct 2026 21:14:32 GMT",
+        "server": "Vercel",
+        "x-vercel-id": "cle1::iad1::bfpfx-1793049272800-89ef0b42385d"
+      },
+      "rawByteLength": 73274,
+      "rawSha256": "84b16928762a6f832be6b2aa31b93328a053ae2a4357df758eb9ef04db92e6ed",
+      "privateRawObjectKey": "v03/raw_source_captures/sha256/84b16928762a6f832be6b2aa31b93328a053ae2a4357df758eb9ef04db92e6ed.html",
+      "derivedTextByteLength": 9021,
+      "derivedTextSha256": "2b719e80f21707c44f5f92a10ea3e77560a0fc5c3752a4539aa03b7a21f8a84a",
+      "privateDerivedTextObjectKey": "v03/raw_source_captures/sha256/2b719e80f21707c44f5f92a10ea3e77560a0fc5c3752a4539aa03b7a21f8a84a.derived.txt",
+      "extractorVersion": "dcc-html-text-extractor-v031.1",
+      "sourcePublishedAt": null,
+      "lastModifiedHeader": null,
+      "etagHeader": null,
+      "rawBodyStoredInPrivateVaultOnly": true,
+      "verifiedExcerpts": [
+        {
+          "exactQuote": "Private Denver Airport to Winter Park Transportation\n$ 349 one way per private SUV\nTotal for the private vehicle—not per passenger.",
+          "jsonPointer": null,
+          "selectors": [
+            {
+              "type": "TextQuoteSelector",
+              "exact": "Private Denver Airport to Winter Park Transportation\n$ 349 one way per private SUV\nTotal for the private vehicle—not per passenger.",
+              "prefix": "DO HUBBIG SKY (MT)GROUPSNEWSFLEET(720) 369-6292\n",
+              "suffix": "\nThe advertised flat rate includes all required "
+            },
+            {
+              "type": "TextPositionSelector",
+              "start": 166,
+              "end": 297
+            }
+          ],
+          "surroundingContext": {
+            "before": "DO HUBBIG SKY (MT)GROUPSNEWSFLEET(720) 369-6292\n",
+            "exactMatch": "Private Denver Airport to Winter Park Transportation\n$ 349 one way per private SUV\nTotal for the private vehicle—not per passenger.",
+            "after": "\nThe advertised flat rate includes all required "
+          }
+        }
+      ]
+    },
+    "cap:gosno:denver-to-breckenridge-html": {
+      "captureId": "cap:gosno:denver-to-breckenridge-html",
+      "domain": "gosno",
+      "sourceId": "src:gosno:breckenridge-page",
+      "sourceTitle": "GoSno Denver / DEN to Breckenridge Private Transfer Page (/denver-to-breckenridge)",
+      "sourceOrganization": "GoSno Private Mountain Transportation",
+      "sourceClass": "operator_published_terms",
+      "uri": "https://gosno.co/denver-to-breckenridge",
+      "url": "https://gosno.co/denver-to-breckenridge",
+      "finalUrl": "https://gosno.co/?origin=DEN&dest=Breckenridge",
+      "httpMethod": "GET",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=utf-8",
+      "retrievedAt": "2026-10-26T21:14:32.891Z",
+      "responseHeaders": {
+        "cache-control": "private, no-cache, no-store, max-age=0, must-revalidate",
+        "content-type": "text/html; charset=utf-8",
+        "date": "Mon, 26 Oct 2026 21:14:33 GMT",
+        "server": "Vercel",
+        "x-vercel-id": "cle1::iad1::9782p-1793049273077-859a839018eb"
+      },
+      "rawByteLength": 83879,
+      "rawSha256": "f33930b6347513c6987e6e6e2ad8783d0b7e99160dd1de2cdd3c285dfe4326c1",
+      "privateRawObjectKey": "v03/raw_source_captures/sha256/f33930b6347513c6987e6e6e2ad8783d0b7e99160dd1de2cdd3c285dfe4326c1.html",
+      "derivedTextByteLength": 7018,
+      "derivedTextSha256": "659a193e19f196564a64de9f714dc383d4fbb5116e14d917a9f75d17d6a9c73a",
+      "privateDerivedTextObjectKey": "v03/raw_source_captures/sha256/659a193e19f196564a64de9f714dc383d4fbb5116e14d917a9f75d17d6a9c73a.derived.txt",
+      "extractorVersion": "dcc-html-text-extractor-v031.1",
+      "sourcePublishedAt": null,
+      "lastModifiedHeader": null,
+      "etagHeader": null,
+      "rawBodyStoredInPrivateVaultOnly": true,
+      "verifiedExcerpts": [
+        {
+          "exactQuote": "Book a 100% private AWD SUV (up to 6 passengers) or private passenger van (up to 10 passengers) from Denver International Airport (DEN) directly to your mountain lodging with transparent flat rates and ample ski & snowboard gear space.",
+          "jsonPointer": null,
+          "selectors": [
+            {
+              "type": "TextQuoteSelector",
+              "exact": "Book a 100% private AWD SUV (up to 6 passengers) or private passenger van (up to 10 passengers) from Denver International Airport (DEN) directly to your mountain lodging with transparent flat rates and ample ski & snowboard gear space.",
+              "prefix": "olorado's dedicated ski transportation company. ",
+              "suffix": "\n100% Private SUV & VanPublished Flat RatesSki &"
+            },
+            {
+              "type": "TextPositionSelector",
+              "start": 355,
+              "end": 590
+            }
+          ],
+          "surroundingContext": {
+            "before": "olorado's dedicated ski transportation company. ",
+            "exactMatch": "Book a 100% private AWD SUV (up to 6 passengers) or private passenger van (up to 10 passengers) from Denver International Airport (DEN) directly to your mountain lodging with transparent flat rates and ample ski & snowboard gear space.",
+            "after": "\n100% Private SUV & VanPublished Flat RatesSki &"
+          }
+        }
+      ]
+    },
+    "cap:juneau:coastal-icefield-excursion-html": {
+      "captureId": "cap:juneau:coastal-icefield-excursion-html",
+      "domain": "juneau",
+      "sourceId": "src:coastal-helicopters:icefield-excursion",
+      "sourceTitle": "Coastal Helicopters — Icefield Excursion Product & Policy Page",
+      "sourceOrganization": "Coastal Helicopters, Inc.",
+      "sourceClass": "operator_published_terms",
+      "uri": "https://coastalhelicopters.com/tours/icefield-excursion/",
+      "url": "https://coastalhelicopters.com/tours/icefield-excursion/",
+      "finalUrl": "https://coastalhelicopters.com/tours/icefield-excursion/",
+      "httpMethod": "GET",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "retrievedAt": "2026-10-26T21:14:33.152Z",
+      "responseHeaders": {
+        "cache-control": "max-age=300, must-revalidate",
+        "content-type": "text/html; charset=UTF-8",
+        "date": "Mon, 26 Oct 2026 21:14:33 GMT",
+        "server": "nginx"
+      },
+      "rawByteLength": 128898,
+      "rawSha256": "37f43f31bd9890655bf550fef85193d116c378d0b8efeecdd19a9830f45f95e1",
+      "privateRawObjectKey": "v03/raw_source_captures/sha256/37f43f31bd9890655bf550fef85193d116c378d0b8efeecdd19a9830f45f95e1.html",
+      "derivedTextByteLength": 7404,
+      "derivedTextSha256": "a3f8341c3fcc8c05aeec3517fc39c09919128196b6a3b4bcaae8a4bd24d232fb",
+      "privateDerivedTextObjectKey": "v03/raw_source_captures/sha256/a3f8341c3fcc8c05aeec3517fc39c09919128196b6a3b4bcaae8a4bd24d232fb.derived.txt",
+      "extractorVersion": "dcc-html-text-extractor-v031.1",
+      "sourcePublishedAt": null,
+      "lastModifiedHeader": null,
+      "etagHeader": null,
+      "rawBodyStoredInPrivateVaultOnly": true,
+      "verifiedExcerpts": [
+        {
+          "exactQuote": "Standard Passengers\nStarts AT:\n(Price may vary depending on weight)\n$\n459\nStandard Plus\nStarts AT:\n(Price may vary depending on weight)\n$\n609\nPremium\nStarts AT:\n(Price may vary depending on weight)\n$\n918",
+          "jsonPointer": null,
+          "selectors": [
+            {
+              "type": "TextQuoteSelector",
+              "exact": "Standard Passengers\nStarts AT:\n(Price may vary depending on weight)\n$\n459\nStandard Plus\nStarts AT:\n(Price may vary depending on weight)\n$\n609\nPremium\nStarts AT:\n(Price may vary depending on weight)\n$\n918",
+              "prefix": "ve and Explore Herbert Glacier on Foot\nBook Now\n",
+              "suffix": "\nDiscover Alaska’s glacial landscape from two pe"
+            },
+            {
+              "type": "TextPositionSelector",
+              "start": 639,
+              "end": 842
+            }
+          ],
+          "surroundingContext": {
+            "before": "ve and Explore Herbert Glacier on Foot\nBook Now\n",
+            "exactMatch": "Standard Passengers\nStarts AT:\n(Price may vary depending on weight)\n$\n459\nStandard Plus\nStarts AT:\n(Price may vary depending on weight)\n$\n609\nPremium\nStarts AT:\n(Price may vary depending on weight)\n$\n918",
+            "after": "\nDiscover Alaska’s glacial landscape from two pe"
+          }
+        },
+        {
+          "exactQuote": "When selecting a Juneau helicopter glacier tour time; please allow yourself a 45-minute buffer from when your ship arrives and leaves.",
+          "jsonPointer": null,
+          "selectors": [
+            {
+              "type": "TextQuoteSelector",
+              "exact": "When selecting a Juneau helicopter glacier tour time; please allow yourself a 45-minute buffer from when your ship arrives and leaves.",
+              "prefix": "p’s schedule.\nImportant Details About Your Tour\n",
+              "suffix": " It is your responsibility to book times that wo"
+            },
+            {
+              "type": "TextPositionSelector",
+              "start": 3151,
+              "end": 3285
+            }
+          ],
+          "surroundingContext": {
+            "before": "p’s schedule.\nImportant Details About Your Tour\n",
+            "exactMatch": "When selecting a Juneau helicopter glacier tour time; please allow yourself a 45-minute buffer from when your ship arrives and leaves.",
+            "after": " It is your responsibility to book times that wo"
+          }
+        },
+        {
+          "exactQuote": "Cameras and cell phones are welcomed while on tour, but all drones, selfie sticks, phone stabilizers, and any camera extensions are prohibited.",
+          "jsonPointer": null,
+          "selectors": [
+            {
+              "type": "TextQuoteSelector",
+              "exact": "Cameras and cell phones are welcomed while on tour, but all drones, selfie sticks, phone stabilizers, and any camera extensions are prohibited.",
+              "prefix": " to book times that work with your cruise ship.\n",
+              "suffix": "\nThe selected tour time is the pick-up time from"
+            },
+            {
+              "type": "TextPositionSelector",
+              "start": 3359,
+              "end": 3502
+            }
+          ],
+          "surroundingContext": {
+            "before": " to book times that work with your cruise ship.\n",
+            "exactMatch": "Cameras and cell phones are welcomed while on tour, but all drones, selfie sticks, phone stabilizers, and any camera extensions are prohibited.",
+            "after": "\nThe selected tour time is the pick-up time from"
+          }
+        },
+        {
+          "exactQuote": "Coastal Helicopters, Inc. is an equal opportunity employer and operates under a USDA Forest Service Special Use Permit on the Tongass National Forest.",
+          "jsonPointer": null,
+          "selectors": [
+            {
+              "type": "TextQuoteSelector",
+              "exact": "Coastal Helicopters, Inc. is an equal opportunity employer and operates under a USDA Forest Service Special Use Permit on the Tongass National Forest.",
+              "prefix": "lights & Private Charters\nAbout Us\nFAQs\nContact\n",
+              "suffix": "\nPrivacy & Cookie Statement\nManage Consent\nTo pr"
+            },
+            {
+              "type": "TextPositionSelector",
+              "start": 5546,
+              "end": 5696
+            }
+          ],
+          "surroundingContext": {
+            "before": "lights & Private Charters\nAbout Us\nFAQs\nContact\n",
+            "exactMatch": "Coastal Helicopters, Inc. is an equal opportunity employer and operates under a USDA Forest Service Special Use Permit on the Tongass National Forest.",
+            "after": "\nPrivacy & Cookie Statement\nManage Consent\nTo pr"
+          }
+        }
+      ]
+    },
+    "cap:juneau:coastal-faq-html": {
+      "captureId": "cap:juneau:coastal-faq-html",
+      "domain": "juneau",
+      "sourceId": "src:coastal-helicopters:faq",
+      "sourceTitle": "Coastal Helicopters — Passenger Weight, Safety & Mobility FAQs",
+      "sourceOrganization": "Coastal Helicopters, Inc.",
+      "sourceClass": "operator_published_terms",
+      "uri": "https://coastalhelicopters.com/faq/",
+      "url": "https://coastalhelicopters.com/faq/",
+      "finalUrl": "https://coastalhelicopters.com/faq/",
+      "httpMethod": "GET",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "retrievedAt": "2026-10-26T21:14:33.493Z",
+      "responseHeaders": {
+        "cache-control": "max-age=300, must-revalidate",
+        "content-type": "text/html; charset=UTF-8",
+        "date": "Mon, 26 Oct 2026 21:14:34 GMT",
+        "server": "nginx"
+      },
+      "rawByteLength": 139304,
+      "rawSha256": "724c5bb399830abfd5fdd58ea3dafbbcd0618732e894dbbbdf22eea784985789",
+      "privateRawObjectKey": "v03/raw_source_captures/sha256/724c5bb399830abfd5fdd58ea3dafbbcd0618732e894dbbbdf22eea784985789.html",
+      "derivedTextByteLength": 11508,
+      "derivedTextSha256": "0167f62bdbbd28dd3442abd03c660bae739e07cb35f96bd6b04a5a05083628b9",
+      "privateDerivedTextObjectKey": "v03/raw_source_captures/sha256/0167f62bdbbd28dd3442abd03c660bae739e07cb35f96bd6b04a5a05083628b9.derived.txt",
+      "extractorVersion": "dcc-html-text-extractor-v031.1",
+      "sourcePublishedAt": null,
+      "lastModifiedHeader": null,
+      "etagHeader": null,
+      "rawBodyStoredInPrivateVaultOnly": true,
+      "verifiedExcerpts": [
+        {
+          "exactQuote": "Due to the limited space in our aircraft, we have to reserve extra space for those weighing 260lbs or more. This fee pays for 1.5 seats.",
+          "jsonPointer": null,
+          "selectors": [
+            {
+              "type": "TextQuoteSelector",
+              "exact": "Due to the limited space in our aircraft, we have to reserve extra space for those weighing 260lbs or more. This fee pays for 1.5 seats.",
+              "prefix": "et.\nI weigh 260+lbs, why do I have to pay more?\n",
+              "suffix": "\nI weigh 300+lbs, why do I have to pay more?\nDue"
+            },
+            {
+              "type": "TextPositionSelector",
+              "start": 7074,
+              "end": 7210
+            }
+          ],
+          "surroundingContext": {
+            "before": "et.\nI weigh 260+lbs, why do I have to pay more?\n",
+            "exactMatch": "Due to the limited space in our aircraft, we have to reserve extra space for those weighing 260lbs or more. This fee pays for 1.5 seats.",
+            "after": "\nI weigh 300+lbs, why do I have to pay more?\nDue"
+          }
+        },
+        {
+          "exactQuote": "Due to the limited space in our aircraft, we have to reserve extra space for those weighing 300lbs or more. This fee pays for 2 full seats.",
+          "jsonPointer": null,
+          "selectors": [
+            {
+              "type": "TextQuoteSelector",
+              "exact": "Due to the limited space in our aircraft, we have to reserve extra space for those weighing 300lbs or more. This fee pays for 2 full seats.",
+              "prefix": "ts.\nI weigh 300+lbs, why do I have to pay more?\n",
+              "suffix": "\nDo you only operate out of Juneau?\nYes, our ope"
+            },
+            {
+              "type": "TextPositionSelector",
+              "start": 7255,
+              "end": 7394
+            }
+          ],
+          "surroundingContext": {
+            "before": "ts.\nI weigh 300+lbs, why do I have to pay more?\n",
+            "exactMatch": "Due to the limited space in our aircraft, we have to reserve extra space for those weighing 300lbs or more. This fee pays for 2 full seats.",
+            "after": "\nDo you only operate out of Juneau?\nYes, our ope"
+          }
+        },
+        {
+          "exactQuote": "If you are unable to enter and exit our aircraft on your own, you may be subject to rescheduling on the day of your tour or cancellation without refund.",
+          "jsonPointer": null,
+          "selectors": [
+            {
+              "type": "TextQuoteSelector",
+              "exact": "If you are unable to enter and exit our aircraft on your own, you may be subject to rescheduling on the day of your tour or cancellation without refund.",
+              "prefix": "inging layers!\nWhat if I have limited mobility?\n",
+              "suffix": " If you anticipate needing additional assistance"
+            },
+            {
+              "type": "TextPositionSelector",
+              "start": 7972,
+              "end": 8124
+            }
+          ],
+          "surroundingContext": {
+            "before": "inging layers!\nWhat if I have limited mobility?\n",
+            "exactMatch": "If you are unable to enter and exit our aircraft on your own, you may be subject to rescheduling on the day of your tour or cancellation without refund.",
+            "after": " If you anticipate needing additional assistance"
+          }
+        }
+      ]
+    },
+    "cap:juneau:temsco-mendenhall-glacier-html": {
+      "captureId": "cap:juneau:temsco-mendenhall-glacier-html",
+      "domain": "juneau",
+      "sourceId": "src:temsco-helicopters:mendenhall-glacier",
+      "sourceTitle": "TEMSCO Helicopters — Mendenhall Glacier Helicopter Tour & Passenger Policy Page",
+      "sourceOrganization": "TEMSCO Helicopters, Inc.",
+      "sourceClass": "operator_published_terms",
+      "uri": "https://temscoair.com/juneau-helicopter-tours/mendenhall-glacier/",
+      "url": "https://temscoair.com/juneau-helicopter-tours/mendenhall-glacier/",
+      "finalUrl": "https://temscoair.com/juneau-helicopter-tours/mendenhall-glacier/",
+      "httpMethod": "GET",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "retrievedAt": "2026-10-26T21:14:34.066Z",
+      "responseHeaders": {
+        "cache-control": "max-age=300, must-revalidate",
+        "content-type": "text/html; charset=UTF-8",
+        "date": "Mon, 26 Oct 2026 21:14:35 GMT",
+        "server": "nginx"
+      },
+      "rawByteLength": 266389,
+      "rawSha256": "18fdb434bb60958189dd01ad52ad73238d3466af7c032a7d329852e4bfec126d",
+      "privateRawObjectKey": "v03/raw_source_captures/sha256/18fdb434bb60958189dd01ad52ad73238d3466af7c032a7d329852e4bfec126d.html",
+      "derivedTextByteLength": 9088,
+      "derivedTextSha256": "b3f2f22224a1e58750cbdc8e54be5f13e495094b4bef52409283cdc64d5a2c80",
+      "privateDerivedTextObjectKey": "v03/raw_source_captures/sha256/b3f2f22224a1e58750cbdc8e54be5f13e495094b4bef52409283cdc64d5a2c80.derived.txt",
+      "extractorVersion": "dcc-html-text-extractor-v031.1",
+      "sourcePublishedAt": null,
+      "lastModifiedHeader": null,
+      "etagHeader": null,
+      "rawBodyStoredInPrivateVaultOnly": true,
+      "verifiedExcerpts": [
+        {
+          "exactQuote": "Due to weight and balance limitations, as well as guest safety and comfort, passengers weighing 250 pounds (113kg or 18 Stone) or more will be charged an additional $150.00 to reserve adequate space on board the helicopter.",
+          "jsonPointer": null,
+          "selectors": [
+            {
+              "type": "TextQuoteSelector",
+              "exact": "Due to weight and balance limitations, as well as guest safety and comfort, passengers weighing 250 pounds (113kg or 18 Stone) or more will be charged an additional $150.00 to reserve adequate space on board the helicopter.",
+              "prefix": "o be located in an exit aisle.\nSurcharge Policy\n",
+              "suffix": " Total weight includes shoes and clothing. Surch"
+            },
+            {
+              "type": "TextPositionSelector",
+              "start": 3229,
+              "end": 3452
+            }
+          ],
+          "surroundingContext": {
+            "before": "o be located in an exit aisle.\nSurcharge Policy\n",
+            "exactMatch": "Due to weight and balance limitations, as well as guest safety and comfort, passengers weighing 250 pounds (113kg or 18 Stone) or more will be charged an additional $150.00 to reserve adequate space on board the helicopter.",
+            "after": " Total weight includes shoes and clothing. Surch"
+          }
+        },
+        {
+          "exactQuote": "Per TEMSCO Helicopters’ Passenger Mobility Policy, service animals shall not be permitted on Temsco Eurocopter Astar, Hughes 500 and Airbus H130 aircraft used by Temsco for flightseeing and tours.",
+          "jsonPointer": null,
+          "selectors": [
+            {
+              "type": "TextQuoteSelector",
+              "exact": "Per TEMSCO Helicopters’ Passenger Mobility Policy, service animals shall not be permitted on Temsco Eurocopter Astar, Hughes 500 and Airbus H130 aircraft used by Temsco for flightseeing and tours.",
+              "prefix": "e.\nAdditional Information\nService Animal Policy\n",
+              "suffix": " Passenger seats in these aircraft are emergency"
+            },
+            {
+              "type": "TextPositionSelector",
+              "start": 2778,
+              "end": 2974
+            }
+          ],
+          "surroundingContext": {
+            "before": "e.\nAdditional Information\nService Animal Policy\n",
+            "exactMatch": "Per TEMSCO Helicopters’ Passenger Mobility Policy, service animals shall not be permitted on Temsco Eurocopter Astar, Hughes 500 and Airbus H130 aircraft used by Temsco for flightseeing and tours.",
+            "after": " Passenger seats in these aircraft are emergency"
+          }
+        },
+        {
+          "exactQuote": "Due to liability reasons, our employees cannot lift guests in or out of the helicopter. TEMSCO staff will be there to lend a helping hand, though ultimately guests are responsible for navigating these steps on their own.",
+          "jsonPointer": null,
+          "selectors": [
+            {
+              "type": "TextQuoteSelector",
+              "exact": "Due to liability reasons, our employees cannot lift guests in or out of the helicopter. TEMSCO staff will be there to lend a helping hand, though ultimately guests are responsible for navigating these steps on their own.",
+              "prefix": "urface of the glacier can be uneven and cracked\n",
+              "suffix": "\nAircraft Seating\nWe arrange seating based on th"
+            },
+            {
+              "type": "TextPositionSelector",
+              "start": 4527,
+              "end": 4747
+            }
+          ],
+          "surroundingContext": {
+            "before": "urface of the glacier can be uneven and cracked\n",
+            "exactMatch": "Due to liability reasons, our employees cannot lift guests in or out of the helicopter. TEMSCO staff will be there to lend a helping hand, though ultimately guests are responsible for navigating these steps on their own.",
+            "after": "\nAircraft Seating\nWe arrange seating based on th"
+          }
+        }
+      ]
+    },
+    "cap:juneau:northstar-walkabout-html": {
+      "captureId": "cap:juneau:northstar-walkabout-html",
+      "domain": "juneau",
+      "sourceId": "src:northstar-trekking:walkabout",
+      "sourceTitle": "NorthStar Trekking — Glacier Walkabout Product & Requirements Page",
+      "sourceOrganization": "NorthStar Trekking",
+      "sourceClass": "operator_published_terms",
+      "uri": "https://northstartrekking.com/adventures/helicopter-glacier-walkabout/",
+      "url": "https://northstartrekking.com/adventures/helicopter-glacier-walkabout/",
+      "finalUrl": "https://northstartrekking.com/adventures/helicopter-glacier-walkabout/",
+      "httpMethod": "GET",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "retrievedAt": "2026-10-26T21:14:35.314Z",
+      "responseHeaders": {
+        "cache-control": "max-age=300, must-revalidate",
+        "cf-ray": "a50c78b47cdd2c99-DFW",
+        "content-type": "text/html; charset=UTF-8",
+        "date": "Mon, 26 Oct 2026 21:14:35 GMT",
+        "server": "cloudflare"
+      },
+      "rawByteLength": 170407,
+      "rawSha256": "94fb78aba84e92d9b2dde73275b6a4c88b1673cc7d0e7224afb857a34268f042",
+      "privateRawObjectKey": "v03/raw_source_captures/sha256/94fb78aba84e92d9b2dde73275b6a4c88b1673cc7d0e7224afb857a34268f042.html",
+      "derivedTextByteLength": 8006,
+      "derivedTextSha256": "9e6de86b7e97dd85983e7b3e005d8f2eb824575b59229c374a12fd69ca7dc945",
+      "privateDerivedTextObjectKey": "v03/raw_source_captures/sha256/9e6de86b7e97dd85983e7b3e005d8f2eb824575b59229c374a12fd69ca7dc945.derived.txt",
+      "extractorVersion": "dcc-html-text-extractor-v031.1",
+      "sourcePublishedAt": null,
+      "lastModifiedHeader": null,
+      "etagHeader": null,
+      "rawBodyStoredInPrivateVaultOnly": true,
+      "verifiedExcerpts": [
+        {
+          "exactQuote": "Must be at least 8 years old to participate.\nMust be able to walk unassisted for one hour on moderately flat but uneven terrain.",
+          "jsonPointer": null,
+          "selectors": [
+            {
+              "type": "TextQuoteSelector",
+              "exact": "Must be at least 8 years old to participate.\nMust be able to walk unassisted for one hour on moderately flat but uneven terrain.",
+              "prefix": " that are sure to last a lifetime.\nRequirements\n",
+              "suffix": "\nWhat's included\nWe will provide:\nSturdy hiking "
+            },
+            {
+              "type": "TextPositionSelector",
+              "start": 2784,
+              "end": 2912
+            }
+          ],
+          "surroundingContext": {
+            "before": " that are sure to last a lifetime.\nRequirements\n",
+            "exactMatch": "Must be at least 8 years old to participate.\nMust be able to walk unassisted for one hour on moderately flat but uneven terrain.",
+            "after": "\nWhat's included\nWe will provide:\nSturdy hiking "
+          }
+        },
+        {
+          "exactQuote": "Please book your tour at least one hour after your ship’s arrival time. The tour should conclude no less than 45 minutes before your ship’s departure time.",
+          "jsonPointer": null,
+          "selectors": [
+            {
+              "type": "TextQuoteSelector",
+              "exact": "Please book your tour at least one hour after your ship’s arrival time. The tour should conclude no less than 45 minutes before your ship’s departure time.",
+              "prefix": "es of helicopter time and 1 hour on the glacier\n",
+              "suffix": " If your ship’s port time changes after you have"
+            },
+            {
+              "type": "TextPositionSelector",
+              "start": 2062,
+              "end": 2217
+            }
+          ],
+          "surroundingContext": {
+            "before": "es of helicopter time and 1 hour on the glacier\n",
+            "exactMatch": "Please book your tour at least one hour after your ship’s arrival time. The tour should conclude no less than 45 minutes before your ship’s departure time.",
+            "after": " If your ship’s port time changes after you have"
+          }
+        }
+      ]
+    },
+    "cap:juneau:northstar-faqs-html": {
+      "captureId": "cap:juneau:northstar-faqs-html",
+      "domain": "juneau",
+      "sourceId": "src:northstar-trekking:faqs",
+      "sourceTitle": "NorthStar Trekking — Weight, Gear & Glacier Trekking FAQs",
+      "sourceOrganization": "NorthStar Trekking",
+      "sourceClass": "operator_published_terms",
+      "uri": "https://northstartrekking.com/faqs/",
+      "url": "https://northstartrekking.com/faqs/",
+      "finalUrl": "https://northstartrekking.com/faqs/",
+      "httpMethod": "GET",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "retrievedAt": "2026-10-26T21:14:35.656Z",
+      "responseHeaders": {
+        "cache-control": "max-age=300, must-revalidate",
+        "cf-ray": "a50c78b54d9d2c99-DFW",
+        "content-type": "text/html; charset=UTF-8",
+        "date": "Mon, 26 Oct 2026 21:14:36 GMT",
+        "server": "cloudflare"
+      },
+      "rawByteLength": 133168,
+      "rawSha256": "bea1205e0963664d59a9018a97541a10b38467d07d14fcaa5b3af84429f42d75",
+      "privateRawObjectKey": "v03/raw_source_captures/sha256/bea1205e0963664d59a9018a97541a10b38467d07d14fcaa5b3af84429f42d75.html",
+      "derivedTextByteLength": 7769,
+      "derivedTextSha256": "02f23ba2af71bad07e6a7bf9a8f0f098334cc1871257252330f64c0d556165c1",
+      "privateDerivedTextObjectKey": "v03/raw_source_captures/sha256/02f23ba2af71bad07e6a7bf9a8f0f098334cc1871257252330f64c0d556165c1.derived.txt",
+      "extractorVersion": "dcc-html-text-extractor-v031.1",
+      "sourcePublishedAt": null,
+      "lastModifiedHeader": null,
+      "etagHeader": null,
+      "rawBodyStoredInPrivateVaultOnly": true,
+      "verifiedExcerpts": [
+        {
+          "exactQuote": "Bags, purses, selfie sticks, nor drones are permitted. We provide safe storage for any personal belongings to remain at our base.",
+          "jsonPointer": null,
+          "selectors": [
+            {
+              "type": "TextQuoteSelector",
+              "exact": "Bags, purses, selfie sticks, nor drones are permitted. We provide safe storage for any personal belongings to remain at our base.",
+              "prefix": "s, we recommend a neck-strap for easy carrying. ",
+              "suffix": "\nHow many people will there be in my helicopter?"
+            },
+            {
+              "type": "TextPositionSelector",
+              "start": 1628,
+              "end": 1757
+            }
+          ],
+          "surroundingContext": {
+            "before": "s, we recommend a neck-strap for easy carrying. ",
+            "exactMatch": "Bags, purses, selfie sticks, nor drones are permitted. We provide safe storage for any personal belongings to remain at our base.",
+            "after": "\nHow many people will there be in my helicopter?"
+          }
+        }
+      ]
+    },
+    "cap:juneau:faa-weathercams-html": {
+      "captureId": "cap:juneau:faa-weathercams-html",
+      "domain": "juneau",
+      "sourceId": "src:faa-weathercams-jnu",
+      "sourceTitle": "FAA Aviation Weather Camera Program Portal",
+      "sourceOrganization": "Federal Aviation Administration (FAA)",
+      "sourceClass": "official_government_feed",
+      "uri": "https://weathercams.faa.gov/",
+      "url": "https://weathercams.faa.gov/",
+      "finalUrl": "https://weathercams.faa.gov/",
+      "httpMethod": "GET",
+      "httpStatus": 200,
+      "contentType": "text/html",
+      "retrievedAt": "2026-10-26T21:14:36.178Z",
+      "responseHeaders": {
+        "cache-control": "private, no-store",
+        "content-length": "3278",
+        "content-type": "text/html",
+        "date": "Mon, 26 Oct 2026 21:14:36 GMT",
+        "etag": "\"6ad002e6-e69\"",
+        "last-modified": "Wed, 14 Oct 2026 22:32:06 GMT"
+      },
+      "rawByteLength": 8368,
+      "rawSha256": "42b984e6fbef5a10d1ed359e01687a95d574c9f4777776c6ea8384c5439b3520",
+      "privateRawObjectKey": "v03/raw_source_captures/sha256/42b984e6fbef5a10d1ed359e01687a95d574c9f4777776c6ea8384c5439b3520.html",
+      "derivedTextByteLength": 145,
+      "derivedTextSha256": "8aba01d45e0815e24dd880ded08bb0b18d280b0a12a120d9b055fa32514acda3",
+      "privateDerivedTextObjectKey": "v03/raw_source_captures/sha256/8aba01d45e0815e24dd880ded08bb0b18d280b0a12a120d9b055fa32514acda3.derived.txt",
+      "extractorVersion": "dcc-html-text-extractor-v031.1",
+      "sourcePublishedAt": null,
+      "lastModifiedHeader": "Wed, 14 Oct 2026 22:32:06 GMT",
+      "etagHeader": "\"6ad002e6-e69\"",
+      "rawBodyStoredInPrivateVaultOnly": true,
+      "verifiedExcerpts": [
+        {
+          "exactQuote": "FAA WeatherCams\nWelcome to WeatherCams",
+          "jsonPointer": null,
+          "selectors": [
+            {
+              "type": "TextQuoteSelector",
+              "exact": "FAA WeatherCams\nWelcome to WeatherCams",
+              "prefix": "",
+              "suffix": "\nIf you experience any issues, please refresh yo"
+            },
+            {
+              "type": "TextPositionSelector",
+              "start": 0,
+              "end": 38
+            }
+          ],
+          "surroundingContext": {
+            "before": "",
+            "exactMatch": "FAA WeatherCams\nWelcome to WeatherCams",
+            "after": "\nIf you experience any issues, please refresh yo"
+          }
+        }
+      ]
+    }
+  }
+}

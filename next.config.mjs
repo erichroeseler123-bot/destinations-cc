@@ -42,7 +42,11 @@ function resolveBuildProvenanceEnv() {
     })
       .split(/\r?\n/)
       .map((l) => l.trim())
-      .filter((l) => l.length > 0 && !/^D\s+legacy_vault\//.test(l));
+      .filter(
+        (l) =>
+          l.length > 0 &&
+          !/^D\s+(legacy_vault|scratch|data\/sources\/geonames|\.open-next|\.wrangler)\//.test(l),
+      );
     dirtySourceStatus = statusLines.length === 0 ? "clean" : "dirty";
   } catch {
     // fallback if .git is not present

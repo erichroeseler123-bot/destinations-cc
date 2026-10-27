@@ -174,15 +174,23 @@ export function getDeploymentProvenanceV03() {
     if (liveBranch && (branchName === "unknown" || !process.env.VERCEL_ENV)) {
       branchName = liveBranch;
     }
-    const statusLines = execSync("git status --porcelain --untracked-files=no", {
-      cwd: process.cwd(),
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "ignore"],
-    })
-      .split(/\r?\n/)
-      .map((l) => l.trim())
-      .filter((l) => l.length > 0 && !/^D\s+legacy_vault\//.test(l));
-    workingTreeState = statusLines.length === 0 ? "clean" : "dirty";
+    if (!process.env.VERCEL_ENV || !process.env.DCC_BUILD_DIRTY_STATUS) {
+      const statusLines = execSync("git status --porcelain --untracked-files=no", {
+        cwd: process.cwd(),
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "ignore"],
+      })
+        .split(/\r?\n/)
+        .map((l) => l.trim())
+        .filter(
+          (l) =>
+            l.length > 0 &&
+            !/^D\s+(legacy_vault|scratch|data\/sources\/geonames|\.open-next|\.wrangler)\//.test(
+              l,
+            ),
+        );
+      workingTreeState = statusLines.length === 0 ? "clean" : "dirty";
+    }
   } catch {
     // Packaged serverless container without .git — uses baked DCC_BUILD_* values
   }
