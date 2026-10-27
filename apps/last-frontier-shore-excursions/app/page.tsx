@@ -3,12 +3,81 @@ import { PORTS } from "@/lib/ports";
 import { DECISION_PAGES } from "@/lib/decisionPages";
 import { PORT_ACTIVITIES } from "@/lib/portActivities";
 import { AFFILIATE_CATALOG } from "@/lib/affiliate/catalog";
+import { buildAffiliateUrl, buildDccHandoffAffiliateUrl } from "@/lib/affiliate/links";
 import { HERO_IMAGE, getActivityImage } from "@/lib/images";
 import { CruiseWindowCalculator } from "@/components/CruiseWindowCalculator";
 import { ExcursionCard } from "@/components/ExcursionCard";
 import { TrustDisclosure } from "@/components/TrustDisclosure";
 
-export default function HomePage() {
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const sp = searchParams ? await searchParams : {};
+  const rawCtx =
+    (typeof sp.ctx === "string" ? sp.ctx : undefined) ||
+    (typeof sp.dcc_ctx === "string" ? sp.dcc_ctx : undefined) ||
+    null;
+  const carriedDate = typeof sp.date === "string" ? sp.date : null;
+  const rawParty =
+    (typeof sp.partySize === "string" ? sp.partySize : undefined) ||
+    (typeof sp.guests === "string" ? sp.guests : undefined);
+  const carriedPartySize =
+    rawParty && Number.isFinite(Number(rawParty)) ? Number(rawParty) : null;
+  const carriedShip = typeof sp.ship === "string" ? sp.ship : null;
+  const ctxQuery = rawCtx
+    ? `?ctx=${encodeURIComponent(rawCtx)}`
+    : carriedDate || carriedPartySize
+    ? `?${new URLSearchParams({
+        ...(carriedDate ? { date: carriedDate } : {}),
+        ...(carriedPartySize ? { partySize: String(carriedPartySize) } : {}),
+      }).toString()}`
+    : "";
+
+  const viatorSampleDest = buildAffiliateUrl(
+    "viator",
+    "https://www.viator.com/Juneau-tours/Port-Transfers/d941-g24-c4032",
+    "last-frontier-home-juneau",
+    "Juneau whale watching shore excursion",
+    false,
+  );
+  const viatorHandoffHref = buildDccHandoffAffiliateUrl({
+    source: "viator",
+    destinationUrl: viatorSampleDest,
+    productCode: "juneau-whale-mendenhall-combo",
+    campaign: "last-frontier-home-viator",
+    contextId: rawCtx,
+    intendedDate: carriedDate,
+    partySize: carriedPartySize,
+  });
+  const gygSampleDest = buildAffiliateUrl(
+    "getyourguide",
+    "https://www.getyourguide.com/s/?q=Alaska+shore+excursions",
+    "last-frontier-home-gyg",
+    "Alaska shore excursions",
+    false,
+  );
+  const gygHandoffHref = buildDccHandoffAffiliateUrl({
+    source: "getyourguide",
+    destinationUrl: gygSampleDest,
+    productCode: "alaska-gyg-catalog",
+    campaign: "last-frontier-home-gyg",
+    contextId: rawCtx,
+    intendedDate: carriedDate,
+    partySize: carriedPartySize,
+  });
+  const fhHandoffHref = buildDccHandoffAffiliateUrl({
+    source: "fareharbor",
+    destinationUrl:
+      "https://fareharbor.com/embeds/book/allenmarine/items/?asn=welcometoalaskatours&ref=last-frontier-home",
+    productCode: "juneau-allen-marine-whale",
+    campaign: "last-frontier-home-fh",
+    contextId: rawCtx,
+    intendedDate: carriedDate,
+    partySize: carriedPartySize,
+  });
+
   const topActivities = [
     PORT_ACTIVITIES.find((a) => a.slug === "whale-watching" && a.portSlug === "juneau")!,
     PORT_ACTIVITIES.find((a) => a.slug === "white-pass-railway-tours")!,
@@ -81,6 +150,113 @@ export default function HomePage() {
                   </span>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* DCC v0.3 Decision Assurance & Commercial Attribution Boundary */}
+      <section
+        aria-label="DCC Decision Assurance & Attribution Disclosure"
+        data-dcc-assurance-banner="true"
+        data-dcc-site="lastfrontiershoreexcursions.com"
+        data-dcc-engine-id="alaska-shore-excursions"
+        data-dcc-classification="qualified"
+        data-dcc-context-id={rawCtx || ""}
+        style={{ background: "#0b1724", color: "#e2e8f0", padding: "20px 0", borderBottom: "1px solid rgba(148,163,184,0.25)" }}
+      >
+        <div className="shell" style={{ fontSize: "13.5px", lineHeight: 1.55 }}>
+          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 8 }}>
+            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8 }}>
+              <span
+                style={{
+                  padding: "3px 9px",
+                  borderRadius: 999,
+                  fontSize: "11px",
+                  fontWeight: 800,
+                  textTransform: "uppercase",
+                  background: "rgba(56, 189, 248, 0.16)",
+                  color: "#7dd3fc",
+                  border: "1px solid rgba(56, 189, 248, 0.35)",
+                }}
+              >
+                DCC v0.3 Classification: QUALIFIED
+              </span>
+              <span style={{ color: "#94a3b8", fontSize: "12px" }}>
+                Engine: <code>alaska-shore-excursions@0.3.0</code> · Isolated from commission &amp; routing priority
+              </span>
+            </div>
+            <a
+              href="https://www.destinationcommandcenter.com/api/v1/docs/receipt-verification"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: "#38bdf8", textDecoration: "underline", fontWeight: 600, fontSize: "12px" }}
+            >
+              Verify DCC Decision Receipt Boundary ↗
+            </a>
+          </div>
+          <div style={{ padding: "10px 14px", borderRadius: 8, background: "rgba(15, 23, 42, 0.75)", border: "1px solid rgba(148,163,184,0.18)", marginBottom: 10 }}>
+            <strong style={{ color: "#f8fafc" }}>Evidence-Bounded Classification &amp; Unresolved Requirements:</strong>{" "}
+            <span>
+              45-minute all-aboard margin + dock shuttle buffer (AJ Dock / Ward Cove) required. Live seat availability and ship-berth departure schedules remain unestablished until confirmed on the selected partner checkout.
+            </span>
+          </div>
+          {(rawCtx || carriedDate || carriedPartySize || carriedShip) && (
+            <div
+              data-dcc-carried-context="true"
+              style={{ padding: "8px 12px", borderRadius: 8, background: "rgba(16,185,129,0.12)", border: "1px solid rgba(16,185,129,0.3)", marginBottom: 10, color: "#d1fae5", fontSize: "12.5px" }}
+            >
+              <strong>Carried Trip Context:</strong>{" "}
+              {rawCtx && <span>Opaque Ref <code>{rawCtx}</code> </span>}
+              {carriedDate && <span>· Date: <strong>{carriedDate}</strong> </span>}
+              {carriedPartySize && <span>· Guests: <strong>{carriedPartySize}</strong> </span>}
+              {carriedShip && <span>· Ship: <strong>{carriedShip}</strong> </span>}
+            </div>
+          )}
+          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              <a
+                href={viatorHandoffHref}
+                data-dcc-handoff-link="true"
+                data-dcc-provider="Viator"
+                data-dcc-account="pid=P00281144"
+                target="_blank"
+                rel="sponsored noopener noreferrer"
+                style={{ padding: "6px 12px", borderRadius: 6, background: "#0284c7", color: "#fff", fontWeight: 700, fontSize: "12px", textDecoration: "none" }}
+              >
+                Check Alaska Excursions on Viator (pid=P00281144)
+              </a>
+              <a
+                href={gygHandoffHref}
+                data-dcc-handoff-link="true"
+                data-dcc-provider="GetYourGuide"
+                data-dcc-account="partner_id=F2MMUUH"
+                target="_blank"
+                rel="sponsored noopener noreferrer"
+                style={{ padding: "6px 12px", borderRadius: 6, background: "#0369a1", color: "#fff", fontWeight: 700, fontSize: "12px", textDecoration: "none" }}
+              >
+                Compare on GetYourGuide (partner_id=F2MMUUH)
+              </a>
+              <a
+                href={fhHandoffHref}
+                data-dcc-handoff-link="true"
+                data-dcc-provider="FareHarbor"
+                data-dcc-account="asn=welcometoalaskatours"
+                target="_blank"
+                rel="sponsored noopener noreferrer"
+                style={{ padding: "6px 12px", borderRadius: 6, background: "#0f766e", color: "#fff", fontWeight: 700, fontSize: "12px", textDecoration: "none" }}
+              >
+                Direct Alaska Operator via FareHarbor (asn=welcometoalaskatours)
+              </a>
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 12, fontSize: "12px" }}>
+              <a
+                href={`https://juneauflightdeck.com/${ctxQuery}`}
+                data-dcc-cross-site-link="true"
+                style={{ color: "#93c5fd", textDecoration: "underline", fontWeight: 600 }}
+              >
+                Continue to Juneau Flight Deck (Helicopter Dispatch) →
+              </a>
             </div>
           </div>
         </div>

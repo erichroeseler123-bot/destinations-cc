@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
-import { getViatorCapabilities } from "@/lib/viator/access";
-import { getViatorServerConfig, normalizeViatorCurrency } from "@/lib/viator/config";
+import { getViatorCapabilities } from "./access";
+import { getViatorServerConfig, normalizeViatorCurrency } from "./config";
 import {
   ViatorDestinationCatalogSchema,
   ViatorDestinationCatalogRowSchema,
@@ -13,7 +13,7 @@ import {
   type ViatorDestinationCatalogRow,
   type ViatorTagCatalog,
   type ViatorTagCatalogItem,
-} from "@/lib/viator/schema";
+} from "./schema";
 
 type ViatorRequestOptions = {
   method?: "GET" | "POST";

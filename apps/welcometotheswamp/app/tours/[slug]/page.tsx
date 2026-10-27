@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import FareHarborWidget from "@/app/components/FareHarborWidget";
+import PortfolioAssuranceBanner from "@/app/components/dcc/PortfolioAssuranceBanner";
+import {
+  buildPortfolioHandoffUrl,
+  evaluatePortfolioAssuranceSummary,
+  resolvePortfolioTripContext,
+} from "@/lib/dcc/commerce/portfolio";
 import { SITE_CONFIG } from "@/app/site-config";
 import { notFound } from "next/navigation";
 
@@ -32,6 +38,7 @@ const getProductImage = (productId: string) => {
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 export function generateStaticParams() {
@@ -59,7 +66,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function TourDetailPage({ params }: PageProps) {
+export default async function TourDetailPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
   const productId = SLUG_TO_ID[slug];
   if (!productId) {
@@ -71,6 +78,20 @@ export default async function TourDetailPage({ params }: PageProps) {
     notFound();
   }
 
+  const resolvedSearchParams = searchParams ? await searchParams : {};
+  const carriedContext = await resolvePortfolioTripContext({
+    searchParams: resolvedSearchParams,
+    claimingOwner: "welcometotheswamp.com",
+    issueIfParamsPresent: true,
+    defaultPortSlug: "new-orleans",
+  });
+  const engineId =
+    slug === "city-tour" ? "new-orleans-city-tours" : "new-orleans-swamp-tours";
+  const assurance = evaluatePortfolioAssuranceSummary({
+    engineId,
+    callerClientId: "ssr:welcometotheswamp.com",
+  });
+
   const image = getProductImage(productId);
   const asn = SITE_CONFIG.fareharborSwampAsn;
 
@@ -78,6 +99,34 @@ export default async function TourDetailPage({ params }: PageProps) {
   const directLink = product.itemId
     ? `https://fareharbor.com/embeds/book/${product.companyShortname}/items/${product.itemId}/?asn=${asn}&flow=${product.flowId || ""}&ref=wts-detail-${slug}`
     : `https://fareharbor.com/embeds/book/${product.companyShortname}/?asn=${asn}&flow=${product.flowId || ""}&ref=wts-detail-${slug}`;
+
+  const fhHandoffHref = buildPortfolioHandoffUrl({
+    originatingSite: "welcometotheswamp.com",
+    provider: "fareharbor",
+    providerAccount: asn,
+    productCode: productId,
+    destinationUrl: directLink,
+    campaign: `wts-detail-${slug}`,
+    contextId: carriedContext.contextId,
+    evaluationRunId: assurance.evaluationRunId,
+    receiptId: assurance.receiptId,
+    intendedDate: carriedContext.payload.date || null,
+    partySize: carriedContext.payload.partySize || null,
+  });
+  const viatorHandoffHref = buildPortfolioHandoffUrl({
+    originatingSite: "welcometotheswamp.com",
+    provider: "viator",
+    providerAccount: "P00058396",
+    productCode: productId,
+    destinationUrl: "https://www.viator.com/New-Orleans-tours/Nature-and-Wildlife/d675-g9-c36?pid=P00058396&mcid=42383",
+    campaign: `wts-detail-${slug}-viator`,
+    contextId: carriedContext.contextId,
+    evaluationRunId: assurance.evaluationRunId,
+    receiptId: assurance.receiptId,
+    intendedDate: carriedContext.payload.date || null,
+    partySize: carriedContext.payload.partySize || null,
+  });
+  const ctxQuery = carriedContext.contextId ? `?ctx=${encodeURIComponent(carriedContext.contextId)}` : "";
 
   const operatorLabel = product.companyShortname === "ragincajuntours" ? "Ragin Cajun Tours" : "Southern Style Tours";
 
@@ -101,7 +150,8 @@ export default async function TourDetailPage({ params }: PageProps) {
           </p>
           <div style={{ marginTop: "12px" }}>
             <a
-              href={directLink}
+              href={fhHandoffHref}
+              data-dcc-handoff-link="true"
               className="wts-button wts-button-primary fh-book"
               style={{ padding: "12px 24px", fontSize: "13px", fontWeight: 700, borderRadius: "12px" }}
             >
@@ -110,6 +160,36 @@ export default async function TourDetailPage({ params }: PageProps) {
           </div>
         </div>
       </div>
+
+      <PortfolioAssuranceBanner
+        siteDomain="welcometotheswamp.com"
+        assurance={assurance}
+        carriedContext={carriedContext}
+        handoffActions={[
+          {
+            label: `Book ${product.title} via FareHarbor`,
+            href: fhHandoffHref,
+            providerLabel: "FareHarbor",
+            accountLabel: `asn=${asn}`,
+          },
+          {
+            label: "Compare Swamp Departures on Viator",
+            href: viatorHandoffHref,
+            providerLabel: "Viator",
+            accountLabel: "pid=P00058396",
+          },
+        ]}
+        crossSiteLinks={[
+          {
+            label: "Compare New Orleans Tours on Welcome to New Orleans Tours",
+            href: `https://www.welcometoneworleanstours.com/tours/airboat-small${ctxQuery}`,
+          },
+          {
+            label: "View DCC Swamp Fast Pass",
+            href: `https://www.destinationcommandcenter.com/new-orleans/swamp-tours${ctxQuery}`,
+          },
+        ]}
+      />
 
       <section className="wts-section" style={{ margin: "32px auto", maxWidth: "800px", padding: "28px" }}>
         <h2 style={{ fontSize: "20px", fontWeight: 800, color: "#0f172a", marginBottom: "16px" }}>

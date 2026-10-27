@@ -30,8 +30,8 @@ jobs:
       - name: TypeScript typecheck
         run: npx tsc --noEmit
 
-      - name: Run Golden Master & Machine Layer Test Suite (Tests 36, 81, 82, 83, 84, 85)
-        run: npx tsx --test tests/dcc/36-discovery-stack.test.ts tests/dcc/81-category-decision-engine-framework.test.ts tests/dcc/82-dcc-machine-layer-v01.test.ts tests/dcc/83-dcc-machine-layer-v02.test.ts tests/dcc/84-dcc-machine-layer-v03.test.ts tests/dcc/85-dcc-machine-layer-v031.test.ts
+      - name: Run Golden Master & Machine Layer Test Suite (Tests 36, 81, 82, 83, 84, 85, 86)
+        run: npx tsx --test tests/dcc/36-discovery-stack.test.ts tests/dcc/81-category-decision-engine-framework.test.ts tests/dcc/82-dcc-machine-layer-v01.test.ts tests/dcc/83-dcc-machine-layer-v02.test.ts tests/dcc/84-dcc-machine-layer-v03.test.ts tests/dcc/85-dcc-machine-layer-v031.test.ts tests/dcc/86-dcc-assurance-commerce-portfolio.test.ts
 
       - name: Run 10-Operation Machine Layer v0.3 Benchmarks
         run: npx tsx scripts/dcc/benchmark-machine-layer-v03.ts

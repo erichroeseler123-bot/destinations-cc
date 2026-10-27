@@ -36,6 +36,7 @@
     ".next/types/**/*.ts",
     "../../app/new-orleans/**/*.ts",
     "../../app/new-orleans/**/*.tsx",
+    "../../app/components/dcc/PortfolioAssuranceBanner.tsx",
     "../../components/**/*.ts",
     "../../components/**/*.tsx",
     "../../lib/**/*.ts",
@@ -43,6 +44,9 @@
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "../../lib/dcc/machine/**/*",
+    "../../lib/dcc/earthos/**/*",
+    "../../lib/dcc/juneauPortDayEngine.ts"
   ]
 }

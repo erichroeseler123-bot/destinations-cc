@@ -521,8 +521,9 @@ export function buildMcpDiscoveryDocument(baseUrl = DCC_V03_SITE_URL) {
     tools: [
       {
         name: "dcc_evaluate_category",
+        requiredScope: "dcc:evaluate",
         description:
-          "Evaluates a declared DCC category engine (juneau-helicopter-tours, hawaii-whale-watching, juneau-helicopter-canary-v03, or denver-to-mountain-transportation) with server-controlled knowledgeCutoff and returns a JWS EdDSA signed receipt.",
+          "Evaluates a declared DCC category engine (juneau-helicopter-tours, hawaii-whale-watching, denver-to-mountain-transportation, alaska-shore-excursions, new-orleans-swamp-tours, new-orleans-city-tours, or juneau-helicopter-canary-v03) with server-controlled knowledgeCutoff and returns a JWS EdDSA signed receipt.",
         inputSchema: {
           type: "object",
           required: ["engineId", "validAt", "inputs"],
@@ -535,6 +536,7 @@ export function buildMcpDiscoveryDocument(baseUrl = DCC_V03_SITE_URL) {
       },
       {
         name: "dcc_verify_receipt_jws",
+        requiredScope: "dcc:read:public",
         description:
           "Verifies a DCC JWS Compact decision receipt (alg=EdDSA) against /.well-known/jwks.json and checks RFC 8785 canonicalization and revocation status.",
         inputSchema: {
@@ -547,6 +549,7 @@ export function buildMcpDiscoveryDocument(baseUrl = DCC_V03_SITE_URL) {
       },
       {
         name: "dcc_get_candidate_universe",
+        requiredScope: "dcc:read:public",
         description:
           "Retrieves a versioned, content-addressed CandidateUniverse including scope, inclusion methodology, sources consulted, known exclusions, and coverage gaps.",
         inputSchema: {
@@ -560,16 +563,72 @@ export function buildMcpDiscoveryDocument(baseUrl = DCC_V03_SITE_URL) {
       },
       {
         name: "dcc_issue_shadow_authorization",
+        requiredScope: "dcc:evaluate",
         description:
           "Transforms a qualified or recommended decision receipt into a provider-neutral shadow-mode DecisionAuthorization (OCTO, AP2, ACP, Rezdy, Square) with zero live side effects.",
         inputSchema: {
           type: "object",
           required: ["targetAdapter"],
           properties: {
+            receiptId: { type: "string" },
             targetAdapter: {
               type: "string",
               enum: ["octo", "ap2", "acp", "rezdy", "square"],
             },
+          },
+        },
+      },
+      {
+        name: "dcc_create_commercial_handoff",
+        requiredScope: "dcc:commerce:handoff",
+        description:
+          "Creates an optional outbound commercial affiliate handoff (handoff_id) in the separated commercial module without altering published evidence or decision receipts.",
+        inputSchema: {
+          type: "object",
+          required: ["originatingSite", "provider", "productCode", "productDestinationUrl"],
+          properties: {
+            originatingSite: { type: "string" },
+            provider: {
+              type: "string",
+              enum: ["viator", "fareharbor", "getyourguide", "direct"],
+            },
+            providerAccount: { type: "string" },
+            productCode: { type: "string" },
+            productDestinationUrl: { type: "string" },
+            contextId: { type: "string" },
+            evaluationRunId: { type: "string" },
+            receiptId: { type: "string" },
+            intendedDate: { type: "string" },
+            intendedOption: { type: "string" },
+            partySize: { type: "number" },
+          },
+        },
+      },
+      {
+        name: "dcc_report_commercial_outcome",
+        requiredScope: "dcc:commerce:report_outcome",
+        description:
+          "Records an authenticated commercial booking outcome with provenance and reconciliation against handoff/evaluation details without altering rules or approved claims.",
+        inputSchema: {
+          type: "object",
+          required: ["provider", "providerBookingRef", "eventType"],
+          properties: {
+            provider: {
+              type: "string",
+              enum: ["viator", "fareharbor", "getyourguide", "direct"],
+            },
+            providerBookingRef: { type: "string" },
+            eventType: { type: "string" },
+            providerEventTime: { type: "string" },
+            handoffId: { type: "string" },
+            campaignOrRefValue: { type: "string" },
+            bookedProductCode: { type: "string" },
+            bookedDate: { type: "string" },
+            bookedPartySize: { type: "number" },
+            bookingValueAmount: { type: "number" },
+            bookingValueCurrency: { type: "string" },
+            estimatedCommissionAmount: { type: "number" },
+            paidCommissionAmount: { type: "number" },
           },
         },
       },
@@ -595,6 +654,61 @@ export function buildReceiptVerificationDocumentation(baseUrl = DCC_V03_SITE_URL
       administrativeSimulation: "rcpt:sim:sha256:<64-lowercase-hex-sha256>",
       truncationPermitted: false,
     },
+    receiptHashBoundary: {
+      hashFormula:
+        "rcpt:sha256:<SHA-256(UTF8(RFC8785(deterministicIdentityCore)))>",
+      deterministicIdentityCoreIncludedFields: [
+        "objectType",
+        "spec",
+        "executionClass",
+        "isSynthetic",
+        "syntheticWatermark",
+        "evaluationFingerprint",
+        "engineId",
+        "engineVersion",
+        "compilerVersion",
+        "decisionIrBundleHash",
+        "candidateUniverseId",
+        "candidateUniverseVersion",
+        "candidateUniverseHash",
+        "pinnedRuleVersionHashes",
+        "pinnedClaimEventHashes",
+        "pinnedEvidenceHashes",
+        "pinnedSchemaHashes",
+        "normalizedInputHash",
+        "validAt",
+        "knowledgeCutoff",
+        "decisionState",
+        "recommendedCandidateDccId",
+        "candidateDispositions",
+        "resultHash",
+        "traceHash",
+        "epistemicLimitationStatement",
+        "jwksUri",
+        "revocationCheckEndpoint",
+      ],
+      excludedFromReceiptIdHash: [
+        "receiptId",
+        "signature",
+        "jwsCompact",
+        "issuedAt",
+        "evaluationRunId",
+        "traceRunId",
+        "client_id",
+        "callerClientId",
+        "traceparent",
+        "cacheStatus",
+        "handoff_id",
+        "handoffId",
+        "commissionRate",
+        "affiliateAccount",
+        "commercialRoutingPriority",
+      ],
+      selfReferenceInvariant:
+        "receiptId never includes its own receiptId or JWS signature bytes in its hash input.",
+      callerAndCommerceIndependenceInvariant:
+        "Caller identity (client_id), invocation run metadata (evaluationRunId, traceRunId, cacheStatus, traceparent), and commercial handoffs (handoff_id) are strictly excluded from deterministicIdentityCore and never required to evaluate, verify, or replay a decision receipt.",
+    },
     verificationSteps: [
       "1. Parse the JWS Compact string (header.payload.signature) and decode the protected header.",
       "2. Confirm header.alg === 'EdDSA', header.typ === 'application/dcc-decision-receipt+jws', and header.kid is a non-empty string.",
@@ -602,7 +716,8 @@ export function buildReceiptVerificationDocumentation(baseUrl = DCC_V03_SITE_URL
       "4. Enforce key lifecycle policy: if key.status === 'revoked', fail closed immediately (KEY_REVOKED). If key.status === 'retired_verify_only', allow verification of historical receipts issued before key.retiredAt.",
       "5. Verify the Ed25519 signature over ASCII(BASE64URL(header) + '.' + BASE64URL(payload)) using standard JWS verification.",
       "6. Decode the payload UTF-8 bytes, parse JSON, re-serialize with RFC 8785 JCS, and confirm byte-for-byte equality with the signed payload bytes.",
-      "7. Confirm payload.knowledgeCutoff was server-established and check payload.isSynthetic === false before treating the receipt as operational evidence.",
+      "7. Recompute SHA-256 over RFC 8785 JCS of deterministicIdentityCore (excluding receiptId, issuedAt, evaluationRunId, traceRunId, and signature bytes) and confirm equality with receiptId.",
+      "8. Confirm payload.knowledgeCutoff was server-established and check payload.isSynthetic === false before treating the receipt as operational evidence.",
     ],
   };
 }

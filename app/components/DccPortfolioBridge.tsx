@@ -23,8 +23,28 @@ function readStoredContext() {
 }
 
 function captureInboundContext() {
-  const raw = new URLSearchParams(window.location.search).get("dcc_ctx");
+  const sp = new URLSearchParams(window.location.search);
+  const raw = sp.get("ctx") || sp.get("dcc_ctx");
   if (!raw) return readStoredContext();
+  if (raw.startsWith("dcc_ctx_")) {
+    fetch(`https://www.destinationcommandcenter.com/api/v1/context/${encodeURIComponent(raw)}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.success && data.payload) {
+          sessionStorage.setItem(
+            CONTEXT_KEY,
+            JSON.stringify({
+              contextId: data.contextId,
+              sourceSite: data.sourceSite,
+              tripContextState: data.tripContextState,
+              ...data.payload,
+            }),
+          );
+        }
+      })
+      .catch(() => undefined);
+    return { contextId: raw };
+  }
   try {
     const parsed = JSON.parse(decodeURIComponent(atob(raw.replace(/-/g, "+").replace(/_/g, "/"))));
     if (parsed && typeof parsed === "object") sessionStorage.setItem(CONTEXT_KEY, JSON.stringify(parsed));
@@ -58,3 +78,4 @@ export default function DccPortfolioBridge({ site }: { site: string }) {
   }, [site]);
   return null;
 }
+

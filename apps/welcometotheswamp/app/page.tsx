@@ -4,6 +4,12 @@ import type { Metadata } from "next";
 import JsonLd from "@/app/components/JsonLd";
 import { buildBreadcrumbJsonLd, buildWebPageJsonLd } from "@/lib/jsonld";
 import NextBoatFinder from "@/app/components/NextBoatFinder";
+import PortfolioAssuranceBanner from "@/app/components/dcc/PortfolioAssuranceBanner";
+import {
+  buildPortfolioHandoffUrl,
+  evaluatePortfolioAssuranceSummary,
+  resolvePortfolioTripContext,
+} from "@/lib/dcc/commerce/portfolio";
 import { SwampStorefrontPage } from "./StorefrontHomePage";
 import { swampStorefrontConfig } from "./pageConfig";
 
@@ -24,7 +30,51 @@ export const metadata: Metadata = {
 const WNO_BASE = "https://welcometoneworleanstours.com";
 const WNO_UTM = "utm_source=welcometotheswamp&utm_medium=referral&utm_campaign=swamp_to_wno";
 
-export default function HomePage() {
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const resolvedSearchParams = searchParams ? await searchParams : {};
+  const carriedContext = await resolvePortfolioTripContext({
+    searchParams: resolvedSearchParams,
+    claimingOwner: "welcometotheswamp.com",
+    issueIfParamsPresent: true,
+    defaultPortSlug: "new-orleans",
+  });
+  const assurance = evaluatePortfolioAssuranceSummary({
+    engineId: "new-orleans-swamp-tours",
+    callerClientId: "ssr:welcometotheswamp.com",
+  });
+  const fhHandoffHref = buildPortfolioHandoffUrl({
+    originatingSite: "welcometotheswamp.com",
+    provider: "fareharbor",
+    providerAccount: "aktourcenter",
+    productCode: "ragincajun-airboat",
+    destinationUrl:
+      "https://fareharbor.com/embeds/book/ragincajuntours/items/228524/?asn=aktourcenter&ref=wts-home-airboat",
+    campaign: "wts-home-airboat",
+    contextId: carriedContext.contextId,
+    evaluationRunId: assurance.evaluationRunId,
+    receiptId: assurance.receiptId,
+    intendedDate: carriedContext.payload.date || null,
+    partySize: carriedContext.payload.partySize || null,
+  });
+  const viatorHandoffHref = buildPortfolioHandoffUrl({
+    originatingSite: "welcometotheswamp.com",
+    provider: "viator",
+    providerAccount: "P00058396",
+    productCode: "nola-swamp-viator",
+    destinationUrl:
+      "https://www.viator.com/New-Orleans-tours/Nature-and-Wildlife/d675-g9-c36?pid=P00058396&mcid=42383",
+    campaign: "wts-home-viator",
+    contextId: carriedContext.contextId,
+    evaluationRunId: assurance.evaluationRunId,
+    receiptId: assurance.receiptId,
+    intendedDate: carriedContext.payload.date || null,
+    partySize: carriedContext.payload.partySize || null,
+  });
+  const ctxQuery = carriedContext.contextId ? `?ctx=${encodeURIComponent(carriedContext.contextId)}` : "";
   const touristTripJsonLd = {
     "@type": "TouristTrip",
     name: "New Orleans Swamp & Airboat Tours",
@@ -127,6 +177,35 @@ export default function HomePage() {
     <>
       <JsonLd data={jsonLd} />
       <div id="next-boat" className="bg-stone-950 px-4 pt-8 pb-4">
+        <PortfolioAssuranceBanner
+          siteDomain="welcometotheswamp.com"
+          assurance={assurance}
+          carriedContext={carriedContext}
+          handoffActions={[
+            {
+              label: "Book Ragin Cajun Airboat via FareHarbor",
+              href: fhHandoffHref,
+              providerLabel: "FareHarbor",
+              accountLabel: "asn=aktourcenter",
+            },
+            {
+              label: "Compare Swamp Departures on Viator",
+              href: viatorHandoffHref,
+              providerLabel: "Viator",
+              accountLabel: "pid=P00058396",
+            },
+          ]}
+          crossSiteLinks={[
+            {
+              label: "Continue to Welcome to New Orleans Tours",
+              href: `https://www.welcometoneworleanstours.com/tours/airboat-small${ctxQuery}`,
+            },
+            {
+              label: "Return to Destination Command Center",
+              href: `https://www.destinationcommandcenter.com/new-orleans/swamp-tours${ctxQuery}`,
+            },
+          ]}
+        />
         <NextBoatFinder />
       </div>
 

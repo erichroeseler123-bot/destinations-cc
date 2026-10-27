@@ -17,6 +17,12 @@ import { TOUR_RECORDS } from "../../lib/tourRecommendationRules";
 import { TOUR_DECISION_COPY } from "../../data/tourDecisionCopy";
 import { isApprovedProductSlug, resolveFareHarborSource } from "../../lib/fareHarborAttribution";
 import { buildWnoBreadcrumbJsonLd, buildWnoWebPageJsonLd, generateProductSchemaGraph } from "../../lib/structuredData";
+import PortfolioAssuranceBanner from "@/app/components/dcc/PortfolioAssuranceBanner";
+import {
+  buildPortfolioHandoffUrl,
+  evaluatePortfolioAssuranceSummary,
+  resolvePortfolioTripContext,
+} from "@/lib/dcc/commerce/portfolio";
 import styles from "./tourDetail.module.css";
 
 interface Props {
@@ -69,6 +75,7 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
   const hostHeader = requestHeaders.get("x-forwarded-host") || requestHeaders.get("host") || "";
   const host = hostHeader.split(":")[0];
   const isWto = host === "welcometoneworleanstours.com" || host === "www.welcometoneworleanstours.com";
+  const siteDomain = isWto ? "welcometoneworleanstours.com" : "destinationcommandcenter.com";
   const basePath = isWto ? "" : NEW_ORLEANS_TOURS_PATH;
   const pagePath = `${basePath}/tours/${slug}`;
   const fallbackHref = getFareHarborUrl(product.companyShortname, product.itemId, product.flowId);
@@ -80,6 +87,50 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
   const childrenConsiderations = product.childrenConsiderations?.length ? product.childrenConsiderations : decisionCopy?.childrenConsiderations;
 
   const resolvedSearchParams = await searchParams;
+  const carriedContext = await resolvePortfolioTripContext({
+    searchParams: resolvedSearchParams,
+    claimingOwner: siteDomain,
+    issueIfParamsPresent: true,
+    defaultPortSlug: "new-orleans",
+  });
+  const engineId =
+    slug.includes("airboat") || slug.includes("swamp")
+      ? "new-orleans-swamp-tours"
+      : "new-orleans-city-tours";
+  const assurance = evaluatePortfolioAssuranceSummary({
+    engineId,
+    callerClientId: `ssr:${siteDomain}`,
+  });
+  const fhHandoffHref = buildPortfolioHandoffUrl({
+    originatingSite: siteDomain,
+    provider: "fareharbor",
+    providerAccount: "aktourcenter",
+    productCode: slug,
+    destinationUrl: fallbackHref,
+    campaign: `${isWto ? "wno" : "dcc"}-${slug}`,
+    contextId: carriedContext.contextId,
+    evaluationRunId: assurance.evaluationRunId,
+    receiptId: assurance.receiptId,
+    intendedDate: carriedContext.payload.date || null,
+    partySize: carriedContext.payload.partySize || null,
+    useRelativePath: !isWto,
+  });
+  const viatorHandoffHref = buildPortfolioHandoffUrl({
+    originatingSite: siteDomain,
+    provider: "viator",
+    providerAccount: "P00058396",
+    productCode: slug,
+    destinationUrl: "https://www.viator.com/New-Orleans/d675-ttd?pid=P00058396&mcid=42383",
+    campaign: `${isWto ? "wno" : "dcc"}-${slug}-viator`,
+    contextId: carriedContext.contextId,
+    evaluationRunId: assurance.evaluationRunId,
+    receiptId: assurance.receiptId,
+    intendedDate: carriedContext.payload.date || null,
+    partySize: carriedContext.payload.partySize || null,
+    useRelativePath: !isWto,
+  });
+  const ctxQuery = carriedContext.contextId ? `?ctx=${encodeURIComponent(carriedContext.contextId)}` : "";
+
   const recommendedParam = typeof resolvedSearchParams.recommended === "string" ? resolvedSearchParams.recommended : "";
   let recommendationExplanation = "";
   if (recommendedParam) {
@@ -196,6 +247,40 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
             <div className={styles.decisionValue}>Current times & prices in FareHarbor</div>
           </div>
         </section>
+
+        <PortfolioAssuranceBanner
+          siteDomain={siteDomain}
+          assurance={assurance}
+          carriedContext={carriedContext}
+          handoffActions={[
+            {
+              label: `Book ${product.title} via FareHarbor`,
+              href: fhHandoffHref,
+              providerLabel: "FareHarbor",
+              accountLabel: "asn=aktourcenter",
+            },
+            {
+              label: "Compare New Orleans Options on Viator",
+              href: viatorHandoffHref,
+              providerLabel: "Viator",
+              accountLabel: "pid=P00058396",
+            },
+          ]}
+          crossSiteLinks={[
+            {
+              label: "Compare Swamp Airboats vs Boats on Welcome to the Swamp",
+              href: `https://welcometotheswamp.com/tours/airboat-tour${ctxQuery}`,
+            },
+            {
+              label: isWto
+                ? "View on Destination Command Center"
+                : "View on Welcome to New Orleans Tours",
+              href: isWto
+                ? `https://www.destinationcommandcenter.com/new-orleans/tours/${slug}${ctxQuery}`
+                : `https://www.welcometoneworleanstours.com/tours/${slug}${ctxQuery}`,
+            },
+          ]}
+        />
 
         <div className={styles.main}>
           <div className={styles.content}>

@@ -1,4 +1,4 @@
-import { getViatorPublicConfig, type ViatorAccessTier } from "@/lib/viator/config";
+import { getViatorPublicConfig, type ViatorAccessTier } from "./config";
 
 export type ViatorCapabilities = {
   accessTier: ViatorAccessTier;
@@ -10,6 +10,7 @@ export type ViatorCapabilities = {
   canUseModifiedSince: boolean;
   canUseSchedules: boolean;
   canUseBooking: boolean;
+  canUseBookingReporting: boolean;
   canUseAmendments: boolean;
   canUseMerchantFlows: boolean;
   shouldUseIngestionModel: boolean;
@@ -25,6 +26,7 @@ const CAPABILITIES_BY_TIER: Record<ViatorAccessTier, Omit<ViatorCapabilities, "a
     canUseModifiedSince: false,
     canUseSchedules: false,
     canUseBooking: false,
+    canUseBookingReporting: false,
     canUseAmendments: false,
     canUseMerchantFlows: false,
     shouldUseIngestionModel: false,
@@ -38,6 +40,7 @@ const CAPABILITIES_BY_TIER: Record<ViatorAccessTier, Omit<ViatorCapabilities, "a
     canUseModifiedSince: true,
     canUseSchedules: true,
     canUseBooking: false,
+    canUseBookingReporting: true,
     canUseAmendments: false,
     canUseMerchantFlows: false,
     shouldUseIngestionModel: true,
@@ -51,6 +54,7 @@ const CAPABILITIES_BY_TIER: Record<ViatorAccessTier, Omit<ViatorCapabilities, "a
     canUseModifiedSince: true,
     canUseSchedules: true,
     canUseBooking: true,
+    canUseBookingReporting: true,
     canUseAmendments: true,
     canUseMerchantFlows: false,
     shouldUseIngestionModel: true,
@@ -64,6 +68,7 @@ const CAPABILITIES_BY_TIER: Record<ViatorAccessTier, Omit<ViatorCapabilities, "a
     canUseModifiedSince: true,
     canUseSchedules: true,
     canUseBooking: true,
+    canUseBookingReporting: true,
     canUseAmendments: true,
     canUseMerchantFlows: true,
     shouldUseIngestionModel: true,
@@ -78,6 +83,8 @@ export function getViatorCapabilities(
     ...CAPABILITIES_BY_TIER[accessTier],
   };
 }
+
+export const getViatorAccessCapabilities = getViatorCapabilities;
 
 export function hasViatorCapability(capability: keyof Omit<ViatorCapabilities, "accessTier">): boolean {
   return Boolean(getViatorCapabilities()[capability]);

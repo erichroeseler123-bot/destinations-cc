@@ -4,6 +4,8 @@ import {
   enforceEvaluationRequestSizeLimit,
   enforceMachineLayerFeatureFlag,
   evaluateMachineEngine,
+  resolveOrGenerateW3cTraceparent,
+  sanitizeEvaluationRequestForAssurance,
   verifyEvaluationAuthAndRateLimit,
 } from "@/lib/dcc/machine";
 
@@ -14,10 +16,12 @@ export async function POST(request: Request) {
   if (flagBlocked) return flagBlocked;
 
   let rawText: string;
+  let authResult: ReturnType<typeof verifyEvaluationAuthAndRateLimit>;
+  const traceparent = resolveOrGenerateW3cTraceparent(request.headers.get("traceparent"));
   try {
     rawText = await request.text();
     enforceEvaluationRequestSizeLimit(rawText);
-    verifyEvaluationAuthAndRateLimit(request, "evaluate:single");
+    authResult = verifyEvaluationAuthAndRateLimit(request, "evaluate:single");
   } catch (err) {
     if (err instanceof MachineSecurityLimitError) {
       return buildMachineJsonResponse(
@@ -73,7 +77,10 @@ export async function POST(request: Request) {
     );
   }
 
-  const payload = body as Record<string, unknown>;
+  const { sanitizedBody } = sanitizeEvaluationRequestForAssurance(
+    body as Record<string, unknown>,
+  );
+  const payload = sanitizedBody;
   const engineId = typeof payload.engineId === "string" ? payload.engineId : "";
   if (!engineId) {
     return buildMachineJsonResponse(
@@ -135,27 +142,36 @@ export async function POST(request: Request) {
     result.response.withdrawnClaimVersionIds.length > 0 ||
     result.response.conflictIds.length > 0;
 
-  return buildMachineJsonResponse(result.response, {
-    etag: `"sha256-${result.response.resultHash.slice(0, 32)}"`,
-    cacheControl: hasWithdrawnOrConflicted
-      ? "no-store"
-      : "public, max-age=60, s-maxage=60",
-    extraHeaders: {
-      "X-DCC-Engine-Id": result.response.engineId,
-      "X-DCC-Engine-Version": result.response.engineVersion,
-      "X-DCC-Bundle-Hash": result.response.bundleHash,
-      "X-DCC-Result-Hash": result.response.resultHash,
-      "X-DCC-Trace-Hash": result.response.traceHash,
-      "X-DCC-Decision-State": result.response.decisionState,
-      ...(result.response.receiptId
-        ? { "X-DCC-Receipt-Id": result.response.receiptId }
-        : {}),
-      ...(result.response.evaluationRunId
-        ? { "X-DCC-Evaluation-Run-Id": result.response.evaluationRunId }
-        : {}),
-      ...(result.response.evaluationFingerprint
-        ? { "X-DCC-Evaluation-Fingerprint": result.response.evaluationFingerprint }
-        : {}),
+  return buildMachineJsonResponse(
+    {
+      ...result.response,
+      callerClientId: authResult.clientId,
+      traceparent,
     },
-  });
+    {
+      etag: `"sha256-${result.response.resultHash.slice(0, 32)}"`,
+      cacheControl: hasWithdrawnOrConflicted
+        ? "no-store"
+        : "public, max-age=60, s-maxage=60",
+      extraHeaders: {
+        "X-DCC-Engine-Id": result.response.engineId,
+        "X-DCC-Engine-Version": result.response.engineVersion,
+        "X-DCC-Bundle-Hash": result.response.bundleHash,
+        "X-DCC-Result-Hash": result.response.resultHash,
+        "X-DCC-Trace-Hash": result.response.traceHash,
+        "X-DCC-Decision-State": result.response.decisionState,
+        "X-DCC-Client-Id": authResult.clientId,
+        traceparent,
+        ...(result.response.receiptId
+          ? { "X-DCC-Receipt-Id": result.response.receiptId }
+          : {}),
+        ...(result.response.evaluationRunId
+          ? { "X-DCC-Evaluation-Run-Id": result.response.evaluationRunId }
+          : {}),
+        ...(result.response.evaluationFingerprint
+          ? { "X-DCC-Evaluation-Fingerprint": result.response.evaluationFingerprint }
+          : {}),
+      },
+    },
+  );
 }

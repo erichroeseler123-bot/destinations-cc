@@ -14,8 +14,11 @@ export async function POST(request: NextRequest) {
   }
 
   const capabilities = getViatorCapabilities();
-  if (!capabilities.canUseBooking) {
-    return NextResponse.json({ ok: false, error: "viator_booking_not_enabled_for_tier" }, { status: 501 });
+  if (!capabilities.canUseBookingReporting) {
+    return NextResponse.json(
+      { ok: false, error: "viator_booking_reporting_not_enabled_for_tier" },
+      { status: 501 }
+    );
   }
 
   const acknowledgements = Array.isArray(body.acknowledgements)

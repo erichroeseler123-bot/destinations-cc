@@ -1,5 +1,10 @@
+import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import {
+  resolveOrGenerateW3cTraceparent,
+  sanitizeEvaluationRequestForAssurance,
+} from "../securityLimits";
 import { buildV03CandidateUniverse, type V03CandidateUniverse } from "./candidateUniverse";
 import {
   issueShadowDecisionAuthorization,
@@ -28,7 +33,11 @@ import {
   loadPreservedCapturesBundleV031,
   persistPreservedCaptureToObjectStore,
 } from "./preservedCapturesV031";
-import { sha256HexFull, type V03SignedDecisionReceipt } from "./rfc8785AndJws";
+import {
+  rfc8785Canonicalize,
+  sha256HexFull,
+  type V03SignedDecisionReceipt,
+} from "./rfc8785AndJws";
 import {
   CloudflareR2PrivateArtifactStore,
   InMemoryTestArtifactStore,
@@ -124,6 +133,7 @@ export interface V03RuntimeStore {
     }
   >;
   authorizationsById: Map<string, V03SignedDecisionAuthorization>;
+  evaluationCacheByDeterministicKey?: Map<string, V03EvaluationResult>;
   preservedCapturesSyncedToObjectStore: boolean;
   baseStateSyncedToNeon: boolean;
   hydratedFromNeon: boolean;
@@ -1832,10 +1842,375 @@ export function getV03RuntimeStore(options?: {
     pinnedSchemaHashes: schemaHashes,
   });
 
+  // Portfolio Category Engine 4: Alaska Shore Excursions (lastfrontiershoreexcursions.com & destinationcommandcenter.com)
+  const alaskaShoreUniverse = buildV03CandidateUniverse({
+    universeId: "univ:alaska-shore-excursions",
+    version: "0.3.0",
+    engineId: "alaska-shore-excursions",
+    engineVersion: "0.3.0",
+    isSynthetic: false,
+    scope: {
+      destinationDccEntityId: jnuDestId,
+      destinationName: "Juneau & Southeast Alaska Cruise Ports",
+      categorySlug: "alaska-shore-excursions",
+      jurisdiction: "US-AK",
+      geographicBounds: { minLat: 55.0, maxLat: 60.0, minLon: -136.5, maxLon: -130.0 },
+    },
+    inclusionMethod:
+      "Juneau helicopter glacier excursions backed by preserved first-party captures (Coastal, TEMSCO, NorthStar) plus Southeast Alaska port excursions bounded by explicit live port-window and seat-inventory confirmation requirements.",
+    sourcesAndQueriesConsulted: [
+      {
+        sourceDccId: srcCoastalPolicyId,
+        organizationName: "Coastal Helicopters",
+        queryOrEndpoint: capCoastalTour.url,
+        consultedAt: capCoastalTour.retrievedAt,
+        snapshotSha256: capCoastalTour.rawSha256,
+      },
+      {
+        sourceDccId: srcTemscoPolicyId,
+        organizationName: "TEMSCO Helicopters",
+        queryOrEndpoint: capTemscoTour.url,
+        consultedAt: capTemscoTour.retrievedAt,
+        snapshotSha256: capTemscoTour.rawSha256,
+      },
+    ],
+    includedCandidates: [
+      ...jnuUniverse.includedCandidates,
+      {
+        candidateDccEntityId: mintOpaqueDccEntityId(
+          "tour_candidate",
+          "ak-juneau-whale-watch-mendenhall-combo-7423p1",
+        ),
+        legacyCandidateCode: "7423P1",
+        displayName: "Juneau Humpback Whale Watching & Mendenhall Glacier View Combo",
+        operatorDccEntityId: coastalOpId,
+        operatorDisplayName: "Juneau Marine & Glacier Excursions",
+        bookingChannelClass: "approved_affiliate",
+        wtaAttributionPresent: false,
+        staticAttributes: {
+          basePriceUsd: 189,
+          requestedFormat: "whale_and_glacier_combo",
+          minAgeYears: 2,
+          requiresOperatorConfirmation: true,
+          operatorConfirmationReasonCode:
+            "LIVE_CRUISE_PORT_WINDOW_AND_VESSEL_SEAT_INVENTORY_UNESTABLISHED",
+        },
+        requiredClaimIds: ["clm:jnu:standard-seat-weight-limit-lbs"],
+      },
+    ],
+    knownExclusions: [],
+    coverageGaps: [
+      ...jnuUniverse.coverageGaps,
+      {
+        gapCode: "LIVE_PROVIDER_DATE_AVAILABILITY_AND_OPTION_SELECTION_UNESTABLISHED",
+        affectedDimension: "real_time_provider_inventory",
+        description:
+          "Date availability and specific departure time-slot selection are not prefilled or guaranteed at static evaluation time and must be confirmed on the provider checkout page.",
+        impactOnCompleteness: "Requires confirmation on outbound provider page.",
+      },
+    ],
+    effectiveFrom: "2026-01-01T00:00:00.000Z",
+    effectiveTo: "2027-12-31T23:59:59.000Z",
+    knowledgeCutoff: repairedIngestionRecordedAt,
+    refreshDeadline: "2026-11-26T00:00:00.000Z",
+    generatorVersion: "dcc-universe-generator/0.3.1",
+    epistemicDisclaimer:
+      "Evaluates substantiated Juneau operator policy rules and port constraints; does not claim live date availability or prefilled provider inventory.",
+  });
+
+  const alaskaShoreBundle = compileV03EngineBundle({
+    engineId: "alaska-shore-excursions",
+    engineVersion: "0.3.0",
+    universe: alaskaShoreUniverse,
+    rules: [
+      {
+        ruleId: "rule:ak:juneau-policy-verified",
+        ruleVersionId: "rulev:ak:juneau-policy-verified:v1",
+        ruleKind: "hard_gate",
+        title: "Substantiated Juneau operator safety and weight-surcharge baseline",
+        reasonCode: "ALASKA_PORT_OPERATOR_POLICY_SUBSTANTIATED",
+        requiredClaimId: "clm:jnu:standard-seat-weight-limit-lbs",
+        predicateType: "claim_must_be_eligible_and_boolean_true",
+        scoreDelta: 20,
+      },
+      {
+        ruleId: "rule:ak:format-match",
+        ruleVersionId: "rulev:ak:format-match:v1",
+        ruleKind: "ranking_weight",
+        title: "Matches requested Alaska shore excursion format",
+        reasonCode: "REQUESTED_FORMAT",
+        requiredClaimId: "clm:jnu:standard-seat-weight-limit-lbs",
+        predicateType: "input_equals_candidate_attr",
+        inputField: "requestedFormat",
+        candidateAttrKey: "requestedFormat",
+        scoreDelta: 15,
+      },
+    ],
+    pinnedSchemaHashes: schemaHashes,
+  });
+
+  // Portfolio Category Engine 5: New Orleans Swamp Tours (welcometotheswamp.com & welcometoneworleanstours.com)
+  const nolaDestId = mintOpaqueDccEntityId("destination", "new-orleans-louisiana");
+  const nolaSwampOpId = mintOpaqueDccEntityId("operator", "new-orleans-bayou-swamp-operators");
+  const candNolaAirboatLargeId = mintOpaqueDccEntityId(
+    "tour_candidate",
+    "nola-airboat-large-417672p1",
+  );
+  const candNolaPontoonCoveredId = mintOpaqueDccEntityId(
+    "tour_candidate",
+    "nola-covered-pontoon-5050p12",
+  );
+  const candNolaJeanLafitteId = mintOpaqueDccEntityId(
+    "tour_candidate",
+    "nola-jean-lafitte-swamp-5628swamp",
+  );
+
+  const nolaSwampUniverse = buildV03CandidateUniverse({
+    universeId: "univ:new-orleans-swamp-tours",
+    version: "0.3.0",
+    engineId: "new-orleans-swamp-tours",
+    engineVersion: "0.3.0",
+    isSynthetic: false,
+    scope: {
+      destinationDccEntityId: nolaDestId,
+      destinationName: "New Orleans, Jean Lafitte & Manchac Bayou, Louisiana",
+      categorySlug: "new-orleans-swamp-tours",
+      jurisdiction: "US-LA",
+      geographicBounds: { minLat: 29.6, maxLat: 30.3, minLon: -90.5, maxLon: -89.8 },
+    },
+    inclusionMethod:
+      "Evidence-bounded New Orleans swamp and bayou boat candidates classified by vessel type (high-speed airboat vs covered pontoon) with explicit unresolved live requirements disclosed.",
+    sourcesAndQueriesConsulted: [],
+    includedCandidates: [
+      {
+        candidateDccEntityId: candNolaAirboatLargeId,
+        legacyCandidateCode: "417672P1",
+        displayName: "New Orleans High-Speed Swamp Airboat Adventure (417672P1)",
+        operatorDccEntityId: nolaSwampOpId,
+        operatorDisplayName: "New Orleans Airboat & Bayou Operators",
+        bookingChannelClass: "approved_affiliate",
+        wtaAttributionPresent: false,
+        staticAttributes: {
+          basePriceUsd: 79,
+          requestedFormat: "airboat",
+          boatType: "airboat",
+          minAgeYears: 5,
+          requiresOperatorConfirmation: true,
+          operatorConfirmationReasonCode:
+            "LIVE_DATE_AVAILABILITY_AND_AIRBOAT_MINIMUM_AGE_HEIGHT_UNESTABLISHED",
+        },
+        requiredClaimIds: [],
+      },
+      {
+        candidateDccEntityId: candNolaPontoonCoveredId,
+        legacyCandidateCode: "5050P12",
+        displayName: "Covered Bayou Pontoon Swamp Boat Tour (Family & Shade Friendly, 5050P12)",
+        operatorDccEntityId: nolaSwampOpId,
+        operatorDisplayName: "New Orleans Airboat & Bayou Operators",
+        bookingChannelClass: "approved_affiliate",
+        wtaAttributionPresent: false,
+        staticAttributes: {
+          basePriceUsd: 59,
+          requestedFormat: "pontoon",
+          boatType: "pontoon",
+          minAgeYears: 0,
+          requiresOperatorConfirmation: true,
+          operatorConfirmationReasonCode:
+            "LIVE_DATE_AVAILABILITY_AND_HOTEL_SHUTTLE_PICKUP_WINDOW_UNESTABLISHED",
+        },
+        requiredClaimIds: [],
+      },
+      {
+        candidateDccEntityId: candNolaJeanLafitteId,
+        legacyCandidateCode: "5628SWAMP",
+        displayName: "Jean Lafitte Swamp & Bayou Tour with French Quarter Pickup (5628SWAMP)",
+        operatorDccEntityId: nolaSwampOpId,
+        operatorDisplayName: "New Orleans Airboat & Bayou Operators",
+        bookingChannelClass: "approved_affiliate",
+        wtaAttributionPresent: false,
+        staticAttributes: {
+          basePriceUsd: 65,
+          requestedFormat: "pontoon_with_pickup",
+          boatType: "pontoon",
+          minAgeYears: 0,
+          requiresOperatorConfirmation: true,
+          operatorConfirmationReasonCode:
+            "LIVE_DATE_AVAILABILITY_AND_FRENCH_QUARTER_PICKUP_ZONE_UNESTABLISHED",
+        },
+        requiredClaimIds: [],
+      },
+    ],
+    knownExclusions: [],
+    coverageGaps: [
+      {
+        gapCode: "LIVE_SWAMP_BOAT_DATE_AVAILABILITY_UNESTABLISHED",
+        affectedDimension: "real_time_provider_inventory",
+        description:
+          "Live departure seat availability and exact date/time option selection are not verified at decision evaluation time and require confirmation on the provider booking page.",
+        impactOnCompleteness: "Candidates are bounded to qualified disposition.",
+      },
+      {
+        gapCode: "AIRBOAT_AGE_HEIGHT_AND_PREGNANCY_RESTRICTIONS_REQUIRE_OPERATOR_CHECK",
+        affectedDimension: "passenger_safety_restrictions",
+        description:
+          "High-speed airboats enforce minimum age/height (~5 years / 48 inches) and back/neck/pregnancy advisories that travelers must confirm before checkout.",
+        impactOnCompleteness: "Covered pontoon boats are preferred for young children.",
+      },
+    ],
+    effectiveFrom: "2026-01-01T00:00:00.000Z",
+    effectiveTo: "2027-12-31T23:59:59.000Z",
+    knowledgeCutoff: repairedIngestionRecordedAt,
+    refreshDeadline: "2026-11-26T00:00:00.000Z",
+    generatorVersion: "dcc-universe-generator/0.3.1",
+    epistemicDisclaimer:
+      "Evidence-bounded New Orleans swamp tour classification: all candidates carry qualified disposition because live date availability, hotel shuttle pickup windows, and operator-specific airboat height/age rules require confirmation at booking.",
+  });
+
+  const nolaSwampBundle = compileV03EngineBundle({
+    engineId: "new-orleans-swamp-tours",
+    engineVersion: "0.3.0",
+    universe: nolaSwampUniverse,
+    rules: [
+      {
+        ruleId: "rule:nola-swamp:boat-type-match",
+        ruleVersionId: "rulev:nola-swamp:boat-type-match:v1",
+        ruleKind: "ranking_weight",
+        title: "Matches traveler swamp vessel preference (airboat vs covered pontoon)",
+        reasonCode: "SWAMP_VESSEL_PREFERENCE",
+        requiredClaimId: "NONE_STATIC_CANDIDATE_ATTR",
+        predicateType: "input_equals_candidate_attr",
+        inputField: "boatType",
+        candidateAttrKey: "boatType",
+        scoreDelta: 15,
+      },
+      {
+        ruleId: "rule:nola-swamp:format-match",
+        ruleVersionId: "rulev:nola-swamp:format-match:v1",
+        ruleKind: "ranking_weight",
+        title: "Matches requested New Orleans swamp excursion format",
+        reasonCode: "REQUESTED_FORMAT",
+        requiredClaimId: "NONE_STATIC_CANDIDATE_ATTR",
+        predicateType: "input_equals_candidate_attr",
+        inputField: "requestedFormat",
+        candidateAttrKey: "requestedFormat",
+        scoreDelta: 15,
+      },
+    ],
+    pinnedSchemaHashes: schemaHashes,
+  });
+
+  // Portfolio Category Engine 6: New Orleans City, Riverboat & Ghost Tours (welcometoneworleanstours.com)
+  const candNolaNatchezId = mintOpaqueDccEntityId(
+    "tour_candidate",
+    "nola-steamboat-natchez-5628jazz",
+  );
+  const candNolaGhostWalkId = mintOpaqueDccEntityId(
+    "tour_candidate",
+    "nola-french-quarter-ghost-42307p1",
+  );
+
+  const nolaCityUniverse = buildV03CandidateUniverse({
+    universeId: "univ:new-orleans-city-tours",
+    version: "0.3.0",
+    engineId: "new-orleans-city-tours",
+    engineVersion: "0.3.0",
+    isSynthetic: false,
+    scope: {
+      destinationDccEntityId: nolaDestId,
+      destinationName: "New Orleans French Quarter, Mississippi River & Bayous, Louisiana",
+      categorySlug: "new-orleans-city-tours",
+      jurisdiction: "US-LA",
+      geographicBounds: { minLat: 29.8, maxLat: 30.1, minLon: -90.2, maxLon: -89.9 },
+    },
+    inclusionMethod:
+      "Evidence-bounded New Orleans city, riverboat, walking, and swamp excursion candidates with explicit unresolved live inventory and boarding requirements.",
+    sourcesAndQueriesConsulted: [],
+    includedCandidates: [
+      ...nolaSwampUniverse.includedCandidates,
+      {
+        candidateDccEntityId: candNolaNatchezId,
+        legacyCandidateCode: "5628JAZZ",
+        displayName: "Steamboat NATCHEZ Daytime or Evening Jazz Cruise on the Mississippi (5628JAZZ)",
+        operatorDccEntityId: nolaSwampOpId,
+        operatorDisplayName: "New Orleans Steamboat & Cultural Operators",
+        bookingChannelClass: "approved_affiliate",
+        wtaAttributionPresent: false,
+        staticAttributes: {
+          basePriceUsd: 56,
+          requestedFormat: "riverboat_jazz_cruise",
+          minAgeYears: 0,
+          requiresOperatorConfirmation: true,
+          operatorConfirmationReasonCode:
+            "LIVE_DATE_AVAILABILITY_AND_DINNER_SEATING_OPTION_UNESTABLISHED",
+        },
+        requiredClaimIds: [],
+      },
+      {
+        candidateDccEntityId: candNolaGhostWalkId,
+        legacyCandidateCode: "42307P1",
+        displayName: "French Quarter Haunted History, Voodoo & Vampire Walking Tour (42307P1)",
+        operatorDccEntityId: nolaSwampOpId,
+        operatorDisplayName: "New Orleans Steamboat & Cultural Operators",
+        bookingChannelClass: "approved_affiliate",
+        wtaAttributionPresent: false,
+        staticAttributes: {
+          basePriceUsd: 35,
+          requestedFormat: "french_quarter_walking_tour",
+          minAgeYears: 0,
+          requiresOperatorConfirmation: true,
+          operatorConfirmationReasonCode:
+            "LIVE_DATE_AVAILABILITY_AND_WALKING_PACE_ACCESSIBILITY_UNESTABLISHED",
+        },
+        requiredClaimIds: [],
+      },
+    ],
+    knownExclusions: [],
+    coverageGaps: [
+      {
+        gapCode: "LIVE_PROVIDER_DATE_AVAILABILITY_UNESTABLISHED",
+        affectedDimension: "real_time_provider_inventory",
+        description:
+          "Live departure availability and option selection (e.g. cruise-only vs lunch/dinner seating) are not prefilled at decision time and must be selected on the provider checkout page.",
+        impactOnCompleteness: "Candidates are bounded to qualified disposition.",
+      },
+    ],
+    effectiveFrom: "2026-01-01T00:00:00.000Z",
+    effectiveTo: "2027-12-31T23:59:59.000Z",
+    knowledgeCutoff: repairedIngestionRecordedAt,
+    refreshDeadline: "2026-11-26T00:00:00.000Z",
+    generatorVersion: "dcc-universe-generator/0.3.1",
+    epistemicDisclaimer:
+      "Evidence-bounded New Orleans tour classification: live date availability, meal/pickup options, and operator-specific boarding rules are unresolved at static evaluation time.",
+  });
+
+  const nolaCityBundle = compileV03EngineBundle({
+    engineId: "new-orleans-city-tours",
+    engineVersion: "0.3.0",
+    universe: nolaCityUniverse,
+    rules: [
+      {
+        ruleId: "rule:nola-city:format-match",
+        ruleVersionId: "rulev:nola-city:format-match:v1",
+        ruleKind: "ranking_weight",
+        title: "Matches requested New Orleans tour format",
+        reasonCode: "REQUESTED_FORMAT",
+        requiredClaimId: "NONE_STATIC_CANDIDATE_ATTR",
+        predicateType: "input_equals_candidate_attr",
+        inputField: "requestedFormat",
+        candidateAttrKey: "requestedFormat",
+        scoreDelta: 15,
+      },
+    ],
+    pinnedSchemaHashes: schemaHashes,
+  });
+
   for (const [univ, bnd] of [
     [jnuUniverse, jnuBundle],
     [hawUniverse, hawBundle],
     [gosnoUniverse, gosnoBundle],
+    [alaskaShoreUniverse, alaskaShoreBundle],
+    [nolaSwampUniverse, nolaSwampBundle],
+    [nolaCityUniverse, nolaCityBundle],
   ] as const) {
     universesByIdAndVersion.set(`${univ.universeId}@${univ.version}`, univ);
     universesByIdAndVersion.set(univ.universeId, univ);
@@ -1879,6 +2254,7 @@ export function getV03RuntimeStore(options?: {
     evidenceRefsById,
     receiptsById,
     authorizationsById,
+    evaluationCacheByDeterministicKey: new Map(),
     preservedCapturesSyncedToObjectStore: objectStore instanceof InMemoryTestArtifactStore,
     baseStateSyncedToNeon: false,
     hydratedFromNeon: false,
@@ -2439,16 +2815,34 @@ export async function getV03CandidateUniverseWithFallback(
 
 export async function handleV03EvaluateRequest(
   rawBody: Record<string, unknown>,
-  options?: { adminToken?: string; enforceProductionStorageGate?: boolean },
+  options?: {
+    adminToken?: string;
+    enforceProductionStorageGate?: boolean;
+    authenticatedClientId?: string;
+    callerClientId?: string;
+    traceparent?: string | null;
+    bypassEvaluationCache?: boolean;
+  },
 ): Promise<V03EvaluationResult> {
   const store = getV03RuntimeStore();
   await ensureRuntimeStoreHydratedFromNeon(store);
   await ensurePreservedCapturesStoredInObjectStore(store);
 
-  const engineId = String(rawBody.engineId ?? "");
+  // Strip untrusted body identity fields (`client_id`, `clientId`, etc.) and forbidden commercial
+  // fields (`commissionRate`, `affiliateAccount`, `commercialRoutingPriority`, `preferredProvider`, etc.)
+  const sanitized = sanitizeEvaluationRequestForAssurance(rawBody);
+  const cleanBody = sanitized.sanitizedBody;
+
+  const callerClientId =
+    options?.authenticatedClientId?.trim() ||
+    options?.callerClientId?.trim() ||
+    "client:public_canary_anonymous";
+  const traceparent = resolveOrGenerateW3cTraceparent(options?.traceparent);
+
+  const engineId = String(cleanBody.engineId ?? "");
   const version =
-    typeof rawBody.engineVersion === "string"
-      ? rawBody.engineVersion
+    typeof cleanBody.engineVersion === "string"
+      ? cleanBody.engineVersion
       : store.activeEngineVersionByEngineId.get(engineId) ?? "0.3.0";
 
   const bundle =
@@ -2459,7 +2853,7 @@ export async function handleV03EvaluateRequest(
   }
   const universe = store.universesByHash.get(bundle.universeHash)!;
 
-  const normalizedInputs = ((rawBody.inputs ?? rawBody.constraints) ?? {}) as Record<
+  const normalizedInputs = ((cleanBody.inputs ?? cleanBody.constraints) ?? {}) as Record<
     string,
     unknown
   >;
@@ -2468,7 +2862,7 @@ export async function handleV03EvaluateRequest(
   const storageGate = evaluateV03StorageAndEvidenceGate({
     enforceProductionStorageGate:
       options?.enforceProductionStorageGate ??
-      rawBody.enforceProductionStorageGate === true,
+      cleanBody.enforceProductionStorageGate === true,
     store,
   });
 
@@ -2488,33 +2882,110 @@ export async function handleV03EvaluateRequest(
   }
 
   const normalizedRawBody: Record<string, unknown> = {
-    ...rawBody,
+    ...cleanBody,
     inputs: effectiveInputs,
   };
 
-  let result: V03EvaluationResult;
-  if (rawBody.mode === "admin_simulation") {
-    result = await simulateAdministrativeV03({
+  if (!store.evaluationCacheByDeterministicKey) {
+    store.evaluationCacheByDeterministicKey = new Map();
+  }
+
+  const allLedgerEvents = store.knowledgeLedger.getAllEvents();
+  const ledgerTailEventHash =
+    allLedgerEvents.length > 0
+      ? allLedgerEvents[allLedgerEvents.length - 1]!.eventHash
+      : "genesis";
+  const validAtKey =
+    typeof cleanBody.validAt === "string" ? cleanBody.validAt : "default_valid_at";
+  const hasForbiddenTimeOverride =
+    cleanBody.knownAt !== undefined ||
+    cleanBody.knowledgeCutoff !== undefined ||
+    cleanBody.simulatedKnowledgeCutoff !== undefined;
+
+  const deterministicCacheKey = sha256HexFull(
+    rfc8785Canonicalize({
+      engineId,
+      version,
+      bundleHash: bundle.bundleHash,
+      universeHash: universe.universeHash,
+      validAtKey,
+      ledgerTailEventHash,
+      inputs: effectiveInputs,
+    }),
+  );
+
+  const canUseDeterministicCache =
+    cleanBody.mode !== "admin_simulation" &&
+    !hasForbiddenTimeOverride &&
+    options?.bypassEvaluationCache !== true &&
+    typeof cleanBody.validAt === "string";
+
+  if (canUseDeterministicCache) {
+    const cachedResult = store.evaluationCacheByDeterministicKey.get(deterministicCacheKey);
+    if (cachedResult) {
+      const reusedRunId = `evalrun:${crypto.randomUUID()}`;
+      const reusedTraceRunId = `tracerun:${crypto.randomUUID()}`;
+      return {
+        ...cachedResult,
+        evaluationRunId: reusedRunId,
+        traceRunId: reusedTraceRunId,
+        cacheStatus: "reused",
+        callerClientId,
+        clientId: callerClientId,
+        traceparent,
+        assuranceIsolation: {
+          commercialParametersConsumed: false,
+          strippedCommercialKeys: sanitized.strippedCommercialKeys,
+          strippedUntrustedIdentityKeys: sanitized.strippedUntrustedIdentityKeys,
+          requiresCommercialHandoff: false,
+          outboundAffiliateLinksInjected: false,
+        },
+      };
+    }
+  }
+
+  let baseResult: V03EvaluationResult;
+  if (cleanBody.mode === "admin_simulation") {
+    baseResult = await simulateAdministrativeV03({
       adminToken: options?.adminToken,
       bundle,
       universe,
       ledger: store.knowledgeLedger,
       inputs: effectiveInputs,
       validAtIso:
-        typeof rawBody.validAt === "string" ? rawBody.validAt : new Date().toISOString(),
+        typeof cleanBody.validAt === "string" ? cleanBody.validAt : new Date().toISOString(),
       simulatedKnowledgeCutoffIso:
-        typeof rawBody.simulatedKnowledgeCutoff === "string"
-          ? rawBody.simulatedKnowledgeCutoff
+        typeof cleanBody.simulatedKnowledgeCutoff === "string"
+          ? cleanBody.simulatedKnowledgeCutoff
           : new Date().toISOString(),
     });
   } else {
-    result = await evaluateCurrentV03({
+    baseResult = await evaluateCurrentV03({
       rawClientRequestBody: normalizedRawBody,
       bundle,
       universe,
       ledger: store.knowledgeLedger,
     });
   }
+
+  if (canUseDeterministicCache) {
+    store.evaluationCacheByDeterministicKey.set(deterministicCacheKey, baseResult);
+  }
+
+  const result: V03EvaluationResult = {
+    ...baseResult,
+    cacheStatus: "computed",
+    callerClientId,
+    clientId: callerClientId,
+    traceparent,
+    assuranceIsolation: {
+      commercialParametersConsumed: false,
+      strippedCommercialKeys: sanitized.strippedCommercialKeys,
+      strippedUntrustedIdentityKeys: sanitized.strippedUntrustedIdentityKeys,
+      requiresCommercialHandoff: false,
+      outboundAffiliateLinksInjected: false,
+    },
+  };
 
   fallbackInputsArchiveByReceiptId.set(result.receiptId, effectiveInputs);
   store.receiptsById.set(result.receiptId, {

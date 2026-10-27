@@ -83,6 +83,20 @@ export const DCC_SOURCE_SITES: Record<string, SourceSiteEntry> = {
     role: "feeder",
     specialty: "wisconsin_dells_family_and_groups",
   },
+  dcc: {
+    id: "dcc",
+    name: "Destination Command Center",
+    canonicalDomain: "destinationcommandcenter.com",
+    role: "authority",
+    specialty: "cross_portfolio_decision_assurance_and_trip_context",
+  },
+  welcometotheswamp: {
+    id: "welcometotheswamp",
+    name: "Welcome to the Swamp",
+    canonicalDomain: "welcometotheswamp.com",
+    role: "hybrid",
+    specialty: "new_orleans_bayou_and_swamp_comparisons",
+  },
 };
 
 export const DCC_CANONICAL_OWNERS: Record<string, CanonicalOwnerEntry> = {
@@ -120,6 +134,31 @@ export const DCC_CANONICAL_OWNERS: Record<string, CanonicalOwnerEntry> = {
     canonicalDomain: "welcometotheswamp.com",
     allowedDestinations: ["new-orleans"],
     productCategories: ["bayou_airboat", "swamp_tour"],
+  },
+  wno: {
+    id: "wno",
+    name: "Welcome to New Orleans",
+    canonicalDomain: "welcometoneworleanstours.com",
+    allowedDestinations: ["new-orleans"],
+    productCategories: ["city_tour", "swamp_tour", "riverboat_cruise", "walking_tour"],
+  },
+  dcc: {
+    id: "dcc",
+    name: "Destination Command Center",
+    canonicalDomain: "destinationcommandcenter.com",
+    allowedDestinations: [
+      "juneau",
+      "skagway",
+      "ketchikan",
+      "denver",
+      "morrison",
+      "copper-mountain",
+      "big-sky",
+      "new-orleans",
+      "chetek",
+      "wisconsin-dells",
+    ],
+    productCategories: ["helicopter", "shore_excursions", "swamp_tour", "mountain_shuttle"],
   },
   "vibing-around": {
     id: "vibing-around",

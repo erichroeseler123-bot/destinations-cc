@@ -166,6 +166,17 @@ export interface V03EvaluationResult {
   traceHash: string;
   epistemicLimitationStatement: string;
   gateFailureCode?: string | null;
+  cacheStatus?: "computed" | "reused";
+  callerClientId?: string;
+  clientId?: string;
+  traceparent?: string;
+  assuranceIsolation?: {
+    commercialParametersConsumed: false;
+    strippedCommercialKeys: string[];
+    strippedUntrustedIdentityKeys: string[];
+    requiresCommercialHandoff: false;
+    outboundAffiliateLinksInjected: false;
+  };
   receipt: V03SignedDecisionReceipt;
 }
 
@@ -265,6 +276,27 @@ async function executeDeterministicEvaluationCore(params: {
 
     // 2. Execute rules against candidate & projected claims
     for (const rule of params.bundle.rules) {
+      if (rule.requiredClaimId === "NONE_STATIC_CANDIDATE_ATTR") {
+        if (rule.predicateType === "input_equals_candidate_attr") {
+          const inputVal = rule.inputField ? params.inputs[rule.inputField] : undefined;
+          const candVal = rule.candidateAttrKey
+            ? cand.staticAttributes[rule.candidateAttrKey]
+            : undefined;
+          if (inputVal !== undefined && candVal !== undefined && inputVal === candVal) {
+            score += rule.scoreDelta;
+            reasonCodes.push(`${rule.reasonCode}_MATCH`);
+          }
+        } else if (rule.predicateType === "qualification_penalty_if_input_matches") {
+          const inputVal = rule.inputField ? params.inputs[rule.inputField] : undefined;
+          if (inputVal === rule.expectedValue) {
+            qualified = true;
+            score += rule.scoreDelta;
+            reasonCodes.push(rule.reasonCode);
+          }
+        }
+        continue;
+      }
+
       const claimState = projection.effectiveClaimByClaimId.get(rule.requiredClaimId);
       if (!claimState) {
         if (rule.ruleKind === "hard_gate" || rule.ruleKind === "required_evidence_gate") {

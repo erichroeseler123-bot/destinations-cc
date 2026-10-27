@@ -134,3 +134,33 @@ export function buildAffiliateUrl(
 
   return buildViatorProductUrl(officialUrl, campaign);
 }
+
+export function buildDccHandoffAffiliateUrl(params: {
+  source: AffiliateSource | "fareharbor";
+  destinationUrl: string;
+  productCode?: string;
+  campaign: string;
+  contextId?: string | null;
+  intendedDate?: string | null;
+  partySize?: number | null;
+}): string {
+  const handoffBase = "https://www.destinationcommandcenter.com/go/commerce/handoff";
+  const qs = new URLSearchParams();
+  qs.set("site", "lastfrontiershoreexcursions.com");
+  qs.set("provider", params.source);
+  if (params.source === "viator") {
+    qs.set("account", DEFAULT_VIATOR_PID);
+  } else if (params.source === "getyourguide") {
+    qs.set("account", DEFAULT_GYG_PARTNER_ID);
+  } else if (params.source === "fareharbor") {
+    qs.set("account", "welcometoalaskatours");
+  }
+  if (params.productCode) qs.set("product", params.productCode);
+  qs.set("url", params.destinationUrl);
+  qs.set("campaign", params.campaign);
+  if (params.contextId) qs.set("ctx", params.contextId);
+  if (params.intendedDate) qs.set("date", params.intendedDate);
+  if (params.partySize && params.partySize > 0) qs.set("partySize", String(params.partySize));
+  return `${handoffBase}?${qs.toString()}`;
+}
+

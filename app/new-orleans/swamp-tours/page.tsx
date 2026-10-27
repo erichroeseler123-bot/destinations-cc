@@ -8,6 +8,12 @@ import {
   buildWebPageJsonLd,
 } from "@/lib/dcc/jsonld";
 import { buildSwampPlanHref } from "@/lib/dcc/warmTransfer";
+import PortfolioAssuranceBanner from "@/app/components/dcc/PortfolioAssuranceBanner";
+import {
+  buildPortfolioHandoffUrl,
+  evaluatePortfolioAssuranceSummary,
+  resolvePortfolioTripContext,
+} from "@/lib/dcc/commerce/portfolio";
 import { NEW_ORLEANS_TOUR_CATEGORY_PAGES } from "@/src/data/new-orleans-city-site";
 
 const page = NEW_ORLEANS_TOUR_CATEGORY_PAGES["swamp-tours"];
@@ -104,7 +110,52 @@ function JsonLdGraph() {
   return <JsonLd data={data} />;
 }
 
-export default function NewOrleansSwampToursPage() {
+export default async function NewOrleansSwampToursPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const resolvedSearchParams = searchParams ? await searchParams : {};
+  const carriedContext = await resolvePortfolioTripContext({
+    searchParams: resolvedSearchParams,
+    claimingOwner: "destinationcommandcenter.com",
+    issueIfParamsPresent: true,
+    defaultPortSlug: "new-orleans",
+  });
+  const assurance = evaluatePortfolioAssuranceSummary({
+    engineId: "new-orleans-swamp-tours",
+    callerClientId: "ssr:destinationcommandcenter.com",
+  });
+  const fhHandoffHref = buildPortfolioHandoffUrl({
+    originatingSite: "destinationcommandcenter.com",
+    provider: "fareharbor",
+    providerAccount: "aktourcenter",
+    productCode: "ragincajun-airboat",
+    destinationUrl: "https://fareharbor.com/embeds/book/ragincajuntours/items/228524/?asn=aktourcenter&ref=dcc-swamp-tours",
+    campaign: "dcc-swamp-tours-fh",
+    contextId: carriedContext.contextId,
+    evaluationRunId: assurance.evaluationRunId,
+    receiptId: assurance.receiptId,
+    intendedDate: carriedContext.payload.date || null,
+    partySize: carriedContext.payload.partySize || null,
+    useRelativePath: true,
+  });
+  const viatorHandoffHref = buildPortfolioHandoffUrl({
+    originatingSite: "destinationcommandcenter.com",
+    provider: "viator",
+    providerAccount: "P00058396",
+    productCode: "nola-swamp-viator",
+    destinationUrl: "https://www.viator.com/New-Orleans-tours/Nature-and-Wildlife/d675-g9-c36?pid=P00058396&mcid=42383",
+    campaign: "dcc-swamp-tours-viator",
+    contextId: carriedContext.contextId,
+    evaluationRunId: assurance.evaluationRunId,
+    receiptId: assurance.receiptId,
+    intendedDate: carriedContext.payload.date || null,
+    partySize: carriedContext.payload.partySize || null,
+    useRelativePath: true,
+  });
+  const ctxQuery = carriedContext.contextId ? `?ctx=${encodeURIComponent(carriedContext.contextId)}` : "";
+
   const satelliteHref = buildSwampPlanHref({
     intent: "compare",
     topic: "swamp-tours",
@@ -118,6 +169,35 @@ export default function NewOrleansSwampToursPage() {
     <main className="min-h-screen bg-[#050816] text-white" data-page-intent={PAGE_INTENT}>
       <JsonLdGraph />
       <div className="mx-auto max-w-6xl space-y-8 px-6 py-16">
+        <PortfolioAssuranceBanner
+          siteDomain="destinationcommandcenter.com"
+          assurance={assurance}
+          carriedContext={carriedContext}
+          handoffActions={[
+            {
+              label: "Book Ragin Cajun Airboat via FareHarbor",
+              href: fhHandoffHref,
+              providerLabel: "FareHarbor",
+              accountLabel: "asn=aktourcenter",
+            },
+            {
+              label: "Compare Swamp Tours on Viator",
+              href: viatorHandoffHref,
+              providerLabel: "Viator",
+              accountLabel: "pid=P00058396",
+            },
+          ]}
+          crossSiteLinks={[
+            {
+              label: "Open Welcome to the Swamp Specialist Storefront",
+              href: `https://welcometotheswamp.com/tours/airboat-tour${ctxQuery}`,
+            },
+            {
+              label: "Open Welcome to New Orleans Tours",
+              href: `https://www.welcometoneworleanstours.com/tours/airboat-small${ctxQuery}`,
+            },
+          ]}
+        />
         <header className="rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(125,211,252,0.12),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(74,222,128,0.10),transparent_24%),linear-gradient(180deg,rgba(9,17,24,0.97),rgba(5,8,22,0.99))] p-8 shadow-[0_28px_90px_rgba(0,0,0,0.45)] md:p-10">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-xs uppercase tracking-[0.24em] text-cyan-300">DCC swamp-tour lane</p>

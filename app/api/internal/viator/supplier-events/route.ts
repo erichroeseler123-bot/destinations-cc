@@ -10,6 +10,10 @@ import {
   writeViatorSupplierState,
 } from "@/lib/viator/supplier-events";
 import { getViatorSupplierPollMs } from "@/lib/viator/status";
+import {
+  getPollerCheckpoint,
+  pollViatorModifiedSinceWithCheckpoint,
+} from "@/lib/dcc/commerce";
 
 export const runtime = "nodejs";
 
@@ -22,35 +26,54 @@ export async function POST(request: NextRequest) {
   }
 
   const capabilities = getViatorCapabilities();
-  if (!capabilities.canUseBooking) {
-    return NextResponse.json({ ok: false, error: "viator_booking_not_enabled_for_tier" }, { status: 501 });
+  if (!capabilities.canUseBookingReporting) {
+    return NextResponse.json(
+      { ok: false, error: "viator_booking_reporting_not_enabled_for_tier" },
+      { status: 501 }
+    );
   }
 
+  const durableCheckpoint = await getPollerCheckpoint("viator_modified_since_primary");
   const state = readViatorSupplierState();
   const cursor =
     typeof body.cursor === "string" && body.cursor.trim().length > 0
       ? body.cursor.trim()
-      : state.cursor;
+      : durableCheckpoint?.cursorValue ?? state.cursor;
 
   try {
-    const response = await getViatorClient().getBookingsModifiedSince({ cursor: cursor || undefined });
-    const events = extractViatorSupplierEvents(response);
-    const acknowledgements = extractViatorAcknowledgements(response);
-    const nextCursor = extractViatorNextCursor(response);
+    let rawResponseCapture: Record<string, unknown> = {};
+    const pollerRun = await pollViatorModifiedSinceWithCheckpoint({
+      pollerId: "viator_modified_since_primary",
+      overrideCursor: cursor || null,
+      customFetchPage: async ({ cursor: activeCursor }) => {
+        const res = (await getViatorClient().getBookingsModifiedSince({
+          cursor: activeCursor || undefined,
+        })) as Record<string, unknown>;
+        rawResponseCapture = res;
+        return res;
+      },
+    });
+
+    const events = extractViatorSupplierEvents(rawResponseCapture);
+    const acknowledgements = extractViatorAcknowledgements(rawResponseCapture);
+    const nextCursor = pollerRun.nextCursor ?? extractViatorNextCursor(rawResponseCapture);
     const filePath = writeViatorSupplierArtifact({
       kind: "feed",
       cursor,
       payload: { cursor },
-      response,
+      response: rawResponseCapture,
     });
     if (nextCursor) writeViatorSupplierState(nextCursor);
     return NextResponse.json(
       {
         ok: true,
+        accessTier: capabilities.accessTier,
+        canUseBookingReporting: capabilities.canUseBookingReporting,
         cursor,
         nextCursor,
         events,
         acknowledgements,
+        commercialReporting: pollerRun,
         filePath,
         pollEveryMs: getViatorSupplierPollMs(),
       },
@@ -60,6 +83,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         ok: false,
+        accessTier: capabilities.accessTier,
+        canUseBookingReporting: capabilities.canUseBookingReporting,
         error: error instanceof Error ? error.message : "supplier_events_failed",
         cursor,
         pollEveryMs: getViatorSupplierPollMs(),
@@ -68,3 +93,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+

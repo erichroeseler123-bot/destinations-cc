@@ -36,6 +36,9 @@
       "@/app/components/DccPortfolioBridge": [
         "../../app/components/DccPortfolioBridge"
       ],
+      "@/app/components/dcc/*": [
+        "../../app/components/dcc/*"
+      ],
       "@/app/components/network/types": [
         "../../app/components/network/types"
       ],

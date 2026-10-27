@@ -7,8 +7,10 @@ import {
   handleV03EvaluateRequest,
   MachineSecurityLimitError,
   recordSecurityAuditEvent,
+  resolveOrGenerateW3cTraceparent,
   UnauthorizedAdminSimulationError,
   verifyEvaluationAuthAndRateLimit,
+  type AuthAndRateLimitResult,
 } from "@/lib/dcc/machine";
 
 export const dynamic = "force-dynamic";
@@ -17,11 +19,14 @@ export async function POST(request: Request) {
   const flagBlocked = enforceMachineLayerFeatureFlag();
   if (flagBlocked) return flagBlocked;
 
+  const traceparent = resolveOrGenerateW3cTraceparent(request);
+
   let rawBody: string;
+  let authResult: AuthAndRateLimitResult;
   try {
     rawBody = await request.text();
     enforceEvaluationRequestSizeLimit(rawBody);
-    verifyEvaluationAuthAndRateLimit(request, "evaluate:single");
+    authResult = verifyEvaluationAuthAndRateLimit(request, "evaluate:single");
   } catch (err) {
     if (err instanceof MachineSecurityLimitError) {
       return buildMachineJsonResponse(
@@ -32,7 +37,11 @@ export async function POST(request: Request) {
             message: err.message,
           },
         },
-        { status: err.statusCode, cacheControl: "no-store" },
+        {
+          status: err.statusCode,
+          cacheControl: "no-store",
+          extraHeaders: { traceparent },
+        },
       );
     }
     return buildMachineJsonResponse(
@@ -43,7 +52,7 @@ export async function POST(request: Request) {
           message: err instanceof Error ? err.message : "Failed to read request body.",
         },
       },
-      { status: 400, cacheControl: "no-store" },
+      { status: 400, cacheControl: "no-store", extraHeaders: { traceparent } },
     );
   }
 
@@ -64,7 +73,7 @@ export async function POST(request: Request) {
           resetAtEpochMs: rateDecision.resetAtEpochMs,
         },
       },
-      { status: 429, cacheControl: "no-store" },
+      { status: 429, cacheControl: "no-store", extraHeaders: { traceparent } },
     );
   }
 
@@ -84,7 +93,7 @@ export async function POST(request: Request) {
           message: err instanceof Error ? err.message : "Invalid JSON request body.",
         },
       },
-      { status: 400, cacheControl: "no-store" },
+      { status: 400, cacheControl: "no-store", extraHeaders: { traceparent } },
     );
   }
 
@@ -98,7 +107,7 @@ export async function POST(request: Request) {
           message: "Field 'engineId' is required.",
         },
       },
-      { status: 400, cacheControl: "no-store" },
+      { status: 400, cacheControl: "no-store", extraHeaders: { traceparent } },
     );
   }
 
@@ -111,12 +120,21 @@ export async function POST(request: Request) {
       : "authenticated_evaluation";
 
   try {
-    const evalRes = await handleV03EvaluateRequest(parsed, { adminToken });
+    const evalRes = await handleV03EvaluateRequest(parsed, {
+      adminToken,
+      authenticatedClientId: authResult.clientId,
+      traceparent,
+    });
 
     return buildMachineJsonResponse(
       {
         ok: true,
         protocolVersion: "0.3.0",
+        client_id: authResult.clientId,
+        evaluationRunId: evalRes.evaluationRunId,
+        cacheStatus: evalRes.cacheStatus ?? "computed",
+        receiptId: evalRes.receiptId,
+        traceparent,
         evaluation: evalRes,
       },
       {
@@ -124,8 +142,11 @@ export async function POST(request: Request) {
         etag: `"sha256-${evalRes.resultHash}"`,
         cacheControl: "no-store",
         extraHeaders: {
+          traceparent,
           "X-DCC-Protocol-Version": "0.3.0",
           "X-DCC-Surface-Class": surfaceClass,
+          "X-DCC-Client-Id": authResult.clientId,
+          "X-DCC-Cache-Status": evalRes.cacheStatus ?? "computed",
           "X-DCC-RateLimit-Backend": rateDecision.coordinationBackend,
           "X-DCC-RateLimit-Remaining": String(rateDecision.remaining),
           "X-DCC-Engine-Id": evalRes.engineId,

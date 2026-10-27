@@ -1,7 +1,9 @@
+import crypto from "node:crypto";
 import { checkMachineApiRateLimit, resetMachineRateLimitsForTests } from "./ssrfGuard";
 
 /**
- * DCC Machine Layer v0.2 — Security & Execution Resource Limits, Rate Limiting, and API Key Scopes
+ * DCC Machine Layer v0.2 / v0.3 — Security & Execution Resource Limits, Rate Limiting,
+ * Machine Identity Boundary (`client_id`, W3C `traceparent`), and Assurance-Commerce Separation
  */
 
 export type MachineApiKeyScope =
@@ -9,11 +11,15 @@ export type MachineApiKeyScope =
   | "dcc:evaluate"
   | "dcc:evaluate:batch"
   | "dcc:admin:write"
+  | "dcc:commerce:handoff"
+  | "dcc:commerce:report_outcome"
+  | "dcc:commerce:read"
   | "evaluate:single"
   | "evaluate:batch";
 
 export type RegisteredMachineApiKey = {
   keyId: string;
+  clientId: string;
   secretToken: string;
   owner: string;
   scopes: MachineApiKeyScope[];
@@ -198,12 +204,16 @@ export function enforceExecutionTimeBudget(
 const DEFAULT_API_KEYS: RegisteredMachineApiKey[] = [
   {
     keyId: "key:dcc-canary-eval-default",
+    clientId: "client:dcc-canary-verifier",
     secretToken: process.env.DCC_MACHINE_EVAL_API_KEY || "dcc_eval_canary_v02_public_token",
     owner: "dcc-canary-verifier",
     scopes: [
       "dcc:read:public",
       "dcc:evaluate",
       "dcc:evaluate:batch",
+      "dcc:commerce:handoff",
+      "dcc:commerce:report_outcome",
+      "dcc:commerce:read",
       "evaluate:single",
       "evaluate:batch",
     ],
@@ -212,6 +222,7 @@ const DEFAULT_API_KEYS: RegisteredMachineApiKey[] = [
   },
   {
     keyId: "key:dcc-eval-single-only",
+    clientId: "client:dcc-single-scope-agent",
     secretToken: "dcc_eval_single_only_v02_token",
     owner: "dcc-single-scope-agent",
     scopes: ["dcc:read:public", "dcc:evaluate", "evaluate:single"],
@@ -219,7 +230,22 @@ const DEFAULT_API_KEYS: RegisteredMachineApiKey[] = [
     revoked: false,
   },
   {
+    keyId: "key:dcc-commerce-reporter-only",
+    clientId: "client:dcc-commerce-partner-reporter",
+    secretToken: process.env.DCC_COMMERCE_REPORTER_API_KEY || "dcc_commerce_reporter_v03_token",
+    owner: "dcc-commerce-partner-reporter",
+    scopes: [
+      "dcc:read:public",
+      "dcc:commerce:handoff",
+      "dcc:commerce:report_outcome",
+      "dcc:commerce:read",
+    ],
+    maxRequestsPerMinute: 300,
+    revoked: false,
+  },
+  {
     keyId: "key:dcc-read-only-no-eval",
+    clientId: "client:dcc-readonly-client",
     secretToken: "dcc_readonly_v02_token",
     owner: "dcc-readonly-client",
     scopes: ["dcc:read:public"],
@@ -228,6 +254,7 @@ const DEFAULT_API_KEYS: RegisteredMachineApiKey[] = [
   },
   {
     keyId: "key:dcc-revoked-key",
+    clientId: "client:revoked-agent",
     secretToken: "dcc_revoked_v02_token",
     owner: "revoked-agent",
     scopes: ["dcc:evaluate", "dcc:evaluate:batch", "evaluate:single", "evaluate:batch"],
@@ -264,8 +291,10 @@ function resolveConfiguredApiKeys(): RegisteredMachineApiKey[] {
       const parsed = JSON.parse(customJson) as Record<string, MachineApiKeyScope[]>;
       for (const [token, scopes] of Object.entries(parsed)) {
         if (Array.isArray(scopes)) {
+          const shortId = token.slice(0, 12);
           dynamicKeys.push({
-            keyId: `key:env:${token.slice(0, 12)}`,
+            keyId: `key:env:${shortId}`,
+            clientId: `client:env:${shortId}`,
             secretToken: token,
             owner: "env-configured",
             scopes,
@@ -283,6 +312,7 @@ function resolveConfiguredApiKeys(): RegisteredMachineApiKey[] {
 
 export type AuthAndRateLimitResult = {
   keyId: string;
+  clientId: string;
   tier: "authenticated_api_key" | "public_canary_anonymous";
   scopes: MachineApiKeyScope[];
   rateLimit: {
@@ -401,6 +431,7 @@ export function verifyEvaluationAuthAndRateLimit(
 
   return {
     keyId: resolvedKey ? resolvedKey.keyId : "public_canary_anonymous",
+    clientId: resolvedKey ? resolvedKey.clientId : "client:public_canary_anonymous",
     tier: resolvedKey ? "authenticated_api_key" : "public_canary_anonymous",
     scopes: resolvedKey
       ? resolvedKey.scopes
@@ -408,6 +439,8 @@ export function verifyEvaluationAuthAndRateLimit(
           "dcc:read:public",
           "dcc:evaluate",
           "dcc:evaluate:batch",
+          "dcc:commerce:handoff",
+          "dcc:commerce:read",
           "evaluate:single",
           "evaluate:batch",
         ],
@@ -418,3 +451,145 @@ export function verifyEvaluationAuthAndRateLimit(
     },
   };
 }
+
+/**
+ * Validates or generates a standard W3C Trace Context `traceparent` header
+ * (`00-<32hex-trace-id>-<16hex-parent-id>-<2hex-trace-flags>`).
+ * Strictly diagnostic and guaranteed free of personal information.
+ */
+const W3C_TRACEPARENT_REGEX =
+  /^00-(?!0{32})([0-9a-f]{32})-(?!0{16})([0-9a-f]{16})-([0-9a-f]{2})$/i;
+
+export function resolveOrGenerateW3cTraceparent(
+  requestOrHeader?: Request | Headers | Record<string, string | undefined> | string | null,
+): string {
+  let candidate: string | null = null;
+  if (typeof requestOrHeader === "string") {
+    candidate = requestOrHeader.trim();
+  } else if (requestOrHeader && typeof (requestOrHeader as Request).headers?.get === "function") {
+    candidate = (requestOrHeader as Request).headers.get("traceparent");
+  } else if (requestOrHeader && typeof (requestOrHeader as Headers).get === "function") {
+    candidate = (requestOrHeader as Headers).get("traceparent");
+  } else if (requestOrHeader && typeof requestOrHeader === "object") {
+    const rec = requestOrHeader as Record<string, string | undefined>;
+    const key = Object.keys(rec).find((k) => k.toLowerCase() === "traceparent");
+    candidate = key ? rec[key] ?? null : null;
+  }
+
+  if (candidate && W3C_TRACEPARENT_REGEX.test(candidate.trim())) {
+    return candidate.trim().toLowerCase();
+  }
+
+  const traceId = crypto.randomBytes(16).toString("hex");
+  const parentId = crypto.randomBytes(8).toString("hex");
+  return `00-${traceId}-${parentId}-01`;
+}
+
+/**
+ * Forbidden commercial & untrusted identity keys that must NEVER enter the assurance
+ * evaluator or affect `normalizedInputHash`, `resultHash`, or `receiptId`.
+ */
+export const FORBIDDEN_COMMERCIAL_EVALUATION_KEYS = new Set([
+  "commissionrate",
+  "commission_rate",
+  "commissionrates",
+  "commission_rates",
+  "affiliateaccount",
+  "affiliate_account",
+  "affiliatepreferences",
+  "affiliate_preferences",
+  "commercialroutingpriority",
+  "commercial_routing_priority",
+  "commercialpreferences",
+  "commercial_preferences",
+  "preferredprovider",
+  "preferred_provider",
+  "pid",
+  "mcid",
+  "asn",
+  "partner_id",
+  "partnerid",
+  "handoff_id",
+  "handoffid",
+]);
+
+export const UNTRUSTED_BODY_IDENTITY_KEYS = new Set([
+  "client_id",
+  "clientid",
+  "caller_id",
+  "callerid",
+  "authenticated_client_id",
+]);
+
+export interface SanitizedAssuranceBodyResult {
+  sanitizedBody: Record<string, unknown>;
+  strippedUntrustedIdentityKeys: string[];
+  strippedCommercialKeys: string[];
+}
+
+function stripForbiddenKeysFromObject(
+  obj: Record<string, unknown>,
+  strippedUntrustedIdentityKeys: Set<string>,
+  strippedCommercialKeys: Set<string>,
+): Record<string, unknown> {
+  const cleaned: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    const lower = key.toLowerCase();
+    if (UNTRUSTED_BODY_IDENTITY_KEYS.has(lower)) {
+      strippedUntrustedIdentityKeys.add(key);
+      continue;
+    }
+    if (FORBIDDEN_COMMERCIAL_EVALUATION_KEYS.has(lower)) {
+      strippedCommercialKeys.add(key);
+      continue;
+    }
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      cleaned[key] = stripForbiddenKeysFromObject(
+        value as Record<string, unknown>,
+        strippedUntrustedIdentityKeys,
+        strippedCommercialKeys,
+      );
+    } else {
+      cleaned[key] = value;
+    }
+  }
+  return cleaned;
+}
+
+/**
+ * Strips any untrusted caller identity (`client_id`, `clientId`, etc.) and any
+ * commercial routing/commission/affiliate fields from an evaluation request body
+ * so the evaluator remains 100% isolated from commercial parameters and body-spoofed identities.
+ */
+export function sanitizeEvaluationRequestForAssurance(
+  rawBody: Record<string, unknown>,
+): SanitizedAssuranceBodyResult {
+  const strippedUntrustedIdentityKeys = new Set<string>();
+  const strippedCommercialKeys = new Set<string>();
+
+  const sanitizedBody = stripForbiddenKeysFromObject(
+    rawBody,
+    strippedUntrustedIdentityKeys,
+    strippedCommercialKeys,
+  );
+
+  if (Array.isArray(sanitizedBody.items)) {
+    sanitizedBody.items = sanitizedBody.items.map((item) => {
+      if (item && typeof item === "object" && !Array.isArray(item)) {
+        return stripForbiddenKeysFromObject(
+          item as Record<string, unknown>,
+          strippedUntrustedIdentityKeys,
+          strippedCommercialKeys,
+        );
+      }
+      return item;
+    });
+  }
+
+  return {
+    sanitizedBody,
+    strippedUntrustedIdentityKeys: Array.from(strippedUntrustedIdentityKeys),
+    strippedCommercialKeys: Array.from(strippedCommercialKeys),
+  };
+}
+

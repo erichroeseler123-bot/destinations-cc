@@ -2136,7 +2136,7 @@ export function evaluateJuneauPortDayScenario(
 
   if (resolvedTravelDate !== null && resolvedTravelDate !== "") {
     const dateCheck = validateStrictIsoDate(resolvedTravelDate);
-    if (!dateCheck.valid) {
+    if ("reason" in dateCheck) {
       inputValidationErrors.push(dateCheck.reason);
     } else {
       derivedMonthFromDate = dateCheck.month;

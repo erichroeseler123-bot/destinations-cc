@@ -17,7 +17,16 @@ import {
   resolveSourceSite,
 } from "./registry";
 
-export const DCC_CONTEXT_TTL_MS = 15 * 60 * 1000; // 15 minutes (900,000 ms)
+export const DCC_CONTEXT_TTL_MS = 15 * 60 * 1000; // 15 minutes (900,000 ms) short-lived redemption token TTL
+export const DCC_TRIP_CONTEXT_RETENTION_MS = 7 * 24 * 60 * 60 * 1000; // 7 days longer-lived trip context retention
+
+const memoryContextsByHash = new Map<string, DccContextRow>();
+const memoryContextsByIdempotencyKey = new Map<string, DccContextRow>();
+
+export function clearMemoryStore(): void {
+  memoryContextsByHash.clear();
+  memoryContextsByIdempotencyKey.clear();
+}
 
 export interface IssueContextResult {
   success: true;
@@ -25,6 +34,7 @@ export interface IssueContextResult {
   version: "1.0";
   issuedAt: number;
   expiresAt: number;
+  tripContextExpiresAt?: number;
   status: "issued";
   bridgeUrl: string;
   idempotencyReplay?: boolean;
@@ -183,6 +193,7 @@ export async function issueContext(
 
     if (existing.length > 0) {
       const row = existing[0];
+      memoryContextsByHash.set(row.contextHash, row);
       const bridgeUrl = `${resolveOwnerBaseUrl(row.targetOwner)}/book?ctx=${row.contextId}`;
       return {
         success: true,
@@ -190,6 +201,23 @@ export async function issueContext(
         version: "1.0",
         issuedAt: row.issuedAt.getTime(),
         expiresAt: row.expiresAt.getTime(),
+        tripContextExpiresAt: row.issuedAt.getTime() + DCC_TRIP_CONTEXT_RETENTION_MS,
+        status: "issued",
+        bridgeUrl,
+        idempotencyReplay: true,
+      };
+    }
+  } else if (!db && scopedKey) {
+    const memIdem = memoryContextsByIdempotencyKey.get(scopedKey);
+    if (memIdem) {
+      const bridgeUrl = `${resolveOwnerBaseUrl(memIdem.targetOwner)}/book?ctx=${memIdem.contextId}`;
+      return {
+        success: true,
+        contextId: memIdem.contextId,
+        version: "1.0",
+        issuedAt: memIdem.issuedAt.getTime(),
+        expiresAt: memIdem.expiresAt.getTime(),
+        tripContextExpiresAt: memIdem.issuedAt.getTime() + DCC_TRIP_CONTEXT_RETENTION_MS,
         status: "issued",
         bridgeUrl,
         idempotencyReplay: true,
@@ -201,6 +229,40 @@ export async function issueContext(
   const rawIdBytes = crypto.randomBytes(16).toString("hex");
   const contextId = `dcc_ctx_${rawIdBytes}`;
   const contextHash = hashContextId(contextId);
+
+  const rowToStore: DccContextRow = {
+    contextId,
+    contextHash,
+    idempotencyKey: scopedKey,
+    version: "1.0",
+    status: "issued",
+    sourceSite: input.sourceSite,
+    destination: input.destination,
+    targetOwner: owner ? owner.id : input.targetOwner,
+    targetIntent: input.targetIntent || null,
+    timezone: profile.timezone,
+    scheduleDate: input.schedule.date,
+    arrival: input.schedule.arrival || null,
+    departure: input.schedule.departure || null,
+    travelers: input.schedule.travelers,
+    shipOrVenue: input.schedule.shipOrVenue || null,
+    bufferMinutes: authoritativeBuffer,
+    latestSafeReturnDate: scheduleCalc.latestSafeReturnDate,
+    latestSafeReturnTime: scheduleCalc.latestSafeReturnTime,
+    midnightCrossed: scheduleCalc.midnightCrossed,
+    attribution: input.attribution || null,
+    issuedAt: issuedAtDate,
+    expiresAt: expiresAtDate,
+    redeemedAt: null,
+    redeemedBy: null,
+    createdAt: issuedAtDate,
+    updatedAt: issuedAtDate,
+  };
+
+  memoryContextsByHash.set(contextHash, rowToStore);
+  if (scopedKey) {
+    memoryContextsByIdempotencyKey.set(scopedKey, rowToStore);
+  }
 
   // 4. Persist to Database
   if (db) {
@@ -240,6 +302,7 @@ export async function issueContext(
 
         if (raceExisting.length > 0) {
           const row = raceExisting[0];
+          memoryContextsByHash.set(row.contextHash, row);
           const bridgeUrl = `${resolveOwnerBaseUrl(row.targetOwner)}/book?ctx=${row.contextId}`;
           return {
             success: true,
@@ -247,6 +310,7 @@ export async function issueContext(
             version: "1.0",
             issuedAt: row.issuedAt.getTime(),
             expiresAt: row.expiresAt.getTime(),
+            tripContextExpiresAt: row.issuedAt.getTime() + DCC_TRIP_CONTEXT_RETENTION_MS,
             status: "issued",
             bridgeUrl,
             idempotencyReplay: true,
@@ -265,8 +329,152 @@ export async function issueContext(
     version: "1.0",
     issuedAt: now,
     expiresAt: now + DCC_CONTEXT_TTL_MS,
+    tripContextExpiresAt: now + DCC_TRIP_CONTEXT_RETENTION_MS,
     status: "issued",
     bridgeUrl,
+  };
+}
+
+export interface InspectTripContextResult {
+  success: true;
+  contextId: string;
+  version: "1.0";
+  redemptionTokenState: "issued" | "redeemed" | "expired" | "revoked";
+  tripContextState: "active" | "expired" | "revoked";
+  redemptionExpiresAt: number;
+  tripContextExpiresAt: number;
+  sourceSite: string;
+  destination: string;
+  targetOwner: string;
+  targetIntent: string | null;
+  timezone: string;
+  schedule: {
+    date: string;
+    arrival: string | null;
+    departure: string | null;
+    travelers: number;
+    shipOrVenue: string | null;
+  };
+  safetyConstraint: {
+    bufferMinutes: number;
+    latestSafeReturnDate: string | null;
+    latestSafeReturnTime: string | null;
+    midnightCrossed: boolean;
+  };
+  attribution?: Record<string, unknown>;
+}
+
+/**
+ * Reads the longer-lived trip context (dates, party size, ship/venue, safety buffer)
+ * by opaque `contextId` (`dcc_ctx_...`) without consuming or altering the single-use
+ * short-lived redemption token state.
+ */
+export async function inspectTripContext(
+  contextId: string,
+  options?: { now?: number; dbOverride?: DccDb | null },
+): Promise<
+  | InspectTripContextResult
+  | {
+      success: false;
+      statusCode: 404 | 410;
+      errorCode: "CONTEXT_NOT_FOUND" | "TRIP_CONTEXT_EXPIRED" | "CONTEXT_REVOKED";
+      message: string;
+    }
+> {
+  if (!contextId || !contextId.startsWith("dcc_ctx_")) {
+    return {
+      success: false,
+      statusCode: 404,
+      errorCode: "CONTEXT_NOT_FOUND",
+      message: "Invalid context identifier format.",
+    };
+  }
+
+  const nowMs = options?.now ?? Date.now();
+  const contextHash = hashContextId(contextId);
+  const db = options?.dbOverride !== undefined ? options.dbOverride : getDb();
+
+  let row: DccContextRow | undefined = memoryContextsByHash.get(contextHash);
+  if (db) {
+    try {
+      const existing = await db
+        .select()
+        .from(dccContexts)
+        .where(eq(dccContexts.contextHash, contextHash))
+        .limit(1);
+      if (existing.length > 0) {
+        row = existing[0];
+        memoryContextsByHash.set(contextHash, row);
+      }
+    } catch {
+      // Fallback to in-memory cache if DB read fails transiently
+    }
+  }
+
+  if (!row) {
+    return {
+      success: false,
+      statusCode: 404,
+      errorCode: "CONTEXT_NOT_FOUND",
+      message: "Context token does not exist.",
+    };
+  }
+
+  if (row.status === "revoked") {
+    return {
+      success: false,
+      statusCode: 410,
+      errorCode: "CONTEXT_REVOKED",
+      message: "Context token has been revoked.",
+    };
+  }
+
+  const redemptionExpiresAt = row.expiresAt.getTime();
+  const tripContextExpiresAt = row.issuedAt.getTime() + DCC_TRIP_CONTEXT_RETENTION_MS;
+
+  if (nowMs > tripContextExpiresAt) {
+    return {
+      success: false,
+      statusCode: 410,
+      errorCode: "TRIP_CONTEXT_EXPIRED",
+      message: "Trip context retention window has expired.",
+    };
+  }
+
+  const redemptionTokenState: "issued" | "redeemed" | "expired" | "revoked" =
+    row.status === "redeemed"
+      ? "redeemed"
+      : nowMs >= redemptionExpiresAt || row.status === "expired"
+        ? "expired"
+        : "issued";
+
+  return {
+    success: true,
+    contextId: row.contextId,
+    version: "1.0",
+    redemptionTokenState,
+    tripContextState: "active",
+    redemptionExpiresAt,
+    tripContextExpiresAt,
+    sourceSite: row.sourceSite,
+    destination: row.destination,
+    targetOwner: row.targetOwner,
+    targetIntent: row.targetIntent,
+    timezone: row.timezone,
+    schedule: {
+      date: row.scheduleDate,
+      arrival: row.arrival,
+      departure: row.departure,
+      travelers: row.travelers,
+      shipOrVenue: row.shipOrVenue,
+    },
+    safetyConstraint: {
+      bufferMinutes: row.bufferMinutes,
+      latestSafeReturnDate: row.latestSafeReturnDate,
+      latestSafeReturnTime: row.latestSafeReturnTime,
+      midnightCrossed: row.midnightCrossed,
+    },
+    attribution: row.attribution || undefined,
   };
 }
 
@@ -298,19 +506,81 @@ export async function redeemContext(
     };
   }
 
-  const db = options?.dbOverride !== undefined ? options.dbOverride : getDb();
-  if (!db) {
-    return {
-      success: false,
-      statusCode: 500,
-      errorCode: "DATABASE_UNAVAILABLE",
-      message: "Database connection is not configured.",
-    };
-  }
-
   const now = options?.now ? new Date(options.now) : new Date();
   const contextHash = hashContextId(contextId);
   const normalizedClaimingId = resolvedClaimingOwner.id;
+
+  const db = options?.dbOverride !== undefined ? options.dbOverride : getDb();
+  if (!db) {
+    if (options?.dbOverride === null) {
+      return {
+        success: false,
+        statusCode: 500,
+        errorCode: "DATABASE_UNAVAILABLE",
+        message: "Database connection is not configured.",
+      };
+    }
+    const memRow = memoryContextsByHash.get(contextHash);
+    if (!memRow) {
+      return {
+        success: false,
+        statusCode: 404,
+        errorCode: "CONTEXT_NOT_FOUND",
+        message: "Context token does not exist.",
+      };
+    }
+    if (memRow.status === "revoked") {
+      return {
+        success: false,
+        statusCode: 410,
+        errorCode: "CONTEXT_REVOKED",
+        message: "Context token has been revoked.",
+      };
+    }
+    if (memRow.expiresAt <= now || memRow.status === "expired") {
+      return {
+        success: false,
+        statusCode: 410,
+        errorCode: "CONTEXT_EXPIRED",
+        message: `Context token expired at ${memRow.expiresAt.toISOString()}.`,
+      };
+    }
+    if (memRow.targetOwner !== normalizedClaimingId) {
+      return {
+        success: false,
+        statusCode: 403,
+        errorCode: "OWNER_MISMATCH",
+        message: `Context token was issued for owner '${memRow.targetOwner}', but claimed by '${claimingOwner}'.`,
+      };
+    }
+    if (memRow.status === "redeemed") {
+      if (memRow.redeemedBy === normalizedClaimingId && memRow.targetOwner === normalizedClaimingId) {
+        return {
+          success: true,
+          data: formatRedeemedResponse(memRow),
+          idempotencyReplay: true,
+        };
+      }
+      return {
+        success: false,
+        statusCode: 409,
+        errorCode: "CONTEXT_ALREADY_REDEEMED",
+        message: `Context token was already redeemed at ${memRow.redeemedAt?.toISOString()} by '${memRow.redeemedBy}'. Replay attacks are prohibited.`,
+      };
+    }
+    const updatedMem: DccContextRow = {
+      ...memRow,
+      status: "redeemed",
+      redeemedAt: now,
+      redeemedBy: normalizedClaimingId,
+      updatedAt: now,
+    };
+    memoryContextsByHash.set(contextHash, updatedMem);
+    return {
+      success: true,
+      data: formatRedeemedResponse(updatedMem),
+    };
+  }
 
   // 1. ATOMIC UPDATE QUERY (Guaranteed Single-Winner Concurrency Lock)
   const updated = await db
@@ -332,6 +602,7 @@ export async function redeemContext(
     .returning();
 
   if (updated.length === 1) {
+    memoryContextsByHash.set(contextHash, updated[0]);
     return {
       success: true,
       data: formatRedeemedResponse(updated[0]),
@@ -355,6 +626,7 @@ export async function redeemContext(
   }
 
   const row = existing[0];
+  memoryContextsByHash.set(contextHash, row);
 
   if (row.status === "revoked") {
     return {

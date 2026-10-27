@@ -11,6 +11,7 @@ import {
   handleV03ReplayReceiptRequest,
   MachineSecurityLimitError,
   PrivilegedSurfaceAccessError,
+  resolveOrGenerateW3cTraceparent,
   toPublicCitationProjection,
   UnauthorizedAdminSimulationError,
   verifyEvaluationAuthAndRateLimit,
@@ -18,6 +19,11 @@ import {
   verifyV031SurfaceAccess,
   type CommerceAdapterTarget,
 } from "@/lib/dcc/machine";
+import {
+  createCommercialHandoff,
+  recordCommercialOutcome,
+  type CommercialProvider,
+} from "@/lib/dcc/commerce";
 
 export const dynamic = "force-dynamic";
 
@@ -25,11 +31,13 @@ export async function GET(request: Request) {
   const flagBlocked = enforceMachineLayerFeatureFlag();
   if (flagBlocked) return flagBlocked;
 
+  const traceparent = resolveOrGenerateW3cTraceparent(request);
   const url = new URL(request.url);
   const baseUrl = `${url.protocol}//${url.host}`;
   return buildMachineJsonResponse(buildMcpDiscoveryDocument(baseUrl), {
     cacheControl: "public, max-age=300, s-maxage=300",
     extraHeaders: {
+      traceparent,
       "X-DCC-Surface-Class": "public_discovery",
     },
   });
@@ -39,6 +47,7 @@ export async function POST(request: Request) {
   const flagBlocked = enforceMachineLayerFeatureFlag();
   if (flagBlocked) return flagBlocked;
 
+  const traceparent = resolveOrGenerateW3cTraceparent(request);
   const clientIp =
     request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local-client";
   const rateDecision = await checkDistributedRateLimitV03({
@@ -59,7 +68,7 @@ export async function POST(request: Request) {
           },
         },
       },
-      { status: 429, cacheControl: "no-store" },
+      { status: 429, cacheControl: "no-store", extraHeaders: { traceparent } },
     );
   }
 
@@ -81,7 +90,7 @@ export async function POST(request: Request) {
             data: { errorCode: err.code },
           },
         },
-        { status: err.statusCode, cacheControl: "no-store" },
+        { status: err.statusCode, cacheControl: "no-store", extraHeaders: { traceparent } },
       );
     }
     return buildMachineJsonResponse(
@@ -90,7 +99,7 @@ export async function POST(request: Request) {
         id: null,
         error: { code: -32700, message: "Parse error" },
       },
-      { status: 400, cacheControl: "no-store" },
+      { status: 400, cacheControl: "no-store", extraHeaders: { traceparent } },
     );
   }
 
@@ -114,6 +123,7 @@ export async function POST(request: Request) {
       {
         cacheControl: "no-store",
         extraHeaders: {
+          traceparent,
           "X-DCC-Surface-Class": "public_discovery",
           "X-DCC-RateLimit-Backend": rateDecision.coordinationBackend,
         },
@@ -127,7 +137,7 @@ export async function POST(request: Request) {
 
     try {
       if (toolName === "dcc_evaluate_category" || toolName === "dcc_evaluate_current") {
-        verifyEvaluationAuthAndRateLimit(request, "evaluate:single");
+        const auth = verifyEvaluationAuthAndRateLimit(request, "evaluate:single");
         const isSim = args.mode === "admin_simulation";
         const adminToken =
           request.headers.get("x-dcc-admin-simulation-token") ??
@@ -140,7 +150,11 @@ export async function POST(request: Request) {
             explicitToken: adminToken,
           });
         }
-        const evalRes = await handleV03EvaluateRequest(args, { adminToken });
+        const evalRes = await handleV03EvaluateRequest(args, {
+          adminToken,
+          authenticatedClientId: auth.clientId,
+          traceparent,
+        });
         return buildMachineJsonResponse(
           {
             jsonrpc: "2.0",
@@ -153,6 +167,8 @@ export async function POST(request: Request) {
           {
             cacheControl: "no-store",
             extraHeaders: {
+              traceparent,
+              "X-DCC-Client-Id": auth.clientId,
               "X-DCC-Surface-Class": isSim
                 ? "privileged_simulation"
                 : "authenticated_evaluation",
@@ -177,6 +193,7 @@ export async function POST(request: Request) {
           {
             cacheControl: "no-store",
             extraHeaders: {
+              traceparent,
               "X-DCC-Surface-Class": "public_verification",
               "X-DCC-RateLimit-Backend": rateDecision.coordinationBackend,
             },
@@ -199,6 +216,7 @@ export async function POST(request: Request) {
           {
             cacheControl: "no-store",
             extraHeaders: {
+              traceparent,
               "X-DCC-Surface-Class": "public_verification",
               "X-DCC-RateLimit-Backend": rateDecision.coordinationBackend,
             },
@@ -220,7 +238,7 @@ export async function POST(request: Request) {
                 message: `Evidence reference "${referenceId}" not found.`,
               },
             },
-            { status: 404, cacheControl: "no-store" },
+            { status: 404, cacheControl: "no-store", extraHeaders: { traceparent } },
           );
         }
         const projection = toPublicCitationProjection(evRef);
@@ -236,6 +254,7 @@ export async function POST(request: Request) {
           {
             cacheControl: "no-store",
             extraHeaders: {
+              traceparent,
               "X-DCC-Surface-Class": "public_verification",
               "X-DCC-RateLimit-Backend": rateDecision.coordinationBackend,
             },
@@ -257,7 +276,7 @@ export async function POST(request: Request) {
                 message: `CandidateUniverse "${universeId}" not found.`,
               },
             },
-            { status: 404, cacheControl: "no-store" },
+            { status: 404, cacheControl: "no-store", extraHeaders: { traceparent } },
           );
         }
         return buildMachineJsonResponse(
@@ -272,6 +291,7 @@ export async function POST(request: Request) {
           {
             cacheControl: "no-store",
             extraHeaders: {
+              traceparent,
               "X-DCC-Surface-Class": "public_discovery",
               "X-DCC-RateLimit-Backend": rateDecision.coordinationBackend,
             },
@@ -280,6 +300,7 @@ export async function POST(request: Request) {
       }
 
       if (toolName === "dcc_issue_shadow_authorization") {
+        const auth = verifyEvaluationAuthAndRateLimit(request, "evaluate:single");
         verifyV031SurfaceAccess({
           surfaceClass: "privileged_authorization",
           request,
@@ -307,7 +328,113 @@ export async function POST(request: Request) {
           {
             cacheControl: "no-store",
             extraHeaders: {
+              traceparent,
+              "X-DCC-Client-Id": auth.clientId,
               "X-DCC-Surface-Class": "privileged_authorization",
+              "X-DCC-RateLimit-Backend": rateDecision.coordinationBackend,
+            },
+          },
+        );
+      }
+
+      if (toolName === "dcc_create_commercial_handoff") {
+        const auth = verifyEvaluationAuthAndRateLimit(request, "dcc:commerce:handoff");
+        const handoff = await createCommercialHandoff({
+          originatingSite: String(args.originatingSite ?? "destinationcommandcenter.com"),
+          provider: (args.provider as CommercialProvider) ?? "viator",
+          providerAccount:
+            typeof args.providerAccount === "string" ? args.providerAccount : null,
+          productCode: String(args.productCode ?? ""),
+          productTitle: typeof args.productTitle === "string" ? args.productTitle : null,
+          productDestinationUrl: String(args.productDestinationUrl ?? ""),
+          campaign: typeof args.campaign === "string" ? args.campaign : null,
+          contextId: typeof args.contextId === "string" ? args.contextId : null,
+          evaluationRunId:
+            typeof args.evaluationRunId === "string" ? args.evaluationRunId : null,
+          receiptId: typeof args.receiptId === "string" ? args.receiptId : null,
+          intendedDate: typeof args.intendedDate === "string" ? args.intendedDate : null,
+          intendedOption:
+            typeof args.intendedOption === "string" ? args.intendedOption : null,
+          partySize: typeof args.partySize === "number" ? args.partySize : null,
+          callerClientId: auth.clientId,
+          traceparent,
+        });
+        return buildMachineJsonResponse(
+          {
+            jsonrpc: "2.0",
+            id: rpcId,
+            result: {
+              content: [{ type: "text", text: JSON.stringify(handoff) }],
+              structuredContent: handoff,
+            },
+          },
+          {
+            cacheControl: "no-store",
+            extraHeaders: {
+              traceparent,
+              "X-DCC-Client-Id": auth.clientId,
+              "X-DCC-Surface-Class": "commercial_handoff",
+              "X-DCC-RateLimit-Backend": rateDecision.coordinationBackend,
+            },
+          },
+        );
+      }
+
+      if (toolName === "dcc_report_commercial_outcome") {
+        const auth = verifyEvaluationAuthAndRateLimit({
+          headers: request.headers,
+          requiredScope: "dcc:commerce:report_outcome",
+          requireExplicitApiKey: true,
+        });
+        const outcome = await recordCommercialOutcome({
+          reporterClientId: auth.clientId,
+          reporterProvenance: "authenticated_api_reporter",
+          provider: (args.provider as CommercialProvider) ?? "viator",
+          providerAccount:
+            typeof args.providerAccount === "string" ? args.providerAccount : null,
+          providerBookingRef: String(args.providerBookingRef ?? ""),
+          eventType: String(args.eventType ?? "BOOKING_CONFIRMED"),
+          providerEventTime:
+            typeof args.providerEventTime === "string" ? args.providerEventTime : null,
+          handoffId: typeof args.handoffId === "string" ? args.handoffId : null,
+          campaignOrRefValue:
+            typeof args.campaignOrRefValue === "string" ? args.campaignOrRefValue : null,
+          bookedProductCode:
+            typeof args.bookedProductCode === "string" ? args.bookedProductCode : null,
+          bookedDate: typeof args.bookedDate === "string" ? args.bookedDate : null,
+          bookedPartySize:
+            typeof args.bookedPartySize === "number" ? args.bookedPartySize : null,
+          bookingValueAmount:
+            typeof args.bookingValueAmount === "number" ? args.bookingValueAmount : null,
+          bookingValueCurrency:
+            typeof args.bookingValueCurrency === "string"
+              ? args.bookingValueCurrency
+              : null,
+          estimatedCommissionAmount:
+            typeof args.estimatedCommissionAmount === "number"
+              ? args.estimatedCommissionAmount
+              : null,
+          paidCommissionAmount:
+            typeof args.paidCommissionAmount === "number"
+              ? args.paidCommissionAmount
+              : null,
+          traceparent,
+        });
+        return buildMachineJsonResponse(
+          {
+            jsonrpc: "2.0",
+            id: rpcId,
+            result: {
+              content: [{ type: "text", text: JSON.stringify(outcome) }],
+              structuredContent: outcome,
+            },
+          },
+          {
+            cacheControl: "no-store",
+            extraHeaders: {
+              traceparent,
+              "X-DCC-Client-Id": auth.clientId,
+              "X-DCC-Surface-Class": "commercial_outcome_reporting",
               "X-DCC-RateLimit-Backend": rateDecision.coordinationBackend,
             },
           },
@@ -323,7 +450,7 @@ export async function POST(request: Request) {
             message: `Unknown MCP tool "${toolName}".`,
           },
         },
-        { status: 400, cacheControl: "no-store" },
+        { status: 400, cacheControl: "no-store", extraHeaders: { traceparent } },
       );
     } catch (err) {
       if (err instanceof ClientSuppliedKnownAtForbiddenError) {
