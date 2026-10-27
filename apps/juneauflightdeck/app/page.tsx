@@ -8,6 +8,7 @@ import {
 import { TOOLKIT_CONFIG } from "@/lib/toolkitConfig";
 import { SITE_DESCRIPTION } from "@/lib/sitePositioning";
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import BookingTransparency from "./components/BookingTransparency";
 import HomeHero from "./components/HomeHero";
 import HelicopterDispatchBoard from "./components/HelicopterDispatchBoard";
@@ -43,8 +44,19 @@ export default async function HomePage({
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const resolvedSearchParams = searchParams ? await searchParams : {};
+  let cookieCtx: string | null = null;
+  try {
+    const cookieStore = await cookies();
+    cookieCtx =
+      cookieStore.get("jfd_checkout_session")?.value ||
+      cookieStore.get("dcc_trip_ctx")?.value ||
+      null;
+  } catch {
+    cookieCtx = null;
+  }
   const carriedContext = await resolvePortfolioTripContext({
     searchParams: resolvedSearchParams,
+    cookieContextId: cookieCtx,
     claimingOwner: "juneauflightdeck.com",
     issueIfParamsPresent: true,
     defaultPortSlug: "juneau",
@@ -113,6 +125,10 @@ export default async function HomePage({
           {
             label: "Compare All Alaska Port Windows on Last Frontier Shore Excursions",
             href: `https://www.lastfrontiershoreexcursions.com/${ctxQuery}`,
+          },
+          {
+            label: "Return to Cruise Promenade Planner",
+            href: `https://cruisepromenade.com/planner${ctxQuery}`,
           },
           {
             label: "Verify on Destination Command Center",

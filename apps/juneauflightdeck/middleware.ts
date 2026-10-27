@@ -1,4 +1,4 @@
-﻿import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import {
   redeemOpaqueContextEdge,
   signSessionTokenEdge,
@@ -36,9 +36,57 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  if (
+    request.method === "GET" &&
+    !pathname.startsWith("/api/") &&
+    !pathname.startsWith("/.well-known/")
+  ) {
+    const rawCtx =
+      searchParams.get("ctx")?.trim() ||
+      searchParams.get("dcc_ctx")?.trim() ||
+      "";
+    if (rawCtx.startsWith("dcc_ctx_")) {
+      const cleanUrl = request.nextUrl.clone();
+      for (const param of [
+        "ctx",
+        "dcc_ctx",
+        "name",
+        "fullName",
+        "firstName",
+        "lastName",
+        "email",
+        "phone",
+        "weight",
+        "passengerWeight",
+        "weights",
+        "accessibility",
+        "medicalNotes",
+        "cabin",
+        "cabinNumber",
+        "stateroom",
+        "stateroomNumber",
+        "bookingRef",
+        "reservationNumber",
+        "pnr",
+      ]) {
+        cleanUrl.searchParams.delete(param);
+      }
+
+      const redirectRes = NextResponse.redirect(cleanUrl, 302);
+      redirectRes.cookies.set(JFD_CHECKOUT_COOKIE_NAME, rawCtx, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "lax",
+        path: "/",
+        maxAge: 60 * 60 * 24,
+      });
+      return redirectRes;
+    }
+  }
+
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/book"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)"],
 };

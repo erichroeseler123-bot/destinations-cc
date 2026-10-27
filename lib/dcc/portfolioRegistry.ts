@@ -1,8 +1,20 @@
 import { DCC_SITE_TRUTH } from "./siteTruth";
+import {
+  DCC_EXCLUDED_PORTFOLIO_SITES,
+  DCC_PORTFOLIO_NETWORK_SITES,
+  FEASTLY_SPREAD_MARKETS,
+} from "./portfolioNetworkRegistry";
+
+export {
+  DCC_EXCLUDED_PORTFOLIO_SITES,
+  DCC_PORTFOLIO_NETWORK_SITES,
+  FEASTLY_SPREAD_MARKETS,
+};
 
 export const DCC_SITE_CONTRACT = {
   spec: "dcc-site-contract",
   version: "1.0",
+  manifestSchema: "dcc.site-manifest.v1",
   schemaUrl: "https://www.destinationcommandcenter.com/dcc-site-contract.schema.json",
   registryUrl: "https://www.destinationcommandcenter.com/api/public/portfolio-feed",
   truthFeedUrl: "https://www.destinationcommandcenter.com/api/public/truth-feed",
@@ -29,6 +41,7 @@ export const DCC_PORTFOLIO_RELATIONSHIPS = [
   { from: "dcc:site:destination-command-center", relation: "indexes", to: "dcc:site:wno-tours" },
   { from: "dcc:site:destination-command-center", relation: "indexes", to: "dcc:site:gosno" },
   { from: "dcc:site:destination-command-center", relation: "indexes", to: "dcc:site:bigsky-gosno" },
+  { from: "dcc:site:destination-command-center", relation: "indexes", to: "dcc:site:party-at-red-rocks" },
   { from: "dcc:site:destination-command-center", relation: "indexes", to: "dcc:site:save-on-the-strip" },
   { from: "dcc:site:destination-command-center", relation: "indexes", to: "dcc:site:welcome-to-the-swamp" },
   { from: "dcc:site:destination-command-center", relation: "indexes", to: "dcc:site:juneau-flight-deck" },
@@ -39,6 +52,22 @@ export const DCC_PORTFOLIO_RELATIONSHIPS = [
   { from: "dcc:site:destination-command-center", relation: "indexes", to: "dcc:site:420-friendly-airport-pickup" },
   { from: "dcc:site:destination-command-center", relation: "indexes", to: "dcc:site:somerset-amphitheater-shuttle" },
   { from: "dcc:site:destination-command-center", relation: "indexes", to: "dcc:site:blue-hills-outpost" },
+  { from: "dcc:site:destination-command-center", relation: "indexes", to: "dcc:site:feastly-spread" },
+  { from: "dcc:site:destination-command-center", relation: "indexes", to: "dcc:site:brinkberry" },
+  { from: "dcc:site:cruise-promenade", relation: "natural_journey", to: "dcc:site:last-frontier-shore-excursions" },
+  { from: "dcc:site:last-frontier-shore-excursions", relation: "natural_journey", to: "dcc:site:juneau-flight-deck" },
+  { from: "dcc:site:juneau-flight-deck", relation: "natural_journey", to: "dcc:site:last-frontier-shore-excursions" },
+  { from: "dcc:site:last-frontier-shore-excursions", relation: "natural_journey", to: "dcc:site:cruise-promenade" },
+  { from: "dcc:site:juneau-flight-deck", relation: "natural_journey", to: "dcc:site:cruise-promenade" },
+  { from: "dcc:site:cruise-promenade", relation: "natural_journey", to: "dcc:site:wno-tours" },
+  { from: "dcc:site:wno-tours", relation: "natural_journey", to: "dcc:site:welcome-to-the-swamp" },
+  { from: "dcc:site:welcome-to-the-swamp", relation: "natural_journey", to: "dcc:site:wno-tours" },
+  { from: "dcc:site:wno-tours", relation: "natural_journey", to: "dcc:site:cruise-promenade" },
+  { from: "dcc:site:welcome-to-the-swamp", relation: "natural_journey", to: "dcc:site:cruise-promenade" },
+  { from: "dcc:site:cruise-promenade", relation: "natural_journey", to: "dcc:site:vibe-around-town" },
+  { from: "dcc:site:brinkberry", relation: "natural_journey", to: "dcc:site:party-at-red-rocks" },
+  { from: "dcc:site:destination-command-center", relation: "natural_journey", to: "dcc:site:gosno" },
+  { from: "dcc:site:destination-command-center", relation: "natural_journey", to: "dcc:site:feastly-spread" },
   { from: "dcc:site:bigsky-gosno", relation: "related_service", to: "dcc:site:gosno" },
   { from: "dcc:site:wno-tours", relation: "serves_destination", to: "dcc:destination:new-orleans" },
   { from: "dcc:site:welcome-to-the-swamp", relation: "serves_destination", to: "dcc:destination:new-orleans" },
@@ -50,6 +79,8 @@ export const DCC_PORTFOLIO_RELATIONSHIPS = [
   { from: "dcc:site:juneau-flight-deck", relation: "serves_destination", to: "dcc:destination:juneau" },
   { from: "dcc:site:last-frontier-shore-excursions", relation: "serves_region", to: "dcc:region:alaska" },
   { from: "dcc:site:welcome-to-the-dells", relation: "serves_destination", to: "dcc:destination:wisconsin-dells" },
+  { from: "dcc:site:feastly-spread", relation: "serves_destination", to: "dcc:destination:wisconsin-dells" },
+  { from: "dcc:site:feastly-spread", relation: "serves_destination", to: "dcc:destination:door-county" },
   { from: "dcc:site:gosno", relation: "serves_airport", to: "dcc:airport:den" },
   { from: "dcc:site:gosno", relation: "serves_airport", to: "dcc:airport:cos" },
   { from: "dcc:site:bigsky-gosno", relation: "serves_airport", to: "dcc:airport:bzn" },

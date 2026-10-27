@@ -1,6 +1,7 @@
 import { TourFeatureLinks } from "@/app/components/tour-tools/TourPlanningKit";
 import { TOOLKIT_CONFIG } from "@/lib/toolkitConfig";
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import JsonLd from "@/app/components/JsonLd";
 import { buildBreadcrumbJsonLd, buildWebPageJsonLd } from "@/lib/jsonld";
 import NextBoatFinder from "@/app/components/NextBoatFinder";
@@ -36,8 +37,19 @@ export default async function HomePage({
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const resolvedSearchParams = searchParams ? await searchParams : {};
+  let cookieCtx: string | null = null;
+  try {
+    const cookieStore = await cookies();
+    cookieCtx =
+      cookieStore.get("wts_trip_ctx")?.value ||
+      cookieStore.get("dcc_trip_ctx")?.value ||
+      null;
+  } catch {
+    cookieCtx = null;
+  }
   const carriedContext = await resolvePortfolioTripContext({
     searchParams: resolvedSearchParams,
+    cookieContextId: cookieCtx,
     claimingOwner: "welcometotheswamp.com",
     issueIfParamsPresent: true,
     defaultPortSlug: "new-orleans",
@@ -199,6 +211,10 @@ export default async function HomePage({
             {
               label: "Continue to Welcome to New Orleans Tours",
               href: `https://www.welcometoneworleanstours.com/tours/airboat-small${ctxQuery}`,
+            },
+            {
+              label: "Return to Cruise Promenade Planner",
+              href: `https://cruisepromenade.com/planner${ctxQuery}`,
             },
             {
               label: "Return to Destination Command Center",

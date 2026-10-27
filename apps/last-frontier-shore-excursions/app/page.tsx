@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { PORTS } from "@/lib/ports";
 import { DECISION_PAGES } from "@/lib/decisionPages";
 import { PORT_ACTIVITIES } from "@/lib/portActivities";
@@ -15,9 +16,20 @@ export default async function HomePage({
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const sp = searchParams ? await searchParams : {};
+  let cookieCtx: string | undefined;
+  try {
+    const cookieStore = await cookies();
+    cookieCtx =
+      cookieStore.get("lfse_trip_ctx")?.value ||
+      cookieStore.get("dcc_trip_ctx")?.value ||
+      undefined;
+  } catch {
+    cookieCtx = undefined;
+  }
   const rawCtx =
     (typeof sp.ctx === "string" ? sp.ctx : undefined) ||
     (typeof sp.dcc_ctx === "string" ? sp.dcc_ctx : undefined) ||
+    cookieCtx ||
     null;
   const carriedDate = typeof sp.date === "string" ? sp.date : null;
   const rawParty =
@@ -256,6 +268,13 @@ export default async function HomePage({
                 style={{ color: "#93c5fd", textDecoration: "underline", fontWeight: 600 }}
               >
                 Continue to Juneau Flight Deck (Helicopter Dispatch) →
+              </a>
+              <a
+                href={`https://cruisepromenade.com/planner${ctxQuery}`}
+                data-dcc-cross-site-link="true"
+                style={{ color: "#93c5fd", textDecoration: "underline", fontWeight: 600 }}
+              >
+                Return to Cruise Promenade Planner →
               </a>
             </div>
           </div>

@@ -18,6 +18,8 @@ const ALLOWED_PROVIDERS = new Set<CommercialProvider>([
   "viator",
   "fareharbor",
   "getyourguide",
+  "rezdy",
+  "square",
   "direct",
 ]);
 
@@ -133,7 +135,7 @@ export async function POST(request: Request) {
         ok: false,
         error: {
           code: "UNSUPPORTED_COMMERCIAL_PROVIDER",
-          message: `Provider '${providerRaw}' is not supported. Expected viator, fareharbor, getyourguide, or direct.`,
+          message: `Provider '${providerRaw}' is not supported. Expected viator, fareharbor, getyourguide, rezdy, square, or direct.`,
         },
       },
       { status: 400, cacheControl: "no-store", extraHeaders: { traceparent } },
@@ -163,6 +165,7 @@ export async function POST(request: Request) {
     originatingSite: String(
       body.originatingSite ?? body.site ?? "destinationcommandcenter.com",
     ),
+    targetSite: typeof body.targetSite === "string" ? body.targetSite : null,
     provider: providerRaw,
     providerAccount:
       typeof body.providerAccount === "string" ? body.providerAccount : null,
@@ -186,6 +189,25 @@ export async function POST(request: Request) {
       typeof body.quotedPriceAmount === "number" ? body.quotedPriceAmount : null,
     quotedPriceCurrency:
       typeof body.quotedPriceCurrency === "string" ? body.quotedPriceCurrency : null,
+    approvedPartnerAttribution:
+      body.approvedPartnerAttribution &&
+      typeof body.approvedPartnerAttribution === "object" &&
+      typeof (body.approvedPartnerAttribution as Record<string, unknown>).partnerId ===
+        "string"
+        ? {
+            partnerId: String(
+              (body.approvedPartnerAttribution as Record<string, unknown>).partnerId,
+            ),
+            partnerName:
+              typeof (body.approvedPartnerAttribution as Record<string, unknown>)
+                .partnerName === "string"
+                ? String(
+                    (body.approvedPartnerAttribution as Record<string, unknown>)
+                      .partnerName,
+                  )
+                : null,
+          }
+        : null,
     callerClientId,
     traceparent,
     metadata:

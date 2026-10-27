@@ -152,11 +152,12 @@ export function getWtonotHostRewrite(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
-  // Allow static next/image/assets resources and API routes
+  // Allow static next/image/assets resources, well-known manifests, and API routes
   if (
     pathname.startsWith("/_next/") ||
     pathname.startsWith("/images/") ||
     pathname.startsWith("/api/") ||
+    pathname.startsWith("/.well-known/") ||
     pathname === "/favicon.ico" ||
     pathname === "/sitemap.xml" ||
     pathname === "/robots.txt"
@@ -297,10 +298,12 @@ function getLfseHostRewrite(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
-  // Allow static next/image/assets resources
+  // Allow static next/image/assets resources and well-known manifests
   if (
     pathname.startsWith("/_next/") ||
     pathname.startsWith("/images/") ||
+    pathname.startsWith("/api/") ||
+    pathname.startsWith("/.well-known/") ||
     pathname === "/favicon.ico" ||
     pathname === "/sitemap.xml" ||
     pathname === "/robots.txt"
@@ -682,6 +685,69 @@ export async function proxy(request: NextRequest, event: NextFetchEvent) {
   // Enforce www canonical host redirection for LFSE
   if (host === "lastfrontiershoreexcursions.com") {
     return NextResponse.redirect(`https://www.lastfrontiershoreexcursions.com${request.nextUrl.pathname}${request.nextUrl.search}`, 308);
+  }
+
+  // Opaque cross-domain trip-context redemption: store in Secure HttpOnly first-party cookie and 302 strip from URL
+  if (
+    request.method === "GET" &&
+    !request.nextUrl.pathname.startsWith("/api/") &&
+    !request.nextUrl.pathname.startsWith("/go/")
+  ) {
+    const rawCtx =
+      request.nextUrl.searchParams.get("ctx")?.trim() ||
+      request.nextUrl.searchParams.get("dcc_ctx")?.trim() ||
+      "";
+    if (rawCtx.startsWith("dcc_ctx_")) {
+      const normalizedHost = host.toLowerCase().replace(/^www\./, "");
+      const cookieName =
+        normalizedHost === "welcometoneworleanstours.com"
+          ? "wtno_trip_ctx"
+          : normalizedHost === "lastfrontiershoreexcursions.com"
+            ? "lfse_trip_ctx"
+            : normalizedHost === "welcometotheswamp.com"
+              ? "wts_trip_ctx"
+              : normalizedHost === "juneauflightdeck.com"
+                ? "jfd_checkout_session"
+                : normalizedHost === "420friendlyairportpickup.com"
+                  ? "ap420_trip_ctx"
+                  : "dcc_trip_ctx";
+
+      const cleanUrl = request.nextUrl.clone();
+      for (const param of [
+        "ctx",
+        "dcc_ctx",
+        "name",
+        "fullName",
+        "firstName",
+        "lastName",
+        "email",
+        "phone",
+        "weight",
+        "passengerWeight",
+        "weights",
+        "accessibility",
+        "medicalNotes",
+        "cabin",
+        "cabinNumber",
+        "stateroom",
+        "stateroomNumber",
+        "bookingRef",
+        "reservationNumber",
+        "pnr",
+      ]) {
+        cleanUrl.searchParams.delete(param);
+      }
+
+      const redirectRes = NextResponse.redirect(cleanUrl, 302);
+      redirectRes.cookies.set(cookieName, rawCtx, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "lax",
+        path: "/",
+        maxAge: 60 * 60 * 24,
+      });
+      return redirectRes;
+    }
   }
 
   if (request.nextUrl.pathname.startsWith("/api/internal/")) {

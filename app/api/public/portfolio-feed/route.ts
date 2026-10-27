@@ -1,7 +1,10 @@
 import {
+  DCC_EXCLUDED_PORTFOLIO_SITES,
+  DCC_PORTFOLIO_NETWORK_SITES,
   DCC_PORTFOLIO_RELATIONSHIPS,
   DCC_PORTFOLIO_SITES,
   DCC_SITE_CONTRACT,
+  FEASTLY_SPREAD_MARKETS,
 } from "@/lib/dcc/portfolioRegistry";
 
 export const revalidate = 300;
@@ -11,10 +14,14 @@ export function GET() {
     {
       spec: DCC_SITE_CONTRACT.spec,
       version: DCC_SITE_CONTRACT.version,
+      manifest_schema: DCC_SITE_CONTRACT.manifestSchema,
       generated_at: new Date().toISOString(),
       graph_role: "canonical_public_portfolio_directory",
       truth_feed: DCC_SITE_CONTRACT.truthFeedUrl,
       sites: DCC_PORTFOLIO_SITES,
+      canonical_network_sites: DCC_PORTFOLIO_NETWORK_SITES,
+      excluded_sites: DCC_EXCLUDED_PORTFOLIO_SITES,
+      feastly_markets: FEASTLY_SPREAD_MARKETS,
       relationships: DCC_PORTFOLIO_RELATIONSHIPS,
       guidance: {
         authority_rule:

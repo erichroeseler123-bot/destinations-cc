@@ -124,7 +124,10 @@ export function formatRedeemedResponse(row: DccContextRow): DccContextRedeemResp
       latestSafeReturnTime: row.latestSafeReturnTime,
       midnightCrossed: row.midnightCrossed,
     },
-    attribution: row.attribution || undefined,
+    attribution:
+      row.attribution && Object.keys(row.attribution).length > 0
+        ? row.attribution
+        : undefined,
     issuedAt: row.issuedAt.getTime(),
     expiresAt: row.expiresAt.getTime(),
     redeemedAt: row.redeemedAt?.getTime() || Date.now(),
@@ -239,7 +242,7 @@ export async function issueContext(
     sourceSite: input.sourceSite,
     destination: input.destination,
     targetOwner: owner ? owner.id : input.targetOwner,
-    targetIntent: input.targetIntent || null,
+    targetIntent: input.targetIntent || "general",
     timezone: profile.timezone,
     scheduleDate: input.schedule.date,
     arrival: input.schedule.arrival || null,
@@ -250,7 +253,7 @@ export async function issueContext(
     latestSafeReturnDate: scheduleCalc.latestSafeReturnDate,
     latestSafeReturnTime: scheduleCalc.latestSafeReturnTime,
     midnightCrossed: scheduleCalc.midnightCrossed,
-    attribution: input.attribution || null,
+    attribution: input.attribution || {},
     issuedAt: issuedAtDate,
     expiresAt: expiresAtDate,
     redeemedAt: null,
@@ -276,7 +279,7 @@ export async function issueContext(
         sourceSite: input.sourceSite,
         destination: input.destination,
         targetOwner: owner ? owner.id : input.targetOwner,
-        targetIntent: input.targetIntent || null,
+        targetIntent: input.targetIntent || "general",
         timezone: profile.timezone,
         scheduleDate: input.schedule.date,
         arrival: input.schedule.arrival || null,
@@ -287,7 +290,7 @@ export async function issueContext(
         latestSafeReturnDate: scheduleCalc.latestSafeReturnDate,
         latestSafeReturnTime: scheduleCalc.latestSafeReturnTime,
         midnightCrossed: scheduleCalc.midnightCrossed,
-        attribution: input.attribution || null,
+        attribution: input.attribution || {},
         issuedAt: issuedAtDate,
         expiresAt: expiresAtDate,
       });
@@ -708,18 +711,50 @@ export async function revokeContext(
     };
   }
 
-  const db = options?.dbOverride !== undefined ? options.dbOverride : getDb();
-  if (!db) {
-    return {
-      success: false,
-      statusCode: 500,
-      errorCode: "DATABASE_UNAVAILABLE",
-      message: "Database connection is not configured.",
-    };
-  }
-
   const now = options?.now ? new Date(options.now) : new Date();
   const contextHash = hashContextId(contextId);
+
+  const db = options?.dbOverride !== undefined ? options.dbOverride : getDb();
+  if (!db) {
+    if (options?.dbOverride === null) {
+      return {
+        success: false,
+        statusCode: 500,
+        errorCode: "DATABASE_UNAVAILABLE",
+        message: "Database connection is not configured.",
+      };
+    }
+    const memRow = memoryContextsByHash.get(contextHash);
+    if (!memRow) {
+      return {
+        success: false,
+        statusCode: 404,
+        errorCode: "CONTEXT_NOT_FOUND",
+        message: "Context token does not exist.",
+      };
+    }
+    if (memRow.status === "redeemed") {
+      return {
+        success: false,
+        statusCode: 400,
+        errorCode: "ALREADY_REDEEMED",
+        message: "Cannot revoke a context token that has already been redeemed.",
+      };
+    }
+    const updatedMem: DccContextRow = {
+      ...memRow,
+      status: "revoked",
+      updatedAt: now,
+    };
+    memoryContextsByHash.set(contextHash, updatedMem);
+    return {
+      success: true,
+      contextId,
+      status: "revoked",
+      revokedAt: now.getTime(),
+      revokedBy: requestedBy,
+    };
+  }
 
   const updated = await db
     .update(dccContexts)
@@ -736,6 +771,7 @@ export async function revokeContext(
     .returning();
 
   if (updated.length === 1) {
+    memoryContextsByHash.set(contextHash, updated[0]);
     return {
       success: true,
       contextId,

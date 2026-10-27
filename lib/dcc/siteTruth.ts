@@ -321,8 +321,63 @@ export const DCC_SITE_TRUTH: readonly DccPortfolioTruthRecord[] = [
       finality: "Editorial and visitor guide; activities, rentals, and lodging are provided by independent local businesses.",
     },
   },
+  {
+    dcc_id: "dcc:site:feastly-spread",
+    id: "feastly-spread",
+    name: "FeastlySpread",
+    url: "https://feastlyspread.com",
+    type: "vacation_rental_catering_platform",
+    role: "vacation-rental group catering spread platform with 2 active markets and 16 coverage-request markets",
+    authority: [
+      "vacation_rental_catering_packages",
+      "active_market_package_ordering",
+      "coverage_request_market_intake",
+    ],
+    status: {
+      state: "active",
+      note: "Active package ordering is available only in Wisconsin Dells, WI and Door County, WI; 16 additional markets accept coverage requests only.",
+    },
+    provenance: { kind: "operator_supplied", last_verified: "2026-10-27" },
+    booking: {
+      authority: "site",
+      takes_payment: true,
+      finality:
+        "Live package checkout applies only to active markets (Wisconsin Dells, Door County); coverage-request markets record demand only and never confirm fulfillment.",
+    },
+    public_claims: {
+      active_markets_count: 2,
+      coverage_request_markets_count: 16,
+    },
+  },
+  {
+    dcc_id: "dcc:site:brinkberry",
+    id: "brinkberry",
+    name: "Brinkberry",
+    url: "https://brinkberry.com",
+    type: "regional_event_and_stay_feeder",
+    role: "regional event, concert, and group-stay discovery feeder surface",
+    authority: [
+      "regional_event_discovery",
+      "concert_shuttle_context_handoffs",
+      "group_stay_catering_handoffs",
+    ],
+    status: { state: "active" },
+    provenance: { kind: "declared_by_site", last_verified: "2026-10-27" },
+    booking: {
+      authority: "operator",
+      takes_payment: false,
+      finality: "Brinkberry routes travelers to operator surfaces (such as Party at Red Rocks or FeastlySpread) where reservations are finalized.",
+    },
+  },
 ] as const;
 
 export function getDccSiteTruth(idOrDccId: string) {
-  return DCC_SITE_TRUTH.find((record) => record.id === idOrDccId || record.dcc_id === idOrDccId);
+  const normalized = idOrDccId.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0];
+  return DCC_SITE_TRUTH.find(
+    (record) =>
+      record.id === idOrDccId ||
+      record.dcc_id === idOrDccId ||
+      record.url.toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0] === normalized
+  );
 }
+

@@ -11,6 +11,8 @@ const ALLOWED_PROVIDERS = new Set<CommercialProvider>([
   "viator",
   "fareharbor",
   "getyourguide",
+  "rezdy",
+  "square",
   "direct",
 ]);
 
@@ -74,8 +76,12 @@ export async function GET(request: Request) {
   const quotedPriceAmount =
     Number.isFinite(priceRaw) && priceRaw > 0 ? priceRaw : null;
 
+  const partnerId = sp.get("partnerId")?.trim() || sp.get("partner")?.trim() || null;
+  const targetSite = sp.get("targetSite")?.trim() || null;
+
   const handoff = await createCommercialHandoff({
     originatingSite,
+    targetSite,
     provider,
     providerAccount,
     productCode,
@@ -97,6 +103,7 @@ export async function GET(request: Request) {
       : null,
     quotedPriceAmount,
     quotedPriceCurrency: quotedPriceAmount !== null ? "USD" : null,
+    approvedPartnerAttribution: partnerId ? { partnerId } : null,
     callerClientId: "client:public_traveler_browser",
     traceparent,
   });

@@ -19,7 +19,33 @@ import { Pool } from "@neondatabase/serverless";
 import { getViatorAccessCapabilities } from "../../viator/access";
 import { getViatorClient } from "../../viator/client";
 
-export type CommercialProvider = "viator" | "fareharbor" | "getyourguide" | "direct";
+export type CommercialProvider =
+  | "viator"
+  | "fareharbor"
+  | "getyourguide"
+  | "rezdy"
+  | "square"
+  | "direct";
+
+export interface ApprovedPartnerAttribution {
+  partnerId: string;
+  partnerName?: string | null;
+  authScope: "referral_attribution_only";
+  grantsLoginAccess: false;
+  grantsReportingAccess: false;
+  grantsPayoutAccess: false;
+}
+
+export interface CommercialHandoffOutcomeState {
+  status: "click_recorded_outcome_unknown" | "outcome_reported";
+  bookingOutcome: "unknown" | "confirmed" | "amended" | "cancelled" | "pending";
+  revenueReconciliation: "unknown" | "reported";
+  commissionReconciliation: "unknown" | "estimated" | "paid";
+  clickIsBooking: false;
+  reportingFeedAvailable: boolean;
+  lastOutcomeId: string | null;
+  lastUpdatedAt: string | null;
+}
 
 export interface CommercialPartyDetails {
   adults?: number;
@@ -34,6 +60,7 @@ export interface CommercialPartyDetails {
 
 export interface CreateCommercialHandoffInput {
   originatingSite: string;
+  targetSite?: string | null;
   provider: CommercialProvider;
   providerAccount?: string | null;
   productCode: string;
@@ -49,6 +76,10 @@ export interface CreateCommercialHandoffInput {
   partyDetails?: CommercialPartyDetails | null;
   quotedPriceAmount?: number | null;
   quotedPriceCurrency?: string | null;
+  approvedPartnerAttribution?: {
+    partnerId: string;
+    partnerName?: string | null;
+  } | null;
   callerClientId?: string | null;
   traceparent?: string | null;
   metadata?: Record<string, unknown> | null;
@@ -57,6 +88,7 @@ export interface CreateCommercialHandoffInput {
 export interface CommercialHandoffRecord {
   handoffId: string;
   originatingSite: string;
+  targetSite: string | null;
   provider: CommercialProvider;
   providerAccount: string;
   productCode: string;
@@ -74,6 +106,8 @@ export interface CommercialHandoffRecord {
   partyDetails: CommercialPartyDetails | null;
   quotedPriceAmount: number | null;
   quotedPriceCurrency: string | null;
+  approvedPartnerAttribution: ApprovedPartnerAttribution | null;
+  outcomeState: CommercialHandoffOutcomeState;
   callerClientId: string;
   traceparent: string | null;
   dccBookingAdapterMode: "shadow_only_no_side_effects";
@@ -213,6 +247,12 @@ const SITE_DEFAULT_ACCOUNTS: Record<
     fareharborAsn: "welcometoalaskatours",
     gygPartnerId: process.env.NEXT_PUBLIC_GYG_PARTNER_ID || "F2MMUUH",
   },
+  "cruisepromenade.com": {
+    viatorPid: process.env.NEXT_PUBLIC_VIATOR_PID || "P00058396",
+    viatorMcid: process.env.NEXT_PUBLIC_VIATOR_MCID || "42383",
+    fareharborAsn: "welcometoalaskatours",
+    gygPartnerId: process.env.NEXT_PUBLIC_GYG_PARTNER_ID || "F2MMUUH",
+  },
   "welcometoneworleanstours.com": {
     viatorPid: process.env.NEXT_PUBLIC_VIATOR_PID || "P00058396",
     viatorMcid: process.env.NEXT_PUBLIC_VIATOR_MCID || "42383",
@@ -237,7 +277,97 @@ const SITE_DEFAULT_ACCOUNTS: Record<
     fareharborAsn: "welcometoalaskatours",
     gygPartnerId: process.env.NEXT_PUBLIC_GYG_PARTNER_ID || "F2MMUUH",
   },
+  "vibearoundtown.com": {
+    viatorPid: process.env.NEXT_PUBLIC_VIATOR_PID || "P00058396",
+    viatorMcid: process.env.NEXT_PUBLIC_VIATOR_MCID || "42383",
+    fareharborAsn: "vibingaroundtourco",
+    gygPartnerId: process.env.NEXT_PUBLIC_GYG_PARTNER_ID || "F2MMUUH",
+  },
+  "gosno.co": {
+    viatorPid: process.env.NEXT_PUBLIC_VIATOR_PID || "P00058396",
+    viatorMcid: process.env.NEXT_PUBLIC_VIATOR_MCID || "42383",
+    fareharborAsn: "gosno",
+    gygPartnerId: process.env.NEXT_PUBLIC_GYG_PARTNER_ID || "F2MMUUH",
+  },
+  "feastlyspread.com": {
+    viatorPid: process.env.NEXT_PUBLIC_VIATOR_PID || "P00058396",
+    viatorMcid: process.env.NEXT_PUBLIC_VIATOR_MCID || "42383",
+    fareharborAsn: "feastlyspread",
+    gygPartnerId: process.env.NEXT_PUBLIC_GYG_PARTNER_ID || "F2MMUUH",
+  },
+  "brinkberry.com": {
+    viatorPid: process.env.NEXT_PUBLIC_VIATOR_PID || "P00058396",
+    viatorMcid: process.env.NEXT_PUBLIC_VIATOR_MCID || "42383",
+    fareharborAsn: "brinkberry",
+    gygPartnerId: process.env.NEXT_PUBLIC_GYG_PARTNER_ID || "F2MMUUH",
+  },
+  "partyatredrocks.com": {
+    viatorPid: process.env.NEXT_PUBLIC_VIATOR_PID || "P00058396",
+    viatorMcid: process.env.NEXT_PUBLIC_VIATOR_MCID || "42383",
+    fareharborAsn: "partyatredrocks",
+    gygPartnerId: process.env.NEXT_PUBLIC_GYG_PARTNER_ID || "F2MMUUH",
+  },
+  "420friendlyairportpickup.com": {
+    viatorPid: process.env.NEXT_PUBLIC_VIATOR_PID || "P00058396",
+    viatorMcid: process.env.NEXT_PUBLIC_VIATOR_MCID || "42383",
+    fareharborAsn: "420friendlyairportpickup",
+    gygPartnerId: process.env.NEXT_PUBLIC_GYG_PARTNER_ID || "F2MMUUH",
+  },
 };
+
+export function buildInitialHandoffOutcomeState(
+  provider: CommercialProvider,
+): CommercialHandoffOutcomeState {
+  return {
+    status: "click_recorded_outcome_unknown",
+    bookingOutcome: "unknown",
+    revenueReconciliation: "unknown",
+    commissionReconciliation: "unknown",
+    clickIsBooking: false,
+    reportingFeedAvailable: provider === "viator",
+    lastOutcomeId: null,
+    lastUpdatedAt: null,
+  };
+}
+
+export function deriveHandoffOutcomeStateFromOutcome(
+  provider: CommercialProvider,
+  outcome: CommercialOutcomeRecord,
+): CommercialHandoffOutcomeState {
+  const evt = outcome.eventType.trim().toUpperCase();
+  const bookingOutcome: CommercialHandoffOutcomeState["bookingOutcome"] = evt.includes(
+    "CANCEL",
+  )
+    ? "cancelled"
+    : evt.includes("AMEND")
+      ? "amended"
+      : evt.includes("PEND")
+        ? "pending"
+        : evt.includes("CONFIRM")
+          ? "confirmed"
+          : "unknown";
+
+  const revenueReconciliation: CommercialHandoffOutcomeState["revenueReconciliation"] =
+    outcome.bookingValue.amount !== null ? "reported" : "unknown";
+
+  const commissionReconciliation: CommercialHandoffOutcomeState["commissionReconciliation"] =
+    outcome.paidCommission.amount !== null
+      ? "paid"
+      : outcome.estimatedCommission.amount !== null
+        ? "estimated"
+        : "unknown";
+
+  return {
+    status: "outcome_reported",
+    bookingOutcome,
+    revenueReconciliation,
+    commissionReconciliation,
+    clickIsBooking: false,
+    reportingFeedAvailable: provider === "viator",
+    lastOutcomeId: outcome.outcomeId,
+    lastUpdatedAt: outcome.dccRecordedAt,
+  };
+}
 
 // In-memory store synchronized with Neon PostgreSQL when DATABASE_URL is configured
 const memoryHandoffs = new Map<string, CommercialHandoffRecord>();
@@ -494,6 +624,35 @@ export function buildProviderAffiliateHandoffUrl(params: {
     };
   }
 
+  if (params.provider === "rezdy") {
+    const rezdyAccount = params.providerAccount?.trim() || url.hostname;
+    const refValue = `${baseCampaign}__${params.handoffId}`;
+    url.searchParams.set("ref", refValue);
+    url.searchParams.set("utm_source", siteKey);
+
+    return {
+      outboundAffiliateUrl: url.toString(),
+      providerAccount: rezdyAccount,
+      attributionParameterName: "ref",
+      attributionParameterValue: refValue,
+    };
+  }
+
+  if (params.provider === "square") {
+    const squareAccount = params.providerAccount?.trim() || url.hostname;
+    const attributionValue = `${baseCampaign}__${params.handoffId}`;
+    url.searchParams.set("dcc_handoff_id", params.handoffId);
+    url.searchParams.set("utm_source", siteKey);
+    url.searchParams.set("utm_campaign", attributionValue);
+
+    return {
+      outboundAffiliateUrl: url.toString(),
+      providerAccount: squareAccount,
+      attributionParameterName: "dcc_handoff_id",
+      attributionParameterValue: params.handoffId,
+    };
+  }
+
   // Direct operator referral
   const operatorAccount = params.providerAccount?.trim() || url.hostname;
   const attributionValue = `${baseCampaign}__${params.handoffId}`;
@@ -527,6 +686,39 @@ export async function createCommercialHandoff(
     handoffId,
     campaign: input.campaign,
   });
+
+  let derivedTargetSite: string | null = input.targetSite
+    ? normalizeOriginatingSite(input.targetSite)
+    : null;
+  if (!derivedTargetSite) {
+    try {
+      derivedTargetSite = new URL(input.productDestinationUrl).hostname
+        .toLowerCase()
+        .replace(/^www\./, "");
+    } catch {
+      derivedTargetSite = null;
+    }
+  }
+
+  const approvedPartnerAttribution: ApprovedPartnerAttribution | null =
+    input.approvedPartnerAttribution?.partnerId?.trim()
+      ? {
+          partnerId: input.approvedPartnerAttribution.partnerId.trim(),
+          partnerName: input.approvedPartnerAttribution.partnerName ?? null,
+          authScope: "referral_attribution_only",
+          grantsLoginAccess: false,
+          grantsReportingAccess: false,
+          grantsPayoutAccess: false,
+        }
+      : null;
+
+  const outcomeState = buildInitialHandoffOutcomeState(input.provider);
+
+  const enrichedMetadata: Record<string, unknown> = {
+    ...(input.metadata ?? {}),
+    ...(derivedTargetSite ? { targetSite: derivedTargetSite } : {}),
+    ...(approvedPartnerAttribution ? { approvedPartnerAttribution } : {}),
+  };
 
   const partySize =
     typeof input.partySize === "number" && Number.isFinite(input.partySize)
@@ -605,7 +797,7 @@ export async function createCommercialHandoff(
           input.quotedPriceCurrency ?? null,
           input.callerClientId || "public_traveler_browser",
           input.traceparent ?? null,
-          JSON.stringify(input.metadata ?? {}),
+          JSON.stringify(enrichedMetadata),
         ]
       );
       if (res.rows[0]?.created_at) {
@@ -619,6 +811,7 @@ export async function createCommercialHandoff(
   const record: CommercialHandoffRecord = {
     handoffId,
     originatingSite,
+    targetSite: derivedTargetSite,
     provider: input.provider,
     providerAccount: urlBuilt.providerAccount,
     productCode: input.productCode,
@@ -636,12 +829,14 @@ export async function createCommercialHandoff(
     partyDetails: input.partyDetails ?? null,
     quotedPriceAmount: input.quotedPriceAmount ?? null,
     quotedPriceCurrency: input.quotedPriceCurrency ?? null,
+    approvedPartnerAttribution,
+    outcomeState,
     callerClientId: input.callerClientId || "public_traveler_browser",
     traceparent: input.traceparent ?? null,
     dccBookingAdapterMode: "shadow_only_no_side_effects",
     requiresDecisionAuthorization: false,
     createdAt: createdAtIso,
-    metadata: input.metadata ?? {},
+    metadata: enrichedMetadata,
   };
 
   memoryHandoffs.set(handoffId, record);
@@ -690,9 +885,19 @@ export async function getCommercialHandoffById(
     );
     const row = res.rows[0];
     if (!row) return null;
+    const meta = row.metadata_json ?? {};
+    const targetSiteFromMeta =
+      typeof meta.targetSite === "string" ? meta.targetSite : null;
+    const partnerAttrFromMeta =
+      meta.approvedPartnerAttribution &&
+      typeof meta.approvedPartnerAttribution === "object"
+        ? (meta.approvedPartnerAttribution as ApprovedPartnerAttribution)
+        : null;
+
     const loaded: CommercialHandoffRecord = {
       handoffId: row.handoff_id,
       originatingSite: row.originating_site,
+      targetSite: targetSiteFromMeta,
       provider: row.provider,
       providerAccount: row.provider_account,
       productCode: row.product_code,
@@ -711,12 +916,14 @@ export async function getCommercialHandoffById(
       quotedPriceAmount:
         row.quoted_price_amount !== null ? Number(row.quoted_price_amount) : null,
       quotedPriceCurrency: row.quoted_price_currency,
+      approvedPartnerAttribution: partnerAttrFromMeta,
+      outcomeState: buildInitialHandoffOutcomeState(row.provider),
       callerClientId: row.caller_client_id,
       traceparent: row.traceparent,
       dccBookingAdapterMode: "shadow_only_no_side_effects",
       requiresDecisionAuthorization: false,
       createdAt: new Date(row.created_at).toISOString(),
-      metadata: row.metadata_json ?? {},
+      metadata: meta,
     };
     memoryHandoffs.set(loaded.handoffId, loaded);
     return loaded;
@@ -1044,6 +1251,14 @@ export async function recordCommercialOutcome(
     approvedClaimStatus: "not_a_claim_outcome_only",
     traceparent: input.traceparent ?? null,
   };
+
+  if (matchedHandoff) {
+    const updatedHandoff: CommercialHandoffRecord = {
+      ...matchedHandoff,
+      outcomeState: deriveHandoffOutcomeStateFromOutcome(matchedHandoff.provider, record),
+    };
+    memoryHandoffs.set(matchedHandoff.handoffId, updatedHandoff);
+  }
 
   memoryOutcomesByDedupeKey.set(dedupeKey, { ...record, duplicateDelivery: false });
   memoryOutcomesById.set(record.outcomeId, { ...record, duplicateDelivery: false });

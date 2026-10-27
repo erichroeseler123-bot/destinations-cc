@@ -469,6 +469,16 @@ function createInMemoryTestDb(): DccDb {
       }
 
       if (qLower.startsWith("update")) {
+        if (qLower.includes('"redeemed_at" =') && qLower.includes('"context_id" =')) {
+          const [nextStatus, redeemedAt, redeemedBy, targetContextId] = params;
+          const matched = contexts.filter((c) => c.context_id === targetContextId);
+          for (const c of matched) {
+            c.status = nextStatus;
+            c.redeemed_at = redeemedAt;
+            c.redeemed_by = redeemedBy;
+          }
+          return formatResult(matched, CONTEXT_COLS, options);
+        }
         if (qLower.includes('"redeemed_at" =')) {
           // Atomic redemption update: SET status=$1, redeemed_at=$2, redeemed_by=$3, updated_at=$4 WHERE context_hash=$5 AND status=$6 AND target_owner=$7 AND expires_at >= $8
           const [nextStatus, redeemedAt, redeemedBy, updatedAt, hash, reqStatus, reqOwner, nowParam] = params;
