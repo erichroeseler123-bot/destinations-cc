@@ -411,10 +411,12 @@ export function getV03RuntimeStore(options?: {
 
   const schemaHashes = getV03SchemaHashes();
   const persistedSnapshot = loadPersistedAdmissionSnapshotV031();
-  const capCoastalTourForClock = getPreservedCaptureByIdV031(
-    "cap:juneau:coastal-icefield-excursion-html",
-  );
-  const capGosnoRouteFeedForClock = getPreservedCaptureByIdV031("cap:gosno:route-feed-json");
+  const preservedBundleForClock = loadPreservedCapturesBundleV031();
+  const maxCaptureRetrievedAtIso =
+    Object.values(preservedBundleForClock.captures)
+      .map((c) => c.retrievedAt)
+      .sort()
+      .pop() ?? "2026-10-26T21:03:22.000Z";
 
   const admittedTimestamps: V03AdmittedLedgerTimestamps =
     options?.admittedTimestampsOverride ??
@@ -422,13 +424,13 @@ export function getV03RuntimeStore(options?: {
       admissionId: "bootstrap-pending-db-admission",
       admittedByDatabaseClock: false,
       databaseSchema: "dcc_machine_v03",
-      withdrawalRecordedAt: capGosnoRouteFeedForClock.retrievedAt,
-      noaaRecordedAt: capCoastalTourForClock.retrievedAt,
-      juneauPolicyRecordedAt: capCoastalTourForClock.retrievedAt,
-      gosnoModeRecordedAt: capGosnoRouteFeedForClock.retrievedAt,
-      gosnoSuvRecordedAt: capGosnoRouteFeedForClock.retrievedAt,
-      gosnoVanRecordedAt: capGosnoRouteFeedForClock.retrievedAt,
-      gosnoUnknownConditionsRecordedAt: capGosnoRouteFeedForClock.retrievedAt,
+      withdrawalRecordedAt: maxCaptureRetrievedAtIso,
+      noaaRecordedAt: maxCaptureRetrievedAtIso,
+      juneauPolicyRecordedAt: maxCaptureRetrievedAtIso,
+      gosnoModeRecordedAt: maxCaptureRetrievedAtIso,
+      gosnoSuvRecordedAt: maxCaptureRetrievedAtIso,
+      gosnoVanRecordedAt: maxCaptureRetrievedAtIso,
+      gosnoUnknownConditionsRecordedAt: maxCaptureRetrievedAtIso,
     };
 
   const withdrawalRecordedAt = admittedTimestamps.withdrawalRecordedAt;

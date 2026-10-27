@@ -910,6 +910,25 @@ test("v0.3.1 Gate 7: Repair Verification — Withdrawn GoSno Seed Containment, P
     firstAdditiveRepair.admittedTimestamps,
   );
 
+  // Verify getV03RuntimeStore() succeeds when VERCEL_ENV=production (where persisted nonprod snapshot is ignored)
+  const prevVercelEnv = process.env.VERCEL_ENV;
+  try {
+    process.env.VERCEL_ENV = "production";
+    resetV03RuntimeStore();
+    const prodBootstrapStore = getV03RuntimeStore();
+    assert.equal(prodBootstrapStore.admittedTimestamps.admittedByDatabaseClock, false);
+    assert.equal(
+      prodBootstrapStore.admittedTimestamps.admissionId,
+      "bootstrap-pending-db-admission",
+    );
+  } finally {
+    if (prevVercelEnv === undefined) {
+      delete process.env.VERCEL_ENV;
+    } else {
+      process.env.VERCEL_ENV = prevVercelEnv;
+    }
+  }
+
   // Restore clean singleton runtime store for any subsequent checks
   resetV03RuntimeStore();
 });

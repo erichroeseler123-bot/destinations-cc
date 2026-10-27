@@ -166,6 +166,7 @@ export class NeonRelationalLedgerStoreV03 {
     }
     for (const alterStmt of [
       `ALTER TABLE "dcc_v03_knowledge_events" ALTER COLUMN "recorded_at" DROP NOT NULL`,
+      `ALTER TABLE "dcc_v03_allocated_identifiers" ALTER COLUMN "allocated_at" DROP NOT NULL`,
       `ALTER TABLE "dcc_v03_claim_projections" ALTER COLUMN "retrieved_at" DROP NOT NULL`,
       `ALTER TABLE "dcc_v03_claim_projections" ALTER COLUMN "recorded_at" DROP NOT NULL`,
       `ALTER TABLE "dcc_v03_candidate_universes" DROP CONSTRAINT IF EXISTS "dcc_v03_candidate_universes_uid_ver_uniq"`,
