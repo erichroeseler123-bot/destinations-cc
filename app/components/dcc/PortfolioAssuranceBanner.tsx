@@ -104,7 +104,7 @@ export function PortfolioAssuranceBanner({
             rel="noopener noreferrer"
             style={{ color: "#38bdf8", textDecoration: "underline", fontWeight: 600 }}
           >
-            Verify Decision Receipt ({assurance.receiptId.slice(0, 18)}…) ↗
+            Inspect Decision Engine ({assurance.engineId}) ↗
           </a>
         </div>
       </div>
