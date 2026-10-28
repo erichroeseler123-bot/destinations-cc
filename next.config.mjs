@@ -83,7 +83,25 @@ function isVercelModifiedNextConfigBackedByCleanHead(baseDir) {
   }
 }
 
-function isStatusLineCleanAgainstHead(baseDir, line) {
+function isVercelContainerRewrittenVercelJsonBackedByHead(baseDir, liveHead) {
+  try {
+    if (process.env.VERCEL !== "1" || !process.env.VERCEL_GIT_COMMIT_SHA?.trim()) {
+      return false;
+    }
+    if (liveHead && process.env.VERCEL_GIT_COMMIT_SHA.trim() !== liveHead) {
+      return false;
+    }
+    const headBlob = execSync("git show HEAD:vercel.json", {
+      cwd: baseDir,
+      stdio: ["ignore", "pipe", "ignore"],
+    });
+    return headBlob.length > 0;
+  } catch {
+    return false;
+  }
+}
+
+function isStatusLineCleanAgainstHead(baseDir, line, liveHead) {
   if (/^D\s+"?(legacy_vault|scratch|data\/sources\/geonames|\.open-next|\.wrangler)\//.test(line)) {
     return true;
   }
@@ -93,6 +111,12 @@ function isStatusLineCleanAgainstHead(baseDir, line) {
   }
   const relPath = match[1].trim().replace(/^"|"$/g, "");
   if (relPath === "next.config.mjs" && isVercelModifiedNextConfigBackedByCleanHead(baseDir)) {
+    return true;
+  }
+  if (
+    relPath === "vercel.json" &&
+    isVercelContainerRewrittenVercelJsonBackedByHead(baseDir, liveHead)
+  ) {
     return true;
   }
   try {
@@ -117,6 +141,26 @@ function isStatusLineCleanAgainstHead(baseDir, line) {
 function hashFilesDeterministic(baseDir, relPaths) {
   const pieces = [];
   for (const rel of [...relPaths].sort()) {
+    if (
+      rel === "vercel.json" &&
+      process.env.VERCEL === "1" &&
+      process.env.VERCEL_GIT_COMMIT_SHA?.trim()
+    ) {
+      try {
+        const headBlob = execSync("git show HEAD:vercel.json", {
+          cwd: baseDir,
+          stdio: ["ignore", "pipe", "ignore"],
+        });
+        const headNormalized = Buffer.from(
+          headBlob.toString("utf8").replace(/\r\n/g, "\n"),
+          "utf8",
+        );
+        pieces.push(`${rel}:${sha256HexNode(headNormalized)}`);
+        continue;
+      } catch {
+        // fall through to disk file
+      }
+    }
     const full =
       rel === "next.config.mjs"
         ? resolveEffectiveNextConfigPath(baseDir)
@@ -214,7 +258,7 @@ function resolveBuildProvenanceEnv() {
       .map((l) => l.trim())
       .filter(Boolean);
     const statusLines = rawStatusLines.filter(
-      (l) => !isStatusLineCleanAgainstHead(__dirname, l),
+      (l) => !isStatusLineCleanAgainstHead(__dirname, l, liveHead),
     );
     debugDirtyLines = statusLines;
     dirtySourceStatus = statusLines.length === 0 ? "clean" : "dirty";

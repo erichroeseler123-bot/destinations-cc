@@ -231,7 +231,32 @@ function isVercelModifiedNextConfigBackedByCleanHead(baseDir: string): boolean {
   }
 }
 
-function isStatusLineCleanAgainstHead(baseDir: string, line: string): boolean {
+function isVercelContainerRewrittenVercelJsonBackedByHead(
+  baseDir: string,
+  liveHead?: string,
+): boolean {
+  try {
+    if (process.env.VERCEL !== "1" || !process.env.VERCEL_GIT_COMMIT_SHA?.trim()) {
+      return false;
+    }
+    if (liveHead && process.env.VERCEL_GIT_COMMIT_SHA.trim() !== liveHead) {
+      return false;
+    }
+    const headBlob = execSync("git show HEAD:vercel.json", {
+      cwd: baseDir,
+      stdio: ["ignore", "pipe", "ignore"],
+    });
+    return headBlob.length > 0;
+  } catch {
+    return false;
+  }
+}
+
+function isStatusLineCleanAgainstHead(
+  baseDir: string,
+  line: string,
+  liveHead?: string,
+): boolean {
   if (/^D\s+"?(legacy_vault|scratch|data\/sources\/geonames|\.open-next|\.wrangler)\//.test(line)) {
     return true;
   }
@@ -241,6 +266,12 @@ function isStatusLineCleanAgainstHead(baseDir: string, line: string): boolean {
   }
   const relPath = match[1].trim().replace(/^"|"$/g, "");
   if (relPath === "next.config.mjs" && isVercelModifiedNextConfigBackedByCleanHead(baseDir)) {
+    return true;
+  }
+  if (
+    relPath === "vercel.json" &&
+    isVercelContainerRewrittenVercelJsonBackedByHead(baseDir, liveHead)
+  ) {
     return true;
   }
   try {
@@ -265,6 +296,26 @@ function isStatusLineCleanAgainstHead(baseDir: string, line: string): boolean {
 function hashFilesDeterministic(baseDir: string, relPaths: readonly string[]): string {
   const pieces: string[] = [];
   for (const rel of [...relPaths].sort()) {
+    if (
+      rel === "vercel.json" &&
+      process.env.VERCEL === "1" &&
+      process.env.VERCEL_GIT_COMMIT_SHA?.trim()
+    ) {
+      try {
+        const headBlob = execSync("git show HEAD:vercel.json", {
+          cwd: baseDir,
+          stdio: ["ignore", "pipe", "ignore"],
+        });
+        const headNormalized = Buffer.from(
+          headBlob.toString("utf8").replace(/\r\n/g, "\n"),
+          "utf8",
+        );
+        pieces.push(`${rel}:${sha256HexFull(headNormalized)}`);
+        continue;
+      } catch {
+        // fall through to disk file
+      }
+    }
     const full =
       rel === "next.config.mjs"
         ? resolveEffectiveNextConfigPath(baseDir)
