@@ -8,7 +8,7 @@ import {
 } from "@/lib/dcc/commerce/portfolio";
 
 // Keep this app entrypoint tied to the shared New Orleans storefront. Category routes
-// provide their own DCC assurance engine, ranking, and operator handoff policy.
+// provide category-specific DCC assurance, live decision-center references, ranking, and operator handoff policy.
 export const metadata: Metadata = {
   title: "Welcome to New Orleans Tours | Find the Right Experience",
   description: "Choose the New Orleans experience that fits your group, time, transportation, and interests, then check live operator availability.",
