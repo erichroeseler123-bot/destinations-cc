@@ -51,9 +51,6 @@ export const OPERATOR_IMAGE_PERMISSIONS = {
  */
 export const PRODUCT_IMAGE_REPLACEMENT_QUEUE = [
   "all-day-city-plantation-combo",
-  "covered-boat-plantation-combo",
-  "swamp-boat-oak-alley-combo",
-  "swamp-boat-whitney-combo",
 ] as const;
 
 export const PRODUCT_IMAGES: Record<string, ImageAttribution> = {
@@ -88,6 +85,40 @@ export const PRODUCT_IMAGES: Record<string, ImageAttribution> = {
     rightsStatus: "approved",
     rightsBasis: "operator-direct",
     approvalNote: "Direct operator image-use permission confirmed by site owner.",
+  },
+  "covered-boat-plantation-combo": {
+    url: "/images/travel-markets/new-orleans/covered-boat-swamp.png",
+    alt: "Covered pontoon boat used for the swamp portion of the combination tour",
+    source: "Operator",
+    author: "Ragin Cajun Tours",
+    verifiedRights: true,
+    rightsStatus: "approved",
+    rightsBasis: "operator-direct",
+    approvalNote: "Direct operator image-use permission confirmed by site owner.",
+  },
+  "swamp-boat-oak-alley-combo": {
+    url: "/images/wikimedia/originals/oak-alley-front.jpg",
+    alt: "Oak Alley Plantation, included in the swamp and plantation combination",
+    source: "Wikimedia Commons",
+    author: "Sven Krosse",
+    license: "CC BY-SA 3.0",
+    licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0",
+    sourceUrl: "https://commons.wikimedia.org/wiki/File:Oak_alley_-_view_from_front.jpg",
+    verifiedRights: true,
+    rightsStatus: "approved",
+    rightsBasis: "creative-commons",
+  },
+  "swamp-boat-whitney-combo": {
+    url: "https://upload.wikimedia.org/wikipedia/commons/3/30/The_Big_House_-_Whitney_Plantation%2C_Louisiana.jpg",
+    alt: "The Big House at Whitney Plantation, included in the swamp and plantation combination",
+    source: "Wikimedia Commons",
+    author: "bvi4092",
+    license: "CC BY 2.0",
+    licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+    sourceUrl: "https://commons.wikimedia.org/wiki/File:The_Big_House_-_Whitney_Plantation,_Louisiana.jpg",
+    verifiedRights: true,
+    rightsStatus: "approved",
+    rightsBasis: "creative-commons",
   },
   "evening-jazz-cruise": {
     url: "/images/travel-markets/new-orleans/steamboat-natchez.jpg",
