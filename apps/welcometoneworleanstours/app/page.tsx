@@ -7,8 +7,8 @@ import {
   resolvePortfolioTripContext,
 } from "@/lib/dcc/commerce/portfolio";
 
-// Keep this app entrypoint tied to the shared New Orleans storefront so WNO production
-// rebuilds when shared customer-facing cleanup and retired-route fixes are ready to ship.
+// Keep this app entrypoint tied to the shared New Orleans storefront. Category routes
+// provide their own DCC assurance engine, ranking, and operator handoff policy.
 export const metadata: Metadata = {
   title: "Welcome to New Orleans Tours | Find the Right Experience",
   description: "Choose the New Orleans experience that fits your group, time, transportation, and interests, then check live operator availability.",
