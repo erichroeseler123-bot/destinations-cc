@@ -10,6 +10,8 @@ import VisualEditorialCard from "../../components/VisualEditorialCard";
 import { buildSeoMetadata } from "../../lib/buildSeoMetadata";
 import GeoDirectAnswerCard from "../../components/GeoDirectAnswerCard";
 import { getNolaGeoFact } from "../../data/nolaGeoFacts";
+import PortfolioAssuranceBanner from "@/app/components/dcc/PortfolioAssuranceBanner";
+import { evaluatePortfolioAssuranceSummary } from "@/lib/dcc/commerce/portfolio";
 
 import { STOREFRONT_PRODUCTS } from "../../tours/pageConfig";
 import DailyBriefSignup from "../../components/DailyBriefSignup";
@@ -211,7 +213,29 @@ export default async function CategoryPage({
     notFound();
   }
 
-  const products = record.liveProductIds.map((id) => getProductById(id)).filter(isLiveProduct);
+  const products = record.liveProductIds
+    .map((id) => getProductById(id))
+    .filter(isLiveProduct)
+    .sort((a, b) => {
+      const aOperator = STOREFRONT_PRODUCTS.find((p) => p.slug === a.slug)?.operatorName.toLowerCase() || "";
+      const bOperator = STOREFRONT_PRODUCTS.find((p) => p.slug === b.slug)?.operatorName.toLowerCase() || "";
+      const aIsGrayLine = aOperator.includes("gray line");
+      const bIsGrayLine = bOperator.includes("gray line");
+      return Number(aIsGrayLine) - Number(bIsGrayLine);
+    });
+  const swampAssurance = ["swamp-tours", "airboat-tours", "covered-swamp-boat-tours"].includes(
+    resolvedParams.categorySlug,
+  )
+    ? evaluatePortfolioAssuranceSummary({
+        engineId: "new-orleans-swamp-tours",
+        inputs: {
+          portSlug: "new-orleans",
+          date: selectedDate,
+          partySize: Number.parseInt(selectedPartySize, 10) || 2,
+        },
+        callerClientId: "portfolio:welcometoneworleanstours.com",
+      })
+    : null;
   const heroImage =
     products
       .map((product) => {
@@ -511,6 +535,14 @@ export default async function CategoryPage({
       <main className="mx-auto w-[min(1180px,calc(100%-2rem))] py-12 md:py-16">
         {/* DIRECT ANSWER CARD FOR GOOGLE AI OVERVIEWS */}
         {geoFact && <GeoDirectAnswerCard fact={geoFact} />}
+
+        {swampAssurance && (
+          <PortfolioAssuranceBanner
+            siteDomain="welcometoneworleanstours.com"
+            assurance={swampAssurance}
+            handoffActions={[]}
+          />
+        )}
 
         {layout === "adventure" && decisionSection}
         {openingSection}
