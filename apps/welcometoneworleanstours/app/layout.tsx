@@ -29,9 +29,7 @@ export const metadata: Metadata = {
 };
 
 const isProduction = process.env.VERCEL_ENV === "production";
-const gaId = isProduction
-  ? process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID
-  : undefined;
+const gaId = isProduction ? "G-MD9WE039CB" : undefined;
 
 if (isProduction && !gaId) {
   throw new Error(
