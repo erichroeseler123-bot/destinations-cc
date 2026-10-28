@@ -453,17 +453,17 @@ export default async function CategoryPage({
           <Link
             key={link.href}
             href={link.href}
-            className="group flex flex-col justify-between border border-[#342b1d] bg-[#12110e] p-5 transition hover:border-[#c9a86a] hover:bg-[#181612]"
+            className="group flex flex-col justify-between rounded-2xl border border-[#d8c39e] !bg-[#fffaf0] p-6 shadow-[0_12px_30px_rgba(72,48,25,.08)] transition hover:-translate-y-0.5 hover:border-[#b67a20] hover:shadow-[0_16px_36px_rgba(72,48,25,.13)]"
           >
             <div>
-              <h3 className="font-serif text-lg font-semibold text-[#f8f1e5] group-hover:text-[#e4c985]">
+              <h3 className="font-serif text-lg font-semibold !text-[#2f2118] group-hover:!text-[#8b5300]">
                 {link.title}
               </h3>
-              <p className="mt-2 text-xs leading-relaxed text-[#aaa193]">
+              <p className="mt-2 text-sm leading-relaxed !text-[#665649]">
                 {link.desc}
               </p>
             </div>
-            <span className="mt-4 text-xs font-bold uppercase tracking-wider text-[#c9a86a]">
+            <span className="mt-5 text-xs font-bold uppercase tracking-wider !text-[#9a5a00]">
               Read Guide →
             </span>
           </Link>
