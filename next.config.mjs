@@ -83,6 +83,37 @@ function isVercelModifiedNextConfigBackedByCleanHead(baseDir) {
   }
 }
 
+function isStatusLineCleanAgainstHead(baseDir, line) {
+  if (/^D\s+"?(legacy_vault|scratch|data\/sources\/geonames|\.open-next|\.wrangler)\//.test(line)) {
+    return true;
+  }
+  const match = line.match(/^[MT]+\s+(.+)$/);
+  if (!match) {
+    return false;
+  }
+  const relPath = match[1].trim().replace(/^"|"$/g, "");
+  if (relPath === "next.config.mjs" && isVercelModifiedNextConfigBackedByCleanHead(baseDir)) {
+    return true;
+  }
+  try {
+    const diskPath = path.join(baseDir, relPath);
+    if (!fs.existsSync(diskPath) || !fs.statSync(diskPath).isFile()) {
+      return false;
+    }
+    const diskDigest = sha256HexNode(readNormalizedTextBytes(diskPath));
+    const headBlob = execSync(`git show HEAD:${relPath}`, {
+      cwd: baseDir,
+      stdio: ["ignore", "pipe", "ignore"],
+    });
+    const headNormalized = headBlob.includes(0)
+      ? headBlob
+      : Buffer.from(headBlob.toString("utf8").replace(/\r\n/g, "\n"), "utf8");
+    return diskDigest === sha256HexNode(headNormalized);
+  } catch {
+    return false;
+  }
+}
+
 function hashFilesDeterministic(baseDir, relPaths) {
   const pieces = [];
   for (const rel of [...relPaths].sort()) {
@@ -117,6 +148,28 @@ function listFilesRecursiveRel(baseDir, subDir) {
 }
 
 function resolveBuildProvenanceEnv() {
+  if (process.env.DCC_BUILD_PROVENANCE_CACHED === "1") {
+    return {
+      DCC_BUILD_GIT_COMMIT: process.env.DCC_BUILD_GIT_COMMIT || "unknown",
+      DCC_BUILD_GIT_BRANCH: process.env.DCC_BUILD_GIT_BRANCH || "unknown",
+      DCC_BUILD_DIRTY_STATUS: process.env.DCC_BUILD_DIRTY_STATUS || "unknown",
+      DCC_BUILD_SOURCE_INSPECTION_AVAILABLE:
+        process.env.DCC_BUILD_SOURCE_INSPECTION_AVAILABLE || "false",
+      DCC_BUILD_CHECKED_INPUTS:
+        process.env.DCC_BUILD_CHECKED_INPUTS || CHECKED_BUILD_INPUT_PATHS.join(","),
+      DCC_BUILD_LOCK_HASH:
+        process.env.DCC_BUILD_LOCK_HASH || "unavailable_in_packaged_runtime",
+      DCC_BUILD_ROOT_CONFIG_HASH:
+        process.env.DCC_BUILD_ROOT_CONFIG_HASH || "unavailable_in_packaged_runtime",
+      DCC_BUILD_MIGRATIONS_HASH:
+        process.env.DCC_BUILD_MIGRATIONS_HASH || "unavailable_in_packaged_runtime",
+      DCC_BUILD_SCRIPTS_HASH:
+        process.env.DCC_BUILD_SCRIPTS_HASH || "unavailable_in_packaged_runtime",
+      DCC_BUILD_TIME: process.env.DCC_BUILD_TIME || new Date().toISOString(),
+      DCC_BUILD_ID: process.env.DCC_BUILD_ID || `build-${Date.now()}`,
+    };
+  }
+
   let gitCommit =
     process.env.VERCEL_GIT_COMMIT_SHA?.trim() ||
     process.env.DCC_BUILD_GIT_COMMIT?.trim() ||
@@ -129,6 +182,7 @@ function resolveBuildProvenanceEnv() {
     "";
   let dirtySourceStatus = "unknown";
   let sourceInspectionAvailable = "false";
+  let debugDirtyLines = [];
   try {
     const liveHead = execSync("git rev-parse HEAD", {
       cwd: __dirname,
@@ -159,18 +213,10 @@ function resolveBuildProvenanceEnv() {
       .split(/\r?\n/)
       .map((l) => l.trim())
       .filter(Boolean);
-    const statusLines = rawStatusLines.filter((l) => {
-      if (/^D\s+(legacy_vault|scratch|data\/sources\/geonames|\.open-next|\.wrangler)\//.test(l)) {
-        return false;
-      }
-      if (
-        /^M\s+next\.config\.mjs$/.test(l) &&
-        isVercelModifiedNextConfigBackedByCleanHead(__dirname)
-      ) {
-        return false;
-      }
-      return true;
-    });
+    const statusLines = rawStatusLines.filter(
+      (l) => !isStatusLineCleanAgainstHead(__dirname, l),
+    );
+    debugDirtyLines = statusLines;
     dirtySourceStatus = statusLines.length === 0 ? "clean" : "dirty";
     sourceInspectionAvailable = "true";
   } catch {
@@ -232,7 +278,7 @@ function resolveBuildProvenanceEnv() {
 
   const buildTime = new Date().toISOString();
   const buildId = `build-${gitCommit ? gitCommit.slice(0, 12) : Date.now()}`;
-  return {
+  const resolved = {
     DCC_BUILD_GIT_COMMIT: gitCommit || "unknown",
     DCC_BUILD_GIT_BRANCH: gitBranch || "unknown",
     DCC_BUILD_DIRTY_STATUS: dirtySourceStatus,
@@ -242,12 +288,17 @@ function resolveBuildProvenanceEnv() {
     DCC_BUILD_ROOT_CONFIG_HASH: rootConfigHash || "unavailable_in_packaged_runtime",
     DCC_BUILD_MIGRATIONS_HASH: migrationsHash || "unavailable_in_packaged_runtime",
     DCC_BUILD_SCRIPTS_HASH: scriptsHash || "unavailable_in_packaged_runtime",
-    DCC_CI_VERIFIED_COMMIT_SHA: process.env.DCC_CI_VERIFIED_COMMIT_SHA?.trim() || "",
-    DCC_CI_VERIFIED_RUN_ID: process.env.DCC_CI_VERIFIED_RUN_ID?.trim() || "",
-    DCC_CI_VERIFIED_LOCK_HASH: process.env.DCC_CI_VERIFIED_LOCK_HASH?.trim() || "",
     DCC_BUILD_TIME: buildTime,
     DCC_BUILD_ID: buildId,
   };
+  for (const [k, v] of Object.entries(resolved)) {
+    process.env[k] = v;
+  }
+  process.env.DCC_BUILD_PROVENANCE_CACHED = "1";
+  console.log(
+    `[dcc-build-provenance] commit=${resolved.DCC_BUILD_GIT_COMMIT.slice(0, 12)} dirty=${dirtySourceStatus} dirtyLines=${JSON.stringify(debugDirtyLines)} rootConfig=${resolved.DCC_BUILD_ROOT_CONFIG_HASH.slice(0, 12)}`,
+  );
+  return resolved;
 }
 
 const buildProvenanceEnv = resolveBuildProvenanceEnv();

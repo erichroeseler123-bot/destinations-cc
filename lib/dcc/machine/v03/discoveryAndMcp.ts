@@ -197,16 +197,22 @@ function readNormalizedTextBytes(filePath: string): Buffer {
 }
 
 function resolveEffectiveNextConfigPath(baseDir: string): string {
-  const vercelBackup = path.join(baseDir, "next.config.__vercel_builder_backup__.mjs");
+  const vercelBackup = path.join(
+    /*turbopackIgnore: true*/ baseDir,
+    "next.config.__vercel_builder_backup__.mjs",
+  );
   if (fs.existsSync(vercelBackup) && fs.statSync(vercelBackup).isFile()) {
     return vercelBackup;
   }
-  return path.join(baseDir, "next.config.mjs");
+  return path.join(/*turbopackIgnore: true*/ baseDir, "next.config.mjs");
 }
 
 function isVercelModifiedNextConfigBackedByCleanHead(baseDir: string): boolean {
   try {
-    const vercelBackup = path.join(baseDir, "next.config.__vercel_builder_backup__.mjs");
+    const vercelBackup = path.join(
+      /*turbopackIgnore: true*/ baseDir,
+      "next.config.__vercel_builder_backup__.mjs",
+    );
     if (!fs.existsSync(vercelBackup) || !fs.statSync(vercelBackup).isFile()) {
       return false;
     }
@@ -225,13 +231,44 @@ function isVercelModifiedNextConfigBackedByCleanHead(baseDir: string): boolean {
   }
 }
 
+function isStatusLineCleanAgainstHead(baseDir: string, line: string): boolean {
+  if (/^D\s+"?(legacy_vault|scratch|data\/sources\/geonames|\.open-next|\.wrangler)\//.test(line)) {
+    return true;
+  }
+  const match = line.match(/^[MT]+\s+(.+)$/);
+  if (!match) {
+    return false;
+  }
+  const relPath = match[1].trim().replace(/^"|"$/g, "");
+  if (relPath === "next.config.mjs" && isVercelModifiedNextConfigBackedByCleanHead(baseDir)) {
+    return true;
+  }
+  try {
+    const diskPath = path.join(/*turbopackIgnore: true*/ baseDir, relPath);
+    if (!fs.existsSync(diskPath) || !fs.statSync(diskPath).isFile()) {
+      return false;
+    }
+    const diskDigest = sha256HexFull(readNormalizedTextBytes(diskPath));
+    const headBlob = execSync(`git show HEAD:${relPath}`, {
+      cwd: baseDir,
+      stdio: ["ignore", "pipe", "ignore"],
+    });
+    const headNormalized = headBlob.includes(0)
+      ? headBlob
+      : Buffer.from(headBlob.toString("utf8").replace(/\r\n/g, "\n"), "utf8");
+    return diskDigest === sha256HexFull(headNormalized);
+  } catch {
+    return false;
+  }
+}
+
 function hashFilesDeterministic(baseDir: string, relPaths: readonly string[]): string {
   const pieces: string[] = [];
   for (const rel of [...relPaths].sort()) {
     const full =
       rel === "next.config.mjs"
         ? resolveEffectiveNextConfigPath(baseDir)
-        : path.join(baseDir, rel);
+        : path.join(/*turbopackIgnore: true*/ baseDir, rel);
     if (fs.existsSync(full) && fs.statSync(full).isFile()) {
       const fileDigest = sha256HexFull(readNormalizedTextBytes(full));
       pieces.push(`${rel}:${fileDigest}`);
@@ -241,12 +278,12 @@ function hashFilesDeterministic(baseDir: string, relPaths: readonly string[]): s
 }
 
 function listFilesRecursiveRel(baseDir: string, subDir: string): string[] {
-  const target = path.join(baseDir, subDir);
+  const target = path.join(/*turbopackIgnore: true*/ baseDir, subDir);
   if (!fs.existsSync(target) || !fs.statSync(target).isDirectory()) return [];
   const results: string[] = [];
   const walk = (dir: string) => {
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-      const full = path.join(dir, entry.name);
+      const full = path.join(/*turbopackIgnore: true*/ dir, entry.name);
       if (entry.isDirectory()) {
         walk(full);
       } else if (entry.isFile()) {
@@ -313,7 +350,7 @@ export function getDeploymentProvenanceV03(options?: { cwd?: string }) {
         branchName = liveBranch;
       }
       const existingBuildInputs = V03_CHECKED_BUILD_INPUT_PATHS.filter((relPath) =>
-        fs.existsSync(path.join(inspectCwd, relPath)),
+        fs.existsSync(path.join(/*turbopackIgnore: true*/ inspectCwd, relPath)),
       );
       if (existingBuildInputs.length === 0) {
         throw new Error("No build inputs found in inspection directory");
@@ -328,21 +365,7 @@ export function getDeploymentProvenanceV03(options?: { cwd?: string }) {
       )
         .split(/\r?\n/)
         .map((l) => l.trim())
-        .filter((l) => {
-          if (!l) return false;
-          if (
-            /^D\s+(legacy_vault|scratch|data\/sources\/geonames|\.open-next|\.wrangler)\//.test(l)
-          ) {
-            return false;
-          }
-          if (
-            /^M\s+next\.config\.mjs$/.test(l) &&
-            isVercelModifiedNextConfigBackedByCleanHead(inspectCwd)
-          ) {
-            return false;
-          }
-          return true;
-        });
+        .filter((l) => Boolean(l) && !isStatusLineCleanAgainstHead(inspectCwd, l));
       workingTreeState = statusLines.length === 0 ? "clean" : "dirty";
       sourceInspectionAvailable = true;
     } catch {
@@ -362,36 +385,33 @@ export function getDeploymentProvenanceV03(options?: { cwd?: string }) {
   let scriptsSha256 =
     process.env.DCC_BUILD_SCRIPTS_HASH?.trim() || "unavailable_in_packaged_runtime";
 
-  try {
-    const lockPath = path.join(inspectCwd, "package-lock.json");
-    if (fs.existsSync(lockPath)) {
-      dependencyLockSha256 = sha256HexFull(readNormalizedTextBytes(lockPath));
-    }
-    const allRootConfigsPresent = ROOT_CONFIG_INPUT_FILES.every((rel) =>
-      fs.existsSync(path.join(inspectCwd, rel)),
-    );
-    if (allRootConfigsPresent || options?.cwd || rootConfigSha256 === "unavailable_in_packaged_runtime") {
+  if (!process.env.VERCEL_ENV || options?.cwd) {
+    try {
+      const lockPath = path.join(/*turbopackIgnore: true*/ inspectCwd, "package-lock.json");
+      if (fs.existsSync(lockPath)) {
+        dependencyLockSha256 = sha256HexFull(readNormalizedTextBytes(lockPath));
+      }
       const computedRootConfig = hashFilesDeterministic(inspectCwd, ROOT_CONFIG_INPUT_FILES);
       if (computedRootConfig !== "unavailable_in_packaged_runtime") {
         rootConfigSha256 = computedRootConfig;
       }
+      const computedMigrations = hashFilesDeterministic(
+        inspectCwd,
+        listFilesRecursiveRel(inspectCwd, "drizzle"),
+      );
+      if (computedMigrations !== "unavailable_in_packaged_runtime") {
+        migrationsSha256 = computedMigrations;
+      }
+      const computedScripts = hashFilesDeterministic(
+        inspectCwd,
+        listFilesRecursiveRel(inspectCwd, "scripts/dcc"),
+      );
+      if (computedScripts !== "unavailable_in_packaged_runtime") {
+        scriptsSha256 = computedScripts;
+      }
+    } catch {
+      // ignore
     }
-    const computedMigrations = hashFilesDeterministic(
-      inspectCwd,
-      listFilesRecursiveRel(inspectCwd, "drizzle"),
-    );
-    if (computedMigrations !== "unavailable_in_packaged_runtime") {
-      migrationsSha256 = computedMigrations;
-    }
-    const computedScripts = hashFilesDeterministic(
-      inspectCwd,
-      listFilesRecursiveRel(inspectCwd, "scripts/dcc"),
-    );
-    if (computedScripts !== "unavailable_in_packaged_runtime") {
-      scriptsSha256 = computedScripts;
-    }
-  } catch {
-    // ignore
   }
 
   const checkedBuildInputs = (
