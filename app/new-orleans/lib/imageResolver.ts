@@ -22,9 +22,6 @@ export type ResolvedProductImage = {
 // represents the experience rather than a misleading or broken substitute.
 const COMMERCE_IMAGE_BLOCKLIST = new Set([
   "all-day-city-plantation-combo",
-  "covered-boat-plantation-combo",
-  "swamp-boat-oak-alley-combo",
-  "swamp-boat-whitney-combo",
   "city-cemetery-garden-district-tour",
 ]);
 
