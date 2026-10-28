@@ -78,6 +78,7 @@ export default function FareHarborBookingButton({
       window.dispatchEvent(new CustomEvent(eventName, { detail: eventData }));
       const dataLayer = (window as any).dataLayer || [];
       dataLayer.push({ event: eventName, ...eventData });
+      (window as any).gtag?.("event", eventName, eventData);
     }
   }, [effectiveFallbackHref, flowId, itemId, placement, productSlug, productTitle, refCode, shortname]);
 
@@ -107,6 +108,7 @@ export default function FareHarborBookingButton({
 
     trackEvent("fareharbor_cta_clicked");
     trackEvent("booking_opened");
+    trackEvent("begin_checkout");
     sendWnoTelemetry({
       eventName: "booking_opened",
       sourcePage,
