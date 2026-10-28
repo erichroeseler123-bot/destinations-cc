@@ -93,10 +93,16 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
     issueIfParamsPresent: true,
     defaultPortSlug: "new-orleans",
   });
-  const engineId =
-    slug.includes("airboat") || slug.includes("swamp")
-      ? "new-orleans-swamp-tours"
-      : "new-orleans-city-tours";
+  const normalizedCategory = product.category.toLowerCase();
+  const isSwampProduct =
+    normalizedCategory.includes("swamp") ||
+    normalizedCategory.includes("airboat") ||
+    slug.includes("airboat") ||
+    slug.includes("swamp") ||
+    slug === "covered-boat-plantation-combo";
+  const engineId = isSwampProduct
+    ? "new-orleans-swamp-tours"
+    : "new-orleans-city-tours";
   const assurance = evaluatePortfolioAssuranceSummary({
     engineId,
     callerClientId: `ssr:${siteDomain}`,
