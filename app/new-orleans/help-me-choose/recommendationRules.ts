@@ -124,16 +124,16 @@ export function getRecommendation(
   switch (categoryId) {
     case "swamp-airboat":
       if (preferenceId === "swamp-covered") {
-        return { primaryProductId: "swamp-bayou-tour", alternativeProductIds: ["covered-tour-boat"], explanation: "A classic, relaxed covered boat tour." };
+        return { primaryProductId: "ragincajun-covered-boat", alternativeProductIds: ["swamp-bayou-tour"], explanation: "A classic, relaxed covered boat tour with local hotel pickup or self-drive options confirmed at checkout." };
       }
       if (preferenceId === "swamp-small-airboat") {
-        return { primaryProductId: "small-airboat-swamp-adventure", alternativeProductIds: ["ragin-cajun-airboat-options"], explanation: "An intimate, fast-paced airboat ride." };
+        return { primaryProductId: "ragincajun-airboat", alternativeProductIds: ["small-airboat-swamp-adventure"], explanation: "A fast-paced airboat ride with direct local operator options shown first." };
       }
       if (preferenceId === "swamp-large-airboat") {
-        return { primaryProductId: "large-airboat-swamp-adventure", alternativeProductIds: ["ragin-cajun-airboat-options"], explanation: "A high-speed large airboat experience." };
+        return { primaryProductId: "ragincajun-airboat", alternativeProductIds: ["large-airboat-swamp-adventure"], explanation: "A high-speed airboat experience with direct local operator options shown first." };
       }
       if (preferenceId === "swamp-plantation") {
-        return { primaryProductId: "swamp-boat-oak-alley-combo", alternativeProductIds: ["swamp-boat-whitney-combo"], explanation: "A full day exploring both." };
+        return { primaryProductId: "ragincajun-covered-plantation-combo", alternativeProductIds: ["swamp-boat-oak-alley-combo", "swamp-boat-whitney-combo"], explanation: "A full-day local operator combination, with additional Gray Line options available below." };
       }
       return { explanation: "Explore our swamp options.", fallbackMessage: "Please choose a specific swamp experience." };
 
