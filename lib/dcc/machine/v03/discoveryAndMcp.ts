@@ -371,10 +371,11 @@ export function inspectVercelJsonPlatformTransformation(
       };
     }
 
+    const vercelCommitSha = process.env.VERCEL_GIT_COMMIT_SHA?.trim() ?? "";
     const vercelEnvMatches =
       process.env.VERCEL === "1" &&
-      Boolean(process.env.VERCEL_GIT_COMMIT_SHA?.trim()) &&
-      (!liveHead || process.env.VERCEL_GIT_COMMIT_SHA.trim() === liveHead);
+      Boolean(vercelCommitSha) &&
+      (!liveHead || vercelCommitSha === liveHead);
 
     const expectedMinified =
       headParsed !== undefined ? JSON.stringify(headParsed) : null;
