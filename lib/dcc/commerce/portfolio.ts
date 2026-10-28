@@ -75,7 +75,10 @@ export function evaluatePortfolioAssuranceSummary(params: {
     engineVersion: "0.3.0",
     evaluationRunId: `evalrun:portfolio:${params.engineId}`,
     receiptId: `rcpt:sha256:portfolio_${params.engineId}`,
-    receiptVerifyUrl: `${DEFAULT_DCC_ORIGIN}/api/v1/engines/${params.engineId}`,
+    receiptVerifyUrl:
+      params.engineId === "new-orleans-swamp-tours"
+        ? `${DEFAULT_DCC_ORIGIN}/new-orleans/swamp-tours`
+        : `${DEFAULT_DCC_ORIGIN}/api/v1/engines/${params.engineId}`,
     resultHash: `sha256:portfolio:${params.engineId}`,
     cacheStatus: "reused",
     decisionOutcome: "qualified_recommendation",
