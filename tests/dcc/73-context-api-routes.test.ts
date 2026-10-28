@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { NextRequest } from "next/server";
 import { POST as handleIssueContext, clearIssueRateLimitCacheForTesting } from "@/app/api/v1/context/handler";
 import { POST as handleRedeemContext } from "@/app/api/v1/context/[contextId]/redeem/route";
+import { POST as handleEdgeRedeemContext } from "@/app/api/v1/context/[contextId]/edge-redeem/route";
 import { POST as handleRevokeContext } from "@/app/api/v1/context/[contextId]/revoke/route";
 import {
   signServiceRequest,
@@ -613,4 +614,46 @@ test("Context API Route & Staging Neon Concurrency Suite", async (t) => {
     assert.equal(json.success, false);
     assert.equal(json.errorCode, "CONTEXT_EXPIRED");
   });
+
+  await t.test(
+    "15. POST /api/v1/context/:id/edge-redeem - Returns redeemed destination, sourceSite, and schedule (date, travelers, and null arrival when omitted)",
+    async () => {
+      const issued = await issueContext({
+        sourceSite: "destinationcommandcenter",
+        destination: "copper-mountain",
+        targetOwner: "gosno",
+        targetIntent: "private-ski-shuttle",
+        schedule: {
+          date: "2026-12-15",
+          travelers: 4,
+        },
+      });
+
+      const req = new NextRequest(
+        `https://www.destinationcommandcenter.com/api/v1/context/${issued.contextId}/edge-redeem`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ owner: "gosno.co" }),
+        }
+      );
+
+      const res = await handleEdgeRedeemContext(req, {
+        params: Promise.resolve({ contextId: issued.contextId }),
+      });
+      const json = await res.json();
+
+      assert.equal(res.status, 200);
+      assert.equal(json.ok, true);
+      assert.equal(json.success, true);
+      assert.equal(json.targetOwner, "gosno");
+      assert.equal(json.redeemedBy, "gosno");
+      assert.equal(json.sourceSite, "destinationcommandcenter");
+      assert.equal(json.destination, "copper-mountain");
+      assert.equal(json.targetIntent, "private-ski-shuttle");
+      assert.equal(json.schedule?.date, "2026-12-15");
+      assert.equal(json.schedule?.travelers, 4);
+      assert.equal(json.schedule?.arrival ?? null, null);
+    }
+  );
 });

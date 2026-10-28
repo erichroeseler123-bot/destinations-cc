@@ -48,12 +48,50 @@ function sha256HexNode(bufOrStr) {
   return crypto.createHash("sha256").update(bufOrStr).digest("hex");
 }
 
+function readNormalizedTextBytes(filePath) {
+  const raw = fs.readFileSync(filePath);
+  if (raw.includes(0)) return raw;
+  return Buffer.from(raw.toString("utf8").replace(/\r\n/g, "\n"), "utf8");
+}
+
+function resolveEffectiveNextConfigPath(baseDir) {
+  const vercelBackup = path.join(baseDir, "next.config.__vercel_builder_backup__.mjs");
+  if (fs.existsSync(vercelBackup) && fs.statSync(vercelBackup).isFile()) {
+    return vercelBackup;
+  }
+  return path.join(baseDir, "next.config.mjs");
+}
+
+function isVercelModifiedNextConfigBackedByCleanHead(baseDir) {
+  try {
+    const vercelBackup = path.join(baseDir, "next.config.__vercel_builder_backup__.mjs");
+    if (!fs.existsSync(vercelBackup) || !fs.statSync(vercelBackup).isFile()) {
+      return false;
+    }
+    const backupDigest = sha256HexNode(readNormalizedTextBytes(vercelBackup));
+    const headBlob = execSync("git show HEAD:next.config.mjs", {
+      cwd: baseDir,
+      stdio: ["ignore", "pipe", "ignore"],
+    });
+    const headNormalized = Buffer.from(
+      headBlob.toString("utf8").replace(/\r\n/g, "\n"),
+      "utf8",
+    );
+    return backupDigest === sha256HexNode(headNormalized);
+  } catch {
+    return false;
+  }
+}
+
 function hashFilesDeterministic(baseDir, relPaths) {
   const pieces = [];
   for (const rel of [...relPaths].sort()) {
-    const full = path.join(baseDir, rel);
+    const full =
+      rel === "next.config.mjs"
+        ? resolveEffectiveNextConfigPath(baseDir)
+        : path.join(baseDir, rel);
     if (fs.existsSync(full) && fs.statSync(full).isFile()) {
-      const fileDigest = sha256HexNode(fs.readFileSync(full));
+      const fileDigest = sha256HexNode(readNormalizedTextBytes(full));
       pieces.push(`${rel}:${fileDigest}`);
     }
   }
@@ -110,7 +148,7 @@ function resolveBuildProvenanceEnv() {
     const existingBuildInputs = CHECKED_BUILD_INPUT_PATHS.filter((relPath) =>
       fs.existsSync(path.join(__dirname, relPath)),
     );
-    const statusLines = execSync(
+    const rawStatusLines = execSync(
       `git status --porcelain --untracked-files=no -- ${existingBuildInputs.join(" ")}`,
       {
         cwd: __dirname,
@@ -120,11 +158,19 @@ function resolveBuildProvenanceEnv() {
     )
       .split(/\r?\n/)
       .map((l) => l.trim())
-      .filter(
-        (l) =>
-          l.length > 0 &&
-          !/^D\s+(legacy_vault|scratch|data\/sources\/geonames|\.open-next|\.wrangler)\//.test(l),
-      );
+      .filter(Boolean);
+    const statusLines = rawStatusLines.filter((l) => {
+      if (/^D\s+(legacy_vault|scratch|data\/sources\/geonames|\.open-next|\.wrangler)\//.test(l)) {
+        return false;
+      }
+      if (
+        /^M\s+next\.config\.mjs$/.test(l) &&
+        isVercelModifiedNextConfigBackedByCleanHead(__dirname)
+      ) {
+        return false;
+      }
+      return true;
+    });
     dirtySourceStatus = statusLines.length === 0 ? "clean" : "dirty";
     sourceInspectionAvailable = "true";
   } catch {
@@ -143,7 +189,7 @@ function resolveBuildProvenanceEnv() {
   try {
     const lockPath = path.join(__dirname, "package-lock.json");
     if (fs.existsSync(lockPath)) {
-      dependencyLockHash = sha256HexNode(fs.readFileSync(lockPath));
+      dependencyLockHash = sha256HexNode(readNormalizedTextBytes(lockPath));
     }
     const computedRoot = hashFilesDeterministic(__dirname, [
       "package.json",
@@ -196,13 +242,9 @@ function resolveBuildProvenanceEnv() {
     DCC_BUILD_ROOT_CONFIG_HASH: rootConfigHash || "unavailable_in_packaged_runtime",
     DCC_BUILD_MIGRATIONS_HASH: migrationsHash || "unavailable_in_packaged_runtime",
     DCC_BUILD_SCRIPTS_HASH: scriptsHash || "unavailable_in_packaged_runtime",
-    DCC_CI_VERIFIED_COMMIT_SHA:
-      process.env.DCC_CI_VERIFIED_COMMIT_SHA?.trim() || gitCommit || "unknown",
+    DCC_CI_VERIFIED_COMMIT_SHA: process.env.DCC_CI_VERIFIED_COMMIT_SHA?.trim() || "",
     DCC_CI_VERIFIED_RUN_ID: process.env.DCC_CI_VERIFIED_RUN_ID?.trim() || "",
-    DCC_CI_VERIFIED_LOCK_HASH:
-      process.env.DCC_CI_VERIFIED_LOCK_HASH?.trim() ||
-      dependencyLockHash ||
-      "unavailable_in_packaged_runtime",
+    DCC_CI_VERIFIED_LOCK_HASH: process.env.DCC_CI_VERIFIED_LOCK_HASH?.trim() || "",
     DCC_BUILD_TIME: buildTime,
     DCC_BUILD_ID: buildId,
   };

@@ -746,6 +746,11 @@ test("v0.3.1 Gate 7: Repair Verification — Withdrawn GoSno Seed Containment, P
     );
     assert.equal(unknownProv.buildInputsInspection.sourceInspectionAvailable, false);
     assert.equal(unknownProv.buildInputsInspection.dirtySourceStatus, "unknown");
+    assert.equal(
+      unknownProv.hostedCiVerification.verifiedAgainstHostedCi,
+      false,
+      "Unknown dirtySourceStatus must never report verifiedAgainstHostedCi=true",
+    );
     fs.rmSync(uninspectedDir, { recursive: true, force: true });
   } finally {
     if (savedDirtyEnv !== undefined) process.env.DCC_BUILD_DIRTY_STATUS = savedDirtyEnv;

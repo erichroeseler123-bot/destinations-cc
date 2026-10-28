@@ -190,12 +190,50 @@ const ROOT_CONFIG_INPUT_FILES = [
   "verify.mjs",
 ] as const;
 
+function readNormalizedTextBytes(filePath: string): Buffer {
+  const raw = fs.readFileSync(filePath);
+  if (raw.includes(0)) return raw;
+  return Buffer.from(raw.toString("utf8").replace(/\r\n/g, "\n"), "utf8");
+}
+
+function resolveEffectiveNextConfigPath(baseDir: string): string {
+  const vercelBackup = path.join(baseDir, "next.config.__vercel_builder_backup__.mjs");
+  if (fs.existsSync(vercelBackup) && fs.statSync(vercelBackup).isFile()) {
+    return vercelBackup;
+  }
+  return path.join(baseDir, "next.config.mjs");
+}
+
+function isVercelModifiedNextConfigBackedByCleanHead(baseDir: string): boolean {
+  try {
+    const vercelBackup = path.join(baseDir, "next.config.__vercel_builder_backup__.mjs");
+    if (!fs.existsSync(vercelBackup) || !fs.statSync(vercelBackup).isFile()) {
+      return false;
+    }
+    const backupDigest = sha256HexFull(readNormalizedTextBytes(vercelBackup));
+    const headBlob = execSync("git show HEAD:next.config.mjs", {
+      cwd: baseDir,
+      stdio: ["ignore", "pipe", "ignore"],
+    });
+    const headNormalized = Buffer.from(
+      headBlob.toString("utf8").replace(/\r\n/g, "\n"),
+      "utf8",
+    );
+    return backupDigest === sha256HexFull(headNormalized);
+  } catch {
+    return false;
+  }
+}
+
 function hashFilesDeterministic(baseDir: string, relPaths: readonly string[]): string {
   const pieces: string[] = [];
   for (const rel of [...relPaths].sort()) {
-    const full = path.join(baseDir, rel);
+    const full =
+      rel === "next.config.mjs"
+        ? resolveEffectiveNextConfigPath(baseDir)
+        : path.join(baseDir, rel);
     if (fs.existsSync(full) && fs.statSync(full).isFile()) {
-      const fileDigest = sha256HexFull(fs.readFileSync(full));
+      const fileDigest = sha256HexFull(readNormalizedTextBytes(full));
       pieces.push(`${rel}:${fileDigest}`);
     }
   }
@@ -230,14 +268,19 @@ function listFilesRecursiveRel(baseDir: string, subDir: string): string[] {
  */
 export function getDeploymentProvenanceV03(options?: { cwd?: string }) {
   const inspectCwd = options?.cwd ?? process.cwd();
+  const runtimeEnv: NodeJS.ProcessEnv = process.env;
   let sourceCommitSha =
+    runtimeEnv["VERCEL_GIT_COMMIT_SHA"]?.trim() ||
     process.env.VERCEL_GIT_COMMIT_SHA?.trim() ||
     process.env.DCC_BUILD_GIT_COMMIT?.trim() ||
+    runtimeEnv["GITHUB_SHA"]?.trim() ||
     process.env.GITHUB_SHA?.trim() ||
     "unknown";
   let branchName =
+    runtimeEnv["VERCEL_GIT_COMMIT_REF"]?.trim() ||
     process.env.VERCEL_GIT_COMMIT_REF?.trim() ||
     process.env.DCC_BUILD_GIT_BRANCH?.trim() ||
+    runtimeEnv["GITHUB_REF_NAME"]?.trim() ||
     process.env.GITHUB_REF_NAME?.trim() ||
     "unknown";
 
@@ -285,13 +328,21 @@ export function getDeploymentProvenanceV03(options?: { cwd?: string }) {
       )
         .split(/\r?\n/)
         .map((l) => l.trim())
-        .filter(
-          (l) =>
-            l.length > 0 &&
-            !/^D\s+(legacy_vault|scratch|data\/sources\/geonames|\.open-next|\.wrangler)\//.test(
-              l,
-            ),
-        );
+        .filter((l) => {
+          if (!l) return false;
+          if (
+            /^D\s+(legacy_vault|scratch|data\/sources\/geonames|\.open-next|\.wrangler)\//.test(l)
+          ) {
+            return false;
+          }
+          if (
+            /^M\s+next\.config\.mjs$/.test(l) &&
+            isVercelModifiedNextConfigBackedByCleanHead(inspectCwd)
+          ) {
+            return false;
+          }
+          return true;
+        });
       workingTreeState = statusLines.length === 0 ? "clean" : "dirty";
       sourceInspectionAvailable = true;
     } catch {
@@ -314,11 +365,16 @@ export function getDeploymentProvenanceV03(options?: { cwd?: string }) {
   try {
     const lockPath = path.join(inspectCwd, "package-lock.json");
     if (fs.existsSync(lockPath)) {
-      dependencyLockSha256 = sha256HexFull(fs.readFileSync(lockPath));
+      dependencyLockSha256 = sha256HexFull(readNormalizedTextBytes(lockPath));
     }
-    const computedRootConfig = hashFilesDeterministic(inspectCwd, ROOT_CONFIG_INPUT_FILES);
-    if (computedRootConfig !== "unavailable_in_packaged_runtime") {
-      rootConfigSha256 = computedRootConfig;
+    const allRootConfigsPresent = ROOT_CONFIG_INPUT_FILES.every((rel) =>
+      fs.existsSync(path.join(inspectCwd, rel)),
+    );
+    if (allRootConfigsPresent || options?.cwd || rootConfigSha256 === "unavailable_in_packaged_runtime") {
+      const computedRootConfig = hashFilesDeterministic(inspectCwd, ROOT_CONFIG_INPUT_FILES);
+      if (computedRootConfig !== "unavailable_in_packaged_runtime") {
+        rootConfigSha256 = computedRootConfig;
+      }
     }
     const computedMigrations = hashFilesDeterministic(
       inspectCwd,
@@ -348,20 +404,34 @@ export function getDeploymentProvenanceV03(options?: { cwd?: string }) {
   const aggregateSchemaHash = sha256HexFull(rfc8785Canonicalize(schemaHashes));
   const r2Status = inspectR2CredentialsFromEnv();
   const deploymentEnvironment =
-    process.env.VERCEL_ENV?.trim() || process.env.NODE_ENV?.trim() || "local";
+    runtimeEnv["VERCEL_ENV"]?.trim() ||
+    process.env.VERCEL_ENV?.trim() ||
+    process.env.NODE_ENV?.trim() ||
+    "local";
   const buildTime = process.env.DCC_BUILD_TIME?.trim() || new Date().toISOString();
   const vercelDeploymentId =
+    runtimeEnv["VERCEL_DEPLOYMENT_ID"]?.trim() ||
     process.env.VERCEL_DEPLOYMENT_ID?.trim() ||
+    runtimeEnv["VERCEL_URL"]?.trim() ||
     process.env.VERCEL_URL?.trim() ||
     `build-${sourceCommitSha.slice(0, 12)}`;
   const buildId = process.env.DCC_BUILD_ID?.trim() || vercelDeploymentId;
-  const gitProvider = process.env.VERCEL_GIT_PROVIDER?.trim() || null;
+  const gitProvider =
+    runtimeEnv["VERCEL_GIT_PROVIDER"]?.trim() ||
+    process.env.VERCEL_GIT_PROVIDER?.trim() ||
+    null;
   const ciVerifiedCommitSha =
-    process.env.DCC_CI_VERIFIED_COMMIT_SHA?.trim() || null;
+    runtimeEnv["DCC_CI_VERIFIED_COMMIT_SHA"]?.trim() ||
+    process.env.DCC_CI_VERIFIED_COMMIT_SHA?.trim() ||
+    null;
   const ciVerifiedRunId =
-    process.env.DCC_CI_VERIFIED_RUN_ID?.trim() || null;
+    runtimeEnv["DCC_CI_VERIFIED_RUN_ID"]?.trim() ||
+    process.env.DCC_CI_VERIFIED_RUN_ID?.trim() ||
+    null;
   const ciVerifiedLockHash =
-    process.env.DCC_CI_VERIFIED_LOCK_HASH?.trim() || null;
+    runtimeEnv["DCC_CI_VERIFIED_LOCK_HASH"]?.trim() ||
+    process.env.DCC_CI_VERIFIED_LOCK_HASH?.trim() ||
+    null;
   const commitMatchesHostedCi =
     Boolean(ciVerifiedCommitSha) &&
     sourceCommitSha !== "unknown" &&
@@ -393,7 +463,10 @@ export function getDeploymentProvenanceV03(options?: { cwd?: string }) {
     generatedAt: new Date().toISOString(),
     hostedCiVerification: {
       verifiedAgainstHostedCi: Boolean(
-        ciVerifiedRunId && commitMatchesHostedCi && dependencyLockHashMatchesHostedCi,
+        workingTreeState === "clean" &&
+          ciVerifiedRunId &&
+          commitMatchesHostedCi &&
+          dependencyLockHashMatchesHostedCi,
       ),
       ciRunId: ciVerifiedRunId,
       ciVerifiedCommitSha,
