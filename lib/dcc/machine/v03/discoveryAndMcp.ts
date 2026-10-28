@@ -196,60 +196,244 @@ function readNormalizedTextBytes(filePath: string): Buffer {
   return Buffer.from(raw.toString("utf8").replace(/\r\n/g, "\n"), "utf8");
 }
 
-function resolveEffectiveNextConfigPath(baseDir: string): string {
+export interface NextConfigPlatformTransformationInspection {
+  path: "next.config.mjs";
+  status:
+    | "clean_unmodified"
+    | "validated_platform_transformation"
+    | "unvalidated_modification_dirty"
+    | "unknown";
+  transformationValidated: boolean;
+  committedSha256: string;
+  effectiveSourceSha256: string;
+  effectiveOnDiskSha256: string;
+  disclosedModification: string | null;
+}
+
+export interface VercelJsonPlatformTransformationInspection {
+  path: "vercel.json";
+  status:
+    | "clean_unmodified"
+    | "validated_platform_transformation"
+    | "unvalidated_modification_dirty"
+    | "unknown";
+  transformationValidated: boolean;
+  committedSha256: string;
+  effectiveOnDiskSha256: string;
+  canonicalContentSha256: string | null;
+  committedMatchesCanonicalContent: boolean;
+  disclosedModification: string | null;
+}
+
+export function inspectNextConfigPlatformTransformation(
+  baseDir: string,
+): NextConfigPlatformTransformationInspection {
+  const diskPath = path.join(/*turbopackIgnore: true*/ baseDir, "next.config.mjs");
   const vercelBackup = path.join(
     /*turbopackIgnore: true*/ baseDir,
     "next.config.__vercel_builder_backup__.mjs",
   );
-  if (fs.existsSync(vercelBackup) && fs.statSync(vercelBackup).isFile()) {
-    return vercelBackup;
-  }
-  return path.join(/*turbopackIgnore: true*/ baseDir, "next.config.mjs");
-}
-
-function isVercelModifiedNextConfigBackedByCleanHead(baseDir: string): boolean {
+  let effectiveOnDiskSha256 = "unknown";
+  let diskText = "";
   try {
-    const vercelBackup = path.join(
-      /*turbopackIgnore: true*/ baseDir,
-      "next.config.__vercel_builder_backup__.mjs",
-    );
-    if (!fs.existsSync(vercelBackup) || !fs.statSync(vercelBackup).isFile()) {
-      return false;
+    if (fs.existsSync(diskPath) && fs.statSync(diskPath).isFile()) {
+      const normDisk = readNormalizedTextBytes(diskPath);
+      effectiveOnDiskSha256 = sha256HexFull(normDisk);
+      diskText = normDisk.toString("utf8");
     }
-    const backupDigest = sha256HexFull(readNormalizedTextBytes(vercelBackup));
+  } catch {
+    // ignore
+  }
+  try {
     const headBlob = execSync("git show HEAD:next.config.mjs", {
       cwd: baseDir,
       stdio: ["ignore", "pipe", "ignore"],
     });
-    const headNormalized = Buffer.from(
-      headBlob.toString("utf8").replace(/\r\n/g, "\n"),
-      "utf8",
-    );
-    return backupDigest === sha256HexFull(headNormalized);
+    const headNorm = Buffer.from(headBlob.toString("utf8").replace(/\r\n/g, "\n"), "utf8");
+    const committedSha256 = sha256HexFull(headNorm);
+    if (effectiveOnDiskSha256 !== "unknown" && effectiveOnDiskSha256 === committedSha256) {
+      return {
+        path: "next.config.mjs",
+        status: "clean_unmodified",
+        transformationValidated: true,
+        committedSha256,
+        effectiveSourceSha256: committedSha256,
+        effectiveOnDiskSha256,
+        disclosedModification: null,
+      };
+    }
+    if (fs.existsSync(vercelBackup) && fs.statSync(vercelBackup).isFile()) {
+      const backupNorm = readNormalizedTextBytes(vercelBackup);
+      const backupSha256 = sha256HexFull(backupNorm);
+      const wrapperImportsBackup = diskText.includes("next.config.__vercel_builder_backup__");
+      if (backupSha256 === committedSha256 && wrapperImportsBackup) {
+        return {
+          path: "next.config.mjs",
+          status: "validated_platform_transformation",
+          transformationValidated: true,
+          committedSha256,
+          effectiveSourceSha256: backupSha256,
+          effectiveOnDiskSha256,
+          disclosedModification: "vercel_builder_backup_wrapper_rewrite",
+        };
+      }
+    }
+    return {
+      path: "next.config.mjs",
+      status: "unvalidated_modification_dirty",
+      transformationValidated: false,
+      committedSha256,
+      effectiveSourceSha256: effectiveOnDiskSha256,
+      effectiveOnDiskSha256,
+      disclosedModification: "unvalidated_next_config_modification",
+    };
   } catch {
-    return false;
+    return {
+      path: "next.config.mjs",
+      status: "unknown",
+      transformationValidated: false,
+      committedSha256: "unknown",
+      effectiveSourceSha256: effectiveOnDiskSha256,
+      effectiveOnDiskSha256,
+      disclosedModification: "verification_unavailable",
+    };
   }
 }
 
-function isVercelContainerRewrittenVercelJsonBackedByHead(
+export function inspectVercelJsonPlatformTransformation(
   baseDir: string,
   liveHead?: string,
-): boolean {
+): VercelJsonPlatformTransformationInspection {
+  const diskPath = path.join(/*turbopackIgnore: true*/ baseDir, "vercel.json");
+  let effectiveOnDiskSha256 = "unknown";
+  let diskText: string | null = null;
   try {
-    if (process.env.VERCEL !== "1" || !process.env.VERCEL_GIT_COMMIT_SHA?.trim()) {
-      return false;
+    if (fs.existsSync(diskPath) && fs.statSync(diskPath).isFile()) {
+      const normDisk = readNormalizedTextBytes(diskPath);
+      effectiveOnDiskSha256 = sha256HexFull(normDisk);
+      diskText = normDisk.toString("utf8");
     }
-    if (liveHead && process.env.VERCEL_GIT_COMMIT_SHA.trim() !== liveHead) {
-      return false;
-    }
+  } catch {
+    // ignore
+  }
+  try {
     const headBlob = execSync("git show HEAD:vercel.json", {
       cwd: baseDir,
       stdio: ["ignore", "pipe", "ignore"],
     });
-    return headBlob.length > 0;
+    const headNorm = Buffer.from(headBlob.toString("utf8").replace(/\r\n/g, "\n"), "utf8");
+    const headText = headNorm.toString("utf8");
+    const committedSha256 = sha256HexFull(headNorm);
+    if (diskText === null || effectiveOnDiskSha256 === "unknown") {
+      return {
+        path: "vercel.json",
+        status: "unknown",
+        transformationValidated: false,
+        committedSha256,
+        effectiveOnDiskSha256: "unknown",
+        canonicalContentSha256: null,
+        committedMatchesCanonicalContent: false,
+        disclosedModification: "disk_vercel_json_unavailable",
+      };
+    }
+
+    let headParsed: unknown;
+    let diskParsed: unknown;
+    let headCanonical: string | null = null;
+    let diskCanonical: string | null = null;
+    try {
+      headParsed = JSON.parse(headText);
+      headCanonical = rfc8785Canonicalize(headParsed);
+    } catch {
+      // ignore
+    }
+    try {
+      diskParsed = JSON.parse(diskText);
+      diskCanonical = rfc8785Canonicalize(diskParsed);
+    } catch {
+      // ignore
+    }
+    const canonicalContentSha256 = diskCanonical ? sha256HexFull(diskCanonical) : null;
+    const committedMatchesCanonicalContent = Boolean(
+      headCanonical !== null && diskCanonical !== null && headCanonical === diskCanonical,
+    );
+
+    if (effectiveOnDiskSha256 === committedSha256) {
+      return {
+        path: "vercel.json",
+        status: "clean_unmodified",
+        transformationValidated: true,
+        committedSha256,
+        effectiveOnDiskSha256,
+        canonicalContentSha256,
+        committedMatchesCanonicalContent: true,
+        disclosedModification: null,
+      };
+    }
+
+    const vercelEnvMatches =
+      process.env.VERCEL === "1" &&
+      Boolean(process.env.VERCEL_GIT_COMMIT_SHA?.trim()) &&
+      (!liveHead || process.env.VERCEL_GIT_COMMIT_SHA.trim() === liveHead);
+
+    const expectedMinified =
+      headParsed !== undefined ? JSON.stringify(headParsed) : null;
+    const matchesExpectedVercelMinification = Boolean(
+      expectedMinified !== null &&
+        committedMatchesCanonicalContent &&
+        (diskText === expectedMinified || diskText === `${expectedMinified}\n`),
+    );
+
+    if (vercelEnvMatches && matchesExpectedVercelMinification) {
+      return {
+        path: "vercel.json",
+        status: "validated_platform_transformation",
+        transformationValidated: true,
+        committedSha256,
+        effectiveOnDiskSha256,
+        canonicalContentSha256,
+        committedMatchesCanonicalContent: true,
+        disclosedModification: "vercel_container_lossless_json_minify_newline",
+      };
+    }
+
+    const disclosedModification = committedMatchesCanonicalContent
+      ? "unvalidated_non_platform_formatting_modification"
+      : `unvalidated_effective_config_modification:committedCanonical=${headCanonical ? sha256HexFull(headCanonical).slice(0, 12) : "invalid_json"},effectiveCanonical=${canonicalContentSha256 ? canonicalContentSha256.slice(0, 12) : "invalid_json"}`;
+
+    return {
+      path: "vercel.json",
+      status: "unvalidated_modification_dirty",
+      transformationValidated: false,
+      committedSha256,
+      effectiveOnDiskSha256,
+      canonicalContentSha256,
+      committedMatchesCanonicalContent,
+      disclosedModification,
+    };
   } catch {
-    return false;
+    return {
+      path: "vercel.json",
+      status: "unknown",
+      transformationValidated: false,
+      committedSha256: "unknown",
+      effectiveOnDiskSha256,
+      canonicalContentSha256: null,
+      committedMatchesCanonicalContent: false,
+      disclosedModification: "verification_unavailable",
+    };
   }
+}
+
+function resolveEffectiveNextConfigPath(baseDir: string): string {
+  const nextCheck = inspectNextConfigPlatformTransformation(baseDir);
+  if (nextCheck.status === "validated_platform_transformation") {
+    return path.join(
+      /*turbopackIgnore: true*/ baseDir,
+      "next.config.__vercel_builder_backup__.mjs",
+    );
+  }
+  return path.join(/*turbopackIgnore: true*/ baseDir, "next.config.mjs");
 }
 
 function isStatusLineCleanAgainstHead(
@@ -265,14 +449,11 @@ function isStatusLineCleanAgainstHead(
     return false;
   }
   const relPath = match[1].trim().replace(/^"|"$/g, "");
-  if (relPath === "next.config.mjs" && isVercelModifiedNextConfigBackedByCleanHead(baseDir)) {
-    return true;
+  if (relPath === "next.config.mjs") {
+    return inspectNextConfigPlatformTransformation(baseDir).transformationValidated;
   }
-  if (
-    relPath === "vercel.json" &&
-    isVercelContainerRewrittenVercelJsonBackedByHead(baseDir, liveHead)
-  ) {
-    return true;
+  if (relPath === "vercel.json") {
+    return inspectVercelJsonPlatformTransformation(baseDir, liveHead).transformationValidated;
   }
   try {
     const diskPath = path.join(/*turbopackIgnore: true*/ baseDir, relPath);
@@ -293,29 +474,12 @@ function isStatusLineCleanAgainstHead(
   }
 }
 
-function hashFilesDeterministic(baseDir: string, relPaths: readonly string[]): string {
+function hashEffectiveFilesDeterministic(
+  baseDir: string,
+  relPaths: readonly string[],
+): string {
   const pieces: string[] = [];
   for (const rel of [...relPaths].sort()) {
-    if (
-      rel === "vercel.json" &&
-      process.env.VERCEL === "1" &&
-      process.env.VERCEL_GIT_COMMIT_SHA?.trim()
-    ) {
-      try {
-        const headBlob = execSync("git show HEAD:vercel.json", {
-          cwd: baseDir,
-          stdio: ["ignore", "pipe", "ignore"],
-        });
-        const headNormalized = Buffer.from(
-          headBlob.toString("utf8").replace(/\r\n/g, "\n"),
-          "utf8",
-        );
-        pieces.push(`${rel}:${sha256HexFull(headNormalized)}`);
-        continue;
-      } catch {
-        // fall through to disk file
-      }
-    }
     const full =
       rel === "next.config.mjs"
         ? resolveEffectiveNextConfigPath(baseDir)
@@ -325,7 +489,31 @@ function hashFilesDeterministic(baseDir: string, relPaths: readonly string[]): s
       pieces.push(`${rel}:${fileDigest}`);
     }
   }
-  return pieces.length > 0 ? sha256HexFull(pieces.join("\n")) : "unavailable_in_packaged_runtime";
+  return pieces.length > 0 ? sha256HexFull(pieces.join("\n")) : "unknown";
+}
+
+function hashCommittedHeadFilesDeterministic(
+  baseDir: string,
+  relPaths: readonly string[],
+): string {
+  const pieces: string[] = [];
+  for (const rel of [...relPaths].sort()) {
+    const full = path.join(/*turbopackIgnore: true*/ baseDir, rel);
+    if (!fs.existsSync(full)) continue;
+    try {
+      const headBlob = execSync(`git show HEAD:${rel}`, {
+        cwd: baseDir,
+        stdio: ["ignore", "pipe", "ignore"],
+      });
+      const headNormalized = headBlob.includes(0)
+        ? headBlob
+        : Buffer.from(headBlob.toString("utf8").replace(/\r\n/g, "\n"), "utf8");
+      pieces.push(`${rel}:${sha256HexFull(headNormalized)}`);
+    } catch {
+      return "unknown";
+    }
+  }
+  return pieces.length > 0 ? sha256HexFull(pieces.join("\n")) : "unknown";
 }
 
 function listFilesRecursiveRel(baseDir: string, subDir: string): string[] {
@@ -351,29 +539,36 @@ function listFilesRecursiveRel(baseDir: string, subDir: string): string[] {
  * to the actual source commit (`VERCEL_GIT_COMMIT_SHA` or `git rev-parse HEAD`),
  * working tree cleanliness across all relevant build inputs (root configuration,
  * dependency files, scripts, migrations, and source directories), `package-lock.json` hash,
+ * committed vs effective root config hashes, platform transformation disclosures,
  * runtime versions, and schema hashes. Reports `"unknown"` (never `"clean"`) if source
  * inspection is unavailable.
  */
 export function getDeploymentProvenanceV03(options?: { cwd?: string }) {
+  const customCwdProvided = Boolean(options?.cwd);
   const inspectCwd = options?.cwd ?? process.cwd();
   const runtimeEnv: NodeJS.ProcessEnv = process.env;
-  let sourceCommitSha =
-    runtimeEnv["VERCEL_GIT_COMMIT_SHA"]?.trim() ||
-    process.env.VERCEL_GIT_COMMIT_SHA?.trim() ||
-    process.env.DCC_BUILD_GIT_COMMIT?.trim() ||
-    runtimeEnv["GITHUB_SHA"]?.trim() ||
-    process.env.GITHUB_SHA?.trim() ||
-    "unknown";
-  let branchName =
-    runtimeEnv["VERCEL_GIT_COMMIT_REF"]?.trim() ||
-    process.env.VERCEL_GIT_COMMIT_REF?.trim() ||
-    process.env.DCC_BUILD_GIT_BRANCH?.trim() ||
-    runtimeEnv["GITHUB_REF_NAME"]?.trim() ||
-    process.env.GITHUB_REF_NAME?.trim() ||
-    "unknown";
+  let sourceCommitSha = customCwdProvided
+    ? "unknown"
+    : runtimeEnv["VERCEL_GIT_COMMIT_SHA"]?.trim() ||
+      process.env.VERCEL_GIT_COMMIT_SHA?.trim() ||
+      process.env.DCC_BUILD_GIT_COMMIT?.trim() ||
+      runtimeEnv["GITHUB_SHA"]?.trim() ||
+      process.env.GITHUB_SHA?.trim() ||
+      "unknown";
+  let branchName = customCwdProvided
+    ? "unknown"
+    : runtimeEnv["VERCEL_GIT_COMMIT_REF"]?.trim() ||
+      process.env.VERCEL_GIT_COMMIT_REF?.trim() ||
+      process.env.DCC_BUILD_GIT_BRANCH?.trim() ||
+      runtimeEnv["GITHUB_REF_NAME"]?.trim() ||
+      process.env.GITHUB_REF_NAME?.trim() ||
+      "unknown";
 
-  const envDirtyRaw = process.env.DCC_BUILD_DIRTY_STATUS?.trim();
+  const envDirtyRaw = customCwdProvided
+    ? undefined
+    : process.env.DCC_BUILD_DIRTY_STATUS?.trim();
   const envSourceInspected =
+    !customCwdProvided &&
     process.env.DCC_BUILD_SOURCE_INSPECTION_AVAILABLE?.trim() !== "false" &&
     (envDirtyRaw === "clean" || envDirtyRaw === "dirty");
 
@@ -382,7 +577,50 @@ export function getDeploymentProvenanceV03(options?: { cwd?: string }) {
     : "unknown";
   let sourceInspectionAvailable = envSourceInspected;
 
-  if (!process.env.VERCEL_ENV || options?.cwd) {
+  let modifiedBuildInputs: string[] | null = null;
+  let vercelJsonProvenance: VercelJsonPlatformTransformationInspection = {
+    path: "vercel.json",
+    status: "unknown",
+    transformationValidated: false,
+    committedSha256: "unknown",
+    effectiveOnDiskSha256: "unknown",
+    canonicalContentSha256: null,
+    committedMatchesCanonicalContent: false,
+    disclosedModification: "verification_unavailable",
+  };
+  let nextConfigProvenance: NextConfigPlatformTransformationInspection = {
+    path: "next.config.mjs",
+    status: "unknown",
+    transformationValidated: false,
+    committedSha256: "unknown",
+    effectiveSourceSha256: "unknown",
+    effectiveOnDiskSha256: "unknown",
+    disclosedModification: "verification_unavailable",
+  };
+
+  if (!customCwdProvided && envSourceInspected) {
+    try {
+      if (process.env.DCC_BUILD_MODIFIED_INPUTS) {
+        modifiedBuildInputs = JSON.parse(process.env.DCC_BUILD_MODIFIED_INPUTS);
+      }
+      if (process.env.DCC_BUILD_VERCEL_JSON_PROVENANCE) {
+        const parsedVj = JSON.parse(process.env.DCC_BUILD_VERCEL_JSON_PROVENANCE);
+        if (parsedVj && typeof parsedVj === "object") {
+          vercelJsonProvenance = parsedVj;
+        }
+      }
+      if (process.env.DCC_BUILD_NEXT_CONFIG_PROVENANCE) {
+        const parsedNc = JSON.parse(process.env.DCC_BUILD_NEXT_CONFIG_PROVENANCE);
+        if (parsedNc && typeof parsedNc === "object") {
+          nextConfigProvenance = parsedNc;
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  if (!process.env.VERCEL_ENV || customCwdProvided) {
     try {
       const liveHead = execSync("git rev-parse HEAD", {
         cwd: inspectCwd,
@@ -400,13 +638,15 @@ export function getDeploymentProvenanceV03(options?: { cwd?: string }) {
       if (liveBranch) {
         branchName = liveBranch;
       }
+      vercelJsonProvenance = inspectVercelJsonPlatformTransformation(inspectCwd, liveHead);
+      nextConfigProvenance = inspectNextConfigPlatformTransformation(inspectCwd);
       const existingBuildInputs = V03_CHECKED_BUILD_INPUT_PATHS.filter((relPath) =>
         fs.existsSync(path.join(/*turbopackIgnore: true*/ inspectCwd, relPath)),
       );
       if (existingBuildInputs.length === 0) {
         throw new Error("No build inputs found in inspection directory");
       }
-      const statusLines = execSync(
+      const rawStatusLines = execSync(
         `git status --porcelain --untracked-files=no -- ${existingBuildInputs.join(" ")}`,
         {
           cwd: inspectCwd,
@@ -416,48 +656,80 @@ export function getDeploymentProvenanceV03(options?: { cwd?: string }) {
       )
         .split(/\r?\n/)
         .map((l) => l.trim())
-        .filter((l) => Boolean(l) && !isStatusLineCleanAgainstHead(inspectCwd, l));
-      workingTreeState = statusLines.length === 0 ? "clean" : "dirty";
+        .filter(Boolean);
+      const dirtyLines = rawStatusLines.filter(
+        (l) => !isStatusLineCleanAgainstHead(inspectCwd, l, liveHead),
+      );
+      modifiedBuildInputs = dirtyLines.map((l) =>
+        l.replace(/^[A-Z?]+\s+/, "").trim().replace(/^"|"$/g, ""),
+      );
+      workingTreeState = dirtyLines.length === 0 ? "clean" : "dirty";
       sourceInspectionAvailable = true;
     } catch {
-      if (!envSourceInspected || options?.cwd) {
+      if (!envSourceInspected || customCwdProvided) {
         workingTreeState = "unknown";
         sourceInspectionAvailable = false;
+        modifiedBuildInputs = null;
+        vercelJsonProvenance = inspectVercelJsonPlatformTransformation(inspectCwd);
+        nextConfigProvenance = inspectNextConfigPlatformTransformation(inspectCwd);
       }
     }
   }
 
-  let dependencyLockSha256 =
-    process.env.DCC_BUILD_LOCK_HASH?.trim() || "unavailable_in_packaged_runtime";
-  let rootConfigSha256 =
-    process.env.DCC_BUILD_ROOT_CONFIG_HASH?.trim() || "unavailable_in_packaged_runtime";
-  let migrationsSha256 =
-    process.env.DCC_BUILD_MIGRATIONS_HASH?.trim() || "unavailable_in_packaged_runtime";
-  let scriptsSha256 =
-    process.env.DCC_BUILD_SCRIPTS_HASH?.trim() || "unavailable_in_packaged_runtime";
+  let dependencyLockSha256 = customCwdProvided
+    ? "unknown"
+    : process.env.DCC_BUILD_LOCK_HASH?.trim() || "unknown";
+  let committedRootConfigSha256 = customCwdProvided
+    ? "unknown"
+    : process.env.DCC_BUILD_COMMITTED_ROOT_CONFIG_HASH?.trim() || "unknown";
+  let effectiveRootConfigSha256 = customCwdProvided
+    ? "unknown"
+    : process.env.DCC_BUILD_EFFECTIVE_ROOT_CONFIG_HASH?.trim() ||
+      process.env.DCC_BUILD_ROOT_CONFIG_HASH?.trim() ||
+      "unknown";
+  let rootConfigSha256 = customCwdProvided
+    ? "unknown"
+    : process.env.DCC_BUILD_ROOT_CONFIG_HASH?.trim() || "unknown";
+  let migrationsSha256 = customCwdProvided
+    ? "unknown"
+    : process.env.DCC_BUILD_MIGRATIONS_HASH?.trim() || "unknown";
+  let scriptsSha256 = customCwdProvided
+    ? "unknown"
+    : process.env.DCC_BUILD_SCRIPTS_HASH?.trim() || "unknown";
 
-  if (!process.env.VERCEL_ENV || options?.cwd) {
+  if (!process.env.VERCEL_ENV || customCwdProvided) {
     try {
       const lockPath = path.join(/*turbopackIgnore: true*/ inspectCwd, "package-lock.json");
       if (fs.existsSync(lockPath)) {
         dependencyLockSha256 = sha256HexFull(readNormalizedTextBytes(lockPath));
       }
-      const computedRootConfig = hashFilesDeterministic(inspectCwd, ROOT_CONFIG_INPUT_FILES);
-      if (computedRootConfig !== "unavailable_in_packaged_runtime") {
-        rootConfigSha256 = computedRootConfig;
+      const computedCommittedRoot = hashCommittedHeadFilesDeterministic(
+        inspectCwd,
+        ROOT_CONFIG_INPUT_FILES,
+      );
+      if (computedCommittedRoot !== "unknown") {
+        committedRootConfigSha256 = computedCommittedRoot;
       }
-      const computedMigrations = hashFilesDeterministic(
+      const computedEffectiveRoot = hashEffectiveFilesDeterministic(
+        inspectCwd,
+        ROOT_CONFIG_INPUT_FILES,
+      );
+      if (computedEffectiveRoot !== "unknown") {
+        effectiveRootConfigSha256 = computedEffectiveRoot;
+        rootConfigSha256 = computedEffectiveRoot;
+      }
+      const computedMigrations = hashEffectiveFilesDeterministic(
         inspectCwd,
         listFilesRecursiveRel(inspectCwd, "drizzle"),
       );
-      if (computedMigrations !== "unavailable_in_packaged_runtime") {
+      if (computedMigrations !== "unknown") {
         migrationsSha256 = computedMigrations;
       }
-      const computedScripts = hashFilesDeterministic(
+      const computedScripts = hashEffectiveFilesDeterministic(
         inspectCwd,
         listFilesRecursiveRel(inspectCwd, "scripts/dcc"),
       );
-      if (computedScripts !== "unavailable_in_packaged_runtime") {
+      if (computedScripts !== "unknown") {
         scriptsSha256 = computedScripts;
       }
     } catch {
@@ -466,7 +738,7 @@ export function getDeploymentProvenanceV03(options?: { cwd?: string }) {
   }
 
   const checkedBuildInputs = (
-    process.env.DCC_BUILD_CHECKED_INPUTS?.trim()
+    !customCwdProvided && process.env.DCC_BUILD_CHECKED_INPUTS?.trim()
       ? process.env.DCC_BUILD_CHECKED_INPUTS.trim().split(",")
       : [...V03_CHECKED_BUILD_INPUT_PATHS]
   ).filter(Boolean);
@@ -509,6 +781,7 @@ export function getDeploymentProvenanceV03(options?: { cwd?: string }) {
     ciVerifiedCommitSha === sourceCommitSha;
   const dependencyLockHashMatchesHostedCi =
     Boolean(ciVerifiedLockHash) &&
+    dependencyLockSha256 !== "unknown" &&
     dependencyLockSha256 !== "unavailable_in_packaged_runtime" &&
     ciVerifiedLockHash === dependencyLockSha256;
 
@@ -521,6 +794,8 @@ export function getDeploymentProvenanceV03(options?: { cwd?: string }) {
     vercelEnv: deploymentEnvironment,
     vercelDeploymentId,
     dependencyLockHash: dependencyLockSha256,
+    committedRootConfigHash: committedRootConfigSha256,
+    effectiveRootConfigHash: effectiveRootConfigSha256,
     rootConfigHash: rootConfigSha256,
     migrationsHash: migrationsSha256,
     scriptsHash: scriptsSha256,
@@ -530,6 +805,9 @@ export function getDeploymentProvenanceV03(options?: { cwd?: string }) {
     deploymentEnvironment,
     dirtySourceStatus: workingTreeState,
     sourceInspectionAvailable,
+    modifiedBuildInputs,
+    vercelJsonProvenance,
+    nextConfigProvenance,
     buildTime,
     generatedAt: new Date().toISOString(),
     hostedCiVerification: {
@@ -551,6 +829,7 @@ export function getDeploymentProvenanceV03(options?: { cwd?: string }) {
       gitProvider,
       workingTreeState,
       sourceInspectionAvailable,
+      modifiedBuildInputs,
       checkedBuildInputs,
       v01FreezeCommitSha: "9272c6b207f0242f7b217944551a9d76e0beb3d5",
       v02CompletedHeadCommitSha: "3016a030fba23457d2795d4374a1d8393aa59b3e",
@@ -559,12 +838,19 @@ export function getDeploymentProvenanceV03(options?: { cwd?: string }) {
     buildInputsInspection: {
       sourceInspectionAvailable,
       dirtySourceStatus: workingTreeState,
+      modifiedBuildInputs,
       checkedBuildInputs,
+      committedRootConfigSha256,
+      effectiveRootConfigSha256,
       rootConfigSha256,
       dependencyLockSha256,
       migrationsSha256,
       scriptsSha256,
       schemaSha256: aggregateSchemaHash,
+      platformTransformations: {
+        vercelJson: vercelJsonProvenance,
+        nextConfig: nextConfigProvenance,
+      },
     },
     dependencyLockSha256,
     runtimeVersions: {

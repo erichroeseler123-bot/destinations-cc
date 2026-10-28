@@ -726,6 +726,8 @@ test("v0.3.1 Gate 7: Repair Verification — Withdrawn GoSno Seed Containment, P
       `Provenance must inspect build input: ${requiredInput}`,
     );
   }
+  assert.equal(liveProv.buildInputsInspection.committedRootConfigSha256.length, 64);
+  assert.equal(liveProv.buildInputsInspection.effectiveRootConfigSha256.length, 64);
   assert.equal(liveProv.buildInputsInspection.rootConfigSha256.length, 64);
   assert.equal(liveProv.buildInputsInspection.dependencyLockSha256.length, 64);
   assert.equal(liveProv.buildInputsInspection.migrationsSha256.length, 64);
@@ -746,6 +748,10 @@ test("v0.3.1 Gate 7: Repair Verification — Withdrawn GoSno Seed Containment, P
     );
     assert.equal(unknownProv.buildInputsInspection.sourceInspectionAvailable, false);
     assert.equal(unknownProv.buildInputsInspection.dirtySourceStatus, "unknown");
+    assert.equal(unknownProv.committedRootConfigHash, "unknown");
+    assert.equal(unknownProv.effectiveRootConfigHash, "unknown");
+    assert.equal(unknownProv.vercelJsonProvenance.status, "unknown");
+    assert.equal(unknownProv.vercelJsonProvenance.committedSha256, "unknown");
     assert.equal(
       unknownProv.hostedCiVerification.verifiedAgainstHostedCi,
       false,
@@ -757,6 +763,132 @@ test("v0.3.1 Gate 7: Repair Verification — Withdrawn GoSno Seed Containment, P
     if (savedSourceInspEnv !== undefined) {
       process.env.DCC_BUILD_SOURCE_INSPECTION_AVAILABLE = savedSourceInspEnv;
     }
+  }
+
+  // 7b. Verify platform transformation validation vs unvalidated vercel.json modification disclosure
+  const { execSync: execSyncChild } = await import("node:child_process");
+  const tempGitDir = fs.mkdtempSync(path.join(process.env.TEMP ?? "/tmp", "dcc-prov-git-"));
+  const savedVercelFlag = process.env.VERCEL;
+  const savedVercelSha = process.env.VERCEL_GIT_COMMIT_SHA;
+  try {
+    execSyncChild("git init", { cwd: tempGitDir, stdio: "ignore" });
+    execSyncChild('git config user.email "test@example.com"', {
+      cwd: tempGitDir,
+      stdio: "ignore",
+    });
+    execSyncChild('git config user.name "Test"', { cwd: tempGitDir, stdio: "ignore" });
+    const initialVercelJsonObj = {
+      framework: "nextjs",
+      crons: [{ path: "/api/internal/earthos/reference-maintenance", schedule: "0 8 * * *" }],
+    };
+    fs.writeFileSync(
+      path.join(tempGitDir, "vercel.json"),
+      JSON.stringify(initialVercelJsonObj, null, 2) + "\n",
+      "utf8",
+    );
+    fs.writeFileSync(
+      path.join(tempGitDir, "package.json"),
+      JSON.stringify({ name: "dcc-prov-test", version: "1.0.0" }, null, 2) + "\n",
+      "utf8",
+    );
+    fs.writeFileSync(
+      path.join(tempGitDir, "next.config.mjs"),
+      "export default {};\n",
+      "utf8",
+    );
+    execSyncChild("git add vercel.json package.json next.config.mjs", {
+      cwd: tempGitDir,
+      stdio: "ignore",
+    });
+    execSyncChild('git commit -m "init"', { cwd: tempGitDir, stdio: "ignore" });
+    const tempHead = execSyncChild("git rev-parse HEAD", {
+      cwd: tempGitDir,
+      encoding: "utf8",
+    }).trim();
+
+    // Case A: Expected Vercel lossless JSON minification with matching VERCEL=1 and VERCEL_GIT_COMMIT_SHA
+    process.env.VERCEL = "1";
+    process.env.VERCEL_GIT_COMMIT_SHA = tempHead;
+    fs.writeFileSync(
+      path.join(tempGitDir, "vercel.json"),
+      JSON.stringify(initialVercelJsonObj) + "\n",
+      "utf8",
+    );
+    const platformProv = getDeploymentProvenanceV03({ cwd: tempGitDir });
+    assert.equal(platformProv.dirtySourceStatus, "clean");
+    assert.deepEqual(platformProv.modifiedBuildInputs, []);
+    assert.equal(
+      platformProv.vercelJsonProvenance.status,
+      "validated_platform_transformation",
+    );
+    assert.equal(platformProv.vercelJsonProvenance.transformationValidated, true);
+    assert.equal(platformProv.vercelJsonProvenance.committedMatchesCanonicalContent, true);
+    assert.notEqual(
+      platformProv.vercelJsonProvenance.committedSha256,
+      platformProv.vercelJsonProvenance.effectiveOnDiskSha256,
+    );
+    assert.notEqual(
+      platformProv.committedRootConfigHash,
+      platformProv.effectiveRootConfigHash,
+      "Committed root config hash must be distinguished from effective on-disk deployment config hash",
+    );
+
+    // Case B: Unvalidated modification to vercel.json even when VERCEL=1 and VERCEL_GIT_COMMIT_SHA match
+    fs.writeFileSync(
+      path.join(tempGitDir, "vercel.json"),
+      JSON.stringify({
+        ...initialVercelJsonObj,
+        crons: [{ path: "/api/tampered", schedule: "0 0 * * *" }],
+      }) + "\n",
+      "utf8",
+    );
+    const dirtyVercelProv = getDeploymentProvenanceV03({ cwd: tempGitDir });
+    assert.equal(
+      dirtyVercelProv.dirtySourceStatus,
+      "dirty",
+      "An unvalidated modification to vercel.json must never be blanket-labeled clean even when VERCEL=1",
+    );
+    assert.deepEqual(dirtyVercelProv.modifiedBuildInputs, ["vercel.json"]);
+    assert.equal(
+      dirtyVercelProv.vercelJsonProvenance.status,
+      "unvalidated_modification_dirty",
+    );
+    assert.equal(dirtyVercelProv.vercelJsonProvenance.transformationValidated, false);
+    assert.equal(dirtyVercelProv.vercelJsonProvenance.committedMatchesCanonicalContent, false);
+    assert.ok(
+      dirtyVercelProv.vercelJsonProvenance.disclosedModification?.startsWith(
+        "unvalidated_effective_config_modification:",
+      ),
+    );
+    assert.notEqual(
+      dirtyVercelProv.committedRootConfigHash,
+      dirtyVercelProv.effectiveRootConfigHash,
+    );
+    assert.equal(dirtyVercelProv.rootConfigHash, dirtyVercelProv.effectiveRootConfigHash);
+    assert.equal(dirtyVercelProv.hostedCiVerification.verifiedAgainstHostedCi, false);
+
+    // Case C: Even lossless minification outside Vercel container (VERCEL != "1") is flagged dirty
+    delete process.env.VERCEL;
+    delete process.env.VERCEL_GIT_COMMIT_SHA;
+    fs.writeFileSync(
+      path.join(tempGitDir, "vercel.json"),
+      JSON.stringify(initialVercelJsonObj) + "\n",
+      "utf8",
+    );
+    const nonVercelMinifiedProv = getDeploymentProvenanceV03({ cwd: tempGitDir });
+    assert.equal(nonVercelMinifiedProv.dirtySourceStatus, "dirty");
+    assert.deepEqual(nonVercelMinifiedProv.modifiedBuildInputs, ["vercel.json"]);
+    assert.equal(
+      nonVercelMinifiedProv.vercelJsonProvenance.status,
+      "unvalidated_modification_dirty",
+    );
+    assert.equal(nonVercelMinifiedProv.vercelJsonProvenance.transformationValidated, false);
+  } finally {
+    if (savedVercelFlag === undefined) delete process.env.VERCEL;
+    else process.env.VERCEL = savedVercelFlag;
+    if (savedVercelSha === undefined) delete process.env.VERCEL_GIT_COMMIT_SHA;
+    else process.env.VERCEL_GIT_COMMIT_SHA = savedVercelSha;
+    fs.rmSync(tempGitDir, { recursive: true, force: true });
   }
 
   // 8. Verify additive idempotent admission on a pre-repair 7-event legacy ledger (such as production /neondb)
