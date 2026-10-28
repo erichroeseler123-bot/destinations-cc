@@ -104,7 +104,9 @@ export function PortfolioAssuranceBanner({
             rel="noopener noreferrer"
             style={{ color: "#38bdf8", textDecoration: "underline", fontWeight: 600 }}
           >
-            Inspect Decision Engine ({assurance.engineId}) ↗
+            {assurance.receiptVerifyUrl.includes("/api/v1/engines/")
+              ? `Inspect Decision Engine (${assurance.engineId}) ↗`
+              : `Open DCC Decision Center (${assurance.engineId}) ↗`}
           </a>
         </div>
       </div>
