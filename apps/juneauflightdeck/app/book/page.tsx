@@ -1,12 +1,20 @@
 import Link from "next/link";
+import Script from "next/script";
 import { cookies } from "next/headers";
 import SiteHeader from "../components/SiteHeader";
 import SiteFooter from "../components/SiteFooter";
-import { getOrCreateCheckoutSession, JFD_CHECKOUT_COOKIE_NAME } from "../../lib/dccContext";
+import {
+  extractHandoffIdFromQueryOrRef,
+  getOrCreateCheckoutSession,
+  JFD_CHECKOUT_COOKIE_NAME,
+  loadAuthoritativeDccHandoffForCheckout,
+  safeJsonSerializeForScriptTag,
+} from "../../lib/dccContext";
 
 interface BookPageSearchParams {
   ctx?: string;
   handoff_id?: string;
+  ref?: string;
   receipt_id?: string;
   asn?: string;
   shortname?: string;
@@ -17,12 +25,14 @@ interface BookPageSearchParams {
   time?: string;
   party_size?: string;
   max_weight_lbs?: string;
-  quoted_price?: string;
-  live_price?: string;
-  available_seats?: string;
-  departure_status?: string;
+  youngest_age_years?: string;
   requires_assisted_boarding?: string;
+  can_walk_one_hour?: string;
   carrying_drone?: string;
+  carrying_selfie_stick?: string;
+  carrying_bags_on_flight?: string;
+  has_service_animal?: string;
+  accept_weight_surcharge?: string;
 }
 
 interface BookPageProps {
@@ -53,152 +63,210 @@ export default async function BookPage(props: BookPageProps) {
     }
   }
 
-  const handoffId = searchParams.handoff_id?.trim() || null;
-  const receiptId = searchParams.receipt_id?.trim() || null;
-  const operatorShortname =
-    searchParams.shortname?.trim() || searchParams.asn?.trim() || null;
-  const fareharborItemId = searchParams.item?.trim() || null;
-  const tourCode = searchParams.tour?.trim() || null;
-  const intendedDate =
-    searchParams.date?.trim() || contextData?.schedule?.date || null;
-  const departureId = searchParams.departure?.trim() || null;
-  const departureTime = searchParams.time?.trim() || null;
-  const partySizeNum = searchParams.party_size
-    ? Number(searchParams.party_size)
-    : typeof contextData?.schedule?.travelers === "number"
-      ? contextData.schedule.travelers
-      : null;
-  const maxWeightLbs = searchParams.max_weight_lbs
-    ? Number(searchParams.max_weight_lbs)
-    : null;
-  const quotedPriceRaw = searchParams.quoted_price
-    ? Number(searchParams.quoted_price)
-    : null;
-
-  const hasDccHandoffBinding = Boolean(
-    handoffId || fareharborItemId || departureId || tourCode,
+  const resolvedHandoffId = extractHandoffIdFromQueryOrRef(
+    searchParams.handoff_id,
+    searchParams.ref,
   );
 
-  const catalogBasePerPersonUsd =
-    tourCode === "jnu-heli-temsco-mendenhall"
-      ? 419
-      : tourCode === "jnu-heli-northstar-level1-trek"
-        ? 529
-        : 459;
-
-  const effectivePartySize =
-    partySizeNum && Number.isFinite(partySizeNum) && partySizeNum > 0 ? partySizeNum : 1;
-
-  const quotedTotalUsd =
-    quotedPriceRaw !== null && Number.isFinite(quotedPriceRaw)
-      ? quotedPriceRaw >= catalogBasePerPersonUsd * effectivePartySize * 0.9 &&
-        effectivePartySize > 1
-        ? quotedPriceRaw
-        : quotedPriceRaw * effectivePartySize
-      : null;
-  const quotedPerPersonUsd =
-    quotedTotalUsd !== null
-      ? Number((quotedTotalUsd / effectivePartySize).toFixed(2))
-      : null;
-
-  const livePerPersonUsd = searchParams.live_price
-    ? Number(searchParams.live_price)
-    : quotedPerPersonUsd ?? catalogBasePerPersonUsd;
-
-  const requiredWeightSurchargeUsd =
-    typeof maxWeightLbs === "number" && Number.isFinite(maxWeightLbs)
-      ? tourCode === "jnu-heli-temsco-mendenhall"
-        ? maxWeightLbs >= 250
-          ? 179.5
-          : 0
-        : maxWeightLbs >= 300
-          ? 459
-          : maxWeightLbs >= 260
-            ? 150
-            : 0
-      : 0;
-
-  const liveRequiredTotalUsd = Number(
-    (livePerPersonUsd * effectivePartySize + requiredWeightSurchargeUsd).toFixed(2),
+  const hasUrlHandoffAttempt = Boolean(
+    resolvedHandoffId ||
+      searchParams.handoff_id?.trim() ||
+      searchParams.receipt_id?.trim() ||
+      searchParams.item?.trim() ||
+      searchParams.departure?.trim() ||
+      searchParams.tour?.trim(),
   );
 
-  const availableSeats = searchParams.available_seats
-    ? Number(searchParams.available_seats)
-    : 6;
-  const departureStatus = (searchParams.departure_status || "OPEN").toUpperCase();
-  const requiresAssistedBoarding = searchParams.requires_assisted_boarding === "true";
-  const carryingDrone = searchParams.carrying_drone === "true";
+  const requestedPartySize =
+    searchParams.party_size !== undefined && searchParams.party_size.trim() !== ""
+      ? Number(searchParams.party_size)
+      : null;
+  const declaredWeightLbs =
+    searchParams.max_weight_lbs !== undefined && searchParams.max_weight_lbs.trim() !== ""
+      ? Number(searchParams.max_weight_lbs)
+      : null;
+  const declaredYoungestAge =
+    searchParams.youngest_age_years !== undefined &&
+    searchParams.youngest_age_years.trim() !== ""
+      ? Number(searchParams.youngest_age_years)
+      : null;
 
-  const blockingReasons: string[] = [];
-  if (hasDccHandoffBinding) {
-    if (
-      !operatorShortname ||
-      !fareharborItemId ||
-      !tourCode ||
-      !intendedDate ||
-      !departureId ||
-      !departureTime ||
-      !partySizeNum ||
-      partySizeNum <= 0
-    ) {
-      blockingReasons.push("INCOMPLETE_BOOKABLE_DEPARTURE_BINDING_BLOCKS_PROGRESSION");
-    }
-    if (
-      quotedPerPersonUsd !== null &&
-      Math.abs(livePerPersonUsd - quotedPerPersonUsd) > 0.01
-    ) {
-      blockingReasons.push("LIVE_OPERATOR_PRICE_DRIFT_BLOCKS_PROGRESSION");
-    }
-    if (
-      requiredWeightSurchargeUsd > 0 &&
-      quotedTotalUsd !== null &&
-      liveRequiredTotalUsd > quotedTotalUsd + 0.01
-    ) {
-      blockingReasons.push("UNQUOTED_WEIGHT_SURCHARGE_AT_CHECKIN_BLOCKS_PROGRESSION");
-    }
-    if (departureStatus !== "OPEN") {
-      blockingReasons.push(`DEPARTURE_STATUS_${departureStatus}_BLOCKS_PROGRESSION`);
-    }
-    if (partySizeNum && availableSeats < partySizeNum) {
-      blockingReasons.push("DEPARTURE_INSUFFICIENT_SEATS_BLOCKS_PROGRESSION");
-    }
-    if (intendedDate) {
-      const m = /^\d{4}-(\d{2})-\d{2}/.exec(intendedDate);
-      const month = m ? Number(m[1]) : NaN;
-      if (!Number.isFinite(month) || month < 5 || month > 9) {
-        blockingReasons.push("OUTSIDE_MAY_SEPTEMBER_OPERATING_SEASON_BLOCKS_PROGRESSION");
+  let handoffVerifiedServerSide = false;
+  let authoritativeHandoff: Record<string, any> | null = null;
+  let authoritativeRevalidation: Record<string, any> | null = null;
+  let handoffLoadError: { code: string; message: string } | null = null;
+
+  if (hasUrlHandoffAttempt) {
+    if (!resolvedHandoffId) {
+      handoffLoadError = {
+        code: "MISSING_AUTHORITATIVE_HANDOFF_ID_BLOCKS_PROGRESSION",
+        message:
+          "Booking parameters in the URL cannot be trusted without a valid DCC handoff_id verified server-side.",
+      };
+    } else {
+      const loadResult = await loadAuthoritativeDccHandoffForCheckout({
+        handoffId: resolvedHandoffId,
+        requestedReceiptId: searchParams.receipt_id?.trim() || null,
+        requestedTourCode: searchParams.tour?.trim() || null,
+        requestedFareharborItemId: searchParams.item?.trim() || null,
+        requestedDate: searchParams.date?.trim() || null,
+        requestedDepartureId: searchParams.departure?.trim() || null,
+        requestedDepartureTime: searchParams.time?.trim() || null,
+        requestedPartySize:
+          requestedPartySize !== null && Number.isFinite(requestedPartySize)
+            ? requestedPartySize
+            : null,
+        declaredMaxSinglePassengerWeightLbs:
+          declaredWeightLbs !== null && Number.isFinite(declaredWeightLbs)
+            ? declaredWeightLbs
+            : null,
+        declaredYoungestPassengerAgeYears:
+          declaredYoungestAge !== null && Number.isFinite(declaredYoungestAge)
+            ? declaredYoungestAge
+            : null,
+        requiresAssistedAircraftBoarding:
+          searchParams.requires_assisted_boarding === "true"
+            ? true
+            : searchParams.requires_assisted_boarding === "false"
+              ? false
+              : null,
+        canWalkUnassistedOneHourUnevenTerrain:
+          searchParams.can_walk_one_hour === "true"
+            ? true
+            : searchParams.can_walk_one_hour === "false"
+              ? false
+              : null,
+        carryingDrone:
+          searchParams.carrying_drone === "true"
+            ? true
+            : searchParams.carrying_drone === "false"
+              ? false
+              : null,
+        carryingSelfieStickOrExtension:
+          searchParams.carrying_selfie_stick === "true"
+            ? true
+            : searchParams.carrying_selfie_stick === "false"
+              ? false
+              : null,
+        carryingBagsOrPursesOnFlight:
+          searchParams.carrying_bags_on_flight === "true"
+            ? true
+            : searchParams.carrying_bags_on_flight === "false"
+              ? false
+              : null,
+        hasServiceAnimal:
+          searchParams.has_service_animal === "true"
+            ? true
+            : searchParams.has_service_animal === "false"
+              ? false
+              : null,
+        travelerAcceptedWeightSurcharge:
+          searchParams.accept_weight_surcharge === "true" ? true : null,
+      });
+
+      if (loadResult.found && loadResult.handoff && loadResult.revalidation) {
+        handoffVerifiedServerSide = true;
+        authoritativeHandoff = loadResult.handoff;
+        authoritativeRevalidation = loadResult.revalidation;
+      } else {
+        handoffLoadError = {
+          code:
+            loadResult.errorCode || "AUTHORITATIVE_HANDOFF_NOT_FOUND_BLOCKS_PROGRESSION",
+          message:
+            loadResult.message ||
+            "Authoritative handoff record could not be loaded from DCC.",
+        };
       }
-    }
-    if (requiresAssistedBoarding) {
-      blockingReasons.push("ASSISTED_BOARDING_NOT_PERMITTED_BLOCKS_PROGRESSION");
-    }
-    if (carryingDrone) {
-      blockingReasons.push("PROHIBITED_ITEM_DRONE_BLOCKS_PROGRESSION");
     }
   }
 
-  const progressionAllowed = hasDccHandoffBinding ? blockingReasons.length === 0 : true;
+  // All displayed handoff values come strictly from the server-verified DCC handoff & revalidation record
+  const handoffId = authoritativeRevalidation?.handoffId ?? resolvedHandoffId ?? null;
+  const receiptId = authoritativeRevalidation?.receiptId ?? null;
+  const receiptVerified = authoritativeRevalidation?.receiptVerified === true;
+  const operatorShortname = authoritativeRevalidation?.fareharborShortname ?? null;
+  const fareharborItemId = authoritativeRevalidation?.fareharborItemId ?? null;
+  const fareharborDirectEmbedUrl =
+    authoritativeRevalidation?.fareharborDirectEmbedUrl ??
+    authoritativeHandoff?.checkoutBookingBinding?.fareharborDirectEmbedUrl ??
+    null;
+  const tourCode = authoritativeRevalidation?.productCode ?? null;
+  const intendedDate =
+    authoritativeRevalidation?.intendedDate ?? contextData?.schedule?.date ?? null;
+  const departureId = authoritativeRevalidation?.intendedDepartureId ?? null;
+  const departureTime = authoritativeRevalidation?.intendedDepartureTime ?? null;
+  const partySize =
+    typeof authoritativeRevalidation?.partySize === "number"
+      ? authoritativeRevalidation.partySize
+      : typeof contextData?.schedule?.travelers === "number"
+        ? contextData.schedule.travelers
+        : null;
+  const maxSinglePassengerWeightLbs =
+    authoritativeRevalidation?.checks?.passengerConstraints?.maxSinglePassengerWeightLbs ??
+    null;
+
+  const publishedBasePerPersonUsd: number | null =
+    authoritativeRevalidation?.checks?.priceAndSurcharge?.publishedBasePerPersonUsd ??
+    null;
+  const requiredWeightSurchargeUsd: number =
+    authoritativeRevalidation?.checks?.priceAndSurcharge?.requiredWeightSurchargeUsd ?? 0;
+  const publishedPolicyRequiredTotalUsd: number | null =
+    authoritativeRevalidation?.checks?.priceAndSurcharge
+      ?.publishedPolicyRequiredTotalUsd ?? null;
+  const quotedPerPersonUsd: number | null =
+    authoritativeRevalidation?.checks?.priceAndSurcharge?.quotedPerPersonUsd ?? null;
+  const quotedTotalUsd: number | null =
+    authoritativeRevalidation?.checks?.priceAndSurcharge?.quotedTotalUsd ?? null;
+
+  const providerConfirmation = authoritativeRevalidation?.providerConfirmation ?? {
+    status: "unknown_until_authenticated_provider_response",
+    liveAvailabilityStatus: "unknown",
+    liveAvailableSeats: null,
+    liveOperatorPricePerPersonUsd: null,
+    authenticatedOutcomeId: null,
+    requiresProviderConfirmationAtCheckout: true,
+    explanation:
+      "Live seat inventory, departure dispatch status, and final operator fare are not established by DCC and remain unknown until confirmed by an authenticated FareHarbor response.",
+  };
+
+  const versionedPolicySource = authoritativeRevalidation?.versionedPolicySource ?? null;
+
+  const blockingReasons: string[] = handoffVerifiedServerSide
+    ? (authoritativeRevalidation?.blockingReasons ?? [])
+    : handoffLoadError
+      ? [handoffLoadError.code]
+      : [];
+
+  const progressionAllowed = hasUrlHandoffAttempt
+    ? handoffVerifiedServerSide &&
+      authoritativeRevalidation?.progressionAllowed === true &&
+      blockingReasons.length === 0
+    : true;
+
   const revalidationStatus = progressionAllowed ? "passed" : "blocked";
 
-  const checkoutBindingPayload = hasDccHandoffBinding
+  const checkoutBindingPayload = hasUrlHandoffAttempt
     ? {
         handoffId,
+        handoffVerifiedServerSide,
         receiptId,
+        receiptVerified,
         operatorShortname,
         fareharborItemId,
+        fareharborDirectEmbedUrl: progressionAllowed ? fareharborDirectEmbedUrl : null,
         tourCode,
         intendedDate,
         departureId,
         departureTime,
-        partySize: partySizeNum,
-        maxSinglePassengerWeightLbs: maxWeightLbs,
+        partySize,
+        maxSinglePassengerWeightLbs,
         quotedPerPersonUsd,
         quotedTotalUsd,
-        livePerPersonUsd,
+        publishedBasePerPersonUsd,
         requiredWeightSurchargeUsd,
-        liveRequiredTotalUsd,
-        availableSeats,
-        departureStatus,
+        publishedPolicyRequiredTotalUsd,
+        versionedPolicySource,
+        providerConfirmation,
         progressionAllowed,
         revalidationStatus,
         blockingReasons,
@@ -207,6 +275,10 @@ export default async function BookPage(props: BookPageProps) {
 
   return (
     <div className="site-shell-wrapper">
+      <Script
+        src="https://fareharbor.com/embeds/api/v1/?autolightframe=yes"
+        strategy="afterInteractive"
+      />
       <SiteHeader />
       <main className="site-main py-10">
         <div className="site-shell max-w-4xl mx-auto px-4">
@@ -215,40 +287,46 @@ export default async function BookPage(props: BookPageProps) {
               id="dcc-checkout-binding"
               type="application/json"
               dangerouslySetInnerHTML={{
-                __html: JSON.stringify(checkoutBindingPayload),
+                __html: safeJsonSerializeForScriptTag(checkoutBindingPayload),
               }}
             />
           )}
 
           <div className="mb-8">
             <span className="text-xs font-bold tracking-widest text-sky-600 uppercase">
-              Direct Merchant Booking • Juneau Flight Deck
+              Specialist Booking Portal • Juneau Flight Deck
             </span>
             <h1 className="text-3xl font-extrabold text-slate-900 mt-1">
-              Confirm Your Glacier Helicopter Flight
+              Juneau Helicopter Tour Checkout Handoff
             </h1>
             <p className="text-slate-600 mt-2">
-              Flights are scheduled with recommended port safety buffers prior to ship departure.
+              DCC evaluates published operator policies and cruise port buffers. Final seat
+              inventory, departure dispatch, and live fare are confirmed directly by the
+              operator via FareHarbor.
             </p>
           </div>
 
-          {hasDccHandoffBinding && (
+          {hasUrlHandoffAttempt && (
             <div
               data-dcc-handoff-bound="true"
+              data-handoff-verified={String(handoffVerifiedServerSide)}
               data-handoff-id={handoffId || ""}
               data-receipt-id={receiptId || ""}
+              data-receipt-verified={String(receiptVerified)}
               data-fareharbor-shortname={operatorShortname || ""}
               data-fareharbor-item={fareharborItemId || ""}
               data-tour-code={tourCode || ""}
               data-intended-date={intendedDate || ""}
               data-departure-id={departureId || ""}
               data-departure-time={departureTime || ""}
-              data-party-size={partySizeNum !== null ? String(partySizeNum) : ""}
+              data-party-size={partySize !== null ? String(partySize) : ""}
+              data-provider-confirmation-status={providerConfirmation.status}
+              data-live-availability-status={providerConfirmation.liveAvailabilityStatus}
               data-revalidation-status={revalidationStatus}
               data-progression-allowed={String(progressionAllowed)}
               className={`p-6 mb-8 rounded-xl border shadow-sm ${
                 progressionAllowed
-                  ? "bg-emerald-50 border-emerald-200 text-slate-900"
+                  ? "bg-slate-50 border-slate-300 text-slate-900"
                   : "bg-rose-50 border-rose-300 text-rose-950"
               }`}
             >
@@ -256,57 +334,82 @@ export default async function BookPage(props: BookPageProps) {
                 <div className="flex items-center gap-2">
                   <span
                     className={`inline-block w-2.5 h-2.5 rounded-full ${
-                      progressionAllowed ? "bg-emerald-600" : "bg-rose-600"
+                      progressionAllowed ? "bg-sky-600" : "bg-rose-600"
                     }`}
                   />
                   <span className="font-bold text-sm tracking-wide uppercase">
                     {progressionAllowed
-                      ? "DCC Verified Departure & Pre-Commitment Revalidation Passed"
-                      : "Pre-Booking Revalidation Gate Blocked Progression"}
+                      ? "DCC Policy Handoff Revalidated — Live Fare & Seat Availability Confirmed in FareHarbor"
+                      : "Pre-Booking Policy & Handoff Revalidation Gate Blocked Progression"}
                   </span>
                 </div>
                 <span className="text-xs font-mono text-slate-700">
-                  Handoff: {handoffId || "unlinked"} • Receipt: {receiptId || "unlinked"}
+                  Handoff: {handoffId || "unverified"} • Receipt:{" "}
+                  {receiptId ? `${receiptId} (${receiptVerified ? "verified" : "unverified"})` : "none"}
                 </span>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                <div>
-                  <span className="text-slate-500 text-xs font-semibold uppercase">
-                    Operator & FareHarbor Item
-                  </span>
-                  <div className="text-base font-bold text-slate-900">
-                    {operatorShortname || "unspecified"} • Item #{fareharborItemId || "N/A"}
+              {handoffVerifiedServerSide ? (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                  <div>
+                    <span className="text-slate-500 text-xs font-semibold uppercase">
+                      Operator & FareHarbor Item
+                    </span>
+                    <div className="text-base font-bold text-slate-900">
+                      {operatorShortname || "unspecified"} • Item #{fareharborItemId || "N/A"}
+                    </div>
+                    <div className="text-xs text-slate-600 font-mono">{tourCode || "N/A"}</div>
+                    {versionedPolicySource?.universeId && (
+                      <div className="text-xs text-slate-500 mt-1">
+                        Policy: {versionedPolicySource.universeId}@
+                        {versionedPolicySource.universeVersion}
+                      </div>
+                    )}
                   </div>
-                  <div className="text-xs text-slate-600 font-mono">{tourCode || "N/A"}</div>
+                  <div>
+                    <span className="text-slate-500 text-xs font-semibold uppercase">
+                      Target Date, Slot & Published Tariff
+                    </span>
+                    <div className="text-base font-bold text-slate-900">
+                      {intendedDate || "Unspecified Date"} @ {departureTime || "TBD"}
+                    </div>
+                    <div className="text-xs text-slate-600 font-mono">
+                      Target Slot: {departureId || "unspecified"} • {partySize ?? "?"}{" "}
+                      {partySize === 1 ? "Traveler" : "Travelers"}
+                    </div>
+                    {publishedPolicyRequiredTotalUsd !== null &&
+                      publishedBasePerPersonUsd !== null && (
+                        <div className="text-xs text-slate-700 mt-1 font-semibold">
+                          Published Policy Tariff: ${publishedPolicyRequiredTotalUsd.toFixed(2)}{" "}
+                          USD (${publishedBasePerPersonUsd.toFixed(2)}/person base
+                          {requiredWeightSurchargeUsd > 0
+                            ? ` + $${requiredWeightSurchargeUsd.toFixed(2)} weight surcharge`
+                            : ""}
+                          )
+                        </div>
+                      )}
+                  </div>
+                  <div>
+                    <span className="text-slate-500 text-xs font-semibold uppercase">
+                      Provider Confirmation & Live Inventory
+                    </span>
+                    <div className="text-sm font-bold text-amber-900 bg-amber-100 border border-amber-300 px-2.5 py-1 rounded inline-block mt-0.5">
+                      Status: UNKNOWN UNTIL FAREHARBOR CHECKOUT
+                    </div>
+                    <div className="text-xs text-slate-600 mt-1">
+                      Live seat count, departure dispatch status, and final operator fare are
+                      not established by DCC; confirmed directly by FareHarbor.
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <span className="text-slate-500 text-xs font-semibold uppercase">
-                    Bookable Departure Slot
-                  </span>
-                  <div className="text-base font-bold text-slate-900">
-                    {intendedDate || "Unspecified Date"} @ {departureTime || "TBD"}
-                  </div>
-                  <div className="text-xs text-slate-600 font-mono">
-                    Slot ID: {departureId || "unspecified"} ({departureStatus} • {availableSeats} seats open)
-                  </div>
+              ) : (
+                <div className="text-sm text-rose-900">
+                  {handoffLoadError?.message ||
+                    "Authoritative handoff record could not be verified with DCC."}
                 </div>
-                <div>
-                  <span className="text-slate-500 text-xs font-semibold uppercase">
-                    Travelers & Revalidated Fare
-                  </span>
-                  <div className="text-base font-bold text-slate-900">
-                    {partySizeNum ?? "Unspecified"}{" "}
-                    {partySizeNum === 1 ? "Traveler" : "Travelers"} • ${liveRequiredTotalUsd.toFixed(2)} USD
-                  </div>
-                  <div className="text-xs text-slate-600">
-                    ${livePerPersonUsd.toFixed(2)}/person
-                    {maxWeightLbs !== null ? ` • Max weight ${maxWeightLbs} lbs` : ""}
-                  </div>
-                </div>
-              </div>
+              )}
 
-              {!progressionAllowed && (
+              {!progressionAllowed && blockingReasons.length > 0 && (
                 <div className="mt-4 p-3 rounded-lg bg-rose-100 border border-rose-300 text-xs font-mono text-rose-900">
                   Blocking Reasons: {blockingReasons.join(", ")}
                 </div>
@@ -320,8 +423,8 @@ export default async function BookPage(props: BookPageProps) {
                 {contextError.status === 410
                   ? "Booking Context Expired (15-minute TTL)"
                   : contextError.status === 409
-                  ? "Booking Session Already Active"
-                  : "Context Notice"}
+                    ? "Booking Session Already Active"
+                    : "Context Notice"}
               </div>
               <p className="text-sm mt-1">{contextError.message}</p>
               <div className="mt-3">
@@ -341,7 +444,7 @@ export default async function BookPage(props: BookPageProps) {
                 <div className="flex items-center gap-2">
                   <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
                   <span className="font-bold text-sky-950 text-sm tracking-wide uppercase">
-                    Port Timeline Verified
+                    Port Timeline Context Loaded
                   </span>
                 </div>
                 <span className="text-xs font-mono text-sky-800">
@@ -351,25 +454,39 @@ export default async function BookPage(props: BookPageProps) {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div>
-                  <span className="text-slate-500 text-xs font-semibold uppercase">Port Date</span>
-                  <div className="text-base font-bold text-slate-900">{contextData.schedule.date}</div>
+                  <span className="text-slate-500 text-xs font-semibold uppercase">
+                    Port Date
+                  </span>
+                  <div className="text-base font-bold text-slate-900">
+                    {contextData.schedule.date}
+                  </div>
                 </div>
                 <div>
-                  <span className="text-slate-500 text-xs font-semibold uppercase">Party Size</span>
+                  <span className="text-slate-500 text-xs font-semibold uppercase">
+                    Party Size
+                  </span>
                   <div className="text-base font-bold text-slate-900">
-                    {contextData.schedule.travelers} {contextData.schedule.travelers === 1 ? "Traveler" : "Travelers"}
+                    {contextData.schedule.travelers}{" "}
+                    {contextData.schedule.travelers === 1 ? "Traveler" : "Travelers"}
                   </div>
                 </div>
                 {contextData.schedule.shipOrVenue && (
                   <div>
-                    <span className="text-slate-500 text-xs font-semibold uppercase">Cruise Ship</span>
-                    <div className="text-base font-bold text-slate-900">{contextData.schedule.shipOrVenue}</div>
+                    <span className="text-slate-500 text-xs font-semibold uppercase">
+                      Cruise Ship
+                    </span>
+                    <div className="text-base font-bold text-slate-900">
+                      {contextData.schedule.shipOrVenue}
+                    </div>
                   </div>
                 )}
                 <div>
-                  <span className="text-slate-500 text-xs font-semibold uppercase">Calculated Safe Dock Return</span>
+                  <span className="text-slate-500 text-xs font-semibold uppercase">
+                    Calculated Safe Dock Return
+                  </span>
                   <div className="text-base font-bold text-emerald-800">
-                    Latest Safe Return: {contextData.safetyConstraint.latestSafeReturnTime || "TBD"} (
+                    Latest Safe Return:{" "}
+                    {contextData.safetyConstraint.latestSafeReturnTime || "TBD"} (
                     {contextData.safetyConstraint.bufferMinutes}m Alaska Buffer)
                   </div>
                 </div>
@@ -377,89 +494,179 @@ export default async function BookPage(props: BookPageProps) {
             </div>
           )}
 
-          {/* Direct Checkout Form */}
+          {/* Authoritative FareHarbor Lightframe & Direct Booking Action */}
           <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-            <h2 className="text-lg font-bold text-slate-900 mb-4">Passenger Details</h2>
-            <form className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Lead Traveler Full Name</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Jane Doe"
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Email Address</label>
-                  <input
-                    type="email"
-                    required
-                    placeholder="jane@example.com"
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
-                  />
-                </div>
-              </div>
+            <h2 className="text-lg font-bold text-slate-900 mb-2">
+              {hasUrlHandoffAttempt
+                ? "Operator Reservation Handoff (FareHarbor)"
+                : "Select a Permitted Juneau Helicopter Operator (FareHarbor)"}
+            </h2>
+            <p className="text-sm text-slate-600 mb-6">
+              {hasUrlHandoffAttempt
+                ? "Your evaluated tour, target date, departure slot, and party parameters are bound below. Proceeding opens the operator's FareHarbor booking calendar where live seat availability and final fare are confirmed prior to payment."
+                : "Choose one of the three USFS Tongass National Forest permitted Juneau helicopter operators below to open live FareHarbor availability and checkout."}
+            </p>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Mobile Phone (Port Day Contact)</label>
-                  <input
-                    type="tel"
-                    required
-                    placeholder="+1 (555) 000-0000"
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Bound Flight Departure</label>
-                  <select
-                    defaultValue={departureId || "dep-coastal-1330"}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
-                  >
-                    {departureId && departureTime && (
-                      <option value={departureId}>
-                        {departureTime} ({departureId} • Item #{fareharborItemId || "4012"} •{" "}
-                        {intendedDate || "Selected Date"})
-                      </option>
-                    )}
-                    <option value="dep-coastal-0930">09:30 (Morning Glacier)</option>
-                    <option value="dep-coastal-1145">11:45 (Midday Sun)</option>
-                    <option value="dep-coastal-1330">13:30 (Afternoon Icefield Excursion)</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="pt-4 border-t border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                  <span className="text-xs text-slate-500">Pricing — live rate confirmed by operator before charge</span>
-                  <div className="text-xl font-bold text-slate-900">
-                    {hasDccHandoffBinding
-                      ? `$${liveRequiredTotalUsd.toFixed(2)} USD (${partySizeNum ?? 1} ${
-                          partySizeNum === 1 ? "Traveler" : "Travelers"
-                        } @ $${livePerPersonUsd.toFixed(2)}/ea)`
-                      : "Pricing finalized upon flight slot selection"}
+            {hasUrlHandoffAttempt ? (
+              <div className="space-y-6">
+                {handoffVerifiedServerSide && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-lg bg-slate-50 border border-slate-200 text-sm">
+                    <div>
+                      <span className="block text-xs font-semibold text-slate-500 uppercase">
+                        Bound Operator & Item
+                      </span>
+                      <span className="font-bold text-slate-900">
+                        {operatorShortname} • FareHarbor Item #{fareharborItemId} ({tourCode})
+                      </span>
+                    </div>
+                    <div>
+                      <span className="block text-xs font-semibold text-slate-500 uppercase">
+                        Target Date & Departure
+                      </span>
+                      <span className="font-bold text-slate-900">
+                        {intendedDate} @ {departureTime} ({departureId})
+                      </span>
+                    </div>
+                    <div>
+                      <span className="block text-xs font-semibold text-slate-500 uppercase">
+                        Declared Party & Weight
+                      </span>
+                      <span className="font-bold text-slate-900">
+                        {partySize} {partySize === 1 ? "Traveler" : "Travelers"}
+                        {maxSinglePassengerWeightLbs !== null
+                          ? ` • Max single traveler weight: ${maxSinglePassengerWeightLbs} lbs`
+                          : ""}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="block text-xs font-semibold text-slate-500 uppercase">
+                        Published Policy Tariff (Before Live Operator Check)
+                      </span>
+                      <span className="font-bold text-slate-900">
+                        {publishedPolicyRequiredTotalUsd !== null &&
+                        publishedBasePerPersonUsd !== null
+                          ? `$${publishedPolicyRequiredTotalUsd.toFixed(2)} USD (${partySize} × $${publishedBasePerPersonUsd.toFixed(2)}${
+                              requiredWeightSurchargeUsd > 0
+                                ? ` + $${requiredWeightSurchargeUsd.toFixed(2)} weight surcharge`
+                                : ""
+                            })`
+                          : "Confirmed in FareHarbor"}
+                      </span>
+                    </div>
                   </div>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Final departure slot, passenger weights, and live fare confirmed prior to charge.
-                  </p>
+                )}
+
+                <div className="pt-4 border-t border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div>
+                    <span className="text-xs font-semibold text-amber-800 uppercase">
+                      Provider Confirmation Status: UNKNOWN
+                    </span>
+                    <p className="text-xs text-slate-600 mt-1">
+                      FareHarbor establishes live seat availability, exact departure opening,
+                      and final total before any payment commitment.
+                    </p>
+                  </div>
+
+                  {progressionAllowed && fareharborDirectEmbedUrl ? (
+                    <a
+                      href={fareharborDirectEmbedUrl}
+                      data-testid="fareharbor-booking-cta"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center px-6 py-3 font-bold rounded-lg shadow bg-sky-700 hover:bg-sky-800 text-white transition text-center"
+                    >
+                      Continue to FareHarbor Live Availability &amp; Checkout ↗
+                    </a>
+                  ) : (
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                      <span
+                        data-testid="fareharbor-booking-blocked"
+                        className="px-5 py-2.5 font-bold rounded-lg bg-rose-100 border border-rose-300 text-rose-900 text-sm"
+                      >
+                        Booking Handoff Blocked by Revalidation Gate
+                      </span>
+                      <Link
+                        href="/helicopter"
+                        className="text-xs font-semibold text-sky-700 hover:underline"
+                      >
+                        Return to Helicopter Comparison →
+                      </Link>
+                    </div>
+                  )}
                 </div>
-                <button
-                  type="button"
-                  disabled={!progressionAllowed}
-                  className={`px-6 py-3 font-bold rounded-lg shadow transition ${
-                    progressionAllowed
-                      ? "bg-sky-700 hover:bg-sky-800 text-white"
-                      : "bg-slate-300 text-slate-600 cursor-not-allowed"
-                  }`}
-                >
-                  {progressionAllowed
-                    ? "Review reservation details"
-                    : "Booking Blocked by Revalidation Gate"}
-                </button>
               </div>
-            </form>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="p-4 rounded-lg border border-slate-200 flex flex-col justify-between">
+                  <div>
+                    <div className="text-xs font-bold text-sky-700 uppercase">
+                      Coastal Helicopters
+                    </div>
+                    <div className="font-bold text-slate-900 mt-1">
+                      Icefield Excursion &amp; Glacier Walk
+                    </div>
+                    <div className="text-xs text-slate-600 mt-1">
+                      Published Policy Base: $459/person • 260 lb / 300 lb weight surcharge tiers
+                    </div>
+                  </div>
+                  <a
+                    href="https://fareharbor.com/embeds/book/coastalhelicopters/items/4012/?asn=welcometoalaskatours&ref=juneauflightdeck-direct&full-items=yes"
+                    data-testid="fareharbor-direct-coastal"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-4 inline-block text-center text-xs font-bold px-4 py-2.5 rounded bg-sky-700 hover:bg-sky-800 text-white"
+                  >
+                    Check Coastal Availability on FareHarbor ↗
+                  </a>
+                </div>
+
+                <div className="p-4 rounded-lg border border-slate-200 flex flex-col justify-between">
+                  <div>
+                    <div className="text-xs font-bold text-sky-700 uppercase">
+                      TEMSCO Helicopters
+                    </div>
+                    <div className="font-bold text-slate-900 mt-1">
+                      Mendenhall Glacier &amp; Guided Walk
+                    </div>
+                    <div className="text-xs text-slate-600 mt-1">
+                      Published Policy Base: $449/person • 250 lb weight surcharge (+$150)
+                    </div>
+                  </div>
+                  <a
+                    href="https://fareharbor.com/embeds/book/temscoair-juneau/items/214803/?asn=welcometoalaskatours&ref=juneauflightdeck-direct&full-items=yes"
+                    data-testid="fareharbor-direct-temsco"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-4 inline-block text-center text-xs font-bold px-4 py-2.5 rounded bg-sky-700 hover:bg-sky-800 text-white"
+                  >
+                    Check TEMSCO Availability on FareHarbor ↗
+                  </a>
+                </div>
+
+                <div className="p-4 rounded-lg border border-slate-200 flex flex-col justify-between">
+                  <div>
+                    <div className="text-xs font-bold text-sky-700 uppercase">
+                      NorthStar Trekking
+                    </div>
+                    <div className="font-bold text-slate-900 mt-1">
+                      Helicopter Glacier Walkabout
+                    </div>
+                    <div className="text-xs text-slate-600 mt-1">
+                      Published Policy Base: $499/person • 250 lb weight surcharge (+$150) • Min age 8
+                    </div>
+                  </div>
+                  <a
+                    href="https://fareharbor.com/embeds/book/northstartrekking/items/88310/?asn=welcometoalaskatours&ref=juneauflightdeck-direct&full-items=yes"
+                    data-testid="fareharbor-direct-northstar"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-4 inline-block text-center text-xs font-bold px-4 py-2.5 rounded bg-sky-700 hover:bg-sky-800 text-white"
+                  >
+                    Check NorthStar Availability on FareHarbor ↗
+                  </a>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </main>
@@ -467,3 +674,4 @@ export default async function BookPage(props: BookPageProps) {
     </div>
   );
 }
+

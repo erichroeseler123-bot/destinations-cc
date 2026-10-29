@@ -16,6 +16,10 @@
 
 import crypto from "node:crypto";
 import { Pool } from "@neondatabase/serverless";
+import {
+  getV03CandidateUniverseWithFallback,
+  getV03ReceiptWithFallback,
+} from "../machine/v03/runtimeStoreV03";
 import { getViatorAccessCapabilities } from "../../viator/access";
 import { getViatorClient } from "../../viator/client";
 
@@ -890,31 +894,146 @@ export function buildProviderAffiliateHandoffUrl(params: {
   };
 }
 
-const DEFAULT_JUNEAU_FH_TOUR_MAP: Record<
-  string,
-  { shortname: string; itemId: string; defaultPriceUsd: number }
-> = {
-  "jnu-heli-coastal-icefield": {
-    shortname: "coastalhelicopters",
-    itemId: "4012",
-    defaultPriceUsd: 459,
-  },
-  "jnu-heli-mendenhall-landing": {
-    shortname: "temscoair-juneau",
-    itemId: "214803",
-    defaultPriceUsd: 449,
-  },
-  "jnu-heli-temsco-mendenhall": {
-    shortname: "temscoair-juneau",
-    itemId: "214803",
-    defaultPriceUsd: 449,
-  },
-  "jnu-heli-northstar-trek": {
-    shortname: "northstartrekking",
-    itemId: "88310",
-    defaultPriceUsd: 499,
-  },
-};
+export interface VersionedCandidatePolicyAttributes {
+  universeId: string;
+  universeVersion: string;
+  universeHash: string;
+  candidateDccEntityId: string;
+  legacyCandidateCode: string;
+  displayName: string;
+  operatorDisplayName: string;
+  fareharborShortname: string | null;
+  fareharborItemId: string | null;
+  basePriceUsd: number;
+  weightPolicyType: string;
+  weightSurchargeThresholdLbs: number | null;
+  weightSurchargeUsd: number;
+  secondaryWeightSurchargeThresholdLbs: number | null;
+  secondaryWeightSurchargeUsd: number | null;
+  minAgeYears: number;
+  prohibitsLapChildren: boolean;
+  requiresUnassistedAircraftBoarding: boolean;
+  requiresOneHourUnassistedGlacierWalk: boolean;
+  prohibitsDrones: boolean;
+  prohibitsSelfieSticks: boolean;
+  prohibitsBagsOnAircraft: boolean;
+  prohibitsServiceAnimals: boolean;
+  postArrivalBufferMinutes: number;
+  preDepartureBufferMinutes: number;
+  totalDurationMinutes: number;
+  minPortWindowMinutes: number;
+  operatingSeasonMonthsUtc: number[];
+  requiredClaimIds: readonly string[];
+}
+
+export async function resolveVersionedCandidatePolicy(
+  productCode: string,
+  receiptId?: string | null,
+): Promise<VersionedCandidatePolicyAttributes | null> {
+  const code = (productCode ?? "").trim();
+  if (!code) return null;
+
+  let universe = null;
+  if (receiptId?.trim()) {
+    const storedReceipt = await getV03ReceiptWithFallback(receiptId.trim());
+    if (storedReceipt?.receipt?.payload?.candidateUniverseHash) {
+      universe = await getV03CandidateUniverseWithFallback(
+        storedReceipt.receipt.payload.candidateUniverseHash,
+      );
+    }
+  }
+  if (!universe) {
+    universe = await getV03CandidateUniverseWithFallback(
+      "univ:juneau-helicopter-tours",
+      "0.3.0",
+    );
+  }
+  if (!universe) return null;
+
+  const candidate = universe.includedCandidates.find(
+    (c) => c.legacyCandidateCode === code || c.candidateDccEntityId === code,
+  );
+  if (!candidate) return null;
+
+  const attrs = candidate.staticAttributes ?? {};
+  const basePriceUsd =
+    typeof attrs.basePriceUsd === "number" ? attrs.basePriceUsd : 459;
+  const weightSurchargeThresholdLbs =
+    typeof attrs.weightSurchargeThresholdLbs === "number"
+      ? attrs.weightSurchargeThresholdLbs
+      : null;
+  const weightSurchargeUsd =
+    typeof attrs.weightSurchargeUsd === "number"
+      ? attrs.weightSurchargeUsd
+      : typeof attrs.standardPlusPriceUsd260To299Lbs === "number"
+        ? Number((attrs.standardPlusPriceUsd260To299Lbs - basePriceUsd).toFixed(2))
+        : 150;
+  const secondaryWeightSurchargeThresholdLbs =
+    typeof attrs.secondaryWeightSurchargeThresholdLbs === "number"
+      ? attrs.secondaryWeightSurchargeThresholdLbs
+      : null;
+  const secondaryWeightSurchargeUsd =
+    typeof attrs.secondaryWeightSurchargeUsd === "number"
+      ? attrs.secondaryWeightSurchargeUsd
+      : typeof attrs.premiumPriceUsd300PlusLbs === "number"
+        ? Number((attrs.premiumPriceUsd300PlusLbs - basePriceUsd).toFixed(2))
+        : null;
+
+  const rawSeason =
+    typeof attrs.operatingSeasonMonthsUtc === "string"
+      ? attrs.operatingSeasonMonthsUtc
+      : "5,6,7,8,9";
+  const operatingSeasonMonthsUtc = rawSeason
+    .split(",")
+    .map((m) => Number(m.trim()))
+    .filter((n) => Number.isFinite(n) && n >= 1 && n <= 12);
+
+  return {
+    universeId: universe.universeId,
+    universeVersion: universe.version,
+    universeHash: universe.universeHash,
+    candidateDccEntityId: candidate.candidateDccEntityId,
+    legacyCandidateCode: candidate.legacyCandidateCode,
+    displayName: candidate.displayName,
+    operatorDisplayName: candidate.operatorDisplayName,
+    fareharborShortname:
+      typeof attrs.fareharborShortname === "string" ? attrs.fareharborShortname : null,
+    fareharborItemId:
+      typeof attrs.fareharborItemId === "string" ? attrs.fareharborItemId : null,
+    basePriceUsd,
+    weightPolicyType:
+      typeof attrs.weightPolicyType === "string" ? attrs.weightPolicyType : "surcharge_only",
+    weightSurchargeThresholdLbs,
+    weightSurchargeUsd,
+    secondaryWeightSurchargeThresholdLbs,
+    secondaryWeightSurchargeUsd,
+    minAgeYears: typeof attrs.minAgeYears === "number" ? attrs.minAgeYears : 0,
+    prohibitsLapChildren: attrs.prohibitsLapChildren === true,
+    requiresUnassistedAircraftBoarding:
+      attrs.requiresUnassistedAircraftBoarding === true ||
+      attrs.requiresUnassistedBoarding === true,
+    requiresOneHourUnassistedGlacierWalk:
+      attrs.requiresOneHourUnassistedGlacierWalk === true ||
+      attrs.requiresOneHourGlacierWalk === true,
+    prohibitsDrones: attrs.prohibitsDrones === true,
+    prohibitsSelfieSticks: attrs.prohibitsSelfieSticks === true,
+    prohibitsBagsOnAircraft:
+      attrs.prohibitsBagsOnAircraft === true || attrs.prohibitsCarryOnBags === true,
+    prohibitsServiceAnimals: attrs.prohibitsServiceAnimals === true,
+    postArrivalBufferMinutes:
+      typeof attrs.postArrivalBufferMinutes === "number" ? attrs.postArrivalBufferMinutes : 45,
+    preDepartureBufferMinutes:
+      typeof attrs.preDepartureBufferMinutes === "number"
+        ? attrs.preDepartureBufferMinutes
+        : 45,
+    totalDurationMinutes:
+      typeof attrs.totalDurationMinutes === "number" ? attrs.totalDurationMinutes : 135,
+    minPortWindowMinutes:
+      typeof attrs.minPortWindowMinutes === "number" ? attrs.minPortWindowMinutes : 210,
+    operatingSeasonMonthsUtc,
+    requiredClaimIds: candidate.requiredClaimIds,
+  };
+}
 
 /**
  * Creates and persists an outbound commercial handoff record.
@@ -984,13 +1103,16 @@ export async function createCommercialHandoff(
             )
           : null;
 
-  const knownTourMapping = DEFAULT_JUNEAU_FH_TOUR_MAP[input.productCode.trim()] ?? null;
+  const versionedCandidate = await resolveVersionedCandidatePolicy(
+    input.productCode.trim(),
+    input.receiptId ?? null,
+  );
   const fareharborShortname =
     input.fareharborShortname?.trim() ||
-    knownTourMapping?.shortname ||
+    versionedCandidate?.fareharborShortname ||
     (input.provider === "fareharbor" ? input.providerAccount?.trim() ?? null : null);
   const fareharborItemId =
-    input.fareharborItemId?.trim() || knownTourMapping?.itemId || null;
+    input.fareharborItemId?.trim() || versionedCandidate?.fareharborItemId || null;
 
   const intendedDepartureId =
     input.intendedDepartureId?.trim() ||
@@ -1037,7 +1159,7 @@ export async function createCommercialHandoff(
   const quotedPricePerPerson =
     typeof input.quotedPriceAmount === "number"
       ? input.quotedPriceAmount
-      : knownTourMapping?.defaultPriceUsd ?? null;
+      : versionedCandidate?.basePriceUsd ?? null;
   const quotedTotalPrice =
     quotedPricePerPerson !== null && partySize !== null
       ? Number((quotedPricePerPerson * partySize).toFixed(2))
@@ -2213,29 +2335,35 @@ export interface RevalidateCommercialHandoffInput {
   receiptEvaluatedPartySize?: number | null;
   receiptEvaluatedDate?: string | null;
   requestedPartySize?: number | null;
+  requestedDate?: string | null;
   requestedDepartureId?: string | null;
   requestedDepartureTime?: string | null;
-  liveOperatorPricePerPersonUsd?: number | null;
-  liveAvailableSeats?: number | null;
-  liveDepartureStatus?: "OPEN" | "SOLD_OUT" | "WEATHER_HOLD" | "CLOSED" | null;
-  liveMaxSinglePassengerWeightLbs?: number | null;
-  liveYoungestPassengerAgeYears?: number | null;
+  requestedFareharborItemId?: string | null;
+  requestedTourCode?: string | null;
+  requestedReceiptId?: string | null;
+  declaredMaxSinglePassengerWeightLbs?: number | null;
+  declaredYoungestPassengerAgeYears?: number | null;
+  hasLapChildUnder2?: boolean | null;
   requiresAssistedAircraftBoarding?: boolean | null;
   canWalkUnassistedOneHourUnevenTerrain?: boolean | null;
   carryingDrone?: boolean | null;
   carryingSelfieStickOrExtension?: boolean | null;
+  carryingBagsOrPursesOnFlight?: boolean | null;
   hasServiceAnimal?: boolean | null;
   shipArrivalTime?: string | null;
   shipDepartureTime?: string | null;
   travelerAcceptedWeightSurcharge?: boolean | null;
+  ignoredUntrustedOperatorFactFields?: string[];
 }
 
 export interface CommercialHandoffRevalidationResult {
   handoffId: string;
   receiptId: string | null;
+  receiptVerified: boolean;
   productCode: string;
   fareharborShortname: string | null;
   fareharborItemId: string | null;
+  fareharborDirectEmbedUrl: string | null;
   intendedDate: string | null;
   intendedDepartureId: string | null;
   intendedDepartureTime: string | null;
@@ -2243,27 +2371,53 @@ export interface CommercialHandoffRevalidationResult {
   progressionAllowed: boolean;
   revalidationStatus: "passed" | "blocked";
   blockingReasons: string[];
+  ignoredUntrustedOperatorFactFields: string[];
+  versionedPolicySource: {
+    universeId: string | null;
+    universeVersion: string | null;
+    universeHash: string | null;
+    candidateDccEntityId: string | null;
+    legacyCandidateCode: string | null;
+    weightPolicyType: string | null;
+    requiredClaimIds: readonly string[];
+  };
+  providerConfirmation: {
+    status:
+      | "unknown_until_authenticated_provider_response"
+      | "confirmed_by_authenticated_provider_response";
+    liveAvailabilityStatus: "unknown" | "confirmed";
+    liveAvailableSeats: null;
+    liveOperatorPricePerPersonUsd: null;
+    authenticatedOutcomeId: string | null;
+    requiresProviderConfirmationAtCheckout: boolean;
+    explanation: string;
+  };
   checks: {
     bindingConsistency: {
       passed: boolean;
+      receiptVerified: boolean;
       reasons: string[];
     };
     priceAndSurcharge: {
       passed: boolean;
       quotedPerPersonUsd: number | null;
       quotedTotalUsd: number | null;
-      liveBasePerPersonUsd: number | null;
+      publishedBasePerPersonUsd: number | null;
       requiredWeightSurchargeUsd: number;
-      liveRequiredTotalUsd: number | null;
+      publishedPolicyRequiredTotalUsd: number | null;
+      liveOperatorPricePerPersonUsd: null;
       reasons: string[];
     };
     availabilityAndSchedule: {
       passed: boolean;
-      departureStatus: string;
-      availableSeats: number;
+      liveDepartureAvailability: "unknown" | "confirmed";
+      liveAvailableSeats: null;
       requiredPartySize: number | null;
+      operatingSeasonMonthsUtc: number[];
       shipArrivalTime: string | null;
       shipDepartureTime: string | null;
+      minPortWindowMinutes: number | null;
+      actualPortWindowMinutes: number | null;
       earliestAllowedDepartureMinutes: number | null;
       latestAllowedReturnMinutes: number | null;
       estimatedReturnMinutes: number | null;
@@ -2272,10 +2426,15 @@ export interface CommercialHandoffRevalidationResult {
     passengerConstraints: {
       passed: boolean;
       maxSinglePassengerWeightLbs: number | null;
+      weightPolicyType: string | null;
       youngestPassengerAgeYears: number | null;
+      operatorMinAgeYears: number | null;
+      hasLapChildUnder2: boolean;
       requiresAssistedAircraftBoarding: boolean;
+      canWalkUnassistedOneHourUnevenTerrain: boolean | null;
       carryingDrone: boolean;
       carryingSelfieStickOrExtension: boolean;
+      carryingBagsOrPursesOnFlight: boolean;
       hasServiceAnimal: boolean;
       reasons: string[];
     };
@@ -2312,6 +2471,18 @@ export async function revalidateCommercialHandoffBeforeCommitment(
   const intendedDepartureTime = handoff.intendedDepartureTime;
   const fareharborShortname = handoff.fareharborShortname;
   const fareharborItemId = handoff.fareharborItemId;
+  const fareharborDirectEmbedUrl =
+    handoff.checkoutBookingBinding?.fareharborDirectEmbedUrl ?? null;
+
+  // 1. Load authoritative versioned candidate policy from the evaluator's CandidateUniverse
+  const versionedCandidate = await resolveVersionedCandidatePolicy(
+    handoff.productCode,
+    handoff.receiptId,
+  );
+
+  if (!versionedCandidate) {
+    bindingReasons.push("UNKNOWN_CANDIDATE_NOT_IN_VERSIONED_UNIVERSE_BLOCKS_PROGRESSION");
+  }
 
   if (
     !fareharborShortname ||
@@ -2325,10 +2496,72 @@ export async function revalidateCommercialHandoffBeforeCommitment(
     bindingReasons.push("INCOMPLETE_BOOKABLE_DEPARTURE_BINDING_BLOCKS_PROGRESSION");
   }
 
+  if (versionedCandidate) {
+    if (
+      (versionedCandidate.fareharborShortname &&
+        fareharborShortname !== versionedCandidate.fareharborShortname) ||
+      (versionedCandidate.fareharborItemId &&
+        fareharborItemId !== versionedCandidate.fareharborItemId)
+    ) {
+      bindingReasons.push("FAREHARBOR_ITEM_MISMATCH_WITH_VERSIONED_POLICY_BLOCKS_PROGRESSION");
+    }
+  }
+
+  // 2. Verify authoritative signed decision receipt when receiptId is linked
+  let receiptVerified = false;
+  let receiptInputs: Record<string, unknown> = {};
+  let effectiveReceiptPartySize: number | null =
+    input.receiptEvaluatedPartySize ?? null;
+  let effectiveReceiptDate: string | null = input.receiptEvaluatedDate ?? null;
+
+  if (handoff.receiptId) {
+    const storedReceipt = await getV03ReceiptWithFallback(handoff.receiptId);
+    if (!storedReceipt) {
+      bindingReasons.push("UNVERIFIED_OR_MISSING_DECISION_RECEIPT_BLOCKS_PROGRESSION");
+    } else {
+      receiptVerified = true;
+      receiptInputs = (storedReceipt.inputs ?? {}) as Record<string, unknown>;
+      if (effectiveReceiptPartySize === null) {
+        effectiveReceiptPartySize =
+          typeof receiptInputs.partySize === "number"
+            ? receiptInputs.partySize
+            : typeof receiptInputs.passengerCount === "number"
+              ? receiptInputs.passengerCount
+              : null;
+      }
+      if (!effectiveReceiptDate && storedReceipt.receipt.payload.validAt) {
+        effectiveReceiptDate = storedReceipt.receipt.payload.validAt.slice(0, 10);
+      }
+
+      const candidateSummary =
+        storedReceipt.receipt.payload.candidateDispositionSummary.find(
+          (c) =>
+            c.legacyCode === handoff.productCode ||
+            c.candidateDccId === handoff.productCode ||
+            (versionedCandidate &&
+              c.candidateDccId === versionedCandidate.candidateDccEntityId),
+        );
+      if (
+        !candidateSummary ||
+        candidateSummary.disposition === "ineligible" ||
+        candidateSummary.disposition === "indeterminate"
+      ) {
+        bindingReasons.push("RECEIPT_CANDIDATE_NOT_VIABLE_BLOCKS_PROGRESSION");
+      }
+    }
+  }
+
   if (
-    input.receiptEvaluatedPartySize !== undefined &&
-    input.receiptEvaluatedPartySize !== null &&
-    partySize !== input.receiptEvaluatedPartySize
+    input.requestedReceiptId &&
+    handoff.receiptId &&
+    input.requestedReceiptId.trim() !== handoff.receiptId
+  ) {
+    bindingReasons.push("REVALIDATION_RECEIPT_ID_MISMATCH_WITH_HANDOFF_BLOCKS_PROGRESSION");
+  }
+
+  if (
+    effectiveReceiptPartySize !== null &&
+    partySize !== effectiveReceiptPartySize
   ) {
     bindingReasons.push("REVALIDATION_PARTY_SIZE_MISMATCH_WITH_RECEIPT_BLOCKS_PROGRESSION");
   }
@@ -2342,11 +2575,19 @@ export async function revalidateCommercialHandoffBeforeCommitment(
   }
 
   if (
-    input.receiptEvaluatedDate &&
+    effectiveReceiptDate &&
     intendedDate &&
-    intendedDate.slice(0, 10) !== input.receiptEvaluatedDate.slice(0, 10)
+    intendedDate.slice(0, 10) !== effectiveReceiptDate.slice(0, 10)
   ) {
     bindingReasons.push("REVALIDATION_DATE_MISMATCH_WITH_RECEIPT_BLOCKS_PROGRESSION");
+  }
+
+  if (
+    input.requestedDate &&
+    intendedDate &&
+    intendedDate.slice(0, 10) !== input.requestedDate.slice(0, 10)
+  ) {
+    bindingReasons.push("REVALIDATION_DATE_MISMATCH_WITH_HANDOFF_BLOCKS_PROGRESSION");
   }
 
   if (
@@ -2365,22 +2606,30 @@ export async function revalidateCommercialHandoffBeforeCommitment(
     bindingReasons.push("REVALIDATION_DEPARTURE_TIME_MISMATCH_WITH_HANDOFF_BLOCKS_PROGRESSION");
   }
 
-  const isCoastal = handoff.productCode === "jnu-heli-coastal-icefield";
-  const isTemsco = handoff.productCode === "jnu-heli-temsco-mendenhall";
-  const isNorthStar = handoff.productCode === "jnu-heli-northstar-level1-trek";
+  if (
+    input.requestedFareharborItemId &&
+    fareharborItemId &&
+    fareharborItemId !== input.requestedFareharborItemId
+  ) {
+    bindingReasons.push("REVALIDATION_ITEM_MISMATCH_WITH_HANDOFF_BLOCKS_PROGRESSION");
+  }
 
-  const catalogBasePerPersonUsd = isCoastal
-    ? 459
-    : isTemsco
-      ? 419
-      : isNorthStar
-        ? 529
-        : handoff.quotedPriceAmount ?? 459;
+  if (
+    input.requestedTourCode &&
+    handoff.productCode &&
+    handoff.productCode !== input.requestedTourCode
+  ) {
+    bindingReasons.push("REVALIDATION_TOUR_CODE_MISMATCH_WITH_HANDOFF_BLOCKS_PROGRESSION");
+  }
 
+  // 3. Versioned Policy Tariff & Weight Surcharge Check (never trusting caller-supplied live price)
+  const publishedBasePerPersonUsd = versionedCandidate?.basePriceUsd ?? null;
   const effectivePartySize = partySize ?? 1;
+
   const quotedTotalUsd =
     handoff.quotedPriceAmount !== null
-      ? handoff.quotedPriceAmount >= catalogBasePerPersonUsd * effectivePartySize * 0.9 &&
+      ? publishedBasePerPersonUsd !== null &&
+        handoff.quotedPriceAmount >= publishedBasePerPersonUsd * effectivePartySize * 0.9 &&
         effectivePartySize > 1
         ? handoff.quotedPriceAmount
         : handoff.quotedPriceAmount * effectivePartySize
@@ -2388,89 +2637,105 @@ export async function revalidateCommercialHandoffBeforeCommitment(
   const quotedPerPersonUsd =
     quotedTotalUsd !== null ? Number((quotedTotalUsd / effectivePartySize).toFixed(2)) : null;
 
-  const liveBasePerPersonUsd =
-    input.liveOperatorPricePerPersonUsd !== undefined &&
-    input.liveOperatorPricePerPersonUsd !== null
-      ? input.liveOperatorPricePerPersonUsd
-      : quotedPerPersonUsd ?? catalogBasePerPersonUsd;
-
   const effectiveWeightLbs =
-    input.liveMaxSinglePassengerWeightLbs !== undefined &&
-    input.liveMaxSinglePassengerWeightLbs !== null
-      ? input.liveMaxSinglePassengerWeightLbs
-      : handoff.maxSinglePassengerWeightLbs;
+    input.declaredMaxSinglePassengerWeightLbs !== undefined &&
+    input.declaredMaxSinglePassengerWeightLbs !== null
+      ? input.declaredMaxSinglePassengerWeightLbs
+      : handoff.maxSinglePassengerWeightLbs ??
+        (typeof receiptInputs.maxSinglePassengerWeightLbs === "number"
+          ? receiptInputs.maxSinglePassengerWeightLbs
+          : typeof receiptInputs.passengerWeightLbs === "number"
+            ? receiptInputs.passengerWeightLbs
+            : null);
 
   let requiredWeightSurchargeUsd = 0;
-  if (typeof effectiveWeightLbs === "number") {
-    if (isCoastal) {
-      if (effectiveWeightLbs >= 300) {
-        requiredWeightSurchargeUsd = 459;
-      } else if (effectiveWeightLbs >= 260) {
-        requiredWeightSurchargeUsd = 150;
-      }
-    } else if (isTemsco) {
-      if (effectiveWeightLbs >= 250) {
-        requiredWeightSurchargeUsd = 179.5;
-      }
+  if (typeof effectiveWeightLbs === "number" && versionedCandidate) {
+    if (
+      versionedCandidate.secondaryWeightSurchargeThresholdLbs !== null &&
+      effectiveWeightLbs >= versionedCandidate.secondaryWeightSurchargeThresholdLbs
+    ) {
+      requiredWeightSurchargeUsd =
+        versionedCandidate.secondaryWeightSurchargeUsd ??
+        versionedCandidate.weightSurchargeUsd;
+    } else if (
+      versionedCandidate.weightSurchargeThresholdLbs !== null &&
+      effectiveWeightLbs >= versionedCandidate.weightSurchargeThresholdLbs
+    ) {
+      requiredWeightSurchargeUsd = versionedCandidate.weightSurchargeUsd;
     }
   }
 
-  const liveRequiredTotalUsd =
-    liveBasePerPersonUsd !== null
-      ? Number((liveBasePerPersonUsd * effectivePartySize + requiredWeightSurchargeUsd).toFixed(2))
+  const publishedPolicyRequiredTotalUsd =
+    publishedBasePerPersonUsd !== null
+      ? Number(
+          (publishedBasePerPersonUsd * effectivePartySize + requiredWeightSurchargeUsd).toFixed(2),
+        )
       : null;
 
   if (
     quotedPerPersonUsd !== null &&
-    liveBasePerPersonUsd !== null &&
-    Math.abs(liveBasePerPersonUsd - quotedPerPersonUsd) > 0.01
+    publishedBasePerPersonUsd !== null &&
+    Math.abs(publishedBasePerPersonUsd - quotedPerPersonUsd) > 0.01
   ) {
-    priceReasons.push("LIVE_OPERATOR_PRICE_DRIFT_BLOCKS_PROGRESSION");
+    priceReasons.push("QUOTED_PRICE_MISMATCH_WITH_VERSIONED_POLICY_TARIFF_BLOCKS_PROGRESSION");
   }
 
   if (
     requiredWeightSurchargeUsd > 0 &&
     quotedTotalUsd !== null &&
-    liveRequiredTotalUsd !== null &&
-    liveRequiredTotalUsd > quotedTotalUsd + 0.01 &&
+    publishedPolicyRequiredTotalUsd !== null &&
+    publishedPolicyRequiredTotalUsd > quotedTotalUsd + 0.01 &&
     input.travelerAcceptedWeightSurcharge !== true
   ) {
     priceReasons.push("UNQUOTED_WEIGHT_SURCHARGE_AT_CHECKIN_BLOCKS_PROGRESSION");
   }
 
-  const departureStatus = input.liveDepartureStatus ?? "OPEN";
-  const availableSeats =
-    input.liveAvailableSeats !== undefined && input.liveAvailableSeats !== null
-      ? input.liveAvailableSeats
-      : 6;
-
-  if (departureStatus !== "OPEN") {
-    availabilityReasons.push(`DEPARTURE_STATUS_${departureStatus}_BLOCKS_PROGRESSION`);
-  }
-
-  if (partySize !== null && availableSeats < partySize) {
-    availabilityReasons.push("DEPARTURE_INSUFFICIENT_SEATS_BLOCKS_PROGRESSION");
-  }
-
+  // 4. Operating Season & Port Schedule Window Check (from versioned candidate staticAttributes)
+  const operatingSeasonMonthsUtc = versionedCandidate?.operatingSeasonMonthsUtc ?? [
+    5, 6, 7, 8, 9,
+  ];
   if (intendedDate) {
     const monthMatch = /^\d{4}-(\d{2})-\d{2}/.exec(intendedDate);
     const monthNum = monthMatch ? Number(monthMatch[1]) : NaN;
-    if (!Number.isFinite(monthNum) || monthNum < 5 || monthNum > 9) {
+    if (!Number.isFinite(monthNum) || !operatingSeasonMonthsUtc.includes(monthNum)) {
       availabilityReasons.push("OUTSIDE_MAY_SEPTEMBER_OPERATING_SEASON_BLOCKS_PROGRESSION");
     }
   }
 
-  const shipArrivalTime = input.shipArrivalTime ?? handoff.shipArrivalTime;
-  const shipDepartureTime = input.shipDepartureTime ?? handoff.shipDepartureTime;
+  const shipArrivalTime =
+    input.shipArrivalTime ??
+    handoff.shipArrivalTime ??
+    (typeof receiptInputs.shipArrivalTime === "string" ? receiptInputs.shipArrivalTime : null);
+  const shipDepartureTime =
+    input.shipDepartureTime ??
+    handoff.shipDepartureTime ??
+    (typeof receiptInputs.shipDepartureTime === "string"
+      ? receiptInputs.shipDepartureTime
+      : null);
+
   const depMins = parseHhMmToMinutesHelper(intendedDepartureTime);
   const arrMins = parseHhMmToMinutesHelper(shipArrivalTime);
   const sailMins = parseHhMmToMinutesHelper(shipDepartureTime);
 
-  const tourDurationMins = isNorthStar ? 210 : 135;
-  const bufferMins = isNorthStar ? 60 : 45;
-  const earliestAllowedDepartureMinutes = arrMins !== null ? arrMins + bufferMins : null;
-  const latestAllowedReturnMinutes = sailMins !== null ? sailMins - bufferMins : null;
+  const postArrivalBufferMins = versionedCandidate?.postArrivalBufferMinutes ?? 45;
+  const preDepartureBufferMins = versionedCandidate?.preDepartureBufferMinutes ?? 45;
+  const tourDurationMins = versionedCandidate?.totalDurationMinutes ?? 135;
+  const minPortWindowMinutes = versionedCandidate?.minPortWindowMinutes ?? 210;
+  const actualPortWindowMinutes =
+    arrMins !== null && sailMins !== null && sailMins > arrMins ? sailMins - arrMins : null;
+
+  const earliestAllowedDepartureMinutes =
+    arrMins !== null ? arrMins + postArrivalBufferMins : null;
+  const latestAllowedReturnMinutes =
+    sailMins !== null ? sailMins - preDepartureBufferMins : null;
   const estimatedReturnMinutes = depMins !== null ? depMins + tourDurationMins : null;
+
+  if (
+    actualPortWindowMinutes !== null &&
+    actualPortWindowMinutes < minPortWindowMinutes
+  ) {
+    availabilityReasons.push("INSUFFICIENT_PORT_WINDOW_BLOCKS_PROGRESSION");
+  }
 
   if (
     depMins !== null &&
@@ -2488,46 +2753,122 @@ export async function revalidateCommercialHandoffBeforeCommitment(
     availabilityReasons.push("DEPARTURE_VIOLATES_SHIP_DEPARTURE_BUFFER_BLOCKS_PROGRESSION");
   }
 
+  // 5. Passenger Policy Constraints (from versioned candidate staticAttributes)
   const youngestAge =
-    input.liveYoungestPassengerAgeYears !== undefined &&
-    input.liveYoungestPassengerAgeYears !== null
-      ? input.liveYoungestPassengerAgeYears
-      : handoff.youngestPassengerAgeYears;
-  const requiresAssistedBoarding = input.requiresAssistedAircraftBoarding === true;
-  const canWalkOneHour = input.canWalkUnassistedOneHourUnevenTerrain;
-  const carryingDrone = input.carryingDrone === true;
-  const carryingSelfieStick = input.carryingSelfieStickOrExtension === true;
-  const hasServiceAnimal = input.hasServiceAnimal === true;
+    input.declaredYoungestPassengerAgeYears !== undefined &&
+    input.declaredYoungestPassengerAgeYears !== null
+      ? input.declaredYoungestPassengerAgeYears
+      : handoff.youngestPassengerAgeYears ??
+        (typeof receiptInputs.youngestPassengerAgeYears === "number"
+          ? receiptInputs.youngestPassengerAgeYears
+          : null);
+  const hasLapChildUnder2 =
+    input.hasLapChildUnder2 === true || receiptInputs.hasLapChildUnder2 === true;
+  const requiresAssistedBoarding =
+    input.requiresAssistedAircraftBoarding === true ||
+    receiptInputs.requiresAssistedAircraftBoarding === true ||
+    receiptInputs.requiresAssistedBoarding === true;
+  const canWalkOneHour =
+    input.canWalkUnassistedOneHourUnevenTerrain !== undefined &&
+    input.canWalkUnassistedOneHourUnevenTerrain !== null
+      ? input.canWalkUnassistedOneHourUnevenTerrain
+      : typeof receiptInputs.canWalkUnassistedOneHourUnevenTerrain === "boolean"
+        ? receiptInputs.canWalkUnassistedOneHourUnevenTerrain
+        : typeof receiptInputs.canWalkOneHourGlacierTerrain === "boolean"
+          ? receiptInputs.canWalkOneHourGlacierTerrain
+          : null;
+  const carryingDrone =
+    input.carryingDrone === true || receiptInputs.carryingDrone === true;
+  const carryingSelfieStick =
+    input.carryingSelfieStickOrExtension === true ||
+    receiptInputs.carryingSelfieStickOrExtension === true;
+  const carryingBagsOnFlight =
+    input.carryingBagsOrPursesOnFlight === true ||
+    receiptInputs.carryingBagsOrPursesOnFlight === true;
+  const hasServiceAnimal =
+    input.hasServiceAnimal === true || receiptInputs.hasServiceAnimal === true;
 
   if (effectiveWeightLbs === null || effectiveWeightLbs === undefined) {
     passengerReasons.push("MISSING_PASSENGER_WEIGHT_BLOCKS_PROGRESSION");
-  } else if (isNorthStar && effectiveWeightLbs > 250) {
-    passengerReasons.push("PASSENGER_EXCEEDS_NORTHSTAR_250LB_HARD_CAP_BLOCKS_PROGRESSION");
+  } else if (
+    versionedCandidate &&
+    versionedCandidate.weightPolicyType === "hard_cap" &&
+    versionedCandidate.weightSurchargeThresholdLbs !== null &&
+    effectiveWeightLbs > versionedCandidate.weightSurchargeThresholdLbs
+  ) {
+    passengerReasons.push("PASSENGER_EXCEEDS_OPERATOR_WEIGHT_HARD_CAP_BLOCKS_PROGRESSION");
   }
 
-  if (requiresAssistedBoarding) {
+  if (
+    versionedCandidate &&
+    versionedCandidate.minAgeYears > 0 &&
+    typeof youngestAge === "number" &&
+    youngestAge < versionedCandidate.minAgeYears
+  ) {
+    passengerReasons.push("PASSENGER_BELOW_OPERATOR_MINIMUM_AGE_BLOCKS_PROGRESSION");
+  }
+
+  if ((versionedCandidate?.prohibitsLapChildren ?? true) && hasLapChildUnder2) {
+    passengerReasons.push("LAP_CHILD_PROHIBITED_BY_OPERATOR_POLICY_BLOCKS_PROGRESSION");
+  }
+
+  if (
+    (versionedCandidate?.requiresUnassistedAircraftBoarding ?? true) &&
+    requiresAssistedBoarding
+  ) {
     passengerReasons.push("ASSISTED_BOARDING_NOT_PERMITTED_BLOCKS_PROGRESSION");
   }
 
-  if (isNorthStar && canWalkOneHour === false) {
+  if (
+    versionedCandidate?.requiresOneHourUnassistedGlacierWalk &&
+    canWalkOneHour === false
+  ) {
     passengerReasons.push("NORTHSTAR_1HR_UNASSISTED_GLACIER_WALK_REQUIRED_BLOCKS_PROGRESSION");
   }
 
-  if (isNorthStar && typeof youngestAge === "number" && youngestAge < 8) {
-    passengerReasons.push("PASSENGER_UNDER_NORTHSTAR_MIN_AGE_8_BLOCKS_PROGRESSION");
-  }
-
-  if (carryingDrone) {
+  if ((versionedCandidate?.prohibitsDrones ?? true) && carryingDrone) {
     passengerReasons.push("PROHIBITED_ITEM_DRONE_BLOCKS_PROGRESSION");
   }
 
-  if (carryingSelfieStick) {
+  if ((versionedCandidate?.prohibitsSelfieSticks ?? true) && carryingSelfieStick) {
     passengerReasons.push("PROHIBITED_ITEM_EXTENSION_POLE_BLOCKS_PROGRESSION");
   }
 
-  if (isTemsco && hasServiceAnimal) {
+  if ((versionedCandidate?.prohibitsBagsOnAircraft ?? true) && carryingBagsOnFlight) {
+    passengerReasons.push("PROHIBITED_ITEM_BAGS_ON_AIRCRAFT_BLOCKS_PROGRESSION");
+  }
+
+  if (versionedCandidate?.prohibitsServiceAnimals && hasServiceAnimal) {
     passengerReasons.push("SERVICE_ANIMAL_RESTRICTED_ON_HELICOPTER_BLOCKS_PROGRESSION");
   }
+
+  // 6. Provider Confirmation State (explicitly unknown until authenticated provider response)
+  const hasAuthenticatedConfirmation =
+    handoff.outcomeState.bookingOutcome === "confirmed" &&
+    Boolean(handoff.outcomeState.lastOutcomeId);
+
+  const providerConfirmation: CommercialHandoffRevalidationResult["providerConfirmation"] =
+    hasAuthenticatedConfirmation
+      ? {
+          status: "confirmed_by_authenticated_provider_response",
+          liveAvailabilityStatus: "confirmed",
+          liveAvailableSeats: null,
+          liveOperatorPricePerPersonUsd: null,
+          authenticatedOutcomeId: handoff.outcomeState.lastOutcomeId,
+          requiresProviderConfirmationAtCheckout: false,
+          explanation:
+            "Authenticated provider outcome recorded for this handoff.",
+        }
+      : {
+          status: "unknown_until_authenticated_provider_response",
+          liveAvailabilityStatus: "unknown",
+          liveAvailableSeats: null,
+          liveOperatorPricePerPersonUsd: null,
+          authenticatedOutcomeId: null,
+          requiresProviderConfirmationAtCheckout: true,
+          explanation:
+            "Live seat inventory, departure dispatch status, and final operator fare are not established by DCC and remain unknown until confirmed by an authenticated FareHarbor response.",
+        };
 
   const blockingReasons = [
     ...bindingReasons,
@@ -2540,9 +2881,11 @@ export async function revalidateCommercialHandoffBeforeCommitment(
   return {
     handoffId: handoff.handoffId,
     receiptId: handoff.receiptId,
+    receiptVerified,
     productCode: handoff.productCode,
     fareharborShortname,
     fareharborItemId,
+    fareharborDirectEmbedUrl,
     intendedDate,
     intendedDepartureId,
     intendedDepartureTime,
@@ -2550,27 +2893,43 @@ export async function revalidateCommercialHandoffBeforeCommitment(
     progressionAllowed,
     revalidationStatus: progressionAllowed ? "passed" : "blocked",
     blockingReasons,
+    ignoredUntrustedOperatorFactFields: input.ignoredUntrustedOperatorFactFields ?? [],
+    versionedPolicySource: {
+      universeId: versionedCandidate?.universeId ?? null,
+      universeVersion: versionedCandidate?.universeVersion ?? null,
+      universeHash: versionedCandidate?.universeHash ?? null,
+      candidateDccEntityId: versionedCandidate?.candidateDccEntityId ?? null,
+      legacyCandidateCode: versionedCandidate?.legacyCandidateCode ?? null,
+      weightPolicyType: versionedCandidate?.weightPolicyType ?? null,
+      requiredClaimIds: versionedCandidate?.requiredClaimIds ?? [],
+    },
+    providerConfirmation,
     checks: {
       bindingConsistency: {
         passed: bindingReasons.length === 0,
+        receiptVerified,
         reasons: bindingReasons,
       },
       priceAndSurcharge: {
         passed: priceReasons.length === 0,
         quotedPerPersonUsd,
         quotedTotalUsd,
-        liveBasePerPersonUsd,
+        publishedBasePerPersonUsd,
         requiredWeightSurchargeUsd,
-        liveRequiredTotalUsd,
+        publishedPolicyRequiredTotalUsd,
+        liveOperatorPricePerPersonUsd: null,
         reasons: priceReasons,
       },
       availabilityAndSchedule: {
         passed: availabilityReasons.length === 0,
-        departureStatus,
-        availableSeats,
+        liveDepartureAvailability: providerConfirmation.liveAvailabilityStatus,
+        liveAvailableSeats: null,
         requiredPartySize: partySize,
+        operatingSeasonMonthsUtc,
         shipArrivalTime,
         shipDepartureTime,
+        minPortWindowMinutes,
+        actualPortWindowMinutes,
         earliestAllowedDepartureMinutes,
         latestAllowedReturnMinutes,
         estimatedReturnMinutes,
@@ -2579,10 +2938,15 @@ export async function revalidateCommercialHandoffBeforeCommitment(
       passengerConstraints: {
         passed: passengerReasons.length === 0,
         maxSinglePassengerWeightLbs: effectiveWeightLbs ?? null,
+        weightPolicyType: versionedCandidate?.weightPolicyType ?? null,
         youngestPassengerAgeYears: youngestAge ?? null,
+        operatorMinAgeYears: versionedCandidate?.minAgeYears ?? null,
+        hasLapChildUnder2,
         requiresAssistedAircraftBoarding: requiresAssistedBoarding,
+        canWalkUnassistedOneHourUnevenTerrain: canWalkOneHour,
         carryingDrone,
         carryingSelfieStickOrExtension: carryingSelfieStick,
+        carryingBagsOrPursesOnFlight: carryingBagsOnFlight,
         hasServiceAnimal,
         reasons: passengerReasons,
       },

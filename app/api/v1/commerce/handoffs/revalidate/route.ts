@@ -110,34 +110,56 @@ export async function POST(request: Request) {
     }
   }
 
+  const UNTRUSTED_OPERATOR_FACT_KEYS = [
+    "liveOperatorPricePerPersonUsd",
+    "liveAvailableSeats",
+    "liveDepartureStatus",
+    "live_price",
+    "available_seats",
+    "departure_status",
+  ] as const;
+
+  const ignoredUntrustedOperatorFactFields = UNTRUSTED_OPERATOR_FACT_KEYS.filter(
+    (k) => body[k] !== undefined,
+  );
+
+  const declaredWeightRaw =
+    typeof body.declaredMaxSinglePassengerWeightLbs === "number"
+      ? body.declaredMaxSinglePassengerWeightLbs
+      : typeof body.maxSinglePassengerWeightLbs === "number"
+        ? body.maxSinglePassengerWeightLbs
+        : null;
+
+  const declaredAgeRaw =
+    typeof body.declaredYoungestPassengerAgeYears === "number"
+      ? body.declaredYoungestPassengerAgeYears
+      : typeof body.youngestPassengerAgeYears === "number"
+        ? body.youngestPassengerAgeYears
+        : null;
+
   const revalidation = await revalidateCommercialHandoffBeforeCommitment({
     handoffId,
     receiptEvaluatedPartySize,
     receiptEvaluatedDate,
     requestedPartySize:
       typeof body.requestedPartySize === "number" ? body.requestedPartySize : null,
+    requestedDate: typeof body.requestedDate === "string" ? body.requestedDate : null,
     requestedDepartureId:
       typeof body.requestedDepartureId === "string" ? body.requestedDepartureId : null,
     requestedDepartureTime:
       typeof body.requestedDepartureTime === "string" ? body.requestedDepartureTime : null,
-    liveOperatorPricePerPersonUsd:
-      typeof body.liveOperatorPricePerPersonUsd === "number"
-        ? body.liveOperatorPricePerPersonUsd
+    requestedFareharborItemId:
+      typeof body.requestedFareharborItemId === "string"
+        ? body.requestedFareharborItemId
         : null,
-    liveAvailableSeats:
-      typeof body.liveAvailableSeats === "number" ? body.liveAvailableSeats : null,
-    liveDepartureStatus:
-      typeof body.liveDepartureStatus === "string"
-        ? (body.liveDepartureStatus as "OPEN" | "SOLD_OUT" | "WEATHER_HOLD" | "CLOSED")
-        : null,
-    liveMaxSinglePassengerWeightLbs:
-      typeof body.liveMaxSinglePassengerWeightLbs === "number"
-        ? body.liveMaxSinglePassengerWeightLbs
-        : null,
-    liveYoungestPassengerAgeYears:
-      typeof body.liveYoungestPassengerAgeYears === "number"
-        ? body.liveYoungestPassengerAgeYears
-        : null,
+    requestedTourCode:
+      typeof body.requestedTourCode === "string" ? body.requestedTourCode : null,
+    requestedReceiptId:
+      typeof body.requestedReceiptId === "string" ? body.requestedReceiptId : null,
+    declaredMaxSinglePassengerWeightLbs: declaredWeightRaw,
+    declaredYoungestPassengerAgeYears: declaredAgeRaw,
+    hasLapChildUnder2:
+      typeof body.hasLapChildUnder2 === "boolean" ? body.hasLapChildUnder2 : null,
     requiresAssistedAircraftBoarding:
       typeof body.requiresAssistedAircraftBoarding === "boolean"
         ? body.requiresAssistedAircraftBoarding
@@ -151,6 +173,10 @@ export async function POST(request: Request) {
       typeof body.carryingSelfieStickOrExtension === "boolean"
         ? body.carryingSelfieStickOrExtension
         : null,
+    carryingBagsOrPursesOnFlight:
+      typeof body.carryingBagsOrPursesOnFlight === "boolean"
+        ? body.carryingBagsOrPursesOnFlight
+        : null,
     hasServiceAnimal:
       typeof body.hasServiceAnimal === "boolean" ? body.hasServiceAnimal : null,
     shipArrivalTime:
@@ -161,6 +187,7 @@ export async function POST(request: Request) {
       typeof body.travelerAcceptedWeightSurcharge === "boolean"
         ? body.travelerAcceptedWeightSurcharge
         : null,
+    ignoredUntrustedOperatorFactFields,
   });
 
   if (!revalidation) {
@@ -184,6 +211,8 @@ export async function POST(request: Request) {
       progressionAllowed: revalidation.progressionAllowed,
       revalidationStatus: revalidation.revalidationStatus,
       blockingReasons: revalidation.blockingReasons,
+      providerConfirmation: revalidation.providerConfirmation,
+      handoff,
       revalidation,
       traceparent,
     },
@@ -195,6 +224,7 @@ export async function POST(request: Request) {
         "X-DCC-Surface-Class": "commercial_handoff_revalidation",
         "X-DCC-Handoff-Id": revalidation.handoffId,
         "X-DCC-Progression-Allowed": String(revalidation.progressionAllowed),
+        "X-DCC-Provider-Confirmation-Status": revalidation.providerConfirmation.status,
       },
     },
   );

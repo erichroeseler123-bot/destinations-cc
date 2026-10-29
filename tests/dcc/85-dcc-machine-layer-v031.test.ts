@@ -1211,7 +1211,8 @@ test("v0.3.1 Gate 7: Repair Verification — Withdrawn GoSno Seed Containment, P
   assert.equal(outboundUrl.includes("time=13%3A30"), true);
   assert.equal(outboundUrl.includes("party_size=2"), true);
 
-  // 9e. Active pre-booking revalidation passes when price, seats, schedule buffer, and passenger checks match
+  // 9e. Active pre-booking revalidation verifies handoff + receipt against versioned CandidateUniverse policy,
+  //     ignores caller-supplied live operator facts, and keeps providerConfirmation explicitly unknown
   const revalPassRes = await postRevalidateRoute(
     new Request(
       "https://www.destinationcommandcenter.com/api/v1/commerce/handoffs/revalidate",
@@ -1220,10 +1221,10 @@ test("v0.3.1 Gate 7: Repair Verification — Withdrawn GoSno Seed Containment, P
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           handoffId,
-          liveOperatorPricePerPersonUsd: 459,
+          liveOperatorPricePerPersonUsd: 999,
           liveAvailableSeats: 6,
           liveDepartureStatus: "OPEN",
-          liveMaxSinglePassengerWeightLbs: 255,
+          declaredMaxSinglePassengerWeightLbs: 255,
           requiresAssistedAircraftBoarding: false,
           carryingDrone: false,
         }),
@@ -1233,8 +1234,35 @@ test("v0.3.1 Gate 7: Repair Verification — Withdrawn GoSno Seed Containment, P
   assert.equal(revalPassRes.status, 200);
   const revalPassBody = (await revalPassRes.json()) as Record<string, any>;
   assert.equal(revalPassBody.progressionAllowed, true);
+  assert.equal(revalPassBody.revalidation.receiptVerified, true);
+  assert.equal(
+    revalPassBody.revalidation.versionedPolicySource.universeId,
+    "univ:juneau-helicopter-tours",
+  );
+  assert.equal(
+    revalPassBody.revalidation.versionedPolicySource.legacyCandidateCode,
+    "jnu-heli-coastal-icefield",
+  );
+  assert.equal(
+    revalPassBody.providerConfirmation.status,
+    "unknown_until_authenticated_provider_response",
+  );
+  assert.equal(revalPassBody.providerConfirmation.liveAvailabilityStatus, "unknown");
+  assert.equal(revalPassBody.providerConfirmation.liveAvailableSeats, null);
+  assert.equal(revalPassBody.providerConfirmation.liveOperatorPricePerPersonUsd, null);
+  assert.deepEqual(revalPassBody.revalidation.ignoredUntrustedOperatorFactFields, [
+    "liveOperatorPricePerPersonUsd",
+    "liveAvailableSeats",
+    "liveDepartureStatus",
+  ]);
+  assert.equal(
+    revalPassBody.revalidation.fareharborDirectEmbedUrl.startsWith(
+      "https://fareharbor.com/embeds/book/coastalhelicopters/items/4012/calendar/2026/07/",
+    ),
+    true,
+  );
 
-  // 9f. Active pre-booking revalidation blocks progression (409) when price drifts, departure is unavailable, or passenger check fails
+  // 9f. Active pre-booking revalidation blocks progression (409) when declared parameters violate versioned policy or drift from handoff
   const revalBlockRes = await postRevalidateRoute(
     new Request(
       "https://www.destinationcommandcenter.com/api/v1/commerce/handoffs/revalidate",
@@ -1243,9 +1271,8 @@ test("v0.3.1 Gate 7: Repair Verification — Withdrawn GoSno Seed Containment, P
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           handoffId,
-          liveOperatorPricePerPersonUsd: 499,
-          liveAvailableSeats: 1,
-          liveMaxSinglePassengerWeightLbs: 268,
+          requestedPartySize: 3,
+          declaredMaxSinglePassengerWeightLbs: 268,
           requiresAssistedAircraftBoarding: true,
           carryingDrone: true,
         }),
@@ -1256,18 +1283,14 @@ test("v0.3.1 Gate 7: Repair Verification — Withdrawn GoSno Seed Containment, P
   const revalBlockBody = (await revalBlockRes.json()) as Record<string, any>;
   assert.equal(revalBlockBody.progressionAllowed, false);
   assert.equal(
-    revalBlockBody.blockingReasons.includes("LIVE_OPERATOR_PRICE_DRIFT_BLOCKS_PROGRESSION"),
-    true,
-  );
-  assert.equal(
     revalBlockBody.blockingReasons.includes(
-      "UNQUOTED_WEIGHT_SURCHARGE_AT_CHECKIN_BLOCKS_PROGRESSION",
+      "REVALIDATION_PARTY_SIZE_MISMATCH_WITH_HANDOFF_BLOCKS_PROGRESSION",
     ),
     true,
   );
   assert.equal(
     revalBlockBody.blockingReasons.includes(
-      "DEPARTURE_INSUFFICIENT_SEATS_BLOCKS_PROGRESSION",
+      "UNQUOTED_WEIGHT_SURCHARGE_AT_CHECKIN_BLOCKS_PROGRESSION",
     ),
     true,
   );
@@ -1281,9 +1304,43 @@ test("v0.3.1 Gate 7: Repair Verification — Withdrawn GoSno Seed Containment, P
     revalBlockBody.blockingReasons.includes("PROHIBITED_ITEM_DRONE_BLOCKS_PROGRESSION"),
     true,
   );
+
+  // 9g. Verify versioned policy agreement for TEMSCO (jnu-heli-mendenhall-landing) and NorthStar (jnu-heli-northstar-trek)
+  //     including that NorthStar's 250 lb threshold is a surcharge_only policy (+$150), NOT a hard cap
+  const { resolveVersionedCandidatePolicy } = await import("../../lib/dcc/commerce");
+  const temscoPolicy = await resolveVersionedCandidatePolicy("jnu-heli-mendenhall-landing");
+  assert.ok(temscoPolicy);
+  assert.equal(temscoPolicy.basePriceUsd, 449);
+  assert.equal(temscoPolicy.weightSurchargeThresholdLbs, 250);
+  assert.equal(temscoPolicy.weightSurchargeUsd, 150);
+  assert.equal(temscoPolicy.weightPolicyType, "surcharge_only");
+  assert.equal(temscoPolicy.minAgeYears, 2);
+  assert.equal(temscoPolicy.prohibitsServiceAnimals, true);
+  assert.equal(temscoPolicy.fareharborShortname, "temscoair-juneau");
+  assert.equal(temscoPolicy.fareharborItemId, "214803");
+
+  const northStarPolicy = await resolveVersionedCandidatePolicy("jnu-heli-northstar-trek");
+  assert.ok(northStarPolicy);
+  assert.equal(northStarPolicy.basePriceUsd, 499);
+  assert.equal(northStarPolicy.weightSurchargeThresholdLbs, 250);
+  assert.equal(northStarPolicy.weightSurchargeUsd, 150);
+  assert.equal(northStarPolicy.weightPolicyType, "surcharge_only");
+  assert.equal(northStarPolicy.minAgeYears, 8);
+  assert.equal(northStarPolicy.requiresOneHourUnassistedGlacierWalk, true);
+  assert.equal(northStarPolicy.fareharborShortname, "northstartrekking");
+  assert.equal(northStarPolicy.fareharborItemId, "88310");
+
+  // 9h. Verify safeJsonSerializeForScriptTag escapes <, >, and & against script breakout
+  const { safeJsonSerializeForScriptTag } = await import(
+    "../../apps/juneauflightdeck/lib/dccContext"
+  );
+  const escapedJson = safeJsonSerializeForScriptTag({
+    injection: "</script><script>alert('xss')</script>&test",
+  });
+  assert.equal(escapedJson.includes("</script>"), false);
+  assert.equal(
+    escapedJson,
+    '{"injection":"\\u003c/script\\u003e\\u003cscript\\u003ealert(\'xss\')\\u003c/script\\u003e\\u0026test"}',
+  );
 });
-
-
-
-
 

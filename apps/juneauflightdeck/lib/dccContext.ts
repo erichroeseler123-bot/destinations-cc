@@ -439,3 +439,151 @@ export async function getOrCreateCheckoutSession(
     isExistingSession: false,
   };
 }
+
+export function extractHandoffIdFromQueryOrRef(
+  handoffIdParam?: string | null,
+  refParam?: string | null,
+): string | null {
+  if (handoffIdParam && /^hndf_[0-9a-f]{24}$/i.test(handoffIdParam.trim())) {
+    return handoffIdParam.trim().toLowerCase();
+  }
+  if (refParam && typeof refParam === "string") {
+    const m = refParam.match(/(hndf_[0-9a-f]{24})/i);
+    if (m) return m[1].toLowerCase();
+  }
+  return null;
+}
+
+/**
+ * Safely serializes an object to JSON for embedding inside an HTML <script type="application/json"> tag,
+ * escaping <, >, &, U+2028, and U+2029 to prevent script-tag breakout / XSS injection.
+ */
+export function safeJsonSerializeForScriptTag(value: unknown): string {
+  return JSON.stringify(value)
+    .replace(/</g, "\\u003c")
+    .replace(/>/g, "\\u003e")
+    .replace(/&/g, "\\u0026")
+    .replace(/\u2028/g, "\\u2028")
+    .replace(/\u2029/g, "\\u2029");
+}
+
+export interface AuthoritativeHandoffCheckoutLoadInput {
+  handoffId: string;
+  requestedReceiptId?: string | null;
+  requestedTourCode?: string | null;
+  requestedFareharborItemId?: string | null;
+  requestedDate?: string | null;
+  requestedDepartureId?: string | null;
+  requestedDepartureTime?: string | null;
+  requestedPartySize?: number | null;
+  declaredMaxSinglePassengerWeightLbs?: number | null;
+  declaredYoungestPassengerAgeYears?: number | null;
+  requiresAssistedAircraftBoarding?: boolean | null;
+  canWalkUnassistedOneHourUnevenTerrain?: boolean | null;
+  carryingDrone?: boolean | null;
+  carryingSelfieStickOrExtension?: boolean | null;
+  carryingBagsOrPursesOnFlight?: boolean | null;
+  hasServiceAnimal?: boolean | null;
+  travelerAcceptedWeightSurcharge?: boolean | null;
+  baseUrl?: string;
+}
+
+export interface AuthoritativeHandoffCheckoutLoadResult {
+  found: boolean;
+  statusCode: number;
+  errorCode?: string;
+  message?: string;
+  handoff?: Record<string, any>;
+  revalidation?: Record<string, any>;
+}
+
+/**
+ * Server-side loader that fetches and revalidates the authoritative commercial handoff
+ * and its linked signed decision receipt directly from DCC (`destinationcommandcenter.com`).
+ * Never trusts URL parameters for live price, seat inventory, or departure status.
+ */
+export async function loadAuthoritativeDccHandoffForCheckout(
+  input: AuthoritativeHandoffCheckoutLoadInput,
+): Promise<AuthoritativeHandoffCheckoutLoadResult> {
+  const handoffId = (input.handoffId ?? "").trim();
+  if (!handoffId || !/^hndf_[0-9a-f]{24}$/i.test(handoffId)) {
+    return {
+      found: false,
+      statusCode: 400,
+      errorCode: "INVALID_HANDOFF_ID",
+      message: "Handoff ID must match hndf_<24hex>.",
+    };
+  }
+
+  const baseUrl = (
+    input.baseUrl ||
+    process.env.DCC_API_BASE_URL ||
+    process.env.NEXT_PUBLIC_DCC_API_URL ||
+    "https://destinationcommandcenter.com"
+  ).replace(/\/+$/, "");
+
+  try {
+    const response = await fetch(`${baseUrl}/api/v1/commerce/handoffs/revalidate`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        handoffId,
+        requestedReceiptId: input.requestedReceiptId ?? null,
+        requestedTourCode: input.requestedTourCode ?? null,
+        requestedFareharborItemId: input.requestedFareharborItemId ?? null,
+        requestedDate: input.requestedDate ?? null,
+        requestedDepartureId: input.requestedDepartureId ?? null,
+        requestedDepartureTime: input.requestedDepartureTime ?? null,
+        requestedPartySize: input.requestedPartySize ?? null,
+        declaredMaxSinglePassengerWeightLbs:
+          input.declaredMaxSinglePassengerWeightLbs ?? null,
+        declaredYoungestPassengerAgeYears:
+          input.declaredYoungestPassengerAgeYears ?? null,
+        requiresAssistedAircraftBoarding:
+          input.requiresAssistedAircraftBoarding ?? null,
+        canWalkUnassistedOneHourUnevenTerrain:
+          input.canWalkUnassistedOneHourUnevenTerrain ?? null,
+        carryingDrone: input.carryingDrone ?? null,
+        carryingSelfieStickOrExtension:
+          input.carryingSelfieStickOrExtension ?? null,
+        carryingBagsOrPursesOnFlight: input.carryingBagsOrPursesOnFlight ?? null,
+        hasServiceAnimal: input.hasServiceAnimal ?? null,
+        travelerAcceptedWeightSurcharge:
+          input.travelerAcceptedWeightSurcharge ?? null,
+      }),
+      cache: "no-store",
+    });
+
+    const json = await response.json().catch(() => ({}));
+
+    if (response.status === 404 || !json?.revalidation || !json?.handoff) {
+      return {
+        found: false,
+        statusCode: response.status,
+        errorCode: json?.error?.code || "HANDOFF_NOT_FOUND",
+        message:
+          json?.error?.message ||
+          `Authoritative commercial handoff '${handoffId}' could not be verified on DCC.`,
+      };
+    }
+
+    return {
+      found: true,
+      statusCode: response.status,
+      handoff: json.handoff,
+      revalidation: json.revalidation,
+    };
+  } catch (err: any) {
+    return {
+      found: false,
+      statusCode: 502,
+      errorCode: "DCC_HANDOFF_AUTHORITY_UNREACHABLE",
+      message:
+        err?.message || "Failed to contact DCC Handoff Authority for server-side verification.",
+    };
+  }
+}
+
