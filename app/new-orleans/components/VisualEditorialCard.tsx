@@ -73,7 +73,7 @@ export default function VisualEditorialCard({
                 </span>
               </div>
             )}
-            <div className="absolute inset-x-0 bottom-0 border-t border-[#d4af37]/25 bg-black/80 p-5 backdrop-blur-[1px] md:p-6">
+            <div data-wno-card-overlay className="absolute inset-x-0 bottom-0 border-t border-[#d4af37]/25 bg-black/80 p-5 backdrop-blur-[1px] md:p-6">
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] !text-[#ffe6a3] drop-shadow-[0_1px_2px_rgba(0,0,0,1)]">{eyebrow}</p>
               <h3 className="mt-2 font-serif text-2xl font-semibold leading-tight !text-white drop-shadow-[0_2px_3px_rgba(0,0,0,1)] md:text-[1.7rem]">{title}</h3>
             </div>
