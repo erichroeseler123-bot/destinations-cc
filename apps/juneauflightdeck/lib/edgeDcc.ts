@@ -1,4 +1,4 @@
-﻿export const JFD_CHECKOUT_COOKIE_NAME = "jfd_checkout_session";
+export const JFD_CHECKOUT_COOKIE_NAME = "jfd_checkout_session";
 export const JFD_SESSION_AUDIENCE = "juneauflightdeck";
 export const JFD_SESSION_KEY_VERSION = "v1";
 
@@ -121,7 +121,7 @@ export async function redeemOpaqueContextEdge(contextId: string): Promise<{
   const baseUrl = (
     process.env.DCC_API_BASE_URL ||
     process.env.NEXT_PUBLIC_DCC_API_URL ||
-    "https://api.destinationcommandcenter.com"
+    "https://destinationcommandcenter.com"
   ).replace(/\/+$/, "");
 
   const keyId =

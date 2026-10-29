@@ -86,7 +86,15 @@ function buildGraphDestinationStatuses(): DestinationStatusCardModel[] {
 
   return COMMAND_DESTINATIONS.map((destination) => {
     const summary = bySlug.get(destination.slug);
-    if (!summary) return destination;
+    if (!summary) {
+      return {
+        ...destination,
+        status: "unavailable",
+        liveSignal: "Place graph summary unavailable for this destination.",
+        transportStatus: "Live transport telemetry unavailable.",
+        recommendation: `Verify ${destination.name} operator and transfer status directly before committing.`,
+      };
+    }
 
     const totalActions =
       summary.action_counts.cruises +
@@ -172,7 +180,10 @@ function buildBestMoves(corridors: ScoredCorridorState[]): BestMoveModel[] {
     .slice(0, 3)
     .map((corridor) => ({
       id: `move-${corridor.id}`,
-      title: `${corridor.name} needs a tactical move`,
+      title:
+        corridor.status === "unavailable"
+          ? `${corridor.name}: live corridor telemetry unavailable`
+          : `${corridor.name} needs a tactical move`,
       context: corridor.pressureLabel,
       recommendation: corridor.bestMove,
       status: corridor.status,
@@ -182,25 +193,43 @@ function buildBestMoves(corridors: ScoredCorridorState[]): BestMoveModel[] {
 }
 
 function buildAlerts(corridors: ScoredCorridorState[]): CommandAlertModel[] {
+  const alerts: CommandAlertModel[] = [];
+
+  if (corridors.some((entry) => !entry.analysis.shipmentSchemaAvailable)) {
+    alerts.push({
+      id: "alert-shipment-telemetry-unavailable",
+      title: "Shipment telemetry tables unavailable in database",
+      impact:
+        "dcc_shipment_events and dcc_shipment_units are not provisioned; corridors without live satellite handoff events are marked unavailable.",
+      severity: "unavailable",
+      href: "/command",
+    });
+  }
+
   const dynamic = corridors
     .map((entry) => entry.card)
-    .filter((corridor) => corridor.status === "critical" || corridor.status === "busy")
+    .filter(
+      (corridor) =>
+        corridor.status === "critical" ||
+        corridor.status === "busy" ||
+        corridor.status === "unavailable",
+    )
     .map((corridor) => ({
       id: `alert-${corridor.id}`,
-      title: `${corridor.name} under pressure`,
+      title:
+        corridor.status === "unavailable"
+          ? `${corridor.name} telemetry unavailable`
+          : `${corridor.name} under pressure`,
       impact: corridor.pressureLabel,
       severity: corridor.status,
       href:
         corridor.id === "denver-red-rocks"
           ? "/red-rocks-transportation"
-          : corridor.id === "denver-dia"
-            ? "/command"
-            : corridor.id === "miami-port"
-              ? "/command"
-              : "/command",
+          : "/command",
     }));
 
-  return dynamic.length > 0 ? dynamic : COMMAND_ALERTS;
+  alerts.push(...dynamic);
+  return alerts.length > 0 ? alerts : COMMAND_ALERTS;
 }
 
 function buildEntrySurfaceCards(): CommandEntrySurfaceCardModel[] {
@@ -253,7 +282,12 @@ export async function getCommandViewData(): Promise<CommandViewPayload> {
   const liveAlerts =
     graphSummaries.filter((row) => row.trend === "degrading").length +
     feedFallbacks +
-    corridors.filter((corridor) => corridor.card.status === "busy" || corridor.card.status === "critical").length;
+    corridors.filter(
+      (corridor) =>
+        corridor.card.status === "busy" ||
+        corridor.card.status === "critical" ||
+        corridor.card.status === "unavailable",
+    ).length;
   const recentEvents = getPlanetaryEvents(20).length;
   const destinationStatuses = buildDestinationStatuses(corridors);
   const activeRoutes = graphHealth.edges + network.lanes.length;

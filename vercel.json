@@ -4,10 +4,7 @@
     {
       "path": "/api/internal/earthos/reference-maintenance",
       "schedule": "0 8 * * *"
-    },
-    {
-      "path": "/api/internal/earthos/reference-maintenance?schedule=continuous",
-      "schedule": "*/5 * * * *"
     }
   ]
 }
+

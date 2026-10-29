@@ -21,7 +21,7 @@ export type GoldCorridorTemplate = CommandCorridorDefinition & {
     avoidAfter?: string;
   };
   copy: Record<
-    CommandStatusLevel,
+    Exclude<CommandStatusLevel, "unavailable">,
     {
       pressureLabel: string;
       bestMove: string;

@@ -162,3 +162,24 @@ test("command intake section renders the same promoted entries and no extra mani
 
   assert.deepEqual(renderedPromoted, EXPECTED_PROMOTED_ENTRIES);
 });
+
+test("command view surfaces missing shipment telemetry as unavailable rather than healthy or watch", async () => {
+  const data = await getCommandViewData();
+
+  const unavailableCorridors = data.corridors.filter((corridor) => corridor.status === "unavailable");
+  assert.ok(
+    unavailableCorridors.length > 0,
+    "expected corridors without live shipment or satellite handoff telemetry to report status 'unavailable'",
+  );
+
+  for (const corridor of unavailableCorridors) {
+    assert.equal(corridor.trend, "unavailable");
+    assert.match(corridor.pressureLabel, /unavailable/i);
+  }
+
+  assert.ok(
+    data.alerts.some((alert) => alert.severity === "unavailable"),
+    "expected command alerts rail to surface unavailable telemetry explicitly",
+  );
+});
+

@@ -8,6 +8,8 @@ export function commandTone(level: CommandStatusLevel) {
       return "border-amber-300/30 bg-amber-300/12 text-amber-50";
     case "watch":
       return "border-yellow-300/30 bg-yellow-300/12 text-yellow-50";
+    case "unavailable":
+      return "border-zinc-500/40 bg-zinc-500/15 text-zinc-200";
     default:
       return "border-emerald-400/30 bg-emerald-400/12 text-emerald-100";
   }

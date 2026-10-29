@@ -534,6 +534,15 @@ function resolveBuildProvenanceEnv() {
     DCC_BUILD_SCRIPTS_HASH: scriptsHash || "unknown",
     DCC_BUILD_TIME: buildTime,
     DCC_BUILD_ID: buildId,
+    ...(process.env.DCC_CI_VERIFIED_COMMIT_SHA?.trim()
+      ? { DCC_CI_VERIFIED_COMMIT_SHA: process.env.DCC_CI_VERIFIED_COMMIT_SHA.trim() }
+      : {}),
+    ...(process.env.DCC_CI_VERIFIED_RUN_ID?.trim()
+      ? { DCC_CI_VERIFIED_RUN_ID: process.env.DCC_CI_VERIFIED_RUN_ID.trim() }
+      : {}),
+    ...(process.env.DCC_CI_VERIFIED_LOCK_HASH?.trim()
+      ? { DCC_CI_VERIFIED_LOCK_HASH: process.env.DCC_CI_VERIFIED_LOCK_HASH.trim() }
+      : {}),
   };
   for (const [k, v] of Object.entries(resolved)) {
     process.env[k] = v;

@@ -1,4 +1,4 @@
-export type CommandStatusLevel = "normal" | "watch" | "busy" | "critical";
+export type CommandStatusLevel = "normal" | "watch" | "busy" | "critical" | "unavailable";
 
 export type CommandNetworkStatus = {
   placesTracked: number;
@@ -39,7 +39,7 @@ export type CorridorMapFeature = {
   center: { lat: number; lon: number };
   path: Array<[number, number]>;
   status: CommandStatusLevel;
-  trend: "improving" | "steady" | "slipping";
+  trend: "improving" | "steady" | "slipping" | "unavailable";
   pressureLabel: string;
   bestMove: string;
 };
@@ -50,7 +50,7 @@ export type CorridorHealthCardModel = {
   from: string;
   to: string;
   status: CommandStatusLevel;
-  trend: "improving" | "steady" | "slipping";
+  trend: "improving" | "steady" | "slipping" | "unavailable";
   pressureLabel: string;
   bestMove: string;
 };

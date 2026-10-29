@@ -24,7 +24,8 @@ jobs:
     timeout-minutes: 20
     env:
       VERCEL_ORG_ID: team_A35bPkpQ920idHaAvOwWpsSX
-      VERCEL_PROJECT_ID: prj_u5YgZvGuXLTdhbTehOTOGbkBUCpX
+      VERCEL_PROJECT_ID: prj_pqvFn6jtJbbVgv1UsAsg3KtMl26s
+      DCC_MACHINE_V1: "1"
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -54,6 +55,18 @@ jobs:
             echo "should_build=true" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Install dependencies (strict lockfile via npm ci)
+        if: steps.check_changed.outputs.should_build == 'true'
+        run: npm ci
+
+      - name: Run TypeScript typecheck
+        if: steps.check_changed.outputs.should_build == 'true'
+        run: npx tsc --noEmit
+
+      - name: Run DCC verification suite against release commit
+        if: steps.check_changed.outputs.should_build == 'true'
+        run: npx tsx --test tests/dcc/23-entry-surface-parity.test.ts tests/dcc/site-truth.test.ts tests/dcc/satellite-truth-linkage.test.ts tests/dcc/36-discovery-stack.test.ts tests/dcc/81-category-decision-engine-framework.test.ts tests/dcc/82-dcc-machine-layer-v01.test.ts tests/dcc/83-dcc-machine-layer-v02.test.ts tests/dcc/84-dcc-machine-layer-v03.test.ts tests/dcc/85-dcc-machine-layer-v031.test.ts tests/dcc/86-dcc-assurance-commerce-portfolio.test.ts tests/dcc/86-commercial-attribution-and-outcomes.test.ts tests/dcc/87-portfolio-network-and-journeys.test.ts
+
       - name: Install pnpm
         if: steps.check_changed.outputs.should_build == 'true'
         run: npm install -g pnpm@10
@@ -70,15 +83,22 @@ jobs:
         if: steps.check_changed.outputs.should_build == 'true'
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
 
-      - name: Build production
+      - name: Build production bound to verified CI run
         if: steps.check_changed.outputs.should_build == 'true'
         shell: bash
         run: |
           set -a
           source .vercel/.env.production.local
+          export VERCEL_GIT_COMMIT_SHA="${GITHUB_SHA}"
+          export VERCEL_GIT_COMMIT_REF="${GITHUB_REF_NAME}"
+          export VERCEL_GIT_PROVIDER="github"
+          export DCC_CI_VERIFIED_COMMIT_SHA="${GITHUB_SHA}"
+          export DCC_CI_VERIFIED_RUN_ID="${GITHUB_RUN_ID}"
+          export DCC_CI_VERIFIED_LOCK_HASH="$(node -e 'const fs=require("fs"),crypto=require("crypto");const b=Buffer.from(fs.readFileSync("package-lock.json","utf8").replace(/\r\n/g,"\n"),"utf8");process.stdout.write(crypto.createHash("sha256").update(b).digest("hex"))')"
           set +a
           vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy production
         if: steps.check_changed.outputs.should_build == 'true'
         run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+

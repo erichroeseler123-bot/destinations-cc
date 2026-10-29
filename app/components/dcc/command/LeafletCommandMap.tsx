@@ -22,6 +22,8 @@ function statusColor(status: CorridorMapFeature["status"]) {
       return "#f59e0b";
     case "watch":
       return "#fde047";
+    case "unavailable":
+      return "#71717a";
     default:
       return "#34d399";
   }
@@ -99,7 +101,10 @@ export function LeafletCommandMap({
                 color,
                 weight: selectedCorridorId === feature.id ? 8 : feature.tier === "gold" ? 6 : 4,
                 opacity: selectedCorridorId === feature.id ? 1 : 0.85,
-                dashArray: feature.status === "watch" ? "10 8" : undefined,
+                dashArray:
+                  feature.status === "watch" || feature.status === "unavailable"
+                    ? "10 8"
+                    : undefined,
               }}
             >
               <Popup>

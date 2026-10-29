@@ -49,13 +49,14 @@ export type CommandCorridorDefinition = {
 
 export type CorridorSignalAnalysis = {
   status: CommandStatusLevel;
-  trend: "improving" | "steady" | "slipping";
+  trend: "improving" | "steady" | "slipping" | "unavailable";
   delayCount: number;
   degradedCount: number;
   positiveCount: number;
   eventCount: number;
   shipmentEventCount: number;
   handoffEventCount: number;
+  shipmentSchemaAvailable: boolean;
   debugSource: CorridorDebugSource;
 };
 
@@ -149,24 +150,29 @@ async function getRecentShipmentSignals(
   corridor: CommandCorridorDefinition,
   days = 14,
   limit = 120,
-): Promise<{ rows: ShipmentSignalRow[]; matchMode: ShipmentMatchMode | null }> {
+): Promise<{ rows: ShipmentSignalRow[]; matchMode: ShipmentMatchMode | null; schemaAvailable: boolean }> {
   const db = getDb();
-  if (!db) return { rows: [], matchMode: null };
+  if (!db) return { rows: [], matchMode: null, schemaAvailable: false };
 
   const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
-  const rows = await db
-    .select({
-      shipmentId: dccShipmentEvents.shipmentUnitId,
-      event: dccShipmentEvents,
-      originPlaceId: dccShipmentUnits.originPlaceId,
-      destinationPlaceId: dccShipmentUnits.destinationPlaceId,
-      currentPlaceId: dccShipmentUnits.currentPlaceId,
-    })
-    .from(dccShipmentEvents)
-    .innerJoin(dccShipmentUnits, eq(dccShipmentEvents.shipmentUnitId, dccShipmentUnits.id))
-    .where(gte(dccShipmentEvents.occurredAt, since))
-    .orderBy(desc(dccShipmentEvents.occurredAt))
-    .limit(limit);
+  let rows: ShipmentSignalRow[] = [];
+  try {
+    rows = await db
+      .select({
+        shipmentId: dccShipmentEvents.shipmentUnitId,
+        event: dccShipmentEvents,
+        originPlaceId: dccShipmentUnits.originPlaceId,
+        destinationPlaceId: dccShipmentUnits.destinationPlaceId,
+        currentPlaceId: dccShipmentUnits.currentPlaceId,
+      })
+      .from(dccShipmentEvents)
+      .innerJoin(dccShipmentUnits, eq(dccShipmentEvents.shipmentUnitId, dccShipmentUnits.id))
+      .where(gte(dccShipmentEvents.occurredAt, since))
+      .orderBy(desc(dccShipmentEvents.occurredAt))
+      .limit(limit);
+  } catch {
+    return { rows: [], matchMode: null, schemaAvailable: false };
+  }
 
   let matchedByPlaceId = false;
   let matchedByTextFallback = false;
@@ -180,6 +186,7 @@ async function getRecentShipmentSignals(
   return {
     rows: filtered,
     matchMode: matchedByPlaceId ? "place_id" : matchedByTextFallback ? "text_fallback" : null,
+    schemaAvailable: true,
   };
 }
 
@@ -205,6 +212,7 @@ function scoreSignals(
   shipmentSignals: ShipmentSignalRow[],
   handoffSignals: StoredSatelliteEvent[],
   shipmentMatchMode: ShipmentMatchMode | null,
+  shipmentSchemaAvailable = true,
 ): CorridorSignalAnalysis {
   const delayedShipmentCount = shipmentSignals.filter(
     (row) =>
@@ -222,14 +230,15 @@ function scoreSignals(
 
   if (eventCount === 0) {
     return {
-      status: "watch",
-      trend: "steady",
+      status: "unavailable",
+      trend: "unavailable",
       delayCount: 0,
       degradedCount: 0,
       positiveCount: 0,
       eventCount: 0,
       shipmentEventCount: 0,
       handoffEventCount: 0,
+      shipmentSchemaAvailable,
       debugSource: {
         primary: "fallback",
         contributing: ["fallback"],
@@ -275,6 +284,7 @@ function scoreSignals(
     eventCount,
     shipmentEventCount: shipmentSignals.length,
     handoffEventCount: handoffSignals.length,
+    shipmentSchemaAvailable,
     debugSource: {
       primary,
       contributing,
@@ -284,20 +294,24 @@ function scoreSignals(
 }
 
 export async function calculateCorridorHealth(corridor: CommandCorridorDefinition) {
-  const [{ rows: shipmentSignals, matchMode: shipmentMatchMode }, handoffSignals] = await Promise.all([
+  const [{ rows: shipmentSignals, matchMode: shipmentMatchMode, schemaAvailable }, handoffSignals] = await Promise.all([
     getRecentShipmentSignals(corridor),
     Promise.resolve(getRecentHandoffSignals(corridor)),
   ]);
 
-  return scoreSignals(shipmentSignals, handoffSignals, shipmentMatchMode);
+  return scoreSignals(shipmentSignals, handoffSignals, shipmentMatchMode, schemaAvailable);
 }
 
 export function buildPressureLabel(corridor: CommandCorridorDefinition, analysis: CorridorSignalAnalysis) {
+  if (analysis.status === "unavailable" || analysis.eventCount === 0) {
+    return analysis.shipmentSchemaAvailable === false
+      ? "Live corridor telemetry unavailable (shipment event tables not provisioned; zero recent satellite handoff events)."
+      : "Live corridor telemetry unavailable (zero recent shipment or satellite handoff events recorded).";
+  }
   const copy = corridor.copy?.[analysis.status];
   if (copy) {
     return copy.pressureLabel;
   }
-  if (analysis.eventCount === 0) return corridor.fallback.pressureLabel;
   if (analysis.status === "critical") {
     return `${analysis.degradedCount} degraded command signals are pressuring this lane right now.`;
   }
@@ -311,6 +325,9 @@ export function buildPressureLabel(corridor: CommandCorridorDefinition, analysis
 }
 
 export function buildBestMove(corridor: CommandCorridorDefinition, analysis: CorridorSignalAnalysis) {
+  if (analysis.status === "unavailable" || analysis.eventCount === 0) {
+    return `Do not rely on automated corridor status for ${corridor.name}; verify current transfer and operator conditions directly.`;
+  }
   const copy = corridor.copy?.[analysis.status];
   if (copy) {
     return copy.bestMove;
@@ -328,6 +345,11 @@ export function buildBestMove(corridor: CommandCorridorDefinition, analysis: Cor
 }
 
 export function buildLiveSignal(corridor: CommandCorridorDefinition, analysis: CorridorSignalAnalysis) {
+  if (analysis.status === "unavailable" || analysis.eventCount === 0) {
+    return analysis.shipmentSchemaAvailable === false
+      ? "Shipment telemetry tables unavailable; no recent live corridor signals recorded."
+      : "No recent live corridor signals recorded in the active observation window.";
+  }
   if (analysis.handoffEventCount > 0 && analysis.degradedCount > 0) {
     return "Booking and handoff pressure is rising in the active execution lane.";
   }
@@ -341,6 +363,9 @@ export function buildLiveSignal(corridor: CommandCorridorDefinition, analysis: C
 }
 
 export function buildTransportStatus(corridor: CommandCorridorDefinition, analysis: CorridorSignalAnalysis) {
+  if (analysis.status === "unavailable" || analysis.eventCount === 0) {
+    return "Live transfer telemetry unavailable.";
+  }
   const copy = corridor.copy?.[analysis.status];
   if (copy) {
     return copy.transportStatus;
@@ -358,6 +383,9 @@ export function buildTransportStatus(corridor: CommandCorridorDefinition, analys
 }
 
 export function buildRecommendation(corridor: CommandCorridorDefinition, analysis: CorridorSignalAnalysis) {
+  if (analysis.status === "unavailable" || analysis.eventCount === 0) {
+    return `Treat ${corridor.name} status as unverified until live telemetry is available.`;
+  }
   const copy = corridor.copy?.[analysis.status];
   if (copy) {
     return copy.recommendation;

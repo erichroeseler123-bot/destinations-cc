@@ -2,8 +2,6 @@ name: Suite Health Check
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '17 13 * * *'
 
 permissions:
   contents: read
