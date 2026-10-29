@@ -263,3 +263,16 @@
   text-shadow: 0 2px 4px #000 !important;
   opacity: 1 !important;
 }
+
+
+/* The #options ID gives these rules enough specificity to beat legacy
+   category-wide !important heading rules without affecting other surfaces. */
+[data-wno-category] #options [data-wno-card-overlay] p {
+  color: #ffe6a3 !important;
+  -webkit-text-fill-color: #ffe6a3 !important;
+}
+
+[data-wno-category] #options [data-wno-card-overlay] h3 {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
