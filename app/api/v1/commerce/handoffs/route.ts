@@ -5,6 +5,7 @@ import {
   resolveOrGenerateW3cTraceparent,
   verifyEvaluationAuthAndRateLimit,
 } from "@/lib/dcc/machine";
+import { getV03ReceiptWithFallback } from "@/lib/dcc/machine/v03/runtimeStoreV03";
 import {
   createCommercialHandoff,
   getCommercialHandoffById,
@@ -159,6 +160,101 @@ export async function POST(request: Request) {
     );
   }
 
+  const receiptId = typeof body.receiptId === "string" ? body.receiptId.trim() : null;
+  let evaluatedInputs: Record<string, unknown> | null = null;
+
+  if (receiptId) {
+    const storedReceipt = await getV03ReceiptWithFallback(receiptId);
+    if (storedReceipt) {
+      evaluatedInputs = (storedReceipt.inputs ?? {}) as Record<string, unknown>;
+      const evaluatedPartySize =
+        typeof evaluatedInputs.partySize === "number"
+          ? evaluatedInputs.partySize
+          : typeof evaluatedInputs.passengerCount === "number"
+            ? evaluatedInputs.passengerCount
+            : null;
+
+      if (typeof body.partySize === "number") {
+        if (evaluatedPartySize !== null && body.partySize !== evaluatedPartySize) {
+          return buildMachineJsonResponse(
+            {
+              ok: false,
+              error: {
+                code: "HANDOFF_RECEIPT_PARTY_SIZE_MISMATCH",
+                message: `Handoff partySize (${body.partySize}) does not match the evaluated receipt partySize (${evaluatedPartySize}) for receipt '${receiptId}'.`,
+                receiptId,
+                evaluatedPartySize,
+                requestedPartySize: body.partySize,
+              },
+            },
+            { status: 409, cacheControl: "no-store", extraHeaders: { traceparent } },
+          );
+        }
+        if (
+          evaluatedPartySize === null &&
+          storedReceipt.receipt.payload.engineId === "juneau-helicopter-tours"
+        ) {
+          return buildMachineJsonResponse(
+            {
+              ok: false,
+              error: {
+                code: "HANDOFF_RECEIPT_PARTY_SIZE_UNDECLARED",
+                message: `Handoff introduces partySize (${body.partySize}) which was not declared in evaluation request for receipt '${receiptId}'. Re-evaluate with explicit partySize before creating a departure-bound handoff.`,
+                receiptId,
+                evaluatedPartySize: null,
+                requestedPartySize: body.partySize,
+              },
+            },
+            { status: 409, cacheControl: "no-store", extraHeaders: { traceparent } },
+          );
+        }
+      }
+
+      const evaluatedValidAt = storedReceipt.receipt.payload.validAt;
+      if (typeof body.intendedDate === "string" && evaluatedValidAt) {
+        if (body.intendedDate.slice(0, 10) !== evaluatedValidAt.slice(0, 10)) {
+          return buildMachineJsonResponse(
+            {
+              ok: false,
+              error: {
+                code: "HANDOFF_RECEIPT_DATE_MISMATCH",
+                message: `Handoff intendedDate (${body.intendedDate.slice(0, 10)}) does not match evaluated receipt validAt date (${evaluatedValidAt.slice(0, 10)}).`,
+                receiptId,
+                evaluatedDate: evaluatedValidAt.slice(0, 10),
+                requestedDate: body.intendedDate.slice(0, 10),
+              },
+            },
+            { status: 409, cacheControl: "no-store", extraHeaders: { traceparent } },
+          );
+        }
+      }
+
+      const candidateSummary = storedReceipt.receipt.payload.candidateDispositionSummary.find(
+        (c) => c.legacyCode === productCode || c.candidateDccId === productCode,
+      );
+      if (
+        candidateSummary &&
+        (candidateSummary.disposition === "ineligible" ||
+          candidateSummary.disposition === "indeterminate")
+      ) {
+        return buildMachineJsonResponse(
+          {
+            ok: false,
+            error: {
+              code: "HANDOFF_CANDIDATE_NOT_VIABLE_IN_RECEIPT",
+              message: `Candidate '${productCode}' had disposition '${candidateSummary.disposition}' in receipt '${receiptId}' and cannot be handed off for booking.`,
+              receiptId,
+              productCode,
+              disposition: candidateSummary.disposition,
+              reasons: candidateSummary.reasonCodes,
+            },
+          },
+          { status: 409, cacheControl: "no-store", extraHeaders: { traceparent } },
+        );
+      }
+    }
+  }
+
   // Note: callerClientId is strictly derived from validated credentials (or anonymous browser tier),
   // NEVER trusted from body.client_id or body.clientId.
   const record = await createCommercialHandoff({
@@ -169,6 +265,10 @@ export async function POST(request: Request) {
     provider: providerRaw,
     providerAccount:
       typeof body.providerAccount === "string" ? body.providerAccount : null,
+    fareharborShortname:
+      typeof body.fareharborShortname === "string" ? body.fareharborShortname : null,
+    fareharborItemId:
+      typeof body.fareharborItemId === "string" ? body.fareharborItemId : null,
     productCode,
     productTitle: typeof body.productTitle === "string" ? body.productTitle : null,
     productDestinationUrl,
@@ -176,7 +276,7 @@ export async function POST(request: Request) {
     contextId: typeof body.contextId === "string" ? body.contextId : null,
     evaluationRunId:
       typeof body.evaluationRunId === "string" ? body.evaluationRunId : null,
-    receiptId: typeof body.receiptId === "string" ? body.receiptId : null,
+    receiptId,
     idempotencyKey:
       typeof body.idempotencyKey === "string"
         ? body.idempotencyKey
@@ -184,6 +284,18 @@ export async function POST(request: Request) {
           ? body.idempotency_key
           : null,
     intendedDate: typeof body.intendedDate === "string" ? body.intendedDate : null,
+    intendedDepartureId:
+      typeof body.intendedDepartureId === "string"
+        ? body.intendedDepartureId
+        : typeof evaluatedInputs?.selectedDepartureId === "string"
+          ? evaluatedInputs.selectedDepartureId
+          : null,
+    intendedDepartureTime:
+      typeof body.intendedDepartureTime === "string"
+        ? body.intendedDepartureTime
+        : typeof evaluatedInputs?.selectedDepartureTime === "string"
+          ? evaluatedInputs.selectedDepartureTime
+          : null,
     intendedOption:
       typeof body.intendedOption === "string" ? body.intendedOption : null,
     partySize: typeof body.partySize === "number" ? body.partySize : null,
@@ -191,6 +303,30 @@ export async function POST(request: Request) {
       body.partyDetails && typeof body.partyDetails === "object"
         ? (body.partyDetails as CommercialPartyDetails)
         : null,
+    maxSinglePassengerWeightLbs:
+      typeof body.maxSinglePassengerWeightLbs === "number"
+        ? body.maxSinglePassengerWeightLbs
+        : typeof evaluatedInputs?.maxSinglePassengerWeightLbs === "number"
+          ? evaluatedInputs.maxSinglePassengerWeightLbs
+          : null,
+    youngestPassengerAgeYears:
+      typeof body.youngestPassengerAgeYears === "number"
+        ? body.youngestPassengerAgeYears
+        : typeof evaluatedInputs?.youngestPassengerAgeYears === "number"
+          ? evaluatedInputs.youngestPassengerAgeYears
+          : null,
+    shipArrivalTime:
+      typeof body.shipArrivalTime === "string"
+        ? body.shipArrivalTime
+        : typeof evaluatedInputs?.shipArrivalTime === "string"
+          ? evaluatedInputs.shipArrivalTime
+          : null,
+    shipDepartureTime:
+      typeof body.shipDepartureTime === "string"
+        ? body.shipDepartureTime
+        : typeof evaluatedInputs?.shipDepartureTime === "string"
+          ? evaluatedInputs.shipDepartureTime
+          : null,
     quotedPriceAmount:
       typeof body.quotedPriceAmount === "number" ? body.quotedPriceAmount : null,
     quotedPriceCurrency:

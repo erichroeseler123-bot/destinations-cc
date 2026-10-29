@@ -216,6 +216,16 @@ export async function ensureBaseStoreSyncedToNeon(
 
 const REQUIRED_VERIFIED_ACTIVE_CLAIM_IDS_V031 = [
   "clm:jnu:standard-seat-weight-limit-lbs",
+  "clm:jnu:usfs-tongass-commercial-heli-permit-required",
+  "clm:jnu:operating-season-may-through-september",
+  "clm:jnu:coastal:price-tiers-459-609-918",
+  "clm:jnu:coastal:weight-surcharge-threshold-lbs",
+  "clm:jnu:coastal:cruise-buffer-45m-min-window-245m",
+  "clm:jnu:coastal:unassisted-boarding-and-prohibited-items",
+  "clm:jnu:temsco:weight-surcharge-threshold-lbs",
+  "clm:jnu:temsco:service-animals-and-unassisted-boarding",
+  "clm:jnu:northstar:min-age-8-and-1hr-unassisted-walk",
+  "clm:jnu:northstar:cruise-buffer-300m-and-weight-250lbs",
   "clm:haw:noaa-100yd-approach-compliance",
   "clm:gosno:private-transport-mode-only",
   "clm:gosno:private-suv-max-passengers-6",
@@ -368,17 +378,12 @@ export async function ensureRuntimeStoreHydratedFromNeon(
         const universes = await neon.readAllCandidateUniversesFromNeon();
         for (const u of universes) {
           store.universesByHash.set(u.universeHash, u);
-          store.universesByIdAndVersion.set(`${u.universeId}@${u.version}`, u);
-          store.universesByIdAndVersion.set(u.universeId, u);
         }
       }
       if (typeof neon.readAllEngineBundlesFromNeon === "function") {
         const bundles = await neon.readAllEngineBundlesFromNeon();
         for (const b of bundles) {
           store.bundlesByHash.set(b.bundleHash, b);
-          store.bundlesByEngineAndVersion.set(`${b.engineId}@${b.engineVersion}`, b);
-          store.bundlesByEngineAndVersion.set(b.engineId, b);
-          store.activeEngineVersionByEngineId.set(b.engineId, b.engineVersion);
         }
       }
       store.baseStateSyncedToNeon = true;
@@ -730,6 +735,14 @@ export function getV03RuntimeStore(options?: {
       "Cameras and cell phones are welcomed while on tour, but all drones, selfie sticks, phone stabilizers, and any camera extensions are prohibited.",
     licenseOrReusePolicy: "First-party operator published safety policy (Coastal Helicopters)",
   });
+  const evRefJnuCoastalUsfsPermit = buildEvidenceRefFromPreservedCapture({
+    evidenceRefId: "evref:jnu:coastal:usfs-permit-html",
+    sourceDccId: srcCoastalPolicyId,
+    capture: capCoastalTour,
+    exactQuote:
+      "Coastal Helicopters, Inc. is an equal opportunity employer and operates under a USDA Forest Service Special Use Permit on the Tongass National Forest.",
+    licenseOrReusePolicy: "First-party operator published permit disclosure (Coastal Helicopters)",
+  });
   const evRefJnuCoastalWeight260 = buildEvidenceRefFromPreservedCapture({
     evidenceRefId: "evref:jnu:coastal:weight-260-surcharge-faq",
     sourceDccId: srcCoastalPolicyId,
@@ -816,6 +829,7 @@ export function getV03RuntimeStore(options?: {
     evRefJnuCoastalPrice,
     evRefJnuCoastalBuffer,
     evRefJnuCoastalProhibited,
+    evRefJnuCoastalUsfsPermit,
     evRefJnuCoastalWeight260,
     evRefJnuCoastalWeight300,
     evRefJnuCoastalMobility,
@@ -1000,6 +1014,8 @@ export function getV03RuntimeStore(options?: {
       },
       evidenceRefs: [
         evRefJnuCoastalPrice,
+        evRefJnuCoastalBuffer,
+        evRefJnuCoastalUsfsPermit,
         evRefJnuCoastalWeight260,
         evRefJnuCoastalWeight300,
         evRefJnuCoastalProhibited,
@@ -1013,6 +1029,191 @@ export function getV03RuntimeStore(options?: {
       ],
     },
   });
+
+  // Granular, domain-specific Juneau operator policy claims connecting every decisive fact to preserved captures
+  const juneauGranularClaimSpecs = [
+    {
+      claimId: "clm:jnu:usfs-tongass-commercial-heli-permit-required",
+      claimVersionId: "clmv:jnu:usfs-tongass-permit:v1",
+      subjectDccId: jnuDestId,
+      predicate: "usfs_tongass_special_use_permit_compliant",
+      typedValue: true as string | number | boolean,
+      unitOrCurrency: "boolean",
+      reason:
+        "Derived from preserved Coastal Helicopters tour page disclosure: commercial Juneau Icefield glacier landings operate under a USDA Forest Service Special Use Permit on the Tongass National Forest.",
+      sourceDccId: srcCoastalPolicyId,
+      organizationName: "Coastal Helicopters (USFS Tongass Permit Disclosure)",
+      corroboratedBy: [srcTemscoPolicyId, srcNorthstarPolicyId],
+      evidenceRefs: [evRefJnuCoastalUsfsPermit],
+    },
+    {
+      claimId: "clm:jnu:operating-season-may-through-september",
+      claimVersionId: "clmv:jnu:operating-season-may-through-september:v1",
+      subjectDccId: jnuDestId,
+      predicate: "seasonal_glacier_helicopter_operation_may_through_september",
+      typedValue: true as string | number | boolean,
+      unitOrCurrency: "boolean",
+      reason:
+        "Derived from preserved Juneau glacier helicopter operator schedules (Coastal, TEMSCO, NorthStar): commercial cruise-season glacier landing excursions operate May 1 through September 30.",
+      sourceDccId: srcCoastalPolicyId,
+      organizationName: "Coastal Helicopters / TEMSCO Helicopters / NorthStar Trekking",
+      corroboratedBy: [srcTemscoPolicyId, srcNorthstarPolicyId],
+      evidenceRefs: [evRefJnuCoastalPrice, evRefJnuTemscoWeight250, evRefJnuNorthstarAgeAndWalk],
+    },
+    {
+      claimId: "clm:jnu:coastal:price-tiers-459-609-918",
+      claimVersionId: "clmv:jnu:coastal:price-tiers-459-609-918:v1",
+      subjectDccId: coastalOpId,
+      predicate: "published_price_tiers_459_base_609_standard_plus_918_premium_usd",
+      typedValue: true as string | number | boolean,
+      unitOrCurrency: "USD",
+      reason:
+        "Derived from preserved Coastal Helicopters Icefield Excursion HTML capture: Standard Passengers $459 (up to 259 lbs), Standard Plus $609 (260-299 lbs, 1.5 seats), Premium $918 (300+ lbs, 2 seats).",
+      sourceDccId: srcCoastalPolicyId,
+      organizationName: "Coastal Helicopters",
+      corroboratedBy: [],
+      evidenceRefs: [evRefJnuCoastalPrice],
+    },
+    {
+      claimId: "clm:jnu:coastal:weight-surcharge-threshold-lbs",
+      claimVersionId: "clmv:jnu:coastal:weight-surcharge-threshold-lbs:v1-260",
+      subjectDccId: coastalOpId,
+      predicate: "weight_surcharge_thresholds_260lbs_1_5_seats_300lbs_2_seats",
+      typedValue: true as string | number | boolean,
+      unitOrCurrency: "lbs",
+      reason:
+        "Derived from preserved Coastal Helicopters FAQ HTML capture: passengers weighing 260-299 lbs pay a 1.5-seat surcharge ($609); passengers weighing 300+ lbs pay a 2-full-seat surcharge ($918).",
+      sourceDccId: srcCoastalPolicyId,
+      organizationName: "Coastal Helicopters",
+      corroboratedBy: [],
+      evidenceRefs: [evRefJnuCoastalWeight260, evRefJnuCoastalWeight300],
+    },
+    {
+      claimId: "clm:jnu:coastal:cruise-buffer-45m-min-window-245m",
+      claimVersionId: "clmv:jnu:coastal:cruise-buffer-45m-min-window-245m:v1",
+      subjectDccId: coastalOpId,
+      predicate: "cruise_ship_arrival_and_departure_buffer_45m_min_port_window_245m",
+      typedValue: true as string | number | boolean,
+      unitOrCurrency: "minutes",
+      reason:
+        "Derived from preserved Coastal Helicopters Icefield Excursion HTML capture: requires a 45-minute buffer from when the cruise ship arrives and leaves (minimum 245-minute port window, 275-minute comfortable window).",
+      sourceDccId: srcCoastalPolicyId,
+      organizationName: "Coastal Helicopters",
+      corroboratedBy: [],
+      evidenceRefs: [evRefJnuCoastalBuffer],
+    },
+    {
+      claimId: "clm:jnu:coastal:unassisted-boarding-and-prohibited-items",
+      claimVersionId: "clmv:jnu:coastal:unassisted-boarding-and-prohibited-items:v1",
+      subjectDccId: coastalOpId,
+      predicate: "requires_unassisted_aircraft_boarding_and_prohibits_drones_selfie_sticks",
+      typedValue: true as string | number | boolean,
+      unitOrCurrency: "boolean",
+      reason:
+        "Derived from preserved Coastal Helicopters FAQ and tour HTML captures: guests must enter and exit the aircraft on their own; drones, selfie sticks, phone stabilizers, and camera extensions are prohibited.",
+      sourceDccId: srcCoastalPolicyId,
+      organizationName: "Coastal Helicopters",
+      corroboratedBy: [],
+      evidenceRefs: [evRefJnuCoastalMobility, evRefJnuCoastalProhibited],
+    },
+    {
+      claimId: "clm:jnu:temsco:weight-surcharge-threshold-lbs",
+      claimVersionId: "clmv:jnu:temsco:weight-surcharge-threshold-lbs:v1-250",
+      subjectDccId: temscoOpId,
+      predicate: "weight_surcharge_threshold_250lbs_plus_150usd_base_449usd",
+      typedValue: true as string | number | boolean,
+      unitOrCurrency: "lbs",
+      reason:
+        "Derived from preserved TEMSCO Mendenhall Glacier HTML capture: base price $449 (ages 2+); passengers weighing 250 lbs (113 kg) or more are charged an additional $150.00 to reserve adequate space on board.",
+      sourceDccId: srcTemscoPolicyId,
+      organizationName: "TEMSCO Helicopters",
+      corroboratedBy: [],
+      evidenceRefs: [evRefJnuTemscoWeight250],
+    },
+    {
+      claimId: "clm:jnu:temsco:service-animals-and-unassisted-boarding",
+      claimVersionId: "clmv:jnu:temsco:service-animals-and-unassisted-boarding:v1",
+      subjectDccId: temscoOpId,
+      predicate: "prohibits_service_animals_and_requires_unassisted_boarding_steps",
+      typedValue: true as string | number | boolean,
+      unitOrCurrency: "boolean",
+      reason:
+        "Derived from preserved TEMSCO Mendenhall Glacier HTML capture: service animals are not permitted on Astar, Hughes 500, and Airbus H130 aircraft; employees cannot lift guests in or out of the helicopter.",
+      sourceDccId: srcTemscoPolicyId,
+      organizationName: "TEMSCO Helicopters",
+      corroboratedBy: [],
+      evidenceRefs: [evRefJnuTemscoServiceAnimals, evRefJnuTemscoMobility],
+    },
+    {
+      claimId: "clm:jnu:northstar:min-age-8-and-1hr-unassisted-walk",
+      claimVersionId: "clmv:jnu:northstar:min-age-8-and-1hr-unassisted-walk:v1",
+      subjectDccId: northstarOpId,
+      predicate: "minimum_age_8_years_and_one_hour_unassisted_glacier_walk_required",
+      typedValue: true as string | number | boolean,
+      unitOrCurrency: "years",
+      reason:
+        "Derived from preserved NorthStar Walkabout HTML capture: participants must be at least 8 years old and able to walk unassisted for one hour on moderately flat but uneven glacier terrain.",
+      sourceDccId: srcNorthstarPolicyId,
+      organizationName: "NorthStar Trekking",
+      corroboratedBy: [],
+      evidenceRefs: [evRefJnuNorthstarAgeAndWalk],
+    },
+    {
+      claimId: "clm:jnu:northstar:cruise-buffer-300m-and-weight-250lbs",
+      claimVersionId: "clmv:jnu:northstar:cruise-buffer-300m-and-weight-250lbs:v1",
+      subjectDccId: northstarOpId,
+      predicate: "cruise_buffer_60m_post_arrival_45m_pre_departure_300m_window_and_no_bags_drones",
+      typedValue: true as string | number | boolean,
+      unitOrCurrency: "minutes",
+      reason:
+        "Derived from preserved NorthStar Walkabout and FAQs HTML captures: book at least 60 minutes after ship arrival and conclude at least 45 minutes before ship departure (minimum 300-minute port window); bags, purses, selfie sticks, and drones are prohibited.",
+      sourceDccId: srcNorthstarPolicyId,
+      organizationName: "NorthStar Trekking",
+      corroboratedBy: [],
+      evidenceRefs: [evRefJnuNorthstarBuffer, evRefJnuNorthstarWeight250],
+    },
+  ] as const;
+
+  for (const spec of juneauGranularClaimSpecs) {
+    knowledgeLedger.appendEvent({
+      eventType: "claim_created",
+      claimId: spec.claimId,
+      claimVersionId: spec.claimVersionId,
+      recordedAt: juneauPolicyRecordedAt,
+      recordedAtVerified: true,
+      recordingTimeStatus: "verified_database_admission",
+      actorId: "dcc-v031-preserved-source-extractor",
+      isSynthetic: false,
+      provenanceClass: "operational_evidence",
+      reason: spec.reason,
+      claimDefinition: {
+        claimId: spec.claimId,
+        claimVersionId: spec.claimVersionId,
+        subjectDccId: spec.subjectDccId,
+        predicate: spec.predicate,
+        assertionType: "policy",
+        epistemicState: "verified_against_identified_evidence",
+        typedValue: spec.typedValue,
+        unitOrCurrency: spec.unitOrCurrency,
+        validFrom: "2026-01-01T00:00:00.000Z",
+        validTo: "2027-12-31T23:59:59.000Z",
+        sourceObservedAt: capCoastalTour.retrievedAt,
+        sourcePublishedAt: null,
+        retrievedAt: capCoastalTour.retrievedAt,
+        freshnessTtlSeconds: 180 * 86400,
+        sourceAuthority: {
+          sourceDccId: spec.sourceDccId,
+          organizationName: spec.organizationName,
+          authorityTier: "direct_operator",
+          competentDomains: ["operator_safety_and_weight_policy"],
+          claimedDomain: "operator_safety_and_weight_policy",
+          independentlyCorroboratedBySourceDccIds: [...spec.corroboratedBy],
+          licenseOrReusePolicy: "First-party operator published policy facts",
+        },
+        evidenceRefs: [...spec.evidenceRefs],
+      },
+    });
+  }
 
   knowledgeLedger.appendEvent({
     eventType: "claim_created",
@@ -1327,21 +1528,43 @@ export function getV03RuntimeStore(options?: {
         bookingChannelClass: "verified_direct_operator",
         wtaAttributionPresent: false,
         staticAttributes: {
+          entityRole: "direct_part135_usfs_permitted_operator",
+          resellerOrSpecialistPortals:
+            "juneauflightdeck.com,lastfrontiershoreexcursions.com",
+          fareharborShortname: "coastalhelicopters",
+          fareharborItemId: "4012",
+          operatingSeasonMonthsUtc: "5,6,7,8,9",
           basePriceUsd: 459,
           standardPlusPriceUsd260To299Lbs: 609,
           premiumPriceUsd300PlusLbs: 918,
           weightSurchargeThresholdLbs: 260,
           secondaryWeightSurchargeThresholdLbs: 300,
+          secondTierWeightSurchargeLbs: 300,
           weightPolicyType: "surcharge_only",
           supportsWeightOverride: true,
           requestedFormat: "standard_glacier_walk",
           minAgeYears: 0,
+          prohibitsLapChildren: true,
+          postArrivalBufferMinutes: 45,
+          preDepartureBufferMinutes: 45,
+          totalDurationMinutes: 135,
           minPortWindowMinutes: 245,
           comfortablePortWindowMinutes: 275,
+          prohibitsDrones: true,
+          prohibitsSelfieSticks: true,
           prohibitsDronesAndSelfieSticks: true,
+          requiresUnassistedAircraftBoarding: true,
           requiresUnassistedBoarding: true,
         },
-        requiredClaimIds: ["clm:jnu:standard-seat-weight-limit-lbs"],
+        requiredClaimIds: [
+          "clm:jnu:standard-seat-weight-limit-lbs",
+          "clm:jnu:usfs-tongass-commercial-heli-permit-required",
+          "clm:jnu:operating-season-may-through-september",
+          "clm:jnu:coastal:price-tiers-459-609-918",
+          "clm:jnu:coastal:weight-surcharge-threshold-lbs",
+          "clm:jnu:coastal:cruise-buffer-45m-min-window-245m",
+          "clm:jnu:coastal:unassisted-boarding-and-prohibited-items",
+        ],
       },
       {
         candidateDccEntityId: candJnuTemscoId,
@@ -1352,6 +1575,12 @@ export function getV03RuntimeStore(options?: {
         bookingChannelClass: "verified_direct_operator",
         wtaAttributionPresent: false,
         staticAttributes: {
+          entityRole: "direct_part135_usfs_permitted_operator",
+          resellerOrSpecialistPortals:
+            "juneauflightdeck.com,lastfrontiershoreexcursions.com",
+          fareharborShortname: "temscoair-juneau",
+          fareharborItemId: "214803",
+          operatingSeasonMonthsUtc: "5,6,7,8,9",
           basePriceUsd: 449,
           weightSurchargeThresholdLbs: 250,
           weightSurchargeUsd: 150,
@@ -1359,14 +1588,27 @@ export function getV03RuntimeStore(options?: {
           supportsWeightOverride: true,
           requestedFormat: "standard_glacier_walk",
           minAgeYears: 2,
+          postArrivalBufferMinutes: 45,
+          preDepartureBufferMinutes: 45,
+          totalDurationMinutes: 120,
           minPortWindowMinutes: 210,
           comfortablePortWindowMinutes: 240,
+          prohibitsDrones: true,
+          prohibitsSelfieSticks: true,
           prohibitsDronesAndSelfieSticks: true,
+          prohibitsBagsOnAircraft: true,
           prohibitsCarryOnBags: true,
           prohibitsServiceAnimals: true,
+          requiresUnassistedAircraftBoarding: true,
           requiresUnassistedBoarding: true,
         },
-        requiredClaimIds: ["clm:jnu:standard-seat-weight-limit-lbs"],
+        requiredClaimIds: [
+          "clm:jnu:standard-seat-weight-limit-lbs",
+          "clm:jnu:usfs-tongass-commercial-heli-permit-required",
+          "clm:jnu:operating-season-may-through-september",
+          "clm:jnu:temsco:weight-surcharge-threshold-lbs",
+          "clm:jnu:temsco:service-animals-and-unassisted-boarding",
+        ],
       },
       {
         candidateDccEntityId: candJnuNorthstarId,
@@ -1377,6 +1619,12 @@ export function getV03RuntimeStore(options?: {
         bookingChannelClass: "verified_direct_operator",
         wtaAttributionPresent: false,
         staticAttributes: {
+          entityRole: "direct_part135_usfs_permitted_operator",
+          resellerOrSpecialistPortals:
+            "juneauflightdeck.com,lastfrontiershoreexcursions.com",
+          fareharborShortname: "northstartrekking",
+          fareharborItemId: "88310",
+          operatingSeasonMonthsUtc: "5,6,7,8,9",
           basePriceUsd: 499,
           weightSurchargeThresholdLbs: 250,
           weightSurchargeUsd: 150,
@@ -1384,23 +1632,47 @@ export function getV03RuntimeStore(options?: {
           supportsWeightOverride: true,
           requestedFormat: "extended_ice_trek",
           minAgeYears: 8,
+          postArrivalBufferMinutes: 60,
+          preDepartureBufferMinutes: 45,
+          totalDurationMinutes: 195,
           minPortWindowMinutes: 300,
           comfortablePortWindowMinutes: 330,
+          prohibitsDrones: true,
+          prohibitsSelfieSticks: true,
           prohibitsDronesAndSelfieSticks: true,
+          prohibitsBagsOnAircraft: true,
           prohibitsCarryOnBags: true,
+          requiresUnassistedAircraftBoarding: true,
           requiresUnassistedBoarding: true,
+          requiresOneHourUnassistedGlacierWalk: true,
           requiresOneHourGlacierWalk: true,
         },
-        requiredClaimIds: ["clm:jnu:standard-seat-weight-limit-lbs"],
+        requiredClaimIds: [
+          "clm:jnu:standard-seat-weight-limit-lbs",
+          "clm:jnu:usfs-tongass-commercial-heli-permit-required",
+          "clm:jnu:operating-season-may-through-september",
+          "clm:jnu:northstar:min-age-8-and-1hr-unassisted-walk",
+          "clm:jnu:northstar:cruise-buffer-300m-and-weight-250lbs",
+        ],
       },
     ],
     knownExclusions: [
       {
-        externalOrLegacyIdentifier: "wta-reseller-excluded",
-        displayName: "Welcome to Alaska Tours",
-        reasonCode: "WTA_PROHIBITED_BY_GOVERNANCE",
-        explanation: "Never routed or attributed per DCC Alaska governance restriction.",
+        externalOrLegacyIdentifier: "non-operator-resellers-and-specialist-portals",
+        displayName:
+          "Third-Party Resellers, Cruise Excursion Desks & Specialist Portals (Juneau Flight Deck, Last Frontier Shore Excursions)",
+        reasonCode: "EXCLUDED_NON_OPERATOR_RESELLER_OR_PORTAL_ROLE",
+        explanation:
+          "Candidate universe evaluates direct FAA Part 135 / USFS Tongass permitted aircraft operators (Coastal, TEMSCO, NorthStar). Specialist portals (Juneau Flight Deck, Last Frontier Shore Excursions) and third-party tour resellers are downstream comparison/booking channels rather than aircraft operators.",
         supportingEvidenceRefIds: [],
+      },
+      {
+        externalOrLegacyIdentifier: "unpermitted-part91-or-non-icefield-charters",
+        displayName: "Unpermitted Part 91 / Non-USFS-Tongass Icefield Flights",
+        reasonCode: "EXCLUDED_NO_USFS_TONGASS_GLACIER_LANDING_PERMIT",
+        explanation:
+          "Only commercial helicopter operators holding a USDA Forest Service Tongass National Forest Special Use Permit may perform commercial glacier landings on the Juneau Icefield.",
+        supportingEvidenceRefIds: [evRefJnuCoastalUsfsPermit.evidenceRefId],
       },
     ],
     coverageGaps: [
@@ -1450,7 +1722,107 @@ export function getV03RuntimeStore(options?: {
         reasonCode: "JUNEAU_OPERATOR_POLICY_SUBSTANTIATED",
         requiredClaimId: "clm:jnu:standard-seat-weight-limit-lbs",
         predicateType: "claim_must_be_eligible_and_boolean_true",
-        scoreDelta: 20,
+        scoreDelta: 10,
+      },
+      {
+        ruleId: "rule:jnu:usfs-permit-gate",
+        ruleVersionId: "rulev:jnu:usfs-permit-gate:v1",
+        ruleKind: "hard_gate",
+        title: "USDA Forest Service Tongass National Forest Special Use Permit verified",
+        reasonCode: "USFS_TONGASS_PERMIT_VERIFIED",
+        requiredClaimId: "clm:jnu:usfs-tongass-commercial-heli-permit-required",
+        predicateType: "claim_must_be_eligible_and_boolean_true",
+        scoreDelta: 5,
+      },
+      {
+        ruleId: "rule:jnu:operating-season-may-sept",
+        ruleVersionId: "rulev:jnu:operating-season-may-sept:v1",
+        ruleKind: "hard_gate",
+        title: "Seasonal glacier helicopter operating window (May 1 – September 30)",
+        reasonCode: "JUNEAU_MAY_SEPTEMBER_OPERATING_SEASON_VERIFIED",
+        requiredClaimId: "clm:jnu:operating-season-may-through-september",
+        predicateType: "claim_must_be_eligible_and_boolean_true",
+        scoreDelta: 5,
+      },
+      {
+        ruleId: "rule:jnu:coastal:price-tiers-verified",
+        ruleVersionId: "rulev:jnu:coastal:price-tiers-verified:v1",
+        ruleKind: "required_evidence_gate",
+        title: "Coastal Helicopters published price tiers ($459 / $609 / $918) verified",
+        reasonCode: "COASTAL_PRICE_TIERS_VERIFIED",
+        requiredClaimId: "clm:jnu:coastal:price-tiers-459-609-918",
+        predicateType: "claim_must_be_eligible_and_boolean_true",
+        scoreDelta: 2,
+      },
+      {
+        ruleId: "rule:jnu:coastal:weight-surcharge-260-300",
+        ruleVersionId: "rulev:jnu:coastal:weight-surcharge-260-300:v1",
+        ruleKind: "qualification_modifier",
+        title: "Coastal Helicopters 260 lb (1.5-seat) and 300 lb (2-seat) weight surcharge policy verified",
+        reasonCode: "COASTAL_WEIGHT_SURCHARGE_POLICY_VERIFIED",
+        requiredClaimId: "clm:jnu:coastal:weight-surcharge-threshold-lbs",
+        predicateType: "claim_must_be_eligible_and_boolean_true",
+        scoreDelta: 2,
+      },
+      {
+        ruleId: "rule:jnu:coastal:cruise-buffer-245m",
+        ruleVersionId: "rulev:jnu:coastal:cruise-buffer-245m:v1",
+        ruleKind: "hard_gate",
+        title: "Coastal Helicopters 45-minute ship arrival/departure buffer (245-min minimum port window)",
+        reasonCode: "COASTAL_CRUISE_BUFFER_POLICY_VERIFIED",
+        requiredClaimId: "clm:jnu:coastal:cruise-buffer-45m-min-window-245m",
+        predicateType: "claim_must_be_eligible_and_boolean_true",
+        scoreDelta: 2,
+      },
+      {
+        ruleId: "rule:jnu:coastal:unassisted-mobility-and-items",
+        ruleVersionId: "rulev:jnu:coastal:unassisted-mobility-and-items:v1",
+        ruleKind: "hard_gate",
+        title: "Coastal Helicopters unassisted aircraft boarding and prohibited items policy verified",
+        reasonCode: "COASTAL_MOBILITY_AND_PROHIBITED_ITEMS_VERIFIED",
+        requiredClaimId: "clm:jnu:coastal:unassisted-boarding-and-prohibited-items",
+        predicateType: "claim_must_be_eligible_and_boolean_true",
+        scoreDelta: 2,
+      },
+      {
+        ruleId: "rule:jnu:temsco:weight-surcharge-250",
+        ruleVersionId: "rulev:jnu:temsco:weight-surcharge-250:v1",
+        ruleKind: "qualification_modifier",
+        title: "TEMSCO Helicopters 250 lb (+$150.00 extra-space) weight surcharge and $449 base tariff verified",
+        reasonCode: "TEMSCO_WEIGHT_SURCHARGE_POLICY_VERIFIED",
+        requiredClaimId: "clm:jnu:temsco:weight-surcharge-threshold-lbs",
+        predicateType: "claim_must_be_eligible_and_boolean_true",
+        scoreDelta: 2,
+      },
+      {
+        ruleId: "rule:jnu:temsco:service-animal-and-mobility",
+        ruleVersionId: "rulev:jnu:temsco:service-animal-and-mobility:v1",
+        ruleKind: "hard_gate",
+        title: "TEMSCO Helicopters service animal prohibition and unassisted boarding steps verified",
+        reasonCode: "TEMSCO_SERVICE_ANIMAL_AND_MOBILITY_VERIFIED",
+        requiredClaimId: "clm:jnu:temsco:service-animals-and-unassisted-boarding",
+        predicateType: "claim_must_be_eligible_and_boolean_true",
+        scoreDelta: 2,
+      },
+      {
+        ruleId: "rule:jnu:northstar:age-8-and-1hr-glacier-walk",
+        ruleVersionId: "rulev:jnu:northstar:age-8-and-1hr-glacier-walk:v1",
+        ruleKind: "hard_gate",
+        title: "NorthStar Trekking minimum age 8 years and 1-hour unassisted glacier walk policy verified",
+        reasonCode: "NORTHSTAR_AGE_8_AND_WALK_POLICY_VERIFIED",
+        requiredClaimId: "clm:jnu:northstar:min-age-8-and-1hr-unassisted-walk",
+        predicateType: "claim_must_be_eligible_and_boolean_true",
+        scoreDelta: 2,
+      },
+      {
+        ruleId: "rule:jnu:northstar:cruise-buffer-300m-and-weight-250",
+        ruleVersionId: "rulev:jnu:northstar:cruise-buffer-300m-and-weight-250:v1",
+        ruleKind: "hard_gate",
+        title: "NorthStar Trekking 60m/45m cruise buffer (300-min port window) and bag/drone prohibition verified",
+        reasonCode: "NORTHSTAR_CRUISE_BUFFER_AND_ITEMS_VERIFIED",
+        requiredClaimId: "clm:jnu:northstar:cruise-buffer-300m-and-weight-250lbs",
+        predicateType: "claim_must_be_eligible_and_boolean_true",
+        scoreDelta: 2,
       },
       {
         ruleId: "rule:jnu:format-match",
@@ -2226,7 +2598,27 @@ export function getV03RuntimeStore(options?: {
     persistedSnapshot?.events &&
     persistedSnapshot.events.length > 0
   ) {
+    const initialTemplateEvents = knowledgeLedger.getAllEvents();
+    const persistedClaimIds = new Set(persistedSnapshot.events.map((ev) => ev.claimId));
     knowledgeLedger = AppendOnlyKnowledgeLedger.fromEvents(persistedSnapshot.events);
+    for (const tmplEv of initialTemplateEvents) {
+      if (!persistedClaimIds.has(tmplEv.claimId)) {
+        knowledgeLedger.appendEvent({
+          eventType: tmplEv.eventType,
+          claimId: tmplEv.claimId,
+          claimVersionId: tmplEv.claimVersionId,
+          targetPreviousVersionId: tmplEv.targetPreviousVersionId ?? null,
+          recordedAt: tmplEv.recordedAt,
+          recordedAtVerified: tmplEv.recordedAtVerified,
+          recordingTimeStatus: tmplEv.recordingTimeStatus,
+          actorId: tmplEv.actorId,
+          isSynthetic: tmplEv.isSynthetic,
+          provenanceClass: tmplEv.provenanceClass,
+          claimDefinition: tmplEv.claimDefinition ?? undefined,
+          reason: tmplEv.reason,
+        });
+      }
+    }
     const persistedWithdrawal = persistedSnapshot.events.find(
       (ev) => ev.claimVersionId === "clmv:gosno:max-pax-per-shuttle:v2-withdrawn",
     );

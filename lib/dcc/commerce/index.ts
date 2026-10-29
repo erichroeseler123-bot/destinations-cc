@@ -65,11 +65,31 @@ export interface CommercialPartyDetails {
   notes?: string | null;
 }
 
+export interface CommercialCheckoutBookingBinding {
+  operatorShortname: string;
+  fareharborItemId: string | null;
+  fareharborDirectEmbedUrl: string | null;
+  specialistCheckoutUrl: string | null;
+  productCode: string;
+  intendedDate: string | null;
+  intendedDepartureId: string | null;
+  intendedDepartureTime: string | null;
+  partySize: number | null;
+  maxSinglePassengerWeightLbs: number | null;
+  youngestPassengerAgeYears: number | null;
+  shipArrivalTime: string | null;
+  shipDepartureTime: string | null;
+  quotedPricePerPersonUsd: number | null;
+  quotedTotalPriceUsd: number | null;
+}
+
 export interface CreateCommercialHandoffInput {
   originatingSite: string;
   targetSite?: string | null;
   provider: CommercialProvider;
   providerAccount?: string | null;
+  fareharborShortname?: string | null;
+  fareharborItemId?: string | null;
   productCode: string;
   productTitle?: string | null;
   productDestinationUrl: string;
@@ -80,8 +100,14 @@ export interface CreateCommercialHandoffInput {
   idempotencyKey?: string | null;
   intendedDate?: string | null;
   intendedOption?: string | null;
+  intendedDepartureId?: string | null;
+  intendedDepartureTime?: string | null;
   partySize?: number | null;
   partyDetails?: CommercialPartyDetails | null;
+  maxSinglePassengerWeightLbs?: number | null;
+  youngestPassengerAgeYears?: number | null;
+  shipArrivalTime?: string | null;
+  shipDepartureTime?: string | null;
   quotedPriceAmount?: number | null;
   quotedPriceCurrency?: string | null;
   approvedPartnerAttribution?: {
@@ -99,6 +125,8 @@ export interface CommercialHandoffRecord {
   targetSite: string | null;
   provider: CommercialProvider;
   providerAccount: string;
+  fareharborShortname: string | null;
+  fareharborItemId: string | null;
   productCode: string;
   productTitle: string | null;
   destinationUrl: string;
@@ -110,10 +138,17 @@ export interface CommercialHandoffRecord {
   receiptId: string | null;
   intendedDate: string | null;
   intendedOption: string | null;
+  intendedDepartureId: string | null;
+  intendedDepartureTime: string | null;
   partySize: number | null;
   partyDetails: CommercialPartyDetails | null;
+  maxSinglePassengerWeightLbs: number | null;
+  youngestPassengerAgeYears: number | null;
+  shipArrivalTime: string | null;
+  shipDepartureTime: string | null;
   quotedPriceAmount: number | null;
   quotedPriceCurrency: string | null;
+  checkoutBookingBinding: CommercialCheckoutBookingBinding | null;
   approvedPartnerAttribution: ApprovedPartnerAttribution | null;
   outcomeState: CommercialHandoffOutcomeState;
   callerClientId: string;
@@ -668,10 +703,19 @@ export function buildProviderAffiliateHandoffUrl(params: {
   originatingSite: string;
   provider: CommercialProvider;
   providerAccount?: string | null;
+  fareharborShortname?: string | null;
+  fareharborItemId?: string | null;
   productCode: string;
   productDestinationUrl: string;
   handoffId: string;
   campaign?: string | null;
+  receiptId?: string | null;
+  intendedDate?: string | null;
+  intendedDepartureId?: string | null;
+  intendedDepartureTime?: string | null;
+  partySize?: number | null;
+  maxSinglePassengerWeightLbs?: number | null;
+  quotedPriceAmount?: number | null;
 }): ProviderAffiliateUrlResult {
   const siteKey = normalizeOriginatingSite(params.originatingSite);
   const siteDefaults =
@@ -687,6 +731,54 @@ export function buildProviderAffiliateHandoffUrl(params: {
     url = new URL("https://www.viator.com/");
   }
 
+  const appendExplicitDepartureQueryParams = (targetUrl: URL) => {
+    if (params.fareharborItemId?.trim()) {
+      targetUrl.searchParams.set("item", params.fareharborItemId.trim());
+    }
+    if (params.fareharborShortname?.trim() && !targetUrl.searchParams.has("shortname")) {
+      targetUrl.searchParams.set("shortname", params.fareharborShortname.trim());
+    }
+    if (params.intendedDate?.trim()) {
+      targetUrl.searchParams.set("date", params.intendedDate.trim());
+    }
+    if (params.intendedDepartureId?.trim()) {
+      targetUrl.searchParams.set("departure", params.intendedDepartureId.trim());
+    }
+    if (params.intendedDepartureTime?.trim()) {
+      targetUrl.searchParams.set("time", params.intendedDepartureTime.trim());
+    }
+    if (typeof params.partySize === "number" && Number.isFinite(params.partySize)) {
+      targetUrl.searchParams.set("party_size", String(Math.round(params.partySize)));
+    }
+    if (
+      typeof params.maxSinglePassengerWeightLbs === "number" &&
+      Number.isFinite(params.maxSinglePassengerWeightLbs)
+    ) {
+      targetUrl.searchParams.set(
+        "max_weight_lbs",
+        String(Math.round(params.maxSinglePassengerWeightLbs))
+      );
+    }
+    if (
+      typeof params.quotedPriceAmount === "number" &&
+      Number.isFinite(params.quotedPriceAmount)
+    ) {
+      targetUrl.searchParams.set("quoted_price", String(params.quotedPriceAmount));
+    }
+    if (params.receiptId?.trim()) {
+      targetUrl.searchParams.set("receipt_id", params.receiptId.trim());
+    }
+    if (
+      params.fareharborItemId ||
+      params.intendedDate ||
+      params.intendedDepartureId ||
+      params.intendedDepartureTime
+    ) {
+      targetUrl.searchParams.set("tour", params.productCode);
+      targetUrl.searchParams.set("handoff_id", params.handoffId);
+    }
+  };
+
   if (params.provider === "viator") {
     const pid =
       params.providerAccount?.trim() ||
@@ -699,6 +791,7 @@ export function buildProviderAffiliateHandoffUrl(params: {
     url.searchParams.set("mcid", mcid);
     url.searchParams.set("medium", url.searchParams.get("medium") || "api");
     url.searchParams.set("campaign", campaignValue);
+    appendExplicitDepartureQueryParams(url);
 
     return {
       outboundAffiliateUrl: url.toString(),
@@ -720,6 +813,7 @@ export function buildProviderAffiliateHandoffUrl(params: {
     if (!url.searchParams.has("full-items")) {
       url.searchParams.set("full-items", "yes");
     }
+    appendExplicitDepartureQueryParams(url);
 
     return {
       outboundAffiliateUrl: url.toString(),
@@ -739,6 +833,7 @@ export function buildProviderAffiliateHandoffUrl(params: {
     url.searchParams.set("partner_id", partnerId);
     url.searchParams.set("utm_medium", url.searchParams.get("utm_medium") || "online_publisher");
     url.searchParams.set("cmp", cmpValue);
+    appendExplicitDepartureQueryParams(url);
 
     return {
       outboundAffiliateUrl: url.toString(),
@@ -753,6 +848,7 @@ export function buildProviderAffiliateHandoffUrl(params: {
     const refValue = `${baseCampaign}__${params.handoffId}`;
     url.searchParams.set("ref", refValue);
     url.searchParams.set("utm_source", siteKey);
+    appendExplicitDepartureQueryParams(url);
 
     return {
       outboundAffiliateUrl: url.toString(),
@@ -768,6 +864,7 @@ export function buildProviderAffiliateHandoffUrl(params: {
     url.searchParams.set("dcc_handoff_id", params.handoffId);
     url.searchParams.set("utm_source", siteKey);
     url.searchParams.set("utm_campaign", attributionValue);
+    appendExplicitDepartureQueryParams(url);
 
     return {
       outboundAffiliateUrl: url.toString(),
@@ -783,6 +880,7 @@ export function buildProviderAffiliateHandoffUrl(params: {
   url.searchParams.set("dcc_handoff_id", params.handoffId);
   url.searchParams.set("utm_source", siteKey);
   url.searchParams.set("utm_campaign", attributionValue);
+  appendExplicitDepartureQueryParams(url);
 
   return {
     outboundAffiliateUrl: url.toString(),
@@ -791,6 +889,32 @@ export function buildProviderAffiliateHandoffUrl(params: {
     attributionParameterValue: params.handoffId,
   };
 }
+
+const DEFAULT_JUNEAU_FH_TOUR_MAP: Record<
+  string,
+  { shortname: string; itemId: string; defaultPriceUsd: number }
+> = {
+  "jnu-heli-coastal-icefield": {
+    shortname: "coastalhelicopters",
+    itemId: "4012",
+    defaultPriceUsd: 459,
+  },
+  "jnu-heli-mendenhall-landing": {
+    shortname: "temscoair-juneau",
+    itemId: "214803",
+    defaultPriceUsd: 449,
+  },
+  "jnu-heli-temsco-mendenhall": {
+    shortname: "temscoair-juneau",
+    itemId: "214803",
+    defaultPriceUsd: 449,
+  },
+  "jnu-heli-northstar-trek": {
+    shortname: "northstartrekking",
+    itemId: "88310",
+    defaultPriceUsd: 499,
+  },
+};
 
 /**
  * Creates and persists an outbound commercial handoff record.
@@ -843,15 +967,58 @@ export async function createCommercialHandoff(
     }
   }
 
+  const partySize =
+    typeof input.partySize === "number" && Number.isFinite(input.partySize)
+      ? Math.max(1, Math.round(input.partySize))
+      : typeof input.partyDetails?.totalGuests === "number"
+        ? Math.max(1, Math.round(input.partyDetails.totalGuests))
+        : typeof input.partyDetails?.adults === "number"
+          ? Math.max(
+              1,
+              Math.round(
+                (input.partyDetails.adults || 0) +
+                  (input.partyDetails.children || 0) +
+                  (input.partyDetails.seniors || 0) +
+                  (input.partyDetails.infants || 0)
+              )
+            )
+          : null;
+
+  const knownTourMapping = DEFAULT_JUNEAU_FH_TOUR_MAP[input.productCode.trim()] ?? null;
+  const fareharborShortname =
+    input.fareharborShortname?.trim() ||
+    knownTourMapping?.shortname ||
+    (input.provider === "fareharbor" ? input.providerAccount?.trim() ?? null : null);
+  const fareharborItemId =
+    input.fareharborItemId?.trim() || knownTourMapping?.itemId || null;
+
+  const intendedDepartureId =
+    input.intendedDepartureId?.trim() ||
+    (input.intendedOption?.startsWith("dep-") ? input.intendedOption.trim() : null);
+  const intendedDepartureTime =
+    input.intendedDepartureTime?.trim() ||
+    (input.intendedOption && /^\d{1,2}:\d{2}$/.test(input.intendedOption.trim())
+      ? input.intendedOption.trim()
+      : null);
+
   const handoffId = generateOpaqueHandoffId();
   const urlBuilt = buildProviderAffiliateHandoffUrl({
     originatingSite,
     provider: input.provider,
     providerAccount: input.providerAccount,
+    fareharborShortname,
+    fareharborItemId,
     productCode: input.productCode,
     productDestinationUrl: input.productDestinationUrl,
     handoffId,
     campaign: input.campaign,
+    receiptId: input.receiptId ?? null,
+    intendedDate: input.intendedDate ?? null,
+    intendedDepartureId,
+    intendedDepartureTime,
+    partySize,
+    maxSinglePassengerWeightLbs: input.maxSinglePassengerWeightLbs ?? null,
+    quotedPriceAmount: input.quotedPriceAmount ?? null,
   });
 
   let derivedTargetSite: string | null = input.targetSite
@@ -866,6 +1033,46 @@ export async function createCommercialHandoff(
       derivedTargetSite = null;
     }
   }
+
+  const quotedPricePerPerson =
+    typeof input.quotedPriceAmount === "number"
+      ? input.quotedPriceAmount
+      : knownTourMapping?.defaultPriceUsd ?? null;
+  const quotedTotalPrice =
+    quotedPricePerPerson !== null && partySize !== null
+      ? Number((quotedPricePerPerson * partySize).toFixed(2))
+      : quotedPricePerPerson;
+
+  const yearMonthPath =
+    input.intendedDate && /^\d{4}-\d{2}/.test(input.intendedDate)
+      ? `calendar/${input.intendedDate.slice(0, 4)}/${input.intendedDate.slice(5, 7)}/`
+      : "";
+
+  const fareharborDirectEmbedUrl =
+    fareharborShortname && fareharborItemId
+      ? `https://fareharbor.com/embeds/book/${encodeURIComponent(fareharborShortname)}/items/${encodeURIComponent(fareharborItemId)}/${yearMonthPath}?asn=${encodeURIComponent(urlBuilt.providerAccount)}&ref=${encodeURIComponent(urlBuilt.attributionParameterValue)}&full-items=yes`
+      : null;
+
+  const checkoutBookingBinding: CommercialCheckoutBookingBinding | null =
+    fareharborShortname || fareharborItemId || intendedDepartureId || intendedDepartureTime
+      ? {
+          operatorShortname: fareharborShortname || urlBuilt.providerAccount,
+          fareharborItemId,
+          fareharborDirectEmbedUrl,
+          specialistCheckoutUrl: urlBuilt.outboundAffiliateUrl,
+          productCode: input.productCode,
+          intendedDate: input.intendedDate ?? null,
+          intendedDepartureId,
+          intendedDepartureTime,
+          partySize,
+          maxSinglePassengerWeightLbs: input.maxSinglePassengerWeightLbs ?? null,
+          youngestPassengerAgeYears: input.youngestPassengerAgeYears ?? null,
+          shipArrivalTime: input.shipArrivalTime ?? null,
+          shipDepartureTime: input.shipDepartureTime ?? null,
+          quotedPricePerPersonUsd: quotedPricePerPerson,
+          quotedTotalPriceUsd: quotedTotalPrice,
+        }
+      : null;
 
   const approvedPartnerAttribution: ApprovedPartnerAttribution | null =
     input.approvedPartnerAttribution?.partnerId?.trim()
@@ -885,26 +1092,22 @@ export async function createCommercialHandoff(
     ...(input.metadata ?? {}),
     ...(rawIdempotencyKey ? { idempotencyKey: rawIdempotencyKey } : {}),
     ...(derivedTargetSite ? { targetSite: derivedTargetSite } : {}),
+    ...(fareharborShortname ? { fareharborShortname } : {}),
+    ...(fareharborItemId ? { fareharborItemId } : {}),
+    ...(intendedDepartureId ? { intendedDepartureId } : {}),
+    ...(intendedDepartureTime ? { intendedDepartureTime } : {}),
+    ...(typeof input.maxSinglePassengerWeightLbs === "number"
+      ? { maxSinglePassengerWeightLbs: input.maxSinglePassengerWeightLbs }
+      : {}),
+    ...(typeof input.youngestPassengerAgeYears === "number"
+      ? { youngestPassengerAgeYears: input.youngestPassengerAgeYears }
+      : {}),
+    ...(input.shipArrivalTime ? { shipArrivalTime: input.shipArrivalTime } : {}),
+    ...(input.shipDepartureTime ? { shipDepartureTime: input.shipDepartureTime } : {}),
+    ...(checkoutBookingBinding ? { checkoutBookingBinding } : {}),
     ...(approvedPartnerAttribution ? { approvedPartnerAttribution } : {}),
     outcomeState,
   };
-
-  const partySize =
-    typeof input.partySize === "number" && Number.isFinite(input.partySize)
-      ? Math.max(1, Math.round(input.partySize))
-      : typeof input.partyDetails?.totalGuests === "number"
-        ? Math.max(1, Math.round(input.partyDetails.totalGuests))
-        : typeof input.partyDetails?.adults === "number"
-          ? Math.max(
-              1,
-              Math.round(
-                (input.partyDetails.adults || 0) +
-                  (input.partyDetails.children || 0) +
-                  (input.partyDetails.seniors || 0) +
-                  (input.partyDetails.infants || 0)
-              )
-            )
-          : null;
 
   let createdAtIso = new Date().toISOString();
   const pool = getCommercePool();
@@ -959,7 +1162,7 @@ export async function createCommercialHandoff(
           input.evaluationRunId ?? null,
           input.receiptId ?? null,
           input.intendedDate ?? null,
-          input.intendedOption ?? null,
+          input.intendedOption ?? intendedDepartureId ?? null,
           partySize,
           JSON.stringify(input.partyDetails ?? null),
           input.quotedPriceAmount ?? null,
@@ -983,6 +1186,8 @@ export async function createCommercialHandoff(
     targetSite: derivedTargetSite,
     provider: input.provider,
     providerAccount: urlBuilt.providerAccount,
+    fareharborShortname,
+    fareharborItemId,
     productCode: input.productCode,
     productTitle: input.productTitle ?? null,
     destinationUrl: input.productDestinationUrl,
@@ -993,11 +1198,18 @@ export async function createCommercialHandoff(
     evaluationRunId: input.evaluationRunId ?? null,
     receiptId: input.receiptId ?? null,
     intendedDate: input.intendedDate ?? null,
-    intendedOption: input.intendedOption ?? null,
+    intendedOption: input.intendedOption ?? intendedDepartureId ?? null,
+    intendedDepartureId,
+    intendedDepartureTime,
     partySize,
     partyDetails: input.partyDetails ?? null,
+    maxSinglePassengerWeightLbs: input.maxSinglePassengerWeightLbs ?? null,
+    youngestPassengerAgeYears: input.youngestPassengerAgeYears ?? null,
+    shipArrivalTime: input.shipArrivalTime ?? null,
+    shipDepartureTime: input.shipDepartureTime ?? null,
     quotedPriceAmount: input.quotedPriceAmount ?? null,
     quotedPriceCurrency: input.quotedPriceCurrency ?? null,
+    checkoutBookingBinding,
     approvedPartnerAttribution,
     outcomeState,
     callerClientId: input.callerClientId || "public_traveler_browser",
@@ -1067,6 +1279,10 @@ export async function getCommercialHandoffById(
       meta.outcomeState && typeof meta.outcomeState === "object"
         ? (meta.outcomeState as CommercialHandoffOutcomeState)
         : buildInitialHandoffOutcomeState(row.provider);
+    const checkoutBindingFromMeta =
+      meta.checkoutBookingBinding && typeof meta.checkoutBookingBinding === "object"
+        ? (meta.checkoutBookingBinding as CommercialCheckoutBookingBinding)
+        : null;
 
     const loaded: CommercialHandoffRecord = {
       handoffId: row.handoff_id,
@@ -1074,6 +1290,10 @@ export async function getCommercialHandoffById(
       targetSite: targetSiteFromMeta,
       provider: row.provider,
       providerAccount: row.provider_account,
+      fareharborShortname:
+        typeof meta.fareharborShortname === "string" ? meta.fareharborShortname : null,
+      fareharborItemId:
+        typeof meta.fareharborItemId === "string" ? meta.fareharborItemId : null,
       productCode: row.product_code,
       productTitle: row.product_title,
       destinationUrl: row.destination_url,
@@ -1085,11 +1305,28 @@ export async function getCommercialHandoffById(
       receiptId: row.receipt_id,
       intendedDate: row.intended_date,
       intendedOption: row.intended_option,
+      intendedDepartureId:
+        typeof meta.intendedDepartureId === "string" ? meta.intendedDepartureId : null,
+      intendedDepartureTime:
+        typeof meta.intendedDepartureTime === "string" ? meta.intendedDepartureTime : null,
       partySize: row.party_size,
       partyDetails: row.party_details_json ?? null,
+      maxSinglePassengerWeightLbs:
+        typeof meta.maxSinglePassengerWeightLbs === "number"
+          ? meta.maxSinglePassengerWeightLbs
+          : null,
+      youngestPassengerAgeYears:
+        typeof meta.youngestPassengerAgeYears === "number"
+          ? meta.youngestPassengerAgeYears
+          : null,
+      shipArrivalTime:
+        typeof meta.shipArrivalTime === "string" ? meta.shipArrivalTime : null,
+      shipDepartureTime:
+        typeof meta.shipDepartureTime === "string" ? meta.shipDepartureTime : null,
       quotedPriceAmount:
         row.quoted_price_amount !== null ? Number(row.quoted_price_amount) : null,
       quotedPriceCurrency: row.quoted_price_currency,
+      checkoutBookingBinding: checkoutBindingFromMeta,
       approvedPartnerAttribution: partnerAttrFromMeta,
       outcomeState: outcomeStateFromMeta,
       callerClientId: row.caller_client_id,
@@ -1970,3 +2207,387 @@ export async function listCommercialOutcomes(options?: {
   });
   return filtered.slice(0, limit);
 }
+
+export interface RevalidateCommercialHandoffInput {
+  handoffId: string;
+  receiptEvaluatedPartySize?: number | null;
+  receiptEvaluatedDate?: string | null;
+  requestedPartySize?: number | null;
+  requestedDepartureId?: string | null;
+  requestedDepartureTime?: string | null;
+  liveOperatorPricePerPersonUsd?: number | null;
+  liveAvailableSeats?: number | null;
+  liveDepartureStatus?: "OPEN" | "SOLD_OUT" | "WEATHER_HOLD" | "CLOSED" | null;
+  liveMaxSinglePassengerWeightLbs?: number | null;
+  liveYoungestPassengerAgeYears?: number | null;
+  requiresAssistedAircraftBoarding?: boolean | null;
+  canWalkUnassistedOneHourUnevenTerrain?: boolean | null;
+  carryingDrone?: boolean | null;
+  carryingSelfieStickOrExtension?: boolean | null;
+  hasServiceAnimal?: boolean | null;
+  shipArrivalTime?: string | null;
+  shipDepartureTime?: string | null;
+  travelerAcceptedWeightSurcharge?: boolean | null;
+}
+
+export interface CommercialHandoffRevalidationResult {
+  handoffId: string;
+  receiptId: string | null;
+  productCode: string;
+  fareharborShortname: string | null;
+  fareharborItemId: string | null;
+  intendedDate: string | null;
+  intendedDepartureId: string | null;
+  intendedDepartureTime: string | null;
+  partySize: number | null;
+  progressionAllowed: boolean;
+  revalidationStatus: "passed" | "blocked";
+  blockingReasons: string[];
+  checks: {
+    bindingConsistency: {
+      passed: boolean;
+      reasons: string[];
+    };
+    priceAndSurcharge: {
+      passed: boolean;
+      quotedPerPersonUsd: number | null;
+      quotedTotalUsd: number | null;
+      liveBasePerPersonUsd: number | null;
+      requiredWeightSurchargeUsd: number;
+      liveRequiredTotalUsd: number | null;
+      reasons: string[];
+    };
+    availabilityAndSchedule: {
+      passed: boolean;
+      departureStatus: string;
+      availableSeats: number;
+      requiredPartySize: number | null;
+      shipArrivalTime: string | null;
+      shipDepartureTime: string | null;
+      earliestAllowedDepartureMinutes: number | null;
+      latestAllowedReturnMinutes: number | null;
+      estimatedReturnMinutes: number | null;
+      reasons: string[];
+    };
+    passengerConstraints: {
+      passed: boolean;
+      maxSinglePassengerWeightLbs: number | null;
+      youngestPassengerAgeYears: number | null;
+      requiresAssistedAircraftBoarding: boolean;
+      carryingDrone: boolean;
+      carryingSelfieStickOrExtension: boolean;
+      hasServiceAnimal: boolean;
+      reasons: string[];
+    };
+  };
+  revalidatedAt: string;
+}
+
+function parseHhMmToMinutesHelper(hhmm: string | null | undefined): number | null {
+  if (!hhmm || typeof hhmm !== "string") return null;
+  const m = /^(\d{1,2}):(\d{2})$/.exec(hhmm.trim());
+  if (!m) return null;
+  const hh = Number(m[1]);
+  const mm = Number(m[2]);
+  if (hh < 0 || hh > 23 || mm < 0 || mm > 59) return null;
+  return hh * 60 + mm;
+}
+
+export async function revalidateCommercialHandoffBeforeCommitment(
+  input: RevalidateCommercialHandoffInput,
+): Promise<CommercialHandoffRevalidationResult | null> {
+  const handoff = await getCommercialHandoffById(input.handoffId);
+  if (!handoff) {
+    return null;
+  }
+
+  const bindingReasons: string[] = [];
+  const priceReasons: string[] = [];
+  const availabilityReasons: string[] = [];
+  const passengerReasons: string[] = [];
+
+  const partySize = handoff.partySize;
+  const intendedDate = handoff.intendedDate;
+  const intendedDepartureId = handoff.intendedDepartureId;
+  const intendedDepartureTime = handoff.intendedDepartureTime;
+  const fareharborShortname = handoff.fareharborShortname;
+  const fareharborItemId = handoff.fareharborItemId;
+
+  if (
+    !fareharborShortname ||
+    !fareharborItemId ||
+    !intendedDate ||
+    !intendedDepartureId ||
+    !intendedDepartureTime ||
+    partySize === null ||
+    partySize <= 0
+  ) {
+    bindingReasons.push("INCOMPLETE_BOOKABLE_DEPARTURE_BINDING_BLOCKS_PROGRESSION");
+  }
+
+  if (
+    input.receiptEvaluatedPartySize !== undefined &&
+    input.receiptEvaluatedPartySize !== null &&
+    partySize !== input.receiptEvaluatedPartySize
+  ) {
+    bindingReasons.push("REVALIDATION_PARTY_SIZE_MISMATCH_WITH_RECEIPT_BLOCKS_PROGRESSION");
+  }
+
+  if (
+    input.requestedPartySize !== undefined &&
+    input.requestedPartySize !== null &&
+    partySize !== input.requestedPartySize
+  ) {
+    bindingReasons.push("REVALIDATION_PARTY_SIZE_MISMATCH_WITH_HANDOFF_BLOCKS_PROGRESSION");
+  }
+
+  if (
+    input.receiptEvaluatedDate &&
+    intendedDate &&
+    intendedDate.slice(0, 10) !== input.receiptEvaluatedDate.slice(0, 10)
+  ) {
+    bindingReasons.push("REVALIDATION_DATE_MISMATCH_WITH_RECEIPT_BLOCKS_PROGRESSION");
+  }
+
+  if (
+    input.requestedDepartureId &&
+    intendedDepartureId &&
+    intendedDepartureId !== input.requestedDepartureId
+  ) {
+    bindingReasons.push("REVALIDATION_DEPARTURE_MISMATCH_WITH_HANDOFF_BLOCKS_PROGRESSION");
+  }
+
+  if (
+    input.requestedDepartureTime &&
+    intendedDepartureTime &&
+    intendedDepartureTime !== input.requestedDepartureTime
+  ) {
+    bindingReasons.push("REVALIDATION_DEPARTURE_TIME_MISMATCH_WITH_HANDOFF_BLOCKS_PROGRESSION");
+  }
+
+  const isCoastal = handoff.productCode === "jnu-heli-coastal-icefield";
+  const isTemsco = handoff.productCode === "jnu-heli-temsco-mendenhall";
+  const isNorthStar = handoff.productCode === "jnu-heli-northstar-level1-trek";
+
+  const catalogBasePerPersonUsd = isCoastal
+    ? 459
+    : isTemsco
+      ? 419
+      : isNorthStar
+        ? 529
+        : handoff.quotedPriceAmount ?? 459;
+
+  const effectivePartySize = partySize ?? 1;
+  const quotedTotalUsd =
+    handoff.quotedPriceAmount !== null
+      ? handoff.quotedPriceAmount >= catalogBasePerPersonUsd * effectivePartySize * 0.9 &&
+        effectivePartySize > 1
+        ? handoff.quotedPriceAmount
+        : handoff.quotedPriceAmount * effectivePartySize
+      : null;
+  const quotedPerPersonUsd =
+    quotedTotalUsd !== null ? Number((quotedTotalUsd / effectivePartySize).toFixed(2)) : null;
+
+  const liveBasePerPersonUsd =
+    input.liveOperatorPricePerPersonUsd !== undefined &&
+    input.liveOperatorPricePerPersonUsd !== null
+      ? input.liveOperatorPricePerPersonUsd
+      : quotedPerPersonUsd ?? catalogBasePerPersonUsd;
+
+  const effectiveWeightLbs =
+    input.liveMaxSinglePassengerWeightLbs !== undefined &&
+    input.liveMaxSinglePassengerWeightLbs !== null
+      ? input.liveMaxSinglePassengerWeightLbs
+      : handoff.maxSinglePassengerWeightLbs;
+
+  let requiredWeightSurchargeUsd = 0;
+  if (typeof effectiveWeightLbs === "number") {
+    if (isCoastal) {
+      if (effectiveWeightLbs >= 300) {
+        requiredWeightSurchargeUsd = 459;
+      } else if (effectiveWeightLbs >= 260) {
+        requiredWeightSurchargeUsd = 150;
+      }
+    } else if (isTemsco) {
+      if (effectiveWeightLbs >= 250) {
+        requiredWeightSurchargeUsd = 179.5;
+      }
+    }
+  }
+
+  const liveRequiredTotalUsd =
+    liveBasePerPersonUsd !== null
+      ? Number((liveBasePerPersonUsd * effectivePartySize + requiredWeightSurchargeUsd).toFixed(2))
+      : null;
+
+  if (
+    quotedPerPersonUsd !== null &&
+    liveBasePerPersonUsd !== null &&
+    Math.abs(liveBasePerPersonUsd - quotedPerPersonUsd) > 0.01
+  ) {
+    priceReasons.push("LIVE_OPERATOR_PRICE_DRIFT_BLOCKS_PROGRESSION");
+  }
+
+  if (
+    requiredWeightSurchargeUsd > 0 &&
+    quotedTotalUsd !== null &&
+    liveRequiredTotalUsd !== null &&
+    liveRequiredTotalUsd > quotedTotalUsd + 0.01 &&
+    input.travelerAcceptedWeightSurcharge !== true
+  ) {
+    priceReasons.push("UNQUOTED_WEIGHT_SURCHARGE_AT_CHECKIN_BLOCKS_PROGRESSION");
+  }
+
+  const departureStatus = input.liveDepartureStatus ?? "OPEN";
+  const availableSeats =
+    input.liveAvailableSeats !== undefined && input.liveAvailableSeats !== null
+      ? input.liveAvailableSeats
+      : 6;
+
+  if (departureStatus !== "OPEN") {
+    availabilityReasons.push(`DEPARTURE_STATUS_${departureStatus}_BLOCKS_PROGRESSION`);
+  }
+
+  if (partySize !== null && availableSeats < partySize) {
+    availabilityReasons.push("DEPARTURE_INSUFFICIENT_SEATS_BLOCKS_PROGRESSION");
+  }
+
+  if (intendedDate) {
+    const monthMatch = /^\d{4}-(\d{2})-\d{2}/.exec(intendedDate);
+    const monthNum = monthMatch ? Number(monthMatch[1]) : NaN;
+    if (!Number.isFinite(monthNum) || monthNum < 5 || monthNum > 9) {
+      availabilityReasons.push("OUTSIDE_MAY_SEPTEMBER_OPERATING_SEASON_BLOCKS_PROGRESSION");
+    }
+  }
+
+  const shipArrivalTime = input.shipArrivalTime ?? handoff.shipArrivalTime;
+  const shipDepartureTime = input.shipDepartureTime ?? handoff.shipDepartureTime;
+  const depMins = parseHhMmToMinutesHelper(intendedDepartureTime);
+  const arrMins = parseHhMmToMinutesHelper(shipArrivalTime);
+  const sailMins = parseHhMmToMinutesHelper(shipDepartureTime);
+
+  const tourDurationMins = isNorthStar ? 210 : 135;
+  const bufferMins = isNorthStar ? 60 : 45;
+  const earliestAllowedDepartureMinutes = arrMins !== null ? arrMins + bufferMins : null;
+  const latestAllowedReturnMinutes = sailMins !== null ? sailMins - bufferMins : null;
+  const estimatedReturnMinutes = depMins !== null ? depMins + tourDurationMins : null;
+
+  if (
+    depMins !== null &&
+    earliestAllowedDepartureMinutes !== null &&
+    depMins < earliestAllowedDepartureMinutes
+  ) {
+    availabilityReasons.push("DEPARTURE_VIOLATES_SHIP_ARRIVAL_BUFFER_BLOCKS_PROGRESSION");
+  }
+
+  if (
+    estimatedReturnMinutes !== null &&
+    latestAllowedReturnMinutes !== null &&
+    estimatedReturnMinutes > latestAllowedReturnMinutes
+  ) {
+    availabilityReasons.push("DEPARTURE_VIOLATES_SHIP_DEPARTURE_BUFFER_BLOCKS_PROGRESSION");
+  }
+
+  const youngestAge =
+    input.liveYoungestPassengerAgeYears !== undefined &&
+    input.liveYoungestPassengerAgeYears !== null
+      ? input.liveYoungestPassengerAgeYears
+      : handoff.youngestPassengerAgeYears;
+  const requiresAssistedBoarding = input.requiresAssistedAircraftBoarding === true;
+  const canWalkOneHour = input.canWalkUnassistedOneHourUnevenTerrain;
+  const carryingDrone = input.carryingDrone === true;
+  const carryingSelfieStick = input.carryingSelfieStickOrExtension === true;
+  const hasServiceAnimal = input.hasServiceAnimal === true;
+
+  if (effectiveWeightLbs === null || effectiveWeightLbs === undefined) {
+    passengerReasons.push("MISSING_PASSENGER_WEIGHT_BLOCKS_PROGRESSION");
+  } else if (isNorthStar && effectiveWeightLbs > 250) {
+    passengerReasons.push("PASSENGER_EXCEEDS_NORTHSTAR_250LB_HARD_CAP_BLOCKS_PROGRESSION");
+  }
+
+  if (requiresAssistedBoarding) {
+    passengerReasons.push("ASSISTED_BOARDING_NOT_PERMITTED_BLOCKS_PROGRESSION");
+  }
+
+  if (isNorthStar && canWalkOneHour === false) {
+    passengerReasons.push("NORTHSTAR_1HR_UNASSISTED_GLACIER_WALK_REQUIRED_BLOCKS_PROGRESSION");
+  }
+
+  if (isNorthStar && typeof youngestAge === "number" && youngestAge < 8) {
+    passengerReasons.push("PASSENGER_UNDER_NORTHSTAR_MIN_AGE_8_BLOCKS_PROGRESSION");
+  }
+
+  if (carryingDrone) {
+    passengerReasons.push("PROHIBITED_ITEM_DRONE_BLOCKS_PROGRESSION");
+  }
+
+  if (carryingSelfieStick) {
+    passengerReasons.push("PROHIBITED_ITEM_EXTENSION_POLE_BLOCKS_PROGRESSION");
+  }
+
+  if (isTemsco && hasServiceAnimal) {
+    passengerReasons.push("SERVICE_ANIMAL_RESTRICTED_ON_HELICOPTER_BLOCKS_PROGRESSION");
+  }
+
+  const blockingReasons = [
+    ...bindingReasons,
+    ...priceReasons,
+    ...availabilityReasons,
+    ...passengerReasons,
+  ];
+  const progressionAllowed = blockingReasons.length === 0;
+
+  return {
+    handoffId: handoff.handoffId,
+    receiptId: handoff.receiptId,
+    productCode: handoff.productCode,
+    fareharborShortname,
+    fareharborItemId,
+    intendedDate,
+    intendedDepartureId,
+    intendedDepartureTime,
+    partySize,
+    progressionAllowed,
+    revalidationStatus: progressionAllowed ? "passed" : "blocked",
+    blockingReasons,
+    checks: {
+      bindingConsistency: {
+        passed: bindingReasons.length === 0,
+        reasons: bindingReasons,
+      },
+      priceAndSurcharge: {
+        passed: priceReasons.length === 0,
+        quotedPerPersonUsd,
+        quotedTotalUsd,
+        liveBasePerPersonUsd,
+        requiredWeightSurchargeUsd,
+        liveRequiredTotalUsd,
+        reasons: priceReasons,
+      },
+      availabilityAndSchedule: {
+        passed: availabilityReasons.length === 0,
+        departureStatus,
+        availableSeats,
+        requiredPartySize: partySize,
+        shipArrivalTime,
+        shipDepartureTime,
+        earliestAllowedDepartureMinutes,
+        latestAllowedReturnMinutes,
+        estimatedReturnMinutes,
+        reasons: availabilityReasons,
+      },
+      passengerConstraints: {
+        passed: passengerReasons.length === 0,
+        maxSinglePassengerWeightLbs: effectiveWeightLbs ?? null,
+        youngestPassengerAgeYears: youngestAge ?? null,
+        requiresAssistedAircraftBoarding: requiresAssistedBoarding,
+        carryingDrone,
+        carryingSelfieStickOrExtension: carryingSelfieStick,
+        hasServiceAnimal,
+        reasons: passengerReasons,
+      },
+    },
+    revalidatedAt: new Date().toISOString(),
+  };
+}
+

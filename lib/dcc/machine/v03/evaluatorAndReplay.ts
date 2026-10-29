@@ -335,7 +335,12 @@ async function executeDeterministicEvaluationCore(params: {
       }
 
       if (rule.predicateType === "claim_must_be_eligible_and_boolean_true") {
-        if (claimState.typedValue !== true) {
+        const isSubstantiatedPolicyValue =
+          claimState.typedValue === true ||
+          (typeof claimState.typedValue === "number" &&
+            Number.isFinite(claimState.typedValue) &&
+            claimState.typedValue > 0);
+        if (!isSubstantiatedPolicyValue) {
           if (rule.ruleKind === "required_evidence_gate") {
             indeterminate = true;
             reasonCodes.push(rule.reasonCode);
@@ -555,21 +560,24 @@ async function executeDeterministicEvaluationCore(params: {
     // Candidate-specific prohibited items (absolute passenger restrictions)
     if (
       params.inputs.carryingDrone === true &&
-      cand.staticAttributes.prohibitsDrones === true
+      (cand.staticAttributes.prohibitsDrones === true ||
+        cand.staticAttributes.prohibitsDronesAndSelfieSticks === true)
     ) {
       ineligible = true;
       reasonCodes.push("PROHIBITED_ITEM_DRONE");
     }
     if (
       params.inputs.carryingSelfieStickOrExtension === true &&
-      cand.staticAttributes.prohibitsSelfieSticks === true
+      (cand.staticAttributes.prohibitsSelfieSticks === true ||
+        cand.staticAttributes.prohibitsDronesAndSelfieSticks === true)
     ) {
       ineligible = true;
       reasonCodes.push("PROHIBITED_ITEM_SELFIE_STICK_OR_EXTENSION");
     }
     if (
       params.inputs.carryingBagsOrPursesOnFlight === true &&
-      cand.staticAttributes.prohibitsBagsOnAircraft === true
+      (cand.staticAttributes.prohibitsBagsOnAircraft === true ||
+        cand.staticAttributes.prohibitsCarryOnBags === true)
     ) {
       ineligible = true;
       reasonCodes.push("PROHIBITED_ITEM_BAGS_ON_AIRCRAFT_LOCKER_REQUIRED");
@@ -586,19 +594,140 @@ async function executeDeterministicEvaluationCore(params: {
     }
 
     // Candidate-specific unassisted mobility gates (absolute passenger restrictions)
-    if (
-      params.inputs.requiresAssistedAircraftBoarding === true &&
-      cand.staticAttributes.requiresUnassistedAircraftBoarding === true
-    ) {
+    const requiresSelfBoarding =
+      cand.staticAttributes.requiresUnassistedAircraftBoarding === true ||
+      cand.staticAttributes.requiresUnassistedBoarding === true;
+    const requiresOneHourWalk =
+      cand.staticAttributes.requiresOneHourUnassistedGlacierWalk === true ||
+      cand.staticAttributes.requiresOneHourGlacierWalk === true;
+
+    if (params.inputs.requiresAssistedAircraftBoarding === true && requiresSelfBoarding) {
       ineligible = true;
       reasonCodes.push("UNASSISTED_AIRCRAFT_BOARDING_REQUIRED");
     }
     if (
       params.inputs.canWalkUnassistedOneHourUnevenTerrain === false &&
-      cand.staticAttributes.requiresOneHourUnassistedGlacierWalk === true
+      requiresOneHourWalk
     ) {
       ineligible = true;
       reasonCodes.push("UNASSISTED_ONE_HOUR_GLACIER_WALK_REQUIRED");
+    }
+
+    // Juneau Helicopter Tours seasonal operation & input-completeness rules
+    if (params.bundle.engineId === "juneau-helicopter-tours") {
+      // 1. Seasonal Operating Window (May 1 – September 30 UTC)
+      const targetDateStr =
+        typeof params.inputs.intendedDate === "string"
+          ? params.inputs.intendedDate
+          : typeof params.inputs.date === "string"
+            ? params.inputs.date
+            : params.validAtIso;
+      const parsedTargetDate = new Date(targetDateStr);
+      if (!Number.isNaN(parsedTargetDate.getTime())) {
+        const utcMonth = parsedTargetDate.getUTCMonth() + 1; // 1..12
+        if (utcMonth < 5 || utcMonth > 9) {
+          ineligible = true;
+          reasonCodes.push("OUTSIDE_VERIFIED_MAY_SEPTEMBER_OPERATING_SEASON");
+        }
+      }
+
+      // 2. Mandatory Core Physical Input: maxSinglePassengerWeightLbs (Omission -> indeterminate)
+      if (
+        params.inputs.maxSinglePassengerWeightLbs === undefined ||
+        params.inputs.maxSinglePassengerWeightLbs === null
+      ) {
+        indeterminate = true;
+        reasonCodes.push("MISSING_REQUIRED_WEIGHT_INPUT_INDETERMINATE");
+      }
+
+      // 3. Conditional Party Size, Mobility, Port Window, and Departure Slot Inputs (Omission -> qualified)
+      const effectivePartySize =
+        typeof params.inputs.partySize === "number"
+          ? params.inputs.partySize
+          : paxCount;
+      if (effectivePartySize === undefined || effectivePartySize === null) {
+        qualified = true;
+        score -= 4;
+        reasonCodes.push("PARTY_SIZE_CONFIRMATION_REQUIRED_QUALIFIED");
+      } else if (effectivePartySize <= 0) {
+        ineligible = true;
+        reasonCodes.push("INVALID_PASSENGER_COUNT");
+      }
+
+      if (
+        requiresSelfBoarding &&
+        (params.inputs.requiresAssistedAircraftBoarding === undefined ||
+          params.inputs.requiresAssistedAircraftBoarding === null)
+      ) {
+        qualified = true;
+        score -= 5;
+        reasonCodes.push("MOBILITY_SELF_BOARDING_CONFIRMATION_REQUIRED_QUALIFIED");
+      }
+      if (
+        requiresOneHourWalk &&
+        (params.inputs.canWalkUnassistedOneHourUnevenTerrain === undefined ||
+          params.inputs.canWalkUnassistedOneHourUnevenTerrain === null)
+      ) {
+        qualified = true;
+        score -= 5;
+        reasonCodes.push("GLACIER_WALK_MOBILITY_CONFIRMATION_REQUIRED_QUALIFIED");
+      }
+      if (
+        params.inputs.cruisePortWindowMinutes === undefined ||
+        params.inputs.cruisePortWindowMinutes === null
+      ) {
+        qualified = true;
+        score -= 5;
+        reasonCodes.push("CRUISE_PORT_WINDOW_CONFIRMATION_REQUIRED_QUALIFIED");
+      }
+
+      const selectedDepTime =
+        typeof params.inputs.selectedDepartureTime === "string"
+          ? params.inputs.selectedDepartureTime.trim()
+          : "";
+      const selectedDepId =
+        typeof params.inputs.selectedDepartureId === "string"
+          ? params.inputs.selectedDepartureId.trim()
+          : "";
+      if (!selectedDepTime && !selectedDepId) {
+        qualified = true;
+        score -= 4;
+        reasonCodes.push("DEPARTURE_SLOT_SELECTION_REQUIRED_QUALIFIED");
+      } else if (selectedDepTime) {
+        const parseHm = (s: unknown): number | null => {
+          if (typeof s !== "string") return null;
+          const m = s.trim().match(/^(\d{1,2}):(\d{2})$/);
+          if (!m) return null;
+          return Number(m[1]) * 60 + Number(m[2]);
+        };
+        const depMin = parseHm(selectedDepTime);
+        const arrMin = parseHm(params.inputs.shipArrivalTime);
+        const shipDepMin = parseHm(params.inputs.shipDepartureTime);
+        const postArrBuf =
+          typeof cand.staticAttributes.postArrivalBufferMinutes === "number"
+            ? cand.staticAttributes.postArrivalBufferMinutes
+            : 45;
+        const preDepBuf =
+          typeof cand.staticAttributes.preDepartureBufferMinutes === "number"
+            ? cand.staticAttributes.preDepartureBufferMinutes
+            : 45;
+        const tourDur =
+          typeof cand.staticAttributes.totalDurationMinutes === "number"
+            ? cand.staticAttributes.totalDurationMinutes
+            : 135;
+        if (depMin !== null && arrMin !== null && depMin < arrMin + postArrBuf) {
+          ineligible = true;
+          reasonCodes.push("SELECTED_DEPARTURE_VIOLATES_SHIP_ARRIVAL_BUFFER");
+        }
+        if (
+          depMin !== null &&
+          shipDepMin !== null &&
+          depMin + tourDur + preDepBuf > shipDepMin
+        ) {
+          ineligible = true;
+          reasonCodes.push("SELECTED_DEPARTURE_VIOLATES_SHIP_DEPARTURE_BUFFER");
+        }
+      }
     }
 
     // Candidate-specific cruise port transfer window gate (when supplied)
@@ -619,7 +748,10 @@ async function executeDeterministicEvaluationCore(params: {
     // Candidate-specific operator weight surcharge threshold (distinguished from absolute passenger restriction)
     const paxWeight = params.inputs.maxSinglePassengerWeightLbs;
     const candWeightSurchargeLbs = cand.staticAttributes.weightSurchargeThresholdLbs;
-    const candSecondTierSurchargeLbs = cand.staticAttributes.secondTierWeightSurchargeLbs;
+    const candSecondTierSurchargeLbs =
+      typeof cand.staticAttributes.secondTierWeightSurchargeLbs === "number"
+        ? cand.staticAttributes.secondTierWeightSurchargeLbs
+        : cand.staticAttributes.secondaryWeightSurchargeThresholdLbs;
     const candHardWeightMaxLbs = cand.staticAttributes.hardMaxWeightLbs;
     if (typeof paxWeight === "number" && typeof candWeightSurchargeLbs === "number") {
       if (typeof candHardWeightMaxLbs === "number" && paxWeight > candHardWeightMaxLbs) {
@@ -651,15 +783,19 @@ async function executeDeterministicEvaluationCore(params: {
 
     // Explicit live-departure / day-of-weather confirmation check when requested by caller
     if (params.inputs.requireLiveDepartureConfirmation === true) {
-      const liveInvClaimId = cand.staticAttributes.liveInventoryClaimId;
-      const weatherClaimId = cand.staticAttributes.dayOfWeatherClaimId;
+      const liveInvClaimId =
+        typeof cand.staticAttributes.liveInventoryClaimId === "string"
+          ? cand.staticAttributes.liveInventoryClaimId
+          : "clm:jnu:live-departure-seat-inventory";
+      const weatherClaimId =
+        typeof cand.staticAttributes.dayOfWeatherClaimId === "string"
+          ? cand.staticAttributes.dayOfWeatherClaimId
+          : "clm:jnu:day-of-flight-vfr-weather";
       for (const cid of [liveInvClaimId, weatherClaimId]) {
-        if (typeof cid === "string") {
-          const st = projection.effectiveClaimByClaimId.get(cid);
-          if (!st || !st.canSupportPositiveEligibility) {
-            indeterminate = true;
-            reasonCodes.push(`LIVE_CONFIRMATION_UNKNOWN:${cid}`);
-          }
+        const st = projection.effectiveClaimByClaimId.get(cid);
+        if (!st || !st.canSupportPositiveEligibility) {
+          indeterminate = true;
+          reasonCodes.push(`LIVE_CONFIRMATION_UNKNOWN:${cid}`);
         }
       }
     }

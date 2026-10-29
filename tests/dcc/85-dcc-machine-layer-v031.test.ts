@@ -1012,8 +1012,8 @@ test("v0.3.1 Gate 7: Repair Verification — Withdrawn GoSno Seed Containment, P
   });
   assert.equal(firstAdditiveRepair.preservedExistingEventsCount, 7);
   assert.equal(firstAdditiveRepair.preservedUnverifiedLegacyEventsCount, 7);
-  assert.equal(firstAdditiveRepair.newlyAppendedEventsCount, 11);
-  assert.equal(firstAdditiveRepair.events.length, 18);
+  assert.equal(firstAdditiveRepair.newlyAppendedEventsCount, 21);
+  assert.equal(firstAdditiveRepair.events.length, 28);
 
   // Verify the original 7 legacy events are preserved at eventSeq 1..7 as unverified_legacy_recording_time
   for (let i = 0; i < 7; i++) {
@@ -1022,7 +1022,7 @@ test("v0.3.1 Gate 7: Repair Verification — Withdrawn GoSno Seed Containment, P
     assert.equal(legacyEv.recordedAtVerified, false);
     assert.equal(legacyEv.recordingTimeStatus, "unverified_legacy_recording_time");
   }
-  // Verify eventSeq 8..18 are verified_database_admission and reference the earlier unverified records
+  // Verify eventSeq 8..28 are verified_database_admission and reference the earlier unverified records
   const correctiveWithdrawal = firstAdditiveRepair.events[7]!;
   assert.equal(
     correctiveWithdrawal.claimVersionId,
@@ -1041,7 +1041,7 @@ test("v0.3.1 Gate 7: Repair Verification — Withdrawn GoSno Seed Containment, P
     writeSnapshotToDisk: false,
   });
   assert.equal(secondAdditiveRepair.newlyAppendedEventsCount, 0);
-  assert.equal(secondAdditiveRepair.events.length, 18);
+  assert.equal(secondAdditiveRepair.events.length, 28);
   assert.deepEqual(
     secondAdditiveRepair.admittedTimestamps,
     firstAdditiveRepair.admittedTimestamps,
@@ -1068,7 +1068,221 @@ test("v0.3.1 Gate 7: Repair Verification — Withdrawn GoSno Seed Containment, P
 
   // Restore clean singleton runtime store for any subsequent checks
   resetV03RuntimeStore();
+
+  // 9. Verify November off-season rejection, complete July in-season trace, receipt-to-handoff consistency check, and pre-booking revalidation gate
+  const { POST: postHandoffRoute } = await import("../../app/api/v1/commerce/handoffs/route");
+  const { POST: postRevalidateRoute } = await import(
+    "../../app/api/v1/commerce/handoffs/revalidate/route"
+  );
+
+  // 9a. November off-season evaluation must reject all candidates with OUTSIDE_VERIFIED_MAY_SEPTEMBER_OPERATING_SEASON
+  const novEvalRes = await postV03EvaluateRoute(
+    new Request("https://www.destinationcommandcenter.com/api/v1/v03/evaluate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        engineId: "juneau-helicopter-tours",
+        validAt: "2026-11-15T18:00:00.000Z",
+        constraints: {
+          partySize: 2,
+          maxSinglePassengerWeightLbs: 210,
+          youngestPassengerAgeYears: 34,
+          requiresAssistedAircraftBoarding: false,
+          canWalkUnassistedOneHourUnevenTerrain: true,
+          cruisePortWindowMinutes: 420,
+          selectedDepartureId: "dep-coastal-1330",
+          selectedDepartureTime: "13:30",
+          shipArrivalTime: "10:00",
+          shipDepartureTime: "20:00",
+        },
+      }),
+    }),
+  );
+  const novEvalBody = (await novEvalRes.json()) as Record<string, any>;
+  assert.equal(novEvalBody.evaluation.decisionState, "no_viable_candidates");
+  for (const d of novEvalBody.evaluation.candidateDispositions) {
+    assert.equal(d.disposition, "ineligible");
+    assert.equal(
+      d.reasonCodes.includes("OUTSIDE_VERIFIED_MAY_SEPTEMBER_OPERATING_SEASON"),
+      true,
+    );
+  }
+
+  // 9b. Complete July in-season evaluation with full evidence trace (11 claims, 12 rules, 13 evidenceRefs)
+  const julyEvalRes = await postV03EvaluateRoute(
+    new Request("https://www.destinationcommandcenter.com/api/v1/v03/evaluate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        engineId: "juneau-helicopter-tours",
+        validAt: "2026-07-15T18:00:00.000Z",
+        constraints: {
+          partySize: 2,
+          maxSinglePassengerWeightLbs: 255,
+          maxBudgetPerPersonUsd: 500,
+          youngestPassengerAgeYears: 10,
+          hasLapChildUnder2: false,
+          requiresAssistedAircraftBoarding: false,
+          canWalkUnassistedOneHourUnevenTerrain: true,
+          carryingDrone: false,
+          carryingSelfieStickOrExtension: false,
+          carryingBagsOrPursesOnFlight: false,
+          hasServiceAnimal: true,
+          cruisePortWindowMinutes: 285,
+          selectedDepartureId: "dep-coastal-1330",
+          selectedDepartureTime: "13:30",
+          shipArrivalTime: "11:30",
+          shipDepartureTime: "18:00",
+          requestedFormat: "icefield_excursion",
+        },
+      }),
+    }),
+  );
+  const julyEvalBody = (await julyEvalRes.json()) as Record<string, any>;
+  assert.equal(julyEvalBody.ok, true);
+  assert.equal(julyEvalBody.evaluation.decisionState, "recommended");
+  const julyReceiptPayload = julyEvalBody.evaluation.receipt.payload;
+  assert.equal(Object.keys(julyReceiptPayload.pinnedClaimEventHashes).length, 11);
+  assert.equal(Object.keys(julyReceiptPayload.pinnedRuleVersionHashes).length, 12);
+  assert.equal(Object.keys(julyReceiptPayload.pinnedEvidenceHashes).length, 13);
+
+  // 9c. Consistency check: handoff with partySize=3 against receipt evaluated with partySize=2 must fail with 409 Conflict
+  const mismatchHandoffRes = await postHandoffRoute(
+    new Request("https://www.destinationcommandcenter.com/api/v1/commerce/handoffs", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        provider: "fareharbor",
+        providerAccount: "coastalhelicopters",
+        fareharborShortname: "coastalhelicopters",
+        fareharborItemId: "4012",
+        productCode: "jnu-heli-coastal-icefield",
+        productDestinationUrl: "https://juneauflightdeck.com/book",
+        receiptId: julyEvalBody.receiptId,
+        intendedDate: "2026-07-15",
+        intendedDepartureId: "dep-coastal-1330",
+        intendedDepartureTime: "13:30",
+        partySize: 3,
+        quotedPriceAmount: 1377,
+        quotedPriceCurrency: "USD",
+      }),
+    }),
+  );
+  assert.equal(mismatchHandoffRes.status, 409);
+  const mismatchHandoffBody = (await mismatchHandoffRes.json()) as Record<string, any>;
+  assert.equal(mismatchHandoffBody.error.code, "HANDOFF_RECEIPT_PARTY_SIZE_MISMATCH");
+
+  // 9d. Consistent departure-bound handoff (partySize=2) succeeds and encodes exact item, date, departure, and party size
+  const validHandoffRes = await postHandoffRoute(
+    new Request("https://www.destinationcommandcenter.com/api/v1/commerce/handoffs", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        provider: "fareharbor",
+        providerAccount: "coastalhelicopters",
+        fareharborShortname: "coastalhelicopters",
+        fareharborItemId: "4012",
+        productCode: "jnu-heli-coastal-icefield",
+        productTitle: "Icefield Excursion & Glacier Walk (Coastal Helicopters)",
+        productDestinationUrl: "https://juneauflightdeck.com/book",
+        receiptId: julyEvalBody.receiptId,
+        evaluationRunId: julyEvalBody.evaluationRunId,
+        intendedDate: "2026-07-15",
+        intendedDepartureId: "dep-coastal-1330",
+        intendedDepartureTime: "13:30",
+        partySize: 2,
+        maxSinglePassengerWeightLbs: 255,
+        youngestPassengerAgeYears: 10,
+        shipArrivalTime: "11:30",
+        shipDepartureTime: "18:00",
+        quotedPriceAmount: 918,
+        quotedPriceCurrency: "USD",
+      }),
+    }),
+  );
+  assert.equal(validHandoffRes.status, 201);
+  const validHandoffBody = (await validHandoffRes.json()) as Record<string, any>;
+  const handoffId = String(validHandoffBody.handoff_id);
+  const outboundUrl = String(validHandoffBody.handoff.outboundAffiliateUrl);
+  assert.equal(outboundUrl.includes("shortname=coastalhelicopters"), true);
+  assert.equal(outboundUrl.includes("item=4012"), true);
+  assert.equal(outboundUrl.includes("date=2026-07-15"), true);
+  assert.equal(outboundUrl.includes("departure=dep-coastal-1330"), true);
+  assert.equal(outboundUrl.includes("time=13%3A30"), true);
+  assert.equal(outboundUrl.includes("party_size=2"), true);
+
+  // 9e. Active pre-booking revalidation passes when price, seats, schedule buffer, and passenger checks match
+  const revalPassRes = await postRevalidateRoute(
+    new Request(
+      "https://www.destinationcommandcenter.com/api/v1/commerce/handoffs/revalidate",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          handoffId,
+          liveOperatorPricePerPersonUsd: 459,
+          liveAvailableSeats: 6,
+          liveDepartureStatus: "OPEN",
+          liveMaxSinglePassengerWeightLbs: 255,
+          requiresAssistedAircraftBoarding: false,
+          carryingDrone: false,
+        }),
+      },
+    ),
+  );
+  assert.equal(revalPassRes.status, 200);
+  const revalPassBody = (await revalPassRes.json()) as Record<string, any>;
+  assert.equal(revalPassBody.progressionAllowed, true);
+
+  // 9f. Active pre-booking revalidation blocks progression (409) when price drifts, departure is unavailable, or passenger check fails
+  const revalBlockRes = await postRevalidateRoute(
+    new Request(
+      "https://www.destinationcommandcenter.com/api/v1/commerce/handoffs/revalidate",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          handoffId,
+          liveOperatorPricePerPersonUsd: 499,
+          liveAvailableSeats: 1,
+          liveMaxSinglePassengerWeightLbs: 268,
+          requiresAssistedAircraftBoarding: true,
+          carryingDrone: true,
+        }),
+      },
+    ),
+  );
+  assert.equal(revalBlockRes.status, 409);
+  const revalBlockBody = (await revalBlockRes.json()) as Record<string, any>;
+  assert.equal(revalBlockBody.progressionAllowed, false);
+  assert.equal(
+    revalBlockBody.blockingReasons.includes("LIVE_OPERATOR_PRICE_DRIFT_BLOCKS_PROGRESSION"),
+    true,
+  );
+  assert.equal(
+    revalBlockBody.blockingReasons.includes(
+      "UNQUOTED_WEIGHT_SURCHARGE_AT_CHECKIN_BLOCKS_PROGRESSION",
+    ),
+    true,
+  );
+  assert.equal(
+    revalBlockBody.blockingReasons.includes(
+      "DEPARTURE_INSUFFICIENT_SEATS_BLOCKS_PROGRESSION",
+    ),
+    true,
+  );
+  assert.equal(
+    revalBlockBody.blockingReasons.includes(
+      "ASSISTED_BOARDING_NOT_PERMITTED_BLOCKS_PROGRESSION",
+    ),
+    true,
+  );
+  assert.equal(
+    revalBlockBody.blockingReasons.includes("PROHIBITED_ITEM_DRONE_BLOCKS_PROGRESSION"),
+    true,
+  );
 });
+
 
 
 

@@ -823,10 +823,12 @@ export async function runGenuineJuneauEvidenceCanary(options?: {
     ],
     knownExclusions: [
       {
-        externalOrLegacyIdentifier: "wta-unverified-reseller",
-        displayName: "Welcome to Alaska Tours (Excluded Third-Party Reseller)",
-        reasonCode: "WTA_TRAFFIC_PROHIBITED_BY_GOVERNANCE",
-        explanation: "Excluded per DCC commercial governance policy.",
+        externalOrLegacyIdentifier: "non-operator-resellers-and-specialist-portals",
+        displayName:
+          "Third-Party Resellers, Cruise Excursion Desks & Specialist Portals (Juneau Flight Deck, Last Frontier Shore Excursions)",
+        reasonCode: "EXCLUDED_NON_OPERATOR_RESELLER_OR_PORTAL_ROLE",
+        explanation:
+          "Candidate universe evaluates direct FAA Part 135 / USFS Tongass permitted aircraft operators; specialist portals and resellers are downstream booking/comparison channels rather than aircraft operators.",
         supportingEvidenceRefIds: [],
       },
     ],
@@ -1525,11 +1527,21 @@ export async function runGenuineJuneauOperationalPackV031() {
     ],
     knownExclusions: [
       {
-        externalOrLegacyIdentifier: "wta-reseller-excluded",
-        displayName: "Welcome to Alaska Tours (WTA)",
-        reasonCode: "WTA_PROHIBITED_BY_GOVERNANCE",
-        explanation: "Never routed or attributed per DCC Alaska governance policy.",
+        externalOrLegacyIdentifier: "non-operator-resellers-and-specialist-portals",
+        displayName:
+          "Third-Party Resellers, Cruise Excursion Desks & Specialist Portals (Juneau Flight Deck, Last Frontier Shore Excursions)",
+        reasonCode: "EXCLUDED_NON_OPERATOR_RESELLER_OR_PORTAL_ROLE",
+        explanation:
+          "Candidate universe evaluates direct FAA Part 135 / USFS Tongass permitted aircraft operators; specialist portals and resellers are downstream booking/comparison channels rather than aircraft operators.",
         supportingEvidenceRefIds: [],
+      },
+      {
+        externalOrLegacyIdentifier: "unpermitted-part91-or-non-icefield-charters",
+        displayName: "Unpermitted Part 91 / Non-USFS-Tongass Icefield Flights",
+        reasonCode: "EXCLUDED_NO_USFS_TONGASS_GLACIER_LANDING_PERMIT",
+        explanation:
+          "Only commercial helicopter operators holding a USDA Forest Service Tongass National Forest Special Use Permit may perform commercial glacier landings on the Juneau Icefield.",
+        supportingEvidenceRefIds: [evCoastalUsfsPermit.evidenceRefId],
       },
     ],
     coverageGaps: [
@@ -1583,18 +1595,26 @@ export async function runGenuineJuneauOperationalPackV031() {
   });
 
   // Scenario 1 (Synthetic Traveler Scenario Fixture evaluated against real preserved operator policies):
-  // Cruise passenger party: 255 lb passenger, age 7 child in party, 280-minute cruise port window
+  // In-season Alaska cruise passenger party (2026-07-15): 2 passengers, 255 lb max weight, age 7 child,
+  // 280-minute cruise port window, unassisted boarding & 1-hr uneven terrain walk confirmed, 13:30 departure selected
   // -> Coastal Helicopters: `eligible` (255 < 260 lbs surcharge threshold, age 7 >= 0, 280 >= 275 min comfortable window)
   // -> TEMSCO Helicopters: `qualified` (255 >= 250 lbs surcharge threshold -> +$150.00 extra-space surcharge, age 7 >= 2, 280 >= 240 min window)
   // -> NorthStar Trekking: `ineligible` (age 7 < 8 minAgeYears on Walkabout AND 280 < 300 minPortWindowMinutes)
   const mixedDispositionEvaluation = await evaluateCurrentV03({
     rawClientRequestBody: {
-      validAt: "2026-11-15T18:00:00.000Z",
+      validAt: "2026-07-15T18:00:00.000Z",
       inputs: {
+        partySize: 2,
         maxSinglePassengerWeightLbs: 255,
         youngestPassengerAgeYears: 7,
         cruisePortWindowMinutes: 280,
         maxBudgetPerPersonUsd: 650,
+        requiresAssistedAircraftBoarding: false,
+        canWalkUnassistedOneHourUnevenTerrain: true,
+        selectedDepartureId: "dep-coastal-1330",
+        selectedDepartureTime: "13:30",
+        shipArrivalTime: "11:00",
+        shipDepartureTime: "17:00",
       },
     },
     bundle: jnuOperationalBundle,
@@ -1607,12 +1627,17 @@ export async function runGenuineJuneauOperationalPackV031() {
   // -> All 3 candidates resolve to `indeterminate` because `clm:jnu:live-departure-seat-inventory` and `clm:jnu:day-of-flight-vfr-weather` are `unknown`!
   const liveConfirmationRequiredEvaluation = await evaluateCurrentV03({
     rawClientRequestBody: {
-      validAt: "2026-11-15T18:00:00.000Z",
+      validAt: "2026-07-15T18:00:00.000Z",
       inputs: {
+        partySize: 2,
         maxSinglePassengerWeightLbs: 185,
         youngestPassengerAgeYears: 30,
         cruisePortWindowMinutes: 420,
         maxBudgetPerPersonUsd: 650,
+        requiresAssistedAircraftBoarding: false,
+        canWalkUnassistedOneHourUnevenTerrain: true,
+        selectedDepartureId: "dep-coastal-1330",
+        selectedDepartureTime: "13:30",
         requireLiveDepartureConfirmation: true,
       },
     },
@@ -1626,12 +1651,17 @@ export async function runGenuineJuneauOperationalPackV031() {
   // rather than rejected as ineligible, whereas a passenger with prohibited items or service animal on TEMSCO is `ineligible`!
   const weightSurchargeVsRestrictionEvaluation = await evaluateCurrentV03({
     rawClientRequestBody: {
-      validAt: "2026-11-15T18:00:00.000Z",
+      validAt: "2026-07-15T18:00:00.000Z",
       inputs: {
+        partySize: 2,
         maxSinglePassengerWeightLbs: 305,
         youngestPassengerAgeYears: 35,
         cruisePortWindowMinutes: 420,
         maxBudgetPerPersonUsd: 950,
+        requiresAssistedAircraftBoarding: false,
+        canWalkUnassistedOneHourUnevenTerrain: true,
+        selectedDepartureId: "dep-coastal-1330",
+        selectedDepartureTime: "13:30",
         hasServiceAnimal: true,
       },
     },

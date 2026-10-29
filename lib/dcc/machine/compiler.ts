@@ -417,10 +417,11 @@ export function compileDecisionEngineBundle(
     (spec.engineId === "juneau-helicopter-tours"
       ? [
           {
-            candidateOrOperator: "Welcome to Alaska Tours (WTA)",
-            reasonCode: "EXCLUDED_UNAPPROVED_RESELLER_POLICY",
+            candidateOrOperator:
+              "Third-Party Tour Resellers & Specialist Portals (Non-Operator Distribution Channels)",
+            reasonCode: "EXCLUDED_NON_OPERATOR_RESELLER_OR_PORTAL_ROLE",
             explanation:
-              "Excluded by DCC governance policy: unowned reseller attribution and links are prohibited.",
+              "Candidate universe evaluates direct FAA Part 135 / USFS Tongass permitted aircraft operators; specialist portals (Juneau Flight Deck, Last Frontier Shore Excursions) and third-party resellers are downstream booking/comparison channels rather than operating carriers.",
           },
           {
             candidateOrOperator: "Unpermitted Part 91 / Private Charter Flights",
