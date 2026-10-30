@@ -1,0 +1,580 @@
+[
+  {
+    "slug": "virgin-islands-ecotours",
+    "name": "Virgin Islands Ecotours",
+    "city": "St. Thomas, USVI",
+    "website": "https://www.viecotours.com",
+    "verifiedBusinessEmail": "info@viecotours.com",
+    "overview": "Kayak and snorkel experiences around the Virgin Islands, including St. Thomas’s Mangrove Lagoon. Compare the selected excursion, starting point and time on the water before choosing your day.",
+    "specialties": [
+      "Kayaking",
+      "Snorkeling",
+      "Nature excursions"
+    ],
+    "areasServed": [
+      "St. Thomas, USVI"
+    ],
+    "fareharborShortname": "viecotours",
+    "publicListings": [
+      {
+        "code": "5199KSML",
+        "title": "St Thomas Mangrove Lagoon Kayak and Snorkel Tour in the US Virgin Islands",
+        "supplierName": "Virgin Islands Ecotours",
+        "canonicalUrl": "https://www.viator.com/tours/St-Thomas/St-Thomas-Mangrove-Lagoon-Kayak-and-Snorkel-Tour/d965-5199KSML",
+        "durationText": "2 hours 30 minutes",
+        "checkedAt": "2026-10-30"
+      }
+    ],
+    "planningNotes": [
+      {
+        "title": "Choose the right island",
+        "text": "The operator offers activities on more than one Virgin Island. Check the departure island and meeting point on your selected tour, rather than relying on the operator name alone."
+      },
+      {
+        "title": "Check the activity mix",
+        "text": "The listed Mangrove Lagoon experience is a kayak and snorkel tour. Confirm whether a hike, equipment, transport or lunch is included in the particular option you select."
+      },
+      {
+        "title": "Allow for the whole journey",
+        "text": "The approximate tour duration does not establish your time from ship to meeting point and back. Check transfers, check-in and your own return deadline separately."
+      }
+    ],
+    "sources": [
+      {
+        "label": "Virgin Islands Ecotours official website",
+        "url": "https://www.viecotours.com",
+        "checkedAt": "2026-10-30"
+      },
+      {
+        "label": "Operator booking link on FareHarbor",
+        "url": "https://fareharbor.com/embeds/book/viecotours/items/?full-items=yes",
+        "checkedAt": "2026-10-30"
+      }
+    ]
+  },
+  {
+    "slug": "cruz-bay-watersports",
+    "name": "Cruz Bay Watersports",
+    "city": "St. John, USVI",
+    "website": "https://cruzbaywatersports.com/",
+    "verifiedBusinessEmail": "info@cruzbaywatersports.com",
+    "overview": "Sailing, snorkeling and sunset experiences with departures on St. John and St. Thomas. Start with your island and departure location, then choose the outing that fits your time ashore.",
+    "specialties": [
+      "Snorkel sails",
+      "Sunset cruises",
+      "Island excursions"
+    ],
+    "areasServed": [
+      "St. John, USVI"
+    ],
+    "fareharborShortname": "cruzbaywatersports",
+    "publicListings": [
+      {
+        "code": "114771P1",
+        "title": "St. John Days End Sunset Sail with Open Bar from the Westin",
+        "supplierName": "Cruz Bay Watersports",
+        "canonicalUrl": "https://www.viator.com/tours/St-John/Westin-Champagne-Sunset-Sail/d4521-114771P1",
+        "durationText": "1 hour 30 minutes",
+        "checkedAt": "2026-10-30"
+      },
+      {
+        "code": "114771P3",
+        "title": "St. John PiZZA Pi Snorkel Sail with Beach Stop, Lunch & Open Bar - Westin",
+        "supplierName": "Cruz Bay Watersports",
+        "canonicalUrl": "https://www.viator.com/tours/St-John/Westin-Pizza-Pi-Snorkel-Sail/d4521-114771P3",
+        "durationText": "5 hours",
+        "checkedAt": "2026-10-30"
+      }
+    ],
+    "planningNotes": [
+      {
+        "title": "Select your departure",
+        "text": "Tours depart from different islands and resort locations. The Westin departures below should not be treated as downtown Cruz Bay or St. Thomas departures."
+      },
+      {
+        "title": "Lunch and sunset are different plans",
+        "text": "The selected Pizza Pi excursion is a longer daytime outing; the sunset sail is shorter but later. Compare both the start time and return journey before choosing."
+      },
+      {
+        "title": "Check cross-island details",
+        "text": "For a BVI excursion or an inter-island transfer, ask about required travel documents, separate transport and the planned return. Those details are not established by the listings below."
+      }
+    ],
+    "sources": [
+      {
+        "label": "Cruz Bay Watersports official website",
+        "url": "https://cruzbaywatersports.com/",
+        "checkedAt": "2026-10-30"
+      },
+      {
+        "label": "Operator booking link on FareHarbor",
+        "url": "https://fareharbor.com/embeds/book/cruzbaywatersports/?full-items=yes&flow=283111",
+        "checkedAt": "2026-10-30"
+      }
+    ]
+  },
+  {
+    "slug": "bahamas-jet-boat",
+    "name": "Bahamas Jet Boat",
+    "city": "Nassau, Bahamas",
+    "website": "https://bahamasjetboat.com/",
+    "verifiedBusinessEmail": "info@bahamasjetboat.com",
+    "overview": "Nassau-based boat excursions and island experiences. Use the official operator’s current tour descriptions to distinguish swimming-pig outings, beach activities and what is included in each departure.",
+    "specialties": [
+      "Boat excursions",
+      "Island visits",
+      "Water activities"
+    ],
+    "areasServed": [
+      "Nassau, Bahamas"
+    ],
+    "fareharborShortname": "bahamasjetboat",
+    "publicListings": [
+      {
+        "code": "52556P13",
+        "title": "Nassau Swimming Pigs: Snorkeling, Lunch & Private Beach Club",
+        "supplierName": "Bahamas Jet Boat Ltd.",
+        "canonicalUrl": "https://www.viator.com/tours/Nassau/Exclusive-Swimming-Pigs-Speed-Boat-Snorkeling-Beach-Bar-and-Grill-Package/d420-52556P13",
+        "durationText": "4 hours",
+        "checkedAt": "2026-10-30"
+      }
+    ],
+    "planningNotes": [
+      {
+        "title": "Identify the exact outing",
+        "text": "A swimming-pig excursion, a jet-boat ride and a beach-club package can be different products. Match the actual itinerary before comparing prices."
+      },
+      {
+        "title": "Check transport and meeting points",
+        "text": "Confirm where to meet, whether port or hotel transfers are included, and the check-in deadline for the selected trip."
+      },
+      {
+        "title": "Plan the return",
+        "text": "For a cruise port day, compare the operator’s stated return time and transfer arrangements with your ship’s confirmed all-aboard time. A generic tour duration is not enough."
+      }
+    ],
+    "sources": [
+      {
+        "label": "Bahamas Jet Boat official website",
+        "url": "https://bahamasjetboat.com/",
+        "checkedAt": "2026-10-30"
+      },
+      {
+        "label": "Operator booking link on FareHarbor",
+        "url": "https://fareharbor.com/embeds/book/bahamasjetboat/items/?language=en-gb&full-items=yes&back=https://bahamasjetboat.com/",
+        "checkedAt": "2026-10-30"
+      }
+    ]
+  },
+  {
+    "slug": "jolly-pirates",
+    "name": "Jolly Pirates",
+    "city": "Aruba",
+    "website": "https://www.jolly-pirates.com/",
+    "verifiedBusinessEmail": "info@jolly-pirates.com",
+    "overview": "Pirate-ship snorkeling and sunset sailing in Aruba. Compare the time on the water, swimming stops and the distinction between a sightseeing sail and a dinner experience.",
+    "specialties": [
+      "Snorkeling",
+      "Sunset sails",
+      "Pirate-ship cruises"
+    ],
+    "areasServed": [
+      "Aruba"
+    ],
+    "fareharborShortname": "jolly-pirates",
+    "publicListings": [
+      {
+        "code": "37387P2",
+        "title": "Jolly Pirate Sunset Sail with Open Bar",
+        "supplierName": "Jolly Pirates Sailing Cruises & Snorkeling",
+        "canonicalUrl": "https://www.viator.com/tours/Aruba/Sunset-Pirate-Cruise-in-Aruba/d28-37387P2",
+        "durationText": "2 hours",
+        "checkedAt": "2026-10-30"
+      },
+      {
+        "code": "37387P3",
+        "title": "Jolly Pirate Afternoon Sail with Snorkeling",
+        "supplierName": "Jolly Pirates Sailing Cruises & Snorkeling",
+        "canonicalUrl": "https://www.viator.com/tours/Aruba/Afternoon-Pirate-Sail-and-Snorkel-Cruise-in-Aruba/d28-37387P3",
+        "durationText": "3 hours",
+        "checkedAt": "2026-10-30"
+      },
+      {
+        "code": "37387P4",
+        "title": "Adults Only Jolly Pirate Sunset Grub and Grog Dinner Sail",
+        "supplierName": "Jolly Pirates Sailing Cruises & Snorkeling",
+        "canonicalUrl": "https://www.viator.com/tours/Aruba/Jolly-Pirates-Grub-and-Grog-Pirate-Fest/d28-37387P4",
+        "durationText": "3 hours",
+        "checkedAt": "2026-10-30"
+      }
+    ],
+    "planningNotes": [
+      {
+        "title": "Choose sail or snorkel",
+        "text": "A sunset sail and an afternoon snorkeling excursion do not have the same activity mix. Use the selected product’s inclusions rather than assuming every cruise includes swimming."
+      },
+      {
+        "title": "Check the age rules",
+        "text": "The selected Grub and Grog dinner sail is listed as adults only. Confirm the permitted ages on the exact departure if traveling with children."
+      },
+      {
+        "title": "Compare meals and transport",
+        "text": "Check whether food, drinks and transfers are included for your option. Compare the same departure, passenger categories and mandatory charges across channels."
+      }
+    ],
+    "sources": [
+      {
+        "label": "Jolly Pirates official website",
+        "url": "https://www.jolly-pirates.com/",
+        "checkedAt": "2026-10-30"
+      },
+      {
+        "label": "Operator booking link on FareHarbor",
+        "url": "https://fareharbor.com/embeds/book/jolly-pirates/items/64354/calendar/?ref=https%3A%2F%2Fwww.jolly-pirates.com",
+        "checkedAt": "2026-10-30"
+      }
+    ]
+  },
+  {
+    "slug": "kayaking-puerto-rico",
+    "name": "Kayaking Puerto Rico",
+    "city": "Fajardo, Puerto Rico",
+    "website": "https://kayakingpuertorico.com/",
+    "verifiedBusinessEmail": "info@kayakingpuertorico.com",
+    "overview": "Guided kayaking and aquatic excursions in Puerto Rico, including bioluminescent-bay outings in Fajardo. The place, evening schedule and journey to and from the launch matter as much as the activity itself.",
+    "specialties": [
+      "Bio-bay kayaking",
+      "Snorkeling",
+      "Aquatic excursions"
+    ],
+    "areasServed": [
+      "Fajardo, Puerto Rico"
+    ],
+    "fareharborShortname": "kayakingpuertorico",
+    "publicListings": [
+      {
+        "code": "9266P3",
+        "title": "Bio Bay Kayak Tour in Fajardo",
+        "supplierName": "Kayaking Puerto Rico",
+        "canonicalUrl": "https://www.viator.com/tours/Fajardo/Bio-Bay-Kayak-Tour/d23854-9266P3",
+        "durationText": "2 hours",
+        "checkedAt": "2026-10-30"
+      }
+    ],
+    "planningNotes": [
+      {
+        "title": "Fajardo is a specific location",
+        "text": "The listed bio-bay departure is in Fajardo. Do not treat a Vieques or San Juan experience with a similar title as the same product."
+      },
+      {
+        "title": "Include the evening transfer",
+        "text": "Confirm check-in, the actual launch time and transport back to your accommodation or ship. A two-hour activity does not describe the complete journey."
+      },
+      {
+        "title": "Ask about participation",
+        "text": "Check swimming expectations, paddling requirements, age limits and any assistance needed with the operator. Missing accessibility information should be confirmed before booking."
+      }
+    ],
+    "sources": [
+      {
+        "label": "Kayaking Puerto Rico official website",
+        "url": "https://kayakingpuertorico.com/",
+        "checkedAt": "2026-10-30"
+      },
+      {
+        "label": "Operator booking link on FareHarbor",
+        "url": "https://fareharbor.com/embeds/book/kayakingpuertorico/items/calendar/?full-items=yes",
+        "checkedAt": "2026-10-30"
+      }
+    ]
+  },
+  {
+    "slug": "sea-spray-cruises",
+    "name": "Sea Spray Cruises",
+    "city": "Rodney Bay, St. Lucia",
+    "website": "https://seaspraycruises.com/",
+    "verifiedBusinessEmail": "info@seaspraycruises.com",
+    "overview": "Catamaran sailing, sunset cruises and land-and-sea excursions in St. Lucia. Compare a full-day itinerary with a shorter evening sail, and establish whether the departure works for your hotel or cruise port.",
+    "specialties": [
+      "Catamaran cruises",
+      "Land and sea tours",
+      "Shore excursions"
+    ],
+    "areasServed": [
+      "Rodney Bay, St. Lucia"
+    ],
+    "fareharborShortname": "seaspraycruises",
+    "publicListings": [
+      {
+        "code": "7449P1",
+        "title": "St Lucia Full-Day Catamaran Sightseeing Cruise With Snorkeling",
+        "supplierName": "Sea Spray Cruises Ltd.",
+        "canonicalUrl": "https://www.viator.com/tours/St-Lucia/St-Lucia-Full-Day-Catamaran-Sightseeing-Cruise-With-Snorkeling/d38-7449P1",
+        "durationText": "8 hours",
+        "checkedAt": "2026-10-30"
+      },
+      {
+        "code": "7449P3",
+        "title": "Champagne Sunset Sail in St. Lucia",
+        "supplierName": "Sea Spray Cruises Ltd.",
+        "canonicalUrl": "https://www.viator.com/tours/St-Lucia/St-Lucia-Sunset-Sail/d38-7449P3",
+        "durationText": "2 hours",
+        "checkedAt": "2026-10-30"
+      }
+    ],
+    "planningNotes": [
+      {
+        "title": "Full day or sunset",
+        "text": "The selected full-day excursion is listed at about eight hours; the sunset sail at about two. Transport and check-in may add time beyond those durations."
+      },
+      {
+        "title": "Establish your pickup",
+        "text": "Rodney Bay Marina, hotel pickup and cruise-port pickup are not interchangeable. Confirm the actual pickup and drop-off arrangements for the selected booking option."
+      },
+      {
+        "title": "Check your ship window",
+        "text": "An eight-hour hotel excursion is not automatically a suitable shore excursion. Establish port transfers, check-in, return time and your ship’s confirmed deadline first."
+      }
+    ],
+    "sources": [
+      {
+        "label": "Sea Spray Cruises official website",
+        "url": "https://seaspraycruises.com/",
+        "checkedAt": "2026-10-30"
+      },
+      {
+        "label": "Operator booking link on FareHarbor",
+        "url": "https://fareharbor.com/embeds/book/seaspraycruises/items/190232/calendar/?flow=279023",
+        "checkedAt": "2026-10-30"
+      }
+    ]
+  },
+  {
+    "slug": "marlin-del-rey",
+    "name": "Marlin del Rey",
+    "city": "Tamarindo / Playas del Coco, Costa Rica",
+    "website": "https://marlindelrey.com/",
+    "verifiedBusinessEmail": "info@marlindelrey.com",
+    "overview": "Catamaran sailing from Tamarindo and Playas del Coco on Costa Rica’s Pacific coast. Confirm the departure beach and selected sailing option before comparing transport, timings and total cost.",
+    "specialties": [
+      "Catamaran sailing",
+      "Snorkeling",
+      "Private charters"
+    ],
+    "areasServed": [
+      "Tamarindo / Playas del Coco, Costa Rica"
+    ],
+    "fareharborShortname": "marlindelrey",
+    "publicListings": [
+      {
+        "code": "39790P1",
+        "title": "Marlin del Rey Catamaran – Tamarindo & Playas del Coco",
+        "supplierName": "Marlin del Rey Catamaran Sailing Tours",
+        "canonicalUrl": "https://www.viator.com/tours/Tamarindo/TAMARINDO/d24763-39790P1",
+        "durationText": "4 hours 30 minutes",
+        "checkedAt": "2026-10-30"
+      }
+    ],
+    "planningNotes": [
+      {
+        "title": "Choose the correct departure",
+        "text": "Tamarindo and Playas del Coco are separate starting locations. Select the right option for where you are staying, rather than assuming the departure is the same."
+      },
+      {
+        "title": "Count transport and check-in",
+        "text": "The selected listing describes approximately four and a half hours. Add the journey to the departure point and the operator’s check-in requirement to your own plan."
+      },
+      {
+        "title": "Keep the seller distinct",
+        "text": "Other resellers can advertise an experience aboard Marlin del Rey. Match the underlying departure, inclusions, transport and cancellation terms before treating two offers as equivalent."
+      }
+    ],
+    "sources": [
+      {
+        "label": "Marlin del Rey official website",
+        "url": "https://marlindelrey.com/",
+        "checkedAt": "2026-10-30"
+      },
+      {
+        "label": "Operator booking link on FareHarbor",
+        "url": "https://fareharbor.com/embeds/book/marlindelrey/items/?full-items=yes",
+        "checkedAt": "2026-10-30"
+      }
+    ]
+  },
+  {
+    "slug": "runners-adventures",
+    "name": "Runners Adventures",
+    "city": "Punta Cana, Dominican Republic",
+    "website": "https://www.runnersadventures.com/",
+    "verifiedBusinessEmail": "contact@runnersadventures.com",
+    "overview": "Adventure excursions in the Dominican Republic, including Punta Cana’s Monkeyland and zipline combination. Check the full activity sequence, pickup area and participation rules for the exact product you choose.",
+    "specialties": [
+      "Adventure excursions",
+      "Monkeyland",
+      "Zipline combinations"
+    ],
+    "areasServed": [
+      "Punta Cana, Dominican Republic"
+    ],
+    "fareharborShortname": "runnersadventures",
+    "publicListings": [
+      {
+        "code": "7096P16",
+        "title": "Punta Cana Monkeyland and Zipline Two Adventures in One Day",
+        "supplierName": "Runners Adventures",
+        "canonicalUrl": "https://www.viator.com/tours/Dominican-Republic/Monkeyland-and-Zipline-Adventure-from-Punta-Cana/d32-7096P16",
+        "durationText": "8 hours",
+        "checkedAt": "2026-10-30"
+      }
+    ],
+    "planningNotes": [
+      {
+        "title": "A combination takes a full day",
+        "text": "The selected Monkeyland and zipline combination is listed at about eight hours. A shorter single-activity tour is not an equivalent comparison."
+      },
+      {
+        "title": "Confirm your pickup area",
+        "text": "Hotel location can affect pickup and return timing. Establish the route for your accommodation instead of relying on a general Punta Cana label."
+      },
+      {
+        "title": "Review each activity",
+        "text": "Check participation and equipment requirements for the zipline and animal-visit portions separately. A combined experience needs to work for every mandatory segment."
+      }
+    ],
+    "sources": [
+      {
+        "label": "Runners Adventures official website",
+        "url": "https://www.runnersadventures.com/",
+        "checkedAt": "2026-10-30"
+      },
+      {
+        "label": "Operator booking link on FareHarbor",
+        "url": "https://fareharbor.com/embeds/book/runnersadventures/?ref=https%3A%2F%2Fwww.runnersadventures.com&flow=530851",
+        "checkedAt": "2026-10-30"
+      }
+    ]
+  },
+  {
+    "slug": "cabo-blue",
+    "name": "Cabo Blue",
+    "city": "Cabo San Lucas, Mexico",
+    "website": "https://www.caboblue.net/",
+    "verifiedBusinessEmail": "cabobluetrimaran@gmail.com",
+    "overview": "Trimaran snorkeling and sunset outings in Cabo San Lucas. Compare a daytime Santa Maria Bay excursion with a shorter evening cruise, then check the marina meeting point and what each option includes.",
+    "specialties": [
+      "Trimaran cruises",
+      "Snorkeling",
+      "Sunset outings"
+    ],
+    "areasServed": [
+      "Cabo San Lucas, Mexico"
+    ],
+    "fareharborShortname": "caboblue",
+    "publicListings": [
+      {
+        "code": "220975P1",
+        "title": "Cabo San Lucas and Santa Maria Bay Snorkeling Sightseeing Cruise",
+        "supplierName": "Cabo Blue Boat",
+        "canonicalUrl": "https://www.viator.com/tours/Cabo-San-Lucas/Snorkel-Tour/d50859-220975P1",
+        "durationText": "3 hours 30 minutes",
+        "checkedAt": "2026-10-30"
+      },
+      {
+        "code": "220975P3",
+        "title": "Cabo San Lucas Sunset Cruise with Open Bar and Snacks",
+        "supplierName": "Cabo Blue Boat",
+        "canonicalUrl": "https://www.viator.com/tours/Cabo-San-Lucas/Sunset-Cruise-with-Open-bar-and-Snacks/d50859-220975P3",
+        "durationText": "2 hours",
+        "checkedAt": "2026-10-30"
+      }
+    ],
+    "planningNotes": [
+      {
+        "title": "Match the experience",
+        "text": "The selected snorkel outing and sunset cruise have different durations and activities. A sunset product should not be assumed to include a snorkeling stop."
+      },
+      {
+        "title": "Find the check-in point",
+        "text": "Confirm the exact marina meeting location, check-in cutoff and how you will get there. Hotel or cruise-port pickup is not assumed on this page."
+      },
+      {
+        "title": "Compare the complete total",
+        "text": "Check food, drinks, equipment, passenger categories and any mandatory charges for the same departure. No dated savings comparison has been established here."
+      }
+    ],
+    "sources": [
+      {
+        "label": "Cabo Blue official website",
+        "url": "https://www.caboblue.net/",
+        "checkedAt": "2026-10-30"
+      },
+      {
+        "label": "Operator booking link on FareHarbor",
+        "url": "https://fareharbor.com/embeds/book/caboblue/?full-items=yes",
+        "checkedAt": "2026-10-30"
+      }
+    ]
+  },
+  {
+    "slug": "body-glove-hawaii",
+    "name": "Body Glove Hawaii",
+    "city": "Kailua-Kona, Hawaii",
+    "website": "https://www.bodyglovehawaii.com/",
+    "verifiedBusinessEmail": "reservations@bodyglovehawaii.com",
+    "overview": "Kailua-Kona snorkeling, dinner cruises and seasonal ocean experiences. Compare the daytime snorkel outing with the historical dinner cruise to Kealakekua Bay, including the departure time and return journey.",
+    "specialties": [
+      "Snorkeling",
+      "Dinner cruises",
+      "Ocean excursions"
+    ],
+    "areasServed": [
+      "Kailua-Kona, Hawaii"
+    ],
+    "fareharborShortname": "bodyglove",
+    "publicListings": [
+      {
+        "code": "15509P2",
+        "title": "Big Island Historical Dinner Cruise to Kealakekua Bay",
+        "supplierName": "Body Glove Cruises",
+        "canonicalUrl": "https://www.viator.com/tours/Big-Island-of-Hawaii/Historical-Dinner-or-Lunch-Cruise-to-Kealakekua-Bay/d669-15509P2",
+        "durationText": "3 hours",
+        "checkedAt": "2026-10-30"
+      },
+      {
+        "code": "15509P1",
+        "title": "Deluxe Snorkel & Dolphin Watch Aboard a Luxury Catamaran from Kailua-Kona",
+        "supplierName": "Body Glove Cruises",
+        "canonicalUrl": "https://www.viator.com/tours/Big-Island-of-Hawaii/Snorkel-and-Dolphin-Adventure/d669-15509P1",
+        "durationText": "4 hours 30 minutes",
+        "checkedAt": "2026-10-30"
+      }
+    ],
+    "planningNotes": [
+      {
+        "title": "Choose daytime or dinner",
+        "text": "The selected snorkel excursion is listed at about four and a half hours, and the dinner cruise at about three. They are different experiences, not interchangeable price comparisons."
+      },
+      {
+        "title": "Check Kona access",
+        "text": "Confirm the exact boarding location and transfer arrangements. If arriving by cruise ship, establish tender and return timing separately from the boat-tour duration."
+      },
+      {
+        "title": "Confirm the participation details",
+        "text": "Ask about water entry, swimming ability, assistance and equipment for the selected snorkeling product. A dinner cruise does not establish the same physical requirements."
+      }
+    ],
+    "sources": [
+      {
+        "label": "Body Glove Hawaii official website",
+        "url": "https://www.bodyglovehawaii.com/",
+        "checkedAt": "2026-10-30"
+      },
+      {
+        "label": "Operator booking link on FareHarbor",
+        "url": "https://fareharbor.com/embeds/book/bodyglove/items/413/calendar/?ref=https%3A%2F%2Fwww.bodyglovehawaii.com",
+        "checkedAt": "2026-10-30"
+      }
+    ]
+  }
+]

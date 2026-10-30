@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import JsonLd from "@/app/components/dcc/JsonLd";
+import SeasonalOperatorPage from "../SeasonalOperatorPage";
 import {
   DCC_OPERATOR_PAGE_DIRECT_OFFER_MESSAGE,
   getOperatorManifest,
@@ -23,8 +24,12 @@ export async function generateMetadata({
   if (!operator) return { title: "Operator | Destination Command Center" };
 
   return {
-    title: `${operator.name} (${operator.city}) | Verified Tours & Operator Profile | DCC`,
-    description: `${operator.name} in ${operator.city}. View official website, verified Viator product links, and DCC's 10% direct API partnership option.`,
+    title: operator.isSeasonal
+      ? `${operator.name} | Tours, Planning & Booking Options | DCC`
+      : `${operator.name} (${operator.city}) | Verified Tours & Operator Profile | DCC`,
+    description: operator.isSeasonal
+      ? `${operator.name} in ${operator.city}. Compare selected experiences, check departure details, and find official booking options with dated sources.`
+      : `${operator.name} in ${operator.city}. View official website, verified Viator product links, and DCC's 10% direct API partnership option.`,
     alternates: { canonical: `/operators/${slug}` },
   };
 }
@@ -37,6 +42,7 @@ export default async function OperatorPage({
   const { slug } = await params;
   const operator = getOperatorManifest(slug);
   if (!operator) notFound();
+  if (operator.isSeasonal) return <SeasonalOperatorPage operator={operator} />;
 
   const isDirectPilot = operator.currentBookingChannel === "direct_pilot" && operator.directPilot;
 

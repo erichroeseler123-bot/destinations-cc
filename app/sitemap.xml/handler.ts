@@ -12,6 +12,7 @@ import { WNO_OPERATOR_ENTITIES } from "@/app/new-orleans/data/operatorRegistry";
 import { COMPARISON_OPPORTUNITIES } from "@/app/new-orleans/data/comparisonRegistry";
 import { INTENT_SEO_PAGES } from "@/app/new-orleans/data/intentSeoPages";
 import { AUDIENCE_INTENT_SEO_PAGES } from "@/app/new-orleans/data/audienceIntentSeoPages";
+import { listOperatorSlugs } from "@/lib/dcc/operators";
 
 export const dynamic = "force-dynamic";
 export const WTONOT_ORIGIN = "https://www.welcometoneworleanstours.com";
@@ -148,6 +149,8 @@ export async function GET() {
     "/juneau-flightseeing",
     "/french-quarter-orientation",
     "/new-orleans-swamp-tours",
+    "/operators",
+    ...listOperatorSlugs().map((slug) => `/operators/${slug}`),
     ...DECISION_CATEGORIES.map((category) => `/guides/category/${category.slug}`),
     ...PUBLISHED_DECISION_GUIDES.map((guide) => `/guides/${guide.slug}`),
   ];
