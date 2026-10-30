@@ -1,4 +1,4 @@
-import { neon } from "@neondatabase/serverless";
+import { Client, Pool, neon, neonConfig } from "@neondatabase/serverless";
 import { drizzle, type NeonHttpDatabase } from "drizzle-orm/neon-http";
 import * as schema from "@/lib/db/schema";
 import { LIVE_CORRIDOR_CATALOG } from "@/lib/dcc/telemetry/corridorCatalog";
@@ -354,10 +354,15 @@ function createInMemoryTestDb(): DccDb {
     const q = queryText.trim();
     const qLower = q.toLowerCase();
 
+    if (qLower.startsWith("create table")) {
+      if (sqliteBackedTablesRegex.test(qLower)) {
+        getOrCreateSqliteDb();
+      }
+      return formatResult([], [], options);
+    }
+
     if (
-      (qLower.startsWith("create table") ||
-        qLower.startsWith("create index") ||
-        qLower.startsWith("create unique index")) &&
+      (qLower.startsWith("create index") || qLower.startsWith("create unique index")) &&
       !sqliteBackedTablesRegex.test(qLower)
     ) {
       return formatResult([], [], options);
@@ -1346,6 +1351,169 @@ function executeSqliteQuery(
   }
 }
 
+class HybridPgWebSocketOrTcpAdapter {
+  public binaryType = "arraybuffer";
+  private wsImpl: any = null;
+  private tcpSocket: any = null;
+  private listeners: Record<string, Array<(evt: any) => void>> = {
+    open: [],
+    message: [],
+    error: [],
+    close: [],
+  };
+
+  constructor(url: string) {
+    let parsed: URL | null = null;
+    try {
+      parsed = new URL(url);
+    } catch {}
+    const isNeonHost = Boolean(parsed?.hostname?.endsWith(".neon.tech"));
+    if (isNeonHost) {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const WsCtor = require("ws");
+      this.wsImpl = new WsCtor(url);
+      this.wsImpl.binaryType = "arraybuffer";
+      return;
+    }
+
+    // Standard TCP PostgreSQL wire-protocol socket (e.g. localhost:5432 in CI)
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const net = require("node:net") as typeof import("node:net");
+    const host = parsed?.hostname || "127.0.0.1";
+    const port = Number(parsed?.port || 5432);
+    this.tcpSocket = net.connect({ host, port }, () => {
+      for (const fn of this.listeners.open) fn({});
+    });
+    this.tcpSocket.on("data", (buf: Buffer) => {
+      const ab = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
+      for (const fn of this.listeners.message) fn({ data: ab });
+    });
+    this.tcpSocket.on("error", (err: Error) => {
+      for (const fn of this.listeners.error) fn(err);
+    });
+    this.tcpSocket.on("close", () => {
+      for (const fn of this.listeners.close) fn({});
+    });
+  }
+
+  addEventListener(type: string, fn: (evt: any) => void): void {
+    if (this.wsImpl) {
+      this.wsImpl.addEventListener(type, fn);
+      return;
+    }
+    if (this.listeners[type]) {
+      this.listeners[type].push(fn);
+    }
+  }
+
+  send(data: Uint8Array | ArrayBuffer | string): void {
+    if (this.wsImpl) {
+      this.wsImpl.send(data);
+      return;
+    }
+    if (this.tcpSocket) {
+      this.tcpSocket.write(Buffer.from(data as any));
+    }
+  }
+
+  close(): void {
+    if (this.wsImpl) {
+      this.wsImpl.close();
+      return;
+    }
+    if (this.tcpSocket) {
+      this.tcpSocket.end();
+    }
+  }
+}
+
+function isNeonHostUrl(connectionString: string): boolean {
+  try {
+    return new URL(connectionString).hostname.endsWith(".neon.tech");
+  } catch {
+    return connectionString.includes(".neon.tech");
+  }
+}
+
+function sanitizePgWireConnectionString(connectionString: string): string {
+  if (!isNeonHostUrl(connectionString)) return connectionString;
+  try {
+    const parsed = new URL(connectionString);
+    parsed.searchParams.delete("channel_binding");
+    return parsed.toString();
+  } catch {
+    return connectionString;
+  }
+}
+
+function configureNeonDriverForUrl(connectionString: string): void {
+  const isNeon = isNeonHostUrl(connectionString);
+  if (isNeon) {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const WsCtor = require("ws");
+    neonConfig.webSocketConstructor = WsCtor as any;
+    neonConfig.wsProxy = (host: string) => `${host}/v2`;
+    neonConfig.useSecureWebSocket = true;
+    neonConfig.pipelineConnect = "password";
+    neonConfig.forceDisablePgSSL = true;
+  } else {
+    neonConfig.webSocketConstructor = HybridPgWebSocketOrTcpAdapter as any;
+    neonConfig.wsProxy = (host: string, port: number | string) => `${host}:${port || 5432}`;
+    neonConfig.useSecureWebSocket = false;
+    neonConfig.pipelineConnect = false;
+    neonConfig.forceDisablePgSSL = true;
+  }
+}
+
+function createPgQueryExecutor(pgQueryable: { query: (cfg: any) => Promise<any> }) {
+  const executor: any = async (
+    queryText: string,
+    params: any[] = [],
+    options?: { arrayMode?: boolean; fullResults?: boolean }
+  ) => {
+    const isWriteQuery = /^\s*(insert|update|delete)\b/i.test(queryText);
+    if (
+      isWriteQuery &&
+      (simulateDbFailureForTests || process.env.DCC_SIMULATE_DB_FAILURE === "1")
+    ) {
+      const simulatedErr: any = new Error(
+        "SIMULATED_DB_PERSISTENCE_FAILURE: database write rejected"
+      );
+      simulatedErr.code = "57P01";
+      throw simulatedErr;
+    }
+    if (
+      !isWriteQuery &&
+      (simulateDbReadFailureForTests || process.env.DCC_SIMULATE_DB_READ_FAILURE === "1")
+    ) {
+      const simulatedReadErr: any = new Error(
+        "SIMULATED_DB_READ_FAILURE: database select rejected"
+      );
+      simulatedReadErr.code = "57P01";
+      throw simulatedReadErr;
+    }
+
+    const res = await pgQueryable.query({
+      text: queryText,
+      values: params,
+      ...(options?.arrayMode ? { rowMode: "array" as const } : {}),
+    });
+    if (options && options.fullResults === false) {
+      return res.rows;
+    }
+    return {
+      rows: res.rows,
+      rowCount: res.rowCount ?? res.rows.length,
+      fields: res.fields,
+    };
+  };
+  executor.query = executor;
+  return executor;
+}
+
+let cachedTcpPool: Pool | null = null;
+let cachedTcpPoolUrl: string | undefined;
+
 export function getDb(): DccDb | null {
   const connectionString = resolveDatabaseUrl();
   const key = `${connectionString}::${process.env.DCC_ISOLATED_TEST_DB || ""}::${process.env.DCC_TEST_SQLITE_PATH || ""}`;
@@ -1363,9 +1531,146 @@ export function getDb(): DccDb | null {
     return cachedDb;
   }
 
-  const client = neon(connectionString);
-  cachedDb = drizzle(client, { schema });
+  if (!isNeonHostUrl(connectionString)) {
+    configureNeonDriverForUrl(connectionString);
+    if (!cachedTcpPool || cachedTcpPoolUrl !== connectionString) {
+      if (cachedTcpPool) {
+        cachedTcpPool.end().catch(() => {});
+      }
+      cachedTcpPool = new Pool({ connectionString });
+      cachedTcpPoolUrl = connectionString;
+    }
+    cachedDb = drizzle(createPgQueryExecutor(cachedTcpPool) as any, { schema });
+    return cachedDb;
+  }
+
+  const rawNeonClient = neon(connectionString);
+  const wrappedNeonClient: any = async (
+    queryText: string,
+    params: any[] = [],
+    options?: { arrayMode?: boolean; fullResults?: boolean; authToken?: any }
+  ) => {
+    const isWriteQuery = /^\s*(insert|update|delete)\b/i.test(queryText);
+    if (
+      isWriteQuery &&
+      (simulateDbFailureForTests || process.env.DCC_SIMULATE_DB_FAILURE === "1")
+    ) {
+      const simulatedErr: any = new Error(
+        "SIMULATED_DB_PERSISTENCE_FAILURE: database write rejected"
+      );
+      simulatedErr.code = "57P01";
+      throw simulatedErr;
+    }
+    if (
+      !isWriteQuery &&
+      (simulateDbReadFailureForTests || process.env.DCC_SIMULATE_DB_READ_FAILURE === "1")
+    ) {
+      const simulatedReadErr: any = new Error(
+        "SIMULATED_DB_READ_FAILURE: database select rejected"
+      );
+      simulatedReadErr.code = "57P01";
+      throw simulatedReadErr;
+    }
+    if (typeof (rawNeonClient as any).query === "function") {
+      return (rawNeonClient as any).query(queryText, params, options);
+    }
+    return (rawNeonClient as any)(queryText, params, options);
+  };
+  wrappedNeonClient.query = wrappedNeonClient;
+  cachedDb = drizzle(wrappedNeonClient as any, { schema });
   return cachedDb;
+}
+
+const inProcessPaymentTxLocks = new Map<string, Promise<unknown>>();
+let sqliteTransactionChain: Promise<unknown> = Promise.resolve();
+
+/**
+ * Executes `fn(txDb)` inside a single atomic database transaction (`BEGIN ... COMMIT` / `ROLLBACK`)
+ * while holding a per-payment database lock (`pg_advisory_xact_lock` + row-level `FOR UPDATE` in PostgreSQL,
+ * or `BEGIN IMMEDIATE` in SQLite).
+ */
+export async function withPaymentAllocationTransaction<T>(
+  paymentId: string,
+  fn: (txDb: DccDb | null) => Promise<T>
+): Promise<T> {
+  const lockKey = paymentId.trim() || "__default_payment__";
+  const previous = inProcessPaymentTxLocks.get(lockKey) ?? Promise.resolve();
+  let releaseLock!: () => void;
+  const currentGate = new Promise<void>((resolve) => {
+    releaseLock = resolve;
+  });
+  const chained = previous.then(() => currentGate);
+  inProcessPaymentTxLocks.set(lockKey, chained);
+
+  await previous;
+  try {
+    const connectionString = resolveDatabaseUrl();
+    if (connectionString) {
+      configureNeonDriverForUrl(connectionString);
+      const wireUrl = sanitizePgWireConnectionString(connectionString);
+      const pgClient = new Client({ connectionString: wireUrl });
+      pgClient.on("error", () => {});
+      await pgClient.connect();
+      let committed = false;
+      try {
+        await pgClient.query("BEGIN");
+        await pgClient.query(
+          "SELECT pg_advisory_xact_lock(hashtext('dcc_pay_alloc'), hashtext($1))",
+          [lockKey]
+        );
+        const txDb = drizzle(createPgQueryExecutor(pgClient) as any, { schema });
+        const result = await fn(txDb);
+        await pgClient.query("COMMIT");
+        committed = true;
+        return result;
+      } catch (err) {
+        if (!committed) {
+          await pgClient.query("ROLLBACK").catch(() => {});
+        }
+        throw err;
+      } finally {
+        await pgClient.end().catch(() => {});
+      }
+    }
+
+    if (process.env.DCC_ISOLATED_TEST_DB === "1" || process.env.DCC_TEST_SQLITE_PATH) {
+      const prevSqliteTx = sqliteTransactionChain;
+      let releaseSqliteTx!: () => void;
+      const nextSqliteGate = new Promise<void>((resolve) => {
+        releaseSqliteTx = resolve;
+      });
+      sqliteTransactionChain = prevSqliteTx.then(() => nextSqliteGate);
+      await prevSqliteTx;
+      try {
+        const sqliteDb = getOrCreateSqliteDb();
+        const db = getDb()!;
+        sqliteDb.exec("BEGIN IMMEDIATE");
+        let committed = false;
+        try {
+          const result = await fn(db);
+          sqliteDb.exec("COMMIT");
+          committed = true;
+          return result;
+        } catch (err) {
+          if (!committed) {
+            try {
+              sqliteDb.exec("ROLLBACK");
+            } catch {}
+          }
+          throw err;
+        }
+      } finally {
+        releaseSqliteTx();
+      }
+    }
+
+    return await fn(null);
+  } finally {
+    releaseLock();
+    if (inProcessPaymentTxLocks.get(lockKey) === chained) {
+      inProcessPaymentTxLocks.delete(lockKey);
+    }
+  }
 }
 
 export function hasDb() {
@@ -1375,4 +1680,5 @@ export function hasDb() {
       process.env.DCC_TEST_SQLITE_PATH
   );
 }
+
 

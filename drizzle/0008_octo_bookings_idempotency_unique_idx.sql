@@ -73,82 +73,8 @@ CREATE INDEX IF NOT EXISTS "octo_booking_idempotency_conflicts_booking_id_idx"
 CREATE INDEX IF NOT EXISTS "octo_booking_idempotency_conflicts_status_idx"
   ON "octo_booking_idempotency_conflicts" ("resolution_status");
 
--- Non-destructive duplicate check: never automatically delete duplicate octo_bookings rows.
--- Any pre-existing duplicate idempotency_key rows are recorded in octo_booking_idempotency_conflicts
--- and halt unique index creation until explicit reconciliation is performed.
-DO $$
-DECLARE
-  v_dup_count integer := 0;
-BEGIN
-  INSERT INTO "octo_booking_idempotency_conflicts" (
-    "id",
-    "idempotency_key",
-    "booking_id",
-    "booking_uuid",
-    "status",
-    "supplier_reference",
-    "total_price",
-    "currency",
-    "conflict_classification",
-    "resolution_status",
-    "row_snapshot",
-    "detected_at"
-  )
-  SELECT
-    'conflict:' || b."idempotency_key" || ':' || b."id",
-    b."idempotency_key",
-    b."id",
-    b."booking_uuid",
-    b."status",
-    b."supplier_reference",
-    b."total_price",
-    b."currency",
-    CASE
-      WHEN dup_stats.confirmed_count > 1 THEN 'multiple_confirmed_conflict'
-      WHEN dup_stats.confirmed_count = 1 THEN 'confirmed_vs_non_confirmed'
-      ELSE 'duplicate_non_confirmed'
-    END,
-    'unresolved',
-    to_jsonb(b),
-    now()
-  FROM "octo_bookings" b
-  INNER JOIN (
-    SELECT
-      "idempotency_key",
-      COUNT(*) AS row_count,
-      COUNT(*) FILTER (WHERE "status" = 'CONFIRMED') AS confirmed_count
-    FROM "octo_bookings"
-    WHERE "idempotency_key" IS NOT NULL
-    GROUP BY "idempotency_key"
-    HAVING COUNT(*) > 1
-  ) dup_stats ON dup_stats."idempotency_key" = b."idempotency_key"
-  ON CONFLICT ("id") DO UPDATE SET
-    "status" = EXCLUDED."status",
-    "supplier_reference" = EXCLUDED."supplier_reference",
-    "conflict_classification" = EXCLUDED."conflict_classification",
-    "row_snapshot" = EXCLUDED."row_snapshot",
-    "detected_at" = now();
-
-  SELECT COUNT(*)
-  INTO v_dup_count
-  FROM (
-    SELECT "idempotency_key"
-    FROM "octo_bookings"
-    WHERE "idempotency_key" IS NOT NULL
-    GROUP BY "idempotency_key"
-    HAVING COUNT(*) > 1
-  ) dup_groups;
-
-  IF COALESCE(v_dup_count, 0) > 0 THEN
-    RAISE EXCEPTION 'UNRESOLVED_IDEMPOTENCY_DUPLICATES: Found % duplicate idempotency_key group(s) in octo_bookings; rows preserved in octo_booking_idempotency_conflicts for explicit reconciliation.', v_dup_count;
-  END IF;
-END $$;
-
 CREATE UNIQUE INDEX IF NOT EXISTS "octo_bookings_booking_uuid_uidx"
   ON "octo_bookings" ("booking_uuid");
-
-CREATE UNIQUE INDEX IF NOT EXISTS "octo_bookings_idempotency_key_uidx"
-  ON "octo_bookings" ("idempotency_key");
 
 CREATE INDEX IF NOT EXISTS "octo_bookings_status_idx"
   ON "octo_bookings" ("status");
@@ -415,3 +341,160 @@ CREATE INDEX IF NOT EXISTS "dcc_payment_allocations_payment_id_idx"
 
 CREATE INDEX IF NOT EXISTS "dcc_payment_allocations_order_id_idx"
   ON "dcc_payment_allocations" ("order_id");
+
+CREATE TABLE IF NOT EXISTS "dcc_supplier_bookings" (
+  "id" text PRIMARY KEY,
+  "order_id" text NOT NULL,
+  "order_item_id" text NOT NULL,
+  "supplier_connection_id" text NOT NULL,
+  "operator_slug" text NOT NULL,
+  "operator_name" text NOT NULL,
+  "product_id" text NOT NULL,
+  "option_id" text NOT NULL,
+  "availability_id" text NOT NULL,
+  "provider_booking_id" text,
+  "provider_booking_uuid" text,
+  "status" text NOT NULL DEFAULT 'PENDING_HOLD',
+  "hold_expires_at" timestamptz,
+  "confirmed_at" timestamptz,
+  "cancelled_at" timestamptz,
+  "cancellation_reason" text,
+  "price" numeric(12, 2) NOT NULL,
+  "currency" text NOT NULL DEFAULT 'USD',
+  "unit_items" jsonb NOT NULL DEFAULT '[]'::jsonb,
+  "idempotency_key" text,
+  "idempotency_hash" text,
+  "external_request_id" text,
+  "attempt_count" integer NOT NULL DEFAULT 0,
+  "last_error_code" text,
+  "last_error_message" text,
+  "voucher_code" text,
+  "voucher_url" text,
+  "voucher_instructions" text,
+  "created_at" timestamptz NOT NULL DEFAULT now(),
+  "updated_at" timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS "dcc_supplier_bookings_order_id_idx"
+  ON "dcc_supplier_bookings" ("order_id");
+
+CREATE INDEX IF NOT EXISTS "dcc_supplier_bookings_order_item_id_idx"
+  ON "dcc_supplier_bookings" ("order_item_id");
+
+CREATE INDEX IF NOT EXISTS "dcc_supplier_bookings_supplier_conn_idx"
+  ON "dcc_supplier_bookings" ("supplier_connection_id");
+
+CREATE INDEX IF NOT EXISTS "dcc_supplier_bookings_status_idx"
+  ON "dcc_supplier_bookings" ("status");
+
+CREATE INDEX IF NOT EXISTS "dcc_supplier_bookings_idempotency_key_idx"
+  ON "dcc_supplier_bookings" ("idempotency_key");
+
+-- Step A: Standalone top-level statement that durably records any duplicate idempotency_key
+-- rows into octo_booking_idempotency_conflicts BEFORE the migration guard checks for duplicates.
+-- Because this statement is outside the DO $$ block that raises UNRESOLVED_IDEMPOTENCY_DUPLICATES,
+-- duplicate-conflict reports are committed and preserved when unique index activation is blocked.
+INSERT INTO "octo_booking_idempotency_conflicts" (
+  "id",
+  "idempotency_key",
+  "booking_id",
+  "booking_uuid",
+  "status",
+  "supplier_reference",
+  "total_price",
+  "currency",
+  "conflict_classification",
+  "resolution_status",
+  "authoritative_booking_id",
+  "row_snapshot",
+  "detected_at"
+)
+SELECT
+  'conflict:' || ranked."idempotency_key" || ':' || ranked."id",
+  ranked."idempotency_key",
+  ranked."id",
+  ranked."booking_uuid",
+  ranked."status",
+  ranked."supplier_reference",
+  ranked."total_price",
+  ranked."currency",
+  ranked."conflict_classification",
+  'unresolved',
+  ranked."recommended_authoritative_id",
+  ranked."row_snapshot",
+  now()
+FROM (
+  SELECT
+    b."id",
+    b."idempotency_key",
+    b."booking_uuid",
+    b."status",
+    b."supplier_reference",
+    b."total_price",
+    b."currency",
+    CASE
+      WHEN dup_stats.confirmed_count > 1 THEN 'multiple_confirmed_conflict'
+      WHEN dup_stats.confirmed_count = 1 THEN 'confirmed_vs_non_confirmed'
+      ELSE 'duplicate_non_confirmed'
+    END AS "conflict_classification",
+    FIRST_VALUE(b."id") OVER (
+      PARTITION BY b."idempotency_key"
+      ORDER BY
+        CASE b."status"
+          WHEN 'CONFIRMED' THEN 100
+          WHEN 'ON_HOLD' THEN 70
+          WHEN 'PENDING' THEN 50
+          WHEN 'HOLD_IN_PROGRESS' THEN 20
+          WHEN 'CANCELLED' THEN 10
+          WHEN 'EXPIRED' THEN 10
+          ELSE 30
+        END DESC,
+        CASE WHEN b."supplier_reference" IS NOT NULL AND b."supplier_reference" <> '' THEN 1 ELSE 0 END DESC,
+        b."created_at" ASC,
+        b."id" ASC
+    ) AS "recommended_authoritative_id",
+    to_jsonb(b) AS "row_snapshot"
+  FROM "octo_bookings" b
+  INNER JOIN (
+    SELECT
+      "idempotency_key",
+      COUNT(*) AS row_count,
+      COUNT(*) FILTER (WHERE "status" = 'CONFIRMED') AS confirmed_count
+    FROM "octo_bookings"
+    WHERE "idempotency_key" IS NOT NULL
+    GROUP BY "idempotency_key"
+    HAVING COUNT(*) > 1
+  ) dup_stats ON dup_stats."idempotency_key" = b."idempotency_key"
+) ranked
+ON CONFLICT ("id") DO UPDATE SET
+  "status" = EXCLUDED."status",
+  "supplier_reference" = EXCLUDED."supplier_reference",
+  "conflict_classification" = EXCLUDED."conflict_classification",
+  "authoritative_booking_id" = EXCLUDED."authoritative_booking_id",
+  "row_snapshot" = EXCLUDED."row_snapshot",
+  "detected_at" = now();
+
+-- Step B: Block unique index activation when unresolved duplicate idempotency_key rows exist.
+DO $$
+DECLARE
+  v_dup_count integer := 0;
+BEGIN
+  SELECT COUNT(*)
+  INTO v_dup_count
+  FROM (
+    SELECT "idempotency_key"
+    FROM "octo_bookings"
+    WHERE "idempotency_key" IS NOT NULL
+    GROUP BY "idempotency_key"
+    HAVING COUNT(*) > 1
+  ) dup_groups;
+
+  IF COALESCE(v_dup_count, 0) > 0 THEN
+    RAISE EXCEPTION 'UNRESOLVED_IDEMPOTENCY_DUPLICATES: Found % duplicate idempotency_key group(s) in octo_bookings; rows preserved in octo_booking_idempotency_conflicts for explicit reconciliation.', v_dup_count;
+  END IF;
+END $$;
+
+-- Step C: Activate the database-level unique constraint index once zero unresolved duplicates exist.
+CREATE UNIQUE INDEX IF NOT EXISTS "octo_bookings_idempotency_key_uidx"
+  ON "octo_bookings" ("idempotency_key");
+

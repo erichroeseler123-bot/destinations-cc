@@ -1017,6 +1017,28 @@ export class DccSettlementEngine {
       }
     }
 
+    if (
+      (params.refundType === "full" || params.refundType === "partial") &&
+      entry.verifiedPaymentEvidence?.transactionId
+    ) {
+      const baseAmount = entry.capturedAmount || entry.grossAmount;
+      const netRetained =
+        params.refundType === "full"
+          ? 0
+          : Math.max(0, Math.round((baseAmount - (entry.refundedAmount || 0)) * 100) / 100);
+      await DccPaymentService.adjustPaymentObligationAllocation({
+        paymentId: entry.verifiedPaymentEvidence.transactionId,
+        orderId: entry.orderId,
+        bookingId: entry.bookingId,
+        newAllocatedAmount: netRetained,
+        reason: `Settlement ${params.refundType} refund adjustment`,
+      }).catch((err: any) => {
+        if (err instanceof OctoApiError && err.code === "PAYMENT_ALLOCATION_PERSISTENCE_FAILED") {
+          throw err;
+        }
+      });
+    }
+
     fallbackSettlementStore.set(entry.id, entry);
     fallbackSettlementStore.set(entry.bookingId, entry);
     if (entry.orderItemId) {

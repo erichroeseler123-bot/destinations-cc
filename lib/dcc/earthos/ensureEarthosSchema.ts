@@ -15,13 +15,13 @@ export function resetEarthosSchemaEnsuredForTests() {
 }
 
 export async function getRequiredEarthosDb(): Promise<DccDb> {
-  if (!hasConfiguredDatabaseUrl()) {
-    throw new Error(
-      "Durable EarthOS persistence requires an active database connection (DCC_DATABASE_URL, DATABASE_URL, or POSTGRES_URL).",
-    );
-  }
   const db = getDb();
   if (!db) {
+    if (!hasConfiguredDatabaseUrl()) {
+      throw new Error(
+        "Durable EarthOS persistence requires an active database connection (DCC_DATABASE_URL, DATABASE_URL, or POSTGRES_URL).",
+      );
+    }
     throw new Error("Failed to initialize durable database client for EarthOS persistence.");
   }
   await ensureEarthosSchema();
@@ -34,13 +34,13 @@ export async function runRepeatableEarthosMigration(): Promise<{
   executionCount: number;
   lastAppliedAt: string;
 }> {
-  if (!hasConfiguredDatabaseUrl()) {
-    throw new Error(
-      "Durable EarthOS persistence requires an active database connection (DCC_DATABASE_URL, DATABASE_URL, or POSTGRES_URL).",
-    );
-  }
   const db = getDb();
   if (!db) {
+    if (!hasConfiguredDatabaseUrl()) {
+      throw new Error(
+        "Durable EarthOS persistence requires an active database connection (DCC_DATABASE_URL, DATABASE_URL, or POSTGRES_URL).",
+      );
+    }
     throw new Error("Failed to initialize durable database client for EarthOS persistence.");
   }
 
@@ -344,15 +344,7 @@ export async function runRepeatableEarthosMigration(): Promise<{
   await executeDdl(sql`CREATE INDEX IF NOT EXISTS octo_booking_idempotency_conflicts_booking_id_idx ON octo_booking_idempotency_conflicts (booking_id);`);
   await executeDdl(sql`CREATE INDEX IF NOT EXISTS octo_booking_idempotency_conflicts_status_idx ON octo_booking_idempotency_conflicts (resolution_status);`);
 
-  const duplicateReport = await inspectOctoBookingIdempotencyDuplicates(db);
-  if (duplicateReport.duplicateGroupCount > 0) {
-    throw new Error(
-      `UNRESOLVED_IDEMPOTENCY_DUPLICATES: Found ${duplicateReport.duplicateGroupCount} duplicate idempotency_key group(s) (${duplicateReport.totalDuplicateRows} rows) in octo_bookings. All conflicting rows were preserved in octo_booking_idempotency_conflicts; run reconcileOctoBookingIdempotencyDuplicates() before creating octo_bookings_idempotency_key_uidx.`
-    );
-  }
-
   await executeDdl(sql`CREATE UNIQUE INDEX IF NOT EXISTS octo_bookings_booking_uuid_uidx ON octo_bookings (booking_uuid);`);
-  await executeDdl(sql`CREATE UNIQUE INDEX IF NOT EXISTS octo_bookings_idempotency_key_uidx ON octo_bookings (idempotency_key);`);
   await executeDdl(sql`CREATE INDEX IF NOT EXISTS octo_bookings_status_idx ON octo_bookings (status);`);
   await executeDdl(sql`CREATE INDEX IF NOT EXISTS octo_bookings_product_id_idx ON octo_bookings (product_id);`);
   await executeDdl(sql`CREATE INDEX IF NOT EXISTS octo_bookings_supplier_conn_idx ON octo_bookings (supplier_connection_id);`);
@@ -567,6 +559,18 @@ export async function runRepeatableEarthosMigration(): Promise<{
   await executeDdl(sql`CREATE INDEX IF NOT EXISTS dcc_square_webhook_events_payment_id_idx ON dcc_square_webhook_events (payment_id);`);
   await executeDdl(sql`CREATE INDEX IF NOT EXISTS dcc_square_webhook_events_order_id_idx ON dcc_square_webhook_events (order_id);`);
   await executeDdl(sql`CREATE INDEX IF NOT EXISTS dcc_square_webhook_events_status_idx ON dcc_square_webhook_events (processing_status);`);
+
+  // Non-destructively inspect octo_bookings and commit duplicate conflict reports BEFORE activating octo_bookings_idempotency_key_uidx
+  const duplicateReport = await inspectOctoBookingIdempotencyDuplicates(db);
+  if (duplicateReport.duplicateGroupCount > 0) {
+    const blockedErr = new Error(
+      `UNRESOLVED_IDEMPOTENCY_DUPLICATES: Found ${duplicateReport.duplicateGroupCount} duplicate idempotency_key group(s) (${duplicateReport.totalDuplicateRows} rows) in octo_bookings. All conflicting rows were preserved in octo_booking_idempotency_conflicts; run reconcileOctoBookingIdempotencyDuplicates() before creating octo_bookings_idempotency_key_uidx.`
+    ) as Error & { duplicateReport?: OctoBookingIdempotencyDuplicateReport };
+    blockedErr.duplicateReport = duplicateReport;
+    throw blockedErr;
+  }
+
+  await executeDdl(sql`CREATE UNIQUE INDEX IF NOT EXISTS octo_bookings_idempotency_key_uidx ON octo_bookings (idempotency_key);`);
 
   await executeDdl(sql`
     INSERT INTO earthos_schema_migrations (migration_id, checksum, first_applied_at, last_applied_at, execution_count)
@@ -910,8 +914,112 @@ export async function reconcileOctoBookingIdempotencyDuplicates(
   };
 }
 
+export function splitPostgresMigrationStatements(rawSql: string): string[] {
+  const withoutComments = rawSql
+    .split(/\r?\n/)
+    .filter((line) => !line.trim().startsWith("--"))
+    .join("\n");
+
+  const statements: string[] = [];
+  let current = "";
+  let inSingleQuote = false;
+  let inDollarBlock = false;
+
+  for (let i = 0; i < withoutComments.length; i++) {
+    const ch = withoutComments[i];
+    const next = withoutComments[i + 1];
+
+    if (!inSingleQuote && ch === "$" && next === "$") {
+      inDollarBlock = !inDollarBlock;
+      current += "$$";
+      i++;
+      continue;
+    }
+
+    if (!inDollarBlock && ch === "'") {
+      if (inSingleQuote && next === "'") {
+        current += "''";
+        i++;
+        continue;
+      }
+      inSingleQuote = !inSingleQuote;
+      current += ch;
+      continue;
+    }
+
+    if (!inSingleQuote && !inDollarBlock && ch === ";") {
+      const trimmed = current.trim();
+      if (trimmed.length > 0) {
+        statements.push(`${trimmed};`);
+      }
+      current = "";
+      continue;
+    }
+
+    current += ch;
+  }
+
+  const remainder = current.trim();
+  if (remainder.length > 0) {
+    statements.push(remainder);
+  }
+
+  return statements;
+}
+
+/**
+ * Executes `drizzle/0008_octo_bookings_idempotency_unique_idx.sql` statement-by-statement
+ * so that Step A (`INSERT INTO "octo_booking_idempotency_conflicts"`) commits durably
+ * before Step B (`DO $$ ... RAISE EXCEPTION 'UNRESOLVED_IDEMPOTENCY_DUPLICATES...' END $$;`)
+ * blocks Step C (`CREATE UNIQUE INDEX IF NOT EXISTS "octo_bookings_idempotency_key_uidx"`).
+ */
+export async function applyMigration0008Sql(
+  targetDb?: DccDb | null,
+  options?: { onlyIdempotencyActivationSteps?: boolean }
+): Promise<void> {
+  const db = targetDb || getDb();
+  if (!db) {
+    throw new Error("Database connection required to apply migration 0008.");
+  }
+
+  const getBuiltin = (process as unknown as {
+    getBuiltinModule?: (id: string) => unknown;
+  }).getBuiltinModule;
+  const nodeFs = getBuiltin
+    ? (getBuiltin("fs") as typeof import("node:fs"))
+    : undefined;
+  const nodePath = getBuiltin
+    ? (getBuiltin("path") as typeof import("node:path"))
+    : undefined;
+
+  if (!nodeFs || !nodePath) {
+    throw new Error("Node fs/path required to read 0008_octo_bookings_idempotency_unique_idx.sql.");
+  }
+
+  const migrationPath = nodePath.resolve(
+    process.cwd(),
+    "drizzle",
+    "0008_octo_bookings_idempotency_unique_idx.sql"
+  );
+  const rawSql = nodeFs.readFileSync(migrationPath, "utf8");
+  const allStatements = splitPostgresMigrationStatements(rawSql);
+  const statements = options?.onlyIdempotencyActivationSteps
+    ? allStatements.filter(
+        (s) =>
+          s.includes("octo_booking_idempotency_conflicts") ||
+          s.includes("UNRESOLVED_IDEMPOTENCY_DUPLICATES") ||
+          s.includes("octo_bookings_idempotency_key_uidx")
+      )
+    : allStatements;
+
+  for (const stmt of statements) {
+    await db.execute(sql.raw(stmt));
+  }
+}
+
 export async function ensureEarthosSchema(): Promise<void> {
   if (schemaEnsured) return;
   await runRepeatableEarthosMigration();
 }
+
 

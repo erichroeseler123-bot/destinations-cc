@@ -1,5 +1,10 @@
 import crypto from "crypto";
-import { getDb } from "@/lib/db/client";
+import {
+  getDb,
+  hasConfiguredDatabaseUrl,
+  withPaymentAllocationTransaction,
+  type DccDb,
+} from "@/lib/db/client";
 import {
   dccOrderPayments,
   dccPaymentAllocations,
@@ -43,30 +48,14 @@ const fallbackPaymentStore = new Map<string, DccOrderPaymentRecord>();
 const fallbackRefundStore = new Map<string, DccRefundRecord>();
 const paymentObligationAllocations = new Map<string, Map<string, number>>();
 const refundObligationAllocations = new Map<string, string>();
-const paymentAllocationMutexes = new Map<string, Promise<void>>();
 
-async function withPaymentAllocationMutex<T>(
-  paymentKey: string,
-  fn: () => Promise<T>
-): Promise<T> {
-  const prev = paymentAllocationMutexes.get(paymentKey) || Promise.resolve();
-  let release!: () => void;
-  const next = new Promise<void>((resolve) => {
-    release = resolve;
-  });
-  const chained = prev.then(
-    () => next,
-    () => next
-  );
-  paymentAllocationMutexes.set(paymentKey, chained);
-  await prev.catch(() => {});
-  try {
-    return await fn();
-  } finally {
-    release();
-    if (paymentAllocationMutexes.get(paymentKey) === chained) {
-      paymentAllocationMutexes.delete(paymentKey);
-    }
+async function maybeTriggerBetweenAllocationWritesHook(): Promise<void> {
+  if (process.env.DCC_TEST_PAUSE_BETWEEN_ALLOCATION_WRITES === "1") {
+    process.stdout.write("DCC_ALLOC_TX_AFTER_FIRST_WRITE\n");
+    await new Promise((resolve) => setTimeout(resolve, 30_000));
+  } else if (process.env.DCC_TEST_CRASH_BETWEEN_ALLOCATION_WRITES === "1") {
+    process.stdout.write("DCC_ALLOC_TX_AFTER_FIRST_WRITE\n");
+    process.kill(process.pid, "SIGKILL");
   }
 }
 
@@ -214,7 +203,8 @@ function normalizeObligationInput(
 }
 
 async function resolveObligationContext(
-  obligation: DccExpectedFinancialObligation
+  obligation: DccExpectedFinancialObligation,
+  targetDb?: DccDb | null
 ): Promise<{
   hasIdentity: boolean;
   canonicalBookingId?: string;
@@ -253,7 +243,7 @@ async function resolveObligationContext(
     candidateIds.add(`dcc:ledg:${canonicalBookingId.replace(/^dcc:bk:/, "")}`);
   }
 
-  const db = getDb();
+  const db = targetDb !== undefined ? targetDb : getDb();
   if (db && candidateIds.size > 0) {
     try {
       for (const cid of Array.from(candidateIds)) {
@@ -348,6 +338,305 @@ async function resolveObligationContext(
       obligation.orderId,
     linkedOrderIds,
     candidateIds,
+  };
+}
+
+/**
+ * Executes all payment allocation mutations—including hydration/reductions from `octo_settlement_ledger`,
+ * parent-order placeholder release, individual obligation allocation writes (increases or reductions),
+ * refund-driven allocation adjustments, and the `__PAYMENT_TOTAL__` sentinel update—inside a SINGLE
+ * database transaction (`txDb`) while holding the per-payment database lock.
+ */
+async function executeTransactionalPaymentAllocationSync(
+  txDb: DccDb,
+  params: {
+    record: DccOrderPaymentRecord;
+    netAvailableCapturedCents: number;
+    targetObligation?: {
+      obligationKey: string;
+      candidateIds: Set<string>;
+      requiredAllocationCents: number;
+    };
+    refundAdjustment?: {
+      bookingId?: string;
+      orderItemId?: string;
+      refundAmountCents: number;
+    };
+  }
+): Promise<{
+  targetObligationKey?: string;
+  previousObligationCents: number;
+  newObligationCents: number;
+  totalAllocatedCents: number;
+  obligationMapDollars: Map<string, number>;
+}> {
+  const { record, netAvailableCapturedCents } = params;
+  const netAvailableCaptured = netAvailableCapturedCents / 100;
+
+  // 1. Ensure sentinel budget row exists for this payment inside the transaction
+  await txDb
+    .insert(dccPaymentAllocations)
+    .values({
+      id: `alloc_total:${record.id}`,
+      paymentId: record.id,
+      orderId: record.orderId,
+      obligationKey: "__PAYMENT_TOTAL__",
+      allocatedAmountCents: 0,
+      currency: record.currency,
+    })
+    .onConflictDoNothing();
+
+  // 2. Acquire row-level FOR UPDATE lock on all allocation rows for this payment in PostgreSQL
+  if (hasConfiguredDatabaseUrl()) {
+    await txDb.execute(
+      sql`SELECT id, obligation_key, allocated_amount_cents FROM dcc_payment_allocations WHERE payment_id = ${record.id} FOR UPDATE`
+    );
+  }
+
+  // 3. Load existing durable allocations for this payment inside the transaction
+  const existingAllocRows = await txDb
+    .select()
+    .from(dccPaymentAllocations)
+    .where(eq(dccPaymentAllocations.paymentId, record.id));
+  const existingObligationMap = new Map<string, number>();
+  for (const row of existingAllocRows) {
+    if (row.obligationKey !== "__PAYMENT_TOTAL__") {
+      existingObligationMap.set(row.obligationKey, Number(row.allocatedAmountCents || 0));
+    }
+  }
+
+  // 4. Synchronize any unrecorded allocations or refund reductions from octoSettlementLedger
+  const ledgerRows = await txDb.select().from(octoSettlementLedger);
+  for (const lr of ledgerRows) {
+    const meta = (lr.metadata || {}) as Record<string, any>;
+    const ev = meta.verifiedPaymentEvidence;
+    if (
+      !ev ||
+      (ev.transactionId !== record.id &&
+        ev.providerRecordId !== record.id &&
+        ev.transactionId !== record.providerPaymentId)
+    ) {
+      continue;
+    }
+    const isActiveCapture =
+      (lr.paymentStatus === "captured" || lr.paymentStatus === "partially_refunded") &&
+      lr.cancellationStatus !== "cancelled_full_refund";
+    const allocatedAmt = Number(meta.capturedAmount ?? lr.grossAmount ?? 0);
+    const refundedAmt = Number(meta.refundedAmount ?? 0);
+    const ledgerNetCents = isActiveCapture
+      ? Math.max(0, Math.round((allocatedAmt - refundedAmt) * 100))
+      : 0;
+
+    const currentRecordedCents = existingObligationMap.get(lr.bookingId);
+    const isExplicitlyTargeted =
+      params.targetObligation &&
+      (params.targetObligation.obligationKey === lr.bookingId ||
+        params.targetObligation.candidateIds.has(lr.bookingId));
+
+    if (currentRecordedCents === undefined && ledgerNetCents > 0 && !isExplicitlyTargeted) {
+      await txDb
+        .insert(dccPaymentAllocations)
+        .values({
+          id: `alloc:${record.id}:${lr.bookingId}`,
+          paymentId: record.id,
+          orderId: record.orderId,
+          obligationKey: lr.bookingId,
+          allocatedAmountCents: ledgerNetCents,
+          currency: record.currency,
+        })
+        .onConflictDoUpdate({
+          target: dccPaymentAllocations.id,
+          set: {
+            allocatedAmountCents: ledgerNetCents,
+            updatedAt: new Date(),
+          },
+        });
+      existingObligationMap.set(lr.bookingId, ledgerNetCents);
+    } else if (
+      currentRecordedCents !== undefined &&
+      ledgerNetCents < currentRecordedCents &&
+      !isExplicitlyTargeted
+    ) {
+      await txDb
+        .update(dccPaymentAllocations)
+        .set({
+          allocatedAmountCents: ledgerNetCents,
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(dccPaymentAllocations.paymentId, record.id),
+            eq(dccPaymentAllocations.obligationKey, lr.bookingId)
+          )
+        );
+      existingObligationMap.set(lr.bookingId, ledgerNetCents);
+    }
+  }
+
+  let resolvedTargetKey: string | undefined;
+  let previousObligationCents = 0;
+  let newObligationCents = 0;
+
+  // 5. Target obligation allocation change (increase, reduction, or initial write)
+  if (params.targetObligation) {
+    const { obligationKey, candidateIds, requiredAllocationCents } = params.targetObligation;
+
+    // Release parent order container placeholder if allocating a child booking item
+    if (obligationKey !== record.orderId && existingObligationMap.has(record.orderId)) {
+      await txDb
+        .delete(dccPaymentAllocations)
+        .where(
+          and(
+            eq(dccPaymentAllocations.paymentId, record.id),
+            eq(dccPaymentAllocations.obligationKey, record.orderId)
+          )
+        );
+      existingObligationMap.delete(record.orderId);
+    }
+
+    const matchedExistingKey = existingObligationMap.has(obligationKey)
+      ? obligationKey
+      : Array.from(candidateIds).find(
+          (cid) => cid !== record.orderId && existingObligationMap.has(cid)
+        );
+    resolvedTargetKey = matchedExistingKey || obligationKey;
+    previousObligationCents = matchedExistingKey
+      ? existingObligationMap.get(matchedExistingKey)!
+      : 0;
+    newObligationCents = Math.max(0, requiredAllocationCents);
+
+    // Write 1: Individual obligation row upsert inside the transaction
+    await txDb
+      .insert(dccPaymentAllocations)
+      .values({
+        id: `alloc:${record.id}:${resolvedTargetKey}`,
+        paymentId: record.id,
+        orderId: record.orderId,
+        obligationKey: resolvedTargetKey,
+        allocatedAmountCents: newObligationCents,
+        currency: record.currency,
+      })
+      .onConflictDoUpdate({
+        target: dccPaymentAllocations.id,
+        set: {
+          allocatedAmountCents: newObligationCents,
+          updatedAt: new Date(),
+        },
+      });
+    existingObligationMap.set(resolvedTargetKey, newObligationCents);
+  }
+
+  // 6. Refund-driven allocation adjustment inside the same transaction
+  if (params.refundAdjustment && params.refundAdjustment.refundAmountCents > 0) {
+    const { bookingId, orderItemId, refundAmountCents } = params.refundAdjustment;
+    let refundTargetKey =
+      bookingId && existingObligationMap.has(bookingId) ? bookingId : undefined;
+    if (!refundTargetKey && (bookingId || orderItemId)) {
+      const ctx = await resolveObligationContext({ bookingId, orderItemId }, txDb);
+      refundTargetKey = Array.from(ctx.candidateIds).find((cid) =>
+        existingObligationMap.has(cid)
+      );
+    }
+
+    if (refundTargetKey && existingObligationMap.has(refundTargetKey)) {
+      const prevCents = existingObligationMap.get(refundTargetKey)!;
+      const reducedCents = Math.max(0, prevCents - refundAmountCents);
+      resolvedTargetKey = refundTargetKey;
+      previousObligationCents = prevCents;
+      newObligationCents = reducedCents;
+      await txDb
+        .update(dccPaymentAllocations)
+        .set({
+          allocatedAmountCents: reducedCents,
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(dccPaymentAllocations.paymentId, record.id),
+            eq(dccPaymentAllocations.obligationKey, refundTargetKey)
+          )
+        );
+      existingObligationMap.set(refundTargetKey, reducedCents);
+    }
+
+    // Ensure total allocations after refund do not exceed netAvailableCapturedCents
+    let sumAfterRefund = Array.from(existingObligationMap.values()).reduce(
+      (sum, c) => sum + c,
+      0
+    );
+    if (sumAfterRefund > netAvailableCapturedCents) {
+      let excessCents = sumAfterRefund - netAvailableCapturedCents;
+      const orderedKeys = [
+        ...(existingObligationMap.has(record.orderId) ? [record.orderId] : []),
+        ...Array.from(existingObligationMap.keys()).filter((k) => k !== record.orderId),
+      ];
+      for (const k of orderedKeys) {
+        if (excessCents <= 0) break;
+        const cur = existingObligationMap.get(k) || 0;
+        if (cur <= 0) continue;
+        const cut = Math.min(cur, excessCents);
+        const updatedCents = cur - cut;
+        excessCents -= cut;
+        await txDb
+          .update(dccPaymentAllocations)
+          .set({
+            allocatedAmountCents: updatedCents,
+            updatedAt: new Date(),
+          })
+          .where(
+            and(
+              eq(dccPaymentAllocations.paymentId, record.id),
+              eq(dccPaymentAllocations.obligationKey, k)
+            )
+          );
+        existingObligationMap.set(k, updatedCents);
+      }
+    }
+  }
+
+  // 7. Deterministic crash-between-writes test hook (after individual obligation write(s), before __PAYMENT_TOTAL__ write and COMMIT)
+  await maybeTriggerBetweenAllocationWritesHook();
+
+  // 8. Recompute authoritative total from individual obligation rows and enforce budget ceiling
+  const totalAllocatedCents = Array.from(existingObligationMap.values()).reduce(
+    (sum, c) => sum + c,
+    0
+  );
+  if (totalAllocatedCents > netAvailableCapturedCents) {
+    const allocatedToOtherDollars =
+      Math.max(0, totalAllocatedCents - newObligationCents) / 100;
+    throw new OctoApiError(
+      422,
+      "PAYMENT_OVERALLOCATED",
+      `Payment '${record.id}' has $${netAvailableCaptured.toFixed(2)} net captured balance, with $${allocatedToOtherDollars.toFixed(2)} already allocated to other obligations; cannot allocate an additional $${(newObligationCents / 100).toFixed(2)} to '${resolvedTargetKey || record.orderId}'.`
+    );
+  }
+
+  // 9. Write 2: Update __PAYMENT_TOTAL__ sentinel row in the same transaction
+  await txDb
+    .update(dccPaymentAllocations)
+    .set({
+      allocatedAmountCents: totalAllocatedCents,
+      updatedAt: new Date(),
+    })
+    .where(
+      and(
+        eq(dccPaymentAllocations.paymentId, record.id),
+        eq(dccPaymentAllocations.obligationKey, "__PAYMENT_TOTAL__")
+      )
+    );
+
+  const obligationMapDollars = new Map<string, number>();
+  for (const [k, cents] of existingObligationMap.entries()) {
+    obligationMapDollars.set(k, cents / 100);
+  }
+
+  return {
+    targetObligationKey: resolvedTargetKey,
+    previousObligationCents,
+    newObligationCents,
+    totalAllocatedCents,
+    obligationMapDollars,
   };
 }
 
@@ -839,7 +1128,8 @@ export class DccPaymentService {
       !evidence.transactionId.trim() ||
       typeof evidence.capturedAmount !== "number" ||
       !Number.isFinite(evidence.capturedAmount) ||
-      evidence.capturedAmount <= 0 ||
+      (evidence.capturedAmount <= 0 &&
+        !(typeof expectedAmount === "number" && Number.isFinite(expectedAmount) && expectedAmount >= 0 && evidence.capturedAmount >= 0)) ||
       typeof evidence.currency !== "string" ||
       !evidence.currency.trim() ||
       typeof evidence.capturedAt !== "string" ||
@@ -876,10 +1166,10 @@ export class DccPaymentService {
     }
 
     const txKey = evidence.transactionId.trim();
-    return withPaymentAllocationMutex(txKey, async () => {
+    return withPaymentAllocationTransaction(txKey, async (txDb) => {
       try {
         const normalizedObligation = normalizeObligationInput(expectedObligation, evidence);
-        const obligationCtx = await resolveObligationContext(normalizedObligation);
+        const obligationCtx = await resolveObligationContext(normalizedObligation, txDb);
         if (!obligationCtx.hasIdentity) {
           throw new OctoApiError(
             422,
@@ -889,7 +1179,7 @@ export class DccPaymentService {
         }
 
         const explicitSim = isExplicitPaymentTestSimulation();
-        const record = await this.getPaymentById(txKey);
+        const record = await this.getPaymentById(txKey, txDb);
         if (!record) {
           if (explicitSim && evidence.provenanceSource === "explicit_test_simulation") {
             return {
@@ -947,9 +1237,8 @@ export class DccPaymentService {
           );
         }
 
-        const db = getDb();
-        if (provenance === "authenticated_webhook" && record.webhookEventId && db) {
-          const evtRows = await db
+        if (provenance === "authenticated_webhook" && record.webhookEventId && txDb) {
+          const evtRows = await txDb
             .select()
             .from(dccSquareWebhookEvents)
             .where(eq(dccSquareWebhookEvents.squareEventId, record.webhookEventId));
@@ -974,7 +1263,7 @@ export class DccPaymentService {
         }
 
         // Compute net unrefunded captured funds on this payment record (counting only processed refunds)
-        const orderRefunds = await this.getRefundsForOrder(record.orderId);
+        const orderRefunds = await this.getRefundsForOrder(record.orderId, txDb);
         const processedRefundsTotal = orderRefunds
           .filter((r) => r.status === "processed" && r.type === "refund")
           .reduce((sum, r) => sum + r.amount, 0);
@@ -1025,244 +1314,19 @@ export class DccPaymentService {
         const allocMap =
           paymentObligationAllocations.get(record.id) || new Map<string, number>();
 
-        if (db) {
-          // 1. Ensure sentinel budget row exists for this payment
-          await db
-            .insert(dccPaymentAllocations)
-            .values({
-              id: `alloc_total:${record.id}`,
-              paymentId: record.id,
-              orderId: record.orderId,
-              obligationKey: "__PAYMENT_TOTAL__",
-              allocatedAmountCents: 0,
-              currency: record.currency,
-            })
-            .onConflictDoNothing();
-
-          // 2. Load existing durable allocations for this payment
-          const existingAllocRows = await db
-            .select()
-            .from(dccPaymentAllocations)
-            .where(eq(dccPaymentAllocations.paymentId, record.id));
-          const existingObligationMap = new Map<string, number>();
-          for (const row of existingAllocRows) {
-            if (row.obligationKey !== "__PAYMENT_TOTAL__") {
-              existingObligationMap.set(
-                row.obligationKey,
-                Number(row.allocatedAmountCents || 0)
-              );
-            }
-          }
-
-          // 3. Synchronize any durable allocations or refund reductions from octoSettlementLedger
-          const ledgerRows = await db.select().from(octoSettlementLedger);
-          for (const lr of ledgerRows) {
-            const meta = (lr.metadata || {}) as Record<string, any>;
-            const ev = meta.verifiedPaymentEvidence;
-            if (
-              !ev ||
-              (ev.transactionId !== record.id &&
-                ev.providerRecordId !== record.id &&
-                ev.transactionId !== record.providerPaymentId)
-            ) {
-              continue;
-            }
-            const isActiveCapture =
-              (lr.paymentStatus === "captured" || lr.paymentStatus === "partially_refunded") &&
-              lr.cancellationStatus !== "cancelled_full_refund";
-            const allocatedAmt = Number(meta.capturedAmount ?? lr.grossAmount ?? 0);
-            const refundedAmt = Number(meta.refundedAmount ?? 0);
-            const ledgerNetCents = isActiveCapture
-              ? Math.max(0, Math.round((allocatedAmt - refundedAmt) * 100))
-              : 0;
-
-            const currentRecordedCents = existingObligationMap.get(lr.bookingId);
-            if (currentRecordedCents === undefined && ledgerNetCents > 0) {
-              const insertedHydration = await db
-                .insert(dccPaymentAllocations)
-                .values({
-                  id: `alloc:${record.id}:${lr.bookingId}`,
-                  paymentId: record.id,
-                  orderId: record.orderId,
-                  obligationKey: lr.bookingId,
-                  allocatedAmountCents: ledgerNetCents,
-                  currency: record.currency,
-                })
-                .onConflictDoNothing()
-                .returning({ id: dccPaymentAllocations.id });
-              if (insertedHydration.length > 0) {
-                await db
-                  .update(dccPaymentAllocations)
-                  .set({
-                    allocatedAmountCents: sql`${dccPaymentAllocations.allocatedAmountCents} + ${ledgerNetCents}`,
-                    updatedAt: new Date(),
-                  })
-                  .where(
-                    and(
-                      eq(dccPaymentAllocations.paymentId, record.id),
-                      eq(dccPaymentAllocations.obligationKey, "__PAYMENT_TOTAL__")
-                    )
-                  );
-                existingObligationMap.set(lr.bookingId, ledgerNetCents);
-              }
-            } else if (
-              currentRecordedCents !== undefined &&
-              ledgerNetCents < currentRecordedCents
-            ) {
-              const reductionCents = currentRecordedCents - ledgerNetCents;
-              await db
-                .update(dccPaymentAllocations)
-                .set({
-                  allocatedAmountCents: ledgerNetCents,
-                  updatedAt: new Date(),
-                })
-                .where(
-                  and(
-                    eq(dccPaymentAllocations.paymentId, record.id),
-                    eq(dccPaymentAllocations.obligationKey, lr.bookingId)
-                  )
-                );
-              await db
-                .update(dccPaymentAllocations)
-                .set({
-                  allocatedAmountCents: sql`CASE WHEN ${dccPaymentAllocations.allocatedAmountCents} >= ${reductionCents} THEN ${dccPaymentAllocations.allocatedAmountCents} - ${reductionCents} ELSE 0 END`,
-                  updatedAt: new Date(),
-                })
-                .where(
-                  and(
-                    eq(dccPaymentAllocations.paymentId, record.id),
-                    eq(dccPaymentAllocations.obligationKey, "__PAYMENT_TOTAL__")
-                  )
-                );
-              existingObligationMap.set(lr.bookingId, ledgerNetCents);
-            }
-          }
-
-          // 4. Release parent order container placeholder if allocating a child booking item
-          if (obligationKey !== record.orderId && existingObligationMap.has(record.orderId)) {
-            const deletedParentRows = await db
-              .delete(dccPaymentAllocations)
-              .where(
-                and(
-                  eq(dccPaymentAllocations.paymentId, record.id),
-                  eq(dccPaymentAllocations.obligationKey, record.orderId)
-                )
-              )
-              .returning({
-                allocatedAmountCents: dccPaymentAllocations.allocatedAmountCents,
-              });
-            if (deletedParentRows.length > 0) {
-              const parentCents = Number(deletedParentRows[0].allocatedAmountCents || 0);
-              if (parentCents > 0) {
-                await db
-                  .update(dccPaymentAllocations)
-                  .set({
-                    allocatedAmountCents: sql`CASE WHEN ${dccPaymentAllocations.allocatedAmountCents} >= ${parentCents} THEN ${dccPaymentAllocations.allocatedAmountCents} - ${parentCents} ELSE 0 END`,
-                    updatedAt: new Date(),
-                  })
-                  .where(
-                    and(
-                      eq(dccPaymentAllocations.paymentId, record.id),
-                      eq(dccPaymentAllocations.obligationKey, "__PAYMENT_TOTAL__")
-                    )
-                  );
-              }
-              existingObligationMap.delete(record.orderId);
-            }
-          }
-
-          // 5. Compute delta for this obligation
-          const matchedExistingKey = existingObligationMap.has(obligationKey)
-            ? obligationKey
-            : Array.from(obligationCtx.candidateIds).find(
-                (cid) => cid !== record.orderId && existingObligationMap.has(cid)
-              );
-          const targetObligationKey = matchedExistingKey || obligationKey;
-          const existingObligationCents = matchedExistingKey
-            ? existingObligationMap.get(matchedExistingKey)!
-            : 0;
-          const deltaCents = requiredAllocationCents - existingObligationCents;
-
-          // 6. Atomic single-statement conditional budget reservation on __PAYMENT_TOTAL__
-          const reservedRows = await db
-            .update(dccPaymentAllocations)
-            .set({
-              allocatedAmountCents: sql`${dccPaymentAllocations.allocatedAmountCents} + ${deltaCents}`,
-              updatedAt: new Date(),
-            })
-            .where(
-              and(
-                eq(dccPaymentAllocations.paymentId, record.id),
-                eq(dccPaymentAllocations.obligationKey, "__PAYMENT_TOTAL__"),
-                sql`(${dccPaymentAllocations.allocatedAmountCents} + ${deltaCents}) <= ${netAvailableCapturedCents}`
-              )
-            )
-            .returning({
-              allocatedAmountCents: dccPaymentAllocations.allocatedAmountCents,
-            });
-
-          if (reservedRows.length === 0) {
-            const totalRows = await db
-              .select()
-              .from(dccPaymentAllocations)
-              .where(
-                and(
-                  eq(dccPaymentAllocations.paymentId, record.id),
-                  eq(dccPaymentAllocations.obligationKey, "__PAYMENT_TOTAL__")
-                )
-              );
-            const currentTotalCents = Number(totalRows[0]?.allocatedAmountCents || 0);
-            const allocatedToOtherDollars =
-              Math.max(0, currentTotalCents - existingObligationCents) / 100;
-            throw new OctoApiError(
-              422,
-              "PAYMENT_OVERALLOCATED",
-              `Payment '${evidence.transactionId}' has $${netAvailableCaptured.toFixed(2)} net captured balance, with $${allocatedToOtherDollars.toFixed(2)} already allocated to other obligations; cannot allocate an additional $${requiredAllocation.toFixed(2)} to '${obligationKey}'.`
-            );
-          }
-
-          // 7. Persist durable per-obligation allocation row
-          try {
-            await db
-              .insert(dccPaymentAllocations)
-              .values({
-                id: `alloc:${record.id}:${targetObligationKey}`,
-                paymentId: record.id,
-                orderId: record.orderId,
-                obligationKey: targetObligationKey,
-                allocatedAmountCents: requiredAllocationCents,
-                currency: record.currency,
-              })
-              .onConflictDoUpdate({
-                target: dccPaymentAllocations.id,
-                set: {
-                  allocatedAmountCents: requiredAllocationCents,
-                  updatedAt: new Date(),
-                },
-              });
-          } catch (obligationWriteErr) {
-            if (deltaCents !== 0) {
-              await db
-                .update(dccPaymentAllocations)
-                .set({
-                  allocatedAmountCents: sql`${dccPaymentAllocations.allocatedAmountCents} - ${deltaCents}`,
-                  updatedAt: new Date(),
-                })
-                .where(
-                  and(
-                    eq(dccPaymentAllocations.paymentId, record.id),
-                    eq(dccPaymentAllocations.obligationKey, "__PAYMENT_TOTAL__")
-                  )
-                )
-                .catch(() => {});
-            }
-            throw obligationWriteErr;
-          }
-
-          allocMap.set(targetObligationKey, requiredAllocation);
-          paymentObligationAllocations.set(record.id, allocMap);
+        if (txDb) {
+          const syncRes = await executeTransactionalPaymentAllocationSync(txDb, {
+            record,
+            netAvailableCapturedCents,
+            targetObligation: {
+              obligationKey,
+              candidateIds: obligationCtx.candidateIds,
+              requiredAllocationCents,
+            },
+          });
+          paymentObligationAllocations.set(record.id, syncRes.obligationMapDollars);
         } else {
-          // Pure in-memory reservation when no DB is configured (serialized by withPaymentAllocationMutex)
+          // Pure in-memory reservation when no DB is configured (serialized by withPaymentAllocationTransaction)
           let allocatedToOtherObligations = 0;
           for (const [otherKey, otherAmt] of allocMap.entries()) {
             if (otherKey === obligationKey || obligationCtx.candidateIds.has(otherKey)) {
@@ -1305,6 +1369,130 @@ export class DccPaymentService {
           503,
           "PAYMENT_ALLOCATION_PERSISTENCE_FAILED",
           `Database error while verifying or reserving payment allocation for '${evidence.transactionId}': ${err?.message || String(err)}`
+        );
+      }
+    });
+  }
+
+  /**
+   * Atomically adjusts (increases, reduces, or zeroes out) an obligation's allocation
+   * against a payment inside a single database transaction with per-payment locking.
+   */
+  static async adjustPaymentObligationAllocation(params: {
+    paymentId: string;
+    orderId?: string;
+    bookingId: string;
+    newAllocatedAmount: number;
+    reason?: string;
+  }): Promise<{
+    paymentId: string;
+    obligationKey: string;
+    previousAllocatedAmount: number;
+    newAllocatedAmount: number;
+    totalAllocatedAmount: number;
+  }> {
+    if (
+      !params.paymentId ||
+      !params.bookingId ||
+      typeof params.newAllocatedAmount !== "number" ||
+      !Number.isFinite(params.newAllocatedAmount) ||
+      params.newAllocatedAmount < 0
+    ) {
+      throw new OctoApiError(
+        422,
+        "INVALID_ALLOCATION_ADJUSTMENT",
+        "adjustPaymentObligationAllocation requires a valid paymentId, bookingId, and non-negative newAllocatedAmount."
+      );
+    }
+
+    const txKey = params.paymentId.trim();
+    return withPaymentAllocationTransaction(txKey, async (txDb) => {
+      try {
+        const obligationCtx = await resolveObligationContext(
+          {
+            orderId: params.orderId,
+            bookingId: params.bookingId,
+          },
+          txDb
+        );
+        const record =
+          (await this.getPaymentById(txKey, txDb)) ||
+          (params.orderId ? await this.getPaymentByOrderId(params.orderId, txDb) : null);
+        if (!record) {
+          throw new OctoApiError(
+            422,
+            "UNTRACEABLE_PAYMENT_EVIDENCE",
+            `Cannot adjust allocation: payment '${params.paymentId}' does not exist.`
+          );
+        }
+
+        const orderRefunds = await this.getRefundsForOrder(record.orderId, txDb);
+        const processedRefundsTotal = orderRefunds
+          .filter((r) => r.status === "processed" && r.type === "refund")
+          .reduce((sum, r) => sum + r.amount, 0);
+        const netAvailableCaptured = Math.max(
+          0,
+          Math.round((record.amount - processedRefundsTotal) * 100) / 100
+        );
+        const netAvailableCapturedCents = Math.round(netAvailableCaptured * 100);
+        const obligationKey = obligationCtx.canonicalBookingId || params.bookingId;
+        const requiredAllocationCents = Math.round(params.newAllocatedAmount * 100);
+
+        if (txDb) {
+          const syncRes = await executeTransactionalPaymentAllocationSync(txDb, {
+            record,
+            netAvailableCapturedCents,
+            targetObligation: {
+              obligationKey,
+              candidateIds: obligationCtx.candidateIds,
+              requiredAllocationCents,
+            },
+          });
+          paymentObligationAllocations.set(record.id, syncRes.obligationMapDollars);
+          return {
+            paymentId: record.id,
+            obligationKey: syncRes.targetObligationKey || obligationKey,
+            previousAllocatedAmount: syncRes.previousObligationCents / 100,
+            newAllocatedAmount: syncRes.newObligationCents / 100,
+            totalAllocatedAmount: syncRes.totalAllocatedCents / 100,
+          };
+        }
+
+        const allocMap =
+          paymentObligationAllocations.get(record.id) || new Map<string, number>();
+        const prevAmt = allocMap.get(obligationKey) || 0;
+        let allocatedToOther = 0;
+        for (const [k, v] of allocMap.entries()) {
+          if (k !== obligationKey && !obligationCtx.candidateIds.has(k)) {
+            allocatedToOther += v;
+          }
+        }
+        if (
+          Math.round((allocatedToOther + params.newAllocatedAmount) * 100) >
+          netAvailableCapturedCents
+        ) {
+          throw new OctoApiError(
+            422,
+            "PAYMENT_OVERALLOCATED",
+            `Payment '${record.id}' has $${netAvailableCaptured.toFixed(2)} net captured balance; cannot adjust '${obligationKey}' to $${params.newAllocatedAmount.toFixed(2)}.`
+          );
+        }
+        allocMap.set(obligationKey, params.newAllocatedAmount);
+        paymentObligationAllocations.set(record.id, allocMap);
+        return {
+          paymentId: record.id,
+          obligationKey,
+          previousAllocatedAmount: prevAmt,
+          newAllocatedAmount: params.newAllocatedAmount,
+          totalAllocatedAmount:
+            Math.round((allocatedToOther + params.newAllocatedAmount) * 100) / 100,
+        };
+      } catch (err: any) {
+        if (err instanceof OctoApiError) throw err;
+        throw new OctoApiError(
+          503,
+          "PAYMENT_ALLOCATION_PERSISTENCE_FAILED",
+          `Database error while adjusting payment allocation for '${params.paymentId}': ${err?.message || String(err)}`
         );
       }
     });
@@ -1497,8 +1685,11 @@ export class DccPaymentService {
   /**
    * Retrieve the primary payment record for an order
    */
-  static async getPaymentByOrderId(orderId: string): Promise<DccOrderPaymentRecord | null> {
-    const db = getDb();
+  static async getPaymentByOrderId(
+    orderId: string,
+    targetDb?: DccDb | null
+  ): Promise<DccOrderPaymentRecord | null> {
+    const db = targetDb !== undefined ? targetDb : getDb();
     if (db) {
       const rows = await db
         .select()
@@ -1531,8 +1722,11 @@ export class DccPaymentService {
   /**
    * Retrieve a payment record by either internal DCC ID or provider payment ID
    */
-  static async getPaymentById(id: string): Promise<DccOrderPaymentRecord | null> {
-    const db = getDb();
+  static async getPaymentById(
+    id: string,
+    targetDb?: DccDb | null
+  ): Promise<DccOrderPaymentRecord | null> {
+    const db = targetDb !== undefined ? targetDb : getDb();
     if (db) {
       const rows = await db
         .select()
@@ -1565,8 +1759,11 @@ export class DccPaymentService {
   /**
    * Retrieve a recorded refund by ID
    */
-  static async getRefundById(refundId: string): Promise<DccRefundRecord | null> {
-    const db = getDb();
+  static async getRefundById(
+    refundId: string,
+    targetDb?: DccDb | null
+  ): Promise<DccRefundRecord | null> {
+    const db = targetDb !== undefined ? targetDb : getDb();
     if (db) {
       const rows = await db
         .select()
@@ -1658,11 +1855,14 @@ export class DccPaymentService {
 
   /**
    * Record an external refund event (e.g. from authenticated Square webhook).
-   * Only reduces the payment balance when the refund status is "processed" ("COMPLETED").
+   * Only reduces the payment balance and adjusts payment allocations when the refund status is "processed" ("COMPLETED").
+   * Executes inside a single database transaction with per-payment locking.
    */
   static async recordExternalRefund(params: {
     refundId: string;
     orderId: string;
+    bookingId?: string;
+    orderItemId?: string;
     amount: number;
     currency?: string;
     reason?: string;
@@ -1671,7 +1871,7 @@ export class DccPaymentService {
     rawProviderStatus?: unknown;
   }): Promise<DccRefundRecord> {
     const now = new Date().toISOString();
-    const payment = await this.getPaymentByOrderId(params.orderId);
+    const initialPayment = await this.getPaymentByOrderId(params.orderId);
     const provenanceSource: PaymentEvidenceProvenanceSource =
       params.provenanceSource ||
       (params.webhookEventId ? "authenticated_webhook" : "explicit_test_simulation");
@@ -1685,6 +1885,8 @@ export class DccPaymentService {
     const refundRecord: DccRefundRecord = {
       id: params.refundId,
       orderId: params.orderId,
+      bookingId: params.bookingId,
+      orderItemId: params.orderItemId,
       operatorSlug: "dcc-system",
       type: "refund",
       amount: params.amount,
@@ -1698,48 +1900,38 @@ export class DccPaymentService {
       createdAt: now,
     };
 
-    if (mappedStatus === "processed") {
-      const existingRefunds = await this.getRefundsForOrder(params.orderId);
-      const processedOthers = existingRefunds
-        .filter((r) => r.id !== params.refundId && r.status === "processed" && r.type === "refund")
-        .reduce((sum, r) => sum + r.amount, 0);
-      const totalRefunded = processedOthers + params.amount;
+    const lockKey = initialPayment?.id || params.orderId;
+    return withPaymentAllocationTransaction(lockKey, async (txDb) => {
+      const payment = (await this.getPaymentByOrderId(params.orderId, txDb)) || initialPayment;
 
-      if (payment) {
-        payment.status =
-          totalRefunded >= payment.amount - 0.005 ? "refunded" : "partially_refunded";
-        payment.updatedAt = now;
+      if (mappedStatus === "processed") {
+        const existingRefunds = await this.getRefundsForOrder(params.orderId, txDb);
+        const processedOthers = existingRefunds
+          .filter((r) => r.id !== params.refundId && r.status === "processed" && r.type === "refund")
+          .reduce((sum, r) => sum + r.amount, 0);
+        const totalRefunded = processedOthers + params.amount;
+
+        if (payment) {
+          payment.status =
+            totalRefunded >= payment.amount - 0.005 ? "refunded" : "partially_refunded";
+          payment.updatedAt = now;
+        }
       }
-    }
 
-    const db = getDb();
-    if (db) {
-      try {
-        await db
-          .insert(dccDisputesAndRefunds)
-          .values({
-            id: refundRecord.id,
-            orderId: refundRecord.orderId,
-            paymentId: payment?.id || "pay_unspecified",
-            operatorSlug: refundRecord.operatorSlug,
-            type: refundRecord.type,
-            amount: refundRecord.amount.toFixed(2),
-            currency: refundRecord.currency,
-            status: refundRecord.status,
-            reason: encodeRefundReasonMeta({
-              reason: refundRecord.reason || "External Square Refund",
-              provenanceSource,
-              providerStatus: providerStatusStr,
-              webhookEventId: params.webhookEventId,
-            }),
-            settlementImpact:
-              mappedStatus === "processed"
-                ? "reduced_pending"
-                : "pending_provider_confirmation",
-          })
-          .onConflictDoUpdate({
-            target: dccDisputesAndRefunds.id,
-            set: {
+      if (txDb) {
+        try {
+          await txDb
+            .insert(dccDisputesAndRefunds)
+            .values({
+              id: refundRecord.id,
+              orderId: refundRecord.orderId,
+              orderItemId: refundRecord.orderItemId || null,
+              bookingId: refundRecord.bookingId || null,
+              paymentId: payment?.id || "pay_unspecified",
+              operatorSlug: refundRecord.operatorSlug,
+              type: refundRecord.type,
+              amount: refundRecord.amount.toFixed(2),
+              currency: refundRecord.currency,
               status: refundRecord.status,
               reason: encodeRefundReasonMeta({
                 reason: refundRecord.reason || "External Square Refund",
@@ -1751,53 +1943,89 @@ export class DccPaymentService {
                 mappedStatus === "processed"
                   ? "reduced_pending"
                   : "pending_provider_confirmation",
-              updatedAt: new Date(),
+            })
+            .onConflictDoUpdate({
+              target: dccDisputesAndRefunds.id,
+              set: {
+                status: refundRecord.status,
+                reason: encodeRefundReasonMeta({
+                  reason: refundRecord.reason || "External Square Refund",
+                  provenanceSource,
+                  providerStatus: providerStatusStr,
+                  webhookEventId: params.webhookEventId,
+                }),
+                settlementImpact:
+                  mappedStatus === "processed"
+                    ? "reduced_pending"
+                    : "pending_provider_confirmation",
+                updatedAt: new Date(),
+              },
+            });
+
+          if (payment && mappedStatus === "processed") {
+            await txDb
+              .update(dccOrderPayments)
+              .set({ status: payment.status, updatedAt: new Date() })
+              .where(eq(dccOrderPayments.orderId, params.orderId));
+
+            const updatedRefunds = await this.getRefundsForOrder(params.orderId, txDb);
+            const processedTotal = updatedRefunds
+              .filter((r) => r.status === "processed" && r.type === "refund")
+              .reduce((sum, r) => sum + r.amount, 0);
+            const netAvailableCents = Math.max(
+              0,
+              Math.round((payment.amount - processedTotal) * 100)
+            );
+            const syncRes = await executeTransactionalPaymentAllocationSync(txDb, {
+              record: payment,
+              netAvailableCapturedCents: netAvailableCents,
+              refundAdjustment: {
+                bookingId: params.bookingId,
+                orderItemId: params.orderItemId,
+                refundAmountCents: Math.round(params.amount * 100),
+              },
+            });
+            paymentObligationAllocations.set(payment.id, syncRes.obligationMapDollars);
+          }
+
+          await txDb.insert(octoAuditLogs).values({
+            action: "WEBHOOK_REFUND_RECORDED",
+            entityType: "REFUND",
+            entityId: refundRecord.id,
+            status: "SUCCESS",
+            payload: {
+              orderId: params.orderId,
+              amount: params.amount,
+              status: refundRecord.status,
+              providerStatus: providerStatusStr || null,
+              provenanceSource,
+              webhookEventId: params.webhookEventId,
             },
           });
-
-        if (payment && mappedStatus === "processed") {
-          await db
-            .update(dccOrderPayments)
-            .set({ status: payment.status, updatedAt: new Date() })
-            .where(eq(dccOrderPayments.orderId, params.orderId));
+        } catch (err: any) {
+          if (err instanceof OctoApiError) throw err;
+          throw new OctoApiError(
+            503,
+            "REFUND_PERSISTENCE_FAILED",
+            `Failed to persist external refund ${refundRecord.id}: ${err.message}`
+          );
         }
-
-        await db.insert(octoAuditLogs).values({
-          action: "WEBHOOK_REFUND_RECORDED",
-          entityType: "REFUND",
-          entityId: refundRecord.id,
-          status: "SUCCESS",
-          payload: {
-            orderId: params.orderId,
-            amount: params.amount,
-            status: refundRecord.status,
-            providerStatus: providerStatusStr || null,
-            provenanceSource,
-            webhookEventId: params.webhookEventId,
-          },
-        });
-      } catch (err: any) {
-        throw new OctoApiError(
-          503,
-          "REFUND_PERSISTENCE_FAILED",
-          `Failed to persist external refund ${refundRecord.id}: ${err.message}`
-        );
       }
-    }
 
-    fallbackRefundStore.set(params.refundId, refundRecord);
-    if (payment) {
-      fallbackPaymentStore.set(params.orderId, payment);
-      fallbackPaymentStore.set(payment.id, payment);
-    }
+      fallbackRefundStore.set(params.refundId, refundRecord);
+      if (payment) {
+        fallbackPaymentStore.set(params.orderId, payment);
+        fallbackPaymentStore.set(payment.id, payment);
+      }
 
-    return refundRecord;
+      return refundRecord;
+    });
   }
 
   /**
    * Process and record a refund (item-level or order-level).
    * Strictly maps provider refund status:
-   * - COMPLETED -> "processed" (reduces payment balance)
+   * - COMPLETED -> "processed" (reduces payment balance & adjusts allocations in one locked transaction)
    * - PENDING -> "pending" (does NOT reduce payment balance)
    * - missing / unfamiliar -> "unresolved" (does NOT reduce payment balance)
    * - FAILED / REJECTED / CANCELED -> "failed" (does NOT reduce payment balance)
@@ -1805,11 +2033,14 @@ export class DccPaymentService {
   static async processRefund(params: DccRefundParams): Promise<DccRefundRecord> {
     const now = new Date().toISOString();
     const explicitSim = isExplicitPaymentTestSimulation(params.options);
-    const payment = await this.getPaymentByOrderId(params.orderId);
+    const initialPayment = await this.getPaymentByOrderId(params.orderId);
     const token = getSquareAccessToken();
 
     if (!explicitSim) {
-      if (!payment || (payment.status !== "captured" && payment.status !== "partially_refunded")) {
+      if (
+        !initialPayment ||
+        (initialPayment.status !== "captured" && initialPayment.status !== "partially_refunded")
+      ) {
         throw new OctoApiError(
           422,
           "MISSING_CAPTURED_PAYMENT_FOR_REFUND",
@@ -1825,27 +2056,27 @@ export class DccPaymentService {
       }
     }
 
-    const existingRefunds = await this.getRefundsForOrder(params.orderId);
-    const alreadyProcessedRefundsTotal = existingRefunds
+    const existingRefundsPre = await this.getRefundsForOrder(params.orderId);
+    const alreadyProcessedRefundsTotalPre = existingRefundsPre
       .filter((r) => r.status === "processed" && r.type === "refund")
       .reduce((sum, r) => sum + r.amount, 0);
 
-    if (payment) {
+    if (initialPayment) {
       if (
-        payment.status === "refunded" ||
-        alreadyProcessedRefundsTotal >= payment.amount - 0.005
+        initialPayment.status === "refunded" ||
+        alreadyProcessedRefundsTotalPre >= initialPayment.amount - 0.005
       ) {
         throw new OctoApiError(
           422,
           "PAYMENT_ALREADY_REFUNDED",
-          `Order ${params.orderId} payment (${payment.id}) has already been fully refunded.`
+          `Order ${params.orderId} payment (${initialPayment.id}) has already been fully refunded.`
         );
       }
-      if (alreadyProcessedRefundsTotal + params.amount > payment.amount + 0.01) {
+      if (alreadyProcessedRefundsTotalPre + params.amount > initialPayment.amount + 0.01) {
         throw new OctoApiError(
           422,
           "REFUND_EXCEEDS_CAPTURED_BALANCE",
-          `Requested refund (${params.amount}) plus already-processed refunds (${alreadyProcessedRefundsTotal}) exceeds captured payment amount (${payment.amount}).`
+          `Requested refund (${params.amount}) plus already-processed refunds (${alreadyProcessedRefundsTotalPre}) exceeds captured payment amount (${initialPayment.amount}).`
         );
       }
     }
@@ -1857,11 +2088,11 @@ export class DccPaymentService {
 
     const shouldInvokeProvider = Boolean(
       params.options?.squareClient ||
-        (payment?.paymentProvider === "square" &&
-          payment.providerPaymentId &&
+        (initialPayment?.paymentProvider === "square" &&
+          initialPayment.providerPaymentId &&
           token &&
-          payment.provenanceSource !== "explicit_test_simulation" &&
-          !payment.providerPaymentId.startsWith("mock_"))
+          initialPayment.provenanceSource !== "explicit_test_simulation" &&
+          !initialPayment.providerPaymentId.startsWith("mock_"))
     );
 
     if (shouldInvokeProvider) {
@@ -1885,7 +2116,8 @@ export class DccPaymentService {
             amount: BigInt(amountCents),
             currency: (params.currency || "USD") as any,
           },
-          paymentId: payment?.providerPaymentId || payment?.id || params.orderId,
+          paymentId:
+            initialPayment?.providerPaymentId || initialPayment?.id || params.orderId,
           reason: params.reason || "DCC Order Cancellation",
         });
         const providerRefundId = sqRefundRes?.refund?.id;
@@ -1944,77 +2176,132 @@ export class DccPaymentService {
       createdAt: now,
     };
 
-    // Only completed ("processed") refunds reduce the captured payment balance
-    if (refundStatus === "processed" && payment) {
-      const totalRefunded = alreadyProcessedRefundsTotal + params.amount;
-      payment.status =
-        totalRefunded >= payment.amount - 0.005 ? "refunded" : "partially_refunded";
-      payment.updatedAt = now;
-    }
+    const lockKey = initialPayment?.id || params.orderId;
+    return withPaymentAllocationTransaction(lockKey, async (txDb) => {
+      const payment =
+        (await this.getPaymentByOrderId(params.orderId, txDb)) || initialPayment;
+      const existingRefunds = await this.getRefundsForOrder(params.orderId, txDb);
+      const alreadyProcessedRefundsTotal = existingRefunds
+        .filter((r) => r.id !== refundId && r.status === "processed" && r.type === "refund")
+        .reduce((sum, r) => sum + r.amount, 0);
 
-    const db = getDb();
-    if (db) {
-      try {
-        await db.insert(dccDisputesAndRefunds).values({
-          id: refundRecord.id,
-          orderId: refundRecord.orderId,
-          orderItemId: refundRecord.orderItemId || null,
-          bookingId: refundRecord.bookingId || null,
-          paymentId: payment?.id || "pay_unspecified",
-          operatorSlug: refundRecord.operatorSlug,
-          type: refundRecord.type,
-          amount: refundRecord.amount.toFixed(2),
-          currency: refundRecord.currency,
-          status: refundRecord.status,
-          reason: encodeRefundReasonMeta({
-            reason: refundRecord.reason || "Customer cancellation refund",
-            provenanceSource,
-            providerStatus: rawProviderRefundStatus,
-          }),
-          settlementImpact:
-            refundStatus === "processed"
-              ? "reduced_pending"
-              : "pending_provider_confirmation",
-        });
-
-        if (payment && refundStatus === "processed") {
-          await db
-            .update(dccOrderPayments)
-            .set({ status: payment.status, updatedAt: new Date() })
-            .where(eq(dccOrderPayments.orderId, params.orderId));
+      if (payment && refundStatus === "processed") {
+        if (
+          payment.status === "refunded" ||
+          alreadyProcessedRefundsTotal >= payment.amount - 0.005
+        ) {
+          throw new OctoApiError(
+            422,
+            "PAYMENT_ALREADY_REFUNDED",
+            `Order ${params.orderId} payment (${payment.id}) has already been fully refunded.`
+          );
+        }
+        if (alreadyProcessedRefundsTotal + params.amount > payment.amount + 0.01) {
+          throw new OctoApiError(
+            422,
+            "REFUND_EXCEEDS_CAPTURED_BALANCE",
+            `Requested refund (${params.amount}) plus already-processed refunds (${alreadyProcessedRefundsTotal}) exceeds captured payment amount (${payment.amount}).`
+          );
         }
 
-        await db.insert(octoAuditLogs).values({
-          action: refundStatus === "processed" ? "REFUND_PROCESSED" : "REFUND_PENDING_OR_UNRESOLVED",
-          entityType: "REFUND",
-          entityId: refundRecord.id,
-          status: "SUCCESS",
-          payload: {
-            orderId: params.orderId,
-            orderItemId: params.orderItemId,
-            bookingId: params.bookingId,
-            amount: params.amount,
-            status: refundRecord.status,
-            providerStatus: rawProviderRefundStatus || null,
-            provenanceSource,
-          },
-        });
-      } catch (err: any) {
-        throw new OctoApiError(
-          503,
-          "REFUND_PERSISTENCE_FAILED",
-          `Failed to persist refund ${refundRecord.id} to database: ${err.message}`
-        );
+        const totalRefunded = alreadyProcessedRefundsTotal + params.amount;
+        payment.status =
+          totalRefunded >= payment.amount - 0.005 ? "refunded" : "partially_refunded";
+        payment.updatedAt = now;
       }
-    }
 
-    fallbackRefundStore.set(refundId, refundRecord);
-    if (payment) {
-      fallbackPaymentStore.set(params.orderId, payment);
-      fallbackPaymentStore.set(payment.id, payment);
-    }
+      if (txDb) {
+        try {
+          await txDb.insert(dccDisputesAndRefunds).values({
+            id: refundRecord.id,
+            orderId: refundRecord.orderId,
+            orderItemId: refundRecord.orderItemId || null,
+            bookingId: refundRecord.bookingId || null,
+            paymentId: payment?.id || "pay_unspecified",
+            operatorSlug: refundRecord.operatorSlug,
+            type: refundRecord.type,
+            amount: refundRecord.amount.toFixed(2),
+            currency: refundRecord.currency,
+            status: refundRecord.status,
+            reason: encodeRefundReasonMeta({
+              reason: refundRecord.reason || "Customer cancellation refund",
+              provenanceSource,
+              providerStatus: rawProviderRefundStatus,
+            }),
+            settlementImpact:
+              refundStatus === "processed"
+                ? "reduced_pending"
+                : "pending_provider_confirmation",
+          });
 
-    return refundRecord;
+          if (payment && refundStatus === "processed") {
+            await txDb
+              .update(dccOrderPayments)
+              .set({ status: payment.status, updatedAt: new Date() })
+              .where(eq(dccOrderPayments.orderId, params.orderId));
+
+            const totalRefunded = alreadyProcessedRefundsTotal + params.amount;
+            const netAvailableCents = Math.max(
+              0,
+              Math.round((payment.amount - totalRefunded) * 100)
+            );
+            const syncRes = await executeTransactionalPaymentAllocationSync(txDb, {
+              record: payment,
+              netAvailableCapturedCents: netAvailableCents,
+              refundAdjustment: {
+                bookingId: params.bookingId,
+                orderItemId: params.orderItemId,
+                refundAmountCents: Math.round(params.amount * 100),
+              },
+            });
+            paymentObligationAllocations.set(payment.id, syncRes.obligationMapDollars);
+          }
+
+          await txDb.insert(octoAuditLogs).values({
+            action:
+              refundStatus === "processed"
+                ? "REFUND_PROCESSED"
+                : "REFUND_PENDING_OR_UNRESOLVED",
+            entityType: "REFUND",
+            entityId: refundRecord.id,
+            status: "SUCCESS",
+            payload: {
+              orderId: params.orderId,
+              orderItemId: params.orderItemId,
+              bookingId: params.bookingId,
+              amount: params.amount,
+              status: refundRecord.status,
+              providerStatus: rawProviderRefundStatus || null,
+              provenanceSource,
+            },
+          });
+        } catch (err: any) {
+          if (err instanceof OctoApiError) throw err;
+          throw new OctoApiError(
+            503,
+            "REFUND_PERSISTENCE_FAILED",
+            `Failed to persist refund ${refundRecord.id} to database: ${err.message}`
+          );
+        }
+      } else if (payment && refundStatus === "processed" && params.bookingId) {
+        const allocMap = paymentObligationAllocations.get(payment.id);
+        if (allocMap && allocMap.has(params.bookingId)) {
+          const cur = allocMap.get(params.bookingId) || 0;
+          allocMap.set(
+            params.bookingId,
+            Math.max(0, Math.round((cur - params.amount) * 100) / 100)
+          );
+        }
+      }
+
+      fallbackRefundStore.set(refundId, refundRecord);
+      if (payment) {
+        fallbackPaymentStore.set(params.orderId, payment);
+        fallbackPaymentStore.set(payment.id, payment);
+      }
+
+      return refundRecord;
+    });
   }
 
   /**
@@ -2127,8 +2414,11 @@ export class DccPaymentService {
   /**
    * List refunds and disputes for an order
    */
-  static async getRefundsForOrder(orderId: string): Promise<DccRefundRecord[]> {
-    const db = getDb();
+  static async getRefundsForOrder(
+    orderId: string,
+    targetDb?: DccDb | null
+  ): Promise<DccRefundRecord[]> {
+    const db = targetDb !== undefined ? targetDb : getDb();
     if (db) {
       const rows = await db
         .select()
@@ -2160,4 +2450,5 @@ export class DccPaymentService {
     return Array.from(fallbackRefundStore.values()).filter((r) => r.orderId === orderId);
   }
 }
+
 

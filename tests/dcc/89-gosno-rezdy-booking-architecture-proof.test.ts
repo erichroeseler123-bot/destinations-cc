@@ -2543,6 +2543,8 @@ test("Gate 9: Concurrent $60+$60 allocations on $100 payment fail closed atomica
       dccPaymentAllocations,
     } = await import("../../lib/db/schema");
     const {
+      ensureEarthosSchema,
+      resetEarthosSchemaEnsuredForTests,
       inspectOctoBookingIdempotencyDuplicates,
       reconcileOctoBookingIdempotencyDuplicates,
     } = await import("../../lib/dcc/earthos/ensureEarthosSchema");
@@ -3016,7 +3018,7 @@ test("Gate 9: Concurrent $60+$60 allocations on $100 payment fail closed atomica
     assert.equal(sim.getOrders()[0].status, "PROCESSING");
 
     // =========================================================================
-    // 3. Non-Destructive Duplicate Detection & Explicit Reconciliation (Zero Automatic DELETEs)
+    // 3. Non-Destructive Duplicate Detection, Conflict Report Preservation When Migration Activation Is Blocked, & Explicit Reconciliation
     // =========================================================================
     const migration0008Sql = fs.readFileSync(
       path.join(process.cwd(), "drizzle/0008_octo_bookings_idempotency_unique_idx.sql"),
@@ -3084,7 +3086,34 @@ test("Gate 9: Concurrent $60+$60 allocations on $100 payment fail closed atomica
       checkoutUrl: null,
     });
 
-    // 3a. Inspect duplicates non-destructively: proves 0 rows deleted, CONFIRMED row prioritized over earlier ON_HOLD row, and conflict snapshots recorded
+    // 3a. Attempt migration activation (ensureEarthosSchema) while duplicates exist:
+    // Activation MUST be blocked with UNRESOLVED_IDEMPOTENCY_DUPLICATES, AND the duplicate-conflict reports MUST be durably preserved!
+    resetEarthosSchemaEnsuredForTests();
+    await assert.rejects(
+      () => ensureEarthosSchema(),
+      (err: any) => String(err?.message || "").includes("UNRESOLVED_IDEMPOTENCY_DUPLICATES"),
+      "ensureEarthosSchema() must block unique index activation when duplicate idempotency_key rows exist"
+    );
+
+    const conflictRowsPreservedOnBlock = await db
+      .select()
+      .from(octoBookingIdempotencyConflicts)
+      .where(eq(octoBookingIdempotencyConflicts.idempotencyKey, dupIdemKey));
+    assert.equal(
+      conflictRowsPreservedOnBlock.length,
+      2,
+      "Duplicate-conflict report rows MUST be preserved in octo_booking_idempotency_conflicts when migration activation is blocked"
+    );
+    assert.ok(
+      conflictRowsPreservedOnBlock.every(
+        (c) =>
+          c.resolutionStatus === "unresolved" &&
+          c.conflictClassification === "confirmed_vs_non_confirmed" &&
+          c.authoritativeBookingId === "dcc:bk:dup_confirmed_later"
+      )
+    );
+
+    // 3b. Inspect duplicates non-destructively: proves 0 rows deleted, CONFIRMED row prioritized over earlier ON_HOLD row, and conflict snapshots recorded
     const dupReport = await inspectOctoBookingIdempotencyDuplicates(db);
     assert.equal(dupReport.duplicateGroupCount, 1);
     assert.equal(dupReport.totalDuplicateRows, 2);
@@ -3096,14 +3125,7 @@ test("Gate 9: Concurrent $60+$60 allocations on $100 payment fail closed atomica
       "Status-aware duplicate inspection must recommend the CONFIRMED booking over an earlier ON_HOLD row (unlike ctid deletion)"
     );
 
-    const conflictRowsBefore = await db
-      .select()
-      .from(octoBookingIdempotencyConflicts)
-      .where(eq(octoBookingIdempotencyConflicts.idempotencyKey, dupIdemKey));
-    assert.equal(conflictRowsBefore.length, 2);
-    assert.ok(conflictRowsBefore.every((c) => c.resolutionStatus === "unresolved"));
-
-    // 3b. Attempting to demote the CONFIRMED booking without allowConfirmedDemotion: true is forbidden
+    // 3c. Attempting to demote the CONFIRMED booking without allowConfirmedDemotion: true is forbidden
     await assert.rejects(
       () =>
         reconcileOctoBookingIdempotencyDuplicates(
@@ -3120,7 +3142,7 @@ test("Gate 9: Concurrent $60+$60 allocations on $100 payment fail closed atomica
       "Reconciliation must refuse to demote a CONFIRMED booking row unless allowConfirmedDemotion: true"
     );
 
-    // 3c. Explicit non-destructive reconciliation preserves BOTH booking rows in octo_bookings (deletedRowCount: 0)
+    // 3d. Explicit non-destructive reconciliation preserves BOTH booking rows in octo_bookings (deletedRowCount: 0)
     const reconcileOutcome = await reconcileOctoBookingIdempotencyDuplicates(
       {
         idempotencyKey: dupIdemKey,
@@ -3165,7 +3187,7 @@ test("Gate 9: Concurrent $60+$60 allocations on $100 payment fail closed atomica
     assert.equal(conflictRowsAfter.length, 2);
     assert.ok(conflictRowsAfter.every((c) => c.resolutionStatus === "reconciled"));
 
-    // 3d. Now creating the unique index octo_bookings_idempotency_key_uidx succeeds with 0 remaining duplicates
+    // 3e. Now creating the unique index octo_bookings_idempotency_key_uidx succeeds with 0 remaining duplicates
     const postReconcileReport = await inspectOctoBookingIdempotencyDuplicates(db);
     assert.equal(postReconcileReport.duplicateGroupCount, 0);
     await db.execute(sql`
@@ -3181,5 +3203,696 @@ test("Gate 9: Concurrent $60+$60 allocations on $100 payment fail closed atomica
     await sim.close();
   }
 });
+
+// ============================================================================
+// GATE 10: Multi-Process Isolated PostgreSQL Proof of Single-Transaction Per-Payment
+//          Allocation Locking (Competing Allocations, Simultaneous Changes to Same Obligation,
+//          Process Killed SIGKILL Between Writes, Refund Allocation Adjustments) &
+//          Duplicate-Conflict Report Preservation When Migration Activation Is Blocked
+// ============================================================================
+test("Gate 10: Independent OS processes against isolated PostgreSQL prove single-transaction per-payment allocation locking, rollback when a process is killed between writes, simultaneous changes to the same obligation, and preserved duplicate-conflict reports when migration activation is blocked", async () => {
+  const { spawn } = await import("node:child_process");
+  const { getDb, resetTestSqliteDb } = await import("../../lib/db/client");
+  const {
+    octoBookings,
+    octoBookingIdempotencyConflicts,
+    dccPaymentAllocations,
+    dccOrderPayments,
+    dccDisputesAndRefunds,
+  } = await import("../../lib/db/schema");
+  const {
+    applyMigration0008Sql,
+    ensureEarthosSchema,
+    resetEarthosSchemaEnsuredForTests,
+    inspectOctoBookingIdempotencyDuplicates,
+    reconcileOctoBookingIdempotencyDuplicates,
+  } = await import("../../lib/dcc/earthos/ensureEarthosSchema");
+  const { and, eq, inArray, sql } = await import("drizzle-orm");
+
+  // Resolve isolated PostgreSQL URL:
+  // 1) In GitHub Actions CI: process.env.DCC_CI_POSTGRES_URL (postgresql://postgres:postgres@localhost:5432/dcc_test)
+  // 2) Locally: isolated nonprod database `neondb_nonprod` derived from DATABASE_URL in .env.local
+  let isolatedPgUrl = (process.env.DCC_CI_POSTGRES_URL || "").trim();
+  if (!isolatedPgUrl) {
+    let baseUrl = (process.env.DATABASE_URL || "").trim();
+    if (!baseUrl) {
+      const envLocalPath = path.join(process.cwd(), ".env.local");
+      if (fs.existsSync(envLocalPath)) {
+        const envText = fs.readFileSync(envLocalPath, "utf8");
+        const m = envText.match(/^DATABASE_URL=["']?([^"'\r\n]+)["']?/m);
+        if (m) baseUrl = m[1].trim();
+      }
+    }
+    if (baseUrl.startsWith("postgres")) {
+      const parsed = new URL(baseUrl);
+      parsed.pathname = "/neondb_nonprod";
+      isolatedPgUrl = parsed.toString();
+    }
+  }
+
+  assert.ok(
+    isolatedPgUrl.startsWith("postgres"),
+    "Gate 10 requires an isolated PostgreSQL connection URL (DCC_CI_POSTGRES_URL or nonprod PostgreSQL)"
+  );
+
+  // Switch active getDb() environment to isolated PostgreSQL
+  const savedEnv = {
+    DCC_ISOLATED_TEST_DB: process.env.DCC_ISOLATED_TEST_DB,
+    DCC_TEST_SQLITE_PATH: process.env.DCC_TEST_SQLITE_PATH,
+    DCC_DATABASE_URL: process.env.DCC_DATABASE_URL,
+    DCC_TARGET_DB: process.env.DCC_TARGET_DB,
+    SQUARE_ACCESS_TOKEN: process.env.SQUARE_ACCESS_TOKEN,
+    SQUARE_LOCATION_ID_DCC: process.env.SQUARE_LOCATION_ID_DCC,
+  };
+
+  process.env.DCC_ISOLATED_TEST_DB = "0";
+  delete process.env.DCC_TEST_SQLITE_PATH;
+  process.env.DCC_DATABASE_URL = isolatedPgUrl;
+  process.env.DCC_TARGET_DB = "nonprod";
+  process.env.SQUARE_ACCESS_TOKEN = "sq_sandbox_gate10_pg_token";
+  process.env.SQUARE_LOCATION_ID_DCC = "loc_sandbox_gate10_pg";
+  resetTestSqliteDb();
+  DccPaymentService.clearInMemoryStoresForProcessRestartSimulation();
+
+  const pgDb = getDb()!;
+  assert.ok(pgDb, "Isolated PostgreSQL DccDb instance must initialize");
+
+  const workerScriptPath = path.join(
+    process.cwd(),
+    "tests/dcc/helpers/pg-multiprocess-allocation-worker.ts"
+  );
+
+  function spawnPgWorker(
+    payload: Record<string, any>,
+    extraEnv?: Record<string, string>
+  ): {
+    child: ReturnType<typeof spawn>;
+    readyPromise: Promise<void>;
+    firstWriteHookPromise: Promise<void>;
+    resultPromise: Promise<{ exitCode: number | null; signal: NodeJS.Signals | null; parsedResult: any; stdout: string; stderr: string }>;
+  } {
+    const resultFile = path.join(
+      os.tmpdir(),
+      `dcc_pg_worker_res_${Date.now()}_${Math.random().toString(16).slice(2, 8)}.json`
+    );
+    const payloadWithResultFile = { ...payload, resultFile };
+    const child = spawn(
+      process.execPath,
+      ["--import", "tsx", workerScriptPath],
+      {
+        cwd: process.cwd(),
+        env: {
+          ...process.env,
+          TSX_TSCONFIG_PATH: path.join(process.cwd(), "tsconfig.json"),
+          DCC_WORKER_PAYLOAD_JSON: JSON.stringify(payloadWithResultFile),
+          DCC_ISOLATED_TEST_DB: "0",
+          DCC_TEST_SQLITE_PATH: "",
+          DCC_DATABASE_URL: isolatedPgUrl,
+          DCC_TARGET_DB: "nonprod",
+          SQUARE_ACCESS_TOKEN: "sq_sandbox_gate10_pg_token",
+          SQUARE_LOCATION_ID_DCC: "loc_sandbox_gate10_pg",
+          ...(extraEnv || {}),
+        },
+        stdio: ["ignore", "pipe", "pipe"],
+      }
+    );
+
+    let stdout = "";
+    let stderr = "";
+    let resolveReady!: () => void;
+    let rejectReady!: (err: Error) => void;
+    let resolveFirstWrite!: () => void;
+    let rejectFirstWrite!: (err: Error) => void;
+    const readyPromise = new Promise<void>((r, rej) => {
+      resolveReady = r;
+      rejectReady = rej;
+    });
+    const firstWriteHookPromise = new Promise<void>((r, rej) => {
+      resolveFirstWrite = r;
+      rejectFirstWrite = rej;
+    });
+    // Prevent unhandled rejection when firstWriteHookPromise is unused
+    firstWriteHookPromise.catch(() => {});
+
+    child.stdout?.on("data", (chunk: Buffer) => {
+      stdout += chunk.toString("utf8");
+      if (stdout.includes("WORKER_READY")) {
+        resolveReady();
+      }
+      if (stdout.includes("DCC_ALLOC_TX_AFTER_FIRST_WRITE")) {
+        resolveFirstWrite();
+      }
+    });
+    child.stderr?.on("data", (chunk: Buffer) => {
+      stderr += chunk.toString("utf8");
+    });
+
+    const resultPromise = new Promise<{
+      exitCode: number | null;
+      signal: NodeJS.Signals | null;
+      parsedResult: any;
+      stdout: string;
+      stderr: string;
+    }>((resolve) => {
+      child.on("close", (code, signal) => {
+        if (!stdout.includes("WORKER_READY")) {
+          rejectReady(
+            new Error(
+              `Worker exited before WORKER_READY (code=${code}, signal=${signal}): ${stderr || stdout}`
+            )
+          );
+        }
+        if (
+          extraEnv?.DCC_TEST_PAUSE_BETWEEN_ALLOCATION_WRITES === "1" &&
+          !stdout.includes("DCC_ALLOC_TX_AFTER_FIRST_WRITE")
+        ) {
+          rejectFirstWrite(
+            new Error(
+              `Worker exited before DCC_ALLOC_TX_AFTER_FIRST_WRITE (code=${code}, signal=${signal}): ${stderr || stdout}`
+            )
+          );
+        }
+        let parsedResult: any = null;
+        if (fs.existsSync(resultFile)) {
+          try {
+            parsedResult = JSON.parse(fs.readFileSync(resultFile, "utf8"));
+            fs.unlinkSync(resultFile);
+          } catch {}
+        }
+        if (!parsedResult) {
+          const m = stdout.match(/RESULT_JSON:(\{[^\r\n]+\})/);
+          if (m) {
+            try {
+              parsedResult = JSON.parse(m[1]);
+            } catch {}
+          }
+        }
+        resolve({ exitCode: code, signal, parsedResult, stdout, stderr });
+      });
+    });
+
+    return { child, readyPromise, firstWriteHookPromise, resultPromise };
+  }
+
+  const runSuffix = `${Date.now()}_${Math.random().toString(16).slice(2, 8)}`;
+  const pgDupKey = `idem_pg_dup_preserve_${runSuffix}`;
+  const pgDupHoldId = `dcc:bk:pg_dup_hold_${runSuffix}`;
+  const pgDupConfId = `dcc:bk:pg_dup_conf_${runSuffix}`;
+  const raceOrderId = `ord_pg_mp_race_${runSuffix}`;
+  const sameOblOrderId = `ord_pg_mp_same_obl_${runSuffix}`;
+  const barrierFiles: string[] = [];
+
+  try {
+    // Ensure base schema exists in isolated PostgreSQL
+    await applyMigration0008Sql(pgDb);
+
+    // =========================================================================
+    // 10A. Preserve Duplicate-Conflict Reports in Isolated PostgreSQL When Migration Activation Is Blocked
+    // =========================================================================
+    await pgDb.execute(sql`DROP INDEX IF EXISTS "octo_bookings_idempotency_key_uidx";`);
+
+    await pgDb.insert(octoBookings).values({
+      id: pgDupHoldId,
+      bookingUuid: crypto.randomUUID(),
+      idempotencyKey: pgDupKey,
+      idempotencyHash: "hash_pg_dup",
+      supplierConnectionId: "conn_gosno_rezdy",
+      resellerId: null,
+      productId: "dcc:gosno:den-breckenridge:suv",
+      optionId: "opt_suburban_69029050",
+      availabilityId: "slot_pg_dup",
+      status: "ON_HOLD",
+      expirationMinutes: 15,
+      utcHoldExpires: null,
+      totalPrice: "399.00",
+      currency: "USD",
+      unitItems: [{ unitId: "unit_suburban_69029050", quantity: 1 }] as any,
+      contact: { firstName: "PgHold", lastName: "Duplicate" },
+      supplierReference: "RZD-PG-HOLD-1",
+      resellerReference: pgDupHoldId,
+      checkoutUrl: null,
+    });
+    await pgDb.insert(octoBookings).values({
+      id: pgDupConfId,
+      bookingUuid: crypto.randomUUID(),
+      idempotencyKey: pgDupKey,
+      idempotencyHash: "hash_pg_dup",
+      supplierConnectionId: "conn_gosno_rezdy",
+      resellerId: null,
+      productId: "dcc:gosno:den-breckenridge:suv",
+      optionId: "opt_suburban_69029050",
+      availabilityId: "slot_pg_dup",
+      status: "CONFIRMED",
+      expirationMinutes: 15,
+      utcHoldExpires: null,
+      totalPrice: "399.00",
+      currency: "USD",
+      unitItems: [{ unitId: "unit_suburban_69029050", quantity: 1 }] as any,
+      contact: { firstName: "PgConfirmed", lastName: "Duplicate" },
+      supplierReference: "RZD-PG-CONFIRMED-2",
+      resellerReference: pgDupConfId,
+      checkoutUrl: null,
+    });
+
+    // Execute migration 0008 SQL against isolated PostgreSQL while duplicate rows exist:
+    // Step B raises UNRESOLVED_IDEMPOTENCY_DUPLICATES and blocks Step C (CREATE UNIQUE INDEX),
+    // while Step A's INSERT INTO octo_booking_idempotency_conflicts remains durably committed!
+    await assert.rejects(
+      () => applyMigration0008Sql(pgDb, { onlyIdempotencyActivationSteps: true }),
+      (err: any) =>
+        String(err?.message || err?.cause?.message || "").includes(
+          "UNRESOLVED_IDEMPOTENCY_DUPLICATES"
+        ),
+      "Migration 0008 SQL must block activation with UNRESOLVED_IDEMPOTENCY_DUPLICATES when duplicate idempotency_key rows exist in PostgreSQL"
+    );
+
+    const idxWhileBlocked = await pgDb.execute(sql`
+      SELECT indexname FROM pg_indexes
+      WHERE tablename = 'octo_bookings' AND indexname = 'octo_bookings_idempotency_key_uidx';
+    `);
+    assert.equal(
+      idxWhileBlocked.rows.length,
+      0,
+      "octo_bookings_idempotency_key_uidx must NOT be created while unresolved duplicates exist"
+    );
+
+    const preservedConflictsFromSql = await pgDb
+      .select()
+      .from(octoBookingIdempotencyConflicts)
+      .where(eq(octoBookingIdempotencyConflicts.idempotencyKey, pgDupKey));
+    assert.equal(
+      preservedConflictsFromSql.length,
+      2,
+      "Migration 0008 SQL must durably preserve duplicate-conflict reports in PostgreSQL octo_booking_idempotency_conflicts when index activation is blocked"
+    );
+    assert.ok(
+      preservedConflictsFromSql.every(
+        (c) =>
+          c.conflictClassification === "confirmed_vs_non_confirmed" &&
+          c.resolutionStatus === "unresolved" &&
+          c.authoritativeBookingId === pgDupConfId
+      )
+    );
+
+    // Also prove inspectOctoBookingIdempotencyDuplicates(pgDb) (used by ensureEarthosSchema) preserves duplicate-conflict reports in PostgreSQL
+    await pgDb
+      .delete(octoBookingIdempotencyConflicts)
+      .where(eq(octoBookingIdempotencyConflicts.idempotencyKey, pgDupKey));
+    const pgDupReport = await inspectOctoBookingIdempotencyDuplicates(pgDb);
+    assert.ok(pgDupReport.duplicateGroupCount >= 1);
+
+    const preservedConflictsFromEnsure = await pgDb
+      .select()
+      .from(octoBookingIdempotencyConflicts)
+      .where(eq(octoBookingIdempotencyConflicts.idempotencyKey, pgDupKey));
+    assert.equal(
+      preservedConflictsFromEnsure.length,
+      2,
+      "inspectOctoBookingIdempotencyDuplicates must durably preserve duplicate-conflict reports in PostgreSQL"
+    );
+
+    // Reconcile the duplicates non-destructively and prove migration activation now succeeds in PostgreSQL
+    const pgReconcileRes = await reconcileOctoBookingIdempotencyDuplicates(
+      {
+        idempotencyKey: pgDupKey,
+        authoritativeBookingId: pgDupConfId,
+        resolvedBy: "gate10-pg-verifier",
+        resolutionReason: "Keep CONFIRMED booking and archive ON_HOLD duplicate",
+      },
+      pgDb
+    );
+    assert.equal(pgReconcileRes.deletedRowCount, 0);
+
+    await applyMigration0008Sql(pgDb, { onlyIdempotencyActivationSteps: true });
+
+    const idxAfterReconcile = await pgDb.execute(sql`
+      SELECT indexname FROM pg_indexes
+      WHERE tablename = 'octo_bookings' AND indexname = 'octo_bookings_idempotency_key_uidx';
+    `);
+    assert.equal(
+      idxAfterReconcile.rows.length,
+      1,
+      "octo_bookings_idempotency_key_uidx must be active in PostgreSQL after explicit reconciliation"
+    );
+
+    // =========================================================================
+    // 10B. Independent OS Processes Racing Simultaneous $60 + $60 Allocations on One $100 Payment in Isolated PostgreSQL
+    // =========================================================================
+    const raceCapture = await captureTraceableSquarePayment(raceOrderId, 100);
+    const barrierRace = path.join(
+      os.tmpdir(),
+      `dcc_pg_barrier_race_${runSuffix}.flag`
+    );
+    barrierFiles.push(barrierRace);
+
+    const worker60A = spawnPgWorker({
+      mode: "assert_evidence",
+      barrierFile: barrierRace,
+      transactionId: raceCapture.transactionId,
+      orderId: raceOrderId,
+      bookingId: `dcc:bk:pg_mp_60_a_${runSuffix}`,
+      amount: 60,
+      capturedAt: raceCapture.capturedAt,
+    });
+    const worker60B = spawnPgWorker({
+      mode: "assert_evidence",
+      barrierFile: barrierRace,
+      transactionId: raceCapture.transactionId,
+      orderId: raceOrderId,
+      bookingId: `dcc:bk:pg_mp_60_b_${runSuffix}`,
+      amount: 60,
+      capturedAt: raceCapture.capturedAt,
+    });
+
+    await Promise.all([worker60A.readyPromise, worker60B.readyPromise]);
+    // Release both OS processes simultaneously
+    fs.writeFileSync(barrierRace, "GO", "utf8");
+
+    const [res60A, res60B] = await Promise.all([
+      worker60A.resultPromise,
+      worker60B.resultPromise,
+    ]);
+
+    const outcomes60 = [res60A.parsedResult, res60B.parsedResult];
+    const succeeded60 = outcomes60.filter((o) => o?.ok === true);
+    const failed60 = outcomes60.filter((o) => o?.ok === false);
+
+    assert.equal(
+      succeeded60.length,
+      1,
+      `Expected exactly 1 of 2 independent OS processes to succeed on $60+$60/$100 race, got: ${JSON.stringify(outcomes60)}`
+    );
+    assert.equal(
+      failed60.length,
+      1,
+      `Expected 1 independent OS process to fail closed on $60+$60/$100 race, got: ${JSON.stringify(outcomes60)}`
+    );
+    assert.equal(failed60[0].status, 422);
+    assert.equal(failed60[0].code, "PAYMENT_OVERALLOCATED");
+
+    const pgRaceAllocRows = await pgDb
+      .select()
+      .from(dccPaymentAllocations)
+      .where(eq(dccPaymentAllocations.paymentId, raceCapture.transactionId));
+    const pgRaceTotal = pgRaceAllocRows.find((r) => r.obligationKey === "__PAYMENT_TOTAL__");
+    const pgRaceObligations = pgRaceAllocRows.filter(
+      (r) => r.obligationKey !== "__PAYMENT_TOTAL__"
+    );
+    assert.ok(pgRaceTotal);
+    assert.equal(Number(pgRaceTotal.allocatedAmountCents), 6000);
+    assert.equal(pgRaceObligations.length, 1);
+    assert.equal(Number(pgRaceObligations[0].allocatedAmountCents), 6000);
+
+    // =========================================================================
+    // 10C. Independent OS Processes Simultaneously Modifying the SAME Obligation (Increases & Reductions) in Isolated PostgreSQL
+    // =========================================================================
+    const sameOblCapture = await captureTraceableSquarePayment(sameOblOrderId, 100);
+    const otherOblKey = `dcc:bk:pg_other_obl_${runSuffix}`;
+    const targetSameOblKey = `dcc:bk:pg_same_obl_${runSuffix}`;
+
+    // Seed $20 on otherOblKey and $60 on targetSameOblKey ($80 total of $100)
+    await DccPaymentService.assertTraceablePaymentEvidence(
+      { ...sameOblCapture, capturedAmount: 20 },
+      20,
+      { orderId: sameOblOrderId, bookingId: otherOblKey }
+    );
+    await DccPaymentService.assertTraceablePaymentEvidence(
+      { ...sameOblCapture, capturedAmount: 60 },
+      60,
+      { orderId: sameOblOrderId, bookingId: targetSameOblKey }
+    );
+
+    const barrierSameObl = path.join(
+      os.tmpdir(),
+      `dcc_pg_barrier_same_obl_${runSuffix}.flag`
+    );
+    barrierFiles.push(barrierSameObl);
+
+    // Spawn 4 independent OS processes simultaneously modifying targetSameOblKey:
+    // - wReduce25: reduces targetSameOblKey to $25 ($25 + $20 = $45 <= $100) -> succeeds
+    // - wIncrease75: increases targetSameOblKey to $75 ($75 + $20 = $95 <= $100) -> succeeds
+    // - wAdjust40: adjusts targetSameOblKey to $40 ($40 + $20 = $60 <= $100) -> succeeds
+    // - wOver85: attempts $85 ($85 + $20 = $105 > $100) -> fails closed with 422 PAYMENT_OVERALLOCATED
+    const wReduce25 = spawnPgWorker({
+      mode: "adjust_allocation",
+      barrierFile: barrierSameObl,
+      paymentId: sameOblCapture.transactionId,
+      orderId: sameOblOrderId,
+      bookingId: targetSameOblKey,
+      newAllocatedAmount: 25,
+    });
+    const wIncrease75 = spawnPgWorker({
+      mode: "assert_evidence",
+      barrierFile: barrierSameObl,
+      transactionId: sameOblCapture.transactionId,
+      orderId: sameOblOrderId,
+      bookingId: targetSameOblKey,
+      amount: 75,
+      capturedAt: sameOblCapture.capturedAt,
+    });
+    const wAdjust40 = spawnPgWorker({
+      mode: "adjust_allocation",
+      barrierFile: barrierSameObl,
+      paymentId: sameOblCapture.transactionId,
+      orderId: sameOblOrderId,
+      bookingId: targetSameOblKey,
+      newAllocatedAmount: 40,
+    });
+    const wOver85 = spawnPgWorker({
+      mode: "adjust_allocation",
+      barrierFile: barrierSameObl,
+      paymentId: sameOblCapture.transactionId,
+      orderId: sameOblOrderId,
+      bookingId: targetSameOblKey,
+      newAllocatedAmount: 85,
+    });
+
+    await Promise.all([
+      wReduce25.readyPromise,
+      wIncrease75.readyPromise,
+      wAdjust40.readyPromise,
+      wOver85.readyPromise,
+    ]);
+    fs.writeFileSync(barrierSameObl, "GO", "utf8");
+
+    const [res25, res75, res40, res85] = await Promise.all([
+      wReduce25.resultPromise,
+      wIncrease75.resultPromise,
+      wAdjust40.resultPromise,
+      wOver85.resultPromise,
+    ]);
+
+    assert.equal(res25.parsedResult?.ok, true, `wReduce25 failed: ${res25.stdout} ${res25.stderr}`);
+    assert.equal(res75.parsedResult?.ok, true, `wIncrease75 failed: ${res75.stdout} ${res75.stderr}`);
+    assert.equal(res40.parsedResult?.ok, true, `wAdjust40 failed: ${res40.stdout} ${res40.stderr}`);
+    assert.equal(res85.parsedResult?.ok, false, "wOver85 ($85 + $20 > $100) must fail closed");
+    assert.equal(res85.parsedResult?.status, 422);
+    assert.equal(res85.parsedResult?.code, "PAYMENT_OVERALLOCATED");
+
+    const afterSameOblRows = await pgDb
+      .select()
+      .from(dccPaymentAllocations)
+      .where(eq(dccPaymentAllocations.paymentId, sameOblCapture.transactionId));
+    const sameOblRowAfter = afterSameOblRows.find(
+      (r) => r.obligationKey === targetSameOblKey
+    )!;
+    const otherOblRowAfter = afterSameOblRows.find(
+      (r) => r.obligationKey === otherOblKey
+    )!;
+    const totalRowAfter = afterSameOblRows.find(
+      (r) => r.obligationKey === "__PAYMENT_TOTAL__"
+    )!;
+
+    const committedSameOblCents = Number(sameOblRowAfter.allocatedAmountCents);
+    assert.ok(
+      [2500, 4000, 7500].includes(committedSameOblCents),
+      `targetSameOblKey cents (${committedSameOblCents}) must equal one of the serialized valid updates (2500, 4000, or 7500)`
+    );
+    assert.equal(Number(otherOblRowAfter.allocatedAmountCents), 2000);
+    assert.equal(
+      Number(totalRowAfter.allocatedAmountCents),
+      committedSameOblCents + 2000,
+      "__PAYMENT_TOTAL__ must strictly equal the sum of individual obligation rows after simultaneous multi-process updates to the same obligation"
+    );
+
+    // =========================================================================
+    // 10D. Independent OS Process Killed (SIGKILL) Between Writes in Isolated PostgreSQL
+    // =========================================================================
+    // Case 1: Kill process with SIGKILL after Write 1 (individual obligation reduction to $10 / 1000 cents)
+    // and before Write 2 (__PAYMENT_TOTAL__ update) & COMMIT.
+    const killedAdjustWorker = spawnPgWorker(
+      {
+        mode: "adjust_allocation",
+        paymentId: sameOblCapture.transactionId,
+        orderId: sameOblOrderId,
+        bookingId: targetSameOblKey,
+        newAllocatedAmount: 10,
+      },
+      {
+        DCC_TEST_PAUSE_BETWEEN_ALLOCATION_WRITES: "1",
+      }
+    );
+
+    await killedAdjustWorker.firstWriteHookPromise;
+    killedAdjustWorker.child.kill("SIGKILL");
+    const killedAdjustOutcome = await killedAdjustWorker.resultPromise;
+    assert.notEqual(
+      killedAdjustOutcome.exitCode,
+      0,
+      "Process killed with SIGKILL between writes must exit non-zero"
+    );
+
+    // Verify PostgreSQL rolled back Write 1 ($10 / 1000 cents) and preserved exact consistency
+    const rowsAfterKilledAdjust = await pgDb
+      .select()
+      .from(dccPaymentAllocations)
+      .where(eq(dccPaymentAllocations.paymentId, sameOblCapture.transactionId));
+    const sameOblAfterKill1 = rowsAfterKilledAdjust.find(
+      (r) => r.obligationKey === targetSameOblKey
+    )!;
+    const totalAfterKill1 = rowsAfterKilledAdjust.find(
+      (r) => r.obligationKey === "__PAYMENT_TOTAL__"
+    )!;
+    assert.equal(
+      Number(sameOblAfterKill1.allocatedAmountCents),
+      committedSameOblCents,
+      "PostgreSQL must roll back uncommitted individual obligation write when worker process is killed between writes"
+    );
+    assert.equal(
+      Number(totalAfterKill1.allocatedAmountCents),
+      committedSameOblCents + 2000,
+      "__PAYMENT_TOTAL__ must remain 100% consistent with individual obligation rows after mid-transaction process kill"
+    );
+
+    // Case 2: Kill process with SIGKILL between writes during a $15 processRefund adjustment,
+    // proving refund row, payment status update, and obligation allocation reduction all roll back together.
+    const killedRefundId = `sq_ref_killed_${runSuffix}`;
+    const killedRefundWorker = spawnPgWorker(
+      {
+        mode: "process_refund",
+        orderId: sameOblOrderId,
+        bookingId: targetSameOblKey,
+        amount: 15,
+        refundId: killedRefundId,
+      },
+      {
+        DCC_TEST_PAUSE_BETWEEN_ALLOCATION_WRITES: "1",
+      }
+    );
+
+    await killedRefundWorker.firstWriteHookPromise;
+    killedRefundWorker.child.kill("SIGKILL");
+    await killedRefundWorker.resultPromise;
+
+    const rolledBackRefundRows = await pgDb
+      .select()
+      .from(dccDisputesAndRefunds)
+      .where(eq(dccDisputesAndRefunds.id, killedRefundId));
+    assert.equal(
+      rolledBackRefundRows.length,
+      0,
+      "Refund row inserted before mid-transaction process kill must be rolled back in PostgreSQL"
+    );
+
+    const paymentAfterKilledRefund = await pgDb
+      .select()
+      .from(dccOrderPayments)
+      .where(eq(dccOrderPayments.id, sameOblCapture.transactionId));
+    assert.equal(
+      paymentAfterKilledRefund[0].status,
+      "captured",
+      "Payment status update before mid-transaction process kill must be rolled back to 'captured'"
+    );
+
+    const rowsAfterKilledRefund = await pgDb
+      .select()
+      .from(dccPaymentAllocations)
+      .where(eq(dccPaymentAllocations.paymentId, sameOblCapture.transactionId));
+    assert.equal(
+      Number(
+        rowsAfterKilledRefund.find((r) => r.obligationKey === targetSameOblKey)!
+          .allocatedAmountCents
+      ),
+      committedSameOblCents,
+      "Obligation allocation reduction must be rolled back when refund process is killed between writes"
+    );
+    assert.equal(
+      Number(
+        rowsAfterKilledRefund.find((r) => r.obligationKey === "__PAYMENT_TOTAL__")!
+          .allocatedAmountCents
+      ),
+      committedSameOblCents + 2000
+    );
+
+    // Now run the $15 processRefund in an independent OS process WITHOUT kill and prove atomic commit
+    const committedRefundId = `sq_ref_committed_${runSuffix}`;
+    const cleanRefundWorker = spawnPgWorker({
+      mode: "process_refund",
+      orderId: sameOblOrderId,
+      bookingId: targetSameOblKey,
+      amount: 15,
+      refundId: committedRefundId,
+    });
+    const cleanRefundOutcome = await cleanRefundWorker.resultPromise;
+    assert.equal(cleanRefundOutcome.parsedResult?.ok, true);
+    assert.equal(cleanRefundOutcome.parsedResult?.status, "processed");
+
+    const rowsAfterCleanRefund = await pgDb
+      .select()
+      .from(dccPaymentAllocations)
+      .where(eq(dccPaymentAllocations.paymentId, sameOblCapture.transactionId));
+    const expectedReducedSameOblCents = committedSameOblCents - 1500;
+    assert.equal(
+      Number(
+        rowsAfterCleanRefund.find((r) => r.obligationKey === targetSameOblKey)!
+          .allocatedAmountCents
+      ),
+      expectedReducedSameOblCents,
+      "Committed refund transaction must atomically reduce the refunded obligation's allocation by 1500 cents ($15.00)"
+    );
+    assert.equal(
+      Number(
+        rowsAfterCleanRefund.find((r) => r.obligationKey === "__PAYMENT_TOTAL__")!
+          .allocatedAmountCents
+      ),
+      expectedReducedSameOblCents + 2000,
+      "Committed refund transaction must atomically update __PAYMENT_TOTAL__ to match the reduced obligation allocation"
+    );
+  } finally {
+    for (const bf of barrierFiles) {
+      if (fs.existsSync(bf)) {
+        try {
+          fs.unlinkSync(bf);
+        } catch {}
+      }
+    }
+    // Clean up test rows created in isolated PostgreSQL
+    try {
+      await pgDb
+        .delete(octoBookingIdempotencyConflicts)
+        .where(eq(octoBookingIdempotencyConflicts.idempotencyKey, pgDupKey));
+      await pgDb
+        .delete(octoBookings)
+        .where(inArray(octoBookings.id, [pgDupHoldId, pgDupConfId]));
+      await pgDb
+        .delete(dccPaymentAllocations)
+        .where(inArray(dccPaymentAllocations.orderId, [raceOrderId, sameOblOrderId]));
+      await pgDb
+        .delete(dccDisputesAndRefunds)
+        .where(inArray(dccDisputesAndRefunds.orderId, [raceOrderId, sameOblOrderId]));
+      await pgDb
+        .delete(dccOrderPayments)
+        .where(inArray(dccOrderPayments.orderId, [raceOrderId, sameOblOrderId]));
+    } catch {}
+
+    // Restore environment variables
+    for (const [k, v] of Object.entries(savedEnv)) {
+      if (v === undefined) delete process.env[k];
+      else process.env[k] = v;
+    }
+    resetTestSqliteDb();
+  }
+});
+
 
 
