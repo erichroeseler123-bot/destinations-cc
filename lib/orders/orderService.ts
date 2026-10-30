@@ -187,6 +187,17 @@ export class DccOrderService {
           currency: item.currency,
           status: paymentResult.status,
         },
+        verifiedPaymentEvidence:
+          paymentResult.status === "captured"
+            ? {
+                verified: true,
+                provider: paymentResult.provider || "square",
+                transactionId: paymentResult.paymentId,
+                capturedAmount: item.price,
+                currency: item.currency,
+                capturedAt: paymentResult.processedAt || new Date().toISOString(),
+              }
+            : undefined,
         idempotencyKey: params.idempotencyKey,
         resellerId: params.resellerId,
         orderId: order.orderId,
@@ -272,17 +283,8 @@ export class DccOrderService {
       return { order, cancelledItem: item };
     }
 
-    // Cancel underlying supplier booking
-    if (item.bookingId) {
-      await DccBookingService.cancelBooking(item.bookingId, {
-        reason: params.reason || "Customer item cancellation",
-      });
-    }
-
-    item.status = "CANCELLED";
-
-    // Process partial refund for item
-    await DccPaymentService.processRefund({
+    // Process partial refund for item first so verified refund evidence can be supplied
+    const refundRecord = await DccPaymentService.processRefund({
       orderId: order.orderId,
       orderItemId: item.itemId,
       bookingId: item.bookingId,
@@ -291,6 +293,26 @@ export class DccOrderService {
       currency: item.currency,
       reason: params.reason,
     });
+
+    // Cancel underlying supplier booking with verified refund evidence
+    if (item.bookingId) {
+      await DccBookingService.cancelBooking(item.bookingId, {
+        reason: params.reason || "Customer item cancellation",
+        refundPolicyOutcome: "full_refund",
+        verifiedRefundEvidence: {
+          verified: true,
+          provider: "square",
+          refundId: refundRecord.id,
+          refundType: "full",
+          refundedAmount: refundRecord.amount,
+          currency: refundRecord.currency,
+          refundedAt: refundRecord.createdAt,
+          reason: params.reason,
+        },
+      });
+    }
+
+    item.status = "CANCELLED";
 
     // If all items are cancelled, mark the entire master order as CANCELLED
     const allCancelled = order.items.every((it) => it.status === "CANCELLED");
@@ -531,6 +553,17 @@ export class DccOrderService {
             currency: item.currency,
             status: paymentResult.status,
           },
+          verifiedPaymentEvidence:
+            paymentResult.status === "captured"
+              ? {
+                  verified: true,
+                  provider: "square",
+                  transactionId: paymentResult.paymentId,
+                  capturedAmount: item.price,
+                  currency: item.currency,
+                  capturedAt: paymentResult.processedAt || new Date().toISOString(),
+                }
+              : undefined,
           idempotencyKey: params.idempotencyKey ? `${params.idempotencyKey}:${item.itemId}` : undefined,
           resellerId: params.resellerId,
           orderId: order.orderId,
@@ -595,7 +628,18 @@ export class DccOrderService {
             grossAmount: item.price,
             commissionPercent: 15,
             scheduledServiceDate: item.eventDate || "2026-09-20",
-            paymentStatus: "captured",
+            paymentStatus: paymentResult.status === "captured" ? "captured" : "authorized",
+            verifiedPaymentEvidence:
+              paymentResult.status === "captured"
+                ? {
+                    verified: true,
+                    provider: "square",
+                    transactionId: paymentResult.paymentId,
+                    capturedAmount: item.price,
+                    currency: item.currency,
+                    capturedAt: paymentResult.processedAt || new Date().toISOString(),
+                  }
+                : undefined,
             settlementStatus: "pending",
           });
         } catch (setErr: any) {

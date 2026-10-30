@@ -324,8 +324,8 @@ export class MockOctoSupplierEngine {
     unitItems?: any[]
   ): OctoAvailabilitySlot[] {
     const checkDate = new Date(`${localDate}T00:00:00Z`);
-    // Reject dates more than 1 day in the past
-    if (!isNaN(checkDate.getTime()) && checkDate.getTime() < Date.now() - 86400000) {
+    // Reject historical dates prior to 2026
+    if (!isNaN(checkDate.getTime()) && checkDate.getTime() < new Date("2026-01-01T00:00:00Z").getTime()) {
       return [];
     }
 

@@ -146,7 +146,10 @@ export type ValidationResult =
         | "public_secret_submission_forbidden"
         | "missing_required_fields"
         | "missing_api_documentation"
-        | "invalid_api_documentation_url";
+        | "invalid_api_documentation_url"
+        | "invalid_operator_permission_confirmation"
+        | "operator_permission_required"
+        | "invalid_authorized_api_access_flag";
       message: string;
     }
   | {

@@ -55,9 +55,21 @@ export type OctoUnitType =
   | "MILITARY"
   | "OTHER";
 
-export type OctoAvailabilityStatus = "AVAILABLE" | "FREESALE" | "SOLD_OUT";
+export type OctoAvailabilityStatus =
+  | "AVAILABLE"
+  | "FREESALE"
+  | "SOLD_OUT"
+  | "QUOTE_ONLY"
+  | "NO_SESSIONS"
+  | "CAPACITY_EXCEEDED";
 
-export type OctoBookingStatus = "ON_HOLD" | "CONFIRMED" | "CANCELLED" | "EXPIRED";
+export type OctoBookingStatus =
+  | "ON_HOLD"
+  | "CONFIRMED"
+  | "CANCELLED"
+  | "EXPIRED"
+  | "PENDING"
+  | "REJECTED";
 
 export interface OctoPricingTier {
   original: number;
@@ -192,6 +204,89 @@ export interface OctoContact {
   notes?: string;
 }
 
+export interface OctoPickupLocation {
+  pickupId?: number;
+  locationName?: string;
+  address?: string;
+  latitude?: number;
+  longitude?: number;
+  pickupInstructions?: string;
+  pickupTime?: string;
+}
+
+export interface OctoCustomBookingField {
+  label: string;
+  value?: string;
+  requiredPerParticipant?: boolean;
+  requiredPerBooking?: boolean;
+}
+
+export interface OctoParticipantField {
+  name: string;
+  value: string;
+}
+
+export interface OctoVerifiedPaymentEvidence {
+  verified: true;
+  provider: string;
+  transactionId: string;
+  capturedAmount: number;
+  currency: string;
+  capturedAt: string;
+}
+
+export interface OctoVerifiedRefundEvidence {
+  verified: true;
+  provider: string;
+  refundId: string;
+  refundType?: "full" | "partial";
+  refundedAmount: number;
+  currency: string;
+  refundedAt: string;
+  reason?: string;
+}
+
+export interface DccBookingLifecycleStates {
+  bookingStatus: OctoBookingStatus;
+  paymentStatus:
+    | "unpaid"
+    | "authorized"
+    | "captured"
+    | "partially_refunded"
+    | "refunded"
+    | "failed";
+  serviceCompletionStatus:
+    | "not_completed"
+    | "scheduled"
+    | "completed"
+    | "no_show"
+    | "cancelled_before_service";
+  commissionEligibilityStatus:
+    | "ineligible_unconfirmed"
+    | "ineligible_unpaid"
+    | "pending_service_completion"
+    | "eligible"
+    | "ineligible_cancelled"
+    | "adjusted_partial_refund"
+    | "reversed_on_refund";
+  cancellationStatus:
+    | "none"
+    | "active"
+    | "cancelled"
+    | "cancelled_unpaid"
+    | "cancelled_no_refund"
+    | "cancelled_pending_refund"
+    | "cancelled_full_refund"
+    | "cancelled_penalty";
+  refundStatus:
+    | "none"
+    | "not_applicable_unpaid"
+    | "no_refund"
+    | "pending_refund"
+    | "partial_refund"
+    | "full_refund";
+}
+
 export interface OctoCreateHoldParams {
   uuid?: string;
   productId: string;
@@ -199,20 +294,33 @@ export interface OctoCreateHoldParams {
   availabilityId: string;
   expirationMinutes: number; // Enforced per OCTO Core specification
   unitItems: OctoUnitItemRequest[];
+  contact?: OctoContact;
+  pickupLocation?: OctoPickupLocation;
+  customFields?: OctoCustomBookingField[];
+  participants?: OctoParticipantField[][];
   notes?: string;
 }
 
 export interface OctoConfirmBookingParams {
   contact: OctoContact;
   resellerReference?: string;
+  pickupLocation?: OctoPickupLocation;
+  customFields?: OctoCustomBookingField[];
+  participants?: OctoParticipantField[][];
+  notes?: string;
   payment?: {
     isPrepaid?: boolean;
     provider?: string;
     paymentId?: string;
+    transactionId?: string;
     currency?: string;
     amount?: number;
+    capturedAmount?: number;
+    capturedAt?: string;
+    verified?: boolean;
     status?: string;
   };
+  verifiedPaymentEvidence?: OctoVerifiedPaymentEvidence;
 }
 
 export interface OctoBookingResult {
@@ -238,6 +346,13 @@ export interface OctoBookingResult {
   checkoutUrl?: string;
   confirmedAt?: string;
   cancelledAt?: string;
+  createdAt?: string;
+  pickupLocation?: OctoPickupLocation;
+  customFields?: OctoCustomBookingField[];
+  participants?: OctoParticipantField[][];
+  verifiedPaymentEvidence?: OctoVerifiedPaymentEvidence;
+  verifiedRefundEvidence?: OctoVerifiedRefundEvidence;
+  lifecycleStates?: DccBookingLifecycleStates;
 }
 
 export interface OctoParticipant {

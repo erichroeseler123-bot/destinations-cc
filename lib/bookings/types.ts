@@ -4,9 +4,22 @@ import {
   OctoCreateHoldParams,
   OctoUnitItemRequest,
   OctoBookingPaymentModel,
+  OctoContact,
+  OctoPickupLocation,
+  OctoCustomBookingField,
+  OctoParticipantField,
+  OctoVerifiedPaymentEvidence,
+  OctoVerifiedRefundEvidence,
+  DccBookingLifecycleStates,
 } from "@/lib/octo/types";
 
-export type DccBookingStatus = "ON_HOLD" | "CONFIRMED" | "CANCELLED" | "EXPIRED";
+export type DccBookingStatus =
+  | "ON_HOLD"
+  | "CONFIRMED"
+  | "CANCELLED"
+  | "EXPIRED"
+  | "PENDING"
+  | "REJECTED";
 
 export interface DccUnitItem {
   unitId: string;
@@ -20,6 +33,10 @@ export interface DccBookingHoldRequest {
   availabilityId: string;
   expirationMinutes?: number;
   unitItems: DccUnitItem[];
+  contact?: OctoContact;
+  pickupLocation?: OctoPickupLocation;
+  customFields?: OctoCustomBookingField[];
+  participants?: OctoParticipantField[][];
   notes?: string;
   idempotencyKey?: string;
   resellerId?: string;
@@ -30,22 +47,40 @@ export interface DccBookingConfirmRequest {
   bookingId: string;
   contact: {
     fullName: string;
+    firstName?: string;
+    lastName?: string;
     emailAddress: string;
     phoneNumber?: string;
     country?: string;
     notes?: string;
   };
+  pickupLocation?: OctoPickupLocation;
+  customFields?: OctoCustomBookingField[];
+  participants?: OctoParticipantField[][];
+  notes?: string;
   payment?: {
     isPrepaid?: boolean;
     provider?: string;
     paymentId?: string;
+    transactionId?: string;
     currency?: string;
     amount?: number;
+    capturedAmount?: number;
+    capturedAt?: string;
+    verified?: boolean;
     status?: string;
   };
+  verifiedPaymentEvidence?: OctoVerifiedPaymentEvidence;
+  requireVerifiedPayment?: boolean;
   idempotencyKey?: string;
   resellerId?: string;
   orderId?: string;
+}
+
+export interface DccBookingCancelRequest {
+  reason?: string;
+  refundPolicyOutcome?: "no_refund" | "pending_refund" | "partial_refund" | "full_refund";
+  verifiedRefundEvidence?: OctoVerifiedRefundEvidence;
 }
 
 export interface DccBookingRecord {
@@ -64,6 +99,9 @@ export interface DccBookingRecord {
   currency: string;
   unitItems: DccUnitItem[];
   contact?: Record<string, unknown>;
+  pickupLocation?: OctoPickupLocation;
+  customFields?: OctoCustomBookingField[];
+  participants?: OctoParticipantField[][];
   supplierReference?: string;
   resellerReference?: string;
   checkoutUrl?: string;
@@ -79,4 +117,5 @@ export interface DccBookingRecord {
   confirmedAt?: string;
   cancelledAt?: string;
   createdAt: string;
+  lifecycleStates?: DccBookingLifecycleStates;
 }
