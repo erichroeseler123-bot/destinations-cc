@@ -16,11 +16,11 @@ const PRIMARY_NAV_CONSOLE: NavItem[] = [
 ];
 
 const PRIMARY_NAV_PUBLIC: NavItem[] = [
+  { href: "/ask", label: "ASK DCC" },
   { href: "/juneau", label: "JUNEAU DECISION ENGINE" },
   { href: "/red-rocks", label: "RED ROCKS" },
   { href: "/routes/denver-breckenridge", label: "I-70 CORRIDOR" },
   { href: "/ports", label: "PORTS" },
-  { href: "/developers", label: "API" },
   { href: "/about", label: "SOURCES & METHODOLOGY" },
 ];
 
@@ -75,3 +75,4 @@ export default function SiteHeader() {
     </header>
   );
 }
+

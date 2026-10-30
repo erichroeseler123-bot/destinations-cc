@@ -3,6 +3,7 @@
 import { FormEvent, useState, useId } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import AskDccEntry from "@/app/components/AskDccEntry";
 
 type ResolvedLocation = {
   id: string;
@@ -96,30 +97,27 @@ export default function LocationFirstHomeFast() {
                 </span>
               </div>
               <h1 className="mt-3 text-4xl font-black tracking-[-0.04em] sm:text-6xl lg:text-7xl max-w-4xl">
-                What Is True, What Fits Your Trip, and How to Choose.
+                What fits your trip?
               </h1>
             </div>
-            <button
-              type="button"
-              onClick={useCurrentLocation}
-              disabled={locating}
-              className="rounded-full border border-cyan-300/30 bg-cyan-300/10 px-5 py-2.5 text-xs font-black uppercase tracking-[0.14em] text-cyan-100 transition hover:bg-cyan-300/20 disabled:cursor-wait disabled:opacity-60"
-            >
-              {locating ? "Locating…" : "📍 Use my location"}
-            </button>
+
           </div>
 
           <p className="mt-5 max-w-3xl text-base leading-8 text-white/75 sm:text-xl">
-            Destination Command Center is a source-backed travel decision engine. Start with destination knowledge, practical schedule and transfer constraints, cited evidence, and clear explanations of what is known or uncertain. You can use DCC without buying anything—or compare public transport, free activities, direct operator options, and marketplace options when a booking link helps you act on a decision.
+            Compare the practical tradeoffs, see the research behind the answer, and choose your next step. Ask about New Orleans tours, Juneau excursions, or Colorado transportation. No account needed.
           </p>
 
-          {/* Primary Action Buttons: Decision Engines, Reference Guides & Documented APIs */}
+          <div className="mt-7 max-w-4xl">
+            <AskDccEntry />
+          </div>
+
+          {/* Existing planning tools and destination guides */}
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
               href="/juneau#port-day-decision-engine"
               className="px-6 py-4 bg-gradient-to-r from-cyan-400 to-emerald-400 text-black font-black text-sm uppercase tracking-wider rounded-2xl shadow-xl shadow-cyan-500/25 hover:brightness-110 transition flex items-center gap-2"
             >
-              <span>Open Juneau Port-Day Decision Engine</span>
+              <span>Check what fits your Juneau port day</span>
               <span>→</span>
             </Link>
 
@@ -127,82 +125,79 @@ export default function LocationFirstHomeFast() {
               href="#featured-destinations"
               className="px-5 py-4 bg-white/10 text-white font-black text-sm uppercase tracking-wider rounded-2xl border border-white/15 hover:bg-white/15 transition flex items-center gap-2"
             >
-              <span>Explore Destination Reference Guides</span>
+              <span>See destination guides</span>
               <span>↓</span>
-            </Link>
-
-            <Link
-              href="/developers"
-              className="px-5 py-4 bg-white/10 text-white font-black text-sm uppercase tracking-wider rounded-2xl border border-white/15 hover:bg-white/15 transition flex items-center gap-2"
-            >
-              <span>Documented APIs &amp; Evidence Contracts</span>
-              <span>→</span>
             </Link>
           </div>
 
           {/* Coordinate Search Engine Form */}
-          <div className="mt-12 pt-8 border-t border-white/10 max-w-4xl">
-            <span className="text-xs font-bold uppercase tracking-wider text-white/50 block mb-2">
-              Explore Live Data For Any Coordinate or Venue:
-            </span>
-            <form
-              role="search"
-              aria-label="Coordinate and venue search"
-              onSubmit={search}
-              className="flex flex-col gap-3 sm:flex-row"
-            >
-              <label className="sr-only" htmlFor={locationSearchInputId}>Open a location</label>
-              <input
-                id={locationSearchInputId}
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Address, venue name, city, ZIP, airport, port, landmark…"
-                className="min-h-14 flex-1 rounded-2xl border border-white/15 bg-white/[0.06] px-5 text-base text-white outline-none placeholder:text-white/40 focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/20"
-                autoComplete="off"
-              />
-              <button
-                type="submit"
-                disabled={searching}
-                className="min-h-14 rounded-2xl bg-cyan-400 px-7 text-sm font-black uppercase tracking-[0.12em] text-[#031217] transition hover:bg-cyan-300 disabled:opacity-60 shadow-lg shadow-cyan-400/20"
-              >
-                {searching ? "Finding…" : "Inspect Node"}
+          <details className="mt-10 max-w-4xl border-t border-white/10 pt-6">
+            <summary className="cursor-pointer text-sm font-bold text-cyan-200 hover:text-white">
+              Check weather and live conditions for a place
+            </summary>
+            <div className="mt-4">
+              <button type="button" onClick={useCurrentLocation} disabled={locating} className="mb-3 rounded-xl border border-cyan-300/30 bg-cyan-300/10 px-4 py-2 text-sm font-bold text-cyan-100 transition hover:bg-cyan-300/20 disabled:cursor-wait disabled:opacity-60">
+                {locating ? "Locating…" : "Use my location"}
               </button>
-            </form>
-
-            <div className="mt-4 flex flex-wrap items-center gap-2" aria-label="Example locations">
-              <span className="py-1 text-xs font-bold uppercase tracking-[0.12em] text-white/45">Instant Live Nodes:</span>
-              <button type="button" onClick={() => openLocation(39.66540, -105.20570)} className="rounded-full border border-white/15 bg-white/[0.03] px-3.5 py-1.5 text-xs font-bold text-cyan-200 transition hover:border-cyan-400 hover:text-white">🎸 Red Rocks, CO</button>
-              <button type="button" onClick={() => openLocation(39.48170, -106.03840)} className="rounded-full border border-white/15 bg-white/[0.03] px-3.5 py-1.5 text-xs font-bold text-white/80 transition hover:border-cyan-400 hover:text-white">⛷️ Breckenridge, CO</button>
-              <button type="button" onClick={() => openLocation(39.75310, -105.23470)} className="rounded-full border border-white/15 bg-white/[0.03] px-3.5 py-1.5 text-xs font-bold text-white/80 transition hover:border-cyan-400 hover:text-white">🌊 Clear Creek Whitewater</button>
-              <button type="button" onClick={() => openLocation(58.29890, -134.40530)} className="rounded-full border border-white/15 bg-white/[0.03] px-3.5 py-1.5 text-xs font-bold text-white/80 transition hover:border-cyan-400 hover:text-white">🚢 Juneau Cruise Port, AK</button>
-            </div>
-
-            <div aria-live="polite" aria-atomic="true">
-              {results.length > 1 ? (
-                <div
-                  role="region"
-                  aria-label="Matching locations"
-                  className="mt-3 grid max-w-4xl gap-2 rounded-2xl border border-white/15 bg-black/80 p-3 shadow-2xl"
+              <form
+                role="search"
+                aria-label="Coordinate and venue search"
+                onSubmit={search}
+                className="flex flex-col gap-3 sm:flex-row"
+              >
+                <label className="sr-only" htmlFor={locationSearchInputId}>Open a location</label>
+                <input
+                  id={locationSearchInputId}
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder="Address, venue name, city, ZIP, airport, port, landmark…"
+                  className="min-h-14 flex-1 rounded-2xl border border-white/15 bg-white/[0.06] px-5 text-base text-white outline-none placeholder:text-white/40 focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/20"
+                  autoComplete="off"
+                />
+                <button
+                  type="submit"
+                  disabled={searching}
+                  className="min-h-14 rounded-2xl bg-cyan-400 px-7 text-sm font-black uppercase tracking-[0.12em] text-[#031217] transition hover:bg-cyan-300 disabled:opacity-60 shadow-lg shadow-cyan-400/20"
                 >
-                  <p className="px-2 pt-1 text-xs font-bold uppercase tracking-[0.12em] text-cyan-200/80">
-                    {results.length} matching locations found — select a coordinate node:
-                  </p>
-                  {results.map((result) => (
-                    <button key={result.id} type="button" onClick={() => openLocation(result.lat, result.lng)} className="rounded-xl px-4 py-3 text-left transition hover:bg-white/[0.1] border border-white/5">
-                      <strong className="block text-sm text-white">{result.name}</strong>
-                      <span className="mt-0.5 block text-xs text-white/50">{result.displayName}</span>
-                    </button>
-                  ))}
-                </div>
-              ) : null}
+                  {searching ? "Finding…" : "Check conditions"}
+                </button>
+              </form>
 
-              {message ? (
-                <p role="status" className="mt-4 text-sm text-amber-300">
-                  {message}
-                </p>
-              ) : null}
+              <div className="mt-4 flex flex-wrap items-center gap-2" aria-label="Example locations">
+                <span className="py-1 text-xs font-bold uppercase tracking-[0.12em] text-white/45">Example places:</span>
+                <button type="button" onClick={() => openLocation(39.66540, -105.20570)} className="rounded-full border border-white/15 bg-white/[0.03] px-3.5 py-1.5 text-xs font-bold text-cyan-200 transition hover:border-cyan-400 hover:text-white">🎸 Red Rocks, CO</button>
+                <button type="button" onClick={() => openLocation(39.48170, -106.03840)} className="rounded-full border border-white/15 bg-white/[0.03] px-3.5 py-1.5 text-xs font-bold text-white/80 transition hover:border-cyan-400 hover:text-white">⛷️ Breckenridge, CO</button>
+                <button type="button" onClick={() => openLocation(39.75310, -105.23470)} className="rounded-full border border-white/15 bg-white/[0.03] px-3.5 py-1.5 text-xs font-bold text-white/80 transition hover:border-cyan-400 hover:text-white">🌊 Clear Creek Whitewater</button>
+                <button type="button" onClick={() => openLocation(58.29890, -134.40530)} className="rounded-full border border-white/15 bg-white/[0.03] px-3.5 py-1.5 text-xs font-bold text-white/80 transition hover:border-cyan-400 hover:text-white">🚢 Juneau Cruise Port, AK</button>
+              </div>
+
+              <div aria-live="polite" aria-atomic="true">
+                {results.length > 1 ? (
+                  <div
+                    role="region"
+                    aria-label="Matching locations"
+                    className="mt-3 grid max-w-4xl gap-2 rounded-2xl border border-white/15 bg-black/80 p-3 shadow-2xl"
+                  >
+                    <p className="px-2 pt-1 text-xs font-bold uppercase tracking-[0.12em] text-cyan-200/80">
+                      {results.length} matching places found — choose a location:
+                    </p>
+                    {results.map((result) => (
+                      <button key={result.id} type="button" onClick={() => openLocation(result.lat, result.lng)} className="rounded-xl px-4 py-3 text-left transition hover:bg-white/[0.1] border border-white/5">
+                        <strong className="block text-sm text-white">{result.name}</strong>
+                        <span className="mt-0.5 block text-xs text-white/50">{result.displayName}</span>
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+
+                {message ? (
+                  <p role="status" className="mt-4 text-sm text-amber-300">
+                    {message}
+                  </p>
+                ) : null}
+              </div>
             </div>
-          </div>
+          </details>
         </div>
       </section>
 
@@ -545,3 +540,4 @@ export default function LocationFirstHomeFast() {
     </main>
   );
 }
+

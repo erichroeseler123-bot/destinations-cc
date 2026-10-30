@@ -17,7 +17,7 @@ const STARTERS = [
   "Can we do whales and a helicopter in Juneau?",
   "How should 7 people get from DEN to Vail?",
   "What should we do with 8 hours in St. Thomas?",
-  "Airboat or covered boat with kids?",
+  "Airboat or covered swamp boat with kids in New Orleans?",
   "How do we get to Red Rocks without driving?",
 ];
 
@@ -50,7 +50,7 @@ export default function AskDccClient() {
       url.searchParams.set("dcc_handoff_id", getSessionId());
       url.searchParams.set("decision_corridor", "ask-dcc");
       url.searchParams.set("decision_action", "ask_dcc_handoff");
-      url.searchParams.set("source_url", window.location.href);
+      url.searchParams.set("source_url", window.location.origin + window.location.pathname);
       return url.toString();
     } catch {
       return href;
@@ -112,7 +112,7 @@ export default function AskDccClient() {
           {!messages.length ? (
             <div className="py-7 text-center">
               <p className="text-sm font-black uppercase tracking-[0.2em] text-cyan-300">Ask a real trip question</p>
-              <p className="mx-auto mt-3 max-w-2xl leading-7 text-slate-400">DCC searches its published decision graph first. AI explains the evidence; the network registry controls the commercial handoff.</p>
+              <p className="mx-auto mt-3 max-w-2xl leading-7 text-slate-400">Start with a destination and the choice you are weighing. Read the answer, inspect the research, then decide whether to explore booking options.</p>
               <div className="mx-auto mt-7 flex max-w-3xl flex-wrap justify-center gap-2">
                 {STARTERS.map((starter) => <button key={starter} onClick={() => void ask(starter)} className="rounded-full border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:border-cyan-600">{starter}</button>)}
               </div>
@@ -124,11 +124,11 @@ export default function AskDccClient() {
               </div>
             </div>
           ))}
-          {loading && <p className="animate-pulse text-sm font-bold text-cyan-300">DCC is tracing the decision graph…</p>}
+          {loading && <p role="status" className="animate-pulse text-sm font-bold text-cyan-300">Finding relevant research…</p>}
         </div>
 
         <form onSubmit={submit} className="mt-4 flex flex-col gap-3 sm:flex-row">
-          <textarea value={input} onChange={(event) => setInput(event.target.value)} rows={2} placeholder="What are you trying to figure out?" className="min-h-[58px] flex-1 resize-none rounded-2xl border border-slate-700 bg-[#080c12] px-4 py-3 text-base text-white outline-none placeholder:text-slate-500 focus:border-cyan-500" />
+          <textarea aria-label="Your travel question or follow-up" maxLength={1800} value={input} onChange={(event) => setInput(event.target.value)} rows={2} placeholder="What are you trying to figure out?" className="min-h-[58px] flex-1 resize-none rounded-2xl border border-slate-700 bg-[#080c12] px-4 py-3 text-base text-white outline-none placeholder:text-slate-500 focus:border-cyan-500" />
           <button disabled={loading || input.trim().length < 3} className="rounded-2xl bg-cyan-300 px-7 py-3 text-sm font-black text-[#061017] disabled:opacity-40">Ask DCC</button>
         </form>
       </div>
@@ -143,10 +143,11 @@ export default function AskDccClient() {
           </section>
           <section className="rounded-3xl border border-amber-900/40 bg-amber-950/10 p-6">
             <p className="text-xs font-black uppercase tracking-wider text-amber-300">Next best action</p>
-            {result.handoff && handoffHref ? <><h2 className="mt-3 text-2xl font-black text-white">{result.handoff.siteName}</h2><p className="mt-3 text-sm leading-6 text-slate-300">{result.handoff.reason}</p><a href={handoffHref} onClick={() => recordHandoffClick(result.handoff!, result.sources, handoffHref)} className="mt-5 inline-flex rounded-xl bg-amber-300 px-5 py-3 text-sm font-black text-[#17110a]">Continue with the decision resolved ↗</a></> : <><h2 className="mt-3 text-xl font-black text-white">Stay in research mode.</h2><p className="mt-3 text-sm text-slate-400">DCC has not justified a commercial handoff yet. Ask a follow-up instead.</p></>}
+            {result.handoff && handoffHref ? <><h2 className="mt-3 text-2xl font-black text-white">{result.handoff.siteName}</h2><p className="mt-3 text-sm leading-6 text-slate-300">{result.handoff.reason}</p><a href={handoffHref} onClick={() => recordHandoffClick(result.handoff!, result.sources, handoffHref)} className="mt-5 inline-flex rounded-xl bg-amber-300 px-5 py-3 text-sm font-black text-[#17110a]">See options on {result.handoff.siteName} ↗</a></> : <><h2 className="mt-3 text-xl font-black text-white">Stay in research mode.</h2><p className="mt-3 text-sm text-slate-400">DCC has not justified a commercial handoff yet. Ask a follow-up instead.</p></>}
           </section>
         </div>
       )}
     </div>
   );
 }
+

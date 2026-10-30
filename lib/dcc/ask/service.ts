@@ -20,6 +20,43 @@ const SYNONYMS: Record<string, string[]> = {
 export type AskDccSource = { slug: string; title: string; href: string; answer: string; category: string };
 export type AskDccHandoff = { siteId: string; siteName: string; href: string; reason: string; terminal: boolean };
 export type AskDccEvidence = { sources: AskDccSource[]; handoff: AskDccHandoff | null; confidence: "high" | "medium" | "low" };
+export type AskDccMessage = { role: "user" | "assistant"; content: string };
+
+// Scope retrieval to destinations named by the traveler. General words such as
+// "pickup" and "kids" are not evidence that the traveler is in New Orleans.
+const DESTINATION_SCOPES = [
+  { pattern: /\b(?:new orleans|nola|french quarter)\b/, categories: ["new-orleans"] },
+  { pattern: /\b(?:juneau|mendenhall|gastineau)\b/, categories: ["alaska"] },
+  { pattern: /\b(?:alaska|skagway|ketchikan|sitka)\b/, categories: ["alaska", "cruise"] },
+  { pattern: /\b(?:den|denver|vail|breckenridge|beaver creek|aspen|snowmass|keystone|winter park|steamboat|colorado|argo|idaho springs)\b/, categories: ["colorado", "transportation"] },
+  { pattern: /\bred rocks\b/, categories: ["red-rocks", "colorado", "transportation"] },
+  { pattern: /\b(?:wisconsin|dells)\b/, categories: ["wisconsin"] },
+  { pattern: /\b(?:st thomas|saint thomas|st croix|saint croix|st john|saint john|usvi|virgin islands)\b/, categories: ["cruise"] },
+] as const;
+
+function retrievalContext(question: string, history: readonly AskDccMessage[]) {
+  const questions = history.slice(-8).filter((message) => message.role === "user")
+    .map((message) => message.content.trim()).filter(Boolean);
+  if (questions.at(-1) !== question.trim()) questions.push(question.trim());
+
+  // A newly named destination replaces the earlier topic. Follow-ups without a
+  // destination inherit the last traveler-supplied scope; assistant text never
+  // gets to introduce a destination into the retrieval context.
+  for (let index = questions.length - 1; index >= 0; index -= 1) {
+    const text = normalize(questions[index]).split(/\binstead of\b/)[0];
+    const scopes = DESTINATION_SCOPES.filter((scope) => scope.pattern.test(text));
+    if (scopes.length) {
+      return {
+        query: questions.slice(index).join(" "),
+        categories: new Set<string>(scopes.flatMap((scope) => [...scope.categories])),
+      };
+    }
+    if (/\b(?:switch(?:ing)? to|different (?:city|destination|country))\b|^now (?:what|how)\b/.test(text)) {
+      return null;
+    }
+  }
+  return null;
+}
 
 function normalize(input: string) {
   return input.toLowerCase().replace(/[^a-z0-9\s-]/g, " ").replace(/\s+/g, " ").trim();
@@ -52,9 +89,12 @@ function scoreGuide(queryTokens: Set<string>, guide: (typeof PUBLISHED_DECISION_
 function siteForHref(href: string) { return sitesRegistry.sites.find((site) => href.includes(site.domain)); }
 function handoffForSite(siteId: string) { return handoffsRegistry.handoffs.find((handoff) => handoff.from === DCC_SITE_ID && handoff.to === siteId); }
 
-export function getAskDccEvidence(question: string): AskDccEvidence {
-  const queryTokens = tokens(question);
+export function getAskDccEvidence(question: string, history: readonly AskDccMessage[] = []): AskDccEvidence {
+  const context = retrievalContext(question, history);
+  if (!context) return { sources: [], handoff: null, confidence: "low" };
+  const queryTokens = tokens(context.query);
   const ranked = PUBLISHED_DECISION_GUIDES
+    .filter((guide) => context.categories.has(guide.category))
     .map((guide) => ({ guide, score: scoreGuide(queryTokens, guide) }))
     .filter((entry) => entry.score > 0)
     .sort((a, b) => b.score - a.score)
@@ -64,7 +104,7 @@ export function getAskDccEvidence(question: string): AskDccEvidence {
   const leadingGuide = ranked[0]?.guide;
   const targetSite = leadingGuide ? siteForHref(leadingGuide.nextStep.href) : null;
   const governedHandoff = targetSite ? handoffForSite(targetSite.site_id) : null;
-  const handoff = targetSite && governedHandoff ? { siteId: targetSite.site_id, siteName: targetSite.name, href: leadingGuide!.nextStep.href, reason: governedHandoff.when, terminal: governedHandoff.terminal } : null;
+  const handoff = targetSite && governedHandoff ? { siteId: targetSite.site_id, siteName: targetSite.name, href: leadingGuide!.nextStep.href, reason: leadingGuide!.nextStep.body, terminal: governedHandoff.terminal } : null;
   const topScore = ranked[0]?.score ?? 0;
   const confidence: AskDccEvidence["confidence"] = topScore >= 18 ? "high" : topScore >= 8 ? "medium" : "low";
   return { sources, handoff, confidence };
@@ -75,7 +115,7 @@ export function fallbackAskDccAnswer(_question: string, evidence: AskDccEvidence
   const lead = evidence.sources[0];
   const supporting = evidence.sources.slice(1, 3).map((source) => source.title);
   const supportText = supporting.length ? ` Related decisions: ${supporting.join("; ")}.` : "";
-  const next = evidence.handoff ? ` When that decision is clear, ${evidence.handoff.siteName} is the governed next step.` : "";
+  const next = evidence.handoff ? ` When you are ready, compare the options on ${evidence.handoff.siteName}.` : "";
   return `${lead.answer}${supportText}${next}`;
 }
 
@@ -97,3 +137,4 @@ export function buildAskDccPrompt(input: { question: string; history: Array<{ ro
     handoffText,
   ].join("\n\n");
 }
+

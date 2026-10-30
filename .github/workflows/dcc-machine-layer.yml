@@ -51,7 +51,7 @@ jobs:
           psql "$DCC_CI_POSTGRES_URL" -v ON_ERROR_STOP=1 -c "SELECT indexname, indexdef FROM pg_indexes WHERE tablename = 'octo_bookings' AND indexname = 'octo_bookings_idempotency_key_uidx';"
 
       - name: Run Golden Master, Truth & Machine Layer Test Suite (Tests 23, 36, 81, 82, 83, 84, 85, 86, 87)
-        run: npx tsx --test tests/dcc/23-entry-surface-parity.test.ts tests/dcc/site-truth.test.ts tests/dcc/satellite-truth-linkage.test.ts tests/dcc/36-discovery-stack.test.ts tests/dcc/81-category-decision-engine-framework.test.ts tests/dcc/82-dcc-machine-layer-v01.test.ts tests/dcc/83-dcc-machine-layer-v02.test.ts tests/dcc/84-dcc-machine-layer-v03.test.ts tests/dcc/85-dcc-machine-layer-v031.test.ts tests/dcc/86-dcc-assurance-commerce-portfolio.test.ts tests/dcc/86-commercial-attribution-and-outcomes.test.ts tests/dcc/87-portfolio-network-and-journeys.test.ts
+        run: npx tsx --test tests/dcc/23-entry-surface-parity.test.ts tests/dcc/42-ask-dcc-routing.test.ts tests/dcc/site-truth.test.ts tests/dcc/satellite-truth-linkage.test.ts tests/dcc/36-discovery-stack.test.ts tests/dcc/81-category-decision-engine-framework.test.ts tests/dcc/82-dcc-machine-layer-v01.test.ts tests/dcc/83-dcc-machine-layer-v02.test.ts tests/dcc/84-dcc-machine-layer-v03.test.ts tests/dcc/85-dcc-machine-layer-v031.test.ts tests/dcc/86-dcc-assurance-commerce-portfolio.test.ts tests/dcc/86-commercial-attribution-and-outcomes.test.ts tests/dcc/87-portfolio-network-and-journeys.test.ts
 
       - name: Run Database-Backed OCTO, Booking, Onboarding, Payment & Settlement Test Suites (Tests 63-69, 71, 88, 89, octo-integration)
         run: node --import tsx --import ./tests/dcc/enable-isolated-db.ts --test tests/dcc/63-octo-production-pilot.test.ts tests/dcc/64-octo-core-lifecycle.test.ts tests/dcc/65-location-octo-integration.test.ts tests/dcc/66-canonical-place-octo.test.ts tests/dcc/67-traveler-order-settlement.test.ts tests/dcc/68-dcc-saga-orchestration.test.ts tests/dcc/69-dcc-square-checkout.test.ts tests/dcc/71-square-webhook-durable-persistence.test.ts tests/dcc/88-operator-acquisition-and-viator-verification.test.ts tests/dcc/89-gosno-rezdy-booking-architecture-proof.test.ts tests/dcc/octo-integration.test.ts
@@ -66,5 +66,6 @@ jobs:
         env:
           SKIP_ENV_CHECK: "1"
         run: npm run build
+
 
 
