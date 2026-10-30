@@ -559,6 +559,7 @@ const buildProvenanceEnv = resolveBuildProvenanceEnv();
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   env: buildProvenanceEnv,
+  serverExternalPackages: ["ws"],
   turbopack: {
     root: __dirname,
   },

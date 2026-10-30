@@ -10,7 +10,7 @@ import {
   type ClaimEvidenceStatus,
   type EvaluatedCitationFreshness,
   type TravelReferenceNode,
-} from "@/lib/dcc/travelReference";
+} from "@/lib/dcc/travelReferenceCore";
 
 export type JuneauArrivalDock =
   | "downtown_walkoff"

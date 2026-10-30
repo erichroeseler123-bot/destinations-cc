@@ -2,14 +2,14 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import {
-  type AuthorityType,
-  type EntryScenarioRule,
-  type EvidenceCitation,
-  type IntegrationStatus,
-  type SpecialistHandoffOption,
-  type TravelReferenceNode,
-} from "@/lib/dcc/travelReference";
+import type {
+  AuthorityType,
+  EntryScenarioRule,
+  EvidenceCitation,
+  IntegrationStatus,
+  SpecialistHandoffOption,
+  TravelReferenceNode,
+} from "@/lib/dcc/travelReferenceCore";
 
 const AUTHORITY_BADGE_MAP: Record<
   AuthorityType,

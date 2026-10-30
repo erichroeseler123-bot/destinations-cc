@@ -22,10 +22,25 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: dcc_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d dcc_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
     env:
       VERCEL_ORG_ID: team_A35bPkpQ920idHaAvOwWpsSX
       VERCEL_PROJECT_ID: prj_pqvFn6jtJbbVgv1UsAsg3KtMl26s
       DCC_MACHINE_V1: "1"
+      DCC_CI_POSTGRES_URL: "postgresql://postgres:postgres@localhost:5432/dcc_test"
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -62,6 +77,12 @@ jobs:
       - name: Run TypeScript typecheck
         if: steps.check_changed.outputs.should_build == 'true'
         run: npx tsc --noEmit
+
+      - name: Apply Production Postgres Migration 0008 & Verify octo_bookings_idempotency_key_uidx in PostgreSQL
+        if: steps.check_changed.outputs.should_build == 'true'
+        run: |
+          psql "$DCC_CI_POSTGRES_URL" -v ON_ERROR_STOP=1 -f drizzle/0008_octo_bookings_idempotency_unique_idx.sql
+          psql "$DCC_CI_POSTGRES_URL" -v ON_ERROR_STOP=1 -c "SELECT indexname, indexdef FROM pg_indexes WHERE tablename = 'octo_bookings' AND indexname = 'octo_bookings_idempotency_key_uidx';"
 
       - name: Run DCC verification suite against release commit
         if: steps.check_changed.outputs.should_build == 'true'

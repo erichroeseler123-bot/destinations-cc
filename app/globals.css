@@ -4,9 +4,19 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --font-heading: "Avenir Next", "Segoe UI", sans-serif;
-  --font-accent: Georgia, serif;
+:root,
+.font-var-heading,
+.font-var-accent,
+.font-var-sans,
+.font-var-mono,
+.font-var-new-orleans-display,
+.font-var-new-orleans-script {
+  --font-heading: "Montserrat", "Avenir Next", "Segoe UI", sans-serif;
+  --font-accent: "Playfair Display", Georgia, serif;
+  --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-new-orleans-display: "Playfair Display", Georgia, serif;
+  --font-new-orleans-script: "Pinyon Script", "Brush Script MT", cursive;
   --surface: #090909;
   --surface2: #151515;
   --surface3: #1d1b19;

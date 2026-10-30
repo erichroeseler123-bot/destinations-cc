@@ -388,10 +388,16 @@ export function loadPermittedThirdPartyReviewCacheForProduct(input: {
       getBuiltinModule?: (id: string) => unknown;
     }).getBuiltinModule;
     const nodeFs = getBuiltin
-      ? (getBuiltin("fs") as typeof import("node:fs"))
+      ? (getBuiltin("fs") as {
+          existsSync: (p: string) => boolean;
+          statSync: (p: string) => { mtime: Date };
+          readFileSync: (p: string, enc: BufferEncoding) => string;
+        })
       : undefined;
     const nodePath = getBuiltin
-      ? (getBuiltin("path") as typeof import("node:path"))
+      ? (getBuiltin("path") as {
+          join: (...parts: string[]) => string;
+        })
       : undefined;
 
     if (!nodeFs || !nodePath) {

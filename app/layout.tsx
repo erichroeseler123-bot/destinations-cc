@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { permanentRedirect } from "next/navigation";
 import Script from "next/script";
-import { JetBrains_Mono, Montserrat, Playfair_Display, Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
 import SiteHeader from "@/app/components/dcc/SiteHeader";
 import SiteBreadcrumbs from "@/app/components/dcc/SiteBreadcrumbs";
@@ -12,33 +11,10 @@ import WhatsLiveFloatingButton from "@/app/components/dcc/next48/WhatsLiveFloati
 import PartnerAnalyticsScript from "@/lib/getyourguide/PartnerAnalyticsScript";
 import { SITE_IDENTITY } from "@/src/data/site-identity";
 
-const headingFont = Montserrat({
-  subsets: ['latin'],
-  weight: ['500', '600', '700', '800', '900'],
-  display: 'swap',
-  variable: '--font-heading',
-});
-
-const accentFont = Playfair_Display({
-  subsets: ['latin'],
-  weight: ['600', '700'],
-  display: 'swap',
-  variable: '--font-accent',
-});
-
-const sansFont = Plus_Jakarta_Sans({
-  subsets: ['latin'],
-  weight: ['500', '700', '800'],
-  display: 'swap',
-  variable: '--font-sans',
-});
-
-const monoFont = JetBrains_Mono({
-  subsets: ['latin'],
-  weight: ['400', '500'],
-  display: 'swap',
-  variable: '--font-mono',
-});
+const headingFont = { variable: "font-var-heading" };
+const accentFont = { variable: "font-var-accent" };
+const sansFont = { variable: "font-var-sans" };
+const monoFont = { variable: "font-var-mono" };
 
 const GA_MEASUREMENT_ID = "G-S6JEJVWVDT";
 

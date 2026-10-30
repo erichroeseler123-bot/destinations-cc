@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import type { TravelReferenceNode } from "@/lib/dcc/travelReference";
+import type { TravelReferenceNode } from "@/lib/dcc/travelReferenceCore";
 import {
   buildJuneauScenarioQueryString,
   DEFAULT_JUNEAU_SCENARIO_INPUT,

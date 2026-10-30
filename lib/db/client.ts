@@ -726,6 +726,39 @@ export function resetTestSqliteDb(): void {
 let activeSqliteDbInstance: any = null;
 let activeSqliteDbPath: string | null = null;
 
+function loadServerNodeModule<T = any>(moduleId: string): T {
+  const getBuiltin = (
+    typeof process !== "undefined"
+      ? (process as unknown as { getBuiltinModule?: (id: string) => any }).getBuiltinModule
+      : undefined
+  );
+  if (getBuiltin) {
+    if (moduleId.startsWith("node:")) {
+      const builtin = getBuiltin(moduleId);
+      if (builtin) return builtin as T;
+    }
+    const nodeModule = getBuiltin("node:module") as
+      | { createRequire?: (filename: string) => (id: string) => any }
+      | undefined;
+    if (nodeModule?.createRequire) {
+      const runtimeRequire = nodeModule.createRequire(`${process.cwd()}/package.json`);
+      return runtimeRequire(moduleId) as T;
+    }
+  }
+  throw new Error(`Server module "${moduleId}" is unavailable in this runtime.`);
+}
+
+function resolveNeonWebSocketConstructor(): any {
+  try {
+    return loadServerNodeModule("ws");
+  } catch {
+    if (typeof globalThis.WebSocket !== "undefined") {
+      return globalThis.WebSocket;
+    }
+    throw new Error("No WebSocket constructor available for Neon PostgreSQL driver.");
+  }
+}
+
 function getOrCreateSqliteDb(): any {
   const targetPath = (process.env.DCC_TEST_SQLITE_PATH || ":memory:").trim();
   if (activeSqliteDbInstance && activeSqliteDbPath === targetPath) {
@@ -736,10 +769,9 @@ function getOrCreateSqliteDb(): any {
       activeSqliteDbInstance.close();
     } catch {}
   }
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { DatabaseSync } = require("node:sqlite") as {
+  const { DatabaseSync } = loadServerNodeModule<{
     DatabaseSync: new (p: string, opts?: { timeout?: number }) => any;
-  };
+  }>("node:sqlite");
   const db = new DatabaseSync(targetPath, { timeout: 10000 });
   db.exec("PRAGMA busy_timeout = 10000;");
   db.exec("PRAGMA foreign_keys = OFF;");
@@ -1369,16 +1401,16 @@ class HybridPgWebSocketOrTcpAdapter {
     } catch {}
     const isNeonHost = Boolean(parsed?.hostname?.endsWith(".neon.tech"));
     if (isNeonHost) {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const WsCtor = require("ws");
+      const WsCtor = resolveNeonWebSocketConstructor();
       this.wsImpl = new WsCtor(url);
       this.wsImpl.binaryType = "arraybuffer";
       return;
     }
 
     // Standard TCP PostgreSQL wire-protocol socket (e.g. localhost:5432 in CI)
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const net = require("node:net") as typeof import("node:net");
+    const net = loadServerNodeModule<{
+      connect: (opts: { host: string; port: number }, cb: () => void) => any;
+    }>("node:net");
     const host = parsed?.hostname || "127.0.0.1";
     const port = Number(parsed?.port || 5432);
     this.tcpSocket = net.connect({ host, port }, () => {
@@ -1449,8 +1481,7 @@ function sanitizePgWireConnectionString(connectionString: string): string {
 function configureNeonDriverForUrl(connectionString: string): void {
   const isNeon = isNeonHostUrl(connectionString);
   if (isNeon) {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const WsCtor = require("ws");
+    const WsCtor = resolveNeonWebSocketConstructor();
     neonConfig.webSocketConstructor = WsCtor as any;
     neonConfig.wsProxy = (host: string) => `${host}/v2`;
     neonConfig.useSecureWebSocket = true;

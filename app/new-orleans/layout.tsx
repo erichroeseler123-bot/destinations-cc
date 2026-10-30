@@ -1,5 +1,4 @@
 import { Suspense } from "react";
-import { Playfair_Display, Pinyon_Script } from 'next/font/google';
 import type { Metadata } from "next";
 import JsonLd from "@/app/components/dcc/JsonLd";
 import { HeaderNav, FooterNav } from "./components/MarketplaceNavigation";
@@ -11,19 +10,8 @@ import { buildWnoSiteGraph } from "./lib/structuredData";
 import visualStyles from "./components/newOrleansVisual.module.css";
 import siteTheme from "./components/siteWideTheme.module.css";
 
-const newOrleansDisplayFont = Playfair_Display({
-  subsets: ['latin'],
-  weight: ['400', '500', '600'],
-  display: 'swap',
-  variable: '--font-new-orleans-display',
-});
-
-const newOrleansScriptFont = Pinyon_Script({
-  subsets: ['latin'],
-  weight: ['400'],
-  display: 'swap',
-  variable: '--font-new-orleans-script',
-});
+const newOrleansDisplayFont = { variable: "font-var-new-orleans-display" };
+const newOrleansScriptFont = { variable: "font-var-new-orleans-script" };
 
 const socialDescription = "Welcome to New Orleans Tours helps visitors choose curated local experiences with timely recommendations, concierge help, and direct booking when they are ready.";
 
