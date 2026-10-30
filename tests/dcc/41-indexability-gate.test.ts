@@ -10,6 +10,22 @@ test("governed document paths emit index-follow only when indexable", () => {
   }
 });
 
+test("published swamp search entry pages emit index-follow rather than contradicting the sitemap", () => {
+  for (const pathname of [
+    "/guides",
+    "/guides/category/new-orleans",
+    "/new-orleans-swamp-tours",
+    "/guides/new-orleans-airboat-vs-covered-swamp-boat",
+    "/guides/new-orleans-swamp-tour-with-kids",
+    "/guides/new-orleans-swamp-tour-pickup-vs-self-drive",
+    "/guides/new-orleans-small-vs-large-airboat",
+    "/guides/best-time-of-day-for-new-orleans-swamp-tour",
+    "/guides/is-a-new-orleans-swamp-tour-worth-it",
+  ]) {
+    assert.equal(getGovernedRobotsTag(pathname), "index, follow", pathname);
+  }
+});
+
 test("generic document surfaces emit noindex-nofollow when route governance does not expose them", () => {
   for (const pathname of [
     "/sedona/jeep-tours",
@@ -17,6 +33,10 @@ test("generic document surfaces emit noindex-nofollow when route governance does
     "/grand-canyon",
     "/hoover-dam",
     "/helicopter-tours",
+    "/guides/not-a-published-guide",
+    "/guides/category/not-a-category",
+    "/admin",
+    "/dashboard",
   ]) {
     assert.equal(INDEXABLE_SURFACE_PATHS.includes(pathname), false);
     assert.equal(getGovernedRobotsTag(pathname), "noindex, nofollow");
@@ -33,3 +53,4 @@ test("non-document paths and go redirects do not receive document robots governa
     assert.equal(getGovernedRobotsTag(pathname), null);
   }
 });
+
