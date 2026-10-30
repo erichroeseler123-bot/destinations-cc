@@ -1,5 +1,10 @@
-import { sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { getDb, hasConfiguredDatabaseUrl, type DccDb } from "@/lib/db/client";
+import {
+  octoBookings,
+  octoBookingIdempotencyConflicts,
+  octoAuditLogs,
+} from "@/lib/db/schema";
 
 let schemaEnsured = false;
 
@@ -316,12 +321,36 @@ export async function runRepeatableEarthosMigration(): Promise<{
 
   await executeDdl(sql`DROP INDEX IF EXISTS octo_bookings_idempotency_key_idx;`);
   await executeDdl(sql`
-    DELETE FROM octo_bookings a
-    USING octo_bookings b
-    WHERE a.idempotency_key IS NOT NULL
-      AND a.idempotency_key = b.idempotency_key
-      AND a.ctid > b.ctid;
+    CREATE TABLE IF NOT EXISTS octo_booking_idempotency_conflicts (
+      id text PRIMARY KEY,
+      idempotency_key text NOT NULL,
+      booking_id text NOT NULL,
+      booking_uuid text NOT NULL,
+      status text NOT NULL,
+      supplier_reference text,
+      total_price numeric(12, 2) NOT NULL,
+      currency text NOT NULL DEFAULT 'USD',
+      conflict_classification text NOT NULL,
+      resolution_status text NOT NULL DEFAULT 'unresolved',
+      authoritative_booking_id text,
+      resolution_reason text,
+      resolved_by text,
+      row_snapshot jsonb NOT NULL DEFAULT '{}'::jsonb,
+      detected_at timestamptz NOT NULL DEFAULT now(),
+      resolved_at timestamptz
+    );
   `);
+  await executeDdl(sql`CREATE INDEX IF NOT EXISTS octo_booking_idempotency_conflicts_key_idx ON octo_booking_idempotency_conflicts (idempotency_key);`);
+  await executeDdl(sql`CREATE INDEX IF NOT EXISTS octo_booking_idempotency_conflicts_booking_id_idx ON octo_booking_idempotency_conflicts (booking_id);`);
+  await executeDdl(sql`CREATE INDEX IF NOT EXISTS octo_booking_idempotency_conflicts_status_idx ON octo_booking_idempotency_conflicts (resolution_status);`);
+
+  const duplicateReport = await inspectOctoBookingIdempotencyDuplicates(db);
+  if (duplicateReport.duplicateGroupCount > 0) {
+    throw new Error(
+      `UNRESOLVED_IDEMPOTENCY_DUPLICATES: Found ${duplicateReport.duplicateGroupCount} duplicate idempotency_key group(s) (${duplicateReport.totalDuplicateRows} rows) in octo_bookings. All conflicting rows were preserved in octo_booking_idempotency_conflicts; run reconcileOctoBookingIdempotencyDuplicates() before creating octo_bookings_idempotency_key_uidx.`
+    );
+  }
+
   await executeDdl(sql`CREATE UNIQUE INDEX IF NOT EXISTS octo_bookings_booking_uuid_uidx ON octo_bookings (booking_uuid);`);
   await executeDdl(sql`CREATE UNIQUE INDEX IF NOT EXISTS octo_bookings_idempotency_key_uidx ON octo_bookings (idempotency_key);`);
   await executeDdl(sql`CREATE INDEX IF NOT EXISTS octo_bookings_status_idx ON octo_bookings (status);`);
@@ -387,6 +416,22 @@ export async function runRepeatableEarthosMigration(): Promise<{
   await executeDdl(sql`CREATE INDEX IF NOT EXISTS dcc_order_payments_order_id_idx ON dcc_order_payments (order_id);`);
   await executeDdl(sql`CREATE INDEX IF NOT EXISTS dcc_order_payments_traveler_id_idx ON dcc_order_payments (traveler_id);`);
   await executeDdl(sql`CREATE INDEX IF NOT EXISTS dcc_order_payments_status_idx ON dcc_order_payments (status);`);
+
+  await executeDdl(sql`
+    CREATE TABLE IF NOT EXISTS dcc_payment_allocations (
+      id text PRIMARY KEY,
+      payment_id text NOT NULL,
+      order_id text NOT NULL,
+      obligation_key text NOT NULL,
+      allocated_amount_cents integer NOT NULL,
+      currency text NOT NULL DEFAULT 'USD',
+      created_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now()
+    );
+  `);
+  await executeDdl(sql`CREATE UNIQUE INDEX IF NOT EXISTS dcc_payment_allocations_payment_obligation_uidx ON dcc_payment_allocations (payment_id, obligation_key);`);
+  await executeDdl(sql`CREATE INDEX IF NOT EXISTS dcc_payment_allocations_payment_id_idx ON dcc_payment_allocations (payment_id);`);
+  await executeDdl(sql`CREATE INDEX IF NOT EXISTS dcc_payment_allocations_order_id_idx ON dcc_payment_allocations (order_id);`);
 
   await executeDdl(sql`
     CREATE TABLE IF NOT EXISTS dcc_orders (
@@ -552,7 +597,321 @@ export async function runRepeatableEarthosMigration(): Promise<{
   };
 }
 
+export type OctoBookingIdempotencyDuplicateGroup = {
+  idempotencyKey: string;
+  conflictClassification:
+    | "multiple_confirmed_conflict"
+    | "confirmed_vs_non_confirmed"
+    | "duplicate_non_confirmed";
+  requiresManualConfirmedResolution: boolean;
+  recommendedAuthoritativeBookingId: string;
+  rows: Array<{
+    id: string;
+    bookingUuid: string;
+    status: string;
+    supplierReference: string | null;
+    totalPrice: string;
+    currency: string;
+    createdAt: string;
+  }>;
+};
+
+export type OctoBookingIdempotencyDuplicateReport = {
+  duplicateGroupCount: number;
+  totalDuplicateRows: number;
+  groups: OctoBookingIdempotencyDuplicateGroup[];
+};
+
+function scoreBookingStatusPriority(status: string): number {
+  switch (status) {
+    case "CONFIRMED":
+      return 100;
+    case "ON_HOLD":
+      return 70;
+    case "PENDING":
+      return 50;
+    case "HOLD_IN_PROGRESS":
+      return 20;
+    case "CANCELLED":
+    case "EXPIRED":
+      return 10;
+    default:
+      return 30;
+  }
+}
+
+/**
+ * Non-destructively scans `octo_bookings` for duplicate `idempotency_key` rows,
+ * classifies each duplicate group by booking status (never deleting rows), and records
+ * full row snapshots into `octo_booking_idempotency_conflicts`.
+ */
+export async function inspectOctoBookingIdempotencyDuplicates(
+  targetDb?: DccDb | null
+): Promise<OctoBookingIdempotencyDuplicateReport> {
+  const db = targetDb || getDb();
+  if (!db) {
+    throw new Error("Database connection required to inspect octo_bookings idempotency duplicates.");
+  }
+
+  const allRows = await db.select().from(octoBookings);
+  const byKey = new Map<string, typeof allRows>();
+  for (const r of allRows) {
+    if (!r.idempotencyKey) continue;
+    const list = byKey.get(r.idempotencyKey) || [];
+    list.push(r);
+    byKey.set(r.idempotencyKey, list);
+  }
+
+  const groups: OctoBookingIdempotencyDuplicateGroup[] = [];
+  let totalDuplicateRows = 0;
+
+  for (const [idempotencyKey, rows] of byKey.entries()) {
+    if (rows.length <= 1) continue;
+    totalDuplicateRows += rows.length;
+
+    const confirmedCount = rows.filter((r) => r.status === "CONFIRMED").length;
+    const conflictClassification: OctoBookingIdempotencyDuplicateGroup["conflictClassification"] =
+      confirmedCount > 1
+        ? "multiple_confirmed_conflict"
+        : confirmedCount === 1
+        ? "confirmed_vs_non_confirmed"
+        : "duplicate_non_confirmed";
+
+    const distinctSupplierRefs = new Set(
+      rows.map((r) => r.supplierReference).filter((v): v is string => Boolean(v))
+    );
+    const requiresManualConfirmedResolution =
+      confirmedCount > 1 || distinctSupplierRefs.size > 1;
+
+    const sorted = [...rows].sort((a, b) => {
+      const scoreDiff =
+        scoreBookingStatusPriority(b.status) - scoreBookingStatusPriority(a.status);
+      if (scoreDiff !== 0) return scoreDiff;
+      const aHasRef = a.supplierReference ? 1 : 0;
+      const bHasRef = b.supplierReference ? 1 : 0;
+      if (bHasRef !== aHasRef) return bHasRef - aHasRef;
+      const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return aTime - bTime;
+    });
+
+    const recommendedAuthoritativeBookingId = sorted[0].id;
+
+    for (const r of rows) {
+      const conflictId = `conflict:${idempotencyKey}:${r.id}`;
+      const snapshot = {
+        id: r.id,
+        bookingUuid: r.bookingUuid,
+        idempotencyKey: r.idempotencyKey,
+        idempotencyHash: r.idempotencyHash,
+        supplierConnectionId: r.supplierConnectionId,
+        resellerId: r.resellerId,
+        productId: r.productId,
+        optionId: r.optionId,
+        availabilityId: r.availabilityId,
+        status: r.status,
+        supplierReference: r.supplierReference,
+        resellerReference: r.resellerReference,
+        totalPrice: String(r.totalPrice),
+        currency: r.currency,
+      };
+      await db
+        .insert(octoBookingIdempotencyConflicts)
+        .values({
+          id: conflictId,
+          idempotencyKey,
+          bookingId: r.id,
+          bookingUuid: r.bookingUuid,
+          status: r.status,
+          supplierReference: r.supplierReference || null,
+          totalPrice: String(r.totalPrice),
+          currency: r.currency,
+          conflictClassification,
+          resolutionStatus: "unresolved",
+          authoritativeBookingId: recommendedAuthoritativeBookingId,
+          rowSnapshot: snapshot,
+        })
+        .onConflictDoUpdate({
+          target: octoBookingIdempotencyConflicts.id,
+          set: {
+            status: r.status,
+            supplierReference: r.supplierReference || null,
+            conflictClassification,
+            authoritativeBookingId: recommendedAuthoritativeBookingId,
+            rowSnapshot: snapshot,
+            detectedAt: new Date(),
+          },
+        });
+    }
+
+    groups.push({
+      idempotencyKey,
+      conflictClassification,
+      requiresManualConfirmedResolution,
+      recommendedAuthoritativeBookingId,
+      rows: rows.map((r) => ({
+        id: r.id,
+        bookingUuid: r.bookingUuid,
+        status: r.status,
+        supplierReference: r.supplierReference || null,
+        totalPrice: String(r.totalPrice),
+        currency: r.currency,
+        createdAt:
+          r.createdAt instanceof Date
+            ? r.createdAt.toISOString()
+            : String(r.createdAt || new Date().toISOString()),
+      })),
+    });
+  }
+
+  return {
+    duplicateGroupCount: groups.length,
+    totalDuplicateRows,
+    groups,
+  };
+}
+
+/**
+ * Explicitly and non-destructively reconciles duplicate `octo_bookings` rows sharing `idempotencyKey`.
+ * - NEVER deletes any row from `octo_bookings`.
+ * - Refuses to demote a `CONFIRMED` duplicate row unless `allowConfirmedDemotion: true` is explicitly passed.
+ * - Preserves non-authoritative duplicate rows in `octo_bookings` with an archived `idempotency_key` (`reconciled_dup:<key>:<id>`)
+ *   and full reconciliation metadata in `contact.__dccMeta.reconciliation`, and marks the conflict records as `'reconciled'`.
+ */
+export async function reconcileOctoBookingIdempotencyDuplicates(
+  params: {
+    idempotencyKey: string;
+    authoritativeBookingId: string;
+    resolvedBy: string;
+    resolutionReason: string;
+    allowConfirmedDemotion?: boolean;
+  },
+  targetDb?: DccDb | null
+): Promise<{
+  idempotencyKey: string;
+  authoritativeBookingId: string;
+  preservedRowIds: string[];
+  demotedRowIds: string[];
+  deletedRowCount: 0;
+}> {
+  const db = targetDb || getDb();
+  if (!db) {
+    throw new Error("Database connection required to reconcile octo_bookings idempotency duplicates.");
+  }
+  if (
+    !params.idempotencyKey?.trim() ||
+    !params.authoritativeBookingId?.trim() ||
+    !params.resolvedBy?.trim() ||
+    !params.resolutionReason?.trim()
+  ) {
+    throw new Error(
+      "reconcileOctoBookingIdempotencyDuplicates requires idempotencyKey, authoritativeBookingId, resolvedBy, and resolutionReason."
+    );
+  }
+
+  // First ensure conflicts are recorded in octo_booking_idempotency_conflicts
+  await inspectOctoBookingIdempotencyDuplicates(db);
+
+  const matchingRows = await db
+    .select()
+    .from(octoBookings)
+    .where(eq(octoBookings.idempotencyKey, params.idempotencyKey));
+
+  const authoritativeRow = matchingRows.find((r) => r.id === params.authoritativeBookingId);
+  if (!authoritativeRow) {
+    throw new Error(
+      `Authoritative booking '${params.authoritativeBookingId}' was not found among rows with idempotency_key '${params.idempotencyKey}'.`
+    );
+  }
+
+  const nonAuthoritativeRows = matchingRows.filter(
+    (r) => r.id !== params.authoritativeBookingId
+  );
+
+  for (const dup of nonAuthoritativeRows) {
+    if (dup.status === "CONFIRMED" && params.allowConfirmedDemotion !== true) {
+      throw new Error(
+        `CONFIRMED_DUPLICATE_DEMOTION_FORBIDDEN: Duplicate booking '${dup.id}' has status 'CONFIRMED' (supplier_reference: '${dup.supplierReference || "none"}'). Refusing to demote a CONFIRMED booking without allowConfirmedDemotion: true.`
+      );
+    }
+  }
+
+  const now = new Date();
+  const demotedRowIds: string[] = [];
+
+  for (const dup of nonAuthoritativeRows) {
+    const archivedKey = `reconciled_dup:${params.idempotencyKey}:${dup.id}`;
+    const existingContact =
+      dup.contact && typeof dup.contact === "object" ? { ...(dup.contact as any) } : {};
+    const existingMeta =
+      existingContact.__dccMeta && typeof existingContact.__dccMeta === "object"
+        ? { ...existingContact.__dccMeta }
+        : {};
+    const updatedContact = {
+      ...existingContact,
+      __dccMeta: {
+        ...existingMeta,
+        reconciliation: {
+          reconciledDuplicateOf: params.authoritativeBookingId,
+          originalIdempotencyKey: params.idempotencyKey,
+          archivedIdempotencyKey: archivedKey,
+          resolvedBy: params.resolvedBy,
+          resolutionReason: params.resolutionReason,
+          reconciledAt: now.toISOString(),
+        },
+      },
+    };
+
+    await db
+      .update(octoBookings)
+      .set({
+        idempotencyKey: archivedKey,
+        contact: updatedContact,
+        updatedAt: now,
+      })
+      .where(and(eq(octoBookings.id, dup.id), eq(octoBookings.idempotencyKey, params.idempotencyKey)));
+
+    demotedRowIds.push(dup.id);
+  }
+
+  await db
+    .update(octoBookingIdempotencyConflicts)
+    .set({
+      resolutionStatus: "reconciled",
+      authoritativeBookingId: params.authoritativeBookingId,
+      resolutionReason: params.resolutionReason,
+      resolvedBy: params.resolvedBy,
+      resolvedAt: now,
+    })
+    .where(eq(octoBookingIdempotencyConflicts.idempotencyKey, params.idempotencyKey));
+
+  await db.insert(octoAuditLogs).values({
+    action: "BOOKING_IDEMPOTENCY_DUPLICATES_RECONCILED",
+    entityType: "BOOKING",
+    entityId: params.authoritativeBookingId,
+    status: "SUCCESS",
+    payload: {
+      idempotencyKey: params.idempotencyKey,
+      authoritativeBookingId: params.authoritativeBookingId,
+      preservedRowIds: matchingRows.map((r) => r.id),
+      demotedRowIds,
+      deletedRowCount: 0,
+      resolvedBy: params.resolvedBy,
+      resolutionReason: params.resolutionReason,
+    },
+  });
+
+  return {
+    idempotencyKey: params.idempotencyKey,
+    authoritativeBookingId: params.authoritativeBookingId,
+    preservedRowIds: matchingRows.map((r) => r.id),
+    demotedRowIds,
+    deletedRowCount: 0,
+  };
+}
+
 export async function ensureEarthosSchema(): Promise<void> {
   if (schemaEnsured) return;
   await runRepeatableEarthosMigration();
 }
+

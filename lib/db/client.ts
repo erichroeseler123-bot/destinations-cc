@@ -354,7 +354,12 @@ function createInMemoryTestDb(): DccDb {
     const q = queryText.trim();
     const qLower = q.toLowerCase();
 
-    if (qLower.startsWith("create table") || qLower.startsWith("create index")) {
+    if (
+      (qLower.startsWith("create table") ||
+        qLower.startsWith("create index") ||
+        qLower.startsWith("create unique index")) &&
+      !sqliteBackedTablesRegex.test(qLower)
+    ) {
       return formatResult([], [], options);
     }
 
@@ -668,7 +673,7 @@ function createInMemoryTestDb(): DccDb {
 }
 
 const sqliteBackedTablesRegex =
-  /\b(octo_bookings|octo_settlement_ledger|octo_audit_logs|octo_supplier_connections|octo_normalized_products|octo_participants|dcc_order_payments|dcc_orders|dcc_order_items|dcc_operator_payables|dcc_disputes_and_refunds|dcc_supplier_bookings|dcc_saga_steps|dcc_saga_audit_events|dcc_square_webhook_events|dcc_traveler_profiles|dcc_auth_tokens)\b/i;
+  /\b(octo_bookings|octo_booking_idempotency_conflicts|octo_settlement_ledger|octo_audit_logs|octo_supplier_connections|octo_normalized_products|octo_participants|dcc_order_payments|dcc_payment_allocations|dcc_orders|dcc_order_items|dcc_operator_payables|dcc_disputes_and_refunds|dcc_supplier_bookings|dcc_saga_steps|dcc_saga_audit_events|dcc_square_webhook_events|dcc_traveler_profiles|dcc_auth_tokens)\b/i;
 
 const SQLITE_BOOLEAN_COLS = new Set(["is_sandbox", "service_completed", "signature_verified"]);
 const SQLITE_JSON_COLS = new Set([
@@ -687,12 +692,18 @@ const SQLITE_JSON_COLS = new Set([
   "output_payload",
   "sanitized_details",
   "error_metadata",
+  "row_snapshot",
 ]);
 
 let simulateDbFailureForTests = false;
+let simulateDbReadFailureForTests = false;
 
 export function setSimulateDbFailureForTests(enabled: boolean): void {
   simulateDbFailureForTests = enabled;
+}
+
+export function setSimulateDbReadFailureForTests(enabled: boolean): void {
+  simulateDbReadFailureForTests = enabled;
 }
 
 export function resetTestSqliteDb(): void {
@@ -839,7 +850,7 @@ function initializeSqliteSchema(db: any): void {
     CREATE TABLE IF NOT EXISTS "octo_bookings" (
       "id" TEXT PRIMARY KEY,
       "booking_uuid" TEXT NOT NULL UNIQUE,
-      "idempotency_key" TEXT UNIQUE,
+      "idempotency_key" TEXT,
       "idempotency_hash" TEXT,
       "supplier_connection_id" TEXT NOT NULL,
       "reseller_id" TEXT,
@@ -867,6 +878,25 @@ function initializeSqliteSchema(db: any): void {
     CREATE UNIQUE INDEX IF NOT EXISTS "octo_bookings_idempotency_key_uidx"
       ON "octo_bookings" ("idempotency_key")
       WHERE "idempotency_key" IS NOT NULL;
+
+    CREATE TABLE IF NOT EXISTS "octo_booking_idempotency_conflicts" (
+      "id" TEXT PRIMARY KEY,
+      "idempotency_key" TEXT NOT NULL,
+      "booking_id" TEXT NOT NULL,
+      "booking_uuid" TEXT NOT NULL,
+      "status" TEXT NOT NULL,
+      "supplier_reference" TEXT,
+      "total_price" TEXT NOT NULL,
+      "currency" TEXT NOT NULL DEFAULT 'USD',
+      "conflict_classification" TEXT NOT NULL,
+      "resolution_status" TEXT NOT NULL DEFAULT 'unresolved',
+      "authoritative_booking_id" TEXT,
+      "resolution_reason" TEXT,
+      "resolved_by" TEXT,
+      "row_snapshot" TEXT NOT NULL DEFAULT '{}',
+      "detected_at" TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+      "resolved_at" TEXT
+    );
 
     CREATE TABLE IF NOT EXISTS "octo_settlement_ledger" (
       "id" TEXT PRIMARY KEY,
@@ -933,6 +963,20 @@ function initializeSqliteSchema(db: any): void {
       "created_at" TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
       "updated_at" TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
     );
+
+    CREATE TABLE IF NOT EXISTS "dcc_payment_allocations" (
+      "id" TEXT PRIMARY KEY,
+      "payment_id" TEXT NOT NULL,
+      "order_id" TEXT NOT NULL,
+      "obligation_key" TEXT NOT NULL,
+      "allocated_amount_cents" INTEGER NOT NULL DEFAULT 0,
+      "currency" TEXT NOT NULL DEFAULT 'USD',
+      "created_at" TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+      "updated_at" TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+    );
+
+    CREATE UNIQUE INDEX IF NOT EXISTS "dcc_payment_allocations_payment_obligation_uidx"
+      ON "dcc_payment_allocations" ("payment_id", "obligation_key");
 
     CREATE TABLE IF NOT EXISTS "dcc_orders" (
       "id" TEXT PRIMARY KEY,
@@ -1243,6 +1287,16 @@ function executeSqliteQuery(
     );
     simulatedErr.code = "57P01";
     throw simulatedErr;
+  }
+  if (
+    !isWriteQuery &&
+    (simulateDbReadFailureForTests || process.env.DCC_SIMULATE_DB_READ_FAILURE === "1")
+  ) {
+    const simulatedReadErr: any = new Error(
+      "SIMULATED_DB_READ_FAILURE: database select rejected"
+    );
+    simulatedReadErr.code = "57P01";
+    throw simulatedReadErr;
   }
 
   const rewrittenInsert = rewritePostgresInsertDefaults(query);

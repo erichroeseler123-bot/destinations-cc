@@ -27,7 +27,7 @@ import {
   DccBookingConfirmRequest,
   DccBookingHoldRequest,
 } from "./types";
-import { eq, and, or } from "drizzle-orm";
+import { eq, and, or, isNull } from "drizzle-orm";
 import crypto from "crypto";
 import fs from "fs";
 import path from "path";
@@ -396,6 +396,184 @@ export class DccBookingService {
   }
 
   /**
+   * Atomically renews a HOLD_IN_PROGRESS lock lease in the database ONLY if `reseller_reference` matches `lockOwnerId`.
+   * Returns true if the lock lease was renewed, or false if the lock is no longer owned by `lockOwnerId`.
+   */
+  static async renewIdempotencyLockLease(params: {
+    dccBookingId: string;
+    lockOwnerId: string;
+    lockLeaseDurationMs: number;
+    contact?: any;
+    meta?: {
+      pickupLocation?: OctoPickupLocation;
+      customFields?: OctoCustomBookingField[];
+      participants?: OctoParticipantField[][];
+      orderId?: string | null;
+    };
+  }): Promise<boolean> {
+    const db = getDb();
+    if (!db) return false;
+    const renewedExpiresAt = Date.now() + params.lockLeaseDurationMs;
+    const renewedRows = await db
+      .update(octoBookings)
+      .set({
+        utcHoldExpires: new Date(renewedExpiresAt),
+        contact: packContactWithDccMeta(params.contact, {
+          pickupLocation: params.meta?.pickupLocation,
+          customFields: params.meta?.customFields,
+          participants: params.meta?.participants,
+          orderId: params.meta?.orderId ?? null,
+          lockOwnerId: params.lockOwnerId,
+          lockLeaseExpiresAt: renewedExpiresAt,
+        }),
+        updatedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(octoBookings.id, params.dccBookingId),
+          eq(octoBookings.status, "HOLD_IN_PROGRESS"),
+          eq(octoBookings.resellerReference, params.lockOwnerId)
+        )
+      )
+      .returning({ id: octoBookings.id });
+    return renewedRows.length === 1;
+  }
+
+  /**
+   * Atomically takes over an expired HOLD_IN_PROGRESS lock via database compare-and-swap (CAS) without deleting the row.
+   * Only succeeds if `status = 'HOLD_IN_PROGRESS'`, `reseller_reference = staleOwnerId`, and `utc_hold_expires` matches the expired timestamp.
+   */
+  static async attemptExpiredIdempotencyLockTakeover(params: {
+    dccBookingId: string;
+    staleOwnerId: string | null;
+    expectedExpiredUtcHoldExpires: Date | string | null;
+    newOwnerId: string;
+    bookingUuid: string;
+    lockLeaseDurationMs: number;
+    contact?: any;
+    meta?: {
+      pickupLocation?: OctoPickupLocation;
+      customFields?: OctoCustomBookingField[];
+      participants?: OctoParticipantField[][];
+      orderId?: string | null;
+    };
+  }): Promise<boolean> {
+    const db = getDb();
+    if (!db) return false;
+    const newLeaseExpiresAt = Date.now() + params.lockLeaseDurationMs;
+    const casConditions = [
+      eq(octoBookings.id, params.dccBookingId),
+      eq(octoBookings.status, "HOLD_IN_PROGRESS"),
+      params.staleOwnerId
+        ? eq(octoBookings.resellerReference, params.staleOwnerId)
+        : isNull(octoBookings.resellerReference),
+      ...(params.expectedExpiredUtcHoldExpires
+        ? [
+            eq(
+              octoBookings.utcHoldExpires,
+              params.expectedExpiredUtcHoldExpires instanceof Date
+                ? params.expectedExpiredUtcHoldExpires
+                : new Date(params.expectedExpiredUtcHoldExpires)
+            ),
+          ]
+        : []),
+    ];
+    const takenOverRows = await db
+      .update(octoBookings)
+      .set({
+        bookingUuid: params.bookingUuid,
+        resellerReference: params.newOwnerId,
+        utcHoldExpires: new Date(newLeaseExpiresAt),
+        contact: packContactWithDccMeta(params.contact, {
+          pickupLocation: params.meta?.pickupLocation,
+          customFields: params.meta?.customFields,
+          participants: params.meta?.participants,
+          orderId: params.meta?.orderId ?? null,
+          lockOwnerId: params.newOwnerId,
+          lockLeaseExpiresAt: newLeaseExpiresAt,
+        }),
+        updatedAt: new Date(),
+      })
+      .where(and(...casConditions))
+      .returning({ id: octoBookings.id });
+    return takenOverRows.length === 1;
+  }
+
+  /**
+   * Atomically deletes a HOLD_IN_PROGRESS lock row on error ONLY if `reseller_reference` still matches `lockOwnerId`.
+   * Prevents a stale worker from deleting a replacement worker's lock.
+   */
+  static async releaseIdempotencyLockOnError(params: {
+    dccBookingId: string;
+    lockOwnerId: string;
+  }): Promise<number> {
+    const db = getDb();
+    if (!db) return 0;
+    const deletedRows = await db
+      .delete(octoBookings)
+      .where(
+        and(
+          eq(octoBookings.id, params.dccBookingId),
+          eq(octoBookings.status, "HOLD_IN_PROGRESS"),
+          eq(octoBookings.resellerReference, params.lockOwnerId)
+        )
+      )
+      .returning({ id: octoBookings.id });
+    return deletedRows.length;
+  }
+
+  /**
+   * Atomically transitions a HOLD_IN_PROGRESS lock row to ON_HOLD ONLY if `reseller_reference` still matches `lockOwnerId`.
+   * Prevents a stale worker from overwriting a replacement worker's lock or finalized booking.
+   */
+  static async finalizeIdempotencyLockHold(params: {
+    dccBookingId: string;
+    lockOwnerId: string;
+    bookingUuid: string;
+    expirationMinutes: number;
+    utcHoldExpires: Date | string | null;
+    totalPrice: number;
+    currency: string;
+    unitItems: any[];
+    packedContact: any;
+    supplierReference: string | null;
+    resellerReference: string;
+    checkoutUrl: string | null;
+  }): Promise<boolean> {
+    const db = getDb();
+    if (!db) return false;
+    const finalizedRows = await db
+      .update(octoBookings)
+      .set({
+        bookingUuid: params.bookingUuid,
+        status: "ON_HOLD",
+        expirationMinutes: params.expirationMinutes,
+        utcHoldExpires: params.utcHoldExpires
+          ? params.utcHoldExpires instanceof Date
+            ? params.utcHoldExpires
+            : new Date(params.utcHoldExpires)
+          : null,
+        totalPrice: params.totalPrice.toFixed(2),
+        currency: params.currency,
+        unitItems: params.unitItems as any,
+        contact: params.packedContact,
+        supplierReference: params.supplierReference,
+        resellerReference: params.resellerReference,
+        checkoutUrl: params.checkoutUrl,
+        updatedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(octoBookings.id, params.dccBookingId),
+          eq(octoBookings.status, "HOLD_IN_PROGRESS"),
+          eq(octoBookings.resellerReference, params.lockOwnerId)
+        )
+      )
+      .returning({ id: octoBookings.id });
+    return finalizedRows.length === 1;
+  }
+
+  /**
    * Resolves the authoritative supplier connection ID for a given product
    */
   static async resolveConnectionForProduct(productId: string): Promise<string> {
@@ -749,10 +927,16 @@ export class DccBookingService {
             };
           }
 
-          // Check whether the current lock owner's lease has expired (owner died / stopped heartbeating)
+          // Check whether the current lock owner's lease has expired (owner stopped heartbeating)
           const rawMeta =
             b.contact && typeof b.contact === "object" ? (b.contact as any).__dccMeta : undefined;
-          const leaseExpiresAt = Number(rawMeta?.lockLeaseExpiresAt || 0);
+          const staleOwner =
+            b.resellerReference ||
+            (typeof rawMeta?.lockOwnerId === "string" && rawMeta.lockOwnerId) ||
+            null;
+          const leaseExpiresAt = b.utcHoldExpires
+            ? new Date(b.utcHoldExpires).getTime()
+            : Number(rawMeta?.lockLeaseExpiresAt || 0);
           const updatedAtMs = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
           const isLeaseExpired =
             leaseExpiresAt > 0
@@ -762,17 +946,29 @@ export class DccBookingService {
               : false;
 
           if (isLeaseExpired) {
-            // Established that previous lock owner's lease expired without renewal; reclaim expired lock
-            await db
-              .delete(octoBookings)
-              .where(
-                and(
-                  eq(octoBookings.id, b.id),
-                  eq(octoBookings.status, "HOLD_IN_PROGRESS")
-                )
-              )
-              .catch(() => {});
-            reclaimedExpiredLock = true;
+            // Atomic compare-and-swap takeover in the database (never DELETE):
+            // Only succeeds if the row is still HOLD_IN_PROGRESS, owned by staleOwner, and has the exact expired lease timestamp.
+            const tookOver = await this.attemptExpiredIdempotencyLockTakeover({
+              dccBookingId: b.id,
+              staleOwnerId: staleOwner,
+              expectedExpiredUtcHoldExpires: b.utcHoldExpires || null,
+              newOwnerId: lockOwnerId,
+              bookingUuid,
+              lockLeaseDurationMs,
+              contact: params.contact,
+              meta: {
+                pickupLocation: params.pickupLocation,
+                customFields: params.customFields,
+                participants: params.participants,
+                orderId: (params as any).orderId ?? null,
+              },
+            });
+            if (tookOver) {
+              return { acquiredLock: true, reclaimedExpiredLock: true };
+            }
+            // CAS did not match (either the previous owner renewed its lease at the last instant or another replacement worker won the CAS); wait and poll
+            await new Promise((r) => setTimeout(r, pollIntervalMs));
+            continue;
           } else {
             // Another worker process is actively holding HOLD_IN_PROGRESS with a valid lease; wait and poll
             await new Promise((r) => setTimeout(r, pollIntervalMs));
@@ -780,7 +976,7 @@ export class DccBookingService {
           }
         }
 
-        // Try to atomically insert the HOLD_IN_PROGRESS lock row with our lockOwnerId and lease expiry
+        // Try to atomically insert the HOLD_IN_PROGRESS lock row with our lockOwnerId in reseller_reference and lease expiry in utc_hold_expires
         try {
           const initialLeaseExpiresAt = Date.now() + lockLeaseDurationMs;
           await db.insert(octoBookings).values({
@@ -795,7 +991,7 @@ export class DccBookingService {
             availabilityId: params.availabilityId,
             status: "HOLD_IN_PROGRESS",
             expirationMinutes,
-            utcHoldExpires: null,
+            utcHoldExpires: new Date(initialLeaseExpiresAt),
             totalPrice: "0.00",
             currency: "USD",
             unitItems: params.unitItems as any,
@@ -808,7 +1004,7 @@ export class DccBookingService {
               lockLeaseExpiresAt: initialLeaseExpiresAt,
             }),
             supplierReference: null,
-            resellerReference: dccBookingId,
+            resellerReference: lockOwnerId,
             checkoutUrl: null,
           });
           return { acquiredLock: true, reclaimedExpiredLock };
@@ -913,26 +1109,23 @@ export class DccBookingService {
           Math.min(1000, Math.floor(lockLeaseDurationMs / 3))
         );
         lockHeartbeatTimer = setInterval(() => {
-          if (!db) return;
-          const renewedExpiresAt = Date.now() + lockLeaseDurationMs;
-          db.update(octoBookings)
-            .set({
-              contact: packContactWithDccMeta(params.contact, {
-                pickupLocation: params.pickupLocation,
-                customFields: params.customFields,
-                participants: params.participants,
-                orderId: (params as any).orderId ?? null,
-                lockOwnerId,
-                lockLeaseExpiresAt: renewedExpiresAt,
-              }),
-              updatedAt: new Date(),
+          this.renewIdempotencyLockLease({
+            dccBookingId,
+            lockOwnerId,
+            lockLeaseDurationMs,
+            contact: params.contact,
+            meta: {
+              pickupLocation: params.pickupLocation,
+              customFields: params.customFields,
+              participants: params.participants,
+              orderId: (params as any).orderId ?? null,
+            },
+          })
+            .then((stillOwned) => {
+              if (!stillOwned) {
+                stopLockHeartbeat();
+              }
             })
-            .where(
-              and(
-                eq(octoBookings.id, dccBookingId),
-                eq(octoBookings.status, "HOLD_IN_PROGRESS")
-              )
-            )
             .catch(() => {});
         }, heartbeatIntervalMs);
         if (typeof (lockHeartbeatTimer as any).unref === "function") {
@@ -943,15 +1136,10 @@ export class DccBookingService {
       const releaseDbLockOnError = async () => {
         stopLockHeartbeat();
         if (acquiredDbLock && db) {
-          await db
-            .delete(octoBookings)
-            .where(
-              and(
-                eq(octoBookings.id, dccBookingId),
-                eq(octoBookings.status, "HOLD_IN_PROGRESS")
-              )
-            )
-            .catch(() => {});
+          await this.releaseIdempotencyLockOnError({
+            dccBookingId,
+            lockOwnerId,
+          }).catch(() => {});
         }
       };
 
@@ -1121,44 +1309,27 @@ export class DccBookingService {
 
         if (db) {
           if (acquiredDbLock) {
-            const currentLockRows = await db
-              .select()
-              .from(octoBookings)
-              .where(eq(octoBookings.id, dccBookingId));
-            const currentLockMeta =
-              currentLockRows[0]?.contact && typeof currentLockRows[0].contact === "object"
-                ? (currentLockRows[0].contact as any).__dccMeta
-                : undefined;
-            if (
-              !currentLockRows[0] ||
-              (currentLockRows[0].status === "HOLD_IN_PROGRESS" &&
-                currentLockMeta?.lockOwnerId &&
-                currentLockMeta.lockOwnerId !== lockOwnerId)
-            ) {
-              throw new Error(
-                `Idempotency lock for ${dccBookingId} was lost or reclaimed by another worker before completion`
+            const finalized = await this.finalizeIdempotencyLockHold({
+              dccBookingId,
+              lockOwnerId,
+              bookingUuid: holdResult.uuid,
+              expirationMinutes,
+              utcHoldExpires: holdResult.utcHoldExpires || null,
+              totalPrice: holdResult.totalPrice,
+              currency: holdResult.currency,
+              unitItems: holdResult.unitItems as any,
+              packedContact,
+              supplierReference: holdResult.supplierReference || null,
+              resellerReference: holdResult.resellerReference || dccBookingId,
+              checkoutUrl: holdResult.checkoutUrl || null,
+            });
+            if (!finalized) {
+              throw new OctoApiError(
+                409,
+                "IDEMPOTENCY_LOCK_LOST",
+                `Idempotency lock for ${dccBookingId} (owner ${lockOwnerId}) was lost or taken over by a replacement worker before finalization; aborting stale worker finalization.`
               );
             }
-
-            await db
-              .update(octoBookings)
-              .set({
-                bookingUuid: holdResult.uuid,
-                status: "ON_HOLD",
-                expirationMinutes,
-                utcHoldExpires: holdResult.utcHoldExpires
-                  ? new Date(holdResult.utcHoldExpires)
-                  : null,
-                totalPrice: holdResult.totalPrice.toFixed(2),
-                currency: holdResult.currency,
-                unitItems: holdResult.unitItems as any,
-                contact: packedContact,
-                supplierReference: holdResult.supplierReference || null,
-                resellerReference: holdResult.resellerReference || dccBookingId,
-                checkoutUrl: holdResult.checkoutUrl || null,
-                updatedAt: new Date(),
-              })
-              .where(eq(octoBookings.id, dccBookingId));
           } else {
             await db.insert(octoBookings).values({
               id: dccBookingId,
@@ -1213,6 +1384,11 @@ export class DccBookingService {
             : undefined
         );
       } catch (persistErr: any) {
+        if (persistErr instanceof OctoApiError && persistErr.code === "IDEMPOTENCY_LOCK_LOST") {
+          stopLockHeartbeat();
+          // Do NOT cancel the upstream hold when lock ownership was lost to a replacement worker that reconciled the booking!
+          throw persistErr;
+        }
         await releaseDbLockOnError();
         // Compensating action: cancel the upstream hold so no orphaned hold remains in Rezdy
         try {

@@ -45,12 +45,104 @@ CREATE TABLE IF NOT EXISTS "octo_bookings" (
 -- If a legacy non-unique index existed on octo_bookings(idempotency_key), replace it with the unique constraint index
 DROP INDEX IF EXISTS "octo_bookings_idempotency_key_idx";
 
--- Deduplicate any pre-existing duplicate non-null idempotency_key rows (retaining the earliest created row) before enforcing uniqueness
-DELETE FROM "octo_bookings" a
-USING "octo_bookings" b
-WHERE a."idempotency_key" IS NOT NULL
-  AND a."idempotency_key" = b."idempotency_key"
-  AND a."ctid" > b."ctid";
+CREATE TABLE IF NOT EXISTS "octo_booking_idempotency_conflicts" (
+  "id" text PRIMARY KEY,
+  "idempotency_key" text NOT NULL,
+  "booking_id" text NOT NULL,
+  "booking_uuid" text NOT NULL,
+  "status" text NOT NULL,
+  "supplier_reference" text,
+  "total_price" numeric(12, 2) NOT NULL,
+  "currency" text NOT NULL DEFAULT 'USD',
+  "conflict_classification" text NOT NULL,
+  "resolution_status" text NOT NULL DEFAULT 'unresolved',
+  "authoritative_booking_id" text,
+  "resolution_reason" text,
+  "resolved_by" text,
+  "row_snapshot" jsonb NOT NULL DEFAULT '{}'::jsonb,
+  "detected_at" timestamptz NOT NULL DEFAULT now(),
+  "resolved_at" timestamptz
+);
+
+CREATE INDEX IF NOT EXISTS "octo_booking_idempotency_conflicts_key_idx"
+  ON "octo_booking_idempotency_conflicts" ("idempotency_key");
+
+CREATE INDEX IF NOT EXISTS "octo_booking_idempotency_conflicts_booking_id_idx"
+  ON "octo_booking_idempotency_conflicts" ("booking_id");
+
+CREATE INDEX IF NOT EXISTS "octo_booking_idempotency_conflicts_status_idx"
+  ON "octo_booking_idempotency_conflicts" ("resolution_status");
+
+-- Non-destructive duplicate check: never automatically delete duplicate octo_bookings rows.
+-- Any pre-existing duplicate idempotency_key rows are recorded in octo_booking_idempotency_conflicts
+-- and halt unique index creation until explicit reconciliation is performed.
+DO $$
+DECLARE
+  v_dup_count integer := 0;
+BEGIN
+  INSERT INTO "octo_booking_idempotency_conflicts" (
+    "id",
+    "idempotency_key",
+    "booking_id",
+    "booking_uuid",
+    "status",
+    "supplier_reference",
+    "total_price",
+    "currency",
+    "conflict_classification",
+    "resolution_status",
+    "row_snapshot",
+    "detected_at"
+  )
+  SELECT
+    'conflict:' || b."idempotency_key" || ':' || b."id",
+    b."idempotency_key",
+    b."id",
+    b."booking_uuid",
+    b."status",
+    b."supplier_reference",
+    b."total_price",
+    b."currency",
+    CASE
+      WHEN dup_stats.confirmed_count > 1 THEN 'multiple_confirmed_conflict'
+      WHEN dup_stats.confirmed_count = 1 THEN 'confirmed_vs_non_confirmed'
+      ELSE 'duplicate_non_confirmed'
+    END,
+    'unresolved',
+    to_jsonb(b),
+    now()
+  FROM "octo_bookings" b
+  INNER JOIN (
+    SELECT
+      "idempotency_key",
+      COUNT(*) AS row_count,
+      COUNT(*) FILTER (WHERE "status" = 'CONFIRMED') AS confirmed_count
+    FROM "octo_bookings"
+    WHERE "idempotency_key" IS NOT NULL
+    GROUP BY "idempotency_key"
+    HAVING COUNT(*) > 1
+  ) dup_stats ON dup_stats."idempotency_key" = b."idempotency_key"
+  ON CONFLICT ("id") DO UPDATE SET
+    "status" = EXCLUDED."status",
+    "supplier_reference" = EXCLUDED."supplier_reference",
+    "conflict_classification" = EXCLUDED."conflict_classification",
+    "row_snapshot" = EXCLUDED."row_snapshot",
+    "detected_at" = now();
+
+  SELECT COUNT(*)
+  INTO v_dup_count
+  FROM (
+    SELECT "idempotency_key"
+    FROM "octo_bookings"
+    WHERE "idempotency_key" IS NOT NULL
+    GROUP BY "idempotency_key"
+    HAVING COUNT(*) > 1
+  ) dup_groups;
+
+  IF COALESCE(v_dup_count, 0) > 0 THEN
+    RAISE EXCEPTION 'UNRESOLVED_IDEMPOTENCY_DUPLICATES: Found % duplicate idempotency_key group(s) in octo_bookings; rows preserved in octo_booking_idempotency_conflicts for explicit reconciliation.', v_dup_count;
+  END IF;
+END $$;
 
 CREATE UNIQUE INDEX IF NOT EXISTS "octo_bookings_booking_uuid_uidx"
   ON "octo_bookings" ("booking_uuid");
@@ -303,3 +395,23 @@ CREATE INDEX IF NOT EXISTS "dcc_square_webhook_events_order_id_idx"
 
 CREATE INDEX IF NOT EXISTS "dcc_square_webhook_events_status_idx"
   ON "dcc_square_webhook_events" ("processing_status");
+
+CREATE TABLE IF NOT EXISTS "dcc_payment_allocations" (
+  "id" text PRIMARY KEY,
+  "payment_id" text NOT NULL,
+  "order_id" text NOT NULL,
+  "obligation_key" text NOT NULL,
+  "allocated_amount_cents" integer NOT NULL,
+  "currency" text NOT NULL DEFAULT 'USD',
+  "created_at" timestamptz NOT NULL DEFAULT now(),
+  "updated_at" timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS "dcc_payment_allocations_payment_obligation_uidx"
+  ON "dcc_payment_allocations" ("payment_id", "obligation_key");
+
+CREATE INDEX IF NOT EXISTS "dcc_payment_allocations_payment_id_idx"
+  ON "dcc_payment_allocations" ("payment_id");
+
+CREATE INDEX IF NOT EXISTS "dcc_payment_allocations_order_id_idx"
+  ON "dcc_payment_allocations" ("order_id");

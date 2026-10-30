@@ -2,6 +2,7 @@ import crypto from "crypto";
 import { getDb } from "@/lib/db/client";
 import {
   dccOrderPayments,
+  dccPaymentAllocations,
   dccOrderItems,
   dccSupplierBookings,
   dccOperatorPayables,
@@ -11,7 +12,7 @@ import {
   octoSettlementLedger,
   octoAuditLogs,
 } from "@/lib/db/schema";
-import { eq, or } from "drizzle-orm";
+import { and, eq, or, sql } from "drizzle-orm";
 import { SquareClient, SquareEnvironment } from "square";
 import {
   getSquareAccessToken,
@@ -42,6 +43,32 @@ const fallbackPaymentStore = new Map<string, DccOrderPaymentRecord>();
 const fallbackRefundStore = new Map<string, DccRefundRecord>();
 const paymentObligationAllocations = new Map<string, Map<string, number>>();
 const refundObligationAllocations = new Map<string, string>();
+const paymentAllocationMutexes = new Map<string, Promise<void>>();
+
+async function withPaymentAllocationMutex<T>(
+  paymentKey: string,
+  fn: () => Promise<T>
+): Promise<T> {
+  const prev = paymentAllocationMutexes.get(paymentKey) || Promise.resolve();
+  let release!: () => void;
+  const next = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const chained = prev.then(
+    () => next,
+    () => next
+  );
+  paymentAllocationMutexes.set(paymentKey, chained);
+  await prev.catch(() => {});
+  try {
+    return await fn();
+  } finally {
+    release();
+    if (paymentAllocationMutexes.get(paymentKey) === chained) {
+      paymentAllocationMutexes.delete(paymentKey);
+    }
+  }
+}
 
 /**
  * Strictly maps a provider (Square) payment status to DCC's internal payment status.
@@ -301,8 +328,13 @@ async function resolveObligationContext(
           }
         }
       }
-    } catch {
-      // Non-fatal lookup fallback
+    } catch (err: any) {
+      if (err instanceof OctoApiError) throw err;
+      throw new OctoApiError(
+        503,
+        "PAYMENT_ALLOCATION_PERSISTENCE_FAILED",
+        `Database error while resolving financial obligation identity: ${err.message}`
+      );
     }
   }
 
@@ -790,7 +822,7 @@ export class DccPaymentService {
    * Verifies that a supplied `OctoVerifiedPaymentEvidence` object is:
    * 1. Traced to an authoritative recorded payment in `DccPaymentService` with status `"captured"` or `"partially_refunded"` (never `"refunded"`, `"authorized"`, `"pending"`, or `"unresolved"`).
    * 2. Bound to the expected financial obligation (`bookingId` / `orderId`), preventing reuse of unrelated payments.
-   * 3. Backed by sufficient net unrefunded and unallocated captured funds (`netAvailableCaptured = record.amount - processedRefundsTotal - alreadyAllocatedToOtherObligations`).
+   * 3. Atomically and durably reserved against net unrefunded captured funds (`dcc_payment_allocations`), failing closed on over-allocation (`422 PAYMENT_OVERALLOCATED`) or database read/write errors (`503 PAYMENT_ALLOCATION_PERSISTENCE_FAILED`).
    */
   static async assertTraceablePaymentEvidence(
     evidence: OctoVerifiedPaymentEvidence | null | undefined,
@@ -843,224 +875,439 @@ export class DccPaymentService {
       expectedObligation = expectedObligationArg;
     }
 
-    const normalizedObligation = normalizeObligationInput(expectedObligation, evidence);
-    const obligationCtx = await resolveObligationContext(normalizedObligation);
-    if (!obligationCtx.hasIdentity) {
-      throw new OctoApiError(
-        422,
-        "MISSING_PAYMENT_OBLIGATION_IDENTITY",
-        "Payment evidence verification requires an expected bookingId or orderId to bind the payment to a specific financial obligation."
-      );
-    }
+    const txKey = evidence.transactionId.trim();
+    return withPaymentAllocationMutex(txKey, async () => {
+      try {
+        const normalizedObligation = normalizeObligationInput(expectedObligation, evidence);
+        const obligationCtx = await resolveObligationContext(normalizedObligation);
+        if (!obligationCtx.hasIdentity) {
+          throw new OctoApiError(
+            422,
+            "MISSING_PAYMENT_OBLIGATION_IDENTITY",
+            "Payment evidence verification requires an expected bookingId or orderId to bind the payment to a specific financial obligation."
+          );
+        }
 
-    const explicitSim = isExplicitPaymentTestSimulation();
-    const record = await this.getPaymentById(evidence.transactionId.trim());
-    if (!record) {
-      if (explicitSim && evidence.provenanceSource === "explicit_test_simulation") {
-        return {
-          ...evidence,
-          orderId: normalizedObligation.orderId || normalizedObligation.bookingId,
-          bookingId: obligationCtx.canonicalBookingId,
-        };
-      }
-      throw new OctoApiError(
-        422,
-        "UNTRACEABLE_PAYMENT_EVIDENCE",
-        `Payment transactionId '${evidence.transactionId}' is not backed by any recorded provider payment capture or authenticated webhook in DccPaymentService. Generated payment IDs or caller-supplied verified:true fields are rejected.`
-      );
-    }
-
-    if (record.status === "refunded") {
-      throw new OctoApiError(
-        422,
-        "PAYMENT_ALREADY_REFUNDED",
-        `Recorded payment '${evidence.transactionId}' has status 'refunded' and cannot be accepted as available capture evidence.`
-      );
-    }
-
-    if (record.status !== "captured" && record.status !== "partially_refunded") {
-      throw new OctoApiError(
-        422,
-        "UNRESOLVED_PAYMENT_EVIDENCE",
-        `Recorded payment '${evidence.transactionId}' has status '${record.status}', not 'captured'. Pending, authorized, failed, or unresolved payments cannot be accepted as completed capture evidence.`
-      );
-    }
-
-    // Verify obligation binding: record.orderId must match the target obligation or its parent order
-    const matchesDirectCandidate = obligationCtx.candidateIds.has(record.orderId);
-    const matchesLinkedOrder = obligationCtx.linkedOrderIds.has(record.orderId);
-    const explicitOrderMismatch =
-      normalizedObligation.orderId &&
-      normalizedObligation.orderId !== normalizedObligation.bookingId &&
-      normalizedObligation.orderId !== record.orderId &&
-      !obligationCtx.candidateIds.has(record.orderId);
-
-    if (explicitOrderMismatch || (!matchesDirectCandidate && !matchesLinkedOrder)) {
-      throw new OctoApiError(
-        422,
-        "PAYMENT_OBLIGATION_MISMATCH",
-        `Recorded payment '${evidence.transactionId}' belongs to obligation '${record.orderId}' and cannot be bound to unrelated obligation '${obligationCtx.canonicalBookingId || normalizedObligation.orderId}'.`
-      );
-    }
-
-    const provenance = record.provenanceSource || "explicit_test_simulation";
-    if (!explicitSim && provenance === "explicit_test_simulation") {
-      throw new OctoApiError(
-        422,
-        "UNTRACEABLE_PAYMENT_EVIDENCE",
-        `Payment '${evidence.transactionId}' was created via test simulation, which is rejected outside explicit test simulation mode.`
-      );
-    }
-
-    if (provenance === "authenticated_webhook" && record.webhookEventId) {
-      const db = getDb();
-      if (db) {
-        const evtRows = await db
-          .select()
-          .from(dccSquareWebhookEvents)
-          .where(eq(dccSquareWebhookEvents.squareEventId, record.webhookEventId));
-        if (evtRows.length === 0 || evtRows[0].processingStatus === "failed") {
+        const explicitSim = isExplicitPaymentTestSimulation();
+        const record = await this.getPaymentById(txKey);
+        if (!record) {
+          if (explicitSim && evidence.provenanceSource === "explicit_test_simulation") {
+            return {
+              ...evidence,
+              orderId: normalizedObligation.orderId || normalizedObligation.bookingId,
+              bookingId: obligationCtx.canonicalBookingId,
+            };
+          }
           throw new OctoApiError(
             422,
             "UNTRACEABLE_PAYMENT_EVIDENCE",
-            `Webhook payment '${evidence.transactionId}' references unverified or failed webhook event '${record.webhookEventId}'.`
+            `Payment transactionId '${evidence.transactionId}' is not backed by any recorded provider payment capture or authenticated webhook in DccPaymentService. Generated payment IDs or caller-supplied verified:true fields are rejected.`
           );
         }
-      }
-    }
 
-    if (
-      expectedCurrency &&
-      record.currency.toUpperCase() !== expectedCurrency.toUpperCase()
-    ) {
-      throw new OctoApiError(
-        422,
-        "PAYMENT_CURRENCY_MISMATCH",
-        `Recorded payment '${evidence.transactionId}' currency '${record.currency}' does not match booking currency '${expectedCurrency}'.`
-      );
-    }
+        if (record.status === "refunded") {
+          throw new OctoApiError(
+            422,
+            "PAYMENT_ALREADY_REFUNDED",
+            `Recorded payment '${evidence.transactionId}' has status 'refunded' and cannot be accepted as available capture evidence.`
+          );
+        }
 
-    // Compute net unrefunded captured funds on this payment record (counting only processed refunds)
-    const orderRefunds = await this.getRefundsForOrder(record.orderId);
-    const processedRefundsTotal = orderRefunds
-      .filter((r) => r.status === "processed" && r.type === "refund")
-      .reduce((sum, r) => sum + r.amount, 0);
-    const netAvailableCaptured = Math.max(
-      0,
-      Math.round((record.amount - processedRefundsTotal) * 100) / 100
-    );
+        if (record.status !== "captured" && record.status !== "partially_refunded") {
+          throw new OctoApiError(
+            422,
+            "UNRESOLVED_PAYMENT_EVIDENCE",
+            `Recorded payment '${evidence.transactionId}' has status '${record.status}', not 'captured'. Pending, authorized, failed, or unresolved payments cannot be accepted as completed capture evidence.`
+          );
+        }
 
-    if (netAvailableCaptured <= 0) {
-      throw new OctoApiError(
-        422,
-        "PAYMENT_ALREADY_REFUNDED",
-        `Recorded payment '${evidence.transactionId}' has $0.00 net captured balance remaining after processed refunds ($${processedRefundsTotal.toFixed(2)} refunded of $${record.amount.toFixed(2)}).`
-      );
-    }
+        // Verify obligation binding: record.orderId must match the target obligation or its parent order
+        const matchesDirectCandidate = obligationCtx.candidateIds.has(record.orderId);
+        const matchesLinkedOrder = obligationCtx.linkedOrderIds.has(record.orderId);
+        const explicitOrderMismatch =
+          normalizedObligation.orderId &&
+          normalizedObligation.orderId !== normalizedObligation.bookingId &&
+          normalizedObligation.orderId !== record.orderId &&
+          !obligationCtx.candidateIds.has(record.orderId);
 
-    if (Math.round(evidence.capturedAmount * 100) > Math.round(netAvailableCaptured * 100)) {
-      throw new OctoApiError(
-        422,
-        "INSUFFICIENT_CAPTURED_PAYMENT",
-        `Payment evidence capturedAmount (${evidence.capturedAmount}) exceeds net unrefunded captured balance (${netAvailableCaptured}) on payment '${evidence.transactionId}'.`
-      );
-    }
+        if (explicitOrderMismatch || (!matchesDirectCandidate && !matchesLinkedOrder)) {
+          throw new OctoApiError(
+            422,
+            "PAYMENT_OBLIGATION_MISMATCH",
+            `Recorded payment '${evidence.transactionId}' belongs to obligation '${record.orderId}' and cannot be bound to unrelated obligation '${obligationCtx.canonicalBookingId || normalizedObligation.orderId}'.`
+          );
+        }
 
-    if (
-      typeof expectedAmount === "number" &&
-      Number.isFinite(expectedAmount) &&
-      Math.round(netAvailableCaptured * 100) < Math.round(expectedAmount * 100)
-    ) {
-      throw new OctoApiError(
-        422,
-        "INSUFFICIENT_CAPTURED_PAYMENT",
-        `Recorded payment '${evidence.transactionId}' net captured balance (${netAvailableCaptured}) is less than required amount (${expectedAmount}).`
-      );
-    }
+        const provenance = record.provenanceSource || "explicit_test_simulation";
+        if (!explicitSim && provenance === "explicit_test_simulation") {
+          throw new OctoApiError(
+            422,
+            "UNTRACEABLE_PAYMENT_EVIDENCE",
+            `Payment '${evidence.transactionId}' was created via test simulation, which is rejected outside explicit test simulation mode.`
+          );
+        }
 
-    // Prevent over-allocation of a payment across multiple bookings/obligations
-    const obligationKey =
-      obligationCtx.canonicalBookingId ||
-      normalizedObligation.bookingId ||
-      normalizedObligation.orderId!;
-    const requiredAllocation =
-      typeof expectedAmount === "number" && Number.isFinite(expectedAmount)
-        ? expectedAmount
-        : evidence.capturedAmount;
-
-    const allocMap =
-      paymentObligationAllocations.get(record.id) || new Map<string, number>();
-
-    // Also hydrate any durable allocations from octoSettlementLedger in DB
-    const db = getDb();
-    if (db) {
-      try {
-        const ledgerRows = await db.select().from(octoSettlementLedger);
-        for (const lr of ledgerRows) {
-          if (
-            lr.paymentStatus !== "captured" &&
-            lr.paymentStatus !== "partially_refunded"
-          ) {
-            continue;
-          }
-          if (lr.cancellationStatus === "cancelled_full_refund") {
-            continue;
-          }
-          const meta = (lr.metadata || {}) as Record<string, any>;
-          const ev = meta.verifiedPaymentEvidence;
-          if (
-            ev &&
-            (ev.transactionId === record.id ||
-              ev.providerRecordId === record.id ||
-              ev.transactionId === record.providerPaymentId)
-          ) {
-            const allocatedAmt = Number(meta.capturedAmount ?? lr.grossAmount ?? 0);
-            const refundedAmt = Number(meta.refundedAmount ?? 0);
-            const netAllocated = Math.max(0, allocatedAmt - refundedAmt);
-            if (netAllocated > 0 && !allocMap.has(lr.bookingId)) {
-              allocMap.set(lr.bookingId, netAllocated);
-            }
+        const db = getDb();
+        if (provenance === "authenticated_webhook" && record.webhookEventId && db) {
+          const evtRows = await db
+            .select()
+            .from(dccSquareWebhookEvents)
+            .where(eq(dccSquareWebhookEvents.squareEventId, record.webhookEventId));
+          if (evtRows.length === 0 || evtRows[0].processingStatus === "failed") {
+            throw new OctoApiError(
+              422,
+              "UNTRACEABLE_PAYMENT_EVIDENCE",
+              `Webhook payment '${evidence.transactionId}' references unverified or failed webhook event '${record.webhookEventId}'.`
+            );
           }
         }
-      } catch {
-        // Ignore DB read error during allocation hydration
+
+        if (
+          expectedCurrency &&
+          record.currency.toUpperCase() !== expectedCurrency.toUpperCase()
+        ) {
+          throw new OctoApiError(
+            422,
+            "PAYMENT_CURRENCY_MISMATCH",
+            `Recorded payment '${evidence.transactionId}' currency '${record.currency}' does not match booking currency '${expectedCurrency}'.`
+          );
+        }
+
+        // Compute net unrefunded captured funds on this payment record (counting only processed refunds)
+        const orderRefunds = await this.getRefundsForOrder(record.orderId);
+        const processedRefundsTotal = orderRefunds
+          .filter((r) => r.status === "processed" && r.type === "refund")
+          .reduce((sum, r) => sum + r.amount, 0);
+        const netAvailableCaptured = Math.max(
+          0,
+          Math.round((record.amount - processedRefundsTotal) * 100) / 100
+        );
+        const netAvailableCapturedCents = Math.round(netAvailableCaptured * 100);
+
+        if (netAvailableCapturedCents <= 0) {
+          throw new OctoApiError(
+            422,
+            "PAYMENT_ALREADY_REFUNDED",
+            `Recorded payment '${evidence.transactionId}' has $0.00 net captured balance remaining after processed refunds ($${processedRefundsTotal.toFixed(2)} refunded of $${record.amount.toFixed(2)}).`
+          );
+        }
+
+        if (Math.round(evidence.capturedAmount * 100) > netAvailableCapturedCents) {
+          throw new OctoApiError(
+            422,
+            "INSUFFICIENT_CAPTURED_PAYMENT",
+            `Payment evidence capturedAmount (${evidence.capturedAmount}) exceeds net unrefunded captured balance (${netAvailableCaptured}) on payment '${evidence.transactionId}'.`
+          );
+        }
+
+        if (
+          typeof expectedAmount === "number" &&
+          Number.isFinite(expectedAmount) &&
+          netAvailableCapturedCents < Math.round(expectedAmount * 100)
+        ) {
+          throw new OctoApiError(
+            422,
+            "INSUFFICIENT_CAPTURED_PAYMENT",
+            `Recorded payment '${evidence.transactionId}' net captured balance (${netAvailableCaptured}) is less than required amount (${expectedAmount}).`
+          );
+        }
+
+        const obligationKey =
+          obligationCtx.canonicalBookingId ||
+          normalizedObligation.bookingId ||
+          normalizedObligation.orderId!;
+        const requiredAllocation =
+          typeof expectedAmount === "number" && Number.isFinite(expectedAmount)
+            ? expectedAmount
+            : evidence.capturedAmount;
+        const requiredAllocationCents = Math.round(requiredAllocation * 100);
+
+        const allocMap =
+          paymentObligationAllocations.get(record.id) || new Map<string, number>();
+
+        if (db) {
+          // 1. Ensure sentinel budget row exists for this payment
+          await db
+            .insert(dccPaymentAllocations)
+            .values({
+              id: `alloc_total:${record.id}`,
+              paymentId: record.id,
+              orderId: record.orderId,
+              obligationKey: "__PAYMENT_TOTAL__",
+              allocatedAmountCents: 0,
+              currency: record.currency,
+            })
+            .onConflictDoNothing();
+
+          // 2. Load existing durable allocations for this payment
+          const existingAllocRows = await db
+            .select()
+            .from(dccPaymentAllocations)
+            .where(eq(dccPaymentAllocations.paymentId, record.id));
+          const existingObligationMap = new Map<string, number>();
+          for (const row of existingAllocRows) {
+            if (row.obligationKey !== "__PAYMENT_TOTAL__") {
+              existingObligationMap.set(
+                row.obligationKey,
+                Number(row.allocatedAmountCents || 0)
+              );
+            }
+          }
+
+          // 3. Synchronize any durable allocations or refund reductions from octoSettlementLedger
+          const ledgerRows = await db.select().from(octoSettlementLedger);
+          for (const lr of ledgerRows) {
+            const meta = (lr.metadata || {}) as Record<string, any>;
+            const ev = meta.verifiedPaymentEvidence;
+            if (
+              !ev ||
+              (ev.transactionId !== record.id &&
+                ev.providerRecordId !== record.id &&
+                ev.transactionId !== record.providerPaymentId)
+            ) {
+              continue;
+            }
+            const isActiveCapture =
+              (lr.paymentStatus === "captured" || lr.paymentStatus === "partially_refunded") &&
+              lr.cancellationStatus !== "cancelled_full_refund";
+            const allocatedAmt = Number(meta.capturedAmount ?? lr.grossAmount ?? 0);
+            const refundedAmt = Number(meta.refundedAmount ?? 0);
+            const ledgerNetCents = isActiveCapture
+              ? Math.max(0, Math.round((allocatedAmt - refundedAmt) * 100))
+              : 0;
+
+            const currentRecordedCents = existingObligationMap.get(lr.bookingId);
+            if (currentRecordedCents === undefined && ledgerNetCents > 0) {
+              const insertedHydration = await db
+                .insert(dccPaymentAllocations)
+                .values({
+                  id: `alloc:${record.id}:${lr.bookingId}`,
+                  paymentId: record.id,
+                  orderId: record.orderId,
+                  obligationKey: lr.bookingId,
+                  allocatedAmountCents: ledgerNetCents,
+                  currency: record.currency,
+                })
+                .onConflictDoNothing()
+                .returning({ id: dccPaymentAllocations.id });
+              if (insertedHydration.length > 0) {
+                await db
+                  .update(dccPaymentAllocations)
+                  .set({
+                    allocatedAmountCents: sql`${dccPaymentAllocations.allocatedAmountCents} + ${ledgerNetCents}`,
+                    updatedAt: new Date(),
+                  })
+                  .where(
+                    and(
+                      eq(dccPaymentAllocations.paymentId, record.id),
+                      eq(dccPaymentAllocations.obligationKey, "__PAYMENT_TOTAL__")
+                    )
+                  );
+                existingObligationMap.set(lr.bookingId, ledgerNetCents);
+              }
+            } else if (
+              currentRecordedCents !== undefined &&
+              ledgerNetCents < currentRecordedCents
+            ) {
+              const reductionCents = currentRecordedCents - ledgerNetCents;
+              await db
+                .update(dccPaymentAllocations)
+                .set({
+                  allocatedAmountCents: ledgerNetCents,
+                  updatedAt: new Date(),
+                })
+                .where(
+                  and(
+                    eq(dccPaymentAllocations.paymentId, record.id),
+                    eq(dccPaymentAllocations.obligationKey, lr.bookingId)
+                  )
+                );
+              await db
+                .update(dccPaymentAllocations)
+                .set({
+                  allocatedAmountCents: sql`CASE WHEN ${dccPaymentAllocations.allocatedAmountCents} >= ${reductionCents} THEN ${dccPaymentAllocations.allocatedAmountCents} - ${reductionCents} ELSE 0 END`,
+                  updatedAt: new Date(),
+                })
+                .where(
+                  and(
+                    eq(dccPaymentAllocations.paymentId, record.id),
+                    eq(dccPaymentAllocations.obligationKey, "__PAYMENT_TOTAL__")
+                  )
+                );
+              existingObligationMap.set(lr.bookingId, ledgerNetCents);
+            }
+          }
+
+          // 4. Release parent order container placeholder if allocating a child booking item
+          if (obligationKey !== record.orderId && existingObligationMap.has(record.orderId)) {
+            const deletedParentRows = await db
+              .delete(dccPaymentAllocations)
+              .where(
+                and(
+                  eq(dccPaymentAllocations.paymentId, record.id),
+                  eq(dccPaymentAllocations.obligationKey, record.orderId)
+                )
+              )
+              .returning({
+                allocatedAmountCents: dccPaymentAllocations.allocatedAmountCents,
+              });
+            if (deletedParentRows.length > 0) {
+              const parentCents = Number(deletedParentRows[0].allocatedAmountCents || 0);
+              if (parentCents > 0) {
+                await db
+                  .update(dccPaymentAllocations)
+                  .set({
+                    allocatedAmountCents: sql`CASE WHEN ${dccPaymentAllocations.allocatedAmountCents} >= ${parentCents} THEN ${dccPaymentAllocations.allocatedAmountCents} - ${parentCents} ELSE 0 END`,
+                    updatedAt: new Date(),
+                  })
+                  .where(
+                    and(
+                      eq(dccPaymentAllocations.paymentId, record.id),
+                      eq(dccPaymentAllocations.obligationKey, "__PAYMENT_TOTAL__")
+                    )
+                  );
+              }
+              existingObligationMap.delete(record.orderId);
+            }
+          }
+
+          // 5. Compute delta for this obligation
+          const matchedExistingKey = existingObligationMap.has(obligationKey)
+            ? obligationKey
+            : Array.from(obligationCtx.candidateIds).find(
+                (cid) => cid !== record.orderId && existingObligationMap.has(cid)
+              );
+          const targetObligationKey = matchedExistingKey || obligationKey;
+          const existingObligationCents = matchedExistingKey
+            ? existingObligationMap.get(matchedExistingKey)!
+            : 0;
+          const deltaCents = requiredAllocationCents - existingObligationCents;
+
+          // 6. Atomic single-statement conditional budget reservation on __PAYMENT_TOTAL__
+          const reservedRows = await db
+            .update(dccPaymentAllocations)
+            .set({
+              allocatedAmountCents: sql`${dccPaymentAllocations.allocatedAmountCents} + ${deltaCents}`,
+              updatedAt: new Date(),
+            })
+            .where(
+              and(
+                eq(dccPaymentAllocations.paymentId, record.id),
+                eq(dccPaymentAllocations.obligationKey, "__PAYMENT_TOTAL__"),
+                sql`(${dccPaymentAllocations.allocatedAmountCents} + ${deltaCents}) <= ${netAvailableCapturedCents}`
+              )
+            )
+            .returning({
+              allocatedAmountCents: dccPaymentAllocations.allocatedAmountCents,
+            });
+
+          if (reservedRows.length === 0) {
+            const totalRows = await db
+              .select()
+              .from(dccPaymentAllocations)
+              .where(
+                and(
+                  eq(dccPaymentAllocations.paymentId, record.id),
+                  eq(dccPaymentAllocations.obligationKey, "__PAYMENT_TOTAL__")
+                )
+              );
+            const currentTotalCents = Number(totalRows[0]?.allocatedAmountCents || 0);
+            const allocatedToOtherDollars =
+              Math.max(0, currentTotalCents - existingObligationCents) / 100;
+            throw new OctoApiError(
+              422,
+              "PAYMENT_OVERALLOCATED",
+              `Payment '${evidence.transactionId}' has $${netAvailableCaptured.toFixed(2)} net captured balance, with $${allocatedToOtherDollars.toFixed(2)} already allocated to other obligations; cannot allocate an additional $${requiredAllocation.toFixed(2)} to '${obligationKey}'.`
+            );
+          }
+
+          // 7. Persist durable per-obligation allocation row
+          try {
+            await db
+              .insert(dccPaymentAllocations)
+              .values({
+                id: `alloc:${record.id}:${targetObligationKey}`,
+                paymentId: record.id,
+                orderId: record.orderId,
+                obligationKey: targetObligationKey,
+                allocatedAmountCents: requiredAllocationCents,
+                currency: record.currency,
+              })
+              .onConflictDoUpdate({
+                target: dccPaymentAllocations.id,
+                set: {
+                  allocatedAmountCents: requiredAllocationCents,
+                  updatedAt: new Date(),
+                },
+              });
+          } catch (obligationWriteErr) {
+            if (deltaCents !== 0) {
+              await db
+                .update(dccPaymentAllocations)
+                .set({
+                  allocatedAmountCents: sql`${dccPaymentAllocations.allocatedAmountCents} - ${deltaCents}`,
+                  updatedAt: new Date(),
+                })
+                .where(
+                  and(
+                    eq(dccPaymentAllocations.paymentId, record.id),
+                    eq(dccPaymentAllocations.obligationKey, "__PAYMENT_TOTAL__")
+                  )
+                )
+                .catch(() => {});
+            }
+            throw obligationWriteErr;
+          }
+
+          allocMap.set(targetObligationKey, requiredAllocation);
+          paymentObligationAllocations.set(record.id, allocMap);
+        } else {
+          // Pure in-memory reservation when no DB is configured (serialized by withPaymentAllocationMutex)
+          let allocatedToOtherObligations = 0;
+          for (const [otherKey, otherAmt] of allocMap.entries()) {
+            if (otherKey === obligationKey || obligationCtx.candidateIds.has(otherKey)) {
+              continue;
+            }
+            if (otherKey === record.orderId && obligationKey !== record.orderId) {
+              continue;
+            }
+            allocatedToOtherObligations += otherAmt;
+          }
+
+          if (
+            Math.round((allocatedToOtherObligations + requiredAllocation) * 100) >
+            netAvailableCapturedCents
+          ) {
+            throw new OctoApiError(
+              422,
+              "PAYMENT_OVERALLOCATED",
+              `Payment '${evidence.transactionId}' has $${netAvailableCaptured.toFixed(2)} net captured balance, with $${allocatedToOtherObligations.toFixed(2)} already allocated to other obligations; cannot allocate an additional $${requiredAllocation.toFixed(2)} to '${obligationKey}'.`
+            );
+          }
+
+          allocMap.set(obligationKey, requiredAllocation);
+          paymentObligationAllocations.set(record.id, allocMap);
+        }
+
+        return {
+          ...evidence,
+          provenanceSource: provenance,
+          providerRecordId: record.id,
+          orderId: record.orderId,
+          bookingId: obligationKey,
+          ...(record.webhookEventId ? { webhookEventId: record.webhookEventId } : {}),
+        };
+      } catch (err: any) {
+        if (err instanceof OctoApiError) {
+          throw err;
+        }
+        throw new OctoApiError(
+          503,
+          "PAYMENT_ALLOCATION_PERSISTENCE_FAILED",
+          `Database error while verifying or reserving payment allocation for '${evidence.transactionId}': ${err?.message || String(err)}`
+        );
       }
-    }
-
-    let allocatedToOtherObligations = 0;
-    for (const [otherKey, otherAmt] of allocMap.entries()) {
-      if (otherKey === obligationKey || obligationCtx.candidateIds.has(otherKey)) {
-        continue;
-      }
-      // If a parent order key was previously checked before item-level bookings, don't double-count the parent order container against its own child booking
-      if (otherKey === record.orderId && obligationKey !== record.orderId) {
-        continue;
-      }
-      allocatedToOtherObligations += otherAmt;
-    }
-
-    if (
-      Math.round((allocatedToOtherObligations + requiredAllocation) * 100) >
-      Math.round(netAvailableCaptured * 100)
-    ) {
-      throw new OctoApiError(
-        422,
-        "PAYMENT_OVERALLOCATED",
-        `Payment '${evidence.transactionId}' has $${netAvailableCaptured.toFixed(2)} net captured balance, with $${allocatedToOtherObligations.toFixed(2)} already allocated to other obligations; cannot allocate an additional $${requiredAllocation.toFixed(2)} to '${obligationKey}'.`
-      );
-    }
-
-    allocMap.set(obligationKey, requiredAllocation);
-    paymentObligationAllocations.set(record.id, allocMap);
-
-    return {
-      ...evidence,
-      provenanceSource: provenance,
-      providerRecordId: record.id,
-      orderId: record.orderId,
-      bookingId: obligationKey,
-      ...(record.webhookEventId ? { webhookEventId: record.webhookEventId } : {}),
-    };
+    });
   }
 
   /**

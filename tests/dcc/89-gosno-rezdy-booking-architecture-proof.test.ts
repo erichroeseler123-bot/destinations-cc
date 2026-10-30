@@ -2520,3 +2520,666 @@ test("Gate 8: Authoritative Payment/Refund Statuses, Obligation Binding & Over-A
   }
 });
 
+// ============================================================================
+// GATE 9: Atomic Concurrent Payment Allocation, Atomic Lock Ownership Enforcement, & Non-Destructive Duplicate Reconciliation
+// ============================================================================
+test("Gate 9: Concurrent $60+$60 allocations on $100 payment fail closed atomically, lock ownership is enforced in DB across renewal/takeover/cleanup/finalization, and duplicate migration is non-destructive", async () => {
+  setupCleanSqliteEnvironment();
+  const sim = await startLocalRezdyV1Simulator();
+  const prevToken = process.env.SQUARE_ACCESS_TOKEN;
+  const prevLoc = process.env.SQUARE_LOCATION_ID_DCC;
+  process.env.SQUARE_ACCESS_TOKEN = "sq_sandbox_gate9_token";
+  process.env.SQUARE_LOCATION_ID_DCC = "loc_sandbox_gate9";
+
+  try {
+    const {
+      getDb,
+      setSimulateDbFailureForTests,
+      setSimulateDbReadFailureForTests,
+    } = await import("../../lib/db/client");
+    const {
+      octoBookings,
+      octoBookingIdempotencyConflicts,
+      dccPaymentAllocations,
+    } = await import("../../lib/db/schema");
+    const {
+      inspectOctoBookingIdempotencyDuplicates,
+      reconcileOctoBookingIdempotencyDuplicates,
+    } = await import("../../lib/dcc/earthos/ensureEarthosSchema");
+    const { and, eq, sql } = await import("drizzle-orm");
+    const db = getDb()!;
+    assert.ok(db);
+
+    // =========================================================================
+    // 1. Concurrent Payment Allocations Cannot Exceed Captured Money & DB Errors Fail Closed
+    // =========================================================================
+    const sharedOrder100 = "ord_concurrent_100";
+    const capture100 = await captureTraceableSquarePayment(sharedOrder100, 100);
+
+    // Run two simultaneous $60 allocations against the single $100 payment via Promise.all
+    const concurrentResults = await Promise.allSettled([
+      DccPaymentService.assertTraceablePaymentEvidence(
+        { ...capture100, capturedAmount: 60 },
+        60,
+        { orderId: sharedOrder100, bookingId: "dcc:bk:concurrent_60_a" }
+      ),
+      DccPaymentService.assertTraceablePaymentEvidence(
+        { ...capture100, capturedAmount: 60 },
+        60,
+        { orderId: sharedOrder100, bookingId: "dcc:bk:concurrent_60_b" }
+      ),
+    ]);
+
+    const fulfilled60 = concurrentResults.filter((r) => r.status === "fulfilled");
+    const rejected60 = concurrentResults.filter(
+      (r): r is PromiseRejectedResult => r.status === "rejected"
+    );
+
+    assert.equal(
+      fulfilled60.length,
+      1,
+      "Exactly one of two simultaneous $60 allocations against a $100 payment may succeed"
+    );
+    assert.equal(
+      rejected60.length,
+      1,
+      "The competing simultaneous $60 allocation must be rejected"
+    );
+    assert.ok(
+      rejected60[0].reason instanceof OctoApiError &&
+        rejected60[0].reason.status === 422 &&
+        rejected60[0].reason.code === "PAYMENT_OVERALLOCATED",
+      `Expected 422 PAYMENT_OVERALLOCATED, got ${rejected60[0].reason}`
+    );
+
+    // Verify durable dcc_payment_allocations table in DB reflects $60 (6000 cents), never $120
+    const allocRowsAfter60 = await db
+      .select()
+      .from(dccPaymentAllocations)
+      .where(eq(dccPaymentAllocations.paymentId, capture100.transactionId));
+    const totalSentinelRow = allocRowsAfter60.find(
+      (r) => r.obligationKey === "__PAYMENT_TOTAL__"
+    );
+    assert.ok(totalSentinelRow, "__PAYMENT_TOTAL__ budget sentinel row must exist in dcc_payment_allocations");
+    assert.equal(
+      Number(totalSentinelRow.allocatedAmountCents),
+      6000,
+      "Durable __PAYMENT_TOTAL__ allocation must equal 6000 cents ($60.00)"
+    );
+
+    // Even after simulated process restart (clearing all in-memory maps), durable DB allocation prevents a second $60 allocation
+    DccPaymentService.clearInMemoryStoresForProcessRestartSimulation();
+    await assert.rejects(
+      () =>
+        DccPaymentService.assertTraceablePaymentEvidence(
+          { ...capture100, capturedAmount: 60 },
+          60,
+          { orderId: sharedOrder100, bookingId: "dcc:bk:concurrent_60_c" }
+        ),
+      (err: unknown) =>
+        err instanceof OctoApiError &&
+        err.status === 422 &&
+        err.code === "PAYMENT_OVERALLOCATED",
+      "Durable DB allocation must survive process restart and reject $60 allocation when $60 of $100 is already reserved"
+    );
+
+    // Race a $40 allocation ($60 + $40 = $100 <= $100) against a $41 allocation ($60 + $41 = $101 > $100)
+    const remainderResults = await Promise.allSettled([
+      DccPaymentService.assertTraceablePaymentEvidence(
+        { ...capture100, capturedAmount: 40 },
+        40,
+        { orderId: sharedOrder100, bookingId: "dcc:bk:concurrent_40_valid" }
+      ),
+      DccPaymentService.assertTraceablePaymentEvidence(
+        { ...capture100, capturedAmount: 41 },
+        41,
+        { orderId: sharedOrder100, bookingId: "dcc:bk:concurrent_41_excess" }
+      ),
+    ]);
+    assert.equal(remainderResults[0].status, "fulfilled", "$40 remaining allocation must succeed");
+    assert.equal(remainderResults[1].status, "rejected", "$41 allocation must fail closed");
+
+    const finalSentinelRows = await db
+      .select()
+      .from(dccPaymentAllocations)
+      .where(
+        and(
+          eq(dccPaymentAllocations.paymentId, capture100.transactionId),
+          eq(dccPaymentAllocations.obligationKey, "__PAYMENT_TOTAL__")
+        )
+      );
+    assert.equal(Number(finalSentinelRows[0].allocatedAmountCents), 10000);
+
+    // Prove that database read or write errors during assertTraceablePaymentEvidence fail closed (never ignored)
+    setSimulateDbReadFailureForTests(true);
+    try {
+      await assert.rejects(
+        () =>
+          DccPaymentService.assertTraceablePaymentEvidence(
+            { ...capture100, capturedAmount: 40 },
+            40,
+            { orderId: sharedOrder100, bookingId: "dcc:bk:concurrent_40_valid" }
+          ),
+        (err: unknown) =>
+          err instanceof OctoApiError &&
+          err.status === 503 &&
+          err.code === "PAYMENT_ALLOCATION_PERSISTENCE_FAILED",
+        "Database read failure during allocation check must fail closed with 503 PAYMENT_ALLOCATION_PERSISTENCE_FAILED"
+      );
+    } finally {
+      setSimulateDbReadFailureForTests(false);
+    }
+
+    const orderWriteFail = "ord_alloc_write_fail_100";
+    const captureWriteFail = await captureTraceableSquarePayment(orderWriteFail, 100);
+    setSimulateDbFailureForTests(true);
+    try {
+      await assert.rejects(
+        () =>
+          DccPaymentService.assertTraceablePaymentEvidence(
+            captureWriteFail,
+            100,
+            { orderId: orderWriteFail, bookingId: "dcc:bk:write_fail_bk" }
+          ),
+        (err: unknown) =>
+          err instanceof OctoApiError &&
+          err.status === 503 &&
+          err.code === "PAYMENT_ALLOCATION_PERSISTENCE_FAILED",
+        "Database write failure during allocation reservation must fail closed with 503 PAYMENT_ALLOCATION_PERSISTENCE_FAILED"
+      );
+    } finally {
+      setSimulateDbFailureForTests(false);
+    }
+
+    // =========================================================================
+    // 2. Atomic Lock Ownership Enforcement Across Renewal, Takeover, Cleanup, and Finalization
+    // =========================================================================
+    const slotBreck = formatCanonicalRezdySlotId("P7477S", 497020486, "2026-11-12T10:53:00");
+    const casLockIdemKey = "idem_atomic_cas_ownership_001";
+    const casSeed = crypto.createHash("sha256").update(casLockIdemKey).digest("hex");
+    const casUuid = `${casSeed.slice(0, 8)}-${casSeed.slice(8, 12)}-4${casSeed.slice(13, 16)}-a${casSeed.slice(17, 20)}-${casSeed.slice(20, 32)}`;
+    const casDccId = `dcc:bk:${casUuid.slice(0, 12)}`;
+    const staleOwnerA = "worker-a:stale-owner-001";
+    const replacementOwnerB = "worker-b:replacement-002";
+    const replacementOwnerC = "worker-c:replacement-003";
+    const expiredLeaseDate = new Date(Date.now() - 2000);
+
+    // Seed an expired HOLD_IN_PROGRESS row owned by staleOwnerA
+    await db.insert(octoBookings).values({
+      id: casDccId,
+      bookingUuid: casUuid,
+      idempotencyKey: casLockIdemKey,
+      idempotencyHash: "hash_cas_001",
+      supplierConnectionId: "conn_gosno_rezdy",
+      resellerId: null,
+      productId: "dcc:gosno:den-breckenridge:suv",
+      optionId: "opt_suburban_69029050",
+      availabilityId: slotBreck,
+      status: "HOLD_IN_PROGRESS",
+      expirationMinutes: 15,
+      utcHoldExpires: expiredLeaseDate,
+      totalPrice: "0.00",
+      currency: "USD",
+      unitItems: [{ unitId: "unit_suburban_69029050", quantity: 1 }] as any,
+      contact: {
+        firstName: "Worker",
+        lastName: "A",
+        __dccMeta: {
+          lockOwnerId: staleOwnerA,
+          lockLeaseExpiresAt: expiredLeaseDate.getTime(),
+        },
+      },
+      supplierReference: null,
+      resellerReference: staleOwnerA,
+      checkoutUrl: null,
+    });
+
+    // 2a. Two replacement workers (Worker B and Worker C) race to take over Worker A's expired lock via atomic CAS UPDATE
+    const [takeoverB, takeoverC] = await Promise.all([
+      DccBookingService.attemptExpiredIdempotencyLockTakeover({
+        dccBookingId: casDccId,
+        staleOwnerId: staleOwnerA,
+        expectedExpiredUtcHoldExpires: expiredLeaseDate,
+        newOwnerId: replacementOwnerB,
+        bookingUuid: casUuid,
+        lockLeaseDurationMs: 30_000,
+        contact: { firstName: "Worker", lastName: "B" },
+      }),
+      DccBookingService.attemptExpiredIdempotencyLockTakeover({
+        dccBookingId: casDccId,
+        staleOwnerId: staleOwnerA,
+        expectedExpiredUtcHoldExpires: expiredLeaseDate,
+        newOwnerId: replacementOwnerC,
+        bookingUuid: casUuid,
+        lockLeaseDurationMs: 30_000,
+        contact: { firstName: "Worker", lastName: "C" },
+      }),
+    ]);
+
+    assert.equal(
+      Number(takeoverB) + Number(takeoverC),
+      1,
+      "Exactly one replacement worker may win the atomic CAS takeover of staleOwnerA's expired lock"
+    );
+    const winningOwner = takeoverB ? replacementOwnerB : replacementOwnerC;
+
+    const afterTakeoverRows = await db
+      .select()
+      .from(octoBookings)
+      .where(eq(octoBookings.id, casDccId));
+    assert.equal(afterTakeoverRows.length, 1);
+    assert.equal(afterTakeoverRows[0].status, "HOLD_IN_PROGRESS");
+    assert.equal(afterTakeoverRows[0].resellerReference, winningOwner);
+    assert.equal((afterTakeoverRows[0].contact as any)?.__dccMeta?.lockOwnerId, winningOwner);
+
+    // 2b. Stale Worker A wakes up and attempts a late heartbeat renewal -> rejected by DB ownership check
+    const staleHeartbeatRenewed = await DccBookingService.renewIdempotencyLockLease({
+      dccBookingId: casDccId,
+      lockOwnerId: staleOwnerA,
+      lockLeaseDurationMs: 30_000,
+      contact: { firstName: "Stale", lastName: "A" },
+    });
+    assert.equal(
+      staleHeartbeatRenewed,
+      false,
+      "Stale Worker A's heartbeat renewal must match 0 rows and return false after takeover"
+    );
+
+    // Winning replacement worker's heartbeat renewal succeeds
+    const winningHeartbeatRenewed = await DccBookingService.renewIdempotencyLockLease({
+      dccBookingId: casDccId,
+      lockOwnerId: winningOwner,
+      lockLeaseDurationMs: 30_000,
+      contact: { firstName: "Winning", lastName: "Worker" },
+    });
+    assert.equal(
+      winningHeartbeatRenewed,
+      true,
+      "Current lock owner's heartbeat renewal must succeed"
+    );
+
+    // 2c. Stale Worker A wakes up and attempts error cleanup (releaseIdempotencyLockOnError) -> deletes 0 rows
+    const staleDeletedCount = await DccBookingService.releaseIdempotencyLockOnError({
+      dccBookingId: casDccId,
+      lockOwnerId: staleOwnerA,
+    });
+    assert.equal(
+      staleDeletedCount,
+      0,
+      "Stale Worker A's error cleanup must NOT delete the replacement worker's lock row"
+    );
+
+    const stillOwnedAfterStaleCleanup = await db
+      .select()
+      .from(octoBookings)
+      .where(eq(octoBookings.id, casDccId));
+    assert.equal(stillOwnedAfterStaleCleanup.length, 1);
+    assert.equal(stillOwnedAfterStaleCleanup[0].resellerReference, winningOwner);
+
+    // 2d. Stale Worker A attempts to finalize the lock row to ON_HOLD -> updates 0 rows
+    const staleFinalized = await DccBookingService.finalizeIdempotencyLockHold({
+      dccBookingId: casDccId,
+      lockOwnerId: staleOwnerA,
+      bookingUuid: casUuid,
+      expirationMinutes: 15,
+      utcHoldExpires: new Date(Date.now() + 900_000),
+      totalPrice: 399,
+      currency: "USD",
+      unitItems: [{ unitId: "unit_suburban_69029050", quantity: 1 }],
+      packedContact: { firstName: "Stale", lastName: "A" },
+      supplierReference: "RZD-STALE-A",
+      resellerReference: casDccId,
+      checkoutUrl: null,
+    });
+    assert.equal(
+      staleFinalized,
+      false,
+      "Stale Worker A must NOT be able to finalize a lock owned by the replacement worker"
+    );
+
+    // Winning replacement worker finalizes the lock row to ON_HOLD -> succeeds
+    const winnerFinalized = await DccBookingService.finalizeIdempotencyLockHold({
+      dccBookingId: casDccId,
+      lockOwnerId: winningOwner,
+      bookingUuid: casUuid,
+      expirationMinutes: 15,
+      utcHoldExpires: new Date(Date.now() + 900_000),
+      totalPrice: 399,
+      currency: "USD",
+      unitItems: [{ unitId: "unit_suburban_69029050", quantity: 1 }],
+      packedContact: { firstName: "Winning", lastName: "Worker" },
+      supplierReference: "RZD-WINNER-B",
+      resellerReference: casDccId,
+      checkoutUrl: null,
+    });
+    assert.equal(winnerFinalized, true);
+
+    // Even after winningOwner finalized to ON_HOLD, a late stale Worker A finalization still returns false and cannot overwrite RZD-WINNER-B
+    const lateStaleFinalized = await DccBookingService.finalizeIdempotencyLockHold({
+      dccBookingId: casDccId,
+      lockOwnerId: staleOwnerA,
+      bookingUuid: casUuid,
+      expirationMinutes: 15,
+      utcHoldExpires: new Date(Date.now() + 900_000),
+      totalPrice: 399,
+      currency: "USD",
+      unitItems: [{ unitId: "unit_suburban_69029050", quantity: 1 }],
+      packedContact: { firstName: "Stale", lastName: "A" },
+      supplierReference: "RZD-STALE-A",
+      resellerReference: casDccId,
+      checkoutUrl: null,
+    });
+    assert.equal(lateStaleFinalized, false);
+
+    const finalizedRow = (
+      await db.select().from(octoBookings).where(eq(octoBookings.id, casDccId))
+    )[0];
+    assert.equal(finalizedRow.status, "ON_HOLD");
+    assert.equal(finalizedRow.supplierReference, "RZD-WINNER-B");
+
+    // 2e. Full end-to-end slow-worker vs replacement-worker createHold proof:
+    // Worker 1 acquires lock, creates upstream booking, then stalls while its lease is artificially expired in DB;
+    // Worker 2 takes over via CAS, reconciles the upstream booking via findBookingByResellerReference, and finalizes ON_HOLD;
+    // Worker 1 then resumes and fails with 409 IDEMPOTENCY_LOCK_LOST WITHOUT cancelling Worker 2's reconciled upstream booking!
+    let releaseStalledWorker1!: () => void;
+    const worker1StallPromise = new Promise<void>((resolve) => {
+      releaseStalledWorker1 = resolve;
+    });
+    let worker1EnteredStall!: () => void;
+    const worker1ReadyForTakeover = new Promise<void>((resolve) => {
+      worker1EnteredStall = resolve;
+    });
+
+    const baseAdapter = new RezdyAdapter({
+      endpoint: sim.baseUrl,
+      apiKey: sim.apiKey,
+      platform: "rezdy",
+      operatorSlug: "gosno",
+      isSandbox: true,
+    });
+
+    let createBookingHoldCallCount = 0;
+    let cancelBookingCallCount = 0;
+    const customStallingAdapter: any = {
+      checkAvailability: (...args: any[]) => (baseAdapter as any).checkAvailability(...args),
+      confirmBooking: (...args: any[]) => (baseAdapter as any).confirmBooking(...args),
+      getBooking: (...args: any[]) => (baseAdapter as any).getBooking(...args),
+      cancelBooking: async (...args: any[]) => {
+        cancelBookingCallCount++;
+        return (baseAdapter as any).cancelBooking(...args);
+      },
+      createBookingHold: async (req: any, idemKey?: string) => {
+        createBookingHoldCallCount++;
+        const hold = await baseAdapter.createBookingHold(req, idemKey);
+        if (createBookingHoldCallCount === 1) {
+          worker1EnteredStall();
+          await worker1StallPromise;
+        }
+        return hold;
+      },
+    };
+
+    DccBookingService.registerPilotSupplierConnection({
+      id: "conn_gosno_rezdy",
+      operatorSlug: "gosno",
+      operatorName: "GoSno Mountain Transportation",
+      endpoint: sim.baseUrl,
+      reservationPlatform: "rezdy",
+      commissionPercent: 10.0,
+      apiKey: sim.apiKey,
+      isSandbox: true,
+      connectionStatus: "sandbox_verified",
+      adapter: customStallingAdapter,
+    });
+
+    const e2eRaceIdemKey = "idem_e2e_stale_vs_replacement_001";
+    const e2eSeed = crypto.createHash("sha256").update(e2eRaceIdemKey).digest("hex");
+    const e2eUuid = `${e2eSeed.slice(0, 8)}-${e2eSeed.slice(8, 12)}-4${e2eSeed.slice(13, 16)}-a${e2eSeed.slice(17, 20)}-${e2eSeed.slice(20, 32)}`;
+    const e2eDccId = `dcc:bk:${e2eUuid.slice(0, 12)}`;
+
+    const worker1Promise = DccBookingService.createHold({
+      supplierConnectionId: "conn_gosno_rezdy",
+      productId: "dcc:gosno:den-breckenridge:suv",
+      optionId: "opt_suburban_69029050",
+      availabilityId: slotBreck,
+      expirationMinutes: 15,
+      unitItems: [{ unitId: "unit_suburban_69029050", quantity: 1 }],
+      idempotencyKey: e2eRaceIdemKey,
+      contact: {
+        firstName: "Race",
+        lastName: "Traveler",
+        emailAddress: "race@example.com",
+      },
+    });
+
+    await worker1ReadyForTakeover;
+    // Simulate cross-process contention by clearing the in-process map entry while Worker 1 is stalled in flight,
+    // and expiring Worker 1's DB lease so Worker 2 takes over via DB CAS
+    DccBookingService.clearInMemoryStoresOnlyForTests();
+    const expiredPast = new Date(Date.now() - 5000);
+    await db
+      .update(octoBookings)
+      .set({
+        utcHoldExpires: expiredPast,
+        contact: {
+          firstName: "Race",
+          lastName: "Traveler",
+          emailAddress: "race@example.com",
+          __dccMeta: {
+            lockOwnerId: "stalled-worker-1",
+            lockLeaseExpiresAt: expiredPast.getTime(),
+          },
+        },
+        resellerReference: "stalled-worker-1",
+      })
+      .where(eq(octoBookings.id, e2eDccId));
+
+    // Worker 2 takes over the expired lock, reconciles the upstream Rezdy booking, and finalizes ON_HOLD
+    const worker2Result = await DccBookingService.createHold({
+      supplierConnectionId: "conn_gosno_rezdy",
+      productId: "dcc:gosno:den-breckenridge:suv",
+      optionId: "opt_suburban_69029050",
+      availabilityId: slotBreck,
+      expirationMinutes: 15,
+      unitItems: [{ unitId: "unit_suburban_69029050", quantity: 1 }],
+      idempotencyKey: e2eRaceIdemKey,
+      contact: {
+        firstName: "Race",
+        lastName: "Traveler",
+        emailAddress: "race@example.com",
+      },
+    });
+    assert.equal(worker2Result.dccBookingId, e2eDccId);
+    assert.equal(worker2Result.status, "ON_HOLD");
+    assert.equal(
+      sim.getOrders().length,
+      1,
+      "Worker 2 must reconcile Worker 1's upstream booking via resellerReference without creating a duplicate upstream booking"
+    );
+
+    // Now release stalled Worker 1 and verify it fails with 409 IDEMPOTENCY_LOCK_LOST and does NOT cancel Worker 2's upstream booking
+    releaseStalledWorker1();
+    await assert.rejects(
+      () => worker1Promise,
+      (err: unknown) =>
+        err instanceof OctoApiError &&
+        err.status === 409 &&
+        err.code === "IDEMPOTENCY_LOCK_LOST",
+      "Stale Worker 1 must fail with 409 IDEMPOTENCY_LOCK_LOST when attempting to finalize after Worker 2 took over"
+    );
+    assert.equal(
+      cancelBookingCallCount,
+      0,
+      "Stale Worker 1 must NOT cancel the upstream Rezdy booking that Worker 2 reconciled and owns"
+    );
+    assert.equal(sim.getOrders().length, 1);
+    assert.equal(sim.getOrders()[0].status, "PROCESSING");
+
+    // =========================================================================
+    // 3. Non-Destructive Duplicate Detection & Explicit Reconciliation (Zero Automatic DELETEs)
+    // =========================================================================
+    const migration0008Sql = fs.readFileSync(
+      path.join(process.cwd(), "drizzle/0008_octo_bookings_idempotency_unique_idx.sql"),
+      "utf8"
+    );
+    const ensureEarthosSrc = fs.readFileSync(
+      path.join(process.cwd(), "lib/dcc/earthos/ensureEarthosSchema.ts"),
+      "utf8"
+    );
+    assert.equal(
+      /DELETE\s+FROM\s+"?octo_bookings"?/i.test(migration0008Sql),
+      false,
+      "drizzle/0008_octo_bookings_idempotency_unique_idx.sql must NOT contain any automatic DELETE FROM octo_bookings"
+    );
+    assert.equal(
+      /DELETE\s+FROM\s+"?octo_bookings"?/i.test(ensureEarthosSrc),
+      false,
+      "lib/dcc/earthos/ensureEarthosSchema.ts must NOT contain any automatic DELETE FROM octo_bookings"
+    );
+
+    // Temporarily drop the unique index in the isolated SQLite test DB to simulate a legacy pre-0008 table with duplicates
+    await db.execute(sql`DROP INDEX IF EXISTS "octo_bookings_idempotency_key_uidx"; -- octo_bookings`);
+
+    const dupIdemKey = "idem_legacy_duplicate_conflict_001";
+    await db.insert(octoBookings).values({
+      id: "dcc:bk:dup_hold_earlier",
+      bookingUuid: crypto.randomUUID(),
+      idempotencyKey: dupIdemKey,
+      idempotencyHash: "hash_dup_001",
+      supplierConnectionId: "conn_gosno_rezdy",
+      resellerId: null,
+      productId: "dcc:gosno:den-breckenridge:suv",
+      optionId: "opt_suburban_69029050",
+      availabilityId: slotBreck,
+      status: "ON_HOLD",
+      expirationMinutes: 15,
+      utcHoldExpires: null,
+      totalPrice: "399.00",
+      currency: "USD",
+      unitItems: [{ unitId: "unit_suburban_69029050", quantity: 1 }] as any,
+      contact: { firstName: "Earlier", lastName: "Hold" },
+      supplierReference: "RZD-HOLD-EARLIER",
+      resellerReference: "dcc:bk:dup_hold_earlier",
+      checkoutUrl: null,
+    });
+    await db.insert(octoBookings).values({
+      id: "dcc:bk:dup_confirmed_later",
+      bookingUuid: crypto.randomUUID(),
+      idempotencyKey: dupIdemKey,
+      idempotencyHash: "hash_dup_001",
+      supplierConnectionId: "conn_gosno_rezdy",
+      resellerId: null,
+      productId: "dcc:gosno:den-breckenridge:suv",
+      optionId: "opt_suburban_69029050",
+      availabilityId: slotBreck,
+      status: "CONFIRMED",
+      expirationMinutes: 15,
+      utcHoldExpires: null,
+      totalPrice: "399.00",
+      currency: "USD",
+      unitItems: [{ unitId: "unit_suburban_69029050", quantity: 1 }] as any,
+      contact: { firstName: "Later", lastName: "Confirmed" },
+      supplierReference: "RZD-CONFIRMED-LATER",
+      resellerReference: "dcc:bk:dup_confirmed_later",
+      checkoutUrl: null,
+    });
+
+    // 3a. Inspect duplicates non-destructively: proves 0 rows deleted, CONFIRMED row prioritized over earlier ON_HOLD row, and conflict snapshots recorded
+    const dupReport = await inspectOctoBookingIdempotencyDuplicates(db);
+    assert.equal(dupReport.duplicateGroupCount, 1);
+    assert.equal(dupReport.totalDuplicateRows, 2);
+    assert.equal(dupReport.groups[0].idempotencyKey, dupIdemKey);
+    assert.equal(dupReport.groups[0].conflictClassification, "confirmed_vs_non_confirmed");
+    assert.equal(
+      dupReport.groups[0].recommendedAuthoritativeBookingId,
+      "dcc:bk:dup_confirmed_later",
+      "Status-aware duplicate inspection must recommend the CONFIRMED booking over an earlier ON_HOLD row (unlike ctid deletion)"
+    );
+
+    const conflictRowsBefore = await db
+      .select()
+      .from(octoBookingIdempotencyConflicts)
+      .where(eq(octoBookingIdempotencyConflicts.idempotencyKey, dupIdemKey));
+    assert.equal(conflictRowsBefore.length, 2);
+    assert.ok(conflictRowsBefore.every((c) => c.resolutionStatus === "unresolved"));
+
+    // 3b. Attempting to demote the CONFIRMED booking without allowConfirmedDemotion: true is forbidden
+    await assert.rejects(
+      () =>
+        reconcileOctoBookingIdempotencyDuplicates(
+          {
+            idempotencyKey: dupIdemKey,
+            authoritativeBookingId: "dcc:bk:dup_hold_earlier",
+            resolvedBy: "ops-auditor",
+            resolutionReason: "Accidental attempt to pick ON_HOLD over CONFIRMED",
+          },
+          db
+        ),
+      (err: any) =>
+        String(err?.message || "").includes("CONFIRMED_DUPLICATE_DEMOTION_FORBIDDEN"),
+      "Reconciliation must refuse to demote a CONFIRMED booking row unless allowConfirmedDemotion: true"
+    );
+
+    // 3c. Explicit non-destructive reconciliation preserves BOTH booking rows in octo_bookings (deletedRowCount: 0)
+    const reconcileOutcome = await reconcileOctoBookingIdempotencyDuplicates(
+      {
+        idempotencyKey: dupIdemKey,
+        authoritativeBookingId: "dcc:bk:dup_confirmed_later",
+        resolvedBy: "ops-auditor",
+        resolutionReason: "Keep CONFIRMED booking RZD-CONFIRMED-LATER as authoritative and archive earlier ON_HOLD duplicate",
+      },
+      db
+    );
+    assert.equal(reconcileOutcome.deletedRowCount, 0);
+    assert.equal(reconcileOutcome.authoritativeBookingId, "dcc:bk:dup_confirmed_later");
+    assert.deepEqual(reconcileOutcome.demotedRowIds, ["dcc:bk:dup_hold_earlier"]);
+
+    const preservedConfirmed = (
+      await db
+        .select()
+        .from(octoBookings)
+        .where(eq(octoBookings.id, "dcc:bk:dup_confirmed_later"))
+    )[0];
+    const preservedDemoted = (
+      await db
+        .select()
+        .from(octoBookings)
+        .where(eq(octoBookings.id, "dcc:bk:dup_hold_earlier"))
+    )[0];
+    assert.ok(preservedConfirmed, "Authoritative CONFIRMED row must exist in octo_bookings");
+    assert.equal(preservedConfirmed.idempotencyKey, dupIdemKey);
+    assert.ok(preservedDemoted, "Demoted duplicate row must STILL exist in octo_bookings (never deleted)");
+    assert.equal(
+      preservedDemoted.idempotencyKey,
+      `reconciled_dup:${dupIdemKey}:dcc:bk:dup_hold_earlier`
+    );
+    assert.equal(
+      (preservedDemoted.contact as any)?.__dccMeta?.reconciliation?.reconciledDuplicateOf,
+      "dcc:bk:dup_confirmed_later"
+    );
+
+    const conflictRowsAfter = await db
+      .select()
+      .from(octoBookingIdempotencyConflicts)
+      .where(eq(octoBookingIdempotencyConflicts.idempotencyKey, dupIdemKey));
+    assert.equal(conflictRowsAfter.length, 2);
+    assert.ok(conflictRowsAfter.every((c) => c.resolutionStatus === "reconciled"));
+
+    // 3d. Now creating the unique index octo_bookings_idempotency_key_uidx succeeds with 0 remaining duplicates
+    const postReconcileReport = await inspectOctoBookingIdempotencyDuplicates(db);
+    assert.equal(postReconcileReport.duplicateGroupCount, 0);
+    await db.execute(sql`
+      CREATE UNIQUE INDEX IF NOT EXISTS "octo_bookings_idempotency_key_uidx"
+        ON "octo_bookings" ("idempotency_key")
+        WHERE "idempotency_key" IS NOT NULL;
+    `);
+  } finally {
+    if (prevToken !== undefined) process.env.SQUARE_ACCESS_TOKEN = prevToken;
+    else delete process.env.SQUARE_ACCESS_TOKEN;
+    if (prevLoc !== undefined) process.env.SQUARE_LOCATION_ID_DCC = prevLoc;
+    else delete process.env.SQUARE_LOCATION_ID_DCC;
+    await sim.close();
+  }
+});
+
+

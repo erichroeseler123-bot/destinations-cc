@@ -1206,6 +1206,35 @@ export const octoBookings = pgTable(
   })
 );
 
+export const octoBookingIdempotencyConflicts = pgTable(
+  "octo_booking_idempotency_conflicts",
+  {
+    id: text("id").primaryKey(), // conflict:<idempotencyKey>:<bookingId>
+    idempotencyKey: text("idempotency_key").notNull(),
+    bookingId: text("booking_id").notNull(),
+    bookingUuid: text("booking_uuid").notNull(),
+    status: text("status").notNull(),
+    supplierReference: text("supplier_reference"),
+    totalPrice: numeric("total_price", { precision: 12, scale: 2 }).notNull(),
+    currency: text("currency").notNull().default("USD"),
+    conflictClassification: text("conflict_classification").notNull(), // safe_transient_lock_shadow | conflicting_active_bookings
+    resolutionStatus: text("resolution_status").notNull().default("unresolved"), // unresolved | reconciled_preserved
+    authoritativeBookingId: text("authoritative_booking_id"),
+    resolutionReason: text("resolution_reason"),
+    resolvedBy: text("resolved_by"),
+    rowSnapshot: jsonb("row_snapshot").$type<Record<string, unknown>>().notNull().default({}),
+    detectedAt: timestamp("detected_at", { withTimezone: true }).notNull().defaultNow(),
+    resolvedAt: timestamp("resolved_at", { withTimezone: true }),
+  },
+  (table) => ({
+    idempotencyKeyIdx: index("octo_booking_idempotency_conflicts_key_idx").on(table.idempotencyKey),
+    bookingIdIdx: index("octo_booking_idempotency_conflicts_booking_idx").on(table.bookingId),
+    resolutionStatusIdx: index("octo_booking_idempotency_conflicts_status_idx").on(
+      table.resolutionStatus
+    ),
+  })
+);
+
 export const octoSettlementLedger = pgTable(
   "octo_settlement_ledger",
   {
@@ -1326,6 +1355,28 @@ export const dccOrderPayments = pgTable(
     orderIdIdx: index("dcc_order_payments_order_id_idx").on(table.orderId),
     travelerIdIdx: index("dcc_order_payments_traveler_id_idx").on(table.travelerId),
     statusIdx: index("dcc_order_payments_status_idx").on(table.status),
+  })
+);
+
+export const dccPaymentAllocations = pgTable(
+  "dcc_payment_allocations",
+  {
+    id: text("id").primaryKey(), // alloc:<paymentId>:<obligationKey>
+    paymentId: text("payment_id").notNull(),
+    orderId: text("order_id").notNull(),
+    obligationKey: text("obligation_key").notNull(),
+    allocatedAmountCents: integer("allocated_amount_cents").notNull().default(0),
+    currency: text("currency").notNull().default("USD"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    paymentObligationUniqueIdx: uniqueIndex("dcc_payment_allocations_payment_obligation_uidx").on(
+      table.paymentId,
+      table.obligationKey
+    ),
+    paymentIdIdx: index("dcc_payment_allocations_payment_id_idx").on(table.paymentId),
+    orderIdIdx: index("dcc_payment_allocations_order_id_idx").on(table.orderId),
   })
 );
 
