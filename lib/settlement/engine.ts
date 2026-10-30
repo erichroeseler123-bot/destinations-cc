@@ -90,6 +90,8 @@ export function validateVerifiedPaymentEvidence(
     capturedAmount: Math.round(capturedAmount * 100) / 100,
     currency,
     capturedAt,
+    ...(typeof ev.orderId === "string" ? { orderId: ev.orderId.trim() } : {}),
+    ...(typeof ev.bookingId === "string" ? { bookingId: ev.bookingId.trim() } : {}),
     ...(typeof ev.provenanceSource === "string"
       ? { provenanceSource: ev.provenanceSource as any }
       : {}),
@@ -171,6 +173,8 @@ export function validateVerifiedRefundEvidence(
     refundedAmount: normalizedAmount,
     currency,
     refundedAt,
+    ...(typeof ev.orderId === "string" ? { orderId: ev.orderId.trim() } : {}),
+    ...(typeof ev.bookingId === "string" ? { bookingId: ev.bookingId.trim() } : {}),
     ...(typeof ev.reason === "string" ? { reason: ev.reason } : {}),
     ...(typeof ev.provenanceSource === "string"
       ? { provenanceSource: ev.provenanceSource as any }
@@ -340,7 +344,13 @@ export class DccSettlementEngine {
       verifiedEvidence = await DccPaymentService.assertTraceablePaymentEvidence(
         structurallyValid,
         params.grossAmount,
-        currency
+        currency,
+        {
+          bookingId: params.bookingId,
+          orderId: params.orderId,
+          orderItemId: params.orderItemId,
+          ledgerId: `dcc:ledg:${params.dccReference.replace(/^dcc:bk:/, "")}`,
+        }
       );
     } else if (params.paymentStatus === "captured") {
       throw new OctoApiError(
@@ -559,7 +569,13 @@ export class DccSettlementEngine {
     const validated = await DccPaymentService.assertTraceablePaymentEvidence(
       structurallyValid,
       entry.grossAmount,
-      entry.currency
+      entry.currency,
+      {
+        bookingId: entry.bookingId,
+        orderId: entry.orderId,
+        orderItemId: entry.orderItemId,
+        ledgerId: entry.id,
+      }
     );
     const { dccShareAmount, operatorShareAmount, reserveHoldAmount } = this.calculateShares(
       validated.capturedAmount,
@@ -688,9 +704,20 @@ export class DccSettlementEngine {
       Boolean(entry.verifiedPaymentEvidence?.verified);
 
     if (hasAuthenticatedPaymentCapture) {
-      entry.commissionEligibilityStatus =
-        entry.paymentStatus === "partially_refunded" ? "adjusted_partial_refund" : "eligible";
-      if (entry.settlementStatus === "pending") {
+      if (entry.paymentStatus === "partially_refunded") {
+        const baseAmount = entry.capturedAmount || entry.grossAmount;
+        const netRetained = Math.max(0, baseAmount - (entry.refundedAmount || 0));
+        const { dccShareAmount, operatorShareAmount } = this.calculateShares(
+          netRetained,
+          entry.dccSharePercent
+        );
+        entry.dccShareAmount = dccShareAmount;
+        entry.operatorShareAmount = operatorShareAmount;
+        entry.commissionEligibilityStatus = "adjusted_partial_refund";
+      } else {
+        entry.commissionEligibilityStatus = "eligible";
+      }
+      if (entry.settlementStatus === "pending" || entry.settlementStatus === "adjusted") {
         entry.settlementStatus = "ready_for_payout";
       }
     } else {
@@ -705,6 +732,8 @@ export class DccSettlementEngine {
         await db
           .update(octoSettlementLedger)
           .set({
+            dccShareAmount: entry.dccShareAmount.toFixed(2),
+            operatorShareAmount: entry.operatorShareAmount.toFixed(2),
             settlementStatus: entry.settlementStatus as any,
             metadata: metadataPayload,
             updatedAt: new Date(),
@@ -714,6 +743,8 @@ export class DccSettlementEngine {
         await db
           .update(dccOperatorPayables)
           .set({
+            dccCommissionAmount: entry.dccShareAmount.toFixed(2),
+            operatorPayableAmount: entry.operatorShareAmount.toFixed(2),
             settlementStatus: entry.settlementStatus,
             serviceCompletedAt: new Date(now),
             metadata: metadataPayload,
@@ -755,11 +786,13 @@ export class DccSettlementEngine {
 
   /**
    * Record cancellation or verified refund against a settlement entry.
-   * INVARIANT: A cancellation does NOT automatically mean a full refund occurred.
-   * - If payment was never captured ('unpaid'), cancellationStatus becomes 'cancelled_unpaid' and refundStatus becomes 'not_applicable_unpaid'.
-   * - If payment was captured and no verifiedRefundEvidence is supplied, paymentStatus remains 'captured',
-   *   refundStatus is 'no_refund' or 'pending_refund', and settlementStatus is 'cancelled_no_refund' or 'cancelled_pending_refund'.
-   * - Only when traceable verifiedRefundEvidence is supplied is money marked refunded/reversed.
+   * INVARIANT:
+   * 1. A cancellation does NOT automatically mean a full refund occurred.
+   * 2. Retained money on a cancelled booking alone does NOT establish completed service!
+   *    Unless service was completed (`entry.serviceCompleted === true` and not cancelled) OR an explicit
+   *    cancellation-penalty commission policy was agreed (`params.allowCancellationPenaltyCommission === true`),
+   *    DCC commission (`dccShareAmount`) on a cancelled or uncompleted booking is $0.00 and
+   *    `commissionEligibilityStatus` is `'ineligible_cancelled'` (or `'pending_service_completion'` if active).
    */
   static async recordCancellationSettlement(params: {
     ledgerId: string;
@@ -767,6 +800,9 @@ export class DccSettlementEngine {
     refundType: "full" | "partial" | "none" | "pending" | "unpaid";
     refundAmount?: number;
     verifiedRefundEvidence?: OctoVerifiedRefundEvidence;
+    isBookingCancelled?: boolean;
+    allowCancellationPenaltyCommission?: boolean;
+    cancellationPenaltyCommissionPercent?: number;
   }): Promise<DccSettlementLedgerEntry | null> {
     if (simulateSettlementPersistenceFailure) {
       throw new OctoApiError(
@@ -784,7 +820,12 @@ export class DccSettlementEngine {
       return null;
     }
 
-    if (entry.serviceCompleted && params.refundType !== "full" && params.refundType !== "partial") {
+    const isCancelled = params.isBookingCancelled !== false;
+    const wasServiceCompletedBeforeRefund =
+      Boolean(entry.serviceCompleted && entry.serviceCompletionStatus === "completed") &&
+      !isCancelled;
+
+    if (isCancelled) {
       entry.serviceCompleted = false;
       entry.serviceCompletionStatus = "cancelled_before_service";
     } else if (!entry.serviceCompleted) {
@@ -803,33 +844,61 @@ export class DccSettlementEngine {
       entry.settlementStatus = "cancelled_no_refund";
       entry.cancellationStatus = "cancelled_no_refund";
       entry.refundStatus = "no_refund";
-      entry.commissionEligibilityStatus = "ineligible_cancelled";
+      const retainedBase = Math.max(0, (entry.capturedAmount || 0) - (entry.refundedAmount || 0));
+      if (params.allowCancellationPenaltyCommission === true && retainedBase > 0) {
+        const penaltyRate =
+          params.cancellationPenaltyCommissionPercent ?? entry.dccSharePercent;
+        const shares = this.calculateShares(retainedBase, penaltyRate);
+        entry.dccShareAmount = shares.dccShareAmount;
+        entry.operatorShareAmount = shares.operatorShareAmount;
+        entry.commissionEligibilityStatus = "adjusted_partial_refund";
+      } else {
+        entry.dccShareAmount = 0;
+        entry.operatorShareAmount = retainedBase;
+        entry.reserveHoldAmount = 0;
+        entry.commissionEligibilityStatus = "ineligible_cancelled";
+      }
     } else if (params.refundType === "pending") {
       entry.settlementStatus = "cancelled_pending_refund";
       entry.cancellationStatus = "cancelled_pending_refund";
       entry.refundStatus = "pending_refund";
       entry.commissionEligibilityStatus = "ineligible_cancelled";
+      entry.dccShareAmount = 0;
+      entry.operatorShareAmount = 0;
+      entry.reserveHoldAmount = 0;
     } else if (params.refundType === "full") {
       const maxRefundable = entry.capturedAmount || entry.grossAmount;
+      const previouslyRefunded = entry.refundedAmount || 0;
       const structurallyValid = validateVerifiedRefundEvidence(
         params.verifiedRefundEvidence,
         maxRefundable,
         entry.currency
       );
-      if (Math.abs(structurallyValid.refundedAmount - maxRefundable) > 0.01) {
+      const isSingleShotFull =
+        Math.abs(structurallyValid.refundedAmount - maxRefundable) <= 0.01;
+      const isCumulativeFull =
+        previouslyRefunded > 0 &&
+        Math.abs(previouslyRefunded + structurallyValid.refundedAmount - maxRefundable) <= 0.01;
+      if (!isSingleShotFull && !isCumulativeFull) {
         throw new OctoApiError(
           422,
           "UNVERIFIED_REFUND_EVIDENCE",
-          `Full refund evidence amount (${structurallyValid.refundedAmount}) does not match capturedAmount (${maxRefundable})`
+          `Full refund evidence amount (${structurallyValid.refundedAmount}) does not match remaining capturedAmount (${maxRefundable - previouslyRefunded} of ${maxRefundable})`
         );
       }
       const tracedRefund = await DccPaymentService.assertTraceableRefundEvidence(
         structurallyValid,
         maxRefundable,
-        entry.currency
+        entry.currency,
+        {
+          bookingId: entry.bookingId,
+          orderId: entry.orderId,
+          orderItemId: entry.orderItemId,
+          ledgerId: entry.id,
+        }
       );
       entry.verifiedRefundEvidence = { ...tracedRefund, refundType: "full" };
-      entry.refundedAmount = tracedRefund.refundedAmount;
+      entry.refundedAmount = maxRefundable;
       entry.paymentStatus = "refunded";
       entry.settlementStatus = "reversed";
       entry.cancellationStatus = "cancelled_full_refund";
@@ -848,7 +917,13 @@ export class DccSettlementEngine {
       const tracedRefund = await DccPaymentService.assertTraceableRefundEvidence(
         structurallyValid,
         maxRefundable,
-        entry.currency
+        entry.currency,
+        {
+          bookingId: entry.bookingId,
+          orderId: entry.orderId,
+          orderItemId: entry.orderItemId,
+          ledgerId: entry.id,
+        }
       );
       entry.verifiedRefundEvidence = { ...tracedRefund, refundType: "partial" };
       entry.refundedAmount = tracedRefund.refundedAmount;
@@ -856,15 +931,37 @@ export class DccSettlementEngine {
       entry.settlementStatus = "adjusted";
       entry.cancellationStatus = "cancelled_penalty";
       entry.refundStatus = "partial_refund";
-      entry.commissionEligibilityStatus = "adjusted_partial_refund";
+
       const baseAmount = entry.capturedAmount || entry.grossAmount;
-      const netGross = Math.max(0, baseAmount - entry.refundedAmount);
-      const { dccShareAmount, operatorShareAmount } = this.calculateShares(
-        netGross,
-        entry.dccSharePercent
+      const netRetained = Math.max(
+        0,
+        Math.round((baseAmount - entry.refundedAmount) * 100) / 100
       );
-      entry.dccShareAmount = dccShareAmount;
-      entry.operatorShareAmount = operatorShareAmount;
+
+      // Completed-booking commission rule:
+      // Retained funds on a cancelled or uncompleted booking do NOT earn DCC commission unless
+      // either service was actually completed or a cancellation-penalty commission policy was explicitly agreed.
+      if (wasServiceCompletedBeforeRefund || params.allowCancellationPenaltyCommission === true) {
+        const effectivePercent =
+          params.allowCancellationPenaltyCommission &&
+          params.cancellationPenaltyCommissionPercent !== undefined
+            ? params.cancellationPenaltyCommissionPercent
+            : entry.dccSharePercent;
+        const { dccShareAmount, operatorShareAmount } = this.calculateShares(
+          netRetained,
+          effectivePercent
+        );
+        entry.dccShareAmount = dccShareAmount;
+        entry.operatorShareAmount = operatorShareAmount;
+        entry.commissionEligibilityStatus = "adjusted_partial_refund";
+      } else {
+        entry.dccShareAmount = 0;
+        entry.operatorShareAmount = netRetained;
+        entry.reserveHoldAmount = 0;
+        entry.commissionEligibilityStatus = isCancelled
+          ? "ineligible_cancelled"
+          : "pending_service_completion";
+      }
     }
 
     const metadataPayload = buildSettlementMetadata(entry);

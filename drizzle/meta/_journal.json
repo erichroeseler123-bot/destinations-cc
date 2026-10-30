@@ -15,6 +15,13 @@
       "when": 1789660000000,
       "tag": "0002_dcc_invalidated_sessions",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793350000000,
+      "tag": "0008_octo_bookings_idempotency_unique_idx",
+      "breakpoints": true
     }
   ]
 }

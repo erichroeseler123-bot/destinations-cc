@@ -241,6 +241,8 @@ export interface OctoVerifiedPaymentEvidence {
   provenanceSource?: PaymentEvidenceProvenanceSource;
   providerRecordId?: string;
   webhookEventId?: string;
+  orderId?: string;
+  bookingId?: string;
 }
 
 export interface OctoVerifiedRefundEvidence {
@@ -255,17 +257,21 @@ export interface OctoVerifiedRefundEvidence {
   provenanceSource?: PaymentEvidenceProvenanceSource;
   providerRecordId?: string;
   webhookEventId?: string;
+  orderId?: string;
+  bookingId?: string;
 }
 
 export interface DccBookingLifecycleStates {
   bookingStatus: OctoBookingStatus;
   paymentStatus:
     | "unpaid"
+    | "pending"
     | "authorized"
     | "captured"
     | "partially_refunded"
     | "refunded"
-    | "failed";
+    | "failed"
+    | "unresolved";
   serviceCompletionStatus:
     | "not_completed"
     | "scheduled"

@@ -257,7 +257,7 @@ test("Square Webhook Durable Persistence, Sandbox Operations, and Replay Protect
           refund: {
             id: refundId,
             payment_id: testPaymentId,
-            status: "SUCCESS",
+            status: "COMPLETED",
             amount_money: { amount: 5000, currency: "USD" },
             reason: "Courtesy credit",
           },

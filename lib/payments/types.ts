@@ -2,13 +2,25 @@ import { PaymentEvidenceProvenanceSource } from "@/lib/octo/types";
 
 export type DccPaymentStatus =
   | "unpaid"
+  | "pending"
   | "authorized"
   | "captured"
   | "refunded"
   | "partially_refunded"
   | "chargeback"
   | "cancelled"
-  | "failed";
+  | "failed"
+  | "unresolved";
+
+export type DccRefundStatus = "initiated" | "pending" | "processed" | "failed" | "unresolved";
+
+export interface DccExpectedFinancialObligation {
+  bookingId?: string;
+  bookingUuid?: string;
+  orderId?: string;
+  orderItemId?: string;
+  ledgerId?: string;
+}
 
 export interface DccPaymentInfo {
   provider?: "square" | "octo_reseller" | "supplier_hosted" | string;
@@ -42,6 +54,7 @@ export interface DccPaymentResult {
   success: boolean;
   paymentId: string;
   status: DccPaymentStatus;
+  providerStatus?: string;
   amount: number;
   currency: string;
   processedAt: string;
@@ -55,6 +68,7 @@ export interface DccOrderPaymentRecord {
   orderId: string;
   paymentProvider: string;
   providerPaymentId?: string;
+  providerStatus?: string;
   amount: number;
   currency: string;
   status: DccPaymentStatus;
@@ -88,7 +102,8 @@ export interface DccRefundRecord {
   type: "refund" | "chargeback" | "penalty" | "reversal";
   amount: number;
   currency: string;
-  status: "initiated" | "processed" | "failed";
+  status: DccRefundStatus;
+  providerStatus?: string;
   reason?: string;
   provenanceSource?: PaymentEvidenceProvenanceSource;
   webhookEventId?: string;

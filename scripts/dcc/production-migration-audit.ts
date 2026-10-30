@@ -105,9 +105,41 @@ async function runProductionAudit() {
         issuesFound++;
       }
 
+      // Check octo_bookings table and unique idempotency constraint
+      const octoBookingsTableCheck = await db.execute(
+        sql`SELECT table_name FROM information_schema.tables WHERE table_name = 'octo_bookings' AND table_schema = 'public';`
+      );
+      if (octoBookingsTableCheck.rows.length > 0) {
+        console.log("  ✔ Table 'octo_bookings' exists in public schema.");
+      } else {
+        console.log("  ❌ Table 'octo_bookings' DOES NOT EXIST (requires migration 0008).");
+        issuesFound++;
+      }
+
+      const idempotencyUidCheck = await db.execute(
+        sql`SELECT indexname, indexdef FROM pg_indexes WHERE tablename = 'octo_bookings' AND indexname = 'octo_bookings_idempotency_key_uidx';`
+      );
+      const idempotencyUidRow = idempotencyUidCheck.rows[0] as
+        | { indexname?: string; indexdef?: string }
+        | undefined;
+      if (
+        idempotencyUidRow &&
+        typeof idempotencyUidRow.indexdef === "string" &&
+        idempotencyUidRow.indexdef.toUpperCase().includes("CREATE UNIQUE INDEX")
+      ) {
+        console.log(
+          `  ✔ Unique constraint index 'octo_bookings_idempotency_key_uidx' verified in Postgres: ${idempotencyUidRow.indexdef}`
+        );
+      } else {
+        console.log(
+          "  ❌ Unique constraint index 'octo_bookings_idempotency_key_uidx' MISSING on octo_bookings (requires migration 0008)."
+        );
+        issuesFound++;
+      }
+
       // Check indexes
       const indexesCheck = await db.execute(
-        sql`SELECT indexname FROM pg_indexes WHERE tablename IN ('dcc_contexts', 'dcc_invalidated_sessions');`
+        sql`SELECT indexname FROM pg_indexes WHERE tablename IN ('dcc_contexts', 'dcc_invalidated_sessions', 'octo_bookings');`
       );
       const indexNames = indexesCheck.rows.map((r: any) => r.indexname);
       console.log(`  ✔ Discovered ${indexNames.length} active indexes: ${indexNames.join(", ")}`);

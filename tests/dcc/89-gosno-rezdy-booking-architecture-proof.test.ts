@@ -683,19 +683,28 @@ test("Gate 2: Database-Backed Payables, Traceable Payment/Refund Provenance (Pro
     assert.equal(ledgerPartialRefund.refundStatus, "partial_refund");
     assert.equal(ledgerPartialRefund.settlementStatus, "adjusted");
     assert.equal(ledgerPartialRefund.refundedAmount, 200);
-    assert.equal(ledgerPartialRefund.dccShareAmount, 29.9);
-    assert.equal(ledgerPartialRefund.operatorShareAmount, 269.1);
+    assert.equal(
+      ledgerPartialRefund.commissionEligibilityStatus,
+      "ineligible_cancelled",
+      "Cancelled booking with partial refund and uncompleted service must remain ineligible_cancelled"
+    );
+    assert.equal(
+      ledgerPartialRefund.dccShareAmount,
+      0,
+      "Retained funds on a cancelled, uncompleted booking must not award DCC commission without an explicit penalty policy"
+    );
+    assert.equal(ledgerPartialRefund.operatorShareAmount, 299);
     assert.equal(payablePartialRefund.settlementStatus, "adjusted");
-    assert.equal(payablePartialRefund.dccCommissionAmount, 29.9);
-    assert.equal(payablePartialRefund.operatorPayableAmount, 269.1);
+    assert.equal(payablePartialRefund.dccCommissionAmount, 0);
+    assert.equal(payablePartialRefund.operatorPayableAmount, 299);
 
-    // Full refund with real provider-backed refund record ($499 refunded of $499)
+    // Cumulative full refund with real provider-backed refund record (remaining $299 refunded of $499 -> $499 total refunded)
     const traceableFullRefund = await processTraceableSquareRefund(
       holdVail.dccBookingId,
       "gosno",
-      499,
+      299,
       "full",
-      "Full refund authorized"
+      "Remaining balance refunded for full refund"
     );
     const afterFullRefund = await DccBookingService.recordVerifiedRefund(
       holdVail.dccBookingId,
@@ -1104,7 +1113,7 @@ test("Gate 4: No Invented Booking Details, Unswallowed DB Persistence Failures, 
         assert.equal(payPaid?.operatorPayableAmount, 359.1);
         assert.equal(orderPayB?.status, "captured");
 
-        // C. Partially refunded cancelled booking
+        // C. Partially refunded cancelled booking (uncompleted service -> $0 DCC commission, $299 operator retained)
         const bkPartial = await DccBookingService.getBooking(partialRefundId);
         const ledgPartial = await DccSettlementEngine.getSettlementEntry(partialRefundId);
         const payPartial = await DccSettlementEngine.getOperatorPayableRow(partialRefundId);
@@ -1112,15 +1121,17 @@ test("Gate 4: No Invented Booking Details, Unswallowed DB Persistence Failures, 
         assert.equal(bkPartial.status, "CANCELLED");
         assert.equal(bkPartial.lifecycleStates?.paymentStatus, "partially_refunded");
         assert.equal(bkPartial.lifecycleStates?.refundStatus, "partial_refund");
+        assert.equal(bkPartial.lifecycleStates?.commissionEligibilityStatus, "ineligible_cancelled");
         assert.equal(bkPartial.verifiedRefundEvidence?.refundedAmount, 200);
         assert.equal(bkPartial.verifiedRefundEvidence?.provenanceSource, "provider_api_response");
         assert.equal(ledgPartial?.settlementStatus, "adjusted");
+        assert.equal(ledgPartial?.commissionEligibilityStatus, "ineligible_cancelled");
         assert.equal(ledgPartial?.refundedAmount, 200);
-        assert.equal(ledgPartial?.dccShareAmount, 29.9);
-        assert.equal(ledgPartial?.operatorShareAmount, 269.1);
+        assert.equal(ledgPartial?.dccShareAmount, 0);
+        assert.equal(ledgPartial?.operatorShareAmount, 299);
         assert.equal(payPartial?.settlementStatus, "adjusted");
-        assert.equal(payPartial?.dccCommissionAmount, 29.9);
-        assert.equal(payPartial?.operatorPayableAmount, 269.1);
+        assert.equal(payPartial?.dccCommissionAmount, 0);
+        assert.equal(payPartial?.operatorPayableAmount, 299);
         assert.equal(refundsC.length, 1);
         assert.equal(refundsC[0].amount, 200);
 
@@ -1772,3 +1783,740 @@ test("Gate 7: Preserved Request/Response Evidence Artifact Separates Live Read-O
     /BLOCKED_MISSING_STAGING_API_KEY/
   );
 });
+
+test("Gate 8: Authoritative Payment/Refund Statuses, Obligation Binding & Over-Allocation Prevention, Active Lock Lease Protection, Postgres Constraint Proof, and Completed-Booking Commission Rule", async () => {
+  setupCleanSqliteEnvironment();
+  const prevToken = process.env.SQUARE_ACCESS_TOKEN;
+  const prevLoc = process.env.SQUARE_LOCATION_ID_DCC;
+  process.env.SQUARE_ACCESS_TOKEN = "sq_sandbox_test_token_configured";
+  process.env.SQUARE_LOCATION_ID_DCC = "loc_dcc_sandbox_001";
+
+  const sim = await startLocalRezdyV1Simulator();
+
+  try {
+    // =========================================================================
+    // 1. Authoritative Payment and Refund Statuses (Missing or unfamiliar -> unresolved; two-phase complete inspected)
+    // =========================================================================
+    const nonCompletedPaymentCases: Array<{
+      label: string;
+      sqStatus: any;
+      expectedDccStatus: string;
+    }> = [
+      { label: "APPROVED", sqStatus: "APPROVED", expectedDccStatus: "authorized" },
+      { label: "PENDING", sqStatus: "PENDING", expectedDccStatus: "pending" },
+      { label: "missing undefined status", sqStatus: undefined, expectedDccStatus: "unresolved" },
+      { label: "missing empty string status", sqStatus: "", expectedDccStatus: "unresolved" },
+      {
+        label: "unfamiliar status",
+        sqStatus: "PROCESSING_MANUAL_BANK_REVIEW",
+        expectedDccStatus: "unresolved",
+      },
+    ];
+
+    for (const tc of nonCompletedPaymentCases) {
+      const orderId = `ord_status_${tc.label.replace(/\s+/g, "_")}`;
+      const payRes = await DccPaymentService.processPayment({
+        orderId,
+        amount: 399,
+        currency: "USD",
+        sourceId: "cnon:card-nonce-ok",
+        status: "captured", // Caller requests captured, but provider returns non-COMPLETED!
+        options: {
+          squareClient: {
+            payments: {
+              create: async (req: any) => ({
+                payment: {
+                  id: `sq_pay_${req.idempotencyKey}`,
+                  ...(tc.sqStatus !== undefined ? { status: tc.sqStatus } : {}),
+                  amountMoney: req.amountMoney,
+                },
+              }),
+            },
+          },
+        },
+      });
+
+      assert.equal(
+        payRes.status,
+        tc.expectedDccStatus,
+        `Provider payment with ${tc.label} must record '${tc.expectedDccStatus}', never 'captured'`
+      );
+      const storedPay = await DccPaymentService.getPaymentByOrderId(orderId);
+      assert.equal(storedPay?.status, tc.expectedDccStatus);
+
+      await assert.rejects(
+        () =>
+          DccPaymentService.assertTraceablePaymentEvidence(
+            {
+              verified: true,
+              provider: "square",
+              transactionId: payRes.paymentId,
+              capturedAmount: 399,
+              currency: "USD",
+              capturedAt: payRes.processedAt,
+            },
+            399,
+            { orderId }
+          ),
+        (err: unknown) =>
+          err instanceof OctoApiError &&
+          err.status === 422 &&
+          err.code === "UNRESOLVED_PAYMENT_EVIDENCE",
+        `assertTraceablePaymentEvidence must reject ${tc.label} payment`
+      );
+    }
+
+    // Two-phase authorization-to-capture path (payments.complete):
+    const authOrderId = "ord_two_phase_auth_complete";
+    const authRes = await DccPaymentService.processPayment({
+      orderId: authOrderId,
+      amount: 399,
+      currency: "USD",
+      sourceId: "cnon:card-nonce-ok",
+      status: "authorized",
+      options: {
+        squareClient: {
+          payments: {
+            create: async (req: any) => ({
+              payment: {
+                id: `sq_auth_${req.idempotencyKey}`,
+                status: "APPROVED",
+                amountMoney: req.amountMoney,
+              },
+            }),
+          },
+        },
+      },
+    });
+    assert.equal(authRes.status, "authorized");
+
+    // Attempt capture when payments.complete returns PENDING -> must record "pending", NOT "captured"
+    const completePendingRes = await DccPaymentService.processPayment({
+      orderId: authOrderId,
+      amount: 399,
+      currency: "USD",
+      sourceId: "cnon:card-nonce-ok",
+      status: "captured",
+      options: {
+        squareClient: {
+          payments: {
+            complete: async () => ({
+              payment: {
+                id: authRes.paymentId,
+                status: "PENDING",
+              },
+            }),
+          },
+        },
+      },
+    });
+    assert.equal(
+      completePendingRes.status,
+      "pending",
+      "Two-phase completion returning PENDING must not record captured"
+    );
+
+    // Attempt capture when payments.complete omits status -> must record "unresolved", NOT "captured"
+    const authOrderIdMissing = "ord_two_phase_auth_missing_status";
+    const authResMissing = await DccPaymentService.processPayment({
+      orderId: authOrderIdMissing,
+      amount: 399,
+      currency: "USD",
+      sourceId: "cnon:card-nonce-ok",
+      status: "authorized",
+      options: {
+        squareClient: {
+          payments: {
+            create: async (req: any) => ({
+              payment: {
+                id: `sq_auth_missing_${req.idempotencyKey}`,
+                status: "APPROVED",
+                amountMoney: req.amountMoney,
+              },
+            }),
+          },
+        },
+      },
+    });
+    assert.equal(authResMissing.status, "authorized");
+
+    const completeMissingStatusRes = await DccPaymentService.processPayment({
+      orderId: authOrderIdMissing,
+      amount: 399,
+      currency: "USD",
+      sourceId: "cnon:card-nonce-ok",
+      status: "captured",
+      options: {
+        squareClient: {
+          payments: {
+            complete: async () => ({
+              payment: {
+                id: authResMissing.paymentId,
+                // status omitted!
+              },
+            }),
+          },
+        },
+      },
+    });
+    assert.equal(
+      completeMissingStatusRes.status,
+      "unresolved",
+      "Two-phase completion missing status must record unresolved, never captured"
+    );
+
+    // Now complete with COMPLETED -> transitions to "captured"
+    const authOrderIdSuccess = "ord_two_phase_auth_completed";
+    const authResSuccess = await DccPaymentService.processPayment({
+      orderId: authOrderIdSuccess,
+      amount: 399,
+      currency: "USD",
+      sourceId: "cnon:card-nonce-ok",
+      status: "authorized",
+      options: {
+        squareClient: {
+          payments: {
+            create: async (req: any) => ({
+              payment: {
+                id: `sq_auth_ok_${req.idempotencyKey}`,
+                status: "APPROVED",
+                amountMoney: req.amountMoney,
+              },
+            }),
+          },
+        },
+      },
+    });
+    assert.equal(authResSuccess.status, "authorized");
+
+    const completeSuccessRes = await DccPaymentService.processPayment({
+      orderId: authOrderIdSuccess,
+      amount: 399,
+      currency: "USD",
+      sourceId: "cnon:card-nonce-ok",
+      status: "captured",
+      options: {
+        squareClient: {
+          payments: {
+            complete: async () => ({
+              payment: {
+                id: authResSuccess.paymentId,
+                status: "COMPLETED",
+              },
+            }),
+          },
+        },
+      },
+    });
+    assert.equal(completeSuccessRes.status, "captured");
+
+    // Refund status tests: PENDING, missing status, or unfamiliar status must NOT record processed or reduce payment balance
+    const refundTestOrderId = "ord_refund_status_strict_499";
+    await captureTraceableSquarePayment(refundTestOrderId, 499);
+
+    for (const refCase of [
+      { label: "PENDING", sqRefundStatus: "PENDING", expectedDccRefundStatus: "pending" },
+      { label: "missing status", sqRefundStatus: undefined, expectedDccRefundStatus: "unresolved" },
+      {
+        label: "unfamiliar status",
+        sqRefundStatus: "BANK_QUEUED_UNKNOWN",
+        expectedDccRefundStatus: "unresolved",
+      },
+    ]) {
+      const refRes = await DccPaymentService.processRefund({
+        orderId: refundTestOrderId,
+        operatorSlug: "gosno",
+        amount: 200,
+        currency: "USD",
+        type: "refund",
+        reason: `Test ${refCase.label} refund`,
+        options: {
+          squareClient: {
+            refunds: {
+              refundPayment: async (req: any) => ({
+                refund: {
+                  id: `sq_ref_${refCase.label.replace(/\s+/g, "_")}_${req.idempotencyKey}`,
+                  ...(refCase.sqRefundStatus !== undefined
+                    ? { status: refCase.sqRefundStatus }
+                    : {}),
+                  amountMoney: req.amountMoney,
+                },
+              }),
+            },
+          },
+        },
+      });
+
+      assert.equal(
+        refRes.status,
+        refCase.expectedDccRefundStatus,
+        `Refund with ${refCase.label} must record '${refCase.expectedDccRefundStatus}', never 'processed'`
+      );
+      const paymentAfterUnsettledRefund =
+        await DccPaymentService.getPaymentByOrderId(refundTestOrderId);
+      assert.equal(
+        paymentAfterUnsettledRefund?.status,
+        "captured",
+        `Refund with ${refCase.label} must NOT transition payment to partially_refunded or reduce available balance`
+      );
+
+      await assert.rejects(
+        () =>
+          DccPaymentService.assertTraceableRefundEvidence(
+            {
+              verified: true,
+              provider: "square",
+              refundId: refRes.id,
+              refundType: "partial",
+              refundedAmount: 200,
+              currency: "USD",
+              refundedAt: refRes.createdAt,
+            },
+            499,
+            "USD",
+            { orderId: refundTestOrderId }
+          ),
+        (err: unknown) =>
+          err instanceof OctoApiError &&
+          err.status === 422 &&
+          err.code === "UNRESOLVED_REFUND_EVIDENCE"
+      );
+    }
+
+    // =========================================================================
+    // 2. Bind Evidence to the Correct Financial Obligation (Prevent Reuse, Over-Allocation, and Refunded Capture)
+    // =========================================================================
+    const alicePayment = await captureTraceableSquarePayment("dcc:bk:alice_001", 399);
+
+    // 2a. Missing obligation identity fails closed
+    await assert.rejects(
+      () => DccPaymentService.assertTraceablePaymentEvidence(alicePayment, 399, undefined),
+      (err: unknown) =>
+        err instanceof OctoApiError &&
+        err.status === 422 &&
+        err.code === "MISSING_PAYMENT_OBLIGATION_IDENTITY"
+    );
+
+    // 2b. Unrelated obligation reuse fails closed with PAYMENT_OBLIGATION_MISMATCH
+    await assert.rejects(
+      () =>
+        DccPaymentService.assertTraceablePaymentEvidence(alicePayment, 399, {
+          bookingId: "dcc:bk:bob_002",
+          orderId: "ord_bob_002",
+        }),
+      (err: unknown) =>
+        err instanceof OctoApiError &&
+        err.status === 422 &&
+        err.code === "PAYMENT_OBLIGATION_MISMATCH"
+    );
+
+    // 2c. Fully refunded payment evidence rejected as capture evidence (PAYMENT_ALREADY_REFUNDED)
+    const refundedOrderKey = "dcc:bk:fully_refunded_399";
+    const initiallyCapturedEvidence = await captureTraceableSquarePayment(refundedOrderKey, 399);
+    await processTraceableSquareRefund(
+      refundedOrderKey,
+      "gosno",
+      399,
+      "full",
+      "Full refund before capture reuse attempt"
+    );
+    const refundedPayRecord = await DccPaymentService.getPaymentByOrderId(refundedOrderKey);
+    assert.equal(refundedPayRecord?.status, "refunded");
+
+    await assert.rejects(
+      () =>
+        DccPaymentService.assertTraceablePaymentEvidence(initiallyCapturedEvidence, 399, {
+          bookingId: refundedOrderKey,
+        }),
+      (err: unknown) =>
+        err instanceof OctoApiError &&
+        err.status === 422 &&
+        err.code === "PAYMENT_ALREADY_REFUNDED",
+      "Fully refunded payment must be rejected as capture evidence"
+    );
+
+    // 2d. Partially refunded payment where net available funds ($499 - $300 = $199) < expectedAmount ($399) fails closed
+    const partialReducedKey = "dcc:bk:partially_refunded_net199";
+    const partialReducedCapture = await captureTraceableSquarePayment(partialReducedKey, 499);
+    await processTraceableSquareRefund(
+      partialReducedKey,
+      "gosno",
+      300,
+      "partial",
+      "Refunded $300 leaving $199 net available"
+    );
+    await assert.rejects(
+      () =>
+        DccPaymentService.assertTraceablePaymentEvidence(
+          { ...partialReducedCapture, capturedAmount: 399 },
+          399,
+          { bookingId: partialReducedKey }
+        ),
+      (err: unknown) =>
+        err instanceof OctoApiError &&
+        err.status === 422 &&
+        err.code === "INSUFFICIENT_CAPTURED_PAYMENT"
+    );
+
+    // 2e. Cross-obligation over-allocation on a shared multi-item order payment ($500 captured)
+    const sharedOrderId = "ord_multi_item_shared_500";
+    const sharedOrderCapture = await captureTraceableSquarePayment(sharedOrderId, 500);
+
+    // First booking item on sharedOrderId allocates $300 of $500 -> succeeds
+    const alloc1 = await DccPaymentService.assertTraceablePaymentEvidence(
+      { ...sharedOrderCapture, capturedAmount: 300 },
+      300,
+      { orderId: sharedOrderId, bookingId: "dcc:bk:multi_item_1" }
+    );
+    assert.equal(alloc1.capturedAmount, 300);
+
+    // Second booking item on sharedOrderId attempts to allocate $300 ($300 + $300 = $600 > $500) -> fails with PAYMENT_OVERALLOCATED
+    await assert.rejects(
+      () =>
+        DccPaymentService.assertTraceablePaymentEvidence(
+          { ...sharedOrderCapture, capturedAmount: 300 },
+          300,
+          { orderId: sharedOrderId, bookingId: "dcc:bk:multi_item_2" }
+        ),
+      (err: unknown) =>
+        err instanceof OctoApiError &&
+        err.status === 422 &&
+        err.code === "PAYMENT_OVERALLOCATED"
+    );
+
+    // Allocating the remaining $200 ($300 + $200 = $500 <= $500) to item 2 succeeds
+    const alloc2 = await DccPaymentService.assertTraceablePaymentEvidence(
+      { ...sharedOrderCapture, capturedAmount: 200 },
+      200,
+      { orderId: sharedOrderId, bookingId: "dcc:bk:multi_item_2" }
+    );
+    assert.equal(alloc2.capturedAmount, 200);
+
+    // =========================================================================
+    // 3. Fix Lock Takeover (Never Delete Active Slow Worker Lock After 120 Polls) & Prove Postgres Constraint
+    // =========================================================================
+    const { getDb } = await import("../../lib/db/client");
+    const { octoBookings } = await import("../../lib/db/schema");
+    const { eq } = await import("drizzle-orm");
+    const db = getDb()!;
+    assert.ok(db);
+
+    const adapter = new RezdyAdapter({
+      endpoint: sim.baseUrl,
+      apiKey: sim.apiKey,
+      platform: "rezdy",
+      operatorSlug: "gosno",
+      isSandbox: true,
+    });
+    DccBookingService.registerPilotSupplierConnection({
+      id: "conn_gosno_rezdy",
+      operatorSlug: "gosno",
+      operatorName: "GoSno Mountain Transportation",
+      endpoint: sim.baseUrl,
+      reservationPlatform: "rezdy",
+      commissionPercent: 10.0,
+      apiKey: sim.apiKey,
+      isSandbox: true,
+      connectionStatus: "sandbox_verified",
+      adapter,
+    });
+
+    const slotBreck = formatCanonicalRezdySlotId("P7477S", 497020486, "2026-11-12T10:53:00");
+    const activeSlowWorkerIdemKey = "idem_slow_worker_active_lease_001";
+    const slowSeed = crypto.createHash("sha256").update(activeSlowWorkerIdemKey).digest("hex");
+    const slowUuid = `${slowSeed.slice(0, 8)}-${slowSeed.slice(8, 12)}-4${slowSeed.slice(13, 16)}-a${slowSeed.slice(17, 20)}-${slowSeed.slice(20, 32)}`;
+    const slowDccId = `dcc:bk:${slowUuid.slice(0, 12)}`;
+    const slowPayloadRow = {
+      productId: "dcc:gosno:den-breckenridge:suv",
+      optionId: "opt_suburban_69029050",
+      availabilityId: slotBreck,
+      unitItems: [{ unitId: "unit_suburban_69029050", quantity: 1 }],
+    };
+    const slowPayloadHash = crypto
+      .createHash("sha256")
+      .update(JSON.stringify(slowPayloadRow))
+      .digest("hex");
+
+    // Insert an active HOLD_IN_PROGRESS row owned by a slow worker whose lease is valid for another 60 seconds
+    await db.insert(octoBookings).values({
+      id: slowDccId,
+      bookingUuid: slowUuid,
+      idempotencyKey: activeSlowWorkerIdemKey,
+      idempotencyHash: slowPayloadHash,
+      supplierConnectionId: "conn_gosno_rezdy",
+      resellerId: null,
+      productId: slowPayloadRow.productId,
+      optionId: slowPayloadRow.optionId,
+      availabilityId: slowPayloadRow.availabilityId,
+      status: "HOLD_IN_PROGRESS",
+      expirationMinutes: 15,
+      utcHoldExpires: null,
+      totalPrice: "0.00",
+      currency: "USD",
+      unitItems: slowPayloadRow.unitItems as any,
+      contact: {
+        firstName: "Slow",
+        lastName: "Worker",
+        emailAddress: "slow@example.com",
+        __dccMeta: {
+          lockOwnerId: "slow-worker-pid:active-owner",
+          lockLeaseExpiresAt: Date.now() + 60_000, // Lease is active!
+        },
+      },
+      supplierReference: null,
+      resellerReference: slowDccId,
+      checkoutUrl: null,
+    });
+
+    // Run all 120 polling attempts (with fast 5ms interval for test speed) while the slow worker's lease is active
+    process.env.DCC_IDEMPOTENCY_MAX_POLL_ATTEMPTS = "120";
+    process.env.DCC_IDEMPOTENCY_POLL_INTERVAL_MS = "5";
+    try {
+      await assert.rejects(
+        () =>
+          DccBookingService.createHold({
+            supplierConnectionId: "conn_gosno_rezdy",
+            productId: slowPayloadRow.productId,
+            optionId: slowPayloadRow.optionId,
+            availabilityId: slowPayloadRow.availabilityId,
+            expirationMinutes: 15,
+            unitItems: slowPayloadRow.unitItems,
+            idempotencyKey: activeSlowWorkerIdemKey,
+            contact: {
+              firstName: "Slow",
+              lastName: "Worker",
+              emailAddress: "slow@example.com",
+            },
+          }),
+        (err: unknown) =>
+          err instanceof OctoApiError &&
+          err.status === 409 &&
+          err.code === "IDEMPOTENCY_LOCK_ACTIVE",
+        "After 120 polling attempts, an active slow worker's HOLD_IN_PROGRESS lock must NOT be deleted or taken over"
+      );
+    } finally {
+      delete process.env.DCC_IDEMPOTENCY_MAX_POLL_ATTEMPTS;
+      delete process.env.DCC_IDEMPOTENCY_POLL_INTERVAL_MS;
+    }
+
+    // Verify the slow worker's HOLD_IN_PROGRESS row was NOT deleted and zero provider bookings were created by the second worker
+    const stillHeldRows = await db
+      .select()
+      .from(octoBookings)
+      .where(eq(octoBookings.id, slowDccId));
+    assert.equal(stillHeldRows.length, 1, "Active slow worker's HOLD_IN_PROGRESS row must still exist");
+    assert.equal(stillHeldRows[0].status, "HOLD_IN_PROGRESS");
+    assert.equal(
+      (stillHeldRows[0].contact as any)?.__dccMeta?.lockOwnerId,
+      "slow-worker-pid:active-owner"
+    );
+    assert.equal(sim.getOrders().length, 0, "Contending worker must not call provider while slow worker owns lock");
+
+    // Now simulate that the previous worker died and its lease has expired (lockLeaseExpiresAt in the past)
+    await db
+      .update(octoBookings)
+      .set({
+        contact: {
+          firstName: "Slow",
+          lastName: "Worker",
+          emailAddress: "slow@example.com",
+          __dccMeta: {
+            lockOwnerId: "dead-worker-pid:expired-owner",
+            lockLeaseExpiresAt: Date.now() - 1000, // Lease is now EXPIRED!
+          },
+        },
+      })
+      .where(eq(octoBookings.id, slowDccId));
+
+    const reclaimedHold = await DccBookingService.createHold({
+      supplierConnectionId: "conn_gosno_rezdy",
+      productId: slowPayloadRow.productId,
+      optionId: slowPayloadRow.optionId,
+      availabilityId: slowPayloadRow.availabilityId,
+      expirationMinutes: 15,
+      unitItems: slowPayloadRow.unitItems,
+      idempotencyKey: activeSlowWorkerIdemKey,
+      contact: {
+        firstName: "Slow",
+        lastName: "Worker",
+        emailAddress: "slow@example.com",
+      },
+    });
+    assert.equal(reclaimedHold.dccBookingId, slowDccId);
+    assert.equal(reclaimedHold.status, "ON_HOLD");
+    assert.equal(sim.getOrders().length, 1);
+
+    // Prove the Production Postgres Migration & Constraint (drizzle/0008_octo_bookings_idempotency_unique_idx.sql + Postgres pg_indexes + 23505 enforcement)
+    const migration0008Path = path.join(
+      process.cwd(),
+      "drizzle/0008_octo_bookings_idempotency_unique_idx.sql"
+    );
+    assert.ok(
+      fs.existsSync(migration0008Path),
+      "Production Postgres migration drizzle/0008_octo_bookings_idempotency_unique_idx.sql must exist"
+    );
+    const migration0008Sql = fs.readFileSync(migration0008Path, "utf8");
+    assert.match(
+      migration0008Sql,
+      /CREATE UNIQUE INDEX IF NOT EXISTS "octo_bookings_idempotency_key_uidx"\s+ON "octo_bookings" \("idempotency_key"\);/
+    );
+
+    // If Neon Postgres DATABASE_URL (in env or .env.local) or CI Postgres (DCC_CI_POSTGRES_URL) is available, prove the constraint directly in Postgres!
+    let neonPgUrl = process.env.DATABASE_URL || "";
+    if (!neonPgUrl) {
+      const envLocalPath = path.join(process.cwd(), ".env.local");
+      if (fs.existsSync(envLocalPath)) {
+        const envText = fs.readFileSync(envLocalPath, "utf8");
+        const m = envText.match(/^DATABASE_URL=["']?([^"'\r\n]+)["']?/m);
+        if (m) neonPgUrl = m[1].trim();
+      }
+    }
+
+    if (neonPgUrl && neonPgUrl.startsWith("postgres")) {
+      const { neon } = await import("@neondatabase/serverless");
+      const pgSql = neon(neonPgUrl);
+      const pgIndexRows = await pgSql`
+        SELECT indexname, indexdef
+        FROM pg_indexes
+        WHERE tablename = 'octo_bookings'
+          AND indexname = 'octo_bookings_idempotency_key_uidx'
+      `;
+      assert.equal(
+        pgIndexRows.length,
+        1,
+        "octo_bookings_idempotency_key_uidx must exist in Postgres pg_indexes"
+      );
+      assert.match(
+        String(pgIndexRows[0].indexdef),
+        /CREATE UNIQUE INDEX octo_bookings_idempotency_key_uidx ON public\.octo_bookings USING btree \(idempotency_key\)/i
+      );
+
+      const pgTestId1 = `dcc:bk:pg_uidx_proof_1_${Date.now()}`;
+      const pgTestId2 = `dcc:bk:pg_uidx_proof_2_${Date.now()}`;
+      const pgTestIdemKey = `idem_pg_uidx_proof_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+      try {
+        await pgSql`
+          INSERT INTO octo_bookings (
+            id, booking_uuid, idempotency_key, idempotency_hash,
+            supplier_connection_id, product_id, option_id, availability_id,
+            status, expiration_minutes, total_price, currency
+          ) VALUES (
+            ${pgTestId1}, ${crypto.randomUUID()}, ${pgTestIdemKey}, 'hash_1',
+            'conn_gosno_rezdy', 'dcc:gosno:den-breckenridge:suv', 'opt_suburban_69029050', ${slotBreck},
+            'HOLD_IN_PROGRESS', 15, 0.00, 'USD'
+          )
+        `;
+
+        let pgDuplicateErr: any = null;
+        try {
+          await pgSql`
+            INSERT INTO octo_bookings (
+              id, booking_uuid, idempotency_key, idempotency_hash,
+              supplier_connection_id, product_id, option_id, availability_id,
+              status, expiration_minutes, total_price, currency
+            ) VALUES (
+              ${pgTestId2}, ${crypto.randomUUID()}, ${pgTestIdemKey}, 'hash_1',
+              'conn_gosno_rezdy', 'dcc:gosno:den-breckenridge:suv', 'opt_suburban_69029050', ${slotBreck},
+              'HOLD_IN_PROGRESS', 15, 0.00, 'USD'
+            )
+          `;
+        } catch (err: any) {
+          pgDuplicateErr = err;
+        }
+        assert.ok(
+          pgDuplicateErr,
+          "Postgres must reject duplicate idempotency_key insert on octo_bookings"
+        );
+        assert.equal(
+          pgDuplicateErr.code,
+          "23505",
+          "Postgres unique constraint violation must return SQLSTATE 23505"
+        );
+      } finally {
+        await pgSql`DELETE FROM octo_bookings WHERE id IN (${pgTestId1}, ${pgTestId2})`;
+      }
+    }
+
+    if (process.env.DCC_CI_POSTGRES_URL) {
+      const ciIdemKey = `idem_ci_pg_${Date.now()}`;
+      const ciSql = `
+        INSERT INTO octo_bookings (id, booking_uuid, idempotency_key, supplier_connection_id, product_id, option_id, availability_id, status, total_price)
+        VALUES ('dcc:bk:ci_pg_1', 'uuid_ci_pg_1', '${ciIdemKey}', 'conn_gosno_rezdy', 'p1', 'o1', 'a1', 'HOLD_IN_PROGRESS', 0);
+        INSERT INTO octo_bookings (id, booking_uuid, idempotency_key, supplier_connection_id, product_id, option_id, availability_id, status, total_price)
+        VALUES ('dcc:bk:ci_pg_2', 'uuid_ci_pg_2', '${ciIdemKey}', 'conn_gosno_rezdy', 'p1', 'o1', 'a1', 'HOLD_IN_PROGRESS', 0);
+      `;
+      await assert.rejects(
+        () =>
+          execFileAsync("psql", [
+            process.env.DCC_CI_POSTGRES_URL!,
+            "-v",
+            "ON_ERROR_STOP=1",
+            "-c",
+            ciSql,
+          ]),
+        (err: any) =>
+          String(err?.stderr || err?.message || "").includes(
+            "octo_bookings_idempotency_key_uidx"
+          ),
+        "CI PostgreSQL 16 must enforce unique constraint octo_bookings_idempotency_key_uidx"
+      );
+    }
+
+    // =========================================================================
+    // 4. Completed-Booking Commission Rule (No Commission on Cancelled Uncompleted Bookings Without Explicit Policy)
+    // =========================================================================
+    const cancelledNoRefundBookingId = "dcc:bk:cancel_no_refund_399";
+    const captureNoRefund = await captureTraceableSquarePayment(cancelledNoRefundBookingId, 399);
+    await DccSettlementEngine.recordBookingSettlement({
+      bookingId: cancelledNoRefundBookingId,
+      orderId: cancelledNoRefundBookingId,
+      dccReference: cancelledNoRefundBookingId,
+      operatorSlug: "gosno",
+      operatorName: "GoSno Mountain Transportation",
+      currency: "USD",
+      grossAmount: 399,
+      commissionPercent: 10,
+      paymentStatus: "captured",
+      verifiedPaymentEvidence: captureNoRefund,
+      serviceCompletionStatus: "scheduled",
+    });
+
+    // Cancelled with no refund ($399 retained) while service was NOT completed -> $0 DCC commission, $399 operator share
+    const afterNoRefundCancel = await DccSettlementEngine.recordCancellationSettlement({
+      ledgerId: `dcc:ledg:${cancelledNoRefundBookingId.replace(/^dcc:bk:/, "")}`,
+      bookingId: cancelledNoRefundBookingId,
+      refundType: "none",
+      refundAmount: 0,
+      isBookingCancelled: true,
+    });
+    assert.ok(afterNoRefundCancel);
+    assert.equal(afterNoRefundCancel.dccShareAmount, 0);
+    assert.equal(afterNoRefundCancel.operatorShareAmount, 399);
+    assert.equal(afterNoRefundCancel.commissionEligibilityStatus, "ineligible_cancelled");
+
+    // Only when an explicit cancellation-penalty commission policy is agreed does a cancelled penalty award commission
+    const afterExplicitPenaltyPolicy = await DccSettlementEngine.recordCancellationSettlement({
+      ledgerId: `dcc:ledg:${cancelledNoRefundBookingId.replace(/^dcc:bk:/, "")}`,
+      bookingId: cancelledNoRefundBookingId,
+      refundType: "none",
+      refundAmount: 0,
+      isBookingCancelled: true,
+      allowCancellationPenaltyCommission: true,
+      cancellationPenaltyCommissionPercent: 10,
+    });
+    assert.ok(afterExplicitPenaltyPolicy);
+    assert.equal(afterExplicitPenaltyPolicy.dccShareAmount, 39.9);
+    assert.equal(afterExplicitPenaltyPolicy.operatorShareAmount, 359.1);
+    assert.equal(
+      afterExplicitPenaltyPolicy.commissionEligibilityStatus,
+      "adjusted_partial_refund"
+    );
+  } finally {
+    if (prevToken !== undefined) process.env.SQUARE_ACCESS_TOKEN = prevToken;
+    else delete process.env.SQUARE_ACCESS_TOKEN;
+    if (prevLoc !== undefined) process.env.SQUARE_LOCATION_ID_DCC = prevLoc;
+    else delete process.env.SQUARE_LOCATION_ID_DCC;
+    await sim.close();
+  }
+});
+

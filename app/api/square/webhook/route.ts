@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { WebhooksHelper } from "square";
-import { DccPaymentService } from "@/lib/payments/paymentService";
+import {
+  DccPaymentService,
+  mapSquarePaymentStatusToDccStatus,
+  mapSquareRefundStatusToDccStatus,
+} from "@/lib/payments/paymentService";
 import { DccSquareWebhookService } from "@/lib/payments/squareWebhookService";
 import { getDb } from "@/lib/db/client";
 import { octoAuditLogs } from "@/lib/db/schema";
@@ -147,11 +151,11 @@ export async function POST(request: NextRequest) {
         const payment = dataObj.payment || dataObj;
         const paymentId = payment.id;
         const orderId = payment.reference_id || payment.order_id;
-        const squareStatus = String(payment.status || "").toUpperCase();
+        const mappedStatus = mapSquarePaymentStatusToDccStatus(payment.status);
         const amount = payment.amount_money ? Number(payment.amount_money.amount) / 100 : undefined;
         const currency = payment.amount_money?.currency || "USD";
 
-        if (paymentId && orderId && squareStatus === "COMPLETED" && amount && amount > 0) {
+        if (paymentId && orderId && mappedStatus === "captured" && amount && amount > 0) {
           await DccPaymentService.recordWebhookPaymentCapture({
             paymentId,
             orderId,
@@ -159,7 +163,19 @@ export async function POST(request: NextRequest) {
             currency,
             webhookEventId: eventId,
             provenanceSource,
+            rawProviderStatus: payment.status,
           });
+        } else if (paymentId && orderId) {
+          const existing =
+            (await DccPaymentService.getPaymentById(paymentId)) ||
+            (await DccPaymentService.getPaymentByOrderId(orderId));
+          if (existing && existing.status !== "captured") {
+            await DccPaymentService.updatePaymentStatus(existing.orderId, mappedStatus, {
+              webhookEventId: eventId,
+              provenanceSource,
+              providerStatus: typeof payment.status === "string" ? payment.status : undefined,
+            });
+          }
         }
 
         logSanitizedWebhook("payment_created", {
@@ -167,7 +183,7 @@ export async function POST(request: NextRequest) {
           eventId,
           paymentId,
           orderId,
-          status: payment.status,
+          status: mappedStatus,
           amount,
           currency,
         });
@@ -177,7 +193,7 @@ export async function POST(request: NextRequest) {
       case "payment.updated": {
         const payment = dataObj.payment || dataObj;
         const paymentId = payment.id;
-        const squareStatus = payment.status; // COMPLETED, APPROVED, CANCELED, FAILED
+        const squareStatus = payment.status;
         const orderId = payment.reference_id;
 
         if (paymentId) {
@@ -229,19 +245,13 @@ export async function POST(request: NextRequest) {
             }
           }
 
-          let nextStatus = targetPayment.status;
-          if (squareStatus === "COMPLETED") {
-            nextStatus = "captured";
-          } else if (squareStatus === "CANCELED") {
-            nextStatus = "cancelled";
-          } else if (squareStatus === "FAILED") {
-            nextStatus = "failed";
-          }
+          const nextStatus = mapSquarePaymentStatusToDccStatus(squareStatus);
 
-          if (nextStatus !== targetPayment.status || squareStatus === "COMPLETED") {
+          if (nextStatus !== targetPayment.status || nextStatus === "captured") {
             await DccPaymentService.updatePaymentStatus(targetPayment.orderId, nextStatus, {
               webhookEventId: eventId,
               provenanceSource,
+              providerStatus: typeof squareStatus === "string" ? squareStatus : undefined,
             });
           }
 
@@ -263,12 +273,13 @@ export async function POST(request: NextRequest) {
         const refund = dataObj.refund || dataObj;
         const refundId = refund.id;
         const paymentId = refund.payment_id;
-        const refundStatus = refund.status; // SUCCESS, PENDING, FAILED, REJECTED
+        const refundStatus = refund.status;
+        const mappedRefundStatus = mapSquareRefundStatusToDccStatus(refundStatus);
         const amountCents = refund.amount_money ? Number(refund.amount_money.amount) : 0;
         const amount = amountCents / 100;
         const currency = refund.amount_money?.currency || "USD";
 
-        if (paymentId && (refundStatus === "SUCCESS" || refundStatus === "COMPLETED")) {
+        if (paymentId && refundId) {
           const targetPayment = await DccPaymentService.getPaymentById(paymentId);
           if (targetPayment) {
             // Verify currency match
@@ -278,11 +289,12 @@ export async function POST(request: NextRequest) {
               return NextResponse.json({ ok: false, error: "currency_mismatch" }, { status: 400 });
             }
 
-            // Idempotent refund handling: check if already recorded
+            // Idempotent refund handling: check if already recorded as processed
             const existingRefunds = await DccPaymentService.getRefundsForOrder(targetPayment.orderId);
-            const alreadyRecorded = existingRefunds.some((r) => r.id === refundId);
+            const existingRefund = existingRefunds.find((r) => r.id === refundId);
+            const alreadyProcessed = existingRefund?.status === "processed";
 
-            if (!alreadyRecorded) {
+            if (!alreadyProcessed && (!existingRefund || existingRefund.status !== mappedRefundStatus)) {
               await DccPaymentService.recordExternalRefund({
                 refundId,
                 orderId: targetPayment.orderId,
@@ -291,10 +303,11 @@ export async function POST(request: NextRequest) {
                 reason: refund.reason || "Square Webhook Refund",
                 webhookEventId: eventId,
                 provenanceSource,
+                rawProviderStatus: refundStatus,
               });
             }
 
-            logSanitizedWebhook("refund_processed", {
+            logSanitizedWebhook("refund_webhook_handled", {
               eventType,
               eventId,
               refundId,
@@ -302,7 +315,7 @@ export async function POST(request: NextRequest) {
               orderId: targetPayment.orderId,
               amount,
               currency,
-              status: "processed",
+              status: mappedRefundStatus,
             });
           }
         }

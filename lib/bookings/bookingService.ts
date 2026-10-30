@@ -66,6 +66,9 @@ function packContactWithDccMeta(
     lifecycleStates?: DccBookingLifecycleStates;
     verifiedPaymentEvidence?: OctoVerifiedPaymentEvidence;
     verifiedRefundEvidence?: OctoVerifiedRefundEvidence;
+    orderId?: string | null;
+    lockOwnerId?: string | null;
+    lockLeaseExpiresAt?: number | null;
   }
 ): any {
   const baseContact = contact && typeof contact === "object" ? { ...contact } : {};
@@ -80,6 +83,11 @@ function packContactWithDccMeta(
       lifecycleStates: meta.lifecycleStates,
       verifiedPaymentEvidence: meta.verifiedPaymentEvidence,
       verifiedRefundEvidence: meta.verifiedRefundEvidence,
+      ...(meta.orderId !== undefined ? { orderId: meta.orderId } : {}),
+      ...(meta.lockOwnerId !== undefined ? { lockOwnerId: meta.lockOwnerId } : {}),
+      ...(meta.lockLeaseExpiresAt !== undefined
+        ? { lockLeaseExpiresAt: meta.lockLeaseExpiresAt }
+        : {}),
     },
   };
 }
@@ -142,9 +150,10 @@ function unpackDbBookingRow(r: any, settlementEntry?: any): any {
 
   return {
     id: r.id,
-     dccBookingId: r.id,
+    dccBookingId: r.id,
     bookingUuid: r.bookingUuid,
     uuid: r.bookingUuid,
+    orderId: settlementEntry?.orderId || dccMeta.orderId || undefined,
     idempotencyKey: r.idempotencyKey,
     idempotencyHash: r.idempotencyHash,
     supplierConnectionId: r.supplierConnectionId,
@@ -689,16 +698,29 @@ export class DccBookingService {
       idempotencyKey: string,
       dccBookingId: string,
       bookingUuid: string,
-      expirationMinutes: number
+      expirationMinutes: number,
+      lockOwnerId: string,
+      lockLeaseDurationMs: number
     ): Promise<{
       completedResult?: OctoBookingResult & { dccBookingId: string };
       acquiredLock: boolean;
+      reclaimedExpiredLock?: boolean;
     }> => {
       if (!db || simulatePersistenceFailureForTests) {
         return { acquiredLock: false };
       }
 
-      for (let attempt = 0; attempt < 120; attempt++) {
+      const maxPollAttempts = Math.max(
+        1,
+        Number(process.env.DCC_IDEMPOTENCY_MAX_POLL_ATTEMPTS || 120)
+      );
+      const pollIntervalMs = Math.max(
+        5,
+        Number(process.env.DCC_IDEMPOTENCY_POLL_INTERVAL_MS || 40)
+      );
+      let reclaimedExpiredLock = false;
+
+      for (let attempt = 0; attempt < maxPollAttempts; attempt++) {
         const existingRows = await db
           .select()
           .from(octoBookings)
@@ -726,13 +748,41 @@ export class DccBookingService {
               acquiredLock: false,
             };
           }
-          // Another worker process is currently holding HOLD_IN_PROGRESS; wait and poll
-          await new Promise((r) => setTimeout(r, 40));
-          continue;
+
+          // Check whether the current lock owner's lease has expired (owner died / stopped heartbeating)
+          const rawMeta =
+            b.contact && typeof b.contact === "object" ? (b.contact as any).__dccMeta : undefined;
+          const leaseExpiresAt = Number(rawMeta?.lockLeaseExpiresAt || 0);
+          const updatedAtMs = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+          const isLeaseExpired =
+            leaseExpiresAt > 0
+              ? Date.now() > leaseExpiresAt
+              : updatedAtMs > 0
+              ? Date.now() - updatedAtMs > lockLeaseDurationMs
+              : false;
+
+          if (isLeaseExpired) {
+            // Established that previous lock owner's lease expired without renewal; reclaim expired lock
+            await db
+              .delete(octoBookings)
+              .where(
+                and(
+                  eq(octoBookings.id, b.id),
+                  eq(octoBookings.status, "HOLD_IN_PROGRESS")
+                )
+              )
+              .catch(() => {});
+            reclaimedExpiredLock = true;
+          } else {
+            // Another worker process is actively holding HOLD_IN_PROGRESS with a valid lease; wait and poll
+            await new Promise((r) => setTimeout(r, pollIntervalMs));
+            continue;
+          }
         }
 
-        // Try to atomically insert the HOLD_IN_PROGRESS lock row
+        // Try to atomically insert the HOLD_IN_PROGRESS lock row with our lockOwnerId and lease expiry
         try {
+          const initialLeaseExpiresAt = Date.now() + lockLeaseDurationMs;
           await db.insert(octoBookings).values({
             id: dccBookingId,
             bookingUuid,
@@ -753,12 +803,15 @@ export class DccBookingService {
               pickupLocation: params.pickupLocation,
               customFields: params.customFields,
               participants: params.participants,
+              orderId: (params as any).orderId ?? null,
+              lockOwnerId,
+              lockLeaseExpiresAt: initialLeaseExpiresAt,
             }),
             supplierReference: null,
             resellerReference: dccBookingId,
             checkoutUrl: null,
           });
-          return { acquiredLock: true };
+          return { acquiredLock: true, reclaimedExpiredLock };
         } catch (insertErr: any) {
           const errCode = insertErr?.code || insertErr?.cause?.code || insertErr?.cause?.cause?.code;
           const errMsg = `${insertErr?.message || ""} ${insertErr?.cause?.message || ""} ${insertErr?.cause?.cause?.message || ""}`;
@@ -774,17 +827,13 @@ export class DccBookingService {
         }
       }
 
-      // Stale HOLD_IN_PROGRESS lock after timeout: take over lock so worker can reconcile upstream
-      await db
-        .delete(octoBookings)
-        .where(
-          and(
-            eq(octoBookings.idempotencyKey, idempotencyKey),
-            eq(octoBookings.status, "HOLD_IN_PROGRESS")
-          )
-        )
-        .catch(() => {});
-      return { acquiredLock: false };
+      // Polling attempts exhausted while the existing HOLD_IN_PROGRESS owner's lease is STILL active.
+      // Never delete an active worker's HOLD_IN_PROGRESS lock or proceed without owning the lock!
+      throw new OctoApiError(
+        409,
+        "IDEMPOTENCY_LOCK_ACTIVE",
+        `Another worker is still actively processing idempotency key '${idempotencyKey}' (lock lease has not expired); refusing to take over active lock.`
+      );
     };
 
     if (params.idempotencyKey) {
@@ -826,22 +875,73 @@ export class DccBookingService {
         ? `${deterministicSeed.slice(0, 8)}-${deterministicSeed.slice(8, 12)}-4${deterministicSeed.slice(13, 16)}-a${deterministicSeed.slice(17, 20)}-${deterministicSeed.slice(20, 32)}`
         : crypto.randomUUID();
       const dccBookingId = `dcc:bk:${bookingUuid.slice(0, 12)}`;
+      const lockOwnerId = `${process.pid}:${crypto.randomUUID()}`;
+      const lockLeaseDurationMs = Math.max(
+        Number(process.env.DCC_IDEMPOTENCY_LOCK_LEASE_MS || 0) || 15000,
+        150
+      );
 
       let acquiredDbLock = false;
+      let reclaimedExpiredLock = false;
       if (db && params.idempotencyKey) {
         const lockOutcome = await waitForOrAcquireDbIdempotencyLock(
           params.idempotencyKey,
           dccBookingId,
           bookingUuid,
-          expirationMinutes
+          expirationMinutes,
+          lockOwnerId,
+          lockLeaseDurationMs
         );
         if (lockOutcome.completedResult) {
           return lockOutcome.completedResult;
         }
         acquiredDbLock = lockOutcome.acquiredLock;
+        reclaimedExpiredLock = Boolean(lockOutcome.reclaimedExpiredLock);
+      }
+
+      let lockHeartbeatTimer: ReturnType<typeof setInterval> | null = null;
+      const stopLockHeartbeat = () => {
+        if (lockHeartbeatTimer) {
+          clearInterval(lockHeartbeatTimer);
+          lockHeartbeatTimer = null;
+        }
+      };
+
+      if (acquiredDbLock && db) {
+        const heartbeatIntervalMs = Math.max(
+          40,
+          Math.min(1000, Math.floor(lockLeaseDurationMs / 3))
+        );
+        lockHeartbeatTimer = setInterval(() => {
+          if (!db) return;
+          const renewedExpiresAt = Date.now() + lockLeaseDurationMs;
+          db.update(octoBookings)
+            .set({
+              contact: packContactWithDccMeta(params.contact, {
+                pickupLocation: params.pickupLocation,
+                customFields: params.customFields,
+                participants: params.participants,
+                orderId: (params as any).orderId ?? null,
+                lockOwnerId,
+                lockLeaseExpiresAt: renewedExpiresAt,
+              }),
+              updatedAt: new Date(),
+            })
+            .where(
+              and(
+                eq(octoBookings.id, dccBookingId),
+                eq(octoBookings.status, "HOLD_IN_PROGRESS")
+              )
+            )
+            .catch(() => {});
+        }, heartbeatIntervalMs);
+        if (typeof (lockHeartbeatTimer as any).unref === "function") {
+          (lockHeartbeatTimer as any).unref();
+        }
       }
 
       const releaseDbLockOnError = async () => {
+        stopLockHeartbeat();
         if (acquiredDbLock && db) {
           await db
             .delete(octoBookings)
@@ -925,22 +1025,35 @@ export class DccBookingService {
             notes: params.notes,
           });
         } else if (adapter) {
-          holdResult = await adapter.createBookingHold(
-            {
-              uuid: bookingUuid,
-              productId: params.productId,
-              optionId: params.optionId,
-              availabilityId: params.availabilityId,
-              expirationMinutes,
-              unitItems: params.unitItems,
-              contact: params.contact,
-              pickupLocation: params.pickupLocation,
-              customFields: params.customFields,
-              participants: params.participants,
-              notes: params.notes,
-            },
-            params.idempotencyKey
-          );
+          let existingReconciled: OctoBookingResult | null = null;
+          if (
+            reclaimedExpiredLock &&
+            typeof (adapter as any).findBookingByResellerReference === "function"
+          ) {
+            existingReconciled = await (adapter as any)
+              .findBookingByResellerReference(dccBookingId)
+              .catch(() => null);
+          }
+          if (existingReconciled) {
+            holdResult = existingReconciled;
+          } else {
+            holdResult = await adapter.createBookingHold(
+              {
+                uuid: bookingUuid,
+                productId: params.productId,
+                optionId: params.optionId,
+                availabilityId: params.availabilityId,
+                expirationMinutes,
+                unitItems: params.unitItems,
+                contact: params.contact,
+                pickupLocation: params.pickupLocation,
+                customFields: params.customFields,
+                participants: params.participants,
+                notes: params.notes,
+              },
+              params.idempotencyKey
+            );
+          }
         } else {
           throw new Error("ADAPTER_INITIALIZATION_FAILED");
         }
@@ -948,6 +1061,8 @@ export class DccBookingService {
         await releaseDbLockOnError();
         throw upstreamErr;
       }
+
+      stopLockHeartbeat();
 
       const dccCheckoutDeadlineUtc =
         holdResult.dccCheckoutDeadlineUtc ??
@@ -1000,11 +1115,31 @@ export class DccBookingService {
             participants: holdResult.participants || params.participants,
             dccCheckoutDeadlineUtc,
             lifecycleStates,
+            orderId: (params as any).orderId ?? null,
           }
         );
 
         if (db) {
           if (acquiredDbLock) {
+            const currentLockRows = await db
+              .select()
+              .from(octoBookings)
+              .where(eq(octoBookings.id, dccBookingId));
+            const currentLockMeta =
+              currentLockRows[0]?.contact && typeof currentLockRows[0].contact === "object"
+                ? (currentLockRows[0].contact as any).__dccMeta
+                : undefined;
+            if (
+              !currentLockRows[0] ||
+              (currentLockRows[0].status === "HOLD_IN_PROGRESS" &&
+                currentLockMeta?.lockOwnerId &&
+                currentLockMeta.lockOwnerId !== lockOwnerId)
+            ) {
+              throw new Error(
+                `Idempotency lock for ${dccBookingId} was lost or reclaimed by another worker before completion`
+              );
+            }
+
             await db
               .update(octoBookings)
               .set({
@@ -1175,6 +1310,17 @@ export class DccBookingService {
       );
     }
 
+    const bookingUuid =
+      bookingRecord?.bookingUuid ||
+      bookingRecord?.uuid ||
+      fallbackBookingUuidMap.get(params.bookingId) ||
+      params.bookingId;
+    const dccBookingId =
+      bookingRecord?.id ||
+      (params.bookingId.startsWith("dcc:bk:")
+        ? params.bookingId
+        : `dcc:bk:${bookingUuid.replace(/^dcc:bk:/, "").slice(0, 12)}`);
+
     // Validate verifiedPaymentEvidence and trace provenance to a real provider response or authenticated webhook
     let verifiedPaymentEvidence: OctoVerifiedPaymentEvidence | undefined;
     if (params.verifiedPaymentEvidence) {
@@ -1184,7 +1330,12 @@ export class DccBookingService {
       );
       verifiedPaymentEvidence = await DccPaymentService.assertTraceablePaymentEvidence(
         verifiedPaymentEvidence,
-        bookingRecord ? Number(bookingRecord.totalPrice) : undefined
+        bookingRecord ? Number(bookingRecord.totalPrice) : undefined,
+        {
+          bookingId: dccBookingId,
+          bookingUuid,
+          orderId: params.orderId || bookingRecord?.orderId,
+        }
       );
     } else if (params.requireVerifiedPayment || params.payment?.status === "captured") {
       throw new OctoApiError(
@@ -1278,17 +1429,6 @@ export class DccBookingService {
       }
     }
 
-    const bookingUuid =
-      bookingRecord?.bookingUuid ||
-      bookingRecord?.uuid ||
-      fallbackBookingUuidMap.get(params.bookingId) ||
-      params.bookingId;
-    const dccBookingId =
-      bookingRecord?.id ||
-      (params.bookingId.startsWith("dcc:bk:")
-        ? params.bookingId
-        : `dcc:bk:${bookingUuid.replace(/^dcc:bk:/, "").slice(0, 12)}`);
-
     let confirmedResult: OctoBookingResult;
 
     const supplierPayment = connection?.requiresPaymentDetails
@@ -1369,6 +1509,7 @@ export class DccBookingService {
               dccCheckoutDeadlineUtc: bookingRecord?.dccCheckoutDeadlineUtc ?? null,
               lifecycleStates,
               verifiedPaymentEvidence,
+              orderId: params.orderId || bookingRecord?.orderId || null,
             }),
             voucher: confirmedResult.voucher as any,
             confirmedAt: new Date(),
@@ -1439,6 +1580,7 @@ export class DccBookingService {
       id: dccBookingId,
       bookingUuid: confirmedResult.uuid || bookingUuid,
       uuid: confirmedResult.uuid || bookingUuid,
+      orderId: params.orderId || bookingRecord?.orderId,
       supplierConnectionId,
       status: "CONFIRMED",
       lifecycleStates,
@@ -1462,16 +1604,24 @@ export class DccBookingService {
     options?: { supplierConnectionId?: string }
   ): Promise<OctoBookingResult> {
     const booking = await this.getBooking(bookingIdOrUuid, options);
+    const bookingKey = booking.id || bookingIdOrUuid;
+    const rawRecord = loadRecordFromFallbackOrDurable(bookingKey) || booking;
+    const existingSettlement = await DccSettlementEngine.getSettlementEntry(bookingKey).catch(
+      () => null
+    );
     const validatedEvidence = validateVerifiedPaymentEvidence(
       verifiedPaymentEvidence,
       booking.totalPrice
     );
     const traceableEvidence = await DccPaymentService.assertTraceablePaymentEvidence(
       validatedEvidence,
-      booking.totalPrice
+      booking.totalPrice,
+      {
+        bookingId: bookingKey,
+        bookingUuid: booking.uuid,
+        orderId: existingSettlement?.orderId || (rawRecord as any)?.orderId,
+      }
     );
-    const bookingKey = booking.id || bookingIdOrUuid;
-    const rawRecord = loadRecordFromFallbackOrDurable(bookingKey) || booking;
 
     const currentLifecycle: DccBookingLifecycleStates =
       booking.lifecycleStates ||
@@ -1519,6 +1669,7 @@ export class DccBookingService {
               lifecycleStates: updatedLifecycle,
               verifiedPaymentEvidence: traceableEvidence,
               verifiedRefundEvidence: booking.verifiedRefundEvidence,
+              orderId: existingSettlement?.orderId || (rawRecord as any)?.orderId || null,
             }),
             updatedAt: new Date(),
           })
@@ -1605,6 +1756,7 @@ export class DccBookingService {
               lifecycleStates: updatedLifecycle,
               verifiedPaymentEvidence: booking.verifiedPaymentEvidence,
               verifiedRefundEvidence: booking.verifiedRefundEvidence,
+              orderId: ledgerEntry?.orderId || (rawRecord as any)?.orderId || null,
             }),
             updatedAt: new Date(),
           })
@@ -1636,24 +1788,35 @@ export class DccBookingService {
     options?: { supplierConnectionId?: string }
   ): Promise<OctoBookingResult> {
     const booking = await this.getBooking(bookingIdOrUuid, options);
+    const bookingKey = booking.id || bookingIdOrUuid;
+    const rawRecord = loadRecordFromFallbackOrDurable(bookingKey) || booking;
+    const existingSettlement = await DccSettlementEngine.getSettlementEntry(bookingKey).catch(
+      () => null
+    );
     const validatedRefund = validateVerifiedRefundEvidence(
       verifiedRefundEvidence,
       booking.totalPrice
     );
     const traceableRefund = await DccPaymentService.assertTraceableRefundEvidence(
       validatedRefund,
-      booking.totalPrice
+      booking.totalPrice,
+      {
+        bookingId: bookingKey,
+        bookingUuid: booking.uuid,
+        orderId: existingSettlement?.orderId || (rawRecord as any)?.orderId,
+      }
     );
-    const bookingKey = booking.id || bookingIdOrUuid;
-    const rawRecord = loadRecordFromFallbackOrDurable(bookingKey) || booking;
     const ledgerId = `dcc:ledg:${bookingKey.replace(/^dcc:bk:/, "")}`;
 
-    await DccSettlementEngine.recordCancellationSettlement({
+    const settlementAfterRefund = await DccSettlementEngine.recordCancellationSettlement({
       ledgerId,
       bookingId: bookingKey,
       refundType: traceableRefund.refundType || "full",
       refundAmount: traceableRefund.refundedAmount,
       verifiedRefundEvidence: traceableRefund,
+      isBookingCancelled:
+        booking.status === "CANCELLED" ||
+        booking.lifecycleStates?.cancellationStatus === "cancelled",
     });
 
     const currentLifecycle: DccBookingLifecycleStates =
@@ -1669,12 +1832,19 @@ export class DccBookingService {
 
     const updatedLifecycle: DccBookingLifecycleStates = {
       ...currentLifecycle,
-      paymentStatus: traceableRefund.refundType === "full" ? "refunded" : "partially_refunded",
-      refundStatus: traceableRefund.refundType === "full" ? "full_refund" : "partial_refund",
+      paymentStatus:
+        settlementAfterRefund?.paymentStatus ||
+        (traceableRefund.refundType === "full" ? "refunded" : "partially_refunded"),
+      refundStatus:
+        settlementAfterRefund?.refundStatus ||
+        (traceableRefund.refundType === "full" ? "full_refund" : "partial_refund"),
       commissionEligibilityStatus:
-        traceableRefund.refundType === "full"
+        settlementAfterRefund?.commissionEligibilityStatus ||
+        (traceableRefund.refundType === "full" ||
+        currentLifecycle.cancellationStatus === "cancelled" ||
+        booking.status === "CANCELLED"
           ? "ineligible_cancelled"
-          : currentLifecycle.commissionEligibilityStatus,
+          : currentLifecycle.commissionEligibilityStatus),
     };
 
     const db = getDb();
@@ -1694,6 +1864,7 @@ export class DccBookingService {
               lifecycleStates: updatedLifecycle,
               verifiedPaymentEvidence: booking.verifiedPaymentEvidence,
               verifiedRefundEvidence: traceableRefund,
+              orderId: existingSettlement?.orderId || (rawRecord as any)?.orderId || null,
             }),
             updatedAt: new Date(),
           })
@@ -1993,6 +2164,7 @@ export class DccBookingService {
 
     const bookingKey = booking.id || bookingIdOrUuid;
     const rawRecord = loadRecordFromFallbackOrDurable(bookingKey) || booking;
+    const existingSettlement = await DccSettlementEngine.getSettlementEntry(bookingKey);
     const supplierConnectionId =
       rawRecord?.supplierConnectionId ||
       options?.supplierConnectionId ||
@@ -2006,7 +2178,12 @@ export class DccBookingService {
       );
       validatedRefundEvidence = await DccPaymentService.assertTraceableRefundEvidence(
         validatedRefundEvidence,
-        booking.totalPrice
+        booking.totalPrice,
+        {
+          bookingId: bookingKey,
+          bookingUuid: booking.uuid,
+          orderId: existingSettlement?.orderId || (rawRecord as any)?.orderId,
+        }
       );
     }
 
@@ -2028,7 +2205,6 @@ export class DccBookingService {
     }
 
     // Determine current payment state before cancellation
-    const existingSettlement = await DccSettlementEngine.getSettlementEntry(bookingKey);
     const currentPaymentStatus: DccBookingLifecycleStates["paymentStatus"] =
       booking.lifecycleStates?.paymentStatus ||
       rawRecord?.lifecycleStates?.paymentStatus ||
@@ -2103,6 +2279,7 @@ export class DccBookingService {
               lifecycleStates: updatedLifecycle,
               verifiedPaymentEvidence: cancelledResult.verifiedPaymentEvidence,
               verifiedRefundEvidence: cancelledResult.verifiedRefundEvidence,
+              orderId: existingSettlement?.orderId || (rawRecord as any)?.orderId || null,
             }),
             cancelledAt: new Date(),
             cancellationReason: reasonText,
@@ -2139,6 +2316,7 @@ export class DccBookingService {
       refundType,
       refundAmount,
       verifiedRefundEvidence: validatedRefundEvidence,
+      isBookingCancelled: true,
     });
 
     const updatedRecord = {

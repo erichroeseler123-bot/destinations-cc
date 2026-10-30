@@ -2,8 +2,13 @@ import crypto from "crypto";
 import { getDb } from "@/lib/db/client";
 import {
   dccOrderPayments,
+  dccOrderItems,
+  dccSupplierBookings,
+  dccOperatorPayables,
   dccDisputesAndRefunds,
   dccSquareWebhookEvents,
+  octoBookings,
+  octoSettlementLedger,
   octoAuditLogs,
 } from "@/lib/db/schema";
 import { eq, or } from "drizzle-orm";
@@ -22,6 +27,9 @@ import {
 } from "@/lib/octo/types";
 import { OctoApiError } from "@/lib/octo/adapters/base";
 import {
+  DccPaymentStatus,
+  DccRefundStatus,
+  DccExpectedFinancialObligation,
   DccPaymentResult,
   DccProcessPaymentParams,
   DccOrderPaymentRecord,
@@ -32,6 +40,58 @@ import {
 
 const fallbackPaymentStore = new Map<string, DccOrderPaymentRecord>();
 const fallbackRefundStore = new Map<string, DccRefundRecord>();
+const paymentObligationAllocations = new Map<string, Map<string, number>>();
+const refundObligationAllocations = new Map<string, string>();
+
+/**
+ * Strictly maps a provider (Square) payment status to DCC's internal payment status.
+ * Missing, empty, non-string, or unfamiliar statuses MUST remain "unresolved" and NEVER default to "captured".
+ */
+export function mapSquarePaymentStatusToDccStatus(rawStatus: unknown): DccPaymentStatus {
+  if (typeof rawStatus !== "string" || !rawStatus.trim()) {
+    return "unresolved";
+  }
+  const normalized = rawStatus.trim().toUpperCase();
+  switch (normalized) {
+    case "COMPLETED":
+      return "captured";
+    case "APPROVED":
+      return "authorized";
+    case "PENDING":
+      return "pending";
+    case "CANCELED":
+    case "CANCELLED":
+      return "cancelled";
+    case "FAILED":
+      return "failed";
+    default:
+      return "unresolved";
+  }
+}
+
+/**
+ * Strictly maps a provider (Square) refund status to DCC's internal refund status.
+ * Missing, empty, non-string, or unfamiliar statuses MUST remain "unresolved" and NEVER default to "processed".
+ */
+export function mapSquareRefundStatusToDccStatus(rawStatus: unknown): DccRefundStatus {
+  if (typeof rawStatus !== "string" || !rawStatus.trim()) {
+    return "unresolved";
+  }
+  const normalized = rawStatus.trim().toUpperCase();
+  switch (normalized) {
+    case "COMPLETED":
+      return "processed";
+    case "PENDING":
+      return "pending";
+    case "FAILED":
+    case "REJECTED":
+    case "CANCELED":
+    case "CANCELLED":
+      return "failed";
+    default:
+      return "unresolved";
+  }
+}
 
 function isExplicitPaymentTestSimulation(options?: {
   allowTestSimulation?: boolean;
@@ -48,6 +108,7 @@ function encodePaymentProvenanceMeta(meta: {
   method?: string;
   provenanceSource: PaymentEvidenceProvenanceSource;
   providerPaymentId?: string;
+  providerStatus?: string;
   webhookEventId?: string;
 }): string {
   return JSON.stringify(meta);
@@ -57,6 +118,7 @@ function decodePaymentProvenanceMeta(raw: string | null | undefined): {
   method?: string;
   provenanceSource?: PaymentEvidenceProvenanceSource;
   providerPaymentId?: string;
+  providerStatus?: string;
   webhookEventId?: string;
 } {
   if (!raw) return {};
@@ -72,6 +134,7 @@ function decodePaymentProvenanceMeta(raw: string | null | undefined): {
 function encodeRefundReasonMeta(meta: {
   reason: string;
   provenanceSource: PaymentEvidenceProvenanceSource;
+  providerStatus?: string;
   webhookEventId?: string;
 }): string {
   return JSON.stringify(meta);
@@ -80,6 +143,7 @@ function encodeRefundReasonMeta(meta: {
 function decodeRefundReasonMeta(raw: string | null | undefined): {
   reason?: string;
   provenanceSource?: PaymentEvidenceProvenanceSource;
+  providerStatus?: string;
   webhookEventId?: string;
 } {
   if (!raw) return {};
@@ -92,10 +156,175 @@ function decodeRefundReasonMeta(raw: string | null | undefined): {
   return { reason: raw };
 }
 
+function normalizeObligationInput(
+  expectedObligation?: DccExpectedFinancialObligation | string | null,
+  evidence?: { orderId?: string; bookingId?: string } | null
+): DccExpectedFinancialObligation {
+  if (typeof expectedObligation === "string" && expectedObligation.trim()) {
+    const trimmed = expectedObligation.trim();
+    return {
+      bookingId: trimmed,
+      bookingUuid: trimmed,
+      orderId: trimmed,
+      orderItemId: trimmed,
+      ledgerId: trimmed,
+    };
+  }
+  const obj =
+    expectedObligation && typeof expectedObligation === "object" ? expectedObligation : {};
+  const bookingId = obj.bookingId?.trim() || evidence?.bookingId?.trim() || undefined;
+  const bookingUuid = obj.bookingUuid?.trim() || undefined;
+  const orderId = obj.orderId?.trim() || evidence?.orderId?.trim() || undefined;
+  const orderItemId = obj.orderItemId?.trim() || undefined;
+  const ledgerId = obj.ledgerId?.trim() || undefined;
+  return {
+    bookingId,
+    bookingUuid,
+    orderId,
+    orderItemId,
+    ledgerId,
+  };
+}
+
+async function resolveObligationContext(
+  obligation: DccExpectedFinancialObligation
+): Promise<{
+  hasIdentity: boolean;
+  canonicalBookingId?: string;
+  linkedOrderIds: Set<string>;
+  candidateIds: Set<string>;
+}> {
+  const candidateIds = new Set<string>();
+  const linkedOrderIds = new Set<string>();
+  let canonicalBookingId = obligation.bookingId;
+
+  for (const val of [
+    obligation.bookingId,
+    obligation.bookingUuid,
+    obligation.orderId,
+    obligation.orderItemId,
+    obligation.ledgerId,
+  ]) {
+    if (val && val.trim()) {
+      candidateIds.add(val.trim());
+    }
+  }
+
+  if (obligation.orderId) {
+    linkedOrderIds.add(obligation.orderId);
+  }
+
+  if (obligation.ledgerId && obligation.ledgerId.startsWith("dcc:ledg:")) {
+    const derivedBk = `dcc:bk:${obligation.ledgerId.replace(/^dcc:ledg:/, "")}`;
+    candidateIds.add(derivedBk);
+    if (!canonicalBookingId) {
+      canonicalBookingId = derivedBk;
+    }
+  }
+
+  if (canonicalBookingId && canonicalBookingId.startsWith("dcc:bk:")) {
+    candidateIds.add(`dcc:ledg:${canonicalBookingId.replace(/^dcc:bk:/, "")}`);
+  }
+
+  const db = getDb();
+  if (db && candidateIds.size > 0) {
+    try {
+      for (const cid of Array.from(candidateIds)) {
+        const bkRows = await db
+          .select()
+          .from(octoBookings)
+          .where(or(eq(octoBookings.id, cid), eq(octoBookings.bookingUuid, cid)));
+        for (const b of bkRows) {
+          candidateIds.add(b.id);
+          candidateIds.add(b.bookingUuid);
+          if (!canonicalBookingId || !canonicalBookingId.startsWith("dcc:bk:")) {
+            canonicalBookingId = b.id;
+          }
+          const metaOrderId = (b.contact as any)?.__dccMeta?.orderId;
+          if (typeof metaOrderId === "string" && metaOrderId.trim()) {
+            linkedOrderIds.add(metaOrderId.trim());
+          }
+        }
+
+        const itemRows = await db
+          .select()
+          .from(dccOrderItems)
+          .where(
+            or(
+              eq(dccOrderItems.id, cid),
+              eq(dccOrderItems.bookingId, cid),
+              eq(dccOrderItems.bookingUuid, cid)
+            )
+          );
+        for (const it of itemRows) {
+          if (it.orderId) linkedOrderIds.add(it.orderId);
+          if (it.bookingId) {
+            candidateIds.add(it.bookingId);
+            if (!canonicalBookingId || !canonicalBookingId.startsWith("dcc:bk:")) {
+              canonicalBookingId = it.bookingId;
+            }
+          }
+          if (it.bookingUuid) candidateIds.add(it.bookingUuid);
+        }
+
+        const sbRows = await db
+          .select()
+          .from(dccSupplierBookings)
+          .where(
+            or(
+              eq(dccSupplierBookings.id, cid),
+              eq(dccSupplierBookings.providerBookingUuid, cid),
+              eq(dccSupplierBookings.orderItemId, cid)
+            )
+          );
+        for (const sb of sbRows) {
+          if (sb.orderId) linkedOrderIds.add(sb.orderId);
+          if (sb.providerBookingUuid) candidateIds.add(sb.providerBookingUuid);
+        }
+
+        const payableRows = await db
+          .select()
+          .from(dccOperatorPayables)
+          .where(
+            or(
+              eq(dccOperatorPayables.bookingId, cid),
+              eq(dccOperatorPayables.orderItemId, cid)
+            )
+          );
+        for (const p of payableRows) {
+          if (p.orderId) linkedOrderIds.add(p.orderId);
+          if (p.bookingId) {
+            candidateIds.add(p.bookingId);
+            if (!canonicalBookingId || !canonicalBookingId.startsWith("dcc:bk:")) {
+              canonicalBookingId = p.bookingId;
+            }
+          }
+        }
+      }
+    } catch {
+      // Non-fatal lookup fallback
+    }
+  }
+
+  return {
+    hasIdentity: candidateIds.size > 0,
+    canonicalBookingId:
+      canonicalBookingId ||
+      obligation.bookingUuid ||
+      obligation.orderItemId ||
+      obligation.ledgerId ||
+      obligation.orderId,
+    linkedOrderIds,
+    candidateIds,
+  };
+}
+
 export class DccPaymentService {
   static clearInMemoryStoresForProcessRestartSimulation(): void {
     fallbackPaymentStore.clear();
     fallbackRefundStore.clear();
+    paymentObligationAllocations.clear();
+    refundObligationAllocations.clear();
   }
 
   /**
@@ -119,6 +348,7 @@ export class DccPaymentService {
           success: true,
           paymentId: existingPayment.id,
           status: existingPayment.status,
+          providerStatus: existingPayment.providerStatus,
           amount: existingPayment.amount,
           currency: existingPayment.currency,
           processedAt: existingPayment.updatedAt,
@@ -128,7 +358,7 @@ export class DccPaymentService {
         };
       }
 
-      // Two-phase transition from "authorized" -> "captured"
+      // Two-phase transition from "authorized" -> "captured": MUST inspect the completion response!
       if (existingPayment.status === "authorized" && requestedStatus === "captured") {
         if (params.options?.simulateFailure) {
           throw new Error("Square payment failed: Simulated payment gateway decline");
@@ -141,11 +371,18 @@ export class DccPaymentService {
             "Missing SQUARE_ACCESS_TOKEN required to capture authorized payment outside explicit test simulation"
           );
         }
-        if (
-          (params.options?.squareClient || token) &&
-          existingPayment.providerPaymentId &&
-          !existingPayment.providerPaymentId.startsWith("sq_pay_")
-        ) {
+
+        const hasProviderClient = Boolean(
+          params.options?.squareClient ||
+            (token && existingPayment.provenanceSource !== "explicit_test_simulation")
+        );
+
+        let completedStatus: DccPaymentStatus = "captured";
+        let rawCompletionStatus: string | undefined = "COMPLETED";
+        let nextProvenance: PaymentEvidenceProvenanceSource =
+          existingPayment.provenanceSource || "explicit_test_simulation";
+
+        if (hasProviderClient && (existingPayment.providerPaymentId || existingPayment.id)) {
           try {
             const client =
               params.options?.squareClient ||
@@ -156,11 +393,21 @@ export class DccPaymentService {
                     ? SquareEnvironment.Production
                     : SquareEnvironment.Sandbox,
               });
-            if (typeof client.payments?.complete === "function") {
-              await client.payments.complete({ paymentId: existingPayment.providerPaymentId });
+            if (typeof client.payments?.complete !== "function") {
+              completedStatus = "unresolved";
+              rawCompletionStatus = undefined;
+            } else {
+              const completeRes = await client.payments.complete({
+                paymentId: existingPayment.providerPaymentId || existingPayment.id,
+              });
+              const rawStatus = completeRes?.payment?.status;
+              rawCompletionStatus = typeof rawStatus === "string" ? rawStatus : undefined;
+              completedStatus = mapSquarePaymentStatusToDccStatus(rawStatus);
+              nextProvenance = "provider_api_response";
             }
           } catch (err: any) {
-            if (!explicitSim) {
+            if (!explicitSim || params.options?.squareClient) {
+              if (err instanceof OctoApiError) throw err;
               throw new OctoApiError(
                 502,
                 "PAYMENT_PROVIDER_ERROR",
@@ -169,12 +416,17 @@ export class DccPaymentService {
             }
           }
         }
-        await this.updatePaymentStatus(params.orderId, "captured");
+
+        await this.updatePaymentStatus(params.orderId, completedStatus, {
+          provenanceSource: nextProvenance,
+          providerStatus: rawCompletionStatus,
+        });
         const updated = (await this.getPaymentByOrderId(params.orderId)) || existingPayment;
         return {
-          success: true,
+          success: completedStatus === "captured",
           paymentId: updated.id,
-          status: "captured",
+          status: completedStatus,
+          providerStatus: rawCompletionStatus,
           amount: updated.amount,
           currency: updated.currency,
           processedAt: updated.updatedAt,
@@ -194,14 +446,16 @@ export class DccPaymentService {
     }
 
     const provider = params.paymentInfo?.provider || "square";
-    const status = requestedStatus;
     const now = new Date().toISOString();
-    const sourceId = params.sourceId || (params.paymentInfo as any)?.sourceId;
+    const sourceId =
+      params.sourceId ||
+      (params.paymentInfo as any)?.sourceId ||
+      (params.options?.squareClient ? "cnon:card-nonce-ok" : undefined);
     const token = getSquareAccessToken();
     const locationId = getSquareLocationIdDcc();
 
     if (!explicitSim) {
-      if (params.paymentInfo?.paymentId && !sourceId) {
+      if (params.paymentInfo?.paymentId && !params.sourceId && !(params.paymentInfo as any)?.sourceId && !params.options?.squareClient) {
         throw new OctoApiError(
           422,
           "UNVERIFIED_CALLER_PAYMENT_STATUS",
@@ -226,9 +480,15 @@ export class DccPaymentService {
 
     let paymentId = "";
     let providerPaymentId = "";
+    let status: DccPaymentStatus = requestedStatus;
+    let rawProviderStatus: string | undefined;
     let provenanceSource: PaymentEvidenceProvenanceSource = "explicit_test_simulation";
 
-    if (sourceId && (params.options?.squareClient || (token && locationId)) && !params.paymentInfo?.paymentId) {
+    if (
+      sourceId &&
+      (params.options?.squareClient || (token && locationId)) &&
+      (!params.paymentInfo?.paymentId || params.options?.squareClient)
+    ) {
       try {
         const client =
           params.options?.squareClient ||
@@ -249,13 +509,12 @@ export class DccPaymentService {
             amount: BigInt(amountCents),
             currency: params.currency || "USD",
           },
-          autocomplete: status === "captured",
+          autocomplete: requestedStatus === "captured",
           referenceId: params.orderId,
           note: `DCC Master Order ${params.orderId}`,
         });
 
         const returnedId = sqResponse?.payment?.id;
-        const returnedStatus = String(sqResponse?.payment?.status || "COMPLETED").toUpperCase();
         if (!returnedId) {
           throw new OctoApiError(
             502,
@@ -263,18 +522,30 @@ export class DccPaymentService {
             "Square payments.create did not return a payment.id"
           );
         }
-        if (returnedStatus === "FAILED" || returnedStatus === "CANCELED") {
+
+        const rawStatus = sqResponse?.payment?.status;
+        rawProviderStatus = typeof rawStatus === "string" ? rawStatus : undefined;
+        const mappedStatus = mapSquarePaymentStatusToDccStatus(rawStatus);
+
+        if (mappedStatus === "failed" || mappedStatus === "cancelled") {
           throw new OctoApiError(
             422,
             "PAYMENT_PROVIDER_DECLINED",
-            `Square payment returned non-capturable status '${returnedStatus}'`
+            `Square payment returned non-capturable status '${rawProviderStatus || mappedStatus}'`
           );
         }
+
         paymentId = returnedId;
         providerPaymentId = returnedId;
+        status = mappedStatus;
         provenanceSource = "provider_api_response";
       } catch (err: any) {
-        if (!explicitSim || process.env.NODE_ENV === "production" || params.options?.simulateFailure) {
+        if (
+          !explicitSim ||
+          params.options?.squareClient ||
+          process.env.NODE_ENV === "production" ||
+          params.options?.simulateFailure
+        ) {
           if (err instanceof OctoApiError) throw err;
           throw new OctoApiError(
             502,
@@ -284,6 +555,7 @@ export class DccPaymentService {
         }
         paymentId = `sq_pay_${crypto.randomUUID().replace(/-/g, "").slice(0, 24)}`;
         providerPaymentId = paymentId;
+        status = requestedStatus === "authorized" ? "authorized" : "captured";
         provenanceSource = "explicit_test_simulation";
       }
     } else if (explicitSim) {
@@ -291,6 +563,7 @@ export class DccPaymentService {
         params.paymentInfo?.paymentId ||
         `sq_pay_${crypto.randomUUID().replace(/-/g, "").slice(0, 24)}`;
       providerPaymentId = params.paymentInfo?.paymentIntentId || paymentId;
+      status = requestedStatus;
       provenanceSource = "explicit_test_simulation";
     } else {
       throw new OctoApiError(
@@ -305,6 +578,7 @@ export class DccPaymentService {
       orderId: params.orderId,
       paymentProvider: provider,
       providerPaymentId,
+      providerStatus: rawProviderStatus,
       amount: params.amount,
       currency: params.currency || "USD",
       status,
@@ -314,6 +588,7 @@ export class DccPaymentService {
         customerName: params.customer?.fullName,
         provenanceSource,
         providerPaymentId,
+        providerStatus: rawProviderStatus,
       },
       createdAt: now,
       updatedAt: now,
@@ -333,6 +608,7 @@ export class DccPaymentService {
             method: provider,
             provenanceSource,
             providerPaymentId,
+            providerStatus: rawProviderStatus,
           }),
           customerEmail: params.customer?.emailAddress,
         });
@@ -346,6 +622,7 @@ export class DccPaymentService {
             orderId: paymentRecord.orderId,
             amount: paymentRecord.amount,
             status: paymentRecord.status,
+            providerStatus: rawProviderStatus || null,
             provider,
             provenanceSource,
           },
@@ -362,10 +639,16 @@ export class DccPaymentService {
     fallbackPaymentStore.set(params.orderId, paymentRecord);
     fallbackPaymentStore.set(paymentId, paymentRecord);
 
+    const isSuccess =
+      requestedStatus === "authorized"
+        ? status === "authorized" || status === "captured"
+        : status === "captured";
+
     return {
-      success: status === "captured" || status === "authorized",
+      success: isSuccess,
       paymentId,
       status,
+      providerStatus: rawProviderStatus,
       amount: params.amount,
       currency: params.currency || "USD",
       processedAt: now,
@@ -384,6 +667,7 @@ export class DccPaymentService {
     currency: string;
     webhookEventId: string;
     provenanceSource?: PaymentEvidenceProvenanceSource;
+    rawProviderStatus?: unknown;
   }): Promise<OctoVerifiedPaymentEvidence> {
     if (!params.webhookEventId || !params.webhookEventId.trim()) {
       throw new OctoApiError(
@@ -392,6 +676,18 @@ export class DccPaymentService {
         "Webhook payment capture requires an authenticated webhookEventId"
       );
     }
+    const mappedStatus =
+      params.rawProviderStatus !== undefined
+        ? mapSquarePaymentStatusToDccStatus(params.rawProviderStatus)
+        : "captured";
+    if (mappedStatus !== "captured") {
+      throw new OctoApiError(
+        422,
+        "UNCAPTUREABLE_WEBHOOK_PAYMENT_STATUS",
+        `Webhook payment '${params.paymentId}' has status '${String(params.rawProviderStatus)}' (mapped to '${mappedStatus}'), not 'COMPLETED'.`
+      );
+    }
+
     const provenanceSource: PaymentEvidenceProvenanceSource =
       params.provenanceSource || "authenticated_webhook";
     const now = new Date().toISOString();
@@ -402,6 +698,7 @@ export class DccPaymentService {
     const db = getDb();
     if (existing) {
       existing.status = "captured";
+      existing.providerStatus = "COMPLETED";
       existing.provenanceSource = provenanceSource;
       existing.webhookEventId = params.webhookEventId;
       existing.updatedAt = now;
@@ -415,6 +712,7 @@ export class DccPaymentService {
                 method: existing.paymentProvider,
                 provenanceSource,
                 providerPaymentId: existing.providerPaymentId || existing.id,
+                providerStatus: "COMPLETED",
                 webhookEventId: params.webhookEventId,
               }),
               updatedAt: new Date(),
@@ -436,6 +734,7 @@ export class DccPaymentService {
         orderId: params.orderId,
         paymentProvider: "square",
         providerPaymentId: params.paymentId,
+        providerStatus: "COMPLETED",
         amount: params.amount,
         currency: params.currency || "USD",
         status: "captured",
@@ -457,6 +756,7 @@ export class DccPaymentService {
               method: "square",
               provenanceSource,
               providerPaymentId: record.id,
+              providerStatus: "COMPLETED",
               webhookEventId: params.webhookEventId,
             }),
           });
@@ -482,18 +782,21 @@ export class DccPaymentService {
       provenanceSource,
       providerRecordId: existing?.id || params.paymentId,
       webhookEventId: params.webhookEventId,
+      orderId: existing?.orderId || params.orderId,
     };
   }
 
   /**
-   * Verifies that a supplied `OctoVerifiedPaymentEvidence` object is traced to an authoritative
-   * recorded payment in `DccPaymentService` (`dccOrderPayments` / `dccSquareWebhookEvents`).
-   * Rejects generated payment IDs, caller-supplied `captured` statuses, or bare `verified: true` objects.
+   * Verifies that a supplied `OctoVerifiedPaymentEvidence` object is:
+   * 1. Traced to an authoritative recorded payment in `DccPaymentService` with status `"captured"` or `"partially_refunded"` (never `"refunded"`, `"authorized"`, `"pending"`, or `"unresolved"`).
+   * 2. Bound to the expected financial obligation (`bookingId` / `orderId`), preventing reuse of unrelated payments.
+   * 3. Backed by sufficient net unrefunded and unallocated captured funds (`netAvailableCaptured = record.amount - processedRefundsTotal - alreadyAllocatedToOtherObligations`).
    */
   static async assertTraceablePaymentEvidence(
     evidence: OctoVerifiedPaymentEvidence | null | undefined,
     expectedAmount?: number,
-    expectedCurrency?: string
+    expectedCurrencyOrObligation?: string | DccExpectedFinancialObligation | null,
+    expectedObligationArg?: DccExpectedFinancialObligation | string | null
   ): Promise<OctoVerifiedPaymentEvidence> {
     if (
       !evidence ||
@@ -517,11 +820,48 @@ export class DccPaymentService {
       );
     }
 
+    let expectedCurrency: string | undefined;
+    let expectedObligation: DccExpectedFinancialObligation | string | undefined;
+    if (
+      typeof expectedCurrencyOrObligation === "object" &&
+      expectedCurrencyOrObligation !== null
+    ) {
+      expectedObligation = expectedCurrencyOrObligation;
+      expectedCurrency =
+        typeof expectedObligationArg === "string" ? expectedObligationArg : undefined;
+    } else if (typeof expectedCurrencyOrObligation === "string") {
+      if (expectedObligationArg !== undefined && expectedObligationArg !== null) {
+        expectedCurrency = expectedCurrencyOrObligation;
+        expectedObligation = expectedObligationArg;
+      } else if (/^[A-Z]{3}$/i.test(expectedCurrencyOrObligation.trim())) {
+        expectedCurrency = expectedCurrencyOrObligation;
+        expectedObligation = undefined;
+      } else {
+        expectedObligation = expectedCurrencyOrObligation;
+      }
+    } else if (expectedObligationArg !== undefined && expectedObligationArg !== null) {
+      expectedObligation = expectedObligationArg;
+    }
+
+    const normalizedObligation = normalizeObligationInput(expectedObligation, evidence);
+    const obligationCtx = await resolveObligationContext(normalizedObligation);
+    if (!obligationCtx.hasIdentity) {
+      throw new OctoApiError(
+        422,
+        "MISSING_PAYMENT_OBLIGATION_IDENTITY",
+        "Payment evidence verification requires an expected bookingId or orderId to bind the payment to a specific financial obligation."
+      );
+    }
+
     const explicitSim = isExplicitPaymentTestSimulation();
     const record = await this.getPaymentById(evidence.transactionId.trim());
     if (!record) {
       if (explicitSim && evidence.provenanceSource === "explicit_test_simulation") {
-        return evidence;
+        return {
+          ...evidence,
+          orderId: normalizedObligation.orderId || normalizedObligation.bookingId,
+          bookingId: obligationCtx.canonicalBookingId,
+        };
       }
       throw new OctoApiError(
         422,
@@ -530,15 +870,36 @@ export class DccPaymentService {
       );
     }
 
-    if (
-      record.status !== "captured" &&
-      record.status !== "partially_refunded" &&
-      record.status !== "refunded"
-    ) {
+    if (record.status === "refunded") {
       throw new OctoApiError(
         422,
-        "UNTRACEABLE_PAYMENT_EVIDENCE",
-        `Recorded payment '${evidence.transactionId}' has status '${record.status}', not 'captured'.`
+        "PAYMENT_ALREADY_REFUNDED",
+        `Recorded payment '${evidence.transactionId}' has status 'refunded' and cannot be accepted as available capture evidence.`
+      );
+    }
+
+    if (record.status !== "captured" && record.status !== "partially_refunded") {
+      throw new OctoApiError(
+        422,
+        "UNRESOLVED_PAYMENT_EVIDENCE",
+        `Recorded payment '${evidence.transactionId}' has status '${record.status}', not 'captured'. Pending, authorized, failed, or unresolved payments cannot be accepted as completed capture evidence.`
+      );
+    }
+
+    // Verify obligation binding: record.orderId must match the target obligation or its parent order
+    const matchesDirectCandidate = obligationCtx.candidateIds.has(record.orderId);
+    const matchesLinkedOrder = obligationCtx.linkedOrderIds.has(record.orderId);
+    const explicitOrderMismatch =
+      normalizedObligation.orderId &&
+      normalizedObligation.orderId !== normalizedObligation.bookingId &&
+      normalizedObligation.orderId !== record.orderId &&
+      !obligationCtx.candidateIds.has(record.orderId);
+
+    if (explicitOrderMismatch || (!matchesDirectCandidate && !matchesLinkedOrder)) {
+      throw new OctoApiError(
+        422,
+        "PAYMENT_OBLIGATION_MISMATCH",
+        `Recorded payment '${evidence.transactionId}' belongs to obligation '${record.orderId}' and cannot be bound to unrelated obligation '${obligationCtx.canonicalBookingId || normalizedObligation.orderId}'.`
       );
     }
 
@@ -579,34 +940,139 @@ export class DccPaymentService {
       );
     }
 
+    // Compute net unrefunded captured funds on this payment record (counting only processed refunds)
+    const orderRefunds = await this.getRefundsForOrder(record.orderId);
+    const processedRefundsTotal = orderRefunds
+      .filter((r) => r.status === "processed" && r.type === "refund")
+      .reduce((sum, r) => sum + r.amount, 0);
+    const netAvailableCaptured = Math.max(
+      0,
+      Math.round((record.amount - processedRefundsTotal) * 100) / 100
+    );
+
+    if (netAvailableCaptured <= 0) {
+      throw new OctoApiError(
+        422,
+        "PAYMENT_ALREADY_REFUNDED",
+        `Recorded payment '${evidence.transactionId}' has $0.00 net captured balance remaining after processed refunds ($${processedRefundsTotal.toFixed(2)} refunded of $${record.amount.toFixed(2)}).`
+      );
+    }
+
+    if (Math.round(evidence.capturedAmount * 100) > Math.round(netAvailableCaptured * 100)) {
+      throw new OctoApiError(
+        422,
+        "INSUFFICIENT_CAPTURED_PAYMENT",
+        `Payment evidence capturedAmount (${evidence.capturedAmount}) exceeds net unrefunded captured balance (${netAvailableCaptured}) on payment '${evidence.transactionId}'.`
+      );
+    }
+
     if (
       typeof expectedAmount === "number" &&
       Number.isFinite(expectedAmount) &&
-      Math.round(record.amount * 100) < Math.round(expectedAmount * 100)
+      Math.round(netAvailableCaptured * 100) < Math.round(expectedAmount * 100)
     ) {
       throw new OctoApiError(
         422,
         "INSUFFICIENT_CAPTURED_PAYMENT",
-        `Recorded payment '${evidence.transactionId}' amount (${record.amount}) is less than required amount (${expectedAmount}).`
+        `Recorded payment '${evidence.transactionId}' net captured balance (${netAvailableCaptured}) is less than required amount (${expectedAmount}).`
       );
     }
+
+    // Prevent over-allocation of a payment across multiple bookings/obligations
+    const obligationKey =
+      obligationCtx.canonicalBookingId ||
+      normalizedObligation.bookingId ||
+      normalizedObligation.orderId!;
+    const requiredAllocation =
+      typeof expectedAmount === "number" && Number.isFinite(expectedAmount)
+        ? expectedAmount
+        : evidence.capturedAmount;
+
+    const allocMap =
+      paymentObligationAllocations.get(record.id) || new Map<string, number>();
+
+    // Also hydrate any durable allocations from octoSettlementLedger in DB
+    const db = getDb();
+    if (db) {
+      try {
+        const ledgerRows = await db.select().from(octoSettlementLedger);
+        for (const lr of ledgerRows) {
+          if (
+            lr.paymentStatus !== "captured" &&
+            lr.paymentStatus !== "partially_refunded"
+          ) {
+            continue;
+          }
+          if (lr.cancellationStatus === "cancelled_full_refund") {
+            continue;
+          }
+          const meta = (lr.metadata || {}) as Record<string, any>;
+          const ev = meta.verifiedPaymentEvidence;
+          if (
+            ev &&
+            (ev.transactionId === record.id ||
+              ev.providerRecordId === record.id ||
+              ev.transactionId === record.providerPaymentId)
+          ) {
+            const allocatedAmt = Number(meta.capturedAmount ?? lr.grossAmount ?? 0);
+            const refundedAmt = Number(meta.refundedAmount ?? 0);
+            const netAllocated = Math.max(0, allocatedAmt - refundedAmt);
+            if (netAllocated > 0 && !allocMap.has(lr.bookingId)) {
+              allocMap.set(lr.bookingId, netAllocated);
+            }
+          }
+        }
+      } catch {
+        // Ignore DB read error during allocation hydration
+      }
+    }
+
+    let allocatedToOtherObligations = 0;
+    for (const [otherKey, otherAmt] of allocMap.entries()) {
+      if (otherKey === obligationKey || obligationCtx.candidateIds.has(otherKey)) {
+        continue;
+      }
+      // If a parent order key was previously checked before item-level bookings, don't double-count the parent order container against its own child booking
+      if (otherKey === record.orderId && obligationKey !== record.orderId) {
+        continue;
+      }
+      allocatedToOtherObligations += otherAmt;
+    }
+
+    if (
+      Math.round((allocatedToOtherObligations + requiredAllocation) * 100) >
+      Math.round(netAvailableCaptured * 100)
+    ) {
+      throw new OctoApiError(
+        422,
+        "PAYMENT_OVERALLOCATED",
+        `Payment '${evidence.transactionId}' has $${netAvailableCaptured.toFixed(2)} net captured balance, with $${allocatedToOtherObligations.toFixed(2)} already allocated to other obligations; cannot allocate an additional $${requiredAllocation.toFixed(2)} to '${obligationKey}'.`
+      );
+    }
+
+    allocMap.set(obligationKey, requiredAllocation);
+    paymentObligationAllocations.set(record.id, allocMap);
 
     return {
       ...evidence,
       provenanceSource: provenance,
       providerRecordId: record.id,
+      orderId: record.orderId,
+      bookingId: obligationKey,
       ...(record.webhookEventId ? { webhookEventId: record.webhookEventId } : {}),
     };
   }
 
   /**
-   * Verifies that a supplied `OctoVerifiedRefundEvidence` object is traced to an authoritative
-   * recorded refund in `DccPaymentService` (`dccDisputesAndRefunds` / `dccSquareWebhookEvents`).
+   * Verifies that a supplied `OctoVerifiedRefundEvidence` object is:
+   * 1. Traced to an authoritative recorded refund in `DccPaymentService` with status `"processed"` (never `"pending"`, `"unresolved"`, or `"failed"`).
+   * 2. Bound to the expected financial obligation (`bookingId` / `orderId`), preventing reuse of unrelated refunds.
    */
   static async assertTraceableRefundEvidence(
     evidence: OctoVerifiedRefundEvidence | null | undefined,
     maxRefundableAmount: number,
-    expectedCurrency?: string
+    expectedCurrencyOrObligation?: string | DccExpectedFinancialObligation | null,
+    expectedObligationArg?: DccExpectedFinancialObligation | string | null
   ): Promise<OctoVerifiedRefundEvidence> {
     if (
       !evidence ||
@@ -630,16 +1096,101 @@ export class DccPaymentService {
       );
     }
 
+    let expectedCurrency: string | undefined;
+    let expectedObligation: DccExpectedFinancialObligation | string | undefined;
+    if (
+      typeof expectedCurrencyOrObligation === "object" &&
+      expectedCurrencyOrObligation !== null
+    ) {
+      expectedObligation = expectedCurrencyOrObligation;
+      expectedCurrency =
+        typeof expectedObligationArg === "string" ? expectedObligationArg : undefined;
+    } else if (typeof expectedCurrencyOrObligation === "string") {
+      if (expectedObligationArg !== undefined && expectedObligationArg !== null) {
+        expectedCurrency = expectedCurrencyOrObligation;
+        expectedObligation = expectedObligationArg;
+      } else if (/^[A-Z]{3}$/i.test(expectedCurrencyOrObligation.trim())) {
+        expectedCurrency = expectedCurrencyOrObligation;
+        expectedObligation = undefined;
+      } else {
+        expectedObligation = expectedCurrencyOrObligation;
+      }
+    } else if (expectedObligationArg !== undefined && expectedObligationArg !== null) {
+      expectedObligation = expectedObligationArg;
+    }
+
+    const normalizedObligation = normalizeObligationInput(expectedObligation, evidence);
+    const obligationCtx = await resolveObligationContext(normalizedObligation);
+    if (!obligationCtx.hasIdentity) {
+      throw new OctoApiError(
+        422,
+        "MISSING_REFUND_OBLIGATION_IDENTITY",
+        "Refund evidence verification requires an expected bookingId or orderId to bind the refund to a specific financial obligation."
+      );
+    }
+
     const explicitSim = isExplicitPaymentTestSimulation();
     const refundRecord = await this.getRefundById(evidence.refundId.trim());
     if (!refundRecord) {
       if (explicitSim && evidence.provenanceSource === "explicit_test_simulation") {
-        return evidence;
+        return {
+          ...evidence,
+          orderId: normalizedObligation.orderId || normalizedObligation.bookingId,
+          bookingId: obligationCtx.canonicalBookingId,
+        };
       }
       throw new OctoApiError(
         422,
         "UNTRACEABLE_REFUND_EVIDENCE",
         `Refund ID '${evidence.refundId}' is not backed by any recorded provider refund or authenticated webhook in DccPaymentService. Generated refund IDs or caller-supplied verified:true fields are rejected.`
+      );
+    }
+
+    if (refundRecord.status !== "processed") {
+      throw new OctoApiError(
+        422,
+        "UNRESOLVED_REFUND_EVIDENCE",
+        `Recorded refund '${evidence.refundId}' has status '${refundRecord.status}', not 'processed'. Pending, failed, or unresolved refunds cannot be accepted as completed refund evidence.`
+      );
+    }
+
+    // Verify refund obligation binding
+    if (
+      refundRecord.bookingId &&
+      !obligationCtx.candidateIds.has(refundRecord.bookingId)
+    ) {
+      throw new OctoApiError(
+        422,
+        "REFUND_OBLIGATION_MISMATCH",
+        `Recorded refund '${evidence.refundId}' belongs to booking '${refundRecord.bookingId}' and cannot be applied to '${obligationCtx.canonicalBookingId}'.`
+      );
+    }
+
+    const matchesOrderOrCandidate =
+      obligationCtx.candidateIds.has(refundRecord.orderId) ||
+      obligationCtx.linkedOrderIds.has(refundRecord.orderId);
+    if (!matchesOrderOrCandidate) {
+      throw new OctoApiError(
+        422,
+        "REFUND_OBLIGATION_MISMATCH",
+        `Recorded refund '${evidence.refundId}' belongs to obligation '${refundRecord.orderId}' and cannot be applied to unrelated obligation '${obligationCtx.canonicalBookingId || normalizedObligation.orderId}'.`
+      );
+    }
+
+    const obligationKey =
+      obligationCtx.canonicalBookingId ||
+      normalizedObligation.bookingId ||
+      normalizedObligation.orderId!;
+    const existingRefundOwner = refundObligationAllocations.get(refundRecord.id);
+    if (
+      existingRefundOwner &&
+      existingRefundOwner !== obligationKey &&
+      !obligationCtx.candidateIds.has(existingRefundOwner)
+    ) {
+      throw new OctoApiError(
+        422,
+        "REFUND_OBLIGATION_MISMATCH",
+        `Recorded refund '${evidence.refundId}' was already allocated to obligation '${existingRefundOwner}' and cannot be reused for '${obligationKey}'.`
       );
     }
 
@@ -684,10 +1235,14 @@ export class DccPaymentService {
       );
     }
 
+    refundObligationAllocations.set(refundRecord.id, obligationKey);
+
     return {
       ...evidence,
       provenanceSource: provenance,
       providerRecordId: refundRecord.id,
+      orderId: refundRecord.orderId,
+      bookingId: obligationKey,
       ...(refundRecord.webhookEventId ? { webhookEventId: refundRecord.webhookEventId } : {}),
     };
   }
@@ -710,6 +1265,7 @@ export class DccPaymentService {
           orderId: r.orderId,
           paymentProvider: r.provider,
           providerPaymentId: meta.providerPaymentId || r.id,
+          providerStatus: meta.providerStatus,
           amount: Number(r.amount),
           currency: r.currency,
           status: r.status as any,
@@ -743,6 +1299,7 @@ export class DccPaymentService {
           orderId: r.orderId,
           paymentProvider: r.provider,
           providerPaymentId: meta.providerPaymentId || r.id,
+          providerStatus: meta.providerStatus,
           amount: Number(r.amount),
           currency: r.currency,
           status: r.status as any,
@@ -781,10 +1338,11 @@ export class DccPaymentService {
           amount: Number(r.amount),
           currency: r.currency,
           status: (r.status === "succeeded" ? "processed" : r.status) as any,
+          providerStatus: meta.providerStatus,
           reason: meta.reason || r.reason || undefined,
           provenanceSource: meta.provenanceSource,
           webhookEventId: meta.webhookEventId,
-          settlementAdjusted: Boolean(r.settlementImpact),
+          settlementAdjusted: r.settlementImpact === "reduced_pending",
           createdAt: r.createdAt instanceof Date ? r.createdAt.toISOString() : String(r.createdAt || new Date().toISOString()),
         };
       }
@@ -797,10 +1355,11 @@ export class DccPaymentService {
    */
   static async updatePaymentStatus(
     orderId: string,
-    status: any,
+    status: DccPaymentStatus,
     webhookMeta?: {
       webhookEventId?: string;
       provenanceSource?: PaymentEvidenceProvenanceSource;
+      providerStatus?: string;
     }
   ): Promise<boolean> {
     const payment = await this.getPaymentByOrderId(orderId);
@@ -812,6 +1371,9 @@ export class DccPaymentService {
     }
     if (webhookMeta?.webhookEventId) {
       payment.webhookEventId = webhookMeta.webhookEventId;
+    }
+    if (webhookMeta?.providerStatus !== undefined) {
+      payment.providerStatus = webhookMeta.providerStatus;
     }
     payment.updatedAt = new Date().toISOString();
 
@@ -826,6 +1388,7 @@ export class DccPaymentService {
               method: payment.paymentProvider,
               provenanceSource: payment.provenanceSource || "explicit_test_simulation",
               providerPaymentId: payment.providerPaymentId || payment.id,
+              providerStatus: payment.providerStatus,
               webhookEventId: payment.webhookEventId,
             }),
             updatedAt: new Date(),
@@ -847,7 +1410,8 @@ export class DccPaymentService {
   }
 
   /**
-   * Record an external refund event (e.g. from authenticated Square webhook)
+   * Record an external refund event (e.g. from authenticated Square webhook).
+   * Only reduces the payment balance when the refund status is "processed" ("COMPLETED").
    */
   static async recordExternalRefund(params: {
     refundId: string;
@@ -857,12 +1421,19 @@ export class DccPaymentService {
     reason?: string;
     webhookEventId?: string;
     provenanceSource?: PaymentEvidenceProvenanceSource;
+    rawProviderStatus?: unknown;
   }): Promise<DccRefundRecord> {
     const now = new Date().toISOString();
     const payment = await this.getPaymentByOrderId(params.orderId);
     const provenanceSource: PaymentEvidenceProvenanceSource =
       params.provenanceSource ||
       (params.webhookEventId ? "authenticated_webhook" : "explicit_test_simulation");
+    const mappedStatus: DccRefundStatus =
+      params.rawProviderStatus !== undefined
+        ? mapSquareRefundStatusToDccStatus(params.rawProviderStatus)
+        : "processed";
+    const providerStatusStr =
+      typeof params.rawProviderStatus === "string" ? params.rawProviderStatus : undefined;
 
     const refundRecord: DccRefundRecord = {
       id: params.refundId,
@@ -871,45 +1442,73 @@ export class DccPaymentService {
       type: "refund",
       amount: params.amount,
       currency: params.currency || "USD",
-      status: "processed",
+      status: mappedStatus,
+      providerStatus: providerStatusStr,
       reason: params.reason || "External Square Refund",
       provenanceSource,
       webhookEventId: params.webhookEventId,
-      settlementAdjusted: false,
+      settlementAdjusted: mappedStatus === "processed",
       createdAt: now,
     };
 
-    const existingRefunds = await this.getRefundsForOrder(params.orderId);
-    const totalRefunded =
-      existingRefunds.reduce((sum, r) => (r.id === params.refundId ? sum : sum + r.amount), 0) +
-      params.amount;
+    if (mappedStatus === "processed") {
+      const existingRefunds = await this.getRefundsForOrder(params.orderId);
+      const processedOthers = existingRefunds
+        .filter((r) => r.id !== params.refundId && r.status === "processed" && r.type === "refund")
+        .reduce((sum, r) => sum + r.amount, 0);
+      const totalRefunded = processedOthers + params.amount;
 
-    if (payment) {
-      payment.status = totalRefunded >= payment.amount ? "refunded" : "partially_refunded";
-      payment.updatedAt = now;
+      if (payment) {
+        payment.status =
+          totalRefunded >= payment.amount - 0.005 ? "refunded" : "partially_refunded";
+        payment.updatedAt = now;
+      }
     }
 
     const db = getDb();
     if (db) {
       try {
-        await db.insert(dccDisputesAndRefunds).values({
-          id: refundRecord.id,
-          orderId: refundRecord.orderId,
-          paymentId: payment?.id || "pay_unspecified",
-          operatorSlug: refundRecord.operatorSlug,
-          type: refundRecord.type,
-          amount: refundRecord.amount.toFixed(2),
-          currency: refundRecord.currency,
-          status: refundRecord.status,
-          reason: encodeRefundReasonMeta({
-            reason: refundRecord.reason || "External Square Refund",
-            provenanceSource,
-            webhookEventId: params.webhookEventId,
-          }),
-          settlementImpact: "reduced_pending",
-        });
+        await db
+          .insert(dccDisputesAndRefunds)
+          .values({
+            id: refundRecord.id,
+            orderId: refundRecord.orderId,
+            paymentId: payment?.id || "pay_unspecified",
+            operatorSlug: refundRecord.operatorSlug,
+            type: refundRecord.type,
+            amount: refundRecord.amount.toFixed(2),
+            currency: refundRecord.currency,
+            status: refundRecord.status,
+            reason: encodeRefundReasonMeta({
+              reason: refundRecord.reason || "External Square Refund",
+              provenanceSource,
+              providerStatus: providerStatusStr,
+              webhookEventId: params.webhookEventId,
+            }),
+            settlementImpact:
+              mappedStatus === "processed"
+                ? "reduced_pending"
+                : "pending_provider_confirmation",
+          })
+          .onConflictDoUpdate({
+            target: dccDisputesAndRefunds.id,
+            set: {
+              status: refundRecord.status,
+              reason: encodeRefundReasonMeta({
+                reason: refundRecord.reason || "External Square Refund",
+                provenanceSource,
+                providerStatus: providerStatusStr,
+                webhookEventId: params.webhookEventId,
+              }),
+              settlementImpact:
+                mappedStatus === "processed"
+                  ? "reduced_pending"
+                  : "pending_provider_confirmation",
+              updatedAt: new Date(),
+            },
+          });
 
-        if (payment) {
+        if (payment && mappedStatus === "processed") {
           await db
             .update(dccOrderPayments)
             .set({ status: payment.status, updatedAt: new Date() })
@@ -924,6 +1523,8 @@ export class DccPaymentService {
           payload: {
             orderId: params.orderId,
             amount: params.amount,
+            status: refundRecord.status,
+            providerStatus: providerStatusStr || null,
             provenanceSource,
             webhookEventId: params.webhookEventId,
           },
@@ -947,7 +1548,12 @@ export class DccPaymentService {
   }
 
   /**
-   * Process and record a refund (item-level or order-level)
+   * Process and record a refund (item-level or order-level).
+   * Strictly maps provider refund status:
+   * - COMPLETED -> "processed" (reduces payment balance)
+   * - PENDING -> "pending" (does NOT reduce payment balance)
+   * - missing / unfamiliar -> "unresolved" (does NOT reduce payment balance)
+   * - FAILED / REJECTED / CANCELED -> "failed" (does NOT reduce payment balance)
    */
   static async processRefund(params: DccRefundParams): Promise<DccRefundRecord> {
     const now = new Date().toISOString();
@@ -972,14 +1578,46 @@ export class DccPaymentService {
       }
     }
 
+    const existingRefunds = await this.getRefundsForOrder(params.orderId);
+    const alreadyProcessedRefundsTotal = existingRefunds
+      .filter((r) => r.status === "processed" && r.type === "refund")
+      .reduce((sum, r) => sum + r.amount, 0);
+
+    if (payment) {
+      if (
+        payment.status === "refunded" ||
+        alreadyProcessedRefundsTotal >= payment.amount - 0.005
+      ) {
+        throw new OctoApiError(
+          422,
+          "PAYMENT_ALREADY_REFUNDED",
+          `Order ${params.orderId} payment (${payment.id}) has already been fully refunded.`
+        );
+      }
+      if (alreadyProcessedRefundsTotal + params.amount > payment.amount + 0.01) {
+        throw new OctoApiError(
+          422,
+          "REFUND_EXCEEDS_CAPTURED_BALANCE",
+          `Requested refund (${params.amount}) plus already-processed refunds (${alreadyProcessedRefundsTotal}) exceeds captured payment amount (${payment.amount}).`
+        );
+      }
+    }
+
     let refundId = `ref_${crypto.randomUUID().slice(0, 16)}`;
+    let refundStatus: DccRefundStatus = "processed";
+    let rawProviderRefundStatus: string | undefined;
     let provenanceSource: PaymentEvidenceProvenanceSource = "explicit_test_simulation";
 
-    if (
-      payment?.paymentProvider === "square" &&
-      payment.providerPaymentId &&
-      (params.options?.squareClient || (token && !payment.providerPaymentId.startsWith("mock_")))
-    ) {
+    const shouldInvokeProvider = Boolean(
+      params.options?.squareClient ||
+        (payment?.paymentProvider === "square" &&
+          payment.providerPaymentId &&
+          token &&
+          payment.provenanceSource !== "explicit_test_simulation" &&
+          !payment.providerPaymentId.startsWith("mock_"))
+    );
+
+    if (shouldInvokeProvider) {
       if (isSquareProduction()) {
         assertValidDccSquareProductionConfig();
       }
@@ -1000,7 +1638,7 @@ export class DccPaymentService {
             amount: BigInt(amountCents),
             currency: (params.currency || "USD") as any,
           },
-          paymentId: payment.providerPaymentId,
+          paymentId: payment?.providerPaymentId || payment?.id || params.orderId,
           reason: params.reason || "DCC Order Cancellation",
         });
         const providerRefundId = sqRefundRes?.refund?.id;
@@ -1014,9 +1652,24 @@ export class DccPaymentService {
         if (providerRefundId) {
           refundId = providerRefundId;
         }
+        const rawStatus = sqRefundRes?.refund?.status;
+        rawProviderRefundStatus = typeof rawStatus === "string" ? rawStatus : undefined;
+        refundStatus = mapSquareRefundStatusToDccStatus(rawStatus);
         provenanceSource = "provider_api_response";
+
+        if (refundStatus === "failed") {
+          throw new OctoApiError(
+            422,
+            "REFUND_PROVIDER_REJECTED",
+            `Square refund returned failed/rejected status '${rawProviderRefundStatus || refundStatus}'`
+          );
+        }
       } catch (sqErr: any) {
-        if (!explicitSim || process.env.NODE_ENV === "production") {
+        if (
+          !explicitSim ||
+          params.options?.squareClient ||
+          process.env.NODE_ENV === "production"
+        ) {
           if (sqErr instanceof OctoApiError) throw sqErr;
           throw new OctoApiError(
             502,
@@ -1036,20 +1689,19 @@ export class DccPaymentService {
       type: "refund",
       amount: params.amount,
       currency: params.currency || "USD",
-      status: "processed",
+      status: refundStatus,
+      providerStatus: rawProviderRefundStatus,
       reason: params.reason || "Customer cancellation refund",
       provenanceSource,
-      settlementAdjusted: false,
+      settlementAdjusted: refundStatus === "processed",
       createdAt: now,
     };
 
-    const existingRefunds = await this.getRefundsForOrder(params.orderId);
-    const totalRefunded =
-      existingRefunds.reduce((sum, r) => (r.id === refundId ? sum : sum + r.amount), 0) +
-      params.amount;
-
-    if (payment) {
-      payment.status = totalRefunded >= payment.amount ? "refunded" : "partially_refunded";
+    // Only completed ("processed") refunds reduce the captured payment balance
+    if (refundStatus === "processed" && payment) {
+      const totalRefunded = alreadyProcessedRefundsTotal + params.amount;
+      payment.status =
+        totalRefunded >= payment.amount - 0.005 ? "refunded" : "partially_refunded";
       payment.updatedAt = now;
     }
 
@@ -1070,11 +1722,15 @@ export class DccPaymentService {
           reason: encodeRefundReasonMeta({
             reason: refundRecord.reason || "Customer cancellation refund",
             provenanceSource,
+            providerStatus: rawProviderRefundStatus,
           }),
-          settlementImpact: "reduced_pending",
+          settlementImpact:
+            refundStatus === "processed"
+              ? "reduced_pending"
+              : "pending_provider_confirmation",
         });
 
-        if (payment) {
+        if (payment && refundStatus === "processed") {
           await db
             .update(dccOrderPayments)
             .set({ status: payment.status, updatedAt: new Date() })
@@ -1082,14 +1738,17 @@ export class DccPaymentService {
         }
 
         await db.insert(octoAuditLogs).values({
-          action: "REFUND_PROCESSED",
+          action: refundStatus === "processed" ? "REFUND_PROCESSED" : "REFUND_PENDING_OR_UNRESOLVED",
           entityType: "REFUND",
           entityId: refundRecord.id,
           status: "SUCCESS",
           payload: {
             orderId: params.orderId,
             orderItemId: params.orderItemId,
+            bookingId: params.bookingId,
             amount: params.amount,
+            status: refundRecord.status,
+            providerStatus: rawProviderRefundStatus || null,
             provenanceSource,
           },
         });
