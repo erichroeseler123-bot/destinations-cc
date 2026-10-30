@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { trackEvent } from "@/lib/analytics";
 import { DccRecommendationOutcomeV1, DccTravelerContextV1, getStoredDccTravelerContext } from "@/lib/dcc/travelerContext";
@@ -280,6 +280,8 @@ export default function NewOrleansRecommendationFlow() {
   const [result, setResult] = useState<RecommendationResult | null>(null);
   const [liveContext, setLiveContext] = useState<LiveRecommendationContext>({});
   const [dccPrefillCount, setDccPrefillCount] = useState(0);
+  const headingRef = useRef<HTMLHeadingElement | null>(null);
+  const shouldMoveFocusRef = useRef(false);
 
   const emitChooserEvent = (eventName: string, extra: Record<string, unknown> = {}) => {
     const context = getWnoFunnelContext();
@@ -447,6 +449,12 @@ export default function NewOrleansRecommendationFlow() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    if (!shouldMoveFocusRef.current) return;
+    shouldMoveFocusRef.current = false;
+    headingRef.current?.focus();
+  }, [result, stepIndex]);
+
   const currentStepId = STEPS[stepIndex];
   const currentQuestion = QUESTIONS[currentStepId];
 
@@ -470,6 +478,7 @@ export default function NewOrleansRecommendationFlow() {
       return;
     }
 
+    shouldMoveFocusRef.current = true;
     completeChooser(nextAnswers as RecommendationInputs);
   };
 
@@ -482,6 +491,7 @@ export default function NewOrleansRecommendationFlow() {
       // Ignore storage errors on reset.
     }
     emitChooserEvent("chooser_restarted");
+    shouldMoveFocusRef.current = true;
     setAnswers({});
     setDccPrefillCount(0);
     setStepIndex(0);
@@ -507,94 +517,119 @@ export default function NewOrleansRecommendationFlow() {
     });
   };
 
-  if (result) {
-    return (
-      <div className={`${visualStyles.surfacePanel} mt-8 p-6 md:p-10`}>
-        <div className="text-center">
-          <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--nola-gold)]">Your concierge recommendation</p>
-          <h3 className={`mt-3 text-3xl uppercase tracking-wide text-[var(--nola-ivory)] md:text-4xl ${visualStyles.accentFont}`}>Our top picks for your group</h3>
-          <p className="mt-2 text-sm text-[var(--nola-text-muted)]">Verified options matching your party size, timing, and transportation needs.</p>
-          <button onClick={restart} className="mt-4 text-xs font-bold uppercase tracking-widest text-[var(--nola-text-muted)] hover:text-[var(--nola-gold)]">Start over</button>
-        </div>
-
-        {result.isNoFit || !result.primary ? (
-          <div className="mx-auto mt-10 max-w-2xl border border-[var(--nola-border)] bg-[var(--nola-bg-charcoal)] p-8 text-center">
-            <h4 className="text-2xl font-bold text-[var(--nola-ivory)]">Let’s narrow it another way.</h4>
-            <p className="mt-4 text-sm leading-6 text-[var(--nola-text-muted)]">None of the 21 curated experiences is a strong enough fit for that exact combination. Change an answer or let our local team help with your timing and group.</p>
-            <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
-              <button onClick={restart} className="border border-[var(--nola-gold)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-[var(--nola-gold)]">Adjust answers</button>
-              <Link href="/contact" data-wno-event="chooser_concierge_fallback_clicked" className="bg-[var(--nola-gold)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-[var(--nola-bg-black)]">Get Tour Planning Help</Link>
-            </div>
-          </div>
-        ) : (
-          <div className="mx-auto mt-10 max-w-3xl space-y-6">
-            <RecommendationCard
-              slug={result.primary.slug}
-              reasons={result.primary.reasons}
-              cautions={result.primary.cautionReasons}
-              rank="primary"
-              href={getTourHref(result.primary.slug)}
-              onClick={() => handleRecommendationClick(result.primary!.slug, "primary")}
-            />
-            {result.secondary && (
-              <RecommendationCard
-                slug={result.secondary.slug}
-                reasons={result.secondary.reasons}
-                cautions={result.secondary.cautionReasons}
-                rank="secondary"
-                href={getTourHref(result.secondary.slug)}
-                onClick={() => handleRecommendationClick(result.secondary!.slug, "secondary")}
-              />
-            )}
-            {result.tertiary && (
-              <RecommendationCard
-                slug={result.tertiary.slug}
-                reasons={result.tertiary.reasons}
-                cautions={result.tertiary.cautionReasons}
-                rank="tertiary"
-                href={getTourHref(result.tertiary.slug)}
-                onClick={() => handleRecommendationClick(result.tertiary!.slug, "tertiary")}
-              />
-            )}
-          </div>
-        )}
-
-        <div className="mt-10 text-center">
-          <p className="text-sm text-[var(--nola-text-muted)]">Still not sure? Tell us when you’re free, who is with you, and what kind of New Orleans you want.</p>
-          <Link href="/contact" data-wno-event="chooser_planning_help_clicked" className="mt-3 inline-block text-xs font-bold uppercase tracking-widest text-[var(--nola-gold)]">Get planning help →</Link>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className={`${visualStyles.surfacePanel} mt-8 p-6 md:p-10`}>
-      <div className="mx-auto max-w-xl">
-        {dccPrefillCount > 0 && (
+      <div className={result ? "text-center" : "mx-auto max-w-xl"}>
+        {!result && dccPrefillCount > 0 && (
           <p className="mb-5 text-center text-xs leading-5 text-[var(--nola-text-muted)]">
             We carried {dccPrefillCount} detail{dccPrefillCount === 1 ? "" : "s"} from your trip context, so we’ll only ask what’s still missing.
           </p>
         )}
-        <div className="mb-8 flex justify-center gap-2" aria-hidden="true">
-          {STEPS.map((step, index) => (
-            <span key={step} className={`h-[3px] ${index === stepIndex ? "w-8 bg-[var(--nola-gold)]" : answers[step] ? "w-4 bg-[var(--nola-gold-muted)]" : "w-4 bg-[var(--nola-border)]"}`} />
-          ))}
-        </div>
-        <p className="text-center text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--nola-gold)]">Question {stepIndex + 1} of {STEPS.length}</p>
-        <h3 className={`mt-3 text-center text-2xl text-[var(--nola-ivory)] md:text-3xl ${visualStyles.accentFont}`}>{currentQuestion.title}</h3>
-        <div className="mt-8 space-y-3">
-          {currentQuestion.options.map((option) => (
-            <button
-              key={option}
-              onClick={() => handleSelect(option)}
-              className="w-full border border-[var(--nola-border)] bg-[var(--nola-bg-charcoal)] px-5 py-4 text-left text-sm text-[var(--nola-ivory)] transition hover:border-[var(--nola-gold)] hover:text-[var(--nola-gold)]"
-            >
-              {option}
-            </button>
-          ))}
-        </div>
-        {stepIndex > 0 && <button onClick={back} className="mt-6 text-xs font-bold uppercase tracking-widest text-[var(--nola-text-muted)] hover:text-[var(--nola-gold)]">← Back</button>}
+        {!result && (
+          <div className="mb-8 flex justify-center gap-2" aria-hidden="true">
+            {STEPS.map((step, index) => (
+              <span key={step} className={`h-[3px] ${index === stepIndex ? "w-8 bg-[var(--nola-gold)]" : answers[step] ? "w-4 bg-[var(--nola-gold-muted)]" : "w-4 bg-[var(--nola-border)]"}`} />
+            ))}
+          </div>
+        )}
+        <p
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          className={
+            result
+              ? "text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--nola-gold)]"
+              : "text-center text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--nola-gold)]"
+          }
+        >
+          {result ? "Your concierge recommendation" : `Question ${stepIndex + 1} of ${STEPS.length}`}
+        </p>
+        <h3
+          ref={headingRef}
+          tabIndex={-1}
+          className={
+            result
+              ? `mt-3 text-3xl uppercase tracking-wide text-[var(--nola-ivory)] focus:outline focus:outline-2 focus:outline-offset-4 focus:outline-[var(--nola-gold)] md:text-4xl ${visualStyles.accentFont}`
+              : `mt-3 text-center text-2xl text-[var(--nola-ivory)] focus:outline focus:outline-2 focus:outline-offset-4 focus:outline-[var(--nola-gold)] md:text-3xl ${visualStyles.accentFont}`
+          }
+        >
+          {result ? "Our top picks for your group" : currentQuestion.title}
+        </h3>
+        {result ? (
+          <>
+            <p className="mt-2 text-sm text-[var(--nola-text-muted)]">Verified options matching your party size, timing, and transportation needs.</p>
+            <button type="button" onClick={restart} className="mt-4 text-xs font-bold uppercase tracking-widest text-[var(--nola-text-muted)] hover:text-[var(--nola-gold)]">Start over</button>
+          </>
+        ) : (
+          <>
+            <div className="mt-8 space-y-3">
+              {currentQuestion.options.map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  aria-pressed={answers[currentStepId] === option}
+                  onClick={() => handleSelect(option)}
+                  className={`w-full border ${answers[currentStepId] === option ? "border-[var(--nola-gold)]" : "border-[var(--nola-border)]"} bg-[var(--nola-bg-charcoal)] px-5 py-4 text-left text-sm text-[var(--nola-ivory)] transition hover:border-[var(--nola-gold)] hover:text-[var(--nola-gold)]`}
+                >
+                  {option}
+                </button>
+              ))}
+            </div>
+            {stepIndex > 0 && <button type="button" onClick={back} className="mt-6 text-xs font-bold uppercase tracking-widest text-[var(--nola-text-muted)] hover:text-[var(--nola-gold)]">← Back</button>}
+          </>
+        )}
       </div>
+
+      {result && (
+        <>
+          {result.isNoFit || !result.primary ? (
+            <div className="mx-auto mt-10 max-w-2xl border border-[var(--nola-border)] bg-[var(--nola-bg-charcoal)] p-8 text-center">
+              <h4 className="text-2xl font-bold text-[var(--nola-ivory)]">Let’s narrow it another way.</h4>
+              <p className="mt-4 text-sm leading-6 text-[var(--nola-text-muted)]">None of the 21 curated experiences is a strong enough fit for that exact combination. Change an answer or let our local team help with your timing and group.</p>
+              <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+                <button type="button" onClick={restart} className="border border-[var(--nola-gold)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-[var(--nola-gold)]">Adjust answers</button>
+                <Link href="/contact" data-wno-event="chooser_concierge_fallback_clicked" className="bg-[var(--nola-gold)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-[var(--nola-bg-black)]">Get Tour Planning Help</Link>
+              </div>
+            </div>
+          ) : (
+            <div className="mx-auto mt-10 max-w-3xl space-y-6">
+              <RecommendationCard
+                slug={result.primary.slug}
+                reasons={result.primary.reasons}
+                cautions={result.primary.cautionReasons}
+                rank="primary"
+                href={getTourHref(result.primary.slug)}
+                onClick={() => handleRecommendationClick(result.primary!.slug, "primary")}
+              />
+              {result.secondary && (
+                <RecommendationCard
+                  slug={result.secondary.slug}
+                  reasons={result.secondary.reasons}
+                  cautions={result.secondary.cautionReasons}
+                  rank="secondary"
+                  href={getTourHref(result.secondary.slug)}
+                  onClick={() => handleRecommendationClick(result.secondary!.slug, "secondary")}
+                />
+              )}
+              {result.tertiary && (
+                <RecommendationCard
+                  slug={result.tertiary.slug}
+                  reasons={result.tertiary.reasons}
+                  cautions={result.tertiary.cautionReasons}
+                  rank="tertiary"
+                  href={getTourHref(result.tertiary.slug)}
+                  onClick={() => handleRecommendationClick(result.tertiary!.slug, "tertiary")}
+                />
+              )}
+            </div>
+          )}
+
+          <div className="mt-10 text-center">
+            <p className="text-sm text-[var(--nola-text-muted)]">Still not sure? Tell us when you’re free, who is with you, and what kind of New Orleans you want.</p>
+            <Link href="/contact" data-wno-event="chooser_planning_help_clicked" className="mt-3 inline-block text-xs font-bold uppercase tracking-widest text-[var(--nola-gold)]">Get planning help →</Link>
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -699,4 +734,3 @@ function RecommendationCard({
     </div>
   );
 }
-
