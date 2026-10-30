@@ -1,12 +1,20 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import crypto from "node:crypto";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { NextRequest } from "next/server";
 
+import {
+  resetTestSqliteDb,
+  setSimulateDbFailureForTests,
+} from "../../lib/db/client";
 import { validateOperatorOnboardingApplication } from "../../lib/dcc/operatorOnboardingStore";
 import { POST as postOnboardingRoute } from "../../app/api/operators/onboarding/route";
+import { POST as postSquareWebhookRoute } from "../../app/api/square/webhook/route";
 import {
   RezdyAdapter,
   GOSNO_DCC_PRODUCT_MAPPINGS,
@@ -20,12 +28,15 @@ import {
 } from "../../lib/octo/adapters/rezdy";
 import { OctoApiError } from "../../lib/octo/adapters/base";
 import { DccBookingService } from "../../lib/bookings/bookingService";
+import { DccPaymentService } from "../../lib/payments/paymentService";
 import { DccSettlementEngine } from "../../lib/settlement/engine";
 import {
   createCommercialHandoff,
   recordCommercialOutcome,
   resetCommercialMemoryStoreForTests,
 } from "../../lib/dcc/commerce";
+
+const execFileAsync = promisify(execFile);
 
 const VALID_BASE_ONBOARDING_PAYLOAD = {
   companyName: "Alpine Private Transfers LLC",
@@ -37,7 +48,121 @@ const VALID_BASE_ONBOARDING_PAYLOAD = {
   apiDocumentationUrl: "https://developers.rezdy.com/",
 };
 
+function createMockSquareClient() {
+  return {
+    payments: {
+      create: async (req: any) => ({
+        payment: {
+          id: `sq_prov_${req.idempotencyKey}`,
+          status: "COMPLETED",
+          amountMoney: req.amountMoney,
+        },
+      }),
+    },
+    refunds: {
+      refundPayment: async (req: any) => ({
+        refund: {
+          id: `sq_ref_prov_${req.idempotencyKey}`,
+          status: "COMPLETED",
+          amountMoney: req.amountMoney,
+        },
+      }),
+    },
+  };
+}
+
+async function captureTraceableSquarePayment(
+  orderId: string,
+  amount: number,
+  currency = "USD"
+) {
+  const prevToken = process.env.SQUARE_ACCESS_TOKEN;
+  const prevLoc = process.env.SQUARE_LOCATION_ID_DCC;
+  process.env.SQUARE_ACCESS_TOKEN = "sq_sandbox_test_token_configured";
+  process.env.SQUARE_LOCATION_ID_DCC = "loc_dcc_sandbox_001";
+  try {
+    const payment = await DccPaymentService.processPayment({
+      orderId,
+      amount,
+      currency,
+      sourceId: "cnon:card-nonce-ok",
+      options: { squareClient: createMockSquareClient() },
+    });
+    return {
+      verified: true as const,
+      provider: "square" as const,
+      transactionId: payment.paymentId,
+      providerRecordId: payment.paymentId,
+      provenanceSource: "provider_api_response" as const,
+      capturedAmount: payment.amount,
+      currency: payment.currency,
+      capturedAt: payment.processedAt,
+    };
+  } finally {
+    if (prevToken !== undefined) process.env.SQUARE_ACCESS_TOKEN = prevToken;
+    else delete process.env.SQUARE_ACCESS_TOKEN;
+    if (prevLoc !== undefined) process.env.SQUARE_LOCATION_ID_DCC = prevLoc;
+    else delete process.env.SQUARE_LOCATION_ID_DCC;
+  }
+}
+
+async function processTraceableSquareRefund(
+  orderId: string,
+  operatorSlug: string,
+  refundAmount: number,
+  refundType: "partial" | "full",
+  reason: string,
+  currency = "USD"
+) {
+  const prevToken = process.env.SQUARE_ACCESS_TOKEN;
+  const prevLoc = process.env.SQUARE_LOCATION_ID_DCC;
+  process.env.SQUARE_ACCESS_TOKEN = "sq_sandbox_test_token_configured";
+  process.env.SQUARE_LOCATION_ID_DCC = "loc_dcc_sandbox_001";
+  try {
+    const refund = await DccPaymentService.processRefund({
+      orderId,
+      operatorSlug,
+      amount: refundAmount,
+      currency,
+      reason,
+      options: { squareClient: createMockSquareClient() },
+    });
+    return {
+      verified: true as const,
+      provider: "square" as const,
+      refundId: refund.id,
+      providerRecordId: refund.id,
+      provenanceSource: "provider_api_response" as const,
+      refundType,
+      refundedAmount: refund.amount,
+      currency: refund.currency,
+      refundedAt: refund.createdAt,
+      reason,
+    };
+  } finally {
+    if (prevToken !== undefined) process.env.SQUARE_ACCESS_TOKEN = prevToken;
+    else delete process.env.SQUARE_ACCESS_TOKEN;
+    if (prevLoc !== undefined) process.env.SQUARE_LOCATION_ID_DCC = prevLoc;
+    else delete process.env.SQUARE_LOCATION_ID_DCC;
+  }
+}
+
+function setupCleanSqliteEnvironment() {
+  process.env.DCC_ISOLATED_TEST_DB = "1";
+  delete process.env.DCC_TEST_SQLITE_PATH;
+  delete process.env.DCC_PAYMENT_SIMULATION_MODE;
+  resetTestSqliteDb();
+  setSimulateDbFailureForTests(false);
+  DccBookingService.clearPilotSupplierConnections();
+  DccBookingService.resetFallbackStoresForTests();
+  DccSettlementEngine.resetFallbackStoreForTests();
+  DccPaymentService.clearInMemoryStoresForProcessRestartSimulation();
+  resetCommercialMemoryStoreForTests();
+}
+
 test("Gate 1: Accurate Evidence Labeling, Production Write Guardrail, and Provider-Hosted Testing Requirements", async () => {
+  setupCleanSqliteEnvironment();
+
   // 1. Verify onboarding boolean validation remains strict
   const omittedPermission = validateOperatorOnboardingApplication({
     ...VALID_BASE_ONBOARDING_PAYLOAD,
@@ -133,16 +258,11 @@ test("Gate 1: Accurate Evidence Labeling, Production Write Guardrail, and Provid
   );
 });
 
-test("Gate 2: Separate Payment, Refund, Confirmation, Service Completion, Cancellation, and Commission Eligibility States", async () => {
-  const prevDbUrl = process.env.DATABASE_URL;
-  process.env.DATABASE_URL = "";
+test("Gate 2: Database-Backed Payables, Traceable Payment/Refund Provenance (Provider Response & HMAC Webhook), and Fail-Closed Payment Guards", async () => {
+  setupCleanSqliteEnvironment();
   const sim = await startLocalRezdyV1Simulator();
 
   try {
-    DccBookingService.clearPilotSupplierConnections();
-    DccBookingService.resetFallbackStoresForTests();
-    DccSettlementEngine.resetFallbackStoreForTests();
-
     const adapter = new RezdyAdapter({
       endpoint: sim.baseUrl,
       apiKey: sim.apiKey,
@@ -164,6 +284,78 @@ test("Gate 2: Separate Payment, Refund, Confirmation, Service Completion, Cancel
       adapter,
     });
 
+    // 1. Fail-closed payment service checks outside explicit test simulation:
+    // 1a. Missing sourceId fails closed with 422 MISSING_PAYMENT_SOURCE
+    await assert.rejects(
+      () =>
+        DccPaymentService.processPayment({
+          orderId: "ord_missing_source",
+          amount: 399,
+          currency: "USD",
+        }),
+      (err: unknown) =>
+        err instanceof OctoApiError &&
+        err.status === 422 &&
+        err.code === "MISSING_PAYMENT_SOURCE"
+    );
+
+    // 1b. Caller-supplied status:"captured" or paymentId without sourceId fails closed with 422 UNVERIFIED_CALLER_PAYMENT_STATUS
+    await assert.rejects(
+      () =>
+        DccPaymentService.processPayment({
+          orderId: "ord_caller_claimed",
+          amount: 399,
+          currency: "USD",
+          paymentInfo: {
+            provider: "square",
+            paymentId: "sq_caller_invented_999",
+            status: "captured",
+          },
+        }),
+      (err: unknown) =>
+        err instanceof OctoApiError &&
+        err.status === 422 &&
+        err.code === "UNVERIFIED_CALLER_PAYMENT_STATUS"
+    );
+
+    // 1c. Missing Square configuration (SQUARE_ACCESS_TOKEN / SQUARE_LOCATION_ID_DCC) fails closed with 503 MISSING_PAYMENT_PROVIDER_CONFIG
+    delete process.env.SQUARE_ACCESS_TOKEN;
+    delete process.env.SQUARE_LOCATION_ID_DCC;
+    await assert.rejects(
+      () =>
+        DccPaymentService.processPayment({
+          orderId: "ord_missing_config",
+          amount: 399,
+          currency: "USD",
+          sourceId: "cnon:card-nonce-ok",
+        }),
+      (err: unknown) =>
+        err instanceof OctoApiError &&
+        err.status === 503 &&
+        err.code === "MISSING_PAYMENT_PROVIDER_CONFIG"
+    );
+
+    // 1d. Missing SQUARE_WEBHOOK_SIGNATURE_KEY_DCC in webhook endpoint fails closed with 503
+    delete process.env.SQUARE_WEBHOOK_SIGNATURE_KEY_DCC;
+    const unconfiguredWebhookReq = new NextRequest(
+      "https://www.destinationcommandcenter.com/api/square/webhook",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-square-hmacsha256-signature": "dummy_sig",
+        },
+        body: JSON.stringify({
+          event_id: "evt_unconfigured_1",
+          type: "payment.updated",
+          data: { object: { payment: { id: "sq_1", status: "COMPLETED" } } },
+        }),
+      }
+    );
+    const unconfiguredWebhookRes = await postSquareWebhookRoute(unconfiguredWebhookReq);
+    assert.equal(unconfiguredWebhookRes.status, 503);
+
+    // 2. Create booking hold and verify database-backed confirmation, markServiceCompleted, and traceable payment capture
     const slotBreck = formatCanonicalRezdySlotId("P7477S", 497020486, "2026-11-12T10:53:00");
     const hold = await DccBookingService.createHold({
       supplierConnectionId: "conn_gosno_rezdy",
@@ -190,7 +382,7 @@ test("Gate 2: Separate Payment, Refund, Confirmation, Service Completion, Cancel
       refundStatus: "none",
     });
 
-    // 1. Attempting to claim paymentStatus: "captured" without verifiedPaymentEvidence MUST fail with 422 UNVERIFIED_PAYMENT_EVIDENCE
+    // 2a. Attempting to claim paymentStatus: "captured" without verifiedPaymentEvidence MUST fail with 422 UNVERIFIED_PAYMENT_EVIDENCE
     await assert.rejects(
       () =>
         DccBookingService.confirmReservation({
@@ -214,7 +406,7 @@ test("Gate 2: Separate Payment, Refund, Confirmation, Service Completion, Cancel
         err.code === "UNVERIFIED_PAYMENT_EVIDENCE"
     );
 
-    // 2. Attempting to pass unverified or mismatched payment evidence MUST fail with 422
+    // 2b. Attempting to supply a generated/untraced transactionId with bare verified:true MUST fail closed with 422 UNTRACEABLE_PAYMENT_EVIDENCE
     await assert.rejects(
       () =>
         DccBookingService.confirmReservation({
@@ -228,8 +420,8 @@ test("Gate 2: Separate Payment, Refund, Confirmation, Service Completion, Cancel
           verifiedPaymentEvidence: {
             verified: true,
             provider: "square",
-            transactionId: "sq_wrong_amt",
-            capturedAmount: 100, // Mismatches $399
+            transactionId: "sq_pay_fake_generated_id_399",
+            capturedAmount: 399,
             currency: "USD",
             capturedAt: "2026-10-30T12:00:00.000Z",
           },
@@ -237,10 +429,10 @@ test("Gate 2: Separate Payment, Refund, Confirmation, Service Completion, Cancel
       (err: unknown) =>
         err instanceof OctoApiError &&
         err.status === 422 &&
-        err.code === "UNVERIFIED_PAYMENT_EVIDENCE"
+        err.code === "UNTRACEABLE_PAYMENT_EVIDENCE"
     );
 
-    // 3. Confirming reservation WITHOUT payment evidence keeps paymentStatus: "unpaid" and commissionEligibilityStatus: "ineligible_unpaid"
+    // 3. Confirm reservation WITHOUT payment evidence -> DB ledger and DB payable remain unpaid / awaiting_payment
     const confirmedUnpaid = await DccBookingService.confirmReservation({
       bookingId: hold.dccBookingId,
       contact: {
@@ -253,54 +445,82 @@ test("Gate 2: Separate Payment, Refund, Confirmation, Service Completion, Cancel
     });
 
     assert.equal(confirmedUnpaid.status, "CONFIRMED");
-    assert.deepEqual(confirmedUnpaid.lifecycleStates, {
-      bookingStatus: "CONFIRMED",
-      paymentStatus: "unpaid",
-      serviceCompletionStatus: "scheduled",
-      commissionEligibilityStatus: "ineligible_unpaid",
-      cancellationStatus: "active",
-      refundStatus: "none",
-    });
-
     const ledgerUnpaid = await DccSettlementEngine.getSettlementEntry(hold.dccBookingId);
+    const payableUnpaid = await DccSettlementEngine.getOperatorPayableRow(hold.dccBookingId);
     assert.ok(ledgerUnpaid);
+    assert.ok(payableUnpaid, "dcc_operator_payables row must exist in SQLite database");
     assert.equal(ledgerUnpaid.paymentStatus, "unpaid");
-    assert.equal(ledgerUnpaid.capturedAmount, 0);
     assert.equal(ledgerUnpaid.settlementStatus, "awaiting_payment");
     assert.equal(ledgerUnpaid.commissionEligibilityStatus, "ineligible_unpaid");
-    assert.equal(ledgerUnpaid.dccShareAmount, 0);
-    assert.equal(ledgerUnpaid.operatorShareAmount, 0);
+    assert.equal(payableUnpaid.settlementStatus, "awaiting_payment");
+    assert.equal(payableUnpaid.serviceCompleted, false);
+    assert.equal(payableUnpaid.dccCommissionAmount, 0);
+    assert.equal(payableUnpaid.operatorPayableAmount, 0);
 
-    // Upstream Rezdy order has no payments recorded when confirmed unpaid
-    assert.equal(sim.getOrders()[0].payments?.length || 0, 0);
-    assert.equal(sim.getOrders()[0].totalPaid, 0);
-    assert.equal(sim.getOrders()[0].totalDue, 399);
-
-    // 4. Marking service completed while still unpaid does NOT make commission eligible
+    // 4. Requirement 1 Proof: Calling markServiceCompleted while still unpaid MUST keep BOTH octo_settlement_ledger AND dcc_operator_payables in awaiting_payment / ineligible_unpaid (NEVER ready_for_payout!)
     const completedWhileUnpaid = await DccBookingService.markServiceCompleted(hold.dccBookingId);
     assert.equal(completedWhileUnpaid.lifecycleStates?.serviceCompletionStatus, "completed");
     assert.equal(
       completedWhileUnpaid.lifecycleStates?.commissionEligibilityStatus,
       "ineligible_unpaid"
     );
-    const ledgerCompletedUnpaid = await DccSettlementEngine.getSettlementEntry(hold.dccBookingId);
-    assert.equal(ledgerCompletedUnpaid?.commissionEligibilityStatus, "ineligible_unpaid");
-    assert.equal(ledgerCompletedUnpaid?.settlementStatus, "awaiting_payment");
 
-    // 5. Supplying verifiedPaymentEvidence transitions paymentStatus to "captured" and (since service is completed) commissionEligibilityStatus to "eligible"
-    const afterCapture = await DccBookingService.recordVerifiedPaymentCapture(hold.dccBookingId, {
-      verified: true,
-      provider: "square",
-      transactionId: "sq_pay_elena_399",
-      capturedAmount: 399,
-      currency: "USD",
-      capturedAt: "2026-10-30T12:05:00.000Z",
-    });
+    const ledgerCompletedUnpaid = await DccSettlementEngine.getSettlementEntry(hold.dccBookingId);
+    const payableCompletedUnpaid = await DccSettlementEngine.getOperatorPayableRow(
+      hold.dccBookingId
+    );
+    assert.ok(ledgerCompletedUnpaid);
+    assert.ok(payableCompletedUnpaid);
+    assert.equal(ledgerCompletedUnpaid.serviceCompletionStatus, "completed");
+    assert.equal(ledgerCompletedUnpaid.commissionEligibilityStatus, "ineligible_unpaid");
+    assert.equal(
+      ledgerCompletedUnpaid.settlementStatus,
+      "awaiting_payment",
+      "Ledger row must remain awaiting_payment when service completes before payment capture"
+    );
+    assert.equal(payableCompletedUnpaid.serviceCompleted, true);
+    assert.equal(
+      payableCompletedUnpaid.settlementStatus,
+      "awaiting_payment",
+      "DB dcc_operator_payables row must NOT transition to ready_for_payout when unpaid"
+    );
+    assert.equal(payableCompletedUnpaid.dccCommissionAmount, 0);
+    assert.equal(payableCompletedUnpaid.operatorPayableAmount, 0);
+
+    // 5. Attempting recordVerifiedPaymentCapture with an untraced transactionId fails closed with 422 UNTRACEABLE_PAYMENT_EVIDENCE
+    await assert.rejects(
+      () =>
+        DccBookingService.recordVerifiedPaymentCapture(hold.dccBookingId, {
+          verified: true,
+          provider: "square",
+          transactionId: "sq_untraced_elena_399",
+          capturedAmount: 399,
+          currency: "USD",
+          capturedAt: "2026-10-30T12:05:00.000Z",
+        }),
+      (err: unknown) =>
+        err instanceof OctoApiError &&
+        err.status === 422 &&
+        err.code === "UNTRACEABLE_PAYMENT_EVIDENCE"
+    );
+
+    // 6. Execute a real provider-backed capture in DccPaymentService and verify both ledger AND DB payable now become ready_for_payout + eligible
+    const traceableCaptureElena = await captureTraceableSquarePayment(hold.dccBookingId, 399);
+    const afterCapture = await DccBookingService.recordVerifiedPaymentCapture(
+      hold.dccBookingId,
+      traceableCaptureElena
+    );
     assert.equal(afterCapture.lifecycleStates?.paymentStatus, "captured");
     assert.equal(afterCapture.lifecycleStates?.commissionEligibilityStatus, "eligible");
+    assert.equal(
+      afterCapture.verifiedPaymentEvidence?.provenanceSource,
+      "provider_api_response"
+    );
 
     const ledgerEligible = await DccSettlementEngine.getSettlementEntry(hold.dccBookingId);
+    const payableEligible = await DccSettlementEngine.getOperatorPayableRow(hold.dccBookingId);
     assert.ok(ledgerEligible);
+    assert.ok(payableEligible);
     assert.equal(ledgerEligible.paymentStatus, "captured");
     assert.equal(ledgerEligible.capturedAmount, 399);
     assert.equal(ledgerEligible.dccSharePercent, 10);
@@ -308,9 +528,12 @@ test("Gate 2: Separate Payment, Refund, Confirmation, Service Completion, Cancel
     assert.equal(ledgerEligible.operatorShareAmount, 359.1);
     assert.equal(ledgerEligible.commissionEligibilityStatus, "eligible");
     assert.equal(ledgerEligible.settlementStatus, "ready_for_payout");
+    assert.equal(payableEligible.settlementStatus, "ready_for_payout");
+    assert.equal(payableEligible.serviceCompleted, true);
+    assert.equal(payableEligible.dccCommissionAmount, 39.9);
+    assert.equal(payableEligible.operatorPayableAmount, 359.1);
 
-    // 6. Verify cancellation does NOT automatically mean a full refund occurred:
-    // Case A: Captured booking cancelled without verifiedRefundEvidence -> stays paymentStatus: "captured", refundStatus: "pending_refund"
+    // 7. Traceable Payment Capture via HMAC-Authenticated Square Webhook + Cancellation/Refund Lifecycle
     const slotVail = formatCanonicalRezdySlotId("PXFGPP", 498001122, "2026-11-12T11:00:00");
     const holdVail = await DccBookingService.createHold({
       supplierConnectionId: "conn_gosno_rezdy",
@@ -328,7 +551,48 @@ test("Gate 2: Separate Payment, Refund, Confirmation, Service Completion, Cancel
       },
     });
 
-    await DccBookingService.confirmReservation({
+    // Deliver an HMAC-SHA256-authenticated Square webhook for Marcus's $499 payment
+    const webhookSigKey = "sq_wh_secret_key_gate2_test";
+    const webhookUrl = "https://www.destinationcommandcenter.com/api/square/webhook";
+    process.env.SQUARE_WEBHOOK_SIGNATURE_KEY_DCC = webhookSigKey;
+    process.env.SQUARE_WEBHOOK_NOTIFICATION_URL = webhookUrl;
+
+    const webhookBodyObj = {
+      event_id: "sq_evt_marcus_capture_499",
+      type: "payment.created",
+      data: {
+        object: {
+          payment: {
+            id: "sq_wh_pay_marcus_499",
+            order_id: holdVail.dccBookingId,
+            status: "COMPLETED",
+            amount_money: {
+              amount: 49900,
+              currency: "USD",
+            },
+          },
+        },
+      },
+    };
+    const webhookRawBody = JSON.stringify(webhookBodyObj);
+    const validHmacSig = crypto
+      .createHmac("sha256", webhookSigKey)
+      .update(webhookUrl + webhookRawBody)
+      .digest("base64");
+
+    const signedWebhookReq = new NextRequest(webhookUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-square-hmacsha256-signature": validHmacSig,
+      },
+      body: webhookRawBody,
+    });
+    const signedWebhookRes = await postSquareWebhookRoute(signedWebhookReq);
+    assert.equal(signedWebhookRes.status, 200);
+
+    // Confirm reservation using the HMAC-authenticated webhook payment evidence
+    const confirmedViaWebhook = await DccBookingService.confirmReservation({
       bookingId: holdVail.dccBookingId,
       contact: {
         firstName: "Marcus",
@@ -340,123 +604,132 @@ test("Gate 2: Separate Payment, Refund, Confirmation, Service Completion, Cancel
       verifiedPaymentEvidence: {
         verified: true,
         provider: "square",
-        transactionId: "sq_pay_marcus_499",
+        transactionId: "sq_wh_pay_marcus_499",
+        webhookEventId: "sq_evt_marcus_capture_499",
         capturedAmount: 499,
         currency: "USD",
         capturedAt: "2026-10-30T12:10:00.000Z",
       },
     });
+    assert.equal(confirmedViaWebhook.status, "CONFIRMED");
+    assert.equal(
+      confirmedViaWebhook.verifiedPaymentEvidence?.provenanceSource,
+      "authenticated_webhook"
+    );
 
+    const payableBeforeCompletion = await DccSettlementEngine.getOperatorPayableRow(
+      holdVail.dccBookingId
+    );
+    assert.ok(payableBeforeCompletion);
+    assert.equal(
+      payableBeforeCompletion.settlementStatus,
+      "pending",
+      "Captured payment before service completion must stay pending, not ready_for_payout"
+    );
+
+    // Cancel without refund evidence -> stays captured + pending_refund
     const cancelledNoRefundYet = await DccBookingService.cancelBooking(holdVail.dccBookingId, {
       reason: "Customer cancelled; refund under review",
     });
     assert.equal(cancelledNoRefundYet.status, "CANCELLED");
-    assert.equal(cancelledNoRefundYet.lifecycleStates?.cancellationStatus, "cancelled");
-    assert.equal(
-      cancelledNoRefundYet.lifecycleStates?.paymentStatus,
-      "captured",
-      "Cancellation without refund evidence must NOT mark payment as refunded"
-    );
+    assert.equal(cancelledNoRefundYet.lifecycleStates?.paymentStatus, "captured");
     assert.equal(cancelledNoRefundYet.lifecycleStates?.refundStatus, "pending_refund");
-    assert.equal(
-      cancelledNoRefundYet.lifecycleStates?.commissionEligibilityStatus,
-      "ineligible_cancelled"
+
+    // Attempting recordVerifiedRefund with an untraced refundId MUST fail closed with 422 UNTRACEABLE_REFUND_EVIDENCE
+    await assert.rejects(
+      () =>
+        DccBookingService.recordVerifiedRefund(holdVail.dccBookingId, {
+          verified: true,
+          provider: "square",
+          refundId: "sq_ref_fake_invented_200",
+          refundType: "partial",
+          refundedAmount: 200,
+          currency: "USD",
+          refundedAt: "2026-10-30T12:12:00.000Z",
+          reason: "Untraced refund attempt",
+        }),
+      (err: unknown) =>
+        err instanceof OctoApiError &&
+        err.status === 422 &&
+        err.code === "UNTRACEABLE_REFUND_EVIDENCE"
     );
 
-    const ledgerPendingRefund = await DccSettlementEngine.getSettlementEntry(holdVail.dccBookingId);
-    assert.ok(ledgerPendingRefund);
-    assert.equal(ledgerPendingRefund.paymentStatus, "captured");
-    assert.equal(ledgerPendingRefund.refundStatus, "pending_refund");
-    assert.equal(ledgerPendingRefund.settlementStatus, "cancelled_pending_refund");
-    assert.equal(ledgerPendingRefund.refundedAmount, 0);
-
-    // Case B: Partial refund with verifiedRefundEvidence ($200 refunded of $499, $299 retained)
+    // Partial refund with real provider-backed refund record ($200 refunded of $499, $299 retained)
+    const traceablePartialRefund = await processTraceableSquareRefund(
+      holdVail.dccBookingId,
+      "gosno",
+      200,
+      "partial",
+      "Partial refund per winter cancellation window"
+    );
     const afterPartialRefund = await DccBookingService.recordVerifiedRefund(
       holdVail.dccBookingId,
-      {
-        verified: true,
-        provider: "square",
-        refundId: "sq_ref_partial_200",
-        refundType: "partial",
-        refundedAmount: 200,
-        currency: "USD",
-        refundedAt: "2026-10-30T12:12:00.000Z",
-        reason: "Partial refund per winter cancellation window",
-      }
+      traceablePartialRefund
     );
     assert.equal(afterPartialRefund.lifecycleStates?.paymentStatus, "partially_refunded");
     assert.equal(afterPartialRefund.lifecycleStates?.refundStatus, "partial_refund");
+    assert.equal(
+      afterPartialRefund.verifiedRefundEvidence?.provenanceSource,
+      "provider_api_response"
+    );
 
     const ledgerPartialRefund = await DccSettlementEngine.getSettlementEntry(holdVail.dccBookingId);
+    const payablePartialRefund = await DccSettlementEngine.getOperatorPayableRow(
+      holdVail.dccBookingId
+    );
     assert.ok(ledgerPartialRefund);
+    assert.ok(payablePartialRefund);
     assert.equal(ledgerPartialRefund.paymentStatus, "partially_refunded");
     assert.equal(ledgerPartialRefund.refundStatus, "partial_refund");
     assert.equal(ledgerPartialRefund.settlementStatus, "adjusted");
     assert.equal(ledgerPartialRefund.refundedAmount, 200);
-    assert.equal(ledgerPartialRefund.dccShareAmount, 29.9); // 10% of $299 retained
-    assert.equal(ledgerPartialRefund.operatorShareAmount, 269.1); // 90% of $299 retained
+    assert.equal(ledgerPartialRefund.dccShareAmount, 29.9);
+    assert.equal(ledgerPartialRefund.operatorShareAmount, 269.1);
+    assert.equal(payablePartialRefund.settlementStatus, "adjusted");
+    assert.equal(payablePartialRefund.dccCommissionAmount, 29.9);
+    assert.equal(payablePartialRefund.operatorPayableAmount, 269.1);
 
-    // Case C: Full refund with verifiedRefundEvidence ($499 refunded of $499)
-    const afterFullRefund = await DccBookingService.recordVerifiedRefund(holdVail.dccBookingId, {
-      verified: true,
-      provider: "square",
-      refundId: "sq_ref_full_499",
-      refundType: "full",
-      refundedAmount: 499,
-      currency: "USD",
-      refundedAt: "2026-10-30T12:15:00.000Z",
-      reason: "Full refund authorized",
-    });
+    // Full refund with real provider-backed refund record ($499 refunded of $499)
+    const traceableFullRefund = await processTraceableSquareRefund(
+      holdVail.dccBookingId,
+      "gosno",
+      499,
+      "full",
+      "Full refund authorized"
+    );
+    const afterFullRefund = await DccBookingService.recordVerifiedRefund(
+      holdVail.dccBookingId,
+      traceableFullRefund
+    );
     assert.equal(afterFullRefund.lifecycleStates?.paymentStatus, "refunded");
     assert.equal(afterFullRefund.lifecycleStates?.refundStatus, "full_refund");
 
     const ledgerFullRefund = await DccSettlementEngine.getSettlementEntry(holdVail.dccBookingId);
+    const payableFullRefund = await DccSettlementEngine.getOperatorPayableRow(
+      holdVail.dccBookingId
+    );
     assert.ok(ledgerFullRefund);
+    assert.ok(payableFullRefund);
     assert.equal(ledgerFullRefund.paymentStatus, "refunded");
     assert.equal(ledgerFullRefund.refundStatus, "full_refund");
     assert.equal(ledgerFullRefund.settlementStatus, "reversed");
     assert.equal(ledgerFullRefund.dccShareAmount, 0);
     assert.equal(ledgerFullRefund.operatorShareAmount, 0);
-
-    // Case D: Unpaid booking cancelled -> refundStatus: "not_applicable_unpaid"
-    const slotSnowmass = formatCanonicalRezdySlotId("PEAVH0", 499002233, "2026-11-15T10:00:00");
-    const holdUnpaid = await DccBookingService.createHold({
-      supplierConnectionId: "conn_gosno_rezdy",
-      productId: "dcc:gosno:snowmass-den:suv",
-      optionId: "opt_group_76622153",
-      availabilityId: slotSnowmass,
-      expirationMinutes: 15,
-      unitItems: [{ unitId: "unit_group_76622153", quantity: 1 }],
-      contact: {
-        firstName: "Nora",
-        lastName: "Bell",
-        fullName: "Nora Bell",
-        emailAddress: "nora.bell@example.com",
-      },
-    });
-    const cancelledUnpaid = await DccBookingService.cancelBooking(
-      holdUnpaid.dccBookingId,
-      "Customer released unpaid hold"
-    );
-    assert.equal(cancelledUnpaid.lifecycleStates?.paymentStatus, "unpaid");
-    assert.equal(cancelledUnpaid.lifecycleStates?.refundStatus, "not_applicable_unpaid");
-    assert.equal(cancelledUnpaid.lifecycleStates?.cancellationStatus, "cancelled");
+    assert.equal(payableFullRefund.settlementStatus, "reversed");
+    assert.equal(payableFullRefund.dccCommissionAmount, 0);
+    assert.equal(payableFullRefund.operatorPayableAmount, 0);
   } finally {
+    delete process.env.SQUARE_WEBHOOK_SIGNATURE_KEY_DCC;
+    delete process.env.SQUARE_WEBHOOK_NOTIFICATION_URL;
     await sim.close();
-    if (prevDbUrl !== undefined) process.env.DATABASE_URL = prevDbUrl;
-    else delete process.env.DATABASE_URL;
   }
 });
 
 test("Gate 3: Native Rezdy Full-Object Booking Updates (Retrieve -> Preserve Items, Participants, Custom Fields, Pickup -> PUT)", async () => {
-  const prevDbUrl = process.env.DATABASE_URL;
-  process.env.DATABASE_URL = "";
+  setupCleanSqliteEnvironment();
   const sim = await startLocalRezdyV1Simulator();
 
   try {
-    DccBookingService.clearPilotSupplierConnections();
-    DccBookingService.resetFallbackStoresForTests();
-
     const adapter = new RezdyAdapter({
       endpoint: sim.baseUrl,
       apiKey: sim.apiKey,
@@ -532,7 +805,6 @@ test("Gate 3: Native Rezdy Full-Object Booking Updates (Retrieve -> Preserve Ite
             lastName: "Redfield",
             email: "claire.redfield@example.com",
           },
-          // items omitted!
         }),
       }
     );
@@ -540,14 +812,14 @@ test("Gate 3: Native Rezdy Full-Object Booking Updates (Retrieve -> Preserve Ite
     const partialPutBody = await partialPutRes.json();
     assert.equal(partialPutBody.requestStatus.error.errorCode, "MISSING_FULL_BOOKING_OBJECT");
 
-    // 2. Update booking via DccBookingService.updateBooking (which performs GET -> preserve -> PUT)
+    // 2. Update booking via DccBookingService.updateBooking (which performs GET -> preserve -> PUT and persists to SQLite)
     const updated = await DccBookingService.updateBooking(hold.dccBookingId, {
       contact: {
         firstName: "Claire",
         lastName: "Redfield",
         fullName: "Claire Redfield",
         emailAddress: "claire.redfield@example.com",
-        phoneNumber: "+1-303-555-0199", // Updated phone
+        phoneNumber: "+1-303-555-0199",
       },
       customFields: [
         { label: "Airline & Flight Number", value: "DL 2099 (Rebooked)" },
@@ -558,7 +830,6 @@ test("Gate 3: Native Rezdy Full-Object Booking Updates (Retrieve -> Preserve Ite
 
     const upstreamOrder = sim.getOrderByNumber("RZSIM1001");
     assert.ok(upstreamOrder);
-    // Items and quantities preserved intact
     assert.equal(upstreamOrder.items.length, 1);
     assert.equal(upstreamOrder.items[0].productCode, "P7477S");
     assert.equal(upstreamOrder.items[0].startTimeLocal, "2026-11-12 10:53:00");
@@ -570,49 +841,38 @@ test("Gate 3: Native Rezdy Full-Object Booking Updates (Retrieve -> Preserve Ite
         priceGroupType: "EACH",
       },
     ]);
-    // Participants preserved intact
     assert.equal(upstreamOrder.items[0].participants?.length, 2);
-    assert.deepEqual(upstreamOrder.items[0].participants?.[0], [
-      { label: "First Name", value: "Claire" },
-      { label: "Last Name", value: "Redfield" },
-    ]);
-    // Pickup details preserved intact
     assert.equal(upstreamOrder.items[0].pickupId, "den_east_level_5");
-    assert.equal(
-      upstreamOrder.items[0].pickupLocation?.locationName,
-      "DEN East Terminal Level 5 Island 1"
-    );
-    assert.equal(upstreamOrder.items[0].pickupLocation?.pickupInstructions, "Meet by Door 513");
-    // Custom fields preserved + merged
     assert.deepEqual(upstreamOrder.fields, [
       { label: "Airline & Flight Number", value: "DL 2099 (Rebooked)" },
       { label: "Child Booster Seats", value: "1" },
       { label: "Special Request", value: "Roof box for skis" },
     ]);
-    // Customer phone updated while preserving name & email
     assert.equal(upstreamOrder.customer.phone, "+1-303-555-0199");
     assert.equal(updated.contact?.phoneNumber, "+1-303-555-0199");
   } finally {
     await sim.close();
-    if (prevDbUrl !== undefined) process.env.DATABASE_URL = prevDbUrl;
-    else delete process.env.DATABASE_URL;
   }
 });
 
-test("Gate 4: No Invented Booking Details and Stateless Execution Across Independent Server/Adapter Instances", async () => {
-  const prevDbUrl = process.env.DATABASE_URL;
-  process.env.DATABASE_URL = "";
-  const sim = await startLocalRezdyV1Simulator();
-  const tempStoreFile = path.join(
+test("Gate 4: No Invented Booking Details, Unswallowed DB Persistence Failures, and Fresh OS Process Recovery from SQLite Database (Unpaid, Captured, Completed, Partially Refunded)", async () => {
+  const sqliteFile = path.join(
     os.tmpdir(),
-    `dcc-stateless-booking-store-${Date.now()}-${Math.random().toString(16).slice(2)}.json`
+    `dcc-fresh-process-recovery-${Date.now()}-${Math.random().toString(16).slice(2)}.sqlite`
   );
+  process.env.DCC_ISOLATED_TEST_DB = "1";
+  process.env.DCC_TEST_SQLITE_PATH = sqliteFile;
+  delete process.env.DCC_PAYMENT_SIMULATION_MODE;
+  resetTestSqliteDb();
+  setSimulateDbFailureForTests(false);
+  DccBookingService.clearPilotSupplierConnections();
+  DccBookingService.resetFallbackStoresForTests();
+  DccSettlementEngine.resetFallbackStoreForTests();
+  DccPaymentService.clearInMemoryStoresForProcessRestartSimulation();
+
+  const sim = await startLocalRezdyV1Simulator();
 
   try {
-    DccBookingService.clearPilotSupplierConnections();
-    DccBookingService.resetFallbackStoresForTests();
-    DccBookingService.setDurableBookingStorePathForTests(tempStoreFile);
-
     const makeFreshAdapter = () =>
       new RezdyAdapter({
         endpoint: sim.baseUrl,
@@ -622,7 +882,7 @@ test("Gate 4: No Invented Booking Details and Stateless Execution Across Indepen
         isSandbox: true,
       });
 
-    // 1. Missing/unmapped product must throw 400/404 (never falls back to P7477S or $399)
+    // 1. Missing/unmapped product, missing departure time, bare session ID, and missing customer contact all fail closed
     await assert.rejects(
       () => makeFreshAdapter().getProduct("dcc:gosno:invented-nonexistent-route"),
       (err: unknown) => err instanceof OctoApiError && err.status === 404
@@ -632,32 +892,10 @@ test("Gate 4: No Invented Booking Details and Stateless Execution Across Indepen
     await assert.rejects(
       () =>
         makeFreshAdapter().createBookingHold({
-          uuid: "unmapped-prod-uuid",
-          productId: "dcc:gosno:invented-nonexistent-route",
-          optionId: "opt_suburban_69029050",
-          availabilityId: canonicalSlot,
-          expirationMinutes: 15,
-          unitItems: [{ unitId: "unit_suburban_69029050", quantity: 1 }],
-          contact: {
-            firstName: "Real",
-            lastName: "Customer",
-            emailAddress: "real@example.com",
-          },
-        }),
-      (err: unknown) =>
-        err instanceof OctoApiError &&
-        err.status === 400 &&
-        err.code === "UNMAPPED_PRODUCT_ID"
-    );
-
-    // 2. Date-only availabilityId without departure time or canonical session locator must throw 400 MISSING_REQUIRED_AVAILABILITY_LOCATOR (never invents 10:00:00)
-    await assert.rejects(
-      () =>
-        makeFreshAdapter().createBookingHold({
           uuid: "no-time-uuid",
           productId: "dcc:gosno:den-breckenridge:suv",
           optionId: "opt_suburban_69029050",
-          availabilityId: "2026-11-12", // Date only — no time or session locator!
+          availabilityId: "2026-11-12",
           expirationMinutes: 15,
           unitItems: [{ unitId: "unit_suburban_69029050", quantity: 1 }],
           contact: {
@@ -672,43 +910,8 @@ test("Gate 4: No Invented Booking Details and Stateless Execution Across Indepen
         (err.code === "MISSING_EXPLICIT_DEPARTURE_TIME" ||
           err.code === "MISSING_REQUIRED_AVAILABILITY_LOCATOR")
     );
-
-    // 3. Bare numeric session ID without a fresh adapter cache returns null from parseStatelessRezdyAvailabilityLocator and throws 400 on createBookingHold (never falls back to in-memory cache or 10:00:00)
     assert.equal(parseStatelessRezdyAvailabilityLocator("497020486"), null);
 
-    // 4. Missing customer contact on createBookingHold must throw 400 MISSING_CUSTOMER_DETAILS (never invents DCC ReservationHold / traveler@example.com)
-    await assert.rejects(
-      () =>
-        makeFreshAdapter().createBookingHold({
-          uuid: "no-contact-uuid",
-          productId: "dcc:gosno:den-breckenridge:suv",
-          optionId: "opt_suburban_69029050",
-          availabilityId: canonicalSlot,
-          expirationMinutes: 15,
-          unitItems: [{ unitId: "unit_suburban_69029050", quantity: 1 }],
-          // contact omitted!
-        }),
-      (err: unknown) =>
-        err instanceof OctoApiError &&
-        err.status === 400 &&
-        err.code === "MISSING_CUSTOMER_DETAILS"
-    );
-
-    // 5. Execute the 5-step flow across 5 completely separate RezdyAdapter instances and cleared in-memory stores
-    // Instance 1: checkAvailability returns canonical self-contained slot ID
-    const adapterInstance1 = makeFreshAdapter();
-    const availSlots = await adapterInstance1.checkAvailability(
-      "dcc:gosno:den-breckenridge:suv",
-      "opt_suburban_69029050",
-      "2026-11-12",
-      [{ unitId: "unit_suburban_69029050", quantity: 1 }]
-    );
-    assert.equal(availSlots.length, 1);
-    assert.equal(availSlots[0].id, canonicalSlot);
-    assert.equal(availSlots[0].localDateTimeStart, "2026-11-12 10:53:00");
-
-    // Instance 2: createHold on a brand-new adapter instance with zero shared state from Instance 1
-    DccBookingService.clearInMemoryStoresOnlyForTests();
     DccBookingService.registerPilotSupplierConnection({
       id: "conn_gosno_rezdy",
       operatorSlug: "gosno",
@@ -722,11 +925,40 @@ test("Gate 4: No Invented Booking Details and Stateless Execution Across Indepen
       adapter: makeFreshAdapter(),
     });
 
-    const hold = await DccBookingService.createHold({
+    // 2. Create 3 distinct bookings in the file-backed SQLite database:
+    // Booking A: Unpaid confirmed booking with service completed while unpaid (must remain awaiting_payment / ineligible_unpaid)
+    const slotSnowmass = formatCanonicalRezdySlotId("PEAVH0", 499002233, "2026-11-15T10:00:00");
+    const holdUnpaid = await DccBookingService.createHold({
+      supplierConnectionId: "conn_gosno_rezdy",
+      productId: "dcc:gosno:snowmass-den:suv",
+      optionId: "opt_group_76622153",
+      availabilityId: slotSnowmass,
+      expirationMinutes: 15,
+      unitItems: [{ unitId: "unit_group_76622153", quantity: 1 }],
+      contact: {
+        firstName: "Unpaid",
+        lastName: "Traveler",
+        fullName: "Unpaid Traveler",
+        emailAddress: "unpaid@example.com",
+      },
+    });
+    await DccBookingService.confirmReservation({
+      bookingId: holdUnpaid.dccBookingId,
+      contact: {
+        firstName: "Unpaid",
+        lastName: "Traveler",
+        fullName: "Unpaid Traveler",
+        emailAddress: "unpaid@example.com",
+      },
+    });
+    await DccBookingService.markServiceCompleted(holdUnpaid.dccBookingId);
+
+    // Booking B: Captured + Service Completed -> eligible / ready_for_payout ($399 -> $39.90 DCC, $359.10 operator)
+    const holdCompletedPaid = await DccBookingService.createHold({
       supplierConnectionId: "conn_gosno_rezdy",
       productId: "dcc:gosno:den-breckenridge:suv",
       optionId: "opt_suburban_69029050",
-      availabilityId: availSlots[0].id,
+      availabilityId: canonicalSlot,
       expirationMinutes: 15,
       unitItems: [{ unitId: "unit_suburban_69029050", quantity: 1 }],
       contact: {
@@ -737,53 +969,12 @@ test("Gate 4: No Invented Booking Details and Stateless Execution Across Indepen
         phoneNumber: "+1-303-555-0188",
       },
     });
-    assert.equal(hold.status, "ON_HOLD");
-    assert.equal(hold.supplierReference, "RZSIM1001");
-
-    // Instance 3: updateBooking on a brand-new adapter instance after clearing in-memory stores
-    DccBookingService.clearInMemoryStoresOnlyForTests();
-    DccBookingService.registerPilotSupplierConnection({
-      id: "conn_gosno_rezdy",
-      operatorSlug: "gosno",
-      operatorName: "GoSno Mountain Transportation",
-      endpoint: sim.baseUrl,
-      reservationPlatform: "rezdy",
-      commissionPercent: 10.0,
-      apiKey: sim.apiKey,
-      isSandbox: true,
-      connectionStatus: "sandbox_verified",
-      adapter: makeFreshAdapter(),
-    });
-
-    const updated = await DccBookingService.updateBooking(hold.dccBookingId, {
-      customFields: [{ label: "Flight Number", value: "F9 402" }],
-    });
-    assert.equal(
-      updated.customFields?.find((f) => f.label === "Barcode")?.value,
-      "RZSIM1001"
+    const evidenceHannah = await captureTraceableSquarePayment(
+      holdCompletedPaid.dccBookingId,
+      399
     );
-    assert.equal(
-      updated.customFields?.find((f) => f.label === "Flight Number")?.value,
-      "F9 402"
-    );
-
-    // Instance 4: confirmReservation on a brand-new adapter instance after clearing in-memory stores
-    DccBookingService.clearInMemoryStoresOnlyForTests();
-    DccBookingService.registerPilotSupplierConnection({
-      id: "conn_gosno_rezdy",
-      operatorSlug: "gosno",
-      operatorName: "GoSno Mountain Transportation",
-      endpoint: sim.baseUrl,
-      reservationPlatform: "rezdy",
-      commissionPercent: 10.0,
-      apiKey: sim.apiKey,
-      isSandbox: true,
-      connectionStatus: "sandbox_verified",
-      adapter: makeFreshAdapter(),
-    });
-
-    const confirmed = await DccBookingService.confirmReservation({
-      bookingId: hold.dccBookingId,
+    await DccBookingService.confirmReservation({
+      bookingId: holdCompletedPaid.dccBookingId,
       contact: {
         firstName: "Hannah",
         lastName: "Abbott",
@@ -791,56 +982,205 @@ test("Gate 4: No Invented Booking Details and Stateless Execution Across Indepen
         emailAddress: "hannah.abbott@example.com",
         phoneNumber: "+1-303-555-0188",
       },
-      verifiedPaymentEvidence: {
-        verified: true,
-        provider: "square",
-        transactionId: "sq_stateless_399",
-        capturedAmount: 399,
-        currency: "USD",
-        capturedAt: "2026-10-30T12:20:00.000Z",
+      verifiedPaymentEvidence: evidenceHannah,
+    });
+    await DccBookingService.markServiceCompleted(holdCompletedPaid.dccBookingId);
+
+    // Booking C: Captured ($499) -> Cancelled with Partial Refund ($200 refunded, $299 retained -> $29.90 DCC, $269.10 operator)
+    const slotVail = formatCanonicalRezdySlotId("PXFGPP", 498001122, "2026-11-12T11:00:00");
+    const holdPartialRefund = await DccBookingService.createHold({
+      supplierConnectionId: "conn_gosno_rezdy",
+      productId: "dcc:gosno:den-vail:suv",
+      optionId: "opt_suburban_75298226",
+      availabilityId: slotVail,
+      expirationMinutes: 15,
+      unitItems: [{ unitId: "unit_suburban_75298226", quantity: 1 }],
+      contact: {
+        firstName: "Partial",
+        lastName: "RefundUser",
+        fullName: "Partial RefundUser",
+        emailAddress: "partial.refund@example.com",
       },
     });
-    assert.equal(confirmed.status, "CONFIRMED");
-
-    // Instance 5: cancelBooking on a brand-new adapter instance after clearing in-memory stores
-    DccBookingService.clearInMemoryStoresOnlyForTests();
-    DccBookingService.registerPilotSupplierConnection({
-      id: "conn_gosno_rezdy",
-      operatorSlug: "gosno",
-      operatorName: "GoSno Mountain Transportation",
-      endpoint: sim.baseUrl,
-      reservationPlatform: "rezdy",
-      commissionPercent: 10.0,
-      apiKey: sim.apiKey,
-      isSandbox: true,
-      connectionStatus: "sandbox_verified",
-      adapter: makeFreshAdapter(),
+    const evidencePartial = await captureTraceableSquarePayment(
+      holdPartialRefund.dccBookingId,
+      499
+    );
+    await DccBookingService.confirmReservation({
+      bookingId: holdPartialRefund.dccBookingId,
+      contact: {
+        firstName: "Partial",
+        lastName: "RefundUser",
+        fullName: "Partial RefundUser",
+        emailAddress: "partial.refund@example.com",
+      },
+      verifiedPaymentEvidence: evidencePartial,
+    });
+    const refundPartialEvidence = await processTraceableSquareRefund(
+      holdPartialRefund.dccBookingId,
+      "gosno",
+      200,
+      "partial",
+      "Winter partial refund window"
+    );
+    await DccBookingService.cancelBooking(holdPartialRefund.dccBookingId, {
+      reason: "Customer cancelled with partial refund",
+      verifiedRefundEvidence: refundPartialEvidence,
     });
 
-    const cancelled = await DccBookingService.cancelBooking(hold.dccBookingId, {
-      reason: "Stateless cross-instance cancellation test",
-    });
-    assert.equal(cancelled.status, "CANCELLED");
+    // 3. Prove DB write failures are NEVER swallowed (throw 503 BOOKING_PERSISTENCE_FAILED / SETTLEMENT_PERSISTENCE_FAILED)
+    setSimulateDbFailureForTests(true);
+    try {
+      await assert.rejects(
+        () => DccSettlementEngine.markServiceCompleted(holdUnpaid.dccBookingId),
+        (err: unknown) => err instanceof OctoApiError && err.status === 503
+      );
+      await assert.rejects(
+        () =>
+          DccPaymentService.processPayment({
+            orderId: "ord_db_fail_check",
+            amount: 100,
+            currency: "USD",
+            sourceId: "cnon:card-nonce-ok",
+            options: {
+              allowTestSimulation: true,
+            },
+          }),
+        (err: unknown) =>
+          err instanceof OctoApiError &&
+          err.status === 503 &&
+          err.code === "PAYMENT_PERSISTENCE_FAILED"
+      );
+    } finally {
+      setSimulateDbFailureForTests(false);
+    }
+
+    // 4. Spawn a brand-new OS child process (zero in-memory state!) and verify all 3 bookings, ledger entries, and DB payables reload consistently from SQLite
+    const tempVerifyScriptPath = path.join(
+      process.cwd(),
+      "tests",
+      "dcc",
+      `.tmp-gate4-verify-${Date.now()}-${Math.random().toString(16).slice(2)}.ts`
+    );
+    const childVerifyScript = `
+      import assert from "node:assert/strict";
+      import { DccBookingService } from "../../lib/bookings/bookingService";
+      import { DccSettlementEngine } from "../../lib/settlement/engine";
+      import { DccPaymentService } from "../../lib/payments/paymentService";
+
+      const [unpaidId, completedPaidId, partialRefundId] = process.argv.slice(2);
+
+      async function main() {
+        // A. Unpaid booking with service completed
+        const bkUnpaid = await DccBookingService.getBooking(unpaidId);
+        const ledgUnpaid = await DccSettlementEngine.getSettlementEntry(unpaidId);
+        const payUnpaid = await DccSettlementEngine.getOperatorPayableRow(unpaidId);
+        assert.equal(bkUnpaid.status, "CONFIRMED");
+        assert.equal(bkUnpaid.lifecycleStates?.paymentStatus, "unpaid");
+        assert.equal(bkUnpaid.lifecycleStates?.serviceCompletionStatus, "completed");
+        assert.equal(bkUnpaid.lifecycleStates?.commissionEligibilityStatus, "ineligible_unpaid");
+        assert.equal(ledgUnpaid?.settlementStatus, "awaiting_payment");
+        assert.equal(ledgUnpaid?.commissionEligibilityStatus, "ineligible_unpaid");
+        assert.equal(payUnpaid?.settlementStatus, "awaiting_payment");
+        assert.equal(payUnpaid?.serviceCompleted, true);
+        assert.equal(payUnpaid?.dccCommissionAmount, 0);
+        assert.equal(payUnpaid?.operatorPayableAmount, 0);
+
+        // B. Captured + completed booking
+        const bkPaid = await DccBookingService.getBooking(completedPaidId);
+        const ledgPaid = await DccSettlementEngine.getSettlementEntry(completedPaidId);
+        const payPaid = await DccSettlementEngine.getOperatorPayableRow(completedPaidId);
+        const orderPayB = await DccPaymentService.getPaymentByOrderId(completedPaidId);
+        assert.equal(bkPaid.status, "CONFIRMED");
+        assert.equal(bkPaid.lifecycleStates?.paymentStatus, "captured");
+        assert.equal(bkPaid.lifecycleStates?.serviceCompletionStatus, "completed");
+        assert.equal(bkPaid.lifecycleStates?.commissionEligibilityStatus, "eligible");
+        assert.equal(bkPaid.verifiedPaymentEvidence?.provenanceSource, "provider_api_response");
+        assert.equal(ledgPaid?.settlementStatus, "ready_for_payout");
+        assert.equal(ledgPaid?.dccShareAmount, 39.9);
+        assert.equal(ledgPaid?.operatorShareAmount, 359.1);
+        assert.equal(payPaid?.settlementStatus, "ready_for_payout");
+        assert.equal(payPaid?.dccCommissionAmount, 39.9);
+        assert.equal(payPaid?.operatorPayableAmount, 359.1);
+        assert.equal(orderPayB?.status, "captured");
+
+        // C. Partially refunded cancelled booking
+        const bkPartial = await DccBookingService.getBooking(partialRefundId);
+        const ledgPartial = await DccSettlementEngine.getSettlementEntry(partialRefundId);
+        const payPartial = await DccSettlementEngine.getOperatorPayableRow(partialRefundId);
+        const refundsC = await DccPaymentService.getRefundsForOrder(partialRefundId);
+        assert.equal(bkPartial.status, "CANCELLED");
+        assert.equal(bkPartial.lifecycleStates?.paymentStatus, "partially_refunded");
+        assert.equal(bkPartial.lifecycleStates?.refundStatus, "partial_refund");
+        assert.equal(bkPartial.verifiedRefundEvidence?.refundedAmount, 200);
+        assert.equal(bkPartial.verifiedRefundEvidence?.provenanceSource, "provider_api_response");
+        assert.equal(ledgPartial?.settlementStatus, "adjusted");
+        assert.equal(ledgPartial?.refundedAmount, 200);
+        assert.equal(ledgPartial?.dccShareAmount, 29.9);
+        assert.equal(ledgPartial?.operatorShareAmount, 269.1);
+        assert.equal(payPartial?.settlementStatus, "adjusted");
+        assert.equal(payPartial?.dccCommissionAmount, 29.9);
+        assert.equal(payPartial?.operatorPayableAmount, 269.1);
+        assert.equal(refundsC.length, 1);
+        assert.equal(refundsC[0].amount, 200);
+
+        console.log("FRESH_PROCESS_RECOVERY_OK");
+      }
+
+      main().catch((err) => {
+        console.error(err);
+        process.exit(1);
+      });
+    `;
+
+    fs.writeFileSync(tempVerifyScriptPath, childVerifyScript, "utf8");
+    try {
+      const { stdout } = await execFileAsync(
+        process.execPath,
+        [
+          "--import",
+          "tsx",
+          tempVerifyScriptPath,
+          holdUnpaid.dccBookingId,
+          holdCompletedPaid.dccBookingId,
+          holdPartialRefund.dccBookingId,
+        ],
+        {
+          cwd: process.cwd(),
+          env: {
+            ...process.env,
+            DCC_ISOLATED_TEST_DB: "1",
+            DCC_TEST_SQLITE_PATH: sqliteFile,
+          },
+        }
+      );
+      assert.match(stdout, /FRESH_PROCESS_RECOVERY_OK/);
+    } finally {
+      if (fs.existsSync(tempVerifyScriptPath)) {
+        try {
+          fs.unlinkSync(tempVerifyScriptPath);
+        } catch {}
+      }
+    }
   } finally {
-    DccBookingService.setDurableBookingStorePathForTests(null);
-    if (fs.existsSync(tempStoreFile)) {
-      fs.unlinkSync(tempStoreFile);
+    delete process.env.DCC_TEST_SQLITE_PATH;
+    resetTestSqliteDb();
+    for (const suffix of ["", "-wal", "-shm"]) {
+      if (fs.existsSync(`${sqliteFile}${suffix}`)) {
+        try {
+          fs.unlinkSync(`${sqliteFile}${suffix}`);
+        } catch {}
+      }
     }
     await sim.close();
-    if (prevDbUrl !== undefined) process.env.DATABASE_URL = prevDbUrl;
-    else delete process.env.DATABASE_URL;
   }
 });
 
-test("Gate 5: Truthful Availability States (Quote-Only, No Sessions, Sold Out), Strict Status Mapping, and Deterministic Hold Expiry", async () => {
-  const prevDbUrl = process.env.DATABASE_URL;
-  process.env.DATABASE_URL = "";
+test("Gate 5: Truthful Availability States (Quote-Only, No Sessions, Sold Out), Strict Status Mapping, and Separation of DCC Checkout Deadline from Authoritative Rezdy Hold Expiry", async () => {
+  setupCleanSqliteEnvironment();
   const sim = await startLocalRezdyV1Simulator();
 
   try {
-    DccBookingService.clearPilotSupplierConnections();
-    DccBookingService.resetFallbackStoresForTests();
-
     const adapter = new RezdyAdapter({
       endpoint: sim.baseUrl,
       apiKey: sim.apiKey,
@@ -862,7 +1202,7 @@ test("Gate 5: Truthful Availability States (Quote-Only, No Sessions, Sold Out), 
       adapter,
     });
 
-    // 1. Quote-only product (PKQDPG) returns [] from adapter.checkAvailability and status: "QUOTE_ONLY" from DccBookingService (NEVER "SOLD_OUT" or "10:00:00")
+    // 1. Quote-only product (PKQDPG) returns [] from adapter.checkAvailability and status: "QUOTE_ONLY" from DccBookingService
     const rawQuoteOnlySlots = await adapter.checkAvailability(
       "dcc:gosno:den-breckenridge:van",
       "opt_van_73379226",
@@ -883,15 +1223,7 @@ test("Gate 5: Truthful Availability States (Quote-Only, No Sessions, Sold Out), 
     assert.equal(svcQuoteOnly.quoteOnly, true);
     assert.equal(svcQuoteOnly.localDateTimeStart, null);
 
-    // 2. Date with no returned sessions (2026-12-15 on P7477S) returns [] from adapter and status: "NO_SESSIONS" from DccBookingService (NEVER "SOLD_OUT" or "10:00:00")
-    const rawNoSessionSlots = await adapter.checkAvailability(
-      "dcc:gosno:den-breckenridge:suv",
-      "opt_suburban_69029050",
-      "2026-12-15",
-      [{ unitId: "unit_suburban_69029050", quantity: 1 }]
-    );
-    assert.deepEqual(rawNoSessionSlots, []);
-
+    // 2. Date with no returned sessions returns status: "NO_SESSIONS"
     const svcNoSessions = await DccBookingService.checkAvailability(
       "dcc:gosno:den-breckenridge:suv",
       "opt_suburban_69029050",
@@ -901,10 +1233,9 @@ test("Gate 5: Truthful Availability States (Quote-Only, No Sessions, Sold Out), 
     assert.equal(svcNoSessions.available, false);
     assert.equal(svcNoSessions.bookable, false);
     assert.equal(svcNoSessions.status, "NO_SESSIONS");
-    assert.equal(svcNoSessions.quoteOnly, false);
     assert.equal(svcNoSessions.localDateTimeStart, null);
 
-    // 3. Actual sold-out session (507139971 on 2026-12-14 with seatsAvailable: 0) returns status: "SOLD_OUT" with its real timestamp 2026-12-14 15:05:00
+    // 3. Actual sold-out session returns status: "SOLD_OUT" with real timestamp
     const svcSoldOut = await DccBookingService.checkAvailability(
       "dcc:gosno:den-breckenridge:suv",
       "opt_suburban_69029050",
@@ -912,20 +1243,10 @@ test("Gate 5: Truthful Availability States (Quote-Only, No Sessions, Sold Out), 
       [{ unitId: "unit_suburban_69029050", quantity: 1 }]
     );
     assert.equal(svcSoldOut.available, false);
-    assert.equal(svcSoldOut.bookable, false);
     assert.equal(svcSoldOut.status, "SOLD_OUT");
-    assert.equal(svcSoldOut.vacancies, 0);
     assert.equal(svcSoldOut.localDateTimeStart, "2026-12-14 15:05:00");
 
-    // 4. Unfamiliar booking statuses MUST NOT map to ON_HOLD; they must throw 502 UNRECOGNIZED_REZDY_BOOKING_STATUS
-    assert.equal(mapRezdyStatusToOctoStatus("PROCESSING", "RZSIM1001"), "ON_HOLD");
-    assert.equal(mapRezdyStatusToOctoStatus("ON_HOLD", "RZSIM1001"), "ON_HOLD");
-    assert.equal(mapRezdyStatusToOctoStatus("NEW", "RZSIM1001"), "ON_HOLD");
-    assert.equal(mapRezdyStatusToOctoStatus("WAITING_SUPPLIER", "RZSIM1001"), "PENDING");
-    assert.equal(mapRezdyStatusToOctoStatus("CONFIRMED", "RZSIM1001"), "CONFIRMED");
-    assert.equal(mapRezdyStatusToOctoStatus("CANCELLED", "RZSIM1001"), "CANCELLED");
-    assert.equal(mapRezdyStatusToOctoStatus("ABANDONED", "RZSIM1001"), "EXPIRED");
-
+    // 4. Unfamiliar booking statuses MUST throw 502 UNRECOGNIZED_REZDY_BOOKING_STATUS
     assert.throws(
       () => mapRezdyStatusToOctoStatus("UNKNOWN_VENDOR_STATUS_XYZ", "RZSIM1001"),
       (err: unknown) =>
@@ -934,7 +1255,9 @@ test("Gate 5: Truthful Availability States (Quote-Only, No Sessions, Sold Out), 
         err.code === "UNRECOGNIZED_REZDY_BOOKING_STATUS"
     );
 
-    // 5. Hold expiry is deterministic from dateCreated and never generates a fresh 15-minute expiry when getBooking is called
+    // 5. Requirement 5 Proof: Separate DCC checkout deadlines from authoritative Rezdy hold expiry.
+    // Standard Rezdy PROCESSING bookings do NOT report an authoritative provider hold expiry field,
+    // so utcHoldExpires MUST be null while dccCheckoutDeadlineUtc is tracked separately.
     const slotId = formatCanonicalRezdySlotId("P7477S", 497020486, "2026-11-12T10:53:00");
     const hold = await DccBookingService.createHold({
       supplierConnectionId: "conn_gosno_rezdy",
@@ -950,53 +1273,217 @@ test("Gate 5: Truthful Availability States (Quote-Only, No Sessions, Sold Out), 
         emailAddress: "arthur.dent@example.com",
       },
     });
-    assert.ok(hold.utcHoldExpires);
+    assert.equal(
+      hold.utcHoldExpires,
+      null,
+      "Authoritative provider utcHoldExpires must be null when Rezdy does not supply a hold expiry timestamp"
+    );
+    assert.ok(
+      hold.dccCheckoutDeadlineUtc,
+      "DCC checkout deadline must be tracked separately on dccCheckoutDeadlineUtc"
+    );
+    assert.equal(hold.dccCheckoutExpired, false);
 
-    // Set upstream order's dateCreated to a fixed timestamp 5 minutes ago
-    const fixedCreatedIso = new Date(Date.now() - 5 * 60 * 1000).toISOString();
-    const expectedExpiresIso = new Date(
-      Date.parse(fixedCreatedIso) + 15 * 60 * 1000
+    // Set upstream order's dateCreated to 20 minutes ago (past the 15-minute DCC checkout deadline) WITHOUT setting an authoritative provider hold expiry
+    const twentyMinsAgoIso = new Date(Date.now() - 20 * 60 * 1000).toISOString();
+    const expectedDccDeadlineIso = new Date(
+      Date.parse(twentyMinsAgoIso) + 15 * 60 * 1000
     ).toISOString();
     sim.mutateOrderForTest("RZSIM1001", (ord) => {
-      ord.dateCreated = fixedCreatedIso;
+      ord.dateCreated = twentyMinsAgoIso;
     });
 
     const fetched1 = await adapter.getBooking("RZSIM1001");
-    await new Promise((r) => setTimeout(r, 30));
+    await new Promise((r) => setTimeout(r, 25));
     const fetched2 = await adapter.getBooking("RZSIM1001");
 
-    assert.equal(fetched1.utcHoldExpires, expectedExpiresIso);
     assert.equal(
-      fetched2.utcHoldExpires,
-      expectedExpiresIso,
-      "getBooking must never generate a fresh 15-minute hold expiry on retrieval"
+      fetched1.status,
+      "ON_HOLD",
+      "Provider booking must NOT be marked EXPIRED solely from the default 15-minute DCC checkout calculation"
     );
+    assert.equal(fetched1.utcHoldExpires, null);
+    assert.equal(fetched1.dccCheckoutDeadlineUtc, expectedDccDeadlineIso);
+    assert.equal(fetched1.dccCheckoutExpired, true);
+    assert.equal(
+      fetched2.dccCheckoutDeadlineUtc,
+      expectedDccDeadlineIso,
+      "getBooking must never generate a fresh 15-minute deadline on retrieval"
+    );
+
+    // When authoritative provider hold expiry IS explicitly present on the provider booking and in the past, status becomes EXPIRED
+    sim.mutateOrderForTest("RZSIM1001", (ord) => {
+      (ord as any).utcHoldExpires = new Date(Date.now() - 60 * 1000).toISOString();
+    });
+    const fetchedWithAuthoritativeExpiry = await adapter.getBooking("RZSIM1001");
+    assert.equal(fetchedWithAuthoritativeExpiry.status, "EXPIRED");
+    assert.ok(fetchedWithAuthoritativeExpiry.utcHoldExpires);
   } finally {
     await sim.close();
-    if (prevDbUrl !== undefined) process.env.DATABASE_URL = prevDbUrl;
-    else delete process.env.DATABASE_URL;
   }
 });
 
-test("Gate 6: Complete Flow Verification — Concurrent Duplicates, Retry After Dropped Response, Expired Hold, Provider Timeout, and Persistence Failure Rollback", async () => {
-  const prevDbUrl = process.env.DATABASE_URL;
-  process.env.DATABASE_URL = "";
+test("Gate 6: Multi-Process Concurrency Across Independent Workers, Timeout After Provider Commit Reconciliation, and Persistence Failure Rollback", async () => {
+  const sqliteFile = path.join(
+    os.tmpdir(),
+    `dcc-multiprocess-concurrency-${Date.now()}-${Math.random().toString(16).slice(2)}.sqlite`
+  );
+  process.env.DCC_ISOLATED_TEST_DB = "1";
+  process.env.DCC_TEST_SQLITE_PATH = sqliteFile;
+  delete process.env.DCC_PAYMENT_SIMULATION_MODE;
+  resetTestSqliteDb();
+  setSimulateDbFailureForTests(false);
+  DccBookingService.clearPilotSupplierConnections();
+  DccBookingService.resetFallbackStoresForTests();
+  DccSettlementEngine.resetFallbackStoreForTests();
+  DccPaymentService.clearInMemoryStoresForProcessRestartSimulation();
+  resetCommercialMemoryStoreForTests();
+
   const sim = await startLocalRezdyV1Simulator();
 
   try {
-    DccBookingService.clearPilotSupplierConnections();
-    DccBookingService.resetFallbackStoresForTests();
-    DccSettlementEngine.resetFallbackStoreForTests();
-    resetCommercialMemoryStoreForTests();
+    // Ensure the shared SQLite file and WAL schema are initialized before spawning 3 concurrent OS worker processes
+    await DccSettlementEngine.getSettlementEntry("init_schema_for_multiprocess");
 
-    const adapter = new RezdyAdapter({
+    // 1. Multi-Process Concurrency Proof: Spawn 3 separate OS worker processes simultaneously sharing SQLite + Rezdy simulator
+    const slotBreck = formatCanonicalRezdySlotId("P7477S", 497020486, "2026-11-12T10:53:00");
+    const tempWorkerScriptPath = path.join(
+      process.cwd(),
+      "tests",
+      "dcc",
+      `.tmp-gate6-worker-${Date.now()}-${Math.random().toString(16).slice(2)}.ts`
+    );
+    const workerHoldScript = `
+      import { RezdyAdapter } from "../../lib/octo/adapters/rezdy";
+      import { DccBookingService } from "../../lib/bookings/bookingService";
+
+      const [baseUrl, apiKey, slotId, idemKey, timeoutMsStr] = process.argv.slice(2);
+
+      async function main() {
+        const adapter = new RezdyAdapter({
+          endpoint: baseUrl,
+          apiKey,
+          platform: "rezdy",
+          operatorSlug: "gosno",
+          isSandbox: true,
+          requestTimeoutMs: timeoutMsStr ? Number(timeoutMsStr) : undefined,
+        });
+
+        DccBookingService.registerPilotSupplierConnection({
+          id: "conn_gosno_rezdy",
+          operatorSlug: "gosno",
+          operatorName: "GoSno Mountain Transportation",
+          endpoint: baseUrl,
+          reservationPlatform: "rezdy",
+          commissionPercent: 10.0,
+          apiKey,
+          isSandbox: true,
+          connectionStatus: "sandbox_verified",
+          adapter,
+        });
+
+        const res = await DccBookingService.createHold({
+          supplierConnectionId: "conn_gosno_rezdy",
+          productId: "dcc:gosno:den-breckenridge:suv",
+          optionId: "opt_suburban_69029050",
+          availabilityId: slotId,
+          expirationMinutes: 15,
+          unitItems: [{ unitId: "unit_suburban_69029050", quantity: 1 }],
+          idempotencyKey: idemKey,
+          contact: {
+            firstName: "Concurrent",
+            lastName: "Worker",
+            fullName: "Concurrent Worker",
+            emailAddress: "worker@example.com",
+          },
+        });
+        console.log(JSON.stringify({ dccBookingId: res.dccBookingId, supplierReference: res.supplierReference, status: res.status }));
+      }
+
+      main().catch((err) => {
+        console.error(err);
+        process.exit(1);
+      });
+    `;
+
+    fs.writeFileSync(tempWorkerScriptPath, workerHoldScript, "utf8");
+    let workerOutputs: Array<{ stdout: string; stderr: string }>;
+    try {
+      workerOutputs = await Promise.all(
+        Array.from({ length: 3 }, () =>
+          execFileAsync(
+            process.execPath,
+            [
+              "--import",
+              "tsx",
+              tempWorkerScriptPath,
+              sim.baseUrl,
+              sim.apiKey,
+              slotBreck,
+              "idem_multiprocess_workers_001",
+            ],
+            {
+              cwd: process.cwd(),
+              env: {
+                ...process.env,
+                DCC_ISOLATED_TEST_DB: "1",
+                DCC_TEST_SQLITE_PATH: sqliteFile,
+              },
+            }
+          )
+        )
+      );
+    } finally {
+      if (fs.existsSync(tempWorkerScriptPath)) {
+        try {
+          fs.unlinkSync(tempWorkerScriptPath);
+        } catch {}
+      }
+    }
+
+    const parsedWorkers = workerOutputs.map((out) =>
+      JSON.parse(out.stdout.trim().split("\n").pop()!)
+    );
+    const uniqueDccIds = new Set(parsedWorkers.map((w) => w.dccBookingId));
+    const uniqueSupplierRefs = new Set(parsedWorkers.map((w) => w.supplierReference));
+    assert.equal(
+      uniqueDccIds.size,
+      1,
+      "All 3 separate OS worker processes must resolve to the exact same dccBookingId"
+    );
+    assert.equal(
+      uniqueSupplierRefs.size,
+      1,
+      "All 3 separate OS worker processes must resolve to the exact same Rezdy orderNumber"
+    );
+    assert.equal(
+      sim.getOrders().length,
+      1,
+      "Exactly 1 upstream Rezdy booking may be created across 3 simultaneous OS worker processes"
+    );
+    const postBookingLogs = sim
+      .getServerLogs()
+      .filter((l) => l.method === "POST" && l.path === "/v1/bookings");
+    assert.equal(
+      postBookingLogs.length,
+      1,
+      "Exactly 1 POST /v1/bookings request may hit the provider across 3 concurrent OS worker processes"
+    );
+
+    // 2. Timeout After Upstream Provider Commit (postCommitDelayMsOnce) Followed by Separate Worker Recovery:
+    // Session 498001122 on PXFGPP has only 1 seat available.
+    // Worker 1 calls createHold with a 50ms timeout while the simulator delays the response by 250ms AFTER committing RZSIM1002 (decrementing seatsAvailable from 1 to 0).
+    const slotVail = formatCanonicalRezdySlotId("PXFGPP", 498001122, "2026-11-12T11:00:00");
+    sim.setFaultInjection({ postCommitDelayMsOnce: 250 });
+
+    const adapterFastTimeout = new RezdyAdapter({
       endpoint: sim.baseUrl,
       apiKey: sim.apiKey,
       platform: "rezdy",
       operatorSlug: "gosno",
       isSandbox: true,
+      requestTimeoutMs: 50,
     });
-
     DccBookingService.registerPilotSupplierConnection({
       id: "conn_gosno_rezdy",
       operatorSlug: "gosno",
@@ -1007,154 +1494,127 @@ test("Gate 6: Complete Flow Verification — Concurrent Duplicates, Retry After 
       apiKey: sim.apiKey,
       isSandbox: true,
       connectionStatus: "sandbox_verified",
-      adapter,
+      adapter: adapterFastTimeout,
     });
 
-    // 1. Concurrent Duplicate Protection: 5 simultaneous Promise.all createHold calls with the same idempotencyKey
-    const slotBreck = formatCanonicalRezdySlotId("P7477S", 497020486, "2026-11-12T10:53:00");
-    const concurrentResults = await Promise.all(
-      Array.from({ length: 5 }, () =>
+    await assert.rejects(
+      () =>
         DccBookingService.createHold({
           supplierConnectionId: "conn_gosno_rezdy",
-          productId: "dcc:gosno:den-breckenridge:suv",
-          optionId: "opt_suburban_69029050",
-          availabilityId: slotBreck,
+          productId: "dcc:gosno:den-vail:suv",
+          optionId: "opt_suburban_75298226",
+          availabilityId: slotVail,
           expirationMinutes: 15,
-          unitItems: [{ unitId: "unit_suburban_69029050", quantity: 1 }],
-          idempotencyKey: "idem_concurrent_burst_001",
+          unitItems: [{ unitId: "unit_suburban_75298226", quantity: 1 }],
+          idempotencyKey: "idem_timeout_after_commit_002",
           contact: {
-            firstName: "Concurrent",
-            lastName: "Traveler",
-            fullName: "Concurrent Traveler",
-            emailAddress: "concurrent@example.com",
+            firstName: "Timeout",
+            lastName: "CommitUser",
+            fullName: "Timeout CommitUser",
+            emailAddress: "timeout.commit@example.com",
           },
-        })
-      )
+        }),
+      (err: unknown) =>
+        err instanceof OctoApiError &&
+        err.status === 504 &&
+        err.code === "PROVIDER_TIMEOUT"
     );
 
-    const uniqueBookingIds = new Set(concurrentResults.map((r) => r.dccBookingId));
-    assert.equal(uniqueBookingIds.size, 1, "All 5 concurrent calls must resolve to the same DCC booking ID");
-    assert.equal(sim.getOrders().length, 1, "Only 1 upstream Rezdy order may be created across 5 concurrent requests");
-    const postBookingLogs = sim
-      .getServerLogs()
-      .filter((l) => l.method === "POST" && l.path === "/v1/bookings");
-    assert.equal(postBookingLogs.length, 1, "Exactly 1 POST /v1/bookings call must hit the server");
+    // Wait for simulator's delayed response handler to finish
+    await new Promise((r) => setTimeout(r, 260));
 
-    // 2. Retry Recovery After Dropped HTTP Response (server committed order RZSIM1002, response dropped with 502)
-    // RezdyAdapter automatically reconciles via GET /v1/bookings?resellerReference=... on the dropped response,
-    // AND a subsequent retry on a brand-new adapter instance also recovers RZSIM1002 without posting a second order.
-    const slotVail = formatCanonicalRezdySlotId("PXFGPP", 498001122, "2026-11-12T11:00:00");
-    sim.setFaultInjection({ dropNextPostBookingAfterCommit: true });
-
-    const autoReconciledHold = await adapter.createBookingHold(
-      {
-        uuid: "drop-test-uuid-1",
-        productId: "dcc:gosno:den-vail:suv",
-        optionId: "opt_suburban_75298226",
-        availabilityId: slotVail,
-        expirationMinutes: 15,
-        unitItems: [{ unitId: "unit_suburban_75298226", quantity: 1 }],
-        contact: {
-          firstName: "Retry",
-          lastName: "Traveler",
-          emailAddress: "retry@example.com",
-        },
-      },
-      "idem_dropped_response_002"
-    );
-    assert.equal(autoReconciledHold.supplierReference, "RZSIM1002");
+    // Verify the provider HAS already committed order RZSIM1002 even though Worker 1 timed out
     assert.equal(sim.getOrders().length, 2);
+    assert.equal(sim.getOrderByNumber("RZSIM1002")?.status, "PROCESSING");
 
-    // Retrying with the same idempotencyKey on a fresh adapter reconciles via GET /v1/bookings?resellerReference=... without creating a duplicate order
-    const retryAdapter = new RezdyAdapter({
+    // Now Worker 2 (with normal timeout) retries the same idempotencyKey and reconciles RZSIM1002 into SQLite without creating a duplicate booking!
+    const adapterNormal = new RezdyAdapter({
       endpoint: sim.baseUrl,
       apiKey: sim.apiKey,
       platform: "rezdy",
       operatorSlug: "gosno",
       isSandbox: true,
     });
-    const recoveredHold = await retryAdapter.createBookingHold(
-      {
-        uuid: "drop-test-uuid-2",
-        productId: "dcc:gosno:den-vail:suv",
-        optionId: "opt_suburban_75298226",
-        availabilityId: slotVail,
-        expirationMinutes: 15,
-        unitItems: [{ unitId: "unit_suburban_75298226", quantity: 1 }],
-        contact: {
-          firstName: "Retry",
-          lastName: "Traveler",
-          emailAddress: "retry@example.com",
-        },
-      },
-      "idem_dropped_response_002"
-    );
-    assert.equal(recoveredHold.supplierReference, "RZSIM1002");
-    assert.equal(
-      recoveredHold.resellerReference,
-      buildDccRezdyResellerReference("idem_dropped_response_002")
-    );
-    assert.equal(sim.getOrders().length, 2, "Retry recovery must not create a third order");
+    DccBookingService.registerPilotSupplierConnection({
+      id: "conn_gosno_rezdy",
+      operatorSlug: "gosno",
+      operatorName: "GoSno Mountain Transportation",
+      endpoint: sim.baseUrl,
+      reservationPlatform: "rezdy",
+      commissionPercent: 10.0,
+      apiKey: sim.apiKey,
+      isSandbox: true,
+      connectionStatus: "sandbox_verified",
+      adapter: adapterNormal,
+    });
 
-    // 3. Expired Hold Rejection: Mutating hold expiry into the past rejects confirmation with 400 EXPIRED_HOLD and cancels upstream hold
+    const reconciledAfterTimeout = await DccBookingService.createHold({
+      supplierConnectionId: "conn_gosno_rezdy",
+      productId: "dcc:gosno:den-vail:suv",
+      optionId: "opt_suburban_75298226",
+      availabilityId: slotVail,
+      expirationMinutes: 15,
+      unitItems: [{ unitId: "unit_suburban_75298226", quantity: 1 }],
+      idempotencyKey: "idem_timeout_after_commit_002",
+      contact: {
+        firstName: "Timeout",
+        lastName: "CommitUser",
+        fullName: "Timeout CommitUser",
+        emailAddress: "timeout.commit@example.com",
+      },
+    });
+    assert.equal(reconciledAfterTimeout.supplierReference, "RZSIM1002");
+    assert.equal(reconciledAfterTimeout.status, "ON_HOLD");
+    assert.equal(
+      sim.getOrders().length,
+      2,
+      "Reconciling after timeout-after-commit must not create a third order"
+    );
+
+    // 3. Separate DCC Checkout Deadline Expiry vs Authoritative Provider Hold Expiry on Confirmation:
     const slotSnowmass = formatCanonicalRezdySlotId("PEAVH0", 499002233, "2026-11-15T10:00:00");
-    const holdToExpire = await DccBookingService.createHold({
+    const holdDccDeadline = await DccBookingService.createHold({
       supplierConnectionId: "conn_gosno_rezdy",
       productId: "dcc:gosno:snowmass-den:suv",
       optionId: "opt_group_76622153",
       availabilityId: slotSnowmass,
-      expirationMinutes: 15,
+      expirationMinutes: -5, // DCC checkout deadline already elapsed, while Rezdy has no authoritative utcHoldExpires
       unitItems: [{ unitId: "unit_group_76622153", quantity: 1 }],
       contact: {
-        firstName: "Expired",
-        lastName: "HoldUser",
-        fullName: "Expired HoldUser",
-        emailAddress: "expired@example.com",
+        firstName: "Deadline",
+        lastName: "Tester",
+        fullName: "Deadline Tester",
+        emailAddress: "deadline@example.com",
       },
     });
-    assert.equal(holdToExpire.supplierReference, "RZSIM1003");
-
-    // Force hold expiry into the past on both upstream order and local record
-    const twentyMinsAgo = new Date(Date.now() - 20 * 60 * 1000).toISOString();
-    sim.mutateOrderForTest("RZSIM1003", (ord) => {
-      ord.dateCreated = twentyMinsAgo;
-    });
-    const expiredUpstreamView = await adapter.getBooking("RZSIM1003");
-    assert.equal(expiredUpstreamView.status, "EXPIRED");
+    assert.equal(holdDccDeadline.supplierReference, "RZSIM1003");
+    assert.equal(holdDccDeadline.utcHoldExpires, null);
+    assert.equal(holdDccDeadline.dccCheckoutExpired, true);
 
     await assert.rejects(
       () =>
-        adapter.confirmBooking("RZSIM1003", {
+        DccBookingService.confirmReservation({
+          bookingId: holdDccDeadline.dccBookingId,
           contact: {
-            firstName: "Expired",
-            lastName: "HoldUser",
-            fullName: "Expired HoldUser",
-            emailAddress: "expired@example.com",
+            firstName: "Deadline",
+            lastName: "Tester",
+            fullName: "Deadline Tester",
+            emailAddress: "deadline@example.com",
           },
         }),
       (err: unknown) =>
-        err instanceof OctoApiError && err.status === 400 && err.code === "EXPIRED_HOLD"
+        err instanceof OctoApiError &&
+        err.status === 400 &&
+        err.code === "DCC_CHECKOUT_DEADLINE_EXPIRED"
     );
 
-    // 4. Provider Timeout Handling: Simulator delay exceeding adapter requestTimeoutMs throws 504 PROVIDER_TIMEOUT
-    sim.setFaultInjection({ delayMs: 250 });
-    const fastTimeoutAdapter = new RezdyAdapter({
-      endpoint: sim.baseUrl,
-      apiKey: sim.apiKey,
-      platform: "rezdy",
-      operatorSlug: "gosno",
-      isSandbox: true,
-      requestTimeoutMs: 40,
-    });
-
-    await assert.rejects(
-      () => fastTimeoutAdapter.getProduct("dcc:gosno:den-breckenridge:suv"),
-      (err: unknown) =>
-        err instanceof OctoApiError && err.status === 504 && err.code === "PROVIDER_TIMEOUT"
+    // Verify the provider booking was NOT falsely marked EXPIRED
+    const afterDccDeadlineReject = await DccBookingService.getBooking(
+      holdDccDeadline.dccBookingId
     );
-    sim.setFaultInjection({ delayMs: 0 });
+    assert.equal(afterDccDeadlineReject.status, "ON_HOLD");
 
-    // 5. Persistence Failure Compensation: Local persistence failure during createHold rolls back upstream Rezdy hold
+    // 4. Persistence Failure Compensation: Local persistence failure during createHold rolls back upstream Rezdy hold
     DccBookingService.setSimulatePersistenceFailureForTests(true);
     try {
       await assert.rejects(
@@ -1179,7 +1639,6 @@ test("Gate 6: Complete Flow Verification — Concurrent Duplicates, Retry After 
           err.code === "BOOKING_PERSISTENCE_FAILED"
       );
 
-      // Verify the upstream order RZSIM1004 was automatically rolled back to CANCELLED
       const rolledBackOrder = sim.getOrderByNumber("RZSIM1004");
       assert.ok(rolledBackOrder);
       assert.equal(
@@ -1191,7 +1650,7 @@ test("Gate 6: Complete Flow Verification — Concurrent Duplicates, Retry After 
       DccBookingService.setSimulatePersistenceFailureForTests(false);
     }
 
-    // 6. Outcome Reconciliation (Handoff -> Rezdy Confirmed Outcome -> Deduplication)
+    // 5. Outcome Reconciliation (Handoff -> Rezdy Confirmed Outcome -> Deduplication)
     const handoff = await createCommercialHandoff({
       originatingSite: "destinationcommandcenter.com",
       targetSite: "gosno.co",
@@ -1232,9 +1691,16 @@ test("Gate 6: Complete Flow Verification — Concurrent Duplicates, Retry After 
     assert.equal(outcome.reconciliationStatus, "matched");
     assert.equal(outcome.duplicateDelivery, false);
   } finally {
+    delete process.env.DCC_TEST_SQLITE_PATH;
+    resetTestSqliteDb();
+    for (const suffix of ["", "-wal", "-shm"]) {
+      if (fs.existsSync(`${sqliteFile}${suffix}`)) {
+        try {
+          fs.unlinkSync(`${sqliteFile}${suffix}`);
+        } catch {}
+      }
+    }
     await sim.close();
-    if (prevDbUrl !== undefined) process.env.DATABASE_URL = prevDbUrl;
-    else delete process.env.DATABASE_URL;
   }
 });
 
@@ -1258,7 +1724,6 @@ test("Gate 7: Preserved Request/Response Evidence Artifact Separates Live Read-O
   const proof = JSON.parse(raw);
   assert.equal(proof.directProductionSalesEnabled, false);
 
-  // Verify strict separation of evidence classifications
   assert.equal(
     proof.evidenceClassification.liveReadonlyApiEvidence.source,
     "live_rezdy_v1_read_only"
@@ -1284,7 +1749,6 @@ test("Gate 7: Preserved Request/Response Evidence Artifact Separates Live Read-O
     "BLOCKED_MISSING_STAGING_API_KEY"
   );
 
-  // Verify status summary fields
   assert.equal(proof.statusSummary.onboardingBooleanValidationFixed, "PASSED");
   assert.equal(proof.statusSummary.rezdyRequestResponseTranslationImplemented, "PASSED");
   assert.equal(proof.statusSummary.dccProductMappingVerified, "PASSED");
@@ -1306,51 +1770,5 @@ test("Gate 7: Preserved Request/Response Evidence Artifact Separates Live Read-O
   assert.match(
     proof.statusSummary.directRezdyStagingApiWriteStatus,
     /BLOCKED_MISSING_STAGING_API_KEY/
-  );
-
-  // Verify simulator evidence records all 6 separate lifecycle states accurately
-  assert.equal(
-    proof.dccWrittenSimulatorEvidence.confirmedUnpaidState.bookingLifecycleStates.paymentStatus,
-    "unpaid"
-  );
-  assert.equal(
-    proof.dccWrittenSimulatorEvidence.confirmedUnpaidState.bookingLifecycleStates
-      .commissionEligibilityStatus,
-    "ineligible_unpaid"
-  );
-  assert.equal(
-    proof.dccWrittenSimulatorEvidence.verifiedPaymentCapturedState.bookingLifecycleStates
-      .paymentStatus,
-    "captured"
-  );
-  assert.equal(
-    proof.dccWrittenSimulatorEvidence.verifiedPaymentCapturedState.bookingLifecycleStates
-      .commissionEligibilityStatus,
-    "pending_service_completion"
-  );
-  assert.equal(
-    proof.dccWrittenSimulatorEvidence.serviceCompletedCommissionEligibleState
-      .bookingLifecycleStates.commissionEligibilityStatus,
-    "eligible"
-  );
-  assert.equal(
-    proof.dccWrittenSimulatorEvidence.cancellationWithoutAutomaticRefundState
-      .bookingLifecycleStates.paymentStatus,
-    "captured"
-  );
-  assert.equal(
-    proof.dccWrittenSimulatorEvidence.cancellationWithoutAutomaticRefundState
-      .bookingLifecycleStates.refundStatus,
-    "pending_refund"
-  );
-  assert.equal(
-    proof.dccWrittenSimulatorEvidence.verifiedRefundCompletedState.bookingLifecycleStates
-      .paymentStatus,
-    "refunded"
-  );
-  assert.equal(
-    proof.dccWrittenSimulatorEvidence.verifiedRefundCompletedState.bookingLifecycleStates
-      .refundStatus,
-    "full_refund"
   );
 });

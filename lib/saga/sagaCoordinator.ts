@@ -532,6 +532,21 @@ export class DccSagaCoordinator {
 
         if (captureResult.success) {
           captureSuccess = true;
+          for (const sb of supplierBookings) {
+            if (sb.providerBookingUuid) {
+              await DccBookingService.recordVerifiedPaymentCapture(sb.providerBookingUuid, {
+                verified: true,
+                provider: captureResult.provider || "square",
+                transactionId: captureResult.paymentId,
+                capturedAmount: sb.price,
+                currency: sb.currency,
+                capturedAt: captureResult.processedAt || new Date().toISOString(),
+                provenanceSource: captureResult.provenanceSource,
+                providerRecordId: captureResult.paymentId,
+                webhookEventId: captureResult.webhookEventId,
+              });
+            }
+          }
         }
       }
 

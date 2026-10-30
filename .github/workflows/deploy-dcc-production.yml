@@ -65,7 +65,9 @@ jobs:
 
       - name: Run DCC verification suite against release commit
         if: steps.check_changed.outputs.should_build == 'true'
-        run: npx tsx --test tests/dcc/23-entry-surface-parity.test.ts tests/dcc/site-truth.test.ts tests/dcc/satellite-truth-linkage.test.ts tests/dcc/36-discovery-stack.test.ts tests/dcc/81-category-decision-engine-framework.test.ts tests/dcc/82-dcc-machine-layer-v01.test.ts tests/dcc/83-dcc-machine-layer-v02.test.ts tests/dcc/84-dcc-machine-layer-v03.test.ts tests/dcc/85-dcc-machine-layer-v031.test.ts tests/dcc/86-dcc-assurance-commerce-portfolio.test.ts tests/dcc/86-commercial-attribution-and-outcomes.test.ts tests/dcc/87-portfolio-network-and-journeys.test.ts
+        run: |
+          npx tsx --test tests/dcc/23-entry-surface-parity.test.ts tests/dcc/site-truth.test.ts tests/dcc/satellite-truth-linkage.test.ts tests/dcc/36-discovery-stack.test.ts tests/dcc/81-category-decision-engine-framework.test.ts tests/dcc/82-dcc-machine-layer-v01.test.ts tests/dcc/83-dcc-machine-layer-v02.test.ts tests/dcc/84-dcc-machine-layer-v03.test.ts tests/dcc/85-dcc-machine-layer-v031.test.ts tests/dcc/86-dcc-assurance-commerce-portfolio.test.ts tests/dcc/86-commercial-attribution-and-outcomes.test.ts tests/dcc/87-portfolio-network-and-journeys.test.ts
+          node --import tsx --import ./tests/dcc/enable-isolated-db.ts --test tests/dcc/63-octo-production-pilot.test.ts tests/dcc/64-octo-core-lifecycle.test.ts tests/dcc/65-location-octo-integration.test.ts tests/dcc/66-canonical-place-octo.test.ts tests/dcc/67-traveler-order-settlement.test.ts tests/dcc/68-dcc-saga-orchestration.test.ts tests/dcc/69-dcc-square-checkout.test.ts tests/dcc/71-square-webhook-durable-persistence.test.ts tests/dcc/88-operator-acquisition-and-viator-verification.test.ts tests/dcc/89-gosno-rezdy-booking-architecture-proof.test.ts tests/dcc/octo-integration.test.ts
 
       - name: Install pnpm
         if: steps.check_changed.outputs.should_build == 'true'
@@ -87,6 +89,10 @@ jobs:
         if: steps.check_changed.outputs.should_build == 'true'
         shell: bash
         run: |
+          if [ -f .vercel/.env.production.local ]; then
+            grep -v '="\[SENSITIVE\]"' .vercel/.env.production.local > .vercel/.env.production.sanitized || true
+            mv .vercel/.env.production.sanitized .vercel/.env.production.local
+          fi
           set -a
           source .vercel/.env.production.local
           export VERCEL_GIT_COMMIT_SHA="${GITHUB_SHA}"

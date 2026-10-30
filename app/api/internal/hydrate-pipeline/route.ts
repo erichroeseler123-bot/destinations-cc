@@ -3,10 +3,14 @@ import { Redis } from "@upstash/redis";
 import { appendViatorAttribution } from "@/lib/viator/links";
 import { optimizeViatorProducts } from "@/lib/adapters";
 
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL || "",
-  token: process.env.UPSTASH_REDIS_REST_TOKEN || "",
-});
+function getRedisClient(): Redis | null {
+  const url = (process.env.UPSTASH_REDIS_REST_URL || "").trim();
+  const token = (process.env.UPSTASH_REDIS_REST_TOKEN || "").trim();
+  if (!url.startsWith("https://") || !token || token === "[SENSITIVE]") {
+    return null;
+  }
+  return new Redis({ url, token });
+}
 
 const HARVEST_QUEUE = [
   { slug: "rome", name: "Rome (Civitavecchia)", lat: 42.0924, lon: 11.7954, countryCode: "IT", viatorId: "511", placeId: "rome" },
@@ -95,6 +99,11 @@ export async function GET(request: Request) {
   const authKey = searchParams.get("key");
   if (authKey !== process.env.INTERNAL_CRON_KEY) {
     return NextResponse.json({ error: "Unauthorized payload request" }, { status: 401 });
+  }
+
+  const redis = getRedisClient();
+  if (!redis) {
+    return NextResponse.json({ error: "Upstash Redis is not configured" }, { status: 503 });
   }
 
   const force = searchParams.get("force") === "true";

@@ -226,6 +226,11 @@ export interface OctoParticipantField {
   value: string;
 }
 
+export type PaymentEvidenceProvenanceSource =
+  | "provider_api_response"
+  | "authenticated_webhook"
+  | "explicit_test_simulation";
+
 export interface OctoVerifiedPaymentEvidence {
   verified: true;
   provider: string;
@@ -233,6 +238,9 @@ export interface OctoVerifiedPaymentEvidence {
   capturedAmount: number;
   currency: string;
   capturedAt: string;
+  provenanceSource?: PaymentEvidenceProvenanceSource;
+  providerRecordId?: string;
+  webhookEventId?: string;
 }
 
 export interface OctoVerifiedRefundEvidence {
@@ -244,6 +252,9 @@ export interface OctoVerifiedRefundEvidence {
   currency: string;
   refundedAt: string;
   reason?: string;
+  provenanceSource?: PaymentEvidenceProvenanceSource;
+  providerRecordId?: string;
+  webhookEventId?: string;
 }
 
 export interface DccBookingLifecycleStates {
@@ -328,6 +339,8 @@ export interface OctoBookingResult {
   uuid: string;
   status: OctoBookingStatus;
   utcHoldExpires: string | null;
+  dccCheckoutDeadlineUtc?: string | null;
+  dccCheckoutExpired?: boolean;
   productId: string;
   optionId: string;
   availabilityId: string;

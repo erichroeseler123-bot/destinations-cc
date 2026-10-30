@@ -657,22 +657,651 @@ function createInMemoryTestDb(): DccDb {
       }
     }
 
+    if (sqliteBackedTablesRegex.test(qLower)) {
+      return executeSqliteQuery(getOrCreateSqliteDb(), queryText, params, options);
+    }
+
     return formatResult([], [], options);
   };
 
   return drizzle(client as any, { schema });
 }
 
+const sqliteBackedTablesRegex =
+  /\b(octo_bookings|octo_settlement_ledger|octo_audit_logs|octo_supplier_connections|octo_normalized_products|octo_participants|dcc_order_payments|dcc_orders|dcc_order_items|dcc_operator_payables|dcc_disputes_and_refunds|dcc_supplier_bookings|dcc_saga_steps|dcc_saga_audit_events|dcc_square_webhook_events|dcc_traveler_profiles|dcc_auth_tokens)\b/i;
+
+const SQLITE_BOOLEAN_COLS = new Set(["is_sandbox", "service_completed", "signature_verified"]);
+const SQLITE_JSON_COLS = new Set([
+  "destinations",
+  "capabilities",
+  "authorized_product_ids",
+  "cancellation_rules",
+  "options",
+  "unit_items",
+  "contact",
+  "voucher",
+  "metadata",
+  "payload",
+  "retry_policy",
+  "input_payload",
+  "output_payload",
+  "sanitized_details",
+  "error_metadata",
+]);
+
+let simulateDbFailureForTests = false;
+
+export function setSimulateDbFailureForTests(enabled: boolean): void {
+  simulateDbFailureForTests = enabled;
+}
+
+export function resetTestSqliteDb(): void {
+  if (activeSqliteDbInstance) {
+    try {
+      activeSqliteDbInstance.close();
+    } catch {}
+    activeSqliteDbInstance = null;
+    activeSqliteDbPath = null;
+  }
+  cachedDb = undefined;
+  cachedConnectionKey = undefined;
+}
+
+let activeSqliteDbInstance: any = null;
+let activeSqliteDbPath: string | null = null;
+
+function getOrCreateSqliteDb(): any {
+  const targetPath = (process.env.DCC_TEST_SQLITE_PATH || ":memory:").trim();
+  if (activeSqliteDbInstance && activeSqliteDbPath === targetPath) {
+    return activeSqliteDbInstance;
+  }
+  if (activeSqliteDbInstance) {
+    try {
+      activeSqliteDbInstance.close();
+    } catch {}
+  }
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { DatabaseSync } = require("node:sqlite") as {
+    DatabaseSync: new (p: string, opts?: { timeout?: number }) => any;
+  };
+  const db = new DatabaseSync(targetPath, { timeout: 10000 });
+  db.exec("PRAGMA busy_timeout = 10000;");
+  db.exec("PRAGMA foreign_keys = OFF;");
+  const existingTable = db
+    .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='octo_bookings'")
+    .get();
+  if (!existingTable) {
+    if (targetPath !== ":memory:") {
+      try {
+        db.exec("PRAGMA journal_mode = WAL;");
+      } catch {}
+    }
+    initializeSqliteSchema(db);
+  }
+  activeSqliteDbInstance = db;
+  activeSqliteDbPath = targetPath;
+  return db;
+}
+
+function initializeSqliteSchema(db: any): void {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS "octo_participants" (
+      "id" TEXT PRIMARY KEY,
+      "name" TEXT NOT NULL,
+      "role" TEXT NOT NULL,
+      "website" TEXT NOT NULL,
+      "contact_email" TEXT NOT NULL,
+      "contact_name" TEXT,
+      "destinations" TEXT NOT NULL DEFAULT '[]',
+      "endpoint" TEXT,
+      "certification_evidence" TEXT,
+      "consent_status" TEXT NOT NULL DEFAULT 'not_requested',
+      "credential_status" TEXT NOT NULL DEFAULT 'none',
+      "products_available_count" INTEGER NOT NULL DEFAULT 0,
+      "booking_payment_model" TEXT NOT NULL DEFAULT 'supplier_hosted',
+      "outreach_status" TEXT NOT NULL DEFAULT 'identified',
+      "agreed_commission_percent" TEXT,
+      "notes" TEXT,
+      "created_at" TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+      "updated_at" TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS "octo_supplier_connections" (
+      "id" TEXT PRIMARY KEY,
+      "operator_slug" TEXT NOT NULL,
+      "operator_name" TEXT NOT NULL,
+      "endpoint" TEXT NOT NULL,
+      "encrypted_api_key" TEXT,
+      "encrypted_bearer_token" TEXT,
+      "capabilities" TEXT NOT NULL DEFAULT '["octo/core"]',
+      "is_sandbox" INTEGER NOT NULL DEFAULT 0,
+      "connection_status" TEXT NOT NULL DEFAULT 'discovery_only',
+      "reservation_platform" TEXT NOT NULL DEFAULT 'direct_octo',
+      "octo_base_url" TEXT,
+      "api_credential_ref" TEXT,
+      "authorized_product_ids" TEXT NOT NULL DEFAULT '[]',
+      "onboarding_stage" TEXT NOT NULL DEFAULT 'discovered',
+      "operator_legal_name" TEXT,
+      "business_address" TEXT,
+      "signatory_name" TEXT,
+      "signatory_email" TEXT,
+      "consent_agreement_version" TEXT NOT NULL DEFAULT '1.0',
+      "consent_terms_text" TEXT,
+      "consented_at" TEXT,
+      "sandbox_verified_at" TEXT,
+      "production_verified_at" TEXT,
+      "payment_model" TEXT NOT NULL DEFAULT 'supplier_hosted',
+      "settlement_terms" TEXT,
+      "commission_percent" TEXT,
+      "cancellation_rules" TEXT,
+      "health_status" TEXT NOT NULL DEFAULT 'untested',
+      "last_health_check_at" TEXT,
+      "last_health_check_status" TEXT,
+      "provenance" TEXT,
+      "last_verification_time" TEXT,
+      "catalog_sync_status" TEXT,
+      "catalog_synced_at" TEXT,
+      "availability_test_status" TEXT,
+      "availability_tested_at" TEXT,
+      "booking_test_status" TEXT,
+      "booking_tested_at" TEXT,
+      "last_sync_at" TEXT,
+      "last_error_message" TEXT,
+      "created_at" TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+      "updated_at" TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS "octo_normalized_products" (
+      "id" TEXT PRIMARY KEY,
+      "supplier_connection_id" TEXT NOT NULL,
+      "supplier_product_reference" TEXT NOT NULL,
+      "title" TEXT NOT NULL,
+      "description" TEXT,
+      "destination_slug" TEXT NOT NULL,
+      "destination_name" TEXT,
+      "country" TEXT,
+      "location_name" TEXT,
+      "latitude" TEXT,
+      "longitude" TEXT,
+      "default_currency" TEXT NOT NULL DEFAULT 'USD',
+      "duration_minutes" INTEGER,
+      "meeting_point" TEXT,
+      "cancellation_policy" TEXT,
+      "capabilities" TEXT NOT NULL DEFAULT '["octo/core"]',
+      "options" TEXT NOT NULL DEFAULT '[]',
+      "pricing_from" TEXT,
+      "image_url" TEXT,
+      "source_freshness" TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+      "created_at" TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+      "updated_at" TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS "octo_bookings" (
+      "id" TEXT PRIMARY KEY,
+      "booking_uuid" TEXT NOT NULL UNIQUE,
+      "idempotency_key" TEXT UNIQUE,
+      "idempotency_hash" TEXT,
+      "supplier_connection_id" TEXT NOT NULL,
+      "reseller_id" TEXT,
+      "product_id" TEXT NOT NULL,
+      "option_id" TEXT NOT NULL,
+      "availability_id" TEXT NOT NULL,
+      "status" TEXT NOT NULL DEFAULT 'ON_HOLD',
+      "expiration_minutes" INTEGER NOT NULL DEFAULT 15,
+      "utc_hold_expires" TEXT,
+      "total_price" TEXT NOT NULL,
+      "currency" TEXT NOT NULL DEFAULT 'USD',
+      "unit_items" TEXT NOT NULL DEFAULT '[]',
+      "contact" TEXT,
+      "supplier_reference" TEXT,
+      "reseller_reference" TEXT,
+      "checkout_url" TEXT,
+      "voucher" TEXT,
+      "cancellation_reason" TEXT,
+      "confirmed_at" TEXT,
+      "cancelled_at" TEXT,
+      "created_at" TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+      "updated_at" TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+    );
+
+    CREATE UNIQUE INDEX IF NOT EXISTS "octo_bookings_idempotency_key_uidx"
+      ON "octo_bookings" ("idempotency_key")
+      WHERE "idempotency_key" IS NOT NULL;
+
+    CREATE TABLE IF NOT EXISTS "octo_settlement_ledger" (
+      "id" TEXT PRIMARY KEY,
+      "booking_id" TEXT NOT NULL,
+      "dcc_reference" TEXT NOT NULL,
+      "supplier_reference" TEXT,
+      "operator_slug" TEXT NOT NULL,
+      "operator_name" TEXT NOT NULL,
+      "currency" TEXT NOT NULL DEFAULT 'USD',
+      "gross_amount" TEXT NOT NULL,
+      "dcc_share_percent" TEXT DEFAULT '0.00',
+      "dcc_share_amount" TEXT NOT NULL,
+      "operator_share_amount" TEXT NOT NULL,
+      "payment_status" TEXT NOT NULL DEFAULT 'unpaid',
+      "settlement_status" TEXT NOT NULL DEFAULT 'pending',
+      "cancellation_status" TEXT NOT NULL DEFAULT 'none',
+      "metadata" TEXT NOT NULL DEFAULT '{}',
+      "created_at" TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+      "updated_at" TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS "octo_audit_logs" (
+      "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+      "occurred_at" TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+      "action" TEXT NOT NULL,
+      "entity_type" TEXT NOT NULL,
+      "entity_id" TEXT NOT NULL,
+      "status" TEXT NOT NULL,
+      "payload" TEXT NOT NULL DEFAULT '{}',
+      "error_message" TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS "dcc_traveler_profiles" (
+      "id" TEXT PRIMARY KEY,
+      "email" TEXT NOT NULL UNIQUE,
+      "full_name" TEXT,
+      "phone_number" TEXT,
+      "metadata" TEXT NOT NULL DEFAULT '{}',
+      "created_at" TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+      "updated_at" TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS "dcc_auth_tokens" (
+      "id" TEXT PRIMARY KEY,
+      "email" TEXT NOT NULL,
+      "token_hash" TEXT NOT NULL,
+      "otp_code" TEXT NOT NULL,
+      "expires_at" TEXT NOT NULL,
+      "consumed_at" TEXT,
+      "created_at" TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS "dcc_order_payments" (
+      "id" TEXT PRIMARY KEY,
+      "order_id" TEXT NOT NULL,
+      "traveler_id" TEXT,
+      "amount" TEXT NOT NULL,
+      "currency" TEXT NOT NULL DEFAULT 'USD',
+      "provider" TEXT NOT NULL,
+      "status" TEXT NOT NULL,
+      "payment_method" TEXT,
+      "receipt_url" TEXT,
+      "customer_email" TEXT,
+      "created_at" TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+      "updated_at" TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS "dcc_orders" (
+      "id" TEXT PRIMARY KEY,
+      "traveler_id" TEXT,
+      "reseller_id" TEXT,
+      "status" TEXT NOT NULL DEFAULT 'PENDING_HOLD',
+      "currency" TEXT NOT NULL DEFAULT 'USD',
+      "total_price" TEXT NOT NULL,
+      "payment_id" TEXT,
+      "payment_status" TEXT NOT NULL DEFAULT 'unpaid',
+      "idempotency_key" TEXT,
+      "idempotency_hash" TEXT,
+      "utc_hold_expires" TEXT,
+      "customer_full_name" TEXT,
+      "customer_email" TEXT,
+      "customer_phone" TEXT,
+      "customer_country" TEXT,
+      "customer_notes" TEXT,
+      "saga_id" TEXT,
+      "saga_status" TEXT NOT NULL DEFAULT 'NOT_STARTED',
+      "last_error_code" TEXT,
+      "last_error_message" TEXT,
+      "metadata" TEXT NOT NULL DEFAULT '{}',
+      "created_at" TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+      "updated_at" TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS "dcc_order_items" (
+      "id" TEXT PRIMARY KEY,
+      "order_id" TEXT NOT NULL,
+      "booking_id" TEXT,
+      "booking_uuid" TEXT,
+      "product_id" TEXT NOT NULL,
+      "option_id" TEXT NOT NULL,
+      "availability_id" TEXT NOT NULL,
+      "supplier_connection_id" TEXT,
+      "operator_slug" TEXT NOT NULL,
+      "operator_name" TEXT NOT NULL,
+      "price" TEXT NOT NULL,
+      "currency" TEXT NOT NULL DEFAULT 'USD',
+      "unit_items" TEXT NOT NULL DEFAULT '[]',
+      "status" TEXT NOT NULL DEFAULT 'ON_HOLD',
+      "event_date" TEXT,
+      "event_time" TEXT,
+      "service_completed" INTEGER NOT NULL DEFAULT 0,
+      "service_completed_at" TEXT,
+      "voucher" TEXT,
+      "created_at" TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+      "updated_at" TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS "dcc_operator_payables" (
+      "id" TEXT PRIMARY KEY,
+      "order_id" TEXT NOT NULL,
+      "order_item_id" TEXT NOT NULL,
+      "booking_id" TEXT NOT NULL,
+      "operator_slug" TEXT NOT NULL,
+      "operator_name" TEXT NOT NULL,
+      "currency" TEXT NOT NULL DEFAULT 'USD',
+      "gross_amount" TEXT NOT NULL,
+      "dcc_commission_percent" TEXT,
+      "dcc_commission_amount" TEXT NOT NULL,
+      "operator_payable_amount" TEXT NOT NULL,
+      "reserve_amount" TEXT NOT NULL DEFAULT '0.00',
+      "settlement_status" TEXT NOT NULL DEFAULT 'pending',
+      "service_date" TEXT,
+      "service_completed_at" TEXT,
+      "paid_at" TEXT,
+      "cancellation_status" TEXT NOT NULL DEFAULT 'none',
+      "metadata" TEXT NOT NULL DEFAULT '{}',
+      "created_at" TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+      "updated_at" TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS "dcc_disputes_and_refunds" (
+      "id" TEXT PRIMARY KEY,
+      "type" TEXT NOT NULL,
+      "order_id" TEXT NOT NULL,
+      "order_item_id" TEXT,
+      "booking_id" TEXT,
+      "payment_id" TEXT NOT NULL,
+      "operator_slug" TEXT NOT NULL,
+      "amount" TEXT NOT NULL,
+      "currency" TEXT NOT NULL DEFAULT 'USD',
+      "status" TEXT NOT NULL DEFAULT 'succeeded',
+      "reason" TEXT,
+      "settlement_impact" TEXT NOT NULL,
+      "created_at" TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+      "updated_at" TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS "dcc_supplier_bookings" (
+      "id" TEXT PRIMARY KEY,
+      "order_id" TEXT NOT NULL,
+      "order_item_id" TEXT NOT NULL,
+      "supplier_connection_id" TEXT NOT NULL,
+      "operator_slug" TEXT NOT NULL,
+      "operator_name" TEXT NOT NULL,
+      "product_id" TEXT NOT NULL,
+      "option_id" TEXT NOT NULL,
+      "availability_id" TEXT NOT NULL,
+      "provider_booking_id" TEXT,
+      "provider_booking_uuid" TEXT,
+      "status" TEXT NOT NULL DEFAULT 'PENDING_HOLD',
+      "hold_expires_at" TEXT,
+      "confirmed_at" TEXT,
+      "cancelled_at" TEXT,
+      "cancellation_reason" TEXT,
+      "price" TEXT NOT NULL,
+      "currency" TEXT NOT NULL DEFAULT 'USD',
+      "unit_items" TEXT NOT NULL DEFAULT '[]',
+      "idempotency_key" TEXT,
+      "idempotency_hash" TEXT,
+      "external_request_id" TEXT,
+      "attempt_count" INTEGER NOT NULL DEFAULT 0,
+      "last_error_code" TEXT,
+      "last_error_message" TEXT,
+      "voucher_code" TEXT,
+      "voucher_url" TEXT,
+      "voucher_instructions" TEXT,
+      "created_at" TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+      "updated_at" TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS "dcc_saga_steps" (
+      "id" TEXT PRIMARY KEY,
+      "saga_id" TEXT NOT NULL,
+      "order_id" TEXT NOT NULL,
+      "step_name" TEXT NOT NULL,
+      "step_index" INTEGER NOT NULL,
+      "status" TEXT NOT NULL DEFAULT 'PENDING',
+      "idempotency_key" TEXT NOT NULL,
+      "attempt_count" INTEGER NOT NULL DEFAULT 0,
+      "max_retries" INTEGER NOT NULL DEFAULT 3,
+      "retry_policy" TEXT NOT NULL DEFAULT '{}',
+      "next_retry_at" TEXT,
+      "external_reference_id" TEXT,
+      "input_payload" TEXT NOT NULL DEFAULT '{}',
+      "output_payload" TEXT DEFAULT '{}',
+      "error_code" TEXT,
+      "error_message" TEXT,
+      "compensation_status" TEXT NOT NULL DEFAULT 'NOT_APPLICABLE',
+      "started_at" TEXT,
+      "completed_at" TEXT,
+      "created_at" TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+      "updated_at" TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS "dcc_saga_audit_events" (
+      "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+      "saga_id" TEXT NOT NULL,
+      "order_id" TEXT NOT NULL,
+      "step_id" TEXT,
+      "event_type" TEXT NOT NULL,
+      "action" TEXT NOT NULL,
+      "entity_type" TEXT NOT NULL,
+      "entity_id" TEXT NOT NULL,
+      "idempotency_key" TEXT,
+      "attempt_number" INTEGER NOT NULL DEFAULT 1,
+      "status" TEXT NOT NULL,
+      "error_code" TEXT,
+      "error_message" TEXT,
+      "sanitized_details" TEXT NOT NULL DEFAULT '{}',
+      "occurred_at" TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS "dcc_square_webhook_events" (
+      "id" TEXT PRIMARY KEY,
+      "square_event_id" TEXT NOT NULL UNIQUE,
+      "event_type" TEXT NOT NULL,
+      "payment_id" TEXT,
+      "order_id" TEXT,
+      "processing_status" TEXT NOT NULL DEFAULT 'processing',
+      "error_metadata" TEXT,
+      "received_at" TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+      "processed_at" TEXT,
+      "created_at" TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+      "updated_at" TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+    );
+  `);
+}
+
+function rewritePostgresInsertDefaults(sqlText: string): string {
+  const insertMatch = sqlText.match(/^(\s*insert\s+into\s+"[^"]+"\s*)\(([^)]+)\)\s*values\s*\(/i);
+  if (!insertMatch) return sqlText;
+  const prefix = insertMatch[1];
+  const colsRaw = insertMatch[2].split(",").map((c) => c.trim());
+  const valuesKeywordIdx = sqlText.search(/\bvalues\s*\(/i);
+  const openParen = sqlText.indexOf("(", valuesKeywordIdx);
+  let depth = 0;
+  let closeParen = -1;
+  let inQuotes = false;
+  for (let i = openParen; i < sqlText.length; i++) {
+    const ch = sqlText[i];
+    if (ch === "'") inQuotes = !inQuotes;
+    if (!inQuotes) {
+      if (ch === "(") depth++;
+      else if (ch === ")") {
+        depth--;
+        if (depth === 0) {
+          closeParen = i;
+          break;
+        }
+      }
+    }
+  }
+  if (closeParen === -1) return sqlText;
+  const inner = sqlText.slice(openParen + 1, closeParen);
+  const tokens: string[] = [];
+  let cur = "";
+  inQuotes = false;
+  let pDepth = 0;
+  for (let i = 0; i < inner.length; i++) {
+    const ch = inner[i];
+    if (ch === "'") inQuotes = !inQuotes;
+    if (!inQuotes) {
+      if (ch === "(") pDepth++;
+      else if (ch === ")") pDepth--;
+      else if (ch === "," && pDepth === 0) {
+        tokens.push(cur.trim());
+        cur = "";
+        continue;
+      }
+    }
+    cur += ch;
+  }
+  if (cur.trim()) tokens.push(cur.trim());
+  if (colsRaw.length !== tokens.length) return sqlText;
+
+  const keptCols: string[] = [];
+  const keptTokens: string[] = [];
+  for (let i = 0; i < colsRaw.length; i++) {
+    if (/^default$/i.test(tokens[i])) continue;
+    keptCols.push(colsRaw[i]);
+    keptTokens.push(tokens[i]);
+  }
+  const suffix = sqlText.slice(closeParen + 1);
+  if (keptCols.length === 0) {
+    return `${prefix}default values${suffix}`;
+  }
+  return `${prefix}(${keptCols.join(", ")}) values (${keptTokens.join(", ")})${suffix}`;
+}
+
+function bindPostgresParamsToSqlite(
+  sqlText: string,
+  params: unknown[]
+): { sql: string; bindArgs: any[] } {
+  const bindArgs: any[] = [];
+  let out = "";
+  let inSingle = false;
+  let inDouble = false;
+  for (let i = 0; i < sqlText.length; i++) {
+    const ch = sqlText[i];
+    if (ch === "'" && !inDouble) {
+      inSingle = !inSingle;
+      out += ch;
+      continue;
+    }
+    if (ch === '"' && !inSingle) {
+      inDouble = !inDouble;
+      out += ch;
+      continue;
+    }
+    if (!inSingle && !inDouble && ch === "$") {
+      let j = i + 1;
+      while (j < sqlText.length && sqlText[j] >= "0" && sqlText[j] <= "9") {
+        j++;
+      }
+      if (j > i + 1) {
+        const paramIdx = Number(sqlText.slice(i + 1, j)) - 1;
+        const rawVal = params[paramIdx];
+        let normVal: any;
+        if (rawVal === undefined || rawVal === null) {
+          normVal = null;
+        } else if (typeof rawVal === "boolean") {
+          normVal = rawVal ? 1 : 0;
+        } else if (rawVal instanceof Date) {
+          normVal = rawVal.toISOString();
+        } else if (typeof rawVal === "object" && !(rawVal instanceof Uint8Array)) {
+          normVal = JSON.stringify(rawVal);
+        } else {
+          normVal = rawVal;
+        }
+        bindArgs.push(normVal);
+        out += "?";
+        i = j - 1;
+        continue;
+      }
+    }
+    out += ch;
+  }
+  return { sql: out, bindArgs };
+}
+
+function executeSqliteQuery(
+  sqliteDb: any,
+  query: string,
+  params: unknown[],
+  options?: { arrayMode?: boolean }
+) {
+  const isWriteQuery = /^\s*(insert|update|delete)\b/i.test(query);
+  if (
+    isWriteQuery &&
+    (simulateDbFailureForTests || process.env.DCC_SIMULATE_DB_FAILURE === "1")
+  ) {
+    const simulatedErr: any = new Error(
+      "SIMULATED_DB_PERSISTENCE_FAILURE: database write rejected"
+    );
+    simulatedErr.code = "57P01";
+    throw simulatedErr;
+  }
+
+  const rewrittenInsert = rewritePostgresInsertDefaults(query);
+  const { sql, bindArgs } = bindPostgresParamsToSqlite(rewrittenInsert, params);
+  const returnsRows = /^\s*select\b|\breturning\b/i.test(sql);
+
+  try {
+    const stmt = sqliteDb.prepare(sql);
+    if (!returnsRows) {
+      const info = stmt.run(...bindArgs);
+      return {
+        rows: [],
+        rowCount: Number(info?.changes ?? 0),
+      };
+    }
+
+    const rawRows = stmt.all(...bindArgs) as Record<string, any>[];
+    if (rawRows.length === 0) {
+      return formatResult([], [], options);
+    }
+
+    const cols = Object.keys(rawRows[0]);
+    const normalizedRows = rawRows.map((raw) => {
+      const obj: Record<string, any> = {};
+      for (const col of cols) {
+        let val = raw[col];
+        if (val !== null && val !== undefined) {
+          if (SQLITE_BOOLEAN_COLS.has(col)) {
+            val = Boolean(val);
+          } else if (SQLITE_JSON_COLS.has(col) && typeof val === "string") {
+            try {
+              val = JSON.parse(val);
+            } catch {}
+          }
+        }
+        obj[col] = val;
+      }
+      return obj;
+    });
+
+    return formatResult(normalizedRows, cols, options);
+  } catch (err: any) {
+    if (err && typeof err.message === "string" && err.message.includes("UNIQUE constraint failed")) {
+      err.code = "23505";
+    }
+    throw err;
+  }
+}
+
 export function getDb(): DccDb | null {
   const connectionString = resolveDatabaseUrl();
-  const key = `${connectionString}::${process.env.DCC_ISOLATED_TEST_DB || ""}`;
+  const key = `${connectionString}::${process.env.DCC_ISOLATED_TEST_DB || ""}::${process.env.DCC_TEST_SQLITE_PATH || ""}`;
   if (cachedDb !== undefined && cachedConnectionKey === key) {
     return cachedDb;
   }
   cachedConnectionKey = key;
 
   if (!connectionString) {
-    if (process.env.DCC_ISOLATED_TEST_DB === "1") {
+    if (process.env.DCC_ISOLATED_TEST_DB === "1" || process.env.DCC_TEST_SQLITE_PATH) {
       cachedDb = createInMemoryTestDb();
       return cachedDb;
     }
@@ -686,5 +1315,10 @@ export function getDb(): DccDb | null {
 }
 
 export function hasDb() {
-  return Boolean(resolveDatabaseUrl() || process.env.DCC_ISOLATED_TEST_DB === "1");
+  return Boolean(
+    resolveDatabaseUrl() ||
+      process.env.DCC_ISOLATED_TEST_DB === "1" ||
+      process.env.DCC_TEST_SQLITE_PATH
+  );
 }
+

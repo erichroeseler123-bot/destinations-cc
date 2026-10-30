@@ -196,6 +196,9 @@ export class DccOrderService {
                 capturedAmount: item.price,
                 currency: item.currency,
                 capturedAt: paymentResult.processedAt || new Date().toISOString(),
+                provenanceSource: paymentResult.provenanceSource,
+                providerRecordId: paymentResult.paymentId,
+                webhookEventId: paymentResult.webhookEventId,
               }
             : undefined,
         idempotencyKey: params.idempotencyKey,
@@ -308,6 +311,9 @@ export class DccOrderService {
           currency: refundRecord.currency,
           refundedAt: refundRecord.createdAt,
           reason: params.reason,
+          provenanceSource: refundRecord.provenanceSource,
+          providerRecordId: refundRecord.id,
+          webhookEventId: refundRecord.webhookEventId,
         },
       });
     }

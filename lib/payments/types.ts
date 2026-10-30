@@ -1,3 +1,5 @@
+import { PaymentEvidenceProvenanceSource } from "@/lib/octo/types";
+
 export type DccPaymentStatus =
   | "unpaid"
   | "authorized"
@@ -32,6 +34,7 @@ export interface DccProcessPaymentParams {
     squareClient?: any;
     simulateCapture?: boolean;
     simulateFailure?: boolean;
+    allowTestSimulation?: boolean;
   };
 }
 
@@ -43,6 +46,8 @@ export interface DccPaymentResult {
   currency: string;
   processedAt: string;
   provider: string;
+  provenanceSource?: PaymentEvidenceProvenanceSource;
+  webhookEventId?: string;
 }
 
 export interface DccOrderPaymentRecord {
@@ -53,6 +58,8 @@ export interface DccOrderPaymentRecord {
   amount: number;
   currency: string;
   status: DccPaymentStatus;
+  provenanceSource?: PaymentEvidenceProvenanceSource;
+  webhookEventId?: string;
   rawMetadata?: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
@@ -66,6 +73,10 @@ export interface DccRefundParams {
   amount: number;
   currency?: string;
   reason?: string;
+  options?: {
+    squareClient?: any;
+    allowTestSimulation?: boolean;
+  };
 }
 
 export interface DccRefundRecord {
@@ -79,6 +90,8 @@ export interface DccRefundRecord {
   currency: string;
   status: "initiated" | "processed" | "failed";
   reason?: string;
+  provenanceSource?: PaymentEvidenceProvenanceSource;
+  webhookEventId?: string;
   settlementAdjusted: boolean;
   createdAt: string;
 }
@@ -91,3 +104,4 @@ export interface DccChargebackParams {
   reason?: string;
   evidence?: Record<string, unknown>;
 }
+

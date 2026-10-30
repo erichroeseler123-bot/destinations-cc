@@ -15,7 +15,8 @@ import {
   OctoVerifiedRefundEvidence,
 } from "@/lib/octo/types";
 import { OctoApiError } from "@/lib/octo/adapters/base";
-import { eq, and } from "drizzle-orm";
+import { DccPaymentService } from "@/lib/payments/paymentService";
+import { eq, and, or } from "drizzle-orm";
 
 export const DCC_DEFAULT_COMMISSION_PERCENT: number | null = null;
 export const DCC_DEFAULT_RESERVE_PERCENT: number = 0; // Configurable per operator / agreement
@@ -89,6 +90,13 @@ export function validateVerifiedPaymentEvidence(
     capturedAmount: Math.round(capturedAmount * 100) / 100,
     currency,
     capturedAt,
+    ...(typeof ev.provenanceSource === "string"
+      ? { provenanceSource: ev.provenanceSource as any }
+      : {}),
+    ...(typeof ev.providerRecordId === "string"
+      ? { providerRecordId: ev.providerRecordId }
+      : {}),
+    ...(typeof ev.webhookEventId === "string" ? { webhookEventId: ev.webhookEventId } : {}),
   };
 }
 
@@ -164,12 +172,115 @@ export function validateVerifiedRefundEvidence(
     currency,
     refundedAt,
     ...(typeof ev.reason === "string" ? { reason: ev.reason } : {}),
+    ...(typeof ev.provenanceSource === "string"
+      ? { provenanceSource: ev.provenanceSource as any }
+      : {}),
+    ...(typeof ev.providerRecordId === "string"
+      ? { providerRecordId: ev.providerRecordId }
+      : {}),
+    ...(typeof ev.webhookEventId === "string" ? { webhookEventId: ev.webhookEventId } : {}),
+  };
+}
+
+function buildSettlementMetadata(
+  entry: DccSettlementLedgerEntry,
+  extra?: Record<string, unknown>
+): Record<string, unknown> {
+  return {
+    ...(extra || {}),
+    orderId: entry.orderId || null,
+    orderItemId: entry.orderItemId || null,
+    capturedAmount: entry.capturedAmount ?? 0,
+    refundedAmount: entry.refundedAmount ?? 0,
+    reserveHoldAmount: entry.reserveHoldAmount ?? 0,
+    verifiedPaymentEvidence: entry.verifiedPaymentEvidence || null,
+    verifiedRefundEvidence: entry.verifiedRefundEvidence || null,
+    commissionEligibilityStatus: entry.commissionEligibilityStatus,
+    refundStatus: entry.refundStatus,
+    serviceCompleted: entry.serviceCompleted,
+    serviceCompletionStatus: entry.serviceCompletionStatus,
+    scheduledServiceDate: entry.scheduledServiceDate || null,
+    completedAt: entry.completedAt || null,
+    reconciledAt: entry.reconciledAt || null,
+  };
+}
+
+function reconstructLedgerEntryFromRow(row: any): DccSettlementLedgerEntry {
+  const meta =
+    row.metadata && typeof row.metadata === "object"
+      ? (row.metadata as Record<string, any>)
+      : {};
+  const paymentStatus = (row.paymentStatus || "unpaid") as DccSettlementLedgerEntry["paymentStatus"];
+  const settlementStatus = (row.settlementStatus || "pending") as DccSettlementLedgerEntry["settlementStatus"];
+  const cancellationStatus = (row.cancellationStatus || "none") as DccSettlementLedgerEntry["cancellationStatus"];
+  const serviceCompleted = Boolean(meta.serviceCompleted);
+  const serviceCompletionStatus =
+    meta.serviceCompletionStatus || (serviceCompleted ? "completed" : "scheduled");
+  const commissionEligibilityStatus =
+    meta.commissionEligibilityStatus ||
+    (cancellationStatus !== "none"
+      ? "ineligible_cancelled"
+      : paymentStatus === "captured" || paymentStatus === "partially_refunded"
+      ? serviceCompleted
+        ? "eligible"
+        : "pending_service_completion"
+      : "ineligible_unpaid");
+  const refundStatus =
+    meta.refundStatus ||
+    (paymentStatus === "refunded"
+      ? "full_refund"
+      : paymentStatus === "partially_refunded"
+      ? "partial_refund"
+      : "none");
+
+  return {
+    id: row.id,
+    bookingId: row.bookingId,
+    orderId: meta.orderId || undefined,
+    orderItemId: meta.orderItemId || undefined,
+    dccReference: row.dccReference,
+    supplierReference: row.supplierReference || undefined,
+    operatorSlug: row.operatorSlug,
+    operatorName: row.operatorName,
+    currency: row.currency,
+    grossAmount: Number(row.grossAmount),
+    capturedAmount:
+      typeof meta.capturedAmount === "number"
+        ? meta.capturedAmount
+        : paymentStatus === "captured"
+        ? Number(row.grossAmount)
+        : 0,
+    refundedAmount: typeof meta.refundedAmount === "number" ? meta.refundedAmount : 0,
+    dccSharePercent: Number(row.dccSharePercent ?? 0),
+    dccShareAmount: Number(row.dccShareAmount),
+    operatorShareAmount: Number(row.operatorShareAmount),
+    reserveHoldAmount: typeof meta.reserveHoldAmount === "number" ? meta.reserveHoldAmount : 0,
+    paymentStatus,
+    verifiedPaymentEvidence: meta.verifiedPaymentEvidence || undefined,
+    verifiedRefundEvidence: meta.verifiedRefundEvidence || undefined,
+    settlementStatus,
+    commissionEligibilityStatus,
+    cancellationStatus,
+    refundStatus,
+    serviceCompleted,
+    serviceCompletionStatus,
+    scheduledServiceDate: meta.scheduledServiceDate || undefined,
+    completedAt: meta.completedAt || undefined,
+    reconciledAt: meta.reconciledAt || undefined,
+    createdAt:
+      row.createdAt instanceof Date
+        ? row.createdAt.toISOString()
+        : String(row.createdAt || new Date().toISOString()),
   };
 }
 
 export class DccSettlementEngine {
   static setSimulatePersistenceFailureForTests(enabled: boolean): void {
     simulateSettlementPersistenceFailure = enabled;
+  }
+
+  static clearInMemoryStoresForProcessRestartSimulation(): void {
+    fallbackSettlementStore.clear();
   }
 
   /**
@@ -202,7 +313,7 @@ export class DccSettlementEngine {
   /**
    * Create an authorized financial settlement record.
    * INVARIANTS:
-   * - paymentStatus is NEVER marked 'captured' without verifiedPaymentEvidence.
+   * - paymentStatus is NEVER marked 'captured' without traceable verifiedPaymentEvidence.
    * - settlementStatus is 'awaiting_payment' when unpaid, or 'pending' when captured until scheduled service is completed.
    * - commissionEligibilityStatus is 'ineligible_unpaid' until payment is captured, and 'pending_service_completion' until service is completed.
    */
@@ -221,8 +332,13 @@ export class DccSettlementEngine {
     let verifiedEvidence: OctoVerifiedPaymentEvidence | undefined;
 
     if (params.verifiedPaymentEvidence) {
-      verifiedEvidence = validateVerifiedPaymentEvidence(
+      const structurallyValid = validateVerifiedPaymentEvidence(
         params.verifiedPaymentEvidence,
+        params.grossAmount,
+        currency
+      );
+      verifiedEvidence = await DccPaymentService.assertTraceablePaymentEvidence(
+        structurallyValid,
         params.grossAmount,
         currency
       );
@@ -250,6 +366,7 @@ export class DccSettlementEngine {
     );
 
     const ledgerId = `dcc:ledg:${params.dccReference.replace(/^dcc:bk:/, "")}`;
+    const payableId = `op_pay_${ledgerId.replace("dcc:ledg:", "")}`;
     const now = new Date().toISOString();
 
     const settlementStatus =
@@ -290,49 +407,79 @@ export class DccSettlementEngine {
       createdAt: now,
     };
 
+    const metadataPayload = buildSettlementMetadata(entry, params.metadata);
+
     const db = getDb();
     if (db) {
       try {
-        await db.insert(octoSettlementLedger).values({
-          id: entry.id,
-          bookingId: entry.bookingId,
-          dccReference: entry.dccReference,
-          supplierReference: entry.supplierReference || null,
-          operatorSlug: entry.operatorSlug,
-          operatorName: entry.operatorName,
-          currency: entry.currency,
-          grossAmount: entry.grossAmount.toFixed(2),
-          dccSharePercent: entry.dccSharePercent.toFixed(2),
-          dccShareAmount: entry.dccShareAmount.toFixed(2),
-          operatorShareAmount: entry.operatorShareAmount.toFixed(2),
-          paymentStatus: entry.paymentStatus as any,
-          settlementStatus: entry.settlementStatus as any,
-          cancellationStatus: "none",
-          metadata: {
-            ...(params.metadata || {}),
-            verifiedPaymentEvidence: verifiedEvidence || null,
-            commissionEligibilityStatus: entry.commissionEligibilityStatus,
-            refundStatus: entry.refundStatus,
-            serviceCompletionStatus: entry.serviceCompletionStatus,
-          },
-        });
+        await db
+          .insert(octoSettlementLedger)
+          .values({
+            id: entry.id,
+            bookingId: entry.bookingId,
+            dccReference: entry.dccReference,
+            supplierReference: entry.supplierReference || null,
+            operatorSlug: entry.operatorSlug,
+            operatorName: entry.operatorName,
+            currency: entry.currency,
+            grossAmount: entry.grossAmount.toFixed(2),
+            dccSharePercent: entry.dccSharePercent.toFixed(2),
+            dccShareAmount: entry.dccShareAmount.toFixed(2),
+            operatorShareAmount: entry.operatorShareAmount.toFixed(2),
+            paymentStatus: entry.paymentStatus as any,
+            settlementStatus: entry.settlementStatus as any,
+            cancellationStatus: "none",
+            metadata: metadataPayload,
+          })
+          .onConflictDoUpdate({
+            target: octoSettlementLedger.id,
+            set: {
+              dccSharePercent: entry.dccSharePercent.toFixed(2),
+              dccShareAmount: entry.dccShareAmount.toFixed(2),
+              operatorShareAmount: entry.operatorShareAmount.toFixed(2),
+              paymentStatus: entry.paymentStatus as any,
+              settlementStatus: entry.settlementStatus as any,
+              cancellationStatus: entry.cancellationStatus,
+              metadata: metadataPayload,
+              updatedAt: new Date(),
+            },
+          });
 
-        await db.insert(dccOperatorPayables).values({
-          id: `op_pay_${ledgerId.replace("dcc:ledg:", "")}`,
-          orderId: params.orderId || entry.id,
-          orderItemId: params.orderItemId || entry.id,
-          bookingId: entry.bookingId,
-          operatorSlug: entry.operatorSlug,
-          operatorName: entry.operatorName,
-          currency: entry.currency,
-          grossAmount: entry.grossAmount.toFixed(2),
-          dccCommissionPercent: entry.dccSharePercent.toFixed(2),
-          dccCommissionAmount: entry.dccShareAmount.toFixed(2),
-          operatorPayableAmount: entry.operatorShareAmount.toFixed(2),
-          reserveAmount: entry.reserveHoldAmount.toFixed(2),
-          settlementStatus: entry.settlementStatus,
-          serviceDate: params.scheduledServiceDate ? params.scheduledServiceDate.slice(0, 10) : null,
-        });
+        await db
+          .insert(dccOperatorPayables)
+          .values({
+            id: payableId,
+            orderId: params.orderId || entry.id,
+            orderItemId: params.orderItemId || entry.id,
+            bookingId: entry.bookingId,
+            operatorSlug: entry.operatorSlug,
+            operatorName: entry.operatorName,
+            currency: entry.currency,
+            grossAmount: entry.grossAmount.toFixed(2),
+            dccCommissionPercent: entry.dccSharePercent.toFixed(2),
+            dccCommissionAmount: entry.dccShareAmount.toFixed(2),
+            operatorPayableAmount: entry.operatorShareAmount.toFixed(2),
+            reserveAmount: (entry.reserveHoldAmount ?? 0).toFixed(2),
+            settlementStatus: entry.settlementStatus,
+            serviceDate: params.scheduledServiceDate
+              ? params.scheduledServiceDate.slice(0, 10)
+              : null,
+            cancellationStatus: "none",
+            metadata: metadataPayload,
+          })
+          .onConflictDoUpdate({
+            target: dccOperatorPayables.id,
+            set: {
+              dccCommissionPercent: entry.dccSharePercent.toFixed(2),
+              dccCommissionAmount: entry.dccShareAmount.toFixed(2),
+              operatorPayableAmount: entry.operatorShareAmount.toFixed(2),
+              reserveAmount: (entry.reserveHoldAmount ?? 0).toFixed(2),
+              settlementStatus: entry.settlementStatus,
+              cancellationStatus: entry.cancellationStatus,
+              metadata: metadataPayload,
+              updatedAt: new Date(),
+            },
+          });
 
         await db.insert(octoAuditLogs).values({
           action: "SETTLEMENT_RECORDED",
@@ -352,7 +499,11 @@ export class DccSettlementEngine {
           },
         });
       } catch (err: any) {
-        console.error("Database insert error on settlement ledger:", err.message);
+        throw new OctoApiError(
+          503,
+          "SETTLEMENT_PERSISTENCE_FAILED",
+          `Database persistence failed on recordBookingSettlement(${entry.id}): ${err.message}`
+        );
       }
     }
 
@@ -374,6 +525,14 @@ export class DccSettlementEngine {
       | { bookingId?: string; ledgerId?: string; verifiedPaymentEvidence: OctoVerifiedPaymentEvidence },
     evidenceArg?: OctoVerifiedPaymentEvidence
   ): Promise<DccSettlementLedgerEntry> {
+    if (simulateSettlementPersistenceFailure) {
+      throw new OctoApiError(
+        503,
+        "SETTLEMENT_PERSISTENCE_FAILED",
+        "Simulated settlement persistence failure"
+      );
+    }
+
     const identifier =
       typeof identifierOrParams === "string"
         ? identifierOrParams
@@ -383,15 +542,25 @@ export class DccSettlementEngine {
         ? evidenceArg!
         : identifierOrParams.verifiedPaymentEvidence;
 
-    const entry =
-      fallbackSettlementStore.get(identifier) ||
-      fallbackSettlementStore.get(`dcc:ledg:${identifier.replace(/^dcc:bk:/, "")}`);
-
+    const entry = await this.getSettlementEntry(identifier);
     if (!entry) {
-      throw new OctoApiError(404, "SETTLEMENT_NOT_FOUND", `Settlement entry for ${identifier} not found`);
+      throw new OctoApiError(
+        404,
+        "SETTLEMENT_NOT_FOUND",
+        `Settlement entry for ${identifier} not found`
+      );
     }
 
-    const validated = validateVerifiedPaymentEvidence(evidence, entry.grossAmount, entry.currency);
+    const structurallyValid = validateVerifiedPaymentEvidence(
+      evidence,
+      entry.grossAmount,
+      entry.currency
+    );
+    const validated = await DccPaymentService.assertTraceablePaymentEvidence(
+      structurallyValid,
+      entry.grossAmount,
+      entry.currency
+    );
     const { dccShareAmount, operatorShareAmount, reserveHoldAmount } = this.calculateShares(
       validated.capturedAmount,
       entry.dccSharePercent
@@ -405,7 +574,7 @@ export class DccSettlementEngine {
     entry.reserveHoldAmount = reserveHoldAmount;
 
     if (entry.cancellationStatus === "none") {
-      if (entry.serviceCompletionStatus === "completed") {
+      if (entry.serviceCompletionStatus === "completed" || entry.serviceCompleted) {
         entry.commissionEligibilityStatus = "eligible";
         entry.settlementStatus = "ready_for_payout";
       } else {
@@ -414,79 +583,174 @@ export class DccSettlementEngine {
       }
     }
 
+    const metadataPayload = buildSettlementMetadata(entry);
+    const db = getDb();
+    if (db) {
+      try {
+        await db
+          .update(octoSettlementLedger)
+          .set({
+            paymentStatus: entry.paymentStatus as any,
+            dccShareAmount: entry.dccShareAmount.toFixed(2),
+            operatorShareAmount: entry.operatorShareAmount.toFixed(2),
+            settlementStatus: entry.settlementStatus as any,
+            metadata: metadataPayload,
+            updatedAt: new Date(),
+          })
+          .where(eq(octoSettlementLedger.id, entry.id));
+
+        await db
+          .update(dccOperatorPayables)
+          .set({
+            dccCommissionAmount: entry.dccShareAmount.toFixed(2),
+            operatorPayableAmount: entry.operatorShareAmount.toFixed(2),
+            reserveAmount: (entry.reserveHoldAmount ?? 0).toFixed(2),
+            settlementStatus: entry.settlementStatus,
+            metadata: metadataPayload,
+            updatedAt: new Date(),
+          })
+          .where(eq(dccOperatorPayables.bookingId, entry.bookingId));
+
+        await db.insert(octoAuditLogs).values({
+          action: "SETTLEMENT_PAYMENT_CAPTURED",
+          entityType: "LEDGER_ENTRY",
+          entityId: entry.id,
+          status: "SUCCESS",
+          payload: {
+            bookingId: entry.bookingId,
+            capturedAmount: entry.capturedAmount,
+            dccShareAmount: entry.dccShareAmount,
+            operatorShareAmount: entry.operatorShareAmount,
+            settlementStatus: entry.settlementStatus,
+            commissionEligibilityStatus: entry.commissionEligibilityStatus,
+            transactionId: validated.transactionId,
+            provenanceSource: validated.provenanceSource,
+          },
+        });
+      } catch (err: any) {
+        throw new OctoApiError(
+          503,
+          "SETTLEMENT_PERSISTENCE_FAILED",
+          `Database persistence failed on recordVerifiedPaymentCapture(${entry.id}): ${err.message}`
+        );
+      }
+    }
+
+    fallbackSettlementStore.set(entry.id, entry);
+    fallbackSettlementStore.set(entry.bookingId, entry);
+    if (entry.orderItemId) {
+      fallbackSettlementStore.set(entry.orderItemId, entry);
+    }
+
     return { ...entry };
   }
 
   /**
    * Mark service as fulfilled / completed.
-   * Requires booking to not be cancelled. Transitions commissionEligibilityStatus to 'eligible'
-   * and settlementStatus to 'ready_for_payout' ONLY if paymentStatus is 'captured' (or 'partially_refunded').
+   * INVARIANT (Requirement 1):
+   * Database payables (`dccOperatorPayables`) and ledger rows (`octoSettlementLedger`) MUST remain
+   * ineligible (`settlementStatus: 'awaiting_payment'`, `commissionEligibilityStatus: 'ineligible_unpaid'`)
+   * until BOTH authenticated payment capture and service completion are established.
+   * Never updates `ready_for_payout` unconditionally.
    */
   static async markServiceCompleted(
     identifier: string,
     completedAt?: string
   ): Promise<DccSettlementLedgerEntry | null> {
-    const entry =
-      fallbackSettlementStore.get(identifier) ||
-      fallbackSettlementStore.get(`dcc:ledg:${identifier.replace(/^dcc:bk:/, "")}`);
-
-    const now = completedAt || new Date().toISOString();
-
-    if (entry) {
-      if (entry.cancellationStatus !== "none") {
-        throw new OctoApiError(
-          409,
-          "CANNOT_COMPLETE_CANCELLED_BOOKING",
-          `Cannot mark cancelled booking ${identifier} as service completed`
-        );
-      }
-      entry.serviceCompleted = true;
-      entry.serviceCompletionStatus = "completed";
-      entry.completedAt = now;
-      if (entry.paymentStatus === "captured" || entry.paymentStatus === "partially_refunded") {
-        entry.commissionEligibilityStatus = "eligible";
-        if (entry.settlementStatus === "pending") {
-          entry.settlementStatus = "ready_for_payout";
-        }
-      } else {
-        entry.commissionEligibilityStatus = "ineligible_unpaid";
-      }
+    if (simulateSettlementPersistenceFailure) {
+      throw new OctoApiError(
+        503,
+        "SETTLEMENT_PERSISTENCE_FAILED",
+        "Simulated settlement persistence failure"
+      );
     }
 
+    const entry = await this.getSettlementEntry(identifier);
+    if (!entry) {
+      return null;
+    }
+
+    if (entry.cancellationStatus !== "none") {
+      throw new OctoApiError(
+        409,
+        "CANNOT_COMPLETE_CANCELLED_BOOKING",
+        `Cannot mark cancelled booking ${identifier} as service completed`
+      );
+    }
+
+    const now = completedAt || new Date().toISOString();
+    entry.serviceCompleted = true;
+    entry.serviceCompletionStatus = "completed";
+    entry.completedAt = now;
+
+    const hasAuthenticatedPaymentCapture =
+      (entry.paymentStatus === "captured" || entry.paymentStatus === "partially_refunded") &&
+      Boolean(entry.verifiedPaymentEvidence?.verified);
+
+    if (hasAuthenticatedPaymentCapture) {
+      entry.commissionEligibilityStatus =
+        entry.paymentStatus === "partially_refunded" ? "adjusted_partial_refund" : "eligible";
+      if (entry.settlementStatus === "pending") {
+        entry.settlementStatus = "ready_for_payout";
+      }
+    } else {
+      entry.commissionEligibilityStatus = "ineligible_unpaid";
+      entry.settlementStatus = "awaiting_payment";
+    }
+
+    const metadataPayload = buildSettlementMetadata(entry);
     const db = getDb();
     if (db) {
       try {
-        const targetId = entry?.id || (identifier.startsWith("dcc:ledg:") ? identifier : `dcc:ledg:${identifier.replace(/^dcc:bk:/, "")}`);
         await db
           .update(octoSettlementLedger)
           .set({
-            settlementStatus: "ready_for_payout" as any,
+            settlementStatus: entry.settlementStatus as any,
+            metadata: metadataPayload,
             updatedAt: new Date(),
           })
-          .where(eq(octoSettlementLedger.id, targetId));
+          .where(eq(octoSettlementLedger.id, entry.id));
 
         await db
           .update(dccOperatorPayables)
           .set({
-            settlementStatus: "ready_for_payout",
-            serviceCompletedAt: new Date(),
+            settlementStatus: entry.settlementStatus,
+            serviceCompletedAt: new Date(now),
+            metadata: metadataPayload,
             updatedAt: new Date(),
           })
-          .where(eq(dccOperatorPayables.bookingId, entry?.bookingId || identifier));
+          .where(eq(dccOperatorPayables.bookingId, entry.bookingId));
 
         await db.insert(octoAuditLogs).values({
-          action: "SERVICE_COMPLETED_PAYABLE_READY",
+          action: hasAuthenticatedPaymentCapture
+            ? "SERVICE_COMPLETED_PAYABLE_READY"
+            : "SERVICE_COMPLETED_AWAITING_PAYMENT",
           entityType: "LEDGER_ENTRY",
-          entityId: targetId,
+          entityId: entry.id,
           status: "SUCCESS",
-          payload: { completedAt: now },
+          payload: {
+            completedAt: now,
+            paymentStatus: entry.paymentStatus,
+            settlementStatus: entry.settlementStatus,
+            commissionEligibilityStatus: entry.commissionEligibilityStatus,
+          },
         });
       } catch (err: any) {
-        console.error("Database update error on markServiceCompleted:", err.message);
+        throw new OctoApiError(
+          503,
+          "SETTLEMENT_PERSISTENCE_FAILED",
+          `Database update failed on markServiceCompleted(${entry.id}): ${err.message}`
+        );
       }
     }
 
-    return entry ? { ...entry } : null;
+    fallbackSettlementStore.set(entry.id, entry);
+    fallbackSettlementStore.set(entry.bookingId, entry);
+    if (entry.orderItemId) {
+      fallbackSettlementStore.set(entry.orderItemId, entry);
+    }
+
+    return { ...entry };
   }
 
   /**
@@ -495,7 +759,7 @@ export class DccSettlementEngine {
    * - If payment was never captured ('unpaid'), cancellationStatus becomes 'cancelled_unpaid' and refundStatus becomes 'not_applicable_unpaid'.
    * - If payment was captured and no verifiedRefundEvidence is supplied, paymentStatus remains 'captured',
    *   refundStatus is 'no_refund' or 'pending_refund', and settlementStatus is 'cancelled_no_refund' or 'cancelled_pending_refund'.
-   * - Only when verifiedRefundEvidence is supplied (or refundType is 'full'/'partial' with verified evidence) is money marked refunded/reversed.
+   * - Only when traceable verifiedRefundEvidence is supplied is money marked refunded/reversed.
    */
   static async recordCancellationSettlement(params: {
     ledgerId: string;
@@ -504,117 +768,165 @@ export class DccSettlementEngine {
     refundAmount?: number;
     verifiedRefundEvidence?: OctoVerifiedRefundEvidence;
   }): Promise<DccSettlementLedgerEntry | null> {
-    const entry =
-      fallbackSettlementStore.get(params.ledgerId) ||
-      (params.bookingId ? fallbackSettlementStore.get(params.bookingId) : undefined);
+    if (simulateSettlementPersistenceFailure) {
+      throw new OctoApiError(
+        503,
+        "SETTLEMENT_PERSISTENCE_FAILED",
+        "Simulated settlement persistence failure"
+      );
+    }
 
-    if (entry) {
+    const entry =
+      (await this.getSettlementEntry(params.ledgerId)) ||
+      (params.bookingId ? await this.getSettlementEntry(params.bookingId) : null);
+
+    if (!entry) {
+      return null;
+    }
+
+    if (entry.serviceCompleted && params.refundType !== "full" && params.refundType !== "partial") {
       entry.serviceCompleted = false;
       entry.serviceCompletionStatus = "cancelled_before_service";
+    } else if (!entry.serviceCompleted) {
+      entry.serviceCompletionStatus = "cancelled_before_service";
+    }
 
-      if (entry.paymentStatus === "unpaid" || params.refundType === "unpaid") {
-        entry.settlementStatus = "cancelled_unpaid";
-        entry.cancellationStatus = "cancelled_unpaid";
-        entry.refundStatus = "not_applicable_unpaid";
-        entry.commissionEligibilityStatus = "ineligible_cancelled";
-        entry.dccShareAmount = 0;
-        entry.operatorShareAmount = 0;
-        entry.reserveHoldAmount = 0;
-      } else if (params.refundType === "none") {
-        entry.settlementStatus = "cancelled_no_refund";
-        entry.cancellationStatus = "cancelled_no_refund";
-        entry.refundStatus = "no_refund";
-        entry.commissionEligibilityStatus = "ineligible_cancelled";
-      } else if (params.refundType === "pending") {
-        entry.settlementStatus = "cancelled_pending_refund";
-        entry.cancellationStatus = "cancelled_pending_refund";
-        entry.refundStatus = "pending_refund";
-        entry.commissionEligibilityStatus = "ineligible_cancelled";
-      } else if (params.refundType === "full") {
-        const validatedRefund = validateVerifiedRefundEvidence(
-          params.verifiedRefundEvidence,
-          entry.capturedAmount || entry.grossAmount,
-          entry.currency
+    if (entry.paymentStatus === "unpaid" || params.refundType === "unpaid") {
+      entry.settlementStatus = "cancelled_unpaid";
+      entry.cancellationStatus = "cancelled_unpaid";
+      entry.refundStatus = "not_applicable_unpaid";
+      entry.commissionEligibilityStatus = "ineligible_cancelled";
+      entry.dccShareAmount = 0;
+      entry.operatorShareAmount = 0;
+      entry.reserveHoldAmount = 0;
+    } else if (params.refundType === "none") {
+      entry.settlementStatus = "cancelled_no_refund";
+      entry.cancellationStatus = "cancelled_no_refund";
+      entry.refundStatus = "no_refund";
+      entry.commissionEligibilityStatus = "ineligible_cancelled";
+    } else if (params.refundType === "pending") {
+      entry.settlementStatus = "cancelled_pending_refund";
+      entry.cancellationStatus = "cancelled_pending_refund";
+      entry.refundStatus = "pending_refund";
+      entry.commissionEligibilityStatus = "ineligible_cancelled";
+    } else if (params.refundType === "full") {
+      const maxRefundable = entry.capturedAmount || entry.grossAmount;
+      const structurallyValid = validateVerifiedRefundEvidence(
+        params.verifiedRefundEvidence,
+        maxRefundable,
+        entry.currency
+      );
+      if (Math.abs(structurallyValid.refundedAmount - maxRefundable) > 0.01) {
+        throw new OctoApiError(
+          422,
+          "UNVERIFIED_REFUND_EVIDENCE",
+          `Full refund evidence amount (${structurallyValid.refundedAmount}) does not match capturedAmount (${maxRefundable})`
         );
-        if (Math.abs(validatedRefund.refundedAmount - (entry.capturedAmount || entry.grossAmount)) > 0.01) {
-          throw new OctoApiError(
-            422,
-            "UNVERIFIED_REFUND_EVIDENCE",
-            `Full refund evidence amount (${validatedRefund.refundedAmount}) does not match capturedAmount (${entry.capturedAmount || entry.grossAmount})`
-          );
-        }
-        entry.verifiedRefundEvidence = validatedRefund;
-        entry.refundedAmount = validatedRefund.refundedAmount;
-        entry.paymentStatus = "refunded";
-        entry.settlementStatus = "reversed";
-        entry.cancellationStatus = "cancelled_full_refund";
-        entry.refundStatus = "full_refund";
-        entry.commissionEligibilityStatus = "reversed_on_refund";
-        entry.operatorShareAmount = 0;
-        entry.dccShareAmount = 0;
-        entry.reserveHoldAmount = 0;
-      } else if (params.refundType === "partial") {
-        const validatedRefund = validateVerifiedRefundEvidence(
-          params.verifiedRefundEvidence,
-          entry.capturedAmount || entry.grossAmount,
-          entry.currency
+      }
+      const tracedRefund = await DccPaymentService.assertTraceableRefundEvidence(
+        structurallyValid,
+        maxRefundable,
+        entry.currency
+      );
+      entry.verifiedRefundEvidence = { ...tracedRefund, refundType: "full" };
+      entry.refundedAmount = tracedRefund.refundedAmount;
+      entry.paymentStatus = "refunded";
+      entry.settlementStatus = "reversed";
+      entry.cancellationStatus = "cancelled_full_refund";
+      entry.refundStatus = "full_refund";
+      entry.commissionEligibilityStatus = "reversed_on_refund";
+      entry.operatorShareAmount = 0;
+      entry.dccShareAmount = 0;
+      entry.reserveHoldAmount = 0;
+    } else if (params.refundType === "partial") {
+      const maxRefundable = entry.capturedAmount || entry.grossAmount;
+      const structurallyValid = validateVerifiedRefundEvidence(
+        params.verifiedRefundEvidence,
+        maxRefundable,
+        entry.currency
+      );
+      const tracedRefund = await DccPaymentService.assertTraceableRefundEvidence(
+        structurallyValid,
+        maxRefundable,
+        entry.currency
+      );
+      entry.verifiedRefundEvidence = { ...tracedRefund, refundType: "partial" };
+      entry.refundedAmount = tracedRefund.refundedAmount;
+      entry.paymentStatus = "partially_refunded";
+      entry.settlementStatus = "adjusted";
+      entry.cancellationStatus = "cancelled_penalty";
+      entry.refundStatus = "partial_refund";
+      entry.commissionEligibilityStatus = "adjusted_partial_refund";
+      const baseAmount = entry.capturedAmount || entry.grossAmount;
+      const netGross = Math.max(0, baseAmount - entry.refundedAmount);
+      const { dccShareAmount, operatorShareAmount } = this.calculateShares(
+        netGross,
+        entry.dccSharePercent
+      );
+      entry.dccShareAmount = dccShareAmount;
+      entry.operatorShareAmount = operatorShareAmount;
+    }
+
+    const metadataPayload = buildSettlementMetadata(entry);
+    const db = getDb();
+    if (db) {
+      try {
+        await db
+          .update(octoSettlementLedger)
+          .set({
+            paymentStatus: entry.paymentStatus as any,
+            dccShareAmount: entry.dccShareAmount.toFixed(2),
+            operatorShareAmount: entry.operatorShareAmount.toFixed(2),
+            settlementStatus: entry.settlementStatus as any,
+            cancellationStatus: entry.cancellationStatus,
+            metadata: metadataPayload,
+            updatedAt: new Date(),
+          })
+          .where(eq(octoSettlementLedger.id, entry.id));
+
+        await db
+          .update(dccOperatorPayables)
+          .set({
+            dccCommissionAmount: entry.dccShareAmount.toFixed(2),
+            operatorPayableAmount: entry.operatorShareAmount.toFixed(2),
+            reserveAmount: (entry.reserveHoldAmount ?? 0).toFixed(2),
+            settlementStatus: entry.settlementStatus,
+            cancellationStatus: entry.cancellationStatus,
+            metadata: metadataPayload,
+            updatedAt: new Date(),
+          })
+          .where(eq(dccOperatorPayables.bookingId, entry.bookingId));
+
+        await db.insert(octoAuditLogs).values({
+          action: "SETTLEMENT_REFUND_RECORDED",
+          entityType: "LEDGER_ENTRY",
+          entityId: entry.id,
+          status: "SUCCESS",
+          payload: {
+            refundType: params.refundType,
+            refundAmount: entry.refundedAmount,
+            paymentStatus: entry.paymentStatus,
+            settlementStatus: entry.settlementStatus,
+            cancellationStatus: entry.cancellationStatus,
+            refundStatus: entry.refundStatus,
+          },
+        });
+      } catch (err: any) {
+        throw new OctoApiError(
+          503,
+          "SETTLEMENT_PERSISTENCE_FAILED",
+          `Database update failed on recordCancellationSettlement(${entry.id}): ${err.message}`
         );
-        entry.verifiedRefundEvidence = validatedRefund;
-        entry.refundedAmount = validatedRefund.refundedAmount;
-        entry.paymentStatus = "partially_refunded";
-        entry.settlementStatus = "adjusted";
-        entry.cancellationStatus = "cancelled_penalty";
-        entry.refundStatus = "partial_refund";
-        entry.commissionEligibilityStatus = "adjusted_partial_refund";
-        const baseAmount = entry.capturedAmount || entry.grossAmount;
-        const netGross = Math.max(0, baseAmount - entry.refundedAmount);
-        const { dccShareAmount, operatorShareAmount } = this.calculateShares(
-          netGross,
-          entry.dccSharePercent
-        );
-        entry.dccShareAmount = dccShareAmount;
-        entry.operatorShareAmount = operatorShareAmount;
       }
     }
 
-    const db = getDb();
-    if (!db) return entry ? { ...entry } : null;
-
-    try {
-      await db
-        .update(octoSettlementLedger)
-        .set({
-          settlementStatus: (params.refundType === "full" ? "refunded" : "disputed") as any,
-          cancellationStatus:
-            params.refundType === "full" ? "cancelled_full_refund" : "cancelled_penalty",
-          updatedAt: new Date(),
-        })
-        .where(eq(octoSettlementLedger.id, params.ledgerId));
-
-      await db
-        .update(dccOperatorPayables)
-        .set({
-          settlementStatus: params.refundType === "full" ? "reversed" : "adjusted",
-          cancellationStatus: params.refundType === "full" ? "cancelled_full_refund" : "cancelled_penalty",
-          updatedAt: new Date(),
-        })
-        .where(eq(dccOperatorPayables.bookingId, params.bookingId || params.ledgerId));
-
-      await db.insert(octoAuditLogs).values({
-        action: "SETTLEMENT_REFUND_RECORDED",
-        entityType: "LEDGER_ENTRY",
-        entityId: params.ledgerId,
-        status: "SUCCESS",
-        payload: {
-          refundType: params.refundType,
-          refundAmount: params.refundAmount,
-        },
-      });
-    } catch (err: any) {
-      console.error("Database update error on cancellation settlement:", err.message);
+    fallbackSettlementStore.set(entry.id, entry);
+    fallbackSettlementStore.set(entry.bookingId, entry);
+    if (entry.orderItemId) {
+      fallbackSettlementStore.set(entry.orderItemId, entry);
     }
 
-    return entry ? { ...entry } : null;
+    return { ...entry };
   }
 
   /**
@@ -626,24 +938,44 @@ export class DccSettlementEngine {
     chargebackAmount: number;
     currency?: string;
   }) {
-    const entry = params.bookingId ? fallbackSettlementStore.get(params.bookingId) : undefined;
+    const entry = params.bookingId
+      ? await this.getSettlementEntry(params.bookingId)
+      : null;
     if (entry) {
       entry.settlementStatus = "disputed";
       entry.operatorShareAmount = Math.max(0, entry.operatorShareAmount - params.chargebackAmount);
+      fallbackSettlementStore.set(entry.id, entry);
+      fallbackSettlementStore.set(entry.bookingId, entry);
     }
 
     const db = getDb();
     if (db && params.bookingId) {
       try {
+        if (entry) {
+          await db
+            .update(octoSettlementLedger)
+            .set({
+              settlementStatus: "disputed" as any,
+              operatorShareAmount: entry.operatorShareAmount.toFixed(2),
+              metadata: buildSettlementMetadata(entry),
+              updatedAt: new Date(),
+            })
+            .where(eq(octoSettlementLedger.id, entry.id));
+        }
         await db
           .update(dccOperatorPayables)
           .set({
             settlementStatus: "disputed",
+            ...(entry ? { operatorPayableAmount: entry.operatorShareAmount.toFixed(2) } : {}),
             updatedAt: new Date(),
           })
           .where(eq(dccOperatorPayables.bookingId, params.bookingId));
       } catch (err: any) {
-        console.error("Database update error on chargeback adjust:", err.message);
+        throw new OctoApiError(
+          503,
+          "SETTLEMENT_PERSISTENCE_FAILED",
+          `Database update failed on adjustForChargeback(${params.bookingId}): ${err.message}`
+        );
       }
     }
   }
@@ -657,54 +989,56 @@ export class DccSettlementEngine {
   ): Promise<DccOperatorBalanceSummary> {
     const db = getDb();
     if (db) {
-      try {
-        const rows = await db
-          .select()
-          .from(dccOperatorPayables)
-          .where(
-            and(
-              eq(dccOperatorPayables.operatorSlug, operatorSlug),
-              eq(dccOperatorPayables.currency, currency)
-            )
-          );
+      const rows = await db
+        .select()
+        .from(dccOperatorPayables)
+        .where(
+          and(
+            eq(dccOperatorPayables.operatorSlug, operatorSlug),
+            eq(dccOperatorPayables.currency, currency)
+          )
+        );
 
-        if (rows.length > 0) {
-          let totalGross = 0;
-          let totalDccCommission = 0;
-          let totalPendingPayable = 0;
-          let totalReadyForPayout = 0;
-          let totalPaid = 0;
-          let totalReserveHeld = 0;
+      if (rows.length > 0) {
+        let totalGross = 0;
+        let totalDccCommission = 0;
+        let totalPendingPayable = 0;
+        let totalReadyForPayout = 0;
+        let totalPaid = 0;
+        let totalReserveHeld = 0;
 
-          for (const r of rows) {
-            const gross = Number(r.grossAmount);
-            const comm = Number(r.dccCommissionAmount);
-            const payable = Number(r.operatorPayableAmount);
-            const reserve = Number(r.reserveAmount);
+        for (const r of rows) {
+          const gross = Number(r.grossAmount);
+          const comm = Number(r.dccCommissionAmount);
+          const payable = Number(r.operatorPayableAmount);
+          const reserve = Number(r.reserveAmount);
 
+          if (r.settlementStatus !== "reversed" && r.settlementStatus !== "refunded") {
             totalGross += gross;
-            totalDccCommission += comm;
-            totalReserveHeld += reserve;
-
-            if (r.settlementStatus === "pending") totalPendingPayable += payable;
-            else if (r.settlementStatus === "ready_for_payout") totalReadyForPayout += payable;
-            else if (r.settlementStatus === "paid") totalPaid += payable;
           }
+          totalDccCommission += comm;
+          totalReserveHeld += reserve;
 
-          return {
-            operatorSlug,
-            currency,
-            totalGross: Math.round(totalGross * 100) / 100,
-            totalDccCommission: Math.round(totalDccCommission * 100) / 100,
-            totalPendingPayable: Math.round(totalPendingPayable * 100) / 100,
-            totalReadyForPayout: Math.round(totalReadyForPayout * 100) / 100,
-            totalPaid: Math.round(totalPaid * 100) / 100,
-            totalReserveHeld: Math.round(totalReserveHeld * 100) / 100,
-            activeItemCount: rows.length,
-          };
+          if (r.settlementStatus === "pending" || r.settlementStatus === "adjusted") {
+            totalPendingPayable += payable;
+          } else if (r.settlementStatus === "ready_for_payout") {
+            totalReadyForPayout += payable;
+          } else if (r.settlementStatus === "paid") {
+            totalPaid += payable;
+          }
         }
-      } catch (err: any) {
-        console.error("Database query error on getOperatorBalance:", err.message);
+
+        return {
+          operatorSlug,
+          currency,
+          totalGross: Math.round(totalGross * 100) / 100,
+          totalDccCommission: Math.round(totalDccCommission * 100) / 100,
+          totalPendingPayable: Math.round(totalPendingPayable * 100) / 100,
+          totalReadyForPayout: Math.round(totalReadyForPayout * 100) / 100,
+          totalPaid: Math.round(totalPaid * 100) / 100,
+          totalReserveHeld: Math.round(totalReserveHeld * 100) / 100,
+          activeItemCount: rows.length,
+        };
       }
     }
 
@@ -731,9 +1065,13 @@ export class DccSettlementEngine {
       totalDccCommission += e.dccShareAmount;
       totalReserveHeld += e.reserveHoldAmount || 0;
 
-      if (e.settlementStatus === "pending") totalPendingPayable += e.operatorShareAmount;
-      else if (e.settlementStatus === "ready_for_payout") totalReadyForPayout += e.operatorShareAmount;
-      else if (e.settlementStatus === "paid") totalPaid += e.operatorShareAmount;
+      if (e.settlementStatus === "pending" || e.settlementStatus === "adjusted") {
+        totalPendingPayable += e.operatorShareAmount;
+      } else if (e.settlementStatus === "ready_for_payout") {
+        totalReadyForPayout += e.operatorShareAmount;
+      } else if (e.settlementStatus === "paid") {
+        totalPaid += e.operatorShareAmount;
+      }
     }
 
     return {
@@ -750,16 +1088,71 @@ export class DccSettlementEngine {
   }
 
   /**
-   * Get settlement ledger entry by booking ID or ledger ID
+   * Get settlement ledger entry by booking ID or ledger ID (queries database first).
    */
   static async getSettlementEntry(identifier: string): Promise<DccSettlementLedgerEntry | null> {
+    const normalizedLedgerId = identifier.startsWith("dcc:ledg:")
+      ? identifier
+      : `dcc:ledg:${identifier.replace(/^dcc:bk:/, "")}`;
+
+    const db = getDb();
+    if (db) {
+      const rows = await db
+        .select()
+        .from(octoSettlementLedger)
+        .where(
+          or(
+            eq(octoSettlementLedger.id, identifier),
+            eq(octoSettlementLedger.id, normalizedLedgerId),
+            eq(octoSettlementLedger.bookingId, identifier)
+          )
+        );
+      if (rows.length > 0) {
+        const reconstructed = reconstructLedgerEntryFromRow(rows[0]);
+        fallbackSettlementStore.set(reconstructed.id, reconstructed);
+        fallbackSettlementStore.set(reconstructed.bookingId, reconstructed);
+        return { ...reconstructed };
+      }
+    }
+
     const entry =
       fallbackSettlementStore.get(identifier) ||
-      fallbackSettlementStore.get(`dcc:ledg:${identifier.replace(/^dcc:bk:/, "")}`);
+      fallbackSettlementStore.get(normalizedLedgerId);
     return entry ? { ...entry } : null;
+  }
+
+  /**
+   * Direct database lookup for `dcc_operator_payables` row by booking ID or payable ID.
+   */
+  static async getOperatorPayableRow(identifier: string): Promise<any | null> {
+    const db = getDb();
+    if (!db) return null;
+    const rows = await db
+      .select()
+      .from(dccOperatorPayables)
+      .where(
+        or(
+          eq(dccOperatorPayables.bookingId, identifier),
+          eq(dccOperatorPayables.id, identifier),
+          eq(dccOperatorPayables.orderItemId, identifier)
+        )
+      );
+    const row = rows[0];
+    if (!row) return null;
+    return {
+      ...row,
+      grossAmount: Number(row.grossAmount ?? 0),
+      dccCommissionPercent:
+        row.dccCommissionPercent != null ? Number(row.dccCommissionPercent) : null,
+      dccCommissionAmount: Number(row.dccCommissionAmount ?? 0),
+      operatorPayableAmount: Number(row.operatorPayableAmount ?? 0),
+      reserveAmount: Number(row.reserveAmount ?? 0),
+      serviceCompleted: Boolean(row.serviceCompletedAt),
+    };
   }
 
   static resetFallbackStoreForTests(): void {
     fallbackSettlementStore.clear();
   }
 }
+

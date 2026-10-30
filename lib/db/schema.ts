@@ -1199,7 +1199,7 @@ export const octoBookings = pgTable(
   },
   (table) => ({
     bookingUuidUniqueIdx: uniqueIndex("octo_bookings_booking_uuid_uidx").on(table.bookingUuid),
-    idempotencyKeyIdx: index("octo_bookings_idempotency_key_idx").on(table.idempotencyKey),
+    idempotencyKeyIdx: uniqueIndex("octo_bookings_idempotency_key_uidx").on(table.idempotencyKey),
     statusIdx: index("octo_bookings_status_idx").on(table.status),
     productIdIdx: index("octo_bookings_product_id_idx").on(table.productId),
     supplierConnIdx: index("octo_bookings_supplier_conn_idx").on(table.supplierConnectionId),

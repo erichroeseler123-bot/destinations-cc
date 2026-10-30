@@ -119,6 +119,7 @@ export interface DccSettlementLedgerEntry {
     | "cancelled_before_service";
   scheduledServiceDate?: string;
   completedAt?: string;
+  reconciledAt?: string;
   createdAt: string;
 }
 

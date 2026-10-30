@@ -46,38 +46,39 @@ export async function POST(request: NextRequest) {
   const rawBody = await request.text();
   const signatureKey = getSignatureKey();
   const isProd = process.env.NODE_ENV === "production";
-  const isTestBypass = !isProd && request.headers.get("x-dcc-test-bypass") === "true";
+  const isTestBypass =
+    !isProd &&
+    process.env.DCC_PAYMENT_SIMULATION_MODE === "explicit_test" &&
+    request.headers.get("x-dcc-test-bypass") === "true";
 
-  // 1. Signature Verification
+  // 1. Signature Verification (Fail-closed when signatureKey is missing outside explicit test simulation)
   if (!isTestBypass) {
     if (!signatureKey) {
       logSanitizedWebhook("misconfigured", { eventType: "unknown", status: "missing_signature_key" });
-      if (isProd) {
-        return NextResponse.json(
-          { ok: false, error: "DCC_SQUARE_WEBHOOK_CONFIG_ERROR: Missing SQUARE_WEBHOOK_SIGNATURE_KEY_DCC" },
-          { status: 503 }
-        );
-      }
-    } else {
-      const signatureHeader = String(request.headers.get("x-square-hmacsha256-signature") || "").trim();
-      const notificationUrl = getWebhookNotificationUrl(request);
+      return NextResponse.json(
+        { ok: false, error: "DCC_SQUARE_WEBHOOK_CONFIG_ERROR: Missing SQUARE_WEBHOOK_SIGNATURE_KEY_DCC" },
+        { status: 503 }
+      );
+    }
 
-      let isValid = false;
-      try {
-        isValid = await WebhooksHelper.verifySignature({
-          requestBody: rawBody,
-          signatureHeader,
-          signatureKey,
-          notificationUrl,
-        });
-      } catch (err: any) {
-        logSanitizedWebhook("signature_error", { status: err.message });
-      }
+    const signatureHeader = String(request.headers.get("x-square-hmacsha256-signature") || "").trim();
+    const notificationUrl = getWebhookNotificationUrl(request);
 
-      if (!isValid) {
-        logSanitizedWebhook("rejected", { status: "invalid_signature" });
-        return NextResponse.json({ ok: false, error: "invalid_square_signature" }, { status: 401 });
-      }
+    let isValid = false;
+    try {
+      isValid = await WebhooksHelper.verifySignature({
+        requestBody: rawBody,
+        signatureHeader,
+        signatureKey,
+        notificationUrl,
+      });
+    } catch (err: any) {
+      logSanitizedWebhook("signature_error", { status: err.message });
+    }
+
+    if (!isValid) {
+      logSanitizedWebhook("rejected", { status: "invalid_signature" });
+      return NextResponse.json({ ok: false, error: "invalid_square_signature" }, { status: 401 });
     }
   }
 
@@ -137,19 +138,38 @@ export async function POST(request: NextRequest) {
 
   logSanitizedWebhook("received", { eventType, eventId, paymentId: preliminaryPaymentId, orderId: preliminaryOrderId });
 
+  const provenanceSource = isTestBypass ? "explicit_test_simulation" : "authenticated_webhook";
+
   // 5. Route Event to Handlers & Verify Amount/Currency Matching
   try {
     switch (eventType) {
       case "payment.created": {
         const payment = dataObj.payment || dataObj;
+        const paymentId = payment.id;
+        const orderId = payment.reference_id || payment.order_id;
+        const squareStatus = String(payment.status || "").toUpperCase();
+        const amount = payment.amount_money ? Number(payment.amount_money.amount) / 100 : undefined;
+        const currency = payment.amount_money?.currency || "USD";
+
+        if (paymentId && orderId && squareStatus === "COMPLETED" && amount && amount > 0) {
+          await DccPaymentService.recordWebhookPaymentCapture({
+            paymentId,
+            orderId,
+            amount,
+            currency,
+            webhookEventId: eventId,
+            provenanceSource,
+          });
+        }
+
         logSanitizedWebhook("payment_created", {
           eventType,
           eventId,
-          paymentId: payment.id,
-          orderId: payment.reference_id || payment.order_id,
+          paymentId,
+          orderId,
           status: payment.status,
-          amount: payment.amount_money ? Number(payment.amount_money.amount) / 100 : undefined,
-          currency: payment.amount_money?.currency,
+          amount,
+          currency,
         });
         break;
       }
@@ -218,8 +238,11 @@ export async function POST(request: NextRequest) {
             nextStatus = "failed";
           }
 
-          if (nextStatus !== targetPayment.status) {
-            await DccPaymentService.updatePaymentStatus(targetPayment.orderId, nextStatus);
+          if (nextStatus !== targetPayment.status || squareStatus === "COMPLETED") {
+            await DccPaymentService.updatePaymentStatus(targetPayment.orderId, nextStatus, {
+              webhookEventId: eventId,
+              provenanceSource,
+            });
           }
 
           logSanitizedWebhook("payment_updated", {
@@ -266,6 +289,8 @@ export async function POST(request: NextRequest) {
                 amount,
                 currency,
                 reason: refund.reason || "Square Webhook Refund",
+                webhookEventId: eventId,
+                provenanceSource,
               });
             }
 

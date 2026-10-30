@@ -1419,19 +1419,34 @@ export class RezdyAdapter extends BaseOctoAdapter {
 
     let status = mapRezdyStatusToOctoStatus(booking.status, booking.orderNumber);
     let utcHoldExpires: string | null = null;
+    let dccCheckoutDeadlineUtc: string | null = null;
+    let dccCheckoutExpired = false;
 
     if (status === "ON_HOLD") {
-      // Deterministic expiry derived strictly from booking.dateCreated (never Date.now())
+      // Authoritative provider hold expiry is only populated if Rezdy explicitly supplies an expiry timestamp
+      const explicitProviderExpiry =
+        (booking as any).utcHoldExpires ||
+        (booking as any).holdExpiresAt ||
+        (booking as any).expiresAt ||
+        null;
+      if (
+        typeof explicitProviderExpiry === "string" &&
+        !Number.isNaN(Date.parse(explicitProviderExpiry))
+      ) {
+        const providerExpiresMs = Date.parse(explicitProviderExpiry);
+        utcHoldExpires = new Date(providerExpiresMs).toISOString();
+        if (Date.now() > providerExpiresMs) {
+          status = "EXPIRED";
+        }
+      }
+
+      // Separate DCC checkout deadline derived from booking.dateCreated (never conflated with provider hold expiry)
       if (booking.dateCreated && !Number.isNaN(Date.parse(booking.dateCreated))) {
         const createdMs = Date.parse(booking.dateCreated);
         const holdMinutes = options?.expirationMinutes ?? 15;
-        const expiresMs = createdMs + holdMinutes * 60 * 1000;
-        utcHoldExpires = new Date(expiresMs).toISOString();
-        if (Date.now() > expiresMs) {
-          status = "EXPIRED";
-        }
-      } else {
-        utcHoldExpires = null;
+        const deadlineMs = createdMs + holdMinutes * 60 * 1000;
+        dccCheckoutDeadlineUtc = new Date(deadlineMs).toISOString();
+        dccCheckoutExpired = Date.now() > deadlineMs;
       }
     }
 
@@ -1451,6 +1466,8 @@ export class RezdyAdapter extends BaseOctoAdapter {
       uuid: booking.orderNumber,
       status,
       utcHoldExpires,
+      dccCheckoutDeadlineUtc,
+      dccCheckoutExpired,
       productId,
       optionId,
       availabilityId,
@@ -1729,7 +1746,7 @@ export class RezdyAdapter extends BaseOctoAdapter {
         expirationMinutes: params.expirationMinutes,
       });
     } catch (err: any) {
-      // If a transport timeout or 409 conflict occurred after Rezdy accepted the booking,
+      // If a transport drop or 409 conflict occurred after Rezdy accepted the booking,
       // attempt idempotent recovery via GET /v1/bookings?resellerReference=...
       if (err instanceof OctoApiError && (err.status === 409 || err.status === 502 || err.status === 503)) {
         const recoveredList = await this.fetchBookingsByResellerReference(resellerReference).catch(() => []);
@@ -1768,17 +1785,23 @@ export class RezdyAdapter extends BaseOctoAdapter {
 
     const existing = await this.getRawRezdyBooking(orderNumber);
 
+    const explicitProviderExpiry =
+      (existing as any).utcHoldExpires ||
+      (existing as any).holdExpiresAt ||
+      (existing as any).expiresAt ||
+      null;
     if (
       changes.status === "CONFIRMED" &&
       String(existing.status || "").toUpperCase() === "PROCESSING" &&
-      existing.dateCreated
+      typeof explicitProviderExpiry === "string" &&
+      !Number.isNaN(Date.parse(explicitProviderExpiry))
     ) {
-      const createdMs = Date.parse(existing.dateCreated);
-      if (Number.isFinite(createdMs) && Date.now() > createdMs + 15 * 60 * 1000) {
+      const providerExpiresMs = Date.parse(explicitProviderExpiry);
+      if (Date.now() > providerExpiresMs) {
         throw new OctoApiError(
           400,
           "EXPIRED_HOLD",
-          `Rezdy booking hold ${orderNumber} expired at ${new Date(createdMs + 15 * 60 * 1000).toISOString()} and cannot be confirmed.`,
+          `Rezdy provider hold ${orderNumber} expired at ${new Date(providerExpiresMs).toISOString()} and cannot be confirmed.`,
         );
       }
     }
@@ -2065,6 +2088,7 @@ export interface LocalRezdyV1SimulatorHandle {
   setFaultInjection: (faults: {
     delayMs?: number;
     dropConnectionAfterCreateOnce?: boolean;
+    postCommitDelayMsOnce?: number;
   }) => void;
   getServerLogs: () => Array<{ method: string; path: string; status: number; body?: unknown }>;
   close: () => Promise<void>;
@@ -2293,6 +2317,7 @@ export async function startLocalRezdyV1Simulator(options?: {
   let faultConfig: {
     delayMs?: number;
     dropConnectionAfterCreateOnce?: boolean;
+    postCommitDelayMsOnce?: number;
   } = {};
 
   const sendJson = (res: http.ServerResponse, status: number, payload: unknown) => {
@@ -2556,6 +2581,12 @@ export async function startLocalRezdyV1Simulator(options?: {
           faultConfig.dropConnectionAfterCreateOnce = false;
           req.socket.destroy();
           return;
+        }
+
+        if (faultConfig.postCommitDelayMsOnce && faultConfig.postCommitDelayMsOnce > 0) {
+          const waitMs = faultConfig.postCommitDelayMsOnce;
+          faultConfig.postCommitDelayMsOnce = undefined;
+          await new Promise((r) => setTimeout(r, waitMs));
         }
 
         return sendJson(res, 200, {
