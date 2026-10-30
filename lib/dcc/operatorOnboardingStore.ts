@@ -203,12 +203,11 @@ export function validateOperatorOnboardingApplication(
     : String(body.destinations || "").trim();
   const bookingSystem = String(body.bookingSystem || "").trim();
   const apiDocumentationUrl = String(body.apiDocumentationUrl || "").trim();
-  const authorizedApiAccessAvailable = Boolean(
-    body.authorizedApiAccessAvailable ?? body.authorizedApiAccessConfirmed,
-  );
-  const operatorPermissionConfirmed = Boolean(
-    body.operatorPermissionConfirmed ?? body.authorizedApiAccessConfirmed ?? true,
-  );
+  const rawApiAccess =
+    body.authorizedApiAccessAvailable !== undefined
+      ? body.authorizedApiAccessAvailable
+      : body.authorizedApiAccessConfirmed;
+  const rawPermission = body.operatorPermissionConfirmed;
   const notes = body.notes ? String(body.notes).trim().slice(0, 2000) : undefined;
 
   if (!companyName || !contactName || !contactEmail || !website || !destinations || !bookingSystem) {
@@ -220,6 +219,39 @@ export function validateOperatorOnboardingApplication(
         "Missing required fields: companyName, contactName, contactEmail, website, destinations, and bookingSystem are required.",
     };
   }
+
+  if (typeof rawPermission !== "boolean") {
+    return {
+      ok: false,
+      status: 400,
+      errorCode: "invalid_operator_permission_confirmation",
+      message:
+        "operatorPermissionConfirmed is required and must be an actual boolean (true or false). Permission is never inferred from a missing or non-boolean field.",
+    };
+  }
+
+  if (rawPermission !== true) {
+    return {
+      ok: false,
+      status: 400,
+      errorCode: "operator_permission_required",
+      message:
+        "Explicit operator permission confirmation (operatorPermissionConfirmed: true) is required to submit an onboarding application.",
+    };
+  }
+
+  if (typeof rawApiAccess !== "boolean") {
+    return {
+      ok: false,
+      status: 400,
+      errorCode: "invalid_authorized_api_access_flag",
+      message:
+        "authorizedApiAccessAvailable is required and must be an actual boolean (true or false).",
+    };
+  }
+
+  const authorizedApiAccessAvailable: boolean = rawApiAccess;
+  const operatorPermissionConfirmed: boolean = rawPermission;
 
   const priorOutreachFlag = detectPriorOutreachFlag(companyName);
   const commercialTermsNote =

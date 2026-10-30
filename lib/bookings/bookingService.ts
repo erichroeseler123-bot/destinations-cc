@@ -23,15 +23,70 @@ import {
 import { eq, desc, and } from "drizzle-orm";
 import crypto from "crypto";
 
+import { resolveGosnoRezdyProductMapping } from "@/lib/octo/adapters/rezdy";
+
 const fallbackBookingUuidMap = new Map<string, string>();
 const fallbackIdempotencyStore = new Map<string, { payloadHash: string; result: any }>();
 const fallbackBookingRecordMap = new Map<string, any>();
+const registeredPilotConnections = new Map<
+  string,
+  {
+    connection: any;
+    adapter: OctoProviderAdapter;
+  }
+>();
 
 function hashPayload(payload: unknown): string {
   return crypto.createHash("sha256").update(JSON.stringify(payload)).digest("hex");
 }
 
 export class DccBookingService {
+  /**
+   * Registers a verified or pilot supplier connection (e.g., GoSno Rezdy v1 pilot)
+   */
+  static registerPilotSupplierConnection(config: {
+    id: string;
+    operatorSlug: string;
+    operatorName: string;
+    endpoint: string;
+    reservationPlatform: "rezdy" | "fareharbor" | "bokun" | "ventrata" | "direct_octo";
+    commissionPercent: number;
+    apiKey?: string;
+    bearerToken?: string;
+    isSandbox?: boolean;
+    connectionStatus?: string;
+    adapter?: OctoProviderAdapter;
+  }): OctoProviderAdapter {
+    const connection = {
+      id: config.id,
+      operatorSlug: config.operatorSlug,
+      operatorName: config.operatorName,
+      endpoint: config.endpoint,
+      reservationPlatform: config.reservationPlatform,
+      commissionPercent: config.commissionPercent,
+      connectionStatus: config.connectionStatus || "sandbox_verified",
+      isSandbox: config.isSandbox ?? true,
+    };
+    const adapter =
+      config.adapter ||
+      getProviderAdapterForConnection(connection as any, {
+        apiKey: config.apiKey,
+        bearerToken: config.bearerToken,
+      });
+    registeredPilotConnections.set(config.id, { connection, adapter });
+    return adapter;
+  }
+
+  static clearPilotSupplierConnections(): void {
+    registeredPilotConnections.clear();
+  }
+
+  static resetFallbackStoresForTests(): void {
+    fallbackBookingUuidMap.clear();
+    fallbackIdempotencyStore.clear();
+    fallbackBookingRecordMap.clear();
+  }
+
   /**
    * Resolves the authoritative supplier connection ID for a given product
    */
@@ -42,6 +97,9 @@ export class DccBookingService {
       productId.startsWith("prod_mock_")
     ) {
       return "conn_mock_alaska";
+    }
+    if (resolveGosnoRezdyProductMapping(productId)) {
+      return "conn_gosno_rezdy";
     }
     const db = getDb();
     if (db) {
@@ -73,6 +131,22 @@ export class DccBookingService {
     connection: any;
   }> {
     const isProd = process.env.NODE_ENV === "production";
+
+    const pilotRegistered = registeredPilotConnections.get(connectionId);
+    if (pilotRegistered) {
+      if (isProd && pilotRegistered.connection.connectionStatus !== "bookable") {
+        throw new OctoApiError(
+          403,
+          "SUPPLIER_NOT_BOOKABLE",
+          `Supplier ${pilotRegistered.connection.operatorName} is in ${pilotRegistered.connection.connectionStatus} state and cannot accept production bookings`
+        );
+      }
+      return {
+        adapter: pilotRegistered.adapter,
+        isMock: false,
+        connection: pilotRegistered.connection,
+      };
+    }
 
     if (connectionId === "conn_mock_alaska" || connectionId.startsWith("mock_")) {
       if (isProd) {
@@ -170,7 +244,14 @@ export class DccBookingService {
     optionId: string,
     availabilityId: string,
     unitItems: any[] = []
-  ): Promise<{ available: boolean; id: string }> {
+  ): Promise<{
+    available: boolean;
+    id: string;
+    status?: string;
+    vacancies?: number | null;
+    quoteOnly?: boolean;
+    reason?: string;
+  }> {
     const supplierConnId = await this.resolveConnectionForProduct(productId);
     const { adapter, isMock } = await this.getAdapterForConnection(supplierConnId);
 
@@ -182,6 +263,8 @@ export class DccBookingService {
       return {
         available: Boolean(found?.available && found.status !== "SOLD_OUT"),
         id: availabilityId,
+        status: found?.status,
+        vacancies: found?.vacancies,
       };
     }
 
@@ -189,10 +272,23 @@ export class DccBookingService {
       const dateMatch = availabilityId.match(/\d{4}-\d{2}-\d{2}/);
       const checkDate = dateMatch ? dateMatch[0] : new Date().toISOString().slice(0, 10);
       const avail = await adapter.checkAvailability(productId, optionId, checkDate, unitItems);
-      const found = avail.find((s: any) => s.id === availabilityId && s.available);
+      const exactSlot =
+        avail.find((s: any) => s.id === availabilityId) ||
+        avail.find((s: any) => s.localDateTimeStart === availabilityId) ||
+        avail[0];
+      const isAvailable = Boolean(
+        exactSlot &&
+          exactSlot.available &&
+          exactSlot.status !== "SOLD_OUT" &&
+          !(exactSlot as any).quoteOnly
+      );
       return {
-        available: Boolean(found),
-        id: availabilityId,
+        available: isAvailable,
+        id: exactSlot?.id || availabilityId,
+        status: exactSlot?.status || "SOLD_OUT",
+        vacancies: exactSlot?.vacancies ?? 0,
+        quoteOnly: Boolean((exactSlot as any)?.quoteOnly),
+        reason: (exactSlot as any)?.reason,
       };
     }
 
@@ -790,14 +886,40 @@ export class DccBookingService {
       return booking;
     }
 
+    const bookingKey = booking.id || bookingIdOrUuid;
+    const rawRecord =
+      fallbackBookingRecordMap.get(bookingKey) ||
+      fallbackBookingRecordMap.get(bookingIdOrUuid) ||
+      fallbackBookingRecordMap.get(fallbackBookingUuidMap.get(bookingIdOrUuid) || "");
+    const supplierConnectionId =
+      rawRecord?.supplierConnectionId || (await this.resolveConnectionForProduct(booking.productId));
+
+    let upstreamCancelResult: Partial<OctoBookingResult> = {};
+    try {
+      const { adapter, isMock } = await this.getAdapterForConnection(supplierConnectionId);
+      if (isMock) {
+        upstreamCancelResult = MockOctoSupplierEngine.cancelBooking(booking.uuid, reasonText);
+      } else if (adapter) {
+        upstreamCancelResult = await adapter.cancelBooking(
+          booking.supplierReference || booking.uuid,
+          reasonText
+        );
+      }
+    } catch (err: any) {
+      if (err instanceof OctoApiError && err.status !== 404) {
+        throw err;
+      }
+    }
+
     const cancelledResult: OctoBookingResult = {
       ...booking,
+      ...upstreamCancelResult,
+      id: bookingKey,
+      uuid: booking.uuid,
       status: "CANCELLED",
-      cancelledAt: new Date().toISOString(),
+      cancelledAt: upstreamCancelResult.cancelledAt || new Date().toISOString(),
       cancellationReason: reasonText,
     };
-
-    const bookingKey = booking.id || bookingIdOrUuid;
 
     if (db) {
       try {
@@ -839,7 +961,15 @@ export class DccBookingService {
       refundAmount: booking.totalPrice,
     });
 
-    fallbackBookingRecordMap.set(bookingKey, cancelledResult);
+    const updatedRecord = {
+      ...rawRecord,
+      ...cancelledResult,
+      status: "CANCELLED",
+    };
+    fallbackBookingRecordMap.set(bookingKey, updatedRecord);
+    if (booking.uuid) {
+      fallbackBookingRecordMap.set(booking.uuid, updatedRecord);
+    }
     return cancelledResult;
   }
 

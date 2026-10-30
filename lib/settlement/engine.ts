@@ -370,10 +370,14 @@ export class DccSettlementEngine {
       }
     }
 
-    // Fallback in-memory calculation
-    const allEntries = Array.from(fallbackSettlementStore.values()).filter(
-      (e) => e.operatorSlug === operatorSlug && e.currency === currency
-    );
+    // Fallback in-memory calculation (deduplicated by entry.id)
+    const uniqueById = new Map<string, DccSettlementLedgerEntry>();
+    for (const e of fallbackSettlementStore.values()) {
+      if (e.operatorSlug === operatorSlug && e.currency === currency) {
+        uniqueById.set(e.id, e);
+      }
+    }
+    const allEntries = Array.from(uniqueById.values());
 
     let totalGross = 0;
     let totalDccCommission = 0;
@@ -383,7 +387,9 @@ export class DccSettlementEngine {
     let totalReserveHeld = 0;
 
     for (const e of allEntries) {
-      totalGross += e.grossAmount;
+      if (e.settlementStatus !== "reversed" && e.settlementStatus !== "refunded") {
+        totalGross += e.grossAmount;
+      }
       totalDccCommission += e.dccShareAmount;
       totalReserveHeld += e.reserveHoldAmount || 0;
 
@@ -409,6 +415,13 @@ export class DccSettlementEngine {
    * Get settlement ledger entry by booking ID or ledger ID
    */
   static async getSettlementEntry(identifier: string): Promise<DccSettlementLedgerEntry | null> {
-    return fallbackSettlementStore.get(identifier) || null;
+    const entry =
+      fallbackSettlementStore.get(identifier) ||
+      fallbackSettlementStore.get(`dcc:ledg:${identifier.replace(/^dcc:bk:/, "")}`);
+    return entry ? { ...entry } : null;
+  }
+
+  static resetFallbackStoreForTests(): void {
+    fallbackSettlementStore.clear();
   }
 }

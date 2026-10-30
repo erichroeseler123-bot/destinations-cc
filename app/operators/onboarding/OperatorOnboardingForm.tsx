@@ -208,12 +208,13 @@ export default function OperatorOnboardingForm({
         <label className="flex items-start gap-3 cursor-pointer">
           <input
             type="checkbox"
+            required
             checked={operatorPermissionConfirmed}
             onChange={(e) => setOperatorPermissionConfirmed(e.target.checked)}
             className="mt-1"
           />
           <span>
-            <strong>Commercial Terms Separation:</strong> I understand the proposed 10% commission on completed direct bookings is separate from signed commercial and settlement terms, and that submitting this form does not authorize sales until commercial terms are signed and technical verification passes.
+            <strong>Operator Permission &amp; Commercial Terms Separation *:</strong> I confirm I have operator permission to submit this application for technical review, and I understand the proposed 10% commission on completed direct bookings is separate from signed commercial and settlement terms (submitting this form does not authorize sales until commercial terms are signed and technical verification passes).
           </span>
         </label>
       </div>

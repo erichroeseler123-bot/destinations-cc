@@ -1,0 +1,1483 @@
+{
+  "capturedAt": "2026-10-30T11:41:47.771Z",
+  "operator": "GoSno LLC (GoSno Mountain Transportation)",
+  "provider": "Rezdy Native REST API v1",
+  "statusSummary": {
+    "onboardingBooleanValidationFixed": "PASSED",
+    "rezdyRequestResponseTranslationImplemented": "PASSED",
+    "dccProductMappingVerified": "PASSED",
+    "liveReadonlyCatalogAndPriceRetrieval": "PASSED",
+    "liveReadonlyAvailabilityAndSoldOutHandling": "PASSED",
+    "quoteOnlyPreservationVerified": "PASSED",
+    "testFacilityReservationHoldConfirmCancelLifecycle": "PASSED",
+    "duplicateRequestProtectionVerified": "PASSED",
+    "outcomeReconciliationVerified": "PASSED",
+    "tenPercentCommissionAccountingVerified": "PASSED",
+    "directRezdyStagingApiWriteStatus": "BLOCKED_MISSING_STAGING_API_KEY (https://api.rezdy-staging.com/v1 returned 401 Invalid API Key; live production POST /v1/bookings intentionally not called per instruction not to create paid production bookings or touch GoSno production checkout)"
+  },
+  "liveReadonlyEvidence": {
+    "translatedProducts": {
+      "P7477S": {
+        "id": "dcc:gosno:den-breckenridge:suv",
+        "internalName": "denver-to-breckenridge-private-suv",
+        "reference": "P7477S",
+        "title": "Denver Airport to Breckenridge — Private SUV Transfer",
+        "description": "A private SUV picks you up curbside at Denver International (DEN) and drives your group straight to Breckenridge. Flight tracking is included so we are there when you land, with room for ski bags and winter luggage. Pre-book your return to Denver at the same time. Priced per vehicle.",
+        "country": "US",
+        "location": "DEN -> Breckenridge",
+        "destinationSlug": "breckenridge",
+        "timeZone": "America/Denver",
+        "defaultCurrency": "USD",
+        "options": [
+          {
+            "id": "opt_suburban_69029050",
+            "default": true,
+            "internalName": "Suburban",
+            "reference": "Suburban",
+            "title": "Denver Airport to Breckenridge — Private SUV Transfer (Suburban)",
+            "description": "Private SUV transfer from Denver International (DEN) to Breckenridge with flight tracking and room for ski gear.",
+            "units": [
+              {
+                "id": "unit_suburban_69029050",
+                "internalName": "Suburban",
+                "reference": "69029050",
+                "type": "OTHER",
+                "pricingFrom": [
+                  {
+                    "original": 399,
+                    "retail": 399,
+                    "currency": "USD",
+                    "currencyPrecision": 2,
+                    "includedTaxesAndFees": false
+                  }
+                ],
+                "restrictions": {
+                  "minQuantity": 1,
+                  "maxQuantity": 3
+                }
+              }
+            ],
+            "requiredContactFields": [
+              "firstName",
+              "lastName",
+              "emailAddress",
+              "phoneNumber"
+            ]
+          }
+        ],
+        "capabilities": [
+          "octo/core",
+          "octo/pricing"
+        ],
+        "durationMinutes": 150,
+        "meetingPoint": "DEN Level 5 Curbside (Island 2, Doors 506–510 West or 507–511 East)",
+        "providerExternalIds": {
+          "rezdyLocation": "colorado",
+          "custom": {
+            "rezdyProductCode": "P7477S",
+            "routeId": "DEN-BRECKENRIDGE",
+            "vehicleClass": "suv",
+            "maxPassengers": 6,
+            "canonicalQuantityLabel": "Suburban",
+            "priceDollars": 399,
+            "priceCents": 39900,
+            "quoteOnly": 0,
+            "onlineBookable": 1
+          }
+        }
+      },
+      "PXFGPP": {
+        "id": "dcc:gosno:den-vail:suv",
+        "internalName": "denver-to-vail-private-suv",
+        "reference": "PXFGPP",
+        "title": "Denver Airport to Vail — Private SUV Transfer",
+        "description": "Private transportation from Denver International (DEN) to Vail, built for travelers who want the logistics solved before they arrive. Includes flight tracking, ski-gear space, and a pre-bookable return ride to Denver. Priced per vehicle.",
+        "country": "US",
+        "location": "DEN -> Vail",
+        "destinationSlug": "vail",
+        "timeZone": "America/Denver",
+        "defaultCurrency": "USD",
+        "options": [
+          {
+            "id": "opt_suburban_75298226",
+            "default": true,
+            "internalName": "Suburban",
+            "reference": "Suburban",
+            "title": "Denver Airport to Vail — Private SUV Transfer (Suburban)",
+            "description": "Private SUV transfer from DEN to Vail with timing handled before you land.",
+            "units": [
+              {
+                "id": "unit_suburban_75298226",
+                "internalName": "Suburban",
+                "reference": "75298226",
+                "type": "OTHER",
+                "pricingFrom": [
+                  {
+                    "original": 499,
+                    "retail": 499,
+                    "currency": "USD",
+                    "currencyPrecision": 2,
+                    "includedTaxesAndFees": false
+                  }
+                ],
+                "restrictions": {
+                  "minQuantity": 1,
+                  "maxQuantity": 3
+                }
+              }
+            ],
+            "requiredContactFields": [
+              "firstName",
+              "lastName",
+              "emailAddress",
+              "phoneNumber"
+            ]
+          }
+        ],
+        "capabilities": [
+          "octo/core",
+          "octo/pricing"
+        ],
+        "durationMinutes": 150,
+        "meetingPoint": "DEN Level 5 Curbside (Island 2, Doors 506–510 West or 507–511 East)",
+        "providerExternalIds": {
+          "rezdyLocation": "colorado",
+          "custom": {
+            "rezdyProductCode": "PXFGPP",
+            "routeId": "DEN-VAIL",
+            "vehicleClass": "suv",
+            "maxPassengers": 6,
+            "canonicalQuantityLabel": "Suburban",
+            "priceDollars": 499,
+            "priceCents": 49900,
+            "quoteOnly": 0,
+            "onlineBookable": 1
+          }
+        }
+      },
+      "PEAVH0": {
+        "id": "dcc:gosno:snowmass-den:suv",
+        "internalName": "GOSNO_SNOWMASS_DEN_SUV",
+        "reference": "PEAVH0",
+        "title": "Snowmass to Denver Airport — Private SUV Transfer",
+        "description": "Private SUV transportation from Denver Airport (DEN) to confirmed Snowmass lodging for one traveling party. This service is priced per vehicle and requires advance reservation. Passenger capacity is subject to luggage and ski-equipment fit. Weather, traffic, closures, restrictions, airport access, and property access can affect routing and timing. Provided flight information may be used for pickup coordination; final meeting instructions are confirmed for the trip.",
+        "country": "US",
+        "location": "Snowmass -> DEN",
+        "destinationSlug": "den",
+        "timeZone": "America/Denver",
+        "defaultCurrency": "USD",
+        "options": [
+          {
+            "id": "opt_group_76622153",
+            "default": true,
+            "internalName": "Group from 1 to 2",
+            "reference": "Group from 1 to 2",
+            "title": "Snowmass to Denver Airport — Private SUV Transfer (Group from 1 to 2)",
+            "description": "Private SUV transportation from Snowmass to Denver International Airport (DEN).",
+            "units": [
+              {
+                "id": "unit_group_76622153",
+                "internalName": "Group from 1 to 2",
+                "reference": "76622153",
+                "type": "OTHER",
+                "pricingFrom": [
+                  {
+                    "original": 699,
+                    "retail": 699,
+                    "currency": "USD",
+                    "currencyPrecision": 2,
+                    "includedTaxesAndFees": false
+                  }
+                ],
+                "restrictions": {
+                  "minQuantity": 1,
+                  "maxQuantity": 2
+                }
+              }
+            ],
+            "requiredContactFields": [
+              "firstName",
+              "lastName",
+              "emailAddress",
+              "phoneNumber"
+            ]
+          }
+        ],
+        "capabilities": [
+          "octo/core",
+          "octo/pricing"
+        ],
+        "durationMinutes": 240,
+        "meetingPoint": "Confirmed lodging, condo, or private residence access point",
+        "providerExternalIds": {
+          "rezdyLocation": "colorado",
+          "custom": {
+            "rezdyProductCode": "PEAVH0",
+            "routeId": "SNOWMASS-DEN",
+            "vehicleClass": "suv",
+            "maxPassengers": 6,
+            "canonicalQuantityLabel": "Group from 1 to 2",
+            "priceDollars": 699,
+            "priceCents": 69900,
+            "quoteOnly": 0,
+            "onlineBookable": 1
+          }
+        }
+      },
+      "PKQDPG": {
+        "id": "dcc:gosno:den-breckenridge:van",
+        "internalName": "GOSNO_DEN_BRECKENRIDGE_VAN",
+        "reference": "PKQDPG",
+        "title": "Denver International Airport (DEN) to Breckenridge - Private Van Transfer",
+        "description": "Private van transportation from Denver International Airport (DEN) to Breckenridge for one traveling party. This service is priced per vehicle and requires advance reservation.",
+        "country": "US",
+        "location": "DEN -> Breckenridge",
+        "destinationSlug": "breckenridge",
+        "timeZone": "America/Denver",
+        "defaultCurrency": "USD",
+        "options": [
+          {
+            "id": "opt_van_73379226",
+            "default": true,
+            "internalName": "Private Van 10ppl",
+            "reference": "Private Van 10ppl",
+            "title": "Denver International Airport (DEN) to Breckenridge - Private Van Transfer (Private Van 10ppl)",
+            "description": "Private van transportation from Denver International Airport (DEN) to Breckenridge.",
+            "units": [
+              {
+                "id": "unit_van_73379226",
+                "internalName": "Private Van 10ppl",
+                "reference": "73379226",
+                "type": "OTHER",
+                "pricingFrom": [
+                  {
+                    "original": 599,
+                    "retail": 599,
+                    "currency": "USD",
+                    "currencyPrecision": 2,
+                    "includedTaxesAndFees": false
+                  }
+                ],
+                "restrictions": {
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                }
+              }
+            ],
+            "requiredContactFields": [
+              "firstName",
+              "lastName",
+              "emailAddress",
+              "phoneNumber"
+            ]
+          }
+        ],
+        "capabilities": [
+          "octo/core",
+          "octo/pricing"
+        ],
+        "durationMinutes": 150,
+        "meetingPoint": "DEN Level 5 Curbside (Island 2, Doors 506–510 West or 507–511 East)",
+        "providerExternalIds": {
+          "rezdyLocation": "colorado",
+          "custom": {
+            "rezdyProductCode": "PKQDPG",
+            "routeId": "DEN-BRECKENRIDGE-VAN",
+            "vehicleClass": "van",
+            "maxPassengers": 10,
+            "canonicalQuantityLabel": "Private Van 10ppl",
+            "priceDollars": 599,
+            "priceCents": 59900,
+            "quoteOnly": 1,
+            "onlineBookable": 0
+          }
+        }
+      }
+    },
+    "translatedAvailability": {
+      "availableSession_497020486": [
+        {
+          "id": "497020486",
+          "localDateTimeStart": "2026-11-12 10:53:00",
+          "localDateTimeEnd": "2026-11-12 13:23:00",
+          "allDay": false,
+          "available": true,
+          "status": "AVAILABLE",
+          "vacancies": 1,
+          "capacity": 1,
+          "maxUnits": 6,
+          "unitPricing": [
+            {
+              "unitId": "unit_suburban_69029050",
+              "pricing": {
+                "original": 399,
+                "retail": 399,
+                "currency": "USD",
+                "currencyPrecision": 2,
+                "includedTaxesAndFees": false
+              }
+            }
+          ],
+          "pickupAvailable": true,
+          "quoteOnly": false,
+          "rezdyProductCode": "P7477S"
+        }
+      ],
+      "soldOutSession_507139971": [
+        {
+          "id": "507139971",
+          "localDateTimeStart": "2026-12-14 15:05:00",
+          "localDateTimeEnd": "2026-12-14 17:35:00",
+          "allDay": false,
+          "available": false,
+          "status": "SOLD_OUT",
+          "vacancies": 0,
+          "capacity": 999,
+          "maxUnits": 6,
+          "unitPricing": [
+            {
+              "unitId": "unit_suburban_69029050",
+              "pricing": {
+                "original": 399,
+                "retail": 399,
+                "currency": "USD",
+                "currencyPrecision": 2,
+                "includedTaxesAndFees": false
+              }
+            }
+          ],
+          "pickupAvailable": true,
+          "quoteOnly": false,
+          "reason": "ZERO_SEATS_AVAILABLE",
+          "rezdyProductCode": "P7477S"
+        }
+      ],
+      "quoteOnlyVan_PKQDPG": [
+        {
+          "id": "rezdy_nosession_PKQDPG_2026-12-15",
+          "localDateTimeStart": "2026-12-15 10:00:00",
+          "localDateTimeEnd": "2026-12-15 12:30:00",
+          "allDay": false,
+          "available": false,
+          "status": "SOLD_OUT",
+          "vacancies": 0,
+          "capacity": 0,
+          "quoteOnly": true,
+          "reason": "QUOTE_ONLY_PRODUCT",
+          "rezdyProductCode": "PKQDPG"
+        }
+      ]
+    },
+    "stagingEndpointProbe": {
+      "endpoint": "https://api.rezdy-staging.com/v1/products",
+      "status": 401,
+      "response": {
+        "requestStatus": {
+          "success": false,
+          "error": {
+            "errorCode": "4",
+            "errorMessage": "Invalid API Key"
+          }
+        }
+      }
+    },
+    "capturedHttpExchanges": [
+      {
+        "step": "getProduct:P7477S",
+        "timestamp": "2026-10-30T11:41:45.440Z",
+        "request": {
+          "method": "GET",
+          "urlRedacted": "https://gosno.co/api/internal/rezdy-admin?path=%2Fproducts%2FP7477S&token=%5BREDACTED%5D",
+          "headersRedacted": {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "User-Agent": "DestinationCommandCenter-Rezdy-v1/1.0",
+            "X-Rezdy-Integration": "DCC-Rezdy-v1",
+            "apiKey": "[REDACTED]"
+          },
+          "body": null
+        },
+        "response": {
+          "status": 200,
+          "body": {
+            "requestStatus": {
+              "success": true,
+              "version": "v1"
+            },
+            "product": {
+              "productType": "PRIVATE_TOUR",
+              "name": "Denver Airport to Breckenridge — Private SUV Transfer",
+              "shortDescription": "Private SUV transfer from Denver International (DEN) to Breckenridge with flight tracking and room for ski gear.",
+              "description": "A private SUV picks you up curbside at Denver International (DEN) and drives your group straight to Breckenridge. Flight tracking is included so we are there when you land, with room for ski bags and winter luggage. Pre-book your return to Denver at the same time. Priced per vehicle.",
+              "productCode": "P7477S",
+              "internalCode": "denver-to-breckenridge-private-suv",
+              "supplierId": 230001,
+              "supplierAlias": "gosnotransportation58",
+              "supplierName": "GoSno Mountain Transportation",
+              "timezone": "America/Denver",
+              "advertisedPrice": 399,
+              "priceOptions": [
+                {
+                  "price": 399,
+                  "label": "Suburban",
+                  "id": 69029050,
+                  "seatsUsed": 1,
+                  "productCode": "P7477S"
+                }
+              ],
+              "currency": "USD",
+              "unitLabel": "Suburban",
+              "unitLabelPlural": "Suburbans",
+              "quantityRequired": true,
+              "quantityRequiredMin": 1,
+              "quantityRequiredMax": 3,
+              "images": [],
+              "videos": [],
+              "bookingMode": "INVENTORY",
+              "charter": true,
+              "latitude": 39.4748079,
+              "longitude": -106.0425697,
+              "confirmMode": "AUTOCONFIRM",
+              "commissionIncludesExtras": false,
+              "cancellationPolicyDays": 1,
+              "dateCreated": "2026-06-03T15:04:46Z",
+              "minimumNoticeMinutes": 720,
+              "durationMinutes": 150,
+              "dateUpdated": "2026-09-29T16:43:46Z",
+              "locationAddress": {
+                "addressLine": "1020 main Street ",
+                "postCode": "80202",
+                "city": "Denver",
+                "state": "CO",
+                "countryCode": "us",
+                "latitude": 39.4748079,
+                "longitude": -106.0425697
+              },
+              "tags": [
+                "TYPE:Private_tour",
+                "CATEGORY:Bus Tours"
+              ],
+              "isApiBookingSupported": true,
+              "isMultiProductBookingSupported": true
+            }
+          }
+        }
+      },
+      {
+        "step": "getProduct:PXFGPP",
+        "timestamp": "2026-10-30T11:41:45.772Z",
+        "request": {
+          "method": "GET",
+          "urlRedacted": "https://gosno.co/api/internal/rezdy-admin?path=%2Fproducts%2FPXFGPP&token=%5BREDACTED%5D",
+          "headersRedacted": {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "User-Agent": "DestinationCommandCenter-Rezdy-v1/1.0",
+            "X-Rezdy-Integration": "DCC-Rezdy-v1",
+            "apiKey": "[REDACTED]"
+          },
+          "body": null
+        },
+        "response": {
+          "status": 200,
+          "body": {
+            "requestStatus": {
+              "success": true,
+              "version": "v1"
+            },
+            "product": {
+              "productType": "PRIVATE_TOUR",
+              "name": "Denver Airport to Vail — Private SUV Transfer",
+              "shortDescription": "Private SUV transfer from DEN to Vail with timing handled before you land.",
+              "description": "Private transportation from Denver International (DEN) to Vail, built for travelers who want the logistics solved before they arrive. Includes flight tracking, ski-gear space, and a pre-bookable return ride to Denver. Priced per vehicle.",
+              "productCode": "PXFGPP",
+              "internalCode": "denver-to-vail-private-suv",
+              "supplierId": 230001,
+              "supplierAlias": "gosnotransportation58",
+              "supplierName": "GoSno Mountain Transportation",
+              "timezone": "America/Denver",
+              "advertisedPrice": 499,
+              "priceOptions": [
+                {
+                  "price": 499,
+                  "label": "Suburban",
+                  "id": 75298226,
+                  "seatsUsed": 1,
+                  "productCode": "PXFGPP"
+                }
+              ],
+              "currency": "USD",
+              "unitLabel": "Suburban",
+              "unitLabelPlural": "Suburbans",
+              "quantityRequired": true,
+              "quantityRequiredMin": 1,
+              "quantityRequiredMax": 3,
+              "images": [],
+              "videos": [],
+              "bookingMode": "INVENTORY",
+              "charter": true,
+              "latitude": 39.4748079,
+              "longitude": -106.0425697,
+              "confirmMode": "AUTOCONFIRM",
+              "commissionIncludesExtras": false,
+              "cancellationPolicyDays": 1,
+              "dateCreated": "2026-06-03T15:05:27Z",
+              "minimumNoticeMinutes": 720,
+              "durationMinutes": 150,
+              "dateUpdated": "2026-09-29T16:43:50Z",
+              "locationAddress": {
+                "addressLine": "1020 main Street ",
+                "postCode": "80202",
+                "city": "Denver",
+                "state": "CO",
+                "countryCode": "us",
+                "latitude": 39.4748079,
+                "longitude": -106.0425697
+              },
+              "tags": [
+                "TYPE:Private_tour",
+                "CATEGORY:Bus Tours"
+              ],
+              "isApiBookingSupported": true,
+              "isMultiProductBookingSupported": true
+            }
+          }
+        }
+      },
+      {
+        "step": "getProduct:PEAVH0",
+        "timestamp": "2026-10-30T11:41:46.085Z",
+        "request": {
+          "method": "GET",
+          "urlRedacted": "https://gosno.co/api/internal/rezdy-admin?path=%2Fproducts%2FPEAVH0&token=%5BREDACTED%5D",
+          "headersRedacted": {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "User-Agent": "DestinationCommandCenter-Rezdy-v1/1.0",
+            "X-Rezdy-Integration": "DCC-Rezdy-v1",
+            "apiKey": "[REDACTED]"
+          },
+          "body": null
+        },
+        "response": {
+          "status": 200,
+          "body": {
+            "requestStatus": {
+              "success": true,
+              "version": "v1"
+            },
+            "product": {
+              "productType": "PRIVATE_TOUR",
+              "name": "Snowmass to Denver Airport — Private SUV Transfer",
+              "shortDescription": "Private SUV transportation from Snowmass to Denver International Airport (DEN).",
+              "description": "Private SUV transportation from Denver Airport (DEN) to confirmed Snowmass lodging for one traveling party. This service is priced per vehicle and requires advance reservation. Passenger capacity is subject to luggage and ski-equipment fit. Weather, traffic, closures, restrictions, airport access, and property access can affect routing and timing. Provided flight information may be used for pickup coordination; final meeting instructions are confirmed for the trip.",
+              "productCode": "PEAVH0",
+              "internalCode": "GOSNO_SNOWMASS_DEN_SUV",
+              "supplierId": 230001,
+              "supplierAlias": "gosnotransportation58",
+              "supplierName": "GoSno Mountain Transportation",
+              "timezone": "America/Denver",
+              "advertisedPrice": 699,
+              "priceOptions": [
+                {
+                  "price": 699,
+                  "label": "Group from 1 to 2",
+                  "id": 76622153,
+                  "seatsUsed": 1,
+                  "minQuantity": 1,
+                  "maxQuantity": 2,
+                  "priceGroupType": "EACH",
+                  "productCode": "PEAVH0"
+                }
+              ],
+              "currency": "USD",
+              "unitLabel": "Vehicle",
+              "unitLabelPlural": "Vehicles",
+              "quantityRequired": true,
+              "quantityRequiredMin": 1,
+              "quantityRequiredMax": 2,
+              "images": [],
+              "videos": [],
+              "bookingMode": "INVENTORY",
+              "charter": true,
+              "terms": "",
+              "bookingFields": [
+                {
+                  "label": "First Name",
+                  "requiredPerParticipant": false,
+                  "requiredPerBooking": true,
+                  "visiblePerParticipant": false,
+                  "visiblePerBooking": true,
+                  "fieldType": "String"
+                },
+                {
+                  "label": "Last Name",
+                  "requiredPerParticipant": false,
+                  "requiredPerBooking": true,
+                  "visiblePerParticipant": false,
+                  "visiblePerBooking": true,
+                  "fieldType": "String"
+                },
+                {
+                  "label": "Mobile",
+                  "requiredPerParticipant": false,
+                  "requiredPerBooking": true,
+                  "visiblePerParticipant": false,
+                  "visiblePerBooking": true,
+                  "fieldType": "Phone"
+                },
+                {
+                  "label": "Email",
+                  "requiredPerParticipant": false,
+                  "requiredPerBooking": true,
+                  "visiblePerParticipant": false,
+                  "visiblePerBooking": true,
+                  "fieldType": "String"
+                }
+              ],
+              "latitude": 39.8560963,
+              "longitude": -104.6737376,
+              "xeroAccount": "",
+              "confirmMode": "AUTOCONFIRM",
+              "commissionIncludesExtras": false,
+              "cancellationPolicyDays": 1,
+              "dateCreated": "2026-08-07T04:20:20Z",
+              "minimumNoticeMinutes": 720,
+              "durationMinutes": 240,
+              "dateUpdated": "2026-09-29T16:49:18Z",
+              "locationAddress": {
+                "addressLine": "8500 Peña Blvd",
+                "postCode": "80249",
+                "city": "Denver",
+                "state": "CO",
+                "countryCode": "US",
+                "latitude": 39.8560963,
+                "longitude": -104.6737376
+              },
+              "tags": [],
+              "isApiBookingSupported": true,
+              "isMultiProductBookingSupported": true
+            }
+          }
+        }
+      },
+      {
+        "step": "getProduct:PKQDPG",
+        "timestamp": "2026-10-30T11:41:46.416Z",
+        "request": {
+          "method": "GET",
+          "urlRedacted": "https://gosno.co/api/internal/rezdy-admin?path=%2Fproducts%2FPKQDPG&token=%5BREDACTED%5D",
+          "headersRedacted": {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "User-Agent": "DestinationCommandCenter-Rezdy-v1/1.0",
+            "X-Rezdy-Integration": "DCC-Rezdy-v1",
+            "apiKey": "[REDACTED]"
+          },
+          "body": null
+        },
+        "response": {
+          "status": 200,
+          "body": {
+            "requestStatus": {
+              "success": true,
+              "version": "v1"
+            },
+            "product": {
+              "productType": "PRIVATE_TOUR",
+              "name": "Denver International Airport (DEN) to Breckenridge - Private Van Transfer",
+              "shortDescription": "Private van transportation from Denver International Airport (DEN) to Breckenridge.",
+              "description": "Private van transportation from Denver International Airport (DEN) to Breckenridge for one traveling party. This service is priced per vehicle and requires advance reservation.",
+              "productCode": "PKQDPG",
+              "internalCode": "GOSNO_DEN_BRECKENRIDGE_VAN",
+              "supplierId": 230001,
+              "supplierAlias": "gosnotransportation58",
+              "supplierName": "GoSno Mountain Transportation",
+              "timezone": "America/Denver",
+              "advertisedPrice": 599,
+              "priceOptions": [
+                {
+                  "price": 599,
+                  "label": "Private Van 10ppl",
+                  "id": 73379226,
+                  "seatsUsed": 1,
+                  "productCode": "PKQDPG"
+                }
+              ],
+              "currency": "USD",
+              "unitLabel": "Private Van",
+              "unitLabelPlural": "Private Vans",
+              "quantityRequired": true,
+              "quantityRequiredMin": 1,
+              "quantityRequiredMax": 1,
+              "images": [],
+              "videos": [],
+              "bookingMode": "INVENTORY",
+              "charter": true,
+              "latitude": 39.4748079,
+              "longitude": -106.0425697,
+              "confirmMode": "AUTOCONFIRM",
+              "commissionIncludesExtras": false,
+              "cancellationPolicyDays": 1,
+              "dateCreated": "2026-08-07T17:48:15Z",
+              "minimumNoticeMinutes": 720,
+              "durationMinutes": 150,
+              "dateUpdated": "2026-09-29T17:16:29Z",
+              "locationAddress": {
+                "addressLine": "1020 main Street ",
+                "postCode": "80202",
+                "city": "Denver",
+                "state": "CO",
+                "countryCode": "us",
+                "latitude": 39.4748079,
+                "longitude": -106.0425697
+              },
+              "tags": [
+                "TYPE:Private_tour",
+                "CATEGORY:Bus Tours"
+              ],
+              "isApiBookingSupported": true,
+              "isMultiProductBookingSupported": true
+            }
+          }
+        }
+      },
+      {
+        "step": "checkAvailability:P7477S:2026-11-12",
+        "timestamp": "2026-10-30T11:41:46.644Z",
+        "request": {
+          "method": "GET",
+          "urlRedacted": "https://gosno.co/api/internal/rezdy-admin?path=%2Favailability&token=%5BREDACTED%5D&productCode=P7477S&startTimeLocal=2026-11-12+00%3A00%3A00&endTimeLocal=2026-11-12+23%3A59%3A59",
+          "headersRedacted": {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "User-Agent": "DestinationCommandCenter-Rezdy-v1/1.0",
+            "X-Rezdy-Integration": "DCC-Rezdy-v1",
+            "apiKey": "[REDACTED]"
+          },
+          "body": null
+        },
+        "response": {
+          "status": 200,
+          "body": {
+            "requestStatus": {
+              "success": true,
+              "version": "v1"
+            },
+            "sessions": [
+              {
+                "id": 497020486,
+                "productCode": "P7477S",
+                "startTime": "2026-11-12T17:53:00Z",
+                "endTime": "2026-11-12T20:23:00Z",
+                "startTimeLocal": "2026-11-12 10:53:00",
+                "endTimeLocal": "2026-11-12 13:23:00",
+                "allDay": false,
+                "seats": 1,
+                "seatsAvailable": 1,
+                "priceOptions": [
+                  {
+                    "price": 399,
+                    "label": "Suburban",
+                    "id": 69029050,
+                    "seatsUsed": 1,
+                    "productCode": "P7477S"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      {
+        "step": "checkAvailability:P7477S:2026-12-14",
+        "timestamp": "2026-10-30T11:41:46.869Z",
+        "request": {
+          "method": "GET",
+          "urlRedacted": "https://gosno.co/api/internal/rezdy-admin?path=%2Favailability&token=%5BREDACTED%5D&productCode=P7477S&startTimeLocal=2026-12-14+00%3A00%3A00&endTimeLocal=2026-12-14+23%3A59%3A59",
+          "headersRedacted": {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "User-Agent": "DestinationCommandCenter-Rezdy-v1/1.0",
+            "X-Rezdy-Integration": "DCC-Rezdy-v1",
+            "apiKey": "[REDACTED]"
+          },
+          "body": null
+        },
+        "response": {
+          "status": 200,
+          "body": {
+            "requestStatus": {
+              "success": true,
+              "version": "v1"
+            },
+            "sessions": [
+              {
+                "id": 507139971,
+                "productCode": "P7477S",
+                "startTime": "2026-12-14T22:05:00Z",
+                "endTime": "2026-12-15T00:35:00Z",
+                "startTimeLocal": "2026-12-14 15:05:00",
+                "endTimeLocal": "2026-12-14 17:35:00",
+                "allDay": false,
+                "seats": 999,
+                "seatsAvailable": 0,
+                "priceOptions": [
+                  {
+                    "price": 399,
+                    "label": "Suburban",
+                    "id": 69029050,
+                    "seatsUsed": 1,
+                    "productCode": "P7477S"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      {
+        "step": "checkAvailability:PKQDPG:2026-12-15",
+        "timestamp": "2026-10-30T11:41:47.114Z",
+        "request": {
+          "method": "GET",
+          "urlRedacted": "https://gosno.co/api/internal/rezdy-admin?path=%2Favailability&token=%5BREDACTED%5D&productCode=PKQDPG&startTimeLocal=2026-12-15+00%3A00%3A00&endTimeLocal=2026-12-15+23%3A59%3A59",
+          "headersRedacted": {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "User-Agent": "DestinationCommandCenter-Rezdy-v1/1.0",
+            "X-Rezdy-Integration": "DCC-Rezdy-v1",
+            "apiKey": "[REDACTED]"
+          },
+          "body": null
+        },
+        "response": {
+          "status": 200,
+          "body": {
+            "requestStatus": {
+              "success": true,
+              "version": "v1"
+            },
+            "sessions": []
+          }
+        }
+      }
+    ]
+  },
+  "testFacilityLifecycleEvidence": {
+    "availabilityChecks": {
+      "availableSlot": {
+        "available": true,
+        "id": "497020486",
+        "status": "AVAILABLE",
+        "vacancies": 1,
+        "quoteOnly": false
+      },
+      "soldOutSlot": {
+        "available": false,
+        "id": "507139971",
+        "status": "SOLD_OUT",
+        "vacancies": 0,
+        "quoteOnly": false,
+        "reason": "ZERO_SEATS_AVAILABLE"
+      },
+      "quoteOnlyVanSlot": {
+        "available": false,
+        "id": "rezdy_nosession_PKQDPG_2026-12-15",
+        "status": "SOLD_OUT",
+        "vacancies": 0,
+        "quoteOnly": true,
+        "reason": "QUOTE_ONLY_PRODUCT"
+      }
+    },
+    "holdCreated": {
+      "uuid": "RZTEST1001",
+      "status": "ON_HOLD",
+      "utcHoldExpires": "2026-10-30T11:56:47.725Z",
+      "productId": "dcc:gosno:den-breckenridge:suv",
+      "optionId": "opt_suburban_69029050",
+      "availabilityId": "497020486",
+      "contact": {
+        "fullName": "DCC ReservationHold",
+        "firstName": "DCC",
+        "lastName": "ReservationHold",
+        "emailAddress": "pilot-hold@destinationcommandcenter.com",
+        "phoneNumber": "+13035550100"
+      },
+      "unitItems": [
+        {
+          "uuid": "RZTEST1001_item_1",
+          "unitId": "Suburban",
+          "pricing": {
+            "original": 399,
+            "retail": 399,
+            "currency": "USD",
+            "currencyPrecision": 2,
+            "includedTaxesAndFees": false
+          }
+        }
+      ],
+      "totalPrice": 399,
+      "currency": "USD",
+      "supplierReference": "RZTEST1001",
+      "resellerReference": "DCC-vXwJieHXETm6BweEHHTzLo",
+      "id": "dcc:bk:a72c2d36-6d7",
+      "dccBookingId": "dcc:bk:a72c2d36-6d7"
+    },
+    "duplicateHoldIdempotentResponse": {
+      "sameDccBookingId": true,
+      "sameSupplierReference": true,
+      "totalRezdyOrdersCreated": 1
+    },
+    "confirmedBooking": {
+      "uuid": "RZTEST1001",
+      "status": "CONFIRMED",
+      "utcHoldExpires": null,
+      "productId": "P7477S",
+      "optionId": "opt_suburban_69029050",
+      "availabilityId": "497020486",
+      "contact": {
+        "fullName": "Erich Roeseler",
+        "firstName": "Erich",
+        "lastName": "Roeseler",
+        "emailAddress": "erich@destinationcommandcenter.com",
+        "phoneNumber": "+1-504-717-5616"
+      },
+      "unitItems": [
+        {
+          "uuid": "RZTEST1001_item_1",
+          "unitId": "Suburban",
+          "pricing": {
+            "original": 399,
+            "retail": 399,
+            "currency": "USD",
+            "currencyPrecision": 2,
+            "includedTaxesAndFees": false
+          }
+        }
+      ],
+      "totalPrice": 399,
+      "currency": "USD",
+      "supplierReference": "RZTEST1001",
+      "resellerReference": "dcc:bk:a72c2d36-6d7",
+      "confirmedAt": "2026-10-30T11:41:47.738Z",
+      "voucher": {
+        "code": "RZTEST1001",
+        "redemptionInstructions": "Present Rezdy order number at GoSno private transfer pickup point."
+      },
+      "id": "dcc:bk:a72c2d36-6d7"
+    },
+    "tenPercentSettlementAfterConfirm": {
+      "ledgerEntry": {
+        "id": "dcc:ledg:a72c2d36-6d7",
+        "bookingId": "dcc:bk:a72c2d36-6d7",
+        "dccReference": "dcc:bk:a72c2d36-6d7",
+        "supplierReference": "RZTEST1001",
+        "operatorSlug": "gosno",
+        "operatorName": "GoSno Mountain Transportation",
+        "currency": "USD",
+        "grossAmount": 399,
+        "dccSharePercent": 10,
+        "dccShareAmount": 39.9,
+        "operatorShareAmount": 359.1,
+        "reserveHoldAmount": 0,
+        "paymentStatus": "captured",
+        "settlementStatus": "pending",
+        "cancellationStatus": "none",
+        "serviceCompleted": false,
+        "createdAt": "2026-10-30T11:41:47.739Z"
+      },
+      "operatorBalance": {
+        "operatorSlug": "gosno",
+        "currency": "USD",
+        "totalGross": 399,
+        "totalDccCommission": 39.9,
+        "totalPendingPayable": 359.1,
+        "totalReadyForPayout": 0,
+        "totalPaid": 0,
+        "totalReserveHeld": 0,
+        "activeItemCount": 1
+      }
+    },
+    "outcomeReconciliation": {
+      "handoffId": "hndf_5a328b2a33caac91e2fe260a",
+      "reconciliationStatus": "matched",
+      "duplicateDelivery": false,
+      "bookingValue": {
+        "amount": 399,
+        "currency": "USD"
+      },
+      "estimatedCommission": {
+        "amount": 39.9,
+        "currency": "USD"
+      },
+      "comparison": {
+        "reconciled": true,
+        "missingOutcomeImpliesFailedBooking": false,
+        "matchedHandoffId": "hndf_5a328b2a33caac91e2fe260a",
+        "matchedEvaluationRunId": null,
+        "matchedReceiptId": null,
+        "matchedContextId": null,
+        "dateComparison": {
+          "handoffOrEvaluated": "2026-11-12",
+          "bookedActual": "2026-11-12",
+          "matches": true
+        },
+        "productCodeComparison": {
+          "handoffOrEvaluated": "P7477S",
+          "bookedActual": "P7477S",
+          "matches": true
+        },
+        "partySizeComparison": {
+          "handoffOrEvaluated": 4,
+          "bookedActual": 4,
+          "matches": true
+        },
+        "priceComparison": {
+          "handoffOrEvaluated": 399,
+          "bookedActual": 399,
+          "matches": true
+        }
+      }
+    },
+    "cancelledBooking": {
+      "id": "dcc:bk:a72c2d36-6d7",
+      "uuid": "RZTEST1001",
+      "status": "CANCELLED",
+      "productId": "P7477S",
+      "optionId": "opt_suburban_69029050",
+      "availabilityId": "497020486",
+      "totalPrice": 399,
+      "currency": "USD",
+      "unitItems": [
+        {
+          "uuid": "RZTEST1001_item_1",
+          "unitId": "Suburban",
+          "pricing": {
+            "original": 399,
+            "retail": 399,
+            "currency": "USD",
+            "currencyPrecision": 2,
+            "includedTaxesAndFees": false
+          }
+        }
+      ],
+      "contact": {
+        "fullName": "Erich Roeseler",
+        "firstName": "Erich",
+        "lastName": "Roeseler",
+        "emailAddress": "erich@destinationcommandcenter.com",
+        "phoneNumber": "+1-504-717-5616"
+      },
+      "confirmedAt": "2026-10-30T11:41:47.738Z",
+      "cancelledAt": "2026-10-30T11:41:47.771Z",
+      "cancellationReason": "Pilot lifecycle verification cleanup",
+      "supplierReference": "RZTEST1001",
+      "resellerReference": "dcc:bk:a72c2d36-6d7",
+      "utcHoldExpires": null
+    },
+    "tenPercentSettlementAfterCancel": {
+      "ledgerEntry": {
+        "id": "dcc:ledg:a72c2d36-6d7",
+        "bookingId": "dcc:bk:a72c2d36-6d7",
+        "dccReference": "dcc:bk:a72c2d36-6d7",
+        "supplierReference": "RZTEST1001",
+        "operatorSlug": "gosno",
+        "operatorName": "GoSno Mountain Transportation",
+        "currency": "USD",
+        "grossAmount": 399,
+        "dccSharePercent": 10,
+        "dccShareAmount": 0,
+        "operatorShareAmount": 0,
+        "reserveHoldAmount": 0,
+        "paymentStatus": "captured",
+        "settlementStatus": "reversed",
+        "cancellationStatus": "cancelled_full_refund",
+        "serviceCompleted": false,
+        "createdAt": "2026-10-30T11:41:47.739Z"
+      },
+      "operatorBalance": {
+        "operatorSlug": "gosno",
+        "currency": "USD",
+        "totalGross": 0,
+        "totalDccCommission": 0,
+        "totalPendingPayable": 0,
+        "totalReadyForPayout": 0,
+        "totalPaid": 0,
+        "totalReserveHeld": 0,
+        "activeItemCount": 1
+      }
+    },
+    "capturedHttpExchanges": [
+      {
+        "step": "checkAvailability:P7477S:2026-11-12",
+        "timestamp": "2026-10-30T11:41:47.674Z",
+        "request": {
+          "method": "GET",
+          "urlRedacted": "http://127.0.0.1:62515/v1/availability?apiKey=%5BREDACTED%5D&productCode=P7477S&startTimeLocal=2026-11-12+00%3A00%3A00&endTimeLocal=2026-11-12+23%3A59%3A59",
+          "headersRedacted": {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "User-Agent": "DestinationCommandCenter-Rezdy-v1/1.0",
+            "X-Rezdy-Integration": "DCC-Rezdy-v1",
+            "apiKey": "[REDACTED]"
+          },
+          "body": null
+        },
+        "response": {
+          "status": 200,
+          "body": {
+            "requestStatus": {
+              "success": true,
+              "version": "v1"
+            },
+            "sessions": [
+              {
+                "id": 497020486,
+                "productCode": "P7477S",
+                "startTime": "2026-11-12T17:53:00Z",
+                "endTime": "2026-11-12T20:23:00Z",
+                "startTimeLocal": "2026-11-12 10:53:00",
+                "endTimeLocal": "2026-11-12 13:23:00",
+                "allDay": false,
+                "seats": 1,
+                "seatsAvailable": 1,
+                "priceOptions": [
+                  {
+                    "price": 399,
+                    "label": "Suburban",
+                    "id": 69029050,
+                    "seatsUsed": 1,
+                    "productCode": "P7477S"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      {
+        "step": "checkAvailability:P7477S:2026-12-14",
+        "timestamp": "2026-10-30T11:41:47.676Z",
+        "request": {
+          "method": "GET",
+          "urlRedacted": "http://127.0.0.1:62515/v1/availability?apiKey=%5BREDACTED%5D&productCode=P7477S&startTimeLocal=2026-12-14+00%3A00%3A00&endTimeLocal=2026-12-14+23%3A59%3A59",
+          "headersRedacted": {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "User-Agent": "DestinationCommandCenter-Rezdy-v1/1.0",
+            "X-Rezdy-Integration": "DCC-Rezdy-v1",
+            "apiKey": "[REDACTED]"
+          },
+          "body": null
+        },
+        "response": {
+          "status": 200,
+          "body": {
+            "requestStatus": {
+              "success": true,
+              "version": "v1"
+            },
+            "sessions": [
+              {
+                "id": 507139971,
+                "productCode": "P7477S",
+                "startTime": "2026-12-14T22:05:00Z",
+                "endTime": "2026-12-15T00:35:00Z",
+                "startTimeLocal": "2026-12-14 15:05:00",
+                "endTimeLocal": "2026-12-14 17:35:00",
+                "allDay": false,
+                "seats": 999,
+                "seatsAvailable": 0,
+                "priceOptions": [
+                  {
+                    "price": 399,
+                    "label": "Suburban",
+                    "id": 69029050,
+                    "seatsUsed": 1,
+                    "productCode": "P7477S"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      {
+        "step": "checkAvailability:PKQDPG:2026-12-15",
+        "timestamp": "2026-10-30T11:41:47.692Z",
+        "request": {
+          "method": "GET",
+          "urlRedacted": "http://127.0.0.1:62515/v1/availability?apiKey=%5BREDACTED%5D&productCode=PKQDPG&startTimeLocal=2026-12-15+00%3A00%3A00&endTimeLocal=2026-12-15+23%3A59%3A59",
+          "headersRedacted": {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "User-Agent": "DestinationCommandCenter-Rezdy-v1/1.0",
+            "X-Rezdy-Integration": "DCC-Rezdy-v1",
+            "apiKey": "[REDACTED]"
+          },
+          "body": null
+        },
+        "response": {
+          "status": 200,
+          "body": {
+            "requestStatus": {
+              "success": true,
+              "version": "v1"
+            },
+            "sessions": []
+          }
+        }
+      },
+      {
+        "step": "fetchBookingsByResellerReference:DCC-vXwJieHXETm6BweEHHTzLo",
+        "timestamp": "2026-10-30T11:41:47.708Z",
+        "request": {
+          "method": "GET",
+          "urlRedacted": "http://127.0.0.1:62515/v1/bookings?apiKey=%5BREDACTED%5D&resellerReference=DCC-vXwJieHXETm6BweEHHTzLo&limit=100",
+          "headersRedacted": {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "User-Agent": "DestinationCommandCenter-Rezdy-v1/1.0",
+            "X-Rezdy-Integration": "DCC-Rezdy-v1",
+            "apiKey": "[REDACTED]"
+          },
+          "body": null
+        },
+        "response": {
+          "status": 200,
+          "body": {
+            "requestStatus": {
+              "success": true,
+              "version": "v1"
+            },
+            "bookings": []
+          }
+        }
+      },
+      {
+        "step": "createBookingHold:P7477S",
+        "timestamp": "2026-10-30T11:41:47.724Z",
+        "request": {
+          "method": "POST",
+          "urlRedacted": "http://127.0.0.1:62515/v1/bookings?apiKey=%5BREDACTED%5D",
+          "headersRedacted": {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "User-Agent": "DestinationCommandCenter-Rezdy-v1/1.0",
+            "X-Rezdy-Integration": "DCC-Rezdy-v1",
+            "apiKey": "[REDACTED]",
+            "X-DCC-Idempotency-Key": "idem_gosno_rezdy_pilot_001"
+          },
+          "body": {
+            "resellerReference": "DCC-vXwJieHXETm6BweEHHTzLo",
+            "status": "PROCESSING",
+            "customer": {
+              "firstName": "DCC",
+              "lastName": "ReservationHold",
+              "email": "pilot-hold@destinationcommandcenter.com",
+              "phone": "+13035550100"
+            },
+            "items": [
+              {
+                "productCode": "P7477S",
+                "startTimeLocal": "2026-11-12 10:53:00",
+                "amount": 399,
+                "quantities": [
+                  {
+                    "optionLabel": "Suburban",
+                    "value": 1
+                  }
+                ],
+                "sessionId": 497020486
+              }
+            ],
+            "comments": "DCC Pilot Hold | DEN -> Breckenridge Private SUV (P7477S)"
+          }
+        },
+        "response": {
+          "status": 200,
+          "body": {
+            "requestStatus": {
+              "success": true,
+              "version": "v1"
+            },
+            "booking": {
+              "orderNumber": "RZTEST1001",
+              "status": "PROCESSING",
+              "resellerReference": "DCC-vXwJieHXETm6BweEHHTzLo",
+              "totalAmount": 399,
+              "totalCurrency": "USD",
+              "totalPaid": 0,
+              "totalDue": 399,
+              "dateCreated": "2026-10-30T11:41:47.724Z",
+              "dateUpdated": "2026-10-30T11:41:47.724Z",
+              "customer": {
+                "firstName": "DCC",
+                "lastName": "ReservationHold",
+                "email": "pilot-hold@destinationcommandcenter.com",
+                "phone": "+13035550100"
+              },
+              "items": [
+                {
+                  "productName": "Denver Airport to Breckenridge — Private SUV Transfer",
+                  "productCode": "P7477S",
+                  "startTimeLocal": "2026-11-12 10:53:00",
+                  "amount": 399,
+                  "subtotal": 399,
+                  "totalItemTax": 0,
+                  "quantities": [
+                    {
+                      "optionLabel": "Suburban",
+                      "optionPrice": 399,
+                      "value": 1,
+                      "priceGroupType": "EACH"
+                    }
+                  ],
+                  "sessionId": 497020486
+                }
+              ],
+              "comments": "DCC Pilot Hold | DEN -> Breckenridge Private SUV (P7477S)"
+            }
+          }
+        }
+      },
+      {
+        "step": "confirmBooking:RZTEST1001",
+        "timestamp": "2026-10-30T11:41:47.739Z",
+        "request": {
+          "method": "PUT",
+          "urlRedacted": "http://127.0.0.1:62515/v1/bookings/RZTEST1001?apiKey=%5BREDACTED%5D",
+          "headersRedacted": {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "User-Agent": "DestinationCommandCenter-Rezdy-v1/1.0",
+            "X-Rezdy-Integration": "DCC-Rezdy-v1",
+            "apiKey": "[REDACTED]"
+          },
+          "body": {
+            "status": "CONFIRMED",
+            "resellerReference": "dcc:bk:a72c2d36-6d7",
+            "customer": {
+              "firstName": "Erich",
+              "lastName": "Roeseler",
+              "email": "erich@destinationcommandcenter.com",
+              "phone": "+1-504-717-5616"
+            },
+            "comments": "Confirmed via DCC Direct API (10% commission)"
+          }
+        },
+        "response": {
+          "status": 200,
+          "body": {
+            "requestStatus": {
+              "success": true,
+              "version": "v1"
+            },
+            "booking": {
+              "orderNumber": "RZTEST1001",
+              "status": "CONFIRMED",
+              "resellerReference": "dcc:bk:a72c2d36-6d7",
+              "totalAmount": 399,
+              "totalCurrency": "USD",
+              "totalPaid": 399,
+              "totalDue": 0,
+              "dateCreated": "2026-10-30T11:41:47.724Z",
+              "dateUpdated": "2026-10-30T11:41:47.738Z",
+              "customer": {
+                "firstName": "Erich",
+                "lastName": "Roeseler",
+                "email": "erich@destinationcommandcenter.com",
+                "phone": "+1-504-717-5616"
+              },
+              "items": [
+                {
+                  "productName": "Denver Airport to Breckenridge — Private SUV Transfer",
+                  "productCode": "P7477S",
+                  "startTimeLocal": "2026-11-12 10:53:00",
+                  "amount": 399,
+                  "subtotal": 399,
+                  "totalItemTax": 0,
+                  "quantities": [
+                    {
+                      "optionLabel": "Suburban",
+                      "optionPrice": 399,
+                      "value": 1,
+                      "priceGroupType": "EACH"
+                    }
+                  ],
+                  "sessionId": 497020486
+                }
+              ],
+              "comments": "Confirmed via DCC Direct API (10% commission)",
+              "dateConfirmed": "2026-10-30T11:41:47.738Z"
+            }
+          }
+        }
+      },
+      {
+        "step": "cancelBooking:RZTEST1001",
+        "timestamp": "2026-10-30T11:41:47.771Z",
+        "request": {
+          "method": "DELETE",
+          "urlRedacted": "http://127.0.0.1:62515/v1/bookings/RZTEST1001?apiKey=%5BREDACTED%5D",
+          "headersRedacted": {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "User-Agent": "DestinationCommandCenter-Rezdy-v1/1.0",
+            "X-Rezdy-Integration": "DCC-Rezdy-v1",
+            "apiKey": "[REDACTED]"
+          },
+          "body": null
+        },
+        "response": {
+          "status": 200,
+          "body": {
+            "requestStatus": {
+              "success": true,
+              "version": "v1"
+            },
+            "booking": {
+              "orderNumber": "RZTEST1001",
+              "status": "CANCELLED",
+              "resellerReference": "dcc:bk:a72c2d36-6d7",
+              "totalAmount": 399,
+              "totalCurrency": "USD",
+              "totalPaid": 399,
+              "totalDue": 0,
+              "dateCreated": "2026-10-30T11:41:47.724Z",
+              "dateUpdated": "2026-10-30T11:41:47.770Z",
+              "customer": {
+                "firstName": "Erich",
+                "lastName": "Roeseler",
+                "email": "erich@destinationcommandcenter.com",
+                "phone": "+1-504-717-5616"
+              },
+              "items": [
+                {
+                  "productName": "Denver Airport to Breckenridge — Private SUV Transfer",
+                  "productCode": "P7477S",
+                  "startTimeLocal": "2026-11-12 10:53:00",
+                  "amount": 399,
+                  "subtotal": 399,
+                  "totalItemTax": 0,
+                  "quantities": [
+                    {
+                      "optionLabel": "Suburban",
+                      "optionPrice": 399,
+                      "value": 1,
+                      "priceGroupType": "EACH"
+                    }
+                  ],
+                  "sessionId": 497020486
+                }
+              ],
+              "comments": "Confirmed via DCC Direct API (10% commission)",
+              "dateConfirmed": "2026-10-30T11:41:47.738Z"
+            }
+          }
+        }
+      }
+    ]
+  }
+}
