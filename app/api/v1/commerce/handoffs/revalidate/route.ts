@@ -137,6 +137,12 @@ export async function POST(request: Request) {
         ? body.youngestPassengerAgeYears
         : null;
 
+  const passengerWeightsRaw = Array.isArray(body.passengerWeightsLbs)
+    ? body.passengerWeightsLbs.filter(
+        (w): w is number => typeof w === "number" && Number.isFinite(w) && w > 0,
+      )
+    : null;
+
   const revalidation = await revalidateCommercialHandoffBeforeCommitment({
     handoffId,
     receiptEvaluatedPartySize,
@@ -152,10 +158,15 @@ export async function POST(request: Request) {
       typeof body.requestedFareharborItemId === "string"
         ? body.requestedFareharborItemId
         : null,
+    requestedViatorProductCode:
+      typeof body.requestedViatorProductCode === "string"
+        ? body.requestedViatorProductCode
+        : null,
     requestedTourCode:
       typeof body.requestedTourCode === "string" ? body.requestedTourCode : null,
     requestedReceiptId:
       typeof body.requestedReceiptId === "string" ? body.requestedReceiptId : null,
+    passengerWeightsLbs: passengerWeightsRaw,
     declaredMaxSinglePassengerWeightLbs: declaredWeightRaw,
     declaredYoungestPassengerAgeYears: declaredAgeRaw,
     hasLapChildUnder2:

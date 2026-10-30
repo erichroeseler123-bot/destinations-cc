@@ -12,7 +12,9 @@ export interface DepartureTour {
   id: string;
   title: string;
   supplierName: string | null;
+  bookHref?: string;
   directOperatorHref?: string;
+  expectedItemPk?: number | string;
 }
 
 export interface NextDeparture {
@@ -42,12 +44,14 @@ export function parseCalendarDepartures(
   now = new Date(),
 ): NextDeparture[] {
   if (!raw || typeof raw !== "object" || !Array.isArray((raw as { availabilities?: unknown }).availabilities)) throw new Error("Invalid calendar response");
-  const base = new URL(tour.directOperatorHref!);
+  const targetHref = tour.bookHref || tour.directOperatorHref;
+  if (!targetHref) throw new Error("Missing tour booking URL");
+  const base = new URL(targetHref);
+  const expectedItem = tour.expectedItemPk !== undefined ? String(tour.expectedItemPk) : base.pathname.match(/\/items\/(\d+)\//)?.[1];
   return (raw as { availabilities: Record<string, unknown>[] }).availabilities.flatMap((slot) => {
     if (!slot || typeof slot !== "object") return [];
     const item = slot.item as Record<string, unknown> | undefined;
-    const expectedItem = base.pathname.match(/\/items\/(\d+)\//)?.[1];
-    if (!item || String(item.pk) !== expectedItem) return [];
+    if (!item || (expectedItem && String(item.pk) !== expectedItem)) return [];
     if (slot.is_bookable !== true || slot.is_sold_out === true || slot.is_waitlist === true || slot.is_unlisted === true || slot.is_bookable_only_by_phone === true || slot.is_past_cutoff_with_bookings === true || slot.is_past_cutoff_without_bookings === true || slot.booking_restriction) return [];
     if (typeof item.minimum_initial_party_size === "number" && travelers < item.minimum_initial_party_size) return [];
     if (typeof item.maximum_initial_party_size === "number" && travelers > item.maximum_initial_party_size) return [];
@@ -57,8 +61,12 @@ export function parseCalendarDepartures(
     if (!Number.isFinite(start.getTime()) || start <= now || juneauDate(start) !== date || juneauClock(start) < readyAfter) return [];
     if (typeof slot.pk !== "number" || !Number.isSafeInteger(slot.pk)) return [];
     const booking = new URL(base);
-    booking.searchParams.set("availability", String(slot.pk));
-    booking.searchParams.set("date", date);
+    if (booking.hostname === "www.viator.com" || booking.hostname === "viator.com") {
+      booking.searchParams.set("startDate", date);
+      booking.searchParams.set("numTravelers", String(travelers));
+    } else {
+      booking.searchParams.set("date", date);
+    }
     return [{
       id: `${tour.id}-${slot.pk}`,
       title: typeof item.name === "string" ? item.name : tour.title,

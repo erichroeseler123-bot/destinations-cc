@@ -142,12 +142,12 @@ async function runBrowserTest() {
     const initialTelemetryCount = capturedTelemetryRequests.length;
     console.log(`Page view telemetry events captured on mount: ${initialTelemetryCount}`);
 
-    // Click the TEMSCO Walk FareHarbor button
-    console.log('Clicking TEMSCO Mendenhall Glacier Walk direct FareHarbor booking button...');
+    // Click the Coastal Icefield Walk Viator button
+    console.log('Clicking Coastal Icefield Walk Viator booking button...');
     const clickResult = await cdp.send('Runtime.evaluate', {
       expression: `
         (() => {
-          const btn = document.querySelector('a[href*="214803"]');
+          const btn = document.querySelector('a[href*="6251SHOREXICEWALK"]');
           if (!btn) return { ok: false, error: 'button_not_found' };
           btn.click();
           return { ok: true, href: btn.href, text: btn.textContent };
@@ -172,11 +172,11 @@ async function runBrowserTest() {
     if (clickEvent.eventName !== 'booking_clicked') {
       throw new Error(`Expected eventName booking_clicked, got ${clickEvent.eventName}`);
     }
-    if (clickEvent.outcome?.tourSlug !== 'temsco-mendenhall-glacier-walk') {
-      throw new Error(`Expected tourSlug temsco-mendenhall-glacier-walk, got ${clickEvent.outcome?.tourSlug}`);
+    if (clickEvent.outcome?.tourSlug !== 'coastal-icefield-walk') {
+      throw new Error(`Expected tourSlug coastal-icefield-walk, got ${clickEvent.outcome?.tourSlug}`);
     }
-    if (clickEvent.outcome?.provider !== 'fareharbor') {
-      throw new Error(`Expected provider fareharbor, got ${clickEvent.outcome?.provider}`);
+    if (clickEvent.outcome?.provider !== 'viator') {
+      throw new Error(`Expected provider viator, got ${clickEvent.outcome?.provider}`);
     }
 
     console.log('✅ Outbound booking click produced exactly 1 accurately attributed telemetry event!');

@@ -36,11 +36,11 @@ const agentPayload = {
     truth_record: truthRecord,
   },
   customer_benefits: BOOKING_BENEFITS,
-  booking_channels: ["Direct operator booking pages, including FareHarbor", "Viator product or search links"],
+  booking_channels: ["Viator product links (including Section 20 Worry-free Shore Excursions such as 6251SHOREXICEWALK) and Viator search links", "Official operator tour information pages"],
   booking_boundary: {
     roles: BOOKING_ROLES,
     rule:
-      "Use the selected operator or booking provider as the authority for live availability, weather cancellation rules, payment, final inclusions, restrictions, and operator terms.",
+      "DCC evaluates tour suitability; Juneau Flight Deck explains the options; Viator handles the booking and applicable booking protections. Confirm final price and availability in Viator.",
   },
   network: {
     parent_dcc_id: "dcc:site:destination-command-center",

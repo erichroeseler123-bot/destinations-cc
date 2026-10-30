@@ -5,7 +5,7 @@
  * 1. Intake: Passenger registers via POST /api/waitlist
  * 2. Processing: Inventory scan detects opening matching passenger's port date & party size
  * 3. Receipt: Exact email/SMS alert generated, recorded to audit log with full payload
- * 4. Booking Link: Live FareHarbor checkout URL verified via real HTTP request (returns 200 OK)
+ * 4. Booking Link: Live Viator referral URL verified via real HTTP request (returns 200 OK)
  */
 
 import { promises as fs } from "node:fs";
@@ -121,12 +121,12 @@ async function runProductionDemonstration() {
 
   // STEP 4: VERIFICATION OF THE LIVE BOOKING LINK (HTTP 200 OK)
   console.log("--------------------------------------------------------------------------------");
-  console.log("STEP 4: LIVE FAREHARBOR OPERATOR BOOKING LINK VERIFICATION");
+  console.log("STEP 4: LIVE VIATOR PARTNER BOOKING LINK VERIFICATION");
   console.log("--------------------------------------------------------------------------------");
 
   const checkoutUrl = notificationRecord.checkoutUrl;
   console.log(`Generated Booking URL:\n${checkoutUrl}\n`);
-  console.log("Pinging FareHarbor operator endpoint live to verify HTTP response status...");
+  console.log("Pinging Viator partner endpoint live to verify HTTP response status...");
 
   const liveResponse = await fetch(checkoutUrl, {
     method: "GET",
@@ -141,7 +141,7 @@ async function runProductionDemonstration() {
   console.log(`Server:           ${liveResponse.headers.get("server")}`);
 
   if (liveResponse.status === 200) {
-    console.log("\n✅ SUCCESS: FareHarbor checkout endpoint returned HTTP 200 OK.");
+    console.log("\n✅ SUCCESS: Viator partner endpoint returned HTTP 200 OK.");
     console.log("The link is live, bookable, and ready for passenger reservation.");
   } else {
     console.error(`\n❌ ERROR: Unexpected status code ${liveResponse.status}`);

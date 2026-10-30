@@ -17,7 +17,7 @@ ${benefits}
 ## How booking works
 ${BOOKING_ROLES}
 
-Direct operator booking pages (including FareHarbor) and Viator links are separate booking channels. Links labeled "Search on Viator" open search results rather than a specific checkout. Travelers choose a product and enter their date and party size on the booking provider's page. Published guide prices are not final checkout quotes. Confirm current availability, restrictions, pickup instructions, and cancellation terms before paying.
+Product-specific Viator links (such as Coastal Helicopters' Icefield Excursion, product code 6251SHOREXICEWALK) open the exact Viator tour listing, while links labeled "Search on Viator" open search results rather than a specific checkout. Only products expressly marked "Worry-free Shore Excursion" on Viator (tagId 367649) qualify for Viator's back-to-ship protection under Viator Terms of Use Section 20 (https://www.viator.com/support/termsAndConditions). DCC's cruise-timing buffer calculation is an independent planning check and is not itself a back-to-ship guarantee. Published guide prices are not final checkout quotes. Confirm final price and availability in Viator before paying.
 
 Juneau Flight Deck is an independent excursion booking and comparison service, distinct from Alaska Fish & Chips Company at the Flight Deck restaurant at Merchants Wharf. The named tour operators operate the aircraft and boats. Juneau Flight Deck may earn a referral commission when a traveler books through a partner link.
 

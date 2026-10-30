@@ -374,6 +374,16 @@ export async function ensureRuntimeStoreHydratedFromNeon(
         };
       }
 
+      if (typeof neon.persistCandidateUniverseToNeon === "function") {
+        for (const univ of store.universesByHash.values()) {
+          await neon.persistCandidateUniverseToNeon(univ);
+        }
+      }
+      if (typeof neon.persistEngineBundleToNeon === "function") {
+        for (const bnd of store.bundlesByHash.values()) {
+          await neon.persistEngineBundleToNeon(bnd);
+        }
+      }
       if (typeof neon.readAllCandidateUniversesFromNeon === "function") {
         const universes = await neon.readAllCandidateUniversesFromNeon();
         for (const u of universes) {
@@ -1531,8 +1541,20 @@ export function getV03RuntimeStore(options?: {
           entityRole: "direct_part135_usfs_permitted_operator",
           resellerOrSpecialistPortals:
             "juneauflightdeck.com,lastfrontiershoreexcursions.com",
-          fareharborShortname: "coastalhelicopters",
-          fareharborItemId: "4012",
+          bookingProvider: "viator",
+          viatorProductCode: "6251SHOREXICEWALK",
+          viatorProductUrl:
+            "https://www.viator.com/tours/Juneau/Juneau-Shore-Excursion-Helicopter-Tour-and-Guided-Icefield-Walk/d941-6251SHOREXICEWALK",
+          viatorAffiliatePid: "P00058396",
+          viatorAffiliateMcid: "42383",
+          viatorWorryFreeShoreExcursion: true,
+          viatorWorryFreeTagId: 367649,
+          viatorTermsUrl: "https://www.viator.com/support/termsAndConditions",
+          viatorTermsSection: "Section 20 (Worry-free Shore Excursions)",
+          viatorMinPostTourBufferBeforeShipDepartureMinutes: 120,
+          viatorNextPortTransportLimitPerPersonUsd: 1000,
+          operatorSourceUrl: "https://coastalhelicopters.com/tours/icefield-excursion/",
+          operatorFaqUrl: "https://coastalhelicopters.com/faq/",
           operatingSeasonMonthsUtc: "5,6,7,8,9",
           basePriceUsd: 459,
           standardPlusPriceUsd260To299Lbs: 609,
@@ -1582,8 +1604,14 @@ export function getV03RuntimeStore(options?: {
           entityRole: "direct_part135_usfs_permitted_operator",
           resellerOrSpecialistPortals:
             "juneauflightdeck.com,lastfrontiershoreexcursions.com",
-          fareharborShortname: "temscoair-juneau",
-          fareharborItemId: "214803",
+          bookingProvider: "viator",
+          viatorProductCode: "NONE_VIATOR_SEARCH_FALLBACK",
+          viatorSearchUrl:
+            "https://www.viator.com/searchResults/all?text=Juneau+Mendenhall+Glacier+helicopter+tour",
+          viatorAffiliatePid: "P00058396",
+          viatorAffiliateMcid: "42383",
+          viatorWorryFreeShoreExcursion: false,
+          operatorSourceUrl: "https://temscoair.com/tours/pilots-choice-exploration/",
           operatingSeasonMonthsUtc: "5,6,7,8,9",
           basePriceUsd: 449,
           weightSurchargeThresholdLbs: 250,
@@ -1626,8 +1654,16 @@ export function getV03RuntimeStore(options?: {
           entityRole: "direct_part135_usfs_permitted_operator",
           resellerOrSpecialistPortals:
             "juneauflightdeck.com,lastfrontiershoreexcursions.com",
-          fareharborShortname: "northstartrekking",
-          fareharborItemId: "88310",
+          bookingProvider: "viator",
+          viatorProductCode: "NONE_VIATOR_SEARCH_FALLBACK",
+          viatorSearchUrl:
+            "https://www.viator.com/searchResults/all?text=Juneau+NorthStar+Glacier+Walkabout+helicopter",
+          viatorAffiliatePid: "P00058396",
+          viatorAffiliateMcid: "42383",
+          viatorWorryFreeShoreExcursion: false,
+          operatorSourceUrl:
+            "https://northstartrekking.com/treks/tours/helicopter-glacier-walkabout/",
+          operatorFaqUrl: "https://northstartrekking.com/faqs/",
           operatingSeasonMonthsUtc: "5,6,7,8,9",
           basePriceUsd: 499,
           weightSurchargeThresholdLbs: 250,

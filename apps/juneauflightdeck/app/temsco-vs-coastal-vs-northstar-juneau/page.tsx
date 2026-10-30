@@ -410,7 +410,7 @@ export default function OperatorComparisonPage() {
             </p>
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
               <a
-                href="https://www.viator.com/searchResults/all?text=Juneau+TEMSCO+dog+sledding&pid=P00058396&mcid=42383&medium=api"
+                href="https://www.viator.com/searchResults/all?text=Juneau+TEMSCO+dog+sledding&pid=P00058396&mcid=42383&medium=api&campaign=jfd-comparison-temsco-dogsled"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="button button-primary"
@@ -419,13 +419,13 @@ export default function OperatorComparisonPage() {
                 Search on Viator →
               </a>
               <a
-                href="https://fareharbor.com/embeds/book/temscoair-juneau/items/214810/?ref=juneauflightdeck&asn=welcometoalaskatours&full_items=yes"
+                href="https://temscoair.com/tours/juneau-tours/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="button button-card"
                 style={{ fontSize: "0.75rem", padding: "6px 10px" }}
               >
-                Direct (FareHarbor 214810) ↗
+                TEMSCO Tour Details ↗
               </a>
             </div>
           </div>
@@ -444,7 +444,7 @@ export default function OperatorComparisonPage() {
             </p>
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
               <a
-                href="https://www.viator.com/searchResults/all?text=Juneau+Coastal+dog+sledding&pid=P00058396&mcid=42383&medium=api"
+                href="https://www.viator.com/searchResults/all?text=Juneau+Coastal+dog+sledding&pid=P00058396&mcid=42383&medium=api&campaign=jfd-comparison-coastal-dogsled"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="button button-primary"
@@ -459,7 +459,7 @@ export default function OperatorComparisonPage() {
                 className="button button-card"
                 style={{ fontSize: "0.75rem", padding: "6px 10px" }}
               >
-                Coastal Direct ↗
+                Coastal Tour Details ↗
               </a>
             </div>
           </div>
@@ -478,7 +478,7 @@ export default function OperatorComparisonPage() {
             </p>
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
               <a
-                href="https://www.viator.com/searchResults/all?text=Juneau+NorthStar+dog+sledding&pid=P00058396&mcid=42383&medium=api"
+                href="https://www.viator.com/searchResults/all?text=Juneau+NorthStar+dog+sledding&pid=P00058396&mcid=42383&medium=api&campaign=jfd-comparison-northstar-dogsled"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="button button-primary"
@@ -487,13 +487,13 @@ export default function OperatorComparisonPage() {
                 Search on Viator →
               </a>
               <a
-                href="https://fareharbor.com/embeds/book/northstartrekking/items/115991/?ref=juneauflightdeck&asn=welcometoalaskatours&full_items=yes"
+                href="https://northstartrekking.com/adventures/helicopter-glacier-dogsled-adventure/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="button button-card"
                 style={{ fontSize: "0.75rem", padding: "6px 10px" }}
               >
-                Direct (FareHarbor 115991) ↗
+                NorthStar Tour Details ↗
               </a>
             </div>
           </div>
@@ -677,7 +677,7 @@ export default function OperatorComparisonPage() {
               <em>Weather Grounding:</em> When an operator cancels a flight due to mountain pass clouds, fog, or FAA safety limits, a 100% refund is provided.
             </p>
             <p style={{ fontSize: "0.82rem", color: "#fef3c7", lineHeight: 1.4, margin: "6px 0 0" }}>
-              <em>Ship Delays &amp; Missed Ports:</em> Refund terms if your cruise ship bypasses Juneau or arrives too late to make your departure vary by provider and booking channel. Do not assume a blanket guarantee across all channels: check the specific missed-port policy on your direct operator confirmation or third-party booking voucher.
+              <em>Viator Worry-free Shore Excursion Guarantee vs. DCC Timing Calculations:</em> Under <a href="https://www.viator.com/support/termsAndConditions" target="_blank" rel="noopener noreferrer" style={{ color: "#fcd34d", textDecoration: "underline" }}>Viator Terms of Use Section 20 (&ldquo;Worry-free Shore Excursions&rdquo;)</a>, only products expressly marked &ldquo;Worry-free Shore Excursion&rdquo; on Viator (such as Coastal Helicopters&apos; <code>6251SHOREXICEWALK</code>, <code>tagId: 367649</code>) carry Viator&apos;s back-to-ship protection (up to US$1,000 per person next-port transport when scheduled to end at least 2 hours before ship departure, or a refund if requested within 14 days when a ship misses port). DCC calculates cruise-port timing buffers to evaluate suitability, but DCC itself does not provide a back-to-ship guarantee.
             </p>
           </div>
         </div>
@@ -720,7 +720,7 @@ export default function OperatorComparisonPage() {
             </p>
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
               <a
-                href="https://www.viator.com/searchResults/all?text=Juneau+TEMSCO+Helicopters&pid=P00058396&mcid=42383&medium=api"
+                href="https://www.viator.com/searchResults/all?text=Juneau+TEMSCO+Helicopters&pid=P00058396&mcid=42383&medium=api&campaign=jfd-comparison-temsco-mendenhall"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="button button-primary"
@@ -729,13 +729,13 @@ export default function OperatorComparisonPage() {
                 Search on Viator →
               </a>
               <a
-                href="https://fareharbor.com/embeds/book/temscoair-juneau/items/214803/?ref=juneauflightdeck&asn=welcometoalaskatours&full_items=yes"
+                href="https://temscoair.com/tours/juneau-tours/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="button button-card"
                 style={{ fontSize: "0.82rem", padding: "8px 14px" }}
               >
-                🏢 Book TEMSCO Direct (FareHarbor) ↗
+                🏢 TEMSCO Official Tour Info ↗
               </a>
             </div>
           </div>
@@ -745,35 +745,35 @@ export default function OperatorComparisonPage() {
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12, marginBottom: 12 }}>
               <div>
                 <span style={{ fontSize: "0.75rem", fontWeight: 800, color: "#38bdf8", textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                  Best Scenic Icefield Flight &amp; Herbert Glacier Landing
+                  Best Scenic Icefield Flight &amp; Herbert Glacier Landing · Viator Worry-Free Shore Excursion
                 </span>
                 <h3 style={{ fontSize: "1.35rem", color: "#ffffff", margin: "4px 0" }}>
-                  Coastal Helicopters: Icefield Tour with Glacier Landing
+                  Coastal Helicopters: Icefield Tour with Glacier Landing (6251SHOREXICEWALK)
                 </h3>
               </div>
-              <span style={{ fontSize: "1.1rem", fontWeight: 800, color: "#10b981" }}>$429 published base</span>
+              <span style={{ fontSize: "1.1rem", fontWeight: 800, color: "#10b981" }}>$429 direct / $459 Viator</span>
             </div>
             <p style={{ fontSize: "0.9rem", color: "var(--muted, #cbd5e1)", lineHeight: 1.6, marginBottom: 16 }}>
-              <strong>Why this wins:</strong> Coastal excels at panoramic flightseeing through mountain passes directly to Herbert Glacier, offering 25 to 30 minutes on ancient blue ice away from high-traffic zones. (Note: The historic Taku Glacier Lodge salmon feast is operated by Wings Airways using classic seaplanes from downtown harbor, while Coastal is Juneau&apos;s premier boutique helicopter operator).
+              <strong>Why this wins:</strong> Coastal excels at panoramic flightseeing through mountain passes directly to Herbert Glacier, offering 25 to 30 minutes on ancient blue ice away from high-traffic zones. On Viator (<code>6251SHOREXICEWALK</code>, <code>tagId: 367649</code>), this product is expressly designated a <strong>Worry-free Shore Excursion</strong> under <a href="https://www.viator.com/support/termsAndConditions" target="_blank" rel="noopener noreferrer" style={{ color: "#38bdf8", textDecoration: "underline" }}>Viator Terms of Use Section 20</a>.
             </p>
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
               <a
-                href="https://www.viator.com/searchResults/all?text=Juneau+Coastal+Helicopters&pid=P00058396&mcid=42383&medium=api"
+                href="https://www.viator.com/tours/Juneau/Juneau-Shore-Excursion-Helicopter-Tour-and-Guided-Icefield-Walk/d941-6251SHOREXICEWALK?pid=P00058396&mcid=42383&medium=api&campaign=jfd-comparison-coastal-icefield"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="button button-primary"
                 style={{ fontSize: "0.85rem", padding: "8px 16px" }}
               >
-                Search on Viator →
+                Book on Viator (Worry-Free Shore Excursion) →
               </a>
               <a
-                href="https://fareharbor.com/embeds/book/coastalhelicopters/items/413056/?ref=juneauflightdeck&asn=welcometoalaskatours&full_items=yes"
+                href="https://coastalhelicopters.com/tours/icefield-excursion/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="button button-card"
                 style={{ fontSize: "0.82rem", padding: "8px 14px" }}
               >
-                🏢 Book Coastal Direct (FareHarbor) ↗
+                🏢 Coastal Official Tour Info ↗
               </a>
             </div>
           </div>
@@ -799,31 +799,31 @@ export default function OperatorComparisonPage() {
             </p>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
               <a
-                href="https://fareharbor.com/embeds/book/temscoair-juneau/items/214810/?ref=juneauflightdeck&asn=welcometoalaskatours&full_items=yes"
+                href="https://www.viator.com/searchResults/all?text=Juneau+TEMSCO+dog+sledding&pid=P00058396&mcid=42383&medium=api&campaign=jfd-comparison-dogsled-temsco"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="button button-primary"
                 style={{ fontSize: "0.82rem", padding: "8px 14px" }}
               >
-                TEMSCO Dog Sled ($659) ↗
+                Search TEMSCO Dog Sled on Viator →
               </a>
               <a
-                href="https://coastalhelicopters.com/tours/dog-sled-tours/"
+                href="https://www.viator.com/searchResults/all?text=Juneau+Coastal+dog+sledding&pid=P00058396&mcid=42383&medium=api&campaign=jfd-comparison-dogsled-coastal"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="button button-card"
                 style={{ fontSize: "0.82rem", padding: "8px 14px" }}
               >
-                Coastal Dog Sled ($709) ↗
+                Search Coastal Dog Sled on Viator →
               </a>
               <a
-                href="https://fareharbor.com/embeds/book/northstartrekking/items/115991/?ref=juneauflightdeck&asn=welcometoalaskatours&full_items=yes"
+                href="https://www.viator.com/searchResults/all?text=Juneau+NorthStar+dog+sledding&pid=P00058396&mcid=42383&medium=api&campaign=jfd-comparison-dogsled-northstar"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="button button-card"
                 style={{ fontSize: "0.82rem", padding: "8px 14px" }}
               >
-                NorthStar Dogsled ($739) ↗
+                Search NorthStar Dogsled on Viator →
               </a>
               <Link
                 href="/helicopter-waitlist?tour=dogsled"
@@ -852,22 +852,22 @@ export default function OperatorComparisonPage() {
             </p>
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
               <a
-                href="https://fareharbor.com/embeds/book/northstartrekking/items/116029/?ref=juneauflightdeck&asn=welcometoalaskatours&full_items=yes"
+                href="https://www.viator.com/searchResults/all?text=Juneau+NorthStar+Glacier+Walkabout&pid=P00058396&mcid=42383&medium=api&campaign=jfd-comparison-northstar-walkabout"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="button button-primary"
                 style={{ fontSize: "0.85rem", padding: "8px 16px" }}
               >
-                Book Walkabout ($499) ↗
+                Search Walkabout on Viator →
               </a>
               <a
-                href="https://fareharbor.com/embeds/book/northstartrekking/items/116035/?ref=juneauflightdeck&asn=welcometoalaskatours&full_items=yes"
+                href="https://www.viator.com/searchResults/all?text=Juneau+NorthStar+Glacier+Trek&pid=P00058396&mcid=42383&medium=api&campaign=jfd-comparison-northstar-trek"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="button button-card"
                 style={{ fontSize: "0.82rem", padding: "8px 14px" }}
               >
-                Book Level 1 Trek ($549) ↗
+                Search Level 1 Trek on Viator →
               </a>
               <Link
                 href="/helicopter-waitlist?operator=northstar"

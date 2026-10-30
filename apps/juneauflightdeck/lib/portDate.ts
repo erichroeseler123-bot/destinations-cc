@@ -52,12 +52,11 @@ export function buildDatedOperatorUrl(href: string | null | undefined, date: str
 
   try {
     const url = new URL(href);
-    if (url.hostname !== "fareharbor.com") return href;
-    const itemMatch = url.pathname.match(/^(.*\/items\/\d+)(?:\/calendar\/\d{4}\/\d{2})?\/?$/);
-    if (!itemMatch) return href;
-    const [year, month] = date.split("-");
-    url.pathname = `${itemMatch[1]}/calendar/${year}/${month}/`;
-    return url.toString();
+    if (url.hostname === "www.viator.com" || url.hostname === "viator.com") {
+      url.searchParams.set("startDate", date);
+      return url.toString();
+    }
+    return href;
   } catch {
     return href;
   }

@@ -1108,14 +1108,14 @@ test("v0.3.1 Gate 7: Repair Verification — Withdrawn GoSno Seed Containment, P
     );
   }
 
-  // 9b. Complete July in-season evaluation with full evidence trace (11 claims, 12 rules, 13 evidenceRefs)
+  // 9b. Complete future July in-season evaluation (2027-07-15) with full evidence trace (11 claims, 12 rules, 13 evidenceRefs)
   const julyEvalRes = await postV03EvaluateRoute(
     new Request("https://www.destinationcommandcenter.com/api/v1/v03/evaluate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         engineId: "juneau-helicopter-tours",
-        validAt: "2026-07-15T18:00:00.000Z",
+        validAt: "2027-07-15T18:00:00.000Z",
         constraints: {
           partySize: 2,
           maxSinglePassengerWeightLbs: 255,
@@ -1152,14 +1152,15 @@ test("v0.3.1 Gate 7: Repair Verification — Withdrawn GoSno Seed Containment, P
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        provider: "fareharbor",
-        providerAccount: "coastalhelicopters",
-        fareharborShortname: "coastalhelicopters",
-        fareharborItemId: "4012",
+        originatingSite: "juneauflightdeck.com",
+        provider: "viator",
+        providerAccount: "P00058396",
+        viatorProductCode: "6251SHOREXICEWALK",
         productCode: "jnu-heli-coastal-icefield",
-        productDestinationUrl: "https://juneauflightdeck.com/book",
+        productDestinationUrl:
+          "https://www.viator.com/tours/Juneau/Juneau-Shore-Excursion-Helicopter-Tour-and-Guided-Icefield-Walk/d941-6251SHOREXICEWALK",
         receiptId: julyEvalBody.receiptId,
-        intendedDate: "2026-07-15",
+        intendedDate: "2027-07-15",
         intendedDepartureId: "dep-coastal-1330",
         intendedDepartureTime: "13:30",
         partySize: 3,
@@ -1172,26 +1173,48 @@ test("v0.3.1 Gate 7: Repair Verification — Withdrawn GoSno Seed Containment, P
   const mismatchHandoffBody = (await mismatchHandoffRes.json()) as Record<string, any>;
   assert.equal(mismatchHandoffBody.error.code, "HANDOFF_RECEIPT_PARTY_SIZE_MISMATCH");
 
-  // 9d. Consistent departure-bound handoff (partySize=2) succeeds and encodes exact item, date, departure, and party size
+  // 9c-2. Viator homepage fallback is explicitly rejected (no homepage fallback allowed)
+  const homepageFallbackRes = await postHandoffRoute(
+    new Request("https://www.destinationcommandcenter.com/api/v1/commerce/handoffs", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        originatingSite: "juneauflightdeck.com",
+        provider: "viator",
+        providerAccount: "P00058396",
+        productCode: "jnu-heli-coastal-icefield",
+        productDestinationUrl: "https://www.viator.com/",
+        intendedDate: "2027-07-15",
+        partySize: 2,
+      }),
+    }),
+  );
+  assert.equal(homepageFallbackRes.status, 400);
+  const homepageFallbackBody = (await homepageFallbackRes.json()) as Record<string, any>;
+  assert.equal(homepageFallbackBody.error.code, "INVALID_HANDOFF_DESTINATION_URL");
+
+  // 9d. Consistent Viator handoff (partySize=2, future date 2027-07-15) succeeds and encodes supported Viator params (pid, mcid, medium, campaign, startDate, numTravelers)
   const validHandoffRes = await postHandoffRoute(
     new Request("https://www.destinationcommandcenter.com/api/v1/commerce/handoffs", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        provider: "fareharbor",
-        providerAccount: "coastalhelicopters",
-        fareharborShortname: "coastalhelicopters",
-        fareharborItemId: "4012",
+        originatingSite: "juneauflightdeck.com",
+        provider: "viator",
+        providerAccount: "P00058396",
+        viatorProductCode: "6251SHOREXICEWALK",
         productCode: "jnu-heli-coastal-icefield",
         productTitle: "Icefield Excursion & Glacier Walk (Coastal Helicopters)",
-        productDestinationUrl: "https://juneauflightdeck.com/book",
+        productDestinationUrl:
+          "https://www.viator.com/tours/Juneau/Juneau-Shore-Excursion-Helicopter-Tour-and-Guided-Icefield-Walk/d941-6251SHOREXICEWALK",
         receiptId: julyEvalBody.receiptId,
         evaluationRunId: julyEvalBody.evaluationRunId,
-        intendedDate: "2026-07-15",
+        intendedDate: "2027-07-15",
         intendedDepartureId: "dep-coastal-1330",
         intendedDepartureTime: "13:30",
         partySize: 2,
         maxSinglePassengerWeightLbs: 255,
+        passengerWeightsLbs: [210, 255],
         youngestPassengerAgeYears: 10,
         shipArrivalTime: "11:30",
         shipDepartureTime: "18:00",
@@ -1204,15 +1227,20 @@ test("v0.3.1 Gate 7: Repair Verification — Withdrawn GoSno Seed Containment, P
   const validHandoffBody = (await validHandoffRes.json()) as Record<string, any>;
   const handoffId = String(validHandoffBody.handoff_id);
   const outboundUrl = String(validHandoffBody.handoff.outboundAffiliateUrl);
-  assert.equal(outboundUrl.includes("shortname=coastalhelicopters"), true);
-  assert.equal(outboundUrl.includes("item=4012"), true);
-  assert.equal(outboundUrl.includes("date=2026-07-15"), true);
-  assert.equal(outboundUrl.includes("departure=dep-coastal-1330"), true);
-  assert.equal(outboundUrl.includes("time=13%3A30"), true);
-  assert.equal(outboundUrl.includes("party_size=2"), true);
+  assert.equal(outboundUrl.includes("d941-6251SHOREXICEWALK"), true);
+  assert.equal(outboundUrl.includes("pid=P00058396"), true);
+  assert.equal(outboundUrl.includes("mcid=42383"), true);
+  assert.equal(outboundUrl.includes("medium=api"), true);
+  assert.equal(outboundUrl.includes(`__${handoffId}`), true);
+  assert.equal(outboundUrl.includes("startDate=2027-07-15"), true);
+  assert.equal(outboundUrl.includes("numTravelers=2"), true);
+  assert.equal(outboundUrl.includes("welcometoalaskatours"), false);
+  assert.equal(outboundUrl.includes("fareharbor.com"), false);
+  assert.deepEqual(validHandoffBody.handoff.passengerWeightsLbs, [210, 255]);
 
   // 9e. Active pre-booking revalidation verifies handoff + receipt against versioned CandidateUniverse policy,
-  //     ignores caller-supplied live operator facts, and keeps providerConfirmation explicitly unknown
+  //     surfaces Viator Section 20 Worry-Free Shore Excursion terms, ignores caller-supplied live operator facts,
+  //     and keeps providerConfirmation explicitly unknown
   const revalPassRes = await postRevalidateRoute(
     new Request(
       "https://www.destinationcommandcenter.com/api/v1/commerce/handoffs/revalidate",
@@ -1225,6 +1253,7 @@ test("v0.3.1 Gate 7: Repair Verification — Withdrawn GoSno Seed Containment, P
           liveAvailableSeats: 6,
           liveDepartureStatus: "OPEN",
           declaredMaxSinglePassengerWeightLbs: 255,
+          passengerWeightsLbs: [210, 255],
           requiresAssistedAircraftBoarding: false,
           carryingDrone: false,
         }),
@@ -1256,11 +1285,85 @@ test("v0.3.1 Gate 7: Repair Verification — Withdrawn GoSno Seed Containment, P
     "liveDepartureStatus",
   ]);
   assert.equal(
-    revalPassBody.revalidation.fareharborDirectEmbedUrl.startsWith(
-      "https://fareharbor.com/embeds/book/coastalhelicopters/items/4012/calendar/2026/07/",
+    revalPassBody.revalidation.viatorDirectProductUrl.startsWith(
+      "https://www.viator.com/tours/Juneau/Juneau-Shore-Excursion-Helicopter-Tour-and-Guided-Icefield-Walk/d941-6251SHOREXICEWALK",
     ),
     true,
   );
+  assert.equal(revalPassBody.revalidation.fareharborDirectEmbedUrl, null);
+  assert.equal(
+    revalPassBody.revalidation.viatorWorryFreeShoreExcursion.qualifiesForViatorWorryFreeGuarantee,
+    true,
+  );
+  assert.equal(revalPassBody.revalidation.viatorWorryFreeShoreExcursion.viatorTagId, 367649);
+  assert.equal(
+    revalPassBody.revalidation.viatorWorryFreeShoreExcursion.minPostTourBufferBeforeShipDepartureMinutes,
+    120,
+  );
+  assert.equal(
+    revalPassBody.revalidation.viatorWorryFreeShoreExcursion.nextPortTransportLimitPerPersonUsd,
+    1000,
+  );
+  assert.equal(
+    revalPassBody.revalidation.viatorWorryFreeShoreExcursion.termsUrl,
+    "https://www.viator.com/support/termsAndConditions",
+  );
+  assert.equal(revalPassBody.revalidation.publishedGroupTotalConfirmed, true);
+  assert.equal(revalPassBody.revalidation.publishedPolicyRequiredTotalUsd, 918);
+
+  // 9e-2. Multi-passenger weight surcharge calculation:
+  //       (a) When partySize=2 and only heaviest passenger weight (268 lbs) is supplied without individual passengerWeightsLbs,
+  //           publishedGroupTotalConfirmed is false, publishedPolicyRequiredTotalUsd is null, and progression is blocked with
+  //           INCOMPLETE_PARTY_PASSENGER_WEIGHTS_FOR_SURCHARGE_BLOCKS_PROGRESSION.
+  const revalIncompleteWeightsRes = await postRevalidateRoute(
+    new Request(
+      "https://www.destinationcommandcenter.com/api/v1/commerce/handoffs/revalidate",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          handoffId,
+          declaredMaxSinglePassengerWeightLbs: 268,
+        }),
+      },
+    ),
+  );
+  assert.equal(revalIncompleteWeightsRes.status, 409);
+  const revalIncompleteWeightsBody = (await revalIncompleteWeightsRes.json()) as Record<
+    string,
+    any
+  >;
+  assert.equal(revalIncompleteWeightsBody.progressionAllowed, false);
+  assert.equal(revalIncompleteWeightsBody.revalidation.publishedGroupTotalConfirmed, false);
+  assert.equal(revalIncompleteWeightsBody.revalidation.publishedPolicyRequiredTotalUsd, null);
+  assert.equal(
+    revalIncompleteWeightsBody.blockingReasons.includes(
+      "INCOMPLETE_PARTY_PASSENGER_WEIGHTS_FOR_SURCHARGE_BLOCKS_PROGRESSION",
+    ),
+    true,
+  );
+
+  //       (b) When both passengers incur a surcharge (passengerWeightsLbs: [265, 270]), both surcharges ($150 x 2 = $300)
+  //           are summed accurately ($918 base + $300 surcharge = $1,218), and publishedGroupTotalConfirmed is true.
+  const revalDualSurchargeRes = await postRevalidateRoute(
+    new Request(
+      "https://www.destinationcommandcenter.com/api/v1/commerce/handoffs/revalidate",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          handoffId,
+          passengerWeightsLbs: [265, 270],
+        }),
+      },
+    ),
+  );
+  assert.equal(revalDualSurchargeRes.status, 409);
+  const revalDualSurchargeBody = (await revalDualSurchargeRes.json()) as Record<string, any>;
+  assert.equal(revalDualSurchargeBody.revalidation.passengersIncurringWeightSurchargeCount, 2);
+  assert.equal(revalDualSurchargeBody.revalidation.requiredWeightSurchargeUsd, 300);
+  assert.equal(revalDualSurchargeBody.revalidation.publishedGroupTotalConfirmed, true);
+  assert.equal(revalDualSurchargeBody.revalidation.publishedPolicyRequiredTotalUsd, 1218);
 
   // 9f. Active pre-booking revalidation blocks progression (409) when declared parameters violate versioned policy or drift from handoff
   const revalBlockRes = await postRevalidateRoute(
@@ -1273,6 +1376,7 @@ test("v0.3.1 Gate 7: Repair Verification — Withdrawn GoSno Seed Containment, P
           handoffId,
           requestedPartySize: 3,
           declaredMaxSinglePassengerWeightLbs: 268,
+          passengerWeightsLbs: [210, 268],
           requiresAssistedAircraftBoarding: true,
           carryingDrone: true,
         }),
@@ -1305,9 +1409,17 @@ test("v0.3.1 Gate 7: Repair Verification — Withdrawn GoSno Seed Containment, P
     true,
   );
 
-  // 9g. Verify versioned policy agreement for TEMSCO (jnu-heli-mendenhall-landing) and NorthStar (jnu-heli-northstar-trek)
-  //     including that NorthStar's 250 lb threshold is a surcharge_only policy (+$150), NOT a hard cap
+  // 9g. Verify versioned policy agreement for Coastal, TEMSCO, and NorthStar
+  //     including Viator Worry-Free Shore Excursion metadata on Coastal and surcharge_only on NorthStar
   const { resolveVersionedCandidatePolicy } = await import("../../lib/dcc/commerce");
+  const coastalPolicy = await resolveVersionedCandidatePolicy("jnu-heli-coastal-icefield");
+  assert.ok(coastalPolicy);
+  assert.equal(coastalPolicy.viatorProductCode, "6251SHOREXICEWALK");
+  assert.equal(coastalPolicy.viatorWorryFreeShoreExcursion, true);
+  assert.equal(coastalPolicy.viatorWorryFreeTagId, 367649);
+  assert.equal(coastalPolicy.fareharborShortname, null);
+  assert.equal(coastalPolicy.fareharborItemId, null);
+
   const temscoPolicy = await resolveVersionedCandidatePolicy("jnu-heli-mendenhall-landing");
   assert.ok(temscoPolicy);
   assert.equal(temscoPolicy.basePriceUsd, 449);
@@ -1316,8 +1428,9 @@ test("v0.3.1 Gate 7: Repair Verification — Withdrawn GoSno Seed Containment, P
   assert.equal(temscoPolicy.weightPolicyType, "surcharge_only");
   assert.equal(temscoPolicy.minAgeYears, 2);
   assert.equal(temscoPolicy.prohibitsServiceAnimals, true);
-  assert.equal(temscoPolicy.fareharborShortname, "temscoair-juneau");
-  assert.equal(temscoPolicy.fareharborItemId, "214803");
+  assert.equal(temscoPolicy.viatorWorryFreeShoreExcursion, false);
+  assert.equal(temscoPolicy.fareharborShortname, null);
+  assert.equal(temscoPolicy.fareharborItemId, null);
 
   const northStarPolicy = await resolveVersionedCandidatePolicy("jnu-heli-northstar-trek");
   assert.ok(northStarPolicy);
@@ -1327,8 +1440,9 @@ test("v0.3.1 Gate 7: Repair Verification — Withdrawn GoSno Seed Containment, P
   assert.equal(northStarPolicy.weightPolicyType, "surcharge_only");
   assert.equal(northStarPolicy.minAgeYears, 8);
   assert.equal(northStarPolicy.requiresOneHourUnassistedGlacierWalk, true);
-  assert.equal(northStarPolicy.fareharborShortname, "northstartrekking");
-  assert.equal(northStarPolicy.fareharborItemId, "88310");
+  assert.equal(northStarPolicy.viatorWorryFreeShoreExcursion, false);
+  assert.equal(northStarPolicy.fareharborShortname, null);
+  assert.equal(northStarPolicy.fareharborItemId, null);
 
   // 9h. Verify safeJsonSerializeForScriptTag escapes <, >, and & against script breakout
   const { safeJsonSerializeForScriptTag } = await import(

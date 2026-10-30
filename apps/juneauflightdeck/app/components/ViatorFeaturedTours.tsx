@@ -886,9 +886,7 @@ export function TourCard({
     selectedDate,
     passengerCount
   );
-  const primaryBookingUrl = product.directOperatorHref
-    ? buildDatedOperatorUrl(product.directOperatorHref, selectedDate)
-    : finalBookingUrl;
+  const primaryBookingUrl = finalBookingUrl;
   const categoryLabel =
     product.tourType === "dog_sledding"
       ? "Glacier dog sledding"
@@ -991,7 +989,7 @@ export function TourCard({
             zIndex: 2,
           }}
         >
-          {product.badges.slice(0, 1).map((badge, idx) => (
+          {product.badges.slice(0, 2).map((badge, idx) => (
             <span
               key={idx}
               style={{
@@ -1150,12 +1148,27 @@ export function TourCard({
           )}
           <div style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--ice, #9ed9ff)" }}>
             <span>🚐</span>
-            <span>Confirm pickup point and transfer details before payment</span>
+            <span>Confirm departure slot, passenger weight tier, and ship details in Viator</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#86efac" }}>
             <span>✓</span>
             <span>{product.cancellationPolicy}</span>
           </div>
+          {product.worryFreeSummary && (
+            <div style={{ fontSize: "0.74rem", color: "#a7f3d0", lineHeight: 1.4, marginTop: 4 }}>
+              🛡️ {product.worryFreeSummary}{" "}
+              {product.worryFreeTermsUrl && (
+                <a
+                  href={product.worryFreeTermsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: "#6ee7b7", textDecoration: "underline" }}
+                >
+                  Viator Terms §20 ↗
+                </a>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Price & Primary Checkout Options */}
@@ -1175,7 +1188,7 @@ export function TourCard({
           >
             <div>
               <div style={{ fontSize: "0.7rem", textTransform: "uppercase", color: "var(--muted)" }}>
-                {product.isLive ? "From" : "Departure Rates"}
+                {product.isLive ? "From" : "Published Base"}
               </div>
               <div
                 style={{
@@ -1195,7 +1208,7 @@ export function TourCard({
               href={primaryBookingUrl}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label={`Check availability for ${product.title} with ${product.supplierName || "the operator"}`}
+              aria-label={`Check availability for ${product.title} on Viator`}
               style={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -1214,8 +1227,8 @@ export function TourCard({
             >
               <span>
                 {selectedDate
-                  ? `Check ${selectedDate.slice(5)} with operator`
-                  : "Check operator dates"}
+                  ? `Check ${selectedDate.slice(5)} on Viator`
+                  : "Check Dates on Viator"}
               </span>
               <span>&rarr;</span>
             </a>
@@ -1234,7 +1247,7 @@ export function TourCard({
             }}
           >
             <span style={{ fontSize: "0.76rem", color: "var(--ice, #9ed9ff)", fontWeight: 700 }}>
-              ↗ Exact tour or operator booking calendar
+              ↗ Confirm final price and availability in Viator
             </span>
 
             {product.operatorSourceHref && (

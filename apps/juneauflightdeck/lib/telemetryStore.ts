@@ -60,9 +60,7 @@ export function recordTelemetryEvent(payload: TelemetryEventPayload): TelemetryR
 
   const provider =
     payload.outcome?.provider ||
-    (payload.targetPath?.includes("fareharbor.com")
-      ? "fareharbor"
-      : payload.targetPath?.includes("viator.com")
+    (payload.targetPath?.includes("viator.com")
       ? "viator"
       : undefined);
 

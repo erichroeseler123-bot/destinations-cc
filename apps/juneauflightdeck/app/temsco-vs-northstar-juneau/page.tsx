@@ -124,7 +124,7 @@ export default function TemscoVsNorthstarPage() {
             <tr style={{ borderBottom: "1px solid var(--line, #334155)" }}>
               <td style={{ padding: "12px 16px", fontWeight: 700, color: "var(--ice, #93c5fd)" }}>Dog Sledding Option</td>
               <td style={{ padding: "12px 16px", color: "#cbd5e1" }}>Herbert Glacier ($659 base)</td>
-              <td colSpan={2} style={{ padding: "12px 16px", color: "#cbd5e1" }}>Norris Glacier ($739 base · FareHarbor 115991)</td>
+              <td colSpan={2} style={{ padding: "12px 16px", color: "#cbd5e1" }}>Norris Glacier ($739 base · Douglas Island Base)</td>
             </tr>
             <tr style={{ borderBottom: "1px solid var(--line, #334155)" }}>
               <td style={{ padding: "12px 16px", fontWeight: 700, color: "var(--ice, #93c5fd)" }}>Cruise Port Shuttles</td>
@@ -158,22 +158,22 @@ export default function TemscoVsNorthstarPage() {
           </ul>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <a
-              href="https://www.viator.com/searchResults/all?text=Juneau+TEMSCO+Helicopters&pid=P00058396&mcid=42383&medium=api"
+              href="https://www.viator.com/searchResults/all?text=Juneau+TEMSCO+Helicopters&pid=P00058396&mcid=42383&medium=api&campaign=jfd-temsco-vs-northstar-temsco"
               target="_blank"
               rel="noopener noreferrer"
               className="button button-primary"
               style={{ fontSize: "0.82rem", padding: "8px 12px" }}
             >
-              Book TEMSCO on Viator →
+              Search TEMSCO on Viator →
             </a>
             <a
-              href="https://fareharbor.com/embeds/book/temscoair-juneau/items/214803/?ref=juneauflightdeck&asn=welcometoalaskatours&full_items=yes"
+              href="https://temscoair.com/tours/juneau-tours/"
               target="_blank"
               rel="noopener noreferrer"
               className="button button-card"
               style={{ fontSize: "0.8rem", padding: "8px 10px" }}
             >
-              Direct (FareHarbor) ↗
+              TEMSCO Tour Info ↗
             </a>
           </div>
         </div>
@@ -190,26 +190,26 @@ export default function TemscoVsNorthstarPage() {
             <li>20 minutes on the ice feels too short—you want a full hour (60 minutes) exploring.</li>
             <li>You want traction crampons and trekking poles without needing technical climbing gear.</li>
             <li>All guests in your group are at least 8 years old.</li>
-            <li>Direct rate from $499 base (FareHarbor item 116029).</li>
+            <li>Published base rate from $499.</li>
           </ul>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <a
-              href="https://www.viator.com/searchResults/all?text=Juneau+NorthStar+Glacier+Walkabout&pid=P00058396&mcid=42383&medium=api"
+              href="https://www.viator.com/searchResults/all?text=Juneau+NorthStar+Glacier+Walkabout&pid=P00058396&mcid=42383&medium=api&campaign=jfd-temsco-vs-northstar-walkabout"
               target="_blank"
               rel="noopener noreferrer"
               className="button button-primary"
               style={{ fontSize: "0.82rem", padding: "8px 12px" }}
             >
-              Book Walkabout on Viator →
+              Search Walkabout on Viator →
             </a>
             <a
-              href="https://fareharbor.com/embeds/book/northstartrekking/items/116029/?ref=juneauflightdeck&asn=welcometoalaskatours&full_items=yes"
+              href="https://northstartrekking.com/treks/tours/helicopter-glacier-walkabout/"
               target="_blank"
               rel="noopener noreferrer"
               className="button button-card"
               style={{ fontSize: "0.8rem", padding: "8px 10px" }}
             >
-              Direct (FareHarbor) ↗
+              NorthStar Tour Info ↗
             </a>
           </div>
         </div>
@@ -226,26 +226,26 @@ export default function TemscoVsNorthstarPage() {
             <li>You want active mountaineering: 2 hours hiking deep glacier ice in crampons and harness.</li>
             <li>You want to examine crevasses, look down 100-foot moulins, and touch sculpted blue ice.</li>
             <li>All participants are fit, active, and at least 12 years old.</li>
-            <li>Direct rate from $549 base (FareHarbor item 116035).</li>
+            <li>Published base rate from $549.</li>
           </ul>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <a
-              href="https://www.viator.com/searchResults/all?text=Juneau+NorthStar+Trekking&pid=P00058396&mcid=42383&medium=api"
+              href="https://www.viator.com/searchResults/all?text=Juneau+NorthStar+Trekking&pid=P00058396&mcid=42383&medium=api&campaign=jfd-temsco-vs-northstar-trek"
               target="_blank"
               rel="noopener noreferrer"
               className="button button-primary"
               style={{ fontSize: "0.82rem", padding: "8px 12px" }}
             >
-              Book Trek on Viator →
+              Search Trek on Viator →
             </a>
             <a
-              href="https://fareharbor.com/embeds/book/northstartrekking/items/116035/?ref=juneauflightdeck&asn=welcometoalaskatours&full_items=yes"
+              href="https://northstartrekking.com/treks/tours/helicopter-glacier-trek/"
               target="_blank"
               rel="noopener noreferrer"
               className="button button-card"
               style={{ fontSize: "0.8rem", padding: "8px 10px" }}
             >
-              Direct (FareHarbor) ↗
+              NorthStar Tour Info ↗
             </a>
           </div>
         </div>

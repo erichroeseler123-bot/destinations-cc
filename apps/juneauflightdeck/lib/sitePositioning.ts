@@ -3,7 +3,7 @@ export const SITE_DESCRIPTION =
   "Juneau Flight Deck helps cruise passengers choose and book Juneau excursions with operator comparisons, glacier maps, pickup and port timing guidance, and help exploring weather alternatives.";
 
 export const BOOKING_ROLES =
-  "Choose your tour with Juneau Flight Deck, then complete your reservation through the operator booking page or Viator link shown. The named operator runs your tour; the selected booking provider handles payment, confirmation, and booking terms.";
+  "DCC evaluates tour suitability; Juneau Flight Deck explains the options; Viator handles the booking and applicable booking protections. The named operator runs your tour, while Viator (or the selected operator channel) handles payment, confirmation, and reservation terms.";
 
 export const BOOKING_BENEFITS = [
   {
@@ -29,18 +29,18 @@ export const BOOKING_BENEFITS = [
 export const BOOKING_FAQS = [
   {
     question: "Why book through Juneau Flight Deck?",
-    answer: "Juneau Flight Deck brings operator comparisons, an icefield map, cruise pickup and timing guidance, and planning help together so you can choose a tour that fits your group and port day. These benefits apply when tours are available; availability requests are an additional option for dates you cannot book online.",
+    answer: "Juneau Flight Deck brings operator comparisons, an icefield map, cruise pickup and timing guidance, and Viator booking links together so you can choose a tour that fits your group and port day. DCC evaluates tour suitability and calculates cruise timing buffers; Juneau Flight Deck explains the options; Viator handles the booking and applicable booking protections.",
   },
   {
-    question: "Does every Juneau Flight Deck booking go through Viator?",
-    answer: "No. Juneau Flight Deck includes direct operator booking pages, including FareHarbor pages, as well as Viator links. A link labeled Search on Viator opens search results; choose the specific product and review its terms before paying. The booking provider you select handles payment and confirmation.",
+    question: "How do Viator links and Worry-free Shore Excursion protections work?",
+    answer: "Product-specific Viator links (such as Coastal Helicopters' Icefield Excursion, product code 6251SHOREXICEWALK) open the exact Viator tour listing, while links labeled Search on Viator open filtered search results where you should select the specific product and review its terms before paying. Only products expressly marked 'Worry-free Shore Excursion' on Viator (tagId 367649) qualify for Viator's back-to-ship protection under Viator Terms of Use Section 20 (https://www.viator.com/support/termsAndConditions), which requires accurate ship arrival/departure details, a minimum 2-hour buffer before ship departure, and contacting Viator directly if delayed (up to US$1,000 per person next-port transport). DCC's cruise-timing buffer calculation is an independent planning check and is not itself a back-to-ship guarantee.",
   },
   {
     question: "Who operates my tour and handles cancellations?",
-    answer: "The named local operator runs your tour and determines flight safety and pickup arrangements. Payment, changes, and refunds follow the terms of your selected booking channel and tour. Contact the provider on your confirmation for reservation changes or urgent departure updates.",
+    answer: "The named local operator runs your tour and determines flight safety and pickup arrangements. Payment, changes, and refunds follow the terms of Viator or the operator channel on your confirmation.",
   },
   {
     question: "Can I use Juneau Flight Deck if my tour is not sold out?",
-    answer: "Yes. Start by comparing experiences and following the booking link for your chosen tour. Availability requests support dates with no suitable online option; they do not reserve seats or guarantee an opening.",
+    answer: "Yes. Start by comparing experiences and following the Viator booking link for your chosen tour. Availability requests support dates with no suitable online option; they do not reserve seats or guarantee an opening.",
   },
 ] as const;

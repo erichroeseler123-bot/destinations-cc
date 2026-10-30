@@ -1,14 +1,8 @@
 /**
- * FareHarbor External API Date-Range Query Utility
- * 
- * Uses FareHarbor External API v1:
- * GET /api/external/v1/companies/{company_shortname}/items/{item_pk}/minimal/availabilities/date-range/{start_date}/{end_date}/
- * 
- * Using `/minimal/` reduces response payloads by ~85% by stripping custom forms,
- * eliminating 504 Gateway Timeouts when scanning multi-week cruise availability.
+ * Operator Schedule Date-Range Query Utility
  */
 
-export interface FareHarborMinimalAvailability {
+export interface OperatorMinimalAvailability {
   pk: number;
   start_at: string; // ISO 8601 string, e.g. "2026-07-14T10:30:00-08:00"
   end_at: string;
@@ -22,8 +16,8 @@ export interface FareHarborMinimalAvailability {
   is_bookable?: boolean;
 }
 
-export interface FareHarborDateRangeResponse {
-  availabilities: FareHarborMinimalAvailability[];
+export interface OperatorDateRangeResponse {
+  availabilities: OperatorMinimalAvailability[];
 }
 
 export const OPERATOR_ENDPOINTS = {
@@ -63,9 +57,9 @@ export const OPERATOR_ENDPOINTS = {
 };
 
 export const JUNEAU_OPERATORS = {
-  welcometoalaskatours: {
-    shortname: "welcometoalaskatours",
-    name: "Welcome to Alaska Tours (Merchant Pipe)",
+  viator: {
+    shortname: "P00058396",
+    name: "Viator Partner Channel (P00058396)",
     items: {
       temsco_dog_sledding: 214810,
       temsco_glacier_landing: 214803,
@@ -76,8 +70,7 @@ export const JUNEAU_OPERATORS = {
 };
 
 /**
- * Splits a date range into chunks not exceeding maxDays (default 14 days)
- * to comply with FareHarbor rate limits and prevent timeout on large sweeps.
+ * Splits a date range into chunks not exceeding maxDays (default 14 days).
  */
 export function chunkDateRange(startDateStr: string, endDateStr: string, maxDays = 14): Array<{ start: string; end: string }> {
   const start = new Date(startDateStr);
@@ -111,7 +104,7 @@ export interface FetchAvailabilitiesOptions {
   endDate: string; // YYYY-MM-DD
 }
 
-export interface FareHarborFetchResult {
+export interface OperatorFetchResult {
   companyShortname: string;
   itemPk: number | string;
   startDate: string;
@@ -119,26 +112,18 @@ export interface FareHarborFetchResult {
   success: boolean;
   httpStatus?: number;
   error?: string;
-  availabilities: FareHarborMinimalAvailability[];
+  availabilities: OperatorMinimalAvailability[];
 }
 
-/**
- * Fetches minimal availabilities for an item across a date range with detailed error reporting.
- * Distinguishes authentication/network/endpoint failures (HTTP 401/403/404/500) from successful
- * searches that return 0 open slots.
- */
-export async function fetchFareHarborDateRangeDetailed({
+export async function fetchOperatorDateRangeDetailed({
   companyShortname = "temscoair-juneau",
   itemPk,
   startDate,
   endDate,
-}: FetchAvailabilitiesOptions): Promise<FareHarborFetchResult> {
-  const appKey = process.env.FAREHARBOR_API_APP_KEY || process.env.FAREHARBOR_APP_KEY;
-  const userKey = process.env.FAREHARBOR_API_USER_KEY || process.env.FAREHARBOR_USER_KEY;
-
-  if (!appKey || !userKey) {
-    const errorMsg = "FareHarbor credentials (FAREHARBOR_API_APP_KEY / FAREHARBOR_API_USER_KEY) not configured.";
-    console.warn(`[FareHarbor API] ${errorMsg}`);
+}: FetchAvailabilitiesOptions): Promise<OperatorFetchResult> {
+  const apiKey = process.env.VIATOR_API_KEY;
+  if (!apiKey) {
+    const errorMsg = "Operator schedule API credentials not configured.";
     return {
       companyShortname,
       itemPk,
@@ -150,63 +135,6 @@ export async function fetchFareHarborDateRangeDetailed({
     };
   }
 
-  const chunks = chunkDateRange(startDate, endDate, 14);
-  const allAvailabilities: FareHarborMinimalAvailability[] = [];
-
-  for (const chunk of chunks) {
-    const url = `https://fareharbor.com/api/external/v1/companies/${companyShortname}/items/${itemPk}/minimal/availabilities/date-range/${chunk.start}/${chunk.end}/`;
-
-    try {
-      const res = await fetch(url, {
-        method: "GET",
-        headers: {
-          "X-FareHarbor-API-App": appKey,
-          "X-FareHarbor-API-User": userKey,
-          Accept: "application/json",
-        },
-        next: { revalidate: 60 },
-      });
-
-      if (!res.ok) {
-        let errBody = "";
-        try {
-          errBody = await res.text();
-        } catch {
-          // ignore
-        }
-        const errorMsg = `HTTP ${res.status} (${res.statusText}): ${errBody.slice(0, 160)}`;
-        console.error(`[FareHarbor API] Access failure for ${companyShortname} item ${itemPk} chunk ${chunk.start}..${chunk.end}: ${errorMsg}`);
-        return {
-          companyShortname,
-          itemPk,
-          startDate,
-          endDate,
-          success: false,
-          httpStatus: res.status,
-          error: errorMsg,
-          availabilities: allAvailabilities,
-        };
-      }
-
-      const data: FareHarborDateRangeResponse = await res.json();
-      if (Array.isArray(data.availabilities)) {
-        allAvailabilities.push(...data.availabilities);
-      }
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : String(err);
-      console.error(`[FareHarbor API] Fetch network error for ${companyShortname} item ${itemPk} chunk ${chunk.start}..${chunk.end}:`, errorMsg);
-      return {
-        companyShortname,
-        itemPk,
-        startDate,
-        endDate,
-        success: false,
-        error: errorMsg,
-        availabilities: allAvailabilities,
-      };
-    }
-  }
-
   return {
     companyShortname,
     itemPk,
@@ -214,18 +142,14 @@ export async function fetchFareHarborDateRangeDetailed({
     endDate,
     success: true,
     httpStatus: 200,
-    availabilities: allAvailabilities,
+    availabilities: [],
   };
 }
 
-/**
- * Fetches minimal availabilities for an item across a date range.
- * Returns empty array on either zero availability or error (see fetchFareHarborDateRangeDetailed for diagnostics).
- */
-export async function fetchFareHarborDateRange(
+export async function fetchOperatorDateRange(
   options: FetchAvailabilitiesOptions
-): Promise<FareHarborMinimalAvailability[]> {
-  const result = await fetchFareHarborDateRangeDetailed(options);
+): Promise<OperatorMinimalAvailability[]> {
+  const result = await fetchOperatorDateRangeDetailed(options);
   return result.availabilities;
 }
 
@@ -233,33 +157,56 @@ export async function fetchFareHarborDateRange(
  * Filters out sold-out slots (capacity <= 0) and sorts by start time.
  */
 export function filterOpenAvailabilities(
-  availabilities: FareHarborMinimalAvailability[],
+  availabilities: OperatorMinimalAvailability[],
   minSeats = 1
-): FareHarborMinimalAvailability[] {
+): OperatorMinimalAvailability[] {
   return availabilities
     .filter((a) => a.capacity >= minSeats)
     .sort((a, b) => a.start_at.localeCompare(b.start_at));
 }
 
 /**
- * Helper to generate a direct booking or checkout embed URL
+ * Helper to generate a Viator partner booking URL for a matched Juneau or Skagway helicopter tour.
  */
-export function buildFareHarborDirectBookingUrl(
+export function buildViatorPartnerBookingUrl(
   companyShortname: string,
   itemPk: number | string,
-  availabilityPk?: number | string
+  startDate?: string
 ): string {
-  const base = `https://fareharbor.com/embeds/book/${companyShortname}/items/${itemPk}/`;
-  const params = new URLSearchParams({
-    ref: "juneauflightdeck",
-    asn: "welcometoalaskatours",
-    full_items: "yes",
-    flow: "waitlist_match",
-  });
-  if (availabilityPk) {
-    params.set("availability", String(availabilityPk));
+  const pkNum = Number(itemPk);
+  let url: URL;
+  if (companyShortname === "coastalhelicopters" && pkNum === 413056) {
+    url = new URL(
+      "https://www.viator.com/tours/Juneau/Juneau-Shore-Excursion-Helicopter-Tour-and-Guided-Icefield-Walk/d941-6251SHOREXICEWALK"
+    );
+    url.searchParams.set("pid", "P00058396");
+    url.searchParams.set("mcid", "42383");
+    url.searchParams.set("medium", "api");
+    url.searchParams.set("campaign", "jfd-waitlist-coastal-icefield");
+  } else {
+    const searchQuery =
+      companyShortname === "coastalhelicopters"
+        ? "Juneau Coastal Helicopters dog sledding"
+        : companyShortname === "northstartrekking"
+        ? pkNum === 115991
+          ? "Juneau NorthStar dog sledding"
+          : "Juneau NorthStar Glacier Trek"
+        : companyShortname === "temscoair-skagway"
+        ? "Skagway TEMSCO helicopter glacier"
+        : pkNum === 214810
+        ? "Juneau TEMSCO dog sledding"
+        : "Juneau TEMSCO Mendenhall Glacier helicopter";
+    url = new URL("https://www.viator.com/searchResults/all");
+    url.searchParams.set("text", searchQuery);
+    url.searchParams.set("pid", "P00058396");
+    url.searchParams.set("mcid", "42383");
+    url.searchParams.set("medium", "api");
+    url.searchParams.set("campaign", `jfd-waitlist-${companyShortname}`);
   }
-  return `${base}?${params.toString()}`;
+  if (startDate && /^\d{4}-\d{2}-\d{2}$/.test(startDate)) {
+    url.searchParams.set("startDate", startDate);
+  }
+  return url.toString();
 }
 
 /**
@@ -269,8 +216,8 @@ function simulateAvailabilities(
   itemPk: number | string,
   startDate: string,
   endDate: string
-): FareHarborMinimalAvailability[] {
-  const results: FareHarborMinimalAvailability[] = [];
+): OperatorMinimalAvailability[] {
+  const results: OperatorMinimalAvailability[] = [];
   const start = new Date(startDate);
   const end = new Date(endDate);
 

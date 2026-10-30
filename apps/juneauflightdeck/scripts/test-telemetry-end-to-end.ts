@@ -30,30 +30,30 @@ recordTelemetryEvent({
   sessionId: "test_session_user_1",
   sourcePage: "/temsco-vs-coastal-vs-northstar-juneau",
   landingPath: "/temsco-vs-coastal-vs-northstar-juneau",
-  targetPath: "https://fareharbor.com/embeds/book/temscoair-juneau/items/214803/?ref=juneauflightdeck&asn=welcometoalaskatours&full_items=yes",
+  targetPath: "https://www.viator.com/searchResults/all?text=Juneau+TEMSCO+Mendenhall+Glacier+Walk&pid=P00058396&mcid=42383&medium=api",
   outcome: {
-    provider: "fareharbor",
+    provider: "viator",
     tourSlug: "temsco-mendenhall-glacier-walk",
     tourName: "TEMSCO Mendenhall Glacier Walk",
-    targetUrl: "https://fareharbor.com/embeds/book/temscoair-juneau/items/214803/?ref=juneauflightdeck&asn=welcometoalaskatours&full_items=yes",
-    anchorText: "🏢 Book TEMSCO Direct (FareHarbor) ↗",
+    targetUrl: "https://www.viator.com/searchResults/all?text=Juneau+TEMSCO+Mendenhall+Glacier+Walk&pid=P00058396&mcid=42383&medium=api",
+    anchorText: "🛡️ Check TEMSCO Walk on Viator ↗",
   },
 });
 
-// Click B: Coastal Herbert Glacier Landing from Comparison Page
+// Click B: Coastal Icefield Walk (6251SHOREXICEWALK) from Comparison Page
 recordTelemetryEvent({
   site: "juneau-flight-deck",
   eventName: "booking_clicked",
   sessionId: "test_session_user_1",
   sourcePage: "/temsco-vs-coastal-vs-northstar-juneau",
   landingPath: "/temsco-vs-coastal-vs-northstar-juneau",
-  targetPath: "https://fareharbor.com/embeds/book/coastalhelicopters/items/413056/?ref=juneauflightdeck&asn=welcometoalaskatours&full_items=yes",
+  targetPath: "https://www.viator.com/tours/Juneau/Juneau-Shore-Excursion-Helicopter-Tour-and-Guided-Icefield-Walk/d941-6251SHOREXICEWALK?pid=P00058396&mcid=42383&medium=api",
   outcome: {
-    provider: "fareharbor",
-    tourSlug: "coastal-herbert-glacier-landing",
-    tourName: "Coastal Herbert Glacier Landing",
-    targetUrl: "https://fareharbor.com/embeds/book/coastalhelicopters/items/413056/?ref=juneauflightdeck&asn=welcometoalaskatours&full_items=yes",
-    anchorText: "🏢 Book Coastal Direct (FareHarbor) ↗",
+    provider: "viator",
+    tourSlug: "coastal-icefield-walk",
+    tourName: "Juneau Shore Excursion Helicopter Tour and Guided Icefield Walk",
+    targetUrl: "https://www.viator.com/tours/Juneau/Juneau-Shore-Excursion-Helicopter-Tour-and-Guided-Icefield-Walk/d941-6251SHOREXICEWALK?pid=P00058396&mcid=42383&medium=api",
+    anchorText: "🛡️ Book Coastal Icefield Walk on Viator (6251SHOREXICEWALK) ↗",
   },
 });
 
@@ -64,13 +64,13 @@ recordTelemetryEvent({
   sessionId: "test_session_user_2",
   sourcePage: "/temsco-vs-coastal-vs-northstar-juneau",
   landingPath: "/temsco-vs-coastal-vs-northstar-juneau",
-  targetPath: "https://fareharbor.com/embeds/book/northstartrekking/items/116029/?ref=juneauflightdeck&asn=welcometoalaskatours&full_items=yes",
+  targetPath: "https://www.viator.com/searchResults/all?text=Juneau+NorthStar+Glacier+Walkabout&pid=P00058396&mcid=42383&medium=api",
   outcome: {
-    provider: "fareharbor",
+    provider: "viator",
     tourSlug: "northstar-glacier-walkabout",
     tourName: "NorthStar Glacier Walkabout",
-    targetUrl: "https://fareharbor.com/embeds/book/northstartrekking/items/116029/?ref=juneauflightdeck&asn=welcometoalaskatours&full_items=yes",
-    anchorText: "🏢 Book NorthStar Walkabout (FareHarbor) ↗",
+    targetUrl: "https://www.viator.com/searchResults/all?text=Juneau+NorthStar+Glacier+Walkabout&pid=P00058396&mcid=42383&medium=api",
+    anchorText: "🛡️ Check NorthStar Walkabout on Viator ↗",
   },
 });
 
@@ -171,8 +171,8 @@ if (summary.pageViews.total !== 2) {
 if (!summary.bookingClicks.byTour["temsco-mendenhall-glacier-walk"]) {
   throw new Error("Missing temsco-mendenhall-glacier-walk in booking clicks by tour");
 }
-if (!summary.bookingClicks.byProvider["fareharbor"] || !summary.bookingClicks.byProvider["viator"]) {
-  throw new Error("Missing provider breakdown");
+if (!summary.bookingClicks.byProvider["viator"]) {
+  throw new Error("Missing viator provider breakdown");
 }
 
 console.log("\n✅ All Telemetry Pipeline Assertions Passed Successfully!");

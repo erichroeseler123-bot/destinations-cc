@@ -31,7 +31,6 @@ const MANIFEST = {
   ],
   bookingAuthority: [
     "viator_affiliate",
-    "fareharbor",
     "getyourguide_affiliate",
     "direct_provider",
   ],
@@ -46,7 +45,6 @@ const MANIFEST = {
   ],
   commercialChannels: [
     "viator_affiliate",
-    "fareharbor_affiliate",
     "getyourguide_click_attribution",
     "direct_operator_referral",
   ],

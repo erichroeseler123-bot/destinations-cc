@@ -155,7 +155,7 @@ export default function JuneauDogSleddingPage() {
 
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10 }}>
             <a
-              href="https://www.viator.com/searchResults/all?text=Juneau+glacier+dog+sledding&pid=P00058396&mcid=42383&medium=api"
+              href="https://www.viator.com/searchResults/all?text=Juneau+glacier+dog+sledding&pid=P00058396&mcid=42383&medium=api&campaign=jfd-dogsled-hero"
               target="_blank"
               rel="noopener noreferrer"
               className="button button-primary"
@@ -165,31 +165,31 @@ export default function JuneauDogSleddingPage() {
             </a>
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "flex-end" }}>
               <a
-                href="https://fareharbor.com/embeds/book/temscoair-juneau/items/214810/?ref=juneauflightdeck&asn=welcometoalaskatours&full_items=yes"
+                href="https://www.viator.com/searchResults/all?text=Juneau+TEMSCO+dog+sledding&pid=P00058396&mcid=42383&medium=api&campaign=jfd-dogsled-temsco"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="button button-card"
                 style={{ fontSize: "0.78rem", padding: "6px 10px", whiteSpace: "nowrap" }}
               >
-                TEMSCO ($659) ↗
+                TEMSCO on Viator ↗
               </a>
               <a
-                href="https://coastalhelicopters.com/tours/dog-sled-tours/"
+                href="https://www.viator.com/searchResults/all?text=Juneau+Coastal+dog+sledding&pid=P00058396&mcid=42383&medium=api&campaign=jfd-dogsled-coastal"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="button button-card"
                 style={{ fontSize: "0.78rem", padding: "6px 10px", whiteSpace: "nowrap" }}
               >
-                Coastal ($709) ↗
+                Coastal on Viator ↗
               </a>
               <a
-                href="https://fareharbor.com/embeds/book/northstartrekking/items/115991/?ref=juneauflightdeck&asn=welcometoalaskatours&full_items=yes"
+                href="https://www.viator.com/searchResults/all?text=Juneau+NorthStar+dog+sledding&pid=P00058396&mcid=42383&medium=api&campaign=jfd-dogsled-northstar"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="button button-card"
                 style={{ fontSize: "0.78rem", padding: "6px 10px", whiteSpace: "nowrap" }}
               >
-                NorthStar ($739) ↗
+                NorthStar on Viator ↗
               </a>
             </div>
             <a

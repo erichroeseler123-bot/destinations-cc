@@ -257,106 +257,133 @@ export async function POST(request: Request) {
 
   // Note: callerClientId is strictly derived from validated credentials (or anonymous browser tier),
   // NEVER trusted from body.client_id or body.clientId.
-  const record = await createCommercialHandoff({
-    originatingSite: String(
-      body.originatingSite ?? body.site ?? "destinationcommandcenter.com",
-    ),
-    targetSite: typeof body.targetSite === "string" ? body.targetSite : null,
-    provider: providerRaw,
-    providerAccount:
-      typeof body.providerAccount === "string" ? body.providerAccount : null,
-    fareharborShortname:
-      typeof body.fareharborShortname === "string" ? body.fareharborShortname : null,
-    fareharborItemId:
-      typeof body.fareharborItemId === "string" ? body.fareharborItemId : null,
-    productCode,
-    productTitle: typeof body.productTitle === "string" ? body.productTitle : null,
-    productDestinationUrl,
-    campaign: typeof body.campaign === "string" ? body.campaign : null,
-    contextId: typeof body.contextId === "string" ? body.contextId : null,
-    evaluationRunId:
-      typeof body.evaluationRunId === "string" ? body.evaluationRunId : null,
-    receiptId,
-    idempotencyKey:
-      typeof body.idempotencyKey === "string"
-        ? body.idempotencyKey
-        : typeof body.idempotency_key === "string"
-          ? body.idempotency_key
+  const passengerWeightsLbs = Array.isArray(body.passengerWeightsLbs)
+    ? body.passengerWeightsLbs.filter(
+        (w): w is number => typeof w === "number" && Number.isFinite(w) && w > 0,
+      )
+    : Array.isArray(evaluatedInputs?.passengerWeightsLbs)
+      ? (evaluatedInputs.passengerWeightsLbs as unknown[]).filter(
+          (w): w is number => typeof w === "number" && Number.isFinite(w) && w > 0,
+        )
+      : null;
+
+  let record;
+  try {
+    record = await createCommercialHandoff({
+      originatingSite: String(
+        body.originatingSite ?? body.site ?? "destinationcommandcenter.com",
+      ),
+      targetSite: typeof body.targetSite === "string" ? body.targetSite : null,
+      provider: providerRaw,
+      providerAccount:
+        typeof body.providerAccount === "string" ? body.providerAccount : null,
+      viatorProductCode:
+        typeof body.viatorProductCode === "string" ? body.viatorProductCode : null,
+      fareharborShortname:
+        typeof body.fareharborShortname === "string" ? body.fareharborShortname : null,
+      fareharborItemId:
+        typeof body.fareharborItemId === "string" ? body.fareharborItemId : null,
+      productCode,
+      productTitle: typeof body.productTitle === "string" ? body.productTitle : null,
+      productDestinationUrl,
+      campaign: typeof body.campaign === "string" ? body.campaign : null,
+      contextId: typeof body.contextId === "string" ? body.contextId : null,
+      evaluationRunId:
+        typeof body.evaluationRunId === "string" ? body.evaluationRunId : null,
+      receiptId,
+      idempotencyKey:
+        typeof body.idempotencyKey === "string"
+          ? body.idempotencyKey
+          : typeof body.idempotency_key === "string"
+            ? body.idempotency_key
+            : null,
+      intendedDate: typeof body.intendedDate === "string" ? body.intendedDate : null,
+      intendedDepartureId:
+        typeof body.intendedDepartureId === "string"
+          ? body.intendedDepartureId
+          : typeof evaluatedInputs?.selectedDepartureId === "string"
+            ? evaluatedInputs.selectedDepartureId
+            : null,
+      intendedDepartureTime:
+        typeof body.intendedDepartureTime === "string"
+          ? body.intendedDepartureTime
+          : typeof evaluatedInputs?.selectedDepartureTime === "string"
+            ? evaluatedInputs.selectedDepartureTime
+            : null,
+      intendedOption:
+        typeof body.intendedOption === "string" ? body.intendedOption : null,
+      partySize: typeof body.partySize === "number" ? body.partySize : null,
+      partyDetails:
+        body.partyDetails && typeof body.partyDetails === "object"
+          ? (body.partyDetails as CommercialPartyDetails)
           : null,
-    intendedDate: typeof body.intendedDate === "string" ? body.intendedDate : null,
-    intendedDepartureId:
-      typeof body.intendedDepartureId === "string"
-        ? body.intendedDepartureId
-        : typeof evaluatedInputs?.selectedDepartureId === "string"
-          ? evaluatedInputs.selectedDepartureId
+      passengerWeightsLbs,
+      maxSinglePassengerWeightLbs:
+        typeof body.maxSinglePassengerWeightLbs === "number"
+          ? body.maxSinglePassengerWeightLbs
+          : typeof evaluatedInputs?.maxSinglePassengerWeightLbs === "number"
+            ? evaluatedInputs.maxSinglePassengerWeightLbs
+            : null,
+      youngestPassengerAgeYears:
+        typeof body.youngestPassengerAgeYears === "number"
+          ? body.youngestPassengerAgeYears
+          : typeof evaluatedInputs?.youngestPassengerAgeYears === "number"
+            ? evaluatedInputs.youngestPassengerAgeYears
+            : null,
+      shipArrivalTime:
+        typeof body.shipArrivalTime === "string"
+          ? body.shipArrivalTime
+          : typeof evaluatedInputs?.shipArrivalTime === "string"
+            ? evaluatedInputs.shipArrivalTime
+            : null,
+      shipDepartureTime:
+        typeof body.shipDepartureTime === "string"
+          ? body.shipDepartureTime
+          : typeof evaluatedInputs?.shipDepartureTime === "string"
+            ? evaluatedInputs.shipDepartureTime
+            : null,
+      quotedPriceAmount:
+        typeof body.quotedPriceAmount === "number" ? body.quotedPriceAmount : null,
+      quotedPriceCurrency:
+        typeof body.quotedPriceCurrency === "string" ? body.quotedPriceCurrency : null,
+      approvedPartnerAttribution:
+        body.approvedPartnerAttribution &&
+        typeof body.approvedPartnerAttribution === "object" &&
+        typeof (body.approvedPartnerAttribution as Record<string, unknown>).partnerId ===
+          "string"
+          ? {
+              partnerId: String(
+                (body.approvedPartnerAttribution as Record<string, unknown>).partnerId,
+              ),
+              partnerName:
+                typeof (body.approvedPartnerAttribution as Record<string, unknown>)
+                  .partnerName === "string"
+                  ? String(
+                      (body.approvedPartnerAttribution as Record<string, unknown>)
+                        .partnerName,
+                    )
+                  : null,
+            }
           : null,
-    intendedDepartureTime:
-      typeof body.intendedDepartureTime === "string"
-        ? body.intendedDepartureTime
-        : typeof evaluatedInputs?.selectedDepartureTime === "string"
-          ? evaluatedInputs.selectedDepartureTime
+      callerClientId,
+      traceparent,
+      metadata:
+        body.metadata && typeof body.metadata === "object"
+          ? (body.metadata as Record<string, unknown>)
           : null,
-    intendedOption:
-      typeof body.intendedOption === "string" ? body.intendedOption : null,
-    partySize: typeof body.partySize === "number" ? body.partySize : null,
-    partyDetails:
-      body.partyDetails && typeof body.partyDetails === "object"
-        ? (body.partyDetails as CommercialPartyDetails)
-        : null,
-    maxSinglePassengerWeightLbs:
-      typeof body.maxSinglePassengerWeightLbs === "number"
-        ? body.maxSinglePassengerWeightLbs
-        : typeof evaluatedInputs?.maxSinglePassengerWeightLbs === "number"
-          ? evaluatedInputs.maxSinglePassengerWeightLbs
-          : null,
-    youngestPassengerAgeYears:
-      typeof body.youngestPassengerAgeYears === "number"
-        ? body.youngestPassengerAgeYears
-        : typeof evaluatedInputs?.youngestPassengerAgeYears === "number"
-          ? evaluatedInputs.youngestPassengerAgeYears
-          : null,
-    shipArrivalTime:
-      typeof body.shipArrivalTime === "string"
-        ? body.shipArrivalTime
-        : typeof evaluatedInputs?.shipArrivalTime === "string"
-          ? evaluatedInputs.shipArrivalTime
-          : null,
-    shipDepartureTime:
-      typeof body.shipDepartureTime === "string"
-        ? body.shipDepartureTime
-        : typeof evaluatedInputs?.shipDepartureTime === "string"
-          ? evaluatedInputs.shipDepartureTime
-          : null,
-    quotedPriceAmount:
-      typeof body.quotedPriceAmount === "number" ? body.quotedPriceAmount : null,
-    quotedPriceCurrency:
-      typeof body.quotedPriceCurrency === "string" ? body.quotedPriceCurrency : null,
-    approvedPartnerAttribution:
-      body.approvedPartnerAttribution &&
-      typeof body.approvedPartnerAttribution === "object" &&
-      typeof (body.approvedPartnerAttribution as Record<string, unknown>).partnerId ===
-        "string"
-        ? {
-            partnerId: String(
-              (body.approvedPartnerAttribution as Record<string, unknown>).partnerId,
-            ),
-            partnerName:
-              typeof (body.approvedPartnerAttribution as Record<string, unknown>)
-                .partnerName === "string"
-                ? String(
-                    (body.approvedPartnerAttribution as Record<string, unknown>)
-                      .partnerName,
-                  )
-                : null,
-          }
-        : null,
-    callerClientId,
-    traceparent,
-    metadata:
-      body.metadata && typeof body.metadata === "object"
-        ? (body.metadata as Record<string, unknown>)
-        : null,
-  });
+    });
+  } catch (err) {
+    return buildMachineJsonResponse(
+      {
+        ok: false,
+        error: {
+          code: "INVALID_HANDOFF_DESTINATION_URL",
+          message: err instanceof Error ? err.message : "Invalid handoff destination URL.",
+        },
+      },
+      { status: 400, cacheControl: "no-store", extraHeaders: { traceparent } },
+    );
+  }
 
   return buildMachineJsonResponse(
     {

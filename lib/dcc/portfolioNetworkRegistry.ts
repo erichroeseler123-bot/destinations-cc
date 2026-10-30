@@ -904,7 +904,6 @@ export const DCC_PORTFOLIO_NETWORK_SITES: readonly DccSiteManifestV1[] = [
       primary: "viator_affiliate",
       supported_authorities: [
         "viator_affiliate",
-        "fareharbor",
         "direct_provider",
       ],
       takes_direct_payment: false,
@@ -912,7 +911,7 @@ export const DCC_PORTFOLIO_NETWORK_SITES: readonly DccSiteManifestV1[] = [
       decision_authorization_mode: "shadow_only_no_side_effects",
       universal_multi_provider_checkout: false,
       finality_statement:
-        "Juneau Flight Deck qualifies Juneau aviation windows and refers travelers to Part 135 operators or Viator/FareHarbor checkout where weight rules, weather dispatch, and payment are finalized.",
+        "DCC evaluates tour suitability; Juneau Flight Deck explains Juneau aviation options; Viator handles booking and applicable Section 20 Worry-free Shore Excursion protections.",
     },
     natural_relationships: {
       inbound: [
@@ -954,21 +953,14 @@ export const DCC_PORTFOLIO_NETWORK_SITES: readonly DccSiteManifestV1[] = [
         provider: "viator",
         attribution_parameter: "pid,mcid,campaign",
         outcome_reporting: "modified_since_poller",
-        notes: "Viator affiliate account P00058396 with campaign__handoffId tracking.",
-      },
-      {
-        channel_id: "jfd-fareharbor-affiliate",
-        provider: "fareharbor",
-        attribution_parameter: "asn,ref",
-        outcome_reporting: "click_level_only",
-        notes: "FareHarbor ASN referral via asn and ref parameters.",
+        notes: "Viator affiliate account P00058396 (mcid=42383, medium=api) with campaign__handoffId tracking and Section 20 Worry-free Shore Excursion eligibility on qualifying products (6251SHOREXICEWALK).",
       },
       {
         channel_id: "jfd-direct-operator",
         provider: "direct_provider",
         attribution_parameter: "dcc_handoff_id,utm_campaign",
         outcome_reporting: "click_level_only",
-        notes: "Direct Part 135 operator referral (e.g. TEMSCO, Coastal Helicopters).",
+        notes: "Direct Part 135 operator policy reference (Coastal Helicopters, TEMSCO Helicopters, NorthStar Trekking).",
       },
     ],
     context_support: {

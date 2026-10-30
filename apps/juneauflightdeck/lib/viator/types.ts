@@ -1,6 +1,12 @@
 export interface ViatorJuneauProduct {
   id: string;
   productCode: string;
+  viatorProductCode?: string | null;
+  isExactViatorProduct?: boolean;
+  worryFreeShoreExcursion?: boolean;
+  worryFreeTagId?: number | null;
+  worryFreeTermsUrl?: string | null;
+  worryFreeSummary?: string | null;
   title: string;
   description: string | null;
   durationMinutes: number | null;

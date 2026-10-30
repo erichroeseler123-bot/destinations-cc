@@ -4,9 +4,9 @@ Standalone Juneau helicopter-tour satellite for `juneauflightdeck.com`.
 
 ## Goals
 
-- show date-first Juneau helicopter availability from DCC
+- show date-first Juneau helicopter suitability and options from DCC
 - keep the flow focused on one cruise day only
-- route visitors into direct provider bookings through FareHarbor
+- route visitors into Viator partner bookings (`pid=P00058396`) with accurate Viator Terms of Use Section 20 Worry-free Shore Excursion positioning
 
 ## Required env
 
@@ -16,8 +16,8 @@ Standalone Juneau helicopter-tour satellite for `juneauflightdeck.com`.
 
 1. Link this directory to the target Vercel project.
 2. Add the production domain `juneauflightdeck.com`.
-3. Verify the DCC Juneau live-slot endpoint is returning real helicopter inventory.
-4. Replace any placeholder FareHarbor assumptions with real provider routing if needed.
+3. Verify the DCC Juneau evaluation and handoff endpoints are returning verified helicopter suitability and Viator handoff URLs.
+4. Confirm Viator partner attribution (`pid=P00058396`, `mcid=42383`, `medium=api`) is preserved across product and search referrals.
 
 ## Deployment verification
 

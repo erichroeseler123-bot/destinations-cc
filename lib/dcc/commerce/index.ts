@@ -69,7 +69,30 @@ export interface CommercialPartyDetails {
   notes?: string | null;
 }
 
+export interface ViatorWorryFreeProtectionSummary {
+  qualifies: boolean;
+  qualifiesForViatorWorryFreeGuarantee: boolean;
+  tagId: number | null;
+  viatorTagId: number | null;
+  termsUrl: string;
+  termsSection: string;
+  requiredPostTourBufferMinutes: number;
+  minPostTourBufferBeforeShipDepartureMinutes: number;
+  nextPortTransportLimitPerPersonUsd: number;
+  missedPortRefundWindowDays: number;
+  dccRoleDistinction: string;
+}
+
 export interface CommercialCheckoutBookingBinding {
+  bookingProvider: CommercialProvider;
+  viatorProductCode: string | null;
+  viatorBookingUrl: string | null;
+  viatorAffiliatePid: string | null;
+  viatorAffiliateMcid: string | null;
+  viatorWorryFreeShoreExcursion: ViatorWorryFreeProtectionSummary | null;
+  travelerReselectionRequirements: string[];
+  operatorSourceUrl: string | null;
+  operatorFaqUrl: string | null;
   operatorShortname: string;
   fareharborItemId: string | null;
   fareharborDirectEmbedUrl: string | null;
@@ -79,6 +102,7 @@ export interface CommercialCheckoutBookingBinding {
   intendedDepartureId: string | null;
   intendedDepartureTime: string | null;
   partySize: number | null;
+  passengerWeightsLbs?: number[] | null;
   maxSinglePassengerWeightLbs: number | null;
   youngestPassengerAgeYears: number | null;
   shipArrivalTime: string | null;
@@ -92,6 +116,7 @@ export interface CreateCommercialHandoffInput {
   targetSite?: string | null;
   provider: CommercialProvider;
   providerAccount?: string | null;
+  viatorProductCode?: string | null;
   fareharborShortname?: string | null;
   fareharborItemId?: string | null;
   productCode: string;
@@ -108,6 +133,7 @@ export interface CreateCommercialHandoffInput {
   intendedDepartureTime?: string | null;
   partySize?: number | null;
   partyDetails?: CommercialPartyDetails | null;
+  passengerWeightsLbs?: number[] | null;
   maxSinglePassengerWeightLbs?: number | null;
   youngestPassengerAgeYears?: number | null;
   shipArrivalTime?: string | null;
@@ -129,6 +155,7 @@ export interface CommercialHandoffRecord {
   targetSite: string | null;
   provider: CommercialProvider;
   providerAccount: string;
+  viatorProductCode?: string | null;
   fareharborShortname: string | null;
   fareharborItemId: string | null;
   productCode: string;
@@ -146,6 +173,7 @@ export interface CommercialHandoffRecord {
   intendedDepartureTime: string | null;
   partySize: number | null;
   partyDetails: CommercialPartyDetails | null;
+  passengerWeightsLbs?: number[] | null;
   maxSinglePassengerWeightLbs: number | null;
   youngestPassengerAgeYears: number | null;
   shipArrivalTime: string | null;
@@ -306,13 +334,13 @@ const SITE_DEFAULT_ACCOUNTS: Record<
   "destinationcommandcenter.com": {
     viatorPid: process.env.NEXT_PUBLIC_VIATOR_PID || "P00058396",
     viatorMcid: process.env.NEXT_PUBLIC_VIATOR_MCID || "42383",
-    fareharborAsn: "welcometoalaskatours",
+    fareharborAsn: "",
     gygPartnerId: process.env.NEXT_PUBLIC_GYG_PARTNER_ID || "F2MMUUH",
   },
   "cruisepromenade.com": {
     viatorPid: process.env.NEXT_PUBLIC_VIATOR_PID || "P00058396",
     viatorMcid: process.env.NEXT_PUBLIC_VIATOR_MCID || "42383",
-    fareharborAsn: "welcometoalaskatours",
+    fareharborAsn: "",
     gygPartnerId: process.env.NEXT_PUBLIC_GYG_PARTNER_ID || "F2MMUUH",
   },
   "welcometoneworleanstours.com": {
@@ -330,13 +358,13 @@ const SITE_DEFAULT_ACCOUNTS: Record<
   "lastfrontiershoreexcursions.com": {
     viatorPid: "P00281144",
     viatorMcid: "42383",
-    fareharborAsn: "welcometoalaskatours",
+    fareharborAsn: "",
     gygPartnerId: process.env.NEXT_PUBLIC_GYG_PARTNER_ID || "F2MMUUH",
   },
   "juneauflightdeck.com": {
     viatorPid: process.env.NEXT_PUBLIC_VIATOR_PID || "P00058396",
     viatorMcid: process.env.NEXT_PUBLIC_VIATOR_MCID || "42383",
-    fareharborAsn: "welcometoalaskatours",
+    fareharborAsn: "",
     gygPartnerId: process.env.NEXT_PUBLIC_GYG_PARTNER_ID || "F2MMUUH",
   },
   "vibearoundtown.com": {
@@ -698,15 +726,23 @@ export interface ProviderAffiliateUrlResult {
   attributionParameterValue: string;
 }
 
+export const JUNEAU_VIATOR_RESELECTION_REQUIREMENTS = [
+  "Confirm or reselect the travel date (startDate) in Viator's live availability calendar.",
+  "Select a specific departure time slot inside Viator that fits your cruise ship arrival and all-aboard buffer.",
+  "Select the passenger count and appropriate Coastal Helicopters weight-tier option (DEFAULT: 1–259 lbs standard seat, TG1: 260–299 lbs half-seat surcharge, TG2: 300+ lbs second seat) in Viator.",
+  "Enter each passenger's individual weight, full name, cruise ship name, port arrival/departure times, and pickup point during Viator checkout.",
+] as const;
+
 /**
  * Constructs a provider-supported affiliate URL preserving the originating site's
  * existing account attribution and attaching the opaque `handoff_id` without inventing
- * unsupported direct-to-cart capabilities.
+ * unsupported direct-to-cart capabilities or falling back to Viator's homepage.
  */
 export function buildProviderAffiliateHandoffUrl(params: {
   originatingSite: string;
   provider: CommercialProvider;
   providerAccount?: string | null;
+  viatorProductCode?: string | null;
   fareharborShortname?: string | null;
   fareharborItemId?: string | null;
   productCode: string;
@@ -732,10 +768,31 @@ export function buildProviderAffiliateHandoffUrl(params: {
   try {
     url = new URL(params.productDestinationUrl);
   } catch {
-    url = new URL("https://www.viator.com/");
+    const err = new Error(
+      `Invalid productDestinationUrl '${params.productDestinationUrl}'. Refusing to fall back to Viator homepage.`,
+    ) as Error & { code?: string; statusCode?: number };
+    err.code = "INVALID_PRODUCT_DESTINATION_URL";
+    err.statusCode = 400;
+    throw err;
+  }
+
+  if (
+    params.provider === "viator" &&
+    (url.hostname === "viator.com" || url.hostname === "www.viator.com") &&
+    (url.pathname === "/" || url.pathname.trim() === "")
+  ) {
+    const err = new Error(
+      "VIATOR_PRODUCT_URL_REQUIRED: Refusing to fall back to Viator homepage; an explicit Viator product or search URL is required.",
+    ) as Error & { code?: string; statusCode?: number };
+    err.code = "VIATOR_PRODUCT_URL_REQUIRED";
+    err.statusCode = 400;
+    throw err;
   }
 
   const appendExplicitDepartureQueryParams = (targetUrl: URL) => {
+    if (params.viatorProductCode?.trim()) {
+      targetUrl.searchParams.set("viator_product", params.viatorProductCode.trim());
+    }
     if (params.fareharborItemId?.trim()) {
       targetUrl.searchParams.set("item", params.fareharborItemId.trim());
     }
@@ -773,6 +830,7 @@ export function buildProviderAffiliateHandoffUrl(params: {
       targetUrl.searchParams.set("receipt_id", params.receiptId.trim());
     }
     if (
+      params.viatorProductCode ||
       params.fareharborItemId ||
       params.intendedDate ||
       params.intendedDepartureId ||
@@ -795,7 +853,17 @@ export function buildProviderAffiliateHandoffUrl(params: {
     url.searchParams.set("mcid", mcid);
     url.searchParams.set("medium", url.searchParams.get("medium") || "api");
     url.searchParams.set("campaign", campaignValue);
-    appendExplicitDepartureQueryParams(url);
+    if (params.intendedDate?.trim()) {
+      url.searchParams.set("startDate", params.intendedDate.trim());
+    }
+    if (typeof params.partySize === "number" && Number.isFinite(params.partySize)) {
+      url.searchParams.set("numTravelers", String(Math.round(params.partySize)));
+    }
+    const isDirectViatorHost =
+      url.hostname === "viator.com" || url.hostname === "www.viator.com";
+    if (!isDirectViatorHost) {
+      appendExplicitDepartureQueryParams(url);
+    }
 
     return {
       outboundAffiliateUrl: url.toString(),
@@ -812,7 +880,9 @@ export function buildProviderAffiliateHandoffUrl(params: {
       siteDefaults.fareharborAsn;
     const refValue = `${baseCampaign}__${params.handoffId}`;
 
-    url.searchParams.set("asn", asn);
+    if (asn) {
+      url.searchParams.set("asn", asn);
+    }
     url.searchParams.set("ref", refValue);
     if (!url.searchParams.has("full-items")) {
       url.searchParams.set("full-items", "yes");
@@ -902,6 +972,21 @@ export interface VersionedCandidatePolicyAttributes {
   legacyCandidateCode: string;
   displayName: string;
   operatorDisplayName: string;
+  bookingProvider: string;
+  viatorProductCode: string | null;
+  viatorProductUrl: string | null;
+  viatorSearchUrl: string | null;
+  viatorAffiliatePid: string | null;
+  viatorAffiliateMcid: string | null;
+  viatorWorryFreeShoreExcursion: boolean;
+  viatorWorryFreeTagId: number | null;
+  viatorTermsUrl: string | null;
+  viatorTermsSection: string | null;
+  viatorMinPostTourBufferBeforeShipDepartureMinutes: number | null;
+  viatorNextPortTransportLimitPerPersonUsd: number | null;
+  viatorWorryFreeProtection: ViatorWorryFreeProtectionSummary;
+  operatorSourceUrl: string | null;
+  operatorFaqUrl: string | null;
   fareharborShortname: string | null;
   fareharborItemId: string | null;
   basePriceUsd: number;
@@ -951,7 +1036,12 @@ export async function resolveVersionedCandidatePolicy(
   if (!universe) return null;
 
   const candidate = universe.includedCandidates.find(
-    (c) => c.legacyCandidateCode === code || c.candidateDccEntityId === code,
+    (c) =>
+      c.legacyCandidateCode === code ||
+      c.candidateDccEntityId === code ||
+      (typeof c.staticAttributes?.viatorProductCode === "string" &&
+        c.staticAttributes.viatorProductCode !== "NONE_VIATOR_SEARCH_FALLBACK" &&
+        c.staticAttributes.viatorProductCode === code),
   );
   if (!candidate) return null;
 
@@ -988,6 +1078,32 @@ export async function resolveVersionedCandidatePolicy(
     .map((m) => Number(m.trim()))
     .filter((n) => Number.isFinite(n) && n >= 1 && n <= 12);
 
+  const rawViatorCode =
+    typeof attrs.viatorProductCode === "string" &&
+    attrs.viatorProductCode !== "NONE_VIATOR_SEARCH_FALLBACK"
+      ? attrs.viatorProductCode
+      : null;
+
+  const qualifiesWorryFree = attrs.viatorWorryFreeShoreExcursion === true;
+  const worryFreeTagId =
+    typeof attrs.viatorWorryFreeTagId === "number" ? attrs.viatorWorryFreeTagId : null;
+  const worryFreeTermsUrl =
+    typeof attrs.viatorTermsUrl === "string"
+      ? attrs.viatorTermsUrl
+      : "https://www.viator.com/support/termsAndConditions";
+  const worryFreeTermsSection =
+    typeof attrs.viatorTermsSection === "string"
+      ? attrs.viatorTermsSection
+      : "Section 20 (Worry-free Shore Excursions)";
+  const worryFreeBufferMins =
+    typeof attrs.viatorMinPostTourBufferBeforeShipDepartureMinutes === "number"
+      ? attrs.viatorMinPostTourBufferBeforeShipDepartureMinutes
+      : 120;
+  const worryFreeLimitUsd =
+    typeof attrs.viatorNextPortTransportLimitPerPersonUsd === "number"
+      ? attrs.viatorNextPortTransportLimitPerPersonUsd
+      : 1000;
+
   return {
     universeId: universe.universeId,
     universeVersion: universe.version,
@@ -996,6 +1112,41 @@ export async function resolveVersionedCandidatePolicy(
     legacyCandidateCode: candidate.legacyCandidateCode,
     displayName: candidate.displayName,
     operatorDisplayName: candidate.operatorDisplayName,
+    bookingProvider:
+      typeof attrs.bookingProvider === "string" ? attrs.bookingProvider : "viator",
+    viatorProductCode: rawViatorCode,
+    viatorProductUrl:
+      typeof attrs.viatorProductUrl === "string" ? attrs.viatorProductUrl : null,
+    viatorSearchUrl:
+      typeof attrs.viatorSearchUrl === "string" ? attrs.viatorSearchUrl : null,
+    viatorAffiliatePid:
+      typeof attrs.viatorAffiliatePid === "string" ? attrs.viatorAffiliatePid : "P00058396",
+    viatorAffiliateMcid:
+      typeof attrs.viatorAffiliateMcid === "string" ? attrs.viatorAffiliateMcid : "42383",
+    viatorWorryFreeShoreExcursion: qualifiesWorryFree,
+    viatorWorryFreeTagId: worryFreeTagId,
+    viatorTermsUrl: worryFreeTermsUrl,
+    viatorTermsSection: worryFreeTermsSection,
+    viatorMinPostTourBufferBeforeShipDepartureMinutes: worryFreeBufferMins,
+    viatorNextPortTransportLimitPerPersonUsd: worryFreeLimitUsd,
+    viatorWorryFreeProtection: {
+      qualifies: qualifiesWorryFree,
+      qualifiesForViatorWorryFreeGuarantee: qualifiesWorryFree,
+      tagId: worryFreeTagId,
+      viatorTagId: worryFreeTagId,
+      termsUrl: worryFreeTermsUrl,
+      termsSection: worryFreeTermsSection,
+      requiredPostTourBufferMinutes: worryFreeBufferMins,
+      minPostTourBufferBeforeShipDepartureMinutes: worryFreeBufferMins,
+      nextPortTransportLimitPerPersonUsd: worryFreeLimitUsd,
+      missedPortRefundWindowDays: 14,
+      dccRoleDistinction:
+        "DCC evaluates tour suitability and calculates cruise-port schedule buffers; Juneau Flight Deck explains the options; Viator handles the booking and provides the Worry-free Shore Excursion back-to-ship guarantee under Section 20 of Viator's Terms of Use. DCC itself does not provide a back-to-ship guarantee.",
+    },
+    operatorSourceUrl:
+      typeof attrs.operatorSourceUrl === "string" ? attrs.operatorSourceUrl : null,
+    operatorFaqUrl:
+      typeof attrs.operatorFaqUrl === "string" ? attrs.operatorFaqUrl : null,
     fareharborShortname:
       typeof attrs.fareharborShortname === "string" ? attrs.fareharborShortname : null,
     fareharborItemId:
@@ -1107,6 +1258,10 @@ export async function createCommercialHandoff(
     input.productCode.trim(),
     input.receiptId ?? null,
   );
+  const viatorProductCode =
+    input.viatorProductCode?.trim() ||
+    versionedCandidate?.viatorProductCode ||
+    null;
   const fareharborShortname =
     input.fareharborShortname?.trim() ||
     versionedCandidate?.fareharborShortname ||
@@ -1128,6 +1283,7 @@ export async function createCommercialHandoff(
     originatingSite,
     provider: input.provider,
     providerAccount: input.providerAccount,
+    viatorProductCode,
     fareharborShortname,
     fareharborItemId,
     productCode: input.productCode,
@@ -1158,12 +1314,23 @@ export async function createCommercialHandoff(
 
   const quotedPricePerPerson =
     typeof input.quotedPriceAmount === "number"
-      ? input.quotedPriceAmount
+      ? versionedCandidate?.basePriceUsd !== undefined &&
+        partySize !== null &&
+        partySize > 1 &&
+        input.quotedPriceAmount >= versionedCandidate.basePriceUsd * partySize * 0.9
+        ? Number((input.quotedPriceAmount / partySize).toFixed(2))
+        : input.quotedPriceAmount
       : versionedCandidate?.basePriceUsd ?? null;
   const quotedTotalPrice =
-    quotedPricePerPerson !== null && partySize !== null
-      ? Number((quotedPricePerPerson * partySize).toFixed(2))
-      : quotedPricePerPerson;
+    typeof input.quotedPriceAmount === "number" &&
+    versionedCandidate?.basePriceUsd !== undefined &&
+    partySize !== null &&
+    partySize > 1 &&
+    input.quotedPriceAmount >= versionedCandidate.basePriceUsd * partySize * 0.9
+      ? input.quotedPriceAmount
+      : quotedPricePerPerson !== null && partySize !== null
+        ? Number((quotedPricePerPerson * partySize).toFixed(2))
+        : quotedPricePerPerson;
 
   const yearMonthPath =
     input.intendedDate && /^\d{4}-\d{2}/.test(input.intendedDate)
@@ -1172,13 +1339,75 @@ export async function createCommercialHandoff(
 
   const fareharborDirectEmbedUrl =
     fareharborShortname && fareharborItemId
-      ? `https://fareharbor.com/embeds/book/${encodeURIComponent(fareharborShortname)}/items/${encodeURIComponent(fareharborItemId)}/${yearMonthPath}?asn=${encodeURIComponent(urlBuilt.providerAccount)}&ref=${encodeURIComponent(urlBuilt.attributionParameterValue)}&full-items=yes`
+      ? `https://fareharbor.com/embeds/book/${encodeURIComponent(fareharborShortname)}/items/${encodeURIComponent(fareharborItemId)}/${yearMonthPath}?${urlBuilt.providerAccount ? `asn=${encodeURIComponent(urlBuilt.providerAccount)}&` : ""}ref=${encodeURIComponent(urlBuilt.attributionParameterValue)}&full-items=yes`
       : null;
 
+  const baseViatorTargetUrl =
+    versionedCandidate?.viatorProductUrl ||
+    versionedCandidate?.viatorSearchUrl ||
+    (input.productDestinationUrl.includes("viator.com")
+      ? input.productDestinationUrl
+      : null);
+
+  let viatorBookingUrl: string | null = null;
+  if (baseViatorTargetUrl) {
+    try {
+      const vUrl = new URL(baseViatorTargetUrl);
+      const pid =
+        input.provider === "viator"
+          ? urlBuilt.providerAccount
+          : versionedCandidate?.viatorAffiliatePid || "P00058396";
+      const mcid = versionedCandidate?.viatorAffiliateMcid || "42383";
+      vUrl.searchParams.set("pid", pid);
+      vUrl.searchParams.set("mcid", mcid);
+      vUrl.searchParams.set("medium", "api");
+      vUrl.searchParams.set("campaign", urlBuilt.attributionParameterValue);
+      if (input.intendedDate?.trim()) {
+        vUrl.searchParams.set("startDate", input.intendedDate.trim());
+      }
+      if (partySize !== null && partySize > 0) {
+        vUrl.searchParams.set("numTravelers", String(partySize));
+      }
+      viatorBookingUrl = vUrl.toString();
+    } catch {
+      viatorBookingUrl = null;
+    }
+  }
+
+  const viatorWorryFreeShoreExcursion: ViatorWorryFreeProtectionSummary | null =
+    versionedCandidate &&
+    (input.provider === "viator" || versionedCandidate.bookingProvider === "viator")
+      ? versionedCandidate.viatorWorryFreeProtection
+      : null;
+
+  const passengerWeightsLbs = Array.isArray(input.passengerWeightsLbs)
+    ? input.passengerWeightsLbs.filter((w) => typeof w === "number" && Number.isFinite(w))
+    : null;
+
   const checkoutBookingBinding: CommercialCheckoutBookingBinding | null =
-    fareharborShortname || fareharborItemId || intendedDepartureId || intendedDepartureTime
+    viatorBookingUrl ||
+    viatorProductCode ||
+    fareharborShortname ||
+    fareharborItemId ||
+    intendedDepartureId ||
+    intendedDepartureTime
       ? {
-          operatorShortname: fareharborShortname || urlBuilt.providerAccount,
+          bookingProvider: input.provider,
+          viatorProductCode,
+          viatorBookingUrl,
+          viatorAffiliatePid:
+            input.provider === "viator"
+              ? urlBuilt.providerAccount
+              : versionedCandidate?.viatorAffiliatePid ?? null,
+          viatorAffiliateMcid: versionedCandidate?.viatorAffiliateMcid ?? "42383",
+          viatorWorryFreeShoreExcursion,
+          travelerReselectionRequirements: [...JUNEAU_VIATOR_RESELECTION_REQUIREMENTS],
+          operatorSourceUrl: versionedCandidate?.operatorSourceUrl ?? null,
+          operatorFaqUrl: versionedCandidate?.operatorFaqUrl ?? null,
+          operatorShortname:
+            fareharborShortname ||
+            versionedCandidate?.operatorDisplayName ||
+            urlBuilt.providerAccount,
           fareharborItemId,
           fareharborDirectEmbedUrl,
           specialistCheckoutUrl: urlBuilt.outboundAffiliateUrl,
@@ -1187,6 +1416,7 @@ export async function createCommercialHandoff(
           intendedDepartureId,
           intendedDepartureTime,
           partySize,
+          passengerWeightsLbs,
           maxSinglePassengerWeightLbs: input.maxSinglePassengerWeightLbs ?? null,
           youngestPassengerAgeYears: input.youngestPassengerAgeYears ?? null,
           shipArrivalTime: input.shipArrivalTime ?? null,
@@ -1214,10 +1444,12 @@ export async function createCommercialHandoff(
     ...(input.metadata ?? {}),
     ...(rawIdempotencyKey ? { idempotencyKey: rawIdempotencyKey } : {}),
     ...(derivedTargetSite ? { targetSite: derivedTargetSite } : {}),
+    ...(viatorProductCode ? { viatorProductCode } : {}),
     ...(fareharborShortname ? { fareharborShortname } : {}),
     ...(fareharborItemId ? { fareharborItemId } : {}),
     ...(intendedDepartureId ? { intendedDepartureId } : {}),
     ...(intendedDepartureTime ? { intendedDepartureTime } : {}),
+    ...(passengerWeightsLbs ? { passengerWeightsLbs } : {}),
     ...(typeof input.maxSinglePassengerWeightLbs === "number"
       ? { maxSinglePassengerWeightLbs: input.maxSinglePassengerWeightLbs }
       : {}),
@@ -1308,6 +1540,7 @@ export async function createCommercialHandoff(
     targetSite: derivedTargetSite,
     provider: input.provider,
     providerAccount: urlBuilt.providerAccount,
+    viatorProductCode,
     fareharborShortname,
     fareharborItemId,
     productCode: input.productCode,
@@ -1325,6 +1558,7 @@ export async function createCommercialHandoff(
     intendedDepartureTime,
     partySize,
     partyDetails: input.partyDetails ?? null,
+    passengerWeightsLbs,
     maxSinglePassengerWeightLbs: input.maxSinglePassengerWeightLbs ?? null,
     youngestPassengerAgeYears: input.youngestPassengerAgeYears ?? null,
     shipArrivalTime: input.shipArrivalTime ?? null,
@@ -1412,6 +1646,8 @@ export async function getCommercialHandoffById(
       targetSite: targetSiteFromMeta,
       provider: row.provider,
       providerAccount: row.provider_account,
+      viatorProductCode:
+        typeof meta.viatorProductCode === "string" ? meta.viatorProductCode : null,
       fareharborShortname:
         typeof meta.fareharborShortname === "string" ? meta.fareharborShortname : null,
       fareharborItemId:
@@ -1433,6 +1669,9 @@ export async function getCommercialHandoffById(
         typeof meta.intendedDepartureTime === "string" ? meta.intendedDepartureTime : null,
       partySize: row.party_size,
       partyDetails: row.party_details_json ?? null,
+      passengerWeightsLbs: Array.isArray(meta.passengerWeightsLbs)
+        ? (meta.passengerWeightsLbs as number[])
+        : null,
       maxSinglePassengerWeightLbs:
         typeof meta.maxSinglePassengerWeightLbs === "number"
           ? meta.maxSinglePassengerWeightLbs
@@ -2339,8 +2578,10 @@ export interface RevalidateCommercialHandoffInput {
   requestedDepartureId?: string | null;
   requestedDepartureTime?: string | null;
   requestedFareharborItemId?: string | null;
+  requestedViatorProductCode?: string | null;
   requestedTourCode?: string | null;
   requestedReceiptId?: string | null;
+  passengerWeightsLbs?: number[] | null;
   declaredMaxSinglePassengerWeightLbs?: number | null;
   declaredYoungestPassengerAgeYears?: number | null;
   hasLapChildUnder2?: boolean | null;
@@ -2360,7 +2601,13 @@ export interface CommercialHandoffRevalidationResult {
   handoffId: string;
   receiptId: string | null;
   receiptVerified: boolean;
+  bookingProvider: CommercialProvider;
   productCode: string;
+  viatorProductCode: string | null;
+  viatorBookingUrl: string | null;
+  viatorDirectProductUrl: string | null;
+  viatorWorryFreeShoreExcursion: ViatorWorryFreeProtectionSummary | null;
+  travelerReselectionRequirements: readonly string[] | null;
   fareharborShortname: string | null;
   fareharborItemId: string | null;
   fareharborDirectEmbedUrl: string | null;
@@ -2368,6 +2615,10 @@ export interface CommercialHandoffRevalidationResult {
   intendedDepartureId: string | null;
   intendedDepartureTime: string | null;
   partySize: number | null;
+  publishedGroupTotalConfirmed: boolean;
+  passengersIncurringWeightSurchargeCount: number;
+  requiredWeightSurchargeUsd: number;
+  publishedPolicyRequiredTotalUsd: number | null;
   progressionAllowed: boolean;
   revalidationStatus: "passed" | "blocked";
   blockingReasons: string[];
@@ -2403,6 +2654,8 @@ export interface CommercialHandoffRevalidationResult {
       quotedPerPersonUsd: number | null;
       quotedTotalUsd: number | null;
       publishedBasePerPersonUsd: number | null;
+      passengerWeightsLbs: number[] | null;
+      publishedGroupTotalConfirmed: boolean;
       requiredWeightSurchargeUsd: number;
       publishedPolicyRequiredTotalUsd: number | null;
       liveOperatorPricePerPersonUsd: null;
@@ -2452,6 +2705,25 @@ function parseHhMmToMinutesHelper(hhmm: string | null | undefined): number | nul
   return hh * 60 + mm;
 }
 
+function calculateSinglePassengerWeightSurchargeUsd(
+  weightLbs: number,
+  policy: VersionedCandidatePolicyAttributes,
+): number {
+  if (
+    policy.secondaryWeightSurchargeThresholdLbs !== null &&
+    weightLbs >= policy.secondaryWeightSurchargeThresholdLbs
+  ) {
+    return policy.secondaryWeightSurchargeUsd ?? policy.weightSurchargeUsd;
+  }
+  if (
+    policy.weightSurchargeThresholdLbs !== null &&
+    weightLbs >= policy.weightSurchargeThresholdLbs
+  ) {
+    return policy.weightSurchargeUsd;
+  }
+  return 0;
+}
+
 export async function revalidateCommercialHandoffBeforeCommitment(
   input: RevalidateCommercialHandoffInput,
 ): Promise<CommercialHandoffRevalidationResult | null> {
@@ -2484,26 +2756,59 @@ export async function revalidateCommercialHandoffBeforeCommitment(
     bindingReasons.push("UNKNOWN_CANDIDATE_NOT_IN_VERSIONED_UNIVERSE_BLOCKS_PROGRESSION");
   }
 
-  if (
-    !fareharborShortname ||
-    !fareharborItemId ||
-    !intendedDate ||
-    !intendedDepartureId ||
-    !intendedDepartureTime ||
-    partySize === null ||
-    partySize <= 0
-  ) {
-    bindingReasons.push("INCOMPLETE_BOOKABLE_DEPARTURE_BINDING_BLOCKS_PROGRESSION");
-  }
+  const isViatorHandoff =
+    handoff.provider === "viator" || versionedCandidate?.bookingProvider === "viator";
+  const viatorProductCode =
+    handoff.viatorProductCode ?? versionedCandidate?.viatorProductCode ?? null;
+  const viatorBookingUrl =
+    handoff.checkoutBookingBinding?.viatorBookingUrl ??
+    (isViatorHandoff ? handoff.outboundAffiliateUrl : null);
+  const viatorWorryFreeShoreExcursion =
+    handoff.checkoutBookingBinding?.viatorWorryFreeShoreExcursion ??
+    versionedCandidate?.viatorWorryFreeProtection ??
+    null;
+  const travelerReselectionRequirements =
+    handoff.checkoutBookingBinding?.travelerReselectionRequirements ??
+    (isViatorHandoff ? JUNEAU_VIATOR_RESELECTION_REQUIREMENTS : null);
 
-  if (versionedCandidate) {
+  if (isViatorHandoff) {
     if (
-      (versionedCandidate.fareharborShortname &&
-        fareharborShortname !== versionedCandidate.fareharborShortname) ||
-      (versionedCandidate.fareharborItemId &&
-        fareharborItemId !== versionedCandidate.fareharborItemId)
+      !intendedDate ||
+      partySize === null ||
+      partySize <= 0 ||
+      !viatorBookingUrl ||
+      !viatorProductCode
     ) {
-      bindingReasons.push("FAREHARBOR_ITEM_MISMATCH_WITH_VERSIONED_POLICY_BLOCKS_PROGRESSION");
+      bindingReasons.push("INCOMPLETE_BOOKABLE_DEPARTURE_BINDING_BLOCKS_PROGRESSION");
+    }
+    if (
+      versionedCandidate?.viatorProductCode &&
+      viatorProductCode &&
+      viatorProductCode !== versionedCandidate.viatorProductCode
+    ) {
+      bindingReasons.push("VIATOR_PRODUCT_CODE_MISMATCH_WITH_VERSIONED_POLICY_BLOCKS_PROGRESSION");
+    }
+  } else {
+    if (
+      !fareharborShortname ||
+      !fareharborItemId ||
+      !intendedDate ||
+      !intendedDepartureId ||
+      !intendedDepartureTime ||
+      partySize === null ||
+      partySize <= 0
+    ) {
+      bindingReasons.push("INCOMPLETE_BOOKABLE_DEPARTURE_BINDING_BLOCKS_PROGRESSION");
+    }
+    if (versionedCandidate) {
+      if (
+        (versionedCandidate.fareharborShortname &&
+          fareharborShortname !== versionedCandidate.fareharborShortname) ||
+        (versionedCandidate.fareharborItemId &&
+          fareharborItemId !== versionedCandidate.fareharborItemId)
+      ) {
+        bindingReasons.push("FAREHARBOR_ITEM_MISMATCH_WITH_VERSIONED_POLICY_BLOCKS_PROGRESSION");
+      }
     }
   }
 
@@ -2615,6 +2920,14 @@ export async function revalidateCommercialHandoffBeforeCommitment(
   }
 
   if (
+    input.requestedViatorProductCode &&
+    viatorProductCode &&
+    viatorProductCode !== input.requestedViatorProductCode
+  ) {
+    bindingReasons.push("REVALIDATION_VIATOR_PRODUCT_MISMATCH_WITH_HANDOFF_BLOCKS_PROGRESSION");
+  }
+
+  if (
     input.requestedTourCode &&
     handoff.productCode &&
     handoff.productCode !== input.requestedTourCode
@@ -2622,7 +2935,7 @@ export async function revalidateCommercialHandoffBeforeCommitment(
     bindingReasons.push("REVALIDATION_TOUR_CODE_MISMATCH_WITH_HANDOFF_BLOCKS_PROGRESSION");
   }
 
-  // 3. Versioned Policy Tariff & Weight Surcharge Check (never trusting caller-supplied live price)
+  // 3. Versioned Policy Tariff & Multi-Passenger Weight Surcharge Check (never trusting caller-supplied live price)
   const publishedBasePerPersonUsd = versionedCandidate?.basePriceUsd ?? null;
   const effectivePartySize = partySize ?? 1;
 
@@ -2637,36 +2950,80 @@ export async function revalidateCommercialHandoffBeforeCommitment(
   const quotedPerPersonUsd =
     quotedTotalUsd !== null ? Number((quotedTotalUsd / effectivePartySize).toFixed(2)) : null;
 
+  const handoffValidWeights = Array.isArray(handoff.passengerWeightsLbs)
+    ? handoff.passengerWeightsLbs.filter(
+        (w): w is number => typeof w === "number" && Number.isFinite(w) && w > 0,
+      )
+    : null;
+  const handoffMaxWeight =
+    handoffValidWeights && handoffValidWeights.length > 0
+      ? Math.max(...handoffValidWeights)
+      : null;
+
+  const normalizedPassengerWeightsLbs = Array.isArray(input.passengerWeightsLbs)
+    ? input.passengerWeightsLbs.filter(
+        (w): w is number => typeof w === "number" && Number.isFinite(w) && w > 0,
+      )
+    : handoffValidWeights &&
+        (input.declaredMaxSinglePassengerWeightLbs === undefined ||
+          input.declaredMaxSinglePassengerWeightLbs === null ||
+          input.declaredMaxSinglePassengerWeightLbs === handoffMaxWeight)
+      ? handoffValidWeights
+      : null;
+
   const effectiveWeightLbs =
-    input.declaredMaxSinglePassengerWeightLbs !== undefined &&
-    input.declaredMaxSinglePassengerWeightLbs !== null
-      ? input.declaredMaxSinglePassengerWeightLbs
-      : handoff.maxSinglePassengerWeightLbs ??
-        (typeof receiptInputs.maxSinglePassengerWeightLbs === "number"
-          ? receiptInputs.maxSinglePassengerWeightLbs
-          : typeof receiptInputs.passengerWeightLbs === "number"
-            ? receiptInputs.passengerWeightLbs
-            : null);
+    normalizedPassengerWeightsLbs && normalizedPassengerWeightsLbs.length > 0
+      ? Math.max(
+          ...normalizedPassengerWeightsLbs,
+          typeof input.declaredMaxSinglePassengerWeightLbs === "number"
+            ? input.declaredMaxSinglePassengerWeightLbs
+            : 0,
+        )
+      : input.declaredMaxSinglePassengerWeightLbs !== undefined &&
+          input.declaredMaxSinglePassengerWeightLbs !== null
+        ? input.declaredMaxSinglePassengerWeightLbs
+        : handoff.maxSinglePassengerWeightLbs ??
+          (typeof receiptInputs.maxSinglePassengerWeightLbs === "number"
+            ? receiptInputs.maxSinglePassengerWeightLbs
+            : typeof receiptInputs.passengerWeightLbs === "number"
+              ? receiptInputs.passengerWeightLbs
+              : null);
 
   let requiredWeightSurchargeUsd = 0;
-  if (typeof effectiveWeightLbs === "number" && versionedCandidate) {
+  let passengersIncurringWeightSurchargeCount = 0;
+  let publishedGroupTotalConfirmed = false;
+
+  if (versionedCandidate) {
     if (
-      versionedCandidate.secondaryWeightSurchargeThresholdLbs !== null &&
-      effectiveWeightLbs >= versionedCandidate.secondaryWeightSurchargeThresholdLbs
+      normalizedPassengerWeightsLbs &&
+      normalizedPassengerWeightsLbs.length === effectivePartySize
     ) {
-      requiredWeightSurchargeUsd =
-        versionedCandidate.secondaryWeightSurchargeUsd ??
-        versionedCandidate.weightSurchargeUsd;
-    } else if (
-      versionedCandidate.weightSurchargeThresholdLbs !== null &&
-      effectiveWeightLbs >= versionedCandidate.weightSurchargeThresholdLbs
-    ) {
-      requiredWeightSurchargeUsd = versionedCandidate.weightSurchargeUsd;
+      for (const w of normalizedPassengerWeightsLbs) {
+        const surcharge = calculateSinglePassengerWeightSurchargeUsd(w, versionedCandidate);
+        if (surcharge > 0) {
+          passengersIncurringWeightSurchargeCount += 1;
+          requiredWeightSurchargeUsd += surcharge;
+        }
+      }
+      publishedGroupTotalConfirmed = true;
+    } else if (typeof effectiveWeightLbs === "number") {
+      const heaviestPassengerSurcharge = calculateSinglePassengerWeightSurchargeUsd(
+        effectiveWeightLbs,
+        versionedCandidate,
+      );
+      requiredWeightSurchargeUsd = heaviestPassengerSurcharge;
+      passengersIncurringWeightSurchargeCount = heaviestPassengerSurcharge > 0 ? 1 : 0;
+      // When maxSinglePassengerWeightLbs is below the surcharge threshold, 0 passengers in the party incur a surcharge
+      // so the group total is known. If effectivePartySize === 1, a single weight also covers the whole party.
+      // Otherwise, if effectivePartySize > 1 and the heaviest passenger triggers a surcharge without per-passenger weights,
+      // the group total cannot be confirmed until all passenger weights are collected.
+      publishedGroupTotalConfirmed =
+        effectivePartySize === 1 || heaviestPassengerSurcharge === 0;
     }
   }
 
   const publishedPolicyRequiredTotalUsd =
-    publishedBasePerPersonUsd !== null
+    publishedBasePerPersonUsd !== null && publishedGroupTotalConfirmed
       ? Number(
           (publishedBasePerPersonUsd * effectivePartySize + requiredWeightSurchargeUsd).toFixed(2),
         )
@@ -2681,10 +3038,18 @@ export async function revalidateCommercialHandoffBeforeCommitment(
   }
 
   if (
+    effectivePartySize > 1 &&
+    requiredWeightSurchargeUsd > 0 &&
+    !publishedGroupTotalConfirmed
+  ) {
+    priceReasons.push("INCOMPLETE_PARTY_PASSENGER_WEIGHTS_FOR_SURCHARGE_BLOCKS_PROGRESSION");
+  }
+
+  if (
     requiredWeightSurchargeUsd > 0 &&
     quotedTotalUsd !== null &&
-    publishedPolicyRequiredTotalUsd !== null &&
-    publishedPolicyRequiredTotalUsd > quotedTotalUsd + 0.01 &&
+    (publishedPolicyRequiredTotalUsd === null ||
+      publishedPolicyRequiredTotalUsd > quotedTotalUsd + 0.01) &&
     input.travelerAcceptedWeightSurcharge !== true
   ) {
     priceReasons.push("UNQUOTED_WEIGHT_SURCHARGE_AT_CHECKIN_BLOCKS_PROGRESSION");
@@ -2847,6 +3212,7 @@ export async function revalidateCommercialHandoffBeforeCommitment(
     handoff.outcomeState.bookingOutcome === "confirmed" &&
     Boolean(handoff.outcomeState.lastOutcomeId);
 
+  const providerLabel = isViatorHandoff ? "Viator" : "the booking provider";
   const providerConfirmation: CommercialHandoffRevalidationResult["providerConfirmation"] =
     hasAuthenticatedConfirmation
       ? {
@@ -2866,8 +3232,7 @@ export async function revalidateCommercialHandoffBeforeCommitment(
           liveOperatorPricePerPersonUsd: null,
           authenticatedOutcomeId: null,
           requiresProviderConfirmationAtCheckout: true,
-          explanation:
-            "Live seat inventory, departure dispatch status, and final operator fare are not established by DCC and remain unknown until confirmed by an authenticated FareHarbor response.",
+          explanation: `Live seat inventory, departure time slot availability, and final fare are not established by DCC and remain unknown until confirmed in ${providerLabel}.`,
         };
 
   const blockingReasons = [
@@ -2882,7 +3247,13 @@ export async function revalidateCommercialHandoffBeforeCommitment(
     handoffId: handoff.handoffId,
     receiptId: handoff.receiptId,
     receiptVerified,
+    bookingProvider: handoff.provider,
     productCode: handoff.productCode,
+    viatorProductCode,
+    viatorBookingUrl,
+    viatorDirectProductUrl: viatorBookingUrl,
+    viatorWorryFreeShoreExcursion,
+    travelerReselectionRequirements,
     fareharborShortname,
     fareharborItemId,
     fareharborDirectEmbedUrl,
@@ -2890,6 +3261,10 @@ export async function revalidateCommercialHandoffBeforeCommitment(
     intendedDepartureId,
     intendedDepartureTime,
     partySize,
+    publishedGroupTotalConfirmed,
+    passengersIncurringWeightSurchargeCount,
+    requiredWeightSurchargeUsd,
+    publishedPolicyRequiredTotalUsd,
     progressionAllowed,
     revalidationStatus: progressionAllowed ? "passed" : "blocked",
     blockingReasons,
@@ -2915,6 +3290,8 @@ export async function revalidateCommercialHandoffBeforeCommitment(
         quotedPerPersonUsd,
         quotedTotalUsd,
         publishedBasePerPersonUsd,
+        passengerWeightsLbs: normalizedPassengerWeightsLbs,
+        publishedGroupTotalConfirmed,
         requiredWeightSurchargeUsd,
         publishedPolicyRequiredTotalUsd,
         liveOperatorPricePerPersonUsd: null,
@@ -2954,4 +3331,5 @@ export async function revalidateCommercialHandoffBeforeCommitment(
     revalidatedAt: new Date().toISOString(),
   };
 }
+
 

@@ -266,22 +266,24 @@ export default function HelicopterDispatchBoard({
                 <td>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-start' }}>
                     <a
-                      href="#tours"
+                      href="https://www.viator.com/searchResults/all?text=Juneau+Mendenhall+Glacier+helicopter+tour&pid=P00058396&mcid=42383&medium=api&campaign=jfd-dispatch-temsco"
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="button button-primary"
                       style={{ whiteSpace: 'nowrap', fontSize: '0.82rem', padding: '6px 12px' }}
-                      aria-label="View TEMSCO Helicopter Flights"
+                      aria-label="Check TEMSCO Helicopter Flights on Viator"
                     >
-                      View Flights &darr;
+                      Check on Viator ↗
                     </a>
                     <a
-                      href="https://fareharbor.com/embeds/book/temscoair-juneau/items/214803/?ref=juneauflightdeck&asn=welcometoalaskatours&full_items=yes"
+                      href="https://temscoair.com/tours/pilots-choice-exploration/"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="button button-card"
                       style={{ whiteSpace: 'nowrap', fontSize: '0.76rem', padding: '4px 8px' }}
-                      aria-label="Book TEMSCO Direct on FareHarbor"
+                      aria-label="TEMSCO Official Policy Page"
                     >
-                      TEMSCO Direct ↗
+                      Operator Policy ↗
                     </a>
                   </div>
                 </td>
@@ -289,7 +291,7 @@ export default function HelicopterDispatchBoard({
               <tr>
                 <td>
                   <span className="jfd-op-name">Coastal Helicopters</span>
-                  <span className="jfd-op-sub">Icefield Specialist</span>
+                  <span className="jfd-op-sub">Icefield Specialist · Viator 6251SHOREXICEWALK</span>
                 </td>
                 <td>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -318,7 +320,7 @@ export default function HelicopterDispatchBoard({
                         Icefield Landing &amp; Dog Sledding
                       </div>
                       <div style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>
-                        Herbert Glacier Landing ($429) &amp; Dog Sled ($709)
+                        Herbert Glacier Landing ($459 · Worry-Free §20) &amp; Dog Sled ($709)
                       </div>
                     </div>
                   </div>
@@ -328,22 +330,24 @@ export default function HelicopterDispatchBoard({
                 <td>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-start' }}>
                     <a
-                      href="#tours"
+                      href="https://www.viator.com/tours/Juneau/Juneau-Shore-Excursion-Helicopter-Tour-and-Guided-Icefield-Walk/d941-6251SHOREXICEWALK?pid=P00058396&mcid=42383&medium=api&campaign=jfd-dispatch-coastal"
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="button button-primary"
                       style={{ whiteSpace: 'nowrap', fontSize: '0.82rem', padding: '6px 12px' }}
-                      aria-label="View Coastal Helicopter Flights"
+                      aria-label="Book Coastal Icefield Walk 6251SHOREXICEWALK on Viator"
                     >
-                      View Flights &darr;
+                      Book on Viator (§20) ↗
                     </a>
                     <a
-                      href="https://fareharbor.com/embeds/book/coastalhelicopters/items/413056/?ref=juneauflightdeck&asn=welcometoalaskatours&full_items=yes"
+                      href="https://coastalhelicopters.com/tours/icefield-excursion/"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="button button-card"
                       style={{ whiteSpace: 'nowrap', fontSize: '0.76rem', padding: '4px 8px' }}
-                      aria-label="Book Coastal Direct on FareHarbor"
+                      aria-label="Coastal Helicopters Official Policy Page"
                     >
-                      Coastal Direct ↗
+                      Operator Policy ↗
                     </a>
                   </div>
                 </td>
@@ -390,22 +394,24 @@ export default function HelicopterDispatchBoard({
                 <td>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-start' }}>
                     <a
-                      href="#tours"
+                      href="https://www.viator.com/searchResults/all?text=Juneau+NorthStar+Glacier+Walkabout+helicopter&pid=P00058396&mcid=42383&medium=api&campaign=jfd-dispatch-northstar"
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="button button-primary"
                       style={{ whiteSpace: 'nowrap', fontSize: '0.82rem', padding: '6px 12px' }}
-                      aria-label="View NorthStar Glacier Treks"
+                      aria-label="Check NorthStar Glacier Treks on Viator"
                     >
-                      View Treks &darr;
+                      Check on Viator ↗
                     </a>
                     <a
-                      href="https://fareharbor.com/embeds/book/northstartrekking/items/116035/?ref=juneauflightdeck&asn=welcometoalaskatours&full_items=yes"
+                      href="https://northstartrekking.com/treks/tours/helicopter-glacier-walkabout/"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="button button-card"
                       style={{ whiteSpace: 'nowrap', fontSize: '0.76rem', padding: '4px 8px' }}
-                      aria-label="Book NorthStar Direct on FareHarbor"
+                      aria-label="NorthStar Trekking Official Policy Page"
                     >
-                      NorthStar Direct ↗
+                      Operator Policy ↗
                     </a>
                   </div>
                 </td>

@@ -21,7 +21,7 @@ Major cruise lines calling in Juneau (Princess Cruises, Holland America Line, Ro
 * **Local Operator Direct:**
   * **Company:** TEMSCO Helicopters
   * **Official Listing URL:** [https://temscoair.com](https://temscoair.com)
-  * **FareHarbor Item ID:** `#560822` (*"Mendenhall Glacier and Guided Walk"*)
+  * **Operator Tour Title:** *"Mendenhall Glacier and Guided Walk"*
   * **Total Footprint:** 2 hours 15 minutes (~30 minutes total flight time in AStar 350, 20–25 minutes guided walking on ice).
   * **Inclusions:** Roundtrip dockside shuttle transfer between cruise ship piers (Franklin Dock, AJ Dock, Intermediate Vessel Float) and TEMSCO base; glacier overboots; safety briefing; pilot narration via voice-activated aviation headsets.
   * **Fees & Surcharges:** Passengers 250+ lbs (fully clothed) pay an adjacent comfort-seat surcharge per FAA weight-and-balance regulations; 5% City and Borough of Juneau sales tax.
@@ -39,7 +39,7 @@ Major cruise lines calling in Juneau (Princess Cruises, Holland America Line, Ro
 * **Local Operator Direct:**
   * **Company:** TEMSCO Helicopters
   * **Official Listing URL:** [https://temscoair.com](https://temscoair.com)
-  * **FareHarbor Item ID:** `#560826` (*"Dog Sledding on Mendenhall Glacier by Helicopter"*)
+  * **Operator Tour Title:** *"Dog Sledding on Mendenhall Glacier by Helicopter"*
   * **Operating Window:** Mid-May through late August (dependent on snowpack conditions on the upper icefield).
   * **Total Footprint:** 2 hours 45 minutes (~30 minutes flight time, ~1 hour at high-altitude glacier mushing camp).
   * **Inclusions:** Dockside shuttle pickup, scenic flightseeing to glacier dog camp on Herbert/Mendenhall Glacier, 20–25 minute sled run pulled by Alaskan husky sled team, interaction with mushers and puppies, glacier boots.
@@ -53,13 +53,13 @@ Major cruise lines calling in Juneau (Princess Cruises, Holland America Line, Ro
 ---
 
 ### Program C: Juneau Icefield Excursion & Landing
-* **Local Operator Direct:**
+* **Local Operator Direct & Viator Product:**
   * **Company:** Coastal Helicopters
   * **Official Listing URL:** [https://coastalhelicopters.com/tours/icefield-excursion/](https://coastalhelicopters.com/tours/icefield-excursion/)
-  * **FareHarbor Item ID:** `#561220` (*"Icefield Excursion"*)
-  * **Total Footprint:** ~2 hours 15 minutes (~30 minutes flight time, 15–20 minutes landing on glacier).
+  * **Viator Product Code:** `6251SHOREXICEWALK` (*"Juneau Shore Excursion: Helicopter Tour and Guided Icefield Walk"*, `tagId: 367649` Worry-free Shore Excursion under Viator Terms of Use Section 20)
+  * **Total Footprint:** ~2 hours 35 minutes (~30 minutes flight time, 25–30 minutes landing on glacier).
   * **Inclusions:** Dock pickup from Mt. Roberts Tramway terminal parking area; flightseeing over Herbert, Taku, Lemon, or Norris glaciers; glacier landing; overboots.
-  * **Cancellation Terms:** 100% refund 7+ days (168h) prior; 50% refund 4–6 days (96–144h) prior; non-refundable under 72h. 100% refund if weather grounds flight or ship misses port.
+  * **Cancellation Terms:** 100% refund 7+ days (168h) prior direct (or standard 24h window on Viator); 100% refund if weather grounds flight. Qualifying Viator Worry-free Shore Excursion protection under Viator Terms of Use Section 20.
 
 ---
 
@@ -67,7 +67,7 @@ Major cruise lines calling in Juneau (Princess Cruises, Holland America Line, Ro
 * **Local Operator Direct:**
   * **Company:** NorthStar Trekking
   * **Official Listing URL:** [https://northstartrekking.com](https://northstartrekking.com)
-  * **FareHarbor Item ID:** `#560851` (*"Helicopter Glacier Trek (Level 1 / 2)"*)
+  * **Operator Tour Title:** *"Helicopter Glacier Trek (Level 1 / 2)"*
   * **Total Footprint:** 3.25 to 4.25 hours total (flight time + 1 to 2 hours of technical glacier hiking).
   * **Inclusions:** Roundtrip dock transfer, flightseeing, mountaineering boots, crampons, harnesses, ice axes/trekking poles, small-group certified guide (maximum 6 guests per guide).
   * **Cancellation Terms:** 100% refund up to 48 hours prior; 100% full refund for weather/ship cancellation.

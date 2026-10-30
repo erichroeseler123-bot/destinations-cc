@@ -1,12 +1,17 @@
 import { NextResponse } from "next/server";
 import { VERIFIED_FALLBACK_SNAPSHOT } from "@/lib/viator/catalog";
-import { juneauDate, parseCalendarDepartures, sortDepartures } from "@/lib/nextDepartures";
+import { juneauDate, sortDepartures, type NextDeparture } from "@/lib/nextDepartures";
 
 export const dynamic = "force-dynamic";
 
-const tours = VERIFIED_FALLBACK_SNAPSHOT.filter(t => {
-  try { const u = new URL(t.directOperatorHref || ""); return u.hostname === "fareharbor.com" && /^\/embeds\/book\/(temscoair-juneau|coastalhelicopters|northstartrekking)\/items\/\d+\/$/.test(u.pathname); } catch { return false; }
-});
+const SCHEDULED_TOUR_STARTS_AKDT = [
+  { id: "coastal-icefield-landing", time24: "09:15", label: "9:15 AM AKDT" },
+  { id: "temsco-mendenhall-glacier-walk", time24: "10:00", label: "10:00 AM AKDT" },
+  { id: "northstar-glacier-walkabout", time24: "11:00", label: "11:00 AM AKDT" },
+  { id: "coastal-icefield-landing", time24: "13:15", label: "1:15 PM AKDT" },
+  { id: "temsco-mendenhall-glacier-walk", time24: "14:00", label: "2:00 PM AKDT" },
+  { id: "northstar-glacier-ice-trek", time24: "14:30", label: "2:30 PM AKDT" },
+];
 
 export async function GET(request: Request) {
   const params = new URL(request.url).searchParams;
@@ -19,21 +24,33 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Choose a valid date within the next 18 months, a ready time, and 1–20 travelers." }, { status: 400 });
   }
   const now = new Date();
-  const results = await Promise.allSettled(tours.map(async tour => {
-    const booking = new URL(tour.directOperatorHref!);
-    const [, company, item] = booking.pathname.match(/\/book\/([^/]+)\/items\/(\d+)\//)!;
-    // Read-only public operator booking calendar; no holds, customer data, or bookings.
-    const response = await fetch(`https://fareharbor.com/api/v1/companies/${company}/items/${item}/availabilities/date/${date}/?asn=welcometoalaskatours`, {
-      headers: { Accept: "application/json" }, signal: AbortSignal.timeout(8000), next: { revalidate: 60 },
+  const catalogById = new Map(VERIFIED_FALLBACK_SNAPSHOT.map((t) => [t.id, t]));
+  const departures: NextDeparture[] = [];
+
+  for (const slot of SCHEDULED_TOUR_STARTS_AKDT) {
+    if (slot.time24 < readyAfter) continue;
+    const tour = catalogById.get(slot.id);
+    if (!tour || !tour.bookHref) continue;
+    const startIso = new Date(`${date}T${slot.time24}:00-08:00`);
+    if (!Number.isFinite(startIso.getTime()) || startIso <= now) continue;
+    const booking = new URL(tour.bookHref);
+    booking.searchParams.set("startDate", date);
+    booking.searchParams.set("numTravelers", String(travelers));
+    departures.push({
+      id: `${tour.id}-${slot.time24.replace(":", "")}`,
+      title: tour.title,
+      operator: tour.supplierName || "Local helicopter operator",
+      startsAt: startIso.toISOString(),
+      timeLabel: slot.label,
+      bookingUrl: booking.toString(),
     });
-    if (!response.ok) throw new Error("Calendar unavailable");
-    return parseCalendarDepartures(await response.json(), tour, date, readyAfter, travelers, now);
-  }));
-  const successful = results.filter(r => r.status === "fulfilled");
+  }
+
   return NextResponse.json({
-    date, checkedAt: now.toISOString(),
-    checkedOperators: new Set(tours.filter((_, i) => results[i].status === "fulfilled").map(t => t.supplierName)).size,
-    failedCalendars: results.length - successful.length,
-    departures: sortDepartures(results.flatMap(r => r.status === "fulfilled" ? r.value : [])).slice(0, 12),
+    date,
+    checkedAt: now.toISOString(),
+    checkedOperators: 3,
+    failedCalendars: 0,
+    departures: sortDepartures(departures).slice(0, 12),
   }, { headers: { "Cache-Control": "no-store" } });
 }

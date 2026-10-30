@@ -7,7 +7,7 @@ import {
   type WaitlistEntry,
 } from "../../../../lib/waitlistStore";
 import {
-  fetchFareHarborDateRangeDetailed,
+  fetchOperatorDateRangeDetailed,
   OPERATOR_ENDPOINTS,
 } from "../../../../lib/fareharborRange";
 
@@ -73,7 +73,7 @@ export async function GET(request: Request) {
     const action = url.searchParams.get("action");
 
     // 1. Live Operator Inventory Diagnostic Pre-Flight Check
-    if (action === "diagnose_fareharbor") {
+    if (action === "diagnose_operators") {
       const results = [];
       // Use upcoming summer 2027 cruise season dates for schedule inspection
       const testStart = url.searchParams.get("start") || "2027-07-01";
@@ -87,7 +87,7 @@ export async function GET(request: Request) {
       ];
 
       for (const target of targets) {
-        const fetchRes = await fetchFareHarborDateRangeDetailed({
+        const fetchRes = await fetchOperatorDateRangeDetailed({
           companyShortname: target.shortname,
           itemPk: target.itemPk,
           startDate: testStart,
@@ -319,11 +319,11 @@ export async function POST(request: Request) {
     }
 
     if (action === "update_status") {
-      const { id, status, matchedOperator, matchedSlotTime, fareharborCheckoutUrl } = body;
+      const { id, status, matchedOperator, matchedSlotTime, checkoutUrl } = body;
       const updated = await updateWaitlistStatus(id, status, {
         matchedOperator,
         matchedSlotTime,
-        fareharborCheckoutUrl,
+        checkoutUrl,
       });
 
       if (!updated) {

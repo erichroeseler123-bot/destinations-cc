@@ -296,20 +296,20 @@ test("Gate 4: Provider-Specific Affiliate URL Construction & Lightweight Handoff
   assert.equal(gygUrl.searchParams.get("partner_id"), "F2MMUUH");
   assert.equal(gygUrl.searchParams.get("cmp"), "dcc-nola-jazz__hndf_testgyg000000000000002");
 
-  // 3. FareHarbor affiliate URL preserves asn + ref=...__handoffId
+  // 3. FareHarbor affiliate URL (legitimate NOLA integration) preserves asn=aktourcenter + ref=...__handoffId
   const fhBuilt = buildProviderAffiliateHandoffUrl({
-    originatingSite: "lastfrontiershoreexcursions.com",
+    originatingSite: "welcometoneworleanstours.com",
     provider: "fareharbor",
-    providerAccount: "welcometoalaskatours",
-    productCode: "fh-juneau-whale",
+    providerAccount: "aktourcenter",
+    productCode: "fh-nola-swamp",
     productDestinationUrl:
-      "https://fareharbor.com/embeds/book/juneauwhalewatch/items/12345/?full-items=yes",
+      "https://fareharbor.com/embeds/book/cajunencounters/items/12345/?full-items=yes",
     handoffId: "hndf_testfh0000000000000003",
-    campaign: "lfse-juneau-whale",
+    campaign: "wtno-swamp",
   });
   const fhUrl = new URL(fhBuilt.outboundAffiliateUrl);
-  assert.equal(fhUrl.searchParams.get("asn"), "welcometoalaskatours");
-  assert.equal(fhUrl.searchParams.get("ref"), "lfse-juneau-whale__hndf_testfh0000000000000003");
+  assert.equal(fhUrl.searchParams.get("asn"), "aktourcenter");
+  assert.equal(fhUrl.searchParams.get("ref"), "wtno-swamp__hndf_testfh0000000000000003");
 
   // 4. Direct operator referral URL
   const directBuilt = buildProviderAffiliateHandoffUrl({
@@ -334,7 +334,7 @@ test("Gate 4: Provider-Specific Affiliate URL Construction & Lightweight Handoff
     productDestinationUrl: "https://www.viator.com/tours/New-Orleans/Airboat/d675-5070AIRBOAT",
     evaluationRunId: "evalrun:test_run_001",
     receiptId: "rcpt:sha256:test_receipt_001",
-    intendedDate: "2026-07-15",
+    intendedDate: "2027-07-15",
     intendedOption: "morning-9am",
     partySize: 4,
     quotedPriceAmount: 396,
@@ -349,7 +349,7 @@ test("Gate 4: Provider-Specific Affiliate URL Construction & Lightweight Handoff
   const loaded = await getCommercialHandoffById(handoff.handoffId);
   assert.ok(loaded);
   assert.equal(loaded.originatingSite, "welcometotheswamp.com");
-  assert.equal(loaded.intendedDate, "2026-07-15");
+  assert.equal(loaded.intendedDate, "2027-07-15");
   assert.equal(loaded.partySize, 4);
 });
 
@@ -533,14 +533,15 @@ test("Gate 6: Portfolio Helper Coverage Across All 5 Portfolio Sites", () => {
     {
       site: "lastfrontiershoreexcursions.com",
       engineId: "alaska-shore-excursions" as const,
-      provider: "fareharbor" as const,
-      destinationUrl: "https://fareharbor.com/embeds/book/juneauwhalewatch/?full-items=yes",
+      provider: "viator" as const,
+      destinationUrl: "https://www.viator.com/Alaska/d276-ttd",
     },
     {
       site: "juneauflightdeck.com",
       engineId: "juneau-helicopter-tours" as const,
-      provider: "direct_operator" as const,
-      destinationUrl: "https://www.coastalhelicopters.com/tours/icefield-excursion/",
+      provider: "viator" as const,
+      destinationUrl:
+        "https://www.viator.com/tours/Juneau/Juneau-Shore-Excursion-Helicopter-Tour-and-Guided-Icefield-Walk/d941-6251SHOREXICEWALK",
     },
   ];
 

@@ -122,17 +122,14 @@ export default function DccNetworkBridge() {
       if (!anchor || !anchor.href) return;
 
       const href = anchor.href;
-      const isFareHarbor = href.includes("fareharbor.com");
       const isViator = href.includes("viator.com");
       const isGYG = href.includes("getyourguide.com");
 
-      if (!isFareHarbor && !isViator && !isGYG && !anchor.dataset.bookingClick) {
+      if (!isViator && !isGYG && !anchor.dataset.bookingClick) {
         return;
       }
 
-      const provider = isFareHarbor
-        ? "fareharbor"
-        : isViator
+      const provider = isViator
         ? "viator"
         : isGYG
         ? "getyourguide"
@@ -141,29 +138,12 @@ export default function DccNetworkBridge() {
       let tourSlug = anchor.dataset.tourSlug || "";
       let tourName = anchor.dataset.tourName || "";
 
-      if (!tourSlug && isFareHarbor) {
-        if (href.includes("/214803/")) {
-          tourSlug = "temsco-mendenhall-glacier-walk";
-          tourName = "TEMSCO Mendenhall Glacier Walk";
-        } else if (href.includes("/214810/")) {
-          tourSlug = "temsco-glacier-dog-sledding";
-          tourName = "TEMSCO Glacier Dog Sledding";
-        } else if (href.includes("/413056/")) {
-          tourSlug = "coastal-herbert-glacier-landing";
-          tourName = "Coastal Herbert Glacier Landing";
-        } else if (href.includes("/115991/")) {
-          tourSlug = "northstar-glacier-dogsled";
-          tourName = "NorthStar Glacier Dogsled";
-        } else if (href.includes("/116029/")) {
-          tourSlug = "northstar-glacier-walkabout";
-          tourName = "NorthStar Glacier Walkabout";
-        } else if (href.includes("/116035/")) {
-          tourSlug = "northstar-glacier-ice-trek";
-          tourName = "NorthStar Glacier Ice Trek";
-        }
-      } else if (!tourSlug && isViator) {
+      if (!tourSlug && isViator) {
         const lowerHref = href.toLowerCase();
-        if (lowerHref.includes("temsco")) {
+        if (lowerHref.includes("6251shorexicewalk")) {
+          tourSlug = "coastal-icefield-landing";
+          tourName = "Coastal Helicopters Icefield Excursion (6251SHOREXICEWALK)";
+        } else if (lowerHref.includes("temsco")) {
           tourSlug = "viator-temsco-search";
           tourName = "Viator TEMSCO Tours Search";
         } else if (lowerHref.includes("coastal")) {

@@ -14,7 +14,7 @@ export type CuratedTour = {
   heroImage: string;
   imageAlt: string;
   gallery: Array<{ src: string; alt: string }>;
-  fareharborMatch: RegExp[];
+  tourMatch: RegExp[];
 };
 
 export const curatedTours: CuratedTour[] = [
@@ -58,7 +58,7 @@ export const curatedTours: CuratedTour[] = [
         alt: "Coastal Helicopters landing on Juneau Icefield, Alaska",
       },
     ],
-    fareharborMatch: [/\bglacier\b.*\blanding\b/i, /\blanding\b.*\bglacier\b/i],
+    tourMatch: [/\bglacier\b.*\blanding\b/i, /\blanding\b.*\bglacier\b/i],
   },
   {
     slug: "dogsled-helicopter-combo",
@@ -100,7 +100,7 @@ export const curatedTours: CuratedTour[] = [
         alt: "Coastal Helicopters dog sled camp on glacier snowpack",
       },
     ],
-    fareharborMatch: [/\bdog.?sled\b/i],
+    tourMatch: [/\bdog.?sled\b/i],
   },
   {
     slug: "icefield-flightseeing",
@@ -118,7 +118,7 @@ export const curatedTours: CuratedTour[] = [
     included: [
       "Extended scenic helicopter routing over Juneau icefields",
       "Pilot narration focused on glacier terrain and mountain landmarks",
-      "Direct booking via FareHarbor with live item availability",
+      "Confirm final price and availability in Viator",
     ],
     benefitBullets: [
       "Strongest fit when aerial scenery matters more than stepping onto the ice",
@@ -142,7 +142,7 @@ export const curatedTours: CuratedTour[] = [
         alt: "NorthStar Trekking glacier helicopter landscape near Juneau, Alaska",
       },
     ],
-    fareharborMatch: [/\bicefield\b/i, /\bflightseeing\b/i, /\bhelicopter\b/i],
+    tourMatch: [/\bicefield\b/i, /\bflightseeing\b/i, /\bhelicopter\b/i],
   },
   {
     slug: "private-helicopter-charter",
@@ -160,7 +160,7 @@ export const curatedTours: CuratedTour[] = [
     included: [
       "Private helicopter routing subject to operator format",
       "Custom timing and scenic emphasis based on availability",
-      "Direct booking request through FareHarbor item or charter contact",
+      "Booking inquiry through Viator partner listing or operator charter contact",
     ],
     benefitBullets: [
       "The most exclusive helicopter option on the site",
@@ -184,7 +184,7 @@ export const curatedTours: CuratedTour[] = [
         alt: "High-end aerial glacier landscape suited to a private helicopter tour",
       },
     ],
-    fareharborMatch: [/\bprivate\b/i, /\bcharter\b/i],
+    tourMatch: [/\bprivate\b/i, /\bcharter\b/i],
   },
 ];
 

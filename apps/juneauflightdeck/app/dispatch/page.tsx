@@ -109,7 +109,7 @@ export default function DispatchDashboardPage() {
               Helicopter Seat Watch &amp; Waitlist Dispatch
             </h1>
             <p className="text-sm text-slate-300 mt-1">
-              FareHarbor Partner Pipe: <strong>Welcome to Alaska Tours</strong> · Monitoring TEMSCO, Coastal &amp; NorthStar
+              Viator Partner Channel (<code>P00058396</code>) · Monitoring TEMSCO, Coastal &amp; NorthStar
             </p>
           </div>
 
@@ -170,12 +170,12 @@ export default function DispatchDashboardPage() {
 
             <div className="p-5 rounded-2xl bg-white/5 border border-white/10">
               <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider block mb-1">
-                Est. Commission (18%)
+                Est. Partner Commission
               </span>
               <div className="text-3xl font-extrabold text-amber-400">
                 ${metrics.estimatedCommission.toLocaleString()}
               </div>
-              <span className="text-xs text-slate-400 mt-1 block">Via Welcome to Alaska split</span>
+              <span className="text-xs text-slate-400 mt-1 block">Via Viator Partner Channel</span>
             </div>
           </div>
         )}
@@ -203,7 +203,7 @@ export default function DispatchDashboardPage() {
           <div className="text-xs text-slate-300 border-l border-sky-400/20 pl-4 py-1">
             <div>• Morning sweep: <strong>10:00 AM AKDT</strong></div>
             <div>• Free cancellation cutoff: <strong>48 hours</strong></div>
-            <div>• Partner: <strong>Welcome to Alaska (FareHarbor)</strong></div>
+            <div>• Booking Channel: <strong>Viator Partner (P00058396)</strong></div>
           </div>
         </div>
 
@@ -423,9 +423,9 @@ export default function DispatchDashboardPage() {
 
         {/* Instructions & Help */}
         <div className="mt-8 p-6 rounded-2xl bg-white/5 border border-white/10 text-xs text-slate-300 leading-relaxed">
-          <h4 className="text-sm font-bold text-white mb-2">How This UI Connects to Welcome to Alaska Tours</h4>
+          <h4 className="text-sm font-bold text-white mb-2">How This UI Connects to Viator &amp; Local Operators</h4>
           <p>
-            When a seat is claimed at 10:00 AM, the passenger is sent a direct 15-minute booking link powered by Welcome to Alaska Tours’ FareHarbor merchant account. When the guest enters payment, Welcome to Alaska receives the reservation confirmation and commission credit, and the booking is fulfilled directly by TEMSCO, Coastal, or NorthStar.
+            DCC evaluates tour suitability; Juneau Flight Deck explains the options; Viator handles the booking and applicable booking protections (such as Viator Terms of Use Section 20 for qualifying Worry-free Shore Excursions like <code>6251SHOREXICEWALK</code>). Fulfillment is operated directly by TEMSCO, Coastal, or NorthStar.
           </p>
         </div>
       </div>

@@ -2,10 +2,10 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { getDb, ensureDbTables } from "./db";
 import {
-  fetchFareHarborDateRange,
-  fetchFareHarborDateRangeDetailed,
+  fetchOperatorDateRange,
+  fetchOperatorDateRangeDetailed,
   filterOpenAvailabilities,
-  buildFareHarborDirectBookingUrl,
+  buildViatorPartnerBookingUrl,
   JUNEAU_OPERATORS,
 } from "./fareharborRange";
 import { dispatchSeatDropNotification, getNotificationsDir } from "./notificationDispatcher";
@@ -171,7 +171,7 @@ export interface WaitlistEntry {
   matchedPort?: "juneau" | "skagway";
   matchedOperator?: string;
   matchedSlotTime?: string;
-  fareharborCheckoutUrl?: string;
+  checkoutUrl?: string;
   estimatedValue?: number;
   cancellationPolicyNotes?: string;
   dispatchAlertNotes?: string;
@@ -227,13 +227,13 @@ const SEED_ENTRIES: WaitlistEntry[] = [
     matchedPort: "juneau",
     matchedOperator: "Coastal Helicopters",
     matchedSlotTime: "2:15 PM Departure",
-    fareharborCheckoutUrl: "https://fareharbor.com/embeds/book/welcometoalaskatours/items/561220/",
+    checkoutUrl: "https://www.viator.com/tours/Juneau/Juneau-Shore-Excursion-Helicopter-Tour-and-Guided-Icefield-Walk/d941-6251SHOREXICEWALK?pid=P00058396&mcid=42383&medium=api&campaign=jfd-waitlist-coastal-icefield&startDate=2027-07-22",
     lastScannedAt: "2026-10-01T10:00:00.000Z",
     estimatedValue: 898,
     cancellationPolicyNotes:
       "Coastal Helicopters published terms: 100% full refund at least 7 days (168 hours) prior to flight departure. 50% charge (50% refund) 4–6 days (96–144 hours) ahead. Non-refundable within 3 days (less than 72 hours). 100% full refund if flight is grounded due to weather or cruise delay.",
     dispatchAlertNotes:
-      "Opening detected: Coastal Helicopters Icefield Excursion on 2027-07-22 (2:15 PM Departure). Notification alert dispatched to dmiller99@yahoo.com. Status: contact_pending. Operator hold: not_held (direct operator checkout link provided).",
+      "Opening detected: Coastal Helicopters Icefield Excursion on 2027-07-22 (2:15 PM Departure). Notification alert dispatched to dmiller99@yahoo.com. Status: contact_pending. Operator hold: not_held (Viator partner checkout link provided).",
     notificationDispatchedAt: "2026-10-01T10:00:00.000Z",
   },
   {
@@ -257,13 +257,13 @@ const SEED_ENTRIES: WaitlistEntry[] = [
     matchedPort: "juneau",
     matchedOperator: "TEMSCO Helicopters (Juneau)",
     matchedSlotTime: "3:30 PM Departure",
-    fareharborCheckoutUrl: "https://fareharbor.com/embeds/book/welcometoalaskatours/items/560822/",
+    checkoutUrl: "https://www.viator.com/searchResults/all?text=Juneau+TEMSCO+Mendenhall+Glacier+helicopter&pid=P00058396&mcid=42383&medium=api&campaign=jfd-waitlist-temscoair-juneau&startDate=2027-08-03",
     lastScannedAt: "2026-10-01T10:00:00.000Z",
     estimatedValue: 898,
     cancellationPolicyNotes:
       "TEMSCO Aviation Juneau terms: 100% full refund at least 48 hours prior to flight departure. Non-refundable within 48 hours. 100% refund for weather cancellations or cruise ship delay.",
     dispatchAlertNotes:
-      "Opening detected: TEMSCO Mendenhall Glacier Landing on 2027-08-03 (3:30 PM Departure). Direct checkout link sent to (303) 555-3419 and vance.tom@outlook.com. Status: contact_pending. Operator hold: not_held.",
+      "Opening detected: TEMSCO Mendenhall Glacier Landing on 2027-08-03 (3:30 PM Departure). Viator partner link sent to (303) 555-3419 and vance.tom@outlook.com. Status: contact_pending. Operator hold: not_held.",
     notificationDispatchedAt: "2026-10-01T10:00:00.000Z",
   },
   {
@@ -584,7 +584,7 @@ export async function execute10AmDailySweep(options?: {
     const endDate = sortedDates[sortedDates.length - 1];
 
     try {
-      const fetchResult = await fetchFareHarborDateRangeDetailed({
+      const fetchResult = await fetchOperatorDateRangeDetailed({
         companyShortname: product.companyShortname,
         itemPk: product.itemPk,
         startDate,
@@ -686,10 +686,10 @@ export async function execute10AmDailySweep(options?: {
             timeZone: "America/Juneau",
           });
 
-          const checkoutUrl = buildFareHarborDirectBookingUrl(
+          const checkoutUrl = buildViatorPartnerBookingUrl(
             product.companyShortname,
             product.itemPk,
-            slot.pk
+            slotDate
           );
 
           // Dispatch notification to passenger and record delivery
@@ -741,7 +741,7 @@ export async function execute10AmDailySweep(options?: {
           entry.matchedPort = product.port;
           entry.matchedOperator = product.operator;
           entry.matchedSlotTime = `${slotTime} Departure`;
-          entry.fareharborCheckoutUrl = checkoutUrl;
+          entry.checkoutUrl = checkoutUrl;
           entry.cancellationPolicyNotes = product.cancellationPolicy;
           entry.notificationDispatchedAt = notification.dispatchedAt;
           entry.notificationDeliveryId = notification.deliveryId;

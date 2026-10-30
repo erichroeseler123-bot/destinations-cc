@@ -471,11 +471,12 @@ export interface AuthoritativeHandoffCheckoutLoadInput {
   handoffId: string;
   requestedReceiptId?: string | null;
   requestedTourCode?: string | null;
-  requestedFareharborItemId?: string | null;
+  requestedViatorProductCode?: string | null;
   requestedDate?: string | null;
   requestedDepartureId?: string | null;
   requestedDepartureTime?: string | null;
   requestedPartySize?: number | null;
+  passengerWeightsLbs?: number[] | null;
   declaredMaxSinglePassengerWeightLbs?: number | null;
   declaredYoungestPassengerAgeYears?: number | null;
   requiresAssistedAircraftBoarding?: boolean | null;
@@ -533,11 +534,12 @@ export async function loadAuthoritativeDccHandoffForCheckout(
         handoffId,
         requestedReceiptId: input.requestedReceiptId ?? null,
         requestedTourCode: input.requestedTourCode ?? null,
-        requestedFareharborItemId: input.requestedFareharborItemId ?? null,
+        requestedViatorProductCode: input.requestedViatorProductCode ?? null,
         requestedDate: input.requestedDate ?? null,
         requestedDepartureId: input.requestedDepartureId ?? null,
         requestedDepartureTime: input.requestedDepartureTime ?? null,
         requestedPartySize: input.requestedPartySize ?? null,
+        passengerWeightsLbs: input.passengerWeightsLbs ?? null,
         declaredMaxSinglePassengerWeightLbs:
           input.declaredMaxSinglePassengerWeightLbs ?? null,
         declaredYoungestPassengerAgeYears:

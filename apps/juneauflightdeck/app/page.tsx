@@ -75,9 +75,9 @@ export default async function HomePage({
     originatingSite: "juneauflightdeck.com",
     provider: "viator",
     providerAccount: "P00058396",
-    productCode: "41920P1",
+    productCode: "6251SHOREXICEWALK",
     destinationUrl:
-      "https://www.viator.com/Juneau-tourism/d941-r8418047970-s323605581?pid=P00058396&mcid=42383&medium=api",
+      "https://www.viator.com/tours/Juneau/Juneau-Shore-Excursion-Helicopter-Tour-and-Guided-Icefield-Walk/d941-6251SHOREXICEWALK?pid=P00058396&mcid=42383&medium=api",
     campaign: "jfd-home-viator",
     contextId: carriedContext.contextId,
     evaluationRunId: assurance.evaluationRunId,

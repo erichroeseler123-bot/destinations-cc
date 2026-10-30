@@ -81,7 +81,7 @@ async function runDurablePipelineTests() {
     tourName: "TEMSCO Mendenhall Glacier Landing",
     departureTime: "11:30 AM Departure",
     partySize: 2,
-    checkoutUrl: "https://fareharbor.com/embeds/book/temscoair-juneau/items/214803/",
+    checkoutUrl: "https://www.viator.com/searchResults/all?text=Juneau+TEMSCO+Mendenhall+Glacier+Walk&pid=P00058396&mcid=42383&medium=api&campaign=jfd-waitlist-temsco-walk",
     cancellationPolicy: "TEMSCO Aviation terms: 48h full refund.",
   });
 
@@ -113,7 +113,7 @@ async function runDurablePipelineTests() {
     tourName: "TEMSCO Mendenhall Glacier Landing",
     departureTime: "11:30 AM Departure",
     partySize: 2,
-    checkoutUrl: "https://fareharbor.com/embeds/book/temscoair-juneau/items/214803/",
+    checkoutUrl: "https://www.viator.com/searchResults/all?text=Juneau+TEMSCO+Mendenhall+Glacier+Walk&pid=P00058396&mcid=42383&medium=api&campaign=jfd-waitlist-temsco-walk",
     cancellationPolicy: "TEMSCO Aviation terms: 48h full refund.",
   });
 

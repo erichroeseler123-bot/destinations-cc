@@ -14,8 +14,8 @@ const bookingFacts = [
   },
   {
     number: "03",
-    title: "A Back-to-Ship Guarantee must be explicit",
-    text: "This is not a blanket law covering every independent tour. Viator's current terms create a contractual policy only for products marked “Worry-free Shore Excursion.” Eligibility requires correct ship details, at least two hours between the tour end and ship departure, no traveler-caused delay, and contacting Viator before arranging travel. The stated next-port transport limit is $1,000 per person.",
+    title: "A Back-to-Ship Guarantee must be explicit (Viator Terms §20 vs. DCC Timing)",
+    text: "DCC evaluates tour suitability and calculates cruise-port timing buffers; Juneau Flight Deck explains the options; Viator handles the booking and applicable booking protections. DCC itself does not provide a back-to-ship guarantee. Viator's Terms of Use (Section 20, “Worry-free Shore Excursions”) create a contractual guarantee only for products marked “Worry-free Shore Excursion” (such as Viator product 6251SHOREXICEWALK, Tag 367649). Eligibility requires supplying Viator with accurate ship arrival/departure details, at least 2 hours (120 minutes) between tour end and ship departure, no traveler-caused delay, and contacting Viator directly before arranging transport (up to US$1,000 per person next-port transport; 14-day refund window if a ship misses port).",
   },
   {
     number: "04",

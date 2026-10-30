@@ -158,22 +158,22 @@ export default function TemscoVsCoastalPage() {
           </ul>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <a
-              href="https://www.viator.com/searchResults/all?text=Juneau+TEMSCO+Helicopters&pid=P00058396&mcid=42383&medium=api"
+              href="https://www.viator.com/searchResults/all?text=Juneau+TEMSCO+Helicopters&pid=P00058396&mcid=42383&medium=api&campaign=jfd-temsco-vs-coastal-temsco"
               target="_blank"
               rel="noopener noreferrer"
               className="button button-primary"
               style={{ fontSize: "0.85rem", padding: "8px 14px" }}
             >
-              Book TEMSCO on Viator →
+              Search TEMSCO on Viator →
             </a>
             <a
-              href="https://fareharbor.com/embeds/book/temscoair-juneau/items/214803/?ref=juneauflightdeck&asn=welcometoalaskatours&full_items=yes"
+              href="https://temscoair.com/tours/juneau-tours/"
               target="_blank"
               rel="noopener noreferrer"
               className="button button-card"
               style={{ fontSize: "0.82rem", padding: "8px 12px" }}
             >
-              Book Direct (FareHarbor) ↗
+              TEMSCO Tour Info ↗
             </a>
           </div>
         </div>
@@ -188,28 +188,28 @@ export default function TemscoVsCoastalPage() {
           </h2>
           <ul style={{ fontSize: "0.88rem", color: "#cbd5e1", lineHeight: 1.6, paddingLeft: 18, marginBottom: 20 }}>
             <li>You want scenic flights over the deep passes leading directly onto <strong>Herbert Glacier</strong>.</li>
-            <li>You want 25 to 30 minutes of ice time on Herbert Glacier ($429 published base).</li>
+            <li>You want 25 to 30 minutes of ice time on Herbert Glacier ($429 published base; $459 on Viator as a Section 20 Worry-Free Shore Excursion, <code>6251SHOREXICEWALK</code>).</li>
             <li>You want Herbert Glacier dog sledding ($709 published direct rate; mid-May to mid-August).</li>
             <li>You prefer a locally owned, boutique flight operation with personalized departures.</li>
           </ul>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <a
-              href="https://www.viator.com/searchResults/all?text=Juneau+Coastal+Helicopters&pid=P00058396&mcid=42383&medium=api"
+              href="https://www.viator.com/tours/Juneau/Juneau-Shore-Excursion-Helicopter-Tour-and-Guided-Icefield-Walk/d941-6251SHOREXICEWALK?pid=P00058396&mcid=42383&medium=api&campaign=jfd-temsco-vs-coastal-coastal"
               target="_blank"
               rel="noopener noreferrer"
               className="button button-primary"
               style={{ fontSize: "0.85rem", padding: "8px 14px" }}
             >
-              Book Coastal on Viator →
+              Book Coastal on Viator (Worry-Free) →
             </a>
             <a
-              href="https://fareharbor.com/embeds/book/coastalhelicopters/items/413056/?ref=juneauflightdeck&asn=welcometoalaskatours&full_items=yes"
+              href="https://coastalhelicopters.com/tours/icefield-excursion/"
               target="_blank"
               rel="noopener noreferrer"
               className="button button-card"
               style={{ fontSize: "0.82rem", padding: "8px 12px" }}
             >
-              Book Direct (FareHarbor) ↗
+              Coastal Tour Info ↗
             </a>
           </div>
         </div>

@@ -44,7 +44,7 @@ async function main() {
     tourName: "Mendenhall Glacier Helicopter Tour",
     departureTime: "1:30 PM Departure",
     partySize: 4,
-    checkoutUrl: "https://fareharbor.com/embeds/book/temscoair-juneau/items/214803/availabilities/999901/book/",
+    checkoutUrl: "https://www.viator.com/searchResults/all?text=Juneau+TEMSCO+Mendenhall+Glacier+Walk&pid=P00058396&mcid=42383&medium=api&campaign=jfd-waitlist-temsco-walk",
     cancellationPolicy: "Full refund 48 hours prior • 100% weather guarantee",
     isTest: true,
     isSplitMatch: true,

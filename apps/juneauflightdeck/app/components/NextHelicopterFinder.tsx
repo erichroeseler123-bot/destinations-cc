@@ -54,8 +54,8 @@ export default function NextHelicopterFinder() {
         {result.departures.length === 0 ? <div className={styles.empty}><h3>{result.checkedOperators === 0 ? "We couldn’t check departures right now" : "No matching departures returned"}</h3><p>{result.checkedOperators === 0 ? "Try again or open an operator calendar below." : "Try another date or an earlier ready time. This does not mean every Juneau tour is sold out; seasonal schedules may not be published yet."}</p><a href="#viator-featured-tours">Browse tours and operator calendars ↓</a></div> : <>
           <p className={styles.note}>For {result.date} · {travelers} traveler{travelers === "1" ? "" : "s"} · starts after {after} · checked {new Intl.DateTimeFormat("en-US", { timeZone: "America/Juneau", hour: "numeric", minute: "2-digit", timeZoneName: "short" }).format(new Date(result.checkedAt))}</p>
           {result.departures.slice(0, 4).map((departure, i) => <article className={i === 0 ? styles.next : styles.later} key={departure.id}>
-            <div><p className={styles.eyebrow}>{i === 0 ? "Next listed departure among calendars checked" : "Later departure"}</p><h3>{departure.timeLabel}</h3><strong>{departure.title}</strong><p>{departure.operator}</p><p className={styles.note}>Scheduled start · seats and final price confirmed at checkout</p></div>
-            <a className={styles.book} href={departure.bookingUrl} target="_blank" rel="noopener noreferrer">Check seats &amp; price ↗</a>
+            <div><p className={styles.eyebrow}>{i === 0 ? "Typical operator departure window" : "Later departure window"}</p><h3>{departure.timeLabel}</h3><strong>{departure.title}</strong><p>{departure.operator}</p><p className={styles.note}>Confirm final price and availability in Viator</p></div>
+            <a className={styles.book} href={departure.bookingUrl} target="_blank" rel="noopener noreferrer">Check on Viator ↗</a>
           </article>)}
         </>}
       </>}

@@ -282,8 +282,8 @@ async function runTestSuite() {
         `Recipient email matches passenger: ${record.recipientEmail}`
       );
       assert(
-        record.checkoutUrl.includes("fareharbor.com/embeds/book"),
-        `Direct FareHarbor booking link present: ${record.checkoutUrl}`
+        record.checkoutUrl.includes("viator.com"),
+        `Viator partner booking link present: ${record.checkoutUrl}`
       );
       assert(
         record.cancellationPolicy.length > 20,

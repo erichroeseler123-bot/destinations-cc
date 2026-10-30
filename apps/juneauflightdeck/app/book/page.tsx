@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Script from "next/script";
 import { cookies } from "next/headers";
 import SiteHeader from "../components/SiteHeader";
 import SiteFooter from "../components/SiteFooter";
@@ -15,15 +14,15 @@ interface BookPageSearchParams {
   ctx?: string;
   handoff_id?: string;
   ref?: string;
+  campaign?: string;
   receipt_id?: string;
-  asn?: string;
-  shortname?: string;
-  item?: string;
+  viator_code?: string;
   tour?: string;
   date?: string;
   departure?: string;
   time?: string;
   party_size?: string;
+  passenger_weights_lbs?: string;
   max_weight_lbs?: string;
   youngest_age_years?: string;
   requires_assisted_boarding?: string;
@@ -65,14 +64,14 @@ export default async function BookPage(props: BookPageProps) {
 
   const resolvedHandoffId = extractHandoffIdFromQueryOrRef(
     searchParams.handoff_id,
-    searchParams.ref,
+    searchParams.campaign || searchParams.ref,
   );
 
   const hasUrlHandoffAttempt = Boolean(
     resolvedHandoffId ||
       searchParams.handoff_id?.trim() ||
       searchParams.receipt_id?.trim() ||
-      searchParams.item?.trim() ||
+      searchParams.viator_code?.trim() ||
       searchParams.departure?.trim() ||
       searchParams.tour?.trim(),
   );
@@ -84,6 +83,14 @@ export default async function BookPage(props: BookPageProps) {
   const declaredWeightLbs =
     searchParams.max_weight_lbs !== undefined && searchParams.max_weight_lbs.trim() !== ""
       ? Number(searchParams.max_weight_lbs)
+      : null;
+  const parsedPassengerWeightsLbs =
+    typeof searchParams.passenger_weights_lbs === "string" &&
+    searchParams.passenger_weights_lbs.trim() !== ""
+      ? searchParams.passenger_weights_lbs
+          .split(",")
+          .map((s) => Number(s.trim()))
+          .filter((n) => Number.isFinite(n) && n > 0)
       : null;
   const declaredYoungestAge =
     searchParams.youngest_age_years !== undefined &&
@@ -108,7 +115,7 @@ export default async function BookPage(props: BookPageProps) {
         handoffId: resolvedHandoffId,
         requestedReceiptId: searchParams.receipt_id?.trim() || null,
         requestedTourCode: searchParams.tour?.trim() || null,
-        requestedFareharborItemId: searchParams.item?.trim() || null,
+        requestedViatorProductCode: searchParams.viator_code?.trim() || null,
         requestedDate: searchParams.date?.trim() || null,
         requestedDepartureId: searchParams.departure?.trim() || null,
         requestedDepartureTime: searchParams.time?.trim() || null,
@@ -116,6 +123,7 @@ export default async function BookPage(props: BookPageProps) {
           requestedPartySize !== null && Number.isFinite(requestedPartySize)
             ? requestedPartySize
             : null,
+        passengerWeightsLbs: parsedPassengerWeightsLbs,
         declaredMaxSinglePassengerWeightLbs:
           declaredWeightLbs !== null && Number.isFinite(declaredWeightLbs)
             ? declaredWeightLbs
@@ -184,11 +192,23 @@ export default async function BookPage(props: BookPageProps) {
   const handoffId = authoritativeRevalidation?.handoffId ?? resolvedHandoffId ?? null;
   const receiptId = authoritativeRevalidation?.receiptId ?? null;
   const receiptVerified = authoritativeRevalidation?.receiptVerified === true;
-  const operatorShortname = authoritativeRevalidation?.fareharborShortname ?? null;
-  const fareharborItemId = authoritativeRevalidation?.fareharborItemId ?? null;
-  const fareharborDirectEmbedUrl =
-    authoritativeRevalidation?.fareharborDirectEmbedUrl ??
-    authoritativeHandoff?.checkoutBookingBinding?.fareharborDirectEmbedUrl ??
+  const bookingProvider = authoritativeRevalidation?.bookingProvider ?? "viator";
+  const viatorProductCode =
+    authoritativeRevalidation?.viatorProductCode ??
+    authoritativeHandoff?.viatorProductCode ??
+    null;
+  const viatorBookingUrl =
+    authoritativeRevalidation?.viatorBookingUrl ??
+    authoritativeHandoff?.checkoutBookingBinding?.viatorBookingUrl ??
+    authoritativeHandoff?.outboundAffiliateUrl ??
+    null;
+  const viatorWorryFreeShoreExcursion =
+    authoritativeRevalidation?.viatorWorryFreeShoreExcursion ??
+    authoritativeHandoff?.checkoutBookingBinding?.viatorWorryFreeShoreExcursion ??
+    null;
+  const travelerReselectionRequirements =
+    authoritativeRevalidation?.travelerReselectionRequirements ??
+    authoritativeHandoff?.checkoutBookingBinding?.travelerReselectionRequirements ??
     null;
   const tourCode = authoritativeRevalidation?.productCode ?? null;
   const intendedDate =
@@ -204,6 +224,11 @@ export default async function BookPage(props: BookPageProps) {
   const maxSinglePassengerWeightLbs =
     authoritativeRevalidation?.checks?.passengerConstraints?.maxSinglePassengerWeightLbs ??
     null;
+  const passengerWeightsLbs: number[] | null =
+    authoritativeRevalidation?.checks?.priceAndSurcharge?.passengerWeightsLbs ?? null;
+  const publishedGroupTotalConfirmed: boolean =
+    authoritativeRevalidation?.checks?.priceAndSurcharge?.publishedGroupTotalConfirmed ===
+    true;
 
   const publishedBasePerPersonUsd: number | null =
     authoritativeRevalidation?.checks?.priceAndSurcharge?.publishedBasePerPersonUsd ??
@@ -226,7 +251,7 @@ export default async function BookPage(props: BookPageProps) {
     authenticatedOutcomeId: null,
     requiresProviderConfirmationAtCheckout: true,
     explanation:
-      "Live seat inventory, departure dispatch status, and final operator fare are not established by DCC and remain unknown until confirmed by an authenticated FareHarbor response.",
+      "Live seat inventory, departure time slot availability, and final fare are not established by DCC and remain unknown until confirmed in Viator.",
   };
 
   const versionedPolicySource = authoritativeRevalidation?.versionedPolicySource ?? null;
@@ -251,15 +276,19 @@ export default async function BookPage(props: BookPageProps) {
         handoffVerifiedServerSide,
         receiptId,
         receiptVerified,
-        operatorShortname,
-        fareharborItemId,
-        fareharborDirectEmbedUrl: progressionAllowed ? fareharborDirectEmbedUrl : null,
+        bookingProvider,
+        viatorProductCode,
+        viatorBookingUrl: progressionAllowed ? viatorBookingUrl : null,
+        viatorWorryFreeShoreExcursion,
+        travelerReselectionRequirements,
         tourCode,
         intendedDate,
         departureId,
         departureTime,
         partySize,
+        passengerWeightsLbs,
         maxSinglePassengerWeightLbs,
+        publishedGroupTotalConfirmed,
         quotedPerPersonUsd,
         quotedTotalUsd,
         publishedBasePerPersonUsd,
@@ -275,10 +304,6 @@ export default async function BookPage(props: BookPageProps) {
 
   return (
     <div className="site-shell-wrapper">
-      <Script
-        src="https://fareharbor.com/embeds/api/v1/?autolightframe=yes"
-        strategy="afterInteractive"
-      />
       <SiteHeader />
       <main className="site-main py-10">
         <div className="site-shell max-w-4xl mx-auto px-4">
@@ -294,15 +319,46 @@ export default async function BookPage(props: BookPageProps) {
 
           <div className="mb-8">
             <span className="text-xs font-bold tracking-widest text-sky-600 uppercase">
-              Specialist Booking Portal • Juneau Flight Deck
+              Specialist Referral Portal • Juneau Flight Deck → Viator
             </span>
             <h1 className="text-3xl font-extrabold text-slate-900 mt-1">
-              Juneau Helicopter Tour Checkout Handoff
+              Juneau Helicopter Tour Referral &amp; Pre-Booking Review
             </h1>
             <p className="text-slate-600 mt-2">
-              DCC evaluates published operator policies and cruise port buffers. Final seat
-              inventory, departure dispatch, and live fare are confirmed directly by the
-              operator via FareHarbor.
+              <strong>DCC evaluates tour suitability; Juneau Flight Deck explains the options; Viator handles the booking and applicable booking protections.</strong>{" "}
+              Confirm final price and availability in Viator.
+            </p>
+          </div>
+
+          {/* Role & Back-to-Ship Guarantee Disclosure Banner */}
+          <div className="p-5 mb-8 rounded-xl bg-emerald-50 border border-emerald-200 text-slate-900 shadow-sm">
+            <div className="text-xs font-bold uppercase tracking-wider text-emerald-900 mb-1">
+              Back-to-Ship Protection &amp; Role Separation
+            </div>
+            <p className="text-sm text-slate-800 leading-relaxed">
+              Qualifying Viator tours marked{" "}
+              <strong>&ldquo;Worry-free Shore Excursion&rdquo;</strong> (such as{" "}
+              <code className="font-mono text-xs bg-white px-1.5 py-0.5 rounded border border-emerald-200">
+                6251SHOREXICEWALK
+              </code>
+              , Viator Tag <code className="font-mono text-xs">367649</code>) are covered by{" "}
+              <a
+                href="https://www.viator.com/support/termsAndConditions"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-emerald-900 underline"
+              >
+                Viator Terms of Use Section 20 (&ldquo;Worry-free Shore Excursions&rdquo;)
+              </a>{" "}
+              when you provide accurate ship arrival/departure information to Viator, select a
+              tour ending at least <strong>2 hours (120 minutes) before ship departure</strong>,
+              and are not delayed by your own actions (up to{" "}
+              <strong>US$1,000 per person</strong> next-port transport;{" "}
+              <strong>14-day refund window</strong> if your ship misses or is delayed into port).{" "}
+              <strong>
+                DCC&apos;s cruise-timing buffer calculation evaluates schedule suitability only —
+                DCC itself does not provide a back-to-ship guarantee.
+              </strong>
             </p>
           </div>
 
@@ -313,8 +369,8 @@ export default async function BookPage(props: BookPageProps) {
               data-handoff-id={handoffId || ""}
               data-receipt-id={receiptId || ""}
               data-receipt-verified={String(receiptVerified)}
-              data-fareharbor-shortname={operatorShortname || ""}
-              data-fareharbor-item={fareharborItemId || ""}
+              data-booking-provider={bookingProvider}
+              data-viator-product-code={viatorProductCode || ""}
               data-tour-code={tourCode || ""}
               data-intended-date={intendedDate || ""}
               data-departure-id={departureId || ""}
@@ -339,7 +395,7 @@ export default async function BookPage(props: BookPageProps) {
                   />
                   <span className="font-bold text-sm tracking-wide uppercase">
                     {progressionAllowed
-                      ? "DCC Policy Handoff Revalidated — Live Fare & Seat Availability Confirmed in FareHarbor"
+                      ? "DCC Policy Handoff Revalidated — Confirm final price and availability in Viator"
                       : "Pre-Booking Policy & Handoff Revalidation Gate Blocked Progression"}
                   </span>
                 </div>
@@ -353,10 +409,10 @@ export default async function BookPage(props: BookPageProps) {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                   <div>
                     <span className="text-slate-500 text-xs font-semibold uppercase">
-                      Operator & FareHarbor Item
+                      Evaluated Tour &amp; Viator Product
                     </span>
                     <div className="text-base font-bold text-slate-900">
-                      {operatorShortname || "unspecified"} • Item #{fareharborItemId || "N/A"}
+                      Viator {viatorProductCode || "Search Referral"}
                     </div>
                     <div className="text-xs text-slate-600 font-mono">{tourCode || "N/A"}</div>
                     {versionedPolicySource?.universeId && (
@@ -368,37 +424,48 @@ export default async function BookPage(props: BookPageProps) {
                   </div>
                   <div>
                     <span className="text-slate-500 text-xs font-semibold uppercase">
-                      Target Date, Slot & Published Tariff
+                      Target Date, Planned Slot &amp; Published Tariff
                     </span>
                     <div className="text-base font-bold text-slate-900">
-                      {intendedDate || "Unspecified Date"} @ {departureTime || "TBD"}
+                      {intendedDate || "Unspecified Date"}{" "}
+                      {departureTime ? `(Planned ${departureTime})` : ""}
                     </div>
                     <div className="text-xs text-slate-600 font-mono">
-                      Target Slot: {departureId || "unspecified"} • {partySize ?? "?"}{" "}
-                      {partySize === 1 ? "Traveler" : "Travelers"}
+                      {partySize ?? "?"} {partySize === 1 ? "Traveler" : "Travelers"}
+                      {passengerWeightsLbs && passengerWeightsLbs.length > 0
+                        ? ` • Weights: ${passengerWeightsLbs.join(", ")} lbs`
+                        : maxSinglePassengerWeightLbs !== null
+                          ? ` • Max weight: ${maxSinglePassengerWeightLbs} lbs`
+                          : ""}
                     </div>
-                    {publishedPolicyRequiredTotalUsd !== null &&
-                      publishedBasePerPersonUsd !== null && (
-                        <div className="text-xs text-slate-700 mt-1 font-semibold">
-                          Published Policy Tariff: ${publishedPolicyRequiredTotalUsd.toFixed(2)}{" "}
-                          USD (${publishedBasePerPersonUsd.toFixed(2)}/person base
-                          {requiredWeightSurchargeUsd > 0
-                            ? ` + $${requiredWeightSurchargeUsd.toFixed(2)} weight surcharge`
-                            : ""}
-                          )
-                        </div>
-                      )}
+                    {publishedGroupTotalConfirmed &&
+                    publishedPolicyRequiredTotalUsd !== null &&
+                    publishedBasePerPersonUsd !== null ? (
+                      <div className="text-xs text-slate-700 mt-1 font-semibold">
+                        Published Policy Estimate: ${publishedPolicyRequiredTotalUsd.toFixed(2)}{" "}
+                        USD (${publishedBasePerPersonUsd.toFixed(2)}/person base
+                        {requiredWeightSurchargeUsd > 0
+                          ? ` + $${requiredWeightSurchargeUsd.toFixed(2)} weight surcharge`
+                          : ""}
+                        )
+                      </div>
+                    ) : (
+                      <div className="text-xs text-amber-900 mt-1 font-semibold">
+                        Group total unconfirmed until all individual passenger weights are entered
+                        and confirmed in Viator.
+                      </div>
+                    )}
                   </div>
                   <div>
                     <span className="text-slate-500 text-xs font-semibold uppercase">
-                      Provider Confirmation & Live Inventory
+                      Provider Confirmation &amp; Live Inventory
                     </span>
                     <div className="text-sm font-bold text-amber-900 bg-amber-100 border border-amber-300 px-2.5 py-1 rounded inline-block mt-0.5">
-                      Status: UNKNOWN UNTIL FAREHARBOR CHECKOUT
+                      Confirm final price and availability in Viator
                     </div>
                     <div className="text-xs text-slate-600 mt-1">
-                      Live seat count, departure dispatch status, and final operator fare are
-                      not established by DCC; confirmed directly by FareHarbor.
+                      Live seat count, departure time slot availability, and final fare are not
+                      established by DCC; confirmed directly in Viator.
                     </div>
                   </div>
                 </div>
@@ -432,7 +499,7 @@ export default async function BookPage(props: BookPageProps) {
                   href="/helicopter"
                   className="inline-block text-xs font-semibold px-3 py-1.5 bg-amber-800 text-white rounded hover:bg-amber-900"
                 >
-                  Select Date & Times Manually
+                  Select Date &amp; Times Manually
                 </Link>
               </div>
             </div>
@@ -482,7 +549,7 @@ export default async function BookPage(props: BookPageProps) {
                 )}
                 <div>
                   <span className="text-slate-500 text-xs font-semibold uppercase">
-                    Calculated Safe Dock Return
+                    Calculated Safe Dock Return (DCC Suitability Check)
                   </span>
                   <div className="text-base font-bold text-emerald-800">
                     Latest Safe Return:{" "}
@@ -494,18 +561,55 @@ export default async function BookPage(props: BookPageProps) {
             </div>
           )}
 
-          {/* Authoritative FareHarbor Lightframe & Direct Booking Action */}
+          {/* Viator Referral & Traveler Reselection Requirements */}
           <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
             <h2 className="text-lg font-bold text-slate-900 mb-2">
               {hasUrlHandoffAttempt
-                ? "Operator Reservation Handoff (FareHarbor)"
-                : "Select a Permitted Juneau Helicopter Operator (FareHarbor)"}
+                ? "Viator Booking Referral & Traveler Selection Checklist"
+                : "Juneau Helicopter Excursions — Book via Viator"}
             </h2>
             <p className="text-sm text-slate-600 mb-6">
               {hasUrlHandoffAttempt
-                ? "Your evaluated tour, target date, departure slot, and party parameters are bound below. Proceeding opens the operator's FareHarbor booking calendar where live seat availability and final fare are confirmed prior to payment."
-                : "Choose one of the three USFS Tongass National Forest permitted Juneau helicopter operators below to open live FareHarbor availability and checkout."}
+                ? "Your DCC-evaluated tour, date, and party parameters are preserved below. Confirm final price and availability in Viator."
+                : "Compare Juneau Part 135 helicopter operators below and proceed to Viator to confirm final price, live departure time slots, and Section 20 Worry-free Shore Excursion terms."}
             </p>
+
+            {/* Explicit disclosure of what transfers in the URL vs what must be reselected in Viator */}
+            <div className="mb-6 p-4 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-700 space-y-2">
+              <div className="font-bold text-slate-900 uppercase tracking-wide">
+                What Transfers in the Viator Referral Link vs. What You Must Reselect in Viator
+              </div>
+              <p>
+                <strong>Carried in Viator URL query parameters:</strong> Exact Viator product (
+                <code className="font-mono">d941-6251SHOREXICEWALK</code>), affiliate attribution (
+                <code className="font-mono">pid=P00058396</code>,{" "}
+                <code className="font-mono">mcid=42383</code>,{" "}
+                <code className="font-mono">medium=api</code>,{" "}
+                <code className="font-mono">campaign=...__{handoffId || "<handoff_id>"}</code>),{" "}
+                <code className="font-mono">startDate={intendedDate || "YYYY-MM-DD"}</code>, and{" "}
+                <code className="font-mono">numTravelers={partySize ?? 2}</code>.
+              </p>
+              <p>
+                <strong>Must be confirmed or reselected inside Viator&apos;s booking widget:</strong>{" "}
+                (1) Verify your travel date and guest count in Viator&apos;s availability calendar,
+                (2) select your specific departure time slot (ending at least 2 hours before ship
+                departure for Section 20 Worry-free Shore Excursion coverage), (3) select the
+                required passenger weight-tier option (
+                <code className="font-mono">DEFAULT</code> 1–259 lbs,{" "}
+                <code className="font-mono">TG1</code> 260–299 lbs half-seat surcharge, or{" "}
+                <code className="font-mono">TG2</code> 300+ lbs second seat per{" "}
+                <a
+                  href="https://coastalhelicopters.com/faq/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline font-semibold"
+                >
+                  Coastal Helicopters FAQ
+                </a>
+                ), and (4) enter each traveler&apos;s individual clothed weight and cruise ship
+                arrival/departure details at Viator checkout.
+              </p>
+            </div>
 
             {hasUrlHandoffAttempt ? (
               <div className="space-y-6">
@@ -513,44 +617,53 @@ export default async function BookPage(props: BookPageProps) {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-lg bg-slate-50 border border-slate-200 text-sm">
                     <div>
                       <span className="block text-xs font-semibold text-slate-500 uppercase">
-                        Bound Operator & Item
+                        Bound Viator Product &amp; Operator
                       </span>
                       <span className="font-bold text-slate-900">
-                        {operatorShortname} • FareHarbor Item #{fareharborItemId} ({tourCode})
+                        Viator {viatorProductCode || "Search Referral"} ({tourCode})
+                      </span>
+                      {viatorWorryFreeShoreExcursion?.qualifiesForViatorWorryFreeGuarantee && (
+                        <span className="block text-xs text-emerald-800 font-semibold mt-1">
+                          ✓ Qualifies for Viator Worry-free Shore Excursion (Section 20, Tag 367649)
+                        </span>
+                      )}
+                    </div>
+                    <div>
+                      <span className="block text-xs font-semibold text-slate-500 uppercase">
+                        Target Date &amp; Planned Window
+                      </span>
+                      <span className="font-bold text-slate-900">
+                        {intendedDate} {departureTime ? `@ ${departureTime}` : ""}{" "}
+                        {departureId ? `(${departureId})` : ""}
                       </span>
                     </div>
                     <div>
                       <span className="block text-xs font-semibold text-slate-500 uppercase">
-                        Target Date & Departure
-                      </span>
-                      <span className="font-bold text-slate-900">
-                        {intendedDate} @ {departureTime} ({departureId})
-                      </span>
-                    </div>
-                    <div>
-                      <span className="block text-xs font-semibold text-slate-500 uppercase">
-                        Declared Party & Weight
+                        Declared Party &amp; Weight
                       </span>
                       <span className="font-bold text-slate-900">
                         {partySize} {partySize === 1 ? "Traveler" : "Travelers"}
-                        {maxSinglePassengerWeightLbs !== null
-                          ? ` • Max single traveler weight: ${maxSinglePassengerWeightLbs} lbs`
-                          : ""}
+                        {passengerWeightsLbs && passengerWeightsLbs.length > 0
+                          ? ` • Passenger weights: ${passengerWeightsLbs.join(", ")} lbs`
+                          : maxSinglePassengerWeightLbs !== null
+                            ? ` • Max single traveler weight: ${maxSinglePassengerWeightLbs} lbs`
+                            : ""}
                       </span>
                     </div>
                     <div>
                       <span className="block text-xs font-semibold text-slate-500 uppercase">
-                        Published Policy Tariff (Before Live Operator Check)
+                        Published Policy Estimate (Confirm Final Price in Viator)
                       </span>
                       <span className="font-bold text-slate-900">
-                        {publishedPolicyRequiredTotalUsd !== null &&
+                        {publishedGroupTotalConfirmed &&
+                        publishedPolicyRequiredTotalUsd !== null &&
                         publishedBasePerPersonUsd !== null
                           ? `$${publishedPolicyRequiredTotalUsd.toFixed(2)} USD (${partySize} × $${publishedBasePerPersonUsd.toFixed(2)}${
                               requiredWeightSurchargeUsd > 0
                                 ? ` + $${requiredWeightSurchargeUsd.toFixed(2)} weight surcharge`
                                 : ""
                             })`
-                          : "Confirmed in FareHarbor"}
+                          : "Confirm final price and availability in Viator"}
                       </span>
                     </div>
                   </div>
@@ -559,28 +672,28 @@ export default async function BookPage(props: BookPageProps) {
                 <div className="pt-4 border-t border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div>
                     <span className="text-xs font-semibold text-amber-800 uppercase">
-                      Provider Confirmation Status: UNKNOWN
+                      Confirm final price and availability in Viator
                     </span>
                     <p className="text-xs text-slate-600 mt-1">
-                      FareHarbor establishes live seat availability, exact departure opening,
-                      and final total before any payment commitment.
+                      Viator establishes live seat availability, exact departure time slot selection,
+                      final price, and Section 20 Worry-free Shore Excursion coverage at checkout.
                     </p>
                   </div>
 
-                  {progressionAllowed && fareharborDirectEmbedUrl ? (
+                  {progressionAllowed && viatorBookingUrl ? (
                     <a
-                      href={fareharborDirectEmbedUrl}
-                      data-testid="fareharbor-booking-cta"
+                      href={viatorBookingUrl}
+                      data-testid="viator-booking-cta"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center justify-center px-6 py-3 font-bold rounded-lg shadow bg-sky-700 hover:bg-sky-800 text-white transition text-center"
                     >
-                      Continue to FareHarbor Live Availability &amp; Checkout ↗
+                      Confirm Final Price &amp; Availability in Viator ↗
                     </a>
                   ) : (
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                       <span
-                        data-testid="fareharbor-booking-blocked"
+                        data-testid="viator-booking-blocked"
                         className="px-5 py-2.5 font-bold rounded-lg bg-rose-100 border border-rose-300 text-rose-900 text-sm"
                       >
                         Booking Handoff Blocked by Revalidation Gate
@@ -597,27 +710,43 @@ export default async function BookPage(props: BookPageProps) {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-4 rounded-lg border border-slate-200 flex flex-col justify-between">
+                <div className="p-4 rounded-lg border border-emerald-300 bg-emerald-50/30 flex flex-col justify-between">
                   <div>
-                    <div className="text-xs font-bold text-sky-700 uppercase">
-                      Coastal Helicopters
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs font-bold text-sky-700 uppercase">
+                        Coastal Helicopters
+                      </span>
+                      <span className="text-[10px] font-bold bg-emerald-100 text-emerald-900 px-2 py-0.5 rounded">
+                        Worry-Free (§20)
+                      </span>
                     </div>
                     <div className="font-bold text-slate-900 mt-1">
-                      Icefield Excursion &amp; Glacier Walk
+                      Juneau Shore Excursion Helicopter Tour &amp; Guided Icefield Walk
                     </div>
                     <div className="text-xs text-slate-600 mt-1">
-                      Published Policy Base: $459/person • 260 lb / 300 lb weight surcharge tiers
+                      Viator <code className="font-mono">6251SHOREXICEWALK</code> • Published Base:
+                      $459/person • 260–299 lb (+$150 TG1) / 300+ lb (TG2) tiers
                     </div>
                   </div>
-                  <a
-                    href="https://fareharbor.com/embeds/book/coastalhelicopters/items/4012/?asn=welcometoalaskatours&ref=juneauflightdeck-direct&full-items=yes"
-                    data-testid="fareharbor-direct-coastal"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-4 inline-block text-center text-xs font-bold px-4 py-2.5 rounded bg-sky-700 hover:bg-sky-800 text-white"
-                  >
-                    Check Coastal Availability on FareHarbor ↗
-                  </a>
+                  <div className="mt-4 space-y-2">
+                    <a
+                      href="https://www.viator.com/tours/Juneau/Juneau-Shore-Excursion-Helicopter-Tour-and-Guided-Icefield-Walk/d941-6251SHOREXICEWALK?pid=P00058396&mcid=42383&medium=api&campaign=jfd-book-coastal-icefield"
+                      data-testid="viator-direct-coastal"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block text-center text-xs font-bold px-4 py-2.5 rounded bg-sky-700 hover:bg-sky-800 text-white"
+                    >
+                      Confirm Final Price &amp; Availability in Viator ↗
+                    </a>
+                    <a
+                      href="https://coastalhelicopters.com/tours/icefield-excursion/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block text-center text-[11px] font-semibold text-slate-600 hover:underline"
+                    >
+                      Operator Policy Reference (Coastal Helicopters) ↗
+                    </a>
+                  </div>
                 </div>
 
                 <div className="p-4 rounded-lg border border-slate-200 flex flex-col justify-between">
@@ -629,18 +758,29 @@ export default async function BookPage(props: BookPageProps) {
                       Mendenhall Glacier &amp; Guided Walk
                     </div>
                     <div className="text-xs text-slate-600 mt-1">
-                      Published Policy Base: $449/person • 250 lb weight surcharge (+$150)
+                      Published Policy Base: $449/person • 250 lb weight surcharge (+$150) • Verify
+                      Section 20 Worry-free badge on Viator listing
                     </div>
                   </div>
-                  <a
-                    href="https://fareharbor.com/embeds/book/temscoair-juneau/items/214803/?asn=welcometoalaskatours&ref=juneauflightdeck-direct&full-items=yes"
-                    data-testid="fareharbor-direct-temsco"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-4 inline-block text-center text-xs font-bold px-4 py-2.5 rounded bg-sky-700 hover:bg-sky-800 text-white"
-                  >
-                    Check TEMSCO Availability on FareHarbor ↗
-                  </a>
+                  <div className="mt-4 space-y-2">
+                    <a
+                      href="https://www.viator.com/searchResults/all?text=Juneau+Mendenhall+Glacier+helicopter+tour&pid=P00058396&mcid=42383&medium=api&campaign=jfd-book-temsco-search"
+                      data-testid="viator-direct-temsco"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block text-center text-xs font-bold px-4 py-2.5 rounded bg-sky-700 hover:bg-sky-800 text-white"
+                    >
+                      Search Mendenhall Helicopter Options on Viator ↗
+                    </a>
+                    <a
+                      href="https://temscoair.com/tours/pilots-choice-exploration/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block text-center text-[11px] font-semibold text-slate-600 hover:underline"
+                    >
+                      Operator Policy Reference (TEMSCO) ↗
+                    </a>
+                  </div>
                 </div>
 
                 <div className="p-4 rounded-lg border border-slate-200 flex flex-col justify-between">
@@ -649,21 +789,32 @@ export default async function BookPage(props: BookPageProps) {
                       NorthStar Trekking
                     </div>
                     <div className="font-bold text-slate-900 mt-1">
-                      Helicopter Glacier Walkabout
+                      Helicopter Glacier Walkabout (1 Hour on Ice)
                     </div>
                     <div className="text-xs text-slate-600 mt-1">
-                      Published Policy Base: $499/person • 250 lb weight surcharge (+$150) • Min age 8
+                      Published Policy Base: $499/person • 250 lb weight surcharge (+$150) • Min age
+                      8 • Verify Section 20 Worry-free badge on Viator listing
                     </div>
                   </div>
-                  <a
-                    href="https://fareharbor.com/embeds/book/northstartrekking/items/88310/?asn=welcometoalaskatours&ref=juneauflightdeck-direct&full-items=yes"
-                    data-testid="fareharbor-direct-northstar"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-4 inline-block text-center text-xs font-bold px-4 py-2.5 rounded bg-sky-700 hover:bg-sky-800 text-white"
-                  >
-                    Check NorthStar Availability on FareHarbor ↗
-                  </a>
+                  <div className="mt-4 space-y-2">
+                    <a
+                      href="https://www.viator.com/searchResults/all?text=Juneau+NorthStar+Glacier+Walkabout+helicopter&pid=P00058396&mcid=42383&medium=api&campaign=jfd-book-northstar-search"
+                      data-testid="viator-direct-northstar"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block text-center text-xs font-bold px-4 py-2.5 rounded bg-sky-700 hover:bg-sky-800 text-white"
+                    >
+                      Search Glacier Walkabout Options on Viator ↗
+                    </a>
+                    <a
+                      href="https://northstartrekking.com/treks/tours/helicopter-glacier-walkabout/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block text-center text-[11px] font-semibold text-slate-600 hover:underline"
+                    >
+                      Operator Policy Reference (NorthStar) ↗
+                    </a>
+                  </div>
                 </div>
               </div>
             )}
@@ -674,4 +825,5 @@ export default async function BookPage(props: BookPageProps) {
     </div>
   );
 }
+
 
