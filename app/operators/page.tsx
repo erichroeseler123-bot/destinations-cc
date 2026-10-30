@@ -164,14 +164,28 @@ export default function OperatorsDirectoryPage() {
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-2xl border border-white/10 bg-black/40 p-5">
+            <div className="rounded-2xl border border-white/10 bg-black/40 p-5 space-y-3">
               <p className="text-xs font-mono font-bold uppercase text-emerald-300">
-                1 · Working Production Checkout (Operational &amp; Unchanged)
+                1 · Existing GoSno Storefront Integration (gosno.co — Operational &amp; Unchanged)
               </p>
-              <p className="mt-2 text-sm text-white/80 leading-6">
+              <p className="text-sm text-white/80 leading-6">
                 {pilot.workingCheckoutStatus}
               </p>
-              <div className="mt-4 flex flex-wrap gap-3 text-xs">
+              <div className="rounded-xl border border-white/10 bg-black/50 p-3 text-[11px] font-mono text-white/75 space-y-1">
+                <p className="text-cyan-300 font-bold">
+                  Captured Live Endpoint Evidence ({pilot.storefrontIntegration.capturedAt}):
+                </p>
+                <p>
+                  • GET /.well-known/dcc → HTTP {pilot.storefrontIntegration.wellKnownStatus} ({pilot.storefrontIntegration.legalName}, {pilot.storefrontIntegration.operatingAuthority})
+                </p>
+                <p>
+                  • GET /api/dcc/routes → HTTP {pilot.storefrontIntegration.routesCatalogStatus} ({pilot.storefrontIntegration.publishedPrivateSuvRouteCount} private SUV routes, e.g. {pilot.storefrontIntegration.sampleRouteMapping.routeId} → {pilot.storefrontIntegration.sampleRouteMapping.rezdyProductCode})
+                </p>
+                <p>
+                  • GET /api/availability ({pilot.storefrontIntegration.availabilityProbeResult.date}) → HTTP {pilot.storefrontIntegration.availabilityProbeStatus} (suv.available={String(pilot.storefrontIntegration.availabilityProbeResult.suvAvailable)}, van.quoteOnly={String(pilot.storefrontIntegration.availabilityProbeResult.vanQuoteOnly)})
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-3 text-xs pt-1">
                 <a
                   href={pilot.workingCheckoutUrl}
                   target="_blank"
@@ -191,23 +205,40 @@ export default function OperatorsDirectoryPage() {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-white/10 bg-black/40 p-5">
+            <div className="rounded-2xl border border-white/10 bg-black/40 p-5 space-y-3">
               <p className="text-xs font-mono font-bold uppercase text-amber-300">
-                2 · DCC 10% Direct-Channel Pilot Status (Evaluated Separately)
+                2 · New DCC 10% Direct-Channel Pilot Status (DCC-Side Integration — Pending)
               </p>
-              <ul className="mt-2 space-y-1.5 text-xs text-white/75">
+              <ul className="space-y-1.5 text-xs text-white/75">
                 <li>
-                  • <strong>Operator Authorization &amp; Rezdy API Access:</strong>{" "}
-                  <span className="text-emerald-300 font-mono">Verified</span>
+                  • <strong>Operator Authorization &amp; DCC-Side Rezdy API Access:</strong>{" "}
+                  <span className="text-amber-300 font-mono uppercase">
+                    {pilot.verificationChecklist.operatorAuthorization} / {pilot.verificationChecklist.providerApprovedApiAccess}
+                  </span>
                 </li>
                 <li>
-                  • <strong>Product Mapping &amp; Live Price/Availability:</strong>{" "}
-                  <span className="text-emerald-300 font-mono">Verified (Rezdy REST API v1)</span>
+                  • <strong>DCC Product Mapping &amp; Live Price/Availability:</strong>{" "}
+                  <span className="text-amber-300 font-mono uppercase">
+                    {pilot.verificationChecklist.productMapping} / {pilot.verificationChecklist.livePricesAndAvailability}
+                  </span>
                 </li>
                 <li>
                   • <strong>10% Direct Commercial Addendum &amp; Outcome Reporting:</strong>{" "}
-                  <span className="text-amber-300 font-mono">Pilot Verification In Progress</span>
+                  <span className="text-amber-300 font-mono uppercase">
+                    {pilot.verificationChecklist.agreedCommercialTerms} / {pilot.verificationChecklist.bookingAttributionAndOutcomeReporting}
+                  </span>
                 </li>
+                <li>
+                  • <strong>Separate Direct Cancellation Policy Verification:</strong>{" "}
+                  <span className="text-amber-300 font-mono uppercase">
+                    {pilot.verificationChecklist.cancellationAndReturnPolicyVerifiedSeparately}
+                  </span>
+                </li>
+              </ul>
+              <ul className="border-t border-white/10 pt-2.5 space-y-1 text-[11px] text-white/60 leading-5">
+                {Object.values(pilot.verificationNotes).map((note) => (
+                  <li key={note}>• {note}</li>
+                ))}
               </ul>
             </div>
           </div>
@@ -223,7 +254,7 @@ export default function OperatorsDirectoryPage() {
               Operators Currently Featured Through Verified Viator Listings
             </h2>
             <p className="mt-3 text-sm leading-6 text-white/70">
-              We only list a company here when its DCC operator page, supplier identity (<code className="text-cyan-200">SUPPLIER-...</code>), and active Viator product links have been verified via Viator&apos;s API. These pages currently route bookings through Viator; none of the Viator-channeled operators below are claimed as enrolled direct API partners unless verified and switched.
+              We only list a company here when its DCC operator page, supplier identity (<code className="text-cyan-200">SUPPLIER-...</code>), verified destination reference, and unmodified Viator product URLs have been verified against preserved Viator Partner API v2 responses. These pages currently route bookings through Viator; none of the Viator-channeled operators below are claimed as enrolled direct API partners unless verified and switched.
             </p>
           </div>
 
@@ -257,6 +288,12 @@ export default function OperatorsDirectoryPage() {
                       >
                         {operator.website}
                       </a>
+                    </p>
+                    <p>
+                      Viator Supplier Reference:{" "}
+                      <span className="font-mono text-white/80">
+                        {operator.supplierReference}
+                      </span>
                     </p>
                     <p>
                       Verified Active Viator Products:{" "}

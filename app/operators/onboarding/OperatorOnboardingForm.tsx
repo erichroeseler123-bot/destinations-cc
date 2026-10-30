@@ -251,12 +251,19 @@ export default function OperatorOnboardingForm({
         >
           <p className="font-bold text-sm">
             {result.ok
-              ? `Status: ${result.applicationStatus}`
+              ? `Status: ${result.applicationStatus} (Application ID: ${result.applicationId})`
               : `Submission Error (${result.errorCode || "error"})`}
           </p>
           <p className="mt-1">{result.message || result.commercialTermsNote}</p>
+          {result.ok && result.persisted ? (
+            <div className="mt-2 rounded-xl border border-white/10 bg-black/40 p-3 font-mono text-[11px] text-white/80 space-y-1">
+              <p>• Durable Storage: {result.storageBackend} (verified post-write read-back)</p>
+              <p>• Private Review Queue State: {result.reviewQueueState}</p>
+              <p>• Applicant Retrieval Token: {result.retrievalToken}</p>
+            </div>
+          ) : null}
           {result.credentialArrangementNote ? (
-            <p className="mt-1 text-white/75">{result.credentialArrangementNote}</p>
+            <p className="mt-2 text-white/75">{result.credentialArrangementNote}</p>
           ) : null}
         </div>
       ) : null}

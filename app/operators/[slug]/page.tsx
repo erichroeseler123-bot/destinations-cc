@@ -110,11 +110,16 @@ export default async function OperatorPage({
                 Phone: {operator.phone}
               </span>
             ) : null}
+            {operator.supplierReference ? (
+              <span className="rounded-xl border border-cyan-400/20 bg-cyan-950/30 px-4 py-2.5 font-mono text-xs text-cyan-200">
+                Viator Supplier Ref: {operator.supplierReference}
+              </span>
+            ) : null}
           </div>
 
           {!isDirectPilot ? (
             <p className="text-xs leading-6 text-white/65 border-t border-white/10 pt-4">
-              <strong>Channel Disclosure:</strong> The tours listed on this page are currently booked through Viator using verified product links matched to {operator.name}&apos;s Viator supplier record. Displaying these verified Viator listings does not imply {operator.name} has already entered a direct API partnership with DCC.
+              <strong>Channel Disclosure:</strong> The tours listed on this page are currently booked through Viator using the exact, unmodified <code className="text-cyan-200">productUrl</code> returned by Viator&apos;s Partner API v2 and matched to {operator.name}&apos;s supplier record (<code className="text-cyan-200">{operator.supplierReference}</code>). Displaying these verified Viator listings does not imply {operator.name} has already entered a direct API partnership with DCC.
             </p>
           ) : null}
         </header>
@@ -154,20 +159,34 @@ export default async function OperatorPage({
               {operator.directPilot!.pilotLabel}
             </span>
             <h2 className="text-2xl font-black text-white">
-              Rezdy Native REST API v1 Pilot &amp; Working Production Checkout
+              Existing GoSno Storefront vs. New DCC 10% Direct-Channel Pilot
             </h2>
             <p className="text-sm leading-6 text-white/80">
               {operator.directPilot!.pilotScopeSummary}
             </p>
             <div className="grid gap-4 md:grid-cols-2 pt-2">
-              <div className="rounded-2xl border border-white/10 bg-black/40 p-5">
+              <div className="rounded-2xl border border-white/10 bg-black/40 p-5 space-y-3">
                 <p className="text-xs font-mono font-bold uppercase text-emerald-300">
-                  Working Production Checkout (Unchanged)
+                  1 · Existing GoSno Storefront Integration (gosno.co — Operational &amp; Unchanged)
                 </p>
-                <p className="mt-2 text-xs text-white/75 leading-5">
+                <p className="text-xs text-white/75 leading-5">
                   {operator.directPilot!.workingCheckoutStatus}
                 </p>
-                <div className="mt-3 flex flex-wrap gap-3 text-xs">
+                <div className="rounded-xl border border-white/10 bg-black/50 p-3 text-[11px] font-mono text-white/75 space-y-1">
+                  <p className="text-cyan-300 font-bold">
+                    Captured Live Endpoint Evidence ({operator.directPilot!.storefrontIntegration.capturedAt}):
+                  </p>
+                  <p>
+                    • GET /.well-known/dcc → HTTP {operator.directPilot!.storefrontIntegration.wellKnownStatus} ({operator.directPilot!.storefrontIntegration.legalName}, {operator.directPilot!.storefrontIntegration.operatingAuthority})
+                  </p>
+                  <p>
+                    • GET /api/dcc/routes → HTTP {operator.directPilot!.storefrontIntegration.routesCatalogStatus} ({operator.directPilot!.storefrontIntegration.publishedPrivateSuvRouteCount} private SUV routes, e.g. {operator.directPilot!.storefrontIntegration.sampleRouteMapping.routeId} → {operator.directPilot!.storefrontIntegration.sampleRouteMapping.rezdyProductCode})
+                  </p>
+                  <p>
+                    • GET /api/availability ({operator.directPilot!.storefrontIntegration.availabilityProbeResult.date}) → HTTP {operator.directPilot!.storefrontIntegration.availabilityProbeStatus} (suv.available={String(operator.directPilot!.storefrontIntegration.availabilityProbeResult.suvAvailable)}, van.quoteOnly={String(operator.directPilot!.storefrontIntegration.availabilityProbeResult.vanQuoteOnly)})
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-3 text-xs pt-1">
                   <a
                     href={operator.directPilot!.workingCheckoutUrl}
                     target="_blank"
@@ -186,14 +205,40 @@ export default async function OperatorPage({
                   </a>
                 </div>
               </div>
-              <div className="rounded-2xl border border-white/10 bg-black/40 p-5">
+              <div className="rounded-2xl border border-white/10 bg-black/40 p-5 space-y-3">
                 <p className="text-xs font-mono font-bold uppercase text-amber-300">
-                  Direct-Channel Pilot Verification Status
+                  2 · New DCC 10% Direct-Channel Pilot Status (DCC-Side Integration — Pending)
                 </p>
-                <ul className="mt-2 space-y-1 text-xs text-white/75">
-                  <li>• Operator Permission &amp; Rezdy API Access: Verified</li>
-                  <li>• Product Mapping &amp; Live Price/Availability: Verified</li>
-                  <li>• 10% Direct Commercial Addendum &amp; Outcome Reporting: In Progress</li>
+                <ul className="space-y-1.5 text-xs text-white/75">
+                  <li>
+                    • <strong>Operator Permission &amp; DCC-Side Rezdy API Access:</strong>{" "}
+                    <span className="text-amber-300 font-mono uppercase">
+                      {operator.directPilot!.verificationChecklist.operatorAuthorization} / {operator.directPilot!.verificationChecklist.providerApprovedApiAccess}
+                    </span>
+                  </li>
+                  <li>
+                    • <strong>DCC Product Mapping &amp; Live Price/Availability:</strong>{" "}
+                    <span className="text-amber-300 font-mono uppercase">
+                      {operator.directPilot!.verificationChecklist.productMapping} / {operator.directPilot!.verificationChecklist.livePricesAndAvailability}
+                    </span>
+                  </li>
+                  <li>
+                    • <strong>10% Direct Commercial Addendum &amp; Outcome Reporting:</strong>{" "}
+                    <span className="text-amber-300 font-mono uppercase">
+                      {operator.directPilot!.verificationChecklist.agreedCommercialTerms} / {operator.directPilot!.verificationChecklist.bookingAttributionAndOutcomeReporting}
+                    </span>
+                  </li>
+                  <li>
+                    • <strong>Separate Direct Cancellation Policy Verification:</strong>{" "}
+                    <span className="text-amber-300 font-mono uppercase">
+                      {operator.directPilot!.verificationChecklist.cancellationAndReturnPolicyVerifiedSeparately}
+                    </span>
+                  </li>
+                </ul>
+                <ul className="border-t border-white/10 pt-2.5 space-y-1 text-[11px] text-white/60 leading-5">
+                  {Object.values(operator.directPilot!.verificationNotes).map((note) => (
+                    <li key={note}>• {note}</li>
+                  ))}
                 </ul>
               </div>
             </div>
@@ -211,7 +256,7 @@ export default async function OperatorPage({
                 Verified Viator Products for {operator.name}
               </h2>
               <p className="mt-2 text-sm text-white/70 leading-6">
-                Each product below is verified active in Viator&apos;s Partner API, matched to {operator.name}&apos;s supplier record, and uses supplier-provided imagery. Current departure availability, final pricing, and applicable booking terms are confirmed on Viator at checkout.
+                Each product below is verified active in Viator&apos;s Partner API v2, matched to {operator.name}&apos;s supplier record (<code className="text-cyan-200">{operator.supplierReference}</code>), verified against its primary destination, and preserves the exact <code className="text-cyan-200">productUrl</code> returned by Viator&apos;s API. Current departure availability, final pricing, and applicable booking terms are confirmed on Viator at checkout.
               </p>
             </div>
 
@@ -236,7 +281,8 @@ export default async function OperatorPage({
 
                     <div className="p-6 space-y-3">
                       <p className="text-xs font-mono text-white/55">
-                        Supplier: {product.supplierName} · Photo: {product.imageSourceType}
+                        Supplier: {product.supplierName} ({product.supplierReference}) · Destination: {product.verifiedDestination.name}
+                        {product.verifiedDestination.parentRegionName ? `, ${product.verifiedDestination.parentRegionName}` : ""} (#{product.verifiedDestination.destinationId})
                       </p>
                       <h3 className="text-xl font-bold text-white leading-snug">
                         {product.title}
@@ -249,7 +295,7 @@ export default async function OperatorPage({
 
                   <div className="px-6 pb-6 pt-3 border-t border-white/10 flex flex-col gap-2">
                     <a
-                      href={product.trackedViatorUrl}
+                      href={product.productUrl}
                       target="_blank"
                       rel="sponsored noopener noreferrer"
                       className="w-full rounded-xl bg-amber-300 px-5 py-3 text-center text-xs font-black uppercase tracking-wider text-black hover:bg-amber-200 transition"
@@ -257,7 +303,7 @@ export default async function OperatorPage({
                       Check Current Dates &amp; Prices on Viator →
                     </a>
                     <span className="text-[11px] text-white/50 text-center">
-                      Booked via Viator · Confirm live schedule, price, and cancellation terms on Viator
+                      Booked via Viator · Preserved API productUrl · Confirm live schedule, price, and cancellation terms on Viator
                     </span>
                   </div>
                 </article>

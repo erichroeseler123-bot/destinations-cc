@@ -12,13 +12,17 @@ export async function GET(request: Request) {
 
   const url = new URL(request.url);
   const codesParam = url.searchParams.get("codes");
+  const campaignParam = url.searchParams.get("campaign")?.trim();
 
   if (codesParam) {
     const codes = codesParam.split(",").map((c) => c.trim()).filter(Boolean);
     const results = await Promise.all(
       codes.map(async (code) => {
         try {
-          const res = await fetch(`https://api.viator.com/partner/products/${code}`, {
+          const qs = campaignParam
+            ? `?campaign-value=${encodeURIComponent(campaignParam.slice(0, 200))}`
+            : "";
+          const res = await fetch(`https://api.viator.com/partner/products/${encodeURIComponent(code)}${qs}`, {
             headers: {
               "exp-api-key": apiKey,
               "Accept": "application/json;version=2.0",

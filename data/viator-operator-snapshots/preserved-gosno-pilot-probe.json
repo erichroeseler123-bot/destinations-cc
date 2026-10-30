@@ -1,0 +1,594 @@
+{
+  "capturedAt": "2026-10-30T10:56:31.488Z",
+  "probes": [
+    {
+      "id": "well_known_dcc",
+      "request": {
+        "method": "GET",
+        "url": "https://gosno.co/.well-known/dcc"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "body": {
+          "protocol": "dcc",
+          "core": "2",
+          "self": "https://gosno.co/.well-known/dcc",
+          "id": "gosno.co:org/gosno",
+          "claims": [
+            {
+              "predicate": "legal_name",
+              "value": "GoSno LLC",
+              "as_of": "2024-01-01T00:00:00Z",
+              "evidence": [
+                {
+                  "type": "colorado_secretary_of_state",
+                  "pointer": "https://www.coloradosos.gov/biz/BusinessEntityDetail.do?quit=20241009121",
+                  "as_of": "2024-01-01T00:00:00Z"
+                }
+              ]
+            },
+            {
+              "predicate": "operating_authority",
+              "value": "CO PUC LL-03577",
+              "as_of": "2024-01-01T00:00:00Z",
+              "evidence": [
+                {
+                  "type": "colorado_puc_carrier_search",
+                  "pointer": "https://puc.colorado.gov/transportation",
+                  "as_of": "2024-01-01T00:00:00Z"
+                }
+              ]
+            },
+            {
+              "predicate": "service_regions",
+              "value": [
+                "Colorado Rocky Mountains",
+                "Big Sky Montana"
+              ],
+              "as_of": "2026-01-01T00:00:00Z",
+              "evidence": []
+            },
+            {
+              "predicate": "airport_hubs",
+              "value": [
+                "DEN",
+                "EGE",
+                "COS",
+                "BZN"
+              ],
+              "as_of": "2026-01-01T00:00:00Z",
+              "evidence": []
+            },
+            {
+              "predicate": "destinations_served",
+              "value": [
+                "Breckenridge",
+                "Vail",
+                "Beaver Creek",
+                "Keystone",
+                "Copper Mountain",
+                "Aspen",
+                "Snowmass",
+                "Steamboat Springs",
+                "Crested Butte",
+                "Big Sky"
+              ],
+              "as_of": "2026-01-01T00:00:00Z",
+              "evidence": []
+            }
+          ],
+          "state": [
+            {
+              "predicate": "service_status",
+              "value": "operational",
+              "as_of": "2026-10-30T10:55:07.299Z",
+              "fresh_until": "2026-10-30T11:55:07.299Z",
+              "evidence": []
+            }
+          ],
+          "actions": [
+            {
+              "action_id": "check_availability",
+              "method": "GET",
+              "target": "https://gosno.co/api/availability",
+              "input": {
+                "schema": "https://gosno.co/schemas/availability-query.json",
+                "fields": [
+                  "origin",
+                  "dest",
+                  "date",
+                  "time",
+                  "vehicleClass",
+                  "routeId",
+                  "tripType",
+                  "direction",
+                  "clientCorrelationId"
+                ]
+              },
+              "auth": "none"
+            },
+            {
+              "action_id": "request_quote",
+              "method": "POST",
+              "target": "https://gosno.co/api/quote",
+              "input": {
+                "schema": "https://gosno.co/schemas/quote-query.json",
+                "fields": [
+                  "name",
+                  "phone",
+                  "email",
+                  "passengers",
+                  "origin",
+                  "destination",
+                  "outboundDate",
+                  "outboundPickupTime",
+                  "tripType",
+                  "vehicle"
+                ]
+              },
+              "auth": "none"
+            }
+          ],
+          "links": [
+            {
+              "rel": "routes_catalog",
+              "target": "https://gosno.co/api/dcc/routes"
+            },
+            {
+              "rel": "storefront",
+              "target": "https://gosno.co"
+            }
+          ]
+        }
+      },
+      "capturedAt": "2026-10-30T10:56:31.205Z"
+    },
+    {
+      "id": "dcc_routes_catalog",
+      "request": {
+        "method": "GET",
+        "url": "https://gosno.co/api/dcc/routes"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "body": {
+          "protocol": "dcc",
+          "core": "2",
+          "self": "https://gosno.co/api/dcc/routes",
+          "id": "gosno.co:catalog/routes",
+          "claims": [
+            {
+              "predicate": "route_offering",
+              "value": {
+                "route_id": "DEN-BRECKENRIDGE",
+                "origin": "DEN",
+                "destination": "Breckenridge",
+                "vehicle_class": "suv",
+                "price_cents": 39900,
+                "price_formatted": "$399.00",
+                "duration_minutes": 150,
+                "rezdy_product_code": "P7477S",
+                "online_bookable": true
+              },
+              "as_of": "2026-10-30T10:55:19.296Z",
+              "evidence": []
+            },
+            {
+              "predicate": "route_offering",
+              "value": {
+                "route_id": "DEN-VAIL",
+                "origin": "DEN",
+                "destination": "Vail",
+                "vehicle_class": "suv",
+                "price_cents": 49900,
+                "price_formatted": "$499.00",
+                "duration_minutes": 150,
+                "rezdy_product_code": "PXFGPP",
+                "online_bookable": true
+              },
+              "as_of": "2026-10-30T10:55:19.296Z",
+              "evidence": []
+            },
+            {
+              "predicate": "route_offering",
+              "value": {
+                "route_id": "DEN-BEAVER-CREEK",
+                "origin": "DEN",
+                "destination": "Beaver Creek",
+                "vehicle_class": "suv",
+                "price_cents": 54900,
+                "price_formatted": "$549.00",
+                "duration_minutes": 150,
+                "rezdy_product_code": "P9AP71",
+                "online_bookable": true
+              },
+              "as_of": "2026-10-30T10:55:19.296Z",
+              "evidence": []
+            },
+            {
+              "predicate": "route_offering",
+              "value": {
+                "route_id": "DEN-KEYSTONE",
+                "origin": "DEN",
+                "destination": "Keystone",
+                "vehicle_class": "suv",
+                "price_cents": 34900,
+                "price_formatted": "$349.00",
+                "duration_minutes": 150,
+                "rezdy_product_code": "P9PQRN",
+                "online_bookable": true
+              },
+              "as_of": "2026-10-30T10:55:19.296Z",
+              "evidence": []
+            },
+            {
+              "predicate": "route_offering",
+              "value": {
+                "route_id": "DEN-COPPER",
+                "origin": "DEN",
+                "destination": "Copper Mountain",
+                "vehicle_class": "suv",
+                "price_cents": 39900,
+                "price_formatted": "$399.00",
+                "duration_minutes": 150,
+                "rezdy_product_code": "PHCYQL",
+                "online_bookable": true
+              },
+              "as_of": "2026-10-30T10:55:19.296Z",
+              "evidence": []
+            },
+            {
+              "predicate": "route_offering",
+              "value": {
+                "route_id": "DEN-WINTER-PARK",
+                "origin": "DEN",
+                "destination": "Winter Park",
+                "vehicle_class": "suv",
+                "price_cents": 34900,
+                "price_formatted": "$349.00",
+                "duration_minutes": 150,
+                "rezdy_product_code": "P360K5",
+                "online_bookable": true
+              },
+              "as_of": "2026-10-30T10:55:19.296Z",
+              "evidence": []
+            },
+            {
+              "predicate": "route_offering",
+              "value": {
+                "route_id": "DEN-STEAMBOAT",
+                "origin": "DEN",
+                "destination": "Steamboat Springs",
+                "vehicle_class": "suv",
+                "price_cents": 59900,
+                "price_formatted": "$599.00",
+                "duration_minutes": 180,
+                "rezdy_product_code": "PEZN8V",
+                "online_bookable": true
+              },
+              "as_of": "2026-10-30T10:55:19.296Z",
+              "evidence": []
+            },
+            {
+              "predicate": "route_offering",
+              "value": {
+                "route_id": "DEN-ASPEN",
+                "origin": "DEN",
+                "destination": "Aspen",
+                "vehicle_class": "suv",
+                "price_cents": 69900,
+                "price_formatted": "$699.00",
+                "duration_minutes": 150,
+                "rezdy_product_code": "P11TWN",
+                "online_bookable": true
+              },
+              "as_of": "2026-10-30T10:55:19.296Z",
+              "evidence": []
+            },
+            {
+              "predicate": "route_offering",
+              "value": {
+                "route_id": "DEN-SNOWMASS",
+                "origin": "DEN",
+                "destination": "Snowmass",
+                "vehicle_class": "suv",
+                "price_cents": 69900,
+                "price_formatted": "$699.00",
+                "duration_minutes": 240,
+                "rezdy_product_code": "PP1A72",
+                "online_bookable": true
+              },
+              "as_of": "2026-10-30T10:55:19.296Z",
+              "evidence": []
+            }
+          ],
+          "state": [
+            {
+              "predicate": "total_published_routes",
+              "value": 9,
+              "as_of": "2026-10-30T10:55:19.296Z",
+              "fresh_until": "2026-10-30T11:10:19.298Z",
+              "evidence": []
+            }
+          ],
+          "actions": [
+            {
+              "action_id": "query_route",
+              "method": "GET",
+              "target": "https://gosno.co/api/dcc/routes/{routeId}",
+              "input": {
+                "schema": "https://gosno.co/schemas/route-lookup.json",
+                "fields": [
+                  "routeId"
+                ]
+              },
+              "auth": "none"
+            }
+          ],
+          "links": [
+            {
+              "rel": "operator",
+              "target": "gosno.co:org/gosno"
+            },
+            {
+              "rel": "route_item",
+              "target": "https://gosno.co/api/dcc/routes/DEN-BRECKENRIDGE"
+            },
+            {
+              "rel": "route_item",
+              "target": "https://gosno.co/api/dcc/routes/DEN-VAIL"
+            },
+            {
+              "rel": "route_item",
+              "target": "https://gosno.co/api/dcc/routes/DEN-BEAVER-CREEK"
+            },
+            {
+              "rel": "route_item",
+              "target": "https://gosno.co/api/dcc/routes/DEN-KEYSTONE"
+            },
+            {
+              "rel": "route_item",
+              "target": "https://gosno.co/api/dcc/routes/DEN-COPPER"
+            },
+            {
+              "rel": "route_item",
+              "target": "https://gosno.co/api/dcc/routes/DEN-WINTER-PARK"
+            },
+            {
+              "rel": "route_item",
+              "target": "https://gosno.co/api/dcc/routes/DEN-STEAMBOAT"
+            },
+            {
+              "rel": "route_item",
+              "target": "https://gosno.co/api/dcc/routes/DEN-ASPEN"
+            },
+            {
+              "rel": "route_item",
+              "target": "https://gosno.co/api/dcc/routes/DEN-SNOWMASS"
+            }
+          ]
+        }
+      },
+      "capturedAt": "2026-10-30T10:56:31.285Z"
+    },
+    {
+      "id": "dcc_route_den_breckenridge",
+      "request": {
+        "method": "GET",
+        "url": "https://gosno.co/api/dcc/routes/DEN-BRECKENRIDGE"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "body": {
+          "protocol": "dcc",
+          "core": "2",
+          "self": "https://gosno.co/api/dcc/routes/DEN-BRECKENRIDGE",
+          "id": "gosno.co:route/den-breckenridge",
+          "claims": [
+            {
+              "predicate": "route_id",
+              "value": "DEN-BRECKENRIDGE",
+              "as_of": "2026-01-01T00:00:00Z",
+              "evidence": []
+            },
+            {
+              "predicate": "origin",
+              "value": "DEN",
+              "as_of": "2026-01-01T00:00:00Z",
+              "evidence": []
+            },
+            {
+              "predicate": "destination",
+              "value": "Breckenridge",
+              "as_of": "2026-01-01T00:00:00Z",
+              "evidence": []
+            },
+            {
+              "predicate": "direction",
+              "value": "OUTBOUND",
+              "as_of": "2026-01-01T00:00:00Z",
+              "evidence": []
+            },
+            {
+              "predicate": "vehicle_class",
+              "value": "suv",
+              "as_of": "2026-01-01T00:00:00Z",
+              "evidence": []
+            },
+            {
+              "predicate": "base_price_cents",
+              "value": 39900,
+              "as_of": "2026-01-01T00:00:00Z",
+              "evidence": []
+            },
+            {
+              "predicate": "price_formatted",
+              "value": "$399.00",
+              "as_of": "2026-01-01T00:00:00Z",
+              "evidence": []
+            },
+            {
+              "predicate": "duration_minutes",
+              "value": 150,
+              "as_of": "2026-01-01T00:00:00Z",
+              "evidence": []
+            },
+            {
+              "predicate": "operational_hold_minutes",
+              "value": 300,
+              "as_of": "2026-01-01T00:00:00Z",
+              "evidence": []
+            },
+            {
+              "predicate": "rezdy_product_code",
+              "value": "P7477S",
+              "as_of": "2026-01-01T00:00:00Z",
+              "evidence": []
+            },
+            {
+              "predicate": "online_bookable",
+              "value": true,
+              "as_of": "2026-01-01T00:00:00Z",
+              "evidence": []
+            }
+          ],
+          "state": [
+            {
+              "predicate": "booking_status",
+              "value": "accepting_reservations",
+              "as_of": "2026-10-30T10:55:26.783Z",
+              "fresh_until": "2026-10-30T11:55:26.783Z",
+              "evidence": []
+            },
+            {
+              "predicate": "availability_query_requirement",
+              "value": "Specific date and time required for real-time slot reservation",
+              "as_of": "2026-10-30T10:55:26.783Z",
+              "fresh_until": "2026-10-30T11:55:26.783Z",
+              "evidence": []
+            }
+          ],
+          "actions": [
+            {
+              "action_id": "check_availability",
+              "method": "GET",
+              "target": "https://gosno.co/api/availability",
+              "input": {
+                "schema": "https://gosno.co/schemas/availability-v1.json",
+                "fields": [
+                  "origin",
+                  "dest",
+                  "date",
+                  "time",
+                  "vehicleClass",
+                  "routeId",
+                  "tripType",
+                  "direction",
+                  "clientCorrelationId"
+                ]
+              },
+              "auth": "none"
+            },
+            {
+              "action_id": "book",
+              "method": "POST",
+              "target": "https://gosno.co/pay",
+              "input": {
+                "schema": "https://gosno.co/schemas/checkout-v1.json",
+                "fields": [
+                  "clientCorrelationId",
+                  "availabilityToken",
+                  "origin",
+                  "dest",
+                  "routeId",
+                  "vehicleClass",
+                  "isRoundTrip",
+                  "tripType",
+                  "date",
+                  "time",
+                  "customerName",
+                  "customerEmail",
+                  "customerPhone",
+                  "passengerCount",
+                  "lodgingAddress"
+                ]
+              },
+              "auth": "none"
+            },
+            {
+              "action_id": "request_quote",
+              "method": "POST",
+              "target": "https://gosno.co/api/quote",
+              "input": {
+                "schema": "https://gosno.co/schemas/quote-v1.json",
+                "fields": [
+                  "name",
+                  "phone",
+                  "email",
+                  "passengers",
+                  "origin",
+                  "destination",
+                  "outboundDate",
+                  "outboundPickupTime",
+                  "tripType",
+                  "vehicle"
+                ]
+              },
+              "auth": "none"
+            }
+          ],
+          "links": [
+            {
+              "rel": "operator",
+              "target": "gosno.co:org/gosno"
+            },
+            {
+              "rel": "routes_catalog",
+              "target": "https://gosno.co/api/dcc/routes"
+            },
+            {
+              "rel": "storefront_page",
+              "target": "https://gosno.co/breckenridge"
+            }
+          ]
+        }
+      },
+      "capturedAt": "2026-10-30T10:56:31.373Z"
+    },
+    {
+      "id": "gosno_availability_probe",
+      "request": {
+        "method": "GET",
+        "url": "https://gosno.co/api/availability?origin=DEN&dest=Breckenridge&date=2026-12-15&time=10:00&vehicleClass=suv&tripType=one_way&direction=to_mountain"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "body": {
+          "date": "2026-12-15",
+          "time": "10:00",
+          "origin": "DEN",
+          "destination": "Breckenridge",
+          "direction": "TO_MOUNTAIN",
+          "availability": {
+            "suv": {
+              "available": false
+            },
+            "van": {
+              "available": false,
+              "quoteOnly": true
+            }
+          }
+        }
+      },
+      "capturedAt": "2026-10-30T10:56:31.487Z"
+    }
+  ]
+}

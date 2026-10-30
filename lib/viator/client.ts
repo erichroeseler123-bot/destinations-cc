@@ -25,7 +25,7 @@ type ViatorClient = {
   listDestinations(): Promise<ViatorDestinationCatalog>;
   listTags(): Promise<ViatorTagCatalog>;
   searchProducts(input: Record<string, unknown>): Promise<unknown>;
-  getProductDetail(productCode: string): Promise<unknown>;
+  getProductDetail(productCode: string, options?: { campaignValue?: string }): Promise<unknown>;
   getProductsModifiedSince(cursor?: string): Promise<unknown>;
   getAvailabilitySchedulesModifiedSince(cursor?: string): Promise<unknown>;
   getProductSchedules(productCode: string): Promise<unknown>;
@@ -200,8 +200,11 @@ export function getViatorClient(): ViatorClient {
       return request("/products/search", { method: "POST", body: withDefaultSearchCurrency(input) });
     },
 
-    async getProductDetail(productCode: string) {
-      return request(`/products/${encodeURIComponent(productCode)}`);
+    async getProductDetail(productCode: string, options?: { campaignValue?: string }) {
+      const campaignParam = options?.campaignValue?.trim()
+        ? `?campaign-value=${encodeURIComponent(options.campaignValue.trim().slice(0, 200))}`
+        : "";
+      return request(`/products/${encodeURIComponent(productCode)}${campaignParam}`);
     },
 
     async getProductsModifiedSince(cursor?: string) {

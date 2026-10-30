@@ -169,14 +169,21 @@ export default async function OperatorOnboardingPage({
           </p>
 
           <div className="grid gap-4 md:grid-cols-2 text-xs">
-            <div className="rounded-2xl border border-white/10 bg-black/40 p-4">
-              <strong className="text-emerald-300 block">Working Production Checkout (Unchanged):</strong>
-              <span className="text-zinc-300 mt-1 block">{pilot.workingCheckoutStatus}</span>
+            <div className="rounded-2xl border border-white/10 bg-black/40 p-4 space-y-1.5">
+              <strong className="text-emerald-300 block">
+                1 · Existing GoSno Storefront Integration (gosno.co — Operational &amp; Unchanged):
+              </strong>
+              <span className="text-zinc-300 block">{pilot.workingCheckoutStatus}</span>
+              <span className="text-cyan-200 font-mono block text-[11px]">
+                Captured live: GET /.well-known/dcc (HTTP {pilot.storefrontIntegration.wellKnownStatus}) · GET /api/dcc/routes (HTTP {pilot.storefrontIntegration.routesCatalogStatus}, {pilot.storefrontIntegration.publishedPrivateSuvRouteCount} private SUV routes) · GET /api/availability (HTTP {pilot.storefrontIntegration.availabilityProbeStatus}, suv.available={String(pilot.storefrontIntegration.availabilityProbeResult.suvAvailable)}, van.quoteOnly={String(pilot.storefrontIntegration.availabilityProbeResult.vanQuoteOnly)})
+              </span>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-black/40 p-4">
-              <strong className="text-amber-300 block">10% Direct-Channel Pilot Evaluation:</strong>
-              <span className="text-zinc-300 mt-1 block">
-                Operator authorization, Rezdy REST API v1 access, product mapping, and live price/availability checks verified; 10% direct commercial addendum and settlement reporting in pilot evaluation.
+            <div className="rounded-2xl border border-white/10 bg-black/40 p-4 space-y-1.5">
+              <strong className="text-amber-300 block">
+                2 · New DCC 10% Direct-Channel Pilot (DCC-Side Verification — Pending):
+              </strong>
+              <span className="text-zinc-300 block">
+                All DCC-side pilot gates (operator authorization, DCC-provisioned Rezdy API credentials, DCC-side product mapping, live price/availability queries inside DCC, 10% commercial addendum, and settlement reporting) remain <code className="text-amber-200">{pilot.verificationChecklist.productMapping}</code> until DCC-side integration credentials and end-to-end tests are completed.
               </span>
             </div>
           </div>

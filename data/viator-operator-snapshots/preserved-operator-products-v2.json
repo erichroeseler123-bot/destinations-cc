@@ -1,0 +1,1154 @@
+{
+  "fetchedAt": "2026-10-30T10:51:43.096Z",
+  "sourceEndpoint": "GET https://api.viator.com/partner/products/{productCode} (Accept: application/json;version=2.0)",
+  "products": [
+    {
+      "code": "6251SHOREXICEWALK",
+      "statusCode": 200,
+      "ok": true,
+      "data": {
+        "productCode": "6251SHOREXICEWALK",
+        "status": "ACTIVE",
+        "title": "Juneau Shore Excursion Helicopter Tour and Guided Icefield Walk",
+        "productUrl": "https://www.viator.com/tours/Juneau/Juneau-Shore-Excursion-Helicopter-Tour-and-Guided-Icefield-Walk/d941-6251SHOREXICEWALK?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+        "supplier": {
+          "name": "Coastal Helicopters",
+          "reference": "SUPPLIER-XZgZhAmmclREedANtzgvJw=="
+        },
+        "destinations": [
+          {
+            "ref": "941",
+            "primary": true
+          }
+        ],
+        "cancellationPolicy": {
+          "type": "CUSTOM",
+          "description": "If you cancel at least 3 full day(s) before the scheduled departure time, you will receive a full refund.<br>If you cancel within 3 day(s) of the scheduled departure, you will receive a 0% refund."
+        },
+        "coverImage": {
+          "imageSource": "SUPPLIER_PROVIDED",
+          "caption": "",
+          "isCover": true,
+          "variants": [
+            {
+              "height": 100,
+              "width": 100,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-100x100/0a/9b/c4/a1.jpg"
+            },
+            {
+              "height": 200,
+              "width": 200,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-200x200/0a/9b/c4/a1.jpg"
+            },
+            {
+              "height": 400,
+              "width": 400,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-400x400/0a/9b/c4/a1.jpg"
+            },
+            {
+              "height": 240,
+              "width": 360,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-360x240/0a/9b/c4/a1.jpg"
+            },
+            {
+              "height": 320,
+              "width": 480,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-480x320/0a/9b/c4/a1.jpg"
+            },
+            {
+              "height": 360,
+              "width": 540,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-540x360/0a/9b/c4/a1.jpg"
+            },
+            {
+              "height": 446,
+              "width": 674,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-674x446/0a/9b/c4/a1.jpg"
+            },
+            {
+              "height": 480,
+              "width": 720,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/0a/9b/c4/a1.jpg"
+            },
+            {
+              "height": 118,
+              "width": 210,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-210x118/0a/9b/c4/a1.jpg"
+            },
+            {
+              "height": 75,
+              "width": 75,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-75x75/0a/9b/c4/a1.jpg"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "code": "6953SWAMP",
+      "statusCode": 200,
+      "ok": true,
+      "data": {
+        "productCode": "6953SWAMP",
+        "status": "ACTIVE",
+        "title": "New Orleans Self-Transport Swamp and Bayou Boat Tour",
+        "productUrl": "https://www.viator.com/tours/New-Orleans/Honey-Island-Swamp-Tour/d675-6953SWAMP?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+        "supplier": {
+          "name": "Cajun Encounters Tour Co.",
+          "reference": "SUPPLIER-Ls68Tv9wCH9YKPX1YdQD0g=="
+        },
+        "destinations": [
+          {
+            "ref": "675",
+            "primary": true
+          }
+        ],
+        "cancellationPolicy": {
+          "type": "STANDARD",
+          "description": "For a full refund, cancel at least 24 hours before the scheduled departure time."
+        },
+        "coverImage": {
+          "imageSource": "SUPPLIER_PROVIDED",
+          "caption": "Up-Close Wildlife Experience",
+          "isCover": true,
+          "variants": [
+            {
+              "height": 100,
+              "width": 100,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-100x100/07/38/cd/26.jpg"
+            },
+            {
+              "height": 200,
+              "width": 200,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-200x200/07/38/cd/26.jpg"
+            },
+            {
+              "height": 400,
+              "width": 400,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-400x400/07/38/cd/26.jpg"
+            },
+            {
+              "height": 240,
+              "width": 360,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-360x240/07/38/cd/26.jpg"
+            },
+            {
+              "height": 320,
+              "width": 480,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-480x320/07/38/cd/26.jpg"
+            },
+            {
+              "height": 360,
+              "width": 540,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-540x360/07/38/cd/26.jpg"
+            },
+            {
+              "height": 446,
+              "width": 674,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-674x446/07/38/cd/26.jpg"
+            },
+            {
+              "height": 480,
+              "width": 720,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/07/38/cd/26.jpg"
+            },
+            {
+              "height": 118,
+              "width": 210,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-210x118/07/38/cd/26.jpg"
+            },
+            {
+              "height": 75,
+              "width": 75,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-75x75/07/38/cd/26.jpg"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "code": "6953SWAMPTRANS",
+      "statusCode": 200,
+      "ok": true,
+      "data": {
+        "productCode": "6953SWAMPTRANS",
+        "status": "ACTIVE",
+        "title": "New Orleans Swamp and Bayou Boat Tour with Transportation",
+        "productUrl": "https://www.viator.com/tours/New-Orleans/Honey-Island-Swamp-Tour-With-Transport/d675-6953SWAMPTRANS?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+        "supplier": {
+          "name": "Cajun Encounters Tour Co.",
+          "reference": "SUPPLIER-Ls68Tv9wCH9YKPX1YdQD0g=="
+        },
+        "destinations": [
+          {
+            "ref": "675",
+            "primary": true
+          }
+        ],
+        "cancellationPolicy": {
+          "type": "STANDARD",
+          "description": "For a full refund, cancel at least 24 hours before the scheduled departure time."
+        },
+        "coverImage": {
+          "imageSource": "SUPPLIER_PROVIDED",
+          "caption": "Explore the Honey Island Swamp",
+          "isCover": true,
+          "variants": [
+            {
+              "height": 100,
+              "width": 100,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-100x100/07/6f/d1/42.jpg"
+            },
+            {
+              "height": 200,
+              "width": 200,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-200x200/07/6f/d1/42.jpg"
+            },
+            {
+              "height": 400,
+              "width": 400,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-400x400/07/6f/d1/42.jpg"
+            },
+            {
+              "height": 240,
+              "width": 360,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-360x240/07/6f/d1/42.jpg"
+            },
+            {
+              "height": 320,
+              "width": 480,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-480x320/07/6f/d1/42.jpg"
+            },
+            {
+              "height": 360,
+              "width": 540,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-540x360/07/6f/d1/42.jpg"
+            },
+            {
+              "height": 446,
+              "width": 674,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-674x446/07/6f/d1/42.jpg"
+            },
+            {
+              "height": 480,
+              "width": 720,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/07/6f/d1/42.jpg"
+            },
+            {
+              "height": 118,
+              "width": 210,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-210x118/07/6f/d1/42.jpg"
+            },
+            {
+              "height": 75,
+              "width": 75,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-75x75/07/6f/d1/42.jpg"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "code": "141126P1",
+      "statusCode": 200,
+      "ok": true,
+      "data": {
+        "productCode": "141126P1",
+        "status": "ACTIVE",
+        "title": "New Orleans Swamp Boat Tour",
+        "productUrl": "https://www.viator.com/tours/New-Orleans/Drive-Out-Swamp-Tour/d675-141126P1?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+        "supplier": {
+          "name": "Cajun Pride Swamp Tours",
+          "reference": "SUPPLIER-ah695t/3pUZ5JxgMe0brVQ=="
+        },
+        "destinations": [
+          {
+            "ref": "675",
+            "primary": true
+          }
+        ],
+        "cancellationPolicy": {
+          "type": "STANDARD",
+          "description": "For a full refund, cancel at least 24 hours before the scheduled departure time."
+        },
+        "coverImage": {
+          "imageSource": "SUPPLIER_PROVIDED",
+          "caption": "Cajun Pride Swamp Tours",
+          "isCover": true,
+          "variants": [
+            {
+              "height": 100,
+              "width": 100,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-100x100/07/a3/03/60.jpg"
+            },
+            {
+              "height": 200,
+              "width": 200,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-200x200/07/a3/03/60.jpg"
+            },
+            {
+              "height": 400,
+              "width": 400,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-400x400/07/a3/03/60.jpg"
+            },
+            {
+              "height": 240,
+              "width": 360,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-360x240/07/a3/03/60.jpg"
+            },
+            {
+              "height": 320,
+              "width": 480,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-480x320/07/a3/03/60.jpg"
+            },
+            {
+              "height": 360,
+              "width": 540,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-540x360/07/a3/03/60.jpg"
+            },
+            {
+              "height": 446,
+              "width": 674,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-674x446/07/a3/03/60.jpg"
+            },
+            {
+              "height": 480,
+              "width": 720,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/07/a3/03/60.jpg"
+            },
+            {
+              "height": 118,
+              "width": 210,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-210x118/07/a3/03/60.jpg"
+            },
+            {
+              "height": 75,
+              "width": 75,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-75x75/07/a3/03/60.jpg"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "code": "141126P2",
+      "statusCode": 200,
+      "ok": true,
+      "data": {
+        "productCode": "141126P2",
+        "status": "ACTIVE",
+        "title": "New Orleans Swamp Boat Tour with Shuttle Service",
+        "productUrl": "https://www.viator.com/tours/New-Orleans/Swamp-Tour-with-Transportation/d675-141126P2?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+        "supplier": {
+          "name": "Cajun Pride Swamp Tours",
+          "reference": "SUPPLIER-ah695t/3pUZ5JxgMe0brVQ=="
+        },
+        "destinations": [
+          {
+            "ref": "675",
+            "primary": true
+          }
+        ],
+        "cancellationPolicy": {
+          "type": "STANDARD",
+          "description": "For a full refund, cancel at least 24 hours before the scheduled departure time."
+        },
+        "coverImage": {
+          "imageSource": "SUPPLIER_PROVIDED",
+          "caption": "",
+          "isCover": true,
+          "variants": [
+            {
+              "height": 100,
+              "width": 100,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-100x100/07/8f/4d/ac.jpg"
+            },
+            {
+              "height": 200,
+              "width": 200,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-200x200/07/8f/4d/ac.jpg"
+            },
+            {
+              "height": 400,
+              "width": 400,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-400x400/07/8f/4d/ac.jpg"
+            },
+            {
+              "height": 240,
+              "width": 360,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-360x240/07/8f/4d/ac.jpg"
+            },
+            {
+              "height": 320,
+              "width": 480,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-480x320/07/8f/4d/ac.jpg"
+            },
+            {
+              "height": 360,
+              "width": 540,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-540x360/07/8f/4d/ac.jpg"
+            },
+            {
+              "height": 446,
+              "width": 674,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-674x446/07/8f/4d/ac.jpg"
+            },
+            {
+              "height": 480,
+              "width": 720,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/07/8f/4d/ac.jpg"
+            },
+            {
+              "height": 118,
+              "width": 210,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-210x118/07/8f/4d/ac.jpg"
+            },
+            {
+              "height": 75,
+              "width": 75,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-75x75/07/8f/4d/ac.jpg"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "code": "3252_1",
+      "statusCode": 200,
+      "ok": true,
+      "data": {
+        "productCode": "3252_1",
+        "status": "ACTIVE",
+        "title": "New Orleans Haunted History Ghost Tour",
+        "productUrl": "https://www.viator.com/tours/New-Orleans/New-Orleans-Haunted-History-Ghost-Tour/d675-3252_1?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+        "supplier": {
+          "name": "Haunted History Tours",
+          "reference": "SUPPLIER-xe2YbZ42ogLOrNtIzC5ybg=="
+        },
+        "destinations": [
+          {
+            "ref": "675",
+            "primary": true
+          }
+        ],
+        "cancellationPolicy": {
+          "type": "STANDARD",
+          "description": "For a full refund, cancel at least 24 hours before the scheduled departure time."
+        },
+        "coverImage": {
+          "imageSource": "SUPPLIER_PROVIDED",
+          "caption": "",
+          "isCover": true,
+          "variants": [
+            {
+              "height": 100,
+              "width": 100,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-100x100/09/1c/20/c6.jpg"
+            },
+            {
+              "height": 200,
+              "width": 200,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-200x200/09/1c/20/c6.jpg"
+            },
+            {
+              "height": 400,
+              "width": 400,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-400x400/09/1c/20/c6.jpg"
+            },
+            {
+              "height": 240,
+              "width": 360,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-360x240/09/1c/20/c6.jpg"
+            },
+            {
+              "height": 320,
+              "width": 480,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-480x320/09/1c/20/c6.jpg"
+            },
+            {
+              "height": 360,
+              "width": 540,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-540x360/09/1c/20/c6.jpg"
+            },
+            {
+              "height": 446,
+              "width": 674,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-674x446/09/1c/20/c6.jpg"
+            },
+            {
+              "height": 480,
+              "width": 720,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/09/1c/20/c6.jpg"
+            },
+            {
+              "height": 118,
+              "width": 210,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-210x118/09/1c/20/c6.jpg"
+            },
+            {
+              "height": 75,
+              "width": 75,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-75x75/09/1c/20/c6.jpg"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "code": "3252_5",
+      "statusCode": 200,
+      "ok": true,
+      "data": {
+        "productCode": "3252_5",
+        "status": "ACTIVE",
+        "title": "New Orleans Vampire Walking Tour",
+        "productUrl": "https://www.viator.com/tours/New-Orleans/New-Orleans-Vampire-Tour/d675-3252_5?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+        "supplier": {
+          "name": "Haunted History Tours",
+          "reference": "SUPPLIER-xe2YbZ42ogLOrNtIzC5ybg=="
+        },
+        "destinations": [
+          {
+            "ref": "675",
+            "primary": true
+          }
+        ],
+        "cancellationPolicy": {
+          "type": "STANDARD",
+          "description": "For a full refund, cancel at least 24 hours before the scheduled departure time."
+        },
+        "coverImage": {
+          "imageSource": "SUPPLIER_PROVIDED",
+          "caption": "",
+          "isCover": true,
+          "variants": [
+            {
+              "height": 100,
+              "width": 100,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-100x100/07/32/05/48.jpg"
+            },
+            {
+              "height": 200,
+              "width": 200,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-200x200/07/32/05/48.jpg"
+            },
+            {
+              "height": 400,
+              "width": 400,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-400x400/07/32/05/48.jpg"
+            },
+            {
+              "height": 240,
+              "width": 360,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-360x240/07/32/05/48.jpg"
+            },
+            {
+              "height": 320,
+              "width": 480,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-480x320/07/32/05/48.jpg"
+            },
+            {
+              "height": 360,
+              "width": 540,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-540x360/07/32/05/48.jpg"
+            },
+            {
+              "height": 446,
+              "width": 674,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-674x446/07/32/05/48.jpg"
+            },
+            {
+              "height": 480,
+              "width": 720,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/07/32/05/48.jpg"
+            },
+            {
+              "height": 118,
+              "width": 210,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-210x118/07/32/05/48.jpg"
+            },
+            {
+              "height": 75,
+              "width": 75,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-75x75/07/32/05/48.jpg"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "code": "3252P9",
+      "statusCode": 200,
+      "ok": true,
+      "data": {
+        "productCode": "3252P9",
+        "status": "ACTIVE",
+        "title": "New Orleans Dead of Night Ghosts and Cemetery Bus Tour",
+        "productUrl": "https://www.viator.com/tours/New-Orleans/Dead-of-Night-Ghosts-and-Graveyard-Bus-Tour/d675-3252P9?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+        "supplier": {
+          "name": "Haunted History Tours",
+          "reference": "SUPPLIER-xe2YbZ42ogLOrNtIzC5ybg=="
+        },
+        "destinations": [
+          {
+            "ref": "675",
+            "primary": true
+          }
+        ],
+        "cancellationPolicy": {
+          "type": "STANDARD",
+          "description": "For a full refund, cancel at least 24 hours before the scheduled departure time."
+        },
+        "coverImage": {
+          "imageSource": "SUPPLIER_PROVIDED",
+          "caption": "The Old Charity Hospital Cemetery",
+          "isCover": true,
+          "variants": [
+            {
+              "height": 100,
+              "width": 100,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-100x100/0c/02/91/e6.jpg"
+            },
+            {
+              "height": 200,
+              "width": 200,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-200x200/0c/02/91/e6.jpg"
+            },
+            {
+              "height": 400,
+              "width": 400,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-400x400/0c/02/91/e6.jpg"
+            },
+            {
+              "height": 240,
+              "width": 360,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-360x240/0c/02/91/e6.jpg"
+            },
+            {
+              "height": 320,
+              "width": 480,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-480x320/0c/02/91/e6.jpg"
+            },
+            {
+              "height": 360,
+              "width": 540,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-540x360/0c/02/91/e6.jpg"
+            },
+            {
+              "height": 446,
+              "width": 674,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-674x446/0c/02/91/e6.jpg"
+            },
+            {
+              "height": 480,
+              "width": 720,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/0c/02/91/e6.jpg"
+            },
+            {
+              "height": 118,
+              "width": 210,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-210x118/0c/02/91/e6.jpg"
+            },
+            {
+              "height": 75,
+              "width": 75,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-75x75/0c/02/91/e6.jpg"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "code": "6484NOLAFOOD",
+      "statusCode": 200,
+      "ok": true,
+      "data": {
+        "productCode": "6484NOLAFOOD",
+        "status": "ACTIVE",
+        "title": "New Orleans Food and History Walking Tour",
+        "productUrl": "https://www.viator.com/tours/New-Orleans/New-Orleans-Food-and-History-Tour/d675-6484NOLAFOOD?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+        "supplier": {
+          "name": "Doctor Gumbo Tours",
+          "reference": "SUPPLIER-uhTuEGs0R00a22vvRVDMHg=="
+        },
+        "destinations": [
+          {
+            "ref": "675",
+            "primary": true
+          }
+        ],
+        "cancellationPolicy": {
+          "type": "STANDARD",
+          "description": "For a full refund, cancel at least 24 hours before the scheduled departure time."
+        },
+        "coverImage": {
+          "imageSource": "SUPPLIER_PROVIDED",
+          "caption": "Food and History Tour",
+          "isCover": true,
+          "variants": [
+            {
+              "height": 100,
+              "width": 100,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-100x100/06/73/13/25.jpg"
+            },
+            {
+              "height": 200,
+              "width": 200,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-200x200/06/73/13/25.jpg"
+            },
+            {
+              "height": 400,
+              "width": 400,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-400x400/06/73/13/25.jpg"
+            },
+            {
+              "height": 240,
+              "width": 360,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-360x240/06/73/13/25.jpg"
+            },
+            {
+              "height": 320,
+              "width": 480,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-480x320/06/73/13/25.jpg"
+            },
+            {
+              "height": 360,
+              "width": 540,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-540x360/06/73/13/25.jpg"
+            },
+            {
+              "height": 446,
+              "width": 674,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-674x446/06/73/13/25.jpg"
+            },
+            {
+              "height": 480,
+              "width": 720,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/06/73/13/25.jpg"
+            },
+            {
+              "height": 118,
+              "width": 210,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-210x118/06/73/13/25.jpg"
+            },
+            {
+              "height": 75,
+              "width": 75,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-75x75/06/73/13/25.jpg"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "code": "6484P3",
+      "statusCode": 200,
+      "ok": true,
+      "data": {
+        "productCode": "6484P3",
+        "status": "ACTIVE",
+        "title": "New Orleans Cocktail and Food History Tour",
+        "productUrl": "https://www.viator.com/tours/New-Orleans/Combo-Cocktail-and-Food-History-Tour/d675-6484P3?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+        "supplier": {
+          "name": "Doctor Gumbo Tours",
+          "reference": "SUPPLIER-uhTuEGs0R00a22vvRVDMHg=="
+        },
+        "destinations": [
+          {
+            "ref": "675",
+            "primary": true
+          }
+        ],
+        "cancellationPolicy": {
+          "type": "STANDARD",
+          "description": "For a full refund, cancel at least 24 hours before the scheduled departure time."
+        },
+        "coverImage": {
+          "imageSource": "SUPPLIER_PROVIDED",
+          "caption": "Muffuletta at the iconic Napoleon House!",
+          "isCover": true,
+          "variants": [
+            {
+              "height": 100,
+              "width": 100,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-100x100/12/78/57/b9.jpg"
+            },
+            {
+              "height": 200,
+              "width": 200,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-200x200/12/78/57/b9.jpg"
+            },
+            {
+              "height": 400,
+              "width": 400,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-400x400/12/78/57/b9.jpg"
+            },
+            {
+              "height": 240,
+              "width": 360,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-360x240/12/78/57/b9.jpg"
+            },
+            {
+              "height": 320,
+              "width": 480,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-480x320/12/78/57/b9.jpg"
+            },
+            {
+              "height": 360,
+              "width": 540,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-540x360/12/78/57/b9.jpg"
+            },
+            {
+              "height": 446,
+              "width": 674,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-674x446/12/78/57/b9.jpg"
+            },
+            {
+              "height": 480,
+              "width": 720,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/12/78/57/b9.jpg"
+            },
+            {
+              "height": 118,
+              "width": 210,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-210x118/12/78/57/b9.jpg"
+            },
+            {
+              "height": 75,
+              "width": 75,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-75x75/12/78/57/b9.jpg"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "code": "6484FRQCK",
+      "statusCode": 200,
+      "ok": true,
+      "data": {
+        "productCode": "6484FRQCK",
+        "status": "ACTIVE",
+        "title": "New Orleans Cocktail History Walking Tour in the French Quarter",
+        "productUrl": "https://www.viator.com/tours/New-Orleans/New-Orleans-Cocktail-History-Walking-Tour-in-the-French-Quarter/d675-6484FRQCK?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+        "supplier": {
+          "name": "Doctor Gumbo Tours",
+          "reference": "SUPPLIER-uhTuEGs0R00a22vvRVDMHg=="
+        },
+        "destinations": [
+          {
+            "ref": "675",
+            "primary": true
+          }
+        ],
+        "cancellationPolicy": {
+          "type": "STANDARD",
+          "description": "For a full refund, cancel at least 24 hours before the scheduled departure time."
+        },
+        "coverImage": {
+          "imageSource": "SUPPLIER_PROVIDED",
+          "caption": "",
+          "isCover": true,
+          "variants": [
+            {
+              "height": 100,
+              "width": 100,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-100x100/07/2d/c6/11.jpg"
+            },
+            {
+              "height": 200,
+              "width": 200,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-200x200/07/2d/c6/11.jpg"
+            },
+            {
+              "height": 400,
+              "width": 400,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-400x400/07/2d/c6/11.jpg"
+            },
+            {
+              "height": 240,
+              "width": 360,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-360x240/07/2d/c6/11.jpg"
+            },
+            {
+              "height": 320,
+              "width": 480,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-480x320/07/2d/c6/11.jpg"
+            },
+            {
+              "height": 360,
+              "width": 540,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-540x360/07/2d/c6/11.jpg"
+            },
+            {
+              "height": 446,
+              "width": 674,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-674x446/07/2d/c6/11.jpg"
+            },
+            {
+              "height": 480,
+              "width": 720,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/07/2d/c6/11.jpg"
+            },
+            {
+              "height": 118,
+              "width": 210,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-210x118/07/2d/c6/11.jpg"
+            },
+            {
+              "height": 75,
+              "width": 75,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-75x75/07/2d/c6/11.jpg"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "code": "6455NOLAAIR",
+      "statusCode": 200,
+      "ok": true,
+      "data": {
+        "productCode": "6455NOLAAIR",
+        "status": "ACTIVE",
+        "title": "New Orleans Airboat Ride",
+        "productUrl": "https://www.viator.com/tours/New-Orleans/New-Orleans-Airboat-Ride/d675-6455NOLAAIR?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+        "supplier": {
+          "name": "Airboat Adventures",
+          "reference": "SUPPLIER-7eNlteakiwgCVdiaT3VQkg=="
+        },
+        "destinations": [
+          {
+            "ref": "675",
+            "primary": true
+          }
+        ],
+        "cancellationPolicy": {
+          "type": "STANDARD",
+          "description": "For a full refund, cancel at least 24 hours before the scheduled departure time."
+        },
+        "coverImage": {
+          "imageSource": "SUPPLIER_PROVIDED",
+          "caption": "Small Airboat",
+          "isCover": true,
+          "variants": [
+            {
+              "height": 100,
+              "width": 100,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-100x100/11/46/79/42.jpg"
+            },
+            {
+              "height": 200,
+              "width": 200,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-200x200/11/46/79/42.jpg"
+            },
+            {
+              "height": 400,
+              "width": 400,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-400x400/11/46/79/42.jpg"
+            },
+            {
+              "height": 240,
+              "width": 360,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-360x240/11/46/79/42.jpg"
+            },
+            {
+              "height": 320,
+              "width": 480,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-480x320/11/46/79/42.jpg"
+            },
+            {
+              "height": 360,
+              "width": 540,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-540x360/11/46/79/42.jpg"
+            },
+            {
+              "height": 446,
+              "width": 674,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-674x446/11/46/79/42.jpg"
+            },
+            {
+              "height": 480,
+              "width": 720,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/11/46/79/42.jpg"
+            },
+            {
+              "height": 118,
+              "width": 210,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-210x118/11/46/79/42.jpg"
+            },
+            {
+              "height": 75,
+              "width": 75,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-75x75/11/46/79/42.jpg"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "code": "22050P2",
+      "statusCode": 200,
+      "ok": true,
+      "data": {
+        "productCode": "22050P2",
+        "status": "ACTIVE",
+        "title": "Small-Group Manchac Swamp Kayak Tour",
+        "productUrl": "https://www.viator.com/tours/New-Orleans/Manchac-Mystic-Wildlife-Kayak-Tour/d675-22050P2?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+        "supplier": {
+          "name": "New Orleans Kayak Swamp Tours",
+          "reference": "SUPPLIER-CN3etwHlngDFw8ce4fY4dQ=="
+        },
+        "destinations": [
+          {
+            "ref": "675",
+            "primary": true
+          }
+        ],
+        "cancellationPolicy": {
+          "type": "STANDARD",
+          "description": "For a full refund, cancel at least 24 hours before the scheduled departure time."
+        },
+        "coverImage": {
+          "imageSource": "SUPPLIER_PROVIDED",
+          "caption": "",
+          "isCover": true,
+          "variants": [
+            {
+              "height": 100,
+              "width": 100,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-100x100/0a/ef/08/e7.jpg"
+            },
+            {
+              "height": 200,
+              "width": 200,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-200x200/0a/ef/08/e7.jpg"
+            },
+            {
+              "height": 400,
+              "width": 400,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-400x400/0a/ef/08/e7.jpg"
+            },
+            {
+              "height": 240,
+              "width": 360,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-360x240/0a/ef/08/e7.jpg"
+            },
+            {
+              "height": 320,
+              "width": 480,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-480x320/0a/ef/08/e7.jpg"
+            },
+            {
+              "height": 360,
+              "width": 540,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-540x360/0a/ef/08/e7.jpg"
+            },
+            {
+              "height": 446,
+              "width": 674,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-674x446/0a/ef/08/e7.jpg"
+            },
+            {
+              "height": 480,
+              "width": 720,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/0a/ef/08/e7.jpg"
+            },
+            {
+              "height": 118,
+              "width": 210,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-210x118/0a/ef/08/e7.jpg"
+            },
+            {
+              "height": 75,
+              "width": 75,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-75x75/0a/ef/08/e7.jpg"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "code": "22050P3",
+      "statusCode": 200,
+      "ok": true,
+      "data": {
+        "productCode": "22050P3",
+        "status": "ACTIVE",
+        "title": "Whitney Plantation and Manchac Swamp Kayak Tour Combo",
+        "productUrl": "https://www.viator.com/tours/New-Orleans/Whitney-Plantation-and-Manchac-Swamp-Kayak-Tour-Combo/d675-22050P3?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+        "supplier": {
+          "name": "New Orleans Kayak Swamp Tours",
+          "reference": "SUPPLIER-CN3etwHlngDFw8ce4fY4dQ=="
+        },
+        "destinations": [
+          {
+            "ref": "675",
+            "primary": true
+          }
+        ],
+        "cancellationPolicy": {
+          "type": "STANDARD",
+          "description": "For a full refund, cancel at least 24 hours before the scheduled departure time."
+        },
+        "coverImage": {
+          "imageSource": "SUPPLIER_PROVIDED",
+          "caption": "For best availability, price and refund policy book direct through us, not tripadvisor/ viator.",
+          "isCover": true,
+          "variants": [
+            {
+              "height": 100,
+              "width": 100,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-100x100/0a/6b/df/0c.jpg"
+            },
+            {
+              "height": 200,
+              "width": 200,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-200x200/0a/6b/df/0c.jpg"
+            },
+            {
+              "height": 400,
+              "width": 400,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-400x400/0a/6b/df/0c.jpg"
+            },
+            {
+              "height": 240,
+              "width": 360,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-360x240/0a/6b/df/0c.jpg"
+            },
+            {
+              "height": 320,
+              "width": 480,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-480x320/0a/6b/df/0c.jpg"
+            },
+            {
+              "height": 360,
+              "width": 540,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-540x360/0a/6b/df/0c.jpg"
+            },
+            {
+              "height": 446,
+              "width": 674,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-674x446/0a/6b/df/0c.jpg"
+            },
+            {
+              "height": 480,
+              "width": 720,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/0a/6b/df/0c.jpg"
+            },
+            {
+              "height": 118,
+              "width": 210,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-210x118/0a/6b/df/0c.jpg"
+            },
+            {
+              "height": 75,
+              "width": 75,
+              "url": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-75x75/0a/6b/df/0c.jpg"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

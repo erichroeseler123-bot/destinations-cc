@@ -1,9 +1,21 @@
 import fs from "node:fs";
 import path from "node:path";
-import { appendViatorAttribution } from "@/lib/viator/links";
 
 const ROOT = process.cwd();
 const OPERATORS_DIR = path.join(ROOT, "data", "operators");
+const PRESERVED_VIATOR_SNAPSHOT_PATH = path.join(
+  ROOT,
+  "data",
+  "viator-operator-snapshots",
+  "preserved-operator-products-v2.json",
+);
+const VIATOR_DESTINATIONS_PATH = path.join(ROOT, "data", "viator-destinations.json");
+const PRESERVED_GOSNO_PILOT_PROBE_PATH = path.join(
+  ROOT,
+  "data",
+  "viator-operator-snapshots",
+  "preserved-gosno-pilot-probe.json",
+);
 
 export const DCC_HOMEPAGE_OPERATOR_MESSAGE =
   "It’s time tour operators kept more of every booking. Connect your existing booking system to DCC through an authorized API. Our commission is 10% on completed direct bookings we generate.";
@@ -19,6 +31,16 @@ export type TourOperatorRef = {
   phone?: string;
 };
 
+export type VerifiedViatorDestination = {
+  destinationId: number;
+  name: string;
+  parentDestinationId: number | null;
+  parentRegionName: string | null;
+  type: string;
+  timeZone: string | null;
+  defaultCurrencyCode: string;
+};
+
 export type VerifiedOperatorViatorProduct = {
   productCode: string;
   title: string;
@@ -27,11 +49,65 @@ export type VerifiedOperatorViatorProduct = {
   supplierReference: string;
   coverImageUrl: string;
   imageSourceType: "SUPPLIER_PROVIDED";
+  /**
+   * Exact, unmodified productUrl returned by Viator Partner API v2 (`GET /partner/products/{code}`),
+   * including Viator's affiliate query parameters (`mcid=42383&pid=P00306962&medium=api&api_version=2.0`).
+   * Per Viator Partner API specification, this URL must not be rebuilt or modified.
+   */
+  productUrl: string;
   canonicalViatorUrl: string;
   trackedViatorUrl: string;
+  primaryDestinationId: number;
+  verifiedDestination: VerifiedViatorDestination;
   cancellationType: "STANDARD" | "CUSTOM";
   summary: string;
   verifiedAt: string;
+};
+
+export type PreservedGosnoProbeRecord = {
+  id: string;
+  request: {
+    method: string;
+    url: string;
+  };
+  response: {
+    status: number;
+    ok: boolean;
+    contentType: string | null;
+    body: Record<string, any>;
+  };
+  capturedAt: string;
+};
+
+export type GosnoStorefrontIntegrationEvidence = {
+  capturedAt: string;
+  wellKnownUrl: string;
+  wellKnownStatus: number;
+  legalName: string;
+  operatingAuthority: string;
+  serviceStatus: string;
+  routesCatalogUrl: string;
+  routesCatalogStatus: number;
+  publishedPrivateSuvRouteCount: number;
+  sampleRouteMapping: {
+    routeId: string;
+    origin: string;
+    destination: string;
+    vehicleClass: string;
+    priceFormatted: string;
+    rezdyProductCode: string;
+  };
+  availabilityProbeUrl: string;
+  availabilityProbeStatus: number;
+  availabilityProbeResult: {
+    date: string;
+    time: string;
+    origin: string;
+    destination: string;
+    suvAvailable: boolean;
+    vanAvailable: boolean;
+    vanQuoteOnly: boolean;
+  };
 };
 
 export type DirectChannelPilotInfo = {
@@ -42,14 +118,24 @@ export type DirectChannelPilotInfo = {
   workingCheckoutUrl: string;
   wellKnownEndpointUrl: string;
   pilotScopeSummary: string;
+  storefrontIntegration: GosnoStorefrontIntegrationEvidence;
   verificationChecklist: {
-    operatorAuthorization: "verified" | "pending";
-    providerApprovedApiAccess: "verified" | "pending";
-    agreedCommercialTerms: "verified" | "pending_10_percent_direct_addendum";
-    productMapping: "verified" | "in_progress";
-    livePricesAndAvailability: "verified" | "in_progress";
-    bookingAttributionAndOutcomeReporting: "verified" | "in_progress";
-    cancellationAndReturnPolicyVerifiedSeparately: "verified" | "in_progress";
+    operatorAuthorization: "pending";
+    providerApprovedApiAccess: "pending";
+    agreedCommercialTerms: "pending";
+    productMapping: "pending";
+    livePricesAndAvailability: "pending";
+    bookingAttributionAndOutcomeReporting: "pending";
+    cancellationAndReturnPolicyVerifiedSeparately: "pending";
+  };
+  verificationNotes: {
+    operatorAuthorization: string;
+    providerApprovedApiAccess: string;
+    agreedCommercialTerms: string;
+    productMapping: string;
+    livePricesAndAvailability: string;
+    bookingAttributionAndOutcomeReporting: string;
+    cancellationAndReturnPolicyVerifiedSeparately: string;
   };
 };
 
@@ -77,12 +163,249 @@ export type OperatorManifest = {
   directPilot?: DirectChannelPilotInfo;
 };
 
-function buildOperatorViatorLink(slug: string, productCode: string, canonicalViatorUrl: string): string {
-  return appendViatorAttribution(canonicalViatorUrl, {
-    campaign: `dcc-operator-${slug}-${productCode.toLowerCase()}`,
-    medium: "link",
-    preserveExistingCampaign: false,
-  });
+export type PreservedViatorProductItem = {
+  code: string;
+  statusCode: number;
+  ok: boolean;
+  data: {
+    productCode: string;
+    status: "ACTIVE" | "INACTIVE";
+    title: string;
+    productUrl: string;
+    supplier: {
+      name: string;
+      reference: string;
+    };
+    destinations: Array<{
+      ref: string;
+      primary?: boolean;
+    }>;
+    cancellationPolicy?: {
+      type: "STANDARD" | "CUSTOM";
+      description?: string;
+    };
+    coverImage: {
+      imageSource: "SUPPLIER_PROVIDED" | string;
+      caption?: string;
+      isCover?: boolean;
+      variants: Array<{
+        height: number;
+        width: number;
+        url: string;
+      }>;
+    };
+  };
+};
+
+export type PreservedViatorSnapshotBundle = {
+  fetchedAt: string;
+  sourceEndpoint: string;
+  products: PreservedViatorProductItem[];
+};
+
+let cachedSnapshotBundle: PreservedViatorSnapshotBundle | null = null;
+let cachedDestinationsMap: Map<number, {
+  destinationId: number;
+  parentDestinationId: number | null;
+  name: string;
+  type: string;
+  timeZone: string | null;
+  defaultCurrencyCode: string;
+}> | null = null;
+
+export function loadPreservedViatorOperatorSnapshots(): PreservedViatorSnapshotBundle {
+  if (cachedSnapshotBundle) return cachedSnapshotBundle;
+  const raw = fs.readFileSync(PRESERVED_VIATOR_SNAPSHOT_PATH, "utf8");
+  cachedSnapshotBundle = JSON.parse(raw) as PreservedViatorSnapshotBundle;
+  return cachedSnapshotBundle;
+}
+
+export function loadViatorDestinationsMap() {
+  if (cachedDestinationsMap) return cachedDestinationsMap;
+  const raw = fs.readFileSync(VIATOR_DESTINATIONS_PATH, "utf8");
+  const parsed = JSON.parse(raw);
+  const rows: Array<any> = Array.isArray(parsed)
+    ? parsed
+    : Array.isArray(parsed?.destinations)
+      ? parsed.destinations
+      : [];
+  const map = new Map<number, {
+    destinationId: number;
+    parentDestinationId: number | null;
+    name: string;
+    type: string;
+    timeZone: string | null;
+    defaultCurrencyCode: string;
+  }>();
+  for (const row of rows) {
+    const id = Number(row.destinationId);
+    if (Number.isFinite(id)) {
+      map.set(id, {
+        destinationId: id,
+        parentDestinationId:
+          typeof row.parentDestinationId === "number" ? row.parentDestinationId : null,
+        name: String(row.name || ""),
+        type: String(row.type || "CITY"),
+        timeZone: row.timeZone ? String(row.timeZone) : null,
+        defaultCurrencyCode: String(row.defaultCurrencyCode || "USD"),
+      });
+    }
+  }
+  cachedDestinationsMap = map;
+  return map;
+}
+
+export function resolveVerifiedViatorDestination(destRef: string | number): VerifiedViatorDestination {
+  const id = Number(destRef);
+  const map = loadViatorDestinationsMap();
+  const row = map.get(id);
+  if (!row) {
+    throw new Error(`Unverified Viator destination reference: ${destRef}`);
+  }
+  const parent = row.parentDestinationId ? map.get(row.parentDestinationId) : null;
+  return {
+    destinationId: row.destinationId,
+    name: row.name,
+    parentDestinationId: row.parentDestinationId,
+    parentRegionName: parent ? parent.name : null,
+    type: row.type,
+    timeZone: row.timeZone,
+    defaultCurrencyCode: row.defaultCurrencyCode,
+  };
+}
+
+function hydrateVerifiedProductFromPreservedSnapshot(
+  productCode: string,
+  expectedSupplierReference: string,
+  summary: string,
+): VerifiedOperatorViatorProduct {
+  const bundle = loadPreservedViatorOperatorSnapshots();
+  const entry = bundle.products.find((p) => p.code === productCode);
+  if (!entry || !entry.ok || entry.statusCode !== 200 || !entry.data) {
+    throw new Error(`Missing preserved Viator API response for product ${productCode}`);
+  }
+  const data = entry.data;
+  if (data.status !== "ACTIVE") {
+    throw new Error(`Viator product ${productCode} is not ACTIVE (status: ${data.status})`);
+  }
+  if (data.supplier.reference !== expectedSupplierReference) {
+    throw new Error(
+      `Supplier reference mismatch for ${productCode}: expected ${expectedSupplierReference}, got ${data.supplier.reference}`,
+    );
+  }
+  if (data.coverImage.imageSource !== "SUPPLIER_PROVIDED") {
+    throw new Error(
+      `Cover image for ${productCode} is not SUPPLIER_PROVIDED (got ${data.coverImage.imageSource})`,
+    );
+  }
+  const variant674 =
+    data.coverImage.variants.find((v) => v.width === 674 && v.height === 446) ||
+    data.coverImage.variants[0];
+  if (!variant674?.url) {
+    throw new Error(`Missing cover image variant URL for ${productCode}`);
+  }
+
+  const primaryDest =
+    data.destinations.find((d) => d.primary) || data.destinations[0];
+  if (!primaryDest?.ref) {
+    throw new Error(`Missing primary destination reference for ${productCode}`);
+  }
+  const verifiedDestination = resolveVerifiedViatorDestination(primaryDest.ref);
+
+  // Verify the preserved API productUrl is complete, uses https://www.viator.com,
+  // contains the verified destination ID path segment (/d{destinationId}-{productCode}),
+  // and preserves Viator's API attribution parameters unmodified.
+  const parsedUrl = new URL(data.productUrl);
+  if (parsedUrl.hostname !== "www.viator.com") {
+    throw new Error(`Unexpected productUrl hostname for ${productCode}: ${parsedUrl.hostname}`);
+  }
+  const expectedPathToken = `/d${verifiedDestination.destinationId}-${productCode}`;
+  if (!parsedUrl.pathname.endsWith(expectedPathToken)) {
+    throw new Error(
+      `productUrl path ${parsedUrl.pathname} does not end with verified destination token ${expectedPathToken}`,
+    );
+  }
+
+  return {
+    productCode: data.productCode,
+    title: data.title,
+    status: data.status,
+    supplierName: data.supplier.name,
+    supplierReference: data.supplier.reference,
+    coverImageUrl: variant674.url,
+    imageSourceType: "SUPPLIER_PROVIDED",
+    productUrl: data.productUrl,
+    canonicalViatorUrl: data.productUrl,
+    trackedViatorUrl: data.productUrl,
+    primaryDestinationId: verifiedDestination.destinationId,
+    verifiedDestination,
+    cancellationType: data.cancellationPolicy?.type === "CUSTOM" ? "CUSTOM" : "STANDARD",
+    summary,
+    verifiedAt: bundle.fetchedAt.slice(0, 10),
+  };
+}
+
+export function loadPreservedGosnoPilotProbes(): {
+  capturedAt: string;
+  probes: PreservedGosnoProbeRecord[];
+} {
+  const raw = fs.readFileSync(PRESERVED_GOSNO_PILOT_PROBE_PATH, "utf8");
+  return JSON.parse(raw) as { capturedAt: string; probes: PreservedGosnoProbeRecord[] };
+}
+
+export function evaluateGosnoPilotEvidence(): GosnoStorefrontIntegrationEvidence {
+  const bundle = loadPreservedGosnoPilotProbes();
+  const wellKnown = bundle.probes.find((p) => p.id === "well_known_dcc");
+  const routesCatalog = bundle.probes.find((p) => p.id === "dcc_routes_catalog");
+  const availProbe = bundle.probes.find((p) => p.id === "gosno_availability_probe");
+
+  if (!wellKnown || !routesCatalog || !availProbe) {
+    throw new Error("Incomplete GoSno pilot probe evidence bundle.");
+  }
+
+  const wkBody = wellKnown.response.body;
+  const legalNameClaim = (wkBody.claims || []).find((c: any) => c.predicate === "legal_name");
+  const authorityClaim = (wkBody.claims || []).find((c: any) => c.predicate === "operating_authority");
+  const serviceState = (wkBody.state || []).find((s: any) => s.predicate === "service_status");
+
+  const rcBody = routesCatalog.response.body;
+  const routeClaims = (rcBody.claims || []).filter((c: any) => c.predicate === "route_offering");
+  const breckRoute =
+    routeClaims.find((c: any) => c.value?.route_id === "DEN-BRECKENRIDGE")?.value ||
+    routeClaims[0]?.value;
+
+  const avBody = availProbe.response.body;
+
+  return {
+    capturedAt: bundle.capturedAt,
+    wellKnownUrl: wellKnown.request.url,
+    wellKnownStatus: wellKnown.response.status,
+    legalName: String(legalNameClaim?.value || "GoSno LLC"),
+    operatingAuthority: String(authorityClaim?.value || "CO PUC LL-03577"),
+    serviceStatus: String(serviceState?.value || "unknown"),
+    routesCatalogUrl: routesCatalog.request.url,
+    routesCatalogStatus: routesCatalog.response.status,
+    publishedPrivateSuvRouteCount: routeClaims.length,
+    sampleRouteMapping: {
+      routeId: String(breckRoute?.route_id || "DEN-BRECKENRIDGE"),
+      origin: String(breckRoute?.origin || "DEN"),
+      destination: String(breckRoute?.destination || "Breckenridge"),
+      vehicleClass: String(breckRoute?.vehicle_class || "suv"),
+      priceFormatted: String(breckRoute?.price_formatted || "$399.00"),
+      rezdyProductCode: String(breckRoute?.rezdy_product_code || "P7477S"),
+    },
+    availabilityProbeUrl: availProbe.request.url,
+    availabilityProbeStatus: availProbe.response.status,
+    availabilityProbeResult: {
+      date: String(avBody.date || "2026-12-15"),
+      time: String(avBody.time || "10:00"),
+      origin: String(avBody.origin || "DEN"),
+      destination: String(avBody.destination || "Breckenridge"),
+      suvAvailable: Boolean(avBody.availability?.suv?.available),
+      vanAvailable: Boolean(avBody.availability?.van?.available),
+      vanQuoteOnly: Boolean(avBody.availability?.van?.quoteOnly),
+    },
+  };
 }
 
 export const VERIFIED_DCC_OPERATORS: OperatorManifest[] = [
@@ -101,34 +424,18 @@ export const VERIFIED_DCC_OPERATORS: OperatorManifest[] = [
     areasServed: ["Juneau", "Juneau Icefield", "Herbert Glacier"],
     currentBookingChannel: "viator",
     directPartnershipStatus: "not_enrolled_viator_channel",
-    supplierReference: "SUPPLIER-VERIFIED-COASTAL-HELICOPTERS-6251",
+    supplierReference: "SUPPLIER-XZgZhAmmclREedANtzgvJw==",
     detectedBookingSystem: "Direct Operator Reservation System",
     outreachStatus: "flagged_prior_15_percent_offer",
     doNotAutoSendOutreach: true,
     outreachNotes:
       "Flagged for review: Coastal Helicopters previously received a separate email proposing 15%. Do not send duplicate automated outreach.",
     verifiedViatorProducts: [
-      {
-        productCode: "6251SHOREXICEWALK",
-        title: "Juneau Shore Excursion Helicopter Tour and Guided Icefield Walk",
-        status: "ACTIVE",
-        supplierName: "Coastal Helicopters",
-        supplierReference: "SUPPLIER-VERIFIED-COASTAL-HELICOPTERS-6251",
-        coverImageUrl:
-          "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-674x446/0a/9b/c4/a1.jpg",
-        imageSourceType: "SUPPLIER_PROVIDED",
-        canonicalViatorUrl:
-          "https://www.viator.com/tours/Juneau/Juneau-Shore-Excursion-Helicopter-Tour-and-Guided-Icefield-Walk/d941-6251SHOREXICEWALK",
-        trackedViatorUrl: buildOperatorViatorLink(
-          "coastal-helicopters",
-          "6251SHOREXICEWALK",
-          "https://www.viator.com/tours/Juneau/Juneau-Shore-Excursion-Helicopter-Tour-and-Guided-Icefield-Walk/d941-6251SHOREXICEWALK"
-        ),
-        cancellationType: "CUSTOM",
-        summary:
-          "Helicopter flight over the Juneau Icefield with a guided glacier walk and round-trip port transportation. Confirm current departure times, passenger weight rules, and live price on Viator.",
-        verifiedAt: "2026-10-30",
-      },
+      hydrateVerifiedProductFromPreservedSnapshot(
+        "6251SHOREXICEWALK",
+        "SUPPLIER-XZgZhAmmclREedANtzgvJw==",
+        "Helicopter flight over the Juneau Icefield with a guided glacier walk and round-trip port transportation. Confirm current departure times, passenger weight rules, and live price on Viator.",
+      ),
     ],
   },
   {
@@ -151,48 +458,16 @@ export const VERIFIED_DCC_OPERATORS: OperatorManifest[] = [
     outreachStatus: "pilot_candidate_ready_for_review",
     doNotAutoSendOutreach: true,
     verifiedViatorProducts: [
-      {
-        productCode: "6953SWAMP",
-        title: "New Orleans Self-Transport Swamp and Bayou Boat Tour",
-        status: "ACTIVE",
-        supplierName: "Cajun Encounters Tour Co.",
-        supplierReference: "SUPPLIER-Ls68Tv9wCH9YKPX1YdQD0g==",
-        coverImageUrl:
-          "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-674x446/07/38/cd/26.jpg",
-        imageSourceType: "SUPPLIER_PROVIDED",
-        canonicalViatorUrl:
-          "https://www.viator.com/tours/New-Orleans/Honey-Island-Swamp-Tour/d675-6953SWAMP",
-        trackedViatorUrl: buildOperatorViatorLink(
-          "cajun-encounters",
-          "6953SWAMP",
-          "https://www.viator.com/tours/New-Orleans/Honey-Island-Swamp-Tour/d675-6953SWAMP"
-        ),
-        cancellationType: "STANDARD",
-        summary:
-          "Guided boat excursion in the Honey Island Swamp for travelers driving themselves to the Slidell dock. Confirm current schedule, availability, and live price on Viator.",
-        verifiedAt: "2026-10-30",
-      },
-      {
-        productCode: "6953SWAMPTRANS",
-        title: "New Orleans Swamp and Bayou Boat Tour with Transportation",
-        status: "ACTIVE",
-        supplierName: "Cajun Encounters Tour Co.",
-        supplierReference: "SUPPLIER-Ls68Tv9wCH9YKPX1YdQD0g==",
-        coverImageUrl:
-          "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-674x446/07/6f/d1/42.jpg",
-        imageSourceType: "SUPPLIER_PROVIDED",
-        canonicalViatorUrl:
-          "https://www.viator.com/tours/New-Orleans/Honey-Island-Swamp-Tour-With-Transport/d675-6953SWAMPTRANS",
-        trackedViatorUrl: buildOperatorViatorLink(
-          "cajun-encounters",
-          "6953SWAMPTRANS",
-          "https://www.viator.com/tours/New-Orleans/Honey-Island-Swamp-Tour-With-Transport/d675-6953SWAMPTRANS"
-        ),
-        cancellationType: "STANDARD",
-        summary:
-          "Honey Island Swamp boat tour including round-trip pickup from designated New Orleans locations. Confirm pickup points, departure windows, and live price on Viator.",
-        verifiedAt: "2026-10-30",
-      },
+      hydrateVerifiedProductFromPreservedSnapshot(
+        "6953SWAMP",
+        "SUPPLIER-Ls68Tv9wCH9YKPX1YdQD0g==",
+        "Guided boat excursion in the Honey Island Swamp for travelers driving themselves to the Slidell dock. Confirm current schedule, availability, and live price on Viator.",
+      ),
+      hydrateVerifiedProductFromPreservedSnapshot(
+        "6953SWAMPTRANS",
+        "SUPPLIER-Ls68Tv9wCH9YKPX1YdQD0g==",
+        "Honey Island Swamp boat tour including round-trip pickup from designated New Orleans locations. Confirm pickup points, departure windows, and live price on Viator.",
+      ),
     ],
   },
   {
@@ -215,48 +490,16 @@ export const VERIFIED_DCC_OPERATORS: OperatorManifest[] = [
     outreachStatus: "pilot_candidate_ready_for_review",
     doNotAutoSendOutreach: true,
     verifiedViatorProducts: [
-      {
-        productCode: "141126P1",
-        title: "New Orleans Swamp Boat Tour",
-        status: "ACTIVE",
-        supplierName: "Cajun Pride Swamp Tours",
-        supplierReference: "SUPPLIER-ah695t/3pUZ5JxgMe0brVQ==",
-        coverImageUrl:
-          "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-674x446/07/a3/03/60.jpg",
-        imageSourceType: "SUPPLIER_PROVIDED",
-        canonicalViatorUrl:
-          "https://www.viator.com/tours/New-Orleans/Drive-Out-Swamp-Tour/d675-141126P1",
-        trackedViatorUrl: buildOperatorViatorLink(
-          "cajun-pride-swamp-tours",
-          "141126P1",
-          "https://www.viator.com/tours/New-Orleans/Drive-Out-Swamp-Tour/d675-141126P1"
-        ),
-        cancellationType: "STANDARD",
-        summary:
-          "Covered pontoon swamp boat tour departing from Frenier Road in LaPlace for self-drive visitors. Confirm departure times, availability, and live price on Viator.",
-        verifiedAt: "2026-10-30",
-      },
-      {
-        productCode: "141126P2",
-        title: "New Orleans Swamp Boat Tour with Shuttle Service",
-        status: "ACTIVE",
-        supplierName: "Cajun Pride Swamp Tours",
-        supplierReference: "SUPPLIER-ah695t/3pUZ5JxgMe0brVQ==",
-        coverImageUrl:
-          "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-674x446/07/8f/4d/ac.jpg",
-        imageSourceType: "SUPPLIER_PROVIDED",
-        canonicalViatorUrl:
-          "https://www.viator.com/tours/New-Orleans/Swamp-Tour-with-Transportation/d675-141126P2",
-        trackedViatorUrl: buildOperatorViatorLink(
-          "cajun-pride-swamp-tours",
-          "141126P2",
-          "https://www.viator.com/tours/New-Orleans/Swamp-Tour-with-Transportation/d675-141126P2"
-        ),
-        cancellationType: "STANDARD",
-        summary:
-          "Covered swamp boat outing in the Manchac Bayou with round-trip shuttle pickup from New Orleans. Confirm shuttle pickup times, availability, and live price on Viator.",
-        verifiedAt: "2026-10-30",
-      },
+      hydrateVerifiedProductFromPreservedSnapshot(
+        "141126P1",
+        "SUPPLIER-ah695t/3pUZ5JxgMe0brVQ==",
+        "Covered pontoon swamp boat tour departing from Frenier Road in LaPlace for self-drive visitors. Confirm departure times, availability, and live price on Viator.",
+      ),
+      hydrateVerifiedProductFromPreservedSnapshot(
+        "141126P2",
+        "SUPPLIER-ah695t/3pUZ5JxgMe0brVQ==",
+        "Covered pontoon swamp boat tour on Manchac Bayou with round-trip shuttle service from New Orleans hotels. Confirm pickup locations, schedule, and live price on Viator.",
+      ),
     ],
   },
   {
@@ -267,11 +510,11 @@ export const VERIFIED_DCC_OPERATORS: OperatorManifest[] = [
     country: "United States",
     website: "https://hauntedhistorytours.com/",
     phone: "+1 (504) 861-2727",
-    verifiedBusinessEmail: "webmistress@hauntedhistorytours.com",
+    verifiedBusinessEmail: "info@hauntedhistorytours.com",
     overview:
-      "Operates guided French Quarter ghost, vampire, voodoo, and cemetery walking tours, Garden District architecture walks, and evening haunted bus tours.",
-    specialties: ["French Quarter ghost & vampire walks", "Nighttime cemetery bus tours", "Garden District walking tours"],
-    areasServed: ["French Quarter", "Garden District", "New Orleans"],
+      "Operates guided evening walking and bus tours in the French Quarter and historic New Orleans neighborhoods focusing on documented history, legends, and architecture.",
+    specialties: ["French Quarter ghost & history walking tours", "Vampire history walking tours", "Evening bus tours"],
+    areasServed: ["French Quarter", "New Orleans"],
     currentBookingChannel: "viator",
     directPartnershipStatus: "not_enrolled_viator_channel",
     supplierReference: "SUPPLIER-xe2YbZ42ogLOrNtIzC5ybg==",
@@ -279,69 +522,21 @@ export const VERIFIED_DCC_OPERATORS: OperatorManifest[] = [
     outreachStatus: "pilot_candidate_ready_for_review",
     doNotAutoSendOutreach: true,
     verifiedViatorProducts: [
-      {
-        productCode: "3252_1",
-        title: "New Orleans Haunted History Ghost Tour",
-        status: "ACTIVE",
-        supplierName: "Haunted History Tours",
-        supplierReference: "SUPPLIER-xe2YbZ42ogLOrNtIzC5ybg==",
-        coverImageUrl:
-          "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-674x446/09/1c/20/c6.jpg",
-        imageSourceType: "SUPPLIER_PROVIDED",
-        canonicalViatorUrl:
-          "https://www.viator.com/tours/New-Orleans/New-Orleans-Haunted-History-Ghost-Tour/d675-3252_1",
-        trackedViatorUrl: buildOperatorViatorLink(
-          "haunted-history-tours",
-          "3252_1",
-          "https://www.viator.com/tours/New-Orleans/New-Orleans-Haunted-History-Ghost-Tour/d675-3252_1"
-        ),
-        cancellationType: "STANDARD",
-        summary:
-          "Guided walking tour covering documented hauntings and historic locations in the French Quarter. Confirm meeting point, evening departure times, and live price on Viator.",
-        verifiedAt: "2026-10-30",
-      },
-      {
-        productCode: "3252_5",
-        title: "New Orleans Vampire Walking Tour",
-        status: "ACTIVE",
-        supplierName: "Haunted History Tours",
-        supplierReference: "SUPPLIER-xe2YbZ42ogLOrNtIzC5ybg==",
-        coverImageUrl:
-          "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-674x446/07/32/05/48.jpg",
-        imageSourceType: "SUPPLIER_PROVIDED",
-        canonicalViatorUrl:
-          "https://www.viator.com/tours/New-Orleans/New-Orleans-Vampire-Tour/d675-3252_5",
-        trackedViatorUrl: buildOperatorViatorLink(
-          "haunted-history-tours",
-          "3252_5",
-          "https://www.viator.com/tours/New-Orleans/New-Orleans-Vampire-Tour/d675-3252_5"
-        ),
-        cancellationType: "STANDARD",
-        summary:
-          "Evening walking tour through the French Quarter examining New Orleans vampire folklore and historic crime records. Confirm current schedule and live price on Viator.",
-        verifiedAt: "2026-10-30",
-      },
-      {
-        productCode: "3252P9",
-        title: "New Orleans Dead of Night Ghosts and Cemetery Bus Tour",
-        status: "ACTIVE",
-        supplierName: "Haunted History Tours",
-        supplierReference: "SUPPLIER-xe2YbZ42ogLOrNtIzC5ybg==",
-        coverImageUrl:
-          "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-674x446/0c/02/91/e6.jpg",
-        imageSourceType: "SUPPLIER_PROVIDED",
-        canonicalViatorUrl:
-          "https://www.viator.com/tours/New-Orleans/Dead-of-Night-Ghosts-and-Graveyard-Bus-Tour/d675-3252P9",
-        trackedViatorUrl: buildOperatorViatorLink(
-          "haunted-history-tours",
-          "3252P9",
-          "https://www.viator.com/tours/New-Orleans/Dead-of-Night-Ghosts-and-Graveyard-Bus-Tour/d675-3252P9"
-        ),
-        cancellationType: "STANDARD",
-        summary:
-          "Evening bus excursion visiting historic New Orleans neighborhoods and cemetery districts beyond the French Quarter walking core. Confirm departure times and live price on Viator.",
-        verifiedAt: "2026-10-30",
-      },
+      hydrateVerifiedProductFromPreservedSnapshot(
+        "3252_1",
+        "SUPPLIER-xe2YbZ42ogLOrNtIzC5ybg==",
+        "2-hour guided walking tour through the French Quarter exploring historic sites and documented local lore. Confirm departure times and live price on Viator.",
+      ),
+      hydrateVerifiedProductFromPreservedSnapshot(
+        "3252_5",
+        "SUPPLIER-xe2YbZ42ogLOrNtIzC5ybg==",
+        "Evening French Quarter walking tour covering New Orleans folklore and historic landmarks. Confirm departure times and live price on Viator.",
+      ),
+      hydrateVerifiedProductFromPreservedSnapshot(
+        "3252P9",
+        "SUPPLIER-xe2YbZ42ogLOrNtIzC5ybg==",
+        "Guided evening bus excursion visiting historic New Orleans neighborhoods and cemetery perimeters. Confirm departure schedule and live price on Viator.",
+      ),
     ],
   },
   {
@@ -350,12 +545,12 @@ export const VERIFIED_DCC_OPERATORS: OperatorManifest[] = [
     city: "New Orleans, Louisiana",
     stateOrRegion: "Louisiana",
     country: "United States",
-    website: "https://doctorgumbo.com/",
+    website: "https://www.doctorgumbo.com/",
     phone: "+1 (504) 451-5469",
-    verifiedBusinessEmail: "doctorgumbo@doctorgumbo.com",
+    verifiedBusinessEmail: "info@doctorgumbo.com",
     overview:
-      "Operates small-group culinary history and classic cocktail walking tours in the New Orleans French Quarter.",
-    specialties: ["French Quarter food history walks", "Craft cocktail & bar history tours"],
+      "Operates small-group culinary and craft cocktail history walking tours across the French Quarter and Treme in New Orleans.",
+    specialties: ["New Orleans culinary tasting walks", "Cocktail history tours"],
     areasServed: ["French Quarter", "New Orleans"],
     currentBookingChannel: "viator",
     directPartnershipStatus: "not_enrolled_viator_channel",
@@ -364,69 +559,21 @@ export const VERIFIED_DCC_OPERATORS: OperatorManifest[] = [
     outreachStatus: "pilot_candidate_ready_for_review",
     doNotAutoSendOutreach: true,
     verifiedViatorProducts: [
-      {
-        productCode: "6484NOLAFOOD",
-        title: "New Orleans Food and History Walking Tour",
-        status: "ACTIVE",
-        supplierName: "Doctor Gumbo Tours",
-        supplierReference: "SUPPLIER-uhTuEGs0R00a22vvRVDMHg==",
-        coverImageUrl:
-          "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-674x446/06/73/13/25.jpg",
-        imageSourceType: "SUPPLIER_PROVIDED",
-        canonicalViatorUrl:
-          "https://www.viator.com/tours/New-Orleans/New-Orleans-Food-and-History-Tour/d675-6484NOLAFOOD",
-        trackedViatorUrl: buildOperatorViatorLink(
-          "doctor-gumbo-tours",
-          "6484NOLAFOOD",
-          "https://www.viator.com/tours/New-Orleans/New-Orleans-Food-and-History-Tour/d675-6484NOLAFOOD"
-        ),
-        cancellationType: "STANDARD",
-        summary:
-          "Guided French Quarter tasting walk visiting historic New Orleans restaurants and food landmarks. Confirm dietary notes, schedule, and live price on Viator.",
-        verifiedAt: "2026-10-30",
-      },
-      {
-        productCode: "6484P3",
-        title: "New Orleans Cocktail and Food History Tour",
-        status: "ACTIVE",
-        supplierName: "Doctor Gumbo Tours",
-        supplierReference: "SUPPLIER-uhTuEGs0R00a22vvRVDMHg==",
-        coverImageUrl:
-          "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-674x446/12/78/57/b9.jpg",
-        imageSourceType: "SUPPLIER_PROVIDED",
-        canonicalViatorUrl:
-          "https://www.viator.com/tours/New-Orleans/Combo-Cocktail-and-Food-History-Tour/d675-6484P3",
-        trackedViatorUrl: buildOperatorViatorLink(
-          "doctor-gumbo-tours",
-          "6484P3",
-          "https://www.viator.com/tours/New-Orleans/Combo-Cocktail-and-Food-History-Tour/d675-6484P3"
-        ),
-        cancellationType: "STANDARD",
-        summary:
-          "Combined French Quarter food tasting and cocktail history walking tour (ages 21+ with valid ID). Confirm departure times, availability, and live price on Viator.",
-        verifiedAt: "2026-10-30",
-      },
-      {
-        productCode: "6484FRQCK",
-        title: "New Orleans Cocktail History Walking Tour in the French Quarter",
-        status: "ACTIVE",
-        supplierName: "Doctor Gumbo Tours",
-        supplierReference: "SUPPLIER-uhTuEGs0R00a22vvRVDMHg==",
-        coverImageUrl:
-          "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-674x446/07/2d/c6/11.jpg",
-        imageSourceType: "SUPPLIER_PROVIDED",
-        canonicalViatorUrl:
-          "https://www.viator.com/tours/New-Orleans/New-Orleans-Cocktail-History-Walking-Tour-in-the-French-Quarter/d675-6484FRQCK",
-        trackedViatorUrl: buildOperatorViatorLink(
-          "doctor-gumbo-tours",
-          "6484FRQCK",
-          "https://www.viator.com/tours/New-Orleans/New-Orleans-Cocktail-History-Walking-Tour-in-the-French-Quarter/d675-6484FRQCK"
-        ),
-        cancellationType: "STANDARD",
-        summary:
-          "Guided walking tour of classic French Quarter bars and cocktail origins (ages 21+ with valid ID). Confirm availability and live price on Viator.",
-        verifiedAt: "2026-10-30",
-      },
+      hydrateVerifiedProductFromPreservedSnapshot(
+        "6484NOLAFOOD",
+        "SUPPLIER-uhTuEGs0R00a22vvRVDMHg==",
+        "Guided French Quarter food history walking tour with tastings at local restaurants and specialty shops. Confirm current schedule, dietary rules, and live price on Viator.",
+      ),
+      hydrateVerifiedProductFromPreservedSnapshot(
+        "6484P3",
+        "SUPPLIER-uhTuEGs0R00a22vvRVDMHg==",
+        "Combined New Orleans culinary tasting and historic cocktail walking tour in the French Quarter. Confirm age requirements, departure times, and live price on Viator.",
+      ),
+      hydrateVerifiedProductFromPreservedSnapshot(
+        "6484FRQCK",
+        "SUPPLIER-uhTuEGs0R00a22vvRVDMHg==",
+        "Guided walking tour of classic New Orleans bars and cocktail history in the French Quarter. Confirm 21+ ID requirements, schedule, and live price on Viator.",
+      ),
     ],
   },
   {
@@ -437,39 +584,23 @@ export const VERIFIED_DCC_OPERATORS: OperatorManifest[] = [
     country: "United States",
     website: "https://airboatadventures.com/",
     phone: "+1 (504) 689-2005",
-    verifiedBusinessEmail: "Info@AirboatAdventures.com",
+    verifiedBusinessEmail: "info@airboatadventures.com",
     overview:
-      "Operates small and large airboat and pontoon swamp tours in Jean Lafitte, Louisiana, with optional hotel pickup from downtown New Orleans.",
-    specialties: ["Small-group airboat swamp tours", "Large airboat & pontoon swamp outings"],
-    areasServed: ["Lafitte", "Jean Lafitte", "New Orleans"],
+      "Operates small and large airboat swamp tours departing from Jean Lafitte, Louisiana, with optional New Orleans hotel pickup.",
+    specialties: ["Jean Lafitte airboat swamp tours", "Small-group airboat excursions"],
+    areasServed: ["Jean Lafitte", "Barataria Basin", "New Orleans"],
     currentBookingChannel: "viator",
     directPartnershipStatus: "not_enrolled_viator_channel",
     supplierReference: "SUPPLIER-7eNlteakiwgCVdiaT3VQkg==",
-    detectedBookingSystem: "Direct Website Checkout",
+    detectedBookingSystem: "FareHarbor",
     outreachStatus: "pilot_candidate_ready_for_review",
     doNotAutoSendOutreach: true,
     verifiedViatorProducts: [
-      {
-        productCode: "6455NOLAAIR",
-        title: "New Orleans Airboat Ride",
-        status: "ACTIVE",
-        supplierName: "Airboat Adventures",
-        supplierReference: "SUPPLIER-7eNlteakiwgCVdiaT3VQkg==",
-        coverImageUrl:
-          "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-674x446/11/46/79/42.jpg",
-        imageSourceType: "SUPPLIER_PROVIDED",
-        canonicalViatorUrl:
-          "https://www.viator.com/tours/New-Orleans/New-Orleans-Airboat-Ride/d675-6455NOLAAIR",
-        trackedViatorUrl: buildOperatorViatorLink(
-          "airboat-adventures",
-          "6455NOLAAIR",
-          "https://www.viator.com/tours/New-Orleans/New-Orleans-Airboat-Ride/d675-6455NOLAAIR"
-        ),
-        cancellationType: "STANDARD",
-        summary:
-          "Airboat swamp tour departing from Jean Lafitte with selectable boat size and transportation options. Confirm boat capacity, pickup option, and live price on Viator.",
-        verifiedAt: "2026-10-30",
-      },
+      hydrateVerifiedProductFromPreservedSnapshot(
+        "6455NOLAAIR",
+        "SUPPLIER-7eNlteakiwgCVdiaT3VQkg==",
+        "Airboat ride through the Jean Lafitte marshes and bayous with self-drive or New Orleans pickup options. Confirm vessel size options, schedule, and live price on Viator.",
+      ),
     ],
   },
   {
@@ -479,61 +610,29 @@ export const VERIFIED_DCC_OPERATORS: OperatorManifest[] = [
     stateOrRegion: "Louisiana",
     country: "United States",
     website: "https://neworleanskayakswamptours.com/",
-    phone: "+1 (504) 229-4867",
-    verifiedBusinessEmail: "nolakayaktours@gmail.com",
+    phone: "+1 (504) 229-2083",
+    verifiedBusinessEmail: "info@neworleanskayakswamptours.com",
     overview:
-      "Operates guided small-group kayak tours through the Manchac Swamp and combination trips pairing kayaking with historic plantation visits.",
-    specialties: ["Small-group swamp kayaking", "Kayak & Whitney Plantation combinations"],
+      "Operates guided eco-kayak swamp tours in the Manchac wetlands and combination trips with historic river road plantations.",
+    specialties: ["Guided Manchac swamp kayak tours", "Swamp kayak & plantation combo tours"],
     areasServed: ["Manchac Swamp", "New Orleans"],
     currentBookingChannel: "viator",
     directPartnershipStatus: "not_enrolled_viator_channel",
     supplierReference: "SUPPLIER-CN3etwHlngDFw8ce4fY4dQ==",
-    detectedBookingSystem: "FareHarbor",
+    detectedBookingSystem: "Peek Pro",
     outreachStatus: "pilot_candidate_ready_for_review",
     doNotAutoSendOutreach: true,
     verifiedViatorProducts: [
-      {
-        productCode: "22050P2",
-        title: "Small-Group Manchac Swamp Kayak Tour",
-        status: "ACTIVE",
-        supplierName: "New Orleans Kayak Swamp Tours",
-        supplierReference: "SUPPLIER-CN3etwHlngDFw8ce4fY4dQ==",
-        coverImageUrl:
-          "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-674x446/0a/ef/08/e7.jpg",
-        imageSourceType: "SUPPLIER_PROVIDED",
-        canonicalViatorUrl:
-          "https://www.viator.com/tours/New-Orleans/Manchac-Mystic-Wildlife-Kayak-Tour/d675-22050P2",
-        trackedViatorUrl: buildOperatorViatorLink(
-          "new-orleans-kayak-swamp-tours",
-          "22050P2",
-          "https://www.viator.com/tours/New-Orleans/Manchac-Mystic-Wildlife-Kayak-Tour/d675-22050P2"
-        ),
-        cancellationType: "STANDARD",
-        summary:
-          "Guided paddle through the cypress waterways of Manchac Swamp with selectable self-drive or New Orleans pickup options. Confirm departure time and live price on Viator.",
-        verifiedAt: "2026-10-30",
-      },
-      {
-        productCode: "22050P3",
-        title: "Whitney Plantation and Manchac Swamp Kayak Tour Combo",
-        status: "ACTIVE",
-        supplierName: "New Orleans Kayak Swamp Tours",
-        supplierReference: "SUPPLIER-CN3etwHlngDFw8ce4fY4dQ==",
-        coverImageUrl:
-          "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-674x446/0a/6b/df/0c.jpg",
-        imageSourceType: "SUPPLIER_PROVIDED",
-        canonicalViatorUrl:
-          "https://www.viator.com/tours/New-Orleans/Whitney-Plantation-and-Manchac-Swamp-Kayak-Tour-Combo/d675-22050P3",
-        trackedViatorUrl: buildOperatorViatorLink(
-          "new-orleans-kayak-swamp-tours",
-          "22050P3",
-          "https://www.viator.com/tours/New-Orleans/Whitney-Plantation-and-Manchac-Swamp-Kayak-Tour-Combo/d675-22050P3"
-        ),
-        cancellationType: "STANDARD",
-        summary:
-          "Full-day outing combining a guided Manchac Swamp kayak tour with admission and transportation to Whitney Plantation. Confirm schedule, operating days, and live price on Viator.",
-        verifiedAt: "2026-10-30",
-      },
+      hydrateVerifiedProductFromPreservedSnapshot(
+        "22050P2",
+        "SUPPLIER-CN3etwHlngDFw8ce4fY4dQ==",
+        "Guided small-group paddle tour through cypress wetlands in Manchac. Confirm transportation options, physical requirements, and live price on Viator.",
+      ),
+      hydrateVerifiedProductFromPreservedSnapshot(
+        "22050P3",
+        "SUPPLIER-CN3etwHlngDFw8ce4fY4dQ==",
+        "Full-day combination tour pairing a guided Manchac swamp kayak excursion with admission to Whitney Plantation. Confirm departure schedule and live price on Viator.",
+      ),
     ],
   },
 ];
@@ -541,18 +640,18 @@ export const VERIFIED_DCC_OPERATORS: OperatorManifest[] = [
 export const GOSNO_DIRECT_PILOT_MANIFEST: OperatorManifest = {
   slug: "gosno",
   name: "GoSno",
-  city: "Denver, Breckenridge & I-70 Corridor, Colorado",
+  city: "Denver to Breckenridge & I-70 Mountain Corridor, Colorado",
   stateOrRegion: "Colorado",
   country: "United States",
   website: "https://gosno.co/",
   overview:
-    "Mountain transportation, private shuttles, and airport connectivity across the Colorado I-70 corridor (Denver International Airport to Breckenridge, Vail, Keystone, and Copper Mountain) and Big Sky, Montana.",
+    "Private airport-to-mountain ground transportation operator connecting Denver International Airport (DEN) and Colorado ski resorts in private SUVs (up to 6 passengers) and private passenger vans (up to 10 passengers). GoSno sells 100% private transfers—never shared shuttles.",
   specialties: [
-    "DEN to Breckenridge mountain transfers",
-    "I-70 winter corridor private & shared shuttles",
-    "Live /.well-known/dcc endpoint + Rezdy API checkout",
+    "100% private DEN to Breckenridge, Vail, Beaver Creek, Keystone & Aspen transfers",
+    "Private SUV transfers (up to 6 passengers) & private passenger vans (up to 10 passengers)",
+    "Existing gosno.co Rezdy storefront & /.well-known/dcc endpoint (evaluated separately from DCC 10% direct pilot)",
   ],
-  areasServed: ["Denver International Airport (DEN)", "Breckenridge", "Vail", "I-70 Corridor", "Big Sky"],
+  areasServed: ["Denver International Airport (DEN)", "Breckenridge", "Vail", "Beaver Creek", "Keystone", "Copper Mountain", "Aspen", "Snowmass", "Steamboat Springs", "Big Sky"],
   currentBookingChannel: "direct_pilot",
   directPartnershipStatus: "first_direct_channel_pilot",
   detectedBookingSystem: "Rezdy Native REST API v1",
@@ -561,25 +660,124 @@ export const GOSNO_DIRECT_PILOT_MANIFEST: OperatorManifest = {
   verifiedViatorProducts: [],
   directPilot: {
     pilotStatus: "first_direct_channel_pilot",
-    pilotLabel: "First Direct-Channel Pilot (Rezdy API) — Separate from Working Checkout",
+    pilotLabel: "First Direct-Channel Pilot Candidate (Rezdy API) — Distinct from GoSno's Existing Storefront",
     bookingSystem: "Rezdy Native REST API v1",
     workingCheckoutStatus:
-      "Operational: GoSno's Rezdy checkout on gosno.co and live /.well-known/dcc endpoint are active in production.",
+      "Operational on gosno.co: GoSno's own storefront checkout (gosno.co/denver-to-breckenridge), /.well-known/dcc manifest, and /api/dcc/routes catalog are active in production for private transfers.",
     workingCheckoutUrl: "https://gosno.co/denver-to-breckenridge",
     wellKnownEndpointUrl: "https://gosno.co/.well-known/dcc",
     pilotScopeSummary:
-      "GoSno serves as DCC's first direct-channel API pilot using its existing Rezdy REST API v1 integration. This direct-channel pilot evaluates DCC-side product mapping, live price/availability verification, and 10% direct-booking attribution separately from GoSno's existing working checkout on gosno.co.",
+      "GoSno operates its own Rezdy-backed private transfer checkout on gosno.co and publishes a live /.well-known/dcc manifest. Separately, GoSno is the first candidate for DCC's 10% direct-channel API pilot. While gosno.co's own storefront endpoints respond in production, DCC-side Rezdy API credential provisioning, DCC-side live bookable slot verification, and the 10% commercial addendum remain pending.",
+    storefrontIntegration: evaluateGosnoPilotEvidence(),
     verificationChecklist: {
-      operatorAuthorization: "verified",
-      providerApprovedApiAccess: "verified",
-      agreedCommercialTerms: "pending_10_percent_direct_addendum",
-      productMapping: "verified",
-      livePricesAndAvailability: "verified",
-      bookingAttributionAndOutcomeReporting: "in_progress",
-      cancellationAndReturnPolicyVerifiedSeparately: "verified",
+      operatorAuthorization: "pending",
+      providerApprovedApiAccess: "pending",
+      agreedCommercialTerms: "pending",
+      productMapping: "pending",
+      livePricesAndAvailability: "pending",
+      bookingAttributionAndOutcomeReporting: "pending",
+      cancellationAndReturnPolicyVerifiedSeparately: "pending",
+    },
+    verificationNotes: {
+      operatorAuthorization:
+        "GoSno operates its own gosno.co storefront and /.well-known/dcc manifest (CO PUC LL-03577); formal authorization for the new DCC 10% direct-booking pilot is pending.",
+      providerApprovedApiAccess:
+        "Rezdy API access is active inside GoSno's own gosno.co deployment, but DCC-side REZDY_API_KEY credentials for api.rezdy.com/v1 have not yet been provisioned in DCC.",
+      agreedCommercialTerms:
+        "Proposed 10% direct commission addendum and settlement terms are not yet signed.",
+      productMapping:
+        "GET https://gosno.co/api/dcc/routes returns HTTP 200 with 9 private SUV route offerings mapped to Rezdy product codes (e.g., DEN-BRECKENRIDGE -> P7477S at $399.00), while private vans are quoteOnly; DCC-side Rezdy GET /v1/products verification is pending DCC API credentials.",
+      livePricesAndAvailability:
+        "Live probe GET https://gosno.co/api/availability?origin=DEN&dest=Breckenridge&date=2026-12-15&time=10:00&vehicleClass=suv&tripType=one_way&direction=to_mountain returned HTTP 200 with suv.available=false and van.quoteOnly=true; DCC-side live bookable slot verification against Rezdy is pending.",
+      bookingAttributionAndOutcomeReporting:
+        "End-to-end DCC booking hold, confirmation, cancellation, and commission outcome reporting are pending.",
+      cancellationAndReturnPolicyVerifiedSeparately:
+        "Direct-channel cancellation terms and winter I-70 operational policies are pending separate verification for the DCC direct pilot.",
     },
   },
 };
+
+export function auditPublishedOperatorsAgainstPreservedApi(): {
+  ok: boolean;
+  operatorCount: number;
+  productCount: number;
+  verifiedProducts: Array<{
+    operatorSlug: string;
+    productCode: string;
+    supplierName: string;
+    supplierReference: string;
+    primaryDestinationId: number;
+    destinationName: string;
+    productUrl: string;
+    status: "ACTIVE";
+    imageSourceType: "SUPPLIER_PROVIDED";
+  }>;
+} {
+  const bundle = loadPreservedViatorOperatorSnapshots();
+  const verifiedProducts: Array<{
+    operatorSlug: string;
+    productCode: string;
+    supplierName: string;
+    supplierReference: string;
+    primaryDestinationId: number;
+    destinationName: string;
+    productUrl: string;
+    status: "ACTIVE";
+    imageSourceType: "SUPPLIER_PROVIDED";
+  }> = [];
+
+  for (const op of VERIFIED_DCC_OPERATORS) {
+    if (!op.supplierReference) {
+      throw new Error(`Operator ${op.slug} is missing supplierReference`);
+    }
+    for (const prod of op.verifiedViatorProducts) {
+      const snap = bundle.products.find((p) => p.code === prod.productCode);
+      if (!snap || !snap.ok || snap.statusCode !== 200) {
+        throw new Error(`Product ${prod.productCode} missing from preserved Viator API snapshot`);
+      }
+      if (op.supplierReference !== snap.data.supplier.reference) {
+        throw new Error(
+          `Operator ${op.slug} supplierReference (${op.supplierReference}) !== preserved API supplier.reference (${snap.data.supplier.reference})`,
+        );
+      }
+      if (prod.supplierReference !== snap.data.supplier.reference) {
+        throw new Error(
+          `Product ${prod.productCode} supplierReference (${prod.supplierReference}) !== preserved API supplier.reference (${snap.data.supplier.reference})`,
+        );
+      }
+      if (prod.productUrl !== snap.data.productUrl || prod.trackedViatorUrl !== snap.data.productUrl) {
+        throw new Error(
+          `Product ${prod.productCode} URL was modified from preserved Viator API productUrl`,
+        );
+      }
+      const primaryRef = (snap.data.destinations.find((d) => d.primary) || snap.data.destinations[0])?.ref;
+      const dest = resolveVerifiedViatorDestination(primaryRef!);
+      if (prod.primaryDestinationId !== dest.destinationId) {
+        throw new Error(
+          `Product ${prod.productCode} primaryDestinationId (${prod.primaryDestinationId}) !== verified destination (${dest.destinationId})`,
+        );
+      }
+      verifiedProducts.push({
+        operatorSlug: op.slug,
+        productCode: prod.productCode,
+        supplierName: prod.supplierName,
+        supplierReference: prod.supplierReference,
+        primaryDestinationId: prod.primaryDestinationId,
+        destinationName: `${dest.name}${dest.parentRegionName ? `, ${dest.parentRegionName}` : ""}`,
+        productUrl: prod.productUrl,
+        status: prod.status,
+        imageSourceType: prod.imageSourceType,
+      });
+    }
+  }
+
+  return {
+    ok: true,
+    operatorCount: VERIFIED_DCC_OPERATORS.length,
+    productCount: verifiedProducts.length,
+    verifiedProducts,
+  };
+}
 
 export type PriorOutreachFlaggedOperator = {
   name: string;
@@ -600,7 +798,7 @@ export const FLAGGED_PRIOR_OUTREACH_OPERATORS: PriorOutreachFlaggedOperator[] = 
     doNotAutoSend: true,
     verifiedViatorPageSlug: "coastal-helicopters",
     statusNote:
-      "Already received a separate email proposing 15%. Has verified DCC page (/operators/coastal-helicopters) with active Viator product 6251SHOREXICEWALK. Flagged for manual review—do not auto-send.",
+      "Already received a separate email proposing 15%. Has verified DCC page (/operators/coastal-helicopters) with active Viator product 6251SHOREXICEWALK (SUPPLIER-XZgZhAmmclREedANtzgvJw==). Flagged for manual review—do not auto-send.",
   },
   {
     name: "TEMSCO Helicopters",
@@ -644,7 +842,7 @@ export const NATIVE_PROVIDER_API_PROFILES: NativeProviderApiSpec[] = [
     catalogAndAvailabilityEndpoints:
       "GET /v1/products, GET /v1/availability?productCode=...&startTimeLocal=...&endTimeLocal=...",
     bookingAndAttributionNotes:
-      "POST /v1/bookings with internal reference/reseller tracking; used by GoSno as DCC's first direct-channel pilot.",
+      "POST /v1/bookings with internal reference/reseller tracking; used by GoSno's gosno.co storefront and evaluated as DCC's first direct-channel pilot candidate.",
   },
   {
     provider: "FareHarbor (External API v1)",
