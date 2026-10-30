@@ -92,7 +92,7 @@ export default function LocationFirstHomeFast() {
               <div className="flex flex-wrap items-center gap-2">
                 <p className="text-[11px] font-black uppercase tracking-[0.24em] text-cyan-300">Destination Command Center</p>
                 <span className="rounded-full border border-cyan-400/30 bg-cyan-400/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-cyan-200">
-                  Attributable Destination Knowledge + Interactive Decision Engines + Coordinate Intelligence
+                  Source-Backed Travel Decision Engine
                 </span>
               </div>
               <h1 className="mt-3 text-4xl font-black tracking-[-0.04em] sm:text-6xl lg:text-7xl max-w-4xl">
@@ -109,11 +109,11 @@ export default function LocationFirstHomeFast() {
             </button>
           </div>
 
-          <p className="mt-5 max-w-3xl text-base leading-8 text-white/70 sm:text-xl">
-            Check whether real-world travel options fit your schedule, change the assumptions, inspect claim-level evidence and freshness, and see current environmental telemetry (NOAA, NWS, USGS, FAA, Open-Meteo). Tour bookings are optional—book directly with operators, choose public or free alternatives, or buy nothing.
+          <p className="mt-5 max-w-3xl text-base leading-8 text-white/75 sm:text-xl">
+            Destination Command Center is a source-backed travel decision engine. Start with destination knowledge, practical schedule and transfer constraints, cited evidence, and clear explanations of what is known or uncertain. You can use DCC without buying anything—or compare public transport, free activities, direct operator options, and marketplace options when a booking link helps you act on a decision.
           </p>
 
-          {/* Primary Action Buttons: Decision Engines & Reference Guides */}
+          {/* Primary Action Buttons: Decision Engines, Reference Guides & Documented APIs */}
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
               href="/juneau#port-day-decision-engine"
@@ -135,7 +135,7 @@ export default function LocationFirstHomeFast() {
               href="/developers"
               className="px-5 py-4 bg-white/10 text-white font-black text-sm uppercase tracking-wider rounded-2xl border border-white/15 hover:bg-white/15 transition flex items-center gap-2"
             >
-              <span>Coordinate JSON API &amp; OpenAPI Spec</span>
+              <span>Documented APIs &amp; Evidence Contracts</span>
               <span>→</span>
             </Link>
           </div>
@@ -356,7 +356,7 @@ export default function LocationFirstHomeFast() {
         </div>
       </section>
 
-      {/* Why Travelers, Search Engines & AI Assistants Use DCC */}
+      {/* Why Travelers, Developers & AI Systems Use DCC */}
       <section className="py-16 sm:py-24 px-5 sm:px-8 max-w-7xl mx-auto">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <span className="text-xs font-black uppercase tracking-widest text-cyan-300">
@@ -365,30 +365,30 @@ export default function LocationFirstHomeFast() {
           <h2 className="mt-2 text-3xl sm:text-5xl font-black text-white">
             Verifiable Decisions First. Optional Booking Second.
           </h2>
-          <p className="mt-4 text-base text-white/70">
-            DCC combines maintained destination facts, claim-level freshness policies, and inspectable timing calculations so you can verify whether options actually fit your trip before deciding whether or where to book.
+          <p className="mt-4 text-base text-white/75 leading-7">
+            DCC earns trust by helping people choose. Commercial connections support that purpose: we offer booking links where they help someone act on a decision, while keeping public transport, free activities, direct operator options, and marketplace options visible when relevant.
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Card 1: Interactive Decision Engine & Evidence */}
+          {/* Card 1: Travelers */}
           <div className="rounded-3xl border border-cyan-500/30 bg-gradient-to-b from-cyan-950/20 to-black/40 p-8 flex flex-col justify-between backdrop-blur-xl relative overflow-hidden">
             <div>
               <div className="flex items-center justify-between mb-4">
                 <span className="text-xs font-black uppercase tracking-wider text-cyan-400 bg-cyan-400/10 px-3 py-1 rounded-full border border-cyan-400/30">
-                  Primary Product · Traveler Decision Engine
+                  For Travelers · Decision Engine
                 </span>
-                <span className="text-sm font-bold text-white/60">Public &amp; Commission-Neutral</span>
+                <span className="text-sm font-bold text-white/60">Use Without Buying Anything</span>
               </div>
-              <h3 className="text-2xl sm:text-3xl font-black text-white">Check Constraints, Change Assumptions, Inspect Evidence</h3>
-              <p className="mt-3 text-sm text-white/70 leading-6">
-                Evaluate real port windows, dock transfer friction, operator check-in cutoffs, mobility constraints, and return buffers. Compare public/free options alongside direct local operators and partner links without commercial bias.
+              <h3 className="text-2xl sm:text-3xl font-black text-white">Explore Destinations &amp; Compare Suitable Options</h3>
+              <p className="mt-3 text-sm text-white/75 leading-6">
+                Check real port windows, dock transfer friction, operator check-in cutoffs, mobility constraints, and return buffers. Compare public transport, free activities, direct operator options, and marketplace options side by side—with clear explanations of what is known or uncertain.
               </p>
               <ul className="mt-6 space-y-2.5 text-xs text-white/80">
-                <li className="flex items-center gap-2">✓ <strong>Inspectable Math:</strong> Explicit transfer legs, check-in lead times, and local time zones</li>
-                <li className="flex items-center gap-2">✓ <strong>Claim-Level Freshness:</strong> Distinct observation, retrieval, and verification timestamps</li>
-                <li className="flex items-center gap-2">✓ <strong>Honest 180-Day Reviews:</strong> Dated third-party review summaries with strict minimum thresholds</li>
-                <li className="flex items-center gap-2">✓ <strong>Independent &amp; Free Options:</strong> Public trails, transit, and direct operators included</li>
+                <li className="flex items-center gap-2">✓ <strong>Practical Constraints:</strong> Explicit transfer legs, check-in lead times, and local time zones</li>
+                <li className="flex items-center gap-2">✓ <strong>Cited Evidence &amp; Uncertainty:</strong> Clear separation between verified facts, live telemetry, and unconfirmed details</li>
+                <li className="flex items-center gap-2">✓ <strong>All Relevant Options Visible:</strong> Public transit, free trails, direct operators, and marketplace links</li>
+                <li className="flex items-center gap-2">✓ <strong>Unbiased Suitability:</strong> Commercial relationships never determine recommendation ranking</li>
               </ul>
             </div>
             <div className="mt-8 pt-6 border-t border-white/10 flex flex-wrap gap-3">
@@ -407,18 +407,18 @@ export default function LocationFirstHomeFast() {
             </div>
           </div>
 
-          {/* Card 2: API & Machine Distribution */}
+          {/* Card 2: Developers & AI Systems */}
           <div className="rounded-3xl border border-emerald-500/30 bg-gradient-to-b from-emerald-950/20 to-black/40 p-8 flex flex-col justify-between backdrop-blur-xl relative overflow-hidden">
             <div>
               <div className="flex items-center justify-between mb-4">
                 <span className="text-xs font-black uppercase tracking-wider text-emerald-400 bg-emerald-400/10 px-3 py-1 rounded-full border border-emerald-400/30">
-                  Secondary Distribution · API &amp; Machine Contracts
+                  For Developers &amp; AI Systems · Evidence Contracts
                 </span>
                 <span className="text-sm font-bold text-white/60">JSON API · OpenAPI 3.1</span>
               </div>
-              <h3 className="text-2xl sm:text-3xl font-black text-white">Coordinate &amp; Decision Intelligence API</h3>
-              <p className="mt-3 text-sm text-white/70 leading-6">
-                Query any latitude and longitude on Earth to receive normalized environmental feeds alongside linked destination reference claims, freshness status, and decision-engine models.
+              <h3 className="text-2xl sm:text-3xl font-black text-white">Access Documented APIs &amp; Evidence Contracts</h3>
+              <p className="mt-3 text-sm text-white/75 leading-6">
+                Query any coordinate for normalized public environmental feeds alongside linked destination reference claims, freshness timestamps, and explicit coverage and safety boundaries.
               </p>
               <div className="mt-5 rounded-2xl bg-black/60 p-4 border border-white/10 font-mono text-xs text-emerald-300 overflow-x-auto">
                 <code>GET /api/location/58.30190/-134.41970</code>
@@ -442,6 +442,18 @@ export default function LocationFirstHomeFast() {
               </Link>
             </div>
           </div>
+        </div>
+
+        <div className="mt-8 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/[0.025] px-6 py-4 text-sm text-white/70">
+          <span>
+            Operate tours or transportation? Learn how DCC represents local operators and connects authorized booking APIs.
+          </span>
+          <Link
+            href="/operators"
+            className="font-bold text-cyan-300 hover:text-cyan-200 underline underline-offset-4"
+          >
+            For tour operators →
+          </Link>
         </div>
       </section>
 

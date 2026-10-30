@@ -22,6 +22,17 @@ export async function POST(req: NextRequest) {
       adultCount: Number(adultCount) || 2,
     });
 
+    if (!availability.success) {
+      const status =
+        availability.availabilityStatus === "invalid_mapping"
+          ? 404
+          : availability.availabilityStatus === "auth_error" ||
+              availability.availabilityStatus === "unconfigured"
+            ? 503
+            : 502;
+      return NextResponse.json(availability, { status });
+    }
+
     return NextResponse.json(availability);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);

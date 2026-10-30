@@ -48,14 +48,14 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 
   return {
-    title: "Destination Command Center | Travel Reference, Trip Preparation & Live Coordinate Intelligence",
+    title: "Destination Command Center | Source-Backed Travel Decision Engine",
     description:
-      "Trusted travel reference and decision platform supported by live, source-attributed coordinate intelligence. Explore destination guides for Juneau, Red Rocks, and the Denver–Breckenridge corridor, or query any coordinate via our web view, embeddable venue widget, and JSON API.",
+      "Source-backed travel decision engine. Check destination knowledge, schedule constraints, cited evidence, and live environmental conditions. Compare public transport, free activities, direct operator options, and marketplace options—or use DCC without buying anything.",
     alternates: { canonical: "/" },
     openGraph: {
-      title: "Destination Command Center | Travel Reference & Live Coordinate Intelligence",
+      title: "Destination Command Center | Source-Backed Travel Decision Engine",
       description:
-        "Understand destinations, prepare for trips, compare practical transport and excursion options, and inspect live, source-attributed coordinate telemetry.",
+        "Understand destinations, check practical constraints and evidence, and compare public transport, free activities, direct operators, and marketplace options.",
       url: "https://destinationcommandcenter.com",
       type: "website",
     },

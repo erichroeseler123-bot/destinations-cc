@@ -1,220 +1,213 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { OctoOnboardingService } from "@/lib/octo/onboardingService";
-import { getDb } from "@/lib/db/client";
-import { octoSupplierConnections } from "@/lib/db/schema";
+import OperatorOnboardingForm from "./OperatorOnboardingForm";
+import {
+  DCC_HOMEPAGE_OPERATOR_MESSAGE,
+  GOSNO_DIRECT_PILOT_MANIFEST,
+  NATIVE_PROVIDER_API_PROFILES,
+  getOperatorManifest,
+} from "@/lib/dcc/operators";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Operator Onboarding & Verification Console | Destination Command Center",
+  title: "Operator API Onboarding & Verification | 10% Direct Partnership | DCC",
   description:
-    "Authoritative 8-stage technical onboarding, verification, and live promotion pipeline for sovereign OCTO tour operators.",
+    "Connect your authorized booking API to Destination Command Center. Proposed 10% commission on completed direct bookings after commercial agreement and technical verification.",
+  alternates: { canonical: "/operators/onboarding" },
 };
 
-const ONBOARDING_STAGES = [
-  { id: "discovered", label: "Discovered", desc: "Identified in OCTO network" },
-  { id: "consented", label: "Consented", desc: "Terms & authority agreed" },
-  { id: "credentials_configured", label: "Credentials", desc: "Encrypted API keys stored" },
-  { id: "connection_verified", label: "Connection", desc: "Endpoint health verified" },
-  { id: "catalog_synced", label: "Catalog Synced", desc: "Products normalized to DCC" },
-  { id: "availability_verified", label: "Availability", desc: "Live availability confirmed" },
-  { id: "booking_tested", label: "Booking Tested", desc: "Hold -> Confirm -> Cancel passed" },
-  { id: "bookable", label: "Bookable", desc: "Promoted to live directory" },
+const VERIFICATION_GATES = [
+  {
+    id: "operator_authorization",
+    label: "1. Operator Permission",
+    desc: "Explicit authorization from the tour or transportation company.",
+  },
+  {
+    id: "commercial_terms",
+    label: "2. Agreed Commercial & Settlement Terms",
+    desc: "Signed 10% direct commission and settlement agreement (kept separate from onboarding applications).",
+  },
+  {
+    id: "verified_credentials",
+    label: "3. Securely Arranged Credentials",
+    desc: "Provider-approved API credentials arranged securely after review—never via public forms or email.",
+  },
+  {
+    id: "product_mapping",
+    label: "4. Exact Product & Option Mapping",
+    desc: "Verified mapping between DCC references and the operator's native API product/option IDs.",
+  },
+  {
+    id: "live_price_availability",
+    label: "5. Current Prices & Live Availability",
+    desc: "Live API responses verified for real-time seat inventory, schedules, and retail pricing.",
+  },
+  {
+    id: "attribution_reporting",
+    label: "6. Reliable Attribution & Outcome Reporting",
+    desc: "End-to-end verification of booking references, confirmations, cancellations, and settlement reporting.",
+  },
+  {
+    id: "policy_verification",
+    label: "7. Cancellation & Cruise-Return Policies",
+    desc: "Verified separately for direct bookings; Viator marketplace guarantees do not automatically carry over.",
+  },
 ];
 
-export default async function OperatorOnboardingPage() {
-  const db = getDb();
-  let connections: any[] = [];
-  if (db) {
-    try {
-      connections = await db.select().from(octoSupplierConnections);
-    } catch {
-      connections = [];
-    }
-  }
-
-  const pilotChecklist = OctoOnboardingService.generatePilotChecklist("ventrata");
+export default async function OperatorOnboardingPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ operator?: string }>;
+}) {
+  const sp = (await searchParams) || {};
+  const prefilledOperator = sp.operator ? getOperatorManifest(sp.operator) : null;
+  const pilot = GOSNO_DIRECT_PILOT_MANIFEST.directPilot!;
 
   return (
     <main className="min-h-screen bg-[#070b10] text-white">
-      {/* Header */}
-      <div className="border-b border-white/10 bg-black/40 py-8 px-6 sm:px-10">
-        <div className="mx-auto max-w-6xl space-y-3">
-          <div className="flex items-center gap-2">
+      <div className="border-b border-white/10 bg-black/40 py-10 px-6 sm:px-10">
+        <div className="mx-auto max-w-6xl space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <Link href="/operators" className="text-xs font-bold text-cyan-300 hover:underline">
+              ← Back to Operator Partnership Overview
+            </Link>
             <span className="rounded-full border border-cyan-400/40 bg-cyan-400/10 px-3 py-0.5 text-xs font-mono font-bold text-cyan-300 uppercase tracking-widest">
-              OCTO Pipeline
+              API-Only Direct Partnership Onboarding
             </span>
-            <span className="text-xs text-white/50 font-mono">Stage 1 through 8</span>
           </div>
-          <h1 className="text-3xl font-black tracking-tight sm:text-4xl text-white">
-            Operator Onboarding & Verification Console
+
+          <h1 className="text-3xl font-black tracking-tight sm:text-5xl text-white">
+            Operator API Onboarding &amp; Integration Verification
           </h1>
-          <p className="text-sm text-zinc-300 max-w-3xl">
-            Neutral, sovereign onboarding path for OCTO tour operators. Operators maintain direct authority over
-            inventory, fulfillment, cancellations, and customer relationships with zero mandatory OTA gatekeeping.
+
+          <blockquote className="rounded-2xl border border-cyan-400/30 bg-cyan-950/20 p-5 text-base sm:text-lg font-bold text-white">
+            “{DCC_HOMEPAGE_OPERATOR_MESSAGE}”
+          </blockquote>
+
+          <p className="text-sm text-zinc-300 max-w-3xl leading-6">
+            Direct partnerships are API-only. Without an authorized API connection, we cannot switch an operator to direct bookings, and any existing verified Viator listings can continue through Viator. Submitting an onboarding application initiates technical and commercial review—it never automatically authorizes sales.
           </p>
         </div>
       </div>
 
       <div className="mx-auto max-w-6xl py-10 px-6 sm:px-10 space-y-12">
-        {/* 8-Stage Pipeline Visualizer */}
+        {/* Application Form */}
+        <section className="rounded-3xl border border-cyan-500/30 bg-white/[0.025] p-6 sm:p-8 space-y-6">
+          <div>
+            <span className="text-xs font-mono font-bold uppercase tracking-widest text-cyan-300">
+              Step 1 · Operator Application (No API Secrets Collected Here)
+            </span>
+            <h2 className="mt-2 text-2xl font-black text-white">
+              Submit Company, Booking System &amp; API Documentation Details
+            </h2>
+            <p className="mt-1 text-xs text-zinc-400">
+              We welcome operators worldwide. Please provide your company contact details, destinations, reservation system, and API documentation link.
+            </p>
+          </div>
+
+          <OperatorOnboardingForm
+            initialCompanyName={prefilledOperator?.name || ""}
+            initialWebsite={prefilledOperator?.website || ""}
+            initialDestinations={prefilledOperator?.city || ""}
+            initialBookingSystem={
+              prefilledOperator?.detectedBookingSystem === "FareHarbor"
+                ? "FareHarbor External API v1"
+                : "Rezdy Native REST API v1"
+            }
+          />
+        </section>
+
+        {/* 7 Verification Gates Required Before Switching */}
         <section className="rounded-3xl border border-white/10 bg-white/[0.025] p-6 sm:p-8 space-y-6">
-          <h2 className="text-xl font-bold text-white">8-Stage Technical Verification Lifecycle</h2>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
-            {ONBOARDING_STAGES.map((s, idx) => (
+          <div>
+            <span className="text-xs font-mono font-bold uppercase tracking-widest text-cyan-300">
+              Step 2 · Mandatory Verification Gates Before Channel Cutover
+            </span>
+            <h2 className="mt-2 text-2xl font-black text-white">
+              Required Verification Before Switching from Viator to Direct API
+            </h2>
+            <p className="mt-2 text-sm text-zinc-300 max-w-3xl leading-6">
+              We keep an operator&apos;s existing verified Viator booking channel active until all seven verification gates pass. Commission never determines traveler suitability or recommendation ranking.
+            </p>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {VERIFICATION_GATES.map((gate) => (
               <div
-                key={s.id}
-                className="rounded-2xl border border-white/10 bg-black/40 p-4 space-y-2 relative overflow-hidden"
+                key={gate.id}
+                className="rounded-2xl border border-white/10 bg-black/40 p-5 space-y-2"
               >
-                <span className="text-[10px] font-mono text-cyan-400 font-bold">Step {idx + 1}</span>
-                <p className="text-xs font-bold text-white leading-tight">{s.label}</p>
-                <p className="text-[10px] text-zinc-400 leading-normal">{s.desc}</p>
+                <p className="text-sm font-bold text-cyan-200">{gate.label}</p>
+                <p className="text-xs text-zinc-300 leading-5">{gate.desc}</p>
               </div>
             ))}
           </div>
         </section>
 
-        {/* Live Operator Connections in DB */}
-        <section className="rounded-3xl border border-white/10 bg-white/[0.025] p-6 sm:p-8 space-y-6">
-          <div className="flex items-center justify-between">
+        {/* GoSno First Direct-Channel Pilot */}
+        <section className="rounded-3xl border border-emerald-500/30 bg-gradient-to-br from-emerald-950/20 via-black/40 to-cyan-950/20 p-6 sm:p-8 space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="text-xl font-bold text-white">Registered Operator Connections</h2>
-              <p className="text-xs text-zinc-400">Current state in Neon PostgreSQL</p>
+              <span className="text-[11px] font-mono text-emerald-300 uppercase tracking-widest font-bold">
+                {pilot.pilotLabel}
+              </span>
+              <h2 className="mt-1 text-2xl font-black text-white">
+                GoSno · {pilot.bookingSystem}
+              </h2>
             </div>
             <Link
-              href="/octo"
-              className="text-xs font-bold text-cyan-300 hover:text-cyan-200 transition"
+              href="/operators/gosno"
+              className="rounded-full border border-emerald-400/40 bg-emerald-400/10 px-4 py-1.5 text-xs font-bold text-emerald-200 hover:bg-emerald-400/20"
             >
-              OCTO Directory →
+              Inspect GoSno Pilot Profile →
             </Link>
           </div>
 
-          {connections.length > 0 ? (
-            <div className="divide-y divide-white/10 overflow-hidden rounded-2xl border border-white/10 bg-black/40">
-              {connections.map((c) => (
-                <div key={c.id} className="p-5 space-y-3">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-base font-bold text-white">{c.operatorName}</h3>
-                        {c.isSandbox ? (
-                          <span className="rounded bg-amber-400/10 px-2 py-0.5 text-[10px] font-mono text-amber-300 border border-amber-400/20">
-                            Sandbox
-                          </span>
-                        ) : (
-                          <span className="rounded bg-emerald-400/10 px-2 py-0.5 text-[10px] font-mono text-emerald-300 border border-emerald-400/20">
-                            Live Production
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-xs font-mono text-zinc-400">{c.endpoint}</p>
-                    </div>
+          <p className="text-sm text-zinc-300 leading-6">
+            {pilot.pilotScopeSummary}
+          </p>
 
-                    <div className="flex items-center gap-2">
-                      <span className="rounded-full border border-cyan-400/40 bg-cyan-400/10 px-3 py-1 text-xs font-mono font-bold text-cyan-300">
-                        {c.onboardingStage || "discovered"}
-                      </span>
-                      <span
-                        className={`rounded-full border px-3 py-1 text-xs font-mono font-bold ${
-                          c.healthStatus === "healthy"
-                            ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-300"
-                            : "border-zinc-600 bg-zinc-800 text-zinc-400"
-                        }`}
-                      >
-                        {c.healthStatus}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4 text-xs sm:grid-cols-4 pt-2 border-t border-white/5 text-zinc-400">
-                    <div>
-                      <span className="text-[10px] uppercase text-zinc-500 block">Commission</span>
-                      <span className="text-white font-mono">{c.commissionPercent}%</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] uppercase text-zinc-500 block">Signatory</span>
-                      <span className="text-white font-mono">{c.signatoryName || "Pending"}</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] uppercase text-zinc-500 block">Catalog Status</span>
-                      <span className="text-white font-mono">{c.catalogSyncStatus || "Unsynced"}</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] uppercase text-zinc-500 block">Booking Test</span>
-                      <span className="text-white font-mono">{c.bookingTestStatus || "Untested"}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
+          <div className="grid gap-4 md:grid-cols-2 text-xs">
+            <div className="rounded-2xl border border-white/10 bg-black/40 p-4">
+              <strong className="text-emerald-300 block">Working Production Checkout (Unchanged):</strong>
+              <span className="text-zinc-300 mt-1 block">{pilot.workingCheckoutStatus}</span>
             </div>
-          ) : (
-            <p className="text-xs text-zinc-500">No operator connections currently registered.</p>
-          )}
+            <div className="rounded-2xl border border-white/10 bg-black/40 p-4">
+              <strong className="text-amber-300 block">10% Direct-Channel Pilot Evaluation:</strong>
+              <span className="text-zinc-300 mt-1 block">
+                Operator authorization, Rezdy REST API v1 access, product mapping, and live price/availability checks verified; 10% direct commercial addendum and settlement reporting in pilot evaluation.
+              </span>
+            </div>
+          </div>
         </section>
 
-        {/* First Live Pilot Operator Checklist */}
-        <section className="rounded-3xl border border-cyan-500/30 bg-gradient-to-br from-cyan-950/20 via-black/40 to-emerald-950/20 p-6 sm:p-8 space-y-6">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-widest font-bold">
-                Pilot Candidate Grounding
-              </span>
-              <h2 className="text-2xl font-black text-white">{pilotChecklist.candidate}</h2>
-            </div>
-            <span className="rounded-full border border-emerald-400/40 bg-emerald-400/10 px-3 py-1 text-xs font-bold text-emerald-300">
-              5% Agreed Model
+        {/* Native Provider API Profiles */}
+        <section className="rounded-3xl border border-white/10 bg-white/[0.025] p-6 sm:p-8 space-y-6">
+          <div>
+            <span className="text-xs font-mono font-bold uppercase tracking-widest text-cyan-300">
+              Inspected Provider Documentation
             </span>
+            <h2 className="mt-2 text-xl sm:text-2xl font-black text-white">
+              Provider-Specific API Architectures (Not All Systems Use OCTO)
+            </h2>
+            <p className="mt-1 text-xs text-zinc-400 max-w-3xl leading-5">
+              We inspect the actual API documentation for each booking system rather than assuming FareHarbor, Bókun, Rezdy, and other native APIs all use OCTO endpoints.
+            </p>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2">
-            <div className="space-y-4 rounded-2xl border border-white/10 bg-black/40 p-5">
-              <h3 className="text-sm font-bold text-cyan-300 uppercase tracking-wider">
-                Required Credentials Checklist
-              </h3>
-              <ul className="space-y-3 text-xs">
-                {pilotChecklist.requiredCredentials.map((c, idx) => (
-                  <li key={idx} className="space-y-1">
-                    <p className="font-bold text-white">{c.name}</p>
-                    <p className="text-zinc-400">{c.purpose}</p>
-                    {c.format && <p className="font-mono text-[11px] text-cyan-400">Format: {c.format}</p>}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="space-y-4 rounded-2xl border border-white/10 bg-black/40 p-5">
-              <h3 className="text-sm font-bold text-emerald-300 uppercase tracking-wider">
-                Consent & Authority Agreement
-              </h3>
-              <div className="space-y-2 text-xs text-zinc-300">
-                <p>
-                  <strong className="text-white">Agreement Version:</strong> {pilotChecklist.requiredConsent.agreement}
+          <div className="grid gap-4 md:grid-cols-2">
+            {NATIVE_PROVIDER_API_PROFILES.map((spec) => (
+              <div key={spec.provider} className="rounded-2xl border border-white/10 bg-black/40 p-5 space-y-2 text-xs">
+                <p className="font-bold text-white text-sm">{spec.provider}</p>
+                <p className="text-cyan-300 font-mono">{spec.protocolType}</p>
+                <p className="text-zinc-300">
+                  <strong>Auth:</strong> {spec.authMechanism}
                 </p>
-                <p>
-                  <strong className="text-white">Platform Take-Rate:</strong> {pilotChecklist.requiredConsent.distributionShare}
-                </p>
-                <p>
-                  <strong className="text-white">Provider Authority:</strong> {pilotChecklist.requiredConsent.operatorAuthority}
-                </p>
-                <p>
-                  <strong className="text-white">Payment Model:</strong> {pilotChecklist.requiredConsent.paymentModel}
-                </p>
+                <p className="text-emerald-300 font-mono">{spec.catalogAndAvailabilityEndpoints}</p>
+                <p className="text-zinc-400">{spec.bookingAndAttributionNotes}</p>
               </div>
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-white/10 bg-black/40 p-5 space-y-3">
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider">
-              Verification Run Order
-            </h3>
-            <ol className="grid gap-2 sm:grid-cols-2 text-xs text-zinc-400 list-decimal list-inside">
-              {pilotChecklist.technicalVerificationStages.map((step, idx) => (
-                <li key={idx} className="leading-relaxed">
-                  {step}
-                </li>
-              ))}
-            </ol>
+            ))}
           </div>
         </section>
       </div>

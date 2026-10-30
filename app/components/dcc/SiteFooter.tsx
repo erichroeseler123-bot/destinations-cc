@@ -23,8 +23,8 @@ const ENGINE_LINKS: FooterLink[] = [
 
 const SYSTEM_LINKS: FooterLink[] = [
   { href: "/about", label: "About & Capability Matrix" },
+  { href: "/operators", label: "For tour operators" },
   { href: "/widget", label: "Venue Widget" },
-  { href: "/pricing", label: "Commercial Pricing" },
   { href: "/developers", label: "Coordinate API" },
   { href: "/scope.json", label: "Scope Contract" },
   { href: "/agent.json", label: "Agent Manifest" },
@@ -80,7 +80,7 @@ export default function SiteFooter() {
             <p className="dcc-site-footer__brand-desc">
               {isConsoleView
                 ? "Destination intelligence, network governance, and travel-system diagnostics."
-                : "Travel decisions powered by live context, destination knowledge, and specialist handoffs."}
+                : "Source-backed travel decision engine. Practical constraints, cited evidence, and live environmental conditions."}
             </p>
           </div>
 
@@ -132,6 +132,8 @@ export default function SiteFooter() {
         <div className="dcc-site-footer__basement">
           <div className="dcc-site-footer__copyright">© 2026 DCC. All rights reserved.</div>
           <div className="dcc-site-footer__legal-links">
+            <Link href="/operators">For tour operators</Link>
+            <span className="dcc-site-footer__divider">/</span>
             <Link href="/privacy">Privacy</Link>
             <span className="dcc-site-footer__divider">/</span>
             <Link href="/terms">Terms of Service</Link>

@@ -214,9 +214,15 @@ export function getViatorPublicConfig(): ViatorPublicConfig {
 export function getViatorServerConfig(): ViatorServerConfig {
   const publicConfig = getViatorPublicConfig();
   const bookingModeRaw = pickString(process.env.VIATOR_BOOKING_MODE, "partner_form").toLowerCase();
+  const rawKey = pickString(
+    process.env.VIATOR_API_KEY,
+    process.env.VIATOR_API,
+    process.env.VIATOR_KEY
+  );
+  const apiKey = rawKey ? rawKey.replace(/^["']|["']$/g, "").trim() || null : null;
   return {
     ...publicConfig,
-    apiKey: pickString(process.env.VIATOR_API_KEY),
+    apiKey,
     apiBase: pickString(process.env.VIATOR_API_BASE, "https://api.viator.com/partner"),
     sourcePolicy: pickString(process.env.VIATOR_SOURCE_POLICY, "auto"),
     bookingMode: bookingModeRaw === "viator_form" ? "viator_form" : "partner_form",

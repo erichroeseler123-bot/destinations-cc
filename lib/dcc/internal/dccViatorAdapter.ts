@@ -36,9 +36,25 @@ export type DccLiveAvailabilityRequest = {
   adultCount: number;
 };
 
+export type DccLiveAvailabilityStatus =
+  | "available"
+  | "sold_out"
+  | "auth_error"
+  | "unconfigured"
+  | "upstream_error"
+  | "invalid_mapping";
+
 export type DccLiveAvailabilityResponse = {
   success: boolean;
-  available: boolean;
+  /**
+   * True when at least one option is confirmed available; false ONLY when Viator
+   * responds with HTTP 200 and no options are available (sold out).
+   * Null when availability is unknown due to auth failure, missing configuration,
+   * invalid mapping, or upstream error.
+   */
+  available: boolean | null;
+  availabilityStatus: DccLiveAvailabilityStatus;
+  errorCode?: string;
   productCode: string;
   bookingDate: string;
   retailPrice?: number;
@@ -179,7 +195,9 @@ export async function checkDccLiveAvailability(
   if (!viatorCode) {
     return {
       success: false,
-      available: false,
+      available: null,
+      availabilityStatus: "invalid_mapping",
+      errorCode: "unrecognized_product_mapping",
       productCode: "",
       bookingDate: req.bookingDate,
       currency: "USD",
@@ -245,6 +263,7 @@ export async function checkDccLiveAvailability(
     return {
       success: true,
       available: isAvailable,
+      availabilityStatus: isAvailable ? "available" : "sold_out",
       productCode: viatorCode,
       bookingDate: req.bookingDate,
       retailPrice: firstOption?.retailPrice,
@@ -254,9 +273,30 @@ export async function checkDccLiveAvailability(
     };
   } catch (err: unknown) {
     const errorMsg = err instanceof Error ? err.message : String(err);
+    const isUnconfigured = errorMsg.includes("missing_viator_api_key");
+    const isAuthError =
+      errorMsg.includes("viator_http_401") ||
+      errorMsg.includes("viator_http_403") ||
+      errorMsg.includes("UNAUTHORIZED") ||
+      errorMsg.includes("Invalid API Key");
+
+    const availabilityStatus: DccLiveAvailabilityStatus = isUnconfigured
+      ? "unconfigured"
+      : isAuthError
+        ? "auth_error"
+        : "upstream_error";
+
+    const errorCode = isUnconfigured
+      ? "viator_unconfigured"
+      : isAuthError
+        ? "viator_auth_failed"
+        : "viator_upstream_error";
+
     return {
       success: false,
-      available: false,
+      available: null,
+      availabilityStatus,
+      errorCode,
       productCode: viatorCode,
       bookingDate: req.bookingDate,
       currency: "USD",

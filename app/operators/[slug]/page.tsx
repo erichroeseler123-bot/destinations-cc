@@ -1,26 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import tours from "@/data/tours.json";
-import CityTimePanel from "@/app/components/dcc/CityTimePanel";
 import JsonLd from "@/app/components/dcc/JsonLd";
 import {
+  DCC_OPERATOR_PAGE_DIRECT_OFFER_MESSAGE,
   getOperatorManifest,
   listOperatorSlugs,
-  type TourOperatorRef,
 } from "@/lib/dcc/operators";
 import { buildBreadcrumbJsonLd, buildOperatorJsonLd } from "@/lib/dcc/jsonld";
-
-type Tour = {
-  id: string | number;
-  name: string;
-  city?: string;
-  description?: string;
-  timezone?: string;
-  operator?: TourOperatorRef;
-};
-
-const allTours = tours as unknown as Tour[];
 
 export function generateStaticParams() {
   return listOperatorSlugs().map((slug) => ({ slug }));
@@ -33,11 +20,11 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const operator = getOperatorManifest(slug);
-  if (!operator) return { title: "Operator" };
+  if (!operator) return { title: "Operator | Destination Command Center" };
 
   return {
-    title: `${operator.name} Tours and Company Overview`,
-    description: `${operator.name} operates local experiences in ${operator.city}. See specialties, areas served, and tours listed on Destination Command Center.`,
+    title: `${operator.name} (${operator.city}) | Verified Tours & Operator Profile | DCC`,
+    description: `${operator.name} in ${operator.city}. View official website, verified Viator product links, and DCC's 10% direct API partnership option.`,
     alternates: { canonical: `/operators/${slug}` },
   };
 }
@@ -51,8 +38,7 @@ export default async function OperatorPage({
   const operator = getOperatorManifest(slug);
   if (!operator) notFound();
 
-  const operatorTours = allTours.filter((tour) => tour.operator?.slug === slug);
-  const timezone = operatorTours.find((tour) => tour.timezone)?.timezone;
+  const isDirectPilot = operator.currentBookingChannel === "direct_pilot" && operator.directPilot;
 
   return (
     <main className="min-h-screen bg-[#050816] text-white">
@@ -70,100 +56,256 @@ export default async function OperatorPage({
             }),
             buildBreadcrumbJsonLd([
               { name: "Home", item: "/" },
-              { name: "Operators", item: "/tours" },
+              { name: "For tour operators", item: "/operators" },
               { name: operator.name, item: `/operators/${slug}` },
             ]),
           ],
         }}
       />
-      <div className="mx-auto max-w-5xl space-y-8 px-6 py-16">
-        <header className="rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(255,176,124,0.12),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(61,243,255,0.10),transparent_26%),linear-gradient(180deg,rgba(15,23,42,0.96),rgba(7,11,25,0.98))] p-8 shadow-[0_28px_90px_rgba(0,0,0,0.45)] md:p-10">
-          <p className="text-xs uppercase tracking-[0.24em] text-[#ffb07c]">Tour operator</p>
-          <h1 className="mt-4 text-4xl font-black tracking-tight md:text-6xl">{operator.name}</h1>
-          <p className="mt-4 max-w-3xl text-lg leading-8 text-white/82">
-            {operator.overview ||
-              `${operator.name} appears on DCC as a local operator connected to tours in ${operator.city}.`}
+
+      <div className="mx-auto max-w-5xl space-y-10 px-6 py-14">
+        <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-white/65">
+          <Link href="/operators" className="text-cyan-300 hover:underline font-bold">
+            ← All Tour Operators &amp; 10% Direct API Partnership
+          </Link>
+          <span>Commission never determines traveler suitability or recommendation ranking.</span>
+        </div>
+
+        {/* Operator Header */}
+        <header className="rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.12),transparent_32%),linear-gradient(180deg,rgba(15,23,42,0.96),rgba(7,11,25,0.98))] p-8 shadow-2xl md:p-10 space-y-5">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-cyan-200">
+              {operator.city}
+            </span>
+            {isDirectPilot ? (
+              <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-emerald-200">
+                First Direct-Channel Pilot · {operator.directPilot!.bookingSystem}
+              </span>
+            ) : (
+              <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-amber-200">
+                Current Booking Channel: Viator (Verified Active Products)
+              </span>
+            )}
+          </div>
+
+          <h1 className="text-3xl font-black tracking-tight md:text-5xl text-white">
+            {operator.name}
+          </h1>
+
+          <p className="max-w-3xl text-base md:text-lg leading-8 text-white/80">
+            {operator.overview}
           </p>
-          <div className="mt-6 flex flex-wrap gap-3 text-sm text-white/82">
-            <span className="rounded-2xl border border-white/12 bg-white/6 px-4 py-2">{operator.city}</span>
-            {operator.founded ? (
-              <span className="rounded-2xl border border-white/12 bg-white/6 px-4 py-2">
-                Founded {operator.founded}
+
+          <div className="flex flex-wrap gap-3 pt-2 text-sm">
+            <a
+              href={operator.website}
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              className="rounded-xl border border-white/15 bg-white/[0.06] px-4 py-2.5 font-bold text-cyan-200 hover:bg-white/[0.12] transition"
+            >
+              Official Website: {operator.website} ↗
+            </a>
+            {operator.phone ? (
+              <span className="rounded-xl border border-white/12 bg-white/[0.04] px-4 py-2.5 text-white/75">
+                Phone: {operator.phone}
               </span>
             ) : null}
-            {operator.website ? (
-              <a
-                href={operator.website}
-                target="_blank"
-                rel="noopener noreferrer nofollow"
-                className="rounded-2xl border border-white/12 bg-white/6 px-4 py-2 hover:bg-white/10"
-              >
-                Visit website
-              </a>
-            ) : null}
           </div>
-          {timezone ? (
-            <div className="mt-6 max-w-sm">
-              <CityTimePanel cityName={operator.city} timezone={timezone} showWeekday />
-            </div>
+
+          {!isDirectPilot ? (
+            <p className="text-xs leading-6 text-white/65 border-t border-white/10 pt-4">
+              <strong>Channel Disclosure:</strong> The tours listed on this page are currently booked through Viator using verified product links matched to {operator.name}&apos;s Viator supplier record. Displaying these verified Viator listings does not imply {operator.name} has already entered a direct API partnership with DCC.
+            </p>
           ) : null}
         </header>
 
-        {operator.specialties && operator.specialties.length > 0 ? (
-          <section className="rounded-3xl border border-white/10 bg-white/[0.05] p-6">
-            <p className="text-xs uppercase tracking-[0.22em] text-[#8fd0ff]">Specialties</p>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {operator.specialties.map((specialty) => (
-                <span
-                  key={specialty}
-                  className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs uppercase tracking-[0.14em] text-zinc-300"
-                >
-                  {specialty}
-                </span>
-              ))}
+        {/* Direct Partnership Offer (on Viator-channeled operator pages) */}
+        {!isDirectPilot ? (
+          <section
+            aria-labelledby="direct-partnership-offer-heading"
+            className="rounded-3xl border border-cyan-400/35 bg-gradient-to-br from-cyan-950/30 via-black/50 to-emerald-950/20 p-6 sm:p-8 space-y-4"
+          >
+            <span className="text-xs font-mono font-bold uppercase tracking-widest text-cyan-300">
+              For {operator.name} Management &amp; Distribution Team
+            </span>
+            <h2 id="direct-partnership-offer-heading" className="text-xl sm:text-2xl font-black text-white">
+              Direct API Booking Option (Proposed 10% Commission)
+            </h2>
+            <blockquote className="rounded-2xl border border-cyan-400/25 bg-black/40 p-5 text-base sm:text-lg font-semibold leading-7 text-white">
+              “{DCC_OPERATOR_PAGE_DIRECT_OFFER_MESSAGE}”
+            </blockquote>
+            <p className="text-xs leading-6 text-white/70">
+              The proposed 10% commission applies solely to our proposed direct agreement on completed direct bookings generated through DCC. It does not change Viator&apos;s commission structure or guarantee a specific savings amount. Direct bookings require explicit operator permission, provider-approved API access, agreed commercial terms, and a verified technical integration. Operators can keep all existing sales channels, and commission never affects traveler suitability or recommendation ranking.
+            </p>
+            <div className="pt-2">
+              <Link
+                href={`/operators/onboarding?operator=${encodeURIComponent(operator.slug)}`}
+                className="inline-flex items-center gap-2 rounded-xl bg-cyan-400 px-5 py-3 text-xs font-black uppercase tracking-wider text-black hover:bg-cyan-300 transition"
+              >
+                <span>Connect Your Booking API (Operator Onboarding)</span>
+                <span>→</span>
+              </Link>
             </div>
           </section>
-        ) : null}
-
-        {operator.areasServed && operator.areasServed.length > 0 ? (
-          <section className="rounded-3xl border border-white/10 bg-white/[0.05] p-6">
-            <p className="text-xs uppercase tracking-[0.22em] text-[#8fd0ff]">Areas served</p>
-            <div className="mt-4 flex flex-wrap gap-3">
-              {operator.areasServed.map((area) => (
-                <span key={area} className="rounded-2xl border border-white/10 bg-black/20 px-4 py-2 text-sm text-white/82">
-                  {area}
-                </span>
-              ))}
+        ) : (
+          /* GoSno Direct Pilot Section */
+          <section className="rounded-3xl border border-emerald-400/35 bg-emerald-950/20 p-6 sm:p-8 space-y-4">
+            <span className="text-xs font-mono font-bold uppercase tracking-widest text-emerald-300">
+              {operator.directPilot!.pilotLabel}
+            </span>
+            <h2 className="text-2xl font-black text-white">
+              Rezdy Native REST API v1 Pilot &amp; Working Production Checkout
+            </h2>
+            <p className="text-sm leading-6 text-white/80">
+              {operator.directPilot!.pilotScopeSummary}
+            </p>
+            <div className="grid gap-4 md:grid-cols-2 pt-2">
+              <div className="rounded-2xl border border-white/10 bg-black/40 p-5">
+                <p className="text-xs font-mono font-bold uppercase text-emerald-300">
+                  Working Production Checkout (Unchanged)
+                </p>
+                <p className="mt-2 text-xs text-white/75 leading-5">
+                  {operator.directPilot!.workingCheckoutStatus}
+                </p>
+                <div className="mt-3 flex flex-wrap gap-3 text-xs">
+                  <a
+                    href={operator.directPilot!.workingCheckoutUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-bold text-cyan-300 underline"
+                  >
+                    Open GoSno Checkout →
+                  </a>
+                  <a
+                    href={operator.directPilot!.wellKnownEndpointUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-mono text-white/70 underline"
+                  >
+                    Inspect /.well-known/dcc →
+                  </a>
+                </div>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-black/40 p-5">
+                <p className="text-xs font-mono font-bold uppercase text-amber-300">
+                  Direct-Channel Pilot Verification Status
+                </p>
+                <ul className="mt-2 space-y-1 text-xs text-white/75">
+                  <li>• Operator Permission &amp; Rezdy API Access: Verified</li>
+                  <li>• Product Mapping &amp; Live Price/Availability: Verified</li>
+                  <li>• 10% Direct Commercial Addendum &amp; Outcome Reporting: In Progress</li>
+                </ul>
+              </div>
             </div>
           </section>
-        ) : null}
+        )}
 
-        <section className="rounded-3xl border border-white/10 bg-white/[0.05] p-6">
-          <p className="text-xs uppercase tracking-[0.22em] text-[#8fd0ff]">Tours they operate</p>
-          <div className="mt-5 grid gap-4 md:grid-cols-2">
-            {operatorTours.length > 0 ? (
-              operatorTours.map((tour) => (
-                <Link
-                  key={tour.id}
-                  href={`/tours/${tour.id}`}
-                  className="rounded-2xl border border-white/10 bg-black/20 p-5 hover:bg-white/[0.08]"
-                >
-                  <h2 className="text-lg font-semibold text-white">{tour.name}</h2>
-                  <p className="mt-2 text-sm text-zinc-300">
-                    {tour.city || operator.city}
-                  </p>
-                  {tour.description ? (
-                    <p className="mt-3 text-sm leading-7 text-zinc-400">{tour.description}</p>
-                  ) : null}
-                </Link>
-              ))
-            ) : (
-              <p className="text-sm text-zinc-400">
-                Tours from this operator are not listed yet, but the company profile is available for transparency.
+        {/* Verified Active Viator Products */}
+        {operator.verifiedViatorProducts.length > 0 ? (
+          <section aria-labelledby="verified-products-heading" className="space-y-6">
+            <div>
+              <span className="text-xs font-mono font-bold uppercase tracking-widest text-cyan-300">
+                Verified Viator API Catalog · Status: ACTIVE
+              </span>
+              <h2 id="verified-products-heading" className="mt-2 text-2xl sm:text-3xl font-black text-white">
+                Verified Viator Products for {operator.name}
+              </h2>
+              <p className="mt-2 text-sm text-white/70 leading-6">
+                Each product below is verified active in Viator&apos;s Partner API, matched to {operator.name}&apos;s supplier record, and uses supplier-provided imagery. Current departure availability, final pricing, and applicable booking terms are confirmed on Viator at checkout.
               </p>
-            )}
-          </div>
-        </section>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2">
+              {operator.verifiedViatorProducts.map((product) => (
+                <article
+                  key={product.productCode}
+                  className="rounded-2xl border border-white/10 bg-white/[0.03] overflow-hidden flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="relative h-52 w-full bg-black/50 overflow-hidden border-b border-white/10">
+                      <img
+                        src={product.coverImageUrl}
+                        alt={`${product.title} — ${product.supplierName}`}
+                        className="h-full w-full object-cover"
+                        loading="lazy"
+                      />
+                      <span className="absolute top-3 left-3 rounded-full bg-black/80 border border-white/15 px-3 py-1 text-[11px] font-mono text-cyan-200">
+                        Code: {product.productCode} · {product.status}
+                      </span>
+                    </div>
+
+                    <div className="p-6 space-y-3">
+                      <p className="text-xs font-mono text-white/55">
+                        Supplier: {product.supplierName} · Photo: {product.imageSourceType}
+                      </p>
+                      <h3 className="text-xl font-bold text-white leading-snug">
+                        {product.title}
+                      </h3>
+                      <p className="text-sm leading-6 text-white/75">
+                        {product.summary}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="px-6 pb-6 pt-3 border-t border-white/10 flex flex-col gap-2">
+                    <a
+                      href={product.trackedViatorUrl}
+                      target="_blank"
+                      rel="sponsored noopener noreferrer"
+                      className="w-full rounded-xl bg-amber-300 px-5 py-3 text-center text-xs font-black uppercase tracking-wider text-black hover:bg-amber-200 transition"
+                    >
+                      Check Current Dates &amp; Prices on Viator →
+                    </a>
+                    <span className="text-[11px] text-white/50 text-center">
+                      Booked via Viator · Confirm live schedule, price, and cancellation terms on Viator
+                    </span>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        {/* Specialties & Areas Served */}
+        {(operator.specialties?.length || operator.areasServed?.length) ? (
+          <section className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 sm:p-8 grid gap-6 md:grid-cols-2">
+            {operator.specialties && operator.specialties.length > 0 ? (
+              <div>
+                <h2 className="text-xs font-bold uppercase tracking-widest text-cyan-300">
+                  Tour Formats &amp; Specialties
+                </h2>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {operator.specialties.map((specialty) => (
+                    <span
+                      key={specialty}
+                      className="rounded-full border border-white/12 bg-black/30 px-3 py-1 text-xs text-white/80"
+                    >
+                      {specialty}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            {operator.areasServed && operator.areasServed.length > 0 ? (
+              <div>
+                <h2 className="text-xs font-bold uppercase tracking-widest text-cyan-300">
+                  Operating Areas
+                </h2>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {operator.areasServed.map((area) => (
+                    <span
+                      key={area}
+                      className="rounded-full border border-white/12 bg-black/30 px-3 py-1 text-xs text-white/80"
+                    >
+                      {area}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+          </section>
+        ) : null}
       </div>
     </main>
   );

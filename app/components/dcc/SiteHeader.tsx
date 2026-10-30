@@ -62,8 +62,8 @@ export default function SiteHeader() {
         </nav>
 
         <div className="dcc-site-header__actions">
-          <Link href="/operator/register" className="dcc-site-header__login">
-            Sign In
+          <Link href="/operators" className="dcc-site-header__login">
+            For tour operators
           </Link>
           {isConsoleView && (
             <Link href="/command" className="dcc-site-header__button">

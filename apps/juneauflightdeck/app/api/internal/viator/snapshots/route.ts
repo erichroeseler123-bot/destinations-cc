@@ -63,20 +63,78 @@ export async function GET(request: Request) {
     );
   }
 
-  const queries = [
-    { name: "Alaska (270) Helicopter", body: { filtering: { destination: "270" }, searchTerm: "helicopter", pagination: { start: 1, count: 50 }, currency: "USD" } },
-    { name: "Alaska (270) TEMSCO", body: { filtering: { destination: "270" }, searchTerm: "TEMSCO", pagination: { start: 1, count: 50 }, currency: "USD" } },
-    { name: "Alaska (270) Coastal", body: { filtering: { destination: "270" }, searchTerm: "Coastal Helicopters", pagination: { start: 1, count: 50 }, currency: "USD" } },
-    { name: "Alaska (270) NorthStar", body: { filtering: { destination: "270" }, searchTerm: "NorthStar Trekking", pagination: { start: 1, count: 50 }, currency: "USD" } },
-    { name: "Skagway (943) Helicopter", body: { filtering: { destination: "943" }, searchTerm: "helicopter", pagination: { start: 1, count: 50 }, currency: "USD" } },
-  ];
+  const searchTermParam = url.searchParams.get("search")?.trim();
+  const destIdParam = url.searchParams.get("destId")?.trim() || "941";
+  const startParam = Math.max(1, Number(url.searchParams.get("start")) || 1);
+  const countParam = Math.min(50, Math.max(1, Number(url.searchParams.get("count")) || 50));
+
+  const queries = searchTermParam
+    ? [
+        {
+          name: `Freetext "${searchTermParam}" (dest ${destIdParam}, start ${startParam})`,
+          endpoint: "https://api.viator.com/partner/search/freetext",
+          body: {
+            searchTerm: searchTermParam,
+            productFiltering: { destination: destIdParam },
+            searchTypes: [
+              {
+                searchType: "PRODUCTS",
+                pagination: { start: startParam, count: countParam },
+              },
+            ],
+            currency: "USD",
+          },
+        },
+      ]
+    : [
+        {
+          name: "Juneau (941) Helicopter Freetext",
+          endpoint: "https://api.viator.com/partner/search/freetext",
+          body: {
+            searchTerm: "helicopter",
+            productFiltering: { destination: "941" },
+            searchTypes: [{ searchType: "PRODUCTS", pagination: { start: 1, count: 50 } }],
+            currency: "USD",
+          },
+        },
+        {
+          name: "Juneau (941) Coastal Helicopters Freetext",
+          endpoint: "https://api.viator.com/partner/search/freetext",
+          body: {
+            searchTerm: "Coastal Helicopters",
+            productFiltering: { destination: "941" },
+            searchTypes: [{ searchType: "PRODUCTS", pagination: { start: 1, count: 50 } }],
+            currency: "USD",
+          },
+        },
+        {
+          name: "Juneau (941) TEMSCO Freetext",
+          endpoint: "https://api.viator.com/partner/search/freetext",
+          body: {
+            searchTerm: "TEMSCO",
+            productFiltering: { destination: "941" },
+            searchTypes: [{ searchType: "PRODUCTS", pagination: { start: 1, count: 50 } }],
+            currency: "USD",
+          },
+        },
+        {
+          name: "Juneau (941) NorthStar Trekking Freetext",
+          endpoint: "https://api.viator.com/partner/search/freetext",
+          body: {
+            searchTerm: "NorthStar Trekking",
+            productFiltering: { destination: "941" },
+            searchTypes: [{ searchType: "PRODUCTS", pagination: { start: 1, count: 50 } }],
+            currency: "USD",
+          },
+        },
+      ];
 
   const searchResults: any[] = [];
   const foundProductMap = new Map<string, any>();
 
   for (const q of queries) {
     try {
-      const res = await fetch("https://api.viator.com/partner/products/search", {
+      const res = await fetch(q.endpoint, {
         method: "POST",
         headers: {
           "exp-api-key": apiKey,
@@ -90,20 +148,27 @@ export async function GET(request: Request) {
 
       if (res.ok) {
         const data = await res.json();
-        const products = data.products || [];
-        const matches = products.filter((p: any) => {
-          const t = (p.title || "").toLowerCase();
-          return t.includes("helicopter") || t.includes("heli") || t.includes("sled") || t.includes("dog");
-        });
+        const productsBlock = data.products || {};
+        const products = Array.isArray(productsBlock)
+          ? productsBlock
+          : Array.isArray(productsBlock.results)
+            ? productsBlock.results
+            : [];
+        const totalCount =
+          typeof productsBlock.totalCount === "number"
+            ? productsBlock.totalCount
+            : typeof data.totalCount === "number"
+              ? data.totalCount
+              : products.length;
 
         searchResults.push({
           query: q.name,
-          totalCount: data.totalCount,
+          endpoint: q.endpoint,
+          totalCount,
           returnedCount: products.length,
-          matchesCount: matches.length,
         });
 
-        for (const p of matches) {
+        for (const p of products) {
           if (p.productCode && !foundProductMap.has(p.productCode)) {
             foundProductMap.set(p.productCode, {
               code: p.productCode,
@@ -112,10 +177,10 @@ export async function GET(request: Request) {
           }
         }
       } else {
-        searchResults.push({ query: q.name, status: res.status });
+        searchResults.push({ query: q.name, endpoint: q.endpoint, status: res.status });
       }
     } catch (err: any) {
-      searchResults.push({ query: q.name, error: err.message });
+      searchResults.push({ query: q.name, endpoint: q.endpoint, error: err.message });
     }
   }
 

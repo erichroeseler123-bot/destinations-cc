@@ -31,9 +31,9 @@ export default function DccMachineContractExplainer() {
             </p>
           </article>
           <article className="rounded-2xl border border-white/10 bg-white/[0.035] p-5">
-            <strong className="text-sm text-cyan-200">3. Execute Safely (Handoffs &amp; Endpoints)</strong>
+            <strong className="text-sm text-cyan-200">3. Act on a Decision (Optional Handoffs)</strong>
             <p className="mt-2 text-sm leading-6 text-white/55">
-              Context-preserving handoffs to specialist sites, live <code className="text-cyan-200">/.well-known/dcc</code> operator endpoints (e.g., GoSno), and pilot OCTO connectivity.
+              Public transit and free alternatives alongside verified marketplace links, specialist sites, and authorized operator endpoints (such as GoSno&apos;s <code className="text-cyan-200">/.well-known/dcc</code> and Rezdy API pilot).
             </p>
           </article>
         </div>
@@ -57,6 +57,9 @@ export default function DccMachineContractExplainer() {
           <a href="/llms.txt" className="rounded-xl border border-white/12 px-5 py-3 text-sm font-black text-white/75 transition hover:bg-white/[0.05]">
             llms.txt
           </a>
+          <Link href="/operators" className="rounded-xl border border-white/12 px-5 py-3 text-sm font-black text-white/75 transition hover:bg-white/[0.05]">
+            For tour operators
+          </Link>
         </div>
       </div>
     </section>
