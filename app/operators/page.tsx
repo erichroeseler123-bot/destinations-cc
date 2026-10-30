@@ -5,6 +5,7 @@ import {
   GOSNO_DIRECT_PILOT_MANIFEST,
   NATIVE_PROVIDER_API_PROFILES,
   VERIFIED_DCC_OPERATORS,
+  SEASONAL_DCC_OPERATORS,
 } from "@/lib/dcc/operators";
 
 export const metadata: Metadata = {
@@ -132,7 +133,19 @@ export default function OperatorsDirectoryPage() {
           </div>
         </section>
 
-        {/* GoSno Direct-Channel Pilot (Separate from Working Checkout) */}
+      <section id="seasonal-operators" className="mx-auto max-w-6xl px-5 py-12 sm:px-8">
+        <h2 className="text-3xl font-bold">Explore island and coastal operators</h2>
+        <p className="mt-3 max-w-3xl text-sm leading-7 text-white/70">Dated sources, selected tour listings and practical questions to check before choosing an experience.</p>
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {SEASONAL_DCC_OPERATORS.map((operator) => <Link key={operator.slug} href={`/operators/${operator.slug}`} className="rounded-2xl border border-white/15 bg-white/[0.03] p-5 hover:border-cyan-200/60">
+            <span className="text-xs text-cyan-200">{operator.city}</span>
+            <h3 className="mt-2 text-lg font-semibold">{operator.name}</h3>
+            <p className="mt-3 text-sm text-white/70">Planning details and booking options →</p>
+          </Link>)}
+        </div>
+      </section>
+
+      {/* GoSno Direct-Channel Pilot (Separate from Working Checkout) */}
         <section
           id="gosno-direct-pilot"
           aria-labelledby="gosno-pilot-heading"

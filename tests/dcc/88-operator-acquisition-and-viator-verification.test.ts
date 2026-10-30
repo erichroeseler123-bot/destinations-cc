@@ -2,6 +2,9 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import test from "node:test";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import SeasonalOperatorPage from "../../app/operators/SeasonalOperatorPage";
 import { NextRequest } from "next/server";
 import {
   DCC_HOMEPAGE_OPERATOR_MESSAGE,
@@ -10,6 +13,7 @@ import {
   GOSNO_DIRECT_PILOT_MANIFEST,
   NATIVE_PROVIDER_API_PROFILES,
   VERIFIED_DCC_OPERATORS,
+  SEASONAL_DCC_OPERATORS,
   auditPublishedOperatorsAgainstPreservedApi,
   evaluateGosnoPilotEvidence,
   generatePilotOutreachDraft,
@@ -18,6 +22,52 @@ import {
   listVerifiedOperators,
 } from "../../lib/dcc/operators";
 import { checkDccLiveAvailability } from "../../lib/dcc/internal/dccViatorAdapter";
+
+test("Seasonal pages preserve supplier identity, disclose public evidence, and render exact product affiliate links", () => {
+  const expectedSuppliers: Record<string, string> = {
+    "virgin-islands-ecotours": "Virgin Islands Ecotours",
+    "cruz-bay-watersports": "Cruz Bay Watersports",
+    "bahamas-jet-boat": "Bahamas Jet Boat Ltd.",
+    "jolly-pirates": "Jolly Pirates Sailing Cruises & Snorkeling",
+    "kayaking-puerto-rico": "Kayaking Puerto Rico",
+    "sea-spray-cruises": "Sea Spray Cruises Ltd.",
+    "marlin-del-rey": "Marlin del Rey Catamaran Sailing Tours",
+    "runners-adventures": "Runners Adventures",
+    "cabo-blue": "Cabo Blue Boat",
+    "body-glove-hawaii": "Body Glove Cruises",
+  };
+  assert.equal(SEASONAL_DCC_OPERATORS.length, 10);
+  for (const operator of SEASONAL_DCC_OPERATORS) {
+    assert.ok(listOperatorSlugs().includes(operator.slug));
+    assert.equal(getOperatorManifest(operator.slug), operator);
+    assert.equal(operator.verifiedViatorProducts.length, 0, "Public pages must not become preserved API evidence");
+    assert.equal(operator.supplierReference, undefined, "A supplier reference must not be fabricated");
+    assert.ok(operator.publicListings?.length);
+    const markup = renderToStaticMarkup(createElement(SeasonalOperatorPage, { operator }));
+    assert.match(markup, /selected list, not a complete catalog or a live availability check/);
+    assert.match(markup, /No dated, like-for-like price comparison/);
+    assert.doesNotMatch(markup, /Verified Viator API Catalog|Status: ACTIVE|api_version=2\.0/);
+    assert.ok(markup.includes(`data-default-page-path="/operators/${operator.slug}"`));
+    assert.ok(markup.includes(`/operators/onboarding?operator=${operator.slug}`));
+    assert.ok((operator.sources || []).length >= 2);
+    for (const product of operator.publicListings || []) {
+      assert.equal(product.supplierName, expectedSuppliers[operator.slug]);
+      const canonical = new URL(product.canonicalUrl);
+      assert.equal(canonical.hostname, "www.viator.com");
+      assert.ok(canonical.pathname.endsWith(`-${product.code}`));
+      assert.ok(!canonical.pathname.includes("searchResults"));
+      assert.ok(Number.isFinite(Date.parse(product.checkedAt)));
+      assert.ok(markup.includes(`data-product-code="${product.code}"`));
+      assert.ok(markup.includes(canonical.pathname));
+    }
+    assert.match(markup, /medium=link/);
+    assert.match(markup, /rel="sponsored noopener noreferrer"/);
+  }
+  const publishedCodes = SEASONAL_DCC_OPERATORS.flatMap((operator) => operator.publicListings?.map((p) => p.code) || []);
+  for (const wrongSupplierCode of ["6240P1", "17279P28", "24791P4", "342635P1"]) {
+    assert.ok(!publishedCodes.includes(wrongSupplierCode), `${wrongSupplierCode} belongs to another supplier`);
+  }
+});
 import {
   DELETE as deleteOnboardingRoute,
   GET as getOnboardingRoute,
@@ -159,7 +209,7 @@ test("All published Viator operators and products match preserved Viator Partner
   );
   assert.match(viatorClientSource, /campaign-value/);
 
-  assert.equal(listOperatorSlugs().length, VERIFIED_DCC_OPERATORS.length + 1);
+  assert.equal(listOperatorSlugs().length, VERIFIED_DCC_OPERATORS.length + SEASONAL_DCC_OPERATORS.length + 1);
   assert.equal(getOperatorManifest("mendenhall-tours-co"), null);
   assert.equal(getOperatorManifest("northstar-heli-adventures"), null);
 });

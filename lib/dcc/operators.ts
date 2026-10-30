@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import seasonalProfiles from "@/data/seasonal-operator-pages.json";
 
 const ROOT = process.cwd();
 const OPERATORS_DIR = path.join(ROOT, "data", "operators");
@@ -152,8 +153,8 @@ export type OperatorManifest = {
   verifiedBusinessEmail?: string;
   overview: string;
   areasServed?: string[];
-  currentBookingChannel: "viator" | "direct_pilot";
-  directPartnershipStatus: "not_enrolled_viator_channel" | "first_direct_channel_pilot";
+  currentBookingChannel: "viator" | "official" | "direct_pilot";
+  directPartnershipStatus: "not_enrolled_viator_channel" | "not_enrolled" | "first_direct_channel_pilot";
   supplierReference?: string;
   detectedBookingSystem?: string;
   outreachStatus?: "pilot_candidate_ready_for_review" | "flagged_prior_15_percent_offer" | "direct_pilot";
@@ -161,7 +162,32 @@ export type OperatorManifest = {
   outreachNotes?: string;
   verifiedViatorProducts: VerifiedOperatorViatorProduct[];
   directPilot?: DirectChannelPilotInfo;
+  isSeasonal?: boolean;
+  publicListings?: Array<{
+    code: string;
+    title: string;
+    supplierName: string;
+    canonicalUrl: string;
+    durationText: string | null;
+    checkedAt: string;
+  }>;
+  planningNotes?: Array<{ title: string; text: string }>;
+  sources?: Array<{ label: string; url: string; checkedAt: string }>;
+  fareharborShortname?: string;
 };
+
+// Public listing checks remain separate from preserved Partner API evidence.
+// Never infer API ACTIVE status, supplier references, prices or available seats.
+export const SEASONAL_DCC_OPERATORS: OperatorManifest[] = seasonalProfiles.map((profile) => ({
+  ...profile,
+  isSeasonal: true,
+  currentBookingChannel: profile.publicListings.length ? "viator" : "official",
+  directPartnershipStatus: "not_enrolled",
+  detectedBookingSystem: "FareHarbor",
+  outreachStatus: "pilot_candidate_ready_for_review",
+  doNotAutoSendOutreach: true,
+  verifiedViatorProducts: [],
+}));
 
 export type PreservedViatorProductItem = {
   code: string;
@@ -893,6 +919,7 @@ export function listVerifiedOperators(): OperatorManifest[] {
 export function listOperatorSlugs(): string[] {
   const slugs = new Set<string>([
     ...VERIFIED_DCC_OPERATORS.map((op) => op.slug),
+    ...SEASONAL_DCC_OPERATORS.map((op) => op.slug),
     GOSNO_DIRECT_PILOT_MANIFEST.slug,
   ]);
   return Array.from(slugs).sort();
@@ -904,6 +931,8 @@ export function getOperatorManifest(slug: string): OperatorManifest | null {
   }
   const verified = VERIFIED_DCC_OPERATORS.find((op) => op.slug === slug);
   if (verified) return verified;
+  const seasonal = SEASONAL_DCC_OPERATORS.find((op) => op.slug === slug);
+  if (seasonal) return seasonal;
 
   const fromDisk = readOperatorFile(slug);
   if (!fromDisk || !Array.isArray(fromDisk.verifiedViatorProducts)) return null;
