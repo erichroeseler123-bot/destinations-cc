@@ -219,7 +219,7 @@ export function getViatorServerConfig(): ViatorServerConfig {
     process.env.VIATOR_API,
     process.env.VIATOR_KEY
   );
-  const apiKey = rawKey ? rawKey.replace(/^["']|["']$/g, "").trim() || null : null;
+  const apiKey = rawKey ? rawKey.replace(/^["']|["']$/g, "").trim() : "";
   return {
     ...publicConfig,
     apiKey,
