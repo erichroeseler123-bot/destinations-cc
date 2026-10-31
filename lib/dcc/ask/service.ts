@@ -112,14 +112,20 @@ function handoffForSite(siteId: string) { return handoffsRegistry.handoffs.find(
 export function getAskDccEvidence(question: string, history: readonly AskDccMessage[] = []): AskDccEvidence {
   const context = retrievalContext(question, history);
   if (!context) return { sources: [], handoff: null, confidence: "low" };
-  const queryTokens = tokens(context.query);
-  const exactQueryTokens = tokens(context.query, false);
-  const normalizedQuery = normalize(context.query);
+  const queryTokens = tokens(question);
+  const exactQueryTokens = tokens(question, false);
+  const contextTokens = tokens(context.query);
+  const exactContextTokens = tokens(context.query, false);
+  const normalizedQuery = normalize(question);
   const combinationQuestion = /\bcan (?:we|i|you) (?:do|fit|combine)\b/.test(normalizedQuery)
     && /\b(?:and|both)\b/.test(normalizedQuery) && !/\bor\b/.test(normalizedQuery);
   const candidates = PUBLISHED_DECISION_GUIDES
     .filter((guide) => context.categories.has(guide.category))
-    .map((guide) => ({ guide, score: scoreGuide(queryTokens, guide, exactQueryTokens, combinationQuestion) }))
+    .map((guide) => ({
+      guide,
+      score: 0.8 * scoreGuide(queryTokens, guide, exactQueryTokens, combinationQuestion)
+        + 0.2 * scoreGuide(contextTokens, guide, exactContextTokens, combinationQuestion),
+    }))
     .filter((entry) => entry.score > 0)
     .sort((a, b) => b.score - a.score);
   // Do not pad the research panel with weak matches just to fill four slots.

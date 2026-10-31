@@ -45,6 +45,7 @@ test("a hotel-pickup follow-up retains New Orleans swamp context without unrelat
   ]);
   assert.ok(result.sources.length > 0);
   assert.ok(result.sources.every((source) => source.category === "new-orleans"));
+  assert.match(result.sources[0].title, /pickup|kids/i);
   assert.ok(!result.sources.some((source) => /cannabis|airport/i.test(source.title)));
   assert.equal(new URL(result.handoff!.href).hostname, "welcometotheswamp.com");
 });
