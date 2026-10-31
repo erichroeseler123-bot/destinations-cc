@@ -8,9 +8,11 @@ const STOP_WORDS = new Set([
 ]);
 
 const SYNONYMS: Record<string, string[]> = {
+  den: ["denver", "airport"],
   denver: ["den", "colorado"], vail: ["mountain", "resort", "ski"], breckenridge: ["mountain", "resort", "ski"],
   juneau: ["alaska", "cruise", "helicopter", "glacier"], helicopter: ["flight", "flightseeing", "glacier", "juneau"],
   whale: ["whales", "watching", "juneau", "alaska"], swamp: ["airboat", "covered", "boat", "new", "orleans"],
+  whales: ["whale", "watching"], kids: ["child", "children", "family"], child: ["children", "kids", "family"], children: ["child", "kids", "family"],
   airboat: ["swamp", "boat", "new", "orleans"], bourbon: ["french", "quarter", "new", "orleans"], royal: ["french", "quarter", "new", "orleans"],
   thomas: ["st", "usvi", "cruise", "driver"], croix: ["st", "usvi", "cruise", "driver"], john: ["st", "usvi", "cruise", "driver"],
   driver: ["private", "local", "vibe", "cruise"], red: ["rocks", "concert", "transportation"], argo: ["idaho", "springs", "shuttle", "denver"],
@@ -62,26 +64,44 @@ function normalize(input: string) {
   return input.toLowerCase().replace(/[^a-z0-9\s-]/g, " ").replace(/\s+/g, " ").trim();
 }
 
-function tokens(input: string) {
-  const base = normalize(input).split(" ").filter((token) => token.length > 1 && !STOP_WORDS.has(token));
+function tokens(input: string, expandSynonyms = true) {
+  const variants: Record<string, string> = { whales: "whale", helicopters: "helicopter", airboats: "airboat", children: "child", kids: "child", people: "group" };
+  const base = normalize(input).split(" ").filter((token) => token.length > 1 && !STOP_WORDS.has(token)).map((token) => variants[token] ?? token);
   const expanded = new Set(base);
-  for (const token of base) for (const extra of SYNONYMS[token] ?? []) expanded.add(extra);
+  if (expandSynonyms) for (const token of base) for (const extra of SYNONYMS[token] ?? []) expanded.add(extra);
   return expanded;
 }
 
-function scoreGuide(queryTokens: Set<string>, guide: (typeof PUBLISHED_DECISION_GUIDES)[number]) {
-  const titleTokens = tokens(guide.title);
-  const descriptionTokens = tokens(guide.description);
-  const answerTokens = tokens(guide.answer);
-  const questionTokens = tokens(guide.questions.join(" "));
-  const mattersTokens = tokens(guide.matters.join(" "));
+const DOCUMENT_FREQUENCY = new Map<string, number>();
+for (const guide of PUBLISHED_DECISION_GUIDES) {
+  const words = tokens([guide.title, guide.description, guide.answer, ...guide.questions, ...guide.matters].join(" "), false);
+  for (const word of words) DOCUMENT_FREQUENCY.set(word, (DOCUMENT_FREQUENCY.get(word) ?? 0) + 1);
+}
+
+function scoreGuide(queryTokens: Set<string>, guide: (typeof PUBLISHED_DECISION_GUIDES)[number], exactQueryTokens: Set<string>, combinationQuestion: boolean) {
+  // Expand the traveler's vocabulary, but score actual source words. Expanding
+  // both sides made unrelated Denver activities look like Vail transfer advice.
+  const titleTokens = tokens(guide.title, false);
+  const descriptionTokens = tokens(guide.description, false);
+  const answerTokens = tokens(guide.answer, false);
+  const questionTokens = tokens(guide.questions.join(" "), false);
+  const mattersTokens = tokens(guide.matters.join(" "), false);
   let score = 0;
   for (const token of queryTokens) {
-    if (titleTokens.has(token)) score += 7;
-    if (descriptionTokens.has(token)) score += 4;
-    if (mattersTokens.has(token)) score += 3;
-    if (questionTokens.has(token)) score += 3;
-    if (answerTokens.has(token)) score += 1;
+    // A specific destination or constraint should outweigh a city name that
+    // appears throughout the catalog, without preferring a commercial partner.
+    const rarity = 1 + Math.log((PUBLISHED_DECISION_GUIDES.length + 1) / ((DOCUMENT_FREQUENCY.get(token) ?? 0) + 1));
+    const weight = rarity * (exactQueryTokens.has(token) ? 2 : 1);
+    if (titleTokens.has(token)) score += 7 * weight;
+    if (descriptionTokens.has(token)) score += 4 * weight;
+    if (mattersTokens.has(token)) score += 3 * weight;
+    if (questionTokens.has(token)) score += 3 * weight;
+    if (answerTokens.has(token)) score += weight;
+  }
+  if (combinationQuestion) {
+    const title = normalize(guide.title);
+    if (/\b(?:and|both|combine|combination)\b/.test(title) && !/\b(?:or|vs|versus)\b/.test(title)) score *= 1.5;
+    else if (/\b(?:or|vs|versus)\b/.test(title)) score *= 0.75;
   }
   return score;
 }
@@ -93,12 +113,18 @@ export function getAskDccEvidence(question: string, history: readonly AskDccMess
   const context = retrievalContext(question, history);
   if (!context) return { sources: [], handoff: null, confidence: "low" };
   const queryTokens = tokens(context.query);
-  const ranked = PUBLISHED_DECISION_GUIDES
+  const exactQueryTokens = tokens(context.query, false);
+  const normalizedQuery = normalize(context.query);
+  const combinationQuestion = /\bcan (?:we|i|you) (?:do|fit|combine)\b/.test(normalizedQuery)
+    && /\b(?:and|both)\b/.test(normalizedQuery) && !/\bor\b/.test(normalizedQuery);
+  const candidates = PUBLISHED_DECISION_GUIDES
     .filter((guide) => context.categories.has(guide.category))
-    .map((guide) => ({ guide, score: scoreGuide(queryTokens, guide) }))
+    .map((guide) => ({ guide, score: scoreGuide(queryTokens, guide, exactQueryTokens, combinationQuestion) }))
     .filter((entry) => entry.score > 0)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 4);
+    .sort((a, b) => b.score - a.score);
+  // Do not pad the research panel with weak matches just to fill four slots.
+  const bestScore = candidates[0]?.score ?? 0;
+  const ranked = candidates.filter((entry) => entry.score >= bestScore * 0.65).slice(0, 4);
 
   const sources: AskDccSource[] = ranked.map(({ guide }) => ({ slug: guide.slug, title: guide.title, href: `/guides/${guide.slug}`, answer: guide.answer, category: guide.category }));
   const leadingGuide = ranked[0]?.guide;

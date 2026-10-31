@@ -6,6 +6,7 @@ test("Ask DCC finds published Juneau research before routing", () => {
   const result = getAskDccEvidence("Can we do whales and a helicopter in Juneau?");
   assert.ok(result.sources.length > 0);
   assert.ok(result.sources.some((source) => /juneau|whale|helicopter|flight/i.test(source.title)));
+  assert.match(result.sources[0].title, /whale watching and a helicopter/i);
   if (result.handoff) assert.ok(result.handoff.href.startsWith("https://"));
 });
 
@@ -13,6 +14,14 @@ test("Ask DCC finds Colorado transportation research for DEN to Vail", () => {
   const result = getAskDccEvidence("How should 7 people get from DEN to Vail with ski gear?");
   assert.ok(result.sources.length > 0);
   assert.ok(result.sources.some((source) => /vail|airport|transport|ski|gear/i.test(source.title)));
+});
+
+test("a DEN-to-Vail transfer question does not pad its research with unrelated Denver activities", () => {
+  for (const question of ["How should 7 people get from DEN to Vail?", "How should 7 people get from DEN to Vail with ski gear?"]) {
+    const result = getAskDccEvidence(question);
+    assert.ok(result.sources.length > 0);
+    assert.ok(!result.sources.some((source) => /argo|idaho springs|breckenridge/i.test(source.title)));
+  }
 });
 
 test("Ask DCC finds swamp research for a family question", () => {
