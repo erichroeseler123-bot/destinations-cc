@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     },
   });
 
-  const evidence = getAskDccEvidence(question);
+  const evidence = getAskDccEvidence(question, messages);
   let answer = fallbackAskDccAnswer(question, evidence);
   let mode: "graph" | "ai" = "graph";
   const apiKey = process.env.GEMINI_API_KEY;
@@ -90,3 +90,4 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json({ answer, mode, confidence: evidence.confidence, sources: evidence.sources.map(({ answer: _answer, ...source }) => source), handoff: evidence.handoff });
 }
+
