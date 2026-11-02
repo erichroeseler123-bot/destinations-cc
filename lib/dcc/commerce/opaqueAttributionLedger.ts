@@ -1,4 +1,9 @@
 import crypto from "node:crypto";
+import {
+  readDurableLedgerState,
+  resetDurableLedgerStateForTests,
+  runDurableLedgerTransaction,
+} from "../storage/durableTransactionalStore";
 import type { CommercialProvider } from "./index";
 
 export const FORBIDDEN_OUTBOUND_ARCHITECTURE_PARAMS = [
@@ -118,21 +123,159 @@ export interface PartnerCsvReconciliationSummary {
   }>;
 }
 
-const memoryOpaqueClicksById = new Map<string, OpaqueClickAttributionRecord>();
-const memoryOpaqueClicksByHandoffId = new Map<string, OpaqueClickAttributionRecord>();
-const memoryReconciliationByDedupeKey = new Map<string, OpaqueClickReconciledOutcome>();
+function makeCommerceAuthError(
+  message: string,
+  code: string,
+  statusCode: 401 | 403 = 401,
+): Error & { code: string; statusCode: number } {
+  const err = new Error(message) as Error & { code: string; statusCode: number };
+  err.code = code;
+  err.statusCode = statusCode;
+  return err;
+}
+
+function safeEqualStrings(a: string, b: string): boolean {
+  const bufA = Buffer.from(a, "utf8");
+  const bufB = Buffer.from(b, "utf8");
+  if (bufA.length !== bufB.length) return false;
+  return crypto.timingSafeEqual(bufA, bufB);
+}
+
+export function resolveCommerceAdminSecret(): string {
+  return (
+    process.env.DCC_COMMERCE_ADMIN_SECRET?.trim() ||
+    process.env.INTERNAL_API_SECRET?.trim() ||
+    "dcc-commerce-admin-secret-v1"
+  );
+}
+
+export function resolvePartnerWebhookSecret(): string {
+  return (
+    process.env.DCC_PARTNER_WEBHOOK_SECRET?.trim() ||
+    process.env.INTERNAL_API_SECRET?.trim() ||
+    "dcc-partner-webhook-secret-v1"
+  );
+}
+
+export function issueCommerceAdminToken(
+  scope = "commerce:admin",
+  secret?: string,
+): string {
+  const key = secret || resolveCommerceAdminSecret();
+  const mac = crypto
+    .createHmac("sha256", key)
+    .update(`dcc-commerce-admin-v1:${scope}`, "utf8")
+    .digest("hex");
+  return `cadm.${scope}.${mac}`;
+}
+
+export function signPartnerWebhookPayload(
+  rawBody: string,
+  secret?: string,
+): string {
+  const key = secret || resolvePartnerWebhookSecret();
+  const digest = crypto
+    .createHmac("sha256", key)
+    .update(rawBody, "utf8")
+    .digest("hex");
+  return `sha256=${digest}`;
+}
+
+function extractBearerHeader(request: Request): string {
+  const auth = request.headers.get("authorization") || "";
+  if (!auth.toLowerCase().startsWith("bearer ")) return "";
+  return auth.slice(7).trim();
+}
+
+export function authenticateCommerceAdminRequest(request: Request): {
+  authorized: true;
+  actor: string;
+} {
+  const token =
+    request.headers.get("x-dcc-commerce-admin-token")?.trim() ||
+    request.headers.get("x-internal-secret")?.trim() ||
+    extractBearerHeader(request);
+
+  if (!token) {
+    throw makeCommerceAuthError(
+      "Internal attribution administration requires x-dcc-commerce-admin-token or Bearer authentication.",
+      "COMMERCE_AUTH_REQUIRED",
+      401,
+    );
+  }
+
+  if (token.startsWith("cadm.")) {
+    const lastDot = token.lastIndexOf(".");
+    if (lastDot > 5) {
+      const scope = token.slice(5, lastDot);
+      const expectedScopedToken = issueCommerceAdminToken(scope);
+      if (safeEqualStrings(token, expectedScopedToken)) {
+        return { authorized: true, actor: scope };
+      }
+    }
+  }
+
+  const rawAdminSecret = resolveCommerceAdminSecret();
+  if (safeEqualStrings(token, rawAdminSecret)) {
+    return { authorized: true, actor: "commerce:admin" };
+  }
+
+  throw makeCommerceAuthError(
+    "Invalid commerce administrator credentials.",
+    "COMMERCE_INVALID_CREDENTIALS",
+    401,
+  );
+}
+
+export function authenticatePartnerWebhookOrAdminRequest(
+  request: Request,
+  rawBody: string,
+): {
+  authorized: true;
+  method: "webhook_hmac" | "commerce_admin";
+} {
+  const sigHeader = request.headers.get("x-dcc-webhook-signature")?.trim();
+  if (sigHeader) {
+    const expectedSig = signPartnerWebhookPayload(rawBody);
+    if (!safeEqualStrings(sigHeader, expectedSig)) {
+      throw makeCommerceAuthError(
+        "Partner webhook HMAC signature verification failed.",
+        "WEBHOOK_SIGNATURE_INVALID",
+        401,
+      );
+    }
+    return { authorized: true, method: "webhook_hmac" };
+  }
+
+  const hasAdminHeaders = Boolean(
+    request.headers.get("x-dcc-commerce-admin-token")?.trim() ||
+      request.headers.get("x-internal-secret")?.trim() ||
+      extractBearerHeader(request),
+  );
+
+  if (hasAdminHeaders) {
+    authenticateCommerceAdminRequest(request);
+    return { authorized: true, method: "commerce_admin" };
+  }
+
+  throw makeCommerceAuthError(
+    "Partner webhook reconciliation requires a valid x-dcc-webhook-signature HMAC header or commerce admin credentials.",
+    "WEBHOOK_SIGNATURE_REQUIRED",
+    401,
+  );
+}
 
 export function resetOpaqueAttributionLedgerForTests(): void {
-  memoryOpaqueClicksById.clear();
-  memoryOpaqueClicksByHandoffId.clear();
-  memoryReconciliationByDedupeKey.clear();
+  resetDurableLedgerStateForTests(true);
 }
 
 export function generateOpaqueClickId(): string {
   return `clk_${crypto.randomBytes(12).toString("hex")}`;
 }
 
-export function extractClickIdFromTrackingValue(value?: string | null): string | null {
+export function extractClickIdFromTrackingValue(
+  value?: string | null,
+): string | null {
   if (!value || typeof value !== "string") return null;
   const match = value.match(/(clk_[0-9a-f]{24})/i);
   return match ? match[1].toLowerCase() : null;
@@ -187,55 +330,73 @@ export function issueOpaqueClickAttribution(
       ? input.clickId.trim().toLowerCase()
       : generateOpaqueClickId();
 
-  const existing = memoryOpaqueClicksById.get(clickId);
-  if (existing) return existing;
+  return runDurableLedgerTransaction((state) => {
+    const existing = state.opaqueClicksById[clickId];
+    if (existing) return existing;
 
-  const { outboundUrl, strippedLeakParams } = sanitizeOutboundPartnerUrlWithOpaqueClickId(
-    input.productDestinationUrl,
-    clickId,
-  );
+    const { outboundUrl, strippedLeakParams } =
+      sanitizeOutboundPartnerUrlWithOpaqueClickId(
+        input.productDestinationUrl,
+        clickId,
+      );
 
-  const record: OpaqueClickAttributionRecord = {
-    clickId,
-    handoffId: input.handoffId?.trim() || null,
-    decisionReceiptId: input.decisionReceiptId.trim(),
-    recommendedOperatorId: input.recommendedOperatorId.trim(),
-    recommendedOperatorName:
-      input.recommendedOperatorName?.trim() || input.recommendedOperatorId.trim(),
-    recommendedVehicleClassId: input.recommendedVehicleClassId?.trim() || null,
-    evidenceVersion: input.evidenceVersion.trim(),
-    applicabilityModelVersion: input.applicabilityModelVersion?.trim() || null,
-    applicabilityOutcomeHash: input.applicabilityOutcomeHash?.trim() || null,
-    originatingSite: input.originatingSite?.trim() || "destinationcommandcenter.com",
-    provider: input.provider,
-    productCode: input.productCode.trim(),
-    outboundPartnerUrl: outboundUrl,
-    strippedLeakParams,
-    reconciliationState: "pending_partner_event",
-    reconciledOutcomes: [],
-    createdAt: new Date().toISOString(),
-  };
+    const record: OpaqueClickAttributionRecord = {
+      clickId,
+      handoffId: input.handoffId?.trim() || null,
+      decisionReceiptId: input.decisionReceiptId.trim(),
+      recommendedOperatorId: input.recommendedOperatorId.trim(),
+      recommendedOperatorName:
+        input.recommendedOperatorName?.trim() ||
+        input.recommendedOperatorId.trim(),
+      recommendedVehicleClassId:
+        input.recommendedVehicleClassId?.trim() || null,
+      evidenceVersion: input.evidenceVersion.trim(),
+      applicabilityModelVersion:
+        input.applicabilityModelVersion?.trim() || null,
+      applicabilityOutcomeHash: input.applicabilityOutcomeHash?.trim() || null,
+      originatingSite:
+        input.originatingSite?.trim() || "destinationcommandcenter.com",
+      provider: input.provider,
+      productCode: input.productCode.trim(),
+      outboundPartnerUrl: outboundUrl,
+      strippedLeakParams,
+      reconciliationState: "pending_partner_event",
+      reconciledOutcomes: [],
+      createdAt: new Date().toISOString(),
+    };
 
-  memoryOpaqueClicksById.set(clickId, record);
-  if (record.handoffId) {
-    memoryOpaqueClicksByHandoffId.set(record.handoffId, record);
-  }
+    state.opaqueClicksById[clickId] = record;
+    if (record.handoffId) {
+      state.opaqueClickIdsByHandoffId[record.handoffId] = clickId;
+    }
 
-  return record;
+    return record;
+  });
 }
 
 export function getOpaqueClickAttributionById(
   clickId: string,
 ): OpaqueClickAttributionRecord | null {
   if (!clickId) return null;
-  return memoryOpaqueClicksById.get(clickId.trim().toLowerCase()) || null;
+  const state = readDurableLedgerState();
+  return state.opaqueClicksById[clickId.trim().toLowerCase()] || null;
+}
+
+export function listReconciledOutcomesForClickId(
+  clickId: string,
+): OpaqueClickReconciledOutcome[] {
+  const record = getOpaqueClickAttributionById(clickId);
+  return record ? record.reconciledOutcomes : [];
 }
 
 export function getOpaqueClickAttributionByHandoffId(
   handoffId: string,
 ): OpaqueClickAttributionRecord | null {
   if (!handoffId) return null;
-  return memoryOpaqueClicksByHandoffId.get(handoffId.trim()) || null;
+  const state = readDurableLedgerState();
+  const clickId = state.opaqueClickIdsByHandoffId[handoffId.trim()];
+  if (!clickId) return null;
+  return state.opaqueClicksById[clickId] || null;
 }
 
 export function reconcilePartnerWebhookByClickId(
@@ -262,70 +423,76 @@ export function reconcilePartnerWebhookByClickId(
     };
   }
 
-  const record = memoryOpaqueClicksById.get(resolvedClickId);
-  if (!record) {
-    return {
-      matched: false,
-      reason: `UNKNOWN_OPAQUE_CLICK_ID:${resolvedClickId}`,
-    };
-  }
+  return runDurableLedgerTransaction((state) => {
+    const record = state.opaqueClicksById[resolvedClickId];
+    if (!record) {
+      return {
+        matched: false as const,
+        reason: `UNKNOWN_OPAQUE_CLICK_ID:${resolvedClickId}`,
+      };
+    }
 
-  const dedupeKey = `${record.clickId}::${input.provider}::${input.providerBookingRef.trim()}::${input.eventType}`;
-  const existingOutcome = memoryReconciliationByDedupeKey.get(dedupeKey);
-  if (existingOutcome) {
+    const dedupeKey = `${record.clickId}::${input.provider}::${input.providerBookingRef.trim()}::${input.eventType}`;
+    const existingOutcome = state.reconciliationByDedupeKey[dedupeKey];
+    if (existingOutcome) {
+      return {
+        matched: true as const,
+        outcome: { ...existingOutcome, duplicateDelivery: true },
+        ledgerRecord: record,
+      };
+    }
+
+    const outcome: OpaqueClickReconciledOutcome = {
+      reconciliationId: `rec_${crypto.randomBytes(10).toString("hex")}`,
+      clickId: record.clickId,
+      sourceChannel,
+      provider: input.provider,
+      providerBookingRef: input.providerBookingRef.trim(),
+      eventType: input.eventType,
+      grossRevenueUsd:
+        typeof input.grossRevenueUsd === "number" &&
+        Number.isFinite(input.grossRevenueUsd)
+          ? Number(input.grossRevenueUsd.toFixed(2))
+          : null,
+      estimatedCommissionUsd:
+        typeof input.estimatedCommissionUsd === "number" &&
+        Number.isFinite(input.estimatedCommissionUsd)
+          ? Number(input.estimatedCommissionUsd.toFixed(2))
+          : null,
+      paidCommissionUsd:
+        typeof input.paidCommissionUsd === "number" &&
+        Number.isFinite(input.paidCommissionUsd)
+          ? Number(input.paidCommissionUsd.toFixed(2))
+          : null,
+      currency: (input.currency || "USD").trim().toUpperCase(),
+      resolvedDecisionReceiptId: record.decisionReceiptId,
+      resolvedRecommendedOperatorId: record.recommendedOperatorId,
+      resolvedRecommendedOperatorName: record.recommendedOperatorName,
+      resolvedEvidenceVersion: record.evidenceVersion,
+      reconciledAt: input.occurredAt?.trim() || new Date().toISOString(),
+      duplicateDelivery: false,
+    };
+
+    state.reconciliationByDedupeKey[dedupeKey] = outcome;
+    record.reconciledOutcomes.push(outcome);
+    if (
+      input.eventType === "BOOKING_CANCELLED" ||
+      input.eventType === "BOOKING_REFUNDED"
+    ) {
+      record.reconciliationState = "cancelled_or_refunded";
+    } else {
+      record.reconciliationState =
+        sourceChannel === "partner_csv"
+          ? "reconciled_csv"
+          : "reconciled_webhook";
+    }
+
     return {
-      matched: true,
-      outcome: { ...existingOutcome, duplicateDelivery: true },
+      matched: true as const,
+      outcome,
       ledgerRecord: record,
     };
-  }
-
-  const outcome: OpaqueClickReconciledOutcome = {
-    reconciliationId: `rec_${crypto.randomBytes(10).toString("hex")}`,
-    clickId: record.clickId,
-    sourceChannel,
-    provider: input.provider,
-    providerBookingRef: input.providerBookingRef.trim(),
-    eventType: input.eventType,
-    grossRevenueUsd:
-      typeof input.grossRevenueUsd === "number" && Number.isFinite(input.grossRevenueUsd)
-        ? Number(input.grossRevenueUsd.toFixed(2))
-        : null,
-    estimatedCommissionUsd:
-      typeof input.estimatedCommissionUsd === "number" &&
-      Number.isFinite(input.estimatedCommissionUsd)
-        ? Number(input.estimatedCommissionUsd.toFixed(2))
-        : null,
-    paidCommissionUsd:
-      typeof input.paidCommissionUsd === "number" && Number.isFinite(input.paidCommissionUsd)
-        ? Number(input.paidCommissionUsd.toFixed(2))
-        : null,
-    currency: (input.currency || "USD").trim().toUpperCase(),
-    resolvedDecisionReceiptId: record.decisionReceiptId,
-    resolvedRecommendedOperatorId: record.recommendedOperatorId,
-    resolvedRecommendedOperatorName: record.recommendedOperatorName,
-    resolvedEvidenceVersion: record.evidenceVersion,
-    reconciledAt: input.occurredAt?.trim() || new Date().toISOString(),
-    duplicateDelivery: false,
-  };
-
-  memoryReconciliationByDedupeKey.set(dedupeKey, outcome);
-  record.reconciledOutcomes.push(outcome);
-  if (
-    input.eventType === "BOOKING_CANCELLED" ||
-    input.eventType === "BOOKING_REFUNDED"
-  ) {
-    record.reconciliationState = "cancelled_or_refunded";
-  } else {
-    record.reconciliationState =
-      sourceChannel === "partner_csv" ? "reconciled_csv" : "reconciled_webhook";
-  }
-
-  return {
-    matched: true,
-    outcome,
-    ledgerRecord: record,
-  };
+  });
 }
 
 /**
@@ -354,16 +521,35 @@ export function reconcilePartnerCsvBatchByClickId(params: {
 
   const headers = lines[0].split(",").map((h) => h.trim().toLowerCase());
   const idxClickId = headers.findIndex((h) =>
-    ["click_id", "clickid", "sub_id", "subid", "campaign", "ref", "external_ref"].includes(h),
+    [
+      "click_id",
+      "clickid",
+      "sub_id",
+      "subid",
+      "campaign",
+      "ref",
+      "external_ref",
+    ].includes(h),
   );
   const idxBookingRef = headers.findIndex((h) =>
-    ["booking_ref", "bookingref", "provider_booking_ref", "order_id", "reference"].includes(h),
+    [
+      "booking_ref",
+      "bookingref",
+      "provider_booking_ref",
+      "order_id",
+      "reference",
+    ].includes(h),
   );
   const idxStatus = headers.findIndex((h) =>
     ["status", "event_type", "booking_status"].includes(h),
   );
   const idxGross = headers.findIndex((h) =>
-    ["gross_amount", "gross_revenue_usd", "booking_value", "total_price"].includes(h),
+    [
+      "gross_amount",
+      "gross_revenue_usd",
+      "booking_value",
+      "total_price",
+    ].includes(h),
   );
   const idxCommission = headers.findIndex((h) =>
     ["commission_amount", "commission_usd", "estimated_commission"].includes(h),
@@ -385,8 +571,12 @@ export function reconcilePartnerCsvBatchByClickId(params: {
     const cols = lines[i].split(",").map((c) => c.trim());
     const rawClickIdOrTracking = idxClickId >= 0 ? cols[idxClickId] || "" : "";
     const providerBookingRef =
-      idxBookingRef >= 0 && cols[idxBookingRef] ? cols[idxBookingRef] : `CSV-ROW-${i}`;
-    const rawStatus = (idxStatus >= 0 ? cols[idxStatus] || "" : "BOOKING_CONFIRMED").toUpperCase();
+      idxBookingRef >= 0 && cols[idxBookingRef]
+        ? cols[idxBookingRef]
+        : `CSV-ROW-${i}`;
+    const rawStatus = (
+      idxStatus >= 0 ? cols[idxStatus] || "" : "BOOKING_CONFIRMED"
+    ).toUpperCase();
 
     const eventType: PartnerWebhookReconciliationInput["eventType"] =
       rawStatus.includes("CANCEL")
@@ -397,16 +587,22 @@ export function reconcilePartnerCsvBatchByClickId(params: {
             ? "BOOKING_FULFILLED"
             : "BOOKING_CONFIRMED";
 
-    const grossVal = idxGross >= 0 && cols[idxGross] !== "" ? Number(cols[idxGross]) : null;
+    const grossVal =
+      idxGross >= 0 && cols[idxGross] !== "" ? Number(cols[idxGross]) : null;
     const commVal =
-      idxCommission >= 0 && cols[idxCommission] !== "" ? Number(cols[idxCommission]) : null;
+      idxCommission >= 0 && cols[idxCommission] !== ""
+        ? Number(cols[idxCommission])
+        : null;
     const paidVal =
       idxPaidCommission >= 0 && cols[idxPaidCommission] !== ""
         ? Number(cols[idxPaidCommission])
         : null;
-    const currency = idxCurrency >= 0 && cols[idxCurrency] ? cols[idxCurrency] : "USD";
+    const currency =
+      idxCurrency >= 0 && cols[idxCurrency] ? cols[idxCurrency] : "USD";
     const occurredAt =
-      idxEventTime >= 0 && cols[idxEventTime] ? cols[idxEventTime] : new Date().toISOString();
+      idxEventTime >= 0 && cols[idxEventTime]
+        ? cols[idxEventTime]
+        : new Date().toISOString();
 
     const res = reconcilePartnerWebhookByClickId(
       {

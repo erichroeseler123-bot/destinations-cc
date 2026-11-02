@@ -4,6 +4,7 @@ import {
   createCommercialHandoff,
   type CommercialProvider,
 } from "@/lib/dcc/commerce";
+import { syncDurableLedgerWithPostgres } from "@/lib/dcc/storage/durableTransactionalStore";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,7 @@ const ALLOWED_PROVIDERS = new Set<CommercialProvider>([
 ]);
 
 export async function GET(request: Request) {
+  await syncDurableLedgerWithPostgres();
   const traceparent = resolveOrGenerateW3cTraceparent(request);
   const url = new URL(request.url);
   const sp = url.searchParams;
@@ -107,6 +109,7 @@ export async function GET(request: Request) {
     callerClientId: "client:public_traveler_browser",
     traceparent,
   });
+  await syncDurableLedgerWithPostgres({ forcePushLocal: true });
 
   if (sp.get("mode") === "json" || sp.get("inspect") === "1") {
     return NextResponse.json(

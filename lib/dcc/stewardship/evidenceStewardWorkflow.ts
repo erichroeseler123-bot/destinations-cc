@@ -9,6 +9,11 @@ import {
   type StewardVehicleEvidencePatch,
   type TripApplicabilityRequest,
 } from "../applicability";
+import {
+  readDurableLedgerState,
+  resetDurableLedgerStateForTests,
+  runDurableLedgerTransaction,
+} from "../storage/durableTransactionalStore";
 
 // 1. Core Types & Status Enums
 export type SubmitterTrustLevel =
@@ -36,6 +41,13 @@ export type AuditOutcomeCode =
   | "evidence_inconclusive"
   | "evidence_stale"
   | "unverifiable";
+
+export type StewardPermission =
+  | "workbench:read"
+  | "document:scan"
+  | "case:assign"
+  | "case:safeguard"
+  | "case:resolve";
 
 // 2. The Untrusted External Submission
 // This is what the operator or user submits. It is quarantined by default.
@@ -140,6 +152,8 @@ export interface StewardProfile {
   displayName: string;
   role: "DCC Evidence Steward" | "DCC Compliance Team";
   affiliatedFirms: string[];
+  permissions: readonly StewardPermission[];
+  isSystemQueue?: boolean;
 }
 
 export const REGISTERED_CLAIM_FACTS: Record<string, RegisteredClaimFact> = {
@@ -217,30 +231,72 @@ export const REGISTERED_STEWARDS: Record<string, StewardProfile> = {
     displayName: "Quarantine Intake Queue",
     role: "DCC Evidence Steward",
     affiliatedFirms: [],
+    permissions: [],
+    isSystemQueue: true,
   },
   "steward:independent-compliance-01": {
     stewardId: "steward:independent-compliance-01",
     displayName: "Independent Evidence Steward #01",
     role: "DCC Evidence Steward",
     affiliatedFirms: ["independent-audit-board"],
+    permissions: [
+      "workbench:read",
+      "document:scan",
+      "case:assign",
+      "case:safeguard",
+      "case:resolve",
+    ],
   },
   "steward:compliance-legal-02": {
     stewardId: "steward:compliance-legal-02",
     displayName: "DCC Compliance & Legal Team #02",
     role: "DCC Compliance Team",
     affiliatedFirms: ["independent-legal-panel"],
+    permissions: [
+      "workbench:read",
+      "document:scan",
+      "case:assign",
+      "case:safeguard",
+      "case:resolve",
+    ],
+  },
+  "steward:document-scanner-bot": {
+    stewardId: "steward:document-scanner-bot",
+    displayName: "Quarantine Document Malware Scanner",
+    role: "DCC Compliance Team",
+    affiliatedFirms: [],
+    permissions: ["document:scan"],
+  },
+  "steward:auditor-readonly-01": {
+    stewardId: "steward:auditor-readonly-01",
+    displayName: "Internal Read-Only Compliance Auditor",
+    role: "DCC Compliance Team",
+    affiliatedFirms: [],
+    permissions: ["workbench:read"],
   },
   "steward:gosno-ops-conflict": {
     stewardId: "steward:gosno-ops-conflict",
     displayName: "GoSno-Affiliated Operations Analyst",
     role: "DCC Evidence Steward",
     affiliatedFirms: ["gosno", "dcc-colorado-fleet"],
+    permissions: [
+      "workbench:read",
+      "case:assign",
+      "case:safeguard",
+      "case:resolve",
+    ],
   },
   "steward:parr-ops-conflict": {
     stewardId: "steward:parr-ops-conflict",
     displayName: "Party at Red Rocks Affiliated Analyst",
     role: "DCC Evidence Steward",
     affiliatedFirms: ["parr", "rrdd"],
+    permissions: [
+      "workbench:read",
+      "case:assign",
+      "case:safeguard",
+      "case:resolve",
+    ],
   },
 };
 
@@ -326,38 +382,8 @@ const FORBIDDEN_MANUAL_OVERRIDE_KEYS = [
   "requested_rank",
 ] as const;
 
-const memoryDisputes = new Map<string, OperatorDisputeSubmission>();
-const memoryCases = new Map<string, StewardReviewCase>();
-const memoryDecisions = new Map<string, AuditDecisionRecord>();
-const memoryPublicTimeline: PublicMaterialChangeEntry[] = [
-  {
-    entryId: "pmc_seed_vail_20261102_01",
-    corridorId: "corridor:denver-vail-i70",
-    operatorId: "epic-mountain-express",
-    publicSummaryTemplateCode: "PRICING_SCHEDULE_UPDATED",
-    renderedPublicSummary: "Published fare and schedule evidence was updated.",
-    auditedByRole: "DCC Evidence Steward",
-    auditTimestamp: "Verified on Nov 2, 2026",
-    resolvedClaimId: "claim:epic-mountain-express:vail:baggage-allowance",
-  },
-  {
-    entryId: "pmc_seed_vail_20261102_02",
-    corridorId: "corridor:denver-vail-i70",
-    operatorId: "gosno",
-    publicSummaryTemplateCode: "CARGO_CAPACITY_CONFIRMED",
-    renderedPublicSummary:
-      "Vehicle cargo-capacity specifications were re-verified with no material change.",
-    auditedByRole: "DCC Compliance Team",
-    auditTimestamp: "Verified on Nov 2, 2026",
-    resolvedClaimId: "claim:gosno:vail-private-suv:cargo-capacity",
-  },
-];
-
 export function resetEvidenceStewardWorkflowForTests(): void {
-  memoryDisputes.clear();
-  memoryCases.clear();
-  memoryDecisions.clear();
-  memoryPublicTimeline.length = 0;
+  resetDurableLedgerStateForTests(false);
   resetStewardVehicleEvidencePatchesForTests();
 }
 
@@ -370,6 +396,160 @@ function makeWorkflowError(
   err.code = code;
   err.statusCode = statusCode;
   return err;
+}
+
+function safeEqualStrings(a: string, b: string): boolean {
+  const bufA = Buffer.from(a, "utf8");
+  const bufB = Buffer.from(b, "utf8");
+  if (bufA.length !== bufB.length) return false;
+  return crypto.timingSafeEqual(bufA, bufB);
+}
+
+export function resolveStewardAuthSecret(): string {
+  return (
+    process.env.DCC_STEWARD_AUTH_SECRET?.trim() ||
+    process.env.INTERNAL_API_SECRET?.trim() ||
+    "dcc-steward-hmac-secret-v1"
+  );
+}
+
+/**
+ * Validates that `stewardId` is a registered, active human/bot steward in `REGISTERED_STEWARDS`
+ * (never an unregistered identity or the system quarantine queue) and optionally holds `requiredPermission`.
+ */
+export function requireRegisteredStewardProfile(
+  stewardId: string,
+  requiredPermission?: StewardPermission,
+): StewardProfile {
+  const trimmed = (stewardId || "").trim();
+  const profile = REGISTERED_STEWARDS[trimmed];
+  if (!profile || profile.isSystemQueue) {
+    throw makeWorkflowError(
+      `Unregistered or non-assignable steward identity '${trimmed}'. Only registered stewards in REGISTERED_STEWARDS may access or mutate cases.`,
+      "UNREGISTERED_STEWARD_IDENTITY",
+      403,
+    );
+  }
+  if (
+    requiredPermission &&
+    !profile.permissions.includes(requiredPermission)
+  ) {
+    throw makeWorkflowError(
+      `Steward '${profile.stewardId}' lacks required permission '${requiredPermission}'.`,
+      "STEWARD_PERMISSION_DENIED",
+      403,
+    );
+  }
+  return profile;
+}
+
+/**
+ * Issues a cryptographically signed HMAC credential token bound to a specific registered `stewardId`.
+ */
+export function issueStewardCredentialToken(
+  stewardId: string,
+  secret?: string,
+): string {
+  const profile = requireRegisteredStewardProfile(stewardId);
+  const key = secret || resolveStewardAuthSecret();
+  const b64Id = Buffer.from(profile.stewardId, "utf8").toString("base64url");
+  const mac = crypto
+    .createHmac("sha256", key)
+    .update(`dcc-steward-token-v1:${profile.stewardId}`, "utf8")
+    .digest("hex");
+  return `stw.${b64Id}.${mac}`;
+}
+
+function extractStewardTokenFromRequest(request: Request): string {
+  const headerToken = request.headers.get("x-dcc-steward-token")?.trim();
+  if (headerToken) return headerToken;
+  const auth = request.headers.get("authorization") || "";
+  if (auth.toLowerCase().startsWith("bearer ")) {
+    return auth.slice(7).trim();
+  }
+  return "";
+}
+
+/**
+ * Authenticates an incoming HTTP Request for a Steward operation:
+ * 1. Verifies the `x-dcc-steward-token` (or `Authorization: Bearer`) HMAC signature in constant time.
+ * 2. Resolves the registered steward profile and rejects unregistered identities.
+ * 3. Verifies the steward holds `requiredPermission`.
+ * 4. If the request payload specifies `claimedStewardId`, verifies it matches the authenticated steward.
+ */
+export function authenticateStewardRequest(
+  request: Request,
+  requiredPermission: StewardPermission,
+  claimedStewardId?: string | null,
+): StewardProfile {
+  const rawToken = extractStewardTokenFromRequest(request);
+  if (!rawToken) {
+    throw makeWorkflowError(
+      "Steward operation requires a valid x-dcc-steward-token or Bearer credential.",
+      "STEWARD_AUTH_REQUIRED",
+      401,
+    );
+  }
+
+  const parts = rawToken.split(".");
+  if (parts.length !== 3 || parts[0] !== "stw" || !parts[1] || !parts[2]) {
+    throw makeWorkflowError(
+      "Malformed or invalid steward credential token.",
+      "STEWARD_INVALID_CREDENTIALS",
+      401,
+    );
+  }
+
+  let decodedStewardId = "";
+  try {
+    decodedStewardId = Buffer.from(parts[1], "base64url").toString("utf8");
+  } catch {
+    throw makeWorkflowError(
+      "Invalid steward credential encoding.",
+      "STEWARD_INVALID_CREDENTIALS",
+      401,
+    );
+  }
+
+  const profile = REGISTERED_STEWARDS[decodedStewardId];
+  if (!profile || profile.isSystemQueue) {
+    throw makeWorkflowError(
+      `Unregistered steward identity '${decodedStewardId}'.`,
+      "UNREGISTERED_STEWARD_IDENTITY",
+      403,
+    );
+  }
+
+  const expectedToken = issueStewardCredentialToken(profile.stewardId);
+  if (!safeEqualStrings(rawToken, expectedToken)) {
+    throw makeWorkflowError(
+      "Steward credential signature verification failed.",
+      "STEWARD_INVALID_CREDENTIALS",
+      401,
+    );
+  }
+
+  if (!profile.permissions.includes(requiredPermission)) {
+    throw makeWorkflowError(
+      `Steward '${profile.stewardId}' lacks required permission '${requiredPermission}'.`,
+      "STEWARD_PERMISSION_DENIED",
+      403,
+    );
+  }
+
+  if (
+    claimedStewardId &&
+    claimedStewardId.trim() !== "" &&
+    claimedStewardId.trim() !== profile.stewardId
+  ) {
+    throw makeWorkflowError(
+      `Authenticated steward '${profile.stewardId}' cannot act as or impersonate '${claimedStewardId.trim()}'.`,
+      "STEWARD_IDENTITY_MISMATCH",
+      403,
+    );
+  }
+
+  return profile;
 }
 
 function assertNoManualRankingOverrides(payload: Record<string, unknown>): void {
@@ -519,10 +699,11 @@ export function submitOperatorDisputeToQuarantine(
     resolvedAt: null,
   };
 
-  memoryDisputes.set(submission.disputeId, submission);
-  memoryCases.set(reviewCase.caseId, reviewCase);
-
-  return { submission, reviewCase };
+  return runDurableLedgerTransaction((state) => {
+    state.stewardDisputesById[submission.disputeId] = submission;
+    state.stewardCasesById[reviewCase.caseId] = reviewCase;
+    return { submission, reviewCase };
+  });
 }
 
 /**
@@ -532,40 +713,45 @@ export function updateSubmittedDocumentMalwareStatus(params: {
   disputeId: string;
   documentId: string;
   malwareScanStatus: "pending" | "clean" | "flagged";
+  actorStewardId?: string;
 }): OperatorDisputeSubmission {
-  const sub = memoryDisputes.get(params.disputeId);
-  if (!sub) {
-    throw makeWorkflowError(
-      `Dispute '${params.disputeId}' not found.`,
-      "DISPUTE_NOT_FOUND",
-      404,
-    );
+  if (params.actorStewardId) {
+    requireRegisteredStewardProfile(params.actorStewardId, "document:scan");
   }
-  const doc = sub.submittedEvidence.uploadedDocuments.find(
-    (d) => d.documentId === params.documentId,
-  );
-  if (!doc) {
-    throw makeWorkflowError(
-      `Document '${params.documentId}' not found in dispute '${params.disputeId}'.`,
-      "DOCUMENT_NOT_FOUND",
-      404,
+  return runDurableLedgerTransaction((state) => {
+    const sub = state.stewardDisputesById[params.disputeId];
+    if (!sub) {
+      throw makeWorkflowError(
+        `Dispute '${params.disputeId}' not found.`,
+        "DISPUTE_NOT_FOUND",
+        404,
+      );
+    }
+    const doc = sub.submittedEvidence.uploadedDocuments.find(
+      (d) => d.documentId === params.documentId,
     );
-  }
-  doc.malwareScanStatus = params.malwareScanStatus;
-  return sub;
+    if (!doc) {
+      throw makeWorkflowError(
+        `Document '${params.documentId}' not found in dispute '${params.disputeId}'.`,
+        "DOCUMENT_NOT_FOUND",
+        404,
+      );
+    }
+    doc.malwareScanStatus = params.malwareScanStatus;
+    return sub;
+  });
 }
 
 function assertStewardHasNoRecusalConflict(
   reviewCase: StewardReviewCase,
   stewardId: string,
+  requiredPermission: StewardPermission,
   extraStewardAffiliations?: string[],
 ): StewardProfile {
-  const profile: StewardProfile = REGISTERED_STEWARDS[stewardId] ?? {
+  const profile = requireRegisteredStewardProfile(
     stewardId,
-    displayName: stewardId,
-    role: "DCC Evidence Steward",
-    affiliatedFirms: extraStewardAffiliations ?? [],
-  };
+    requiredPermission,
+  );
 
   const allAffiliations = new Set(
     [...profile.affiliatedFirms, ...(extraStewardAffiliations ?? [])].map((f) =>
@@ -612,7 +798,8 @@ function assertSubmissionDocumentsSafeForReview(
 
 /**
  * Step 2: Assigns an independent Evidence Steward to the case and moves it from 'quarantined' to 'under_review'
- * (or 'escalated_legal'), enforcing conflict-of-interest recusal rules and document malware checks.
+ * (or 'escalated_legal'), enforcing registered steward identity, permissions, conflict-of-interest recusal rules,
+ * and document malware checks.
  */
 export function assignStewardToReviewCase(params: {
   caseId: string;
@@ -620,29 +807,32 @@ export function assignStewardToReviewCase(params: {
   stewardAffiliatedFirms?: string[];
   nextStatus?: "under_review" | "escalated_legal";
 }): StewardReviewCase {
-  const reviewCase = memoryCases.get(params.caseId);
-  if (!reviewCase) {
-    throw makeWorkflowError(
-      `Review case '${params.caseId}' not found.`,
-      "CASE_NOT_FOUND",
-      404,
+  return runDurableLedgerTransaction((state) => {
+    const reviewCase = state.stewardCasesById[params.caseId];
+    if (!reviewCase) {
+      throw makeWorkflowError(
+        `Review case '${params.caseId}' not found.`,
+        "CASE_NOT_FOUND",
+        404,
+      );
+    }
+
+    assertStewardHasNoRecusalConflict(
+      reviewCase,
+      params.stewardId,
+      "case:assign",
+      params.stewardAffiliatedFirms,
     );
-  }
 
-  assertStewardHasNoRecusalConflict(
-    reviewCase,
-    params.stewardId,
-    params.stewardAffiliatedFirms,
-  );
+    const submission = state.stewardDisputesById[reviewCase.disputeReferenceId];
+    if (submission) {
+      assertSubmissionDocumentsSafeForReview(submission, true);
+    }
 
-  const submission = memoryDisputes.get(reviewCase.disputeReferenceId);
-  if (submission) {
-    assertSubmissionDocumentsSafeForReview(submission, true);
-  }
-
-  reviewCase.assignedStewardId = params.stewardId;
-  reviewCase.status = params.nextStatus ?? "under_review";
-  return reviewCase;
+    reviewCase.assignedStewardId = params.stewardId;
+    reviewCase.status = params.nextStatus ?? "under_review";
+    return reviewCase;
+  });
 }
 
 /**
@@ -659,24 +849,33 @@ export function activateTemporaryStewardSafeguard(params: {
   reviewCase: StewardReviewCase;
   reEvaluatedOutcome: CompiledApplicableDecisionOutcome | null;
 } {
-  const reviewCase = memoryCases.get(params.caseId);
-  if (!reviewCase) {
-    throw makeWorkflowError(
-      `Review case '${params.caseId}' not found.`,
-      "CASE_NOT_FOUND",
-      404,
+  const { reviewCase, claimFact } = runDurableLedgerTransaction((state) => {
+    const existingCase = state.stewardCasesById[params.caseId];
+    if (!existingCase) {
+      throw makeWorkflowError(
+        `Review case '${params.caseId}' not found.`,
+        "CASE_NOT_FOUND",
+        404,
+      );
+    }
+
+    assertStewardHasNoRecusalConflict(
+      existingCase,
+      params.stewardId,
+      "case:safeguard",
     );
-  }
 
-  assertStewardHasNoRecusalConflict(reviewCase, params.stewardId);
+    existingCase.temporarySafeguardActive = true;
+    existingCase.safeguardExpiry = params.safeguardExpiry;
 
-  reviewCase.temporarySafeguardActive = true;
-  reviewCase.safeguardExpiry = params.safeguardExpiry;
+    const submission =
+      state.stewardDisputesById[existingCase.disputeReferenceId];
+    const resolvedFact = submission
+      ? REGISTERED_CLAIM_FACTS[submission.targetClaimId]
+      : undefined;
 
-  const submission = memoryDisputes.get(reviewCase.disputeReferenceId);
-  const claimFact = submission
-    ? REGISTERED_CLAIM_FACTS[submission.targetClaimId]
-    : undefined;
+    return { reviewCase: existingCase, claimFact: resolvedFact };
+  });
 
   let reEvaluatedOutcome: CompiledApplicableDecisionOutcome | null = null;
   if (claimFact && params.suspendOperatingAuthority) {
@@ -719,7 +918,10 @@ export function recordStewardAuditDecision(
     stewardAffiliatedFirms?: string[];
     outcomeCode: AuditOutcomeCode;
     privateInternalRationale: string;
-    evidenceMutation?: Omit<StewardVehicleEvidencePatch, "vehicleClassId" | "evidenceVersion"> | null;
+    evidenceMutation?: Omit<
+      StewardVehicleEvidencePatch,
+      "vehicleClassId" | "evidenceVersion"
+    > | null;
     reEvaluationTripRequest?: TripApplicabilityRequest;
     decisionTimestamp?: string;
   } & Record<string, unknown>,
@@ -731,76 +933,121 @@ export function recordStewardAuditDecision(
 } {
   assertNoManualRankingOverrides(input);
 
-  const reviewCase = memoryCases.get(input.caseId);
-  if (!reviewCase) {
-    throw makeWorkflowError(
-      `Review case '${input.caseId}' not found.`,
-      "CASE_NOT_FOUND",
-      404,
+  const txResult = runDurableLedgerTransaction((state) => {
+    const reviewCase = state.stewardCasesById[input.caseId];
+    if (!reviewCase) {
+      throw makeWorkflowError(
+        `Review case '${input.caseId}' not found.`,
+        "CASE_NOT_FOUND",
+        404,
+      );
+    }
+
+    const stewardProfile = assertStewardHasNoRecusalConflict(
+      reviewCase,
+      input.stewardId,
+      "case:resolve",
+      input.stewardAffiliatedFirms,
     );
-  }
 
-  const stewardProfile = assertStewardHasNoRecusalConflict(
-    reviewCase,
-    input.stewardId,
-    input.stewardAffiliatedFirms,
-  );
+    const submission = state.stewardDisputesById[reviewCase.disputeReferenceId];
+    if (!submission) {
+      throw makeWorkflowError(
+        `Dispute submission '${reviewCase.disputeReferenceId}' not found for case '${reviewCase.caseId}'.`,
+        "DISPUTE_NOT_FOUND",
+        404,
+      );
+    }
 
-  const submission = memoryDisputes.get(reviewCase.disputeReferenceId);
-  if (!submission) {
-    throw makeWorkflowError(
-      `Dispute submission '${reviewCase.disputeReferenceId}' not found for case '${reviewCase.caseId}'.`,
-      "DISPUTE_NOT_FOUND",
-      404,
-    );
-  }
+    if (
+      input.outcomeCode === "evidence_confirmed" ||
+      input.outcomeCode === "evidence_contradicted"
+    ) {
+      assertSubmissionDocumentsSafeForReview(submission, true);
+    } else {
+      assertSubmissionDocumentsSafeForReview(submission, false);
+    }
 
-  // If the steward is confirming or mutating evidence based on the submission, all uploaded documents must be scanned clean
-  if (
-    input.outcomeCode === "evidence_confirmed" ||
-    input.outcomeCode === "evidence_contradicted"
-  ) {
-    assertSubmissionDocumentsSafeForReview(submission, true);
-  } else {
-    assertSubmissionDocumentsSafeForReview(submission, false);
-  }
+    const claimFact = REGISTERED_CLAIM_FACTS[submission.targetClaimId];
+    const decisionTimestamp =
+      input.decisionTimestamp || new Date().toISOString();
 
-  const claimFact = REGISTERED_CLAIM_FACTS[submission.targetClaimId];
-  const decisionTimestamp = input.decisionTimestamp || new Date().toISOString();
+    const mutatesEvidence =
+      Boolean(input.evidenceMutation) ||
+      input.outcomeCode === "evidence_contradicted";
 
-  const mutatesEvidence =
-    Boolean(input.evidenceMutation) ||
-    input.outcomeCode === "evidence_contradicted";
+    let resultingEvidenceSnapshotId: string | null = null;
 
-  let resultingEvidenceSnapshotId: string | null = null;
-  let reEvaluatedMarketOutcome: CompiledApplicableDecisionOutcome | null = null;
+    if (mutatesEvidence && claimFact) {
+      const snapshotSeed = rfc8785Canonicalize({
+        caseId: reviewCase.caseId,
+        targetClaimId: claimFact.claimId,
+        outcomeCode: input.outcomeCode,
+        mutation: input.evidenceMutation ?? {},
+        decisionTimestamp,
+      });
+      resultingEvidenceSnapshotId = `evsnap:sha256:${sha256HexFull(snapshotSeed).slice(0, 32)}`;
 
-  if (mutatesEvidence && claimFact) {
-    const snapshotSeed = rfc8785Canonicalize({
-      caseId: reviewCase.caseId,
-      targetClaimId: claimFact.claimId,
-      outcomeCode: input.outcomeCode,
-      mutation: input.evidenceMutation ?? {},
-      decisionTimestamp,
-    });
-    resultingEvidenceSnapshotId = `evsnap:sha256:${sha256HexFull(snapshotSeed).slice(0, 32)}`;
-
-    applyStewardVehicleEvidencePatch(
-      {
+      state.stewardVehiclePatchesByClassId[claimFact.vehicleClassId] = {
         vehicleClassId: claimFact.vehicleClassId,
         evidenceVersion: resultingEvidenceSnapshotId,
         ...(input.evidenceMutation ?? {}),
-      },
+      };
+      state.stewardLatestSnapshotId = resultingEvidenceSnapshotId;
+    }
+
+    const reEvaluationRequired = mutatesEvidence;
+
+    const decision: AuditDecisionRecord = {
+      decisionId: `dec_${crypto.randomBytes(10).toString("hex")}`,
+      caseId: reviewCase.caseId,
+      stewardId: stewardProfile.stewardId,
+      outcomeCode: input.outcomeCode,
+      privateInternalRationale: input.privateInternalRationale.trim(),
       resultingEvidenceSnapshotId,
-    );
-  }
+      reEvaluationRequired,
+      decisionTimestamp,
+    };
 
-  const reEvaluationRequired = mutatesEvidence;
+    reviewCase.assignedStewardId = stewardProfile.stewardId;
+    reviewCase.status =
+      input.outcomeCode === "unverifiable" ? "dismissed" : "resolved";
+    reviewCase.temporarySafeguardActive = false;
+    reviewCase.safeguardExpiry = null;
+    reviewCase.resolvedAt = decisionTimestamp;
 
-  if (reEvaluationRequired && claimFact) {
+    const templateKey = `${claimFact?.category ?? "default"}:${input.outcomeCode}`;
+    const template =
+      PUBLIC_SUMMARY_TEMPLATES[templateKey] ?? PUBLIC_SUMMARY_TEMPLATES.default;
+
+    const publicTimelineEntry: PublicMaterialChangeEntry = {
+      entryId: `pmc_${crypto.randomBytes(10).toString("hex")}`,
+      corridorId: claimFact?.corridorId ?? reviewCase.affectedMarketId,
+      operatorId: claimFact?.operatorId ?? "unknown-operator",
+      publicSummaryTemplateCode: template.code,
+      renderedPublicSummary: template.text,
+      auditedByRole: stewardProfile.role,
+      auditTimestamp: formatPublicAuditTimestamp(decisionTimestamp),
+      resolvedClaimId: submission.targetClaimId,
+    };
+
+    state.stewardDecisionsById[decision.decisionId] = decision;
+    state.stewardPublicTimeline.unshift(publicTimelineEntry);
+
+    return {
+      decision,
+      reviewCase,
+      publicTimelineEntry,
+      claimFact,
+      reEvaluationRequired,
+    };
+  });
+
+  let reEvaluatedMarketOutcome: CompiledApplicableDecisionOutcome | null = null;
+  if (txResult.reEvaluationRequired && txResult.claimFact) {
     reEvaluatedMarketOutcome = compileApplicableDecisionContext(
       input.reEvaluationTripRequest ?? {
-        corridorId: claimFact.corridorId,
+        corridorId: txResult.claimFact.corridorId,
         travelDate: "2026-12-15",
         passengerCount: 7,
         standardBagCount: 6,
@@ -813,46 +1060,10 @@ export function recordStewardAuditDecision(
     );
   }
 
-  const decision: AuditDecisionRecord = {
-    decisionId: `dec_${crypto.randomBytes(10).toString("hex")}`,
-    caseId: reviewCase.caseId,
-    stewardId: stewardProfile.stewardId,
-    outcomeCode: input.outcomeCode,
-    privateInternalRationale: input.privateInternalRationale.trim(),
-    resultingEvidenceSnapshotId,
-    reEvaluationRequired,
-    decisionTimestamp,
-  };
-
-  reviewCase.assignedStewardId = stewardProfile.stewardId;
-  reviewCase.status =
-    input.outcomeCode === "unverifiable" ? "dismissed" : "resolved";
-  reviewCase.temporarySafeguardActive = false;
-  reviewCase.safeguardExpiry = null;
-  reviewCase.resolvedAt = decisionTimestamp;
-
-  const templateKey = `${claimFact?.category ?? "default"}:${input.outcomeCode}`;
-  const template =
-    PUBLIC_SUMMARY_TEMPLATES[templateKey] ?? PUBLIC_SUMMARY_TEMPLATES.default;
-
-  const publicTimelineEntry: PublicMaterialChangeEntry = {
-    entryId: `pmc_${crypto.randomBytes(10).toString("hex")}`,
-    corridorId: claimFact?.corridorId ?? reviewCase.affectedMarketId,
-    operatorId: claimFact?.operatorId ?? "unknown-operator",
-    publicSummaryTemplateCode: template.code,
-    renderedPublicSummary: template.text,
-    auditedByRole: stewardProfile.role,
-    auditTimestamp: formatPublicAuditTimestamp(decisionTimestamp),
-    resolvedClaimId: submission.targetClaimId,
-  };
-
-  memoryDecisions.set(decision.decisionId, decision);
-  memoryPublicTimeline.unshift(publicTimelineEntry);
-
   return {
-    decision,
-    reviewCase,
-    publicTimelineEntry,
+    decision: txResult.decision,
+    reviewCase: txResult.reviewCase,
+    publicTimelineEntry: txResult.publicTimelineEntry,
     reEvaluatedMarketOutcome,
   };
 }
@@ -864,13 +1075,14 @@ export function recordStewardAuditDecision(
 export function getPublicMaterialChangeTimeline(
   corridorId?: string,
 ): PublicMaterialChangeEntry[] {
+  const state = readDurableLedgerState();
   const entries = corridorId
-    ? memoryPublicTimeline.filter(
+    ? state.stewardPublicTimeline.filter(
         (e) =>
           e.corridorId === corridorId ||
           e.corridorId.startsWith(corridorId),
       )
-    : [...memoryPublicTimeline];
+    : [...state.stewardPublicTimeline];
 
   // Return defensive clones containing strictly the 8 public contract fields
   return entries.map((e) => ({
@@ -890,9 +1102,10 @@ export function getInternalStewardWorkbenchState(): {
   cases: StewardReviewCase[];
   decisions: AuditDecisionRecord[];
 } {
+  const state = readDurableLedgerState();
   return {
-    disputes: Array.from(memoryDisputes.values()),
-    cases: Array.from(memoryCases.values()),
-    decisions: Array.from(memoryDecisions.values()),
+    disputes: Object.values(state.stewardDisputesById),
+    cases: Object.values(state.stewardCasesById),
+    decisions: Object.values(state.stewardDecisionsById),
   };
 }

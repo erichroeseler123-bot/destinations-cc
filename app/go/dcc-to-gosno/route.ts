@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
 import { issueOpaqueClickAttribution } from "@/lib/dcc/commerce/opaqueAttributionLedger";
+import { syncDurableLedgerWithPostgres } from "@/lib/dcc/storage/durableTransactionalStore";
 
 const ALLOWED_GOSNO_DESTINATIONS = new Set([
   "breckenridge",
@@ -26,6 +27,7 @@ function slug(value: string | null) {
 }
 
 export async function GET(request: Request) {
+  await syncDurableLedgerWithPostgres();
   const incoming = new URL(request.url);
   const destination = slug(incoming.searchParams.get("destination"));
 
@@ -71,6 +73,7 @@ export async function GET(request: Request) {
     productCode: `gosno-${destination}`,
     productDestinationUrl: target.toString(),
   });
+  await syncDurableLedgerWithPostgres({ forcePushLocal: true });
 
   target.searchParams.set("destination", destination);
   if (airport) target.searchParams.set("airport", airport);

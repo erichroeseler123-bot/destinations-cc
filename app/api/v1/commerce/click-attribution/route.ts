@@ -1,15 +1,50 @@
 import { NextResponse } from "next/server";
 import type { CommercialProvider } from "@/lib/dcc/commerce";
 import {
+  authenticateCommerceAdminRequest,
+  authenticatePartnerWebhookOrAdminRequest,
   getOpaqueClickAttributionById,
   issueOpaqueClickAttribution,
+  listReconciledOutcomesForClickId,
   reconcilePartnerCsvBatchByClickId,
   reconcilePartnerWebhookByClickId,
 } from "@/lib/dcc/commerce/opaqueAttributionLedger";
+import { syncDurableLedgerWithPostgres } from "@/lib/dcc/storage/durableTransactionalStore";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
+  let auth: { authorized: true; actor: string };
+  try {
+    auth = authenticateCommerceAdminRequest(request);
+  } catch (error) {
+    const statusCode =
+      error &&
+      typeof error === "object" &&
+      "statusCode" in error &&
+      typeof (error as { statusCode?: unknown }).statusCode === "number"
+        ? (error as { statusCode: number }).statusCode
+        : 401;
+    const code =
+      error &&
+      typeof error === "object" &&
+      "code" in error &&
+      typeof (error as { code?: unknown }).code === "string"
+        ? (error as { code: string }).code
+        : "COMMERCE_AUTH_REQUIRED";
+    return NextResponse.json(
+      {
+        ok: false,
+        code,
+        error:
+          error instanceof Error
+            ? error.message
+            : "Unauthorized attribution lookup.",
+      },
+      { status: statusCode, headers: { "Cache-Control": "no-store" } },
+    );
+  }
+
   const url = new URL(request.url);
   const clickId =
     url.searchParams.get("click_id")?.trim() ||
@@ -26,6 +61,7 @@ export async function GET(request: Request) {
     );
   }
 
+  await syncDurableLedgerWithPostgres();
   const record = getOpaqueClickAttributionById(clickId);
   if (!record) {
     return NextResponse.json(
@@ -37,11 +73,15 @@ export async function GET(request: Request) {
     );
   }
 
+  const reconciledOutcomes = listReconciledOutcomesForClickId(record.clickId);
+
   return NextResponse.json(
     {
       ok: true,
+      authenticatedActorId: auth.actor,
       click_id: record.clickId,
       record,
+      reconciledOutcomes,
     },
     {
       status: 200,
@@ -54,7 +94,8 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as Record<string, unknown>;
+    const rawBody = await request.text();
+    const body = (rawBody ? JSON.parse(rawBody) : {}) as Record<string, unknown>;
     const action =
       typeof body.action === "string" ? body.action.trim() : "issue_click";
     const provider = ((typeof body.provider === "string"
@@ -64,6 +105,9 @@ export async function POST(request: Request) {
         : "direct") as CommercialProvider);
 
     if (action === "reconcile_webhook") {
+      authenticatePartnerWebhookOrAdminRequest(request, rawBody);
+      await syncDurableLedgerWithPostgres();
+
       const result = reconcilePartnerWebhookByClickId({
         clickId: String(body.clickId ?? body.click_id ?? ""),
         trackingParamValue:
@@ -73,12 +117,13 @@ export async function POST(request: Request) {
         provider,
         providerBookingRef: String(
           body.providerBookingRef ??
+            body.provider_booking_ref ??
             body.partnerBookingRef ??
             body.partner_booking_ref ??
             "",
         ),
         eventType:
-          (body.eventType as
+          ((body.eventType ?? body.event_type) as
             | "BOOKING_CONFIRMED"
             | "BOOKING_CANCELLED"
             | "BOOKING_REFUNDED"
@@ -86,27 +131,43 @@ export async function POST(request: Request) {
         grossRevenueUsd:
           typeof body.grossRevenueUsd === "number"
             ? body.grossRevenueUsd
-            : typeof body.grossBookingAmountUsd === "number"
-              ? body.grossBookingAmountUsd
-              : null,
+            : typeof body.gross_revenue_usd === "number"
+              ? body.gross_revenue_usd
+              : typeof body.grossBookingAmountUsd === "number"
+                ? body.grossBookingAmountUsd
+                : null,
         estimatedCommissionUsd:
           typeof body.estimatedCommissionUsd === "number"
             ? body.estimatedCommissionUsd
-            : typeof body.commissionAmountUsd === "number"
-              ? body.commissionAmountUsd
-              : null,
+            : typeof body.estimated_commission_usd === "number"
+              ? body.estimated_commission_usd
+              : typeof body.commissionAmountUsd === "number"
+                ? body.commissionAmountUsd
+                : null,
         paidCommissionUsd:
           typeof body.paidCommissionUsd === "number"
             ? body.paidCommissionUsd
-            : null,
+            : typeof body.paid_commission_usd === "number"
+              ? body.paid_commission_usd
+              : null,
         currency: typeof body.currency === "string" ? body.currency : "USD",
         occurredAt:
-          typeof body.occurredAt === "string" ? body.occurredAt : null,
+          typeof body.occurredAt === "string"
+            ? body.occurredAt
+            : typeof body.occurred_at === "string"
+              ? body.occurred_at
+              : null,
       });
+
+      await syncDurableLedgerWithPostgres({ forcePushLocal: true });
 
       return NextResponse.json(
         {
           ok: true,
+          ...result,
+          duplicateDelivery: result.matched
+            ? result.outcome.duplicateDelivery
+            : false,
           reconciliation: result,
         },
         { status: 200, headers: { "Cache-Control": "no-store" } },
@@ -114,60 +175,70 @@ export async function POST(request: Request) {
     }
 
     if (action === "reconcile_csv") {
+      authenticateCommerceAdminRequest(request);
+      await syncDurableLedgerWithPostgres();
+
       const csvText = String(body.csvText ?? body.csv ?? "");
       const summary = reconcilePartnerCsvBatchByClickId({
         provider,
         csvText,
       });
+
+      await syncDurableLedgerWithPostgres({ forcePushLocal: true });
+
       return NextResponse.json(
         {
           ok: true,
-          ...summary,
+          summary,
         },
         { status: 200, headers: { "Cache-Control": "no-store" } },
       );
     }
 
-    // Default: issue_click
-    const productDestinationUrl = String(
-      body.productDestinationUrl ?? body.destinationUrl ?? body.outboundUrl ?? "",
+    authenticateCommerceAdminRequest(request);
+    await syncDurableLedgerWithPostgres();
+
+    const targetUrl = String(
+      body.productDestinationUrl ??
+        body.targetUrl ??
+        body.destinationUrl ??
+        "",
     ).trim();
-    if (!productDestinationUrl) {
+    const decisionReceiptId = String(
+      body.decisionReceiptId ?? body.receiptId ?? "",
+    ).trim();
+    const recommendedOperatorId = String(
+      body.recommendedOperatorId ?? body.operatorId ?? "",
+    ).trim();
+    const evidenceVersion = String(
+      body.evidenceVersion ?? "dcc-evidence-bundle/2026.11.02",
+    ).trim();
+
+    if (!targetUrl || !decisionReceiptId || !recommendedOperatorId) {
       return NextResponse.json(
         {
           ok: false,
           error:
-            "productDestinationUrl (or destinationUrl) is required to issue an opaque click_id.",
+            "productDestinationUrl, decisionReceiptId, and recommendedOperatorId are required to mint an opaque click_id.",
         },
         { status: 400 },
       );
     }
 
-    const decisionReceiptId =
-      typeof body.decisionReceiptId === "string" && body.decisionReceiptId.trim()
-        ? body.decisionReceiptId.trim()
-        : typeof body.receiptId === "string" && body.receiptId.trim()
-          ? body.receiptId.trim()
-          : `rcpt:sha256:${"0".repeat(64)}`;
-
     const record = issueOpaqueClickAttribution({
+      clickId: typeof body.clickId === "string" ? body.clickId : null,
+      handoffId: typeof body.handoffId === "string" ? body.handoffId : null,
       decisionReceiptId,
-      recommendedOperatorId: String(
-        body.recommendedOperatorId ?? body.operatorId ?? "operator:unknown",
-      ),
+      recommendedOperatorId,
       recommendedOperatorName:
         typeof body.recommendedOperatorName === "string"
           ? body.recommendedOperatorName
-          : null,
+          : recommendedOperatorId,
       recommendedVehicleClassId:
         typeof body.recommendedVehicleClassId === "string"
           ? body.recommendedVehicleClassId
-          : typeof body.selectedVehicleClassId === "string"
-            ? body.selectedVehicleClassId
-            : null,
-      evidenceVersion: String(
-        body.evidenceVersion ?? "dcc-evidence-stewardship/2026.11",
-      ),
+          : null,
+      evidenceVersion,
       applicabilityModelVersion:
         typeof body.applicabilityModelVersion === "string"
           ? body.applicabilityModelVersion
@@ -176,19 +247,26 @@ export async function POST(request: Request) {
         typeof body.applicabilityOutcomeHash === "string"
           ? body.applicabilityOutcomeHash
           : null,
+      originatingSite:
+        typeof body.originatingSite === "string"
+          ? body.originatingSite
+          : "destinationcommandcenter.com",
       provider,
-      productCode: String(
-        body.productCode ?? body.recommendedOperatorId ?? "dcc-product",
-      ),
-      productDestinationUrl,
+      productCode:
+        typeof body.productCode === "string"
+          ? body.productCode
+          : `${recommendedOperatorId}-default`,
+      productDestinationUrl: targetUrl,
     });
+
+    await syncDurableLedgerWithPostgres({ forcePushLocal: true });
 
     return NextResponse.json(
       {
         ok: true,
         click_id: record.clickId,
         outboundPartnerUrl: record.outboundPartnerUrl,
-        record,
+        strippedLeakParams: record.strippedLeakParams,
       },
       {
         status: 201,
@@ -204,17 +282,25 @@ export async function POST(request: Request) {
       typeof error === "object" &&
       "statusCode" in error &&
       typeof (error as { statusCode?: unknown }).statusCode === "number"
-        ? ((error as { statusCode: number }).statusCode)
+        ? (error as { statusCode: number }).statusCode
         : 400;
+    const code =
+      error &&
+      typeof error === "object" &&
+      "code" in error &&
+      typeof (error as { code?: unknown }).code === "string"
+        ? (error as { code: string }).code
+        : "COMMERCE_ATTRIBUTION_ERROR";
     return NextResponse.json(
       {
         ok: false,
+        code,
         error:
           error instanceof Error
             ? error.message
-            : "Failed to process click attribution request.",
+            : "Failed to process opaque click attribution request.",
       },
-      { status: statusCode },
+      { status: statusCode, headers: { "Cache-Control": "no-store" } },
     );
   }
 }

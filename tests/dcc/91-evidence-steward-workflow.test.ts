@@ -1,16 +1,25 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { compileApplicableDecisionContext } from "@/lib/dcc/applicability";
 import {
   activateTemporaryStewardSafeguard,
   assignStewardToReviewCase,
   getInternalStewardWorkbenchState,
   getPublicMaterialChangeTimeline,
+  issueStewardCredentialToken,
   recordStewardAuditDecision,
   resetEvidenceStewardWorkflowForTests,
   submitOperatorDisputeToQuarantine,
   updateSubmittedDocumentMalwareStatus,
 } from "@/lib/dcc/stewardship";
+import {
+  GET as stewardshipCasesGet,
+  POST as stewardshipCasesPost,
+} from "@/app/api/v1/stewardship/cases/route";
 
 test("1. Targeted Scopes (targetClaimId) & Quarantine by Default: rejects rank/route disputes and quarantines claim disputes", () => {
   resetEvidenceStewardWorkflowForTests();
@@ -421,4 +430,569 @@ test("4. No Manual Overrides & Deterministic Market Re-Evaluation: steward updat
 
   // Clean up patches for subsequent tests
   resetEvidenceStewardWorkflowForTests();
+});
+
+test("5. Authenticated Steward Identities, Permissions, and Recusal Controls on API & Workflow (rejects invalid credentials & unregistered stewards)", async () => {
+  resetEvidenceStewardWorkflowForTests();
+
+  const { submission, reviewCase } = submitOperatorDisputeToQuarantine({
+    targetClaimId: "claim:gosno:vail-private-van:operating-authority",
+    submitter: {
+      identityId: "op:carrier-review",
+      trustLevel: "verified_operator",
+      declaredAffiliation: "carrier-review",
+    },
+    submittedEvidence: {
+      description: "Submitted updated commercial carrier filing.",
+      sourceUrls: ["https://puc.colorado.gov"],
+      uploadedDocuments: [
+        {
+          documentId: "doc_puc_2026_clean.pdf",
+          malwareScanStatus: "pending",
+        },
+      ],
+    },
+    submittedAt: "2026-11-02T17:00:00.000Z",
+  });
+
+  // 5a. Unregistered steward identities are rejected in direct workflow functions (cannot bypass recusal controls)
+  assert.throws(
+    () =>
+      assignStewardToReviewCase({
+        caseId: reviewCase.caseId,
+        stewardId: "steward:unregistered-bypass-attempt",
+      }),
+    (err: unknown) =>
+      Boolean(
+        err &&
+          typeof err === "object" &&
+          "code" in err &&
+          (err as { code: string; statusCode: number }).code ===
+            "UNREGISTERED_STEWARD_IDENTITY" &&
+          (err as { code: string; statusCode: number }).statusCode === 403,
+      ),
+  );
+
+  assert.throws(
+    () => issueStewardCredentialToken("steward:unregistered-bypass-attempt"),
+    (err: unknown) =>
+      Boolean(
+        err &&
+          typeof err === "object" &&
+          "code" in err &&
+          (err as { code: string }).code === "UNREGISTERED_STEWARD_IDENTITY",
+      ),
+  );
+
+  // 5b. Internal GET workbench rejects missing token AND rejects arbitrary nonempty token
+  const noTokenGetRes = await stewardshipCasesGet(
+    new Request(
+      "https://destinationcommandcenter.com/api/v1/stewardship/cases?mode=internal",
+    ),
+  );
+  assert.equal(noTokenGetRes.status, 401);
+  const noTokenGetJson = (await noTokenGetRes.json()) as {
+    ok: boolean;
+    code: string;
+  };
+  assert.equal(noTokenGetJson.code, "STEWARD_AUTH_REQUIRED");
+
+  const arbitraryTokenGetRes = await stewardshipCasesGet(
+    new Request(
+      "https://destinationcommandcenter.com/api/v1/stewardship/cases?mode=internal",
+      {
+        headers: {
+          "x-dcc-steward-token": "any-nonempty-token-must-be-rejected",
+        },
+      },
+    ),
+  );
+  assert.equal(arbitraryTokenGetRes.status, 401);
+  const arbitraryTokenGetJson = (await arbitraryTokenGetRes.json()) as {
+    ok: boolean;
+    code: string;
+  };
+  assert.equal(arbitraryTokenGetJson.code, "STEWARD_INVALID_CREDENTIALS");
+
+  // 5c. Case-changing POST requests reject unauthenticated or invalidly signed tokens
+  const unauthPostRes = await stewardshipCasesPost(
+    new Request(
+      "https://destinationcommandcenter.com/api/v1/stewardship/cases",
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          action: "assign_steward",
+          caseId: reviewCase.caseId,
+          stewardId: "steward:independent-compliance-01",
+        }),
+      },
+    ),
+  );
+  assert.equal(unauthPostRes.status, 401);
+  const unauthPostJson = (await unauthPostRes.json()) as {
+    ok: boolean;
+    code: string;
+  };
+  assert.equal(unauthPostJson.code, "STEWARD_AUTH_REQUIRED");
+
+  const arbitraryPostRes = await stewardshipCasesPost(
+    new Request(
+      "https://destinationcommandcenter.com/api/v1/stewardship/cases",
+      {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-dcc-steward-token": "forged-token-value",
+        },
+        body: JSON.stringify({
+          action: "assign_steward",
+          caseId: reviewCase.caseId,
+          stewardId: "steward:independent-compliance-01",
+        }),
+      },
+    ),
+  );
+  assert.equal(arbitraryPostRes.status, 401);
+  const arbitraryPostJson = (await arbitraryPostRes.json()) as {
+    ok: boolean;
+    code: string;
+  };
+  assert.equal(arbitraryPostJson.code, "STEWARD_INVALID_CREDENTIALS");
+
+  // 5d. Role-based permission checks: read-only auditor can read workbench, but cannot scan documents or assign/resolve cases
+  const readonlyToken = issueStewardCredentialToken(
+    "steward:auditor-readonly-01",
+  );
+  const readonlyGetRes = await stewardshipCasesGet(
+    new Request(
+      "https://destinationcommandcenter.com/api/v1/stewardship/cases?mode=internal",
+      {
+        headers: { "x-dcc-steward-token": readonlyToken },
+      },
+    ),
+  );
+  assert.equal(readonlyGetRes.status, 200);
+
+  const readonlyAssignRes = await stewardshipCasesPost(
+    new Request(
+      "https://destinationcommandcenter.com/api/v1/stewardship/cases",
+      {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-dcc-steward-token": readonlyToken,
+        },
+        body: JSON.stringify({
+          action: "assign_steward",
+          caseId: reviewCase.caseId,
+          stewardId: "steward:auditor-readonly-01",
+        }),
+      },
+    ),
+  );
+  assert.equal(readonlyAssignRes.status, 403);
+  const readonlyAssignJson = (await readonlyAssignRes.json()) as {
+    ok: boolean;
+    code: string;
+  };
+  assert.equal(readonlyAssignJson.code, "STEWARD_PERMISSION_DENIED");
+
+  // 5e. Scanner bot can scan documents, but cannot resolve cases
+  const scannerToken = issueStewardCredentialToken(
+    "steward:document-scanner-bot",
+  );
+  const scanRes = await stewardshipCasesPost(
+    new Request(
+      "https://destinationcommandcenter.com/api/v1/stewardship/cases",
+      {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-dcc-steward-token": scannerToken,
+        },
+        body: JSON.stringify({
+          action: "scan_document",
+          disputeId: submission.disputeId,
+          documentId: "doc_puc_2026_clean.pdf",
+          malwareScanStatus: "clean",
+        }),
+      },
+    ),
+  );
+  assert.equal(scanRes.status, 200);
+
+  const scannerResolveRes = await stewardshipCasesPost(
+    new Request(
+      "https://destinationcommandcenter.com/api/v1/stewardship/cases",
+      {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-dcc-steward-token": scannerToken,
+        },
+        body: JSON.stringify({
+          action: "resolve_case",
+          caseId: reviewCase.caseId,
+          stewardId: "steward:document-scanner-bot",
+          outcomeCode: "evidence_confirmed",
+          privateInternalRationale: "Bot trying to resolve case.",
+        }),
+      },
+    ),
+  );
+  assert.equal(scannerResolveRes.status, 403);
+  const scannerResolveJson = (await scannerResolveRes.json()) as {
+    ok: boolean;
+    code: string;
+  };
+  assert.equal(scannerResolveJson.code, "STEWARD_PERMISSION_DENIED");
+
+  // 5f. Identity binding check: token for steward:independent-compliance-01 cannot impersonate steward:compliance-legal-02 in request body
+  const independentToken = issueStewardCredentialToken(
+    "steward:independent-compliance-01",
+  );
+  const mismatchRes = await stewardshipCasesPost(
+    new Request(
+      "https://destinationcommandcenter.com/api/v1/stewardship/cases",
+      {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-dcc-steward-token": independentToken,
+        },
+        body: JSON.stringify({
+          action: "assign_steward",
+          caseId: reviewCase.caseId,
+          stewardId: "steward:compliance-legal-02",
+        }),
+      },
+    ),
+  );
+  assert.equal(mismatchRes.status, 403);
+  const mismatchJson = (await mismatchRes.json()) as {
+    ok: boolean;
+    code: string;
+  };
+  assert.equal(mismatchJson.code, "STEWARD_IDENTITY_MISMATCH");
+
+  // 5g. Authenticated steward with recusal conflict (GoSno) is still blocked by requiredRecusalFirms
+  const gosnoStewardToken = issueStewardCredentialToken(
+    "steward:gosno-ops-conflict",
+  );
+  const conflictAssignRes = await stewardshipCasesPost(
+    new Request(
+      "https://destinationcommandcenter.com/api/v1/stewardship/cases",
+      {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-dcc-steward-token": gosnoStewardToken,
+        },
+        body: JSON.stringify({
+          action: "assign_steward",
+          caseId: reviewCase.caseId,
+          stewardId: "steward:gosno-ops-conflict",
+        }),
+      },
+    ),
+  );
+  assert.equal(conflictAssignRes.status, 403);
+  const conflictAssignJson = (await conflictAssignRes.json()) as {
+    ok: boolean;
+    code: string;
+  };
+  assert.equal(
+    conflictAssignJson.code,
+    "STEWARD_RECUSAL_CONFLICT_OF_INTEREST",
+  );
+
+  // 5h. Authenticated independent steward assigns and resolves the case cleanly
+  const validAssignRes = await stewardshipCasesPost(
+    new Request(
+      "https://destinationcommandcenter.com/api/v1/stewardship/cases",
+      {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-dcc-steward-token": independentToken,
+        },
+        body: JSON.stringify({
+          action: "assign_steward",
+          caseId: reviewCase.caseId,
+          stewardId: "steward:independent-compliance-01",
+        }),
+      },
+    ),
+  );
+  assert.equal(validAssignRes.status, 200);
+
+  const validResolveRes = await stewardshipCasesPost(
+    new Request(
+      "https://destinationcommandcenter.com/api/v1/stewardship/cases",
+      {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-dcc-steward-token": independentToken,
+        },
+        body: JSON.stringify({
+          action: "resolve_case",
+          caseId: reviewCase.caseId,
+          stewardId: "steward:independent-compliance-01",
+          outcomeCode: "evidence_confirmed",
+          privateInternalRationale:
+            "Verified active PUC certificate directly with state portal.",
+        }),
+      },
+    ),
+  );
+  assert.equal(validResolveRes.status, 200);
+  const validResolveJson = (await validResolveRes.json()) as {
+    ok: boolean;
+    authenticatedStewardId: string;
+    reviewCase: { status: string };
+  };
+  assert.equal(validResolveJson.ok, true);
+  assert.equal(
+    validResolveJson.authenticatedStewardId,
+    "steward:independent-compliance-01",
+  );
+  assert.equal(validResolveJson.reviewCase.status, "resolved");
+
+  resetEvidenceStewardWorkflowForTests();
+});
+
+test("6. Durable Transactional Storage Survives Separate OS Processes and Enforces Atomic Rollback", () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "dcc-durable-tx-"));
+  const storePath = path.join(tempDir, "durable-ledger.json");
+  const scriptAPath = path.join(tempDir, "proc-a.ts");
+  const scriptBPath = path.join(tempDir, "proc-b.ts");
+
+  try {
+    const childEnv = {
+      ...process.env,
+      DCC_DURABLE_STORE_PATH: storePath,
+      DCC_DISABLE_DURABLE_POSTGRES: "1",
+    };
+
+    // Spawn Process A (separate OS process) to write click attribution, booking reconciliation,
+    // dispute, steward decision, evidence patch, and verify atomic rollback on error.
+    const processAScript = `
+      import assert from "node:assert/strict";
+      import {
+        issueOpaqueClickAttribution,
+        reconcilePartnerWebhookByClickId,
+      } from "@/lib/dcc/commerce/opaqueAttributionLedger";
+      import {
+        assignStewardToReviewCase,
+        recordStewardAuditDecision,
+        submitOperatorDisputeToQuarantine,
+        updateSubmittedDocumentMalwareStatus,
+      } from "@/lib/dcc/stewardship/evidenceStewardWorkflow";
+      import { runDurableLedgerTransaction } from "@/lib/dcc/storage/durableTransactionalStore";
+
+      const click = issueOpaqueClickAttribution({
+        decisionReceiptId: "rcpt:sha256:9999999999999999999999999999999999999999999999999999999999999999",
+        recommendedOperatorId: "gosno:vail-private-van",
+        recommendedOperatorName: "GoSno Mountain Transfer",
+        recommendedVehicleClassId: "veh:private-transit-van-10-14",
+        evidenceVersion: "dcc-evidence-stewardship/2026.11",
+        provider: "direct",
+        productCode: "gosno-vail-van",
+        productDestinationUrl: "https://gosno.co/vail?origin=DEN&destination=Vail",
+      });
+
+      const reconciled = reconcilePartnerWebhookByClickId({
+        clickId: click.clickId,
+        provider: "direct",
+        providerBookingRef: "PROC-A-BOOKING-001",
+        eventType: "BOOKING_CONFIRMED",
+        grossRevenueUsd: 825,
+        estimatedCommissionUsd: 123.75,
+        paidCommissionUsd: 123.75,
+      });
+      assert.equal(reconciled.matched, true);
+
+      const { submission, reviewCase } = submitOperatorDisputeToQuarantine({
+        targetClaimId: "claim:gosno:vail-private-van:operating-authority",
+        submitter: {
+          identityId: "auditor:proc-a",
+          trustLevel: "internal_auditor",
+          declaredAffiliation: "State Registry Monitor",
+        },
+        submittedEvidence: {
+          description: "Process A durable persistence verification.",
+          sourceUrls: ["https://puc.colorado.gov"],
+          uploadedDocuments: [
+            { documentId: "doc_proc_a.pdf", malwareScanStatus: "pending" },
+          ],
+        },
+        submittedAt: "2026-11-02T18:00:00.000Z",
+      });
+
+      updateSubmittedDocumentMalwareStatus({
+        disputeId: submission.disputeId,
+        documentId: "doc_proc_a.pdf",
+        malwareScanStatus: "clean",
+      });
+
+      assignStewardToReviewCase({
+        caseId: reviewCase.caseId,
+        stewardId: "steward:independent-compliance-01",
+      });
+
+      const resolved = recordStewardAuditDecision({
+        caseId: reviewCase.caseId,
+        stewardId: "steward:independent-compliance-01",
+        outcomeCode: "evidence_contradicted",
+        privateInternalRationale: "Process A confirmed permit lapse; persisting durable mutation.",
+        evidenceMutation: {
+          operatingAuthorityValid: false,
+        },
+        decisionTimestamp: "2026-11-02T18:15:00.000Z",
+      });
+
+      // Verify that a failed transaction inside runDurableLedgerTransaction rolls back atomically
+      assert.throws(() => {
+        runDurableLedgerTransaction((state) => {
+          state.opaqueClicksById["clk_rolledback00000000000000"] = {
+            clickId: "clk_rolledback00000000000000",
+            decisionReceiptId: "rcpt:sha256:bad",
+            recommendedOperatorId: "bad",
+            recommendedOperatorName: null,
+            recommendedVehicleClassId: null,
+            evidenceVersion: "bad",
+            applicabilityModelVersion: null,
+            applicabilityOutcomeHash: null,
+            handoffId: null,
+            provider: "direct",
+            productCode: "bad",
+            outboundPartnerUrl: "https://example.com",
+            strippedLeakParams: [],
+            reconciliationState: "unmatched",
+            lastReconciledOutcomeId: null,
+            lastReconciledAt: null,
+            createdAt: new Date().toISOString(),
+          };
+          throw new Error("SIMULATED_TX_FAILURE");
+        });
+      }, /SIMULATED_TX_FAILURE/);
+
+      process.stdout.write(JSON.stringify({
+        clickId: click.clickId,
+        disputeId: submission.disputeId,
+        caseId: reviewCase.caseId,
+        decisionId: resolved.decision.decisionId,
+        snapshotId: resolved.decision.resultingEvidenceSnapshotId,
+      }));
+    `;
+
+    fs.writeFileSync(scriptAPath, processAScript, "utf8");
+    const procAOutRaw = execFileSync(
+      process.execPath,
+      ["--import", "tsx", scriptAPath],
+      {
+        cwd: process.cwd(),
+        env: childEnv,
+        encoding: "utf8",
+      },
+    );
+    const procAData = JSON.parse(procAOutRaw.trim()) as {
+      clickId: string;
+      disputeId: string;
+      caseId: string;
+      decisionId: string;
+      snapshotId: string;
+    };
+
+    assert.match(procAData.clickId, /^clk_[0-9a-f]{24}$/);
+
+    // Now spawn Process B (a completely separate OS process) to read the durable ledger
+    // and verify all records survived Process A exit and that the aborted transaction rolled back.
+    const processBScript = `
+      import assert from "node:assert/strict";
+      import {
+        getOpaqueClickAttributionById,
+        listReconciledOutcomesForClickId,
+      } from "@/lib/dcc/commerce/opaqueAttributionLedger";
+      import {
+        getInternalStewardWorkbenchState,
+        getPublicMaterialChangeTimeline,
+      } from "@/lib/dcc/stewardship/evidenceStewardWorkflow";
+      import { compileApplicableDecisionContext } from "@/lib/dcc/applicability";
+
+      const expected = ${JSON.stringify(procAData)};
+
+      // 1. Verify rolled-back click ID does not exist
+      assert.equal(getOpaqueClickAttributionById("clk_rolledback00000000000000"), null);
+
+      // 2. Verify committed click attribution and reconciled booking survived across processes
+      const clickRecord = getOpaqueClickAttributionById(expected.clickId);
+      assert.ok(clickRecord, "Click attribution record must survive across separate processes");
+      assert.equal(
+        clickRecord.decisionReceiptId,
+        "rcpt:sha256:9999999999999999999999999999999999999999999999999999999999999999"
+      );
+
+      const outcomes = listReconciledOutcomesForClickId(expected.clickId);
+      assert.equal(outcomes.length, 1);
+      assert.equal(outcomes[0].providerBookingRef, "PROC-A-BOOKING-001");
+      assert.equal(outcomes[0].paidCommissionUsd, 123.75);
+
+      // 3. Verify dispute, resolved case, decision, and public timeline survived across processes
+      const workbench = getInternalStewardWorkbenchState();
+      assert.equal(workbench.disputes.length, 1);
+      assert.equal(workbench.disputes[0].disputeId, expected.disputeId);
+      assert.equal(workbench.cases.length, 1);
+      assert.equal(workbench.cases[0].caseId, expected.caseId);
+      assert.equal(workbench.cases[0].status, "resolved");
+      assert.equal(workbench.decisions.length, 1);
+      assert.equal(workbench.decisions[0].decisionId, expected.decisionId);
+      assert.equal(
+        workbench.decisions[0].privateInternalRationale,
+        "Process A confirmed permit lapse; persisting durable mutation."
+      );
+
+      const publicTimeline = getPublicMaterialChangeTimeline("corridor:denver-vail");
+      assert.ok(
+        publicTimeline.some((e) => e.resolvedClaimId === "claim:gosno:vail-private-van:operating-authority"),
+        "Public timeline entry must survive across separate processes"
+      );
+
+      // 4. Verify steward evidence mutation survived across processes and deterministically alters compilation
+      const reEvaluated = compileApplicableDecisionContext({
+        corridorId: "corridor:denver-vail-i70",
+        travelDate: "2026-12-15",
+        passengerCount: 7,
+        standardBagCount: 6,
+        skiOrOversizeBagCount: 2,
+        activeSegmentConditions: {
+          i70TractionLawActive: true,
+          vailPassChainLawActive: true,
+        },
+      });
+      assert.equal(reEvaluated.recommendedVehicleClassId, "veh:shared-mountain-shuttle");
+      assert.equal(reEvaluated.recommendedOperatorId, "op:epic-mountain-express");
+
+      process.stdout.write(JSON.stringify({ verifiedInProcessB: true }));
+    `;
+
+    fs.writeFileSync(scriptBPath, processBScript, "utf8");
+    const procBOutRaw = execFileSync(
+      process.execPath,
+      ["--import", "tsx", scriptBPath],
+      {
+        cwd: process.cwd(),
+        env: childEnv,
+        encoding: "utf8",
+      },
+    );
+    const procBData = JSON.parse(procBOutRaw.trim()) as {
+      verifiedInProcessB: boolean;
+    };
+    assert.equal(procBData.verifiedInProcessB, true);
+  } finally {
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  }
 });

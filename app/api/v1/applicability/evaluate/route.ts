@@ -6,6 +6,7 @@ import {
   type TripApplicabilityRequest,
 } from "@/lib/dcc/applicability";
 import { issueOpaqueClickAttribution } from "@/lib/dcc/commerce/opaqueAttributionLedger";
+import { syncDurableLedgerWithPostgres } from "@/lib/dcc/storage/durableTransactionalStore";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +24,7 @@ const DEFAULT_PARTNER_URLS: Record<CorridorId, string> = {
 };
 
 export async function GET() {
+  await syncDurableLedgerWithPostgres();
   const model = getVersionedApplicabilityContextModel();
   return NextResponse.json(
     {
@@ -45,6 +47,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    await syncDurableLedgerWithPostgres();
     const body = (await request.json()) as Partial<TripApplicabilityRequest> & {
       partnerDestinationUrl?: string;
       partnerNetwork?:
@@ -97,6 +100,7 @@ export async function POST(request: Request) {
       productCode: outcome.recommendedVehicleClassId || corridorId,
       productDestinationUrl: basePartnerUrl,
     });
+    await syncDurableLedgerWithPostgres({ forcePushLocal: true });
 
     return NextResponse.json(
       {

@@ -5,10 +5,12 @@ import {
   submitOperatorDisputeToQuarantine,
   type SubmitterTrustLevel,
 } from "@/lib/dcc/stewardship";
+import { syncDurableLedgerWithPostgres } from "@/lib/dcc/storage/durableTransactionalStore";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
+  await syncDurableLedgerWithPostgres();
   const url = new URL(request.url);
   const corridorId = url.searchParams.get("corridorId")?.trim() || undefined;
 
@@ -29,6 +31,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    await syncDurableLedgerWithPostgres();
     const body = (await request.json()) as Record<string, unknown>;
     const submitterRaw =
       body.submitter && typeof body.submitter === "object"
@@ -68,6 +71,7 @@ export async function POST(request: Request) {
         })),
       },
     });
+    await syncDurableLedgerWithPostgres({ forcePushLocal: true });
 
     return NextResponse.json(
       {

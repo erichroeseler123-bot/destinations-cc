@@ -496,31 +496,44 @@ export interface StewardVehicleEvidencePatch {
   operatingAuthorityValid?: boolean;
 }
 
-const stewardVehiclePatches = new Map<string, StewardVehicleEvidencePatch>();
-let currentStewardEvidenceSnapshotId = "dcc-evidence-bundle/2026.11.02";
+import {
+  readDurableLedgerState,
+  runDurableLedgerTransaction,
+} from "../storage/durableTransactionalStore";
+
+const DEFAULT_EVIDENCE_SNAPSHOT_ID = "dcc-evidence-bundle/2026.11.02";
 
 export function applyStewardVehicleEvidencePatch(
   patch: StewardVehicleEvidencePatch,
   resultingEvidenceSnapshotId: string,
 ): void {
-  stewardVehiclePatches.set(patch.vehicleClassId, patch);
-  currentStewardEvidenceSnapshotId = resultingEvidenceSnapshotId;
+  runDurableLedgerTransaction((state) => {
+    state.stewardVehiclePatchesByClassId[patch.vehicleClassId] = patch;
+    state.stewardLatestSnapshotId = resultingEvidenceSnapshotId;
+  });
 }
 
 export function getStewardVehicleEvidencePatch(
   vehicleClassId: string,
 ): StewardVehicleEvidencePatch | undefined {
-  return stewardVehiclePatches.get(vehicleClassId);
+  const state = readDurableLedgerState();
+  return state.stewardVehiclePatchesByClassId[vehicleClassId];
 }
 
 export function resetStewardVehicleEvidencePatchesForTests(): void {
-  stewardVehiclePatches.clear();
-  currentStewardEvidenceSnapshotId = "dcc-evidence-bundle/2026.11.02";
+  runDurableLedgerTransaction((state) => {
+    state.stewardVehiclePatchesByClassId = {};
+    state.stewardLatestSnapshotId = null;
+  });
 }
 
 export function getVersionedApplicabilityContextModel(): VersionedApplicabilityContextModel {
+  const durableState = readDurableLedgerState();
+  const effectiveSnapshotId =
+    durableState.stewardLatestSnapshotId || DEFAULT_EVIDENCE_SNAPSHOT_ID;
+
   const effectiveVehicles: readonly VehicleClassCapacitySpec[] = VEHICLE_CLASSES.map((v) => {
-    const patch = stewardVehiclePatches.get(v.vehicleClassId);
+    const patch = durableState.stewardVehiclePatchesByClassId[v.vehicleClassId];
     if (!patch) return v;
     return {
       ...v,
@@ -553,7 +566,7 @@ export function getVersionedApplicabilityContextModel(): VersionedApplicabilityC
   const core = {
     modelVersion: APPLICABILITY_MODEL_VERSION,
     compilerVersion: APPLICABILITY_COMPILER_VERSION,
-    evidenceVersion: currentStewardEvidenceSnapshotId,
+    evidenceVersion: effectiveSnapshotId,
     knowledgeCutoff: "2026-11-02T12:00:00.000Z",
     segments: GEOGRAPHIC_SEGMENTS,
     vehicleClasses: effectiveVehicles,
