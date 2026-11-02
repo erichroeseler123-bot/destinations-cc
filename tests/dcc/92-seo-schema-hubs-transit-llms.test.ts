@@ -174,23 +174,31 @@ test("2. Auto-Generated Regional Hub Pages group coordinates, reference nodes, v
   assert.ok(laHub.ports.some((p) => p.href === "/ports/new-orleans"));
   assert.ok(laHub.decisionGuides.length >= 6, "Louisiana hub must pull in published swamp decision guides");
 
-  // Verify Publication Manifest & Indexable Surface governance for regional hubs
+  // Verify Publication Manifest & Indexable Surface governance for canonical /destinations/[state] hubs
   for (const path of [
     "/destinations",
     "/destinations/colorado",
     "/destinations/alaska",
     "/destinations/louisiana",
     "/destinations/nevada",
-    "/regions/colorado",
-    "/regions/alaska",
-    "/regions/louisiana",
-    "/regions/nevada",
   ]) {
     const entry = getPublicationManifestEntry(path);
     assert.ok(entry, `Expected ${path} in PUBLICATION_MANIFEST`);
     assert.equal(entry.acceptanceState, "public_indexable");
     assert.equal(INDEXABLE_SURFACE_PATHS.includes(path), true);
     assert.equal(getGovernedRobotsTag(path), "index, follow");
+  }
+
+  // Duplicate /regions/[state] aliases are withdrawn from indexability and canonicalize to /destinations/[state]
+  for (const state of ["colorado", "alaska", "louisiana", "nevada"]) {
+    const aliasPath = `/regions/${state}`;
+    const entry = getPublicationManifestEntry(aliasPath);
+    assert.ok(entry, `Expected ${aliasPath} in PUBLICATION_MANIFEST`);
+    assert.equal(entry.acceptanceState, "withdrawn_historical");
+    assert.equal(entry.includeInSitemap, false);
+    assert.equal(entry.canonicalUrl, `https://destinationcommandcenter.com/destinations/${state}`);
+    assert.equal(INDEXABLE_SURFACE_PATHS.includes(aliasPath), false);
+    assert.equal(getGovernedRobotsTag(aliasPath), "noindex, nofollow");
   }
 
   // Unpromoted telemetry state hubs remain public_non_indexable
@@ -406,4 +414,349 @@ test("6. /vegas ISR policy (3600s) and separation of short-lived telemetry from 
     );
   }
 });
+
+test("7. Sitemap excludes duplicate /regions/[state], proxy 308 redirects /regions/[state] -> /destinations/[state], and visitor browser event collection works without admin credentials", async () => {
+  const { buildDccSitemapXml, listDccSitemapPaths } = await import("@/app/sitemap.xml/handler");
+  const { proxy } = await import("@/proxy");
+  const { POST: postPublicCorridorEvent } = await import("@/app/api/public/corridor-events/route");
+  const { POST: postInternalCorridorEvent } = await import("@/app/api/internal/corridor-events/route");
+  const { buildDecisionFunnelPayload, CORRIDOR_EVENT_ENDPOINT } = await import("@/lib/analytics");
+
+  const paths = listDccSitemapPaths();
+  const xml = buildDccSitemapXml();
+  assert.equal(paths.length, 33, "Sitemap should contain 33 canonical indexable URLs after removing 4 duplicate /regions/[state] aliases");
+  for (const state of ["colorado", "alaska", "louisiana", "nevada"]) {
+    assert.equal(paths.includes(`/destinations/${state}`), true);
+    assert.equal(paths.includes(`/regions/${state}`), false);
+    assert.equal(xml.includes(`https://destinationcommandcenter.com/destinations/${state}`), true);
+    assert.equal(xml.includes(`https://destinationcommandcenter.com/regions/${state}`), false);
+  }
+
+  for (const state of ["colorado", "alaska", "louisiana", "nevada", "florida"]) {
+    const req = new NextRequest(`https://destinationcommandcenter.com/regions/${state}?date=2026-07-15`);
+    const res = await proxy(req);
+    assert.equal(res.status, 308);
+    assert.equal(
+      res.headers.get("location"),
+      `https://destinationcommandcenter.com/destinations/${state}?date=2026-07-15`,
+    );
+  }
+
+  // Unauthenticated browser event POST must pass proxy without 401
+  const eventPayload = {
+    corridor_id: "juneau",
+    event_name: "plan_modified",
+    session_id: "smoke_unit_visitor_event",
+    source_page: "/juneau",
+    landing_path: "/juneau",
+    target_path: "/juneau",
+    fit_signal: "two_activity_combo",
+    metadata: {
+      test: true,
+      synthetic: true,
+      modified_field: "arrivalDock",
+      arrival_dock: "aj_dock",
+    },
+  };
+
+  const proxyPublicReq = new NextRequest("https://destinationcommandcenter.com/api/public/corridor-events", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(eventPayload),
+  });
+  const proxyPublicRes = await proxy(proxyPublicReq);
+  assert.notEqual(proxyPublicRes.status, 401, "Public visitor event endpoint must never return 401");
+
+  const proxyInternalReq = new NextRequest("https://destinationcommandcenter.com/api/internal/corridor-events", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(eventPayload),
+  });
+  const proxyInternalRes = await proxy(proxyInternalReq);
+  assert.notEqual(proxyInternalRes.status, 401, "Legacy visitor event POST endpoint must not return 401 in proxy");
+
+  // Protected internal admin API route still requires admin authorization
+  const protectedAdminReq = new NextRequest("https://destinationcommandcenter.com/api/internal/earthos/reference-maintenance", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "refresh_snapshot" }),
+  });
+  const protectedAdminRes = await proxy(protectedAdminReq);
+  assert.equal(protectedAdminRes.status, 401, "Admin endpoints under /api/internal/* must still enforce 401 when unauthenticated");
+
+  // Route handler accepts unauthenticated visitor event POST and returns 200
+  const routeReq1 = new NextRequest("https://destinationcommandcenter.com/api/public/corridor-events", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(eventPayload),
+  });
+  const routeRes1 = await postPublicCorridorEvent(routeReq1);
+  assert.equal(routeRes1.status, 200);
+  const routeData1 = await routeRes1.json();
+  assert.equal(routeData1.ok, true);
+  assert.equal(routeData1.corridorId, "juneau");
+
+  const routeReq2 = new NextRequest("https://destinationcommandcenter.com/api/internal/corridor-events", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(eventPayload),
+  });
+  const routeRes2 = await postInternalCorridorEvent(routeReq2);
+  assert.equal(routeRes2.status, 200);
+
+  // Verify client analytics builder maps decision-interaction events
+  assert.equal(CORRIDOR_EVENT_ENDPOINT, "/api/public/corridor-events");
+  const funnelModified = buildDecisionFunnelPayload("plan_modified", {
+    surface: "juneau",
+    corridor: "juneau",
+    page: "/juneau",
+    intent: "two_activity_combo",
+    modified_field: "arrivalDock",
+  });
+  assert.ok(funnelModified);
+  assert.equal(funnelModified.corridor_id, "juneau");
+  assert.equal(funnelModified.event_name, "plan_modified");
+  assert.equal(funnelModified.fit_signal, "two_activity_combo");
+});
+
+test("8. Administrator review demonstration: evidence-backed candidate approval reaches published output in both dcc-research (dcc.answers.v1) and DCC Travel Reference / Port-Day Decision Engine", async () => {
+  const {
+    evaluatePilotTransportationAnswer,
+    filterDccAnswerForConsumer,
+    buildPilotQuestionFaqEntry,
+    inspectPortalApprovalCapability,
+  } = await import("../../../dcc-research/lib/dcc/answers/dccAnswersV1");
+  const { evaluateTravelReferenceNodePublishability } = await import("@/src/data/publication-manifest");
+  const { getTravelReferenceNode } = await import("@/lib/dcc/travelReferenceCore");
+  const {
+    DEFAULT_JUNEAU_SCENARIO_INPUT,
+    evaluateJuneauPortDayScenario,
+  } = await import("@/lib/dcc/juneauPortDayEngine");
+
+  const nowUtcIso = "2026-10-21T18:02:00Z";
+  const grayLineSha = "3d75567b7bbad0683d75567b7bbad0683d75567b7bbad0683d75567b7bbad068";
+  const grayLineFaqSha = "a1ef9012bc345678a1ef9012bc345678a1ef9012bc345678a1ef9012bc345678";
+
+  // 1. Before approval: candidate 4d242c7a31e7e6aea34b02c0 is in "Needs confirmation" (0 human-confirmed facts)
+  const unconfirmedStore: any = {
+    schema_version: "dcc.producer-input.v1",
+    authority: "dcc-research-review",
+    store_authority: "dcc-research-review",
+    cluster: "new-orleans-swamp",
+    read_at: "2026-10-21T18:01:00Z",
+    complete: true,
+    human_review_audits: {},
+    candidates: {
+      "4d242c7a31e7e6aea34b02c0": {
+        claim_id: "claim:gray-line-large-airboat:pickup-rules",
+        fact_id: "4d242c7a31e7e6aea34b02c0",
+        product_id: "gray-line-large-airboat",
+        product_name: "Large Airboat Swamp Adventure",
+        operator_name: "Gray Line New Orleans",
+        variant_id: "large-airboat-15-27-pax",
+        variant_label: "Large Airboat (15-27 passenger)",
+        booking_channel: "direct_operator_website",
+        product_mapping_verified: true,
+        claim_domain: "transportation",
+        constraint_type: "pickup_rules",
+        summary_text:
+          "Gray Line New Orleans provides round-trip transportation on its Large Airboat Swamp Adventure departing from the Gray Line Lighthouse Ticket Office at 400 Toulouse St. (Steamboat NATCHEZ dock), with Downtown/CBD hotel pickup available only for groups of 10+ arranged 24 hours in advance.",
+        prose_heading: "Gray Line New Orleans — Large Airboat Swamp Adventure",
+        prose_body:
+          "On the direct Gray Line Large Airboat page, round-trip motorcoach transportation is offered from 400 Toulouse St. in the French Quarter, while Downtown/CBD hotel pickup requires a group of 10 or more arranged at least 24 hours in advance.",
+        structured_value: "Round-trip transportation from 400 Toulouse St.; group hotel pickup for 10+ with 24h notice",
+        unit: "policy",
+        conditions: "Departing from Gray Line Lighthouse Ticket Office at 400 Toulouse St.; hotel pickup for groups of 10+ with 24h advance arrangement.",
+        transportation_offered: "Yes (round-trip motorcoach from 400 Toulouse St.)",
+        included_or_fee: "Select With Transportation fare option on direct operator page",
+        pickup_scope: "400 Toulouse St. (Steamboat NATCHEZ dock); CBD/French Quarter hotels for groups of 10+ with 24h notice",
+        temporal_bounds: {
+          valid_from: null,
+          valid_through: null,
+          requires_trip_date: false,
+        },
+        source_url: "https://www.graylineneworleans.com/swamp-tours/large-airboat-swamp-adventure/",
+        source_excerpt: "Round-trip transportation",
+        approved_revision: 1,
+        current_revision: 1,
+        approved_readable_text_sha256: grayLineSha,
+        current_readable_text_sha256: grayLineSha,
+        raw_html_sha256: null,
+        source_checked_at: "2026-10-21T18:00:00Z",
+        snapshot_expires_at: "2026-10-21T18:04:30Z",
+        source_healthy: true,
+        review_status: "Needs confirmation",
+        verified_on: null,
+        verified_by: null,
+        review_due_on: null,
+        last_review_token: null,
+        approval_origin: "hosted_portal_human_review",
+        approval_revoked_by_source_change: false,
+        companion_dependencies: {
+          e5530f35d8cf28936a19781f: {
+            fact_id: "e5530f35d8cf28936a19781f",
+            constraint_type: "meeting_point",
+            required: true,
+            product_id: "gray-line-large-airboat",
+            variant_id: "large-airboat-15-27-pax",
+            booking_channel: "direct_operator_website",
+            source_url: "https://www.graylineneworleans.com/swamp-tours/large-airboat-swamp-adventure/",
+            source_excerpt: "Gray Line Lighthouse Ticket Office at Toulouse St. Wharf (400 Toulouse St.)",
+            structured_value: "400 Toulouse St. (Steamboat NATCHEZ dock)",
+            approved_revision: 1,
+            current_revision: 1,
+            approved_readable_text_sha256: grayLineSha,
+            current_readable_text_sha256: grayLineSha,
+            source_checked_at: "2026-10-21T18:00:00Z",
+            snapshot_expires_at: "2026-10-21T18:04:30Z",
+            source_healthy: true,
+            review_status: "Needs confirmation",
+            verified_on: null,
+            verified_by: null,
+            review_due_on: null,
+            last_review_token: null,
+            approval_origin: "hosted_portal_human_review",
+            approval_revoked_by_source_change: false,
+          },
+        },
+      },
+    },
+  };
+
+  const beforeAnswer = evaluatePilotTransportationAnswer(unconfirmedStore, { nowUtcIso });
+  assert.equal(beforeAnswer.outcome, "insufficient_confirmed_evidence");
+  assert.equal(beforeAnswer.opening_claims.length, 0);
+  assert.equal(beforeAnswer.comparison_rows.length, 0);
+  assert.equal(buildPilotQuestionFaqEntry(beforeAnswer), null);
+
+  // 2. Administrator reviews primary source, sets Confirmed status + review_due_on expiry, and consumes review token
+  const approvedStore: any = structuredClone(unconfirmedStore);
+  const cand = approvedStore.candidates["4d242c7a31e7e6aea34b02c0"];
+  cand.review_status = "Confirmed";
+  cand.verified_on = "2026-10-21";
+  cand.verified_by = "dcc-editorial-review";
+  cand.review_due_on = "2026-11-20";
+  cand.last_review_token = "tok_grayline_4d242c7a31e7e6aea34b";
+
+  const dep = cand.companion_dependencies["e5530f35d8cf28936a19781f"];
+  dep.review_status = "Confirmed";
+  dep.verified_on = "2026-10-21";
+  dep.verified_by = "dcc-editorial-review";
+  dep.review_due_on = "2026-11-20";
+  dep.last_review_token = "tok_grayline_e5530f35d8cf28936a19";
+
+  approvedStore.human_review_audits = {
+    "4d242c7a31e7e6aea34b02c0": {
+      fact_id: "4d242c7a31e7e6aea34b02c0",
+      decision: "Confirmed",
+      action: "confirm",
+      human_attested: true,
+      reviewer_id: "dcc-editorial-review",
+      approved_revision: 1,
+      approved_readable_text_sha256: grayLineSha,
+      verified_on: "2026-10-21",
+      review_due_on: "2026-11-20",
+      source_opened_at: "2026-10-21T17:58:00Z",
+      reviewed_at: "2026-10-21T17:59:00Z",
+      review_token: "tok_grayline_4d242c7a31e7e6aea34b",
+      review_token_consumed: true,
+      review_token_consumed_at: "2026-10-21T17:59:00Z",
+      canonical_product_id: "gray-line-large-airboat",
+      atomic_constraint_type: "pickup_rules",
+      value: cand.structured_value,
+      source_url: cand.source_url,
+    },
+    e5530f35d8cf28936a19781f: {
+      fact_id: "e5530f35d8cf28936a19781f",
+      decision: "Confirmed",
+      action: "confirm",
+      human_attested: true,
+      reviewer_id: "dcc-editorial-review",
+      approved_revision: 1,
+      approved_readable_text_sha256: grayLineSha,
+      verified_on: "2026-10-21",
+      review_due_on: "2026-11-20",
+      source_opened_at: "2026-10-21T17:58:10Z",
+      reviewed_at: "2026-10-21T17:59:10Z",
+      review_token: "tok_grayline_e5530f35d8cf28936a19",
+      review_token_consumed: true,
+      review_token_consumed_at: "2026-10-21T17:59:10Z",
+      canonical_product_id: "gray-line-large-airboat",
+      atomic_constraint_type: "meeting_point",
+      value: dep.structured_value,
+      source_url: dep.source_url,
+    },
+  };
+
+  const capability = inspectPortalApprovalCapability(approvedStore, nowUtcIso);
+  assert.equal(capability.can_project_public_claims, true);
+  assert.equal(capability.verified_fact_count, 1);
+
+  const afterAnswer = evaluatePilotTransportationAnswer(approvedStore, { nowUtcIso });
+  const consumerFiltered = filterDccAnswerForConsumer(afterAnswer, { nowUtcIso });
+  assert.equal(consumerFiltered.outcome, "partially_supported");
+  assert.equal(consumerFiltered.opening_claims.length, 1);
+  assert.equal(consumerFiltered.opening_claims[0].fact_id, "4d242c7a31e7e6aea34b02c0");
+  assert.equal(consumerFiltered.comparison_rows.length, 1);
+  assert.equal(
+    consumerFiltered.comparison_rows[0].pickup_scope,
+    "400 Toulouse St. (Steamboat NATCHEZ dock); CBD/French Quarter hotels for groups of 10+ with 24h notice",
+  );
+  assert.ok(
+    consumerFiltered.handoffs.some((h) => h.handoff_id === "handoff:direct:gray-line-large-airboat"),
+    "Approved claim unlocks the direct operator handoff in the published answer",
+  );
+  const faqEntry = buildPilotQuestionFaqEntry(consumerFiltered);
+  assert.ok(faqEntry, "Approved claim populates FAQPage JSON-LD acceptedAnswer");
+  assert.match(faqEntry.acceptedAnswer.text, /400 Toulouse St\./);
+
+  // 3. Demonstrate DCC Travel Reference / Juneau Port-Day Decision Engine approval flow:
+  // Flagging citation jun-cbj-harbors as "stale" withdraws /juneau indexability and qualifies affected port-day options;
+  // approving the refreshed citation restores public_indexable and fits_comfortably.
+  const baseJuneau = getAllTravelReferenceNodes().find((n) => n.id === "juneau")!;
+  const staleJuneau = structuredClone(baseJuneau);
+  const dockCitation = staleJuneau.evidenceRegistry.find((c) => c.id === "jun-cbj-harbors")!;
+  dockCitation.evidenceStatusOverride = "conflicted";
+
+  const stalePub = evaluateTravelReferenceNodePublishability(staleJuneau);
+  assert.equal(stalePub[0].route, "/juneau");
+  assert.equal(stalePub[0].acceptanceState, "public_non_indexable");
+  assert.deepEqual(stalePub[0].blockingReasonCodes, [
+    "blocking_defect_unresolved",
+    "unverified_evidence_snapshot",
+  ]);
+
+  const staleScenario = evaluateJuneauPortDayScenario(DEFAULT_JUNEAU_SCENARIO_INPUT, {
+    node: staleJuneau,
+  });
+  assert.equal(staleScenario.evidenceHealth.hasWithdrawnOrConflictedClaims, true);
+  const staleWhaleOption = staleScenario.options.find(
+    (o) => o.optionId === "jun-opt-auke-bay-whale-direct",
+  )!;
+  assert.equal(staleWhaleOption.fitStatus, "withdrawn_or_qualified_evidence");
+
+  // Administrator approves refreshed source citation with updated review/expiry window
+  const approvedJuneau = structuredClone(staleJuneau);
+  const approvedDockCitation = approvedJuneau.evidenceRegistry.find((c) => c.id === "jun-cbj-harbors")!;
+  approvedDockCitation.evidenceStatusOverride = "current";
+  approvedDockCitation.lastCheckedAt = "2026-11-02";
+  approvedDockCitation.verifiedAt = "2026-11-02T15:00:00.000Z";
+
+  const approvedPub = evaluateTravelReferenceNodePublishability(approvedJuneau);
+  assert.equal(approvedPub[0].route, "/juneau");
+  assert.equal(approvedPub[0].acceptanceState, "public_indexable");
+  assert.deepEqual(approvedPub[0].blockingReasonCodes, []);
+
+  const approvedScenario = evaluateJuneauPortDayScenario(DEFAULT_JUNEAU_SCENARIO_INPUT, {
+    node: approvedJuneau,
+  });
+  assert.equal(approvedScenario.evidenceHealth.hasWithdrawnOrConflictedClaims, false);
+  const restoredWhaleOption = approvedScenario.options.find(
+    (o) => o.optionId === "jun-opt-auke-bay-whale-direct",
+  )!;
+  assert.equal(restoredWhaleOption.fitStatus, "fits_comfortably");
+  assert.equal(restoredWhaleOption.evidenceQualificationNote, null);
+});
+
+
 

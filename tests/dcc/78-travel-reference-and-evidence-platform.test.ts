@@ -149,12 +149,13 @@ test("5. Machine contracts (/scope.json, /agent.json, /llms.txt, /openapi.json) 
     "/venues/red-rocks-amphitheatre",
     "/routes/denver-breckenridge",
     "/transportation/colorado",
-    "/regions/colorado",
+    "/destinations/colorado",
     "/widget",
     "/pricing",
   ]) {
     assert.equal(INDEXABLE_SURFACE_PATHS.includes(path), true, `Expected ${path} in INDEXABLE_SURFACE_PATHS`);
   }
+  assert.equal(INDEXABLE_SURFACE_PATHS.includes("/regions/colorado"), false);
 
   assert.ok(getDecisionEnginePageByPath("/routes/denver-breckenridge"));
 });

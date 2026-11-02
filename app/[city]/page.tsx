@@ -547,7 +547,7 @@ export default async function CityHubPage({ params }: { params: Promise<Params> 
               <Link className="rounded-full border border-white/10 bg-black/30 px-4 py-2 text-xs font-black uppercase tracking-[0.16em] text-zinc-200 hover:bg-white/10" href="/mighty-argo">
                 Mighty Argo Guide
               </Link>
-              <Link className="rounded-full border border-white/10 bg-black/30 px-4 py-2 text-xs font-black uppercase tracking-[0.16em] text-zinc-200 hover:bg-white/10" href="/regions/colorado">
+              <Link className="rounded-full border border-white/10 bg-black/30 px-4 py-2 text-xs font-black uppercase tracking-[0.16em] text-zinc-200 hover:bg-white/10" href="/destinations/colorado">
                 Colorado region
               </Link>
             </div>

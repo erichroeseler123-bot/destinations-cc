@@ -98,7 +98,7 @@ export default async function RouteDecisionPage({
           <Link href="/transportation/colorado" className="hover:text-zinc-200">
             Open Colorado transportation hub →
           </Link>
-          <Link href="/regions/colorado" className="hover:text-zinc-200">
+          <Link href="/destinations/colorado" className="hover:text-zinc-200">
             Open Colorado region guide →
           </Link>
         </footer>

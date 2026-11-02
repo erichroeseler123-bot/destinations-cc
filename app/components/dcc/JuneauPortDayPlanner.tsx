@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import { trackEvent } from "@/lib/analytics";
 import type { TravelReferenceNode } from "@/lib/dcc/travelReferenceCore";
 import {
   buildJuneauScenarioQueryString,
@@ -109,13 +110,50 @@ export default function JuneauPortDayPlanner({
     [input, node]
   );
 
+  const updateScenarioField = (
+    field: string,
+    updater: (prev: JuneauPortDayScenarioInput) => JuneauPortDayScenarioInput
+  ) => {
+    setInput((prev) => {
+      const next = updater(prev);
+      trackEvent("plan_modified", {
+        surface: "juneau",
+        corridor: "juneau",
+        page: "/juneau",
+        modified_field: field,
+        arrival_dock: next.arrivalDock,
+        goal_mode: next.goalMode,
+        return_buffer_minutes: next.returnBufferMinutes,
+        intent: next.goalMode,
+      });
+      trackEvent("verdict_shown", {
+        surface: "juneau",
+        corridor: "juneau",
+        page: "/juneau",
+        modified_field: field,
+        intent: next.goalMode,
+      });
+      return next;
+    });
+  };
+
   const applyPreset = (
     preset: Partial<JuneauPortDayScenarioInput>,
     openAdvanced = false
   ) => {
-    setInput({
+    const next = {
       ...DEFAULT_JUNEAU_SCENARIO_INPUT,
       ...preset,
+    };
+    setInput(next);
+    trackEvent("plan_modified", {
+      surface: "juneau",
+      corridor: "juneau",
+      page: "/juneau",
+      modified_field: "preset",
+      arrival_dock: next.arrivalDock,
+      goal_mode: next.goalMode,
+      intent: next.goalMode,
     });
     if (openAdvanced) {
       setShowAdvancedAssumptions(true);
@@ -130,6 +168,13 @@ export default function JuneauPortDayPlanner({
     if (navigator.clipboard?.writeText) {
       navigator.clipboard.writeText(window.location.origin + nextUrl).catch(() => {});
     }
+    trackEvent("handoff_created", {
+      surface: "juneau",
+      corridor: "juneau",
+      page: "/juneau",
+      target_path: nextUrl,
+      intent: input.goalMode,
+    });
     setCopiedShareUrl(true);
     setTimeout(() => setCopiedShareUrl(false), 3000);
   };
@@ -206,7 +251,7 @@ export default function JuneauPortDayPlanner({
             onChange={(e) => {
               const rawVal = e.target.value.trim();
               if (!rawVal) {
-                setInput((prev) => ({
+                updateScenarioField("travelDate", (prev) => ({
                   ...prev,
                   travelDate: null,
                   travelMonth: 7,
@@ -214,7 +259,7 @@ export default function JuneauPortDayPlanner({
                 return;
               }
               const parsedMonth = Number(rawVal.slice(5, 7));
-              setInput((prev) => ({
+              updateScenarioField("travelDate", (prev) => ({
                 ...prev,
                 travelDate: rawVal,
                 travelMonth:
@@ -241,7 +286,7 @@ export default function JuneauPortDayPlanner({
             aria-label="Ship Arrival Time"
             value={norm.shipArrivalTime}
             onChange={(e) =>
-              setInput((prev) => ({
+              updateScenarioField("shipArrivalTime", (prev) => ({
                 ...prev,
                 shipArrivalTime: e.target.value || "08:00",
               }))
@@ -262,7 +307,7 @@ export default function JuneauPortDayPlanner({
             aria-label="All-Aboard Deadline"
             value={norm.allAboardTime}
             onChange={(e) =>
-              setInput((prev) => ({
+              updateScenarioField("allAboardTime", (prev) => ({
                 ...prev,
                 allAboardTime: e.target.value || "16:30",
               }))
@@ -282,7 +327,7 @@ export default function JuneauPortDayPlanner({
             aria-label="Cruise Berth or Arrival Mode"
             value={norm.arrivalDock}
             onChange={(e) =>
-              setInput((prev) => ({
+              updateScenarioField("arrivalDock", (prev) => ({
                 ...prev,
                 arrivalDock: e.target.value as JuneauArrivalDock,
               }))
@@ -315,7 +360,7 @@ export default function JuneauPortDayPlanner({
             aria-label="Trip Goal"
             value={norm.goalMode}
             onChange={(e) =>
-              setInput((prev) => ({
+              updateScenarioField("goalMode", (prev) => ({
                 ...prev,
                 goalMode: e.target.value as JuneauGoalMode,
               }))
@@ -419,7 +464,7 @@ export default function JuneauPortDayPlanner({
               aria-label="Return Buffer Minutes"
               value={norm.returnBufferMinutes}
               onChange={(e) =>
-                setInput((prev) => ({
+                updateScenarioField("returnBufferMinutes", (prev) => ({
                   ...prev,
                   returnBufferMinutes: Number(e.target.value),
                 }))
@@ -442,7 +487,7 @@ export default function JuneauPortDayPlanner({
               aria-label="Mobility Level"
               value={norm.mobilityLevel}
               onChange={(e) =>
-                setInput((prev) => ({
+                updateScenarioField("mobilityLevel", (prev) => ({
                   ...prev,
                   mobilityLevel: e.target.value as JuneauMobilityLevel,
                 }))
@@ -468,7 +513,7 @@ export default function JuneauPortDayPlanner({
               aria-label="Overnight Port Call"
               value={norm.overnightPortCall ? "overnight" : "same_day"}
               onChange={(e) =>
-                setInput((prev) => ({
+                updateScenarioField("overnightPortCall", (prev) => ({
                   ...prev,
                   overnightPortCall: e.target.value === "overnight",
                 }))
@@ -488,7 +533,7 @@ export default function JuneauPortDayPlanner({
               aria-label="Weather or Ceiling Condition"
               value={norm.weatherCondition}
               onChange={(e) =>
-                setInput((prev) => ({
+                updateScenarioField("weatherCondition", (prev) => ({
                   ...prev,
                   weatherCondition: e.target.value as JuneauWeatherInputState,
                 }))
@@ -524,7 +569,7 @@ export default function JuneauPortDayPlanner({
               value={norm.budgetMaxPerPersonUsd ?? ""}
               onChange={(e) => {
                 const val = e.target.value.trim();
-                setInput((prev) => ({
+                updateScenarioField("budgetMaxPerPersonUsd", (prev) => ({
                   ...prev,
                   budgetMaxPerPersonUsd:
                     val === "" ? null : Math.max(0, Number(val)),
@@ -997,6 +1042,18 @@ export default function JuneauPortDayPlanner({
                               book.url.startsWith("http")
                                 ? "noopener noreferrer"
                                 : undefined
+                            }
+                            onClick={() =>
+                              trackEvent("operator_cta_clicked", {
+                                surface: "juneau",
+                                corridor: "juneau",
+                                page: "/juneau",
+                                target_path: book.url,
+                                product_code: option.optionId,
+                                decision_option: option.fitStatus,
+                                channel_type: book.channelType,
+                                operator_name: book.operatorOrProviderName,
+                              })
                             }
                             className="mt-1.5 inline-block font-semibold text-cyan-300 underline decoration-cyan-400/50 underline-offset-4 hover:text-cyan-200"
                           >

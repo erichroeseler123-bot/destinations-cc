@@ -1,9 +1,6 @@
 import Link from "next/link";
-import RegionalHubTemplate from "@/app/components/dcc/RegionalHubTemplate";
-import {
-  getRegionalHubByStateSlug,
-  listRegionalHubs,
-} from "@/lib/dcc/regionalHubs";
+import { permanentRedirect } from "next/navigation";
+import { getRegionalHubByStateSlug } from "@/lib/dcc/regionalHubs";
 import { getEffectivePorts } from "@/lib/dcc/ports";
 import { getRegionPorts, getRegionStaticParams } from "@/lib/dcc/regions";
 
@@ -21,11 +18,10 @@ type Port = {
 export async function generateStaticParams() {
   const effectivePorts = getEffectivePorts() as Port[];
   const portRegions = getRegionStaticParams(effectivePorts);
-  const stateHubs = listRegionalHubs().map((h) => ({ region: h.slug }));
   const seen = new Set<string>();
   const combined: Array<{ region: string }> = [];
-  for (const item of [...stateHubs, ...portRegions]) {
-    if (!seen.has(item.region)) {
+  for (const item of portRegions) {
+    if (!seen.has(item.region) && !getRegionalHubByStateSlug(item.region)) {
       seen.add(item.region);
       combined.push(item);
     }
@@ -41,7 +37,7 @@ export default async function RegionPage({
   const { region } = await params;
   const hub = getRegionalHubByStateSlug(region);
   if (hub) {
-    return <RegionalHubTemplate hub={hub} routePrefix="/regions" />;
+    permanentRedirect(hub.canonicalPath);
   }
 
   const currentAreaSlug = region;

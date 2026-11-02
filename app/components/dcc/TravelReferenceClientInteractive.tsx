@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { trackEvent } from "@/lib/analytics";
 import type {
   AuthorityType,
   EntryScenarioRule,
@@ -131,7 +132,17 @@ export function EntryDependencyExplorer({
           <select
             id="entry-scenario-select"
             value={selectedId}
-            onChange={(e) => setSelectedId(e.target.value)}
+            onChange={(e) => {
+              const nextId = e.target.value;
+              setSelectedId(nextId);
+              trackEvent("plan_modified", {
+                surface: "ask-dcc",
+                corridor: "ask-dcc",
+                modified_field: "entry_scenario",
+                selected_scenario_id: nextId,
+                intent: nextId,
+              });
+            }}
             className="w-full sm:w-80 rounded-xl border border-white/15 bg-zinc-950 px-3 py-2 text-xs md:text-sm text-white focus:border-cyan-400 focus:outline-none"
           >
             <option value="all">Show All Traveler Entry & Rule Scenarios ({scenarios.length})</option>
@@ -267,6 +278,7 @@ export function SpecialistHandoffInteractive({
     customChoice?: string;
   };
 }) {
+  const corridorId = nodeId || "ask-dcc";
   const [travelDate, setTravelDate] = useState<string>(
     initialContext?.date || "",
   );
@@ -377,7 +389,18 @@ export function SpecialistHandoffInteractive({
                 id="handoff-date-input"
                 type="date"
                 value={travelDate}
-                onChange={(e) => setTravelDate(e.target.value)}
+                onChange={(e) => {
+                  const nextDate = e.target.value;
+                  setTravelDate(nextDate);
+                  trackEvent("plan_modified", {
+                    surface: corridorId,
+                    corridor: corridorId,
+                    modified_field: "travel_date",
+                    travel_date: nextDate,
+                    party_size: partySize,
+                    intent: customChoice || "date_selected",
+                  });
+                }}
                 className="w-full rounded-lg border border-white/15 bg-zinc-950 px-3 py-2 text-xs md:text-sm text-white focus:border-cyan-400 focus:outline-none"
               />
             </div>
@@ -394,7 +417,18 @@ export function SpecialistHandoffInteractive({
               <select
                 id="handoff-party-select"
                 value={partySize}
-                onChange={(e) => setPartySize(e.target.value)}
+                onChange={(e) => {
+                  const nextParty = e.target.value;
+                  setPartySize(nextParty);
+                  trackEvent("plan_modified", {
+                    surface: corridorId,
+                    corridor: corridorId,
+                    modified_field: "party_size",
+                    party_size: nextParty,
+                    travel_date: travelDate,
+                    intent: customChoice || `party_${nextParty}`,
+                  });
+                }}
                 className="w-full rounded-lg border border-white/15 bg-zinc-950 px-3 py-2 text-xs md:text-sm text-white focus:border-cyan-400 focus:outline-none"
               >
                 {[1, 2, 3, 4, 5, 6, 8, 10, 12].map((num) => (
@@ -417,7 +451,19 @@ export function SpecialistHandoffInteractive({
               <select
                 id="handoff-custom-select"
                 value={customChoice}
-                onChange={(e) => setCustomChoice(e.target.value)}
+                onChange={(e) => {
+                  const nextChoice = e.target.value;
+                  setCustomChoice(nextChoice);
+                  trackEvent("plan_modified", {
+                    surface: corridorId,
+                    corridor: corridorId,
+                    modified_field: config.contextControls.customSelectorParam || "custom_context",
+                    custom_choice: nextChoice,
+                    travel_date: travelDate,
+                    party_size: partySize,
+                    intent: nextChoice,
+                  });
+                }}
                 className="w-full rounded-lg border border-white/15 bg-zinc-950 px-3 py-2 text-xs md:text-sm text-white focus:border-cyan-400 focus:outline-none"
               >
                 {config.contextControls.customSelectorOptions.map((opt) => (
@@ -435,6 +481,27 @@ export function SpecialistHandoffInteractive({
         {config.options.map((option) => {
           const href = buildHandoffUrl(option);
           const isExternal = href.startsWith("http");
+          const handleOptionClick = () => {
+            trackEvent("operator_cta_clicked", {
+              surface: corridorId,
+              corridor: corridorId,
+              target_path: href,
+              product_code: option.id,
+              decision_option: option.partnerRole,
+              operator_name: option.partnerName,
+              travel_date: travelDate,
+              party_size: partySize,
+              custom_choice: customChoice,
+            });
+            trackEvent("cta_clicked_primary", {
+              surface: corridorId,
+              corridor: corridorId,
+              target_path: href,
+              product_code: option.id,
+              decision_option: option.partnerRole,
+              operator_name: option.partnerName,
+            });
+          };
           return (
             <article
               key={option.id}
@@ -469,6 +536,7 @@ export function SpecialistHandoffInteractive({
                     href={href}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={handleOptionClick}
                     className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-cyan-500 px-4 py-2.5 text-xs md:text-sm font-bold text-zinc-950 hover:bg-cyan-400 transition"
                   >
                     <span>Continue to {option.partnerName}</span>
@@ -477,6 +545,7 @@ export function SpecialistHandoffInteractive({
                 ) : (
                   <Link
                     href={href}
+                    onClick={handleOptionClick}
                     className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-cyan-500/40 bg-cyan-500/15 px-4 py-2.5 text-xs md:text-sm font-bold text-cyan-200 hover:bg-cyan-500/25 transition"
                   >
                     <span>Open {option.partnerName}</span>

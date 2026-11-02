@@ -3,9 +3,10 @@ import {
   appendCorridorEventDurably,
   CorridorEventPayloadSchema,
 } from "@/lib/dcc/telemetry/corridorEvents";
-import { isInternalAuthorized } from "@/lib/api/internalAuth";
 
 export const runtime = "nodejs";
+
+const MAX_EVENT_BODY_BYTES = 16_384;
 
 function withCors(response: NextResponse) {
   response.headers.set("Access-Control-Allow-Origin", "*");
@@ -19,13 +20,20 @@ export async function OPTIONS() {
 }
 
 export async function POST(request: NextRequest) {
-  if (!isInternalAuthorized(request)) {
-    return withCors(NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 }));
+  let rawText: string;
+  try {
+    rawText = await request.text();
+  } catch {
+    return withCors(NextResponse.json({ ok: false, error: "invalid_json" }, { status: 400 }));
+  }
+
+  if (Buffer.byteLength(rawText, "utf8") > MAX_EVENT_BODY_BYTES) {
+    return withCors(NextResponse.json({ ok: false, error: "payload_too_large" }, { status: 413 }));
   }
 
   let body: unknown;
   try {
-    body = await request.json();
+    body = JSON.parse(rawText);
   } catch {
     return withCors(NextResponse.json({ ok: false, error: "invalid_json" }, { status: 400 }));
   }

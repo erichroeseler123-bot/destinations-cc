@@ -388,15 +388,20 @@ export async function appendCorridorEventDurably(input: CorridorEventPayload) {
     return { ok: true as const, stored: true as const, corridorId: CRUISE_DEBUG_CORRIDOR_ID };
   }
 
-  const db = getDb();
-  if (!db) {
-    await appendCruiseDebugEvent(input);
-    return { ok: false as const, stored: false as const, reason: "no_database" };
-  }
-
   const catalog = getCorridorCatalogEntry(input.corridor_id);
   if (!catalog) {
     throw new Error(`unknown_corridor:${input.corridor_id}`);
+  }
+
+  const db = getDb();
+  if (!db) {
+    await appendCruiseDebugEvent(input);
+    return {
+      ok: true as const,
+      stored: false as const,
+      reason: "no_database",
+      corridorId: catalog.corridorId,
+    };
   }
 
   await ensureCorridorCatalogRows();

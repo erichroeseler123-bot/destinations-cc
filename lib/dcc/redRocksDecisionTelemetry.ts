@@ -1,6 +1,6 @@
 "use client";
 
-const CORRIDOR_EVENT_ENDPOINT = "/api/internal/corridor-events";
+const CORRIDOR_EVENT_ENDPOINT = "/api/public/corridor-events";
 const SESSION_KEY = "dcc_red_rocks_decision_session_v1";
 const FLOW_STATE_KEY = "dcc_red_rocks_plan_state_v1";
 const CORRIDOR_ID = "partyatredrocks";

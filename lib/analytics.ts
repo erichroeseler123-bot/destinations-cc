@@ -19,7 +19,7 @@ declare global {
 
 const LOCAL_EVENT_BUFFER_KEY = "dcc_telemetry_buffer_v1";
 const LOCAL_EVENT_BUFFER_LIMIT = 250;
-const CORRIDOR_EVENT_ENDPOINT = "/api/internal/corridor-events";
+export const CORRIDOR_EVENT_ENDPOINT = "/api/public/corridor-events";
 
 const LEGACY_DECISION_EVENT_MAP: Record<string, string> = {
   dcc_page_view: "landing_viewed",
@@ -123,7 +123,13 @@ export function isDecisionFunnelEvent(name: string) {
     mappedName === "viator_fallback_handoff" ||
     mappedName === "operator_cta_clicked" ||
     mappedName === "cta_clicked_primary" ||
-    mappedName === "booking_opened"
+    mappedName === "cta_clicked_alternative" ||
+    mappedName === "booking_opened" ||
+    mappedName === "plan_modified" ||
+    mappedName === "plan_abandoned" ||
+    mappedName === "transport_mode_selected" ||
+    mappedName === "destination_selected" ||
+    mappedName === "handoff_created"
   );
 }
 

@@ -2,7 +2,7 @@
 
 const CORRIDOR_EVENT_ENDPOINT =
   process.env.NEXT_PUBLIC_DCC_EVENT_ENDPOINT ||
-  "https://www.destinationcommandcenter.com/api/internal/corridor-events";
+  "https://www.destinationcommandcenter.com/api/public/corridor-events";
 const SESSION_KEY = "dcc_corridor_session_v1";
 
 type MappingClickEvent = {

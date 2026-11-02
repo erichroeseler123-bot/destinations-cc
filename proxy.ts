@@ -919,7 +919,12 @@ export async function proxy(request: NextRequest, event: NextFetchEvent) {
     }
   }
 
-  if (request.nextUrl.pathname.startsWith("/api/internal/")) {
+  const isPublicVisitorEventCollector =
+    (request.nextUrl.pathname === "/api/internal/corridor-events" ||
+      request.nextUrl.pathname === "/api/internal/ingest-engagement") &&
+    (request.method === "POST" || request.method === "OPTIONS");
+
+  if (request.nextUrl.pathname.startsWith("/api/internal/") && !isPublicVisitorEventCollector) {
     const auth = checkInternalApiAuthorization(request);
     if (!auth.authorized) {
       return NextResponse.json(
@@ -1084,6 +1089,17 @@ export async function proxy(request: NextRequest, event: NextFetchEvent) {
         });
       }
     }
+  }
+
+  const stateHubRegionMatch = request.nextUrl.pathname.match(
+    /^\/regions\/(colorado|alaska|louisiana|nevada|florida|montana|wisconsin|us-virgin-islands)\/?$/i,
+  );
+  if (stateHubRegionMatch) {
+    const stateSlug = stateHubRegionMatch[1].toLowerCase();
+    return NextResponse.redirect(
+      new URL(`/destinations/${stateSlug}${request.nextUrl.search}`, request.url),
+      308,
+    );
   }
 
   if (request.nextUrl.pathname === "/dashboard") {

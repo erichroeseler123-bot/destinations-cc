@@ -26,7 +26,7 @@ type CorridorEventPayload = {
 };
 
 function postCorridorEvent(payload: CorridorEventPayload) {
-  void fetch("/api/internal/corridor-events", {
+  void fetch("/api/public/corridor-events", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),

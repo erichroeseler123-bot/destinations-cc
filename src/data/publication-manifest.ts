@@ -231,7 +231,10 @@ export function evaluateTravelReferenceNodePublishability(
       "/cities/denver",
     ].filter((p) => !unmountedAliases.has(p)),
   );
-  const routes = [node.canonicalPath, ...node.aliasPaths];
+  const routes = [
+    node.canonicalPath,
+    ...node.aliasPaths.filter((p) => p !== "/regions/colorado"),
+  ];
   return routes.map((route) => {
     const routeReasons = promotedReferencePaths.has(route)
       ? reasons
@@ -708,9 +711,10 @@ function compilePublicationManifest(): readonly PublicationManifestRecord[] {
       register(
         createRecord({
           route: `/regions/${spec.stateSlug}`,
-          acceptanceState: nodesHealthyForState ? "public_indexable" : "public_non_indexable",
-          blockingReasonCodes: blockingReasons,
-          evidenceSnapshotId: snapshotId,
+          canonicalPathOverride: `/destinations/${spec.stateSlug}`,
+          acceptanceState: "withdrawn_historical",
+          blockingReasonCodes: ["withdrawn_or_superseded"],
+          evidenceSnapshotId: null,
           materialChangeDate: stateMaterialDate,
         }),
       );
