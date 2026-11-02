@@ -22,43 +22,39 @@ import {
   buildFaqJsonLd,
   buildPlaceJsonLd,
 } from "@/lib/dcc/jsonld";
-import { headers } from "next/headers";
 import LfsTrustStrip from "@/components/LfsTrustStrip";
 import DccNetworkStrip from "@/components/DccNetworkStrip";
 import { getViatorActionForPlace } from "@/lib/dcc/internal/viatorAction";
 import TravelReferenceExperience from "@/app/components/dcc/TravelReferenceExperience";
 import { getPublishedTravelReferenceNodeById } from "@/lib/dcc/travelReference";
+import { getPublicationManifestEntry } from "@/src/data/publication-manifest";
 
 const BASE_URL = "https://destinationcommandcenter.com";
+
+export const revalidate = 3600;
 
 export async function generateStaticParams() {
   return getPortSlugs().map((slug) => ({ slug }));
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}): Promise<Metadata> {
-  const resolvedParams = await params;
-  const port = getPortBySlug(resolvedParams.slug);
+function buildPortPageMetadata(slug: string, isLfse = false): Metadata {
+  const port = getPortBySlug(slug);
   if (!port) return { title: "Cruise Port" };
 
   const config = getPortAuthorityConfig(port);
   const pageTitle = config.heroTitle || `${port.name} Cruise Port`;
   const description = config.summary;
   const canonicalPath = `/ports/${port.slug}`;
-
-  const hostHeader = (await headers()).get("x-forwarded-host") || (await headers()).get("host") || "";
-  const host = hostHeader.split(":")[0];
-  const isLfse = host === "lastfrontiershoreexcursions.com" || host === "www.lastfrontiershoreexcursions.com";
-  const origin = isLfse ? "https://www.lastfrontiershoreexcursions.com" : "https://destinationcommandcenter.com";
+  const origin = isLfse ? "https://www.lastfrontiershoreexcursions.com" : BASE_URL;
+  const manifestEntry = getPublicationManifestEntry(canonicalPath);
+  const isIndexable = isLfse ? true : manifestEntry?.indexingState === "index_follow";
 
   return {
     title: pageTitle,
     description,
     metadataBase: new URL(origin),
-    alternates: { canonical: canonicalPath },
+    alternates: { canonical: isLfse ? `${origin}${canonicalPath}` : manifestEntry?.canonicalUrl || `${origin}${canonicalPath}` },
+    robots: { index: isIndexable, follow: isIndexable },
     applicationName: isLfse ? "Last Frontier Shore Excursions" : "Destination Command Center",
     openGraph: {
       siteName: isLfse ? "Last Frontier Shore Excursions" : "Destination Command Center",
@@ -77,18 +73,18 @@ export async function generateMetadata({
   };
 }
 
-export default async function PortPage({
+export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug: string }>;
-}) {
+}): Promise<Metadata> {
   const resolvedParams = await params;
-  const port = getPortBySlug(resolvedParams.slug);
-  if (!port) notFound();
+  return buildPortPageMetadata(resolvedParams.slug, false);
+}
 
-  const hostHeader = (await headers()).get("x-forwarded-host") || (await headers()).get("host") || "";
-  const host = hostHeader.split(":")[0];
-  const isLfse = host === "lastfrontiershoreexcursions.com" || host === "www.lastfrontiershoreexcursions.com";
+async function renderPortPage(slug: string, isLfse = false) {
+  const port = getPortBySlug(slug);
+  if (!port) notFound();
 
   const config = getPortAuthorityConfig(port);
   const nearbyAirports = getAirportsByPortSlug(port.slug);
@@ -99,6 +95,7 @@ export default async function PortPage({
     if (!allowedLfseSlugs.has(port.slug)) {
       notFound();
     }
+
 
     // Fetch real Viator tours for this port
     let tours: any[] = [];
@@ -474,4 +471,13 @@ export default async function PortPage({
       {port.slug === "juneau" ? <Next48Button entityType="port" slug="juneau" /> : null}
     </>
   );
+}
+
+export default async function PortPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  return renderPortPage(slug, false);
 }

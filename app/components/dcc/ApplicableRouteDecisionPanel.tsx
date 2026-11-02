@@ -1,0 +1,354 @@
+"use client";
+
+import { useState } from "react";
+import type { CompiledApplicableDecisionOutcome } from "@/lib/dcc/applicability";
+
+export interface InitialOpaqueAttribution {
+  clickId: string;
+  outboundPartnerUrl: string;
+  recommendedOperatorId: string;
+  recommendedOperatorName: string | null;
+}
+
+interface ApplicableRouteDecisionPanelProps {
+  initialOutcome: CompiledApplicableDecisionOutcome;
+  initialOpaqueAttribution: InitialOpaqueAttribution;
+  basePartnerDestinationUrl: string;
+}
+
+export default function ApplicableRouteDecisionPanel({
+  initialOutcome,
+  initialOpaqueAttribution,
+  basePartnerDestinationUrl,
+}: ApplicableRouteDecisionPanelProps) {
+  const [outcome, setOutcome] =
+    useState<CompiledApplicableDecisionOutcome>(initialOutcome);
+  const [opaqueAttribution, setOpaqueAttribution] =
+    useState<InitialOpaqueAttribution>(initialOpaqueAttribution);
+  const [passengerCount, setPassengerCount] = useState<number>(
+    initialOutcome.normalizedInputs.passengerCount,
+  );
+  const [standardBagCount, setStandardBagCount] = useState<number>(
+    initialOutcome.normalizedInputs.standardBagCount,
+  );
+  const [skiOrOversizeBagCount, setSkiOrOversizeBagCount] = useState<number>(
+    initialOutcome.normalizedInputs.skiOrOversizeBagCount,
+  );
+  const [vailPassChainLawActive, setVailPassChainLawActive] = useState<boolean>(
+    Boolean(
+      initialOutcome.normalizedInputs.activeSegmentConditions
+        .vailPassChainLawActive,
+    ),
+  );
+  const [i70TractionLawActive, setI70TractionLawActive] = useState<boolean>(
+    Boolean(
+      initialOutcome.normalizedInputs.activeSegmentConditions
+        .i70TractionLawActive,
+    ),
+  );
+  const [isCompiling, setIsCompiling] = useState<boolean>(false);
+
+  async function recompileOnServer(nextParams: {
+    passengerCount: number;
+    standardBagCount: number;
+    skiOrOversizeBagCount: number;
+    vailPassChainLawActive: boolean;
+    i70TractionLawActive: boolean;
+  }) {
+    setIsCompiling(true);
+    try {
+      const res = await fetch("/api/v1/applicability/evaluate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          corridorId: outcome.corridorId,
+          travelDate: outcome.normalizedInputs.travelDate,
+          passengerCount: nextParams.passengerCount,
+          standardBagCount: nextParams.standardBagCount,
+          skiOrOversizeBagCount: nextParams.skiOrOversizeBagCount,
+          partnerDestinationUrl: basePartnerDestinationUrl,
+          partnerNetwork: "direct",
+          activeSegmentConditions: {
+            vailPassChainLawActive: nextParams.vailPassChainLawActive,
+            i70TractionLawActive: nextParams.i70TractionLawActive,
+          },
+        }),
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.ok && data.outcome && data.opaqueAttribution) {
+        setOutcome(data.outcome);
+        setOpaqueAttribution(data.opaqueAttribution);
+      }
+    } finally {
+      setIsCompiling(false);
+    }
+  }
+
+  return (
+    <section
+      aria-label="Deterministic Context & Applicability Compiler"
+      className="rounded-3xl border border-cyan-400/25 bg-slate-950/90 p-6 md:p-8 shadow-[0_20px_60px_rgba(0,0,0,0.45)]"
+      data-testid="applicable-route-decision-panel"
+      data-model-version={outcome.modelVersion}
+      data-compiler-version={outcome.compilerVersion}
+      data-evidence-version={outcome.evidenceVersion}
+      data-opaque-click-id={opaqueAttribution.clickId}
+    >
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
+        <div>
+          <p className="text-xs uppercase tracking-[0.24em] text-cyan-300 font-semibold">
+            Context &amp; Applicability Engine · Server-Compiled Decision
+          </p>
+          <h2 className="mt-1 text-xl md:text-2xl font-black text-white">
+            Segment, Cargo &amp; Seasonal Regulation Outcome
+          </h2>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 text-[11px] font-mono text-slate-300">
+          <span className="rounded-full border border-white/15 bg-white/[0.04] px-2.5 py-1">
+            {outcome.modelVersion}
+          </span>
+          <span className="rounded-full border border-cyan-400/30 bg-cyan-500/10 px-2.5 py-1 text-cyan-200">
+            click_id: {opaqueAttribution.clickId}
+          </span>
+        </div>
+      </div>
+
+      {/* Trip Constraint Inputs sent to Deterministic Backend Compiler */}
+      <div className="mt-5 grid gap-4 md:grid-cols-5 rounded-2xl border border-white/10 bg-white/[0.02] p-4">
+        <label className="block text-xs text-slate-300">
+          <span className="font-semibold uppercase tracking-wider text-slate-400">
+            Passengers
+          </span>
+          <input
+            type="number"
+            min={1}
+            max={14}
+            value={passengerCount}
+            onChange={(e) => {
+              const next = Math.max(1, Math.min(14, Number(e.target.value) || 1));
+              setPassengerCount(next);
+              void recompileOnServer({
+                passengerCount: next,
+                standardBagCount,
+                skiOrOversizeBagCount,
+                vailPassChainLawActive,
+                i70TractionLawActive,
+              });
+            }}
+            className="mt-1.5 w-full rounded-lg border border-white/15 bg-slate-900 px-3 py-1.5 text-sm font-semibold text-white"
+          />
+        </label>
+
+        <label className="block text-xs text-slate-300">
+          <span className="font-semibold uppercase tracking-wider text-slate-400">
+            Standard Bags
+          </span>
+          <input
+            type="number"
+            min={0}
+            max={20}
+            value={standardBagCount}
+            onChange={(e) => {
+              const next = Math.max(0, Math.min(20, Number(e.target.value) || 0));
+              setStandardBagCount(next);
+              void recompileOnServer({
+                passengerCount,
+                standardBagCount: next,
+                skiOrOversizeBagCount,
+                vailPassChainLawActive,
+                i70TractionLawActive,
+              });
+            }}
+            className="mt-1.5 w-full rounded-lg border border-white/15 bg-slate-900 px-3 py-1.5 text-sm font-semibold text-white"
+          />
+        </label>
+
+        <label className="block text-xs text-slate-300">
+          <span className="font-semibold uppercase tracking-wider text-slate-400">
+            Ski / Snowboard Bags
+          </span>
+          <input
+            type="number"
+            min={0}
+            max={14}
+            value={skiOrOversizeBagCount}
+            onChange={(e) => {
+              const next = Math.max(0, Math.min(14, Number(e.target.value) || 0));
+              setSkiOrOversizeBagCount(next);
+              void recompileOnServer({
+                passengerCount,
+                standardBagCount,
+                skiOrOversizeBagCount: next,
+                vailPassChainLawActive,
+                i70TractionLawActive,
+              });
+            }}
+            className="mt-1.5 w-full rounded-lg border border-white/15 bg-slate-900 px-3 py-1.5 text-sm font-semibold text-white"
+          />
+        </label>
+
+        <label className="flex items-center gap-2.5 text-xs text-slate-200 pt-4">
+          <input
+            type="checkbox"
+            checked={i70TractionLawActive}
+            onChange={(e) => {
+              const next = e.target.checked;
+              setI70TractionLawActive(next);
+              void recompileOnServer({
+                passengerCount,
+                standardBagCount,
+                skiOrOversizeBagCount,
+                vailPassChainLawActive,
+                i70TractionLawActive: next,
+              });
+            }}
+            className="h-4 w-4 rounded border-white/20 bg-slate-900 text-cyan-400"
+          />
+          <span>I-70 Traction Law (Code 15)</span>
+        </label>
+
+        <label className="flex items-center gap-2.5 text-xs text-amber-200 pt-4">
+          <input
+            type="checkbox"
+            checked={vailPassChainLawActive}
+            onChange={(e) => {
+              const next = e.target.checked;
+              setVailPassChainLawActive(next);
+              void recompileOnServer({
+                passengerCount,
+                standardBagCount,
+                skiOrOversizeBagCount,
+                vailPassChainLawActive: next,
+                i70TractionLawActive,
+              });
+            }}
+            className="h-4 w-4 rounded border-amber-400/40 bg-slate-900 text-amber-400"
+          />
+          <span className="font-semibold">Vail Pass Chain Law (Code 16/18)</span>
+        </label>
+      </div>
+
+      {/* Strictly Rendered Server-Compiled Outcome Summary */}
+      <div className="mt-5 rounded-2xl border border-cyan-400/20 bg-cyan-950/20 p-5">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <span className="text-xs font-bold uppercase tracking-wider text-cyan-300">
+            Compiled Decision Outcome {isCompiling ? "(Recompiling...)" : ""}
+          </span>
+          <span className="text-xs font-mono text-slate-400">
+            Total Bags: {outcome.normalizedInputs.totalBagCount}
+          </span>
+        </div>
+        <p
+          className="mt-2 text-sm md:text-base leading-relaxed text-slate-100 font-medium"
+          data-testid="compiled-decision-summary"
+        >
+          {outcome.compiledDecisionSummary.headline}
+        </p>
+        <p className="mt-2 text-xs leading-relaxed text-slate-300">
+          {outcome.compiledDecisionSummary.baggageEnvelopeResolution}
+        </p>
+        <p className="mt-1 text-xs leading-relaxed text-cyan-200">
+          {outcome.compiledDecisionSummary.pricingDisposition}
+        </p>
+      </div>
+
+      {/* Strictly Rendered Geographic Segment Constraints */}
+      <div className="mt-5 grid gap-3 md:grid-cols-2">
+        {outcome.compiledSegmentConstraints.map((seg) => (
+          <div
+            key={seg.segmentId}
+            className={`rounded-2xl border p-4 ${
+              seg.compiledSegmentStatus === "active_chain_law_enforcement"
+                ? "border-amber-400/35 bg-amber-500/10"
+                : seg.compiledSegmentStatus === "active_traction_law"
+                  ? "border-cyan-400/25 bg-white/[0.03]"
+                  : "border-white/10 bg-white/[0.02]"
+            }`}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="text-sm font-bold text-white">{seg.segmentName}</h3>
+              <span className="rounded-full border border-white/15 px-2 py-0.5 text-[10px] font-mono uppercase text-slate-300">
+                {seg.compiledSegmentStatus}
+              </span>
+            </div>
+            <ul className="mt-2 space-y-1 text-xs leading-relaxed text-slate-200">
+              {seg.compiledDirectives.map((directive, idx) => (
+                <li key={idx}>• {directive}</li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+
+      {/* Strictly Rendered Vehicle Class Evaluations */}
+      <div className="mt-5 grid gap-3 md:grid-cols-2">
+        {outcome.vehicleClassEvaluations.map((veh) => (
+          <div
+            key={veh.vehicleClassId}
+            className={`rounded-2xl border p-4 ${
+              veh.vehicleClassId === outcome.recommendedVehicleClassId
+                ? "border-emerald-400/40 bg-emerald-500/10"
+                : veh.disposition === "ineligible"
+                  ? "border-rose-400/25 bg-rose-950/20 opacity-85"
+                  : "border-white/10 bg-white/[0.02]"
+            }`}
+          >
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="text-sm font-bold text-white">
+                {veh.displayName}
+              </span>
+              <span
+                className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase ${
+                  veh.disposition === "recommended"
+                    ? "bg-emerald-400/20 text-emerald-200"
+                    : veh.disposition === "ineligible"
+                      ? "bg-rose-500/20 text-rose-200"
+                      : "bg-amber-400/20 text-amber-200"
+                }`}
+              >
+                {veh.disposition}
+              </span>
+            </div>
+            <p className="mt-2 text-xs leading-relaxed text-slate-200">
+              {veh.compiledReason}
+            </p>
+            <p className="mt-1 text-[11px] text-slate-400">
+              {veh.pricingResolution.compiledPricingNote}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      {/* Outbound Partner Link with Opaque click_id (Never Exposing Receipt ID) */}
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-5">
+        <div className="text-xs text-slate-400 space-y-1">
+          <p>
+            Recommended Operator:{" "}
+            <strong className="text-slate-200">
+              {opaqueAttribution.recommendedOperatorName ??
+                opaqueAttribution.recommendedOperatorId}
+            </strong>
+          </p>
+          <p className="font-mono text-[11px] text-slate-400">
+            Outbound attribution uses opaque{" "}
+            <code className="text-cyan-300">
+              click_id={opaqueAttribution.clickId}
+            </code>{" "}
+            (decision receipt kept internal to DCC ledger).
+          </p>
+        </div>
+
+        <a
+          href={opaqueAttribution.outboundPartnerUrl}
+          data-testid="opaque-partner-booking-link"
+          data-click-id={opaqueAttribution.clickId}
+          rel="sponsored noopener noreferrer"
+          className="inline-flex items-center justify-center rounded-2xl bg-cyan-400 px-5 py-3 text-sm font-black uppercase tracking-[0.14em] text-slate-950 transition hover:bg-cyan-300"
+        >
+          Book Compiled Vehicle Class →
+        </a>
+      </div>
+    </section>
+  );
+}

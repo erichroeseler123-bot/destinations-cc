@@ -134,6 +134,8 @@ export default function SiteFooter() {
           <div className="dcc-site-footer__legal-links">
             <Link href="/operators">For tour operators</Link>
             <span className="dcc-site-footer__divider">/</span>
+            <Link href="/affiliate-disclosure">Affiliate Disclosure</Link>
+            <span className="dcc-site-footer__divider">/</span>
             <Link href="/privacy">Privacy</Link>
             <span className="dcc-site-footer__divider">/</span>
             <Link href="/terms">Terms of Service</Link>

@@ -8,12 +8,17 @@ import LiveIntelligencePanel from "./components/LiveIntelligencePanel";
 import DailyBriefSignup from "./components/DailyBriefSignup";
 import { STOREFRONT_PRODUCTS } from "./tours/pageConfig";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export const metadata = {
   title: "New Orleans, Louisiana Travel Reference, Port Logistics & Bayou Guide | Destination Command Center",
   description:
     "Comprehensive New Orleans travel reference combining French Quarter & river port geography, MSY airport & streetcar logistics, Port NOLA WHTI entry rules, live NWS/NOAA conditions, and bayou/plantation specialist handoffs.",
+  alternates: {
+    canonical: "https://destinationcommandcenter.com/new-orleans",
+  },
+  robots: { index: true, follow: true },
+
   openGraph: {
     title: "New Orleans Travel Reference & Local Planning Hub | Destination Command Center",
     description:

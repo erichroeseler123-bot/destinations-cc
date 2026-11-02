@@ -1,11 +1,19 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { getPublicationManifestEntry } from "@/src/data/publication-manifest";
 import AskDccClient from "./AskDccClient";
+
+const manifestEntry = getPublicationManifestEntry("/ask");
+const isIndexable = manifestEntry?.indexingState === "index_follow";
 
 export const metadata: Metadata = {
   title: "Ask DCC | Travel Decision Assistant",
   description: "Ask Destination Command Center a travel decision question. DCC searches its published research graph first, then routes to the right specialist only when the decision is clear.",
-  alternates: { canonical: "https://destinationcommandcenter.com/ask" },
+  alternates: { canonical: manifestEntry?.canonicalUrl || "https://destinationcommandcenter.com/ask" },
+  robots: {
+    index: isIndexable,
+    follow: isIndexable,
+  },
 };
 
 export default function AskDccPage() {

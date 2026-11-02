@@ -23,9 +23,10 @@ test("the swamp indexing repair does not open utility, unknown, or unpromoted ro
   }
 });
 
-test("the indexability allowlist stays unique and preserves existing public surfaces", () => {
+test("the indexability allowlist stays unique, preserves named public surfaces, and excludes raw coordinate URLs", () => {
   assert.equal(new Set(INDEXABLE_SURFACE_PATHS).size, INDEXABLE_SURFACE_PATHS.length);
-  for (const path of ["/", "/about", "/developers", "/juneau", "/new-orleans", "/location/29.95110/-90.07150"]) {
-    assert.equal(isIndexableSurfacePath(path), true);
+  for (const path of ["/", "/about", "/developers", "/juneau", "/new-orleans", "/red-rocks", "/vegas"]) {
+    assert.equal(isIndexableSurfacePath(path), true, `${path} should be indexable`);
   }
+  assert.equal(isIndexableSurfacePath("/location/29.95110/-90.07150"), false);
 });

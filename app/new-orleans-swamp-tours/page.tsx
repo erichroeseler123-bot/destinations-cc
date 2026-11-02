@@ -13,11 +13,15 @@ const DECISIONS = [
   ["Worth it?", "Does the swamp deserve a major block of the trip?", "/guides/is-a-new-orleans-swamp-tour-worth-it"],
 ] as const;
 
+export const revalidate = 3600;
+
 export const metadata: Metadata = {
   title: "New Orleans Swamp Tour Decision Guide | DCC",
   description: "Decide whether to go, which ride style fits, how transportation changes the day, and when to go before comparing bookable swamp tours.",
   alternates: { canonical: "https://destinationcommandcenter.com/new-orleans-swamp-tours" },
+  robots: { index: true, follow: true },
 };
+
 
 export default function NewOrleansSwampDecisionCenter() {
   const jsonLd = {

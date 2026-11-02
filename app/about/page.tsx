@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { DCC_CAPABILITY_TRUTH_MATRIX, listTravelReferenceNodes } from "@/lib/dcc/travelReference";
 
+export const revalidate = 3600;
+
 export const metadata: Metadata = {
   title: "About Destination Command Center | Travel Reference & Capability Truth Matrix",
   description:

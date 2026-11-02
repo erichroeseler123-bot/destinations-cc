@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import FactualErrorReportForm from "@/app/components/dcc/FactualErrorReportForm";
 
+export const revalidate = 3600;
+
 export const metadata: Metadata = {
   title: "Contact & Factual Corrections | Destination Command Center",
   description: "Report factual discrepancies, outdated schedules, or broken citations to Destination Command Center.",
   alternates: { canonical: "/contact" },
+  robots: { index: false, follow: false },
 };
 
 export default function ContactPage() {

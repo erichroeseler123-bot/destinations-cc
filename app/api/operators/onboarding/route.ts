@@ -8,19 +8,10 @@ import {
   getOperatorOnboardingApplicationById,
   listOperatorOnboardingReviewQueue,
   submitOperatorOnboardingApplication,
-  validateOperatorOnboardingApplication,
   type OperatorReviewQueueState,
 } from "@/lib/dcc/operatorOnboardingStore";
 
 export const dynamic = "force-dynamic";
-
-export {
-  validateOperatorOnboardingApplication,
-  submitOperatorOnboardingApplication,
-  getOperatorOnboardingApplicationById,
-  listOperatorOnboardingReviewQueue,
-  deleteOperatorOnboardingApplicationById,
-};
 
 export async function POST(req: NextRequest) {
   try {

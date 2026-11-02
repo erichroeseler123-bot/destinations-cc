@@ -113,6 +113,7 @@ export async function GET(request: Request) {
       {
         ok: true,
         handoff_id: handoff.handoffId,
+        click_id: handoff.clickId,
         handoff,
         redirectTarget: handoff.outboundAffiliateUrl,
         traceparent,
@@ -123,6 +124,7 @@ export async function GET(request: Request) {
           "Cache-Control": "no-store",
           traceparent,
           "X-DCC-Handoff-Id": handoff.handoffId,
+          "X-DCC-Click-Id": handoff.clickId,
           "X-DCC-Provider": handoff.provider,
           "X-DCC-Provider-Account": handoff.providerAccount,
         },
@@ -136,6 +138,7 @@ export async function GET(request: Request) {
       "Cache-Control": "no-store",
       traceparent,
       "X-DCC-Handoff-Id": handoff.handoffId,
+      "X-DCC-Click-Id": handoff.clickId,
       "X-DCC-Provider": handoff.provider,
       "X-DCC-Provider-Account": handoff.providerAccount,
     },

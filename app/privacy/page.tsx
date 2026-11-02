@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+export const revalidate = 3600;
+
 export const metadata: Metadata = {
   title: "Privacy Policy | Destination Command Center",
   description:
     "Privacy policy for Destination Command Center, including how trip-planning, routing, analytics, and handoff data are handled.",
   alternates: { canonical: "/privacy" },
+  robots: { index: false, follow: false },
 };
 
 export default function PrivacyPage() {

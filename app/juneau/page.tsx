@@ -15,13 +15,14 @@ import {
 
 const PAGE_PATH = "/juneau";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: "Juneau, Alaska Travel Reference, Port Logistics & Shore Excursion Guide | Destination Command Center",
   description:
     "Comprehensive Juneau travel reference combining history, geography, air/ferry/cruise access, 6-factor entry rules, live NOAA/NWS/FAA conditions, operational safety boundaries, and shore excursion decisions.",
-  alternates: { canonical: PAGE_PATH },
+  alternates: { canonical: "https://destinationcommandcenter.com/juneau" },
+  robots: { index: true, follow: true },
   openGraph: {
     title: "Juneau, Alaska Travel Reference & Port Decision Hub | Destination Command Center",
     description:
@@ -66,14 +67,7 @@ function JsonLdGraph() {
   );
 }
 
-export default async function JuneauCommercialHubPage({
-  searchParams,
-}: {
-  searchParams?:
-    | Promise<Record<string, string | string[] | undefined>>
-    | Record<string, string | string[] | undefined>;
-} = {}) {
-  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+export default async function JuneauCommercialHubPage() {
   const juneauReference = await getPublishedTravelReferenceNodeById("juneau");
 
   return (
@@ -83,10 +77,10 @@ export default async function JuneauCommercialHubPage({
         {juneauReference ? (
           <TravelReferenceExperience
             node={juneauReference}
-            initialSearchParams={resolvedSearchParams}
           />
         ) : null}
       </div>
+
 
       <section className="mx-auto max-w-7xl px-6 pb-16">
         <div className="rounded-[1.8rem] border border-white/10 bg-black/[0.24] p-6">

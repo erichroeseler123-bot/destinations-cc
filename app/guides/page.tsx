@@ -5,12 +5,16 @@ import { DECISION_CATEGORIES, guidesForCategory } from "@/src/data/decision-taxo
 
 const ORIGIN = "https://destinationcommandcenter.com";
 
+export const revalidate = 3600;
+
 export const metadata: Metadata = {
   title: "Travel Decision Guides | Destination Command Center",
   description:
     "Practical pre-purchase travel guides organized into connected research lanes for cruise ports, tours, transportation, Alaska, New Orleans, Colorado, Red Rocks, and more.",
   alternates: { canonical: `${ORIGIN}/guides` },
+  robots: { index: true, follow: true },
 };
+
 
 export default function GuidesPage() {
   const jsonLd = {

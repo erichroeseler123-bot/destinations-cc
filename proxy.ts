@@ -6,6 +6,7 @@ import {
 import { SOMERSET_BASE_PATH, SOMERSET_PAGE_PATHS } from "@/lib/dcc/corridors/somersetPages";
 import { getEdgeSignalMapForSubjects } from "@/lib/dcc/routing/edge-signals";
 import { isIndexableSurfacePath } from "@/src/data/indexable-surface";
+import { getPublicationManifestEntry } from "@/src/data/publication-manifest";
 import { verifyServiceRequestHeaders } from "@/lib/dcc/auth/hmac-service-auth";
 import { redeemContext, type DccContextReplayPolicy } from "@/lib/dcc/context/service";
 import {
@@ -61,8 +62,35 @@ const LFSE_HOSTS = new Set([
   "www.lastfrontiershoreexcursions.com",
 ]);
 
+const JFD_HOSTS = new Set([
+  "juneauflightdeck.com",
+  "www.juneauflightdeck.com",
+]);
+
+const DELLS_HOSTS = new Set([
+  "welcometothedells.com",
+  "www.welcometothedells.com",
+]);
+
+const SAVE_ON_THE_STRIP_HOSTS = new Set([
+  "saveonthestrip.com",
+  "www.saveonthestrip.com",
+]);
+
+export function resolveTenantFromHost(rawHost: string): string | null {
+  const host = rawHost.split(":")[0].toLowerCase();
+  if (SOMERSET_HOSTS.has(host)) return "somerset";
+  if (WTONOT_HOSTS.has(host)) return "wtonot";
+  if (LFSE_HOSTS.has(host)) return "lfse";
+  if (JFD_HOSTS.has(host)) return "juneauflightdeck";
+  if (DELLS_HOSTS.has(host)) return "welcometothedells";
+  if (SAVE_ON_THE_STRIP_HOSTS.has(host)) return "saveonthestrip";
+  return null;
+}
+
 const WTONOT_ROOT_PATH = "/new-orleans/tours";
 const WTONOT_BRAND_SHELL_HEADER = "x-dcc-brand-shell";
+
 
 const SOMERSET_HOST_PATH_REWRITES = new Map<string, string>(
   SOMERSET_PAGE_PATHS.map((pathname) => [
@@ -330,7 +358,7 @@ function getLfseHostRewrite(request: NextRequest) {
     return url;
   }
 
-  // Allowed core Alaska cruise ports only (Juneau, Skagway, Ketchikan)
+  // Allowed core Alaska cruise ports only (Juneau, Skagway, Ketchikan) -> rewrite to static tenant route group
   const allowedPorts = new Set([
     "juneau",
     "skagway",
@@ -340,6 +368,7 @@ function getLfseHostRewrite(request: NextRequest) {
   if (pathname.startsWith("/ports/")) {
     const slug = pathname.slice(7);
     if (allowedPorts.has(slug)) {
+      url.pathname = `/t/lfse/ports/${slug}`;
       return url;
     }
   }
@@ -347,6 +376,90 @@ function getLfseHostRewrite(request: NextRequest) {
   // Block all other DCC/admin/operator pages on LFSE domain by rewriting to /not-found
   url.pathname = "/not-found";
   return url;
+}
+
+export function handleJfdHost(request: NextRequest) {
+  const hostHeader = request.headers.get("x-forwarded-host") || request.nextUrl.hostname;
+  const host = hostHeader.split(":")[0].toLowerCase();
+  if (!JFD_HOSTS.has(host)) return null;
+
+  const pathname = request.nextUrl.pathname;
+  if (
+    pathname.startsWith("/_next/") ||
+    pathname.startsWith("/images/") ||
+    pathname.startsWith("/api/") ||
+    pathname.startsWith("/.well-known/") ||
+    pathname === "/favicon.ico" ||
+    pathname === "/sitemap.xml" ||
+    pathname === "/robots.txt"
+  ) {
+    return null;
+  }
+
+  const url = request.nextUrl.clone();
+  if (pathname === "/") {
+    url.pathname = "/juneau-flight-deck";
+    const response = NextResponse.rewrite(url);
+    response.headers.set("x-robots-tag", "index, follow");
+    return response;
+  }
+  if (pathname === "/helicopter" || pathname === "/juneau/helicopter") {
+    url.pathname = "/juneau-flight-deck/helicopter";
+    const response = NextResponse.rewrite(url);
+    response.headers.set("x-robots-tag", "index, follow");
+    return response;
+  }
+  if (pathname === "/juneau-flight-deck" || pathname.startsWith("/juneau-flight-deck/")) {
+    return null;
+  }
+  return NextResponse.redirect(new URL("/", request.url), 308);
+}
+
+export function handleDellsHost(request: NextRequest) {
+  const hostHeader = request.headers.get("x-forwarded-host") || request.nextUrl.hostname;
+  const host = hostHeader.split(":")[0].toLowerCase();
+  if (!DELLS_HOSTS.has(host)) return null;
+
+  const pathname = request.nextUrl.pathname;
+  if (
+    pathname.startsWith("/_next/") ||
+    pathname.startsWith("/images/") ||
+    pathname.startsWith("/api/") ||
+    pathname.startsWith("/.well-known/") ||
+    pathname === "/favicon.ico" ||
+    pathname === "/sitemap.xml" ||
+    pathname === "/robots.txt"
+  ) {
+    return null;
+  }
+
+  const url = request.nextUrl.clone();
+  if (pathname === "/") {
+    url.pathname = "/wisconsin-dells-brand";
+    const response = NextResponse.rewrite(url);
+    response.headers.set("x-robots-tag", "index, follow");
+    return response;
+  }
+  if (pathname === "/wisconsin-dells-brand") {
+    return null;
+  }
+  return NextResponse.redirect(new URL("/", request.url), 308);
+}
+
+export function getTenantRouteGroupRewrite(request: NextRequest) {
+  const explicitTenant = request.headers.get("x-dcc-tenant")?.trim().toLowerCase();
+  const hostHeader = request.headers.get("x-forwarded-host") || request.nextUrl.hostname;
+  const tenant = explicitTenant || resolveTenantFromHost(hostHeader);
+  if (!tenant) return null;
+
+  const pathname = request.nextUrl.pathname;
+  const guideMatch = pathname.match(/^\/guides\/([^/]+)$/);
+  if (guideMatch) {
+    const url = request.nextUrl.clone();
+    url.pathname = `/t/${tenant}/guides/${guideMatch[1]}`;
+    return url;
+  }
+  return null;
 }
 
 function getLfseBrandShellHeaders(request: NextRequest) {
@@ -364,6 +477,8 @@ function getWtonotBrandShellHeaders(request: NextRequest) {
 function isDocumentPath(pathname: string) {
   if (pathname.startsWith("/_next/")) return false;
   if (pathname.startsWith("/api/")) return false;
+  if (pathname.startsWith("/location/")) return true;
+
   if (pathname.includes(".")) return false;
   return true;
 }
@@ -372,7 +487,20 @@ export function getGovernedRobotsTag(pathname: string) {
   if (!isDocumentPath(pathname)) return null;
   if (pathname.startsWith("/go/")) return null;
   if (SOMERSET_INDEXABLE_PATHS.has(pathname)) return "index, follow";
+  const manifestEntry = getPublicationManifestEntry(pathname);
+  if (manifestEntry) return manifestEntry.robotsTag;
   return isIndexableSurfacePath(pathname) ? "index, follow" : "noindex, nofollow";
+}
+
+export function isInternalCanaryPath(pathname: string): boolean {
+  if (pathname === "/admin/unlock" || pathname === "/admin/logout") return false;
+  const manifestEntry = getPublicationManifestEntry(pathname);
+  if (manifestEntry?.acceptanceState === "internal_canary") return true;
+  if (pathname === "/admin" || pathname.startsWith("/admin/")) return true;
+  if (pathname === "/dashboard" || pathname.startsWith("/dashboard/")) return true;
+  if (pathname === "/internal" || pathname.startsWith("/internal/")) return true;
+  if (pathname === "/map" || pathname === "/command" || pathname === "/governance") return true;
+  return false;
 }
 
 function readBearerToken(request: NextRequest): string {
@@ -828,71 +956,19 @@ export async function proxy(request: NextRequest, event: NextFetchEvent) {
     }
   }
 
-  if (request.nextUrl.pathname === "/dashboard") {
-    return NextResponse.redirect(new URL("/internal/dashboard", request.url), 307);
-  }
-  if (request.nextUrl.pathname.startsWith("/dashboard/")) {
-    const relativePath = request.nextUrl.pathname.slice(11);
-    return NextResponse.redirect(new URL(`/internal/dashboard/${relativePath}${request.nextUrl.search}`, request.url), 307);
-  }
-
-  if (
-    request.nextUrl.pathname === "/internal/dashboard" ||
-    request.nextUrl.pathname.startsWith("/internal/dashboard/")
-  ) {
-    const isServerActionPost =
-      request.method.toUpperCase() === "POST" && request.headers.has("next-action");
-    if (!isServerActionPost) {
-      const auth = checkInternalApiAuthorization(request);
-      if (!auth.authorized) {
-        const safeNext = request.nextUrl.pathname.startsWith("/internal/dashboard")
-          ? request.nextUrl.pathname
-          : "/internal/dashboard";
-        const unlockHtml = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="robots" content="noindex, nofollow" />
-  <title>EarthOS Mission Control — Operator Unlock Required</title>
-  <style>
-    body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; background: #09090b; color: #fafafa; display: flex; min-height: 100vh; align-items: center; justify-content: center; }
-    .card { max-width: 440px; width: 100%; margin: 24px; padding: 32px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.12); background: rgba(24,24,27,0.92); box-shadow: 0 24px 60px rgba(0,0,0,0.5); }
-    .kicker { font-size: 11px; font-weight: 800; letter-spacing: 0.24em; text-transform: uppercase; color: #f5c66c; }
-    h1 { margin: 12px 0 8px; font-size: 26px; font-weight: 900; letter-spacing: -0.02em; }
-    p { margin: 0 0 20px; font-size: 14px; line-height: 1.6; color: #a1a1aa; }
-    input[type="password"] { box-sizing: border-box; width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff; font-size: 14px; margin-bottom: 12px; }
-    button { width: 100%; padding: 12px 16px; border-radius: 9999px; border: none; background: linear-gradient(180deg, #f5c66c, #21c6da); color: #120f0b; font-size: 13px; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; cursor: pointer; }
-  </style>
-</head>
-<body>
-  <main class="card" data-earthos-auth-gate="unauthorized">
-    <div class="kicker">EarthOS Mission Control · 401 Unauthorized</div>
-    <h1>Operator Authentication Required</h1>
-    <p>Private maintenance records, evidence reviews, and correction controls require an authorized EarthOS operator session.</p>
-    <form action="/admin/unlock" method="post">
-      <input type="hidden" name="next" value="${safeNext}" />
-      <input type="password" name="key" required placeholder="Enter operator access key" autocomplete="current-password" />
-      <button type="submit">Unlock EarthOS Mission Control</button>
-    </form>
-  </main>
-</body>
-</html>`;
-        return new NextResponse(unlockHtml, {
-          status: auth.statusCode || 401,
-          headers: {
-            "content-type": "text/html; charset=utf-8",
-            "x-robots-tag": "noindex, nofollow",
-            "cache-control": "no-store",
-          },
-        });
-      }
-    }
-  }
-
   const somersetResponse = handleSomersetHost(request);
   if (somersetResponse) {
     return somersetResponse;
+  }
+
+  const jfdResponse = handleJfdHost(request);
+  if (jfdResponse) {
+    return jfdResponse;
+  }
+
+  const dellsResponse = handleDellsHost(request);
+  if (dellsResponse) {
+    return dellsResponse;
   }
 
   if (WTONOT_HOSTS.has(host.toLowerCase())) {
@@ -942,6 +1018,80 @@ export async function proxy(request: NextRequest, event: NextFetchEvent) {
     });
     response.headers.set("x-robots-tag", isNotFound ? "noindex, nofollow" : "index, follow");
     return response;
+  }
+
+  const tenantGuideRewrite = getTenantRouteGroupRewrite(request);
+  if (tenantGuideRewrite) {
+    const response = NextResponse.rewrite(tenantGuideRewrite);
+    const robotsTag = getGovernedRobotsTag(request.nextUrl.pathname);
+    if (robotsTag) {
+      response.headers.set("x-robots-tag", robotsTag);
+    }
+    return response;
+  }
+
+
+  // Enforce 401 Operator Authentication across all internal canary surfaces on DCC
+  if (isInternalCanaryPath(request.nextUrl.pathname)) {
+    const isServerActionPost =
+      request.method.toUpperCase() === "POST" && request.headers.has("next-action");
+    if (!isServerActionPost) {
+      const auth = checkInternalApiAuthorization(request);
+      if (!auth.authorized) {
+        const safeNext =
+          request.nextUrl.pathname === "/dashboard"
+            ? "/internal/dashboard"
+            : request.nextUrl.pathname.startsWith("/dashboard/")
+              ? `/internal/dashboard/${request.nextUrl.pathname.slice(11)}`
+              : request.nextUrl.pathname;
+        const unlockHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>EarthOS Mission Control — Operator Unlock Required</title>
+  <style>
+    body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; background: #09090b; color: #fafafa; display: flex; min-height: 100vh; align-items: center; justify-content: center; }
+    .card { max-width: 440px; width: 100%; margin: 24px; padding: 32px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.12); background: rgba(24,24,27,0.92); box-shadow: 0 24px 60px rgba(0,0,0,0.5); }
+    .kicker { font-size: 11px; font-weight: 800; letter-spacing: 0.24em; text-transform: uppercase; color: #f5c66c; }
+    h1 { margin: 12px 0 8px; font-size: 26px; font-weight: 900; letter-spacing: -0.02em; }
+    p { margin: 0 0 20px; font-size: 14px; line-height: 1.6; color: #a1a1aa; }
+    input[type="password"] { box-sizing: border-box; width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff; font-size: 14px; margin-bottom: 12px; }
+    button { width: 100%; padding: 12px 16px; border-radius: 9999px; border: none; background: linear-gradient(180deg, #f5c66c, #21c6da); color: #120f0b; font-size: 13px; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <main class="card" data-earthos-auth-gate="unauthorized">
+    <div class="kicker">EarthOS Mission Control · 401 Unauthorized</div>
+    <h1>Operator Authentication Required</h1>
+    <p>Private maintenance records, evidence reviews, and correction controls require an authorized EarthOS operator session.</p>
+    <form action="/admin/unlock" method="post">
+      <input type="hidden" name="next" value="${safeNext}" />
+      <input type="password" name="key" required placeholder="Enter operator access key" autocomplete="current-password" />
+      <button type="submit">Unlock EarthOS Mission Control</button>
+    </form>
+  </main>
+</body>
+</html>`;
+        return new NextResponse(unlockHtml, {
+          status: auth.statusCode || 401,
+          headers: {
+            "content-type": "text/html; charset=utf-8",
+            "x-robots-tag": "noindex, nofollow",
+            "cache-control": "no-store",
+          },
+        });
+      }
+    }
+  }
+
+  if (request.nextUrl.pathname === "/dashboard") {
+    return NextResponse.redirect(new URL("/internal/dashboard", request.url), 307);
+  }
+  if (request.nextUrl.pathname.startsWith("/dashboard/")) {
+    const relativePath = request.nextUrl.pathname.slice(11);
+    return NextResponse.redirect(new URL(`/internal/dashboard/${relativePath}${request.nextUrl.search}`, request.url), 307);
   }
 
   if (request.nextUrl.pathname === WTONOT_ROOT_PATH) {
@@ -1019,5 +1169,5 @@ export async function proxy(request: NextRequest, event: NextFetchEvent) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)"],
+  matcher: ["/location/:path*", "/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)"],
 };

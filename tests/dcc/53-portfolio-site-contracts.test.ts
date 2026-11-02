@@ -104,7 +104,15 @@ test("Red Rocks properties cannot silently collapse into the same product", () =
 });
 
 test("overlap-risk properties are explicitly governed instead of expanded by default", () => {
-  assert.equal(getPortfolioSiteContract("lfse")?.strategy, "review");
+  const lfse = getPortfolioSiteContract("lfse");
+  const jfd = getPortfolioSiteContract("jfd");
+  assert.ok(lfse && jfd);
+  assert.equal(lfse.strategy, "compound_commerce");
+  assert.equal(jfd.strategy, "specialist");
+  assert.equal(includes(lfse.mustNotOwn, "juneau_flightseeing_depth"), true);
+  assert.equal(includes(jfd.mustNotOwn, "all_alaska_excursions"), true);
+
+  assert.equal(getPortfolioSiteContract("rrfp")?.strategy, "review");
   assert.equal(getPortfolioSiteContract("vegas")?.strategy, "review");
   assert.equal(getPortfolioSiteContract("shuttleya")?.strategy, "prove");
 });

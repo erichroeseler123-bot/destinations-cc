@@ -1,10 +1,11 @@
 import { RESEARCHED_OPERATORS } from "@/app/new-orleans/data/operatorDirectory";
 import { INDEXABLE_SURFACE_PATHS } from "@/src/data/indexable-surface";
-import { PUBLISHED_DECISION_GUIDES } from "@/src/data/published-decision-guides";
-import { DECISION_CATEGORIES } from "@/src/data/decision-taxonomy";
+import {
+  getPublicationManifestEntry,
+  listIndexablePublicationEntries,
+} from "@/src/data/publication-manifest";
 import { headers } from "next/headers";
 import { SITE_IDENTITY } from "@/src/data/site-identity";
-import { SOMERSET_PAGE_PATHS } from "@/lib/dcc/corridors/somersetPages";
 import { ALL_PRODUCTS, SEO_PAGES } from "@/app/new-orleans/data";
 import { COMMERCIAL_CATEGORY_PAGES } from "@/app/new-orleans/data/commercialCategoryPages";
 import { ADDITIONAL_COMMERCIAL_CATEGORY_PAGES } from "@/app/new-orleans/data/additionalCommercialCategoryPages";
@@ -12,7 +13,6 @@ import { WNO_OPERATOR_ENTITIES } from "@/app/new-orleans/data/operatorRegistry";
 import { COMPARISON_OPPORTUNITIES } from "@/app/new-orleans/data/comparisonRegistry";
 import { INTENT_SEO_PAGES } from "@/app/new-orleans/data/intentSeoPages";
 import { AUDIENCE_INTENT_SEO_PAGES } from "@/app/new-orleans/data/audienceIntentSeoPages";
-import { listOperatorSlugs } from "@/lib/dcc/operators";
 
 export const dynamic = "force-dynamic";
 export const WTONOT_ORIGIN = "https://www.welcometoneworleanstours.com";
@@ -89,10 +89,39 @@ function toAbsoluteUrl(pathname: string, origin: string = SITE_IDENTITY.siteUrl)
   return `${origin}${pathname.startsWith("/") ? pathname : `/${pathname}`}`;
 }
 
-export function buildDccSitemapXml(paths: readonly string[] = INDEXABLE_SURFACE_PATHS, origin: string = SITE_IDENTITY.siteUrl, includeLastmod: boolean = true): string {
-  const lastmod = includeLastmod ? new Date().toISOString() : null;
-  const urls = [...paths].map((pathname) => toAbsoluteUrl(pathname, origin)).sort();
-  return ['<?xml version="1.0" encoding="UTF-8"?>','<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',...urls.map((url) => lastmod ? `  <url><loc>${xmlEscape(url)}</loc><lastmod>${xmlEscape(lastmod)}</lastmod></url>` : `  <url><loc>${xmlEscape(url)}</loc></url>`),"</urlset>"].join("\n");
+export function listDccSitemapPaths(): string[] {
+  return listIndexablePublicationEntries().map((entry) => entry.route);
+}
+
+export function buildDccSitemapXml(
+  paths: readonly string[] = listDccSitemapPaths(),
+  origin: string = SITE_IDENTITY.siteUrl,
+  includeLastmod: boolean = true,
+): string {
+  const defaultLastmod = includeLastmod ? new Date().toISOString() : null;
+  const entries = [...paths]
+    .map((pathname) => {
+      const manifestEntry =
+        origin === SITE_IDENTITY.siteUrl ? getPublicationManifestEntry(pathname) : null;
+      return {
+        url: toAbsoluteUrl(pathname, origin),
+        lastmod: includeLastmod
+          ? manifestEntry?.materialChangeDate || defaultLastmod
+          : null,
+      };
+    })
+    .sort((a, b) => a.url.localeCompare(b.url));
+
+  return [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    ...entries.map((entry) =>
+      entry.lastmod
+        ? `  <url><loc>${xmlEscape(entry.url)}</loc><lastmod>${xmlEscape(entry.lastmod)}</lastmod></url>`
+        : `  <url><loc>${xmlEscape(entry.url)}</loc></url>`,
+    ),
+    "</urlset>",
+  ].join("\n");
 }
 
 export function buildWtonotSitemapPaths() {
@@ -137,26 +166,6 @@ export async function GET() {
     );
   }
 
-  const DCC_NON_INDEXABLE_PATHS = new Set([
-    "/guides/juneau-glacier-landing-vs-scenic-flight",
-  ]);
-
-  const preSiteGuidePaths = [
-    "/guides",
-    "/ask",
-    "/vibe-around",
-    "/shuttleya",
-    "/juneau-flightseeing",
-    "/french-quarter-orientation",
-    "/new-orleans-swamp-tours",
-    "/operators",
-    ...listOperatorSlugs().map((slug) => `/operators/${slug}`),
-    ...DECISION_CATEGORIES.map((category) => `/guides/category/${category.slug}`),
-    ...PUBLISHED_DECISION_GUIDES.map((guide) => `/guides/${guide.slug}`),
-  ];
-  const dccPaths = [...new Set([...INDEXABLE_SURFACE_PATHS, ...preSiteGuidePaths])].filter(
-    (path) => !DCC_NON_INDEXABLE_PATHS.has(path)
-  );
-  const body = buildDccSitemapXml(dccPaths);
+  const body = buildDccSitemapXml(listDccSitemapPaths());
   return new Response(body, { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600, s-maxage=3600" } });
 }

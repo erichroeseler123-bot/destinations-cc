@@ -22,6 +22,17 @@ import {
 } from "../machine/v03/runtimeStoreV03";
 import { getViatorAccessCapabilities } from "../../viator/access";
 import { getViatorClient } from "../../viator/client";
+import {
+  extractClickIdFromTrackingValue,
+  generateOpaqueClickId,
+  getOpaqueClickAttributionById,
+  issueOpaqueClickAttribution,
+  reconcilePartnerWebhookByClickId,
+  resetOpaqueAttributionLedgerForTests,
+  sanitizeOutboundPartnerUrlWithOpaqueClickId,
+} from "./opaqueAttributionLedger";
+
+export * from "./opaqueAttributionLedger";
 
 export type CommercialProvider =
   | "viator"
@@ -146,11 +157,15 @@ export interface CreateCommercialHandoffInput {
   } | null;
   callerClientId?: string | null;
   traceparent?: string | null;
+  clickId?: string | null;
+  recommendedOperatorId?: string | null;
+  evidenceVersion?: string | null;
   metadata?: Record<string, unknown> | null;
 }
 
 export interface CommercialHandoffRecord {
   handoffId: string;
+  clickId: string;
   originatingSite: string;
   targetSite: string | null;
   provider: CommercialProvider;
@@ -239,6 +254,7 @@ export interface RecordCommercialOutcomeInput {
     | string;
   providerEventTime: string | null;
   handoffId?: string | null;
+  clickId?: string | null;
   campaignOrRefValue?: string | null;
   evaluationRunId?: string | null;
   receiptId?: string | null;
@@ -573,6 +589,7 @@ export function resetCommercialMemoryStoreForTests(): void {
   memoryOutcomesById.clear();
   memoryCheckpoints.clear();
   memoryActiveLeases.clear();
+  resetOpaqueAttributionLedgerForTests();
 }
 
 let commercePool: Pool | null = null;
@@ -724,6 +741,7 @@ export interface ProviderAffiliateUrlResult {
   providerAccount: string;
   attributionParameterName: string;
   attributionParameterValue: string;
+  clickId: string;
 }
 
 export const JUNEAU_VIATOR_RESELECTION_REQUIREMENTS = [
@@ -735,8 +753,8 @@ export const JUNEAU_VIATOR_RESELECTION_REQUIREMENTS = [
 
 /**
  * Constructs a provider-supported affiliate URL preserving the originating site's
- * existing account attribution and attaching the opaque `handoff_id` without inventing
- * unsupported direct-to-cart capabilities or falling back to Viator's homepage.
+ * existing account attribution and attaching the opaque `handoff_id` and `click_id`
+ * without leaking cryptographic decision receipts or inventing unsupported direct-to-cart capabilities.
  */
 export function buildProviderAffiliateHandoffUrl(params: {
   originatingSite: string;
@@ -748,6 +766,7 @@ export function buildProviderAffiliateHandoffUrl(params: {
   productCode: string;
   productDestinationUrl: string;
   handoffId: string;
+  clickId?: string | null;
   campaign?: string | null;
   receiptId?: string | null;
   intendedDate?: string | null;
@@ -763,6 +782,10 @@ export function buildProviderAffiliateHandoffUrl(params: {
   const baseCampaign = sanitizeCampaignSlug(
     params.campaign || `${siteKey.replace(/\..*$/, "")}-${params.productCode}`
   );
+  const clickId =
+    params.clickId && /^clk_[0-9a-f]{24}$/i.test(params.clickId.trim())
+      ? params.clickId.trim().toLowerCase()
+      : generateOpaqueClickId();
 
   let url: URL;
   try {
@@ -826,9 +849,8 @@ export function buildProviderAffiliateHandoffUrl(params: {
     ) {
       targetUrl.searchParams.set("quoted_price", String(params.quotedPriceAmount));
     }
-    if (params.receiptId?.trim()) {
-      targetUrl.searchParams.set("receipt_id", params.receiptId.trim());
-    }
+    // IMPORTANT: Never pass cryptographic decision receipts (`receipt_id`) to outbound partner URLs.
+    // Instead, strip any leaked receipt/architecture params and append the opaque `click_id`.
     if (
       params.viatorProductCode ||
       params.fareharborItemId ||
@@ -864,12 +886,14 @@ export function buildProviderAffiliateHandoffUrl(params: {
     if (!isDirectViatorHost) {
       appendExplicitDepartureQueryParams(url);
     }
+    const { outboundUrl } = sanitizeOutboundPartnerUrlWithOpaqueClickId(url, clickId);
 
     return {
-      outboundAffiliateUrl: url.toString(),
+      outboundAffiliateUrl: outboundUrl,
       providerAccount: pid,
       attributionParameterName: "campaign",
       attributionParameterValue: campaignValue,
+      clickId,
     };
   }
 
@@ -888,12 +912,14 @@ export function buildProviderAffiliateHandoffUrl(params: {
       url.searchParams.set("full-items", "yes");
     }
     appendExplicitDepartureQueryParams(url);
+    const { outboundUrl } = sanitizeOutboundPartnerUrlWithOpaqueClickId(url, clickId);
 
     return {
-      outboundAffiliateUrl: url.toString(),
+      outboundAffiliateUrl: outboundUrl,
       providerAccount: asn,
       attributionParameterName: "ref",
       attributionParameterValue: refValue,
+      clickId,
     };
   }
 
@@ -908,12 +934,14 @@ export function buildProviderAffiliateHandoffUrl(params: {
     url.searchParams.set("utm_medium", url.searchParams.get("utm_medium") || "online_publisher");
     url.searchParams.set("cmp", cmpValue);
     appendExplicitDepartureQueryParams(url);
+    const { outboundUrl } = sanitizeOutboundPartnerUrlWithOpaqueClickId(url, clickId);
 
     return {
-      outboundAffiliateUrl: url.toString(),
+      outboundAffiliateUrl: outboundUrl,
       providerAccount: partnerId,
       attributionParameterName: "cmp",
       attributionParameterValue: cmpValue,
+      clickId,
     };
   }
 
@@ -923,12 +951,14 @@ export function buildProviderAffiliateHandoffUrl(params: {
     url.searchParams.set("ref", refValue);
     url.searchParams.set("utm_source", siteKey);
     appendExplicitDepartureQueryParams(url);
+    const { outboundUrl } = sanitizeOutboundPartnerUrlWithOpaqueClickId(url, clickId);
 
     return {
-      outboundAffiliateUrl: url.toString(),
+      outboundAffiliateUrl: outboundUrl,
       providerAccount: rezdyAccount,
       attributionParameterName: "ref",
       attributionParameterValue: refValue,
+      clickId,
     };
   }
 
@@ -939,12 +969,14 @@ export function buildProviderAffiliateHandoffUrl(params: {
     url.searchParams.set("utm_source", siteKey);
     url.searchParams.set("utm_campaign", attributionValue);
     appendExplicitDepartureQueryParams(url);
+    const { outboundUrl } = sanitizeOutboundPartnerUrlWithOpaqueClickId(url, clickId);
 
     return {
-      outboundAffiliateUrl: url.toString(),
+      outboundAffiliateUrl: outboundUrl,
       providerAccount: squareAccount,
       attributionParameterName: "dcc_handoff_id",
       attributionParameterValue: params.handoffId,
+      clickId,
     };
   }
 
@@ -955,12 +987,14 @@ export function buildProviderAffiliateHandoffUrl(params: {
   url.searchParams.set("utm_source", siteKey);
   url.searchParams.set("utm_campaign", attributionValue);
   appendExplicitDepartureQueryParams(url);
+  const { outboundUrl } = sanitizeOutboundPartnerUrlWithOpaqueClickId(url, clickId);
 
   return {
-    outboundAffiliateUrl: url.toString(),
+    outboundAffiliateUrl: outboundUrl,
     providerAccount: operatorAccount,
     attributionParameterName: "dcc_handoff_id",
     attributionParameterValue: params.handoffId,
+    clickId,
   };
 }
 
@@ -1289,6 +1323,7 @@ export async function createCommercialHandoff(
     productCode: input.productCode,
     productDestinationUrl: input.productDestinationUrl,
     handoffId,
+    clickId: input.clickId ?? null,
     campaign: input.campaign,
     receiptId: input.receiptId ?? null,
     intendedDate: input.intendedDate ?? null,
@@ -1297,6 +1332,30 @@ export async function createCommercialHandoff(
     partySize,
     maxSinglePassengerWeightLbs: input.maxSinglePassengerWeightLbs ?? null,
     quotedPriceAmount: input.quotedPriceAmount ?? null,
+  });
+
+  const opaqueAttribution = issueOpaqueClickAttribution({
+    clickId: urlBuilt.clickId,
+    handoffId,
+    decisionReceiptId: input.receiptId?.trim() || `rcpt:sha256:handoff_${handoffId}`,
+    recommendedOperatorId:
+      input.recommendedOperatorId?.trim() ||
+      versionedCandidate?.candidateDccEntityId ||
+      urlBuilt.providerAccount ||
+      input.productCode,
+    recommendedOperatorName:
+      versionedCandidate?.operatorDisplayName ||
+      input.productTitle ||
+      urlBuilt.providerAccount,
+    evidenceVersion:
+      input.evidenceVersion?.trim() ||
+      (versionedCandidate
+        ? `${versionedCandidate.universeId}@${versionedCandidate.universeVersion}`
+        : "dcc-evidence-bundle/2026.11.02"),
+    originatingSite,
+    provider: input.provider,
+    productCode: input.productCode,
+    productDestinationUrl: urlBuilt.outboundAffiliateUrl,
   });
 
   let derivedTargetSite: string | null = input.targetSite
@@ -1442,6 +1501,7 @@ export async function createCommercialHandoff(
 
   const enrichedMetadata: Record<string, unknown> = {
     ...(input.metadata ?? {}),
+    clickId: opaqueAttribution.clickId,
     ...(rawIdempotencyKey ? { idempotencyKey: rawIdempotencyKey } : {}),
     ...(derivedTargetSite ? { targetSite: derivedTargetSite } : {}),
     ...(viatorProductCode ? { viatorProductCode } : {}),
@@ -1536,6 +1596,7 @@ export async function createCommercialHandoff(
 
   const record: CommercialHandoffRecord = {
     handoffId,
+    clickId: opaqueAttribution.clickId,
     originatingSite,
     targetSite: derivedTargetSite,
     provider: input.provider,
@@ -1642,6 +1703,10 @@ export async function getCommercialHandoffById(
 
     const loaded: CommercialHandoffRecord = {
       handoffId: row.handoff_id,
+      clickId:
+        typeof meta.clickId === "string"
+          ? meta.clickId
+          : extractClickIdFromTrackingValue(row.outbound_affiliate_url) || `clk_${row.handoff_id.replace(/^hof_/, "")}`,
       originatingSite: row.originating_site,
       targetSite: targetSiteFromMeta,
       provider: row.provider,
@@ -1839,9 +1904,20 @@ export async function recordCommercialOutcome(
     throw err;
   }
 
+  const resolvedClickId =
+    extractClickIdFromTrackingValue(input.clickId) ||
+    extractClickIdFromTrackingValue(input.campaignOrRefValue) ||
+    extractClickIdFromTrackingValue(input.handoffId) ||
+    null;
+
+  const opaqueRecord = resolvedClickId
+    ? getOpaqueClickAttributionById(resolvedClickId)
+    : null;
+
   const resolvedHandoffId =
     extractHandoffIdFromTrackingValue(input.handoffId) ||
     extractHandoffIdFromTrackingValue(input.campaignOrRefValue) ||
+    opaqueRecord?.handoffId ||
     null;
 
   const matchedHandoff = resolvedHandoffId

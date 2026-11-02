@@ -21,11 +21,12 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 const CRUISE_PORT_AUTHORITY_QUEUE = listDccCruisePortEntrypoints();
-export const dynamic = "force-static";
+export const revalidate = 3600;
 export const metadata: Metadata = {
   title: "Destination Command Center Network | How the Travel Suite Fits Together",
   description: "See how Destination Command Center acts as the upstream research layer for a network of focused travel, cruise, tour, and transportation sites.",
   alternates: { canonical: "/network" },
+  robots: { index: true, follow: true },
 };
 
 export default function NetworkPage() {

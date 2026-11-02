@@ -88,6 +88,16 @@ export async function POST(request: NextRequest) {
     });
   }
 
-  return NextResponse.json({ answer, mode, confidence: evidence.confidence, sources: evidence.sources.map(({ answer: _answer, ...source }) => source), handoff: evidence.handoff });
+  return NextResponse.json({
+    answer,
+    mode,
+    confidence: evidence.confidence,
+    verifiedAt: evidence.verifiedAt,
+    assumptionsAndUnknowns: evidence.assumptionsAndUnknowns,
+    citations: evidence.citations,
+    optionComparison: evidence.optionComparison,
+    sources: evidence.sources.map(({ answer: _answer, ...source }) => source),
+    handoff: evidence.handoff,
+  });
 }
 

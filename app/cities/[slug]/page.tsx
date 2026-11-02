@@ -11,8 +11,11 @@ import {
   getDecisionEnginePageByPath,
   listDecisionEnginePagesByPrefix,
 } from "@/src/data/decision-engine-pages";
+import { getPublicationManifestEntry } from "@/src/data/publication-manifest";
 
 type Params = { slug: string };
+
+export const revalidate = 3600;
 
 export function generateStaticParams() {
   return listDecisionEnginePagesByPrefix("/cities/")
@@ -26,18 +29,24 @@ export async function generateMetadata({
   params: Promise<Params>;
 }): Promise<Metadata> {
   const { slug } = await params;
+  const manifestEntry = getPublicationManifestEntry(`/cities/${slug}`);
+  const isIndexable = manifestEntry?.indexingState === "index_follow";
   const entityKey = `city:${slug}`;
   const surface =
     hasSurfaceEntity(entityKey) ?
       await getSurface({ entityKey: entityKey as `city:${string}`, modules: ["decision"], strict: false })
     : null;
   const page = surface?.modules.decision?.page || getDecisionEnginePageByPath(`/cities/${slug}`);
-  if (!page) return { title: "City Guide" };
+  if (!page) return { title: "City Guide", robots: { index: false, follow: false } };
 
   return {
     title: page.title,
     description: page.hero.summary,
-    alternates: { canonical: page.canonicalPath },
+    alternates: { canonical: manifestEntry?.canonicalUrl || page.canonicalPath },
+    robots: {
+      index: isIndexable,
+      follow: isIndexable,
+    },
   };
 }
 

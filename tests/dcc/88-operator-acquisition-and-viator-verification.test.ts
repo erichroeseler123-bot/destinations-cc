@@ -72,8 +72,8 @@ import {
   DELETE as deleteOnboardingRoute,
   GET as getOnboardingRoute,
   POST as postOnboardingRoute,
-  validateOperatorOnboardingApplication,
 } from "../../app/api/operators/onboarding/route";
+import { validateOperatorOnboardingApplication } from "../../lib/dcc/operatorOnboardingStore";
 
 test("Homepage copy stays calm, factual, and decision-focused without salesy hero offers", () => {
   const homePath = path.join(process.cwd(), "app/components/dcc/LocationFirstHomeFast.tsx");

@@ -11,7 +11,9 @@ import {
   listDecisionEnginePagesByPrefix,
 } from "@/src/data/decision-engine-pages";
 
-export const dynamic = "force-dynamic";
+import { getPublicationManifestEntry } from "@/src/data/publication-manifest";
+
+export const revalidate = 3600;
 
 type Params = { slug: string };
 
@@ -35,35 +37,23 @@ export async function generateMetadata({
   const page = surface?.modules.decision?.page || getDecisionEnginePageByPath(`/routes/${slug}`);
   if (!page) return { title: "Route Guide" };
 
+  const manifestEntry = getPublicationManifestEntry(`/routes/${slug}`);
+  const isIndexable = manifestEntry?.indexingState === "index_follow";
+
   return {
     title: `${page.title} | Destination Command Center`,
     description: page.hero.summary,
-    alternates: { canonical: page.canonicalPath },
+    alternates: { canonical: manifestEntry?.canonicalUrl || page.canonicalPath },
+    robots: { index: isIndexable, follow: isIndexable },
   };
 }
 
 export default async function RouteDecisionPage({
   params,
-  searchParams,
 }: {
   params: Promise<Params>;
-  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { slug } = await params;
-  const resolvedSearch = searchParams ? await searchParams : {};
-  const firstStr = (v: string | string[] | undefined) =>
-    Array.isArray(v) ? v[0] : v;
-  const dateParam = firstStr(resolvedSearch.date) || firstStr(resolvedSearch.arrivalDate);
-  const partyParam =
-    firstStr(resolvedSearch.party_size) ||
-    firstStr(resolvedSearch.travelers) ||
-    firstStr(resolvedSearch.passengerCount) ||
-    firstStr(resolvedSearch.passengers) ||
-    firstStr(resolvedSearch.qty);
-  const customChoiceParam =
-    firstStr(resolvedSearch.pickup_hub) ||
-    firstStr(resolvedSearch.direction) ||
-    firstStr(resolvedSearch.port_context);
 
   const entityKey = `route:${slug}`;
   const surface =
@@ -90,11 +80,6 @@ export default async function RouteDecisionPage({
         <TravelReferenceExperience
           node={referenceNode}
           embedded
-          initialContext={{
-            date: dateParam,
-            partySize: partyParam,
-            customChoice: customChoiceParam,
-          }}
         />
       ) : null}
       <div className="mx-auto max-w-6xl px-6 py-14 space-y-8">
@@ -103,12 +88,9 @@ export default async function RouteDecisionPage({
           <RideOptionsCard
             venueSlug="red-rocks-amphitheatre"
             sourcePage="/routes/denver-red-rocks"
-            bookingContext={{
-              date: dateParam,
-              qty: partyParam,
-            }}
           />
         ) : null}
+
         <footer className="flex flex-wrap gap-6 text-sm text-zinc-400">
           <Link href="/cities/denver" className="hover:text-zinc-200">
             Open Denver decision engine →

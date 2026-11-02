@@ -277,11 +277,14 @@ export default async function TravelReferenceExperience({
 
       {/* JUNEAU INTERACTIVE PORT-DAY DECISION ENGINE */}
       {node.id === "juneau" && (
-        <JuneauPortDayPlanner
-          node={node}
-          initialSearchParams={initialSearchParams}
-        />
+        < React.Suspense fallback={null}>
+          <JuneauPortDayPlanner
+            node={node}
+            initialSearchParams={initialSearchParams}
+          />
+        </React.Suspense>
       )}
+
 
       {/* SECTION 5 (SURFACED HIGH OR ANCHORED): LIVE CONDITIONS + OPERATIONAL NON-CONFLATION */}
       <section
@@ -951,12 +954,15 @@ export default async function TravelReferenceExperience({
         id="section-specialist-handoffs"
         aria-labelledby="heading-specialist-handoffs"
       >
-        <SpecialistHandoffInteractive
-          config={node.specialistHandoffs}
-          nodeId={node.id}
-          initialContext={initialContext}
-        />
+        <React.Suspense fallback={null}>
+          <SpecialistHandoffInteractive
+            config={node.specialistHandoffs}
+            nodeId={node.id}
+            initialContext={initialContext}
+          />
+        </React.Suspense>
       </section>
+
 
       {/* CONNECTED PLACE GRAPH: COORDINATES, REGIONS, PORTS, VENUES, ROUTES */}
       <section

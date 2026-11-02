@@ -5,13 +5,15 @@ import { getPublishedTravelReferenceNodeById } from "@/lib/dcc/travelReference";
 import { PARR_OPERATOR } from "@/lib/parrOperator";
 import { getLocalFallbackImageSetForEntity } from "@/src/lib/media/source-local";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: "Red Rocks Amphitheatre & Park Travel Reference, Access & Concert Logistics | Destination Command Center",
   description:
     "Comprehensive Red Rocks Park & Amphitheatre travel reference: geology, altitude prep, parking & shuttle logistics, operational lightning-hold boundaries, live NWS/Open-Meteo telemetry, and context-preserving shuttle handoffs.",
-  alternates: { canonical: "/red-rocks" },
+  alternates: { canonical: "https://destinationcommandcenter.com/red-rocks" },
+  robots: { index: true, follow: true },
+
   keywords: [
     "red rocks guide",
     "red rocks concerts",

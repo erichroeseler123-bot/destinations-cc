@@ -19,22 +19,62 @@ import { getTravelReferenceNodeById } from "@/lib/dcc/travelReference";
 
 type Params = { slug: string };
 
+const RED_ROCKS_VENUE_FALLBACK = {
+  slug: "red-rocks-amphitheatre",
+  name: "Red Rocks Park & Amphitheatre",
+  citySlug: "denver",
+  cityName: "Morrison / Denver, CO",
+  description:
+    "Open-air sandstone monolith concert venue and municipal mountain park at 6,450 ft elevation, 15 miles southwest of downtown Denver.",
+  addressNote: "18300 W Alameda Pkwy, Morrison, CO 80465",
+  sportsLeagues: ["concerts", "outdoor-amphitheatre"],
+  primaryTeams: [] as string[],
+  seatGeekPerformerSlugs: [] as string[],
+  whyItMatters: [
+    "Steep 380-step amphitheatre bowl and separated Upper North, Upper South, and Lower South lot geometry make post-show exit logistics the primary decision factor.",
+    "Post-concert rideshare pickups are routed to the Jurassic Lot with shuttle or uphill walking transfers rather than immediate stage-door curb access.",
+    "Mountain foothill weather and lightning holds are governed by Denver Mountain Parks and venue operations—never guaranteed by a Denver metro forecast.",
+  ],
+  relatedPages: [
+    { href: "/red-rocks", label: "Red Rocks Flagship Reference" },
+    { href: "/cities/denver", label: "Denver Reference Hub" },
+    { href: "/transportation/colorado", label: "Colorado Transit & Shuttles" },
+  ],
+};
+
+function resolveVenueBySlug(slug: string) {
+  const sportsVenue = getSportsVenue(slug);
+  if (sportsVenue) return sportsVenue;
+  if (slug === "red-rocks-amphitheatre") return RED_ROCKS_VENUE_FALLBACK;
+  return null;
+}
+
+import { getPublicationManifestEntry } from "@/src/data/publication-manifest";
+
+export const revalidate = 3600;
+
 export async function generateStaticParams() {
-  return getSportsVenueSlugs().map((slug) => ({ slug }));
+  const slugs = new Set([...getSportsVenueSlugs(), "red-rocks-amphitheatre"]);
+  return [...slugs].map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { slug } = await params;
-  const venue = getSportsVenue(slug);
+  const venue = resolveVenueBySlug(slug);
   if (!venue) {
     return { title: "Venue | Destination Command Center" };
   }
+  const route = `/venues/${venue.slug}`;
+  const manifestEntry = getPublicationManifestEntry(route);
+  const isIndexable = manifestEntry?.indexingState === "index_follow";
   return {
-    title: `${venue.name} Venue Guide and Tickets | Destination Command Center`,
-    description: `${venue.name} venue context, primary teams, and ticket discovery.`,
-    alternates: { canonical: `/venues/${venue.slug}` },
+    title: `${venue.name} Venue Guide and Logistics | Destination Command Center`,
+    description: `${venue.name} venue context, arrival/exit logistics, and event discovery.`,
+    alternates: { canonical: manifestEntry?.canonicalUrl || `https://destinationcommandcenter.com/venues/${venue.slug}` },
+    robots: { index: isIndexable, follow: isIndexable },
   };
 }
+
 
 function formatDate(value: string | null): string {
   if (!value) return "Check event date";
@@ -51,7 +91,7 @@ function formatDate(value: string | null): string {
 
 export default async function VenuePage({ params }: { params: Promise<Params> }) {
   const { slug } = await params;
-  const venue = getSportsVenue(slug);
+  const venue = resolveVenueBySlug(slug);
   if (!venue) notFound();
 
   const teams = getTeamsByVenue(venue.slug);
@@ -267,12 +307,14 @@ export default async function VenuePage({ params }: { params: Promise<Params> })
                 {page.label}
               </Link>
             ))}
-            <Link
-              href={`/sports/team/${getSportsTeam(venue.primaryTeams[0] || "")?.slug ?? ""}`}
-              className="rounded-2xl border border-white/10 bg-black/20 p-4 hover:bg-white/10"
-            >
-              Open primary team node
-            </Link>
+            {venue.primaryTeams[0] && getSportsTeam(venue.primaryTeams[0]) ? (
+              <Link
+                href={`/sports/team/${getSportsTeam(venue.primaryTeams[0])!.slug}`}
+                className="rounded-2xl border border-white/10 bg-black/20 p-4 hover:bg-white/10"
+              >
+                Open primary team node
+              </Link>
+            ) : null}
           </div>
         </section>
       </div>

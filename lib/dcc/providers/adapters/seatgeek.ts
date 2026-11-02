@@ -91,8 +91,9 @@ export const seatGeekAdapter: ProviderAdapter<SeatGeekQuery, SeatGeekEvent[]> = 
 
       const res = await fetch(url.toString(), {
         headers: { Accept: "application/json" },
-        cache: "no-store",
+        next: { revalidate: 3600 },
       });
+
       if (!res.ok) {
         return {
           ok: false,

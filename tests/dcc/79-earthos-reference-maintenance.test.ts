@@ -23,7 +23,7 @@ import {
   runReferenceDetectionAction,
   verifyReferenceTaskAction,
 } from "@/app/internal/dashboard/actions";
-import { renderEarthOSDashboardPage } from "@/app/internal/dashboard/page";
+import renderEarthOSDashboardPage from "@/app/internal/dashboard/page";
 import {
   launchWorkflowMission,
   signalWorkflowMission,

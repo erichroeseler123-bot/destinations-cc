@@ -22,7 +22,7 @@ function countBy<T extends string>(values: T[]): Record<T, number> {
   );
 }
 
-export async function renderEarthOSDashboardPage({
+async function renderEarthOSDashboardPage({
   explicitAuthToken,
 }: {
   explicitAuthToken?: string;
@@ -143,6 +143,7 @@ export async function renderEarthOSDashboardPage({
   );
 }
 
-export default async function EarthOSDashboardPage() {
-  return renderEarthOSDashboardPage();
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default async function EarthOSDashboardPage(props?: any) {
+  return renderEarthOSDashboardPage(props);
 }

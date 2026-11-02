@@ -15,18 +15,26 @@ import {
   resolvePortfolioTripContext,
 } from "@/lib/dcc/commerce/portfolio";
 import { NEW_ORLEANS_TOUR_CATEGORY_PAGES } from "@/src/data/new-orleans-city-site";
+import { getPublishedDecisionGuide } from "@/src/data/published-decision-guides";
+import { getPublicationManifestEntry } from "@/src/data/publication-manifest";
 
 const page = NEW_ORLEANS_TOUR_CATEGORY_PAGES["swamp-tours"];
 const PAGE_PATH = "/new-orleans/swamp-tours";
 const PAGE_URL = "https://destinationcommandcenter.com/new-orleans/swamp-tours";
 const SATELLITE_URL = "https://welcometotheswamp.com";
 const PAGE_INTENT = "compare" as const;
+const swampGuide = getPublishedDecisionGuide("new-orleans-swamp-tour-with-kids");
+const manifestEntry = getPublicationManifestEntry(PAGE_PATH);
 
 export const metadata: Metadata = {
   title: "DCC Fast Pass | New Orleans Swamp Tours | Live Availability and Direct Bookings",
   description:
     "DCC Fast Pass for New Orleans swamp tours. Understand the main buying lanes, then hand off to a dedicated mobile-first booking surface for live availability and direct bookings.",
-  alternates: { canonical: "/new-orleans/swamp-tours" },
+  alternates: { canonical: manifestEntry?.canonicalUrl || PAGE_PATH },
+  robots: {
+    index: manifestEntry?.indexingState === "index_follow",
+    follow: manifestEntry?.indexingState === "index_follow",
+  },
   keywords: [
     "new orleans swamp tours",
     "new orleans airboat tours",
@@ -43,6 +51,7 @@ export const metadata: Metadata = {
 };
 
 function JsonLdGraph() {
+  const verifiedAt = swampGuide?.verifiedAt || manifestEntry?.materialChangeDate || "2026-11-02";
   const laneItems = page.intents.map((intent) => ({
     name: intent.label,
     description: intent.description,
@@ -68,7 +77,7 @@ function JsonLdGraph() {
         path: PAGE_PATH,
         name: page.title,
         description: page.description,
-        dateModified: "2026-03-29",
+        dateModified: verifiedAt,
         isPartOfPath: "/new-orleans",
       }),
       buildBreadcrumbJsonLd([
@@ -110,18 +119,16 @@ function JsonLdGraph() {
   return <JsonLd data={data} />;
 }
 
-export default async function NewOrleansSwampToursPage({
-  searchParams,
-}: {
-  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
-}) {
-  const resolvedSearchParams = searchParams ? await searchParams : {};
+export const revalidate = 3600;
+
+export default async function NewOrleansSwampToursPage() {
   const carriedContext = await resolvePortfolioTripContext({
-    searchParams: resolvedSearchParams,
+    searchParams: {},
     claimingOwner: "destinationcommandcenter.com",
-    issueIfParamsPresent: true,
+    issueIfParamsPresent: false,
     defaultPortSlug: "new-orleans",
   });
+
   const assurance = evaluatePortfolioAssuranceSummary({
     engineId: "new-orleans-swamp-tours",
     callerClientId: "ssr:destinationcommandcenter.com",
@@ -207,24 +214,102 @@ export default async function NewOrleansSwampToursPage({
           </div>
           <h1 className="mt-4 text-4xl font-black tracking-tight md:text-6xl">{page.title}</h1>
           <p className="mt-4 text-base font-bold uppercase tracking-[0.18em] text-[#8df0cc]">
-            DCC Fast Pass - Real-time availability to direct bookings
+            DCC Decision Lane — Covered Pontoon vs. Airboat, Hotel Pickup &amp; Age Rules (Sources Verified: 2026-11-02)
           </p>
           <p className="mt-4 max-w-3xl text-lg leading-8 text-white/82">{page.intro}</p>
           <p className="mt-5 max-w-3xl text-sm leading-7 text-white/68">
-            DCC is the discovery and routing layer here. When you are ready to book, the handoff goes to a dedicated swamp-tour surface showing live availability, and the reservation is completed directly with the provider through FareHarbor.
+            DCC is the source-backed decision and routing layer—not a live inventory calendar. Use the comparison below to verify boat type, child age restrictions, hotel shuttle inclusion, and current NPS trail closures before handing off to a direct operator, marketplace, or self-guided preserve.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <a
               href={satelliteHref}
               className="rounded-2xl border border-[#7dd3fc]/30 bg-[linear-gradient(180deg,#7dd3fc,#4ade80)] px-5 py-3 text-sm font-black uppercase tracking-[0.16em] text-[#071018] shadow-[0_18px_38px_rgba(74,222,128,0.12)] transition hover:scale-[1.02]"
             >
-              Get DCC Fast Pass
+              Compare on Welcome to the Swamp
             </a>
+            <Link href="/guides/new-orleans-swamp-tour-with-kids" className="rounded-2xl border border-white/12 bg-white/6 px-5 py-3 text-sm text-white/88 hover:bg-white/10">
+              Family &amp; No-Car Decision Guide
+            </Link>
             <Link href="/new-orleans/tours" className="rounded-2xl border border-white/12 bg-white/6 px-5 py-3 text-sm text-white/88 hover:bg-white/10">
               Back to New Orleans tours
             </Link>
           </div>
         </header>
+
+        <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 space-y-5">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-cyan-300">
+                Source-Backed Comparison (Direct Operator, Marketplace, Public/Self-Guided, and No-Purchase)
+              </p>
+              <h2 className="mt-1 text-2xl font-bold text-white">
+                How to choose for families, kids, and travelers without a car
+              </h2>
+            </div>
+            <span className="text-xs text-white/60">Checked: 2026-11-02</span>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <article className="rounded-2xl border border-white/10 bg-black/30 p-5">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8df0cc]">Direct Operator / Covered Boat + Hotel or Coach Transport</p>
+              <h3 className="mt-2 text-lg font-bold text-white">Covered Pontoon Swamp Boat with Pickup (Cajun Encounters / Cajun Pride / Gray Line)</h3>
+              <p className="mt-2 text-sm leading-6 text-white/80">
+                <strong>Why it fits families without a car:</strong> Shaded flat-bottom deck with guardrails, quiet enough for live narration, all ages permitted on Cajun Encounters&rsquo; Original Swamp Tour (from $39.99), Cajun Pride (Manchac refuge), and Gray Line ($65 adults 13+, $32 ages 6–12, infants 2–5 free), with round-trip hotel shuttle pickup or Gray Line&rsquo;s included motorcoach from 400 Toulouse St. (~3.75–5 hours door-to-door).
+              </p>
+              <p className="mt-2 text-xs leading-5 text-white/65">
+                <strong>What could make it unsuitable:</strong> Slower pace than a planing airboat; Cajun Encounters&rsquo; 10–12 guest VIP Small-Boat Tour requires age 13+ unless booked private; travelers at residential rentals/Airbnbs must meet a designated hotel pickup stop or 400 Toulouse St.
+              </p>
+            </article>
+
+            <article className="rounded-2xl border border-white/10 bg-black/30 p-5">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-300">Direct Operator / High-Speed Airboat (Age 5+ Only)</p>
+              <h3 className="mt-2 text-lg font-bold text-white">Small or Large Airboat with $30/Person Hotel Shuttle (Airboat Adventures / Ragin Cajun)</h3>
+              <p className="mt-2 text-sm leading-6 text-white/80">
+                <strong>Why it fits older kids &amp; teens:</strong> High-speed open-air marsh skimming (6–30 passenger hulls, small airboats from $89/person on Airboat Adventures) for families whose children are all <strong>5 years and older</strong>; round-trip hotel transportation on Airboat Adventures is <strong>$30/person extra</strong> (pickup starts 1 hr 15 min prior from Downtown/French Quarter hotels only).
+              </p>
+              <p className="mt-2 text-xs leading-5 text-white/65">
+                <strong>What could make it unsuitable:</strong> <strong>Children under 5, pregnant women, and anyone with neck or back injuries are strictly prohibited</strong> on airboats; guests must board unassisted; unshaded benches and loud fan engines require ear protection; Airboat Adventures&rsquo; shuttle does not pick up at residential addresses or Airbnbs.
+              </p>
+            </article>
+
+            <article className="rounded-2xl border border-white/10 bg-black/30 p-5">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">Public / Self-Guided Option (Car Required; 2026 Closure Alert)</p>
+              <h3 className="mt-2 text-lg font-bold text-white">NPS Barataria Preserve (Twin Canals Only Free) &amp; Paid Wetland Trace Boardwalk</h3>
+              <p className="mt-2 text-sm leading-6 text-white/80">
+                <strong>Current NPS status (effective Feb 2, 2026 for ~2 years):</strong> The Barataria Preserve Visitor Center and most trails are <strong>closed for ~2 years</strong> of reconstruction. Only the <strong>Twin Canals parking lot, trail, and canoe launch</strong> remain open for free day-use access (with no restroom facilities). Visitor services and the open <strong>Wetland Trace Boardwalk</strong> are relocated 6 miles away to the <strong>Louisiana Wetlands Education Center</strong> (4917 City Park Drive, Jean Lafitte), which <strong>charges admission</strong> ($10 adults; $5 seniors, ages 13–17, LA residents, and military; children under 12 free with parent).
+              </p>
+              <p className="mt-2 text-xs leading-5 text-white/65">
+                <strong>What could make it unsuitable:</strong> <strong>Neither site is served by public transit</strong>, most Barataria Preserve boardwalks are closed for ~2 years, and return Uber/Lyft pickups from Marrero/Jean Lafitte are unavailable—unsuitable without a car.
+              </p>
+            </article>
+
+            <article className="rounded-2xl border border-white/10 bg-black/30 p-5">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/70">No-Purchase / Transit-Accessible Option</p>
+              <h3 className="mt-2 text-lg font-bold text-white">Skip the Paid Swamp Tour — City Park &amp; Bayou Metairie via RTA Streetcar</h3>
+              <p className="mt-2 text-sm leading-6 text-white/80">
+                <strong>Why it fits tight budgets or bad weather:</strong> Reachable without a car for $1.25 on the Canal Street–City Park/Museum RTA streetcar; ancient live oaks, Couturie Forest lagoon paths, and zero rural transfer time.
+              </p>
+              <p className="mt-2 text-xs leading-5 text-white/65">
+                <strong>What could make it unsuitable:</strong> Urban park setting rather than a wild cypress bayou boat excursion.
+              </p>
+            </article>
+          </div>
+
+          <div className="rounded-2xl border border-amber-400/25 bg-amber-500/[0.06] p-4 text-xs leading-6 text-amber-100/90">
+            <strong>Explicit Assumptions &amp; Unknowns:</strong> Until you specify your youngest child&rsquo;s exact age, your hotel location, and your travel date, DCC cannot verify airboat eligibility or confirm which hotel shuttle stop applies. Swamp docks in Slidell (Honey Island), Manchac/LaPlace, and Jean Lafitte are 30–45 minutes outside New Orleans where return cab/Uber/Lyft service is unavailable—never book a &ldquo;Self-Drive / Meet at Dock&rdquo; ticket if you do not have a car. A weather forecast never guarantees a departure will run.
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-2 text-xs text-white/75" data-dcc-shared-evidence-bound="true">
+            {(swampGuide?.citations || []).map((cite) => (
+              <div key={cite.id} className="rounded-2xl border border-white/10 bg-black/25 p-3.5">
+                <a href={cite.url} target="_blank" rel="noopener noreferrer" className="font-semibold text-white hover:text-cyan-200 underline underline-offset-4">
+                  {cite.label} ↗
+                </a>{" "}
+                <span className="text-white/50">(Checked {cite.checkedAt})</span>: {cite.claimSupported}
+              </div>
+            ))}
+          </div>
+        </section>
 
         <section className="hidden items-center justify-between gap-8 rounded-3xl border border-[#8df0cc]/20 bg-[linear-gradient(135deg,rgba(17,29,31,0.96),rgba(7,14,22,0.96))] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.28)] lg:flex">
           <div className="max-w-2xl">
@@ -237,7 +322,7 @@ export default async function NewOrleansSwampToursPage({
               href={satelliteHref}
               className="mt-5 inline-flex rounded-2xl border border-white/12 bg-white/6 px-5 py-3 text-sm font-medium text-white/88 hover:bg-white/10"
             >
-              Open the booking surface
+              Open the comparison surface
             </a>
           </div>
           <div className="shrink-0 rounded-[2rem] border border-white/10 bg-white p-4 text-center shadow-[0_18px_40px_rgba(0,0,0,0.22)]">
@@ -257,23 +342,27 @@ export default async function NewOrleansSwampToursPage({
             <h2 className="text-2xl font-bold">How this lane works</h2>
             <div className="mt-4 space-y-4 text-sm leading-7 text-white/78">
               <p>
-                Swamp-tour buyers usually already know the activity. The real friction is figuring out which type of ride fits the day, whether there are open spots, and how to move straight into a live departure without bouncing through generic aggregator pages.
+                Swamp-tour buyers usually already know the activity. The real friction is figuring out which type of ride fits the family (covered pontoon vs. high-speed airboat), whether hotel shuttle transport is included, and how to move into a specific operator product without bouncing through generic aggregator homepages.
               </p>
               <p>
-                DCC handles the explanation and intent routing. The satellite handles the live slot surface. The booking is then completed directly with the provider through FareHarbor, so the visitor feels like they are booking at the source instead of through a vague middle layer.
+                DCC handles the source-backed comparison and intent routing. The specialist satellite or direct operator surface handles live departure slots, and reservations are completed with the provider.
               </p>
             </div>
           </article>
-          <article className="rounded-3xl border border-white/10 bg-black/20 p-6">
-            <div className="text-xs uppercase tracking-[0.18em] text-cyan-300">Booking notice</div>
+          <article className="rounded-3xl border border-white/10 bg-black/20 p-6" data-dcc-compliance-disclosure="true">
+            <div className="text-xs uppercase tracking-[0.18em] text-cyan-300">Commercial transparency notice</div>
             <p className="mt-4 text-sm leading-7 text-white/76">
-              DCC Fast Pass gives visitors a faster route into live availability and direct bookings with the provider through FareHarbor. DCC may earn a commission from the operator.
+              DCC compares direct operator, marketplace, public/free, and no-purchase alternatives using the same constraint rules regardless of commission. If you choose to book through a partner link, DCC may earn a commission at no extra cost to you. Review our{" "}
+              <Link href="/affiliate-disclosure" className="text-cyan-300 underline underline-offset-4">
+                Affiliate &amp; Portfolio Disclosure
+              </Link>
+              .
             </p>
             <a
               href={satelliteHref}
               className="mt-5 inline-flex rounded-2xl border border-white/12 bg-white/6 px-4 py-3 text-sm font-medium text-white/88 hover:bg-white/10"
             >
-              Open live slots
+              Open specialist swamp comparison
             </a>
           </article>
         </section>
@@ -362,7 +451,7 @@ export default async function NewOrleansSwampToursPage({
         </section>
 
         <p className="text-center text-sm font-semibold uppercase tracking-[0.18em] text-white/46">
-          DCC Fast Pass - To Direct Bookings
+          DCC Decision Layer — Source-Backed Comparison Before Booking
         </p>
       </div>
     </main>

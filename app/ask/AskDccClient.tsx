@@ -5,11 +5,31 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
 type Message = { role: "user" | "assistant"; content: string };
+type Citation = {
+  id: string;
+  label: string;
+  organization: string;
+  url: string;
+  checkedAt: string;
+  claimSupported: string;
+};
+type OptionComparison = {
+  optionType: "direct_operator" | "marketplace" | "specialist" | "public_or_free" | "no_purchase";
+  name: string;
+  fitSummary: string;
+  whenUnsuitable: string;
+  url?: string;
+  urlLabel?: string;
+};
 type Result = {
   answer: string;
   mode?: "graph" | "ai";
   confidence: "high" | "medium" | "low";
-  sources: Array<{ slug: string; title: string; href: string; category: string }>;
+  verifiedAt?: string | null;
+  assumptionsAndUnknowns?: string[];
+  citations?: Citation[];
+  optionComparison?: OptionComparison[];
+  sources: Array<{ slug: string; title: string; href: string; category: string; verifiedAt?: string }>;
   handoff: null | { siteName: string; href: string; reason: string };
 };
 
@@ -90,7 +110,7 @@ export default function AskDccClient() {
     }
     void fetch("/api/ask-dcc/telemetry", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", },
       body: payload,
       keepalive: true,
     });
@@ -134,17 +154,73 @@ export default function AskDccClient() {
       </div>
 
       {result && (
-        <div className="mt-6 grid gap-5 lg:grid-cols-[1fr_.9fr]">
-          <section className="rounded-3xl border border-slate-800 bg-[#0d131d] p-6">
-            <div className="flex justify-between gap-3"><h2 className="font-black text-white">Research used</h2><span className="text-xs uppercase text-slate-500">{result.confidence} match{result.mode ? ` · ${result.mode}` : ""}</span></div>
-            <div className="mt-4 space-y-3">
-              {result.sources.length ? result.sources.map((source) => <Link key={source.slug} href={source.href} className="block rounded-2xl border border-slate-800 p-4 hover:border-cyan-700"><p className="text-xs font-black uppercase tracking-wider text-cyan-300">{source.category}</p><p className="mt-2 text-sm font-bold text-white">{source.title}</p></Link>) : <p className="text-sm text-slate-400">No strong published match yet. Add destination, timing, group size, or the tradeoff.</p>}
-            </div>
-          </section>
-          <section className="rounded-3xl border border-amber-900/40 bg-amber-950/10 p-6">
-            <p className="text-xs font-black uppercase tracking-wider text-amber-300">Next best action</p>
-            {result.handoff && handoffHref ? <><h2 className="mt-3 text-2xl font-black text-white">{result.handoff.siteName}</h2><p className="mt-3 text-sm leading-6 text-slate-300">{result.handoff.reason}</p><a href={handoffHref} onClick={() => recordHandoffClick(result.handoff!, result.sources, handoffHref)} className="mt-5 inline-flex rounded-xl bg-amber-300 px-5 py-3 text-sm font-black text-[#17110a]">See options on {result.handoff.siteName} ↗</a></> : <><h2 className="mt-3 text-xl font-black text-white">Stay in research mode.</h2><p className="mt-3 text-sm text-slate-400">DCC has not justified a commercial handoff yet. Ask a follow-up instead.</p></>}
-          </section>
+        <div className="mt-6 space-y-5">
+          {result.assumptionsAndUnknowns && result.assumptionsAndUnknowns.length > 0 && (
+            <section className="rounded-3xl border border-amber-900/50 bg-[#14110b] p-6">
+              <p className="text-xs font-black uppercase tracking-wider text-amber-300">Explicit unknowns &amp; planning assumptions</p>
+              <p className="mt-1 text-xs text-slate-400">DCC treats unverified schedule, age, bag, and inventory details as unknown rather than guessing.</p>
+              <ul className="mt-4 space-y-2 text-sm leading-6 text-slate-200">
+                {result.assumptionsAndUnknowns.map((item) => (
+                  <li key={item} className="rounded-xl border border-amber-900/30 bg-black/30 px-4 py-3">{item}</li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {result.optionComparison && result.optionComparison.length > 0 && (
+            <section className="rounded-3xl border border-slate-800 bg-[#0d131d] p-6">
+              <p className="text-xs font-black uppercase tracking-wider text-cyan-300">Fair option comparison (direct, marketplace, public/free &amp; no-purchase)</p>
+              <div className="mt-4 grid gap-3 md:grid-cols-2">
+                {result.optionComparison.map((opt) => (
+                  <div key={opt.name} className="rounded-2xl border border-slate-800 bg-[#080c12] p-4">
+                    <span className="text-[11px] font-black uppercase tracking-wider text-cyan-300">{opt.optionType.replace(/_/g, " ")}</span>
+                    <h3 className="mt-1 text-sm font-black text-white">{opt.name}</h3>
+                    <p className="mt-2 text-xs leading-5 text-slate-300"><strong className="text-slate-100">Why it fits:</strong> {opt.fitSummary}</p>
+                    <p className="mt-1 text-xs leading-5 text-slate-400"><strong className="text-slate-200">When unsuitable:</strong> {opt.whenUnsuitable}</p>
+                    {opt.url && (
+                      <a href={opt.url} className="mt-3 inline-block text-xs font-bold text-cyan-300 hover:underline">
+                        {opt.urlLabel || "Inspect option source"} ↗
+                      </a>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {result.citations && result.citations.length > 0 && (
+            <section className="rounded-3xl border border-slate-800 bg-[#0d131d] p-6">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h2 className="font-black text-white">Verified sources &amp; check timestamps</h2>
+                {result.verifiedAt && <span className="text-xs text-emerald-300">Last verified: {result.verifiedAt}</span>}
+              </div>
+              <div className="mt-4 space-y-3">
+                {result.citations.map((cite) => (
+                  <div key={cite.id} className="rounded-2xl border border-slate-800 bg-[#080c12] p-4 text-xs leading-5">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="font-bold text-white">{cite.label}</span>
+                      <span className="text-slate-400">{cite.organization} · Checked {cite.checkedAt}</span>
+                    </div>
+                    <p className="mt-1 text-slate-300">{cite.claimSupported}</p>
+                    <a href={cite.url} rel="noopener noreferrer" className="mt-2 inline-block font-bold text-cyan-300 hover:underline">{cite.url} ↗</a>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          <div className="grid gap-5 lg:grid-cols-[1fr_.9fr]">
+            <section className="rounded-3xl border border-slate-800 bg-[#0d131d] p-6">
+              <div className="flex justify-between gap-3"><h2 className="font-black text-white">Research used</h2><span className="text-xs uppercase text-slate-500">{result.confidence} match{result.mode ? ` · ${result.mode}` : ""}</span></div>
+              <div className="mt-4 space-y-3">
+                {result.sources.length ? result.sources.map((source) => <Link key={source.slug} href={source.href} className="block rounded-2xl border border-slate-800 p-4 hover:border-cyan-700"><p className="text-xs font-black uppercase tracking-wider text-cyan-300">{source.category}{source.verifiedAt ? ` · verified ${source.verifiedAt}` : ""}</p><p className="mt-2 text-sm font-bold text-white">{source.title}</p></Link>) : <p className="text-sm text-slate-400">No strong published match yet. Add destination, timing, group size, or the tradeoff.</p>}
+              </div>
+            </section>
+            <section className="rounded-3xl border border-amber-900/40 bg-amber-950/10 p-6">
+              <p className="text-xs font-black uppercase tracking-wider text-amber-300">Next best action</p>
+              {result.handoff && handoffHref ? <><h2 className="mt-3 text-2xl font-black text-white">{result.handoff.siteName}</h2><p className="mt-3 text-sm leading-6 text-slate-300">{result.handoff.reason}</p><a href={handoffHref} onClick={() => recordHandoffClick(result.handoff!, result.sources, handoffHref)} className="mt-5 inline-flex rounded-xl bg-amber-300 px-5 py-3 text-sm font-black text-[#17110a]">See options on {result.handoff.siteName} ↗</a></> : <><h2 className="mt-3 text-xl font-black text-white">Stay in research mode.</h2><p className="mt-3 text-sm text-slate-400">DCC has not justified a commercial handoff yet. Ask a follow-up instead.</p></>}
+            </section>
+          </div>
         </div>
       )}
     </div>

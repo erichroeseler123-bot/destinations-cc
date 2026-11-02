@@ -262,3 +262,24 @@ export function getPortfolioSiteContract(id: string) {
 export function portfolioSiteContractsByStrategy(strategy: PortfolioStrategy) {
   return PORTFOLIO_SITE_CONTRACTS.filter((site) => site.strategy === strategy);
 }
+
+export function resolvePortfolioSiteContractByUrl(
+  urlOrPath: string,
+): PortfolioSiteContract | null {
+  try {
+    const parsed = new URL(urlOrPath, "https://destinationcommandcenter.com");
+    const host = parsed.hostname.replace(/^www\./i, "").toLowerCase();
+    for (const contract of PORTFOLIO_SITE_CONTRACTS) {
+      if (!contract.canonicalUrl) continue;
+      const contractHost = new URL(contract.canonicalUrl).hostname
+        .replace(/^www\./i, "")
+        .toLowerCase();
+      if (host === contractHost) {
+        return contract;
+      }
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}

@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+export const revalidate = 3600;
+
 export const metadata: Metadata = {
   title: "Terms of Use | Destination Command Center",
   description: "Terms of use for Destination Command Center and connected routing across the Destination Command Network.",
   alternates: { canonical: "/terms" },
+  robots: { index: false, follow: false },
 };
 
 export default function TermsPage() {

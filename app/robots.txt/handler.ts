@@ -22,6 +22,9 @@ const PUBLIC_CRAWL_RULES = [
   "Disallow: /api/",
   "Disallow: /internal/",
   "Disallow: /dashboard/",
+  "Disallow: /map",
+  "Disallow: /command",
+  "Disallow: /governance",
   "Disallow: /_vercel/",
   "Disallow: /wp-content/",
   "Disallow: /test/",
@@ -53,7 +56,6 @@ export function buildRobotsTxt(host: string) {
   }
 
   const sitemaps = [`Sitemap: ${sitemapUrl}`];
-  if (isDcc) sitemaps.push("Sitemap: https://destinationcommandcenter.com/locations-sitemap.xml");
 
   return [...groups, ...sitemaps].join("\n\n");
 }

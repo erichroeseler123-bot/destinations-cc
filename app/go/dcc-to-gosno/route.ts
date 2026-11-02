@@ -1,5 +1,6 @@
 import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
+import { issueOpaqueClickAttribution } from "@/lib/dcc/commerce/opaqueAttributionLedger";
 
 const ALLOWED_GOSNO_DESTINATIONS = new Set([
   "breckenridge",
@@ -54,6 +55,22 @@ export async function GET(request: Request) {
   const vehicleType = slug(incoming.searchParams.get("vehicle_type"));
   const rawSourcePage = clean(incoming.searchParams.get("source_page"), 240);
   const sourcePage = rawSourcePage.startsWith("/location/") ? rawSourcePage : "/go/dcc-to-gosno";
+  const receiptId = clean(incoming.searchParams.get("receipt_id") || incoming.searchParams.get("receiptId"), 128) || null;
+  const operatorId = clean(incoming.searchParams.get("operator_id") || incoming.searchParams.get("operatorId"), 96) || `gosno:${destination}`;
+  const evidenceVersion = clean(incoming.searchParams.get("evidence_version") || incoming.searchParams.get("evidenceVersion"), 128) || "dcc-evidence-stewardship/2026.11";
+  const handoffId = `ho_${randomUUID()}`;
+
+  const opaqueRecord = issueOpaqueClickAttribution({
+    decisionReceiptId: receiptId || `rcpt:sha256:${"0".repeat(64)}`,
+    recommendedOperatorId: operatorId,
+    recommendedOperatorName: `GoSno Mountain Transfer (${destination})`,
+    recommendedVehicleClassId: vehicleType ? `veh:${vehicleType}` : null,
+    evidenceVersion,
+    handoffId,
+    provider: "direct",
+    productCode: `gosno-${destination}`,
+    productDestinationUrl: target.toString(),
+  });
 
   target.searchParams.set("destination", destination);
   if (airport) target.searchParams.set("airport", airport);
@@ -61,7 +78,8 @@ export async function GET(request: Request) {
   if (/^\d{1,2}$/.test(partySize)) target.searchParams.set("party_size", partySize);
   if (vehicleType) target.searchParams.set("vehicle_type", vehicleType);
 
-  target.searchParams.set("dcc_handoff_id", `ho_${randomUUID()}`);
+  target.searchParams.set("dcc_handoff_id", handoffId);
+  target.searchParams.set("click_id", opaqueRecord.clickId);
   target.searchParams.set("source_page", sourcePage);
 
   return NextResponse.redirect(target, 302);

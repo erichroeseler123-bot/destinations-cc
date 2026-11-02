@@ -57,7 +57,7 @@ export default async function NewOrleansToursPage({
   searchParams,
 }: {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
-} = {}) {
+}) {
   const resolvedSearch = searchParams ? await searchParams : {};
   const firstStr = (v: string | string[] | undefined) =>
     Array.isArray(v) ? v[0] : v;

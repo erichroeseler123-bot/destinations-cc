@@ -7,7 +7,11 @@ import {
   guidesForCategory,
 } from "@/src/data/decision-taxonomy";
 
+import { getPublicationManifestEntry } from "@/src/data/publication-manifest";
+
 const ORIGIN = "https://destinationcommandcenter.com";
+
+export const revalidate = 3600;
 
 type Props = {
   params: Promise<{ category: string }>;
@@ -21,14 +25,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { category: slug } = await params;
   const category = getDecisionCategory(slug);
   if (!category) return {};
-  const url = `${ORIGIN}/guides/category/${category.slug}`;
+  const route = `/guides/category/${category.slug}`;
+  const manifestEntry = getPublicationManifestEntry(route);
+  const url = manifestEntry?.canonicalUrl || `${ORIGIN}${route}`;
+  const isIndexable = manifestEntry?.indexingState === "index_follow";
   return {
     title: `${category.label} Decision Guides | Destination Command Center`,
     description: category.promise,
     alternates: { canonical: url },
+    robots: { index: isIndexable, follow: isIndexable },
     openGraph: { title: `${category.label} Decision Guides`, description: category.promise, url, type: "website" },
   };
 }
+
 
 export default async function DecisionCategoryPage({ params }: Props) {
   const { category: slug } = await params;

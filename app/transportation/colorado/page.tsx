@@ -7,13 +7,21 @@ import { getColoradoTransferRecommendationActions } from "@/lib/dcc/handoffAnaly
 import { getTravelReferenceNodeById } from "@/lib/dcc/travelReference";
 import { getTransportEntriesByRegion } from "@/src/data/transport-directory";
 
-export const dynamic = "force-dynamic";
+import { getPublicationManifestEntry } from "@/src/data/publication-manifest";
+
+export const revalidate = 3600;
+
+const manifestEntry = getPublicationManifestEntry("/transportation/colorado");
 
 export const metadata: Metadata = {
   title: "Colorado Transportation & I-70 Mountain Corridor Reference | Destination Command Center",
   description:
     "Colorado transportation reference across the Denver–Breckenridge I-70 corridor, Red Rocks Amphitheatre, Denver venues, Bustang/Pegasus transit, and CDOT traction laws.",
-  alternates: { canonical: "/transportation/colorado" },
+  alternates: { canonical: manifestEntry?.canonicalUrl || "/transportation/colorado" },
+  robots: {
+    index: manifestEntry?.indexingState === "index_follow",
+    follow: manifestEntry?.indexingState === "index_follow",
+  },
 };
 
 const GROUPS = [
@@ -39,25 +47,7 @@ const GROUPS = [
   },
 ];
 
-export default async function ColoradoTransportationPage({
-  searchParams,
-}: {
-  searchParams?: Promise<Record<string, string | string[] | undefined>>;
-}) {
-  const resolvedSearch = searchParams ? await searchParams : {};
-  const firstStr = (v: string | string[] | undefined) =>
-    Array.isArray(v) ? v[0] : v;
-  const dateParam = firstStr(resolvedSearch.date) || firstStr(resolvedSearch.arrivalDate);
-  const partyParam =
-    firstStr(resolvedSearch.party_size) ||
-    firstStr(resolvedSearch.travelers) ||
-    firstStr(resolvedSearch.passengerCount) ||
-    firstStr(resolvedSearch.passengers) ||
-    firstStr(resolvedSearch.qty);
-  const customChoiceParam =
-    firstStr(resolvedSearch.direction) ||
-    firstStr(resolvedSearch.pickup_hub);
-
+export default async function ColoradoTransportationPage() {
   const actions = getColoradoTransferRecommendationActions();
   const entries = getTransportEntriesByRegion("Colorado");
   const bySlug = new Map(entries.map((entry) => [entry.slug, entry]));
@@ -112,22 +102,14 @@ export default async function ColoradoTransportationPage({
           <TravelReferenceExperience
             node={corridorRef}
             embedded
-            initialContext={{
-              date: dateParam,
-              partySize: partyParam,
-              customChoice: customChoiceParam,
-            }}
           />
         ) : null}
 
         <RideOptionsCard
           venueSlug="red-rocks-amphitheatre"
           sourcePage="/transportation/colorado"
-          bookingContext={{
-            date: dateParam,
-            qty: partyParam,
-          }}
         />
+
 
         <NextStepEngine
           title="Colorado Transfer Next Step"
