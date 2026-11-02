@@ -6,8 +6,8 @@ import { NextRequest } from "next/server";
 import {
   buildEventVenueJsonLd,
   buildPlaceJsonLd,
+  resolveVenueGeo,
 } from "@/lib/dcc/jsonld";
-import { resolveVenueGeo } from "@/app/venues/[slug]/page";
 import {
   generateMetadata as generateLocationMetadata,
   generateStaticParams as generateLocationStaticParams,

@@ -13,50 +13,12 @@ import { getDecisionEnginePageByPath } from "@/src/data/decision-engine-pages";
 import { getSportsTeam, getTeamsByVenue } from "@/src/data/sports-teams-config";
 import { getSportsVenue, getSportsVenueSlugs } from "@/src/data/sports-venues-config";
 import { buildMapsSearchUrl, buildOfficialSearchUrl, type PageAction } from "@/src/lib/page-actions";
-import { buildBreadcrumbJsonLd, buildEventVenueJsonLd } from "@/lib/dcc/jsonld";
+import { buildBreadcrumbJsonLd, buildEventVenueJsonLd, resolveVenueGeo } from "@/lib/dcc/jsonld";
 import TravelReferenceExperience from "@/app/components/dcc/TravelReferenceExperience";
 import { getTravelReferenceNodeById } from "@/lib/dcc/travelReference";
-import { getNodeBySlugInClass } from "@/lib/dcc/registry";
 import { getPublicationManifestEntry } from "@/src/data/publication-manifest";
 
 type Params = { slug: string };
-
-const VENUE_GEO_BY_SLUG: Record<string, { lat: number; lng: number; capacity?: number; region?: string }> = {
-  "red-rocks-amphitheatre": { lat: 39.6654, lng: -105.2057, capacity: 9525, region: "CO" },
-  "ball-arena": { lat: 39.7487, lng: -105.0077, capacity: 19520, region: "CO" },
-  "empower-field-at-mile-high": { lat: 39.7439, lng: -105.0201, capacity: 76125, region: "CO" },
-  "coors-field": { lat: 39.7559, lng: -104.9942, capacity: 50144, region: "CO" },
-  "dicks-sporting-goods-park": { lat: 39.8056, lng: -104.8919, capacity: 18061, region: "CO" },
-  "allegiant-stadium": { lat: 36.0909, lng: -115.1833, capacity: 65000, region: "NV" },
-  "t-mobile-arena": { lat: 36.1029, lng: -115.1784, capacity: 17500, region: "NV" },
-  "caesars-superdome": { lat: 29.9511, lng: -90.0812, capacity: 73208, region: "LA" },
-  "smoothie-king-center": { lat: 29.949, lng: -90.0821, capacity: 16867, region: "LA" },
-  "hard-rock-stadium": { lat: 25.958, lng: -80.2389, capacity: 64767, region: "FL" },
-  "kaseya-center": { lat: 25.7814, lng: -80.187, capacity: 19600, region: "FL" },
-};
-
-export function resolveVenueGeo(
-  slug: string,
-): { lat: number; lng: number; capacity?: number; region?: string } | undefined {
-  const direct = VENUE_GEO_BY_SLUG[slug];
-  if (direct) return direct;
-  try {
-    const venueNode = getNodeBySlugInClass(slug, "venue");
-    if (
-      typeof venueNode?.geo?.lat === "number" &&
-      typeof venueNode?.geo?.lon === "number"
-    ) {
-      return {
-        lat: venueNode.geo.lat,
-        lng: venueNode.geo.lon,
-        region: venueNode.admin?.admin1_code || undefined,
-      };
-    }
-  } catch {
-    // ignore lookup errors; unknown venue coordinates must remain undefined
-  }
-  return undefined;
-}
 
 const RED_ROCKS_VENUE_FALLBACK = {
   slug: "red-rocks-amphitheatre",

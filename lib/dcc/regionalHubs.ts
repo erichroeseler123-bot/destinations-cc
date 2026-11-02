@@ -407,13 +407,11 @@ function buildRegionalHubModel(config: RegionalHubConfig): RegionalHubModel {
       ports.push({
         slug: port.slug,
         name: port.name,
-        area: port.area,
+        area: port.area || config.name,
         href,
         lat: port.lat,
         lng: port.lng ?? port.lon,
-        summary:
-          port.description ||
-          `${port.name} (${port.area}) cruise and marine terminal logistics.`,
+        summary: `${port.name} (${port.area || config.name}) cruise and marine terminal logistics.`,
         manifestRecord: getPublicationManifestEntry(href),
       });
     }
@@ -425,8 +423,8 @@ function buildRegionalHubModel(config: RegionalHubConfig): RegionalHubModel {
     const matchesState = config.guideCategoryOrSlugs.some(
       (kw) =>
         guide.slug.includes(kw) ||
-        guide.categorySlug?.includes(kw) ||
-        guide.locationLabel?.toLowerCase().includes(kw),
+        guide.category.includes(kw) ||
+        guide.eyebrow.toLowerCase().includes(kw),
     );
     if (matchesState) {
       const href = `/guides/${guide.slug}`;
@@ -434,7 +432,7 @@ function buildRegionalHubModel(config: RegionalHubConfig): RegionalHubModel {
         slug: guide.slug,
         title: guide.title,
         href,
-        summary: guide.QuickAnswer?.verdict || guide.metaDescription || guide.title,
+        summary: guide.answer || guide.description || guide.title,
         manifestRecord: getPublicationManifestEntry(href),
       });
     }

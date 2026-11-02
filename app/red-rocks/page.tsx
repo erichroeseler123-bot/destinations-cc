@@ -60,10 +60,10 @@ export default async function RedRocksPage() {
                 lng: redRocksReference?.primaryCoordinate.lng ?? -105.2057,
               },
               maximumAttendeeCapacity: 9525,
-              containedInPlaceName: "Colorado",
-              containedInPlacePath: "/destinations/colorado",
+              containedInName: "Colorado",
+              containedInPath: "/destinations/colorado",
               sameAs: ["https://www.redrocksonline.com/"],
-              touristType: ["Concert travelers", "Outdoor enthusiasts", "Red Rocks shuttle riders"],
+              touristTypes: ["Concert travelers", "Outdoor enthusiasts", "Red Rocks shuttle riders"],
             }),
             buildBreadcrumbJsonLd([
               { name: "Home", item: "/" },

@@ -162,7 +162,7 @@ export function buildTravelReferenceNodeLlmsTxt(node: TravelReferenceNode): stri
     lines.push(`- **Routing & Transit**: ${scenario.dependencies.routingAndTransit}`);
     lines.push(`- **Trip Purpose**: ${scenario.dependencies.tripPurpose}`);
     lines.push(`- **Date & Validity Rule**: ${scenario.dependencies.dateAndValidityRule}`);
-    lines.push(`- **Official Rule Summary**: ${scenario.officialRuleSummary}`);
+    lines.push(`- **Official Rule Summary**: ${scenario.officialRequirementSummary}`);
     lines.push(`- **Practical Explanation**: ${scenario.dccPracticalExplanation}`);
     for (const link of scenario.officialLinks) {
       lines.push(`- **Primary Authority**: [${link.label} (${link.issuingOrganization})](${link.url})`);
