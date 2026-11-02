@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import RedRocksAuthorityPage from "@/app/components/dcc/RedRocksAuthorityPage";
 import TravelReferenceExperience from "@/app/components/dcc/TravelReferenceExperience";
+import JsonLd from "@/app/components/dcc/JsonLd";
+import { buildBreadcrumbJsonLd, buildEventVenueJsonLd } from "@/lib/dcc/jsonld";
 import { getPublishedTravelReferenceNodeById } from "@/lib/dcc/travelReference";
 import { PARR_OPERATOR } from "@/lib/parrOperator";
 import { getLocalFallbackImageSetForEntity } from "@/src/lib/media/source-local";
@@ -36,6 +38,41 @@ export default async function RedRocksPage() {
 
   return (
     <div className="bg-[#060b12] text-white">
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@graph": [
+            buildEventVenueJsonLd({
+              path: "/red-rocks",
+              name: "Red Rocks Park & Amphitheatre",
+              description:
+                redRocksReference?.heroSummary ||
+                "Open-air amphitheatre at 6,450 ft in Morrison, Colorado, operated by Denver Arts & Venues with concert shuttle and parking logistics.",
+              address: {
+                streetAddress: "18300 W Alameda Pkwy",
+                locality: "Morrison",
+                region: "CO",
+                postalCode: "80465",
+                country: "US",
+              },
+              geo: {
+                lat: redRocksReference?.primaryCoordinate.lat ?? 39.6654,
+                lng: redRocksReference?.primaryCoordinate.lng ?? -105.2057,
+              },
+              maximumAttendeeCapacity: 9525,
+              containedInPlaceName: "Colorado",
+              containedInPlacePath: "/destinations/colorado",
+              sameAs: ["https://www.redrocksonline.com/"],
+              touristType: ["Concert travelers", "Outdoor enthusiasts", "Red Rocks shuttle riders"],
+            }),
+            buildBreadcrumbJsonLd([
+              { name: "Home", item: "/" },
+              { name: "Colorado", item: "/destinations/colorado" },
+              { name: "Red Rocks Park & Amphitheatre", item: "/red-rocks" },
+            ]),
+          ],
+        }}
+      />
       {redRocksReference ? <TravelReferenceExperience node={redRocksReference} embedded /> : null}
       <RedRocksAuthorityPage
         eyebrow="DCC Red Rocks Hub"

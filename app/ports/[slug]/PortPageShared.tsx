@@ -360,6 +360,8 @@ export async function renderPortPage(slug: string, isLfse = false) {
     port.slug === "juneau" || port.slug === "new-orleans"
       ? await getPublishedTravelReferenceNodeById(port.slug)
       : null;
+  const portLat = port.lat ?? portReferenceNode?.primaryCoordinate.lat;
+  const portLng = port.lng ?? port.lon ?? portReferenceNode?.primaryCoordinate.lng;
 
   return (
     <>
@@ -372,9 +374,14 @@ export async function renderPortPage(slug: string, isLfse = false) {
               name: pageTitle,
               description,
               address: {
+                locality: port.city || port.name,
                 region,
                 country,
               },
+              geo:
+                typeof portLat === "number" && typeof portLng === "number"
+                  ? { lat: portLat, lng: portLng }
+                  : undefined,
               touristTypes: ["Cruise travelers", "Shore excursion buyers", "Port planners"],
             }),
             buildBreadcrumbJsonLd([

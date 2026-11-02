@@ -121,6 +121,7 @@ function maxIsoDate(dates: Array<string | undefined | null>, fallback: string): 
 
 function createRecord(input: {
   route: string;
+  canonicalPathOverride?: string | null;
   acceptanceState: PublicationAcceptanceState;
   blockingReasonCodes?: readonly PublicationBlockingReasonCode[];
   evidenceSnapshotId: string | null;
@@ -165,7 +166,7 @@ function createRecord(input: {
 
   return {
     route: input.route,
-    canonicalUrl: toCanonicalUrl(input.route),
+    canonicalUrl: toCanonicalUrl(input.canonicalPathOverride || input.route),
     acceptanceState: input.acceptanceState,
     publicationState,
     indexingState: isIndexable ? "index_follow" : "noindex_nofollow",
@@ -399,6 +400,7 @@ export function evaluateCoordinatePublishability(
 
   return createRecord({
     route,
+    canonicalPathOverride: location.canonicalNamedPath,
     acceptanceState: "public_non_indexable",
     blockingReasonCodes: reasons,
     evidenceSnapshotId: null,
@@ -645,6 +647,75 @@ function compilePublicationManifest(): readonly PublicationManifestRecord[] {
       materialChangeDate: "2026-10-23",
     }),
   );
+
+  // 2b. Regional Topic Cluster Hubs (/destinations and /destinations/[state]) derived from state Reference Nodes
+  register(
+    createRecord({
+      route: "/destinations",
+      acceptanceState: scopeReady && allNodesHealthy ? "public_indexable" : "public_non_indexable",
+      blockingReasonCodes: scopeReady && allNodesHealthy ? [] : ["incomplete_operator_universe"],
+      evidenceSnapshotId:
+        scopeReady && allNodesHealthy ? `evidence:hub:destinations:${latestNodeDate}` : null,
+      materialChangeDate: latestNodeDate,
+    }),
+  );
+
+  const regionalHubSpecs: Array<{
+    stateSlug: string;
+    requiredNodePaths: string[];
+  }> = [
+    { stateSlug: "colorado", requiredNodePaths: ["/red-rocks", "/routes/denver-breckenridge"] },
+    { stateSlug: "alaska", requiredNodePaths: ["/juneau"] },
+    { stateSlug: "louisiana", requiredNodePaths: ["/new-orleans"] },
+    { stateSlug: "nevada", requiredNodePaths: ["/vegas"] },
+    { stateSlug: "florida", requiredNodePaths: [] },
+    { stateSlug: "montana", requiredNodePaths: [] },
+    { stateSlug: "wisconsin", requiredNodePaths: [] },
+    { stateSlug: "us-virgin-islands", requiredNodePaths: [] },
+  ];
+
+  for (const spec of regionalHubSpecs) {
+    const hasPromotedNodes = spec.requiredNodePaths.length > 0;
+    const nodesHealthyForState =
+      hasPromotedNodes &&
+      spec.requiredNodePaths.every(
+        (p) => nodeRecordsByCanonicalPath.get(p)?.acceptanceState === "public_indexable",
+      );
+    const stateMaterialDate = maxIsoDate(
+      spec.requiredNodePaths.map((p) => nodeRecordsByCanonicalPath.get(p)?.materialChangeDate),
+      "2026-11-02",
+    );
+    const snapshotId = nodesHealthyForState
+      ? `evidence:regional-hub:${spec.stateSlug}:${spec.requiredNodePaths.length}n:${stateMaterialDate}`
+      : null;
+    const blockingReasons: PublicationBlockingReasonCode[] = nodesHealthyForState
+      ? []
+      : hasPromotedNodes
+        ? ["blocking_defect_unresolved", "unverified_evidence_snapshot"]
+        : ["corridor_unpromoted"];
+
+    register(
+      createRecord({
+        route: `/destinations/${spec.stateSlug}`,
+        acceptanceState: nodesHealthyForState ? "public_indexable" : "public_non_indexable",
+        blockingReasonCodes: blockingReasons,
+        evidenceSnapshotId: snapshotId,
+        materialChangeDate: stateMaterialDate,
+      }),
+    );
+
+    if (!map.has(`/regions/${spec.stateSlug}`)) {
+      register(
+        createRecord({
+          route: `/regions/${spec.stateSlug}`,
+          acceptanceState: nodesHealthyForState ? "public_indexable" : "public_non_indexable",
+          blockingReasonCodes: blockingReasons,
+          evidenceSnapshotId: snapshotId,
+          materialChangeDate: stateMaterialDate,
+        }),
+      );
+    }
+  }
 
   // 3. Coordinate telemetry views (governed as non-indexable unless possessing distinct search value)
   for (const location of DISCOVERABLE_LOCATIONS) {

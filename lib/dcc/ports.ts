@@ -15,6 +15,9 @@ export type PortView = {
   country?: string;
   tags?: string[];
   passenger_volume?: number;
+  lat?: number;
+  lon?: number;
+  lng?: number;
 };
 
 const LEGACY_FALLBACK_ENABLED = process.env.DCC_LEGACY_FALLBACK !== "false";
@@ -30,8 +33,37 @@ function countryFromNode(node: DccNode): string {
   return node.admin?.country_name || node.admin?.country_code || "Unknown";
 }
 
+const PORT_GEO_FALLBACK_BY_SLUG: Record<string, { lat: number; lon: number }> = {
+  juneau: { lat: 58.2989, lon: -134.4053 },
+  "new-orleans": { lat: 29.9395, lon: -90.0617 },
+  ketchikan: { lat: 55.3422, lon: -131.6461 },
+  skagway: { lat: 59.4501, lon: -135.3208 },
+  sitka: { lat: 57.0531, lon: -135.33 },
+  icystraitpoint: { lat: 58.1328, lon: -135.4436 },
+  miami: { lat: 25.7781, lon: -80.1791 },
+  "port-canaveral": { lat: 28.4105, lon: -80.6186 },
+  tampa: { lat: 27.9428, lon: -82.4451 },
+  "key-west": { lat: 24.5592, lon: -81.8077 },
+  "fort-lauderdale": { lat: 26.0912, lon: -80.1189 },
+  "st-thomas": { lat: 18.3303, lon: -64.9221 },
+  seattle: { lat: 47.6114, lon: -122.3508 },
+  vancouver: { lat: 49.2888, lon: -123.1111 },
+};
+
+const LEGACY_COORDS_BY_SLUG = new Map<string, { lat: number; lon: number }>(
+  (legacyPortsData as Array<{ slug: string; lat?: number; lon?: number }>)
+    .filter((p) => typeof p.lat === "number" && typeof p.lon === "number")
+    .map((p) => [p.slug, { lat: p.lat!, lon: p.lon! }]),
+);
+
 function toPortView(node: DccNode): PortView {
   const area = areaFromNode(node);
+  const legacyCoord =
+    LEGACY_COORDS_BY_SLUG.get(node.slug) || PORT_GEO_FALLBACK_BY_SLUG[node.slug];
+  const lat =
+    typeof node.geo?.lat === "number" ? node.geo.lat : legacyCoord?.lat;
+  const lon =
+    typeof node.geo?.lon === "number" ? node.geo.lon : legacyCoord?.lon;
   return {
     slug: node.slug,
     name: node.display_name || node.name,
@@ -41,11 +73,25 @@ function toPortView(node: DccNode): PortView {
     country: countryFromNode(node),
     tags: node.tags || [],
     passenger_volume: node.metrics?.passenger_volume ?? undefined,
+    lat,
+    lon,
+    lng: lon,
   };
 }
 
 function getLegacyPorts(): PortView[] {
-  return legacyPortsData as PortView[];
+  return (legacyPortsData as Array<PortView & { lat?: number; lon?: number }>).map((p) => {
+    const fallback = PORT_GEO_FALLBACK_BY_SLUG[p.slug];
+    const lat = typeof p.lat === "number" ? p.lat : fallback?.lat;
+    const lon = typeof p.lon === "number" ? p.lon : fallback?.lon;
+    const lng = typeof p.lng === "number" ? p.lng : lon;
+    return {
+      ...p,
+      lat,
+      lon,
+      lng,
+    };
+  });
 }
 
 function getCanonicalPorts(): PortView[] {

@@ -8,6 +8,7 @@ import {
   AuthorityBadge,
   IntegrationBadge,
 } from "@/app/components/dcc/TravelReferenceClientInteractive";
+import TransitComparisonTable from "@/app/components/dcc/TransitComparisonTable";
 
 export default function CoordinateReferenceBridge({
   lat,
@@ -29,7 +30,7 @@ export default function CoordinateReferenceBridge({
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex flex-wrap items-center gap-2">
               <span className="rounded-full border border-amber-500/40 bg-amber-500/15 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-amber-300">
-                Coordinate Coverage & Safety Boundary
+                Coordinate Coverage &amp; Safety Boundary
               </span>
               <AuthorityBadge type="observation" />
             </div>
@@ -133,6 +134,14 @@ export default function CoordinateReferenceBridge({
             </div>
           ))}
         </div>
+
+        {/* Automated Side-by-Side Transit Comparison Table for this Coordinate */}
+        <TransitComparisonTable
+          modes={primaryNode.gettingThereAndAround.modes}
+          compact
+          title="Alternative Route & Transit Comparison"
+          subtitle="Side-by-side pricing models, egress timing, and statutory rules for this coordinate corridor"
+        />
 
         {/* Operational Non-Conflation Banner */}
         <div className="rounded-xl border border-amber-500/35 bg-amber-950/25 p-3.5 text-xs space-y-1.5">

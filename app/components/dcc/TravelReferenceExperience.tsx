@@ -15,6 +15,7 @@ import {
 } from "@/app/components/dcc/TravelReferenceClientInteractive";
 import JuneauPortDayPlanner from "@/app/components/dcc/JuneauPortDayPlanner";
 import FactualErrorReportForm from "@/app/components/dcc/FactualErrorReportForm";
+import TransitComparisonTable from "@/app/components/dcc/TransitComparisonTable";
 
 function cToF(celsius: number | null | undefined): string {
   if (celsius == null || !Number.isFinite(celsius)) return "—";
@@ -687,90 +688,14 @@ export default async function TravelReferenceExperience({
           </p>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          {node.gettingThereAndAround.modes.map((mode) => {
-            const qualification =
-              claimDependencies.transportModeQualificationById[mode.id];
-            return (
-              <article
-                key={mode.id}
-                data-transport-mode-id={mode.id}
-                className="rounded-2xl border border-white/10 bg-zinc-950/80 p-5 flex flex-col justify-between space-y-4"
-              >
-                <div className="space-y-3">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-cyan-400">
-                      {mode.category.replaceAll("_", " ")}
-                    </span>
-                    <IntegrationBadge
-                      status={
-                        mode.scheduleAndStatusIntegration === "live_integrated"
-                          ? "live_integrated"
-                          : "linked_official_resource"
-                      }
-                    />
-                  </div>
-                  <h3 className="text-lg font-bold text-white">{mode.modeName}</h3>
-                  {qualification && (
-                    <div
-                      role="note"
-                      className="rounded-xl border border-amber-400/40 bg-amber-950/40 p-3 text-xs text-amber-100"
-                    >
-                      <strong className="text-amber-300">
-                        Evidence Qualification:
-                      </strong>{" "}
-                      {qualification}
-                    </div>
-                  )}
-                  <p className="text-xs text-zinc-400">
-                    <strong className="text-zinc-200">Authority / Operator:</strong>{" "}
-                    {mode.operatorOrAuthority}
-                  </p>
-                  <p className="text-xs text-zinc-400">
-                    <strong className="text-zinc-200">Route / Coverage:</strong>{" "}
-                    {mode.routeOrCoverage}
-                  </p>
-                  <div className="rounded-xl border border-white/5 bg-zinc-900/70 p-3.5 space-y-1.5">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-300 block">
-                      Practical Reality
-                    </span>
-                    <p className="text-xs md:text-sm text-zinc-200 leading-relaxed">
-                      {mode.whatWorksInPractice}
-                    </p>
-                  </div>
-                  <ul className="space-y-1.5 text-xs text-zinc-300 list-disc pl-4">
-                    {mode.practicalConstraints.map((constraint, idx) => (
-                      <li key={idx}>{constraint}</li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className="pt-3 border-t border-white/10 flex flex-wrap items-center justify-between gap-2">
-                  <a
-                    href={mode.officialResourceUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-cyan-300 hover:underline"
-                  >
-                    <span>{mode.officialResourceLabel}</span>
-                    <span aria-hidden="true">↗</span>
-                  </a>
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    {mode.citationIds.map((cid) => (
-                      <a
-                        key={cid}
-                        href={`#cite-${cid}`}
-                        className="rounded border border-cyan-500/30 bg-cyan-500/10 px-2 py-0.5 font-mono text-[10px] text-cyan-200 hover:bg-cyan-500/20"
-                      >
-                        [{cid}]
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              </article>
-            );
-          })}
-        </div>
+        <TransitComparisonTable
+          modes={node.gettingThereAndAround.modes}
+          transportModeQualificationById={
+            claimDependencies.transportModeQualificationById
+          }
+          title="Alternative Route & Transit Comparison Matrix"
+          subtitle="Side-by-side comparison of pricing models, egress timing, bottlenecks, and statutory operating laws"
+        />
 
         <div className="rounded-2xl border border-emerald-500/30 bg-emerald-950/20 p-4 md:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">

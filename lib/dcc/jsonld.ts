@@ -7,8 +7,10 @@ type BreadcrumbItem = {
 };
 
 type AddressInput = {
+  streetAddress?: string;
   locality?: string;
   region?: string;
+  postalCode?: string;
   country?: string;
 };
 
@@ -42,11 +44,21 @@ function toAbsoluteUrl(pathOrUrl: string): string {
 }
 
 function maybeAddress(address?: AddressInput) {
-  if (!address?.locality && !address?.region && !address?.country) return undefined;
+  if (
+    !address?.streetAddress &&
+    !address?.locality &&
+    !address?.region &&
+    !address?.postalCode &&
+    !address?.country
+  ) {
+    return undefined;
+  }
   return {
     "@type": "PostalAddress",
+    streetAddress: address.streetAddress,
     addressLocality: address.locality,
     addressRegion: address.region,
+    postalCode: address.postalCode,
     addressCountry: address.country || "US",
   };
 }
@@ -480,6 +492,46 @@ export function buildPlaceJsonLd(input: {
       "@type": "Audience",
       audienceType,
     })),
+  };
+}
+
+export function buildEventVenueJsonLd(input: {
+  path: string;
+  name: string;
+  description: string;
+  address?: AddressInput;
+  geo?: GeoInput;
+  maximumAttendeeCapacity?: number;
+  containedInPath?: string;
+  containedInName?: string;
+  sameAs?: string[];
+  touristTypes?: string[];
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "@id": `${toAbsoluteUrl(input.path)}#venue`,
+    name: input.name,
+    url: toAbsoluteUrl(input.path),
+    description: input.description,
+    address: maybeAddress(input.address),
+    geo: maybeGeo(input.geo),
+    maximumAttendeeCapacity: input.maximumAttendeeCapacity,
+    sameAs: input.sameAs && input.sameAs.length > 0 ? input.sameAs : undefined,
+    containedInPlace:
+      input.containedInPath && input.containedInName
+        ? {
+            "@id": `${toAbsoluteUrl(input.containedInPath)}#destination`,
+            name: input.containedInName,
+          }
+        : undefined,
+    touristType: (input.touristTypes || []).map((audienceType) => ({
+      "@type": "Audience",
+      audienceType,
+    })),
+    isPartOf: {
+      "@id": `${SITE_IDENTITY.siteUrl}/#website`,
+    },
   };
 }
 

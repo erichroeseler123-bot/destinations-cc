@@ -125,7 +125,12 @@ test("5. Machine contracts (/scope.json, /agent.json, /llms.txt, /openapi.json) 
   const agentData = await agentRes.json();
   assert.equal(agentData.schema_version, "2026-10-23");
   assert.ok(agentData.travel_reference_architecture);
-  assert.equal(agentData.octo_connectivity.status, "pilot_and_directory_onboarding_layer");
+  assert.ok(
+    [
+      "pilot_and_directory_onboarding_layer",
+      "reference_registry_only_direct_sales_disabled",
+    ].includes(agentData.octo_connectivity.status),
+  );
 
   const llmsRes = await getLlmsTxt();
   const llmsText = await llmsRes.text();

@@ -1,15 +1,28 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import { notFound, permanentRedirect } from "next/navigation";
 import DenseLocationView from "@/app/components/dcc/DenseLocationView";
 import ExtendedLocationPanels from "@/app/components/dcc/ExtendedLocationPanels";
 import CoordinateReferenceBridge from "@/app/components/dcc/CoordinateReferenceBridge";
 import { logDiscoveryRequest } from "@/lib/dcc/discoveryTelemetry";
-import { canonicalCoordinate, getDiscoverableLocation, isIndexableCoordinate } from "@/lib/dcc/locationDiscovery";
+import {
+  DISCOVERABLE_LOCATIONS,
+  canonicalCoordinate,
+  getDiscoverableLocation,
+  isIndexableCoordinate,
+} from "@/lib/dcc/locationDiscovery";
 import { readLocationIntelligence } from "@/lib/dcc/locationIntelligence";
 import Link from "next/link";
 import { readApplicableDccEndpoints } from "@/lib/dcc/endpointRegistry";
 import { DccLocationProductService } from "@/lib/octo/locationProductService";
+
+export const revalidate = 300;
+
+export function generateStaticParams() {
+  return DISCOVERABLE_LOCATIONS.map((loc) => ({
+    lat: canonicalCoordinate(loc.lat),
+    lng: canonicalCoordinate(loc.lng),
+  }));
+}
 
 const SITE_URL = "https://destinationcommandcenter.com";
 
@@ -333,11 +346,14 @@ async function ServerLocationSnapshot({ lat, lng, dccEndpoints }: { lat: number;
                   <div key={op.id} className="flex flex-col justify-between rounded-2xl border border-white/10 bg-black/20 p-5">
                     <div>
                       <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-amber-300">
-                        ○ Directory Listing
+                        ○ Directory Reference Only (Unverified)
                       </span>
                       <h4 className="mt-3 text-base font-bold text-white">{op.name}</h4>
                       <p className="mt-1 text-xs text-cyan-200/80">{op.website}</p>
                       <p className="mt-2 text-xs leading-5 text-white/45">{op.notes}</p>
+                      <p className="mt-2 font-mono text-[10px] text-white/50">
+                        access: {op.apiAccessStatus ?? "unknown"} · inventory: {op.inventoryStatus ?? "unknown"} · commercial: {op.commercialTermsStatus ?? "unknown"}
+                      </p>
                       <div className="mt-2 flex flex-wrap gap-1">
                         {op.destinations.map((d: string) => (
                           <span key={d} className="rounded bg-white/5 px-2 py-0.5 text-[10px] text-white/40">
@@ -347,7 +363,7 @@ async function ServerLocationSnapshot({ lat, lng, dccEndpoints }: { lat: number;
                       </div>
                     </div>
                     <div className="mt-4 pt-3 border-t border-white/8 text-center text-[10px] text-amber-200/70">
-                      Reseller agreement pending · Direct booking unavailable
+                      API access, inventory &amp; commercial terms unknown · Direct booking unavailable
                     </div>
                   </div>
                 ))}
@@ -400,14 +416,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const indexable = isIndexableCoordinate(lat, lng);
   const coordinate = `${canonicalCoordinate(lat)}, ${canonicalCoordinate(lng)}`;
   const label = known?.name || coordinate;
+  const resolvedCanonicalPath =
+    known?.canonicalNamedPath ||
+    `/location/${canonicalCoordinate(lat)}/${canonicalCoordinate(lng)}`;
 
   return {
     title: `${label} | Destination Command Center`,
     description: known
       ? `Dense public location intelligence for ${known.name}, anchored to latitude ${canonicalCoordinate(lat)} and longitude ${canonicalCoordinate(lng)}.`
       : `Dense public location intelligence for latitude ${canonicalCoordinate(lat)} and longitude ${canonicalCoordinate(lng)}.`,
-    alternates: { canonical: `/location/${canonicalCoordinate(lat)}/${canonicalCoordinate(lng)}` },
-    robots: { index: indexable, follow: true },
+    alternates: { canonical: `${SITE_URL}${resolvedCanonicalPath}` },
+    robots: { index: indexable, follow: indexable },
   };
 }
 
@@ -425,12 +444,11 @@ export default async function CoordinateLocationPage({ params }: PageProps) {
 
   const known = getDiscoverableLocation(lat, lng);
   const indexable = isIndexableCoordinate(lat, lng);
-  const h = await headers();
   logDiscoveryRequest({
     surface: "location_page",
     path: `/location/${canonicalLat}/${canonicalLng}`,
-    userAgent: h.get("user-agent"),
-    referer: h.get("referer"),
+    userAgent: null,
+    referer: null,
     coordinate: `${canonicalLat},${canonicalLng}`,
     indexable,
   });

@@ -16,7 +16,7 @@ import { CITY_AUTHORITY_CONFIG } from "@/src/data/city-authority-config";
 import { getCityMoneyLane } from "@/src/data/city-money-lanes";
 import { getTeamsByCity } from "@/src/data/sports-teams-config";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 const PAGE_URL = "https://destinationcommandcenter.com/vegas";
 const VEGAS = CITY_AUTHORITY_CONFIG["las-vegas"];
@@ -82,7 +82,8 @@ export const metadata: Metadata = {
   title: VEGAS.seoTitle,
   description: VEGAS.seoDescription,
   keywords: VEGAS.keywords,
-  alternates: { canonical: "/vegas" },
+  alternates: { canonical: PAGE_URL },
+  robots: { index: true, follow: true },
   openGraph: {
     title: "Las Vegas Travel Guide | Tours, Shows, and Logistics",
     description:
@@ -109,6 +110,11 @@ function JsonLd() {
         "@type": "TouristDestination",
         name: "Las Vegas",
         url: PAGE_URL,
+        geo: {
+          "@type": "GeoCoordinates",
+          latitude: 36.1147,
+          longitude: -115.1728,
+        },
         touristType: VEGAS.structuredDataHints,
       },
       {

@@ -534,6 +534,9 @@ export type TransportModeGuide = {
   operatorOrAuthority: string;
   routeOrCoverage: string;
   scheduleAndStatusIntegration: "live_integrated" | "curated_with_official_link";
+  pricingModel?: string;
+  egressOrTransitTiming?: string;
+  statutoryOrOperationalRule?: string;
   whatWorksInPractice: string;
   practicalConstraints: string[];
   officialResourceUrl: string;
@@ -4065,6 +4068,155 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
     ],
   },
 };
+
+export const TRANSPORT_MODE_COMPARISON_BY_ID: Record<
+  string,
+  {
+    pricingModel: string;
+    egressOrTransitTiming: string;
+    statutoryOrOperationalRule: string;
+  }
+> = {
+  // Juneau
+  "jnu-airport": {
+    pricingModel: "Commercial airfare + metered taxi/rideshare (~$25–$35 to downtown) or $2.00 Capital Transit Route 3/4/8.",
+    egressOrTransitTiming: "15–20 min drive (8.5 mi) along Egan Drive; flight dispatch subject to Gastineau Channel ceilings/visibility.",
+    statutoryOrOperationalRule: "No highway into Juneau; TSA REAL ID (49 CFR Part 1540) required at security; VFR helicopter tours require FAA Part 135 ceiling minimums.",
+  },
+  "juneau-cruise-docks": {
+    pricingModel: "Included in cruise passage; AJ Dock & Franklin Dock runs operate free or nominal pier-to-downtown loop shuttles.",
+    egressOrTransitTiming: "60–90 min all-aboard buffer for docked ships (CT/AS/FKL); 90–120 min buffer for anchored tender ships or AJ Dock transfers.",
+    statutoryOrOperationalRule: "CBJ Docks & Harbors & CLAA berth assignments govern pier access; independent operators stage outside restricted security gates.",
+  },
+  "amhs-ferry": {
+    pricingModel: "Tariffed passenger + per-linear-foot vehicle fare via Alaska DOT&PF (advanced reservation required for vehicles).",
+    egressOrTransitTiming: "Terminal at Auke Bay is 13.5 mi (22–28 min) north of downtown Cruise Docks; requires taxi or bus transfer.",
+    statutoryOrOperationalRule: "Canadian border admissibility (CBSA) applies if boarding/transiting via Prince Rupert BC; vehicle check-in closes 1–2 hrs prior.",
+  },
+  "capital-transit-and-shuttles": {
+    pricingModel: "Capital Transit municipal bus: $2.00 exact cash fare; USFS-permitted Mendenhall Glacier coaches: ~$45–$80 round-trip.",
+    egressOrTransitTiming: "Municipal bus stops 1.5 mi (30-min walk each way) from Mendenhall Visitor Center; permitted shuttles drop directly at Visitor Center.",
+    statutoryOrOperationalRule: "USFS Tongass National Forest commercial visitor service day-caps strictly limit permitted glacier shuttle seats on 4–5 ship days.",
+  },
+
+  // Red Rocks
+  "rr-shuttle-transfer": {
+    pricingModel: "Fixed per-seat round-trip fare (~$55–$65 shared coach) or flat private-charter rate; zero surge pricing.",
+    egressOrTransitTiming: "30–35 min from downtown Denver; fixed 30-min post-encore departure window from Upper North or Top Circle commercial zones.",
+    statutoryOrOperationalRule: "Permitted commercial motorcoaches stage in dedicated bus loops, bypassing the Jurassic Lot rideshare queue.",
+  },
+  "rr-driving-parking": {
+    pricingModel: "$0.00 general concert parking in official Park lots (included with concert admission unless VIP/reserved).",
+    egressOrTransitTiming: "Arrive 90–120 min before doors for Upper Lots; post-encore canyon exit takes 35–60 min due to converging single-lane park roads.",
+    statutoryOrOperationalRule: "Denver Parks rule: vehicles left past 2:00 AM after concert nights are subject to ticketing/towing; Upper Lots close 60–90 min pre-doors.",
+  },
+  "rr-rideshare": {
+    pricingModel: "Standard fare inbound (~$30–$45 from Denver); heavy post-show surge pricing ($85–$160+) at encore.",
+    egressOrTransitTiming: "60–90+ min post-encore wait in Jurassic Lot (Entrance 4 on Hwy 93) plus steeply graded downhill walk or transfer shuttle.",
+    statutoryOrOperationalRule: "Jefferson County Sheriff & Park Traffic Control prohibit post-show passenger pickups at Upper North or Top Circle; all rideshares geofenced to Jurassic Lot.",
+  },
+  "rr-public-transit-reality": {
+    pricingModel: "RTD standard local fare ($2.75), but NO service into Red Rocks Park or Amphitheatre.",
+    egressOrTransitTiming: "W Line light rail ends 6.5 mi away at Jefferson County Govt Center–Golden; NO late-night pedestrian path along CO-93/CO-74.",
+    statutoryOrOperationalRule: "Do not rely on RTD for concert egress; walking unlit mountain highway shoulders after dark is a severe safety hazard.",
+  },
+
+  // Denver - Breckenridge I-70
+  "db-mountain-shuttles": {
+    pricingModel: "Fixed shared-van fare (~$59–$115 one-way from DEN) or flat private SUV charter (~$499–$699).",
+    egressOrTransitTiming: "2 hr 00 min – 2 hr 30 min in clear flow (104 mi via I-70 & CO-9); allow 3.5–4.5 hrs before DEN flight departure in winter.",
+    statutoryOrOperationalRule: "Commercial passenger carriers operate 4WD/AWD winter-equipped fleets compliant with CDOT Code 15/16 traction and chain mandates.",
+  },
+  "db-bustang-pegasus": {
+    pricingModel: "CDOT Bustang West Line / Pegasus Express: ~$12–$22 one-way from Denver Union Station / Federal Center to Frisco.",
+    egressOrTransitTiming: "1 hr 45 min Union Station to Frisco Transfer Center + 25–30 min free Summit Stage connection to Breckenridge.",
+    statutoryOrOperationalRule: "Pegasus Express uses the I-70 Mountain Express Lane when open; requires pre-reserved seat and connects to free Summit Stage.",
+  },
+  "db-rental-car-driving": {
+    pricingModel: "Daily rental rate + fuel + I-70 Express Lane tolls + Breckenridge overnight town parking fees ($15–$45/night).",
+    egressOrTransitTiming: "1 hr 45 min clear; 3–5+ hrs during weekend ski peak or Eisenhower Tunnel / Vail Pass safety holds and traction checks.",
+    statutoryOrOperationalRule: "C.R.S. § 42-4-106 Passenger Vehicle Traction Law (Code 15) mandatory Sep 1–May 31 (I-70 Morrison to Dotsero): requires 4WD/AWD or 3PMSF/M+S tires with ≥3/16\" tread, or chains. Standard airport rentals often violate this statute.",
+  },
+  "db-summit-stage-free-ride": {
+    pricingModel: "$0.00 (100% tax-funded free public transit across Summit County and Town of Breckenridge).",
+    egressOrTransitTiming: "15–30 min headways connecting Breck Station, Gondola lots, Frisco Transfer Center, Keystone, and Copper Mountain.",
+    statutoryOrOperationalRule: "Ski/snowboard racks provided; eliminates need for local driving or paid day-parking once in Breckenridge.",
+  },
+
+  // New Orleans
+  "nola-mode-air-msy": {
+    pricingModel: "Statutory $36.00 flat taxi rate (1–2 pax to French Quarter/CBD, +$15/extra pax); RTA E2 bus $1.25; rideshare $34–$55+.",
+    egressOrTransitTiming: "20–30 min via I-10 East (11 mi); allow 45–60 min during Mardi Gras parade closures or Superdome event egress.",
+    statutoryOrOperationalRule: "New Orleans City Code Sec. 162-609 mandates $36 flat rate from MSY to Downtown/French Quarter (west of Elysian Fields) for 1–2 passengers and requires credit card acceptance.",
+  },
+  "nola-mode-cruise-port": {
+    pricingModel: "Terminal parking ~$25/day at Erato/Julia garages; short metered/zone taxi or pedicab from CBD/Warehouse District hotels.",
+    egressOrTransitTiming: "10–15 min from CBD hotels; embarkation day Riverfront traffic bottlenecks between 10:00 AM and 1:30 PM.",
+    statutoryOrOperationalRule: "Port NOLA restricts luggage drop-off to designated Erato St. and Julia St. terminal lanes; Lower Mississippi river fog can delay vessel turnarounds.",
+  },
+  "nola-mode-rta-streetcar": {
+    pricingModel: "$1.25 single ride or $3.00 24-hour RTA Jazzy Pass (unlimited streetcars, buses, and $2 Algiers Point ferry).",
+    egressOrTransitTiming: "Historic mixed-traffic pace (12–18 min intervals); streetcar routes truncate or convert to bus bridges along Canal/St. Charles during Mardi Gras parades.",
+    statutoryOrOperationalRule: "Exact change or Le Pass app required; bicycles not permitted inside historic Perley Thomas St. Charles streetcars.",
+  },
+  "nola-mode-swamp-plantation-shuttles": {
+    pricingModel: "Bundled tour + round-trip coach transfer (~$55–$95) vs. one-way rideshare ($45–$75 each way with high stranding risk).",
+    egressOrTransitTiming: "35–45 min south to Jean Lafitte / Barataria swamps; 50–65 min west along Great River Road (LA-18) to plantations.",
+    statutoryOrOperationalRule: "City of New Orleans prohibits motorcoaches >32 ft inside the Vieux Carré (French Quarter); pickups stage at perimeter hotels or Steamboat Natchez dock.",
+  },
+
+  // Las Vegas
+  "lv-mode-air-las": {
+    pricingModel: "Nevada Taxicab Authority flat zone fares ($21–$30+ to Strip zones + $3.00 card fee); rideshare dynamic pricing; RTC CX bus $2.00.",
+    egressOrTransitTiming: "10–20 min to Resort Corridor; T1 and T3 are physically separate buildings (15–20 min inter-terminal shuttle if wrong terminal selected).",
+    statutoryOrOperationalRule: "Nevada Taxicab Authority enforces fixed geographic Strip zone fares from LAS (eliminating Paradise Rd/I-215 tunnel long-hauling).",
+  },
+  "lv-mode-strip-transit": {
+    pricingModel: "Las Vegas Monorail ~$5.50/ride or $13.45/24-hr pass; RTC Deuce 24/7 bus $8.00/24-hr pass; Aria/Bellagio/Excalibur resort trams $0.00.",
+    egressOrTransitTiming: "Monorail runs every 4–8 min behind east-side resorts (SAHARA to MGM Grand, 15 min end-to-end); walking " +
+      "'next door' between resorts takes 20–35 min.",
+    statutoryOrOperationalRule: "Strip pedestrian bridges and resort properties prohibit stopping on glass overpasses during F1 / major event security lockdowns.",
+  },
+  "lv-mode-canyon-dam-transfers": {
+    pricingModel: "Bundled hotel-pickup tour coach or self-drive + $20/vehicle Red Rock Canyon entry + $2.00 Recreation.gov timed-entry reservation.",
+    egressOrTransitTiming: "30 min west to Red Rock Canyon (17 mi); 45 min southeast to Hoover Dam (35 mi); zero reliable cell signal for return Uber/Lyft inside Red Rock Scenic Loop.",
+    statutoryOrOperationalRule: "BLM requires mandatory Recreation.gov timed-entry reservations (8:00 AM–5:00 PM, Oct 1–May 31) for Red Rock Canyon Scenic Drive; Bureau of Reclamation enforces vehicle/RV screening at Hoover Dam.",
+  },
+};
+
+export function resolveTransportModeComparison(mode: TransportModeGuide): {
+  pricingModel: string;
+  egressOrTransitTiming: string;
+  statutoryOrOperationalRule: string;
+} {
+  const mapped = TRANSPORT_MODE_COMPARISON_BY_ID[mode.id];
+  return {
+    pricingModel:
+      mode.pricingModel ||
+      mapped?.pricingModel ||
+      "Confirm current tariff or fare schedule with the operating authority.",
+    egressOrTransitTiming:
+      mode.egressOrTransitTiming ||
+      mapped?.egressOrTransitTiming ||
+      mode.practicalConstraints[0] ||
+      mode.whatWorksInPractice,
+    statutoryOrOperationalRule:
+      mode.statutoryOrOperationalRule ||
+      mapped?.statutoryOrOperationalRule ||
+      mode.practicalConstraints[1] ||
+      mode.practicalConstraints[0] ||
+      "Subject to municipal, port, or state highway operating rules.",
+  };
+}
+
+for (const node of Object.values(TRAVEL_REFERENCE_NODES)) {
+  for (const mode of node.gettingThereAndAround.modes) {
+    const resolved = resolveTransportModeComparison(mode);
+    mode.pricingModel = resolved.pricingModel;
+    mode.egressOrTransitTiming = resolved.egressOrTransitTiming;
+    mode.statutoryOrOperationalRule = resolved.statutoryOrOperationalRule;
+  }
+}
 
 export type EarthosEnvironmentScope = "production" | "nonprod";
 
