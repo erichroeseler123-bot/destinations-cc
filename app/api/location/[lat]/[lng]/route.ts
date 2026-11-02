@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { logDiscoveryRequest } from "@/lib/dcc/discoveryTelemetry";
 import { isIndexableCoordinate } from "@/lib/dcc/locationDiscovery";
-import { readLocationIntelligence } from "@/lib/dcc/locationIntelligence";
+import { readLocationIntelligence, runWithUpstreamFetchCounter } from "@/lib/dcc/locationIntelligence";
 import { normalizeGaugeStatuses, readHydroMarine } from "@/lib/dcc/hydroMarine";
 import { readExtendedCoordinateFeeds } from "@/lib/dcc/extendedCoordinateFeeds";
 import { readApplicableDccEndpoints } from "@/lib/dcc/endpointRegistry";
@@ -22,6 +22,16 @@ export const dynamic = "force-dynamic";
 const NATURAL_EVENT_RELEVANCE_KM = 500;
 
 type Scope = "core" | "extended" | "full";
+
+type CachedTelemetryBundle = {
+  expiresAt: number;
+  intelligence: Awaited<ReturnType<typeof readLocationIntelligence>>;
+  enrichment: readonly [any, any, any];
+  dccEndpoints: Awaited<ReturnType<typeof readApplicableDccEndpoints>>;
+  octoDiscovery: Awaited<ReturnType<typeof DccLocationProductService.findProductsForLocation>>;
+};
+
+const TELEMETRY_BUNDLE_CACHE = new Map<string, CachedTelemetryBundle>();
 
 function parseCoordinate(value: string, min: number, max: number) {
   const decoded = decodeURIComponent(value);
@@ -106,27 +116,55 @@ export async function GET(request: NextRequest, context: RouteContext) {
   }));
 
   try {
-    const intelligencePromise = readLocationIntelligence({ lat, lng });
-    const dccEndpointsPromise = readApplicableDccEndpoints({ lat, lng });
-    const octoDiscoveryPromise = DccLocationProductService.findProductsForLocation({ lat, lng });
-    const enrichmentPromise = scope === "core"
-      ? Promise.resolve([
-          { river: null, marine: null, sources: [] },
-          { nearby: [], aviation: [], coastal: { coops: [], ndbc: [] }, sources: [] },
-          null,
-        ] as const)
-      : Promise.all([
-          readHydroMarine({ lat, lng }),
-          readExtendedCoordinateFeeds({ lat, lng }),
-          readOptionalLegacy(origin, lat, lng, request.nextUrl.searchParams.get("timezone") || "auto"),
-        ]);
+    const cacheTtlSeconds = scope === "core" ? 120 : 60;
+    const cacheKey = `${canonicalLat},${canonicalLng}:${scope}:${request.nextUrl.searchParams.get("timezone") || "auto"}`;
+    const nowMs = Date.now();
+    const existingCacheEntry = TELEMETRY_BUNDLE_CACHE.get(cacheKey);
+    const hasValidCacheEntry = Boolean(existingCacheEntry && existingCacheEntry.expiresAt > nowMs);
+    const telemetryCacheStatus: "MISS" | "HIT" | "EXPIRED" = hasValidCacheEntry
+      ? "HIT"
+      : existingCacheEntry
+      ? "EXPIRED"
+      : "MISS";
 
-    const [intelligence, enrichment, dccEndpoints, octoDiscovery] = await Promise.all([
-      intelligencePromise,
-      enrichmentPromise,
-      dccEndpointsPromise,
-      octoDiscoveryPromise,
-    ]);
+    const { result: bundle, metrics } = await runWithUpstreamFetchCounter(async () => {
+      if (hasValidCacheEntry && existingCacheEntry) {
+        return existingCacheEntry;
+      }
+      const intelligencePromise = readLocationIntelligence({ lat, lng });
+      const dccEndpointsPromise = readApplicableDccEndpoints({ lat, lng });
+      const octoDiscoveryPromise = DccLocationProductService.findProductsForLocation({ lat, lng });
+      const enrichmentPromise = scope === "core"
+        ? Promise.resolve([
+            { river: null, marine: null, sources: [] },
+            { nearby: [], aviation: [], coastal: { coops: [], ndbc: [] }, sources: [] },
+            null,
+          ] as const)
+        : Promise.all([
+            readHydroMarine({ lat, lng }),
+            readExtendedCoordinateFeeds({ lat, lng }),
+            readOptionalLegacy(origin, lat, lng, request.nextUrl.searchParams.get("timezone") || "auto"),
+          ]);
+
+      const [intelligence, enrichment, dccEndpoints, octoDiscovery] = await Promise.all([
+        intelligencePromise,
+        enrichmentPromise,
+        dccEndpointsPromise,
+        octoDiscoveryPromise,
+      ]);
+
+      const freshEntry: CachedTelemetryBundle = {
+        expiresAt: Date.now() + cacheTtlSeconds * 1000,
+        intelligence,
+        enrichment,
+        dccEndpoints,
+        octoDiscovery,
+      };
+      TELEMETRY_BUNDLE_CACHE.set(cacheKey, freshEntry);
+      return freshEntry;
+    });
+
+    const { intelligence, enrichment, dccEndpoints, octoDiscovery } = bundle;
     const [hydroMarine, extended, legacy] = enrichment as any;
 
     const normalizedGauges = (intelligence.water.nearbyGauges || []).map(normalizeGaugeStatuses);
@@ -329,6 +367,12 @@ export async function GET(request: NextRequest, context: RouteContext) {
         eligible: indexable,
         policy: indexable ? "quality-gated-known-location" : "available-but-noindex",
       },
+      diagnostics: {
+        telemetryCacheStatus,
+        upstreamCalls: metrics.calls,
+        upstreamErrors: metrics.errors,
+        cacheTtlSeconds,
+      },
       policy: {
         coordinateIsCanonicalKey: true,
         dynamicFactsMayChange: true,
@@ -362,6 +406,9 @@ export async function GET(request: NextRequest, context: RouteContext) {
       scope,
       ms: Date.now() - startedAt,
       sourceCount: sources.length,
+      telemetryCacheStatus,
+      upstreamCalls: metrics.calls,
+      upstreamErrors: metrics.errors,
     }));
 
     return NextResponse.json(payload, {
@@ -377,6 +424,9 @@ export async function GET(request: NextRequest, context: RouteContext) {
         "X-DCC-Scope": scope,
         "X-DCC-Coordinate": `${canonicalLat},${canonicalLng}`,
         "X-DCC-Natural-Event-Relevance-Km": String(NATURAL_EVENT_RELEVANCE_KM),
+        "X-DCC-Telemetry-Cache": telemetryCacheStatus,
+        "X-DCC-Upstream-Calls": String(metrics.calls),
+        "X-DCC-Upstream-Errors": String(metrics.errors),
       },
     });
   } catch (error) {

@@ -66,8 +66,8 @@ async function ServerLocationSnapshot({ lat, lng, dccEndpoints }: { lat: number;
 
   try {
     const [intResult, epResult, octoResult] = await Promise.all([
-      readLocationIntelligence({ lat, lng }),
-      dccEndpoints ? Promise.resolve(dccEndpoints) : readApplicableDccEndpoints({ lat, lng }),
+      readLocationIntelligence({ lat, lng }, { minRevalidateSeconds: 300 }),
+      dccEndpoints ? Promise.resolve(dccEndpoints) : readApplicableDccEndpoints({ lat, lng }, { revalidateSeconds: 300 }),
       DccLocationProductService.findProductsForLocation({ lat, lng }),
     ]);
     intelligence = intResult;
@@ -479,7 +479,7 @@ export default async function CoordinateLocationPage({ params }: PageProps) {
     },
   };
 
-  const dccEndpoints = await readApplicableDccEndpoints({ lat, lng });
+  const dccEndpoints = await readApplicableDccEndpoints({ lat, lng }, { revalidateSeconds: 300 });
 
   return (
     <>

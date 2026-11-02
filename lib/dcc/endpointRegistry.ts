@@ -211,6 +211,8 @@ export function validateDccCoreV2(payload: unknown): DccValidationResult {
 // 4. Live HTTPS Hydration (Direct, Short-Lived Caching with Visible Timestamps)
 // ============================================================================
 
+import { recordUpstreamFetchCall } from "@/lib/dcc/locationIntelligence";
+
 export async function fetchAndHydrateDccEndpoint(
   entry: DccSourceRegistryEntry,
   options: { timeoutMs?: number; revalidateSeconds?: number } = {},
@@ -233,6 +235,7 @@ export async function fetchAndHydrateDccEndpoint(
     });
 
     if (!res.ok) {
+      recordUpstreamFetchCall(entry.endpointUrl, true);
       return {
         id: entry.id,
         name: entry.name,
@@ -246,6 +249,7 @@ export async function fetchAndHydrateDccEndpoint(
       };
     }
 
+    recordUpstreamFetchCall(entry.endpointUrl, false);
     const json = (await res.json()) as any;
     const validation = validateDccCoreV2(json);
 
@@ -304,6 +308,7 @@ export async function fetchAndHydrateDccEndpoint(
       isFresh,
     };
   } catch (err) {
+    recordUpstreamFetchCall(entry.endpointUrl, true);
     const message = err instanceof Error ? err.message : "Network request failed";
     return {
       id: entry.id,

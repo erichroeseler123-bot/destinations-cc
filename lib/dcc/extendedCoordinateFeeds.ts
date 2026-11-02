@@ -1,4 +1,10 @@
+import { recordUpstreamFetchCall, type TelemetryReadOptions } from "@/lib/dcc/locationIntelligence";
+
 export type Coordinate = { lat: number; lng: number };
+
+function resolveRevalidate(defaultSeconds: number, options?: TelemetryReadOptions): number {
+  return Math.max(defaultSeconds, options?.minRevalidateSeconds ?? 0);
+}
 
 type SourceState<T> = {
   provider: string;
@@ -31,8 +37,17 @@ async function readJson(url: string, revalidate: number, timeoutMs = 8000) {
       headers: { Accept: "application/json", "User-Agent": UA },
       next: { revalidate },
     });
-    if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+    if (!response.ok) {
+      recordUpstreamFetchCall(url, true);
+      throw new Error(`${response.status} ${response.statusText}`);
+    }
+    recordUpstreamFetchCall(url, false);
     return await response.json();
+  } catch (err) {
+    if (!(err instanceof Error && /^\d{3}\s/.test(err.message))) {
+      recordUpstreamFetchCall(url, true);
+    }
+    throw err;
   } finally {
     clearTimeout(timeout);
   }
@@ -47,8 +62,17 @@ async function readText(url: string, revalidate: number, timeoutMs = 8000) {
       headers: { Accept: "text/plain,application/xml,text/xml,*/*", "User-Agent": UA },
       next: { revalidate },
     });
-    if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+    if (!response.ok) {
+      recordUpstreamFetchCall(url, true);
+      throw new Error(`${response.status} ${response.statusText}`);
+    }
+    recordUpstreamFetchCall(url, false);
     return await response.text();
+  } catch (err) {
+    if (!(err instanceof Error && /^\d{3}\s/.test(err.message))) {
+      recordUpstreamFetchCall(url, true);
+    }
+    throw err;
   } finally {
     clearTimeout(timeout);
   }
@@ -91,11 +115,11 @@ function infrastructureKind(tags: Record<string, string>) {
   return "infrastructure";
 }
 
-export async function readNearbyInfrastructure({ lat, lng }: Coordinate) {
+export async function readNearbyInfrastructure({ lat, lng }: Coordinate, options?: TelemetryReadOptions) {
   return source("openstreetmap-overpass", "Nearby infrastructure: OpenStreetMap contributors via Overpass API", async () => {
     const query = `[out:json][timeout:12];(nwr(around:5000,${lat},${lng})[\"aeroway\"=\"aerodrome\"];nwr(around:5000,${lat},${lng})[\"amenity\"~\"^(hospital|clinic|police|fire_station|fuel|charging_station|bus_station|ferry_terminal)$\"];nwr(around:5000,${lat},${lng})[\"railway\"~\"^(station|halt)$\"];nwr(around:5000,${lat},${lng})[\"public_transport\"~\"^(station|stop_position)$\"];nwr(around:2500,${lat},${lng})[\"highway\"=\"motorway_junction\"];);out center tags 100;`;
     const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
-    const payload: any = await readJson(url, 1800, 12000);
+    const payload: any = await readJson(url, resolveRevalidate(1800, options), 12000);
     const items = (payload?.elements || [])
       .map((element: any) => {
         const point = elementPoint(element);
@@ -134,7 +158,11 @@ export async function readNearbyInfrastructure({ lat, lng }: Coordinate) {
   });
 }
 
-export async function readAviationWeather(coordinate: Coordinate, infrastructure: any[] = []) {
+export async function readAviationWeather(
+  coordinate: Coordinate,
+  infrastructure: any[] = [],
+  options?: TelemetryReadOptions,
+) {
   return source("aviationweather-gov", "Aviation observations and forecasts: NOAA/NWS Aviation Weather Center", async () => {
     const osmAirports = infrastructure
       .filter((item) => item?.kind === "airport" && item?.icao && item.distanceKm <= 120)
@@ -143,8 +171,8 @@ export async function readAviationWeather(coordinate: Coordinate, infrastructure
     if (osmAirports.length > 0) {
       const ids = osmAirports.map((item) => item.icao).join(",");
       const [metars, tafs] = await Promise.all([
-        readJson(`https://aviationweather.gov/api/data/metar?ids=${encodeURIComponent(ids)}&format=json`, 120).catch(() => []),
-        readJson(`https://aviationweather.gov/api/data/taf?ids=${encodeURIComponent(ids)}&format=json`, 600).catch(() => []),
+        readJson(`https://aviationweather.gov/api/data/metar?ids=${encodeURIComponent(ids)}&format=json`, resolveRevalidate(120, options)).catch(() => []),
+        readJson(`https://aviationweather.gov/api/data/taf?ids=${encodeURIComponent(ids)}&format=json`, resolveRevalidate(600, options)).catch(() => []),
       ]);
       const metarList = Array.isArray(metars) ? metars : [];
       const tafList = Array.isArray(tafs) ? tafs : [];
@@ -167,7 +195,7 @@ export async function readAviationWeather(coordinate: Coordinate, infrastructure
     ].join(",");
     const bboxMetars = await readJson(
       `https://aviationweather.gov/api/data/metar?bbox=${encodeURIComponent(bbox)}&format=json`,
-      120,
+      resolveRevalidate(120, options),
     ).catch(() => []);
     const metarList = (Array.isArray(bboxMetars) ? bboxMetars : [])
       .map((row: any) => {
@@ -188,7 +216,7 @@ export async function readAviationWeather(coordinate: Coordinate, infrastructure
     const ids = metarList.map((entry) => entry.row.icaoId).join(",");
     const tafs = await readJson(
       `https://aviationweather.gov/api/data/taf?ids=${encodeURIComponent(ids)}&format=json`,
-      600,
+      resolveRevalidate(600, options),
     ).catch(() => []);
     const tafList = Array.isArray(tafs) ? tafs : [];
 
@@ -220,9 +248,9 @@ function stationDistance(origin: Coordinate, station: any) {
   return haversineKm(origin, { lat, lng });
 }
 
-export async function readCoops(coordinate: Coordinate) {
+export async function readCoops(coordinate: Coordinate, options?: TelemetryReadOptions) {
   return source("noaa-coops", "Tides, water levels and coastal stations: NOAA CO-OPS", async () => {
-    const payload: any = await readJson("https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations.json?type=waterlevels", 21600, 12000);
+    const payload: any = await readJson("https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations.json?type=waterlevels", resolveRevalidate(21600, options), 12000);
     const stations = (payload?.stations || [])
       .map((station: any) => ({ ...station, distanceKm: stationDistance(coordinate, station) }))
       .filter((station: any) => Number.isFinite(station.distanceKm) && station.distanceKm <= 125)
@@ -235,8 +263,8 @@ export async function readCoops(coordinate: Coordinate) {
       const observationUrl = `https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?date=latest&product=water_level&datum=MLLW&${common}`;
       const predictionUrl = `https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?date=today&product=predictions&datum=MLLW&interval=hilo&${common}`;
       const [observation, prediction] = await Promise.all([
-        readJson(observationUrl, 360).catch(() => null),
-        station.tidal ? readJson(predictionUrl, 1800).catch(() => null) : Promise.resolve(null),
+        readJson(observationUrl, resolveRevalidate(360, options)).catch(() => null),
+        station.tidal ? readJson(predictionUrl, resolveRevalidate(1800, options)).catch(() => null) : Promise.resolve(null),
       ]);
       return {
         id: station.id,
@@ -275,9 +303,9 @@ function parseNdbcObservation(text: string) {
   return row;
 }
 
-export async function readNdbc(coordinate: Coordinate) {
+export async function readNdbc(coordinate: Coordinate, options?: TelemetryReadOptions) {
   return source("noaa-ndbc", "Buoy and coastal observations: NOAA National Data Buoy Center", async () => {
-    const xml = await readText("https://www.ndbc.noaa.gov/activestations.xml", 21600, 12000);
+    const xml = await readText("https://www.ndbc.noaa.gov/activestations.xml", resolveRevalidate(21600, options), 12000);
     const stations = [...xml.matchAll(/<station\s+([^>]+?)\s*\/>/g)]
       .map((match) => parseXmlAttributes(match[1]))
       .map((station) => ({ ...station, distanceKm: stationDistance(coordinate, station) }))
@@ -287,7 +315,7 @@ export async function readNdbc(coordinate: Coordinate) {
     if (!stations.length) throw new Error(`no active NDBC stations within ${NDBC_RELEVANCE_KM} km`);
 
     return Promise.all(stations.map(async (station: any) => {
-      const latest = await readText(`https://www.ndbc.noaa.gov/data/realtime2/${encodeURIComponent(station.id)}.txt`, 300).catch(() => "");
+      const latest = await readText(`https://www.ndbc.noaa.gov/data/realtime2/${encodeURIComponent(station.id)}.txt`, resolveRevalidate(300, options)).catch(() => "");
       return {
         id: station.id,
         name: station.name || station.id,
@@ -308,12 +336,12 @@ export async function readNdbc(coordinate: Coordinate) {
   });
 }
 
-export async function readExtendedCoordinateFeeds(coordinate: Coordinate) {
+export async function readExtendedCoordinateFeeds(coordinate: Coordinate, options?: TelemetryReadOptions) {
   const [infrastructure, aviation, coops, ndbc] = await Promise.all([
-    readNearbyInfrastructure(coordinate),
-    readAviationWeather(coordinate, []),
-    readCoops(coordinate),
-    readNdbc(coordinate),
+    readNearbyInfrastructure(coordinate, options),
+    readAviationWeather(coordinate, [], options),
+    readCoops(coordinate, options),
+    readNdbc(coordinate, options),
   ]);
   return {
     nearby: infrastructure.data || [],

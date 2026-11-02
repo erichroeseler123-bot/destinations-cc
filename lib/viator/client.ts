@@ -19,6 +19,7 @@ type ViatorRequestOptions = {
   method?: "GET" | "POST";
   body?: unknown;
   acceptLanguage?: string;
+  revalidateSeconds?: number;
 };
 
 type ViatorClient = {
@@ -81,7 +82,9 @@ async function request(endpoint: string, options: ViatorRequestOptions = {}): Pr
     method: options.method || "GET",
     headers: withVersionHeader(options.acceptLanguage || config.locale, config.apiKey),
     body: options.body === undefined ? undefined : JSON.stringify(options.body),
-    cache: "no-store",
+    ...(options.revalidateSeconds
+      ? { next: { revalidate: options.revalidateSeconds } }
+      : { cache: "no-store" as const }),
   });
 
   if (!response.ok) {
@@ -197,7 +200,11 @@ export function getViatorClient(): ViatorClient {
       if (!getViatorCapabilities().canUseSearch) {
         throw new Error("viator_search_not_enabled_for_tier");
       }
-      return request("/products/search", { method: "POST", body: withDefaultSearchCurrency(input) });
+      return request("/products/search", {
+        method: "POST",
+        body: withDefaultSearchCurrency(input),
+        revalidateSeconds: 3600,
+      });
     },
 
     async getProductDetail(productCode: string, options?: { campaignValue?: string }) {

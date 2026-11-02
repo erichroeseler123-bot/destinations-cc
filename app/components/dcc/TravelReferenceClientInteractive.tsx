@@ -491,3 +491,401 @@ export function SpecialistHandoffInteractive({
     </div>
   );
 }
+
+function cToF(celsius: number | null | undefined): string {
+  if (celsius == null || !Number.isFinite(celsius)) return "—";
+  const f = (celsius * 9) / 5 + 32;
+  return `${Math.round(f)}°F (${celsius.toFixed(1)}°C)`;
+}
+
+function kphToMph(kph: number | null | undefined): string {
+  if (kph == null || !Number.isFinite(kph)) return "—";
+  const mph = kph * 0.621371;
+  return `${Math.round(mph)} mph (${Math.round(kph)} km/h)`;
+}
+
+const STALE_THRESHOLD_MS = 60 * 60 * 1000;
+
+export type TelemetrySnapshotInput = {
+  core: any | null;
+  extended: any | null;
+  fetchError: string | null;
+};
+
+function mapLocationApiToSnapshot(apiPayload: any): TelemetrySnapshotInput {
+  if (!apiPayload || apiPayload.ok === false) {
+    return {
+      core: null,
+      extended: null,
+      fetchError: apiPayload?.error || "Live API unavailable",
+    };
+  }
+  const modules = apiPayload.modules || {};
+  return {
+    core: {
+      checkedAt: apiPayload.checkedAt || new Date().toISOString(),
+      now: modules.now || { weather: apiPayload.weather || null, airQuality: null },
+      conditions: modules.conditions || { next12Hours: [], next3Days: [] },
+      hazards: modules.hazards || { alerts: apiPayload.alerts || [] },
+      sources: apiPayload.sources || [],
+    },
+    extended: {
+      coastal: modules.coastal || apiPayload.coastal || { coops: [], ndbc: [] },
+      aviation: modules.aviation || apiPayload.aviation || [],
+      sources: apiPayload.sources || [],
+    },
+    fetchError: null,
+  };
+}
+
+export function LiveCoordinateTelemetryCards({
+  primaryCoordinate,
+  secondaryCoordinate,
+  initialPrimaryTelemetry,
+  initialSecondaryTelemetry,
+  whatRequiresOfficialExternalCheck,
+}: {
+  primaryCoordinate: TravelReferenceNode["primaryCoordinate"];
+  secondaryCoordinate?: TravelReferenceNode["secondaryCoordinates"][number] | null;
+  initialPrimaryTelemetry: TelemetrySnapshotInput;
+  initialSecondaryTelemetry: TelemetrySnapshotInput | null;
+  whatRequiresOfficialExternalCheck: TravelReferenceNode["operationalBoundaries"]["whatRequiresOfficialExternalCheck"];
+}) {
+  const [primaryTelemetry, setPrimaryTelemetry] = useState<TelemetrySnapshotInput>(
+    initialPrimaryTelemetry,
+  );
+  const [secondaryTelemetry, setSecondaryTelemetry] =
+    useState<TelemetrySnapshotInput | null>(initialSecondaryTelemetry);
+  const [refreshError, setRefreshError] = useState<string | null>(null);
+  const [lastClientRefreshAt, setLastClientRefreshAt] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+
+    async function refreshTelemetry() {
+      try {
+        const primaryUrl = `/api/location/${primaryCoordinate.lat.toFixed(5)}/${primaryCoordinate.lng.toFixed(5)}?scope=full`;
+        const secondaryUrl = secondaryCoordinate
+          ? `/api/location/${secondaryCoordinate.lat.toFixed(5)}/${secondaryCoordinate.lng.toFixed(5)}?scope=core`
+          : null;
+
+        const [primRes, secRes] = await Promise.all([
+          fetch(primaryUrl, { cache: "no-store" }),
+          secondaryUrl ? fetch(secondaryUrl, { cache: "no-store" }) : Promise.resolve(null),
+        ]);
+
+        if (!active) return;
+
+        if (primRes.ok) {
+          const primJson = await primRes.json();
+          if (active) {
+            setPrimaryTelemetry(mapLocationApiToSnapshot(primJson));
+            setLastClientRefreshAt(primJson.checkedAt || new Date().toISOString());
+            setRefreshError(null);
+          }
+        } else {
+          setRefreshError(`API HTTP ${primRes.status}`);
+        }
+
+        if (secRes && secRes.ok) {
+          const secJson = await secRes.json();
+          if (active) {
+            setSecondaryTelemetry(mapLocationApiToSnapshot(secJson));
+          }
+        }
+      } catch (err) {
+        if (!active) return;
+        setRefreshError(err instanceof Error ? err.message : "Live API refresh failed");
+      }
+    }
+
+    void refreshTelemetry();
+    const timer = setInterval(() => {
+      void refreshTelemetry();
+    }, 60_000);
+
+    return () => {
+      active = false;
+      clearInterval(timer);
+    };
+  }, [
+    primaryCoordinate.lat,
+    primaryCoordinate.lng,
+    secondaryCoordinate?.lat,
+    secondaryCoordinate?.lng,
+  ]);
+
+  const primaryCore = primaryTelemetry.core;
+  const primaryExt = primaryTelemetry.extended;
+  const primaryWeather = primaryCore?.now?.weather || null;
+  const primaryAqi = primaryCore?.now?.airQuality || null;
+  const primaryAlerts = primaryCore?.hazards?.alerts || [];
+  const primaryNext12 = primaryCore?.conditions?.next12Hours || [];
+  const primarySnowDepthM =
+    primaryNext12.find((h: any) => typeof h?.snowDepthM === "number")?.snowDepthM ??
+    null;
+
+  const nwsSourceState = primaryCore?.sources?.find((s: any) => s.provider === "nws");
+  const weatherSourceState = primaryCore?.sources?.find(
+    (s: any) => s.provider === "open-meteo",
+  );
+  const coopsStations = primaryExt?.coastal?.coops || [];
+  const aviationStations = primaryExt?.aviation || [];
+
+  const checkedTimestamp =
+    nwsSourceState?.checkedAt ||
+    weatherSourceState?.checkedAt ||
+    primaryCore?.checkedAt ||
+    lastClientRefreshAt ||
+    null;
+  const checkedMs = checkedTimestamp ? new Date(checkedTimestamp).getTime() : Number.NaN;
+  const isStale =
+    Number.isFinite(checkedMs) && Date.now() - checkedMs > STALE_THRESHOLD_MS;
+
+  return (
+    <div className="grid gap-4 lg:grid-cols-2">
+      {/* Primary Coordinate Card */}
+      <div className="rounded-2xl border border-white/10 bg-zinc-950 p-5 space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-3">
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-cyan-400">
+                Local Weather & Alerts
+              </span>
+              {isStale ? (
+                <span className="rounded-full border border-amber-400/40 bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-200">
+                  Stale Snapshot
+                </span>
+              ) : refreshError ? (
+                <span className="rounded-full border border-amber-400/40 bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-200">
+                  Live Refresh Unavailable ({refreshError})
+                </span>
+              ) : null}
+            </div>
+            <h3 className="text-base font-bold text-white">
+              {primaryCoordinate.label}
+            </h3>
+          </div>
+          <Link
+            href={primaryCoordinate.canonicalLocationPath}
+            className="text-xs font-mono text-cyan-300 hover:underline"
+          >
+            {primaryCoordinate.lat.toFixed(5)},{" "}
+            {primaryCoordinate.lng.toFixed(5)} →
+          </Link>
+        </div>
+
+        {weatherSourceState?.available && primaryWeather ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
+            <div className="rounded-xl border border-white/5 bg-zinc-900/70 p-3">
+              <span className="text-zinc-400 block">Temperature</span>
+              <strong className="text-sm text-white mt-0.5 block">
+                {cToF(primaryWeather.temperature_2m)}
+              </strong>
+              <span className="text-[11px] text-zinc-400">
+                Feels like {cToF(primaryWeather.apparent_temperature)}
+              </span>
+            </div>
+            <div className="rounded-xl border border-white/5 bg-zinc-900/70 p-3">
+              <span className="text-zinc-400 block">Condition & Wind</span>
+              <strong className="text-sm text-white mt-0.5 block">
+                {primaryWeather.description || "Observed"}
+              </strong>
+              <span className="text-[11px] text-zinc-400">
+                Wind {kphToMph(primaryWeather.wind_speed_10m)}
+              </span>
+            </div>
+            <div className="rounded-xl border border-white/5 bg-zinc-900/70 p-3">
+              <span className="text-zinc-400 block">
+                Air Quality & Model Snow
+              </span>
+              <strong className="text-sm text-white mt-0.5 block">
+                US AQI: {primaryAqi?.us_aqi ?? "Unavailable"}
+              </strong>
+              <span className="text-[11px] text-zinc-400">
+                Grid Snow:{" "}
+                {primarySnowDepthM != null
+                  ? `${(primarySnowDepthM * 39.37).toFixed(1)} in (${primarySnowDepthM.toFixed(2)} m)`
+                  : "0.0 in"}
+              </span>
+            </div>
+          </div>
+        ) : (
+          <div className="rounded-xl border border-rose-500/40 bg-rose-950/30 p-4 text-xs text-rose-200">
+            <strong>Weather Feed Unavailable / Unverified:</strong> Upstream
+            Open-Meteo weather observation is currently unreachable (
+            {weatherSourceState?.error ||
+              primaryTelemetry.fetchError ||
+              refreshError ||
+              "timeout"}
+            ). Do not interpret missing telemetry as favorable weather.
+          </div>
+        )}
+
+        {/* NWS Alerts Status with Explicit Non-All-Clear Language */}
+        <div className="rounded-xl border border-white/10 bg-zinc-900/60 p-3.5 space-y-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="text-xs font-bold text-white">
+              U.S. National Weather Service (NWS) Point Alerts
+            </span>
+            <span className="text-[11px] font-mono text-zinc-400">
+              {nwsSourceState?.available
+                ? `Checked ${new Date(nwsSourceState.checkedAt).toISOString().slice(0, 16)}Z${isStale ? " (Stale)" : ""}`
+                : "Source Unavailable"}
+            </span>
+          </div>
+          {!nwsSourceState?.available ? (
+            <p className="text-xs text-amber-300 font-semibold">
+              ⚠ NWS Alert Feed Unavailable ({nwsSourceState?.error || refreshError || "timeout"}
+              ) — Status Unverified (Not an All-Clear). Check weather.gov
+              directly.
+            </p>
+          ) : primaryAlerts.length > 0 ? (
+            <ul className="space-y-2">
+              {primaryAlerts.slice(0, 3).map((alert: any, idx: number) => (
+                <li
+                  key={alert.id || idx}
+                  className="rounded-lg border border-amber-500/40 bg-amber-950/40 p-2.5 text-xs text-amber-100"
+                >
+                  <strong>{alert.event}:</strong> {alert.headline}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-xs text-zinc-300">
+              0 active NWS weather warnings at check time.{" "}
+              <span className="text-zinc-400">
+                (Note: 0 weather alerts does not confirm venue opening, road
+                traction status, or marine/trail safety.)
+              </span>
+            </p>
+          )}
+        </div>
+
+        {/* Extra Marine / Aviation Telemetry when applicable (e.g. Juneau PAJN & Tides) */}
+        {(coopsStations.length > 0 || aviationStations.length > 0) && (
+          <div className="grid gap-2.5 sm:grid-cols-2 text-xs pt-1">
+            {coopsStations[0] && (
+              <div className="rounded-lg border border-cyan-500/20 bg-cyan-950/20 p-3">
+                <span className="font-bold text-cyan-300 block">
+                  NOAA CO-OPS Tide Station ({coopsStations[0].name})
+                </span>
+                <span className="text-zinc-200 mt-1 block">
+                  Latest MLLW Water Level:{" "}
+                  {coopsStations[0].observation?.v
+                    ? `${coopsStations[0].observation.v} m`
+                    : "See station link"}
+                </span>
+                <a
+                  href={coopsStations[0].pageUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[11px] text-cyan-300 underline mt-1 inline-block"
+                >
+                  NOAA Station {coopsStations[0].id} ↗
+                </a>
+              </div>
+            )}
+            {aviationStations[0] && (
+              <div className="rounded-lg border border-sky-500/20 bg-sky-950/20 p-3">
+                <span className="font-bold text-sky-300 block">
+                  NOAA Aviation METAR ({aviationStations[0].airport?.icao})
+                </span>
+                <span className="text-zinc-200 mt-1 block font-mono text-[11px] break-words">
+                  {aviationStations[0].metar?.rawOb ||
+                    `Flight Cat: ${aviationStations[0].metar?.fltCat || "Reported"}`}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Secondary / Comparison Coordinate Card + Official External Status Links */}
+      <div className="rounded-2xl border border-white/10 bg-zinc-950 p-5 flex flex-col justify-between space-y-4">
+        {secondaryCoordinate && secondaryTelemetry?.core ? (
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-3">
+              <div>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-400 block">
+                  Nearby Comparison Point ({secondaryCoordinate.elevationFt.toLocaleString()} ft)
+                </span>
+                <h3 className="text-base font-bold text-white">
+                  {secondaryCoordinate.label}
+                </h3>
+              </div>
+              <Link
+                href={secondaryCoordinate.canonicalLocationPath}
+                className="text-xs font-mono text-indigo-300 hover:underline"
+              >
+                {secondaryCoordinate.lat.toFixed(5)},{" "}
+                {secondaryCoordinate.lng.toFixed(5)} →
+              </Link>
+            </div>
+            <p className="text-xs text-zinc-400">
+              {secondaryCoordinate.roleInPlace}
+            </p>
+            {secondaryTelemetry.core.now?.weather ? (
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <div className="rounded-xl border border-white/5 bg-zinc-900/70 p-3">
+                  <span className="text-zinc-400 block">Temperature</span>
+                  <strong className="text-sm text-white mt-0.5 block">
+                    {cToF(secondaryTelemetry.core.now.weather.temperature_2m)}
+                  </strong>
+                  <span className="text-[11px] text-zinc-400">
+                    {secondaryTelemetry.core.now.weather.description || "Observed"}
+                  </span>
+                </div>
+                <div className="rounded-xl border border-white/5 bg-zinc-900/70 p-3">
+                  <span className="text-zinc-400 block">Wind & Active Alerts</span>
+                  <strong className="text-sm text-white mt-0.5 block">
+                    {kphToMph(secondaryTelemetry.core.now.weather.wind_speed_10m)}
+                  </strong>
+                  <span className="text-[11px] text-zinc-400">
+                    NWS Alerts: {secondaryTelemetry.core.hazards?.alerts?.length ?? 0}
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <p className="text-xs text-amber-300">
+                Companion coordinate telemetry temporarily unavailable.
+              </p>
+            )}
+          </div>
+        ) : null}
+
+        {/* What Requires Official External Verification */}
+        <div className="space-y-3 pt-2 border-t border-white/10">
+          <div className="flex items-center justify-between gap-2">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-amber-300">
+              Official Operational Status (Linked — Not Automated)
+            </h4>
+            <IntegrationBadge status="linked_official_resource" />
+          </div>
+          <div className="space-y-2.5">
+            {whatRequiresOfficialExternalCheck.map((item) => (
+              <div
+                key={item.capability}
+                className="rounded-xl border border-white/10 bg-zinc-900/70 p-3 text-xs space-y-1.5"
+              >
+                <div className="font-bold text-white">{item.capability}</div>
+                <p className="text-zinc-300 leading-relaxed">
+                  {item.whyNotAutomated}
+                </p>
+                <a
+                  href={item.officialSourceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-cyan-300 font-semibold hover:underline pt-0.5"
+                >
+                  <span>Check Official Authority: {item.officialSourceLabel}</span>
+                  <span aria-hidden="true">↗</span>
+                </a>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

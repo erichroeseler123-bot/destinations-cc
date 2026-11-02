@@ -361,3 +361,49 @@ test("5. Root-layout caching fix and location-page ISR / robots metadata alignme
     "https://destinationcommandcenter.com/location/45.26180/-111.30800",
   );
 });
+
+test("6. /vegas ISR policy (3600s) and separation of short-lived telemetry from HTML revalidation (300s / 3600s)", async () => {
+  const rootDir = process.cwd();
+
+  const ticketmasterSrc = fs.readFileSync(
+    path.join(rootDir, "lib/dcc/providers/adapters/ticketmaster.ts"),
+    "utf8",
+  );
+  assert.doesNotMatch(
+    ticketmasterSrc,
+    /cache:\s*["']no-store["']/,
+    "ticketmasterAdapter must not use cache: 'no-store' (would force /vegas into dynamic rendering)",
+  );
+  assert.match(ticketmasterSrc, /next:\s*\{\s*revalidate:\s*3600\s*\}/);
+
+  const locationPageSrc = fs.readFileSync(
+    path.join(rootDir, "app/location/[lat]/[lng]/page.tsx"),
+    "utf8",
+  );
+  assert.match(locationPageSrc, /export const revalidate = 300;/);
+  assert.match(locationPageSrc, /minRevalidateSeconds:\s*300/);
+  assert.match(locationPageSrc, /revalidateSeconds:\s*300/);
+
+  const travelRefExpSrc = fs.readFileSync(
+    path.join(rootDir, "app/components/dcc/TravelReferenceExperience.tsx"),
+    "utf8",
+  );
+  assert.match(travelRefExpSrc, /minRevalidateSeconds:\s*3600/);
+  assert.match(travelRefExpSrc, /LiveCoordinateTelemetryCards/);
+
+  for (const relPath of [
+    "app/red-rocks/page.tsx",
+    "app/juneau/page.tsx",
+    "app/new-orleans/page.tsx",
+    "app/routes/[slug]/page.tsx",
+    "app/vegas/page.tsx",
+  ]) {
+    const pageSrc = fs.readFileSync(path.join(rootDir, relPath), "utf8");
+    assert.match(
+      pageSrc,
+      /export const revalidate = 3600;/,
+      `Expected export const revalidate = 3600 in ${relPath}`,
+    );
+  }
+});
+

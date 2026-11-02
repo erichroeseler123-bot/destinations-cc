@@ -11,29 +11,18 @@ import {
   AuthorityBadge,
   EntryDependencyExplorer,
   IntegrationBadge,
+  LiveCoordinateTelemetryCards,
   SpecialistHandoffInteractive,
 } from "@/app/components/dcc/TravelReferenceClientInteractive";
 import JuneauPortDayPlanner from "@/app/components/dcc/JuneauPortDayPlanner";
 import FactualErrorReportForm from "@/app/components/dcc/FactualErrorReportForm";
 import TransitComparisonTable from "@/app/components/dcc/TransitComparisonTable";
 
-function cToF(celsius: number | null | undefined): string {
-  if (celsius == null || !Number.isFinite(celsius)) return "—";
-  const f = (celsius * 9) / 5 + 32;
-  return `${Math.round(f)}°F (${celsius.toFixed(1)}°C)`;
-}
-
-function kphToMph(kph: number | null | undefined): string {
-  if (kph == null || !Number.isFinite(kph)) return "—";
-  const mph = kph * 0.621371;
-  return `${Math.round(mph)} mph (${Math.round(kph)} km/h)`;
-}
-
 async function fetchCoordinateTelemetrySummary(lat: number, lng: number) {
   try {
     const [core, extended] = await Promise.all([
-      readLocationIntelligence({ lat, lng }),
-      readExtendedCoordinateFeeds({ lat, lng }),
+      readLocationIntelligence({ lat, lng }, { minRevalidateSeconds: 3600 }),
+      readExtendedCoordinateFeeds({ lat, lng }, { minRevalidateSeconds: 3600 }),
     ]);
     return { core, extended, fetchError: null };
   } catch (err) {
@@ -69,7 +58,7 @@ export default async function TravelReferenceExperience({
   }
   const claimDependencies = evaluateNodeClaimDependencies(node);
 
-  // Fetch live coordinate intelligence for primary coordinate and (if corridor/dual-anchor) first secondary coordinate
+  // Fetch baseline coordinate intelligence for primary coordinate and (if corridor/dual-anchor) first secondary coordinate
   const [primaryTelemetry, secondaryTelemetry] = await Promise.all([
     fetchCoordinateTelemetrySummary(
       node.primaryCoordinate.lat,
@@ -82,23 +71,6 @@ export default async function TravelReferenceExperience({
         )
       : Promise.resolve(null),
   ]);
-
-  const primaryCore = primaryTelemetry.core;
-  const primaryExt = primaryTelemetry.extended;
-  const primaryWeather = primaryCore?.now?.weather || null;
-  const primaryAqi = primaryCore?.now?.airQuality || null;
-  const primaryAlerts = primaryCore?.hazards?.alerts || [];
-  const primaryNext12 = primaryCore?.conditions?.next12Hours || [];
-  const primarySnowDepthM =
-    primaryNext12.find((h: any) => typeof h?.snowDepthM === "number")?.snowDepthM ??
-    null;
-
-  const nwsSourceState = primaryCore?.sources?.find((s) => s.provider === "nws");
-  const weatherSourceState = primaryCore?.sources?.find(
-    (s) => s.provider === "open-meteo",
-  );
-  const coopsStations = primaryExt?.coastal?.coops || [];
-  const aviationStations = primaryExt?.aviation || [];
 
   return (
     <div className="space-y-10 text-zinc-100">
@@ -353,240 +325,15 @@ export default async function TravelReferenceExperience({
         </div>
 
         {/* LIVE TELEMETRY CARDS FOR PRIMARY & SECONDARY ANCHORS */}
-        <div className="grid gap-4 lg:grid-cols-2">
-          {/* Primary Coordinate Card */}
-          <div className="rounded-2xl border border-white/10 bg-zinc-950 p-5 space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-3">
-              <div>
-                <span className="text-[11px] font-bold uppercase tracking-wider text-cyan-400 block">
-                  Local Weather & Alerts
-                </span>
-                <h3 className="text-base font-bold text-white">
-                  {node.primaryCoordinate.label}
-                </h3>
-              </div>
-              <Link
-                href={node.primaryCoordinate.canonicalLocationPath}
-                className="text-xs font-mono text-cyan-300 hover:underline"
-              >
-                {node.primaryCoordinate.lat.toFixed(5)},{" "}
-                {node.primaryCoordinate.lng.toFixed(5)} →
-              </Link>
-            </div>
-
-            {weatherSourceState?.available && primaryWeather ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
-                <div className="rounded-xl border border-white/5 bg-zinc-900/70 p-3">
-                  <span className="text-zinc-400 block">Temperature</span>
-                  <strong className="text-sm text-white mt-0.5 block">
-                    {cToF(primaryWeather.temperature_2m)}
-                  </strong>
-                  <span className="text-[11px] text-zinc-400">
-                    Feels like {cToF(primaryWeather.apparent_temperature)}
-                  </span>
-                </div>
-                <div className="rounded-xl border border-white/5 bg-zinc-900/70 p-3">
-                  <span className="text-zinc-400 block">Condition & Wind</span>
-                  <strong className="text-sm text-white mt-0.5 block">
-                    {primaryWeather.description || "Observed"}
-                  </strong>
-                  <span className="text-[11px] text-zinc-400">
-                    Wind {kphToMph(primaryWeather.wind_speed_10m)}
-                  </span>
-                </div>
-                <div className="rounded-xl border border-white/5 bg-zinc-900/70 p-3">
-                  <span className="text-zinc-400 block">
-                    Air Quality & Model Snow
-                  </span>
-                  <strong className="text-sm text-white mt-0.5 block">
-                    US AQI: {primaryAqi?.us_aqi ?? "Unavailable"}
-                  </strong>
-                  <span className="text-[11px] text-zinc-400">
-                    Grid Snow:{" "}
-                    {primarySnowDepthM != null
-                      ? `${(primarySnowDepthM * 39.37).toFixed(1)} in (${primarySnowDepthM.toFixed(2)} m)`
-                      : "0.0 in"}
-                  </span>
-                </div>
-              </div>
-            ) : (
-              <div className="rounded-xl border border-rose-500/40 bg-rose-950/30 p-4 text-xs text-rose-200">
-                <strong>Weather Feed Unavailable / Unverified:</strong> Upstream
-                Open-Meteo weather observation is currently unreachable (
-                {weatherSourceState?.error ||
-                  primaryTelemetry.fetchError ||
-                  "timeout"}
-                ). Do not interpret missing telemetry as favorable weather.
-              </div>
-            )}
-
-            {/* NWS Alerts Status with Explicit Non-All-Clear Language */}
-            <div className="rounded-xl border border-white/10 bg-zinc-900/60 p-3.5 space-y-2">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="text-xs font-bold text-white">
-                  U.S. National Weather Service (NWS) Point Alerts
-                </span>
-                <span className="text-[11px] font-mono text-zinc-400">
-                  {nwsSourceState?.available
-                    ? `Checked ${new Date(nwsSourceState.checkedAt).toISOString().slice(0, 16)}Z`
-                    : "Source Unavailable"}
-                </span>
-              </div>
-              {!nwsSourceState?.available ? (
-                <p className="text-xs text-amber-300 font-semibold">
-                  ⚠ NWS Alert Feed Unavailable ({nwsSourceState?.error || "timeout"}
-                  ) — Status Unverified (Not an All-Clear). Check weather.gov
-                  directly.
-                </p>
-              ) : primaryAlerts.length > 0 ? (
-                <ul className="space-y-2">
-                  {primaryAlerts.slice(0, 3).map((alert: any, idx: number) => (
-                    <li
-                      key={alert.id || idx}
-                      className="rounded-lg border border-amber-500/40 bg-amber-950/40 p-2.5 text-xs text-amber-100"
-                    >
-                      <strong>{alert.event}:</strong> {alert.headline}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-xs text-zinc-300">
-                  0 active NWS weather warnings at check time.{" "}
-                  <span className="text-zinc-400">
-                    (Note: 0 weather alerts does not confirm venue opening, road
-                    traction status, or marine/trail safety.)
-                  </span>
-                </p>
-              )}
-            </div>
-
-            {/* Extra Marine / Aviation Telemetry when applicable (e.g. Juneau PAJN & Tides) */}
-            {(coopsStations.length > 0 || aviationStations.length > 0) && (
-              <div className="grid gap-2.5 sm:grid-cols-2 text-xs pt-1">
-                {coopsStations[0] && (
-                  <div className="rounded-lg border border-cyan-500/20 bg-cyan-950/20 p-3">
-                    <span className="font-bold text-cyan-300 block">
-                      NOAA CO-OPS Tide Station ({coopsStations[0].name})
-                    </span>
-                    <span className="text-zinc-200 mt-1 block">
-                      Latest MLLW Water Level:{" "}
-                      {coopsStations[0].observation?.v
-                        ? `${coopsStations[0].observation.v} m`
-                        : "See station link"}
-                    </span>
-                    <a
-                      href={coopsStations[0].pageUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[11px] text-cyan-300 underline mt-1 inline-block"
-                    >
-                      NOAA Station {coopsStations[0].id} ↗
-                    </a>
-                  </div>
-                )}
-                {aviationStations[0] && (
-                  <div className="rounded-lg border border-sky-500/20 bg-sky-950/20 p-3">
-                    <span className="font-bold text-sky-300 block">
-                      NOAA Aviation METAR ({aviationStations[0].airport?.icao})
-                    </span>
-                    <span className="text-zinc-200 mt-1 block font-mono text-[11px] break-words">
-                      {aviationStations[0].metar?.rawOb ||
-                        `Flight Cat: ${aviationStations[0].metar?.fltCat || "Reported"}`}
-                    </span>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Secondary / Comparison Coordinate Card + Official External Status Links */}
-          <div className="rounded-2xl border border-white/10 bg-zinc-950 p-5 flex flex-col justify-between space-y-4">
-            {node.secondaryCoordinates[0] && secondaryTelemetry?.core ? (
-              <div className="space-y-3">
-                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-3">
-                  <div>
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-400 block">
-                      Nearby Comparison Point ({node.secondaryCoordinates[0].elevationFt.toLocaleString()} ft)
-                    </span>
-                    <h3 className="text-base font-bold text-white">
-                      {node.secondaryCoordinates[0].label}
-                    </h3>
-                  </div>
-                  <Link
-                    href={node.secondaryCoordinates[0].canonicalLocationPath}
-                    className="text-xs font-mono text-indigo-300 hover:underline"
-                  >
-                    {node.secondaryCoordinates[0].lat.toFixed(5)},{" "}
-                    {node.secondaryCoordinates[0].lng.toFixed(5)} →
-                  </Link>
-                </div>
-                <p className="text-xs text-zinc-400">
-                  {node.secondaryCoordinates[0].roleInPlace}
-                </p>
-                {secondaryTelemetry.core.now?.weather ? (
-                  <div className="grid grid-cols-2 gap-3 text-xs">
-                    <div className="rounded-xl border border-white/5 bg-zinc-900/70 p-3">
-                      <span className="text-zinc-400 block">Temperature</span>
-                      <strong className="text-sm text-white mt-0.5 block">
-                        {cToF(secondaryTelemetry.core.now.weather.temperature_2m)}
-                      </strong>
-                      <span className="text-[11px] text-zinc-400">
-                        {secondaryTelemetry.core.now.weather.description || "Observed"}
-                      </span>
-                    </div>
-                    <div className="rounded-xl border border-white/5 bg-zinc-900/70 p-3">
-                      <span className="text-zinc-400 block">Wind & Active Alerts</span>
-                      <strong className="text-sm text-white mt-0.5 block">
-                        {kphToMph(secondaryTelemetry.core.now.weather.wind_speed_10m)}
-                      </strong>
-                      <span className="text-[11px] text-zinc-400">
-                        NWS Alerts: {secondaryTelemetry.core.hazards?.alerts?.length ?? 0}
-                      </span>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-xs text-amber-300">
-                    Companion coordinate telemetry temporarily unavailable.
-                  </p>
-                )}
-              </div>
-            ) : null}
-
-            {/* What Requires Official External Verification */}
-            <div className="space-y-3 pt-2 border-t border-white/10">
-              <div className="flex items-center justify-between gap-2">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-amber-300">
-                  Official Operational Status (Linked — Not Automated)
-                </h4>
-                <IntegrationBadge status="linked_official_resource" />
-              </div>
-              <div className="space-y-2.5">
-                {node.operationalBoundaries.whatRequiresOfficialExternalCheck.map(
-                  (item) => (
-                    <div
-                      key={item.capability}
-                      className="rounded-xl border border-white/10 bg-zinc-900/70 p-3 text-xs space-y-1.5"
-                    >
-                      <div className="font-bold text-white">{item.capability}</div>
-                      <p className="text-zinc-300 leading-relaxed">
-                        {item.whyNotAutomated}
-                      </p>
-                      <a
-                        href={item.officialSourceUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-cyan-300 font-semibold hover:underline pt-0.5"
-                      >
-                        <span>Check Official Authority: {item.officialSourceLabel}</span>
-                        <span aria-hidden="true">↗</span>
-                      </a>
-                    </div>
-                  ),
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
+        <LiveCoordinateTelemetryCards
+          primaryCoordinate={node.primaryCoordinate}
+          secondaryCoordinate={node.secondaryCoordinates[0] || null}
+          initialPrimaryTelemetry={primaryTelemetry}
+          initialSecondaryTelemetry={secondaryTelemetry}
+          whatRequiresOfficialExternalCheck={
+            node.operationalBoundaries.whatRequiresOfficialExternalCheck
+          }
+        />
       </section>
 
       {/* SECTION 1: OVERVIEW, GEOGRAPHY, HISTORY & LOCAL CONTEXT */}

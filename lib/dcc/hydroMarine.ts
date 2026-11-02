@@ -1,3 +1,5 @@
+import { recordUpstreamFetchCall } from "@/lib/dcc/locationIntelligence";
+
 export type Coordinate = { lat: number; lng: number };
 
 type SourceState<T> = {
@@ -30,8 +32,17 @@ async function readJson(url: string, revalidate: number) {
       headers: { Accept: "application/json", "User-Agent": UA },
       next: { revalidate },
     });
-    if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+    if (!response.ok) {
+      recordUpstreamFetchCall(url, true);
+      throw new Error(`${response.status} ${response.statusText}`);
+    }
+    recordUpstreamFetchCall(url, false);
     return await response.json();
+  } catch (err) {
+    if (!(err instanceof Error && /^\d{3}\s/.test(err.message))) {
+      recordUpstreamFetchCall(url, true);
+    }
+    throw err;
   } finally {
     clearTimeout(timeout);
   }

@@ -1,4 +1,38 @@
+import { AsyncLocalStorage } from "node:async_hooks";
+
 export type Coordinate = { lat: number; lng: number };
+
+export type TelemetryReadOptions = {
+  minRevalidateSeconds?: number;
+};
+
+export type UpstreamFetchMetrics = {
+  calls: number;
+  errors: number;
+  urls: string[];
+};
+
+const upstreamFetchStorage = new AsyncLocalStorage<UpstreamFetchMetrics>();
+
+export function recordUpstreamFetchCall(url: string, failed = false) {
+  const store = upstreamFetchStorage.getStore();
+  if (!store) return;
+  store.calls += 1;
+  store.urls.push(url);
+  if (failed) store.errors += 1;
+}
+
+export async function runWithUpstreamFetchCounter<T>(
+  fn: () => Promise<T>,
+): Promise<{ result: T; metrics: UpstreamFetchMetrics }> {
+  const metrics: UpstreamFetchMetrics = { calls: 0, errors: 0, urls: [] };
+  const result = await upstreamFetchStorage.run(metrics, fn);
+  return { result, metrics };
+}
+
+function resolveRevalidate(defaultSeconds: number, options?: TelemetryReadOptions): number {
+  return Math.max(defaultSeconds, options?.minRevalidateSeconds ?? 0);
+}
 
 type SourceState<T> = {
   available: boolean;
@@ -38,8 +72,17 @@ async function readJson<T>(
         ? { next: { revalidate: options.revalidate } }
         : { cache: "no-store" as const }),
     });
-    if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+    if (!response.ok) {
+      recordUpstreamFetchCall(url, true);
+      throw new Error(`${response.status} ${response.statusText}`);
+    }
+    recordUpstreamFetchCall(url, false);
     return (await response.json()) as T;
+  } catch (err) {
+    if (!(err instanceof Error && /^\d{3}\s/.test(err.message))) {
+      recordUpstreamFetchCall(url, true);
+    }
+    throw err;
   } finally {
     clearTimeout(timeout);
   }
@@ -112,7 +155,7 @@ function weatherDescription(code: number | null | undefined) {
   return descriptions[code] || `Weather code ${code}`;
 }
 
-export async function readGlobalWeather({ lat, lng }: Coordinate) {
+export async function readGlobalWeather({ lat, lng }: Coordinate, options?: TelemetryReadOptions) {
   return source("open-meteo", "Weather data: Open-Meteo", async () => {
     const url = new URL("https://api.open-meteo.com/v1/forecast");
     url.searchParams.set("latitude", String(lat));
@@ -164,7 +207,7 @@ export async function readGlobalWeather({ lat, lng }: Coordinate) {
       ].join(","),
     );
     url.searchParams.set("forecast_days", "3");
-    const payload: any = await readJson(url.toString(), { revalidate: 300 });
+    const payload: any = await readJson(url.toString(), { revalidate: resolveRevalidate(300, options) });
     const current = payload?.current || {};
     const times: string[] = payload?.hourly?.time || [];
     const currentIndex = Math.max(
@@ -213,7 +256,7 @@ export async function readGlobalWeather({ lat, lng }: Coordinate) {
   });
 }
 
-export async function readAirQuality({ lat, lng }: Coordinate) {
+export async function readAirQuality({ lat, lng }: Coordinate, options?: TelemetryReadOptions) {
   return source(
     "open-meteo-air-quality",
     "Air-quality data: Open-Meteo using Copernicus Atmosphere Monitoring Service (CAMS)",
@@ -228,7 +271,7 @@ export async function readAirQuality({ lat, lng }: Coordinate) {
       );
       url.searchParams.set("hourly", "us_aqi,pm10,pm2_5,ozone,uv_index");
       url.searchParams.set("forecast_hours", "12");
-      const payload: any = await readJson(url.toString(), { revalidate: 900 });
+      const payload: any = await readJson(url.toString(), { revalidate: resolveRevalidate(900, options) });
       return {
         timezone: payload?.timezone || null,
         current: payload?.current || null,
@@ -246,18 +289,24 @@ export async function readAirQuality({ lat, lng }: Coordinate) {
   );
 }
 
-export async function readNws({ lat, lng }: Coordinate) {
+export async function readNws({ lat, lng }: Coordinate, options?: TelemetryReadOptions) {
   return source("nws", "U.S. National Weather Service", async () => {
     const pointUrl = `https://api.weather.gov/points/${round(lat, 4)},${round(lng, 4)}`;
     const point: any = await readJson(pointUrl, {
-      revalidate: 21600,
+      revalidate: resolveRevalidate(21600, options),
       headers: { "User-Agent": UA },
     });
     const props = point?.properties || {};
     const [alerts, forecast, hourly] = await Promise.all([
-      readJson<any>(`https://api.weather.gov/alerts/active?point=${round(lat, 4)},${round(lng, 4)}`, { revalidate: 60 }).catch(() => null),
-      props.forecast ? readJson<any>(props.forecast, { revalidate: 300 }).catch(() => null) : Promise.resolve(null),
-      props.forecastHourly ? readJson<any>(props.forecastHourly, { revalidate: 300 }).catch(() => null) : Promise.resolve(null),
+      readJson<any>(`https://api.weather.gov/alerts/active?point=${round(lat, 4)},${round(lng, 4)}`, {
+        revalidate: resolveRevalidate(60, options),
+      }).catch(() => null),
+      props.forecast
+        ? readJson<any>(props.forecast, { revalidate: resolveRevalidate(300, options) }).catch(() => null)
+        : Promise.resolve(null),
+      props.forecastHourly
+        ? readJson<any>(props.forecastHourly, { revalidate: resolveRevalidate(300, options) }).catch(() => null)
+        : Promise.resolve(null),
     ]);
     return {
       office: props?.cwa || null,
@@ -303,7 +352,7 @@ export async function readNws({ lat, lng }: Coordinate) {
   });
 }
 
-export async function readEarthquakes({ lat, lng }: Coordinate) {
+export async function readEarthquakes({ lat, lng }: Coordinate, options?: TelemetryReadOptions) {
   return source("usgs-earthquakes", "U.S. Geological Survey Earthquake Hazards Program", async () => {
     const start = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     const url = new URL("https://earthquake.usgs.gov/fdsnws/event/1/query");
@@ -314,7 +363,7 @@ export async function readEarthquakes({ lat, lng }: Coordinate) {
     url.searchParams.set("starttime", start);
     url.searchParams.set("orderby", "time");
     url.searchParams.set("limit", "50");
-    const payload: any = await readJson(url.toString(), { revalidate: 300 });
+    const payload: any = await readJson(url.toString(), { revalidate: resolveRevalidate(300, options) });
     return (payload?.features || []).map((feature: any) => {
       const coordinates = feature?.geometry?.coordinates || [];
       return {
@@ -348,7 +397,7 @@ function eventPoint(event: any): Coordinate | null {
   return null;
 }
 
-export async function readNaturalEvents({ lat, lng }: Coordinate) {
+export async function readNaturalEvents({ lat, lng }: Coordinate, options?: TelemetryReadOptions) {
   return source("nasa-eonet", "NASA Earth Observatory Natural Event Tracker (EONET)", async () => {
     const latDelta = 3;
     const lngDelta = Math.min(8, 3 / Math.max(0.25, Math.cos((lat * Math.PI) / 180)));
@@ -361,7 +410,7 @@ export async function readNaturalEvents({ lat, lng }: Coordinate) {
     url.searchParams.set("days", "30");
     url.searchParams.set("limit", "50");
     url.searchParams.set("bbox", `${minLng},${maxLat},${maxLng},${minLat}`);
-    const payload: any = await readJson(url.toString(), { revalidate: 900 });
+    const payload: any = await readJson(url.toString(), { revalidate: resolveRevalidate(900, options) });
     return (payload?.events || [])
       .map((event: any) => {
         const point = eventPoint(event);
@@ -380,7 +429,7 @@ export async function readNaturalEvents({ lat, lng }: Coordinate) {
   });
 }
 
-export async function readWaterGauges({ lat, lng }: Coordinate) {
+export async function readWaterGauges({ lat, lng }: Coordinate, options?: TelemetryReadOptions) {
   return source("noaa-nwps", "NOAA National Water Prediction Service", async () => {
     const deltaLat = 0.65;
     const deltaLng = Math.min(2, 0.65 / Math.max(0.25, Math.cos((lat * Math.PI) / 180)));
@@ -390,7 +439,7 @@ export async function readWaterGauges({ lat, lng }: Coordinate) {
     url.searchParams.set("bbox.xmax", String(clamp(lng + deltaLng, -180, 180)));
     url.searchParams.set("bbox.ymax", String(clamp(lat + deltaLat, -90, 90)));
     url.searchParams.set("srid", "EPSG_4326");
-    const payload: any = await readJson(url.toString(), { revalidate: 300 });
+    const payload: any = await readJson(url.toString(), { revalidate: resolveRevalidate(300, options) });
     const rawGauges: any[] = payload?.gauges || payload?.data || payload || [];
     const gauges = Array.isArray(rawGauges) ? rawGauges : [];
     return gauges
@@ -419,14 +468,14 @@ export async function readWaterGauges({ lat, lng }: Coordinate) {
   });
 }
 
-export async function readLocationIntelligence(coordinate: Coordinate) {
+export async function readLocationIntelligence(coordinate: Coordinate, options?: TelemetryReadOptions) {
   const [weather, airQuality, nws, earthquakes, naturalEvents, water] = await Promise.all([
-    readGlobalWeather(coordinate),
-    readAirQuality(coordinate),
-    readNws(coordinate),
-    readEarthquakes(coordinate),
-    readNaturalEvents(coordinate),
-    readWaterGauges(coordinate),
+    readGlobalWeather(coordinate, options),
+    readAirQuality(coordinate, options),
+    readNws(coordinate, options),
+    readEarthquakes(coordinate, options),
+    readNaturalEvents(coordinate, options),
+    readWaterGauges(coordinate, options),
   ]);
 
   const sources = [weather, airQuality, nws, earthquakes, naturalEvents, water].map((entry) => ({
