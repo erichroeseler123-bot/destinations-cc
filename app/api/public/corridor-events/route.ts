@@ -1,1 +1,2 @@
-export { OPTIONS, POST, runtime } from "../../internal/corridor-events/route";
+export const runtime = "nodejs";
+export { OPTIONS, POST } from "../../internal/corridor-events/route";
