@@ -19,7 +19,6 @@ export type LocationProductAssociation = {
     connectionStatus: string;
     onboardingStage: string;
     isAuthorized: boolean;
-    fareharborOctoAuthorized?: false;
   };
   distanceKm?: number;
   reason?: string;
@@ -32,12 +31,6 @@ export type LocationDiscoveryDirectoryItem = {
   website: string;
   destinations: string[];
   commercialStatus: "directory_only";
-  apiAccessStatus: "unknown" | "sandbox_mock_only" | "verified";
-  inventoryStatus: "unknown" | "sandbox_mock_only" | "verified";
-  commercialTermsStatus: "unknown" | "proposed_not_agreed" | "sandbox_only" | "agreed";
-  agreedCommissionPercent: number | null;
-  agreementReference: string | null;
-  proposedDirectOperatorCommissionPercent: number | null;
   notes?: string;
 };
 
@@ -292,7 +285,7 @@ export class DccLocationProductService {
 
           productAssociations.push({
             product: p,
-            commercialStatus: "bookable", // Available in non-production test / sandbox only
+            commercialStatus: "bookable", // Available in test / sandbox
             supplier: {
               connectionId,
               operatorName,
@@ -301,11 +294,9 @@ export class DccLocationProductService {
               connectionStatus: "authorized",
               onboardingStage: "technical_onboarding",
               isAuthorized: true,
-              fareharborOctoAuthorized: false,
             },
             distanceKm,
-            reason:
-              "Sandbox Test Environment - Reference Supplier (FareHarbor external IDs do not imply an authorized OCTO connection)",
+            reason: "Sandbox Test Environment - Reference Supplier",
           });
         }
       }
@@ -313,19 +304,11 @@ export class DccLocationProductService {
 
     // 3. Match Discovery-Only Operators (e.g. Vibe Around Town in USVI)
     for (const participant of INITIAL_OCTO_PARTICIPANTS) {
-      if (
-        participant.role === "supplier" &&
-        participant.outreachStatus !== "live_authorized" &&
-        participant.partnershipStatus !== "sandbox_mock_only"
-      ) {
+      if (participant.outreachStatus !== "live_authorized") {
         let matches = false;
         if (detectedSlug) {
           const dLower = detectedSlug.toLowerCase();
-          if (
-            participant.destinations.some(
-              (d) => d.toLowerCase().includes(dLower) || dLower.includes(d.toLowerCase())
-            )
-          ) {
+          if (participant.destinations.some((d) => d.toLowerCase().includes(dLower) || dLower.includes(d.toLowerCase()))) {
             matches = true;
           }
         }
@@ -343,16 +326,7 @@ export class DccLocationProductService {
             website: participant.website,
             destinations: participant.destinations,
             commercialStatus: "directory_only",
-            apiAccessStatus: participant.apiAccessStatus,
-            inventoryStatus: participant.inventoryStatus,
-            commercialTermsStatus: participant.commercialTermsStatus,
-            agreedCommissionPercent: participant.agreedCommissionPercent ?? null,
-            agreementReference: participant.agreementReference ?? null,
-            proposedDirectOperatorCommissionPercent:
-              participant.proposedDirectOperatorCommissionPercent ?? null,
-            notes:
-              participant.notes ||
-              "Access, inventory, and commercial terms unknown. Commercial agreement pending. Directory listing only.",
+            notes: participant.notes || "Commercial agreement pending. Directory listing only.",
           });
         }
       }
