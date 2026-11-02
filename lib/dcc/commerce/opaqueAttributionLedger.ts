@@ -436,7 +436,7 @@ export function reconcilePartnerCsvBatchByClickId(params: {
         rowNumber: i,
         rawClickIdOrTracking,
         providerBookingRef,
-        reason: res.reason,
+        reason: "reason" in res ? res.reason : "UNMATCHED",
       });
     }
   }
