@@ -193,8 +193,26 @@ export function signServiceRequest(params: {
   };
 }
 
+export const REVIEW_DESK_PRODUCER_KEY_ID = "review_desk_service_key";
+
+export function isResearchProducerKey(keyId: string): boolean {
+  const configuredProducerKeyId =
+    process.env.DCC_REVIEW_DESK_SERVICE_KEY_ID?.trim() ||
+    REVIEW_DESK_PRODUCER_KEY_ID;
+  return keyId.trim() === configuredProducerKeyId;
+}
+
 export function resolveServiceSecret(keyId: string): string | null {
-  // Check configured feeder and owner service keys
+  // 1. Dedicated review-desk producer key (strictly isolated; never falls back to consumer secrets)
+  if (isResearchProducerKey(keyId)) {
+    return (
+      process.env.DCC_SERVICE_SECRET_REVIEW_DESK_SERVICE_KEY?.trim() ||
+      process.env.DCC_REVIEW_DESK_SECRET?.trim() ||
+      null
+    );
+  }
+
+  // 2. Check configured feeder and owner consumer service keys
   const cpKeyId = process.env.DCC_CP_SERVICE_KEY_ID?.trim() || "cp_service_key";
   const cpSecret = process.env.DCC_CP_SERVICE_SECRET?.trim();
   if (keyId === cpKeyId && cpSecret) {
@@ -283,11 +301,46 @@ export function verifyServiceRequestHeaders(params: {
   }
 
   // 2. Extract required headers
-  const keyId = getHeader("x-dcc-key-id").trim();
-  const timestampRaw = getHeader("x-dcc-timestamp").trim();
-  const nonce = getHeader("x-dcc-nonce").trim();
-  const signature = getHeader("x-dcc-signature").trim().toLowerCase();
-  const contentSha256 = getHeader("x-dcc-content-sha256").trim().toLowerCase();
+  const keyId = (
+    getHeader("x-dcc-key-id") ||
+    getHeader("x-service-key-id") ||
+    getHeader("x-key-id")
+  ).trim();
+  const timestampRaw = (
+    getHeader("x-dcc-timestamp") ||
+    getHeader("x-timestamp") ||
+    getHeader("x-signature-timestamp")
+  ).trim();
+  const explicitNonce = (
+    getHeader("x-dcc-nonce") ||
+    getHeader("x-nonce") ||
+    getHeader("x-dcc-delivery-id") ||
+    getHeader("x-delivery-id")
+  ).trim();
+  const signatureRaw = (
+    getHeader("x-dcc-signature") ||
+    getHeader("x-signature") ||
+    getHeader("x-hub-signature-256")
+  )
+    .trim()
+    .replace(/^sha256=/i, "")
+    .replace(/^v1=/i, "");
+  const signature = signatureRaw.toLowerCase();
+  const contentSha256 = (
+    getHeader("x-dcc-content-sha256") ||
+    getHeader("x-dcc-body-sha256") ||
+    getHeader("x-content-sha256")
+  )
+    .trim()
+    .replace(/^sha256=/i, "")
+    .toLowerCase();
+
+  const expectedBodyHash = hashBody(params.body);
+  const nonce =
+    explicitNonce ||
+    (isResearchProducerKey(keyId) && timestampRaw
+      ? `producer:${timestampRaw}:${contentSha256 || expectedBodyHash}`
+      : "");
 
   if (!keyId || !timestampRaw || !nonce || !signature) {
     return {
@@ -298,9 +351,15 @@ export function verifyServiceRequestHeaders(params: {
     };
   }
 
-  // 3. Validate timestamp
-  const requestTimestamp = Number(timestampRaw);
-  if (isNaN(requestTimestamp)) {
+  // 3. Validate timestamp (supports Unix epoch ms, Unix epoch seconds, or ISO-8601)
+  let requestTimestampMs = NaN;
+  if (/^\d+$/.test(timestampRaw)) {
+    const num = Number(timestampRaw);
+    requestTimestampMs = num < 1e11 ? num * 1000 : num;
+  } else {
+    requestTimestampMs = Date.parse(timestampRaw);
+  }
+  if (!Number.isFinite(requestTimestampMs)) {
     return {
       authorized: false,
       statusCode: 401,
@@ -309,7 +368,7 @@ export function verifyServiceRequestHeaders(params: {
     };
   }
 
-  const timeDiff = Math.abs(now - requestTimestamp);
+  const timeDiff = Math.abs(now - requestTimestampMs);
   if (timeDiff > SERVICE_AUTH_WINDOW_MS) {
     return {
       authorized: false,
@@ -359,7 +418,6 @@ export function verifyServiceRequestHeaders(params: {
   }
 
   // 7. Verify body hash if provided or calculated
-  const expectedBodyHash = hashBody(params.body);
   const shouldVerifyBodyContent = params.verifyBodyContent ?? true;
   if (shouldVerifyBodyContent && contentSha256 && contentSha256 !== expectedBodyHash) {
     return {
@@ -371,29 +429,88 @@ export function verifyServiceRequestHeaders(params: {
   }
 
   // 8. Build canonical string and verify HMAC signature in constant time
-  const canonical = buildCanonicalRequest({
+  const effectiveBodyHash = contentSha256 || expectedBodyHash;
+  const primaryCanonical = buildCanonicalRequest({
     method: params.method,
     pathname: params.pathname,
     searchParams: params.searchParams,
     timestamp: timestampRaw,
-    nonce,
-    bodyHash: contentSha256 || expectedBodyHash,
+    nonce: explicitNonce,
+    bodyHash: effectiveBodyHash,
   });
 
-  const expectedSignature = crypto
-    .createHmac("sha256", secret)
-    .update(canonical)
-    .digest("hex")
-    .toLowerCase();
+  const rawBodyString =
+    typeof params.body === "string"
+      ? params.body
+      : Buffer.isBuffer(params.body)
+        ? params.body.toString("utf8")
+        : "";
 
-  const signatureBuffer = Buffer.from(signature, "hex");
-  const expectedBuffer = Buffer.from(expectedSignature, "hex");
+  const canonicalCandidates: string[] = [primaryCanonical];
+  if (isResearchProducerKey(keyId)) {
+    canonicalCandidates.push(
+      [
+        params.method.toUpperCase(),
+        params.pathname,
+        timestampRaw,
+        explicitNonce,
+        effectiveBodyHash,
+      ].join("\n"),
+      [
+        params.method.toUpperCase(),
+        params.pathname,
+        "",
+        timestampRaw,
+        explicitNonce,
+        rawBodyString,
+      ].join("\n"),
+      [
+        params.method.toUpperCase(),
+        params.pathname,
+        timestampRaw,
+        rawBodyString,
+      ].join("\n"),
+      `${timestampRaw}.${rawBodyString}`,
+      `${timestampRaw}\n${explicitNonce}\n${effectiveBodyHash}`,
+      `${timestampRaw}\n${rawBodyString}`,
+    );
+  }
 
-  if (
-    signatureBuffer.length === 0 ||
-    signatureBuffer.length !== expectedBuffer.length ||
-    !crypto.timingSafeEqual(signatureBuffer, expectedBuffer)
-  ) {
+  const matchesCandidate = (candidate: string): boolean => {
+    const expectedHex = crypto
+      .createHmac("sha256", secret)
+      .update(candidate)
+      .digest("hex")
+      .toLowerCase();
+    const sigHexBuf = Buffer.from(signature, "hex");
+    const expHexBuf = Buffer.from(expectedHex, "hex");
+    if (
+      sigHexBuf.length > 0 &&
+      sigHexBuf.length === expHexBuf.length &&
+      crypto.timingSafeEqual(sigHexBuf, expHexBuf)
+    ) {
+      return true;
+    }
+    if (isResearchProducerKey(keyId)) {
+      const expectedB64 = crypto
+        .createHmac("sha256", secret)
+        .update(candidate)
+        .digest("base64");
+      const sigB64Buf = Buffer.from(signatureRaw, "utf8");
+      const expB64Buf = Buffer.from(expectedB64, "utf8");
+      if (
+        sigB64Buf.length > 0 &&
+        sigB64Buf.length === expB64Buf.length &&
+        crypto.timingSafeEqual(sigB64Buf, expB64Buf)
+      ) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  const isSignatureValid = canonicalCandidates.some(matchesCandidate);
+  if (!isSignatureValid) {
     return {
       authorized: false,
       statusCode: 401,

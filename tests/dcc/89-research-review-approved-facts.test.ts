@@ -22,6 +22,8 @@ import { GET as getCruisePortRoute } from "@/app/api/internal/cruises/port/[slug
 
 const CP_KEY_ID = "cp_service_key";
 const CP_SECRET = "test_cp_to_dcc_hmac_secret_2026";
+const PRODUCER_KEY_ID = "review_desk_service_key";
+const PRODUCER_SECRET = "test_review_desk_producer_hmac_secret_2026";
 
 const COASTAL_DURATION_CONFIRMED_FIXTURE: RawResearchDeskFactRow = {
   id: "20a56628f0ce1e5cc2299a68",
@@ -61,6 +63,7 @@ const COASTAL_DURATION_CONFIRMED_FIXTURE: RawResearchDeskFactRow = {
 test.beforeEach(() => {
   process.env.DCC_CP_SERVICE_KEY_ID = CP_KEY_ID;
   process.env.DCC_CP_SERVICE_SECRET = CP_SECRET;
+  process.env.DCC_SERVICE_SECRET_REVIEW_DESK_SERVICE_KEY = PRODUCER_SECRET;
   process.env.ALLOW_IN_MEMORY_NONCE_FALLBACK_FOR_TESTS = "true";
   clearNonceReplayCacheForTesting();
 });
@@ -413,7 +416,7 @@ test("DCC Research Review Approved-Fact Integration Suite", async (t) => {
   );
 
   await t.test(
-    "6. Production routes enforce HMAC auth, evaluate using real server time, and reject test clock (?now=, body.now) and clear controls with 400",
+    "6. Production routes enforce producer-only writes (403 on consumer POST), read-only consumer GETs, real server time, and 400 on test clock/clear controls",
     async () => {
       // Unauthenticated GET must fail with 401
       const unauthRes = await getApprovedFactsRoute(
@@ -445,11 +448,40 @@ test("DCC Research Review Approved-Fact Integration Suite", async (t) => {
       const forbiddenGetJson = await forbiddenGetRes.json();
       assert.equal(forbiddenGetJson.code, "PRODUCTION_TEST_CONTROL_FORBIDDEN");
 
-      // Authenticated POST with action: "clear" must be rejected with 400 PRODUCTION_TEST_CONTROL_FORBIDDEN
-      const clearBody = JSON.stringify({ action: "clear" });
-      const signedClearPost = signServiceRequest({
+      // Consumer credentials (cp_service_key) attempting POST must be rejected with 403 FORBIDDEN_CONSUMER_WRITE
+      const consumerWriteBody = JSON.stringify({
+        action: "sync",
+        rows: [COASTAL_DURATION_CONFIRMED_FIXTURE],
+      });
+      const signedConsumerWrite = signServiceRequest({
         keyId: CP_KEY_ID,
         secret: CP_SECRET,
+        method: "POST",
+        pathname: "/api/internal/research/approved-facts",
+        body: consumerWriteBody,
+      });
+      const consumerWriteRes = await postApprovedFactsRoute(
+        new Request(
+          "https://destinationcommandcenter.com/api/internal/research/approved-facts",
+          {
+            method: "POST",
+            headers: {
+              "content-type": "application/json",
+              ...signedConsumerWrite.headers,
+            },
+            body: consumerWriteBody,
+          },
+        ),
+      );
+      assert.equal(consumerWriteRes.status, 403);
+      const consumerWriteJson = await consumerWriteRes.json();
+      assert.equal(consumerWriteJson.code, "FORBIDDEN_CONSUMER_WRITE");
+
+      // Producer POST with action: "clear" must be rejected with 400 PRODUCTION_TEST_CONTROL_FORBIDDEN
+      const clearBody = JSON.stringify({ action: "clear" });
+      const signedClearPost = signServiceRequest({
+        keyId: PRODUCER_KEY_ID,
+        secret: PRODUCER_SECRET,
         method: "POST",
         pathname: "/api/internal/research/approved-facts",
         body: clearBody,
@@ -471,7 +503,7 @@ test("DCC Research Review Approved-Fact Integration Suite", async (t) => {
       const clearPostJson = await clearPostRes.json();
       assert.equal(clearPostJson.code, "PRODUCTION_TEST_CONTROL_FORBIDDEN");
 
-      // Authenticated POST sync of confirmed Coastal duration fact (revision 4) without test clock override
+      // Dedicated producer POST (review_desk_service_key) sync of confirmed Coastal duration fact (revision 4)
       const syncBody = JSON.stringify({
         action: "sync",
         rows: [
@@ -482,8 +514,8 @@ test("DCC Research Review Approved-Fact Integration Suite", async (t) => {
         ],
       });
       const signedPost = signServiceRequest({
-        keyId: CP_KEY_ID,
-        secret: CP_SECRET,
+        keyId: PRODUCER_KEY_ID,
+        secret: PRODUCER_SECRET,
         method: "POST",
         pathname: "/api/internal/research/approved-facts",
         body: syncBody,
@@ -505,6 +537,7 @@ test("DCC Research Review Approved-Fact Integration Suite", async (t) => {
       assert.equal(postRes.status, 200);
       const postJson = await postRes.json();
       assert.equal(postJson.ok, true);
+      assert.equal(postJson.producer_key_id, "review_desk_service_key");
       assert.equal(postJson.verified_count, 1);
       assert.equal(
         postJson.verified_facts[0].fact_id,

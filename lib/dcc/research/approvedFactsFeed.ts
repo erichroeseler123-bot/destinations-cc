@@ -678,27 +678,43 @@ export interface RawResearchDeskFactRow {
   id?: string;
   fact_id?: string;
   cluster?: string;
+  cluster_id?: string;
   product_id?: string;
+  canonical_product_id?: string;
   constraint_type?: string;
+  atomic_constraint_type?: string;
   source_url?: string;
   source_excerpt?: string;
   source_hash?: string;
+  evidence_fingerprint?: string | null;
+  approved_readable_text_sha256?: string | null;
+  fingerprint?: string | null;
   checked_at?: string;
+  source_checked_at?: string | null;
   value?: string | number | null;
   unit?: string | null;
   conditions?: string | null;
   status?: string | null;
+  decision?: string | null;
   verified_on?: string | null;
+  reviewed_at?: string | null;
   verified_by?: string | null;
   reviewer_id?: string | null;
+  reviewer_key?: string | null;
+  actor?: string | null;
   review_due_on?: string | null;
   revision?: number | string | null;
   approved_revision?: number | string | null;
+  current_revision?: number | string | null;
   active?: number | boolean | null;
+  withdrawn?: boolean | null;
+  revoked_by_source_event?: boolean | null;
   consumers?: string | string[] | null;
+  affected_consumers?: string | string[] | null;
   last_review_token?: string | null;
   healthy?: number | boolean | null;
   current_source_hash?: string | null;
+  current_fingerprint?: string | null;
   conflicted?: boolean | null;
 }
 
@@ -1544,26 +1560,45 @@ export interface DurableResearchSyncState {
 }
 
 export interface DurableResearchSyncMutation {
-  action?: "sync" | "upsert_facts" | "update_sources" | "withdraw";
+  action?: "sync" | "upsert_facts" | "update_sources" | "withdraw" | string;
   sync_origin?: string;
   cluster?: string;
   replace_cluster?: boolean;
   rows?: RawResearchDeskFactRow[];
   verified_facts?: RawResearchDeskFactRow[];
+  approved_facts?: RawResearchDeskFactRow[];
+  eligible_facts?: RawResearchDeskFactRow[];
   candidates?: RawResearchDeskFactRow[];
-  facts?: RawResearchDeskFactRow[];
+  facts?: RawResearchDeskFactRow[] | Record<string, RawResearchDeskFactRow>;
+  fact?: RawResearchDeskFactRow;
   withdraw_fact_ids?: string[];
-  sources?: Array<{
-    url?: string;
-    source_url?: string;
-    fingerprint?: string | null;
-    hash?: string | null;
-    content_hash?: string | null;
-    current_source_hash?: string | null;
-    source_hash?: string | null;
-    healthy?: number | boolean | null;
-    checked_at?: string | null;
-  }>;
+  sources?:
+    | Array<{
+        url?: string;
+        source_url?: string;
+        fingerprint?: string | null;
+        readable_text_sha256?: string | null;
+        hash?: string | null;
+        content_hash?: string | null;
+        current_source_hash?: string | null;
+        source_hash?: string | null;
+        healthy?: number | boolean | null;
+        checked_at?: string | null;
+        source_checked_at?: string | null;
+      }>
+    | Record<
+        string,
+        {
+          url?: string;
+          fingerprint?: string | null;
+          readable_text_sha256?: string | null;
+          hash?: string | null;
+          content_hash?: string | null;
+          healthy?: number | boolean | null;
+          checked_at?: string | null;
+          source_checked_at?: string | null;
+        }
+      >;
   source_fingerprints?: Record<
     string,
     { content_hash: string; healthy: boolean; checked_at?: string | null }
@@ -1581,6 +1616,39 @@ export function createEmptyDurableResearchSyncState(
     sources_by_url: {},
     revoked_revisions_by_fact_id: {},
   };
+}
+
+function normalizeFactRowList(
+  mutation: DurableResearchSyncMutation,
+): RawResearchDeskFactRow[] {
+  const list: RawResearchDeskFactRow[] = [];
+  const pushItems = (
+    items?:
+      | RawResearchDeskFactRow[]
+      | Record<string, RawResearchDeskFactRow>
+      | null,
+  ) => {
+    if (!items) return;
+    if (Array.isArray(items)) {
+      list.push(...items);
+    } else if (typeof items === "object") {
+      for (const [k, v] of Object.entries(items)) {
+        if (v && typeof v === "object") {
+          list.push({ id: v.id ?? v.fact_id ?? k, fact_id: v.fact_id ?? v.id ?? k, ...v });
+        }
+      }
+    }
+  };
+  pushItems(mutation.rows);
+  pushItems(mutation.verified_facts);
+  pushItems(mutation.approved_facts);
+  pushItems(mutation.eligible_facts);
+  pushItems(mutation.candidates);
+  pushItems(mutation.facts);
+  if (mutation.fact && typeof mutation.fact === "object") {
+    list.push(mutation.fact);
+  }
+  return list;
 }
 
 export function applyDurableResearchSyncMutation(
@@ -1601,7 +1669,7 @@ export function applyDurableResearchSyncMutation(
     ...base.revoked_revisions_by_fact_id,
   };
 
-  // 1. Collect incoming source observations from `sources` array and `source_fingerprints` map
+  // 1. Collect incoming source observations from `sources` (array or map) and `source_fingerprints` map
   const incomingSources = new Map<string, DurableSourceRecord>();
   if (Array.isArray(mutation.sources)) {
     for (const src of mutation.sources) {
@@ -1612,6 +1680,7 @@ export function applyDurableResearchSyncMutation(
         src.current_source_hash ??
         src.source_hash ??
         src.fingerprint ??
+        src.readable_text_sha256 ??
         src.hash ??
         "";
       const contentHash = String(hashRaw ?? "").trim().toLowerCase();
@@ -1623,7 +1692,30 @@ export function applyDurableResearchSyncMutation(
         url,
         content_hash: contentHash,
         healthy,
-        checked_at: src.checked_at ?? nowIso,
+        checked_at: src.checked_at ?? src.source_checked_at ?? nowIso,
+      });
+    }
+  } else if (mutation.sources && typeof mutation.sources === "object") {
+    for (const [rawUrl, src] of Object.entries(mutation.sources)) {
+      if (!src || typeof src !== "object") continue;
+      const url = String(src.url ?? rawUrl ?? "").trim();
+      if (!url) continue;
+      const hashRaw =
+        src.content_hash ??
+        src.fingerprint ??
+        src.readable_text_sha256 ??
+        src.hash ??
+        "";
+      const contentHash = String(hashRaw ?? "").trim().toLowerCase();
+      const healthy =
+        src.healthy === undefined || src.healthy === null
+          ? true
+          : src.healthy === 1 || src.healthy === true;
+      incomingSources.set(url, {
+        url,
+        content_hash: contentHash,
+        healthy,
+        checked_at: src.checked_at ?? src.source_checked_at ?? nowIso,
       });
     }
   }
@@ -1688,13 +1780,7 @@ export function applyDurableResearchSyncMutation(
     (mutation.withdraw_fact_ids ?? []).map((id) => String(id).trim()).filter(Boolean),
   );
   if (mutation.action === "withdraw") {
-    const rawWithdrawRows =
-      mutation.rows ??
-      mutation.verified_facts ??
-      mutation.candidates ??
-      mutation.facts ??
-      [];
-    for (const r of rawWithdrawRows) {
+    for (const r of normalizeFactRowList(mutation)) {
       const fid = String(r.id ?? r.fact_id ?? "").trim();
       if (fid) withdrawIds.add(fid);
     }
@@ -1720,14 +1806,9 @@ export function applyDurableResearchSyncMutation(
     }
   }
 
-  // 3. Process incoming fact rows (`rows`, `verified_facts`, `candidates`, or `facts`)
+  // 3. Process incoming fact rows
   if (mutation.action !== "withdraw") {
-    const incomingRows =
-      mutation.rows ??
-      mutation.verified_facts ??
-      mutation.candidates ??
-      mutation.facts ??
-      [];
+    const incomingRows = normalizeFactRowList(mutation);
     const incomingIdsInCluster = new Set<string>();
 
     for (const rawRow of incomingRows) {
@@ -1736,20 +1817,38 @@ export function applyDurableResearchSyncMutation(
       incomingIdsInCluster.add(fid);
 
       const prevRow = rowsByFactId[fid];
-      const incomingRev = Number(rawRow.revision ?? prevRow?.revision ?? 1);
+      const incomingRev = Number(
+        rawRow.revision ??
+          rawRow.approved_revision ??
+          rawRow.current_revision ??
+          prevRow?.revision ??
+          1,
+      );
       const prevRev = Number(prevRow?.revision ?? 1);
       const incomingActive =
-        rawRow.active === undefined || rawRow.active === null
-          ? true
-          : rawRow.active === 1 || rawRow.active === true;
-      const incomingStatus = String(rawRow.status ?? "").trim();
+        rawRow.withdrawn === true || rawRow.revoked_by_source_event === true
+          ? false
+          : rawRow.active === undefined || rawRow.active === null
+            ? true
+            : rawRow.active === 1 || rawRow.active === true;
+      const rawStatusStr = String(
+        rawRow.status ?? rawRow.decision ?? "",
+      ).trim();
+      const incomingStatus = /^confirmed$/i.test(rawStatusStr)
+        ? "Confirmed"
+        : rawStatusStr;
 
       const sourceUrl = String(
         rawRow.source_url ?? prevRow?.source_url ?? "",
       ).trim();
       const knownSource = sourcesByUrl[sourceUrl];
       const rowSourceHash = String(
-        rawRow.source_hash ?? prevRow?.source_hash ?? "",
+        rawRow.source_hash ??
+          rawRow.evidence_fingerprint ??
+          rawRow.approved_readable_text_sha256 ??
+          rawRow.fingerprint ??
+          prevRow?.source_hash ??
+          "",
       )
         .trim()
         .toLowerCase();
@@ -1759,7 +1858,10 @@ export function applyDurableResearchSyncMutation(
           : rawRow.current_source_hash !== undefined &&
               rawRow.current_source_hash !== null
             ? String(rawRow.current_source_hash).trim().toLowerCase()
-            : rowSourceHash;
+            : rawRow.current_fingerprint !== undefined &&
+                rawRow.current_fingerprint !== null
+              ? String(rawRow.current_fingerprint).trim().toLowerCase()
+              : rowSourceHash;
       const effectiveHealthy =
         (rawRow.healthy === undefined || rawRow.healthy === null
           ? true
@@ -1800,11 +1902,51 @@ export function applyDurableResearchSyncMutation(
         incomingRev >= 2 &&
         incomingRev > revokedRev;
 
+      const rawVerifiedOn = String(
+        rawRow.verified_on ?? rawRow.reviewed_at ?? prevRow?.verified_on ?? "",
+      ).trim();
+      const normalizedVerifiedOn = /^\d{4}-\d{2}-\d{2}/.test(rawVerifiedOn)
+        ? rawVerifiedOn.slice(0, 10)
+        : rawVerifiedOn || null;
+
+      const rawReviewDueOn = String(
+        rawRow.review_due_on ?? prevRow?.review_due_on ?? "",
+      ).trim();
+      const normalizedReviewDueOn = /^\d{4}-\d{2}-\d{2}/.test(rawReviewDueOn)
+        ? rawReviewDueOn.slice(0, 10)
+        : rawReviewDueOn || null;
+
+      const normalizedVerifiedBy =
+        String(
+          rawRow.verified_by ??
+            rawRow.reviewer_id ??
+            rawRow.reviewer_key ??
+            rawRow.actor ??
+            prevRow?.verified_by ??
+            "",
+        ).trim() || null;
+
+      const normalizedProductId = String(
+        rawRow.product_id ?? rawRow.canonical_product_id ?? prevRow?.product_id ?? "",
+      ).trim();
+      const normalizedCluster = String(
+        rawRow.cluster ?? rawRow.cluster_id ?? prevRow?.cluster ?? "",
+      ).trim();
+      const normalizedConstraintType = String(
+        rawRow.constraint_type ??
+          rawRow.atomic_constraint_type ??
+          prevRow?.constraint_type ??
+          "",
+      ).trim();
+
       rowsByFactId[fid] = {
         ...prevRow,
         ...rawRow,
         id: fid,
         fact_id: fid,
+        product_id: normalizedProductId,
+        cluster: normalizedCluster || undefined,
+        constraint_type: normalizedConstraintType,
         source_url: sourceUrl,
         source_hash: rowSourceHash,
         current_source_hash: effectiveCurrentHash,
@@ -1816,8 +1958,9 @@ export function applyDurableResearchSyncMutation(
           : incomingStatus === "Confirmed"
             ? "needs confirmation"
             : incomingStatus || "needs confirmation",
-        verified_on: canStayConfirmed ? rawRow.verified_on ?? null : null,
-        verified_by: canStayConfirmed ? rawRow.verified_by ?? null : null,
+        verified_on: canStayConfirmed ? normalizedVerifiedOn : null,
+        verified_by: canStayConfirmed ? normalizedVerifiedBy : null,
+        review_due_on: normalizedReviewDueOn,
       };
     }
 
