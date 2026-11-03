@@ -761,13 +761,19 @@ export const CONNECTED_COASTAL_CONSUMERS = [
   "dcc:api/internal/cruises/port/juneau",
   "cruisepromenade:ports/juneau",
   "cruisepromenade:api/excursions",
+  "lfse:ports/juneau",
+  "lfse:juneau/helicopter-glacier-tours",
+  "lfse:api/research-qualifications",
   "juneauflightdeck:Juneau helicopter comparison",
-  "planned:LFSE Juneau selection (integration pending)",
 ] as const;
 
 export const CONNECTED_CHETEK_CONSUMERS = [
   "dcc:api/internal/research/approved-facts?port=chetek",
-  "planned:Blue Hills Outpost Chetek selection (integration pending)",
+  "blue-hills-outpost:api/research-facts",
+  "blue-hills-outpost:api/tours",
+  "blue-hills-outpost:chetek-hydroflites-water-ski-show-schedule",
+  "blue-hills-outpost:blue-hills-hiking-trail-guide",
+  "blue-hills-outpost:blue-hills-atv-trail-guide",
 ] as const;
 
 /**
@@ -1285,7 +1291,45 @@ export function evaluateResearchFactRecord(
       ? ""
       : String(row.status).trim();
 
-  const consumers = parseConsumers(row.consumers);
+  const rawConsumers = parseConsumers(row.consumers);
+  const resolvedConsumers = (() => {
+    const base =
+      rawConsumers.length > 0
+        ? rawConsumers.flatMap((c) => {
+            if (c === "planned:LFSE Juneau selection (integration pending)") {
+              return [
+                "dcc:juneau/port-day-engine",
+                "dcc:api/internal/cruises/port/juneau",
+                "cruisepromenade:ports/juneau",
+                "cruisepromenade:api/excursions",
+                "lfse:ports/juneau",
+                "lfse:juneau/helicopter-glacier-tours",
+                "lfse:api/research-qualifications",
+              ];
+            }
+            if (c === "planned:LFSE Ketchikan selection (integration pending)") {
+              return [
+                "dcc:api/internal/research/approved-facts?port=ketchikan",
+                "cruisepromenade:ports/ketchikan",
+                "lfse:ports/ketchikan",
+                "lfse:api/research-qualifications",
+              ];
+            }
+            if (
+              c ===
+              "planned:Blue Hills Outpost Chetek selection (integration pending)"
+            ) {
+              return [...CONNECTED_CHETEK_CONSUMERS];
+            }
+            return [c];
+          })
+        : mapping?.productId === "coastal-helicopters-icefield-excursion-direct"
+          ? [...CONNECTED_COASTAL_CONSUMERS]
+          : mapping?.clusterId === "wisconsin-chetek"
+            ? [...CONNECTED_CHETEK_CONSUMERS]
+            : [];
+    return Array.from(new Set(base));
+  })();
 
   const buildResult = (
     verified: boolean,
@@ -1325,14 +1369,7 @@ export function evaluateResearchFactRecord(
     remaining_ttl_seconds: verified ? remainingTtlSeconds : 0,
     healthy,
     active,
-    consumers:
-      consumers.length > 0
-        ? consumers
-        : mapping?.productId === "coastal-helicopters-icefield-excursion-direct"
-          ? [...CONNECTED_COASTAL_CONSUMERS]
-          : mapping?.clusterId === "wisconsin-chetek"
-            ? [...CONNECTED_CHETEK_CONSUMERS]
-            : [],
+    consumers: resolvedConsumers,
     non_transferable_to_other_tours: true,
     non_transferable_note:
       mapping?.nonTransferableNote ??
