@@ -761,12 +761,22 @@ test("DCC Research Review Approved-Fact Integration Suite", async (t) => {
       for (const fact of hydroflitesFacts) {
         assert.equal(fact.verified, false);
         assert.equal(fact.eligibility_status, "needs_confirmation");
+        assert.equal(fact.checked_at, "2026-11-03T14:09:07.636650+00:00");
         assert.equal(
           fact.blue_hills_outpost_tour_id,
           "chetek-hydroflites-water-ski-show",
         );
         assert.equal(fact.non_transferable_to_other_tours, true);
       }
+
+      const blackoutFact = hydroflitesFacts.find(
+        (f: { fact_id: string }) => f.fact_id === "c39820438d099142bf27a3ca",
+      );
+      assert.ok(blackoutFact);
+      assert.equal(blackoutFact.value, "2026-07-19");
+      assert.equal(blackoutFact.unit, "historical_no_home_show_date");
+      assert.equal(blackoutFact.temporal_scope?.historical_only, true);
+      assert.match(blackoutFact.conditions, /Historical 2026 season blackout/i);
 
       const felsenmeerFacts = getJson.all_evaluated_facts.filter(
         (f: { product_id: string }) =>
@@ -780,11 +790,30 @@ test("DCC Research Review Approved-Fact Integration Suite", async (t) => {
       for (const fact of felsenmeerFacts) {
         assert.equal(fact.verified, false);
         assert.equal(fact.eligibility_status, "needs_confirmation");
+        assert.equal(fact.checked_at, "2026-11-03T14:09:07.636650+00:00");
         assert.equal(
           fact.blue_hills_outpost_tour_id,
           "blue-hills-felsenmeer-trail",
         );
       }
+
+      // Verify legacy "planned:LFSE Juneau selection (integration pending)" consumer label is upgraded to connected
+      const legacyConsumerEval = evaluateResearchFactRecord({
+        ...COASTAL_DURATION_CONFIRMED_FIXTURE,
+        consumers: [
+          "connected:DCC approved-fact feed (live verified 2026-11-03)",
+          "connected:Cruise Promenade exact-product qualification (live verified 2026-11-03)",
+          "planned:LFSE Juneau selection (integration pending)",
+        ],
+      });
+      assert.ok(
+        legacyConsumerEval.consumers.includes(
+          "connected:Last Frontier Shore Excursions Juneau selection (live verified 2026-11-03)",
+        ),
+      );
+      assert.ok(
+        !legacyConsumerEval.consumers.some((c) => c.startsWith("planned:LFSE")),
+      );
     },
   );
 });

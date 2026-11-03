@@ -716,6 +716,11 @@ export interface RawResearchDeskFactRow {
   current_source_hash?: string | null;
   current_fingerprint?: string | null;
   conflicted?: boolean | null;
+  temporal_scope?: {
+    date?: string;
+    timezone?: string;
+    historical_only?: boolean;
+  } | null;
 }
 
 export interface EvaluatedResearchFact {
@@ -739,6 +744,12 @@ export interface EvaluatedResearchFact {
   source_excerpt: string;
   source_hash: string;
   current_source_hash: string | null;
+  checked_at: string | null;
+  temporal_scope?: {
+    date?: string;
+    timezone?: string;
+    historical_only?: boolean;
+  } | null;
   revision: number;
   verified: boolean;
   eligibility_status: ResearchFactEligibilityStatus;
@@ -757,6 +768,9 @@ export interface EvaluatedResearchFact {
 }
 
 export const CONNECTED_COASTAL_CONSUMERS = [
+  "connected:DCC approved-fact feed (live verified 2026-11-03)",
+  "connected:Cruise Promenade exact-product qualification (live verified 2026-11-03)",
+  "connected:Last Frontier Shore Excursions Juneau selection (live verified 2026-11-03)",
   "dcc:juneau/port-day-engine",
   "dcc:api/internal/cruises/port/juneau",
   "cruisepromenade:ports/juneau",
@@ -768,6 +782,8 @@ export const CONNECTED_COASTAL_CONSUMERS = [
 ] as const;
 
 export const CONNECTED_CHETEK_CONSUMERS = [
+  "connected:DCC approved-fact feed (live verified 2026-11-03)",
+  "connected:Blue Hills Outpost Wisconsin/Chetek feed (live verified 2026-11-03)",
   "dcc:api/internal/research/approved-facts?port=chetek",
   "blue-hills-outpost:api/research-facts",
   "blue-hills-outpost:api/tours",
@@ -795,7 +811,7 @@ export const COASTAL_HELICOPTERS_ICEFIELD_CANDIDATE_BASELINE: RawResearchDeskFac
         "8c193318f4d1c67ad35058592ac74dffb7747be317a0cdd20319687a7a9638f5",
       current_source_hash:
         "8c193318f4d1c67ad35058592ac74dffb7747be317a0cdd20319687a7a9638f5",
-      checked_at: "2026-04-20T00:13:07.887822+00:00",
+      checked_at: "2026-11-03T06:26:52.717488+00:00",
       value: "155",
       unit: "minutes",
       conditions:
@@ -823,7 +839,7 @@ export const COASTAL_HELICOPTERS_ICEFIELD_CANDIDATE_BASELINE: RawResearchDeskFac
         "8c193318f4d1c67ad35058592ac74dffb7747be317a0cdd20319687a7a9638f5",
       current_source_hash:
         "8c193318f4d1c67ad35058592ac74dffb7747be317a0cdd20319687a7a9638f5",
-      checked_at: "2026-04-20T00:13:07.887822+00:00",
+      checked_at: "2026-11-03T06:26:52.717488+00:00",
       value: "250",
       unit: "lbs_per_passenger_surcharge_threshold",
       conditions:
@@ -851,7 +867,7 @@ export const COASTAL_HELICOPTERS_ICEFIELD_CANDIDATE_BASELINE: RawResearchDeskFac
         "8c193318f4d1c67ad35058592ac74dffb7747be317a0cdd20319687a7a9638f5",
       current_source_hash:
         "8c193318f4d1c67ad35058592ac74dffb7747be317a0cdd20319687a7a9638f5",
-      checked_at: "2026-04-20T00:13:07.887822+00:00",
+      checked_at: "2026-11-03T06:26:52.717488+00:00",
       value: "No carry-on bags permitted",
       unit: "policy",
       conditions:
@@ -879,7 +895,7 @@ export const COASTAL_HELICOPTERS_ICEFIELD_CANDIDATE_BASELINE: RawResearchDeskFac
         "8c193318f4d1c67ad35058592ac74dffb7747be317a0cdd20319687a7a9638f5",
       current_source_hash:
         "8c193318f4d1c67ad35058592ac74dffb7747be317a0cdd20319687a7a9638f5",
-      checked_at: "2026-04-20T00:13:07.887822+00:00",
+      checked_at: "2026-11-03T06:26:52.717488+00:00",
       value: "Included",
       unit: "round_trip_shuttle",
       conditions:
@@ -907,7 +923,7 @@ export const COASTAL_HELICOPTERS_ICEFIELD_CANDIDATE_BASELINE: RawResearchDeskFac
         "8c193318f4d1c67ad35058592ac74dffb7747be317a0cdd20319687a7a9638f5",
       current_source_hash:
         "8c193318f4d1c67ad35058592ac74dffb7747be317a0cdd20319687a7a9638f5",
-      checked_at: "2026-04-20T00:13:07.887822+00:00",
+      checked_at: "2026-11-03T06:26:52.717488+00:00",
       value: "24",
       unit: "hours_prior_full_refund",
       conditions:
@@ -935,7 +951,7 @@ export const COASTAL_HELICOPTERS_ICEFIELD_CANDIDATE_BASELINE: RawResearchDeskFac
         "8c193318f4d1c67ad35058592ac74dffb7747be317a0cdd20319687a7a9638f5",
       current_source_hash:
         "8c193318f4d1c67ad35058592ac74dffb7747be317a0cdd20319687a7a9638f5",
-      checked_at: "2026-04-20T00:13:07.887822+00:00",
+      checked_at: "2026-11-03T06:26:52.717488+00:00",
       value: "24",
       unit: "months_and_older_full_fare_own_seat",
       conditions:
@@ -954,7 +970,8 @@ export const COASTAL_HELICOPTERS_ICEFIELD_CANDIDATE_BASELINE: RawResearchDeskFac
 
 /**
  * Primary-source-backed machine candidates for Wisconsin / Chetek (Blue Hills Outpost).
- * Captured from https://www.hydroflites.com/ and https://dnr.wisconsin.gov/topic/statenaturalareas/BlueHillsFelsenmeer.
+ * Captured from https://www.hydroflites.com/ and https://dnr.wisconsin.gov/topic/statenaturalareas/BlueHillsFelsenmeer
+ * and refreshed on 2026-11-03T14:09:07.636650+00:00.
  * All rows remain unconfirmed (`status: "needs confirmation"`, `verified: false`, `revision: 1`)
  * until human review confirmation in the DCC Research Review desk.
  */
@@ -971,7 +988,7 @@ export const WISCONSIN_CHETEK_CANDIDATE_BASELINE: RawResearchDeskFactRow[] = [
       "3974e9fa13886a717ba54fff817987920408ec7f483808eb39ab9335b1edb8f1",
     current_source_hash:
       "3974e9fa13886a717ba54fff817987920408ec7f483808eb39ab9335b1edb8f1",
-    checked_at: "2026-04-20T01:15:00.000000+00:00",
+    checked_at: "2026-11-03T14:09:07.636650+00:00",
     value: "0",
     unit: "usd_admission",
     conditions:
@@ -999,7 +1016,7 @@ export const WISCONSIN_CHETEK_CANDIDATE_BASELINE: RawResearchDeskFactRow[] = [
       "98c45c3b7e30120cc6b46cd6a9a9196c0cbf8799a1fdba0b64f4afe6006e214b",
     current_source_hash:
       "98c45c3b7e30120cc6b46cd6a9a9196c0cbf8799a1fdba0b64f4afe6006e214b",
-    checked_at: "2026-04-20T01:15:00.000000+00:00",
+    checked_at: "2026-11-03T14:09:07.636650+00:00",
     value:
       "Aqua Theater, 728 Lakeview Drive, Chetek, WI 54728 (onsite parking across from Chetek Airport)",
     unit: "self_drive_venue_arrival",
@@ -1028,7 +1045,7 @@ export const WISCONSIN_CHETEK_CANDIDATE_BASELINE: RawResearchDeskFactRow[] = [
       "98c45c3b7e30120cc6b46cd6a9a9196c0cbf8799a1fdba0b64f4afe6006e214b",
     current_source_hash:
       "98c45c3b7e30120cc6b46cd6a9a9196c0cbf8799a1fdba0b64f4afe6006e214b",
-    checked_at: "2026-04-20T01:15:00.000000+00:00",
+    checked_at: "2026-11-03T14:09:07.636650+00:00",
     value:
       "Rain or Shine (delayed or canceled only for severe weather in the immediate area)",
     unit: "policy",
@@ -1057,11 +1074,16 @@ export const WISCONSIN_CHETEK_CANDIDATE_BASELINE: RawResearchDeskFactRow[] = [
       "47fec369396016842508aab456ee23c203d4240901fde5591ce07c6bba65b790",
     current_source_hash:
       "47fec369396016842508aab456ee23c203d4240901fde5591ce07c6bba65b790",
-    checked_at: "2026-04-20T01:15:00.000000+00:00",
+    checked_at: "2026-11-03T14:09:07.636650+00:00",
     value: "2026-07-19",
-    unit: "no_home_show_date",
+    unit: "historical_no_home_show_date",
     conditions:
-      "No home show at Lake Chetek Aqua Theater on Sunday, July 19, 2026 while the team performs at the Wisconsin Water Ski Show Tournament.",
+      "Historical 2026 season blackout (past date as of November 3, 2026): No home show at Lake Chetek Aqua Theater on Sunday, July 19, 2026 while the team performed at the Wisconsin Water Ski Show Tournament. Historical evidence only; do not project to future seasons.",
+    temporal_scope: {
+      date: "2026-07-19",
+      timezone: "America/Chicago",
+      historical_only: true,
+    },
     status: "needs confirmation",
     verified_on: null,
     verified_by: null,
@@ -1086,7 +1108,7 @@ export const WISCONSIN_CHETEK_CANDIDATE_BASELINE: RawResearchDeskFactRow[] = [
       "99950c58f43752edc6440b56721fc37dc291f63afe190730abcb58c56bce356b",
     current_source_hash:
       "99950c58f43752edc6440b56721fc37dc291f63afe190730abcb58c56bce356b",
-    checked_at: "2026-04-20T01:15:00.000000+00:00",
+    checked_at: "2026-11-03T14:09:07.636650+00:00",
     value:
       "Undesignated footpaths and steep talus rock rubble; no restrooms, picnic areas, or developed ADA trails",
     unit: "trail_surface_and_facilities",
@@ -1116,7 +1138,7 @@ export const WISCONSIN_CHETEK_CANDIDATE_BASELINE: RawResearchDeskFactRow[] = [
       "99950c58f43752edc6440b56721fc37dc291f63afe190730abcb58c56bce356b",
     current_source_hash:
       "99950c58f43752edc6440b56721fc37dc291f63afe190730abcb58c56bce356b",
-    checked_at: "2026-04-20T01:15:00.000000+00:00",
+    checked_at: "2026-11-03T14:09:07.636650+00:00",
     value:
       "Gated logging road off County W (high clearance gravel turn-off) or end of Slack Road (unplowed in winter)",
     unit: "trailhead_access",
@@ -1247,6 +1269,24 @@ export function evaluateResearchFactRecord(
         : sourceHash;
   const currentSourceHash = currentSourceHashRaw || null;
 
+  const checkedAt =
+    typeof row.checked_at === "string" && row.checked_at.trim().length > 0
+      ? row.checked_at.trim()
+      : typeof row.source_checked_at === "string" &&
+          row.source_checked_at.trim().length > 0
+        ? row.source_checked_at.trim()
+        : null;
+
+  const temporalScope =
+    row.temporal_scope ??
+    (factId === "c39820438d099142bf27a3ca"
+      ? {
+          date: "2026-07-19",
+          timezone: "America/Chicago",
+          historical_only: true,
+        }
+      : undefined);
+
   const revision = Number(row.revision ?? 1);
   const approvedRevision =
     row.approved_revision !== undefined && row.approved_revision !== null
@@ -1291,13 +1331,17 @@ export function evaluateResearchFactRecord(
       ? ""
       : String(row.status).trim();
 
-  const rawConsumers = parseConsumers(row.consumers);
+  const rawConsumers = parseConsumers(row.consumers ?? row.affected_consumers);
   const resolvedConsumers = (() => {
     const base =
       rawConsumers.length > 0
         ? rawConsumers.flatMap((c) => {
-            if (c === "planned:LFSE Juneau selection (integration pending)") {
+            if (
+              c === "planned:LFSE Juneau selection (integration pending)" ||
+              c.startsWith("planned:LFSE Juneau")
+            ) {
               return [
+                "connected:Last Frontier Shore Excursions Juneau selection (live verified 2026-11-03)",
                 "dcc:juneau/port-day-engine",
                 "dcc:api/internal/cruises/port/juneau",
                 "cruisepromenade:ports/juneau",
@@ -1307,8 +1351,12 @@ export function evaluateResearchFactRecord(
                 "lfse:api/research-qualifications",
               ];
             }
-            if (c === "planned:LFSE Ketchikan selection (integration pending)") {
+            if (
+              c === "planned:LFSE Ketchikan selection (integration pending)" ||
+              c.startsWith("planned:LFSE")
+            ) {
               return [
+                "connected:Last Frontier Shore Excursions Ketchikan selection (live verified 2026-11-03)",
                 "dcc:api/internal/research/approved-facts?port=ketchikan",
                 "cruisepromenade:ports/ketchikan",
                 "lfse:ports/ketchikan",
@@ -1317,7 +1365,8 @@ export function evaluateResearchFactRecord(
             }
             if (
               c ===
-              "planned:Blue Hills Outpost Chetek selection (integration pending)"
+                "planned:Blue Hills Outpost Chetek selection (integration pending)" ||
+              c.startsWith("planned:Blue Hills Outpost")
             ) {
               return [...CONNECTED_CHETEK_CONSUMERS];
             }
@@ -1356,6 +1405,8 @@ export function evaluateResearchFactRecord(
     source_excerpt: String(row.source_excerpt ?? "").trim(),
     source_hash: sourceHash,
     current_source_hash: currentSourceHash,
+    checked_at: checkedAt,
+    ...(temporalScope ? { temporal_scope: temporalScope } : {}),
     revision: Number.isFinite(revision) ? revision : 0,
     verified,
     eligibility_status: eligibilityStatus,
