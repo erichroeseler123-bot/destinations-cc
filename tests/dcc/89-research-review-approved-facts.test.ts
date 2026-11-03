@@ -6,7 +6,8 @@ import {
 } from "@/lib/dcc/auth/hmac-service-auth";
 import {
   COASTAL_HELICOPTERS_ICEFIELD_CANDIDATE_BASELINE,
-  clearSyncedReviewDeskPayloadForTesting,
+  WISCONSIN_CHETEK_CANDIDATE_BASELINE,
+  applyDurableResearchSyncMutation,
   evaluateApprovedFactFeed,
   evaluateResearchFactRecord,
   getVerifiedFactsForExactProduct,
@@ -34,17 +35,17 @@ const COASTAL_DURATION_CONFIRMED_FIXTURE: RawResearchDeskFactRow = {
     "8c193318f4d1c67ad35058592ac74dffb7747be317a0cdd20319687a7a9638f5",
   current_source_hash:
     "8c193318f4d1c67ad35058592ac74dffb7747be317a0cdd20319687a7a9638f5",
-  checked_at: "2026-04-20T00:13:07.887822+00:00",
+  checked_at: "2026-11-03T00:00:00.000Z",
   value: "155",
   unit: "minutes",
   conditions:
     "Includes round-trip downtown/cruise port shuttle transportation; approximately 55 minutes from pickup to return plus 40–45 minutes on the Herbert Glacier.",
   status: "Confirmed",
-  verified_on: "2026-04-20",
+  verified_on: "2026-11-03",
   verified_by: "Erich Roeseler",
   reviewer_id: "erich@destinationcommandcenter.com",
-  review_due_on: "2026-07-19",
-  revision: 2,
+  review_due_on: "2026-12-03",
+  revision: 4,
   active: 1,
   healthy: 1,
   consumers: [
@@ -52,6 +53,8 @@ const COASTAL_DURATION_CONFIRMED_FIXTURE: RawResearchDeskFactRow = {
     "dcc:api/internal/cruises/port/juneau",
     "cruisepromenade:ports/juneau",
     "cruisepromenade:api/excursions",
+    "lfse:ports/juneau",
+    "lfse:juneau/helicopter-glacier-tours",
   ],
 };
 
@@ -60,19 +63,18 @@ test.beforeEach(() => {
   process.env.DCC_CP_SERVICE_SECRET = CP_SECRET;
   process.env.ALLOW_IN_MEMORY_NONCE_FALLBACK_FOR_TESTS = "true";
   clearNonceReplayCacheForTesting();
-  clearSyncedReviewDeskPayloadForTesting();
 });
 
 test("DCC Research Review Approved-Fact Integration Suite", async (t) => {
   await t.test(
     "1. Machine candidates are never automatically approved and remain needs_confirmation",
     () => {
-      const evaluation = evaluateApprovedFactFeed(
-        COASTAL_HELICOPTERS_ICEFIELD_CANDIDATE_BASELINE,
-        { nowMs: Date.parse("2026-04-20T12:00:00Z") },
-      );
+      const evaluation = evaluateApprovedFactFeed([
+        ...COASTAL_HELICOPTERS_ICEFIELD_CANDIDATE_BASELINE,
+        ...WISCONSIN_CHETEK_CANDIDATE_BASELINE,
+      ]);
 
-      assert.equal(evaluation.total_evaluated, 6);
+      assert.equal(evaluation.total_evaluated, 12);
       assert.equal(evaluation.verified_count, 0);
       assert.equal(evaluation.verified_facts.length, 0);
 
@@ -85,12 +87,10 @@ test("DCC Research Review Approved-Fact Integration Suite", async (t) => {
   );
 
   await t.test(
-    "2. Human-confirmed Coastal Helicopters 155-minute duration fact preserves exact IDs, value, conditions, source, revision, and dates",
+    "2. Human-confirmed Coastal Helicopters 155-minute duration fact (revision 4, verified 2026-11-03, due 2026-12-03) preserves exact IDs, value, conditions, source, revision, and dates under server time",
     () => {
-      const nowMs = Date.parse("2026-04-20T12:00:00Z");
       const evaluated = evaluateResearchFactRecord(
         COASTAL_DURATION_CONFIRMED_FIXTURE,
-        { nowMs },
       );
 
       assert.equal(evaluated.verified, true);
@@ -119,26 +119,31 @@ test("DCC Research Review Approved-Fact Integration Suite", async (t) => {
         evaluated.source_hash,
         "8c193318f4d1c67ad35058592ac74dffb7747be317a0cdd20319687a7a9638f5",
       );
-      assert.equal(evaluated.revision, 2);
-      assert.equal(evaluated.verified_on, "2026-04-20");
+      assert.equal(evaluated.revision, 4);
+      assert.equal(evaluated.verified_on, "2026-11-03");
       assert.equal(evaluated.verified_by, "Erich Roeseler");
-      assert.equal(evaluated.review_due_on, "2026-07-19");
+      assert.equal(evaluated.review_due_on, "2026-12-03");
       assert.equal(evaluated.non_transferable_to_other_tours, true);
     },
   );
 
   await t.test(
-    "3. Non-transferability and qualification: Coastal Helicopters approval never applies to TEMSCO or NorthStar, and duration alone does not establish port-day fit",
+    "3. Non-transferability and qualification: Coastal Helicopters approval never applies to TEMSCO, NorthStar, Ketchikan umbrella bundles, or Chetek tours, and duration alone does not establish port-day fit",
     () => {
       const rows: RawResearchDeskFactRow[] = [
         COASTAL_DURATION_CONFIRMED_FIXTURE,
         ...COASTAL_HELICOPTERS_ICEFIELD_CANDIDATE_BASELINE.filter(
           (r) => r.fact_id !== "20a56628f0ce1e5cc2299a68",
         ),
+        {
+          ...COASTAL_DURATION_CONFIRMED_FIXTURE,
+          id: "blocked-ketchikan-umbrella",
+          fact_id: "blocked-ketchikan-umbrella",
+          cluster: "alaska-ketchikan",
+          product_id: "cape-fox-saxman-highlights-lumberjack",
+        },
       ];
-      const evaluation = evaluateApprovedFactFeed(rows, {
-        nowMs: Date.parse("2026-04-20T12:00:00Z"),
-      });
+      const evaluation = evaluateApprovedFactFeed(rows);
 
       const coastalFacts = getVerifiedFactsForExactProduct(
         evaluation.verified_facts,
@@ -152,11 +157,20 @@ test("DCC Research Review Approved-Fact Integration Suite", async (t) => {
         evaluation.verified_facts,
         "northstar-glacier-walkabout-direct",
       );
+      const blockedUmbrellaFact = evaluation.all_evaluated_facts.find(
+        (f) => f.fact_id === "blocked-ketchikan-umbrella",
+      );
 
       assert.equal(coastalFacts.length, 1);
       assert.equal(coastalFacts[0].fact_id, "20a56628f0ce1e5cc2299a68");
       assert.equal(temscoFacts.length, 0);
       assert.equal(northstarFacts.length, 0);
+      assert.ok(blockedUmbrellaFact);
+      assert.equal(blockedUmbrellaFact.verified, false);
+      assert.equal(
+        blockedUmbrellaFact.disqualification_reason,
+        "blocked_umbrella_product",
+      );
 
       const coastalSummary = evaluateJuneauOperatorProductFacts(
         "coastal-helicopters-icefield-excursion-direct",
@@ -190,7 +204,7 @@ test("DCC Research Review Approved-Fact Integration Suite", async (t) => {
   await t.test(
     "4. Withdrawn, expired, conflicted, source-changed, and unhealthy facts immediately lose verified status and cap Cache-Control",
     () => {
-      const nowMs = Date.parse("2026-04-20T12:00:00Z");
+      const nowMs = Date.parse("2026-11-03T12:00:00Z");
 
       // Withdrawn
       const withdrawn = evaluateResearchFactRecord(
@@ -204,7 +218,7 @@ test("DCC Research Review Approved-Fact Integration Suite", async (t) => {
       // Expired (at or after review_due_on 00:00:00Z)
       const expired = evaluateResearchFactRecord(
         COASTAL_DURATION_CONFIRMED_FIXTURE,
-        { nowMs: Date.parse("2026-07-19T00:00:00Z") },
+        { nowMs: Date.parse("2026-12-03T00:00:00Z") },
       );
       assert.equal(expired.verified, false);
       assert.equal(expired.eligibility_status, "expired");
@@ -245,7 +259,7 @@ test("DCC Research Review Approved-Fact Integration Suite", async (t) => {
       const nearExpiryEval = evaluateApprovedFactFeed(
         [COASTAL_DURATION_CONFIRMED_FIXTURE],
         {
-          nowMs: Date.parse("2026-07-19T00:00:00Z") - 42_000,
+          nowMs: Date.parse("2026-12-03T00:00:00Z") - 42_000,
         },
       );
       assert.equal(nearExpiryEval.verified_count, 1);
@@ -259,7 +273,7 @@ test("DCC Research Review Approved-Fact Integration Suite", async (t) => {
       const postExpiryEval = evaluateApprovedFactFeed(
         [COASTAL_DURATION_CONFIRMED_FIXTURE],
         {
-          nowMs: Date.parse("2026-07-19T00:00:01Z"),
+          nowMs: Date.parse("2026-12-03T00:00:01Z"),
         },
       );
       assert.equal(postExpiryEval.verified_count, 0);
@@ -272,7 +286,134 @@ test("DCC Research Review Approved-Fact Integration Suite", async (t) => {
   );
 
   await t.test(
-    "5. Authenticated /api/internal/research/approved-facts and /api/internal/cruises/port/juneau enforce HMAC auth and return verified Coastal fact",
+    "5. Durable synchronization handles upsert, withdrawal, source-change invalidation, and prevents resurrection of revoked revisions",
+    () => {
+      const nowMs = Date.parse("2026-11-03T12:00:00Z");
+
+      // Step A: Upsert confirmed revision 4
+      const stateAfterUpsert = applyDurableResearchSyncMutation(
+        null,
+        {
+          action: "sync",
+          rows: [COASTAL_DURATION_CONFIRMED_FIXTURE],
+        },
+        nowMs,
+      );
+      const evalAfterUpsert = evaluateApprovedFactFeed(
+        Object.values(stateAfterUpsert.rows_by_fact_id),
+        {
+          nowMs,
+          sourceFingerprintsByUrl: stateAfterUpsert.sources_by_url,
+          revokedRevisionsByFactId: stateAfterUpsert.revoked_revisions_by_fact_id,
+        },
+      );
+      assert.equal(evalAfterUpsert.verified_count, 1);
+      assert.equal(evalAfterUpsert.verified_facts[0].revision, 4);
+
+      // Step B: Source-change invalidates revision 4 and records it in revoked_revisions_by_fact_id
+      const stateAfterSourceDrift = applyDurableResearchSyncMutation(
+        stateAfterUpsert,
+        {
+          action: "update_sources",
+          sources: [
+            {
+              source_url: "https://coastalhelicopters.com/tours/icefield-excursion/",
+              current_source_hash:
+                "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+              healthy: true,
+            },
+          ],
+        },
+        nowMs + 1000,
+      );
+      assert.equal(
+        stateAfterSourceDrift.revoked_revisions_by_fact_id["20a56628f0ce1e5cc2299a68"],
+        4,
+      );
+      const evalAfterSourceDrift = evaluateApprovedFactFeed(
+        Object.values(stateAfterSourceDrift.rows_by_fact_id),
+        {
+          nowMs: nowMs + 1000,
+          sourceFingerprintsByUrl: stateAfterSourceDrift.sources_by_url,
+          revokedRevisionsByFactId:
+            stateAfterSourceDrift.revoked_revisions_by_fact_id,
+        },
+      );
+      assert.equal(evalAfterSourceDrift.verified_count, 0);
+
+      // Step C: Attempting to re-replay revision 4 even with matching source hash cannot resurrect it
+      const stateReplayRev4 = applyDurableResearchSyncMutation(
+        stateAfterSourceDrift,
+        {
+          action: "sync",
+          rows: [COASTAL_DURATION_CONFIRMED_FIXTURE],
+          sources: [
+            {
+              source_url: "https://coastalhelicopters.com/tours/icefield-excursion/",
+              current_source_hash:
+                "8c193318f4d1c67ad35058592ac74dffb7747be317a0cdd20319687a7a9638f5",
+              healthy: true,
+            },
+          ],
+        },
+        nowMs + 2000,
+      );
+      const evalReplayRev4 = evaluateApprovedFactFeed(
+        Object.values(stateReplayRev4.rows_by_fact_id),
+        {
+          nowMs: nowMs + 2000,
+          sourceFingerprintsByUrl: stateReplayRev4.sources_by_url,
+          revokedRevisionsByFactId: stateReplayRev4.revoked_revisions_by_fact_id,
+        },
+      );
+      assert.equal(evalReplayRev4.verified_count, 0);
+
+      // Step D: Explicit human re-approval at higher revision 5 restores eligibility, and subsequent withdrawal revokes revision 5
+      const stateRev5 = applyDurableResearchSyncMutation(
+        stateReplayRev4,
+        {
+          action: "sync",
+          rows: [{ ...COASTAL_DURATION_CONFIRMED_FIXTURE, revision: 5 }],
+        },
+        nowMs + 3000,
+      );
+      const evalRev5 = evaluateApprovedFactFeed(
+        Object.values(stateRev5.rows_by_fact_id),
+        {
+          nowMs: nowMs + 3000,
+          sourceFingerprintsByUrl: stateRev5.sources_by_url,
+          revokedRevisionsByFactId: stateRev5.revoked_revisions_by_fact_id,
+        },
+      );
+      assert.equal(evalRev5.verified_count, 1);
+      assert.equal(evalRev5.verified_facts[0].revision, 5);
+
+      const stateWithdrawn = applyDurableResearchSyncMutation(
+        stateRev5,
+        {
+          action: "withdraw",
+          withdraw_fact_ids: ["20a56628f0ce1e5cc2299a68"],
+        },
+        nowMs + 4000,
+      );
+      const evalWithdrawn = evaluateApprovedFactFeed(
+        Object.values(stateWithdrawn.rows_by_fact_id),
+        {
+          nowMs: nowMs + 4000,
+          sourceFingerprintsByUrl: stateWithdrawn.sources_by_url,
+          revokedRevisionsByFactId: stateWithdrawn.revoked_revisions_by_fact_id,
+        },
+      );
+      assert.equal(evalWithdrawn.verified_count, 0);
+      assert.equal(
+         evalWithdrawn.all_evaluated_facts[0].eligibility_status,
+        "withdrawn",
+      );
+    },
+  );
+
+  await t.test(
+    "6. Production routes enforce HMAC auth, evaluate using real server time, and reject test clock (?now=, body.now) and clear controls with 400",
     async () => {
       // Unauthenticated GET must fail with 401
       const unauthRes = await getApprovedFactsRoute(
@@ -282,10 +423,57 @@ test("DCC Research Review Approved-Fact Integration Suite", async (t) => {
       );
       assert.equal(unauthRes.status, 401);
 
-      // Authenticated POST sync of confirmed Coastal duration fact + 5 unconfirmed candidates
+      // Authenticated GET with ?now= must be rejected with 400 PRODUCTION_TEST_CONTROL_FORBIDDEN
+      const forbiddenQuery = "port=juneau&now=2026-11-03T12%3A00%3A00Z";
+      const signedForbiddenGet = signServiceRequest({
+        keyId: CP_KEY_ID,
+        secret: CP_SECRET,
+        method: "GET",
+        pathname: "/api/internal/research/approved-facts",
+        searchParams: forbiddenQuery,
+      });
+      const forbiddenGetRes = await getApprovedFactsRoute(
+        new Request(
+          `https://destinationcommandcenter.com/api/internal/research/approved-facts?${forbiddenQuery}`,
+          {
+            method: "GET",
+            headers: signedForbiddenGet.headers,
+          },
+        ),
+      );
+      assert.equal(forbiddenGetRes.status, 400);
+      const forbiddenGetJson = await forbiddenGetRes.json();
+      assert.equal(forbiddenGetJson.code, "PRODUCTION_TEST_CONTROL_FORBIDDEN");
+
+      // Authenticated POST with action: "clear" must be rejected with 400 PRODUCTION_TEST_CONTROL_FORBIDDEN
+      const clearBody = JSON.stringify({ action: "clear" });
+      const signedClearPost = signServiceRequest({
+        keyId: CP_KEY_ID,
+        secret: CP_SECRET,
+        method: "POST",
+        pathname: "/api/internal/research/approved-facts",
+        body: clearBody,
+      });
+      const clearPostRes = await postApprovedFactsRoute(
+        new Request(
+          "https://destinationcommandcenter.com/api/internal/research/approved-facts",
+          {
+            method: "POST",
+            headers: {
+              "content-type": "application/json",
+              ...signedClearPost.headers,
+            },
+            body: clearBody,
+          },
+        ),
+      );
+      assert.equal(clearPostRes.status, 400);
+      const clearPostJson = await clearPostRes.json();
+      assert.equal(clearPostJson.code, "PRODUCTION_TEST_CONTROL_FORBIDDEN");
+
+      // Authenticated POST sync of confirmed Coastal duration fact (revision 4) without test clock override
       const syncBody = JSON.stringify({
         action: "sync",
-        now: "2026-04-20T12:00:00Z",
         rows: [
           COASTAL_DURATION_CONFIRMED_FIXTURE,
           ...COASTAL_HELICOPTERS_ICEFIELD_CANDIDATE_BASELINE.filter(
@@ -322,9 +510,12 @@ test("DCC Research Review Approved-Fact Integration Suite", async (t) => {
         postJson.verified_facts[0].fact_id,
         "20a56628f0ce1e5cc2299a68",
       );
+      assert.equal(postJson.verified_facts[0].revision, 4);
+      assert.equal(postJson.verified_facts[0].verified_on, "2026-11-03");
+      assert.equal(postJson.verified_facts[0].review_due_on, "2026-12-03");
 
-      // Authenticated GET from Cruise Promenade for Juneau approved facts
-      const query = "port=juneau&now=2026-04-20T12%3A00%3A00Z";
+      // Authenticated GET from Cruise Promenade for Juneau approved facts (using server time)
+      const query = "port=juneau";
       const signedGet = signServiceRequest({
         keyId: CP_KEY_ID,
         secret: CP_SECRET,
@@ -352,19 +543,19 @@ test("DCC Research Review Approved-Fact Integration Suite", async (t) => {
       );
       assert.equal(getJson.verified_facts[0].value, "155");
       assert.equal(getJson.verified_facts[0].unit, "minutes");
+      assert.equal(getJson.verified_facts[0].revision, 4);
 
       // Authenticated GET to /api/internal/cruises/port/juneau includes approved_research_facts
-      const portQuery = "now=2026-04-20T12%3A00%3A00Z";
       const signedPortGet = signServiceRequest({
         keyId: CP_KEY_ID,
         secret: CP_SECRET,
         method: "GET",
         pathname: "/api/internal/cruises/port/juneau",
-        searchParams: portQuery,
+        searchParams: "",
       });
       const portRes = await getCruisePortRoute(
         new Request(
-          `https://destinationcommandcenter.com/api/internal/cruises/port/juneau?${portQuery}`,
+          "https://destinationcommandcenter.com/api/internal/cruises/port/juneau",
           {
             method: "GET",
             headers: signedPortGet.headers,
@@ -378,6 +569,10 @@ test("DCC Research Review Approved-Fact Integration Suite", async (t) => {
       assert.equal(
         portJson.approved_research_facts.verified_facts[0].fact_id,
         "20a56628f0ce1e5cc2299a68",
+      );
+      assert.equal(
+        portJson.approved_research_facts.verified_facts[0].revision,
+        4,
       );
     },
   );

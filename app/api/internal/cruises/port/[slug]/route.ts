@@ -38,17 +38,26 @@ export async function GET(
 
   const resolved = await params;
   const { searchParams } = url;
+  if (searchParams.has("now") || searchParams.has("clear")) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error:
+          "Test clock (?now=) and clear controls (?clear=) are excluded from production routes.",
+        code: "PRODUCTION_TEST_CONTROL_FORBIDDEN",
+      },
+      {
+        status: 400,
+        headers: {
+          "Cache-Control": "private, no-store, max-age=0, must-revalidate",
+        },
+      },
+    );
+  }
+
   const sortMode = normalizeCruiseSortMode(searchParams.get("sort"));
   const dateStart = searchParams.get("start") || undefined;
   const dateEnd = searchParams.get("end") || undefined;
-  const rawNow = searchParams.get("now")?.trim();
-  const parsedNow = rawNow
-    ? /^\d+$/.test(rawNow)
-      ? Number(rawNow)
-      : Date.parse(rawNow)
-    : undefined;
-  const nowMs =
-    parsedNow !== undefined && Number.isFinite(parsedNow) ? parsedNow : undefined;
 
   const [payload, researchIngestion] = await Promise.all([
     buildCruisePayload({
@@ -60,7 +69,6 @@ export async function GET(
     }),
     ingestApprovedFactsFromReviewDesk({
       portSlug: resolved.slug.toLowerCase(),
-      nowMs,
     }),
   ]);
 

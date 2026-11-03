@@ -1,9 +1,16 @@
+import { redis } from "@/lib/redis";
+
 export type ResearchClusterId =
   | "alaska-juneau"
   | "alaska-ketchikan"
-  | "new-orleans-swamp";
+  | "new-orleans-swamp"
+  | "wisconsin-chetek";
 
-export type ResearchPortSlug = "juneau" | "ketchikan" | "new-orleans";
+export type ResearchPortSlug =
+  | "juneau"
+  | "ketchikan"
+  | "new-orleans"
+  | "chetek";
 
 export type ResearchConstraintType =
   | "total_duration"
@@ -19,6 +26,8 @@ export type ResearchConstraintType =
   | "weight_declaration"
   | "bag_policy"
   | "cancellation_policy"
+  | "weather_policy"
+  | "tournament_blackout_2026"
   | "price"
   | "exclusions"
   | string;
@@ -63,6 +72,8 @@ export interface ExplicitResearchProductMapping {
   officialSourceUrls: string[];
   dccOptionId?: string;
   cruisePromenadeExcursionId?: string;
+  lfseContextId?: string;
+  blueHillsOutpostTourId?: string;
   nonTransferableNote: string;
 }
 
@@ -85,8 +96,41 @@ export const EXPLICIT_RESEARCH_PRODUCT_REGISTRY: Record<
     ],
     dccOptionId: "jun-opt-coastal-icefield-excursion-direct",
     cruisePromenadeExcursionId: "coastal-helicopters-icefield-excursion-direct",
+    lfseContextId: "juneau/coastal-helicopters-icefield-excursion-direct",
     nonTransferableNote:
-      "Applies strictly to Coastal Helicopters direct Herbert Glacier Icefield Excursion (FareHarbor item 413056). Never apply to TEMSCO, NorthStar, Coastal Dog Sled, Coastal Private Icefield, or third-party reseller SKUs.",
+      "Applies strictly to Coastal Helicopters direct Herbert Glacier Icefield Excursion (FareHarbor item 413056). Never apply to TEMSCO, NorthStar, Coastal Dog Sled, Coastal Private Icefield, or third-party reseller SKUs (such as Viator 6251SHOREXICEWALK where channel equivalence is not established).",
+  },
+  "coastal-helicopters-herbert-icefield": {
+    productId: "coastal-helicopters-herbert-icefield",
+    productName: "Coastal Helicopters — Herbert Glacier Helicopter Icefield Excursion",
+    operatorId: "coastal-helicopters",
+    operatorName: "Coastal Helicopters",
+    portSlug: "juneau",
+    clusterId: "alaska-juneau",
+    bookingChannel: "direct_operator",
+    officialSourceUrls: [
+      "https://coastalhelicopters.com/tours/icefield-excursion/",
+      "https://coastalhelicopters.com/faq/",
+    ],
+    lfseContextId: "juneau/6251SHOREXICEWALK",
+    nonTransferableNote:
+      "Audits Viator 6251SHOREXICEWALK against direct Coastal Helicopters sources; never inherit direct-only FareHarbor 413056 approvals without explicit channel equivalence confirmation.",
+  },
+  "coastal-helicopters-herbert-dogsled": {
+    productId: "coastal-helicopters-herbert-dogsled",
+    productName: "Coastal Helicopters — Dog Sled Tour on Herbert Glacier",
+    operatorId: "coastal-helicopters",
+    operatorName: "Coastal Helicopters",
+    portSlug: "juneau",
+    clusterId: "alaska-juneau",
+    bookingChannel: "direct_operator",
+    officialSourceUrls: [
+      "https://coastalhelicopters.com/tours/dog-sled-tours/",
+      "https://coastalhelicopters.com/faq/",
+    ],
+    lfseContextId: "juneau/coastal-helicopters-herbert-dogsled",
+    nonTransferableNote:
+      "Applies strictly to Coastal Helicopters Dog Sled Tour on Herbert Glacier; never inherit shared Icefield Excursion approvals.",
   },
   "temsco-mendenhall-glacier-pilot-choice-direct": {
     productId: "temsco-mendenhall-glacier-pilot-choice-direct",
@@ -99,8 +143,132 @@ export const EXPLICIT_RESEARCH_PRODUCT_REGISTRY: Record<
     officialSourceUrls: ["https://temscoair.com/juneau-tours/"],
     dccOptionId: "jun-opt-temsco-pilot-choice-direct",
     cruisePromenadeExcursionId: "temsco-mendenhall-glacier-pilot-choice-direct",
+    lfseContextId: "juneau/temsco-mendenhall-glacier-pilot-choice-direct",
     nonTransferableNote:
       "Applies strictly to TEMSCO direct Juneau helicopter products; never inherit Coastal Helicopters or NorthStar approvals.",
+  },
+  "temsco-mendenhall-glacier-walk": {
+    productId: "temsco-mendenhall-glacier-walk",
+    productName: "TEMSCO Helicopters — Mendenhall Glacier Helicopter & Guided Walk",
+    operatorId: "temsco-helicopters",
+    operatorName: "TEMSCO Helicopters",
+    portSlug: "juneau",
+    clusterId: "alaska-juneau",
+    bookingChannel: "direct_operator",
+    officialSourceUrls: [
+      "https://temscoair.com/juneau-tours/",
+      "https://temscoair.com/frequently-asked-questions/",
+    ],
+    lfseContextId: "juneau/temsco-mendenhall-glacier-walk",
+    nonTransferableNote:
+      "Applies strictly to TEMSCO Mendenhall Glacier Helicopter & Guided Walk; never inherit Coastal Helicopters approvals.",
+  },
+  "temsco-mendenhall-dogsled-heli": {
+    productId: "temsco-mendenhall-dogsled-heli",
+    productName: "TEMSCO Helicopters — Mendenhall Glacier Dog Sledding by Helicopter",
+    operatorId: "temsco-helicopters",
+    operatorName: "TEMSCO Helicopters",
+    portSlug: "juneau",
+    clusterId: "alaska-juneau",
+    bookingChannel: "direct_operator",
+    officialSourceUrls: [
+      "https://temscoair.com/juneau-tours/",
+      "https://temscoair.com/frequently-asked-questions/",
+    ],
+    lfseContextId: "juneau/temsco-mendenhall-dogsled-heli",
+    nonTransferableNote:
+      "Applies strictly to TEMSCO Mendenhall Glacier Dog Sledding by Helicopter; do not conflate with sheep creek wheeled summer camp.",
+  },
+  "temsco-juneau-dogsled-summer-camp": {
+    productId: "temsco-juneau-dogsled-summer-camp",
+    productName: "Alaskan Husky Tours / TEMSCO — Juneau Dog Sled Summer Camp (Wheeled Cart)",
+    operatorId: "temsco-helicopters",
+    operatorName: "TEMSCO Helicopters",
+    portSlug: "juneau",
+    clusterId: "alaska-juneau",
+    bookingChannel: "direct_operator",
+    officialSourceUrls: ["https://temscoair.com/juneau-tours/"],
+    lfseContextId: "juneau/62390P4",
+    nonTransferableNote:
+      "Applies strictly to Sheep Creek wheeled summer camp (audits 62390P4); never apply helicopter glacier dog sled facts.",
+  },
+  "wings-airways-taku-lodge-feast": {
+    productId: "wings-airways-taku-lodge-feast",
+    productName: "Wings Airways — Taku Glacier Lodge Feast & 5-Glacier Seaplane Discovery",
+    operatorId: "wings-airways",
+    operatorName: "Wings Airways",
+    portSlug: "juneau",
+    clusterId: "alaska-juneau",
+    bookingChannel: "direct_operator",
+    officialSourceUrls: [
+      "https://wingsairways.com/taku-glacier-lodge-feast-and-5-glacier-discovery/",
+      "https://wingsairways.com/faq/",
+    ],
+    lfseContextId: "juneau/110048P1",
+    nonTransferableNote:
+      "Applies strictly to Wings Airways Taku Glacier Lodge Feast & 5-Glacier Discovery; never inherit helicopter glacier walk facts.",
+  },
+  "juneau-tours-mendenhall-shuttle": {
+    productId: "juneau-tours-mendenhall-shuttle",
+    productName: "Juneau Tours — Mendenhall Glacier Blue Bus Express",
+    operatorId: "juneau-tours",
+    operatorName: "Juneau Tours",
+    portSlug: "juneau",
+    clusterId: "alaska-juneau",
+    bookingChannel: "direct_operator",
+    officialSourceUrls: [
+      "https://www.juneautours.com/book-a-tour/glacier-shuttle-tours/",
+      "https://www.juneautours.com/faqs/",
+    ],
+    lfseContextId: "juneau/5857SHUTTLE",
+    nonTransferableNote:
+      "Applies strictly to Juneau Tours Mendenhall Glacier Blue Bus Express; never transfer to whale watching combos.",
+  },
+  "juneau-tours-whale-watch": {
+    productId: "juneau-tours-whale-watch",
+    productName: "Juneau Tours — Juneau Whale Watching Adventure",
+    operatorId: "juneau-tours",
+    operatorName: "Juneau Tours",
+    portSlug: "juneau",
+    clusterId: "alaska-juneau",
+    bookingChannel: "direct_operator",
+    officialSourceUrls: [
+      "https://www.juneautours.com/book-a-tour/juneau-whale-watching-tours/",
+      "https://www.juneautours.com/faqs/",
+    ],
+    lfseContextId: "juneau/juneau-tours-whale-watch",
+    nonTransferableNote:
+      "Applies strictly to Juneau Tours standalone Whale Watching Adventure; never transfer to Mendenhall Shuttle.",
+  },
+  "true-alaskan-juneau-mendenhall-whale-quest": {
+    productId: "true-alaskan-juneau-mendenhall-whale-quest",
+    productName: "True Alaskan Tours — Juneau Mendenhall Glacier & Whale Quest",
+    operatorId: "true-alaskan-tours",
+    operatorName: "True Alaskan Tours",
+    portSlug: "juneau",
+    clusterId: "alaska-juneau",
+    bookingChannel: "direct_operator",
+    officialSourceUrls: [
+      "https://truealaskantours.com/juneau-tours/mendenhall-glacier-and-whale-quest/",
+    ],
+    lfseContextId: "juneau/true-alaskan-juneau-mendenhall-whale-quest",
+    nonTransferableNote:
+      "Applies strictly to True Alaskan Tours Juneau Mendenhall Glacier & Whale Quest combo.",
+  },
+  "alaska-travel-adventures-whale-salmon-bake": {
+    productId: "alaska-travel-adventures-whale-salmon-bake",
+    productName: "Alaska Travel Adventures — Juneau Whale Watch & Gold Creek Salmon Bake",
+    operatorId: "alaska-travel-adventures",
+    operatorName: "Alaska Travel Adventures",
+    portSlug: "juneau",
+    clusterId: "alaska-juneau",
+    bookingChannel: "direct_operator",
+    officialSourceUrls: [
+      "https://www.bestofalaskatravel.com/alaska_day_tours/pages/j_w_bake.htm",
+    ],
+    lfseContextId: "juneau/alaska-travel-adventures-whale-salmon-bake",
+    nonTransferableNote:
+      "Applies strictly to Alaska Travel Adventures Juneau Whale Watch & Gold Creek Salmon Bake.",
   },
   "northstar-glacier-walkabout-direct": {
     productId: "northstar-glacier-walkabout-direct",
@@ -113,6 +281,7 @@ export const EXPLICIT_RESEARCH_PRODUCT_REGISTRY: Record<
     officialSourceUrls: ["https://www.glaciertrekking.com/"],
     dccOptionId: "jun-opt-northstar-walkabout-direct",
     cruisePromenadeExcursionId: "northstar-glacier-walkabout-direct",
+    lfseContextId: "juneau/northstar-glacier-walkabout-direct",
     nonTransferableNote:
       "Applies strictly to NorthStar Trekking direct Glacier Walkabout; never inherit Coastal Helicopters or TEMSCO approvals.",
   },
@@ -125,6 +294,7 @@ export const EXPLICIT_RESEARCH_PRODUCT_REGISTRY: Record<
     clusterId: "alaska-ketchikan",
     bookingChannel: "port_shuttle",
     officialSourceUrls: ["https://wardcoveak.com/schedules/"],
+    lfseContextId: "ketchikan/ward-cove-complimentary-bus",
     nonTransferableNote:
       "Applies strictly to Ward Cove complimentary land shuttle; do not transfer to paid True Alaskan waterfront shuttles.",
   },
@@ -139,6 +309,7 @@ export const EXPLICIT_RESEARCH_PRODUCT_REGISTRY: Record<
     officialSourceUrls: [
       "https://truealaskantours.com/ketchikan-tours/waterfront-shuttle-ward-cove-to-downtown-ketchikan/",
     ],
+    lfseContextId: "ketchikan/true-alaskan-waterfront-ward-cove-to-downtown",
     nonTransferableNote:
       "Applies strictly to direct Ward Cove to Downtown direction; do not apply to return direction or free land bus.",
   },
@@ -154,6 +325,7 @@ export const EXPLICIT_RESEARCH_PRODUCT_REGISTRY: Record<
     officialSourceUrls: [
       "https://truealaskantours.com/ketchikan-tours/waterfront-shuttle-downtown-ketchikan-returning-to-ward-cove/",
     ],
+    lfseContextId: "ketchikan/true-alaskan-waterfront-downtown-to-ward-cove",
     nonTransferableNote:
       "Applies strictly to direct Downtown Returning to Ward Cove direction; do not apply to outbound direction.",
   },
@@ -168,6 +340,7 @@ export const EXPLICIT_RESEARCH_PRODUCT_REGISTRY: Record<
     officialSourceUrls: [
       "https://truealaskantours.com/ketchikan-tours/misty-fjords-wilderness-explorer/",
     ],
+    lfseContextId: "ketchikan/true-alaskan-misty-fjords-downtown-direct",
     nonTransferableNote:
       "Applies strictly to Downtown departure; do not transfer to Ward Cove departure.",
   },
@@ -182,6 +355,39 @@ export const EXPLICIT_RESEARCH_PRODUCT_REGISTRY: Record<
     officialSourceUrls: [
       "https://truealaskantours.com/ward-cove-tours/misty-fjords-wilderness-explorer-from-ward-cove/",
     ],
+    lfseContextId: "ketchikan/true-alaskan-misty-fjords-ward-cove-direct",
+    nonTransferableNote:
+      "Applies strictly to Ward Cove departure; do not transfer to Downtown departure.",
+  },
+  "true-alaskan-misty-fjords-downtown": {
+    productId: "true-alaskan-misty-fjords-downtown",
+    productName: "True Alaskan Tours — Misty Fjords Wilderness Explorer (Downtown Departure)",
+    operatorId: "true-alaskan-tours",
+    operatorName: "True Alaskan Tours",
+    portSlug: "ketchikan",
+    clusterId: "alaska-ketchikan",
+    bookingChannel: "direct_operator",
+    officialSourceUrls: [
+      "https://truealaskantours.com/ketchikan-tours/misty-fjords-wilderness-explorer/",
+      "https://truealaskantours.com/faq/",
+    ],
+    lfseContextId: "ketchikan/472133P3",
+    nonTransferableNote:
+      "Audits Downtown departure against Viator 472133P3; do not transfer to Ward Cove departure.",
+  },
+  "true-alaskan-misty-fjords-ward-cove": {
+    productId: "true-alaskan-misty-fjords-ward-cove",
+    productName: "True Alaskan Tours — Misty Fjords Wilderness Explorer (Ward Cove Departure)",
+    operatorId: "true-alaskan-tours",
+    operatorName: "True Alaskan Tours",
+    portSlug: "ketchikan",
+    clusterId: "alaska-ketchikan",
+    bookingChannel: "direct_operator",
+    officialSourceUrls: [
+      "https://truealaskantours.com/ward-cove-tours/misty-fjords-wilderness-explorer-from-ward-cove/",
+      "https://truealaskantours.com/faq/",
+    ],
+    lfseContextId: "ketchikan/true-alaskan-misty-fjords-ward-cove",
     nonTransferableNote:
       "Applies strictly to Ward Cove departure; do not transfer to Downtown departure.",
   },
@@ -195,6 +401,7 @@ export const EXPLICIT_RESEARCH_PRODUCT_REGISTRY: Record<
     clusterId: "alaska-ketchikan",
     bookingChannel: "direct_operator",
     officialSourceUrls: ["https://capefoxtours.com/"],
+    lfseContextId: "ketchikan/cape-fox-saxman-highlights-lumberjack-downtown-direct",
     nonTransferableNote:
       "Applies strictly to Cape Fox direct Downtown departure; do not inherit Viator 445368P5 terms.",
   },
@@ -208,8 +415,95 @@ export const EXPLICIT_RESEARCH_PRODUCT_REGISTRY: Record<
     clusterId: "alaska-ketchikan",
     bookingChannel: "direct_operator",
     officialSourceUrls: ["https://capefoxtours.com/"],
+    lfseContextId: "ketchikan/cape-fox-saxman-highlights-lumberjack-ward-cove-direct",
     nonTransferableNote:
       "Applies strictly to Cape Fox direct Ward Cove departure; do not inherit Viator 445368P5 terms.",
+  },
+  "cape-fox-saxman-highlights-lumberjack-downtown": {
+    productId: "cape-fox-saxman-highlights-lumberjack-downtown",
+    productName:
+      "Cape Fox Tours — Saxman Native Village, Ketchikan Highlights & Lumberjack Show (Downtown Departure)",
+    operatorId: "cape-fox-tours",
+    operatorName: "Cape Fox Tours",
+    portSlug: "ketchikan",
+    clusterId: "alaska-ketchikan",
+    bookingChannel: "direct_operator",
+    officialSourceUrls: ["https://capefoxtours.com/tours-adventures/"],
+    lfseContextId: "ketchikan/445368P5-downtown",
+    nonTransferableNote:
+      "Applies strictly to Downtown departure variant; do not merge with Ward Cove departure.",
+  },
+  "cape-fox-saxman-highlights-lumberjack-ward-cove": {
+    productId: "cape-fox-saxman-highlights-lumberjack-ward-cove",
+    productName:
+      "Cape Fox Tours — Saxman Native Village, Ketchikan Highlights & Lumberjack Show (Ward Cove Departure)",
+    operatorId: "cape-fox-tours",
+    operatorName: "Cape Fox Tours",
+    portSlug: "ketchikan",
+    clusterId: "alaska-ketchikan",
+    bookingChannel: "direct_operator",
+    officialSourceUrls: ["https://capefoxtours.com/tours-adventures/"],
+    lfseContextId: "ketchikan/445368P5-ward-cove",
+    nonTransferableNote:
+      "Applies strictly to Ward Cove departure variant; do not merge with Downtown departure.",
+  },
+  "cape-fox-saxman-signature-creek-street-downtown": {
+    productId: "cape-fox-saxman-signature-creek-street-downtown",
+    productName:
+      "Cape Fox Tours — Saxman Native Village Signature Tour & Creek Street Walk (Downtown Departure)",
+    operatorId: "cape-fox-tours",
+    operatorName: "Cape Fox Tours",
+    portSlug: "ketchikan",
+    clusterId: "alaska-ketchikan",
+    bookingChannel: "direct_operator",
+    officialSourceUrls: ["https://capefoxtours.com/tours-adventures/"],
+    lfseContextId: "ketchikan/cape-fox-saxman-signature-creek-street-downtown",
+    nonTransferableNote:
+      "Applies strictly to Downtown departure of Signature Tour & Creek Street Walk.",
+  },
+  "cape-fox-saxman-signature-creek-street-ward-cove": {
+    productId: "cape-fox-saxman-signature-creek-street-ward-cove",
+    productName:
+      "Cape Fox Tours — Saxman Native Village Signature Tour & Creek Street Walk (Ward Cove Departure)",
+    operatorId: "cape-fox-tours",
+    operatorName: "Cape Fox Tours",
+    portSlug: "ketchikan",
+    clusterId: "alaska-ketchikan",
+    bookingChannel: "direct_operator",
+    officialSourceUrls: ["https://capefoxtours.com/tours-adventures/"],
+    lfseContextId: "ketchikan/cape-fox-saxman-signature-creek-street-ward-cove",
+    nonTransferableNote:
+      "Applies strictly to Ward Cove departure of Signature Tour & Creek Street Walk.",
+  },
+  "cape-fox-cultural-culinary-lumberjack": {
+    productId: "cape-fox-cultural-culinary-lumberjack",
+    productName:
+      "Cape Fox Tours — Ketchikan Cultural & Culinary Journey with Lumberjack Show",
+    operatorId: "cape-fox-tours",
+    operatorName: "Cape Fox Tours",
+    portSlug: "ketchikan",
+    clusterId: "alaska-ketchikan",
+    bookingChannel: "direct_operator",
+    officialSourceUrls: ["https://capefoxtours.com/tours-adventures/"],
+    lfseContextId: "ketchikan/cape-fox-cultural-culinary-lumberjack",
+    nonTransferableNote:
+      "Applies strictly to Cultural & Culinary Journey; does not include Totem Park access.",
+  },
+  "great-alaskan-lumberjack-show-ward-cove": {
+    productId: "great-alaskan-lumberjack-show-ward-cove",
+    productName: "Great Alaskan Lumberjack Show (with Ward Cove Shuttle Option)",
+    operatorId: "great-alaskan-lumberjack-show",
+    operatorName: "Great Alaskan Lumberjack Show",
+    portSlug: "ketchikan",
+    clusterId: "alaska-ketchikan",
+    bookingChannel: "direct_operator",
+    officialSourceUrls: [
+      "https://lumberjackshows.com/tickets/",
+      "https://lumberjackshows.com/alaska-cruise-excursions/",
+    ],
+    lfseContextId: "ketchikan/great-alaskan-lumberjack-show-ward-cove",
+    nonTransferableNote:
+      "Applies strictly to Great Alaskan Lumberjack Show direct tickets/Ward Cove shuttle option.",
   },
   "taquan-air-misty-fjords-direct": {
     productId: "taquan-air-misty-fjords-direct",
@@ -225,8 +519,9 @@ export const EXPLICIT_RESEARCH_PRODUCT_REGISTRY: Record<
       "https://taquanair.com/tours/misty-fjords-flightseeing/",
       "https://taquanair.com/faq/",
     ],
+    lfseContextId: "ketchikan/6459PRTKTNMISTY",
     nonTransferableNote:
-      "Applies strictly to Taquan Air direct flightseeing; never transfer to Island Wings or Viator 6459PRTKTNMISTY.",
+      "Applies strictly to Taquan Air direct flightseeing; never transfer to Island Wings or Viator 6459PRTKTNMISTY without channel equivalence verification.",
   },
   "island-wings-misty-fjords-direct": {
     productId: "island-wings-misty-fjords-direct",
@@ -241,6 +536,7 @@ export const EXPLICIT_RESEARCH_PRODUCT_REGISTRY: Record<
       "https://www.islandwings.com/mistytours.html",
       "https://www.islandwings.com/faq.html",
     ],
+    lfseContextId: "ketchikan/island-wings-misty-fjords-direct",
     nonTransferableNote:
       "Applies strictly to Island Wings Air Service; never transfer to Taquan Air.",
   },
@@ -324,10 +620,58 @@ export const EXPLICIT_RESEARCH_PRODUCT_REGISTRY: Record<
     nonTransferableNote:
       "Applies strictly to Gray Line New Orleans direct Large Airboat Swamp Adventure.",
   },
+  "chetek-hydroflites-water-ski-show-direct": {
+    productId: "chetek-hydroflites-water-ski-show-direct",
+    productName: "Chetek Hydroflites Water Ski Show — Aqua Theater (Direct)",
+    operatorId: "chetek-hydroflites",
+    operatorName: "Chetek Hydroflites Water Ski Show Team",
+    portSlug: "chetek",
+    clusterId: "wisconsin-chetek",
+    bookingChannel: "direct_operator",
+    officialSourceUrls: [
+      "https://www.hydroflites.com/",
+      "https://www.hydroflites.com/location",
+      "https://www.hydroflites.com/shows",
+    ],
+    blueHillsOutpostTourId: "chetek-hydroflites-water-ski-show",
+    nonTransferableNote:
+      "Applies strictly to Chetek Hydroflites Water Ski Show at Aqua Theater (728 Lakeview Drive, Chetek, WI); never transfer to Muddy Paddle Pub, pontoon rentals, or Blue Hills trails.",
+  },
+  "blue-hills-felsenmeer-state-natural-area": {
+    productId: "blue-hills-felsenmeer-state-natural-area",
+    productName:
+      "Blue Hills Felsenmeer State Natural Area No. 74 (Wisconsin DNR / Rusk County)",
+    operatorId: "wisconsin-dnr-rusk-county",
+    operatorName: "Wisconsin DNR & Rusk County Forestry",
+    portSlug: "chetek",
+    clusterId: "wisconsin-chetek",
+    bookingChannel: "direct_operator",
+    officialSourceUrls: [
+      "https://dnr.wisconsin.gov/topic/statenaturalareas/BlueHillsFelsenmeer",
+    ],
+    blueHillsOutpostTourId: "blue-hills-felsenmeer-trail",
+    nonTransferableNote:
+      "Applies strictly to Blue Hills Felsenmeer State Natural Area No. 74 footpaths/access; never transfer to motorized Blue Hills ATV trails or Lake Chetek boat tours.",
+  },
+  "muddy-paddle-pub-chetek-direct": {
+    productId: "muddy-paddle-pub-chetek-direct",
+    productName: "Muddy Paddle Pub — Chetek Chain of Lakes Pedal Boat (Direct)",
+    operatorId: "muddy-paddle-pub",
+    operatorName: "Muddy Paddle Pub",
+    portSlug: "chetek",
+    clusterId: "wisconsin-chetek",
+    bookingChannel: "direct_operator",
+    officialSourceUrls: ["https://www.facebook.com/muddypaddlepub/"],
+    blueHillsOutpostTourId: "muddy-paddle-pub-chetek",
+    nonTransferableNote:
+      "Applies strictly to Muddy Paddle Pub Chetek; never inherit Chetek Hydroflites or Blue Hills Felsenmeer approvals.",
+  },
 };
 
 export const BLOCKED_UMBRELLA_PRODUCT_IDS = new Set<string>([
   "airboat-adventures-public-airboat",
+  "cape-fox-saxman-highlights-lumberjack",
+  "cape-fox-saxman-signature-creek-street",
 ]);
 
 export interface RawResearchDeskFactRow {
@@ -369,6 +713,8 @@ export interface EvaluatedResearchFact {
   booking_channel: "direct_operator" | "port_shuttle" | "blocked_umbrella";
   dcc_option_id: string | null;
   cruisepromenade_excursion_id: string | null;
+  lfse_context_id: string | null;
+  blue_hills_outpost_tour_id: string | null;
   constraint_type: ResearchConstraintType;
   value: string;
   unit: string;
@@ -399,8 +745,18 @@ export const CONNECTED_COASTAL_CONSUMERS = [
   "dcc:api/internal/cruises/port/juneau",
   "cruisepromenade:ports/juneau",
   "cruisepromenade:api/excursions",
+  "lfse:ports/juneau",
+  "lfse:juneau/helicopter-glacier-tours",
+  "lfse:api/research-qualifications",
   "juneauflightdeck:Juneau helicopter comparison",
-  "lfse:Juneau shore excursions",
+] as const;
+
+export const CONNECTED_CHETEK_CONSUMERS = [
+  "dcc:api/internal/research/approved-facts?port=chetek",
+  "blue-hills-outpost:api/research-facts",
+  "blue-hills-outpost:api/tours",
+  "blue-hills-outpost:chetek-hydroflites-water-ski-show-schedule",
+  "blue-hills-outpost:blue-hills-atv-trail-guide",
 ] as const;
 
 /**
@@ -579,6 +935,193 @@ export const COASTAL_HELICOPTERS_ICEFIELD_CANDIDATE_BASELINE: RawResearchDeskFac
     },
   ];
 
+/**
+ * Primary-source-backed machine candidates for Wisconsin / Chetek (Blue Hills Outpost).
+ * Captured from https://www.hydroflites.com/ and https://dnr.wisconsin.gov/topic/statenaturalareas/BlueHillsFelsenmeer.
+ * All rows remain unconfirmed (`status: "needs confirmation"`, `verified: false`, `revision: 1`)
+ * until human review confirmation in the DCC Research Review desk.
+ */
+export const WISCONSIN_CHETEK_CANDIDATE_BASELINE: RawResearchDeskFactRow[] = [
+  {
+    id: "e2b51de8d43d54d31481f894",
+    fact_id: "e2b51de8d43d54d31481f894",
+    cluster: "wisconsin-chetek",
+    product_id: "chetek-hydroflites-water-ski-show-direct",
+    constraint_type: "price",
+    source_url: "https://www.hydroflites.com/",
+    source_excerpt: "Upcoming 2026 Shows - Free to the Public",
+    source_hash:
+      "3974e9fa13886a717ba54fff817987920408ec7f483808eb39ab9335b1edb8f1",
+    current_source_hash:
+      "3974e9fa13886a717ba54fff817987920408ec7f483808eb39ab9335b1edb8f1",
+    checked_at: "2026-04-20T01:15:00.000000+00:00",
+    value: "0",
+    unit: "usd_admission",
+    conditions:
+      "Admission to the Chetek Hydroflites Water Ski Show at the Aqua Theater is free to the public (team funded by sponsors, member dues, and donations).",
+    status: "needs confirmation",
+    verified_on: null,
+    verified_by: null,
+    reviewer_id: null,
+    review_due_on: null,
+    revision: 1,
+    active: 1,
+    healthy: 1,
+    consumers: [...CONNECTED_CHETEK_CONSUMERS],
+  },
+  {
+    id: "662dbc63c8e6d3f909ddd076",
+    fact_id: "662dbc63c8e6d3f909ddd076",
+    cluster: "wisconsin-chetek",
+    product_id: "chetek-hydroflites-water-ski-show-direct",
+    constraint_type: "pickup_meeting",
+    source_url: "https://www.hydroflites.com/location",
+    source_excerpt:
+      "The Chetek Hydroflites Water Ski Show is located on beautiful Lake Chetek off of Lakeview Drive. Our brand new Aqua Theater is east of Chetek directly across from the Chetek Airport. Ample parking is available onsite.",
+    source_hash:
+      "98c45c3b7e30120cc6b46cd6a9a9196c0cbf8799a1fdba0b64f4afe6006e214b",
+    current_source_hash:
+      "98c45c3b7e30120cc6b46cd6a9a9196c0cbf8799a1fdba0b64f4afe6006e214b",
+    checked_at: "2026-04-20T01:15:00.000000+00:00",
+    value:
+      "Aqua Theater, 728 Lakeview Drive, Chetek, WI 54728 (onsite parking across from Chetek Airport)",
+    unit: "self_drive_venue_arrival",
+    conditions:
+      "Self-drive arrival at Aqua Theater (728 Lakeview Drive, Chetek, WI 54728) directly across from the Chetek Airport; ample onsite parking is available; no hotel shuttle is provided.",
+    status: "needs confirmation",
+    verified_on: null,
+    verified_by: null,
+    reviewer_id: null,
+    review_due_on: null,
+    revision: 1,
+    active: 1,
+    healthy: 1,
+    consumers: [...CONNECTED_CHETEK_CONSUMERS],
+  },
+  {
+    id: "a6827bfbc093f21df550d541",
+    fact_id: "a6827bfbc093f21df550d541",
+    cluster: "wisconsin-chetek",
+    product_id: "chetek-hydroflites-water-ski-show-direct",
+    constraint_type: "weather_policy",
+    source_url: "https://www.hydroflites.com/location",
+    source_excerpt:
+      'All of our shows are performed "Rain or Shine" and delayed or canceled only for severe weather in the immediate area. You should use your own judgment as to the appropriateness of outdoor activities during potentially inclement weather.',
+    source_hash:
+      "98c45c3b7e30120cc6b46cd6a9a9196c0cbf8799a1fdba0b64f4afe6006e214b",
+    current_source_hash:
+      "98c45c3b7e30120cc6b46cd6a9a9196c0cbf8799a1fdba0b64f4afe6006e214b",
+    checked_at: "2026-04-20T01:15:00.000000+00:00",
+    value:
+      "Rain or Shine (delayed or canceled only for severe weather in the immediate area)",
+    unit: "policy",
+    conditions:
+      "Shows operate rain or shine and are delayed or canceled only for severe weather in the immediate Lake Chetek area.",
+    status: "needs confirmation",
+    verified_on: null,
+    verified_by: null,
+    reviewer_id: null,
+    review_due_on: null,
+    revision: 1,
+    active: 1,
+    healthy: 1,
+    consumers: [...CONNECTED_CHETEK_CONSUMERS],
+  },
+  {
+    id: "c39820438d099142bf27a3ca",
+    fact_id: "c39820438d099142bf27a3ca",
+    cluster: "wisconsin-chetek",
+    product_id: "chetek-hydroflites-water-ski-show-direct",
+    constraint_type: "tournament_blackout_2026",
+    source_url: "https://www.hydroflites.com/shows",
+    source_excerpt:
+      "No show! The Chetek Hydroflites will be performing at the Wisconsin Water Ski Show Tournament.",
+    source_hash:
+      "47fec369396016842508aab456ee23c203d4240901fde5591ce07c6bba65b790",
+    current_source_hash:
+      "47fec369396016842508aab456ee23c203d4240901fde5591ce07c6bba65b790",
+    checked_at: "2026-04-20T01:15:00.000000+00:00",
+    value: "2026-07-19",
+    unit: "no_home_show_date",
+    conditions:
+      "No home show at Lake Chetek Aqua Theater on Sunday, July 19, 2026 while the team performs at the Wisconsin Water Ski Show Tournament.",
+    status: "needs confirmation",
+    verified_on: null,
+    verified_by: null,
+    reviewer_id: null,
+    review_due_on: null,
+    revision: 1,
+    active: 1,
+    healthy: 1,
+    consumers: [...CONNECTED_CHETEK_CONSUMERS],
+  },
+  {
+    id: "7821e46629ff2d43877c3d1a",
+    fact_id: "7821e46629ff2d43877c3d1a",
+    cluster: "wisconsin-chetek",
+    product_id: "blue-hills-felsenmeer-state-natural-area",
+    constraint_type: "mobility_requirements",
+    source_url:
+      "https://dnr.wisconsin.gov/topic/statenaturalareas/BlueHillsFelsenmeer",
+    source_excerpt:
+      "Generally, there are no picnic areas, restrooms, or other developments. Parking lots or designated parking areas are noted on individual SNA pages and maps. Trails, if present, are typically undesignated footpaths.",
+    source_hash:
+      "99950c58f43752edc6440b56721fc37dc291f63afe190730abcb58c56bce356b",
+    current_source_hash:
+      "99950c58f43752edc6440b56721fc37dc291f63afe190730abcb58c56bce356b",
+    checked_at: "2026-04-20T01:15:00.000000+00:00",
+    value:
+      "Undesignated footpaths and steep talus rock rubble; no restrooms, picnic areas, or developed ADA trails",
+    unit: "trail_surface_and_facilities",
+    conditions:
+      "Wisconsin DNR State Natural Area No. 74 has no restrooms or developed facilities; trails are undesignated footpaths across glacial talus slopes.",
+    status: "needs confirmation",
+    verified_on: null,
+    verified_by: null,
+    reviewer_id: null,
+    review_due_on: null,
+    revision: 1,
+    active: 1,
+    healthy: 1,
+    consumers: [...CONNECTED_CHETEK_CONSUMERS],
+  },
+  {
+    id: "bc30c3bc3020d3e3f777bdfa",
+    fact_id: "bc30c3bc3020d3e3f777bdfa",
+    cluster: "wisconsin-chetek",
+    product_id: "blue-hills-felsenmeer-state-natural-area",
+    constraint_type: "pickup_meeting",
+    source_url:
+      "https://dnr.wisconsin.gov/topic/statenaturalareas/BlueHillsFelsenmeer",
+    source_excerpt:
+      "If you have high vehicle clearance, you can drive down the gravel road and park. The hiking route starts heading west on the gated logging road. There is a shorter approach from the end of Slack Road, which is north of the curve on County W. Slack Road is usually not plowed in winter.",
+    source_hash:
+      "99950c58f43752edc6440b56721fc37dc291f63afe190730abcb58c56bce356b",
+    current_source_hash:
+      "99950c58f43752edc6440b56721fc37dc291f63afe190730abcb58c56bce356b",
+    checked_at: "2026-04-20T01:15:00.000000+00:00",
+    value:
+      "Gated logging road off County W (high clearance gravel turn-off) or end of Slack Road (unplowed in winter)",
+    unit: "trailhead_access",
+    conditions:
+      "Self-drive trailhead access off County W (2.3 miles north of Old 14 Road; high vehicle clearance required for gravel turn-off) or via Slack Road (not plowed in winter).",
+    status: "needs confirmation",
+    verified_on: null,
+    verified_by: null,
+    reviewer_id: null,
+    review_due_on: null,
+    revision: 1,
+    active: 1,
+    healthy: 1,
+    consumers: [...CONNECTED_CHETEK_CONSUMERS],
+  },
+];
+
+export const ALL_RESEARCH_CANDIDATE_BASELINES: RawResearchDeskFactRow[] = [
+  ...COASTAL_HELICOPTERS_ICEFIELD_CANDIDATE_BASELINE,
+  ...WISCONSIN_CHETEK_CANDIDATE_BASELINE,
+];
+
 const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const SHA256_HEX_RE = /^[a-f0-9]{64}$/i;
 
@@ -602,7 +1145,9 @@ function parseConsumers(raw: string | string[] | null | undefined): string[] {
   return [];
 }
 
-function parseReviewDeadlineUtcMs(reviewDueOn: string | null | undefined): number | null {
+function parseReviewDeadlineUtcMs(
+  reviewDueOn: string | null | undefined,
+): number | null {
   if (!reviewDueOn || typeof reviewDueOn !== "string") return null;
   const trimmed = reviewDueOn.trim();
   if (!ISO_DATE_RE.test(trimmed)) return null;
@@ -610,7 +1155,9 @@ function parseReviewDeadlineUtcMs(reviewDueOn: string | null | undefined): numbe
   return Number.isFinite(ms) ? ms : null;
 }
 
-function parseVerifiedOnUtcMs(verifiedOn: string | null | undefined): number | null {
+function parseVerifiedOnUtcMs(
+  verifiedOn: string | null | undefined,
+): number | null {
   if (!verifiedOn || typeof verifiedOn !== "string") return null;
   const trimmed = verifiedOn.trim();
   if (!ISO_DATE_RE.test(trimmed)) return null;
@@ -624,6 +1171,7 @@ export interface EvaluateFactOptions {
     string,
     { content_hash: string; healthy: boolean }
   >;
+  revokedRevisionsByFactId?: Record<string, number>;
 }
 
 /**
@@ -643,7 +1191,9 @@ export function evaluateResearchFactRecord(
 
   const mapping = EXPLICIT_RESEARCH_PRODUCT_REGISTRY[rawProductId];
   const fallbackCluster: ResearchClusterId =
-    rawCluster === "alaska-ketchikan" || rawCluster === "new-orleans-swamp"
+    rawCluster === "alaska-ketchikan" ||
+    rawCluster === "new-orleans-swamp" ||
+    rawCluster === "wisconsin-chetek"
       ? rawCluster
       : "alaska-juneau";
   const fallbackPort: ResearchPortSlug =
@@ -651,7 +1201,9 @@ export function evaluateResearchFactRecord(
       ? "ketchikan"
       : fallbackCluster === "new-orleans-swamp"
         ? "new-orleans"
-        : "juneau";
+        : fallbackCluster === "wisconsin-chetek"
+          ? "chetek"
+          : "juneau";
 
   const active =
     row.active === undefined || row.active === null
@@ -670,10 +1222,12 @@ export function evaluateResearchFactRecord(
 
   const sourceHash = String(row.source_hash ?? "").trim().toLowerCase();
   const currentSourceHashRaw =
-    externalSourceInfo?.content_hash ??
-    (row.current_source_hash !== undefined && row.current_source_hash !== null
-      ? String(row.current_source_hash).trim().toLowerCase()
-      : sourceHash);
+    externalSourceInfo?.content_hash !== undefined
+      ? String(externalSourceInfo.content_hash).trim().toLowerCase()
+      : row.current_source_hash !== undefined &&
+          row.current_source_hash !== null
+        ? String(row.current_source_hash).trim().toLowerCase()
+        : sourceHash;
   const currentSourceHash = currentSourceHashRaw || null;
 
   const revision = Number(row.revision ?? 1);
@@ -701,10 +1255,14 @@ export function evaluateResearchFactRecord(
 
   const deadlineMs = parseReviewDeadlineUtcMs(reviewDueOn);
   const remainingTtlSeconds =
-    deadlineMs !== null ? Math.max(0, Math.floor((deadlineMs - nowMs) / 1000)) : 0;
+    deadlineMs !== null
+      ? Math.max(0, Math.floor((deadlineMs - nowMs) / 1000))
+      : 0;
 
   const valueStr =
-    row.value === undefined || row.value === null ? "" : String(row.value).trim();
+    row.value === undefined || row.value === null
+      ? ""
+      : String(row.value).trim();
   const unitStr =
     row.unit === undefined || row.unit === null ? "" : String(row.unit).trim();
   const conditionsStr =
@@ -712,7 +1270,9 @@ export function evaluateResearchFactRecord(
       ? ""
       : String(row.conditions).trim();
   const statusStr =
-    row.status === undefined || row.status === null ? "" : String(row.status).trim();
+    row.status === undefined || row.status === null
+      ? ""
+      : String(row.status).trim();
 
   const consumers = parseConsumers(row.consumers);
 
@@ -731,6 +1291,8 @@ export function evaluateResearchFactRecord(
     booking_channel: mapping?.bookingChannel ?? "blocked_umbrella",
     dcc_option_id: mapping?.dccOptionId ?? null,
     cruisepromenade_excursion_id: mapping?.cruisePromenadeExcursionId ?? null,
+    lfse_context_id: mapping?.lfseContextId ?? null,
+    blue_hills_outpost_tour_id: mapping?.blueHillsOutpostTourId ?? null,
     constraint_type: String(row.constraint_type ?? "").trim(),
     value: valueStr,
     unit: unitStr,
@@ -757,7 +1319,9 @@ export function evaluateResearchFactRecord(
         ? consumers
         : mapping?.productId === "coastal-helicopters-icefield-excursion-direct"
           ? [...CONNECTED_COASTAL_CONSUMERS]
-          : [],
+          : mapping?.clusterId === "wisconsin-chetek"
+            ? [...CONNECTED_CHETEK_CONSUMERS]
+            : [],
     non_transferable_to_other_tours: true,
     non_transferable_note:
       mapping?.nonTransferableNote ??
@@ -833,9 +1397,11 @@ export function evaluateResearchFactRecord(
     return buildResult(false, "source_changed", "source_hash_drift");
   }
 
+  const revokedRevision = options?.revokedRevisionsByFactId?.[factId] ?? 0;
   if (
     !Number.isInteger(revision) ||
     revision < 2 ||
+    revision <= revokedRevision ||
     (approvedRevision !== null && approvedRevision !== revision)
   ) {
     return buildResult(false, "needs_confirmation", "unconfirmed_revision");
@@ -913,6 +1479,7 @@ export function evaluateApprovedFactFeed(
     evaluateResearchFactRecord(row, {
       nowMs,
       sourceFingerprintsByUrl: options?.sourceFingerprintsByUrl,
+      revokedRevisionsByFactId: options?.revokedRevisionsByFactId,
     }),
   );
   const verifiedFacts = allEvaluated.filter((fact) => fact.verified);
@@ -948,38 +1515,462 @@ export function getVerifiedFactsForExactProduct(
   );
 }
 
-// Server-side synced rows pushed by authorized review-desk sync or test harnesses
-let syncedReviewDeskRows: RawResearchDeskFactRow[] | null = null;
-let syncedSourceFingerprints: Record<
-  string,
-  { content_hash: string; healthy: boolean }
-> = {};
-let lastSyncedAtIso: string | null = null;
+/**
+ * Durable synchronization store persisted in Upstash Redis (`dcc:research:durable_sync:v1`).
+ * Tracks synchronized review-desk rows, source states, and revoked revisions so that:
+ * 1. Synchronized human approvals survive across serverless isolates and cold starts.
+ * 2. Withdrawals (`active: 0`, `status !== "Confirmed"`, or `action: "withdraw"`) immediately
+ *    revoke the fact and record its revision in `revoked_revisions_by_fact_id`.
+ * 3. Source-fingerprint changes or source health failures immediately revoke any confirmed
+ *    facts depending on that URL, and even if the original hash later returns, a revoked
+ *    revision cannot be resurrected without a higher revision (`revision > revokedRevision`).
+ */
+export const REDIS_RESEARCH_DURABLE_SYNC_KEY = "dcc:research:durable_sync:v1";
 
-export function setSyncedReviewDeskPayload(params: {
-  rows: RawResearchDeskFactRow[];
-  sourceFingerprintsByUrl?: Record<
+export interface DurableSourceRecord {
+  url: string;
+  content_hash: string;
+  healthy: boolean;
+  checked_at: string | null;
+}
+
+export interface DurableResearchSyncState {
+  version: 1;
+  updated_at: string;
+  sync_origin: string;
+  rows_by_fact_id: Record<string, RawResearchDeskFactRow>;
+  sources_by_url: Record<string, DurableSourceRecord>;
+  revoked_revisions_by_fact_id: Record<string, number>;
+}
+
+export interface DurableResearchSyncMutation {
+  action?: "sync" | "upsert_facts" | "update_sources" | "withdraw";
+  sync_origin?: string;
+  cluster?: string;
+  replace_cluster?: boolean;
+  rows?: RawResearchDeskFactRow[];
+  verified_facts?: RawResearchDeskFactRow[];
+  candidates?: RawResearchDeskFactRow[];
+  facts?: RawResearchDeskFactRow[];
+  withdraw_fact_ids?: string[];
+  sources?: Array<{
+    url?: string;
+    source_url?: string;
+    fingerprint?: string | null;
+    hash?: string | null;
+    content_hash?: string | null;
+    current_source_hash?: string | null;
+    source_hash?: string | null;
+    healthy?: number | boolean | null;
+    checked_at?: string | null;
+  }>;
+  source_fingerprints?: Record<
     string,
-    { content_hash: string; healthy: boolean }
+    { content_hash: string; healthy: boolean; checked_at?: string | null }
   >;
-  syncedAtIso?: string;
-}) {
-  syncedReviewDeskRows = [...params.rows];
-  syncedSourceFingerprints = { ...(params.sourceFingerprintsByUrl ?? {}) };
-  lastSyncedAtIso = params.syncedAtIso ?? new Date().toISOString();
 }
 
-export function clearSyncedReviewDeskPayloadForTesting() {
-  syncedReviewDeskRows = null;
-  syncedSourceFingerprints = {};
-  lastSyncedAtIso = null;
+export function createEmptyDurableResearchSyncState(
+  nowIso: string = new Date().toISOString(),
+): DurableResearchSyncState {
+  return {
+    version: 1,
+    updated_at: nowIso,
+    sync_origin: "initial",
+    rows_by_fact_id: {},
+    sources_by_url: {},
+    revoked_revisions_by_fact_id: {},
+  };
 }
 
-export interface ReviewDeskPortalIngestionResult extends ApprovedFactFeedEvaluation {
+export function applyDurableResearchSyncMutation(
+  previous: DurableResearchSyncState | null | undefined,
+  mutation: DurableResearchSyncMutation,
+  nowMs: number = Date.now(),
+): DurableResearchSyncState {
+  const nowIso = new Date(nowMs).toISOString();
+  const base = previous ?? createEmptyDurableResearchSyncState(nowIso);
+
+  const rowsByFactId: Record<string, RawResearchDeskFactRow> = {
+    ...base.rows_by_fact_id,
+  };
+  const sourcesByUrl: Record<string, DurableSourceRecord> = {
+    ...base.sources_by_url,
+  };
+  const revokedRevisionsByFactId: Record<string, number> = {
+    ...base.revoked_revisions_by_fact_id,
+  };
+
+  // 1. Collect incoming source observations from `sources` array and `source_fingerprints` map
+  const incomingSources = new Map<string, DurableSourceRecord>();
+  if (Array.isArray(mutation.sources)) {
+    for (const src of mutation.sources) {
+      const url = String(src.url ?? src.source_url ?? "").trim();
+      if (!url) continue;
+      const hashRaw =
+        src.content_hash ??
+        src.current_source_hash ??
+        src.source_hash ??
+        src.fingerprint ??
+        src.hash ??
+        "";
+      const contentHash = String(hashRaw ?? "").trim().toLowerCase();
+      const healthy =
+        src.healthy === undefined || src.healthy === null
+          ? true
+          : src.healthy === 1 || src.healthy === true;
+      incomingSources.set(url, {
+        url,
+        content_hash: contentHash,
+        healthy,
+        checked_at: src.checked_at ?? nowIso,
+      });
+    }
+  }
+  if (
+    mutation.source_fingerprints &&
+    typeof mutation.source_fingerprints === "object"
+  ) {
+    for (const [rawUrl, info] of Object.entries(mutation.source_fingerprints)) {
+      const url = rawUrl.trim();
+      if (!url || !info) continue;
+      incomingSources.set(url, {
+        url,
+        content_hash: String(info.content_hash ?? "").trim().toLowerCase(),
+        healthy: Boolean(info.healthy),
+        checked_at: info.checked_at ?? nowIso,
+      });
+    }
+  }
+
+  // Apply source updates and immediately invalidate any stored confirmed facts on drift or failure
+  for (const [url, srcRecord] of incomingSources.entries()) {
+    sourcesByUrl[url] = srcRecord;
+    for (const [fid, storedRow] of Object.entries(rowsByFactId)) {
+      if (String(storedRow.source_url ?? "").trim() !== url) continue;
+      const factHash = String(storedRow.source_hash ?? "").trim().toLowerCase();
+      const factRev = Number(storedRow.revision ?? 1);
+      const isDriftedOrUnhealthy =
+        !srcRecord.healthy ||
+        !SHA256_HEX_RE.test(srcRecord.content_hash) ||
+        srcRecord.content_hash !== factHash;
+
+      if (isDriftedOrUnhealthy) {
+        if (Number.isFinite(factRev) && factRev > 0) {
+          revokedRevisionsByFactId[fid] = Math.max(
+            revokedRevisionsByFactId[fid] ?? 0,
+            factRev,
+          );
+        }
+        rowsByFactId[fid] = {
+          ...storedRow,
+          current_source_hash: srcRecord.content_hash,
+          healthy: srcRecord.healthy ? 1 : 0,
+          status:
+            storedRow.status === "Confirmed"
+              ? "needs confirmation"
+              : storedRow.status,
+          verified_on: null,
+          verified_by: null,
+        };
+      } else {
+        rowsByFactId[fid] = {
+          ...storedRow,
+          current_source_hash: srcRecord.content_hash,
+          healthy: 1,
+        };
+      }
+    }
+  }
+
+  // 2. Process explicit withdrawals (`action: "withdraw"` or `withdraw_fact_ids`)
+  const withdrawIds = new Set<string>(
+    (mutation.withdraw_fact_ids ?? []).map((id) => String(id).trim()).filter(Boolean),
+  );
+  if (mutation.action === "withdraw") {
+    const rawWithdrawRows =
+      mutation.rows ??
+      mutation.verified_facts ??
+      mutation.candidates ??
+      mutation.facts ??
+      [];
+    for (const r of rawWithdrawRows) {
+      const fid = String(r.id ?? r.fact_id ?? "").trim();
+      if (fid) withdrawIds.add(fid);
+    }
+  }
+
+  for (const fid of withdrawIds) {
+    const existing = rowsByFactId[fid];
+    const rev = Number(existing?.revision ?? 1);
+    if (Number.isFinite(rev) && rev > 0) {
+      revokedRevisionsByFactId[fid] = Math.max(
+        revokedRevisionsByFactId[fid] ?? 0,
+        rev,
+      );
+    }
+    if (existing) {
+      rowsByFactId[fid] = {
+        ...existing,
+        active: 0,
+        status: "needs confirmation",
+        verified_on: null,
+        verified_by: null,
+      };
+    }
+  }
+
+  // 3. Process incoming fact rows (`rows`, `verified_facts`, `candidates`, or `facts`)
+  if (mutation.action !== "withdraw") {
+    const incomingRows =
+      mutation.rows ??
+      mutation.verified_facts ??
+      mutation.candidates ??
+      mutation.facts ??
+      [];
+    const incomingIdsInCluster = new Set<string>();
+
+    for (const rawRow of incomingRows) {
+      const fid = String(rawRow.id ?? rawRow.fact_id ?? "").trim();
+      if (!fid) continue;
+      incomingIdsInCluster.add(fid);
+
+      const prevRow = rowsByFactId[fid];
+      const incomingRev = Number(rawRow.revision ?? prevRow?.revision ?? 1);
+      const prevRev = Number(prevRow?.revision ?? 1);
+      const incomingActive =
+        rawRow.active === undefined || rawRow.active === null
+          ? true
+          : rawRow.active === 1 || rawRow.active === true;
+      const incomingStatus = String(rawRow.status ?? "").trim();
+
+      const sourceUrl = String(
+        rawRow.source_url ?? prevRow?.source_url ?? "",
+      ).trim();
+      const knownSource = sourcesByUrl[sourceUrl];
+      const rowSourceHash = String(
+        rawRow.source_hash ?? prevRow?.source_hash ?? "",
+      )
+        .trim()
+        .toLowerCase();
+      const effectiveCurrentHash =
+        knownSource?.content_hash !== undefined
+          ? knownSource.content_hash
+          : rawRow.current_source_hash !== undefined &&
+              rawRow.current_source_hash !== null
+            ? String(rawRow.current_source_hash).trim().toLowerCase()
+            : rowSourceHash;
+      const effectiveHealthy =
+        (rawRow.healthy === undefined || rawRow.healthy === null
+          ? true
+          : rawRow.healthy === 1 || rawRow.healthy === true) &&
+        (knownSource ? knownSource.healthy : true);
+
+      // If this row was previously Confirmed (or is being synced as inactive/unconfirmed/drifted), record revoked revision
+      const isWithdrawnOrUnconfirmed =
+        !incomingActive || incomingStatus !== "Confirmed";
+      const isSourceDrifted =
+        !effectiveHealthy ||
+        !SHA256_HEX_RE.test(rowSourceHash) ||
+        !SHA256_HEX_RE.test(effectiveCurrentHash) ||
+        rowSourceHash !== effectiveCurrentHash;
+
+      if (
+        (isWithdrawnOrUnconfirmed && prevRow?.status === "Confirmed") ||
+        (incomingStatus === "Confirmed" && isSourceDrifted)
+      ) {
+        const revToRevoke = Math.max(
+          Number.isFinite(prevRev) ? prevRev : 0,
+          Number.isFinite(incomingRev) ? incomingRev : 0,
+        );
+        if (revToRevoke > 0) {
+          revokedRevisionsByFactId[fid] = Math.max(
+            revokedRevisionsByFactId[fid] ?? 0,
+            revToRevoke,
+          );
+        }
+      }
+
+      const revokedRev = revokedRevisionsByFactId[fid] ?? 0;
+      const canStayConfirmed =
+        incomingActive &&
+        incomingStatus === "Confirmed" &&
+        !isSourceDrifted &&
+        Number.isInteger(incomingRev) &&
+        incomingRev >= 2 &&
+        incomingRev > revokedRev;
+
+      rowsByFactId[fid] = {
+        ...prevRow,
+        ...rawRow,
+        id: fid,
+        fact_id: fid,
+        source_url: sourceUrl,
+        source_hash: rowSourceHash,
+        current_source_hash: effectiveCurrentHash,
+        healthy: effectiveHealthy ? 1 : 0,
+        active: incomingActive ? 1 : 0,
+        revision: Number.isFinite(incomingRev) ? incomingRev : 1,
+        status: canStayConfirmed
+          ? "Confirmed"
+          : incomingStatus === "Confirmed"
+            ? "needs confirmation"
+            : incomingStatus || "needs confirmation",
+        verified_on: canStayConfirmed ? rawRow.verified_on ?? null : null,
+        verified_by: canStayConfirmed ? rawRow.verified_by ?? null : null,
+      };
+    }
+
+    // If `replace_cluster: true` is specified on a full cluster sync, withdraw omitted confirmed rows in that cluster
+    if (mutation.replace_cluster && mutation.cluster) {
+      const targetCluster = mutation.cluster.trim();
+      for (const [fid, storedRow] of Object.entries(rowsByFactId)) {
+        const pid = String(storedRow.product_id ?? "").trim();
+        const rowCluster =
+          EXPLICIT_RESEARCH_PRODUCT_REGISTRY[pid]?.clusterId ??
+          String(storedRow.cluster ?? "").trim();
+        if (
+          rowCluster === targetCluster &&
+          !incomingIdsInCluster.has(fid) &&
+          storedRow.status === "Confirmed"
+        ) {
+          const rev = Number(storedRow.revision ?? 1);
+          if (Number.isFinite(rev) && rev > 0) {
+            revokedRevisionsByFactId[fid] = Math.max(
+              revokedRevisionsByFactId[fid] ?? 0,
+              rev,
+            );
+          }
+          rowsByFactId[fid] = {
+            ...storedRow,
+            active: 0,
+            status: "needs confirmation",
+            verified_on: null,
+            verified_by: null,
+          };
+        }
+      }
+    }
+  }
+
+  return {
+    version: 1,
+    updated_at: nowIso,
+    sync_origin: mutation.sync_origin || base.sync_origin || "review_desk_sync",
+    rows_by_fact_id: rowsByFactId,
+    sources_by_url: sourcesByUrl,
+    revoked_revisions_by_fact_id: revokedRevisionsByFactId,
+  };
+}
+
+let localTestFallbackSyncState: DurableResearchSyncState | null = null;
+
+function isLocalTestMemoryAllowed(): boolean {
+  const isProdOrStaging =
+    process.env.NODE_ENV === "production" ||
+    process.env.VERCEL_ENV === "production" ||
+    process.env.VERCEL_ENV === "preview" ||
+    process.env.APP_ENV === "staging" ||
+    process.env.APP_ENV === "production";
+  return (
+    !isProdOrStaging &&
+    process.env.ALLOW_IN_MEMORY_NONCE_FALLBACK_FOR_TESTS === "true"
+  );
+}
+
+export async function loadDurableResearchSyncState(): Promise<DurableResearchSyncState | null> {
+  if (!redis) {
+    return isLocalTestMemoryAllowed() ? localTestFallbackSyncState : null;
+  }
+  try {
+    const raw = await redis.get<DurableResearchSyncState | string>(
+      REDIS_RESEARCH_DURABLE_SYNC_KEY,
+    );
+    if (!raw) return null;
+    const parsed: DurableResearchSyncState =
+      typeof raw === "string" ? JSON.parse(raw) : raw;
+    if (parsed && typeof parsed === "object" && parsed.version === 1) {
+      return {
+        version: 1,
+        updated_at: String(parsed.updated_at ?? ""),
+        sync_origin: String(parsed.sync_origin ?? "review_desk_sync"),
+        rows_by_fact_id: parsed.rows_by_fact_id ?? {},
+        sources_by_url: parsed.sources_by_url ?? {},
+        revoked_revisions_by_fact_id: parsed.revoked_revisions_by_fact_id ?? {},
+      };
+    }
+  } catch (err) {
+    console.warn("[research-durable-sync] Failed to read from Redis:", err);
+  }
+  return null;
+}
+
+export async function persistDurableResearchSyncState(
+  state: DurableResearchSyncState,
+): Promise<boolean> {
+  if (!redis) {
+    if (isLocalTestMemoryAllowed()) {
+      localTestFallbackSyncState = state;
+      return true;
+    }
+    return false;
+  }
+  try {
+    await redis.set(REDIS_RESEARCH_DURABLE_SYNC_KEY, JSON.stringify(state));
+    return true;
+  } catch (err) {
+    console.warn("[research-durable-sync] Failed to write to Redis:", err);
+    return false;
+  }
+}
+
+export async function synchronizeReviewDeskToDurableStore(
+  mutation: DurableResearchSyncMutation,
+): Promise<{
+  persisted: boolean;
+  state: DurableResearchSyncState;
+  evaluation: ApprovedFactFeedEvaluation;
+}> {
+  const serverNowMs = Date.now();
+  const prevState = await loadDurableResearchSyncState();
+  const nextState = applyDurableResearchSyncMutation(
+    prevState,
+    mutation,
+    serverNowMs,
+  );
+  const persisted = await persistDurableResearchSyncState(nextState);
+
+  const mergedByFactId = new Map<string, RawResearchDeskFactRow>();
+  for (const candidate of ALL_RESEARCH_CANDIDATE_BASELINES) {
+    const id = String(candidate.fact_id ?? candidate.id ?? "");
+    if (id) mergedByFactId.set(id, candidate);
+  }
+  for (const [id, row] of Object.entries(nextState.rows_by_fact_id)) {
+    mergedByFactId.set(id, row);
+  }
+
+  const evaluation = evaluateApprovedFactFeed(
+    Array.from(mergedByFactId.values()),
+    {
+      nowMs: serverNowMs,
+      sourceFingerprintsByUrl: nextState.sources_by_url,
+      revokedRevisionsByFactId: nextState.revoked_revisions_by_fact_id,
+    },
+  );
+
+  return {
+    persisted,
+    state: nextState,
+    evaluation,
+  };
+}
+
+export interface ReviewDeskPortalIngestionResult
+  extends ApprovedFactFeedEvaluation {
   review_desk_url: string;
   live_portal_readback_status:
     | "authenticated_live"
-    | "synced_server_snapshot"
+    | "durable_synced_store"
     | "blocked_http_401_missing_portal_session"
     | "blocked_missing_portal_credentials"
     | "blocked_upstream_error";
@@ -1002,6 +1993,7 @@ function buildReviewDeskAuthHeaders(): {
     process.env.DCC_PORTAL_TOKEN?.trim();
   if (bearer) {
     headers.Authorization = `Bearer ${bearer}`;
+    headers["X-DCC-Portal-Token"] = bearer;
     hasAuthCredentials = true;
   }
 
@@ -1031,14 +2023,18 @@ function buildReviewDeskAuthHeaders(): {
   return { headers, hasAuthCredentials };
 }
 
+/**
+ * Production ingestion from the DCC Research Review desk and durable Redis sync store.
+ * Always evaluates eligibility using real server time (`Date.now()`). Test clock overrides
+ * and clear controls are excluded from production ingestion.
+ */
 export async function ingestApprovedFactsFromReviewDesk(options?: {
   portSlug?: string;
   clusterId?: string;
   productId?: string;
-  nowMs?: number;
   skipLiveFetch?: boolean;
 }): Promise<ReviewDeskPortalIngestionResult> {
-  const nowMs = options?.nowMs ?? Date.now();
+  const serverNowMs = Date.now();
   const reviewDeskUrl = (
     process.env.DCC_RESEARCH_REVIEW_URL?.trim() ||
     "https://dcc-research-review.erichroeseler123.chatgpt.site"
@@ -1062,48 +2058,10 @@ export async function ingestApprovedFactsFromReviewDesk(options?: {
       return true;
     });
 
-  // 1. Check in-memory or environment synced snapshot first if present
-  if (syncedReviewDeskRows !== null) {
-    const filtered = filterRows(syncedReviewDeskRows);
-    const evaluation = evaluateApprovedFactFeed(filtered, {
-      nowMs,
-      sourceFingerprintsByUrl: syncedSourceFingerprints,
-    });
-    return {
-      ...evaluation,
-      review_desk_url: reviewDeskUrl,
-      live_portal_readback_status: "synced_server_snapshot",
-      live_portal_verified: true,
-      access_blocker: null,
-      last_synced_at: lastSyncedAtIso,
-    };
-  }
+  // 1. Load existing durable synchronized state from Upstash Redis
+  let durableState = await loadDurableResearchSyncState();
 
-  const envSnapshotJson = process.env.DCC_APPROVED_FACTS_SNAPSHOT_JSON?.trim();
-  if (envSnapshotJson) {
-    try {
-      const parsed = JSON.parse(envSnapshotJson);
-      const rows: RawResearchDeskFactRow[] = Array.isArray(parsed)
-        ? parsed
-        : Array.isArray(parsed?.verified_facts)
-          ? parsed.verified_facts
-          : [];
-      const filtered = filterRows(rows);
-      const evaluation = evaluateApprovedFactFeed(filtered, { nowMs });
-      return {
-        ...evaluation,
-        review_desk_url: reviewDeskUrl,
-        live_portal_readback_status: "synced_server_snapshot",
-        live_portal_verified: true,
-        access_blocker: null,
-        last_synced_at: parsed?.synced_at ?? null,
-      };
-    } catch {
-      // Fall through to live portal fetch
-    }
-  }
-
-  // 2. Attempt authenticated server-side fetch from private review desk
+  // 2. Attempt authenticated server-side pull from review desk if enabled
   const { headers, hasAuthCredentials } = buildReviewDeskAuthHeaders();
   let liveStatus: ReviewDeskPortalIngestionResult["live_portal_readback_status"] =
     hasAuthCredentials
@@ -1111,7 +2069,7 @@ export async function ingestApprovedFactsFromReviewDesk(options?: {
       : "blocked_missing_portal_credentials";
   let accessBlocker: string | null = hasAuthCredentials
     ? null
-    : `Private review desk ${reviewDeskUrl}/api/verified-facts requires ChatGPT OAuth session credentials (DCC_PORTAL_COOKIE or DCC_PORTAL_BEARER_TOKEN), which are not configured in the server environment.`;
+    : `Private review desk ${reviewDeskUrl}/api/verified-facts is gated by OpenAI chatgpt.site dispatch OAuth (HTTP 401 Sign in required). Configure outbound review-desk push to POST /api/internal/research/approved-facts or provide DCC_PORTAL_COOKIE / service endpoint.`;
 
   if (!options?.skipLiveFetch) {
     try {
@@ -1129,33 +2087,56 @@ export async function ingestApprovedFactsFromReviewDesk(options?: {
         if (contentType.includes("application/json")) {
           const data = (await response.json()) as {
             verified_facts?: RawResearchDeskFactRow[];
+            candidates?: RawResearchDeskFactRow[];
+            facts?: RawResearchDeskFactRow[];
+            sources?: DurableResearchSyncMutation["sources"];
           };
           const liveRows = Array.isArray(data?.verified_facts)
             ? data.verified_facts
-            : [];
+            : Array.isArray(data?.candidates)
+              ? data.candidates
+              : Array.isArray(data?.facts)
+                ? data.facts
+                : [];
+          durableState = applyDurableResearchSyncMutation(
+            durableState,
+            {
+              action: "sync",
+              sync_origin: "live_portal_pull",
+              rows: liveRows,
+              sources: data?.sources,
+            },
+            serverNowMs,
+          );
+          await persistDurableResearchSyncState(durableState);
+
           const mergedByFactId = new Map<string, RawResearchDeskFactRow>();
-          for (const candidate of COASTAL_HELICOPTERS_ICEFIELD_CANDIDATE_BASELINE) {
+          for (const candidate of ALL_RESEARCH_CANDIDATE_BASELINES) {
             const id = String(candidate.fact_id ?? candidate.id ?? "");
             if (id) mergedByFactId.set(id, candidate);
           }
-          for (const row of liveRows) {
-            const id = String(row.fact_id ?? row.id ?? "");
-            if (id) mergedByFactId.set(id, row);
+          for (const [id, row] of Object.entries(durableState.rows_by_fact_id)) {
+            mergedByFactId.set(id, row);
           }
+
           const filtered = filterRows(Array.from(mergedByFactId.values()));
-          const evaluation = evaluateApprovedFactFeed(filtered, { nowMs });
+          const evaluation = evaluateApprovedFactFeed(filtered, {
+            nowMs: serverNowMs,
+            sourceFingerprintsByUrl: durableState.sources_by_url,
+            revokedRevisionsByFactId: durableState.revoked_revisions_by_fact_id,
+          });
           return {
             ...evaluation,
             review_desk_url: reviewDeskUrl,
             live_portal_readback_status: "authenticated_live",
             live_portal_verified: true,
             access_blocker: null,
-            last_synced_at: new Date(nowMs).toISOString(),
+            last_synced_at: durableState.updated_at,
           };
         }
       } else if (response.status === 401 || response.status === 403) {
         liveStatus = "blocked_http_401_missing_portal_session";
-        accessBlocker = `Private review desk ${reviewDeskUrl}/api/verified-facts returned HTTP ${response.status} (Sign in required via ChatGPT OAuth gate). Configure DCC_PORTAL_COOKIE or DCC_PORTAL_BEARER_TOKEN, or push an authenticated readback payload to /api/internal/research/approved-facts.`;
+        accessBlocker = `Private review desk ${reviewDeskUrl}/api/verified-facts returned HTTP ${response.status} from OpenAI chatgpt.site dispatch OAuth gate (Sign in required). Enable outbound webhook sync from the review desk to POST /api/internal/research/approved-facts or expose an authenticated service route.`;
       } else {
         liveStatus = "blocked_upstream_error";
         accessBlocker = `Private review desk ${reviewDeskUrl}/api/verified-facts returned HTTP ${response.status}.`;
@@ -1170,9 +2151,42 @@ export async function ingestApprovedFactsFromReviewDesk(options?: {
     }
   }
 
-  // 3. Evaluate baseline candidates (all remain unconfirmed; no candidate is ever auto-approved)
-  const fallbackRows = filterRows(COASTAL_HELICOPTERS_ICEFIELD_CANDIDATE_BASELINE);
-  const evaluation = evaluateApprovedFactFeed(fallbackRows, { nowMs });
+  // 3. If durable Redis store has synchronized review-desk records, evaluate them using server time
+  if (
+    durableState &&
+    (Object.keys(durableState.rows_by_fact_id).length > 0 ||
+      Object.keys(durableState.sources_by_url).length > 0)
+  ) {
+    const mergedByFactId = new Map<string, RawResearchDeskFactRow>();
+    for (const candidate of ALL_RESEARCH_CANDIDATE_BASELINES) {
+      const id = String(candidate.fact_id ?? candidate.id ?? "");
+      if (id) mergedByFactId.set(id, candidate);
+    }
+    for (const [id, row] of Object.entries(durableState.rows_by_fact_id)) {
+      mergedByFactId.set(id, row);
+    }
+
+    const filtered = filterRows(Array.from(mergedByFactId.values()));
+    const evaluation = evaluateApprovedFactFeed(filtered, {
+      nowMs: serverNowMs,
+      sourceFingerprintsByUrl: durableState.sources_by_url,
+      revokedRevisionsByFactId: durableState.revoked_revisions_by_fact_id,
+    });
+    return {
+      ...evaluation,
+      review_desk_url: reviewDeskUrl,
+      live_portal_readback_status: "durable_synced_store",
+      live_portal_verified: true,
+      access_blocker: accessBlocker,
+      last_synced_at: durableState.updated_at,
+    };
+  }
+
+  // 4. Evaluate baseline candidates (all remain unconfirmed; no candidate is ever auto-approved)
+  const fallbackRows = filterRows(ALL_RESEARCH_CANDIDATE_BASELINES);
+  const evaluation = evaluateApprovedFactFeed(fallbackRows, {
+    nowMs: serverNowMs,
+  });
 
   return {
     ...evaluation,
@@ -1180,6 +2194,7 @@ export async function ingestApprovedFactsFromReviewDesk(options?: {
     live_portal_readback_status: liveStatus,
     live_portal_verified: false,
     access_blocker: accessBlocker,
-    last_synced_at: lastSyncedAtIso,
+    last_synced_at: null,
   };
 }
+

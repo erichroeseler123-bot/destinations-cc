@@ -201,6 +201,18 @@ export function resolveServiceSecret(keyId: string): string | null {
     return cpSecret;
   }
 
+  const lfseKeyId = process.env.DCC_LFSE_SERVICE_KEY_ID?.trim() || "lfse_service_key";
+  const lfseSecret = process.env.DCC_LFSE_SERVICE_SECRET?.trim() || cpSecret;
+  if (keyId === lfseKeyId && lfseSecret) {
+    return lfseSecret;
+  }
+
+  const bhoKeyId = process.env.DCC_BHO_SERVICE_KEY_ID?.trim() || "bho_service_key";
+  const bhoSecret = process.env.DCC_BHO_SERVICE_SECRET?.trim() || cpSecret;
+  if (keyId === bhoKeyId && bhoSecret) {
+    return bhoSecret;
+  }
+
   const jfdKeyId = process.env.DCC_JFD_SERVICE_KEY_ID?.trim() || "jfd_service_key";
   const jfdSecret = process.env.DCC_JFD_SERVICE_SECRET?.trim();
   if (keyId === jfdKeyId && jfdSecret) {
@@ -221,7 +233,14 @@ export function resolveServiceSecret(keyId: string): string | null {
   }
 
   // If secret is set and matches key or fallback
-  if (defaultSecret && (keyId === "default" || keyId === cpKeyId || keyId === jfdKeyId)) {
+  if (
+    defaultSecret &&
+    (keyId === "default" ||
+      keyId === cpKeyId ||
+      keyId === lfseKeyId ||
+      keyId === bhoKeyId ||
+      keyId === jfdKeyId)
+  ) {
     return defaultSecret;
   }
 

@@ -2,11 +2,10 @@ import { NextResponse } from "next/server";
 import { verifyServiceRequestHeaders } from "@/lib/dcc/auth/hmac-service-auth";
 import { isValidAdminAccessKey } from "@/lib/adminAccess";
 import {
-  clearSyncedReviewDeskPayloadForTesting,
-  evaluateApprovedFactFeed,
   getVerifiedFactsForExactProduct,
   ingestApprovedFactsFromReviewDesk,
-  setSyncedReviewDeskPayload,
+  synchronizeReviewDeskToDurableStore,
+  type DurableResearchSyncMutation,
   type RawResearchDeskFactRow,
 } from "@/lib/dcc/research/approvedFactsFeed";
 
@@ -21,7 +20,7 @@ function authorizeResearchFeedRequest(
   statusCode: 401 | 403 | 429;
   error?: string;
   code?: string;
-  authMethod?: "hmac_service" | "internal_secret" | "admin_key";
+  authMethod?: "hmac_service" | "internal_secret" | "portal_token" | "admin_key";
 } {
   const url = new URL(request.url);
 
@@ -52,9 +51,14 @@ function authorizeResearchFeedRequest(
     };
   }
 
-  // 2. Check INTERNAL_API_SECRET
+  // 2. Check INTERNAL_API_SECRET or DCC_PORTAL_TOKEN / DCC_CP_SERVICE_SECRET bearer
   const internalSecret = process.env.INTERNAL_API_SECRET?.trim();
+  const portalToken =
+    process.env.DCC_PORTAL_BEARER_TOKEN?.trim() ||
+    process.env.DCC_PORTAL_TOKEN?.trim();
   const headerSecret = request.headers.get("x-internal-secret")?.trim() || "";
+  const portalHeaderSecret =
+    request.headers.get("x-dcc-portal-token")?.trim() || "";
   const authHeader = request.headers.get("authorization") || "";
   const bearerSecret = authHeader.toLowerCase().startsWith("bearer ")
     ? authHeader.slice(7).trim()
@@ -68,6 +72,17 @@ function authorizeResearchFeedRequest(
       authorized: true,
       statusCode: 401,
       authMethod: "internal_secret",
+    };
+  }
+
+  if (
+    portalToken &&
+    (portalHeaderSecret === portalToken || bearerSecret === portalToken)
+  ) {
+    return {
+      authorized: true,
+      statusCode: 401,
+      authMethod: "portal_token",
     };
   }
 
@@ -90,28 +105,18 @@ function authorizeResearchFeedRequest(
   return {
     authorized: false,
     statusCode: 401,
-    error: "Unauthorized. Approved research fact feed requires service HMAC or internal credentials.",
+    error:
+      "Unauthorized. Approved research fact feed requires service HMAC or internal credentials.",
     code: "UNAUTHORIZED",
   };
 }
 
-function parseNowOverride(raw: string | number | null | undefined): number {
-  if (typeof raw === "number" && Number.isFinite(raw)) {
-    return raw;
-  }
-  if (typeof raw === "string" && raw.trim().length > 0) {
-    const trimmed = raw.trim();
-    const numeric = Number(trimmed);
-    if (Number.isFinite(numeric) && /^\d+$/.test(trimmed)) {
-      return numeric;
-    }
-    const parsed = Date.parse(trimmed);
-    if (Number.isFinite(parsed)) {
-      return parsed;
-    }
-  }
-  return Date.now();
-}
+const ALLOWED_PRODUCTION_SYNC_ACTIONS = new Set([
+  "sync",
+  "upsert_facts",
+  "update_sources",
+  "withdraw",
+]);
 
 export async function GET(request: Request) {
   const auth = authorizeResearchFeedRequest(request);
@@ -128,16 +133,32 @@ export async function GET(request: Request) {
   }
 
   const url = new URL(request.url);
+  if (url.searchParams.has("now") || url.searchParams.has("clear")) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error:
+          "Test clock and clear controls are excluded from production routes. Production eligibility always uses server time.",
+        code: "PRODUCTION_TEST_CONTROL_FORBIDDEN",
+      },
+      {
+        status: 400,
+        headers: {
+          "Cache-Control": "private, no-store, max-age=0, must-revalidate",
+        },
+      },
+    );
+  }
+
   const portSlug = url.searchParams.get("port")?.trim().toLowerCase() || undefined;
-  const clusterId = url.searchParams.get("cluster")?.trim().toLowerCase() || undefined;
+  const clusterId =
+    url.searchParams.get("cluster")?.trim().toLowerCase() || undefined;
   const productId = url.searchParams.get("product_id")?.trim() || undefined;
-  const nowMs = parseNowOverride(url.searchParams.get("now"));
 
   const ingestion = await ingestApprovedFactsFromReviewDesk({
     portSlug,
     clusterId,
     productId,
-    nowMs,
   });
 
   const verifiedFacts = productId
@@ -166,7 +187,9 @@ export async function GET(request: Request) {
       headers: {
         "Cache-Control": ingestion.cache_control_header,
         "X-DCC-Approved-Facts-Count": String(verifiedFacts.length),
-        "X-DCC-Recommended-Max-Age": String(ingestion.recommended_max_age_seconds),
+        "X-DCC-Recommended-Max-Age": String(
+          ingestion.recommended_max_age_seconds,
+        ),
       },
     },
   );
@@ -201,16 +224,38 @@ export async function POST(request: Request) {
     );
   }
 
+  const url = new URL(request.url);
+  if (url.searchParams.has("now") || url.searchParams.has("clear")) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error:
+          "Test clock and clear controls are excluded from production routes. Production eligibility always uses server time.",
+        code: "PRODUCTION_TEST_CONTROL_FORBIDDEN",
+      },
+      {
+        status: 400,
+        headers: {
+          "Cache-Control": "private, no-store, max-age=0, must-revalidate",
+        },
+      },
+    );
+  }
+
   let body: {
-    action?: "evaluate" | "sync" | "clear";
+    action?: string;
+    sync_origin?: string;
+    cluster?: string;
+    replace_cluster?: boolean;
     rows?: RawResearchDeskFactRow[];
     verified_facts?: RawResearchDeskFactRow[];
-    source_fingerprints?: Record<
-      string,
-      { content_hash: string; healthy: boolean }
-    >;
+    candidates?: RawResearchDeskFactRow[];
+    facts?: RawResearchDeskFactRow[];
+    withdraw_fact_ids?: string[];
+    sources?: DurableResearchSyncMutation["sources"];
+    source_fingerprints?: DurableResearchSyncMutation["source_fingerprints"];
     product_id?: string;
-    now?: string | number;
+    now?: unknown;
   } = {};
 
   if (rawBody.trim().length > 0) {
@@ -229,12 +274,20 @@ export async function POST(request: Request) {
     }
   }
 
-  if (body.action === "clear") {
-    clearSyncedReviewDeskPayloadForTesting();
+  const requestedAction = body.action ? String(body.action).trim() : "sync";
+  if (
+    body.now !== undefined ||
+    !ALLOWED_PRODUCTION_SYNC_ACTIONS.has(requestedAction)
+  ) {
     return NextResponse.json(
-      { ok: true, action: "clear", cleared: true },
       {
-        status: 200,
+        ok: false,
+        error:
+          "Test clock (`now`), `clear`, and ephemeral `evaluate` controls are excluded from production routes. Use durable synchronization actions (`sync`, `upsert_facts`, `update_sources`, `withdraw`) evaluated at server time.",
+        code: "PRODUCTION_TEST_CONTROL_FORBIDDEN",
+      },
+      {
+        status: 400,
         headers: {
           "Cache-Control": "private, no-store, max-age=0, must-revalidate",
         },
@@ -242,27 +295,21 @@ export async function POST(request: Request) {
     );
   }
 
-  const rows: RawResearchDeskFactRow[] = Array.isArray(body.rows)
-    ? body.rows
-    : Array.isArray(body.verified_facts)
-      ? body.verified_facts
-      : [];
-
-  const nowMs = parseNowOverride(body.now);
-
-  if (body.action === "sync") {
-    setSyncedReviewDeskPayload({
-      rows,
-      sourceFingerprintsByUrl: body.source_fingerprints,
-      syncedAtIso: new Date(nowMs).toISOString(),
-    });
-  }
-
-  const evaluation = evaluateApprovedFactFeed(rows, {
-    nowMs,
-    sourceFingerprintsByUrl: body.source_fingerprints,
+  const syncResult = await synchronizeReviewDeskToDurableStore({
+    action: requestedAction as DurableResearchSyncMutation["action"],
+    sync_origin: body.sync_origin || `api_${auth.authMethod || "authenticated"}`,
+    cluster: body.cluster,
+    replace_cluster: body.replace_cluster,
+    rows: body.rows,
+    verified_facts: body.verified_facts,
+    candidates: body.candidates,
+    facts: body.facts,
+    withdraw_fact_ids: body.withdraw_fact_ids,
+    sources: body.sources,
+    source_fingerprints: body.source_fingerprints,
   });
 
+  const evaluation = syncResult.evaluation;
   const verifiedFacts = body.product_id
     ? getVerifiedFactsForExactProduct(evaluation.verified_facts, body.product_id)
     : evaluation.verified_facts;
@@ -271,7 +318,9 @@ export async function POST(request: Request) {
     {
       ok: true,
       service: "dcc-research-approved-facts",
-      action: body.action || "evaluate",
+      action: requestedAction,
+      durable_persisted: syncResult.persisted,
+      last_synced_at: syncResult.state.updated_at,
       auth_method: auth.authMethod,
       evaluated_at: evaluation.evaluated_at,
       total_evaluated: evaluation.total_evaluated,
@@ -285,7 +334,9 @@ export async function POST(request: Request) {
       headers: {
         "Cache-Control": evaluation.cache_control_header,
         "X-DCC-Approved-Facts-Count": String(verifiedFacts.length),
-        "X-DCC-Recommended-Max-Age": String(evaluation.recommended_max_age_seconds),
+        "X-DCC-Recommended-Max-Age": String(
+          evaluation.recommended_max_age_seconds,
+        ),
       },
     },
   );
