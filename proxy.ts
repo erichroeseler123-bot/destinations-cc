@@ -533,11 +533,17 @@ function checkInternalApiAuthorization(request: NextRequest): {
     request.headers.get("x-dcc-signature") ||
     request.headers.get("x-dcc-key-id")
   ) {
+    const pathname = request.nextUrl.pathname;
+    const handlerRecordsNonce =
+      pathname.startsWith("/api/internal/research/") ||
+      pathname.startsWith("/api/internal/cruises/port/");
     const result = verifyServiceRequestHeaders({
       headers: request.headers,
       method: request.method,
-      pathname: request.nextUrl.pathname,
+      pathname,
       searchParams: request.nextUrl.searchParams,
+      recordNonce: !handlerRecordsNonce,
+      verifyBodyContent: !handlerRecordsNonce,
     });
     if (!result.authorized) {
       return {

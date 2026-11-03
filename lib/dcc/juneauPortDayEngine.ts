@@ -3112,3 +3112,95 @@ export function evaluateJuneauPortDayScenario(
     options: evaluatedOptions,
   };
 }
+
+import {
+  EXPLICIT_RESEARCH_PRODUCT_REGISTRY,
+  getVerifiedFactsForExactProduct,
+  type EvaluatedResearchFact,
+} from "@/lib/dcc/research/approvedFactsFeed";
+
+export interface JuneauOperatorProductFactSummary {
+  productId: string;
+  productName: string;
+  operatorId: string;
+  operatorName: string;
+  portSlug: "juneau";
+  verifiedDurationFact: EvaluatedResearchFact | null;
+  verifiedTransportFact: EvaluatedResearchFact | null;
+  verifiedAgeFact: EvaluatedResearchFact | null;
+  verifiedWeightFact: EvaluatedResearchFact | null;
+  verifiedBagFact: EvaluatedResearchFact | null;
+  verifiedCancellationFact: EvaluatedResearchFact | null;
+  allProductVerifiedFacts: EvaluatedResearchFact[];
+  missingConstraintTypes: string[];
+  fitsPortDayEstablished: false;
+  qualificationNote: string;
+}
+
+/**
+ * Evaluates human-confirmed research facts for a specific Juneau direct operator
+ * product (e.g. `coastal-helicopters-icefield-excursion-direct`) without applying
+ * one tour's approval to any other operator or variant, and without treating a
+ * verified duration alone as proof that the excursion fits a traveler's port day.
+ */
+export function evaluateJuneauOperatorProductFacts(
+  productId: string,
+  evaluatedFacts: EvaluatedResearchFact[],
+): JuneauOperatorProductFactSummary | null {
+  const mapping = EXPLICIT_RESEARCH_PRODUCT_REGISTRY[productId];
+  if (!mapping || mapping.portSlug !== "juneau") {
+    return null;
+  }
+
+  const productFacts = getVerifiedFactsForExactProduct(
+    evaluatedFacts,
+    productId,
+  );
+  const findFact = (...types: string[]) =>
+    productFacts.find((f) => types.includes(f.constraint_type)) ?? null;
+
+  const verifiedDurationFact = findFact("total_duration", "duration");
+  const verifiedTransportFact = findFact(
+    "transport_inclusion",
+    "pickup_meeting",
+    "pickup_rules",
+  );
+  const verifiedAgeFact = findFact(
+    "child_seat_and_fare",
+    "age_policy",
+    "minimum_age",
+  );
+  const verifiedWeightFact = findFact(
+    "weight_declaration",
+    "mobility_requirements",
+  );
+  const verifiedBagFact = findFact("bag_policy");
+  const verifiedCancellationFact = findFact("cancellation_policy");
+
+  const missingConstraintTypes: string[] = [];
+  if (!verifiedDurationFact) missingConstraintTypes.push("total_duration");
+  if (!verifiedTransportFact) missingConstraintTypes.push("pickup_and_transport");
+  if (!verifiedAgeFact) missingConstraintTypes.push("age_and_seat_policy");
+  if (!verifiedWeightFact) missingConstraintTypes.push("mobility_and_weight");
+
+  return {
+    productId: mapping.productId,
+    productName: mapping.productName,
+    operatorId: mapping.operatorId,
+    operatorName: mapping.operatorName,
+    portSlug: "juneau",
+    verifiedDurationFact,
+    verifiedTransportFact,
+    verifiedAgeFact,
+    verifiedWeightFact,
+    verifiedBagFact,
+    verifiedCancellationFact,
+    allProductVerifiedFacts: productFacts,
+    missingConstraintTypes,
+    fitsPortDayEstablished: false,
+    qualificationNote: verifiedDurationFact
+      ? `Verified total duration (${verifiedDurationFact.value} ${verifiedDurationFact.unit}, fact ${verifiedDurationFact.fact_id}, rev ${verifiedDurationFact.revision}) applies strictly to ${mapping.productName}. A verified duration alone does not establish port-day fit without confirmed ship arrival/all-aboard times, 90-minute return buffer clearance, pickup logistics, age/seat rules, and mobility/weight eligibility.`
+      : `No current human-confirmed duration fact is active for ${mapping.productName}; all unconfirmed constraints remain unknown.`,
+  };
+}
+

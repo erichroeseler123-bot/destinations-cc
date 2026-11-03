@@ -11,6 +11,8 @@ export const ALLOWED_SERVICE_ROUTES = [
   "/api/internal/cruises/port",
   "/api/internal/cruises/ship",
   "/api/internal/cruises/providers",
+  "/api/internal/research",
+  "/api/internal/research/approved-facts",
   "/api/v1/context",
 ] as const;
 
@@ -237,6 +239,8 @@ export function verifyServiceRequestHeaders(params: {
   searchParams?: URLSearchParams | string;
   body?: string | Buffer | null;
   now?: number;
+  recordNonce?: boolean;
+  verifyBodyContent?: boolean;
 }): VerifyResult {
   const now = params.now ?? Date.now();
   pruneStaleNonces(now);
@@ -337,7 +341,8 @@ export function verifyServiceRequestHeaders(params: {
 
   // 7. Verify body hash if provided or calculated
   const expectedBodyHash = hashBody(params.body);
-  if (contentSha256 && contentSha256 !== expectedBodyHash) {
+  const shouldVerifyBodyContent = params.verifyBodyContent ?? true;
+  if (shouldVerifyBodyContent && contentSha256 && contentSha256 !== expectedBodyHash) {
     return {
       authorized: false,
       statusCode: 401,
@@ -379,7 +384,9 @@ export function verifyServiceRequestHeaders(params: {
   }
 
   // Record nonce to prevent replay
-  seenNonces.set(nonce, { seenAt: now });
+  if (params.recordNonce ?? true) {
+    seenNonces.set(nonce, { seenAt: now });
+  }
 
   return { authorized: true, keyId };
 }
