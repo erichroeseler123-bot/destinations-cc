@@ -9,6 +9,12 @@ import { buildAffiliateUrl } from "@/lib/affiliate/links";
 import { CruiseWindowCalculator } from "@/components/CruiseWindowCalculator";
 import { ExcursionFilters } from "@/components/ExcursionFilters";
 import { TrustDisclosure } from "@/components/TrustDisclosure";
+import { ApprovedResearchQualificationSection } from "@/components/ApprovedResearchQualificationSection";
+import {
+  BLOCKED_KETCHIKAN_UMBRELLA_PRODUCTS,
+  loadLfseApprovedPortFacts,
+  qualifyLfsePortDirectContexts,
+} from "@/lib/dccResearchFeed";
 
 const SITE = "https://www.lastfrontiershoreexcursions.com";
 
@@ -57,6 +63,14 @@ export default async function PortPage({
 
   const activities = getPortActivities(slug);
   const portExcursions = getExcursionsByPort(slug as PortSlug);
+
+  const researchLoad =
+    slug === "juneau" || slug === "ketchikan"
+      ? await loadLfseApprovedPortFacts(slug, { revalidateSeconds: 60 })
+      : null;
+  const researchQualifications = researchLoad
+    ? qualifyLfsePortDirectContexts(slug, researchLoad.facts)
+    : [];
 
   const primaryBrowseUrl = portExcursions.length > 0
     ? buildAffiliateUrl(portExcursions[0].source, portExcursions[0].officialUrl, portExcursions[0].attributionCampaign, portExcursions[0].title, portExcursions[0].isExactProduct)
@@ -234,6 +248,19 @@ export default async function PortPage({
           <CruiseWindowCalculator portSlug={slug as PortSlug} defaultDurationMinutes={portExcursions[0]?.durationMinutes || 210} />
         </div>
       </section>
+
+      {researchQualifications.length > 0 && (
+        <ApprovedResearchQualificationSection
+          portSlug={slug}
+          initialQualifications={researchQualifications}
+          initialLastSyncedAt={researchLoad?.lastSyncedAt ?? null}
+          blockedUmbrellaProducts={
+            slug === "ketchikan"
+              ? [...BLOCKED_KETCHIKAN_UMBRELLA_PRODUCTS]
+              : []
+          }
+        />
+      )}
 
       {/* Interactive Excursions Filter & Comparison */}
       <section className="section" id="clusters" style={{ background: "#f8fbfb" }}>

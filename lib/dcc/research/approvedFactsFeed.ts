@@ -761,18 +761,13 @@ export const CONNECTED_COASTAL_CONSUMERS = [
   "dcc:api/internal/cruises/port/juneau",
   "cruisepromenade:ports/juneau",
   "cruisepromenade:api/excursions",
-  "lfse:ports/juneau",
-  "lfse:juneau/helicopter-glacier-tours",
-  "lfse:api/research-qualifications",
   "juneauflightdeck:Juneau helicopter comparison",
+  "planned:LFSE Juneau selection (integration pending)",
 ] as const;
 
 export const CONNECTED_CHETEK_CONSUMERS = [
   "dcc:api/internal/research/approved-facts?port=chetek",
-  "blue-hills-outpost:api/research-facts",
-  "blue-hills-outpost:api/tours",
-  "blue-hills-outpost:chetek-hydroflites-water-ski-show-schedule",
-  "blue-hills-outpost:blue-hills-atv-trail-guide",
+  "planned:Blue Hills Outpost Chetek selection (integration pending)",
 ] as const;
 
 /**
@@ -2203,8 +2198,14 @@ export async function ingestApprovedFactsFromReviewDesk(options?: {
 
   // 1. Load existing durable synchronized state from Upstash Redis
   let durableState = await loadDurableResearchSyncState();
+  const hasDurableSync = Boolean(
+    durableState &&
+      (Object.keys(durableState.rows_by_fact_id).length > 0 ||
+        Object.keys(durableState.sources_by_url).length > 0),
+  );
 
-  // 2. Attempt authenticated server-side pull from review desk if enabled
+  // 2. Attempt authenticated server-side pull from review desk only when pull credentials are configured
+  // or when no outbound push state exists yet
   const { headers, hasAuthCredentials } = buildReviewDeskAuthHeaders();
   let liveStatus: ReviewDeskPortalIngestionResult["live_portal_readback_status"] =
     hasAuthCredentials
@@ -2214,7 +2215,7 @@ export async function ingestApprovedFactsFromReviewDesk(options?: {
     ? null
     : `Private review desk ${reviewDeskUrl}/api/verified-facts is gated by OpenAI chatgpt.site dispatch OAuth (HTTP 401 Sign in required). Configure outbound review-desk push to POST /api/internal/research/approved-facts or provide DCC_PORTAL_COOKIE / service endpoint.`;
 
-  if (!options?.skipLiveFetch) {
+  if (!options?.skipLiveFetch && (!hasDurableSync || hasAuthCredentials)) {
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 3500);
@@ -2320,7 +2321,7 @@ export async function ingestApprovedFactsFromReviewDesk(options?: {
       review_desk_url: reviewDeskUrl,
       live_portal_readback_status: "durable_synced_store",
       live_portal_verified: true,
-      access_blocker: accessBlocker,
+      access_blocker: null,
       last_synced_at: durableState.updated_at,
     };
   }

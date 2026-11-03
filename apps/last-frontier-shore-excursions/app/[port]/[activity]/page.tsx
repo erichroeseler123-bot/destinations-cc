@@ -12,6 +12,12 @@ import { CruiseWindowCalculator } from "@/components/CruiseWindowCalculator";
 import { ExcursionCard } from "@/components/ExcursionCard";
 import { ExcursionComparisonTable } from "@/components/ExcursionComparisonTable";
 import { TrustDisclosure } from "@/components/TrustDisclosure";
+import { ApprovedResearchQualificationSection } from "@/components/ApprovedResearchQualificationSection";
+import {
+  BLOCKED_KETCHIKAN_UMBRELLA_PRODUCTS,
+  loadLfseApprovedPortFacts,
+  qualifyLfsePortDirectContexts,
+} from "@/lib/dccResearchFeed";
 
 const SITE = "https://www.lastfrontiershoreexcursions.com";
 
@@ -72,6 +78,16 @@ export default async function ActivityPage({
   const matchedExcursions = getExcursionsByActivity(port as PortSlug, activity);
   const fallbackExcursions = matchedExcursions.length > 0 ? matchedExcursions : getExcursionsByPort(port as PortSlug).slice(0, 2);
   const activityImg = getActivityImage(port, activity);
+
+  const researchLoad =
+    port === "juneau" || port === "ketchikan"
+      ? await loadLfseApprovedPortFacts(port, { revalidateSeconds: 60 })
+      : null;
+  const researchQualifications = researchLoad
+    ? qualifyLfsePortDirectContexts(port, researchLoad.facts, {
+        activitySlug: activity,
+      })
+    : [];
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -281,6 +297,20 @@ export default async function ActivityPage({
           <CruiseWindowCalculator portSlug={port as PortSlug} defaultDurationMinutes={fallbackExcursions[0]?.durationMinutes || 210} />
         </div>
       </section>
+
+      {researchQualifications.length > 0 && (
+        <ApprovedResearchQualificationSection
+          portSlug={port}
+          activitySlug={activity}
+          initialQualifications={researchQualifications}
+          initialLastSyncedAt={researchLoad?.lastSyncedAt ?? null}
+          blockedUmbrellaProducts={
+            port === "ketchikan" && activity === "totem-and-cultural-tours"
+              ? [...BLOCKED_KETCHIKAN_UMBRELLA_PRODUCTS]
+              : []
+          }
+        />
+      )}
 
       {/* Curated Partner Excursions Comparison */}
       <section className="section" style={{ background: "#ffffff" }}>

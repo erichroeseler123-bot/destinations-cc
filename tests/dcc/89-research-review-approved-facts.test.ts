@@ -19,6 +19,11 @@ import {
   POST as postApprovedFactsRoute,
 } from "@/app/api/internal/research/approved-facts/route";
 import { GET as getCruisePortRoute } from "@/app/api/internal/cruises/port/[slug]/route";
+import {
+  LFSE_MANDATORY_RETURN_BUFFER_MINUTES,
+  qualifyLfseDirectContext,
+  qualifyLfsePortDirectContexts,
+} from "../../apps/last-frontier-shore-excursions/lib/dccResearchFeed";
 
 const CP_KEY_ID = "cp_service_key";
 const CP_SECRET = "test_cp_to_dcc_hmac_secret_2026";
@@ -569,6 +574,13 @@ test("DCC Research Review Approved-Fact Integration Suite", async (t) => {
       assert.equal(getRes.status, 200);
       const getJson = await getRes.json();
       assert.equal(getJson.ok, true);
+      assert.equal(getJson.live_portal_readback_status, "durable_synced_store");
+      assert.equal(getJson.live_portal_verified, true);
+      assert.equal(
+        getJson.access_blocker,
+        null,
+        "Successful durable push sync must not emit obsolete 401 pull access_blocker diagnostic",
+      );
       assert.equal(getJson.verified_count, 1);
       assert.equal(
         getJson.verified_facts[0].product_id,
@@ -607,6 +619,173 @@ test("DCC Research Review Approved-Fact Integration Suite", async (t) => {
         portJson.approved_research_facts.verified_facts[0].revision,
         4,
       );
+      assert.equal(portJson.approved_research_facts.access_blocker, null);
+    },
+  );
+
+  await t.test(
+    "7. Last Frontier Shore Excursions (LFSE) Juneau & Ketchikan qualification preserves 45-min return buffer, 155-min Coastal Helicopters rev 4 approval, and strict reseller/bundle isolation",
+    () => {
+      const nowDate = new Date("2026-11-04T12:00:00Z");
+      const evaluated = evaluateApprovedFactFeed(
+        [
+          COASTAL_DURATION_CONFIRMED_FIXTURE,
+          ...COASTAL_HELICOPTERS_ICEFIELD_CANDIDATE_BASELINE.filter(
+            (r) => r.fact_id !== "20a56628f0ce1e5cc2299a68",
+          ),
+        ],
+        { nowMs: nowDate.getTime() },
+      );
+
+      const juneauQual = qualifyLfsePortDirectContexts(
+        "juneau",
+        evaluated.all_evaluated_facts,
+        { nowMs: nowDate.getTime() },
+      );
+      assert.equal(LFSE_MANDATORY_RETURN_BUFFER_MINUTES, 45);
+      assert.equal(juneauQual.length, 3);
+
+      const coastal = juneauQual.find(
+        (c) => c.productId === "coastal-helicopters-icefield-excursion-direct",
+      );
+      assert.ok(coastal);
+      assert.equal(coastal.mandatoryReturnBufferMinutes, 45);
+      assert.equal(coastal.verifiedFactCount, 1);
+      assert.equal(coastal.constraints.duration.status, "verified");
+      assert.equal(
+        coastal.constraints.duration.evidence?.fact_id,
+        "20a56628f0ce1e5cc2299a68",
+      );
+      assert.equal(coastal.constraints.duration.evidence?.value, "155");
+      assert.equal(coastal.constraints.duration.evidence?.unit, "minutes");
+      assert.equal(coastal.constraints.duration.evidence?.revision, 4);
+      assert.equal(
+        coastal.constraints.duration.evidence?.verified_on,
+        "2026-11-03",
+      );
+      assert.equal(
+        coastal.constraints.duration.evidence?.review_due_on,
+        "2026-12-03",
+      );
+      assert.equal(
+        coastal.constraints.duration.evidence?.source_url,
+        "https://coastalhelicopters.com/tours/icefield-excursion/",
+      );
+      // Missing pickup/age/mobility remain unknown, and verified duration alone never establishes port-day fit
+      assert.equal(coastal.constraints.pickup.status, "unknown");
+      assert.equal(coastal.constraints.age.status, "unknown");
+      assert.equal(coastal.constraints.mobility.status, "unknown");
+      assert.equal(coastal.fitsPortDayEstablished, false);
+      assert.equal(coastal.overallQualificationStatus, "needs_confirmation");
+      assert.equal(
+        coastal.constraints.returnBuffer.mandatoryBufferMinutes,
+        45,
+      );
+      assert.equal(
+        coastal.constraints.returnBuffer.dockTransferMinutesEachWay,
+        10,
+      );
+      assert.ok(
+        coastal.isolatedViatorResellerSkus.includes("6251SHOREXICEWALK"),
+      );
+
+      // TEMSCO and NorthStar in Juneau must not inherit Coastal Helicopters' verified 155-min fact
+      const temsco = juneauQual.find(
+        (c) => c.productId === "temsco-mendenhall-glacier-pilot-choice-direct",
+      );
+      assert.ok(temsco);
+      assert.equal(temsco.verifiedFactCount, 0);
+      assert.equal(temsco.constraints.duration.status, "unknown");
+
+      // Ketchikan contexts remain strictly isolated and block multi-stop umbrella bundles
+      const ketchikanQual = qualifyLfsePortDirectContexts(
+        "ketchikan",
+        evaluated.all_evaluated_facts,
+        { nowMs: nowDate.getTime() },
+      );
+      assert.equal(ketchikanQual.length, 4);
+      for (const ctx of ketchikanQual) {
+        assert.equal(ctx.verifiedFactCount, 0);
+        assert.equal(ctx.fitsPortDayEstablished, false);
+      }
+      const capeFox = qualifyLfseDirectContext(
+        "cape-fox-saxman-totem-park-direct",
+        evaluated.all_evaluated_facts,
+        { nowMs: nowDate.getTime() },
+      );
+      assert.ok(capeFox);
+      assert.ok(
+        capeFox.nonTransferableScopeNote.includes(
+          "cape-fox-saxman-highlights-lumberjack",
+        ),
+      );
+    },
+  );
+
+  await t.test(
+    "8. Blue Hills Outpost (wisconsin-chetek) candidate facts serve via authenticated feed with exact product mapping and non-transferability",
+    async () => {
+      const query = "port=chetek";
+      const signedGet = signServiceRequest({
+        keyId: CP_KEY_ID,
+        secret: CP_SECRET,
+        method: "GET",
+        pathname: "/api/internal/research/approved-facts",
+        searchParams: query,
+      });
+
+      const getRes = await getApprovedFactsRoute(
+        new Request(
+          `https://destinationcommandcenter.com/api/internal/research/approved-facts?${query}`,
+          {
+            method: "GET",
+            headers: signedGet.headers,
+          },
+        ),
+      );
+      assert.equal(getRes.status, 200);
+      const getJson = await getRes.json();
+      assert.equal(getJson.ok, true);
+      assert.equal(getJson.verified_count, 0);
+      assert.equal(getJson.all_evaluated_facts.length, 6);
+      assert.equal(
+        WISCONSIN_CHETEK_CANDIDATE_BASELINE.length,
+        6,
+      );
+
+      const hydroflitesFacts = getJson.all_evaluated_facts.filter(
+        (f: { product_id: string }) =>
+          f.product_id === "chetek-hydroflites-water-ski-show-direct",
+      );
+      assert.equal(hydroflitesFacts.length, 4);
+      for (const fact of hydroflitesFacts) {
+        assert.equal(fact.verified, false);
+        assert.equal(fact.eligibility_status, "needs_confirmation");
+        assert.equal(
+          fact.blue_hills_outpost_tour_id,
+          "chetek-hydroflites-water-ski-show",
+        );
+        assert.equal(fact.non_transferable_to_other_tours, true);
+      }
+
+      const felsenmeerFacts = getJson.all_evaluated_facts.filter(
+        (f: { product_id: string }) =>
+          f.product_id === "blue-hills-felsenmeer-state-natural-area",
+      );
+      assert.equal(felsenmeerFacts.length, 2);
+      assert.deepEqual(
+        felsenmeerFacts.map((f: { fact_id: string }) => f.fact_id),
+        ["7821e46629ff2d43877c3d1a", "bc30c3bc3020d3e3f777bdfa"],
+      );
+      for (const fact of felsenmeerFacts) {
+        assert.equal(fact.verified, false);
+        assert.equal(fact.eligibility_status, "needs_confirmation");
+        assert.equal(
+          fact.blue_hills_outpost_tour_id,
+          "blue-hills-felsenmeer-trail",
+        );
+      }
     },
   );
 });
+
