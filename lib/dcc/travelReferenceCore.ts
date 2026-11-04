@@ -1,4 +1,121 @@
-import { getGoSnoRouteSnapshotDisplayPricing } from "@/lib/dcc/applicability";
+function getGoSnoRouteSnapshotDisplayPricing(input: { routeId: string }): {
+  suvOneWayLabel: string;
+  vanOneWayLabel: string;
+} {
+  const fallback = "Check current price with GoSno";
+  if (typeof window !== "undefined" || typeof process === "undefined") {
+    return { suvOneWayLabel: fallback, vanOneWayLabel: fallback };
+  }
+  try {
+    const getBuiltin = (
+      process as unknown as { getBuiltinModule?: (id: string) => unknown }
+    ).getBuiltinModule;
+    const nodeFs = getBuiltin
+      ? (getBuiltin("fs") as {
+          existsSync: (p: string) => boolean;
+          readFileSync: (p: string, enc: BufferEncoding) => string;
+        })
+      : undefined;
+    const nodePath = getBuiltin
+      ? (getBuiltin("path") as { join: (...parts: string[]) => string })
+      : undefined;
+    if (!nodeFs || !nodePath) {
+      return { suvOneWayLabel: fallback, vanOneWayLabel: fallback };
+    }
+    const ledgerPath =
+      process.env.DCC_DURABLE_LEDGER_FILE?.trim() ||
+      nodePath.join(
+        process.cwd(),
+        "data",
+        "network",
+        "ledger",
+        "durable-transactional-store.v1.json",
+      );
+    const bundledPath =
+      process.env.DCC_GOSNO_SNAPSHOT_FILE_PATH?.trim() ||
+      nodePath.join(
+        process.cwd(),
+        "data",
+        "network",
+        "audit",
+        "satellite",
+        "gosno",
+        "route-feed.snapshot.json",
+      );
+    type RawSnap = {
+      fetchedAt?: string;
+      expiresAt?: string;
+      feed?: {
+        routes?: Array<{
+          route_id?: string;
+          direction?: string;
+          vehicle_class?: string;
+          pricing?: { amount_usd?: number };
+        }>;
+      };
+    };
+    let activeSnap: RawSnap | null = null;
+    if (nodeFs.existsSync(ledgerPath)) {
+      try {
+        const ledger = JSON.parse(nodeFs.readFileSync(ledgerPath, "utf8")) as {
+          gosnoRouteFeedSnapshot?: RawSnap | null;
+        };
+        if (ledger?.gosnoRouteFeedSnapshot?.feed?.routes) {
+          activeSnap = ledger.gosnoRouteFeedSnapshot;
+        }
+      } catch {
+        // ignore
+      }
+    }
+    if (nodeFs.existsSync(bundledPath)) {
+      try {
+        const bundled = JSON.parse(nodeFs.readFileSync(bundledPath, "utf8")) as RawSnap;
+        if (bundled?.feed?.routes) {
+          if (
+            !activeSnap ||
+            Date.parse(bundled.fetchedAt || "") > Date.parse(activeSnap.fetchedAt || "")
+          ) {
+            activeSnap = bundled;
+          }
+        }
+      } catch {
+        // ignore
+      }
+    }
+    if (!activeSnap?.feed?.routes) {
+      return { suvOneWayLabel: fallback, vanOneWayLabel: fallback };
+    }
+    const expiresMs = Date.parse(activeSnap.expiresAt || "");
+    if (!Number.isFinite(expiresMs) || Date.now() > expiresMs) {
+      return { suvOneWayLabel: fallback, vanOneWayLabel: fallback };
+    }
+    const routes = activeSnap.feed.routes;
+    const suv = routes.find(
+      (r) =>
+        r.route_id === input.routeId &&
+        r.direction === "OUTBOUND" &&
+        r.vehicle_class === "suv",
+    );
+    const van = routes.find(
+      (r) =>
+        r.route_id === input.routeId &&
+        r.direction === "OUTBOUND" &&
+        r.vehicle_class === "van",
+    );
+    return {
+      suvOneWayLabel:
+        typeof suv?.pricing?.amount_usd === "number"
+          ? `$${suv.pricing.amount_usd} one-way`
+          : fallback,
+      vanOneWayLabel:
+        typeof van?.pricing?.amount_usd === "number"
+          ? `$${van.pricing.amount_usd} one-way`
+          : fallback,
+    };
+  } catch {
+    return { suvOneWayLabel: fallback, vanOneWayLabel: fallback };
+  }
+}
 
 export type AuthorityType =
   | "official_rule"
