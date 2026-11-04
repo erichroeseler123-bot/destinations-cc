@@ -35,8 +35,12 @@ import {
   POST as scheduledRefreshPost,
 } from "@/app/api/internal/gosno/route-feed-refresh/route";
 import { POST as evaluateApplicabilityPost } from "@/app/api/v1/applicability/evaluate/route";
+import { NextRequest } from "next/server";
 import { buildDenverToVailShuttleGuidePageModel } from "@/app/transportation/colorado/denver-to-vail-shuttle-guide/model";
 import { getAskDccEvidence } from "@/lib/dcc/ask/service";
+import { getTravelReferenceNodeById } from "@/lib/dcc/travelReference";
+import { proxy } from "@/proxy";
+import { DECISION_ENGINE_PAGES } from "@/src/data/decision-engine-pages";
 import { getPublishedDecisionGuide } from "@/src/data/published-decision-guides";
 
 async function withIsolatedGoSnoTestState<T>(
@@ -1281,5 +1285,166 @@ test("8. DCC guide copy and evaluator agree after a fixture fare change, and a f
     assert.equal(freshInstanceResult.evalVanNextStep, "request a quote");
   });
 });
+
+test("9. Proxy CRON_SECRET authorization and DEN-BRECKENRIDGE shared snapshot fare lookup across Breckenridge guide, reference node, and evaluator", async () => {
+  await withIsolatedGoSnoTestState(async () => {
+    const prevCronSecret = process.env.CRON_SECRET;
+    process.env.CRON_SECRET = "test-cron-secret-release-check";
+    try {
+      const getRefreshReq = new NextRequest(
+        "https://www.destinationcommandcenter.com/api/internal/gosno/route-feed-refresh",
+        {
+          method: "GET",
+          headers: {
+            authorization: "Bearer test-cron-secret-release-check",
+          },
+        },
+      );
+      const getProxyRes = await proxy(getRefreshReq);
+      assert.notEqual(
+        getProxyRes.status,
+        401,
+        "proxy.ts must not return 401 for GET /api/internal/gosno/route-feed-refresh with CRON_SECRET",
+      );
+      assert.notEqual(
+        getProxyRes.status,
+        403,
+        "proxy.ts must allow CRON_SECRET for GET /api/internal/gosno/route-feed-refresh",
+      );
+
+      const postRefreshReq = new NextRequest(
+        "https://www.destinationcommandcenter.com/api/internal/gosno/route-feed-refresh",
+        {
+          method: "POST",
+          headers: {
+            authorization: "Bearer test-cron-secret-release-check",
+          },
+        },
+      );
+      const postProxyRes = await proxy(postRefreshReq);
+      assert.equal(
+        postProxyRes.status,
+        403,
+        "proxy.ts must deny POST with CRON_SECRET",
+      );
+    } finally {
+      if (prevCronSecret === undefined) {
+        delete process.env.CRON_SECRET;
+      } else {
+        process.env.CRON_SECRET = prevCronSecret;
+      }
+    }
+
+    const baseSnap = resetGoSnoRouteFeedSnapshotToBaseline();
+    const freshSnap = createGoSnoRouteFeedSnapshot(baseSnap.feed, {
+      fetchedAt: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+      ttlMs: DEFAULT_GOSNO_SNAPSHOT_TTL_MS,
+    });
+    saveGoSnoRouteFeedSnapshot(freshSnap);
+
+    const breckDecisionPage = DECISION_ENGINE_PAGES.find(
+      (p) => p.canonicalPath === "/routes/denver-breckenridge",
+    )!;
+    const breckNode = getTravelReferenceNodeById("denver-breckenridge");
+    const breckShuttleMode = breckNode.gettingThereAndAround.modes.find(
+      (m) => m.id === "db-mountain-shuttles",
+    )!;
+    const breckHandoff = breckNode.specialistHandoffs.options.find(
+      (o) => o.id === "handoff-gosno-breck",
+    )!;
+
+    assert.match(breckDecisionPage.howToGetThere[0] || "", /\$399 one-way/);
+    assert.match(breckDecisionPage.howToGetThere[0] || "", /\$599/);
+    assert.match(breckShuttleMode.routeOrCoverage, /\$399 one-way/);
+    assert.match(breckShuttleMode.routeOrCoverage, /\$599 one-way/);
+    assert.match(breckShuttleMode.pricingModel || "", /\$399 one-way/);
+    assert.match(breckShuttleMode.pricingModel || "", /\$599 one-way/);
+    assert.match(breckShuttleMode.practicalConstraints[0] || "", /\$399 one-way/);
+    assert.match(breckShuttleMode.practicalConstraints[0] || "", /\$599 one-way/);
+    assert.match(breckHandoff.description, /\$399 one-way/);
+    assert.match(breckHandoff.description, /\$599 one-way/);
+
+    const breckEval = compileApplicableDecisionContext({
+      corridorId: "corridor:denver-breckenridge-i70",
+      routeId: "DEN-BRECKENRIDGE",
+      origin: "DEN",
+      destination: "Breckenridge",
+      passengerCount: 6,
+      standardBagCount: 6,
+      skiOrOversizeBagCount: 4,
+    });
+    const breckEvalSuv = breckEval.vehicleClassEvaluations.find(
+      (v) => v.vehicleClassId === "veh:awd-full-size-suv",
+    )!;
+    const breckEvalVan = breckEval.vehicleClassEvaluations.find(
+      (v) => v.vehicleClassId === "veh:private-transit-van-10",
+    )!;
+    assert.equal(breckEvalSuv.pricingResolution.priceDisplay, "$399");
+    assert.equal(breckEvalVan.pricingResolution.priceDisplay, "$599");
+
+    // Mutate DEN-BRECKENRIDGE fares in a test fixture and verify guide, reference node, and evaluator agree
+    const modifiedFeed = structuredClone(baseSnap.feed);
+    for (const r of modifiedFeed.routes) {
+      if (r.route_id === "DEN-BRECKENRIDGE" && r.vehicle_class === "suv") {
+        r.pricing.amount_usd = 419;
+        r.pricing.amount_cents = 41900;
+      }
+      if (r.route_id === "DEN-BRECKENRIDGE" && r.vehicle_class === "van") {
+        r.pricing.amount_usd = 629;
+        r.pricing.amount_cents = 62900;
+      }
+    }
+    saveGoSnoRouteFeedSnapshot(
+      createGoSnoRouteFeedSnapshot(modifiedFeed, {
+        fetchedAt: new Date().toISOString(),
+        ttlMs: DEFAULT_GOSNO_SNAPSHOT_TTL_MS,
+      }),
+    );
+
+    assert.match(breckDecisionPage.howToGetThere[0] || "", /\$419 one-way/);
+    assert.match(breckDecisionPage.howToGetThere[0] || "", /\$629/);
+    assert.match(breckShuttleMode.routeOrCoverage, /\$419 one-way/);
+    assert.match(breckShuttleMode.routeOrCoverage, /\$629 one-way/);
+    assert.match(breckHandoff.description, /\$419 one-way/);
+    assert.match(breckHandoff.description, /\$629 one-way/);
+
+    const updatedBreckEval = compileApplicableDecisionContext({
+      corridorId: "corridor:denver-breckenridge-i70",
+      routeId: "DEN-BRECKENRIDGE",
+      origin: "DEN",
+      destination: "Breckenridge",
+      passengerCount: 6,
+      standardBagCount: 6,
+      skiOrOversizeBagCount: 4,
+    });
+    const updatedBreckSuv = updatedBreckEval.vehicleClassEvaluations.find(
+      (v) => v.vehicleClassId === "veh:awd-full-size-suv",
+    )!;
+    const updatedBreckVan = updatedBreckEval.vehicleClassEvaluations.find(
+      (v) => v.vehicleClassId === "veh:private-transit-van-10",
+    )!;
+    assert.equal(updatedBreckSuv.pricingResolution.priceDisplay, "$419");
+    assert.equal(updatedBreckVan.pricingResolution.priceDisplay, "$629");
+
+    // Expire snapshot and verify both guide/reference node and evaluator show "Check current price with GoSno"
+    const nowMs = Date.now();
+    saveGoSnoRouteFeedSnapshot(
+      createGoSnoRouteFeedSnapshot(baseSnap.feed, {
+        fetchedAt: new Date(nowMs - 48 * 60 * 60 * 1000).toISOString(),
+        expiresAt: new Date(nowMs - 24 * 60 * 60 * 1000).toISOString(),
+      }),
+    );
+    assert.match(
+      breckDecisionPage.howToGetThere[0] || "",
+      /Check current price with GoSno/,
+    );
+    assert.match(
+      breckShuttleMode.routeOrCoverage,
+      /Check current price with GoSno/,
+    );
+    assert.match(breckHandoff.description, /Check current price with GoSno/);
+  });
+});
+
 
 

@@ -9,6 +9,9 @@ import {
   listOperatorSlugs,
 } from "@/lib/dcc/operators";
 import { buildBreadcrumbJsonLd, buildOperatorJsonLd } from "@/lib/dcc/jsonld";
+import { syncDurableLedgerWithPostgres } from "@/lib/dcc/storage/durableTransactionalStore";
+
+export const dynamic = "force-dynamic";
 
 export function generateStaticParams() {
   return listOperatorSlugs().map((slug) => ({ slug }));
@@ -19,6 +22,7 @@ export async function generateMetadata({
 }: {
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
+  await syncDurableLedgerWithPostgres();
   const { slug } = await params;
   const operator = getOperatorManifest(slug);
   if (!operator) return { title: "Operator | Destination Command Center" };
@@ -39,6 +43,7 @@ export default async function OperatorPage({
 }: {
   params: Promise<{ slug: string }>;
 }) {
+  await syncDurableLedgerWithPostgres();
   const { slug } = await params;
   const operator = getOperatorManifest(slug);
   if (!operator) notFound();

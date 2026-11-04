@@ -2,6 +2,7 @@ import React, { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { syncDurableLedgerWithPostgres } from "@/lib/dcc/storage/durableTransactionalStore";
 import { PUBLISHED_DECISION_GUIDES, getPublishedDecisionGuide } from "@/src/data/published-decision-guides";
 import { getDecisionCategory, relatedDecisionGuides } from "@/src/data/decision-taxonomy";
 import { getPublicationManifestEntry } from "@/src/data/publication-manifest";
@@ -10,7 +11,7 @@ import { GuideVibeNextStep, GuideVibeTopBanner } from "./GuideVibeClient";
 
 const ORIGIN = "https://destinationcommandcenter.com";
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -21,6 +22,7 @@ export function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  await syncDurableLedgerWithPostgres();
   const { slug } = await params;
   const guide = getPublishedDecisionGuide(slug);
   if (!guide) return {};
@@ -41,6 +43,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function PreSiteGuidePage({ params }: Props) {
+  await syncDurableLedgerWithPostgres();
   const { slug } = await params;
   const guide = getPublishedDecisionGuide(slug);
   if (!guide) notFound();

@@ -1,5 +1,7 @@
 import React from "react";
 import Link from "next/link";
+import { getGoSnoRouteSnapshotDisplayPricing } from "@/lib/dcc/applicability";
+import { syncDurableLedgerWithPostgres } from "@/lib/dcc/storage/durableTransactionalStore";
 import {
   evaluateNodeClaimDependencies,
   type EvidenceCitation,
@@ -51,6 +53,10 @@ export default async function TravelReferenceExperience({
   };
   initialSearchParams?: Record<string, string | string[] | undefined>;
 }) {
+  await syncDurableLedgerWithPostgres();
+  const gosnoBreckPricing = getGoSnoRouteSnapshotDisplayPricing({
+    routeId: "DEN-BRECKENRIDGE",
+  });
   const isEmbedded = embeddedMode || embedded;
   const evidenceMap: Record<string, EvidenceCitation> = {};
   for (const item of node.evidenceRegistry) {
@@ -631,6 +637,7 @@ export default async function TravelReferenceExperience({
             config={node.specialistHandoffs}
             nodeId={node.id}
             initialContext={initialContext}
+            gosnoVanOneWayLabel={gosnoBreckPricing.vanOneWayLabel}
           />
         </React.Suspense>
       </section>

@@ -328,7 +328,12 @@ export function resetDurableLedgerStateForTests(
 let pgSchemaEnsured = false;
 
 function resolveStoreKey(): string {
-  return process.env.DCC_DURABLE_STORE_KEY?.trim() || "dcc_core_ledger_v1";
+  const explicitKey = process.env.DCC_DURABLE_STORE_KEY?.trim();
+  if (explicitKey) return explicitKey;
+  if (process.env.VERCEL_ENV?.trim().toLowerCase() === "preview") {
+    return "dcc_core_ledger_preview_v1";
+  }
+  return "dcc_core_ledger_v1";
 }
 
 function shouldSyncToPostgres(): boolean {
@@ -547,24 +552,10 @@ export async function syncDurableLedgerWithPostgres(options?: {
       if (remoteState.stewardLatestSnapshotId && !localDraft.stewardLatestSnapshotId) {
         localDraft.stewardLatestSnapshotId = remoteState.stewardLatestSnapshotId;
       }
-      if (
-        remoteState.gosnoRouteFeedSnapshot &&
-        (!localDraft.gosnoRouteFeedSnapshot ||
-          Date.parse(remoteState.gosnoRouteFeedSnapshot.fetchedAt) >
-            Date.parse(localDraft.gosnoRouteFeedSnapshot.fetchedAt))
-      ) {
+      if (remoteState.gosnoRouteFeedSnapshot) {
         localDraft.gosnoRouteFeedSnapshot = remoteState.gosnoRouteFeedSnapshot;
       }
-      if (
-        remoteState.gosnoRouteFeedRefreshMeta &&
-        (!localDraft.gosnoRouteFeedRefreshMeta ||
-          Date.parse(
-            remoteState.gosnoRouteFeedRefreshMeta.lastRefreshAttemptAt ?? "",
-          ) >=
-            Date.parse(
-              localDraft.gosnoRouteFeedRefreshMeta.lastRefreshAttemptAt ?? "",
-            ))
-      ) {
+      if (remoteState.gosnoRouteFeedRefreshMeta) {
         localDraft.gosnoRouteFeedRefreshMeta =
           remoteState.gosnoRouteFeedRefreshMeta;
       }

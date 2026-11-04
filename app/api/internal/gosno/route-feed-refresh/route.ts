@@ -1,11 +1,15 @@
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import {
   DEFAULT_GOSNO_SNAPSHOT_TTL_MS,
   SCHEDULED_GOSNO_FEED_REFRESH_CRON,
   SCHEDULED_GOSNO_FEED_REFRESH_INTERVAL_MS,
   SCHEDULED_GOSNO_FEED_REFRESH_PATH,
+  createGoSnoRouteFeedSnapshot,
   getActiveGoSnoRouteFeedSnapshotState,
+  getBaselineGoSnoRouteFeedSnapshot,
   refreshGoSnoRouteFeedSnapshot,
+  saveGoSnoRouteFeedSnapshot,
 } from "@/lib/dcc/applicability";
 import {
   buildEarthOSUnauthorizedResponse,
@@ -14,6 +18,55 @@ import {
 import { syncDurableLedgerWithPostgres } from "@/lib/dcc/storage/durableTransactionalStore";
 
 export const dynamic = "force-dynamic";
+
+interface NonProdTestOverride {
+  vailSuvUsd?: number;
+  vailVanUsd?: number;
+  breckSuvUsd?: number;
+  breckVanUsd?: number;
+  forceExpired?: boolean;
+}
+
+function parseNonProdTestOverride(request: Request): NonProdTestOverride | null {
+  if (process.env.VERCEL_ENV?.trim().toLowerCase() === "production") {
+    return null;
+  }
+  try {
+    const url = new URL(request.url);
+    const vailSuvUsd = url.searchParams.get("testVailSuvUsd")
+      ? Number(url.searchParams.get("testVailSuvUsd"))
+      : undefined;
+    const vailVanUsd = url.searchParams.get("testVailVanUsd")
+      ? Number(url.searchParams.get("testVailVanUsd"))
+      : undefined;
+    const breckSuvUsd = url.searchParams.get("testBreckSuvUsd")
+      ? Number(url.searchParams.get("testBreckSuvUsd"))
+      : undefined;
+    const breckVanUsd = url.searchParams.get("testBreckVanUsd")
+      ? Number(url.searchParams.get("testBreckVanUsd"))
+      : undefined;
+    const forceExpired = url.searchParams.get("testExpired") === "1";
+
+    if (
+      (typeof vailSuvUsd === "number" && Number.isFinite(vailSuvUsd)) ||
+      (typeof vailVanUsd === "number" && Number.isFinite(vailVanUsd)) ||
+      (typeof breckSuvUsd === "number" && Number.isFinite(breckSuvUsd)) ||
+      (typeof breckVanUsd === "number" && Number.isFinite(breckVanUsd)) ||
+      forceExpired
+    ) {
+      return {
+        vailSuvUsd,
+        vailVanUsd,
+        breckSuvUsd,
+        breckVanUsd,
+        forceExpired,
+      };
+    }
+  } catch {
+    // ignore
+  }
+  return null;
+}
 
 async function executeScheduledGoSnoFeedRefresh(
   request: Request,
@@ -29,11 +82,92 @@ async function executeScheduledGoSnoFeedRefresh(
 
   try {
     await syncDurableLedgerWithPostgres();
-    const refreshResult = await refreshGoSnoRouteFeedSnapshot({
-      feedUrl: options?.sourceUrl,
-      ttlMs: options?.ttlMs,
-    });
+    const nonProdOverride = parseNonProdTestOverride(request);
+    let refreshResult: Awaited<ReturnType<typeof refreshGoSnoRouteFeedSnapshot>>;
+
+    if (nonProdOverride) {
+      const baseSnap =
+        getActiveGoSnoRouteFeedSnapshotState().snapshot ??
+        getBaselineGoSnoRouteFeedSnapshot();
+      const feedClone = structuredClone(baseSnap.feed);
+      const applyRouteFare = (
+        routeIds: string[],
+        vehicleClass: "suv" | "van",
+        usd?: number,
+      ) => {
+        if (typeof usd !== "number" || !Number.isFinite(usd) || usd <= 0) {
+          return;
+        }
+        for (const r of feedClone.routes) {
+          if (routeIds.includes(r.route_id) && r.vehicle_class === vehicleClass) {
+            r.pricing.amount_usd = usd;
+            r.pricing.amount_cents = Math.round(usd * 100);
+          }
+        }
+      };
+      applyRouteFare(["DEN-VAIL", "VAIL-DEN"], "suv", nonProdOverride.vailSuvUsd);
+      applyRouteFare(["DEN-VAIL", "VAIL-DEN"], "van", nonProdOverride.vailVanUsd);
+      applyRouteFare(
+        ["DEN-BRECKENRIDGE", "BRECKENRIDGE-DEN"],
+        "suv",
+        nonProdOverride.breckSuvUsd,
+      );
+      applyRouteFare(
+        ["DEN-BRECKENRIDGE", "BRECKENRIDGE-DEN"],
+        "van",
+        nonProdOverride.breckVanUsd,
+      );
+
+      const nowMs = Date.now();
+      const fetchedAt = nonProdOverride.forceExpired
+        ? new Date(nowMs - 48 * 60 * 60 * 1000).toISOString()
+        : new Date(nowMs).toISOString();
+      const expiresAt = nonProdOverride.forceExpired
+        ? new Date(nowMs - 24 * 60 * 60 * 1000).toISOString()
+        : new Date(nowMs + DEFAULT_GOSNO_SNAPSHOT_TTL_MS).toISOString();
+
+      const customSnap = createGoSnoRouteFeedSnapshot(feedClone, {
+        fetchedAt,
+        expiresAt,
+        ttlMs: DEFAULT_GOSNO_SNAPSHOT_TTL_MS,
+      });
+      saveGoSnoRouteFeedSnapshot(customSnap, {
+        lastRefreshAttemptAt: new Date(nowMs).toISOString(),
+        lastRefreshStatus: "ok",
+        lastRefreshError: null,
+        consecutiveFailures: 0,
+      });
+      refreshResult = {
+        ok: true,
+        retainedLastValid: false,
+        error: null,
+        snapshot: customSnap,
+        refreshMeta: {
+          lastRefreshAttemptAt: new Date(nowMs).toISOString(),
+          lastRefreshStatus: "ok",
+          lastRefreshError: null,
+          consecutiveFailures: 0,
+        },
+        state: getActiveGoSnoRouteFeedSnapshotState(),
+      };
+    } else {
+      refreshResult = await refreshGoSnoRouteFeedSnapshot({
+        feedUrl: options?.sourceUrl,
+        ttlMs: options?.ttlMs,
+      });
+    }
+
     await syncDurableLedgerWithPostgres({ forcePushLocal: true });
+
+    try {
+      revalidatePath("/transportation/colorado/denver-to-vail-shuttle-guide");
+      revalidatePath("/guides/denver-airport-to-vail-rental-car-vs-private-transfer");
+      revalidatePath("/routes/denver-breckenridge");
+      revalidatePath("/transportation/colorado");
+      revalidatePath("/operators/gosno");
+    } catch {
+      // ignore outside Next.js request context
+    }
 
     const activeState = getActiveGoSnoRouteFeedSnapshotState();
 
@@ -115,3 +249,4 @@ export async function POST(request: Request) {
     ttlMs: body.ttlMs,
   });
 }
+

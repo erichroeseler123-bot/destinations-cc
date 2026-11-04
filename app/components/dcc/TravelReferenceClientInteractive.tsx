@@ -269,6 +269,7 @@ export function SpecialistHandoffInteractive({
   config,
   nodeId,
   initialContext,
+  gosnoVanOneWayLabel = "Check current price with GoSno",
 }: {
   config: TravelReferenceNode["specialistHandoffs"];
   nodeId?: string;
@@ -277,6 +278,7 @@ export function SpecialistHandoffInteractive({
     partySize?: string;
     customChoice?: string;
   };
+  gosnoVanOneWayLabel?: string;
 }) {
   const corridorId = nodeId || "ask-dcc";
   const [travelDate, setTravelDate] = useState<string>(
@@ -726,7 +728,7 @@ export function SpecialistHandoffInteractive({
                     className="rounded-lg border border-amber-400/30 bg-amber-500/10 p-2.5 text-xs text-amber-200"
                     data-testid="gosno-van-gear-fit-notice"
                   >
-                    <strong>{numericParty} Travelers (GoSno Private Van):</strong> Eligible up to 10 passengers, subject to luggage and ski-gear fit and availability ($599 one-way published on gosno.co; live /api/availability returns quoteOnly: true).
+                    <strong>{numericParty} Travelers (GoSno Private Van):</strong> Eligible up to 10 passengers, subject to luggage and ski-gear fit and availability ({gosnoVanOneWayLabel} published on gosno.co; live /api/availability returns quoteOnly: true).
                   </p>
                 )}
                 {isIneligibleSingleGoSnoVan && groupVehicleSuggestion && (

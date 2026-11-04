@@ -815,12 +815,16 @@ const pages: DecisionEnginePage[] = [
 
 export const DECISION_ENGINE_PAGES: DecisionEnginePage[] = pages.map((entry) => {
   const parsed = DecisionEnginePageSchema.parse(entry);
-  if (parsed.canonicalPath === "/regions/colorado/breckenridge") {
+  if (
+    parsed.id === "route-denver-breckenridge" ||
+    parsed.canonicalPath === "/routes/denver-breckenridge" ||
+    parsed.canonicalPath === "/regions/colorado/breckenridge"
+  ) {
     Object.defineProperty(parsed, "howToGetThere", {
       enumerable: true,
       get() {
         const breck = getGoSnoRouteSnapshotDisplayPricing({
-          routeId: "DEN-BRECK",
+          routeId: "DEN-BRECKENRIDGE",
         });
         return [
           `Private & Shared Airport Transfers from DEN Level 5: GoSno (100% private AWD SUVs up to 6 pax at ${breck.suvOneWayLabel} or private vans up to 10 pax at ${breck.vanPriceLabel} published / quoteOnly: true on /api/availability, subject to luggage and ski-gear fit; 11+ passengers exceed a single GoSno van) and Epic Mountain Express / Summit Express (per-seat shared shuttles and private charters).`,

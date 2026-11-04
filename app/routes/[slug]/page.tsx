@@ -5,6 +5,7 @@ import DecisionEngineTemplate from "@/app/components/dcc/DecisionEngineTemplate"
 import TravelReferenceExperience from "@/app/components/dcc/TravelReferenceExperience";
 import RideOptionsCard from "@/app/components/transportation/RideOptionsCard";
 import { getPublishedTravelReferenceNodeById } from "@/lib/dcc/travelReference";
+import { syncDurableLedgerWithPostgres } from "@/lib/dcc/storage/durableTransactionalStore";
 import { getSurface, hasSurfaceEntity } from "@/lib/dcc/surfaces/getSurface";
 import {
   getDecisionEnginePageByPath,
@@ -13,7 +14,7 @@ import {
 
 import { getPublicationManifestEntry } from "@/src/data/publication-manifest";
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 type Params = { slug: string };
 
@@ -28,6 +29,7 @@ export async function generateMetadata({
 }: {
   params: Promise<Params>;
 }): Promise<Metadata> {
+  await syncDurableLedgerWithPostgres();
   const { slug } = await params;
   const entityKey = `route:${slug}`;
   const surface =
@@ -53,6 +55,7 @@ export default async function RouteDecisionPage({
 }: {
   params: Promise<Params>;
 }) {
+  await syncDurableLedgerWithPostgres();
   const { slug } = await params;
 
   const entityKey = `route:${slug}`;

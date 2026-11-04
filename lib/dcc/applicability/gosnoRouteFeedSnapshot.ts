@@ -5,6 +5,7 @@ import {
   readDurableLedgerState,
   runDurableLedgerTransaction,
 } from "../storage/durableTransactionalStore";
+import { registerGoSnoDisplayPricingResolver } from "../travelReferenceCore";
 import type { CorridorId } from "./contextModel";
 
 export const GOSNO_ROUTE_FEED_URL = "https://gosno.co/api/public/route-feed" as const;
@@ -925,6 +926,15 @@ export function resolveGoSnoRouteContext(params: {
   if (!explicitRouteId && normalizedOfferId) {
     explicitRouteId = normalizedOfferId.replace(/-(SUV|VAN)$/, "");
   }
+  const ROUTE_ID_ALIASES: Record<string, string> = {
+    "DEN-BRECK": "DEN-BRECKENRIDGE",
+    "BRECK-DEN": "BRECKENRIDGE-DEN",
+    "COS-BRECK": "COS-BRECKENRIDGE",
+    "BRECK-COS": "BRECKENRIDGE-COS",
+  };
+  if (explicitRouteId && ROUTE_ID_ALIASES[explicitRouteId]) {
+    explicitRouteId = ROUTE_ID_ALIASES[explicitRouteId];
+  }
 
   if (explicitRouteId) {
     const matchedInFeed = snapshot.feed.routes.find(
@@ -1494,3 +1504,6 @@ export function getGoSnoRouteSnapshotDisplayPricing(params: {
     roundTripSuvPriceLabel,
   };
 }
+
+registerGoSnoDisplayPricingResolver(getGoSnoRouteSnapshotDisplayPricing);
+

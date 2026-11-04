@@ -1,16 +1,21 @@
 import { eq } from "drizzle-orm";
 import { earthosControlMapFindings } from "@/lib/db/schema";
+import { getGoSnoRouteSnapshotDisplayPricing } from "@/lib/dcc/applicability";
 import { getRequiredEarthosDb } from "@/lib/dcc/earthos/ensureEarthosSchema";
+import { syncDurableLedgerWithPostgres } from "@/lib/dcc/storage/durableTransactionalStore";
 import {
   applyPublishedReferenceNodeOverride,
   buildReferenceOverrideFindingId,
   DISALLOWED_PRODUCTION_TEST_URLS,
   getBaseTravelReferenceNodeById,
+  registerGoSnoDisplayPricingResolver,
   resolveEarthosEnvironmentScope,
   type EarthosEnvironmentScope,
   type PublishedReferenceNodeOverride,
   type TravelReferenceNode,
 } from "./travelReferenceCore";
+
+registerGoSnoDisplayPricingResolver(getGoSnoRouteSnapshotDisplayPricing);
 
 export * from "./travelReferenceCore";
 
@@ -57,6 +62,7 @@ export async function readPublishedReferenceNodeOverrideFromDb(
 export async function getPublishedTravelReferenceNodeById(
   id: TravelReferenceNode["id"],
 ): Promise<TravelReferenceNode> {
+  await syncDurableLedgerWithPostgres();
   const override = await readPublishedReferenceNodeOverrideFromDb(id);
   return applyPublishedReferenceNodeOverride(getBaseTravelReferenceNodeById(id), override);
 }
@@ -70,3 +76,4 @@ export async function getAllPublishedTravelReferenceNodes(): Promise<TravelRefer
     getPublishedTravelReferenceNodeById("las-vegas"),
   ]);
 }
+

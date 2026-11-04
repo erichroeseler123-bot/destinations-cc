@@ -10,6 +10,7 @@ import {
   buildBreadcrumbJsonLd,
   buildWebPageJsonLd,
 } from "@/lib/dcc/jsonld";
+import { syncDurableLedgerWithPostgres } from "@/lib/dcc/storage/durableTransactionalStore";
 import { getPublicationManifestEntry } from "@/src/data/publication-manifest";
 import {
   DENVER_TO_VAIL_SHUTTLE_GUIDE_PATH,
@@ -19,7 +20,7 @@ import {
 const PAGE_PATH = DENVER_TO_VAIL_SHUTTLE_GUIDE_PATH;
 const manifestEntry = getPublicationManifestEntry(PAGE_PATH);
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Denver to Vail Shuttle Guide | Timing, Group Fit, and Transfer Logic",
@@ -32,7 +33,8 @@ export const metadata: Metadata = {
   },
 };
 
-export default function DenverToVailShuttleGuidePage() {
+export default async function DenverToVailShuttleGuidePage() {
+  await syncDurableLedgerWithPostgres();
   const {
     vailGuide,
     vailPricing,

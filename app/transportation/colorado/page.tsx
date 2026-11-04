@@ -4,12 +4,13 @@ import NextStepEngine from "@/app/components/dcc/NextStepEngine";
 import TravelReferenceExperience from "@/app/components/dcc/TravelReferenceExperience";
 import RideOptionsCard from "@/app/components/transportation/RideOptionsCard";
 import { getColoradoTransferRecommendationActions } from "@/lib/dcc/handoffAnalytics";
+import { syncDurableLedgerWithPostgres } from "@/lib/dcc/storage/durableTransactionalStore";
 import { getTravelReferenceNodeById } from "@/lib/dcc/travelReference";
 import { getTransportEntriesByRegion } from "@/src/data/transport-directory";
 
 import { getPublicationManifestEntry } from "@/src/data/publication-manifest";
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 const manifestEntry = getPublicationManifestEntry("/transportation/colorado");
 
@@ -48,6 +49,7 @@ const GROUPS = [
 ];
 
 export default async function ColoradoTransportationPage() {
+  await syncDurableLedgerWithPostgres();
   const actions = getColoradoTransferRecommendationActions();
   const entries = getTransportEntriesByRegion("Colorado");
   const bySlug = new Map(entries.map((entry) => [entry.slug, entry]));
