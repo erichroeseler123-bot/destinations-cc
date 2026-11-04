@@ -40,6 +40,7 @@ export interface DccBookingHoldRequest {
   notes?: string;
   idempotencyKey?: string;
   resellerId?: string;
+  resellerReference?: string;
   orderId?: string;
 }
 
@@ -74,6 +75,7 @@ export interface DccBookingConfirmRequest {
   requireVerifiedPayment?: boolean;
   idempotencyKey?: string;
   resellerId?: string;
+  resellerReference?: string;
   orderId?: string;
 }
 

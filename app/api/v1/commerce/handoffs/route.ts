@@ -8,7 +8,10 @@ import {
 import { getV03ReceiptWithFallback } from "@/lib/dcc/machine/v03/runtimeStoreV03";
 import {
   createCommercialHandoff,
+  enforceAndResolveWtaAffiliateAttribution,
   getCommercialHandoffById,
+  WTA_AFFILIATE_DOMAIN,
+  WtaAffiliateProductionGateError,
   type CommercialPartyDetails,
   type CommercialProvider,
 } from "@/lib/dcc/commerce";
@@ -267,12 +270,86 @@ export async function POST(request: Request) {
         )
       : null;
 
+  const explicitPartnerAttribution =
+    body.approvedPartnerAttribution &&
+    typeof body.approvedPartnerAttribution === "object" &&
+    typeof (body.approvedPartnerAttribution as Record<string, unknown>).partnerId ===
+      "string"
+      ? {
+          partnerId: String(
+            (body.approvedPartnerAttribution as Record<string, unknown>).partnerId,
+          ),
+          partnerName:
+            typeof (body.approvedPartnerAttribution as Record<string, unknown>)
+              .partnerName === "string"
+              ? String(
+                  (body.approvedPartnerAttribution as Record<string, unknown>)
+                    .partnerName,
+                )
+              : null,
+        }
+      : null;
+
+  const requestedOriginatingSite = String(
+    body.originatingSite ??
+      body.site ??
+      (callerClientId.startsWith("partner:welcome-to-alaska:")
+        ? WTA_AFFILIATE_DOMAIN
+        : "destinationcommandcenter.com"),
+  );
+
+  let resolvedPartnerAttribution = explicitPartnerAttribution;
+  try {
+    const wtaCheck = enforceAndResolveWtaAffiliateAttribution({
+      callerClientId,
+      originatingSite: requestedOriginatingSite,
+      approvedPartnerAttribution: explicitPartnerAttribution,
+    });
+    if (wtaCheck.isWtaAffiliate && wtaCheck.approvedPartnerAttribution) {
+      resolvedPartnerAttribution = wtaCheck.approvedPartnerAttribution;
+    }
+  } catch (err) {
+    if (err instanceof WtaAffiliateProductionGateError) {
+      return buildMachineJsonResponse(
+        {
+          ok: false,
+          error: {
+            code: err.code,
+            message: err.message,
+            missingProductionRequirements:
+              err.gateStatus.missingProductionRequirements,
+            gateStatus: err.gateStatus,
+          },
+          traceparent,
+        },
+        { status: err.statusCode, cacheControl: "no-store", extraHeaders: { traceparent } },
+      );
+    }
+    const status =
+      typeof (err as { statusCode?: number })?.statusCode === "number"
+        ? (err as { statusCode: number }).statusCode
+        : 403;
+    const code =
+      typeof (err as { code?: string })?.code === "string"
+        ? (err as { code: string }).code
+        : "PARTNER_ENROLLMENT_REJECTED";
+    return buildMachineJsonResponse(
+      {
+        ok: false,
+        error: {
+          code,
+          message: err instanceof Error ? err.message : "Partner enrollment check failed.",
+        },
+        traceparent,
+      },
+      { status, cacheControl: "no-store", extraHeaders: { traceparent } },
+    );
+  }
+
   let record;
   try {
     record = await createCommercialHandoff({
-      originatingSite: String(
-        body.originatingSite ?? body.site ?? "destinationcommandcenter.com",
-      ),
+      originatingSite: requestedOriginatingSite,
       targetSite: typeof body.targetSite === "string" ? body.targetSite : null,
       provider: providerRaw,
       providerAccount:
@@ -346,25 +423,7 @@ export async function POST(request: Request) {
         typeof body.quotedPriceAmount === "number" ? body.quotedPriceAmount : null,
       quotedPriceCurrency:
         typeof body.quotedPriceCurrency === "string" ? body.quotedPriceCurrency : null,
-      approvedPartnerAttribution:
-        body.approvedPartnerAttribution &&
-        typeof body.approvedPartnerAttribution === "object" &&
-        typeof (body.approvedPartnerAttribution as Record<string, unknown>).partnerId ===
-          "string"
-          ? {
-              partnerId: String(
-                (body.approvedPartnerAttribution as Record<string, unknown>).partnerId,
-              ),
-              partnerName:
-                typeof (body.approvedPartnerAttribution as Record<string, unknown>)
-                  .partnerName === "string"
-                  ? String(
-                      (body.approvedPartnerAttribution as Record<string, unknown>)
-                        .partnerName,
-                    )
-                  : null,
-            }
-          : null,
+      approvedPartnerAttribution: resolvedPartnerAttribution,
       callerClientId,
       traceparent,
       metadata:

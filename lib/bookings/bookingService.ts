@@ -1668,6 +1668,14 @@ export class DccBookingService {
     const mergedParticipants =
       confirmedResult.participants || params.participants || bookingRecord?.participants;
 
+    const effectivePublisherId =
+      bookingRecord?.resellerId || params.resellerId || "dcc-authorized-reseller";
+    const effectiveResellerReference =
+      params.resellerReference ||
+      confirmedResult.resellerReference ||
+      bookingRecord?.resellerReference ||
+      dccBookingId;
+
     // Update DB status to CONFIRMED without swallowing persistence failures
     try {
       if (simulatePersistenceFailureForTests) {
@@ -1678,6 +1686,7 @@ export class DccBookingService {
           .update(octoBookings)
           .set({
             status: "CONFIRMED",
+            resellerReference: effectiveResellerReference,
             contact: packContactWithDccMeta(mergedContact, {
               pickupLocation: mergedPickup,
               customFields: mergedCustomFields,
@@ -1721,6 +1730,8 @@ export class DccBookingService {
       orderId: params.orderId,
       dccReference: dccBookingId,
       supplierReference: confirmedResult.supplierReference || bookingRecord?.supplierReference,
+      publisherId: effectivePublisherId,
+      resellerReference: effectiveResellerReference,
       operatorSlug: connection.operatorSlug,
       operatorName: connection.operatorName,
       currency: confirmedResult.currency,
@@ -1737,12 +1748,15 @@ export class DccBookingService {
       metadata: {
         confirmedAt: confirmedResult.confirmedAt,
         voucherCode: confirmedResult.voucher?.code,
+        publisherId: effectivePublisherId,
+        resellerReference: effectiveResellerReference,
       },
     });
 
     const updated: OctoBookingResult = {
       ...confirmedResult,
       id: dccBookingId,
+      resellerReference: effectiveResellerReference,
       contact: mergedContact,
       pickupLocation: mergedPickup,
       customFields: mergedCustomFields,
@@ -1757,6 +1771,8 @@ export class DccBookingService {
       bookingUuid: confirmedResult.uuid || bookingUuid,
       uuid: confirmedResult.uuid || bookingUuid,
       orderId: params.orderId || bookingRecord?.orderId,
+      resellerId: effectivePublisherId,
+      resellerReference: effectiveResellerReference,
       supplierConnectionId,
       status: "CONFIRMED",
       lifecycleStates,

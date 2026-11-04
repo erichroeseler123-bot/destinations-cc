@@ -367,7 +367,7 @@ export async function executePortfolioCrossSiteJourney(params: {
       productCode: "MSY_AIRBOAT_SMALL_BAYOU",
       productTitle: "Small-Boat High-Speed Airboat Swamp Adventure with French Quarter Pickup",
       productDestinationUrl:
-        "https://fareharbor.com/embeds/book/neworleansairboat/items/102400/",
+        "https://fareharbor.com/embeds/book/ragincajuntours/items/228524/",
       campaign: "wts-city-to-swamp",
       contextId: issued.contextId,
       evaluationRunId: assurance.evaluationRunId,

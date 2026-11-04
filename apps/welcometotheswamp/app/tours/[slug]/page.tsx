@@ -182,7 +182,7 @@ export default async function TourDetailPage({ params, searchParams }: PageProps
         crossSiteLinks={[
           {
             label: "Compare New Orleans Tours on Welcome to New Orleans Tours",
-            href: `https://www.welcometoneworleanstours.com/tours/airboat-small${ctxQuery}`,
+            href: `https://www.welcometoneworleanstours.com/tours/small-airboat-swamp-adventure${ctxQuery}`,
           },
           {
             label: "View DCC Swamp Fast Pass",

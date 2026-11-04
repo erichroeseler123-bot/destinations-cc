@@ -30,6 +30,21 @@ export function CruiseWindowCalculator({
     return docksForPort.length > 0 ? docksForPort[0][0] : "franklin-dock";
   });
 
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const sp = new URLSearchParams(window.location.search);
+    const arr =
+      sp.get("shipArrivalTime") ||
+      sp.get("arrival_time") ||
+      sp.get("arrival");
+    const aboard =
+      sp.get("allAboardTime") ||
+      sp.get("departure_time") ||
+      sp.get("allAboard");
+    if (arr) setArrivalTime(arr);
+    if (aboard) setAllAboardTime(aboard);
+  }, []);
+
   const availableDocks = useMemo(() => {
     return Object.entries(DOCK_TRANSFERS).filter(([, d]) => d.portSlug === portSlug);
   }, [portSlug]);

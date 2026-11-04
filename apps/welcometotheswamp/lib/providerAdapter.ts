@@ -120,7 +120,7 @@ export const CURATED_SWAMP_CATALOG: CuratedSwampTour[] = [
     dockDriveMinutes: 40,
     pickupLeadMinutes: 0,
     bookingCutoffMinutes: 45,
-    bookingUrl: "https://www.viator.com/tours/New-Orleans/New-Orleans-Airboat-Tour/d675-112604P2",
+    bookingUrl: "https://www.viator.com/tours/New-Orleans/New-Orleans-Airboat-Tour/d675-112604P2?pid=P00058396&mcid=42383&medium=link",
   },
   {
     productCode: "AIRBOAT_ADV_LARGE_PICKUP",
@@ -137,7 +137,7 @@ export const CURATED_SWAMP_CATALOG: CuratedSwampTour[] = [
     dockDriveMinutes: 40,
     pickupLeadMinutes: 80,
     bookingCutoffMinutes: 120,
-    bookingUrl: "https://www.viator.com/tours/New-Orleans/New-Orleans-Airboat-Tour/d675-112604P2",
+    bookingUrl: "https://www.viator.com/tours/New-Orleans/New-Orleans-Airboat-Tour/d675-112604P2?pid=P00058396&mcid=42383&medium=link",
   },
   {
     productCode: "JEAN_LAFITTE_AIRBOAT_DRIVE",
@@ -154,7 +154,7 @@ export const CURATED_SWAMP_CATALOG: CuratedSwampTour[] = [
     dockDriveMinutes: 40,
     pickupLeadMinutes: 0,
     bookingCutoffMinutes: 60,
-    bookingUrl: "https://www.viator.com/tours/New-Orleans/Airboat-Swamp-Tour-at-Jean-Lafitte-Historical-Park/d675-2244P1",
+    bookingUrl: "https://www.viator.com/tours/New-Orleans/Airboat-Swamp-Tour-at-Jean-Lafitte-Historical-Park/d675-2244P1?pid=P00058396&mcid=42383&medium=link",
   },
 ];
 

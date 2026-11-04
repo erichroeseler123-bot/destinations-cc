@@ -201,7 +201,7 @@ export default async function NewOrleansSwampToursPage() {
             },
             {
               label: "Open Welcome to New Orleans Tours",
-              href: `https://www.welcometoneworleanstours.com/tours/airboat-small${ctxQuery}`,
+              href: `https://www.welcometoneworleanstours.com/tours/small-airboat-swamp-adventure${ctxQuery}`,
             },
           ]}
         />

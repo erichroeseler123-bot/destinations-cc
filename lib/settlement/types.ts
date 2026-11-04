@@ -46,6 +46,8 @@ export interface CreateSettlementParams {
   orderItemId?: string;
   dccReference: string;
   supplierReference?: string;
+  publisherId?: string;
+  resellerReference?: string;
   operatorSlug: string;
   operatorName: string;
   currency: string;
@@ -81,6 +83,8 @@ export interface DccSettlementLedgerEntry {
   orderItemId?: string;
   dccReference: string;
   supplierReference?: string;
+  publisherId?: string;
+  resellerReference?: string;
   operatorSlug: string;
   operatorName: string;
   currency: string;

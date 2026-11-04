@@ -32,7 +32,11 @@ export default async function HelicopterPage({
   const resolvedSearch = searchParams ? await searchParams : {};
   const firstStr = (v: string | string[] | undefined) =>
     Array.isArray(v) ? v[0] : v;
-  const dateParam = firstStr(resolvedSearch.date) || firstStr(resolvedSearch.arrivalDate) || null;
+  const dateParam =
+    firstStr(resolvedSearch.date) ||
+    firstStr(resolvedSearch.port_date) ||
+    firstStr(resolvedSearch.arrivalDate) ||
+    null;
   const rawParty =
     firstStr(resolvedSearch.party_size) ||
     firstStr(resolvedSearch.travelers) ||

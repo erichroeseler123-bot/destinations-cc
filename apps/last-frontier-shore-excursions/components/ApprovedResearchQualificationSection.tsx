@@ -30,6 +30,9 @@ export function ApprovedResearchQualificationSection({
   const [dockKey, setDockKey] = useState<string>(
     portSlug === "ketchikan" ? "ketchikan-berths-1-4" : "franklin-dock",
   );
+  const [jfdHandoffHref, setJfdHandoffHref] = useState<string>(
+    "https://juneauflightdeck.com/handoff/dcc?interest=helicopter",
+  );
   const [loading, setLoading] = useState<boolean>(false);
 
   const fetchLiveQualifications = async (params?: {
@@ -67,7 +70,41 @@ export function ApprovedResearchQualificationSection({
   };
 
   useEffect(() => {
-    void fetchLiveQualifications();
+    let initialArr = "";
+    let initialAboard = "";
+    if (typeof window !== "undefined") {
+      const sp = new URLSearchParams(window.location.search);
+      initialArr =
+        sp.get("shipArrivalTime") ||
+        sp.get("arrival_time") ||
+        sp.get("arrival") ||
+        "";
+      initialAboard =
+        sp.get("allAboardTime") ||
+        sp.get("departure_time") ||
+        sp.get("allAboard") ||
+        "";
+      if (initialArr) setShipArrival(initialArr);
+      if (initialAboard) setAllAboard(initialAboard);
+
+      const jfdParams = new URLSearchParams({ interest: "helicopter" });
+      const dateVal = sp.get("date") || sp.get("port_date");
+      const partyVal = sp.get("party_size") || sp.get("passengers") || sp.get("travelers");
+      const shipVal = sp.get("cruise_ship") || sp.get("ship");
+      const handoffVal = sp.get("dcc_handoff_id");
+      if (dateVal) {
+        jfdParams.set("date", dateVal);
+        jfdParams.set("port_date", dateVal);
+      }
+      if (partyVal) jfdParams.set("party_size", partyVal);
+      if (shipVal) jfdParams.set("ship", shipVal);
+      if (handoffVal) jfdParams.set("dcc_handoff_id", handoffVal);
+      setJfdHandoffHref(`https://juneauflightdeck.com/handoff/dcc?${jfdParams.toString()}`);
+    }
+    void fetchLiveQualifications({
+      arrival: initialArr || undefined,
+      allAboard: initialAboard || undefined,
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [portSlug, activitySlug]);
 
@@ -505,6 +542,21 @@ export function ApprovedResearchQualificationSection({
                       direct-operator research):{" "}
                       <code>{q.isolatedViatorResellerSkus.join(", ")}</code>.
                     </span>
+                  )}
+                  {portSlug === "juneau" && (
+                    <div style={{ marginTop: 8 }}>
+                      <a
+                        href={jfdHandoffHref}
+                        data-testid="lfse-to-jfd-handoff-link"
+                        style={{
+                          color: "var(--forest)",
+                          fontWeight: 700,
+                          textDecoration: "underline",
+                        }}
+                      >
+                        Compare Juneau Helicopter &amp; Glacier Flight Formats on Juneau Flight Deck →
+                      </a>
+                    </div>
                   )}
                 </div>
               </article>

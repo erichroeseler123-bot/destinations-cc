@@ -675,6 +675,11 @@ const nextConfig = {
     const runtimeRedirects = buildRuntimeRedirects();
     return [
       {
+        source: "/tours/airboat-small",
+        destination: "/tours/small-airboat-swamp-adventure",
+        permanent: true,
+      },
+      {
         source: "/:path*",
         has: [{ type: "host", value: "www.welcometoneworleanstours.com" }],
         destination: "https://welcometoneworleanstours.com/:path*",

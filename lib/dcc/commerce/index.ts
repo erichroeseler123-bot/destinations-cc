@@ -33,6 +33,7 @@ import {
 } from "./opaqueAttributionLedger";
 
 export * from "./opaqueAttributionLedger";
+export * from "./wtaAffiliateEnrollment";
 
 export type CommercialProvider =
   | "viator"

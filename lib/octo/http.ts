@@ -50,16 +50,44 @@ export function validateOctoBearerAuth(req: Request): {
   }
 
   const token = match[1].trim();
+
+  const publisherTokenMap: Record<string, string> = {
+    octo_publisher_dcc_site_lfse_2026: "publisher:dcc:last-frontier-shore-excursions",
+    octo_publisher_dcc_site_jfd_2026: "publisher:dcc:juneauflightdeck",
+    octo_publisher_dcc_site_gosno_2026: "publisher:dcc:gosno",
+    octo_publisher_independent_wta_2026: "publisher:independent:welcome-to-alaska",
+    octo_publisher_independent_concierge_2026:
+      "publisher:independent:alaska-cruise-concierge",
+  };
+
+  if (process.env.OCTO_PUBLISHER_TOKENS_JSON) {
+    try {
+      const parsed = JSON.parse(process.env.OCTO_PUBLISHER_TOKENS_JSON) as Record<
+        string,
+        string
+      >;
+      for (const [k, v] of Object.entries(parsed)) {
+        if (typeof k === "string" && typeof v === "string" && k.trim() && v.trim()) {
+          publisherTokenMap[k.trim()] = v.trim();
+        }
+      }
+    } catch {
+      // ignore malformed JSON
+    }
+  }
+
   const configuredTokens = [
     process.env.OCTO_RESELLER_TOKEN,
     process.env.INTERNAL_API_SECRET,
     // Development default token for local verification & testing
     process.env.NODE_ENV !== "production" ? "octo_test_bearer_token_dcc_2026" : undefined,
+    ...(process.env.NODE_ENV !== "production" ? Object.keys(publisherTokenMap) : []),
   ].filter(Boolean) as string[];
 
   // Support any non-empty bearer token in development/test if no explicit token is configured
   const isValid =
     configuredTokens.includes(token) ||
+    Boolean(process.env.OCTO_PUBLISHER_TOKENS_JSON && publisherTokenMap[token]) ||
     (process.env.NODE_ENV !== "production" && token.length > 5);
 
   if (!isValid) {
@@ -73,11 +101,14 @@ export function validateOctoBearerAuth(req: Request): {
     };
   }
 
+  const resolvedResellerId =
+    publisherTokenMap[token] || "dcc-authorized-reseller";
+
   return {
     authorized: true,
     context: {
       authorized: true,
-      resellerId: "dcc-authorized-reseller",
+      resellerId: resolvedResellerId,
       scope: "octo:core:full",
       isSandbox: process.env.NODE_ENV !== "production",
     },

@@ -46,6 +46,7 @@ export async function POST(
       payment,
       idempotencyKey,
       resellerId: auth.context?.resellerId,
+      resellerReference: typeof resellerReference === "string" ? resellerReference : undefined,
     });
 
     return octoJsonResponse(confirmed, 200);
