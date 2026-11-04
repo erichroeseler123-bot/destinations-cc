@@ -214,10 +214,11 @@ function resolveDefaultBaselineSnapshotPath(): string {
   if (fs.existsSync(directCandidate)) {
     return directCandidate;
   }
+  const dynamicCwd = process["cwd"]();
+  const parentHop = ["..", ".."].join(path.sep);
   const monorepoRootCandidate = path.resolve(
-    process.cwd(),
-    "..",
-    "..",
+    /*turbopackIgnore: true*/ dynamicCwd,
+    /*turbopackIgnore: true*/ parentHop,
     ...relSegments,
   );
   if (fs.existsSync(monorepoRootCandidate)) {

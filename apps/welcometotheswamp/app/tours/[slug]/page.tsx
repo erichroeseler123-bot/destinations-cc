@@ -96,9 +96,20 @@ export default async function TourDetailPage({ params, searchParams }: PageProps
   const asn = SITE_CONFIG.fareharborSwampAsn;
 
   // Build the backup direct FareHarbor booking link
+  const fhDirectParams = new URLSearchParams({
+    asn,
+    flow: String(product.flowId || ""),
+    ref: `wts-detail-${slug}`,
+  });
+  if (carriedContext.payload.date) {
+    fhDirectParams.set("date", carriedContext.payload.date);
+  }
+  if (carriedContext.payload.partySize) {
+    fhDirectParams.set("party_size", String(carriedContext.payload.partySize));
+  }
   const directLink = product.itemId
-    ? `https://fareharbor.com/embeds/book/${product.companyShortname}/items/${product.itemId}/?asn=${asn}&flow=${product.flowId || ""}&ref=wts-detail-${slug}`
-    : `https://fareharbor.com/embeds/book/${product.companyShortname}/?asn=${asn}&flow=${product.flowId || ""}&ref=wts-detail-${slug}`;
+    ? `https://fareharbor.com/embeds/book/${product.companyShortname}/items/${product.itemId}/?${fhDirectParams.toString()}`
+    : `https://fareharbor.com/embeds/book/${product.companyShortname}/?${fhDirectParams.toString()}`;
 
   const fhHandoffHref = buildPortfolioHandoffUrl({
     originatingSite: "welcometotheswamp.com",
@@ -148,7 +159,7 @@ export default async function TourDetailPage({ params, searchParams }: PageProps
           <p className="wts-hero-summary" style={{ color: "rgba(255, 255, 255, 0.9)", fontSize: "15px", lineHeight: "1.5" }}>
             {product.description}
           </p>
-          <div style={{ marginTop: "12px" }}>
+          <div style={{ marginTop: "12px", display: "flex", gap: "10px", flexWrap: "wrap" }}>
             <a
               href={fhHandoffHref}
               data-dcc-handoff-link="true"
@@ -156,6 +167,14 @@ export default async function TourDetailPage({ params, searchParams }: PageProps
               style={{ padding: "12px 24px", fontSize: "13px", fontWeight: 700, borderRadius: "12px" }}
             >
               Book Direct Now
+            </a>
+            <a
+              href={directLink}
+              data-fareharbor-direct-link="true"
+              className="wts-button fh-book"
+              style={{ padding: "12px 18px", fontSize: "12px", fontWeight: 700, borderRadius: "12px", border: "1px solid rgba(255,255,255,0.35)", color: "#fff" }}
+            >
+              Open FareHarbor Checkout
             </a>
           </div>
         </div>
@@ -206,6 +225,8 @@ export default async function TourDetailPage({ params, searchParams }: PageProps
             campaign={`wts-detail-${slug}`}
             itemId={product.itemId}
             flowId={product.flowId}
+            intendedDate={carriedContext.payload.date || null}
+            partySize={carriedContext.payload.partySize || null}
             layout="calendar"
             className="wts-availability-widget"
           />

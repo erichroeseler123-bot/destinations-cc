@@ -71,8 +71,26 @@ export default async function HomePage({
     partySize: carriedContext.payload.partySize || null,
   });
 
-  const ctxSuffix = carriedContext.contextId
-    ? `?ctx=${encodeURIComponent(carriedContext.contextId)}`
+  const crossSiteParams = new URLSearchParams();
+  if (carriedContext.contextId) {
+    crossSiteParams.set("ctx", carriedContext.contextId);
+  }
+  if (carriedContext.payload.date) {
+    crossSiteParams.set("date", carriedContext.payload.date);
+  }
+  if (carriedContext.payload.partySize) {
+    crossSiteParams.set("party_size", String(carriedContext.payload.partySize));
+  }
+  const pickupParam = Array.isArray(sp.pickup) ? sp.pickup[0] : sp.pickup;
+  const boatTypeParam = Array.isArray(sp.boat_type) ? sp.boat_type[0] : sp.boat_type;
+  if (typeof pickupParam === "string" && pickupParam.trim()) {
+    crossSiteParams.set("pickup", pickupParam.trim());
+  }
+  if (typeof boatTypeParam === "string" && boatTypeParam.trim()) {
+    crossSiteParams.set("boat_type", boatTypeParam.trim());
+  }
+  const ctxSuffix = crossSiteParams.toString()
+    ? `?${crossSiteParams.toString()}`
     : "";
 
   return (

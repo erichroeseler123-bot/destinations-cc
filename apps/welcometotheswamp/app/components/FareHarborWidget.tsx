@@ -8,6 +8,8 @@ interface FareHarborWidgetProps {
   layout?: "calendar" | "grid";
   refCode?: string;
   campaign?: string;
+  intendedDate?: string | null;
+  partySize?: number | string | null;
   className?: string;
 }
 
@@ -18,6 +20,8 @@ export default function FareHarborWidget({
   layout = "calendar",
   refCode,
   campaign,
+  intendedDate,
+  partySize,
   className,
 }: FareHarborWidgetProps) {
   // If the companyShortname is missing, show the dev-only message
@@ -65,6 +69,12 @@ export default function FareHarborWidget({
   // Set ref for campaign / source tracking
   if (campaign) {
     embedUrl.searchParams.set("ref", campaign);
+  }
+  if (intendedDate) {
+    embedUrl.searchParams.set("date", String(intendedDate));
+  }
+  if (partySize) {
+    embedUrl.searchParams.set("party_size", String(partySize));
   }
 
   return (

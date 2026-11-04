@@ -135,7 +135,29 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
     partySize: carriedContext.payload.partySize || null,
     useRelativePath: !isWto,
   });
-  const ctxQuery = carriedContext.contextId ? `?ctx=${encodeURIComponent(carriedContext.contextId)}` : "";
+  const crossSiteParams = new URLSearchParams();
+  if (carriedContext.contextId) {
+    crossSiteParams.set("ctx", carriedContext.contextId);
+  }
+  if (carriedContext.payload.date) {
+    crossSiteParams.set("date", carriedContext.payload.date);
+  }
+  if (carriedContext.payload.partySize) {
+    crossSiteParams.set("party_size", String(carriedContext.payload.partySize));
+  }
+  const rawPickup = Array.isArray(resolvedSearchParams.pickup)
+    ? resolvedSearchParams.pickup[0]
+    : resolvedSearchParams.pickup;
+  const rawBoatType = Array.isArray(resolvedSearchParams.boat_type)
+    ? resolvedSearchParams.boat_type[0]
+    : resolvedSearchParams.boat_type;
+  if (typeof rawPickup === "string" && rawPickup.trim()) {
+    crossSiteParams.set("pickup", rawPickup.trim());
+  }
+  if (typeof rawBoatType === "string" && rawBoatType.trim()) {
+    crossSiteParams.set("boat_type", rawBoatType.trim());
+  }
+  const ctxQuery = crossSiteParams.toString() ? `?${crossSiteParams.toString()}` : "";
 
   const recommendedParam = typeof resolvedSearchParams.recommended === "string" ? resolvedSearchParams.recommended : "";
   let recommendationExplanation = "";

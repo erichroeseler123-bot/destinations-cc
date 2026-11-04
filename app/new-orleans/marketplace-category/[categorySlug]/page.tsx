@@ -541,6 +541,22 @@ export default async function CategoryPage({
             siteDomain="welcometoneworleanstours.com"
             assurance={swampAssurance}
             handoffActions={[]}
+            crossSiteLinks={[
+              {
+                label: "Compare Swamp Airboats vs Boats on Welcome to the Swamp →",
+                href: (() => {
+                  const p = new URLSearchParams();
+                  p.set("date", selectedDate);
+                  p.set("party_size", selectedPartySize);
+                  const pickup = firstStr(resolvedSearch.pickup);
+                  const boatType = firstStr(resolvedSearch.boat_type);
+                  if (pickup) p.set("pickup", pickup);
+                  if (boatType) p.set("boat_type", boatType);
+                  p.set("source", `wno-${resolvedParams.categorySlug}`);
+                  return `https://www.welcometotheswamp.com/tours/airboat-tour?${p.toString()}`;
+                })(),
+              },
+            ]}
           />
         )}
 
