@@ -1896,6 +1896,20 @@ export function computeOutcomeDedupeKey(input: {
 export async function recordCommercialOutcome(
   input: RecordCommercialOutcomeInput
 ): Promise<CommercialOutcomeRecord> {
+  const normalizedReporterClientId = (input.reporterClientId ?? "").trim().toLowerCase();
+  if (
+    normalizedReporterClientId.startsWith("partner:welcome-to-alaska:") ||
+    normalizedReporterClientId === "welcome-to-alaska" ||
+    normalizedReporterClientId === "welcometoalaskatours.com"
+  ) {
+    const err = new Error(
+      `Welcome to Alaska Tours referral credential ('${input.reporterClientId}') is scoped strictly to referral attribution ('referral_attribution_only') and cannot confirm bookings or write commission settlement outcomes.`
+    ) as Error & { code?: string; statusCode?: number };
+    err.code = "WTA_REFERRAL_KEY_CANNOT_WRITE_OUTCOMES";
+    err.statusCode = 403;
+    throw err;
+  }
+
   if (isDccInternalArtifactNotProviderConfirmation(input.providerBookingRef)) {
     const err = new Error(
       `A DCC decision receipt or internal artifact ('${input.providerBookingRef}') is not provider confirmation. Confirmed, cancelled, refunded, and fulfilled outcomes require an authenticated provider, payment, or authorized operational booking reference.`
@@ -2636,6 +2650,135 @@ export async function listCommercialOutcomes(options?: {
   limit?: number;
 }): Promise<CommercialOutcomeRecord[]> {
   const limit = Math.min(Math.max(1, options?.limit ?? 25), 100);
+  const pool = getCommercePool();
+  const hasDb = await ensureCommerceTables();
+
+  if (pool && hasDb) {
+    try {
+      const clauses: string[] = [];
+      const values: unknown[] = [];
+      if (options?.handoffId) {
+        values.push(options.handoffId);
+        clauses.push(`handoff_id = $${values.length}`);
+      }
+      if (options?.receiptId) {
+        values.push(options.receiptId);
+        clauses.push(`receipt_id = $${values.length}`);
+      }
+      if (options?.provider) {
+        values.push(options.provider);
+        clauses.push(`provider = $${values.length}`);
+      }
+      values.push(limit);
+      const whereSql = clauses.length > 0 ? `WHERE ${clauses.join(" AND ")}` : "";
+      const res = await pool.query<{
+        outcome_id: string;
+        dedupe_key: string;
+        reporter_client_id: string;
+        reporter_provenance: string;
+        provider: CommercialProvider;
+        provider_account: string;
+        provider_booking_ref: string;
+        event_type: string;
+        provider_event_time: string | null;
+        dcc_recorded_at: Date | string;
+        handoff_id: string | null;
+        evaluation_run_id: string | null;
+        receipt_id: string | null;
+        context_id: string | null;
+        reconciliation_status: "matched" | "unmatched";
+        reconciliation_json: ReconciliationFieldComparison | null;
+        booked_product_code: string | null;
+        booked_date: string | null;
+        booked_option: string | null;
+        booked_party_size: number | null;
+        booking_value_amount: string | number | null;
+        booking_value_currency: string | null;
+        estimated_commission_amount: string | number | null;
+        estimated_commission_currency: string | null;
+        paid_commission_amount: string | number | null;
+        paid_commission_currency: string | null;
+        cancellation_reason: string | null;
+        traceparent: string | null;
+      }>(
+        `SELECT * FROM dcc_commercial_outcomes ${whereSql} ORDER BY dcc_recorded_at ASC LIMIT $${values.length}`,
+        values
+      );
+
+      for (const row of res.rows) {
+        const bookingVal =
+          row.booking_value_amount !== null && row.booking_value_amount !== undefined
+            ? Number(row.booking_value_amount)
+            : null;
+        const estCommVal =
+          row.estimated_commission_amount !== null &&
+          row.estimated_commission_amount !== undefined
+            ? Number(row.estimated_commission_amount)
+            : null;
+        const paidCommVal =
+          row.paid_commission_amount !== null && row.paid_commission_amount !== undefined
+            ? Number(row.paid_commission_amount)
+            : null;
+
+        const hydrated: CommercialOutcomeRecord = {
+          outcomeId: row.outcome_id,
+          dedupeKey: row.dedupe_key,
+          duplicateDelivery: false,
+          reporterClientId: row.reporter_client_id,
+          reporterProvenance: row.reporter_provenance,
+          provider: row.provider,
+          providerAccount: row.provider_account,
+          providerBookingRef: row.provider_booking_ref,
+          eventType: row.event_type,
+          providerEventTime: row.provider_event_time,
+          dccRecordedAt: new Date(row.dcc_recorded_at).toISOString(),
+          handoffId: row.handoff_id,
+          evaluationRunId: row.evaluation_run_id,
+          receiptId: row.receipt_id,
+          contextId: row.context_id,
+          reconciliationStatus: row.reconciliation_status,
+          reconciliationComparison:
+            row.reconciliation_json ??
+            buildReconciliationComparison(null, {
+              reporterClientId: row.reporter_client_id,
+              reporterProvenance: row.reporter_provenance,
+              provider: row.provider,
+              providerBookingRef: row.provider_booking_ref,
+              eventType: row.event_type,
+              providerEventTime: row.provider_event_time,
+            }),
+          bookedProductCode: row.booked_product_code,
+          bookedDate: row.booked_date,
+          bookedOption: row.booked_option,
+          bookedPartySize:
+            row.booked_party_size !== null && row.booked_party_size !== undefined
+              ? Number(row.booked_party_size)
+              : null,
+          bookingValue: {
+            amount: Number.isFinite(bookingVal) ? bookingVal : null,
+            currency: row.booking_value_currency,
+          },
+          estimatedCommission: {
+            amount: Number.isFinite(estCommVal) ? estCommVal : null,
+            currency: row.estimated_commission_currency,
+          },
+          paidCommission: {
+            amount: Number.isFinite(paidCommVal) ? paidCommVal : null,
+            currency: row.paid_commission_currency,
+          },
+          cancellationReason: row.cancellation_reason,
+          altersPublishedEvidenceOrRules: false,
+          approvedClaimStatus: "not_a_claim_outcome_only",
+          traceparent: row.traceparent,
+        };
+        memoryOutcomesById.set(hydrated.outcomeId, hydrated);
+        memoryOutcomesByDedupeKey.set(hydrated.dedupeKey, hydrated);
+      }
+    } catch {
+      // Fallback to in-memory
+    }
+  }
+
   const allMem = Array.from(memoryOutcomesById.values());
   const filtered = allMem.filter((item) => {
     if (options?.handoffId && item.handoffId !== options.handoffId) return false;
@@ -2643,6 +2786,7 @@ export async function listCommercialOutcomes(options?: {
     if (options?.provider && item.provider !== options.provider) return false;
     return true;
   });
+  filtered.sort((a, b) => a.dccRecordedAt.localeCompare(b.dccRecordedAt));
   return filtered.slice(0, limit);
 }
 

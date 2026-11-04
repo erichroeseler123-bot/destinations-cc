@@ -244,15 +244,13 @@ const DEFAULT_API_KEYS: RegisteredMachineApiKey[] = [
     revoked: false,
   },
   {
-    keyId: "key:wta-paid-affiliate-preview",
-    clientId: "partner:welcome-to-alaska:preview",
-    secretToken:
-      process.env.DCC_WTA_AFFILIATE_PREVIEW_API_KEY ||
-      "dcc_wta_affiliate_preview_v1_token",
-    owner: "welcome-to-alaska-paid-affiliate-preview",
+    keyId: "key:wta-paid-affiliate-preview-revoked-v1",
+    clientId: "partner:welcome-to-alaska:preview-revoked",
+    secretToken: "dcc_wta_affiliate_preview_v1_token",
+    owner: "welcome-to-alaska-paid-affiliate-preview-revoked",
     scopes: ["dcc:read:public", "dcc:commerce:handoff", "dcc:commerce:read"],
-    maxRequestsPerMinute: 240,
-    revoked: false,
+    maxRequestsPerMinute: 0,
+    revoked: true,
   },
   {
     keyId: "key:dcc-read-only-no-eval",
@@ -297,6 +295,22 @@ function scopeMatches(
 function resolveConfiguredApiKeys(): RegisteredMachineApiKey[] {
   const customJson = process.env.DCC_MACHINE_API_KEYS_JSON?.trim();
   const dynamicKeys: RegisteredMachineApiKey[] = [];
+  const wtaPreviewToken = process.env.DCC_WTA_AFFILIATE_PREVIEW_API_KEY?.trim();
+  if (
+    wtaPreviewToken &&
+    wtaPreviewToken.length >= 24 &&
+    wtaPreviewToken !== "dcc_wta_affiliate_preview_v1_token"
+  ) {
+    dynamicKeys.push({
+      keyId: "key:wta-paid-affiliate-preview",
+      clientId: "partner:welcome-to-alaska:preview",
+      secretToken: wtaPreviewToken,
+      owner: "welcome-to-alaska-paid-affiliate-preview",
+      scopes: ["dcc:read:public", "dcc:commerce:handoff", "dcc:commerce:read"],
+      maxRequestsPerMinute: 240,
+      revoked: false,
+    });
+  }
   const wtaLiveToken = process.env.DCC_WTA_AFFILIATE_LIVE_API_KEY?.trim();
   if (wtaLiveToken && wtaLiveToken.length >= 24) {
     dynamicKeys.push({

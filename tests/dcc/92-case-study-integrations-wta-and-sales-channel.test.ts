@@ -22,9 +22,15 @@ import {
 import { POST as postOctoBookingConfirm } from "@/app/octo/bookings/[bookingUuid]/confirm/route";
 import {
   evaluateWtaAffiliateActivationGate,
+  parseWtaAgreedCommercialTerms,
+  parseWtaCommercialTerms,
   resetCommercialMemoryStoreForTests,
-  WTA_PREVIEW_API_TOKEN,
+  runWtaAffiliatePreviewSimulation,
+  WTA_DRAFT_COMMERCIAL_TERMS,
+  WTA_LIVE_CLIENT_ID,
   WTA_PREVIEW_CLIENT_ID,
+  WTA_REVOKED_PREVIEW_API_TOKEN_V1,
+  WtaSimulatorPreviewOnlyError,
 } from "@/lib/dcc/commerce";
 import { DCC_PORTFOLIO_NETWORK_SITES } from "@/lib/dcc/portfolioNetworkRegistry";
 import { resetMachineSecurityLimitsForTests } from "@/lib/dcc/machine";
@@ -32,9 +38,14 @@ import { DccBookingService } from "@/lib/bookings/bookingService";
 import { DccSettlementEngine } from "@/lib/settlement";
 import { MockOctoSupplierEngine } from "@/lib/octo/mockServer";
 
+const TEST_ROTATED_WTA_PREVIEW_API_KEY =
+  "dcc_wta_preview_rotated_test_only_9f8e7d6c5b4a3210";
+
 describe("92 — Case-Study Integrations, WTA Paid Affiliate Setup, and Multi-Publisher Sales Channel Proof", () => {
   beforeEach(() => {
     process.env.DCC_DISABLE_NEON_COMMERCE = "1";
+    process.env.DCC_WTA_AFFILIATE_PREVIEW_API_KEY =
+      TEST_ROTATED_WTA_PREVIEW_API_KEY;
     resetCommercialMemoryStoreForTests();
     resetMachineSecurityLimitsForTests();
     DccBookingService.resetFallbackStoresForTests();
@@ -99,8 +110,8 @@ describe("92 — Case-Study Integrations, WTA Paid Affiliate Setup, and Multi-Pu
     });
   });
 
-  describe("Workstream 3: Welcome to Alaska Tours (WTA) Paid Affiliate Enrollment & Separation", () => {
-    it("keeps WTA out of DCC_PORTFOLIO_NETWORK_SITES while enrolling WTA as a narrowly scoped paid affiliate", async () => {
+  describe("Workstream 3: Welcome to Alaska Tours (WTA) Paid Affiliate Live Flow, Draft Terms, and Simulator Guard", () => {
+    it("matches the draft commercial terms parser exactly (12%, 30-day attributionWindowDays, net_30_after_travel) and keeps terms in draft until both parties approve", async () => {
       const inOwnedPortfolio = DCC_PORTFOLIO_NETWORK_SITES.some(
         (s) =>
           String(s.site_id) === "welcome-to-alaska" ||
@@ -121,92 +132,336 @@ describe("92 — Case-Study Integrations, WTA Paid Affiliate Setup, and Multi-Pu
       assert.equal(statusJson.enrollment.grantsLoginAccess, false);
       assert.equal(statusJson.enrollment.grantsReportingAccess, false);
       assert.equal(statusJson.enrollment.grantsPayoutAccess, false);
-      assert.equal(statusJson.enrollment.missingProductionRequirements.length, 3);
+      assert.equal(statusJson.enrollment.termsAgreed, false);
+      assert.equal(statusJson.enrollment.parsedTerms, null);
+
+      const draft = statusJson.enrollment.draftTerms;
+      assert.equal(draft.agreementId, "DCC-AFF-WTA-2026-001");
+      assert.equal(draft.partnerId, "welcome-to-alaska");
+      assert.equal(draft.partnerLegalName, "Welcome to Alaska Tours LLC");
+      assert.equal(draft.status, "draft");
+      assert.equal(draft.commissionRateBps, 1200);
+      assert.equal(draft.attributionWindowDays, 30);
+      assert.equal(draft.payoutSchedule, "net_30_after_travel");
+      assert.equal(draft.signedAt, null);
+      assert.equal(draft.effectiveAt, null);
+      assert.equal(draft.approvedByDcc, false);
+      assert.equal(draft.approvedByPartner, false);
+      assert.equal(typeof draft.commissionAppliesTo, "string");
+      assert.equal(draft.commissionAppliesTo.includes("12% (1200 bps)"), true);
+      assert.equal(typeof draft.commissionPaidBy, "string");
+      assert.equal(draft.commissionPaidBy.includes("Destination Command Center (DCC) pays Welcome to Alaska Tours LLC"), true);
+
+      // Parser rejects non-lowercase attributionWindowDays
+      assert.equal(
+        parseWtaCommercialTerms({
+          ...WTA_DRAFT_COMMERCIAL_TERMS,
+          attributionWindowDays: undefined,
+          AttributionWindowDays: 30,
+        } as unknown as Record<string, unknown>),
+        null,
+      );
+
+      // Parser keeps terms in draft when only one party has approved
+      const oneSided = parseWtaCommercialTerms({
+        ...WTA_DRAFT_COMMERCIAL_TERMS,
+        signedAt: "2026-11-04T00:00:00Z",
+        effectiveAt: "2026-11-04T00:00:00Z",
+        approvedByDcc: true,
+        approvedByPartner: false,
+      });
+      assert.equal(oneSided?.status, "draft");
+      assert.equal(
+        parseWtaAgreedCommercialTerms({
+          ...WTA_DRAFT_COMMERCIAL_TERMS,
+          signedAt: "2026-11-04T00:00:00Z",
+          effectiveAt: "2026-11-04T00:00:00Z",
+          approvedByDcc: true,
+          approvedByPartner: false,
+        }),
+        null,
+      );
     });
 
-    it("proves WTA server-side credential creates a tagged referral and keeps referral, provider-confirmed booking, and commission as separate records", async () => {
-      // 1. WTA cannot self-report outcomes (narrowly scoped to referral handoff + read)
-      const forbiddenOutcomeRes = await postCommerceOutcome(
-        new Request("https://destinationcommandcenter.com/api/v1/commerce/outcomes", {
-          method: "POST",
-          headers: {
-            "content-type": "application/json",
-            "x-dcc-api-key": WTA_PREVIEW_API_TOKEN,
-          },
-          body: JSON.stringify({
-            provider: "fareharbor",
-            providerBookingRef: "FH-SELF-CONFIRM-ATTEMPT",
-            eventType: "BOOKING_CONFIRMED",
-          }),
-        }),
-      );
-      assert.equal(forbiddenOutcomeRes.status, 403);
-      const forbiddenJson = await forbiddenOutcomeRes.json();
-      assert.equal(forbiddenJson.error.code, "API_KEY_INSUFFICIENT_SCOPE");
-
-      // 2. Run the preview lifecycle proof via POST /api/v1/commerce/affiliates/wta
-      const simRes = await postWtaAffiliateSimulation(
+    it("rejects the revoked preview token and keeps the simulator strictly preview-only even when production credentials and terms are active", async () => {
+      // 1. Old exposed token is permanently revoked (401 API_KEY_INVALID_OR_REVOKED)
+      const revokedRes = await postWtaAffiliateSimulation(
         new Request("https://destinationcommandcenter.com/api/v1/commerce/affiliates/wta", {
           method: "POST",
           headers: {
             "content-type": "application/json",
-            "x-dcc-api-key": WTA_PREVIEW_API_TOKEN,
+            "x-dcc-api-key": WTA_REVOKED_PREVIEW_API_TOKEN_V1,
+          },
+          body: JSON.stringify({ action: "create_referral" }),
+        }),
+      );
+      assert.equal(revokedRes.status, 401);
+      const revokedJson = await revokedRes.json();
+      assert.equal(revokedJson.error.code, "API_KEY_INVALID_OR_REVOKED");
+
+      // 2. Simulator is blocked in production even if production credentials and agreed terms are active
+      await assert.rejects(
+        () =>
+          runWtaAffiliatePreviewSimulation({
+            gateOverrideOptions: {
+              runtimeEnv: "production",
+              vercelEnv: "production",
+              liveApiKey: "dcc_wta_live_9876543210abcdef9876543210",
+              webhookHmacSecret:
+                "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+              termsJson: JSON.stringify({
+                ...WTA_DRAFT_COMMERCIAL_TERMS,
+                status: "active",
+                signedAt: "2026-11-04T00:00:00Z",
+                effectiveAt: "2026-11-04T00:00:00Z",
+                approvedByDcc: true,
+                approvedByPartner: true,
+              }),
+            },
+          }),
+        (err: unknown) =>
+          err instanceof WtaSimulatorPreviewOnlyError &&
+          err.code === "WTA_SIMULATOR_PREVIEW_ONLY" &&
+          err.statusCode === 403,
+      );
+    });
+
+    it("completes the live WTA path (referral -> genuine FareHarbor booking -> settlement) and proves WTA's referral key cannot write either outcome", async () => {
+      // Step 1: Create a tagged referral from the WTA site using WTA's rotated credential
+      const createRefRes = await postWtaAffiliateSimulation(
+        new Request("https://destinationcommandcenter.com/api/v1/commerce/affiliates/wta", {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            "x-dcc-api-key": TEST_ROTATED_WTA_PREVIEW_API_KEY,
           },
           body: JSON.stringify({
+            action: "create_referral",
+            originatingSite: "welcometoalaskatours.com",
+            sourcePagePath: "/ports/juneau/helicopter-tours",
+            fareharborShortname: "coastalhelicopters",
+            fareharborItemId: "413056",
+            productCode: "coastal-helicopters-icefield-excursion",
+            productTitle: "Icefield Excursion (Coastal Helicopters • Item 413056)",
             intendedDate: "2026-07-15",
             partySize: 2,
-            productCode: "coastal-helicopters-icefield-excursion",
-            quotedPriceAmount: 858,
+            quotedPriceAmount: 918,
           }),
         }),
       );
-      assert.equal(simRes.status, 201);
-      const simJson = await simRes.json();
-      assert.equal(simJson.ok, true);
-      const proof = simJson.lifecycleProof;
+      assert.equal(createRefRes.status, 201);
+      const createRefJson = await createRefRes.json();
+      assert.equal(createRefJson.ok, true);
+      assert.equal(createRefJson.action, "create_referral");
+      const handoff = createRefJson.handoff;
+      assert.equal(handoff.callerClientId, WTA_PREVIEW_CLIENT_ID);
+      assert.equal(handoff.originatingSite, "welcometoalaskatours.com");
+      assert.equal(handoff.fareharborShortname, "coastalhelicopters");
+      assert.equal(handoff.fareharborItemId, "413056");
+      assert.equal(handoff.approvedPartnerAttribution.partnerId, "welcome-to-alaska");
+      assert.equal(handoff.approvedPartnerAttribution.authScope, "referral_attribution_only");
+
+      const genuineFareHarborBooking = {
+        pk: 98413056,
+        uuid: "8f413056-2259-4156-9b18-000000413056",
+        display_id: "#FH-COASTAL-413056-LIVE",
+        status: "booked",
+        is_paid: true,
+        created_at: "2026-07-01T18:15:00Z",
+        updated_at: "2026-07-01T18:15:05Z",
+        receipt_subtotal: 91800,
+        receipt_taxes: 0,
+        receipt_total: 91800,
+        amount_paid: 91800,
+        currency: "USD",
+        voucher_number: handoff.handoffId,
+        reference: handoff.clickId,
+        company: {
+          shortname: "coastalhelicopters",
+          name: "Coastal Helicopters",
+        },
+        item: {
+          pk: 413056,
+          name: "Icefield Excursion",
+        },
+        availability: {
+          pk: 77413056,
+          start_at: "2026-07-15T10:30:00-08:00",
+          end_at: "2026-07-15T12:45:00-08:00",
+          item: {
+            pk: 413056,
+            name: "Icefield Excursion",
+          },
+        },
+        customer_count: 2,
+        customers: [
+          {
+            pk: 600001,
+            customer_type_rate: {
+              pk: 882259156,
+              total: 45900,
+              customer_prototype: {
+                pk: 2259156,
+                display_name: "Standard Passenger",
+                total: 45900,
+              },
+            },
+          },
+          {
+            pk: 600002,
+            customer_type_rate: {
+              pk: 882259156,
+              total: 45900,
+              customer_prototype: {
+                pk: 2259156,
+                display_name: "Standard Passenger",
+                total: 45900,
+              },
+            },
+          },
+        ],
+      };
+
+      const settlementRecord = {
+        settlementId: `stl_wta_${handoff.handoffId.slice(-10)}`,
+        agreementId: "DCC-AFF-WTA-2026-001",
+        partnerId: "welcome-to-alaska" as const,
+        payerParty: WTA_DRAFT_COMMERCIAL_TERMS.commissionPaidBy,
+        payeeLegalName: "Welcome to Alaska Tours LLC",
+        handoffId: handoff.handoffId,
+        providerBookingRef: "#FH-COASTAL-413056-LIVE",
+        travelCompletedAt: "2026-07-15T12:45:00-08:00",
+        settledAt: "2026-08-14T16:00:00Z",
+        payoutSchedule: "net_30_after_travel" as const,
+        netTourSubtotalAmount: 918,
+        commissionRateBps: 1200,
+        paidCommissionAmount: 110.16,
+        paidCommissionCurrency: "USD",
+        payoutMethod: "ach_transfer" as const,
+        payoutReference: "ACH-WTA-20260814-001",
+      };
+
+      // Step 2: Prove WTA's referral key CANNOT write either outcome (403 WTA_REFERRAL_KEY_CANNOT_WRITE_OUTCOMES)
+      const wtaBookingWriteAttempt1 = await postWtaAffiliateSimulation(
+        new Request("https://destinationcommandcenter.com/api/v1/commerce/affiliates/wta", {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            "x-dcc-api-key": TEST_ROTATED_WTA_PREVIEW_API_KEY,
+          },
+          body: JSON.stringify({
+            action: "confirm_fareharbor_booking",
+            handoffId: handoff.handoffId,
+            booking: genuineFareHarborBooking,
+          }),
+        }),
+      );
+      assert.equal(wtaBookingWriteAttempt1.status, 403);
+      assert.equal(
+        (await wtaBookingWriteAttempt1.json()).error.code,
+        "WTA_REFERRAL_KEY_CANNOT_WRITE_OUTCOMES",
+      );
+
+      const wtaSettlementWriteAttempt1 = await postWtaAffiliateSimulation(
+        new Request("https://destinationcommandcenter.com/api/v1/commerce/affiliates/wta", {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            "x-dcc-api-key": TEST_ROTATED_WTA_PREVIEW_API_KEY,
+          },
+          body: JSON.stringify({
+            action: "record_settlement",
+            settlement: settlementRecord,
+          }),
+        }),
+      );
+      assert.equal(wtaSettlementWriteAttempt1.status, 403);
+      assert.equal(
+        (await wtaSettlementWriteAttempt1.json()).error.code,
+        "WTA_REFERRAL_KEY_CANNOT_WRITE_OUTCOMES",
+      );
+
+      const wtaOutcomesEndpointAttempt = await postCommerceOutcome(
+        new Request("https://destinationcommandcenter.com/api/v1/commerce/outcomes", {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            "x-dcc-api-key": TEST_ROTATED_WTA_PREVIEW_API_KEY,
+          },
+          body: JSON.stringify({
+            adapter: "fareharbor_booking_webhook",
+            booking: genuineFareHarborBooking,
+          }),
+        }),
+      );
+      assert.equal(wtaOutcomesEndpointAttempt.status, 403);
+      const wtaOutcomesErr = await wtaOutcomesEndpointAttempt.json();
+      assert.equal(wtaOutcomesErr.error.code, "WTA_REFERRAL_KEY_CANNOT_WRITE_OUTCOMES");
+      assert.equal(wtaOutcomesErr.error.scopeErrorCode, "API_KEY_INSUFFICIENT_SCOPE");
+
+      // Step 3: Confirm the sale using the genuine FareHarbor booking record and DCC's outcome reporter credential
+      const confirmBookingRes = await postWtaAffiliateSimulation(
+        new Request("https://destinationcommandcenter.com/api/v1/commerce/affiliates/wta", {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            "x-dcc-api-key": "dcc_commerce_reporter_v03_token",
+          },
+          body: JSON.stringify({
+            action: "confirm_fareharbor_booking",
+            handoffId: handoff.handoffId,
+            booking: genuineFareHarborBooking,
+          }),
+        }),
+      );
+      assert.equal(confirmBookingRes.status, 201);
+      const confirmBookingJson = await confirmBookingRes.json();
+      assert.equal(confirmBookingJson.ok, true);
+      assert.equal(confirmBookingJson.bookingOutcome.eventType, "BOOKING_CONFIRMED");
+      assert.equal(confirmBookingJson.bookingOutcome.providerBookingRef, "#FH-COASTAL-413056-LIVE");
+      assert.equal(confirmBookingJson.bookingOutcome.bookingValue.amount, 918);
+      assert.equal(confirmBookingJson.bookingOutcome.estimatedCommission.amount, 110.16);
+      assert.equal(confirmBookingJson.bookingOutcome.paidCommission.amount, null);
+
+      // Step 4: Record the commission settlement using the settlement record and DCC's outcome reporter credential
+      const settleRes = await postWtaAffiliateSimulation(
+        new Request("https://destinationcommandcenter.com/api/v1/commerce/affiliates/wta", {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            "x-dcc-api-key": "dcc_commerce_reporter_v03_token",
+          },
+          body: JSON.stringify({
+            action: "record_settlement",
+            settlement: settlementRecord,
+          }),
+        }),
+      );
+      assert.equal(settleRes.status, 201);
+      const settleJson = await settleRes.json();
+      assert.equal(settleJson.ok, true);
+      assert.equal(settleJson.commissionOutcome.eventType, "COMMISSION_RECONCILED");
+      assert.equal(settleJson.commissionOutcome.paidCommission.amount, 110.16);
+
+      // Verify all 3 separate records via lifecycle proof
+      const proof = settleJson.lifecycleProof;
       assert.equal(proof.verified, true);
-      assert.equal(proof.callerClientId, WTA_PREVIEW_CLIENT_ID);
-
-      // Verify Record 1: Referral Record
-      assert.equal(proof.referralRecord.recordTable, "dcc_commercial_handoffs");
-      assert.equal(proof.referralRecord.recordType, "tagged_referral_handoff");
-      assert.deepEqual(proof.referralRecord.approvedPartnerAttribution, {
-        partnerId: "welcome-to-alaska",
-        partnerName: "Welcome to Alaska Tours",
-        authScope: "referral_attribution_only",
-        grantsLoginAccess: false,
-        grantsReportingAccess: false,
-        grantsPayoutAccess: false,
-      });
-      assert.equal(proof.referralRecord.clickIsBooking, false);
-
-      // Verify Record 2: Provider-Confirmed Booking Record
-      assert.equal(proof.bookingRecord.recordTable, "dcc_commercial_outcomes");
-      assert.equal(proof.bookingRecord.recordType, "provider_confirmed_booking");
-      assert.equal(proof.bookingRecord.eventType, "BOOKING_CONFIRMED");
-      assert.equal(proof.bookingRecord.bookingValueAmount, 858);
-      assert.equal(proof.bookingRecord.estimatedCommissionAmount, 68.64);
+      assert.equal(proof.referralRecord.handoffId, handoff.handoffId);
+      assert.equal(proof.bookingRecord.bookingValueAmount, 918);
+      assert.equal(proof.bookingRecord.estimatedCommissionAmount, 110.16);
       assert.equal(proof.bookingRecord.paidCommissionAmount, null);
-
-      // Verify Record 3: Commission Record
-      assert.equal(proof.commissionRecord.recordTable, "dcc_commercial_outcomes");
-      assert.equal(proof.commissionRecord.recordType, "commission_reconciliation");
-      assert.equal(proof.commissionRecord.eventType, "COMMISSION_RECONCILED");
-      assert.equal(proof.commissionRecord.paidCommissionAmount, 68.64);
-
-      // Verify all three primary IDs are distinct
+      assert.equal(proof.commissionRecord.paidCommissionAmount, 110.16);
       assert.equal(proof.separationAssertions.distinctPrimaryIds.length, 3);
-      assert.equal(proof.separationAssertions.referralAndBookingAreSeparateRecords, true);
-      assert.equal(proof.separationAssertions.bookingAndCommissionAreSeparateRecords, true);
     });
 
-    it("gates WTA production activation until approved credentials and agreed terms are supplied", () => {
+    it("gates WTA production activation until approved credentials and agreed terms are supplied, then allows WTA's production credential to create a tagged referral", async () => {
       const blockedGate = evaluateWtaAffiliateActivationGate({
         runtimeEnv: "production",
         vercelEnv: "production",
       });
       assert.equal(blockedGate.isProductionRuntime, true);
       assert.equal(blockedGate.productionActivationAllowed, false);
+      assert.equal(blockedGate.previewSimulatorAllowed, false);
       assert.deepEqual(
         blockedGate.missingProductionRequirements.map((r) => r.key),
         [
@@ -216,26 +471,51 @@ describe("92 — Case-Study Integrations, WTA Paid Affiliate Setup, and Multi-Pu
         ],
       );
 
+      const liveTestKey = "dcc_wta_live_test_only_9876543210abcdef9876543210";
+      process.env.DCC_WTA_AFFILIATE_LIVE_API_KEY = liveTestKey;
+      process.env.DCC_WTA_WEBHOOK_HMAC_SECRET =
+        "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+      process.env.DCC_WTA_AFFILIATE_TERMS_JSON = JSON.stringify({
+        ...WTA_DRAFT_COMMERCIAL_TERMS,
+        status: "active",
+        signedAt: "2026-11-04T00:00:00Z",
+        effectiveAt: "2026-11-04T00:00:00Z",
+        approvedByDcc: true,
+        approvedByPartner: true,
+      });
+
       const unlockedGate = evaluateWtaAffiliateActivationGate({
         runtimeEnv: "production",
         vercelEnv: "production",
-        liveApiKey: "dcc_wta_live_9876543210abcdef9876543210",
-        webhookHmacSecret:
-          "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
-        termsJson: JSON.stringify({
-          agreementId: "DCC-AFF-WTA-2026-001",
-          partnerId: "welcome-to-alaska",
-          signedAt: "2026-11-04T00:00:00Z",
-          effectiveAt: "2026-11-04T00:00:00Z",
-          commissionRateBps: 800,
-          attributionWindowDays: 30,
-          payoutSchedule: "net_30_post_service_completion",
-          approvedByDcc: true,
-          approvedByPartner: true,
-        }),
       });
       assert.equal(unlockedGate.productionActivationAllowed, true);
       assert.equal(unlockedGate.missingProductionRequirements.length, 0);
+
+      // Verify WTA's production credential registers and creates a live referral
+      const prodRefRes = await postWtaAffiliateSimulation(
+        new Request("https://destinationcommandcenter.com/api/v1/commerce/affiliates/wta", {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            "x-dcc-api-key": liveTestKey,
+          },
+          body: JSON.stringify({
+            action: "create_referral",
+            originatingSite: "welcometoalaskatours.com",
+            fareharborShortname: "coastalhelicopters",
+            fareharborItemId: "413056",
+            intendedDate: "2026-07-15",
+            partySize: 2,
+          }),
+        }),
+      );
+      assert.equal(prodRefRes.status, 201);
+      const prodRefJson = await prodRefRes.json();
+      assert.equal(prodRefJson.handoff.callerClientId, WTA_LIVE_CLIENT_ID);
+      assert.equal(
+        prodRefJson.handoff.metadata.enrollmentChannel,
+        "wta_paid_affiliate_live",
+      );
     });
   });
 
@@ -423,7 +703,7 @@ describe("92 — Case-Study Integrations, WTA Paid Affiliate Setup, and Multi-Pu
           method: "POST",
           headers: {
             "content-type": "application/json",
-            "x-dcc-api-key": WTA_PREVIEW_API_TOKEN,
+            "x-dcc-api-key": TEST_ROTATED_WTA_PREVIEW_API_KEY,
           },
           body: JSON.stringify({
             originatingSite: "welcometoalaskatours.com",

@@ -5,10 +5,18 @@ import {
   verifyEvaluationAuthAndRateLimit,
 } from "@/lib/dcc/machine";
 import {
+  assertCallerIsNotWtaReferralKey,
+  confirmWtaSaleFromFareHarborBooking,
+  createWtaTaggedReferralHandoff,
   evaluateWtaAffiliateActivationGate,
   inspectWtaReferralLifecycleSeparation,
   runWtaAffiliatePreviewSimulation,
+  settleWtaCommissionFromSettlementRecord,
   WtaAffiliateProductionGateError,
+  WtaReferralKeyCannotWriteOutcomeError,
+  WtaSimulatorPreviewOnlyError,
+  type FareHarborExternalBookingRecord,
+  type WtaCommissionSettlementRecord,
 } from "@/lib/dcc/commerce";
 import { DCC_PORTFOLIO_NETWORK_SITES } from "@/lib/dcc/portfolioNetworkRegistry";
 
@@ -58,10 +66,44 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const traceparent = resolveOrGenerateW3cTraceparent(request);
 
+  let body: Record<string, unknown> = {};
   try {
-    verifyEvaluationAuthAndRateLimit({
+    const raw = await request.text();
+    if (raw.trim()) {
+      body = JSON.parse(raw) as Record<string, unknown>;
+    }
+  } catch {
+    return buildMachineJsonResponse(
+      {
+        ok: false,
+        error: {
+          code: "INVALID_JSON_BODY",
+          message: "Request body must be valid JSON.",
+        },
+        traceparent,
+      },
+      { status: 400, cacheControl: "no-store", extraHeaders: { traceparent } },
+    );
+  }
+
+  const requestedAction = String(
+    body.action ??
+      body.mode ??
+      (body.booking
+        ? "confirm_fareharbor_booking"
+        : body.settlement
+          ? "record_settlement"
+          : "create_referral"),
+  )
+    .trim()
+    .toLowerCase();
+
+  // Step 1: Authenticate caller with base read/handoff scope first so we can identify WTA referral keys
+  let baseAuth: { clientId: string; keyId: string; scopes: string[] };
+  try {
+    baseAuth = verifyEvaluationAuthAndRateLimit({
       headers: request.headers,
-      requiredScope: "dcc:commerce:handoff",
+      requiredScope: "dcc:read:public",
       requireExplicitApiKey: true,
     });
   } catch (err) {
@@ -95,45 +137,207 @@ export async function POST(request: Request) {
     );
   }
 
-  let body: Record<string, unknown> = {};
   try {
-    const raw = await request.text();
-    if (raw.trim()) {
-      body = JSON.parse(raw) as Record<string, unknown>;
-    }
-  } catch {
-    return buildMachineJsonResponse(
-      {
-        ok: false,
-        error: {
-          code: "INVALID_JSON_BODY",
-          message: "Request body must be valid JSON.",
-        },
-        traceparent,
-      },
-      { status: 400, cacheControl: "no-store", extraHeaders: { traceparent } },
-    );
-  }
+    // Action A: Confirm sale from a genuine FareHarbor booking record
+    if (
+      requestedAction === "confirm_fareharbor_booking" ||
+      requestedAction === "confirm_booking"
+    ) {
+      // Explicitly prove WTA's referral key cannot write booking outcomes
+      assertCallerIsNotWtaReferralKey(baseAuth.clientId, "booking");
 
-  try {
-    const proof = await runWtaAffiliatePreviewSimulation({
+      const outcomeAuth = verifyEvaluationAuthAndRateLimit({
+        headers: request.headers,
+        requiredScope: "dcc:commerce:report_outcome",
+        requireExplicitApiKey: true,
+      });
+
+      const bookingOutcome = await confirmWtaSaleFromFareHarborBooking({
+        reporterClientId: outcomeAuth.clientId,
+        booking: body.booking as FareHarborExternalBookingRecord,
+        handoffId:
+          typeof body.handoffId === "string" ? body.handoffId : undefined,
+      });
+
+      const lifecycleProof = bookingOutcome.handoffId
+        ? await inspectWtaReferralLifecycleSeparation(bookingOutcome.handoffId)
+        : null;
+
+      return buildMachineJsonResponse(
+        {
+          ok: true,
+          action: "confirm_fareharbor_booking",
+          bookingOutcome,
+          lifecycleProof,
+          traceparent,
+        },
+        {
+          status: bookingOutcome.duplicateDelivery ? 200 : 201,
+          cacheControl: "no-store",
+          extraHeaders: {
+            traceparent,
+            "X-DCC-Surface-Class": "commercial_affiliate_booking_confirmation",
+            "X-DCC-Client-Id": outcomeAuth.clientId,
+            "X-DCC-Outcome-Id": bookingOutcome.outcomeId,
+          },
+        },
+      );
+    }
+
+    // Action B: Mark commission paid from a settlement record
+    if (
+      requestedAction === "record_settlement" ||
+      requestedAction === "settle_commission"
+    ) {
+      // Explicitly prove WTA's referral key cannot write settlement/commission outcomes
+      assertCallerIsNotWtaReferralKey(baseAuth.clientId, "settlement");
+
+      const outcomeAuth = verifyEvaluationAuthAndRateLimit({
+        headers: request.headers,
+        requiredScope: "dcc:commerce:report_outcome",
+        requireExplicitApiKey: true,
+      });
+
+      const commissionOutcome = await settleWtaCommissionFromSettlementRecord({
+        reporterClientId: outcomeAuth.clientId,
+        settlement: body.settlement as WtaCommissionSettlementRecord,
+      });
+
+      const lifecycleProof = commissionOutcome.handoffId
+        ? await inspectWtaReferralLifecycleSeparation(
+            commissionOutcome.handoffId,
+          )
+        : null;
+
+      return buildMachineJsonResponse(
+        {
+          ok: true,
+          action: "record_settlement",
+          commissionOutcome,
+          lifecycleProof,
+          traceparent,
+        },
+        {
+          status: commissionOutcome.duplicateDelivery ? 200 : 201,
+          cacheControl: "no-store",
+          extraHeaders: {
+            traceparent,
+            "X-DCC-Surface-Class": "commercial_affiliate_commission_settlement",
+            "X-DCC-Client-Id": outcomeAuth.clientId,
+            "X-DCC-Outcome-Id": commissionOutcome.outcomeId,
+          },
+        },
+      );
+    }
+
+    // Action C: Preview-only simulator (`preview_simulate`)
+    if (
+      requestedAction === "preview_simulate" ||
+      requestedAction === "simulate"
+    ) {
+      verifyEvaluationAuthAndRateLimit({
+        headers: request.headers,
+        requiredScope: "dcc:commerce:handoff",
+        requireExplicitApiKey: true,
+      });
+
+      const proof = await runWtaAffiliatePreviewSimulation({
+        intendedDate:
+          typeof body.intendedDate === "string" ? body.intendedDate : undefined,
+        partySize:
+          typeof body.partySize === "number" ? body.partySize : undefined,
+        productCode:
+          typeof body.productCode === "string" ? body.productCode : undefined,
+        quotedPriceAmount:
+          typeof body.quotedPriceAmount === "number"
+            ? body.quotedPriceAmount
+            : undefined,
+      });
+
+      return buildMachineJsonResponse(
+        {
+          ok: true,
+          action: "preview_simulate",
+          enrollment: evaluateWtaAffiliateActivationGate(),
+          lifecycleProof: proof,
+          traceparent,
+        },
+        {
+          status: 201,
+          cacheControl: "no-store",
+          extraHeaders: {
+            traceparent,
+            "X-DCC-Surface-Class": "commercial_affiliate_preview_proof",
+          },
+        },
+      );
+    }
+
+    // Action D (Default live path): Create tagged referral handoff from WTA site
+    const handoffAuth = verifyEvaluationAuthAndRateLimit({
+      headers: request.headers,
+      requiredScope: "dcc:commerce:handoff",
+      requireExplicitApiKey: true,
+    });
+
+    const { handoff, gateStatus } = await createWtaTaggedReferralHandoff({
+      callerClientId: handoffAuth.clientId,
+      originatingSite:
+        typeof body.originatingSite === "string"
+          ? body.originatingSite
+          : undefined,
+      sourcePagePath:
+        typeof body.sourcePagePath === "string"
+          ? body.sourcePagePath
+          : undefined,
+      targetSite:
+        typeof body.targetSite === "string" ? body.targetSite : undefined,
+      fareharborShortname:
+        typeof body.fareharborShortname === "string"
+          ? body.fareharborShortname
+          : undefined,
+      fareharborItemId:
+        typeof body.fareharborItemId === "string"
+          ? body.fareharborItemId
+          : undefined,
+      productCode:
+        typeof body.productCode === "string" ? body.productCode : undefined,
+      productTitle:
+        typeof body.productTitle === "string" ? body.productTitle : undefined,
+      productDestinationUrl:
+        typeof body.productDestinationUrl === "string"
+          ? body.productDestinationUrl
+          : undefined,
+      campaign: typeof body.campaign === "string" ? body.campaign : undefined,
       intendedDate:
         typeof body.intendedDate === "string" ? body.intendedDate : undefined,
       partySize:
         typeof body.partySize === "number" ? body.partySize : undefined,
-      productCode:
-        typeof body.productCode === "string" ? body.productCode : undefined,
       quotedPriceAmount:
         typeof body.quotedPriceAmount === "number"
           ? body.quotedPriceAmount
           : undefined,
+      quotedPriceCurrency:
+        typeof body.quotedPriceCurrency === "string"
+          ? body.quotedPriceCurrency
+          : undefined,
+      metadata:
+        body.metadata && typeof body.metadata === "object"
+          ? (body.metadata as Record<string, unknown>)
+          : undefined,
     });
+
+    const lifecycleProof = await inspectWtaReferralLifecycleSeparation(
+      handoff.handoffId,
+    );
 
     return buildMachineJsonResponse(
       {
         ok: true,
-        enrollment: evaluateWtaAffiliateActivationGate(),
-        lifecycleProof: proof,
+        action: "create_referral",
+        enrollment: gateStatus,
+        handoff,
+        lifecycleProof,
         traceparent,
       },
       {
@@ -141,11 +345,50 @@ export async function POST(request: Request) {
         cacheControl: "no-store",
         extraHeaders: {
           traceparent,
-          "X-DCC-Surface-Class": "commercial_affiliate_preview_proof",
+          "X-DCC-Surface-Class": "commercial_affiliate_referral_handoff",
+          "X-DCC-Client-Id": handoffAuth.clientId,
+          "X-DCC-Handoff-Id": handoff.handoffId,
         },
       },
     );
   } catch (err) {
+    if (err instanceof WtaSimulatorPreviewOnlyError) {
+      return buildMachineJsonResponse(
+        {
+          ok: false,
+          error: {
+            code: err.code,
+            message: err.message,
+          },
+          traceparent,
+        },
+        {
+          status: err.statusCode,
+          cacheControl: "no-store",
+          extraHeaders: { traceparent },
+        },
+      );
+    }
+
+    if (err instanceof WtaReferralKeyCannotWriteOutcomeError) {
+      return buildMachineJsonResponse(
+        {
+          ok: false,
+          error: {
+            code: err.code,
+            message: err.message,
+            callerClientId: err.callerClientId,
+          },
+          traceparent,
+        },
+        {
+          status: err.statusCode,
+          cacheControl: "no-store",
+          extraHeaders: { traceparent },
+        },
+      );
+    }
+
     if (err instanceof WtaAffiliateProductionGateError) {
       return buildMachineJsonResponse(
         {
@@ -167,19 +410,42 @@ export async function POST(request: Request) {
       );
     }
 
+    if (err instanceof MachineSecurityLimitError) {
+      return buildMachineJsonResponse(
+        {
+          ok: false,
+          error: {
+            code: err.code,
+            message: err.message,
+          },
+          traceparent,
+        },
+        {
+          status: err.statusCode,
+          cacheControl: "no-store",
+          extraHeaders: { traceparent },
+        },
+      );
+    }
+
+    const typedErr = err as Error & { code?: string; statusCode?: number };
     return buildMachineJsonResponse(
       {
         ok: false,
         error: {
-          code: "WTA_PREVIEW_SIMULATION_FAILED",
+          code: typedErr?.code || "WTA_AFFILIATE_OPERATION_FAILED",
           message:
             err instanceof Error
               ? err.message
-              : "Failed to run WTA affiliate preview simulation.",
+              : "Failed to process WTA affiliate operation.",
         },
         traceparent,
       },
-      { status: 500, cacheControl: "no-store", extraHeaders: { traceparent } },
+      {
+        status: typedErr?.statusCode || 500,
+        cacheControl: "no-store",
+        extraHeaders: { traceparent },
+      },
     );
   }
 }

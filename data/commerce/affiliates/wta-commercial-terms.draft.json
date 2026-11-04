@@ -1,0 +1,15 @@
+{
+  "agreementId": "DCC-AFF-WTA-2026-001",
+  "partnerId": "welcome-to-alaska",
+  "partnerLegalName": "Welcome to Alaska Tours LLC",
+  "status": "draft",
+  "commissionRateBps": 1200,
+  "commissionAppliesTo": "12% (1200 bps) of the completed, non-refunded net tour/activity subtotal (FareHarbor receipt_subtotal / operator net activity fare in USD) for attributed bookings after travel completion, excluding government sales or excise taxes, municipal port/harbor passenger fees, payment-processing fees, and cancelled or refunded seats.",
+  "commissionPaidBy": "Destination Command Center (DCC) pays Welcome to Alaska Tours LLC out of operator/FareHarbor Affiliate Sales Network (ASN) commission proceeds collected from the fulfilling operator (e.g., Coastal Helicopters).",
+  "attributionWindowDays": 30,
+  "payoutSchedule": "net_30_after_travel",
+  "signedAt": null,
+  "effectiveAt": null,
+  "approvedByDcc": false,
+  "approvedByPartner": false
+}

@@ -6,13 +6,19 @@ import {
   verifyEvaluationAuthAndRateLimit,
 } from "@/lib/dcc/machine";
 import {
+  assertCallerIsNotWtaReferralKey,
+  confirmWtaSaleFromFareHarborBooking,
   getPollerCheckpoint,
   isDccInternalArtifactNotProviderConfirmation,
   listCommercialOutcomes,
   pollViatorModifiedSinceWithCheckpoint,
   recordCommercialOutcome,
   reportGetYourGuideOutcomeAdapter,
+  settleWtaCommissionFromSettlementRecord,
+  WtaReferralKeyCannotWriteOutcomeError,
   type CommercialProvider,
+  type FareHarborExternalBookingRecord,
+  type WtaCommissionSettlementRecord,
 } from "@/lib/dcc/commerce";
 
 export const dynamic = "force-dynamic";
@@ -66,6 +72,14 @@ export async function POST(request: Request) {
   try {
     rawBody = await request.text();
     enforceEvaluationRequestSizeLimit(rawBody);
+    // First authenticate caller identity so WTA referral keys receive explicit WTA_REFERRAL_KEY_CANNOT_WRITE_OUTCOMES
+    const baseAuth = verifyEvaluationAuthAndRateLimit({
+      headers: request.headers,
+      requiredScope: "dcc:read:public",
+      requireExplicitApiKey: true,
+    });
+    assertCallerIsNotWtaReferralKey(baseAuth.clientId, "outcome");
+
     const auth = verifyEvaluationAuthAndRateLimit({
       headers: request.headers,
       requiredScope: "dcc:commerce:report_outcome",
@@ -74,6 +88,21 @@ export async function POST(request: Request) {
     // Strictly derive calling integration's identity from validated credentials, never request body
     reporterClientId = auth.clientId;
   } catch (err) {
+    if (err instanceof WtaReferralKeyCannotWriteOutcomeError) {
+      return buildMachineJsonResponse(
+        {
+          ok: false,
+          error: {
+            code: err.code,
+            scopeErrorCode: "API_KEY_INSUFFICIENT_SCOPE",
+            message: err.message,
+            callerClientId: err.callerClientId,
+          },
+          traceparent,
+        },
+        { status: err.statusCode, cacheControl: "no-store", extraHeaders: { traceparent } },
+      );
+    }
     if (err instanceof MachineSecurityLimitError) {
       return buildMachineJsonResponse(
         {
@@ -112,6 +141,105 @@ export async function POST(request: Request) {
       },
       { status: 400, cacheControl: "no-store", extraHeaders: { traceparent } },
     );
+  }
+
+  if (
+    body.adapter === "fareharbor_booking_webhook" ||
+    (body.booking && typeof body.booking === "object")
+  ) {
+    try {
+      const fhOutcome = await confirmWtaSaleFromFareHarborBooking({
+        reporterClientId,
+        booking: body.booking as FareHarborExternalBookingRecord,
+        handoffId: typeof body.handoffId === "string" ? body.handoffId : undefined,
+      });
+      return buildMachineJsonResponse(
+        {
+          ok: true,
+          client_id: reporterClientId,
+          outcome: fhOutcome,
+          traceparent,
+        },
+        {
+          status: fhOutcome.duplicateDelivery ? 200 : 201,
+          cacheControl: "no-store",
+          extraHeaders: {
+            traceparent,
+            "X-DCC-Surface-Class": "commercial_outcome_reporting",
+            "X-DCC-Client-Id": reporterClientId,
+            "X-DCC-Outcome-Id": fhOutcome.outcomeId,
+          },
+        },
+      );
+    } catch (err) {
+      const typedErr = err as Error & { code?: string; statusCode?: number };
+      return buildMachineJsonResponse(
+        {
+          ok: false,
+          error: {
+            code: typedErr?.code || "FAREHARBOR_BOOKING_CONFIRMATION_FAILED",
+            message:
+              err instanceof Error ? err.message : "Failed to confirm FareHarbor booking.",
+          },
+          traceparent,
+        },
+        {
+          status: typedErr?.statusCode || 422,
+          cacheControl: "no-store",
+          extraHeaders: { traceparent },
+        },
+      );
+    }
+  }
+
+  if (
+    body.adapter === "wta_commission_settlement" ||
+    (body.settlement && typeof body.settlement === "object")
+  ) {
+    try {
+      const settlementOutcome = await settleWtaCommissionFromSettlementRecord({
+        reporterClientId,
+        settlement: body.settlement as WtaCommissionSettlementRecord,
+      });
+      return buildMachineJsonResponse(
+        {
+          ok: true,
+          client_id: reporterClientId,
+          outcome: settlementOutcome,
+          traceparent,
+        },
+        {
+          status: settlementOutcome.duplicateDelivery ? 200 : 201,
+          cacheControl: "no-store",
+          extraHeaders: {
+            traceparent,
+            "X-DCC-Surface-Class": "commercial_outcome_reporting",
+            "X-DCC-Client-Id": reporterClientId,
+            "X-DCC-Outcome-Id": settlementOutcome.outcomeId,
+          },
+        },
+      );
+    } catch (err) {
+      const typedErr = err as Error & { code?: string; statusCode?: number };
+      return buildMachineJsonResponse(
+        {
+          ok: false,
+          error: {
+            code: typedErr?.code || "WTA_COMMISSION_SETTLEMENT_FAILED",
+            message:
+              err instanceof Error
+                ? err.message
+                : "Failed to record WTA commission settlement.",
+          },
+          traceparent,
+        },
+        {
+          status: typedErr?.statusCode || 422,
+          cacheControl: "no-store",
+          extraHeaders: { traceparent },
+        },
+      );
+    }
   }
 
   if (body.mode === "poll_viator_modified_since") {
