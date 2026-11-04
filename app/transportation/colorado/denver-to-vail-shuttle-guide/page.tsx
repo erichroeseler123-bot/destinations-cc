@@ -45,6 +45,14 @@ const actions: RecommendationAction[] = [
     reason: "Routes directly to the Vail corridor booking wizard on GoSno (preserving DEN origin, Vail destination, 7-passenger count, and van vehicle class; ski-bag counts are entered on the form) instead of the generic homepage.",
   },
   {
+    id: "gosno-vail-group-inquiry",
+    label: "GoSno Private Multi-Vehicle Group Inquiry (11–50 Passengers)",
+    href: "https://gosno.co/request-quote?origin=DEN&destination=Vail&passengers=16&passengerCount=16&party_size=16&vehicleType=van&vehicleSuggestion=1+Private+Passenger+Van+%2B+1+Private+Chevrolet+Suburban",
+    kind: "external",
+    score: 2,
+    reason: "When a party exceeds GoSno's 10-passenger single-van cap, carries the full party size, route, date, and gear into GoSno's group inquiry (suggesting a van plus a Suburban for 16, or two vans for 20; GoSno confirms gear fit, availability, and one group total).",
+  },
+  {
     id: "gosno-operator-profile",
     label: "Review GoSno Operator Evidence Profile on DCC",
     href: "/operators/gosno",
@@ -161,7 +169,7 @@ export default function DenverToVailShuttleGuidePage() {
             A standard 3-row full-size SUV has 5–6 usable passenger seats only when the third row is raised, which leaves rear cargo room for roughly 4–5 standard bags and <strong>zero full-length (170–190 cm) ski bags inside the cabin</strong> unless a rooftop box is confirmed and the third row is partially folded.
           </p>
           <p className="mt-2 text-sm leading-7 text-zinc-200">
-            <strong>For 7–10 passengers with ski bags (11+ passengers exceed a single GoSno van):</strong> A single 6-passenger SUV cannot legally or physically hold the group. On GoSno, private SUV transfers cap at <strong>up to 6 passengers ($499 one-way DEN to Vail)</strong>, while <strong>private passenger vans carry up to 10 passengers, subject to luggage and ski-gear fit and availability</strong> (GoSno publishes a $599 one-way DEN–Vail van rate on <code>gosno.co/vail</code>, while its live <code>/api/availability</code> endpoint marks van requests <code>quoteOnly: true</code>). Groups of <strong>11 or more passengers are ineligible for a single GoSno van</strong> and must book multi-vehicle private transfers or per-seat shared shuttles.
+            <strong>For 7–10 passengers with ski bags (11+ passengers exceed a single GoSno van):</strong> A single 6-passenger SUV cannot legally or physically hold the group. On GoSno, private SUV transfers cap at <strong>up to 6 passengers ($499 one-way DEN to Vail)</strong>, while <strong>private passenger vans carry up to 10 passengers, subject to luggage and ski-gear fit and availability</strong> (GoSno publishes a $599 one-way DEN–Vail van rate on <code>gosno.co/vail</code>, while its live <code>/api/availability</code> endpoint marks van requests <code>quoteOnly: true</code>). Groups of <strong>11 or more passengers are ineligible for a single GoSno van</strong>; when a party wants a private transfer and exceeds the 10-passenger single-vehicle limit, DCC offers GoSno&rsquo;s multi-vehicle group inquiry (<code>gosno.co/request-quote</code>), suggesting <strong>a van plus a Suburban for 16 passengers</strong> or <strong>two vans for 20 passengers</strong>, where <strong>GoSno confirms gear fit, availability, and one group total</strong>.
           </p>
         </section>
 
@@ -173,7 +181,7 @@ export default function DenverToVailShuttleGuidePage() {
               <strong>Why it fits 7–10 people with ski bags:</strong> Carries up to 10 passengers, subject to luggage and ski-gear fit and availability, in one private door-to-door vehicle from DEN to Vail with a complimentary 20–30 minute grocery stop on advance request.
             </p>
             <p className="mt-2 text-sm leading-6 text-zinc-400">
-              <strong>What could make it unsuitable:</strong> Groups of 11+ passengers (ineligible for a single GoSno van), 10-passenger groups whose total ski/oversize and standard luggage exceeds the cabin cargo envelope, passengers arriving on widely separated flights hours apart, or dates where live van dispatch (`quoteOnly: true` on `/api/availability`, $599 published on `gosno.co/vail`) is unavailable. (For 1–6 passengers with moderate gear, a single private SUV is $499 one-way.)
+              <strong>What could make it unsuitable:</strong> Groups of 11+ passengers (ineligible for a single GoSno van; use GoSno&rsquo;s multi-vehicle group inquiry at <code>gosno.co/request-quote</code> — suggesting a van plus a Suburban for 16, or two vans for 20 — where GoSno confirms gear fit, availability, and one group total), 10-passenger groups whose total ski/oversize and standard luggage exceeds the cabin cargo envelope, passengers arriving on widely separated flights hours apart, or dates where live van dispatch (`quoteOnly: true` on `/api/availability`, $599 published on `gosno.co/vail`) is unavailable. (For 1–6 passengers with moderate gear, a single private SUV is $499 one-way.)
             </p>
           </article>
           <article className="rounded-2xl border border-white/10 bg-white/5 p-5">

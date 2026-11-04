@@ -131,6 +131,161 @@ export interface CompiledApplicableDecisionOutcome {
     pricingDisposition: string;
     epistemicUnknowns: string[];
   };
+  privateGroupInquiryOption?: PrivateGroupInquiryOption | null;
+}
+
+export interface GoSnoGroupVehicleSuggestion {
+  passengers: number;
+  vanCount: number;
+  suvCount: number;
+  summaryLabel: string;
+  shortLabel: string;
+  confirmationPolicy: string;
+}
+
+export interface PrivateGroupInquiryOption {
+  operatorId: "op:gosno";
+  operatorName: "GoSno Mountain Transport";
+  status: "quote_only";
+  nextStep: "request a quote";
+  origin: string;
+  destination: string;
+  outboundDate: string;
+  passengers: number;
+  standardBagCount: number;
+  skiOrOversizeBagCount: number;
+  luggageSummary: string;
+  vehicleSuggestion: GoSnoGroupVehicleSuggestion;
+  referenceCombinedOneWayUsd: number;
+  confirmationPolicy: string;
+  inquiryUrl: string;
+}
+
+export const GOSNO_GROUP_CONFIRMATION_POLICY =
+  "GoSno confirms gear fit, availability, and one group total.";
+
+export function getGoSnoGroupVehicleSuggestion(
+  passengers: number,
+): GoSnoGroupVehicleSuggestion {
+  const count = Math.max(11, Math.round(passengers));
+  const fullVans = Math.floor(count / 10);
+  const remainder = count % 10;
+
+  let vanCount = fullVans;
+  let suvCount = 0;
+  if (remainder > 0 && remainder <= 6) {
+    suvCount = 1;
+  } else if (remainder > 6) {
+    vanCount += 1;
+  }
+
+  let summaryLabel: string;
+  if (vanCount === 1 && suvCount === 1) {
+    summaryLabel = "a van plus a Suburban";
+  } else if (vanCount === 2 && suvCount === 0) {
+    summaryLabel = "two vans";
+  } else if (vanCount > 0 && suvCount === 1) {
+    summaryLabel = `${vanCount} vans plus a Suburban`;
+  } else {
+    summaryLabel = `${vanCount} vans`;
+  }
+
+  const parts: string[] = [];
+  if (vanCount > 0) {
+    parts.push(
+      `${vanCount} Private Passenger Van${vanCount > 1 ? "s" : ""}`,
+    );
+  }
+  if (suvCount > 0) {
+    parts.push(
+      `${suvCount} Private Chevrolet Suburban${suvCount > 1 ? "s" : ""}`,
+    );
+  }
+
+  return {
+    passengers: count,
+    vanCount,
+    suvCount,
+    summaryLabel,
+    shortLabel: parts.join(" + "),
+    confirmationPolicy: GOSNO_GROUP_CONFIRMATION_POLICY,
+  };
+}
+
+export function buildGoSnoPrivateGroupInquiryOption(params: {
+  corridorId: CorridorId;
+  origin?: string;
+  destination?: string;
+  travelDate: string;
+  passengerCount: number;
+  standardBagCount: number;
+  skiOrOversizeBagCount: number;
+}): PrivateGroupInquiryOption | null {
+  if (params.passengerCount <= 10) return null;
+  const isGoSnoCorridor =
+    params.corridorId === "corridor:denver-vail-i70" ||
+    params.corridorId === "corridor:denver-breckenridge-i70";
+  if (!isGoSnoCorridor && !params.destination) return null;
+
+  const origin = params.origin || "DEN";
+  const destination =
+    params.destination ||
+    (params.corridorId === "corridor:denver-breckenridge-i70"
+      ? "Breckenridge"
+      : "Vail");
+  const suggestion = getGoSnoGroupVehicleSuggestion(params.passengerCount);
+  const suvOneWayUsd =
+    destination.toLowerCase().includes("breck") ||
+    params.corridorId === "corridor:denver-breckenridge-i70"
+      ? 399
+      : 499;
+  const vanOneWayUsd = 599;
+  const referenceCombinedOneWayUsd =
+    suggestion.vanCount * vanOneWayUsd + suggestion.suvCount * suvOneWayUsd;
+
+  const luggageParts: string[] = [];
+  if (params.standardBagCount > 0) {
+    luggageParts.push(`${params.standardBagCount} standard bags`);
+  }
+  if (params.skiOrOversizeBagCount > 0) {
+    luggageParts.push(`${params.skiOrOversizeBagCount} ski bags`);
+  }
+  const luggageSummary =
+    luggageParts.length > 0
+      ? luggageParts.join(", ")
+      : `${params.passengerCount} passengers standard luggage + ski gear`;
+
+  const url = new URL("https://gosno.co/request-quote");
+  url.searchParams.set("origin", origin);
+  url.searchParams.set("destination", destination);
+  url.searchParams.set("outboundDate", params.travelDate);
+  url.searchParams.set("date", params.travelDate);
+  url.searchParams.set("passengers", String(params.passengerCount));
+  url.searchParams.set("passengerCount", String(params.passengerCount));
+  url.searchParams.set("party_size", String(params.passengerCount));
+  url.searchParams.set("standardBags", String(params.standardBagCount));
+  url.searchParams.set("skiBags", String(params.skiOrOversizeBagCount));
+  url.searchParams.set("luggage", luggageSummary);
+  url.searchParams.set("vehicleType", "van");
+  url.searchParams.set("vehicleSuggestion", suggestion.shortLabel);
+
+  return {
+    operatorId: "op:gosno",
+    operatorName: "GoSno Mountain Transport",
+    status: "quote_only",
+    nextStep: "request a quote",
+    origin,
+    destination,
+    outboundDate: params.travelDate,
+    passengers: params.passengerCount,
+    standardBagCount: params.standardBagCount,
+    skiOrOversizeBagCount: params.skiOrOversizeBagCount,
+    luggageSummary,
+    vehicleSuggestion: suggestion,
+    referenceCombinedOneWayUsd,
+    confirmationPolicy: GOSNO_GROUP_CONFIRMATION_POLICY,
+    inquiryUrl: url.toString(),
+  };
 }
 
 function parseMonthUtc(travelDate: string): number {
@@ -620,6 +775,14 @@ export function compileApplicableDecisionContext(
   const outcomeHash = `sha256:${outcomeHashHex}`;
   const decisionReceiptId = `rcpt:sha256:${outcomeHashHex}`;
 
+  const privateGroupInquiryOption = buildGoSnoPrivateGroupInquiryOption({
+    corridorId: request.corridorId,
+    travelDate,
+    passengerCount,
+    standardBagCount,
+    skiOrOversizeBagCount,
+  });
+
   return {
     spec: "dcc-compiled-applicability-outcome/1.0",
     modelVersion: APPLICABILITY_MODEL_VERSION,
@@ -649,5 +812,6 @@ export function compileApplicableDecisionContext(
       pricingDisposition,
       epistemicUnknowns,
     },
+    privateGroupInquiryOption,
   };
 }

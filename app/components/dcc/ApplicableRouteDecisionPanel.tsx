@@ -123,10 +123,10 @@ export default function ApplicableRouteDecisionPanel({
           <input
             type="number"
             min={1}
-            max={14}
+            max={50}
             value={passengerCount}
             onChange={(e) => {
-              const next = Math.max(1, Math.min(14, Number(e.target.value) || 1));
+              const next = Math.max(1, Math.min(50, Number(e.target.value) || 1));
               setPassengerCount(next);
               void recompileOnServer({
                 passengerCount: next,
@@ -147,10 +147,10 @@ export default function ApplicableRouteDecisionPanel({
           <input
             type="number"
             min={0}
-            max={20}
+            max={50}
             value={standardBagCount}
             onChange={(e) => {
-              const next = Math.max(0, Math.min(20, Number(e.target.value) || 0));
+              const next = Math.max(0, Math.min(50, Number(e.target.value) || 0));
               setStandardBagCount(next);
               void recompileOnServer({
                 passengerCount,
@@ -171,10 +171,10 @@ export default function ApplicableRouteDecisionPanel({
           <input
             type="number"
             min={0}
-            max={14}
+            max={50}
             value={skiOrOversizeBagCount}
             onChange={(e) => {
-              const next = Math.max(0, Math.min(14, Number(e.target.value) || 0));
+              const next = Math.max(0, Math.min(50, Number(e.target.value) || 0));
               setSkiOrOversizeBagCount(next);
               void recompileOnServer({
                 passengerCount,
@@ -252,6 +252,45 @@ export default function ApplicableRouteDecisionPanel({
           {outcome.compiledDecisionSummary.pricingDisposition}
         </p>
       </div>
+
+      {/* GoSno Multi-Vehicle Private Group Inquiry Option when passengerCount > 10 */}
+      {outcome.privateGroupInquiryOption && (
+        <div
+          className="mt-5 rounded-2xl border border-amber-400/35 bg-amber-500/10 p-5 space-y-3"
+          data-testid="gosno-private-group-inquiry-card"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-amber-300">
+              Private Group Transfer (&gt;10 Passengers · Exceeds Single-Vehicle Cap)
+            </span>
+            <span className="rounded-full border border-amber-400/30 bg-amber-400/15 px-2.5 py-0.5 text-[11px] font-bold uppercase text-amber-200">
+              {outcome.privateGroupInquiryOption.nextStep}
+            </span>
+          </div>
+          <p className="text-sm text-slate-100">
+            For <strong>{outcome.privateGroupInquiryOption.passengers} passengers</strong> ({outcome.privateGroupInquiryOption.origin} → {outcome.privateGroupInquiryOption.destination} on {outcome.privateGroupInquiryOption.outboundDate}, {outcome.privateGroupInquiryOption.luggageSummary}), DCC suggests{" "}
+            <strong data-testid="gosno-panel-group-suggestion">
+              {outcome.privateGroupInquiryOption.vehicleSuggestion.summaryLabel}
+            </strong>{" "}
+            ({outcome.privateGroupInquiryOption.vehicleSuggestion.shortLabel}).{" "}
+            <strong>{outcome.privateGroupInquiryOption.confirmationPolicy}</strong>
+          </p>
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+            <span className="text-xs text-amber-200/90">
+              Reference combined one-way rate: ${outcome.privateGroupInquiryOption.referenceCombinedOneWayUsd}
+            </span>
+            <a
+              href={outcome.privateGroupInquiryOption.inquiryUrl}
+              data-testid="gosno-private-group-inquiry-link"
+              target="_blank"
+              rel="sponsored noopener noreferrer"
+              className="inline-flex items-center justify-center rounded-xl bg-amber-400 px-4 py-2 text-xs font-black uppercase tracking-wider text-slate-950 transition hover:bg-amber-300"
+            >
+              Request GoSno Group Quote ({outcome.privateGroupInquiryOption.vehicleSuggestion.shortLabel}) →
+            </a>
+          </div>
+        </div>
+      )}
 
       {/* Strictly Rendered Geographic Segment Constraints */}
       <div className="mt-5 grid gap-3 md:grid-cols-2">

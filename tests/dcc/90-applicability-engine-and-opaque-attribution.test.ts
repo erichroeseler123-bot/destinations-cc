@@ -804,5 +804,91 @@ test("7. GoSno 10-passenger vs. 11-passenger capacity boundaries, gear-fit rules
   assert.equal(breckHandoffUrl.searchParams.get("standardBags"), "4");
   assert.equal(breckHandoffUrl.searchParams.get("skiBags"), "0");
   assert.equal(breckHandoffUrl.searchParams.get("vehicleClass"), "suv");
+
+  // 7e. 16 passengers (DEN -> Breckenridge) -> single vehicles ineligible; offers GoSno group inquiry suggesting a van plus a Suburban ($998 reference)
+  const breck16EvalRes = await evaluateApplicabilityPost(
+    new Request("https://destinationcommandcenter.com/api/v1/applicability/evaluate", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        corridorId: "corridor:denver-breckenridge-i70",
+        travelDate: "2026-12-24",
+        passengerCount: 16,
+        standardBagCount: 16,
+        skiOrOversizeBagCount: 12,
+      }),
+    }),
+  );
+  assert.equal(breck16EvalRes.status, 200);
+  const breck16Json = (await breck16EvalRes.json()) as any;
+  const breck16Group = breck16Json.outcome.privateGroupInquiryOption;
+  assert.ok(breck16Group);
+  assert.equal(breck16Group.status, "quote_only");
+  assert.equal(breck16Group.nextStep, "request a quote");
+  assert.equal(breck16Group.passengers, 16);
+  assert.equal(breck16Group.vehicleSuggestion.summaryLabel, "a van plus a Suburban");
+  assert.equal(
+    breck16Group.vehicleSuggestion.shortLabel,
+    "1 Private Passenger Van + 1 Private Chevrolet Suburban",
+  );
+  assert.equal(breck16Group.referenceCombinedOneWayUsd, 998);
+  assert.equal(
+    breck16Group.confirmationPolicy,
+    "GoSno confirms gear fit, availability, and one group total.",
+  );
+  const breck16Url = new URL(breck16Json.opaqueAttribution.outboundPartnerUrl);
+  assert.equal(breck16Url.origin + breck16Url.pathname, "https://gosno.co/request-quote");
+  assert.equal(breck16Url.searchParams.get("origin"), "DEN");
+  assert.equal(breck16Url.searchParams.get("destination"), "Breckenridge");
+  assert.equal(breck16Url.searchParams.get("outboundDate"), "2026-12-24");
+  assert.equal(breck16Url.searchParams.get("passengers"), "16");
+  assert.equal(breck16Url.searchParams.get("luggage"), "16 standard bags, 12 ski bags");
+  assert.equal(
+    breck16Url.searchParams.get("vehicleSuggestion"),
+    "1 Private Passenger Van + 1 Private Chevrolet Suburban",
+  );
+
+  // 7f. 20 passengers (DEN -> Vail) -> single vehicles ineligible; offers GoSno group inquiry suggesting two vans ($1,198 reference)
+  const vail20EvalRes = await evaluateApplicabilityPost(
+    new Request("https://destinationcommandcenter.com/api/v1/applicability/evaluate", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        corridorId: "corridor:denver-vail-i70",
+        travelDate: "2026-12-26",
+        passengerCount: 20,
+        standardBagCount: 20,
+        skiOrOversizeBagCount: 16,
+      }),
+    }),
+  );
+  assert.equal(vail20EvalRes.status, 200);
+  const vail20Json = (await vail20EvalRes.json()) as any;
+  const vail20Group = vail20Json.outcome.privateGroupInquiryOption;
+  assert.ok(vail20Group);
+  assert.equal(vail20Group.status, "quote_only");
+  assert.equal(vail20Group.nextStep, "request a quote");
+  assert.equal(vail20Group.passengers, 20);
+  assert.equal(vail20Group.vehicleSuggestion.summaryLabel, "two vans");
+  assert.equal(
+    vail20Group.vehicleSuggestion.shortLabel,
+    "2 Private Passenger Vans",
+  );
+  assert.equal(vail20Group.referenceCombinedOneWayUsd, 1198);
+  assert.equal(
+    vail20Group.confirmationPolicy,
+    "GoSno confirms gear fit, availability, and one group total.",
+  );
+  const vail20Url = new URL(vail20Json.opaqueAttribution.outboundPartnerUrl);
+  assert.equal(vail20Url.origin + vail20Url.pathname, "https://gosno.co/request-quote");
+  assert.equal(vail20Url.searchParams.get("origin"), "DEN");
+  assert.equal(vail20Url.searchParams.get("destination"), "Vail");
+  assert.equal(vail20Url.searchParams.get("outboundDate"), "2026-12-26");
+  assert.equal(vail20Url.searchParams.get("passengers"), "20");
+  assert.equal(vail20Url.searchParams.get("luggage"), "20 standard bags, 16 ski bags");
+  assert.equal(
+    vail20Url.searchParams.get("vehicleSuggestion"),
+    "2 Private Passenger Vans",
+  );
 });
 

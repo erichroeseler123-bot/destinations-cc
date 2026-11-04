@@ -1,5 +1,9 @@
 import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
+import {
+  buildGoSnoPrivateGroupInquiryOption,
+  type CorridorId,
+} from "@/lib/dcc/applicability";
 import { issueOpaqueClickAttribution } from "@/lib/dcc/commerce/opaqueAttributionLedger";
 import { syncDurableLedgerWithPostgres } from "@/lib/dcc/storage/durableTransactionalStore";
 
@@ -18,6 +22,22 @@ const ALLOWED_GOSNO_DESTINATIONS = new Set([
   "crested-butte",
   "big-sky",
 ]);
+
+const DESTINATION_DISPLAY_MAP: Record<string, string> = {
+  breckenridge: "Breckenridge",
+  vail: "Vail",
+  "beaver-creek": "Beaver Creek",
+  keystone: "Keystone",
+  copper: "Copper Mountain",
+  "copper-mountain": "Copper Mountain",
+  "winter-park": "Winter Park",
+  aspen: "Aspen",
+  snowmass: "Snowmass",
+  steamboat: "Steamboat Springs",
+  "steamboat-springs": "Steamboat Springs",
+  "crested-butte": "Crested Butte",
+  "big-sky": "Big Sky",
+};
 
 const GOSNO_MAX_VAN_PASSENGERS = 10;
 const GOSNO_MAX_SUV_PASSENGERS = 6;
@@ -64,7 +84,65 @@ export async function GET(request: Request) {
     ? Number(partySizeRaw)
     : null;
 
+  const airport = clean(incoming.searchParams.get("airport") || incoming.searchParams.get("origin"), 12).toUpperCase();
+  const date = clean(incoming.searchParams.get("date") || incoming.searchParams.get("outboundDate"), 10);
+  const standardBags = Number(clean(incoming.searchParams.get("standardBags"), 3)) || 0;
+  const skiBags = Number(clean(incoming.searchParams.get("skiBags"), 3)) || 0;
+  const rawLuggage = clean(incoming.searchParams.get("luggage"), 180);
+
   if (parsedPartySize !== null && parsedPartySize > GOSNO_MAX_VAN_PASSENGERS) {
+    const corridorId: CorridorId =
+      destination === "breckenridge"
+        ? "corridor:denver-breckenridge-i70"
+        : "corridor:denver-vail-i70";
+    const displayDestination =
+      DESTINATION_DISPLAY_MAP[destination] || destination;
+    const groupOption = buildGoSnoPrivateGroupInquiryOption({
+      corridorId,
+      origin: airport || (destination === "big-sky" ? "BZN" : "DEN"),
+      destination: displayDestination,
+      travelDate: /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : "2026-12-20",
+      passengerCount: parsedPartySize,
+      standardBagCount: standardBags || parsedPartySize,
+      skiOrOversizeBagCount: skiBags,
+    });
+
+    if (groupOption && rawLuggage) {
+      const customInquiryUrl = new URL(groupOption.inquiryUrl);
+      customInquiryUrl.searchParams.set("luggage", rawLuggage);
+      groupOption.luggageSummary = rawLuggage;
+      groupOption.inquiryUrl = customInquiryUrl.toString();
+    }
+
+    const mode = clean(incoming.searchParams.get("mode"), 32);
+    const preferPrivate = clean(incoming.searchParams.get("prefer_private"), 8);
+    if (groupOption && (mode === "group_inquiry" || preferPrivate === "1")) {
+      const handoffId = `ho_${randomUUID()}`;
+      const rawSourcePage = clean(incoming.searchParams.get("source_page"), 240);
+      const sourcePage = rawSourcePage.startsWith("/location/") ? rawSourcePage : "/go/dcc-to-gosno";
+      const receiptId = clean(incoming.searchParams.get("receipt_id") || incoming.searchParams.get("receiptId"), 128) || null;
+      const evidenceVersion = clean(incoming.searchParams.get("evidence_version") || incoming.searchParams.get("evidenceVersion"), 128) || "dcc-evidence-stewardship/2026.11";
+      const groupTarget = new URL(groupOption.inquiryUrl);
+
+      const opaqueRecord = issueOpaqueClickAttribution({
+        decisionReceiptId: receiptId || `rcpt:sha256:${"0".repeat(64)}`,
+        recommendedOperatorId: `gosno:${destination}:group`,
+        recommendedOperatorName: `GoSno Private Group Inquiry (${displayDestination})`,
+        recommendedVehicleClassId: "veh:gosno-multi-vehicle-group",
+        evidenceVersion,
+        handoffId,
+        provider: "direct",
+        productCode: `gosno-${destination}-group`,
+        productDestinationUrl: groupTarget.toString(),
+      });
+      await syncDurableLedgerWithPostgres({ forcePushLocal: true });
+
+      groupTarget.searchParams.set("dcc_handoff_id", handoffId);
+      groupTarget.searchParams.set("click_id", opaqueRecord.clickId);
+      groupTarget.searchParams.set("source_page", sourcePage);
+      return NextResponse.redirect(groupTarget, 302);
+    }
+
     return NextResponse.json(
       {
         ok: false,
@@ -72,6 +150,7 @@ export async function GET(request: Request) {
         maxAllowedPassengers: GOSNO_MAX_VAN_PASSENGERS,
         requestedPassengers: parsedPartySize,
         error: `A group of ${parsedPartySize} passengers exceeds GoSno's 10-passenger maximum single-van capacity (up to 6 in an SUV, or up to 10 in a van, subject to luggage and ski-gear fit).`,
+        privateGroupInquiryOption: groupOption,
       },
       {
         status: 422,
@@ -84,8 +163,6 @@ export async function GET(request: Request) {
   }
 
   const target = new URL("https://gosno.co/handoff/dcc");
-  const airport = clean(incoming.searchParams.get("airport"), 12).toUpperCase();
-  const date = clean(incoming.searchParams.get("date"), 10);
   const requestedVehicleType = slug(incoming.searchParams.get("vehicle_type"));
   const effectiveVehicleType =
     parsedPartySize !== null && parsedPartySize > GOSNO_MAX_SUV_PASSENGERS

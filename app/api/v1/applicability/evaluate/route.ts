@@ -50,6 +50,7 @@ export async function POST(request: Request) {
     await syncDurableLedgerWithPostgres();
     const body = (await request.json()) as Partial<TripApplicabilityRequest> & {
       partnerDestinationUrl?: string;
+      preferPrivateTransfer?: boolean;
       partnerNetwork?:
         | "viator"
         | "fareharbor"
@@ -89,7 +90,12 @@ export async function POST(request: Request) {
 
     let basePartnerUrl = explicitPartnerUrl || defaultPartnerUrl;
 
-    if (outcome.recommendedOperatorId === "op:gosno") {
+    if (
+      outcome.privateGroupInquiryOption &&
+      (body.preferPrivateTransfer === true || !outcome.recommendedOperatorId)
+    ) {
+      basePartnerUrl = outcome.privateGroupInquiryOption.inquiryUrl;
+    } else if (outcome.recommendedOperatorId === "op:gosno") {
       const goSnoBase =
         corridorId === "corridor:denver-breckenridge-i70"
           ? "https://gosno.co/breckenridge"
@@ -158,19 +164,73 @@ export async function POST(request: Request) {
       basePartnerUrl = epicUrl.toString();
     }
 
+    const usePrivateGroupAsPrimary =
+      Boolean(outcome.privateGroupInquiryOption) &&
+      (body.preferPrivateTransfer === true || !outcome.recommendedOperatorId);
+
     const opaqueRecord = issueOpaqueClickAttribution({
       decisionReceiptId: outcome.decisionReceiptId,
-      recommendedOperatorId:
-        outcome.recommendedOperatorId || `operator:${corridorId}`,
-      recommendedOperatorName: outcome.recommendedOperatorName,
-      recommendedVehicleClassId: outcome.recommendedVehicleClassId,
+      recommendedOperatorId: usePrivateGroupAsPrimary
+        ? "op:gosno"
+        : outcome.recommendedOperatorId || `operator:${corridorId}`,
+      recommendedOperatorName: usePrivateGroupAsPrimary
+        ? "GoSno Mountain Transport (Multi-Vehicle Group Inquiry)"
+        : outcome.recommendedOperatorName,
+      recommendedVehicleClassId: usePrivateGroupAsPrimary
+        ? "veh:gosno-multi-vehicle-group"
+        : outcome.recommendedVehicleClassId,
       evidenceVersion: outcome.evidenceVersion,
       applicabilityModelVersion: outcome.modelVersion,
       applicabilityOutcomeHash: outcome.outcomeHash,
       provider: body.partnerNetwork ?? "direct",
-      productCode: outcome.recommendedVehicleClassId || corridorId,
+      productCode: usePrivateGroupAsPrimary
+        ? "gosno-multi-vehicle-group"
+        : outcome.recommendedVehicleClassId || corridorId,
       productDestinationUrl: basePartnerUrl,
     });
+
+    const privateGroupInquiryAttribution = outcome.privateGroupInquiryOption
+      ? usePrivateGroupAsPrimary
+        ? {
+            clickId: opaqueRecord.clickId,
+            outboundPartnerUrl: opaqueRecord.outboundPartnerUrl,
+            recommendedOperatorId: "op:gosno",
+            recommendedOperatorName:
+              "GoSno Mountain Transport (Multi-Vehicle Group Inquiry)",
+            vehicleSuggestion:
+              outcome.privateGroupInquiryOption.vehicleSuggestion,
+            confirmationPolicy:
+              outcome.privateGroupInquiryOption.confirmationPolicy,
+          }
+        : (() => {
+            const groupOpaque = issueOpaqueClickAttribution({
+              decisionReceiptId: outcome.decisionReceiptId,
+              recommendedOperatorId: "op:gosno",
+              recommendedOperatorName:
+                "GoSno Mountain Transport (Multi-Vehicle Group Inquiry)",
+              recommendedVehicleClassId: "veh:gosno-multi-vehicle-group",
+              evidenceVersion: outcome.evidenceVersion,
+              applicabilityModelVersion: outcome.modelVersion,
+              applicabilityOutcomeHash: outcome.outcomeHash,
+              provider: "direct",
+              productCode: "gosno-multi-vehicle-group",
+              productDestinationUrl:
+                outcome.privateGroupInquiryOption!.inquiryUrl,
+            });
+            return {
+              clickId: groupOpaque.clickId,
+              outboundPartnerUrl: groupOpaque.outboundPartnerUrl,
+              recommendedOperatorId: "op:gosno",
+              recommendedOperatorName:
+                "GoSno Mountain Transport (Multi-Vehicle Group Inquiry)",
+              vehicleSuggestion:
+                outcome.privateGroupInquiryOption!.vehicleSuggestion,
+              confirmationPolicy:
+                outcome.privateGroupInquiryOption!.confirmationPolicy,
+            };
+          })()
+      : null;
+
     await syncDurableLedgerWithPostgres({ forcePushLocal: true });
 
     return NextResponse.json(
@@ -183,6 +243,7 @@ export async function POST(request: Request) {
           recommendedOperatorId: opaqueRecord.recommendedOperatorId,
           recommendedOperatorName: opaqueRecord.recommendedOperatorName,
         },
+        privateGroupInquiryAttribution,
       },
       {
         status: 200,
