@@ -932,7 +932,47 @@ export function compileApplicableDecisionContext(
                   ? `$${effectiveFixedRateOneWayUsd}`
                   : GOSNO_PRICE_FALLBACK_MESSAGE,
               canonicalBookingUrl: matchedGoSnoFare?.canonicalBookingUrl ?? null,
-              quoteUrl: matchedGoSnoFare?.quoteUrl ?? null,
+              quoteUrl: (() => {
+                if (!matchedGoSnoFare?.quoteUrl) return null;
+                try {
+                  const parsedQuote = new URL(matchedGoSnoFare.quoteUrl);
+                  parsedQuote.searchParams.set(
+                    "origin",
+                    gosnoRouteCtx.origin || "DEN",
+                  );
+                  parsedQuote.searchParams.set(
+                    "destination",
+                    gosnoRouteCtx.destination || "Vail",
+                  );
+                  parsedQuote.searchParams.set(
+                    "passengers",
+                    String(passengerCount),
+                  );
+                  parsedQuote.searchParams.set(
+                    "passengerCount",
+                    String(passengerCount),
+                  );
+                  parsedQuote.searchParams.set(
+                    "party_size",
+                    String(passengerCount),
+                  );
+                  if (travelDate) {
+                    parsedQuote.searchParams.set("outboundDate", travelDate);
+                    parsedQuote.searchParams.set("date", travelDate);
+                  }
+                  parsedQuote.searchParams.set(
+                    "standardBags",
+                    String(standardBagCount),
+                  );
+                  parsedQuote.searchParams.set(
+                    "skiBags",
+                    String(skiOrOversizeBagCount),
+                  );
+                  return parsedQuote.toString();
+                } catch {
+                  return matchedGoSnoFare.quoteUrl;
+                }
+              })(),
             }
           : {}),
       },
