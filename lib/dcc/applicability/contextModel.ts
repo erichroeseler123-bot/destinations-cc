@@ -113,7 +113,7 @@ export const GEOGRAPHIC_SEGMENTS: readonly GeographicSegmentSpec[] = [
       "reg:co-commercial-chain-law-code-18",
     ],
     supportedVehicleClassIds: [
-      "veh:private-transit-van-10-14",
+      "veh:private-transit-van-10",
       "veh:awd-full-size-suv",
       "veh:shared-mountain-shuttle",
       "veh:cdot-bustang-coach",
@@ -138,7 +138,7 @@ export const GEOGRAPHIC_SEGMENTS: readonly GeographicSegmentSpec[] = [
       "reg:co-commercial-chain-law-code-18",
     ],
     supportedVehicleClassIds: [
-      "veh:private-transit-van-10-14",
+      "veh:private-transit-van-10",
       "veh:awd-full-size-suv",
       "veh:shared-mountain-shuttle",
       "veh:cdot-bustang-coach",
@@ -159,7 +159,7 @@ export const GEOGRAPHIC_SEGMENTS: readonly GeographicSegmentSpec[] = [
     maxGradePercent: 6.0,
     applicableRegulationIds: [],
     supportedVehicleClassIds: [
-      "veh:private-transit-van-10-14",
+      "veh:private-transit-van-10",
       "veh:awd-full-size-suv",
       "veh:sedan-2wd",
     ],
@@ -245,23 +245,23 @@ export const VEHICLE_CLASSES: readonly VehicleClassCapacitySpec[] = [
     evidenceVersion: "dcc-evidence-co-i70/2026.11",
   },
   {
-    vehicleClassId: "veh:private-transit-van-10-14",
+    vehicleClassId: "veh:private-transit-van-10",
     corridorIds: ["corridor:denver-vail-i70", "corridor:denver-breckenridge-i70", "corridor:denver-red-rocks"],
-    displayName: "Private 10–14 Passenger High-Roof Transit Van (GoSno)",
+    displayName: "Private Passenger Van — Up to 10 Passengers (GoSno)",
     operatorId: "op:gosno",
     operatorName: "GoSno Mountain Transport",
     providerType: "direct_operator",
     drivetrain: "awd_commercial_chains",
     commercialChainEquipped: true,
-    maxPassengersStandard: 14,
-    maxPassengersWithFullLengthSkiBagsInside: 14,
-    maxStandardBagsWithFullPassengerLoad: 14,
-    maxStandardBagsWithFoldedThirdRow: 14,
-    maxSkiOrOversizeBagsInsideWithFullPassengerLoad: 14,
-    maxSkiOrOversizeBagsWithRoofBoxAndFoldedRow: 14,
+    maxPassengersStandard: 10,
+    maxPassengersWithFullLengthSkiBagsInside: 10,
+    maxStandardBagsWithFullPassengerLoad: 10,
+    maxStandardBagsWithFoldedThirdRow: 10,
+    maxSkiOrOversizeBagsInsideWithFullPassengerLoad: 10,
+    maxSkiOrOversizeBagsWithRoofBoxAndFoldedRow: 10,
     minPassengerAgeYears: 0,
     pricingModel: "quote_only",
-    fixedRateOneWayUsd: null,
+    fixedRateOneWayUsd: 599,
     quoteOnly: true,
     evidenceVersion: "dcc-evidence-co-i70/2026.11",
   },
@@ -503,12 +503,22 @@ import {
 
 const DEFAULT_EVIDENCE_SNAPSHOT_ID = "dcc-evidence-bundle/2026.11.02";
 
+function normalizeGoSnoVanClassId(vehicleClassId: string): string {
+  return vehicleClassId === "veh:private-transit-van-10-14"
+    ? "veh:private-transit-van-10"
+    : vehicleClassId;
+}
+
 export function applyStewardVehicleEvidencePatch(
   patch: StewardVehicleEvidencePatch,
   resultingEvidenceSnapshotId: string,
 ): void {
+  const normalizedClassId = normalizeGoSnoVanClassId(patch.vehicleClassId);
   runDurableLedgerTransaction((state) => {
-    state.stewardVehiclePatchesByClassId[patch.vehicleClassId] = patch;
+    state.stewardVehiclePatchesByClassId[normalizedClassId] = {
+      ...patch,
+      vehicleClassId: normalizedClassId,
+    };
     state.stewardLatestSnapshotId = resultingEvidenceSnapshotId;
   });
 }
@@ -517,7 +527,11 @@ export function getStewardVehicleEvidencePatch(
   vehicleClassId: string,
 ): StewardVehicleEvidencePatch | undefined {
   const state = readDurableLedgerState();
-  return state.stewardVehiclePatchesByClassId[vehicleClassId];
+  const normalizedClassId = normalizeGoSnoVanClassId(vehicleClassId);
+  return (
+    state.stewardVehiclePatchesByClassId[normalizedClassId] ??
+    state.stewardVehiclePatchesByClassId[vehicleClassId]
+  );
 }
 
 export function resetStewardVehicleEvidencePatchesForTests(): void {
@@ -533,7 +547,11 @@ export function getVersionedApplicabilityContextModel(): VersionedApplicabilityC
     durableState.stewardLatestSnapshotId || DEFAULT_EVIDENCE_SNAPSHOT_ID;
 
   const effectiveVehicles: readonly VehicleClassCapacitySpec[] = VEHICLE_CLASSES.map((v) => {
-    const patch = durableState.stewardVehiclePatchesByClassId[v.vehicleClassId];
+    const patch =
+      durableState.stewardVehiclePatchesByClassId[v.vehicleClassId] ??
+      (v.vehicleClassId === "veh:private-transit-van-10"
+        ? durableState.stewardVehiclePatchesByClassId["veh:private-transit-van-10-14"]
+        : undefined);
     if (!patch) return v;
     return {
       ...v,

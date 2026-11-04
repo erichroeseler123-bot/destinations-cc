@@ -671,13 +671,13 @@ export const GOSNO_DIRECT_PILOT_MANIFEST: OperatorManifest = {
   country: "United States",
   website: "https://gosno.co/",
   overview:
-    "Private airport-to-mountain ground transportation operator connecting Denver International Airport (DEN) and Colorado ski resorts in private SUVs (up to 6 passengers) and private passenger vans (up to 10 passengers). GoSno sells 100% private transfers—never shared shuttles.",
+    "Private airport-to-mountain ground transportation operator connecting Denver International Airport (DEN) and Colorado ski resorts in private SUVs (up to 6 passengers) and private passenger vans (up to 10 passengers, subject to luggage and ski-gear fit; groups of 11+ exceed a single GoSno van). GoSno sells 100% private transfers—never shared shuttles.",
   specialties: [
     "100% private DEN to Breckenridge, Vail, Beaver Creek, Keystone & Aspen transfers",
-    "Private SUV transfers (up to 6 passengers) & private passenger vans (up to 10 passengers)",
+    "Private SUV transfers (up to 6 passengers) & private passenger vans (up to 10 passengers, subject to luggage and ski-gear fit)",
     "Existing gosno.co Rezdy storefront & /.well-known/dcc endpoint (evaluated separately from DCC 10% direct pilot)",
   ],
-  areasServed: ["Denver International Airport (DEN)", "Breckenridge", "Vail", "Beaver Creek", "Keystone", "Copper Mountain", "Aspen", "Snowmass", "Steamboat Springs", "Big Sky"],
+  areasServed: ["Denver International Airport (DEN)", "Breckenridge", "Vail", "Beaver Creek", "Keystone", "Copper Mountain", "Winter Park", "Aspen", "Snowmass", "Steamboat Springs", "Crested Butte", "Big Sky"],
   currentBookingChannel: "direct_pilot",
   directPartnershipStatus: "first_direct_channel_pilot",
   detectedBookingSystem: "Rezdy Native REST API v1",
@@ -689,8 +689,8 @@ export const GOSNO_DIRECT_PILOT_MANIFEST: OperatorManifest = {
     pilotLabel: "First Direct-Channel Pilot Candidate (Rezdy API) — Distinct from GoSno's Existing Storefront",
     bookingSystem: "Rezdy Native REST API v1",
     workingCheckoutStatus:
-      "Operational on gosno.co: GoSno's own storefront checkout (gosno.co/denver-to-breckenridge), /.well-known/dcc manifest, and /api/dcc/routes catalog are active in production for private transfers.",
-    workingCheckoutUrl: "https://gosno.co/denver-to-breckenridge",
+      "Operational on gosno.co: GoSno's own storefront checkout (gosno.co/breckenridge and gosno.co/vail), /.well-known/dcc manifest, and /api/dcc/routes catalog are active in production for 100% private transfers.",
+    workingCheckoutUrl: "https://gosno.co/breckenridge",
     wellKnownEndpointUrl: "https://gosno.co/.well-known/dcc",
     pilotScopeSummary:
       "GoSno operates its own Rezdy-backed private transfer checkout on gosno.co and publishes a live /.well-known/dcc manifest. Separately, GoSno is the first candidate for DCC's 10% direct-channel API pilot. While gosno.co's own storefront endpoints respond in production, DCC-side Rezdy API credential provisioning, DCC-side live bookable slot verification, and the 10% commercial addendum remain pending.",
@@ -712,7 +712,7 @@ export const GOSNO_DIRECT_PILOT_MANIFEST: OperatorManifest = {
       agreedCommercialTerms:
         "Proposed 10% direct commission addendum and settlement terms are not yet signed.",
       productMapping:
-        "GET https://gosno.co/api/dcc/routes returns HTTP 200 with 9 private SUV route offerings mapped to Rezdy product codes (e.g., DEN-BRECKENRIDGE -> P7477S at $399.00), while private vans are quoteOnly; DCC-side Rezdy GET /v1/products verification is pending DCC API credentials.",
+        "GET https://gosno.co/api/dcc/routes returns HTTP 200 with 9 outbound DEN private SUV route offerings mapped to Rezdy product codes (e.g., DEN-BRECKENRIDGE -> P7477S at $399.00; DEN-VAIL -> PSW87A at $499.00; DEN-COPPER -> PF773R at $399.00, whereas gosno.co/llms.txt lists Copper at $449). Separately, GET https://gosno.co/api/public/route-feed lists 4 DEN ↔ Breckenridge records (SUV P7477S/PNK8J0 at $399 and Van PKQDPG/PWWQL7 at $599 up to 10 passengers), while /api/availability marks vans quoteOnly: true.",
       livePricesAndAvailability:
         "Live probe GET https://gosno.co/api/availability?origin=DEN&dest=Breckenridge&date=2026-12-15&time=10:00&vehicleClass=suv&tripType=one_way&direction=to_mountain returned HTTP 200 with suv.available=false and van.quoteOnly=true; DCC-side live bookable slot verification against Rezdy is pending.",
       bookingAttributionAndOutcomeReporting:

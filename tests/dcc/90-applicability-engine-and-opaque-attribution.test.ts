@@ -109,10 +109,10 @@ test("2. Deterministic compiler compiles Vail Pass Chain Law + 6 bags into final
     true,
   );
 
-  // Primary recommended vehicle class is upgraded to 10-14 passenger high-roof transit van
+  // Primary recommended vehicle class is upgraded to up-to-10-passenger private van
   assert.equal(
     outcome1.recommendedVehicleClassId,
-    "veh:private-transit-van-10-14",
+    "veh:private-transit-van-10",
   );
   assert.match(outcome1.compiledDecisionSummary.headline, /Vail Pass Chain Law/);
   assert.match(
@@ -264,7 +264,7 @@ test("5. Background worker reconciles revenue via partner webhooks and CSV expor
       "rcpt:sha256:1111111111111111111111111111111111111111111111111111111111111111",
     recommendedOperatorId: "gosno:vail-private-van",
     recommendedOperatorName: "GoSno Mountain Transfer",
-    recommendedVehicleClassId: "veh:private-transit-van-10-14",
+    recommendedVehicleClassId: "veh:private-transit-van-10",
     evidenceVersion: "dcc-evidence-stewardship/2026.11",
     provider: "direct",
     productCode: "gosno-vail-van",
@@ -652,3 +652,157 @@ test("6. Protected Attribution Administration & End-to-End Booking-to-Reconcilia
     "GOSNO-E2E-99001",
   );
 });
+
+test("7. GoSno 10-passenger vs. 11-passenger capacity boundaries, gear-fit rules, and Vail/Breckenridge handoff verification", async () => {
+  // 7a. 10 passengers within luggage/ski-gear fit envelope -> eligible for GoSno van, subject to gear fit and availability
+  const vail10EvalRes = await evaluateApplicabilityPost(
+    new Request("https://destinationcommandcenter.com/api/v1/applicability/evaluate", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        corridorId: "corridor:denver-vail-i70",
+        travelDate: "2026-12-20",
+        passengerCount: 10,
+        standardBagCount: 8,
+        skiOrOversizeBagCount: 6,
+        activeSegmentConditions: {
+          i70TractionLawActive: true,
+          vailPassChainLawActive: true,
+        },
+      }),
+    }),
+  );
+  assert.equal(vail10EvalRes.status, 200);
+  const vail10Json = (await vail10EvalRes.json()) as any;
+  assert.equal(vail10Json.ok, true);
+  assert.equal(vail10Json.outcome.recommendedVehicleClassId, "veh:private-transit-van-10");
+  assert.equal(vail10Json.outcome.recommendedOperatorId, "op:gosno");
+
+  const vail10Van = vail10Json.outcome.vehicleClassEvaluations.find(
+    (v: any) => v.vehicleClassId === "veh:private-transit-van-10",
+  );
+  assert.ok(vail10Van);
+  assert.equal(vail10Van.disposition, "recommended");
+  assert.equal(vail10Van.capacityResolution.maxAllowedPassengers, 10);
+  assert.equal(vail10Van.capacityResolution.fitsPassengerEnvelope, true);
+  assert.equal(vail10Van.capacityResolution.fitsBaggageEnvelope, true);
+  assert.equal(
+    vail10Van.constraintCodes.includes("SUBJECT_TO_LUGGAGE_AND_SKI_GEAR_FIT_AND_AVAILABILITY"),
+    true,
+  );
+  assert.equal(
+    vail10Van.constraintCodes.includes("TEN_PASSENGER_MAX_CAPACITY_GEAR_FIT_CHECK_REQUIRED"),
+    true,
+  );
+  assert.equal(vail10Van.pricingResolution.fixedRateOneWayUsd, 599);
+  assert.equal(vail10Van.pricingResolution.quoteOnly, true);
+
+  // Verify Vail handoff URL carries exact route and trip parameters
+  const vailHandoffUrl = new URL(vail10Json.opaqueAttribution.outboundPartnerUrl);
+  assert.equal(vailHandoffUrl.origin + vailHandoffUrl.pathname, "https://gosno.co/vail");
+  assert.equal(vailHandoffUrl.searchParams.get("origin"), "DEN");
+  assert.equal(vailHandoffUrl.searchParams.get("destination"), "Vail");
+  assert.equal(vailHandoffUrl.searchParams.get("date"), "2026-12-20");
+  assert.equal(vailHandoffUrl.searchParams.get("passengers"), "10");
+  assert.equal(vailHandoffUrl.searchParams.get("passengerCount"), "10");
+  assert.equal(vailHandoffUrl.searchParams.get("party_size"), "10");
+  assert.equal(vailHandoffUrl.searchParams.get("standardBags"), "8");
+  assert.equal(vailHandoffUrl.searchParams.get("skiBags"), "6");
+  assert.equal(vailHandoffUrl.searchParams.get("vehicleClass"), "van");
+  assert.match(vailHandoffUrl.searchParams.get("click_id") ?? "", /^clk_[0-9a-f]{24}$/);
+
+  // 7b. 10 passengers exceeding luggage/ski-gear fit -> disqualified for single GoSno van
+  const vail10OverGear = compileApplicableDecisionContext({
+    corridorId: "corridor:denver-vail-i70",
+    travelDate: "2026-12-20",
+    passengerCount: 10,
+    standardBagCount: 12,
+    skiOrOversizeBagCount: 11,
+  });
+  const overGearVan = vail10OverGear.vehicleClassEvaluations.find(
+    (v) => v.vehicleClassId === "veh:private-transit-van-10",
+  );
+  assert.ok(overGearVan);
+  assert.equal(overGearVan.disposition, "ineligible");
+  assert.equal(overGearVan.capacityResolution.fitsPassengerEnvelope, true);
+  assert.equal(overGearVan.capacityResolution.fitsBaggageEnvelope, false);
+  assert.equal(
+    overGearVan.constraintCodes.includes("DISQUALIFIED_CARGO_VOLUME_EXCEEDS_VEHICLE_ENVELOPE"),
+    true,
+  );
+  assert.equal(
+    overGearVan.constraintCodes.includes("DISQUALIFIED_OVERSIZE_SKI_BAG_COUNT_EXCEEDS_LIMIT"),
+    true,
+  );
+
+  // 7c. 11 passengers -> INELIGIBLE for a single GoSno van on both Vail and Breckenridge
+  const vail11EvalRes = await evaluateApplicabilityPost(
+    new Request("https://destinationcommandcenter.com/api/v1/applicability/evaluate", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        corridorId: "corridor:denver-vail-i70",
+        travelDate: "2026-12-20",
+        passengerCount: 11,
+        standardBagCount: 8,
+        skiOrOversizeBagCount: 4,
+      }),
+    }),
+  );
+  assert.equal(vail11EvalRes.status, 200);
+  const vail11Json = (await vail11EvalRes.json()) as any;
+  const vail11Van = vail11Json.outcome.vehicleClassEvaluations.find(
+    (v: any) => v.vehicleClassId === "veh:private-transit-van-10",
+  );
+  assert.ok(vail11Van);
+  assert.equal(vail11Van.disposition, "ineligible");
+  assert.equal(vail11Van.capacityResolution.maxAllowedPassengers, 10);
+  assert.equal(vail11Van.capacityResolution.fitsPassengerEnvelope, false);
+  assert.equal(
+    vail11Van.constraintCodes.includes("DISQUALIFIED_PASSENGER_COUNT_EXCEEDS_LEGAL_SEAT_CAP"),
+    true,
+  );
+  assert.notEqual(vail11Json.outcome.recommendedOperatorId, "op:gosno");
+  assert.equal(vail11Json.outcome.recommendedVehicleClassId, "veh:shared-mountain-shuttle");
+  assert.equal(
+    vail11Json.opaqueAttribution.outboundPartnerUrl.includes("gosno.co"),
+    false,
+    "11-passenger group must not be handed off to a single GoSno van",
+  );
+
+  // 7d. Breckenridge handoff verification (5 passengers in SUV at $399 one-way, and 10 passengers in van)
+  const breck5EvalRes = await evaluateApplicabilityPost(
+    new Request("https://destinationcommandcenter.com/api/v1/applicability/evaluate", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        corridorId: "corridor:denver-breckenridge-i70",
+        travelDate: "2026-12-22",
+        passengerCount: 5,
+        standardBagCount: 4,
+        skiOrOversizeBagCount: 0,
+      }),
+    }),
+  );
+  assert.equal(breck5EvalRes.status, 200);
+  const breck5Json = (await breck5EvalRes.json()) as any;
+  assert.equal(breck5Json.outcome.recommendedVehicleClassId, "veh:awd-full-size-suv");
+  assert.equal(breck5Json.outcome.recommendedOperatorId, "op:gosno");
+  const breckSuv = breck5Json.outcome.vehicleClassEvaluations.find(
+    (v: any) => v.vehicleClassId === "veh:awd-full-size-suv",
+  );
+  assert.equal(breckSuv.pricingResolution.fixedRateOneWayUsd, 399);
+
+  const breckHandoffUrl = new URL(breck5Json.opaqueAttribution.outboundPartnerUrl);
+  assert.equal(breckHandoffUrl.origin + breckHandoffUrl.pathname, "https://gosno.co/breckenridge");
+  assert.equal(breckHandoffUrl.searchParams.get("origin"), "DEN");
+  assert.equal(breckHandoffUrl.searchParams.get("destination"), "Breckenridge");
+  assert.equal(breckHandoffUrl.searchParams.get("date"), "2026-12-22");
+  assert.equal(breckHandoffUrl.searchParams.get("passengers"), "5");
+  assert.equal(breckHandoffUrl.searchParams.get("passengerCount"), "5");
+  assert.equal(breckHandoffUrl.searchParams.get("party_size"), "5");
+  assert.equal(breckHandoffUrl.searchParams.get("standardBags"), "4");
+  assert.equal(breckHandoffUrl.searchParams.get("skiBags"), "0");
+  assert.equal(breckHandoffUrl.searchParams.get("vehicleClass"), "suv");
+});
+

@@ -330,6 +330,7 @@ export function SpecialistHandoffInteractive({
     if (travelDate && option.supportedContextParams.includes("date")) {
       url.searchParams.set("date", travelDate);
     }
+    const numericParty = Number(partySize) || 2;
     if (partySize && option.supportedContextParams.includes("partySize")) {
       url.searchParams.set("travelers", partySize);
       url.searchParams.set("party_size", partySize);
@@ -344,6 +345,29 @@ export function SpecialistHandoffInteractive({
         option.supportedContextParams.includes("direction")
       ) {
         url.searchParams.set(config.contextControls.customSelectorParam, customChoice);
+      }
+    }
+
+    if (option.baseUrl.includes("gosno.co")) {
+      url.searchParams.set("vehicleClass", numericParty > 6 ? "van" : "suv");
+      if (customChoice === "breckenridge-to-den") {
+        url.searchParams.set("origin", "Breckenridge");
+        url.searchParams.set("destination", "DEN");
+        url.searchParams.set("direction", "eastbound");
+      } else if (customChoice === "downtown-denver") {
+        url.searchParams.set("origin", "Denver");
+        url.searchParams.set(
+          "destination",
+          option.baseUrl.includes("/vail") ? "Vail" : "Breckenridge",
+        );
+        url.searchParams.set("direction", "westbound");
+      } else {
+        url.searchParams.set("origin", "DEN");
+        url.searchParams.set(
+          "destination",
+          option.baseUrl.includes("/vail") ? "Vail" : "Breckenridge",
+        );
+        url.searchParams.set("direction", "westbound");
       }
     }
 
@@ -372,7 +396,7 @@ export function SpecialistHandoffInteractive({
             Pass Your Trip Date & Party Size to Booking Links (Optional)
           </p>
           <span className="text-[11px] text-zinc-400">
-            Leave date blank until you know your sailing date
+            Leave date blank until you know your travel date
           </span>
         </div>
 
@@ -431,7 +455,7 @@ export function SpecialistHandoffInteractive({
                 }}
                 className="w-full rounded-lg border border-white/15 bg-zinc-950 px-3 py-2 text-xs md:text-sm text-white focus:border-cyan-400 focus:outline-none"
               >
-                {[1, 2, 3, 4, 5, 6, 8, 10, 12].map((num) => (
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((num) => (
                   <option key={num} value={String(num)}>
                     {num} {num === 1 ? "Traveler" : "Travelers"}
                   </option>
@@ -481,6 +505,11 @@ export function SpecialistHandoffInteractive({
         {config.options.map((option) => {
           const href = buildHandoffUrl(option);
           const isExternal = href.startsWith("http");
+          const numericParty = Number(partySize) || 2;
+          const isGoSnoOption = option.baseUrl.includes("gosno.co");
+          const isIneligibleSingleGoSnoVan = isGoSnoOption && numericParty > 10;
+          const isGoSnoVanSubjectToFit =
+            isGoSnoOption && numericParty >= 7 && numericParty <= 10;
           const handleOptionClick = () => {
             trackEvent("operator_cta_clicked", {
               surface: corridorId,
@@ -525,13 +554,37 @@ export function SpecialistHandoffInteractive({
                 <p className="text-xs text-zinc-400">
                   <strong className="text-zinc-200">When it helps:</strong> {option.whenItHelps}
                 </p>
+                {isGoSnoVanSubjectToFit && (
+                  <p
+                    className="rounded-lg border border-amber-400/30 bg-amber-500/10 p-2.5 text-xs text-amber-200"
+                    data-testid="gosno-van-gear-fit-notice"
+                  >
+                    <strong>{numericParty} Travelers (GoSno Private Van):</strong> Eligible up to 10 passengers, subject to luggage and ski-gear fit and availability ($599 one-way published on gosno.co; live /api/availability returns quoteOnly: true).
+                  </p>
+                )}
+                {isIneligibleSingleGoSnoVan && (
+                  <p
+                    className="rounded-lg border border-rose-400/40 bg-rose-500/10 p-2.5 text-xs text-rose-200"
+                    data-testid="gosno-single-van-ineligible-notice"
+                  >
+                    <strong>Ineligible for a Single GoSno Van ({numericParty} Travelers):</strong> GoSno private vans carry up to 10 passengers max. A group of {numericParty} requires a multi-vehicle booking or per-seat shared shuttle.
+                  </p>
+                )}
               </div>
 
               <div className="space-y-3 pt-3 border-t border-white/10">
                 <p className="text-[11px] text-zinc-400 italic">
                   {option.noPurchaseRequiredNote}
                 </p>
-                {isExternal ? (
+                {isIneligibleSingleGoSnoVan ? (
+                  <span
+                    aria-disabled="true"
+                    data-testid="gosno-single-van-disabled-cta"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-rose-500/40 bg-rose-950/40 px-4 py-2.5 text-xs md:text-sm font-bold text-rose-200 cursor-not-allowed"
+                  >
+                    <span>Ineligible for Single GoSno Van ({numericParty} &gt; 10 Pax Cap)</span>
+                  </span>
+                ) : isExternal ? (
                   <a
                     href={href}
                     target="_blank"

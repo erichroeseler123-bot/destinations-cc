@@ -76,7 +76,7 @@ export const DECISION_PATTERNS = {
     label: "Breckenridge transport",
     canonicalDecisionPath: "/transportation/colorado/denver-to-breckenridge-without-a-car",
     executionHost: "gosno.co",
-    executionPath: "/denver-to-breckenridge",
+    executionPath: "/breckenridge",
     handoffParams: CANONICAL_CONTINUATION_FIELDS,
     networkRole: "decision_to_execution",
     telemetryKey: "breckenridge_transport",

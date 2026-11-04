@@ -298,11 +298,11 @@ test("4. No Manual Overrides & Deterministic Market Re-Evaluation: steward updat
     },
   };
 
-  // Baseline before steward evidence mutation: GoSno 10-14 passenger private van is recommended
+  // Baseline before steward evidence mutation: GoSno up-to-10-passenger private van is recommended
   const baselineOutcome = compileApplicableDecisionContext(tripRequest);
   assert.equal(
     baselineOutcome.recommendedVehicleClassId,
-    "veh:private-transit-van-10-14",
+    "veh:private-transit-van-10",
   );
   assert.equal(
     baselineOutcome.recommendedOperatorId,
@@ -355,7 +355,7 @@ test("4. No Manual Overrides & Deterministic Market Re-Evaluation: steward updat
   assert.ok(safeguardRes.reEvaluatedOutcome);
   assert.notEqual(
     safeguardRes.reEvaluatedOutcome.recommendedVehicleClassId,
-    "veh:private-transit-van-10-14",
+    "veh:private-transit-van-10",
   );
 
   // Final steward decision updates the evidence snapshot (operatingAuthorityValid: false) and triggers re-evaluation
@@ -393,7 +393,7 @@ test("4. No Manual Overrides & Deterministic Market Re-Evaluation: steward updat
 
   const disqualifiedVan =
     resolved.reEvaluatedMarketOutcome.vehicleClassEvaluations.find(
-      (v) => v.vehicleClassId === "veh:private-transit-van-10-14",
+      (v) => v.vehicleClassId === "veh:private-transit-van-10",
     );
   assert.ok(disqualifiedVan);
   assert.equal(disqualifiedVan.disposition, "ineligible");
@@ -796,7 +796,7 @@ test("6. Durable Transactional Storage Survives Separate OS Processes and Enforc
         decisionReceiptId: "rcpt:sha256:9999999999999999999999999999999999999999999999999999999999999999",
         recommendedOperatorId: "gosno:vail-private-van",
         recommendedOperatorName: "GoSno Mountain Transfer",
-        recommendedVehicleClassId: "veh:private-transit-van-10-14",
+        recommendedVehicleClassId: "veh:private-transit-van-10",
         evidenceVersion: "dcc-evidence-stewardship/2026.11",
         provider: "direct",
         productCode: "gosno-vail-van",

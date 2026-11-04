@@ -219,7 +219,7 @@ const SATELLITE_ROLE_OVERRIDES: Partial<Record<LocalAppSource["id"], SystemInven
 };
 
 const GOSNO_ROUTE_URLS: Record<string, string> = {
-  breckenridge: "https://gosno.co/denver-to-breckenridge",
+  breckenridge: "https://gosno.co/breckenridge",
   keystone: "https://gosno.co/keystone",
   vail: "https://gosno.co/vail",
   "beaver-creek": "https://gosno.co/beaver-creek",
@@ -380,6 +380,7 @@ const bookingEndpoints: SystemInventoryBookingEndpoint[] = [
     id: `gosno-${route}`,
     operator: "gosno",
     flowId: "event-transport",
+    rideType: "private" as const,
     url,
     route,
     executionAuthority: "external_operator" as const,

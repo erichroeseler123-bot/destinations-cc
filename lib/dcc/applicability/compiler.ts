@@ -398,7 +398,7 @@ export function compileApplicableDecisionContext(
         veh.maxStandardBagsWithFullPassengerLoad +
         veh.maxSkiOrOversizeBagsInsideWithFullPassengerLoad;
       if (
-        standardBagCount > veh.maxStandardBagsWithFullPassengerLoad &&
+        standardBagCount > veh.maxStandardBagsWithFullPassengerLoad ||
         totalBagCount > maxTotalAllowed
       ) {
         fitsBaggageEnvelope = false;
@@ -421,8 +421,12 @@ export function compileApplicableDecisionContext(
 
     if (isEligible) {
       score = 70;
-      if (veh.vehicleClassId === "veh:private-transit-van-10-14") {
-        // High-roof transit van is primary recommendation when 7+ pax, 6+ bags, or Vail Pass Chain Law active with large load
+      if (veh.vehicleClassId === "veh:private-transit-van-10") {
+        constraintCodes.push("SUBJECT_TO_LUGGAGE_AND_SKI_GEAR_FIT_AND_AVAILABILITY");
+        if (passengerCount === 10 || totalBagCount >= 10) {
+          constraintCodes.push("TEN_PASSENGER_MAX_CAPACITY_GEAR_FIT_CHECK_REQUIRED");
+        }
+        // Private passenger van (up to 10 passengers) is primary recommendation when 7-10 pax, 6+ bags, or Vail Pass Chain Law active with large load
         if (passengerCount >= 7 || totalBagCount >= 6 || skiOrOversizeBagCount >= 3) {
           score += 30;
           constraintCodes.push("RECOMMENDED_HIGH_CAPACITY_SINGLE_VEHICLE_FIT");
@@ -473,10 +477,18 @@ export function compileApplicableDecisionContext(
           : "eligible_alternative";
     }
 
+    const effectiveFixedRateOneWayUsd =
+      veh.vehicleClassId === "veh:awd-full-size-suv" &&
+      request.corridorId === "corridor:denver-breckenridge-i70"
+        ? 399
+        : veh.fixedRateOneWayUsd;
+
     const compiledPricingNote = veh.quoteOnly
-      ? "Quote-only (quoteOnly: true) — requires live operator date/cargo dispatch quote; DCC refuses to invent a flat rate."
-      : veh.fixedRateOneWayUsd !== null
-        ? `$${veh.fixedRateOneWayUsd} one-way (${veh.pricingModel.replace(/_/g, " ")})`
+      ? effectiveFixedRateOneWayUsd !== null
+        ? `$${effectiveFixedRateOneWayUsd} one-way published van rate on gosno.co; live availability API returns quoteOnly: true (subject to luggage/ski-gear fit and dispatch availability).`
+        : "Quote-only (quoteOnly: true) — requires live operator date/cargo dispatch quote; DCC refuses to invent a flat rate."
+      : effectiveFixedRateOneWayUsd !== null
+        ? `$${effectiveFixedRateOneWayUsd} one-way (${veh.pricingModel.replace(/_/g, " ")})`
         : extraBagFeeTotalUsd > 0
           ? `Per-seat variable fare + $${extraBagFeeTotalUsd} extra baggage fee ($${veh.extraBagFeeUsd}/extra bag)`
           : "Per-seat date-variable fare verified on operator rate table.";
@@ -490,8 +502,8 @@ export function compileApplicableDecisionContext(
       compiledReason = `Disqualified: ${totalBagCount} total bags (${standardBagCount} standard, ${skiOrOversizeBagCount} ski/oversize) exceed the physical cabin cargo envelope of ${veh.displayName} for ${passengerCount} passengers.`;
     } else if (!passesAgeGate) {
       compiledReason = `Disqualified: youngest passenger (${youngestPassengerAgeYears} yrs) is below the ${veh.minPassengerAgeYears}-year minimum safety requirement.`;
-    } else if (veh.vehicleClassId === "veh:private-transit-van-10-14") {
-      compiledReason = `Holds all ${passengerCount} passengers and ${totalBagCount} bags (${standardBagCount} standard + ${skiOrOversizeBagCount} ski/oversize) in a single commercial chain-equipped high-roof van (${compiledPricingNote}).`;
+    } else if (veh.vehicleClassId === "veh:private-transit-van-10") {
+      compiledReason = `Holds up to ${veh.maxPassengersStandard} passengers (${passengerCount} requested) and ${totalBagCount} bags (${standardBagCount} standard + ${skiOrOversizeBagCount} ski/oversize) in a single commercial chain-equipped passenger van, subject to luggage and ski-gear fit and availability (${compiledPricingNote}).`;
     } else if (veh.vehicleClassId === "veh:awd-full-size-suv") {
       compiledReason = `Fits ${passengerCount} passengers and ${totalBagCount} bags${requiresThirdRowFolded ? " with the third row folded" : " with the third row raised"} (${compiledPricingNote}).`;
     } else {
@@ -521,7 +533,7 @@ export function compileApplicableDecisionContext(
       },
       pricingResolution: {
         pricingModel: veh.pricingModel,
-        fixedRateOneWayUsd: veh.fixedRateOneWayUsd,
+        fixedRateOneWayUsd: effectiveFixedRateOneWayUsd,
         quoteOnly: veh.quoteOnly,
         estimatedExtraBagFeeUsd: extraBagFeeTotalUsd,
         compiledPricingNote,
@@ -575,11 +587,15 @@ export function compileApplicableDecisionContext(
 
   const epistemicUnknowns = [
     "Live operator dispatch availability for your exact flight arrival timestamp remains verified at booking.",
-    ...(topCandidate?.pricingResolution.quoteOnly
+    ...(topCandidate?.vehicleClassId === "veh:private-transit-van-10"
       ? [
-          "10–14 passenger private van pricing is quote-only (quoteOnly: true); final rate depends on exact travel date and pickup window.",
+          "GoSno private passenger van handles up to 10 passengers, subject to luggage and ski-gear fit and availability (GoSno publishes $599 one-way on gosno.co/vail and gosno.co/breckenridge, while /api/availability returns quoteOnly: true for van requests).",
         ]
-      : []),
+      : topCandidate?.pricingResolution.quoteOnly
+        ? [
+            "Private van pricing is quote-only (quoteOnly: true); final rate depends on exact travel date and pickup window.",
+          ]
+        : []),
     ...(request.corridorId === "corridor:denver-vail-i70"
       ? [
           "CDOT avalanche mitigation and live I-70 safety holds over Vail Pass (MP 180–195) or Eisenhower Tunnel (MP 213.7) can change within 30 minutes of departure.",

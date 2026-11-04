@@ -162,22 +162,22 @@ export const REGISTERED_CLAIM_FACTS: Record<string, RegisteredClaimFact> = {
     corridorId: "corridor:denver-vail-i70",
     affectedMarketId: "corridor:denver-vail",
     operatorId: "gosno",
-    vehicleClassId: "veh:private-transit-van-10-14",
+    vehicleClassId: "veh:private-transit-van-10",
     category: "operating_authority",
     defaultSeverity: "blocking_safety_legal",
     claimStatement:
-      "GoSno 10–14 passenger high-roof transit vans maintain active Colorado PUC luxury limousine/charter authority and commercial Code 18 chain equipment on I-70.",
+      "GoSno up-to-10-passenger private vans maintain active Colorado PUC luxury limousine/charter authority and commercial Code 18 chain equipment on I-70.",
   },
   "claim:gosno:vail-private-van:cargo-capacity": {
     claimId: "claim:gosno:vail-private-van:cargo-capacity",
     corridorId: "corridor:denver-vail-i70",
     affectedMarketId: "corridor:denver-vail",
     operatorId: "gosno",
-    vehicleClassId: "veh:private-transit-van-10-14",
+    vehicleClassId: "veh:private-transit-van-10",
     category: "cargo_capacity",
     defaultSeverity: "nonblocking_factual",
     claimStatement:
-      "GoSno 10–14 passenger private transit van holds up to 10 passengers with 14 standard bags and 10 full-length ski bags inside.",
+      "GoSno private passenger van holds up to 10 passengers, subject to luggage and ski-gear fit (up to 10 standard bags and 10 full-length ski bags inside).",
   },
   "claim:gosno:vail-private-suv:cargo-capacity": {
     claimId: "claim:gosno:vail-private-suv:cargo-capacity",

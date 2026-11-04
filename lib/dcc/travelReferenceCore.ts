@@ -2402,14 +2402,16 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
       modes: [
         {
           id: "db-mountain-shuttles",
-          modeName: "Door-to-Door & Hub Mountain Shuttles (DEN Airport ↔ Breckenridge)",
+          modeName: "Door-to-Door Private Transfers (GoSno) & Shared Mountain Shuttles (Epic / Summit Express)",
           category: "shuttle_transfer",
-          operatorOrAuthority: "Registered Mountain Transfer Operators (including GoSno, Epic Mountain Express, Summit Express)",
-          routeOrCoverage: "Direct shared vans and private 4WD SUVs/Sprinters from Denver International Airport (DEN Level 5 Island 5 / commercial lanes) and Denver Union Station to Breckenridge lodging.",
+          operatorOrAuthority: "Registered Mountain Transfer Operators (GoSno for 100% private transfers; Epic Mountain Express and Summit Express for shared per-seat shuttles)",
+          routeOrCoverage: "100% private AWD/4WD SUVs (up to 6 passengers, $399 one-way DEN ↔ Breckenridge) and private passenger vans (up to 10 passengers, subject to luggage and ski-gear fit; $599 one-way published on gosno.co/breckenridge while /api/availability marks vans quoteOnly: true; 11+ passengers exceed a single GoSno van) via GoSno, plus shared per-seat vans from DEN Level 5 via Epic Mountain Express and Summit Express to Breckenridge lodging.",
           scheduleAndStatusIntegration: "live_integrated",
           whatWorksInPractice:
-            "DCC integrates GoSno's live /.well-known/dcc operator feed for the Colorado Rockies bounding box and provides direct context handoffs. Professional mountain shuttles run winter-rated tires, carry commercial chains, and drop you directly at your Breckenridge lodge or the Breck Station gondola hub—eliminating rental car liability on icy passes.",
+            "DCC integrates GoSno's live /.well-known/dcc operator feed for the Colorado Rockies bounding box and provides direct context handoffs. GoSno operates 100% private door-to-door transfers (never shared per-seat shuttles), while Epic Mountain Express and Summit Express provide scheduled per-seat shared shuttles. Professional mountain carriers run winter-rated tires, carry commercial chains, and drop you directly at your Breckenridge lodge or the Breck Station gondola hub—eliminating rental car liability on icy passes.",
           practicalConstraints: [
+            "GoSno vehicle & gear limits: Up to 6 passengers in a private SUV ($399 one-way DEN ↔ Breckenridge) or up to 10 passengers in a private van ($599 one-way published on gosno.co/breckenridge; quoteOnly: true on /api/availability), subject to luggage and ski-gear fit. Groups of 11+ passengers are ineligible for a single GoSno van.",
+            "GoSno DEN pickup note: GoSno's Breckenridge answer card and llms.txt cite DEN Level 5 Curbside (Island 2, Doors 506–510 West or 507–511 East), whereas GoSno's pickup guide (/denver-airport-private-driver-pickup) and page FAQ state that exact pickup doors vary with airport operating conditions and are sent via driver text after baggage claim.",
             "Allow at least 45–60 minutes between scheduled domestic flight touchdown at DEN and shuttle departure to account for the automated train to Jeppesen Terminal and oversized ski/snowboard baggage claim.",
             "On return flights out of DEN during winter weekends, depart Breckenridge at least 4 to 4.5 hours before your flight's scheduled takeoff.",
           ],
@@ -2683,7 +2685,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
     specialistHandoffs: {
       sectionTitle: "Specialist Mountain Transfer Guides & Context-Preserving Handoffs",
       leadSummary:
-        "Compare public transit (Bustang + Summit Stage), self-driving with winter-rated equipment, and direct mountain shuttles. When a shuttle fits best, carry your date, party size, and direction directly into GoSno.",
+        "Compare public transit (Bustang + Summit Stage), self-driving with winter-rated equipment, per-seat shared shuttles (Epic Mountain Express / Summit Express), and 100% private mountain transfers (GoSno). When a private transfer fits best (up to 6 in an SUV or up to 10 in a van, subject to luggage and ski-gear fit), carry your date, party size, and direction directly into GoSno.",
       contextControls: {
         supportsDate: true,
         supportsPartySize: true,
@@ -2702,14 +2704,16 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
           partnerRole: "transport_operator",
           integrationMode: "pilot_endpoint_plus_handoff",
           description:
-            "Registered DCC Colorado Rockies corridor operator providing shared and private winter-equipped transfers between DEN Airport, Denver, and Breckenridge.",
+            "Registered DCC Colorado Rockies corridor operator providing 100% private, winter-equipped door-to-door transfers (never shared per-seat shuttles) between DEN Airport and Breckenridge: up to 6 passengers in a private AWD SUV ($399 one-way) or up to 10 passengers in a private van ($599 one-way published on gosno.co/breckenridge; quoteOnly: true on /api/availability), subject to luggage and ski-gear fit. Groups of 11+ passengers are ineligible for a single GoSno van.",
           whenItHelps:
-            "Best when you want to bypass I-70 rental car traction-law liability and Breckenridge overnight parking costs.",
+            "Best when a group of 1–10 travelers wants a private door-to-door transfer (with an optional 20–30 min grocery stop on advance request) to bypass I-70 rental car traction-law liability and Breckenridge overnight parking costs.",
           noPurchaseRequiredNote:
-            "Forwards your selected date, party size, and pickup origin to GoSno. Reference information on this page requires no purchase.",
+            "Forwards your selected date, party size, vehicle class, and pickup origin to GoSno. Reference information on this page requires no purchase.",
           baseUrl: "https://gosno.co/breckenridge",
           supportedContextParams: ["date", "partySize", "direction"],
           defaultParams: {
+            origin: "DEN",
+            destination: "Breckenridge",
             route: "denver-breckenridge",
             dropoff: "breckenridge",
             source_surface: "dcc_denver_breckenridge_reference",

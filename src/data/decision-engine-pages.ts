@@ -710,7 +710,7 @@ const pages: DecisionEnginePage[] = [
         "Winter and spring bring statutory traction laws and avalanche mitigation holds; summer brings afternoon convective thunderstorms above treeline.",
     },
     howToGetThere: [
-      "Scheduled Airport Shuttles & Transfers (GoSno / Epic Mountain Express / Summit Express) from DEN Level 5 using winter-equipped AWD/4WD fleets.",
+      "Private & Shared Airport Transfers from DEN Level 5: GoSno (100% private AWD SUVs up to 6 pax at $399 one-way or private vans up to 10 pax at $599 published / quoteOnly: true on /api/availability, subject to luggage and ski-gear fit; 11+ passengers exceed a single GoSno van) and Epic Mountain Express / Summit Express (per-seat shared shuttles and private charters).",
       "Public Transit: RTD A-Line from DEN to Denver Union Station, CDOT Bustang West Line or Pegasus to Frisco Transit Center, and free Summit Stage bus to Breckenridge.",
       "Self-Drive via I-70 West & CO-9 South: Only with verified 4WD/AWD or 3PMSF/M+S tires with at least 3/16-inch tread depth.",
       "Always check official CDOT COtrip.org before departing Denver or Frisco for active Code 15 / Code 16 restrictions and tunnel holds.",
@@ -777,7 +777,7 @@ const pages: DecisionEnginePage[] = [
     ],
     executionCtas: [
       { label: "Compare Colorado transfer options", href: "/transportation/colorado", kind: "internal" },
-      { label: "Open GoSno mountain shuttle handoff", href: "https://gosno.co", kind: "external" },
+      { label: "Open GoSno Breckenridge private transfer handoff", href: "https://gosno.co/breckenridge?origin=DEN&destination=Breckenridge", kind: "external" },
     ],
     faq: [
       {
@@ -786,7 +786,7 @@ const pages: DecisionEnginePage[] = [
       },
       {
         q: "Can I reach Breckenridge from Denver Airport without renting a car?",
-        a: "Yes. You can book a direct door-to-door mountain shuttle from DEN Level 5 (GoSno, Epic Mountain Express, Summit Express) or take the RTD A-Line to Denver Union Station, CDOT Bustang/Pegasus to Frisco Transit Center, and the free Summit Stage bus to Breckenridge.",
+        a: "Yes. You can book a 100% private door-to-door mountain transfer with GoSno (up to 6 in an SUV or up to 10 in a van, subject to luggage and ski-gear fit), a per-seat shared shuttle (Epic Mountain Express, Summit Express) from DEN Level 5, or take the RTD A-Line to Denver Union Station, CDOT Bustang/Pegasus to Frisco Transit Center, and the free Summit Stage bus to Breckenridge.",
       },
       {
         q: "Does DCC's snowfall telemetry tell me if I-70 or Loveland Pass is open?",

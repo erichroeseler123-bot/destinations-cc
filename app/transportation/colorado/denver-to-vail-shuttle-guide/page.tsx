@@ -50,7 +50,7 @@ const actions: RecommendationAction[] = [
     href: "/operators/gosno",
     kind: "internal",
     score: 2,
-    reason: "Inspect sourced vehicle caps (6-pax SUV for $499 vs. quote-only 10-pax private van for 7+ riders), luggage rules, and alternatives before clicking out.",
+    reason: "Inspect sourced vehicle caps (up to 6 in an SUV for $499, or up to 10 in a van for $599 published / quoteOnly: true on /api/availability, subject to luggage and ski-gear fit; 11+ passengers exceed a single GoSno van), luggage rules, and alternatives before clicking out.",
   },
   {
     id: "vail-decision-guide",
@@ -63,13 +63,13 @@ const actions: RecommendationAction[] = [
 ];
 
 export default function DenverToVailShuttleGuidePage() {
-  const verifiedAt = vailGuide?.verifiedAt || manifestEntry?.materialChangeDate || "2026-11-02";
+  const verifiedAt = vailGuide?.verifiedAt || manifestEntry?.materialChangeDate || "2026-11-03";
   const citations = vailGuide?.citations || [];
   const gosnoContract = resolvePortfolioSiteContractByUrl("https://gosno.co/vail");
   const materialChangeEntries = getPublicMaterialChangeTimeline("corridor:denver-vail-i70");
 
   const basePartnerDestinationUrl =
-    "https://gosno.co/vail?origin=DEN&destination=Vail&passengers=6&passengerCount=6&vehicleClass=van";
+    "https://gosno.co/vail?origin=DEN&destination=Vail&date=2026-12-15&passengers=6&passengerCount=6&party_size=6&standardBags=6&skiBags=2&vehicleClass=van";
 
   const initialOutcome = compileApplicableDecisionContext({
     corridorId: "corridor:denver-vail-i70",
@@ -161,19 +161,19 @@ export default function DenverToVailShuttleGuidePage() {
             A standard 3-row full-size SUV has 5–6 usable passenger seats only when the third row is raised, which leaves rear cargo room for roughly 4–5 standard bags and <strong>zero full-length (170–190 cm) ski bags inside the cabin</strong> unless a rooftop box is confirmed and the third row is partially folded.
           </p>
           <p className="mt-2 text-sm leading-7 text-zinc-200">
-            <strong>For 7 passengers with ski bags:</strong> A single 6-passenger SUV cannot legally or physically hold the group. On GoSno, private SUV transfers cap at <strong>up to 6 passengers ($499 one-way DEN to Vail)</strong>, while <strong>10-passenger private vans for 7+ travelers are quote-only (<code>quoteOnly: true</code>)</strong> and require a date-specific live quote rather than an invented flat rate.
+            <strong>For 7–10 passengers with ski bags (11+ passengers exceed a single GoSno van):</strong> A single 6-passenger SUV cannot legally or physically hold the group. On GoSno, private SUV transfers cap at <strong>up to 6 passengers ($499 one-way DEN to Vail)</strong>, while <strong>private passenger vans carry up to 10 passengers, subject to luggage and ski-gear fit and availability</strong> (GoSno publishes a $599 one-way DEN–Vail van rate on <code>gosno.co/vail</code>, while its live <code>/api/availability</code> endpoint marks van requests <code>quoteOnly: true</code>). Groups of <strong>11 or more passengers are ineligible for a single GoSno van</strong> and must book multi-vehicle private transfers or per-seat shared shuttles.
           </p>
         </section>
 
         <section className="grid gap-4 md:grid-cols-2">
           <article className="rounded-2xl border border-white/10 bg-white/5 p-5">
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">Direct Operator / Private Van</p>
-            <h2 className="mt-2 text-2xl font-bold">Private 10–14 Passenger Van (GoSno)</h2>
+            <h2 className="mt-2 text-2xl font-bold">Private Passenger Van — Up to 10 Passengers (GoSno)</h2>
             <p className="mt-3 text-sm leading-6 text-zinc-300">
-              <strong>Why it fits 7 people with ski bags:</strong> Keeps all 7 travelers, 7 ski/snowboard bags, and duffels together in one vehicle with one door-to-door departure from DEN to Vail and an optional grocery stop.
+              <strong>Why it fits 7–10 people with ski bags:</strong> Carries up to 10 passengers, subject to luggage and ski-gear fit and availability, in one private door-to-door vehicle from DEN to Vail with a complimentary 20–30 minute grocery stop on advance request.
             </p>
             <p className="mt-2 text-sm leading-6 text-zinc-400">
-              <strong>What could make it unsuitable:</strong> Passengers arriving on widely separated flights hours apart, or groups where a quote-only private van exceeds budget. (For 1–6 passengers with moderate gear, a single private SUV is $499 one-way.)
+              <strong>What could make it unsuitable:</strong> Groups of 11+ passengers (ineligible for a single GoSno van), 10-passenger groups whose total ski/oversize and standard luggage exceeds the cabin cargo envelope, passengers arriving on widely separated flights hours apart, or dates where live van dispatch (`quoteOnly: true` on `/api/availability`, $599 published on `gosno.co/vail`) is unavailable. (For 1–6 passengers with moderate gear, a single private SUV is $499 one-way.)
             </p>
           </article>
           <article className="rounded-2xl border border-white/10 bg-white/5 p-5">
@@ -213,8 +213,9 @@ export default function DenverToVailShuttleGuidePage() {
             Explicit Assumptions &amp; Unknowns
           </p>
           <ul className="mt-3 space-y-2 text-sm leading-6 text-zinc-300">
-            <li>• <strong>Unknown without your trip details:</strong> Exact travel date, flight arrival times (single flight vs. staggered arrivals), hard-case vs. soft ski-bag count, child car-seat requirements, and exact Vail drop-off address.</li>
-            <li>• <strong>Unknown without a live operator check:</strong> Exact 10–14 passenger van rate (`quoteOnly: true` for 7+ passengers on GoSno), date-specific shared shuttle fare on your travel date, real-time van availability, and live I-70 traction/chain law dispatch status.</li>
+            <li>• <strong>Unknown without your trip details:</strong> Exact travel date, flight arrival times (single flight vs. staggered arrivals), hard-case vs. soft ski-bag count, child car-seat requirements (GoSno provides up to 1 booster + 1 forward-facing seat on request, but no rear-facing infant seats), and exact Vail drop-off address.</li>
+            <li>• <strong>Unknown without a live operator check:</strong> GoSno private van availability and final dispatch confirmation for up to 10 passengers, subject to luggage and ski-gear fit (GoSno publishes $599 one-way on <code>gosno.co/vail</code> while <code>/api/availability</code> returns <code>quoteOnly: true</code>; 11+ passengers exceed a single GoSno van), date-specific shared shuttle fare on your travel date, and live I-70 traction/chain law dispatch status.</li>
+            <li>• <strong>GoSno DEN airport pickup discrepancy:</strong> GoSno&rsquo;s Vail answer card and <code>llms.txt</code> cite <em>DEN Level 5 Curbside, Island 2, Doors 506–510 West or 507–511 East</em>, whereas GoSno&rsquo;s pickup guide (<code>/denver-airport-private-driver-pickup</code>) and page FAQ state that exact DEN pickup doors vary with airport operating conditions and are sent via driver text after baggage claim.</li>
             <li>• <strong>Never guaranteed by a forecast:</strong> A clear weather forecast does not guarantee open I-70 lanes over Vail Pass or Eisenhower Tunnel; winter accidents and avalanche mitigation can stall the corridor at any time.</li>
           </ul>
         </section>

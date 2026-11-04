@@ -82,10 +82,81 @@ export async function POST(request: Request) {
 
     const outcome = compileApplicableDecisionContext(applicabilityRequest);
 
-    const basePartnerUrl =
-      body.partnerDestinationUrl?.trim() ||
+    const explicitPartnerUrl = body.partnerDestinationUrl?.trim();
+    const defaultPartnerUrl =
       DEFAULT_PARTNER_URLS[corridorId] ||
       "https://gosno.co/vail?origin=DEN&destination=Vail";
+
+    let basePartnerUrl = explicitPartnerUrl || defaultPartnerUrl;
+
+    if (outcome.recommendedOperatorId === "op:gosno") {
+      const goSnoBase =
+        corridorId === "corridor:denver-breckenridge-i70"
+          ? "https://gosno.co/breckenridge"
+          : "https://gosno.co/vail";
+      const parsed = new URL(
+        explicitPartnerUrl && explicitPartnerUrl.includes("gosno.co")
+          ? explicitPartnerUrl
+          : goSnoBase,
+      );
+      parsed.searchParams.set("origin", "DEN");
+      parsed.searchParams.set(
+        "destination",
+        corridorId === "corridor:denver-breckenridge-i70"
+          ? "Breckenridge"
+          : "Vail",
+      );
+      if (applicabilityRequest.travelDate) {
+        parsed.searchParams.set("date", applicabilityRequest.travelDate);
+      }
+      parsed.searchParams.set(
+        "passengers",
+        String(applicabilityRequest.passengerCount),
+      );
+      parsed.searchParams.set(
+        "passengerCount",
+        String(applicabilityRequest.passengerCount),
+      );
+      parsed.searchParams.set(
+        "party_size",
+        String(applicabilityRequest.passengerCount),
+      );
+      parsed.searchParams.set(
+        "standardBags",
+        String(applicabilityRequest.standardBagCount),
+      );
+      parsed.searchParams.set(
+        "skiBags",
+        String(applicabilityRequest.skiOrOversizeBagCount),
+      );
+      parsed.searchParams.set(
+        "vehicleClass",
+        outcome.recommendedVehicleClassId === "veh:awd-full-size-suv"
+          ? "suv"
+          : "van",
+      );
+      basePartnerUrl = parsed.toString();
+    } else if (
+      outcome.recommendedOperatorId === "op:epic-mountain-express" &&
+      basePartnerUrl.includes("gosno.co")
+    ) {
+      const epicUrl = new URL("https://www.epicmountainexpress.com/shuttle-rates");
+      epicUrl.searchParams.set("origin", "DEN");
+      epicUrl.searchParams.set(
+        "destination",
+        corridorId === "corridor:denver-breckenridge-i70"
+          ? "Breckenridge"
+          : "Vail",
+      );
+      if (applicabilityRequest.travelDate) {
+        epicUrl.searchParams.set("date", applicabilityRequest.travelDate);
+      }
+      epicUrl.searchParams.set(
+        "passengers",
+        String(applicabilityRequest.passengerCount),
+      );
+      basePartnerUrl = epicUrl.toString();
+    }
 
     const opaqueRecord = issueOpaqueClickAttribution({
       decisionReceiptId: outcome.decisionReceiptId,

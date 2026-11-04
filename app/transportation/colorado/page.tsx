@@ -78,7 +78,7 @@ export default async function ColoradoTransportationPage() {
             <Link href="/routes/denver-breckenridge" className="rounded-2xl border border-cyan-400/25 bg-cyan-400/[0.06] p-4 hover:bg-cyan-400/[0.12]">
               <div className="text-xs uppercase tracking-[0.18em] text-cyan-300">Mountain corridor reference</div>
               <h3 className="mt-2 text-lg font-semibold text-white">Denver–Breckenridge (I-70 & CO-9)</h3>
-              <p className="mt-3 text-sm text-zinc-300">Statutory CDOT traction laws, Bustang/Pegasus transit, GoSno endpoint, and live divide telemetry.</p>
+              <p className="mt-3 text-sm text-zinc-300">Statutory CDOT traction laws, Bustang/Pegasus transit, GoSno 100% private transfers (up to 6 in SUV / up to 10 in van, subject to gear fit), and live divide telemetry.</p>
             </Link>
             <Link href="/red-rocks" className="rounded-2xl border border-cyan-400/25 bg-cyan-400/[0.06] p-4 hover:bg-cyan-400/[0.12]">
               <div className="text-xs uppercase tracking-[0.18em] text-cyan-300">Venue reference</div>
@@ -93,7 +93,7 @@ export default async function ColoradoTransportationPage() {
             <Link href="/transportation/colorado/denver-to-vail-shuttle-guide" className="rounded-2xl border border-white/10 bg-black/20 p-4 hover:bg-white/10">
               <div className="text-xs uppercase tracking-[0.18em] text-cyan-300">Ski corridor guide</div>
               <h3 className="mt-2 text-lg font-semibold text-white">Denver to Vail shuttle guide</h3>
-              <p className="mt-3 text-sm text-zinc-300">Authority-first transfer logic before the traveler moves into GOSNO execution.</p>
+              <p className="mt-3 text-sm text-zinc-300">Authority-first transfer &amp; ski-gear capacity logic (up to 6 in SUV / up to 10 in GoSno van; 11+ pax ineligible for single van) before execution.</p>
             </Link>
           </div>
         </section>
