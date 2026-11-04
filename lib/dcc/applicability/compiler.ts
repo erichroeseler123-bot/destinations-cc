@@ -17,6 +17,8 @@ export interface ActiveSegmentConditionInputs {
 
 export interface TripApplicabilityRequest {
   corridorId: CorridorId;
+  origin?: string;
+  destination?: string;
   travelDate?: string;
   passengerCount: number;
   standardBagCount: number;
@@ -169,7 +171,7 @@ export const GOSNO_APPROVED_SUV_ONE_WAY_USD: Record<string, Record<string, numbe
     Keystone: 349,
     "Winter Park": 349,
     Breckenridge: 399,
-    "Copper Mountain": 399,
+    "Copper Mountain": 349,
     Vail: 499,
     "Beaver Creek": 549,
     "Steamboat Springs": 599,
@@ -881,6 +883,8 @@ export function compileApplicableDecisionContext(
 
   const privateGroupInquiryOption = buildGoSnoPrivateGroupInquiryOption({
     corridorId: request.corridorId,
+    origin: request.origin,
+    destination: request.destination,
     travelDate,
     passengerCount,
     standardBagCount,

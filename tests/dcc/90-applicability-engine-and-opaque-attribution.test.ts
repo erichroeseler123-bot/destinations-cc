@@ -884,11 +884,111 @@ test("7. GoSno 10-passenger vs. 11-passenger capacity boundaries, gear-fit rules
   assert.equal(vail20Url.searchParams.get("origin"), "DEN");
   assert.equal(vail20Url.searchParams.get("destination"), "Vail");
   assert.equal(vail20Url.searchParams.get("outboundDate"), "2026-12-26");
-  assert.equal(vail20Url.searchParams.get("passengers"), "20");
+  assert.equal(vail20Url.searchParams.get("passengers"), "16" === "20" ? "16" : "20");
   assert.equal(vail20Url.searchParams.get("luggage"), "20 standard bags, 16 ski bags");
   assert.equal(
     vail20Url.searchParams.get("vehicleSuggestion"),
     "2 Private Passenger Vans",
+  );
+
+  // 7g. 16 to Winter Park: 16 regular bags, 12 ski bags, one van plus one Suburban suggested ($848 combined reference)
+  const wp16EvalRes = await evaluateApplicabilityPost(
+    new Request("https://destinationcommandcenter.com/api/v1/applicability/evaluate", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        corridorId: "corridor:denver-vail-i70",
+        origin: "DEN",
+        destination: "Winter Park",
+        travelDate: "2026-12-20",
+        passengerCount: 16,
+        standardBagCount: 16,
+        skiOrOversizeBagCount: 12,
+      }),
+    }),
+  );
+  assert.equal(wp16EvalRes.status, 200);
+  const wp16Json = (await wp16EvalRes.json()) as any;
+  const wp16Group = wp16Json.outcome.privateGroupInquiryOption;
+  assert.ok(wp16Group);
+  assert.equal(wp16Group.origin, "DEN");
+  assert.equal(wp16Group.destination, "Winter Park");
+  assert.equal(wp16Group.passengers, 16);
+  assert.equal(wp16Group.standardBagCount, 16);
+  assert.equal(wp16Group.skiOrOversizeBagCount, 12);
+  assert.equal(wp16Group.luggageSummary, "16 standard bags, 12 ski bags");
+  assert.equal(
+    wp16Group.vehicleSuggestion.shortLabel,
+    "1 Private Passenger Van + 1 Private Chevrolet Suburban",
+  );
+  assert.equal(wp16Group.referenceCombinedOneWayUsd, 848);
+  const wp16Url = new URL(wp16Group.inquiryUrl);
+  assert.equal(wp16Url.searchParams.get("destination"), "Winter Park");
+  assert.equal(wp16Url.searchParams.get("passengers"), "16");
+  assert.equal(wp16Url.searchParams.get("standardBags"), "16");
+  assert.equal(wp16Url.searchParams.get("skiBags"), "12");
+  assert.equal(wp16Url.searchParams.get("luggage"), "16 standard bags, 12 ski bags");
+  assert.equal(
+    wp16Url.searchParams.get("vehicleSuggestion"),
+    "1 Private Passenger Van + 1 Private Chevrolet Suburban",
+  );
+
+  // 7h. 20 to Steamboat: 20 regular bags, 16 ski bags throughout, two vans suggested ($1,798 combined reference)
+  const sb20EvalRes = await evaluateApplicabilityPost(
+    new Request("https://destinationcommandcenter.com/api/v1/applicability/evaluate", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        corridorId: "corridor:denver-vail-i70",
+        origin: "DEN",
+        destination: "Steamboat Springs",
+        travelDate: "2026-12-22",
+        passengerCount: 20,
+        standardBagCount: 20,
+        skiOrOversizeBagCount: 16,
+      }),
+    }),
+  );
+  assert.equal(sb20EvalRes.status, 200);
+  const sb20Json = (await sb20EvalRes.json()) as any;
+  const sb20Group = sb20Json.outcome.privateGroupInquiryOption;
+  assert.ok(sb20Group);
+  assert.equal(sb20Group.origin, "DEN");
+  assert.equal(sb20Group.destination, "Steamboat Springs");
+  assert.equal(sb20Group.passengers, 20);
+  assert.equal(sb20Group.standardBagCount, 20);
+  assert.equal(sb20Group.skiOrOversizeBagCount, 16);
+  assert.equal(sb20Group.luggageSummary, "20 standard bags, 16 ski bags");
+  assert.equal(sb20Group.vehicleSuggestion.shortLabel, "2 Private Passenger Vans");
+  assert.equal(sb20Group.referenceCombinedOneWayUsd, 1798);
+  const sb20Url = new URL(sb20Group.inquiryUrl);
+  assert.equal(sb20Url.searchParams.get("destination"), "Steamboat Springs");
+  assert.equal(sb20Url.searchParams.get("passengers"), "20");
+  assert.equal(sb20Url.searchParams.get("standardBags"), "20");
+  assert.equal(sb20Url.searchParams.get("skiBags"), "16");
+  assert.equal(sb20Url.searchParams.get("luggage"), "20 standard bags, 16 ski bags");
+  assert.equal(sb20Url.searchParams.get("vehicleSuggestion"), "2 Private Passenger Vans");
+
+  // 7i. Copper Mountain DEN SUV approved rate is $349 (so 16 to Copper = $599 Van + $349 SUV = $948)
+  const copper16EvalRes = await evaluateApplicabilityPost(
+    new Request("https://destinationcommandcenter.com/api/v1/applicability/evaluate", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        corridorId: "corridor:denver-vail-i70",
+        origin: "DEN",
+        destination: "Copper Mountain",
+        travelDate: "2026-12-23",
+        passengerCount: 16,
+        standardBagCount: 16,
+        skiOrOversizeBagCount: 12,
+      }),
+    }),
+  );
+  const copper16Json = (await copper16EvalRes.json()) as any;
+  assert.equal(
+    copper16Json.outcome.privateGroupInquiryOption.referenceCombinedOneWayUsd,
+    948,
   );
 });
 

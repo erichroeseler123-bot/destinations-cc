@@ -290,11 +290,18 @@ export function SpecialistHandoffInteractive({
       config.contextControls.customSelectorOptions?.[0]?.value ||
       "",
   );
+  const [resortDestination, setResortDestination] = useState<string>("");
+  const [standardBags, setStandardBags] = useState<string>("");
+  const [skiBags, setSkiBags] = useState<string>("");
+  const hasGoSnoOption = useMemo(
+    () => config.options.some((opt) => opt.baseUrl.includes("gosno.co")),
+    [config.options],
+  );
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     const sp = new URLSearchParams(window.location.search);
-    const urlDate = sp.get("date") || sp.get("arrivalDate");
+    const urlDate = sp.get("date") || sp.get("arrivalDate") || sp.get("outboundDate");
     if (urlDate && /^\d{4}-\d{2}-\d{2}$/.test(urlDate)) {
       setTravelDate(urlDate);
     }
@@ -306,6 +313,18 @@ export function SpecialistHandoffInteractive({
       sp.get("qty");
     if (urlParty && /^\d+$/.test(urlParty)) {
       setPartySize(urlParty);
+    }
+    const urlDest = sp.get("destination") || sp.get("resort");
+    if (urlDest) {
+      setResortDestination(urlDest);
+    }
+    const urlStandardBags = sp.get("standardBags");
+    if (urlStandardBags && /^\d+$/.test(urlStandardBags)) {
+      setStandardBags(urlStandardBags);
+    }
+    const urlSkiBags = sp.get("skiBags");
+    if (urlSkiBags && /^\d+$/.test(urlSkiBags)) {
+      setSkiBags(urlSkiBags);
     }
     const customParam = config.contextControls.customSelectorParam;
     if (customParam) {
@@ -350,23 +369,19 @@ export function SpecialistHandoffInteractive({
 
     if (option.baseUrl.includes("gosno.co")) {
       url.searchParams.set("vehicleClass", numericParty > 6 ? "van" : "suv");
+      const fallbackDest = option.baseUrl.includes("/vail") ? "Vail" : "Breckenridge";
+      const effectiveDest = resortDestination || fallbackDest;
       if (customChoice === "breckenridge-to-den") {
         url.searchParams.set("origin", "Breckenridge");
         url.searchParams.set("destination", "DEN");
         url.searchParams.set("direction", "eastbound");
       } else if (customChoice === "downtown-denver") {
         url.searchParams.set("origin", "Denver");
-        url.searchParams.set(
-          "destination",
-          option.baseUrl.includes("/vail") ? "Vail" : "Breckenridge",
-        );
+        url.searchParams.set("destination", effectiveDest);
         url.searchParams.set("direction", "westbound");
       } else {
         url.searchParams.set("origin", "DEN");
-        url.searchParams.set(
-          "destination",
-          option.baseUrl.includes("/vail") ? "Vail" : "Breckenridge",
-        );
+        url.searchParams.set("destination", effectiveDest);
         url.searchParams.set("direction", "westbound");
       }
     }
@@ -499,6 +514,72 @@ export function SpecialistHandoffInteractive({
             </div>
           )}
         </div>
+
+        {hasGoSnoOption && (
+          <div className="grid gap-3 sm:grid-cols-3 pt-2 border-t border-white/10">
+            <div>
+              <label
+                htmlFor="handoff-destination-select"
+                className="block text-[11px] font-semibold uppercase tracking-wider text-zinc-300 mb-1"
+              >
+                Resort Destination
+              </label>
+              <select
+                id="handoff-destination-select"
+                value={resortDestination}
+                onChange={(e) => setResortDestination(e.target.value)}
+                className="w-full rounded-lg border border-white/15 bg-zinc-950 px-3 py-2 text-xs md:text-sm text-white focus:border-cyan-400 focus:outline-none"
+              >
+                <option value="">Default Corridor Resort</option>
+                <option value="Breckenridge">Breckenridge</option>
+                <option value="Vail">Vail</option>
+                <option value="Winter Park">Winter Park</option>
+                <option value="Steamboat Springs">Steamboat Springs</option>
+                <option value="Copper Mountain">Copper Mountain</option>
+                <option value="Keystone">Keystone</option>
+                <option value="Beaver Creek">Beaver Creek</option>
+                <option value="Aspen">Aspen</option>
+                <option value="Snowmass">Snowmass</option>
+              </select>
+            </div>
+            <div>
+              <label
+                htmlFor="handoff-standard-bags-input"
+                className="block text-[11px] font-semibold uppercase tracking-wider text-zinc-300 mb-1"
+              >
+                Regular Bags (Optional)
+              </label>
+              <input
+                id="handoff-standard-bags-input"
+                type="number"
+                min={0}
+                max={50}
+                placeholder="e.g. 16"
+                value={standardBags}
+                onChange={(e) => setStandardBags(e.target.value)}
+                className="w-full rounded-lg border border-white/15 bg-zinc-950 px-3 py-2 text-xs md:text-sm text-white focus:border-cyan-400 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="handoff-ski-bags-input"
+                className="block text-[11px] font-semibold uppercase tracking-wider text-zinc-300 mb-1"
+              >
+                Ski / Snowboard Bags (Optional)
+              </label>
+              <input
+                id="handoff-ski-bags-input"
+                type="number"
+                min={0}
+                max={50}
+                placeholder="e.g. 12"
+                value={skiBags}
+                onChange={(e) => setSkiBags(e.target.value)}
+                className="w-full rounded-lg border border-white/15 bg-zinc-950 px-3 py-2 text-xs md:text-sm text-white focus:border-cyan-400 focus:outline-none"
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -544,12 +625,32 @@ export function SpecialistHandoffInteractive({
                     : customChoice === "downtown-denver"
                       ? "Denver"
                       : "DEN";
-                const destination =
+                const fallbackDestination =
                   customChoice === "breckenridge-to-den"
                     ? "DEN"
                     : option.baseUrl.includes("/vail")
                       ? "Vail"
                       : "Breckenridge";
+                const destination = resortDestination || fallbackDestination;
+                const parsedStandardBags =
+                  standardBags !== "" && !Number.isNaN(Number(standardBags))
+                    ? Number(standardBags)
+                    : null;
+                const parsedSkiBags =
+                  skiBags !== "" && !Number.isNaN(Number(skiBags))
+                    ? Number(skiBags)
+                    : null;
+                const luggageParts: string[] = [];
+                if (parsedStandardBags !== null && parsedStandardBags > 0) {
+                  luggageParts.push(`${parsedStandardBags} standard bags`);
+                }
+                if (parsedSkiBags !== null && parsedSkiBags > 0) {
+                  luggageParts.push(`${parsedSkiBags} ski bags`);
+                }
+                const luggageSummary =
+                  luggageParts.length > 0
+                    ? luggageParts.join(", ")
+                    : `${numericParty} passengers standard luggage + ski gear`;
                 const inquiryUrl = new URL("https://gosno.co/request-quote");
                 inquiryUrl.searchParams.set("origin", origin);
                 inquiryUrl.searchParams.set("destination", destination);
@@ -560,10 +661,13 @@ export function SpecialistHandoffInteractive({
                 inquiryUrl.searchParams.set("passengers", String(numericParty));
                 inquiryUrl.searchParams.set("passengerCount", String(numericParty));
                 inquiryUrl.searchParams.set("party_size", String(numericParty));
-                inquiryUrl.searchParams.set(
-                  "luggage",
-                  `${numericParty} passengers standard luggage + ski gear`,
-                );
+                if (parsedStandardBags !== null) {
+                  inquiryUrl.searchParams.set("standardBags", String(parsedStandardBags));
+                }
+                if (parsedSkiBags !== null) {
+                  inquiryUrl.searchParams.set("skiBags", String(parsedSkiBags));
+                }
+                inquiryUrl.searchParams.set("luggage", luggageSummary);
                 inquiryUrl.searchParams.set("vehicleType", "van");
                 inquiryUrl.searchParams.set("vehicleSuggestion", shortLabel);
                 return {

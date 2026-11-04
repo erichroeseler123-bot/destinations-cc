@@ -25,6 +25,14 @@ export default function ApplicableRouteDecisionPanel({
     useState<CompiledApplicableDecisionOutcome>(initialOutcome);
   const [opaqueAttribution, setOpaqueAttribution] =
     useState<InitialOpaqueAttribution>(initialOpaqueAttribution);
+  const [destination, setDestination] = useState<string>(
+    initialOutcome.corridorId === "corridor:denver-breckenridge-i70"
+      ? "Breckenridge"
+      : "Vail",
+  );
+  const [travelDate, setTravelDate] = useState<string>(
+    initialOutcome.normalizedInputs.travelDate,
+  );
   const [passengerCount, setPassengerCount] = useState<number>(
     initialOutcome.normalizedInputs.passengerCount,
   );
@@ -49,6 +57,8 @@ export default function ApplicableRouteDecisionPanel({
   const [isCompiling, setIsCompiling] = useState<boolean>(false);
 
   async function recompileOnServer(nextParams: {
+    destination?: string;
+    travelDate?: string;
     passengerCount: number;
     standardBagCount: number;
     skiOrOversizeBagCount: number;
@@ -57,12 +67,16 @@ export default function ApplicableRouteDecisionPanel({
   }) {
     setIsCompiling(true);
     try {
+      const nextDestination = nextParams.destination ?? destination;
+      const nextTravelDate = nextParams.travelDate ?? travelDate;
       const res = await fetch("/api/v1/applicability/evaluate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           corridorId: outcome.corridorId,
-          travelDate: outcome.normalizedInputs.travelDate,
+          origin: nextDestination === "Big Sky" ? "BZN" : "DEN",
+          destination: nextDestination,
+          travelDate: nextTravelDate,
           passengerCount: nextParams.passengerCount,
           standardBagCount: nextParams.standardBagCount,
           skiOrOversizeBagCount: nextParams.skiOrOversizeBagCount,
@@ -115,7 +129,48 @@ export default function ApplicableRouteDecisionPanel({
       </div>
 
       {/* Trip Constraint Inputs sent to Deterministic Backend Compiler */}
-      <div className="mt-5 grid gap-4 md:grid-cols-5 rounded-2xl border border-white/10 bg-white/[0.02] p-4">
+      <div className="mt-5 grid gap-4 md:grid-cols-6 rounded-2xl border border-white/10 bg-white/[0.02] p-4">
+        <label className="block text-xs text-slate-300">
+          <span className="font-semibold uppercase tracking-wider text-slate-400">
+            Destination
+          </span>
+          <select
+            data-testid="applicability-destination-select"
+            value={destination}
+            onChange={(e) => {
+              const nextDest = e.target.value;
+              setDestination(nextDest);
+              void recompileOnServer({
+                destination: nextDest,
+                travelDate,
+                passengerCount,
+                standardBagCount,
+                skiOrOversizeBagCount,
+                vailPassChainLawActive,
+                i70TractionLawActive,
+              });
+            }}
+            className="mt-1.5 w-full rounded-lg border border-white/15 bg-slate-900 px-3 py-1.5 text-sm font-semibold text-white"
+          >
+            {[
+              "Vail",
+              "Breckenridge",
+              "Winter Park",
+              "Steamboat Springs",
+              "Copper Mountain",
+              "Keystone",
+              "Beaver Creek",
+              "Aspen",
+              "Snowmass",
+              "Big Sky",
+            ].map((destName) => (
+              <option key={destName} value={destName}>
+                {destName}
+              </option>
+            ))}
+          </select>
+        </label>
+
         <label className="block text-xs text-slate-300">
           <span className="font-semibold uppercase tracking-wider text-slate-400">
             Passengers
@@ -129,6 +184,8 @@ export default function ApplicableRouteDecisionPanel({
               const next = Math.max(1, Math.min(50, Number(e.target.value) || 1));
               setPassengerCount(next);
               void recompileOnServer({
+                destination,
+                travelDate,
                 passengerCount: next,
                 standardBagCount,
                 skiOrOversizeBagCount,
@@ -153,6 +210,8 @@ export default function ApplicableRouteDecisionPanel({
               const next = Math.max(0, Math.min(50, Number(e.target.value) || 0));
               setStandardBagCount(next);
               void recompileOnServer({
+                destination,
+                travelDate,
                 passengerCount,
                 standardBagCount: next,
                 skiOrOversizeBagCount,
@@ -177,6 +236,8 @@ export default function ApplicableRouteDecisionPanel({
               const next = Math.max(0, Math.min(50, Number(e.target.value) || 0));
               setSkiOrOversizeBagCount(next);
               void recompileOnServer({
+                destination,
+                travelDate,
                 passengerCount,
                 standardBagCount,
                 skiOrOversizeBagCount: next,
@@ -196,6 +257,8 @@ export default function ApplicableRouteDecisionPanel({
               const next = e.target.checked;
               setI70TractionLawActive(next);
               void recompileOnServer({
+                destination,
+                travelDate,
                 passengerCount,
                 standardBagCount,
                 skiOrOversizeBagCount,
@@ -216,6 +279,8 @@ export default function ApplicableRouteDecisionPanel({
               const next = e.target.checked;
               setVailPassChainLawActive(next);
               void recompileOnServer({
+                destination,
+                travelDate,
                 passengerCount,
                 standardBagCount,
                 skiOrOversizeBagCount,

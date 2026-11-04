@@ -64,6 +64,8 @@ export async function POST(request: Request) {
       body.corridorId ?? "corridor:denver-vail-i70";
     const applicabilityRequest: TripApplicabilityRequest = {
       corridorId,
+      origin: body.origin,
+      destination: body.destination,
       travelDate: body.travelDate ?? "2026-12-15",
       passengerCount: Number(body.passengerCount ?? 4),
       standardBagCount: Number(body.standardBagCount ?? 6),
