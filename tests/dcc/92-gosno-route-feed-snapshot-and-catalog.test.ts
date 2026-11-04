@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -9,14 +10,19 @@ process.env.DCC_DURABLE_STORE_PATH = path.join(
   `dcc-gosno-route-feed-test-${process.pid}.json`,
 );
 import {
+  DEFAULT_GOSNO_SNAPSHOT_TTL_MS,
   GOSNO_PRICE_FALLBACK_MESSAGE,
   GOSNO_ROUTE_FEED_URL,
+  SCHEDULED_GOSNO_FEED_REFRESH_CRON,
+  SCHEDULED_GOSNO_FEED_REFRESH_INTERVAL_MS,
+  SCHEDULED_GOSNO_FEED_REFRESH_PATH,
   buildGoSnoPrivateGroupInquiryOption,
   compileApplicableDecisionContext,
   createGoSnoRouteFeedSnapshot,
   getActiveGoSnoRouteFeedSnapshotState,
   getBaselineGoSnoRouteFeedSnapshot,
   refreshGoSnoRouteFeedSnapshot,
+  replayHistoricalApplicableDecisionContext,
   resetGoSnoRouteFeedSnapshotToBaseline,
   resolveGoSnoOneWayFare,
   resolveGoSnoRoundTripFare,
@@ -24,7 +30,42 @@ import {
   validateGoSnoRouteFeedPayload,
   type GoSnoRouteFeedPayload,
 } from "@/lib/dcc/applicability";
+import {
+  GET as scheduledRefreshGet,
+  POST as scheduledRefreshPost,
+} from "@/app/api/internal/gosno/route-feed-refresh/route";
 import { POST as evaluateApplicabilityPost } from "@/app/api/v1/applicability/evaluate/route";
+import { buildDenverToVailShuttleGuidePageModel } from "@/app/transportation/colorado/denver-to-vail-shuttle-guide/model";
+import { getAskDccEvidence } from "@/lib/dcc/ask/service";
+import { getPublishedDecisionGuide } from "@/src/data/published-decision-guides";
+
+async function withIsolatedGoSnoTestState<T>(
+  fn: (ctx: { tempDir: string; storePath: string }) => Promise<T> | T,
+): Promise<T> {
+  const prevStorePath = process.env.DCC_DURABLE_STORE_PATH;
+  const prevBaselinePath = process.env.DCC_GOSNO_BASELINE_SNAPSHOT_PATH;
+  const tempDir = fs.mkdtempSync(
+    path.join(os.tmpdir(), `dcc-gosno-isolated-${process.pid}-`),
+  );
+  const storePath = path.join(tempDir, "durable-store.json");
+  process.env.DCC_DURABLE_STORE_PATH = storePath;
+  delete process.env.DCC_GOSNO_BASELINE_SNAPSHOT_PATH;
+  try {
+    return await fn({ tempDir, storePath });
+  } finally {
+    if (prevStorePath === undefined) {
+      delete process.env.DCC_DURABLE_STORE_PATH;
+    } else {
+      process.env.DCC_DURABLE_STORE_PATH = prevStorePath;
+    }
+    if (prevBaselinePath === undefined) {
+      delete process.env.DCC_GOSNO_BASELINE_SNAPSHOT_PATH;
+    } else {
+      process.env.DCC_GOSNO_BASELINE_SNAPSHOT_PATH = prevBaselinePath;
+    }
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  }
+}
 
 test("1. Duplicate GoSno fare tables and hardcoded fallback fares are removed from compiler.ts", () => {
   const compilerPath = path.join(
@@ -319,20 +360,19 @@ test("3. Vail: $599 published van fare still leads to a quote where required; 11
   assert.match(vail20Option.inquiryUrl, /^https:\/\/gosno\.co\/request-quote\?/);
 });
 
-test("4. Feed failure, invalid data, expired snapshot, and missing group component fare behavior", async () => {
-  resetGoSnoRouteFeedSnapshotToBaseline();
-  const baseline = getBaselineGoSnoRouteFeedSnapshot();
-  const baseNowMs = Date.parse("2026-11-04T12:00:00.000Z");
+test("4. Feed failure, invalid data, expired snapshot, and missing group component fare behavior (isolated test state)", async () => {
+  await withIsolatedGoSnoTestState(async () => {
+    const baseline = getBaselineGoSnoRouteFeedSnapshot();
+    const baseNowMs = Date.now();
 
-  // Seed a known valid snapshot fetched 45 minutes ago
-  const validFetchedAt = new Date(baseNowMs - 45 * 60 * 1000).toISOString();
-  const seededValidSnapshot = createGoSnoRouteFeedSnapshot(baseline.feed, {
-    fetchedAt: validFetchedAt,
-    ttlMs: 24 * 60 * 60 * 1000,
-  });
-  saveGoSnoRouteFeedSnapshot(seededValidSnapshot);
+    // Seed a known valid snapshot fetched 45 minutes ago in isolated state
+    const validFetchedAt = new Date(baseNowMs - 45 * 60 * 1000).toISOString();
+    const seededValidSnapshot = createGoSnoRouteFeedSnapshot(baseline.feed, {
+      fetchedAt: validFetchedAt,
+      ttlMs: 24 * 60 * 60 * 1000,
+    });
+    saveGoSnoRouteFeedSnapshot(seededValidSnapshot);
 
-  try {
     // 4a. Unavailable feed (HTTP 503): retains last valid snapshot, shows its age (45m old), and evaluates fares from it
     const unavailableRefresh = await refreshGoSnoRouteFeedSnapshot({
       now: new Date(baseNowMs),
@@ -354,13 +394,15 @@ test("4. Feed failure, invalid data, expired snapshot, and missing group compone
       /retaining last valid GoSno snapshot \(45m old/,
     );
 
-    const outcomeAfterUnavailable = compileApplicableDecisionContext({
-      corridorId: "corridor:denver-vail-i70",
-      routeId: "DEN-COPPER",
-      passengerCount: 4,
-      standardBagCount: 4,
-      evaluationTimestamp: new Date(baseNowMs).toISOString(),
-    });
+    const outcomeAfterUnavailable = compileApplicableDecisionContext(
+      {
+        corridorId: "corridor:denver-vail-i70",
+        routeId: "DEN-COPPER",
+        passengerCount: 4,
+        standardBagCount: 4,
+      },
+      { serverNowMs: baseNowMs },
+    );
     const suvAfterUnavailable =
       outcomeAfterUnavailable.vehicleClassEvaluations.find(
         (v) => v.vehicleClassId === "veh:awd-full-size-suv",
@@ -419,17 +461,19 @@ test("4. Feed failure, invalid data, expired snapshot, and missing group compone
       seededValidSnapshot.contentHash,
     );
 
-    // 4c. Expired snapshot (evaluated 26 hours after fetch, past 24h TTL): shows "Check current price with GoSno" and withholds numeric fares
-    const expiredEvalTimeIso = new Date(
-      Date.parse(validFetchedAt) + 26 * 60 * 60 * 1000,
-    ).toISOString();
+    // 4c. Expired snapshot (evaluated 26 hours after fetch, past 24h TTL): shows "Check current price with GoSno", withholds numeric fares, and preserves quote handoff
+    const expiredSnapshot = createGoSnoRouteFeedSnapshot(baseline.feed, {
+      fetchedAt: new Date(baseNowMs - 26 * 60 * 60 * 1000).toISOString(),
+      ttlMs: 24 * 60 * 60 * 1000,
+    });
+    saveGoSnoRouteFeedSnapshot(expiredSnapshot);
+
     const expiredOutcome = compileApplicableDecisionContext({
       corridorId: "corridor:denver-vail-i70",
       routeId: "DEN-COPPER",
       passengerCount: 16,
       standardBagCount: 16,
       skiOrOversizeBagCount: 12,
-      evaluationTimestamp: expiredEvalTimeIso,
     });
     assert.equal(
       expiredOutcome.gosnoPricingSnapshot?.freshnessStatus,
@@ -452,6 +496,15 @@ test("4. Feed failure, invalid data, expired snapshot, and missing group compone
       expiredSuv.pricingResolution.priceDisplay,
       GOSNO_PRICE_FALLBACK_MESSAGE,
     );
+    assert.equal(expiredSuv.pricingResolution.quoteOnly, true);
+    assert.equal(
+      expiredOutcome.gosnoPricingSnapshot?.suvOffer?.onlineBookable,
+      false,
+    );
+    assert.equal(
+      expiredOutcome.gosnoPricingSnapshot?.suvOffer?.nextStep,
+      "request a quote",
+    );
     assert.match(
       expiredSuv.pricingResolution.compiledPricingNote,
       /Check current price with GoSno/,
@@ -460,6 +513,15 @@ test("4. Feed failure, invalid data, expired snapshot, and missing group compone
     assert.equal(
       expiredVan.pricingResolution.priceDisplay,
       GOSNO_PRICE_FALLBACK_MESSAGE,
+    );
+    assert.equal(expiredVan.pricingResolution.quoteOnly, true);
+    assert.equal(
+      expiredOutcome.gosnoPricingSnapshot?.vanOffer?.onlineBookable,
+      false,
+    );
+    assert.equal(
+      expiredOutcome.gosnoPricingSnapshot?.vanOffer?.nextStep,
+      "request a quote",
     );
 
     assert.ok(expiredOutcome.privateGroupInquiryOption);
@@ -477,6 +539,7 @@ test("4. Feed failure, invalid data, expired snapshot, and missing group compone
     );
 
     // 4d. Group estimate missing a component fare (e.g. Crested Butte 16-person group where SUV is $699 but Van fare is null)
+    saveGoSnoRouteFeedSnapshot(seededValidSnapshot);
     const crestedButte16Group = buildGoSnoPrivateGroupInquiryOption({
       corridorId: "corridor:denver-vail-i70",
       origin: "DEN",
@@ -508,148 +571,715 @@ test("4. Feed failure, invalid data, expired snapshot, and missing group compone
       crestedButte16Group.inquiryUrl.includes("referenceCombinedOneWayUsd"),
       false,
     );
-  } finally {
-    resetGoSnoRouteFeedSnapshotToBaseline();
-  }
+  });
 });
 
 test("5. Automated catalog comparison against all 72 one-way and 36 round-trip offers from live GoSno route feed", async () => {
-  resetGoSnoRouteFeedSnapshotToBaseline();
+  await withIsolatedGoSnoTestState(async () => {
+    const liveRes = await fetch(GOSNO_ROUTE_FEED_URL, {
+      headers: { Accept: "application/json" },
+    });
+    assert.equal(liveRes.ok, true, "Live GoSno route feed must return HTTP 200");
+    const liveFeed = (await liveRes.json()) as GoSnoRouteFeedPayload;
 
-  const liveRes = await fetch(GOSNO_ROUTE_FEED_URL, {
-    headers: { Accept: "application/json" },
+    const validation = validateGoSnoRouteFeedPayload(liveFeed);
+    assert.equal(
+      validation.valid,
+      true,
+      `Live GoSno route feed failed validation: ${validation.errors.join("; ")}`,
+    );
+
+    assert.equal(
+      liveFeed.routes.length,
+      72,
+      "GoSno route feed must expose exactly 72 one-way offers",
+    );
+    assert.equal(
+      liveFeed.round_trips.length,
+      36,
+      "GoSno route feed must expose exactly 36 round-trip offers",
+    );
+
+    // Seed freshly fetched live snapshot into isolated state
+    const liveSnapshot = createGoSnoRouteFeedSnapshot(liveFeed);
+    saveGoSnoRouteFeedSnapshot(liveSnapshot);
+
+    const activeState = getActiveGoSnoRouteFeedSnapshotState();
+    assert.equal(
+      activeState.snapshot.contentHash,
+      getBaselineGoSnoRouteFeedSnapshot().contentHash,
+      "Saved DCC baseline snapshot contentHash must match live GoSno route feed catalog content",
+    );
+
+    // Compare all 72 one-way offers for every field DCC consumes
+    for (const liveOffer of liveFeed.routes) {
+      const resolved = resolveGoSnoOneWayFare({
+        offerId: liveOffer.offer_id,
+        routeId: liveOffer.route_id,
+        direction: liveOffer.direction,
+        origin: liveOffer.origin,
+        destination: liveOffer.destination,
+        vehicleClass: liveOffer.vehicle_class,
+      });
+
+      assert.equal(
+        resolved.matched,
+        true,
+        `Offer ${liveOffer.offer_id} must match in DCC`,
+      );
+      assert.equal(resolved.offerId, liveOffer.offer_id);
+      assert.equal(resolved.routeId, liveOffer.route_id);
+      assert.equal(resolved.direction, liveOffer.direction);
+      assert.equal(resolved.origin, liveOffer.origin);
+      assert.equal(resolved.destination, liveOffer.destination);
+      assert.equal(resolved.vehicleClass, liveOffer.vehicle_class);
+      assert.equal(resolved.seatingLimit, liveOffer.seating_limit);
+      assert.equal(resolved.amountUsd, liveOffer.pricing.amount_usd);
+      assert.equal(resolved.amountCents, liveOffer.pricing.amount_cents);
+      assert.equal(resolved.currency, liveOffer.pricing.currency);
+      assert.equal(resolved.canonicalBookingUrl, liveOffer.canonical_booking_url);
+      assert.equal(resolved.quoteUrl, liveOffer.quote_url);
+
+      // Also verify compileApplicableDecisionContext evaluates this exact offer price
+      const compiled = compileApplicableDecisionContext({
+        corridorId:
+          liveOffer.destination === "Breckenridge" ||
+          liveOffer.origin === "Breckenridge"
+            ? "corridor:denver-breckenridge-i70"
+            : "corridor:denver-vail-i70",
+        offerId: liveOffer.offer_id,
+        routeId: liveOffer.route_id,
+        direction: liveOffer.direction,
+        origin: liveOffer.origin,
+        destination: liveOffer.destination,
+        passengerCount: liveOffer.vehicle_class === "suv" ? 4 : 8,
+        standardBagCount: 4,
+      });
+
+      const targetClassId =
+        liveOffer.vehicle_class === "suv"
+          ? "veh:awd-full-size-suv"
+          : "veh:private-transit-van-10";
+      const evalVehicle = compiled.vehicleClassEvaluations.find(
+        (v) => v.vehicleClassId === targetClassId,
+      )!;
+      assert.equal(
+        evalVehicle.pricingResolution.matchedOfferId,
+        liveOffer.offer_id,
+      );
+      assert.equal(
+        evalVehicle.pricingResolution.matchedRouteId,
+        liveOffer.route_id,
+      );
+      assert.equal(
+        evalVehicle.pricingResolution.fixedRateOneWayUsd,
+        liveOffer.pricing.amount_usd,
+      );
+    }
+
+    // Compare all 36 round-trip offers for every field DCC consumes
+    for (const liveRt of liveFeed.round_trips) {
+      const resolvedRt = resolveGoSnoRoundTripFare({
+        offerId: liveRt.offer_id,
+        routeId: liveRt.route_id,
+        airport: liveRt.airport,
+        resort: liveRt.resort,
+        vehicleClass: liveRt.vehicle_class,
+      });
+
+      assert.equal(
+        resolvedRt.matched,
+        true,
+        `Round-trip offer ${liveRt.offer_id} must match in DCC`,
+      );
+      assert.equal(resolvedRt.offerId, liveRt.offer_id);
+      assert.equal(resolvedRt.routeId, liveRt.route_id);
+      assert.equal(resolvedRt.outboundRouteId, liveRt.outbound_route_id);
+      assert.equal(resolvedRt.returnRouteId, liveRt.return_route_id);
+      assert.equal(resolvedRt.airport, liveRt.airport);
+      assert.equal(resolvedRt.resort, liveRt.resort);
+      assert.equal(resolvedRt.vehicleClass, liveRt.vehicle_class);
+      assert.equal(resolvedRt.seatingLimit, liveRt.seating_limit);
+      assert.equal(
+        resolvedRt.outboundAmountUsd,
+        liveRt.pricing.outbound_amount_usd,
+      );
+      assert.equal(
+        resolvedRt.returnAmountUsd,
+        liveRt.pricing.return_amount_usd,
+      );
+      assert.equal(resolvedRt.totalAmountUsd, liveRt.pricing.total_amount_usd);
+      assert.equal(
+        resolvedRt.totalAmountCents,
+        liveRt.pricing.total_amount_cents,
+      );
+      assert.equal(resolvedRt.canonicalBookingUrl, liveRt.canonical_booking_url);
+      assert.equal(resolvedRt.quoteUrl, liveRt.quote_url);
+    }
   });
-  assert.equal(liveRes.ok, true, "Live GoSno route feed must return HTTP 200");
-  const liveFeed = (await liveRes.json()) as GoSnoRouteFeedPayload;
-
-  const validation = validateGoSnoRouteFeedPayload(liveFeed);
-  assert.equal(
-    validation.valid,
-    true,
-    `Live GoSno route feed failed validation: ${validation.errors.join("; ")}`,
-  );
-
-  assert.equal(
-    liveFeed.routes.length,
-    72,
-    "GoSno route feed must expose exactly 72 one-way offers",
-  );
-  assert.equal(
-    liveFeed.round_trips.length,
-    36,
-    "GoSno route feed must expose exactly 36 round-trip offers",
-  );
-
-  const activeState = getActiveGoSnoRouteFeedSnapshotState();
-  assert.equal(
-    activeState.snapshot.contentHash,
-    createGoSnoRouteFeedSnapshot(liveFeed).contentHash,
-    "Saved DCC baseline snapshot contentHash must match live GoSno route feed catalog content",
-  );
-
-  // Compare all 72 one-way offers for every field DCC consumes
-  for (const liveOffer of liveFeed.routes) {
-    const resolved = resolveGoSnoOneWayFare({
-      offerId: liveOffer.offer_id,
-      routeId: liveOffer.route_id,
-      direction: liveOffer.direction,
-      origin: liveOffer.origin,
-      destination: liveOffer.destination,
-      vehicleClass: liveOffer.vehicle_class,
-    });
-
-    assert.equal(
-      resolved.matched,
-      true,
-      `Offer ${liveOffer.offer_id} must match in DCC`,
-    );
-    assert.equal(resolved.offerId, liveOffer.offer_id);
-    assert.equal(resolved.routeId, liveOffer.route_id);
-    assert.equal(resolved.direction, liveOffer.direction);
-    assert.equal(resolved.origin, liveOffer.origin);
-    assert.equal(resolved.destination, liveOffer.destination);
-    assert.equal(resolved.vehicleClass, liveOffer.vehicle_class);
-    assert.equal(resolved.seatingLimit, liveOffer.seating_limit);
-    assert.equal(resolved.amountUsd, liveOffer.pricing.amount_usd);
-    assert.equal(resolved.amountCents, liveOffer.pricing.amount_cents);
-    assert.equal(resolved.currency, liveOffer.pricing.currency);
-    assert.equal(resolved.canonicalBookingUrl, liveOffer.canonical_booking_url);
-    assert.equal(resolved.quoteUrl, liveOffer.quote_url);
-
-    // Also verify compileApplicableDecisionContext evaluates this exact offer price
-    const compiled = compileApplicableDecisionContext({
-      corridorId:
-        liveOffer.destination === "Breckenridge" ||
-        liveOffer.origin === "Breckenridge"
-          ? "corridor:denver-breckenridge-i70"
-          : "corridor:denver-vail-i70",
-      offerId: liveOffer.offer_id,
-      routeId: liveOffer.route_id,
-      direction: liveOffer.direction,
-      origin: liveOffer.origin,
-      destination: liveOffer.destination,
-      passengerCount: liveOffer.vehicle_class === "suv" ? 4 : 8,
-      standardBagCount: 4,
-    });
-
-    const targetClassId =
-      liveOffer.vehicle_class === "suv"
-        ? "veh:awd-full-size-suv"
-        : "veh:private-transit-van-10";
-    const evalVehicle = compiled.vehicleClassEvaluations.find(
-      (v) => v.vehicleClassId === targetClassId,
-    )!;
-    assert.equal(
-      evalVehicle.pricingResolution.matchedOfferId,
-      liveOffer.offer_id,
-    );
-    assert.equal(
-      evalVehicle.pricingResolution.matchedRouteId,
-      liveOffer.route_id,
-    );
-    assert.equal(
-      evalVehicle.pricingResolution.fixedRateOneWayUsd,
-      liveOffer.pricing.amount_usd,
-    );
-  }
-
-  // Compare all 36 round-trip offers for every field DCC consumes
-  for (const liveRt of liveFeed.round_trips) {
-    const resolvedRt = resolveGoSnoRoundTripFare({
-      offerId: liveRt.offer_id,
-      routeId: liveRt.route_id,
-      airport: liveRt.airport,
-      resort: liveRt.resort,
-      vehicleClass: liveRt.vehicle_class,
-    });
-
-    assert.equal(
-      resolvedRt.matched,
-      true,
-      `Round-trip offer ${liveRt.offer_id} must match in DCC`,
-    );
-    assert.equal(resolvedRt.offerId, liveRt.offer_id);
-    assert.equal(resolvedRt.routeId, liveRt.route_id);
-    assert.equal(resolvedRt.outboundRouteId, liveRt.outbound_route_id);
-    assert.equal(resolvedRt.returnRouteId, liveRt.return_route_id);
-    assert.equal(resolvedRt.airport, liveRt.airport);
-    assert.equal(resolvedRt.resort, liveRt.resort);
-    assert.equal(resolvedRt.vehicleClass, liveRt.vehicle_class);
-    assert.equal(resolvedRt.seatingLimit, liveRt.seating_limit);
-    assert.equal(
-      resolvedRt.outboundAmountUsd,
-      liveRt.pricing.outbound_amount_usd,
-    );
-    assert.equal(
-      resolvedRt.returnAmountUsd,
-      liveRt.pricing.return_amount_usd,
-    );
-    assert.equal(resolvedRt.totalAmountUsd, liveRt.pricing.total_amount_usd);
-    assert.equal(
-      resolvedRt.totalAmountCents,
-      liveRt.pricing.total_amount_cents,
-    );
-    assert.equal(resolvedRt.canonicalBookingUrl, liveRt.canonical_booking_url);
-    assert.equal(resolvedRt.quoteUrl, liveRt.quote_url);
-  }
 });
+
+test("6. Authenticated scheduled refresh job runs before expiry while public trip evaluations only read the snapshot", async () => {
+  await withIsolatedGoSnoTestState(async () => {
+    // Verify vercel.json cron configuration matches scheduled cadence before 24h expiry
+    const vercelConfigPath = path.join(process.cwd(), "vercel.json");
+    const vercelConfig = JSON.parse(
+      fs.readFileSync(vercelConfigPath, "utf8"),
+    ) as {
+      crons: Array<{ path: string; schedule: string }>;
+    };
+    const gosnoCron = vercelConfig.crons.find(
+      (c) => c.path === SCHEDULED_GOSNO_FEED_REFRESH_PATH,
+    );
+    assert.ok(
+      gosnoCron,
+      "vercel.json must configure /api/internal/gosno/route-feed-refresh cron",
+    );
+    assert.equal(gosnoCron.schedule, SCHEDULED_GOSNO_FEED_REFRESH_CRON);
+    assert.equal(
+      DEFAULT_GOSNO_SNAPSHOT_TTL_MS / SCHEDULED_GOSNO_FEED_REFRESH_INTERVAL_MS,
+      4,
+      "Scheduled refresh job must run 4 times (every 6h) before the 24h snapshot TTL expires",
+    );
+
+    const prevCronSecret = process.env.CRON_SECRET;
+    const prevInternalSecret = process.env.INTERNAL_API_SECRET;
+    process.env.CRON_SECRET = "test-cron-secret-gosno-refresh";
+    process.env.INTERNAL_API_SECRET = "test-internal-secret-gosno-refresh";
+
+    try {
+      // 6a. Unauthenticated GET and POST to /api/internal/gosno/route-feed-refresh must be rejected with 401
+      const unauthGetRes = await scheduledRefreshGet(
+        new Request("http://localhost/api/internal/gosno/route-feed-refresh", {
+          method: "GET",
+        }),
+      );
+      assert.equal(unauthGetRes.status, 401);
+
+      const unauthPostRes = await scheduledRefreshPost(
+        new Request("http://localhost/api/internal/gosno/route-feed-refresh", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({}),
+        }),
+      );
+      assert.equal(unauthPostRes.status, 401);
+
+      // 6b. Authenticated scheduled cron GET refreshes the snapshot before expiry
+      const authCronGetRes = await scheduledRefreshGet(
+        new Request("http://localhost/api/internal/gosno/route-feed-refresh", {
+          method: "GET",
+          headers: {
+            Authorization: "Bearer test-cron-secret-gosno-refresh",
+          },
+        }),
+      );
+      assert.equal(authCronGetRes.status, 200);
+      const authCronGetJson = await authCronGetRes.json();
+      assert.equal(authCronGetJson.ok, true);
+      assert.equal(authCronGetJson.authMethod, "cron_secret");
+      assert.equal(
+        authCronGetJson.scheduledRefreshCadence.cron,
+        "0 */6 * * *",
+      );
+      assert.equal(
+        authCronGetJson.scheduledRefreshCadence.refreshIntervalHours,
+        6,
+      );
+      assert.equal(
+        authCronGetJson.scheduledRefreshCadence.snapshotTtlHours,
+        24,
+      );
+      assert.equal(
+        authCronGetJson.scheduledRefreshCadence.refreshesBeforeExpiry,
+        4,
+      );
+      assert.equal(
+        authCronGetJson.gosnoRouteFeedSnapshot.freshnessStatus,
+        "fresh",
+      );
+
+      // 6c. Authenticated internal POST also succeeds
+      const authInternalPostRes = await scheduledRefreshPost(
+        new Request("http://localhost/api/internal/gosno/route-feed-refresh", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-internal-secret": "test-internal-secret-gosno-refresh",
+          },
+          body: JSON.stringify({ ttlMs: 24 * 60 * 60 * 1000 }),
+        }),
+      );
+      assert.equal(authInternalPostRes.status, 200);
+      const authInternalPostJson = await authInternalPostRes.json();
+      assert.equal(authInternalPostJson.ok, true);
+      assert.equal(authInternalPostJson.authMethod, "internal_secret");
+
+      // 6d. Public trip evaluations strictly read the saved snapshot and ignore any refresh/simulation fields
+      const beforeEvalState = getActiveGoSnoRouteFeedSnapshotState();
+      const publicEvalRes = await evaluateApplicabilityPost(
+        new Request("http://localhost/api/v1/applicability/evaluate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            corridorId: "corridor:denver-vail-i70",
+            routeId: "DEN-COPPER",
+            passengerCount: 4,
+            standardBagCount: 4,
+            // Attempt to pass removed public fields; route must ignore them and only read snapshot
+            refreshGoSnoFeed: true,
+            simulateFeedState: "expired",
+          }),
+        }),
+      );
+      assert.equal(publicEvalRes.status, 200);
+      const publicEvalJson = await publicEvalRes.json();
+      assert.equal(publicEvalJson.ok, true);
+      assert.equal(
+        publicEvalJson.outcome.gosnoPricingSnapshot.freshnessStatus,
+        "fresh",
+      );
+      assert.equal(
+        publicEvalJson.outcome.gosnoPricingSnapshot.fetchedAt,
+        beforeEvalState.snapshot.fetchedAt,
+      );
+      const suvEval = publicEvalJson.outcome.vehicleClassEvaluations.find(
+        (v: { vehicleClassId: string }) =>
+          v.vehicleClassId === "veh:awd-full-size-suv",
+      );
+      assert.equal(suvEval.pricingResolution.fixedRateOneWayUsd, 349);
+    } finally {
+      if (prevCronSecret === undefined) {
+        delete process.env.CRON_SECRET;
+      } else {
+        process.env.CRON_SECRET = prevCronSecret;
+      }
+      if (prevInternalSecret === undefined) {
+        delete process.env.INTERNAL_API_SECRET;
+      } else {
+        process.env.INTERNAL_API_SECRET = prevInternalSecret;
+      }
+    }
+  });
+});
+
+test("7. Server time governs current fare freshness (including bundled snapshot on a cold start), expired snapshot preserves quote handoff, and historical replay stays separate", async () => {
+  await withIsolatedGoSnoTestState(async ({ tempDir }) => {
+    const baseline = getBaselineGoSnoRouteFeedSnapshot();
+    const realServerNowMs = Date.now();
+
+    // Create an expired bundled snapshot file (fetched 30h ago, expired 6h ago relative to server time)
+    const coldStartFetchedAtIso = new Date(
+      realServerNowMs - 30 * 60 * 60 * 1000,
+    ).toISOString();
+    const expiredBundledSnapshot = createGoSnoRouteFeedSnapshot(baseline.feed, {
+      fetchedAt: coldStartFetchedAtIso,
+      ttlMs: 24 * 60 * 60 * 1000,
+    });
+    const coldStartBaselinePath = path.join(
+      tempDir,
+      "cold-start-expired-baseline.snapshot.json",
+    );
+    fs.writeFileSync(
+      coldStartBaselinePath,
+      JSON.stringify(expiredBundledSnapshot, null, 2),
+      "utf8",
+    );
+    process.env.DCC_GOSNO_BASELINE_SNAPSHOT_PATH = coldStartBaselinePath;
+
+    // 7a. On a cold start (no durable store entry yet), getActiveGoSnoRouteFeedSnapshotState() uses server time and detects the bundled snapshot is expired
+    const coldStartState = getActiveGoSnoRouteFeedSnapshotState();
+    assert.equal(coldStartState.isExpired, true);
+    assert.equal(coldStartState.freshnessStatus, "expired");
+    assert.match(
+      coldStartState.statusBanner,
+      /Check current price with GoSno/,
+    );
+
+    // 7b. Even if a request passes a backdated evaluationTimestamp (when the bundled snapshot was 1h old), current trip evaluation uses server time, shows "Check current price with GoSno", and preserves the quote handoff
+    const backdatedTimestampWhenSnapshotWasFresh = new Date(
+      Date.parse(coldStartFetchedAtIso) + 60 * 60 * 1000,
+    ).toISOString();
+
+    const coldStartEvalRes = await evaluateApplicabilityPost(
+      new Request("http://localhost/api/v1/applicability/evaluate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          corridorId: "corridor:denver-vail-i70",
+          routeId: "DEN-VAIL",
+          origin: "DEN",
+          destination: "Vail",
+          travelDate: "2026-12-20",
+          passengerCount: 4,
+          standardBagCount: 2,
+          skiOrOversizeBagCount: 2,
+          roofBoxConfirmed: true,
+          evaluationTimestamp: backdatedTimestampWhenSnapshotWasFresh,
+        }),
+      }),
+    );
+    assert.equal(coldStartEvalRes.status, 200);
+    const coldStartEvalJson = await coldStartEvalRes.json();
+    assert.equal(coldStartEvalJson.ok, true);
+    assert.equal(
+      coldStartEvalJson.outcome.gosnoPricingSnapshot.isExpired,
+      true,
+    );
+    assert.equal(
+      coldStartEvalJson.outcome.gosnoPricingSnapshot.freshnessStatus,
+      "expired",
+    );
+
+    const vailSuvExpired =
+      coldStartEvalJson.outcome.vehicleClassEvaluations.find(
+        (v: { vehicleClassId: string }) =>
+          v.vehicleClassId === "veh:awd-full-size-suv",
+      );
+    const vailVanExpired =
+      coldStartEvalJson.outcome.vehicleClassEvaluations.find(
+        (v: { vehicleClassId: string }) =>
+          v.vehicleClassId === "veh:private-transit-van-10",
+      );
+    assert.ok(vailSuvExpired);
+    assert.ok(vailVanExpired);
+
+    assert.equal(vailSuvExpired.pricingResolution.fixedRateOneWayUsd, null);
+    assert.equal(
+      vailSuvExpired.pricingResolution.priceDisplay,
+      "Check current price with GoSno",
+    );
+    assert.equal(vailSuvExpired.pricingResolution.quoteOnly, true);
+    assert.equal(
+      coldStartEvalJson.outcome.gosnoPricingSnapshot.suvOffer.onlineBookable,
+      false,
+    );
+    assert.equal(
+      coldStartEvalJson.outcome.gosnoPricingSnapshot.suvOffer.nextStep,
+      "request a quote",
+    );
+    const expiredHandoffUrl =
+      coldStartEvalJson.opaqueAttribution.outboundPartnerUrl;
+    assert.ok(
+      expiredHandoffUrl,
+      "Expired snapshot must preserve the GoSno quote handoff URL",
+    );
+    assert.match(
+      expiredHandoffUrl,
+      /^https:\/\/gosno\.co\/request-quote\?/,
+    );
+    assert.match(expiredHandoffUrl, /origin=DEN/);
+    assert.match(expiredHandoffUrl, /destination=Vail/);
+    assert.match(expiredHandoffUrl, /routeId=DEN-VAIL/);
+    assert.match(expiredHandoffUrl, /offerId=DEN-VAIL-(?:SUV|VAN)/);
+    assert.match(expiredHandoffUrl, /date=2026-12-20/);
+    assert.match(expiredHandoffUrl, /passengers=4/);
+    assert.match(expiredHandoffUrl, /skiBags=2/);
+    assert.equal(
+      expiredHandoffUrl.includes("publishedPrice"),
+      false,
+      "Expired quote handoff URL must not include a stale publishedPrice",
+    );
+
+    assert.ok(vailSuvExpired.pricingResolution.quoteUrl);
+    assert.match(
+      vailSuvExpired.pricingResolution.quoteUrl,
+      /^https:\/\/gosno\.co\/request-quote\?/,
+    );
+    assert.equal(
+      vailSuvExpired.pricingResolution.quoteUrl.includes("publishedPrice"),
+      false,
+    );
+
+    assert.equal(vailVanExpired.pricingResolution.fixedRateOneWayUsd, null);
+    assert.equal(
+      vailVanExpired.pricingResolution.priceDisplay,
+      "Check current price with GoSno",
+    );
+    assert.ok(
+      vailVanExpired.pricingResolution.quoteUrl,
+      "Expired snapshot must preserve the GoSno quote handoff URL on Van",
+    );
+    assert.match(
+      vailVanExpired.pricingResolution.quoteUrl,
+      /^https:\/\/gosno\.co\/request-quote\?/,
+    );
+    assert.equal(
+      vailVanExpired.pricingResolution.quoteUrl.includes("publishedPrice"),
+      false,
+    );
+
+    // 7c. Historical replay is kept separate and evaluates the snapshot at replayAtIso without affecting current freshness
+    const replayedOutcome = replayHistoricalApplicableDecisionContext(
+      {
+        corridorId: "corridor:denver-vail-i70",
+        routeId: "DEN-VAIL",
+        origin: "DEN",
+        destination: "Vail",
+        passengerCount: 4,
+        standardBagCount: 2,
+        skiOrOversizeBagCount: 2,
+      },
+      {
+        snapshot: expiredBundledSnapshot,
+        replayAtIso: backdatedTimestampWhenSnapshotWasFresh,
+      },
+    );
+    assert.equal(replayedOutcome.gosnoPricingSnapshot?.isExpired, false);
+    assert.equal(
+      replayedOutcome.gosnoPricingSnapshot?.freshnessStatus,
+      "fresh",
+    );
+    assert.equal(replayedOutcome.gosnoPricingSnapshot?.ageLabel, "1h old");
+    const replayedVailSuv = replayedOutcome.vehicleClassEvaluations.find(
+      (v) => v.vehicleClassId === "veh:awd-full-size-suv",
+    )!;
+    assert.equal(replayedVailSuv.pricingResolution.fixedRateOneWayUsd, 499);
+    assert.equal(replayedVailSuv.pricingResolution.priceDisplay, "$499");
+  });
+});
+
+test("8. DCC guide copy and evaluator agree after a fixture fare change, and a fresh instance reads the same snapshot while Vail van still requires a quote", async () => {
+  await withIsolatedGoSnoTestState(async ({ tempDir, storePath }) => {
+    const baseline = getBaselineGoSnoRouteFeedSnapshot();
+    const nowIso = new Date().toISOString();
+
+    // Seed fresh baseline snapshot ($499 Vail SUV / $599 Vail Van)
+    const freshBaselineSnapshot = createGoSnoRouteFeedSnapshot(baseline.feed, {
+      fetchedAt: nowIso,
+      ttlMs: 24 * 60 * 60 * 1000,
+    });
+    saveGoSnoRouteFeedSnapshot(freshBaselineSnapshot);
+
+    // 8a. Verify baseline Vail guide copy and shuttle guide page model reflect $499 SUV and $599 van
+    const baselineVailGuide = getPublishedDecisionGuide(
+      "denver-airport-to-vail-rental-car-vs-private-transfer",
+    )!;
+    assert.ok(baselineVailGuide);
+    assert.match(baselineVailGuide.answer, /\$499/);
+    assert.match(baselineVailGuide.answer, /\$599/);
+
+    const baselineShuttleModel = buildDenverToVailShuttleGuidePageModel();
+    assert.equal(baselineShuttleModel.vailPricing.suvPriceLabel, "$499");
+    assert.equal(baselineShuttleModel.vailPricing.vanPriceLabel, "$599");
+    assert.equal(
+      baselineShuttleModel.vailPricing.roundTripSuvPriceLabel,
+      "$998",
+    );
+    assert.equal(
+      baselineShuttleModel.vailPricing.roundTripVanFare.priceDisplay,
+      "$1198",
+    );
+
+    // 8b. Modify DEN-VAIL fares in a test fixture ($499 -> $479 SUV, $599 -> $649 Van) and run refreshGoSnoRouteFeedSnapshot
+    const modifiedFeed: GoSnoRouteFeedPayload = structuredClone(baseline.feed);
+    for (const route of modifiedFeed.routes) {
+      if (route.route_id === "DEN-VAIL" || route.route_id === "VAIL-DEN") {
+        if (route.vehicle_class === "suv") {
+          route.pricing.amount_usd = 479;
+          route.pricing.amount_cents = 47900;
+        } else if (route.vehicle_class === "van") {
+          route.pricing.amount_usd = 649;
+          route.pricing.amount_cents = 64900;
+        }
+      }
+    }
+    for (const rt of modifiedFeed.round_trips) {
+      if (
+        rt.resort === "Vail" ||
+        rt.route_id === "DEN-VAIL" ||
+        rt.route_id === "DEN-VAIL-RT"
+      ) {
+        if (rt.vehicle_class === "suv") {
+          rt.pricing.outbound_amount_usd = 479;
+          rt.pricing.return_amount_usd = 479;
+          rt.pricing.total_amount_usd = 958;
+          rt.pricing.total_amount_cents = 95800;
+        } else if (rt.vehicle_class === "van") {
+          rt.pricing.outbound_amount_usd = 649;
+          rt.pricing.return_amount_usd = 649;
+          rt.pricing.total_amount_usd = 1298;
+          rt.pricing.total_amount_cents = 129800;
+        }
+      }
+    }
+
+    const refreshResult = await refreshGoSnoRouteFeedSnapshot({
+      now: new Date(),
+      fetchImpl: async () =>
+        new Response(JSON.stringify(modifiedFeed), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+    });
+    assert.equal(refreshResult.ok, true);
+
+    // 8c. Verify DCC guide copy, shuttle guide page model, Ask DCC evidence, and evaluator all agree on $479 SUV / $649 Van
+    const updatedVailGuide = getPublishedDecisionGuide(
+      "denver-airport-to-vail-rental-car-vs-private-transfer",
+    )!;
+    const updatedGroupGuide = getPublishedDecisionGuide(
+      "how-does-group-size-change-airport-transportation",
+    )!;
+    const updatedGearGuide = getPublishedDecisionGuide(
+      "how-ski-gear-changes-colorado-airport-transfer-choice",
+    )!;
+    const updatedShuttleModel = buildDenverToVailShuttleGuidePageModel();
+    const updatedEvidence = getAskDccEvidence(
+      "How should seven people get from Denver airport to Vail with ski bags?",
+    );
+
+    assert.match(updatedVailGuide.answer, /\$479/);
+    assert.match(updatedVailGuide.answer, /\$649/);
+    assert.equal(updatedVailGuide.answer.includes("$499"), false);
+    assert.equal(updatedVailGuide.answer.includes("$599"), false);
+    assert.match(
+      JSON.stringify(updatedVailGuide.optionComparison),
+      /\$479/,
+    );
+    assert.match(
+      JSON.stringify(updatedVailGuide.optionComparison),
+      /\$649/,
+    );
+    assert.match(JSON.stringify(updatedVailGuide.citations), /\$479/);
+    assert.match(JSON.stringify(updatedVailGuide.citations), /\$649/);
+
+    assert.match(updatedGroupGuide.answer, /\$479/);
+    assert.match(updatedGroupGuide.answer, /\$649/);
+    assert.match(updatedGearGuide.answer, /\$479/);
+    assert.match(
+      JSON.stringify(updatedGearGuide.assumptionsAndUnknowns),
+      /\$649/,
+    );
+    assert.match(JSON.stringify(updatedGearGuide.citations), /\$479/);
+    assert.match(JSON.stringify(updatedGearGuide.citations), /\$649/);
+
+    assert.equal(updatedShuttleModel.vailPricing.suvPriceLabel, "$479");
+    assert.equal(updatedShuttleModel.vailPricing.vanPriceLabel, "$649");
+    assert.equal(
+      updatedShuttleModel.vailPricing.roundTripSuvPriceLabel,
+      "$958",
+    );
+    assert.equal(
+      updatedShuttleModel.vailPricing.roundTripVanFare.priceDisplay,
+      "$1298",
+    );
+    assert.match(updatedShuttleModel.capacityRuleSummary, /\$479/);
+    assert.match(updatedShuttleModel.capacityRuleSummary, /\$649/);
+
+    assert.match(JSON.stringify(updatedEvidence), /\$479/);
+    assert.match(JSON.stringify(updatedEvidence), /\$649/);
+
+    const updatedEval = compileApplicableDecisionContext({
+      corridorId: "corridor:denver-vail-i70",
+      routeId: "DEN-VAIL",
+      origin: "DEN",
+      destination: "Vail",
+      passengerCount: 8,
+      standardBagCount: 8,
+      skiOrOversizeBagCount: 6,
+    });
+    const updatedEvalSuv = updatedEval.vehicleClassEvaluations.find(
+      (v) => v.vehicleClassId === "veh:awd-full-size-suv",
+    )!;
+    const updatedEvalVan = updatedEval.vehicleClassEvaluations.find(
+      (v) => v.vehicleClassId === "veh:private-transit-van-10",
+    )!;
+    assert.equal(updatedEvalSuv.pricingResolution.fixedRateOneWayUsd, 479);
+    assert.equal(updatedEvalSuv.pricingResolution.priceDisplay, "$479");
+    assert.equal(updatedEvalVan.pricingResolution.fixedRateOneWayUsd, 649);
+    assert.equal(updatedEvalVan.pricingResolution.priceDisplay, "$649");
+    assert.equal(updatedEvalVan.pricingResolution.quoteOnly, true);
+    assert.equal(
+      updatedEval.gosnoPricingSnapshot?.vanOffer?.onlineBookable,
+      false,
+    );
+    assert.equal(
+      updatedEval.gosnoPricingSnapshot?.vanOffer?.nextStep,
+      "request a quote",
+    );
+
+    // 8d. Spawn a fresh OS process pointing at the same storePath to verify a fresh instance reads the same snapshot and Vail van still requires a quote
+    const childScriptPath = path.join(tempDir, "fresh-instance-verify.ts");
+    const childScript = `
+      import { compileApplicableDecisionContext, getActiveGoSnoRouteFeedSnapshotState } from "@/lib/dcc/applicability";
+      import { getPublishedDecisionGuide } from "@/src/data/published-decision-guides";
+      import { buildDenverToVailShuttleGuidePageModel } from "@/app/transportation/colorado/denver-to-vail-shuttle-guide/model";
+
+      const state = getActiveGoSnoRouteFeedSnapshotState();
+      const guide = getPublishedDecisionGuide("denver-airport-to-vail-rental-car-vs-private-transfer");
+      const shuttle = buildDenverToVailShuttleGuidePageModel();
+      const evaluated = compileApplicableDecisionContext({
+        corridorId: "corridor:denver-vail-i70",
+        routeId: "DEN-VAIL",
+        origin: "DEN",
+        destination: "Vail",
+        travelDate: "2026-12-20",
+        passengerCount: 8,
+        standardBagCount: 8,
+        skiOrOversizeBagCount: 6,
+      });
+      const suv = evaluated.vehicleClassEvaluations.find((v) => v.vehicleClassId === "veh:awd-full-size-suv");
+      const van = evaluated.vehicleClassEvaluations.find((v) => v.vehicleClassId === "veh:private-transit-van-10");
+      process.stdout.write(JSON.stringify({
+        contentHash: state.snapshot.contentHash,
+        guideAnswer: guide?.answer,
+        shuttleSuvText: shuttle.vailPricing.suvPriceLabel,
+        shuttleVanText: shuttle.vailPricing.vanPriceLabel,
+        evalSuvUsd: suv?.pricingResolution.fixedRateOneWayUsd,
+        evalVanUsd: van?.pricingResolution.fixedRateOneWayUsd,
+        evalVanPriceDisplay: van?.pricingResolution.priceDisplay,
+        evalVanQuoteOnly: van?.pricingResolution.quoteOnly,
+        evalVanOnlineBookable: evaluated.gosnoPricingSnapshot?.vanOffer?.onlineBookable,
+        evalVanNextStep: evaluated.gosnoPricingSnapshot?.vanOffer?.nextStep,
+      }));
+    `;
+    fs.writeFileSync(childScriptPath, childScript, "utf8");
+    const childStdout = execFileSync(
+      process.execPath,
+      ["--import", "tsx", childScriptPath],
+      {
+        cwd: process.cwd(),
+        env: {
+          ...process.env,
+          DCC_DURABLE_STORE_PATH: storePath,
+        },
+        encoding: "utf8",
+      },
+    );
+    const freshInstanceResult = JSON.parse(childStdout.trim()) as {
+      contentHash: string;
+      guideAnswer: string;
+      shuttleSuvText: string;
+      shuttleVanText: string;
+      evalSuvUsd: number;
+      evalVanUsd: number;
+      evalVanPriceDisplay: string;
+      evalVanQuoteOnly: boolean;
+      evalVanOnlineBookable: boolean;
+      evalVanNextStep: string;
+    };
+
+    assert.equal(
+      freshInstanceResult.contentHash,
+      refreshResult.snapshot.contentHash,
+      "Fresh instance must read the exact same refreshed snapshot",
+    );
+    assert.match(freshInstanceResult.guideAnswer, /\$479/);
+    assert.match(freshInstanceResult.guideAnswer, /\$649/);
+    assert.equal(freshInstanceResult.shuttleSuvText, "$479");
+    assert.equal(freshInstanceResult.shuttleVanText, "$649");
+    assert.equal(freshInstanceResult.evalSuvUsd, 479);
+    assert.equal(freshInstanceResult.evalVanUsd, 649);
+    assert.equal(freshInstanceResult.evalVanPriceDisplay, "$649");
+    assert.equal(
+      freshInstanceResult.evalVanQuoteOnly,
+      true,
+      "Fresh instance must still require a quote for the Vail van",
+    );
+    assert.equal(freshInstanceResult.evalVanOnlineBookable, false);
+    assert.equal(freshInstanceResult.evalVanNextStep, "request a quote");
+  });
+});
+
+

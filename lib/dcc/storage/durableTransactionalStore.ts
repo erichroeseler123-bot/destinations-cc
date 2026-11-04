@@ -557,7 +557,13 @@ export async function syncDurableLedgerWithPostgres(options?: {
       }
       if (
         remoteState.gosnoRouteFeedRefreshMeta &&
-        !localDraft.gosnoRouteFeedRefreshMeta
+        (!localDraft.gosnoRouteFeedRefreshMeta ||
+          Date.parse(
+            remoteState.gosnoRouteFeedRefreshMeta.lastRefreshAttemptAt ?? "",
+          ) >=
+            Date.parse(
+              localDraft.gosnoRouteFeedRefreshMeta.lastRefreshAttemptAt ?? "",
+            ))
       ) {
         localDraft.gosnoRouteFeedRefreshMeta =
           remoteState.gosnoRouteFeedRefreshMeta;

@@ -143,7 +143,11 @@ export async function verifyEarthOSAuthorization(
       } catch {
         pathname = "";
       }
-      if (method !== "GET" || (pathname && pathname !== "/api/internal/earthos/reference-maintenance")) {
+      const allowedCronPaths = new Set([
+        "/api/internal/earthos/reference-maintenance",
+        "/api/internal/gosno/route-feed-refresh",
+      ]);
+      if (method !== "GET" || (pathname && !allowedCronPaths.has(pathname))) {
         return {
           authorized: false,
           actor: "vercel:cron",

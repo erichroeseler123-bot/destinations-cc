@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getGoSnoRouteSnapshotDisplayPricing } from "@/lib/dcc/applicability";
 
 export type BigSkyTransportationPageProps = {
   title: string;
@@ -10,7 +11,6 @@ export type BigSkyTransportationPageProps = {
 };
 
 const GOSNO_HREF = "https://gosno.co/big-sky";
-const PRICE = 299;
 
 export default function BigSkyTransportationPage({
   title,
@@ -20,6 +20,13 @@ export default function BigSkyTransportationPage({
   driveTime,
   canonicalPath,
 }: BigSkyTransportationPageProps) {
+  const bigSkyPricing = getGoSnoRouteSnapshotDisplayPricing({
+    routeId: "BZN-BIG-SKY",
+  });
+  const eachWayLabel =
+    bigSkyPricing.suvFare.amountUsd !== null
+      ? `${bigSkyPricing.suvPriceLabel} each way`
+      : bigSkyPricing.suvPriceLabel;
   const handoffHref = `${GOSNO_HREF}?source=dcc&sourcePage=${encodeURIComponent(canonicalPath)}&destination=${encodeURIComponent(destination)}`;
 
   return (
@@ -32,7 +39,7 @@ export default function BigSkyTransportationPage({
             <p className="mt-6 max-w-2xl text-lg leading-8 text-zinc-300">{description}</p>
             <div className="mt-7 flex flex-wrap gap-3 text-xs font-black uppercase tracking-[0.14em] text-zinc-200">
               <span className="rounded-full border border-white/12 bg-white/5 px-4 py-2">Private Suburban</span>
-              <span className="rounded-full border border-white/12 bg-white/5 px-4 py-2">${PRICE} each way</span>
+              <span className="rounded-full border border-white/12 bg-white/5 px-4 py-2">{eachWayLabel}</span>
               <span className="rounded-full border border-white/12 bg-white/5 px-4 py-2">One stop included</span>
               <span className="rounded-full border border-white/12 bg-white/5 px-4 py-2">BZN airport</span>
             </div>
@@ -40,7 +47,7 @@ export default function BigSkyTransportationPage({
 
           <aside className="rounded-[1.8rem] border border-cyan-300/20 bg-[#0b1822] p-7 shadow-[0_25px_80px_rgba(0,0,0,.35)]">
             <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-300">DCC recommendation</p>
-            <div className="mt-4 text-5xl font-black">${PRICE}</div>
+            <div className="mt-4 text-5xl font-black">{bigSkyPricing.suvPriceLabel}</div>
             <p className="mt-1 text-sm text-zinc-400">one way · private Chevrolet Suburban</p>
             <div className="my-6 h-px bg-white/10" />
             <dl className="grid gap-4 text-sm">

@@ -33,10 +33,7 @@ export default function ApplicableRouteDecisionPanel({
   const [direction, setDirection] = useState<"OUTBOUND" | "RETURN">(
     initialOutcome.gosnoPricingSnapshot?.matchedDirection ?? "OUTBOUND",
   );
-  const [simulateFeedState, setSimulateFeedState] = useState<
-    "live" | "unavailable_feed" | "invalid_data" | "expired_snapshot"
-  >("live");
-  const [travelDate, setTravelDate] = useState<string>(
+  const [travelDate] = useState<string>(
     initialOutcome.normalizedInputs.travelDate,
   );
   const [passengerCount, setPassengerCount] = useState<number>(
@@ -65,11 +62,6 @@ export default function ApplicableRouteDecisionPanel({
   async function recompileOnServer(nextParams: {
     destination?: string;
     direction?: "OUTBOUND" | "RETURN";
-    simulateFeedState?:
-      | "live"
-      | "unavailable_feed"
-      | "invalid_data"
-      | "expired_snapshot";
     travelDate?: string;
     passengerCount: number;
     standardBagCount: number;
@@ -81,7 +73,6 @@ export default function ApplicableRouteDecisionPanel({
     try {
       const nextDestination = nextParams.destination ?? destination;
       const nextDirection = nextParams.direction ?? direction;
-      const nextFeedState = nextParams.simulateFeedState ?? simulateFeedState;
       const nextTravelDate = nextParams.travelDate ?? travelDate;
       const airport = nextDestination === "Big Sky" ? "BZN" : "DEN";
       const reqOrigin =
@@ -103,7 +94,6 @@ export default function ApplicableRouteDecisionPanel({
           skiOrOversizeBagCount: nextParams.skiOrOversizeBagCount,
           partnerDestinationUrl: basePartnerDestinationUrl,
           partnerNetwork: "direct",
-          simulateFeedState: nextFeedState,
           activeSegmentConditions: {
             vailPassChainLawActive: nextParams.vailPassChainLawActive,
             i70TractionLawActive: nextParams.i70TractionLawActive,
@@ -215,7 +205,6 @@ export default function ApplicableRouteDecisionPanel({
               void recompileOnServer({
                 destination: nextDest,
                 direction,
-                simulateFeedState,
                 travelDate,
                 passengerCount,
                 standardBagCount,
@@ -259,7 +248,6 @@ export default function ApplicableRouteDecisionPanel({
               void recompileOnServer({
                 destination,
                 direction: nextDir,
-                simulateFeedState,
                 travelDate,
                 passengerCount,
                 standardBagCount,
@@ -290,7 +278,6 @@ export default function ApplicableRouteDecisionPanel({
               void recompileOnServer({
                 destination,
                 direction,
-                simulateFeedState,
                 travelDate,
                 passengerCount: next,
                 standardBagCount,
@@ -301,41 +288,6 @@ export default function ApplicableRouteDecisionPanel({
             }}
             className="mt-1.5 w-full rounded-lg border border-white/15 bg-slate-900 px-3 py-1.5 text-sm font-semibold text-white"
           />
-        </label>
-
-        <label className="block text-xs text-slate-300">
-          <span className="font-semibold uppercase tracking-wider text-slate-400">
-            Feed Snapshot State
-          </span>
-          <select
-            data-testid="applicability-feed-state-select"
-            value={simulateFeedState}
-            onChange={(e) => {
-              const nextState = e.target.value as
-                | "live"
-                | "unavailable_feed"
-                | "invalid_data"
-                | "expired_snapshot";
-              setSimulateFeedState(nextState);
-              void recompileOnServer({
-                destination,
-                direction,
-                simulateFeedState: nextState,
-                travelDate,
-                passengerCount,
-                standardBagCount,
-                skiOrOversizeBagCount,
-                vailPassChainLawActive,
-                i70TractionLawActive,
-              });
-            }}
-            className="mt-1.5 w-full rounded-lg border border-white/15 bg-slate-900 px-3 py-1.5 text-sm font-semibold text-white"
-          >
-            <option value="live">Live Valid Snapshot</option>
-            <option value="unavailable_feed">Unavailable Feed (Retain Last Valid)</option>
-            <option value="invalid_data">Invalid Feed Data (Retain Last Valid)</option>
-            <option value="expired_snapshot">Expired Snapshot (Fallback)</option>
-          </select>
         </label>
 
         <label className="block text-xs text-slate-300">
@@ -353,7 +305,6 @@ export default function ApplicableRouteDecisionPanel({
               void recompileOnServer({
                 destination,
                 direction,
-                simulateFeedState,
                 travelDate,
                 passengerCount,
                 standardBagCount: next,
@@ -381,7 +332,6 @@ export default function ApplicableRouteDecisionPanel({
               void recompileOnServer({
                 destination,
                 direction,
-                simulateFeedState,
                 travelDate,
                 passengerCount,
                 standardBagCount,
@@ -404,7 +354,6 @@ export default function ApplicableRouteDecisionPanel({
               void recompileOnServer({
                 destination,
                 direction,
-                simulateFeedState,
                 travelDate,
                 passengerCount,
                 standardBagCount,
@@ -428,7 +377,6 @@ export default function ApplicableRouteDecisionPanel({
               void recompileOnServer({
                 destination,
                 direction,
-                simulateFeedState,
                 travelDate,
                 passengerCount,
                 standardBagCount,

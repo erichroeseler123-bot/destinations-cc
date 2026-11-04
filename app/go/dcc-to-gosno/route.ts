@@ -2,6 +2,7 @@ import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
 import {
   buildGoSnoPrivateGroupInquiryOption,
+  getGoSnoRouteSnapshotDisplayPricing,
   type CorridorId,
 } from "@/lib/dcc/applicability";
 import { issueOpaqueClickAttribution } from "@/lib/dcc/commerce/opaqueAttributionLedger";
@@ -97,6 +98,9 @@ export async function GET(request: Request) {
     : GOSNO_MAX_VAN_PASSENGERS;
 
   if (isBigSky && requestedVehicleType === "van" && (parsedPartySize === null || parsedPartySize <= GOSNO_MAX_SUV_PASSENGERS)) {
+    const bigSkyPricing = getGoSnoRouteSnapshotDisplayPricing({
+      routeId: "BZN-BIG-SKY",
+    });
     return NextResponse.json(
       {
         ok: false,
@@ -104,8 +108,7 @@ export async function GET(request: Request) {
         status: "currently_unavailable",
         nextStep: "currently unavailable",
         maxAllowedPassengers: GOSNO_MAX_SUV_PASSENGERS,
-        error:
-          "GoSno Big Sky operates Private Chevrolet Suburbans only (up to 6 passengers per vehicle at $299 one-way / $548 round-trip). Passenger vans are currently unavailable in Big Sky.",
+        error: `GoSno Big Sky operates Private Chevrolet Suburbans only (up to 6 passengers per vehicle at ${bigSkyPricing.suvOneWayLabel} / ${bigSkyPricing.roundTripSuvPriceLabel} round-trip). Passenger vans are currently unavailable in Big Sky.`,
       },
       {
         status: 422,

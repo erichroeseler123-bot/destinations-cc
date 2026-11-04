@@ -173,7 +173,7 @@ function scoreGuide(
       score *= 0.15;
     }
     if (guide.slug === "denver-airport-to-vail-rental-car-vs-private-transfer") {
-      score *= 1.15;
+      score *= 1.35;
     }
     if (/\b(?:ski|snowboard|bags|bag|gear)\b/.test(normalizedQuery) && guide.slug === "how-ski-gear-changes-colorado-airport-transfer-choice") {
       score *= 1.12;

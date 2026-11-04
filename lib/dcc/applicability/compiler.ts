@@ -10,11 +10,13 @@ import {
 } from "./contextModel";
 import {
   GOSNO_PRICE_FALLBACK_MESSAGE,
+  evaluateHistoricalGoSnoRouteFeedSnapshotState,
   getActiveGoSnoRouteFeedSnapshotState,
   resolveGoSnoOneWayFare,
   resolveGoSnoRouteContext,
   type ActiveGoSnoSnapshotState,
   type GoSnoRouteDirection,
+  type GoSnoRouteFeedVersionedSnapshot,
   type GoSnoSnapshotFreshnessStatus,
   type ResolvedGoSnoOneWayFare,
 } from "./gosnoRouteFeedSnapshot";
@@ -434,8 +436,14 @@ function parseMonthUtc(travelDate: string): number {
   return Number.isFinite(month) && month >= 1 && month <= 12 ? month : 12;
 }
 
+export interface CompileApplicableDecisionOptions {
+  serverNowMs?: number;
+  snapshotState?: ActiveGoSnoSnapshotState;
+}
+
 export function compileApplicableDecisionContext(
   request: TripApplicabilityRequest,
+  options?: CompileApplicableDecisionOptions,
 ): CompiledApplicableDecisionOutcome {
   const model = getVersionedApplicabilityContextModel();
   const travelDate =
@@ -577,15 +585,11 @@ export function compileApplicableDecisionContext(
 
   const chainLawCode16Active = activeRegById.has("reg:co-passenger-chain-law-code-16");
 
-  const evalNowMs =
-    typeof request.evaluationTimestamp === "string" &&
-    Number.isFinite(Date.parse(request.evaluationTimestamp))
-      ? Date.parse(request.evaluationTimestamp)
-      : undefined;
-
-  const activeGoSnoSnapshotState = getActiveGoSnoRouteFeedSnapshotState({
-    nowMs: evalNowMs,
-  });
+  const activeGoSnoSnapshotState =
+    options?.snapshotState ??
+    getActiveGoSnoRouteFeedSnapshotState({
+      nowMs: options?.serverNowMs,
+    });
 
   const gosnoRouteCtx = resolveGoSnoRouteContext({
     offerId: request.offerId,
@@ -1027,7 +1031,7 @@ export function compileApplicableDecisionContext(
     passengerCount,
     standardBagCount,
     skiOrOversizeBagCount,
-    nowMs: evalNowMs,
+    nowMs: options?.serverNowMs,
     snapshotState: activeGoSnoSnapshotState,
   });
 
@@ -1096,4 +1100,19 @@ export function compileApplicableDecisionContext(
     gosnoPricingSnapshot,
   };
 }
+
+export function replayHistoricalApplicableDecisionContext(
+  request: TripApplicabilityRequest,
+  replayOptions: {
+    snapshot: GoSnoRouteFeedVersionedSnapshot;
+    replayAtIso: string;
+  },
+): CompiledApplicableDecisionOutcome {
+  const historicalSnapshotState =
+    evaluateHistoricalGoSnoRouteFeedSnapshotState(replayOptions);
+  return compileApplicableDecisionContext(request, {
+    snapshotState: historicalSnapshotState,
+  });
+}
+
 

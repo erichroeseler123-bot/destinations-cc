@@ -4,7 +4,12 @@
     {
       "path": "/api/internal/earthos/reference-maintenance",
       "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/internal/gosno/route-feed-refresh",
+      "schedule": "0 */6 * * *"
     }
   ]
 }
+
 

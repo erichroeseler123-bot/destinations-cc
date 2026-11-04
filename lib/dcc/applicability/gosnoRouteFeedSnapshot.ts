@@ -9,6 +9,10 @@ import type { CorridorId } from "./contextModel";
 
 export const GOSNO_ROUTE_FEED_URL = "https://gosno.co/api/public/route-feed" as const;
 export const DEFAULT_GOSNO_SNAPSHOT_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+export const SCHEDULED_GOSNO_FEED_REFRESH_CRON = "0 */6 * * *" as const; // Every 6 hours (4x before 24h expiry)
+export const SCHEDULED_GOSNO_FEED_REFRESH_INTERVAL_MS = 6 * 60 * 60 * 1000; // 6 hours
+export const SCHEDULED_GOSNO_FEED_REFRESH_PATH =
+  "/api/internal/gosno/route-feed-refresh" as const;
 export const GOSNO_PRICE_FALLBACK_MESSAGE = "Check current price with GoSno" as const;
 
 export type GoSnoVehicleClass = "suv" | "van";
@@ -541,11 +545,17 @@ export function createGoSnoRouteFeedSnapshot(
   };
 }
 
+let cachedBaselineSnapshotPath: string | null = null;
+
 export function getBaselineGoSnoRouteFeedSnapshot(): GoSnoRouteFeedVersionedSnapshot {
-  if (cachedBaselineSnapshot) {
+  const customBaselinePath = process.env.DCC_GOSNO_BASELINE_SNAPSHOT_PATH?.trim();
+  const activePath = customBaselinePath
+    ? path.resolve(customBaselinePath)
+    : BASELINE_SNAPSHOT_PATH;
+  if (cachedBaselineSnapshot && cachedBaselineSnapshotPath === activePath) {
     return structuredClone(cachedBaselineSnapshot);
   }
-  const rawText = fs.readFileSync(BASELINE_SNAPSHOT_PATH, "utf8");
+  const rawText = fs.readFileSync(activePath, "utf8");
   const parsed = JSON.parse(rawText) as GoSnoRouteFeedVersionedSnapshot;
   const validation = validateGoSnoRouteFeedPayload(parsed.feed);
   if (!validation.valid) {
@@ -554,6 +564,7 @@ export function getBaselineGoSnoRouteFeedSnapshot(): GoSnoRouteFeedVersionedSnap
     );
   }
   cachedBaselineSnapshot = parsed;
+  cachedBaselineSnapshotPath = activePath;
   return structuredClone(parsed);
 }
 
@@ -582,9 +593,9 @@ export function saveGoSnoRouteFeedSnapshot(
 
 export function getActiveGoSnoRouteFeedSnapshotState(options?: {
   nowMs?: number;
+  serverNowMs?: number;
 }): ActiveGoSnoSnapshotState {
   const durable = readDurableLedgerState();
-  const hasPersistedSnapshot = Boolean(durable.gosnoRouteFeedSnapshot);
   const snapshot =
     durable.gosnoRouteFeedSnapshot ?? getBaselineGoSnoRouteFeedSnapshot();
   const refreshMeta: GoSnoRouteFeedRefreshMeta =
@@ -598,18 +609,13 @@ export function getActiveGoSnoRouteFeedSnapshotState(options?: {
   const fetchedAtMs = Date.parse(snapshot.fetchedAt);
   const expiresAtMs = Date.parse(snapshot.expiresAt);
 
-  // If using the unmutated baseline seed in offline tests without an explicit nowMs,
-  // avoid false expiry if the wall clock moves past the seed's static 24h window.
-  let evalNowMs: number;
-  if (typeof options?.nowMs === "number" && Number.isFinite(options.nowMs)) {
-    evalNowMs = options.nowMs;
-  } else if (hasPersistedSnapshot || durable.gosnoRouteFeedRefreshMeta) {
-    evalNowMs = Date.now();
-  } else {
-    const wallNow = Date.now();
-    evalNowMs =
-      wallNow > expiresAtMs ? fetchedAtMs + 5 * 60 * 1000 : wallNow;
-  }
+  // Current fare freshness always uses server time, including for the bundled snapshot on a cold start.
+  const evalNowMs =
+    typeof options?.serverNowMs === "number" && Number.isFinite(options.serverNowMs)
+      ? options.serverNowMs
+      : typeof options?.nowMs === "number" && Number.isFinite(options.nowMs)
+        ? options.nowMs
+        : Date.now();
 
   const ageMs = Math.max(0, evalNowMs - fetchedAtMs);
   const ageLabel = formatSnapshotAge(ageMs);
@@ -634,6 +640,47 @@ export function getActiveGoSnoRouteFeedSnapshotState(options?: {
   return {
     snapshot,
     refreshMeta,
+    freshnessStatus,
+    isExpired,
+    ageMs,
+    ageLabel,
+    statusBanner,
+    priceFallbackMessage: GOSNO_PRICE_FALLBACK_MESSAGE,
+  };
+}
+
+/**
+ * Historical replay helper kept strictly separate from current fare freshness evaluation.
+ */
+export function evaluateHistoricalGoSnoRouteFeedSnapshotState(params: {
+  snapshot: GoSnoRouteFeedVersionedSnapshot;
+  replayAtIso: string;
+}): ActiveGoSnoSnapshotState {
+  const { snapshot, replayAtIso } = params;
+  const replayAtMs = Date.parse(replayAtIso);
+  if (!Number.isFinite(replayAtMs)) {
+    throw new Error(`Invalid historical replayAtIso "${replayAtIso}".`);
+  }
+  const fetchedAtMs = Date.parse(snapshot.fetchedAt);
+  const expiresAtMs = Date.parse(snapshot.expiresAt);
+  const ageMs = Math.max(0, replayAtMs - fetchedAtMs);
+  const ageLabel = formatSnapshotAge(ageMs);
+  const isExpired = replayAtMs > expiresAtMs;
+  const freshnessStatus: GoSnoSnapshotFreshnessStatus = isExpired
+    ? "expired"
+    : "fresh";
+  const statusBanner = isExpired
+    ? `${GOSNO_PRICE_FALLBACK_MESSAGE} — historical GoSno route-feed snapshot (${snapshot.feedVersion}, ${snapshot.contentHash.slice(0, 19)}) was expired at replay time (${ageLabel}, fetched ${snapshot.fetchedAt}).`
+    : `Historical replay from validated GoSno route-feed snapshot (${snapshot.feedVersion}, ${snapshot.contentHash.slice(0, 19)}, ${ageLabel} at ${replayAtIso}, fetched ${snapshot.fetchedAt}).`;
+
+  return {
+    snapshot,
+    refreshMeta: {
+      lastRefreshAttemptAt: snapshot.fetchedAt,
+      lastRefreshStatus: "ok",
+      lastRefreshError: null,
+      consecutiveFailures: 0,
+    },
     freshnessStatus,
     isExpired,
     ageMs,
@@ -1105,11 +1152,24 @@ export function resolveGoSnoOneWayFare(params: {
     const effectiveUsd = isExpired ? null : publishedUsd;
     const effectiveCents =
       effectiveUsd !== null ? matchedRouteOffer.pricing.amount_cents : null;
-    // Vans on GoSno still require a quote / availability confirmation in DCC even when a published van fare exists
+    // Vans on GoSno still require a quote / availability confirmation in DCC even when a published van fare exists;
+    // expired snapshots also require a quote handoff to confirm current pricing.
     const isQuoteOnly =
+      isExpired ||
       params.vehicleClass === "van" ||
       matchedRouteOffer.status === "quote_only" ||
       !matchedRouteOffer.booking_eligibility.online_bookable;
+
+    let resolvedQuoteUrl = matchedRouteOffer.quote_url;
+    if (isExpired) {
+      try {
+        const parsedQuote = new URL(matchedRouteOffer.quote_url);
+        parsedQuote.searchParams.delete("publishedPrice");
+        resolvedQuoteUrl = parsedQuote.toString();
+      } catch {
+        resolvedQuoteUrl = matchedRouteOffer.quote_url;
+      }
+    }
 
     return {
       matched: true,
@@ -1130,7 +1190,7 @@ export function resolveGoSnoOneWayFare(params: {
         !isQuoteOnly && matchedRouteOffer.booking_eligibility.online_bookable,
       quoteOnly: isQuoteOnly,
       canonicalBookingUrl: matchedRouteOffer.canonical_booking_url,
-      quoteUrl: matchedRouteOffer.quote_url,
+      quoteUrl: resolvedQuoteUrl,
       rezdyProductCode:
         matchedRouteOffer.booking_eligibility.rezdy_product_code ?? null,
       isExpired,
@@ -1174,7 +1234,7 @@ export function resolveGoSnoOneWayFare(params: {
         effectiveUsd !== null ? Math.round(effectiveUsd * 100) : null,
       currency: reconciledMatch.currency || "USD",
       status: reconciledMatch.status,
-      nextStep: reconciledMatch.nextStep,
+      nextStep: isExpired ? "request a quote" : reconciledMatch.nextStep,
       onlineBookable: false,
       quoteOnly: true,
       canonicalBookingUrl: reconciledMatch.canonicalUrl,
@@ -1303,6 +1363,17 @@ export function resolveGoSnoRoundTripFare(params: {
   }
 
   const publishedTotal = matchedRt.pricing.total_amount_usd;
+  let resolvedQuoteUrl = matchedRt.quote_url;
+  if (isExpired) {
+    try {
+      const parsedQuote = new URL(matchedRt.quote_url);
+      parsedQuote.searchParams.delete("publishedPrice");
+      resolvedQuoteUrl = parsedQuote.toString();
+    } catch {
+      resolvedQuoteUrl = matchedRt.quote_url;
+    }
+  }
+
   return {
     matched: true,
     offerId: matchedRt.offer_id,
@@ -1321,12 +1392,105 @@ export function resolveGoSnoRoundTripFare(params: {
     currency: matchedRt.pricing.currency,
     status: matchedRt.status,
     nextStep:
-      params.vehicleClass === "van" ? "request a quote" : matchedRt.next_step,
+      isExpired || params.vehicleClass === "van"
+        ? "request a quote"
+        : matchedRt.next_step,
     canonicalBookingUrl: matchedRt.canonical_booking_url,
-    quoteUrl: matchedRt.quote_url,
+    quoteUrl: resolvedQuoteUrl,
     isExpired,
     priceDisplay: isExpired
       ? GOSNO_PRICE_FALLBACK_MESSAGE
       : `$${publishedTotal}`,
+  };
+}
+
+export interface GoSnoRouteSnapshotDisplayPricing {
+  snapshotState: ActiveGoSnoSnapshotState;
+  suvFare: ResolvedGoSnoOneWayFare;
+  vanFare: ResolvedGoSnoOneWayFare;
+  roundTripSuvFare: ResolvedGoSnoRoundTripFare;
+  roundTripVanFare: ResolvedGoSnoRoundTripFare;
+  suvPriceLabel: string;
+  suvOneWayLabel: string;
+  vanPriceLabel: string;
+  vanOneWayLabel: string;
+  vanQuoteRequired: boolean;
+  roundTripSuvPriceLabel: string;
+}
+
+export function getGoSnoRouteSnapshotDisplayPricing(params: {
+  routeId?: string;
+  origin?: string;
+  destination?: string;
+  direction?: GoSnoRouteDirection;
+  corridorId?: CorridorId;
+  snapshotState?: ActiveGoSnoSnapshotState;
+}): GoSnoRouteSnapshotDisplayPricing {
+  const snapshotState =
+    params.snapshotState ?? getActiveGoSnoRouteFeedSnapshotState();
+  const suvFare = resolveGoSnoOneWayFare({
+    routeId: params.routeId,
+    origin: params.origin,
+    destination: params.destination,
+    direction: params.direction ?? "OUTBOUND",
+    corridorId: params.corridorId,
+    vehicleClass: "suv",
+    snapshotState,
+  });
+  const vanFare = resolveGoSnoOneWayFare({
+    routeId: params.routeId,
+    origin: params.origin,
+    destination: params.destination,
+    direction: params.direction ?? "OUTBOUND",
+    corridorId: params.corridorId,
+    vehicleClass: "van",
+    snapshotState,
+  });
+  const roundTripSuvFare = resolveGoSnoRoundTripFare({
+    airport: suvFare.origin,
+    resort: suvFare.destination,
+    vehicleClass: "suv",
+    snapshotState,
+  });
+  const roundTripVanFare = resolveGoSnoRoundTripFare({
+    airport: vanFare.origin,
+    resort: vanFare.destination,
+    vehicleClass: "van",
+    snapshotState,
+  });
+
+  const suvPriceLabel =
+    suvFare.amountUsd !== null
+      ? `$${suvFare.amountUsd}`
+      : GOSNO_PRICE_FALLBACK_MESSAGE;
+  const suvOneWayLabel =
+    suvFare.amountUsd !== null
+      ? `$${suvFare.amountUsd} one-way`
+      : GOSNO_PRICE_FALLBACK_MESSAGE;
+  const vanPriceLabel =
+    vanFare.amountUsd !== null
+      ? `$${vanFare.amountUsd}`
+      : GOSNO_PRICE_FALLBACK_MESSAGE;
+  const vanOneWayLabel =
+    vanFare.amountUsd !== null
+      ? `$${vanFare.amountUsd} one-way`
+      : GOSNO_PRICE_FALLBACK_MESSAGE;
+  const roundTripSuvPriceLabel =
+    roundTripSuvFare.totalAmountUsd !== null
+      ? `$${roundTripSuvFare.totalAmountUsd}`
+      : GOSNO_PRICE_FALLBACK_MESSAGE;
+
+  return {
+    snapshotState,
+    suvFare,
+    vanFare,
+    roundTripSuvFare,
+    roundTripVanFare,
+    suvPriceLabel,
+    suvOneWayLabel,
+    vanPriceLabel,
+    vanOneWayLabel,
+    vanQuoteRequired: vanFare.quoteOnly,
+    roundTripSuvPriceLabel,
   };
 }

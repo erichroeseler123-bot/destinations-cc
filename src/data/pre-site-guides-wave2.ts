@@ -1,3 +1,4 @@
+import { getGoSnoRouteSnapshotDisplayPricing } from "@/lib/dcc/applicability";
 import type { PreSiteGuide } from "@/src/data/pre-site-guides";
 
 export const PRE_SITE_GUIDES_WAVE2: PreSiteGuide[] = [
@@ -55,39 +56,48 @@ export const PRE_SITE_GUIDES_WAVE2: PreSiteGuide[] = [
     eyebrow: "Airport transportation",
     title: "How does group size (such as 7 people) change the best airport transportation option?",
     description: "Compare airport transportation by total group movement and ski/luggage volume instead of looking at one passenger at a time.",
-    answer: "As a group reaches 6 to 7+ people, passenger seat count and luggage/ski-bag volume must be evaluated separately. A standard private SUV (Suburban/Yukon XL) caps at 5–6 passengers max (and only 4–5 with ski bags), so a group of 7 people with ski bags cannot fit in a single SUV or 7-seat minivan. For 7 travelers from DEN to a mountain resort like Vail, compare: (1) a private passenger van up to 10 passengers (on GoSno, SUVs cap at 6 pax for $499 DEN–Vail while private vans carry up to 10 passengers subject to luggage and ski-gear fit and availability, with $599 published on gosno.co/vail and quoteOnly: true on /api/availability; groups of 11+ exceed a single GoSno van); (2) per-seat shared shuttles (e.g., Epic Mountain Express, where published DEN–Vail rates vary by travel date and peak/holiday periods from $59–$129/guest to Vail Transfer Center or $69–$139/guest door-to-door before 20% Epic Pass discount, allowing 2 baggage items including a ski/snowboard bag plus 1 small personal item per guest, best when arrivals are staggered); (3) two AWD/4WD rental SUVs with ski racks (subject to Colorado I-70 Traction Law C.R.S. § 42-4-106 and double overnight resort parking fees); or (4) public transit (RTD A-Line $10.50 + CDOT Bustang West Line $17 to Vail Transportation Center).",
+    get answer() {
+      const vail = getGoSnoRouteSnapshotDisplayPricing({ routeId: "DEN-VAIL" });
+      return `As a group reaches 6 to 7+ people, passenger seat count and luggage/ski-bag volume must be evaluated separately. A standard private SUV (Suburban/Yukon XL) caps at 5–6 passengers max (and only 4–5 with ski bags), so a group of 7 people with ski bags cannot fit in a single SUV or 7-seat minivan. For 7 travelers from DEN to a mountain resort like Vail, compare: (1) a private passenger van up to 10 passengers (on GoSno, SUVs cap at 6 pax for ${vail.suvPriceLabel} DEN–Vail while private vans carry up to 10 passengers subject to luggage and ski-gear fit and availability, with ${vail.vanPriceLabel} published on gosno.co/vail and quoteOnly: true on /api/availability; groups of 11+ exceed a single GoSno van); (2) per-seat shared shuttles (e.g., Epic Mountain Express, where published DEN–Vail rates vary by travel date and peak/holiday periods from $59–$129/guest to Vail Transfer Center or $69–$139/guest door-to-door before 20% Epic Pass discount, allowing 2 baggage items including a ski/snowboard bag plus 1 small personal item per guest, best when arrivals are staggered); (3) two AWD/4WD rental SUVs with ski racks (subject to Colorado I-70 Traction Law C.R.S. § 42-4-106 and double overnight resort parking fees); or (4) public transit (RTD A-Line $10.50 + CDOT Bustang West Line $17 to Vail Transportation Center).`;
+    },
     verifiedAt: "2026-11-03",
-    assumptionsAndUnknowns: [
-      "Unknown: Total count of ski/snowboard bags and large suitcases — 7 passengers with ski bags exceed a 6-passenger SUV and require an up-to-10-passenger van (subject to luggage and ski-gear fit; 11+ passengers exceed a single GoSno van), shared shuttle seats, or two vehicles.",
-      "Unknown: Travel date, flight arrival times, and whether all 7 travelers arrive on the same flight (shared shuttle rates vary by travel date and peak/holiday periods).",
-      "Unknown: Live van availability and dispatch confirmation — GoSno private vans carry up to 10 passengers subject to luggage and ski-gear fit ($599 published on gosno.co/vail; quoteOnly: true on /api/availability).",
-    ],
-    citations: [
-      {
-        id: "col-gosno-catalog",
-        label: "GoSno Private Mountain Transfer — Vehicle Capacity & Quote-Only Van Rule",
-        organization: "GoSno LLC (CO PUC LL-03577)",
-        url: "https://gosno.co/vail",
-        checkedAt: "2026-11-03",
-        claimSupported: "GoSno private SUVs hold up to 6 passengers ($499 DEN–Vail baseline) while private vans hold up to 10 passengers, subject to luggage and ski-gear fit ($599 published on gosno.co/vail; quoteOnly: true on /api/availability; 11+ passengers exceed a single GoSno van).",
-      },
-      {
-        id: "col-epic-shuttle",
-        label: "Epic Mountain Express — Official Shuttle Service Rates & Bag Policy",
-        organization: "Epic Mountain Express",
-        url: "https://www.epicmountainexpress.com/shuttle-rates",
-        checkedAt: "2026-11-02",
-        claimSupported: "Published DEN–Vail shared shuttle rates vary by travel date and peak/holiday periods ($59–$129/guest to Vail Transfer Center; $69–$139/guest door-to-door), with 2 baggage items (including a ski/snowboard bag) plus 1 small personal item per guest.",
-      },
-      {
-        id: "col-cdot-bustang",
-        label: "CDOT Bustang West Line — Denver Union Station to Vail",
-        organization: "Colorado Department of Transportation (CDOT)",
-        url: "https://www.codot.gov/travel/bustang",
-        checkedAt: "2026-10-23",
-        claimSupported: "Public motorcoach service from Denver Union Station ($10.50 RTD A-Line from DEN) to Vail Transportation Center ($17 one-way).",
-      },
-    ],
+    get assumptionsAndUnknowns() {
+      const vail = getGoSnoRouteSnapshotDisplayPricing({ routeId: "DEN-VAIL" });
+      return [
+        "Unknown: Total count of ski/snowboard bags and large suitcases — 7 passengers with ski bags exceed a 6-passenger SUV and require an up-to-10-passenger van (subject to luggage and ski-gear fit; 11+ passengers exceed a single GoSno van), shared shuttle seats, or two vehicles.",
+        "Unknown: Travel date, flight arrival times, and whether all 7 travelers arrive on the same flight (shared shuttle rates vary by travel date and peak/holiday periods).",
+        `Unknown: Live van availability and dispatch confirmation — GoSno private vans carry up to 10 passengers subject to luggage and ski-gear fit (${vail.vanPriceLabel} published on gosno.co/vail; quoteOnly: true on /api/availability).`,
+      ];
+    },
+    get citations(): PreSiteGuide["citations"] {
+      const vail = getGoSnoRouteSnapshotDisplayPricing({ routeId: "DEN-VAIL" });
+      return [
+        {
+          id: "col-gosno-catalog",
+          label: "GoSno Private Mountain Transfer — Vehicle Capacity & Quote-Only Van Rule",
+          organization: "GoSno LLC (CO PUC LL-03577)",
+          url: "https://gosno.co/vail",
+          checkedAt: "2026-11-03",
+          claimSupported: `GoSno private SUVs hold up to 6 passengers (${vail.suvPriceLabel} DEN–Vail baseline) while private vans hold up to 10 passengers, subject to luggage and ski-gear fit (${vail.vanPriceLabel} published on gosno.co/vail; quoteOnly: true on /api/availability; 11+ passengers exceed a single GoSno van).`,
+        },
+        {
+          id: "col-epic-shuttle",
+          label: "Epic Mountain Express — Official Shuttle Service Rates & Bag Policy",
+          organization: "Epic Mountain Express",
+          url: "https://www.epicmountainexpress.com/shuttle-rates",
+          checkedAt: "2026-11-02",
+          claimSupported: "Published DEN–Vail shared shuttle rates vary by travel date and peak/holiday periods ($59–$129/guest to Vail Transfer Center; $69–$139/guest door-to-door), with 2 baggage items (including a ski/snowboard bag) plus 1 small personal item per guest.",
+        },
+        {
+          id: "col-cdot-bustang",
+          label: "CDOT Bustang West Line — Denver Union Station to Vail",
+          organization: "Colorado Department of Transportation (CDOT)",
+          url: "https://www.codot.gov/travel/bustang",
+          checkedAt: "2026-10-23",
+          claimSupported: "Public motorcoach service from Denver Union Station ($10.50 RTD A-Line from DEN) to Vail Transportation Center ($17 one-way).",
+        },
+      ];
+    },
     matters: ["Number of passengers (7 exceeds a 6-pax SUV; GoSno vans cap at 10 passengers subject to gear fit)", "Luggage & ski-bag volume", "Whether the group lands on the same flight", "Child car-seat or mobility needs", "Number of vehicles required"],
     tradeoffs: [
       { label: "Private up-to-10 pax van", body: "Keeps 7–10 people and ski gear in one door-to-door vehicle, subject to luggage and ski-gear fit and availability (11+ passengers exceed a single GoSno van)." },
@@ -119,39 +129,48 @@ export const PRE_SITE_GUIDES_WAVE2: PreSiteGuide[] = [
     eyebrow: "Colorado mountain travel",
     title: "How should ski bags and luggage change your Denver-to-Vail airport transfer decision?",
     description: "Transportation capacity is not just a passenger count when a winter group (such as 7 people) is carrying ski bags, snowboards, boots, and winter suitcases.",
-    answer: "Plan around physical cargo volume—not just seat belts. A 6-passenger full-size SUV comfortably holds only 4–5 passengers once 6-foot ski/snowboard bags and winter duffels are loaded, and 7 passengers with ski bags physically cannot fit in any single SUV or 7-seat minivan. For 7 people traveling from Denver Airport (DEN) to Vail with ski bags, your viable options are: (1) a private passenger van up to 10 passengers (on GoSno, private SUVs cap at 6 passengers for $499 DEN–Vail, while private vans carry up to 10 passengers subject to luggage and ski-gear fit and availability; 11+ passengers exceed a single GoSno van); (2) a per-seat shared shuttle such as Epic Mountain Express (published DEN–Vail rates vary by travel date and peak/holiday periods from $59–$129/guest to Vail Transfer Center or $69–$139/guest door-to-door before 20% Epic Pass discount, allowing 2 baggage items including a ski/snowboard bag plus 1 small personal item per guest); (3) two AWD/4WD rental SUVs with ski racks (which must satisfy Colorado Statutory Traction Law C.R.S. § 42-4-106 Sept 1–May 31 and pay $40–$65+/night per-vehicle Vail Village parking, even though Town of Vail in-town buses are free); or (4) RTD A-Line ($10.50) + CDOT Bustang West Line ($17) motorcoach to Vail Transportation Center.",
+    get answer() {
+      const vail = getGoSnoRouteSnapshotDisplayPricing({ routeId: "DEN-VAIL" });
+      return `Plan around physical cargo volume—not just seat belts. A 6-passenger full-size SUV comfortably holds only 4–5 passengers once 6-foot ski/snowboard bags and winter duffels are loaded, and 7 passengers with ski bags physically cannot fit in any single SUV or 7-seat minivan. For 7 people traveling from Denver Airport (DEN) to Vail with ski bags, your viable options are: (1) a private passenger van up to 10 passengers (on GoSno, private SUVs cap at 6 passengers for ${vail.suvPriceLabel} DEN–Vail, while private vans carry up to 10 passengers subject to luggage and ski-gear fit and availability; 11+ passengers exceed a single GoSno van); (2) a per-seat shared shuttle such as Epic Mountain Express (published DEN–Vail rates vary by travel date and peak/holiday periods from $59–$129/guest to Vail Transfer Center or $69–$139/guest door-to-door before 20% Epic Pass discount, allowing 2 baggage items including a ski/snowboard bag plus 1 small personal item per guest); (3) two AWD/4WD rental SUVs with ski racks (which must satisfy Colorado Statutory Traction Law C.R.S. § 42-4-106 Sept 1–May 31 and pay $40–$65+/night per-vehicle Vail Village parking, even though Town of Vail in-town buses are free); or (4) RTD A-Line ($10.50) + CDOT Bustang West Line ($17) motorcoach to Vail Transportation Center.`;
+    },
     verifiedAt: "2026-11-03",
-    assumptionsAndUnknowns: [
-      "Unknown: Exact number and length of ski/snowboard bags plus checked bags.",
-      "Unknown: Travel date, flight arrival times, and live private-van availability (GoSno private vans carry up to 10 passengers subject to luggage and ski-gear fit, with $599 published on gosno.co/vail and quoteOnly: true on /api/availability; shared shuttle rates vary by travel date and peak/holiday periods).",
-      "Planning Assumption: I-70 winter traction requirements (C.R.S. § 42-4-106 Code 15, Sept 1–May 31) apply to all rental and private vehicles.",
-    ],
-    citations: [
-      {
-        id: "col-gosno-catalog",
-        label: "GoSno Private Mountain Transfer — DEN to Vail SUV vs. Van Capacity",
-        organization: "GoSno LLC (CO PUC LL-03577)",
-        url: "https://gosno.co/vail",
-        checkedAt: "2026-11-03",
-        claimSupported: "GoSno private SUVs cap at 6 passengers ($499 DEN–Vail); private vans carry up to 10 passengers, subject to luggage and ski-gear fit ($599 published on gosno.co/vail; quoteOnly: true on /api/availability; 11+ passengers exceed a single GoSno van).",
-      },
-      {
-        id: "col-epic-shuttle",
-        label: "Epic Mountain Express — Official Shuttle Service Rates & Bag Policy",
-        organization: "Epic Mountain Express",
-        url: "https://www.epicmountainexpress.com/shuttle-rates",
-        checkedAt: "2026-11-02",
-        claimSupported: "Published DEN–Vail shared shuttle rates vary by travel date ($59–$129/guest to Vail Transfer Center; $69–$139/guest door-to-door), and each guest is allowed 2 baggage items (including a ski/snowboard bag) plus 1 small personal item.",
-      },
-      {
-        id: "col-cdot-traction",
-        label: "CDOT Passenger Vehicle Traction & Chain Laws (C.R.S. § 42-4-106)",
-        organization: "Colorado Department of Transportation (CDOT)",
-        url: "https://www.codot.gov/travel/winter-driving/tractionlaw",
-        checkedAt: "2026-10-23",
-        claimSupported: "Mandatory AWD/4WD or M+S/3PMSF winter tires with >= 3/16-inch tread depth on I-70 (MP 133 to MP 259) from Sept 1 to May 31.",
-      },
-    ],
+    get assumptionsAndUnknowns() {
+      const vail = getGoSnoRouteSnapshotDisplayPricing({ routeId: "DEN-VAIL" });
+      return [
+        "Unknown: Exact number and length of ski/snowboard bags plus checked bags.",
+        `Unknown: Travel date, flight arrival times, and live private-van availability (GoSno private vans carry up to 10 passengers subject to luggage and ski-gear fit, with ${vail.vanPriceLabel} published on gosno.co/vail and quoteOnly: true on /api/availability; shared shuttle rates vary by travel date and peak/holiday periods).`,
+        "Planning Assumption: I-70 winter traction requirements (C.R.S. § 42-4-106 Code 15, Sept 1–May 31) apply to all rental and private vehicles.",
+      ];
+    },
+    get citations(): PreSiteGuide["citations"] {
+      const vail = getGoSnoRouteSnapshotDisplayPricing({ routeId: "DEN-VAIL" });
+      return [
+        {
+          id: "col-gosno-catalog",
+          label: "GoSno Private Mountain Transfer — DEN to Vail SUV vs. Van Capacity",
+          organization: "GoSno LLC (CO PUC LL-03577)",
+          url: "https://gosno.co/vail",
+          checkedAt: "2026-11-03",
+          claimSupported: `GoSno private SUVs cap at 6 passengers (${vail.suvPriceLabel} DEN–Vail); private vans carry up to 10 passengers, subject to luggage and ski-gear fit (${vail.vanPriceLabel} published on gosno.co/vail; quoteOnly: true on /api/availability; 11+ passengers exceed a single GoSno van).`,
+        },
+        {
+          id: "col-epic-shuttle",
+          label: "Epic Mountain Express — Official Shuttle Service Rates & Bag Policy",
+          organization: "Epic Mountain Express",
+          url: "https://www.epicmountainexpress.com/shuttle-rates",
+          checkedAt: "2026-11-02",
+          claimSupported: "Published DEN–Vail shared shuttle rates vary by travel date ($59–$129/guest to Vail Transfer Center; $69–$139/guest door-to-door), and each guest is allowed 2 baggage items (including a ski/snowboard bag) plus 1 small personal item.",
+        },
+        {
+          id: "col-cdot-traction",
+          label: "CDOT Passenger Vehicle Traction & Chain Laws (C.R.S. § 42-4-106)",
+          organization: "Colorado Department of Transportation (CDOT)",
+          url: "https://www.codot.gov/travel/winter-driving/tractionlaw",
+          checkedAt: "2026-10-23",
+          claimSupported: "Mandatory AWD/4WD or M+S/3PMSF winter tires with >= 3/16-inch tread depth on I-70 (MP 133 to MP 259) from Sept 1 to May 31.",
+        },
+      ];
+    },
     matters: ["Number of ski or snowboard bags", "Large checked luggage", "Passenger count (7 people + ski bags cannot fit in a 6-seat SUV; GoSno vans cap at 10 passengers subject to gear fit)", "Vehicle cargo layout (up-to-10 pax van vs. 2 SUVs)", "I-70 Traction Law & Vail parking costs"],
     tradeoffs: [
       { label: "Private up-to-10 pax van", body: "Holds 7–10 passengers plus ski bags in one door-to-door vehicle, subject to luggage and ski-gear fit and availability (11+ passengers exceed a single GoSno van)." },

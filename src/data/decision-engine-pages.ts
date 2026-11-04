@@ -1,3 +1,4 @@
+import { getGoSnoRouteSnapshotDisplayPricing } from "@/lib/dcc/applicability";
 import {
   DecisionEnginePageSchema,
   type DecisionEnginePage,
@@ -812,9 +813,26 @@ const pages: DecisionEnginePage[] = [
   },
 ];
 
-export const DECISION_ENGINE_PAGES: DecisionEnginePage[] = pages.map((entry) =>
-  DecisionEnginePageSchema.parse(entry)
-);
+export const DECISION_ENGINE_PAGES: DecisionEnginePage[] = pages.map((entry) => {
+  const parsed = DecisionEnginePageSchema.parse(entry);
+  if (parsed.canonicalPath === "/regions/colorado/breckenridge") {
+    Object.defineProperty(parsed, "howToGetThere", {
+      enumerable: true,
+      get() {
+        const breck = getGoSnoRouteSnapshotDisplayPricing({
+          routeId: "DEN-BRECK",
+        });
+        return [
+          `Private & Shared Airport Transfers from DEN Level 5: GoSno (100% private AWD SUVs up to 6 pax at ${breck.suvOneWayLabel} or private vans up to 10 pax at ${breck.vanPriceLabel} published / quoteOnly: true on /api/availability, subject to luggage and ski-gear fit; 11+ passengers exceed a single GoSno van) and Epic Mountain Express / Summit Express (per-seat shared shuttles and private charters).`,
+          "Public Transit: RTD A-Line from DEN to Denver Union Station, CDOT Bustang West Line or Pegasus to Frisco Transit Center, and free Summit Stage bus to Breckenridge.",
+          "Self-Drive via I-70 West & CO-9 South: Only with verified 4WD/AWD or 3PMSF/M+S tires with at least 3/16-inch tread depth.",
+          "Always check official CDOT COtrip.org before departing Denver or Frisco for active Code 15 / Code 16 restrictions and tunnel holds.",
+        ];
+      },
+    });
+  }
+  return parsed;
+});
 
 const byPath = new Map(DECISION_ENGINE_PAGES.map((entry) => [entry.canonicalPath, entry]));
 
@@ -825,3 +843,4 @@ export function getDecisionEnginePageByPath(pathname: string): DecisionEnginePag
 export function listDecisionEnginePagesByPrefix(prefix: string): DecisionEnginePage[] {
   return DECISION_ENGINE_PAGES.filter((entry) => entry.canonicalPath.startsWith(prefix));
 }
+
