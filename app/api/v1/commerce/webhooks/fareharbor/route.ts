@@ -144,6 +144,15 @@ export async function POST(request: Request) {
     const hasValidQueryToken = verifyWebhookQueryToken(url);
     const hasValidFhHeaders = verifyFareHarborApiHeaders(request.headers);
 
+    if (lookupBaseUrlOverride && lookupBaseUrlOverride.trim().length > 0) {
+      const err = new Error(
+        "Caller-supplied lookup URLs are prohibited in deployed previews and production. Authorized FareHarbor booking lookups must query FareHarbor's External API directly.",
+      ) as Error & { code?: string; statusCode?: number };
+      err.code = "CALLER_LOOKUP_URL_FORBIDDEN";
+      err.statusCode = 400;
+      throw err;
+    }
+
     // 3. Prefer authorized FareHarbor booking lookup when bookingUuid is present and lookup succeeds
     if (bookingUuid && companyShortname) {
       try {
@@ -152,9 +161,13 @@ export async function POST(request: Request) {
             reporterClientId: "client:fareharbor-webhook-authorized-lookup",
             companyShortname,
             bookingUuid,
+            environment:
+              body.environment === "demo" ||
+              url.searchParams.get("environment") === "demo"
+                ? "demo"
+                : "live",
             handoffId:
               typeof body.handoffId === "string" ? body.handoffId : undefined,
-            lookupBaseUrlOverride,
           });
 
         const lifecycleProof = lookupConfirmation.bookingOutcome.handoffId
@@ -189,8 +202,13 @@ export async function POST(request: Request) {
           },
         );
       } catch (lookupErr) {
-        // If caller did NOT authenticate via query token or FH headers, require the authorized lookup to succeed
-        if (!hasValidQueryToken && !hasValidFhHeaders) {
+        const typedLookupErr = lookupErr as Error & { code?: string };
+        // Never swallow simulated booking rejection or caller lookup URL forbidden errors
+        if (
+          typedLookupErr?.code === "CALLER_LOOKUP_URL_FORBIDDEN" ||
+          typedLookupErr?.code === "SIMULATED_BOOKING_RECORD_REJECTED" ||
+          (!hasValidQueryToken && !hasValidFhHeaders)
+        ) {
           throw lookupErr;
         }
       }

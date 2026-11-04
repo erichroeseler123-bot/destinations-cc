@@ -199,6 +199,8 @@ export async function POST(request: Request) {
         reporterClientId,
         companyShortname,
         bookingUuid,
+        environment:
+          body.environment === "demo" || body.sandbox === true ? "demo" : "live",
         handoffId: typeof body.handoffId === "string" ? body.handoffId : undefined,
         lookupBaseUrlOverride:
           typeof body.lookupBaseUrl === "string" ? body.lookupBaseUrl : undefined,

@@ -266,7 +266,7 @@ describe("92 — Case-Study Integrations, WTA Paid Affiliate Setup, and Multi-Pu
       const genuineFareHarborBooking = {
         pk: 98413056,
         uuid: "8f413056-2259-4156-9b18-000000413056",
-        display_id: "#FH-COASTAL-413056-LIVE",
+        display_id: "#98413056",
         status: "booked",
         is_paid: true,
         created_at: "2026-07-01T18:15:00Z",
@@ -331,7 +331,7 @@ describe("92 — Case-Study Integrations, WTA Paid Affiliate Setup, and Multi-Pu
         payerParty: WTA_DRAFT_COMMERCIAL_TERMS.commissionPaidBy,
         payeeLegalName: "Welcome to Alaska Tours LLC",
         handoffId: handoff.handoffId,
-        providerBookingRef: "#FH-COASTAL-413056-LIVE",
+        providerBookingRef: "#98413056",
         travelCompletedAt: "2026-07-15T12:45:00-08:00",
         settledAt: "2026-08-14T16:00:00Z",
         payoutSchedule: "net_30_after_travel" as const,
@@ -420,7 +420,7 @@ describe("92 — Case-Study Integrations, WTA Paid Affiliate Setup, and Multi-Pu
       const confirmBookingJson = await confirmBookingRes.json();
       assert.equal(confirmBookingJson.ok, true);
       assert.equal(confirmBookingJson.bookingOutcome.eventType, "BOOKING_CONFIRMED");
-      assert.equal(confirmBookingJson.bookingOutcome.providerBookingRef, "#FH-COASTAL-413056-LIVE");
+      assert.equal(confirmBookingJson.bookingOutcome.providerBookingRef, "#98413056");
       assert.equal(confirmBookingJson.bookingOutcome.bookingValue.amount, 918);
       assert.equal(confirmBookingJson.bookingOutcome.estimatedCommission.amount, 110.16);
       assert.equal(confirmBookingJson.bookingOutcome.paidCommission.amount, null);
@@ -561,13 +561,85 @@ describe("92 — Case-Study Integrations, WTA Paid Affiliate Setup, and Multi-Pu
         "WTA_REFERRAL_KEY_CANNOT_WRITE_OUTCOMES",
       );
 
-      // 4. Confirm via authorized FareHarbor booking lookup (verify X-FareHarbor-API-App and X-FareHarbor-API-User headers are sent, no custom X-DCC-API-Key header)
+      // 3b. Prove caller-supplied lookupBaseUrl is rejected on deployed previews (400 CALLER_LOOKUP_URL_FORBIDDEN)
+      const callerLookupWtaAttempt = await postWtaAffiliateSimulation(
+        new Request("https://destinationcommandcenter.com/api/v1/commerce/affiliates/wta", {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            "x-dcc-api-key": "dcc_commerce_reporter_v03_token",
+          },
+          body: JSON.stringify({
+            action: "lookup_and_confirm_fareharbor_booking",
+            companyShortname: "coastalhelicopters",
+            bookingUuid,
+            lookupBaseUrl: "https://wta-renderer.vercel.app/api/fareharbor/booking",
+          }),
+        }),
+      );
+      assert.equal(callerLookupWtaAttempt.status, 400);
+      assert.equal(
+        (await callerLookupWtaAttempt.json()).error.code,
+        "CALLER_LOOKUP_URL_FORBIDDEN",
+      );
+
+      const callerLookupWebhookAttempt = await postFareHarborWebhook(
+        new Request(
+          "https://destinationcommandcenter.com/api/v1/commerce/webhooks/fareharbor?token=fh_user_test_key_coastal_123456",
+          {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+              companyShortname: "coastalhelicopters",
+              bookingUuid,
+              lookupBaseUrl: "https://wta-renderer.vercel.app/api/fareharbor/booking",
+            }),
+          },
+        ),
+      );
+      assert.equal(callerLookupWebhookAttempt.status, 400);
+      assert.equal(
+        (await callerLookupWebhookAttempt.json()).error.code,
+        "CALLER_LOOKUP_URL_FORBIDDEN",
+      );
+
+      // 3c. Prove simulated booking records (fhv1-..., #FH-COASTAL-..., validation: {...}) are rejected with 422 SIMULATED_BOOKING_RECORD_REJECTED
+      const simulatedBookingAttempt = await postWtaAffiliateSimulation(
+        new Request("https://destinationcommandcenter.com/api/v1/commerce/affiliates/wta", {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            "x-dcc-api-key": "dcc_commerce_reporter_v03_token",
+          },
+          body: JSON.stringify({
+            action: "confirm_fareharbor_booking",
+            handoffId: handoff.handoffId,
+            booking: {
+              ...authorizedFhBooking,
+              uuid: `fhv1-664215206--${handoff.handoffId}--ord_456a5316`,
+              validation: {
+                validated_via: "https://fareharbor.com/api/external/v1/companies/coastalhelicopters/availabilities/-29637421/bookings/validate/",
+                is_bookable: true,
+              },
+            },
+          }),
+        }),
+      );
+      assert.equal(simulatedBookingAttempt.status, 422);
+      assert.equal(
+        (await simulatedBookingAttempt.json()).error.code,
+        "SIMULATED_BOOKING_RECORD_REJECTED",
+      );
+
+      // 4. Confirm via authorized FareHarbor booking lookup (verify X-FareHarbor-API-App and X-FareHarbor-API-User headers are sent directly to fareharbor.com, no custom X-DCC-API-Key header)
+      let capturedFhUrl = "";
       let capturedFhHeaders: Record<string, string> = {};
       const lookupResult = await confirmWtaSaleViaAuthorizedFareHarborLookup({
         reporterClientId: "client:fareharbor-authorized-api",
         companyShortname: "coastalhelicopters",
         bookingUuid,
-        customFetch: async (_url, init) => {
+        customFetch: async (url, init) => {
+          capturedFhUrl = String(url);
           const h = new Headers(init?.headers);
           capturedFhHeaders = {
             app: h.get("x-fareharbor-api-app") || "",
@@ -581,6 +653,10 @@ describe("92 — Case-Study Integrations, WTA Paid Affiliate Setup, and Multi-Pu
         },
       });
 
+      assert.equal(
+        capturedFhUrl,
+        `https://fareharbor.com/api/external/v1/companies/coastalhelicopters/bookings/${bookingUuid}/`,
+      );
       assert.equal(capturedFhHeaders.app, "fh_app_test_key_coastal");
       assert.equal(capturedFhHeaders.user, "fh_user_test_key_coastal_123456");
       assert.equal(capturedFhHeaders.dcc, "");

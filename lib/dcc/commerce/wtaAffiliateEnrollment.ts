@@ -731,17 +731,21 @@ export function extractDccHandoffIdFromFareHarborBooking(
   return null;
 }
 
-export function getDccFareHarborCredentials(): {
+export function getDccFareHarborCredentials(
+  environment: "live" | "demo" = "live",
+): {
   appKey: string;
   userKey: string;
 } {
   const appKey = (
+    (environment === "demo" ? process.env.FAREHARBOR_DEMO_APP_KEY : "") ||
     process.env.FAREHARBOR_APP_KEY ||
     process.env.FH_APP_NAME ||
     process.env.FH_APP_KEY ||
     ""
   ).trim();
   const userKey = (
+    (environment === "demo" ? process.env.FAREHARBOR_DEMO_USER_KEY : "") ||
     process.env.FAREHARBOR_USER_KEY ||
     process.env.FH_API_KEY ||
     process.env.FH_USER_KEY ||
@@ -758,23 +762,66 @@ export function getDccFareHarborCredentials(): {
   return { appKey, userKey };
 }
 
+export function assertGenuineFareHarborBookingNotSimulated(
+  booking: Partial<FareHarborExternalBookingRecord> | Record<string, unknown> | null | undefined,
+): void {
+  if (!booking || typeof booking !== "object") return;
+  const raw = booking as Record<string, unknown>;
+  const uuid = String(raw["uuid"] || "").trim();
+  const displayId = String(raw["display_id"] || "").trim();
+  const hasValidationBlock = Boolean(raw["validation"] && typeof raw["validation"] === "object");
+  const isFlaggedSimulated = raw["simulated"] === true || raw["is_simulated"] === true;
+
+  if (
+    hasValidationBlock ||
+    isFlaggedSimulated ||
+    /^(fhv1-|sim_|test_|mock_|b7f2c413-0560-4d2e-9a11-)/i.test(uuid) ||
+    /^(#?FH-COASTAL-|#?FH-SIM-)/i.test(displayId)
+  ) {
+    const err = new Error(
+      "Simulated or locally synthesized booking records are barred from confirmed-sale reporting. Supply a genuine FareHarbor reservation (sandbox or authorized live booking).",
+    ) as Error & { code?: string; statusCode?: number };
+    err.code = "SIMULATED_BOOKING_RECORD_REJECTED";
+    err.statusCode = 422;
+    throw err;
+  }
+}
+
 /**
- * Fetches an authorized FareHarbor booking record using `X-FareHarbor-API-App` and `X-FareHarbor-API-User`
- * (no custom `X-DCC-API-Key` header required from FareHarbor) and extracts the DCC referral (`hndf_...`).
+ * Fetches an authorized FareHarbor booking record directly from FareHarbor's External API v1
+ * (`https://fareharbor.com/api/external/v1/...` or `https://demo.fareharbor.com/api/external/v1/...`)
+ * using `X-FareHarbor-API-App` and `X-FareHarbor-API-User` (no custom `X-DCC-API-Key` header required from FareHarbor)
+ * and extracts the DCC referral (`hndf_...`).
+ *
+ * Caller-supplied lookup URLs (`lookupBaseUrl` / `lookupBaseUrlOverride`) are strictly rejected.
  */
 export async function fetchAuthorizedFareHarborBookingRecord(params: {
   companyShortname: string;
   bookingUuid: string;
+  environment?: "live" | "demo";
   lookupBaseUrlOverride?: string;
   customFetch?: typeof fetch;
 }): Promise<{
   booking: FareHarborExternalBookingRecord;
   lookupSource:
     | "fareharbor_external_api_v1"
-    | "wta_authorized_fareharbor_booking_store";
+    | "fareharbor_demo_external_api_v1";
   extractedHandoffId: string | null;
 }> {
-  const { appKey, userKey } = getDccFareHarborCredentials();
+  if (
+    typeof params.lookupBaseUrlOverride === "string" &&
+    params.lookupBaseUrlOverride.trim().length > 0
+  ) {
+    const err = new Error(
+      "Caller-supplied lookup URLs are prohibited in deployed previews and production. Authorized FareHarbor booking lookups must query FareHarbor's External API directly.",
+    ) as Error & { code?: string; statusCode?: number };
+    err.code = "CALLER_LOOKUP_URL_FORBIDDEN";
+    err.statusCode = 400;
+    throw err;
+  }
+
+  const environment = params.environment === "demo" ? "demo" : "live";
+  const { appKey, userKey } = getDccFareHarborCredentials(environment);
   const company = params.companyShortname.trim();
   const bookingUuid = params.bookingUuid.trim();
   const fetchFn = params.customFetch ?? fetch;
@@ -788,41 +835,26 @@ export async function fetchAuthorizedFareHarborBookingRecord(params: {
     throw err;
   }
 
+  if (/^(fhv1-|sim_|test_|mock_)/i.test(bookingUuid)) {
+    const err = new Error(
+      "Simulated booking UUIDs cannot be looked up or reported as confirmed sales.",
+    ) as Error & { code?: string; statusCode?: number };
+    err.code = "SIMULATED_BOOKING_RECORD_REJECTED";
+    err.statusCode = 422;
+    throw err;
+  }
+
   const fhHeaders = {
     "X-FareHarbor-API-App": appKey,
     "X-FareHarbor-API-User": userKey,
     Accept: "application/json",
   };
 
-  const gate = evaluateWtaAffiliateActivationGate();
-  const allowLookupOverride =
-    !gate.isProductionRuntime &&
-    typeof params.lookupBaseUrlOverride === "string" &&
-    params.lookupBaseUrlOverride.trim().length > 0;
-
-  if (allowLookupOverride) {
-    const base = params.lookupBaseUrlOverride!.trim().replace(/\/+$/, "");
-    const overrideUrl = `${base}/api/fareharbor/booking?company=${encodeURIComponent(company)}&uuid=${encodeURIComponent(bookingUuid)}`;
-    const res = await fetchFn(overrideUrl, {
-      method: "GET",
-      headers: fhHeaders,
-      cache: "no-store",
-    });
-    if (res.ok) {
-      const data = (await res.json().catch(() => null)) as
-        | { booking?: FareHarborExternalBookingRecord }
-        | null;
-      if (data?.booking) {
-        return {
-          booking: data.booking,
-          lookupSource: "wta_authorized_fareharbor_booking_store",
-          extractedHandoffId: extractDccHandoffIdFromFareHarborBooking(data.booking),
-        };
-      }
-    }
-  }
-
-  const canonicalFhUrl = `https://fareharbor.com/api/external/v1/companies/${encodeURIComponent(company)}/bookings/${encodeURIComponent(bookingUuid)}/`;
+  const fhHost =
+    environment === "demo"
+      ? "https://demo.fareharbor.com"
+      : "https://fareharbor.com";
+  const canonicalFhUrl = `${fhHost}/api/external/v1/companies/${encodeURIComponent(company)}/bookings/${encodeURIComponent(bookingUuid)}/`;
   const fhRes = await fetchFn(canonicalFhUrl, {
     method: "GET",
     headers: fhHeaders,
@@ -834,16 +866,20 @@ export async function fetchAuthorizedFareHarborBookingRecord(params: {
       | { booking?: FareHarborExternalBookingRecord }
       | null;
     if (data?.booking) {
+      assertGenuineFareHarborBookingNotSimulated(data.booking);
       return {
         booking: data.booking,
-        lookupSource: "fareharbor_external_api_v1",
+        lookupSource:
+          environment === "demo"
+            ? "fareharbor_demo_external_api_v1"
+            : "fareharbor_external_api_v1",
         extractedHandoffId: extractDccHandoffIdFromFareHarborBooking(data.booking),
       };
     }
   }
 
   const err = new Error(
-    `Authorized FareHarbor booking lookup could not find booking '${bookingUuid}' for company '${company}'.`,
+    `Authorized FareHarbor booking lookup (${fhHost}) could not find booking '${bookingUuid}' for company '${company}'.`,
   ) as Error & { code?: string; statusCode?: number };
   err.code = "FAREHARBOR_BOOKING_LOOKUP_NOT_FOUND";
   err.statusCode = 404;
@@ -854,6 +890,7 @@ export async function fetchAuthorizedFareHarborBookingRecord(params: {
  * Confirms a WTA affiliate sale from a genuine FareHarbor `booking` record.
  * - Rejects WTA's referral credential (`partner:welcome-to-alaska:*`) with `403 WTA_REFERRAL_KEY_CANNOT_WRITE_OUTCOMES`.
  * - Enforces the production activation gate (`403 WTA_AFFILIATE_PRODUCTION_ACTIVATION_GATED`) while terms are unsigned.
+ * - Rejects any simulated booking record (`422 SIMULATED_BOOKING_RECORD_REJECTED`).
  * - Extracts the DCC referral `handoffId` (`hndf_...`) from `booking.note`, `booking.voucher_number`, or `booking.reference`.
  * - Extracts the net tour subtotal (`receipt_subtotal` in cents -> USD dollars), computes the 12% (`1200` bps)
  *   estimated commission, and records `BOOKING_CONFIRMED` in `dcc_commercial_outcomes` with `paidCommission.amount: null`.
@@ -873,6 +910,8 @@ export async function confirmWtaSaleFromFareHarborBooking(params: {
   }
 
   const booking = params.booking;
+  assertGenuineFareHarborBookingNotSimulated(booking);
+
   if (
     !booking ||
     typeof booking !== "object" ||
@@ -927,7 +966,7 @@ export async function confirmWtaSaleFromFareHarborBooking(params: {
   );
   const currency = (booking.currency || "USD").toUpperCase();
   const providerBookingRef =
-    booking.display_id?.trim() || `FH-${booking.pk}-${booking.uuid.slice(0, 8)}`;
+    booking.display_id?.trim() || `#${booking.pk}`;
 
   return recordCommercialOutcome({
     reporterClientId: params.reporterClientId,
@@ -991,6 +1030,7 @@ export async function confirmWtaSaleViaAuthorizedFareHarborLookup(params: {
   reporterClientId: string;
   companyShortname: string;
   bookingUuid: string;
+  environment?: "live" | "demo";
   handoffId?: string | null;
   lookupBaseUrlOverride?: string;
   customFetch?: typeof fetch;
@@ -999,7 +1039,7 @@ export async function confirmWtaSaleViaAuthorizedFareHarborLookup(params: {
   booking: FareHarborExternalBookingRecord;
   lookupSource:
     | "fareharbor_external_api_v1"
-    | "wta_authorized_fareharbor_booking_store";
+    | "fareharbor_demo_external_api_v1";
   extractedHandoffId: string | null;
   bookingOutcome: CommercialOutcomeRecord;
 }> {
@@ -1013,6 +1053,7 @@ export async function confirmWtaSaleViaAuthorizedFareHarborLookup(params: {
   const lookup = await fetchAuthorizedFareHarborBookingRecord({
     companyShortname: params.companyShortname,
     bookingUuid: params.bookingUuid,
+    environment: params.environment,
     lookupBaseUrlOverride: params.lookupBaseUrlOverride,
     customFetch: params.customFetch,
   });
@@ -1180,6 +1221,10 @@ export async function settleWtaCommissionFromSettlementRecord(params: {
 
 export interface WtaSeparateLifecycleProof {
   verified: boolean;
+  verificationStatus:
+    | "checkout referral verified in preview"
+    | "sale_confirmed_commission_unpaid"
+    | "commission_reconciled_after_settlement";
   partnerId: typeof WTA_AFFILIATE_PARTNER_ID;
   callerClientId: string;
   referralRecord: {
@@ -1290,6 +1335,13 @@ export async function inspectWtaReferralLifecycleSeparation(
       commissionOutcome.paidCommission.amount > 0,
   );
 
+  const verificationStatus: WtaSeparateLifecycleProof["verificationStatus"] =
+    bookingOutcome && commissionOutcome
+      ? "commission_reconciled_after_settlement"
+      : bookingOutcome
+        ? "sale_confirmed_commission_unpaid"
+        : "checkout referral verified in preview";
+
   return {
     verified:
       referralHasPartnerAttributionOnlyScope &&
@@ -1298,6 +1350,7 @@ export async function inspectWtaReferralLifecycleSeparation(
       bookingAndCommissionAreSeparateRecords &&
       bookingRecordHasNullPaidCommissionBeforeSettlement &&
       commissionRecordHasVerifiedPaidCommission,
+    verificationStatus,
     partnerId: WTA_AFFILIATE_PARTNER_ID,
     callerClientId: handoff.callerClientId,
     referralRecord: {
@@ -1369,9 +1422,10 @@ export async function inspectWtaReferralLifecycleSeparation(
 }
 
 /**
- * Preview-only lifecycle simulator.
- * Strictly blocked in production runtimes (`WtaSimulatorPreviewOnlyError`, `403 WTA_SIMULATOR_PREVIEW_ONLY`)
- * even if production credentials and agreed terms are active.
+ * Preview-only referral simulator.
+ * - Strictly blocked in production runtimes (`WtaSimulatorPreviewOnlyError`, `403 WTA_SIMULATOR_PREVIEW_ONLY`)
+ *   even if production credentials and agreed terms are active.
+ * - Keeps simulated booking records out of `dcc_commercial_outcomes` (confirmed-sale reporting).
  */
 export async function runWtaAffiliatePreviewSimulation(params?: {
   intendedDate?: string;
@@ -1390,9 +1444,8 @@ export async function runWtaAffiliatePreviewSimulation(params?: {
   const productCode =
     params?.productCode || "coastal-helicopters-icefield-excursion";
   const quotedPriceAmount = params?.quotedPriceAmount || 918;
-  const receiptSubtotalCents = Math.round(quotedPriceAmount * 100);
 
-  // Record 1: Tagged Referral Handoff created by WTA preview credential
+  // Create only the preview referral handoff; never write simulated bookings to dcc_commercial_outcomes
   const { handoff } = await createWtaTaggedReferralHandoff({
     callerClientId: WTA_PREVIEW_CLIENT_ID,
     originatingSite: WTA_AFFILIATE_DOMAIN,
@@ -1403,85 +1456,11 @@ export async function runWtaAffiliatePreviewSimulation(params?: {
     intendedDate,
     partySize,
     quotedPriceAmount,
+    metadata: {
+      verificationStatus: "checkout referral verified in preview",
+      confirmedSaleReported: false,
+    },
     gateOverrideOptions: params?.gateOverrideOptions,
-  });
-
-  const displayId = `#FH-COASTAL-${handoff.handoffId.slice(-8).toUpperCase()}`;
-
-  // Record 2: Separate Provider-Confirmed Booking Record via genuine FareHarbor booking shape
-  await confirmWtaSaleFromFareHarborBooking({
-    reporterClientId: "client:dcc-commerce-partner-reporter",
-    handoffId: handoff.handoffId,
-    booking: {
-      pk: 98413056,
-      uuid: `b7f2c413-0560-4d2e-9a11-${handoff.handoffId.slice(-12).padStart(12, "0")}`,
-      display_id: displayId,
-      status: "booked",
-      is_paid: true,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      receipt_subtotal: receiptSubtotalCents,
-      receipt_taxes: 0,
-      receipt_total: receiptSubtotalCents,
-      amount_paid: receiptSubtotalCents,
-      currency: "USD",
-      voucher_number: handoff.handoffId,
-      reference: handoff.clickId,
-      company: {
-        shortname: "coastalhelicopters",
-        name: "Coastal Helicopters",
-      },
-      item: {
-        pk: 413056,
-        name: "Icefield Excursion",
-      },
-      availability: {
-        pk: 77413056,
-        start_at: `${intendedDate}T10:30:00-08:00`,
-        end_at: `${intendedDate}T12:45:00-08:00`,
-        item: {
-          pk: 413056,
-          name: "Icefield Excursion",
-        },
-      },
-      customer_count: partySize,
-      customers: Array.from({ length: partySize }, (_, idx) => ({
-        pk: 500001 + idx,
-        customer_type_rate: {
-          pk: 882259156,
-          total: Math.round(receiptSubtotalCents / partySize),
-          customer_prototype: {
-            pk: 2259156,
-            display_name: "Standard Passenger",
-            total: Math.round(receiptSubtotalCents / partySize),
-          },
-        },
-      })),
-    },
-  });
-
-  // Record 3: Separate Commission Settlement Record (`net_30_after_travel`, 12% = 1200 bps)
-  const paidCommissionAmount = Number(((quotedPriceAmount * 1200) / 10_000).toFixed(2));
-  await settleWtaCommissionFromSettlementRecord({
-    reporterClientId: "client:dcc-commerce-partner-reporter",
-    settlement: {
-      settlementId: `stl_wta_${handoff.handoffId.slice(-10)}`,
-      agreementId: WTA_DEFAULT_AGREEMENT_ID,
-      partnerId: WTA_AFFILIATE_PARTNER_ID,
-      payerParty: WTA_DEFAULT_COMMISSION_PAID_BY,
-      payeeLegalName: WTA_AFFILIATE_LEGAL_NAME,
-      handoffId: handoff.handoffId,
-      providerBookingRef: displayId,
-      travelCompletedAt: `${intendedDate}T12:45:00-08:00`,
-      settledAt: new Date(Date.now() + 1000).toISOString(),
-      payoutSchedule: WTA_DEFAULT_PAYOUT_SCHEDULE,
-      netTourSubtotalAmount: quotedPriceAmount,
-      commissionRateBps: WTA_DEFAULT_COMMISSION_RATE_BPS,
-      paidCommissionAmount,
-      paidCommissionCurrency: "USD",
-      payoutMethod: "ach_transfer",
-      payoutReference: `ACH-WTA-${handoff.handoffId.slice(-8).toUpperCase()}`,
-    },
   });
 
   const proof = await inspectWtaReferralLifecycleSeparation(handoff.handoffId);
