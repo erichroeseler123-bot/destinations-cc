@@ -164,9 +164,100 @@ export interface PrivateGroupInquiryOption {
 export const GOSNO_GROUP_CONFIRMATION_POLICY =
   "GoSno confirms gear fit, availability, and one group total.";
 
+export const GOSNO_APPROVED_SUV_ONE_WAY_USD: Record<string, Record<string, number>> = {
+  DEN: {
+    Keystone: 349,
+    "Winter Park": 349,
+    Breckenridge: 399,
+    "Copper Mountain": 399,
+    Vail: 499,
+    "Beaver Creek": 549,
+    "Steamboat Springs": 599,
+    Aspen: 699,
+    Snowmass: 699,
+    "Crested Butte": 699,
+  },
+  COS: {
+    Keystone: 349,
+    Breckenridge: 399,
+    "Winter Park": 449,
+    "Copper Mountain": 449,
+    Vail: 499,
+    "Beaver Creek": 549,
+    "Steamboat Springs": 799,
+    Aspen: 799,
+    Snowmass: 799,
+    "Crested Butte": 599,
+  },
+  BZN: {
+    "Big Sky": 299,
+    "Big Sky Resort": 299,
+  },
+};
+
+export const GOSNO_APPROVED_VAN_ONE_WAY_USD: Record<string, Record<string, number>> = {
+  DEN: {
+    Keystone: 499,
+    "Winter Park": 499,
+    Breckenridge: 599,
+    "Copper Mountain": 599,
+    Vail: 599,
+    "Beaver Creek": 649,
+    "Steamboat Springs": 899,
+    Aspen: 899,
+    Snowmass: 899,
+  },
+  COS: {
+    Keystone: 699,
+    "Winter Park": 699,
+    Breckenridge: 699,
+    "Copper Mountain": 749,
+    Vail: 749,
+    "Beaver Creek": 799,
+    "Steamboat Springs": 999,
+    Aspen: 999,
+    Snowmass: 999,
+  },
+};
+
+function normalizeGoSnoDestinationName(destination: string, corridorId?: CorridorId): string {
+  const lower = destination.trim().toLowerCase();
+  if (lower.includes("winter park") || lower === "winter-park") return "Winter Park";
+  if (lower.includes("steamboat")) return "Steamboat Springs";
+  if (lower.includes("big sky") || lower === "big-sky") return "Big Sky";
+  if (lower.includes("keystone")) return "Keystone";
+  if (lower.includes("copper")) return "Copper Mountain";
+  if (lower.includes("beaver creek") || lower === "beaver-creek") return "Beaver Creek";
+  if (lower.includes("aspen")) return "Aspen";
+  if (lower.includes("snowmass")) return "Snowmass";
+  if (lower.includes("crested butte") || lower === "crested-butte") return "Crested Butte";
+  if (lower.includes("breck") || corridorId === "corridor:denver-breckenridge-i70") return "Breckenridge";
+  return "Vail";
+}
+
 export function getGoSnoGroupVehicleSuggestion(
   passengers: number,
+  origin = "DEN",
+  destination = "Breckenridge",
 ): GoSnoGroupVehicleSuggestion {
+  const isBigSky =
+    origin.trim().toUpperCase() === "BZN" ||
+    destination.trim().toLowerCase().includes("big sky") ||
+    destination.trim().toLowerCase() === "big-sky";
+
+  if (isBigSky) {
+    const count = Math.max(7, Math.round(passengers));
+    const suvCount = Math.ceil(count / 6);
+    return {
+      passengers: count,
+      vanCount: 0,
+      suvCount,
+      summaryLabel: `${suvCount} Suburbans`,
+      shortLabel: `${suvCount} Private Chevrolet Suburbans (up to 6 passengers each)`,
+      confirmationPolicy: GOSNO_GROUP_CONFIRMATION_POLICY,
+    };
+  }
+
   const count = Math.max(11, Math.round(passengers));
   const fullVans = Math.floor(count / 10);
   const remainder = count % 10;
@@ -221,25 +312,38 @@ export function buildGoSnoPrivateGroupInquiryOption(params: {
   standardBagCount: number;
   skiOrOversizeBagCount: number;
 }): PrivateGroupInquiryOption | null {
-  if (params.passengerCount <= 10) return null;
+  const rawDest =
+    params.destination ||
+    (params.corridorId === "corridor:denver-breckenridge-i70"
+      ? "Breckenridge"
+      : "Vail");
+  const destination = normalizeGoSnoDestinationName(rawDest, params.corridorId);
+  const isBigSky =
+    destination === "Big Sky" ||
+    (params.origin || "").trim().toUpperCase() === "BZN";
+  const singleVehicleMax = isBigSky ? 6 : 10;
+  if (params.passengerCount <= singleVehicleMax) return null;
+
   const isGoSnoCorridor =
     params.corridorId === "corridor:denver-vail-i70" ||
     params.corridorId === "corridor:denver-breckenridge-i70";
   if (!isGoSnoCorridor && !params.destination) return null;
 
-  const origin = params.origin || "DEN";
-  const destination =
-    params.destination ||
-    (params.corridorId === "corridor:denver-breckenridge-i70"
-      ? "Breckenridge"
-      : "Vail");
-  const suggestion = getGoSnoGroupVehicleSuggestion(params.passengerCount);
+  const origin = isBigSky
+    ? "BZN"
+    : (params.origin || "DEN").trim().toUpperCase() === "COS"
+      ? "COS"
+      : "DEN";
+  const suggestion = getGoSnoGroupVehicleSuggestion(
+    params.passengerCount,
+    origin,
+    destination,
+  );
   const suvOneWayUsd =
-    destination.toLowerCase().includes("breck") ||
-    params.corridorId === "corridor:denver-breckenridge-i70"
-      ? 399
-      : 499;
-  const vanOneWayUsd = 599;
+    GOSNO_APPROVED_SUV_ONE_WAY_USD[origin]?.[destination] ??
+    (destination === "Breckenridge" ? 399 : 499);
+  const vanOneWayUsd =
+    GOSNO_APPROVED_VAN_ONE_WAY_USD[origin]?.[destination] ?? 599;
   const referenceCombinedOneWayUsd =
     suggestion.vanCount * vanOneWayUsd + suggestion.suvCount * suvOneWayUsd;
 
@@ -257,7 +361,7 @@ export function buildGoSnoPrivateGroupInquiryOption(params: {
 
   const url = new URL("https://gosno.co/request-quote");
   url.searchParams.set("origin", origin);
-  url.searchParams.set("destination", destination);
+  url.searchParams.set("destination", isBigSky ? "Big Sky Resort" : destination);
   url.searchParams.set("outboundDate", params.travelDate);
   url.searchParams.set("date", params.travelDate);
   url.searchParams.set("passengers", String(params.passengerCount));
@@ -266,7 +370,7 @@ export function buildGoSnoPrivateGroupInquiryOption(params: {
   url.searchParams.set("standardBags", String(params.standardBagCount));
   url.searchParams.set("skiBags", String(params.skiOrOversizeBagCount));
   url.searchParams.set("luggage", luggageSummary);
-  url.searchParams.set("vehicleType", "van");
+  url.searchParams.set("vehicleType", isBigSky ? "suv" : "van");
   url.searchParams.set("vehicleSuggestion", suggestion.shortLabel);
 
   return {

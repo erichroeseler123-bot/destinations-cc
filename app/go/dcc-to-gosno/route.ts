@@ -90,7 +90,34 @@ export async function GET(request: Request) {
   const skiBags = Number(clean(incoming.searchParams.get("skiBags"), 3)) || 0;
   const rawLuggage = clean(incoming.searchParams.get("luggage"), 180);
 
-  if (parsedPartySize !== null && parsedPartySize > GOSNO_MAX_VAN_PASSENGERS) {
+  const isBigSky = destination === "big-sky";
+  const requestedVehicleType = slug(incoming.searchParams.get("vehicle_type"));
+  const maxSingleVehiclePassengers = isBigSky
+    ? GOSNO_MAX_SUV_PASSENGERS
+    : GOSNO_MAX_VAN_PASSENGERS;
+
+  if (isBigSky && requestedVehicleType === "van" && (parsedPartySize === null || parsedPartySize <= GOSNO_MAX_SUV_PASSENGERS)) {
+    return NextResponse.json(
+      {
+        ok: false,
+        eligible: false,
+        status: "currently_unavailable",
+        nextStep: "currently unavailable",
+        maxAllowedPassengers: GOSNO_MAX_SUV_PASSENGERS,
+        error:
+          "GoSno Big Sky operates Private Chevrolet Suburbans only (up to 6 passengers per vehicle at $299 one-way / $548 round-trip). Passenger vans are currently unavailable in Big Sky.",
+      },
+      {
+        status: 422,
+        headers: {
+          "cache-control": "no-store",
+          "x-robots-tag": "noindex, nofollow",
+        },
+      },
+    );
+  }
+
+  if (parsedPartySize !== null && parsedPartySize > maxSingleVehiclePassengers) {
     const corridorId: CorridorId =
       destination === "breckenridge"
         ? "corridor:denver-breckenridge-i70"
@@ -99,7 +126,7 @@ export async function GET(request: Request) {
       DESTINATION_DISPLAY_MAP[destination] || destination;
     const groupOption = buildGoSnoPrivateGroupInquiryOption({
       corridorId,
-      origin: airport || (destination === "big-sky" ? "BZN" : "DEN"),
+      origin: airport || (isBigSky ? "BZN" : "DEN"),
       destination: displayDestination,
       travelDate: /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : "2026-12-20",
       passengerCount: parsedPartySize,
@@ -147,9 +174,11 @@ export async function GET(request: Request) {
       {
         ok: false,
         eligible: false,
-        maxAllowedPassengers: GOSNO_MAX_VAN_PASSENGERS,
+        maxAllowedPassengers: maxSingleVehiclePassengers,
         requestedPassengers: parsedPartySize,
-        error: `A group of ${parsedPartySize} passengers exceeds GoSno's 10-passenger maximum single-van capacity (up to 6 in an SUV, or up to 10 in a van, subject to luggage and ski-gear fit).`,
+        error: isBigSky
+          ? `A group of ${parsedPartySize} passengers exceeds GoSno Big Sky's 6-passenger maximum single-Suburban capacity (passenger vans are currently unavailable in Big Sky; multiple Suburbans require a group quote).`
+          : `A group of ${parsedPartySize} passengers exceeds GoSno's 10-passenger maximum single-van capacity (up to 6 in an SUV, or up to 10 in a van, subject to luggage and ski-gear fit).`,
         privateGroupInquiryOption: groupOption,
       },
       {
@@ -163,9 +192,9 @@ export async function GET(request: Request) {
   }
 
   const target = new URL("https://gosno.co/handoff/dcc");
-  const requestedVehicleType = slug(incoming.searchParams.get("vehicle_type"));
-  const effectiveVehicleType =
-    parsedPartySize !== null && parsedPartySize > GOSNO_MAX_SUV_PASSENGERS
+  const effectiveVehicleType = isBigSky
+    ? "suv"
+    : parsedPartySize !== null && parsedPartySize > GOSNO_MAX_SUV_PASSENGERS
       ? "van"
       : requestedVehicleType;
   const rawSourcePage = clean(incoming.searchParams.get("source_page"), 240);

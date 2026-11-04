@@ -78,4 +78,48 @@ describe("DCC to GoSno handoff", () => {
     );
     assert.ok(parsed.searchParams.get("click_id")?.startsWith("clk_"));
   });
+
+  it("reconciles Winter Park ($349 SUV / $499 Van), Steamboat ($599 SUV / $899 Van), and Big Sky ($299 Suburban only, no vans)", async () => {
+    // Winter Park 16 passengers -> 1 Van ($499) + 1 Suburban ($349) = $848
+    const wp16 = await GET(new Request("https://www.destinationcommandcenter.com/go/dcc-to-gosno?destination=winter-park&airport=den&date=2026-12-20&party_size=16&standardBags=16&skiBags=12"));
+    assert.equal(wp16.status, 422);
+    const wp16Body = await wp16.json();
+    assert.equal(wp16Body.privateGroupInquiryOption.destination, "Winter Park");
+    assert.equal(wp16Body.privateGroupInquiryOption.referenceCombinedOneWayUsd, 848);
+    assert.equal(
+      wp16Body.privateGroupInquiryOption.vehicleSuggestion.summaryLabel,
+      "a van plus a Suburban",
+    );
+
+    // Steamboat Springs 20 passengers -> 2 Vans ($899 each) = $1,798
+    const sb20 = await GET(new Request("https://www.destinationcommandcenter.com/go/dcc-to-gosno?destination=steamboat&airport=den&date=2026-12-22&party_size=20&standardBags=20&skiBags=16"));
+    assert.equal(sb20.status, 422);
+    const sb20Body = await sb20.json();
+    assert.equal(sb20Body.privateGroupInquiryOption.destination, "Steamboat Springs");
+    assert.equal(sb20Body.privateGroupInquiryOption.referenceCombinedOneWayUsd, 1798);
+    assert.equal(
+      sb20Body.privateGroupInquiryOption.vehicleSuggestion.summaryLabel,
+      "two vans",
+    );
+
+    // Big Sky van request -> currently unavailable (Suburban only up to 6 pax)
+    const bsVan = await GET(new Request("https://www.destinationcommandcenter.com/go/dcc-to-gosno?destination=big-sky&airport=bzn&date=2026-12-20&party_size=5&vehicle_type=van"));
+    assert.equal(bsVan.status, 422);
+    const bsVanBody = await bsVan.json();
+    assert.equal(bsVanBody.status, "currently_unavailable");
+    assert.equal(bsVanBody.nextStep, "currently unavailable");
+    assert.equal(bsVanBody.maxAllowedPassengers, 6);
+
+    // Big Sky 8 passengers -> exceeds 6-passenger Suburban limit, offers 2 Suburbans ($598 reference)
+    const bs8 = await GET(new Request("https://www.destinationcommandcenter.com/go/dcc-to-gosno?destination=big-sky&airport=bzn&date=2026-12-20&party_size=8&standardBags=8&skiBags=6"));
+    assert.equal(bs8.status, 422);
+    const bs8Body = await bs8.json();
+    assert.equal(bs8Body.maxAllowedPassengers, 6);
+    assert.equal(bs8Body.privateGroupInquiryOption.origin, "BZN");
+    assert.equal(bs8Body.privateGroupInquiryOption.referenceCombinedOneWayUsd, 598);
+    assert.equal(
+      bs8Body.privateGroupInquiryOption.vehicleSuggestion.shortLabel,
+      "2 Private Chevrolet Suburbans (up to 6 passengers each)",
+    );
+  });
 });
