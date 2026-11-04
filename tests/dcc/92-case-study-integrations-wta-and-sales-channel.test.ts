@@ -103,8 +103,8 @@ describe("92 — Case-Study Integrations, WTA Paid Affiliate Setup, and Multi-Pu
     it("keeps WTA out of DCC_PORTFOLIO_NETWORK_SITES while enrolling WTA as a narrowly scoped paid affiliate", async () => {
       const inOwnedPortfolio = DCC_PORTFOLIO_NETWORK_SITES.some(
         (s) =>
-          s.siteId === "welcome-to-alaska" ||
-          s.primaryDomain === "welcometoalaskatours.com",
+          String(s.site_id) === "welcome-to-alaska" ||
+          s.canonical_domains.includes("welcometoalaskatours.com"),
       );
       assert.equal(inOwnedPortfolio, false);
 

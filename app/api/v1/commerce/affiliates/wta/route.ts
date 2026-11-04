@@ -25,8 +25,8 @@ export async function GET(request: Request) {
   const gateStatus = evaluateWtaAffiliateActivationGate();
   const inPortfolioList = DCC_PORTFOLIO_NETWORK_SITES.some(
     (s) =>
-      s.siteId === "welcome-to-alaska" ||
-      s.primaryDomain === "welcometoalaskatours.com",
+      String(s.site_id) === "welcome-to-alaska" ||
+      s.canonical_domains.includes("welcometoalaskatours.com"),
   );
 
   let lifecycleProof = null;

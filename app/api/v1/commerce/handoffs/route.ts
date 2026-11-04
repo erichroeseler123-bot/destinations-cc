@@ -306,7 +306,10 @@ export async function POST(request: Request) {
       approvedPartnerAttribution: explicitPartnerAttribution,
     });
     if (wtaCheck.isWtaAffiliate && wtaCheck.approvedPartnerAttribution) {
-      resolvedPartnerAttribution = wtaCheck.approvedPartnerAttribution;
+      resolvedPartnerAttribution = {
+        ...wtaCheck.approvedPartnerAttribution,
+        partnerName: wtaCheck.approvedPartnerAttribution.partnerName ?? null,
+      };
     }
   } catch (err) {
     if (err instanceof WtaAffiliateProductionGateError) {
