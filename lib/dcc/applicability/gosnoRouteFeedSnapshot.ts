@@ -202,26 +202,26 @@ export interface GoSnoRouteFeedValidationResult {
 }
 
 function resolveDefaultBaselineSnapshotPath(): string {
-  const relSegments = [
+  const directCandidate = path.join(
+    process.cwd(),
     "data",
     "network",
     "audit",
     "satellite",
     "gosno",
     "route-feed.snapshot.json",
-  ];
-  const directCandidate = path.join(process.cwd(), ...relSegments);
+  );
   if (fs.existsSync(directCandidate)) {
     return directCandidate;
   }
-  const dynamicCwd = process["cwd"]();
-  const parentHop = ["..", ".."].join(path.sep);
-  const monorepoRootCandidate = path.resolve(
-    /*turbopackIgnore: true*/ dynamicCwd,
-    /*turbopackIgnore: true*/ parentHop,
-    ...relSegments,
+  const monorepoRootCandidate = directCandidate.replace(
+    /[\\/]+apps[\\/]+[^\\/]+(?=[\\/]+data[\\/])/,
+    "",
   );
-  if (fs.existsSync(monorepoRootCandidate)) {
+  if (
+    monorepoRootCandidate !== directCandidate &&
+    fs.existsSync(monorepoRootCandidate)
+  ) {
     return monorepoRootCandidate;
   }
   return directCandidate;

@@ -126,6 +126,8 @@ export async function resolvePortfolioTripContext(params: {
   const date = typeof sp.date === "string" ? sp.date : undefined;
   const partyRaw =
     (typeof sp.partySize === "string" ? sp.partySize : undefined) ||
+    (typeof sp.party_size === "string" ? sp.party_size : undefined) ||
+    (typeof sp.travelers === "string" ? sp.travelers : undefined) ||
     (typeof sp.guests === "string" ? sp.guests : undefined) ||
     (typeof sp.pax === "string" ? sp.pax : undefined);
   const partySize = partyRaw && Number.isFinite(Number(partyRaw)) ? Number(partyRaw) : undefined;
