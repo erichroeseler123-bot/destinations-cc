@@ -1446,5 +1446,160 @@ test("9. Proxy CRON_SECRET authorization and DEN-BRECKENRIDGE shared snapshot fa
   });
 });
 
+test("10. Production guard enforces canonical GoSno route feed URL and configured 24h expiry while keeping sourceUrl and ttlMs overrides preview-only", async () => {
+  await withIsolatedGoSnoTestState(async () => {
+    const baseline = getBaselineGoSnoRouteFeedSnapshot();
+    const prevVercelEnv = process.env.VERCEL_ENV;
+    const prevDccScope = process.env.DCC_ENVIRONMENT_SCOPE;
+    const prevInternalSecret = process.env.INTERNAL_API_SECRET;
+    const originalFetch = globalThis.fetch;
+
+    try {
+      // 10a. Preview/nonprod honors custom feedUrl/sourceUrl and ttlMs overrides
+      process.env.VERCEL_ENV = "preview";
+      delete process.env.DCC_ENVIRONMENT_SCOPE;
+      process.env.INTERNAL_API_SECRET = "test-internal-secret-prod-guard";
+
+      const nowPreview = new Date("2026-11-04T15:00:00.000Z");
+      const previewRefresh = await refreshGoSnoRouteFeedSnapshot({
+        feedUrl: "https://preview-fixture.gosno.test/api/public/route-feed",
+        ttlMs: 3600_000, // 1 hour custom TTL in preview
+        now: nowPreview,
+        fetchImpl: async (input) => {
+          assert.equal(
+            String(input),
+            "https://preview-fixture.gosno.test/api/public/route-feed",
+          );
+          return new Response(JSON.stringify(baseline.feed), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          });
+        },
+      });
+      assert.equal(previewRefresh.ok, true);
+      assert.equal(
+        previewRefresh.snapshot.sourceUrl,
+        "https://preview-fixture.gosno.test/api/public/route-feed",
+      );
+      assert.equal(previewRefresh.snapshot.ttlMs, 3600_000);
+      assert.equal(
+        previewRefresh.snapshot.expiresAt,
+        "2026-11-04T16:00:00.000Z",
+      );
+
+      // 10b. Production ignores feedUrl/sourceUrl and ttlMs overrides in refreshGoSnoRouteFeedSnapshot
+      process.env.VERCEL_ENV = "production";
+      const nowProd = new Date("2026-11-04T15:10:00.000Z");
+      let requestedProdUrl = "";
+      const prodRefresh = await refreshGoSnoRouteFeedSnapshot({
+        feedUrl: "https://rogue-override.example.com/feed.json",
+        ttlMs: 60_000, // 1 minute custom TTL attempted
+        now: nowProd,
+        fetchImpl: async (input) => {
+          requestedProdUrl = String(input);
+          return new Response(JSON.stringify(baseline.feed), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          });
+        },
+      });
+      assert.equal(prodRefresh.ok, true);
+      assert.equal(requestedProdUrl, GOSNO_ROUTE_FEED_URL);
+      assert.equal(prodRefresh.snapshot.sourceUrl, GOSNO_ROUTE_FEED_URL);
+      assert.equal(prodRefresh.snapshot.ttlMs, DEFAULT_GOSNO_SNAPSHOT_TTL_MS);
+      assert.equal(
+        prodRefresh.snapshot.expiresAt,
+        "2026-11-05T15:10:00.000Z",
+      );
+
+      // 10c. Production POST /api/internal/gosno/route-feed-refresh ignores body.sourceUrl, body.ttlMs, and query-param test overrides
+      let routeRequestedUrl = "";
+      globalThis.fetch = async (input) => {
+        routeRequestedUrl = String(input);
+        return new Response(JSON.stringify(baseline.feed), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      };
+
+      const prodRouteRes = await scheduledRefreshPost(
+        new Request(
+          "https://www.destinationcommandcenter.com/api/internal/gosno/route-feed-refresh?testVailVanUsd=999&testExpired=1",
+          {
+            method: "POST",
+            headers: {
+              authorization: "Bearer test-internal-secret-prod-guard",
+              "content-type": "application/json",
+            },
+            body: JSON.stringify({
+              sourceUrl: "https://rogue-override.example.com/feed.json",
+              ttlMs: 5000,
+            }),
+          },
+        ),
+      );
+      assert.equal(prodRouteRes.status, 200);
+      const prodRouteBody = (await prodRouteRes.json()) as {
+        ok: boolean;
+        gosnoRouteFeedSnapshot: {
+          sourceUrl: string;
+          fetchedAt: string;
+          expiresAt: string;
+          isExpired: boolean;
+          freshnessStatus: string;
+        };
+      };
+      assert.equal(prodRouteBody.ok, true);
+      assert.equal(routeRequestedUrl, GOSNO_ROUTE_FEED_URL);
+      assert.equal(
+        prodRouteBody.gosnoRouteFeedSnapshot.sourceUrl,
+        GOSNO_ROUTE_FEED_URL,
+      );
+      assert.equal(prodRouteBody.gosnoRouteFeedSnapshot.isExpired, false);
+      assert.equal(
+        prodRouteBody.gosnoRouteFeedSnapshot.freshnessStatus,
+        "fresh",
+      );
+      const prodFetchedMs = Date.parse(
+        prodRouteBody.gosnoRouteFeedSnapshot.fetchedAt,
+      );
+      const prodExpiresMs = Date.parse(
+        prodRouteBody.gosnoRouteFeedSnapshot.expiresAt,
+      );
+      assert.equal(
+        prodExpiresMs - prodFetchedMs,
+        DEFAULT_GOSNO_SNAPSHOT_TTL_MS,
+      );
+      const vailVanAfterProdRefresh = resolveGoSnoOneWayFare({
+        routeId: "DEN-VAIL",
+        vehicleClass: "van",
+      });
+      assert.equal(
+        vailVanAfterProdRefresh?.amountUsd,
+        599,
+        "Production refresh must ignore query-param fare overrides and use canonical GoSno feed fare ($599)",
+      );
+    } finally {
+      globalThis.fetch = originalFetch;
+      if (prevVercelEnv === undefined) {
+        delete process.env.VERCEL_ENV;
+      } else {
+        process.env.VERCEL_ENV = prevVercelEnv;
+      }
+      if (prevDccScope === undefined) {
+        delete process.env.DCC_ENVIRONMENT_SCOPE;
+      } else {
+        process.env.DCC_ENVIRONMENT_SCOPE = prevDccScope;
+      }
+      if (prevInternalSecret === undefined) {
+        delete process.env.INTERNAL_API_SECRET;
+      } else {
+        process.env.INTERNAL_API_SECRET = prevInternalSecret;
+      }
+    }
+  });
+});
+
+
 
 

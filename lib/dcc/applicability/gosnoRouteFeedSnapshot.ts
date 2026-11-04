@@ -691,6 +691,12 @@ export function evaluateHistoricalGoSnoRouteFeedSnapshotState(params: {
   };
 }
 
+export function isProductionGoSnoFeedEnvironment(): boolean {
+  const vercelEnv = process.env.VERCEL_ENV?.trim().toLowerCase();
+  const dccScope = process.env.DCC_ENVIRONMENT_SCOPE?.trim().toLowerCase();
+  return vercelEnv === "production" || dccScope === "production";
+}
+
 export async function refreshGoSnoRouteFeedSnapshot(options?: {
   feedUrl?: string;
   fetchImpl?: typeof fetch;
@@ -704,12 +710,23 @@ export async function refreshGoSnoRouteFeedSnapshot(options?: {
   refreshMeta: GoSnoRouteFeedRefreshMeta;
   state: ActiveGoSnoSnapshotState;
 }> {
-  const feedUrl = options?.feedUrl ?? GOSNO_ROUTE_FEED_URL;
+  const isProd = isProductionGoSnoFeedEnvironment();
+  const feedUrl = isProd
+    ? GOSNO_ROUTE_FEED_URL
+    : options?.feedUrl?.trim()
+      ? options.feedUrl.trim()
+      : GOSNO_ROUTE_FEED_URL;
   const fetchFn = options?.fetchImpl ?? fetch;
   const now = options?.now ?? new Date();
   const nowIso = now.toISOString();
   const nowMs = now.getTime();
-  const ttlMs = options?.ttlMs ?? DEFAULT_GOSNO_SNAPSHOT_TTL_MS;
+  const ttlMs = isProd
+    ? DEFAULT_GOSNO_SNAPSHOT_TTL_MS
+    : typeof options?.ttlMs === "number" &&
+        Number.isFinite(options.ttlMs) &&
+        options.ttlMs > 0
+      ? options.ttlMs
+      : DEFAULT_GOSNO_SNAPSHOT_TTL_MS;
 
   try {
     const response = await fetchFn(feedUrl, {

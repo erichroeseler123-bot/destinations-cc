@@ -2,12 +2,14 @@ import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import {
   DEFAULT_GOSNO_SNAPSHOT_TTL_MS,
+  GOSNO_ROUTE_FEED_URL,
   SCHEDULED_GOSNO_FEED_REFRESH_CRON,
   SCHEDULED_GOSNO_FEED_REFRESH_INTERVAL_MS,
   SCHEDULED_GOSNO_FEED_REFRESH_PATH,
   createGoSnoRouteFeedSnapshot,
   getActiveGoSnoRouteFeedSnapshotState,
   getBaselineGoSnoRouteFeedSnapshot,
+  isProductionGoSnoFeedEnvironment,
   refreshGoSnoRouteFeedSnapshot,
   saveGoSnoRouteFeedSnapshot,
 } from "@/lib/dcc/applicability";
@@ -28,7 +30,7 @@ interface NonProdTestOverride {
 }
 
 function parseNonProdTestOverride(request: Request): NonProdTestOverride | null {
-  if (process.env.VERCEL_ENV?.trim().toLowerCase() === "production") {
+  if (isProductionGoSnoFeedEnvironment()) {
     return null;
   }
   try {
@@ -82,6 +84,19 @@ async function executeScheduledGoSnoFeedRefresh(
 
   try {
     await syncDurableLedgerWithPostgres();
+    const isProd = isProductionGoSnoFeedEnvironment();
+    const effectiveSourceUrl = isProd
+      ? GOSNO_ROUTE_FEED_URL
+      : options?.sourceUrl?.trim()
+        ? options.sourceUrl.trim()
+        : GOSNO_ROUTE_FEED_URL;
+    const effectiveTtlMs = isProd
+      ? DEFAULT_GOSNO_SNAPSHOT_TTL_MS
+      : typeof options?.ttlMs === "number" &&
+          Number.isFinite(options.ttlMs) &&
+          options.ttlMs > 0
+        ? options.ttlMs
+        : DEFAULT_GOSNO_SNAPSHOT_TTL_MS;
     const nonProdOverride = parseNonProdTestOverride(request);
     let refreshResult: Awaited<ReturnType<typeof refreshGoSnoRouteFeedSnapshot>>;
 
@@ -152,8 +167,8 @@ async function executeScheduledGoSnoFeedRefresh(
       };
     } else {
       refreshResult = await refreshGoSnoRouteFeedSnapshot({
-        feedUrl: options?.sourceUrl,
-        ttlMs: options?.ttlMs,
+        feedUrl: effectiveSourceUrl,
+        ttlMs: effectiveTtlMs,
       });
     }
 
