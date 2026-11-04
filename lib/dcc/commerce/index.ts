@@ -427,6 +427,9 @@ export const AUTHENTICATED_EVIDENCE_PROVENANCES = new Set<string>([
   "viator_modified_since_poller",
   "getyourguide_partner_adapter",
   "fareharbor_webhook_adapter",
+  "fareharbor_booking_webhook",
+  "fareharbor_authorized_booking_lookup",
+  "wta_commission_settlement_ledger",
   "authenticated_payment_webhook",
   "authorized_operational_evidence",
 ]);
@@ -517,7 +520,7 @@ export function deriveHandoffOutcomeStateFromOutcome(
           ? "amended"
           : evt.includes("PEND")
             ? "pending"
-            : evt.includes("CONFIRM")
+            : evt.includes("CONFIRM") || evt.includes("COMMISSION_RECONCILED")
               ? "confirmed"
               : "unknown";
 

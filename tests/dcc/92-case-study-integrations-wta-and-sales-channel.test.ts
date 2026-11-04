@@ -15,12 +15,14 @@ import {
   GET as getWtaAffiliateStatus,
   POST as postWtaAffiliateSimulation,
 } from "@/app/api/v1/commerce/affiliates/wta/route";
+import { POST as postFareHarborWebhook } from "@/app/api/v1/commerce/webhooks/fareharbor/route";
 import {
   POST as postOctoBookings,
   GET as getOctoBookings,
 } from "@/app/octo/bookings/route";
 import { POST as postOctoBookingConfirm } from "@/app/octo/bookings/[bookingUuid]/confirm/route";
 import {
+  confirmWtaSaleViaAuthorizedFareHarborLookup,
   evaluateWtaAffiliateActivationGate,
   parseWtaAgreedCommercialTerms,
   parseWtaCommercialTerms,
@@ -447,11 +449,172 @@ describe("92 — Case-Study Integrations, WTA Paid Affiliate Setup, and Multi-Pu
       const proof = settleJson.lifecycleProof;
       assert.equal(proof.verified, true);
       assert.equal(proof.referralRecord.handoffId, handoff.handoffId);
+      assert.equal(proof.bookingRecord.creditedPartnerId, "welcome-to-alaska");
       assert.equal(proof.bookingRecord.bookingValueAmount, 918);
       assert.equal(proof.bookingRecord.estimatedCommissionAmount, 110.16);
       assert.equal(proof.bookingRecord.paidCommissionAmount, null);
+      assert.equal(proof.commissionRecord.creditedPartnerId, "welcome-to-alaska");
       assert.equal(proof.commissionRecord.paidCommissionAmount, 110.16);
       assert.equal(proof.separationAssertions.distinctPrimaryIds.length, 3);
+    });
+
+    it("verifies a Coastal Helicopters booking via authorized FareHarbor booking lookup and FareHarbor-supported webhook receiver without requiring custom X-DCC-API-Key headers", async () => {
+      process.env.FAREHARBOR_APP_KEY = "fh_app_test_key_coastal";
+      process.env.FAREHARBOR_USER_KEY = "fh_user_test_key_coastal_123456";
+
+      // 1. Create referral from WTA Book / Checkout flow for Coastal Helicopters item 413056
+      const createRefRes = await postWtaAffiliateSimulation(
+        new Request("https://destinationcommandcenter.com/api/v1/commerce/affiliates/wta", {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            "x-dcc-api-key": TEST_ROTATED_WTA_PREVIEW_API_KEY,
+          },
+          body: JSON.stringify({
+            action: "create_referral",
+            originatingSite: "welcometoalaskatours.com",
+            sourcePagePath: "/tours/coastalhelicopters/413056/calendar/2027-07-15",
+            fareharborShortname: "coastalhelicopters",
+            fareharborItemId: "413056",
+            productCode: "coastal-helicopters-icefield-excursion",
+            productTitle: "Icefield Excursion (Coastal Helicopters • Item 413056)",
+            intendedDate: "2027-07-15",
+            partySize: 2,
+            quotedPriceAmount: 918,
+          }),
+        }),
+      );
+      assert.equal(createRefRes.status, 201);
+      const { handoff } = await createRefRes.json();
+
+      // 2. Authorized FareHarbor booking record carrying the WTA checkout note & voucher_number
+      const bookingUuid = "d4130560-2027-4715-8740-926063543301";
+      const authorizedFhBooking = {
+        pk: 741305601,
+        uuid: bookingUuid,
+        display_id: "#741305601",
+        status: "booked",
+        is_paid: true,
+        receipt_subtotal: 91800,
+        receipt_taxes: 0,
+        receipt_total: 91800,
+        amount_paid: 91800,
+        invoice_price: 73440,
+        currency: "USD",
+        voucher_number: `WTA-${handoff.handoffId}-ord_test1234`,
+        note: `WTA order ord_test1234 / PI pi_test1234 / DCC ${handoff.handoffId}`,
+        company: {
+          shortname: "coastalhelicopters",
+          name: "Coastal Helicopters",
+        },
+        availability: {
+          pk: -29637421,
+          start_at: "2027-07-15T07:40:00-0800",
+          end_at: "2027-07-15T10:15:24-0800",
+          item: {
+            pk: 413056,
+            name: "Icefield Excursion",
+          },
+        },
+        customers: [
+          {
+            pk: 7001,
+            customer_type_rate: {
+              pk: 9260635433,
+              total: 45900,
+              customer_prototype: {
+                pk: 2259156,
+                display_name: "Standard Passenger",
+                total: 45900,
+              },
+            },
+          },
+          {
+            pk: 7002,
+            customer_type_rate: {
+              pk: 9260635433,
+              total: 45900,
+              customer_prototype: {
+                pk: 2259156,
+                display_name: "Standard Passenger",
+                total: 45900,
+              },
+            },
+          },
+        ],
+      };
+
+      // 3. Prove WTA referral key is rejected on the FareHarbor webhook receiver
+      const wtaWebhookAttempt = await postFareHarborWebhook(
+        new Request("https://destinationcommandcenter.com/api/v1/commerce/webhooks/fareharbor", {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            "x-dcc-api-key": TEST_ROTATED_WTA_PREVIEW_API_KEY,
+          },
+          body: JSON.stringify({ booking: authorizedFhBooking }),
+        }),
+      );
+      assert.equal(wtaWebhookAttempt.status, 403);
+      assert.equal(
+        (await wtaWebhookAttempt.json()).error.code,
+        "WTA_REFERRAL_KEY_CANNOT_WRITE_OUTCOMES",
+      );
+
+      // 4. Confirm via authorized FareHarbor booking lookup (verify X-FareHarbor-API-App and X-FareHarbor-API-User headers are sent, no custom X-DCC-API-Key header)
+      let capturedFhHeaders: Record<string, string> = {};
+      const lookupResult = await confirmWtaSaleViaAuthorizedFareHarborLookup({
+        reporterClientId: "client:fareharbor-authorized-api",
+        companyShortname: "coastalhelicopters",
+        bookingUuid,
+        customFetch: async (_url, init) => {
+          const h = new Headers(init?.headers);
+          capturedFhHeaders = {
+            app: h.get("x-fareharbor-api-app") || "",
+            user: h.get("x-fareharbor-api-user") || "",
+            dcc: h.get("x-dcc-api-key") || "",
+          };
+          return new Response(JSON.stringify({ booking: authorizedFhBooking }), {
+            status: 200,
+            headers: { "content-type": "application/json" },
+          });
+        },
+      });
+
+      assert.equal(capturedFhHeaders.app, "fh_app_test_key_coastal");
+      assert.equal(capturedFhHeaders.user, "fh_user_test_key_coastal_123456");
+      assert.equal(capturedFhHeaders.dcc, "");
+      assert.equal(lookupResult.extractedHandoffId, handoff.handoffId);
+      assert.equal(lookupResult.bookingOutcome.reconciliationStatus, "matched");
+      assert.equal(lookupResult.bookingOutcome.bookingValue.amount, 918);
+      assert.equal(lookupResult.bookingOutcome.estimatedCommission.amount, 110.16);
+      assert.equal(lookupResult.bookingOutcome.paidCommission.amount, null);
+
+      // 5. Also verify FareHarbor-supported webhook receiver with ?token= query param and NO X-DCC-API-Key header
+      const webhookRes = await postFareHarborWebhook(
+        new Request(
+          "https://destinationcommandcenter.com/api/v1/commerce/webhooks/fareharbor?token=fh_user_test_key_coastal_123456",
+          {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ booking: authorizedFhBooking }),
+          },
+        ),
+      );
+      assert.equal(webhookRes.status, 200); // Deduplicated against lookup confirmation above
+      const webhookJson = await webhookRes.json();
+      assert.equal(webhookJson.ok, true);
+      assert.equal(webhookJson.requiresCustomDccHeader, false);
+      assert.equal(webhookJson.extractedHandoffId, handoff.handoffId);
+      assert.equal(
+        webhookJson.lifecycleProof.bookingRecord.creditedPartnerId,
+        "welcome-to-alaska",
+      );
+      assert.equal(
+        webhookJson.lifecycleProof.bookingRecord.paidCommissionAmount,
+        null,
+      );
+      assert.equal(webhookJson.lifecycleProof.commissionRecord, null);
     });
 
     it("gates WTA production activation until approved credentials and agreed terms are supplied, then allows WTA's production credential to create a tagged referral", async () => {

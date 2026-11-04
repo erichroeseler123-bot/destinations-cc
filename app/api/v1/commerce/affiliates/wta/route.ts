@@ -7,8 +7,10 @@ import {
 import {
   assertCallerIsNotWtaReferralKey,
   confirmWtaSaleFromFareHarborBooking,
+  confirmWtaSaleViaAuthorizedFareHarborLookup,
   createWtaTaggedReferralHandoff,
   evaluateWtaAffiliateActivationGate,
+  getDccFareHarborCredentials,
   inspectWtaReferralLifecycleSeparation,
   runWtaAffiliatePreviewSimulation,
   settleWtaCommissionFromSettlementRecord,
@@ -21,6 +23,21 @@ import {
 import { DCC_PORTFOLIO_NETWORK_SITES } from "@/lib/dcc/portfolioNetworkRegistry";
 
 export const dynamic = "force-dynamic";
+
+function verifyFareHarborHeaderCaller(headers: Headers): string | null {
+  try {
+    const providedApp = (headers.get("x-fareharbor-api-app") || "").trim();
+    const providedUser = (headers.get("x-fareharbor-api-user") || "").trim();
+    if (!providedApp || !providedUser) return null;
+    const { appKey, userKey } = getDccFareHarborCredentials();
+    if (providedApp === appKey && providedUser === userKey) {
+      return "client:fareharbor-authorized-api";
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
 
 export async function GET(request: Request) {
   const traceparent = resolveOrGenerateW3cTraceparent(request);
@@ -89,23 +106,38 @@ export async function POST(request: Request) {
   const requestedAction = String(
     body.action ??
       body.mode ??
-      (body.booking
-        ? "confirm_fareharbor_booking"
-        : body.settlement
-          ? "record_settlement"
-          : "create_referral"),
+      (body.bookingUuid || body.booking_uuid
+        ? "lookup_and_confirm_fareharbor_booking"
+        : body.booking
+          ? "confirm_fareharbor_booking"
+          : body.settlement
+            ? "record_settlement"
+            : "create_referral"),
   )
     .trim()
     .toLowerCase();
 
-  // Step 1: Authenticate caller with base read/handoff scope first so we can identify WTA referral keys
+  const fhCallerId = verifyFareHarborHeaderCaller(request.headers);
+
+  // Step 1: Authenticate caller with base read/handoff scope (or FareHarbor API headers for booking lookup)
   let baseAuth: { clientId: string; keyId: string; scopes: string[] };
   try {
-    baseAuth = verifyEvaluationAuthAndRateLimit({
-      headers: request.headers,
-      requiredScope: "dcc:read:public",
-      requireExplicitApiKey: true,
-    });
+    const hasExplicitDccKey = Boolean(
+      request.headers.get("x-dcc-api-key") || request.headers.get("authorization"),
+    );
+    if (!hasExplicitDccKey && fhCallerId) {
+      baseAuth = {
+        clientId: fhCallerId,
+        keyId: "fh_api_headers",
+        scopes: ["dcc:read:public", "dcc:commerce:report_outcome"],
+      };
+    } else {
+      baseAuth = verifyEvaluationAuthAndRateLimit({
+        headers: request.headers,
+        requiredScope: "dcc:read:public",
+        requireExplicitApiKey: true,
+      });
+    }
   } catch (err) {
     if (err instanceof MachineSecurityLimitError) {
       return buildMachineJsonResponse(
@@ -129,7 +161,7 @@ export async function POST(request: Request) {
         ok: false,
         error: {
           code: "UNAUTHORIZED",
-          message: "Valid WTA or DCC commerce API key is required.",
+          message: "Valid WTA, FareHarbor, or DCC commerce credential is required.",
         },
         traceparent,
       },
@@ -138,6 +170,71 @@ export async function POST(request: Request) {
   }
 
   try {
+    // Action A0: Authorized FareHarbor booking lookup + sale confirmation (no custom X-DCC-API-Key header required when X-FareHarbor-API-App/User are supplied)
+    if (
+      requestedAction === "lookup_and_confirm_fareharbor_booking" ||
+      requestedAction === "authorized_fareharbor_booking_lookup"
+    ) {
+      assertCallerIsNotWtaReferralKey(baseAuth.clientId, "booking");
+
+      const reporterClientId = fhCallerId
+        ? fhCallerId
+        : verifyEvaluationAuthAndRateLimit({
+            headers: request.headers,
+            requiredScope: "dcc:commerce:report_outcome",
+            requireExplicitApiKey: true,
+          }).clientId;
+
+      const companyShortname = String(
+        body.companyShortname ||
+          body.company ||
+          body.fareharborShortname ||
+          "coastalhelicopters",
+      ).trim();
+      const bookingUuid = String(
+        body.bookingUuid || body.booking_uuid || body.uuid || "",
+      ).trim();
+
+      const lookupResult = await confirmWtaSaleViaAuthorizedFareHarborLookup({
+        reporterClientId,
+        companyShortname,
+        bookingUuid,
+        handoffId: typeof body.handoffId === "string" ? body.handoffId : undefined,
+        lookupBaseUrlOverride:
+          typeof body.lookupBaseUrl === "string" ? body.lookupBaseUrl : undefined,
+      });
+
+      const lifecycleProof = lookupResult.bookingOutcome.handoffId
+        ? await inspectWtaReferralLifecycleSeparation(
+            lookupResult.bookingOutcome.handoffId,
+          )
+        : null;
+
+      return buildMachineJsonResponse(
+        {
+          ok: true,
+          action: "lookup_and_confirm_fareharbor_booking",
+          lookupSource: lookupResult.lookupSource,
+          extractedHandoffId: lookupResult.extractedHandoffId,
+          authorizedBooking: lookupResult.booking,
+          bookingOutcome: lookupResult.bookingOutcome,
+          lifecycleProof,
+          traceparent,
+        },
+        {
+          status: lookupResult.bookingOutcome.duplicateDelivery ? 200 : 201,
+          cacheControl: "no-store",
+          extraHeaders: {
+            traceparent,
+            "X-DCC-Surface-Class":
+              "commercial_affiliate_authorized_booking_lookup",
+            "X-DCC-Client-Id": reporterClientId,
+            "X-DCC-Outcome-Id": lookupResult.bookingOutcome.outcomeId,
+          },
+        },
+      );
+    }
+
     // Action A: Confirm sale from a genuine FareHarbor booking record
     if (
       requestedAction === "confirm_fareharbor_booking" ||
@@ -146,14 +243,16 @@ export async function POST(request: Request) {
       // Explicitly prove WTA's referral key cannot write booking outcomes
       assertCallerIsNotWtaReferralKey(baseAuth.clientId, "booking");
 
-      const outcomeAuth = verifyEvaluationAuthAndRateLimit({
-        headers: request.headers,
-        requiredScope: "dcc:commerce:report_outcome",
-        requireExplicitApiKey: true,
-      });
+      const reporterClientId = fhCallerId
+        ? fhCallerId
+        : verifyEvaluationAuthAndRateLimit({
+            headers: request.headers,
+            requiredScope: "dcc:commerce:report_outcome",
+            requireExplicitApiKey: true,
+          }).clientId;
 
       const bookingOutcome = await confirmWtaSaleFromFareHarborBooking({
-        reporterClientId: outcomeAuth.clientId,
+        reporterClientId,
         booking: body.booking as FareHarborExternalBookingRecord,
         handoffId:
           typeof body.handoffId === "string" ? body.handoffId : undefined,
@@ -177,7 +276,7 @@ export async function POST(request: Request) {
           extraHeaders: {
             traceparent,
             "X-DCC-Surface-Class": "commercial_affiliate_booking_confirmation",
-            "X-DCC-Client-Id": outcomeAuth.clientId,
+            "X-DCC-Client-Id": reporterClientId,
             "X-DCC-Outcome-Id": bookingOutcome.outcomeId,
           },
         },

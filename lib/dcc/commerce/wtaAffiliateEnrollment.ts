@@ -693,8 +693,168 @@ export interface FareHarborExternalBookingRecord {
 }
 
 /**
+ * Extracts a DCC `hndf_...` referral handoff ID from any of the standard FareHarbor booking fields
+ * (`note`, `voucher_number`, `reference`, `external_id`, `handoff_id`, or `affiliate_company.asn_parameter`).
+ */
+export function extractDccHandoffIdFromFareHarborBooking(
+  booking: Partial<FareHarborExternalBookingRecord> | Record<string, unknown> | null | undefined,
+  explicitHandoffId?: string | null,
+): string | null {
+  const candidates: Array<unknown> = [
+    explicitHandoffId,
+    booking && typeof booking === "object" ? (booking as Record<string, unknown>)["handoff_id"] : null,
+    booking && typeof booking === "object" ? (booking as Record<string, unknown>)["note"] : null,
+    booking && typeof booking === "object" ? (booking as Record<string, unknown>)["voucher_number"] : null,
+    booking && typeof booking === "object" ? (booking as Record<string, unknown>)["reference"] : null,
+    booking && typeof booking === "object" ? (booking as Record<string, unknown>)["external_id"] : null,
+    booking &&
+    typeof booking === "object" &&
+    (booking as Record<string, unknown>)["affiliate_company"] &&
+    typeof (booking as Record<string, unknown>)["affiliate_company"] === "object"
+      ? ((booking as Record<string, unknown>)["affiliate_company"] as Record<string, unknown>)[
+          "asn_parameter"
+        ]
+      : null,
+  ];
+
+  for (const candidate of candidates) {
+    if (typeof candidate !== "string" || !candidate.trim()) continue;
+    const hexMatch = candidate.match(/\b(hndf_[0-9a-f]{24})\b/i);
+    if (hexMatch?.[1]) return hexMatch[1].toLowerCase();
+    const generalMatch = candidate.match(/\b(hndf_[a-zA-Z0-9_-]+)\b/);
+    if (generalMatch?.[1]) return generalMatch[1];
+  }
+
+  if (typeof explicitHandoffId === "string" && explicitHandoffId.trim()) {
+    return explicitHandoffId.trim();
+  }
+  return null;
+}
+
+export function getDccFareHarborCredentials(): {
+  appKey: string;
+  userKey: string;
+} {
+  const appKey = (
+    process.env.FAREHARBOR_APP_KEY ||
+    process.env.FH_APP_NAME ||
+    process.env.FH_APP_KEY ||
+    ""
+  ).trim();
+  const userKey = (
+    process.env.FAREHARBOR_USER_KEY ||
+    process.env.FH_API_KEY ||
+    process.env.FH_USER_KEY ||
+    ""
+  ).trim();
+  if (!appKey || !userKey) {
+    const err = new Error(
+      "Missing FAREHARBOR_APP_KEY or FAREHARBOR_USER_KEY in DCC environment.",
+    ) as Error & { code?: string; statusCode?: number };
+    err.code = "FAREHARBOR_CREDENTIALS_NOT_CONFIGURED";
+    err.statusCode = 503;
+    throw err;
+  }
+  return { appKey, userKey };
+}
+
+/**
+ * Fetches an authorized FareHarbor booking record using `X-FareHarbor-API-App` and `X-FareHarbor-API-User`
+ * (no custom `X-DCC-API-Key` header required from FareHarbor) and extracts the DCC referral (`hndf_...`).
+ */
+export async function fetchAuthorizedFareHarborBookingRecord(params: {
+  companyShortname: string;
+  bookingUuid: string;
+  lookupBaseUrlOverride?: string;
+  customFetch?: typeof fetch;
+}): Promise<{
+  booking: FareHarborExternalBookingRecord;
+  lookupSource:
+    | "fareharbor_external_api_v1"
+    | "wta_authorized_fareharbor_booking_store";
+  extractedHandoffId: string | null;
+}> {
+  const { appKey, userKey } = getDccFareHarborCredentials();
+  const company = params.companyShortname.trim();
+  const bookingUuid = params.bookingUuid.trim();
+  const fetchFn = params.customFetch ?? fetch;
+
+  if (!company || !bookingUuid) {
+    const err = new Error(
+      "companyShortname and bookingUuid are required for authorized FareHarbor booking lookup.",
+    ) as Error & { code?: string; statusCode?: number };
+    err.code = "INVALID_FAREHARBOR_LOOKUP_PARAMS";
+    err.statusCode = 400;
+    throw err;
+  }
+
+  const fhHeaders = {
+    "X-FareHarbor-API-App": appKey,
+    "X-FareHarbor-API-User": userKey,
+    Accept: "application/json",
+  };
+
+  const gate = evaluateWtaAffiliateActivationGate();
+  const allowLookupOverride =
+    !gate.isProductionRuntime &&
+    typeof params.lookupBaseUrlOverride === "string" &&
+    params.lookupBaseUrlOverride.trim().length > 0;
+
+  if (allowLookupOverride) {
+    const base = params.lookupBaseUrlOverride!.trim().replace(/\/+$/, "");
+    const overrideUrl = `${base}/api/fareharbor/booking?company=${encodeURIComponent(company)}&uuid=${encodeURIComponent(bookingUuid)}`;
+    const res = await fetchFn(overrideUrl, {
+      method: "GET",
+      headers: fhHeaders,
+      cache: "no-store",
+    });
+    if (res.ok) {
+      const data = (await res.json().catch(() => null)) as
+        | { booking?: FareHarborExternalBookingRecord }
+        | null;
+      if (data?.booking) {
+        return {
+          booking: data.booking,
+          lookupSource: "wta_authorized_fareharbor_booking_store",
+          extractedHandoffId: extractDccHandoffIdFromFareHarborBooking(data.booking),
+        };
+      }
+    }
+  }
+
+  const canonicalFhUrl = `https://fareharbor.com/api/external/v1/companies/${encodeURIComponent(company)}/bookings/${encodeURIComponent(bookingUuid)}/`;
+  const fhRes = await fetchFn(canonicalFhUrl, {
+    method: "GET",
+    headers: fhHeaders,
+    cache: "no-store",
+  });
+
+  if (fhRes.ok) {
+    const data = (await fhRes.json().catch(() => null)) as
+      | { booking?: FareHarborExternalBookingRecord }
+      | null;
+    if (data?.booking) {
+      return {
+        booking: data.booking,
+        lookupSource: "fareharbor_external_api_v1",
+        extractedHandoffId: extractDccHandoffIdFromFareHarborBooking(data.booking),
+      };
+    }
+  }
+
+  const err = new Error(
+    `Authorized FareHarbor booking lookup could not find booking '${bookingUuid}' for company '${company}'.`,
+  ) as Error & { code?: string; statusCode?: number };
+  err.code = "FAREHARBOR_BOOKING_LOOKUP_NOT_FOUND";
+  err.statusCode = 404;
+  throw err;
+}
+
+/**
  * Confirms a WTA affiliate sale from a genuine FareHarbor `booking` record.
  * - Rejects WTA's referral credential (`partner:welcome-to-alaska:*`) with `403 WTA_REFERRAL_KEY_CANNOT_WRITE_OUTCOMES`.
+ * - Enforces the production activation gate (`403 WTA_AFFILIATE_PRODUCTION_ACTIVATION_GATED`) while terms are unsigned.
+ * - Extracts the DCC referral `handoffId` (`hndf_...`) from `booking.note`, `booking.voucher_number`, or `booking.reference`.
  * - Extracts the net tour subtotal (`receipt_subtotal` in cents -> USD dollars), computes the 12% (`1200` bps)
  *   estimated commission, and records `BOOKING_CONFIRMED` in `dcc_commercial_outcomes` with `paidCommission.amount: null`.
  */
@@ -702,8 +862,15 @@ export async function confirmWtaSaleFromFareHarborBooking(params: {
   reporterClientId: string;
   booking: FareHarborExternalBookingRecord;
   handoffId?: string | null;
+  reporterProvenance?: string;
+  gateOverrideOptions?: Parameters<typeof evaluateWtaAffiliateActivationGate>[0];
 }): Promise<CommercialOutcomeRecord> {
   assertCallerIsNotWtaReferralKey(params.reporterClientId, "booking");
+
+  const gate = evaluateWtaAffiliateActivationGate(params.gateOverrideOptions);
+  if (gate.isProductionRuntime && !gate.productionActivationAllowed) {
+    throw new WtaAffiliateProductionGateError(gate);
+  }
 
   const booking = params.booking;
   if (
@@ -734,14 +901,10 @@ export async function confirmWtaSaleFromFareHarborBooking(params: {
     throw err;
   }
 
-  const candidateHandoffRef =
-    params.handoffId ||
-    booking.handoff_id ||
-    booking.voucher_number ||
-    booking.reference ||
-    booking.note ||
-    booking.affiliate_company?.asn_parameter ||
-    null;
+  const candidateHandoffRef = extractDccHandoffIdFromFareHarborBooking(
+    booking,
+    params.handoffId,
+  );
 
   const resolvedItem = booking.item ?? booking.availability.item ?? null;
   const bookedDate = booking.availability.start_at.slice(0, 10);
@@ -754,7 +917,6 @@ export async function confirmWtaSaleFromFareHarborBooking(params: {
 
   // FareHarbor monetary values (`receipt_subtotal`, `receipt_total`) are in integer cents
   const netSubtotalUsd = Number((booking.receipt_subtotal / 100).toFixed(2));
-  const gate = evaluateWtaAffiliateActivationGate();
   const commissionRateBps =
     gate.parsedTerms?.commissionRateBps ??
     gate.draftTerms.commissionRateBps ??
@@ -769,17 +931,20 @@ export async function confirmWtaSaleFromFareHarborBooking(params: {
 
   return recordCommercialOutcome({
     reporterClientId: params.reporterClientId,
-    reporterProvenance: "fareharbor_booking_webhook",
+    reporterProvenance: params.reporterProvenance || "fareharbor_booking_webhook",
     provider: "fareharbor",
     providerAccount: booking.company.shortname,
     providerBookingRef,
     eventType: "BOOKING_CONFIRMED",
     providerEventTime:
-      booking.updated_at || booking.created_at || new Date().toISOString(),
+      booking.updated_at ||
+      booking.created_at ||
+      booking.availability.start_at,
     handoffId: candidateHandoffRef,
     clickId: booking.click_id ?? candidateHandoffRef,
     campaignOrRefValue:
       booking.voucher_number ??
+      booking.note ??
       booking.reference ??
       booking.affiliate_company?.asn_parameter ??
       null,
@@ -800,6 +965,9 @@ export async function confirmWtaSaleFromFareHarborBooking(params: {
       fareharborBookingPk: booking.pk,
       fareharborBookingUuid: booking.uuid,
       fareharborDisplayId: booking.display_id ?? providerBookingRef,
+      fareharborVoucherNumber: booking.voucher_number ?? null,
+      fareharborNote: booking.note ?? null,
+      extractedDccHandoffId: candidateHandoffRef,
       companyShortname: booking.company.shortname,
       itemPk: resolvedItem?.pk ?? null,
       itemName: resolvedItem?.name ?? null,
@@ -808,10 +976,65 @@ export async function confirmWtaSaleFromFareHarborBooking(params: {
       receiptSubtotalCents: booking.receipt_subtotal,
       receiptTaxesCents: booking.receipt_taxes ?? 0,
       receiptTotalCents: booking.receipt_total ?? booking.receipt_subtotal,
+      invoicePriceCents: booking.invoice_price ?? null,
       commissionRateBps,
       commissionAppliesTo: "receipt_subtotal",
     },
   });
+}
+
+/**
+ * Confirms a WTA affiliate sale by performing an authorized FareHarbor booking lookup
+ * (`X-FareHarbor-API-App` + `X-FareHarbor-API-User`) without requiring any custom `X-DCC-API-Key` header from FareHarbor.
+ */
+export async function confirmWtaSaleViaAuthorizedFareHarborLookup(params: {
+  reporterClientId: string;
+  companyShortname: string;
+  bookingUuid: string;
+  handoffId?: string | null;
+  lookupBaseUrlOverride?: string;
+  customFetch?: typeof fetch;
+  gateOverrideOptions?: Parameters<typeof evaluateWtaAffiliateActivationGate>[0];
+}): Promise<{
+  booking: FareHarborExternalBookingRecord;
+  lookupSource:
+    | "fareharbor_external_api_v1"
+    | "wta_authorized_fareharbor_booking_store";
+  extractedHandoffId: string | null;
+  bookingOutcome: CommercialOutcomeRecord;
+}> {
+  assertCallerIsNotWtaReferralKey(params.reporterClientId, "booking");
+
+  const gate = evaluateWtaAffiliateActivationGate(params.gateOverrideOptions);
+  if (gate.isProductionRuntime && !gate.productionActivationAllowed) {
+    throw new WtaAffiliateProductionGateError(gate);
+  }
+
+  const lookup = await fetchAuthorizedFareHarborBookingRecord({
+    companyShortname: params.companyShortname,
+    bookingUuid: params.bookingUuid,
+    lookupBaseUrlOverride: params.lookupBaseUrlOverride,
+    customFetch: params.customFetch,
+  });
+
+  const resolvedHandoffId =
+    extractDccHandoffIdFromFareHarborBooking(lookup.booking, params.handoffId) ||
+    lookup.extractedHandoffId;
+
+  const bookingOutcome = await confirmWtaSaleFromFareHarborBooking({
+    reporterClientId: params.reporterClientId,
+    booking: lookup.booking,
+    handoffId: resolvedHandoffId,
+    reporterProvenance: "fareharbor_authorized_booking_lookup",
+    gateOverrideOptions: params.gateOverrideOptions,
+  });
+
+  return {
+    booking: lookup.booking,
+    lookupSource: lookup.lookupSource,
+    extractedHandoffId: resolvedHandoffId,
+    bookingOutcome,
+  };
 }
 
 /**
@@ -840,14 +1063,21 @@ export interface WtaCommissionSettlementRecord {
 /**
  * Marks commission paid (`COMMISSION_RECONCILED`) from a genuine settlement record.
  * - Rejects WTA's referral credential (`partner:welcome-to-alaska:*`) with `403 WTA_REFERRAL_KEY_CANNOT_WRITE_OUTCOMES`.
+ * - Enforces the production activation gate (`403 WTA_AFFILIATE_PRODUCTION_ACTIVATION_GATED`) while terms are unsigned.
  * - Verifies that a confirmed booking record (`BOOKING_CONFIRMED`) already exists for the handoff and booking reference.
  * - Verifies the 12% (`1200` bps) calculation against `netTourSubtotalAmount` and `net_30_after_travel` payout schedule.
  */
 export async function settleWtaCommissionFromSettlementRecord(params: {
   reporterClientId: string;
   settlement: WtaCommissionSettlementRecord;
+  gateOverrideOptions?: Parameters<typeof evaluateWtaAffiliateActivationGate>[0];
 }): Promise<CommercialOutcomeRecord> {
   assertCallerIsNotWtaReferralKey(params.reporterClientId, "settlement");
+
+  const gate = evaluateWtaAffiliateActivationGate(params.gateOverrideOptions);
+  if (gate.isProductionRuntime && !gate.productionActivationAllowed) {
+    throw new WtaAffiliateProductionGateError(gate);
+  }
 
   const s = params.settlement;
   if (
@@ -973,6 +1203,8 @@ export interface WtaSeparateLifecycleProof {
     recordType: "provider_confirmed_booking";
     outcomeId: string;
     handoffId: string | null;
+    creditedPartnerId: string | null;
+    creditedOriginatingSite: string;
     reporterClientId: string;
     reporterProvenance: string;
     providerBookingRef: string;
@@ -989,6 +1221,8 @@ export interface WtaSeparateLifecycleProof {
     recordType: "commission_reconciliation";
     outcomeId: string;
     handoffId: string | null;
+    creditedPartnerId: string | null;
+    creditedOriginatingSite: string;
     reporterClientId: string;
     reporterProvenance: string;
     providerBookingRef: string;
@@ -1088,6 +1322,8 @@ export async function inspectWtaReferralLifecycleSeparation(
           recordType: "provider_confirmed_booking",
           outcomeId: bookingOutcome.outcomeId,
           handoffId: bookingOutcome.handoffId,
+          creditedPartnerId: handoff.approvedPartnerAttribution?.partnerId ?? null,
+          creditedOriginatingSite: handoff.originatingSite,
           reporterClientId: bookingOutcome.reporterClientId,
           reporterProvenance: bookingOutcome.reporterProvenance,
           providerBookingRef: bookingOutcome.providerBookingRef,
@@ -1106,6 +1342,8 @@ export async function inspectWtaReferralLifecycleSeparation(
           recordType: "commission_reconciliation",
           outcomeId: commissionOutcome.outcomeId,
           handoffId: commissionOutcome.handoffId,
+          creditedPartnerId: handoff.approvedPartnerAttribution?.partnerId ?? null,
+          creditedOriginatingSite: handoff.originatingSite,
           reporterClientId: commissionOutcome.reporterClientId,
           reporterProvenance: commissionOutcome.reporterProvenance,
           providerBookingRef: commissionOutcome.providerBookingRef,
