@@ -2687,7 +2687,7 @@ export async function listCommercialOutcomes(options?: {
         receipt_id: string | null;
         context_id: string | null;
         reconciliation_status: "matched" | "unmatched";
-        reconciliation_json: ReconciliationFieldComparison | null;
+        reconciliation_json: CommercialOutcomeRecord["reconciliationComparison"] | null;
         booked_product_code: string | null;
         booked_date: string | null;
         booked_option: string | null;
