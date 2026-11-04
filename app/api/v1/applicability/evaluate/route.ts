@@ -1,12 +1,23 @@
 import { NextResponse } from "next/server";
 import {
   compileApplicableDecisionContext,
+  createGoSnoRouteFeedSnapshot,
+  getActiveGoSnoRouteFeedSnapshotState,
+  getBaselineGoSnoRouteFeedSnapshot,
   getVersionedApplicabilityContextModel,
+  refreshGoSnoRouteFeedSnapshot,
+  saveGoSnoRouteFeedSnapshot,
+  type CompiledApplicableDecisionOutcome,
   type CorridorId,
+  type GoSnoRouteDirection,
   type TripApplicabilityRequest,
 } from "@/lib/dcc/applicability";
 import { issueOpaqueClickAttribution } from "@/lib/dcc/commerce/opaqueAttributionLedger";
-import { syncDurableLedgerWithPostgres } from "@/lib/dcc/storage/durableTransactionalStore";
+import {
+  readDurableLedgerState,
+  runDurableLedgerTransaction,
+  syncDurableLedgerWithPostgres,
+} from "@/lib/dcc/storage/durableTransactionalStore";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +37,7 @@ const DEFAULT_PARTNER_URLS: Record<CorridorId, string> = {
 export async function GET() {
   await syncDurableLedgerWithPostgres();
   const model = getVersionedApplicabilityContextModel();
+  const gosnoState = getActiveGoSnoRouteFeedSnapshotState();
   return NextResponse.json(
     {
       ok: true,
@@ -35,6 +47,23 @@ export async function GET() {
       segmentsCount: model.segments.length,
       vehicleClassesCount: model.vehicleClasses.length,
       regulationsCount: model.regulations.length,
+      gosnoRouteFeedSnapshot: {
+        snapshotId: gosnoState.snapshot.snapshotId,
+        sourceUrl: gosnoState.snapshot.sourceUrl,
+        feedVersion: gosnoState.snapshot.feedVersion,
+        feedGeneratedAt: gosnoState.snapshot.feedGeneratedAt,
+        contentHash: gosnoState.snapshot.contentHash,
+        rawPayloadHash: gosnoState.snapshot.rawPayloadHash,
+        fetchedAt: gosnoState.snapshot.fetchedAt,
+        expiresAt: gosnoState.snapshot.expiresAt,
+        ageMs: gosnoState.ageMs,
+        ageLabel: gosnoState.ageLabel,
+        isExpired: gosnoState.isExpired,
+        freshnessStatus: gosnoState.freshnessStatus,
+        statusBanner: gosnoState.statusBanner,
+        routeCount: gosnoState.snapshot.routeCount,
+        roundTripCount: gosnoState.snapshot.roundTripCount,
+      },
     },
     {
       status: 200,
@@ -51,6 +80,12 @@ export async function POST(request: Request) {
     const body = (await request.json()) as Partial<TripApplicabilityRequest> & {
       partnerDestinationUrl?: string;
       preferPrivateTransfer?: boolean;
+      refreshGoSnoFeed?: boolean;
+      simulateFeedState?:
+        | "live"
+        | "unavailable_feed"
+        | "invalid_data"
+        | "expired_snapshot";
       partnerNetwork?:
         | "viator"
         | "fareharbor"
@@ -60,10 +95,20 @@ export async function POST(request: Request) {
         | "direct";
     };
 
+    if (body.refreshGoSnoFeed === true && !body.simulateFeedState) {
+      await refreshGoSnoRouteFeedSnapshot();
+    }
+
     const corridorId: CorridorId =
       body.corridorId ?? "corridor:denver-vail-i70";
     const applicabilityRequest: TripApplicabilityRequest = {
       corridorId,
+      routeId: body.routeId,
+      offerId: body.offerId,
+      direction:
+        body.direction === "RETURN" || body.direction === "OUTBOUND"
+          ? (body.direction as GoSnoRouteDirection)
+          : undefined,
       origin: body.origin,
       destination: body.destination,
       travelDate: body.travelDate ?? "2026-12-15",
@@ -81,9 +126,115 @@ export async function POST(request: Request) {
           ? body.maxSinglePassengerWeightLbs
           : null,
       activeSegmentConditions: body.activeSegmentConditions ?? {},
+      evaluationTimestamp: body.evaluationTimestamp,
     };
 
-    const outcome = compileApplicableDecisionContext(applicabilityRequest);
+    let outcome: CompiledApplicableDecisionOutcome;
+
+    if (
+      body.simulateFeedState === "unavailable_feed" ||
+      body.simulateFeedState === "invalid_data" ||
+      body.simulateFeedState === "expired_snapshot"
+    ) {
+      const priorState = readDurableLedgerState();
+      const priorSnapshot = priorState.gosnoRouteFeedSnapshot ?? null;
+      const priorMeta = priorState.gosnoRouteFeedRefreshMeta ?? null;
+      const baseNowMs = Date.now();
+      const baseline = getBaselineGoSnoRouteFeedSnapshot();
+
+      try {
+        if (body.simulateFeedState === "unavailable_feed") {
+          const retainedFetchedAt = new Date(
+            baseNowMs - 42 * 60 * 1000,
+          ).toISOString();
+          const seededValid = createGoSnoRouteFeedSnapshot(baseline.feed, {
+            fetchedAt: retainedFetchedAt,
+            ttlMs: 24 * 60 * 60 * 1000,
+          });
+          saveGoSnoRouteFeedSnapshot(seededValid);
+          await refreshGoSnoRouteFeedSnapshot({
+            now: new Date(baseNowMs),
+            fetchImpl: async () =>
+              new Response("Service Unavailable", {
+                status: 503,
+                statusText: "Service Unavailable",
+              }),
+          });
+          outcome = compileApplicableDecisionContext({
+            ...applicabilityRequest,
+            evaluationTimestamp: new Date(baseNowMs).toISOString(),
+          });
+        } else if (body.simulateFeedState === "invalid_data") {
+          const retainedFetchedAt = new Date(
+            baseNowMs - 42 * 60 * 1000,
+          ).toISOString();
+          const seededValid = createGoSnoRouteFeedSnapshot(baseline.feed, {
+            fetchedAt: retainedFetchedAt,
+            ttlMs: 24 * 60 * 60 * 1000,
+          });
+          saveGoSnoRouteFeedSnapshot(seededValid);
+          await refreshGoSnoRouteFeedSnapshot({
+            now: new Date(baseNowMs),
+            fetchImpl: async () =>
+              new Response(
+                JSON.stringify({
+                  spec: "dcc-route-feed",
+                  version: "1.0",
+                  generated_at: new Date(baseNowMs).toISOString(),
+                  routes: [
+                    {
+                      offer_id: "DEN-COPPER-SUV",
+                      route_id: "DEN-COPPER",
+                      direction: "OUTBOUND",
+                      origin: "DEN",
+                      destination: "Copper Mountain",
+                      vehicle_class: "suv",
+                      seating_limit: 6,
+                      canonical_booking_url: "https://gosno.co/copper",
+                      quote_url: "https://gosno.co/request-quote",
+                      pricing: {
+                        amount_usd: -349,
+                        amount_cents: -34900,
+                        currency: "USD",
+                      },
+                    },
+                  ],
+                  round_trips: [],
+                }),
+                {
+                  status: 200,
+                  headers: { "Content-Type": "application/json" },
+                },
+              ),
+          });
+          outcome = compileApplicableDecisionContext({
+            ...applicabilityRequest,
+            evaluationTimestamp: new Date(baseNowMs).toISOString(),
+          });
+        } else {
+          // expired_snapshot
+          const expiredFetchedAt = new Date(
+            baseNowMs - 26 * 60 * 60 * 1000,
+          ).toISOString();
+          const expiredSnap = createGoSnoRouteFeedSnapshot(baseline.feed, {
+            fetchedAt: expiredFetchedAt,
+            ttlMs: 24 * 60 * 60 * 1000,
+          });
+          saveGoSnoRouteFeedSnapshot(expiredSnap);
+          outcome = compileApplicableDecisionContext({
+            ...applicabilityRequest,
+            evaluationTimestamp: new Date(baseNowMs).toISOString(),
+          });
+        }
+      } finally {
+        runDurableLedgerTransaction((state) => {
+          state.gosnoRouteFeedSnapshot = priorSnapshot;
+          state.gosnoRouteFeedRefreshMeta = priorMeta;
+        });
+      }
+    } else {
+      outcome = compileApplicableDecisionContext(applicabilityRequest);
+    }
 
     const explicitPartnerUrl = body.partnerDestinationUrl?.trim();
     const defaultPartnerUrl =
@@ -98,22 +249,53 @@ export async function POST(request: Request) {
     ) {
       basePartnerUrl = outcome.privateGroupInquiryOption.inquiryUrl;
     } else if (outcome.recommendedOperatorId === "op:gosno") {
-      const goSnoBase =
+      const matchedSnap = outcome.gosnoPricingSnapshot;
+      const isSuv = outcome.recommendedVehicleClassId === "veh:awd-full-size-suv";
+      const matchedOffer = isSuv
+        ? matchedSnap?.suvOffer
+        : matchedSnap?.vanOffer;
+
+      const hasCustomRouteOrDest = Boolean(
+        body.routeId ||
+          body.offerId ||
+          body.direction === "RETURN" ||
+          (body.destination &&
+            body.destination !== "Vail" &&
+            body.destination !== "Breckenridge"),
+      );
+
+      const fallbackGoSnoBase =
         corridorId === "corridor:denver-breckenridge-i70"
           ? "https://gosno.co/breckenridge"
           : "https://gosno.co/vail";
+
+      const goSnoBase =
+        matchedOffer?.canonicalBookingUrl || fallbackGoSnoBase;
+
       const parsed = new URL(
-        explicitPartnerUrl && explicitPartnerUrl.includes("gosno.co")
+        !hasCustomRouteOrDest &&
+          explicitPartnerUrl &&
+          explicitPartnerUrl.includes("gosno.co")
           ? explicitPartnerUrl
           : goSnoBase,
       );
-      parsed.searchParams.set("origin", "DEN");
+      parsed.searchParams.set(
+        "origin",
+        matchedSnap?.matchedOrigin || "DEN",
+      );
       parsed.searchParams.set(
         "destination",
-        corridorId === "corridor:denver-breckenridge-i70"
-          ? "Breckenridge"
-          : "Vail",
+        matchedSnap?.matchedDestination ||
+          (corridorId === "corridor:denver-breckenridge-i70"
+            ? "Breckenridge"
+            : "Vail"),
       );
+      if (matchedSnap?.matchedRouteId) {
+        parsed.searchParams.set("routeId", matchedSnap.matchedRouteId);
+      }
+      if (matchedOffer?.offerId) {
+        parsed.searchParams.set("offerId", matchedOffer.offerId);
+      }
       if (applicabilityRequest.travelDate) {
         parsed.searchParams.set("date", applicabilityRequest.travelDate);
       }
@@ -137,12 +319,7 @@ export async function POST(request: Request) {
         "skiBags",
         String(applicabilityRequest.skiOrOversizeBagCount),
       );
-      parsed.searchParams.set(
-        "vehicleClass",
-        outcome.recommendedVehicleClassId === "veh:awd-full-size-suv"
-          ? "suv"
-          : "van",
-      );
+      parsed.searchParams.set("vehicleClass", isSuv ? "suv" : "van");
       basePartnerUrl = parsed.toString();
     } else if (
       outcome.recommendedOperatorId === "op:epic-mountain-express" &&

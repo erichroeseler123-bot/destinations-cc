@@ -8,6 +8,16 @@ import {
   type SeasonalRegulationSpec,
   type VehicleClassCapacitySpec,
 } from "./contextModel";
+import {
+  GOSNO_PRICE_FALLBACK_MESSAGE,
+  getActiveGoSnoRouteFeedSnapshotState,
+  resolveGoSnoOneWayFare,
+  resolveGoSnoRouteContext,
+  type ActiveGoSnoSnapshotState,
+  type GoSnoRouteDirection,
+  type GoSnoSnapshotFreshnessStatus,
+  type ResolvedGoSnoOneWayFare,
+} from "./gosnoRouteFeedSnapshot";
 
 export interface ActiveSegmentConditionInputs {
   vailPassChainLawActive?: boolean;
@@ -17,6 +27,9 @@ export interface ActiveSegmentConditionInputs {
 
 export interface TripApplicabilityRequest {
   corridorId: CorridorId;
+  routeId?: string;
+  offerId?: string;
+  direction?: GoSnoRouteDirection;
   origin?: string;
   destination?: string;
   travelDate?: string;
@@ -28,6 +41,7 @@ export interface TripApplicabilityRequest {
   youngestPassengerAgeYears?: number | null;
   maxSinglePassengerWeightLbs?: number | null;
   activeSegmentConditions?: ActiveSegmentConditionInputs;
+  evaluationTimestamp?: string;
 }
 
 export interface CompiledSegmentConstraint {
@@ -91,9 +105,41 @@ export interface CompiledVehicleClassEvaluation {
     quoteOnly: boolean;
     estimatedExtraBagFeeUsd: number;
     compiledPricingNote: string;
+    matchedOfferId?: string | null;
+    matchedRouteId?: string | null;
+    direction?: GoSnoRouteDirection;
+    priceDisplay?: string;
+    canonicalBookingUrl?: string | null;
+    quoteUrl?: string | null;
   };
   compiledReason: string;
   evidenceVersion: string;
+}
+
+export interface CompiledGoSnoPricingSnapshotSummary {
+  snapshotId: string;
+  sourceUrl: string;
+  feedVersion: string;
+  feedGeneratedAt: string;
+  contentHash: string;
+  rawPayloadHash: string;
+  fetchedAt: string;
+  expiresAt: string;
+  ageMs: number;
+  ageLabel: string;
+  isExpired: boolean;
+  freshnessStatus: GoSnoSnapshotFreshnessStatus;
+  lastRefreshStatus: "ok" | "retained_last_valid_after_error";
+  lastRefreshError: string | null;
+  lastRefreshAttemptAt: string | null;
+  statusBanner: string;
+  priceFallbackMessage: string;
+  matchedRouteId: string | null;
+  matchedDirection: GoSnoRouteDirection;
+  matchedOrigin: string;
+  matchedDestination: string;
+  suvOffer: ResolvedGoSnoOneWayFare | null;
+  vanOffer: ResolvedGoSnoOneWayFare | null;
 }
 
 export interface CompiledApplicableDecisionOutcome {
@@ -134,6 +180,7 @@ export interface CompiledApplicableDecisionOutcome {
     epistemicUnknowns: string[];
   };
   privateGroupInquiryOption?: PrivateGroupInquiryOption | null;
+  gosnoPricingSnapshot?: CompiledGoSnoPricingSnapshotSummary;
 }
 
 export interface GoSnoGroupVehicleSuggestion {
@@ -150,6 +197,8 @@ export interface PrivateGroupInquiryOption {
   operatorName: "GoSno Mountain Transport";
   status: "quote_only";
   nextStep: "request a quote";
+  routeId: string | null;
+  direction: GoSnoRouteDirection;
   origin: string;
   destination: string;
   outboundDate: string;
@@ -158,84 +207,22 @@ export interface PrivateGroupInquiryOption {
   skiOrOversizeBagCount: number;
   luggageSummary: string;
   vehicleSuggestion: GoSnoGroupVehicleSuggestion;
-  referenceCombinedOneWayUsd: number;
+  referenceCombinedOneWayUsd: number | null;
+  priceDisplay: string;
+  componentFares: {
+    suvOfferId: string | null;
+    suvOneWayUsd: number | null;
+    vanOfferId: string | null;
+    vanOneWayUsd: number | null;
+    missingComponentFare: boolean;
+    snapshotExpired: boolean;
+  };
   confirmationPolicy: string;
   inquiryUrl: string;
 }
 
 export const GOSNO_GROUP_CONFIRMATION_POLICY =
   "GoSno confirms gear fit, availability, and one group total.";
-
-export const GOSNO_APPROVED_SUV_ONE_WAY_USD: Record<string, Record<string, number>> = {
-  DEN: {
-    Keystone: 349,
-    "Winter Park": 349,
-    Breckenridge: 399,
-    "Copper Mountain": 349,
-    Vail: 499,
-    "Beaver Creek": 549,
-    "Steamboat Springs": 599,
-    Aspen: 699,
-    Snowmass: 699,
-    "Crested Butte": 699,
-  },
-  COS: {
-    Keystone: 349,
-    Breckenridge: 399,
-    "Winter Park": 449,
-    "Copper Mountain": 449,
-    Vail: 499,
-    "Beaver Creek": 549,
-    "Steamboat Springs": 799,
-    Aspen: 799,
-    Snowmass: 799,
-    "Crested Butte": 599,
-  },
-  BZN: {
-    "Big Sky": 299,
-    "Big Sky Resort": 299,
-  },
-};
-
-export const GOSNO_APPROVED_VAN_ONE_WAY_USD: Record<string, Record<string, number>> = {
-  DEN: {
-    Keystone: 499,
-    "Winter Park": 499,
-    Breckenridge: 599,
-    "Copper Mountain": 599,
-    Vail: 599,
-    "Beaver Creek": 649,
-    "Steamboat Springs": 899,
-    Aspen: 899,
-    Snowmass: 899,
-  },
-  COS: {
-    Keystone: 699,
-    "Winter Park": 699,
-    Breckenridge: 699,
-    "Copper Mountain": 749,
-    Vail: 749,
-    "Beaver Creek": 799,
-    "Steamboat Springs": 999,
-    Aspen: 999,
-    Snowmass: 999,
-  },
-};
-
-function normalizeGoSnoDestinationName(destination: string, corridorId?: CorridorId): string {
-  const lower = destination.trim().toLowerCase();
-  if (lower.includes("winter park") || lower === "winter-park") return "Winter Park";
-  if (lower.includes("steamboat")) return "Steamboat Springs";
-  if (lower.includes("big sky") || lower === "big-sky") return "Big Sky";
-  if (lower.includes("keystone")) return "Keystone";
-  if (lower.includes("copper")) return "Copper Mountain";
-  if (lower.includes("beaver creek") || lower === "beaver-creek") return "Beaver Creek";
-  if (lower.includes("aspen")) return "Aspen";
-  if (lower.includes("snowmass")) return "Snowmass";
-  if (lower.includes("crested butte") || lower === "crested-butte") return "Crested Butte";
-  if (lower.includes("breck") || corridorId === "corridor:denver-breckenridge-i70") return "Breckenridge";
-  return "Vail";
-}
 
 export function getGoSnoGroupVehicleSuggestion(
   passengers: number,
@@ -307,47 +294,79 @@ export function getGoSnoGroupVehicleSuggestion(
 
 export function buildGoSnoPrivateGroupInquiryOption(params: {
   corridorId: CorridorId;
+  routeId?: string;
+  offerId?: string;
+  direction?: GoSnoRouteDirection;
   origin?: string;
   destination?: string;
   travelDate: string;
   passengerCount: number;
   standardBagCount: number;
   skiOrOversizeBagCount: number;
+  nowMs?: number;
+  snapshotState?: ActiveGoSnoSnapshotState;
 }): PrivateGroupInquiryOption | null {
-  const rawDest =
-    params.destination ||
-    (params.corridorId === "corridor:denver-breckenridge-i70"
-      ? "Breckenridge"
-      : "Vail");
-  const destination = normalizeGoSnoDestinationName(rawDest, params.corridorId);
-  const isBigSky =
-    destination === "Big Sky" ||
-    (params.origin || "").trim().toUpperCase() === "BZN";
+  const activeState =
+    params.snapshotState ??
+    getActiveGoSnoRouteFeedSnapshotState({ nowMs: params.nowMs });
+
+  const ctx = resolveGoSnoRouteContext({
+    offerId: params.offerId,
+    routeId: params.routeId,
+    origin: params.origin,
+    destination: params.destination,
+    direction: params.direction,
+    corridorId: params.corridorId,
+    snapshot: activeState.snapshot,
+  });
+
+  if (!ctx.isGoSnoCorridorOrRoute) return null;
+
+  const isBigSky = ctx.resort === "Big Sky" || ctx.airport === "BZN";
   const singleVehicleMax = isBigSky ? 6 : 10;
   if (params.passengerCount <= singleVehicleMax) return null;
 
-  const isGoSnoCorridor =
-    params.corridorId === "corridor:denver-vail-i70" ||
-    params.corridorId === "corridor:denver-breckenridge-i70";
-  if (!isGoSnoCorridor && !params.destination) return null;
-
-  const origin = isBigSky
-    ? "BZN"
-    : (params.origin || "DEN").trim().toUpperCase() === "COS"
-      ? "COS"
-      : "DEN";
   const suggestion = getGoSnoGroupVehicleSuggestion(
     params.passengerCount,
-    origin,
-    destination,
+    ctx.origin,
+    ctx.destination,
   );
-  const suvOneWayUsd =
-    GOSNO_APPROVED_SUV_ONE_WAY_USD[origin]?.[destination] ??
-    (destination === "Breckenridge" ? 399 : 499);
-  const vanOneWayUsd =
-    GOSNO_APPROVED_VAN_ONE_WAY_USD[origin]?.[destination] ?? 599;
-  const referenceCombinedOneWayUsd =
-    suggestion.vanCount * vanOneWayUsd + suggestion.suvCount * suvOneWayUsd;
+
+  const suvFare = resolveGoSnoOneWayFare({
+    routeId: ctx.routeId ?? undefined,
+    origin: ctx.origin,
+    destination: ctx.destination,
+    direction: ctx.direction,
+    corridorId: params.corridorId,
+    vehicleClass: "suv",
+    snapshotState: activeState,
+  });
+  const vanFare = resolveGoSnoOneWayFare({
+    routeId: ctx.routeId ?? undefined,
+    origin: ctx.origin,
+    destination: ctx.destination,
+    direction: ctx.direction,
+    corridorId: params.corridorId,
+    vehicleClass: "van",
+    snapshotState: activeState,
+  });
+
+  const missingSuvComponent =
+    suggestion.suvCount > 0 && suvFare.amountUsd === null;
+  const missingVanComponent =
+    suggestion.vanCount > 0 && vanFare.amountUsd === null;
+  const missingComponentFare =
+    activeState.isExpired || missingSuvComponent || missingVanComponent;
+
+  const referenceCombinedOneWayUsd = missingComponentFare
+    ? null
+    : suggestion.vanCount * (vanFare.amountUsd ?? 0) +
+      suggestion.suvCount * (suvFare.amountUsd ?? 0);
+
+  const priceDisplay =
+    referenceCombinedOneWayUsd !== null
+      ? `$${referenceCombinedOneWayUsd}`
+      : GOSNO_PRICE_FALLBACK_MESSAGE;
 
   const luggageParts: string[] = [];
   if (params.standardBagCount > 0) {
@@ -362,8 +381,11 @@ export function buildGoSnoPrivateGroupInquiryOption(params: {
       : `${params.passengerCount} passengers standard luggage + ski gear`;
 
   const url = new URL("https://gosno.co/request-quote");
-  url.searchParams.set("origin", origin);
-  url.searchParams.set("destination", isBigSky ? "Big Sky Resort" : destination);
+  url.searchParams.set("origin", ctx.origin);
+  url.searchParams.set(
+    "destination",
+    isBigSky && ctx.direction === "OUTBOUND" ? "Big Sky Resort" : ctx.destination,
+  );
   url.searchParams.set("outboundDate", params.travelDate);
   url.searchParams.set("date", params.travelDate);
   url.searchParams.set("passengers", String(params.passengerCount));
@@ -380,8 +402,10 @@ export function buildGoSnoPrivateGroupInquiryOption(params: {
     operatorName: "GoSno Mountain Transport",
     status: "quote_only",
     nextStep: "request a quote",
-    origin,
-    destination,
+    routeId: ctx.routeId,
+    direction: ctx.direction,
+    origin: ctx.origin,
+    destination: ctx.destination,
     outboundDate: params.travelDate,
     passengers: params.passengerCount,
     standardBagCount: params.standardBagCount,
@@ -389,6 +413,15 @@ export function buildGoSnoPrivateGroupInquiryOption(params: {
     luggageSummary,
     vehicleSuggestion: suggestion,
     referenceCombinedOneWayUsd,
+    priceDisplay,
+    componentFares: {
+      suvOfferId: suvFare.offerId,
+      suvOneWayUsd: suvFare.amountUsd,
+      vanOfferId: vanFare.offerId,
+      vanOneWayUsd: vanFare.amountUsd,
+      missingComponentFare,
+      snapshotExpired: activeState.isExpired,
+    },
     confirmationPolicy: GOSNO_GROUP_CONFIRMATION_POLICY,
     inquiryUrl: url.toString(),
   };
@@ -544,6 +577,60 @@ export function compileApplicableDecisionContext(
 
   const chainLawCode16Active = activeRegById.has("reg:co-passenger-chain-law-code-16");
 
+  const evalNowMs =
+    typeof request.evaluationTimestamp === "string" &&
+    Number.isFinite(Date.parse(request.evaluationTimestamp))
+      ? Date.parse(request.evaluationTimestamp)
+      : undefined;
+
+  const activeGoSnoSnapshotState = getActiveGoSnoRouteFeedSnapshotState({
+    nowMs: evalNowMs,
+  });
+
+  const gosnoRouteCtx = resolveGoSnoRouteContext({
+    offerId: request.offerId,
+    routeId: request.routeId,
+    origin: request.origin,
+    destination: request.destination,
+    direction: request.direction,
+    corridorId: request.corridorId,
+    snapshot: activeGoSnoSnapshotState.snapshot,
+  });
+
+  const gosnoSuvFare = gosnoRouteCtx.isGoSnoCorridorOrRoute
+    ? resolveGoSnoOneWayFare({
+        offerId:
+          request.offerId &&
+          request.offerId.trim().toUpperCase().endsWith("-SUV")
+            ? request.offerId
+            : undefined,
+        routeId: gosnoRouteCtx.routeId ?? request.routeId,
+        origin: gosnoRouteCtx.origin,
+        destination: gosnoRouteCtx.destination,
+        direction: gosnoRouteCtx.direction,
+        corridorId: request.corridorId,
+        vehicleClass: "suv",
+        snapshotState: activeGoSnoSnapshotState,
+      })
+    : null;
+
+  const gosnoVanFare = gosnoRouteCtx.isGoSnoCorridorOrRoute
+    ? resolveGoSnoOneWayFare({
+        offerId:
+          request.offerId &&
+          request.offerId.trim().toUpperCase().endsWith("-VAN")
+            ? request.offerId
+            : undefined,
+        routeId: gosnoRouteCtx.routeId ?? request.routeId,
+        origin: gosnoRouteCtx.origin,
+        destination: gosnoRouteCtx.destination,
+        direction: gosnoRouteCtx.direction,
+        corridorId: request.corridorId,
+        vehicleClass: "van",
+        snapshotState: activeGoSnoSnapshotState,
+      })
+    : null;
+
   const corridorVehicles = model.vehicleClasses.filter((v) =>
     v.corridorIds.includes(request.corridorId),
   );
@@ -551,6 +638,13 @@ export function compileApplicableDecisionContext(
   const vehicleClassEvaluations: CompiledVehicleClassEvaluation[] = corridorVehicles.map((veh) => {
     const constraintCodes: string[] = [];
     const stewardPatch = getStewardVehicleEvidencePatch(veh.vehicleClassId);
+    const matchedGoSnoFare =
+      veh.vehicleClassId === "veh:awd-full-size-suv"
+        ? gosnoSuvFare
+        : veh.vehicleClassId === "veh:private-transit-van-10"
+          ? gosnoVanFare
+          : null;
+
     let passesActiveSegmentRegulations = !disqualifiedByRegSet.has(veh.vehicleClassId);
     if (!passesActiveSegmentRegulations) {
       for (const reg of compiledRegulations) {
@@ -563,6 +657,11 @@ export function compileApplicableDecisionContext(
     if (stewardPatch?.operatingAuthorityValid === false) {
       passesActiveSegmentRegulations = false;
       constraintCodes.push("DISQUALIFIED_STEWARD_OPERATING_AUTHORITY_SUSPENDED");
+    }
+
+    if (matchedGoSnoFare?.status === "currently_unavailable") {
+      passesActiveSegmentRegulations = false;
+      constraintCodes.push("DISQUALIFIED_VEHICLE_CLASS_UNAVAILABLE_ON_ROUTE");
     }
 
     if (chainLawCode16Active) {
@@ -738,21 +837,42 @@ export function compileApplicableDecisionContext(
           : "eligible_alternative";
     }
 
-    const effectiveFixedRateOneWayUsd =
-      veh.vehicleClassId === "veh:awd-full-size-suv" &&
-      request.corridorId === "corridor:denver-breckenridge-i70"
-        ? 399
-        : veh.fixedRateOneWayUsd;
+    const isGoSnoVehicle =
+      veh.vehicleClassId === "veh:awd-full-size-suv" ||
+      veh.vehicleClassId === "veh:private-transit-van-10";
 
-    const compiledPricingNote = veh.quoteOnly
-      ? effectiveFixedRateOneWayUsd !== null
-        ? `$${effectiveFixedRateOneWayUsd} one-way published van rate on gosno.co; live availability API returns quoteOnly: true (subject to luggage/ski-gear fit and dispatch availability).`
-        : "Quote-only (quoteOnly: true) — requires live operator date/cargo dispatch quote; DCC refuses to invent a flat rate."
-      : effectiveFixedRateOneWayUsd !== null
-        ? `$${effectiveFixedRateOneWayUsd} one-way (${veh.pricingModel.replace(/_/g, " ")})`
-        : extraBagFeeTotalUsd > 0
-          ? `Per-seat variable fare + $${extraBagFeeTotalUsd} extra baggage fee ($${veh.extraBagFeeUsd}/extra bag)`
-          : "Per-seat date-variable fare verified on operator rate table.";
+    const effectiveFixedRateOneWayUsd = isGoSnoVehicle
+      ? stewardPatch?.fixedRateOneWayUsd !== undefined
+        ? stewardPatch.fixedRateOneWayUsd
+        : matchedGoSnoFare?.amountUsd ?? null
+      : veh.fixedRateOneWayUsd;
+
+    const effectiveQuoteOnly = isGoSnoVehicle
+      ? stewardPatch?.quoteOnly !== undefined
+        ? stewardPatch.quoteOnly
+        : veh.quoteOnly || Boolean(matchedGoSnoFare?.quoteOnly)
+      : veh.quoteOnly;
+
+    let compiledPricingNote: string;
+    if (isGoSnoVehicle && activeGoSnoSnapshotState.isExpired && stewardPatch?.fixedRateOneWayUsd === undefined) {
+      compiledPricingNote = `${GOSNO_PRICE_FALLBACK_MESSAGE} — saved GoSno route-feed snapshot expired.`;
+    } else if (effectiveQuoteOnly) {
+      if (effectiveFixedRateOneWayUsd !== null) {
+        compiledPricingNote =
+          veh.vehicleClassId === "veh:private-transit-van-10"
+            ? `$${effectiveFixedRateOneWayUsd} one-way published van rate on gosno.co; live availability API returns quoteOnly: true (subject to luggage/ski-gear fit and dispatch availability).`
+            : `$${effectiveFixedRateOneWayUsd} one-way published reference rate on gosno.co; requires quote confirmation for availability and final price.`;
+      } else {
+        compiledPricingNote =
+          "Quote-only (quoteOnly: true) — requires live operator date/cargo dispatch quote; DCC refuses to invent a flat rate.";
+      }
+    } else if (effectiveFixedRateOneWayUsd !== null) {
+      compiledPricingNote = `$${effectiveFixedRateOneWayUsd} one-way (${veh.pricingModel.replace(/_/g, " ")})`;
+    } else if (extraBagFeeTotalUsd > 0) {
+      compiledPricingNote = `Per-seat variable fare + $${extraBagFeeTotalUsd} extra baggage fee ($${veh.extraBagFeeUsd}/extra bag)`;
+    } else {
+      compiledPricingNote = "Per-seat date-variable fare verified on operator rate table.";
+    }
 
     let compiledReason = "";
     if (!passesActiveSegmentRegulations) {
@@ -795,9 +915,22 @@ export function compileApplicableDecisionContext(
       pricingResolution: {
         pricingModel: veh.pricingModel,
         fixedRateOneWayUsd: effectiveFixedRateOneWayUsd,
-        quoteOnly: veh.quoteOnly,
+        quoteOnly: effectiveQuoteOnly,
         estimatedExtraBagFeeUsd: extraBagFeeTotalUsd,
         compiledPricingNote,
+        ...(isGoSnoVehicle
+          ? {
+              matchedOfferId: matchedGoSnoFare?.offerId ?? null,
+              matchedRouteId: matchedGoSnoFare?.routeId ?? null,
+              direction: gosnoRouteCtx.direction,
+              priceDisplay:
+                effectiveFixedRateOneWayUsd !== null
+                  ? `$${effectiveFixedRateOneWayUsd}`
+                  : GOSNO_PRICE_FALLBACK_MESSAGE,
+              canonicalBookingUrl: matchedGoSnoFare?.canonicalBookingUrl ?? null,
+              quoteUrl: matchedGoSnoFare?.quoteUrl ?? null,
+            }
+          : {}),
       },
       compiledReason,
       evidenceVersion: veh.evidenceVersion,
@@ -850,7 +983,9 @@ export function compileApplicableDecisionContext(
     "Live operator dispatch availability for your exact flight arrival timestamp remains verified at booking.",
     ...(topCandidate?.vehicleClassId === "veh:private-transit-van-10"
       ? [
-          "GoSno private passenger van handles up to 10 passengers, subject to luggage and ski-gear fit and availability (GoSno publishes $599 one-way on gosno.co/vail and gosno.co/breckenridge, while /api/availability returns quoteOnly: true for van requests).",
+          topCandidate.pricingResolution.fixedRateOneWayUsd !== null
+            ? `GoSno private passenger van handles up to 10 passengers, subject to luggage and ski-gear fit and availability (GoSno publishes $${topCandidate.pricingResolution.fixedRateOneWayUsd} one-way on gosno.co, while /api/availability returns quoteOnly: true for van requests).`
+            : "GoSno private passenger van handles up to 10 passengers, subject to luggage and ski-gear fit and availability (Check current price with GoSno).",
         ]
       : topCandidate?.pricingResolution.quoteOnly
         ? [
@@ -883,13 +1018,50 @@ export function compileApplicableDecisionContext(
 
   const privateGroupInquiryOption = buildGoSnoPrivateGroupInquiryOption({
     corridorId: request.corridorId,
+    routeId: request.routeId,
+    offerId: request.offerId,
+    direction: request.direction,
     origin: request.origin,
     destination: request.destination,
     travelDate,
     passengerCount,
     standardBagCount,
     skiOrOversizeBagCount,
+    nowMs: evalNowMs,
+    snapshotState: activeGoSnoSnapshotState,
   });
+
+  const gosnoPricingSnapshot: CompiledGoSnoPricingSnapshotSummary | undefined =
+    gosnoRouteCtx.isGoSnoCorridorOrRoute
+      ? {
+          snapshotId: activeGoSnoSnapshotState.snapshot.snapshotId,
+          sourceUrl: activeGoSnoSnapshotState.snapshot.sourceUrl,
+          feedVersion: activeGoSnoSnapshotState.snapshot.feedVersion,
+          feedGeneratedAt: activeGoSnoSnapshotState.snapshot.feedGeneratedAt,
+          contentHash: activeGoSnoSnapshotState.snapshot.contentHash,
+          rawPayloadHash: activeGoSnoSnapshotState.snapshot.rawPayloadHash,
+          fetchedAt: activeGoSnoSnapshotState.snapshot.fetchedAt,
+          expiresAt: activeGoSnoSnapshotState.snapshot.expiresAt,
+          ageMs: activeGoSnoSnapshotState.ageMs,
+          ageLabel: activeGoSnoSnapshotState.ageLabel,
+          isExpired: activeGoSnoSnapshotState.isExpired,
+          freshnessStatus: activeGoSnoSnapshotState.freshnessStatus,
+          lastRefreshStatus:
+            activeGoSnoSnapshotState.refreshMeta.lastRefreshStatus,
+          lastRefreshError:
+            activeGoSnoSnapshotState.refreshMeta.lastRefreshError,
+          lastRefreshAttemptAt:
+            activeGoSnoSnapshotState.refreshMeta.lastRefreshAttemptAt,
+          statusBanner: activeGoSnoSnapshotState.statusBanner,
+          priceFallbackMessage: activeGoSnoSnapshotState.priceFallbackMessage,
+          matchedRouteId: gosnoRouteCtx.routeId,
+          matchedDirection: gosnoRouteCtx.direction,
+          matchedOrigin: gosnoRouteCtx.origin,
+          matchedDestination: gosnoRouteCtx.destination,
+          suvOffer: gosnoSuvFare,
+          vanOffer: gosnoVanFare,
+        }
+      : undefined;
 
   return {
     spec: "dcc-compiled-applicability-outcome/1.0",
@@ -921,5 +1093,7 @@ export function compileApplicableDecisionContext(
       epistemicUnknowns,
     },
     privateGroupInquiryOption,
+    gosnoPricingSnapshot,
   };
 }
+

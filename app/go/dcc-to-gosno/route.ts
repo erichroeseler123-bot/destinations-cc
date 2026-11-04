@@ -124,6 +124,21 @@ export async function GET(request: Request) {
         : "corridor:denver-vail-i70";
     const displayDestination =
       DESTINATION_DISPLAY_MAP[destination] || destination;
+    const directionRaw = clean(incoming.searchParams.get("direction"), 16).toUpperCase();
+    const direction =
+      directionRaw === "RETURN" || directionRaw === "INBOUND"
+        ? "RETURN"
+        : directionRaw === "OUTBOUND"
+          ? "OUTBOUND"
+          : undefined;
+    const routeId = clean(
+      incoming.searchParams.get("route_id") || incoming.searchParams.get("routeId"),
+      64,
+    ) || undefined;
+    const offerId = clean(
+      incoming.searchParams.get("offer_id") || incoming.searchParams.get("offerId"),
+      64,
+    ) || undefined;
     const groupOption = buildGoSnoPrivateGroupInquiryOption({
       corridorId,
       origin: airport || (isBigSky ? "BZN" : "DEN"),
@@ -132,6 +147,9 @@ export async function GET(request: Request) {
       passengerCount: parsedPartySize,
       standardBagCount: standardBags || parsedPartySize,
       skiOrOversizeBagCount: skiBags,
+      direction,
+      routeId,
+      offerId,
     });
 
     if (groupOption && rawLuggage) {

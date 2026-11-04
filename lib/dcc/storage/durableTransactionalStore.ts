@@ -15,6 +15,10 @@ import type {
   PublicMaterialChangeEntry,
   StewardReviewCase,
 } from "../stewardship/evidenceStewardWorkflow";
+import type {
+  GoSnoRouteFeedRefreshMeta,
+  GoSnoRouteFeedVersionedSnapshot,
+} from "../applicability/gosnoRouteFeedSnapshot";
 
 export interface DurableLedgerState {
   schemaVersion: "dcc-durable-transactional-store/1.0";
@@ -29,6 +33,8 @@ export interface DurableLedgerState {
   stewardPublicTimeline: PublicMaterialChangeEntry[];
   stewardVehiclePatchesByClassId: Record<string, StewardVehicleEvidencePatch>;
   stewardLatestSnapshotId: string | null;
+  gosnoRouteFeedSnapshot?: GoSnoRouteFeedVersionedSnapshot | null;
+  gosnoRouteFeedRefreshMeta?: GoSnoRouteFeedRefreshMeta | null;
 }
 
 export const DEFAULT_SEED_PUBLIC_TIMELINE: PublicMaterialChangeEntry[] = [
@@ -73,6 +79,8 @@ export function createInitialDurableLedgerState(
       : [],
     stewardVehiclePatchesByClassId: {},
     stewardLatestSnapshotId: null,
+    gosnoRouteFeedSnapshot: null,
+    gosnoRouteFeedRefreshMeta: null,
   };
 }
 
@@ -111,7 +119,7 @@ function acquireCrossProcessLock(
         err && typeof err === "object" && "code" in err
           ? (err as { code?: string }).code
           : "";
-      if (code !== "EEXIST") {
+      if (code !== "EEXIST" && code !== "EPERM" && code !== "EACCES") {
         throw err;
       }
       try {
@@ -204,6 +212,16 @@ function normalizeLoadedState(raw: unknown): DurableLedgerState {
     stewardLatestSnapshotId:
       typeof obj.stewardLatestSnapshotId === "string"
         ? obj.stewardLatestSnapshotId
+        : null,
+    gosnoRouteFeedSnapshot:
+      obj.gosnoRouteFeedSnapshot &&
+      typeof obj.gosnoRouteFeedSnapshot === "object"
+        ? obj.gosnoRouteFeedSnapshot
+        : null,
+    gosnoRouteFeedRefreshMeta:
+      obj.gosnoRouteFeedRefreshMeta &&
+      typeof obj.gosnoRouteFeedRefreshMeta === "object"
+        ? obj.gosnoRouteFeedRefreshMeta
         : null,
   };
 }
@@ -528,6 +546,21 @@ export async function syncDurableLedgerWithPostgres(options?: {
       );
       if (remoteState.stewardLatestSnapshotId && !localDraft.stewardLatestSnapshotId) {
         localDraft.stewardLatestSnapshotId = remoteState.stewardLatestSnapshotId;
+      }
+      if (
+        remoteState.gosnoRouteFeedSnapshot &&
+        (!localDraft.gosnoRouteFeedSnapshot ||
+          Date.parse(remoteState.gosnoRouteFeedSnapshot.fetchedAt) >
+            Date.parse(localDraft.gosnoRouteFeedSnapshot.fetchedAt))
+      ) {
+        localDraft.gosnoRouteFeedSnapshot = remoteState.gosnoRouteFeedSnapshot;
+      }
+      if (
+        remoteState.gosnoRouteFeedRefreshMeta &&
+        !localDraft.gosnoRouteFeedRefreshMeta
+      ) {
+        localDraft.gosnoRouteFeedRefreshMeta =
+          remoteState.gosnoRouteFeedRefreshMeta;
       }
       const timelineById = new Map<string, PublicMaterialChangeEntry>();
       for (const entry of [

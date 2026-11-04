@@ -30,6 +30,12 @@ export default function ApplicableRouteDecisionPanel({
       ? "Breckenridge"
       : "Vail",
   );
+  const [direction, setDirection] = useState<"OUTBOUND" | "RETURN">(
+    initialOutcome.gosnoPricingSnapshot?.matchedDirection ?? "OUTBOUND",
+  );
+  const [simulateFeedState, setSimulateFeedState] = useState<
+    "live" | "unavailable_feed" | "invalid_data" | "expired_snapshot"
+  >("live");
   const [travelDate, setTravelDate] = useState<string>(
     initialOutcome.normalizedInputs.travelDate,
   );
@@ -58,6 +64,12 @@ export default function ApplicableRouteDecisionPanel({
 
   async function recompileOnServer(nextParams: {
     destination?: string;
+    direction?: "OUTBOUND" | "RETURN";
+    simulateFeedState?:
+      | "live"
+      | "unavailable_feed"
+      | "invalid_data"
+      | "expired_snapshot";
     travelDate?: string;
     passengerCount: number;
     standardBagCount: number;
@@ -68,20 +80,30 @@ export default function ApplicableRouteDecisionPanel({
     setIsCompiling(true);
     try {
       const nextDestination = nextParams.destination ?? destination;
+      const nextDirection = nextParams.direction ?? direction;
+      const nextFeedState = nextParams.simulateFeedState ?? simulateFeedState;
       const nextTravelDate = nextParams.travelDate ?? travelDate;
+      const airport = nextDestination === "Big Sky" ? "BZN" : "DEN";
+      const reqOrigin =
+        nextDirection === "RETURN" ? nextDestination : airport;
+      const reqDest =
+        nextDirection === "RETURN" ? airport : nextDestination;
+
       const res = await fetch("/api/v1/applicability/evaluate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           corridorId: outcome.corridorId,
-          origin: nextDestination === "Big Sky" ? "BZN" : "DEN",
-          destination: nextDestination,
+          direction: nextDirection,
+          origin: reqOrigin,
+          destination: reqDest,
           travelDate: nextTravelDate,
           passengerCount: nextParams.passengerCount,
           standardBagCount: nextParams.standardBagCount,
           skiOrOversizeBagCount: nextParams.skiOrOversizeBagCount,
           partnerDestinationUrl: basePartnerDestinationUrl,
           partnerNetwork: "direct",
+          simulateFeedState: nextFeedState,
           activeSegmentConditions: {
             vailPassChainLawActive: nextParams.vailPassChainLawActive,
             i70TractionLawActive: nextParams.i70TractionLawActive,
@@ -98,6 +120,8 @@ export default function ApplicableRouteDecisionPanel({
       setIsCompiling(false);
     }
   }
+
+  const gosnoSnap = outcome.gosnoPricingSnapshot;
 
   return (
     <section
@@ -128,8 +152,56 @@ export default function ApplicableRouteDecisionPanel({
         </div>
       </div>
 
+      {/* GoSno Route-Feed Snapshot Provenance & Freshness Banner */}
+      {gosnoSnap && (
+        <div
+          data-testid="gosno-route-feed-snapshot-banner"
+          data-freshness-status={gosnoSnap.freshnessStatus}
+          data-matched-route-id={gosnoSnap.matchedRouteId || ""}
+          className={`mt-4 rounded-2xl border p-3.5 text-xs ${
+            gosnoSnap.freshnessStatus === "expired"
+              ? "border-rose-400/40 bg-rose-950/30 text-rose-100"
+              : gosnoSnap.freshnessStatus === "retained_after_failed_refresh"
+                ? "border-amber-400/40 bg-amber-950/30 text-amber-100"
+                : "border-emerald-400/30 bg-emerald-950/20 text-emerald-100"
+          }`}
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="font-bold uppercase tracking-wider">
+              GoSno Route-Feed Snapshot ({gosnoSnap.freshnessStatus}) · Route:{" "}
+              <code className="font-mono text-white">
+                {gosnoSnap.matchedRouteId}
+              </code>
+            </span>
+            <span className="font-mono text-[11px] opacity-90">
+              {gosnoSnap.snapshotId} · {gosnoSnap.ageLabel}
+            </span>
+          </div>
+          <p className="mt-1 leading-relaxed" data-testid="gosno-snapshot-status-text">
+            {gosnoSnap.statusBanner}
+          </p>
+          <div className="mt-2 flex flex-wrap gap-3 font-mono text-[11px]">
+            <span data-testid="gosno-matched-suv-fare">
+              SUV ({gosnoSnap.suvOffer?.offerId ?? "unmatched"}):{" "}
+              <strong>
+                {gosnoSnap.suvOffer?.priceDisplay ??
+                  gosnoSnap.priceFallbackMessage}
+              </strong>
+            </span>
+            <span data-testid="gosno-matched-van-fare">
+              Van ({gosnoSnap.vanOffer?.offerId ?? "unmatched"}):{" "}
+              <strong>
+                {gosnoSnap.vanOffer?.priceDisplay ??
+                  gosnoSnap.priceFallbackMessage}
+              </strong>
+              {gosnoSnap.vanOffer?.quoteOnly ? " (quote required)" : ""}
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Trip Constraint Inputs sent to Deterministic Backend Compiler */}
-      <div className="mt-5 grid gap-4 md:grid-cols-6 rounded-2xl border border-white/10 bg-white/[0.02] p-4">
+      <div className="mt-5 grid gap-4 md:grid-cols-4 rounded-2xl border border-white/10 bg-white/[0.02] p-4">
         <label className="block text-xs text-slate-300">
           <span className="font-semibold uppercase tracking-wider text-slate-400">
             Destination
@@ -142,6 +214,8 @@ export default function ApplicableRouteDecisionPanel({
               setDestination(nextDest);
               void recompileOnServer({
                 destination: nextDest,
+                direction,
+                simulateFeedState,
                 travelDate,
                 passengerCount,
                 standardBagCount,
@@ -162,12 +236,42 @@ export default function ApplicableRouteDecisionPanel({
               "Beaver Creek",
               "Aspen",
               "Snowmass",
+              "Crested Butte",
               "Big Sky",
             ].map((destName) => (
               <option key={destName} value={destName}>
                 {destName}
               </option>
             ))}
+          </select>
+        </label>
+
+        <label className="block text-xs text-slate-300">
+          <span className="font-semibold uppercase tracking-wider text-slate-400">
+            Direction
+          </span>
+          <select
+            data-testid="applicability-direction-select"
+            value={direction}
+            onChange={(e) => {
+              const nextDir = e.target.value as "OUTBOUND" | "RETURN";
+              setDirection(nextDir);
+              void recompileOnServer({
+                destination,
+                direction: nextDir,
+                simulateFeedState,
+                travelDate,
+                passengerCount,
+                standardBagCount,
+                skiOrOversizeBagCount,
+                vailPassChainLawActive,
+                i70TractionLawActive,
+              });
+            }}
+            className="mt-1.5 w-full rounded-lg border border-white/15 bg-slate-900 px-3 py-1.5 text-sm font-semibold text-white"
+          >
+            <option value="OUTBOUND">Airport → Resort (Outbound)</option>
+            <option value="RETURN">Resort → Airport (Return)</option>
           </select>
         </label>
 
@@ -185,6 +289,8 @@ export default function ApplicableRouteDecisionPanel({
               setPassengerCount(next);
               void recompileOnServer({
                 destination,
+                direction,
+                simulateFeedState,
                 travelDate,
                 passengerCount: next,
                 standardBagCount,
@@ -195,6 +301,41 @@ export default function ApplicableRouteDecisionPanel({
             }}
             className="mt-1.5 w-full rounded-lg border border-white/15 bg-slate-900 px-3 py-1.5 text-sm font-semibold text-white"
           />
+        </label>
+
+        <label className="block text-xs text-slate-300">
+          <span className="font-semibold uppercase tracking-wider text-slate-400">
+            Feed Snapshot State
+          </span>
+          <select
+            data-testid="applicability-feed-state-select"
+            value={simulateFeedState}
+            onChange={(e) => {
+              const nextState = e.target.value as
+                | "live"
+                | "unavailable_feed"
+                | "invalid_data"
+                | "expired_snapshot";
+              setSimulateFeedState(nextState);
+              void recompileOnServer({
+                destination,
+                direction,
+                simulateFeedState: nextState,
+                travelDate,
+                passengerCount,
+                standardBagCount,
+                skiOrOversizeBagCount,
+                vailPassChainLawActive,
+                i70TractionLawActive,
+              });
+            }}
+            className="mt-1.5 w-full rounded-lg border border-white/15 bg-slate-900 px-3 py-1.5 text-sm font-semibold text-white"
+          >
+            <option value="live">Live Valid Snapshot</option>
+            <option value="unavailable_feed">Unavailable Feed (Retain Last Valid)</option>
+            <option value="invalid_data">Invalid Feed Data (Retain Last Valid)</option>
+            <option value="expired_snapshot">Expired Snapshot (Fallback)</option>
+          </select>
         </label>
 
         <label className="block text-xs text-slate-300">
@@ -211,6 +352,8 @@ export default function ApplicableRouteDecisionPanel({
               setStandardBagCount(next);
               void recompileOnServer({
                 destination,
+                direction,
+                simulateFeedState,
                 travelDate,
                 passengerCount,
                 standardBagCount: next,
@@ -237,6 +380,8 @@ export default function ApplicableRouteDecisionPanel({
               setSkiOrOversizeBagCount(next);
               void recompileOnServer({
                 destination,
+                direction,
+                simulateFeedState,
                 travelDate,
                 passengerCount,
                 standardBagCount,
@@ -258,6 +403,8 @@ export default function ApplicableRouteDecisionPanel({
               setI70TractionLawActive(next);
               void recompileOnServer({
                 destination,
+                direction,
+                simulateFeedState,
                 travelDate,
                 passengerCount,
                 standardBagCount,
@@ -280,6 +427,8 @@ export default function ApplicableRouteDecisionPanel({
               setVailPassChainLawActive(next);
               void recompileOnServer({
                 destination,
+                direction,
+                simulateFeedState,
                 travelDate,
                 passengerCount,
                 standardBagCount,
@@ -341,8 +490,14 @@ export default function ApplicableRouteDecisionPanel({
             <strong>{outcome.privateGroupInquiryOption.confirmationPolicy}</strong>
           </p>
           <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-            <span className="text-xs text-amber-200/90">
-              Reference combined one-way rate: ${outcome.privateGroupInquiryOption.referenceCombinedOneWayUsd}
+            <span
+              className="text-xs text-amber-200/90"
+              data-testid="gosno-group-estimate-display"
+            >
+              {outcome.privateGroupInquiryOption.referenceCombinedOneWayUsd !==
+              null
+                ? `Reference combined one-way rate: $${outcome.privateGroupInquiryOption.referenceCombinedOneWayUsd}`
+                : `${outcome.privateGroupInquiryOption.priceDisplay} (quote required — no numeric estimate)`}
             </span>
             <a
               href={outcome.privateGroupInquiryOption.inquiryUrl}
@@ -390,6 +545,7 @@ export default function ApplicableRouteDecisionPanel({
         {outcome.vehicleClassEvaluations.map((veh) => (
           <div
             key={veh.vehicleClassId}
+            data-testid={`vehicle-eval-${veh.vehicleClassId}`}
             className={`rounded-2xl border p-4 ${
               veh.vehicleClassId === outcome.recommendedVehicleClassId
                 ? "border-emerald-400/40 bg-emerald-500/10"
@@ -417,9 +573,38 @@ export default function ApplicableRouteDecisionPanel({
             <p className="mt-2 text-xs leading-relaxed text-slate-200">
               {veh.compiledReason}
             </p>
-            <p className="mt-1 text-[11px] text-slate-400">
+            <p
+              className="mt-1 text-[11px] text-slate-400"
+              data-testid={`vehicle-pricing-note-${veh.vehicleClassId}`}
+            >
               {veh.pricingResolution.compiledPricingNote}
             </p>
+            {veh.pricingResolution.matchedOfferId && (
+              <div className="mt-2 flex flex-wrap items-center justify-between gap-2 border-t border-white/10 pt-2 text-[11px]">
+                <span className="font-mono text-slate-300">
+                  Offer:{" "}
+                  <strong className="text-white">
+                    {veh.pricingResolution.matchedOfferId}
+                  </strong>{" "}
+                  ·{" "}
+                  <strong className="text-cyan-200">
+                    {veh.pricingResolution.priceDisplay}
+                  </strong>
+                </span>
+                {veh.pricingResolution.quoteOnly &&
+                  veh.pricingResolution.quoteUrl && (
+                    <a
+                      href={veh.pricingResolution.quoteUrl}
+                      target="_blank"
+                      rel="sponsored noopener noreferrer"
+                      data-testid={`vehicle-quote-link-${veh.vehicleClassId}`}
+                      className="font-semibold text-amber-300 underline hover:text-amber-200"
+                    >
+                      Request Quote / Confirm Availability →
+                    </a>
+                  )}
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -456,3 +641,4 @@ export default function ApplicableRouteDecisionPanel({
     </section>
   );
 }
+
