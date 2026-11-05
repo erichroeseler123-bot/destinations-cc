@@ -74,17 +74,23 @@ export async function GET(request: NextRequest) {
       includeDiscoveryOnly: parseBooleanParam(sp.get("includeDiscoveryOnly")),
       limit: parseNumberParam(sp.get("limit")),
       isTest: parseBooleanParam(sp.get("isTest")),
+      userAgent: request.headers.get("user-agent") || undefined,
+      referer: request.headers.get("referer") || undefined,
+      parentOrigin: sp.get("parentOrigin") || request.headers.get("origin") || undefined,
     };
 
     const result = await matchToursForTrip(matchReq);
     return NextResponse.json(result, { status: 200, headers: CORS_HEADERS });
-  } catch (err) {
+  } catch (err: any) {
+    const statusCode = typeof err?.statusCode === "number" ? err.statusCode : 500;
     return NextResponse.json(
       {
         ok: false,
-        error: err instanceof Error ? err.message : "trip_match_failed",
+        error: err?.code || (err instanceof Error ? err.message : "trip_match_failed"),
+        message: err instanceof Error ? err.message : "trip_match_failed",
+        ...(err?.todayInDestinationTz ? { todayInDestinationTz: err.todayInDestinationTz } : {}),
       },
-      { status: 500, headers: CORS_HEADERS },
+      { status: statusCode, headers: CORS_HEADERS },
     );
   }
 }
@@ -122,17 +128,23 @@ export async function POST(request: NextRequest) {
       includeDiscoveryOnly: body.includeDiscoveryOnly,
       limit: body.limit,
       isTest: body.isTest,
+      userAgent: body.userAgent || request.headers.get("user-agent") || undefined,
+      referer: body.referer || request.headers.get("referer") || undefined,
+      parentOrigin: body.parentOrigin || request.headers.get("origin") || undefined,
     };
 
     const result = await matchToursForTrip(matchReq);
     return NextResponse.json(result, { status: 200, headers: CORS_HEADERS });
-  } catch (err) {
+  } catch (err: any) {
+    const statusCode = typeof err?.statusCode === "number" ? err.statusCode : 500;
     return NextResponse.json(
       {
         ok: false,
-        error: err instanceof Error ? err.message : "trip_match_failed",
+        error: err?.code || (err instanceof Error ? err.message : "trip_match_failed"),
+        message: err instanceof Error ? err.message : "trip_match_failed",
+        ...(err?.todayInDestinationTz ? { todayInDestinationTz: err.todayInDestinationTz } : {}),
       },
-      { status: 500, headers: CORS_HEADERS },
+      { status: statusCode, headers: CORS_HEADERS },
     );
   }
 }

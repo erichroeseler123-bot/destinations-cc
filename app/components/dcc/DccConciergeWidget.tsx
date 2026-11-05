@@ -19,7 +19,14 @@ export type DccConciergeWidgetProps = {
     | "welcometotheswamp"
     | "juneau-flight-deck";
   initialPickupMode?: "any" | PickupFulfillmentType;
+  initialDate?: string;
+  initialChildAges?: string;
+  initialCategory?: string;
+  initialShipArrival?: string;
+  initialAllAboardTime?: string;
   embedMode?: boolean;
+  isTest?: boolean;
+  parentOrigin?: string;
 };
 
 const DESTINATION_OPTIONS = [
@@ -39,6 +46,22 @@ const DESTINATION_OPTIONS = [
   { slug: "tampa", label: "Tampa, FL (earthos:node:us-fl-tampa)" },
   { slug: "denver-colorado", label: "Denver / Winter Park / Red Rocks, CO (earthos:node:us-co-denver)" },
 ];
+
+export function getMinTravelDateIso(): string {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+export function getDefaultFutureTravelDateIso(daysAhead = 14): string {
+  const target = new Date(Date.now() + daysAhead * 86_400_000);
+  const y = target.getFullYear();
+  const m = String(target.getMonth() + 1).padStart(2, "0");
+  const d = String(target.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
 
 function formatPrice(cents: number | null, currency = "USD"): string {
   if (cents === null || !Number.isFinite(cents)) return "Price on request / check live";
@@ -70,10 +93,18 @@ export default function DccConciergeWidget({
   initialPropertySlug = "hotel-monteleone-nola",
   initialSurface = "hotel_concierge",
   initialPickupMode,
+  initialDate,
+  initialChildAges = "",
+  initialCategory,
+  initialShipArrival = "",
+  initialAllAboardTime = "",
   embedMode = false,
+  isTest = false,
+  parentOrigin,
 }: DccConciergeWidgetProps) {
   const defaultHotel =
     HOTEL_CONCIERGE_CONFIGS[initialPropertySlug] || HOTEL_CONCIERGE_CONFIGS["hotel-monteleone-nola"];
+  const minDateIso = getMinTravelDateIso();
 
   const [surface, setSurface] = useState<string>(initialSurface);
   const [propertySlug, setPropertySlug] = useState<string>(defaultHotel.propertySlug);
@@ -87,15 +118,17 @@ export default function DccConciergeWidget({
   const [approvedTourIds, setApprovedTourIds] = useState<string[]>(defaultHotel.approvedTourIds);
   const [showHotelConfigPanel, setShowHotelConfigPanel] = useState<boolean>(false);
 
-  // Guest trip constraints
-  const [date, setDate] = useState<string>("2026-06-15");
+  // Guest trip constraints — default to a future date (+14 days) and 0 children (empty string)
+  const [date, setDate] = useState<string>(
+    () => initialDate || getDefaultFutureTravelDateIso(14),
+  );
   const [adults, setAdults] = useState<number>(2);
-  const [childAgesText, setChildAgesText] = useState<string>("7, 11");
+  const [childAgesText, setChildAgesText] = useState<string>(initialChildAges);
   const [pickupMode, setPickupMode] = useState<"any" | PickupFulfillmentType>(
     initialPickupMode || (defaultHotel.defaultRequiresHotelPickup ? "hotel_pickup" : "any"),
   );
-  const [shipArrival, setShipArrival] = useState<string>("");
-  const [allAboardTime, setAllAboardTime] = useState<string>("");
+  const [shipArrival, setShipArrival] = useState<string>(initialShipArrival);
+  const [allAboardTime, setAllAboardTime] = useState<string>(initialAllAboardTime);
   const [maxWeightLbs, setMaxWeightLbs] = useState<string>("");
   const [requiresWheelchair, setRequiresWheelchair] = useState<boolean>(false);
 
@@ -130,6 +163,17 @@ export default function DccConciergeWidget({
       if (abortRef.current) {
         abortRef.current.abort();
       }
+
+      const trimmedDate = date.trim();
+      if (trimmedDate && /^\d{4}-\d{2}-\d{2}$/.test(trimmedDate) && trimmedDate < minDateIso) {
+        setError(
+          `Selected travel date (${trimmedDate}) is in the past (today is ${minDateIso}). Please choose today or a future travel date.`,
+        );
+        setLoading(false);
+        setCheckingLiveShortlist(false);
+        return;
+      }
+
       const controller = new AbortController();
       abortRef.current = controller;
 
@@ -146,7 +190,7 @@ export default function DccConciergeWidget({
           .map((s) => s.trim())
           .filter(Boolean)
           .map(Number)
-          .filter((n) => Number.isFinite(n) && n >= 0 && n >= 0 && n <= 17);
+          .filter((n) => Number.isFinite(n) && n >= 0 && n <= 17);
 
         const latNum = Number(hotelLat);
         const lngNum = Number(hotelLng);
@@ -154,7 +198,7 @@ export default function DccConciergeWidget({
 
         const payload = {
           destination,
-          date: date.trim() || undefined,
+          date: trimmedDate || undefined,
           adults,
           childAges,
           pickupMode,
@@ -165,6 +209,7 @@ export default function DccConciergeWidget({
           hotelLng: Number.isFinite(lngNum) ? lngNum : undefined,
           approvedTourIds:
             filterToApprovedOnly && approvedTourIds.length > 0 ? approvedTourIds : undefined,
+          category: initialCategory || undefined,
           shipArrival: shipArrival.trim() || undefined,
           allAboardTime: allAboardTime.trim() || undefined,
           maxPassengerWeightLbs: weightNum && Number.isFinite(weightNum) ? weightNum : undefined,
@@ -173,6 +218,8 @@ export default function DccConciergeWidget({
           propertySlug: surface === "hotel_concierge" ? propertySlug : undefined,
           enableShortlistLiveCheck: withShortlistLiveCheck,
           shortlistMaxCount: 4,
+          isTest: isTest || undefined,
+          parentOrigin: parentOrigin || undefined,
         };
 
         const res = await fetch("/api/v1/tours/match", {
@@ -183,7 +230,7 @@ export default function DccConciergeWidget({
         });
         const data = await res.json();
         if (!res.ok || !data.ok) {
-          throw new Error(data.error || `HTTP ${res.status}`);
+          throw new Error(data.message || data.error || `HTTP ${res.status}`);
         }
         setMatchResult(data as TripMatchResponse);
       } catch (err) {
@@ -199,6 +246,7 @@ export default function DccConciergeWidget({
     [
       destination,
       date,
+      minDateIso,
       adults,
       childAgesText,
       pickupMode,
@@ -207,12 +255,15 @@ export default function DccConciergeWidget({
       hotelLng,
       filterToApprovedOnly,
       approvedTourIds,
+      initialCategory,
       shipArrival,
       allAboardTime,
       maxWeightLbs,
       requiresWheelchair,
       surface,
       propertySlug,
+      isTest,
+      parentOrigin,
     ],
   );
 
@@ -248,6 +299,7 @@ export default function DccConciergeWidget({
   return (
     <div
       data-testid="dcc-concierge-widget"
+      data-embed-mode={embedMode ? "true" : "false"}
       className="rounded-2xl border border-slate-800 bg-slate-950/95 text-slate-100 shadow-2xl overflow-hidden"
     >
       {/* Header Bar */}
@@ -429,6 +481,7 @@ export default function DccConciergeWidget({
             <label className="block text-xs font-medium text-slate-300 mb-1">Travel Date</label>
             <input
               type="date"
+              min={minDateIso}
               aria-label="Travel Date"
               data-testid="concierge-date-input"
               value={date}
@@ -453,11 +506,11 @@ export default function DccConciergeWidget({
 
           <div>
             <label className="block text-xs font-medium text-slate-300 mb-1">
-              Children&apos;s Ages (comma-sep)
+              Children&apos;s Ages (optional)
             </label>
             <input
               type="text"
-              placeholder="e.g. 7, 11"
+              placeholder="None (or e.g. 7, 11)"
               aria-label="Children's Ages"
               data-testid="concierge-children-input"
               value={childAgesText}
@@ -573,6 +626,15 @@ export default function DccConciergeWidget({
                 checked, {matchResult.metrics.upstreamRequestsMade} upstream reqs)
               </strong>
             </span>
+            <span>
+              Supported Transfer Evidence:{" "}
+              <strong
+                data-testid="concierge-supported-transfer-count"
+                className="font-mono text-emerald-300"
+              >
+                {matchResult.metrics.supportedVerifiedTransferCount}
+              </strong>
+            </span>
           </div>
           <div className="flex items-center gap-3">
             <span className="text-emerald-400 font-semibold">
@@ -591,7 +653,10 @@ export default function DccConciergeWidget({
       )}
 
       {error && (
-        <div className="m-6 rounded-xl border border-rose-500/40 bg-rose-500/10 p-4 text-xs text-rose-200">
+        <div
+          data-testid="concierge-validation-error"
+          className="m-6 rounded-xl border border-rose-500/40 bg-rose-500/10 p-4 text-xs text-rose-200"
+        >
           {error}
         </div>
       )}
@@ -611,6 +676,17 @@ export default function DccConciergeWidget({
             opt.cruiseScheduleFit?.planningEstimateTransferMinutes ??
             bound?.planningEstimateTransferMinutes ??
             null;
+          const berthOrMeeting =
+            opt.cruiseScheduleFit?.applicableBerthOrMeetingPoint ??
+            bound?.applicableBerthOrMeetingPoint ??
+            opt.pickupAndLocation.applicableBerthOrMeetingPoint ??
+            null;
+          const transferEvidence =
+            opt.cruiseScheduleFit?.transferEvidenceSource ??
+            bound?.transferEvidenceSource ??
+            opt.pickupAndLocation.transferEvidenceSource ??
+            null;
+          const preselection = opt.bookingPath.checkoutPreselection;
 
           return (
             <div
@@ -693,6 +769,15 @@ export default function DccConciergeWidget({
                           : "Transfer Time Unknown"}
                     </span>
 
+                    {berthOrMeeting && (
+                      <span
+                        data-testid="concierge-berth-meeting-point"
+                        className="rounded-md bg-slate-800/90 border border-slate-700 px-2 py-0.5 text-[11px] text-slate-300"
+                      >
+                        Berth / Hub: {berthOrMeeting}
+                      </span>
+                    )}
+
                     {bound?.departureTime && (
                       <span
                         data-testid="concierge-bound-departure-badge"
@@ -736,6 +821,22 @@ export default function DccConciergeWidget({
                   <div className="mt-2">
                     <a
                       href={opt.bookingPath.handoffUrl}
+                      data-tracked-click-url={opt.bookingPath.trackedClickUrl}
+                      onClick={() => {
+                        if (
+                          opt.bookingPath.trackedClickUrl &&
+                          opt.bookingPath.trackedClickUrl.startsWith("/api/v1/ads/click")
+                        ) {
+                          try {
+                            void fetch(opt.bookingPath.trackedClickUrl, {
+                              method: "GET",
+                              keepalive: true,
+                            });
+                          } catch {
+                            // non-blocking click follow telemetry
+                          }
+                        }
+                      }}
                       target="_blank"
                       rel="noopener noreferrer"
                       data-testid="concierge-bound-checkout-link"
@@ -753,6 +854,83 @@ export default function DccConciergeWidget({
                   )}
                 </div>
               </div>
+
+              {/* Checkout Selection Summary (explains provider preselection vs manual checkout selections) */}
+              {preselection && (
+                <div
+                  data-testid="concierge-checkout-preselection-summary"
+                  className="rounded-lg border border-cyan-500/30 bg-cyan-950/20 px-3.5 py-2.5 text-xs space-y-1"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="font-bold text-cyan-300">
+                      Checkout Selection Summary ({preselection.provider.toUpperCase()}):
+                    </span>
+                    <span className="rounded bg-slate-900/90 border border-slate-700 px-2 py-0.5 text-[10px] font-mono text-slate-300">
+                      {preselection.preselectionSupport}
+                    </span>
+                  </div>
+                  <p className="text-slate-200 leading-relaxed">
+                    {preselection.travelerActionSummary}
+                  </p>
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-slate-300 pt-0.5">
+                    <span>
+                      <strong>Date to Select:</strong>{" "}
+                      <code className="text-emerald-300">
+                        {preselection.requiredSelectionsAtCheckout.date || date || "Select date"}
+                      </code>
+                    </span>
+                    <span>
+                      <strong>Travelers:</strong>{" "}
+                      <code className="text-emerald-300">
+                        {preselection.requiredSelectionsAtCheckout.partySummary}
+                      </code>
+                    </span>
+                    {preselection.requiredSelectionsAtCheckout.optionTitle && (
+                      <span>
+                        <strong>Option:</strong>{" "}
+                        <code className="text-emerald-300">
+                          {preselection.requiredSelectionsAtCheckout.optionTitle}
+                          {preselection.requiredSelectionsAtCheckout.optionCode
+                            ? ` (${preselection.requiredSelectionsAtCheckout.optionCode})`
+                            : ""}
+                        </code>
+                      </span>
+                    )}
+                    {preselection.requiredSelectionsAtCheckout.departureTime && (
+                      <span>
+                        <strong>Departure:</strong>{" "}
+                        <code className="text-emerald-300">
+                          {preselection.requiredSelectionsAtCheckout.departureTime}
+                        </code>
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Cheaper / Alternative Option Tradeoffs */}
+              {Array.isArray(opt.alternativeOptionTradeoffs) &&
+                opt.alternativeOptionTradeoffs.length > 0 && (
+                  <div
+                    data-testid="concierge-option-tradeoffs"
+                    className="rounded-lg border border-amber-500/25 bg-amber-950/15 px-3.5 py-2.5 text-xs space-y-1.5"
+                  >
+                    <div className="font-bold text-amber-300">
+                      Alternative Options & Pickup Tradeoffs Preserved ({opt.alternativeOptionTradeoffs.length})
+                    </div>
+                    <ul className="space-y-1 text-slate-300">
+                      {opt.alternativeOptionTradeoffs.slice(0, 3).map((alt) => (
+                        <li key={alt.optionCode} className="flex flex-wrap items-center gap-1.5">
+                          <span className="font-mono text-[11px] text-amber-200">
+                            [{alt.optionCode}]
+                          </span>
+                          <span className="font-semibold text-white">{alt.title}:</span>
+                          <span>{alt.tradeoffSummary}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
 
               {/* Key Facts Row with Explicit Unknown Preservation */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 pt-2 border-t border-slate-800/80 text-xs">
@@ -784,7 +962,7 @@ export default function DccConciergeWidget({
 
                 <div className="rounded-lg bg-slate-950/60 p-2.5 border border-slate-800/80">
                   <div className="text-[10px] uppercase text-slate-400">
-                    Pickup & Meeting Coordinates
+                    Pickup, Berth & Evidence
                   </div>
                   <div className="font-semibold text-white mt-0.5">
                     {bound?.pickupBadgeLabel ||
@@ -800,6 +978,11 @@ export default function DccConciergeWidget({
                       ? `Coords: ${opt.pickupAndLocation.meetingPointLat.toFixed(4)}, ${opt.pickupAndLocation.meetingPointLng?.toFixed(4)}${opt.pickupAndLocation.distanceFromGuestKm !== null ? ` (${opt.pickupAndLocation.distanceFromGuestKm} km)` : ""}`
                       : "Coordinates: Explicit Unknown (No fake city-center fallback)"}
                   </div>
+                  {transferEvidence && (
+                    <div className="text-[10px] font-mono text-emerald-400 mt-0.5">
+                      Source: {transferEvidence}
+                    </div>
+                  )}
                 </div>
 
                 <div className="rounded-lg bg-slate-950/60 p-2.5 border border-slate-800/80">

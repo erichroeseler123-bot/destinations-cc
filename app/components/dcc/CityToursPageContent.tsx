@@ -4,7 +4,9 @@ import { getCityIntents, titleCase } from "@/src/data/city-intents";
 import PoweredByViator from "@/app/components/dcc/PoweredByViator";
 import ToursSearchPanel from "@/app/components/dcc/ToursSearchPanel";
 import ViatorTourGrid from "@/app/components/dcc/ViatorTourGrid";
+import DccConciergeWidget from "@/app/components/dcc/DccConciergeWidget";
 import JsonLd from "@/app/components/dcc/JsonLd";
+import { resolveEarthOSDestinationNode } from "@/lib/dcc/catalog/destinationRegistry";
 import { getViatorActionForPlace } from "@/lib/dcc/internal/viatorAction";
 import { getCategoriesManifest } from "@/lib/dcc/manifests/cityExpansion";
 import { buildBreadcrumbJsonLd } from "@/lib/dcc/jsonld";
@@ -23,6 +25,7 @@ export default async function CityToursPageContent({ cityKey }: CityToursPageCon
   if (!items) notFound();
 
   const cityName = titleCase(normalizedCityKey);
+  const earthosDestination = resolveEarthOSDestinationNode(normalizedCityKey);
   const suggestions = items.slice(0, 6).map((item) => item.query);
   const categoryGuides = (getCategoriesManifest(normalizedCityKey)?.categories || []).slice(0, 8);
 
@@ -87,6 +90,15 @@ export default async function CityToursPageContent({ cityKey }: CityToursPageCon
               </Link>
             </div>
           </header>
+
+          {earthosDestination ? (
+            <DccConciergeWidget
+              initialDestination={earthosDestination.destinationSlug}
+              initialSurface="dcc"
+              initialPickupMode="hotel_pickup"
+              theme="dark"
+            />
+          ) : null}
 
           <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
             <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">

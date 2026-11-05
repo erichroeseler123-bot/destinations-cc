@@ -9,10 +9,16 @@ import { DCC_SITE_TRUTH } from "@/lib/dcc/siteTruth";
 import {
   EARTHOS_DESTINATION_NODES,
   getCompatibilityAliasesForViatorCode,
+  getDurableCatalogSummaryReport,
+  getLatestDestinationBackfillCheckpoint,
+  getRefreshCheckpoint,
+  loadSyncRunsWithPgHydration,
+  queryDurableTourCatalog,
   readLocalCatalogSnapshot,
   recordCatalogSyncRun,
   retireDurableTourRecord,
   upsertDurableTourRecords,
+  upsertRefreshCheckpoint,
   type CatalogSyncRunRecord,
   type ChannelOffer,
   type DurableTourRecord,
@@ -312,6 +318,8 @@ export type VerifiedLandmarkResolution = {
   lng: number;
   transferMinutesFromPier: number | null;
   transferTimeSource: TransferTimeSource;
+  evidenceSource: string | null;
+  applicableBerthOrMeetingPoint: string | null;
   planningEstimateTransferMinutes: number;
   isDowntownShuttleHub?: boolean;
   isPierAdjacent?: boolean;
@@ -326,7 +334,7 @@ export function resolveVerifiedLandmarkCoordinatesAndPierTransfer(
   const norm = text.trim();
   if (!norm) return null;
 
-  // New Orleans verified landmarks
+  // New Orleans verified landmarks (strict address / landmark match only — no generic walking text)
   if (!destinationSlug || destinationSlug === "new-orleans") {
     if (/\b400\s+toulouse\b|\bgray\s+line\s+new\s+orleans\b|\btoulouse\s+st(?:reet)?\s+wharf\b|\bsteamboat\s+natchez\s+dock\b/i.test(norm)) {
       return {
@@ -336,6 +344,9 @@ export function resolveVerifiedLandmarkCoordinatesAndPierTransfer(
         lng: -90.0625,
         transferMinutesFromPier: 20,
         transferTimeSource: "verified_meeting_point",
+        evidenceSource: "verified_landmark_registry:new_orleans_400_toulouse_wharf",
+        applicableBerthOrMeetingPoint:
+          "Port of New Orleans Erato/Julia Cruise Terminal <-> 400 Toulouse St Wharf (Gray Line / Steamboat Natchez Dock)",
         planningEstimateTransferMinutes: 20,
         isDowntownShuttleHub: true,
       };
@@ -349,11 +360,14 @@ export function resolveVerifiedLandmarkCoordinatesAndPierTransfer(
         // Remote rural bayou self-drive site (42 km from cruise pier): transfer requires independent car/taxi confirmation
         transferMinutesFromPier: null,
         transferTimeSource: "planning_estimate",
+        evidenceSource: null,
+        applicableBerthOrMeetingPoint:
+          "Remote Bayou Self-Drive Dock: 5145 Fleming Park Rd, Lafitte, LA (no pier shuttle included)",
         planningEstimateTransferMinutes: 50,
         isRemoteSelfDriveSite: true,
       };
     }
-    if (/\bjackson\s+square\b|\bst\.?\s*louis\s+cathedral\b|\b700\s+decatur\b|\b500\s+st\.?\s*peter\b|\b533\s+st\.?\s*ann\b|\b400\s+royal\s+st\b|\bfrench\s+quarter\s+walking\b/i.test(norm)) {
+    if (/\bjackson\s+square\b|\bst\.?\s*louis\s+cathedral\b|\b700\s+decatur\b|\b500\s+st\.?\s*peter\b|\b533\s+st\.?\s*ann\b|\b400\s+royal\s+st\b/i.test(norm)) {
       return {
         name: "French Quarter Historic Meeting Point (Jackson Square / Decatur St)",
         address: "700 Decatur St / Jackson Square, New Orleans, LA 70116, USA",
@@ -361,10 +375,13 @@ export function resolveVerifiedLandmarkCoordinatesAndPierTransfer(
         lng: -90.0631,
         transferMinutesFromPier: 20,
         transferTimeSource: "verified_meeting_point",
+        evidenceSource: "verified_landmark_registry:new_orleans_jackson_square_decatur",
+        applicableBerthOrMeetingPoint:
+          "Port of New Orleans Erato/Julia Cruise Terminal <-> Jackson Square / 700 Decatur St Meeting Point",
         planningEstimateTransferMinutes: 20,
       };
     }
-    if (/\blafayette\s+cemetery\b|\b1427\s+washington\s+ave\b|\b2727\s+prytania\b|\bgarden\s+district\s+walking\b/i.test(norm)) {
+    if (/\blafayette\s+cemetery\b|\b1427\s+washington\s+ave\b|\b2727\s+prytania\b/i.test(norm)) {
       return {
         name: "Garden District Meeting Point (Washington Ave / Prytania St)",
         address: "1427 Washington Ave, New Orleans, LA 70130, USA",
@@ -372,6 +389,9 @@ export function resolveVerifiedLandmarkCoordinatesAndPierTransfer(
         lng: -90.0828,
         transferMinutesFromPier: 20,
         transferTimeSource: "verified_meeting_point",
+        evidenceSource: "verified_landmark_registry:new_orleans_garden_district_washington_prytania",
+        applicableBerthOrMeetingPoint:
+          "Port of New Orleans Erato/Julia Cruise Terminal <-> 1427 Washington Ave / 2727 Prytania St Meeting Point",
         planningEstimateTransferMinutes: 20,
       };
     }
@@ -383,6 +403,9 @@ export function resolveVerifiedLandmarkCoordinatesAndPierTransfer(
         lng: -90.0669,
         transferMinutesFromPier: 22,
         transferTimeSource: "verified_meeting_point",
+        evidenceSource: "verified_landmark_registry:new_orleans_armstrong_park_701_rampart",
+        applicableBerthOrMeetingPoint:
+          "Port of New Orleans Erato/Julia Cruise Terminal <-> Louis Armstrong Park Arch (701 N Rampart St)",
         planningEstimateTransferMinutes: 22,
       };
     }
@@ -394,13 +417,16 @@ export function resolveVerifiedLandmarkCoordinatesAndPierTransfer(
         lng: -89.7544,
         transferMinutesFromPier: null,
         transferTimeSource: "planning_estimate",
+        evidenceSource: null,
+        applicableBerthOrMeetingPoint:
+          "Remote Swamp Self-Drive Dock: 41847 Hwy 190 E, Slidell, LA (no pier shuttle included)",
         planningEstimateTransferMinutes: 55,
         isRemoteSelfDriveSite: true,
       };
     }
   }
 
-  // Alaska & Caribbean cruise dock landmarks
+  // Alaska & Caribbean cruise dock landmarks (strict dock/berth/address match only)
   if (destinationSlug === "juneau" && /\bmount\s+roberts\s+tramway\b|\b490\s+s\.?\s*franklin\b|\bjuneau\s+cruise\s+ship\s+terminal\b|\baj\s+dock\b|\bfranklin\s+dock\b/i.test(norm)) {
     return {
       name: "Juneau Cruise Ship Terminal / Mount Roberts Tramway",
@@ -409,6 +435,9 @@ export function resolveVerifiedLandmarkCoordinatesAndPierTransfer(
       lng: -134.4048,
       transferMinutesFromPier: 15,
       transferTimeSource: "verified_pier_pickup",
+      evidenceSource: "verified_landmark_registry:juneau_cruise_terminal_490_s_franklin",
+      applicableBerthOrMeetingPoint:
+        "Juneau Cruise Ship Terminal / AJ Dock / Mount Roberts Tramway (490 S Franklin St)",
       planningEstimateTransferMinutes: 15,
       isPierAdjacent: true,
     };
@@ -421,11 +450,14 @@ export function resolveVerifiedLandmarkCoordinatesAndPierTransfer(
       lng: -131.6461,
       transferMinutesFromPier: 15,
       transferTimeSource: "verified_pier_pickup",
+      evidenceSource: "verified_landmark_registry:ketchikan_downtown_berths_1_4_visitors_bureau",
+      applicableBerthOrMeetingPoint:
+        "Ketchikan Downtown Cruise Berths 1–4 / Visitors Bureau Rain Gauge (131 Front St)",
       planningEstimateTransferMinutes: 15,
       isPierAdjacent: true,
     };
   }
-  if (destinationSlug === "skagway" && /\bbroadway\s+dock\b|\brailroad\s+dock\b|\bore\s+dock\b|\bskagway\s+cruise\b/i.test(norm)) {
+  if (destinationSlug === "skagway" && /\bbroadway\s+dock\b|\brailroad\s+dock\b|\bore\s+dock\b/i.test(norm)) {
     return {
       name: "Skagway Cruise Ship Docks",
       address: "Broadway & 2nd Ave, Skagway, AK 99840, USA",
@@ -433,6 +465,9 @@ export function resolveVerifiedLandmarkCoordinatesAndPierTransfer(
       lng: -135.3182,
       transferMinutesFromPier: 15,
       transferTimeSource: "verified_pier_pickup",
+      evidenceSource: "verified_landmark_registry:skagway_railroad_broadway_ore_docks",
+      applicableBerthOrMeetingPoint:
+        "Skagway Railroad Dock / Broadway Dock / Ore Dock Cruise Berths",
       planningEstimateTransferMinutes: 15,
       isPierAdjacent: true,
     };
@@ -445,6 +480,9 @@ export function resolveVerifiedLandmarkCoordinatesAndPierTransfer(
       lng: -86.9739,
       transferMinutesFromPier: 15,
       transferTimeSource: "verified_pier_pickup",
+      evidenceSource: "verified_landmark_registry:cozumel_puerta_maya_international_punta_langosta",
+      applicableBerthOrMeetingPoint:
+        "Cozumel Puerta Maya / SSA International Pier / Punta Langosta Cruise Terminals",
       planningEstimateTransferMinutes: 15,
       isPierAdjacent: true,
     };
@@ -494,8 +532,11 @@ export function classifyOptionFulfillmentAndTransfers(params: {
   transferBeforeMinutes: number | null;
   transferAfterMinutes: number | null;
   transferTimeSource: TransferTimeSource;
+  transferEvidenceSource: string | null;
+  applicableBerthOrMeetingPoint: string | null;
   planningEstimateTransferMinutes: number;
 } {
+  // Resolve verified landmarks ONLY from specific option text or structured meeting point address (never generic product title alone)
   const landmark =
     resolveVerifiedLandmarkCoordinatesAndPierTransfer(
       params.combinedOptionText,
@@ -504,27 +545,33 @@ export function classifyOptionFulfillmentAndTransfers(params: {
     resolveVerifiedLandmarkCoordinatesAndPierTransfer(
       params.productMeetingPointAddress,
       params.destinationSlug,
-    ) ||
-    resolveVerifiedLandmarkCoordinatesAndPierTransfer(
-      params.productTitle,
-      params.destinationSlug,
     );
 
-  // 1. Check Pier Pickup
+  // 1. Check Pier Pickup: ONLY mark "verified_pier_pickup" when backed by a resolved pier-adjacent berth/landmark with explicit transfer minutes.
+  // Never substitute fallback minutes (e.g. ?? 20) or upgrade generic regex matches to verified.
   if (
     params.productHasCruisePortPickup ||
     PIER_PICKUP_TEXT_REGEX.test(params.combinedOptionText) ||
     landmark?.isPierAdjacent
   ) {
+    const hasVerifiedBerthMinutes =
+      Boolean(landmark?.isPierAdjacent) &&
+      typeof landmark?.transferMinutesFromPier === "number" &&
+      Boolean(landmark?.evidenceSource) &&
+      Boolean(landmark?.applicableBerthOrMeetingPoint);
     return {
       pickupFulfillmentType: "pier_pickup",
       meetingPointName: landmark?.name || null,
       meetingPointLat: landmark?.lat ?? params.productMeetingPointLat,
       meetingPointLng: landmark?.lng ?? params.productMeetingPointLng,
-      transferBeforeMinutes: landmark?.transferMinutesFromPier ?? 20,
-      transferAfterMinutes: landmark?.transferMinutesFromPier ?? 20,
-      transferTimeSource: "verified_pier_pickup",
-      planningEstimateTransferMinutes: landmark?.transferMinutesFromPier ?? 20,
+      transferBeforeMinutes: hasVerifiedBerthMinutes ? landmark!.transferMinutesFromPier : null,
+      transferAfterMinutes: hasVerifiedBerthMinutes ? landmark!.transferMinutesFromPier : null,
+      transferTimeSource: hasVerifiedBerthMinutes ? "verified_pier_pickup" : "planning_estimate",
+      transferEvidenceSource: hasVerifiedBerthMinutes ? landmark!.evidenceSource : null,
+      applicableBerthOrMeetingPoint: hasVerifiedBerthMinutes
+        ? landmark!.applicableBerthOrMeetingPoint
+        : null,
+      planningEstimateTransferMinutes: landmark?.planningEstimateTransferMinutes ?? 25,
     };
   }
 
@@ -534,9 +581,14 @@ export function classifyOptionFulfillmentAndTransfers(params: {
     (DOWNTOWN_SHUTTLE_DEPARTURE_TEXT_REGEX.test(params.combinedOptionText) ||
       landmark?.isDowntownShuttleHub)
   ) {
-    const tfMin = landmark?.transferMinutesFromPier ?? null;
-    const tfSource: TransferTimeSource =
-      tfMin !== null ? "verified_meeting_point" : "planning_estimate";
+    const hasVerifiedHubMinutes =
+      typeof landmark?.transferMinutesFromPier === "number" &&
+      Boolean(landmark?.evidenceSource) &&
+      Boolean(landmark?.applicableBerthOrMeetingPoint);
+    const tfMin = hasVerifiedHubMinutes ? landmark!.transferMinutesFromPier : null;
+    const tfSource: TransferTimeSource = hasVerifiedHubMinutes
+      ? "verified_meeting_point"
+      : "planning_estimate";
     return {
       pickupFulfillmentType: "downtown_shuttle_departure",
       meetingPointName: landmark?.name || null,
@@ -545,6 +597,10 @@ export function classifyOptionFulfillmentAndTransfers(params: {
       transferBeforeMinutes: tfMin,
       transferAfterMinutes: tfMin,
       transferTimeSource: tfSource,
+      transferEvidenceSource: hasVerifiedHubMinutes ? landmark!.evidenceSource : null,
+      applicableBerthOrMeetingPoint: hasVerifiedHubMinutes
+        ? landmark!.applicableBerthOrMeetingPoint
+        : null,
       planningEstimateTransferMinutes: landmark?.planningEstimateTransferMinutes ?? 25,
     };
   }
@@ -560,13 +616,21 @@ export function classifyOptionFulfillmentAndTransfers(params: {
       transferBeforeMinutes: null,
       transferAfterMinutes: null,
       transferTimeSource: "planning_estimate",
+      transferEvidenceSource: null,
+      applicableBerthOrMeetingPoint: null,
       planningEstimateTransferMinutes: 30,
     };
   }
 
   // 4. Check Self-Drive / Meet on Site
   if (params.includesPickup === false) {
-    if (landmark && !landmark.isRemoteSelfDriveSite && landmark.transferMinutesFromPier !== null) {
+    if (
+      landmark &&
+      !landmark.isRemoteSelfDriveSite &&
+      typeof landmark.transferMinutesFromPier === "number" &&
+      landmark.evidenceSource &&
+      landmark.applicableBerthOrMeetingPoint
+    ) {
       return {
         pickupFulfillmentType: "self_drive",
         meetingPointName: landmark.name,
@@ -575,6 +639,8 @@ export function classifyOptionFulfillmentAndTransfers(params: {
         transferBeforeMinutes: landmark.transferMinutesFromPier,
         transferAfterMinutes: landmark.transferMinutesFromPier,
         transferTimeSource: "verified_meeting_point",
+        transferEvidenceSource: landmark.evidenceSource,
+        applicableBerthOrMeetingPoint: landmark.applicableBerthOrMeetingPoint,
         planningEstimateTransferMinutes: landmark.planningEstimateTransferMinutes,
       };
     }
@@ -586,6 +652,8 @@ export function classifyOptionFulfillmentAndTransfers(params: {
       transferBeforeMinutes: null,
       transferAfterMinutes: null,
       transferTimeSource: landmark ? "planning_estimate" : "unknown",
+      transferEvidenceSource: null,
+      applicableBerthOrMeetingPoint: landmark?.applicableBerthOrMeetingPoint || null,
       planningEstimateTransferMinutes: landmark?.planningEstimateTransferMinutes ?? 45,
     };
   }
@@ -599,6 +667,8 @@ export function classifyOptionFulfillmentAndTransfers(params: {
     transferBeforeMinutes: null,
     transferAfterMinutes: null,
     transferTimeSource: "unknown",
+    transferEvidenceSource: null,
+    applicableBerthOrMeetingPoint: null,
     planningEstimateTransferMinutes: 45,
   };
 }
@@ -625,6 +695,8 @@ export function parseProductOptionsAndScheduleFromViator(
   tourTransferBeforeMinutes: number | null;
   tourTransferAfterMinutes: number | null;
   tourTransferTimeSource: TransferTimeSource;
+  tourTransferEvidenceSource: string | null;
+  tourApplicableBerthOrMeetingPoint: string | null;
   tourPlanningEstimateTransferMinutes: number;
 } {
   const rawPricingType = String(detail?.pricingInfo?.type || "").toUpperCase();
@@ -780,6 +852,8 @@ export function parseProductOptionsAndScheduleFromViator(
       transferBeforeMinutes: classified.transferBeforeMinutes,
       transferAfterMinutes: classified.transferAfterMinutes,
       transferTimeSource: classified.transferTimeSource,
+      transferEvidenceSource: classified.transferEvidenceSource,
+      applicableBerthOrMeetingPoint: classified.applicableBerthOrMeetingPoint,
       planningEstimateTransferMinutes: classified.planningEstimateTransferMinutes,
       durationMinutes: optDur ?? null,
       fromPriceCents: scheduleMatch?.minPriceCents ?? null,
@@ -813,6 +887,8 @@ export function parseProductOptionsAndScheduleFromViator(
       transferBeforeMinutes: classified.transferBeforeMinutes,
       transferAfterMinutes: classified.transferAfterMinutes,
       transferTimeSource: classified.transferTimeSource,
+      transferEvidenceSource: classified.transferEvidenceSource,
+      applicableBerthOrMeetingPoint: classified.applicableBerthOrMeetingPoint,
       planningEstimateTransferMinutes: classified.planningEstimateTransferMinutes,
       durationMinutes: itemInfo.durationMinutes ?? defaultDurationMinutes,
       fromPriceCents: itemInfo.minPriceCents ?? rawScheduleFrom,
@@ -889,6 +965,14 @@ export function parseProductOptionsAndScheduleFromViator(
       : tourFallbackClassified.transferAfterMinutes;
   const tourTransferTimeSource: TransferTimeSource =
     baseOption?.transferTimeSource || tourFallbackClassified.transferTimeSource;
+  const tourTransferEvidenceSource =
+    baseOption !== undefined
+      ? (baseOption.transferEvidenceSource ?? null)
+      : tourFallbackClassified.transferEvidenceSource;
+  const tourApplicableBerthOrMeetingPoint =
+    baseOption !== undefined
+      ? (baseOption.applicableBerthOrMeetingPoint ?? null)
+      : tourFallbackClassified.applicableBerthOrMeetingPoint;
   const tourPlanningEstimateTransferMinutes =
     baseOption?.planningEstimateTransferMinutes ??
     tourFallbackClassified.planningEstimateTransferMinutes;
@@ -903,6 +987,8 @@ export function parseProductOptionsAndScheduleFromViator(
     tourTransferBeforeMinutes,
     tourTransferAfterMinutes,
     tourTransferTimeSource,
+    tourTransferEvidenceSource,
+    tourApplicableBerthOrMeetingPoint,
     tourPlanningEstimateTransferMinutes,
   };
 }
@@ -1018,7 +1104,10 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
   const maxPages = Math.max(options.maxPagesPerDestination ?? 1, 1);
   const enrichLimit = options.enrichDetailLimitPerDestination ?? 6;
 
-  const existingSnapshot = readLocalCatalogSnapshot();
+  // Load durable catalog records from Postgres (with snapshot fallback in local test mode)
+  const { records: durableRecords } = await queryDurableTourCatalog({
+    includeDiscoveryOnly: true,
+  });
   const allUpsertedRecords: DurableTourRecord[] = [];
   const allSyncRuns: CatalogSyncRunRecord[] = [];
 
@@ -1033,16 +1122,13 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
     let rejectedCount = 0;
     const rejectionReasons: Record<string, number> = {};
 
-    // Determine starting 1-based offset from checkpoint if resumeFromCheckpoint is enabled
+    // Determine starting 1-based offset from durable Postgres checkpoint if resumeFromCheckpoint is enabled
     let initialStartOffset = options.startOffset ?? 1;
+    let checkpointSource = "explicit_or_default";
     if (options.resumeFromCheckpoint) {
-      const priorRun = existingSnapshot.syncRuns.find(
-        (r) => r.provider === "viator" && r.destinationSlug === destSlug && r.status === "completed",
-      );
-      const savedNext = priorRun?.metadata?.nextStartOffset;
-      if (typeof savedNext === "number" && Number.isFinite(savedNext) && savedNext >= 1) {
-        initialStartOffset = savedNext;
-      }
+      const ckpt = await getLatestDestinationBackfillCheckpoint(destSlug);
+      initialStartOffset = ckpt.nextStartOffset;
+      checkpointSource = ckpt.source;
     }
 
     try {
@@ -1383,6 +1469,8 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
             cruiseBufferBeforeMinutes: optionsAndSchedule.tourTransferBeforeMinutes,
             cruiseBufferAfterMinutes: optionsAndSchedule.tourTransferAfterMinutes,
             transferTimeSource: optionsAndSchedule.tourTransferTimeSource,
+            transferEvidenceSource: optionsAndSchedule.tourTransferEvidenceSource,
+            applicableBerthOrMeetingPoint: optionsAndSchedule.tourApplicableBerthOrMeetingPoint,
             planningEstimateTransferMinutes: optionsAndSchedule.tourPlanningEstimateTransferMinutes,
             weatherDependent: isHeli || category === "Swamp & Bayou",
           },
@@ -1416,6 +1504,7 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
               durationMinutes: durationParsed.durationMinutes,
               freeCancellation: cancellationParsed.freeCancellation,
               tourTransferTimeSource: optionsAndSchedule.tourTransferTimeSource,
+              tourTransferEvidenceSource: optionsAndSchedule.tourTransferEvidenceSource,
             }),
             rawFieldsVerified: {
               durationKnown: durationParsed.durationMinutes !== null,
@@ -1438,10 +1527,9 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
         importedCount += 1;
       }
 
-      // Completing 5 pages (or any partial pagination) does NOT mark a destination complete unless
-      // total imported Viator records for this destination cover providerTotalCount.
+      // Count total Viator records for this destination from durable Postgres + current batch
       const existingViatorCodesForDest = new Set(
-        existingSnapshot.records
+        durableRecords
           .filter(
             (r) =>
               r.destinationSlug === destSlug &&
@@ -1477,11 +1565,15 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
           viatorDestinationId: node.viatorDestinationId,
           startOffset: initialStartOffset,
           nextStartOffset,
+          checkpointSource,
           pagesFetched,
           pageSize,
           providerTotalCount,
           totalViatorImportedForDest,
           coverageStatus: isCompleteCoverage ? "complete" : "sampled",
+          connectedProviderCatalogCoverageStatus: isCompleteCoverage
+            ? "complete_provider_catalog"
+            : "sampled_provider_catalog",
           enrichedDetailCount: detailsByCode.size,
           enrichedSchedulesCount: schedulesByCode.size,
           resolvedLocationsCount: resolvedLocationsByRef.size,
@@ -1491,6 +1583,16 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
       };
       allSyncRuns.push(syncRun);
       await recordCatalogSyncRun(syncRun);
+      await upsertRefreshCheckpoint({
+        streamKey: `viator_backfill:${destSlug}`,
+        provider: "viator",
+        destinationSlug: destSlug,
+        cursorValue: syncRun.cursorValue,
+        nextStartOffset,
+        providerTotalCount,
+        status: isCompleteCoverage ? "complete" : "sampled",
+        metadata: syncRun.metadata,
+      });
     } catch (err) {
       const syncRun: CatalogSyncRunRecord = {
         runId,
@@ -1576,6 +1678,8 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
     try {
       const items = await fetchCompaniesItems(fh.shortname);
       const nowIso = new Date().toISOString();
+      const fhEvidenceSource = `fareharbor_operator_dockside_shuttle_manifest:${fh.shortname}`;
+      const fhBerthOrMeeting = `${node.cruisePierName || `${node.displayName} Cruise Dock`} <-> ${fh.meetingPointName}`;
 
       for (const item of items) {
         const title = String(item.name || "").trim();
@@ -1649,6 +1753,8 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
             cruiseBufferBeforeMinutes: 30,
             cruiseBufferAfterMinutes: 30,
             transferTimeSource: "verified_pier_pickup",
+            transferEvidenceSource: fhEvidenceSource,
+            applicableBerthOrMeetingPoint: fhBerthOrMeeting,
             planningEstimateTransferMinutes: 30,
             weatherDependent: true,
             requiresClosedToeShoes: true,
@@ -1689,6 +1795,8 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
               transferBeforeMinutes: 30,
               transferAfterMinutes: 30,
               transferTimeSource: "verified_pier_pickup",
+              transferEvidenceSource: fhEvidenceSource,
+              applicableBerthOrMeetingPoint: fhBerthOrMeeting,
               planningEstimateTransferMinutes: 30,
               durationMinutes,
               fromPriceCents: null,
@@ -1772,27 +1880,29 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
 
   // 3. Authoritative GoSno & PARR Published Offers (replacing deprecated hardcoded records)
   const authoritativePartnerRecords = buildAuthoritativeGoSnoAndParrRecords(targetSlugs);
-  allUpsertedRecords.push(...authoritativePartnerRecords);
+  if (authoritativePartnerRecords.length > 0) {
+    allUpsertedRecords.push(...authoritativePartnerRecords);
 
-  const opSyncRun: CatalogSyncRunRecord = {
-    runId: `sync:authoritative_corridors:denver-colorado:${Date.now()}`,
-    provider: "gosno+parr",
-    destinationSlug: "denver-colorado",
-    status: "completed",
-    cursorValue: "v2-authoritative-gosno-parr",
-    importedCount: authoritativePartnerRecords.length,
-    updatedCount: authoritativePartnerRecords.length,
-    rejectedCount: 0,
-    upstreamRequestCount: 0,
-    rejectionReasons: {},
-    metadata: {
-      note: "Authoritative GoSno route-feed snapshot offers and PARR published private vehicle charters (flat_rate_per_vehicle). Acceptance fixtures and unsupported operator listings are quarantined.",
-    },
-    startedAt: new Date().toISOString(),
-    completedAt: new Date().toISOString(),
-  };
-  allSyncRuns.push(opSyncRun);
-  await recordCatalogSyncRun(opSyncRun);
+    const opSyncRun: CatalogSyncRunRecord = {
+      runId: `sync:authoritative_corridors:denver-colorado:${Date.now()}`,
+      provider: "gosno+parr",
+      destinationSlug: "denver-colorado",
+      status: "completed",
+      cursorValue: "v2-authoritative-gosno-parr",
+      importedCount: authoritativePartnerRecords.length,
+      updatedCount: authoritativePartnerRecords.length,
+      rejectedCount: 0,
+      upstreamRequestCount: 0,
+      rejectionReasons: {},
+      metadata: {
+        note: "Authoritative GoSno route-feed snapshot offers and PARR published private vehicle charters (flat_rate_per_vehicle). Acceptance fixtures and unsupported operator listings are quarantined.",
+      },
+      startedAt: new Date().toISOString(),
+      completedAt: new Date().toISOString(),
+    };
+    allSyncRuns.push(opSyncRun);
+    await recordCatalogSyncRun(opSyncRun);
+  }
 
   const upsertResult = await upsertDurableTourRecords(allUpsertedRecords);
   return {
@@ -1831,36 +1941,52 @@ async function withRetry<T>(
 }
 
 /**
- * Incremental availability & pricing schedule refresh job (/availability/schedules/{code}).
- * Picks active Viator records ordered by oldest schedule refresh / verification timestamp,
- * refreshes their option pricing & start times with retry, and retires deactivated products.
+ * Incremental availability & pricing schedule refresh job.
+ * Uses a SEPARATE availability/pricing change stream (/availability/schedules/modified-since)
+ * with durable Postgres cursor checkpoints, combined with a durable Postgres least-recently-refreshed
+ * schedule queue (reading from Postgres rather than local snapshot).
  */
 export async function runIncrementalScheduleAndPricingRefresh(options: {
   limit?: number;
   destinationSlug?: string;
+  scheduleCursor?: string;
 } = {}) {
   const client = getViatorClient();
-  const snapshot = readLocalCatalogSnapshot();
   const limit = Math.min(Math.max(options.limit ?? 15, 1), 100);
 
-  const candidates = snapshot.records
-    .filter(
-      (r) =>
-        r.primaryProvider === "viator" &&
-        r.active &&
-        !r.quarantined &&
-        (!options.destinationSlug || r.destinationSlug === options.destinationSlug),
-    )
-    .sort((a, b) => {
-      const tsA = Date.parse(
-        (a.provenance as any)?.lastScheduleRefreshAt || a.lastVerifiedAt || a.updatedAt || "1970-01-01",
+  // 1. Load active Viator records from durable Postgres (with snapshot fallback in test mode)
+  const { records: allViatorRecords, storageSource } = await queryDurableTourCatalog({
+    provider: "viator",
+    destinationSlug: options.destinationSlug,
+    includeDiscoveryOnly: true,
+  });
+  const byCode = new Map<string, DurableTourRecord>();
+  for (const r of allViatorRecords) {
+    if (r.active && !r.quarantined) {
+      byCode.set(r.providerProductCode.toUpperCase(), r);
+    }
+  }
+
+  // 2. Read durable availability/pricing change-stream checkpoint from Postgres
+  let effectiveScheduleCursor = options.scheduleCursor;
+  if (!effectiveScheduleCursor) {
+    const ckpt = await getRefreshCheckpoint("viator_availability_schedules_modified_since");
+    if (ckpt?.cursorValue) {
+      effectiveScheduleCursor = ckpt.cursorValue;
+    } else {
+      const syncRuns = await loadSyncRunsWithPgHydration();
+      const priorSchedRun = syncRuns.find(
+        (r) =>
+          r.provider === "viator_schedule_pricing" &&
+          r.status === "completed" &&
+          typeof r.metadata?.nextScheduleStreamCursor === "string" &&
+          (r.metadata.nextScheduleStreamCursor as string).length > 0,
       );
-      const tsB = Date.parse(
-        (b.provenance as any)?.lastScheduleRefreshAt || b.lastVerifiedAt || b.updatedAt || "1970-01-01",
-      );
-      return tsA - tsB;
-    })
-    .slice(0, limit);
+      if (priorSchedRun?.metadata?.nextScheduleStreamCursor) {
+        effectiveScheduleCursor = String(priorSchedRun.metadata.nextScheduleStreamCursor);
+      }
+    }
+  }
 
   const runId = `sync:viator:schedule_pricing_refresh:${Date.now()}`;
   const startedAt = new Date().toISOString();
@@ -1869,10 +1995,68 @@ export async function runIncrementalScheduleAndPricingRefresh(options: {
   let retiredCount = 0;
   let rejectedCount = 0;
   let retryAttemptsTotal = 0;
+  let nextScheduleStreamCursor: string | null = effectiveScheduleCursor || null;
+  let modifiedSchedulesScanned = 0;
+
+  const prioritizedCandidates: DurableTourRecord[] = [];
+  const selectedCodes = new Set<string>();
+
+  // 3. Poll separate Viator /availability/schedules/modified-since change stream
+  try {
+    const { result: schedStreamRes, attempts: streamAttempts } = await withRetry(
+      () =>
+        client.getAvailabilitySchedulesModifiedSince(
+          effectiveScheduleCursor,
+          Math.min(limit * 4, 200),
+        ) as Promise<any>,
+      { maxAttempts: 2, baseDelayMs: 250 },
+    );
+    upstreamRequests += streamAttempts;
+    retryAttemptsTotal += Math.max(streamAttempts - 1, 0);
+    if (typeof schedStreamRes?.nextCursor === "string" && schedStreamRes.nextCursor.trim()) {
+      nextScheduleStreamCursor = schedStreamRes.nextCursor.trim();
+    }
+    const modSchedules: any[] = Array.isArray(schedStreamRes?.availabilitySchedules)
+      ? schedStreamRes.availabilitySchedules
+      : Array.isArray(schedStreamRes?.schedules)
+        ? schedStreamRes.schedules
+        : [];
+    modifiedSchedulesScanned = modSchedules.length;
+    for (const ms of modSchedules) {
+      const code = String(ms?.productCode || "").trim().toUpperCase();
+      const matched = code ? byCode.get(code) : null;
+      if (matched && !selectedCodes.has(code) && prioritizedCandidates.length < limit) {
+        selectedCodes.add(code);
+        prioritizedCandidates.push(matched);
+      }
+    }
+  } catch {
+    // Non-fatal if /availability/schedules/modified-since requires initial cursor or falls back to Postgres queue
+  }
+
+  // 4. Fill remaining capacity from durable Postgres least-recently-refreshed schedule queue
+  const queueSorted = [...allViatorRecords]
+    .filter((r) => r.active && !r.quarantined && !selectedCodes.has(r.providerProductCode.toUpperCase()))
+    .sort((a, b) => {
+      const tsA = Date.parse(
+        (a.provenance as any)?.lastScheduleRefreshAt || a.lastVerifiedAt || a.updatedAt || "1970-01-01",
+      );
+      const tsB = Date.parse(
+        (b.provenance as any)?.lastScheduleRefreshAt || b.lastVerifiedAt || b.updatedAt || "1970-01-01",
+      );
+      return tsA - tsB;
+    });
+
+  for (const item of queueSorted) {
+    if (prioritizedCandidates.length >= limit) break;
+    selectedCodes.add(item.providerProductCode.toUpperCase());
+    prioritizedCandidates.push(item);
+  }
+
   const updatedRecords: DurableTourRecord[] = [];
   const refreshedCodes: string[] = [];
 
-  for (const existing of candidates) {
+  for (const existing of prioritizedCandidates) {
     const code = existing.providerProductCode.toUpperCase();
     const nowIso = new Date().toISOString();
     try {
@@ -1931,11 +2115,14 @@ export async function runIncrementalScheduleAndPricingRefresh(options: {
           cruiseBufferBeforeMinutes: optionsAndSchedule.tourTransferBeforeMinutes,
           cruiseBufferAfterMinutes: optionsAndSchedule.tourTransferAfterMinutes,
           transferTimeSource: optionsAndSchedule.tourTransferTimeSource,
+          transferEvidenceSource: optionsAndSchedule.tourTransferEvidenceSource,
+          applicableBerthOrMeetingPoint: optionsAndSchedule.tourApplicableBerthOrMeetingPoint,
           planningEstimateTransferMinutes: optionsAndSchedule.tourPlanningEstimateTransferMinutes,
         },
         provenance: {
           ...existing.provenance,
-          sourceEndpoint: "/products/{code}+/availability/schedules/{code}",
+          sourceEndpoint:
+            "/availability/schedules/modified-since+/products/{code}+/availability/schedules/{code}",
           fetchedAt: nowIso,
           lastScheduleRefreshAt: nowIso,
         } as any,
@@ -1953,19 +2140,43 @@ export async function runIncrementalScheduleAndPricingRefresh(options: {
     await upsertDurableTourRecords(updatedRecords);
   }
 
+  const cursorOut =
+    nextScheduleStreamCursor || refreshedCodes[refreshedCodes.length - 1] || null;
+
+  await upsertRefreshCheckpoint({
+    streamKey: "viator_availability_schedules_modified_since",
+    provider: "viator_schedule_pricing",
+    destinationSlug: options.destinationSlug || null,
+    cursorValue: cursorOut,
+    nextStartOffset: null,
+    providerTotalCount: allViatorRecords.length,
+    status: "completed",
+    metadata: {
+      storageSource,
+      modifiedSchedulesScanned,
+      candidatesSelected: prioritizedCandidates.length,
+      refreshedCodes,
+      retiredCount,
+    },
+  });
+
   const syncRun: CatalogSyncRunRecord = {
     runId,
     provider: "viator_schedule_pricing",
     destinationSlug: options.destinationSlug || "multi-destination",
     status: "completed",
-    cursorValue: refreshedCodes[refreshedCodes.length - 1] || null,
+    cursorValue: cursorOut,
     importedCount: 0,
     updatedCount,
     rejectedCount,
     upstreamRequestCount: upstreamRequests,
     rejectionReasons: rejectedCount > 0 ? { schedule_refresh_failed: rejectedCount } : {},
     metadata: {
-      candidatesSelected: candidates.length,
+      storageSource,
+      inputScheduleStreamCursor: effectiveScheduleCursor || null,
+      nextScheduleStreamCursor,
+      modifiedSchedulesScanned,
+      candidatesSelected: prioritizedCandidates.length,
       refreshedCodes,
       retiredCount,
       retryAttemptsTotal,
@@ -1979,31 +2190,38 @@ export async function runIncrementalScheduleAndPricingRefresh(options: {
 
 /**
  * Incremental refresh job using Viator /products/modified-since cursor pagination.
- * Supports durable checkpoint resumption, exponential backoff retries, product retirement
- * handling (INACTIVE -> active: false), and optional schedule/pricing refresh.
+ * Reads checkpoints and catalog state from durable Postgres, supports exponential backoff retries,
+ * product retirement handling (INACTIVE -> active: false), and separate schedule/pricing stream.
  */
 export async function runIncrementalViatorCatalogRefresh(options: IncrementalRefreshOptions = {}) {
   const client = getViatorClient();
-  const snapshot = readLocalCatalogSnapshot();
+  const { records: durableViatorRecords, storageSource } = await queryDurableTourCatalog({
+    provider: "viator",
+    includeDiscoveryOnly: true,
+  });
   const existingByProviderCode = new Map<string, DurableTourRecord>();
-  for (const rec of snapshot.records) {
-    if (rec.primaryProvider === "viator") {
-      existingByProviderCode.set(rec.providerProductCode.toUpperCase(), rec);
-    }
+  for (const rec of durableViatorRecords) {
+    existingByProviderCode.set(rec.providerProductCode.toUpperCase(), rec);
   }
 
-  // Resume from durable checkpoint cursor if no explicit cursor was passed
+  // Resume from durable Postgres checkpoint cursor if no explicit cursor was passed
   let effectiveCursor = options.cursor;
   if (!effectiveCursor) {
-    const priorIncremental = snapshot.syncRuns.find(
-      (r) =>
-        r.provider === "viator_incremental" &&
-        r.status === "completed" &&
-        typeof r.cursorValue === "string" &&
-        r.cursorValue.length > 0,
-    );
-    if (priorIncremental?.cursorValue) {
-      effectiveCursor = priorIncremental.cursorValue;
+    const ckpt = await getRefreshCheckpoint("viator_products_modified_since");
+    if (ckpt?.cursorValue) {
+      effectiveCursor = ckpt.cursorValue;
+    } else {
+      const syncRuns = await loadSyncRunsWithPgHydration();
+      const priorIncremental = syncRuns.find(
+        (r) =>
+          r.provider === "viator_incremental" &&
+          r.status === "completed" &&
+          typeof r.cursorValue === "string" &&
+          r.cursorValue.length > 0,
+      );
+      if (priorIncremental?.cursorValue) {
+        effectiveCursor = priorIncremental.cursorValue;
+      }
     }
   }
 
@@ -2098,6 +2316,8 @@ export async function runIncrementalViatorCatalogRefresh(options: IncrementalRef
           cruiseBufferBeforeMinutes: optionsAndSchedule.tourTransferBeforeMinutes,
           cruiseBufferAfterMinutes: optionsAndSchedule.tourTransferAfterMinutes,
           transferTimeSource: optionsAndSchedule.tourTransferTimeSource,
+          transferEvidenceSource: optionsAndSchedule.tourTransferEvidenceSource,
+          applicableBerthOrMeetingPoint: optionsAndSchedule.tourApplicableBerthOrMeetingPoint,
           planningEstimateTransferMinutes: optionsAndSchedule.tourPlanningEstimateTransferMinutes,
         },
         provenance: {
@@ -2115,6 +2335,24 @@ export async function runIncrementalViatorCatalogRefresh(options: IncrementalRef
     if (updatedRecords.length > 0) {
       await upsertDurableTourRecords(updatedRecords);
     }
+
+    await upsertRefreshCheckpoint({
+      streamKey: "viator_products_modified_since",
+      provider: "viator_incremental",
+      destinationSlug: null,
+      cursorValue: nextCursor,
+      nextStartOffset: null,
+      providerTotalCount: durableViatorRecords.length,
+      status: "completed",
+      metadata: {
+        storageSource,
+        inputCursor: effectiveCursor || null,
+        nextCursor,
+        modifiedProductsScanned: modProducts.length,
+        catalogMatchesUpdated: updatedCount,
+        retiredCount,
+      },
+    });
 
     let scheduleRefreshRun: CatalogSyncRunRecord | null = null;
     if (options.includeScheduleAndPricingRefresh !== false) {
@@ -2135,6 +2373,7 @@ export async function runIncrementalViatorCatalogRefresh(options: IncrementalRef
       upstreamRequestCount: upstreamRequests + (scheduleRefreshRun?.upstreamRequestCount ?? 0),
       rejectionReasons: {},
       metadata: {
+        storageSource,
         inputCursor: effectiveCursor || null,
         nextCursor,
         modifiedProductsScanned: modProducts.length,
@@ -2171,6 +2410,85 @@ export async function runIncrementalViatorCatalogRefresh(options: IncrementalRef
     await recordCatalogSyncRun(syncRun);
     return syncRun;
   }
+}
+
+/**
+ * Background job that resumes incomplete destination backfill checkpoints from durable Postgres.
+ * Prioritizes short Alaska destination tails first, then advances remaining sampled destinations
+ * ordered by smallest remaining tail / lowest imported count so every cron execution makes durable progress.
+ */
+export async function runResumableDestinationBackfillBatch(options: {
+  destinations?: string[];
+  maxDestinationsPerRun?: number;
+  perDestinationLimit?: number;
+  maxPagesPerDestination?: number;
+  enrichDetailLimitPerDestination?: number;
+} = {}) {
+  const maxDestinations = Math.min(Math.max(options.maxDestinationsPerRun ?? 2, 1), 15);
+  const perDestinationLimit = Math.min(Math.max(options.perDestinationLimit ?? 50, 1), 50);
+  const maxPagesPerDestination = Math.max(options.maxPagesPerDestination ?? 2, 1);
+  const enrichDetailLimitPerDestination = Math.max(
+    options.enrichDetailLimitPerDestination ?? 8,
+    0,
+  );
+
+  let targetDestinations: string[] = [];
+  if (options.destinations && options.destinations.length > 0) {
+    targetDestinations = options.destinations;
+  } else {
+    const summary = await getDurableCatalogSummaryReport();
+    const allSlugs = Object.keys(EARTHOS_DESTINATION_NODES);
+    const alaskaSlugs = new Set(["juneau", "skagway", "ketchikan", "seward", "denali"]);
+
+    const incompleteSlugs = allSlugs.filter((slug) => {
+      const stats = summary.byDestination[slug];
+      return !stats || stats.coverageStatus !== "complete";
+    });
+
+    incompleteSlugs.sort((a, b) => {
+      const aAlaska = alaskaSlugs.has(a) ? 0 : 1;
+      const bAlaska = alaskaSlugs.has(b) ? 0 : 1;
+      if (aAlaska !== bAlaska) return aAlaska - bAlaska;
+      const statsA = summary.byDestination[a];
+      const statsB = summary.byDestination[b];
+      const remA =
+        statsA?.providerTotalAvailableCount != null
+          ? Math.max(0, statsA.providerTotalAvailableCount - statsA.viatorImportedCount)
+          : 9999;
+      const remB =
+        statsB?.providerTotalAvailableCount != null
+          ? Math.max(0, statsB.providerTotalAvailableCount - statsB.viatorImportedCount)
+          : 9999;
+      return remA - remB;
+    });
+
+    targetDestinations = incompleteSlugs.slice(0, maxDestinations);
+  }
+
+  if (targetDestinations.length === 0) {
+    return {
+      resumedDestinations: [] as string[],
+      upsertedCount: 0,
+      persistedToPostgres: true,
+      syncRuns: [] as CatalogSyncRunRecord[],
+      note: "All 15 destinations have reached 100% connected provider catalog coverage.",
+    };
+  }
+
+  const ingestionRes = await runUniversalCatalogIngestion({
+    destinations: targetDestinations,
+    perDestinationLimit,
+    maxPagesPerDestination,
+    enrichDetailLimitPerDestination,
+    resumeFromCheckpoint: true,
+  });
+
+  return {
+    resumedDestinations: targetDestinations,
+    upsertedCount: ingestionRes.upsertedCount,
+    persistedToPostgres: ingestionRes.persistedToPostgres,
+    syncRuns: ingestionRes.syncRuns,
+  };
 }
 
 export function buildAuthoritativeGoSnoAndParrRecords(targetSlugs: string[]): DurableTourRecord[] {

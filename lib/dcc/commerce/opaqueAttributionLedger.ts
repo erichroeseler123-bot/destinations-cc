@@ -78,6 +78,8 @@ export interface OpaqueClickReconciledOutcome {
   trafficClass?: TrafficClass;
 }
 
+export type AttributionRecordStage = "recommendation" | "outbound_click";
+
 export interface OpaqueClickAttributionRecord {
   clickId: string;
   handoffId: string | null;
@@ -93,6 +95,9 @@ export interface OpaqueClickAttributionRecord {
   tripDetails?: HandoffTripDetails | null;
   isTest?: boolean;
   trafficClass?: TrafficClass;
+  recordStage?: AttributionRecordStage;
+  followedAt?: string | null;
+  clickCount?: number;
   duplicateDeliveryCount?: number;
   provider: CommercialProvider;
   productCode: string;
@@ -122,6 +127,7 @@ export interface IssueOpaqueClickAttributionInput {
   originatingPage?: string | null;
   tripDetails?: HandoffTripDetails | null;
   isTest?: boolean;
+  recordStage?: AttributionRecordStage;
   provider: CommercialProvider;
   productCode: string;
   productDestinationUrl: string;
@@ -162,11 +168,17 @@ export interface PartnerCsvReconciliationSummary {
 export interface FunnelClassMetrics {
   trafficClass: TrafficClass;
   newVisitors: number;
+  recommendationsIssued: number;
+  recommendationOnlyRecords: number;
   followedHandoffs: number;
+  actualOutboundClicks: number;
   confirmedPaidBookings: number;
   cancelledOrRefundedBookings: number;
   duplicateDeliveriesIgnored: number;
   grossConfirmedRevenueUsd: number;
+  estimatedUnsettledCommissionUsd: number;
+  settledReconciledCommissionUsd: number;
+  reversedCommissionUsd: number;
   byDirection: {
     OUTBOUND: { handoffs: number; confirmedPaidBookings: number };
     RETURN: { handoffs: number; confirmedPaidBookings: number };
@@ -587,6 +599,46 @@ function inferTripDetailsFromUrlAndInput(
   }
 }
 
+export function isDemoOrAutomatedVerificationTraffic(params: {
+  isTest?: boolean;
+  originatingPage?: string | null;
+  decisionReceiptId?: string | null;
+  handoffId?: string | null;
+  userAgent?: string | null;
+  referer?: string | null;
+}): boolean {
+  if (params.isTest === true) return true;
+  const page = String(params.originatingPage || "").toLowerCase();
+  if (
+    page.includes("/demo/") ||
+    page.includes("demo/concierge-widget") ||
+    page.includes("/qa") ||
+    page.includes("playwright")
+  ) {
+    return true;
+  }
+  const ref = String(params.referer || "").toLowerCase();
+  if (ref.includes("/demo/concierge-widget") || ref.includes("/demo/")) {
+    return true;
+  }
+  const ua = String(params.userAgent || "").toLowerCase();
+  if (ua.includes("headlesschrome") || ua.includes("playwright") || ua.includes("puppeteer")) {
+    return true;
+  }
+  const rcpt = String(params.decisionReceiptId || "");
+  if (
+    rcpt === "rcpt:sha256:bc44b315bdcb8ed5d4a806ed2ed729b76b26621a1a28bb1eda5596271d22ead0" ||
+    /:(test|sim|qa|e2e):/i.test(rcpt)
+  ) {
+    return true;
+  }
+  const hoff = String(params.handoffId || "");
+  if (/^(test|sim|qa|e2e)[-_]/i.test(hoff)) {
+    return true;
+  }
+  return false;
+}
+
 export function issueOpaqueClickAttribution(
   input: IssueOpaqueClickAttributionInput,
 ): OpaqueClickAttributionRecord {
@@ -609,8 +661,20 @@ export function issueOpaqueClickAttribution(
       outboundUrl,
       input,
     );
-    const isTest = Boolean(input.isTest);
+    const resolvedOriginatingPage =
+      inferredTripDetails?.originatingPage ||
+      input.originatingPage?.trim() ||
+      "/transportation/colorado";
+    const isTest = isDemoOrAutomatedVerificationTraffic({
+      isTest: input.isTest,
+      originatingPage: resolvedOriginatingPage,
+      decisionReceiptId: input.decisionReceiptId,
+      handoffId: input.handoffId,
+    });
     const trafficClass: TrafficClass = isTest ? "test" : "production";
+    const recordStage: AttributionRecordStage =
+      input.recordStage === "recommendation" ? "recommendation" : "outbound_click";
+    const nowIso = new Date().toISOString();
 
     const record: OpaqueClickAttributionRecord = {
       clickId,
@@ -628,13 +692,13 @@ export function issueOpaqueClickAttribution(
       applicabilityOutcomeHash: input.applicabilityOutcomeHash?.trim() || null,
       originatingSite:
         input.originatingSite?.trim() || "destinationcommandcenter.com",
-      originatingPage:
-        inferredTripDetails?.originatingPage ||
-        input.originatingPage?.trim() ||
-        "/transportation/colorado",
+      originatingPage: resolvedOriginatingPage,
       tripDetails: inferredTripDetails,
       isTest,
       trafficClass,
+      recordStage,
+      followedAt: recordStage === "outbound_click" ? nowIso : null,
+      clickCount: recordStage === "outbound_click" ? 1 : 0,
       duplicateDeliveryCount: 0,
       provider: input.provider,
       productCode: input.productCode.trim(),
@@ -643,7 +707,7 @@ export function issueOpaqueClickAttribution(
       strippedPiiParams,
       reconciliationState: "pending_partner_event",
       reconciledOutcomes: [],
-      createdAt: new Date().toISOString(),
+      createdAt: nowIso,
     };
 
     state.opaqueClicksById[clickId] = record;
@@ -652,6 +716,40 @@ export function issueOpaqueClickAttribution(
     }
 
     return record;
+  });
+}
+
+export function recordOutboundClickFollow(
+  clickIdInput: string,
+  options?: {
+    isTest?: boolean;
+    userAgent?: string | null;
+    referer?: string | null;
+  },
+): OpaqueClickAttributionRecord | null {
+  const norm = extractClickIdFromTrackingValue(clickIdInput) || clickIdInput.trim().toLowerCase();
+  if (!norm) return null;
+  return runDurableLedgerTransaction((state) => {
+    const rec = state.opaqueClicksById[norm];
+    if (!rec) return null;
+    const nowIso = new Date().toISOString();
+    rec.recordStage = "outbound_click";
+    rec.followedAt = rec.followedAt || nowIso;
+    rec.clickCount = (rec.clickCount || 0) + 1;
+    if (
+      isDemoOrAutomatedVerificationTraffic({
+        isTest: options?.isTest || rec.isTest,
+        originatingPage: rec.originatingPage,
+        decisionReceiptId: rec.decisionReceiptId,
+        handoffId: rec.handoffId,
+        userAgent: options?.userAgent,
+        referer: options?.referer,
+      })
+    ) {
+      rec.isTest = true;
+      rec.trafficClass = "test";
+    }
+    return rec;
   });
 }
 
@@ -989,11 +1087,17 @@ function createEmptyFunnelClassMetrics(
   return {
     trafficClass,
     newVisitors: 0,
+    recommendationsIssued: 0,
+    recommendationOnlyRecords: 0,
     followedHandoffs: 0,
+    actualOutboundClicks: 0,
     confirmedPaidBookings: 0,
     cancelledOrRefundedBookings: 0,
     duplicateDeliveriesIgnored: 0,
     grossConfirmedRevenueUsd: 0,
+    estimatedUnsettledCommissionUsd: 0,
+    settledReconciledCommissionUsd: 0,
+    reversedCommissionUsd: 0,
     byDirection: {
       OUTBOUND: { handoffs: 0, confirmedPaidBookings: 0 },
       RETURN: { handoffs: 0, confirmedPaidBookings: 0 },
@@ -1016,7 +1120,15 @@ export function getFunnelMetricsReport(options?: {
   const visitors = Object.values(state.funnelVisitorsById || {});
   for (const vis of visitors) {
     if (filterPage && vis.sourcePage !== filterPage) continue;
-    const bucket = vis.isTest || vis.trafficClass === "test" ? test : production;
+    const isTestVisitor = Boolean(
+      vis.isTest ||
+        vis.trafficClass === "test" ||
+        isDemoOrAutomatedVerificationTraffic({
+          isTest: vis.isTest,
+          originatingPage: vis.sourcePage,
+        }),
+    );
+    const bucket = isTestVisitor ? test : production;
     bucket.newVisitors += 1;
   }
 
@@ -1041,8 +1153,13 @@ export function getFunnelMetricsReport(options?: {
     const isTestRecord = Boolean(
       click.isTest ||
         click.trafficClass === "test" ||
-        click.decisionReceiptId ===
-          "rcpt:sha256:bc44b315bdcb8ed5d4a806ed2ed729b76b26621a1a28bb1eda5596271d22ead0" ||
+        isDemoOrAutomatedVerificationTraffic({
+          isTest: click.isTest,
+          originatingPage: click.originatingPage,
+          decisionReceiptId: click.decisionReceiptId,
+          userAgent: click.userAgent,
+          referer: click.referer,
+        }) ||
         click.reconciledOutcomes.some(
           (o) =>
             o.isTest ||
@@ -1053,8 +1170,16 @@ export function getFunnelMetricsReport(options?: {
         ),
     );
     const bucket = isTestRecord ? test : production;
-    bucket.followedHandoffs += 1;
+    bucket.recommendationsIssued += 1;
     bucket.duplicateDeliveriesIgnored += click.duplicateDeliveryCount || 0;
+
+    const isUnfollowedRecommendation =
+      click.recordStage === "recommendation" ||
+      (!click.recordStage &&
+        Boolean(click.decisionReceiptId?.startsWith("rcpt:dcc:match:")) &&
+        !click.followedAt &&
+        !(typeof click.clickCount === "number" && click.clickCount > 0) &&
+        click.reconciledOutcomes.length === 0);
 
     const dirKey: "OUTBOUND" | "RETURN" | "ROUND_TRIP" =
       click.tripDetails?.direction === "RETURN"
@@ -1063,7 +1188,14 @@ export function getFunnelMetricsReport(options?: {
             click.tripDetails?.tripType === "ROUND_TRIP"
           ? "ROUND_TRIP"
           : "OUTBOUND";
-    bucket.byDirection[dirKey].handoffs += 1;
+
+    if (isUnfollowedRecommendation) {
+      bucket.recommendationOnlyRecords += 1;
+    } else {
+      bucket.followedHandoffs += 1;
+      bucket.actualOutboundClicks += 1;
+      bucket.byDirection[dirKey].handoffs += 1;
+    }
 
     // Group outcomes by unique providerBookingRef to prevent double-counting across CONFIRMED + FULFILLED events
     const outcomesByBookingRef = new Map<
@@ -1087,19 +1219,91 @@ export function getFunnelMetricsReport(options?: {
           o.eventType === "BOOKING_CONFIRMED" ||
           o.eventType === "BOOKING_FULFILLED",
       );
+      const outcomeWithPaidCommission = [...outcomes]
+        .reverse()
+        .find(
+          (o) =>
+            typeof o.paidCommissionUsd === "number" &&
+            Number.isFinite(o.paidCommissionUsd),
+        );
+      const outcomeWithEstimatedCommission = [...outcomes]
+        .reverse()
+        .find(
+          (o) =>
+            typeof o.estimatedCommissionUsd === "number" &&
+            Number.isFinite(o.estimatedCommissionUsd),
+        );
+
       if (isCancelledOrRefunded) {
         bucket.cancelledOrRefundedBookings += 1;
+        const nonZeroPaidOutcome = [...outcomes]
+          .reverse()
+          .find(
+            (o) =>
+              typeof o.paidCommissionUsd === "number" &&
+              Number.isFinite(o.paidCommissionUsd) &&
+              Math.abs(o.paidCommissionUsd) > 0,
+          );
+        const nonZeroEstimatedOutcome = [...outcomes]
+          .reverse()
+          .find(
+            (o) =>
+              typeof o.estimatedCommissionUsd === "number" &&
+              Number.isFinite(o.estimatedCommissionUsd) &&
+              Math.abs(o.estimatedCommissionUsd) > 0,
+          );
+        const reversedComm =
+          nonZeroPaidOutcome?.paidCommissionUsd != null
+            ? Math.abs(nonZeroPaidOutcome.paidCommissionUsd)
+            : nonZeroEstimatedOutcome?.estimatedCommissionUsd != null
+              ? Math.abs(nonZeroEstimatedOutcome.estimatedCommissionUsd)
+              : 0;
+        if (reversedComm > 0) {
+          bucket.reversedCommissionUsd = Number(
+            (bucket.reversedCommissionUsd + reversedComm).toFixed(2),
+          );
+        }
       } else if (confirmedOutcome) {
         bucket.confirmedPaidBookings += 1;
         bucket.byDirection[dirKey].confirmedPaidBookings += 1;
+        const grossOutcome =
+          [...outcomes]
+            .reverse()
+            .find(
+              (o) =>
+                typeof o.grossRevenueUsd === "number" &&
+                Number.isFinite(o.grossRevenueUsd),
+            ) ?? confirmedOutcome;
         if (
-          typeof confirmedOutcome.grossRevenueUsd === "number" &&
-          Number.isFinite(confirmedOutcome.grossRevenueUsd)
+          typeof grossOutcome.grossRevenueUsd === "number" &&
+          Number.isFinite(grossOutcome.grossRevenueUsd)
         ) {
           bucket.grossConfirmedRevenueUsd = Number(
             (
-              bucket.grossConfirmedRevenueUsd +
-              confirmedOutcome.grossRevenueUsd
+              bucket.grossConfirmedRevenueUsd + grossOutcome.grossRevenueUsd
+            ).toFixed(2),
+          );
+        }
+
+        if (outcomeWithPaidCommission?.paidCommissionUsd != null) {
+          const paidComm = outcomeWithPaidCommission.paidCommissionUsd;
+          if (paidComm >= 0) {
+            bucket.settledReconciledCommissionUsd = Number(
+              (bucket.settledReconciledCommissionUsd + paidComm).toFixed(2),
+            );
+          } else {
+            bucket.reversedCommissionUsd = Number(
+              (bucket.reversedCommissionUsd + Math.abs(paidComm)).toFixed(2),
+            );
+          }
+        } else if (
+          outcomeWithEstimatedCommission?.estimatedCommissionUsd != null &&
+          outcomeWithEstimatedCommission.estimatedCommissionUsd > 0
+        ) {
+          bucket.estimatedUnsettledCommissionUsd = Number(
+            (
+              bucket.estimatedUnsettledCommissionUsd +
+              outcomeWithEstimatedCommission.estimatedCommissionUsd
             ).toFixed(2),
           );
         }

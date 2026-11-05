@@ -24,6 +24,8 @@ import LfsTrustStrip from "@/components/LfsTrustStrip";
 import DccNetworkStrip from "@/components/DccNetworkStrip";
 import { getViatorActionForPlace } from "@/lib/dcc/internal/viatorAction";
 import TravelReferenceExperience from "@/app/components/dcc/TravelReferenceExperience";
+import DccConciergeWidget from "@/app/components/dcc/DccConciergeWidget";
+import { resolveEarthOSDestinationNode } from "@/lib/dcc/catalog/destinationRegistry";
 import { getPublishedTravelReferenceNodeById } from "@/lib/dcc/travelReference";
 import { getPublicationManifestEntry } from "@/src/data/publication-manifest";
 
@@ -360,6 +362,9 @@ export async function renderPortPage(slug: string, isLfse = false) {
     port.slug === "juneau" || port.slug === "new-orleans"
       ? await getPublishedTravelReferenceNodeById(port.slug)
       : null;
+  const earthosDestination =
+    resolveEarthOSDestinationNode(port.slug) ||
+    resolveEarthOSDestinationNode(port.slug.replace(/-alaska$/, ""));
   const portLat = port.lat ?? portReferenceNode?.primaryCoordinate.lat;
   const portLng = port.lng ?? port.lon ?? portReferenceNode?.primaryCoordinate.lng;
 
@@ -394,6 +399,17 @@ export async function renderPortPage(slug: string, isLfse = false) {
         }}
       />
       <PortAuthorityTemplate port={port} config={config} />
+      {earthosDestination ? (
+        <section className="max-w-6xl mx-auto px-6 py-8">
+          <DccConciergeWidget
+            initialDestination={earthosDestination.destinationSlug}
+            initialPropertySlug={port.slug}
+            initialSurface="cruisepromenade"
+            initialPickupMode="pier_pickup"
+            theme="dark"
+          />
+        </section>
+      ) : null}
       {portReferenceNode ? (
         <TravelReferenceExperience node={portReferenceNode} embedded />
       ) : null}

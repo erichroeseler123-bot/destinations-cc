@@ -29,10 +29,20 @@
       (scriptEl && scriptEl.getAttribute("data-surface")) || "hotel_concierge";
     var pickupMode =
       (scriptEl && scriptEl.getAttribute("data-pickup-mode")) || "";
+    var shipArrival =
+      (scriptEl && scriptEl.getAttribute("data-ship-arrival")) || "";
+    var shipAllAboard =
+      (scriptEl && scriptEl.getAttribute("data-ship-all-aboard")) || "";
+    var category =
+      (scriptEl && scriptEl.getAttribute("data-category")) || "";
     var targetId =
       (scriptEl && scriptEl.getAttribute("data-target")) ||
       "dcc-concierge-widget-root";
-    var height = (scriptEl && scriptEl.getAttribute("data-height")) || "780px";
+    var height =
+      (scriptEl &&
+        (scriptEl.getAttribute("data-min-height") ||
+          scriptEl.getAttribute("data-height"))) ||
+      "780px";
 
     var baseUrl = "https://www.destinationcommandcenter.com";
     if (scriptEl && scriptEl.src) {
@@ -49,6 +59,12 @@
     params.set("property", property);
     params.set("surface", surface);
     if (pickupMode) params.set("pickupMode", pickupMode);
+    if (shipArrival) params.set("shipArrival", shipArrival);
+    if (shipAllAboard) params.set("allAboard", shipAllAboard);
+    if (category) params.set("category", category);
+    if (window.location && window.location.origin) {
+      params.set("parentOrigin", window.location.origin);
+    }
 
     var iframe = document.createElement("iframe");
     iframe.src = baseUrl + "/embed/concierge?" + params.toString();

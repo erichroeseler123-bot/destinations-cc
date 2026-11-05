@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import CategoryDecisionEngineExperience from "@/app/components/dcc/CategoryDecisionEngineExperience";
+import DccConciergeWidget from "@/app/components/dcc/DccConciergeWidget";
 import JsonLd from "@/app/components/dcc/JsonLd";
 import PageIntentRouter from "@/app/components/dcc/PageIntentRouter";
 import { NOLA_SWAMP_DECISION_ENGINE } from "@/lib/dcc/decisionEngines/newOrleansSwampToursEngine";
@@ -238,6 +239,15 @@ export default async function NewOrleansSwampToursPage() {
             </Link>
           </div>
         </header>
+
+        <DccConciergeWidget
+          initialDestination="new-orleans"
+          initialPropertySlug="hotel-monteleone-nola"
+          initialSurface="welcometotheswamp"
+          initialPickupMode="hotel_pickup"
+          initialCategory="Swamp & Bayou Tours"
+          theme="dark"
+        />
 
         <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 space-y-5">
           <div className="flex flex-wrap items-center justify-between gap-2">

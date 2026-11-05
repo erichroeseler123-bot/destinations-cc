@@ -4,6 +4,7 @@ import { getDurableCatalogSummaryReport } from "@/lib/dcc/catalog/durableCatalog
 import {
   runIncrementalScheduleAndPricingRefresh,
   runIncrementalViatorCatalogRefresh,
+  runResumableDestinationBackfillBatch,
 } from "@/lib/dcc/catalog/ingest";
 
 export const dynamic = "force-dynamic";
@@ -52,14 +53,44 @@ async function handleCatalogRefreshCron(request: NextRequest) {
 
   try {
     const sp = request.nextUrl.searchParams;
-    const mode = sp.get("mode") || "incremental_and_schedules";
+    const mode = sp.get("mode") || "full_pipeline";
     const count = sp.get("count") ? Number(sp.get("count")) : 50;
     const scheduleLimit = sp.get("scheduleLimit") ? Number(sp.get("scheduleLimit")) : 12;
+    const backfillDestinationsLimit = sp.get("backfillDestinations")
+      ? Number(sp.get("backfillDestinations"))
+      : 2;
+    const backfillPages = sp.get("backfillPages") ? Number(sp.get("backfillPages")) : 2;
+    const explicitDest = sp.get("destination");
+
+    if (mode === "backfill_only") {
+      const backfillRun = await runResumableDestinationBackfillBatch({
+        destinations: explicitDest ? [explicitDest] : undefined,
+        maxDestinationsPerRun: Number.isFinite(backfillDestinationsLimit)
+          ? backfillDestinationsLimit
+          : 2,
+        perDestinationLimit: 50,
+        maxPagesPerDestination: Number.isFinite(backfillPages) ? backfillPages : 2,
+      });
+      const summary = await getDurableCatalogSummaryReport();
+      return NextResponse.json(
+        {
+          ok: true,
+          scheduledRefreshCadence: {
+            endpoint: SCHEDULED_CATALOG_REFRESH_PATH,
+            cron: SCHEDULED_CATALOG_REFRESH_CRON,
+            mode: "backfill_only",
+          },
+          backfillRun,
+          summary,
+        },
+        { status: 200, headers: { "Cache-Control": "no-store" } },
+      );
+    }
 
     if (mode === "schedules_only") {
       const schedRun = await runIncrementalScheduleAndPricingRefresh({
         limit: Number.isFinite(scheduleLimit) ? scheduleLimit : 12,
-        destinationSlug: sp.get("destination") || undefined,
+        destinationSlug: explicitDest || undefined,
       });
       const summary = await getDurableCatalogSummaryReport();
       return NextResponse.json(
@@ -77,6 +108,21 @@ async function handleCatalogRefreshCron(request: NextRequest) {
       );
     }
 
+    // Default ("full_pipeline" or "incremental_and_schedules"):
+    // 1. Resume incomplete destination backfill tails from durable Postgres checkpoints
+    const backfillRun =
+      mode === "incremental_only"
+        ? null
+        : await runResumableDestinationBackfillBatch({
+            destinations: explicitDest ? [explicitDest] : undefined,
+            maxDestinationsPerRun: Number.isFinite(backfillDestinationsLimit)
+              ? backfillDestinationsLimit
+              : 2,
+            perDestinationLimit: 50,
+            maxPagesPerDestination: Number.isFinite(backfillPages) ? backfillPages : 1,
+          });
+
+    // 2. Run product change stream (/products/modified-since) + separate availability/pricing change stream (/availability/schedules/modified-since)
     const incrementalRun = await runIncrementalViatorCatalogRefresh({
       cursor: sp.get("cursor") || undefined,
       count: Number.isFinite(count) ? count : 50,
@@ -91,8 +137,14 @@ async function handleCatalogRefreshCron(request: NextRequest) {
         scheduledRefreshCadence: {
           endpoint: SCHEDULED_CATALOG_REFRESH_PATH,
           cron: SCHEDULED_CATALOG_REFRESH_CRON,
-          mode: "incremental_and_schedules",
+          mode,
+          streams: [
+            "postgres_resumable_destination_backfill",
+            "viator_products_modified_since",
+            "viator_availability_schedules_modified_since_and_pg_queue",
+          ],
         },
+        backfillRun,
         incrementalRun,
         summary,
       },
@@ -116,3 +168,4 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   return handleCatalogRefreshCron(request);
 }
+

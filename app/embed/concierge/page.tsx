@@ -10,6 +10,12 @@ type EmbedConciergePageProps = {
     property?: string;
     surface?: string;
     pickupMode?: string;
+    date?: string;
+    category?: string;
+    shipArrival?: string;
+    allAboard?: string;
+    isTest?: string;
+    parentOrigin?: string;
   }>;
 };
 
@@ -28,6 +34,7 @@ export default async function EmbedConciergePage({ searchParams }: EmbedConcierg
     | "any"
     | PickupFulfillmentType
     | undefined;
+  const isTest = query.isTest === "true" || query.isTest === "1";
 
   return (
     <main
@@ -40,7 +47,13 @@ export default async function EmbedConciergePage({ searchParams }: EmbedConcierg
           initialPropertySlug={propertySlug}
           initialSurface={surface}
           initialPickupMode={pickupMode}
+          initialDate={query.date?.trim() || undefined}
+          initialCategory={query.category?.trim() || undefined}
+          initialShipArrival={query.shipArrival?.trim() || undefined}
+          initialAllAboardTime={query.allAboard?.trim() || undefined}
           embedMode={true}
+          isTest={isTest}
+          parentOrigin={query.parentOrigin?.trim() || undefined}
         />
       </Suspense>
     </main>

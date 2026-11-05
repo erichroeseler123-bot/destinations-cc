@@ -8,53 +8,90 @@ import {
   queryDurableTourCatalog,
 } from "../../lib/dcc/catalog/durableCatalogStore";
 import {
+  buildCheckoutPreselectionMetadata,
+  buildFareHarborDatePreselectedUrl,
+  detectOptionTitleTimeSemantics,
   evaluateCruiseScheduleFit,
   matchToursForTrip,
+  validateTravelDateNotPast,
 } from "../../lib/dcc/catalog/matcher";
 import { getHotelConciergeConfig } from "../../lib/dcc/catalog/hotelConfigs";
 import {
+  getWidgetPlacementReport,
+  recordObservedWidgetOrigin,
+} from "../../lib/dcc/catalog/widgetPlacements";
+import {
   getFunnelMetricsReport,
+  issueOpaqueClickAttribution,
+  reconcilePartnerWebhookByClickId,
+  recordOutboundClickFollow,
   resetOpaqueAttributionLedgerForTests,
 } from "../../lib/dcc/commerce/opaqueAttributionLedger";
 
-test("1. Durable Shared Tour Catalog covers all 15 EarthOS destinations, reports sampled vs complete coverage accurately against provider totals, and preserves compatibility aliases", async () => {
+test("1. Durable Shared Tour Catalog covers all 15 EarthOS destinations, completes all 5 Alaska destinations (100% of connected provider catalog), and labels coverage against connected provider totals", async () => {
   const summary = await getDurableCatalogSummaryReport();
   assert.ok(
-    summary.totalImportedRecords >= 900,
-    `Expected >= 900 records after multi-page backfill, got ${summary.totalImportedRecords}`,
+    summary.totalImportedRecords >= 1450,
+    `Expected >= 1450 records after Alaska completion and multi-destination backfill, got ${summary.totalImportedRecords}`,
   );
   assert.equal(summary.totalDestinationsCovered, 15);
   assert.equal(summary.wtaStatus, "paused");
   assert.ok(summary.quarantinedRecordsExcludedCount >= 6);
+  assert.equal(summary.destinationCoverageBreakdown.coverageBasis, "connected_provider_catalog_total");
+  assert.equal(summary.destinationCoverageBreakdown.alaskaCompleteDestinationsCount, 5);
   assert.ok(
     summary.destinationCoverageBreakdown.sampledDestinationsCount +
       summary.destinationCoverageBreakdown.completeDestinationsCount ===
       15,
   );
 
-  // Completing 5 pages (100 products) does NOT mark a destination complete when provider total > 100
-  assert.equal(summary.byDestination["new-orleans"].viatorImportedCount, 100);
-  assert.ok((summary.byDestination["new-orleans"].providerTotalAvailableCount ?? 0) >= 700);
-  assert.equal(summary.byDestination["new-orleans"].coverageStatus, "sampled");
-
-  assert.equal(summary.byDestination["juneau"].viatorImportedCount, 100);
-  assert.equal(summary.byDestination["juneau"].importedCount, 119);
-  assert.equal(summary.byDestination["juneau"].coverageStatus, "sampled");
-
-  assert.equal(summary.byDestination["ketchikan"].viatorImportedCount, 100);
-  assert.equal(summary.byDestination["ketchikan"].coverageStatus, "sampled");
-
-  assert.equal(summary.byDestination["cozumel"].viatorImportedCount, 100);
-  assert.equal(summary.byDestination["cozumel"].coverageStatus, "sampled");
-
-  // Skagway has 65 Viator products total and all 65 are imported -> complete
+  // All 5 Alaska destinations (Juneau, Skagway, Ketchikan, Seward, Denali) are 100% complete against connected provider totals
+  const alaskaSlugs = ["juneau", "skagway", "ketchikan", "seward", "denali"] as const;
+  for (const slug of alaskaSlugs) {
+    assert.equal(
+      summary.byDestination[slug].coverageStatus,
+      "complete",
+      `Expected Alaska destination ${slug} to have coverageStatus="complete"`,
+    );
+    assert.equal(
+      summary.byDestination[slug].connectedProviderCatalogCoverageStatus,
+      "complete_provider_catalog",
+      `Expected Alaska destination ${slug} to have complete_provider_catalog status`,
+    );
+    assert.equal(
+      summary.byDestination[slug].viatorImportedCount,
+      summary.byDestination[slug].providerTotalAvailableCount,
+      `Expected ${slug} viatorImportedCount === providerTotalAvailableCount`,
+    );
+    assert.ok(
+      summary.byDestination[slug].connectedProviderCatalogCoverageLabel.includes("100%"),
+      `Expected ${slug} coverage label to state 100% of connected provider catalog`,
+    );
+  }
+  assert.equal(summary.byDestination["juneau"].viatorImportedCount, 104);
+  assert.equal(summary.byDestination["juneau"].importedCount, 123);
   assert.equal(summary.byDestination["skagway"].viatorImportedCount, 65);
-  assert.equal(summary.byDestination["skagway"].providerTotalAvailableCount, 65);
-  assert.equal(summary.byDestination["skagway"].coverageStatus, "complete");
+  assert.equal(summary.byDestination["ketchikan"].viatorImportedCount, 147);
+  assert.equal(summary.byDestination["seward"].viatorImportedCount, 57);
+  assert.equal(summary.byDestination["denali"].viatorImportedCount, 47);
+
+  // Larger non-Alaska destinations remain explicitly labeled sampled until 100% of provider total is reached
+  assert.ok(summary.byDestination["new-orleans"].viatorImportedCount >= 150);
+  assert.ok((summary.byDestination["new-orleans"].providerTotalAvailableCount ?? 0) >= 700);
+  assert.equal(
+    summary.byDestination["new-orleans"].connectedProviderCatalogCoverageStatus,
+    "sampled_provider_catalog",
+  );
+
+  assert.ok(summary.byDestination["cozumel"].viatorImportedCount >= 150);
+  assert.equal(
+    summary.byDestination["cozumel"].connectedProviderCatalogCoverageStatus,
+    "sampled_provider_catalog",
+  );
 
   for (const slug of Object.keys(EARTHOS_DESTINATION_NODES)) {
     assert.ok(summary.byDestination[slug], `Missing destination coverage for ${slug}`);
-    assert.ok(summary.byDestination[slug].total >= 35, `Expected >= 35 records for ${slug}`);
+    assert.ok(summary.byDestination[slug].total >= 45, `Expected >= 45 records for ${slug}`);
     assert.equal(
       summary.byDestination[slug].earthosNodeId,
       EARTHOS_DESTINATION_NODES[slug].earthosDestinationNodeId,
@@ -170,16 +207,27 @@ test("3. Authoritative GoSno and Party at Red Rocks published offers replace har
   }
 });
 
-test("4. Option-level pickup fulfillment modes (hotel_pickup, pier_pickup, downtown_shuttle_departure, self_drive) and atomic boundOffer tuple through checkout handoff", async () => {
-  const airboat6455 = await getDurableTourByIdOrAlias("dcc:tour:viator:6455NOLAAIR");
-  assert.ok(airboat6455);
-  assert.equal(airboat6455.hasHotelPickup, true);
-  assert.equal(airboat6455.lowestPriceIncludesPickup, false);
+test("4. Option-level pickup fulfillment modes, cheaper option tradeoffs, option title time semantics, and Checkout Selection Summary", async () => {
+  // Past date validation rejects 2026-06-15 when clock is 2026-11-05
+  const pastCheck = validateTravelDateNotPast("2026-06-15", "America/Chicago");
+  assert.equal(pastCheck.valid, false);
+  assert.equal(pastCheck.errorCode, "INVALID_PAST_DATE");
+  assert.ok(pastCheck.message?.includes("2026-06-15"));
 
-  const airboat3780 = await getDurableTourByIdOrAlias("dcc:tour:viator:3780AIRBOAT");
-  assert.ok(airboat3780);
-  assert.equal(airboat3780.hasHotelPickup, true);
-  assert.equal(airboat3780.lowestPriceIncludesPickup, false);
+  const futureCheck = validateTravelDateNotPast("2026-11-18", "America/Chicago");
+  assert.equal(futureCheck.valid, true);
+
+  // Option title time semantics: pickup/check-in time vs unverified title time vs verified provider timedEntries
+  const pickupSemantics = detectOptionTitleTimeSemantics("8:40 AM Pickup - Large Airboat with Transportation", []);
+  assert.equal(pickupSemantics.semantics, "pickup_or_checkin_unverified_as_departure");
+  assert.equal(pickupSemantics.extractedTitleTime, "08:40");
+
+  const unverifiedTitleTime = detectOptionTitleTimeSemantics("9:45 AM Large Airboat (No Pickup)", []);
+  assert.equal(unverifiedTitleTime.semantics, "pickup_or_checkin_unverified_as_departure");
+  assert.equal(unverifiedTitleTime.extractedTitleTime, "09:45");
+
+  const verifiedTimedEntry = detectOptionTitleTimeSemantics("9:45 AM Large Airboat", ["09:45"]);
+  assert.equal(verifiedTimedEntry.semantics, "verified_provider_departure_time");
 
   // Case A: requiresHotelPickup = false -> selects lowest-priced self_drive option ($49.40 / $59.00) with pickupFulfillmentType="self_drive"
   const noPickupMatch = await matchToursForTrip({
@@ -208,22 +256,21 @@ test("4. Option-level pickup fulfillment modes (hotel_pickup, pier_pickup, downt
   assert.equal(opt6455NoPickup.boundOffer.totalGuests, 3);
   assert.equal(opt6455NoPickup.boundOffer.unitPriceCents, 4940);
   assert.equal(opt6455NoPickup.boundOffer.totalPartyPriceCents, 14820);
-  assert.ok(opt6455NoPickup.bookingPath.handoffUrl.includes("dcc_option_code=6455NOLAAIRSLARGE945"));
-  assert.ok(opt6455NoPickup.bookingPath.handoffUrl.includes("dcc_pickup_mode=self_drive"));
 
-  const opt3780NoPickup = noPickupMatch.options.find(
-    (o) => o.tourId === "dcc:tour:viator:3780AIRBOAT",
+  // Checkout Selection Summary for Viator explicitly discloses that Viator initializes to today's date
+  assert.equal(
+    opt6455NoPickup.bookingPath.checkoutPreselection.preselectionSupport,
+    "affiliate_landing_manual_selection_required",
   );
-  assert.ok(opt3780NoPickup);
-  assert.equal(opt3780NoPickup.pricing.fromPriceCents, 5900);
-  assert.equal(opt3780NoPickup.selectedProductOption?.optionCode, "TG15");
-  assert.equal(opt3780NoPickup.selectedProductOption?.pickupFulfillmentType, "self_drive");
-  assert.equal(opt3780NoPickup.duration.durationMinutes, 90);
-  assert.equal(opt3780NoPickup.boundOffer.durationMinutes, 90);
+  assert.ok(
+    opt6455NoPickup.bookingPath.checkoutPreselection.providerDefaultDateBehavior.includes("Viator"),
+  );
+  assert.ok(
+    opt6455NoPickup.bookingPath.checkoutPreselection.travelerActionSummary.includes("2026-11-18"),
+  );
+  assert.ok(opt6455NoPickup.bookingPath.trackedClickUrl?.includes("/api/v1/ads/click"));
 
-  // Case B: requiresHotelPickup = true ->
-  // - 6455NOLAAIR selects hotel_pickup option 840AMLBWT ($81.70, 240m)
-  // - 3780AIRBOAT selects downtown_shuttle_departure option TG1 ($90.00, 225m, Gray Line 400 Toulouse St) AND flags downtown_shuttle_departure_not_door_to_door_hotel_pickup
+  // Case B: requiresHotelPickup = true -> selects higher-priced pickup option AND preserves cheaper self_drive option in alternativeOptionTradeoffs
   const hotelCfg = getHotelConciergeConfig("hotel-monteleone-nola");
   const withPickupMatch = await matchToursForTrip({
     destination: "new-orleans",
@@ -249,35 +296,47 @@ test("4. Option-level pickup fulfillment modes (hotel_pickup, pier_pickup, downt
   assert.equal(opt6455WithPickup.selectedProductOption?.pickupFulfillmentType, "hotel_pickup");
   assert.ok((opt6455WithPickup.pricing.fromPriceCents ?? 0) >= 8000);
   assert.equal(opt6455WithPickup.duration.durationMinutes, 240);
-
-  const opt3780WithPickup = withPickupMatch.options.find(
-    (o) => o.tourId === "dcc:tour:viator:3780AIRBOAT",
-  );
-  assert.ok(opt3780WithPickup);
-  assert.equal(opt3780WithPickup.selectedProductOption?.optionCode, "TG1");
-  assert.equal(
-    opt3780WithPickup.selectedProductOption?.pickupFulfillmentType,
-    "downtown_shuttle_departure",
-  );
-  assert.equal(opt3780WithPickup.pricing.fromPriceCents, 9000);
-  assert.equal(opt3780WithPickup.duration.durationMinutes, 225);
-  assert.equal(opt3780WithPickup.suitability, "needs_confirmation");
   assert.ok(
-    opt3780WithPickup.missingInformation.includes(
-      "downtown_shuttle_departure_not_door_to_door_hotel_pickup",
-    ),
+    opt6455WithPickup.alternativeOptionTradeoffs.length > 0,
+    "Expected cheaper self_drive alternative option tradeoff to be preserved",
   );
+  assert.equal(
+    opt6455WithPickup.alternativeOptionTradeoffs[0].optionCode,
+    "6455NOLAAIRSLARGE945",
+  );
+  assert.ok(
+    opt6455WithPickup.alternativeOptionTradeoffs[0].tradeoffSummary.includes("Saves $"),
+  );
+
+  // FareHarbor calendar date preselection URL builder
+  const fhUrl = buildFareHarborDatePreselectedUrl(
+    "https://fareharbor.com/embeds/book/alaskatales/items/61209/?asn=fhdn&asn-ref=destinationcommandcenter",
+    "2026-11-18",
+  );
+  assert.ok(fhUrl.includes("/calendar/2026/11/"));
+  assert.ok(fhUrl.includes("date=2026-11-18"));
+  const fhMeta = buildCheckoutPreselectionMetadata({
+    provider: "fareharbor",
+    boundOffer: {
+      ...opt6455NoPickup.boundOffer,
+      provider: "fareharbor",
+      date: "2026-11-18",
+      departureTime: "09:30",
+    },
+  });
+  assert.equal(fhMeta.preselectionSupport, "partial_provider_preselection");
+  assert.ok(fhMeta.preselectedFields.includes("calendarMonth"));
 });
 
-test("5. Cruise schedule fit preserves unknown transfer times, labels planning estimates explicitly, and only claims recommended when transfer, duration, and departure times are verified", async () => {
+test("5. Cruise schedule fit requires transferEvidenceSource + applicableBerthOrMeetingPoint, and widget placements + commercial reporting are strictly separated", async () => {
   resetOpaqueAttributionLedgerForTests();
 
   // Without live date-specific departure time verification -> must return needs_confirmation (NEVER recommended)
   const unverifiedCruiseMatch = await matchToursForTrip({
-    destination: "new-orleans",
+    destination: "juneau",
     date: "2026-11-18",
     adults: 2,
-    childAges: [8],
+    childAges: [],
     shipArrival: "08:00",
     allAboardTime: "16:30",
     surface: "cruisepromenade",
@@ -286,6 +345,7 @@ test("5. Cruise schedule fit preserves unknown transfer times, labels planning e
   });
 
   assert.ok(unverifiedCruiseMatch.options.length > 0);
+  assert.ok(unverifiedCruiseMatch.metrics.supportedVerifiedTransferCount > 0);
   for (const opt of unverifiedCruiseMatch.options) {
     assert.equal(
       opt.suitability,
@@ -295,55 +355,162 @@ test("5. Cruise schedule fit preserves unknown transfer times, labels planning e
     assert.equal(opt.cruiseScheduleFit?.fitStatus, "needs_confirmation");
   }
 
-  // 1. Unknown transfer time (transferBeforeMinutes: null, transferTimeSource: "planning_estimate") -> MUST return needs_confirmation, NEVER recommended!
-  const planningEstimateResult = evaluateCruiseScheduleFit({
+  // Verified transfer requires explicit transferEvidenceSource (never generic regex or fallback minutes)
+  const missingEvidenceResult = evaluateCruiseScheduleFit({
     shipArrival: "08:00",
     shipDeparture: "17:00",
     allAboardTime: "16:30",
     durationMinutes: 120,
-    transferBeforeMinutes: null,
-    transferAfterMinutes: null,
-    transferTimeSource: "planning_estimate",
-    planningEstimateTransferMinutes: 50,
+    transferBeforeMinutes: 20,
+    transferAfterMinutes: 20,
+    transferTimeSource: "verified_pier_pickup",
+    transferEvidenceSource: null,
+    applicableBerthOrMeetingPoint: null,
     verifiedDepartureTimes: ["10:00"],
   });
-  assert.equal(planningEstimateResult.fitStatus, "needs_confirmation");
-  assert.equal(planningEstimateResult.transferBeforeMinutes, null);
-  assert.equal(planningEstimateResult.planningEstimateTransferMinutes, 50);
-  assert.ok(planningEstimateResult.reason.toLowerCase().includes("planning estimate only"));
+  assert.equal(missingEvidenceResult.fitStatus, "needs_confirmation");
 
-  // 2. Verified pier pickup / meeting point transfer + verified departure time 10:00 -> recommended!
-  const fitsResult = evaluateCruiseScheduleFit({
+  const supportedEvidenceResult = evaluateCruiseScheduleFit({
     shipArrival: "08:00",
     shipDeparture: "17:00",
     allAboardTime: "16:30",
     durationMinutes: 120,
-    transferBeforeMinutes: 20,
-    transferAfterMinutes: 20,
+    transferBeforeMinutes: 15,
+    transferAfterMinutes: 15,
     transferTimeSource: "verified_pier_pickup",
+    transferEvidenceSource: "Operator dock-pickup specification (AJ Dock / Cruise Ship Terminal shuttle)",
+    applicableBerthOrMeetingPoint: "Juneau Cruise Ship Terminal / AJ Dock",
     verifiedDepartureTimes: ["10:00", "14:30"],
   });
-  assert.equal(fitsResult.fitStatus, "recommended");
-  assert.deepEqual(fitsResult.fittingDepartureTimes, ["10:00"]);
+  assert.equal(supportedEvidenceResult.fitStatus, "recommended");
+  assert.deepEqual(supportedEvidenceResult.fittingDepartureTimes, ["10:00"]);
 
-  // 3. Only late departure time 14:30 (returns 14:30 + 120m + 20m = 16:50 > 15:00 deadline) -> ineligible!
-  const missesResult = evaluateCruiseScheduleFit({
-    shipArrival: "08:00",
-    shipDeparture: "17:00",
-    allAboardTime: "16:30",
-    durationMinutes: 120,
-    transferBeforeMinutes: 20,
-    transferAfterMinutes: 20,
-    transferTimeSource: "verified_pier_pickup",
-    verifiedDepartureTimes: ["14:30"],
+  // Widget placement separation: Referer / parentOrigin alone NEVER establishes an approved external partner placement
+  recordObservedWidgetOrigin({
+    referer: "https://unverified-travel-blog.example.com/alaska-guide",
+    propertySlug: "juneau",
+    surface: "external_embed",
   });
-  assert.equal(missesResult.fitStatus, "ineligible");
-  assert.deepEqual(missesResult.fittingDepartureTimes, []);
+  const placementReport = getWidgetPlacementReport();
+  assert.ok(placementReport.firstPartyInstallationsCount >= 10);
+  assert.equal(placementReport.observedExternalEmbedsCount, 1);
+  assert.equal(
+    placementReport.approvedExternalPartnerPlacementsCount,
+    0,
+    "Referer or parentOrigin alone must NEVER increment approvedExternalPartnerPlacementsCount",
+  );
+  assert.equal(
+    placementReport.observedExternalEmbeds[0].verificationStatus,
+    "unverified_observed_origin_only",
+  );
 
-  // Verify production funnel metrics report excludes all test clicks (isTest: true)
-  const prodReport = getFunnelMetricsReport();
-  assert.equal(prodReport.production.followedHandoffs, 0);
-  assert.equal(prodReport.production.confirmedPaidBookings, 0);
-  assert.equal(prodReport.production.grossConfirmedRevenueUsd, 0);
-  assert.ok(prodReport.test.followedHandoffs > 0);
+  // Commercial reporting separation:
+  // 1) Recommendation record issued during matching vs actual outbound click follow
+  // 2) Demo / automated verification traffic flagged as test traffic
+  const demoClick = issueOpaqueClickAttribution({
+    decisionReceiptId: "rcpt:demo:1",
+    recommendedOperatorId: "viator:6455NOLAAIR",
+    recommendedOperatorName: "Airboat Adventures",
+    evidenceVersion: "dcc-shared-tour-catalog-v1",
+    originatingSite: "destinationcommandcenter.com",
+    originatingPage: "/demo/concierge-widget",
+    provider: "viator",
+    productCode: "6455NOLAAIR",
+    productDestinationUrl: "https://www.viator.com/tours/New-Orleans/x/d675-6455NOLAAIR",
+    recordStage: "recommendation",
+  });
+  assert.equal(demoClick.isTest, true);
+  assert.equal(demoClick.trafficClass, "test");
+
+  // Production customer journey: recommendation -> actual outbound click -> BOOKING_CONFIRMED (unsettled estimate) -> COMMISSION_RECONCILED (settled once) -> refund reversal
+  const prodRec = issueOpaqueClickAttribution({
+    decisionReceiptId: "rcpt:prod:juneau:1",
+    recommendedOperatorId: "viator:331813P1",
+    recommendedOperatorName: "Alaska Whale Watching",
+    evidenceVersion: "dcc-shared-tour-catalog-v1",
+    originatingSite: "cruisepromenade.com",
+    originatingPage: "/ports/juneau-alaska",
+    provider: "viator",
+    productCode: "331813P1",
+    productDestinationUrl: "https://www.viator.com/tours/Juneau/x/d941-331813P1",
+    recordStage: "recommendation",
+    isTest: false,
+  });
+  assert.equal(prodRec.isTest, false);
+  assert.equal(prodRec.recordStage, "recommendation");
+
+  let metrics = getFunnelMetricsReport();
+  assert.equal(metrics.production.recommendationsIssued, 1);
+  assert.equal(metrics.production.recommendationOnlyRecords, 1);
+  assert.equal(metrics.production.actualOutboundClicks, 0);
+
+  // Follow outbound click
+  recordOutboundClickFollow(prodRec.clickId);
+  metrics = getFunnelMetricsReport();
+  assert.equal(metrics.production.actualOutboundClicks, 1);
+  assert.equal(metrics.production.recommendationOnlyRecords, 0);
+
+  // BOOKING_CONFIRMED with estimatedCommissionUsd = 24.00 must NOT count toward settledReconciledCommissionUsd!
+  reconcilePartnerWebhookByClickId({
+    clickId: prodRec.clickId,
+    provider: "viator",
+    providerBookingRef: "BR-99001122",
+    eventType: "BOOKING_CONFIRMED",
+    grossRevenueUsd: 300,
+    estimatedCommissionUsd: 24,
+    paidCommissionUsd: null,
+    currency: "USD",
+  });
+  metrics = getFunnelMetricsReport();
+  assert.equal(metrics.production.confirmedPaidBookings, 1);
+  assert.equal(metrics.production.estimatedUnsettledCommissionUsd, 24);
+  assert.equal(
+    metrics.production.settledReconciledCommissionUsd,
+    0,
+    "BOOKING_CONFIRMED estimated commission must NEVER be included in settledReconciledCommissionUsd",
+  );
+
+  // COMMISSION_RECONCILED with paidCommissionUsd = 24.00 recorded twice (idempotency check) -> counted ONCE
+  reconcilePartnerWebhookByClickId({
+    clickId: prodRec.clickId,
+    provider: "viator",
+    providerBookingRef: "BR-99001122",
+    eventType: "COMMISSION_RECONCILED",
+    grossRevenueUsd: 300,
+    estimatedCommissionUsd: 24,
+    paidCommissionUsd: 24,
+    currency: "USD",
+  });
+  reconcilePartnerWebhookByClickId({
+    clickId: prodRec.clickId,
+    provider: "viator",
+    providerBookingRef: "BR-99001122",
+    eventType: "COMMISSION_RECONCILED",
+    grossRevenueUsd: 300,
+    estimatedCommissionUsd: 24,
+    paidCommissionUsd: 24,
+    currency: "USD",
+  });
+  metrics = getFunnelMetricsReport();
+  assert.equal(metrics.production.settledReconciledCommissionUsd, 24);
+  assert.equal(metrics.production.estimatedUnsettledCommissionUsd, 0);
+  assert.equal(metrics.production.duplicateDeliveriesIgnored, 1);
+
+  // BOOKING_REFUNDED reverses the settled commission and confirmed booking count
+  reconcilePartnerWebhookByClickId({
+    clickId: prodRec.clickId,
+    provider: "viator",
+    providerBookingRef: "BR-99001122",
+    eventType: "BOOKING_REFUNDED",
+    grossRevenueUsd: 300,
+    estimatedCommissionUsd: 0,
+    paidCommissionUsd: 0,
+    currency: "USD",
+  });
+  metrics = getFunnelMetricsReport();
+  assert.equal(metrics.production.confirmedPaidBookings, 0);
+  assert.equal(metrics.production.cancelledOrRefundedBookings, 1);
+  assert.equal(metrics.production.settledReconciledCommissionUsd, 0);
+  assert.equal(metrics.production.reversedCommissionUsd, 24);
 });
+

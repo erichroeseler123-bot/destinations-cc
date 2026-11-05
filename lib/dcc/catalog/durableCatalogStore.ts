@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { neon } from "@neondatabase/serverless";
 import { DCC_VIATOR_PRODUCT_MAPPINGS } from "@/lib/viator/mappings";
+import { getWidgetPlacementReport } from "./widgetPlacements";
 
 export type TourCapabilityTier =
   | "discovery_only"
@@ -58,6 +59,8 @@ export type TourProductOptionRecord = {
   transferBeforeMinutes?: number | null;
   transferAfterMinutes?: number | null;
   transferTimeSource?: TransferTimeSource;
+  transferEvidenceSource?: string | null;
+  applicableBerthOrMeetingPoint?: string | null;
   planningEstimateTransferMinutes?: number | null;
   durationMinutes: number | null;
   fromPriceCents: number | null;
@@ -75,6 +78,8 @@ export type TourConstraintsRecord = {
   cruiseBufferBeforeMinutes?: number | null;
   cruiseBufferAfterMinutes?: number | null;
   transferTimeSource?: TransferTimeSource;
+  transferEvidenceSource?: string | null;
+  applicableBerthOrMeetingPoint?: string | null;
   planningEstimateTransferMinutes?: number | null;
   weatherDependent?: boolean | null;
   requiresClosedToeShoes?: boolean | null;
@@ -539,6 +544,7 @@ export type UniversalCatalogSnapshotFile = {
 let memoryCatalogCache: DurableTourRecord[] | null = null;
 let memorySyncRunsCache: CatalogSyncRunRecord[] | null = null;
 let pgSchemaReadyPromise: Promise<void> | null = null;
+let pgSchemaReadyForUrl: string | null = null;
 let pgHydratedFromSnapshot = false;
 
 function isAutomatedTestRuntime(): boolean {
@@ -571,7 +577,9 @@ function getSqlClient() {
 
 export async function ensureCatalogSchema(): Promise<void> {
   if (!shouldUsePostgres()) return;
-  if (!pgSchemaReadyPromise) {
+  const currentUrl = String(process.env.DATABASE_URL || "").trim();
+  if (!pgSchemaReadyPromise || pgSchemaReadyForUrl !== currentUrl) {
+    pgSchemaReadyForUrl = currentUrl;
     pgSchemaReadyPromise = (async () => {
       const sql = getSqlClient();
       await sql.query(`
@@ -669,6 +677,22 @@ export async function ensureCatalogSchema(): Promise<void> {
       `);
       await sql.query(
         `CREATE INDEX IF NOT EXISTS dcc_catalog_sync_runs_provider_dest_idx ON dcc_catalog_sync_runs (provider, destination_slug)`,
+      );
+      await sql.query(`
+        CREATE TABLE IF NOT EXISTS dcc_catalog_refresh_checkpoints (
+          stream_key TEXT PRIMARY KEY,
+          provider TEXT NOT NULL,
+          destination_slug TEXT,
+          cursor_value TEXT,
+          next_start_offset INTEGER,
+          provider_total_count INTEGER,
+          status TEXT NOT NULL DEFAULT 'idle',
+          metadata_json JSONB NOT NULL DEFAULT '{}'::jsonb,
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+        )
+      `);
+      await sql.query(
+        `CREATE INDEX IF NOT EXISTS dcc_catalog_refresh_checkpoints_provider_idx ON dcc_catalog_refresh_checkpoints (provider, destination_slug)`,
       );
     })().catch((err) => {
       pgSchemaReadyPromise = null;
@@ -986,29 +1010,43 @@ export async function upsertDurableTourRecords(records: DurableTourRecord[]): Pr
   const byId = new Map<string, DurableTourRecord>(
     snapshot.records.filter((r) => !isQuarantinedTourRecord(r)).map((r) => [r.tourId, r]),
   );
+  const recordsToPersistInPg: DurableTourRecord[] = [];
   for (const rec of records) {
     if (isQuarantinedTourRecord(rec)) {
       byId.delete(rec.tourId);
     } else {
       const existing = byId.get(rec.tourId);
-      if (
+      const effectiveTourId =
         existing &&
-        (!rec.productOptions || rec.productOptions.length === 0) &&
-        existing.productOptions &&
-        existing.productOptions.length > 0
+        existing.destinationSlug !== rec.destinationSlug &&
+        rec.primaryProvider === "viator"
+          ? `viator:${rec.destinationSlug}:${rec.providerProductCode}`
+          : rec.tourId;
+      const targetExisting = byId.get(effectiveTourId);
+      const recordWithId: DurableTourRecord =
+        effectiveTourId !== rec.tourId ? { ...rec, tourId: effectiveTourId } : rec;
+
+      if (
+        targetExisting &&
+        (!recordWithId.productOptions || recordWithId.productOptions.length === 0) &&
+        targetExisting.productOptions &&
+        targetExisting.productOptions.length > 0
       ) {
-        byId.set(rec.tourId, {
-          ...rec,
-          productOptions: existing.productOptions,
+        byId.set(effectiveTourId, {
+          ...recordWithId,
+          productOptions: targetExisting.productOptions,
           lowestPriceIncludesPickup:
-            rec.lowestPriceIncludesPickup ?? existing.lowestPriceIncludesPickup,
-          hasHotelPickup: rec.hasHotelPickup ?? existing.hasHotelPickup,
+            recordWithId.lowestPriceIncludesPickup ?? targetExisting.lowestPriceIncludesPickup,
+          hasHotelPickup: recordWithId.hasHotelPickup ?? targetExisting.hasHotelPickup,
           ageBands:
-            rec.ageBands && rec.ageBands.length > 0 ? rec.ageBands : existing.ageBands,
+            recordWithId.ageBands && recordWithId.ageBands.length > 0
+              ? recordWithId.ageBands
+              : targetExisting.ageBands,
         });
       } else {
-        byId.set(rec.tourId, rec);
+        byId.set(effectiveTourId, recordWithId);
       }
+      recordsToPersistInPg.push(byId.get(effectiveTourId) || recordWithId);
     }
   }
   const merged = Array.from(byId.values());
@@ -1030,8 +1068,8 @@ export async function upsertDurableTourRecords(records: DurableTourRecord[]): Pr
           WHERE tour_id = ANY(${quarantinedArray})
         `;
       }
-      for (const rec of records) {
-        await upsertSingleTourToPg(sql, byId.get(rec.tourId) || rec);
+      for (const rec of recordsToPersistInPg) {
+        await upsertSingleTourToPg(sql, rec);
       }
       persistedToPostgres = true;
     } catch (err) {
@@ -1252,19 +1290,35 @@ export async function getDurableTourByIdOrAlias(idOrAlias: string): Promise<Dura
   );
 }
 
-export async function getDurableCatalogSummaryReport() {
-  const { records, source } = await loadAllCatalogRecordsWithPgHydration();
-  const snapshot = readLocalCatalogSnapshot();
+export type CatalogRefreshCheckpointRecord = {
+  streamKey: string;
+  provider: string;
+  destinationSlug: string | null;
+  cursorValue: string | null;
+  nextStartOffset: number | null;
+  providerTotalCount: number | null;
+  status: string;
+  metadata: Record<string, unknown>;
+  updatedAt: string;
+};
 
-  let syncRuns = snapshot.syncRuns;
+const memoryCheckpointsByStream = new Map<string, CatalogRefreshCheckpointRecord>();
+
+export async function loadSyncRunsWithPgHydration(): Promise<CatalogSyncRunRecord[]> {
+  const snapshot = readLocalCatalogSnapshot();
+  const byRunId = new Map<string, CatalogSyncRunRecord>();
+  for (const r of snapshot.syncRuns) {
+    byRunId.set(r.runId, r);
+  }
   if (shouldUsePostgres()) {
     try {
+      await ensureCatalogSchema();
       const sql = getSqlClient();
       const rows = await sql`
-        SELECT * FROM dcc_catalog_sync_runs ORDER BY started_at DESC LIMIT 50
+        SELECT * FROM dcc_catalog_sync_runs ORDER BY started_at DESC LIMIT 250
       `;
-      if (rows.length > 0) {
-        syncRuns = rows.map((r: any) => ({
+      for (const r of rows as any[]) {
+        const mapped: CatalogSyncRunRecord = {
           runId: String(r.run_id),
           provider: String(r.provider),
           destinationSlug: String(r.destination_slug),
@@ -1278,17 +1332,177 @@ export async function getDurableCatalogSummaryReport() {
           metadata: r.metadata_json || {},
           startedAt: new Date(r.started_at).toISOString(),
           completedAt: r.completed_at ? new Date(r.completed_at).toISOString() : null,
-        }));
+        };
+        byRunId.set(mapped.runId, mapped);
       }
     } catch {
       // Fallback to snapshot syncRuns
     }
   }
-
-  // Index latest Viator sync run per destination to report sampled vs complete coverage
-  const sortedSyncRuns = [...syncRuns].sort(
+  return Array.from(byRunId.values()).sort(
     (a, b) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime(),
   );
+}
+
+export async function upsertRefreshCheckpoint(
+  checkpoint: Omit<CatalogRefreshCheckpointRecord, "updatedAt"> & { updatedAt?: string },
+): Promise<CatalogRefreshCheckpointRecord> {
+  const nowIso = checkpoint.updatedAt || new Date().toISOString();
+  const full: CatalogRefreshCheckpointRecord = {
+    ...checkpoint,
+    updatedAt: nowIso,
+  };
+  memoryCheckpointsByStream.set(full.streamKey, full);
+
+  if (shouldUsePostgres()) {
+    try {
+      await ensureCatalogSchema();
+      const sql = getSqlClient();
+      await sql`
+        INSERT INTO dcc_catalog_refresh_checkpoints (
+          stream_key, provider, destination_slug, cursor_value,
+          next_start_offset, provider_total_count, status, metadata_json, updated_at
+        ) VALUES (
+          ${full.streamKey},
+          ${full.provider},
+          ${full.destinationSlug},
+          ${full.cursorValue},
+          ${full.nextStartOffset},
+          ${full.providerTotalCount},
+          ${full.status},
+          ${JSON.stringify(full.metadata)}::jsonb,
+          ${full.updatedAt}::timestamptz
+        )
+        ON CONFLICT (stream_key) DO UPDATE SET
+          provider = EXCLUDED.provider,
+          destination_slug = EXCLUDED.destination_slug,
+          cursor_value = EXCLUDED.cursor_value,
+          next_start_offset = EXCLUDED.next_start_offset,
+          provider_total_count = EXCLUDED.provider_total_count,
+          status = EXCLUDED.status,
+          metadata_json = EXCLUDED.metadata_json,
+          updated_at = EXCLUDED.updated_at
+      `;
+    } catch (err) {
+      console.warn("[durableCatalogStore] Failed upserting refresh checkpoint to Postgres:", err);
+    }
+  }
+  return full;
+}
+
+export async function getRefreshCheckpoint(
+  streamKey: string,
+): Promise<CatalogRefreshCheckpointRecord | null> {
+  if (shouldUsePostgres()) {
+    try {
+      await ensureCatalogSchema();
+      const sql = getSqlClient();
+      const rows = await sql`
+        SELECT * FROM dcc_catalog_refresh_checkpoints WHERE stream_key = ${streamKey} LIMIT 1
+      `;
+      if (rows.length > 0) {
+        const r = rows[0] as any;
+        const mapped: CatalogRefreshCheckpointRecord = {
+          streamKey: String(r.stream_key),
+          provider: String(r.provider),
+          destinationSlug: r.destination_slug ? String(r.destination_slug) : null,
+          cursorValue: r.cursor_value ? String(r.cursor_value) : null,
+          nextStartOffset:
+            typeof r.next_start_offset === "number" && Number.isFinite(r.next_start_offset)
+              ? r.next_start_offset
+              : null,
+          providerTotalCount:
+            typeof r.provider_total_count === "number" && Number.isFinite(r.provider_total_count)
+              ? r.provider_total_count
+              : null,
+          status: String(r.status || "idle"),
+          metadata: r.metadata_json || {},
+          updatedAt: r.updated_at ? new Date(r.updated_at).toISOString() : new Date().toISOString(),
+        };
+        memoryCheckpointsByStream.set(streamKey, mapped);
+        return mapped;
+      }
+    } catch {
+      // Fallback to memory or syncRuns
+    }
+  }
+  return memoryCheckpointsByStream.get(streamKey) || null;
+}
+
+export async function getLatestDestinationBackfillCheckpoint(destinationSlug: string): Promise<{
+  destinationSlug: string;
+  nextStartOffset: number;
+  providerTotalCount: number | null;
+  viatorImportedCount: number;
+  coverageStatus: "sampled" | "complete";
+  cursorValue: string | null;
+  source: "postgres_checkpoint_table" | "postgres_sync_runs" | "snapshot_sync_runs";
+}> {
+  const { records, source: recordSource } = await loadAllCatalogRecordsWithPgHydration();
+  const viatorImportedCount = records.filter(
+    (r) =>
+      r.destinationSlug === destinationSlug &&
+      r.primaryProvider === "viator" &&
+      r.active &&
+      !isQuarantinedTourRecord(r),
+  ).length;
+
+  const ckpt = await getRefreshCheckpoint(`viator_backfill:${destinationSlug}`);
+  const syncRuns = await loadSyncRunsWithPgHydration();
+  const priorRun = syncRuns.find(
+    (r) =>
+      r.provider === "viator" &&
+      r.destinationSlug === destinationSlug &&
+      r.status === "completed",
+  );
+
+  const rawProviderTotal =
+    ckpt?.providerTotalCount ??
+    (typeof priorRun?.metadata?.providerTotalCount === "number"
+      ? (priorRun.metadata.providerTotalCount as number)
+      : null);
+  const providerTotalCount =
+    typeof rawProviderTotal === "number" && Number.isFinite(rawProviderTotal) && rawProviderTotal > 0
+      ? rawProviderTotal
+      : null;
+
+  const isComplete =
+    providerTotalCount !== null && viatorImportedCount >= providerTotalCount;
+
+  const savedNextFromCkpt = ckpt?.nextStartOffset;
+  const savedNextFromRun =
+    typeof priorRun?.metadata?.nextStartOffset === "number"
+      ? (priorRun.metadata.nextStartOffset as number)
+      : null;
+
+  let nextStartOffset =
+    savedNextFromCkpt ??
+    savedNextFromRun ??
+    (viatorImportedCount > 0 ? viatorImportedCount + 1 : 1);
+  if (providerTotalCount !== null && nextStartOffset > providerTotalCount) {
+    nextStartOffset = 1;
+  }
+
+  return {
+    destinationSlug,
+    nextStartOffset: Math.max(1, nextStartOffset),
+    providerTotalCount,
+    viatorImportedCount,
+    coverageStatus: isComplete ? "complete" : "sampled",
+    cursorValue: ckpt?.cursorValue ?? priorRun?.cursorValue ?? null,
+    source: ckpt
+      ? "postgres_checkpoint_table"
+      : recordSource === "postgres"
+        ? "postgres_sync_runs"
+        : "snapshot_sync_runs",
+  };
+}
+
+export async function getDurableCatalogSummaryReport() {
+  const { records, source } = await loadAllCatalogRecordsWithPgHydration();
+  const snapshot = readLocalCatalogSnapshot();
+  const sortedSyncRuns = await loadSyncRunsWithPgHydration();
+
   const latestSyncByDestination = new Map<string, CatalogSyncRunRecord>();
   for (const run of sortedSyncRuns) {
     if (run.provider === "viator" && run.status === "completed") {
@@ -1305,11 +1519,16 @@ export async function getDurableCatalogSummaryReport() {
       earthosNodeId: string;
       timeZone: string;
       coverageStatus: "sampled" | "complete";
+      connectedProviderCatalogCoverageStatus:
+        | "sampled_provider_catalog"
+        | "complete_provider_catalog";
+      connectedProviderCatalogCoverageLabel: string;
       providerTotalAvailableCount: number | null;
       importedCount: number;
       viatorImportedCount: number;
       viatorCoveragePercent: number | null;
       nextCursor: string | null;
+      nextStartOffset: number | null;
       byCapabilityTier: Record<string, number>;
       byProvider: Record<string, number>;
       byPickupFulfillmentType: Record<string, number>;
@@ -1341,16 +1560,24 @@ export async function getDurableCatalogSummaryReport() {
         typeof rawProviderTotal === "number" && Number.isFinite(rawProviderTotal)
           ? rawProviderTotal
           : null;
+      const rawNextStart = latestRun?.metadata?.nextStartOffset;
+      const nextStartOffset =
+        typeof rawNextStart === "number" && Number.isFinite(rawNextStart)
+          ? rawNextStart
+          : null;
       byDestination[rec.destinationSlug] = {
         total: 0,
         earthosNodeId: rec.earthosDestinationNodeId,
         timeZone: rec.timeZone,
         coverageStatus: "sampled",
+        connectedProviderCatalogCoverageStatus: "sampled_provider_catalog",
+        connectedProviderCatalogCoverageLabel: "Sampled coverage of connected provider catalog",
         providerTotalAvailableCount,
         importedCount: 0,
         viatorImportedCount: 0,
         viatorCoveragePercent: null,
         nextCursor: latestRun?.cursorValue || null,
+        nextStartOffset,
         byCapabilityTier: {},
         byProvider: {},
         byPickupFulfillmentType: {},
@@ -1391,33 +1618,51 @@ export async function getDurableCatalogSummaryReport() {
 
   const sampledDestinations: string[] = [];
   const completeDestinations: string[] = [];
+  const alaskaSlugs = ["juneau", "skagway", "ketchikan", "seward", "denali"];
+  const alaskaCompleteDestinations: string[] = [];
 
   for (const [slug, destStats] of Object.entries(byDestination)) {
     const viatorImported = destStats.byProvider["viator"] || 0;
+    const directCount = destStats.importedCount - viatorImported;
     destStats.viatorImportedCount = viatorImported;
     if (
       destStats.providerTotalAvailableCount !== null &&
       destStats.providerTotalAvailableCount > 0
     ) {
       destStats.viatorCoveragePercent =
-        Math.round((viatorImported / destStats.providerTotalAvailableCount) * 1000) / 10;
+        Math.min(
+          100,
+          Math.round((viatorImported / destStats.providerTotalAvailableCount) * 1000) / 10,
+        );
     }
-    // Completing N pages does NOT make a destination complete unless imported >= providerTotalAvailableCount
+    // Completeness is strictly defined as coverage of the connected provider's (Viator) catalog total for that destination
     if (
       destStats.providerTotalAvailableCount !== null &&
       destStats.providerTotalAvailableCount > 0 &&
       viatorImported >= destStats.providerTotalAvailableCount
     ) {
       destStats.coverageStatus = "complete";
+      destStats.connectedProviderCatalogCoverageStatus = "complete_provider_catalog";
+      destStats.connectedProviderCatalogCoverageLabel = `Complete coverage of connected Viator catalog (${viatorImported}/${destStats.providerTotalAvailableCount}, 100%)${directCount > 0 ? ` + ${directCount} authorized direct operator offers` : ""}`;
       completeDestinations.push(slug);
+      if (alaskaSlugs.includes(slug)) {
+        alaskaCompleteDestinations.push(slug);
+      }
     } else {
       destStats.coverageStatus = "sampled";
+      destStats.connectedProviderCatalogCoverageStatus = "sampled_provider_catalog";
+      const pctStr =
+        destStats.viatorCoveragePercent !== null ? `${destStats.viatorCoveragePercent}%` : "unknown %";
+      destStats.connectedProviderCatalogCoverageLabel = `Sampled coverage of connected Viator catalog (${viatorImported}/${destStats.providerTotalAvailableCount ?? "?"} imported, ${pctStr})${directCount > 0 ? ` + ${directCount} authorized direct operator offers` : ""}`;
       sampledDestinations.push(slug);
     }
   }
 
-  const totalRejectedRecords = syncRuns.reduce((acc, r) => acc + (r.rejectedCount || 0), 0);
-  const totalUpstreamRequests = syncRuns.reduce((acc, r) => acc + (r.upstreamRequestCount || 0), 0);
+  const totalRejectedRecords = sortedSyncRuns.reduce((acc, r) => acc + (r.rejectedCount || 0), 0);
+  const totalUpstreamRequests = sortedSyncRuns.reduce(
+    (acc, r) => acc + (r.upstreamRequestCount || 0),
+    0,
+  );
   const retiredRecordsCount = snapshot.records.filter(
     (r) => !isQuarantinedTourRecord(r) && r.active === false,
   ).length;
@@ -1430,11 +1675,17 @@ export async function getDurableCatalogSummaryReport() {
     quarantinedTourIds: Array.from(QUARANTINED_TOUR_IDS),
     retiredRecordsExcludedCount: retiredRecordsCount,
     destinationCoverageBreakdown: {
+      coverageBasis: "connected_provider_catalog_total",
+      coverageBasisDescription:
+        "Completeness measures imported active products against the connected provider's (Viator Partner API v2) total available catalog count for each destination, plus authorized direct operator feeds (FareHarbor, GoSno, PARR).",
       totalDestinations: Object.keys(byDestination).length,
       sampledDestinationsCount: sampledDestinations.length,
       completeDestinationsCount: completeDestinations.length,
       sampledDestinations,
       completeDestinations,
+      alaskaCompleteDestinationsCount: alaskaCompleteDestinations.length,
+      alaskaTotalDestinationsCount: alaskaSlugs.length,
+      alaskaCompleteDestinations,
     },
     totalRejectedRecords,
     totalUpstreamRequestsDuringSync: totalUpstreamRequests,
@@ -1442,7 +1693,8 @@ export async function getDurableCatalogSummaryReport() {
     byProvider,
     byPickupFulfillmentType,
     byDestination,
-    recentSyncRuns: syncRuns.slice(0, 25),
+    recentSyncRuns: sortedSyncRuns.slice(0, 25),
+    widgetPlacements: getWidgetPlacementReport(),
     wtaStatus: "paused",
   };
 }
