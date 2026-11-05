@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import {
   HOTEL_CONCIERGE_CONFIGS,
   type HotelConciergePropertyConfig,
 } from "@/lib/dcc/catalog/hotelConfigs";
 import type { MatchedTourOption, TripMatchResponse } from "@/lib/dcc/catalog/matcher";
+import type { PickupFulfillmentType } from "@/lib/dcc/catalog/durableCatalogStore";
 
 export type DccConciergeWidgetProps = {
   initialDestination?: string;
@@ -17,6 +18,7 @@ export type DccConciergeWidgetProps = {
     | "welcometoneworleanstours"
     | "welcometotheswamp"
     | "juneau-flight-deck";
+  initialPickupMode?: "any" | PickupFulfillmentType;
   embedMode?: boolean;
 };
 
@@ -48,10 +50,26 @@ function formatPrice(cents: number | null, currency = "USD"): string {
   }).format(dollars);
 }
 
+function getPickupFulfillmentBadgeClasses(mode?: PickupFulfillmentType | null): string {
+  switch (mode) {
+    case "pier_pickup":
+      return "bg-emerald-500/20 text-emerald-300 border-emerald-500/40";
+    case "hotel_pickup":
+      return "bg-blue-500/20 text-blue-300 border-blue-500/40";
+    case "downtown_shuttle_departure":
+      return "bg-amber-500/20 text-amber-300 border-amber-500/40";
+    case "self_drive":
+      return "bg-rose-500/20 text-rose-300 border-rose-500/40";
+    default:
+      return "bg-slate-800 text-slate-300 border-slate-700";
+  }
+}
+
 export default function DccConciergeWidget({
   initialDestination = "new-orleans",
   initialPropertySlug = "hotel-monteleone-nola",
   initialSurface = "hotel_concierge",
+  initialPickupMode,
   embedMode = false,
 }: DccConciergeWidgetProps) {
   const defaultHotel =
@@ -67,24 +85,27 @@ export default function DccConciergeWidget({
   const [hotelLng, setHotelLng] = useState<string>(String(defaultHotel.lng));
   const [filterToApprovedOnly, setFilterToApprovedOnly] = useState<boolean>(false);
   const [approvedTourIds, setApprovedTourIds] = useState<string[]>(defaultHotel.approvedTourIds);
-  const [showHotelConfigPanel, setShowHotelConfigPanel] = useState<boolean>(embedMode);
+  const [showHotelConfigPanel, setShowHotelConfigPanel] = useState<boolean>(false);
 
   // Guest trip constraints
-  const [date, setDate] = useState<string>("2026-11-18");
+  const [date, setDate] = useState<string>("2026-06-15");
   const [adults, setAdults] = useState<number>(2);
   const [childAgesText, setChildAgesText] = useState<string>("7, 11");
-  const [requiresHotelPickup, setRequiresHotelPickup] = useState<boolean>(
-    defaultHotel.defaultRequiresHotelPickup,
+  const [pickupMode, setPickupMode] = useState<"any" | PickupFulfillmentType>(
+    initialPickupMode || (defaultHotel.defaultRequiresHotelPickup ? "hotel_pickup" : "any"),
   );
   const [shipArrival, setShipArrival] = useState<string>("");
   const [allAboardTime, setAllAboardTime] = useState<string>("");
   const [maxWeightLbs, setMaxWeightLbs] = useState<string>("");
   const [requiresWheelchair, setRequiresWheelchair] = useState<boolean>(false);
-  const [enableShortlistLiveCheck, setEnableShortlistLiveCheck] = useState<boolean>(false);
 
   const [loading, setLoading] = useState<boolean>(false);
+  const [checkingLiveShortlist, setCheckingLiveShortlist] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [matchResult, setMatchResult] = useState<TripMatchResponse | null>(null);
+
+  const abortRef = useRef<AbortController | null>(null);
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleSelectPresetHotel = (slug: string) => {
     const preset: HotelConciergePropertyConfig | undefined = HOTEL_CONCIERGE_CONFIGS[slug];
@@ -94,7 +115,7 @@ export default function DccConciergeWidget({
     setDestination(preset.destinationSlug);
     setHotelLat(String(preset.lat));
     setHotelLng(String(preset.lng));
-    setRequiresHotelPickup(preset.defaultRequiresHotelPickup);
+    setPickupMode(preset.defaultRequiresHotelPickup ? "hotel_pickup" : "any");
     setApprovedTourIds(preset.approvedTourIds);
   };
 
@@ -104,91 +125,135 @@ export default function DccConciergeWidget({
     );
   };
 
-  const runTripMatch = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const childAges = childAgesText
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean)
-        .map(Number)
-        .filter((n) => Number.isFinite(n) && n >= 0 && n <= 17);
-
-      const latNum = Number(hotelLat);
-      const lngNum = Number(hotelLng);
-      const weightNum = maxWeightLbs.trim() ? Number(maxWeightLbs) : undefined;
-
-      const payload = {
-        destination,
-        date: date.trim() || undefined,
-        adults,
-        childAges,
-        requiresHotelPickup,
-        hotelName: propertyName,
-        hotelLat: Number.isFinite(latNum) ? latNum : undefined,
-        hotelLng: Number.isFinite(lngNum) ? lngNum : undefined,
-        approvedTourIds:
-          filterToApprovedOnly && approvedTourIds.length > 0 ? approvedTourIds : undefined,
-        shipArrival: shipArrival.trim() || undefined,
-        allAboardTime: allAboardTime.trim() || undefined,
-        maxPassengerWeightLbs: weightNum && Number.isFinite(weightNum) ? weightNum : undefined,
-        requiresWheelchair,
-        surface,
-        propertySlug: surface === "hotel_concierge" ? propertySlug : undefined,
-        enableShortlistLiveCheck,
-        shortlistMaxCount: 3,
-      };
-
-      const res = await fetch("/api/v1/tours/match", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.ok) {
-        throw new Error(data.error || `HTTP ${res.status}`);
+  const runTripMatch = useCallback(
+    async (withShortlistLiveCheck = false) => {
+      if (abortRef.current) {
+        abortRef.current.abort();
       }
-      setMatchResult(data as TripMatchResponse);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to run trip matching");
-    } finally {
-      setLoading(false);
+      const controller = new AbortController();
+      abortRef.current = controller;
+
+      if (withShortlistLiveCheck) {
+        setCheckingLiveShortlist(true);
+      } else {
+        setLoading(true);
+      }
+      setError(null);
+
+      try {
+        const childAges = childAgesText
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean)
+          .map(Number)
+          .filter((n) => Number.isFinite(n) && n >= 0 && n >= 0 && n <= 17);
+
+        const latNum = Number(hotelLat);
+        const lngNum = Number(hotelLng);
+        const weightNum = maxWeightLbs.trim() ? Number(maxWeightLbs) : undefined;
+
+        const payload = {
+          destination,
+          date: date.trim() || undefined,
+          adults,
+          childAges,
+          pickupMode,
+          requiresHotelPickup: pickupMode === "hotel_pickup",
+          requiresPierPickup: pickupMode === "pier_pickup",
+          hotelName: propertyName,
+          hotelLat: Number.isFinite(latNum) ? latNum : undefined,
+          hotelLng: Number.isFinite(lngNum) ? lngNum : undefined,
+          approvedTourIds:
+            filterToApprovedOnly && approvedTourIds.length > 0 ? approvedTourIds : undefined,
+          shipArrival: shipArrival.trim() || undefined,
+          allAboardTime: allAboardTime.trim() || undefined,
+          maxPassengerWeightLbs: weightNum && Number.isFinite(weightNum) ? weightNum : undefined,
+          requiresWheelchair,
+          surface,
+          propertySlug: surface === "hotel_concierge" ? propertySlug : undefined,
+          enableShortlistLiveCheck: withShortlistLiveCheck,
+          shortlistMaxCount: 4,
+        };
+
+        const res = await fetch("/api/v1/tours/match", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+          signal: controller.signal,
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          throw new Error(data.error || `HTTP ${res.status}`);
+        }
+        setMatchResult(data as TripMatchResponse);
+      } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") return;
+        setError(err instanceof Error ? err.message : "Failed to run trip matching");
+      } finally {
+        if (abortRef.current === controller) {
+          setLoading(false);
+          setCheckingLiveShortlist(false);
+        }
+      }
+    },
+    [
+      destination,
+      date,
+      adults,
+      childAgesText,
+      pickupMode,
+      propertyName,
+      hotelLat,
+      hotelLng,
+      filterToApprovedOnly,
+      approvedTourIds,
+      shipArrival,
+      allAboardTime,
+      maxWeightLbs,
+      requiresWheelchair,
+      surface,
+      propertySlug,
+    ],
+  );
+
+  // Stage 1: Debounced catalog match (enableShortlistLiveCheck=false) when filters change.
+  // Prevents firing repeated live-check requests on every keystroke!
+  useEffect(() => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
     }
-  }, [
-    destination,
-    date,
-    adults,
-    childAgesText,
-    requiresHotelPickup,
-    propertyName,
-    hotelLat,
-    hotelLng,
-    filterToApprovedOnly,
-    approvedTourIds,
-    shipArrival,
-    allAboardTime,
-    maxWeightLbs,
-    requiresWheelchair,
-    surface,
-    propertySlug,
-    enableShortlistLiveCheck,
-  ]);
+    debounceTimerRef.current = setTimeout(() => {
+      void runTripMatch(false);
+    }, 450);
+
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, [runTripMatch]);
 
   useEffect(() => {
-    void runTripMatch();
-  }, [runTripMatch]);
+    return () => {
+      if (abortRef.current) {
+        abortRef.current.abort();
+      }
+    };
+  }, []);
 
   const allOptionsForHotelToggle: MatchedTourOption[] = matchResult
     ? [...matchResult.options, ...matchResult.ineligibleOptions]
     : [];
 
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-950/95 text-slate-100 shadow-2xl overflow-hidden">
+    <div
+      data-testid="dcc-concierge-widget"
+      className="rounded-2xl border border-slate-800 bg-slate-950/95 text-slate-100 shadow-2xl overflow-hidden"
+    >
       {/* Header Bar */}
       <div className="border-b border-slate-800 bg-slate-900/90 px-6 py-4 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="inline-flex items-center rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-semibold text-emerald-300 border border-emerald-500/30">
               Shared Tour Catalog & Trip-Matching Service
             </span>
@@ -216,6 +281,7 @@ export default function DccConciergeWidget({
           <label className="text-xs text-slate-400">Presentation Surface:</label>
           <select
             aria-label="Presentation Surface"
+            data-testid="concierge-surface-select"
             value={surface}
             onChange={(e) => setSurface(e.target.value)}
             className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs font-medium text-white"
@@ -339,13 +405,14 @@ export default function DccConciergeWidget({
 
       {/* Guest Circumstances Input Form */}
       <div className="border-b border-slate-800 bg-slate-900/50 px-6 py-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-3">
           <div className="lg:col-span-2">
             <label className="block text-xs font-medium text-slate-300 mb-1">
               Destination / Cruise Port
             </label>
             <select
               aria-label="Destination or Cruise Port"
+              data-testid="concierge-destination-select"
               value={destination}
               onChange={(e) => setDestination(e.target.value)}
               className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-white"
@@ -363,6 +430,7 @@ export default function DccConciergeWidget({
             <input
               type="date"
               aria-label="Travel Date"
+              data-testid="concierge-date-input"
               value={date}
               onChange={(e) => setDate(e.target.value)}
               className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-white"
@@ -376,6 +444,7 @@ export default function DccConciergeWidget({
               min={1}
               max={20}
               aria-label="Adults"
+              data-testid="concierge-adults-input"
               value={adults}
               onChange={(e) => setAdults(Math.max(1, Number(e.target.value) || 1))}
               className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-white"
@@ -388,48 +457,49 @@ export default function DccConciergeWidget({
             </label>
             <input
               type="text"
-              placeholder="e.g. 5, 9"
+              placeholder="e.g. 7, 11"
               aria-label="Children's Ages"
+              data-testid="concierge-children-input"
               value={childAgesText}
               onChange={(e) => setChildAgesText(e.target.value)}
               className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-white"
             />
           </div>
 
+          <div>
+            <label className="block text-xs font-medium text-slate-300 mb-1">
+              Pickup / Fulfillment Mode
+            </label>
+            <select
+              aria-label="Pickup or Fulfillment Mode"
+              data-testid="concierge-pickup-mode-select"
+              value={pickupMode}
+              onChange={(e) => setPickupMode(e.target.value as "any" | PickupFulfillmentType)}
+              className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-white"
+            >
+              <option value="any">Any Pickup / Meeting Mode</option>
+              <option value="hotel_pickup">Door-to-Door Hotel Pickup</option>
+              <option value="pier_pickup">Cruise Pier Pickup</option>
+              <option value="downtown_shuttle_departure">Downtown Shuttle Departure</option>
+              <option value="self_drive">Self-Drive / Meet on Site</option>
+            </select>
+          </div>
+
           <div className="flex items-end">
             <button
               type="button"
-              onClick={() => void runTripMatch()}
-              disabled={loading}
-              className="w-full rounded-lg bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 px-4 py-2 text-xs font-bold text-slate-950 transition"
+              data-testid="concierge-verify-shortlist-btn"
+              onClick={() => void runTripMatch(true)}
+              disabled={checkingLiveShortlist}
+              className="w-full rounded-lg bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 px-3 py-2 text-xs font-bold text-slate-950 transition"
             >
-              {loading ? "Matching Tours…" : "Match Tours & Check"}
+              {checkingLiveShortlist ? "Verifying Live…" : "Verify Shortlist Live"}
             </button>
           </div>
         </div>
 
         {/* Secondary Constraints Row */}
-        <div className="mt-3 pt-3 border-t border-slate-800/80 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-center">
-          <label className="inline-flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={requiresHotelPickup}
-              onChange={(e) => setRequiresHotelPickup(e.target.checked)}
-              className="rounded border-slate-700"
-            />
-            Require Hotel / Shuttle Pickup
-          </label>
-
-          <label className="inline-flex items-center gap-2 text-xs text-cyan-300 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={enableShortlistLiveCheck}
-              onChange={(e) => setEnableShortlistLiveCheck(e.target.checked)}
-              className="rounded border-slate-700"
-            />
-            Check Live Availability for Top Shortlist
-          </label>
-
+        <div className="mt-3 pt-3 border-t border-slate-800/80 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-center">
           <div className="flex items-center gap-1.5">
             <span className="text-[11px] text-slate-400 whitespace-nowrap">Ship Arrival:</span>
             <input
@@ -469,6 +539,14 @@ export default function DccConciergeWidget({
             />
             Requires Wheelchair Access
           </label>
+
+          <div className="text-right text-[11px] text-slate-400">
+            {loading
+              ? "Updating catalog candidates…"
+              : checkingLiveShortlist
+                ? "Running date-specific live checks…"
+                : "Stage 1: Instant Catalog · Click Verify Shortlist Live for date-specific checks"}
+          </div>
         </div>
       </div>
 
@@ -520,189 +598,249 @@ export default function DccConciergeWidget({
 
       {/* Matched Options List */}
       <div className="p-6 space-y-4">
-        {matchResult?.options.map((opt) => (
-          <div
-            key={opt.tourId}
-            className="rounded-xl border border-slate-800 bg-slate-900/60 p-5 space-y-3 hover:border-slate-700 transition"
-          >
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div className="space-y-1 max-w-3xl">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span
-                    className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase ${
-                      opt.suitability === "recommended"
-                        ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
-                        : "bg-amber-500/20 text-amber-300 border border-amber-500/40"
-                    }`}
-                  >
-                    {opt.suitability === "recommended" ? "Recommended Match" : "Needs Confirmation"} (Score{" "}
-                    {opt.matchScore})
-                  </span>
+        {matchResult?.options.map((opt) => {
+          const bound = opt.boundOffer;
+          const pickupBadgeClass = getPickupFulfillmentBadgeClasses(
+            bound?.pickupFulfillmentType ?? opt.pickupAndLocation.pickupFulfillmentType,
+          );
+          const transferSource =
+            opt.cruiseScheduleFit?.transferTimeSource || bound?.transferTimeSource || "unknown";
+          const verifiedTransferMins =
+            opt.cruiseScheduleFit?.transferBeforeMinutes ?? bound?.transferBeforeMinutes ?? null;
+          const planningEstimateMins =
+            opt.cruiseScheduleFit?.planningEstimateTransferMinutes ??
+            bound?.planningEstimateTransferMinutes ??
+            null;
 
-                  <span className="rounded-full bg-slate-800 px-2.5 py-0.5 text-[11px] font-mono text-cyan-300 border border-slate-700">
-                    {opt.capabilityTier}
-                  </span>
+          return (
+            <div
+              key={opt.tourId}
+              data-testid={`concierge-tour-card-${opt.providerProductCode}`}
+              className="rounded-xl border border-slate-800 bg-slate-900/60 p-5 space-y-3 hover:border-slate-700 transition"
+            >
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="space-y-1.5 max-w-3xl">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span
+                      className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase ${
+                        opt.suitability === "recommended"
+                          ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
+                          : "bg-amber-500/20 text-amber-300 border border-amber-500/40"
+                      }`}
+                    >
+                      {opt.suitability === "recommended" ? "Recommended Match" : "Needs Confirmation"}{" "}
+                      (Score {opt.matchScore})
+                    </span>
 
-                  <span
-                    className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium ${
-                      opt.commissionAuthorized
-                        ? "bg-indigo-500/15 text-indigo-300 border border-indigo-500/30"
-                        : "bg-slate-800 text-slate-300 border border-slate-700"
-                    }`}
-                  >
-                    {opt.commissionAuthorized
-                      ? `Authorized (${opt.primaryProvider})`
-                      : "Non-Commission Operator Discovery"}
-                  </span>
+                    <span className="rounded-full bg-slate-800 px-2.5 py-0.5 text-[11px] font-mono text-cyan-300 border border-slate-700">
+                      {opt.capabilityTier}
+                    </span>
 
-                  <span className="text-[11px] font-mono text-slate-500">{opt.tourId}</span>
+                    <span
+                      className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium ${
+                        opt.commissionAuthorized
+                          ? "bg-indigo-500/15 text-indigo-300 border border-indigo-500/30"
+                          : "bg-slate-800 text-slate-300 border border-slate-700"
+                      }`}
+                    >
+                      {opt.commissionAuthorized
+                        ? `Authorized (${opt.primaryProvider})`
+                        : "Non-Commission Operator Discovery"}
+                    </span>
+
+                    <span className="text-[11px] font-mono text-slate-500">{opt.tourId}</span>
+                  </div>
+
+                  <h3 className="text-base font-bold text-white">{opt.title}</h3>
+
+                  {/* Bound Option, Pickup Fulfillment & Transfer Provenance Badge Strip */}
+                  <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                    {bound?.optionTitle && (
+                      <span
+                        data-testid="concierge-bound-option-badge"
+                        className="rounded-md bg-slate-800 border border-slate-700 px-2 py-0.5 text-[11px] font-semibold text-slate-200"
+                      >
+                        Option: {bound.optionTitle}
+                        {bound.optionCode ? ` (${bound.optionCode})` : ""}
+                      </span>
+                    )}
+
+                    <span
+                      data-testid="concierge-pickup-badge"
+                      className={`rounded-md border px-2 py-0.5 text-[11px] font-semibold ${pickupBadgeClass}`}
+                    >
+                      {bound?.pickupBadgeLabel || "Pickup / Meeting Point Unverified"}
+                    </span>
+
+                    <span
+                      data-testid="concierge-transfer-badge"
+                      className={`rounded-md border px-2 py-0.5 text-[11px] font-medium ${
+                        (transferSource === "verified_pier_pickup" ||
+                          transferSource === "verified_meeting_point") &&
+                        verifiedTransferMins !== null
+                          ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30"
+                          : transferSource === "planning_estimate"
+                            ? "bg-amber-500/15 text-amber-300 border-amber-500/30"
+                            : "bg-slate-800 text-slate-400 border-slate-700"
+                      }`}
+                    >
+                      {(transferSource === "verified_pier_pickup" ||
+                        transferSource === "verified_meeting_point") &&
+                      verifiedTransferMins !== null
+                        ? `Verified Pier Transfer (${verifiedTransferMins}m)`
+                        : transferSource === "planning_estimate" && planningEstimateMins !== null
+                          ? `Planning Estimate (~${planningEstimateMins}m transfer, unverified)`
+                          : "Transfer Time Unknown"}
+                    </span>
+
+                    {bound?.departureTime && (
+                      <span
+                        data-testid="concierge-bound-departure-badge"
+                        className="rounded-md bg-cyan-500/15 border border-cyan-500/30 px-2 py-0.5 text-[11px] font-mono text-cyan-300"
+                      >
+                        Departs: {bound.departureTime} ({bound.date || date})
+                      </span>
+                    )}
+                  </div>
+
+                  {opt.summary && (
+                    <p className="text-xs text-slate-300 leading-relaxed">{opt.summary}</p>
+                  )}
                 </div>
 
-                <h3 className="text-base font-bold text-white">{opt.title}</h3>
-                {opt.summary && <p className="text-xs text-slate-300 leading-relaxed">{opt.summary}</p>}
+                <div className="text-right">
+                  <div className="text-lg font-extrabold text-emerald-400">
+                    {formatPrice(opt.pricing.fromPriceCents, opt.pricing.currency)}
+                    <span className="text-xs font-normal text-slate-400 ml-1">
+                      {opt.pricing.priceBasis === "flat_rate_per_vehicle"
+                        ? "/ vehicle"
+                        : "/ person"}
+                    </span>
+                  </div>
+                  {opt.pricing.totalPartyPriceCents !== null &&
+                    opt.pricing.totalPartyPriceCents !== undefined && (
+                      <div
+                        data-testid="concierge-total-party-price"
+                        className="text-xs font-bold text-emerald-300"
+                      >
+                        Total Party ({bound?.totalGuests || adults} guests):{" "}
+                        {formatPrice(opt.pricing.totalPartyPriceCents, opt.pricing.currency)}
+                      </div>
+                    )}
+                  <div className="text-[11px] text-slate-400">
+                    Channel:{" "}
+                    <span className="font-mono text-slate-200">
+                      {opt.pricing.selectedChannelId}
+                    </span>
+                  </div>
+                  <div className="mt-2">
+                    <a
+                      href={opt.bookingPath.handoffUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      data-testid="concierge-bound-checkout-link"
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 px-3.5 py-2 text-xs font-bold text-slate-950 transition"
+                    >
+                      {opt.capabilityTier === "discovery_only"
+                        ? "Visit Operator Site ↗"
+                        : `Continue to Checkout (${bound?.optionCode || opt.primaryProvider}) ↗`}
+                    </a>
+                  </div>
+                  {opt.bookingPath.clickId && (
+                    <div className="mt-1 text-[10px] font-mono text-slate-400">
+                      Trace ID: {opt.bookingPath.clickId}
+                    </div>
+                  )}
+                </div>
               </div>
 
-              <div className="text-right">
-                <div className="text-lg font-extrabold text-emerald-400">
-                  {formatPrice(opt.pricing.fromPriceCents, opt.pricing.currency)}
+              {/* Key Facts Row with Explicit Unknown Preservation */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 pt-2 border-t border-slate-800/80 text-xs">
+                <div className="rounded-lg bg-slate-950/60 p-2.5 border border-slate-800/80">
+                  <div className="text-[10px] uppercase text-slate-400">Duration (Bound Option)</div>
+                  <div className="font-semibold text-white mt-0.5">
+                    {opt.duration.durationMinutes !== null ? (
+                      opt.duration.durationRawText || `${opt.duration.durationMinutes} mins`
+                    ) : (
+                      <span className="text-amber-300">Unknown (Not assumed 3h)</span>
+                    )}
+                  </div>
                 </div>
-                <div className="text-[11px] text-slate-400">
-                  Channel: <span className="font-mono text-slate-200">{opt.pricing.selectedChannelId}</span>
+
+                <div className="rounded-lg bg-slate-950/60 p-2.5 border border-slate-800/80">
+                  <div className="text-[10px] uppercase text-slate-400">Cancellation Policy</div>
+                  <div className="font-semibold text-white mt-0.5">
+                    {opt.cancellation.freeCancellation === true ? (
+                      <span className="text-emerald-300">
+                        Free cancellation ({opt.cancellation.cutoffHours || 24}h)
+                      </span>
+                    ) : opt.cancellation.freeCancellation === false ? (
+                      <span className="text-rose-300">Non-refundable / Strict</span>
+                    ) : (
+                      <span className="text-amber-300">Unknown (Not assumed free)</span>
+                    )}
+                  </div>
                 </div>
-                <div className="mt-2">
-                  <a
-                    href={opt.bookingPath.handoffUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 px-3.5 py-2 text-xs font-bold text-slate-950 transition"
-                  >
-                    {opt.capabilityTier === "discovery_only"
-                      ? "Visit Operator Site ↗"
-                      : "Book / Continue via Tracked Path ↗"}
-                  </a>
+
+                <div className="rounded-lg bg-slate-950/60 p-2.5 border border-slate-800/80">
+                  <div className="text-[10px] uppercase text-slate-400">
+                    Pickup & Meeting Coordinates
+                  </div>
+                  <div className="font-semibold text-white mt-0.5">
+                    {bound?.pickupBadgeLabel ||
+                      (opt.pickupAndLocation.hasHotelPickup === true
+                        ? "Hotel / Shuttle Pickup Offered"
+                        : opt.pickupAndLocation.hasHotelPickup === false
+                          ? "Meeting Point Only"
+                          : "Pickup Coverage Unknown")}
+                  </div>
+                  <div className="text-[11px] text-slate-400 mt-0.5">
+                    {opt.pickupAndLocation.locationPrecision === "exact" &&
+                    opt.pickupAndLocation.meetingPointLat !== null
+                      ? `Coords: ${opt.pickupAndLocation.meetingPointLat.toFixed(4)}, ${opt.pickupAndLocation.meetingPointLng?.toFixed(4)}${opt.pickupAndLocation.distanceFromGuestKm !== null ? ` (${opt.pickupAndLocation.distanceFromGuestKm} km)` : ""}`
+                      : "Coordinates: Explicit Unknown (No fake city-center fallback)"}
+                  </div>
                 </div>
-                {opt.bookingPath.clickId && (
-                  <div className="mt-1 text-[10px] font-mono text-slate-400">
-                    Trace ID: {opt.bookingPath.clickId}
+
+                <div className="rounded-lg bg-slate-950/60 p-2.5 border border-slate-800/80">
+                  <div className="text-[10px] uppercase text-slate-400">
+                    Party & Shortlist Live Status
+                  </div>
+                  <div className="font-semibold text-white mt-0.5">
+                    {opt.partyCompositionApplied.paxMix
+                      .map((p) => `${p.numberOfTravelers}x ${p.ageBand}`)
+                      .join(", ")}
+                  </div>
+                  <div className="text-[11px] text-cyan-300 mt-0.5">
+                    {opt.shortlistLiveCheck.note}
+                  </div>
+                </div>
+              </div>
+
+              {/* Explanations & Explicit Unknown Warnings */}
+              <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                <ul className="space-y-1 text-slate-300 list-disc list-inside">
+                  {opt.explanations.map((exp, idx) => (
+                    <li key={idx}>{exp}</li>
+                  ))}
+                </ul>
+
+                {opt.missingInformation.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {opt.missingInformation.map((m) => (
+                      <span
+                        key={m}
+                        className="rounded bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 text-[11px] font-mono text-amber-300"
+                      >
+                        missing: {m}
+                      </span>
+                    ))}
                   </div>
                 )}
               </div>
             </div>
-
-            {/* Key Facts Row with Explicit Unknown Preservation */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 pt-2 border-t border-slate-800/80 text-xs">
-              <div className="rounded-lg bg-slate-950/60 p-2.5 border border-slate-800/80">
-                <div className="text-[10px] uppercase text-slate-400">Duration</div>
-                <div className="font-semibold text-white mt-0.5">
-                  {opt.duration.durationMinutes !== null ? (
-                    opt.duration.durationRawText || `${opt.duration.durationMinutes} mins`
-                  ) : (
-                    <span className="text-amber-300">Unknown (Not assumed 3h)</span>
-                  )}
-                </div>
-              </div>
-
-              <div className="rounded-lg bg-slate-950/60 p-2.5 border border-slate-800/80">
-                <div className="text-[10px] uppercase text-slate-400">Cancellation Policy</div>
-                <div className="font-semibold text-white mt-0.5">
-                  {opt.cancellation.freeCancellation === true ? (
-                    <span className="text-emerald-300">
-                      Free cancellation ({opt.cancellation.cutoffHours || 24}h)
-                    </span>
-                  ) : opt.cancellation.freeCancellation === false ? (
-                    <span className="text-rose-300">Non-refundable / Strict</span>
-                  ) : (
-                    <span className="text-amber-300">Unknown (Not assumed free)</span>
-                  )}
-                </div>
-              </div>
-
-              <div className="rounded-lg bg-slate-950/60 p-2.5 border border-slate-800/80">
-                <div className="text-[10px] uppercase text-slate-400">Pickup & Meeting Coordinates</div>
-                <div className="font-semibold text-white mt-0.5">
-                  {opt.pickupAndLocation.hasHotelPickup === true
-                    ? "Hotel / Shuttle Pickup Offered"
-                    : opt.pickupAndLocation.hasHotelPickup === false
-                      ? "Meeting Point Only"
-                      : "Pickup Coverage Unknown"}
-                </div>
-                <div className="text-[11px] text-slate-400 mt-0.5">
-                  {opt.pickupAndLocation.locationPrecision === "exact" &&
-                  opt.pickupAndLocation.meetingPointLat !== null
-                    ? `Coords: ${opt.pickupAndLocation.meetingPointLat.toFixed(4)}, ${opt.pickupAndLocation.meetingPointLng?.toFixed(4)}${opt.pickupAndLocation.distanceFromGuestKm !== null ? ` (${opt.pickupAndLocation.distanceFromGuestKm} km)` : ""}`
-                    : "Coordinates: Explicit Unknown (No fake city-center fallback)"}
-                </div>
-              </div>
-
-              <div className="rounded-lg bg-slate-950/60 p-2.5 border border-slate-800/80">
-                <div className="text-[10px] uppercase text-slate-400">Party & Shortlist Live Status</div>
-                <div className="font-semibold text-white mt-0.5">
-                  {opt.partyCompositionApplied.paxMix
-                    .map((p) => `${p.numberOfTravelers}x ${p.ageBand}`)
-                    .join(", ")}
-                </div>
-                <div className="text-[11px] text-cyan-300 mt-0.5">{opt.shortlistLiveCheck.note}</div>
-              </div>
-            </div>
-
-            {/* Explanations & Explicit Unknown Warnings */}
-            <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-              <ul className="space-y-1 text-slate-300 list-disc list-inside">
-                {opt.explanations.map((exp, idx) => (
-                  <li key={idx}>{exp}</li>
-                ))}
-              </ul>
-
-              {opt.missingInformation.length > 0 && (
-                <div className="flex flex-wrap gap-1.5">
-                  {opt.missingInformation.map((m) => (
-                    <span
-                      key={m}
-                      className="rounded bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 text-[11px] font-mono text-amber-300"
-                    >
-                      missing: {m}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Distinct Channel-Specific Offers */}
-            {opt.channelOffers.length > 1 && (
-              <div className="pt-2 border-t border-slate-800/60">
-                <div className="text-[11px] font-semibold text-slate-400 mb-1.5">
-                  Distinct Channel Offers Preserved on Underlying Tour Identity:
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                  {opt.channelOffers.map((co, idx) => (
-                    <div
-                      key={`${co.channelId}-${idx}`}
-                      className="rounded-lg border border-slate-800 bg-slate-950/80 p-2.5 text-[11px]"
-                    >
-                      <div className="flex items-center justify-between font-semibold text-white">
-                        <span>{co.channelId}</span>
-                        <span className="text-emerald-400">
-                          {formatPrice(co.fromPriceCents, co.currency)}
-                        </span>
-                      </div>
-                      <div className="text-slate-400 mt-0.5">
-                        Provider: <span className="font-mono">{co.provider}</span> ({co.capabilityTier})
-                      </div>
-                      <div className="text-slate-400">
-                        Cancel:{" "}
-                        {co.freeCancellation === true
-                          ? `Free (${co.cancellationCutoffHours || 24}h)`
-                          : co.freeCancellation === false
-                            ? `Strict (${co.cancellationCutoffHours || 0}h)`
-                            : "Unknown"}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

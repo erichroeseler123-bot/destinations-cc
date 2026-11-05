@@ -32,11 +32,33 @@ export type TourAgeBandRecord = {
 
 export type PriceBasis = "per_person" | "flat_rate_per_vehicle" | "per_group" | "unknown";
 
+export type PickupFulfillmentType =
+  | "pier_pickup"
+  | "hotel_pickup"
+  | "downtown_shuttle_departure"
+  | "self_drive"
+  | "walkable_from_pier"
+  | "unknown";
+
+export type TransferTimeSource =
+  | "verified_pier_pickup"
+  | "verified_meeting_point"
+  | "planning_estimate"
+  | "unknown";
+
 export type TourProductOptionRecord = {
   optionCode: string;
   title: string;
   description: string | null;
   includesPickup: boolean | null;
+  pickupFulfillmentType?: PickupFulfillmentType;
+  meetingPointName?: string | null;
+  meetingPointLat?: number | null;
+  meetingPointLng?: number | null;
+  transferBeforeMinutes?: number | null;
+  transferAfterMinutes?: number | null;
+  transferTimeSource?: TransferTimeSource;
+  planningEstimateTransferMinutes?: number | null;
   durationMinutes: number | null;
   fromPriceCents: number | null;
   priceBasis: PriceBasis;
@@ -52,6 +74,8 @@ export type TourConstraintsRecord = {
   physicalDifficulty?: "EASY" | "MODERATE" | "CHALLENGING" | "UNKNOWN" | null;
   cruiseBufferBeforeMinutes?: number | null;
   cruiseBufferAfterMinutes?: number | null;
+  transferTimeSource?: TransferTimeSource;
+  planningEstimateTransferMinutes?: number | null;
   weatherDependent?: boolean | null;
   requiresClosedToeShoes?: boolean | null;
 };
@@ -90,6 +114,7 @@ export type TourProvenanceRecord = {
   sourceEndpoint: string;
   fetchedAt: string;
   modifiedSinceCursor?: string | null;
+  lastScheduleRefreshAt?: string | null;
   contentSha256: string;
   rawFieldsVerified: {
     durationKnown: boolean;
@@ -132,11 +157,13 @@ export type DurableTourRecord = {
   hasHotelPickup: boolean | null;
   /** True if the lowest-priced option includes hotel pickup; false if hotel pickup is an optional upgrade; null if unknown */
   lowestPriceIncludesPickup?: boolean | null;
+  pickupFulfillmentType?: PickupFulfillmentType;
   pickupType:
     | "HOTEL_PICKUP"
     | "MEETING_POINT_ONLY"
     | "HOTEL_OR_MEETING_POINT"
     | "CRUISE_PIER_PICKUP"
+    | "DOWNTOWN_SHUTTLE_DEPARTURE"
     | "UNKNOWN"
     | null;
   pickupSummary: string | null;
@@ -161,6 +188,8 @@ export type DurableTourRecord = {
   provenance: TourProvenanceRecord;
   quarantined?: boolean;
   quarantineReason?: string | null;
+  retiredAt?: string | null;
+  retirementReason?: string | null;
   active: boolean;
   lastVerifiedAt: string;
   updatedAt: string;
@@ -733,6 +762,20 @@ function mapPgRowToDurableTourRecord(row: Record<string, any>): DurableTourRecor
     hasHotelPickup: typeof row.has_hotel_pickup === "boolean" ? row.has_hotel_pickup : null,
     lowestPriceIncludesPickup:
       typeof row.lowest_price_includes_pickup === "boolean" ? row.lowest_price_includes_pickup : null,
+    pickupFulfillmentType:
+      (row.service_details_json &&
+      typeof row.service_details_json === "object" &&
+      typeof row.service_details_json.pickupFulfillmentType === "string"
+        ? (row.service_details_json.pickupFulfillmentType as PickupFulfillmentType)
+        : row.pickup_type === "CRUISE_PIER_PICKUP"
+          ? "pier_pickup"
+          : row.pickup_type === "DOWNTOWN_SHUTTLE_DEPARTURE"
+            ? "downtown_shuttle_departure"
+            : row.pickup_type === "HOTEL_PICKUP"
+              ? "hotel_pickup"
+              : row.pickup_type === "MEETING_POINT_ONLY"
+                ? "self_drive"
+                : undefined),
     pickupType: row.pickup_type || null,
     pickupSummary: row.pickup_summary ? String(row.pickup_summary) : null,
     meetingPointName: row.meeting_point_name ? String(row.meeting_point_name) : null,
@@ -786,6 +829,14 @@ function mapPgRowToDurableTourRecord(row: Record<string, any>): DurableTourRecor
           },
     quarantined,
     quarantineReason: row.quarantine_reason ? String(row.quarantine_reason) : null,
+    retiredAt:
+      row.service_details_json && typeof row.service_details_json?.retiredAt === "string"
+        ? row.service_details_json.retiredAt
+        : null,
+    retirementReason:
+      row.service_details_json && typeof row.service_details_json?.retirementReason === "string"
+        ? row.service_details_json.retirementReason
+        : null,
     active: Boolean(row.active) && !quarantined,
     lastVerifiedAt: row.last_verified_at
       ? new Date(row.last_verified_at).toISOString()
@@ -852,7 +903,12 @@ async function upsertSingleTourToPg(sql: ReturnType<typeof getSqlClient>, record
       ${JSON.stringify(record.constraints)}::jsonb,
       ${JSON.stringify(record.channelOffers)}::jsonb,
       ${JSON.stringify(record.productOptions || [])}::jsonb,
-      ${JSON.stringify(record.serviceDetails || {})}::jsonb,
+      ${JSON.stringify({
+        ...(record.serviceDetails || {}),
+        ...(record.pickupFulfillmentType ? { pickupFulfillmentType: record.pickupFulfillmentType } : {}),
+        ...(record.retiredAt ? { retiredAt: record.retiredAt } : {}),
+        ...(record.retirementReason ? { retirementReason: record.retirementReason } : {}),
+      })}::jsonb,
       ${JSON.stringify(record.inclusions)}::jsonb,
       ${JSON.stringify(record.exclusions)}::jsonb,
       ${record.primaryImageUrl},
@@ -1251,25 +1307,32 @@ export async function getDurableCatalogSummaryReport() {
       coverageStatus: "sampled" | "complete";
       providerTotalAvailableCount: number | null;
       importedCount: number;
+      viatorImportedCount: number;
+      viatorCoveragePercent: number | null;
       nextCursor: string | null;
       byCapabilityTier: Record<string, number>;
       byProvider: Record<string, number>;
+      byPickupFulfillmentType: Record<string, number>;
       explicitUnknownCounts: {
         unknownDuration: number;
         unknownCancellation: number;
         unknownPickup: number;
         unknownMeetingCoordinates: number;
+        unknownTransferBuffer: number;
       };
     }
   > = {};
 
   const byCapabilityTier: Record<string, number> = {};
   const byProvider: Record<string, number> = {};
+  const byPickupFulfillmentType: Record<string, number> = {};
 
   for (const rec of records) {
     if (isQuarantinedTourRecord(rec)) continue;
     byCapabilityTier[rec.capabilityTier] = (byCapabilityTier[rec.capabilityTier] || 0) + 1;
     byProvider[rec.primaryProvider] = (byProvider[rec.primaryProvider] || 0) + 1;
+    const pfType = rec.pickupFulfillmentType || "unknown";
+    byPickupFulfillmentType[pfType] = (byPickupFulfillmentType[pfType] || 0) + 1;
 
     if (!byDestination[rec.destinationSlug]) {
       const latestRun = latestSyncByDestination.get(rec.destinationSlug);
@@ -1285,28 +1348,44 @@ export async function getDurableCatalogSummaryReport() {
         coverageStatus: "sampled",
         providerTotalAvailableCount,
         importedCount: 0,
+        viatorImportedCount: 0,
+        viatorCoveragePercent: null,
         nextCursor: latestRun?.cursorValue || null,
         byCapabilityTier: {},
         byProvider: {},
+        byPickupFulfillmentType: {},
         explicitUnknownCounts: {
           unknownDuration: 0,
           unknownCancellation: 0,
           unknownPickup: 0,
           unknownMeetingCoordinates: 0,
+          unknownTransferBuffer: 0,
         },
       };
     }
     const d = byDestination[rec.destinationSlug];
     d.total += 1;
     d.importedCount += 1;
+    if (rec.primaryProvider === "viator") {
+      d.viatorImportedCount += 1;
+    }
     d.byCapabilityTier[rec.capabilityTier] = (d.byCapabilityTier[rec.capabilityTier] || 0) + 1;
     d.byProvider[rec.primaryProvider] = (d.byProvider[rec.primaryProvider] || 0) + 1;
+    d.byPickupFulfillmentType[pfType] = (d.byPickupFulfillmentType[pfType] || 0) + 1;
 
     if (rec.durationMinutes === null) d.explicitUnknownCounts.unknownDuration += 1;
     if (rec.freeCancellation === null) d.explicitUnknownCounts.unknownCancellation += 1;
     if (rec.hasHotelPickup === null) d.explicitUnknownCounts.unknownPickup += 1;
     if (rec.meetingPointLat === null || rec.meetingPointLng === null) {
       d.explicitUnknownCounts.unknownMeetingCoordinates += 1;
+    }
+    if (
+      rec.constraints?.cruiseBufferBeforeMinutes === null ||
+      rec.constraints?.cruiseBufferBeforeMinutes === undefined ||
+      rec.constraints?.transferTimeSource === "unknown" ||
+      rec.constraints?.transferTimeSource === "planning_estimate"
+    ) {
+      d.explicitUnknownCounts.unknownTransferBuffer += 1;
     }
   }
 
@@ -1315,13 +1394,19 @@ export async function getDurableCatalogSummaryReport() {
 
   for (const [slug, destStats] of Object.entries(byDestination)) {
     const viatorImported = destStats.byProvider["viator"] || 0;
-    const latestRun = latestSyncByDestination.get(slug);
-    const runCoverage = latestRun?.metadata?.coverageStatus;
+    destStats.viatorImportedCount = viatorImported;
     if (
-      runCoverage === "complete" ||
-      (destStats.providerTotalAvailableCount !== null &&
-        destStats.providerTotalAvailableCount > 0 &&
-        viatorImported >= destStats.providerTotalAvailableCount)
+      destStats.providerTotalAvailableCount !== null &&
+      destStats.providerTotalAvailableCount > 0
+    ) {
+      destStats.viatorCoveragePercent =
+        Math.round((viatorImported / destStats.providerTotalAvailableCount) * 1000) / 10;
+    }
+    // Completing N pages does NOT make a destination complete unless imported >= providerTotalAvailableCount
+    if (
+      destStats.providerTotalAvailableCount !== null &&
+      destStats.providerTotalAvailableCount > 0 &&
+      viatorImported >= destStats.providerTotalAvailableCount
     ) {
       destStats.coverageStatus = "complete";
       completeDestinations.push(slug);
@@ -1333,6 +1418,9 @@ export async function getDurableCatalogSummaryReport() {
 
   const totalRejectedRecords = syncRuns.reduce((acc, r) => acc + (r.rejectedCount || 0), 0);
   const totalUpstreamRequests = syncRuns.reduce((acc, r) => acc + (r.upstreamRequestCount || 0), 0);
+  const retiredRecordsCount = snapshot.records.filter(
+    (r) => !isQuarantinedTourRecord(r) && r.active === false,
+  ).length;
 
   return {
     storageSource: source,
@@ -1340,6 +1428,7 @@ export async function getDurableCatalogSummaryReport() {
     totalDestinationsCovered: Object.keys(byDestination).length,
     quarantinedRecordsExcludedCount: QUARANTINED_TOUR_IDS.size,
     quarantinedTourIds: Array.from(QUARANTINED_TOUR_IDS),
+    retiredRecordsExcludedCount: retiredRecordsCount,
     destinationCoverageBreakdown: {
       totalDestinations: Object.keys(byDestination).length,
       sampledDestinationsCount: sampledDestinations.length,
@@ -1351,8 +1440,69 @@ export async function getDurableCatalogSummaryReport() {
     totalUpstreamRequestsDuringSync: totalUpstreamRequests,
     byCapabilityTier,
     byProvider,
+    byPickupFulfillmentType,
     byDestination,
-    recentSyncRuns: syncRuns.slice(0, 20),
+    recentSyncRuns: syncRuns.slice(0, 25),
     wtaStatus: "paused",
   };
+}
+
+export async function retireDurableTourRecord(
+  tourIdOrProviderCode: string,
+  reason = "retired_or_inactive_in_provider_feed",
+): Promise<{ retired: boolean; tourId: string | null }> {
+  const norm = tourIdOrProviderCode.trim().toLowerCase();
+  if (!norm) return { retired: false, tourId: null };
+
+  const snapshot = readLocalCatalogSnapshot();
+  const nowIso = new Date().toISOString();
+  let matchedTourId: string | null = null;
+
+  const updatedRecords = snapshot.records.map((rec) => {
+    const isMatch =
+      rec.tourId.toLowerCase() === norm ||
+      rec.providerProductCode.toLowerCase() === norm ||
+      rec.compatibilityAliases.some((a) => a.toLowerCase() === norm);
+    if (!isMatch) return rec;
+    matchedTourId = rec.tourId;
+    return {
+      ...rec,
+      active: false,
+      retiredAt: nowIso,
+      retirementReason: reason,
+      updatedAt: nowIso,
+    };
+  });
+
+  if (matchedTourId) {
+    writeLocalCatalogSnapshot(updatedRecords, snapshot.syncRuns);
+    memoryCatalogCache = updatedRecords.filter((r) => r.active && !isQuarantinedTourRecord(r));
+  }
+
+  if (shouldUsePostgres()) {
+    try {
+      await ensureCatalogSchema();
+      const sql = getSqlClient();
+      const rows = await sql`
+        UPDATE dcc_tour_catalog
+        SET active = false,
+            service_details_json = COALESCE(service_details_json, '{}'::jsonb) || ${JSON.stringify({
+              retiredAt: nowIso,
+              retirementReason: reason,
+            })}::jsonb,
+            updated_at = now()
+        WHERE LOWER(tour_id) = ${norm}
+           OR LOWER(provider_product_code) = ${norm}
+        RETURNING tour_id
+      `;
+      if (rows.length > 0 && !matchedTourId) {
+        matchedTourId = String(rows[0].tour_id);
+      }
+      memoryCatalogCache = null;
+    } catch (err) {
+      console.error("[durableCatalogStore] Failed retiring record in Postgres:", err);
+    }
+  }
+
+  return { retired: Boolean(matchedTourId), tourId: matchedTourId };
 }

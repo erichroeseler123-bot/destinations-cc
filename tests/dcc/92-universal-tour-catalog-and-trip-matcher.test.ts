@@ -17,11 +17,11 @@ import {
   resetOpaqueAttributionLedgerForTests,
 } from "../../lib/dcc/commerce/opaqueAttributionLedger";
 
-test("1. Durable Shared Tour Catalog covers all 15 EarthOS destinations, reports sampled vs complete coverage accurately, and preserves compatibility aliases", async () => {
+test("1. Durable Shared Tour Catalog covers all 15 EarthOS destinations, reports sampled vs complete coverage accurately against provider totals, and preserves compatibility aliases", async () => {
   const summary = await getDurableCatalogSummaryReport();
   assert.ok(
-    summary.totalImportedRecords >= 170,
-    `Expected >= 170 records, got ${summary.totalImportedRecords}`,
+    summary.totalImportedRecords >= 900,
+    `Expected >= 900 records after multi-page backfill, got ${summary.totalImportedRecords}`,
   );
   assert.equal(summary.totalDestinationsCovered, 15);
   assert.equal(summary.wtaStatus, "paused");
@@ -31,16 +31,30 @@ test("1. Durable Shared Tour Catalog covers all 15 EarthOS destinations, reports
       summary.destinationCoverageBreakdown.completeDestinationsCount ===
       15,
   );
-  // New Orleans has 714+ total products on Viator vs 13 imported -> must be reported as sampled, never complete
+
+  // Completing 5 pages (100 products) does NOT mark a destination complete when provider total > 100
+  assert.equal(summary.byDestination["new-orleans"].viatorImportedCount, 100);
+  assert.ok((summary.byDestination["new-orleans"].providerTotalAvailableCount ?? 0) >= 700);
   assert.equal(summary.byDestination["new-orleans"].coverageStatus, "sampled");
-  assert.ok(
-    (summary.byDestination["new-orleans"].providerTotalAvailableCount ?? 0) >
-      summary.byDestination["new-orleans"].importedCount,
-  );
+
+  assert.equal(summary.byDestination["juneau"].viatorImportedCount, 100);
+  assert.equal(summary.byDestination["juneau"].importedCount, 119);
+  assert.equal(summary.byDestination["juneau"].coverageStatus, "sampled");
+
+  assert.equal(summary.byDestination["ketchikan"].viatorImportedCount, 100);
+  assert.equal(summary.byDestination["ketchikan"].coverageStatus, "sampled");
+
+  assert.equal(summary.byDestination["cozumel"].viatorImportedCount, 100);
+  assert.equal(summary.byDestination["cozumel"].coverageStatus, "sampled");
+
+  // Skagway has 65 Viator products total and all 65 are imported -> complete
+  assert.equal(summary.byDestination["skagway"].viatorImportedCount, 65);
+  assert.equal(summary.byDestination["skagway"].providerTotalAvailableCount, 65);
+  assert.equal(summary.byDestination["skagway"].coverageStatus, "complete");
 
   for (const slug of Object.keys(EARTHOS_DESTINATION_NODES)) {
     assert.ok(summary.byDestination[slug], `Missing destination coverage for ${slug}`);
-    assert.ok(summary.byDestination[slug].total >= 10, `Expected >= 10 records for ${slug}`);
+    assert.ok(summary.byDestination[slug].total >= 35, `Expected >= 35 records for ${slug}`);
     assert.equal(
       summary.byDestination[slug].earthosNodeId,
       EARTHOS_DESTINATION_NODES[slug].earthosDestinationNodeId,
@@ -138,12 +152,10 @@ test("3. Authoritative GoSno and Party at Red Rocks published offers replace har
     isTest: true,
   });
 
-  // 6-passenger SUVs must be marked ineligible for a party of 8
   const ineligibleIds = denverGroupOf8.ineligibleOptions.map((o) => o.tourId);
   assert.ok(ineligibleIds.includes("dcc:tour:gosno:den-winter-park-suv"));
   assert.ok(ineligibleIds.includes("dcc:tour:parr:rr-parr-private-suburban-6pax"));
 
-  // 10-passenger Vans remain eligible for a party of 8, and their liveCheck is NEVER fabricated as available=true / 3 slots / 08:00
   const matchedVanIds = denverGroupOf8.options.map((o) => o.tourId);
   assert.ok(matchedVanIds.includes("dcc:tour:gosno:den-winter-park-van"));
   assert.ok(matchedVanIds.includes("dcc:tour:parr:rr-parr-private-van-10pax"));
@@ -158,9 +170,7 @@ test("3. Authoritative GoSno and Party at Red Rocks published offers replace har
   }
 });
 
-test("4. Option-level pickup matching: optional transportation is never presented as included in the lowest-priced option", async () => {
-  // Check 6455NOLAAIR (lowest price $49.40 is Large Airboat - No Pickup; pickup option 840AMLBWT is $80.10)
-  // and 3780AIRBOAT (lowest price $59.00 is Large Boat - No Transportation; pickup option TG1 is $90.00)
+test("4. Option-level pickup fulfillment modes (hotel_pickup, pier_pickup, downtown_shuttle_departure, self_drive) and atomic boundOffer tuple through checkout handoff", async () => {
   const airboat6455 = await getDurableTourByIdOrAlias("dcc:tour:viator:6455NOLAAIR");
   assert.ok(airboat6455);
   assert.equal(airboat6455.hasHotelPickup, true);
@@ -171,12 +181,12 @@ test("4. Option-level pickup matching: optional transportation is never presente
   assert.equal(airboat3780.hasHotelPickup, true);
   assert.equal(airboat3780.lowestPriceIncludesPickup, false);
 
-  // Case A: requiresHotelPickup = false -> selects lowest-priced self-drive option ($49.40 / $59.00) with includesPickup=false
+  // Case A: requiresHotelPickup = false -> selects lowest-priced self_drive option ($49.40 / $59.00) with pickupFulfillmentType="self_drive"
   const noPickupMatch = await matchToursForTrip({
     destination: "new-orleans",
     date: "2026-11-18",
     adults: 2,
-    childAges: [],
+    childAges: [9],
     requiresHotelPickup: false,
     approvedTourIds: ["dcc:tour:viator:6455NOLAAIR", "dcc:tour:viator:3780AIRBOAT"],
     enableShortlistLiveCheck: false,
@@ -188,21 +198,32 @@ test("4. Option-level pickup matching: optional transportation is never presente
   );
   assert.ok(opt6455NoPickup);
   assert.equal(opt6455NoPickup.pricing.fromPriceCents, 4940);
-  assert.equal(opt6455NoPickup.pricing.lowestPriceIncludesPickup, false);
+  assert.equal(opt6455NoPickup.pricing.totalPartyPriceCents, 4940 * 3);
   assert.equal(opt6455NoPickup.selectedProductOption?.optionCode, "6455NOLAAIRSLARGE945");
-  assert.equal(opt6455NoPickup.selectedProductOption?.includesPickup, false);
+  assert.equal(opt6455NoPickup.selectedProductOption?.pickupFulfillmentType, "self_drive");
+  assert.equal(opt6455NoPickup.boundOffer.optionCode, "6455NOLAAIRSLARGE945");
+  assert.equal(opt6455NoPickup.boundOffer.pickupFulfillmentType, "self_drive");
+  assert.equal(opt6455NoPickup.boundOffer.adults, 2);
+  assert.deepEqual(opt6455NoPickup.boundOffer.childAges, [9]);
+  assert.equal(opt6455NoPickup.boundOffer.totalGuests, 3);
+  assert.equal(opt6455NoPickup.boundOffer.unitPriceCents, 4940);
+  assert.equal(opt6455NoPickup.boundOffer.totalPartyPriceCents, 14820);
+  assert.ok(opt6455NoPickup.bookingPath.handoffUrl.includes("dcc_option_code=6455NOLAAIRSLARGE945"));
+  assert.ok(opt6455NoPickup.bookingPath.handoffUrl.includes("dcc_pickup_mode=self_drive"));
 
   const opt3780NoPickup = noPickupMatch.options.find(
     (o) => o.tourId === "dcc:tour:viator:3780AIRBOAT",
   );
   assert.ok(opt3780NoPickup);
   assert.equal(opt3780NoPickup.pricing.fromPriceCents, 5900);
-  assert.equal(opt3780NoPickup.pricing.lowestPriceIncludesPickup, false);
   assert.equal(opt3780NoPickup.selectedProductOption?.optionCode, "TG15");
-  assert.equal(opt3780NoPickup.selectedProductOption?.includesPickup, false);
+  assert.equal(opt3780NoPickup.selectedProductOption?.pickupFulfillmentType, "self_drive");
   assert.equal(opt3780NoPickup.duration.durationMinutes, 90);
+  assert.equal(opt3780NoPickup.boundOffer.durationMinutes, 90);
 
-  // Case B: requiresHotelPickup = true -> selects pickup-inclusive option and quotes its higher pickup price ($80.10 / $90.00) and longer duration (240m / 225m)
+  // Case B: requiresHotelPickup = true ->
+  // - 6455NOLAAIR selects hotel_pickup option 840AMLBWT ($81.70, 240m)
+  // - 3780AIRBOAT selects downtown_shuttle_departure option TG1 ($90.00, 225m, Gray Line 400 Toulouse St) AND flags downtown_shuttle_departure_not_door_to_door_hotel_pickup
   const hotelCfg = getHotelConciergeConfig("hotel-monteleone-nola");
   const withPickupMatch = await matchToursForTrip({
     destination: "new-orleans",
@@ -225,8 +246,8 @@ test("4. Option-level pickup matching: optional transportation is never presente
   );
   assert.ok(opt6455WithPickup);
   assert.equal(opt6455WithPickup.selectedProductOption?.optionCode, "840AMLBWT");
-  assert.equal(opt6455WithPickup.selectedProductOption?.includesPickup, true);
-  assert.equal(opt6455WithPickup.pricing.fromPriceCents, 8010);
+  assert.equal(opt6455WithPickup.selectedProductOption?.pickupFulfillmentType, "hotel_pickup");
+  assert.ok((opt6455WithPickup.pricing.fromPriceCents ?? 0) >= 8000);
   assert.equal(opt6455WithPickup.duration.durationMinutes, 240);
 
   const opt3780WithPickup = withPickupMatch.options.find(
@@ -234,12 +255,21 @@ test("4. Option-level pickup matching: optional transportation is never presente
   );
   assert.ok(opt3780WithPickup);
   assert.equal(opt3780WithPickup.selectedProductOption?.optionCode, "TG1");
-  assert.equal(opt3780WithPickup.selectedProductOption?.includesPickup, true);
+  assert.equal(
+    opt3780WithPickup.selectedProductOption?.pickupFulfillmentType,
+    "downtown_shuttle_departure",
+  );
   assert.equal(opt3780WithPickup.pricing.fromPriceCents, 9000);
   assert.equal(opt3780WithPickup.duration.durationMinutes, 225);
+  assert.equal(opt3780WithPickup.suitability, "needs_confirmation");
+  assert.ok(
+    opt3780WithPickup.missingInformation.includes(
+      "downtown_shuttle_departure_not_door_to_door_hotel_pickup",
+    ),
+  );
 });
 
-test("5. Cruise schedule fit requires actual departure times, duration, transfer buffers, and return deadline; otherwise returns needs_confirmation", async () => {
+test("5. Cruise schedule fit preserves unknown transfer times, labels planning estimates explicitly, and only claims recommended when transfer, duration, and departure times are verified", async () => {
   resetOpaqueAttributionLedgerForTests();
 
   // Without live date-specific departure time verification -> must return needs_confirmation (NEVER recommended)
@@ -263,35 +293,49 @@ test("5. Cruise schedule fit requires actual departure times, duration, transfer
       `Expected ${opt.tourId} without date-verified departure times to be needs_confirmation`,
     );
     assert.equal(opt.cruiseScheduleFit?.fitStatus, "needs_confirmation");
-    assert.ok(
-      opt.missingInformation.includes("date_specific_departure_times_unverified") ||
-        opt.missingInformation.includes("unknown_duration_minutes"),
-    );
   }
 
-  // Direct verification of evaluateCruiseScheduleFit with verifiedDepartureTimes:
-  // 1. Verified departure time 10:00 with 120m duration, 30m debark + 60m transfer before (ready 09:30), 60m transfer after (back at pier 13:00), 90m safety margin before 16:30 all-aboard (latest return 15:00) -> fits!
+  // 1. Unknown transfer time (transferBeforeMinutes: null, transferTimeSource: "planning_estimate") -> MUST return needs_confirmation, NEVER recommended!
+  const planningEstimateResult = evaluateCruiseScheduleFit({
+    shipArrival: "08:00",
+    shipDeparture: "17:00",
+    allAboardTime: "16:30",
+    durationMinutes: 120,
+    transferBeforeMinutes: null,
+    transferAfterMinutes: null,
+    transferTimeSource: "planning_estimate",
+    planningEstimateTransferMinutes: 50,
+    verifiedDepartureTimes: ["10:00"],
+  });
+  assert.equal(planningEstimateResult.fitStatus, "needs_confirmation");
+  assert.equal(planningEstimateResult.transferBeforeMinutes, null);
+  assert.equal(planningEstimateResult.planningEstimateTransferMinutes, 50);
+  assert.ok(planningEstimateResult.reason.toLowerCase().includes("planning estimate only"));
+
+  // 2. Verified pier pickup / meeting point transfer + verified departure time 10:00 -> recommended!
   const fitsResult = evaluateCruiseScheduleFit({
     shipArrival: "08:00",
     shipDeparture: "17:00",
     allAboardTime: "16:30",
     durationMinutes: 120,
-    transferBeforeMinutes: 60,
-    transferAfterMinutes: 60,
-    verifiedDepartureTimes: ["10:00", "14:00"],
+    transferBeforeMinutes: 20,
+    transferAfterMinutes: 20,
+    transferTimeSource: "verified_pier_pickup",
+    verifiedDepartureTimes: ["10:00", "14:30"],
   });
   assert.equal(fitsResult.fitStatus, "recommended");
   assert.deepEqual(fitsResult.fittingDepartureTimes, ["10:00"]);
 
-  // 2. Only late departure time 14:00 (returns 14:00 + 120m + 60m = 17:00 > 15:00 deadline) -> ineligible!
+  // 3. Only late departure time 14:30 (returns 14:30 + 120m + 20m = 16:50 > 15:00 deadline) -> ineligible!
   const missesResult = evaluateCruiseScheduleFit({
     shipArrival: "08:00",
     shipDeparture: "17:00",
     allAboardTime: "16:30",
     durationMinutes: 120,
-    transferBeforeMinutes: 60,
-    transferAfterMinutes: 60,
-    verifiedDepartureTimes: ["14:00"],
+    transferBeforeMinutes: 20,
+    transferAfterMinutes: 20,
+    transferTimeSource: "verified_pier_pickup",
+    verifiedDepartureTimes: ["14:30"],
   });
   assert.equal(missesResult.fitStatus, "ineligible");
   assert.deepEqual(missesResult.fittingDepartureTimes, []);

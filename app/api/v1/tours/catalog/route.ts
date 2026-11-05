@@ -7,6 +7,7 @@ import {
   type TourCapabilityTier,
 } from "@/lib/dcc/catalog/durableCatalogStore";
 import {
+  runIncrementalScheduleAndPricingRefresh,
   runIncrementalViatorCatalogRefresh,
   runUniversalCatalogIngestion,
 } from "@/lib/dcc/catalog/ingest";
@@ -108,9 +109,10 @@ export async function POST(request: NextRequest) {
     }
 
     const body = (await request.json().catch(() => ({}))) as {
-      mode?: "full_or_paginated" | "incremental_refresh";
+      mode?: "full_or_paginated" | "incremental_refresh" | "schedule_pricing_refresh";
       cursor?: string;
       count?: number;
+      scheduleRefreshLimit?: number;
       destinations?: string[];
       perDestinationLimit?: number;
       enrichDetailLimitPerDestination?: number;
@@ -119,10 +121,28 @@ export async function POST(request: NextRequest) {
       resumeFromCheckpoint?: boolean;
     };
 
+    if (body.mode === "schedule_pricing_refresh") {
+      const schedRun = await runIncrementalScheduleAndPricingRefresh({
+        limit: body.scheduleRefreshLimit ?? body.count ?? 15,
+        destinationSlug: body.destinations?.[0],
+      });
+      const summary = await getDurableCatalogSummaryReport();
+      return NextResponse.json(
+        {
+          ok: true,
+          mode: "schedule_pricing_refresh",
+          schedulePricingRun: schedRun,
+          summary,
+        },
+        { status: 200, headers: CORS_HEADERS },
+      );
+    }
+
     if (body.mode === "incremental_refresh") {
       const incRun = await runIncrementalViatorCatalogRefresh({
         cursor: body.cursor,
         count: body.count,
+        scheduleRefreshLimit: body.scheduleRefreshLimit,
       });
       const summary = await getDurableCatalogSummaryReport();
       return NextResponse.json(

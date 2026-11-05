@@ -11,16 +11,19 @@ import {
   getCompatibilityAliasesForViatorCode,
   readLocalCatalogSnapshot,
   recordCatalogSyncRun,
+  retireDurableTourRecord,
   upsertDurableTourRecords,
   type CatalogSyncRunRecord,
   type ChannelOffer,
   type DurableTourRecord,
   type EarthOSDestinationNode,
   type LocationPrecision,
+  type PickupFulfillmentType,
   type PickupLocationRecord,
   type PriceBasis,
   type TourAgeBandRecord,
   type TourProductOptionRecord,
+  type TransferTimeSource,
 } from "./durableCatalogStore";
 
 function sha256Hex(value: unknown): string {
@@ -137,6 +140,7 @@ function parsePickupAndLocationsFromViator(
   resolvedLocationsByRef: Map<string, any>,
 ): {
   hasHotelPickup: boolean | null;
+  hasCruisePortPickup: boolean;
   pickupType:
     | "HOTEL_PICKUP"
     | "MEETING_POINT_ONLY"
@@ -156,6 +160,7 @@ function parsePickupAndLocationsFromViator(
   if (!logistics || typeof logistics !== "object") {
     return {
       hasHotelPickup: null,
+      hasCruisePortPickup: false,
       pickupType: null,
       pickupSummary: null,
       meetingPointName: null,
@@ -200,8 +205,7 @@ function parsePickupAndLocationsFromViator(
   let meetingPointName: string | null = null;
   let meetingPointAddress: string | null = null;
   let meetingPointLat: number | null = null;
-  let meetingPointLng: number | null;
-  meetingPointLng = null;
+  let meetingPointLng: number | null = null;
   let locationPrecision: LocationPrecision = "unknown";
 
   const startArr = Array.isArray(logistics.start) ? logistics.start : [];
@@ -235,12 +239,35 @@ function parsePickupAndLocationsFromViator(
     }
   }
 
+  if (meetingPointLat === null || meetingPointLng === null) {
+    const landmark = resolveVerifiedLandmarkCoordinatesAndPierTransfer(
+      `${meetingPointAddress || ""} ${meetingPointName || ""}`,
+    );
+    if (landmark) {
+      if (!meetingPointName) meetingPointName = landmark.name;
+      if (!meetingPointAddress) meetingPointAddress = landmark.address;
+      meetingPointLat = landmark.lat;
+      meetingPointLng = landmark.lng;
+      locationPrecision = "exact";
+    }
+  }
+
   const pickupLocations: PickupLocationRecord[] = [];
   const rawPickupLocs = Array.isArray(tp?.locations) ? tp.locations : [];
+  let hasCruisePortPickup = Boolean(
+    pickupSummary &&
+      /\bcruise\s+(ship|port|pier|dock|terminal)\s+(pick\s*-?\s*up|shuttle|transfer)/i.test(
+        pickupSummary,
+      ),
+  );
+
   for (const item of rawPickupLocs.slice(0, 25)) {
     const ref = String(item?.location?.ref || "").trim();
     const resolved = ref ? resolvedLocationsByRef.get(ref) : null;
     const pType = String(item?.pickupType || "OTHER").toUpperCase();
+    if (pType === "CRUISE_PORT") {
+      hasCruisePortPickup = true;
+    }
     if (resolved) {
       const lat = resolved.center?.latitude ?? resolved.latitude ?? null;
       const lng = resolved.center?.longitude ?? resolved.longitude ?? null;
@@ -266,6 +293,7 @@ function parsePickupAndLocationsFromViator(
 
   return {
     hasHotelPickup,
+    hasCruisePortPickup,
     pickupType,
     pickupSummary,
     meetingPointName,
@@ -276,6 +304,160 @@ function parsePickupAndLocationsFromViator(
     pickupLocations,
   };
 }
+
+export type VerifiedLandmarkResolution = {
+  name: string;
+  address: string;
+  lat: number;
+  lng: number;
+  transferMinutesFromPier: number | null;
+  transferTimeSource: TransferTimeSource;
+  planningEstimateTransferMinutes: number;
+  isDowntownShuttleHub?: boolean;
+  isPierAdjacent?: boolean;
+  isRemoteSelfDriveSite?: boolean;
+};
+
+export function resolveVerifiedLandmarkCoordinatesAndPierTransfer(
+  text: string | null | undefined,
+  destinationSlug?: string,
+): VerifiedLandmarkResolution | null {
+  if (!text || typeof text !== "string") return null;
+  const norm = text.trim();
+  if (!norm) return null;
+
+  // New Orleans verified landmarks
+  if (!destinationSlug || destinationSlug === "new-orleans") {
+    if (/\b400\s+toulouse\b|\bgray\s+line\s+new\s+orleans\b|\btoulouse\s+st(?:reet)?\s+wharf\b|\bsteamboat\s+natchez\s+dock\b/i.test(norm)) {
+      return {
+        name: "Gray Line New Orleans / Toulouse St Wharf (400 Toulouse St)",
+        address: "400 Toulouse St, New Orleans, LA 70130, USA",
+        lat: 29.9546,
+        lng: -90.0625,
+        transferMinutesFromPier: 20,
+        transferTimeSource: "verified_meeting_point",
+        planningEstimateTransferMinutes: 20,
+        isDowntownShuttleHub: true,
+      };
+    }
+    if (/\b5145\s+fleming\b|\bfleming\s+park\s+rd\b|\bfleming\s+rd\b.*\blafitte\b/i.test(norm)) {
+      return {
+        name: "Airboat Dock (5145 Fleming Rd, Lafitte, LA)",
+        address: "5145 Fleming Park Rd, Lafitte, LA 70067, USA",
+        lat: 29.7367,
+        lng: -90.1282,
+        // Remote rural bayou self-drive site (42 km from cruise pier): transfer requires independent car/taxi confirmation
+        transferMinutesFromPier: null,
+        transferTimeSource: "planning_estimate",
+        planningEstimateTransferMinutes: 50,
+        isRemoteSelfDriveSite: true,
+      };
+    }
+    if (/\bjackson\s+square\b|\bst\.?\s*louis\s+cathedral\b|\b700\s+decatur\b|\b500\s+st\.?\s*peter\b|\b533\s+st\.?\s*ann\b|\b400\s+royal\s+st\b|\bfrench\s+quarter\s+walking\b/i.test(norm)) {
+      return {
+        name: "French Quarter Historic Meeting Point (Jackson Square / Decatur St)",
+        address: "700 Decatur St / Jackson Square, New Orleans, LA 70116, USA",
+        lat: 29.9574,
+        lng: -90.0631,
+        transferMinutesFromPier: 20,
+        transferTimeSource: "verified_meeting_point",
+        planningEstimateTransferMinutes: 20,
+      };
+    }
+    if (/\blafayette\s+cemetery\b|\b1427\s+washington\s+ave\b|\b2727\s+prytania\b|\bgarden\s+district\s+walking\b/i.test(norm)) {
+      return {
+        name: "Garden District Meeting Point (Washington Ave / Prytania St)",
+        address: "1427 Washington Ave, New Orleans, LA 70130, USA",
+        lat: 29.9288,
+        lng: -90.0828,
+        transferMinutesFromPier: 20,
+        transferTimeSource: "verified_meeting_point",
+        planningEstimateTransferMinutes: 20,
+      };
+    }
+    if (/\blouis\s+armstrong\s+park\b|\b701\s+n\.?\s*rampart\b|\bcongo\s+square\b/i.test(norm)) {
+      return {
+        name: "Louis Armstrong Park Arch (701 N Rampart St)",
+        address: "701 N Rampart St, New Orleans, LA 70116, USA",
+        lat: 29.9619,
+        lng: -90.0669,
+        transferMinutesFromPier: 22,
+        transferTimeSource: "verified_meeting_point",
+        planningEstimateTransferMinutes: 22,
+      };
+    }
+    if (/\b41847\s+hwy\s+190\b|\bhoney\s+island\s+swamp\b.*\bslidell\b/i.test(norm)) {
+      return {
+        name: "Honey Island Swamp Dock (41847 Hwy 190 E, Slidell, LA)",
+        address: "41847 Hwy 190 E, Slidell, LA 70461, USA",
+        lat: 30.2241,
+        lng: -89.7544,
+        transferMinutesFromPier: null,
+        transferTimeSource: "planning_estimate",
+        planningEstimateTransferMinutes: 55,
+        isRemoteSelfDriveSite: true,
+      };
+    }
+  }
+
+  // Alaska & Caribbean cruise dock landmarks
+  if (destinationSlug === "juneau" && /\bmount\s+roberts\s+tramway\b|\b490\s+s\.?\s*franklin\b|\bjuneau\s+cruise\s+ship\s+terminal\b|\baj\s+dock\b|\bfranklin\s+dock\b/i.test(norm)) {
+    return {
+      name: "Juneau Cruise Ship Terminal / Mount Roberts Tramway",
+      address: "490 S Franklin St, Juneau, AK 99801, USA",
+      lat: 58.2997,
+      lng: -134.4048,
+      transferMinutesFromPier: 15,
+      transferTimeSource: "verified_pier_pickup",
+      planningEstimateTransferMinutes: 15,
+      isPierAdjacent: true,
+    };
+  }
+  if (destinationSlug === "ketchikan" && /\bketchikan\s+visitors\s+bureau\b|\bliquid\s+sunshine\s+gauge\b|\b131\s+front\s+st\b|\bberth\s+[1234]\b/i.test(norm)) {
+    return {
+      name: "Ketchikan Cruise Berth / Visitors Bureau Rain Gauge",
+      address: "131 Front St, Ketchikan, AK 99901, USA",
+      lat: 55.3422,
+      lng: -131.6461,
+      transferMinutesFromPier: 15,
+      transferTimeSource: "verified_pier_pickup",
+      planningEstimateTransferMinutes: 15,
+      isPierAdjacent: true,
+    };
+  }
+  if (destinationSlug === "skagway" && /\bbroadway\s+dock\b|\brailroad\s+dock\b|\bore\s+dock\b|\bskagway\s+cruise\b/i.test(norm)) {
+    return {
+      name: "Skagway Cruise Ship Docks",
+      address: "Broadway & 2nd Ave, Skagway, AK 99840, USA",
+      lat: 59.4508,
+      lng: -135.3182,
+      transferMinutesFromPier: 15,
+      transferTimeSource: "verified_pier_pickup",
+      planningEstimateTransferMinutes: 15,
+      isPierAdjacent: true,
+    };
+  }
+  if (destinationSlug === "cozumel" && /\bpuerta\s+maya\b|\binternational\s+pier\b|\bpunta\s+langosta\b|\bssa\s+mexico\b/i.test(norm)) {
+    return {
+      name: "Cozumel Cruise Terminal Zone",
+      address: "Costera Sur, Cozumel, Q.R., Mexico",
+      lat: 20.4765,
+      lng: -86.9739,
+      transferMinutesFromPier: 15,
+      transferTimeSource: "verified_pier_pickup",
+      planningEstimateTransferMinutes: 15,
+      isPierAdjacent: true,
+    };
+  }
+
+  return null;
+}
+
+const PIER_PICKUP_TEXT_REGEX =
+  /\b(cruise\s+(?:ship\s+)?(?:port|pier|dock|terminal)\s+pick\s*-?\s*up|pick\s*-?\s*up\s+(?:at|from)\s+(?:the\s+)?cruise\s+(?:ship\s+)?(?:port|pier|dock|terminal)|meet\s+at\s+(?:the\s+)?cruise\s+(?:ship\s+)?(?:pier|dock|terminal))\b/i;
+
+const DOWNTOWN_SHUTTLE_DEPARTURE_TEXT_REGEX =
+  /\b(starting\s+point:\s*gray\s+line\s+new\s+orleans|400\s+toulouse\s+st|departs?\s+from\s+(?:central\s+)?downtown|central\s+departure\s+point|check\s*-?\s*in\s+at\s+our\s+downtown\s+(?:office|lighthouse)|board\s+(?:the\s+)?shuttle\s+at)\b/i;
 
 const NEGATIVE_PICKUP_OPTION_REGEX =
   /\b(no\s+(hotel\s+)?pick\s*-?\s*up|without\s+(hotel\s+)?pick\s*-?\s*up|no\s+transport(ation)?|without\s+transport(ation)?|self\s*-?\s*drive|drive\s+yourself|meet\s+at\s+(site|location|dock|pier|marina))\b/i;
@@ -295,6 +477,132 @@ function parseDurationFromOptionText(text: string | null): number | null {
   return total > 0 ? total : null;
 }
 
+export function classifyOptionFulfillmentAndTransfers(params: {
+  combinedOptionText: string;
+  includesPickup: boolean | null;
+  productHasCruisePortPickup: boolean;
+  productMeetingPointLat: number | null;
+  productMeetingPointLng: number | null;
+  productMeetingPointAddress: string | null;
+  productTitle: string;
+  destinationSlug?: string;
+}): {
+  pickupFulfillmentType: PickupFulfillmentType;
+  meetingPointName: string | null;
+  meetingPointLat: number | null;
+  meetingPointLng: number | null;
+  transferBeforeMinutes: number | null;
+  transferAfterMinutes: number | null;
+  transferTimeSource: TransferTimeSource;
+  planningEstimateTransferMinutes: number;
+} {
+  const landmark =
+    resolveVerifiedLandmarkCoordinatesAndPierTransfer(
+      params.combinedOptionText,
+      params.destinationSlug,
+    ) ||
+    resolveVerifiedLandmarkCoordinatesAndPierTransfer(
+      params.productMeetingPointAddress,
+      params.destinationSlug,
+    ) ||
+    resolveVerifiedLandmarkCoordinatesAndPierTransfer(
+      params.productTitle,
+      params.destinationSlug,
+    );
+
+  // 1. Check Pier Pickup
+  if (
+    params.productHasCruisePortPickup ||
+    PIER_PICKUP_TEXT_REGEX.test(params.combinedOptionText) ||
+    landmark?.isPierAdjacent
+  ) {
+    return {
+      pickupFulfillmentType: "pier_pickup",
+      meetingPointName: landmark?.name || null,
+      meetingPointLat: landmark?.lat ?? params.productMeetingPointLat,
+      meetingPointLng: landmark?.lng ?? params.productMeetingPointLng,
+      transferBeforeMinutes: landmark?.transferMinutesFromPier ?? 20,
+      transferAfterMinutes: landmark?.transferMinutesFromPier ?? 20,
+      transferTimeSource: "verified_pier_pickup",
+      planningEstimateTransferMinutes: landmark?.transferMinutesFromPier ?? 20,
+    };
+  }
+
+  // 2. Check Downtown Shuttle Departure (e.g., 3780AIRBOAT TG1 meeting at 400 Toulouse St Gray Line Lighthouse for round-trip shuttle)
+  if (
+    params.includesPickup === true &&
+    (DOWNTOWN_SHUTTLE_DEPARTURE_TEXT_REGEX.test(params.combinedOptionText) ||
+      landmark?.isDowntownShuttleHub)
+  ) {
+    const tfMin = landmark?.transferMinutesFromPier ?? null;
+    const tfSource: TransferTimeSource =
+      tfMin !== null ? "verified_meeting_point" : "planning_estimate";
+    return {
+      pickupFulfillmentType: "downtown_shuttle_departure",
+      meetingPointName: landmark?.name || null,
+      meetingPointLat: landmark?.lat ?? params.productMeetingPointLat,
+      meetingPointLng: landmark?.lng ?? params.productMeetingPointLng,
+      transferBeforeMinutes: tfMin,
+      transferAfterMinutes: tfMin,
+      transferTimeSource: tfSource,
+      planningEstimateTransferMinutes: landmark?.planningEstimateTransferMinutes ?? 25,
+    };
+  }
+
+  // 3. Check Hotel Pickup
+  if (params.includesPickup === true) {
+    return {
+      pickupFulfillmentType: "hotel_pickup",
+      meetingPointName: landmark?.name || null,
+      meetingPointLat: landmark?.lat ?? params.productMeetingPointLat,
+      meetingPointLng: landmark?.lng ?? params.productMeetingPointLng,
+      // Hotel pickup serves area hotels; from a cruise pier, transfer to pickup hotel is a planning estimate unless pier pickup is verified
+      transferBeforeMinutes: null,
+      transferAfterMinutes: null,
+      transferTimeSource: "planning_estimate",
+      planningEstimateTransferMinutes: 30,
+    };
+  }
+
+  // 4. Check Self-Drive / Meet on Site
+  if (params.includesPickup === false) {
+    if (landmark && !landmark.isRemoteSelfDriveSite && landmark.transferMinutesFromPier !== null) {
+      return {
+        pickupFulfillmentType: "self_drive",
+        meetingPointName: landmark.name,
+        meetingPointLat: landmark.lat,
+        meetingPointLng: landmark.lng,
+        transferBeforeMinutes: landmark.transferMinutesFromPier,
+        transferAfterMinutes: landmark.transferMinutesFromPier,
+        transferTimeSource: "verified_meeting_point",
+        planningEstimateTransferMinutes: landmark.planningEstimateTransferMinutes,
+      };
+    }
+    return {
+      pickupFulfillmentType: "self_drive",
+      meetingPointName: landmark?.name || null,
+      meetingPointLat: landmark?.lat ?? params.productMeetingPointLat,
+      meetingPointLng: landmark?.lng ?? params.productMeetingPointLng,
+      transferBeforeMinutes: null,
+      transferAfterMinutes: null,
+      transferTimeSource: landmark ? "planning_estimate" : "unknown",
+      planningEstimateTransferMinutes: landmark?.planningEstimateTransferMinutes ?? 45,
+    };
+  }
+
+  // 5. Explicit Unknown
+  return {
+    pickupFulfillmentType: "unknown",
+    meetingPointName: landmark?.name || null,
+    meetingPointLat: landmark?.lat ?? params.productMeetingPointLat,
+    meetingPointLng: landmark?.lng ?? params.productMeetingPointLng,
+    transferBeforeMinutes: null,
+    transferAfterMinutes: null,
+    transferTimeSource: "unknown",
+    planningEstimateTransferMinutes: 45,
+  };
+}
+
 export function parseProductOptionsAndScheduleFromViator(
   detail: any,
   schedule: any,
@@ -302,12 +610,22 @@ export function parseProductOptionsAndScheduleFromViator(
   defaultDurationMinutes: number | null,
   productTitle: string,
   productSummary: string | null,
+  destinationSlug?: string,
+  productMeetingPointAddress?: string | null,
+  productMeetingPointLat?: number | null,
+  productMeetingPointLng?: number | null,
+  productHasCruisePortPickup?: boolean,
 ): {
   scheduleFromPriceCents: number | null;
   priceBasis: PriceBasis;
   productOptions: TourProductOptionRecord[];
   lowestPriceIncludesPickup: boolean | null;
   effectiveHasHotelPickup: boolean | null;
+  primaryPickupFulfillmentType: PickupFulfillmentType;
+  tourTransferBeforeMinutes: number | null;
+  tourTransferAfterMinutes: number | null;
+  tourTransferTimeSource: TransferTimeSource;
+  tourPlanningEstimateTransferMinutes: number;
 } {
   const rawPricingType = String(detail?.pricingInfo?.type || "").toUpperCase();
   const productPriceBasis: PriceBasis =
@@ -392,8 +710,6 @@ export function parseProductOptionsAndScheduleFromViator(
     typeof detail?.itinerary?.duration?.variableDurationFromMinutes === "number" &&
     typeof detail?.itinerary?.duration?.variableDurationToMinutes === "number"
   ) {
-    // When itinerary duration is a variable range (e.g. 90m self-drive vs 225m with transportation),
-    // map self-drive options to variableDurationFromMinutes and pickup options to variableDurationToMinutes
     for (const o of rawOptions) {
       const code = String(o?.productOptionCode || "").trim();
       const text = `${o?.title || ""} ${o?.description || ""}`;
@@ -425,13 +741,10 @@ export function parseProductOptionsAndScheduleFromViator(
       includesPickup = false;
     } else if (hasHotelPickup === true) {
       if (anyOptionMatchesNegativePickup) {
-        // Other options explicitly say "No Pickup" / "No Transportation", so this option includes pickup
         includesPickup = true;
       } else if (anyOptionMatchesPositivePickup) {
-        // Other options explicitly say "With Pickup", and this option does not
         includesPickup = false;
       } else {
-        // Hotel pickup applies across all options of this product
         includesPickup = true;
       }
     }
@@ -444,11 +757,30 @@ export function parseProductOptionsAndScheduleFromViator(
       scheduleMatch?.durationMinutes ??
       defaultDurationMinutes;
 
+    const classified = classifyOptionFulfillmentAndTransfers({
+      combinedOptionText: combinedText,
+      includesPickup,
+      productHasCruisePortPickup: Boolean(productHasCruisePortPickup),
+      productMeetingPointLat: productMeetingPointLat ?? null,
+      productMeetingPointLng: productMeetingPointLng ?? null,
+      productMeetingPointAddress: productMeetingPointAddress ?? null,
+      productTitle,
+      destinationSlug,
+    });
+
     productOptions.push({
       optionCode,
       title,
       description,
       includesPickup,
+      pickupFulfillmentType: classified.pickupFulfillmentType,
+      meetingPointName: classified.meetingPointName,
+      meetingPointLat: classified.meetingPointLat,
+      meetingPointLng: classified.meetingPointLng,
+      transferBeforeMinutes: classified.transferBeforeMinutes,
+      transferAfterMinutes: classified.transferAfterMinutes,
+      transferTimeSource: classified.transferTimeSource,
+      planningEstimateTransferMinutes: classified.planningEstimateTransferMinutes,
       durationMinutes: optDur ?? null,
       fromPriceCents: scheduleMatch?.minPriceCents ?? null,
       priceBasis: productPriceBasis,
@@ -459,11 +791,29 @@ export function parseProductOptionsAndScheduleFromViator(
   // If product has no explicit productOptions array in detail, but has a single DEFAULT bookableItem
   if (productOptions.length === 0 && bookableItemsByOptionCode.size === 1) {
     const [optCode, itemInfo] = Array.from(bookableItemsByOptionCode.entries())[0];
+    const classified = classifyOptionFulfillmentAndTransfers({
+      combinedOptionText: `${productTitle} ${productSummary || ""}`,
+      includesPickup: hasHotelPickup,
+      productHasCruisePortPickup: Boolean(productHasCruisePortPickup),
+      productMeetingPointLat: productMeetingPointLat ?? null,
+      productMeetingPointLng: productMeetingPointLng ?? null,
+      productMeetingPointAddress: productMeetingPointAddress ?? null,
+      productTitle,
+      destinationSlug,
+    });
     productOptions.push({
       optionCode: optCode,
       title: productTitle,
       description: null,
       includesPickup: hasHotelPickup,
+      pickupFulfillmentType: classified.pickupFulfillmentType,
+      meetingPointName: classified.meetingPointName,
+      meetingPointLat: classified.meetingPointLat,
+      meetingPointLng: classified.meetingPointLng,
+      transferBeforeMinutes: classified.transferBeforeMinutes,
+      transferAfterMinutes: classified.transferAfterMinutes,
+      transferTimeSource: classified.transferTimeSource,
+      planningEstimateTransferMinutes: classified.planningEstimateTransferMinutes,
       durationMinutes: itemInfo.durationMinutes ?? defaultDurationMinutes,
       fromPriceCents: itemInfo.minPriceCents ?? rawScheduleFrom,
       priceBasis: productPriceBasis,
@@ -507,12 +857,53 @@ export function parseProductOptionsAndScheduleFromViator(
     }
   }
 
+  const tourFallbackClassified = classifyOptionFulfillmentAndTransfers({
+    combinedOptionText: `${productTitle} ${productSummary || ""}`,
+    includesPickup: effectiveHasHotelPickup,
+    productHasCruisePortPickup: Boolean(productHasCruisePortPickup),
+    productMeetingPointLat: productMeetingPointLat ?? null,
+    productMeetingPointLng: productMeetingPointLng ?? null,
+    productMeetingPointAddress: productMeetingPointAddress ?? null,
+    productTitle,
+    destinationSlug,
+  });
+
+  // Determine default tour-level fulfillment and transfer provenance from lowest-priced option or tour fallback
+  const sortedByPrice = [...productOptions].sort((a, b) => {
+    if (a.fromPriceCents === null && b.fromPriceCents === null) return 0;
+    if (a.fromPriceCents === null) return 1;
+    if (b.fromPriceCents === null) return -1;
+    return a.fromPriceCents - b.fromPriceCents;
+  });
+  const baseOption = sortedByPrice[0];
+
+  const primaryPickupFulfillmentType: PickupFulfillmentType =
+    baseOption?.pickupFulfillmentType || tourFallbackClassified.pickupFulfillmentType;
+  const tourTransferBeforeMinutes =
+    baseOption !== undefined
+      ? (baseOption.transferBeforeMinutes ?? null)
+      : tourFallbackClassified.transferBeforeMinutes;
+  const tourTransferAfterMinutes =
+    baseOption !== undefined
+      ? (baseOption.transferAfterMinutes ?? null)
+      : tourFallbackClassified.transferAfterMinutes;
+  const tourTransferTimeSource: TransferTimeSource =
+    baseOption?.transferTimeSource || tourFallbackClassified.transferTimeSource;
+  const tourPlanningEstimateTransferMinutes =
+    baseOption?.planningEstimateTransferMinutes ??
+    tourFallbackClassified.planningEstimateTransferMinutes;
+
   return {
     scheduleFromPriceCents: rawScheduleFrom,
     priceBasis: productPriceBasis,
     productOptions,
     lowestPriceIncludesPickup,
     effectiveHasHotelPickup,
+    primaryPickupFulfillmentType,
+    tourTransferBeforeMinutes,
+    tourTransferAfterMinutes,
+    tourTransferTimeSource,
+    tourPlanningEstimateTransferMinutes,
   };
 }
 
@@ -830,6 +1221,11 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
           durationParsed.durationMinutes,
           title,
           summary,
+          node.destinationSlug,
+          pickupParsed.meetingPointAddress,
+          pickupParsed.meetingPointLat,
+          pickupParsed.meetingPointLng,
+          pickupParsed.hasCruisePortPickup,
         );
 
         const rawFromPrice =
@@ -845,7 +1241,9 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
         const effectiveHasHotelPickup = optionsAndSchedule.effectiveHasHotelPickup;
         let effectivePickupType = pickupParsed.pickupType;
         let effectivePickupSummary = pickupParsed.pickupSummary;
-        if (effectiveHasHotelPickup === true && effectivePickupType === "MEETING_POINT_ONLY") {
+        if (pickupParsed.hasCruisePortPickup) {
+          effectivePickupType = "CRUISE_PIER_PICKUP";
+        } else if (effectiveHasHotelPickup === true && effectivePickupType === "MEETING_POINT_ONLY") {
           effectivePickupType =
             optionsAndSchedule.lowestPriceIncludesPickup === true
               ? "HOTEL_PICKUP"
@@ -859,9 +1257,13 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
           const pickupOpt = optionsAndSchedule.productOptions
             .filter((o) => o.includesPickup === true && o.fromPriceCents !== null)
             .sort((a, b) => (a.fromPriceCents as number) - (b.fromPriceCents as number))[0];
+          const pickupModeLabel =
+            pickupOpt?.pickupFulfillmentType === "downtown_shuttle_departure"
+              ? "downtown shuttle departure"
+              : "hotel pickup";
           const pickupPriceNote = pickupOpt?.fromPriceCents
-            ? `Hotel pickup requires selecting a pickup-inclusive option (from $${(pickupOpt.fromPriceCents / 100).toFixed(2)}); lowest-priced option is self-drive / meeting-point only.`
-            : `Hotel pickup requires selecting a pickup-inclusive tour option; lowest-priced option does not include hotel transportation.`;
+            ? `Transportation (${pickupModeLabel}) requires selecting a pickup-inclusive option (from $${(pickupOpt.fromPriceCents / 100).toFixed(2)}); lowest-priced option is self-drive / meeting-point only.`
+            : `Transportation requires selecting a pickup-inclusive tour option; lowest-priced option does not include hotel or shuttle transportation.`;
           effectivePickupSummary = effectivePickupSummary
             ? `${pickupPriceNote} ${effectivePickupSummary}`
             : pickupPriceNote;
@@ -966,6 +1368,7 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
           hasHotelPickup: effectiveHasHotelPickup,
           lowestPriceIncludesPickup: optionsAndSchedule.lowestPriceIncludesPickup,
           pickupType: effectivePickupType,
+          pickupFulfillmentType: optionsAndSchedule.primaryPickupFulfillmentType,
           pickupSummary: effectivePickupSummary,
           meetingPointName: pickupParsed.meetingPointName,
           meetingPointAddress: pickupParsed.meetingPointAddress,
@@ -977,8 +1380,10 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
           constraints: {
             maxPassengerWeightLbs: isHeli ? 250 : null,
             wheelchairAccessible: null,
-            cruiseBufferBeforeMinutes: 60,
-            cruiseBufferAfterMinutes: 60,
+            cruiseBufferBeforeMinutes: optionsAndSchedule.tourTransferBeforeMinutes,
+            cruiseBufferAfterMinutes: optionsAndSchedule.tourTransferAfterMinutes,
+            transferTimeSource: optionsAndSchedule.tourTransferTimeSource,
+            planningEstimateTransferMinutes: optionsAndSchedule.tourPlanningEstimateTransferMinutes,
             weatherDependent: isHeli || category === "Swamp & Bayou",
           },
           channelOffers,
@@ -1010,6 +1415,7 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
               optionsCount: optionsAndSchedule.productOptions.length,
               durationMinutes: durationParsed.durationMinutes,
               freeCancellation: cancellationParsed.freeCancellation,
+              tourTransferTimeSource: optionsAndSchedule.tourTransferTimeSource,
             }),
             rawFieldsVerified: {
               durationKnown: durationParsed.durationMinutes !== null,
@@ -1032,8 +1438,27 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
         importedCount += 1;
       }
 
+      // Completing 5 pages (or any partial pagination) does NOT mark a destination complete unless
+      // total imported Viator records for this destination cover providerTotalCount.
+      const existingViatorCodesForDest = new Set(
+        existingSnapshot.records
+          .filter(
+            (r) =>
+              r.destinationSlug === destSlug &&
+              r.primaryProvider === "viator" &&
+              r.active &&
+              !r.quarantined,
+          )
+          .map((r) => r.providerProductCode.toUpperCase()),
+      );
+      for (const r of allUpsertedRecords) {
+        if (r.destinationSlug === destSlug && r.primaryProvider === "viator") {
+          existingViatorCodesForDest.add(r.providerProductCode.toUpperCase());
+        }
+      }
+      const totalViatorImportedForDest = existingViatorCodesForDest.size;
       const isCompleteCoverage =
-        providerTotalCount > 0 && currentStart > providerTotalCount && initialStartOffset === 1;
+        providerTotalCount > 0 && totalViatorImportedForDest >= providerTotalCount;
       const nextStartOffset =
         providerTotalCount > 0 && currentStart <= providerTotalCount ? currentStart : 1;
 
@@ -1055,6 +1480,7 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
           pagesFetched,
           pageSize,
           providerTotalCount,
+          totalViatorImportedForDest,
           coverageStatus: isCompleteCoverage ? "complete" : "sampled",
           enrichedDetailCount: detailsByCode.size,
           enrichedSchedulesCount: schedulesByCode.size,
@@ -1195,6 +1621,7 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
           hasHotelPickup: true,
           lowestPriceIncludesPickup: true,
           pickupType: "CRUISE_PIER_PICKUP",
+          pickupFulfillmentType: "pier_pickup",
           pickupSummary:
             "Round-trip shuttle transfer from downtown cruise ship docks to the heliport included.",
           meetingPointName: fh.meetingPointName,
@@ -1219,8 +1646,10 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
           constraints: {
             maxPassengerWeightLbs: 250,
             wheelchairAccessible: false,
-            cruiseBufferBeforeMinutes: 60,
-            cruiseBufferAfterMinutes: 60,
+            cruiseBufferBeforeMinutes: 30,
+            cruiseBufferAfterMinutes: 30,
+            transferTimeSource: "verified_pier_pickup",
+            planningEstimateTransferMinutes: 30,
             weatherDependent: true,
             requiresClosedToeShoes: true,
           },
@@ -1246,7 +1675,27 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
               bookingUrl: directUrl,
             },
           ],
-          productOptions: [],
+          productOptions: [
+            {
+              optionCode: String(item.pk),
+              title: `${fh.operatorName}: ${title} (Cruise Pier Shuttle Included)`,
+              description:
+                "Includes direct round-trip transfer from downtown cruise ship docks to the flight base.",
+              includesPickup: true,
+              pickupFulfillmentType: "pier_pickup",
+              meetingPointName: fh.meetingPointName,
+              meetingPointLat: fh.meetingPointLat,
+              meetingPointLng: fh.meetingPointLng,
+              transferBeforeMinutes: 30,
+              transferAfterMinutes: 30,
+              transferTimeSource: "verified_pier_pickup",
+              planningEstimateTransferMinutes: 30,
+              durationMinutes,
+              fromPriceCents: null,
+              priceBasis: "per_person",
+              scheduledStartTimes: [],
+            },
+          ],
           serviceDetails: {},
           inclusions: [
             "Round-trip dock shuttle transfer",
@@ -1356,11 +1805,182 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
 export type IncrementalRefreshOptions = {
   cursor?: string;
   count?: number;
+  scheduleRefreshLimit?: number;
+  includeScheduleAndPricingRefresh?: boolean;
 };
+
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  options: { maxAttempts?: number; baseDelayMs?: number } = {},
+): Promise<{ result: T; attempts: number }> {
+  const maxAttempts = Math.max(options.maxAttempts ?? 3, 1);
+  const baseDelayMs = Math.max(options.baseDelayMs ?? 300, 50);
+  let lastErr: unknown;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const result = await fn();
+      return { result, attempts: attempt };
+    } catch (err) {
+      lastErr = err;
+      if (attempt < maxAttempts) {
+        await new Promise((r) => setTimeout(r, baseDelayMs * Math.pow(2, attempt - 1)));
+      }
+    }
+  }
+  throw lastErr;
+}
+
+/**
+ * Incremental availability & pricing schedule refresh job (/availability/schedules/{code}).
+ * Picks active Viator records ordered by oldest schedule refresh / verification timestamp,
+ * refreshes their option pricing & start times with retry, and retires deactivated products.
+ */
+export async function runIncrementalScheduleAndPricingRefresh(options: {
+  limit?: number;
+  destinationSlug?: string;
+} = {}) {
+  const client = getViatorClient();
+  const snapshot = readLocalCatalogSnapshot();
+  const limit = Math.min(Math.max(options.limit ?? 15, 1), 100);
+
+  const candidates = snapshot.records
+    .filter(
+      (r) =>
+        r.primaryProvider === "viator" &&
+        r.active &&
+        !r.quarantined &&
+        (!options.destinationSlug || r.destinationSlug === options.destinationSlug),
+    )
+    .sort((a, b) => {
+      const tsA = Date.parse(
+        (a.provenance as any)?.lastScheduleRefreshAt || a.lastVerifiedAt || a.updatedAt || "1970-01-01",
+      );
+      const tsB = Date.parse(
+        (b.provenance as any)?.lastScheduleRefreshAt || b.lastVerifiedAt || b.updatedAt || "1970-01-01",
+      );
+      return tsA - tsB;
+    })
+    .slice(0, limit);
+
+  const runId = `sync:viator:schedule_pricing_refresh:${Date.now()}`;
+  const startedAt = new Date().toISOString();
+  let upstreamRequests = 0;
+  let updatedCount = 0;
+  let retiredCount = 0;
+  let rejectedCount = 0;
+  let retryAttemptsTotal = 0;
+  const updatedRecords: DurableTourRecord[] = [];
+  const refreshedCodes: string[] = [];
+
+  for (const existing of candidates) {
+    const code = existing.providerProductCode.toUpperCase();
+    const nowIso = new Date().toISOString();
+    try {
+      const { result: detail, attempts: detailAttempts } = await withRetry(
+        () => client.getProductDetail(code) as Promise<any>,
+        { maxAttempts: 3, baseDelayMs: 250 },
+      );
+      upstreamRequests += detailAttempts;
+      retryAttemptsTotal += Math.max(detailAttempts - 1, 0);
+
+      if (String(detail?.status || "").toUpperCase() === "INACTIVE") {
+        await retireDurableTourRecord(code, "viator_schedule_refresh_status_inactive");
+        retiredCount += 1;
+        continue;
+      }
+
+      const { result: sched, attempts: schedAttempts } = await withRetry(
+        () => client.getProductSchedules(code) as Promise<any>,
+        { maxAttempts: 3, baseDelayMs: 250 },
+      ).catch(() => ({ result: null, attempts: 1 }));
+      upstreamRequests += schedAttempts;
+      retryAttemptsTotal += Math.max(schedAttempts - 1, 0);
+
+      const durationParsed = parseDurationMinutesFromViator(
+        detail?.itinerary?.duration || detail?.duration,
+      );
+      const pickupParsed = parsePickupAndLocationsFromViator(detail, new Map());
+      const optionsAndSchedule = parseProductOptionsAndScheduleFromViator(
+        detail,
+        sched,
+        pickupParsed.hasHotelPickup ?? existing.hasHotelPickup,
+        durationParsed.durationMinutes ?? existing.durationMinutes,
+        String(detail?.title || existing.title),
+        typeof detail?.description === "string" ? detail.description : existing.summary,
+        existing.destinationSlug,
+        pickupParsed.meetingPointAddress ?? existing.meetingPointAddress,
+        pickupParsed.meetingPointLat ?? existing.meetingPointLat,
+        pickupParsed.meetingPointLng ?? existing.meetingPointLng,
+        pickupParsed.hasCruisePortPickup,
+      );
+
+      updatedRecords.push({
+        ...existing,
+        fromPriceCents: optionsAndSchedule.scheduleFromPriceCents ?? existing.fromPriceCents,
+        priceBasis: optionsAndSchedule.priceBasis,
+        lowestPriceIncludesPickup:
+          optionsAndSchedule.lowestPriceIncludesPickup ?? existing.lowestPriceIncludesPickup,
+        pickupFulfillmentType:
+          optionsAndSchedule.primaryPickupFulfillmentType ?? existing.pickupFulfillmentType,
+        productOptions:
+          optionsAndSchedule.productOptions.length > 0
+            ? optionsAndSchedule.productOptions
+            : existing.productOptions,
+        constraints: {
+          ...existing.constraints,
+          cruiseBufferBeforeMinutes: optionsAndSchedule.tourTransferBeforeMinutes,
+          cruiseBufferAfterMinutes: optionsAndSchedule.tourTransferAfterMinutes,
+          transferTimeSource: optionsAndSchedule.tourTransferTimeSource,
+          planningEstimateTransferMinutes: optionsAndSchedule.tourPlanningEstimateTransferMinutes,
+        },
+        provenance: {
+          ...existing.provenance,
+          sourceEndpoint: "/products/{code}+/availability/schedules/{code}",
+          fetchedAt: nowIso,
+          lastScheduleRefreshAt: nowIso,
+        } as any,
+        lastVerifiedAt: nowIso,
+        updatedAt: nowIso,
+      });
+      updatedCount += 1;
+      refreshedCodes.push(code);
+    } catch {
+      rejectedCount += 1;
+    }
+  }
+
+  if (updatedRecords.length > 0) {
+    await upsertDurableTourRecords(updatedRecords);
+  }
+
+  const syncRun: CatalogSyncRunRecord = {
+    runId,
+    provider: "viator_schedule_pricing",
+    destinationSlug: options.destinationSlug || "multi-destination",
+    status: "completed",
+    cursorValue: refreshedCodes[refreshedCodes.length - 1] || null,
+    importedCount: 0,
+    updatedCount,
+    rejectedCount,
+    upstreamRequestCount: upstreamRequests,
+    rejectionReasons: rejectedCount > 0 ? { schedule_refresh_failed: rejectedCount } : {},
+    metadata: {
+      candidatesSelected: candidates.length,
+      refreshedCodes,
+      retiredCount,
+      retryAttemptsTotal,
+    },
+    startedAt,
+    completedAt: new Date().toISOString(),
+  };
+  await recordCatalogSyncRun(syncRun);
+  return syncRun;
+}
 
 /**
  * Incremental refresh job using Viator /products/modified-since cursor pagination.
- * Updates any existing catalog records whose productCode appears in the modified-since feed.
+ * Supports durable checkpoint resumption, exponential backoff retries, product retirement
+ * handling (INACTIVE -> active: false), and optional schedule/pricing refresh.
  */
 export async function runIncrementalViatorCatalogRefresh(options: IncrementalRefreshOptions = {}) {
   const client = getViatorClient();
@@ -1372,18 +1992,40 @@ export async function runIncrementalViatorCatalogRefresh(options: IncrementalRef
     }
   }
 
+  // Resume from durable checkpoint cursor if no explicit cursor was passed
+  let effectiveCursor = options.cursor;
+  if (!effectiveCursor) {
+    const priorIncremental = snapshot.syncRuns.find(
+      (r) =>
+        r.provider === "viator_incremental" &&
+        r.status === "completed" &&
+        typeof r.cursorValue === "string" &&
+        r.cursorValue.length > 0,
+    );
+    if (priorIncremental?.cursorValue) {
+      effectiveCursor = priorIncremental.cursorValue;
+    }
+  }
+
   const runId = `sync:viator:incremental:${Date.now()}`;
   const startedAt = new Date().toISOString();
   let upstreamRequests = 0;
   let updatedCount = 0;
+  let retiredCount = 0;
   let rejectedCount = 0;
+  let retryAttemptsTotal = 0;
 
   try {
-    upstreamRequests += 1;
-    const modRes = (await client.getProductsModifiedSince(
-      options.cursor,
-      Math.min(Math.max(options.count ?? 50, 1), 500),
-    )) as any;
+    const { result: modRes, attempts } = await withRetry(
+      () =>
+        client.getProductsModifiedSince(
+          effectiveCursor,
+          Math.min(Math.max(options.count ?? 50, 1), 500),
+        ) as Promise<any>,
+      { maxAttempts: 3, baseDelayMs: 300 },
+    );
+    upstreamRequests += attempts;
+    retryAttemptsTotal += Math.max(attempts - 1, 0);
 
     const nextCursor = typeof modRes?.nextCursor === "string" ? modRes.nextCursor : null;
     const modProducts: any[] = Array.isArray(modRes?.products) ? modRes.products : [];
@@ -1397,18 +2039,19 @@ export async function runIncrementalViatorCatalogRefresh(options: IncrementalRef
       if (!existing) continue;
 
       if (String(item?.status || "").toUpperCase() === "INACTIVE") {
-        updatedRecords.push({
-          ...existing,
-          active: false,
-          updatedAt: nowIso,
-          lastVerifiedAt: nowIso,
-        });
+        await retireDurableTourRecord(code, "viator_modified_since_status_inactive");
+        retiredCount += 1;
         updatedCount += 1;
         continue;
       }
 
-      upstreamRequests += 1;
-      const sched = await client.getProductSchedules(code).catch(() => null);
+      const { result: sched, attempts: schedAttempts } = await withRetry(
+        () => client.getProductSchedules(code) as Promise<any>,
+        { maxAttempts: 2, baseDelayMs: 250 },
+      ).catch(() => ({ result: null, attempts: 1 }));
+      upstreamRequests += schedAttempts;
+      retryAttemptsTotal += Math.max(schedAttempts - 1, 0);
+
       const durationParsed = parseDurationMinutesFromViator(
         item?.itinerary?.duration || item?.duration,
       );
@@ -1421,6 +2064,11 @@ export async function runIncrementalViatorCatalogRefresh(options: IncrementalRef
         durationParsed.durationMinutes ?? existing.durationMinutes,
         String(item?.title || existing.title),
         typeof item?.description === "string" ? item.description : existing.summary,
+        existing.destinationSlug,
+        pickupParsed.meetingPointAddress ?? existing.meetingPointAddress,
+        pickupParsed.meetingPointLat ?? existing.meetingPointLat,
+        pickupParsed.meetingPointLng ?? existing.meetingPointLng,
+        pickupParsed.hasCruisePortPickup,
       );
 
       updatedRecords.push({
@@ -1439,10 +2087,19 @@ export async function runIncrementalViatorCatalogRefresh(options: IncrementalRef
         hasHotelPickup: pickupParsed.hasHotelPickup ?? existing.hasHotelPickup,
         lowestPriceIncludesPickup:
           optionsAndSchedule.lowestPriceIncludesPickup ?? existing.lowestPriceIncludesPickup,
+        pickupFulfillmentType:
+          optionsAndSchedule.primaryPickupFulfillmentType ?? existing.pickupFulfillmentType,
         productOptions:
           optionsAndSchedule.productOptions.length > 0
             ? optionsAndSchedule.productOptions
             : existing.productOptions,
+        constraints: {
+          ...existing.constraints,
+          cruiseBufferBeforeMinutes: optionsAndSchedule.tourTransferBeforeMinutes,
+          cruiseBufferAfterMinutes: optionsAndSchedule.tourTransferAfterMinutes,
+          transferTimeSource: optionsAndSchedule.tourTransferTimeSource,
+          planningEstimateTransferMinutes: optionsAndSchedule.tourPlanningEstimateTransferMinutes,
+        },
         provenance: {
           ...existing.provenance,
           sourceEndpoint: "/products/modified-since",
@@ -1459,6 +2116,13 @@ export async function runIncrementalViatorCatalogRefresh(options: IncrementalRef
       await upsertDurableTourRecords(updatedRecords);
     }
 
+    let scheduleRefreshRun: CatalogSyncRunRecord | null = null;
+    if (options.includeScheduleAndPricingRefresh !== false) {
+      scheduleRefreshRun = await runIncrementalScheduleAndPricingRefresh({
+        limit: options.scheduleRefreshLimit ?? 10,
+      });
+    }
+
     const syncRun: CatalogSyncRunRecord = {
       runId,
       provider: "viator_incremental",
@@ -1468,13 +2132,17 @@ export async function runIncrementalViatorCatalogRefresh(options: IncrementalRef
       importedCount: 0,
       updatedCount,
       rejectedCount,
-      upstreamRequestCount: upstreamRequests,
+      upstreamRequestCount: upstreamRequests + (scheduleRefreshRun?.upstreamRequestCount ?? 0),
       rejectionReasons: {},
       metadata: {
-        inputCursor: options.cursor || null,
+        inputCursor: effectiveCursor || null,
         nextCursor,
         modifiedProductsScanned: modProducts.length,
         catalogMatchesUpdated: updatedCount,
+        retiredCount,
+        retryAttemptsTotal,
+        schedulePricingRefreshRunId: scheduleRefreshRun?.runId || null,
+        schedulePricingRefreshedCount: scheduleRefreshRun?.updatedCount ?? 0,
       },
       startedAt,
       completedAt: new Date().toISOString(),
@@ -1487,7 +2155,7 @@ export async function runIncrementalViatorCatalogRefresh(options: IncrementalRef
       provider: "viator_incremental",
       destinationSlug: "multi-destination",
       status: "failed",
-      cursorValue: options.cursor || null,
+      cursorValue: effectiveCursor || null,
       importedCount: 0,
       updatedCount,
       rejectedCount,
@@ -1495,6 +2163,7 @@ export async function runIncrementalViatorCatalogRefresh(options: IncrementalRef
       rejectionReasons: { api_error: 1 },
       metadata: {
         error: err instanceof Error ? err.message : String(err),
+        retryAttemptsTotal,
       },
       startedAt,
       completedAt: new Date().toISOString(),
@@ -1579,6 +2248,14 @@ export function buildAuthoritativeGoSnoAndParrRecords(targetSlugs: string[]): Du
         title: `One-Way ${vehicleShortLabel} (DEN to ${route.destination}, up to ${route.seating_limit} guests)`,
         description: `All-inclusive flat rate per vehicle ($${route.pricing.amount_usd}). ${pickupText}`,
         includesPickup: true,
+        pickupFulfillmentType: "hotel_pickup",
+        meetingPointName: "Denver International Airport (DEN) Jeppesen Terminal",
+        meetingPointLat: 39.8561,
+        meetingPointLng: -104.6737,
+        transferBeforeMinutes: null,
+        transferAfterMinutes: null,
+        transferTimeSource: "unknown",
+        planningEstimateTransferMinutes: null,
         durationMinutes: null,
         fromPriceCents: oneWayCents,
         priceBasis: "flat_rate_per_vehicle",
@@ -1592,6 +2269,14 @@ export function buildAuthoritativeGoSnoAndParrRecords(targetSlugs: string[]): Du
         title: `Round-Trip ${vehicleShortLabel} (DEN <-> ${route.destination}, up to ${route.seating_limit} guests)`,
         description: `All-inclusive round-trip flat rate per vehicle ($${roundTrip.pricing.total_amount_usd}). ${roundTrip.outbound_pickup_instructions || pickupText}`,
         includesPickup: true,
+        pickupFulfillmentType: "hotel_pickup",
+        meetingPointName: "Denver International Airport (DEN) Jeppesen Terminal",
+        meetingPointLat: 39.8561,
+        meetingPointLng: -104.6737,
+        transferBeforeMinutes: null,
+        transferAfterMinutes: null,
+        transferTimeSource: "unknown",
+        planningEstimateTransferMinutes: null,
         durationMinutes: null,
         fromPriceCents: roundTripCents,
         priceBasis: "flat_rate_per_vehicle",
@@ -1644,6 +2329,7 @@ export function buildAuthoritativeGoSnoAndParrRecords(targetSlugs: string[]): Du
       hasHotelPickup: true,
       lowestPriceIncludesPickup: true,
       pickupType: "HOTEL_OR_MEETING_POINT",
+      pickupFulfillmentType: "hotel_pickup",
       pickupSummary: pickupText,
       meetingPointName: "Denver International Airport (DEN) Jeppesen Terminal",
       meetingPointAddress: "8500 Pena Blvd, Denver, CO 80249",
@@ -1670,6 +2356,10 @@ export function buildAuthoritativeGoSnoAndParrRecords(targetSlugs: string[]): Du
         wheelchairAccessible: null,
         minAgeYears: 0,
         physicalDifficulty: "EASY",
+        cruiseBufferBeforeMinutes: null,
+        cruiseBufferAfterMinutes: null,
+        transferTimeSource: "unknown",
+        planningEstimateTransferMinutes: null,
         weatherDependent: true,
       },
       channelOffers: [
@@ -1812,6 +2502,7 @@ export function buildAuthoritativeGoSnoAndParrRecords(targetSlugs: string[]): Du
       hasHotelPickup: true,
       lowestPriceIncludesPickup: true,
       pickupType: "HOTEL_PICKUP",
+      pickupFulfillmentType: "hotel_pickup",
       pickupSummary:
         "Custom door-to-door pickup for your group across Denver / metro area with Red Rocks Top Circle drop-off and dedicated waiting driver.",
       meetingPointName: "Custom Door-to-Door Group Pickup (Denver Metro to Red Rocks Top Circle)",
@@ -1830,6 +2521,10 @@ export function buildAuthoritativeGoSnoAndParrRecords(targetSlugs: string[]): Du
         wheelchairAccessible: cand.accessibilityProfile.stepFreeWheelchairSupported,
         minAgeYears: cand.minimumAgeYears,
         physicalDifficulty: "EASY",
+        cruiseBufferBeforeMinutes: null,
+        cruiseBufferAfterMinutes: null,
+        transferTimeSource: "unknown",
+        planningEstimateTransferMinutes: null,
         weatherDependent: false,
       },
       channelOffers: [
@@ -1856,6 +2551,14 @@ export function buildAuthoritativeGoSnoAndParrRecords(targetSlugs: string[]): Du
           title: cand.shortLabel,
           description: cand.viewingSpaceDescription,
           includesPickup: true,
+          pickupFulfillmentType: "hotel_pickup",
+          meetingPointName: "Custom Door-to-Door Group Pickup (Denver Metro to Red Rocks Top Circle)",
+          meetingPointLat: null,
+          meetingPointLng: null,
+          transferBeforeMinutes: null,
+          transferAfterMinutes: null,
+          transferTimeSource: "unknown",
+          planningEstimateTransferMinutes: null,
           durationMinutes: null,
           fromPriceCents: priceCents,
           priceBasis: "flat_rate_per_vehicle",
