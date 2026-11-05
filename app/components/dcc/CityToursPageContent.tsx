@@ -6,7 +6,7 @@ import ToursSearchPanel from "@/app/components/dcc/ToursSearchPanel";
 import ViatorTourGrid from "@/app/components/dcc/ViatorTourGrid";
 import DccConciergeWidget from "@/app/components/dcc/DccConciergeWidget";
 import JsonLd from "@/app/components/dcc/JsonLd";
-import { resolveEarthOSDestinationNode } from "@/lib/dcc/catalog/destinationRegistry";
+import { resolveEarthOSDestinationNode } from "@/lib/dcc/catalog/durableCatalogStore";
 import { getViatorActionForPlace } from "@/lib/dcc/internal/viatorAction";
 import { getCategoriesManifest } from "@/lib/dcc/manifests/cityExpansion";
 import { buildBreadcrumbJsonLd } from "@/lib/dcc/jsonld";

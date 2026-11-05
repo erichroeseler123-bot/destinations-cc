@@ -2006,8 +2006,7 @@ export async function runIncrementalScheduleAndPricingRefresh(options: {
     const { result: schedStreamRes, attempts: streamAttempts } = await withRetry(
       () =>
         client.getAvailabilitySchedulesModifiedSince(
-          effectiveScheduleCursor,
-          Math.min(limit * 4, 200),
+          effectiveScheduleCursor || undefined,
         ) as Promise<any>,
       { maxAttempts: 2, baseDelayMs: 250 },
     );

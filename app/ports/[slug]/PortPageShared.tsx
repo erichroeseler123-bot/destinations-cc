@@ -25,7 +25,7 @@ import DccNetworkStrip from "@/components/DccNetworkStrip";
 import { getViatorActionForPlace } from "@/lib/dcc/internal/viatorAction";
 import TravelReferenceExperience from "@/app/components/dcc/TravelReferenceExperience";
 import DccConciergeWidget from "@/app/components/dcc/DccConciergeWidget";
-import { resolveEarthOSDestinationNode } from "@/lib/dcc/catalog/destinationRegistry";
+import { resolveEarthOSDestinationNode } from "@/lib/dcc/catalog/durableCatalogStore";
 import { getPublishedTravelReferenceNodeById } from "@/lib/dcc/travelReference";
 import { getPublicationManifestEntry } from "@/src/data/publication-manifest";
 

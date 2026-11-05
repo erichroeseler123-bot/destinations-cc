@@ -27,6 +27,7 @@ export type DccConciergeWidgetProps = {
   embedMode?: boolean;
   isTest?: boolean;
   parentOrigin?: string;
+  theme?: "dark" | "light";
 };
 
 const DESTINATION_OPTIONS = [

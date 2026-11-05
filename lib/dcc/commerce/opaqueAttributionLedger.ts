@@ -99,6 +99,8 @@ export interface OpaqueClickAttributionRecord {
   followedAt?: string | null;
   clickCount?: number;
   duplicateDeliveryCount?: number;
+  userAgent?: string | null;
+  referer?: string | null;
   provider: CommercialProvider;
   productCode: string;
   outboundPartnerUrl: string;
