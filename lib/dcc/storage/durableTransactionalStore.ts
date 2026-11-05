@@ -20,6 +20,16 @@ import type {
   GoSnoRouteFeedVersionedSnapshot,
 } from "../applicability/gosnoRouteFeedSnapshot";
 
+export interface FunnelVisitorRecord {
+  visitorId: string;
+  sourcePage: string;
+  trafficClass: "production" | "test";
+  isTest: boolean;
+  firstSeenAt: string;
+  lastSeenAt: string;
+  visitCount: number;
+}
+
 export interface DurableLedgerState {
   schemaVersion: "dcc-durable-transactional-store/1.0";
   txSequence: number;
@@ -27,6 +37,7 @@ export interface DurableLedgerState {
   opaqueClicksById: Record<string, OpaqueClickAttributionRecord>;
   opaqueClickIdsByHandoffId: Record<string, string>;
   reconciliationByDedupeKey: Record<string, OpaqueClickReconciledOutcome>;
+  funnelVisitorsById?: Record<string, FunnelVisitorRecord>;
   stewardDisputesById: Record<string, OperatorDisputeSubmission>;
   stewardCasesById: Record<string, StewardReviewCase>;
   stewardDecisionsById: Record<string, AuditDecisionRecord>;
@@ -71,6 +82,7 @@ export function createInitialDurableLedgerState(
     opaqueClicksById: {},
     opaqueClickIdsByHandoffId: {},
     reconciliationByDedupeKey: {},
+    funnelVisitorsById: {},
     stewardDisputesById: {},
     stewardCasesById: {},
     stewardDecisionsById: {},
@@ -188,6 +200,10 @@ function normalizeLoadedState(raw: unknown): DurableLedgerState {
       obj.reconciliationByDedupeKey &&
       typeof obj.reconciliationByDedupeKey === "object"
         ? obj.reconciliationByDedupeKey
+        : {},
+    funnelVisitorsById:
+      obj.funnelVisitorsById && typeof obj.funnelVisitorsById === "object"
+        ? obj.funnelVisitorsById
         : {},
     stewardDisputesById:
       obj.stewardDisputesById && typeof obj.stewardDisputesById === "object"
@@ -531,6 +547,15 @@ export async function syncDurableLedgerWithPostgres(options?: {
         localDraft.reconciliationByDedupeKey,
         remoteState.reconciliationByDedupeKey,
       );
+      localDraft.funnelVisitorsById = localDraft.funnelVisitorsById || {};
+      if (remoteState.funnelVisitorsById) {
+        for (const [vid, vrec] of Object.entries(remoteState.funnelVisitorsById)) {
+          const existingVis = localDraft.funnelVisitorsById[vid];
+          if (!existingVis || vrec.visitCount > existingVis.visitCount) {
+            localDraft.funnelVisitorsById[vid] = vrec;
+          }
+        }
+      }
       Object.assign(
         localDraft.stewardDisputesById,
         remoteState.stewardDisputesById,

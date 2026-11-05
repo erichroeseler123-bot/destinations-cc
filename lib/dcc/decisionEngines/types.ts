@@ -6,7 +6,16 @@ import type {
 
 export type DecisionEngineCategoryId =
   | "juneau-helicopter-tours"
-  | "hawaii-whale-watching";
+  | "hawaii-whale-watching"
+  | "juneau-whale-watching"
+  | "denver-to-mountain-transportation"
+  | "red-rocks-concert-shuttle"
+  | "new-orleans-swamp-tours"
+  | "new-orleans-city-tours"
+  | "denver-420-airport-transfers"
+  | "cruise-port-private-drivers"
+  | "vacation-rental-catering-spreads"
+  | "alaska-shore-excursions";
 
 export type ClaimClassification =
   | "official_rule"

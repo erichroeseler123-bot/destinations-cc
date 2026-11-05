@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import CategoryDecisionEngineExperience from "@/app/components/dcc/CategoryDecisionEngineExperience";
 import ParrCtaLink from "@/app/components/dcc/ParrCtaLink";
 import RedRocksAuthorityPage from "@/app/components/dcc/RedRocksAuthorityPage";
+import { RED_ROCKS_CONCERT_DECISION_ENGINE } from "@/lib/dcc/decisionEngines/redRocksConcertTransportationEngine";
+import type { DecisionResult } from "@/lib/dcc/decisionEngines/types";
 import { getEdgeSignalMapForSubjects } from "@/lib/dcc/routing/edge-signals";
 import {
   buildDccRedRocksSharedGoUrl,
@@ -216,6 +219,14 @@ export default async function RedRocksTransportationPage({
               </div>
             </div>
           </section>
+          <CategoryDecisionEngineExperience
+            engineId="red-rocks-concert-shuttle"
+            initialResult={
+              RED_ROCKS_CONCERT_DECISION_ENGINE.evaluate(
+                RED_ROCKS_CONCERT_DECISION_ENGINE.defaultExampleInput,
+              ) as unknown as DecisionResult<Record<string, unknown>>
+            }
+          />
         </div>
       }
       sections={[

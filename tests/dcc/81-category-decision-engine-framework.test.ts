@@ -844,3 +844,104 @@ test("15. Load test: evaluation route survives >= 250 concurrent evaluation requ
   assert.equal(failures, 0);
   assert.equal(latenciesMs.length, totalRequests);
 });
+
+test("16. All 11 registered decision engines (covering all 9 portfolio universes) enforce verified siteTruth and feed rules", () => {
+  const registeredIds = Object.keys(DECISION_ENGINE_REGISTRY);
+  assert.equal(registeredIds.length, 11);
+  for (const expectedId of [
+    "juneau-helicopter-tours",
+    "hawaii-whale-watching",
+    "juneau-whale-watching",
+    "denver-to-mountain-transportation",
+    "red-rocks-concert-shuttle",
+    "new-orleans-swamp-tours",
+    "new-orleans-city-tours",
+    "denver-420-airport-transfers",
+    "cruise-port-private-drivers",
+    "vacation-rental-catering-spreads",
+    "alaska-shore-excursions",
+  ]) {
+    assert.ok(registeredIds.includes(expectedId), `Missing engine ${expectedId}`);
+    const engine = DECISION_ENGINE_REGISTRY[expectedId as keyof typeof DECISION_ENGINE_REGISTRY];
+    const evalDefault = engine.evaluate(engine.defaultExampleInput);
+    assert.equal(evalDefault.commercialNeutrality.commercialWeightAppliedToRanking, 0);
+    assert.ok(evalDefault.viableOptions.length >= 1);
+  }
+
+  // Verify FeastlySpread 2 active markets vs. 16 coverage-request markets
+  const feastlyEngine = DECISION_ENGINE_REGISTRY["vacation-rental-catering-spreads"];
+  const dellsEval = feastlyEngine.evaluate({
+    destinationMarket: "wisconsin-dells",
+    mealApproach: "delivered_in_rental_catering_spread",
+    groupSize: 12,
+    travelDate: "2026-11-20",
+  });
+  assert.equal(dellsEval.bestFitOption?.optionId, "catering-feastly-active-market");
+  assert.ok(
+    dellsEval.eliminatedOptions.some(
+      (e) => e.optionId === "catering-feastly-coverage-inquiry",
+    ),
+  );
+
+  const gatlinburgEval = feastlyEngine.evaluate({
+    destinationMarket: "gatlinburg",
+    mealApproach: "delivered_in_rental_catering_spread",
+    groupSize: 12,
+    travelDate: "2026-11-20",
+  });
+  assert.ok(
+    gatlinburgEval.eliminatedOptions.some(
+      (e) => e.optionId === "catering-feastly-active-market",
+    ),
+  );
+  assert.ok(
+    gatlinburgEval.viableOptions.some(
+      (v) => v.optionId === "catering-feastly-coverage-inquiry",
+    ),
+  );
+
+  // Verify New Orleans City Tours 30-minute French Quarter Orientation truth
+  const nolaCityEngine = DECISION_ENGINE_REGISTRY["new-orleans-city-tours"];
+  const nolaFirstHour = nolaCityEngine.evaluate({
+    visitStage: "first_hour_orientation",
+    timeOfDayContext: "daytime_arrival",
+    wantsBayouOrSwampHandoff: false,
+    travelDate: "2026-11-20",
+  });
+  assert.equal(
+    nolaFirstHour.bestFitOption?.optionId,
+    "nola-city-fq-orientation-30min",
+  );
+
+  // Verify Cruise Port Private Drivers driver-acceptance finality
+  const portDriversEngine = DECISION_ENGINE_REGISTRY["cruise-port-private-drivers"];
+  const rejectedDriverAcceptance = portDriversEngine.evaluate({
+    portDayStyle: "custom_pace_local_driver",
+    acceptsDriverAcceptanceFinality: false,
+    travelDate: "2026-11-20",
+  });
+  assert.ok(
+    rejectedDriverAcceptance.eliminatedOptions.some(
+      (e) => e.optionId === "port-driver-vibe-around-request",
+    ),
+  );
+
+  // Verify Alaska Shore Excursions Juneau Flight Deck port constraint
+  const alaskaShorexEngine = DECISION_ENGINE_REGISTRY["alaska-shore-excursions"];
+  const skagwayEval = alaskaShorexEngine.evaluate({
+    portOfCall: "skagway",
+    excursionFocus: "port_signature_shore_excursion",
+    portWindowHours: 8,
+    travelDate: "2026-07-15",
+  });
+  assert.equal(
+    skagwayEval.bestFitOption?.optionId,
+    "ak-shorex-lfse-port-anchor",
+  );
+  assert.ok(
+    skagwayEval.eliminatedOptions.some(
+      (e) => e.optionId === "ak-shorex-jfd-aviation-specialist",
+    ),
+  );
+});
+

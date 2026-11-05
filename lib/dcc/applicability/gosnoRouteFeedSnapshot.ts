@@ -1338,6 +1338,10 @@ export interface ResolvedGoSnoRoundTripFare {
   currency: string;
   status: string;
   nextStep: string;
+  onlineBookable: boolean;
+  quoteOnly: boolean;
+  outboundRezdyProductCode: string | null;
+  returnRezdyProductCode: string | null;
   canonicalBookingUrl: string;
   quoteUrl: string;
   isExpired: boolean;
@@ -1360,15 +1364,24 @@ export function resolveGoSnoRoundTripFare(params: {
 
   const normalizedOfferId = params.offerId?.trim().toUpperCase();
   const normalizedRouteId = params.routeId?.trim().toUpperCase();
-  const airportCode = isAirportCode(params.airport) ?? "DEN";
-  const resortEntry = matchResortEntry(params.resort);
+  const airportCode =
+    isAirportCode(params.airport) ??
+    isAirportCode(params.resort) ??
+    "DEN";
+  const resortEntry =
+    matchResortEntry(params.resort) ?? matchResortEntry(params.airport);
 
   const matchedRt = snapshot.feed.round_trips.find((rt) => {
     if (rt.vehicle_class !== params.vehicleClass) return false;
     if (normalizedOfferId && rt.offer_id.toUpperCase() === normalizedOfferId) {
       return true;
     }
-    if (normalizedRouteId && rt.route_id.toUpperCase() === normalizedRouteId) {
+    if (
+      normalizedRouteId &&
+      (rt.route_id.toUpperCase() === normalizedRouteId ||
+        rt.outbound_route_id.toUpperCase() === normalizedRouteId ||
+        rt.return_route_id.toUpperCase() === normalizedRouteId)
+    ) {
       return true;
     }
     if (
@@ -1400,6 +1413,10 @@ export function resolveGoSnoRoundTripFare(params: {
       currency: "USD",
       status: "unmatched",
       nextStep: "request a quote",
+      onlineBookable: false,
+      quoteOnly: true,
+      outboundRezdyProductCode: null,
+      returnRezdyProductCode: null,
       canonicalBookingUrl: "https://gosno.co/request-quote",
       quoteUrl: "https://gosno.co/request-quote",
       isExpired,
@@ -1419,6 +1436,12 @@ export function resolveGoSnoRoundTripFare(params: {
     }
   }
 
+  const isQuoteOnly =
+    isExpired ||
+    params.vehicleClass === "van" ||
+    matchedRt.status === "quote_only" ||
+    matchedRt.booking_eligibility?.online_bookable === false;
+
   return {
     matched: true,
     offerId: matchedRt.offer_id,
@@ -1436,10 +1459,14 @@ export function resolveGoSnoRoundTripFare(params: {
     totalAmountCents: isExpired ? null : matchedRt.pricing.total_amount_cents,
     currency: matchedRt.pricing.currency,
     status: matchedRt.status,
-    nextStep:
-      isExpired || params.vehicleClass === "van"
-        ? "request a quote"
-        : matchedRt.next_step,
+    nextStep: isQuoteOnly ? "request a quote" : matchedRt.next_step,
+    onlineBookable:
+      !isQuoteOnly && Boolean(matchedRt.booking_eligibility?.online_bookable ?? true),
+    quoteOnly: isQuoteOnly,
+    outboundRezdyProductCode:
+      matchedRt.booking_eligibility?.outbound_rezdy_product_code ?? null,
+    returnRezdyProductCode:
+      matchedRt.booking_eligibility?.return_rezdy_product_code ?? null,
     canonicalBookingUrl: matchedRt.canonical_booking_url,
     quoteUrl: resolvedQuoteUrl,
     isExpired,
@@ -1491,15 +1518,23 @@ export function getGoSnoRouteSnapshotDisplayPricing(params: {
     vehicleClass: "van",
     snapshotState,
   });
+  const airportForRt =
+    isAirportCode(suvFare.origin) ??
+    isAirportCode(suvFare.destination) ??
+    "DEN";
+  const resortForRt =
+    suvFare.direction === "RETURN" ? suvFare.origin : suvFare.destination;
   const roundTripSuvFare = resolveGoSnoRoundTripFare({
-    airport: suvFare.origin,
-    resort: suvFare.destination,
+    routeId: params.routeId,
+    airport: airportForRt,
+    resort: resortForRt,
     vehicleClass: "suv",
     snapshotState,
   });
   const roundTripVanFare = resolveGoSnoRoundTripFare({
-    airport: vanFare.origin,
-    resort: vanFare.destination,
+    routeId: params.routeId,
+    airport: airportForRt,
+    resort: resortForRt,
     vehicleClass: "van",
     snapshotState,
   });

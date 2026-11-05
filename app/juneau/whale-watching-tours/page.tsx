@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import CategoryDecisionEngineExperience from "@/app/components/dcc/CategoryDecisionEngineExperience";
 import JsonLd from "@/app/components/dcc/JsonLd";
+import { JUNEAU_WHALE_DECISION_ENGINE } from "@/lib/dcc/decisionEngines/juneauWhaleWatchingEngine";
+import type { DecisionResult } from "@/lib/dcc/decisionEngines/types";
 import {
   buildBreadcrumbJsonLd,
   buildCollectionPageJsonLd,
@@ -79,6 +82,9 @@ function JsonLdGraph() {
 }
 
 export default function JuneauWhaleWatchingToursPage() {
+  const initialResult = JUNEAU_WHALE_DECISION_ENGINE.evaluate(
+    JUNEAU_WHALE_DECISION_ENGINE.defaultExampleInput,
+  ) as unknown as DecisionResult<Record<string, unknown>>;
   const primarySpecialistUrl = "https://www.lastfrontiershoreexcursions.com/juneau/whale-watching";
   const comboDecisionUrl =
     "https://www.lastfrontiershoreexcursions.com/decision/whale-watching-vs-glacier-tour";
@@ -141,6 +147,11 @@ export default function JuneauWhaleWatchingToursPage() {
             </article>
           ))}
         </section>
+
+        <CategoryDecisionEngineExperience
+          engineId="juneau-whale-watching"
+          initialResult={initialResult}
+        />
 
         <section className="rounded-[1.9rem] border border-white/10 bg-[#0b1017] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.28)] md:p-8 space-y-5">
           <div className="max-w-3xl">

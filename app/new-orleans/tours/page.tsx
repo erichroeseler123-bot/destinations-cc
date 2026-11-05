@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import CategoryDecisionEngineExperience from "@/app/components/dcc/CategoryDecisionEngineExperience";
 import JsonLd from "@/app/components/dcc/JsonLd";
+import { NOLA_CITY_TOURS_DECISION_ENGINE } from "@/lib/dcc/decisionEngines/newOrleansCityToursEngine";
+import type { DecisionResult } from "@/lib/dcc/decisionEngines/types";
 import ProductCard from "../components/ProductCard";
 import CinematicPageHero from "../components/CinematicPageHero";
 import {
@@ -206,6 +209,19 @@ export default async function NewOrleansToursPage({
             );
           })}
         </div>
+
+        {!isWto ? (
+          <div className="max-w-7xl mx-auto px-6 pb-14">
+            <CategoryDecisionEngineExperience
+              engineId="new-orleans-city-tours"
+              initialResult={
+                NOLA_CITY_TOURS_DECISION_ENGINE.evaluate(
+                  NOLA_CITY_TOURS_DECISION_ENGINE.defaultExampleInput,
+                ) as unknown as DecisionResult<Record<string, unknown>>
+              }
+            />
+          </div>
+        ) : null}
 
         <DailyBriefSignup source="tour-catalog" />
       </main>

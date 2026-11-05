@@ -86,6 +86,8 @@ export async function POST(request: Request) {
     const body = (await request.json()) as Partial<TripApplicabilityRequest> & {
       partnerDestinationUrl?: string;
       preferPrivateTransfer?: boolean;
+      sourcePage?: string;
+      luggageCount?: number;
       partnerNetwork?:
         | "viator"
         | "fareharbor"
@@ -93,21 +95,69 @@ export async function POST(request: Request) {
         | "rezdy"
         | "square"
         | "direct";
+      [key: string]: unknown;
     };
 
     const corridorId: CorridorId =
       body.corridorId ?? "corridor:denver-vail-i70";
+    const rawDirectionUpper =
+      typeof body.direction === "string"
+        ? body.direction.trim().toUpperCase()
+        : "";
+    const rawTripTypeUpper =
+      typeof body.tripType === "string"
+        ? body.tripType.trim().toUpperCase()
+        : "";
+    const isRoundTrip =
+      rawDirectionUpper === "ROUND_TRIP" ||
+      rawTripTypeUpper === "ROUND_TRIP" ||
+      Boolean(typeof body.returnDate === "string" && body.returnDate.trim());
+
+    const normalizedDirection: GoSnoRouteDirection | "ROUND_TRIP" | undefined =
+      isRoundTrip
+        ? "ROUND_TRIP"
+        : rawDirectionUpper === "RETURN" ||
+            rawDirectionUpper === "RESORT_TO_AIRPORT"
+          ? "RETURN"
+          : rawDirectionUpper === "OUTBOUND" ||
+              rawDirectionUpper === "AIRPORT_TO_RESORT"
+            ? "OUTBOUND"
+            : undefined;
+
+    const pickupTime =
+      typeof body.pickupTime === "string" && body.pickupTime.trim()
+        ? body.pickupTime.trim()
+        : null;
+    const returnDate =
+      typeof body.returnDate === "string" && body.returnDate.trim()
+        ? body.returnDate.trim()
+        : null;
+    const returnPickupTime =
+      typeof body.returnPickupTime === "string" && body.returnPickupTime.trim()
+        ? body.returnPickupTime.trim()
+        : null;
+    const originatingPage =
+      (typeof body.originatingPage === "string" &&
+        body.originatingPage.trim()) ||
+      (typeof body.sourcePage === "string" && body.sourcePage.trim()) ||
+      "/transportation/colorado";
+
     const applicabilityRequest: TripApplicabilityRequest = {
       corridorId,
       routeId: body.routeId,
       offerId: body.offerId,
-      direction:
-        body.direction === "RETURN" || body.direction === "OUTBOUND"
-          ? (body.direction as GoSnoRouteDirection)
-          : undefined,
+      direction: normalizedDirection,
+      tripType: isRoundTrip ? "ROUND_TRIP" : "ONE_WAY",
       origin: body.origin,
       destination: body.destination,
       travelDate: body.travelDate ?? "2026-12-15",
+      pickupTime,
+      returnDate,
+      returnPickupTime,
+      returnRouteId:
+        typeof body.returnRouteId === "string" ? body.returnRouteId : null,
+      originatingPage,
+      isTest: Boolean(body.isTest),
       passengerCount: Number(body.passengerCount ?? 4),
       standardBagCount: Number(body.standardBagCount ?? 6),
       skiOrOversizeBagCount: Number(body.skiOrOversizeBagCount ?? 0),
@@ -135,23 +185,56 @@ export async function POST(request: Request) {
 
     let basePartnerUrl = explicitPartnerUrl || defaultPartnerUrl;
 
+    const matchedSnap = outcome.gosnoPricingSnapshot;
+    const isSuv = outcome.recommendedVehicleClassId === "veh:awd-full-size-suv";
+    const matchedOneWayOffer = isSuv
+      ? matchedSnap?.suvOffer
+      : matchedSnap?.vanOffer;
+    const matchedRoundTripOffer = isSuv
+      ? matchedSnap?.roundTripSuvOffer
+      : matchedSnap?.roundTripVanOffer;
+
+    const effectiveDirection: "OUTBOUND" | "RETURN" | "ROUND_TRIP" =
+      isRoundTrip
+        ? "ROUND_TRIP"
+        : matchedSnap?.matchedDirection === "RETURN" ||
+            normalizedDirection === "RETURN"
+          ? "RETURN"
+          : "OUTBOUND";
+    const effectiveTripType: "ONE_WAY" | "ROUND_TRIP" = isRoundTrip
+      ? "ROUND_TRIP"
+      : "ONE_WAY";
+    const effectiveRouteId =
+      (isRoundTrip && matchedRoundTripOffer?.routeId) ||
+      matchedSnap?.matchedRouteId ||
+      body.routeId ||
+      null;
+    const effectiveOfferId =
+      (isRoundTrip && matchedRoundTripOffer?.offerId) ||
+      matchedOneWayOffer?.offerId ||
+      body.offerId ||
+      null;
+    const effectiveReturnRouteId = isRoundTrip
+      ? matchedRoundTripOffer?.returnRouteId ||
+        body.returnRouteId ||
+        (matchedSnap?.matchedDestination
+          ? `${matchedSnap.matchedDestination.toUpperCase().replace(/\s+/g, "-")}-${matchedSnap.matchedOrigin || "DEN"}`
+          : null)
+      : null;
+
     if (
       outcome.privateGroupInquiryOption &&
       (body.preferPrivateTransfer === true || !outcome.recommendedOperatorId)
     ) {
       basePartnerUrl = outcome.privateGroupInquiryOption.inquiryUrl;
     } else if (outcome.recommendedOperatorId === "op:gosno") {
-      const matchedSnap = outcome.gosnoPricingSnapshot;
-      const isSuv = outcome.recommendedVehicleClassId === "veh:awd-full-size-suv";
-      const matchedOffer = isSuv
-        ? matchedSnap?.suvOffer
-        : matchedSnap?.vanOffer;
       const isSnapshotExpired = Boolean(matchedSnap?.isExpired);
 
       const hasCustomRouteOrDest = Boolean(
         body.routeId ||
           body.offerId ||
-          body.direction === "RETURN" ||
+          isRoundTrip ||
+          normalizedDirection === "RETURN" ||
           (body.destination &&
             body.destination !== "Vail" &&
             body.destination !== "Breckenridge"),
@@ -163,8 +246,12 @@ export async function POST(request: Request) {
           : "https://gosno.co/vail";
 
       const goSnoBase = isSnapshotExpired
-        ? matchedOffer?.quoteUrl || "https://gosno.co/request-quote"
-        : matchedOffer?.canonicalBookingUrl || fallbackGoSnoBase;
+        ? (isRoundTrip
+            ? matchedRoundTripOffer?.quoteUrl
+            : matchedOneWayOffer?.quoteUrl) || "https://gosno.co/request-quote"
+        : (isRoundTrip
+            ? matchedRoundTripOffer?.canonicalBookingUrl
+            : matchedOneWayOffer?.canonicalBookingUrl) || fallbackGoSnoBase;
 
       const parsed = new URL(
         !isSnapshotExpired &&
@@ -174,6 +261,22 @@ export async function POST(request: Request) {
           ? explicitPartnerUrl
           : goSnoBase,
       );
+
+      // If caller supplied an explicitPartnerUrl with query params (e.g., to test PII stripping),
+      // carry over any non-structural params so sanitizeOutboundPartnerUrlWithOpaqueClickId filters and logs them.
+      if (explicitPartnerUrl) {
+        try {
+          const explicitParsed = new URL(explicitPartnerUrl);
+          for (const [k, v] of explicitParsed.searchParams.entries()) {
+            if (!parsed.searchParams.has(k)) {
+              parsed.searchParams.set(k, v);
+            }
+          }
+        } catch {
+          // ignore malformed explicit URL
+        }
+      }
+
       parsed.searchParams.set(
         "origin",
         matchedSnap?.matchedOrigin || "DEN",
@@ -185,14 +288,22 @@ export async function POST(request: Request) {
             ? "Breckenridge"
             : "Vail"),
       );
-      if (matchedSnap?.matchedRouteId) {
-        parsed.searchParams.set("routeId", matchedSnap.matchedRouteId);
+      parsed.searchParams.set("direction", effectiveDirection);
+      parsed.searchParams.set(
+        "tripType",
+        isRoundTrip ? "round_trip" : "one_way",
+      );
+      if (effectiveRouteId) {
+        parsed.searchParams.set("routeId", effectiveRouteId);
       }
-      if (matchedOffer?.offerId) {
-        parsed.searchParams.set("offerId", matchedOffer.offerId);
+      if (effectiveOfferId) {
+        parsed.searchParams.set("offerId", effectiveOfferId);
       }
       if (applicabilityRequest.travelDate) {
         parsed.searchParams.set("date", applicabilityRequest.travelDate);
+      }
+      if (pickupTime) {
+        parsed.searchParams.set("pickupTime", pickupTime);
       }
       parsed.searchParams.set(
         "passengers",
@@ -212,9 +323,28 @@ export async function POST(request: Request) {
       );
       parsed.searchParams.set(
         "skiBags",
-        String(applicabilityRequest.skiOrOversizeBagCount),
+        String(applicabilityRequest.skiOrOversizeBagCount ?? 0),
+      );
+      parsed.searchParams.set(
+        "luggage",
+        String(
+          applicabilityRequest.standardBagCount +
+            (applicabilityRequest.skiOrOversizeBagCount ?? 0),
+        ),
       );
       parsed.searchParams.set("vehicleClass", isSuv ? "suv" : "van");
+      if (returnDate) {
+        parsed.searchParams.set("returnDate", returnDate);
+      }
+      if (returnPickupTime) {
+        parsed.searchParams.set("returnPickupTime", returnPickupTime);
+      }
+      if (effectiveReturnRouteId) {
+        parsed.searchParams.set("returnRouteId", effectiveReturnRouteId);
+      }
+      parsed.searchParams.set("originatingPage", originatingPage);
+      parsed.searchParams.set("sourcePage", originatingPage);
+
       if (isSnapshotExpired) {
         parsed.searchParams.delete("publishedPrice");
         if (applicabilityRequest.travelDate) {
@@ -266,10 +396,30 @@ export async function POST(request: Request) {
       evidenceVersion: outcome.evidenceVersion,
       applicabilityModelVersion: outcome.modelVersion,
       applicabilityOutcomeHash: outcome.outcomeHash,
+      originatingPage,
+      tripDetails: {
+        direction: effectiveDirection,
+        tripType: effectiveTripType,
+        origin: matchedSnap?.matchedOrigin || body.origin || "DEN",
+        destination:
+          matchedSnap?.matchedDestination || body.destination || "Vail",
+        routeId: effectiveRouteId,
+        offerId: effectiveOfferId,
+        travelDate: applicabilityRequest.travelDate ?? null,
+        pickupTime,
+        passengerCount: applicabilityRequest.passengerCount,
+        standardBagCount: applicabilityRequest.standardBagCount,
+        skiOrOversizeBagCount: applicabilityRequest.skiOrOversizeBagCount ?? 0,
+        returnDate,
+        returnPickupTime,
+        returnRouteId: effectiveReturnRouteId,
+        originatingPage,
+      },
+      isTest: Boolean(body.isTest),
       provider: body.partnerNetwork ?? "direct",
       productCode: usePrivateGroupAsPrimary
         ? "gosno-multi-vehicle-group"
-        : outcome.recommendedVehicleClassId || corridorId,
+        : effectiveOfferId || outcome.recommendedVehicleClassId || corridorId,
       productDestinationUrl: basePartnerUrl,
     });
 
@@ -296,6 +446,8 @@ export async function POST(request: Request) {
               evidenceVersion: outcome.evidenceVersion,
               applicabilityModelVersion: outcome.modelVersion,
               applicabilityOutcomeHash: outcome.outcomeHash,
+              originatingPage,
+              isTest: Boolean(body.isTest),
               provider: "direct",
               productCode: "gosno-multi-vehicle-group",
               productDestinationUrl:
@@ -324,6 +476,12 @@ export async function POST(request: Request) {
         opaqueAttribution: {
           clickId: opaqueRecord.clickId,
           outboundPartnerUrl: opaqueRecord.outboundPartnerUrl,
+          strippedLeakParams: opaqueRecord.strippedLeakParams,
+          strippedPiiParams: opaqueRecord.strippedPiiParams ?? [],
+          originatingPage: opaqueRecord.originatingPage,
+          tripDetails: opaqueRecord.tripDetails ?? null,
+          isTest: Boolean(opaqueRecord.isTest),
+          trafficClass: opaqueRecord.trafficClass ?? "production",
           recommendedOperatorId: opaqueRecord.recommendedOperatorId,
           recommendedOperatorName: opaqueRecord.recommendedOperatorName,
         },

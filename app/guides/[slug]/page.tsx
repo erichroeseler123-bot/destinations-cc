@@ -2,6 +2,9 @@ import React, { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import CategoryDecisionEngineExperience from "@/app/components/dcc/CategoryDecisionEngineExperience";
+import { DENVER_420_AIRPORT_DECISION_ENGINE } from "@/lib/dcc/decisionEngines/denver420AirportTransfersEngine";
+import type { DecisionResult } from "@/lib/dcc/decisionEngines/types";
 import { syncDurableLedgerWithPostgres } from "@/lib/dcc/storage/durableTransactionalStore";
 import { PUBLISHED_DECISION_GUIDES, getPublishedDecisionGuide } from "@/src/data/published-decision-guides";
 import { getDecisionCategory, relatedDecisionGuides } from "@/src/data/decision-taxonomy";
@@ -171,6 +174,19 @@ export default async function PreSiteGuidePage({ params }: Props) {
             </div>
           </section>
         )}
+
+        {guide.slug === "airport-pickup-after-visiting-a-dispensary-denver" ? (
+          <div className="mt-12">
+            <CategoryDecisionEngineExperience
+              engineId="denver-420-airport-transfers"
+              initialResult={
+                DENVER_420_AIRPORT_DECISION_ENGINE.evaluate(
+                  DENVER_420_AIRPORT_DECISION_ENGINE.defaultExampleInput,
+                ) as unknown as DecisionResult<Record<string, unknown>>
+              }
+            />
+          </div>
+        ) : null}
 
         <section className="mt-14 grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
           <div>

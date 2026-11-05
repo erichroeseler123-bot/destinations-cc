@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { headers } from "next/headers";
 import BookableToursSection from "@/app/components/dcc/BookableToursSection";
+import CategoryDecisionEngineExperience from "@/app/components/dcc/CategoryDecisionEngineExperience";
 import NextStepEngine from "@/app/components/dcc/NextStepEngine";
+import { ALASKA_SHORE_EXCURSIONS_DECISION_ENGINE } from "@/lib/dcc/decisionEngines/alaskaShoreExcursionsEngine";
+import type { DecisionResult } from "@/lib/dcc/decisionEngines/types";
 import { getPortRecommendationActions } from "@/lib/dcc/handoffAnalytics";
 import { getViatorActionForPlace } from "@/lib/dcc/internal/viatorAction";
 import LfsTrustStrip from "@/components/LfsTrustStrip";
@@ -383,6 +386,15 @@ export default async function AlaskaPage() {
             ))}
           </div>
         </div>
+
+        <CategoryDecisionEngineExperience
+          engineId="alaska-shore-excursions"
+          initialResult={
+            ALASKA_SHORE_EXCURSIONS_DECISION_ENGINE.evaluate(
+              ALASKA_SHORE_EXCURSIONS_DECISION_ENGINE.defaultExampleInput,
+            ) as unknown as DecisionResult<Record<string, unknown>>
+          }
+        />
 
         <NextStepEngine
           title="Alaska Next Step Engine"

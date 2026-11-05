@@ -1,5 +1,14 @@
+import { ALASKA_SHORE_EXCURSIONS_DECISION_ENGINE } from "@/lib/dcc/decisionEngines/alaskaShoreExcursionsEngine";
+import { CRUISE_PORT_PRIVATE_DRIVERS_DECISION_ENGINE } from "@/lib/dcc/decisionEngines/cruisePortPrivateDriversEngine";
+import { DENVER_420_AIRPORT_DECISION_ENGINE } from "@/lib/dcc/decisionEngines/denver420AirportTransfersEngine";
+import { DENVER_MOUNTAIN_DECISION_ENGINE } from "@/lib/dcc/decisionEngines/denverMountainTransportationEngine";
 import { HAWAII_WHALE_DECISION_ENGINE } from "@/lib/dcc/decisionEngines/hawaiiWhaleWatchingEngine";
 import { JUNEAU_HELICOPTER_DECISION_ENGINE } from "@/lib/dcc/decisionEngines/juneauHelicopterEngine";
+import { JUNEAU_WHALE_DECISION_ENGINE } from "@/lib/dcc/decisionEngines/juneauWhaleWatchingEngine";
+import { NOLA_CITY_TOURS_DECISION_ENGINE } from "@/lib/dcc/decisionEngines/newOrleansCityToursEngine";
+import { NOLA_SWAMP_DECISION_ENGINE } from "@/lib/dcc/decisionEngines/newOrleansSwampToursEngine";
+import { RED_ROCKS_CONCERT_DECISION_ENGINE } from "@/lib/dcc/decisionEngines/redRocksConcertTransportationEngine";
+import { VACATION_RENTAL_CATERING_DECISION_ENGINE } from "@/lib/dcc/decisionEngines/vacationRentalCateringSpreadsEngine";
 import type {
   DecisionEngineCategoryId,
   DecisionEngineDefinition,
@@ -11,6 +20,15 @@ import type {
 export const DECISION_ENGINE_REGISTRY: Record<DecisionEngineCategoryId, DecisionEngineDefinition<any>> = {
   "juneau-helicopter-tours": JUNEAU_HELICOPTER_DECISION_ENGINE,
   "hawaii-whale-watching": HAWAII_WHALE_DECISION_ENGINE,
+  "juneau-whale-watching": JUNEAU_WHALE_DECISION_ENGINE,
+  "denver-to-mountain-transportation": DENVER_MOUNTAIN_DECISION_ENGINE,
+  "red-rocks-concert-shuttle": RED_ROCKS_CONCERT_DECISION_ENGINE,
+  "new-orleans-swamp-tours": NOLA_SWAMP_DECISION_ENGINE,
+  "new-orleans-city-tours": NOLA_CITY_TOURS_DECISION_ENGINE,
+  "denver-420-airport-transfers": DENVER_420_AIRPORT_DECISION_ENGINE,
+  "cruise-port-private-drivers": CRUISE_PORT_PRIVATE_DRIVERS_DECISION_ENGINE,
+  "vacation-rental-catering-spreads": VACATION_RENTAL_CATERING_DECISION_ENGINE,
+  "alaska-shore-excursions": ALASKA_SHORE_EXCURSIONS_DECISION_ENGINE,
 };
 
 export function listDecisionEngines(): Array<DecisionEngineDefinition<unknown>> {

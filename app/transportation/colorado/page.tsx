@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import CategoryDecisionEngineExperience from "@/app/components/dcc/CategoryDecisionEngineExperience";
 import NextStepEngine from "@/app/components/dcc/NextStepEngine";
 import TravelReferenceExperience from "@/app/components/dcc/TravelReferenceExperience";
 import RideOptionsCard from "@/app/components/transportation/RideOptionsCard";
+import { DENVER_MOUNTAIN_DECISION_ENGINE } from "@/lib/dcc/decisionEngines/denverMountainTransportationEngine";
+import type { DecisionResult } from "@/lib/dcc/decisionEngines/types";
 import { getColoradoTransferRecommendationActions } from "@/lib/dcc/handoffAnalytics";
 import { syncDurableLedgerWithPostgres } from "@/lib/dcc/storage/durableTransactionalStore";
 import { getTravelReferenceNodeById } from "@/lib/dcc/travelReference";
@@ -106,6 +109,15 @@ export default async function ColoradoTransportationPage() {
             embedded
           />
         ) : null}
+
+        <CategoryDecisionEngineExperience
+          engineId="denver-to-mountain-transportation"
+          initialResult={
+            DENVER_MOUNTAIN_DECISION_ENGINE.evaluate(
+              DENVER_MOUNTAIN_DECISION_ENGINE.defaultExampleInput,
+            ) as unknown as DecisionResult<Record<string, unknown>>
+          }
+        />
 
         <RideOptionsCard
           venueSlug="red-rocks-amphitheatre"

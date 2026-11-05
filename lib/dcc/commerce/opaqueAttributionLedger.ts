@@ -1,8 +1,10 @@
 import crypto from "node:crypto";
+import { FORBIDDEN_URL_PII_FIELDS } from "../portfolioNetworkRegistry";
 import {
   readDurableLedgerState,
   resetDurableLedgerStateForTests,
   runDurableLedgerTransaction,
+  type FunnelVisitorRecord,
 } from "../storage/durableTransactionalStore";
 import type { CommercialProvider } from "./index";
 
@@ -27,7 +29,29 @@ export const FORBIDDEN_OUTBOUND_ARCHITECTURE_PARAMS = [
   "evalrunid",
   "normalized_input_hash",
   "normalizedinputhash",
+  "rule_ids",
+  "ruleids",
 ] as const;
+
+export type TrafficClass = "production" | "test";
+
+export interface HandoffTripDetails {
+  direction?: "OUTBOUND" | "RETURN" | "ROUND_TRIP" | null;
+  tripType?: "ONE_WAY" | "ROUND_TRIP" | null;
+  origin?: string | null;
+  destination?: string | null;
+  routeId?: string | null;
+  offerId?: string | null;
+  travelDate?: string | null;
+  pickupTime?: string | null;
+  passengerCount?: number | null;
+  standardBagCount?: number | null;
+  skiOrOversizeBagCount?: number | null;
+  returnDate?: string | null;
+  returnPickupTime?: string | null;
+  returnRouteId?: string | null;
+  originatingPage?: string | null;
+}
 
 export interface OpaqueClickReconciledOutcome {
   reconciliationId: string;
@@ -50,6 +74,8 @@ export interface OpaqueClickReconciledOutcome {
   resolvedEvidenceVersion: string;
   reconciledAt: string;
   duplicateDelivery: boolean;
+  isTest?: boolean;
+  trafficClass?: TrafficClass;
 }
 
 export interface OpaqueClickAttributionRecord {
@@ -63,10 +89,16 @@ export interface OpaqueClickAttributionRecord {
   applicabilityModelVersion: string | null;
   applicabilityOutcomeHash: string | null;
   originatingSite: string;
+  originatingPage?: string;
+  tripDetails?: HandoffTripDetails | null;
+  isTest?: boolean;
+  trafficClass?: TrafficClass;
+  duplicateDeliveryCount?: number;
   provider: CommercialProvider;
   productCode: string;
   outboundPartnerUrl: string;
   strippedLeakParams: string[];
+  strippedPiiParams?: string[];
   reconciliationState:
     | "pending_partner_event"
     | "reconciled_webhook"
@@ -87,6 +119,9 @@ export interface IssueOpaqueClickAttributionInput {
   applicabilityModelVersion?: string | null;
   applicabilityOutcomeHash?: string | null;
   originatingSite?: string | null;
+  originatingPage?: string | null;
+  tripDetails?: HandoffTripDetails | null;
+  isTest?: boolean;
   provider: CommercialProvider;
   productCode: string;
   productDestinationUrl: string;
@@ -107,6 +142,7 @@ export interface PartnerWebhookReconciliationInput {
   paidCommissionUsd?: number | null;
   currency?: string | null;
   occurredAt?: string | null;
+  isTest?: boolean;
 }
 
 export interface PartnerCsvReconciliationSummary {
@@ -123,10 +159,38 @@ export interface PartnerCsvReconciliationSummary {
   }>;
 }
 
+export interface FunnelClassMetrics {
+  trafficClass: TrafficClass;
+  newVisitors: number;
+  followedHandoffs: number;
+  confirmedPaidBookings: number;
+  cancelledOrRefundedBookings: number;
+  duplicateDeliveriesIgnored: number;
+  grossConfirmedRevenueUsd: number;
+  byDirection: {
+    OUTBOUND: { handoffs: number; confirmedPaidBookings: number };
+    RETURN: { handoffs: number; confirmedPaidBookings: number };
+    ROUND_TRIP: { handoffs: number; confirmedPaidBookings: number };
+  };
+}
+
+export interface FunnelMetricsReport {
+  generatedAt: string;
+  filter: {
+    routeId: string | null;
+    originatingPage: string | null;
+  };
+  production: FunnelClassMetrics;
+  test: FunnelClassMetrics;
+}
+
+const DEV_FALLBACK_ADMIN_SECRET = "dcc-commerce-admin-secret-v1";
+const DEV_FALLBACK_WEBHOOK_SECRET = "dcc-partner-webhook-secret-v1";
+
 function makeCommerceAuthError(
   message: string,
   code: string,
-  statusCode: 401 | 403 = 401,
+  statusCode: 401 | 403 | 503 = 401,
 ): Error & { code: string; statusCode: number } {
   const err = new Error(message) as Error & { code: string; statusCode: number };
   err.code = code;
@@ -141,20 +205,56 @@ function safeEqualStrings(a: string, b: string): boolean {
   return crypto.timingSafeEqual(bufA, bufB);
 }
 
-export function resolveCommerceAdminSecret(): string {
+export function isProductionCommerceCredentialsRequired(): boolean {
+  const explicitFlag = process.env.DCC_REQUIRE_PRODUCTION_CREDENTIALS
+    ?.trim()
+    .toLowerCase();
+  if (explicitFlag === "1" || explicitFlag === "true") {
+    return true;
+  }
+  if (explicitFlag === "0" || explicitFlag === "false") {
+    return false;
+  }
   return (
-    process.env.DCC_COMMERCE_ADMIN_SECRET?.trim() ||
-    process.env.INTERNAL_API_SECRET?.trim() ||
-    "dcc-commerce-admin-secret-v1"
+    process.env.NODE_ENV === "production" ||
+    process.env.VERCEL_ENV === "production"
   );
 }
 
+export function resolveCommerceAdminSecret(): string {
+  const configured =
+    process.env.DCC_COMMERCE_ADMIN_SECRET?.trim() ||
+    process.env.INTERNAL_API_SECRET?.trim() ||
+    "";
+  if (isProductionCommerceCredentialsRequired()) {
+    if (!configured || configured === DEV_FALLBACK_ADMIN_SECRET) {
+      throw makeCommerceAuthError(
+        "Production commerce administrator credentials are not configured. Set DCC_COMMERCE_ADMIN_SECRET or INTERNAL_API_SECRET.",
+        "COMMERCE_CREDENTIALS_NOT_CONFIGURED",
+        503,
+      );
+    }
+    return configured;
+  }
+  return configured || DEV_FALLBACK_ADMIN_SECRET;
+}
+
 export function resolvePartnerWebhookSecret(): string {
-  return (
+  const configured =
     process.env.DCC_PARTNER_WEBHOOK_SECRET?.trim() ||
     process.env.INTERNAL_API_SECRET?.trim() ||
-    "dcc-partner-webhook-secret-v1"
-  );
+    "";
+  if (isProductionCommerceCredentialsRequired()) {
+    if (!configured || configured === DEV_FALLBACK_WEBHOOK_SECRET) {
+      throw makeCommerceAuthError(
+        "Production partner webhook credentials are not configured. Set DCC_PARTNER_WEBHOOK_SECRET or INTERNAL_API_SECRET.",
+        "WEBHOOK_CREDENTIALS_NOT_CONFIGURED",
+        503,
+      );
+    }
+    return configured;
+  }
+  return configured || DEV_FALLBACK_WEBHOOK_SECRET;
 }
 
 export function issueCommerceAdminToken(
@@ -191,6 +291,9 @@ export function authenticateCommerceAdminRequest(request: Request): {
   authorized: true;
   actor: string;
 } {
+  // Enforce production credential configuration first so requests fail closed if env secrets are absent.
+  const rawAdminSecret = resolveCommerceAdminSecret();
+
   const token =
     request.headers.get("x-dcc-commerce-admin-token")?.trim() ||
     request.headers.get("x-internal-secret")?.trim() ||
@@ -208,14 +311,16 @@ export function authenticateCommerceAdminRequest(request: Request): {
     const lastDot = token.lastIndexOf(".");
     if (lastDot > 5) {
       const scope = token.slice(5, lastDot);
-      const expectedScopedToken = issueCommerceAdminToken(scope);
+      const expectedScopedToken = issueCommerceAdminToken(
+        scope,
+        rawAdminSecret,
+      );
       if (safeEqualStrings(token, expectedScopedToken)) {
         return { authorized: true, actor: scope };
       }
     }
   }
 
-  const rawAdminSecret = resolveCommerceAdminSecret();
   if (safeEqualStrings(token, rawAdminSecret)) {
     return { authorized: true, actor: "commerce:admin" };
   }
@@ -236,7 +341,8 @@ export function authenticatePartnerWebhookOrAdminRequest(
 } {
   const sigHeader = request.headers.get("x-dcc-webhook-signature")?.trim();
   if (sigHeader) {
-    const expectedSig = signPartnerWebhookPayload(rawBody);
+    const webhookSecret = resolvePartnerWebhookSecret();
+    const expectedSig = signPartnerWebhookPayload(rawBody, webhookSecret);
     if (!safeEqualStrings(sigHeader, expectedSig)) {
       throw makeCommerceAuthError(
         "Partner webhook HMAC signature verification failed.",
@@ -256,6 +362,25 @@ export function authenticatePartnerWebhookOrAdminRequest(
   if (hasAdminHeaders) {
     authenticateCommerceAdminRequest(request);
     return { authorized: true, method: "commerce_admin" };
+  }
+
+  if (isProductionCommerceCredentialsRequired()) {
+    // Ensure production credentials are configured before reporting missing request header
+    const hasConfiguredWebhook = Boolean(
+      process.env.DCC_PARTNER_WEBHOOK_SECRET?.trim() ||
+        process.env.INTERNAL_API_SECRET?.trim(),
+    );
+    const hasConfiguredAdmin = Boolean(
+      process.env.DCC_COMMERCE_ADMIN_SECRET?.trim() ||
+        process.env.INTERNAL_API_SECRET?.trim(),
+    );
+    if (!hasConfiguredWebhook && !hasConfiguredAdmin) {
+      throw makeCommerceAuthError(
+        "Production reconciliation credentials are not configured (set DCC_PARTNER_WEBHOOK_SECRET, DCC_COMMERCE_ADMIN_SECRET, or INTERNAL_API_SECRET).",
+        "WEBHOOK_CREDENTIALS_NOT_CONFIGURED",
+        503,
+      );
+    }
   }
 
   throw makeCommerceAuthError(
@@ -283,7 +408,8 @@ export function extractClickIdFromTrackingValue(
 
 /**
  * Strips any cryptographic decision receipt IDs, bundle hashes, universe hashes,
- * or evidence versions from the outbound partner URL and appends the opaque `click_id`.
+ * evidence versions, or personal data (FORBIDDEN_URL_PII_FIELDS / email / phone)
+ * from the outbound partner URL and appends the opaque `click_id`.
  */
 export function sanitizeOutboundPartnerUrlWithOpaqueClickId(
   targetUrlInput: string | URL,
@@ -291,25 +417,47 @@ export function sanitizeOutboundPartnerUrlWithOpaqueClickId(
 ): {
   outboundUrl: string;
   strippedLeakParams: string[];
+  strippedPiiParams: string[];
 } {
   const url =
     typeof targetUrlInput === "string"
       ? new URL(targetUrlInput)
       : new URL(targetUrlInput.toString());
 
-  const forbiddenSet = new Set<string>(FORBIDDEN_OUTBOUND_ARCHITECTURE_PARAMS);
+  const forbiddenArchSet = new Set<string>(
+    FORBIDDEN_OUTBOUND_ARCHITECTURE_PARAMS,
+  );
+  const forbiddenPiiSet = new Set<string>(FORBIDDEN_URL_PII_FIELDS);
+  const forbiddenPiiCompactSet = new Set<string>(
+    FORBIDDEN_URL_PII_FIELDS.map((field) => field.replace(/[^a-z0-9]/g, "")),
+  );
   const strippedLeakParams: string[] = [];
+  const strippedPiiParams: string[] = [];
 
   for (const key of Array.from(url.searchParams.keys())) {
-    const normalized = key.trim().toLowerCase().replace(/[^a-z0-9_]/g, "");
-    const val = url.searchParams.get(key) || "";
-    if (
-      forbiddenSet.has(normalized) ||
-      forbiddenSet.has(key.trim().toLowerCase()) ||
+    const rawLower = key.trim().toLowerCase();
+    const normalized = rawLower.replace(/[^a-z0-9_]/g, "");
+    const compact = rawLower.replace(/[^a-z0-9]/g, "");
+    const val = (url.searchParams.get(key) || "").trim();
+
+    const looksLikeEmailValue = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+    const isForbiddenPii =
+      forbiddenPiiSet.has(normalized) ||
+      forbiddenPiiSet.has(rawLower) ||
+      forbiddenPiiCompactSet.has(compact) ||
+      looksLikeEmailValue;
+
+    const isForbiddenArch =
+      forbiddenArchSet.has(normalized) ||
+      forbiddenArchSet.has(rawLower) ||
       val.includes("rcpt:sha256:") ||
-      val.includes("evalrun:")
-    ) {
+      val.includes("evalrun:");
+
+    if (isForbiddenArch || isForbiddenPii) {
       strippedLeakParams.push(key);
+      if (isForbiddenPii) {
+        strippedPiiParams.push(key);
+      }
       url.searchParams.delete(key);
     }
   }
@@ -319,7 +467,124 @@ export function sanitizeOutboundPartnerUrlWithOpaqueClickId(
   return {
     outboundUrl: url.toString(),
     strippedLeakParams,
+    strippedPiiParams,
   };
+}
+
+function inferTripDetailsFromUrlAndInput(
+  outboundUrl: string,
+  input: IssueOpaqueClickAttributionInput,
+): HandoffTripDetails | null {
+  try {
+    const parsed = new URL(outboundUrl);
+    const sp = parsed.searchParams;
+    const explicit = input.tripDetails ?? {};
+
+    const rawDir = (
+      explicit.direction ||
+      sp.get("direction") ||
+      ""
+    )
+      .trim()
+      .toUpperCase();
+    const rawTripType = (
+      explicit.tripType ||
+      sp.get("tripType") ||
+      ""
+    )
+      .trim()
+      .toUpperCase();
+
+    const direction: HandoffTripDetails["direction"] =
+      rawDir === "ROUND_TRIP" || rawTripType === "ROUND_TRIP"
+        ? "ROUND_TRIP"
+        : rawDir === "RETURN" || rawDir === "RESORT_TO_AIRPORT"
+          ? "RETURN"
+          : rawDir === "OUTBOUND" || rawDir === "AIRPORT_TO_RESORT"
+            ? "OUTBOUND"
+            : null;
+
+    const tripType: HandoffTripDetails["tripType"] =
+      rawTripType === "ROUND_TRIP" || direction === "ROUND_TRIP"
+        ? "ROUND_TRIP"
+        : rawTripType === "ONE_WAY" ||
+            direction === "OUTBOUND" ||
+            direction === "RETURN"
+          ? "ONE_WAY"
+          : null;
+
+    const paxRaw =
+      explicit.passengerCount ??
+      (sp.get("passengers") || sp.get("passengerCount") || sp.get("party_size")
+        ? Number(
+            sp.get("passengers") ||
+              sp.get("passengerCount") ||
+              sp.get("party_size"),
+          )
+        : null);
+    const stdBagsRaw =
+      explicit.standardBagCount ??
+      (sp.get("standardBags") !== null ? Number(sp.get("standardBags")) : null);
+    const skiBagsRaw =
+      explicit.skiOrOversizeBagCount ??
+      (sp.get("skiBags") !== null
+        ? Number(sp.get("skiBags"))
+        : sp.get("luggage") !== null
+          ? Number(sp.get("luggage"))
+          : null);
+
+    const originatingPage =
+      explicit.originatingPage?.trim() ||
+      input.originatingPage?.trim() ||
+      sp.get("originatingPage")?.trim() ||
+      sp.get("sourcePage")?.trim() ||
+      null;
+
+    const details: HandoffTripDetails = {
+      direction,
+      tripType,
+      origin: explicit.origin?.trim() || sp.get("origin")?.trim() || null,
+      destination:
+        explicit.destination?.trim() || sp.get("destination")?.trim() || null,
+      routeId: explicit.routeId?.trim() || sp.get("routeId")?.trim() || null,
+      offerId: explicit.offerId?.trim() || sp.get("offerId")?.trim() || null,
+      travelDate:
+        explicit.travelDate?.trim() ||
+        sp.get("date")?.trim() ||
+        sp.get("outboundDate")?.trim() ||
+        null,
+      pickupTime:
+        explicit.pickupTime?.trim() || sp.get("pickupTime")?.trim() || null,
+      passengerCount:
+        typeof paxRaw === "number" && Number.isFinite(paxRaw) ? paxRaw : null,
+      standardBagCount:
+        typeof stdBagsRaw === "number" && Number.isFinite(stdBagsRaw)
+          ? stdBagsRaw
+          : null,
+      skiOrOversizeBagCount:
+        typeof skiBagsRaw === "number" && Number.isFinite(skiBagsRaw)
+          ? skiBagsRaw
+          : null,
+      returnDate:
+        explicit.returnDate?.trim() || sp.get("returnDate")?.trim() || null,
+      returnPickupTime:
+        explicit.returnPickupTime?.trim() ||
+        sp.get("returnPickupTime")?.trim() ||
+        null,
+      returnRouteId:
+        explicit.returnRouteId?.trim() ||
+        sp.get("returnRouteId")?.trim() ||
+        null,
+      originatingPage,
+    };
+
+    const hasAnyField = Object.values(details).some(
+      (v) => v !== null && v !== undefined,
+    );
+    return hasAnyField ? details : null;
+  } catch {
+    return input.tripDetails ?? null;
+  }
 }
 
 export function issueOpaqueClickAttribution(
@@ -334,11 +599,18 @@ export function issueOpaqueClickAttribution(
     const existing = state.opaqueClicksById[clickId];
     if (existing) return existing;
 
-    const { outboundUrl, strippedLeakParams } =
+    const { outboundUrl, strippedLeakParams, strippedPiiParams } =
       sanitizeOutboundPartnerUrlWithOpaqueClickId(
         input.productDestinationUrl,
         clickId,
       );
+
+    const inferredTripDetails = inferTripDetailsFromUrlAndInput(
+      outboundUrl,
+      input,
+    );
+    const isTest = Boolean(input.isTest);
+    const trafficClass: TrafficClass = isTest ? "test" : "production";
 
     const record: OpaqueClickAttributionRecord = {
       clickId,
@@ -356,10 +628,19 @@ export function issueOpaqueClickAttribution(
       applicabilityOutcomeHash: input.applicabilityOutcomeHash?.trim() || null,
       originatingSite:
         input.originatingSite?.trim() || "destinationcommandcenter.com",
+      originatingPage:
+        inferredTripDetails?.originatingPage ||
+        input.originatingPage?.trim() ||
+        "/transportation/colorado",
+      tripDetails: inferredTripDetails,
+      isTest,
+      trafficClass,
+      duplicateDeliveryCount: 0,
       provider: input.provider,
       productCode: input.productCode.trim(),
       outboundPartnerUrl: outboundUrl,
       strippedLeakParams,
+      strippedPiiParams,
       reconciliationState: "pending_partner_event",
       reconciledOutcomes: [],
       createdAt: new Date().toISOString(),
@@ -432,9 +713,11 @@ export function reconcilePartnerWebhookByClickId(
       };
     }
 
-    const dedupeKey = `${record.clickId}::${input.provider}::${input.providerBookingRef.trim()}::${input.eventType}`;
+    const trimmedRef = input.providerBookingRef.trim();
+    const dedupeKey = `${record.clickId}::${input.provider}::${trimmedRef}::${input.eventType}`;
     const existingOutcome = state.reconciliationByDedupeKey[dedupeKey];
     if (existingOutcome) {
+      record.duplicateDeliveryCount = (record.duplicateDeliveryCount || 0) + 1;
       return {
         matched: true as const,
         outcome: { ...existingOutcome, duplicateDelivery: true },
@@ -442,12 +725,23 @@ export function reconcilePartnerWebhookByClickId(
       };
     }
 
+    const isTestOutcome = Boolean(
+      input.isTest ||
+        record.isTest ||
+        /^(TEST|SIM|QA|SANDBOX)[-_]/i.test(trimmedRef),
+    );
+    const trafficClass: TrafficClass = isTestOutcome ? "test" : "production";
+    if (isTestOutcome && !record.isTest) {
+      record.isTest = true;
+      record.trafficClass = "test";
+    }
+
     const outcome: OpaqueClickReconciledOutcome = {
       reconciliationId: `rec_${crypto.randomBytes(10).toString("hex")}`,
       clickId: record.clickId,
       sourceChannel,
       provider: input.provider,
-      providerBookingRef: input.providerBookingRef.trim(),
+      providerBookingRef: trimmedRef,
       eventType: input.eventType,
       grossRevenueUsd:
         typeof input.grossRevenueUsd === "number" &&
@@ -471,6 +765,8 @@ export function reconcilePartnerWebhookByClickId(
       resolvedEvidenceVersion: record.evidenceVersion,
       reconciledAt: input.occurredAt?.trim() || new Date().toISOString(),
       duplicateDelivery: false,
+      isTest: isTestOutcome,
+      trafficClass,
     };
 
     state.reconciliationByDedupeKey[dedupeKey] = outcome;
@@ -502,6 +798,7 @@ export function reconcilePartnerWebhookByClickId(
 export function reconcilePartnerCsvBatchByClickId(params: {
   provider: CommercialProvider;
   csvText: string;
+  isTest?: boolean;
 }): PartnerCsvReconciliationSummary {
   const lines = params.csvText
     .split(/\r?\n/)
@@ -616,6 +913,7 @@ export function reconcilePartnerCsvBatchByClickId(params: {
         paidCommissionUsd: Number.isFinite(paidVal) ? paidVal : null,
         currency,
         occurredAt,
+        isTest: params.isTest,
       },
       "partner_csv",
     );
@@ -646,3 +944,168 @@ export function reconcilePartnerCsvBatchByClickId(params: {
     unmatchedRows,
   };
 }
+
+export function recordFunnelVisitorSession(input: {
+  visitorId?: string | null;
+  sourcePage?: string | null;
+  isTest?: boolean;
+}): FunnelVisitorRecord {
+  const visitorId =
+    input.visitorId?.trim() || `vis_${crypto.randomBytes(10).toString("hex")}`;
+  const sourcePage = input.sourcePage?.trim() || "/transportation/colorado";
+  const isTest = Boolean(
+    input.isTest || /^(test|sim|qa)[-_]/i.test(visitorId),
+  );
+  const trafficClass: TrafficClass = isTest ? "test" : "production";
+  const nowIso = new Date().toISOString();
+
+  return runDurableLedgerTransaction((state) => {
+    state.funnelVisitorsById = state.funnelVisitorsById || {};
+    const existing = state.funnelVisitorsById[visitorId];
+    if (existing) {
+      existing.lastSeenAt = nowIso;
+      existing.visitCount += 1;
+      return existing;
+    }
+    const created: FunnelVisitorRecord = {
+      visitorId,
+      sourcePage,
+      trafficClass,
+      isTest,
+      firstSeenAt: nowIso,
+      lastSeenAt: nowIso,
+      visitCount: 1,
+    };
+    state.funnelVisitorsById[visitorId] = created;
+    return created;
+  });
+}
+
+function createEmptyFunnelClassMetrics(
+  trafficClass: TrafficClass,
+): FunnelClassMetrics {
+  return {
+    trafficClass,
+    newVisitors: 0,
+    followedHandoffs: 0,
+    confirmedPaidBookings: 0,
+    cancelledOrRefundedBookings: 0,
+    duplicateDeliveriesIgnored: 0,
+    grossConfirmedRevenueUsd: 0,
+    byDirection: {
+      OUTBOUND: { handoffs: 0, confirmedPaidBookings: 0 },
+      RETURN: { handoffs: 0, confirmedPaidBookings: 0 },
+      ROUND_TRIP: { handoffs: 0, confirmedPaidBookings: 0 },
+    },
+  };
+}
+
+export function getFunnelMetricsReport(options?: {
+  routeId?: string | null;
+  originatingPage?: string | null;
+}): FunnelMetricsReport {
+  const state = readDurableLedgerState();
+  const filterRoute = options?.routeId?.trim().toUpperCase() || null;
+  const filterPage = options?.originatingPage?.trim() || null;
+
+  const production = createEmptyFunnelClassMetrics("production");
+  const test = createEmptyFunnelClassMetrics("test");
+
+  const visitors = Object.values(state.funnelVisitorsById || {});
+  for (const vis of visitors) {
+    if (filterPage && vis.sourcePage !== filterPage) continue;
+    const bucket = vis.isTest || vis.trafficClass === "test" ? test : production;
+    bucket.newVisitors += 1;
+  }
+
+  const clicks = Object.values(state.opaqueClicksById || {});
+  for (const click of clicks) {
+    if (filterRoute) {
+      const clickRoute = click.tripDetails?.routeId?.toUpperCase() || "";
+      const clickReturnRoute =
+        click.tripDetails?.returnRouteId?.toUpperCase() || "";
+      if (
+        clickRoute !== filterRoute &&
+        clickReturnRoute !== filterRoute &&
+        !clickRoute.includes(filterRoute)
+      ) {
+        continue;
+      }
+    }
+    if (filterPage && click.originatingPage !== filterPage) {
+      continue;
+    }
+
+    const isTestRecord = Boolean(
+      click.isTest ||
+        click.trafficClass === "test" ||
+        click.reconciledOutcomes.some(
+          (o) => o.isTest || o.trafficClass === "test",
+        ),
+    );
+    const bucket = isTestRecord ? test : production;
+    bucket.followedHandoffs += 1;
+    bucket.duplicateDeliveriesIgnored += click.duplicateDeliveryCount || 0;
+
+    const dirKey: "OUTBOUND" | "RETURN" | "ROUND_TRIP" =
+      click.tripDetails?.direction === "RETURN"
+        ? "RETURN"
+        : click.tripDetails?.direction === "ROUND_TRIP" ||
+            click.tripDetails?.tripType === "ROUND_TRIP"
+          ? "ROUND_TRIP"
+          : "OUTBOUND";
+    bucket.byDirection[dirKey].handoffs += 1;
+
+    // Group outcomes by unique providerBookingRef to prevent double-counting across CONFIRMED + FULFILLED events
+    const outcomesByBookingRef = new Map<
+      string,
+      OpaqueClickReconciledOutcome[]
+    >();
+    for (const outcome of click.reconciledOutcomes) {
+      const list = outcomesByBookingRef.get(outcome.providerBookingRef) || [];
+      list.push(outcome);
+      outcomesByBookingRef.set(outcome.providerBookingRef, list);
+    }
+
+    for (const [, outcomes] of outcomesByBookingRef.entries()) {
+      const isCancelledOrRefunded = outcomes.some(
+        (o) =>
+          o.eventType === "BOOKING_CANCELLED" ||
+          o.eventType === "BOOKING_REFUNDED",
+      );
+      const confirmedOutcome = outcomes.find(
+        (o) =>
+          o.eventType === "BOOKING_CONFIRMED" ||
+          o.eventType === "BOOKING_FULFILLED",
+      );
+      if (isCancelledOrRefunded) {
+        bucket.cancelledOrRefundedBookings += 1;
+      } else if (confirmedOutcome) {
+        bucket.confirmedPaidBookings += 1;
+        bucket.byDirection[dirKey].confirmedPaidBookings += 1;
+        if (
+          typeof confirmedOutcome.grossRevenueUsd === "number" &&
+          Number.isFinite(confirmedOutcome.grossRevenueUsd)
+        ) {
+          bucket.grossConfirmedRevenueUsd = Number(
+            (
+              bucket.grossConfirmedRevenueUsd +
+              confirmedOutcome.grossRevenueUsd
+            ).toFixed(2),
+          );
+        }
+      }
+    }
+  }
+
+  return {
+    generatedAt: new Date().toISOString(),
+    filter: {
+      routeId: filterRoute,
+      originatingPage: filterPage,
+    },
+    production,
+    test,
+  };
+}
+

@@ -3,11 +3,14 @@ import type { CommercialProvider } from "@/lib/dcc/commerce";
 import {
   authenticateCommerceAdminRequest,
   authenticatePartnerWebhookOrAdminRequest,
+  getFunnelMetricsReport,
   getOpaqueClickAttributionById,
   issueOpaqueClickAttribution,
   listReconciledOutcomesForClickId,
   reconcilePartnerCsvBatchByClickId,
   reconcilePartnerWebhookByClickId,
+  recordFunnelVisitorSession,
+  type HandoffTripDetails,
 } from "@/lib/dcc/commerce/opaqueAttributionLedger";
 import { syncDurableLedgerWithPostgres } from "@/lib/dcc/storage/durableTransactionalStore";
 
@@ -46,6 +49,34 @@ export async function GET(request: Request) {
   }
 
   const url = new URL(request.url);
+  const summaryMode =
+    url.searchParams.get("summary")?.trim().toLowerCase() ||
+    url.searchParams.get("report")?.trim().toLowerCase() ||
+    "";
+
+  if (summaryMode === "funnel") {
+    await syncDurableLedgerWithPostgres();
+    const funnel = getFunnelMetricsReport({
+      routeId: url.searchParams.get("routeId") || url.searchParams.get("route_id"),
+      originatingPage:
+        url.searchParams.get("originatingPage") ||
+        url.searchParams.get("sourcePage"),
+    });
+    return NextResponse.json(
+      {
+        ok: true,
+        authenticatedActorId: auth.actor,
+        funnel,
+      },
+      {
+        status: 200,
+        headers: {
+          "Cache-Control": "no-store",
+        },
+      },
+    );
+  }
+
   const clickId =
     url.searchParams.get("click_id")?.trim() ||
     url.searchParams.get("clickId")?.trim() ||
@@ -104,6 +135,33 @@ export async function POST(request: Request) {
         ? body.partnerNetwork
         : "direct") as CommercialProvider);
 
+    if (action === "record_visitor") {
+      await syncDurableLedgerWithPostgres();
+      const visitor = recordFunnelVisitorSession({
+        visitorId:
+          typeof body.visitorId === "string"
+            ? body.visitorId
+            : typeof body.visitor_id === "string"
+              ? body.visitor_id
+              : null,
+        sourcePage:
+          typeof body.sourcePage === "string"
+            ? body.sourcePage
+            : typeof body.originatingPage === "string"
+              ? body.originatingPage
+              : "/transportation/colorado",
+        isTest: typeof body.isTest === "boolean" ? body.isTest : false,
+      });
+      await syncDurableLedgerWithPostgres({ forcePushLocal: true });
+      return NextResponse.json(
+        {
+          ok: true,
+          visitor,
+        },
+        { status: 201, headers: { "Cache-Control": "no-store" } },
+      );
+    }
+
     if (action === "reconcile_webhook") {
       authenticatePartnerWebhookOrAdminRequest(request, rawBody);
       await syncDurableLedgerWithPostgres();
@@ -157,6 +215,7 @@ export async function POST(request: Request) {
             : typeof body.occurred_at === "string"
               ? body.occurred_at
               : null,
+        isTest: typeof body.isTest === "boolean" ? body.isTest : undefined,
       });
 
       await syncDurableLedgerWithPostgres({ forcePushLocal: true });
@@ -182,6 +241,7 @@ export async function POST(request: Request) {
       const summary = reconcilePartnerCsvBatchByClickId({
         provider,
         csvText,
+        isTest: typeof body.isTest === "boolean" ? body.isTest : undefined,
       });
 
       await syncDurableLedgerWithPostgres({ forcePushLocal: true });
@@ -251,6 +311,17 @@ export async function POST(request: Request) {
         typeof body.originatingSite === "string"
           ? body.originatingSite
           : "destinationcommandcenter.com",
+      originatingPage:
+        typeof body.originatingPage === "string"
+          ? body.originatingPage
+          : typeof body.sourcePage === "string"
+            ? body.sourcePage
+            : null,
+      tripDetails:
+        body.tripDetails && typeof body.tripDetails === "object"
+          ? (body.tripDetails as HandoffTripDetails)
+          : null,
+      isTest: typeof body.isTest === "boolean" ? body.isTest : false,
       provider,
       productCode:
         typeof body.productCode === "string"
@@ -267,6 +338,11 @@ export async function POST(request: Request) {
         click_id: record.clickId,
         outboundPartnerUrl: record.outboundPartnerUrl,
         strippedLeakParams: record.strippedLeakParams,
+        strippedPiiParams: record.strippedPiiParams ?? [],
+        originatingPage: record.originatingPage,
+        tripDetails: record.tripDetails ?? null,
+        isTest: Boolean(record.isTest),
+        trafficClass: record.trafficClass ?? "production",
       },
       {
         status: 201,

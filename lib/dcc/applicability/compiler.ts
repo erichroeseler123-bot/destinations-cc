@@ -13,12 +13,14 @@ import {
   evaluateHistoricalGoSnoRouteFeedSnapshotState,
   getActiveGoSnoRouteFeedSnapshotState,
   resolveGoSnoOneWayFare,
+  resolveGoSnoRoundTripFare,
   resolveGoSnoRouteContext,
   type ActiveGoSnoSnapshotState,
   type GoSnoRouteDirection,
   type GoSnoRouteFeedVersionedSnapshot,
   type GoSnoSnapshotFreshnessStatus,
   type ResolvedGoSnoOneWayFare,
+  type ResolvedGoSnoRoundTripFare,
 } from "./gosnoRouteFeedSnapshot";
 
 export interface ActiveSegmentConditionInputs {
@@ -31,10 +33,17 @@ export interface TripApplicabilityRequest {
   corridorId: CorridorId;
   routeId?: string;
   offerId?: string;
-  direction?: GoSnoRouteDirection;
+  direction?: GoSnoRouteDirection | "ROUND_TRIP";
+  tripType?: "ONE_WAY" | "ROUND_TRIP";
   origin?: string;
   destination?: string;
   travelDate?: string;
+  pickupTime?: string | null;
+  returnDate?: string | null;
+  returnPickupTime?: string | null;
+  returnRouteId?: string | null;
+  originatingPage?: string | null;
+  isTest?: boolean;
   passengerCount: number;
   standardBagCount: number;
   skiOrOversizeBagCount?: number;
@@ -138,10 +147,13 @@ export interface CompiledGoSnoPricingSnapshotSummary {
   priceFallbackMessage: string;
   matchedRouteId: string | null;
   matchedDirection: GoSnoRouteDirection;
+  matchedTripType?: "ONE_WAY" | "ROUND_TRIP";
   matchedOrigin: string;
   matchedDestination: string;
   suvOffer: ResolvedGoSnoOneWayFare | null;
   vanOffer: ResolvedGoSnoOneWayFare | null;
+  roundTripSuvOffer?: ResolvedGoSnoRoundTripFare | null;
+  roundTripVanOffer?: ResolvedGoSnoRoundTripFare | null;
 }
 
 export interface CompiledApplicableDecisionOutcome {
@@ -591,12 +603,23 @@ export function compileApplicableDecisionContext(
       nowMs: options?.serverNowMs,
     });
 
+  const isRequestedRoundTrip =
+    request.direction === "ROUND_TRIP" ||
+    request.tripType === "ROUND_TRIP" ||
+    Boolean(request.returnDate?.trim());
+  const effectiveOneWayDirection: GoSnoRouteDirection | undefined =
+    request.direction === "RETURN"
+      ? "RETURN"
+      : request.direction === "OUTBOUND" || request.direction === "ROUND_TRIP"
+        ? "OUTBOUND"
+        : undefined;
+
   const gosnoRouteCtx = resolveGoSnoRouteContext({
     offerId: request.offerId,
     routeId: request.routeId,
     origin: request.origin,
     destination: request.destination,
-    direction: request.direction,
+    direction: effectiveOneWayDirection,
     corridorId: request.corridorId,
     snapshot: activeGoSnoSnapshotState.snapshot,
   });
@@ -630,6 +653,26 @@ export function compileApplicableDecisionContext(
         destination: gosnoRouteCtx.destination,
         direction: gosnoRouteCtx.direction,
         corridorId: request.corridorId,
+        vehicleClass: "van",
+        snapshotState: activeGoSnoSnapshotState,
+      })
+    : null;
+
+  const gosnoRoundTripSuvFare = gosnoRouteCtx.isGoSnoCorridorOrRoute
+    ? resolveGoSnoRoundTripFare({
+        routeId: gosnoRouteCtx.routeId ?? request.routeId,
+        airport: gosnoRouteCtx.airport,
+        resort: gosnoRouteCtx.resort,
+        vehicleClass: "suv",
+        snapshotState: activeGoSnoSnapshotState,
+      })
+    : null;
+
+  const gosnoRoundTripVanFare = gosnoRouteCtx.isGoSnoCorridorOrRoute
+    ? resolveGoSnoRoundTripFare({
+        routeId: gosnoRouteCtx.routeId ?? request.routeId,
+        airport: gosnoRouteCtx.airport,
+        resort: gosnoRouteCtx.resort,
         vehicleClass: "van",
         snapshotState: activeGoSnoSnapshotState,
       })
@@ -1064,7 +1107,7 @@ export function compileApplicableDecisionContext(
     corridorId: request.corridorId,
     routeId: request.routeId,
     offerId: request.offerId,
-    direction: request.direction,
+    direction: effectiveOneWayDirection,
     origin: request.origin,
     destination: request.destination,
     travelDate,
@@ -1100,10 +1143,13 @@ export function compileApplicableDecisionContext(
           priceFallbackMessage: activeGoSnoSnapshotState.priceFallbackMessage,
           matchedRouteId: gosnoRouteCtx.routeId,
           matchedDirection: gosnoRouteCtx.direction,
+          matchedTripType: isRequestedRoundTrip ? "ROUND_TRIP" : "ONE_WAY",
           matchedOrigin: gosnoRouteCtx.origin,
           matchedDestination: gosnoRouteCtx.destination,
           suvOffer: gosnoSuvFare,
           vanOffer: gosnoVanFare,
+          roundTripSuvOffer: gosnoRoundTripSuvFare,
+          roundTripVanOffer: gosnoRoundTripVanFare,
         }
       : undefined;
 

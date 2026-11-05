@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import CategoryDecisionEngineExperience from "@/app/components/dcc/CategoryDecisionEngineExperience";
 import JsonLd from "@/app/components/dcc/JsonLd";
 import PageIntentRouter from "@/app/components/dcc/PageIntentRouter";
+import { NOLA_SWAMP_DECISION_ENGINE } from "@/lib/dcc/decisionEngines/newOrleansSwampToursEngine";
+import type { DecisionResult } from "@/lib/dcc/decisionEngines/types";
 import {
   buildBreadcrumbJsonLd,
   buildCollectionPageJsonLd,
@@ -449,6 +452,15 @@ export default async function NewOrleansSwampToursPage() {
             ))}
           </div>
         </section>
+
+        <CategoryDecisionEngineExperience
+          engineId="new-orleans-swamp-tours"
+          initialResult={
+            NOLA_SWAMP_DECISION_ENGINE.evaluate(
+              NOLA_SWAMP_DECISION_ENGINE.defaultExampleInput,
+            ) as unknown as DecisionResult<Record<string, unknown>>
+          }
+        />
 
         <p className="text-center text-sm font-semibold uppercase tracking-[0.18em] text-white/46">
           DCC Decision Layer — Source-Backed Comparison Before Booking

@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import CategoryDecisionEngineExperience from "@/app/components/dcc/CategoryDecisionEngineExperience";
+import { CRUISE_PORT_PRIVATE_DRIVERS_DECISION_ENGINE } from "@/lib/dcc/decisionEngines/cruisePortPrivateDriversEngine";
+import type { DecisionResult } from "@/lib/dcc/decisionEngines/types";
 
 const ORIGIN = "https://destinationcommandcenter.com";
 const VIBE_ORIGIN = "https://vibearoundtown.com";
@@ -154,6 +157,17 @@ export default async function VibeAroundDecisionHub({
               I’m ready — show me local drivers ↗
             </a>
           </aside>
+        </div>
+
+        <div className="mt-14">
+          <CategoryDecisionEngineExperience
+            engineId="cruise-port-private-drivers"
+            initialResult={
+              CRUISE_PORT_PRIVATE_DRIVERS_DECISION_ENGINE.evaluate(
+                CRUISE_PORT_PRIVATE_DRIVERS_DECISION_ENGINE.defaultExampleInput,
+              ) as unknown as DecisionResult<Record<string, unknown>>
+            }
+          />
         </div>
 
         <section className="mt-14">
