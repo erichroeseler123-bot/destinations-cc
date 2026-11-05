@@ -11,12 +11,15 @@ export type HotelConciergePropertyConfig = {
   approvedTourIds: string[];
   approvedCategories: string[];
   conciergeDeskNote: string;
+  isDemoPreset?: boolean;
+  demoStatusLabel?: string;
+  defaultPlacementId?: string;
 };
 
 export const HOTEL_CONCIERGE_CONFIGS: Record<string, HotelConciergePropertyConfig> = {
   "hotel-monteleone-nola": {
     propertySlug: "hotel-monteleone-nola",
-    propertyName: "Hotel Monteleone (French Quarter)",
+    propertyName: "Hotel Monteleone — French Quarter (Demo Preset)",
     destinationSlug: "new-orleans",
     earthosDestinationNodeId: "earthos:node:us-la-new-orleans",
     neighborhood: "French Quarter — Royal Street",
@@ -24,7 +27,11 @@ export const HOTEL_CONCIERGE_CONFIGS: Record<string, HotelConciergePropertyConfi
     lat: 29.9542,
     lng: -90.0681,
     defaultRequiresHotelPickup: true,
+    isDemoPreset: true,
+    demoStatusLabel: "DEMO PRESET — Pending Hotel Approval",
+    defaultPlacementId: "nola-hotel-monteleone-demo-pilot",
     approvedTourIds: [
+      "dcc:tour:fh:jeanlafitteswamptour:763318",
       "dcc:tour:viator:6953SWAMPTRANS",
       "dcc:tour:viator:3780AIRBOAT",
       "dcc:tour:viator:3780SWAMP",
@@ -38,7 +45,7 @@ export const HOTEL_CONCIERGE_CONFIGS: Record<string, HotelConciergePropertyConfi
       "Food, Drink & Culture",
     ],
     conciergeDeskNote:
-      "Royal Street shuttle pickup zone is directly outside main lobby doors; Toulouse Street Wharf is within a 6-minute walk.",
+      "DEMO PRESET (Pending Hotel Approval): Royal Street shuttle pickup zone is directly outside main lobby doors (214 Royal St — FareHarbor pickup option #22056428); Toulouse Street Wharf is within a 6-minute walk.",
   },
   "roosevelt-new-orleans": {
     propertySlug: "roosevelt-new-orleans",

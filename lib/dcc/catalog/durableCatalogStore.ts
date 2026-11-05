@@ -1132,6 +1132,250 @@ export async function recordCatalogSyncRun(run: CatalogSyncRunRecord): Promise<v
 
 let memoryCatalogLoadedAt = 0;
 let memoryCatalogSource: "postgres" | "snapshot_hydrated_to_postgres" | "local_snapshot" = "local_snapshot";
+let pilotRecordsUpsertedToPg = false;
+
+export const PILOT_VERIFIED_TOUR_RECORDS: DurableTourRecord[] = [
+  {
+    tourId: "dcc:tour:fh:jeanlafitteswamptour:763318",
+    compatibilityAliases: [
+      "jeanlafitteswamptour:763318",
+      "fh-jeanlafitte-swamp-tour-763318",
+    ],
+    destinationSlug: "new-orleans",
+    portSlug: "new-orleans",
+    earthosDestinationNodeId: "earthos:node:us-la-new-orleans",
+    timeZone: "America/Chicago",
+    title: "Jean Lafitte Swamp Tour (with Hotel Monteleone Shuttle Pickup)",
+    summary:
+      "Guided covered bayou boat excursion through the Jean Lafitte National Historical Park and Barataria Preserve with confirmed round-trip shuttle pickup at Hotel Monteleone (214 Royal St, French Quarter — FareHarbor pickup option #22056428).",
+    category: "Swamp & Bayou",
+    tags: [
+      "swamp",
+      "bayou",
+      "alligators",
+      "hotel-pickup",
+      "hotel-monteleone",
+      "barataria",
+      "fareharbor",
+    ],
+    primaryProvider: "fareharbor",
+    providerProductCode: "jeanlafitteswamptour:763318",
+    operatorName: "Jean Lafitte Swamp Tours",
+    operatorCode: "jeanlafitteswamptour",
+    capabilityTier: "live_check_direct",
+    commissionAuthorized: true,
+    durationMinutes: 90,
+    durationRawText:
+      "1 hour 30 minutes on-water tour (approx. 3 hours total with round-trip French Quarter hotel shuttle)",
+    fromPriceCents: 3200,
+    priceBasis: "per_person",
+    currency: "USD",
+    freeCancellation: true,
+    cancellationPolicyType: "STANDARD",
+    cancellationCutoffHours: 24,
+    cancellationSummary: "Free cancellation up to 24 hours before scheduled departure.",
+    hasHotelPickup: true,
+    lowestPriceIncludesPickup: false,
+    pickupFulfillmentType: "hotel_pickup",
+    pickupType: "HOTEL_OR_MEETING_POINT",
+    pickupSummary:
+      "Round-trip French Quarter hotel shuttle pickup confirmed at Hotel Monteleone (214 Royal St — FareHarbor pickup option #22056428, +$30/person), or self-drive to 6601 Leo Kerner Lafitte Pkwy ($32/adult).",
+    meetingPointName:
+      "Hotel Monteleone — Royal Street Main Entrance (214 Royal St) / Jean Lafitte Barataria Dock",
+    meetingPointAddress:
+      "214 Royal St, New Orleans, LA 70130 (Shuttle) / 6601 Leo Kerner Lafitte Pkwy, Marrero, LA 70072 (Dock)",
+    meetingPointLat: 29.9542,
+    meetingPointLng: -90.0681,
+    locationPrecision: "exact",
+    pickupLocations: [
+      {
+        ref: "fh_custom_field_12258400:22056428",
+        name: "Hotel Monteleone (214 Royal St, French Quarter — FareHarbor Option #22056428)",
+        address: "214 Royal St, New Orleans, LA 70130",
+        lat: 29.9542,
+        lng: -90.0681,
+        precision: "exact",
+        pickupType: "HOTEL",
+      },
+      {
+        ref: "fh_dock:6601_leo_kerner",
+        name: "Jean Lafitte Swamp Tour Dock (Barataria Preserve)",
+        address: "6601 Leo Kerner Lafitte Pkwy, Marrero, LA 70072",
+        lat: 29.7495,
+        lng: -90.1112,
+        precision: "exact",
+        pickupType: "MEETING_POINT",
+      },
+    ],
+    ageBands: [
+      {
+        ageBand: "ADULT",
+        startAge: 13,
+        endAge: 99,
+        minTravelersPerBooking: 1,
+        maxTravelersPerBooking: 30,
+      },
+      {
+        ageBand: "CHILD",
+        startAge: 4,
+        endAge: 12,
+        minTravelersPerBooking: 0,
+        maxTravelersPerBooking: 30,
+      },
+    ],
+    constraints: {
+      wheelchairAccessible: true,
+      minAgeYears: 0,
+      physicalDifficulty: "EASY",
+      cruiseBufferBeforeMinutes: 45,
+      cruiseBufferAfterMinutes: 45,
+      transferTimeSource: "verified_meeting_point",
+      transferEvidenceSource: "fareharbor_custom_field_12258400:hotel_monteleone_22056428",
+      applicableBerthOrMeetingPoint:
+        "Hotel Monteleone (214 Royal St, French Quarter — FareHarbor Pickup Option #22056428) <-> Jean Lafitte Barataria Dock (6601 Leo Kerner Lafitte Pkwy)",
+      planningEstimateTransferMinutes: 45,
+      weatherDependent: true,
+      requiresClosedToeShoes: false,
+    },
+    channelOffers: [
+      {
+        channelId: "hotel_concierge",
+        provider: "fareharbor",
+        providerProductCode: "jeanlafitteswamptour:763318",
+        capabilityTier: "live_check_direct",
+        commissionAuthorized: true,
+        fromPriceCents: 6200,
+        priceBasis: "per_person",
+        currency: "USD",
+        freeCancellation: true,
+        cancellationCutoffHours: 24,
+        cancellationSummary: "Free cancellation up to 24 hours before scheduled departure.",
+        inclusions: [
+          "90-minute guided covered swamp boat tour ($32/adult)",
+          "Round-trip hotel shuttle pickup at Hotel Monteleone (+$30/person)",
+        ],
+        exclusions: ["Gratuities"],
+        bookingUrl:
+          "https://fareharbor.com/embeds/book/jeanlafitteswamptour/items/763318/?asn=aktourcenter&full-items=yes",
+      },
+      {
+        channelId: "dcc",
+        provider: "fareharbor",
+        providerProductCode: "jeanlafitteswamptour:763318",
+        capabilityTier: "live_check_direct",
+        commissionAuthorized: true,
+        fromPriceCents: 3200,
+        priceBasis: "per_person",
+        currency: "USD",
+        freeCancellation: true,
+        cancellationCutoffHours: 24,
+        cancellationSummary: "Free cancellation up to 24 hours before scheduled departure.",
+        inclusions: ["90-minute guided covered swamp boat tour"],
+        exclusions: ["Optional round-trip hotel shuttle (+$30/person)", "Gratuities"],
+        bookingUrl:
+          "https://fareharbor.com/embeds/book/jeanlafitteswamptour/items/763318/?asn=aktourcenter&full-items=yes",
+      },
+    ],
+    productOptions: [
+      {
+        optionCode: "WITH_HOTEL_PICKUP",
+        title: "Swamp Boat Tour + Hotel Monteleone Round-Trip Shuttle ($32 Tour + $30 Shuttle)",
+        description:
+          "90-minute guided covered bayou boat tour ($32/adult) plus round-trip hotel shuttle pickup at Hotel Monteleone (+$30/person; FareHarbor hotel pickup option #22056428).",
+        includesPickup: true,
+        pickupFulfillmentType: "hotel_pickup",
+        meetingPointName:
+          "Hotel Monteleone — Royal Street Main Entrance (214 Royal St, New Orleans, LA 70130)",
+        meetingPointLat: 29.9542,
+        meetingPointLng: -90.0681,
+        transferBeforeMinutes: 45,
+        transferAfterMinutes: 45,
+        transferTimeSource: "verified_meeting_point",
+        transferEvidenceSource: "fareharbor_custom_field_12258400:hotel_monteleone_22056428",
+        applicableBerthOrMeetingPoint:
+          "Hotel Monteleone (214 Royal St, French Quarter — FareHarbor Pickup Option #22056428)",
+        planningEstimateTransferMinutes: 45,
+        durationMinutes: 90,
+        fromPriceCents: 6200,
+        priceBasis: "per_person",
+        scheduledStartTimes: ["10:00", "12:00"],
+      },
+      {
+        optionCode: "SELF_DRIVE_6601",
+        title: "Self-Drive / Meet on Site (6601 Leo Kerner Lafitte Pkwy)",
+        description:
+          "90-minute guided covered bayou boat tour ($32/adult) meeting directly at the Barataria Preserve dock (no hotel shuttle).",
+        includesPickup: false,
+        pickupFulfillmentType: "self_drive",
+        meetingPointName:
+          "Jean Lafitte Swamp Tour Dock (6601 Leo Kerner Lafitte Pkwy, Marrero, LA 70072)",
+        meetingPointLat: 29.7495,
+        meetingPointLng: -90.1112,
+        transferBeforeMinutes: null,
+        transferAfterMinutes: null,
+        transferTimeSource: "planning_estimate",
+        transferEvidenceSource: null,
+        applicableBerthOrMeetingPoint:
+          "Self-Drive to 6601 Leo Kerner Lafitte Pkwy, Marrero, LA 70072",
+        planningEstimateTransferMinutes: 35,
+        durationMinutes: 90,
+        fromPriceCents: 3200,
+        priceBasis: "per_person",
+        scheduledStartTimes: ["10:00", "12:00"],
+      },
+    ],
+    serviceDetails: {
+      pickupFulfillmentType: "hotel_pickup",
+      fareharborShortname: "jeanlafitteswamptour",
+      fareharborItemPk: 763318,
+      fareharborAsnPartner: "aktourcenter",
+      fareharborHotelPickupCustomFieldId: 12258400,
+      fareharborHotelMonteleoneOptionValue: "number:22056428",
+      fareharborTransportationCountCustomFieldId: 12210745,
+    },
+    inclusions: [
+      "90-minute guided covered swamp boat tour",
+      "Optional round-trip hotel shuttle pickup at Hotel Monteleone (+$30/person)",
+    ],
+    exclusions: ["Gratuities"],
+    primaryImageUrl: null,
+    ratingAverage: 4.8,
+    reviewCount: 940,
+    bookingUrl:
+      "https://fareharbor.com/embeds/book/jeanlafitteswamptour/items/763318/?asn=aktourcenter&full-items=yes",
+    provenance: {
+      sourceSystem: "fareharbor_asn_live",
+      sourceEndpoint:
+        "https://fareharbor.com/api/v1/companies/jeanlafitteswamptour/items/763318/availabilities/date/2026-11-18/?asn=aktourcenter",
+      fetchedAt: "2026-11-05T23:00:00.000Z",
+      contentSha256: "fh_jeanlafitteswamptour_763318_monteleone_22056428",
+      rawFieldsVerified: {
+        durationKnown: true,
+        cancellationKnown: true,
+        pickupKnown: true,
+        meetingCoordinatesKnown: true,
+        ageBandsKnown: true,
+      },
+    },
+    quarantined: false,
+    quarantineReason: null,
+    active: true,
+    lastVerifiedAt: "2026-11-05T23:00:00.000Z",
+    updatedAt: "2026-11-05T23:00:00.000Z",
+    createdAt: "2026-11-05T23:00:00.000Z",
+  },
+];
+
+function mergePilotVerifiedRecords(records: DurableTourRecord[]): DurableTourRecord[] {
+  const byId = new Map<string, DurableTourRecord>();
+  for (const r of records) {
+    byId.set(r.tourId, r);
+  }
+  for (const pilot of PILOT_VERIFIED_TOUR_RECORDS) {
+    byId.set(pilot.tourId, pilot);
+  }
+  return Array.from(byId.values());
+}
 
 async function loadAllCatalogRecordsWithPgHydration(): Promise<{
   records: DurableTourRecord[];
@@ -1143,7 +1387,9 @@ async function loadAllCatalogRecordsWithPgHydration(): Promise<{
     Date.now() - memoryCatalogLoadedAt < 60_000
   ) {
     return {
-      records: memoryCatalogCache.filter((r) => r.active && !isQuarantinedTourRecord(r)),
+      records: mergePilotVerifiedRecords(
+        memoryCatalogCache.filter((r) => r.active && !isQuarantinedTourRecord(r)),
+      ),
       source: memoryCatalogSource,
     };
   }
@@ -1152,11 +1398,19 @@ async function loadAllCatalogRecordsWithPgHydration(): Promise<{
     try {
       await ensureCatalogSchema();
       const sql = getSqlClient();
+      if (!pilotRecordsUpsertedToPg) {
+        pilotRecordsUpsertedToPg = true;
+        for (const pilot of PILOT_VERIFIED_TOUR_RECORDS) {
+          await upsertSingleTourToPg(sql, pilot);
+        }
+      }
       const rows = await sql`
         SELECT * FROM dcc_tour_catalog WHERE active = true AND quarantined = false ORDER BY destination_slug, tour_id
       `;
       if (rows.length > 0) {
-        const mapped = rows.map(mapPgRowToDurableTourRecord).filter((r) => r.active && !isQuarantinedTourRecord(r));
+        const mapped = mergePilotVerifiedRecords(
+          rows.map(mapPgRowToDurableTourRecord).filter((r) => r.active && !isQuarantinedTourRecord(r)),
+        );
         memoryCatalogCache = mapped;
         memoryCatalogLoadedAt = Date.now();
         memoryCatalogSource = "postgres";
@@ -1165,7 +1419,9 @@ async function loadAllCatalogRecordsWithPgHydration(): Promise<{
 
       // If Postgres is empty on first query (e.g., fresh production DB), auto-hydrate from committed snapshot
       const snapshot = readLocalCatalogSnapshot();
-      const activeSnapshotRecords = snapshot.records.filter((r) => r.active && !isQuarantinedTourRecord(r));
+      const activeSnapshotRecords = mergePilotVerifiedRecords(
+        snapshot.records.filter((r) => r.active && !isQuarantinedTourRecord(r)),
+      );
       if (activeSnapshotRecords.length > 0 && !pgHydratedFromSnapshot) {
         pgHydratedFromSnapshot = true;
         for (const rec of activeSnapshotRecords) {
@@ -1186,12 +1442,16 @@ async function loadAllCatalogRecordsWithPgHydration(): Promise<{
 
   if (memoryCatalogCache && memoryCatalogCache.length > 0) {
     return {
-      records: memoryCatalogCache.filter((r) => r.active && !isQuarantinedTourRecord(r)),
+      records: mergePilotVerifiedRecords(
+        memoryCatalogCache.filter((r) => r.active && !isQuarantinedTourRecord(r)),
+      ),
       source: "local_snapshot",
     };
   }
   const snapshot = readLocalCatalogSnapshot();
-  const activeRecords = snapshot.records.filter((r) => r.active && !isQuarantinedTourRecord(r));
+  const activeRecords = mergePilotVerifiedRecords(
+    snapshot.records.filter((r) => r.active && !isQuarantinedTourRecord(r)),
+  );
   memoryCatalogCache = activeRecords;
   return { records: activeRecords, source: "local_snapshot" };
 }

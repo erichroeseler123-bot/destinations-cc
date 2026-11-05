@@ -9,6 +9,7 @@ import {
   type TourProductOptionRecord,
   type TransferTimeSource,
 } from "./durableCatalogStore";
+import { HOTEL_CONCIERGE_CONFIGS } from "./hotelConfigs";
 import { recordObservedWidgetOrigin } from "./widgetPlacements";
 import { buildViatorPaxMix, checkDccLiveAvailability } from "@/lib/dcc/internal/dccViatorAdapter";
 import { fetchAvailabilitiesForItem } from "@/lib/dcc/liveSlots/fareharbor";
@@ -59,6 +60,7 @@ export type TripMatchRequest = {
     | "welcometotheswamp"
     | "juneau-flight-deck";
   propertySlug?: string;
+  placementId?: string;
   enableShortlistLiveCheck?: boolean;
   shortlistMaxCount?: number;
   includeDiscoveryOnly?: boolean;
@@ -121,6 +123,7 @@ export type BoundTourOfferTuple = {
   includesPickup: boolean | null;
   date: string | null;
   departureTime: string | null;
+  providerAvailabilityPk?: number | null;
   availableDepartureTimes: string[];
   fittingDepartureTimes: string[];
   optionTitleTimeSemantics?: OptionTitleTimeSemantics;
@@ -1009,9 +1012,10 @@ function buildAlternativeOptionTradeoffs(params: {
 export function buildFareHarborDatePreselectedUrl(
   rawUrl: string,
   date: string | null,
+  slotPk?: number | null,
+  asnRefTag?: string | null,
 ): string {
-  if (!rawUrl || !date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return rawUrl;
-  const [yyyy, mm] = date.split("-");
+  if (!rawUrl) return rawUrl;
   try {
     const u = new URL(rawUrl);
     if (
@@ -1019,9 +1023,20 @@ export function buildFareHarborDatePreselectedUrl(
       /\/embeds\/book\/[^/]+\/items\/\d+\/?$/i.test(u.pathname)
     ) {
       const cleanPath = u.pathname.replace(/\/+$/, "");
-      u.pathname = `${cleanPath}/calendar/${yyyy}/${mm}/`;
+      if (typeof slotPk === "number" && Number.isFinite(slotPk)) {
+        u.pathname = `${cleanPath}/availability/${slotPk}/book/`;
+      } else if (date && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        const [yyyy, mm] = date.split("-");
+        u.pathname = `${cleanPath}/calendar/${yyyy}/${mm}/`;
+      }
     }
-    u.searchParams.set("date", date);
+    if (date && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      u.searchParams.set("date", date);
+    }
+    if (asnRefTag && asnRefTag.trim()) {
+      u.searchParams.set("ref", asnRefTag.trim());
+      u.searchParams.set("custom-tracking", asnRefTag.trim());
+    }
     if (!u.searchParams.has("full-items")) {
       u.searchParams.set("full-items", "yes");
     }
@@ -1067,6 +1082,31 @@ export function buildCheckoutPreselectionMetadata(params: {
 
   if (provider === "fareharbor") {
     const ym = boundOffer.date ? boundOffer.date.slice(0, 7) : "current";
+    const hasDirectSlotBook =
+      typeof boundOffer.providerAvailabilityPk === "number" &&
+      Number.isFinite(boundOffer.providerAvailabilityPk);
+    if (hasDirectSlotBook) {
+      const pickupGuidance = boundOffer.includesPickup
+        ? `, check "Does your party need transportation?", select ${boundOffer.totalGuests} guest${boundOffer.totalGuests === 1 ? "" : "s"} ($30/person), and choose "Hotel Monteleone" in the hotel pickup dropdown`
+        : "";
+      return {
+        provider,
+        preselectionSupport: "partial_provider_preselection",
+        preselectedFields: [
+          "productItem",
+          "date",
+          "departureTimeSlot",
+          "affiliateTrackingRef",
+        ],
+        manualSelectionFieldsAtCheckout: boundOffer.includesPickup
+          ? ["ticketQuantities", "hotelPickupCustomField"]
+          : ["ticketQuantities"],
+        providerDefaultDateBehavior:
+          "FareHarbor booking sheet opens directly to your verified travel date and departure time slot.",
+        travelerActionSummary: `FareHarbor opens directly to Date: ${boundOffer.date} at Departure: ${effectiveDeparture || "10:00"}. Enter Travelers: ${partySummary}${pickupGuidance}.`,
+        requiredSelectionsAtCheckout,
+      };
+    }
     return {
       provider,
       preselectionSupport: "partial_provider_preselection",
@@ -1750,6 +1790,22 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
     if (effectiveMeetingLat !== null && effectiveMeetingLng !== null) score += 4;
     if (hasVerifiedTransferSupport && (hasCruiseWindowInput || requiresPierPickup)) score += 8;
     if (typeof rec.ratingAverage === "number" && rec.ratingAverage >= 4.7) score += 4;
+    if (surface === "hotel_concierge" && input.propertySlug) {
+      const hotelCfg = HOTEL_CONCIERGE_CONFIGS[input.propertySlug];
+      if (
+        hotelCfg &&
+        (hotelCfg.approvedTourIds.includes(rec.tourId) ||
+          hotelCfg.approvedTourIds.includes(rec.providerProductCode))
+      ) {
+        score += 10;
+        if (hasVerifiedTransferSupport && effectivePickupFulfillmentType === "hotel_pickup") {
+          score += 8;
+          explanations.push(
+            `Confirmed hotel pickup at ${hotelCfg.propertyName} (${effectiveApplicableBerthOrMeetingPoint || hotelCfg.address}).`,
+          );
+        }
+      }
+    }
 
     const effectivePriceBasis = selectedProductOption?.priceBasis || priceBasis;
     const initialTotalPartyPriceCents = computeTotalPartyPriceCents(
@@ -2226,9 +2282,9 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
               input.date,
               input.date,
             );
-            const openSlots = availabilities.filter(
-              (a) => typeof a.capacity === "number" && a.capacity >= totalGuests,
-            );
+            const openSlots = availabilities
+              .filter((a) => typeof a.capacity === "number" && a.capacity >= totalGuests)
+              .sort((a, b) => String(a.start_at || "").localeCompare(String(b.start_at || "")));
             const openStartTimes = Array.from(
               new Set(
                 openSlots
@@ -2258,9 +2314,16 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
             if (openSlots.length > 0) {
               option.boundOffer.availableDepartureTimes = openStartTimes;
               option.boundOffer.departureTime = openStartTimes[0] || null;
+              option.boundOffer.providerAvailabilityPk =
+                typeof openSlots[0].pk === "number" && Number.isFinite(openSlots[0].pk)
+                  ? openSlots[0].pk
+                  : null;
               option.boundOffer.optionTitleTimeSemantics = detectOptionTitleTimeSemantics(
                 option.boundOffer.optionTitle,
                 openStartTimes,
+              );
+              option.explanations.push(
+                `Live FareHarbor availability confirmed for "${option.boundOffer.optionTitle}": ${openSlots.length} departure slot${openSlots.length === 1 ? "" : "s"} open on ${input.date} (${openStartTimes.join(", ")}).`,
               );
             } else {
               option.suitability = "ineligible";
@@ -2342,6 +2405,11 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
   const eligibleOptions: MatchedTourOption[] = [];
   const ineligibleOptions: MatchedTourOption[] = [];
   const originatingPagePath = `/${surface}/${input.propertySlug || node.destinationSlug}`;
+  const effectivePlacementId =
+    input.placementId?.trim() ||
+    (surface === "hotel_concierge" && input.propertySlug
+      ? HOTEL_CONCIERGE_CONFIGS[input.propertySlug]?.defaultPlacementId || null
+      : null);
   const isTestTraffic = isDemoOrAutomatedVerificationTraffic({
     isTest: input.isTest,
     originatingPage: originatingPagePath,
@@ -2392,13 +2460,15 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
           issued.outboundPartnerUrl,
           option.boundOffer,
         );
-        option.bookingPath.trackedClickUrl = `/api/v1/ads/click?clickId=${encodeURIComponent(issued.clickId)}${isTestTraffic ? "&isTest=true" : ""}&target=${encodeURIComponent(option.bookingPath.handoffUrl)}`;
+        option.bookingPath.trackedClickUrl = `/api/v1/ads/click?clickId=${encodeURIComponent(issued.clickId)}${effectivePlacementId ? `&placementId=${encodeURIComponent(effectivePlacementId)}` : ""}${input.propertySlug ? `&property=${encodeURIComponent(input.propertySlug)}` : ""}${isTestTraffic ? "&isTest=true" : ""}&target=${encodeURIComponent(option.bookingPath.handoffUrl)}`;
       } else {
         const preClickId = generateOpaqueClickId();
         let preparedDestinationUrl = option.bookingPath.handoffUrl;
+        const placementOrPropertyTag =
+          effectivePlacementId || input.propertySlug || node.destinationSlug;
 
         if (record.primaryProvider === "viator") {
-          const campaignTag = `${surface}-${input.propertySlug || node.destinationSlug}-${option.boundOffer.optionCode || "opt"}-${preClickId}`.slice(
+          const campaignTag = `${surface}-${placementOrPropertyTag}-${option.boundOffer.optionCode || "opt"}-${preClickId}`.slice(
             0,
             120,
           );
@@ -2411,9 +2481,12 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
             option.boundOffer,
           );
         } else if (record.primaryProvider === "fareharbor") {
+          const asnRefTag = `${placementOrPropertyTag}-${preClickId}`.slice(0, 120);
           const fhPreselected = buildFareHarborDatePreselectedUrl(
             preparedDestinationUrl,
             option.boundOffer.date,
+            option.boundOffer.providerAvailabilityPk,
+            asnRefTag,
           );
           preparedDestinationUrl = appendBoundOfferQueryParams(
             fhPreselected,
@@ -2434,6 +2507,9 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
           evidenceVersion: "dcc_catalog_v2",
           originatingSite: surface,
           originatingPage: originatingPagePath,
+          placementId: effectivePlacementId,
+          propertySlug: input.propertySlug || null,
+          surface,
           provider:
             record.primaryProvider === "fareharbor"
               ? "fareharbor"
@@ -2455,6 +2531,9 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
             passengers: totalGuests,
             baggage: null,
             OriginatingPage: originatingPagePath,
+            placementId: effectivePlacementId,
+            propertySlug: input.propertySlug || null,
+            surface,
             boundOptionCode: option.boundOffer.optionCode,
             boundOptionTitle: option.boundOffer.optionTitle,
             boundPickupFulfillmentType: option.boundOffer.pickupFulfillmentType,
@@ -2468,7 +2547,7 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
         });
         option.bookingPath.clickId = issued.clickId;
         option.bookingPath.handoffUrl = issued.outboundPartnerUrl;
-        option.bookingPath.trackedClickUrl = `/api/v1/ads/click?clickId=${encodeURIComponent(issued.clickId)}${isTestTraffic ? "&isTest=true" : ""}&target=${encodeURIComponent(option.bookingPath.handoffUrl)}`;
+        option.bookingPath.trackedClickUrl = `/api/v1/ads/click?clickId=${encodeURIComponent(issued.clickId)}${effectivePlacementId ? `&placementId=${encodeURIComponent(effectivePlacementId)}` : ""}${input.propertySlug ? `&property=${encodeURIComponent(input.propertySlug)}` : ""}${isTestTraffic ? "&isTest=true" : ""}&target=${encodeURIComponent(option.bookingPath.handoffUrl)}`;
       }
     }
 

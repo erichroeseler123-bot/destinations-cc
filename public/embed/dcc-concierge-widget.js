@@ -7,6 +7,7 @@
  *   src="https://www.destinationcommandcenter.com/embed/dcc-concierge-widget.js"
  *   data-destination="new-orleans"
  *   data-property="hotel-monteleone-nola"
+ *   data-placement-id="nola-hotel-monteleone-demo-pilot"
  *   data-surface="hotel_concierge"
  *   data-pickup-mode="hotel_pickup"
  *   async
@@ -25,16 +26,29 @@
     var property =
       (scriptEl && scriptEl.getAttribute("data-property")) ||
       "hotel-monteleone-nola";
+    var placementId =
+      (scriptEl &&
+        (scriptEl.getAttribute("data-placement-id") ||
+          scriptEl.getAttribute("data-placement"))) ||
+      (property === "hotel-monteleone-nola"
+        ? "nola-hotel-monteleone-demo-pilot"
+        : "");
     var surface =
       (scriptEl && scriptEl.getAttribute("data-surface")) || "hotel_concierge";
     var pickupMode =
       (scriptEl && scriptEl.getAttribute("data-pickup-mode")) || "";
+    var date = (scriptEl && scriptEl.getAttribute("data-date")) || "";
     var shipArrival =
       (scriptEl && scriptEl.getAttribute("data-ship-arrival")) || "";
     var shipAllAboard =
       (scriptEl && scriptEl.getAttribute("data-ship-all-aboard")) || "";
     var category =
       (scriptEl && scriptEl.getAttribute("data-category")) || "";
+    var isTest =
+      (scriptEl &&
+        (scriptEl.getAttribute("data-is-test") ||
+          scriptEl.getAttribute("data-test"))) ||
+      "";
     var targetId =
       (scriptEl && scriptEl.getAttribute("data-target")) ||
       "dcc-concierge-widget-root";
@@ -58,10 +72,13 @@
     params.set("destination", destination);
     params.set("property", property);
     params.set("surface", surface);
+    if (placementId) params.set("placementId", placementId);
     if (pickupMode) params.set("pickupMode", pickupMode);
+    if (date) params.set("date", date);
     if (shipArrival) params.set("shipArrival", shipArrival);
     if (shipAllAboard) params.set("allAboard", shipAllAboard);
     if (category) params.set("category", category);
+    if (isTest) params.set("isTest", isTest);
     if (window.location && window.location.origin) {
       params.set("parentOrigin", window.location.origin);
     }
@@ -77,6 +94,21 @@
     iframe.style.overflow = "hidden";
     iframe.setAttribute("loading", "lazy");
     iframe.setAttribute("data-dcc-concierge-embed", "true");
+    if (placementId) {
+      iframe.setAttribute("data-placement-id", placementId);
+    }
+
+    window.addEventListener("message", function (ev) {
+      if (
+        ev &&
+        ev.data &&
+        ev.data.type === "dcc-concierge-resize" &&
+        typeof ev.data.height === "number" &&
+        ev.data.height > 320
+      ) {
+        iframe.style.height = Math.ceil(ev.data.height + 24) + "px";
+      }
+    });
 
     var container = document.getElementById(targetId);
     if (container) {

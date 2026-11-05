@@ -12,6 +12,7 @@ export type DccConciergeWidgetProps = {
   widgetId?: string;
   initialDestination?: string;
   initialPropertySlug?: string;
+  initialPlacementId?: string;
   initialSurface?:
     | "dcc"
     | "hotel_concierge"
@@ -95,6 +96,7 @@ export default function DccConciergeWidget({
   widgetId = "dcc-concierge-matcher",
   initialDestination = "new-orleans",
   initialPropertySlug = "hotel-monteleone-nola",
+  initialPlacementId,
   initialSurface = "hotel_concierge",
   initialPickupMode,
   initialDate,
@@ -114,6 +116,9 @@ export default function DccConciergeWidget({
   const [surface, setSurface] = useState<string>(initialSurface);
   const [propertySlug, setPropertySlug] = useState<string>(defaultHotel.propertySlug);
   const [propertyName, setPropertyName] = useState<string>(defaultHotel.propertyName);
+  const [placementId, setPlacementId] = useState<string>(
+    initialPlacementId || defaultHotel.defaultPlacementId || "",
+  );
   const [destination, setDestination] = useState<string>(
     initialDestination || defaultHotel.destinationSlug,
   );
@@ -149,12 +154,18 @@ export default function DccConciergeWidget({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const initialLiveCheckDoneRef = useRef<boolean>(false);
+  const visitorRecordedRef = useRef<string | null>(null);
+
+  const activeHotelConfig: HotelConciergePropertyConfig | undefined =
+    HOTEL_CONCIERGE_CONFIGS[propertySlug];
 
   const handleSelectPresetHotel = (slug: string) => {
     const preset: HotelConciergePropertyConfig | undefined = HOTEL_CONCIERGE_CONFIGS[slug];
     if (!preset) return;
     setPropertySlug(preset.propertySlug);
     setPropertyName(preset.propertyName);
+    setPlacementId(preset.defaultPlacementId || "");
     setDestination(preset.destinationSlug);
     setHotelLat(String(preset.lat));
     setHotelLng(String(preset.lng));
@@ -226,6 +237,7 @@ export default function DccConciergeWidget({
           requiresWheelchair,
           surface,
           propertySlug: surface === "hotel_concierge" ? propertySlug : undefined,
+          placementId: placementId.trim() || undefined,
           enableShortlistLiveCheck: withShortlistLiveCheck,
           shortlistMaxCount: 4,
           isTest: runtimeIsTest || isTest || undefined,
@@ -272,6 +284,7 @@ export default function DccConciergeWidget({
       requiresWheelchair,
       surface,
       propertySlug,
+      placementId,
       runtimeIsTest,
       isTest,
       parentOrigin,
@@ -286,6 +299,20 @@ export default function DccConciergeWidget({
       const qDate = sp.get("date");
       if (qDate && /^\d{4}-\d{2}-\d{2}$/.test(qDate)) {
         setDate(qDate);
+      }
+      const qPlacement =
+        sp.get("placementId") || sp.get("placement_id") || sp.get("placement");
+      if (qPlacement && qPlacement.trim()) {
+        setPlacementId(qPlacement.trim());
+      }
+      const qProperty = sp.get("property") || sp.get("propertySlug");
+      if (qProperty && HOTEL_CONCIERGE_CONFIGS[qProperty]) {
+        const preset = HOTEL_CONCIERGE_CONFIGS[qProperty];
+        setPropertySlug(preset.propertySlug);
+        setPropertyName(preset.propertyName);
+        if (!qPlacement && preset.defaultPlacementId) {
+          setPlacementId(preset.defaultPlacementId);
+        }
       }
       const qArrival = sp.get("shipArrival");
       if (qArrival) setShipArrival(qArrival);
@@ -334,22 +361,62 @@ export default function DccConciergeWidget({
     };
   }, [runTripMatch]);
 
-  // Stage 1: Debounced catalog match (enableShortlistLiveCheck=false) when filters change.
-  // Prevents firing repeated live-check requests on every keystroke!
+  // Record guest visit session in the durable attribution ledger for placement funnel reporting
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const effectivePlacement =
+      placementId.trim() ||
+      (surface === "hotel_concierge" && propertySlug === "hotel-monteleone-nola"
+        ? "nola-hotel-monteleone-demo-pilot"
+        : "");
+    const visitKey = `${effectivePlacement}::${propertySlug}::${surface}`;
+    if (visitorRecordedRef.current === visitKey) return;
+    visitorRecordedRef.current = visitKey;
+
+    const sp = new URLSearchParams(window.location.search);
+    const urlIsTest =
+      sp.get("isTest") === "true" ||
+      sp.get("isTest") === "1" ||
+      sp.get("trafficClass") === "test" ||
+      window.location.pathname.includes("/demo/");
+
+    void fetch("/api/v1/commerce/click-attribution", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "record_visitor",
+        sourcePage: `${window.location.pathname}${window.location.search}`,
+        placementId: effectivePlacement || null,
+        propertySlug: surface === "hotel_concierge" ? propertySlug : null,
+        surface,
+        isTest: Boolean(runtimeIsTest || isTest || urlIsTest),
+      }),
+    }).catch(() => {
+      // non-blocking visitor telemetry
+    });
+  }, [placementId, propertySlug, surface, runtimeIsTest, isTest]);
+
+  // Stage 1: Debounced catalog match when filters change.
+  // If an explicit initialDate was passed via URL/props, auto-verify shortlist live once on load.
   useEffect(() => {
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
     }
+    const shouldAutoVerify =
+      !initialLiveCheckDoneRef.current && Boolean(initialDate);
+    if (shouldAutoVerify) {
+      initialLiveCheckDoneRef.current = true;
+    }
     debounceTimerRef.current = setTimeout(() => {
-      void runTripMatch(false);
-    }, 450);
+      void runTripMatch(shouldAutoVerify);
+    }, 300);
 
     return () => {
       if (debounceTimerRef.current) {
         clearTimeout(debounceTimerRef.current);
       }
     };
-  }, [runTripMatch]);
+  }, [runTripMatch, initialDate]);
 
   useEffect(() => {
     return () => {
@@ -369,6 +436,7 @@ export default function DccConciergeWidget({
       ref={containerRef}
       data-testid="dcc-concierge-widget"
       data-embed-mode={embedMode ? "true" : "false"}
+      data-placement-id={placementId || undefined}
       className="scroll-mt-6 rounded-2xl border border-slate-800 bg-slate-950/95 text-slate-100 shadow-2xl overflow-hidden"
     >
       {/* Header Bar */}
@@ -378,6 +446,22 @@ export default function DccConciergeWidget({
             <span className="inline-flex items-center rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-semibold text-emerald-300 border border-emerald-500/30">
               Shared Tour Catalog & Trip-Matching Service
             </span>
+            {surface === "hotel_concierge" && activeHotelConfig?.isDemoPreset && (
+              <span
+                data-testid="concierge-demo-preset-badge"
+                className="inline-flex items-center rounded-full bg-amber-500/20 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide text-amber-300 border border-amber-500/40"
+              >
+                {activeHotelConfig.demoStatusLabel || "DEMO PRESET — Pending Hotel Approval"}
+              </span>
+            )}
+            {placementId && (
+              <span
+                data-testid="concierge-placement-id-badge"
+                className="inline-flex items-center rounded-full bg-indigo-500/15 px-2.5 py-0.5 text-xs font-mono text-indigo-300 border border-indigo-500/30"
+              >
+                Placement: {placementId}
+              </span>
+            )}
             <span className="inline-flex items-center rounded-full bg-cyan-500/15 px-2.5 py-0.5 text-xs font-mono text-cyan-300 border border-cyan-500/30">
               {matchResult?.destination.earthosDestinationNodeId || "earthos:node:us-la-new-orleans"}
             </span>
@@ -396,6 +480,11 @@ export default function DccConciergeWidget({
                     ? "Cruise Promenade Shore Excursion Matcher"
                     : "Destination Command Center — Universal Trip Matcher"}
           </h2>
+          {surface === "hotel_concierge" && activeHotelConfig?.conciergeDeskNote && (
+            <p className="mt-1 text-xs text-amber-200/90">
+              {activeHotelConfig.conciergeDeskNote}
+            </p>
+          )}
         </div>
 
         <div className="flex flex-wrap items-center gap-2">

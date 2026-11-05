@@ -8,6 +8,8 @@ type EmbedConciergePageProps = {
   searchParams: Promise<{
     destination?: string;
     property?: string;
+    placementId?: string;
+    placement?: string;
     surface?: string;
     pickupMode?: string;
     date?: string;
@@ -23,6 +25,10 @@ export default async function EmbedConciergePage({ searchParams }: EmbedConcierg
   const query = await searchParams;
   const destination = query.destination?.trim() || "new-orleans";
   const propertySlug = query.property?.trim() || "hotel-monteleone-nola";
+  const placementId =
+    query.placementId?.trim() ||
+    query.placement?.trim() ||
+    (propertySlug === "hotel-monteleone-nola" ? "nola-hotel-monteleone-demo-pilot" : undefined);
   const surface = (query.surface?.trim() || "hotel_concierge") as
     | "dcc"
     | "hotel_concierge"
@@ -45,6 +51,7 @@ export default async function EmbedConciergePage({ searchParams }: EmbedConcierg
         <DccConciergeWidget
           initialDestination={destination}
           initialPropertySlug={propertySlug}
+          initialPlacementId={placementId}
           initialSurface={surface}
           initialPickupMode={pickupMode}
           initialDate={query.date?.trim() || undefined}

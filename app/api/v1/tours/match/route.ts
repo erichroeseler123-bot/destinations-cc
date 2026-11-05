@@ -68,7 +68,12 @@ export async function GET(request: NextRequest) {
       allAboardTime: sp.get("allAboardTime") || undefined,
       flightArrivalTime: sp.get("flightArrivalTime") || undefined,
       surface: (sp.get("surface") as TripMatchRequest["surface"]) || "dcc",
-      propertySlug: sp.get("propertySlug") || undefined,
+      propertySlug: sp.get("propertySlug") || sp.get("property") || undefined,
+      placementId:
+        sp.get("placementId") ||
+        sp.get("placement_id") ||
+        sp.get("placement") ||
+        undefined,
       enableShortlistLiveCheck: parseBooleanParam(sp.get("enableShortlistLiveCheck")),
       shortlistMaxCount: parseNumberParam(sp.get("shortlistMaxCount")),
       includeDiscoveryOnly: parseBooleanParam(sp.get("includeDiscoveryOnly")),
@@ -123,6 +128,7 @@ export async function POST(request: NextRequest) {
       flightArrivalTime: body.flightArrivalTime,
       surface: body.surface || "dcc",
       propertySlug: body.propertySlug,
+      placementId: body.placementId,
       enableShortlistLiveCheck: body.enableShortlistLiveCheck,
       shortlistMaxCount: body.shortlistMaxCount,
       includeDiscoveryOnly: body.includeDiscoveryOnly,

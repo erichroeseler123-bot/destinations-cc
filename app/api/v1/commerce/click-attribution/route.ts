@@ -61,6 +61,13 @@ export async function GET(request: Request) {
       originatingPage:
         url.searchParams.get("originatingPage") ||
         url.searchParams.get("sourcePage"),
+      placementId:
+        url.searchParams.get("placementId") ||
+        url.searchParams.get("placement_id") ||
+        url.searchParams.get("placement"),
+      propertySlug:
+        url.searchParams.get("propertySlug") ||
+        url.searchParams.get("property"),
     });
     return NextResponse.json(
       {
@@ -150,6 +157,19 @@ export async function POST(request: Request) {
             : typeof body.originatingPage === "string"
               ? body.originatingPage
               : "/transportation/colorado",
+        placementId:
+          typeof body.placementId === "string"
+            ? body.placementId
+            : typeof body.placement_id === "string"
+              ? body.placement_id
+              : null,
+        propertySlug:
+          typeof body.propertySlug === "string"
+            ? body.propertySlug
+            : typeof body.property === "string"
+              ? body.property
+              : null,
+        surface: typeof body.surface === "string" ? body.surface : null,
         isTest: typeof body.isTest === "boolean" ? body.isTest : false,
       });
       await syncDurableLedgerWithPostgres({ forcePushLocal: true });
@@ -317,6 +337,19 @@ export async function POST(request: Request) {
           : typeof body.sourcePage === "string"
             ? body.sourcePage
             : null,
+      placementId:
+        typeof body.placementId === "string"
+          ? body.placementId
+          : typeof body.placement_id === "string"
+            ? body.placement_id
+            : null,
+      propertySlug:
+        typeof body.propertySlug === "string"
+          ? body.propertySlug
+          : typeof body.property === "string"
+            ? body.property
+            : null,
+      surface: typeof body.surface === "string" ? body.surface : null,
       tripDetails:
         body.tripDetails && typeof body.tripDetails === "object"
           ? (body.tripDetails as HandoffTripDetails)
@@ -340,6 +373,9 @@ export async function POST(request: Request) {
         strippedLeakParams: record.strippedLeakParams,
         strippedPiiParams: record.strippedPiiParams ?? [],
         originatingPage: record.originatingPage,
+        placementId: record.placementId ?? null,
+        propertySlug: record.propertySlug ?? null,
+        surface: record.surface ?? null,
         tripDetails: record.tripDetails ?? null,
         isTest: Boolean(record.isTest),
         trafficClass: record.trafficClass ?? "production",

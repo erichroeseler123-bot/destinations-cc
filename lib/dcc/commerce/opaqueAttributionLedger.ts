@@ -51,6 +51,9 @@ export interface HandoffTripDetails {
   returnPickupTime?: string | null;
   returnRouteId?: string | null;
   originatingPage?: string | null;
+  placementId?: string | null;
+  propertySlug?: string | null;
+  surface?: string | null;
 }
 
 export interface OpaqueClickReconciledOutcome {
@@ -92,6 +95,9 @@ export interface OpaqueClickAttributionRecord {
   applicabilityOutcomeHash: string | null;
   originatingSite: string;
   originatingPage?: string;
+  placementId?: string | null;
+  propertySlug?: string | null;
+  surface?: string | null;
   tripDetails?: HandoffTripDetails | null;
   isTest?: boolean;
   trafficClass?: TrafficClass;
@@ -127,6 +133,9 @@ export interface IssueOpaqueClickAttributionInput {
   applicabilityOutcomeHash?: string | null;
   originatingSite?: string | null;
   originatingPage?: string | null;
+  placementId?: string | null;
+  propertySlug?: string | null;
+  surface?: string | null;
   tripDetails?: HandoffTripDetails | null;
   isTest?: boolean;
   recordStage?: AttributionRecordStage;
@@ -170,6 +179,7 @@ export interface PartnerCsvReconciliationSummary {
 export interface FunnelClassMetrics {
   trafficClass: TrafficClass;
   newVisitors: number;
+  guestVisits: number;
   recommendationsIssued: number;
   recommendationOnlyRecords: number;
   followedHandoffs: number;
@@ -193,6 +203,8 @@ export interface FunnelMetricsReport {
   filter: {
     routeId: string | null;
     originatingPage: string | null;
+    placementId?: string | null;
+    propertySlug?: string | null;
   };
   production: FunnelClassMetrics;
   test: FunnelClassMetrics;
@@ -553,6 +565,26 @@ function inferTripDetailsFromUrlAndInput(
       sp.get("originatingPage")?.trim() ||
       sp.get("sourcePage")?.trim() ||
       null;
+    const placementId =
+      explicit.placementId?.trim() ||
+      input.placementId?.trim() ||
+      sp.get("placementId")?.trim() ||
+      sp.get("placement")?.trim() ||
+      sp.get("dcc_placement_id")?.trim() ||
+      null;
+    const propertySlug =
+      explicit.propertySlug?.trim() ||
+      input.propertySlug?.trim() ||
+      sp.get("property")?.trim() ||
+      sp.get("propertySlug")?.trim() ||
+      sp.get("dcc_property")?.trim() ||
+      null;
+    const surface =
+      explicit.surface?.trim() ||
+      input.surface?.trim() ||
+      sp.get("surface")?.trim() ||
+      input.originatingSite?.trim() ||
+      null;
 
     const details: HandoffTripDetails = {
       direction,
@@ -565,10 +597,14 @@ function inferTripDetailsFromUrlAndInput(
       travelDate:
         explicit.travelDate?.trim() ||
         sp.get("date")?.trim() ||
+        sp.get("dcc_date")?.trim() ||
         sp.get("outboundDate")?.trim() ||
         null,
       pickupTime:
-        explicit.pickupTime?.trim() || sp.get("pickupTime")?.trim() || null,
+        explicit.pickupTime?.trim() ||
+        sp.get("pickupTime")?.trim() ||
+        sp.get("dcc_departure_time")?.trim() ||
+        null,
       passengerCount:
         typeof paxRaw === "number" && Number.isFinite(paxRaw) ? paxRaw : null,
       standardBagCount:
@@ -590,6 +626,9 @@ function inferTripDetailsFromUrlAndInput(
         sp.get("returnRouteId")?.trim() ||
         null,
       originatingPage,
+      placementId,
+      propertySlug,
+      surface,
     };
 
     const hasAnyField = Object.values(details).some(
@@ -667,6 +706,19 @@ export function issueOpaqueClickAttribution(
       inferredTripDetails?.originatingPage ||
       input.originatingPage?.trim() ||
       "/transportation/colorado";
+    const resolvedPlacementId =
+      input.placementId?.trim() ||
+      inferredTripDetails?.placementId ||
+      null;
+    const resolvedPropertySlug =
+      input.propertySlug?.trim() ||
+      inferredTripDetails?.propertySlug ||
+      null;
+    const resolvedSurface =
+      input.surface?.trim() ||
+      inferredTripDetails?.surface ||
+      input.originatingSite?.trim() ||
+      null;
     const isTest = isDemoOrAutomatedVerificationTraffic({
       isTest: input.isTest,
       originatingPage: resolvedOriginatingPage,
@@ -695,6 +747,9 @@ export function issueOpaqueClickAttribution(
       originatingSite:
         input.originatingSite?.trim() || "destinationcommandcenter.com",
       originatingPage: resolvedOriginatingPage,
+      placementId: resolvedPlacementId,
+      propertySlug: resolvedPropertySlug,
+      surface: resolvedSurface,
       tripDetails: inferredTripDetails,
       isTest,
       trafficClass,
@@ -727,6 +782,8 @@ export function recordOutboundClickFollow(
     isTest?: boolean;
     userAgent?: string | null;
     referer?: string | null;
+    placementId?: string | null;
+    propertySlug?: string | null;
   },
 ): OpaqueClickAttributionRecord | null {
   const norm = extractClickIdFromTrackingValue(clickIdInput) || clickIdInput.trim().toLowerCase();
@@ -738,6 +795,12 @@ export function recordOutboundClickFollow(
     rec.recordStage = "outbound_click";
     rec.followedAt = rec.followedAt || nowIso;
     rec.clickCount = (rec.clickCount || 0) + 1;
+    if (options?.placementId && !rec.placementId) {
+      rec.placementId = options.placementId.trim();
+    }
+    if (options?.propertySlug && !rec.propertySlug) {
+      rec.propertySlug = options.propertySlug.trim();
+    }
     if (
       isDemoOrAutomatedVerificationTraffic({
         isTest: options?.isTest || rec.isTest,
@@ -1050,13 +1113,24 @@ export function reconcilePartnerCsvBatchByClickId(params: {
 export function recordFunnelVisitorSession(input: {
   visitorId?: string | null;
   sourcePage?: string | null;
+  placementId?: string | null;
+  propertySlug?: string | null;
+  surface?: string | null;
   isTest?: boolean;
 }): FunnelVisitorRecord {
   const visitorId =
     input.visitorId?.trim() || `vis_${crypto.randomBytes(10).toString("hex")}`;
   const sourcePage = input.sourcePage?.trim() || "/transportation/colorado";
+  const placementId = input.placementId?.trim() || null;
+  const propertySlug = input.propertySlug?.trim() || null;
+  const surface = input.surface?.trim() || null;
   const isTest = Boolean(
-    input.isTest || /^(test|sim|qa)[-_]/i.test(visitorId),
+    input.isTest ||
+      /^(test|sim|qa)[-_]/i.test(visitorId) ||
+      isDemoOrAutomatedVerificationTraffic({
+        isTest: input.isTest,
+        originatingPage: sourcePage,
+      }),
   );
   const trafficClass: TrafficClass = isTest ? "test" : "production";
   const nowIso = new Date().toISOString();
@@ -1067,11 +1141,17 @@ export function recordFunnelVisitorSession(input: {
     if (existing) {
       existing.lastSeenAt = nowIso;
       existing.visitCount += 1;
+      if (placementId) existing.placementId = placementId;
+      if (propertySlug) existing.propertySlug = propertySlug;
+      if (surface) existing.surface = surface;
       return existing;
     }
     const created: FunnelVisitorRecord = {
       visitorId,
       sourcePage,
+      placementId,
+      propertySlug,
+      surface,
       trafficClass,
       isTest,
       firstSeenAt: nowIso,
@@ -1089,6 +1169,7 @@ function createEmptyFunnelClassMetrics(
   return {
     trafficClass,
     newVisitors: 0,
+    guestVisits: 0,
     recommendationsIssued: 0,
     recommendationOnlyRecords: 0,
     followedHandoffs: 0,
@@ -1108,13 +1189,33 @@ function createEmptyFunnelClassMetrics(
   };
 }
 
+function extractRecordPlacementId(click: OpaqueClickAttributionRecord): string | null {
+  return (
+    click.placementId?.trim() ||
+    click.tripDetails?.placementId?.trim() ||
+    null
+  );
+}
+
+function extractRecordPropertySlug(click: OpaqueClickAttributionRecord): string | null {
+  return (
+    click.propertySlug?.trim() ||
+    click.tripDetails?.propertySlug?.trim() ||
+    null
+  );
+}
+
 export function getFunnelMetricsReport(options?: {
   routeId?: string | null;
   originatingPage?: string | null;
+  placementId?: string | null;
+  propertySlug?: string | null;
 }): FunnelMetricsReport {
   const state = readDurableLedgerState();
   const filterRoute = options?.routeId?.trim().toUpperCase() || null;
   const filterPage = options?.originatingPage?.trim() || null;
+  const filterPlacement = options?.placementId?.trim() || null;
+  const filterProperty = options?.propertySlug?.trim() || null;
 
   const production = createEmptyFunnelClassMetrics("production");
   const test = createEmptyFunnelClassMetrics("test");
@@ -1122,6 +1223,8 @@ export function getFunnelMetricsReport(options?: {
   const visitors = Object.values(state.funnelVisitorsById || {});
   for (const vis of visitors) {
     if (filterPage && vis.sourcePage !== filterPage) continue;
+    if (filterPlacement && vis.placementId !== filterPlacement) continue;
+    if (filterProperty && vis.propertySlug !== filterProperty) continue;
     const isTestVisitor = Boolean(
       vis.isTest ||
         vis.trafficClass === "test" ||
@@ -1132,6 +1235,7 @@ export function getFunnelMetricsReport(options?: {
     );
     const bucket = isTestVisitor ? test : production;
     bucket.newVisitors += 1;
+    bucket.guestVisits += Math.max(1, vis.visitCount || 1);
   }
 
   const clicks = Object.values(state.opaqueClicksById || {});
@@ -1150,6 +1254,21 @@ export function getFunnelMetricsReport(options?: {
     }
     if (filterPage && click.originatingPage !== filterPage) {
       continue;
+    }
+    if (filterPlacement) {
+      const recPlacement = extractRecordPlacementId(click);
+      if (recPlacement !== filterPlacement) {
+        continue;
+      }
+    }
+    if (filterProperty) {
+      const recProp = extractRecordPropertySlug(click);
+      if (
+        recProp !== filterProperty &&
+        !String(click.originatingPage || "").includes(filterProperty)
+      ) {
+        continue;
+      }
     }
 
     const isTestRecord = Boolean(
@@ -1318,9 +1437,52 @@ export function getFunnelMetricsReport(options?: {
     filter: {
       routeId: filterRoute,
       originatingPage: filterPage,
+      placementId: filterPlacement,
+      propertySlug: filterProperty,
     },
     production,
     test,
   };
 }
+
+export function listAttributionRecordsForPlacement(options?: {
+  placementId?: string | null;
+  propertySlug?: string | null;
+  limit?: number;
+}): {
+  visitors: FunnelVisitorRecord[];
+  attributionRecords: OpaqueClickAttributionRecord[];
+} {
+  const state = readDurableLedgerState();
+  const filterPlacement = options?.placementId?.trim() || null;
+  const filterProperty = options?.propertySlug?.trim() || null;
+  const limit = typeof options?.limit === "number" && options.limit > 0 ? options.limit : 25;
+
+  const visitors = Object.values(state.funnelVisitorsById || {})
+    .filter((v) => {
+      if (filterPlacement && v.placementId !== filterPlacement) return false;
+      if (filterProperty && v.propertySlug !== filterProperty) return false;
+      return true;
+    })
+    .sort((a, b) => b.lastSeenAt.localeCompare(a.lastSeenAt))
+    .slice(0, limit);
+
+  const attributionRecords = Object.values(state.opaqueClicksById || {})
+    .filter((c) => {
+      if (filterPlacement && extractRecordPlacementId(c) !== filterPlacement) return false;
+      if (
+        filterProperty &&
+        extractRecordPropertySlug(c) !== filterProperty &&
+        !String(c.originatingPage || "").includes(filterProperty)
+      ) {
+        return false;
+      }
+      return true;
+    })
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .slice(0, limit);
+
+  return { visitors, attributionRecords };
+}
+
 

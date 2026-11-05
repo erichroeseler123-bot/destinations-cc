@@ -15,6 +15,14 @@ export async function GET(request: Request) {
   const clickId = url.searchParams.get("clickId")?.trim() || "";
   const isTestParam = url.searchParams.get("isTest") === "true";
   const targetParam = url.searchParams.get("target")?.trim() || "";
+  const placementIdParam =
+    url.searchParams.get("placementId")?.trim() ||
+    url.searchParams.get("placement")?.trim() ||
+    null;
+  const propertySlugParam =
+    url.searchParams.get("property")?.trim() ||
+    url.searchParams.get("propertySlug")?.trim() ||
+    null;
 
   if (!clickId) {
     return NextResponse.json(
@@ -31,6 +39,8 @@ export async function GET(request: Request) {
       userAgent,
       referer,
       isTest: isTestParam,
+      placementId: placementIdParam,
+      propertySlug: propertySlugParam,
     }) ?? getOpaqueClickAttributionById(clickId);
 
   if (!updated && targetParam && /^https?:\/\//i.test(targetParam)) {
@@ -49,6 +59,8 @@ export async function GET(request: Request) {
       evidenceVersion: "dcc_catalog_v2",
       originatingSite: "destinationcommandcenter.com",
       originatingPage: referer || "/tours",
+      placementId: placementIdParam,
+      propertySlug: propertySlugParam,
       provider,
       productCode: clickId,
       productDestinationUrl: targetParam,

@@ -23,6 +23,9 @@ import type {
 export interface FunnelVisitorRecord {
   visitorId: string;
   sourcePage: string;
+  placementId?: string | null;
+  propertySlug?: string | null;
+  surface?: string | null;
   trafficClass: "production" | "test";
   isTest: boolean;
   firstSeenAt: string;
