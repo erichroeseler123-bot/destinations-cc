@@ -25,13 +25,11 @@ export const HOTEL_CONCIERGE_CONFIGS: Record<string, HotelConciergePropertyConfi
     lng: -90.0681,
     defaultRequiresHotelPickup: true,
     approvedTourIds: [
-      "dcc:tour:nola:cajun-encounters-honey-island-swamp",
-      "dcc:tour:nola:steamboat-natchez-jazz-cruise",
-      "dcc:tour:nola:preservation-hall-jazz-session",
+      "dcc:tour:viator:6953SWAMPTRANS",
       "dcc:tour:viator:3780AIRBOAT",
       "dcc:tour:viator:3780SWAMP",
-      "dcc:tour:viator:6953SWAMPTRANS",
-      "dcc:tour:nola:lafitte-custom-bayou-charter-unknowns",
+      "dcc:tour:viator:3780STEAM",
+      "dcc:tour:viator:6455NOLAAIR",
     ],
     approvedCategories: [
       "Swamp & Bayou",
@@ -40,7 +38,7 @@ export const HOTEL_CONCIERGE_CONFIGS: Record<string, HotelConciergePropertyConfi
       "Food, Drink & Culture",
     ],
     conciergeDeskNote:
-      "Royal Street shuttle pickup zone is directly outside main lobby doors; Toulouse Street Wharf and Preservation Hall are within a 6-minute walk.",
+      "Royal Street shuttle pickup zone is directly outside main lobby doors; Toulouse Street Wharf is within a 6-minute walk.",
   },
   "roosevelt-new-orleans": {
     propertySlug: "roosevelt-new-orleans",
@@ -53,11 +51,11 @@ export const HOTEL_CONCIERGE_CONFIGS: Record<string, HotelConciergePropertyConfi
     lng: -90.0725,
     defaultRequiresHotelPickup: true,
     approvedTourIds: [
-      "dcc:tour:nola:cajun-encounters-honey-island-swamp",
-      "dcc:tour:nola:steamboat-natchez-jazz-cruise",
-      "dcc:tour:nola:preservation-hall-jazz-session",
-      "dcc:tour:viator:3780AIRBOAT",
       "dcc:tour:viator:6953SWAMPTRANS",
+      "dcc:tour:viator:3780AIRBOAT",
+      "dcc:tour:viator:3780SWAMP",
+      "dcc:tour:viator:3780STEAM",
+      "dcc:tour:viator:6455NOLAAIR",
     ],
     approvedCategories: ["Swamp & Bayou", "Music & Riverboat Cruises"],
     conciergeDeskNote:
@@ -74,10 +72,11 @@ export const HOTEL_CONCIERGE_CONFIGS: Record<string, HotelConciergePropertyConfi
     lng: -90.0637,
     defaultRequiresHotelPickup: true,
     approvedTourIds: [
-      "dcc:tour:nola:cajun-encounters-honey-island-swamp",
-      "dcc:tour:nola:steamboat-natchez-jazz-cruise",
       "dcc:tour:viator:6953SWAMPTRANS",
       "dcc:tour:viator:3780SWAMP",
+      "dcc:tour:viator:3780AIRBOAT",
+      "dcc:tour:viator:3780STEAM",
+      "dcc:tour:viator:6455NOLAAIR",
     ],
     approvedCategories: ["Swamp & Bayou", "Music & Riverboat Cruises", "Guided Sightseeing & Excursions"],
     conciergeDeskNote:
@@ -119,12 +118,16 @@ export const HOTEL_CONCIERGE_CONFIGS: Record<string, HotelConciergePropertyConfi
     lng: -104.9968,
     defaultRequiresHotelPickup: false,
     approvedTourIds: [
-      "dcc:tour:gosno:winter-park-express-shuttle",
-      "dcc:tour:parr:red-rocks-amphitheatre-shuttle",
+      "dcc:tour:gosno:den-winter-park-suv",
+      "dcc:tour:gosno:den-winter-park-van",
+      "dcc:tour:gosno:den-breckenridge-suv",
+      "dcc:tour:gosno:den-vail-suv",
+      "dcc:tour:parr:rr-parr-private-suburban-6pax",
+      "dcc:tour:parr:rr-parr-private-van-10pax",
     ],
     approvedCategories: ["Mountain & Venue Transfers", "Guided Sightseeing & Excursions"],
     conciergeDeskNote:
-      "Two blocks from Denver Union Station concourse for GoSno Winter Park ski transfers and PARR Red Rocks shuttles.",
+      "Door-to-door private SUV and passenger van pickup available for GoSno ski resort transfers and Party at Red Rocks private concert charters.",
   },
 };
 

@@ -50,6 +50,7 @@ export type DccLiveAvailabilityRequest = {
   infantCount?: number;
   youthCount?: number;
   ageBands?: ProductAgeBandRule[];
+  allowedProductOptionCodes?: string[];
   currency?: string;
 };
 
@@ -384,7 +385,16 @@ export async function checkDccLiveAvailability(
     });
     const checkResult = (rawResult || {}) as AvailabilityResponse;
 
-    const items = Array.isArray(checkResult.bookableItems) ? checkResult.bookableItems : [];
+    const allowedSet =
+      Array.isArray(req.allowedProductOptionCodes) && req.allowedProductOptionCodes.length > 0
+        ? new Set(req.allowedProductOptionCodes.map((c) => c.trim().toUpperCase()))
+        : null;
+
+    const rawItems = Array.isArray(checkResult.bookableItems) ? checkResult.bookableItems : [];
+    const items = allowedSet
+      ? rawItems.filter((item) => allowedSet.has(String(item.productOptionCode || "").trim().toUpperCase()))
+      : rawItems;
+
     const options = items.map((item) => ({
       optionCode: item.productOptionCode,
       ratePlanCode: item.ratePlanCode,
@@ -393,8 +403,12 @@ export async function checkDccLiveAvailability(
       retailPrice: item.totalPrice?.price?.recommendedRetailPrice,
     }));
 
-    const isAvailable = options.some((opt) => opt.available);
-    const firstOption = options.find((opt) => opt.available) || options[0];
+    const availableOptions = options.filter((opt) => opt.available);
+    const isAvailable = availableOptions.length > 0;
+    const pricedAvailable = availableOptions
+      .filter((opt) => typeof opt.retailPrice === "number" && Number.isFinite(opt.retailPrice))
+      .sort((a, b) => (a.retailPrice as number) - (b.retailPrice as number));
+    const bestOption = pricedAvailable[0] || availableOptions[0] || options[0];
 
     // Canonical destination URL with tracked attribution
     const cached = readVerifiedProductFromCache(viatorCode);
@@ -415,7 +429,7 @@ export async function checkDccLiveAvailability(
       availabilityStatus: isAvailable ? "available" : "sold_out",
       productCode: viatorCode,
       bookingDate: req.bookingDate,
-      retailPrice: firstOption?.retailPrice,
+      retailPrice: bestOption?.retailPrice,
       currency: checkResult.currency || currency,
       paxMixSent: paxMixResult.paxMix,
       ineligibleChildAges: [],

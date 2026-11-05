@@ -2,22 +2,41 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   EARTHOS_DESTINATION_NODES,
+  QUARANTINED_TOUR_IDS,
   getDurableCatalogSummaryReport,
   getDurableTourByIdOrAlias,
   queryDurableTourCatalog,
 } from "../../lib/dcc/catalog/durableCatalogStore";
-import { matchToursForTrip } from "../../lib/dcc/catalog/matcher";
+import {
+  evaluateCruiseScheduleFit,
+  matchToursForTrip,
+} from "../../lib/dcc/catalog/matcher";
 import { getHotelConciergeConfig } from "../../lib/dcc/catalog/hotelConfigs";
 import {
   getFunnelMetricsReport,
   resetOpaqueAttributionLedgerForTests,
 } from "../../lib/dcc/commerce/opaqueAttributionLedger";
 
-test("1. Durable Shared Tour Catalog covers all 15 EarthOS destinations and preserves compatibility aliases", async () => {
+test("1. Durable Shared Tour Catalog covers all 15 EarthOS destinations, reports sampled vs complete coverage accurately, and preserves compatibility aliases", async () => {
   const summary = await getDurableCatalogSummaryReport();
-  assert.ok(summary.totalImportedRecords >= 150, `Expected >= 150 records, got ${summary.totalImportedRecords}`);
+  assert.ok(
+    summary.totalImportedRecords >= 170,
+    `Expected >= 170 records, got ${summary.totalImportedRecords}`,
+  );
   assert.equal(summary.totalDestinationsCovered, 15);
   assert.equal(summary.wtaStatus, "paused");
+  assert.ok(summary.quarantinedRecordsExcludedCount >= 6);
+  assert.ok(
+    summary.destinationCoverageBreakdown.sampledDestinationsCount +
+      summary.destinationCoverageBreakdown.completeDestinationsCount ===
+      15,
+  );
+  // New Orleans has 714+ total products on Viator vs 13 imported -> must be reported as sampled, never complete
+  assert.equal(summary.byDestination["new-orleans"].coverageStatus, "sampled");
+  assert.ok(
+    (summary.byDestination["new-orleans"].providerTotalAvailableCount ?? 0) >
+      summary.byDestination["new-orleans"].importedCount,
+  );
 
   for (const slug of Object.keys(EARTHOS_DESTINATION_NODES)) {
     assert.ok(summary.byDestination[slug], `Missing destination coverage for ${slug}`);
@@ -28,9 +47,10 @@ test("1. Durable Shared Tour Catalog covers all 15 EarthOS destinations and pres
     );
   }
 
-  // Compatibility aliases from lib/viator/mappings.ts resolve to durable catalog records
+  // Compatibility aliases from lib/viator/mappings.ts resolve to real Viator catalog records
   const byInternalAlias = await getDurableTourByIdOrAlias("honey-island-swamp-pickup");
   assert.ok(byInternalAlias, "Expected honey-island-swamp-pickup alias to resolve");
+  assert.equal(byInternalAlias.tourId, "dcc:tour:viator:6953SWAMPTRANS");
   assert.equal(byInternalAlias.destinationSlug, "new-orleans");
 
   const byViatorCode = await getDurableTourByIdOrAlias("331813P1");
@@ -39,139 +59,246 @@ test("1. Durable Shared Tour Catalog covers all 15 EarthOS destinations and pres
   assert.equal(byViatorCode.capabilityTier, "live_check_referral");
 });
 
-test("2. New Orleans acceptance case: distinct channel offers, non-commission discovery listings, and explicit unknowns", async () => {
-  const nolaCatalog = await queryDurableTourCatalog({ destinationSlug: "new-orleans" });
-  assert.ok(nolaCatalog.records.length >= 15);
-
-  // Underlying tour with distinct channel-specific offers (WTS, WNO, Operator Direct)
-  const honeyIsland = await getDurableTourByIdOrAlias("dcc:tour:nola:cajun-encounters-honey-island-swamp");
-  assert.ok(honeyIsland);
-  assert.ok(honeyIsland.channelOffers.length >= 3);
-  const wtsOffer = honeyIsland.channelOffers.find((o) => o.channelId === "welcometotheswamp");
-  const directOffer = honeyIsland.channelOffers.find((o) => o.channelId === "operator_direct");
-  assert.ok(wtsOffer);
-  assert.ok(directOffer);
-  assert.equal(wtsOffer.fromPriceCents, 6300);
-  assert.equal(directOffer.fromPriceCents, 3600);
-  assert.equal(wtsOffer.freeCancellation, true);
-  assert.equal(directOffer.freeCancellation, false);
-
-  // Non-commission discovery listing included
-  const presHall = await getDurableTourByIdOrAlias("dcc:tour:nola:preservation-hall-jazz-session");
-  assert.ok(presHall);
-  assert.equal(presHall.capabilityTier, "discovery_only");
-  assert.equal(presHall.commissionAuthorized, false);
-  assert.equal(presHall.locationPrecision, "exact");
-  assert.equal(presHall.meetingPointLat, 29.9585);
-
-  // Explicit unknowns preserved as null (never defaulted to 180m or freeCancellation: true)
-  const customCharter = await getDurableTourByIdOrAlias(
+test("2. Quarantined acceptance fixtures and unsupported operator listings are excluded from public catalog queries", async () => {
+  const expectedQuarantined = [
     "dcc:tour:nola:lafitte-custom-bayou-charter-unknowns",
-  );
-  assert.ok(customCharter);
-  assert.equal(customCharter.durationMinutes, null);
-  assert.equal(customCharter.freeCancellation, null);
-  assert.equal(customCharter.hasHotelPickup, null);
-  assert.equal(customCharter.meetingPointLat, null);
-  assert.equal(customCharter.locationPrecision, "unknown");
+    "dcc:tour:nola:preservation-hall-jazz-session",
+    "dcc:tour:nola:steamboat-natchez-jazz-cruise",
+    "dcc:tour:nola:cajun-encounters-honey-island-swamp",
+    "dcc:tour:gosno:winter-park-express-shuttle",
+    "dcc:tour:parr:red-rocks-amphitheatre-shuttle",
+  ];
+
+  for (const qId of expectedQuarantined) {
+    assert.ok(QUARANTINED_TOUR_IDS.has(qId), `Expected ${qId} in QUARANTINED_TOUR_IDS`);
+    const directLookup = await getDurableTourByIdOrAlias(qId);
+    assert.equal(directLookup, null, `Expected quarantined record ${qId} to return null`);
+  }
+
+  const allCatalog = await queryDurableTourCatalog({ limit: 500 });
+  for (const rec of allCatalog.records) {
+    assert.equal(
+      QUARANTINED_TOUR_IDS.has(rec.tourId),
+      false,
+      `Quarantined record ${rec.tourId} leaked into queryDurableTourCatalog`,
+    );
+  }
 });
 
-test("3. Shared Trip-Matching Service produces consistent facts across Hotel Concierge, DCC, WNO, WTS, and Cruise Promenade", async () => {
-  resetOpaqueAttributionLedgerForTests();
-  const hotelCfg = getHotelConciergeConfig("hotel-monteleone-nola");
+test("3. Authoritative GoSno and Party at Red Rocks published offers replace hardcoded $89/$59 records with flat_rate_per_vehicle pricing, terms, and capacity limits", async () => {
+  // GoSno Winter Park Private SUV ($349 flat per vehicle up to 6 guests, $698 round-trip)
+  const wpSuv = await getDurableTourByIdOrAlias("dcc:tour:gosno:den-winter-park-suv");
+  assert.ok(wpSuv, "Expected authoritative GoSno DEN-WINTER-PARK-SUV record");
+  assert.equal(wpSuv.fromPriceCents, 34900);
+  assert.equal(wpSuv.priceBasis, "flat_rate_per_vehicle");
+  assert.equal(wpSuv.capabilityTier, "attributable_referral");
+  assert.equal(wpSuv.constraints.maxPassengers, 6);
+  assert.equal(wpSuv.cancellationCutoffHours, 48);
+  assert.ok((wpSuv.productOptions || []).length >= 2, "Expected one-way and round-trip options");
+  assert.equal((wpSuv.serviceDetails as any)?.seatingLimit, 6);
+  assert.equal((wpSuv.serviceDetails as any)?.pricingModel, "flat_rate_per_vehicle");
 
-  const hotelMatch = await matchToursForTrip({
+  // GoSno Winter Park Private Van ($499 flat per vehicle up to 10 guests)
+  const wpVan = await getDurableTourByIdOrAlias("dcc:tour:gosno:den-winter-park-van");
+  assert.ok(wpVan, "Expected authoritative GoSno DEN-WINTER-PARK-VAN record");
+  assert.equal(wpVan.fromPriceCents, 49900);
+  assert.equal(wpVan.priceBasis, "flat_rate_per_vehicle");
+  assert.equal(wpVan.constraints.maxPassengers, 10);
+
+  // Party at Red Rocks Private Suburban ($399 flat round-trip for 1-6 guests, sharedSeatService: false)
+  const parrSuburban = await getDurableTourByIdOrAlias("dcc:tour:parr:rr-parr-private-suburban-6pax");
+  assert.ok(parrSuburban, "Expected authoritative PARR Suburban 6pax record");
+  assert.equal(parrSuburban.fromPriceCents, 39900);
+  assert.equal(parrSuburban.priceBasis, "flat_rate_per_vehicle");
+  assert.equal(parrSuburban.capabilityTier, "attributable_referral");
+  assert.equal(parrSuburban.constraints.maxPassengers, 6);
+  assert.equal((parrSuburban.serviceDetails as any)?.sharedSeatService, false);
+
+  // Party at Red Rocks Private Van ($599 flat round-trip for 1-10 guests, sharedSeatService: false)
+  const parrVan = await getDurableTourByIdOrAlias("dcc:tour:parr:rr-parr-private-van-10pax");
+  assert.ok(parrVan, "Expected authoritative PARR Van 10pax record");
+  assert.equal(parrVan.fromPriceCents, 59900);
+  assert.equal(parrVan.priceBasis, "flat_rate_per_vehicle");
+  assert.equal(parrVan.constraints.maxPassengers, 10);
+  assert.equal((parrVan.serviceDetails as any)?.sharedSeatService, false);
+
+  // Party size capacity enforcement + NO hardcoded available=true, 3 departures, or 08:00
+  const denverGroupOf8 = await matchToursForTrip({
+    destination: "denver-colorado",
+    date: "2026-12-15",
+    adults: 8,
+    childAges: [],
+    approvedTourIds: [
+      "dcc:tour:gosno:den-winter-park-suv",
+      "dcc:tour:gosno:den-winter-park-van",
+      "dcc:tour:parr:rr-parr-private-suburban-6pax",
+      "dcc:tour:parr:rr-parr-private-van-10pax",
+    ],
+    enableShortlistLiveCheck: true,
+    isTest: true,
+  });
+
+  // 6-passenger SUVs must be marked ineligible for a party of 8
+  const ineligibleIds = denverGroupOf8.ineligibleOptions.map((o) => o.tourId);
+  assert.ok(ineligibleIds.includes("dcc:tour:gosno:den-winter-park-suv"));
+  assert.ok(ineligibleIds.includes("dcc:tour:parr:rr-parr-private-suburban-6pax"));
+
+  // 10-passenger Vans remain eligible for a party of 8, and their liveCheck is NEVER fabricated as available=true / 3 slots / 08:00
+  const matchedVanIds = denverGroupOf8.options.map((o) => o.tourId);
+  assert.ok(matchedVanIds.includes("dcc:tour:gosno:den-winter-park-van"));
+  assert.ok(matchedVanIds.includes("dcc:tour:parr:rr-parr-private-van-10pax"));
+
+  for (const opt of denverGroupOf8.options) {
+    assert.equal(opt.pricing.priceBasis, "flat_rate_per_vehicle");
+    assert.equal(opt.shortlistLiveCheck?.checked, false);
+    assert.equal(opt.shortlistLiveCheck?.status, "unknown_unchecked");
+    assert.equal(opt.shortlistLiveCheck?.available, null);
+    assert.equal(opt.shortlistLiveCheck?.bookableSlotsCount, null);
+    assert.equal(opt.shortlistLiveCheck?.earliestStartTime, null);
+  }
+});
+
+test("4. Option-level pickup matching: optional transportation is never presented as included in the lowest-priced option", async () => {
+  // Check 6455NOLAAIR (lowest price $49.40 is Large Airboat - No Pickup; pickup option 840AMLBWT is $80.10)
+  // and 3780AIRBOAT (lowest price $59.00 is Large Boat - No Transportation; pickup option TG1 is $90.00)
+  const airboat6455 = await getDurableTourByIdOrAlias("dcc:tour:viator:6455NOLAAIR");
+  assert.ok(airboat6455);
+  assert.equal(airboat6455.hasHotelPickup, true);
+  assert.equal(airboat6455.lowestPriceIncludesPickup, false);
+
+  const airboat3780 = await getDurableTourByIdOrAlias("dcc:tour:viator:3780AIRBOAT");
+  assert.ok(airboat3780);
+  assert.equal(airboat3780.hasHotelPickup, true);
+  assert.equal(airboat3780.lowestPriceIncludesPickup, false);
+
+  // Case A: requiresHotelPickup = false -> selects lowest-priced self-drive option ($49.40 / $59.00) with includesPickup=false
+  const noPickupMatch = await matchToursForTrip({
     destination: "new-orleans",
     date: "2026-11-18",
     adults: 2,
-    childAges: [5, 10],
+    childAges: [],
+    requiresHotelPickup: false,
+    approvedTourIds: ["dcc:tour:viator:6455NOLAAIR", "dcc:tour:viator:3780AIRBOAT"],
+    enableShortlistLiveCheck: false,
+    isTest: true,
+  });
+
+  const opt6455NoPickup = noPickupMatch.options.find(
+    (o) => o.tourId === "dcc:tour:viator:6455NOLAAIR",
+  );
+  assert.ok(opt6455NoPickup);
+  assert.equal(opt6455NoPickup.pricing.fromPriceCents, 4940);
+  assert.equal(opt6455NoPickup.pricing.lowestPriceIncludesPickup, false);
+  assert.equal(opt6455NoPickup.selectedProductOption?.optionCode, "6455NOLAAIRSLARGE945");
+  assert.equal(opt6455NoPickup.selectedProductOption?.includesPickup, false);
+
+  const opt3780NoPickup = noPickupMatch.options.find(
+    (o) => o.tourId === "dcc:tour:viator:3780AIRBOAT",
+  );
+  assert.ok(opt3780NoPickup);
+  assert.equal(opt3780NoPickup.pricing.fromPriceCents, 5900);
+  assert.equal(opt3780NoPickup.pricing.lowestPriceIncludesPickup, false);
+  assert.equal(opt3780NoPickup.selectedProductOption?.optionCode, "TG15");
+  assert.equal(opt3780NoPickup.selectedProductOption?.includesPickup, false);
+  assert.equal(opt3780NoPickup.duration.durationMinutes, 90);
+
+  // Case B: requiresHotelPickup = true -> selects pickup-inclusive option and quotes its higher pickup price ($80.10 / $90.00) and longer duration (240m / 225m)
+  const hotelCfg = getHotelConciergeConfig("hotel-monteleone-nola");
+  const withPickupMatch = await matchToursForTrip({
+    destination: "new-orleans",
+    date: "2026-11-18",
+    adults: 2,
+    childAges: [],
     requiresHotelPickup: true,
     hotelName: hotelCfg.propertyName,
     hotelLat: hotelCfg.lat,
     hotelLng: hotelCfg.lng,
-    approvedTourIds: hotelCfg.approvedTourIds,
+    approvedTourIds: ["dcc:tour:viator:6455NOLAAIR", "dcc:tour:viator:3780AIRBOAT"],
     surface: "hotel_concierge",
     propertySlug: hotelCfg.propertySlug,
     enableShortlistLiveCheck: false,
     isTest: true,
   });
 
-  const dccMatch = await matchToursForTrip({
-    destination: "new-orleans",
-    date: "2026-11-18",
-    adults: 2,
-    childAges: [5, 10],
-    requiresHotelPickup: true,
-    hotelName: hotelCfg.propertyName,
-    hotelLat: hotelCfg.lat,
-    hotelLng: hotelCfg.lng,
-    approvedTourIds: hotelCfg.approvedTourIds,
-    surface: "dcc",
-    propertySlug: hotelCfg.propertySlug,
-    enableShortlistLiveCheck: false,
-    isTest: true,
-  });
+  const opt6455WithPickup = withPickupMatch.options.find(
+    (o) => o.tourId === "dcc:tour:viator:6455NOLAAIR",
+  );
+  assert.ok(opt6455WithPickup);
+  assert.equal(opt6455WithPickup.selectedProductOption?.optionCode, "840AMLBWT");
+  assert.equal(opt6455WithPickup.selectedProductOption?.includesPickup, true);
+  assert.equal(opt6455WithPickup.pricing.fromPriceCents, 8010);
+  assert.equal(opt6455WithPickup.duration.durationMinutes, 240);
 
-  assert.equal(hotelMatch.destination.earthosDestinationNodeId, "earthos:node:us-la-new-orleans");
-  assert.equal(hotelMatch.destination.timeZone, "America/Chicago");
-  assert.equal(hotelMatch.options.length, dccMatch.options.length);
-
-  // Same underlying tour produces identical duration, pickup distance, and party composition facts
-  const hotelSwamp = hotelMatch.options.find(
-    (o) => o.tourId === "dcc:tour:nola:cajun-encounters-honey-island-swamp",
+  const opt3780WithPickup = withPickupMatch.options.find(
+    (o) => o.tourId === "dcc:tour:viator:3780AIRBOAT",
   );
-  const dccSwamp = dccMatch.options.find(
-    (o) => o.tourId === "dcc:tour:nola:cajun-encounters-honey-island-swamp",
-  );
-  assert.ok(hotelSwamp);
-  assert.ok(dccSwamp);
-  assert.equal(hotelSwamp.duration.durationMinutes, dccSwamp.duration.durationMinutes);
-  assert.equal(
-    hotelSwamp.pickupAndLocation.distanceFromGuestKm,
-    dccSwamp.pickupAndLocation.distanceFromGuestKm,
-  );
-  assert.deepEqual(hotelSwamp.partyCompositionApplied, dccSwamp.partyCompositionApplied);
-  assert.ok(hotelSwamp.bookingPath.clickId?.startsWith("clk_"));
-
-  // Child age 5 is below minAgeYears (6) on the Lafitte custom skiff charter -> marked ineligible!
-  const ineligibleSkiff = hotelMatch.ineligibleOptions.find(
-    (o) => o.tourId === "dcc:tour:nola:lafitte-custom-bayou-charter-unknowns",
-  );
-  assert.ok(ineligibleSkiff, "Expected custom skiff charter (minAge 6) to be ineligible for child age 5");
-  assert.equal(ineligibleSkiff.suitability, "ineligible");
+  assert.ok(opt3780WithPickup);
+  assert.equal(opt3780WithPickup.selectedProductOption?.optionCode, "TG1");
+  assert.equal(opt3780WithPickup.selectedProductOption?.includesPickup, true);
+  assert.equal(opt3780WithPickup.pricing.fromPriceCents, 9000);
+  assert.equal(opt3780WithPickup.duration.durationMinutes, 225);
 });
 
-test("4. Cruise port window and explicit unknown duration handling + QA ledger exclusion", async () => {
-  // Tight 2.5-hour cruise window (08:00 arrival, 10:30 all-aboard = 150m window)
-  const tightPortMatch = await matchToursForTrip({
+test("5. Cruise schedule fit requires actual departure times, duration, transfer buffers, and return deadline; otherwise returns needs_confirmation", async () => {
+  resetOpaqueAttributionLedgerForTests();
+
+  // Without live date-specific departure time verification -> must return needs_confirmation (NEVER recommended)
+  const unverifiedCruiseMatch = await matchToursForTrip({
     destination: "new-orleans",
     date: "2026-11-18",
     adults: 2,
     childAges: [8],
     shipArrival: "08:00",
-    allAboardTime: "10:30",
+    allAboardTime: "16:30",
     surface: "cruisepromenade",
     enableShortlistLiveCheck: false,
     isTest: true,
   });
 
-  // Custom charter has durationMinutes: null -> flagged as needs_confirmation with missing: unknown_duration_minutes
-  const unknownDurOption = tightPortMatch.options.find(
-    (o) => o.tourId === "dcc:tour:nola:lafitte-custom-bayou-charter-unknowns",
-  );
-  assert.ok(unknownDurOption);
-  assert.equal(unknownDurOption.suitability, "needs_confirmation");
-  assert.ok(unknownDurOption.missingInformation.includes("unknown_duration_minutes"));
+  assert.ok(unverifiedCruiseMatch.options.length > 0);
+  for (const opt of unverifiedCruiseMatch.options) {
+    assert.equal(
+      opt.suitability,
+      "needs_confirmation",
+      `Expected ${opt.tourId} without date-verified departure times to be needs_confirmation`,
+    );
+    assert.equal(opt.cruiseScheduleFit?.fitStatus, "needs_confirmation");
+    assert.ok(
+      opt.missingInformation.includes("date_specific_departure_times_unverified") ||
+        opt.missingInformation.includes("unknown_duration_minutes"),
+    );
+  }
 
-  // Cajun Encounters is 135m + 120m buffer = 255m > 150m window -> marked ineligible!
-  const tooLongSwamp = tightPortMatch.ineligibleOptions.find(
-    (o) => o.tourId === "dcc:tour:nola:cajun-encounters-honey-island-swamp",
-  );
-  assert.ok(tooLongSwamp);
-  assert.equal(tooLongSwamp.suitability, "ineligible");
+  // Direct verification of evaluateCruiseScheduleFit with verifiedDepartureTimes:
+  // 1. Verified departure time 10:00 with 120m duration, 30m debark + 60m transfer before (ready 09:30), 60m transfer after (back at pier 13:00), 90m safety margin before 16:30 all-aboard (latest return 15:00) -> fits!
+  const fitsResult = evaluateCruiseScheduleFit({
+    shipArrival: "08:00",
+    shipDeparture: "17:00",
+    allAboardTime: "16:30",
+    durationMinutes: 120,
+    transferBeforeMinutes: 60,
+    transferAfterMinutes: 60,
+    verifiedDepartureTimes: ["10:00", "14:00"],
+  });
+  assert.equal(fitsResult.fitStatus, "recommended");
+  assert.deepEqual(fitsResult.fittingDepartureTimes, ["10:00"]);
+
+  // 2. Only late departure time 14:00 (returns 14:00 + 120m + 60m = 17:00 > 15:00 deadline) -> ineligible!
+  const missesResult = evaluateCruiseScheduleFit({
+    shipArrival: "08:00",
+    shipDeparture: "17:00",
+    allAboardTime: "16:30",
+    durationMinutes: 120,
+    transferBeforeMinutes: 60,
+    transferAfterMinutes: 60,
+    verifiedDepartureTimes: ["14:00"],
+  });
+  assert.equal(missesResult.fitStatus, "ineligible");
+  assert.deepEqual(missesResult.fittingDepartureTimes, []);
 
   // Verify production funnel metrics report excludes all test clicks (isTest: true)
   const prodReport = getFunnelMetricsReport();
+  assert.equal(prodReport.production.followedHandoffs, 0);
   assert.equal(prodReport.production.confirmedPaidBookings, 0);
   assert.equal(prodReport.production.grossConfirmedRevenueUsd, 0);
   assert.ok(prodReport.test.followedHandoffs > 0);

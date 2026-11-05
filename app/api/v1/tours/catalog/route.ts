@@ -6,7 +6,10 @@ import {
   queryDurableTourCatalog,
   type TourCapabilityTier,
 } from "@/lib/dcc/catalog/durableCatalogStore";
-import { runUniversalCatalogIngestion } from "@/lib/dcc/catalog/ingest";
+import {
+  runIncrementalViatorCatalogRefresh,
+  runUniversalCatalogIngestion,
+} from "@/lib/dcc/catalog/ingest";
 
 export const dynamic = "force-dynamic";
 
@@ -105,21 +108,48 @@ export async function POST(request: NextRequest) {
     }
 
     const body = (await request.json().catch(() => ({}))) as {
+      mode?: "full_or_paginated" | "incremental_refresh";
+      cursor?: string;
+      count?: number;
       destinations?: string[];
       perDestinationLimit?: number;
       enrichDetailLimitPerDestination?: number;
+      startOffset?: number;
+      maxPagesPerDestination?: number;
+      resumeFromCheckpoint?: boolean;
     };
+
+    if (body.mode === "incremental_refresh") {
+      const incRun = await runIncrementalViatorCatalogRefresh({
+        cursor: body.cursor,
+        count: body.count,
+      });
+      const summary = await getDurableCatalogSummaryReport();
+      return NextResponse.json(
+        {
+          ok: true,
+          mode: "incremental_refresh",
+          incrementalRun: incRun,
+          summary,
+        },
+        { status: 200, headers: CORS_HEADERS },
+      );
+    }
 
     const syncRes = await runUniversalCatalogIngestion({
       destinations: body.destinations,
-      perDestinationLimit: body.perDestinationLimit ?? 10,
-      enrichDetailLimitPerDestination: body.enrichDetailLimitPerDestination ?? 3,
+      perDestinationLimit: body.perDestinationLimit ?? 12,
+      enrichDetailLimitPerDestination: body.enrichDetailLimitPerDestination ?? 6,
+      startOffset: body.startOffset,
+      maxPagesPerDestination: body.maxPagesPerDestination,
+      resumeFromCheckpoint: body.resumeFromCheckpoint,
     });
     const summary = await getDurableCatalogSummaryReport();
 
     return NextResponse.json(
       {
         ok: true,
+        mode: "full_or_paginated",
         upsertedCount: syncRes.upsertedCount,
         persistedToPostgres: syncRes.persistedToPostgres,
         summary,

@@ -2408,12 +2408,14 @@ export const dccTourCatalog = pgTable(
     durationMinutes: integer("duration_minutes"),
     durationRawText: text("duration_raw_text"),
     fromPriceCents: integer("from_price_cents"),
+    priceBasis: text("price_basis").notNull().default("per_person"),
     currency: text("currency").notNull().default("USD"),
     freeCancellation: boolean("free_cancellation"),
     cancellationPolicyType: text("cancellation_policy_type"),
     cancellationCutoffHours: integer("cancellation_cutoff_hours"),
     cancellationSummary: text("cancellation_summary"),
     hasHotelPickup: boolean("has_hotel_pickup"),
+    lowestPriceIncludesPickup: boolean("lowest_price_includes_pickup"),
     pickupType: text("pickup_type"),
     pickupSummary: text("pickup_summary"),
     meetingPointName: text("meeting_point_name"),
@@ -2431,6 +2433,14 @@ export const dccTourCatalog = pgTable(
       .$type<Array<Record<string, unknown>>>()
       .notNull()
       .default([]),
+    productOptionsJson: jsonb("product_options_json")
+      .$type<Array<Record<string, unknown>>>()
+      .notNull()
+      .default([]),
+    serviceDetailsJson: jsonb("service_details_json")
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .default({}),
     inclusionsJson: jsonb("inclusions_json").$type<string[]>().notNull().default([]),
     exclusionsJson: jsonb("exclusions_json").$type<string[]>().notNull().default([]),
     primaryImageUrl: text("primary_image_url"),
@@ -2438,6 +2448,8 @@ export const dccTourCatalog = pgTable(
     reviewCount: integer("review_count"),
     bookingUrl: text("booking_url").notNull(),
     provenanceJson: jsonb("provenance_json").$type<Record<string, unknown>>().notNull().default({}),
+    quarantined: boolean("quarantined").notNull().default(false),
+    quarantineReason: text("quarantine_reason"),
     active: boolean("active").notNull().default(true),
     lastVerifiedAt: timestamp("last_verified_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

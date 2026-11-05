@@ -27,7 +27,7 @@ type ViatorClient = {
   listTags(): Promise<ViatorTagCatalog>;
   searchProducts(input: Record<string, unknown>): Promise<unknown>;
   getProductDetail(productCode: string, options?: { campaignValue?: string }): Promise<unknown>;
-  getProductsModifiedSince(cursor?: string): Promise<unknown>;
+  getProductsModifiedSince(cursor?: string, count?: number): Promise<unknown>;
   getAvailabilitySchedulesModifiedSince(cursor?: string): Promise<unknown>;
   getProductSchedules(productCode: string): Promise<unknown>;
   checkAvailability(input: Record<string, unknown>): Promise<unknown>;
@@ -214,8 +214,14 @@ export function getViatorClient(): ViatorClient {
       return request(`/products/${encodeURIComponent(productCode)}${campaignParam}`);
     },
 
-    async getProductsModifiedSince(cursor?: string) {
-      return request(`/products/modified-since${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ""}`);
+    async getProductsModifiedSince(cursor?: string, count?: number) {
+      const qs = new URLSearchParams();
+      if (cursor) qs.set("cursor", cursor);
+      if (typeof count === "number" && Number.isFinite(count) && count > 0) {
+        qs.set("count", String(count));
+      }
+      const query = qs.toString();
+      return request(`/products/modified-since${query ? `?${query}` : ""}`);
     },
 
     async getAvailabilitySchedulesModifiedSince(cursor?: string) {

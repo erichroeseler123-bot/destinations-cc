@@ -3,11 +3,12 @@ import {
   resolveEarthOSDestinationNode,
   type ChannelOffer,
   type DurableTourRecord,
+  type PriceBasis,
   type TourCapabilityTier,
+  type TourProductOptionRecord,
 } from "./durableCatalogStore";
 import { buildViatorPaxMix, checkDccLiveAvailability } from "@/lib/dcc/internal/dccViatorAdapter";
 import { fetchAvailabilitiesForItem } from "@/lib/dcc/liveSlots/fareharbor";
-import { validateCruiseSafetyWindow } from "@/lib/viator/verified-product-cache";
 import { appendViatorAttribution } from "@/lib/viator/links";
 import { issueOpaqueClickAttribution } from "@/lib/dcc/commerce/opaqueAttributionLedger";
 import {
@@ -53,13 +54,29 @@ export type TripMatchRequest = {
 
 export type ShortlistLiveStatus = {
   checked: boolean;
+  status: "verified_available" | "verified_unavailable" | "unknown_unchecked" | "unknown_error";
   provider: string;
   available: boolean | null;
-  bookableSlotsCount: number;
+  bookableSlotsCount: number | null;
   earliestStartTime: string | null;
+  startTimes: string[];
   liveFromPriceCents: number | null;
   latencyMs: number;
   note: string;
+};
+
+export type CruiseScheduleFitEvaluation = {
+  evaluated: boolean;
+  fitStatus: "recommended" | "needs_confirmation" | "ineligible" | "not_applicable";
+  arrivalMinutesOfDay: number | null;
+  returnDeadlineMinutesOfDay: number | null;
+  debarkClearanceMinutes: number;
+  transferBeforeMinutes: number | null;
+  transferAfterMinutes: number | null;
+  durationMinutes: number | null;
+  verifiedDepartureTimes: string[];
+  fittingDepartureTimes: string[];
+  reason: string;
 };
 
 export type MatchedTourOption = {
@@ -87,9 +104,17 @@ export type MatchedTourOption = {
   };
   pricing: {
     fromPriceCents: number | null;
+    priceBasis: PriceBasis;
+    lowestPriceIncludesPickup: boolean | null;
     currency: string;
     selectedChannelId: string;
+    selectedOptionCode: string | null;
+    selectedOptionTitle: string | null;
+    selectedOptionIncludesPickup: boolean | null;
   };
+  selectedProductOption: TourProductOptionRecord | null;
+  productOptions: TourProductOptionRecord[];
+  serviceDetails: Record<string, unknown>;
   duration: {
     durationMinutes: number | null;
     durationRawText: string | null;
@@ -104,6 +129,7 @@ export type MatchedTourOption = {
   };
   pickupAndLocation: {
     hasHotelPickup: boolean | null;
+    lowestPriceIncludesPickup: boolean | null;
     pickupType: string | null;
     pickupSummary: string | null;
     meetingPointName: string | null;
@@ -114,6 +140,7 @@ export type MatchedTourOption = {
     distanceFromGuestKm: number | null;
     nearestPickupPointName: string | null;
   };
+  cruiseScheduleFit?: CruiseScheduleFitEvaluation;
   channelOffers: ChannelOffer[];
   shortlistLiveCheck: ShortlistLiveStatus;
   bookingPath: {
@@ -179,40 +206,220 @@ function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): nu
   return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)) * 100) / 100;
 }
 
+export function parseClockMinutesOfDay(val?: string | null): number | null {
+  if (!val || typeof val !== "string") return null;
+  const trimmed = val.trim();
+  if (!trimmed) return null;
+  const hm = trimmed.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+  if (hm) {
+    const h = Number(hm[1]);
+    const m = Number(hm[2]);
+    if (h >= 0 && h <= 23 && m >= 0 && m <= 59) {
+      return h * 60 + m;
+    }
+  }
+  const isoTime = trimmed.match(/T(\d{2}):(\d{2})/);
+  if (isoTime) {
+    const h = Number(isoTime[1]);
+    const m = Number(isoTime[2]);
+    if (h >= 0 && h <= 23 && m >= 0 && m <= 59) {
+      return h * 60 + m;
+    }
+  }
+  return null;
+}
+
+function formatMinutesOfDay(totalMin: number): string {
+  const clamped = Math.max(0, Math.min(23 * 60 + 59, Math.round(totalMin)));
+  const h = Math.floor(clamped / 60);
+  const m = clamped % 60;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+}
+
 function parseTimeWindowMinutes(
   arrivalStr?: string,
   departureOrAllAboardStr?: string,
   isAllAboard = false,
 ): number | null {
-  if (!arrivalStr || !departureOrAllAboardStr) return null;
-  const parseMinutesOfDay = (val: string): number | null => {
-    const trimmed = val.trim();
-    const hm = trimmed.match(/^(\d{1,2}):(\d{2})$/);
-    if (hm) {
-      return Number(hm[1]) * 60 + Number(hm[2]);
-    }
-    const d = new Date(trimmed);
-    if (!Number.isNaN(d.getTime())) {
-      return d.getUTCHours() * 60 + d.getUTCMinutes();
-    }
-    return null;
-  };
-
-  // Try full ISO timestamps first
-  const dArr = new Date(arrivalStr);
-  const dDep = new Date(departureOrAllAboardStr);
-  if (!Number.isNaN(dArr.getTime()) && !Number.isNaN(dDep.getTime()) && arrivalStr.includes("T")) {
-    const diff = Math.round((dDep.getTime() - dArr.getTime()) / 60000);
-    if (diff > 0) return isAllAboard ? diff : Math.max(0, diff - 60);
-  }
-
-  const mArr = parseMinutesOfDay(arrivalStr);
-  const mDep = parseMinutesOfDay(departureOrAllAboardStr);
+  const mArr = parseClockMinutesOfDay(arrivalStr);
+  const mDep = parseClockMinutesOfDay(departureOrAllAboardStr);
   if (mArr !== null && mDep !== null && mDep > mArr) {
     const rawWindow = mDep - mArr;
-    return isAllAboard ? rawWindow : Math.max(0, rawWindow - 60);
+    return isAllAboard ? rawWindow : Math.max(0, rawWindow - 45);
   }
   return null;
+}
+
+export function evaluateCruiseScheduleFit(params: {
+  shipArrival?: string;
+  shipDeparture?: string;
+  allAboardTime?: string;
+  durationMinutes: number | null;
+  transferBeforeMinutes: number | null;
+  transferAfterMinutes: number | null;
+  verifiedDepartureTimes: string[];
+}): CruiseScheduleFitEvaluation {
+  const arrivalMin = parseClockMinutesOfDay(params.shipArrival);
+  const explicitAllAboardMin = parseClockMinutesOfDay(params.allAboardTime);
+  const shipDepartureMin = parseClockMinutesOfDay(params.shipDeparture);
+  const returnDeadlineMin =
+    explicitAllAboardMin ?? (shipDepartureMin !== null ? shipDepartureMin - 45 : null);
+  const debarkClearanceMinutes = 30;
+
+  if (arrivalMin === null && returnDeadlineMin === null) {
+    return {
+      evaluated: false,
+      fitStatus: "not_applicable",
+      arrivalMinutesOfDay: null,
+      returnDeadlineMinutesOfDay: null,
+      debarkClearanceMinutes,
+      transferBeforeMinutes: params.transferBeforeMinutes,
+      transferAfterMinutes: params.transferAfterMinutes,
+      durationMinutes: params.durationMinutes,
+      verifiedDepartureTimes: params.verifiedDepartureTimes,
+      fittingDepartureTimes: [],
+      reason: "No cruise port schedule supplied.",
+    };
+  }
+
+  if (arrivalMin === null || returnDeadlineMin === null || returnDeadlineMin <= arrivalMin) {
+    return {
+      evaluated: true,
+      fitStatus: "needs_confirmation",
+      arrivalMinutesOfDay: arrivalMin,
+      returnDeadlineMinutesOfDay: returnDeadlineMin,
+      debarkClearanceMinutes,
+      transferBeforeMinutes: params.transferBeforeMinutes,
+      transferAfterMinutes: params.transferAfterMinutes,
+      durationMinutes: params.durationMinutes,
+      verifiedDepartureTimes: params.verifiedDepartureTimes,
+      fittingDepartureTimes: [],
+      reason:
+        "Cruise fit requires both ship arrival time and return deadline (all-aboard or ship departure time); schedule needs confirmation.",
+    };
+  }
+
+  if (params.durationMinutes === null || params.durationMinutes <= 0) {
+    return {
+      evaluated: true,
+      fitStatus: "needs_confirmation",
+      arrivalMinutesOfDay: arrivalMin,
+      returnDeadlineMinutesOfDay: returnDeadlineMin,
+      debarkClearanceMinutes,
+      transferBeforeMinutes: params.transferBeforeMinutes,
+      transferAfterMinutes: params.transferAfterMinutes,
+      durationMinutes: null,
+      verifiedDepartureTimes: params.verifiedDepartureTimes,
+      fittingDepartureTimes: [],
+      reason:
+        "Tour duration is unknown in catalog; cannot establish cruise return fit without confirmed duration.",
+    };
+  }
+
+  if (params.transferBeforeMinutes === null || params.transferAfterMinutes === null) {
+    return {
+      evaluated: true,
+      fitStatus: "needs_confirmation",
+      arrivalMinutesOfDay: arrivalMin,
+      returnDeadlineMinutesOfDay: returnDeadlineMin,
+      debarkClearanceMinutes,
+      transferBeforeMinutes: params.transferBeforeMinutes,
+      transferAfterMinutes: params.transferAfterMinutes,
+      durationMinutes: params.durationMinutes,
+      verifiedDepartureTimes: params.verifiedDepartureTimes,
+      fittingDepartureTimes: [],
+      reason:
+        "Port-to-meeting-point transfer buffers are unconfirmed; cruise schedule fit requires confirmation.",
+    };
+  }
+
+  const availablePortMinutes = returnDeadlineMin - arrivalMin;
+  const totalMinimumRequired =
+    debarkClearanceMinutes +
+    params.transferBeforeMinutes +
+    params.durationMinutes +
+    params.transferAfterMinutes;
+
+  if (totalMinimumRequired > availablePortMinutes) {
+    return {
+      evaluated: true,
+      fitStatus: "ineligible",
+      arrivalMinutesOfDay: arrivalMin,
+      returnDeadlineMinutesOfDay: returnDeadlineMin,
+      debarkClearanceMinutes,
+      transferBeforeMinutes: params.transferBeforeMinutes,
+      transferAfterMinutes: params.transferAfterMinutes,
+      durationMinutes: params.durationMinutes,
+      verifiedDepartureTimes: params.verifiedDepartureTimes,
+      fittingDepartureTimes: [],
+      reason: `Exceeds cruise port safety window: requires ${totalMinimumRequired}m (${debarkClearanceMinutes}m debark + ${params.transferBeforeMinutes}m transfer + ${params.durationMinutes}m tour + ${params.transferAfterMinutes}m return transfer) vs ${availablePortMinutes}m available before ${formatMinutesOfDay(returnDeadlineMin)} all-aboard.`,
+    };
+  }
+
+  // Even when theoretical duration fits the window, actual departure times must be verified to mark as recommended
+  const validStartTimes = params.verifiedDepartureTimes.filter(
+    (t) => parseClockMinutesOfDay(t) !== null,
+  );
+  if (validStartTimes.length === 0) {
+    return {
+      evaluated: true,
+      fitStatus: "needs_confirmation",
+      arrivalMinutesOfDay: arrivalMin,
+      returnDeadlineMinutesOfDay: returnDeadlineMin,
+      debarkClearanceMinutes,
+      transferBeforeMinutes: params.transferBeforeMinutes,
+      transferAfterMinutes: params.transferAfterMinutes,
+      durationMinutes: params.durationMinutes,
+      verifiedDepartureTimes: [],
+      fittingDepartureTimes: [],
+      reason: `Duration (${params.durationMinutes}m) and transfers fit within the ${availablePortMinutes}m port window, but actual date-specific departure times have not been verified yet; needs confirmation.`,
+    };
+  }
+
+  const earliestStartAllowed = arrivalMin + debarkClearanceMinutes + params.transferBeforeMinutes;
+  const latestEndAllowed = returnDeadlineMin - params.transferAfterMinutes;
+  const fittingDepartureTimes: string[] = [];
+
+  for (const st of validStartTimes) {
+    const stMin = parseClockMinutesOfDay(st);
+    if (stMin === null) continue;
+    if (stMin >= earliestStartAllowed && stMin + params.durationMinutes <= latestEndAllowed) {
+      fittingDepartureTimes.push(formatMinutesOfDay(stMin));
+    }
+  }
+
+  if (fittingDepartureTimes.length === 0) {
+    return {
+      evaluated: true,
+      fitStatus: "ineligible",
+      arrivalMinutesOfDay: arrivalMin,
+      returnDeadlineMinutesOfDay: returnDeadlineMin,
+      debarkClearanceMinutes,
+      transferBeforeMinutes: params.transferBeforeMinutes,
+      transferAfterMinutes: params.transferAfterMinutes,
+      durationMinutes: params.durationMinutes,
+      verifiedDepartureTimes: validStartTimes,
+      fittingDepartureTimes: [],
+      reason: `Verified departure time(s) [${validStartTimes.join(", ")}] do not fit between earliest post-debark arrival (${formatMinutesOfDay(earliestStartAllowed)}) and latest completion before return transfer (${formatMinutesOfDay(latestEndAllowed - params.durationMinutes)} for ${formatMinutesOfDay(returnDeadlineMin)} all-aboard).`,
+    };
+  }
+
+  const firstFitMin = parseClockMinutesOfDay(fittingDepartureTimes[0])!;
+  const backAtPierMin = firstFitMin + params.durationMinutes + params.transferAfterMinutes;
+
+  return {
+    evaluated: true,
+    fitStatus: "recommended",
+    arrivalMinutesOfDay: arrivalMin,
+    returnDeadlineMinutesOfDay: returnDeadlineMin,
+    debarkClearanceMinutes,
+    transferBeforeMinutes: params.transferBeforeMinutes,
+    transferAfterMinutes: params.transferAfterMinutes,
+    durationMinutes: params.durationMinutes,
+    verifiedDepartureTimes: validStartTimes,
+    fittingDepartureTimes,
+    reason: `Verified cruise schedule fit: departure(s) [${fittingDepartureTimes.join(", ")}] + ${params.durationMinutes}m duration + ${params.transferAfterMinutes}m return transfer return to pier by ${formatMinutesOfDay(backAtPierMin)} (before ${formatMinutesOfDay(returnDeadlineMin)} all-aboard deadline).`,
+  };
 }
 
 function selectChannelOfferForSurface(
@@ -237,6 +444,7 @@ function selectChannelOfferForSurface(
     capabilityTier: record.capabilityTier,
     commissionAuthorized: record.commissionAuthorized,
     fromPriceCents: record.fromPriceCents,
+    priceBasis: record.priceBasis || "per_person",
     currency: record.currency,
     freeCancellation: record.freeCancellation,
     cancellationCutoffHours: record.cancellationCutoffHours,
@@ -264,6 +472,7 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
 
   const surface = input.surface || "dcc";
   const requiresHotelPickup = Boolean(input.requiresHotelPickup);
+  const hasCruiseWindowInput = Boolean(input.shipArrival || input.shipDeparture || input.allAboardTime);
   const portWindowMinutes = input.allAboardTime
     ? parseTimeWindowMinutes(input.shipArrival, input.allAboardTime, true)
     : parseTimeWindowMinutes(input.shipArrival, input.shipDeparture, false);
@@ -280,19 +489,20 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
   const guestLat =
     typeof input.hotelLat === "number" && Number.isFinite(input.hotelLat)
       ? input.hotelLat
-      : portWindowMinutes !== null && node.cruisePierLat !== null
+      : hasCruiseWindowInput && node.cruisePierLat !== null
         ? node.cruisePierLat
         : null;
   const guestLng =
     typeof input.hotelLng === "number" && Number.isFinite(input.hotelLng)
       ? input.hotelLng
-      : portWindowMinutes !== null && node.cruisePierLng !== null
+      : hasCruiseWindowInput && node.cruisePierLng !== null
         ? node.cruisePierLng
         : null;
 
   const evaluated: Array<{
     record: DurableTourRecord;
     option: MatchedTourOption;
+    allowedOptionCodesForLiveCheck?: string[];
   }> = [];
 
   for (const rec of catalogResult.records) {
@@ -301,7 +511,7 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
     let suitability: "recommended" | "needs_confirmation" | "ineligible" = "recommended";
     let score = 70;
 
-    // 1. Party composition & age bands
+    // 1. Party composition, age bands & vehicle seating capacity
     const { paxMix, ineligibleChildAges } = buildViatorPaxMix({
       adultCount: adults,
       childAges,
@@ -310,6 +520,17 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
       youthCount: youths,
       ageBands: rec.ageBands,
     });
+
+    if (
+      typeof rec.constraints?.maxPassengers === "number" &&
+      totalGuests > rec.constraints.maxPassengers
+    ) {
+      suitability = "ineligible";
+      score -= 60;
+      explanations.push(
+        `Ineligible for party size: ${totalGuests} guests exceed maximum vehicle/tour capacity of ${rec.constraints.maxPassengers} passengers.`,
+      );
+    }
 
     if (childAges.length > 0) {
       const minAge = rec.constraints?.minAgeYears;
@@ -338,7 +559,7 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
       explanations.push(`Configured for ${totalGuests} adult traveler${totalGuests === 1 ? "" : "s"}.`);
     }
 
-    // 2. Pickup & Location precision evaluation
+    // 2. Pickup & Option-Level Price Matching (never present optional transportation as included in the lowest-priced option)
     let distanceFromGuestKm: number | null = null;
     let nearestPickupPointName: string | null = null;
 
@@ -374,21 +595,84 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
       }
     }
 
+    const selectedOffer = selectChannelOfferForSurface(rec, surface);
+    const productOptions = Array.isArray(rec.productOptions) ? rec.productOptions : [];
+    const baseFromPriceCents = selectedOffer.fromPriceCents ?? rec.fromPriceCents;
+    const priceBasis: PriceBasis =
+      selectedOffer.priceBasis || rec.priceBasis || "per_person";
+
+    let selectedProductOption: TourProductOptionRecord | null = null;
+    let quotedFromPriceCents: number | null = baseFromPriceCents;
+    let quotedDurationMinutes: number | null = rec.durationMinutes;
+    let allowedOptionCodesForLiveCheck: string[] | undefined = undefined;
+    const lowestPriceIncludesPickup =
+      rec.lowestPriceIncludesPickup !== undefined
+        ? rec.lowestPriceIncludesPickup
+        : rec.hasHotelPickup === false
+          ? false
+          : null;
+
     if (requiresHotelPickup) {
       if (rec.hasHotelPickup === true) {
-        score += 15;
-        if (distanceFromGuestKm !== null && nearestPickupPointName) {
+        const pickupOptions = productOptions.filter((o) => o.includesPickup === true);
+        if (pickupOptions.length > 0) {
+          const sortedPickupOpts = [...pickupOptions].sort((a, b) => {
+            if (a.fromPriceCents === null && b.fromPriceCents === null) return 0;
+            if (a.fromPriceCents === null) return 1;
+            if (b.fromPriceCents === null) return -1;
+            return a.fromPriceCents - b.fromPriceCents;
+          });
+          selectedProductOption = sortedPickupOpts[0];
+          allowedOptionCodesForLiveCheck = pickupOptions.map((o) => o.optionCode);
+          quotedFromPriceCents = selectedProductOption.fromPriceCents;
+          if (selectedProductOption.durationMinutes !== null) {
+            quotedDurationMinutes = selectedProductOption.durationMinutes;
+          }
+
+          if (quotedFromPriceCents !== null) {
+            score += 15;
+            explanations.push(
+              `Matched hotel pickup requirement to option "${selectedProductOption.title}" (${selectedProductOption.optionCode}) at $${(quotedFromPriceCents / 100).toFixed(2)} (${selectedProductOption.priceBasis || priceBasis}).`,
+            );
+          } else {
+            // Do NOT fall back to a lower self-drive base price when pickup option price is unknown
+            if (suitability === "recommended") suitability = "needs_confirmation";
+            missingInformation.push("pickup_option_price_unverified");
+            explanations.push(
+              `Matched hotel pickup option "${selectedProductOption.title}" (${selectedProductOption.optionCode}), but option-specific price requires live date confirmation.`,
+            );
+          }
+        } else if (lowestPriceIncludesPickup === false) {
+          // Product offers optional transportation, and no pickup option price is loaded
+          quotedFromPriceCents = null;
+          if (suitability === "recommended") suitability = "needs_confirmation";
+          missingInformation.push("pickup_option_price_unverified");
           explanations.push(
-            `Includes pickup coverage (nearest verified pickup/hub: ${nearestPickupPointName}, ${distanceFromGuestKm} km away).`,
+            "Hotel pickup is an optional upgrade on this tour; the lowest-priced option is self-drive and pickup option pricing requires confirmation.",
+          );
+        } else if (lowestPriceIncludesPickup === true) {
+          score += 15;
+          explanations.push(
+            rec.pickupSummary || "Includes hotel or designated shuttle pickup service in base price.",
           );
         } else {
+          // lowestPriceIncludesPickup === null on a search-only record
+          if (suitability === "recommended") suitability = "needs_confirmation";
+          missingInformation.push("pickup_option_price_unverified");
           explanations.push(
-            rec.pickupSummary || "Includes hotel or designated shuttle pickup service.",
+            "Hotel pickup is offered, but whether the lowest price includes pickup has not been verified at the option level.",
+          );
+        }
+
+        if (distanceFromGuestKm !== null && nearestPickupPointName) {
+          explanations.push(
+            `Nearest verified pickup/hub: ${nearestPickupPointName} (${distanceFromGuestKm} km away).`,
           );
         }
       } else if (rec.hasHotelPickup === false) {
         if (suitability === "recommended") suitability = "needs_confirmation";
         score -= 18;
+        missingInformation.push("hotel_pickup_not_offered");
         if (distanceFromGuestKm !== null && rec.meetingPointName) {
           explanations.push(
             `Meeting-point only (no hotel pickup). Guest must travel ${distanceFromGuestKm} km to ${rec.meetingPointName}.`,
@@ -399,7 +683,6 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
           );
         }
       } else {
-        // Explicit null for pickup coverage
         if (suitability === "recommended") suitability = "needs_confirmation";
         score -= 10;
         missingInformation.push("unknown_pickup_coverage");
@@ -407,42 +690,76 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
           "Pickup coverage is unknown in catalog; confirm hotel pickup directly before booking.",
         );
       }
-    } else if (rec.hasHotelPickup === null) {
-      missingInformation.push("unknown_pickup_coverage");
+    } else {
+      // Guest did not require hotel pickup; select the lowest-priced option overall
+      if (productOptions.length > 0) {
+        const sortedAll = [...productOptions].sort((a, b) => {
+          if (a.fromPriceCents === null && b.fromPriceCents === null) return 0;
+          if (a.fromPriceCents === null) return 1;
+          if (b.fromPriceCents === null) return -1;
+          return a.fromPriceCents - b.fromPriceCents;
+        });
+        selectedProductOption = sortedAll[0];
+        if (selectedProductOption.fromPriceCents !== null) {
+          quotedFromPriceCents = selectedProductOption.fromPriceCents;
+        }
+        if (selectedProductOption.durationMinutes !== null) {
+          quotedDurationMinutes = selectedProductOption.durationMinutes;
+        }
+        if (selectedProductOption.includesPickup === false && rec.hasHotelPickup === true) {
+          explanations.push(
+            `Lowest-priced option "${selectedProductOption.title}" (${selectedProductOption.optionCode}) is meeting-point / self-drive only (does not include optional hotel transportation).`,
+          );
+        }
+      } else if (rec.hasHotelPickup === null) {
+        missingInformation.push("unknown_pickup_coverage");
+      }
     }
 
     if (rec.meetingPointLat === null || rec.meetingPointLng === null) {
       missingInformation.push("unknown_meeting_point_coordinates");
     }
 
-    // 3. Duration & Cruise/Schedule Timing Fit
-    if (rec.durationMinutes === null) {
-      missingInformation.push("unknown_duration_minutes");
-      if (portWindowMinutes !== null) {
-        if (suitability === "recommended") suitability = "needs_confirmation";
-        score -= 15;
-        explanations.push(
-          "Tour duration is unknown in catalog; cannot verify cruise all-aboard safety window automatically.",
-        );
-      }
-    } else if (portWindowMinutes !== null) {
-      const bufferBefore = rec.constraints?.cruiseBufferBeforeMinutes ?? 60;
-      const bufferAfter = rec.constraints?.cruiseBufferAfterMinutes ?? 60;
-      const totalRequiredMinutes = bufferBefore + rec.durationMinutes + bufferAfter;
-      if (totalRequiredMinutes > portWindowMinutes) {
+    // 3. Duration & Preliminary Cruise Schedule Fit (before live check startTimes are populated)
+    let cruiseFit: CruiseScheduleFitEvaluation | undefined = undefined;
+    if (hasCruiseWindowInput) {
+      cruiseFit = evaluateCruiseScheduleFit({
+        shipArrival: input.shipArrival,
+        shipDeparture: input.shipDeparture,
+        allAboardTime: input.allAboardTime,
+        durationMinutes: quotedDurationMinutes,
+        transferBeforeMinutes: rec.constraints?.cruiseBufferBeforeMinutes ?? null,
+        transferAfterMinutes: rec.constraints?.cruiseBufferAfterMinutes ?? null,
+        verifiedDepartureTimes: [],
+      });
+      if (cruiseFit.fitStatus === "ineligible") {
         suitability = "ineligible";
         score -= 50;
-        explanations.push(
-          `Exceeds cruise port safety window: requires ${totalRequiredMinutes}m (including pier buffers) vs ${portWindowMinutes}m available.`,
-        );
-      } else {
-        score += 12;
-        explanations.push(
-          `Fits cruise port schedule (${rec.durationMinutes}m tour + pier buffers = ${totalRequiredMinutes}m within ${portWindowMinutes}m window).`,
-        );
+        explanations.push(cruiseFit.reason);
+      } else if (cruiseFit.fitStatus === "needs_confirmation") {
+        if (quotedDurationMinutes === null) {
+          missingInformation.push("unknown_duration_minutes");
+        }
+        if (
+          rec.constraints?.cruiseBufferBeforeMinutes === null ||
+          rec.constraints?.cruiseBufferAfterMinutes === null
+        ) {
+          missingInformation.push("unknown_cruise_transfer_buffers");
+        }
+        if (!cruiseFit.verifiedDepartureTimes || cruiseFit.verifiedDepartureTimes.length === 0) {
+          missingInformation.push("date_specific_departure_times_unverified");
+        }
+        if (suitability === "recommended") {
+          suitability = "needs_confirmation";
+        }
+        explanations.push(cruiseFit.reason);
       }
+    } else if (quotedDurationMinutes === null) {
+      missingInformation.push("unknown_duration_minutes");
     } else {
-      explanations.push(`Verified duration: ${rec.durationRawText || `${rec.durationMinutes} minutes`}.`);
+      explanations.push(
+        `Verified duration: ${rec.durationRawText || `${quotedDurationMinutes} minutes`}.`,
+      );
     }
 
     // 4. Cancellation explicit unknown check
@@ -481,14 +798,10 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
       }
     }
 
-    // Slight boost for live-checkable and well-reviewed options
     if (rec.capabilityTier === "live_check_direct") score += 8;
     if (rec.capabilityTier === "live_check_referral") score += 6;
     if (typeof rec.ratingAverage === "number" && rec.ratingAverage >= 4.7) score += 4;
 
-    const selectedOffer = selectChannelOfferForSurface(rec, surface);
-
-    // Build preliminary option (shortlist live check and click attribution added next)
     const option: MatchedTourOption = {
       tourId: rec.tourId,
       compatibilityAliases: rec.compatibilityAliases,
@@ -513,14 +826,22 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
         paxMix,
       },
       pricing: {
-        fromPriceCents: selectedOffer.fromPriceCents ?? rec.fromPriceCents,
+        fromPriceCents: quotedFromPriceCents,
+        priceBasis,
+        lowestPriceIncludesPickup,
         currency: selectedOffer.currency || rec.currency,
         selectedChannelId: selectedOffer.channelId,
+        selectedOptionCode: selectedProductOption?.optionCode || null,
+        selectedOptionTitle: selectedProductOption?.title || null,
+        selectedOptionIncludesPickup: selectedProductOption?.includesPickup ?? null,
       },
+      selectedProductOption,
+      productOptions,
+      serviceDetails: rec.serviceDetails || {},
       duration: {
-        durationMinutes: rec.durationMinutes,
+        durationMinutes: quotedDurationMinutes,
         durationRawText: rec.durationRawText,
-        status: rec.durationMinutes !== null ? "known" : "unknown",
+        status: quotedDurationMinutes !== null ? "known" : "unknown",
       },
       cancellation: {
         freeCancellation: selectedOffer.freeCancellation ?? rec.freeCancellation,
@@ -532,6 +853,7 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
       },
       pickupAndLocation: {
         hasHotelPickup: rec.hasHotelPickup,
+        lowestPriceIncludesPickup,
         pickupType: rec.pickupType,
         pickupSummary: rec.pickupSummary,
         meetingPointName: rec.meetingPointName,
@@ -542,17 +864,20 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
         distanceFromGuestKm,
         nearestPickupPointName,
       },
+      cruiseScheduleFit: cruiseFit,
       channelOffers: rec.channelOffers,
       shortlistLiveCheck: {
         checked: false,
+        status: "unknown_unchecked",
         provider: rec.primaryProvider,
         available: null,
-        bookableSlotsCount: 0,
+        bookableSlotsCount: null,
         earliestStartTime: null,
+        startTimes: [],
         liveFromPriceCents: null,
         latencyMs: 0,
         note: input.date
-          ? "Not in shortlist or live check not required for tier."
+          ? "Date-specific availability check not performed for this candidate; availability is unknown."
           : "No travel date supplied; showing cached durable catalog.",
       },
       bookingPath: {
@@ -582,7 +907,7 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
       reviewCount: rec.reviewCount,
     };
 
-    evaluated.push({ record: rec, option });
+    evaluated.push({ record: rec, option, allowedOptionCodesForLiveCheck });
   }
 
   // Sort by suitability first, then matchScore descending
@@ -594,12 +919,15 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
     return b.option.matchScore - a.option.matchScore;
   });
 
-  // 6. Shortlist-only Live Availability Check (when date is provided)
+  // 6. Authorized Shortlist-only Live Availability Check (when date is provided)
+  // Never fabricate availability for GoSno, PARR, or unchecked candidates.
   const shortlistMax =
     typeof input.shortlistMaxCount === "number" && input.shortlistMaxCount >= 0
       ? Math.min(input.shortlistMaxCount, 8)
       : 4;
-  const shouldLiveCheck = Boolean(input.date && input.enableShortlistLiveCheck !== false && shortlistMax > 0);
+  const shouldLiveCheck = Boolean(
+    input.date && input.enableShortlistLiveCheck !== false && shortlistMax > 0,
+  );
 
   let shortlistCheckedCount = 0;
   let upstreamRequestsMade = 0;
@@ -607,17 +935,21 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
 
   if (shouldLiveCheck && input.date) {
     const shortlistCandidates = evaluated
-      .filter(
-        ({ option }) =>
-          option.suitability !== "ineligible" &&
-          (option.capabilityTier === "live_check_referral" ||
-            option.capabilityTier === "live_check_direct"),
-      )
+      .filter(({ record, option }) => {
+        if (option.suitability === "ineligible") return false;
+        const hasViator =
+          record.primaryProvider === "viator" ||
+          record.channelOffers.some((o) => o.provider === "viator");
+        const hasFareHarbor = record.primaryProvider === "fareharbor";
+        return (
+          (option.capabilityTier === "live_check_referral" && hasViator) ||
+          (option.capabilityTier === "live_check_direct" && hasFareHarbor)
+        );
+      })
       .slice(0, shortlistMax);
 
-    for (const { record, option } of shortlistCandidates) {
+    for (const { record, option, allowedOptionCodesForLiveCheck } of shortlistCandidates) {
       const tItem = Date.now();
-      shortlistCheckedCount += 1;
       const viatorOffer = record.channelOffers.find((o) => o.provider === "viator");
       const viatorCode =
         record.primaryProvider === "viator"
@@ -625,6 +957,7 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
           : viatorOffer?.providerProductCode || null;
 
       if (viatorCode) {
+        shortlistCheckedCount += 1;
         upstreamRequestsMade += 1;
         const liveRes = await checkDccLiveAvailability({
           siteId:
@@ -643,6 +976,7 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
           infantCount: infants,
           youthCount: youths,
           ageBands: record.ageBands,
+          allowedProductOptionCodes: allowedOptionCodesForLiveCheck,
           currency: "USD",
         });
 
@@ -650,43 +984,68 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
         const openOpts = Array.isArray(liveRes.bookableOptions)
           ? liveRes.bookableOptions.filter((o) => o.available)
           : [];
-        if (liveRes.success) {
+        const openStartTimes = Array.from(
+          new Set(
+            openOpts
+              .map((o) => (typeof o.startTime === "string" ? o.startTime.trim() : ""))
+              .filter(Boolean),
+          ),
+        ).sort();
+
+        if (liveRes.success && liveRes.available !== null) {
+          const livePriceCents =
+            typeof liveRes.retailPrice === "number" && Number.isFinite(liveRes.retailPrice)
+              ? Math.round(liveRes.retailPrice * 100)
+              : null;
+
           option.shortlistLiveCheck = {
             checked: true,
+            status: liveRes.available ? "verified_available" : "verified_unavailable",
             provider: "viator",
             available: liveRes.available,
             bookableSlotsCount: openOpts.length,
-            earliestStartTime: openOpts[0]?.startTime || null,
-            liveFromPriceCents:
-              typeof liveRes.retailPrice === "number"
-                ? Math.round(liveRes.retailPrice * 100)
-                : null,
+            earliestStartTime: openStartTimes[0] || null,
+            startTimes: openStartTimes,
+            liveFromPriceCents: livePriceCents,
             latencyMs: itemLatency,
             note: liveRes.available
               ? `Verified ${openOpts.length} bookable slot(s) via Viator /availability/check for ${input.date}.`
               : `No bookable slots returned by Viator /availability/check for ${input.date}.`,
           };
+
           if (liveRes.available) {
+            if (option.pricing.fromPriceCents === null && livePriceCents !== null) {
+              option.pricing.fromPriceCents = livePriceCents;
+              option.missingInformation = option.missingInformation.filter(
+                (m) => m !== "pickup_option_price_unverified",
+              );
+            }
             option.explanations.push(
-              `Live availability confirmed (${openOpts.length} slot${openOpts.length === 1 ? "" : "s"} open on ${input.date}).`,
+              `Live availability confirmed (${openOpts.length} slot${openOpts.length === 1 ? "" : "s"} open on ${input.date}${openStartTimes.length > 0 ? ` at ${openStartTimes.join(", ")}` : ""}).`,
             );
+          } else {
+            option.suitability = "ineligible";
+            option.explanations.push(`Sold out / unavailable on ${input.date} per live Viator check.`);
           }
         } else {
           option.shortlistLiveCheck = {
             checked: true,
+            status: "unknown_error",
             provider: "viator",
             available: null,
-            bookableSlotsCount: 0,
+            bookableSlotsCount: null,
             earliestStartTime: null,
+            startTimes: [],
             liveFromPriceCents: null,
             latencyMs: itemLatency,
-            note: `Live check fallback: ${liveRes.reason || liveRes.errorCode || "unavailable"}`,
+            note: `Live check could not be verified: ${liveRes.reason || liveRes.errorCode || "unknown_error"}`,
           };
         }
       } else if (record.primaryProvider === "fareharbor") {
         const [shortname, pkStr] = record.providerProductCode.split(":");
         const itemPk = Number(pkStr);
         if (shortname && Number.isFinite(itemPk)) {
+          shortlistCheckedCount += 1;
           upstreamRequestsMade += 1;
           try {
             const availabilities = await fetchAvailabilitiesForItem(
@@ -698,13 +1057,25 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
             const openSlots = availabilities.filter(
               (a) => typeof a.capacity === "number" && a.capacity >= totalGuests,
             );
+            const openStartTimes = Array.from(
+              new Set(
+                openSlots
+                  .map((a) => {
+                    const m = parseClockMinutesOfDay(a.start_at);
+                    return m !== null ? formatMinutesOfDay(m) : "";
+                  })
+                  .filter(Boolean),
+              ),
+            ).sort();
             const itemLatency = Date.now() - tItem;
             option.shortlistLiveCheck = {
               checked: true,
+              status: openSlots.length > 0 ? "verified_available" : "verified_unavailable",
               provider: "fareharbor",
               available: openSlots.length > 0,
               bookableSlotsCount: openSlots.length,
-              earliestStartTime: openSlots[0]?.start_at || null,
+              earliestStartTime: openStartTimes[0] || null,
+              startTimes: openStartTimes,
               liveFromPriceCents: null,
               latencyMs: itemLatency,
               note:
@@ -712,33 +1083,68 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
                   ? `Verified ${openSlots.length} FareHarbor departure(s) with capacity >= ${totalGuests} on ${input.date}.`
                   : `No FareHarbor departures with capacity >= ${totalGuests} on ${input.date}.`,
             };
+            if (openSlots.length === 0) {
+              option.suitability = "ineligible";
+              option.explanations.push(
+                `No FareHarbor departures with capacity >= ${totalGuests} on ${input.date}.`,
+              );
+            }
           } catch (err) {
             option.shortlistLiveCheck = {
               checked: true,
+              status: "unknown_error",
               provider: "fareharbor",
               available: null,
-              bookableSlotsCount: 0,
+              bookableSlotsCount: null,
               earliestStartTime: null,
+              startTimes: [],
               liveFromPriceCents: null,
               latencyMs: Date.now() - tItem,
-              note: `FareHarbor live check error: ${err instanceof Error ? err.message : String(err)}`,
+              note: `FareHarbor live check could not be verified: ${err instanceof Error ? err.message : String(err)}`,
             };
           }
         }
-      } else if (record.primaryProvider === "gosno" || record.primaryProvider === "parr") {
-        option.shortlistLiveCheck = {
-          checked: true,
-          provider: record.primaryProvider,
-          available: true,
-          bookableSlotsCount: 3,
-          earliestStartTime: "08:00",
-          liveFromPriceCents: record.fromPriceCents,
-          latencyMs: Date.now() - tItem,
-          note: `Internal DCC corridor schedule active for ${input.date}.`,
-        };
+      }
+
+      // Re-evaluate Cruise Schedule Fit if actual date-specific departure times were returned by the live check
+      if (
+        hasCruiseWindowInput &&
+        option.shortlistLiveCheck.checked &&
+        option.shortlistLiveCheck.available === true &&
+        option.shortlistLiveCheck.startTimes.length > 0
+      ) {
+        const updatedCruiseFit = evaluateCruiseScheduleFit({
+          shipArrival: input.shipArrival,
+          shipDeparture: input.shipDeparture,
+          allAboardTime: input.allAboardTime,
+          durationMinutes: option.duration.durationMinutes,
+          transferBeforeMinutes: record.constraints?.cruiseBufferBeforeMinutes ?? null,
+          transferAfterMinutes: record.constraints?.cruiseBufferAfterMinutes ?? null,
+          verifiedDepartureTimes: option.shortlistLiveCheck.startTimes,
+        });
+        option.cruiseScheduleFit = updatedCruiseFit;
+        option.explanations.push(updatedCruiseFit.reason);
+
+        if (updatedCruiseFit.fitStatus === "ineligible") {
+          option.suitability = "ineligible";
+        } else if (
+          updatedCruiseFit.fitStatus === "recommended" &&
+          option.missingInformation.length === 0
+        ) {
+          option.suitability = "recommended";
+          option.matchScore = Math.min(100, option.matchScore + 15);
+        }
       }
     }
   }
+
+  // Re-sort after live check updates
+  evaluated.sort((a, b) => {
+    const sa = suitabilityOrder[a.option.suitability];
+    const sb = suitabilityOrder[b.option.suitability];
+    if (sa !== sb) return sa - sb;
+    return b.option.matchScore - a.option.matchScore;
+  });
 
   const shortlistLiveCheckMs = shouldLiveCheck ? Date.now() - tLiveStart : 0;
 
@@ -754,16 +1160,26 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
     }
     if (eligibleOptions.length >= limit) continue;
 
-    // Issue traceable click attribution for commercial/attributable tiers
     if (option.capabilityTier !== "discovery_only") {
       if (record.primaryProvider === "gosno") {
+        const resortSlug =
+          typeof record.serviceDetails?.resortSlug === "string"
+            ? record.serviceDetails.resortSlug
+            : "winter-park";
+        const vehicleClass =
+          record.serviceDetails?.vehicleClass === "van" ||
+          record.serviceDetails?.vehicleClass === "suv"
+            ? (record.serviceDetails.vehicleClass as "suv" | "van")
+            : totalGuests > 6
+              ? "van"
+              : "suv";
         const handoffBuild = buildSharedGoSnoHandoffUrlAndDetails({
-          destinationSlug: "winter-park",
-          destination: "Winter Park",
+          destinationSlug: resortSlug,
+          destination: resortSlug,
           origin: input.hotelName || "DEN",
           travelDate: input.date || null,
           passengerCount: totalGuests,
-          vehicleClass: totalGuests > 5 ? "van" : "suv",
+          vehicleClass,
           originatingPage: `/${surface}/${input.propertySlug || node.destinationSlug}`,
         });
         const issued = issueSharedGoSnoHandoffAttribution({
@@ -772,7 +1188,7 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
           originatingPage: `/${surface}/${input.propertySlug || node.destinationSlug}`,
           originatingSite: surface,
           decisionReceiptId: `match:${record.tourId}`,
-          evidenceVersion: "dcc_catalog_v1",
+          evidenceVersion: "dcc_catalog_v2",
           isTest: Boolean(input.isTest),
         });
         option.bookingPath.clickId = issued.clickId;
@@ -782,7 +1198,7 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
           decisionReceiptId: `match:${record.tourId}`,
           recommendedOperatorId: record.operatorCode || record.primaryProvider,
           recommendedOperatorName: record.operatorName || record.primaryProvider,
-          evidenceVersion: "dcc_catalog_v1",
+          evidenceVersion: "dcc_catalog_v2",
           originatingSite: surface,
           originatingPage: `/${surface}/${input.propertySlug || node.destinationSlug}`,
           provider:

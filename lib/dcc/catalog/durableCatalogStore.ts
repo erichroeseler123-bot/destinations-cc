@@ -30,9 +30,23 @@ export type TourAgeBandRecord = {
   maxTravelersPerBooking?: number;
 };
 
+export type PriceBasis = "per_person" | "flat_rate_per_vehicle" | "per_group" | "unknown";
+
+export type TourProductOptionRecord = {
+  optionCode: string;
+  title: string;
+  description: string | null;
+  includesPickup: boolean | null;
+  durationMinutes: number | null;
+  fromPriceCents: number | null;
+  priceBasis: PriceBasis;
+  scheduledStartTimes: string[];
+};
+
 export type TourConstraintsRecord = {
   maxPassengerWeightLbs?: number | null;
   combinedWeightThresholdLbs?: number | null;
+  maxPassengers?: number | null;
   wheelchairAccessible?: boolean | null;
   minAgeYears?: number | null;
   physicalDifficulty?: "EASY" | "MODERATE" | "CHALLENGING" | "UNKNOWN" | null;
@@ -60,6 +74,7 @@ export type ChannelOffer = {
   capabilityTier: TourCapabilityTier;
   commissionAuthorized: boolean;
   fromPriceCents: number | null;
+  priceBasis?: PriceBasis;
   currency: string;
   freeCancellation: boolean | null;
   cancellationCutoffHours: number | null;
@@ -106,6 +121,7 @@ export type DurableTourRecord = {
   durationMinutes: number | null;
   durationRawText: string | null;
   fromPriceCents: number | null;
+  priceBasis?: PriceBasis;
   currency: string;
   /** Explicit null when unknown — NEVER default to true */
   freeCancellation: boolean | null;
@@ -114,6 +130,8 @@ export type DurableTourRecord = {
   cancellationSummary: string | null;
   /** Explicit null when unknown */
   hasHotelPickup: boolean | null;
+  /** True if the lowest-priced option includes hotel pickup; false if hotel pickup is an optional upgrade; null if unknown */
+  lowestPriceIncludesPickup?: boolean | null;
   pickupType:
     | "HOTEL_PICKUP"
     | "MEETING_POINT_ONLY"
@@ -132,6 +150,8 @@ export type DurableTourRecord = {
   ageBands: TourAgeBandRecord[];
   constraints: TourConstraintsRecord;
   channelOffers: ChannelOffer[];
+  productOptions?: TourProductOptionRecord[];
+  serviceDetails?: Record<string, unknown>;
   inclusions: string[];
   exclusions: string[];
   primaryImageUrl: string | null;
@@ -139,11 +159,32 @@ export type DurableTourRecord = {
   reviewCount: number | null;
   bookingUrl: string;
   provenance: TourProvenanceRecord;
+  quarantined?: boolean;
+  quarantineReason?: string | null;
   active: boolean;
   lastVerifiedAt: string;
   updatedAt: string;
   createdAt: string;
 };
+
+/**
+ * Acceptance fixtures, unsupported operator-direct listings, and deprecated hardcoded GoSno/PARR rows
+ * that are strictly quarantined from the public catalog and matcher.
+ */
+export const QUARANTINED_TOUR_IDS = new Set<string>([
+  "dcc:tour:nola:lafitte-custom-bayou-charter-unknowns",
+  "dcc:tour:nola:preservation-hall-jazz-session",
+  "dcc:tour:nola:steamboat-natchez-jazz-cruise",
+  "dcc:tour:nola:cajun-encounters-honey-island-swamp",
+  "dcc:tour:gosno:winter-park-express-shuttle",
+  "dcc:tour:parr:red-rocks-amphitheatre-shuttle",
+]);
+
+export function isQuarantinedTourRecord(rec: Pick<DurableTourRecord, "tourId" | "quarantined">): boolean {
+  if (rec.quarantined === true) return true;
+  if (QUARANTINED_TOUR_IDS.has(rec.tourId)) return true;
+  return false;
+}
 
 export type CatalogSyncRunRecord = {
   runId: string;
@@ -525,12 +566,14 @@ export async function ensureCatalogSchema(): Promise<void> {
           duration_minutes INTEGER,
           duration_raw_text TEXT,
           from_price_cents INTEGER,
+          price_basis TEXT NOT NULL DEFAULT 'per_person',
           currency TEXT NOT NULL DEFAULT 'USD',
           free_cancellation BOOLEAN,
           cancellation_policy_type TEXT,
           cancellation_cutoff_hours INTEGER,
           cancellation_summary TEXT,
           has_hotel_pickup BOOLEAN,
+          lowest_price_includes_pickup BOOLEAN,
           pickup_type TEXT,
           pickup_summary TEXT,
           meeting_point_name TEXT,
@@ -542,6 +585,8 @@ export async function ensureCatalogSchema(): Promise<void> {
           age_bands_json JSONB NOT NULL DEFAULT '[]'::jsonb,
           constraints_json JSONB NOT NULL DEFAULT '{}'::jsonb,
           channel_offers_json JSONB NOT NULL DEFAULT '[]'::jsonb,
+          product_options_json JSONB NOT NULL DEFAULT '[]'::jsonb,
+          service_details_json JSONB NOT NULL DEFAULT '{}'::jsonb,
           inclusions_json JSONB NOT NULL DEFAULT '[]'::jsonb,
           exclusions_json JSONB NOT NULL DEFAULT '[]'::jsonb,
           primary_image_url TEXT,
@@ -549,12 +594,20 @@ export async function ensureCatalogSchema(): Promise<void> {
           review_count INTEGER,
           booking_url TEXT NOT NULL,
           provenance_json JSONB NOT NULL DEFAULT '{}'::jsonb,
+          quarantined BOOLEAN NOT NULL DEFAULT false,
+          quarantine_reason TEXT,
           active BOOLEAN NOT NULL DEFAULT true,
           last_verified_at TIMESTAMPTZ NOT NULL DEFAULT now(),
           updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
           created_at TIMESTAMPTZ NOT NULL DEFAULT now()
         )
       `);
+      await sql.query(`ALTER TABLE dcc_tour_catalog ADD COLUMN IF NOT EXISTS price_basis TEXT NOT NULL DEFAULT 'per_person'`);
+      await sql.query(`ALTER TABLE dcc_tour_catalog ADD COLUMN IF NOT EXISTS lowest_price_includes_pickup BOOLEAN`);
+      await sql.query(`ALTER TABLE dcc_tour_catalog ADD COLUMN IF NOT EXISTS product_options_json JSONB NOT NULL DEFAULT '[]'::jsonb`);
+      await sql.query(`ALTER TABLE dcc_tour_catalog ADD COLUMN IF NOT EXISTS service_details_json JSONB NOT NULL DEFAULT '{}'::jsonb`);
+      await sql.query(`ALTER TABLE dcc_tour_catalog ADD COLUMN IF NOT EXISTS quarantined BOOLEAN NOT NULL DEFAULT false`);
+      await sql.query(`ALTER TABLE dcc_tour_catalog ADD COLUMN IF NOT EXISTS quarantine_reason TEXT`);
       await sql.query(
         `CREATE INDEX IF NOT EXISTS dcc_tour_catalog_destination_slug_idx ON dcc_tour_catalog (destination_slug)`,
       );
@@ -642,8 +695,10 @@ export function writeLocalCatalogSnapshot(
 }
 
 function mapPgRowToDurableTourRecord(row: Record<string, any>): DurableTourRecord {
+  const tourId = String(row.tour_id);
+  const quarantined = Boolean(row.quarantined) || QUARANTINED_TOUR_IDS.has(tourId);
   return {
-    tourId: String(row.tour_id),
+    tourId,
     compatibilityAliases: Array.isArray(row.compatibility_aliases) ? row.compatibility_aliases : [],
     destinationSlug: String(row.destination_slug),
     portSlug: row.port_slug ? String(row.port_slug) : null,
@@ -668,6 +723,7 @@ function mapPgRowToDurableTourRecord(row: Record<string, any>): DurableTourRecor
       typeof row.from_price_cents === "number" && Number.isFinite(row.from_price_cents)
         ? row.from_price_cents
         : null,
+    priceBasis: (row.price_basis as PriceBasis) || "per_person",
     currency: String(row.currency || "USD"),
     freeCancellation: typeof row.free_cancellation === "boolean" ? row.free_cancellation : null,
     cancellationPolicyType: row.cancellation_policy_type || null,
@@ -675,6 +731,8 @@ function mapPgRowToDurableTourRecord(row: Record<string, any>): DurableTourRecor
       typeof row.cancellation_cutoff_hours === "number" ? row.cancellation_cutoff_hours : null,
     cancellationSummary: row.cancellation_summary ? String(row.cancellation_summary) : null,
     hasHotelPickup: typeof row.has_hotel_pickup === "boolean" ? row.has_hotel_pickup : null,
+    lowestPriceIncludesPickup:
+      typeof row.lowest_price_includes_pickup === "boolean" ? row.lowest_price_includes_pickup : null,
     pickupType: row.pickup_type || null,
     pickupSummary: row.pickup_summary ? String(row.pickup_summary) : null,
     meetingPointName: row.meeting_point_name ? String(row.meeting_point_name) : null,
@@ -693,6 +751,11 @@ function mapPgRowToDurableTourRecord(row: Record<string, any>): DurableTourRecor
     constraints:
       row.constraints_json && typeof row.constraints_json === "object" ? row.constraints_json : {},
     channelOffers: Array.isArray(row.channel_offers_json) ? row.channel_offers_json : [],
+    productOptions: Array.isArray(row.product_options_json) ? row.product_options_json : [],
+    serviceDetails:
+      row.service_details_json && typeof row.service_details_json === "object"
+        ? row.service_details_json
+        : {},
     inclusions: Array.isArray(row.inclusions_json) ? row.inclusions_json : [],
     exclusions: Array.isArray(row.exclusions_json) ? row.exclusions_json : [],
     primaryImageUrl: row.primary_image_url ? String(row.primary_image_url) : null,
@@ -721,7 +784,9 @@ function mapPgRowToDurableTourRecord(row: Record<string, any>): DurableTourRecor
               ageBandsKnown: Array.isArray(row.age_bands_json) && row.age_bands_json.length > 0,
             },
           },
-    active: Boolean(row.active),
+    quarantined,
+    quarantineReason: row.quarantine_reason ? String(row.quarantine_reason) : null,
+    active: Boolean(row.active) && !quarantined,
     lastVerifiedAt: row.last_verified_at
       ? new Date(row.last_verified_at).toISOString()
       : new Date().toISOString(),
@@ -731,20 +796,22 @@ function mapPgRowToDurableTourRecord(row: Record<string, any>): DurableTourRecor
 }
 
 async function upsertSingleTourToPg(sql: ReturnType<typeof getSqlClient>, record: DurableTourRecord): Promise<void> {
+  const isQuarantined = isQuarantinedTourRecord(record);
   await sql`
     INSERT INTO dcc_tour_catalog (
       tour_id, compatibility_aliases, destination_slug, port_slug,
       earthos_destination_node_id, time_zone, title, summary,
       category, tags, primary_provider, provider_product_code,
       operator_name, operator_code, capability_tier, commission_authorized,
-      duration_minutes, duration_raw_text, from_price_cents, currency,
+      duration_minutes, duration_raw_text, from_price_cents, price_basis, currency,
       free_cancellation, cancellation_policy_type, cancellation_cutoff_hours, cancellation_summary,
-      has_hotel_pickup, pickup_type, pickup_summary,
+      has_hotel_pickup, lowest_price_includes_pickup, pickup_type, pickup_summary,
       meeting_point_name, meeting_point_address, meeting_point_lat, meeting_point_lng,
       location_precision, pickup_locations_json, age_bands_json,
-      constraints_json, channel_offers_json, inclusions_json, exclusions_json,
+      constraints_json, channel_offers_json, product_options_json, service_details_json,
+      inclusions_json, exclusions_json,
       primary_image_url, rating_average, review_count, booking_url,
-      provenance_json, active, last_verified_at, updated_at, created_at
+      provenance_json, quarantined, quarantine_reason, active, last_verified_at, updated_at, created_at
     ) VALUES (
       ${record.tourId},
       ${JSON.stringify(record.compatibilityAliases)}::jsonb,
@@ -765,12 +832,14 @@ async function upsertSingleTourToPg(sql: ReturnType<typeof getSqlClient>, record
       ${record.durationMinutes},
       ${record.durationRawText},
       ${record.fromPriceCents},
+      ${record.priceBasis || "per_person"},
       ${record.currency},
       ${record.freeCancellation},
       ${record.cancellationPolicyType},
       ${record.cancellationCutoffHours},
       ${record.cancellationSummary},
       ${record.hasHotelPickup},
+      ${record.lowestPriceIncludesPickup ?? null},
       ${record.pickupType},
       ${record.pickupSummary},
       ${record.meetingPointName},
@@ -782,6 +851,8 @@ async function upsertSingleTourToPg(sql: ReturnType<typeof getSqlClient>, record
       ${JSON.stringify(record.ageBands)}::jsonb,
       ${JSON.stringify(record.constraints)}::jsonb,
       ${JSON.stringify(record.channelOffers)}::jsonb,
+      ${JSON.stringify(record.productOptions || [])}::jsonb,
+      ${JSON.stringify(record.serviceDetails || {})}::jsonb,
       ${JSON.stringify(record.inclusions)}::jsonb,
       ${JSON.stringify(record.exclusions)}::jsonb,
       ${record.primaryImageUrl},
@@ -789,7 +860,9 @@ async function upsertSingleTourToPg(sql: ReturnType<typeof getSqlClient>, record
       ${record.reviewCount},
       ${record.bookingUrl},
       ${JSON.stringify(record.provenance)}::jsonb,
-      ${record.active},
+      ${isQuarantined},
+      ${record.quarantineReason || (isQuarantined ? "quarantined_fixture_or_unsupported_operator_listing" : null)},
+      ${record.active && !isQuarantined},
       ${record.lastVerifiedAt}::timestamptz,
       ${record.updatedAt}::timestamptz,
       ${record.createdAt}::timestamptz
@@ -813,12 +886,14 @@ async function upsertSingleTourToPg(sql: ReturnType<typeof getSqlClient>, record
       duration_minutes = EXCLUDED.duration_minutes,
       duration_raw_text = EXCLUDED.duration_raw_text,
       from_price_cents = EXCLUDED.from_price_cents,
+      price_basis = EXCLUDED.price_basis,
       currency = EXCLUDED.currency,
       free_cancellation = EXCLUDED.free_cancellation,
       cancellation_policy_type = EXCLUDED.cancellation_policy_type,
       cancellation_cutoff_hours = EXCLUDED.cancellation_cutoff_hours,
       cancellation_summary = EXCLUDED.cancellation_summary,
       has_hotel_pickup = EXCLUDED.has_hotel_pickup,
+      lowest_price_includes_pickup = EXCLUDED.lowest_price_includes_pickup,
       pickup_type = EXCLUDED.pickup_type,
       pickup_summary = EXCLUDED.pickup_summary,
       meeting_point_name = EXCLUDED.meeting_point_name,
@@ -830,6 +905,8 @@ async function upsertSingleTourToPg(sql: ReturnType<typeof getSqlClient>, record
       age_bands_json = EXCLUDED.age_bands_json,
       constraints_json = EXCLUDED.constraints_json,
       channel_offers_json = EXCLUDED.channel_offers_json,
+      product_options_json = EXCLUDED.product_options_json,
+      service_details_json = EXCLUDED.service_details_json,
       inclusions_json = EXCLUDED.inclusions_json,
       exclusions_json = EXCLUDED.exclusions_json,
       primary_image_url = EXCLUDED.primary_image_url,
@@ -837,6 +914,8 @@ async function upsertSingleTourToPg(sql: ReturnType<typeof getSqlClient>, record
       review_count = EXCLUDED.review_count,
       booking_url = EXCLUDED.booking_url,
       provenance_json = EXCLUDED.provenance_json,
+      quarantined = EXCLUDED.quarantined,
+      quarantine_reason = EXCLUDED.quarantine_reason,
       active = EXCLUDED.active,
       last_verified_at = EXCLUDED.last_verified_at,
       updated_at = now()
@@ -848,9 +927,33 @@ export async function upsertDurableTourRecords(records: DurableTourRecord[]): Pr
   persistedToPostgres: boolean;
 }> {
   const snapshot = readLocalCatalogSnapshot();
-  const byId = new Map<string, DurableTourRecord>(snapshot.records.map((r) => [r.tourId, r]));
+  const byId = new Map<string, DurableTourRecord>(
+    snapshot.records.filter((r) => !isQuarantinedTourRecord(r)).map((r) => [r.tourId, r]),
+  );
   for (const rec of records) {
-    byId.set(rec.tourId, rec);
+    if (isQuarantinedTourRecord(rec)) {
+      byId.delete(rec.tourId);
+    } else {
+      const existing = byId.get(rec.tourId);
+      if (
+        existing &&
+        (!rec.productOptions || rec.productOptions.length === 0) &&
+        existing.productOptions &&
+        existing.productOptions.length > 0
+      ) {
+        byId.set(rec.tourId, {
+          ...rec,
+          productOptions: existing.productOptions,
+          lowestPriceIncludesPickup:
+            rec.lowestPriceIncludesPickup ?? existing.lowestPriceIncludesPickup,
+          hasHotelPickup: rec.hasHotelPickup ?? existing.hasHotelPickup,
+          ageBands:
+            rec.ageBands && rec.ageBands.length > 0 ? rec.ageBands : existing.ageBands,
+        });
+      } else {
+        byId.set(rec.tourId, rec);
+      }
+    }
   }
   const merged = Array.from(byId.values());
   writeLocalCatalogSnapshot(merged, snapshot.syncRuns);
@@ -860,8 +963,19 @@ export async function upsertDurableTourRecords(records: DurableTourRecord[]): Pr
     try {
       await ensureCatalogSchema();
       const sql = getSqlClient();
+      const quarantinedArray = Array.from(QUARANTINED_TOUR_IDS);
+      if (quarantinedArray.length > 0) {
+        await sql`
+          UPDATE dcc_tour_catalog
+          SET quarantined = true,
+              quarantine_reason = COALESCE(quarantine_reason, 'quarantined_fixture_or_unsupported_operator_listing'),
+              active = false,
+              updated_at = now()
+          WHERE tour_id = ANY(${quarantinedArray})
+        `;
+      }
       for (const rec of records) {
-        await upsertSingleTourToPg(sql, rec);
+        await upsertSingleTourToPg(sql, byId.get(rec.tourId) || rec);
       }
       persistedToPostgres = true;
     } catch (err) {
@@ -934,7 +1048,10 @@ async function loadAllCatalogRecordsWithPgHydration(): Promise<{
     memoryCatalogCache.length > 0 &&
     Date.now() - memoryCatalogLoadedAt < 60_000
   ) {
-    return { records: memoryCatalogCache, source: memoryCatalogSource };
+    return {
+      records: memoryCatalogCache.filter((r) => r.active && !isQuarantinedTourRecord(r)),
+      source: memoryCatalogSource,
+    };
   }
 
   if (shouldUsePostgres()) {
@@ -942,10 +1059,10 @@ async function loadAllCatalogRecordsWithPgHydration(): Promise<{
       await ensureCatalogSchema();
       const sql = getSqlClient();
       const rows = await sql`
-        SELECT * FROM dcc_tour_catalog WHERE active = true ORDER BY destination_slug, tour_id
+        SELECT * FROM dcc_tour_catalog WHERE active = true AND quarantined = false ORDER BY destination_slug, tour_id
       `;
       if (rows.length > 0) {
-        const mapped = rows.map(mapPgRowToDurableTourRecord);
+        const mapped = rows.map(mapPgRowToDurableTourRecord).filter((r) => r.active && !isQuarantinedTourRecord(r));
         memoryCatalogCache = mapped;
         memoryCatalogLoadedAt = Date.now();
         memoryCatalogSource = "postgres";
@@ -954,18 +1071,19 @@ async function loadAllCatalogRecordsWithPgHydration(): Promise<{
 
       // If Postgres is empty on first query (e.g., fresh production DB), auto-hydrate from committed snapshot
       const snapshot = readLocalCatalogSnapshot();
-      if (snapshot.records.length > 0 && !pgHydratedFromSnapshot) {
+      const activeSnapshotRecords = snapshot.records.filter((r) => r.active && !isQuarantinedTourRecord(r));
+      if (activeSnapshotRecords.length > 0 && !pgHydratedFromSnapshot) {
         pgHydratedFromSnapshot = true;
-        for (const rec of snapshot.records) {
+        for (const rec of activeSnapshotRecords) {
           await upsertSingleTourToPg(sql, rec);
         }
         for (const run of snapshot.syncRuns) {
           await recordCatalogSyncRun(run);
         }
-        memoryCatalogCache = snapshot.records;
+        memoryCatalogCache = activeSnapshotRecords;
         memoryCatalogLoadedAt = Date.now();
         memoryCatalogSource = "snapshot_hydrated_to_postgres";
-        return { records: snapshot.records, source: "snapshot_hydrated_to_postgres" };
+        return { records: activeSnapshotRecords, source: "snapshot_hydrated_to_postgres" };
       }
     } catch (err) {
       console.warn("[durableCatalogStore] Falling back to snapshot after Postgres query error:", err);
@@ -973,11 +1091,15 @@ async function loadAllCatalogRecordsWithPgHydration(): Promise<{
   }
 
   if (memoryCatalogCache && memoryCatalogCache.length > 0) {
-    return { records: memoryCatalogCache, source: "local_snapshot" };
+    return {
+      records: memoryCatalogCache.filter((r) => r.active && !isQuarantinedTourRecord(r)),
+      source: "local_snapshot",
+    };
   }
   const snapshot = readLocalCatalogSnapshot();
-  memoryCatalogCache = snapshot.records;
-  return { records: snapshot.records, source: "local_snapshot" };
+  const activeRecords = snapshot.records.filter((r) => r.active && !isQuarantinedTourRecord(r));
+  memoryCatalogCache = activeRecords;
+  return { records: activeRecords, source: "local_snapshot" };
 }
 
 export type DurableCatalogQueryFilter = {
@@ -1012,7 +1134,7 @@ export async function queryDurableTourCatalog(filter: DurableCatalogQueryFilter 
       : null;
 
   const filtered = allRecords.filter((rec) => {
-    if (!rec.active) return false;
+    if (!rec.active || isQuarantinedTourRecord(rec)) return false;
     if (filter.includeDiscoveryOnly === false && rec.capabilityTier === "discovery_only") {
       return false;
     }
@@ -1066,9 +1188,10 @@ export async function getDurableTourByIdOrAlias(idOrAlias: string): Promise<Dura
   return (
     records.find(
       (r) =>
-        r.tourId.toLowerCase() === norm ||
-        r.providerProductCode.toLowerCase() === norm ||
-        r.compatibilityAliases.some((a) => a.toLowerCase() === norm),
+        !isQuarantinedTourRecord(r) &&
+        (r.tourId.toLowerCase() === norm ||
+          r.providerProductCode.toLowerCase() === norm ||
+          r.compatibilityAliases.some((a) => a.toLowerCase() === norm)),
     ) || null
   );
 }
@@ -1076,58 +1199,6 @@ export async function getDurableTourByIdOrAlias(idOrAlias: string): Promise<Dura
 export async function getDurableCatalogSummaryReport() {
   const { records, source } = await loadAllCatalogRecordsWithPgHydration();
   const snapshot = readLocalCatalogSnapshot();
-
-  const byDestination: Record<
-    string,
-    {
-      total: number;
-      earthosNodeId: string;
-      timeZone: string;
-      byCapabilityTier: Record<string, number>;
-      byProvider: Record<string, number>;
-      explicitUnknownCounts: {
-        unknownDuration: number;
-        unknownCancellation: number;
-        unknownPickup: number;
-        unknownMeetingCoordinates: number;
-      };
-    }
-  > = {};
-
-  const byCapabilityTier: Record<string, number> = {};
-  const byProvider: Record<string, number> = {};
-
-  for (const rec of records) {
-    byCapabilityTier[rec.capabilityTier] = (byCapabilityTier[rec.capabilityTier] || 0) + 1;
-    byProvider[rec.primaryProvider] = (byProvider[rec.primaryProvider] || 0) + 1;
-
-    if (!byDestination[rec.destinationSlug]) {
-      byDestination[rec.destinationSlug] = {
-        total: 0,
-        earthosNodeId: rec.earthosDestinationNodeId,
-        timeZone: rec.timeZone,
-        byCapabilityTier: {},
-        byProvider: {},
-        explicitUnknownCounts: {
-          unknownDuration: 0,
-          unknownCancellation: 0,
-          unknownPickup: 0,
-          unknownMeetingCoordinates: 0,
-        },
-      };
-    }
-    const d = byDestination[rec.destinationSlug];
-    d.total += 1;
-    d.byCapabilityTier[rec.capabilityTier] = (d.byCapabilityTier[rec.capabilityTier] || 0) + 1;
-    d.byProvider[rec.primaryProvider] = (d.byProvider[rec.primaryProvider] || 0) + 1;
-
-    if (rec.durationMinutes === null) d.explicitUnknownCounts.unknownDuration += 1;
-    if (rec.freeCancellation === null) d.explicitUnknownCounts.unknownCancellation += 1;
-    if (rec.hasHotelPickup === null) d.explicitUnknownCounts.unknownPickup += 1;
-    if (rec.meetingPointLat === null || rec.meetingPointLng === null) {
-      d.explicitUnknownCounts.unknownMeetingCoordinates += 1;
-    }
-  }
 
   let syncRuns = snapshot.syncRuns;
   if (shouldUsePostgres()) {
@@ -1158,6 +1229,108 @@ export async function getDurableCatalogSummaryReport() {
     }
   }
 
+  // Index latest Viator sync run per destination to report sampled vs complete coverage
+  const sortedSyncRuns = [...syncRuns].sort(
+    (a, b) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime(),
+  );
+  const latestSyncByDestination = new Map<string, CatalogSyncRunRecord>();
+  for (const run of sortedSyncRuns) {
+    if (run.provider === "viator" && run.status === "completed") {
+      if (!latestSyncByDestination.has(run.destinationSlug)) {
+        latestSyncByDestination.set(run.destinationSlug, run);
+      }
+    }
+  }
+
+  const byDestination: Record<
+    string,
+    {
+      total: number;
+      earthosNodeId: string;
+      timeZone: string;
+      coverageStatus: "sampled" | "complete";
+      providerTotalAvailableCount: number | null;
+      importedCount: number;
+      nextCursor: string | null;
+      byCapabilityTier: Record<string, number>;
+      byProvider: Record<string, number>;
+      explicitUnknownCounts: {
+        unknownDuration: number;
+        unknownCancellation: number;
+        unknownPickup: number;
+        unknownMeetingCoordinates: number;
+      };
+    }
+  > = {};
+
+  const byCapabilityTier: Record<string, number> = {};
+  const byProvider: Record<string, number> = {};
+
+  for (const rec of records) {
+    if (isQuarantinedTourRecord(rec)) continue;
+    byCapabilityTier[rec.capabilityTier] = (byCapabilityTier[rec.capabilityTier] || 0) + 1;
+    byProvider[rec.primaryProvider] = (byProvider[rec.primaryProvider] || 0) + 1;
+
+    if (!byDestination[rec.destinationSlug]) {
+      const latestRun = latestSyncByDestination.get(rec.destinationSlug);
+      const rawProviderTotal = latestRun?.metadata?.providerTotalCount;
+      const providerTotalAvailableCount =
+        typeof rawProviderTotal === "number" && Number.isFinite(rawProviderTotal)
+          ? rawProviderTotal
+          : null;
+      byDestination[rec.destinationSlug] = {
+        total: 0,
+        earthosNodeId: rec.earthosDestinationNodeId,
+        timeZone: rec.timeZone,
+        coverageStatus: "sampled",
+        providerTotalAvailableCount,
+        importedCount: 0,
+        nextCursor: latestRun?.cursorValue || null,
+        byCapabilityTier: {},
+        byProvider: {},
+        explicitUnknownCounts: {
+          unknownDuration: 0,
+          unknownCancellation: 0,
+          unknownPickup: 0,
+          unknownMeetingCoordinates: 0,
+        },
+      };
+    }
+    const d = byDestination[rec.destinationSlug];
+    d.total += 1;
+    d.importedCount += 1;
+    d.byCapabilityTier[rec.capabilityTier] = (d.byCapabilityTier[rec.capabilityTier] || 0) + 1;
+    d.byProvider[rec.primaryProvider] = (d.byProvider[rec.primaryProvider] || 0) + 1;
+
+    if (rec.durationMinutes === null) d.explicitUnknownCounts.unknownDuration += 1;
+    if (rec.freeCancellation === null) d.explicitUnknownCounts.unknownCancellation += 1;
+    if (rec.hasHotelPickup === null) d.explicitUnknownCounts.unknownPickup += 1;
+    if (rec.meetingPointLat === null || rec.meetingPointLng === null) {
+      d.explicitUnknownCounts.unknownMeetingCoordinates += 1;
+    }
+  }
+
+  const sampledDestinations: string[] = [];
+  const completeDestinations: string[] = [];
+
+  for (const [slug, destStats] of Object.entries(byDestination)) {
+    const viatorImported = destStats.byProvider["viator"] || 0;
+    const latestRun = latestSyncByDestination.get(slug);
+    const runCoverage = latestRun?.metadata?.coverageStatus;
+    if (
+      runCoverage === "complete" ||
+      (destStats.providerTotalAvailableCount !== null &&
+        destStats.providerTotalAvailableCount > 0 &&
+        viatorImported >= destStats.providerTotalAvailableCount)
+    ) {
+      destStats.coverageStatus = "complete";
+      completeDestinations.push(slug);
+    } else {
+      destStats.coverageStatus = "sampled";
+      sampledDestinations.push(slug);
+    }
+  }
+
   const totalRejectedRecords = syncRuns.reduce((acc, r) => acc + (r.rejectedCount || 0), 0);
   const totalUpstreamRequests = syncRuns.reduce((acc, r) => acc + (r.upstreamRequestCount || 0), 0);
 
@@ -1165,6 +1338,15 @@ export async function getDurableCatalogSummaryReport() {
     storageSource: source,
     totalImportedRecords: records.length,
     totalDestinationsCovered: Object.keys(byDestination).length,
+    quarantinedRecordsExcludedCount: QUARANTINED_TOUR_IDS.size,
+    quarantinedTourIds: Array.from(QUARANTINED_TOUR_IDS),
+    destinationCoverageBreakdown: {
+      totalDestinations: Object.keys(byDestination).length,
+      sampledDestinationsCount: sampledDestinations.length,
+      completeDestinationsCount: completeDestinations.length,
+      sampledDestinations,
+      completeDestinations,
+    },
     totalRejectedRecords,
     totalUpstreamRequestsDuringSync: totalUpstreamRequests,
     byCapabilityTier,

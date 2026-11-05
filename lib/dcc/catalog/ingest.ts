@@ -3,9 +3,13 @@ import { getViatorClient } from "@/lib/viator/client";
 import { appendViatorAttribution } from "@/lib/viator/links";
 import { DCC_VIATOR_PRODUCT_MAPPINGS } from "@/lib/viator/mappings";
 import { fetchCompaniesItems } from "@/lib/dcc/liveSlots/fareharbor";
+import { getActiveGoSnoRouteFeedSnapshotState } from "@/lib/dcc/applicability/gosnoRouteFeedSnapshot";
+import { RED_ROCKS_CONCERT_CANDIDATE_OPTIONS } from "@/lib/dcc/decisionEngines/redRocksConcertTransportationEngine";
+import { DCC_SITE_TRUTH } from "@/lib/dcc/siteTruth";
 import {
   EARTHOS_DESTINATION_NODES,
   getCompatibilityAliasesForViatorCode,
+  readLocalCatalogSnapshot,
   recordCatalogSyncRun,
   upsertDurableTourRecords,
   type CatalogSyncRunRecord,
@@ -14,14 +18,16 @@ import {
   type EarthOSDestinationNode,
   type LocationPrecision,
   type PickupLocationRecord,
+  type PriceBasis,
   type TourAgeBandRecord,
+  type TourProductOptionRecord,
 } from "./durableCatalogStore";
 
 function sha256Hex(value: unknown): string {
   return crypto.createHash("sha256").update(JSON.stringify(value)).digest("hex");
 }
 
-function parseDurationMinutesFromViator(rawDuration: any): {
+export function parseDurationMinutesFromViator(rawDuration: any): {
   durationMinutes: number | null;
   durationRawText: string | null;
 } {
@@ -43,7 +49,6 @@ function parseDurationMinutesFromViator(rawDuration: any): {
       ? rawDuration.variableDurationToMinutes
       : null;
   if (fromMin && toMin && fromMin > 0 && toMin >= fromMin) {
-    // Use upper bound for conservative schedule fit, preserve raw range text
     return {
       durationMinutes: Math.round(toMin),
       durationRawText: `${Math.round(fromMin)}-${Math.round(toMin)}m variable`,
@@ -195,7 +200,8 @@ function parsePickupAndLocationsFromViator(
   let meetingPointName: string | null = null;
   let meetingPointAddress: string | null = null;
   let meetingPointLat: number | null = null;
-  let meetingPointLng: number | null = null;
+  let meetingPointLng: number | null;
+  meetingPointLng = null;
   let locationPrecision: LocationPrecision = "unknown";
 
   const startArr = Array.isArray(logistics.start) ? logistics.start : [];
@@ -268,6 +274,245 @@ function parsePickupAndLocationsFromViator(
     meetingPointLng,
     locationPrecision,
     pickupLocations,
+  };
+}
+
+const NEGATIVE_PICKUP_OPTION_REGEX =
+  /\b(no\s+(hotel\s+)?pick\s*-?\s*up|without\s+(hotel\s+)?pick\s*-?\s*up|no\s+transport(ation)?|without\s+transport(ation)?|self\s*-?\s*drive|drive\s+yourself|meet\s+at\s+(site|location|dock|pier|marina))\b/i;
+
+const POSITIVE_PICKUP_OPTION_REGEX =
+  /(?:\+\s*transport(?:ation)?\b|\b(?:with\s+(?:hotel\s+)?pick\s*-?\s*up|with\s+transport(?:ation)?|pick\s*-?\s*up\s+included|transport(?:ation)?\s+included|includes\s+(?:hotel\s+)?pick\s*-?\s*up|includes\s+(?:round-?\s*trip\s+)?transport(?:ation)?|\d{1,2}:\d{2}\s*(?:am|pm)?\s*pick\s*-?\s*up|hotel\s+pick\s*-?\s*up)\b)/i;
+
+function parseDurationFromOptionText(text: string | null): number | null {
+  if (!text) return null;
+  const m = text.match(
+    /Duration:\s*(?:(\d+)\s*hours?)?\s*(?:(\d+)\s*minutes?)?/i,
+  );
+  if (!m || (!m[1] && !m[2])) return null;
+  const hours = m[1] ? Number.parseInt(m[1], 10) : 0;
+  const mins = m[2] ? Number.parseInt(m[2], 10) : 0;
+  const total = hours * 60 + mins;
+  return total > 0 ? total : null;
+}
+
+export function parseProductOptionsAndScheduleFromViator(
+  detail: any,
+  schedule: any,
+  hasHotelPickup: boolean | null,
+  defaultDurationMinutes: number | null,
+  productTitle: string,
+  productSummary: string | null,
+): {
+  scheduleFromPriceCents: number | null;
+  priceBasis: PriceBasis;
+  productOptions: TourProductOptionRecord[];
+  lowestPriceIncludesPickup: boolean | null;
+  effectiveHasHotelPickup: boolean | null;
+} {
+  const rawPricingType = String(detail?.pricingInfo?.type || "").toUpperCase();
+  const productPriceBasis: PriceBasis =
+    rawPricingType === "UNIT" || rawPricingType === "PER_GROUP"
+      ? "per_group"
+      : "per_person";
+
+  const rawScheduleFrom =
+    typeof schedule?.summary?.fromPrice === "number" && Number.isFinite(schedule.summary.fromPrice)
+      ? Math.round(schedule.summary.fromPrice * 100)
+      : null;
+
+  const bookableItemsByOptionCode = new Map<
+    string,
+    { minPriceCents: number | null; startTimes: string[]; durationMinutes: number | null }
+  >();
+
+  const bookableItems = Array.isArray(schedule?.bookableItems) ? schedule.bookableItems : [];
+  for (const bi of bookableItems) {
+    const optCode = String(bi?.productOptionCode || "DEFAULT").trim();
+    let minAdultOrTravelerPrice: number | null = null;
+    let minAnyPrice: number | null = null;
+    const startTimesSet = new Set<string>();
+    const seasons = Array.isArray(bi?.seasons) ? bi.seasons : [];
+
+    for (const season of seasons) {
+      const pricingRecords = Array.isArray(season?.pricingRecords) ? season.pricingRecords : [];
+      for (const pr of pricingRecords) {
+        const timedEntries = Array.isArray(pr?.timedEntries) ? pr.timedEntries : [];
+        for (const te of timedEntries) {
+          const st = typeof te?.startTime === "string" ? te.startTime.trim() : "";
+          if (/^\d{2}:\d{2}$/.test(st)) {
+            startTimesSet.add(st);
+          }
+        }
+        const pricingDetails = Array.isArray(pr?.pricingDetails) ? pr.pricingDetails : [];
+        for (const pd of pricingDetails) {
+          const ageBand = String(pd?.ageBand || "").toUpperCase();
+          const prices = Array.isArray(pd?.price?.original?.recommendedRetailPrice)
+            ? pd.price.original.recommendedRetailPrice
+            : typeof pd?.price?.original?.recommendedRetailPrice === "number"
+              ? [pd.price.original.recommendedRetailPrice]
+              : [];
+          for (const pVal of prices) {
+            if (typeof pVal === "number" && Number.isFinite(pVal) && pVal > 0) {
+              const cents = Math.round(pVal * 100);
+              if (minAnyPrice === null || cents < minAnyPrice) {
+                minAnyPrice = cents;
+              }
+              if (ageBand === "ADULT" || ageBand === "TRAVELER" || !ageBand) {
+                if (minAdultOrTravelerPrice === null || cents < minAdultOrTravelerPrice) {
+                  minAdultOrTravelerPrice = cents;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    const parsedDur = parseDurationMinutesFromViator(bi?.duration);
+    bookableItemsByOptionCode.set(optCode, {
+      minPriceCents: minAdultOrTravelerPrice ?? minAnyPrice,
+      startTimes: Array.from(startTimesSet).sort(),
+      durationMinutes: parsedDur.durationMinutes,
+    });
+  }
+
+  const rawOptions = Array.isArray(detail?.productOptions) ? detail.productOptions : [];
+  const anyOptionMatchesNegativePickup = rawOptions.some((o: any) =>
+    NEGATIVE_PICKUP_OPTION_REGEX.test(`${o?.title || ""} ${o?.description || ""}`),
+  );
+  const anyOptionMatchesPositivePickup = rawOptions.some((o: any) =>
+    POSITIVE_PICKUP_OPTION_REGEX.test(`${o?.title || ""} ${o?.description || ""}`),
+  );
+
+  // Also check itinerary items if option codes have specific durations
+  const durationByOptionCode = new Map<string, number>();
+  if (
+    anyOptionMatchesPositivePickup &&
+    anyOptionMatchesNegativePickup &&
+    typeof detail?.itinerary?.duration?.variableDurationFromMinutes === "number" &&
+    typeof detail?.itinerary?.duration?.variableDurationToMinutes === "number"
+  ) {
+    // When itinerary duration is a variable range (e.g. 90m self-drive vs 225m with transportation),
+    // map self-drive options to variableDurationFromMinutes and pickup options to variableDurationToMinutes
+    for (const o of rawOptions) {
+      const code = String(o?.productOptionCode || "").trim();
+      const text = `${o?.title || ""} ${o?.description || ""}`;
+      if (NEGATIVE_PICKUP_OPTION_REGEX.test(text)) {
+        durationByOptionCode.set(code, Math.round(detail.itinerary.duration.variableDurationFromMinutes));
+      } else if (POSITIVE_PICKUP_OPTION_REGEX.test(text)) {
+        durationByOptionCode.set(code, Math.round(detail.itinerary.duration.variableDurationToMinutes));
+      }
+    }
+  }
+
+  const productOptions: TourProductOptionRecord[] = [];
+  for (const rawOpt of rawOptions) {
+    const optionCode = String(rawOpt?.productOptionCode || "").trim();
+    if (!optionCode) continue;
+    const title = String(rawOpt?.title || optionCode).trim();
+    const description =
+      typeof rawOpt?.description === "string" && rawOpt.description.trim()
+        ? rawOpt.description.trim()
+        : null;
+    const combinedText = `${title} ${description || ""}`;
+
+    let includesPickup: boolean | null = null;
+    if (NEGATIVE_PICKUP_OPTION_REGEX.test(combinedText)) {
+      includesPickup = false;
+    } else if (POSITIVE_PICKUP_OPTION_REGEX.test(combinedText)) {
+      includesPickup = true;
+    } else if (hasHotelPickup === false) {
+      includesPickup = false;
+    } else if (hasHotelPickup === true) {
+      if (anyOptionMatchesNegativePickup) {
+        // Other options explicitly say "No Pickup" / "No Transportation", so this option includes pickup
+        includesPickup = true;
+      } else if (anyOptionMatchesPositivePickup) {
+        // Other options explicitly say "With Pickup", and this option does not
+        includesPickup = false;
+      } else {
+        // Hotel pickup applies across all options of this product
+        includesPickup = true;
+      }
+    }
+
+    const scheduleMatch = bookableItemsByOptionCode.get(optionCode);
+    const optDur =
+      parseDurationMinutesFromViator(rawOpt?.duration).durationMinutes ??
+      parseDurationFromOptionText(description) ??
+      durationByOptionCode.get(optionCode) ??
+      scheduleMatch?.durationMinutes ??
+      defaultDurationMinutes;
+
+    productOptions.push({
+      optionCode,
+      title,
+      description,
+      includesPickup,
+      durationMinutes: optDur ?? null,
+      fromPriceCents: scheduleMatch?.minPriceCents ?? null,
+      priceBasis: productPriceBasis,
+      scheduledStartTimes: scheduleMatch?.startTimes || [],
+    });
+  }
+
+  // If product has no explicit productOptions array in detail, but has a single DEFAULT bookableItem
+  if (productOptions.length === 0 && bookableItemsByOptionCode.size === 1) {
+    const [optCode, itemInfo] = Array.from(bookableItemsByOptionCode.entries())[0];
+    productOptions.push({
+      optionCode: optCode,
+      title: productTitle,
+      description: null,
+      includesPickup: hasHotelPickup,
+      durationMinutes: itemInfo.durationMinutes ?? defaultDurationMinutes,
+      fromPriceCents: itemInfo.minPriceCents ?? rawScheduleFrom,
+      priceBasis: productPriceBasis,
+      scheduledStartTimes: itemInfo.startTimes,
+    });
+  }
+
+  const effectiveHasHotelPickup =
+    productOptions.some((o) => o.includesPickup === true) ? true : hasHotelPickup;
+
+  let lowestPriceIncludesPickup: boolean | null = null;
+  if (effectiveHasHotelPickup === false) {
+    lowestPriceIncludesPickup = false;
+  } else if (effectiveHasHotelPickup === true) {
+    if (productOptions.length > 0) {
+      const pricedOpts = productOptions.filter(
+        (o) => typeof o.fromPriceCents === "number" && Number.isFinite(o.fromPriceCents),
+      );
+      if (pricedOpts.length > 0) {
+        const minAll = Math.min(...pricedOpts.map((o) => o.fromPriceCents as number));
+        const cheapestOpts = pricedOpts.filter((o) => o.fromPriceCents === minAll);
+        if (cheapestOpts.some((o) => o.includesPickup === false)) {
+          lowestPriceIncludesPickup = false;
+        } else if (cheapestOpts.every((o) => o.includesPickup === true)) {
+          lowestPriceIncludesPickup = true;
+        }
+      } else {
+        if (productOptions.some((o) => o.includesPickup === false)) {
+          lowestPriceIncludesPickup = false;
+        } else if (productOptions.every((o) => o.includesPickup === true)) {
+          lowestPriceIncludesPickup = true;
+        }
+      }
+    } else {
+      const titleAndSummary = `${productTitle} ${productSummary || ""}`;
+      if (/\boptional\s+(hotel\s+)?(transport(ation)?|pick\s*-?\s*up|shuttle)\b/i.test(titleAndSummary)) {
+        lowestPriceIncludesPickup = false;
+      } else {
+        lowestPriceIncludesPickup = null;
+      }
+    }
+  }
+
+  return {
+    scheduleFromPriceCents: rawScheduleFrom,
+    priceBasis: productPriceBasis,
+    productOptions,
+    lowestPriceIncludesPickup,
+    effectiveHasHotelPickup,
   };
 }
 
@@ -367,6 +612,9 @@ export type IngestionOptions = {
   destinations?: string[];
   perDestinationLimit?: number;
   enrichDetailLimitPerDestination?: number;
+  startOffset?: number;
+  maxPagesPerDestination?: number;
+  resumeFromCheckpoint?: boolean;
 };
 
 export async function runUniversalCatalogIngestion(options: IngestionOptions = {}) {
@@ -375,9 +623,11 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
     options.destinations && options.destinations.length > 0
       ? options.destinations
       : Object.keys(EARTHOS_DESTINATION_NODES);
-  const perDestLimit = options.perDestinationLimit ?? 12;
-  const enrichLimit = options.enrichDetailLimitPerDestination ?? 4;
+  const pageSize = Math.min(Math.max(options.perDestinationLimit ?? 12, 1), 50);
+  const maxPages = Math.max(options.maxPagesPerDestination ?? 1, 1);
+  const enrichLimit = options.enrichDetailLimitPerDestination ?? 6;
 
+  const existingSnapshot = readLocalCatalogSnapshot();
   const allUpsertedRecords: DurableTourRecord[] = [];
   const allSyncRuns: CatalogSyncRunRecord[] = [];
 
@@ -392,20 +642,64 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
     let rejectedCount = 0;
     const rejectionReasons: Record<string, number> = {};
 
-    try {
-      upstreamRequests += 1;
-      const searchRes = (await client.searchProducts({
-        filtering: {
-          destination: String(node.viatorDestinationId),
-        },
-        pagination: {
-          start: 1,
-          count: perDestLimit,
-        },
-        currency: "USD",
-      })) as any;
+    // Determine starting 1-based offset from checkpoint if resumeFromCheckpoint is enabled
+    let initialStartOffset = options.startOffset ?? 1;
+    if (options.resumeFromCheckpoint) {
+      const priorRun = existingSnapshot.syncRuns.find(
+        (r) => r.provider === "viator" && r.destinationSlug === destSlug && r.status === "completed",
+      );
+      const savedNext = priorRun?.metadata?.nextStartOffset;
+      if (typeof savedNext === "number" && Number.isFinite(savedNext) && savedNext >= 1) {
+        initialStartOffset = savedNext;
+      }
+    }
 
-      const rawProducts: any[] = Array.isArray(searchRes?.products) ? searchRes.products : [];
+    try {
+      const rawProducts: any[] = [];
+      const seenProductCodes = new Set<string>();
+      let currentStart = initialStartOffset;
+      let pagesFetched = 0;
+      let providerTotalCount = 0;
+
+      while (pagesFetched < maxPages) {
+        upstreamRequests += 1;
+        const searchRes = (await client.searchProducts({
+          filtering: {
+            destination: String(node.viatorDestinationId),
+          },
+          pagination: {
+            start: currentStart,
+            count: pageSize,
+          },
+          currency: "USD",
+        })) as any;
+
+        if (typeof searchRes?.totalCount === "number" && searchRes.totalCount > 0) {
+          providerTotalCount = searchRes.totalCount;
+        }
+        const pageItems: any[] = Array.isArray(searchRes?.products) ? searchRes.products : [];
+        pagesFetched += 1;
+
+        if (pageItems.length === 0) {
+          break;
+        }
+
+        for (const p of pageItems) {
+          const code = String(p?.productCode || "").trim().toUpperCase();
+          if (code && !seenProductCodes.has(code)) {
+            seenProductCodes.add(code);
+            rawProducts.push(p);
+          }
+        }
+
+        currentStart += pageItems.length;
+        if (providerTotalCount > 0 && currentStart > providerTotalCount) {
+          break;
+        }
+        if (pageItems.length < pageSize) {
+          break;
+        }
+      }
 
       // Ensure any mapped compatibility Viator codes for this destination are also included
       const mappedForDest = DCC_VIATOR_PRODUCT_MAPPINGS.filter(
@@ -413,14 +707,11 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
           m.destination.toLowerCase().replace(/[^a-z0-9]+/g, "-") === destSlug ||
           (m.portSlug && m.portSlug.toLowerCase() === destSlug),
       );
-      const existingCodes = new Set(
-        rawProducts.map((p) => String(p?.productCode || "").trim().toUpperCase()),
-      );
       const extraMappedCodes = Array.from(
         new Set(mappedForDest.map((m) => m.viatorCode.trim().toUpperCase())),
-      ).filter((code) => code && !existingCodes.has(code));
+      ).filter((code) => code && !seenProductCodes.has(code));
 
-      // Enrich top products + any explicit mapped codes with getProductDetail
+      // Enrich top products + any explicit mapped codes with getProductDetail + getProductSchedules
       const codesToEnrich = Array.from(
         new Set([
           ...extraMappedCodes,
@@ -432,6 +723,7 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
       );
 
       const detailsByCode = new Map<string, any>();
+      const schedulesByCode = new Map<string, any>();
       const locationRefsToResolve = new Set<string>();
 
       for (const code of codesToEnrich) {
@@ -439,11 +731,11 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
           upstreamRequests += 1;
           const detail = (await client.getProductDetail(code)) as any;
           if (detail && detail.productCode) {
-            detailsByCode.set(String(detail.productCode).toUpperCase(), detail);
-            // If this was an extra mapped code not in rawProducts, add it to rawProducts
-            if (!existingCodes.has(String(detail.productCode).toUpperCase())) {
+            const codeUpper = String(detail.productCode).toUpperCase();
+            detailsByCode.set(codeUpper, detail);
+            if (!seenProductCodes.has(codeUpper)) {
               rawProducts.unshift(detail);
-              existingCodes.add(String(detail.productCode).toUpperCase());
+              seenProductCodes.add(codeUpper);
             }
             const starts = Array.isArray(detail?.logistics?.start) ? detail.logistics.start : [];
             for (const s of starts) {
@@ -457,9 +749,19 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
               const ref = String(p?.location?.ref || "").trim();
               if (ref && ref.startsWith("LOC-")) locationRefsToResolve.add(ref);
             }
+
+            // Also fetch pricing/option schedules for enriched products
+            try {
+              upstreamRequests += 1;
+              const sched = await client.getProductSchedules(codeUpper);
+              if (sched) {
+                schedulesByCode.set(codeUpper, sched);
+              }
+            } catch {
+              // Schedule fetch is optional if unavailable for a given product
+            }
           }
-        } catch (err) {
-          // Product code may be retired/unavailable in Viator detail endpoint
+        } catch {
           rejectedCount += 1;
           rejectionReasons.detail_fetch_unavailable =
             (rejectionReasons.detail_fetch_unavailable || 0) + 1;
@@ -497,6 +799,7 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
         }
 
         const detail = detailsByCode.get(productCode.toUpperCase()) || null;
+        const schedule = schedulesByCode.get(productCode.toUpperCase()) || null;
         if (detail?.status && String(detail.status).toUpperCase() === "INACTIVE") {
           rejectedCount += 1;
           rejectionReasons.inactive_status = (rejectionReasons.inactive_status || 0) + 1;
@@ -520,14 +823,49 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
         const pickupParsed = parsePickupAndLocationsFromViator(detail, resolvedLocationsByRef);
         const ageBands = parseAgeBandsFromViator(detail);
 
+        const optionsAndSchedule = parseProductOptionsAndScheduleFromViator(
+          detail,
+          schedule,
+          pickupParsed.hasHotelPickup,
+          durationParsed.durationMinutes,
+          title,
+          summary,
+        );
+
         const rawFromPrice =
           typeof item?.pricing?.summary?.fromPrice === "number"
             ? item.pricing.summary.fromPrice
             : null;
-        const fromPriceCents =
+        const searchFromPriceCents =
           rawFromPrice !== null && Number.isFinite(rawFromPrice)
             ? Math.round(rawFromPrice * 100)
             : null;
+        const fromPriceCents = searchFromPriceCents ?? optionsAndSchedule.scheduleFromPriceCents;
+
+        const effectiveHasHotelPickup = optionsAndSchedule.effectiveHasHotelPickup;
+        let effectivePickupType = pickupParsed.pickupType;
+        let effectivePickupSummary = pickupParsed.pickupSummary;
+        if (effectiveHasHotelPickup === true && effectivePickupType === "MEETING_POINT_ONLY") {
+          effectivePickupType =
+            optionsAndSchedule.lowestPriceIncludesPickup === true
+              ? "HOTEL_PICKUP"
+              : "HOTEL_OR_MEETING_POINT";
+        }
+        if (
+          effectiveHasHotelPickup === true &&
+          optionsAndSchedule.lowestPriceIncludesPickup === false
+        ) {
+          effectivePickupType = "HOTEL_OR_MEETING_POINT";
+          const pickupOpt = optionsAndSchedule.productOptions
+            .filter((o) => o.includesPickup === true && o.fromPriceCents !== null)
+            .sort((a, b) => (a.fromPriceCents as number) - (b.fromPriceCents as number))[0];
+          const pickupPriceNote = pickupOpt?.fromPriceCents
+            ? `Hotel pickup requires selecting a pickup-inclusive option (from $${(pickupOpt.fromPriceCents / 100).toFixed(2)}); lowest-priced option is self-drive / meeting-point only.`
+            : `Hotel pickup requires selecting a pickup-inclusive tour option; lowest-priced option does not include hotel transportation.`;
+          effectivePickupSummary = effectivePickupSummary
+            ? `${pickupPriceNote} ${effectivePickupSummary}`
+            : pickupPriceNote;
+        }
 
         const rawProductUrl =
           typeof item?.productUrl === "string" && item.productUrl.trim()
@@ -558,6 +896,7 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
             capabilityTier: "live_check_referral",
             commissionAuthorized: true,
             fromPriceCents,
+            priceBasis: optionsAndSchedule.priceBasis,
             currency: String(item?.pricing?.currency || "USD"),
             freeCancellation: cancellationParsed.freeCancellation,
             cancellationCutoffHours: cancellationParsed.cancellationCutoffHours,
@@ -569,7 +908,6 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
           },
         ];
 
-        // Add site-specific channel offers if mapped in DCC_VIATOR_PRODUCT_MAPPINGS
         const siteMappings = DCC_VIATOR_PRODUCT_MAPPINGS.filter(
           (m) => m.viatorCode.toUpperCase() === productCode.toUpperCase(),
         );
@@ -581,6 +919,7 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
             capabilityTier: "live_check_referral",
             commissionAuthorized: true,
             fromPriceCents,
+            priceBasis: optionsAndSchedule.priceBasis,
             currency: "USD",
             freeCancellation: cancellationParsed.freeCancellation,
             cancellationCutoffHours: cancellationParsed.cancellationCutoffHours,
@@ -618,14 +957,16 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
           durationMinutes: durationParsed.durationMinutes,
           durationRawText: durationParsed.durationRawText,
           fromPriceCents,
+          priceBasis: optionsAndSchedule.priceBasis,
           currency: String(item?.pricing?.currency || "USD"),
           freeCancellation: cancellationParsed.freeCancellation,
           cancellationPolicyType: cancellationParsed.cancellationPolicyType,
           cancellationCutoffHours: cancellationParsed.cancellationCutoffHours,
           cancellationSummary: cancellationParsed.cancellationSummary,
-          hasHotelPickup: pickupParsed.hasHotelPickup,
-          pickupType: pickupParsed.pickupType,
-          pickupSummary: pickupParsed.pickupSummary,
+          hasHotelPickup: effectiveHasHotelPickup,
+          lowestPriceIncludesPickup: optionsAndSchedule.lowestPriceIncludesPickup,
+          pickupType: effectivePickupType,
+          pickupSummary: effectivePickupSummary,
           meetingPointName: pickupParsed.meetingPointName,
           meetingPointAddress: pickupParsed.meetingPointAddress,
           meetingPointLat: pickupParsed.meetingPointLat,
@@ -641,6 +982,8 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
             weatherDependent: isHeli || category === "Swamp & Bayou",
           },
           channelOffers,
+          productOptions: optionsAndSchedule.productOptions,
+          serviceDetails: {},
           inclusions,
           exclusions,
           primaryImageUrl: extractPrimaryImageUrl(item?.images || detail?.images),
@@ -653,12 +996,18 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
           bookingUrl: trackedViatorUrl,
           provenance: {
             sourceSystem: "viator_partner_api_v2",
-            sourceEndpoint: detail ? "/products/search+/products/{code}" : "/products/search",
+            sourceEndpoint: detail
+              ? schedule
+                ? "/products/search+/products/{code}+/availability/schedules/{code}"
+                : "/products/search+/products/{code}"
+              : "/products/search",
             fetchedAt: nowIso,
             contentSha256: sha256Hex({
               productCode,
               title,
               fromPriceCents,
+              lowestPriceIncludesPickup: optionsAndSchedule.lowestPriceIncludesPickup,
+              optionsCount: optionsAndSchedule.productOptions.length,
               durationMinutes: durationParsed.durationMinutes,
               freeCancellation: cancellationParsed.freeCancellation,
             }),
@@ -671,6 +1020,8 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
               ageBandsKnown: ageBands.length > 0,
             },
           },
+          quarantined: false,
+          quarantineReason: null,
           active: true,
           lastVerifiedAt: nowIso,
           updatedAt: nowIso,
@@ -681,12 +1032,17 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
         importedCount += 1;
       }
 
+      const isCompleteCoverage =
+        providerTotalCount > 0 && currentStart > providerTotalCount && initialStartOffset === 1;
+      const nextStartOffset =
+        providerTotalCount > 0 && currentStart <= providerTotalCount ? currentStart : 1;
+
       const syncRun: CatalogSyncRunRecord = {
         runId,
         provider: "viator",
         destinationSlug: destSlug,
         status: "completed",
-        cursorValue: `page:1:count:${perDestLimit}`,
+        cursorValue: `offset:${currentStart}:total:${providerTotalCount}`,
         importedCount,
         updatedCount: importedCount,
         rejectedCount,
@@ -694,7 +1050,14 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
         rejectionReasons,
         metadata: {
           viatorDestinationId: node.viatorDestinationId,
+          startOffset: initialStartOffset,
+          nextStartOffset,
+          pagesFetched,
+          pageSize,
+          providerTotalCount,
+          coverageStatus: isCompleteCoverage ? "complete" : "sampled",
           enrichedDetailCount: detailsByCode.size,
+          enrichedSchedulesCount: schedulesByCode.size,
           resolvedLocationsCount: resolvedLocationsByRef.size,
         },
         startedAt,
@@ -792,7 +1155,6 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
         const title = String(item.name || "").trim();
         if (!title) continue;
         const textLower = `${title} ${item.headline || ""}`.toLowerCase();
-        // Estimate duration only when explicit in title/headline (e.g., "2 Hour"), otherwise keep null!
         const hoursMatch = textLower.match(/(\d+(?:\.\d+)?)\s*(?:hour|hr)/i);
         const durationMinutes = hoursMatch ? Math.round(Number(hoursMatch[1]) * 60) : null;
         const durationRawText = hoursMatch ? `${hoursMatch[1]} hours` : null;
@@ -821,6 +1183,7 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
           durationMinutes,
           durationRawText,
           fromPriceCents: null,
+          priceBasis: "per_person",
           currency: "USD",
           freeCancellation: null,
           cancellationPolicyType: "CUSTOM",
@@ -830,6 +1193,7 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
               ? `${item.cancellation_policy_hours}-hour operator cancellation cutoff.`
               : null,
           hasHotelPickup: true,
+          lowestPriceIncludesPickup: true,
           pickupType: "CRUISE_PIER_PICKUP",
           pickupSummary:
             "Round-trip shuttle transfer from downtown cruise ship docks to the heliport included.",
@@ -868,6 +1232,7 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
               capabilityTier: "live_check_direct",
               commissionAuthorized: true,
               fromPriceCents: null,
+              priceBasis: "per_person",
               currency: "USD",
               freeCancellation: null,
               cancellationCutoffHours: item.cancellation_policy_hours ?? null,
@@ -881,6 +1246,8 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
               bookingUrl: directUrl,
             },
           ],
+          productOptions: [],
+          serviceDetails: {},
           inclusions: [
             "Round-trip dock shuttle transfer",
             "Glacier overflight & landing gear",
@@ -904,6 +1271,8 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
               ageBandsKnown: true,
             },
           },
+          quarantined: false,
+          quarantineReason: null,
           active: true,
           lastVerifiedAt: nowIso,
           updatedAt: nowIso,
@@ -952,23 +1321,23 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
     }
   }
 
-  // 3. Permitted Operator-Sourced Discovery & Direct Records (regardless of commission status)
-  const operatorRecords = buildPermittedOperatorSourcedRecords(targetSlugs);
-  allUpsertedRecords.push(...operatorRecords);
+  // 3. Authoritative GoSno & PARR Published Offers (replacing deprecated hardcoded records)
+  const authoritativePartnerRecords = buildAuthoritativeGoSnoAndParrRecords(targetSlugs);
+  allUpsertedRecords.push(...authoritativePartnerRecords);
 
   const opSyncRun: CatalogSyncRunRecord = {
-    runId: `sync:operator_direct:multi:${Date.now()}`,
-    provider: "operator_direct",
-    destinationSlug: "multi-destination",
+    runId: `sync:authoritative_corridors:denver-colorado:${Date.now()}`,
+    provider: "gosno+parr",
+    destinationSlug: "denver-colorado",
     status: "completed",
-    cursorValue: "v1-operator-catalog",
-    importedCount: operatorRecords.length,
-    updatedCount: operatorRecords.length,
+    cursorValue: "v2-authoritative-gosno-parr",
+    importedCount: authoritativePartnerRecords.length,
+    updatedCount: authoritativePartnerRecords.length,
     rejectedCount: 0,
     upstreamRequestCount: 0,
     rejectionReasons: {},
     metadata: {
-      note: "Includes discovery_only (non-commission), attributable_referral, and live_check_direct operator records with distinct channel offers and explicit unknowns.",
+      note: "Authoritative GoSno route-feed snapshot offers and PARR published private vehicle charters (flat_rate_per_vehicle). Acceptance fixtures and unsupported operator listings are quarantined.",
     },
     startedAt: new Date().toISOString(),
     completedAt: new Date().toISOString(),
@@ -984,497 +1353,304 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
   };
 }
 
-function buildPermittedOperatorSourcedRecords(targetSlugs: string[]): DurableTourRecord[] {
-  const nowIso = new Date().toISOString();
-  const out: DurableTourRecord[] = [];
+export type IncrementalRefreshOptions = {
+  cursor?: string;
+  count?: number;
+};
 
-  if (targetSlugs.includes("new-orleans")) {
-    const nola = EARTHOS_DESTINATION_NODES["new-orleans"];
-    // 1. Cajun Encounters Honey Island Swamp Tour — Distinct Operator Direct + Viator + WTS + WNO Channel Offers
-    out.push({
-      tourId: "dcc:tour:nola:cajun-encounters-honey-island-swamp",
-      compatibilityAliases: [
-        "honey-island-swamp-pickup",
-        "swamp-tour-with-pickup",
-        "cajun-encounters-swamp-tour",
-      ],
-      destinationSlug: "new-orleans",
-      portSlug: "new-orleans",
-      earthosDestinationNodeId: nola.earthosDestinationNodeId,
-      timeZone: nola.timeZone,
-      title: "Cajun Encounters: Honey Island Swamp & Bayou Boat Tour",
-      summary:
-        "Guided flat-bottom covered boat expedition deep into the protected Honey Island Swamp wildlife preserve, with optional French Quarter & Warehouse District hotel pickup.",
-      category: "Swamp & Bayou",
-      tags: ["swamp", "honey-island", "family-friendly", "hotel-pickup", "covered-boat"],
-      primaryProvider: "operator_direct",
-      providerProductCode: "NOLA-CE-HONEY-ISLAND",
-      operatorName: "Cajun Encounters Tour Company",
-      operatorCode: "cajun-encounters",
-      capabilityTier: "live_check_referral",
-      commissionAuthorized: true,
-      durationMinutes: 135,
-      durationRawText: "2h 15m (4h 15m with French Quarter hotel shuttle)",
-      fromPriceCents: 6300,
-      currency: "USD",
-      freeCancellation: true,
-      cancellationPolicyType: "STANDARD",
-      cancellationCutoffHours: 24,
-      cancellationSummary: "Full refund when cancelled at least 24 hours prior to departure.",
-      hasHotelPickup: true,
-      pickupType: "HOTEL_OR_MEETING_POINT",
-      pickupSummary:
-        "Pickups from 25+ designated French Quarter, CBD, and Warehouse District hotels or self-drive to Pearl River dock.",
-      meetingPointName: "Cajun Encounters Pearl River Marina Dock",
-      meetingPointAddress: "55345 US-90, Slidell, LA 70461",
-      meetingPointLat: 30.2314,
-      meetingPointLng: -89.6872,
-      locationPrecision: "exact",
-      pickupLocations: [
-        {
-          name: "Hotel Monteleone (Royal St French Quarter Pickup)",
-          address: "214 Royal St, New Orleans, LA 70130",
-          lat: 29.9542,
-          lng: -90.0681,
-          precision: "exact",
-          pickupType: "HOTEL",
-        },
-        {
-          name: "The Roosevelt New Orleans (CBD Pickup)",
-          address: "130 Roosevelt Way, New Orleans, LA 70112",
-          lat: 29.9549,
-          lng: -90.0725,
-          precision: "exact",
-          pickupType: "HOTEL",
-        },
-        {
-          name: "Omni Riverfront / Warehouse District & Cruise Terminal Pickup",
-          address: "701 Convention Center Blvd, New Orleans, LA 70130",
-          lat: 29.9421,
-          lng: -90.0637,
-          precision: "exact",
-          pickupType: "HOTEL",
-        },
-      ],
-      ageBands: [
-        { ageBand: "ADULT", startAge: 13, endAge: 99 },
-        { ageBand: "CHILD", startAge: 4, endAge: 12 },
-        { ageBand: "INFANT", startAge: 0, endAge: 3 },
-      ],
-      constraints: {
-        maxPassengerWeightLbs: null,
-        wheelchairAccessible: true,
-        minAgeYears: 0,
-        physicalDifficulty: "EASY",
-        cruiseBufferBeforeMinutes: 60,
-        cruiseBufferAfterMinutes: 60,
-        weatherDependent: true,
-      },
-      channelOffers: [
-        {
-          channelId: "welcometotheswamp",
-          provider: "viator",
-          providerProductCode: "6953SWAMPTRANS",
-          capabilityTier: "live_check_referral",
-          commissionAuthorized: true,
-          fromPriceCents: 6300,
-          currency: "USD",
-          freeCancellation: true,
-          cancellationCutoffHours: 24,
-          cancellationSummary: "Free cancellation up to 24 hours before start time (Viator channel).",
-          inclusions: ["2-hour guided Honey Island swamp boat tour", "Round-trip French Quarter hotel pickup"],
-          exclusions: ["Gratuities", "Food and drinks"],
-          bookingUrl: appendViatorAttribution(
-            "https://www.viator.com/tours/New-Orleans/Honey-Island-Swamp-Tour/d675-6953SWAMPTRANS",
-            { preserveExistingCampaign: false, campaign: "wts-plan-pickup" },
-          ),
-          defaultCampaign: "wts-plan-pickup",
-        },
-        {
-          channelId: "welcometoneworleanstours",
-          provider: "viator",
-          providerProductCode: "6953SWAMPTRANS",
-          capabilityTier: "live_check_referral",
-          commissionAuthorized: true,
-          fromPriceCents: 6300,
-          currency: "USD",
-          freeCancellation: true,
-          cancellationCutoffHours: 24,
-          cancellationSummary: "Free cancellation up to 24 hours before start time (WNO channel).",
-          inclusions: ["2-hour guided Honey Island swamp boat tour", "Round-trip French Quarter hotel pickup"],
-          exclusions: ["Gratuities"],
-          bookingUrl: appendViatorAttribution(
-            "https://www.viator.com/tours/New-Orleans/Honey-Island-Swamp-Tour/d675-6953SWAMPTRANS",
-            { preserveExistingCampaign: false, campaign: "wno-guide-pickup-swamp" },
-          ),
-          defaultCampaign: "wno-guide-pickup-swamp",
-        },
-        {
-          channelId: "operator_direct",
-          provider: "operator_direct",
-          providerProductCode: "NOLA-CE-DIRECT-DRIVE",
-          capabilityTier: "discovery_only",
-          commissionAuthorized: false,
-          fromPriceCents: 3600,
-          currency: "USD",
-          freeCancellation: false,
-          cancellationCutoffHours: 48,
-          cancellationSummary: "Operator-direct self-drive rate requires 48-hour notice for changes.",
-          inclusions: ["2-hour guided Honey Island swamp boat tour (self-drive to Slidell dock)"],
-          exclusions: ["Hotel transportation", "Gratuities"],
-          bookingUrl: "https://www.cajunencounters.com/tours/honey-island-swamp-tour/",
-        },
-      ],
-      inclusions: [
-        "Guided Honey Island Swamp boat tour with local Cajun captain",
-        "Optional French Quarter / CBD hotel shuttle pickup",
-      ],
-      exclusions: ["Gratuities"],
-      primaryImageUrl: null,
-      ratingAverage: 4.8,
-      reviewCount: 4120,
-      bookingUrl: appendViatorAttribution(
-        "https://www.viator.com/tours/New-Orleans/Honey-Island-Swamp-Tour/d675-6953SWAMPTRANS",
-        { preserveExistingCampaign: false, campaign: "dcc-nola-honey-island" },
-      ),
-      provenance: {
-        sourceSystem: "dcc_multi_channel_catalog",
-        sourceEndpoint: "operator_direct+viator_6953SWAMPTRANS",
-        fetchedAt: nowIso,
-        contentSha256: sha256Hex("dcc:tour:nola:cajun-encounters-honey-island-swamp"),
-        rawFieldsVerified: {
-          durationKnown: true,
-          cancellationKnown: true,
-          pickupKnown: true,
-          meetingCoordinatesKnown: true,
-          ageBandsKnown: true,
-        },
-      },
-      active: true,
-      lastVerifiedAt: nowIso,
-      updatedAt: nowIso,
-      createdAt: nowIso,
-    });
-
-    // 2. Preservation Hall Traditional New Orleans Jazz Session — Non-Commission Discovery Listing
-    out.push({
-      tourId: "dcc:tour:nola:preservation-hall-jazz-session",
-      compatibilityAliases: ["preservation-hall-jazz", "nola-preservation-hall"],
-      destinationSlug: "new-orleans",
-      portSlug: "new-orleans",
-      earthosDestinationNodeId: nola.earthosDestinationNodeId,
-      timeZone: nola.timeZone,
-      title: "Preservation Hall: Intimate Acoustic Traditional New Orleans Jazz Set",
-      summary:
-        "45-minute acoustic performance inside the historic 1817 French Quarter sanctuary of traditional New Orleans jazz. Included as an essential cultural option even though Preservation Hall does not pay affiliate commissions.",
-      category: "Music & Riverboat Cruises",
-      tags: ["jazz", "french-quarter", "iconic", "non-commission-discovery", "all-ages"],
-      primaryProvider: "operator_direct",
-      providerProductCode: "PRES-HALL-SET",
-      operatorName: "Preservation Hall",
-      operatorCode: "preservation-hall",
-      capabilityTier: "discovery_only",
-      commissionAuthorized: false,
-      durationMinutes: 45,
-      durationRawText: "45m acoustic performance set",
-      fromPriceCents: 2500,
-      currency: "USD",
-      freeCancellation: false,
-      cancellationPolicyType: "ALL_SALES_FINAL",
-      cancellationCutoffHours: 0,
-      cancellationSummary: "All ticket sales final per Preservation Hall box office policy.",
-      hasHotelPickup: false,
-      pickupType: "MEETING_POINT_ONLY",
-      pickupSummary: "Walk-in / timed entry at 726 St. Peter Street in the French Quarter.",
-      meetingPointName: "Preservation Hall Box Office",
-      meetingPointAddress: "726 St Peter St, New Orleans, LA 70116",
-      meetingPointLat: 29.9585,
-      meetingPointLng: -90.0652,
-      locationPrecision: "exact",
-      pickupLocations: [],
-      ageBands: [{ ageBand: "TRAVELER", startAge: 0, endAge: 99 }],
-      constraints: {
-        maxPassengerWeightLbs: null,
-        wheelchairAccessible: true,
-        minAgeYears: 0,
-        physicalDifficulty: "EASY",
-        cruiseBufferBeforeMinutes: 30,
-        cruiseBufferAfterMinutes: 30,
-        weatherDependent: false,
-      },
-      channelOffers: [
-        {
-          channelId: "operator_direct",
-          provider: "operator_direct",
-          providerProductCode: "PRES-HALL-SET",
-          capabilityTier: "discovery_only",
-          commissionAuthorized: false,
-          fromPriceCents: 2500,
-          currency: "USD",
-          freeCancellation: false,
-          cancellationCutoffHours: 0,
-          cancellationSummary: "All sales final.",
-          inclusions: ["45-minute live acoustic traditional jazz performance"],
-          exclusions: ["Beverages", "Hotel transfer"],
-          bookingUrl: "https://www.preservationhall.com/calendar",
-        },
-      ],
-      inclusions: ["45-minute live acoustic traditional jazz performance"],
-      exclusions: ["Beverages", "Hotel transfer"],
-      primaryImageUrl: null,
-      ratingAverage: 4.9,
-      reviewCount: 3850,
-      bookingUrl: "https://www.preservationhall.com/calendar",
-      provenance: {
-        sourceSystem: "operator_direct_catalog",
-        sourceEndpoint: "https://www.preservationhall.com/calendar",
-        fetchedAt: nowIso,
-        contentSha256: sha256Hex("dcc:tour:nola:preservation-hall-jazz-session"),
-        rawFieldsVerified: {
-          durationKnown: true,
-          cancellationKnown: true,
-          pickupKnown: true,
-          meetingCoordinatesKnown: true,
-          ageBandsKnown: true,
-        },
-      },
-      active: true,
-      lastVerifiedAt: nowIso,
-      updatedAt: nowIso,
-      createdAt: nowIso,
-    });
-
-    // 3. Steamboat Natchez Jazz Cruise — Attributable Referral + Direct Comparison
-    out.push({
-      tourId: "dcc:tour:nola:steamboat-natchez-jazz-cruise",
-      compatibilityAliases: ["steamboat-natchez-daytime-jazz", "nola-steamboat-natchez"],
-      destinationSlug: "new-orleans",
-      portSlug: "new-orleans",
-      earthosDestinationNodeId: nola.earthosDestinationNodeId,
-      timeZone: nola.timeZone,
-      title: "Steamboat NATCHEZ Daytime Mississippi River Jazz Cruise",
-      summary:
-        "2-hour authentic sternwheel steamboat cruise from the French Quarter Toulouse Street Wharf featuring live jazz by the Dukes of Dixieland and optional Creole lunch.",
-      category: "Music & Riverboat Cruises",
-      tags: ["riverboat", "jazz", "french-quarter", "family-friendly", "cruise-port-walkable"],
-      primaryProvider: "operator_direct",
-      providerProductCode: "NATCHEZ-DAY-JAZZ",
-      operatorName: "New Orleans Steamboat Company",
-      operatorCode: "steamboat-natchez",
-      capabilityTier: "attributable_referral",
-      commissionAuthorized: true,
-      durationMinutes: 120,
-      durationRawText: "2h river cruise (boarding begins 30m prior)",
-      fromPriceCents: 4450,
-      currency: "USD",
-      freeCancellation: true,
-      cancellationPolicyType: "STANDARD",
-      cancellationCutoffHours: 24,
-      cancellationSummary: "Refundable up to 24 hours prior to sailing.",
-      hasHotelPickup: false,
-      pickupType: "MEETING_POINT_ONLY",
-      pickupSummary: "Departs from Toulouse Street Wharf behind Jackson Square in the French Quarter.",
-      meetingPointName: "Toulouse Street Wharf (Behind Jackson Square)",
-      meetingPointAddress: "400 Toulouse St, New Orleans, LA 70130",
-      meetingPointLat: 29.9541,
-      meetingPointLng: -90.0620,
-      locationPrecision: "exact",
-      pickupLocations: [],
-      ageBands: [
-        { ageBand: "ADULT", startAge: 13, endAge: 99 },
-        { ageBand: "CHILD", startAge: 6, endAge: 12 },
-        { ageBand: "INFANT", startAge: 0, endAge: 5 },
-      ],
-      constraints: {
-        maxPassengerWeightLbs: null,
-        wheelchairAccessible: true,
-        minAgeYears: 0,
-        physicalDifficulty: "EASY",
-        cruiseBufferBeforeMinutes: 45,
-        cruiseBufferAfterMinutes: 45,
-        weatherDependent: false,
-      },
-      channelOffers: [
-        {
-          channelId: "welcometoneworleanstours",
-          provider: "operator_direct",
-          providerProductCode: "NATCHEZ-DAY-JAZZ",
-          capabilityTier: "attributable_referral",
-          commissionAuthorized: true,
-          fromPriceCents: 4450,
-          currency: "USD",
-          freeCancellation: true,
-          cancellationCutoffHours: 24,
-          cancellationSummary: "Free cancellation up to 24 hours before sailing.",
-          inclusions: ["2-hour Mississippi River cruise", "Live Dukes of Dixieland jazz", "Calliope concert"],
-          exclusions: ["Creole lunch upgrade ($15.50)", "Hotel pickup"],
-          bookingUrl: "https://www.steamboatnatchez.com/harbor-jazz-cruises?utm_source=dcc&utm_medium=referral",
-          defaultCampaign: "wno-natchez-day-jazz",
-        },
-      ],
-      inclusions: ["2-hour Mississippi River cruise", "Live Dukes of Dixieland jazz", "Calliope concert"],
-      exclusions: ["Creole lunch upgrade", "Hotel pickup"],
-      primaryImageUrl: null,
-      ratingAverage: 4.6,
-      reviewCount: 2910,
-      bookingUrl: "https://www.steamboatnatchez.com/harbor-jazz-cruises?utm_source=dcc&utm_medium=referral",
-      provenance: {
-        sourceSystem: "operator_direct_catalog",
-        sourceEndpoint: "https://www.steamboatnatchez.com/harbor-jazz-cruises",
-        fetchedAt: nowIso,
-        contentSha256: sha256Hex("dcc:tour:nola:steamboat-natchez-jazz-cruise"),
-        rawFieldsVerified: {
-          durationKnown: true,
-          cancellationKnown: true,
-          pickupKnown: true,
-          meetingCoordinatesKnown: true,
-          ageBandsKnown: true,
-        },
-      },
-      active: true,
-      lastVerifiedAt: nowIso,
-      updatedAt: nowIso,
-      createdAt: nowIso,
-    });
-
-    // 4. Lafitte Custom Private Bayou Skiff Charter — Explicit Unknowns Acceptance Case
-    // Duration, cancellation policy, pickup coverage, and exact dock coordinates depend on daily tide/captain assignment
-    out.push({
-      tourId: "dcc:tour:nola:lafitte-custom-bayou-charter-unknowns",
-      compatibilityAliases: ["nola-custom-bayou-charter"],
-      destinationSlug: "new-orleans",
-      portSlug: "new-orleans",
-      earthosDestinationNodeId: nola.earthosDestinationNodeId,
-      timeZone: nola.timeZone,
-      title: "Jean Lafitte Custom Private Fisherman's Bayou Skiff Charter",
-      summary:
-        "Bespoke private shallow-draft skiff charter with a Barataria Basin commercial fisherman. Duration, launch dock, and cancellation terms vary by tide and season and are preserved as explicit unknowns rather than assumed.",
-      category: "Swamp & Bayou",
-      tags: ["private-charter", "barataria", "explicit-unknown-acceptance", "non-commission-discovery"],
-      primaryProvider: "operator_direct",
-      providerProductCode: "NOLA-LAFITTE-CUSTOM-SKIFF",
-      operatorName: "Barataria Basin Independent Charter Guild",
-      operatorCode: "barataria-guild",
-      capabilityTier: "discovery_only",
-      commissionAuthorized: false,
-      durationMinutes: null,
-      durationRawText: null,
-      fromPriceCents: 35000,
-      currency: "USD",
-      freeCancellation: null,
-      cancellationPolicyType: "UNKNOWN",
-      cancellationCutoffHours: null,
-      cancellationSummary: null,
-      hasHotelPickup: null,
-      pickupType: "UNKNOWN",
-      pickupSummary: null,
-      meetingPointName: "Assigned Jean Lafitte Launch Slip (Confirmed 24h Prior)",
-      meetingPointAddress: null,
-      meetingPointLat: null,
-      meetingPointLng: null,
-      locationPrecision: "unknown",
-      pickupLocations: [],
-      ageBands: [
-        { ageBand: "ADULT", startAge: 18, endAge: 85 },
-        { ageBand: "CHILD", startAge: 6, endAge: 17 },
-      ],
-      constraints: {
-        maxPassengerWeightLbs: 300,
-        wheelchairAccessible: false,
-        minAgeYears: 6,
-        physicalDifficulty: "MODERATE",
-        cruiseBufferBeforeMinutes: null,
-        cruiseBufferAfterMinutes: null,
-        weatherDependent: true,
-      },
-      channelOffers: [
-        {
-          channelId: "operator_direct",
-          provider: "operator_direct",
-          providerProductCode: "NOLA-LAFITTE-CUSTOM-SKIFF",
-          capabilityTier: "discovery_only",
-          commissionAuthorized: false,
-          fromPriceCents: 35000,
-          currency: "USD",
-          freeCancellation: null,
-          cancellationCutoffHours: null,
-          cancellationSummary: null,
-          inclusions: ["Private skiff & licensed captain"],
-          exclusions: ["Hotel transfer (unconfirmed)"],
-          bookingUrl: "https://welcometotheswamp.com/charters/barataria-custom-skiff",
-        },
-      ],
-      inclusions: ["Private skiff & licensed captain"],
-      exclusions: ["Hotel transfer (unconfirmed)"],
-      primaryImageUrl: null,
-      ratingAverage: null,
-      reviewCount: null,
-      bookingUrl: "https://welcometotheswamp.com/charters/barataria-custom-skiff",
-      provenance: {
-        sourceSystem: "operator_direct_catalog",
-        sourceEndpoint: "barataria-guild-listing",
-        fetchedAt: nowIso,
-        contentSha256: sha256Hex("dcc:tour:nola:lafitte-custom-bayou-charter-unknowns"),
-        rawFieldsVerified: {
-          durationKnown: false,
-          cancellationKnown: false,
-          pickupKnown: false,
-          meetingCoordinatesKnown: false,
-          ageBandsKnown: true,
-        },
-      },
-      active: true,
-      lastVerifiedAt: nowIso,
-      updatedAt: nowIso,
-      createdAt: nowIso,
-    });
+/**
+ * Incremental refresh job using Viator /products/modified-since cursor pagination.
+ * Updates any existing catalog records whose productCode appears in the modified-since feed.
+ */
+export async function runIncrementalViatorCatalogRefresh(options: IncrementalRefreshOptions = {}) {
+  const client = getViatorClient();
+  const snapshot = readLocalCatalogSnapshot();
+  const existingByProviderCode = new Map<string, DurableTourRecord>();
+  for (const rec of snapshot.records) {
+    if (rec.primaryProvider === "viator") {
+      existingByProviderCode.set(rec.providerProductCode.toUpperCase(), rec);
+    }
   }
 
-  if (targetSlugs.includes("denver-colorado")) {
-    const den = EARTHOS_DESTINATION_NODES["denver-colorado"];
+  const runId = `sync:viator:incremental:${Date.now()}`;
+  const startedAt = new Date().toISOString();
+  let upstreamRequests = 0;
+  let updatedCount = 0;
+  let rejectedCount = 0;
+
+  try {
+    upstreamRequests += 1;
+    const modRes = (await client.getProductsModifiedSince(
+      options.cursor,
+      Math.min(Math.max(options.count ?? 50, 1), 500),
+    )) as any;
+
+    const nextCursor = typeof modRes?.nextCursor === "string" ? modRes.nextCursor : null;
+    const modProducts: any[] = Array.isArray(modRes?.products) ? modRes.products : [];
+    const updatedRecords: DurableTourRecord[] = [];
+    const nowIso = new Date().toISOString();
+
+    for (const item of modProducts) {
+      const code = String(item?.productCode || "").trim().toUpperCase();
+      if (!code) continue;
+      const existing = existingByProviderCode.get(code);
+      if (!existing) continue;
+
+      if (String(item?.status || "").toUpperCase() === "INACTIVE") {
+        updatedRecords.push({
+          ...existing,
+          active: false,
+          updatedAt: nowIso,
+          lastVerifiedAt: nowIso,
+        });
+        updatedCount += 1;
+        continue;
+      }
+
+      upstreamRequests += 1;
+      const sched = await client.getProductSchedules(code).catch(() => null);
+      const durationParsed = parseDurationMinutesFromViator(
+        item?.itinerary?.duration || item?.duration,
+      );
+      const cancellationParsed = parseCancellationFromViator(item?.cancellationPolicy, []);
+      const pickupParsed = parsePickupAndLocationsFromViator(item, new Map());
+      const optionsAndSchedule = parseProductOptionsAndScheduleFromViator(
+        item,
+        sched,
+        pickupParsed.hasHotelPickup ?? existing.hasHotelPickup,
+        durationParsed.durationMinutes ?? existing.durationMinutes,
+        String(item?.title || existing.title),
+        typeof item?.description === "string" ? item.description : existing.summary,
+      );
+
+      updatedRecords.push({
+        ...existing,
+        title: String(item?.title || existing.title),
+        durationMinutes: durationParsed.durationMinutes ?? existing.durationMinutes,
+        durationRawText: durationParsed.durationRawText ?? existing.durationRawText,
+        fromPriceCents: optionsAndSchedule.scheduleFromPriceCents ?? existing.fromPriceCents,
+        priceBasis: optionsAndSchedule.priceBasis,
+        freeCancellation: cancellationParsed.freeCancellation ?? existing.freeCancellation,
+        cancellationPolicyType:
+          cancellationParsed.cancellationPolicyType ?? existing.cancellationPolicyType,
+        cancellationCutoffHours:
+          cancellationParsed.cancellationCutoffHours ?? existing.cancellationCutoffHours,
+        cancellationSummary: cancellationParsed.cancellationSummary ?? existing.cancellationSummary,
+        hasHotelPickup: pickupParsed.hasHotelPickup ?? existing.hasHotelPickup,
+        lowestPriceIncludesPickup:
+          optionsAndSchedule.lowestPriceIncludesPickup ?? existing.lowestPriceIncludesPickup,
+        productOptions:
+          optionsAndSchedule.productOptions.length > 0
+            ? optionsAndSchedule.productOptions
+            : existing.productOptions,
+        provenance: {
+          ...existing.provenance,
+          sourceEndpoint: "/products/modified-since",
+          fetchedAt: nowIso,
+          modifiedSinceCursor: nextCursor,
+        },
+        lastVerifiedAt: nowIso,
+        updatedAt: nowIso,
+      });
+      updatedCount += 1;
+    }
+
+    if (updatedRecords.length > 0) {
+      await upsertDurableTourRecords(updatedRecords);
+    }
+
+    const syncRun: CatalogSyncRunRecord = {
+      runId,
+      provider: "viator_incremental",
+      destinationSlug: "multi-destination",
+      status: "completed",
+      cursorValue: nextCursor,
+      importedCount: 0,
+      updatedCount,
+      rejectedCount,
+      upstreamRequestCount: upstreamRequests,
+      rejectionReasons: {},
+      metadata: {
+        inputCursor: options.cursor || null,
+        nextCursor,
+        modifiedProductsScanned: modProducts.length,
+        catalogMatchesUpdated: updatedCount,
+      },
+      startedAt,
+      completedAt: new Date().toISOString(),
+    };
+    await recordCatalogSyncRun(syncRun);
+    return syncRun;
+  } catch (err) {
+    const syncRun: CatalogSyncRunRecord = {
+      runId,
+      provider: "viator_incremental",
+      destinationSlug: "multi-destination",
+      status: "failed",
+      cursorValue: options.cursor || null,
+      importedCount: 0,
+      updatedCount,
+      rejectedCount,
+      upstreamRequestCount: upstreamRequests,
+      rejectionReasons: { api_error: 1 },
+      metadata: {
+        error: err instanceof Error ? err.message : String(err),
+      },
+      startedAt,
+      completedAt: new Date().toISOString(),
+    };
+    await recordCatalogSyncRun(syncRun);
+    return syncRun;
+  }
+}
+
+export function buildAuthoritativeGoSnoAndParrRecords(targetSlugs: string[]): DurableTourRecord[] {
+  const nowIso = new Date().toISOString();
+  const out: DurableTourRecord[] = [];
+  if (!targetSlugs.includes("denver-colorado")) {
+    return out;
+  }
+
+  const den = EARTHOS_DESTINATION_NODES["denver-colorado"];
+  const gosnoState = getActiveGoSnoRouteFeedSnapshotState();
+  const feed = gosnoState.snapshot.feed;
+  const cancellationPolicy = (feed as any).governance?.cancellation_policy || null;
+  const cutoffHours = 48;
+  const cancellationSummary =
+    "100% refund 48+ hours before pickup; 50% refund 24–48 hours before pickup; 0% refund under 24 hours or no-show (https://gosno.co/cancellation-policy).";
+
+  const roundTripsByOutboundId = new Map(
+    (feed.round_trips || []).map((rt) => [rt.outbound_route_id, rt]),
+  );
+
+  // 1. Authoritative GoSno published offers from data/network/audit/satellite/gosno/route-feed.snapshot.json
+  for (const route of feed.routes) {
+    if (
+      route.direction !== "OUTBOUND" ||
+      route.origin !== "DEN" ||
+      !route.booking_eligibility?.published_booking_eligible
+    ) {
+      continue;
+    }
+
+    const roundTrip =
+      roundTripsByOutboundId.get(route.offer_id) ||
+      roundTripsByOutboundId.get(route.record_id) ||
+      (feed.round_trips || []).find(
+        (rt) =>
+          rt.airport === "DEN" &&
+          rt.resort === route.destination &&
+          rt.vehicle_class === route.vehicle_class,
+      ) ||
+      null;
+
+    const oneWayCents = route.pricing.amount_cents;
+    const roundTripCents = roundTrip ? roundTrip.pricing.total_amount_cents : null;
+    const vehicleShortLabel = route.vehicle_class === "suv" ? "Private SUV" : "Private Passenger Van";
+    const resortSlug = route.destination
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+
+    const aliases = [
+      route.offer_id,
+      route.offer_id.toLowerCase(),
+      route.record_id,
+      `gosno-${resortSlug}-${route.vehicle_class}`,
+    ];
+    if (route.offer_id === "DEN-WINTER-PARK-SUV") {
+      aliases.push("gosno-winter-park-shuttle", "winter-park-ski-shuttle");
+    }
+    if (roundTrip) {
+      aliases.push(roundTrip.offer_id, roundTrip.offer_id.toLowerCase(), roundTrip.record_id);
+    }
+
+    const bookingUrl = `/go/dcc-to-gosno?resort=${encodeURIComponent(resortSlug)}&vehicle=${encodeURIComponent(route.vehicle_class)}&route=${encodeURIComponent(route.offer_id)}`;
+    const pickupText =
+      route.pickup_instructions ||
+      "DEN Level 5 Curbside (Island 2, Doors 506–510 West or 507–511 East)";
+    const gearText =
+      route.gear_policy ||
+      "Skis, snowboards, boots, and standard luggage are included at no extra charge when they fit safely inside the reserved private vehicle.";
+
+    const productOptions: TourProductOptionRecord[] = [
+      {
+        optionCode: route.offer_id,
+        title: `One-Way ${vehicleShortLabel} (DEN to ${route.destination}, up to ${route.seating_limit} guests)`,
+        description: `All-inclusive flat rate per vehicle ($${route.pricing.amount_usd}). ${pickupText}`,
+        includesPickup: true,
+        durationMinutes: null,
+        fromPriceCents: oneWayCents,
+        priceBasis: "flat_rate_per_vehicle",
+        scheduledStartTimes: [],
+      },
+    ];
+
+    if (roundTrip && roundTripCents !== null) {
+      productOptions.push({
+        optionCode: roundTrip.offer_id,
+        title: `Round-Trip ${vehicleShortLabel} (DEN <-> ${route.destination}, up to ${route.seating_limit} guests)`,
+        description: `All-inclusive round-trip flat rate per vehicle ($${roundTrip.pricing.total_amount_usd}). ${roundTrip.outbound_pickup_instructions || pickupText}`,
+        includesPickup: true,
+        durationMinutes: null,
+        fromPriceCents: roundTripCents,
+        priceBasis: "flat_rate_per_vehicle",
+        scheduledStartTimes: [],
+      });
+    }
+
+    const inclusions = [
+      ...(route.pricing.inclusions || [
+        `Private ${route.vehicle_class.toUpperCase()} charter for 1-${route.seating_limit} passengers (flat rate per vehicle, not per seat)`,
+      ]),
+      gearText,
+      pickupText,
+    ];
+    const exclusions = ["Driver gratuity (discretionary)"];
+
     out.push({
-      tourId: "dcc:tour:gosno:winter-park-express-shuttle",
-      compatibilityAliases: ["gosno-winter-park-shuttle", "winter-park-ski-shuttle"],
+      tourId: `dcc:tour:gosno:${route.offer_id.toLowerCase()}`,
+      compatibilityAliases: aliases,
       destinationSlug: "denver-colorado",
       portSlug: null,
       earthosDestinationNodeId: den.earthosDestinationNodeId,
       timeZone: den.timeZone,
-      title: "GoSno: Denver & Airport to Winter Park Resort Mountain Ski Transfer",
-      summary:
-        "Direct winter mountain shuttle and private SUV transfer connecting Denver International Airport (DEN) & Denver Union Station with Winter Park Resort, with ski/snowboard gear storage included.",
+      title: `GoSno ${vehicleShortLabel}: DEN to ${route.destination} ($${route.pricing.amount_usd} Flat/Vehicle, Up to ${route.seating_limit} Guests)`,
+      summary: `Authoritative GoSno private ${route.vehicle_label} charter from Denver International Airport (DEN) to ${route.destination}. Flat rate $${route.pricing.amount_usd} per vehicle (1–${route.seating_limit} guests)${roundTrip ? ` or $${roundTrip.pricing.total_amount_usd} round-trip` : ""}. ${pickupText}`,
       category: "Mountain & Venue Transfers",
-      tags: ["gosno", "winter-park", "ski-shuttle", "denver", "direct-handoff"],
+      tags: [
+        "gosno",
+        resortSlug,
+        route.route_id.toLowerCase(),
+        route.vehicle_class,
+        "flat-rate-per-vehicle",
+        "private-mountain-transfer",
+      ],
       primaryProvider: "gosno",
-      providerProductCode: "GOSNO-WP-TRANSFER",
+      providerProductCode: route.offer_id,
       operatorName: "GoSno Mountain Transportation",
       operatorCode: "gosno",
-      capabilityTier: "live_check_direct",
+      capabilityTier: "attributable_referral",
       commissionAuthorized: true,
-      durationMinutes: 110,
-      durationRawText: "1h 50m mountain corridor transfer",
-      fromPriceCents: 8900,
-      currency: "USD",
+      durationMinutes: null,
+      durationRawText: null,
+      fromPriceCents: oneWayCents,
+      priceBasis: "flat_rate_per_vehicle",
+      currency: route.pricing.currency,
       freeCancellation: true,
-      cancellationPolicyType: "STANDARD",
-      cancellationCutoffHours: 24,
-      cancellationSummary: "Free cancellation or flight-delay rebooking up to 24 hours before departure.",
+      cancellationPolicyType: "CUSTOM",
+      cancellationCutoffHours: cutoffHours,
+      cancellationSummary,
       hasHotelPickup: true,
+      lowestPriceIncludesPickup: true,
       pickupType: "HOTEL_OR_MEETING_POINT",
-      pickupSummary: "Pickups at DEN Airport Level 5 Island 1, Denver Union Station, and downtown Denver hotels.",
-      meetingPointName: "Denver Union Station Bus Concourse / DEN Level 5",
-      meetingPointAddress: "1701 Wynkoop St, Denver, CO 80202",
-      meetingPointLat: 39.7527,
-      meetingPointLng: -105.0002,
+      pickupSummary: pickupText,
+      meetingPointName: "Denver International Airport (DEN) Jeppesen Terminal",
+      meetingPointAddress: "8500 Pena Blvd, Denver, CO 80249",
+      meetingPointLat: 39.8561,
+      meetingPointLng: -104.6737,
       locationPrecision: "exact",
       pickupLocations: [
-        {
-          name: "Denver Union Station (1701 Wynkoop St)",
-          address: "1701 Wynkoop St, Denver, CO 80202",
-          lat: 39.7527,
-          lng: -105.0002,
-          precision: "exact",
-          pickupType: "MEETING_POINT",
-        },
         {
           name: "Denver International Airport (DEN) Jeppesen Terminal",
           address: "8500 Pena Blvd, Denver, CO 80249",
@@ -1485,98 +1661,174 @@ function buildPermittedOperatorSourcedRecords(targetSlugs: string[]): DurableTou
         },
       ],
       ageBands: [
-        { ageBand: "ADULT", startAge: 13, endAge: 99 },
-        { ageBand: "CHILD", startAge: 2, endAge: 12 },
+        { ageBand: "ADULT", startAge: 13, endAge: 99, maxTravelersPerBooking: route.seating_limit },
+        { ageBand: "CHILD", startAge: 0, endAge: 12, maxTravelersPerBooking: route.seating_limit },
       ],
       constraints: {
         maxPassengerWeightLbs: null,
-        wheelchairAccessible: true,
+        maxPassengers: route.seating_limit,
+        wheelchairAccessible: null,
         minAgeYears: 0,
         physicalDifficulty: "EASY",
-        weatherDependent: false,
+        weatherDependent: true,
       },
       channelOffers: [
         {
           channelId: "gosno",
           provider: "gosno",
-          providerProductCode: "GOSNO-WP-TRANSFER",
-          capabilityTier: "live_check_direct",
+          providerProductCode: route.offer_id,
+          capabilityTier: "attributable_referral",
           commissionAuthorized: true,
-          fromPriceCents: 8900,
-          currency: "USD",
+          fromPriceCents: oneWayCents,
+          priceBasis: "flat_rate_per_vehicle",
+          currency: route.pricing.currency,
           freeCancellation: true,
-          cancellationCutoffHours: 24,
-          cancellationSummary: "Free cancellation up to 24h prior.",
-          inclusions: ["Mountain-equipped shuttle transfer", "2 ski/snowboard bags + luggage per guest"],
-          exclusions: ["Driver gratuity"],
-          bookingUrl: "/go/dcc-to-gosno?resort=winter-park",
+          cancellationCutoffHours: cutoffHours,
+          cancellationSummary,
+          inclusions,
+          exclusions,
+          bookingUrl,
         },
       ],
-      inclusions: ["Mountain-equipped shuttle transfer", "2 ski/snowboard bags + luggage per guest"],
-      exclusions: ["Driver gratuity"],
+      productOptions,
+      serviceDetails: {
+        recordId: route.record_id,
+        offerId: route.offer_id,
+        routeId: route.route_id,
+        resortSlug,
+        destination: route.destination,
+        vehicleClass: route.vehicle_class,
+        vehicleLabel: route.vehicle_label,
+        seatingLimit: route.seating_limit,
+        pricingModel: route.pricing.pricing_model,
+        oneWayPriceUsd: route.pricing.amount_usd,
+        roundTripOfferId: roundTrip?.offer_id || null,
+        roundTripPriceUsd: roundTrip?.pricing.total_amount_usd || null,
+        canonicalBookingUrl: route.canonical_booking_url,
+        quoteUrl: route.quote_url,
+        rezdyProductCode: route.booking_eligibility.rezdy_product_code,
+        pickupInstructions: pickupText,
+        gearPolicy: gearText,
+        cancellationPolicy,
+      },
+      inclusions,
+      exclusions,
       primaryImageUrl: null,
-      ratingAverage: 4.9,
-      reviewCount: 640,
-      bookingUrl: "/go/dcc-to-gosno?resort=winter-park",
+      ratingAverage: null,
+      reviewCount: null,
+      bookingUrl,
       provenance: {
-        sourceSystem: "dcc_internal_gosno",
-        sourceEndpoint: "/go/dcc-to-gosno",
-        fetchedAt: nowIso,
-        contentSha256: sha256Hex("dcc:tour:gosno:winter-park-express-shuttle"),
+        sourceSystem: "gosno_route_feed_snapshot_v1",
+        sourceEndpoint: gosnoState.snapshot.sourceUrl,
+        fetchedAt: gosnoState.snapshot.fetchedAt,
+        contentSha256: sha256Hex(route),
         rawFieldsVerified: {
-          durationKnown: true,
+          durationKnown: false,
           cancellationKnown: true,
           pickupKnown: true,
           meetingCoordinatesKnown: true,
           ageBandsKnown: true,
         },
       },
+      quarantined: false,
+      quarantineReason: null,
       active: true,
-      lastVerifiedAt: nowIso,
+      lastVerifiedAt: gosnoState.snapshot.fetchedAt,
       updatedAt: nowIso,
       createdAt: nowIso,
     });
+  }
+
+  // 2. Authoritative PARR published offers from RED_ROCKS_CONCERT_CANDIDATE_OPTIONS & DCC_SITE_TRUTH
+  const parrSiteTruth = DCC_SITE_TRUTH.find((r) => r.id === "party-at-red-rocks");
+  const parrClaims = parrSiteTruth?.public_claims || {};
+  const parrCandidates = RED_ROCKS_CONCERT_CANDIDATE_OPTIONS.filter(
+    (c) => c.optionId === "rr-parr-private-suburban-6pax" || c.optionId === "rr-parr-private-van-10pax",
+  );
+
+  for (const cand of parrCandidates) {
+    const isSuburban = cand.optionId === "rr-parr-private-suburban-6pax";
+    const priceUsd = Number(
+      isSuburban
+        ? (parrClaims.suburban_usd ?? cand.indicativePriceUsd.max)
+        : (parrClaims.van_usd ?? cand.indicativePriceUsd.max),
+    );
+    const priceCents = priceUsd * 100;
+    const seatingLimit = cand.groupCapacityRange.max;
+    const vehicleClass = isSuburban ? "suburban" : "sprinter_van";
+    const bookingUrl =
+      cand.bookingDestinations[0]?.url ||
+      "https://www.partyatredrocks.com/book/red-rocks-amphitheatre/private";
+
+    const aliases = isSuburban
+      ? [
+          "rr-parr-private-suburban-6pax",
+          "parr-private-suburban-6pax",
+          "parr-suburban",
+          "parr-red-rocks-shuttle",
+          "red-rocks-concert-shuttle",
+        ]
+      : ["rr-parr-private-van-10pax", "parr-private-van-10pax", "parr-van"];
+
+    const inclusions = [
+      ...cand.tradeoffs.strengths,
+      `Flat rate $${priceUsd} per vehicle round-trip for 1-${seatingLimit} passengers (shared seat shuttle service is not offered)`,
+    ];
+    const exclusions = ["Concert admission ticket", "Driver gratuity"];
 
     out.push({
-      tourId: "dcc:tour:parr:red-rocks-amphitheatre-shuttle",
-      compatibilityAliases: ["parr-red-rocks-shuttle", "red-rocks-concert-shuttle"],
+      tourId: `dcc:tour:parr:${cand.optionId}`,
+      compatibilityAliases: aliases,
       destinationSlug: "denver-colorado",
       portSlug: null,
       earthosDestinationNodeId: den.earthosDestinationNodeId,
       timeZone: den.timeZone,
-      title: "Party at Red Rocks (PARR): Round-Trip Denver to Red Rocks Concert Shuttle",
-      summary:
-        "Official round-trip luxury coach and party shuttle from downtown Denver (Union Station / RiNo) directly to the Top Circle Lot at Red Rocks Amphitheatre.",
+      title: cand.title,
+      summary: `${cand.viewingSpaceDescription} ${cand.indicativePriceUsd.basisLabel}.`,
       category: "Mountain & Venue Transfers",
-      tags: ["parr", "red-rocks", "concert-shuttle", "denver"],
+      tags: [
+        "parr",
+        "red-rocks",
+        "private-charter",
+        "flat-rate-per-vehicle",
+        vehicleClass,
+      ],
       primaryProvider: "parr",
-      providerProductCode: "PARR-RR-SHUTTLE",
+      providerProductCode: cand.optionId,
       operatorName: "Party at Red Rocks",
       operatorCode: "partyatredrocks",
-      capabilityTier: "live_check_direct",
+      capabilityTier: "attributable_referral",
       commissionAuthorized: true,
-      durationMinutes: 300,
-      durationRawText: "Round-trip event duration (departs 2h before doors, returns 30m after encore)",
-      fromPriceCents: 5900,
+      durationMinutes: null,
+      durationRawText:
+        "Round-trip concert charter (departs on your group's schedule; dedicated driver waits on-site through the final encore)",
+      fromPriceCents: priceCents,
+      priceBasis: "flat_rate_per_vehicle",
       currency: "USD",
-      freeCancellation: true,
-      cancellationPolicyType: "STANDARD",
-      cancellationCutoffHours: 48,
-      cancellationSummary: "Full refund up to 48 hours before show night.",
-      hasHotelPickup: false,
-      pickupType: "MEETING_POINT_ONLY",
-      pickupSummary: "Departs from Thirsty Lion at Denver Union Station (1605 Wynkoop St).",
-      meetingPointName: "Thirsty Lion at Denver Union Station",
-      meetingPointAddress: "1605 Wynkoop St, Denver, CO 80202",
-      meetingPointLat: 39.7531,
-      meetingPointLng: -105.0008,
-      locationPrecision: "exact",
+      freeCancellation: null,
+      cancellationPolicyType: "CUSTOM",
+      cancellationCutoffHours: null,
+      cancellationSummary: cand.cancellationTerms,
+      hasHotelPickup: true,
+      lowestPriceIncludesPickup: true,
+      pickupType: "HOTEL_PICKUP",
+      pickupSummary:
+        "Custom door-to-door pickup for your group across Denver / metro area with Red Rocks Top Circle drop-off and dedicated waiting driver.",
+      meetingPointName: "Custom Door-to-Door Group Pickup (Denver Metro to Red Rocks Top Circle)",
+      meetingPointAddress: null,
+      meetingPointLat: null,
+      meetingPointLng: null,
+      locationPrecision: "unknown",
       pickupLocations: [],
-      ageBands: [{ ageBand: "ADULT", startAge: 18, endAge: 99 }],
+      ageBands: [
+        { ageBand: "ADULT", startAge: 18, endAge: 99, maxTravelersPerBooking: seatingLimit },
+        { ageBand: "YOUTH", startAge: 0, endAge: 17, maxTravelersPerBooking: seatingLimit },
+      ],
       constraints: {
         maxPassengerWeightLbs: null,
-        wheelchairAccessible: true,
-        minAgeYears: 18,
+        maxPassengers: seatingLimit,
+        wheelchairAccessible: cand.accessibilityProfile.stepFreeWheelchairSupported,
+        minAgeYears: cand.minimumAgeYears,
         physicalDifficulty: "EASY",
         weatherDependent: false,
       },
@@ -1584,38 +1836,70 @@ function buildPermittedOperatorSourcedRecords(targetSlugs: string[]): DurableTou
         {
           channelId: "partyatredrocks",
           provider: "parr",
-          providerProductCode: "PARR-RR-SHUTTLE",
-          capabilityTier: "live_check_direct",
+          providerProductCode: cand.optionId,
+          capabilityTier: "attributable_referral",
           commissionAuthorized: true,
-          fromPriceCents: 5900,
+          fromPriceCents: priceCents,
+          priceBasis: "flat_rate_per_vehicle",
           currency: "USD",
-          freeCancellation: true,
-          cancellationCutoffHours: 48,
-          cancellationSummary: "Full refund up to 48 hours before show night.",
-          inclusions: ["Round-trip coach to Red Rocks Top Circle Lot", "Pre-show check-in wristband"],
-          exclusions: ["Concert ticket", "Driver gratuity"],
-          bookingUrl: "https://www.partyatredrocks.com/book?utm_source=dcc",
+          freeCancellation: null,
+          cancellationCutoffHours: null,
+          cancellationSummary: cand.cancellationTerms,
+          inclusions,
+          exclusions,
+          bookingUrl,
         },
       ],
-      inclusions: ["Round-trip coach to Red Rocks Top Circle Lot", "Pre-show check-in wristband"],
-      exclusions: ["Concert ticket", "Driver gratuity"],
+      productOptions: [
+        {
+          optionCode: cand.optionId,
+          title: cand.shortLabel,
+          description: cand.viewingSpaceDescription,
+          includesPickup: true,
+          durationMinutes: null,
+          fromPriceCents: priceCents,
+          priceBasis: "flat_rate_per_vehicle",
+          scheduledStartTimes: [],
+        },
+      ],
+      serviceDetails: {
+        optionId: cand.optionId,
+        vehicleClass,
+        vesselOrVehicleType: cand.vesselOrVehicleType,
+        seatingLimit,
+        pricingModel: "flat_rate_per_vehicle",
+        flatRateUsd: priceUsd,
+        basisLabel: cand.indicativePriceUsd.basisLabel,
+        sharedSeatService: Boolean(parrClaims.shared_seat_service ?? false),
+        pickupModel: "Custom door-to-door pickup for your group",
+        dropOffZone: "Red Rocks Top Circle Drop-Off",
+        returnGuarantee: "Dedicated driver waits on-site through the final encore",
+        tailgateGearPolicy:
+          "Space in the vehicle for drinks and pre-show gear; cooler storage during the concert",
+        strengths: cand.tradeoffs.strengths,
+        limitations: cand.tradeoffs.limitations,
+      },
+      inclusions,
+      exclusions,
       primaryImageUrl: null,
-      ratingAverage: 4.9,
-      reviewCount: 1280,
-      bookingUrl: "https://www.partyatredrocks.com/book?utm_source=dcc",
+      ratingAverage: null,
+      reviewCount: null,
+      bookingUrl,
       provenance: {
-        sourceSystem: "dcc_internal_parr",
-        sourceEndpoint: "https://www.partyatredrocks.com",
+        sourceSystem: "dcc_site_truth_parr_v1",
+        sourceEndpoint: bookingUrl,
         fetchedAt: nowIso,
-        contentSha256: sha256Hex("dcc:tour:parr:red-rocks-amphitheatre-shuttle"),
+        contentSha256: sha256Hex({ id: cand.optionId, priceUsd, seatingLimit }),
         rawFieldsVerified: {
-          durationKnown: true,
-          cancellationKnown: true,
+          durationKnown: false,
+          cancellationKnown: false,
           pickupKnown: true,
-          meetingCoordinatesKnown: true,
+          meetingCoordinatesKnown: false,
           ageBandsKnown: true,
         },
       },
+      quarantined: false,
+      quarantineReason: null,
       active: true,
       lastVerifiedAt: nowIso,
       updatedAt: nowIso,
