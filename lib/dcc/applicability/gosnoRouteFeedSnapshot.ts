@@ -5,7 +5,10 @@ import {
   readDurableLedgerState,
   runDurableLedgerTransaction,
 } from "../storage/durableTransactionalStore";
-import { registerGoSnoDisplayPricingResolver } from "../travelReferenceCore";
+import {
+  registerGoSnoDisplayPricingResolver,
+  registerGoSnoSnapshotStateResolver,
+} from "../travelReferenceCore";
 import type { CorridorId } from "./contextModel";
 
 export const GOSNO_ROUTE_FEED_URL = "https://gosno.co/api/public/route-feed" as const;
@@ -1575,5 +1578,11 @@ export function getGoSnoRouteSnapshotDisplayPricing(params: {
   };
 }
 
-registerGoSnoDisplayPricingResolver(getGoSnoRouteSnapshotDisplayPricing);
+registerGoSnoDisplayPricingResolver(
+  getGoSnoRouteSnapshotDisplayPricing as Parameters<
+    typeof registerGoSnoDisplayPricingResolver
+  >[0],
+);
+registerGoSnoSnapshotStateResolver(getActiveGoSnoRouteFeedSnapshotState);
+
 

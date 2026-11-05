@@ -1,12 +1,12 @@
 import { z } from "zod";
-import {
-  getActiveGoSnoRouteFeedSnapshotState,
-  getGoSnoRouteSnapshotDisplayPricing,
-  type ActiveGoSnoSnapshotState,
-  type GoSnoReconciledServiceOffer,
-  type GoSnoRouteFeedOneWayOffer,
-  type GoSnoRouteFeedRoundTripOffer,
-  type GoSnoVehicleClass,
+import bundledGoSnoSnapshotJson from "@/data/network/audit/satellite/gosno/route-feed.snapshot.json";
+import type {
+  ActiveGoSnoSnapshotState,
+  GoSnoReconciledServiceOffer,
+  GoSnoRouteFeedOneWayOffer,
+  GoSnoRouteFeedRoundTripOffer,
+  GoSnoRouteFeedVersionedSnapshot,
+  GoSnoVehicleClass,
 } from "@/lib/dcc/applicability/gosnoRouteFeedSnapshot";
 import { evaluateDecisionEngine } from "@/lib/dcc/decisionEngines/evaluator";
 import type {
@@ -23,6 +23,10 @@ import type {
   SourceRecord,
   TimingCalculationResult,
 } from "@/lib/dcc/decisionEngines/types";
+import {
+  resolveRegisteredGoSnoDisplayPricing,
+  resolveRegisteredGoSnoSnapshotState,
+} from "@/lib/dcc/travelReferenceCore";
 
 export type MountainDestinationCorridor =
   | "winter_park"
@@ -214,6 +218,44 @@ const VAN_LUGGAGE_NOTE =
 const VAN_HARDWARE_NOTE =
   "Van seating rows, interior luggage barrier, and dedicated ski cargo racks depend on physical vehicle assignment.";
 
+function resolveIsomorphicGoSnoSnapshotState(options?: {
+  nowMs?: number;
+  serverNowMs?: number;
+}): ActiveGoSnoSnapshotState {
+  const registered = resolveRegisteredGoSnoSnapshotState(options) as
+    | ActiveGoSnoSnapshotState
+    | null;
+  if (registered) {
+    return registered;
+  }
+  const snapshot =
+    bundledGoSnoSnapshotJson as unknown as GoSnoRouteFeedVersionedSnapshot;
+  const nowMs = options?.serverNowMs ?? options?.nowMs ?? Date.now();
+  const fetchedMs = Date.parse(snapshot.fetchedAt);
+  const expiresMs = Date.parse(snapshot.expiresAt);
+  const ageMs = Number.isFinite(fetchedMs) ? Math.max(0, nowMs - fetchedMs) : 0;
+  const isExpired = Number.isFinite(expiresMs) ? nowMs >= expiresMs : true;
+  const freshnessStatus = isExpired ? "expired" : "fresh";
+  return {
+    snapshot,
+    refreshMeta: {
+      lastRefreshAttemptAt: snapshot.fetchedAt,
+      lastRefreshStatus: "ok",
+      lastRefreshError: null,
+      consecutiveFailures: 0,
+    },
+    ageMs,
+    ageMinutes: Math.round(ageMs / 60000),
+    ageHours: Number((ageMs / 3600000).toFixed(2)),
+    ageLabel: "verified route snapshot",
+    isExpired,
+    freshnessStatus,
+    statusBanner: isExpired
+      ? "GoSno route-feed snapshot has expired; check current price with GoSno."
+      : `Verified against GoSno route feed (${snapshot.snapshotId}).`,
+  };
+}
+
 export function resolveGoSnoEngineRouteFromFeed(
   destinationResort: MountainDestinationCorridor,
   options?: {
@@ -224,7 +266,7 @@ export function resolveGoSnoEngineRouteFromFeed(
 ): ReconciledGoSnoEngineRouteResolution {
   const snapshotState =
     options?.snapshotState ??
-    getActiveGoSnoRouteFeedSnapshotState(
+    resolveIsomorphicGoSnoSnapshotState(
       options?.now ? { nowMs: options.now.getTime() } : undefined,
     );
   const { snapshot, isExpired, freshnessStatus } = snapshotState;
@@ -2232,7 +2274,7 @@ export const DENVER_MOUNTAIN_DECISION_ENGINE: DecisionEngineDefinition<DenverMou
         rawInput,
         options,
       );
-      const snapshotState = getActiveGoSnoRouteFeedSnapshotState(
+      const snapshotState = resolveIsomorphicGoSnoSnapshotState(
         options?.now ? { nowMs: options.now.getTime() } : undefined,
       );
       const gosnoRouteResolution = resolveGoSnoEngineRouteFromFeed(
@@ -2242,7 +2284,7 @@ export const DENVER_MOUNTAIN_DECISION_ENGINE: DecisionEngineDefinition<DenverMou
           direction: baseResult.normalizedAnswers.tripDirection,
         },
       );
-      const gosnoDisplayPricing = getGoSnoRouteSnapshotDisplayPricing({
+      const gosnoDisplayPricing = resolveRegisteredGoSnoDisplayPricing({
         routeId: gosnoRouteResolution.outboundRouteId,
         direction:
           baseResult.normalizedAnswers.tripDirection === "RETURN"

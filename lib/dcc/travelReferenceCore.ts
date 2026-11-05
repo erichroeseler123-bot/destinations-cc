@@ -4,11 +4,24 @@ export type GoSnoDisplayPricingLabels = {
   vanPriceLabel: string;
   vanOneWayLabel: string;
   vanQuoteRequired: boolean;
+  roundTripSuvPriceLabel?: string;
+  snapshotState?: unknown;
+  suvFare?: unknown;
+  vanFare?: unknown;
+  roundTripSuvFare?: unknown;
+  roundTripVanFare?: unknown;
 };
 
 type GoSnoDisplayPricingResolver = (input: {
   routeId: string;
+  direction?: "OUTBOUND" | "RETURN";
+  snapshotState?: unknown;
 }) => GoSnoDisplayPricingLabels;
+
+type GoSnoSnapshotStateResolver = (options?: {
+  nowMs?: number;
+  serverNowMs?: number;
+}) => unknown;
 
 const DEFAULT_GOSNO_DISPLAY_PRICING_LABELS: GoSnoDisplayPricingLabels = {
   suvPriceLabel: "Check current price with GoSno",
@@ -20,6 +33,8 @@ const DEFAULT_GOSNO_DISPLAY_PRICING_LABELS: GoSnoDisplayPricingLabels = {
 
 let registeredGoSnoDisplayPricingResolver: GoSnoDisplayPricingResolver | null =
   null;
+let registeredGoSnoSnapshotStateResolver: GoSnoSnapshotStateResolver | null =
+  null;
 
 export function registerGoSnoDisplayPricingResolver(
   resolver: GoSnoDisplayPricingResolver,
@@ -29,11 +44,29 @@ export function registerGoSnoDisplayPricingResolver(
 
 export function resolveRegisteredGoSnoDisplayPricing(input: {
   routeId: string;
+  direction?: "OUTBOUND" | "RETURN";
+  snapshotState?: unknown;
 }): GoSnoDisplayPricingLabels {
   if (registeredGoSnoDisplayPricingResolver) {
     return registeredGoSnoDisplayPricingResolver(input);
   }
   return DEFAULT_GOSNO_DISPLAY_PRICING_LABELS;
+}
+
+export function registerGoSnoSnapshotStateResolver(
+  resolver: GoSnoSnapshotStateResolver,
+): void {
+  registeredGoSnoSnapshotStateResolver = resolver;
+}
+
+export function resolveRegisteredGoSnoSnapshotState(options?: {
+  nowMs?: number;
+  serverNowMs?: number;
+}): unknown | null {
+  if (registeredGoSnoSnapshotStateResolver) {
+    return registeredGoSnoSnapshotStateResolver(options);
+  }
+  return null;
 }
 
 export type AuthorityType =
