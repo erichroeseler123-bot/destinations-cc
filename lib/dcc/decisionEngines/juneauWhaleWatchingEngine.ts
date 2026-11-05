@@ -847,7 +847,7 @@ export function computeJuneauWhaleTiming(
     activityMinutes,
     returnBufferMinutes,
     netSlackMinutes,
-    summary: `Dock ${dockEntry.code} (${dockEntry.label}): ${checkInLeadMinutes}m check-in + ${transferMinutesRoundTrip}m transfers + ${activityMinutes}m activity + ${returnBufferMinutes}m ship buffer = ${requiredTotalMinutes}m required vs. ${availableWindowMinutes}m port call (${netSlackMinutes >= 0 ? `+${netSlackMinutes}m slack` : `${netSlackMinutes}m deficit`}).`,
+    summary: `Dock ${input.arrivalDock} (${dockEntry.minutesToAukeBay}m each way to Auke Bay): ${checkInLeadMinutes}m check-in + ${transferMinutesRoundTrip}m transfers + ${activityMinutes}m activity + ${returnBufferMinutes}m ship buffer = ${requiredTotalMinutes}m required vs. ${availableWindowMinutes}m port call (${netSlackMinutes >= 0 ? `+${netSlackMinutes}m slack` : `${netSlackMinutes}m deficit`}).`,
   };
 }
 

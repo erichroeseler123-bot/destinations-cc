@@ -245,14 +245,13 @@ function resolveIsomorphicGoSnoSnapshotState(options?: {
       consecutiveFailures: 0,
     },
     ageMs,
-    ageMinutes: Math.round(ageMs / 60000),
-    ageHours: Number((ageMs / 3600000).toFixed(2)),
     ageLabel: "verified route snapshot",
     isExpired,
     freshnessStatus,
     statusBanner: isExpired
       ? "GoSno route-feed snapshot has expired; check current price with GoSno."
       : `Verified against GoSno route feed (${snapshot.snapshotId}).`,
+    priceFallbackMessage: "Check current price with GoSno",
   };
 }
 

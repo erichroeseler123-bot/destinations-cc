@@ -15,7 +15,7 @@ export type GoSnoDisplayPricingLabels = {
 type GoSnoDisplayPricingResolver = (input: {
   routeId: string;
   direction?: "OUTBOUND" | "RETURN";
-  snapshotState?: unknown;
+  snapshotState?: any;
 }) => GoSnoDisplayPricingLabels;
 
 type GoSnoSnapshotStateResolver = (options?: {
@@ -45,7 +45,7 @@ export function registerGoSnoDisplayPricingResolver(
 export function resolveRegisteredGoSnoDisplayPricing(input: {
   routeId: string;
   direction?: "OUTBOUND" | "RETURN";
-  snapshotState?: unknown;
+  snapshotState?: any;
 }): GoSnoDisplayPricingLabels {
   if (registeredGoSnoDisplayPricingResolver) {
     return registeredGoSnoDisplayPricingResolver(input);
