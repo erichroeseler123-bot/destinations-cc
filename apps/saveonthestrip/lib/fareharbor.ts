@@ -165,7 +165,7 @@ function normalizeTour(company: string, item: FareHarborItem): VegasTour {
 }
 
 async function fetchCompanyItems(company: string, appName: string, userKey: string) {
-  const url = `${BASE}/companies/${encodeURIComponent(company)}/items/?api-user=${encodeURIComponent(userKey)}`;
+  const url = `${BASE}/companies/${encodeURIComponent(company)}/items/`;
   const response = await fetch(url, {
     headers: {
       "X-FareHarbor-API-App": appName,
@@ -177,8 +177,7 @@ async function fetchCompanyItems(company: string, appName: string, userKey: stri
   });
 
   if (!response.ok) {
-    const body = await response.text();
-    throw new Error(`FareHarbor ${company} ${response.status}: ${body.slice(0, 200)}`);
+    throw new Error(`FareHarbor ${company} items request failed (${response.status})`);
   }
 
   return (await response.json()) as FareHarborItemsResponse;

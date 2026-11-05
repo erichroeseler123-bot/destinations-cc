@@ -39,7 +39,7 @@ export async function GET(request: Request) {
       : targetParam.includes("fareharbor.com")
         ? "fareharbor"
         : targetParam.includes("gosno.co")
-          ? "gosno"
+          ? "rezdy"
           : "direct";
     updated = issueOpaqueClickAttribution({
       clickId,

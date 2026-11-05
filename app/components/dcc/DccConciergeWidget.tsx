@@ -9,6 +9,7 @@ import type { MatchedTourOption, TripMatchResponse } from "@/lib/dcc/catalog/mat
 import type { PickupFulfillmentType } from "@/lib/dcc/catalog/durableCatalogStore";
 
 export type DccConciergeWidgetProps = {
+  widgetId?: string;
   initialDestination?: string;
   initialPropertySlug?: string;
   initialSurface?:
@@ -24,6 +25,7 @@ export type DccConciergeWidgetProps = {
   initialCategory?: string;
   initialShipArrival?: string;
   initialAllAboardTime?: string;
+  initialShipDeparture?: string;
   embedMode?: boolean;
   isTest?: boolean;
   parentOrigin?: string;
@@ -90,6 +92,7 @@ function getPickupFulfillmentBadgeClasses(mode?: PickupFulfillmentType | null): 
 }
 
 export default function DccConciergeWidget({
+  widgetId = "dcc-concierge-matcher",
   initialDestination = "new-orleans",
   initialPropertySlug = "hotel-monteleone-nola",
   initialSurface = "hotel_concierge",
@@ -99,6 +102,7 @@ export default function DccConciergeWidget({
   initialCategory,
   initialShipArrival = "",
   initialAllAboardTime = "",
+  initialShipDeparture = "",
   embedMode = false,
   isTest = false,
   parentOrigin,
@@ -129,15 +133,20 @@ export default function DccConciergeWidget({
     initialPickupMode || (defaultHotel.defaultRequiresHotelPickup ? "hotel_pickup" : "any"),
   );
   const [shipArrival, setShipArrival] = useState<string>(initialShipArrival);
-  const [allAboardTime, setAllAboardTime] = useState<string>(initialAllAboardTime);
+  const [allAboardTime, setAllAboardTime] = useState<string>(
+    initialAllAboardTime || initialShipDeparture,
+  );
   const [maxWeightLbs, setMaxWeightLbs] = useState<string>("");
   const [requiresWheelchair, setRequiresWheelchair] = useState<boolean>(false);
+  const [runtimeIsTest, setRuntimeIsTest] = useState<boolean>(isTest);
+  const [activeCheckoutOption, setActiveCheckoutOption] = useState<MatchedTourOption | null>(null);
 
   const [loading, setLoading] = useState<boolean>(false);
   const [checkingLiveShortlist, setCheckingLiveShortlist] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [matchResult, setMatchResult] = useState<TripMatchResponse | null>(null);
 
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -219,7 +228,7 @@ export default function DccConciergeWidget({
           propertySlug: surface === "hotel_concierge" ? propertySlug : undefined,
           enableShortlistLiveCheck: withShortlistLiveCheck,
           shortlistMaxCount: 4,
-          isTest: isTest || undefined,
+          isTest: runtimeIsTest || isTest || undefined,
           parentOrigin: parentOrigin || undefined,
         };
 
@@ -263,10 +272,67 @@ export default function DccConciergeWidget({
       requiresWheelchair,
       surface,
       propertySlug,
+      runtimeIsTest,
       isTest,
       parentOrigin,
     ],
   );
+
+  // Sync URL query params and handle "Find tours for my date" primary CTA clicks
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const syncFromUrl = () => {
+      const sp = new URLSearchParams(window.location.search);
+      const qDate = sp.get("date");
+      if (qDate && /^\d{4}-\d{2}-\d{2}$/.test(qDate)) {
+        setDate(qDate);
+      }
+      const qArrival = sp.get("shipArrival");
+      if (qArrival) setShipArrival(qArrival);
+      const qAllAboard = sp.get("allAboardTime") || sp.get("allAboard") || sp.get("shipDeparture");
+      if (qAllAboard) setAllAboardTime(qAllAboard);
+      const qPickup = sp.get("pickupMode");
+      if (
+        qPickup === "any" ||
+        qPickup === "hotel_pickup" ||
+        qPickup === "pier_pickup" ||
+        qPickup === "downtown_shuttle_departure" ||
+        qPickup === "self_drive"
+      ) {
+        setPickupMode(qPickup);
+      }
+      if (sp.get("isTest") === "true" || sp.get("isTest") === "1" || sp.get("trafficClass") === "test") {
+        setRuntimeIsTest(true);
+      }
+    };
+    syncFromUrl();
+
+    const handleCtaClick = (e: Event) => {
+      const target = (e.target as HTMLElement | null)?.closest?.(
+        '[data-testid="find-tours-for-my-date-cta"]',
+      ) as HTMLElement | null;
+      if (!target) return;
+      const carriedDest = target.getAttribute("data-destination");
+      if (carriedDest) setDestination(carriedDest);
+      const carriedDate = target.getAttribute("data-date");
+      if (carriedDate && /^\d{4}-\d{2}-\d{2}$/.test(carriedDate)) setDate(carriedDate);
+      const carriedArrival = target.getAttribute("data-ship-arrival");
+      if (carriedArrival) setShipArrival(carriedArrival);
+      const carriedAllAboard =
+        target.getAttribute("data-all-aboard") || target.getAttribute("data-ship-departure");
+      if (carriedAllAboard) setAllAboardTime(carriedAllAboard);
+
+      containerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      setTimeout(() => {
+        void runTripMatch(true);
+      }, 60);
+    };
+
+    document.addEventListener("click", handleCtaClick);
+    return () => {
+      document.removeEventListener("click", handleCtaClick);
+    };
+  }, [runTripMatch]);
 
   // Stage 1: Debounced catalog match (enableShortlistLiveCheck=false) when filters change.
   // Prevents firing repeated live-check requests on every keystroke!
@@ -299,9 +365,11 @@ export default function DccConciergeWidget({
 
   return (
     <div
+      id={widgetId}
+      ref={containerRef}
       data-testid="dcc-concierge-widget"
       data-embed-mode={embedMode ? "true" : "false"}
-      className="rounded-2xl border border-slate-800 bg-slate-950/95 text-slate-100 shadow-2xl overflow-hidden"
+      className="scroll-mt-6 rounded-2xl border border-slate-800 bg-slate-950/95 text-slate-100 shadow-2xl overflow-hidden"
     >
       {/* Header Bar */}
       <div className="border-b border-slate-800 bg-slate-900/90 px-6 py-4 flex flex-wrap items-center justify-between gap-4">
@@ -664,6 +732,77 @@ export default function DccConciergeWidget({
 
       {/* Matched Options List */}
       <div className="p-6 space-y-4">
+        {activeCheckoutOption?.bookingPath.checkoutPreselection && (
+          <div
+            data-testid="active-checkout-selection-summary-banner"
+            className="sticky top-2 z-20 rounded-xl border border-cyan-400/50 bg-slate-950/95 p-3.5 text-xs shadow-xl backdrop-blur"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="font-bold text-cyan-300">
+                Active Checkout Selection Summary — {activeCheckoutOption.title}
+              </span>
+              <button
+                type="button"
+                onClick={() => setActiveCheckoutOption(null)}
+                className="rounded border border-slate-700 bg-slate-900 px-2 py-0.5 text-[10px] text-slate-300 hover:bg-slate-800"
+              >
+                Dismiss
+              </button>
+            </div>
+            <p className="mt-1 text-slate-200">
+              {activeCheckoutOption.bookingPath.checkoutPreselection.travelerActionSummary}
+            </p>
+            <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-slate-200">
+              <span>
+                <strong>Date to Select:</strong>{" "}
+                <code className="text-emerald-300">
+                  {activeCheckoutOption.bookingPath.checkoutPreselection
+                    .requiredSelectionsAtCheckout.date ||
+                    date ||
+                    "Select date"}
+                </code>
+              </span>
+              <span>
+                <strong>Travelers:</strong>{" "}
+                <code className="text-emerald-300">
+                  {
+                    activeCheckoutOption.bookingPath.checkoutPreselection
+                      .requiredSelectionsAtCheckout.partySummary
+                  }
+                </code>
+              </span>
+              {activeCheckoutOption.bookingPath.checkoutPreselection.requiredSelectionsAtCheckout
+                .optionTitle && (
+                <span>
+                  <strong>Option:</strong>{" "}
+                  <code className="text-emerald-300">
+                    {
+                      activeCheckoutOption.bookingPath.checkoutPreselection
+                        .requiredSelectionsAtCheckout.optionTitle
+                    }
+                    {activeCheckoutOption.bookingPath.checkoutPreselection
+                      .requiredSelectionsAtCheckout.optionCode
+                      ? ` (${activeCheckoutOption.bookingPath.checkoutPreselection.requiredSelectionsAtCheckout.optionCode})`
+                      : ""}
+                  </code>
+                </span>
+              )}
+              {activeCheckoutOption.bookingPath.checkoutPreselection.requiredSelectionsAtCheckout
+                .departureTime && (
+                <span>
+                  <strong>Departure:</strong>{" "}
+                  <code className="text-emerald-300">
+                    {
+                      activeCheckoutOption.bookingPath.checkoutPreselection
+                        .requiredSelectionsAtCheckout.departureTime
+                    }
+                  </code>
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+
         {matchResult?.options.map((opt) => {
           const bound = opt.boundOffer;
           const pickupBadgeClass = getPickupFulfillmentBadgeClasses(
@@ -794,7 +933,7 @@ export default function DccConciergeWidget({
                   )}
                 </div>
 
-                <div className="text-right">
+                <div className="text-left sm:text-right w-full sm:w-auto">
                   <div className="text-lg font-extrabold text-emerald-400">
                     {formatPrice(opt.pricing.fromPriceCents, opt.pricing.currency)}
                     <span className="text-xs font-normal text-slate-400 ml-1">
@@ -819,44 +958,10 @@ export default function DccConciergeWidget({
                       {opt.pricing.selectedChannelId}
                     </span>
                   </div>
-                  <div className="mt-2">
-                    <a
-                      href={opt.bookingPath.handoffUrl}
-                      data-tracked-click-url={opt.bookingPath.trackedClickUrl}
-                      onClick={() => {
-                        if (
-                          opt.bookingPath.trackedClickUrl &&
-                          opt.bookingPath.trackedClickUrl.startsWith("/api/v1/ads/click")
-                        ) {
-                          try {
-                            void fetch(opt.bookingPath.trackedClickUrl, {
-                              method: "GET",
-                              keepalive: true,
-                            });
-                          } catch {
-                            // non-blocking click follow telemetry
-                          }
-                        }
-                      }}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      data-testid="concierge-bound-checkout-link"
-                      className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 px-3.5 py-2 text-xs font-bold text-slate-950 transition"
-                    >
-                      {opt.capabilityTier === "discovery_only"
-                        ? "Visit Operator Site ↗"
-                        : `Continue to Checkout (${bound?.optionCode || opt.primaryProvider}) ↗`}
-                    </a>
-                  </div>
-                  {opt.bookingPath.clickId && (
-                    <div className="mt-1 text-[10px] font-mono text-slate-400">
-                      Trace ID: {opt.bookingPath.clickId}
-                    </div>
-                  )}
                 </div>
               </div>
 
-              {/* Checkout Selection Summary (explains provider preselection vs manual checkout selections) */}
+              {/* Checkout Selection Summary kept directly above the Checkout CTA on mobile & desktop */}
               {preselection && (
                 <div
                   data-testid="concierge-checkout-preselection-summary"
@@ -908,6 +1013,42 @@ export default function DccConciergeWidget({
                   </div>
                 </div>
               )}
+
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                <a
+                  href={opt.bookingPath.handoffUrl}
+                  data-tracked-click-url={opt.bookingPath.trackedClickUrl}
+                  onClick={() => {
+                    setActiveCheckoutOption(opt);
+                    if (
+                      opt.bookingPath.trackedClickUrl &&
+                      opt.bookingPath.trackedClickUrl.startsWith("/api/v1/ads/click")
+                    ) {
+                      try {
+                        void fetch(opt.bookingPath.trackedClickUrl, {
+                          method: "GET",
+                          keepalive: true,
+                        });
+                      } catch {
+                        // non-blocking click follow telemetry
+                      }
+                    }
+                  }}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  data-testid="concierge-bound-checkout-link"
+                  className="inline-flex w-full sm:w-auto justify-center items-center gap-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 px-4 py-2.5 text-xs font-bold text-slate-950 transition"
+                >
+                  {opt.capabilityTier === "discovery_only"
+                    ? "Visit Operator Site ↗"
+                    : `Continue to Checkout (${bound?.optionCode || opt.primaryProvider}) ↗`}
+                </a>
+                {opt.bookingPath.clickId && (
+                  <div className="text-[10px] font-mono text-slate-400">
+                    Trace ID: {opt.bookingPath.clickId}
+                  </div>
+                )}
+              </div>
 
               {/* Cheaper / Alternative Option Tradeoffs */}
               {Array.isArray(opt.alternativeOptionTradeoffs) &&

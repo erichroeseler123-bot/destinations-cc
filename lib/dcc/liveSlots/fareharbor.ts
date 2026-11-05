@@ -69,8 +69,7 @@ export async function fetchItems(shortname: string): Promise<FareHarborItem[]> {
   );
 
   if (!response.ok) {
-    const body = await response.text();
-    throw new Error(`FareHarbor items ${response.status}: ${body.slice(0, 200)}`);
+    throw new Error(`FareHarbor items request failed (${response.status})`);
   }
 
   const data = (await response.json()) as FareHarborItemsResponse;

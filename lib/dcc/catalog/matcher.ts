@@ -1609,9 +1609,14 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
       rec.constraints?.transferEvidenceSource ??
       null;
 
+    const rawProductBerthOrHub = rec.constraints?.applicableBerthOrMeetingPoint ?? null;
     const effectiveApplicableBerthOrMeetingPoint: string | null =
       selectedProductOption?.applicableBerthOrMeetingPoint ??
-      rec.constraints?.applicableBerthOrMeetingPoint ??
+      (effectivePickupFulfillmentType === "hotel_pickup" &&
+      rawProductBerthOrHub &&
+      /self-drive/i.test(rawProductBerthOrHub)
+        ? "French Quarter / Downtown New Orleans Hotel Shuttle Pickup & Return Zone (round-trip shuttle included)"
+        : rawProductBerthOrHub) ??
       (effectiveMeetingName && effectiveMeetingLat !== null ? effectiveMeetingName : null);
 
     const hasVerifiedTransferSupport =
@@ -1620,10 +1625,16 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
       rawTransferBefore !== null &&
       rawTransferAfter !== null;
 
-    const effectiveTransferEvidenceSource: string | null = hasVerifiedTransferSupport
+    const cruiseVerifiedEvidenceSource: string | null = hasVerifiedTransferSupport
       ? explicitEvidenceSource ||
         `catalog_verified_schedule:${rec.primaryProvider}:${rec.providerProductCode}`
       : null;
+
+    const effectiveTransferEvidenceSource: string | null = hasVerifiedTransferSupport
+      ? cruiseVerifiedEvidenceSource
+      : !hasCruiseWindowInput
+        ? explicitEvidenceSource
+        : null;
 
     const effectiveTransferTimeSource: TransferTimeSource = hasVerifiedTransferSupport
       ? rawTransferTimeSource
@@ -1661,7 +1672,7 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
         transferBeforeMinutes: effectiveTransferBeforeMinutes,
         transferAfterMinutes: effectiveTransferAfterMinutes,
         transferTimeSource: effectiveTransferTimeSource,
-        transferEvidenceSource: effectiveTransferEvidenceSource,
+        transferEvidenceSource: cruiseVerifiedEvidenceSource,
         applicableBerthOrMeetingPoint: effectiveApplicableBerthOrMeetingPoint,
         planningEstimateTransferMinutes: effectivePlanningEstimateTransferMinutes,
         verifiedDepartureTimes: [],

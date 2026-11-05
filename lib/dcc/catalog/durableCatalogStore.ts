@@ -1250,11 +1250,15 @@ export async function queryDurableTourCatalog(filter: DurableCatalogQueryFilter 
     if (filter.capabilityTier && rec.capabilityTier !== filter.capabilityTier) {
       return false;
     }
-    if (
-      filter.category &&
-      !rec.category.toLowerCase().includes(filter.category.trim().toLowerCase())
-    ) {
-      return false;
+    if (filter.category) {
+      const recCat = rec.category.trim().toLowerCase();
+      const filterCat = filter.category
+        .trim()
+        .toLowerCase()
+        .replace(/\s+(?:tours|excursions)$/i, "");
+      if (!recCat.includes(filterCat) && !filterCat.includes(recCat)) {
+        return false;
+      }
     }
     if (approvedSet) {
       const idMatch = approvedSet.has(rec.tourId.toLowerCase());

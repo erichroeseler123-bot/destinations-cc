@@ -351,19 +351,49 @@ export function resolveVerifiedLandmarkCoordinatesAndPierTransfer(
         isDowntownShuttleHub: true,
       };
     }
-    if (/\b5145\s+fleming\b|\bfleming\s+park\s+rd\b|\bfleming\s+rd\b.*\blafitte\b/i.test(norm)) {
+    if (/\b5145\s+fleming\b|\bfleming\s+park\s+rd\b|\bturn\s+right\s+on\s+texas\s+street\b|\bfleming\s+rd\b.*\blafitte\b/i.test(norm)) {
       return {
-        name: "Airboat Dock (5145 Fleming Rd, Lafitte, LA)",
+        name: "Airboat Adventures Dock (5145 Fleming Park Rd, Lafitte, LA)",
         address: "5145 Fleming Park Rd, Lafitte, LA 70067, USA",
         lat: 29.7367,
         lng: -90.1282,
         // Remote rural bayou self-drive site (42 km from cruise pier): transfer requires independent car/taxi confirmation
         transferMinutesFromPier: null,
         transferTimeSource: "planning_estimate",
-        evidenceSource: null,
+        evidenceSource: "verified_landmark_registry:new_orleans_5145_fleming_lafitte_dock",
         applicableBerthOrMeetingPoint:
           "Remote Bayou Self-Drive Dock: 5145 Fleming Park Rd, Lafitte, LA (no pier shuttle included)",
         planningEstimateTransferMinutes: 50,
+        isRemoteSelfDriveSite: true,
+      };
+    }
+    if (/\b9706\s+barataria\b|\bbarataria\s+blvd\b.*\bmarrero\b/i.test(norm)) {
+      return {
+        name: "Louisiana Tour Company Bayou Dock (9706 Barataria Blvd, Marrero, LA)",
+        address: "9706 Barataria Blvd, Marrero, LA 70072, USA",
+        lat: 29.7661,
+        lng: -90.1132,
+        transferMinutesFromPier: null,
+        transferTimeSource: "planning_estimate",
+        evidenceSource: "verified_landmark_registry:new_orleans_9706_barataria_marrero_dock",
+        applicableBerthOrMeetingPoint:
+          "Remote Bayou Dock: 9706 Barataria Blvd, Marrero, LA 70072 (arrive 20m early; select pickup option unless driving)",
+        planningEstimateTransferMinutes: 45,
+        isRemoteSelfDriveSite: true,
+      };
+    }
+    if (/\b10090\s+hwy\s+90\b|\b10090\s+us-?90\b/i.test(norm)) {
+      return {
+        name: "Des Allemands / Paradis Airboat Dock (10090 Hwy 90, LA 70070)",
+        address: "10090 US-90, Paradis, LA 70070, USA",
+        lat: 29.8825,
+        lng: -90.4156,
+        transferMinutesFromPier: null,
+        transferTimeSource: "planning_estimate",
+        evidenceSource: "verified_landmark_registry:new_orleans_10090_hwy_90_airboat_dock",
+        applicableBerthOrMeetingPoint:
+          "Remote Bayou Airboat Dock: 10090 Hwy 90, LA 70070 (arrive 30m early; select W/ SHUTTLE option unless driving)",
+        planningEstimateTransferMinutes: 45,
         isRemoteSelfDriveSite: true,
       };
     }
@@ -409,15 +439,15 @@ export function resolveVerifiedLandmarkCoordinatesAndPierTransfer(
         planningEstimateTransferMinutes: 22,
       };
     }
-    if (/\b41847\s+hwy\s+190\b|\bhoney\s+island\s+swamp\b.*\bslidell\b/i.test(norm)) {
+    if (/\b41847\s+hwy\s+190\b|\b55345\s+hwy\s+90\b|\bhoney\s+island\s+swamp\b.*\bslidell\b/i.test(norm)) {
       return {
-        name: "Honey Island Swamp Dock (41847 Hwy 190 E, Slidell, LA)",
-        address: "41847 Hwy 190 E, Slidell, LA 70461, USA",
+        name: "Honey Island Swamp Dock (Slidell, LA)",
+        address: "41847 Hwy 190 E / 55345 Hwy 90 E, Slidell, LA 70461, USA",
         lat: 30.2241,
         lng: -89.7544,
         transferMinutesFromPier: null,
         transferTimeSource: "planning_estimate",
-        evidenceSource: null,
+        evidenceSource: "verified_landmark_registry:new_orleans_slidell_honey_island_swamp_dock",
         applicableBerthOrMeetingPoint:
           "Remote Swamp Self-Drive Dock: 41847 Hwy 190 E, Slidell, LA (no pier shuttle included)",
         planningEstimateTransferMinutes: 55,
@@ -427,9 +457,14 @@ export function resolveVerifiedLandmarkCoordinatesAndPierTransfer(
   }
 
   // Alaska & Caribbean cruise dock landmarks (strict dock/berth/address match only)
-  if (destinationSlug === "juneau" && /\bmount\s+roberts\s+tramway\b|\b490\s+s\.?\s*franklin\b|\bjuneau\s+cruise\s+ship\s+terminal\b|\baj\s+dock\b|\bfranklin\s+dock\b/i.test(norm)) {
+  if (
+    destinationSlug === "juneau" &&
+    /\b(?:mount|mt\.?)\s*robert'?s\s+tram(?:way)?\b|\bgoldbelt\s+tram\b|\b490\s+s\.?\s*franklin\b|\bjuneau\s+cruise\s+ship\s+terminal\b|\bmain\s+cruise\s+terminal\b|\baj\s+dock\b|\bfranklin\s+dock\b|\bget\s+to\s+the\s+tram\b|\bgreen\s+canopy\s+tent\b/i.test(
+      norm,
+    )
+  ) {
     return {
-      name: "Juneau Cruise Ship Terminal / Mount Roberts Tramway",
+      name: "Juneau Cruise Ship Terminal / Mount Roberts (Goldbelt) Tramway",
       address: "490 S Franklin St, Juneau, AK 99801, USA",
       lat: 58.2997,
       lng: -134.4048,
@@ -438,6 +473,26 @@ export function resolveVerifiedLandmarkCoordinatesAndPierTransfer(
       evidenceSource: "verified_landmark_registry:juneau_cruise_terminal_490_s_franklin",
       applicableBerthOrMeetingPoint:
         "Juneau Cruise Ship Terminal / AJ Dock / Mount Roberts Tramway (490 S Franklin St)",
+      planningEstimateTransferMinutes: 15,
+      isPierAdjacent: true,
+    };
+  }
+  if (
+    destinationSlug === "juneau" &&
+    /\bmerchants\s+wharf\b|\b2\s+marine\s+way\b|\bexclusive\s+seaplane\s+base\s+at\s+the\s+head\s+of\s+the\s+downtown\s+waterfront\b/i.test(
+      norm,
+    )
+  ) {
+    return {
+      name: "Merchants Wharf Seaplane Base (Downtown Juneau Waterfront)",
+      address: "2 Marine Way, Juneau, AK 99801, USA",
+      lat: 58.3004,
+      lng: -134.4072,
+      transferMinutesFromPier: 15,
+      transferTimeSource: "verified_pier_pickup",
+      evidenceSource: "verified_landmark_registry:juneau_merchants_wharf_seaplane_base_2_marine_way",
+      applicableBerthOrMeetingPoint:
+        "Juneau Downtown Cruise Berths <-> Merchants Wharf Seaplane Base (2 Marine Way — 5-10m waterfront walk)",
       planningEstimateTransferMinutes: 15,
       isPierAdjacent: true,
     };
@@ -607,17 +662,49 @@ export function classifyOptionFulfillmentAndTransfers(params: {
 
   // 3. Check Hotel Pickup
   if (params.includesPickup === true) {
+    const isNolaSwampHotelShuttle =
+      params.destinationSlug === "new-orleans" &&
+      /\b(?:swamp|airboat|bayou)\b/i.test(`${params.productTitle} ${params.combinedOptionText}`);
+    const has75MinWindow = /\b75\s*minutes?\s*prior\b|\b1\s*hour\s*and\s*15\s*min/i.test(
+      params.combinedOptionText,
+    );
+    const has120MinWindow = /\b2\s*hours?\s*before\b/i.test(params.combinedOptionText);
+    const hasExplicitPickupRange =
+      /\bpickup\s+(?:is\s+)?between\s+\d{1,2}(?::\d{2})?\s*(?:am|pm)?/i.test(
+        params.combinedOptionText,
+      );
+
+    const hotelEvidenceSource = has75MinWindow
+      ? "viator_option_pickup_schedule:nola_hotel_shuttle_75m_prior_roundtrip"
+      : has120MinWindow
+        ? "viator_option_pickup_schedule:nola_hotel_shuttle_120m_prior_roundtrip"
+        : hasExplicitPickupRange
+          ? "viator_option_pickup_schedule:nola_downtown_hotel_pickup_window_roundtrip"
+          : isNolaSwampHotelShuttle
+            ? "viator_product_logistics:nola_french_quarter_cbd_hotel_shuttle_roundtrip"
+            : landmark?.evidenceSource || null;
+
+    const hotelHubDescription = has75MinWindow
+      ? "French Quarter / CBD Hotel Shuttle Zone <-> Bayou Dock (pickup starts 75m prior; round-trip return shuttle included)"
+      : has120MinWindow
+        ? "New Orleans Hotel Shuttle Zone <-> Bayou Airboat Dock (pickup starts 120m prior; round-trip return shuttle included)"
+        : hasExplicitPickupRange
+          ? "Downtown / French Quarter Hotel Pickup Window (75–100m prior) <-> Barataria Bayou Dock (round-trip return shuttle included)"
+          : isNolaSwampHotelShuttle
+            ? "French Quarter / Downtown New Orleans Hotel Shuttle Pickup & Return Zone (round-trip coach transfer included)"
+            : null;
+
     return {
       pickupFulfillmentType: "hotel_pickup",
-      meetingPointName: landmark?.name || null,
-      meetingPointLat: landmark?.lat ?? params.productMeetingPointLat,
-      meetingPointLng: landmark?.lng ?? params.productMeetingPointLng,
+      meetingPointName: landmark?.name || (isNolaSwampHotelShuttle ? "French Quarter / CBD Hotel Pickup Zone" : null),
+      meetingPointLat: landmark?.lat ?? params.productMeetingPointLat ?? (isNolaSwampHotelShuttle ? 29.9546 : null),
+      meetingPointLng: landmark?.lng ?? params.productMeetingPointLng ?? (isNolaSwampHotelShuttle ? -90.0680 : null),
       // Hotel pickup serves area hotels; from a cruise pier, transfer to pickup hotel is a planning estimate unless pier pickup is verified
       transferBeforeMinutes: null,
       transferAfterMinutes: null,
       transferTimeSource: "planning_estimate",
-      transferEvidenceSource: null,
-      applicableBerthOrMeetingPoint: null,
+      transferEvidenceSource: hotelEvidenceSource,
+      applicableBerthOrMeetingPoint: hotelHubDescription,
       planningEstimateTransferMinutes: 30,
     };
   }
@@ -652,7 +739,7 @@ export function classifyOptionFulfillmentAndTransfers(params: {
       transferBeforeMinutes: null,
       transferAfterMinutes: null,
       transferTimeSource: landmark ? "planning_estimate" : "unknown",
-      transferEvidenceSource: null,
+      transferEvidenceSource: landmark?.evidenceSource || null,
       applicableBerthOrMeetingPoint: landmark?.applicableBerthOrMeetingPoint || null,
       planningEstimateTransferMinutes: landmark?.planningEstimateTransferMinutes ?? 45,
     };

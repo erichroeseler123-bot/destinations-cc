@@ -125,13 +125,34 @@ function JsonLdGraph() {
 
 export const revalidate = 3600;
 
-export default async function NewOrleansSwampToursPage() {
+function pickFirstParam(val: string | string[] | undefined): string | undefined {
+  if (Array.isArray(val)) return val[0];
+  return typeof val === "string" && val.trim() ? val.trim() : undefined;
+}
+
+export default async function NewOrleansSwampToursPage(props: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const resolvedSearchParams = props.searchParams ? await props.searchParams : {};
   const carriedContext = await resolvePortfolioTripContext({
-    searchParams: {},
+    searchParams: resolvedSearchParams,
     claimingOwner: "destinationcommandcenter.com",
     issueIfParamsPresent: false,
     defaultPortSlug: "new-orleans",
   });
+
+  const carriedDate =
+    pickFirstParam(resolvedSearchParams.date) || carriedContext.payload.date || undefined;
+  const carriedShipArrival = pickFirstParam(resolvedSearchParams.shipArrival) || undefined;
+  const carriedAllAboard =
+    pickFirstParam(resolvedSearchParams.allAboardTime) ||
+    pickFirstParam(resolvedSearchParams.allAboard) ||
+    pickFirstParam(resolvedSearchParams.shipDeparture) ||
+    undefined;
+  const isTestParam =
+    pickFirstParam(resolvedSearchParams.isTest) === "true" ||
+    pickFirstParam(resolvedSearchParams.isTest) === "1" ||
+    pickFirstParam(resolvedSearchParams.trafficClass) === "test";
 
   const assurance = evaluatePortfolioAssuranceSummary({
     engineId: "new-orleans-swamp-tours",
@@ -226,8 +247,20 @@ export default async function NewOrleansSwampToursPage() {
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <a
+              href="#swamp-date-matcher"
+              data-testid="find-tours-for-my-date-cta"
+              data-destination="new-orleans"
+              data-date={carriedDate || ""}
+              data-ship-arrival={carriedShipArrival || ""}
+              data-all-aboard={carriedAllAboard || ""}
+              className="rounded-2xl border border-emerald-300/40 bg-[linear-gradient(180deg,#4ade80,#22c55e)] px-5 py-3 text-sm font-black uppercase tracking-[0.16em] text-[#05100a] shadow-[0_18px_38px_rgba(74,222,128,0.22)] transition hover:scale-[1.02]"
+            >
+              Find tours for my date
+              {carriedDate ? ` (${carriedDate})` : ""} →
+            </a>
+            <a
               href={satelliteHref}
-              className="rounded-2xl border border-[#7dd3fc]/30 bg-[linear-gradient(180deg,#7dd3fc,#4ade80)] px-5 py-3 text-sm font-black uppercase tracking-[0.16em] text-[#071018] shadow-[0_18px_38px_rgba(74,222,128,0.12)] transition hover:scale-[1.02]"
+              className="rounded-2xl border border-[#7dd3fc]/30 bg-white/10 px-5 py-3 text-sm font-bold uppercase tracking-[0.14em] text-cyan-200 transition hover:bg-white/15"
             >
               Compare on Welcome to the Swamp
             </a>
@@ -238,14 +271,31 @@ export default async function NewOrleansSwampToursPage() {
               Back to New Orleans tours
             </Link>
           </div>
+          {(carriedDate || carriedShipArrival || carriedAllAboard) && (
+            <div
+              data-testid="carried-trip-details-pill"
+              className="mt-4 inline-flex flex-wrap items-center gap-2 rounded-xl border border-emerald-400/30 bg-emerald-500/10 px-3.5 py-2 text-xs text-emerald-200"
+            >
+              <span className="font-bold">Carried Into Matcher:</span>
+              <span>Destination: New Orleans, LA</span>
+              {carriedDate && <span>· Date: {carriedDate}</span>}
+              {carriedShipArrival && <span>· Ship Arrival: {carriedShipArrival}</span>}
+              {carriedAllAboard && <span>· All-Aboard: {carriedAllAboard}</span>}
+            </div>
+          )}
         </header>
 
         <DccConciergeWidget
+          widgetId="swamp-date-matcher"
           initialDestination="new-orleans"
           initialPropertySlug="hotel-monteleone-nola"
           initialSurface="welcometotheswamp"
           initialPickupMode="hotel_pickup"
-          initialCategory="Swamp & Bayou Tours"
+          initialDate={carriedDate}
+          initialShipArrival={carriedShipArrival}
+          initialAllAboardTime={carriedAllAboard}
+          initialCategory="Swamp & Bayou"
+          isTest={isTestParam}
           theme="dark"
         />
 
