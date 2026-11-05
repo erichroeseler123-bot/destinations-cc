@@ -10,7 +10,10 @@ import { fetchAvailabilitiesForItem } from "@/lib/dcc/liveSlots/fareharbor";
 import { validateCruiseSafetyWindow } from "@/lib/viator/verified-product-cache";
 import { appendViatorAttribution } from "@/lib/viator/links";
 import { issueOpaqueClickAttribution } from "@/lib/dcc/commerce/opaqueAttributionLedger";
-import { issueSharedGoSnoHandoffAttribution } from "@/lib/dcc/applicability/gosnoHandoffBuilder";
+import {
+  buildSharedGoSnoHandoffUrlAndDetails,
+  issueSharedGoSnoHandoffAttribution,
+} from "@/lib/dcc/applicability/gosnoHandoffBuilder";
 
 export type TripMatchRequest = {
   destination: string;
@@ -631,7 +634,7 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
             surface === "cruisepromenade"
               ? surface
               : "dcc",
-          internalTourId: record.compatibilityAliases[0] || viatorCode,
+          internalProductId: record.compatibilityAliases[0] || viatorCode,
           viatorProductCode: viatorCode,
           bookingDate: input.date,
           adultCount: adults,
@@ -754,11 +757,18 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
     // Issue traceable click attribution for commercial/attributable tiers
     if (option.capabilityTier !== "discovery_only") {
       if (record.primaryProvider === "gosno") {
-        const issued = issueSharedGoSnoHandoffAttribution({
-          resortSlug: "winter-park",
-          serviceDate: input.date || undefined,
+        const handoffBuild = buildSharedGoSnoHandoffUrlAndDetails({
+          destinationSlug: "winter-park",
+          destination: "Winter Park",
+          origin: input.hotelName || "DEN",
+          travelDate: input.date || null,
           passengerCount: totalGuests,
-          pickupHubName: input.hotelName || "Denver Union Station",
+          vehicleClass: totalGuests > 5 ? "van" : "suv",
+          originatingPage: `/${surface}/${input.propertySlug || node.destinationSlug}`,
+        });
+        const issued = issueSharedGoSnoHandoffAttribution({
+          handoffBuild,
+          recommendedOperatorId: "op:gosno",
           originatingPage: `/${surface}/${input.propertySlug || node.destinationSlug}`,
           originatingSite: surface,
           decisionReceiptId: `match:${record.tourId}`,
@@ -778,9 +788,9 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
           provider:
             record.primaryProvider === "fareharbor"
               ? "fareharbor"
-              : record.primaryProvider === "parr"
-                ? "parr"
-                : "viator",
+              : record.primaryProvider === "viator"
+                ? "viator"
+                : "direct",
           productCode: record.providerProductCode,
           productDestinationUrl: option.bookingPath.handoffUrl,
           tripDetails: {

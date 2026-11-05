@@ -1131,7 +1131,7 @@ export default async function ToursPage({
           </Link>
         </div>
         <DccConciergeWidget
-          initialDestination={normalizeSlug(sp.city || sp.port || "new-orleans")}
+          initialDestination={cityRouteSlug || "new-orleans"}
           initialSurface="dcc"
           embedMode={false}
         />

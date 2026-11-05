@@ -730,7 +730,7 @@ function mapPgRowToDurableTourRecord(row: Record<string, any>): DurableTourRecor
   };
 }
 
-async function upsertSingleTourToPg(sql: ReturnType<typeof neon>, record: DurableTourRecord): Promise<void> {
+async function upsertSingleTourToPg(sql: ReturnType<typeof getSqlClient>, record: DurableTourRecord): Promise<void> {
   await sql`
     INSERT INTO dcc_tour_catalog (
       tour_id, compatibility_aliases, destination_slug, port_slug,

@@ -29,7 +29,7 @@ export type DccAdapterResponse = {
   trackedUrl?: string;
 };
 
-export type ViatorAgeBand = "ADULT" | "CHILD" | "INFANT" | "YOUTH" | "SENIOR";
+export type ViatorAgeBand = "ADULT" | "CHILD" | "INFANT" | "YOUTH" | "SENIOR" | "TRAVELER";
 
 export type ProductAgeBandRule = {
   ageBand: ViatorAgeBand;
