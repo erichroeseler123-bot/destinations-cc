@@ -122,4 +122,44 @@ describe("DCC to GoSno handoff", () => {
       "2 Private Chevrolet Suburbans (up to 6 passengers each)",
     );
   });
+
+  it("uses shared GoSno handoff builder to preserve Winter Park round-trip details in ledger and strip PII", async () => {
+    const { getOpaqueClickAttributionById } = await import(
+      "@/lib/dcc/commerce/opaqueAttributionLedger"
+    );
+    const response = await GET(
+      new Request(
+        "https://www.destinationcommandcenter.com/go/dcc-to-gosno?destination=winter-park&airport=den&direction=ROUND_TRIP&date=2026-12-20&pickupTime=10:30&returnDate=2026-12-27&returnPickupTime=08:00&party_size=4&standardBags=4&skiBags=4&vehicle_type=suv&originatingPage=%2Ftransportation%2Fcolorado&email=test%40example.com&phone=303-555-0100&isTest=1",
+      ),
+    );
+    assert.equal(response.status, 302);
+    const location = response.headers.get("location") || "";
+    const parsed = new URL(location);
+    assert.equal(parsed.searchParams.get("direction"), "ROUND_TRIP");
+    assert.equal(parsed.searchParams.get("tripType"), "round_trip");
+    assert.equal(parsed.searchParams.get("routeId"), "DEN-WINTER-PARK-ROUND-TRIP");
+    assert.equal(parsed.searchParams.get("offerId"), "DEN-WINTER-PARK-ROUND-TRIP-SUV");
+    assert.equal(parsed.searchParams.get("returnRouteId"), "WINTER-PARK-DEN");
+    assert.equal(parsed.searchParams.get("pickupTime"), "10:30");
+    assert.equal(parsed.searchParams.get("returnDate"), "2026-12-27");
+    assert.equal(parsed.searchParams.get("returnPickupTime"), "08:00");
+    assert.equal(parsed.searchParams.get("standardBags"), "4");
+    assert.equal(parsed.searchParams.get("skiBags"), "4");
+    assert.equal(parsed.searchParams.get("email"), null);
+    assert.equal(parsed.searchParams.get("phone"), null);
+
+    const clickId = parsed.searchParams.get("click_id");
+    assert.ok(clickId);
+    const record = getOpaqueClickAttributionById(clickId!);
+    assert.ok(record);
+    assert.equal(record.isTest, true);
+    assert.equal(record.trafficClass, "test");
+    assert.equal(record.tripDetails?.direction, "ROUND_TRIP");
+    assert.equal(record.tripDetails?.destination, "Winter Park");
+    assert.equal(record.tripDetails?.routeId, "DEN-WINTER-PARK-ROUND-TRIP");
+    assert.equal(record.tripDetails?.returnDate, "2026-12-27");
+    assert.ok(record.strippedPiiParams?.includes("email"));
+    assert.ok(record.strippedPiiParams?.includes("phone"));
+  });
 });
+

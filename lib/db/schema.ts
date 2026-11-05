@@ -2,6 +2,7 @@ import {
   bigserial,
   boolean,
   date,
+  doublePrecision,
   index,
   integer,
   jsonb,
@@ -2385,5 +2386,96 @@ export const dccMachineChangeEvents = pgTable(
   }),
 );
 
+export const dccTourCatalog = pgTable(
+  "dcc_tour_catalog",
+  {
+    tourId: text("tour_id").primaryKey(),
+    compatibilityAliases: jsonb("compatibility_aliases").$type<string[]>().notNull().default([]),
+    destinationSlug: text("destination_slug").notNull(),
+    portSlug: text("port_slug"),
+    earthosDestinationNodeId: text("earthos_destination_node_id").notNull(),
+    timeZone: text("time_zone").notNull(),
+    title: text("title").notNull(),
+    summary: text("summary"),
+    category: text("category").notNull(),
+    tags: jsonb("tags").$type<string[]>().notNull().default([]),
+    primaryProvider: text("primary_provider").notNull(),
+    providerProductCode: text("provider_product_code").notNull(),
+    operatorName: text("operator_name"),
+    operatorCode: text("operator_code"),
+    capabilityTier: text("capability_tier").notNull(),
+    commissionAuthorized: boolean("commission_authorized").notNull().default(false),
+    durationMinutes: integer("duration_minutes"),
+    durationRawText: text("duration_raw_text"),
+    fromPriceCents: integer("from_price_cents"),
+    currency: text("currency").notNull().default("USD"),
+    freeCancellation: boolean("free_cancellation"),
+    cancellationPolicyType: text("cancellation_policy_type"),
+    cancellationCutoffHours: integer("cancellation_cutoff_hours"),
+    cancellationSummary: text("cancellation_summary"),
+    hasHotelPickup: boolean("has_hotel_pickup"),
+    pickupType: text("pickup_type"),
+    pickupSummary: text("pickup_summary"),
+    meetingPointName: text("meeting_point_name"),
+    meetingPointAddress: text("meeting_point_address"),
+    meetingPointLat: doublePrecision("meeting_point_lat"),
+    meetingPointLng: doublePrecision("meeting_point_lng"),
+    locationPrecision: text("location_precision").notNull().default("unknown"),
+    pickupLocationsJson: jsonb("pickup_locations_json")
+      .$type<Array<Record<string, unknown>>>()
+      .notNull()
+      .default([]),
+    ageBandsJson: jsonb("age_bands_json").$type<Array<Record<string, unknown>>>().notNull().default([]),
+    constraintsJson: jsonb("constraints_json").$type<Record<string, unknown>>().notNull().default({}),
+    channelOffersJson: jsonb("channel_offers_json")
+      .$type<Array<Record<string, unknown>>>()
+      .notNull()
+      .default([]),
+    inclusionsJson: jsonb("inclusions_json").$type<string[]>().notNull().default([]),
+    exclusionsJson: jsonb("exclusions_json").$type<string[]>().notNull().default([]),
+    primaryImageUrl: text("primary_image_url"),
+    ratingAverage: doublePrecision("rating_average"),
+    reviewCount: integer("review_count"),
+    bookingUrl: text("booking_url").notNull(),
+    provenanceJson: jsonb("provenance_json").$type<Record<string, unknown>>().notNull().default({}),
+    active: boolean("active").notNull().default(true),
+    lastVerifiedAt: timestamp("last_verified_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    destSlugIdx: index("dcc_tour_catalog_destination_slug_idx").on(table.destinationSlug),
+    portSlugIdx: index("dcc_tour_catalog_port_slug_idx").on(table.portSlug),
+    providerIdx: index("dcc_tour_catalog_provider_idx").on(table.primaryProvider, table.providerProductCode),
+    capabilityIdx: index("dcc_tour_catalog_capability_tier_idx").on(table.capabilityTier),
+    earthosIdx: index("dcc_tour_catalog_earthos_node_idx").on(table.earthosDestinationNodeId),
+  }),
+);
 
-
+export const dccCatalogSyncRuns = pgTable(
+  "dcc_catalog_sync_runs",
+  {
+    runId: text("run_id").primaryKey(),
+    provider: text("provider").notNull(),
+    destinationSlug: text("destination_slug").notNull(),
+    status: text("status").notNull(),
+    cursorValue: text("cursor_value"),
+    importedCount: integer("imported_count").notNull().default(0),
+    updatedCount: integer("updated_count").notNull().default(0),
+    rejectedCount: integer("rejected_count").notNull().default(0),
+    upstreamRequestCount: integer("upstream_request_count").notNull().default(0),
+    rejectionReasonsJson: jsonb("rejection_reasons_json")
+      .$type<Record<string, number>>()
+      .notNull()
+      .default({}),
+    metadataJson: jsonb("metadata_json").$type<Record<string, unknown>>().notNull().default({}),
+    startedAt: timestamp("started_at", { withTimezone: true }).notNull().defaultNow(),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+  },
+  (table) => ({
+    providerDestIdx: index("dcc_catalog_sync_runs_provider_dest_idx").on(
+      table.provider,
+      table.destinationSlug,
+    ),
+  }),
+);

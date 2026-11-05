@@ -28,6 +28,7 @@ import DccNetworkStrip from "@/components/DccNetworkStrip";
 import { getDb } from "@/lib/db/client";
 import { octoNormalizedProducts, octoSupplierConnections } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
+import DccConciergeWidget from "@/app/components/dcc/DccConciergeWidget";
 
 export const dynamic = "force-dynamic";
 
@@ -1111,6 +1112,30 @@ export default async function ToursPage({
           )}
         </>
       ) : null}
+
+      <section id="shared-trip-matcher" className="space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <p className="text-xs uppercase tracking-[0.22em] text-emerald-300">
+              Shared Tour Catalog &amp; Trip-Matching Service
+            </p>
+            <h2 className="text-2xl font-bold text-white">
+              Multi-Destination Trip Matcher &amp; Configurable Hotel Concierge
+            </h2>
+          </div>
+          <Link
+            href="/embed/concierge?property=hotel-monteleone-nola&destination=new-orleans"
+            className="rounded-xl border border-emerald-400/30 bg-emerald-500/10 px-4 py-2 text-xs font-semibold text-emerald-200 hover:bg-emerald-500/20"
+          >
+            Open Standalone Hotel Concierge Embed →
+          </Link>
+        </div>
+        <DccConciergeWidget
+          initialDestination={normalizeSlug(sp.city || sp.port || "new-orleans")}
+          initialSurface="dcc"
+          embedMode={false}
+        />
+      </section>
 
       <section className="grid gap-4 md:grid-cols-3">
         <Link href="/cities" className="rounded-2xl border border-emerald-400/20 bg-emerald-500/10 p-5 hover:bg-emerald-500/20">

@@ -29,16 +29,34 @@ export type DccAdapterResponse = {
   trackedUrl?: string;
 };
 
+export type ViatorAgeBand = "ADULT" | "CHILD" | "INFANT" | "YOUTH" | "SENIOR";
+
+export type ProductAgeBandRule = {
+  ageBand: ViatorAgeBand;
+  startAge: number;
+  endAge: number;
+  minTravelersPerBooking?: number;
+  maxTravelersPerBooking?: number;
+};
+
 export type DccLiveAvailabilityRequest = {
   siteId: string;
   internalProductId: string;
+  viatorProductCode?: string;
   bookingDate: string; // YYYY-MM-DD
   adultCount: number;
+  childAges?: number[];
+  seniorCount?: number;
+  infantCount?: number;
+  youthCount?: number;
+  ageBands?: ProductAgeBandRule[];
+  currency?: string;
 };
 
 export type DccLiveAvailabilityStatus =
   | "available"
   | "sold_out"
+  | "ineligible_party"
   | "auth_error"
   | "unconfigured"
   | "upstream_error"
@@ -48,7 +66,7 @@ export type DccLiveAvailabilityResponse = {
   success: boolean;
   /**
    * True when at least one option is confirmed available; false ONLY when Viator
-   * responds with HTTP 200 and no options are available (sold out).
+   * responds with HTTP 200 and no options are available (sold out) or party is ineligible.
    * Null when availability is unknown due to auth failure, missing configuration,
    * invalid mapping, or upstream error.
    */
@@ -61,6 +79,8 @@ export type DccLiveAvailabilityResponse = {
   partnerNetPrice?: number;
   currency: string;
   remainingCapacity?: number;
+  paxMixSent?: Array<{ ageBand: ViatorAgeBand; numberOfTravelers: number }>;
+  ineligibleChildAges?: number[];
   bookableOptions: Array<{
     optionCode: string;
     ratePlanCode?: string;
@@ -71,6 +91,102 @@ export type DccLiveAvailabilityResponse = {
   trackedBookingUrl: string;
   reason?: string;
 };
+
+const DEFAULT_AGE_BAND_RULES: ProductAgeBandRule[] = [
+  { ageBand: "INFANT", startAge: 0, endAge: 2 },
+  { ageBand: "CHILD", startAge: 3, endAge: 12 },
+  { ageBand: "YOUTH", startAge: 13, endAge: 17 },
+  { ageBand: "ADULT", startAge: 18, endAge: 64 },
+  { ageBand: "SENIOR", startAge: 65, endAge: 99 },
+];
+
+export function buildViatorPaxMix(params: {
+  adultCount?: number;
+  childAges?: number[];
+  seniorCount?: number;
+  infantCount?: number;
+  youthCount?: number;
+  ageBands?: ProductAgeBandRule[];
+}): {
+  paxMix: Array<{ ageBand: ViatorAgeBand; numberOfTravelers: number }>;
+  ineligibleChildAges: number[];
+  minSupportedAge: number | null;
+} {
+  const rules =
+    Array.isArray(params.ageBands) && params.ageBands.length > 0
+      ? params.ageBands
+      : DEFAULT_AGE_BAND_RULES;
+
+  const hasCustomRules =
+    Array.isArray(params.ageBands) && params.ageBands.length > 0;
+  const minSupportedAge = hasCustomRules
+    ? Math.min(...rules.map((r) => r.startAge))
+    : null;
+
+  const counts = new Map<ViatorAgeBand, number>();
+  const addBand = (band: ViatorAgeBand, count: number) => {
+    if (count <= 0) return;
+    const supported = rules.some((r) => r.ageBand === band);
+    const targetBand: ViatorAgeBand = supported ? band : "ADULT";
+    counts.set(targetBand, (counts.get(targetBand) || 0) + count);
+  };
+
+  const adults = Math.max(0, Math.floor(params.adultCount ?? 2));
+  addBand("ADULT", adults);
+  if (params.seniorCount && params.seniorCount > 0) {
+    addBand("SENIOR", Math.floor(params.seniorCount));
+  }
+  if (params.youthCount && params.youthCount > 0) {
+    addBand("YOUTH", Math.floor(params.youthCount));
+  }
+  if (params.infantCount && params.infantCount > 0) {
+    addBand("INFANT", Math.floor(params.infantCount));
+  }
+
+  const ineligibleChildAges: number[] = [];
+  if (Array.isArray(params.childAges)) {
+    for (const rawAge of params.childAges) {
+      const age = Math.floor(Number(rawAge));
+      if (!Number.isFinite(age) || age < 0) continue;
+      if (minSupportedAge !== null && age < minSupportedAge) {
+        ineligibleChildAges.push(age);
+        continue;
+      }
+      const matchedRule = rules.find(
+        (r) => age >= r.startAge && age <= r.endAge,
+      );
+      if (matchedRule) {
+        counts.set(
+          matchedRule.ageBand,
+          (counts.get(matchedRule.ageBand) || 0) + 1,
+        );
+      } else if (hasCustomRules) {
+        ineligibleChildAges.push(age);
+      } else {
+        const fallbackBand: ViatorAgeBand =
+          age <= 2 ? "INFANT" : age <= 12 ? "CHILD" : age <= 17 ? "YOUTH" : "ADULT";
+        addBand(fallbackBand, 1);
+      }
+    }
+  }
+
+  if (counts.size === 0 && ineligibleChildAges.length === 0) {
+    counts.set("ADULT", 2);
+  }
+
+  const paxMix = Array.from(counts.entries()).map(
+    ([ageBand, numberOfTravelers]) => ({
+      ageBand,
+      numberOfTravelers,
+    }),
+  );
+
+  return {
+    paxMix,
+    ineligibleChildAges,
+    minSupportedAge,
+  };
+}
 
 const SITE_DOMAINS: Record<string, string> = {
   welcometotheswamp: "welcometotheswamp.com",
@@ -191,7 +307,13 @@ export function getVerifiedProductForSite(
 export async function checkDccLiveAvailability(
   req: DccLiveAvailabilityRequest
 ): Promise<DccLiveAvailabilityResponse> {
-  const viatorCode = resolveViatorCodeForSite(req.siteId, req.internalProductId);
+  const viatorCode =
+    req.viatorProductCode?.trim() ||
+    resolveViatorCodeForSite(req.siteId, req.internalProductId) ||
+    (req.internalProductId?.startsWith("viator:")
+      ? req.internalProductId.slice("viator:".length).trim()
+      : null);
+
   if (!viatorCode) {
     return {
       success: false,
@@ -200,14 +322,41 @@ export async function checkDccLiveAvailability(
       errorCode: "unrecognized_product_mapping",
       productCode: "",
       bookingDate: req.bookingDate,
-      currency: "USD",
+      currency: req.currency || "USD",
       bookableOptions: [],
       trackedBookingUrl: "",
       reason: `Unrecognized product mapping for site ${req.siteId}.`,
     };
   }
 
+  const paxMixResult = buildViatorPaxMix({
+    adultCount: req.adultCount,
+    childAges: req.childAges,
+    seniorCount: req.seniorCount,
+    infantCount: req.infantCount,
+    youthCount: req.youthCount,
+    ageBands: req.ageBands,
+  });
+
+  if (paxMixResult.ineligibleChildAges.length > 0) {
+    return {
+      success: true,
+      available: false,
+      availabilityStatus: "ineligible_party",
+      errorCode: "child_age_below_minimum",
+      productCode: viatorCode,
+      bookingDate: req.bookingDate,
+      currency: req.currency || "USD",
+      paxMixSent: paxMixResult.paxMix,
+      ineligibleChildAges: paxMixResult.ineligibleChildAges,
+      bookableOptions: [],
+      trackedBookingUrl: "",
+      reason: `Traveler age(s) [${paxMixResult.ineligibleChildAges.join(", ")}] are not eligible for this tour${paxMixResult.minSupportedAge !== null ? ` (minimum supported age: ${paxMixResult.minSupportedAge})` : ""}.`,
+    };
+  }
+
   const client = getViatorClient();
+  const currency = (req.currency || "USD").trim().toUpperCase();
 
   try {
     type AvailabilityResponse = {
@@ -230,8 +379,8 @@ export async function checkDccLiveAvailability(
     const rawResult = await client.checkAvailability({
       productCode: viatorCode,
       travelDate: req.bookingDate,
-      currency: "USD",
-      paxMix: [{ ageBand: "ADULT", numberOfTravelers: req.adultCount || 2 }],
+      currency,
+      paxMix: paxMixResult.paxMix,
     });
     const checkResult = (rawResult || {}) as AvailabilityResponse;
 
@@ -267,7 +416,9 @@ export async function checkDccLiveAvailability(
       productCode: viatorCode,
       bookingDate: req.bookingDate,
       retailPrice: firstOption?.retailPrice,
-      currency: "USD",
+      currency: checkResult.currency || currency,
+      paxMixSent: paxMixResult.paxMix,
+      ineligibleChildAges: [],
       bookableOptions: options,
       trackedBookingUrl,
     };

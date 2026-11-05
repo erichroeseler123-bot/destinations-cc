@@ -40,12 +40,12 @@ export const SlowlyChangingDataSchema = z.object({
   inclusions: z.array(z.string()).default([]),
   exclusions: z.array(z.string()).default([]),
   meetingPoint: z.string().nullable().optional(),
-  hasHotelPickup: z.boolean().default(false),
+  hasHotelPickup: z.boolean().nullable().default(null),
   pickupDetails: z.string().nullable().optional(),
   cancellationPolicy: z.object({
     policyType: z.string().nullable().optional(),
     description: z.string().nullable().optional(),
-    freeCancellation: z.boolean().default(true),
+    freeCancellation: z.boolean().nullable().default(null),
   }),
 });
 export type SlowlyChangingData = z.infer<typeof SlowlyChangingDataSchema>;
@@ -147,7 +147,7 @@ export function validatePickupClaim(
   claimRequiresPickup: boolean
 ): boolean {
   if (!claimRequiresPickup) return true;
-  return Boolean(product.slowlyChanging.hasHotelPickup);
+  return product.slowlyChanging.hasHotelPickup === true;
 }
 
 /**
@@ -169,7 +169,7 @@ export function validatePortOperation(
 /**
  * Business Rule 5: Cruise Port Safety Buffer Window
  * Evaluates whether an excursion safely fits a cruise passenger's available shore window.
- * Rejects tours that exceed available port time or return too close to all-aboard time.
+ * Rejects tours that exceed available port time, return too close to all-aboard time, or have an unknown duration.
  */
 export type CruiseTimeWindow = {
   arrivalHour: number; // 24-hr, e.g. 8 for 08:00
@@ -182,7 +182,13 @@ export type CruiseTimeWindow = {
 export function validateCruiseSafetyWindow(
   product: VerifiedProductRecord,
   cruise: CruiseTimeWindow
-): { fits: boolean; reason?: string; availableMinutes: number; tourMinutes: number } {
+): {
+  fits: boolean;
+  status?: "verified_fit" | "exceeds_window" | "unknown_duration" | "invalid_window";
+  reason?: string;
+  availableMinutes: number;
+  tourMinutes: number | null;
+} {
   const arrTotal = cruise.arrivalHour * 60 + (cruise.arrivalMinute || 0);
   const depTotal = cruise.departureHour * 60 + (cruise.departureMinute || 0);
   const buffer = cruise.allAboardBufferMinutes ?? 60;
@@ -190,20 +196,33 @@ export function validateCruiseSafetyWindow(
   const totalPortStayMinutes = depTotal - arrTotal;
   const safeShoreMinutes = totalPortStayMinutes - buffer;
 
-  const durationMinutes = product.stable.durationMinutes || 180; // fallback 3 hours if unstated
+  const durationMinutes = product.stable.durationMinutes;
 
   if (totalPortStayMinutes <= 0) {
     return {
       fits: false,
+      status: "invalid_window",
       reason: "Invalid cruise port window: departure is not after arrival.",
       availableMinutes: 0,
-      tourMinutes: durationMinutes,
+      tourMinutes: durationMinutes ?? null,
+    };
+  }
+
+  if (durationMinutes === null || durationMinutes === undefined || durationMinutes <= 0) {
+    return {
+      fits: false,
+      status: "unknown_duration",
+      reason:
+        "Tour duration is unknown/unverified; cannot confirm safe return before ship all-aboard time.",
+      availableMinutes: Math.max(0, safeShoreMinutes),
+      tourMinutes: null,
     };
   }
 
   if (durationMinutes > safeShoreMinutes) {
     return {
       fits: false,
+      status: "exceeds_window",
       reason: `Tour duration (${durationMinutes}m) exceeds safe shore window (${safeShoreMinutes}m after ${buffer}m all-aboard buffer).`,
       availableMinutes: safeShoreMinutes,
       tourMinutes: durationMinutes,
@@ -212,6 +231,7 @@ export function validateCruiseSafetyWindow(
 
   return {
     fits: true,
+    status: "verified_fit",
     availableMinutes: safeShoreMinutes,
     tourMinutes: durationMinutes,
   };

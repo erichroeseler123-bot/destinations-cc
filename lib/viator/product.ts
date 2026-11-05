@@ -241,9 +241,12 @@ export function getLocalViatorProductDetail(productCodeOrId: string): ViatorProd
     bookingQuestionRefs: [],
     destinations: [],
     cancellationPolicy: {
-      policyType: "STANDARD",
+      policyType: null,
       description: "Check live Viator detail for the latest cancellation policy.",
-      freeCancellation: true,
+      freeCancellation:
+        typeof (tour as Record<string, unknown>).free_cancellation === "boolean"
+          ? ((tour as Record<string, unknown>).free_cancellation as boolean)
+          : null,
     },
     supplierImages: toSupplierImages(tour),
     travelerImages: [],
@@ -270,6 +273,18 @@ export function normalizeLiveProductDetailResponse(raw: unknown, fallbackKey: st
     },
     []
   );
+
+  const policyType = firstString(cancellationPolicy?.type, cancellationPolicy?.policyType);
+  const resolvedFreeCancellation =
+    typeof cancellationPolicy?.freeCancellation === "boolean"
+      ? cancellationPolicy.freeCancellation
+      : policyType === "STANDARD" || policyType === "CUSTOM"
+        ? policyType === "STANDARD"
+          ? true
+          : null
+        : policyType === "ALL_SALES_FINAL"
+          ? false
+          : null;
 
   return normalizeViatorProductDetail({
     product_code: productCode,
@@ -312,9 +327,9 @@ export function normalizeLiveProductDetailResponse(raw: unknown, fallbackKey: st
     bookingQuestionRefs: toStringArray(product.bookingQuestions),
     destinations: normalizeRemoteDestinations(product),
     cancellationPolicy: {
-      policyType: firstString(cancellationPolicy?.type, cancellationPolicy?.policyType),
+      policyType,
       description: firstString(cancellationPolicy?.description),
-      freeCancellation: Boolean(cancellationPolicy?.freeCancellation),
+      freeCancellation: resolvedFreeCancellation,
     },
     reviews: [],
   });

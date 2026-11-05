@@ -239,3 +239,24 @@ test("9. getVerifiedProductForSite orchestrates all business rules through singl
   assert.equal(portViolation.success, false);
   assert.ok(portViolation.reason?.includes("Port boundary violation"));
 });
+
+test("10. Explicit unknowns: unknown duration is never assumed 180m and missing cancellation policy defaults to null", () => {
+  const unknownDurationRecord: VerifiedProductRecord = {
+    ...SAMPLE_JUNEAU_RECORD,
+    stable: {
+      ...SAMPLE_JUNEAU_RECORD.stable,
+      durationMinutes: null,
+      durationText: null,
+    },
+  };
+  const cruiseCheck = validateCruiseSafetyWindow(unknownDurationRecord, {
+    arrivalHour: 8,
+    departureHour: 17,
+    allAboardBufferMinutes: 60,
+  });
+  assert.equal(cruiseCheck.fits, false);
+  assert.equal(cruiseCheck.status, "unknown_duration");
+  assert.equal(cruiseCheck.tourMinutes, null);
+  assert.ok(cruiseCheck.reason?.includes("unknown/unverified"));
+});
+

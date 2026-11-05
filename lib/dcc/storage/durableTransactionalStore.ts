@@ -101,6 +101,11 @@ function resolveDurableStoreFilePath(): string {
   if (explicitPath) {
     return path.resolve(explicitPath);
   }
+  if (isAutomatedTestRuntime()) {
+    const testDir = path.join(os.tmpdir(), "dcc-durable-store-tests");
+    fs.mkdirSync(testDir, { recursive: true });
+    return path.join(testDir, `dcc-test-store-${process.pid}.json`);
+  }
   const preferredDir = path.join(process.cwd(), ".next", "cache");
   try {
     fs.mkdirSync(preferredDir, { recursive: true });
@@ -352,10 +357,23 @@ function resolveStoreKey(): string {
   return "dcc_core_ledger_v1";
 }
 
+function isAutomatedTestRuntime(): boolean {
+  if (process.env.DCC_ENABLE_PG_SYNC_IN_TESTS === "1") return false;
+  if (process.env.NODE_ENV === "test") return true;
+  if (process.execArgv.some((arg) => arg === "--test" || arg.startsWith("--test-"))) {
+    return true;
+  }
+  if (process.argv.some((arg) => /\.test\.[cm]?[jt]sx?$/i.test(arg))) {
+    return true;
+  }
+  return false;
+}
+
 function shouldSyncToPostgres(): boolean {
   if (
     process.env.DCC_DISABLE_PG_LEDGER_SYNC === "1" ||
-    process.env.DCC_DISABLE_DURABLE_POSTGRES === "1"
+    process.env.DCC_DISABLE_DURABLE_POSTGRES === "1" ||
+    isAutomatedTestRuntime()
   ) {
     return false;
   }

@@ -2,7 +2,9 @@ import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
 import {
   buildGoSnoPrivateGroupInquiryOption,
+  buildSharedGoSnoHandoffUrlAndDetails,
   getGoSnoRouteSnapshotDisplayPricing,
+  issueSharedGoSnoHandoffAttribution,
   type CorridorId,
 } from "@/lib/dcc/applicability";
 import { issueOpaqueClickAttribution } from "@/lib/dcc/commerce/opaqueAttributionLedger";
@@ -85,19 +87,52 @@ export async function GET(request: Request) {
     ? Number(partySizeRaw)
     : null;
 
-  const airport = clean(incoming.searchParams.get("airport") || incoming.searchParams.get("origin"), 12).toUpperCase();
-  const date = clean(incoming.searchParams.get("date") || incoming.searchParams.get("outboundDate"), 10);
+  const airport = clean(
+    incoming.searchParams.get("airport") || incoming.searchParams.get("origin"),
+    12,
+  ).toUpperCase();
+  const date = clean(
+    incoming.searchParams.get("date") || incoming.searchParams.get("outboundDate"),
+    10,
+  );
+  const pickupTime = clean(
+    incoming.searchParams.get("pickupTime") || incoming.searchParams.get("pickup_time"),
+    16,
+  );
+  const returnDate = clean(
+    incoming.searchParams.get("returnDate") || incoming.searchParams.get("return_date"),
+    10,
+  );
+  const returnPickupTime = clean(
+    incoming.searchParams.get("returnPickupTime") ||
+      incoming.searchParams.get("return_pickup_time"),
+    16,
+  );
+  const hasStandardBagsParam = incoming.searchParams.has("standardBags");
+  const hasSkiBagsParam = incoming.searchParams.has("skiBags");
   const standardBags = Number(clean(incoming.searchParams.get("standardBags"), 3)) || 0;
   const skiBags = Number(clean(incoming.searchParams.get("skiBags"), 3)) || 0;
   const rawLuggage = clean(incoming.searchParams.get("luggage"), 180);
+  const isTestParam = clean(
+    incoming.searchParams.get("isTest") || incoming.searchParams.get("is_test"),
+    8,
+  ).toLowerCase();
+  const isTest = isTestParam === "1" || isTestParam === "true";
 
   const isBigSky = destination === "big-sky";
-  const requestedVehicleType = slug(incoming.searchParams.get("vehicle_type"));
+  const requestedVehicleType = slug(
+    incoming.searchParams.get("vehicle_type") ||
+      incoming.searchParams.get("vehicleClass"),
+  );
   const maxSingleVehiclePassengers = isBigSky
     ? GOSNO_MAX_SUV_PASSENGERS
     : GOSNO_MAX_VAN_PASSENGERS;
 
-  if (isBigSky && requestedVehicleType === "van" && (parsedPartySize === null || parsedPartySize <= GOSNO_MAX_SUV_PASSENGERS)) {
+  if (
+    isBigSky &&
+    requestedVehicleType === "van" &&
+    (parsedPartySize === null || parsedPartySize <= GOSNO_MAX_SUV_PASSENGERS)
+  ) {
     const bigSkyPricing = getGoSnoRouteSnapshotDisplayPricing({
       routeId: "BZN-BIG-SKY",
     });
@@ -120,28 +155,42 @@ export async function GET(request: Request) {
     );
   }
 
-  if (parsedPartySize !== null && parsedPartySize > maxSingleVehiclePassengers) {
-    const corridorId: CorridorId =
-      destination === "breckenridge"
-        ? "corridor:denver-breckenridge-i70"
-        : "corridor:denver-vail-i70";
-    const displayDestination =
-      DESTINATION_DISPLAY_MAP[destination] || destination;
-    const directionRaw = clean(incoming.searchParams.get("direction"), 16).toUpperCase();
-    const direction =
-      directionRaw === "RETURN" || directionRaw === "INBOUND"
-        ? "RETURN"
-        : directionRaw === "OUTBOUND"
-          ? "OUTBOUND"
-          : undefined;
-    const routeId = clean(
+  const corridorId: CorridorId =
+    destination === "breckenridge"
+      ? "corridor:denver-breckenridge-i70"
+      : "corridor:denver-vail-i70";
+  const displayDestination =
+    DESTINATION_DISPLAY_MAP[destination] || destination;
+  const directionRaw = clean(incoming.searchParams.get("direction"), 16).toUpperCase();
+  const tripTypeRaw = clean(
+    incoming.searchParams.get("tripType") || incoming.searchParams.get("trip_type"),
+    16,
+  ).toUpperCase();
+  const isRoundTrip =
+    directionRaw === "ROUND_TRIP" || tripTypeRaw === "ROUND_TRIP";
+  const direction: "OUTBOUND" | "RETURN" | "ROUND_TRIP" = isRoundTrip
+    ? "ROUND_TRIP"
+    : directionRaw === "RETURN" || directionRaw === "INBOUND"
+      ? "RETURN"
+      : "OUTBOUND";
+  const routeId =
+    clean(
       incoming.searchParams.get("route_id") || incoming.searchParams.get("routeId"),
       64,
     ) || undefined;
-    const offerId = clean(
+  const offerId =
+    clean(
       incoming.searchParams.get("offer_id") || incoming.searchParams.get("offerId"),
       64,
     ) || undefined;
+  const returnRouteId =
+    clean(
+      incoming.searchParams.get("return_route_id") ||
+        incoming.searchParams.get("returnRouteId"),
+      64,
+    ) || undefined;
+
+  if (parsedPartySize !== null && parsedPartySize > maxSingleVehiclePassengers) {
     const groupOption = buildGoSnoPrivateGroupInquiryOption({
       corridorId,
       origin: airport || (isBigSky ? "BZN" : "DEN"),
@@ -150,7 +199,7 @@ export async function GET(request: Request) {
       passengerCount: parsedPartySize,
       standardBagCount: standardBags || parsedPartySize,
       skiOrOversizeBagCount: skiBags,
-      direction,
+      direction: direction === "RETURN" ? "RETURN" : "OUTBOUND",
       routeId,
       offerId,
     });
@@ -166,11 +215,32 @@ export async function GET(request: Request) {
     const preferPrivate = clean(incoming.searchParams.get("prefer_private"), 8);
     if (groupOption && (mode === "group_inquiry" || preferPrivate === "1")) {
       const handoffId = `ho_${randomUUID()}`;
-      const rawSourcePage = clean(incoming.searchParams.get("source_page"), 240);
-      const sourcePage = rawSourcePage.startsWith("/location/") ? rawSourcePage : "/go/dcc-to-gosno";
-      const receiptId = clean(incoming.searchParams.get("receipt_id") || incoming.searchParams.get("receiptId"), 128) || null;
-      const evidenceVersion = clean(incoming.searchParams.get("evidence_version") || incoming.searchParams.get("evidenceVersion"), 128) || "dcc-evidence-stewardship/2026.11";
+      const rawSourcePage = clean(
+        incoming.searchParams.get("originatingPage") ||
+          incoming.searchParams.get("sourcePage") ||
+          incoming.searchParams.get("source_page"),
+        240,
+      );
+      const sourcePage = rawSourcePage.startsWith("/location/")
+        ? rawSourcePage
+        : "/go/dcc-to-gosno";
+      const originatingPage = rawSourcePage || sourcePage;
+      const receiptId =
+        clean(
+          incoming.searchParams.get("receipt_id") ||
+            incoming.searchParams.get("receiptId"),
+          128,
+        ) || null;
+      const evidenceVersion =
+        clean(
+          incoming.searchParams.get("evidence_version") ||
+            incoming.searchParams.get("evidenceVersion"),
+          128,
+        ) || "dcc-evidence-stewardship/2026.11";
       const groupTarget = new URL(groupOption.inquiryUrl);
+      groupTarget.searchParams.set("dcc_handoff_id", handoffId);
+      groupTarget.searchParams.set("source_page", sourcePage);
+      groupTarget.searchParams.set("originatingPage", originatingPage);
 
       const opaqueRecord = issueOpaqueClickAttribution({
         decisionReceiptId: receiptId || `rcpt:sha256:${"0".repeat(64)}`,
@@ -179,16 +249,32 @@ export async function GET(request: Request) {
         recommendedVehicleClassId: "veh:gosno-multi-vehicle-group",
         evidenceVersion,
         handoffId,
+        originatingPage,
+        isTest,
+        tripDetails: {
+          direction,
+          tripType: isRoundTrip ? "ROUND_TRIP" : "ONE_WAY",
+          origin: groupOption.origin,
+          destination: groupOption.destination,
+          routeId: routeId || null,
+          offerId: offerId || null,
+          travelDate: /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : "2026-12-20",
+          pickupTime: pickupTime || null,
+          passengerCount: parsedPartySize,
+          standardBagCount: standardBags || parsedPartySize,
+          skiOrOversizeBagCount: skiBags,
+          returnDate: returnDate || null,
+          returnPickupTime: returnPickupTime || null,
+          returnRouteId: returnRouteId || null,
+          originatingPage,
+        },
         provider: "direct",
         productCode: `gosno-${destination}-group`,
         productDestinationUrl: groupTarget.toString(),
       });
       await syncDurableLedgerWithPostgres({ forcePushLocal: true });
 
-      groupTarget.searchParams.set("dcc_handoff_id", handoffId);
-      groupTarget.searchParams.set("click_id", opaqueRecord.clickId);
-      groupTarget.searchParams.set("source_page", sourcePage);
-      return NextResponse.redirect(groupTarget, 302);
+      return NextResponse.redirect(new URL(opaqueRecord.outboundPartnerUrl), 302);
     }
 
     return NextResponse.json(
@@ -212,52 +298,92 @@ export async function GET(request: Request) {
     );
   }
 
-  const target = new URL("https://gosno.co/handoff/dcc");
-  const effectiveVehicleType = isBigSky
+  const effectiveVehicleClass: "suv" | "van" = isBigSky
     ? "suv"
     : parsedPartySize !== null && parsedPartySize > GOSNO_MAX_SUV_PASSENGERS
       ? "van"
-      : requestedVehicleType;
-  const rawSourcePage = clean(incoming.searchParams.get("source_page"), 240);
-  const sourcePage = rawSourcePage.startsWith("/location/") ? rawSourcePage : "/go/dcc-to-gosno";
-  const receiptId = clean(incoming.searchParams.get("receipt_id") || incoming.searchParams.get("receiptId"), 128) || null;
-  const operatorId = clean(incoming.searchParams.get("operator_id") || incoming.searchParams.get("operatorId"), 96) || `gosno:${destination}`;
-  const evidenceVersion = clean(incoming.searchParams.get("evidence_version") || incoming.searchParams.get("evidenceVersion"), 128) || "dcc-evidence-stewardship/2026.11";
-  const handoffId = `ho_${randomUUID()}`;
+      : requestedVehicleType === "van"
+        ? "van"
+        : "suv";
 
-  const opaqueRecord = issueOpaqueClickAttribution({
+  const rawSourcePage = clean(
+    incoming.searchParams.get("originatingPage") ||
+      incoming.searchParams.get("sourcePage") ||
+      incoming.searchParams.get("source_page"),
+    240,
+  );
+  const sourcePage = rawSourcePage.startsWith("/location/")
+    ? rawSourcePage
+    : "/go/dcc-to-gosno";
+  const originatingPage = rawSourcePage || sourcePage;
+  const receiptId =
+    clean(
+      incoming.searchParams.get("receipt_id") ||
+        incoming.searchParams.get("receiptId"),
+      128,
+    ) || null;
+  const operatorId =
+    clean(
+      incoming.searchParams.get("operator_id") ||
+        incoming.searchParams.get("operatorId"),
+      96,
+    ) || `gosno:${destination}`;
+  const evidenceVersion =
+    clean(
+      incoming.searchParams.get("evidence_version") ||
+        incoming.searchParams.get("evidenceVersion"),
+      128,
+    ) || "dcc-evidence-stewardship/2026.11";
+  const handoffId = `ho_${randomUUID()}`;
+  const useCanonicalRoute =
+    clean(incoming.searchParams.get("canonical_route"), 8) === "1";
+
+  const handoffBuild = buildSharedGoSnoHandoffUrlAndDetails({
+    corridorId,
+    origin:
+      direction === "RETURN"
+        ? displayDestination
+        : airport || (isBigSky ? "BZN" : "DEN"),
+    destination:
+      direction === "RETURN"
+        ? airport || (isBigSky ? "BZN" : "DEN")
+        : displayDestination,
+    destinationSlug: destination,
+    direction,
+    tripType: isRoundTrip ? "ROUND_TRIP" : "ONE_WAY",
+    routeId,
+    offerId,
+    returnRouteId,
+    travelDate: /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : null,
+    pickupTime: pickupTime || null,
+    returnDate: /^\d{4}-\d{2}-\d{2}$/.test(returnDate) ? returnDate : null,
+    returnPickupTime: returnPickupTime || null,
+    passengerCount: parsedPartySize,
+    standardBagCount: hasStandardBagsParam ? standardBags : null,
+    skiOrOversizeBagCount: hasSkiBagsParam ? skiBags : null,
+    rawLuggageSummary: rawLuggage || null,
+    vehicleClass: effectiveVehicleClass,
+    originatingPage,
+    sourcePage,
+    handoffId,
+    incomingSearchParams: incoming.searchParams,
+    useLegacyHandoffDccPath: !useCanonicalRoute,
+  });
+
+  const opaqueRecord = issueSharedGoSnoHandoffAttribution({
+    handoffBuild,
+    handoffId,
     decisionReceiptId: receiptId || `rcpt:sha256:${"0".repeat(64)}`,
     recommendedOperatorId: operatorId,
-    recommendedOperatorName: `GoSno Mountain Transfer (${destination})`,
-    recommendedVehicleClassId: effectiveVehicleType ? `veh:${effectiveVehicleType}` : null,
+    recommendedOperatorName: `GoSno Mountain Transfer (${displayDestination})`,
+    recommendedVehicleClassId: `veh:${effectiveVehicleClass}`,
     evidenceVersion,
-    handoffId,
-    provider: "direct",
-    productCode: `gosno-${destination}`,
-    productDestinationUrl: target.toString(),
+    originatingPage,
+    isTest,
+    productCodeOverride: `gosno-${destination}`,
   });
   await syncDurableLedgerWithPostgres({ forcePushLocal: true });
 
-  target.searchParams.set("destination", destination);
-  if (airport) target.searchParams.set("airport", airport);
-  if (/^\d{4}-\d{2}-\d{2}$/.test(date)) target.searchParams.set("date", date);
-  if (parsedPartySize !== null) {
-    target.searchParams.set("party_size", String(parsedPartySize));
-    target.searchParams.set("passengers", String(parsedPartySize));
-    if (parsedPartySize >= 7) {
-      target.searchParams.set(
-        "fit_note",
-        "subject_to_luggage_and_ski_gear_fit_and_availability",
-      );
-    }
-  }
-  if (effectiveVehicleType) {
-    target.searchParams.set("vehicle_type", effectiveVehicleType);
-  }
-
-  target.searchParams.set("dcc_handoff_id", handoffId);
-  target.searchParams.set("click_id", opaqueRecord.clickId);
-  target.searchParams.set("source_page", sourcePage);
-
-  return NextResponse.redirect(target, 302);
+  return NextResponse.redirect(new URL(opaqueRecord.outboundPartnerUrl), 302);
 }
+

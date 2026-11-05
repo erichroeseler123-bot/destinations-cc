@@ -61,7 +61,7 @@ export const ViatorReviewSchema = z.object({
 export const ViatorCancellationPolicySchema = z.object({
   policyType: z.string().nullable().optional(),
   description: z.string().nullable().optional(),
-  freeCancellation: z.boolean().optional(),
+  freeCancellation: z.boolean().nullable().optional(),
 });
 
 export const ViatorDestinationCatalogRowSchema = z.object({

@@ -19,6 +19,7 @@ import { headers } from "next/headers";
 import { generateCategorySchemaGraph } from "../lib/schema";
 import { isHeldProduct } from "../data/truthPolicy";
 import { FAREHARBOR_SOURCES } from "../lib/fareHarborAttribution";
+import DccConciergeWidget from "@/app/components/dcc/DccConciergeWidget";
 
 const BOOKABLE_PRODUCT_COUNT = STOREFRONT_PRODUCTS.filter((product) => !isHeldProduct(product.slug)).length;
 const CURRENT_TOURS_DESCRIPTION =
@@ -178,6 +179,15 @@ export default async function NewOrleansToursPage({
               </div>
             </div>
           </form>
+
+          <section id="nola-shared-trip-matcher" className="space-y-4">
+            <DccConciergeWidget
+              initialDestination="new-orleans"
+              initialPropertySlug="hotel-monteleone-nola"
+              initialSurface={isWto ? "welcometoneworleanstours" : "dcc"}
+              embedMode={false}
+            />
+          </section>
 
           {sections.map((section, sectionIndex) => {
             const sectionProducts = STOREFRONT_PRODUCTS.filter((p) => p.category === section.id);

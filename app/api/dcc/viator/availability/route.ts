@@ -6,7 +6,19 @@ export const dynamic = "force-dynamic";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { siteId, internalProductId, bookingDate, adultCount } = body;
+    const {
+      siteId,
+      internalProductId,
+      viatorProductCode,
+      bookingDate,
+      adultCount,
+      childAges,
+      seniorCount,
+      infantCount,
+      youthCount,
+      ageBands,
+      currency,
+    } = body;
 
     if (!siteId || !internalProductId || !bookingDate) {
       return NextResponse.json(
@@ -18,8 +30,15 @@ export async function POST(req: NextRequest) {
     const availability = await checkDccLiveAvailability({
       siteId,
       internalProductId,
+      viatorProductCode,
       bookingDate,
       adultCount: Number(adultCount) || 2,
+      childAges: Array.isArray(childAges) ? childAges.map(Number) : undefined,
+      seniorCount: typeof seniorCount === "number" ? seniorCount : undefined,
+      infantCount: typeof infantCount === "number" ? infantCount : undefined,
+      youthCount: typeof youthCount === "number" ? youthCount : undefined,
+      ageBands: Array.isArray(ageBands) ? ageBands : undefined,
+      currency: typeof currency === "string" ? currency : "USD",
     });
 
     if (!availability.success) {

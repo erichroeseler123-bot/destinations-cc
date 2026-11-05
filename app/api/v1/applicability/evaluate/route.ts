@@ -4,6 +4,7 @@ import {
   SCHEDULED_GOSNO_FEED_REFRESH_CRON,
   SCHEDULED_GOSNO_FEED_REFRESH_INTERVAL_MS,
   SCHEDULED_GOSNO_FEED_REFRESH_PATH,
+  buildSharedGoSnoHandoffUrlAndDetails,
   compileApplicableDecisionContext,
   getActiveGoSnoRouteFeedSnapshotState,
   getVersionedApplicabilityContextModel,
@@ -228,134 +229,33 @@ export async function POST(request: Request) {
     ) {
       basePartnerUrl = outcome.privateGroupInquiryOption.inquiryUrl;
     } else if (outcome.recommendedOperatorId === "op:gosno") {
-      const isSnapshotExpired = Boolean(matchedSnap?.isExpired);
-
-      const hasCustomRouteOrDest = Boolean(
-        body.routeId ||
-          body.offerId ||
-          isRoundTrip ||
-          normalizedDirection === "RETURN" ||
-          (body.destination &&
-            body.destination !== "Vail" &&
-            body.destination !== "Breckenridge"),
-      );
-
-      const fallbackGoSnoBase =
-        corridorId === "corridor:denver-breckenridge-i70"
-          ? "https://gosno.co/breckenridge"
-          : "https://gosno.co/vail";
-
-      const goSnoBase = isSnapshotExpired
-        ? (isRoundTrip
-            ? matchedRoundTripOffer?.quoteUrl
-            : matchedOneWayOffer?.quoteUrl) || "https://gosno.co/request-quote"
-        : (isRoundTrip
-            ? matchedRoundTripOffer?.canonicalBookingUrl
-            : matchedOneWayOffer?.canonicalBookingUrl) || fallbackGoSnoBase;
-
-      const parsed = new URL(
-        !isSnapshotExpired &&
-          !hasCustomRouteOrDest &&
-          explicitPartnerUrl &&
-          explicitPartnerUrl.includes("gosno.co")
-          ? explicitPartnerUrl
-          : goSnoBase,
-      );
-
-      // If caller supplied an explicitPartnerUrl with query params (e.g., to test PII stripping),
-      // carry over any non-structural params so sanitizeOutboundPartnerUrlWithOpaqueClickId filters and logs them.
-      if (explicitPartnerUrl) {
-        try {
-          const explicitParsed = new URL(explicitPartnerUrl);
-          for (const [k, v] of explicitParsed.searchParams.entries()) {
-            if (!parsed.searchParams.has(k)) {
-              parsed.searchParams.set(k, v);
-            }
-          }
-        } catch {
-          // ignore malformed explicit URL
-        }
-      }
-
-      parsed.searchParams.set(
-        "origin",
-        matchedSnap?.matchedOrigin || "DEN",
-      );
-      parsed.searchParams.set(
-        "destination",
-        matchedSnap?.matchedDestination ||
+      const handoffBuild = buildSharedGoSnoHandoffUrlAndDetails({
+        corridorId,
+        origin: matchedSnap?.matchedOrigin || body.origin || "DEN",
+        destination:
+          matchedSnap?.matchedDestination ||
+          body.destination ||
           (corridorId === "corridor:denver-breckenridge-i70"
             ? "Breckenridge"
             : "Vail"),
-      );
-      parsed.searchParams.set("direction", effectiveDirection);
-      parsed.searchParams.set(
-        "tripType",
-        isRoundTrip ? "round_trip" : "one_way",
-      );
-      if (effectiveRouteId) {
-        parsed.searchParams.set("routeId", effectiveRouteId);
-      }
-      if (effectiveOfferId) {
-        parsed.searchParams.set("offerId", effectiveOfferId);
-      }
-      if (applicabilityRequest.travelDate) {
-        parsed.searchParams.set("date", applicabilityRequest.travelDate);
-      }
-      if (pickupTime) {
-        parsed.searchParams.set("pickupTime", pickupTime);
-      }
-      parsed.searchParams.set(
-        "passengers",
-        String(applicabilityRequest.passengerCount),
-      );
-      parsed.searchParams.set(
-        "passengerCount",
-        String(applicabilityRequest.passengerCount),
-      );
-      parsed.searchParams.set(
-        "party_size",
-        String(applicabilityRequest.passengerCount),
-      );
-      parsed.searchParams.set(
-        "standardBags",
-        String(applicabilityRequest.standardBagCount),
-      );
-      parsed.searchParams.set(
-        "skiBags",
-        String(applicabilityRequest.skiOrOversizeBagCount ?? 0),
-      );
-      parsed.searchParams.set(
-        "luggage",
-        String(
-          applicabilityRequest.standardBagCount +
-            (applicabilityRequest.skiOrOversizeBagCount ?? 0),
-        ),
-      );
-      parsed.searchParams.set("vehicleClass", isSuv ? "suv" : "van");
-      if (returnDate) {
-        parsed.searchParams.set("returnDate", returnDate);
-      }
-      if (returnPickupTime) {
-        parsed.searchParams.set("returnPickupTime", returnPickupTime);
-      }
-      if (effectiveReturnRouteId) {
-        parsed.searchParams.set("returnRouteId", effectiveReturnRouteId);
-      }
-      parsed.searchParams.set("originatingPage", originatingPage);
-      parsed.searchParams.set("sourcePage", originatingPage);
-
-      if (isSnapshotExpired) {
-        parsed.searchParams.delete("publishedPrice");
-        if (applicabilityRequest.travelDate) {
-          parsed.searchParams.set(
-            "outboundDate",
-            applicabilityRequest.travelDate,
-          );
-        }
-        parsed.searchParams.set("vehicleType", isSuv ? "suv" : "van");
-      }
-      basePartnerUrl = parsed.toString();
+        direction: effectiveDirection,
+        tripType: effectiveTripType,
+        routeId: effectiveRouteId,
+        offerId: effectiveOfferId,
+        returnRouteId: effectiveReturnRouteId,
+        travelDate: applicabilityRequest.travelDate ?? null,
+        pickupTime,
+        returnDate,
+        returnPickupTime,
+        passengerCount: applicabilityRequest.passengerCount,
+        standardBagCount: applicabilityRequest.standardBagCount,
+        skiOrOversizeBagCount: applicabilityRequest.skiOrOversizeBagCount ?? 0,
+        vehicleClass: isSuv ? "suv" : "van",
+        originatingPage,
+        sourcePage: originatingPage,
+        explicitPartnerUrl,
+      });
+      basePartnerUrl = handoffBuild.targetUrl;
     } else if (
       outcome.recommendedOperatorId === "op:epic-mountain-express" &&
       basePartnerUrl.includes("gosno.co")
