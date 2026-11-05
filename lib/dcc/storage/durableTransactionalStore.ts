@@ -552,7 +552,9 @@ export async function syncDurableLedgerWithPostgres(options?: {
         if (
           !existing ||
           v.reconciledOutcomes.length > existing.reconciledOutcomes.length ||
-          v.reconciliationState !== "pending_partner_event"
+          v.reconciliationState !== "pending_partner_event" ||
+          v.recordStage === "outbound_click" ||
+          (v.clickCount || 0) > (existing.clickCount || 0)
         ) {
           localDraft.opaqueClicksById[k] = v;
         }

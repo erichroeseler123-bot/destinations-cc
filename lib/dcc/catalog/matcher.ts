@@ -2381,7 +2381,7 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
           issued.outboundPartnerUrl,
           option.boundOffer,
         );
-        option.bookingPath.trackedClickUrl = `/api/v1/ads/click?clickId=${encodeURIComponent(issued.clickId)}${isTestTraffic ? "&isTest=true" : ""}`;
+        option.bookingPath.trackedClickUrl = `/api/v1/ads/click?clickId=${encodeURIComponent(issued.clickId)}${isTestTraffic ? "&isTest=true" : ""}&target=${encodeURIComponent(option.bookingPath.handoffUrl)}`;
       } else {
         const preClickId = generateOpaqueClickId();
         let preparedDestinationUrl = option.bookingPath.handoffUrl;
@@ -2457,7 +2457,7 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
         });
         option.bookingPath.clickId = issued.clickId;
         option.bookingPath.handoffUrl = issued.outboundPartnerUrl;
-        option.bookingPath.trackedClickUrl = `/api/v1/ads/click?clickId=${encodeURIComponent(issued.clickId)}${isTestTraffic ? "&isTest=true" : ""}`;
+        option.bookingPath.trackedClickUrl = `/api/v1/ads/click?clickId=${encodeURIComponent(issued.clickId)}${isTestTraffic ? "&isTest=true" : ""}&target=${encodeURIComponent(option.bookingPath.handoffUrl)}`;
       }
     }
 

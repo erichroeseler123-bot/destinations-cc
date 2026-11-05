@@ -92,8 +92,8 @@ export const FIRST_PARTY_WIDGET_INSTALLATIONS: FirstPartyWidgetInstallation[] = 
   {
     id: "fp-dcc-port-juneau",
     siteName: "Destination Command Center Port Guide",
-    pagePath: "/ports/juneau-alaska",
-    productionUrl: "https://www.destinationcommandcenter.com/ports/juneau-alaska",
+    pagePath: "/ports/juneau",
+    productionUrl: "https://www.destinationcommandcenter.com/ports/juneau",
     surface: "cruise_port_concierge",
     defaultDestination: "juneau",
     defaultPickupMode: "pier_pickup",
@@ -102,8 +102,8 @@ export const FIRST_PARTY_WIDGET_INSTALLATIONS: FirstPartyWidgetInstallation[] = 
   {
     id: "fp-dcc-port-ketchikan",
     siteName: "Destination Command Center Port Guide",
-    pagePath: "/ports/ketchikan-alaska",
-    productionUrl: "https://www.destinationcommandcenter.com/ports/ketchikan-alaska",
+    pagePath: "/ports/ketchikan",
+    productionUrl: "https://www.destinationcommandcenter.com/ports/ketchikan",
     surface: "cruise_port_concierge",
     defaultDestination: "ketchikan",
     defaultPickupMode: "pier_pickup",
@@ -112,8 +112,8 @@ export const FIRST_PARTY_WIDGET_INSTALLATIONS: FirstPartyWidgetInstallation[] = 
   {
     id: "fp-dcc-port-skagway",
     siteName: "Destination Command Center Port Guide",
-    pagePath: "/ports/skagway-alaska",
-    productionUrl: "https://www.destinationcommandcenter.com/ports/skagway-alaska",
+    pagePath: "/ports/skagway",
+    productionUrl: "https://www.destinationcommandcenter.com/ports/skagway",
     surface: "cruise_port_concierge",
     defaultDestination: "skagway",
     defaultPickupMode: "pier_pickup",
