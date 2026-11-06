@@ -430,8 +430,22 @@ export function resetOpaqueAttributionLedgerForTests(): void {
   resetDurableLedgerStateForTests(true);
 }
 
-export function generateOpaqueClickId(): string {
+export function isQaReferralId(value?: string | null): boolean {
+  if (!value || typeof value !== "string") return false;
+  return /^clk[_-]qa[_-][0-9a-f]{20}$/i.test(value.trim());
+}
+
+export function generateOpaqueClickId(options?: { isTest?: boolean }): string {
+  if (options?.isTest) {
+    return `clk_qa_${crypto.randomBytes(10).toString("hex")}`;
+  }
   return `clk_${crypto.randomBytes(12).toString("hex")}`;
+}
+
+export function issueCheckoutIntentReferralId(options?: {
+  isTest?: boolean;
+}): string {
+  return generateOpaqueClickId(options);
 }
 
 export function deriveServerReferralIdForOffer(params: {
@@ -442,6 +456,7 @@ export function deriveServerReferralIdForOffer(params: {
   propertySlug?: string | null;
   date?: string | null;
   adults?: number | null;
+  isTest?: boolean;
 }): string {
   const canonical = [
     (params.sailingCode || "").trim().toUpperCase(),
@@ -455,9 +470,11 @@ export function deriveServerReferralIdForOffer(params: {
   const digest = crypto
     .createHash("sha256")
     .update(`dcc-referral-v1:${canonical}`, "utf8")
-    .digest("hex")
-    .slice(0, 24);
-  return `clk_${digest}`;
+    .digest("hex");
+  if (params.isTest) {
+    return `clk_qa_${digest.slice(0, 20)}`;
+  }
+  return `clk_${digest.slice(0, 24)}`;
 }
 
 const HANDOFF_SIGNING_FALLBACK_SECRET = "dcc-approved-handoff-signing-secret-v1";
@@ -509,14 +526,43 @@ export function verifyApprovedCheckoutHandoffSignature(
   signature?: string | null,
 ): boolean {
   if (!signature || typeof signature !== "string") return false;
-  const expected = signApprovedCheckoutHandoff(payload);
-  return safeEqualStrings(signature.trim().toLowerCase(), expected.toLowerCase());
+  const sigLower = signature.trim().toLowerCase();
+  const expectedDirect = signApprovedCheckoutHandoff(payload).toLowerCase();
+  if (safeEqualStrings(sigLower, expectedDirect)) return true;
+
+  // Also allow signatures computed against the deterministic offer template ID or empty clickId
+  // when a fresh per-intent referral ID is minted for this guest's click.
+  const templateProdClickId = deriveServerReferralIdForOffer({
+    sailingCode: payload.sailing || "",
+    productCode: payload.offer,
+    optionCode: payload.option || "DEFAULT",
+    placementId: payload.placementId || "",
+    propertySlug: payload.property || "",
+    date: payload.date || "",
+    adults: Number(payload.adults) || 2,
+    isTest: false,
+  });
+  const expectedTemplateProd = signApprovedCheckoutHandoff({
+    ...payload,
+    clickId: templateProdClickId,
+  }).toLowerCase();
+  if (safeEqualStrings(sigLower, expectedTemplateProd)) return true;
+
+  const expectedEmptyClickId = signApprovedCheckoutHandoff({
+    ...payload,
+    clickId: "",
+  }).toLowerCase();
+  return safeEqualStrings(sigLower, expectedEmptyClickId);
 }
 
 export function extractClickIdFromTrackingValue(
   value?: string | null,
 ): string | null {
   if (!value || typeof value !== "string") return null;
+  const qaMatch = value.match(/(clk[_-]qa[_-][0-9a-f]{20})/i);
+  if (qaMatch) {
+    return qaMatch[1].toLowerCase().replace(/^clk[-_]qa[-_]/, "clk_qa_");
+  }
   const match = value.match(/(clk[_-][0-9a-f]{24})/i);
   return match ? match[1].toLowerCase().replace(/^clk-/, "clk_") : null;
 }
@@ -772,10 +818,18 @@ export function isDemoOrAutomatedVerificationTraffic(params: {
 export function issueOpaqueClickAttribution(
   input: IssueOpaqueClickAttributionInput,
 ): OpaqueClickAttributionRecord {
+  const preEvaluatedTest = isDemoOrAutomatedVerificationTraffic({
+    isTest: input.isTest,
+    originatingPage: input.originatingPage,
+    decisionReceiptId: input.decisionReceiptId,
+    handoffId: input.handoffId,
+  });
+  const normalizedInputClickId = extractClickIdFromTrackingValue(input.clickId);
   const clickId =
-    input.clickId && /^clk_[0-9a-f]{24}$/i.test(input.clickId.trim())
-      ? input.clickId.trim().toLowerCase()
-      : generateOpaqueClickId();
+    normalizedInputClickId &&
+    Boolean(isQaReferralId(normalizedInputClickId)) === Boolean(preEvaluatedTest)
+      ? normalizedInputClickId
+      : generateOpaqueClickId({ isTest: preEvaluatedTest });
 
   return runDurableLedgerTransaction((state) => {
     const existing = state.opaqueClicksById[clickId];
@@ -808,12 +862,14 @@ export function issueOpaqueClickAttribution(
       inferredTripDetails?.surface ||
       input.originatingSite?.trim() ||
       null;
-    const isTest = isDemoOrAutomatedVerificationTraffic({
-      isTest: input.isTest,
-      originatingPage: resolvedOriginatingPage,
-      decisionReceiptId: input.decisionReceiptId,
-      handoffId: input.handoffId,
-    });
+    const isTest =
+      isQaReferralId(clickId) ||
+      isDemoOrAutomatedVerificationTraffic({
+        isTest: input.isTest,
+        originatingPage: resolvedOriginatingPage,
+        decisionReceiptId: input.decisionReceiptId,
+        handoffId: input.handoffId,
+      });
     const trafficClass: TrafficClass = isTest ? "test" : "production";
     const recordStage: AttributionRecordStage =
       input.recordStage === "recommendation" ? "recommendation" : "outbound_click";
@@ -880,6 +936,18 @@ export function recordOutboundClickFollow(
   return runDurableLedgerTransaction((state) => {
     const rec = state.opaqueClicksById[norm];
     if (!rec) return null;
+    const isFollowTest = isDemoOrAutomatedVerificationTraffic({
+      isTest: options?.isTest,
+      originatingPage: rec.originatingPage,
+      decisionReceiptId: rec.decisionReceiptId,
+      handoffId: rec.handoffId,
+      userAgent: options?.userAgent,
+      referer: options?.referer,
+    });
+    // Never allow a QA test click to mutate a production guest's ledger record (or vice versa)
+    if (Boolean(rec.isTest) !== Boolean(isFollowTest)) {
+      return null;
+    }
     const nowIso = new Date().toISOString();
     rec.recordStage = "outbound_click";
     rec.followedAt = rec.followedAt || nowIso;
@@ -889,19 +957,6 @@ export function recordOutboundClickFollow(
     }
     if (options?.propertySlug && !rec.propertySlug) {
       rec.propertySlug = options.propertySlug.trim();
-    }
-    if (
-      isDemoOrAutomatedVerificationTraffic({
-        isTest: options?.isTest || rec.isTest,
-        originatingPage: rec.originatingPage,
-        decisionReceiptId: rec.decisionReceiptId,
-        handoffId: rec.handoffId,
-        userAgent: options?.userAgent,
-        referer: options?.referer,
-      })
-    ) {
-      rec.isTest = true;
-      rec.trafficClass = "test";
     }
     return rec;
   });
@@ -978,6 +1033,34 @@ export function reconcilePartnerWebhookByClickId(
     }
 
     const trimmedRef = input.providerBookingRef.trim();
+    const isTestEvent = Boolean(
+      input.isTest ||
+        isQaReferralId(resolvedClickId) ||
+        /^(TEST|SIM|QA|SANDBOX|E2E)[-_]|[-_](E2E|TEST|SIM|QA|SANDBOX)[-_]/i.test(
+          trimmedRef,
+        ),
+    );
+    const isRecordTest = Boolean(
+      record.isTest ||
+        record.trafficClass === "test" ||
+        isQaReferralId(record.clickId),
+    );
+
+    // Strict QA isolation: a test replay can NEVER mutate a production guest's ledger record,
+    // and a production webhook event can NEVER reconcile against a QA referral ID.
+    if (isTestEvent && !isRecordTest) {
+      return {
+        matched: false as const,
+        reason: `QA_TEST_REPLAY_ISOLATED_FROM_PRODUCTION_RECORD:${record.clickId}`,
+      };
+    }
+    if (!isTestEvent && isRecordTest) {
+      return {
+        matched: false as const,
+        reason: `PRODUCTION_EVENT_CANNOT_MUTATE_QA_TEST_RECORD:${record.clickId}`,
+      };
+    }
+
     const dedupeKey = `${record.clickId}::${input.provider}::${trimmedRef}::${input.eventType}`;
     const existingOutcome = state.reconciliationByDedupeKey[dedupeKey];
     if (existingOutcome) {
@@ -989,18 +1072,8 @@ export function reconcilePartnerWebhookByClickId(
       };
     }
 
-    const isTestOutcome = Boolean(
-      input.isTest ||
-        record.isTest ||
-        /^(TEST|SIM|QA|SANDBOX|E2E)[-_]|[-_](E2E|TEST|SIM|QA|SANDBOX)[-_]/i.test(
-          trimmedRef,
-        ),
-    );
+    const isTestOutcome = isRecordTest;
     const trafficClass: TrafficClass = isTestOutcome ? "test" : "production";
-    if (isTestOutcome && !record.isTest) {
-      record.isTest = true;
-      record.trafficClass = "test";
-    }
 
     const outcome: OpaqueClickReconciledOutcome = {
       reconciliationId: `rec_${crypto.randomBytes(10).toString("hex")}`,

@@ -1087,6 +1087,72 @@ const ST_THOMAS_OPTION_SPECS: InternalStThomasOptionSpec[] = [
     bookingChannelLabel: "Book Exact Listing 5199P36 (2h 00m • $89)",
   },
   {
+    optionId: "stt-opt-turtle-cove-catamaran-7452p2",
+    productCode: "7452P2",
+    tourId: "dcc:tour:viator:7452P2",
+    title:
+      "Turtle Cove Catamaran Snorkel and Sail at Little Buck Island STT (7452P2)",
+    shortLabel:
+      "Turtle Cove Catamaran Snorkel & Sail (7452P2 • 3h 00m • $119 • Meet at Marriott Frenchman's Cove)",
+    category: "guided_eco_or_marine",
+    isFreeOrSelfGuided: false,
+    isDayTripChoice: false,
+    dayTripDestination: null,
+    pickupMode: "self_drive",
+    pickupSummary:
+      "Meet at Marriott's Frenchman's Cove Dock (30m mandatory check-in + independent travel both ways from your actual cruise berth)",
+    exactMeetingPointOrPickup:
+      "Marriott's Frenchman's Cove Dock, 7338 Estate Bakkeroe, Charlotte Amalie, St. Thomas 00802 (30 min check-in before departure)",
+    checkoutUrl:
+      "https://www.viator.com/tours/St-Thomas/St-Thomas-Catamaran-Sail-Buck-Island-National-Wildlife-Refuge/d965-7452P2?mcid=42383&pid=P00306962&medium=api&api_version=2.0&campaign=dcc-st-thomas-7452p2&utm_source=destinationcommandcenter&utm_medium=affiliate&utm_campaign=cities&locale=en-US",
+    focusTags: ["any_excursion_or_beach", "st_john_ferry_or_catamaran"],
+    activityDurationMinutes: 180,
+    checkInLeadMinutes: 30,
+    transferEachWayByDock: {
+      havensight_wico: 20,
+      crown_bay: 35,
+      charlotte_amalie_tender: 25,
+      unknown_dock: 35,
+    },
+    minimumReturnBufferMinutes: 60,
+    adultPriceUsd: 119,
+    childUnder12PriceUsd: 95,
+    child12PlusPriceUsd: 119,
+    estimatedRoundTripTaxiPerPersonUsd: 24,
+    costBasisSummary:
+      "Exact Viator listing 7452P2 (operated by The VI Cat): $119.00/adult ($238.00 for 2 adults), 3 hours (180 min), meet at Marriott's Frenchman's Cove Dock (7338 Estate Bakkeroe). Requires 30-minute check-in before departure plus independent taxi/safari travel both ways from your actual cruise berth.",
+    dockComparisonByDock: {
+      havensight_wico:
+        "From Havensight (WICO), allow ~15–20 minutes each way by independent taxi to Marriott's Frenchman's Cove Dock plus mandatory 30-minute check-in (total required window: 330 minutes / 5h 30m incl. 20m disembark and 60m return buffer).",
+      crown_bay:
+        "From Crown Bay (AMSS/AMNS), allow ~30–35 minutes each way across Charlotte Amalie to Marriott's Frenchman's Cove Dock plus mandatory 30-minute check-in (total required window: 360 minutes / 6h 00m).",
+      charlotte_amalie_tender:
+        "Allow 35m tender ashore + 25m independent taxi each way to Marriott's Frenchman's Cove Dock plus 30m check-in.",
+      unknown_dock:
+        "Requires confirming your actual cruise berth (Havensight WICO vs. Crown Bay) and independent transfer timing both ways to Marriott's Frenchman's Cove Dock plus 30-minute check-in.",
+    },
+    accessibilitySummary:
+      "Catamaran dock boarding at Marriott's Frenchman's Cove and open-water snorkeling at Turtle Cove / Little Buck Island; not step-free.",
+    supportsStepFreeWheelchair: false,
+    requiresActiveStairsOrPaddle: false,
+    qualifyPendingHumanConfirmation: true,
+    qualificationReason:
+      "Offer 7452P2 meets at Marriott's Frenchman's Cove Dock (7338 Estate Bakkeroe) and requires a 30-minute check-in plus independent travel both ways from the guest's actual cruise berth (Havensight WICO ~15–20m or Crown Bay ~30–35m each way). Shows 'Needs confirmation' when the ship cutoff or berth transfer timing is unresolved.",
+    supportingSources: [
+      {
+        organization: "The VI Cat / Viator 7452P2",
+        title:
+          "Turtle Cove Catamaran Snorkel and Sail at Little Buck Island STT (7452P2 — 180m, $119, Marriott's Frenchman's Cove Dock)",
+        url: "https://www.viator.com/tours/St-Thomas/St-Thomas-Catamaran-Sail-Buck-Island-National-Wildlife-Refuge/d965-7452P2?mcid=42383&pid=P00306962&medium=api&api_version=2.0&campaign=dcc-st-thomas-7452p2&utm_source=destinationcommandcenter&utm_medium=affiliate&utm_campaign=cities&locale=en-US",
+        checkedOn: "2026-11-06",
+      },
+    ],
+    bookingHandoffUrl:
+      "https://www.viator.com/tours/St-Thomas/St-Thomas-Catamaran-Sail-Buck-Island-National-Wildlife-Refuge/d965-7452P2?mcid=42383&pid=P00306962&medium=api&api_version=2.0&campaign=dcc-st-thomas-7452p2&utm_source=destinationcommandcenter&utm_medium=affiliate&utm_campaign=cities&locale=en-US",
+    bookingChannelLabel:
+      "Needs confirmation — Confirm berth transfer timing before booking 7452P2 (3h 00m • $119)",
+  },
+  {
     optionId: "stt-opt-st-john-trunk-bay-red-hook-ferry",
     productCode: null,
     tourId: null,

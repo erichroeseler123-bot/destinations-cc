@@ -198,8 +198,8 @@ export default async function NewOrleansSwampToursPage(props: {
 
   const wno15200P6Date = carriedDate || "2026-11-18";
   const wno15200P6Adults = carriedContext.payload.partySize || 2;
-  const wno15200P6ClickId = deriveServerReferralIdForOffer({
-    sailingCode: effectiveSurface,
+  const wno15200P6TemplateId = deriveServerReferralIdForOffer({
+    sailingCode: "",
     productCode: "15200P6",
     optionCode: "TG10",
     placementId: effectivePlacementId,
@@ -208,7 +208,7 @@ export default async function NewOrleansSwampToursPage(props: {
     adults: wno15200P6Adults,
   });
   const wno15200P6Sig = signApprovedCheckoutHandoff({
-    clickId: wno15200P6ClickId,
+    clickId: wno15200P6TemplateId,
     offer: "15200P6",
     option: "TG10",
     sailing: "",
@@ -217,7 +217,7 @@ export default async function NewOrleansSwampToursPage(props: {
     date: wno15200P6Date,
     adults: String(wno15200P6Adults),
   });
-  const viatorHandoffHref = `/api/v1/ads/click?clickId=${encodeURIComponent(wno15200P6ClickId)}&offer=15200P6&option=TG10&placementId=${encodeURIComponent(effectivePlacementId)}&property=hotel-monteleone-nola&date=${encodeURIComponent(wno15200P6Date)}&adults=${encodeURIComponent(String(wno15200P6Adults))}&departureTime=08%3A00&sig=${encodeURIComponent(wno15200P6Sig)}${isTestParam ? "&isTest=true" : ""}`;
+  const viatorHandoffHref = `/api/v1/ads/click?offer=15200P6&option=TG10&placementId=${encodeURIComponent(effectivePlacementId)}&property=hotel-monteleone-nola&date=${encodeURIComponent(wno15200P6Date)}&adults=${encodeURIComponent(String(wno15200P6Adults))}&departureTime=08%3A00&sig=${encodeURIComponent(wno15200P6Sig)}${isTestParam ? "&isTest=true" : ""}`;
   const ctxQuery = carriedContext.contextId ? `?ctx=${encodeURIComponent(carriedContext.contextId)}` : "";
 
   const satelliteHref = buildSwampPlanHref({
@@ -239,7 +239,8 @@ export default async function NewOrleansSwampToursPage(props: {
           carriedContext={carriedContext}
           handoffActions={[
             {
-              label: "Book New Orleans Swamp Tour Boat Adventure w/ Pickup (15200P6 — $120 for 2)",
+              label:
+                "Book New Orleans Swamp Tour Boat Adventure with Transportation (15200P6 · Option TG10 9:40am Tour · 8:00–8:30am Hotel Monteleone Pickup · $60/adult · $120 for 2)",
               href: viatorHandoffHref,
               providerLabel: "Viator",
               accountLabel: "pid=P00306962",

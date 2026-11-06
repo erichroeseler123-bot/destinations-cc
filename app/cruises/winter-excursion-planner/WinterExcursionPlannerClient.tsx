@@ -376,11 +376,15 @@ export default function WinterExcursionPlannerClient({ initialData }: Props) {
             </h2>
             <p className="text-sm text-slate-300">
               Only verified port calls on <strong>{data.shipName}</strong> ({data.plan.planCode}
-              ) can be saved into this plan. When timing checks pass,{" "}
-              <strong>Nassau</strong> (Jan 25, 2027) and <strong>St. Thomas</strong> (Jan 28,
-              2027) are bookable; if a port’s all-aboard or last-tender time is missing, it
-              shows <strong>Needs confirmation</strong> and withholds the cruise-fit booking
-              recommendation.
+              ) can be saved into this plan. <strong>Nassau</strong> (Jan 25, 2027 ·{" "}
+              <code>254526P1</code> Option <code>TG4</code> pig-swim tour with verified Prince
+              George Wharf pier pickup) is bookable now; <strong>St. Thomas</strong> (Jan 28,
+              2027 · <code>7452P2</code> meeting at{" "}
+              <strong>Marriott’s Frenchman’s Cove Dock</strong> with a{" "}
+              <strong>30-minute check-in</strong> and{" "}
+              <strong>independent travel both ways from the guest’s actual cruise berth</strong>
+              ) shows <strong>Needs confirmation</strong> and withholds the cruise-fit booking
+              recommendation while ship cutoff or berth transfer timing is unresolved.
             </p>
           </div>
           <div className="rounded-xl border border-emerald-500/40 bg-emerald-950/40 px-4 py-3 text-right">
@@ -444,17 +448,17 @@ export default function WinterExcursionPlannerClient({ initialData }: Props) {
                     </span>
                   </div>
                   <div>
-                    <span className="text-slate-400 block">Pickup & Berth:</span>
+                    <span className="text-slate-400 block">Meeting Point / Pickup & Berth:</span>
                     <span className="font-semibold text-cyan-200">
-                      {sel.pickupBadgeLabel}
+                      {sel.applicableBerthOrMeetingPoint || sel.pickupBadgeLabel}
                     </span>
                   </div>
                   <div>
-                    <span className="text-slate-400 block">Tender / Transfer Math:</span>
+                    <span className="text-slate-400 block">Check-In & Transfer Math:</span>
                     <span className="font-semibold text-slate-200">
-                      {sel.isTenderPort ? "45m tender" : "30m dock"} +{" "}
-                      {sel.transferBeforeMinutes ?? 0}m each way (All-Aboard{" "}
-                      {sel.allAboardTime || "Missing → Needs confirmation"})
+                      {sel.transferBeforeMinutes !== null
+                        ? `${sel.isTenderPort ? "45m tender" : "30m dock"} + ${sel.transferBeforeMinutes}m each way (All-Aboard ${sel.allAboardTime || "Missing → Needs confirmation"})`
+                        : `${sel.isTenderPort ? "45m tender" : "30m dock"} + 30m check-in at Marriott Frenchman's Cove + independent travel both ways from actual cruise berth (All-Aboard ${sel.allAboardTime || "Missing"} · Needs confirmation)`}
                     </span>
                   </div>
                 </div>
@@ -683,9 +687,10 @@ export default function WinterExcursionPlannerClient({ initialData }: Props) {
                             </span>
                           </div>
                           <div>
-                            <span className="text-slate-400 block">Pickup Option:</span>
+                            <span className="text-slate-400 block">Meeting Point / Pickup:</span>
                             <span className="font-semibold text-slate-200">
-                              {opt.boundOffer.pickupBadgeLabel}
+                              {opt.boundOffer.applicableBerthOrMeetingPoint ||
+                                opt.boundOffer.pickupBadgeLabel}
                             </span>
                           </div>
                           <div>
@@ -694,12 +699,14 @@ export default function WinterExcursionPlannerClient({ initialData }: Props) {
                             </span>
                             <span className="font-semibold text-slate-200">
                               {fit
-                                ? `${fit.debarkClearanceMinutes}m clearance + ${fit.transferBeforeMinutes ?? fit.planningEstimateTransferMinutes ?? 15}m/${fit.transferAfterMinutes ?? fit.planningEstimateTransferMinutes ?? 15}m transfer · ${
-                                    fit.allAboardConfirmed !== false &&
-                                    fit.lastTenderConfirmed !== false
-                                      ? "Fits All-Aboard"
-                                      : "All-Aboard / Tender unconfirmed"
-                                  }`
+                                ? fit.transferBeforeMinutes !== null
+                                  ? `${fit.debarkClearanceMinutes}m clearance + ${fit.transferBeforeMinutes}m/${fit.transferAfterMinutes ?? fit.transferBeforeMinutes}m transfer · ${
+                                      fit.allAboardConfirmed !== false &&
+                                      fit.lastTenderConfirmed !== false
+                                        ? "Fits All-Aboard"
+                                        : "All-Aboard / Tender unconfirmed"
+                                    }`
+                                  : `${fit.debarkClearanceMinutes}m clearance + 30m check-in at Marriott Frenchman's Cove + independent travel both ways from actual cruise berth (~15–35m taxi each way) · Needs confirmation`
                                 : "Needs confirmation"}
                             </span>
                           </div>
@@ -709,9 +716,11 @@ export default function WinterExcursionPlannerClient({ initialData }: Props) {
                         opt.suitability === "needs_confirmation" ? (
                           <div className="mt-2 rounded-lg border border-amber-500/30 bg-amber-950/30 px-3 py-1.5 text-xs text-amber-200">
                             <strong>Needs confirmation:</strong>{" "}
-                            {opt.missingInformation.length > 0
-                              ? opt.missingInformation.join(", ")
-                              : "Cruise-fit booking recommendation withheld until ship all-aboard / last-tender time is confirmed."}
+                            {opt.providerProductCode === "7452P2"
+                              ? "Meet at Marriott's Frenchman's Cove Dock (7338 Estate Bakkeroe). Includes 30-minute check-in + independent travel both ways from guest's actual cruise berth (Havensight WICO ~15–20m or Crown Bay ~30–35m each way). Cruise-fit booking recommendation withheld until berth transfer timing and ship cutoff are confirmed."
+                              : opt.missingInformation.length > 0
+                                ? opt.missingInformation.join(", ")
+                                : "Cruise-fit booking recommendation withheld until ship all-aboard / last-tender time is confirmed."}
                           </div>
                         ) : null}
 

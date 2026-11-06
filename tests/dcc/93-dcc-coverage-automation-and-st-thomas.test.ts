@@ -479,7 +479,8 @@ test("10. INDY-2027-01-24 drives recommendations, saves, totals, and checkout st
     "san-juan",
     "st-thomas",
   ]);
-  assert.equal(indyDefault.savedPortsSummary.combinedPartyTotalCents, 57600);
+  // Nassau 254526P1 ($338) is confirmed bookable; St. Thomas 7452P2 ($238) is saved as Needs confirmation (recommendation withheld)
+  assert.equal(indyDefault.savedPortsSummary.combinedPartyTotalCents, 33800);
   assert.equal(indyDefault.offItineraryBlocked, false);
 
   const sanJuanCall = indyDefault.sailingPortCalls.find(
@@ -488,6 +489,22 @@ test("10. INDY-2027-01-24 drives recommendations, saves, totals, and checkout st
   assert.ok(sanJuanCall);
   assert.equal(sanJuanCall.matchedToursCount, 0);
   assert.ok(sanJuanCall.noMatchedToursReason);
+
+  // St. Thomas 7452P2 meets at Marriott's Frenchman's Cove Dock with 30m check-in + independent travel both ways from actual cruise berth -> Needs confirmation
+  const sttSaved = indyDefault.savedPortsSummary.savedSelections.find(
+    (s) => s.portSlug === "st-thomas",
+  );
+  const sttCall = indyDefault.sailingPortCalls.find(
+    (p) => p.portSlug === "st-thomas",
+  );
+  assert.ok(sttSaved);
+  assert.ok(sttCall);
+  assert.equal(sttSaved.providerProductCode, "7452P2");
+  assert.equal(sttSaved.suitability, "needs_confirmation");
+  assert.equal(sttCall.cruiseFitRecommendationWithheld, true);
+  assert.equal(sttCall.checkoutEligible, false);
+  assert.equal(sttSaved.trackedViatorCheckoutUrl, null);
+  assert.match(sttSaved.pickupBadgeLabel, /Frenchman/i);
 
   // Off-itinerary injection attempt (Cozumel 5553274P1 on INDY-2027-01-24)
   const indyBlocked = await evaluateWinterSailingPlan({
@@ -502,7 +519,7 @@ test("10. INDY-2027-01-24 drives recommendations, saves, totals, and checkout st
   });
   assert.equal(indyBlocked.offItineraryBlocked, true);
   assert.equal(indyBlocked.rejectedOffItineraryRequests.length, 2);
-  assert.equal(indyBlocked.savedPortsSummary.combinedPartyTotalCents, 57600);
+  assert.equal(indyBlocked.savedPortsSummary.combinedPartyTotalCents, 33800);
   assert.deepEqual(
     indyBlocked.savedPortsSummary.savedSelections.map((s) => s.portSlug),
     ["nassau", "st-thomas"],
@@ -554,24 +571,49 @@ test("10. INDY-2027-01-24 drives recommendations, saves, totals, and checkout st
   assert.equal(gcSavedMissing.suitability, "needs_confirmation");
   assert.equal(gcSavedMissing.trackedViatorCheckoutUrl, null);
 
-  // Eligible checkout URL carries date, adults, optionCode, departureTime, and placementId
-  const sttEligible = indyDefault.savedPortsSummary.savedSelections.find(
-    (s) => s.portSlug === "st-thomas",
+  // Eligible Nassau 254526P1 checkout URL carries date, adults, optionCode, departureTime, and placementId
+  const nassauEligible = indyDefault.savedPortsSummary.savedSelections.find(
+    (s) => s.portSlug === "nassau",
   );
-  assert.ok(sttEligible?.trackedViatorCheckoutUrl);
-  const decodedSttTarget = decodeURIComponent(
-    sttEligible.trackedViatorCheckoutUrl,
+  assert.ok(nassauEligible?.trackedViatorCheckoutUrl);
+  const decodedNassauTarget = decodeURIComponent(
+    nassauEligible.trackedViatorCheckoutUrl,
   );
-  assert.match(decodedSttTarget, /date=2027-01-28/);
-  assert.match(decodedSttTarget, /adults=2/);
-  assert.match(decodedSttTarget, /optionCode=DEFAULT/);
-  assert.match(decodedSttTarget, /departureTime=(09|13)%3A00/);
-  assert.match(decodedSttTarget, /placementId=fp-cp-winter-excursion-planner/);
+  assert.match(decodedNassauTarget, /date=2027-01-25/);
+  assert.match(decodedNassauTarget, /adults=2/);
+  assert.match(decodedNassauTarget, /optionCode=TG4/);
+  assert.match(decodedNassauTarget, /departureTime=10%3A00/);
+  assert.match(decodedNassauTarget, /placementId=fp-cp-winter-excursion-planner/);
 
-  // Jean Lafitte 763318 pickup address resolution & already-approved first-party placement
+  // Jean Lafitte 763318 pickup address resolution, already-approved first-party placement, & multi-guest isolation
   const replayRes = runWinterAttributionReplayAndNolaStatusTrace();
   assert.equal(replayRes.secondDeliveryReplay.replayIgnored, true);
   assert.equal(replayRes.trackingCampaignTag, replayRes.clickId);
+  assert.match(replayRes.clickId, /^clk_qa_[0-9a-f]{20}$/);
+  assert.equal(
+    replayRes.multiGuestCheckoutIntentIsolation.separateReferralIdsIssued,
+    true,
+  );
+  assert.equal(
+    replayRes.multiGuestCheckoutIntentIsolation.separateLedgerRecordsCreated,
+    true,
+  );
+  assert.equal(
+    replayRes.multiGuestCheckoutIntentIsolation.qaReplayAttemptAgainstGuest1.matched,
+    false,
+  );
+  assert.equal(
+    replayRes.multiGuestCheckoutIntentIsolation.qaReplayAttemptAgainstGuest2.matched,
+    false,
+  );
+  assert.equal(
+    replayRes.multiGuestCheckoutIntentIsolation.qaReplayAttemptAgainstGuest1.guest1RecordUnchanged,
+    true,
+  );
+  assert.equal(
+    replayRes.multiGuestCheckoutIntentIsolation.qaReplayAttemptAgainstGuest2.guest2RecordUnchanged,
+    true,
+  );
   const res763318 =
     replayRes.newOrleansParallelStatus.jeanLafitte763318PickupAddressResolution;
   assert.match(res763318.hotelMonteleoneShuttleOptionAddress, /214 Royal St/);
@@ -585,13 +627,18 @@ test("10. INDY-2027-01-24 drives recommendations, saves, totals, and checkout st
       .placementId,
     "fp-wno-swamp-tours",
   );
+  assert.equal(
+    replayRes.newOrleansParallelStatus.alreadyApprovedFirstPartyPlacement
+      .title,
+    "New Orleans Swamp Tour Boat Adventure with Transportation",
+  );
 });
 
-test("11. Single referral ID flows from server issuance through Viator campaign parameter to campaignValue reconciliation, and /api/v1/ads/click rejects unapproved destinations", async () => {
+test("11. Each checkout intent gets its own referral ID (separate IDs for QA), two guests choosing the same offer get separate ledger records, and a QA test replay cannot change either production record", async () => {
   const { GET: adsClickGet } = await import("../../app/api/v1/ads/click/route");
   const {
-    deriveServerReferralIdForOffer,
     getFunnelMetricsReport,
+    getOpaqueClickAttributionById,
     reconcilePartnerWebhookByClickId,
     resetOpaqueAttributionLedgerForTests,
   } = await import("../../lib/dcc/commerce/opaqueAttributionLedger");
@@ -601,7 +648,8 @@ test("11. Single referral ID flows from server issuance through Viator campaign 
 
   resetOpaqueAttributionLedgerForTests();
 
-  const indyPlan = await evaluateWinterSailingPlan({
+  // QA evaluation uses clk_qa_<20hex> referral IDs
+  const qaIndyPlan = await evaluateWinterSailingPlan({
     planCode: "INDY-2027-01-24",
     adults: 2,
     surface: "cruisepromenade",
@@ -609,16 +657,16 @@ test("11. Single referral ID flows from server issuance through Viator campaign 
     isTest: true,
   });
 
-  const nassauSaved = indyPlan.savedPortsSummary.savedSelections.find(
+  const qaNassauSaved = qaIndyPlan.savedPortsSummary.savedSelections.find(
     (s) => s.portSlug === "nassau",
   );
-  assert.ok(nassauSaved?.clickId);
-  assert.match(nassauSaved.clickId, /^clk_[0-9a-f]{24}$/);
-  assert.ok(nassauSaved.trackedViatorCheckoutUrl);
+  assert.ok(qaNassauSaved?.clickId);
+  assert.match(qaNassauSaved.clickId, /^clk_qa_[0-9a-f]{20}$/);
+  assert.ok(qaNassauSaved.trackedViatorCheckoutUrl);
 
-  // Follow the signed checkout handoff via GET /api/v1/ads/click
+  // Follow the QA signed checkout handoff via GET /api/v1/ads/click
   const validClickReq = new Request(
-    `https://destinationcommandcenter.com${nassauSaved.trackedViatorCheckoutUrl}`,
+    `https://destinationcommandcenter.com${qaNassauSaved.trackedViatorCheckoutUrl}&isTest=true`,
   );
   const validClickRes = await adsClickGet(validClickReq);
   assert.equal(validClickRes.status, 302);
@@ -627,14 +675,105 @@ test("11. Single referral ID flows from server issuance through Viator campaign 
   assert.equal(redirectUrl.hostname, "www.viator.com");
   assert.equal(
     redirectUrl.searchParams.get("campaign"),
-    nassauSaved.clickId,
-    "Viator campaign parameter must equal the exact server-issued referral ID",
+    qaNassauSaved.clickId,
+    "Viator campaign parameter must equal the exact server-issued QA referral ID",
   );
-  assert.equal(redirectUrl.searchParams.get("click_id"), nassauSaved.clickId);
+  assert.equal(redirectUrl.searchParams.get("click_id"), qaNassauSaved.clickId);
+
+  // Two production guests choosing the EXACT SAME offer (Nassau 254526P1 Option TG4) get separate clk_<24hex> referral IDs and separate ledger records
+  const guest1ClickRes = await adsClickGet(
+    new Request(
+      "https://destinationcommandcenter.com/api/v1/ads/click?sailing=INDY-2027-01-24&offer=254526P1&option=TG4&placementId=fp-cp-winter-excursion-planner&property=nassau&date=2027-01-25&adults=2&departureTime=10:00",
+    ),
+  );
+  const guest2ClickRes = await adsClickGet(
+    new Request(
+      "https://destinationcommandcenter.com/api/v1/ads/click?sailing=INDY-2027-01-24&offer=254526P1&option=TG4&placementId=fp-cp-winter-excursion-planner&property=nassau&date=2027-01-25&adults=2&departureTime=10:00",
+    ),
+  );
+  assert.equal(guest1ClickRes.status, 302);
+  assert.equal(guest2ClickRes.status, 302);
+
+  const guest1RefId = guest1ClickRes.headers.get("x-dcc-referral-id") || "";
+  const guest2RefId = guest2ClickRes.headers.get("x-dcc-referral-id") || "";
+  assert.match(guest1RefId, /^clk_[0-9a-f]{24}$/);
+  assert.match(guest2RefId, /^clk_[0-9a-f]{24}$/);
+  assert.notEqual(
+    guest1RefId,
+    guest2RefId,
+    "Two production guests choosing the same offer must receive distinct referral IDs",
+  );
+
+  // Confirm Guest 1's booking in production
+  const guest1Confirm = reconcilePartnerWebhookByClickId({
+    campaignValue: guest1RefId,
+    provider: "viator",
+    providerBookingRef: "BR-PROD-GUEST1-254526P1",
+    eventType: "BOOKING_CONFIRMED",
+    grossRevenueUsd: 338.0,
+    estimatedCommissionUsd: 27.04,
+    paidCommissionUsd: null,
+    currency: "USD",
+    isTest: false,
+  });
+  assert.equal(guest1Confirm.matched, true);
+
+  // Verify Guest 1 has 1 confirmed booking while Guest 2's separate ledger record remains untouched (0 confirmed bookings)
+  const guest1BeforeReplay = getOpaqueClickAttributionById(guest1RefId);
+  const guest2BeforeReplay = getOpaqueClickAttributionById(guest2RefId);
+  assert.ok(guest1BeforeReplay);
+  assert.ok(guest2BeforeReplay);
+  assert.equal(guest1BeforeReplay.isTest, false);
+  assert.equal(guest2BeforeReplay.isTest, false);
+  assert.equal(guest1BeforeReplay.reconciledOutcomes.length, 1);
+  assert.equal(guest2BeforeReplay.reconciledOutcomes.length, 0);
+
+  // Attempt a QA test replay against Guest 1's and Guest 2's production referral IDs -> must be rejected and cannot mutate either production record
+  const qaReplayAgainstGuest1 = reconcilePartnerWebhookByClickId({
+    campaignValue: guest1RefId,
+    provider: "viator",
+    providerBookingRef: "TEST-REPLAY-ATTEMPT-GUEST1",
+    eventType: "BOOKING_FULFILLED",
+    grossRevenueUsd: 999.0,
+    estimatedCommissionUsd: 99.9,
+    paidCommissionUsd: 99.9,
+    currency: "USD",
+    isTest: true,
+  });
+  assert.equal(qaReplayAgainstGuest1.matched, false);
+  assert.match(
+    qaReplayAgainstGuest1.reason,
+    /^QA_TEST_REPLAY_ISOLATED_FROM_PRODUCTION_RECORD:/,
+  );
+
+  const qaReplayAgainstGuest2 = reconcilePartnerWebhookByClickId({
+    campaignValue: guest2RefId,
+    provider: "viator",
+    providerBookingRef: "TEST-REPLAY-ATTEMPT-GUEST2",
+    eventType: "BOOKING_CONFIRMED",
+    grossRevenueUsd: 338.0,
+    estimatedCommissionUsd: 27.04,
+    paidCommissionUsd: null,
+    currency: "USD",
+    isTest: true,
+  });
+  assert.equal(qaReplayAgainstGuest2.matched, false);
+  assert.match(
+    qaReplayAgainstGuest2.reason,
+    /^QA_TEST_REPLAY_ISOLATED_FROM_PRODUCTION_RECORD:/,
+  );
+
+  // Prove neither Guest 1's nor Guest 2's ledger record changed
+  const guest1AfterReplay = getOpaqueClickAttributionById(guest1RefId);
+  const guest2AfterReplay = getOpaqueClickAttributionById(guest2RefId);
+  assert.equal(guest1AfterReplay?.reconciledOutcomes.length, 1);
+  assert.equal(guest1AfterReplay?.reconciliationState, "reconciled_webhook");
+  assert.equal(guest2AfterReplay?.reconciledOutcomes.length, 0);
+  assert.equal(guest2AfterReplay?.reconciliationState, "pending_partner_event");
 
   // Reject unapproved external host
   const evilHostReq = new Request(
-    `https://destinationcommandcenter.com/api/v1/ads/click?clickId=${nassauSaved.clickId}&target=${encodeURIComponent("https://evil.example.com/phish")}`,
+    `https://destinationcommandcenter.com/api/v1/ads/click?clickId=${qaNassauSaved.clickId}&target=${encodeURIComponent("https://evil.example.com/phish")}`,
   );
   const evilHostRes = await adsClickGet(evilHostReq);
   assert.equal(evilHostRes.status, 403);
@@ -660,21 +799,14 @@ test("11. Single referral ID flows from server issuance through Viator campaign 
   assert.equal(offItineraryJson.error, "UNAPPROVED_CHECKOUT_DESTINATION");
   assert.equal(offItineraryJson.reason, "OFFER_NOT_ON_SAILING_ITINERARY");
 
-  // Resolve WNO live Viator offer 15200P6 directly from approved offer without target param
-  const wnoRefId = deriveServerReferralIdForOffer({
-    sailingCode: "welcometoneworleanstours",
-    productCode: "15200P6",
-    optionCode: "TG10",
-    placementId: "fp-wno-swamp-tours",
-    propertySlug: "hotel-monteleone-nola",
-    date: "2026-11-18",
-    adults: 2,
-  });
+  // Resolve WNO live Viator offer 15200P6 directly from approved offer without target param, minting a fresh QA referral ID
   const wnoClickReq = new Request(
-    `https://www.welcometoneworleanstours.com/api/v1/ads/click?clickId=${wnoRefId}&offer=15200P6&option=TG10&placementId=fp-wno-swamp-tours&property=hotel-monteleone-nola&date=2026-11-18&adults=2&departureTime=08:00&isTest=true`,
+    `https://www.welcometoneworleanstours.com/api/v1/ads/click?offer=15200P6&option=TG10&placementId=fp-wno-swamp-tours&property=hotel-monteleone-nola&date=2026-11-18&adults=2&departureTime=08:00&isTest=true`,
   );
   const wnoClickRes = await adsClickGet(wnoClickReq);
   assert.equal(wnoClickRes.status, 302);
+  const wnoRefId = wnoClickRes.headers.get("x-dcc-referral-id") || "";
+  assert.match(wnoRefId, /^clk_qa_[0-9a-f]{20}$/);
   const wnoRedirectUrl = new URL(wnoClickRes.headers.get("location") || "");
   assert.equal(wnoRedirectUrl.searchParams.get("campaign"), wnoRefId);
   assert.match(wnoRedirectUrl.pathname, /15200P6$/);

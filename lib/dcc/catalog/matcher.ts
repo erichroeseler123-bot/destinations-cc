@@ -2882,15 +2882,7 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
         });
         option.bookingPath.trackedClickUrl = `/api/v1/ads/click?clickId=${encodeURIComponent(issued.clickId)}&offer=${encodeURIComponent(record.providerProductCode)}&option=${encodeURIComponent(option.boundOffer.optionCode || "DEFAULT")}${effectivePlacementId ? `&placementId=${encodeURIComponent(effectivePlacementId)}` : ""}&property=${encodeURIComponent(input.propertySlug || node.destinationSlug)}${option.boundOffer.date ? `&date=${encodeURIComponent(option.boundOffer.date)}` : ""}&adults=${encodeURIComponent(String(adults))}&sig=${encodeURIComponent(gosnoSig)}${isTestTraffic ? "&isTest=true" : ""}&target=${encodeURIComponent(option.bookingPath.handoffUrl)}`;
       } else {
-        const preClickId = deriveServerReferralIdForOffer({
-          sailingCode: input.sailingCode || surface,
-          productCode: record.providerProductCode,
-          optionCode: option.boundOffer.optionCode,
-          placementId: effectivePlacementId,
-          propertySlug: input.propertySlug || node.destinationSlug,
-          date: option.boundOffer.date,
-          adults,
-        });
+        const preClickId = generateOpaqueClickId({ isTest: isTestTraffic });
         let preparedDestinationUrl = option.bookingPath.handoffUrl;
         const placementOrPropertyTag =
           effectivePlacementId || input.propertySlug || node.destinationSlug;

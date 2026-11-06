@@ -6,7 +6,9 @@ import {
 import { PILOT_VERIFIED_TOUR_RECORDS } from "./catalog/durableCatalogStore";
 import {
   deriveServerReferralIdForOffer,
+  generateOpaqueClickId,
   getFunnelMetricsReport,
+  getOpaqueClickAttributionById,
   issueOpaqueClickAttribution,
   reconcilePartnerWebhookByClickId,
   recordOutboundClickFollow,
@@ -79,7 +81,7 @@ export const ALL_WINTER_PORT_LOGISTICS_SPECS: Record<
     defaultAllAboardTime: "15:15",
     defaultLastTenderTime: null,
     logisticsSummary:
-      "Docked at Prince George Wharf. Requires 30m ship debark clearance + 15m verified terminal shuttle to Montague Foreshore Marina on Option TG4.",
+      "Docked at Prince George Wharf (7:00 AM – 4:00 PM; All-Aboard 3:15 PM). Requires 30m ship debark clearance + 15m verified terminal shuttle to Montague Foreshore Marina on Option TG4.",
   },
   "san-juan": {
     portSlug: "san-juan",
@@ -108,7 +110,8 @@ export const ALL_WINTER_PORT_LOGISTICS_SPECS: Record<
     dockOrTender: "dock",
     isTenderPort: false,
     defaultClearanceMinutes: 30,
-    terminalOrBerthName: "Havensight (WICO) Dock / Crown Bay Cruise Center",
+    terminalOrBerthName:
+      "Meet at Marriott's Frenchman's Cove Dock (7338 Estate Bakkeroe) · Independent travel both ways from guest's actual cruise berth (Havensight WICO or Crown Bay)",
     dccPortGuidePath: "/ports/st-thomas",
     dccPortGuideUrl: "https://www.destinationcommandcenter.com/ports/st-thomas",
     cruisePromenadePortUrl: "https://cruisepromenade.com/ports/st-thomas-usvi",
@@ -119,7 +122,7 @@ export const ALL_WINTER_PORT_LOGISTICS_SPECS: Record<
     defaultAllAboardTime: "17:15",
     defaultLastTenderTime: null,
     logisticsSummary:
-      "Docked at Havensight (WICO) or Crown Bay. Requires 30m debark clearance + 20m verified open-air safari shuttle transfer each way.",
+      "Offer 7452P2 meets at Marriott's Frenchman's Cove Dock (7338 Estate Bakkeroe, Charlotte Amalie, St. Thomas 00802). Requires 30m check-in prior to departure (12:30 PM for 1:00 PM sail) + independent travel both ways from guest's actual cruise berth (Havensight WICO ~15–20m or Crown Bay ~30–35m taxi each way). Shows Needs confirmation while berth transfer timing or ship cutoff is unresolved.",
   },
   cozumel: {
     portSlug: "cozumel",
@@ -336,7 +339,7 @@ export const INDEPENDENCE_JAN_24_2027_SHAREABLE_PLAN: ShareableWinterSailingDefi
       savedTourId: "dcc:tour:viator:7452P2",
       savedOptionCode: "DEFAULT",
       notes:
-        "Docked at Havensight (WICO) / Crown Bay (8:00 AM – 6:00 PM; All-Aboard 5:15 PM). Saved excursion: Turtle Cove Catamaran Snorkel and Sail at Little Buck Island STT (7452P2 · Cruise Pier Pickup).",
+        "Docked at Havensight (WICO) or Crown Bay (8:00 AM – 6:00 PM; All-Aboard 5:15 PM). Saved excursion: Turtle Cove Catamaran Snorkel and Sail at Little Buck Island STT (7452P2 · Meet at Marriott's Frenchman's Cove Dock, 7338 Estate Bakkeroe · 30m check-in + independent travel both ways from actual cruise berth · Needs confirmation until berth transfer timing is confirmed).",
     },
     {
       dayNumber: 6,
@@ -958,7 +961,7 @@ export async function evaluateWinterSailingPlan(params?: {
       propertySlug: portSlug,
       placementId: plan.placementId,
       enableShortlistLiveCheck: enableLiveCheck,
-      shortlistMaxCount: 3,
+      shortlistMaxCount: 4,
       limit: 8,
       isTest: params?.isTest ?? true,
     });
@@ -1139,7 +1142,11 @@ export async function evaluateWinterSailingPlan(params?: {
         null,
       availableDepartureTimes: opt.boundOffer.availableDepartureTimes,
       pickupFulfillmentType: opt.boundOffer.pickupFulfillmentType,
-      pickupBadgeLabel: opt.boundOffer.pickupBadgeLabel,
+      pickupBadgeLabel:
+        opt.boundOffer.pickupFulfillmentType === "self_drive" &&
+        (opt.pickupAndLocation.meetingPointName || opt.boundOffer.applicableBerthOrMeetingPoint)
+          ? `Meet at ${opt.pickupAndLocation.meetingPointName || opt.boundOffer.applicableBerthOrMeetingPoint}`
+          : opt.boundOffer.pickupBadgeLabel,
       applicableBerthOrMeetingPoint: opt.boundOffer.applicableBerthOrMeetingPoint ?? null,
       isTenderPort: slot.portSpec.isTenderPort,
       debarkOrTenderClearanceMinutes:
@@ -1216,6 +1223,28 @@ export interface WinterAttributionReplayTraceResult {
   productCode: string;
   providerBookingRef: string;
   trackingCampaignTag: string;
+  multiGuestCheckoutIntentIsolation: {
+    offerProductCode: string;
+    optionCode: string;
+    guest1ReferralId: string;
+    guest2ReferralId: string;
+    separateReferralIdsIssued: boolean;
+    separateLedgerRecordsCreated: boolean;
+    qaReplayAttemptAgainstGuest1: {
+      matched: boolean;
+      rejectionReason: string;
+      guest1RecordUnchanged: boolean;
+      guest1TrafficClass: string;
+      guest1ReconciledOutcomesCount: number;
+    };
+    qaReplayAttemptAgainstGuest2: {
+      matched: boolean;
+      rejectionReason: string;
+      guest2RecordUnchanged: boolean;
+      guest2TrafficClass: string;
+      guest2ReconciledOutcomesCount: number;
+    };
+  };
   firstDelivery: {
     matched: boolean;
     duplicateDelivery: boolean;
@@ -1251,10 +1280,13 @@ export interface WinterAttributionReplayTraceResult {
       tourId: string;
       providerProductCode: string;
       title: string;
+      optionCode: string;
+      optionTitle: string;
       operatorName: string;
       commissionStatus: "verified_active_8pct";
       placementApprovalStatus: "live_first_party";
       verifiedHotelMonteleonePickupStop: string;
+      unitPriceAdultUsd: number;
       totalPartyPrice2AdultsUsd: number;
       expectedPartnerCommission2AdultsUsd: number;
     };
@@ -1277,15 +1309,84 @@ export interface WinterAttributionReplayTraceResult {
 /**
  * Replays a labeled provider test event (`isTest: true`) for the Winter Excursion Planner placement
  * and proves that:
- * 1) Plan opens, outbound clicks, provider-confirmed bookings, and paid commissions are tracked separately,
- * 2) Replaying the same provider event credits the placement (`fp-cp-winter-excursion-planner`) exactly once
- *    (`duplicateDelivery: true` on the second replay, `duplicateDeliveriesIgnored: 1`),
- * 3) Production counters remain untouched (`0` from test replay), and
- * 4) The Hotel Monteleone New Orleans pilot remains pending until operator terms and hotel placement are approved.
+ * 1) Two guests choosing the same offer receive separate per-intent referral IDs (`clk_<24hex>`) and separate ledger records,
+ * 2) A test replay (`isTest: true` / `TEST-...`) cannot mutate either production guest's ledger record,
+ * 3) QA uses its own separate `clk_qa_<20hex>` referral ID and credits `fp-cp-winter-excursion-planner` once in the `test` funnel,
+ * 4) Plan opens, outbound clicks, provider-confirmed bookings, and paid commissions are tracked separately.
  */
 export function runWinterAttributionReplayAndNolaStatusTrace(): WinterAttributionReplayTraceResult {
   const placementId = "fp-cp-winter-excursion-planner";
   const planCode = "INDY-2027-01-24";
+
+  // 0. Prove two production guests choosing the same offer (254526P1 Option TG4) get separate referral IDs
+  //    and separate ledger records, and that a QA test replay cannot mutate either production record.
+  const guest1ReferralId = generateOpaqueClickId({ isTest: false });
+  const guest2ReferralId = generateOpaqueClickId({ isTest: false });
+
+  const guest1Record = issueOpaqueClickAttribution({
+    clickId: guest1ReferralId,
+    decisionReceiptId: "rcpt:cp:winter-plan:INDY-2027-01-24:nassau:254526P1:TG4:guest1",
+    recommendedOperatorId: "viator:254526P1",
+    recommendedOperatorName: "Pieces of 8 Tours Bahamas",
+    evidenceVersion: "dcc_winter_excursion_planner_v1",
+    originatingSite: "cruisepromenade.com",
+    originatingPage: "/p/INDY-2027-01-24",
+    placementId,
+    propertySlug: "nassau",
+    surface: "cruisepromenade",
+    provider: "viator",
+    productCode: "254526P1",
+    productDestinationUrl: `https://www.viator.com/tours/Nassau/Pigs-cant-fly-but-they-do-swim/d420-254526P1?mcid=42383&pid=P00306962&medium=api&api_version=2.0&campaign=${guest1ReferralId}`,
+    recordStage: "outbound_click",
+    isTest: false,
+  });
+
+  const guest2Record = issueOpaqueClickAttribution({
+    clickId: guest2ReferralId,
+    decisionReceiptId: "rcpt:cp:winter-plan:INDY-2027-01-24:nassau:254526P1:TG4:guest2",
+    recommendedOperatorId: "viator:254526P1",
+    recommendedOperatorName: "Pieces of 8 Tours Bahamas",
+    evidenceVersion: "dcc_winter_excursion_planner_v1",
+    originatingSite: "cruisepromenade.com",
+    originatingPage: "/p/INDY-2027-01-24",
+    placementId,
+    propertySlug: "nassau",
+    surface: "cruisepromenade",
+    provider: "viator",
+    productCode: "254526P1",
+    productDestinationUrl: `https://www.viator.com/tours/Nassau/Pigs-cant-fly-but-they-do-swim/d420-254526P1?mcid=42383&pid=P00306962&medium=api&api_version=2.0&campaign=${guest2ReferralId}`,
+    recordStage: "outbound_click",
+    isTest: false,
+  });
+
+  const qaAttemptOnGuest1 = reconcilePartnerWebhookByClickId({
+    campaignValue: guest1Record.clickId,
+    trackingParamValue: guest1Record.clickId,
+    provider: "viator",
+    providerBookingRef: "TEST-VIATOR-REPLAY-ATTEMPT-GUEST1",
+    eventType: "BOOKING_CONFIRMED",
+    grossRevenueUsd: 338.0,
+    estimatedCommissionUsd: 27.04,
+    paidCommissionUsd: null,
+    currency: "USD",
+    isTest: true,
+  });
+
+  const qaAttemptOnGuest2 = reconcilePartnerWebhookByClickId({
+    campaignValue: guest2Record.clickId,
+    trackingParamValue: guest2Record.clickId,
+    provider: "viator",
+    providerBookingRef: "TEST-VIATOR-REPLAY-ATTEMPT-GUEST2",
+    eventType: "BOOKING_CONFIRMED",
+    grossRevenueUsd: 338.0,
+    estimatedCommissionUsd: 27.04,
+    paidCommissionUsd: null,
+    currency: "USD",
+    isTest: true,
+  });
+
+  const guest1AfterQaAttempt = getOpaqueClickAttributionById(guest1Record.clickId);
+  const guest2AfterQaAttempt = getOpaqueClickAttributionById(guest2Record.clickId);
 
   // 1. Record a labeled test plan open
   recordPlanOpenEvent({
@@ -1298,20 +1399,12 @@ export function runWinterAttributionReplayAndNolaStatusTrace(): WinterAttributio
     isTest: true,
   });
 
-  // 2. Issue recommendation & follow outbound click for Nassau Swimming Pigs (254526P1 Option TG4)
-  const serverReferralId = deriveServerReferralIdForOffer({
-    sailingCode: planCode,
-    productCode: "254526P1",
-    optionCode: "TG4",
-    placementId,
-    propertySlug: "nassau",
-    date: "2027-01-25",
-    adults: 2,
-  });
+  // 2. Issue QA checkout intent (`clk_qa_<20hex>`) & follow outbound click for Nassau Swimming Pigs (254526P1 Option TG4)
+  const qaReferralId = generateOpaqueClickId({ isTest: true });
 
   const clickAttr = issueOpaqueClickAttribution({
-    clickId: serverReferralId,
-    decisionReceiptId: "rcpt:cp:winter-plan:INDY-2027-01-24:nassau:254526P1:TG4",
+    clickId: qaReferralId,
+    decisionReceiptId: "rcpt:cp:winter-plan:INDY-2027-01-24:nassau:254526P1:TG4:qa",
     recommendedOperatorId: "viator:254526P1",
     recommendedOperatorName: "Pieces of 8 Tours Bahamas",
     evidenceVersion: "dcc_winter_excursion_planner_v1",
@@ -1322,12 +1415,13 @@ export function runWinterAttributionReplayAndNolaStatusTrace(): WinterAttributio
     surface: "cruisepromenade",
     provider: "viator",
     productCode: "254526P1",
-    productDestinationUrl: `https://www.viator.com/tours/Nassau/Pigs-cant-fly-but-they-do-swim/d420-254526P1?mcid=42383&pid=P00306962&medium=api&api_version=2.0&campaign=${serverReferralId}`,
+    productDestinationUrl: `https://www.viator.com/tours/Nassau/Pigs-cant-fly-but-they-do-swim/d420-254526P1?mcid=42383&pid=P00306962&medium=api&api_version=2.0&campaign=${qaReferralId}`,
     recordStage: "recommendation",
     isTest: true,
   });
 
   recordOutboundClickFollow(clickAttr.clickId, {
+    isTest: true,
     userAgent: "Mozilla/5.0 (DCC-Winter-Planner-QA-Verification)",
     referer: "https://cruisepromenade.com/p/INDY-2027-01-24",
   });
@@ -1335,7 +1429,7 @@ export function runWinterAttributionReplayAndNolaStatusTrace(): WinterAttributio
   const trackingCampaignTag = clickAttr.clickId;
   const providerBookingRef = "TEST-VIATOR-INDY2027-NASSAU-254526P1-01";
 
-  // 3. Deliver labeled provider test event #1 (BOOKING_CONFIRMED) carrying Viator campaignValue = referralId
+  // 3. Deliver labeled provider test event #1 (BOOKING_CONFIRMED) carrying Viator campaignValue = qaReferralId
   const firstRes = reconcilePartnerWebhookByClickId({
     campaignValue: trackingCampaignTag,
     trackingParamValue: trackingCampaignTag,
@@ -1406,6 +1500,38 @@ export function runWinterAttributionReplayAndNolaStatusTrace(): WinterAttributio
     productCode: "254526P1",
     providerBookingRef,
     trackingCampaignTag,
+    multiGuestCheckoutIntentIsolation: {
+      offerProductCode: "254526P1",
+      optionCode: "TG4",
+      guest1ReferralId: guest1Record.clickId,
+      guest2ReferralId: guest2Record.clickId,
+      separateReferralIdsIssued: guest1Record.clickId !== guest2Record.clickId,
+      separateLedgerRecordsCreated:
+        Boolean(guest1AfterQaAttempt && guest2AfterQaAttempt) &&
+        guest1AfterQaAttempt?.clickId !== guest2AfterQaAttempt?.clickId,
+      qaReplayAttemptAgainstGuest1: {
+        matched: qaAttemptOnGuest1.matched,
+        rejectionReason: !qaAttemptOnGuest1.matched ? qaAttemptOnGuest1.reason : "NONE",
+        guest1RecordUnchanged:
+          guest1AfterQaAttempt?.trafficClass === "production" &&
+          guest1AfterQaAttempt?.isTest === false &&
+          guest1AfterQaAttempt?.reconciledOutcomes.length === 0 &&
+          guest1AfterQaAttempt?.reconciliationState === "pending_partner_event",
+        guest1TrafficClass: guest1AfterQaAttempt?.trafficClass || "unknown",
+        guest1ReconciledOutcomesCount: guest1AfterQaAttempt?.reconciledOutcomes.length ?? -1,
+      },
+      qaReplayAttemptAgainstGuest2: {
+        matched: qaAttemptOnGuest2.matched,
+        rejectionReason: !qaAttemptOnGuest2.matched ? qaAttemptOnGuest2.reason : "NONE",
+        guest2RecordUnchanged:
+          guest2AfterQaAttempt?.trafficClass === "production" &&
+          guest2AfterQaAttempt?.isTest === false &&
+          guest2AfterQaAttempt?.reconciledOutcomes.length === 0 &&
+          guest2AfterQaAttempt?.reconciliationState === "pending_partner_event",
+        guest2TrafficClass: guest2AfterQaAttempt?.trafficClass || "unknown",
+        guest2ReconciledOutcomesCount: guest2AfterQaAttempt?.reconciledOutcomes.length ?? -1,
+      },
+    },
     firstDelivery: {
       matched: firstRes.matched,
       duplicateDelivery: firstRes.outcome.duplicateDelivery,
@@ -1442,12 +1568,15 @@ export function runWinterAttributionReplayAndNolaStatusTrace(): WinterAttributio
         secondaryLiveGuestUrl: "https://www.destinationcommandcenter.com/new-orleans/swamp-tours",
         tourId: "dcc:tour:viator:15200P6",
         providerProductCode: "15200P6",
-        title: "New Orleans Swamp Tour Boat Adventure With Pickup",
+        title: "New Orleans Swamp Tour Boat Adventure with Transportation",
+        optionCode: "TG10",
+        optionTitle: "9:40am Tour (Hotel pickup 8:00am–8:30am included)",
         operatorName: "Louisiana Tour Company",
         commissionStatus: "verified_active_8pct",
         placementApprovalStatus: "live_first_party",
         verifiedHotelMonteleonePickupStop:
-          "Hotel Monteleone (214 Royal St, New Orleans, LA 70130 — Viator pickup ref LOC-6eKJ+or5y8o99Qw0C8xWyGAjWJk3qp08H7OnT0MLhOs=)",
+          "Hotel Monteleone (214 Royal St, New Orleans, LA 70130 — Viator pickup ref LOC-6eKJ+or5y8o99Qw0C8xWyGAjWJk3qp08H7OnT0MLhOs= · 8:00 AM–8:30 AM pickup window for 9:40 AM tour)",
+        unitPriceAdultUsd: 60.0,
         totalPartyPrice2AdultsUsd: 120.0,
         expectedPartnerCommission2AdultsUsd: 9.6,
       },

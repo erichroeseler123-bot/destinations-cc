@@ -6,8 +6,11 @@ import {
 } from "@/lib/dcc/catalog/durableCatalogStore";
 import { buildFareHarborDatePreselectedUrl } from "@/lib/dcc/catalog/matcher";
 import {
+  deriveServerReferralIdForOffer,
   extractClickIdFromTrackingValue,
+  generateOpaqueClickId,
   getOpaqueClickAttributionById,
+  isQaReferralId,
   issueOpaqueClickAttribution,
   recordOutboundClickFollow,
   verifyApprovedCheckoutHandoffSignature,
@@ -94,7 +97,6 @@ export async function GET(request: Request) {
     url.searchParams.get("clickId")?.trim() ||
     url.searchParams.get("referralId")?.trim() ||
     "";
-  const isTestParam = url.searchParams.get("isTest") === "true";
   const targetParam = url.searchParams.get("target")?.trim() || "";
   const offerParam =
     url.searchParams.get("offer")?.trim() ||
@@ -123,23 +125,29 @@ export async function GET(request: Request) {
   const departureTimeParam = url.searchParams.get("departureTime")?.trim() || null;
   const sigParam = url.searchParams.get("sig")?.trim() || null;
 
-  if (!rawClickId) {
+  if (!rawClickId && !offerParam) {
     return NextResponse.json(
       { ok: false, error: "MISSING_CLICK_ID" },
       { status: 400 },
     );
   }
 
-  const clickId =
-    extractClickIdFromTrackingValue(rawClickId) ||
-    (/^clk_[0-9a-f]{24}$/i.test(rawClickId) ? rawClickId.toLowerCase() : "");
+  const incomingClickId = rawClickId
+    ? extractClickIdFromTrackingValue(rawClickId) ||
+      (/^clk_(?:qa_)?[0-9a-f]{20,24}$/i.test(rawClickId) ? rawClickId.toLowerCase() : "")
+    : "";
 
-  if (!clickId) {
+  if (rawClickId && !incomingClickId) {
     return NextResponse.json(
       { ok: false, error: "INVALID_REFERRAL_ID_FORMAT", clickId: rawClickId },
       { status: 400 },
     );
   }
+
+  const isTestParam =
+    url.searchParams.get("isTest") === "true" ||
+    url.searchParams.get("trafficClass") === "test" ||
+    isQaReferralId(incomingClickId);
 
   let parsedTarget: URL | null = null;
   if (targetParam) {
@@ -240,7 +248,7 @@ export async function GET(request: Request) {
   if (sigParam) {
     const sigValid = verifyApprovedCheckoutHandoffSignature(
       {
-        clickId,
+        clickId: incomingClickId,
         offer: offerParam || catalogRecord?.providerProductCode || "",
         option: optionParam || "DEFAULT",
         sailing: sailingParam,
@@ -266,7 +274,9 @@ export async function GET(request: Request) {
   const userAgent = request.headers.get("user-agent");
   const referer = request.headers.get("referer");
 
-  const existingRecord = getOpaqueClickAttributionById(clickId);
+  const existingRecord = incomingClickId
+    ? getOpaqueClickAttributionById(incomingClickId)
+    : null;
 
   if (existingRecord && parsedTarget && !catalogRecord) {
     try {
@@ -308,20 +318,79 @@ export async function GET(request: Request) {
       );
     }
     return NextResponse.json(
-      { ok: false, error: "CLICK_ATTRIBUTION_NOT_FOUND", clickId },
+      { ok: false, error: "CLICK_ATTRIBUTION_NOT_FOUND", clickId: incomingClickId },
       { status: 404 },
     );
   }
 
-  let updated = existingRecord
-    ? (recordOutboundClickFollow(clickId, {
-        userAgent,
-        referer,
-        isTest: isTestParam,
-        placementId: placementIdParam,
-        propertySlug: propertySlugParam,
-      }) ?? existingRecord)
-    : null;
+  // Check if incomingClickId is a shared deterministic offer template ID or has already been consumed by a prior guest click
+  const templateOfferCode = offerParam || catalogRecord?.providerProductCode || "";
+  const isDeterministicOfferTemplate = Boolean(
+    incomingClickId &&
+      templateOfferCode &&
+      (incomingClickId ===
+        deriveServerReferralIdForOffer({
+          sailingCode: sailingParam || "",
+          productCode: templateOfferCode,
+          optionCode: optionParam || "DEFAULT",
+          placementId: placementIdParam || "",
+          propertySlug: propertySlugParam || catalogRecord?.destinationSlug || "",
+          date: dateParam || "",
+          adults: Number(adultsParam) || 2,
+          isTest: false,
+        }) ||
+        incomingClickId ===
+          deriveServerReferralIdForOffer({
+            sailingCode: "cruisepromenade",
+            productCode: templateOfferCode,
+            optionCode: optionParam || "DEFAULT",
+            placementId: placementIdParam || "",
+            propertySlug: propertySlugParam || catalogRecord?.destinationSlug || "",
+            date: dateParam || "",
+            adults: Number(adultsParam) || 2,
+            isTest: false,
+          }) ||
+        incomingClickId ===
+          deriveServerReferralIdForOffer({
+            sailingCode: "wno",
+            productCode: templateOfferCode,
+            optionCode: optionParam || "DEFAULT",
+            placementId: placementIdParam || "",
+            propertySlug: propertySlugParam || catalogRecord?.destinationSlug || "",
+            date: dateParam || "",
+            adults: Number(adultsParam) || 2,
+            isTest: false,
+          })),
+  );
+
+  const alreadyConsumedByAnotherClick = Boolean(
+    existingRecord &&
+      (existingRecord.followedAt ||
+        (existingRecord.clickCount || 0) >= 1 ||
+        Boolean(existingRecord.isTest) !== Boolean(isTestParam)),
+  );
+
+  const shouldMintFreshPerIntentClickId = Boolean(
+    !incomingClickId ||
+      isDeterministicOfferTemplate ||
+      alreadyConsumedByAnotherClick ||
+      Boolean(isQaReferralId(incomingClickId)) !== Boolean(isTestParam),
+  );
+
+  const effectiveClickId = shouldMintFreshPerIntentClickId
+    ? generateOpaqueClickId({ isTest: isTestParam })
+    : incomingClickId;
+
+  let updated =
+    !shouldMintFreshPerIntentClickId && existingRecord
+      ? recordOutboundClickFollow(effectiveClickId, {
+          userAgent,
+          referer,
+          isTest: isTestParam,
+          placementId: placementIdParam,
+          propertySlug: propertySlugParam,
+        })
+      : null;
 
   if (!updated && catalogRecord && catalogRecord.bookingUrl) {
     let resolvedDestinationUrl = catalogRecord.bookingUrl;
@@ -337,10 +406,10 @@ export async function GET(request: Request) {
     if (catalogRecord.primaryProvider === "viator") {
       resolvedDestinationUrl = appendViatorAttribution(resolvedDestinationUrl, {
         preserveExistingCampaign: false,
-        campaign: clickId,
+        campaign: effectiveClickId,
       });
     } else if (catalogRecord.primaryProvider === "fareharbor") {
-      const asnRefTag = `${placementIdParam || propertySlugParam || catalogRecord.destinationSlug}-${clickId}`.slice(
+      const asnRefTag = `${placementIdParam || propertySlugParam || catalogRecord.destinationSlug}-${effectiveClickId}`.slice(
         0,
         120,
       );
@@ -382,7 +451,7 @@ export async function GET(request: Request) {
             : "direct";
 
     updated = issueOpaqueClickAttribution({
-      clickId,
+      clickId: effectiveClickId,
       decisionReceiptId: `rcpt:dcc:click:${catalogRecord.tourId}:${effectiveOptionCode}`,
       recommendedOperatorId:
         catalogRecord.operatorCode || catalogRecord.primaryProvider,
@@ -399,16 +468,38 @@ export async function GET(request: Request) {
       isTest: isTestParam,
       recordStage: "outbound_click",
     });
+  } else if (!updated && existingRecord) {
+    updated = issueOpaqueClickAttribution({
+      clickId: effectiveClickId,
+      decisionReceiptId: existingRecord.decisionReceiptId,
+      recommendedOperatorId: existingRecord.recommendedOperatorId,
+      recommendedOperatorName: existingRecord.recommendedOperatorName,
+      recommendedVehicleClassId: existingRecord.recommendedVehicleClassId,
+      evidenceVersion: existingRecord.evidenceVersion,
+      applicabilityModelVersion: existingRecord.applicabilityModelVersion,
+      applicabilityOutcomeHash: existingRecord.applicabilityOutcomeHash,
+      originatingSite: existingRecord.originatingSite,
+      originatingPage: referer || existingRecord.originatingPage,
+      placementId: placementIdParam || existingRecord.placementId,
+      propertySlug: propertySlugParam || existingRecord.propertySlug,
+      surface: existingRecord.surface,
+      tripDetails: existingRecord.tripDetails,
+      provider: existingRecord.provider,
+      productCode: existingRecord.productCode,
+      productDestinationUrl: existingRecord.outboundPartnerUrl,
+      isTest: isTestParam,
+      recordStage: "outbound_click",
+    });
   }
 
   if (!updated || !updated.outboundPartnerUrl) {
     return NextResponse.json(
-      { ok: false, error: "CLICK_ATTRIBUTION_NOT_FOUND", clickId },
+      { ok: false, error: "CLICK_ATTRIBUTION_NOT_FOUND", clickId: effectiveClickId },
       { status: 404 },
     );
   }
 
-  // Always enforce the single server-issued referral ID on outbound Viator URLs
+  // Always enforce the single per-intent referral ID on outbound Viator URLs
   const finalRedirectObj = new URL(updated.outboundPartnerUrl);
   if (normalizeHost(finalRedirectObj.hostname) === "viator.com") {
     finalRedirectObj.searchParams.set("campaign", updated.clickId);
