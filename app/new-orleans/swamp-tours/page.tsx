@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import Link from "next/link";
 import CategoryDecisionEngineExperience from "@/app/components/dcc/CategoryDecisionEngineExperience";
 import DccConciergeWidget from "@/app/components/dcc/DccConciergeWidget";
@@ -18,6 +19,10 @@ import {
   evaluatePortfolioAssuranceSummary,
   resolvePortfolioTripContext,
 } from "@/lib/dcc/commerce/portfolio";
+import {
+  deriveServerReferralIdForOffer,
+  signApprovedCheckoutHandoff,
+} from "@/lib/dcc/commerce/opaqueAttributionLedger";
 import { NEW_ORLEANS_TOUR_CATEGORY_PAGES } from "@/src/data/new-orleans-city-site";
 import { getPublishedDecisionGuide } from "@/src/data/published-decision-guides";
 import { getPublicationManifestEntry } from "@/src/data/publication-manifest";
@@ -133,10 +138,28 @@ function pickFirstParam(val: string | string[] | undefined): string | undefined 
 export default async function NewOrleansSwampToursPage(props: {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const reqHeaders = await headers();
+  const hostHeader = (
+    reqHeaders.get("x-forwarded-host") ||
+    reqHeaders.get("host") ||
+    ""
+  ).toLowerCase();
+  const brandShell = (reqHeaders.get("x-dcc-brand-shell") || "").toLowerCase();
+  const isWnoHost =
+    hostHeader.includes("welcometoneworleanstours") ||
+    brandShell.includes("welcometoneworleanstours");
+  const effectiveSiteDomain = isWnoHost
+    ? "welcometoneworleanstours.com"
+    : "destinationcommandcenter.com";
+  const effectivePlacementId = isWnoHost
+    ? "fp-wno-swamp-tours"
+    : "fp-dcc-nola-swamp-tours";
+  const effectiveSurface = isWnoHost ? "welcometoneworleanstours" : "dcc";
+
   const resolvedSearchParams = props.searchParams ? await props.searchParams : {};
   const carriedContext = await resolvePortfolioTripContext({
     searchParams: resolvedSearchParams,
-    claimingOwner: "destinationcommandcenter.com",
+    claimingOwner: effectiveSiteDomain,
     issueIfParamsPresent: false,
     defaultPortSlug: "new-orleans",
   });
@@ -156,15 +179,15 @@ export default async function NewOrleansSwampToursPage(props: {
 
   const assurance = evaluatePortfolioAssuranceSummary({
     engineId: "new-orleans-swamp-tours",
-    callerClientId: "ssr:destinationcommandcenter.com",
+    callerClientId: `ssr:${effectiveSiteDomain}`,
   });
   const fhHandoffHref = buildPortfolioHandoffUrl({
-    originatingSite: "destinationcommandcenter.com",
+    originatingSite: effectiveSiteDomain,
     provider: "fareharbor",
     providerAccount: "aktourcenter",
     productCode: "jeanlafitteswamptour:763318",
-    destinationUrl: "https://fareharbor.com/embeds/book/jeanlafitteswamptour/items/763318/?asn=aktourcenter&ref=fp-dcc-nola-swamp-tours&full-items=yes",
-    campaign: "fp-dcc-nola-swamp-tours",
+    destinationUrl: `https://fareharbor.com/embeds/book/jeanlafitteswamptour/items/763318/?asn=aktourcenter&ref=${effectivePlacementId}&full-items=yes`,
+    campaign: effectivePlacementId,
     contextId: carriedContext.contextId,
     evaluationRunId: assurance.evaluationRunId,
     receiptId: assurance.receiptId,
@@ -172,20 +195,29 @@ export default async function NewOrleansSwampToursPage(props: {
     partySize: carriedContext.payload.partySize || null,
     useRelativePath: true,
   });
-  const viatorHandoffHref = buildPortfolioHandoffUrl({
-    originatingSite: "destinationcommandcenter.com",
-    provider: "viator",
-    providerAccount: "P00058396",
-    productCode: "nola-swamp-viator",
-    destinationUrl: "https://www.viator.com/New-Orleans-tours/Nature-and-Wildlife/d675-g9-c36?pid=P00058396&mcid=42383",
-    campaign: "dcc-swamp-tours-viator",
-    contextId: carriedContext.contextId,
-    evaluationRunId: assurance.evaluationRunId,
-    receiptId: assurance.receiptId,
-    intendedDate: carriedContext.payload.date || null,
-    partySize: carriedContext.payload.partySize || null,
-    useRelativePath: true,
+
+  const wno15200P6Date = carriedDate || "2026-11-18";
+  const wno15200P6Adults = carriedContext.payload.partySize || 2;
+  const wno15200P6ClickId = deriveServerReferralIdForOffer({
+    sailingCode: effectiveSurface,
+    productCode: "15200P6",
+    optionCode: "TG10",
+    placementId: effectivePlacementId,
+    propertySlug: "hotel-monteleone-nola",
+    date: wno15200P6Date,
+    adults: wno15200P6Adults,
   });
+  const wno15200P6Sig = signApprovedCheckoutHandoff({
+    clickId: wno15200P6ClickId,
+    offer: "15200P6",
+    option: "TG10",
+    sailing: "",
+    placementId: effectivePlacementId,
+    property: "hotel-monteleone-nola",
+    date: wno15200P6Date,
+    adults: String(wno15200P6Adults),
+  });
+  const viatorHandoffHref = `/api/v1/ads/click?clickId=${encodeURIComponent(wno15200P6ClickId)}&offer=15200P6&option=TG10&placementId=${encodeURIComponent(effectivePlacementId)}&property=hotel-monteleone-nola&date=${encodeURIComponent(wno15200P6Date)}&adults=${encodeURIComponent(String(wno15200P6Adults))}&departureTime=08%3A00&sig=${encodeURIComponent(wno15200P6Sig)}${isTestParam ? "&isTest=true" : ""}`;
   const ctxQuery = carriedContext.contextId ? `?ctx=${encodeURIComponent(carriedContext.contextId)}` : "";
 
   const satelliteHref = buildSwampPlanHref({
@@ -202,21 +234,21 @@ export default async function NewOrleansSwampToursPage(props: {
       <JsonLdGraph />
       <div className="mx-auto max-w-6xl space-y-8 px-6 py-16">
         <PortfolioAssuranceBanner
-          siteDomain="destinationcommandcenter.com"
+          siteDomain={effectiveSiteDomain}
           assurance={assurance}
           carriedContext={carriedContext}
           handoffActions={[
+            {
+              label: "Book New Orleans Swamp Tour Boat Adventure w/ Pickup (15200P6 — $120 for 2)",
+              href: viatorHandoffHref,
+              providerLabel: "Viator",
+              accountLabel: "pid=P00306962",
+            },
             {
               label: "Book Jean Lafitte Swamp Tour w/ Hotel Pickup ($131.44 for 2 incl. fees)",
               href: fhHandoffHref,
               providerLabel: "FareHarbor",
               accountLabel: "asn=aktourcenter",
-            },
-            {
-              label: "Compare Swamp Tours on Viator",
-              href: viatorHandoffHref,
-              providerLabel: "Viator",
-              accountLabel: "pid=P00058396",
             },
           ]}
           crossSiteLinks={[
@@ -289,8 +321,8 @@ export default async function NewOrleansSwampToursPage(props: {
           widgetId="swamp-date-matcher"
           initialDestination="new-orleans"
           initialPropertySlug="hotel-monteleone-nola"
-          initialPlacementId="fp-dcc-nola-swamp-tours"
-          initialSurface="dcc"
+          initialPlacementId={effectivePlacementId}
+          initialSurface={effectiveSurface}
           initialPickupMode="hotel_pickup"
           initialDate={carriedDate}
           initialShipArrival={carriedShipArrival}

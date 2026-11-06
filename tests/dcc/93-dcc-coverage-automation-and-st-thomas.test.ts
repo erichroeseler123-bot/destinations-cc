@@ -571,6 +571,7 @@ test("10. INDY-2027-01-24 drives recommendations, saves, totals, and checkout st
   // Jean Lafitte 763318 pickup address resolution & already-approved first-party placement
   const replayRes = runWinterAttributionReplayAndNolaStatusTrace();
   assert.equal(replayRes.secondDeliveryReplay.replayIgnored, true);
+  assert.equal(replayRes.trackingCampaignTag, replayRes.clickId);
   const res763318 =
     replayRes.newOrleansParallelStatus.jeanLafitte763318PickupAddressResolution;
   assert.match(res763318.hotelMonteleoneShuttleOptionAddress, /214 Royal St/);
@@ -585,4 +586,153 @@ test("10. INDY-2027-01-24 drives recommendations, saves, totals, and checkout st
     "fp-wno-swamp-tours",
   );
 });
+
+test("11. Single referral ID flows from server issuance through Viator campaign parameter to campaignValue reconciliation, and /api/v1/ads/click rejects unapproved destinations", async () => {
+  const { GET: adsClickGet } = await import("../../app/api/v1/ads/click/route");
+  const {
+    deriveServerReferralIdForOffer,
+    getFunnelMetricsReport,
+    reconcilePartnerWebhookByClickId,
+    resetOpaqueAttributionLedgerForTests,
+  } = await import("../../lib/dcc/commerce/opaqueAttributionLedger");
+  const { evaluateWinterSailingPlan } = await import(
+    "../../lib/dcc/winterExcursionPlanner"
+  );
+
+  resetOpaqueAttributionLedgerForTests();
+
+  const indyPlan = await evaluateWinterSailingPlan({
+    planCode: "INDY-2027-01-24",
+    adults: 2,
+    surface: "cruisepromenade",
+    enableShortlistLiveCheck: false,
+    isTest: true,
+  });
+
+  const nassauSaved = indyPlan.savedPortsSummary.savedSelections.find(
+    (s) => s.portSlug === "nassau",
+  );
+  assert.ok(nassauSaved?.clickId);
+  assert.match(nassauSaved.clickId, /^clk_[0-9a-f]{24}$/);
+  assert.ok(nassauSaved.trackedViatorCheckoutUrl);
+
+  // Follow the signed checkout handoff via GET /api/v1/ads/click
+  const validClickReq = new Request(
+    `https://destinationcommandcenter.com${nassauSaved.trackedViatorCheckoutUrl}`,
+  );
+  const validClickRes = await adsClickGet(validClickReq);
+  assert.equal(validClickRes.status, 302);
+  const redirectLocation = validClickRes.headers.get("location") || "";
+  const redirectUrl = new URL(redirectLocation);
+  assert.equal(redirectUrl.hostname, "www.viator.com");
+  assert.equal(
+    redirectUrl.searchParams.get("campaign"),
+    nassauSaved.clickId,
+    "Viator campaign parameter must equal the exact server-issued referral ID",
+  );
+  assert.equal(redirectUrl.searchParams.get("click_id"), nassauSaved.clickId);
+
+  // Reject unapproved external host
+  const evilHostReq = new Request(
+    `https://destinationcommandcenter.com/api/v1/ads/click?clickId=${nassauSaved.clickId}&target=${encodeURIComponent("https://evil.example.com/phish")}`,
+  );
+  const evilHostRes = await adsClickGet(evilHostReq);
+  assert.equal(evilHostRes.status, 403);
+  const evilHostJson = await evilHostRes.json();
+  assert.equal(evilHostJson.error, "UNAPPROVED_CHECKOUT_DESTINATION");
+
+  // Reject unapproved Viator product not in catalog
+  const unapprovedProductReq = new Request(
+    `https://destinationcommandcenter.com/api/v1/ads/click?clickId=clk_111122223333444455556666&target=${encodeURIComponent("https://www.viator.com/tours/Fake/Unapproved/d1-999999P9")}`,
+  );
+  const unapprovedProductRes = await adsClickGet(unapprovedProductReq);
+  assert.equal(unapprovedProductRes.status, 403);
+  const unapprovedProductJson = await unapprovedProductRes.json();
+  assert.equal(unapprovedProductJson.error, "UNAPPROVED_CHECKOUT_DESTINATION");
+
+  // Reject off-itinerary offer on INDY-2027-01-24 (Cozumel 5553274P1)
+  const offItineraryReq = new Request(
+    `https://destinationcommandcenter.com/api/v1/ads/click?clickId=clk_111122223333444455556666&sailing=INDY-2027-01-24&offer=5553274P1&option=DEFAULT`,
+  );
+  const offItineraryRes = await adsClickGet(offItineraryReq);
+  assert.equal(offItineraryRes.status, 403);
+  const offItineraryJson = await offItineraryRes.json();
+  assert.equal(offItineraryJson.error, "UNAPPROVED_CHECKOUT_DESTINATION");
+  assert.equal(offItineraryJson.reason, "OFFER_NOT_ON_SAILING_ITINERARY");
+
+  // Resolve WNO live Viator offer 15200P6 directly from approved offer without target param
+  const wnoRefId = deriveServerReferralIdForOffer({
+    sailingCode: "welcometoneworleanstours",
+    productCode: "15200P6",
+    optionCode: "TG10",
+    placementId: "fp-wno-swamp-tours",
+    propertySlug: "hotel-monteleone-nola",
+    date: "2026-11-18",
+    adults: 2,
+  });
+  const wnoClickReq = new Request(
+    `https://www.welcometoneworleanstours.com/api/v1/ads/click?clickId=${wnoRefId}&offer=15200P6&option=TG10&placementId=fp-wno-swamp-tours&property=hotel-monteleone-nola&date=2026-11-18&adults=2&departureTime=08:00&isTest=true`,
+  );
+  const wnoClickRes = await adsClickGet(wnoClickReq);
+  assert.equal(wnoClickRes.status, 302);
+  const wnoRedirectUrl = new URL(wnoClickRes.headers.get("location") || "");
+  assert.equal(wnoRedirectUrl.searchParams.get("campaign"), wnoRefId);
+  assert.match(wnoRedirectUrl.pathname, /15200P6$/);
+
+  // Reconcile labeled provider report sample via campaignValue = wnoRefId
+  const confirmOut = reconcilePartnerWebhookByClickId({
+    campaignValue: wnoRefId,
+    provider: "viator",
+    providerBookingRef: "TEST-VIATOR-WNO-15200P6-01",
+    eventType: "BOOKING_CONFIRMED",
+    grossRevenueUsd: 120.0,
+    estimatedCommissionUsd: 9.6,
+    paidCommissionUsd: null,
+    currency: "USD",
+    isTest: true,
+  });
+  assert.equal(confirmOut.matched, true);
+  assert.equal(confirmOut.outcome.duplicateDelivery, false);
+
+  const dupOut = reconcilePartnerWebhookByClickId({
+    campaignValue: wnoRefId,
+    provider: "viator",
+    providerBookingRef: "TEST-VIATOR-WNO-15200P6-01",
+    eventType: "BOOKING_CONFIRMED",
+    grossRevenueUsd: 120.0,
+    estimatedCommissionUsd: 9.6,
+    paidCommissionUsd: null,
+    currency: "USD",
+    isTest: true,
+  });
+  assert.equal(dupOut.matched, true);
+  assert.equal(dupOut.outcome.duplicateDelivery, true);
+
+  let wnoFunnel = getFunnelMetricsReport({ placementId: "fp-wno-swamp-tours" });
+  assert.equal(wnoFunnel.test.confirmedPaidBookings, 1);
+  assert.equal(wnoFunnel.test.paidCommissionsCount, 0);
+  assert.equal(wnoFunnel.test.estimatedUnsettledCommissionUsd, 9.6);
+  assert.equal(wnoFunnel.test.settledReconciledCommissionUsd, 0);
+
+  const settleOut = reconcilePartnerWebhookByClickId({
+    campaignValue: wnoRefId,
+    provider: "viator",
+    providerBookingRef: "TEST-VIATOR-WNO-15200P6-01",
+    eventType: "BOOKING_FULFILLED",
+    grossRevenueUsd: 120.0,
+    estimatedCommissionUsd: 9.6,
+    paidCommissionUsd: 9.6,
+    currency: "USD",
+    isTest: true,
+  });
+  assert.equal(settleOut.matched, true);
+
+  wnoFunnel = getFunnelMetricsReport({ placementId: "fp-wno-swamp-tours" });
+  assert.equal(wnoFunnel.test.confirmedPaidBookings, 1);
+  assert.equal(wnoFunnel.test.paidCommissionsCount, 1);
+  assert.equal(wnoFunnel.test.settledReconciledCommissionUsd, 9.6);
+  assert.equal(wnoFunnel.test.duplicateDeliveriesIgnored, 1);
+  assert.equal(wnoFunnel.production.confirmedPaidBookings, 0);
+});
+
 

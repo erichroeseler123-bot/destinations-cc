@@ -149,6 +149,8 @@ export interface IssueOpaqueClickAttributionInput {
 
 export interface PartnerWebhookReconciliationInput {
   clickId?: string | null;
+  referralId?: string | null;
+  campaignValue?: string | null;
   trackingParamValue?: string | null;
   onlineBookingReferences?: string[] | null;
   provider: CommercialProvider;
@@ -432,12 +434,91 @@ export function generateOpaqueClickId(): string {
   return `clk_${crypto.randomBytes(12).toString("hex")}`;
 }
 
+export function deriveServerReferralIdForOffer(params: {
+  sailingCode?: string | null;
+  productCode: string;
+  optionCode?: string | null;
+  placementId?: string | null;
+  propertySlug?: string | null;
+  date?: string | null;
+  adults?: number | null;
+}): string {
+  const canonical = [
+    (params.sailingCode || "").trim().toUpperCase(),
+    params.productCode.trim(),
+    (params.optionCode || "DEFAULT").trim().toUpperCase(),
+    (params.placementId || "").trim().toLowerCase(),
+    (params.propertySlug || "").trim().toLowerCase(),
+    (params.date || "").trim(),
+    String(params.adults ?? 2),
+  ].join("|");
+  const digest = crypto
+    .createHash("sha256")
+    .update(`dcc-referral-v1:${canonical}`, "utf8")
+    .digest("hex")
+    .slice(0, 24);
+  return `clk_${digest}`;
+}
+
+const HANDOFF_SIGNING_FALLBACK_SECRET = "dcc-approved-handoff-signing-secret-v1";
+
+function resolveHandoffSigningSecret(): string {
+  return (
+    process.env.DCC_HANDOFF_SIGNING_SECRET?.trim() ||
+    process.env.INTERNAL_API_SECRET?.trim() ||
+    process.env.DCC_COMMERCE_ADMIN_SECRET?.trim() ||
+    HANDOFF_SIGNING_FALLBACK_SECRET
+  );
+}
+
+export interface ApprovedHandoffSignaturePayload {
+  clickId: string;
+  offer: string;
+  option?: string | null;
+  sailing?: string | null;
+  placementId?: string | null;
+  property?: string | null;
+  date?: string | null;
+  adults?: number | string | null;
+  target?: string | null;
+}
+
+export function signApprovedCheckoutHandoff(
+  payload: ApprovedHandoffSignaturePayload,
+): string {
+  const canonical = [
+    payload.clickId.trim().toLowerCase(),
+    payload.offer.trim(),
+    (payload.option || "").trim(),
+    (payload.sailing || "").trim(),
+    (payload.placementId || "").trim(),
+    (payload.property || "").trim(),
+    (payload.date || "").trim(),
+    String(payload.adults ?? "").trim(),
+    (payload.target || "").trim(),
+  ].join("|");
+  return crypto
+    .createHmac("sha256", resolveHandoffSigningSecret())
+    .update(`dcc-handoff-v1:${canonical}`, "utf8")
+    .digest("hex")
+    .slice(0, 32);
+}
+
+export function verifyApprovedCheckoutHandoffSignature(
+  payload: ApprovedHandoffSignaturePayload,
+  signature?: string | null,
+): boolean {
+  if (!signature || typeof signature !== "string") return false;
+  const expected = signApprovedCheckoutHandoff(payload);
+  return safeEqualStrings(signature.trim().toLowerCase(), expected.toLowerCase());
+}
+
 export function extractClickIdFromTrackingValue(
   value?: string | null,
 ): string | null {
   if (!value || typeof value !== "string") return null;
-  const match = value.match(/(clk_[0-9a-f]{24})/i);
-  return match ? match[1].toLowerCase() : null;
+  const match = value.match(/(clk[_-][0-9a-f]{24})/i);
+  return match ? match[1].toLowerCase().replace(/^clk-/, "clk_") : null;
 }
 
 /**
@@ -871,7 +952,9 @@ export function reconcilePartnerWebhookByClickId(
     : [];
 
   const resolvedClickId =
+    extractClickIdFromTrackingValue(input.referralId) ||
     extractClickIdFromTrackingValue(input.clickId) ||
+    extractClickIdFromTrackingValue(input.campaignValue) ||
     extractClickIdFromTrackingValue(input.trackingParamValue) ||
     cleanedRefs
       .map((ref) => extractClickIdFromTrackingValue(ref))
@@ -987,7 +1070,7 @@ export function reconcilePartnerWebhookByClickId(
 
 /**
  * Reconciles partner CSV settlement rows (e.g., Viator, GetYourGuide, FareHarbor, or GoSno CSV exports)
- * against the internal Opaque Attribution Ledger using `click_id` (or `campaign`/`sub_id` containing `clk_...`).
+ * against the internal Opaque Attribution Ledger using `click_id` (or `campaignValue`/`campaign`/`sub_id` containing `clk_...`).
  */
 export function reconcilePartnerCsvBatchByClickId(params: {
   provider: CommercialProvider;
@@ -1015,6 +1098,10 @@ export function reconcilePartnerCsvBatchByClickId(params: {
     [
       "click_id",
       "clickid",
+      "referral_id",
+      "referralid",
+      "campaignvalue",
+      "campaign_value",
       "sub_id",
       "subid",
       "campaign",

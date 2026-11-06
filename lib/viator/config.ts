@@ -182,7 +182,7 @@ function normalizeAccessTier(value: string): ViatorAccessTier {
 export function sanitizeViatorCampaignValue(value: string | null | undefined): string {
   const cleaned = String(value || "")
     .toLowerCase()
-    .replace(/[^a-z0-9-]+/g, "-")
+    .replace(/[^a-z0-9_-]+/g, "-")
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "");
   return cleaned || DEFAULT_CONFIG.campaign;

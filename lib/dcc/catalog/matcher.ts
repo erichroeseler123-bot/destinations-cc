@@ -15,9 +15,11 @@ import { buildViatorPaxMix, checkDccLiveAvailability } from "@/lib/dcc/internal/
 import { fetchAvailabilitiesForItem } from "@/lib/dcc/liveSlots/fareharbor";
 import { appendViatorAttribution } from "@/lib/viator/links";
 import {
+  deriveServerReferralIdForOffer,
   generateOpaqueClickId,
   isDemoOrAutomatedVerificationTraffic,
   issueOpaqueClickAttribution,
+  signApprovedCheckoutHandoff,
 } from "@/lib/dcc/commerce/opaqueAttributionLedger";
 import {
   buildSharedGoSnoHandoffUrlAndDetails,
@@ -27,6 +29,7 @@ import {
 export type TripMatchRequest = {
   destination: string;
   portSlug?: string;
+  sailingCode?: string;
   date?: string;
   adults?: number;
   childAges?: number[];
@@ -1900,6 +1903,13 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
             ? 45
             : undefined;
 
+    const isWinterCaribbeanPort =
+      node.destinationSlug === "nassau" ||
+      node.destinationSlug === "st-thomas" ||
+      node.destinationSlug === "cozumel" ||
+      node.destinationSlug === "roatan" ||
+      node.destinationSlug === "grand-cayman";
+
     let cruiseFit: CruiseScheduleFitEvaluation | undefined = undefined;
     if (hasCruiseWindowInput) {
       cruiseFit = evaluateCruiseScheduleFit({
@@ -1916,7 +1926,9 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
         transferEvidenceSource: cruiseVerifiedEvidenceSource,
         applicableBerthOrMeetingPoint: effectiveApplicableBerthOrMeetingPoint,
         planningEstimateTransferMinutes: effectivePlanningEstimateTransferMinutes,
-        verifiedDepartureTimes: selectedProductOption?.scheduledStartTimes || [],
+        verifiedDepartureTimes: isWinterCaribbeanPort
+          ? selectedProductOption?.scheduledStartTimes || []
+          : [],
       });
       if (cruiseFit.fitStatus === "ineligible") {
         suitability = "ineligible";
@@ -2858,21 +2870,35 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
           option.boundOffer,
           effectivePlacementId,
         );
-        option.bookingPath.trackedClickUrl = `/api/v1/ads/click?clickId=${encodeURIComponent(issued.clickId)}${effectivePlacementId ? `&placementId=${encodeURIComponent(effectivePlacementId)}` : ""}${input.propertySlug ? `&property=${encodeURIComponent(input.propertySlug)}` : ""}${isTestTraffic ? "&isTest=true" : ""}&target=${encodeURIComponent(option.bookingPath.handoffUrl)}`;
+        const gosnoSig = signApprovedCheckoutHandoff({
+          clickId: issued.clickId,
+          offer: record.providerProductCode,
+          option: option.boundOffer.optionCode || "DEFAULT",
+          sailing: input.sailingCode || "",
+          placementId: effectivePlacementId || "",
+          property: input.propertySlug || node.destinationSlug,
+          date: option.boundOffer.date || "",
+          adults: String(adults),
+        });
+        option.bookingPath.trackedClickUrl = `/api/v1/ads/click?clickId=${encodeURIComponent(issued.clickId)}&offer=${encodeURIComponent(record.providerProductCode)}&option=${encodeURIComponent(option.boundOffer.optionCode || "DEFAULT")}${effectivePlacementId ? `&placementId=${encodeURIComponent(effectivePlacementId)}` : ""}&property=${encodeURIComponent(input.propertySlug || node.destinationSlug)}${option.boundOffer.date ? `&date=${encodeURIComponent(option.boundOffer.date)}` : ""}&adults=${encodeURIComponent(String(adults))}&sig=${encodeURIComponent(gosnoSig)}${isTestTraffic ? "&isTest=true" : ""}&target=${encodeURIComponent(option.bookingPath.handoffUrl)}`;
       } else {
-        const preClickId = generateOpaqueClickId();
+        const preClickId = deriveServerReferralIdForOffer({
+          sailingCode: input.sailingCode || surface,
+          productCode: record.providerProductCode,
+          optionCode: option.boundOffer.optionCode,
+          placementId: effectivePlacementId,
+          propertySlug: input.propertySlug || node.destinationSlug,
+          date: option.boundOffer.date,
+          adults,
+        });
         let preparedDestinationUrl = option.bookingPath.handoffUrl;
         const placementOrPropertyTag =
           effectivePlacementId || input.propertySlug || node.destinationSlug;
 
         if (record.primaryProvider === "viator") {
-          const campaignTag = `${surface}-${placementOrPropertyTag}-${option.boundOffer.optionCode || "opt"}-${preClickId}`.slice(
-            0,
-            120,
-          );
           const viatorUrl = appendViatorAttribution(preparedDestinationUrl, {
             preserveExistingCampaign: false,
-            campaign: campaignTag,
+            campaign: preClickId,
           });
           preparedDestinationUrl = appendBoundOfferQueryParams(
             viatorUrl,
@@ -2946,9 +2972,21 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
           isTest: isTestTraffic,
           recordStage: "recommendation",
         });
+        const handoffOptionCode = option.boundOffer.optionCode || "DEFAULT";
+        const handoffProperty = input.propertySlug || node.destinationSlug;
+        const handoffSig = signApprovedCheckoutHandoff({
+          clickId: issued.clickId,
+          offer: record.providerProductCode,
+          option: handoffOptionCode,
+          sailing: input.sailingCode || "",
+          placementId: effectivePlacementId || "",
+          property: handoffProperty,
+          date: option.boundOffer.date || "",
+          adults: String(adults),
+        });
         option.bookingPath.clickId = issued.clickId;
         option.bookingPath.handoffUrl = issued.outboundPartnerUrl;
-        option.bookingPath.trackedClickUrl = `/api/v1/ads/click?clickId=${encodeURIComponent(issued.clickId)}${effectivePlacementId ? `&placementId=${encodeURIComponent(effectivePlacementId)}` : ""}${input.propertySlug ? `&property=${encodeURIComponent(input.propertySlug)}` : ""}${isTestTraffic ? "&isTest=true" : ""}&target=${encodeURIComponent(option.bookingPath.handoffUrl)}`;
+        option.bookingPath.trackedClickUrl = `/api/v1/ads/click?clickId=${encodeURIComponent(issued.clickId)}&offer=${encodeURIComponent(record.providerProductCode)}&option=${encodeURIComponent(handoffOptionCode)}${input.sailingCode ? `&sailing=${encodeURIComponent(input.sailingCode)}` : ""}${effectivePlacementId ? `&placementId=${encodeURIComponent(effectivePlacementId)}` : ""}&property=${encodeURIComponent(handoffProperty)}${option.boundOffer.date ? `&date=${encodeURIComponent(option.boundOffer.date)}` : ""}&adults=${encodeURIComponent(String(adults))}${option.boundOffer.departureTime ? `&departureTime=${encodeURIComponent(option.boundOffer.departureTime)}` : ""}&sig=${encodeURIComponent(handoffSig)}${isTestTraffic ? "&isTest=true" : ""}&target=${encodeURIComponent(option.bookingPath.handoffUrl)}`;
       }
     }
 

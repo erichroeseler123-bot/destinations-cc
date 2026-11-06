@@ -1178,23 +1178,12 @@ export default function DccConciergeWidget({
 
               <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
                 <a
-                  href={opt.bookingPath.handoffUrl}
+                  href={opt.bookingPath.trackedClickUrl || opt.bookingPath.handoffUrl}
                   data-tracked-click-url={opt.bookingPath.trackedClickUrl}
+                  data-handoff-url={opt.bookingPath.handoffUrl}
+                  data-click-id={opt.bookingPath.clickId || ""}
                   onClick={() => {
                     setActiveCheckoutOption(opt);
-                    if (
-                      opt.bookingPath.trackedClickUrl &&
-                      opt.bookingPath.trackedClickUrl.startsWith("/api/v1/ads/click")
-                    ) {
-                      try {
-                        void fetch(opt.bookingPath.trackedClickUrl, {
-                          method: "GET",
-                          keepalive: true,
-                        });
-                      } catch {
-                        // non-blocking click follow telemetry
-                      }
-                    }
                   }}
                   target="_blank"
                   rel="noopener noreferrer"

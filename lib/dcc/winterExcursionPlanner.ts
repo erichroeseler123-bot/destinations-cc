@@ -5,6 +5,7 @@ import {
 } from "./catalog/matcher";
 import { PILOT_VERIFIED_TOUR_RECORDS } from "./catalog/durableCatalogStore";
 import {
+  deriveServerReferralIdForOffer,
   getFunnelMetricsReport,
   issueOpaqueClickAttribution,
   reconcilePartnerWebhookByClickId,
@@ -941,6 +942,7 @@ export async function evaluateWinterSailingPlan(params?: {
     const matchRes = await matchToursForTrip({
       destination: portSlug,
       portSlug,
+      sailingCode: plan.planCode,
       date,
       adults,
       childAges,
@@ -1297,7 +1299,18 @@ export function runWinterAttributionReplayAndNolaStatusTrace(): WinterAttributio
   });
 
   // 2. Issue recommendation & follow outbound click for Nassau Swimming Pigs (254526P1 Option TG4)
+  const serverReferralId = deriveServerReferralIdForOffer({
+    sailingCode: planCode,
+    productCode: "254526P1",
+    optionCode: "TG4",
+    placementId,
+    propertySlug: "nassau",
+    date: "2027-01-25",
+    adults: 2,
+  });
+
   const clickAttr = issueOpaqueClickAttribution({
+    clickId: serverReferralId,
     decisionReceiptId: "rcpt:cp:winter-plan:INDY-2027-01-24:nassau:254526P1:TG4",
     recommendedOperatorId: "viator:254526P1",
     recommendedOperatorName: "Pieces of 8 Tours Bahamas",
@@ -1309,8 +1322,7 @@ export function runWinterAttributionReplayAndNolaStatusTrace(): WinterAttributio
     surface: "cruisepromenade",
     provider: "viator",
     productCode: "254526P1",
-    productDestinationUrl:
-      "https://www.viator.com/tours/Nassau/Pigs-cant-fly-but-they-do-swim/d420-254526P1?mcid=42383&pid=P00306962&medium=api&api_version=2.0&campaign=cp-nassau-254526p1",
+    productDestinationUrl: `https://www.viator.com/tours/Nassau/Pigs-cant-fly-but-they-do-swim/d420-254526P1?mcid=42383&pid=P00306962&medium=api&api_version=2.0&campaign=${serverReferralId}`,
     recordStage: "recommendation",
     isTest: true,
   });
@@ -1320,11 +1332,12 @@ export function runWinterAttributionReplayAndNolaStatusTrace(): WinterAttributio
     referer: "https://cruisepromenade.com/p/INDY-2027-01-24",
   });
 
-  const trackingCampaignTag = `${placementId}-TG4-${clickAttr.clickId}`;
+  const trackingCampaignTag = clickAttr.clickId;
   const providerBookingRef = "TEST-VIATOR-INDY2027-NASSAU-254526P1-01";
 
-  // 3. Deliver labeled provider test event #1 (BOOKING_CONFIRMED)
+  // 3. Deliver labeled provider test event #1 (BOOKING_CONFIRMED) carrying Viator campaignValue = referralId
   const firstRes = reconcilePartnerWebhookByClickId({
+    campaignValue: trackingCampaignTag,
     trackingParamValue: trackingCampaignTag,
     provider: "viator",
     providerBookingRef,
@@ -1342,6 +1355,7 @@ export function runWinterAttributionReplayAndNolaStatusTrace(): WinterAttributio
 
   // 4. Replay the exact same labeled provider test event #2 -> must be ignored as duplicate
   const replayRes = reconcilePartnerWebhookByClickId({
+    campaignValue: trackingCampaignTag,
     trackingParamValue: trackingCampaignTag,
     provider: "viator",
     providerBookingRef,
@@ -1359,6 +1373,7 @@ export function runWinterAttributionReplayAndNolaStatusTrace(): WinterAttributio
 
   // 5. Deliver commission settlement event (BOOKING_FULFILLED with paidCommissionUsd: 27.04)
   const settlementRes = reconcilePartnerWebhookByClickId({
+    campaignValue: trackingCampaignTag,
     trackingParamValue: trackingCampaignTag,
     provider: "viator",
     providerBookingRef,
