@@ -129,9 +129,11 @@ export async function fetchAvailabilitiesForItem(
           return asnData.availabilities.map((a) => ({
             ...a,
             capacity:
-              typeof a.capacity === "number"
+              typeof a.capacity === "number" && a.capacity > 0
                 ? a.capacity
-                : typeof a.approximate_available_capacity === "number" && a.is_bookable !== false
+                : typeof a.approximate_available_capacity === "number" &&
+                    a.approximate_available_capacity > 0 &&
+                    a.is_bookable !== false
                   ? a.approximate_available_capacity
                   : a.is_bookable && !a.is_sold_out
                     ? 20
