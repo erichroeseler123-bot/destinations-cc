@@ -25,6 +25,7 @@ import DccNetworkStrip from "@/components/DccNetworkStrip";
 import { getViatorActionForPlace } from "@/lib/dcc/internal/viatorAction";
 import TravelReferenceExperience from "@/app/components/dcc/TravelReferenceExperience";
 import DccConciergeWidget from "@/app/components/dcc/DccConciergeWidget";
+import StThomasPortDayPlanner from "@/app/components/dcc/StThomasPortDayPlanner";
 import { resolveEarthOSDestinationNode } from "@/lib/dcc/catalog/durableCatalogStore";
 import { getPublishedTravelReferenceNodeById } from "@/lib/dcc/travelReference";
 import { getPublicationManifestEntry } from "@/src/data/publication-manifest";
@@ -399,6 +400,7 @@ export async function renderPortPage(slug: string, isLfse = false) {
         }}
       />
       <PortAuthorityTemplate port={port} config={config} />
+      {port.slug === "st-thomas" ? <StThomasPortDayPlanner /> : null}
       {earthosDestination ? (
         <section className="max-w-6xl mx-auto px-6 py-8">
           <DccConciergeWidget

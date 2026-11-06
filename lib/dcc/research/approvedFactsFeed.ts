@@ -4,13 +4,15 @@ export type ResearchClusterId =
   | "alaska-juneau"
   | "alaska-ketchikan"
   | "new-orleans-swamp"
-  | "wisconsin-chetek";
+  | "wisconsin-chetek"
+  | "usvi-st-thomas";
 
 export type ResearchPortSlug =
   | "juneau"
   | "ketchikan"
   | "new-orleans"
-  | "chetek";
+  | "chetek"
+  | "st-thomas";
 
 export type ResearchConstraintType =
   | "total_duration"
@@ -666,6 +668,71 @@ export const EXPLICIT_RESEARCH_PRODUCT_REGISTRY: Record<
     nonTransferableNote:
       "Applies strictly to Muddy Paddle Pub Chetek; never inherit Chetek Hydroflites or Blue Hills Felsenmeer approvals.",
   },
+  "viecotours-cas-cay-kayak-hike-snorkel-direct": {
+    productId: "viecotours-cas-cay-kayak-hike-snorkel-direct",
+    productName:
+      "Virgin Islands Ecotours — Cas Cay Kayak, Hike & Snorkel Adventure (Direct)",
+    operatorId: "virgin-islands-ecotours",
+    operatorName: "Virgin Islands Ecotours (VI Ecotours)",
+    portSlug: "st-thomas",
+    clusterId: "usvi-st-thomas",
+    bookingChannel: "direct_operator",
+    fareharborShortname: "viecotours",
+    officialSourceUrls: ["https://www.viecotours.com/"],
+    dccOptionId: "stt-opt-cas-cay-kayak-hike-snorkel",
+    nonTransferableNote:
+      "Applies strictly to VI Ecotours 3-Hour Cas Cay Kayak, Hike & Snorkel Adventure departing Mangrove Lagoon Marina (6526 Estate Nadir); do not transfer to 5-Hour Best of Cas Cay with Lunch or 2-Hour Sea Turtles.",
+  },
+  "vipa-red-hook-and-crown-bay-st-john-ferry": {
+    productId: "vipa-red-hook-and-crown-bay-st-john-ferry",
+    productName:
+      "Virgin Islands Port Authority — Red Hook & Crown Bay to Cruz Bay (St. John) Passenger Ferries",
+    operatorId: "vipa",
+    operatorName: "Virgin Islands Port Authority (VIPA)",
+    portSlug: "st-thomas",
+    clusterId: "usvi-st-thomas",
+    bookingChannel: "port_shuttle",
+    officialSourceUrls: [
+      "https://www.viport.com/schedules-ferrycargoschedules",
+      "https://www.viport.com/schedule-cruise-ports",
+    ],
+    dccOptionId: "stt-opt-st-john-red-hook-trunk-bay",
+    nonTransferableNote:
+      "Applies strictly to VIPA published Red Hook (Urman Fredericks Terminal) and Crown Bay passenger ferry schedules to Cruz Bay (Loredon Boynes Dock); do not transfer to private water taxis or guided catamaran excursions.",
+  },
+  "magens-bay-authority-beach-admission": {
+    productId: "magens-bay-authority-beach-admission",
+    productName:
+      "Magens Bay Authority — Public Beach Park Admission & Operating Hours",
+    operatorId: "magens-bay-authority",
+    operatorName: "Magens Bay Authority",
+    portSlug: "st-thomas",
+    clusterId: "usvi-st-thomas",
+    bookingChannel: "direct_operator",
+    officialSourceUrls: [
+      "https://magensbayauthority.org/passes/",
+      "https://magensbayauthority.org/",
+    ],
+    dccOptionId: "stt-opt-magens-bay-self-guided",
+    nonTransferableNote:
+      "Applies strictly to Magens Bay Authority park admission and operating gate hours (7:00 AM–5:30 PM); does not include shared safari taxi fares.",
+  },
+  "airboat-adventures-swamp-shuttle-direct": {
+    productId: "airboat-adventures-swamp-shuttle-direct",
+    productName:
+      "Airboat Adventures — Downtown / French Quarter Hotel Pickup Shuttle (Direct)",
+    operatorId: "airboat-adventures",
+    operatorName: "Airboat Adventures",
+    portSlug: "new-orleans",
+    clusterId: "new-orleans-swamp",
+    bookingChannel: "direct_operator",
+    officialSourceUrls: [
+      "https://airboatadventures.com/pickup-locations/",
+      "https://airboatadventures.com/faqs/",
+    ],
+    nonTransferableNote:
+      "Applies strictly to Airboat Adventures optional $30/person roundtrip shuttle pickup list and 75-minute pre-tour pickup window; never transfer to Jean Lafitte or Cajun Encounters.",
+  },
 };
 
 export const BLOCKED_UMBRELLA_PRODUCT_IDS = new Set<string>([
@@ -1156,9 +1223,184 @@ export const WISCONSIN_CHETEK_CANDIDATE_BASELINE: RawResearchDeskFactRow[] = [
   },
 ];
 
+export const ST_THOMAS_WINTER_CANDIDATE_BASELINE: RawResearchDeskFactRow[] = [
+  {
+    id: "mc-stt-viecotours-cas-cay-duration-20261106",
+    fact_id: "mc-stt-viecotours-cas-cay-duration-20261106",
+    cluster: "usvi-st-thomas",
+    product_id: "viecotours-cas-cay-kayak-hike-snorkel-direct",
+    constraint_type: "total_duration",
+    source_url: "https://www.viecotours.com/",
+    source_excerpt:
+      "3 Hours — Cas Cay Kayak, Hike & Snorkel Adventure — From $99. Departing Mangrove Lagoon Marina, 6526 Estate Nadir, St Thomas, VI 00802 (PublicationDate: Nov 05, 2026).",
+    source_hash:
+      "ffe87b18e633ce15889f0480e241ac81ea52637e6cb719c5d39a5b0b27ff1b52",
+    current_source_hash:
+      "ffe87b18e633ce15889f0480e241ac81ea52637e6cb719c5d39a5b0b27ff1b52",
+    checked_at: "2026-11-06T10:40:46.000Z",
+    value: "180",
+    unit: "minutes",
+    conditions:
+      "Updated operator duration (3 hours / 180 minutes, up from 150 minutes in 2026-10-30 snapshot); requires independent taxi transfer to Mangrove Lagoon Marina (25 min each way from Havensight/WICO; 35 min each way from Crown Bay).",
+    status: "needs confirmation",
+    verified_on: null,
+    verified_by: null,
+    reviewer_id: null,
+    review_due_on: null,
+    revision: 1,
+    active: 1,
+    healthy: 1,
+    consumers: [
+      "dcc:st-thomas/port-day-engine",
+      "dcc:api/internal/cruises/port/st-thomas",
+      "dcc:api/internal/research/approved-facts?port=st-thomas",
+    ],
+  },
+  {
+    id: "mc-stt-vipa-ferry-schedule-and-crown-bay-afternoon-only-20261106",
+    fact_id: "mc-stt-vipa-ferry-schedule-and-crown-bay-afternoon-only-20261106",
+    cluster: "usvi-st-thomas",
+    product_id: "vipa-red-hook-and-crown-bay-st-john-ferry",
+    constraint_type: "pickup_rules",
+    source_url: "https://www.viport.com/schedules-ferrycargoschedules",
+    source_excerpt:
+      "Red Hook, St. Thomas to Cruz Bay, St. John: 15 to 20 minutes; Non-Resident Adult $8.15, Child (2-11) $1.00, Luggage $4.00/piece; arrive 15 minutes before departure. Crown Bay, St. Thomas to Cruz Bay, St. John (Inter Island Boat Services): Departs Crown Bay at 2:15 PM (Sat & Sun only), 3:30 PM, and 5:30 PM ($20.00/adult).",
+    source_hash:
+      "acd86c31de4ed5ae57ab2c3cfe17d5200bd1058036cfae35b59ae825520d5464",
+    current_source_hash:
+      "acd86c31de4ed5ae57ab2c3cfe17d5200bd1058036cfae35b59ae825520d5464",
+    checked_at: "2026-11-06T11:25:43.000Z",
+    value:
+      "Red Hook <-> Cruz Bay: 15m crossing ($8.15 adult + $4 luggage, 15m boarding lead); Crown Bay -> Cruz Bay departs afternoon only (14:15 Sat/Sun, 15:30, 17:30)",
+    unit: "ferry_schedule_rule",
+    conditions:
+      "Morning cruise arrivals at Crown Bay cannot use the Crown Bay ferry outbound to St. John and must transfer 35–45 minutes by taxi to Red Hook. Temporary VIPA off-season notice (July 26–Oct 31, 2026) still displayed on Nov 6, 2026 shows Mon–Fri midday Cruz Bay -> Red Hook gaps (10:00, 12:00, 14:00).",
+    status: "needs confirmation",
+    verified_on: null,
+    verified_by: null,
+    reviewer_id: null,
+    review_due_on: null,
+    revision: 1,
+    active: 1,
+    healthy: 1,
+    consumers: [
+      "dcc:st-thomas/port-day-engine",
+      "dcc:api/internal/cruises/port/st-thomas",
+      "dcc:api/internal/research/approved-facts?port=st-thomas",
+    ],
+  },
+  {
+    id: "mc-stt-magens-bay-nonresident-admission-20261106",
+    fact_id: "mc-stt-magens-bay-nonresident-admission-20261106",
+    cluster: "usvi-st-thomas",
+    product_id: "magens-bay-authority-beach-admission",
+    constraint_type: "price",
+    source_url: "https://magensbayauthority.org/passes/",
+    source_excerpt:
+      "Non-Residents Daily $7.00 per person. Kids under 12 FREE. Residents Daily $2.00 per person. Open Daily from 7am - 5:30pm.",
+    source_hash:
+      "b3b0060dcb2ee2471ee76456251ab03b1c83bf27db5e75c2c2d6f059d91e92b2",
+    current_source_hash:
+      "b3b0060dcb2ee2471ee76456251ab03b1c83bf27db5e75c2c2d6f059d91e92b2",
+    checked_at: "2026-11-06T10:43:40.000Z",
+    value: "7.00",
+    unit: "USD_per_nonresident_adult",
+    conditions:
+      "Non-resident daily admission is $7.00 per person; children under 12 are admitted free; operating hours 7:00 AM–5:30 PM daily.",
+    status: "needs confirmation",
+    verified_on: null,
+    verified_by: null,
+    reviewer_id: null,
+    review_due_on: null,
+    revision: 1,
+    active: 1,
+    healthy: 1,
+    consumers: [
+      "dcc:st-thomas/port-day-engine",
+      "dcc:api/internal/cruises/port/st-thomas",
+      "dcc:api/internal/research/approved-facts?port=st-thomas",
+    ],
+  },
+];
+
+export const NEW_ORLEANS_HOTEL_PICKUP_CANDIDATE_BASELINE: RawResearchDeskFactRow[] =
+  [
+    {
+      id: "mc-nola-airboat-adventures-75min-pickup-window-20261106",
+      fact_id: "mc-nola-airboat-adventures-75min-pickup-window-20261106",
+      cluster: "new-orleans-swamp",
+      product_id: "airboat-adventures-swamp-shuttle-direct",
+      constraint_type: "pickup_rules",
+      source_url: "https://airboatadventures.com/pickup-locations/",
+      source_excerpt:
+        "The pickup window begins 1 hour and 15 minutes (75 minutes) before tour time. Guests must be waiting outside their pickup location for the entire pickup window. Roundtrip transportation is an extra $30 per person. Pickup Locations: Monteleone — 214 Royal St; Roosevelt — 123 Baronne St.",
+      source_hash:
+        "cd64cafa213260c685af2269679b77ca38e757790fba6ddf636ac618d3070d56",
+      current_source_hash:
+        "cd64cafa213260c685af2269679b77ca38e757790fba6ddf636ac618d3070d56",
+      checked_at: "2026-11-06T10:41:54.000Z",
+      value:
+        "75-minute pre-tour curbside pickup window (+$30/person roundtrip); direct stops at Monteleone (214 Royal St) and Roosevelt (123 Baronne St)",
+      unit: "hotel_pickup_window_rule",
+      conditions:
+        "Guests must wait outside their designated pickup location for the entire 75-minute window prior to tour time. Omni Riverfront (701 Convention Center Blvd) is not listed by name; nearest listed Warehouse District stops are New Orleans Marriott Warehouse Arts District (Convention Center Blvd) and Embassy Suites (315 Julia St).",
+      status: "needs confirmation",
+      verified_on: null,
+      verified_by: null,
+      reviewer_id: null,
+      review_due_on: null,
+      revision: 1,
+      active: 1,
+      healthy: 1,
+      consumers: [
+        "dcc:new-orleans/swamp-tours",
+        "dcc:api/internal/research/approved-facts?port=new-orleans",
+      ],
+    },
+  ];
+
+export const KETCHIKAN_PRESEASON_CANDIDATE_BASELINE: RawResearchDeskFactRow[] =
+  [
+    {
+      id: "mc-ktn-ward-cove-shuttle-and-2027-preseason-20261106",
+      fact_id: "mc-ktn-ward-cove-shuttle-and-2027-preseason-20261106",
+      cluster: "alaska-ketchikan",
+      product_id: "ward-cove-complimentary-bus",
+      constraint_type: "pickup_rules",
+      source_url: "https://wardcoveak.com/schedules/",
+      source_excerpt:
+        "The shuttle loads at the far end of the Ward Cove Welcome Center and drops off at Berth IV in downtown Ketchikan. Travel time is approximately 20 minutes each way. Please allow at least 30 minutes to reach Berth IV if you have a scheduled appointment. From Berth IV, it is an additional 15-minute walk to the center of downtown.",
+      source_hash:
+        "e6fbb9328c0f68a3130e4b2086c2dc903326214389df0c1ca28ba6158bccdbe3",
+      current_source_hash:
+        "e6fbb9328c0f68a3130e4b2086c2dc903326214389df0c1ca28ba6158bccdbe3",
+      checked_at: "2026-11-06T10:40:54.000Z",
+      value:
+        "Allow 30 minutes shuttle transit to Berth IV + 15 minutes walk to downtown center (45 minutes each way)",
+      unit: "shuttle_transfer_allowance",
+      conditions:
+        "Complimentary shuttle between Ward Cove Welcome Center and Downtown Ketchikan Berth IV (~20 min drive each way; allow 30 min to Berth IV + 15 min walk to downtown center). 2027 Ship Schedule PDF not yet published on wardcoveak.com as of 2026-11-06.",
+      status: "needs confirmation",
+      verified_on: null,
+      verified_by: null,
+      reviewer_id: null,
+      review_due_on: null,
+      revision: 1,
+      active: 1,
+      healthy: 1,
+      consumers: [
+        "dcc:ports/ketchikan",
+        "dcc:api/internal/research/approved-facts?port=ketchikan",
+      ],
+    },
+  ];
+
 export const ALL_RESEARCH_CANDIDATE_BASELINES: RawResearchDeskFactRow[] = [
   ...COASTAL_HELICOPTERS_ICEFIELD_CANDIDATE_BASELINE,
   ...WISCONSIN_CHETEK_CANDIDATE_BASELINE,
+  ...ST_THOMAS_WINTER_CANDIDATE_BASELINE,
+  ...NEW_ORLEANS_HOTEL_PICKUP_CANDIDATE_BASELINE,
+  ...KETCHIKAN_PRESEASON_CANDIDATE_BASELINE,
 ];
 
 const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -1232,7 +1474,8 @@ export function evaluateResearchFactRecord(
   const fallbackCluster: ResearchClusterId =
     rawCluster === "alaska-ketchikan" ||
     rawCluster === "new-orleans-swamp" ||
-    rawCluster === "wisconsin-chetek"
+    rawCluster === "wisconsin-chetek" ||
+    rawCluster === "usvi-st-thomas"
       ? rawCluster
       : "alaska-juneau";
   const fallbackPort: ResearchPortSlug =
@@ -1242,7 +1485,9 @@ export function evaluateResearchFactRecord(
         ? "new-orleans"
         : fallbackCluster === "wisconsin-chetek"
           ? "chetek"
-          : "juneau";
+          : fallbackCluster === "usvi-st-thomas"
+            ? "st-thomas"
+            : "juneau";
 
   const active =
     row.active === undefined || row.active === null
