@@ -172,7 +172,7 @@ export default function VisualEditorialCard({
           {bookingReselectionNote && (
             <p
               data-testid="wno-booking-reselection-note"
-              className="w-full rounded border border-[#c9a86a]/40 bg-[#1a160f] px-3 py-2 text-[11px] leading-relaxed text-[#f3dfb3]"
+              className="w-full rounded border border-[#b8860b]/50 bg-[#fcf5e3] px-3 py-2 text-[11px] font-medium leading-relaxed !text-[#2b2110]"
             >
               {bookingReselectionNote}
             </p>

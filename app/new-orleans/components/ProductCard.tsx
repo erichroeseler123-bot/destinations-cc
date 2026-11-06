@@ -195,7 +195,7 @@ export default function ProductCard({
               {bookingHref && bookingHref.startsWith("/api/v1/ads/click") && (
                 <p
                   data-testid="wno-guide-card-reselection-note"
-                  className="mt-2 w-full rounded border border-[#c9a86a]/40 bg-[#1a160f] px-2.5 py-1.5 text-[11px] leading-relaxed text-[#f3dfb3]"
+                  className="mt-2 w-full rounded border border-[#b8860b]/50 bg-[#fcf5e3] px-2.5 py-1.5 text-[11px] font-medium leading-relaxed !text-[#2b2110]"
                 >
                   Viator opens to its default product screen — reselect your date, group size, and tour option (9:40 AM Tour w/ 8:00–8:30 AM Hotel Pickup · Option TG10) on Viator.
                 </p>
