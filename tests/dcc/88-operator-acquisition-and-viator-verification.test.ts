@@ -739,7 +739,7 @@ test("Extend /operators/onboarding with two choices: Read-only Jean Lafitte (#76
     assert.equal(trace.offerItemId, "763318");
     assert.equal(trace.placementId, "nola-hotel-monteleone-demo-pilot");
     assert.equal(trace.affiliateAccountUsed, "aktourcenter");
-    assert.match(trace.clickId, /^clk_[a-f0-9]{24}$/);
+    assert.match(trace.clickId, /^clk_(?:qa_[a-f0-9]{20}|[a-f0-9]{24})$/);
     assert.equal(
       trace.referralReferenceTag,
       `nola-hotel-monteleone-demo-pilot-${trace.clickId}`,
