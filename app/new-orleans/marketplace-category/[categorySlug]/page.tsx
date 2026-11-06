@@ -203,6 +203,7 @@ export default async function CategoryPage({
     defaultFutureDate;
   const selectedPartySize =
     firstStr(resolvedSearch.party_size) ||
+    firstStr(resolvedSearch.adults) ||
     firstStr(resolvedSearch.travelers) ||
     firstStr(resolvedSearch.passengerCount) ||
     firstStr(resolvedSearch.passengers) ||

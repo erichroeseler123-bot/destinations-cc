@@ -3,6 +3,21 @@ import path from "node:path";
 import { neon } from "@neondatabase/serverless";
 import { DCC_VIATOR_PRODUCT_MAPPINGS } from "@/lib/viator/mappings";
 import { getWidgetPlacementReport } from "./widgetPlacements";
+import {
+  normalizeCatalogBatchPickupAndMeeting,
+  normalizeCatalogTourPickupAndMeeting,
+  queueCatalogPickupExceptionsToReviewDesk,
+  type CatalogPickupExceptionCode,
+  type CatalogPickupExceptionRecord,
+} from "./pickupNormalizer";
+
+export {
+  normalizeCatalogBatchPickupAndMeeting,
+  normalizeCatalogTourPickupAndMeeting,
+  queueCatalogPickupExceptionsToReviewDesk,
+  type CatalogPickupExceptionCode,
+  type CatalogPickupExceptionRecord,
+};
 
 export type TourCapabilityTier =
   | "discovery_only"
@@ -3014,10 +3029,10 @@ export const PILOT_VERIFIED_TOUR_RECORDS: DurableTourRecord[] = [
 function mergePilotVerifiedRecords(records: DurableTourRecord[]): DurableTourRecord[] {
   const byId = new Map<string, DurableTourRecord>();
   for (const r of records) {
-    byId.set(r.tourId, r);
+    byId.set(r.tourId, normalizeCatalogTourPickupAndMeeting(r).normalizedRecord);
   }
   for (const pilot of PILOT_VERIFIED_TOUR_RECORDS) {
-    byId.set(pilot.tourId, pilot);
+    byId.set(pilot.tourId, normalizeCatalogTourPickupAndMeeting(pilot).normalizedRecord);
   }
   return Array.from(byId.values());
 }
@@ -3575,6 +3590,9 @@ export async function getDurableCatalogSummaryReport() {
   const retiredRecordsCount = snapshot.records.filter(
     (r) => !isQuarantinedTourRecord(r) && r.active === false,
   ).length;
+  const pickupNormalization = normalizeCatalogBatchPickupAndMeeting(
+    records.filter((r) => !isQuarantinedTourRecord(r)),
+  );
 
   return {
     storageSource: source,
@@ -3595,6 +3613,11 @@ export async function getDurableCatalogSummaryReport() {
       alaskaCompleteDestinationsCount: alaskaCompleteDestinations.length,
       alaskaTotalDestinationsCount: alaskaSlugs.length,
       alaskaCompleteDestinations,
+    },
+    pickupAndMeetingNormalization: {
+      ...pickupNormalization.summary,
+      sampleReviewDeskExceptions: pickupNormalization.exceptions.slice(0, 15),
+      reviewDeskSyncOrigin: "catalog_pickup_normalizer_exception_queue",
     },
     totalRejectedRecords,
     totalUpstreamRequestsDuringSync: totalUpstreamRequests,

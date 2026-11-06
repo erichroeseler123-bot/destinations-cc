@@ -3,6 +3,8 @@ import {
   EARTHOS_DESTINATION_NODES,
   getDurableCatalogSummaryReport,
   getDurableTourByIdOrAlias,
+  normalizeCatalogBatchPickupAndMeeting,
+  queueCatalogPickupExceptionsToReviewDesk,
   queryDurableTourCatalog,
   type TourCapabilityTier,
 } from "@/lib/dcc/catalog/durableCatalogStore";
@@ -72,6 +74,32 @@ export async function GET(request: NextRequest) {
       limit: Number.isFinite(limit) ? limit : undefined,
     });
 
+    if (sp.get("exceptions") === "true" || sp.get("exceptions") === "1") {
+      const batch = normalizeCatalogBatchPickupAndMeeting(result.records);
+      const shouldQueue =
+        sp.get("queueReviewDesk") === "true" || sp.get("queueReviewDesk") === "1";
+      const reviewDeskQueue = shouldQueue
+        ? await queueCatalogPickupExceptionsToReviewDesk(batch.exceptions, {
+            maxRowsToQueue: Number(sp.get("maxQueue") || 100),
+          })
+        : null;
+      return NextResponse.json(
+        {
+          ok: true,
+          storageSource: result.storageSource,
+          summary: batch.summary,
+          exceptions: batch.exceptions.slice(0, limit ?? 100),
+          reviewDeskQueue: reviewDeskQueue
+            ? {
+                queuedCount: reviewDeskQueue.queuedCount,
+                persistedToDurableStore: reviewDeskQueue.persistedToDurableStore,
+              }
+            : null,
+        },
+        { status: 200, headers: CORS_HEADERS },
+      );
+    }
+
     return NextResponse.json(
       {
         ok: true,
@@ -109,7 +137,11 @@ export async function POST(request: NextRequest) {
     }
 
     const body = (await request.json().catch(() => ({}))) as {
-      mode?: "full_or_paginated" | "incremental_refresh" | "schedule_pricing_refresh";
+      mode?:
+        | "full_or_paginated"
+        | "incremental_refresh"
+        | "schedule_pricing_refresh"
+        | "normalize_pickup_and_queue_review_desk";
       cursor?: string;
       count?: number;
       scheduleRefreshLimit?: number;
@@ -119,7 +151,30 @@ export async function POST(request: NextRequest) {
       startOffset?: number;
       maxPagesPerDestination?: number;
       resumeFromCheckpoint?: boolean;
+      maxRowsToQueue?: number;
     };
+
+    if (body.mode === "normalize_pickup_and_queue_review_desk") {
+      const result = await queryDurableTourCatalog({
+        destinationSlug: body.destinations?.[0],
+      });
+      const batch = normalizeCatalogBatchPickupAndMeeting(result.records);
+      const reviewDeskResult = await queueCatalogPickupExceptionsToReviewDesk(
+        batch.exceptions,
+        { maxRowsToQueue: body.maxRowsToQueue ?? 250 },
+      );
+      return NextResponse.json(
+        {
+          ok: true,
+          mode: "normalize_pickup_and_queue_review_desk",
+          summary: batch.summary,
+          queuedToReviewDeskCount: reviewDeskResult.queuedCount,
+          persistedToDurableStore: reviewDeskResult.persistedToDurableStore,
+          sampleExceptions: batch.exceptions.slice(0, 20),
+        },
+        { status: 200, headers: CORS_HEADERS },
+      );
+    }
 
     if (body.mode === "schedule_pricing_refresh") {
       const schedRun = await runIncrementalScheduleAndPricingRefresh({
