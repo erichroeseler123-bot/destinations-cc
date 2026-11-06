@@ -77,6 +77,12 @@ export default function TransportationPage() {
 
       <section id="hotel-pickup-matcher" className="panel">
         <p className="eyebrow">Direct Hotel Pickup Booking — First-Party Placement (fp-wtts-transportation)</p>
+        <h2 style={{ marginBottom: "8px" }}>
+          Featured Hotel-Pickup Offer: Jean Lafitte Swamp Tour with Hotel Pickup
+        </h2>
+        <p className="muted" style={{ marginBottom: "14px" }}>
+          Verified round-trip French Quarter &amp; CBD hotel pickup (including Hotel Monteleone at 214 Royal St). Checkout total for 2 adults: <strong>$131.44 total incl. 6% fees</strong> ($124.00 subtotal + $7.44 fees).
+        </p>
         <DccConciergeWidget
           widgetId="wtts-transportation-hotel-pickup-matcher"
           initialDestination="new-orleans"

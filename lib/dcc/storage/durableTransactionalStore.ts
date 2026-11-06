@@ -450,81 +450,95 @@ async function commitStateToPostgresBackground(
   const storeKey = resolveStoreKey();
   const stateJsonStr = JSON.stringify(state);
 
-  const queries = [
-    sql`
-      INSERT INTO dcc_durable_transactional_ledger (store_key, tx_sequence, state_json, updated_at)
-      VALUES (${storeKey}, ${state.txSequence}, ${stateJsonStr}::jsonb, NOW())
-      ON CONFLICT (store_key) DO UPDATE
-      SET
-        tx_sequence = GREATEST(dcc_durable_transactional_ledger.tx_sequence + 1, EXCLUDED.tx_sequence),
-        state_json = EXCLUDED.state_json,
-        updated_at = NOW()
-    `,
-  ];
+  await sql`
+    INSERT INTO dcc_durable_transactional_ledger (store_key, tx_sequence, state_json, updated_at)
+    VALUES (${storeKey}, ${state.txSequence}, ${stateJsonStr}::jsonb, NOW())
+    ON CONFLICT (store_key) DO UPDATE
+    SET
+      tx_sequence = GREATEST(dcc_durable_transactional_ledger.tx_sequence + 1, EXCLUDED.tx_sequence),
+      state_json = EXCLUDED.state_json,
+      updated_at = NOW()
+  `;
 
-  for (const click of Object.values(state.opaqueClicksById)) {
-    const clickJson = JSON.stringify(click);
-    queries.push(
-      sql`
-        INSERT INTO dcc_opaque_click_attributions (
-          click_id, handoff_id, decision_receipt_id, recommended_operator_id,
-          evidence_version, reconciliation_state, record_json, updated_at
-        )
-        VALUES (
-          ${click.clickId},
-          ${click.handoffId},
-          ${click.decisionReceiptId},
-          ${click.recommendedOperatorId},
-          ${click.evidenceVersion},
-          ${click.reconciliationState},
-          ${clickJson}::jsonb,
-          NOW()
-        )
-        ON CONFLICT (click_id) DO UPDATE
-        SET
-          reconciliation_state = EXCLUDED.reconciliation_state,
-          record_json = EXCLUDED.record_json,
-          updated_at = NOW()
-      `,
-    );
+  try {
+    const queries = [];
+    const recentClicks = Object.values(state.opaqueClicksById)
+      .sort((a, b) => {
+        const aScore = (a.reconciledOutcomes?.length || 0) * 10 + (a.clickCount || 0);
+        const bScore = (b.reconciledOutcomes?.length || 0) * 10 + (b.clickCount || 0);
+        if (bScore !== aScore) return bScore - aScore;
+        return b.createdAt.localeCompare(a.createdAt);
+      })
+      .slice(0, 20);
+
+    for (const click of recentClicks) {
+      const clickJson = JSON.stringify(click);
+      queries.push(
+        sql`
+          INSERT INTO dcc_opaque_click_attributions (
+            click_id, handoff_id, decision_receipt_id, recommended_operator_id,
+            evidence_version, reconciliation_state, record_json, updated_at
+          )
+          VALUES (
+            ${click.clickId},
+            ${click.handoffId},
+            ${click.decisionReceiptId},
+            ${click.recommendedOperatorId},
+            ${click.evidenceVersion},
+            ${click.reconciliationState},
+            ${clickJson}::jsonb,
+            NOW()
+          )
+          ON CONFLICT (click_id) DO UPDATE
+          SET
+            reconciliation_state = EXCLUDED.reconciliation_state,
+            record_json = EXCLUDED.record_json,
+            updated_at = NOW()
+        `,
+      );
+    }
+
+    for (const reviewCase of Object.values(state.stewardCasesById)) {
+      const dispute = state.stewardDisputesById[reviewCase.disputeReferenceId] ?? null;
+      const decision =
+        Object.values(state.stewardDecisionsById).find(
+          (d) => d.caseId === reviewCase.caseId,
+        ) ?? null;
+      queries.push(
+        sql`
+          INSERT INTO dcc_steward_cases_ledger (
+            case_id, dispute_id, affected_market_id, status, assigned_steward_id,
+            case_json, dispute_json, decision_json, updated_at
+          )
+          VALUES (
+            ${reviewCase.caseId},
+            ${reviewCase.disputeReferenceId},
+            ${reviewCase.affectedMarketId},
+            ${reviewCase.status},
+            ${reviewCase.assignedStewardId},
+            ${JSON.stringify(reviewCase)}::jsonb,
+            ${dispute ? JSON.stringify(dispute) : null}::jsonb,
+            ${decision ? JSON.stringify(decision) : null}::jsonb,
+            NOW()
+          )
+          ON CONFLICT (case_id) DO UPDATE
+          SET
+            status = EXCLUDED.status,
+            assigned_steward_id = EXCLUDED.assigned_steward_id,
+            case_json = EXCLUDED.case_json,
+            dispute_json = EXCLUDED.dispute_json,
+            decision_json = EXCLUDED.decision_json,
+            updated_at = NOW()
+        `,
+      );
+    }
+
+    if (queries.length > 0) {
+      await sql.transaction(queries);
+    }
+  } catch {
+    // Secondary index tables are non-blocking; singleton state_json is authoritative
   }
-
-  for (const reviewCase of Object.values(state.stewardCasesById)) {
-    const dispute = state.stewardDisputesById[reviewCase.disputeReferenceId] ?? null;
-    const decision =
-      Object.values(state.stewardDecisionsById).find(
-        (d) => d.caseId === reviewCase.caseId,
-      ) ?? null;
-    queries.push(
-      sql`
-        INSERT INTO dcc_steward_cases_ledger (
-          case_id, dispute_id, affected_market_id, status, assigned_steward_id,
-          case_json, dispute_json, decision_json, updated_at
-        )
-        VALUES (
-          ${reviewCase.caseId},
-          ${reviewCase.disputeReferenceId},
-          ${reviewCase.affectedMarketId},
-          ${reviewCase.status},
-          ${reviewCase.assignedStewardId},
-          ${JSON.stringify(reviewCase)}::jsonb,
-          ${dispute ? JSON.stringify(dispute) : null}::jsonb,
-          ${decision ? JSON.stringify(decision) : null}::jsonb,
-          NOW()
-        )
-        ON CONFLICT (case_id) DO UPDATE
-        SET
-          status = EXCLUDED.status,
-          assigned_steward_id = EXCLUDED.assigned_steward_id,
-          case_json = EXCLUDED.case_json,
-          dispute_json = EXCLUDED.dispute_json,
-          decision_json = EXCLUDED.decision_json,
-          updated_at = NOW()
-      `,
-    );
-  }
-
-  await sql.transaction(queries);
 }
 
 /**
@@ -544,12 +558,6 @@ export async function syncDurableLedgerWithPostgres(options?: {
     const sql = neon(dbUrl);
     await ensurePostgresLedgerSchema(sql);
     const storeKey = resolveStoreKey();
-
-    if (options?.forcePushLocal) {
-      const local = readDurableLedgerState();
-      await commitStateToPostgresBackground(local);
-      return local;
-    }
 
     const rows = (await sql`
       SELECT tx_sequence, state_json
@@ -579,6 +587,8 @@ export async function syncDurableLedgerWithPostgres(options?: {
             existing.clickCount || 0,
             v.clickCount || 0,
           );
+          const resolvedPlacement = existing.placementId || v.placementId || null;
+          const resolvedProperty = existing.propertySlug || v.propertySlug || null;
           if (
             v.reconciledOutcomes.length > existing.reconciledOutcomes.length ||
             (existing.reconciliationState === "pending_partner_event" &&
@@ -590,10 +600,14 @@ export async function syncDurableLedgerWithPostgres(options?: {
           ) {
             localDraft.opaqueClicksById[k] = {
               ...v,
+              placementId: resolvedPlacement,
+              propertySlug: resolvedProperty,
               clickCount: maxClicks,
               duplicateDeliveryCount: maxDupes,
             };
           } else {
+            existing.placementId = resolvedPlacement;
+            existing.propertySlug = resolvedProperty;
             existing.clickCount = maxClicks;
             existing.duplicateDeliveryCount = maxDupes;
           }
@@ -611,7 +625,9 @@ export async function syncDurableLedgerWithPostgres(options?: {
       if (remoteState.funnelVisitorsById) {
         for (const [vid, vrec] of Object.entries(remoteState.funnelVisitorsById)) {
           const existingVis = localDraft.funnelVisitorsById[vid];
-          if (!existingVis || vrec.visitCount >= existingVis.visitCount) {
+          if (!existingVis) {
+            localDraft.funnelVisitorsById[vid] = vrec;
+          } else if (!options?.forcePushLocal && vrec.visitCount >= existingVis.visitCount) {
             localDraft.funnelVisitorsById[vid] = vrec;
           }
         }
@@ -622,7 +638,7 @@ export async function syncDurableLedgerWithPostgres(options?: {
           const existingApproval = localDraft.placementApprovalsById[pid];
           if (
             !existingApproval ||
-            prec.updatedAt >= existingApproval.updatedAt
+            (!options?.forcePushLocal && prec.updatedAt >= existingApproval.updatedAt)
           ) {
             localDraft.placementApprovalsById[pid] = prec;
           }

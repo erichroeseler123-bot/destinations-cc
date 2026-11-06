@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { matchToursForTrip, type TripMatchRequest } from "@/lib/dcc/catalog/matcher";
+import { syncDurableLedgerWithPostgres } from "@/lib/dcc/storage/durableTransactionalStore";
 
 export const dynamic = "force-dynamic";
 
@@ -84,7 +85,13 @@ export async function GET(request: NextRequest) {
       parentOrigin: sp.get("parentOrigin") || request.headers.get("origin") || undefined,
     };
 
+    if (matchReq.placementId) {
+      await syncDurableLedgerWithPostgres();
+    }
     const result = await matchToursForTrip(matchReq);
+    if (matchReq.placementId) {
+      await syncDurableLedgerWithPostgres({ forcePushLocal: true });
+    }
     return NextResponse.json(result, { status: 200, headers: CORS_HEADERS });
   } catch (err: any) {
     const statusCode = typeof err?.statusCode === "number" ? err.statusCode : 500;
@@ -139,7 +146,13 @@ export async function POST(request: NextRequest) {
       parentOrigin: body.parentOrigin || request.headers.get("origin") || undefined,
     };
 
+    if (matchReq.placementId) {
+      await syncDurableLedgerWithPostgres();
+    }
     const result = await matchToursForTrip(matchReq);
+    if (matchReq.placementId) {
+      await syncDurableLedgerWithPostgres({ forcePushLocal: true });
+    }
     return NextResponse.json(result, { status: 200, headers: CORS_HEADERS });
   } catch (err: any) {
     const statusCode = typeof err?.statusCode === "number" ? err.statusCode : 500;

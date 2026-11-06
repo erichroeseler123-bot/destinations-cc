@@ -76,6 +76,6 @@ export async function GET(request: Request) {
     );
   }
 
-  await syncDurableLedgerWithPostgres();
+  await syncDurableLedgerWithPostgres({ forcePushLocal: true });
   return NextResponse.redirect(updated.outboundPartnerUrl, 302);
 }
