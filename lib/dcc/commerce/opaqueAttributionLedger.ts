@@ -62,11 +62,14 @@ export interface OpaqueClickReconciledOutcome {
   sourceChannel: "partner_webhook" | "partner_csv";
   provider: CommercialProvider;
   providerBookingRef: string;
+  onlineBookingReferences?: string[];
   eventType:
     | "BOOKING_CONFIRMED"
     | "BOOKING_CANCELLED"
     | "BOOKING_REFUNDED"
     | "BOOKING_FULFILLED";
+  subtotalRevenueUsd?: number | null;
+  feesUsd?: number | null;
   grossRevenueUsd: number | null;
   estimatedCommissionUsd: number | null;
   paidCommissionUsd: number | null;
@@ -147,6 +150,7 @@ export interface IssueOpaqueClickAttributionInput {
 export interface PartnerWebhookReconciliationInput {
   clickId?: string | null;
   trackingParamValue?: string | null;
+  onlineBookingReferences?: string[] | null;
   provider: CommercialProvider;
   providerBookingRef: string;
   eventType:
@@ -154,6 +158,8 @@ export interface PartnerWebhookReconciliationInput {
     | "BOOKING_CANCELLED"
     | "BOOKING_REFUNDED"
     | "BOOKING_FULFILLED";
+  subtotalRevenueUsd?: number | null;
+  feesUsd?: number | null;
   grossRevenueUsd?: number | null;
   estimatedCommissionUsd?: number | null;
   paidCommissionUsd?: number | null;
@@ -856,9 +862,19 @@ export function reconcilePartnerWebhookByClickId(
       matched: false;
       reason: string;
     } {
+  const cleanedRefs = Array.isArray(input.onlineBookingReferences)
+    ? input.onlineBookingReferences
+        .filter((r): r is string => typeof r === "string" && r.trim().length > 0)
+        .map((r) => r.trim())
+    : [];
+
   const resolvedClickId =
     extractClickIdFromTrackingValue(input.clickId) ||
-    extractClickIdFromTrackingValue(input.trackingParamValue);
+    extractClickIdFromTrackingValue(input.trackingParamValue) ||
+    cleanedRefs
+      .map((ref) => extractClickIdFromTrackingValue(ref))
+      .find((id): id is string => Boolean(id)) ||
+    null;
 
   if (!resolvedClickId) {
     return {
@@ -907,7 +923,18 @@ export function reconcilePartnerWebhookByClickId(
       sourceChannel,
       provider: input.provider,
       providerBookingRef: trimmedRef,
+      onlineBookingReferences: cleanedRefs.length > 0 ? cleanedRefs : undefined,
       eventType: input.eventType,
+      subtotalRevenueUsd:
+        typeof input.subtotalRevenueUsd === "number" &&
+        Number.isFinite(input.subtotalRevenueUsd)
+          ? Number(input.subtotalRevenueUsd.toFixed(2))
+          : null,
+      feesUsd:
+        typeof input.feesUsd === "number" &&
+        Number.isFinite(input.feesUsd)
+          ? Number(input.feesUsd.toFixed(2))
+          : null,
       grossRevenueUsd:
         typeof input.grossRevenueUsd === "number" &&
         Number.isFinite(input.grossRevenueUsd)

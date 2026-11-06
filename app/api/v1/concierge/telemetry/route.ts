@@ -1,17 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
+  authenticateCommerceAdminRequest,
   getFunnelMetricsReport,
   listAttributionRecordsForPlacement,
 } from "@/lib/dcc/commerce/opaqueAttributionLedger";
 import { getDurableCatalogSummaryReport } from "@/lib/dcc/catalog/durableCatalogStore";
 import { getWidgetPlacementReport } from "@/lib/dcc/catalog/widgetPlacements";
 import { HOTEL_CONCIERGE_CONFIGS } from "@/lib/dcc/catalog/hotelConfigs";
-import { syncDurableLedgerWithPostgres } from "@/lib/dcc/storage/durableTransactionalStore";
+import {
+  readDurableLedgerState,
+  runDurableLedgerTransaction,
+  syncDurableLedgerWithPostgres,
+} from "@/lib/dcc/storage/durableTransactionalStore";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
-  await syncDurableLedgerWithPostgres();
+  const ledgerState = await syncDurableLedgerWithPostgres();
 
   const sp = request.nextUrl.searchParams;
   const requestedPlacementId =
@@ -42,6 +47,9 @@ export async function GET(request: NextRequest) {
   });
 
   const hotelConfig = HOTEL_CONCIERGE_CONFIGS[requestedPropertySlug] || null;
+  const placementApproval =
+    ledgerState.placementApprovalsById?.[requestedPlacementId] || null;
+  const isApprovedLive = placementApproval?.status === "verified_partner_live";
   const placementReport = catalogSummary.widgetPlacements ?? getWidgetPlacementReport();
 
   return NextResponse.json(
@@ -51,18 +59,29 @@ export async function GET(request: NextRequest) {
       pilotPlacement: {
         placementId: requestedPlacementId,
         propertySlug: requestedPropertySlug,
-        propertyName:
-          hotelConfig?.propertyName ||
-          "Hotel Monteleone — French Quarter (Demo Preset)",
-        isDemoPreset: hotelConfig?.isDemoPreset ?? true,
-        demoStatusLabel:
-          hotelConfig?.demoStatusLabel ||
-          "DEMO PRESET — Pending Hotel Approval",
-        approvalStatus: "unverified_demo_preset_pending_hotel_approval",
+        propertyName: isApprovedLive
+          ? (
+              hotelConfig?.propertyName ||
+              "Hotel Monteleone — French Quarter"
+            ).replace(/\s*\(Demo Preset\)/i, "")
+          : hotelConfig?.propertyName ||
+            "Hotel Monteleone — French Quarter (Demo Preset)",
+        isDemoPreset: !isApprovedLive && (hotelConfig?.isDemoPreset ?? true),
+        demoStatusLabel: isApprovedLive
+          ? "APPROVED PARTNER PLACEMENT — Live"
+          : hotelConfig?.demoStatusLabel ||
+            "DEMO PRESET — Pending Hotel Approval",
+        approvalStatus: isApprovedLive
+          ? "verified_partner_live"
+          : "unverified_demo_preset_pending_hotel_approval",
+        approvedAt: placementApproval?.approvedAt || null,
+        approvedBy: placementApproval?.approvedBy || null,
         standaloneGuestLink:
           "https://www.destinationcommandcenter.com/embed/concierge?destination=new-orleans&property=hotel-monteleone-nola&surface=hotel_concierge&pickupMode=hotel_pickup&category=Swamp+%26+Bayou&placementId=nola-hotel-monteleone-demo-pilot",
         embedLoaderUrl:
           "https://www.destinationcommandcenter.com/embed/dcc-concierge-widget.js",
+        activationEndpoint:
+          "POST https://www.destinationcommandcenter.com/api/v1/concierge/telemetry (action: 'activate_placement')",
         funnelByTrafficClass: {
           production: {
             guestVisits: placementFunnel.production.guestVisits,
@@ -72,6 +91,8 @@ export async function GET(request: NextRequest) {
             outboundClicks: placementFunnel.production.actualOutboundClicks,
             providerConfirmedBookings:
               placementFunnel.production.confirmedPaidBookings,
+            duplicateDeliveriesIgnored:
+              placementFunnel.production.duplicateDeliveriesIgnored,
             grossConfirmedRevenueUsd:
               placementFunnel.production.grossConfirmedRevenueUsd,
             estimatedUnsettledCommissionUsd:
@@ -89,6 +110,8 @@ export async function GET(request: NextRequest) {
             outboundClicks: placementFunnel.test.actualOutboundClicks,
             providerConfirmedBookings:
               placementFunnel.test.confirmedPaidBookings,
+            duplicateDeliveriesIgnored:
+              placementFunnel.test.duplicateDeliveriesIgnored,
             grossConfirmedRevenueUsd:
               placementFunnel.test.grossConfirmedRevenueUsd,
             estimatedUnsettledCommissionUsd:
@@ -102,6 +125,8 @@ export async function GET(request: NextRequest) {
           fareharbor: {
             bookingUrlPattern:
               "https://fareharbor.com/embeds/book/jeanlafitteswamptour/items/763318/availability/<slotPk>/book/?asn=aktourcenter&ref=nola-hotel-monteleone-demo-pilot-clk_<24hex>&custom-tracking=nola-hotel-monteleone-demo-pilot-clk_<24hex>&full-items=yes",
+            onlineBookingReferencesField:
+              "booking.online_booking_references: ['nola-hotel-monteleone-demo-pilot-clk_<24hex>', 'asn:aktourcenter']",
             hotelPickupVerificationField:
               "customFieldInstance12258400 = number:22056428 (Hotel Monteleone, 214 Royal St)",
             supportedWebhookEndpoint:
@@ -109,7 +134,7 @@ export async function GET(request: NextRequest) {
             supportedCsvBatchEndpoint:
               "POST https://www.destinationcommandcenter.com/api/v1/commerce/click-attribution (action: 'reconcile_csv')",
             providerReport:
-              "FareHarbor Dashboard -> Reports -> Bookings -> Affiliate / ASN ('aktourcenter') export by Reference ('ref' / 'custom-tracking' containing nola-hotel-monteleone-demo-pilot-clk_<24hex>)",
+              "FareHarbor Dashboard -> Reports -> Bookings -> Affiliate / ASN ('aktourcenter') export by online_booking_references / Reference ('ref' / 'custom-tracking' containing nola-hotel-monteleone-demo-pilot-clk_<24hex>)",
           },
           viator: {
             bookingUrlPattern:
@@ -136,6 +161,7 @@ export async function GET(request: NextRequest) {
               recordStage: r.recordStage,
               followedAt: r.followedAt,
               clickCount: r.clickCount,
+              duplicateDeliveryCount: r.duplicateDeliveryCount || 0,
               provider: r.provider,
               productCode: r.productCode,
               outboundPartnerUrl: r.outboundPartnerUrl,
@@ -154,6 +180,8 @@ export async function GET(request: NextRequest) {
           outboundClicks: overallFunnel.production.actualOutboundClicks,
           providerConfirmedBookings:
             overallFunnel.production.confirmedPaidBookings,
+          duplicateDeliveriesIgnored:
+            overallFunnel.production.duplicateDeliveriesIgnored,
           grossConfirmedRevenueUsd:
             overallFunnel.production.grossConfirmedRevenueUsd,
           estimatedUnsettledCommissionUsd:
@@ -169,6 +197,8 @@ export async function GET(request: NextRequest) {
             overallFunnel.test.recommendationOnlyRecords,
           outboundClicks: overallFunnel.test.actualOutboundClicks,
           providerConfirmedBookings: overallFunnel.test.confirmedPaidBookings,
+          duplicateDeliveriesIgnored:
+            overallFunnel.test.duplicateDeliveriesIgnored,
           grossConfirmedRevenueUsd:
             overallFunnel.test.grossConfirmedRevenueUsd,
           estimatedUnsettledCommissionUsd:
@@ -184,7 +214,10 @@ export async function GET(request: NextRequest) {
         observedExternalEmbedsCount:
           placementReport.observedExternalEmbedsCount,
         approvedExternalPartnerPlacementsCount:
-          placementReport.approvedExternalPartnerPlacementsCount,
+          placementReport.approvedExternalPartnerPlacementsCount +
+          Object.values(readDurableLedgerState().placementApprovalsById || {}).filter(
+            (p) => p.status === "verified_partner_live",
+          ).length,
       },
       catalogCoverage: catalogSummary.destinationCoverageBreakdown,
     },
@@ -196,3 +229,91 @@ export async function GET(request: NextRequest) {
     },
   );
 }
+
+export async function POST(request: NextRequest) {
+  try {
+    const auth = authenticateCommerceAdminRequest(request);
+    await syncDurableLedgerWithPostgres();
+    const body = (await request.json().catch(() => ({}))) as Record<
+      string,
+      unknown
+    >;
+    const action =
+      typeof body.action === "string"
+        ? body.action.trim()
+        : "activate_placement";
+    if (
+      action !== "activate_placement" &&
+      action !== "set_placement_status"
+    ) {
+      return NextResponse.json(
+        { ok: false, error: `Unsupported action '${action}'.` },
+        { status: 400 },
+      );
+    }
+    const placementId =
+      typeof body.placementId === "string" && body.placementId.trim()
+        ? body.placementId.trim()
+        : "nola-hotel-monteleone-demo-pilot";
+    const propertySlug =
+      typeof body.propertySlug === "string" && body.propertySlug.trim()
+        ? body.propertySlug.trim()
+        : "hotel-monteleone-nola";
+    const status: "demo_preset" | "verified_partner_live" =
+      body.status === "demo_preset" ? "demo_preset" : "verified_partner_live";
+    const approvedBy =
+      typeof body.approvedBy === "string" && body.approvedBy.trim()
+        ? body.approvedBy.trim()
+        : auth.actor;
+    const approvedDomain =
+      typeof body.approvedDomain === "string" && body.approvedDomain.trim()
+        ? body.approvedDomain.trim()
+        : "hotelmonteleone.com";
+    const nowIso = new Date().toISOString();
+
+    const record = runDurableLedgerTransaction((state) => {
+      state.placementApprovalsById = state.placementApprovalsById || {};
+      const updated = {
+        placementId,
+        propertySlug,
+        status,
+        approvedBy: status === "verified_partner_live" ? approvedBy : null,
+        approvedDomain:
+          status === "verified_partner_live" ? approvedDomain : null,
+        approvedAt: status === "verified_partner_live" ? nowIso : null,
+        updatedAt: nowIso,
+      };
+      state.placementApprovalsById[placementId] = updated;
+      return updated;
+    });
+
+    await syncDurableLedgerWithPostgres({ forcePushLocal: true });
+
+    return NextResponse.json(
+      {
+        ok: true,
+        placementApproval: record,
+      },
+      { status: 200, headers: { "Cache-Control": "no-store" } },
+    );
+  } catch (error) {
+    const statusCode =
+      error &&
+      typeof error === "object" &&
+      "statusCode" in error &&
+      typeof (error as { statusCode?: unknown }).statusCode === "number"
+        ? (error as { statusCode: number }).statusCode
+        : 401;
+    return NextResponse.json(
+      {
+        ok: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : "Unauthorized placement status update.",
+      },
+      { status: statusCode, headers: { "Cache-Control": "no-store" } },
+    );
+  }
+}
+

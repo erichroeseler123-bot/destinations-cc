@@ -210,26 +210,29 @@ export default async function ConciergeWidgetDemoPage({ searchParams }: DemoPage
                   className="mt-1 text-xs text-amber-300 font-mono"
                 >
                   {pilotFunnelReport.test.confirmedPaidBookings} Test ($
-                  {pilotFunnelReport.test.grossConfirmedRevenueUsd.toFixed(2)})
+                  {pilotFunnelReport.test.grossConfirmedRevenueUsd.toFixed(2)}) ·{" "}
+                  {pilotFunnelReport.production.duplicateDeliveriesIgnored +
+                    pilotFunnelReport.test.duplicateDeliveriesIgnored}{" "}
+                  replay dupes ignored
                 </div>
               </div>
 
               <div className="rounded-lg border border-slate-800 bg-slate-900/90 p-3.5">
                 <div className="text-[11px] uppercase font-semibold text-slate-400">
-                  4. Settled Commission (Placement)
+                  4. Settled Commission vs Unsettled
                 </div>
                 <div
                   data-testid="pilot-prod-settled-commission"
                   className="mt-1 text-2xl font-extrabold text-emerald-300"
                 >
-                  ${pilotFunnelReport.production.settledReconciledCommissionUsd.toFixed(2)} Prod
+                  ${pilotFunnelReport.production.settledReconciledCommissionUsd.toFixed(2)} Settled (Prod)
                 </div>
                 <div
                   data-testid="pilot-test-settled-commission"
                   className="mt-1 text-xs text-amber-300 font-mono"
                 >
-                  Test Settled: ${pilotFunnelReport.test.settledReconciledCommissionUsd.toFixed(2)} ·
-                  Est Unsettled: $
+                  Settled (Test): ${pilotFunnelReport.test.settledReconciledCommissionUsd.toFixed(2)} ·
+                  Unsettled (Confirmed): $
                   {(
                     pilotFunnelReport.production.estimatedUnsettledCommissionUsd +
                     pilotFunnelReport.test.estimatedUnsettledCommissionUsd
@@ -253,26 +256,35 @@ export default async function ConciergeWidgetDemoPage({ searchParams }: DemoPage
                         <th className="py-1 pr-3">stage</th>
                         <th className="py-1 pr-3">traffic</th>
                         <th className="py-1 pr-3">provider / product</th>
-                        <th className="py-1 pr-3">reconciliation</th>
+                        <th className="py-1 pr-3">online_booking_references / reconciliation</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {pilotRecords.attributionRecords.slice(0, 6).map((rec) => (
-                        <tr key={rec.clickId} className="border-b border-slate-900">
-                          <td className="py-1 pr-3 text-cyan-300">{rec.clickId}</td>
-                          <td className="py-1 pr-3 text-indigo-300">{rec.placementId}</td>
-                          <td className="py-1 pr-3">
-                            {rec.recordStage} (clicks: {rec.clickCount})
-                          </td>
-                          <td className="py-1 pr-3 text-amber-300">{rec.trafficClass}</td>
-                          <td className="py-1 pr-3">
-                            {rec.provider} · {rec.productCode}
-                          </td>
-                          <td className="py-1 pr-3 text-emerald-300">
-                            {rec.reconciliationState} ({rec.reconciledOutcomes.length} events)
-                          </td>
-                        </tr>
-                      ))}
+                      {pilotRecords.attributionRecords.slice(0, 6).map((rec) => {
+                        const latestOutcome = rec.reconciledOutcomes[0];
+                        return (
+                          <tr key={rec.clickId} className="border-b border-slate-900">
+                            <td className="py-1 pr-3 text-cyan-300">{rec.clickId}</td>
+                            <td className="py-1 pr-3 text-indigo-300">{rec.placementId}</td>
+                            <td className="py-1 pr-3">
+                              {rec.recordStage} (clicks: {rec.clickCount})
+                            </td>
+                            <td className="py-1 pr-3 text-amber-300">{rec.trafficClass}</td>
+                            <td className="py-1 pr-3">
+                              {rec.provider} · {rec.productCode}
+                            </td>
+                            <td className="py-1 pr-3 text-emerald-300">
+                              {rec.reconciliationState} ({rec.reconciledOutcomes.length} unique ·{" "}
+                              {rec.duplicateDeliveryCount || 0} replay dupes ignored)
+                              {latestOutcome?.onlineBookingReferences?.length ? (
+                                <span className="block text-[10px] text-cyan-300">
+                                  refs: [{latestOutcome.onlineBookingReferences.join(", ")}]
+                                </span>
+                              ) : null}
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>

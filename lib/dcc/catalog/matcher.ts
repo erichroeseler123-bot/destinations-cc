@@ -73,7 +73,12 @@ export type TripMatchRequest = {
 
 export type ShortlistLiveStatus = {
   checked: boolean;
-  status: "verified_available" | "verified_unavailable" | "unknown_unchecked" | "unknown_error";
+  status:
+    | "verified_available"
+    | "check_at_provider"
+    | "verified_unavailable"
+    | "unknown_unchecked"
+    | "unknown_error";
   provider: string;
   available: boolean | null;
   bookableSlotsCount: number | null;
@@ -134,6 +139,11 @@ export type BoundTourOfferTuple = {
   durationMinutes: number | null;
   durationRawText: string | null;
   unitPriceCents: number | null;
+  subtotalPartyPriceCents?: number | null;
+  estimatedFeesCents?: number | null;
+  totalPartyPriceIncludingFeesCents?: number | null;
+  feeRatePercent?: number | null;
+  totalIncludesFees?: boolean;
   totalPartyPriceCents: number | null;
   priceBasis: PriceBasis;
   currency: string;
@@ -205,6 +215,11 @@ export type MatchedTourOption = {
   };
   pricing: {
     fromPriceCents: number | null;
+    subtotalPartyPriceCents?: number | null;
+    estimatedFeesCents?: number | null;
+    totalPartyPriceIncludingFeesCents?: number | null;
+    feeRatePercent?: number | null;
+    totalIncludesFees?: boolean;
     totalPartyPriceCents: number | null;
     priceBasis: PriceBasis;
     lowestPriceIncludesPickup: boolean | null;
@@ -511,6 +526,49 @@ function computeTotalPartyPriceCents(
   return unitPriceCents * Math.max(1, totalGuests);
 }
 
+function computePartyPriceBreakdownCents(
+  subtotalCents: number | null,
+  feeRate: number | null,
+): {
+  subtotalPartyPriceCents: number | null;
+  estimatedFeesCents: number | null;
+  totalPartyPriceIncludingFeesCents: number | null;
+  feeRatePercent: number | null;
+  totalIncludesFees: boolean;
+  effectiveTotalPartyPriceCents: number | null;
+} {
+  if (subtotalCents === null || !Number.isFinite(subtotalCents)) {
+    return {
+      subtotalPartyPriceCents: null,
+      estimatedFeesCents: null,
+      totalPartyPriceIncludingFeesCents: null,
+      feeRatePercent: null,
+      totalIncludesFees: false,
+      effectiveTotalPartyPriceCents: null,
+    };
+  }
+  if (typeof feeRate === "number" && Number.isFinite(feeRate) && feeRate > 0) {
+    const estimatedFeesCents = Math.round(subtotalCents * feeRate);
+    const totalPartyPriceIncludingFeesCents = subtotalCents + estimatedFeesCents;
+    return {
+      subtotalPartyPriceCents: subtotalCents,
+      estimatedFeesCents,
+      totalPartyPriceIncludingFeesCents,
+      feeRatePercent: Math.round(feeRate * 10000) / 100,
+      totalIncludesFees: true,
+      effectiveTotalPartyPriceCents: totalPartyPriceIncludingFeesCents,
+    };
+  }
+  return {
+    subtotalPartyPriceCents: subtotalCents,
+    estimatedFeesCents: null,
+    totalPartyPriceIncludingFeesCents: null,
+    feeRatePercent: null,
+    totalIncludesFees: false,
+    effectiveTotalPartyPriceCents: subtotalCents,
+  };
+}
+
 function appendBoundOfferQueryParams(
   rawUrl: string,
   bound: BoundTourOfferTuple,
@@ -529,6 +587,12 @@ function appendBoundOfferQueryParams(
     urlObj.searchParams.set("dcc_pickup_mode", bound.pickupFulfillmentType);
     if (bound.unitPriceCents !== null) {
       urlObj.searchParams.set("dcc_unit_price_cents", String(bound.unitPriceCents));
+    }
+    if (bound.subtotalPartyPriceCents !== null && bound.subtotalPartyPriceCents !== undefined) {
+      urlObj.searchParams.set("dcc_subtotal_price_cents", String(bound.subtotalPartyPriceCents));
+    }
+    if (bound.estimatedFeesCents !== null && bound.estimatedFeesCents !== undefined) {
+      urlObj.searchParams.set("dcc_fees_cents", String(bound.estimatedFeesCents));
     }
     if (bound.totalPartyPriceCents !== null) {
       urlObj.searchParams.set("dcc_total_price_cents", String(bound.totalPartyPriceCents));
@@ -1085,6 +1149,15 @@ export function buildCheckoutPreselectionMetadata(params: {
     const hasDirectSlotBook =
       typeof boundOffer.providerAvailabilityPk === "number" &&
       Number.isFinite(boundOffer.providerAvailabilityPk);
+    const priceBreakdownSuffix =
+      boundOffer.totalIncludesFees &&
+      typeof boundOffer.subtotalPartyPriceCents === "number" &&
+      typeof boundOffer.estimatedFeesCents === "number" &&
+      typeof boundOffer.totalPartyPriceIncludingFeesCents === "number"
+        ? ` (Subtotal $${(boundOffer.subtotalPartyPriceCents / 100).toFixed(2)} + $${(boundOffer.estimatedFeesCents / 100).toFixed(2)} fees = $${(boundOffer.totalPartyPriceIncludingFeesCents / 100).toFixed(2)} total)`
+        : typeof boundOffer.subtotalPartyPriceCents === "number"
+          ? ` (Subtotal $${(boundOffer.subtotalPartyPriceCents / 100).toFixed(2)} before provider fees)`
+          : "";
     if (hasDirectSlotBook) {
       const pickupGuidance = boundOffer.includesPickup
         ? `, check "Does your party need transportation?", select ${boundOffer.totalGuests} guest${boundOffer.totalGuests === 1 ? "" : "s"} ($30/person), and choose "Hotel Monteleone" in the hotel pickup dropdown`
@@ -1102,8 +1175,8 @@ export function buildCheckoutPreselectionMetadata(params: {
           ? ["ticketQuantities", "hotelPickupCustomField"]
           : ["ticketQuantities"],
         providerDefaultDateBehavior:
-          "FareHarbor booking sheet opens directly to your verified travel date and departure time slot.",
-        travelerActionSummary: `FareHarbor opens directly to Date: ${boundOffer.date} at Departure: ${effectiveDeparture || "10:00"}. Enter Travelers: ${partySummary}${pickupGuidance}.`,
+          "FareHarbor booking sheet opens directly to your travel date and departure time slot to check live seat capacity and complete booking.",
+        travelerActionSummary: `FareHarbor opens directly to Date: ${boundOffer.date} at Departure: ${effectiveDeparture || "10:00"}. Enter Travelers: ${partySummary}${pickupGuidance}${priceBreakdownSuffix}.`,
         requiredSelectionsAtCheckout,
       };
     }
@@ -1119,8 +1192,8 @@ export function buildCheckoutPreselectionMetadata(params: {
         "ticketQuantities",
       ],
       providerDefaultDateBehavior:
-        "FareHarbor embed opens directly to the tour item and selected calendar month; click your date and departure time slot on the calendar.",
-      travelerActionSummary: `FareHarbor opens to the ${ym} calendar. Click Date: ${boundOffer.date || "your travel date"}, select Departure: ${effectiveDeparture || "your preferred time"}, and enter Guests: ${partySummary}.`,
+        "FareHarbor embed opens directly to the tour item and selected calendar month; click your date and departure time slot on the calendar to check availability.",
+      travelerActionSummary: `FareHarbor opens to the ${ym} calendar. Click Date: ${boundOffer.date || "your travel date"}, select Departure: ${effectiveDeparture || "your preferred time"}, and enter Guests: ${partySummary}${priceBreakdownSuffix}.`,
       requiredSelectionsAtCheckout,
     };
   }
@@ -1808,11 +1881,21 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
     }
 
     const effectivePriceBasis = selectedProductOption?.priceBasis || priceBasis;
-    const initialTotalPartyPriceCents = computeTotalPartyPriceCents(
+    const initialSubtotalPartyPriceCents = computeTotalPartyPriceCents(
       quotedFromPriceCents,
       effectivePriceBasis,
       totalGuests,
     );
+    const catalogOnlineBookingFeeRate =
+      typeof rec.serviceDetails?.onlineBookingFeeRate === "number" &&
+      Number.isFinite(rec.serviceDetails.onlineBookingFeeRate)
+        ? (rec.serviceDetails.onlineBookingFeeRate as number)
+        : null;
+    const initialPriceBreakdown = computePartyPriceBreakdownCents(
+      initialSubtotalPartyPriceCents,
+      catalogOnlineBookingFeeRate,
+    );
+    const initialTotalPartyPriceCents = initialPriceBreakdown.effectiveTotalPartyPriceCents;
     const currency = selectedOffer.currency || rec.currency || "USD";
 
     const alternativeOptionTradeoffs = buildAlternativeOptionTradeoffs({
@@ -1822,7 +1905,7 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
       totalGuests,
       selectedPriceBasis: effectivePriceBasis,
       selectedUnitPriceCents: quotedFromPriceCents,
-      selectedTotalPartyPriceCents: initialTotalPartyPriceCents,
+      selectedTotalPartyPriceCents: initialSubtotalPartyPriceCents,
       selectedFulfillmentType: effectivePickupFulfillmentType,
     });
     const cheapestSavingAlt = alternativeOptionTradeoffs.find(
@@ -1854,6 +1937,11 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
       durationRawText:
         quotedDurationMinutes !== null ? `${quotedDurationMinutes}m` : rec.durationRawText,
       unitPriceCents: quotedFromPriceCents,
+      subtotalPartyPriceCents: initialPriceBreakdown.subtotalPartyPriceCents,
+      estimatedFeesCents: initialPriceBreakdown.estimatedFeesCents,
+      totalPartyPriceIncludingFeesCents: initialPriceBreakdown.totalPartyPriceIncludingFeesCents,
+      feeRatePercent: initialPriceBreakdown.feeRatePercent,
+      totalIncludesFees: initialPriceBreakdown.totalIncludesFees,
       totalPartyPriceCents: initialTotalPartyPriceCents,
       priceBasis: effectivePriceBasis,
       currency,
@@ -1897,6 +1985,11 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
       },
       pricing: {
         fromPriceCents: quotedFromPriceCents,
+        subtotalPartyPriceCents: initialPriceBreakdown.subtotalPartyPriceCents,
+        estimatedFeesCents: initialPriceBreakdown.estimatedFeesCents,
+        totalPartyPriceIncludingFeesCents: initialPriceBreakdown.totalPartyPriceIncludingFeesCents,
+        feeRatePercent: initialPriceBreakdown.feeRatePercent,
+        totalIncludesFees: initialPriceBreakdown.totalIncludesFees,
         totalPartyPriceCents: initialTotalPartyPriceCents,
         priceBasis: effectivePriceBasis,
         lowestPriceIncludesPickup,
@@ -2222,9 +2315,30 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
               openStartTimes,
             );
             if (liveTotalPartyPriceCents !== null) {
-              option.boundOffer.totalPartyPriceCents = liveTotalPartyPriceCents;
+              const liveFeeRate =
+                typeof record.serviceDetails?.onlineBookingFeeRate === "number" &&
+                Number.isFinite(record.serviceDetails.onlineBookingFeeRate)
+                  ? (record.serviceDetails.onlineBookingFeeRate as number)
+                  : null;
+              const liveBreakdown = computePartyPriceBreakdownCents(
+                liveTotalPartyPriceCents,
+                liveFeeRate,
+              );
+              option.boundOffer.subtotalPartyPriceCents = liveBreakdown.subtotalPartyPriceCents;
+              option.boundOffer.estimatedFeesCents = liveBreakdown.estimatedFeesCents;
+              option.boundOffer.totalPartyPriceIncludingFeesCents =
+                liveBreakdown.totalPartyPriceIncludingFeesCents;
+              option.boundOffer.feeRatePercent = liveBreakdown.feeRatePercent;
+              option.boundOffer.totalIncludesFees = liveBreakdown.totalIncludesFees;
+              option.boundOffer.totalPartyPriceCents = liveBreakdown.effectiveTotalPartyPriceCents;
               option.boundOffer.priceVerifiedLive = true;
-              option.pricing.totalPartyPriceCents = liveTotalPartyPriceCents;
+              option.pricing.subtotalPartyPriceCents = liveBreakdown.subtotalPartyPriceCents;
+              option.pricing.estimatedFeesCents = liveBreakdown.estimatedFeesCents;
+              option.pricing.totalPartyPriceIncludingFeesCents =
+                liveBreakdown.totalPartyPriceIncludingFeesCents;
+              option.pricing.feeRatePercent = liveBreakdown.feeRatePercent;
+              option.pricing.totalIncludesFees = liveBreakdown.totalIncludesFees;
+              option.pricing.totalPartyPriceCents = liveBreakdown.effectiveTotalPartyPriceCents;
               if (option.pricing.fromPriceCents === null) {
                 const derivedUnit =
                   option.pricing.priceBasis === "flat_rate_per_vehicle" ||
@@ -2245,7 +2359,7 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
               totalGuests,
               selectedPriceBasis: option.pricing.priceBasis,
               selectedUnitPriceCents: option.boundOffer.unitPriceCents,
-              selectedTotalPartyPriceCents: option.boundOffer.totalPartyPriceCents,
+              selectedTotalPartyPriceCents: option.boundOffer.subtotalPartyPriceCents ?? null,
               selectedFulfillmentType: option.boundOffer.pickupFulfillmentType,
             });
             option.explanations.push(
@@ -2282,12 +2396,62 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
               input.date,
               input.date,
             );
-            const openSlots = availabilities
-              .filter((a) => typeof a.capacity === "number" && a.capacity >= totalGuests)
+            const liveFeeRate = availabilities.find(
+              (a) =>
+                typeof a.online_booking_fee_rate === "number" &&
+                Number.isFinite(a.online_booking_fee_rate),
+            )?.online_booking_fee_rate ?? null;
+            if (
+              liveFeeRate !== null &&
+              option.boundOffer.subtotalPartyPriceCents !== null &&
+              option.boundOffer.subtotalPartyPriceCents !== undefined
+            ) {
+              const updatedBreakdown = computePartyPriceBreakdownCents(
+                option.boundOffer.subtotalPartyPriceCents,
+                liveFeeRate,
+              );
+              option.boundOffer.estimatedFeesCents = updatedBreakdown.estimatedFeesCents;
+              option.boundOffer.totalPartyPriceIncludingFeesCents =
+                updatedBreakdown.totalPartyPriceIncludingFeesCents;
+              option.boundOffer.feeRatePercent = updatedBreakdown.feeRatePercent;
+              option.boundOffer.totalIncludesFees = updatedBreakdown.totalIncludesFees;
+              option.boundOffer.totalPartyPriceCents =
+                updatedBreakdown.effectiveTotalPartyPriceCents;
+              option.pricing.estimatedFeesCents = updatedBreakdown.estimatedFeesCents;
+              option.pricing.totalPartyPriceIncludingFeesCents =
+                updatedBreakdown.totalPartyPriceIncludingFeesCents;
+              option.pricing.feeRatePercent = updatedBreakdown.feeRatePercent;
+              option.pricing.totalIncludesFees = updatedBreakdown.totalIncludesFees;
+              option.pricing.totalPartyPriceCents =
+                updatedBreakdown.effectiveTotalPartyPriceCents;
+            }
+
+            const confirmedCapacitySlots = availabilities
+              .filter(
+                (a) =>
+                  typeof a.capacity === "number" &&
+                  a.capacity >= totalGuests &&
+                  a.is_sold_out !== true,
+              )
               .sort((a, b) => String(a.start_at || "").localeCompare(String(b.start_at || "")));
+
+            const unconfirmedBookableSlots = availabilities
+              .filter(
+                (a) =>
+                  a.capacity === undefined &&
+                  a.is_bookable !== false &&
+                  a.is_sold_out !== true,
+              )
+              .sort((a, b) => String(a.start_at || "").localeCompare(String(b.start_at || "")));
+
+            const activeSlots =
+              confirmedCapacitySlots.length > 0
+                ? confirmedCapacitySlots
+                : unconfirmedBookableSlots;
+
             const openStartTimes = Array.from(
               new Set(
-                openSlots
+                activeSlots
                   .map((a) => {
                     const m = parseClockMinutesOfDay(a.start_at);
                     return m !== null ? formatMinutesOfDay(m) : "";
@@ -2296,39 +2460,77 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
               ),
             ).sort();
             const itemLatency = Date.now() - tItem;
-            option.shortlistLiveCheck = {
-              checked: true,
-              status: openSlots.length > 0 ? "verified_available" : "verified_unavailable",
-              provider: "fareharbor",
-              available: openSlots.length > 0,
-              bookableSlotsCount: openSlots.length,
-              earliestStartTime: openStartTimes[0] || null,
-              startTimes: openStartTimes,
-              liveFromPriceCents: null,
-              latencyMs: itemLatency,
-              note:
-                openSlots.length > 0
-                  ? `Verified ${openSlots.length} FareHarbor departure(s) with capacity >= ${totalGuests} on ${input.date}.`
-                  : `No FareHarbor departures with capacity >= ${totalGuests} on ${input.date}.`,
-            };
-            if (openSlots.length > 0) {
+
+            if (confirmedCapacitySlots.length > 0) {
+              option.shortlistLiveCheck = {
+                checked: true,
+                status: "verified_available",
+                provider: "fareharbor",
+                available: true,
+                bookableSlotsCount: confirmedCapacitySlots.length,
+                earliestStartTime: openStartTimes[0] || null,
+                startTimes: openStartTimes,
+                liveFromPriceCents: null,
+                latencyMs: itemLatency,
+                note: `Verified ${confirmedCapacitySlots.length} FareHarbor departure(s) with capacity >= ${totalGuests} on ${input.date}.`,
+              };
               option.boundOffer.availableDepartureTimes = openStartTimes;
               option.boundOffer.departureTime = openStartTimes[0] || null;
               option.boundOffer.providerAvailabilityPk =
-                typeof openSlots[0].pk === "number" && Number.isFinite(openSlots[0].pk)
-                  ? openSlots[0].pk
+                typeof confirmedCapacitySlots[0].pk === "number" &&
+                Number.isFinite(confirmedCapacitySlots[0].pk)
+                  ? confirmedCapacitySlots[0].pk
                   : null;
               option.boundOffer.optionTitleTimeSemantics = detectOptionTitleTimeSemantics(
                 option.boundOffer.optionTitle,
                 openStartTimes,
               );
               option.explanations.push(
-                `Live FareHarbor availability confirmed for "${option.boundOffer.optionTitle}": ${openSlots.length} departure slot${openSlots.length === 1 ? "" : "s"} open on ${input.date} (${openStartTimes.join(", ")}).`,
+                `Live FareHarbor availability confirmed for "${option.boundOffer.optionTitle}": ${confirmedCapacitySlots.length} departure slot${confirmedCapacitySlots.length === 1 ? "" : "s"} open on ${input.date} (${openStartTimes.join(", ")}).`,
+              );
+            } else if (unconfirmedBookableSlots.length > 0) {
+              option.shortlistLiveCheck = {
+                checked: true,
+                status: "check_at_provider",
+                provider: "fareharbor",
+                available: null,
+                bookableSlotsCount: unconfirmedBookableSlots.length,
+                earliestStartTime: openStartTimes[0] || null,
+                startTimes: openStartTimes,
+                liveFromPriceCents: null,
+                latencyMs: itemLatency,
+                note: `FareHarbor lists ${unconfirmedBookableSlots.length} departure(s) (${openStartTimes.join(", ")}) on ${input.date}; provider feed does not confirm remaining seat count — check availability at FareHarbor.`,
+              };
+              option.boundOffer.availableDepartureTimes = openStartTimes;
+              option.boundOffer.departureTime = openStartTimes[0] || null;
+              option.boundOffer.providerAvailabilityPk =
+                typeof unconfirmedBookableSlots[0].pk === "number" &&
+                Number.isFinite(unconfirmedBookableSlots[0].pk)
+                  ? unconfirmedBookableSlots[0].pk
+                  : null;
+              option.boundOffer.optionTitleTimeSemantics = detectOptionTitleTimeSemantics(
+                option.boundOffer.optionTitle,
+                openStartTimes,
+              );
+              option.explanations.push(
+                `FareHarbor lists ${unconfirmedBookableSlots.length} departure slot${unconfirmedBookableSlots.length === 1 ? "" : "s"} on ${input.date} (${openStartTimes.join(", ")}); remaining seat capacity is not confirmed in the provider feed — check availability at FareHarbor.`,
               );
             } else {
+              option.shortlistLiveCheck = {
+                checked: true,
+                status: "verified_unavailable",
+                provider: "fareharbor",
+                available: false,
+                bookableSlotsCount: 0,
+                earliestStartTime: null,
+                startTimes: [],
+                liveFromPriceCents: null,
+                latencyMs: itemLatency,
+                note: `No bookable FareHarbor departures on ${input.date}.`,
+              };
               option.suitability = "ineligible";
               option.explanations.push(
-                `No FareHarbor departures with capacity >= ${totalGuests} on ${input.date}.`,
+                `No bookable FareHarbor departures on ${input.date}.`,
               );
             }
           } catch (err) {

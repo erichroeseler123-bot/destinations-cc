@@ -186,26 +186,96 @@ export async function POST(request: Request) {
       authenticatePartnerWebhookOrAdminRequest(request, rawBody);
       await syncDurableLedgerWithPostgres();
 
+      const fhBooking =
+        body.booking && typeof body.booking === "object"
+          ? (body.booking as Record<string, unknown>)
+          : null;
+      const rawRefs = Array.isArray(body.online_booking_references)
+        ? body.online_booking_references
+        : Array.isArray(body.onlineBookingReferences)
+          ? body.onlineBookingReferences
+          : Array.isArray(fhBooking?.online_booking_references)
+            ? (fhBooking?.online_booking_references as unknown[])
+            : [];
+      const onlineBookingReferences = rawRefs
+        .filter((r): r is string => typeof r === "string" && r.trim().length > 0)
+        .map((r) => r.trim());
+      if (
+        typeof fhBooking?.external_id === "string" &&
+        fhBooking.external_id.trim() &&
+        !onlineBookingReferences.includes(fhBooking.external_id.trim())
+      ) {
+        onlineBookingReferences.push(fhBooking.external_id.trim());
+      }
+
+      const fhReceiptSubtotalUsd =
+        typeof fhBooking?.receipt_subtotal === "number" &&
+        Number.isFinite(fhBooking.receipt_subtotal)
+          ? Number((fhBooking.receipt_subtotal / 100).toFixed(2))
+          : null;
+      const fhReceiptFeesUsd =
+        typeof fhBooking?.receipt_taxes === "number" &&
+        Number.isFinite(fhBooking.receipt_taxes)
+          ? Number((fhBooking.receipt_taxes / 100).toFixed(2))
+          : null;
+      const fhReceiptTotalUsd =
+        typeof fhBooking?.receipt_total === "number" &&
+        Number.isFinite(fhBooking.receipt_total)
+          ? Number((fhBooking.receipt_total / 100).toFixed(2))
+          : null;
+
+      const resolvedProviderBookingRef = String(
+        body.providerBookingRef ??
+          body.provider_booking_ref ??
+          body.partnerBookingRef ??
+          body.partner_booking_ref ??
+          fhBooking?.display_id ??
+          fhBooking?.uuid ??
+          (fhBooking?.pk !== undefined ? `FH-${fhBooking.pk}` : ""),
+      );
+
+      const fhStatus =
+        typeof fhBooking?.status === "string"
+          ? fhBooking.status.trim().toLowerCase()
+          : "";
+      const resolvedEventType:
+        | "BOOKING_CONFIRMED"
+        | "BOOKING_CANCELLED"
+        | "BOOKING_REFUNDED"
+        | "BOOKING_FULFILLED" =
+        ((body.eventType ?? body.event_type) as
+          | "BOOKING_CONFIRMED"
+          | "BOOKING_CANCELLED"
+          | "BOOKING_REFUNDED"
+          | "BOOKING_FULFILLED") ??
+        (fhStatus === "cancelled"
+          ? "BOOKING_CANCELLED"
+          : "BOOKING_CONFIRMED");
+
       const result = reconcilePartnerWebhookByClickId({
         clickId: String(body.clickId ?? body.click_id ?? ""),
         trackingParamValue:
           typeof body.trackingParamValue === "string"
             ? body.trackingParamValue
-            : null,
-        provider,
-        providerBookingRef: String(
-          body.providerBookingRef ??
-            body.provider_booking_ref ??
-            body.partnerBookingRef ??
-            body.partner_booking_ref ??
-            "",
-        ),
-        eventType:
-          ((body.eventType ?? body.event_type) as
-            | "BOOKING_CONFIRMED"
-            | "BOOKING_CANCELLED"
-            | "BOOKING_REFUNDED"
-            | "BOOKING_FULFILLED") ?? "BOOKING_CONFIRMED",
+            : typeof fhBooking?.external_id === "string"
+              ? fhBooking.external_id
+              : null,
+        onlineBookingReferences,
+        provider: fhBooking && provider === "direct" ? "fareharbor" : provider,
+        providerBookingRef: resolvedProviderBookingRef,
+        eventType: resolvedEventType,
+        subtotalRevenueUsd:
+          typeof body.subtotalRevenueUsd === "number"
+            ? body.subtotalRevenueUsd
+            : typeof body.subtotal_revenue_usd === "number"
+              ? body.subtotal_revenue_usd
+              : fhReceiptSubtotalUsd,
+        feesUsd:
+          typeof body.feesUsd === "number"
+            ? body.feesUsd
+            : typeof body.fees_usd === "number"
+              ? body.fees_usd
+              : fhReceiptFeesUsd,
         grossRevenueUsd:
           typeof body.grossRevenueUsd === "number"
             ? body.grossRevenueUsd
@@ -213,7 +283,7 @@ export async function POST(request: Request) {
               ? body.gross_revenue_usd
               : typeof body.grossBookingAmountUsd === "number"
                 ? body.grossBookingAmountUsd
-                : null,
+                : fhReceiptTotalUsd,
         estimatedCommissionUsd:
           typeof body.estimatedCommissionUsd === "number"
             ? body.estimatedCommissionUsd

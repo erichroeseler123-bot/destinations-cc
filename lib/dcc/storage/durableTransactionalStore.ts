@@ -33,6 +33,16 @@ export interface FunnelVisitorRecord {
   visitCount: number;
 }
 
+export interface PlacementApprovalRecord {
+  placementId: string;
+  propertySlug: string;
+  status: "demo_preset" | "verified_partner_live";
+  approvedBy?: string | null;
+  approvedDomain?: string | null;
+  approvedAt?: string | null;
+  updatedAt: string;
+}
+
 export interface DurableLedgerState {
   schemaVersion: "dcc-durable-transactional-store/1.0";
   txSequence: number;
@@ -41,6 +51,7 @@ export interface DurableLedgerState {
   opaqueClickIdsByHandoffId: Record<string, string>;
   reconciliationByDedupeKey: Record<string, OpaqueClickReconciledOutcome>;
   funnelVisitorsById?: Record<string, FunnelVisitorRecord>;
+  placementApprovalsById?: Record<string, PlacementApprovalRecord>;
   stewardDisputesById: Record<string, OperatorDisputeSubmission>;
   stewardCasesById: Record<string, StewardReviewCase>;
   stewardDecisionsById: Record<string, AuditDecisionRecord>;
@@ -86,6 +97,7 @@ export function createInitialDurableLedgerState(
     opaqueClickIdsByHandoffId: {},
     reconciliationByDedupeKey: {},
     funnelVisitorsById: {},
+    placementApprovalsById: {},
     stewardDisputesById: {},
     stewardCasesById: {},
     stewardDecisionsById: {},
@@ -212,6 +224,10 @@ function normalizeLoadedState(raw: unknown): DurableLedgerState {
     funnelVisitorsById:
       obj.funnelVisitorsById && typeof obj.funnelVisitorsById === "object"
         ? obj.funnelVisitorsById
+        : {},
+    placementApprovalsById:
+      obj.placementApprovalsById && typeof obj.placementApprovalsById === "object"
+        ? obj.placementApprovalsById
         : {},
     stewardDisputesById:
       obj.stewardDisputesById && typeof obj.stewardDisputesById === "object"
@@ -552,14 +568,35 @@ export async function syncDurableLedgerWithPostgres(options?: {
     const merged = runDurableLedgerTransaction((localDraft) => {
       for (const [k, v] of Object.entries(remoteState.opaqueClicksById)) {
         const existing = localDraft.opaqueClicksById[k];
-        if (
-          !existing ||
-          v.reconciledOutcomes.length > existing.reconciledOutcomes.length ||
-          v.reconciliationState !== "pending_partner_event" ||
-          v.recordStage === "outbound_click" ||
-          (v.clickCount || 0) > (existing.clickCount || 0)
-        ) {
+        if (!existing) {
           localDraft.opaqueClicksById[k] = v;
+        } else {
+          const maxDupes = Math.max(
+            existing.duplicateDeliveryCount || 0,
+            v.duplicateDeliveryCount || 0,
+          );
+          const maxClicks = Math.max(
+            existing.clickCount || 0,
+            v.clickCount || 0,
+          );
+          if (
+            v.reconciledOutcomes.length > existing.reconciledOutcomes.length ||
+            (existing.reconciliationState === "pending_partner_event" &&
+              v.reconciliationState !== "pending_partner_event") ||
+            (existing.recordStage !== "outbound_click" &&
+              v.recordStage === "outbound_click") ||
+            (v.clickCount || 0) > (existing.clickCount || 0) ||
+            (v.duplicateDeliveryCount || 0) > (existing.duplicateDeliveryCount || 0)
+          ) {
+            localDraft.opaqueClicksById[k] = {
+              ...v,
+              clickCount: maxClicks,
+              duplicateDeliveryCount: maxDupes,
+            };
+          } else {
+            existing.clickCount = maxClicks;
+            existing.duplicateDeliveryCount = maxDupes;
+          }
         }
       }
       Object.assign(
@@ -576,6 +613,18 @@ export async function syncDurableLedgerWithPostgres(options?: {
           const existingVis = localDraft.funnelVisitorsById[vid];
           if (!existingVis || vrec.visitCount > existingVis.visitCount) {
             localDraft.funnelVisitorsById[vid] = vrec;
+          }
+        }
+      }
+      localDraft.placementApprovalsById = localDraft.placementApprovalsById || {};
+      if (remoteState.placementApprovalsById) {
+        for (const [pid, prec] of Object.entries(remoteState.placementApprovalsById)) {
+          const existingApproval = localDraft.placementApprovalsById[pid];
+          if (
+            !existingApproval ||
+            prec.updatedAt >= existingApproval.updatedAt
+          ) {
+            localDraft.placementApprovalsById[pid] = prec;
           }
         }
       }

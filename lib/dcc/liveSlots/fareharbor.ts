@@ -18,6 +18,10 @@ export type FareHarborAvailability = {
   start?: string;
   capacity?: number;
   booked_count?: number;
+  is_bookable?: boolean;
+  is_sold_out?: boolean;
+  status?: string;
+  online_booking_fee_rate?: number | null;
   customer_type_rates?: Array<{ label?: string; price?: number }>;
 };
 
@@ -107,38 +111,76 @@ export async function fetchAvailabilitiesForItem(
 
   if (typeof maybeEndDate === "string") {
     try {
-      const asnUrl = `https://fareharbor.com/api/v1/companies/${encodeURIComponent(String(shortnameOrItemPk))}/items/${encodeURIComponent(String(itemPkOrStartDate))}/availabilities/date/${encodeURIComponent(startDateOrEndDate)}/?asn=aktourcenter`;
-      const asnRes = await fetch(asnUrl, {
-        headers: {
-          Accept: "application/json",
-          "User-Agent": "destinationcommandcenter/1.0 (+destinationcommandcenter.com)",
-        },
-        next: { revalidate: 300 },
-      });
+      const shortname = String(shortnameOrItemPk);
+      const itemPk = String(itemPkOrStartDate);
+      const dateStr = String(startDateOrEndDate);
+      const asnUrl = `https://fareharbor.com/api/v1/companies/${encodeURIComponent(shortname)}/items/${encodeURIComponent(itemPk)}/availabilities/date/${encodeURIComponent(dateStr)}/?asn=aktourcenter`;
+      const companyUrl = `https://fareharbor.com/api/v1/companies/${encodeURIComponent(shortname)}/?asn=aktourcenter`;
+
+      const [asnRes, companyRes] = await Promise.all([
+        fetch(asnUrl, {
+          headers: {
+            Accept: "application/json",
+            "User-Agent": "destinationcommandcenter/1.0 (+destinationcommandcenter.com)",
+          },
+          next: { revalidate: 300 },
+        }),
+        fetch(companyUrl, {
+          headers: {
+            Accept: "application/json",
+            "User-Agent": "destinationcommandcenter/1.0 (+destinationcommandcenter.com)",
+          },
+          next: { revalidate: 3600 },
+        }).catch(() => null),
+      ]);
+
+      let onlineBookingFeeRate: number | null = null;
+      if (companyRes && companyRes.ok) {
+        const compJson = (await companyRes.json().catch(() => null)) as {
+          company?: {
+            online_booking_fee_rate?: number | null;
+            percentage_fee_rate?: number | null;
+          };
+        } | null;
+        const rawRate =
+          compJson?.company?.online_booking_fee_rate ??
+          compJson?.company?.percentage_fee_rate ??
+          null;
+        if (typeof rawRate === "number" && Number.isFinite(rawRate) && rawRate >= 0) {
+          onlineBookingFeeRate = rawRate;
+        }
+      }
+
       if (asnRes.ok) {
         const asnData = (await asnRes.json()) as {
           availabilities?: Array<
             FareHarborAvailability & {
               is_bookable?: boolean;
               is_sold_out?: boolean;
+              status?: string;
               approximate_available_capacity?: number;
             }
           >;
         };
         if (Array.isArray(asnData.availabilities)) {
-          return asnData.availabilities.map((a) => ({
-            ...a,
-            capacity:
+          return asnData.availabilities.map((a) => {
+            const confirmedCapacity =
               typeof a.capacity === "number" && a.capacity > 0
                 ? a.capacity
                 : typeof a.approximate_available_capacity === "number" &&
                     a.approximate_available_capacity > 0 &&
                     a.is_bookable !== false
                   ? a.approximate_available_capacity
-                  : a.is_bookable && !a.is_sold_out
-                    ? 20
-                    : 0,
-          }));
+                  : undefined;
+            return {
+              ...a,
+              capacity: confirmedCapacity,
+              is_bookable: Boolean(a.is_bookable && !a.is_sold_out),
+              is_sold_out: Boolean(a.is_sold_out),
+              status: a.status,
+              online_booking_fee_rate: onlineBookingFeeRate,
+            };
+          });
         }
       }
     } catch {

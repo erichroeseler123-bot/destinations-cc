@@ -1332,6 +1332,7 @@ export const PILOT_VERIFIED_TOUR_RECORDS: DurableTourRecord[] = [
       fareharborHotelPickupCustomFieldId: 12258400,
       fareharborHotelMonteleoneOptionValue: "number:22056428",
       fareharborTransportationCountCustomFieldId: 12210745,
+      onlineBookingFeeRate: 0.06,
     },
     inclusions: [
       "90-minute guided covered swamp boat tour",

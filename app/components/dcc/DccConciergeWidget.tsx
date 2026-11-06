@@ -67,8 +67,8 @@ export function getDefaultFutureTravelDateIso(daysAhead = 14): string {
   return `${y}-${m}-${d}`;
 }
 
-function formatPrice(cents: number | null, currency = "USD"): string {
-  if (cents === null || !Number.isFinite(cents)) return "Price on request / check live";
+function formatPrice(cents: number | null | undefined, currency = "USD"): string {
+  if (cents === null || cents === undefined || !Number.isFinite(cents)) return "Price on request / check live";
   const dollars = cents / 100;
   return new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -1012,7 +1012,11 @@ export default function DccConciergeWidget({
                         data-testid="concierge-bound-departure-badge"
                         className="rounded-md bg-cyan-500/15 border border-cyan-500/30 px-2 py-0.5 text-[11px] font-mono text-cyan-300"
                       >
-                        Departs: {bound.departureTime} ({bound.date || date})
+                        Departs: {bound.departureTime} ({bound.date || date}
+                        {opt.shortlistLiveCheck.status === "check_at_provider"
+                          ? " · Check availability at FareHarbor"
+                          : ""}
+                        )
                       </span>
                     )}
                   </div>
@@ -1023,24 +1027,61 @@ export default function DccConciergeWidget({
                 </div>
 
                 <div className="text-left sm:text-right w-full sm:w-auto">
-                  <div className="text-lg font-extrabold text-emerald-400">
-                    {formatPrice(opt.pricing.fromPriceCents, opt.pricing.currency)}
-                    <span className="text-xs font-normal text-slate-400 ml-1">
-                      {opt.pricing.priceBasis === "flat_rate_per_vehicle"
-                        ? "/ vehicle"
-                        : "/ person"}
-                    </span>
-                  </div>
-                  {opt.pricing.totalPartyPriceCents !== null &&
-                    opt.pricing.totalPartyPriceCents !== undefined && (
+                  {opt.pricing.totalIncludesFees &&
+                  opt.pricing.totalPartyPriceIncludingFeesCents !== null ? (
+                    <>
                       <div
                         data-testid="concierge-total-party-price"
-                        className="text-xs font-bold text-emerald-300"
+                        className="text-lg font-extrabold text-emerald-400"
                       >
-                        Total Party ({bound?.totalGuests || adults} guests):{" "}
-                        {formatPrice(opt.pricing.totalPartyPriceCents, opt.pricing.currency)}
+                        Total incl. fees ({bound?.totalGuests || adults} guests):{" "}
+                        {formatPrice(
+                          opt.pricing.totalPartyPriceIncludingFeesCents,
+                          opt.pricing.currency,
+                        )}
                       </div>
-                    )}
+                      <div
+                        data-testid="concierge-price-breakdown"
+                        className="text-xs font-semibold text-emerald-200"
+                      >
+                        Subtotal:{" "}
+                        {formatPrice(opt.pricing.subtotalPartyPriceCents, opt.pricing.currency)} (
+                        {formatPrice(opt.pricing.fromPriceCents, opt.pricing.currency)}
+                        {opt.pricing.priceBasis === "flat_rate_per_vehicle"
+                          ? "/vehicle"
+                          : "/person"}
+                        ) + Fees ({opt.pricing.feeRatePercent ?? 6}%):{" "}
+                        {formatPrice(opt.pricing.estimatedFeesCents, opt.pricing.currency)}
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="text-lg font-extrabold text-emerald-400">
+                        {formatPrice(opt.pricing.fromPriceCents, opt.pricing.currency)}
+                        <span className="text-xs font-normal text-slate-400 ml-1">
+                          {opt.pricing.priceBasis === "flat_rate_per_vehicle"
+                            ? "/ vehicle (subtotal)"
+                            : "/ person (subtotal)"}
+                        </span>
+                      </div>
+                      {(opt.pricing.subtotalPartyPriceCents ?? opt.pricing.totalPartyPriceCents) !==
+                        null &&
+                        (opt.pricing.subtotalPartyPriceCents ?? opt.pricing.totalPartyPriceCents) !==
+                          undefined && (
+                          <div
+                            data-testid="concierge-total-party-price"
+                            className="text-xs font-bold text-amber-300"
+                          >
+                            Subtotal (excl. fees, {bound?.totalGuests || adults} guests):{" "}
+                            {formatPrice(
+                              opt.pricing.subtotalPartyPriceCents ??
+                                opt.pricing.totalPartyPriceCents,
+                              opt.pricing.currency,
+                            )}
+                          </div>
+                        )}
+                    </>
+                  )}
                   <div className="text-[11px] text-slate-400">
                     Channel:{" "}
                     <span className="font-mono text-slate-200">
@@ -1099,6 +1140,35 @@ export default function DccConciergeWidget({
                         </code>
                       </span>
                     )}
+                    {opt.pricing.totalIncludesFees &&
+                    opt.pricing.totalPartyPriceIncludingFeesCents !== null ? (
+                      <span>
+                        <strong>Checkout Total (incl. fees):</strong>{" "}
+                        <code className="text-emerald-300">
+                          {formatPrice(
+                            opt.pricing.totalPartyPriceIncludingFeesCents,
+                            opt.pricing.currency,
+                          )}{" "}
+                          (Subtotal{" "}
+                          {formatPrice(opt.pricing.subtotalPartyPriceCents, opt.pricing.currency)} +{" "}
+                          {formatPrice(opt.pricing.estimatedFeesCents, opt.pricing.currency)} fees)
+                        </code>
+                      </span>
+                    ) : (
+                      (opt.pricing.subtotalPartyPriceCents ?? opt.pricing.totalPartyPriceCents) !==
+                        null && (
+                        <span>
+                          <strong>Subtotal (before provider fees):</strong>{" "}
+                          <code className="text-amber-300">
+                            {formatPrice(
+                              opt.pricing.subtotalPartyPriceCents ??
+                                opt.pricing.totalPartyPriceCents,
+                              opt.pricing.currency,
+                            )}
+                          </code>
+                        </span>
+                      )
+                    )}
                   </div>
                 </div>
               )}
@@ -1130,7 +1200,9 @@ export default function DccConciergeWidget({
                 >
                   {opt.capabilityTier === "discovery_only"
                     ? "Visit Operator Site ↗"
-                    : `Continue to Checkout (${bound?.optionCode || opt.primaryProvider}) ↗`}
+                    : opt.shortlistLiveCheck.status === "check_at_provider"
+                      ? `Check Availability at ${opt.primaryProvider === "fareharbor" ? "FareHarbor" : "Provider"} (${bound?.optionCode || opt.primaryProvider}) ↗`
+                      : `Continue to Checkout (${bound?.optionCode || opt.primaryProvider}) ↗`}
                 </a>
                 {opt.bookingPath.clickId && (
                   <div className="text-[10px] font-mono text-slate-400">
