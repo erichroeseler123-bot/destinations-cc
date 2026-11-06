@@ -94,6 +94,15 @@ export default async function TourDetailPage({ params, searchParams }: PageProps
 
   const image = getProductImage(productId);
   const asn = SITE_CONFIG.fareharborSwampAsn;
+  const { date, partySize } = carriedContext.payload;
+  const plannedDate = date && /^\d{4}-\d{2}-\d{2}$/.test(date)
+    ? new Date(`${date}T00:00:00Z`)
+    : null;
+  const plannedDateLabel = plannedDate && !Number.isNaN(plannedDate.getTime())
+    && plannedDate.toISOString().slice(0, 10) === date
+    ? new Intl.DateTimeFormat("en-US", { dateStyle: "long", timeZone: "UTC" }).format(plannedDate)
+    : null;
+  const plannedPartySize = partySize && Number.isSafeInteger(partySize) && partySize > 0 ? partySize : null;
 
   // Build the backup direct FareHarbor booking link
   const fhDirectParams = new URLSearchParams({
@@ -159,6 +168,18 @@ export default async function TourDetailPage({ params, searchParams }: PageProps
           <p className="wts-hero-summary" style={{ color: "rgba(255, 255, 255, 0.9)", fontSize: "15px", lineHeight: "1.5" }}>
             {product.description}
           </p>
+          {slug === "airboat-tour" && (plannedDateLabel || plannedPartySize) ? (
+            <p className="wts-hero-summary" style={{ color: "#fff", fontSize: "14px", lineHeight: "1.5", margin: "8px 0" }}>
+              <strong>
+                Your plan{plannedPartySize ? ` for ${plannedPartySize} ${plannedPartySize === 1 ? "guest" : "guests"}` : ""}
+                {plannedDateLabel ? <> on <time dateTime={date}>{plannedDateLabel}</time></> : null}.
+              </strong>{" "}
+              Choose your departure and ticket quantities in FareHarbor.
+              {resolvedSearchParams.pickup === "french-quarter"
+                ? " For pickup, choose a Shuttle Service departure and confirm your pickup location."
+                : null}
+            </p>
+          ) : null}
           <div style={{ marginTop: "12px", display: "flex", gap: "10px", flexWrap: "wrap" }}>
             <a
               href={fhHandoffHref}
