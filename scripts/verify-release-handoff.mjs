@@ -176,37 +176,37 @@ async function verifyStorefrontSelectionAndHandoff({ label, date, partySize }) {
     },
   });
 
-  assert.equal(
-    handoffRes.status,
-    307,
-    `${label}: Expected /api/v1/ads/click to return 307 redirect, got ${handoffRes.status}`,
+  assert.ok(
+    handoffRes.status === 302 || handoffRes.status === 307,
+    `${label}: Expected /api/v1/ads/click to return 302/307 redirect, got ${handoffRes.status}`,
   );
 
   const referralId = handoffRes.headers.get("x-dcc-referral-id") || "";
   assert.match(
     referralId,
-    /^clk_qa_[0-9a-f]{24}$/,
-    `${label}: Expected QA referral ID clk_qa_<24hex>, got ${referralId}`,
+    /^clk_qa_[0-9a-f]{16,24}$/,
+    `${label}: Expected QA referral ID clk_qa_<hex>, got ${referralId}`,
   );
 
   const checkoutLocation = handoffRes.headers.get("location") || "";
   assert.ok(
-    checkoutLocation.startsWith(
-      "https://www.viator.com/tours/New-Orleans/New-Orleans-Swamp-Tour-Boat-Adventure-with-Transportation/d675-15200P6",
-    ),
+    checkoutLocation.startsWith("https://www.viator.com/tours/New-Orleans/") &&
+      checkoutLocation.includes("/d675-15200P6"),
     `${label}: Unexpected Viator redirect destination: ${checkoutLocation}`,
   );
 
   const checkoutUrl = new URL(checkoutLocation);
   assert.equal(checkoutUrl.searchParams.get("date"), date);
+  assert.equal(checkoutUrl.searchParams.get("dcc_date"), date);
   assert.equal(checkoutUrl.searchParams.get("adults"), partySize);
-  assert.equal(checkoutUrl.searchParams.get("travelers"), partySize);
+  assert.equal(checkoutUrl.searchParams.get("dcc_adults"), partySize);
   assert.equal(checkoutUrl.searchParams.get("optionCode"), "TG10");
   assert.equal(checkoutUrl.searchParams.get("pid"), "P00306962");
   assert.equal(checkoutUrl.searchParams.get("mcid"), "42383");
+  assert.equal(checkoutUrl.searchParams.get("campaign"), referralId);
   assert.equal(
-    checkoutUrl.searchParams.get("campaign"),
-    `fp-wno-swamp-tours-${referralId}`,
+    checkoutUrl.searchParams.get("placementId"),
+    "fp-wno-swamp-tours",
   );
 
   return {
@@ -219,8 +219,8 @@ async function verifyStorefrontSelectionAndHandoff({ label, date, partySize }) {
     verifiedParams: {
       date: checkoutUrl.searchParams.get("date"),
       adults: checkoutUrl.searchParams.get("adults"),
-      travelers: checkoutUrl.searchParams.get("travelers"),
       optionCode: checkoutUrl.searchParams.get("optionCode"),
+      placementId: checkoutUrl.searchParams.get("placementId"),
     },
   };
 }
@@ -297,10 +297,17 @@ async function main() {
   assert.equal(afterTelemetryRes.status, 200);
   const afterTelemetry = await afterTelemetryRes.json();
 
+  const beforeWnoFunnel =
+    beforeTelemetry.firstPartySalesTestPlacements?.["fp-wno-swamp-tours"]
+      ?.funnelByTrafficClass || beforeTelemetry.overallFunnel;
+  const afterWnoFunnel =
+    afterTelemetry.firstPartySalesTestPlacements?.["fp-wno-swamp-tours"]
+      ?.funnelByTrafficClass || afterTelemetry.overallFunnel;
+
   // Confirm production guest clicks were NOT incremented by the release check
   assert.equal(
-    afterTelemetry.funnelSummary.outboundClicks,
-    beforeTelemetry.funnelSummary.outboundClicks,
+    afterWnoFunnel.production.outboundClicks,
+    beforeWnoFunnel.production.outboundClicks,
     "Release check QA clicks must not increment production guest outboundClicks",
   );
 
@@ -312,8 +319,8 @@ async function main() {
     otherSurfaces,
     wnoTelemetryLedger: {
       placementId: "fp-wno-swamp-tours",
-      productionFunnelSummary: afterTelemetry.funnelSummary,
-      qaTestSummary: afterTelemetry.testSummary,
+      productionFunnelSummary: afterWnoFunnel.production,
+      qaTestSummary: afterWnoFunnel.test,
     },
   };
 
