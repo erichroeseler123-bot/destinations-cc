@@ -4,6 +4,9 @@ import { neon } from "@neondatabase/serverless";
 import { DCC_VIATOR_PRODUCT_MAPPINGS } from "@/lib/viator/mappings";
 import { getWidgetPlacementReport } from "./widgetPlacements";
 import {
+  deduplicatePickupExceptionsForReviewDesk,
+  enrichTourRecordFromViatorProductDetailAndLocations,
+  extractViatorLocationRefsFromProductDetail,
   normalizeCatalogBatchPickupAndMeeting,
   normalizeCatalogTourPickupAndMeeting,
   queueCatalogPickupExceptionsToReviewDesk,
@@ -12,6 +15,9 @@ import {
 } from "./pickupNormalizer";
 
 export {
+  deduplicatePickupExceptionsForReviewDesk,
+  enrichTourRecordFromViatorProductDetailAndLocations,
+  extractViatorLocationRefsFromProductDetail,
   normalizeCatalogBatchPickupAndMeeting,
   normalizeCatalogTourPickupAndMeeting,
   queueCatalogPickupExceptionsToReviewDesk,

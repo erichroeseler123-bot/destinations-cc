@@ -171,3 +171,75 @@ test("2. normalizeCatalogBatchPickupAndMeeting and queueCatalogPickupExceptionsT
     "catalog_pickup_normalizer_exception_queue",
   );
 });
+
+test("3. deduplicatePickupExceptionsForReviewDesk collapses option-level duplicate exceptions per productCode + exceptionCode", async () => {
+  const { deduplicatePickupExceptionsForReviewDesk } = await import(
+    "../../lib/dcc/catalog/durableCatalogStore"
+  );
+  const rawExceptions = [
+    {
+      exceptionId: "exc-1",
+      factId: "fact-1",
+      tourId: "dcc:tour:viator:15200P6",
+      providerProductCode: "15200P6",
+      destinationSlug: "new-orleans",
+      portSlug: null,
+      title: "Swamp Tour Boat Adventure",
+      optionCode: "TG1",
+      exceptionCode: "option_pickup_unknown_or_ambiguous" as const,
+      observedStateSummary: "Option TG1 missing pickup details",
+      humanDecisionRequired: "Confirm option TG1 pickup",
+      rawPickupType: "OTHER",
+      rawMeetingPointName: null,
+      rawMeetingPointAddress: null,
+      rawTransferTimeSource: "unknown",
+    },
+    {
+      exceptionId: "exc-2",
+      factId: "fact-2",
+      tourId: "dcc:tour:viator:15200P6",
+      providerProductCode: "15200P6",
+      destinationSlug: "new-orleans",
+      portSlug: null,
+      title: "Swamp Tour Boat Adventure",
+      optionCode: "TG2",
+      exceptionCode: "option_pickup_unknown_or_ambiguous" as const,
+      observedStateSummary: "Option TG2 missing pickup details",
+      humanDecisionRequired: "Confirm option TG2 pickup",
+      rawPickupType: "OTHER",
+      rawMeetingPointName: null,
+      rawMeetingPointAddress: null,
+      rawTransferTimeSource: "unknown",
+    },
+  ];
+  const deduped = deduplicatePickupExceptionsForReviewDesk(rawExceptions as any);
+  assert.equal(deduped.length, 1);
+  assert.equal(deduped[0].optionCode, "TG1,TG2");
+  assert.match(deduped[0].observedStateSummary, /Deduplicated across 2 options: TG1, TG2/);
+});
+
+test("4. GET /api/v1/tours/catalog enforces read-only semantics (405 on queueReviewDesk) and POST requires admin authentication (401)", async () => {
+  const { GET, POST } = await import("../../app/api/v1/tours/catalog/route");
+  const { NextRequest } = await import("next/server");
+
+  const getWithMutationAttempt = new NextRequest(
+    "https://www.destinationcommandcenter.com/api/v1/tours/catalog?exceptions=true&queueReviewDesk=true",
+    { method: "GET" },
+  );
+  const getRes = await GET(getWithMutationAttempt);
+  assert.equal(getRes.status, 405);
+  const getBody = await getRes.json();
+  assert.equal(getBody.error, "catalog_get_is_read_only");
+
+  const unauthPost = new NextRequest(
+    "https://www.destinationcommandcenter.com/api/v1/tours/catalog",
+    {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action: "queue_review_desk", destination: "st-thomas" }),
+    },
+  );
+  const postRes = await POST(unauthPost);
+  assert.equal(postRes.status, 401);
+});
+

@@ -88,6 +88,7 @@ export type AttributionRecordStage = "recommendation" | "outbound_click";
 
 export interface OpaqueClickAttributionRecord {
   clickId: string;
+  campaignValue?: string;
   handoffId: string | null;
   decisionReceiptId: string;
   recommendedOperatorId: string;
@@ -432,7 +433,27 @@ export function resetOpaqueAttributionLedgerForTests(): void {
 
 export function isQaReferralId(value?: string | null): boolean {
   if (!value || typeof value !== "string") return false;
-  return /^clk[_-]qa[_-][0-9a-f]{20}$/i.test(value.trim());
+  return /^clk[_-]?qa[_-]?[0-9a-f]{20}$/i.test(value.trim());
+}
+
+export function toViatorCampaignToken(clickId: string): string {
+  const norm =
+    extractClickIdFromTrackingValue(clickId) || clickId.trim().toLowerCase();
+  const qaMatch = norm.match(/^clk[_-]?qa[_-]?([0-9a-f]{20})$/i);
+  if (qaMatch) {
+    return `clkqa${qaMatch[1].toLowerCase()}`;
+  }
+  const prodMatch = norm.match(/^clk[_-]?([0-9a-f]{24})$/i);
+  if (prodMatch) {
+    return `clk${prodMatch[1].toLowerCase()}`;
+  }
+  return norm.replace(/[^a-z0-9]/gi, "").toLowerCase().slice(0, 42);
+}
+
+export function fromViatorCampaignTokenToClickId(
+  value?: string | null,
+): string | null {
+  return extractClickIdFromTrackingValue(value);
 }
 
 export function generateOpaqueClickId(options?: { isTest?: boolean }): string {
@@ -559,12 +580,12 @@ export function extractClickIdFromTrackingValue(
   value?: string | null,
 ): string | null {
   if (!value || typeof value !== "string") return null;
-  const qaMatch = value.match(/(clk[_-]qa[_-][0-9a-f]{20})/i);
+  const qaMatch = value.match(/clk[_-]?qa[_-]?([0-9a-f]{20})/i);
   if (qaMatch) {
-    return qaMatch[1].toLowerCase().replace(/^clk[-_]qa[-_]/, "clk_qa_");
+    return `clk_qa_${qaMatch[1].toLowerCase()}`;
   }
-  const match = value.match(/(clk[_-][0-9a-f]{24})/i);
-  return match ? match[1].toLowerCase().replace(/^clk-/, "clk_") : null;
+  const match = value.match(/clk[_-]?([0-9a-f]{24})/i);
+  return match ? `clk_${match[1].toLowerCase()}` : null;
 }
 
 /**
@@ -897,8 +918,10 @@ export function issueOpaqueClickAttribution(
       input.recordStage === "recommendation" ? "recommendation" : "outbound_click";
     const nowIso = new Date().toISOString();
 
+    const campaignValue = toViatorCampaignToken(clickId);
     const record: OpaqueClickAttributionRecord = {
       clickId,
+      campaignValue,
       handoffId: input.handoffId?.trim() || null,
       decisionReceiptId: input.decisionReceiptId.trim(),
       recommendedOperatorId: input.recommendedOperatorId.trim(),
@@ -935,6 +958,7 @@ export function issueOpaqueClickAttribution(
     };
 
     state.opaqueClicksById[clickId] = record;
+    state.opaqueClickIdsByHandoffId[campaignValue] = clickId;
     if (record.handoffId) {
       state.opaqueClickIdsByHandoffId[record.handoffId] = clickId;
     }
@@ -974,6 +998,9 @@ export function recordOutboundClickFollow(
     rec.recordStage = "outbound_click";
     rec.followedAt = rec.followedAt || nowIso;
     rec.clickCount = (rec.clickCount || 0) + 1;
+    if (!rec.campaignValue) {
+      rec.campaignValue = toViatorCampaignToken(rec.clickId);
+    }
     if (options?.placementId && !rec.placementId) {
       rec.placementId = options.placementId.trim();
     }
@@ -989,7 +1016,13 @@ export function getOpaqueClickAttributionById(
 ): OpaqueClickAttributionRecord | null {
   if (!clickId) return null;
   const state = readDurableLedgerState();
-  return state.opaqueClicksById[clickId.trim().toLowerCase()] || null;
+  const norm =
+    extractClickIdFromTrackingValue(clickId) || clickId.trim().toLowerCase();
+  return (
+    state.opaqueClicksById[norm] ||
+    state.opaqueClicksById[clickId.trim().toLowerCase()] ||
+    null
+  );
 }
 
 export function listReconciledOutcomesForClickId(
@@ -1058,7 +1091,7 @@ export function reconcilePartnerWebhookByClickId(
     const isTestEvent = Boolean(
       input.isTest ||
         isQaReferralId(resolvedClickId) ||
-        /^(TEST|SIM|QA|SANDBOX|E2E)[-_]|[-_](E2E|TEST|SIM|QA|SANDBOX)[-_]/i.test(
+        /^(TEST|SIM|QA|SANDBOX)[-_]|[-_](TEST|SIM|QA|SANDBOX)[-_]/i.test(
           trimmedRef,
         ),
     );
@@ -1188,7 +1221,33 @@ export function reconcilePartnerCsvBatchByClickId(params: {
     };
   }
 
-  const headers = lines[0].split(",").map((h) => h.trim().toLowerCase());
+  const parseCsvLine = (line: string): string[] => {
+    const out: string[] = [];
+    let cur = "";
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') {
+        inQuotes = !inQuotes;
+        continue;
+      }
+      if (ch === "," && !inQuotes) {
+        out.push(cur.trim());
+        cur = "";
+        continue;
+      }
+      cur += ch;
+    }
+    out.push(cur.trim());
+    return out;
+  };
+
+  const headers = parseCsvLine(lines[0]).map((h) =>
+    h
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, "_"),
+  );
   const idxClickId = headers.findIndex((h) =>
     [
       "click_id",
@@ -1197,6 +1256,7 @@ export function reconcilePartnerCsvBatchByClickId(params: {
       "referralid",
       "campaignvalue",
       "campaign_value",
+      "campaign_id",
       "sub_id",
       "subid",
       "campaign",
@@ -1208,13 +1268,22 @@ export function reconcilePartnerCsvBatchByClickId(params: {
     [
       "booking_ref",
       "bookingref",
+      "booking_reference",
+      "viator_booking_ref",
+      "itinerary_id",
       "provider_booking_ref",
       "order_id",
       "reference",
     ].includes(h),
   );
   const idxStatus = headers.findIndex((h) =>
-    ["status", "event_type", "booking_status"].includes(h),
+    [
+      "status",
+      "event_type",
+      "booking_status",
+      "payout_status",
+      "transaction_status",
+    ].includes(h),
   );
   const idxGross = headers.findIndex((h) =>
     [
@@ -1222,18 +1291,48 @@ export function reconcilePartnerCsvBatchByClickId(params: {
       "gross_revenue_usd",
       "booking_value",
       "total_price",
+      "retail_price",
+      "net_price",
     ].includes(h),
   );
   const idxCommission = headers.findIndex((h) =>
-    ["commission_amount", "commission_usd", "estimated_commission"].includes(h),
+    [
+      "commission_amount",
+      "commission_usd",
+      "estimated_commission",
+      "commission",
+      "partner_commission",
+    ].includes(h),
   );
   const idxPaidCommission = headers.findIndex((h) =>
-    ["paid_commission_amount", "paid_commission_usd", "net_payout"].includes(h),
+    [
+      "paid_commission_amount",
+      "paid_commission_usd",
+      "paid_commission",
+      "settled_commission",
+      "net_payout",
+    ].includes(h),
   );
-  const idxCurrency = headers.findIndex((h) => ["currency"].includes(h));
+  const idxCurrency = headers.findIndex((h) =>
+    ["currency", "currency_code"].includes(h),
+  );
   const idxEventTime = headers.findIndex((h) =>
-    ["event_time", "occurred_at", "booking_date", "settled_at"].includes(h),
+    [
+      "event_time",
+      "occurred_at",
+      "booking_date",
+      "travel_date",
+      "settled_at",
+    ].includes(h),
   );
+
+  const parseCurrencyNumber = (raw: string | undefined): number | null => {
+    if (!raw) return null;
+    const cleaned = raw.replace(/[^0-9.-]/g, "").trim();
+    if (!cleaned) return null;
+    const n = Number(cleaned);
+    return Number.isFinite(n) ? n : null;
+  };
 
   const reconciledRecords: OpaqueClickReconciledOutcome[] = [];
   const unmatchedRows: PartnerCsvReconciliationSummary["unmatchedRows"] = [];
@@ -1241,7 +1340,7 @@ export function reconcilePartnerCsvBatchByClickId(params: {
   let deduplicatedCount = 0;
 
   for (let i = 1; i < lines.length; i++) {
-    const cols = lines[i].split(",").map((c) => c.trim());
+    const cols = parseCsvLine(lines[i]);
     const rawClickIdOrTracking = idxClickId >= 0 ? cols[idxClickId] || "" : "";
     const providerBookingRef =
       idxBookingRef >= 0 && cols[idxBookingRef]
@@ -1256,19 +1355,20 @@ export function reconcilePartnerCsvBatchByClickId(params: {
         ? "BOOKING_CANCELLED"
         : rawStatus.includes("REFUND")
           ? "BOOKING_REFUNDED"
-          : rawStatus.includes("FULFILL") || rawStatus.includes("COMPLETE")
+          : rawStatus.includes("FULFILL") ||
+              rawStatus.includes("COMPLETE") ||
+              rawStatus.includes("PAID") ||
+              rawStatus.includes("SETTLE")
             ? "BOOKING_FULFILLED"
             : "BOOKING_CONFIRMED";
 
     const grossVal =
-      idxGross >= 0 && cols[idxGross] !== "" ? Number(cols[idxGross]) : null;
+      idxGross >= 0 ? parseCurrencyNumber(cols[idxGross]) : null;
     const commVal =
-      idxCommission >= 0 && cols[idxCommission] !== ""
-        ? Number(cols[idxCommission])
-        : null;
+      idxCommission >= 0 ? parseCurrencyNumber(cols[idxCommission]) : null;
     const paidVal =
-      idxPaidCommission >= 0 && cols[idxPaidCommission] !== ""
-        ? Number(cols[idxPaidCommission])
+      idxPaidCommission >= 0
+        ? parseCurrencyNumber(cols[idxPaidCommission])
         : null;
     const currency =
       idxCurrency >= 0 && cols[idxCurrency] ? cols[idxCurrency] : "USD";
@@ -1280,13 +1380,14 @@ export function reconcilePartnerCsvBatchByClickId(params: {
     const res = reconcilePartnerWebhookByClickId(
       {
         clickId: rawClickIdOrTracking,
+        campaignValue: rawClickIdOrTracking,
         trackingParamValue: rawClickIdOrTracking,
         provider: params.provider,
         providerBookingRef,
         eventType,
-        grossRevenueUsd: Number.isFinite(grossVal) ? grossVal : null,
-        estimatedCommissionUsd: Number.isFinite(commVal) ? commVal : null,
-        paidCommissionUsd: Number.isFinite(paidVal) ? paidVal : null,
+        grossRevenueUsd: grossVal,
+        estimatedCommissionUsd: commVal,
+        paidCommissionUsd: paidVal,
         currency,
         occurredAt,
         isTest: params.isTest,

@@ -13,11 +13,13 @@ import {
   isQaReferralId,
   issueOpaqueClickAttribution,
   recordOutboundClickFollow,
+  toViatorCampaignToken,
   verifyApprovedCheckoutHandoffSignature,
 } from "@/lib/dcc/commerce/opaqueAttributionLedger";
 import { syncDurableLedgerWithPostgres } from "@/lib/dcc/storage/durableTransactionalStore";
 import { resolveShareableWinterSailingPlan } from "@/lib/dcc/winterExcursionPlanner";
-import { appendViatorAttribution } from "@/lib/viator/links";
+import { getViatorClient } from "@/lib/viator/client";
+import { getViatorServerConfig } from "@/lib/viator/config";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -386,6 +388,7 @@ export async function GET(request: Request) {
   const effectiveClickId = shouldMintFreshPerIntentClickId
     ? generateOpaqueClickId({ isTest: effectiveIsTest })
     : incomingClickId;
+  const effectiveCampaignToken = toViatorCampaignToken(effectiveClickId);
 
   let updated =
     !shouldMintFreshPerIntentClickId && existingRecord
@@ -410,9 +413,10 @@ export async function GET(request: Request) {
         : 2;
 
     if (catalogRecord.primaryProvider === "viator") {
-      resolvedDestinationUrl = appendViatorAttribution(resolvedDestinationUrl, {
-        preserveExistingCampaign: false,
-        campaign: effectiveClickId,
+      resolvedDestinationUrl = await resolveViatorSupportedCampaignProductUrl({
+        productCode: catalogRecord.providerProductCode,
+        campaignToken: effectiveCampaignToken,
+        fallbackBookingUrl: resolvedDestinationUrl,
       });
     } else if (catalogRecord.primaryProvider === "fareharbor") {
       const asnRefTag = `${placementIdParam || propertySlugParam || catalogRecord.destinationSlug}-${effectiveClickId}`.slice(
@@ -428,23 +432,25 @@ export async function GET(request: Request) {
     }
 
     const destObj = new URL(resolvedDestinationUrl);
-    if (dateParam) {
-      destObj.searchParams.set("date", dateParam);
-      destObj.searchParams.set("dcc_date", dateParam);
-    }
-    destObj.searchParams.set("adults", String(effectiveAdults));
-    destObj.searchParams.set("dcc_adults", String(effectiveAdults));
-    if (effectiveOptionCode) {
-      destObj.searchParams.set("optionCode", effectiveOptionCode);
-      destObj.searchParams.set("dcc_option_code", effectiveOptionCode);
-    }
-    if (departureTimeParam) {
-      destObj.searchParams.set("departureTime", departureTimeParam);
-      destObj.searchParams.set("dcc_departure_time", departureTimeParam);
-    }
-    if (placementIdParam) {
-      destObj.searchParams.set("placementId", placementIdParam);
-      destObj.searchParams.set("dcc_placement_id", placementIdParam);
+    if (catalogRecord.primaryProvider !== "viator") {
+      if (dateParam) {
+        destObj.searchParams.set("date", dateParam);
+        destObj.searchParams.set("dcc_date", dateParam);
+      }
+      destObj.searchParams.set("adults", String(effectiveAdults));
+      destObj.searchParams.set("dcc_adults", String(effectiveAdults));
+      if (effectiveOptionCode) {
+        destObj.searchParams.set("optionCode", effectiveOptionCode);
+        destObj.searchParams.set("dcc_option_code", effectiveOptionCode);
+      }
+      if (departureTimeParam) {
+        destObj.searchParams.set("departureTime", departureTimeParam);
+        destObj.searchParams.set("dcc_departure_time", departureTimeParam);
+      }
+      if (placementIdParam) {
+        destObj.searchParams.set("placementId", placementIdParam);
+        destObj.searchParams.set("dcc_placement_id", placementIdParam);
+      }
     }
 
     const provider =
@@ -468,6 +474,15 @@ export async function GET(request: Request) {
       originatingPage: referer || `/tours/${catalogRecord.destinationSlug}`,
       placementId: placementIdParam,
       propertySlug: propertySlugParam || catalogRecord.destinationSlug,
+      tripDetails: {
+        travelDate: dateParam || null,
+        pickupTime: departureTimeParam || null,
+        passengerCount: effectiveAdults,
+        offerId: `${catalogRecord.providerProductCode}:${effectiveOptionCode}`,
+        originatingPage: referer || `/tours/${catalogRecord.destinationSlug}`,
+        placementId: placementIdParam || null,
+        propertySlug: propertySlugParam || catalogRecord.destinationSlug,
+      },
       provider,
       productCode: catalogRecord.providerProductCode,
       productDestinationUrl: destObj.toString(),
@@ -505,40 +520,87 @@ export async function GET(request: Request) {
     );
   }
 
-  // Always enforce the single per-intent referral ID on outbound Viator URLs
+  const finalCampaignToken = toViatorCampaignToken(updated.clickId);
+  let finalRedirectUrlString = updated.outboundPartnerUrl;
   const finalRedirectObj = new URL(updated.outboundPartnerUrl);
   if (normalizeHost(finalRedirectObj.hostname) === "viator.com") {
-    finalRedirectObj.searchParams.set("campaign", updated.clickId);
-    finalRedirectObj.searchParams.set("click_id", updated.clickId);
-    if (dateParam && !finalRedirectObj.searchParams.get("date")) {
-      finalRedirectObj.searchParams.set("date", dateParam);
-      finalRedirectObj.searchParams.set("dcc_date", dateParam);
-    }
-    if (adultsParam && !finalRedirectObj.searchParams.get("adults")) {
-      finalRedirectObj.searchParams.set("adults", adultsParam);
-      finalRedirectObj.searchParams.set("dcc_adults", adultsParam);
-    }
-    if (optionParam && !finalRedirectObj.searchParams.get("optionCode")) {
-      finalRedirectObj.searchParams.set("optionCode", optionParam);
-      finalRedirectObj.searchParams.set("dcc_option_code", optionParam);
-    }
-    if (departureTimeParam && !finalRedirectObj.searchParams.get("departureTime")) {
-      finalRedirectObj.searchParams.set("departureTime", departureTimeParam);
-      finalRedirectObj.searchParams.set("dcc_departure_time", departureTimeParam);
-    }
-    if (placementIdParam && !finalRedirectObj.searchParams.get("placementId")) {
-      finalRedirectObj.searchParams.set("placementId", placementIdParam);
-      finalRedirectObj.searchParams.set("dcc_placement_id", placementIdParam);
-    }
+    finalRedirectUrlString = await resolveViatorSupportedCampaignProductUrl({
+      productCode: updated.productCode || catalogRecord?.providerProductCode || "",
+      campaignToken: finalCampaignToken,
+      fallbackBookingUrl: updated.outboundPartnerUrl,
+    });
   }
 
+  const selectedDateHeader =
+    dateParam || updated.tripDetails?.travelDate || "";
+  const selectedAdultsHeader = String(
+    adultsParam || updated.tripDetails?.passengerCount || 2,
+  );
+  const selectedOptionHeader =
+    optionParam ||
+    catalogRecord?.productOptions?.[0]?.optionCode ||
+    "DEFAULT";
+  const selectedPlacementHeader =
+    placementIdParam || updated.placementId || "";
+
   await syncDurableLedgerWithPostgres({ forcePushLocal: true });
-  return NextResponse.redirect(finalRedirectObj.toString(), {
+  return NextResponse.redirect(finalRedirectUrlString, {
     status: 302,
     headers: {
       "Cache-Control": "no-store",
       "X-DCC-Referral-Id": updated.clickId,
       "X-DCC-Click-Id": updated.clickId,
+      "X-DCC-Campaign-Value": finalCampaignToken,
+      ...(selectedDateHeader ? { "X-DCC-Selected-Date": selectedDateHeader } : {}),
+      ...(selectedAdultsHeader ? { "X-DCC-Selected-Adults": selectedAdultsHeader } : {}),
+      ...(selectedOptionHeader ? { "X-DCC-Selected-Option": selectedOptionHeader } : {}),
+      ...(selectedPlacementHeader ? { "X-DCC-Placement-Id": selectedPlacementHeader } : {}),
     },
   });
+}
+
+async function resolveViatorSupportedCampaignProductUrl(params: {
+  productCode: string;
+  campaignToken: string;
+  fallbackBookingUrl: string;
+}): Promise<string> {
+  const serverConfig = getViatorServerConfig();
+  const isNodeTestRunner = Boolean(
+    process.execArgv?.some((arg) => arg.includes("--test")) ||
+      process.env.NODE_TEST_CONTEXT,
+  );
+  const hasLiveKey = Boolean(
+    serverConfig.apiKey &&
+      serverConfig.apiKey.length >= 20 &&
+      serverConfig.apiKey !== "invalid-test-key" &&
+      (!isNodeTestRunner || process.env.DCC_ENABLE_LIVE_VIATOR_CAMPAIGN_LOOKUP === "true"),
+  );
+  if (hasLiveKey && params.productCode) {
+    try {
+      const detail = (await Promise.race([
+        getViatorClient().getProductDetail(params.productCode, {
+          campaignValue: params.campaignToken,
+        }),
+        new Promise<null>((resolve) => setTimeout(() => resolve(null), 2500)),
+      ])) as { productUrl?: string } | null;
+      if (
+        detail &&
+        typeof detail.productUrl === "string" &&
+        detail.productUrl.startsWith("https://www.viator.com/")
+      ) {
+        return detail.productUrl;
+      }
+    } catch {
+      // Fall back to canonical Viator campaign-value URL below
+    }
+  }
+
+  const cleanViatorUrl = new URL(params.fallbackBookingUrl);
+  cleanViatorUrl.search = "";
+  cleanViatorUrl.searchParams.set("mcid", serverConfig.mcid || "42383");
+  cleanViatorUrl.searchParams.set("campaign", params.campaignToken);
+  cleanViatorUrl.searchParams.set("pid", serverConfig.pid || "P00306962");
+  cleanViatorUrl.searchParams.set("medium", "api");
+  cleanViatorUrl.searchParams.set("api_version", "2.0");
+  return cleanViatorUrl.toString();
 }

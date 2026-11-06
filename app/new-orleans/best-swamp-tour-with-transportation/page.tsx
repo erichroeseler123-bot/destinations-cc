@@ -42,7 +42,7 @@ export default function Page() {
         "Rideshare alert: Never take an Uber or Lyft down to Lafitte on a self-drive ticket. Drivers will take you out, but return rides from the rural bayou back to New Orleans are not reliably available.",
         "Combination days: To combine a swamp boat ride with Oak Alley Plantation in a single day, choose the 7h 45m Gray Line combo.",
       ]}
-      conciergePlacementId="fp-wno-swamp-transportation"
+      conciergePlacementId="fp-wno-swamp-tours"
       productSlugs={[
         "jeanlafitte-swamp-tour-with-hotel-pickup",
         "swamp-bayou-tour",

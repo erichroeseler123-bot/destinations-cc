@@ -1,0 +1,1046 @@
+{
+  "generatedAt": "2026-11-06T19:55:10.561Z",
+  "dryRunScope": {
+    "toursEvaluated": 25,
+    "guestClickedOrPilotPriorityCount": 9,
+    "catalogUnknownLogisticsPriorityCount": 16,
+    "totalOptionsEvaluated": 55
+  },
+  "providerLocationResolution": {
+    "uniqueLocationRefsExtracted": 558,
+    "locationsReturnedByBulkApi": 558,
+    "tripAdvisorResolvedCount": 509,
+    "googlePlaceIdProxyCount": 49,
+    "locationsWithExactCoordinatesCount": 508
+  },
+  "beforeEnrichment": {
+    "pickupModeKnownCount": 16,
+    "pickupModeUnknownCount": 9,
+    "meetingPointKnownCount": 16,
+    "meetingPointUnknownCount": 9,
+    "exactCoordinatesKnownCount": 3,
+    "exactCoordinatesUnknownCount": 22,
+    "totalOptionsEvaluated": 55,
+    "optionPickupKnownCount": 40,
+    "optionPickupUnknownCount": 15,
+    "fullyVerifiedToursCount": 0,
+    "toursWithRemainingUnknownsCount": 25,
+    "rawExceptionsCount": 58,
+    "byExceptionCode": {
+      "missing_pickup_mode": 9,
+      "missing_meeting_point_identity": 0,
+      "missing_meeting_point_coordinates": 12,
+      "unverified_cruise_berth_transfer": 22,
+      "option_pickup_unknown_or_ambiguous": 15
+    },
+    "deduplicatedExceptionsCount": 43
+  },
+  "afterEnrichment": {
+    "pickupModeKnownCount": 24,
+    "pickupModeUnknownCount": 1,
+    "meetingPointKnownCount": 23,
+    "meetingPointUnknownCount": 2,
+    "exactCoordinatesKnownCount": 4,
+    "exactCoordinatesUnknownCount": 21,
+    "totalOptionsEvaluated": 55,
+    "optionPickupKnownCount": 54,
+    "optionPickupUnknownCount": 1,
+    "fullyVerifiedToursCount": 0,
+    "toursWithRemainingUnknownsCount": 25,
+    "rawExceptionsCount": 47,
+    "byExceptionCode": {
+      "missing_pickup_mode": 1,
+      "missing_meeting_point_identity": 1,
+      "missing_meeting_point_coordinates": 20,
+      "unverified_cruise_berth_transfer": 22,
+      "option_pickup_unknown_or_ambiguous": 3
+    },
+    "deduplicatedExceptionsCount": 44
+  },
+  "resolutionImpact": {
+    "pickupModeUnknownsResolved": 8,
+    "meetingPointUnknownsResolved": 7,
+    "exactCoordinatesUnknownsResolved": 1,
+    "optionPickupUnknownsResolved": 14,
+    "totalUnknownFieldsResolved": 30,
+    "rawExceptionsResolved": 11,
+    "deduplicatedExceptionsResolved": 0,
+    "reviewDeskSuppressionFromOptionDeduplication": 3,
+    "reviewDeskDeduplicatedQueuedCount": 44
+  },
+  "deduplicatedReviewDeskCases": [
+    {
+      "factId": "cat-pickup-exc:15200P6:unverified_cruise_berth_transfer",
+      "productCode": "15200P6",
+      "destinationSlug": "new-orleans",
+      "optionCode": null,
+      "exceptionCode": "unverified_cruise_berth_transfer",
+      "observedStateSummary": "Cruise-port tour 15200P6 in new-orleans has transferTimeSource=\"planning_estimate\" without verified berth-to-meeting transfer minutes.",
+      "humanDecisionRequired": "Confirm cruise berth pickup or round-trip transfer minutes between the new-orleans cruise pier and \"French Quarter / Downtown New Orleans Hotel Shuttle Pickup Zone\" for 15200P6."
+    },
+    {
+      "factId": "cat-pickup-exc:6953SWAMPTRANS:missing_meeting_point_coordinates",
+      "productCode": "6953SWAMPTRANS",
+      "destinationSlug": "new-orleans",
+      "optionCode": null,
+      "exceptionCode": "missing_meeting_point_coordinates",
+      "observedStateSummary": "Product 6953SWAMPTRANS (\"New Orleans Swamp and Bayou Boat Tour with Transportation\") meeting point \"Please be outside the Homewood Suites French Quarter at 317 North Rampart Street at the beginning of the pickup window. Your shuttle departs promptly. \n9:30AM Tour (Picks up at 8:00AM)\n12:15PM Tour (Picks up at 10:15AM)\n2:45PM Tour (Picks up at 1:15PM)\n5:00PM Tour (Picks up at 3:30PM)\" lacks exact coordinates (locationPrecision=unknown).",
+      "humanDecisionRequired": "Confirm exact coordinates and landmark match for 6953SWAMPTRANS (Please be outside the Homewood Suites French Quarter at 317 North Rampart Street at the beginning of the pickup window. Your shuttle departs promptly. \n9:30AM Tour (Picks up at 8:00AM)\n12:15PM Tour (Picks up at 10:15AM)\n2:45PM Tour (Picks up at 1:15PM)\n5:00PM Tour (Picks up at 3:30PM))."
+    },
+    {
+      "factId": "cat-pickup-exc:6953SWAMPTRANS:unverified_cruise_berth_transfer",
+      "productCode": "6953SWAMPTRANS",
+      "destinationSlug": "new-orleans",
+      "optionCode": null,
+      "exceptionCode": "unverified_cruise_berth_transfer",
+      "observedStateSummary": "Cruise-port tour 6953SWAMPTRANS in new-orleans has transferTimeSource=\"planning_estimate\" without verified berth-to-meeting transfer minutes.",
+      "humanDecisionRequired": "Confirm cruise berth pickup or round-trip transfer minutes between the new-orleans cruise pier and \"Please be outside the Homewood Suites French Quarter at 317 North Rampart Street at the beginning of the pickup window. Your shuttle departs promptly. \n9:30AM Tour (Picks up at 8:00AM)\n12:15PM Tour (Picks up at 10:15AM)\n2:45PM Tour (Picks up at 1:15PM)\n5:00PM Tour (Picks up at 3:30PM)\" for 6953SWAMPTRANS."
+    },
+    {
+      "factId": "cat-pickup-exc:254526P1:missing_meeting_point_coordinates",
+      "productCode": "254526P1",
+      "destinationSlug": "nassau",
+      "optionCode": null,
+      "exceptionCode": "missing_meeting_point_coordinates",
+      "observedStateSummary": "Product 254526P1 (\"Nassau Swimming Pigs and Private Beach Club Escape\") meeting point \"Punctuality at your designated pickup location is essential for a smooth experience.\n\nFor guests who have opted for the morning tour without pickup services, we kindly request your presence at the designated starting point by 9:45 am. Your prompt arrival ensures a timely commencement of the tour.\" lacks exact coordinates (locationPrecision=unknown).",
+      "humanDecisionRequired": "Confirm exact coordinates and landmark match for 254526P1 (Punctuality at your designated pickup location is essential for a smooth experience.\n\nFor guests who have opted for the morning tour without pickup services, we kindly request your presence at the designated starting point by 9:45 am. Your prompt arrival ensures a timely commencement of the tour.)."
+    },
+    {
+      "factId": "cat-pickup-exc:254526P1:unverified_cruise_berth_transfer",
+      "productCode": "254526P1",
+      "destinationSlug": "nassau",
+      "optionCode": null,
+      "exceptionCode": "unverified_cruise_berth_transfer",
+      "observedStateSummary": "Cruise-port tour 254526P1 in nassau has transferTimeSource=\"unknown\" without verified berth-to-meeting transfer minutes.",
+      "humanDecisionRequired": "Confirm cruise berth pickup or round-trip transfer minutes between the nassau cruise pier and \"Punctuality at your designated pickup location is essential for a smooth experience.\n\nFor guests who have opted for the morning tour without pickup services, we kindly request your presence at the designated starting point by 9:45 am. Your prompt arrival ensures a timely commencement of the tour.\" for 254526P1."
+    },
+    {
+      "factId": "cat-pickup-exc:7452P2:missing_meeting_point_coordinates",
+      "productCode": "7452P2",
+      "destinationSlug": "st-thomas",
+      "optionCode": null,
+      "exceptionCode": "missing_meeting_point_coordinates",
+      "observedStateSummary": "Product 7452P2 (\"Turtle Cove Catamaran Snorkel and Sail at Little Buck Island STT\") meeting point \"Guest is to provide their own transportation to the Marriott's Frenchman's Cove. Check in with security and make your way to the DOCK and follow signs that say public access to beach. Arrive 30 minutes prior to trip departure time. We are cannot accommodate late arrivals. *Reference map in photos.\" lacks exact coordinates (locationPrecision=unknown).",
+      "humanDecisionRequired": "Confirm exact coordinates and landmark match for 7452P2 (Guest is to provide their own transportation to the Marriott's Frenchman's Cove. Check in with security and make your way to the DOCK and follow signs that say public access to beach. Arrive 30 minutes prior to trip departure time. We are cannot accommodate late arrivals. *Reference map in photos.)."
+    },
+    {
+      "factId": "cat-pickup-exc:7452P2:unverified_cruise_berth_transfer",
+      "productCode": "7452P2",
+      "destinationSlug": "st-thomas",
+      "optionCode": null,
+      "exceptionCode": "unverified_cruise_berth_transfer",
+      "observedStateSummary": "Cruise-port tour 7452P2 in st-thomas has transferTimeSource=\"unknown\" without verified berth-to-meeting transfer minutes.",
+      "humanDecisionRequired": "Confirm cruise berth pickup or round-trip transfer minutes between the st-thomas cruise pier and \"Guest is to provide their own transportation to the Marriott's Frenchman's Cove. Check in with security and make your way to the DOCK and follow signs that say public access to beach. Arrive 30 minutes prior to trip departure time. We are cannot accommodate late arrivals. *Reference map in photos.\" for 7452P2."
+    },
+    {
+      "factId": "cat-pickup-exc:5199KSML:missing_meeting_point_identity",
+      "productCode": "5199KSML",
+      "destinationSlug": "st-thomas",
+      "optionCode": null,
+      "exceptionCode": "missing_meeting_point_identity",
+      "observedStateSummary": "Product 5199KSML (\"St Thomas Mangrove Lagoon Kayak and Snorkel Tour in the US Virgin Islands\") uses self_drive (MEETING_POINT_ONLY) but has no verified meeting point name or street/dock address.",
+      "humanDecisionRequired": "Verify the exact check-in dock, curb, or meeting address for 5199KSML before removing the unknown meeting-point status."
+    },
+    {
+      "factId": "cat-pickup-exc:5199KSML:missing_meeting_point_coordinates",
+      "productCode": "5199KSML",
+      "destinationSlug": "st-thomas",
+      "optionCode": null,
+      "exceptionCode": "missing_meeting_point_coordinates",
+      "observedStateSummary": "Product 5199KSML (\"St Thomas Mangrove Lagoon Kayak and Snorkel Tour in the US Virgin Islands\") meeting point \"unknown\" lacks exact coordinates (locationPrecision=unknown).",
+      "humanDecisionRequired": "Confirm exact coordinates and landmark match for 5199KSML (unnamed meeting point)."
+    },
+    {
+      "factId": "cat-pickup-exc:5199KSML:unverified_cruise_berth_transfer",
+      "productCode": "5199KSML",
+      "destinationSlug": "st-thomas",
+      "optionCode": null,
+      "exceptionCode": "unverified_cruise_berth_transfer",
+      "observedStateSummary": "Cruise-port tour 5199KSML in st-thomas has transferTimeSource=\"unknown\" without verified berth-to-meeting transfer minutes.",
+      "humanDecisionRequired": "Confirm cruise berth pickup or round-trip transfer minutes between the st-thomas cruise pier and \"tour meeting point\" for 5199KSML."
+    },
+    {
+      "factId": "cat-pickup-exc:5553274P1:missing_meeting_point_coordinates",
+      "productCode": "5553274P1",
+      "destinationSlug": "cozumel",
+      "optionCode": null,
+      "exceptionCode": "missing_meeting_point_coordinates",
+      "observedStateSummary": "Product 5553274P1 (\"Jade Caverns and Mayan Village Cozumel ATV TOUR\") meeting point \"This is a meeting point located outside Puerta Maya Port.\nThis is meeting point is perfect for people who comes on:\n•Carnival Cruises.\n•Princess Cruise Line.\nYou do not need to pay taxi, you can arrive just walking.\nWe will text you before the tour to send you a video about how to arrive here.\" lacks exact coordinates (locationPrecision=unknown).",
+      "humanDecisionRequired": "Confirm exact coordinates and landmark match for 5553274P1 (This is a meeting point located outside Puerta Maya Port.\nThis is meeting point is perfect for people who comes on:\n•Carnival Cruises.\n•Princess Cruise Line.\nYou do not need to pay taxi, you can arrive just walking.\nWe will text you before the tour to send you a video about how to arrive here.)."
+    },
+    {
+      "factId": "cat-pickup-exc:6455NOLAAIR:unverified_cruise_berth_transfer",
+      "productCode": "6455NOLAAIR",
+      "destinationSlug": "new-orleans",
+      "optionCode": null,
+      "exceptionCode": "unverified_cruise_berth_transfer",
+      "observedStateSummary": "Cruise-port tour 6455NOLAAIR in new-orleans has transferTimeSource=\"planning_estimate\" without verified berth-to-meeting transfer minutes.",
+      "humanDecisionRequired": "Confirm cruise berth pickup or round-trip transfer minutes between the new-orleans cruise pier and \"Please turn right on Texas Street (the next right), not Fleming Park Rd to enter the facility.\" for 6455NOLAAIR."
+    },
+    {
+      "factId": "cat-pickup-exc:3780AIRBOAT:missing_meeting_point_coordinates",
+      "productCode": "3780AIRBOAT",
+      "destinationSlug": "new-orleans",
+      "optionCode": null,
+      "exceptionCode": "missing_meeting_point_coordinates",
+      "observedStateSummary": "Product 3780AIRBOAT (\"Airboat Ride with Optional Transportation from New Orleans\") meeting point \"*SELF-DRIVE - NO TRANSPORTATION INCLUDED*\n\nUpon arrival, you’ll find free parking on-site and a check-in area near the dock. Look for signs for the swamp tour or the main office building, where staff will assist you and give you a wristband with your boat number.\" lacks exact coordinates (locationPrecision=unknown).",
+      "humanDecisionRequired": "Confirm exact coordinates and landmark match for 3780AIRBOAT (*SELF-DRIVE - NO TRANSPORTATION INCLUDED*\n\nUpon arrival, you’ll find free parking on-site and a check-in area near the dock. Look for signs for the swamp tour or the main office building, where staff will assist you and give you a wristband with your boat number.)."
+    },
+    {
+      "factId": "cat-pickup-exc:3780AIRBOAT:unverified_cruise_berth_transfer",
+      "productCode": "3780AIRBOAT",
+      "destinationSlug": "new-orleans",
+      "optionCode": null,
+      "exceptionCode": "unverified_cruise_berth_transfer",
+      "observedStateSummary": "Cruise-port tour 3780AIRBOAT in new-orleans has transferTimeSource=\"planning_estimate\" without verified berth-to-meeting transfer minutes.",
+      "humanDecisionRequired": "Confirm cruise berth pickup or round-trip transfer minutes between the new-orleans cruise pier and \"*SELF-DRIVE - NO TRANSPORTATION INCLUDED*\n\nUpon arrival, you’ll find free parking on-site and a check-in area near the dock. Look for signs for the swamp tour or the main office building, where staff will assist you and give you a wristband with your boat number.\" for 3780AIRBOAT."
+    },
+    {
+      "factId": "cat-pickup-exc:331813P1:unverified_cruise_berth_transfer",
+      "productCode": "331813P1",
+      "destinationSlug": "juneau",
+      "optionCode": null,
+      "exceptionCode": "unverified_cruise_berth_transfer",
+      "observedStateSummary": "Cruise-port tour 331813P1 in juneau has transferTimeSource=\"planning_estimate\" without verified berth-to-meeting transfer minutes.",
+      "humanDecisionRequired": "Confirm cruise berth pickup or round-trip transfer minutes between the juneau cruise pier and \"Juneau Cruise Ship Terminal / Mount Roberts (Goldbelt) Tramway\" for 331813P1."
+    },
+    {
+      "factId": "cat-pickup-exc:5885P231:missing_meeting_point_coordinates",
+      "productCode": "5885P231",
+      "destinationSlug": "cozumel",
+      "optionCode": null,
+      "exceptionCode": "missing_meeting_point_coordinates",
+      "observedStateSummary": "Product 5885P231 (\"Chichen Itza, Cenote & Valladolid Tour with Tequila and Lunch\") meeting point \"You will be picked up at Smart Oasis Cancun at 6:10 am if you have chosen the 5 am option of the tour, or at 9:10 am if you have chosen the 8 am option of the tour.\" lacks exact coordinates (locationPrecision=unknown).",
+      "humanDecisionRequired": "Confirm exact coordinates and landmark match for 5885P231 (You will be picked up at Smart Oasis Cancun at 6:10 am if you have chosen the 5 am option of the tour, or at 9:10 am if you have chosen the 8 am option of the tour.)."
+    },
+    {
+      "factId": "cat-pickup-exc:5885P231:unverified_cruise_berth_transfer",
+      "productCode": "5885P231",
+      "destinationSlug": "cozumel",
+      "optionCode": null,
+      "exceptionCode": "unverified_cruise_berth_transfer",
+      "observedStateSummary": "Cruise-port tour 5885P231 in cozumel has transferTimeSource=\"unknown\" without verified berth-to-meeting transfer minutes.",
+      "humanDecisionRequired": "Confirm cruise berth pickup or round-trip transfer minutes between the cozumel cruise pier and \"You will be picked up at Smart Oasis Cancun at 6:10 am if you have chosen the 5 am option of the tour, or at 9:10 am if you have chosen the 8 am option of the tour.\" for 5885P231."
+    },
+    {
+      "factId": "cat-pickup-exc:5889GHOST:missing_meeting_point_coordinates",
+      "productCode": "5889GHOST",
+      "destinationSlug": "new-orleans",
+      "optionCode": null,
+      "exceptionCode": "missing_meeting_point_coordinates",
+      "observedStateSummary": "Product 5889GHOST (\"New Orleans Premier Ghost, Voodoo and Vampire Walking Tour\") meeting point \"Our Ghost Tours meet at Witches Brew Gallery at 311 Exchange Place.\" lacks exact coordinates (locationPrecision=unknown).",
+      "humanDecisionRequired": "Confirm exact coordinates and landmark match for 5889GHOST (Our Ghost Tours meet at Witches Brew Gallery at 311 Exchange Place.)."
+    },
+    {
+      "factId": "cat-pickup-exc:5889GHOST:unverified_cruise_berth_transfer",
+      "productCode": "5889GHOST",
+      "destinationSlug": "new-orleans",
+      "optionCode": null,
+      "exceptionCode": "unverified_cruise_berth_transfer",
+      "observedStateSummary": "Cruise-port tour 5889GHOST in new-orleans has transferTimeSource=\"unknown\" without verified berth-to-meeting transfer minutes.",
+      "humanDecisionRequired": "Confirm cruise berth pickup or round-trip transfer minutes between the new-orleans cruise pier and \"Our Ghost Tours meet at Witches Brew Gallery at 311 Exchange Place.\" for 5889GHOST."
+    },
+    {
+      "factId": "cat-pickup-exc:5304HAVANA:missing_meeting_point_coordinates",
+      "productCode": "5304HAVANA",
+      "destinationSlug": "miami",
+      "optionCode": null,
+      "exceptionCode": "missing_meeting_point_coordinates",
+      "observedStateSummary": "Product 5304HAVANA (\"Little Havana Food and Walking Tour in Miami\") meeting point \"Meeting Point: Tower Theatre at 1508 SW 8th St, Miami, FL 33135.\" lacks exact coordinates (locationPrecision=unknown).",
+      "humanDecisionRequired": "Confirm exact coordinates and landmark match for 5304HAVANA (Meeting Point: Tower Theatre at 1508 SW 8th St, Miami, FL 33135.)."
+    },
+    {
+      "factId": "cat-pickup-exc:5304HAVANA:unverified_cruise_berth_transfer",
+      "productCode": "5304HAVANA",
+      "destinationSlug": "miami",
+      "optionCode": null,
+      "exceptionCode": "unverified_cruise_berth_transfer",
+      "observedStateSummary": "Cruise-port tour 5304HAVANA in miami has transferTimeSource=\"unknown\" without verified berth-to-meeting transfer minutes.",
+      "humanDecisionRequired": "Confirm cruise berth pickup or round-trip transfer minutes between the miami cruise pier and \"Meeting Point: Tower Theatre at 1508 SW 8th St, Miami, FL 33135.\" for 5304HAVANA."
+    },
+    {
+      "factId": "cat-pickup-exc:36129P1:missing_meeting_point_coordinates",
+      "productCode": "36129P1",
+      "destinationSlug": "seattle",
+      "optionCode": null,
+      "exceptionCode": "missing_meeting_point_coordinates",
+      "observedStateSummary": "Product 36129P1 (\"Beneath The Streets Underground History Tour\") meeting point \"Look for the black awning over the sidewalk; the stairs beneath will lead right to the check-in desk.\" lacks exact coordinates (locationPrecision=unknown).",
+      "humanDecisionRequired": "Confirm exact coordinates and landmark match for 36129P1 (Look for the black awning over the sidewalk; the stairs beneath will lead right to the check-in desk.)."
+    },
+    {
+      "factId": "cat-pickup-exc:36129P1:unverified_cruise_berth_transfer",
+      "productCode": "36129P1",
+      "destinationSlug": "seattle",
+      "optionCode": null,
+      "exceptionCode": "unverified_cruise_berth_transfer",
+      "observedStateSummary": "Cruise-port tour 36129P1 in seattle has transferTimeSource=\"unknown\" without verified berth-to-meeting transfer minutes.",
+      "humanDecisionRequired": "Confirm cruise berth pickup or round-trip transfer minutes between the seattle cruise pier and \"Look for the black awning over the sidewalk; the stairs beneath will lead right to the check-in desk.\" for 36129P1."
+    },
+    {
+      "factId": "cat-pickup-exc:175552P1:missing_meeting_point_coordinates",
+      "productCode": "175552P1",
+      "destinationSlug": "new-orleans",
+      "optionCode": null,
+      "exceptionCode": "missing_meeting_point_coordinates",
+      "observedStateSummary": "Product 175552P1 (\"Adults-Only New Orleans Ghost, Crime, Voodoo, and Vampire Tour\") meeting point \"We will meet and depart from the front gate of Armstrong Park. Look for the giant archway with the name of the park emblazoned across it.\" lacks exact coordinates (locationPrecision=unknown).",
+      "humanDecisionRequired": "Confirm exact coordinates and landmark match for 175552P1 (We will meet and depart from the front gate of Armstrong Park. Look for the giant archway with the name of the park emblazoned across it.)."
+    },
+    {
+      "factId": "cat-pickup-exc:175552P1:unverified_cruise_berth_transfer",
+      "productCode": "175552P1",
+      "destinationSlug": "new-orleans",
+      "optionCode": null,
+      "exceptionCode": "unverified_cruise_berth_transfer",
+      "observedStateSummary": "Cruise-port tour 175552P1 in new-orleans has transferTimeSource=\"unknown\" without verified berth-to-meeting transfer minutes.",
+      "humanDecisionRequired": "Confirm cruise berth pickup or round-trip transfer minutes between the new-orleans cruise pier and \"We will meet and depart from the front gate of Armstrong Park. Look for the giant archway with the name of the park emblazoned across it.\" for 175552P1."
+    },
+    {
+      "factId": "cat-pickup-exc:6205FOODNOLA:missing_meeting_point_coordinates",
+      "productCode": "6205FOODNOLA",
+      "destinationSlug": "new-orleans",
+      "optionCode": null,
+      "exceptionCode": "missing_meeting_point_coordinates",
+      "observedStateSummary": "Product 6205FOODNOLA (\"New Orleans Food Walking Tour of the French Quarter with Small-Group Option\") meeting point \"Meet at Roux Royale , corner of Royal St and Toulouse St.\" lacks exact coordinates (locationPrecision=unknown).",
+      "humanDecisionRequired": "Confirm exact coordinates and landmark match for 6205FOODNOLA (Meet at Roux Royale , corner of Royal St and Toulouse St.)."
+    },
+    {
+      "factId": "cat-pickup-exc:6205FOODNOLA:unverified_cruise_berth_transfer",
+      "productCode": "6205FOODNOLA",
+      "destinationSlug": "new-orleans",
+      "optionCode": null,
+      "exceptionCode": "unverified_cruise_berth_transfer",
+      "observedStateSummary": "Cruise-port tour 6205FOODNOLA in new-orleans has transferTimeSource=\"unknown\" without verified berth-to-meeting transfer minutes.",
+      "humanDecisionRequired": "Confirm cruise berth pickup or round-trip transfer minutes between the new-orleans cruise pier and \"Meet at Roux Royale , corner of Royal St and Toulouse St.\" for 6205FOODNOLA."
+    },
+    {
+      "factId": "cat-pickup-exc:5694NOHOHO:missing_pickup_mode",
+      "productCode": "5694NOHOHO",
+      "destinationSlug": "new-orleans",
+      "optionCode": null,
+      "exceptionCode": "missing_pickup_mode",
+      "observedStateSummary": "Provider viator product 5694NOHOHO (\"New Orleans City Sightseeing Hop-On Hop-Off Bus Tour\") does not specify whether hotel/pier pickup is included or meet-on-location is required (pickupType=UNKNOWN, pickupFulfillmentType=unknown).",
+      "humanDecisionRequired": "Confirm with operator or official listing whether 5694NOHOHO includes hotel/pier pickup or requires independent arrival at a meeting point."
+    },
+    {
+      "factId": "cat-pickup-exc:5694NOHOHO:unverified_cruise_berth_transfer",
+      "productCode": "5694NOHOHO",
+      "destinationSlug": "new-orleans",
+      "optionCode": null,
+      "exceptionCode": "unverified_cruise_berth_transfer",
+      "observedStateSummary": "Cruise-port tour 5694NOHOHO in new-orleans has transferTimeSource=\"unknown\" without verified berth-to-meeting transfer minutes.",
+      "humanDecisionRequired": "Confirm cruise berth pickup or round-trip transfer minutes between the new-orleans cruise pier and \"tour meeting point\" for 5694NOHOHO."
+    },
+    {
+      "factId": "cat-pickup-exc:60593P4:missing_meeting_point_coordinates",
+      "productCode": "60593P4",
+      "destinationSlug": "new-orleans",
+      "optionCode": null,
+      "exceptionCode": "missing_meeting_point_coordinates",
+      "observedStateSummary": "Product 60593P4 (\"St. Louis Cemetery No. 1 Official Walking Tour\") meeting point \"Enter Basin St. Station Visitor Information Center to find our Cemetery Tours Desk & Team! Walking distance from the French Quarter, hop off City Sightseeing Double-Decker at stop 5, or drive and park in the adjacent parking lot, available to the public for hourly, daily, and overnight rates.\" lacks exact coordinates (locationPrecision=unknown).",
+      "humanDecisionRequired": "Confirm exact coordinates and landmark match for 60593P4 (Enter Basin St. Station Visitor Information Center to find our Cemetery Tours Desk & Team! Walking distance from the French Quarter, hop off City Sightseeing Double-Decker at stop 5, or drive and park in the adjacent parking lot, available to the public for hourly, daily, and overnight rates.)."
+    },
+    {
+      "factId": "cat-pickup-exc:60593P4:unverified_cruise_berth_transfer",
+      "productCode": "60593P4",
+      "destinationSlug": "new-orleans",
+      "optionCode": null,
+      "exceptionCode": "unverified_cruise_berth_transfer",
+      "observedStateSummary": "Cruise-port tour 60593P4 in new-orleans has transferTimeSource=\"unknown\" without verified berth-to-meeting transfer minutes.",
+      "humanDecisionRequired": "Confirm cruise berth pickup or round-trip transfer minutes between the new-orleans cruise pier and \"Enter Basin St. Station Visitor Information Center to find our Cemetery Tours Desk & Team! Walking distance from the French Quarter, hop off City Sightseeing Double-Decker at stop 5, or drive and park in the adjacent parking lot, available to the public for hourly, daily, and overnight rates.\" for 60593P4."
+    },
+    {
+      "factId": "cat-pickup-exc:23161P1:missing_meeting_point_coordinates",
+      "productCode": "23161P1",
+      "destinationSlug": "seattle",
+      "optionCode": null,
+      "exceptionCode": "missing_meeting_point_coordinates",
+      "observedStateSummary": "Product 23161P1 (\"Chef Guided Food Tour of Pike Place Market\") meeting point \"Meet your chef outside of Simply Seattle located at 1600 First Ave (the corner of 1st Ave and Pine St). Please arrive 5 minutes early. We can't catch you up after the tour has left.\nSummer is busy and there are several events daily making traffic & parking challenging. Please plan accordingly!\" lacks exact coordinates (locationPrecision=unknown).",
+      "humanDecisionRequired": "Confirm exact coordinates and landmark match for 23161P1 (Meet your chef outside of Simply Seattle located at 1600 First Ave (the corner of 1st Ave and Pine St). Please arrive 5 minutes early. We can't catch you up after the tour has left.\nSummer is busy and there are several events daily making traffic & parking challenging. Please plan accordingly!)."
+    },
+    {
+      "factId": "cat-pickup-exc:23161P1:unverified_cruise_berth_transfer",
+      "productCode": "23161P1",
+      "destinationSlug": "seattle",
+      "optionCode": null,
+      "exceptionCode": "unverified_cruise_berth_transfer",
+      "observedStateSummary": "Cruise-port tour 23161P1 in seattle has transferTimeSource=\"unknown\" without verified berth-to-meeting transfer minutes.",
+      "humanDecisionRequired": "Confirm cruise berth pickup or round-trip transfer minutes between the seattle cruise pier and \"Meet your chef outside of Simply Seattle located at 1600 First Ave (the corner of 1st Ave and Pine St). Please arrive 5 minutes early. We can't catch you up after the tour has left.\nSummer is busy and there are several events daily making traffic & parking challenging. Please plan accordingly!\" for 23161P1."
+    },
+    {
+      "factId": "cat-pickup-exc:169162P2:missing_meeting_point_coordinates",
+      "productCode": "169162P2",
+      "destinationSlug": "miami",
+      "optionCode": null,
+      "exceptionCode": "missing_meeting_point_coordinates",
+      "observedStateSummary": "Product 169162P2 (\"2-Hour Miami Private Boat Tour: Skyline & Star Island\") meeting point \"We are inside the property on 2600 Nw 18th Ter Miami FL 33125, we do not have parking available. The nearest Parking is Street Parking 2 blocks away, is a 4 minute walk to our prop\" lacks exact coordinates (locationPrecision=unknown).",
+      "humanDecisionRequired": "Confirm exact coordinates and landmark match for 169162P2 (We are inside the property on 2600 Nw 18th Ter Miami FL 33125, we do not have parking available. The nearest Parking is Street Parking 2 blocks away, is a 4 minute walk to our prop)."
+    },
+    {
+      "factId": "cat-pickup-exc:169162P2:unverified_cruise_berth_transfer",
+      "productCode": "169162P2",
+      "destinationSlug": "miami",
+      "optionCode": null,
+      "exceptionCode": "unverified_cruise_berth_transfer",
+      "observedStateSummary": "Cruise-port tour 169162P2 in miami has transferTimeSource=\"unknown\" without verified berth-to-meeting transfer minutes.",
+      "humanDecisionRequired": "Confirm cruise berth pickup or round-trip transfer minutes between the miami cruise pier and \"We are inside the property on 2600 Nw 18th Ter Miami FL 33125, we do not have parking available. The nearest Parking is Street Parking 2 blocks away, is a 4 minute walk to our prop\" for 169162P2."
+    },
+    {
+      "factId": "cat-pickup-exc:122218P1:missing_meeting_point_coordinates",
+      "productCode": "122218P1",
+      "destinationSlug": "cozumel",
+      "optionCode": null,
+      "exceptionCode": "missing_meeting_point_coordinates",
+      "observedStateSummary": "Product 122218P1 (\"Cozumel: Paradise Beach Club All-Inclusive Day Pass\") meeting point \"Getting to Paradise is super easy. The easiest way to get here is taking a taxi from your cruise ship/hotel. It is about a 10-15 minute taxi ride and runs about US$16 each way (per TAXI not per Person) for a car for up to four people. There are also taxi VANS that takes up to 8 people.\" lacks exact coordinates (locationPrecision=unknown).",
+      "humanDecisionRequired": "Confirm exact coordinates and landmark match for 122218P1 (Getting to Paradise is super easy. The easiest way to get here is taking a taxi from your cruise ship/hotel. It is about a 10-15 minute taxi ride and runs about US$16 each way (per TAXI not per Person) for a car for up to four people. There are also taxi VANS that takes up to 8 people.)."
+    },
+    {
+      "factId": "cat-pickup-exc:122218P1:unverified_cruise_berth_transfer",
+      "productCode": "122218P1",
+      "destinationSlug": "cozumel",
+      "optionCode": null,
+      "exceptionCode": "unverified_cruise_berth_transfer",
+      "observedStateSummary": "Cruise-port tour 122218P1 in cozumel has transferTimeSource=\"unknown\" without verified berth-to-meeting transfer minutes.",
+      "humanDecisionRequired": "Confirm cruise berth pickup or round-trip transfer minutes between the cozumel cruise pier and \"Getting to Paradise is super easy. The easiest way to get here is taking a taxi from your cruise ship/hotel. It is about a 10-15 minute taxi ride and runs about US$16 each way (per TAXI not per Person) for a car for up to four people. There are also taxi VANS that takes up to 8 people.\" for 122218P1."
+    },
+    {
+      "factId": "cat-pickup-exc:3657RAINIER:unverified_cruise_berth_transfer",
+      "productCode": "3657RAINIER",
+      "destinationSlug": "seattle",
+      "optionCode": null,
+      "exceptionCode": "unverified_cruise_berth_transfer",
+      "observedStateSummary": "Cruise-port tour 3657RAINIER in seattle has transferTimeSource=\"planning_estimate\" without verified berth-to-meeting transfer minutes.",
+      "humanDecisionRequired": "Confirm cruise berth pickup or round-trip transfer minutes between the seattle cruise pier and \"1 Hotel Seattle\" for 3657RAINIER."
+    },
+    {
+      "factId": "cat-pickup-exc:5889P11:missing_meeting_point_coordinates",
+      "productCode": "5889P11",
+      "destinationSlug": "new-orleans",
+      "optionCode": null,
+      "exceptionCode": "missing_meeting_point_coordinates",
+      "observedStateSummary": "Product 5889P11 (\"New Orleans Adults-Only Ghost, Voodoo and Vampire Tour\") meeting point \"At Witches Brew Gallery across from Pelican Club Restaurant.\" lacks exact coordinates (locationPrecision=unknown).",
+      "humanDecisionRequired": "Confirm exact coordinates and landmark match for 5889P11 (At Witches Brew Gallery across from Pelican Club Restaurant.)."
+    },
+    {
+      "factId": "cat-pickup-exc:5889P11:unverified_cruise_berth_transfer",
+      "productCode": "5889P11",
+      "destinationSlug": "new-orleans",
+      "optionCode": null,
+      "exceptionCode": "unverified_cruise_berth_transfer",
+      "observedStateSummary": "Cruise-port tour 5889P11 in new-orleans has transferTimeSource=\"unknown\" without verified berth-to-meeting transfer minutes.",
+      "humanDecisionRequired": "Confirm cruise berth pickup or round-trip transfer minutes between the new-orleans cruise pier and \"At Witches Brew Gallery across from Pelican Club Restaurant.\" for 5889P11."
+    },
+    {
+      "factId": "cat-pickup-exc:8950P6:missing_meeting_point_coordinates",
+      "productCode": "8950P6",
+      "destinationSlug": "denver-colorado",
+      "optionCode": null,
+      "exceptionCode": "missing_meeting_point_coordinates",
+      "observedStateSummary": "Product 8950P6 (\"Discover Rocky Mountain National Park-Small Group Tour\") meeting point \"***We will pickup our guests at 9:45 am for Boulder Pick-Up***\" lacks exact coordinates (locationPrecision=unknown).",
+      "humanDecisionRequired": "Confirm exact coordinates and landmark match for 8950P6 (***We will pickup our guests at 9:45 am for Boulder Pick-Up***)."
+    },
+    {
+      "factId": "cat-pickup-exc:41410P10:missing_meeting_point_coordinates",
+      "productCode": "41410P10",
+      "destinationSlug": "denver-colorado",
+      "optionCode": null,
+      "exceptionCode": "missing_meeting_point_coordinates",
+      "observedStateSummary": "Product 41410P10 (\"Small Group Tour of Pikes Peak and the Garden of the Gods from Denver\") meeting point \"We pick up by the Hopdoddy Burger Bar outside of Union Station on Wynkoop Street.\" lacks exact coordinates (locationPrecision=unknown).",
+      "humanDecisionRequired": "Confirm exact coordinates and landmark match for 41410P10 (We pick up by the Hopdoddy Burger Bar outside of Union Station on Wynkoop Street.)."
+    },
+    {
+      "factId": "cat-pickup-exc:24382P16:missing_meeting_point_coordinates",
+      "productCode": "24382P16",
+      "destinationSlug": "new-orleans",
+      "optionCode": null,
+      "exceptionCode": "missing_meeting_point_coordinates",
+      "observedStateSummary": "Product 24382P16 (\"New Orleans City Tour: History, City Park, Cemeteries, Food tips.\") meeting point \"Outside Bon's New Orleans Street Food next to Landry's Seafood.\" lacks exact coordinates (locationPrecision=unknown).",
+      "humanDecisionRequired": "Confirm exact coordinates and landmark match for 24382P16 (Outside Bon's New Orleans Street Food next to Landry's Seafood.)."
+    },
+    {
+      "factId": "cat-pickup-exc:24382P16:unverified_cruise_berth_transfer",
+      "productCode": "24382P16",
+      "destinationSlug": "new-orleans",
+      "optionCode": null,
+      "exceptionCode": "unverified_cruise_berth_transfer",
+      "observedStateSummary": "Cruise-port tour 24382P16 in new-orleans has transferTimeSource=\"unknown\" without verified berth-to-meeting transfer minutes.",
+      "humanDecisionRequired": "Confirm cruise berth pickup or round-trip transfer minutes between the new-orleans cruise pier and \"Outside Bon's New Orleans Street Food next to Landry's Seafood.\" for 24382P16."
+    }
+  ],
+  "perTourComparison": [
+    {
+      "productCode": "15200P6",
+      "destinationSlug": "new-orleans",
+      "title": "New Orleans Swamp Tour Boat Adventure with Transportation",
+      "selectionReason": "guest_clicked_or_pilot_priority",
+      "liveOptionsEvaluated": 4,
+      "before": {
+        "pickupType": "HOTEL_PICKUP",
+        "pickupFulfillmentType": "hotel_pickup",
+        "meetingPointName": "French Quarter / Downtown New Orleans Hotel Shuttle Pickup Zone",
+        "locationPrecision": "exact"
+      },
+      "after": {
+        "pickupType": "HOTEL_PICKUP",
+        "pickupFulfillmentType": "hotel_pickup",
+        "meetingPointName": "French Quarter / Downtown New Orleans Hotel Shuttle Pickup Zone",
+        "meetingPointAddress": null,
+        "locationPrecision": "exact"
+      },
+      "resolvedPickupMode": false,
+      "resolvedMeetingPoint": false,
+      "resolvedExactCoordinates": false
+    },
+    {
+      "productCode": "6953SWAMPTRANS",
+      "destinationSlug": "new-orleans",
+      "title": "New Orleans Swamp and Bayou Boat Tour with Transportation",
+      "selectionReason": "guest_clicked_or_pilot_priority",
+      "liveOptionsEvaluated": 4,
+      "before": {
+        "pickupType": "HOTEL_PICKUP",
+        "pickupFulfillmentType": "hotel_pickup",
+        "meetingPointName": "Please be outside the Homewood Suites French Quarter at 317 North Rampart Street at the beginning of the pickup window. Your shuttle departs promptly. \n9:30AM Tour (Picks up at 8:00AM)\n12:15PM Tour (Picks up at 10:15AM)\n2:45PM Tour (Picks up at 1:15PM)\n5:00PM Tour (Picks up at 3:30PM)",
+        "locationPrecision": "unknown"
+      },
+      "after": {
+        "pickupType": "MEETING_POINT_ONLY",
+        "pickupFulfillmentType": "self_drive",
+        "meetingPointName": "Please be outside the Homewood Suites French Quarter at 317 North Rampart Street at the beginning of the pickup window. Your shuttle departs promptly. \n9:30AM Tour (Picks up at 8:00AM)\n12:15PM Tour (Picks up at 10:15AM)\n2:45PM Tour (Picks up at 1:15PM)\n5:00PM Tour (Picks up at 3:30PM)",
+        "meetingPointAddress": "Please be outside the Homewood Suites French Quarter at 317 North Rampart Street at the beginning of the pickup window. Your shuttle departs promptly. \n9:30AM Tour (Picks up at 8:00AM)\n12:15PM Tour (Picks up at 10:15AM)\n2:45PM Tour (Picks up at 1:15PM)\n5:00PM Tour (Picks up at 3:30PM)",
+        "locationPrecision": "unknown"
+      },
+      "resolvedPickupMode": false,
+      "resolvedMeetingPoint": false,
+      "resolvedExactCoordinates": false
+    },
+    {
+      "productCode": "254526P1",
+      "destinationSlug": "nassau",
+      "title": "Nassau Swimming Pigs and Private Beach Club Escape",
+      "selectionReason": "guest_clicked_or_pilot_priority",
+      "liveOptionsEvaluated": 2,
+      "before": {
+        "pickupType": "HOTEL_OR_MEETING_POINT",
+        "pickupFulfillmentType": "self_drive",
+        "meetingPointName": "Punctuality at your designated pickup location is essential for a smooth experience.\n\nFor guests who have opted for the morning tour without pickup services, we kindly request your presence at the designated starting point by 9:45 am. Your prompt arrival ensures a timely commencement of the tour.",
+        "locationPrecision": "unknown"
+      },
+      "after": {
+        "pickupType": "HOTEL_OR_MEETING_POINT",
+        "pickupFulfillmentType": "self_drive",
+        "meetingPointName": "Punctuality at your designated pickup location is essential for a smooth experience.\n\nFor guests who have opted for the morning tour without pickup services, we kindly request your presence at the designated starting point by 9:45 am. Your prompt arrival ensures a timely commencement of the tour.",
+        "meetingPointAddress": "Punctuality at your designated pickup location is essential for a smooth experience.\n\nFor guests who have opted for the morning tour without pickup services, we kindly request your presence at the designated starting point by 9:45 am. Your prompt arrival ensures a timely commencement of the tour.",
+        "locationPrecision": "unknown"
+      },
+      "resolvedPickupMode": false,
+      "resolvedMeetingPoint": false,
+      "resolvedExactCoordinates": false
+    },
+    {
+      "productCode": "7452P2",
+      "destinationSlug": "st-thomas",
+      "title": "Turtle Cove Catamaran Snorkel and Sail at Little Buck Island STT",
+      "selectionReason": "guest_clicked_or_pilot_priority",
+      "liveOptionsEvaluated": 1,
+      "before": {
+        "pickupType": "MEETING_POINT_ONLY",
+        "pickupFulfillmentType": "self_drive",
+        "meetingPointName": "Guest is to provide their own transportation to the Marriott's Frenchman's Cove. Check in with security and make your way to the DOCK and follow signs that say public access to beach. Arrive 30 minutes prior to trip departure time. We are cannot accommodate late arrivals. *Reference map in photos.",
+        "locationPrecision": "unknown"
+      },
+      "after": {
+        "pickupType": "MEETING_POINT_ONLY",
+        "pickupFulfillmentType": "self_drive",
+        "meetingPointName": "Guest is to provide their own transportation to the Marriott's Frenchman's Cove. Check in with security and make your way to the DOCK and follow signs that say public access to beach. Arrive 30 minutes prior to trip departure time. We are cannot accommodate late arrivals. *Reference map in photos.",
+        "meetingPointAddress": "Guest is to provide their own transportation to the Marriott's Frenchman's Cove. Check in with security and make your way to the DOCK and follow signs that say public access to beach. Arrive 30 minutes prior to trip departure time. We are cannot accommodate late arrivals. *Reference map in photos.",
+        "locationPrecision": "unknown"
+      },
+      "resolvedPickupMode": false,
+      "resolvedMeetingPoint": false,
+      "resolvedExactCoordinates": false
+    },
+    {
+      "productCode": "5199KSML",
+      "destinationSlug": "st-thomas",
+      "title": "St Thomas Mangrove Lagoon Kayak and Snorkel Tour in the US Virgin Islands",
+      "selectionReason": "guest_clicked_or_pilot_priority",
+      "liveOptionsEvaluated": 2,
+      "before": {
+        "pickupType": "UNKNOWN",
+        "pickupFulfillmentType": "unknown",
+        "meetingPointName": null,
+        "locationPrecision": "unknown"
+      },
+      "after": {
+        "pickupType": "MEETING_POINT_ONLY",
+        "pickupFulfillmentType": "self_drive",
+        "meetingPointName": null,
+        "meetingPointAddress": null,
+        "locationPrecision": "unknown"
+      },
+      "resolvedPickupMode": true,
+      "resolvedMeetingPoint": false,
+      "resolvedExactCoordinates": false
+    },
+    {
+      "productCode": "5553274P1",
+      "destinationSlug": "cozumel",
+      "title": "Jade Caverns and Mayan Village Cozumel ATV TOUR",
+      "selectionReason": "guest_clicked_or_pilot_priority",
+      "liveOptionsEvaluated": 1,
+      "before": {
+        "pickupType": "HOTEL_OR_MEETING_POINT",
+        "pickupFulfillmentType": "pier_pickup",
+        "meetingPointName": "This is a meeting point located outside Puerta Maya Port.\nThis is meeting point is perfect for people who comes on:\n•Carnival Cruises.\n•Princess Cruise Line.\nYou do not need to pay taxi, you can arrive just walking.\nWe will text you before the tour to send you a video about how to arrive here.",
+        "locationPrecision": "unknown"
+      },
+      "after": {
+        "pickupType": "HOTEL_OR_MEETING_POINT",
+        "pickupFulfillmentType": "pier_pickup",
+        "meetingPointName": "This is a meeting point located outside Puerta Maya Port.\nThis is meeting point is perfect for people who comes on:\n•Carnival Cruises.\n•Princess Cruise Line.\nYou do not need to pay taxi, you can arrive just walking.\nWe will text you before the tour to send you a video about how to arrive here.",
+        "meetingPointAddress": "This is a meeting point located outside Puerta Maya Port.\nThis is meeting point is perfect for people who comes on:\n•Carnival Cruises.\n•Princess Cruise Line.\nYou do not need to pay taxi, you can arrive just walking.\nWe will text you before the tour to send you a video about how to arrive here.",
+        "locationPrecision": "unknown"
+      },
+      "resolvedPickupMode": false,
+      "resolvedMeetingPoint": false,
+      "resolvedExactCoordinates": false
+    },
+    {
+      "productCode": "6455NOLAAIR",
+      "destinationSlug": "new-orleans",
+      "title": "New Orleans Airboat Ride",
+      "selectionReason": "guest_clicked_or_pilot_priority",
+      "liveOptionsEvaluated": 5,
+      "before": {
+        "pickupType": "HOTEL_OR_MEETING_POINT",
+        "pickupFulfillmentType": "self_drive",
+        "meetingPointName": "Please turn right on Texas Street (the next right), not Fleming Park Rd to enter the facility.",
+        "locationPrecision": "exact"
+      },
+      "after": {
+        "pickupType": "HOTEL_OR_MEETING_POINT",
+        "pickupFulfillmentType": "self_drive",
+        "meetingPointName": "Please turn right on Texas Street (the next right), not Fleming Park Rd to enter the facility.",
+        "meetingPointAddress": "Please turn right on Texas Street (the next right), not Fleming Park Rd to enter the facility.",
+        "locationPrecision": "exact"
+      },
+      "resolvedPickupMode": false,
+      "resolvedMeetingPoint": false,
+      "resolvedExactCoordinates": false
+    },
+    {
+      "productCode": "3780AIRBOAT",
+      "destinationSlug": "new-orleans",
+      "title": "Airboat Ride with Optional Transportation from New Orleans",
+      "selectionReason": "guest_clicked_or_pilot_priority",
+      "liveOptionsEvaluated": 6,
+      "before": {
+        "pickupType": "HOTEL_OR_MEETING_POINT",
+        "pickupFulfillmentType": "self_drive",
+        "meetingPointName": "*SELF-DRIVE - NO TRANSPORTATION INCLUDED*\n\nUpon arrival, you’ll find free parking on-site and a check-in area near the dock. Look for signs for the swamp tour or the main office building, where staff will assist you and give you a wristband with your boat number.",
+        "locationPrecision": "unknown"
+      },
+      "after": {
+        "pickupType": "MEETING_POINT_ONLY",
+        "pickupFulfillmentType": "self_drive",
+        "meetingPointName": "*SELF-DRIVE - NO TRANSPORTATION INCLUDED*\n\nUpon arrival, you’ll find free parking on-site and a check-in area near the dock. Look for signs for the swamp tour or the main office building, where staff will assist you and give you a wristband with your boat number.",
+        "meetingPointAddress": "*SELF-DRIVE - NO TRANSPORTATION INCLUDED*\n\nUpon arrival, you’ll find free parking on-site and a check-in area near the dock. Look for signs for the swamp tour or the main office building, where staff will assist you and give you a wristband with your boat number.",
+        "locationPrecision": "unknown"
+      },
+      "resolvedPickupMode": false,
+      "resolvedMeetingPoint": false,
+      "resolvedExactCoordinates": false
+    },
+    {
+      "productCode": "331813P1",
+      "destinationSlug": "juneau",
+      "title": "3.5 Hour Crowd-Skipping Whale Tour in Juneau, Alaska",
+      "selectionReason": "guest_clicked_or_pilot_priority",
+      "liveOptionsEvaluated": 1,
+      "before": {
+        "pickupType": "HOTEL_PICKUP",
+        "pickupFulfillmentType": "hotel_pickup",
+        "meetingPointName": "Juneau Cruise Ship Terminal / Mount Roberts (Goldbelt) Tramway",
+        "locationPrecision": "exact"
+      },
+      "after": {
+        "pickupType": "CRUISE_PIER_PICKUP",
+        "pickupFulfillmentType": "pier_pickup",
+        "meetingPointName": "Juneau Cruise Ship Terminal / Mount Roberts (Goldbelt) Tramway",
+        "meetingPointAddress": "490 S Franklin St, Juneau, AK 99801, USA",
+        "locationPrecision": "exact"
+      },
+      "resolvedPickupMode": false,
+      "resolvedMeetingPoint": false,
+      "resolvedExactCoordinates": false
+    },
+    {
+      "productCode": "5885P231",
+      "destinationSlug": "cozumel",
+      "title": "Chichen Itza, Cenote & Valladolid Tour with Tequila and Lunch",
+      "selectionReason": "catalog_unknown_logistics_priority",
+      "liveOptionsEvaluated": 4,
+      "before": {
+        "pickupType": "HOTEL_OR_MEETING_POINT",
+        "pickupFulfillmentType": "self_drive",
+        "meetingPointName": "You will be picked up at Smart Oasis Cancun at 6:10 am if you have chosen the 5 am option of the tour, or at 9:10 am if you have chosen the 8 am option of the tour.",
+        "locationPrecision": "unknown"
+      },
+      "after": {
+        "pickupType": "HOTEL_OR_MEETING_POINT",
+        "pickupFulfillmentType": "self_drive",
+        "meetingPointName": "You will be picked up at Smart Oasis Cancun at 6:10 am if you have chosen the 5 am option of the tour, or at 9:10 am if you have chosen the 8 am option of the tour.",
+        "meetingPointAddress": "You will be picked up at Smart Oasis Cancun at 6:10 am if you have chosen the 5 am option of the tour, or at 9:10 am if you have chosen the 8 am option of the tour.",
+        "locationPrecision": "unknown"
+      },
+      "resolvedPickupMode": false,
+      "resolvedMeetingPoint": false,
+      "resolvedExactCoordinates": false
+    },
+    {
+      "productCode": "5889GHOST",
+      "destinationSlug": "new-orleans",
+      "title": "New Orleans Premier Ghost, Voodoo and Vampire Walking Tour",
+      "selectionReason": "catalog_unknown_logistics_priority",
+      "liveOptionsEvaluated": 4,
+      "before": {
+        "pickupType": "MEETING_POINT_ONLY",
+        "pickupFulfillmentType": "self_drive",
+        "meetingPointName": "Our Ghost Tours meet at Witches Brew Gallery at 311 Exchange Place.",
+        "locationPrecision": "unknown"
+      },
+      "after": {
+        "pickupType": "MEETING_POINT_ONLY",
+        "pickupFulfillmentType": "self_drive",
+        "meetingPointName": "Our Ghost Tours meet at Witches Brew Gallery at 311 Exchange Place.",
+        "meetingPointAddress": "Our Ghost Tours meet at Witches Brew Gallery at 311 Exchange Place.",
+        "locationPrecision": "unknown"
+      },
+      "resolvedPickupMode": false,
+      "resolvedMeetingPoint": false,
+      "resolvedExactCoordinates": false
+    },
+    {
+      "productCode": "5304HAVANA",
+      "destinationSlug": "miami",
+      "title": "Little Havana Food and Walking Tour in Miami",
+      "selectionReason": "catalog_unknown_logistics_priority",
+      "liveOptionsEvaluated": 1,
+      "before": {
+        "pickupType": "UNKNOWN",
+        "pickupFulfillmentType": "unknown",
+        "meetingPointName": null,
+        "locationPrecision": "unknown"
+      },
+      "after": {
+        "pickupType": "MEETING_POINT_ONLY",
+        "pickupFulfillmentType": "self_drive",
+        "meetingPointName": "Meeting Point: Tower Theatre at 1508 SW 8th St, Miami, FL 33135.",
+        "meetingPointAddress": null,
+        "locationPrecision": "unknown"
+      },
+      "resolvedPickupMode": true,
+      "resolvedMeetingPoint": true,
+      "resolvedExactCoordinates": false
+    },
+    {
+      "productCode": "36129P1",
+      "destinationSlug": "seattle",
+      "title": "Beneath The Streets Underground History Tour",
+      "selectionReason": "catalog_unknown_logistics_priority",
+      "liveOptionsEvaluated": 1,
+      "before": {
+        "pickupType": "MEETING_POINT_ONLY",
+        "pickupFulfillmentType": "self_drive",
+        "meetingPointName": "Look for the black awning over the sidewalk; the stairs beneath will lead right to the check-in desk.",
+        "locationPrecision": "unknown"
+      },
+      "after": {
+        "pickupType": "MEETING_POINT_ONLY",
+        "pickupFulfillmentType": "self_drive",
+        "meetingPointName": "Look for the black awning over the sidewalk; the stairs beneath will lead right to the check-in desk.",
+        "meetingPointAddress": "Look for the black awning over the sidewalk; the stairs beneath will lead right to the check-in desk.",
+        "locationPrecision": "unknown"
+      },
+      "resolvedPickupMode": false,
+      "resolvedMeetingPoint": false,
+      "resolvedExactCoordinates": false
+    },
+    {
+      "productCode": "175552P1",
+      "destinationSlug": "new-orleans",
+      "title": "Adults-Only New Orleans Ghost, Crime, Voodoo, and Vampire Tour",
+      "selectionReason": "catalog_unknown_logistics_priority",
+      "liveOptionsEvaluated": 2,
+      "before": {
+        "pickupType": "UNKNOWN",
+        "pickupFulfillmentType": "unknown",
+        "meetingPointName": null,
+        "locationPrecision": "unknown"
+      },
+      "after": {
+        "pickupType": "MEETING_POINT_ONLY",
+        "pickupFulfillmentType": "self_drive",
+        "meetingPointName": "We will meet and depart from the front gate of Armstrong Park. Look for the giant archway with the name of the park emblazoned across it.",
+        "meetingPointAddress": null,
+        "locationPrecision": "unknown"
+      },
+      "resolvedPickupMode": true,
+      "resolvedMeetingPoint": true,
+      "resolvedExactCoordinates": false
+    },
+    {
+      "productCode": "6205FOODNOLA",
+      "destinationSlug": "new-orleans",
+      "title": "New Orleans Food Walking Tour of the French Quarter with Small-Group Option",
+      "selectionReason": "catalog_unknown_logistics_priority",
+      "liveOptionsEvaluated": 2,
+      "before": {
+        "pickupType": "MEETING_POINT_ONLY",
+        "pickupFulfillmentType": "self_drive",
+        "meetingPointName": "Meet at Roux Royale , corner of Royal St and Toulouse St.",
+        "locationPrecision": "unknown"
+      },
+      "after": {
+        "pickupType": "MEETING_POINT_ONLY",
+        "pickupFulfillmentType": "self_drive",
+        "meetingPointName": "Meet at Roux Royale , corner of Royal St and Toulouse St.",
+        "meetingPointAddress": "Meet at Roux Royale , corner of Royal St and Toulouse St.",
+        "locationPrecision": "unknown"
+      },
+      "resolvedPickupMode": false,
+      "resolvedMeetingPoint": false,
+      "resolvedExactCoordinates": false
+    },
+    {
+      "productCode": "5694NOHOHO",
+      "destinationSlug": "new-orleans",
+      "title": "New Orleans City Sightseeing Hop-On Hop-Off Bus Tour",
+      "selectionReason": "catalog_unknown_logistics_priority",
+      "liveOptionsEvaluated": 1,
+      "before": {
+        "pickupType": "UNKNOWN",
+        "pickupFulfillmentType": "unknown",
+        "meetingPointName": null,
+        "locationPrecision": "unknown"
+      },
+      "after": {
+        "pickupType": "UNKNOWN",
+        "pickupFulfillmentType": "unknown",
+        "meetingPointName": null,
+        "meetingPointAddress": null,
+        "locationPrecision": "unknown"
+      },
+      "resolvedPickupMode": false,
+      "resolvedMeetingPoint": false,
+      "resolvedExactCoordinates": false
+    },
+    {
+      "productCode": "60593P4",
+      "destinationSlug": "new-orleans",
+      "title": "St. Louis Cemetery No. 1 Official Walking Tour",
+      "selectionReason": "catalog_unknown_logistics_priority",
+      "liveOptionsEvaluated": 2,
+      "before": {
+        "pickupType": "MEETING_POINT_ONLY",
+        "pickupFulfillmentType": "self_drive",
+        "meetingPointName": "Enter Basin St. Station Visitor Information Center to find our Cemetery Tours Desk & Team! Walking distance from the French Quarter, hop off City Sightseeing Double-Decker at stop 5, or drive and park in the adjacent parking lot, available to the public for hourly, daily, and overnight rates.",
+        "locationPrecision": "unknown"
+      },
+      "after": {
+        "pickupType": "MEETING_POINT_ONLY",
+        "pickupFulfillmentType": "self_drive",
+        "meetingPointName": "Enter Basin St. Station Visitor Information Center to find our Cemetery Tours Desk & Team! Walking distance from the French Quarter, hop off City Sightseeing Double-Decker at stop 5, or drive and park in the adjacent parking lot, available to the public for hourly, daily, and overnight rates.",
+        "meetingPointAddress": "Enter Basin St. Station Visitor Information Center to find our Cemetery Tours Desk & Team! Walking distance from the French Quarter, hop off City Sightseeing Double-Decker at stop 5, or drive and park in the adjacent parking lot, available to the public for hourly, daily, and overnight rates.",
+        "locationPrecision": "unknown"
+      },
+      "resolvedPickupMode": false,
+      "resolvedMeetingPoint": false,
+      "resolvedExactCoordinates": false
+    },
+    {
+      "productCode": "23161P1",
+      "destinationSlug": "seattle",
+      "title": "Chef Guided Food Tour of Pike Place Market",
+      "selectionReason": "catalog_unknown_logistics_priority",
+      "liveOptionsEvaluated": 1,
+      "before": {
+        "pickupType": "MEETING_POINT_ONLY",
+        "pickupFulfillmentType": "self_drive",
+        "meetingPointName": "Meet your chef outside of Simply Seattle located at 1600 First Ave (the corner of 1st Ave and Pine St). Please arrive 5 minutes early. We can't catch you up after the tour has left.\nSummer is busy and there are several events daily making traffic & parking challenging. Please plan accordingly!",
+        "locationPrecision": "unknown"
+      },
+      "after": {
+        "pickupType": "MEETING_POINT_ONLY",
+        "pickupFulfillmentType": "self_drive",
+        "meetingPointName": "Meet your chef outside of Simply Seattle located at 1600 First Ave (the corner of 1st Ave and Pine St). Please arrive 5 minutes early. We can't catch you up after the tour has left.\nSummer is busy and there are several events daily making traffic & parking challenging. Please plan accordingly!",
+        "meetingPointAddress": "Meet your chef outside of Simply Seattle located at 1600 First Ave (the corner of 1st Ave and Pine St). Please arrive 5 minutes early. We can't catch you up after the tour has left.\nSummer is busy and there are several events daily making traffic & parking challenging. Please plan accordingly!",
+        "locationPrecision": "unknown"
+      },
+      "resolvedPickupMode": false,
+      "resolvedMeetingPoint": false,
+      "resolvedExactCoordinates": false
+    },
+    {
+      "productCode": "169162P2",
+      "destinationSlug": "miami",
+      "title": "2-Hour Miami Private Boat Tour: Skyline & Star Island",
+      "selectionReason": "catalog_unknown_logistics_priority",
+      "liveOptionsEvaluated": 4,
+      "before": {
+        "pickupType": "UNKNOWN",
+        "pickupFulfillmentType": "unknown",
+        "meetingPointName": null,
+        "locationPrecision": "unknown"
+      },
+      "after": {
+        "pickupType": "MEETING_POINT_ONLY",
+        "pickupFulfillmentType": "self_drive",
+        "meetingPointName": "We are inside the property on 2600 Nw 18th Ter Miami FL 33125, we do not have parking available. The nearest Parking is Street Parking 2 blocks away, is a 4 minute walk to our prop",
+        "meetingPointAddress": null,
+        "locationPrecision": "unknown"
+      },
+      "resolvedPickupMode": true,
+      "resolvedMeetingPoint": true,
+      "resolvedExactCoordinates": false
+    },
+    {
+      "productCode": "122218P1",
+      "destinationSlug": "cozumel",
+      "title": "Cozumel: Paradise Beach Club All-Inclusive Day Pass",
+      "selectionReason": "catalog_unknown_logistics_priority",
+      "liveOptionsEvaluated": 1,
+      "before": {
+        "pickupType": "MEETING_POINT_ONLY",
+        "pickupFulfillmentType": "self_drive",
+        "meetingPointName": "Getting to Paradise is super easy. The easiest way to get here is taking a taxi from your cruise ship/hotel. It is about a 10-15 minute taxi ride and runs about US$16 each way (per TAXI not per Person) for a car for up to four people. There are also taxi VANS that takes up to 8 people.",
+        "locationPrecision": "unknown"
+      },
+      "after": {
+        "pickupType": "MEETING_POINT_ONLY",
+        "pickupFulfillmentType": "self_drive",
+        "meetingPointName": "Getting to Paradise is super easy. The easiest way to get here is taking a taxi from your cruise ship/hotel. It is about a 10-15 minute taxi ride and runs about US$16 each way (per TAXI not per Person) for a car for up to four people. There are also taxi VANS that takes up to 8 people.",
+        "meetingPointAddress": "Getting to Paradise is super easy. The easiest way to get here is taking a taxi from your cruise ship/hotel. It is about a 10-15 minute taxi ride and runs about US$16 each way (per TAXI not per Person) for a car for up to four people. There are also taxi VANS that takes up to 8 people.",
+        "locationPrecision": "unknown"
+      },
+      "resolvedPickupMode": false,
+      "resolvedMeetingPoint": false,
+      "resolvedExactCoordinates": false
+    },
+    {
+      "productCode": "3657RAINIER",
+      "destinationSlug": "seattle",
+      "title": "Mt. Rainier National Park Highlights Tour",
+      "selectionReason": "catalog_unknown_logistics_priority",
+      "liveOptionsEvaluated": 1,
+      "before": {
+        "pickupType": "HOTEL_PICKUP",
+        "pickupFulfillmentType": "hotel_pickup",
+        "meetingPointName": null,
+        "locationPrecision": "unknown"
+      },
+      "after": {
+        "pickupType": "HOTEL_PICKUP",
+        "pickupFulfillmentType": "hotel_pickup",
+        "meetingPointName": "1 Hotel Seattle",
+        "meetingPointAddress": "2125 Terry Avenue, Seattle, Washington, 98121",
+        "locationPrecision": "exact"
+      },
+      "resolvedPickupMode": false,
+      "resolvedMeetingPoint": true,
+      "resolvedExactCoordinates": true
+    },
+    {
+      "productCode": "5889P11",
+      "destinationSlug": "new-orleans",
+      "title": "New Orleans Adults-Only Ghost, Voodoo and Vampire Tour",
+      "selectionReason": "catalog_unknown_logistics_priority",
+      "liveOptionsEvaluated": 1,
+      "before": {
+        "pickupType": "UNKNOWN",
+        "pickupFulfillmentType": "unknown",
+        "meetingPointName": null,
+        "locationPrecision": "unknown"
+      },
+      "after": {
+        "pickupType": "MEETING_POINT_ONLY",
+        "pickupFulfillmentType": "self_drive",
+        "meetingPointName": "At Witches Brew Gallery across from Pelican Club Restaurant.",
+        "meetingPointAddress": null,
+        "locationPrecision": "unknown"
+      },
+      "resolvedPickupMode": true,
+      "resolvedMeetingPoint": true,
+      "resolvedExactCoordinates": false
+    },
+    {
+      "productCode": "8950P6",
+      "destinationSlug": "denver-colorado",
+      "title": "Discover Rocky Mountain National Park-Small Group Tour",
+      "selectionReason": "catalog_unknown_logistics_priority",
+      "liveOptionsEvaluated": 2,
+      "before": {
+        "pickupType": "UNKNOWN",
+        "pickupFulfillmentType": "unknown",
+        "meetingPointName": null,
+        "locationPrecision": "unknown"
+      },
+      "after": {
+        "pickupType": "MEETING_POINT_ONLY",
+        "pickupFulfillmentType": "self_drive",
+        "meetingPointName": "***We will pickup our guests at 9:45 am for Boulder Pick-Up***",
+        "meetingPointAddress": null,
+        "locationPrecision": "unknown"
+      },
+      "resolvedPickupMode": true,
+      "resolvedMeetingPoint": true,
+      "resolvedExactCoordinates": false
+    },
+    {
+      "productCode": "41410P10",
+      "destinationSlug": "denver-colorado",
+      "title": "Small Group Tour of Pikes Peak and the Garden of the Gods from Denver",
+      "selectionReason": "catalog_unknown_logistics_priority",
+      "liveOptionsEvaluated": 1,
+      "before": {
+        "pickupType": "UNKNOWN",
+        "pickupFulfillmentType": "unknown",
+        "meetingPointName": null,
+        "locationPrecision": "unknown"
+      },
+      "after": {
+        "pickupType": "MEETING_POINT_ONLY",
+        "pickupFulfillmentType": "self_drive",
+        "meetingPointName": "We pick up by the Hopdoddy Burger Bar outside of Union Station on Wynkoop Street.",
+        "meetingPointAddress": null,
+        "locationPrecision": "unknown"
+      },
+      "resolvedPickupMode": true,
+      "resolvedMeetingPoint": true,
+      "resolvedExactCoordinates": false
+    },
+    {
+      "productCode": "24382P16",
+      "destinationSlug": "new-orleans",
+      "title": "New Orleans City Tour: History, City Park, Cemeteries, Food tips.",
+      "selectionReason": "catalog_unknown_logistics_priority",
+      "liveOptionsEvaluated": 1,
+      "before": {
+        "pickupType": "UNKNOWN",
+        "pickupFulfillmentType": "unknown",
+        "meetingPointName": null,
+        "locationPrecision": "unknown"
+      },
+      "after": {
+        "pickupType": "MEETING_POINT_ONLY",
+        "pickupFulfillmentType": "self_drive",
+        "meetingPointName": "Outside Bon's New Orleans Street Food next to Landry's Seafood.",
+        "meetingPointAddress": null,
+        "locationPrecision": "unknown"
+      },
+      "resolvedPickupMode": true,
+      "resolvedMeetingPoint": true,
+      "resolvedExactCoordinates": false
+    }
+  ]
+}

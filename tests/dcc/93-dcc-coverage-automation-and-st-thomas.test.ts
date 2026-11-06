@@ -641,6 +641,7 @@ test("11. Each checkout intent gets its own referral ID (separate IDs for QA), t
     getOpaqueClickAttributionById,
     reconcilePartnerWebhookByClickId,
     resetOpaqueAttributionLedgerForTests,
+    toViatorCampaignToken,
   } = await import("../../lib/dcc/commerce/opaqueAttributionLedger");
   const { evaluateWinterSailingPlan } = await import(
     "../../lib/dcc/winterExcursionPlanner"
@@ -673,12 +674,21 @@ test("11. Each checkout intent gets its own referral ID (separate IDs for QA), t
   const redirectLocation = validClickRes.headers.get("location") || "";
   const redirectUrl = new URL(redirectLocation);
   assert.equal(redirectUrl.hostname, "www.viator.com");
+  const expectedQaCampaignToken = toViatorCampaignToken(qaNassauSaved.clickId);
+  assert.match(expectedQaCampaignToken, /^clkqa[0-9a-f]{20}$/);
   assert.equal(
     redirectUrl.searchParams.get("campaign"),
-    qaNassauSaved.clickId,
-    "Viator campaign parameter must equal the exact server-issued QA referral ID",
+    expectedQaCampaignToken,
+    "Viator campaign parameter must equal the alphanumeric token mapped to the server-issued QA referral ID",
   );
-  assert.equal(redirectUrl.searchParams.get("click_id"), qaNassauSaved.clickId);
+  assert.equal(
+    validClickRes.headers.get("x-dcc-referral-id"),
+    qaNassauSaved.clickId,
+  );
+  assert.equal(
+    validClickRes.headers.get("x-dcc-campaign-value"),
+    expectedQaCampaignToken,
+  );
 
   // Two production guests choosing the EXACT SAME offer (Nassau 254526P1 Option TG4) get separate clk_<24hex> referral IDs and separate ledger records
   const guest1ClickRes = await adsClickGet(
@@ -696,17 +706,23 @@ test("11. Each checkout intent gets its own referral ID (separate IDs for QA), t
 
   const guest1RefId = guest1ClickRes.headers.get("x-dcc-referral-id") || "";
   const guest2RefId = guest2ClickRes.headers.get("x-dcc-referral-id") || "";
+  const guest1CampaignToken =
+    guest1ClickRes.headers.get("x-dcc-campaign-value") || "";
+  const guest2CampaignToken =
+    guest2ClickRes.headers.get("x-dcc-campaign-value") || "";
   assert.match(guest1RefId, /^clk_[0-9a-f]{24}$/);
   assert.match(guest2RefId, /^clk_[0-9a-f]{24}$/);
+  assert.match(guest1CampaignToken, /^clk[0-9a-f]{24}$/);
+  assert.match(guest2CampaignToken, /^clk[0-9a-f]{24}$/);
   assert.notEqual(
     guest1RefId,
     guest2RefId,
     "Two production guests choosing the same offer must receive distinct referral IDs",
   );
 
-  // Confirm Guest 1's booking in production
+  // Confirm Guest 1's booking in production using the alphanumeric campaignValue token
   const guest1Confirm = reconcilePartnerWebhookByClickId({
-    campaignValue: guest1RefId,
+    campaignValue: guest1CampaignToken,
     provider: "viator",
     providerBookingRef: "BR-PROD-GUEST1-254526P1",
     eventType: "BOOKING_CONFIRMED",
@@ -717,6 +733,21 @@ test("11. Each checkout intent gets its own referral ID (separate IDs for QA), t
     isTest: false,
   });
   assert.equal(guest1Confirm.matched, true);
+
+  // Also verify older clk_<24hex> referral ID format matches the same Guest 1 record as a duplicate delivery
+  const guest1LegacyConfirm = reconcilePartnerWebhookByClickId({
+    campaignValue: guest1RefId,
+    provider: "viator",
+    providerBookingRef: "BR-PROD-GUEST1-254526P1",
+    eventType: "BOOKING_CONFIRMED",
+    grossRevenueUsd: 338.0,
+    estimatedCommissionUsd: 27.04,
+    paidCommissionUsd: null,
+    currency: "USD",
+    isTest: false,
+  });
+  assert.equal(guest1LegacyConfirm.matched, true);
+  assert.equal(guest1LegacyConfirm.outcome.duplicateDelivery, true);
 
   // Verify Guest 1 has 1 confirmed booking while Guest 2's separate ledger record remains untouched (0 confirmed bookings)
   const guest1BeforeReplay = getOpaqueClickAttributionById(guest1RefId);
@@ -747,7 +778,7 @@ test("11. Each checkout intent gets its own referral ID (separate IDs for QA), t
   );
 
   const qaReplayAgainstGuest2 = reconcilePartnerWebhookByClickId({
-    campaignValue: guest2RefId,
+    campaignValue: guest2CampaignToken,
     provider: "viator",
     providerBookingRef: "TEST-REPLAY-ATTEMPT-GUEST2",
     eventType: "BOOKING_CONFIRMED",
@@ -806,14 +837,17 @@ test("11. Each checkout intent gets its own referral ID (separate IDs for QA), t
   const wnoClickRes = await adsClickGet(wnoClickReq);
   assert.equal(wnoClickRes.status, 302);
   const wnoRefId = wnoClickRes.headers.get("x-dcc-referral-id") || "";
+  const wnoCampaignToken = wnoClickRes.headers.get("x-dcc-campaign-value") || "";
   assert.match(wnoRefId, /^clk_qa_[0-9a-f]{20}$/);
+  assert.match(wnoCampaignToken, /^clkqa[0-9a-f]{20}$/);
+  assert.equal(wnoCampaignToken, toViatorCampaignToken(wnoRefId));
   const wnoRedirectUrl = new URL(wnoClickRes.headers.get("location") || "");
-  assert.equal(wnoRedirectUrl.searchParams.get("campaign"), wnoRefId);
+  assert.equal(wnoRedirectUrl.searchParams.get("campaign"), wnoCampaignToken);
   assert.match(wnoRedirectUrl.pathname, /15200P6$/);
 
-  // Reconcile labeled provider report sample via campaignValue = wnoRefId
+  // Reconcile labeled provider report sample via alphanumeric campaignValue = wnoCampaignToken
   const confirmOut = reconcilePartnerWebhookByClickId({
-    campaignValue: wnoRefId,
+    campaignValue: wnoCampaignToken,
     provider: "viator",
     providerBookingRef: "TEST-VIATOR-WNO-15200P6-01",
     eventType: "BOOKING_CONFIRMED",
@@ -847,7 +881,7 @@ test("11. Each checkout intent gets its own referral ID (separate IDs for QA), t
   assert.equal(wnoFunnel.test.settledReconciledCommissionUsd, 0);
 
   const settleOut = reconcilePartnerWebhookByClickId({
-    campaignValue: wnoRefId,
+    campaignValue: wnoCampaignToken,
     provider: "viator",
     providerBookingRef: "TEST-VIATOR-WNO-15200P6-01",
     eventType: "BOOKING_FULFILLED",

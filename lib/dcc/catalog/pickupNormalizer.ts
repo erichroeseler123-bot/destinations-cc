@@ -523,21 +523,456 @@ export function convertPickupExceptionToReviewDeskRow(
   };
 }
 
+export function deduplicatePickupExceptionsForReviewDesk(
+  exceptions: CatalogPickupExceptionRecord[],
+): CatalogPickupExceptionRecord[] {
+  const byProductAndCode = new Map<
+    string,
+    {
+      base: CatalogPickupExceptionRecord;
+      optionCodes: string[];
+    }
+  >();
+  const productCodesWithPrimaryPickupGap = new Set<string>();
+  for (const exc of exceptions) {
+    if (
+      exc.exceptionCode === "missing_pickup_mode" ||
+      exc.exceptionCode === "missing_meeting_point_identity"
+    ) {
+      productCodesWithPrimaryPickupGap.add(exc.providerProductCode);
+    }
+  }
+
+  for (const exc of exceptions) {
+    // If the entire tour is already flagged for missing_pickup_mode or missing_meeting_point_identity,
+    // suppress redundant per-option unknown flags unless the tour-level mode is already known.
+    if (
+      exc.exceptionCode === "option_pickup_unknown_or_ambiguous" &&
+      productCodesWithPrimaryPickupGap.has(exc.providerProductCode)
+    ) {
+      continue;
+    }
+
+    const key = `${exc.providerProductCode}::${exc.exceptionCode}`;
+    const existing = byProductAndCode.get(key);
+    if (!existing) {
+      const factId = `cat-pickup-exc:${exc.providerProductCode}:${exc.exceptionCode}`;
+      byProductAndCode.set(key, {
+        base: {
+          ...exc,
+          exceptionId: factId,
+          factId,
+        },
+        optionCodes: exc.optionCode ? [exc.optionCode] : [],
+      });
+    } else if (
+      exc.optionCode &&
+      !existing.optionCodes.includes(exc.optionCode)
+    ) {
+      existing.optionCodes.push(exc.optionCode);
+    }
+  }
+
+  const deduplicated: CatalogPickupExceptionRecord[] = [];
+  for (const { base, optionCodes } of byProductAndCode.values()) {
+    if (optionCodes.length > 1) {
+      deduplicated.push({
+        ...base,
+        optionCode: optionCodes.join(","),
+        observedStateSummary: `${base.observedStateSummary} (Deduplicated across ${optionCodes.length} options: ${optionCodes.join(", ")})`,
+        humanDecisionRequired: `Confirm option-specific pickup or meeting point rules for ${base.providerProductCode} across options: ${optionCodes.join(", ")}.`,
+      });
+    } else {
+      deduplicated.push(base);
+    }
+  }
+
+  return deduplicated;
+}
+
+export function extractViatorLocationRefsFromProductDetail(
+  detail: Record<string, any> | null | undefined,
+): string[] {
+  if (!detail || typeof detail !== "object") return [];
+  const refs = new Set<string>();
+  const addRef = (candidate: unknown) => {
+    if (typeof candidate === "string" && candidate.trim().startsWith("LOC-")) {
+      refs.add(candidate.trim());
+    }
+  };
+
+  const scanLogistics = (logistics: Record<string, any> | null | undefined) => {
+    if (!logistics || typeof logistics !== "object") return;
+    if (Array.isArray(logistics.start)) {
+      for (const s of logistics.start) {
+        addRef(s?.location?.ref);
+      }
+    }
+    if (Array.isArray(logistics.end)) {
+      for (const e of logistics.end) {
+        addRef(e?.location?.ref);
+      }
+    }
+    const tp = logistics.travelerPickup;
+    if (tp && Array.isArray(tp.locations)) {
+      for (const loc of tp.locations) {
+        addRef(loc?.location?.ref);
+      }
+    }
+  };
+
+  scanLogistics(detail.logistics);
+  if (Array.isArray(detail.productOptions)) {
+    for (const opt of detail.productOptions) {
+      scanLogistics(opt?.logistics);
+    }
+  }
+  return Array.from(refs);
+}
+
+function formatResolvedViatorAddress(
+  loc: Record<string, any> | null | undefined,
+): string | null {
+  if (!loc || typeof loc !== "object") return null;
+  const addr = loc.address;
+  if (!addr || typeof addr !== "object") return null;
+  const parts = [
+    addr.street,
+    addr.administrativeArea || addr.city,
+    addr.state,
+    addr.postcode,
+  ]
+    .filter((p): p is string => typeof p === "string" && p.trim().length > 0)
+    .map((p) => p.trim());
+  if (parts.length === 0) return null;
+  const joined = parts.join(", ");
+  return isGenericOrPlaceholderMeetingPointText(joined) ? null : joined;
+}
+
+/**
+ * Enriches a catalog tour record with live Viator `/products/{code}` option-level logistics
+ * and resolved `/locations/bulk` references (`LOC-...`).
+ * Keeps any missing or Google-reference-only coordinates explicitly `unknown` (`null`).
+ */
+export function enrichTourRecordFromViatorProductDetailAndLocations(
+  record: DurableTourRecord,
+  detail: Record<string, any>,
+  locationsByRef: Map<string, Record<string, any>>,
+): DurableTourRecord {
+  const logistics = detail?.logistics ?? {};
+  const travelerPickup = logistics?.travelerPickup ?? {};
+  const pickupOptionType = String(
+    travelerPickup?.pickupOptionType || "",
+  ).toUpperCase();
+
+  const rawPickupLocations = Array.isArray(travelerPickup?.locations)
+    ? travelerPickup.locations
+    : [];
+  const hasPortPickupLocation = rawPickupLocations.some(
+    (l: any) => String(l?.pickupType || "").toUpperCase() === "PORT",
+  );
+  const hasHotelPickupLocation = rawPickupLocations.some(
+    (l: any) => String(l?.pickupType || "").toUpperCase() === "HOTEL",
+  );
+  const allowCustomPickup = Boolean(travelerPickup?.allowCustomTravelerPickup);
+
+  // Resolve primary start location from logistics.start
+  const startEntries = Array.isArray(logistics?.start) ? logistics.start : [];
+  let resolvedStartName: string | null = record.meetingPointName;
+  let resolvedStartAddress: string | null = record.meetingPointAddress;
+  let resolvedStartLat: number | null = record.meetingPointLat;
+  let resolvedStartLng: number | null = record.meetingPointLng;
+
+  for (const startEntry of startEntries) {
+    const ref =
+      typeof startEntry?.location?.ref === "string"
+        ? startEntry.location.ref.trim()
+        : "";
+    const locObj = ref ? locationsByRef.get(ref) : null;
+    const candidateName =
+      typeof locObj?.name === "string" &&
+      !isGenericOrPlaceholderMeetingPointText(locObj.name)
+        ? locObj.name.trim()
+        : null;
+    const candidateAddr = formatResolvedViatorAddress(locObj);
+    const descText =
+      typeof startEntry?.description === "string" &&
+      startEntry.description.trim().length > 0 &&
+      !isGenericOrPlaceholderMeetingPointText(startEntry.description)
+        ? startEntry.description.trim().slice(0, 180)
+        : null;
+
+    if (candidateName && !resolvedStartName) {
+      resolvedStartName = candidateName;
+    }
+    if (candidateAddr && !resolvedStartAddress) {
+      resolvedStartAddress = candidateAddr;
+    }
+    if (!resolvedStartName && descText) {
+      resolvedStartName = descText;
+    }
+    const lat = locObj?.center?.latitude;
+    const lng = locObj?.center?.longitude;
+    if (hasValidCoordinates(lat, lng)) {
+      resolvedStartLat = lat;
+      resolvedStartLng = lng;
+    }
+    if (resolvedStartName && hasValidCoordinates(resolvedStartLat, resolvedStartLng)) {
+      break;
+    }
+  }
+
+  // Also resolve pickup locations list
+  const enrichedPickupLocations = [...(record.pickupLocations || [])];
+  for (const pEntry of rawPickupLocations.slice(0, 40)) {
+    const ref =
+      typeof pEntry?.location?.ref === "string"
+        ? pEntry.location.ref.trim()
+        : "";
+    if (!ref) continue;
+    const locObj = locationsByRef.get(ref);
+    const locName =
+      typeof locObj?.name === "string" &&
+      !isGenericOrPlaceholderMeetingPointText(locObj.name)
+        ? locObj.name.trim()
+        : null;
+    if (!locName) continue;
+    const lat = locObj?.center?.latitude;
+    const lng = locObj?.center?.longitude;
+    const addr = formatResolvedViatorAddress(locObj);
+    if (!enrichedPickupLocations.some((existing) => existing.ref === ref)) {
+      enrichedPickupLocations.push({
+        ref,
+        name: locName,
+        address: addr,
+        lat: hasValidCoordinates(lat, lng) ? lat : null,
+        lng: hasValidCoordinates(lat, lng) ? lng : null,
+        precision: hasValidCoordinates(lat, lng) ? "exact" : "unknown",
+        pickupType: String(pEntry?.pickupType || "HOTEL").toUpperCase() as any,
+      });
+    }
+    // If product is PICKUP_EVERYONE and lacks a start meeting point, use the first resolved pickup hub with coordinates as anchor only if no start point exists
+    if (
+      pickupOptionType === "PICKUP_EVERYONE" &&
+      !resolvedStartName &&
+      hasValidCoordinates(lat, lng)
+    ) {
+      resolvedStartName = locName;
+      resolvedStartAddress = addr;
+      resolvedStartLat = lat;
+      resolvedStartLng = lng;
+    }
+  }
+
+  let resolvedHasHotelPickup = record.hasHotelPickup;
+  let resolvedPickupType = record.pickupType;
+  let resolvedFulfillment = record.pickupFulfillmentType;
+
+  if (pickupOptionType === "PICKUP_EVERYONE") {
+    resolvedHasHotelPickup = true;
+    if (hasPortPickupLocation && !hasHotelPickupLocation && record.portSlug) {
+      resolvedPickupType = "CRUISE_PIER_PICKUP";
+      resolvedFulfillment = "pier_pickup";
+    } else {
+      resolvedPickupType = "HOTEL_PICKUP";
+      resolvedFulfillment = "hotel_pickup";
+    }
+  } else if (pickupOptionType === "PICKUP_AND_MEET_AT_START_POINT") {
+    resolvedHasHotelPickup = true;
+    resolvedPickupType = "HOTEL_OR_MEETING_POINT";
+    resolvedFulfillment =
+      resolvedFulfillment && resolvedFulfillment !== "unknown"
+        ? resolvedFulfillment
+        : "hotel_pickup";
+  } else if (pickupOptionType === "MEET_EVERYONE_AT_START_POINT") {
+    if (hasPortPickupLocation && record.portSlug) {
+      resolvedHasHotelPickup = false;
+      resolvedPickupType = "CRUISE_PIER_PICKUP";
+      resolvedFulfillment = "pier_pickup";
+    } else {
+      resolvedHasHotelPickup = false;
+      resolvedPickupType =
+        resolvedPickupType === "DOWNTOWN_SHUTTLE_DEPARTURE"
+          ? "DOWNTOWN_SHUTTLE_DEPARTURE"
+          : "MEETING_POINT_ONLY";
+      resolvedFulfillment =
+        resolvedFulfillment === "downtown_shuttle_departure" ||
+        resolvedFulfillment === "walkable_from_pier"
+          ? resolvedFulfillment
+          : "self_drive";
+    }
+  } else if (allowCustomPickup || hasHotelPickupLocation) {
+    resolvedHasHotelPickup = true;
+    resolvedPickupType =
+      startEntries.length > 0 ? "HOTEL_OR_MEETING_POINT" : "HOTEL_PICKUP";
+    resolvedFulfillment = "hotel_pickup";
+  }
+
+  // Enrich option-level pickup and meeting points from detail.productOptions
+  const rawDetailOptions = Array.isArray(detail?.productOptions)
+    ? detail.productOptions
+    : [];
+  const detailOptionByCode = new Map<string, Record<string, any>>();
+  for (const dOpt of rawDetailOptions) {
+    const code = String(dOpt?.productOptionCode || dOpt?.optionCode || "").trim();
+    if (code) detailOptionByCode.set(code, dOpt);
+  }
+
+  const existingOptions =
+    Array.isArray(record.productOptions) && record.productOptions.length > 0
+      ? record.productOptions
+      : rawDetailOptions.map((dOpt: any) => ({
+          optionCode: String(dOpt?.productOptionCode || "DEFAULT"),
+          title: String(dOpt?.title || record.title),
+          description:
+            typeof dOpt?.description === "string" ? dOpt.description : null,
+          includesPickup: null,
+          pickupFulfillmentType: "unknown" as PickupFulfillmentType,
+          meetingPointName: null,
+          meetingPointLat: null,
+          meetingPointLng: null,
+          durationMinutes: record.durationMinutes,
+          fromPriceCents: record.fromPriceCents,
+          priceBasis: record.priceBasis || "per_person",
+          scheduledStartTimes: [],
+        }));
+
+  const enrichedOptions: TourProductOptionRecord[] = existingOptions.map(
+    (opt) => {
+      const dOpt = detailOptionByCode.get(opt.optionCode);
+      const optTitleAndDesc = `${opt.title || ""} ${opt.description || ""} ${dOpt?.title || ""} ${dOpt?.description || ""}`.toLowerCase();
+
+      let optMeetingName = opt.meetingPointName ?? resolvedStartName;
+      let optLat = opt.meetingPointLat ?? resolvedStartLat;
+      let optLng = opt.meetingPointLng ?? resolvedStartLng;
+
+      const optStartEntries = Array.isArray(dOpt?.logistics?.start)
+        ? dOpt.logistics.start
+        : [];
+      for (const sEntry of optStartEntries) {
+        const ref =
+          typeof sEntry?.location?.ref === "string"
+            ? sEntry.location.ref.trim()
+            : "";
+        const locObj = ref ? locationsByRef.get(ref) : null;
+        if (
+          locObj?.name &&
+          !isGenericOrPlaceholderMeetingPointText(locObj.name)
+        ) {
+          optMeetingName = String(locObj.name).trim();
+        }
+        if (
+          locObj &&
+          hasValidCoordinates(
+            locObj?.center?.latitude,
+            locObj?.center?.longitude,
+          )
+        ) {
+          optLat = locObj.center.latitude;
+          optLng = locObj.center.longitude;
+        }
+      }
+
+      let optFulfillment: PickupFulfillmentType =
+        opt.pickupFulfillmentType && opt.pickupFulfillmentType !== "unknown"
+          ? opt.pickupFulfillmentType
+          : "unknown";
+      let optIncludesPickup = opt.includesPickup;
+
+      if (optFulfillment === "unknown") {
+        if (
+          /\b(?:no\s+pickup|without\s+pickup|without\s+transportation|no\s+transportation|self[-\s]?drive|drive\s+yourself|meet\s+at)\b/i.test(
+            optTitleAndDesc,
+          )
+        ) {
+          optFulfillment = "self_drive";
+          optIncludesPickup = false;
+        } else if (
+          /\b(?:with\s+(?:hotel\s+)?pickup|hotel\s+pickup|with\s+transportation|includes\s+pickup|pickup\s+included)\b/i.test(
+            optTitleAndDesc,
+          )
+        ) {
+          optFulfillment = "hotel_pickup";
+          optIncludesPickup = true;
+        } else if (
+          /\b(?:pier\s+pickup|cruise\s+port\s+pickup|cruise\s+terminal\s+pickup)\b/i.test(
+            optTitleAndDesc,
+          )
+        ) {
+          optFulfillment = "pier_pickup";
+          optIncludesPickup = true;
+        } else if (
+          resolvedFulfillment &&
+          resolvedFulfillment !== "unknown" &&
+          pickupOptionType !== "PICKUP_AND_MEET_AT_START_POINT"
+        ) {
+          optFulfillment = resolvedFulfillment;
+          optIncludesPickup = resolvedHasHotelPickup;
+        } else if (
+          pickupOptionType === "PICKUP_AND_MEET_AT_START_POINT" &&
+          optMeetingName !== null
+        ) {
+          optFulfillment = "hotel_pickup";
+          optIncludesPickup = true;
+        }
+      }
+
+      return {
+        ...opt,
+        includesPickup: optIncludesPickup,
+        pickupFulfillmentType: optFulfillment,
+        meetingPointName: optMeetingName,
+        meetingPointLat: hasValidCoordinates(optLat, optLng) ? optLat : null,
+        meetingPointLng: hasValidCoordinates(optLat, optLng) ? optLng : null,
+      };
+    },
+  );
+
+  return {
+    ...record,
+    hasHotelPickup: resolvedHasHotelPickup,
+    pickupType: resolvedPickupType,
+    pickupFulfillmentType: resolvedFulfillment,
+    meetingPointName: resolvedStartName,
+    meetingPointAddress: resolvedStartAddress,
+    meetingPointLat: hasValidCoordinates(resolvedStartLat, resolvedStartLng)
+      ? resolvedStartLat
+      : null,
+    meetingPointLng: hasValidCoordinates(resolvedStartLat, resolvedStartLng)
+      ? resolvedStartLng
+      : null,
+    locationPrecision:
+      resolvedStartName &&
+      hasValidCoordinates(resolvedStartLat, resolvedStartLng)
+        ? "exact"
+        : "unknown",
+    pickupLocations: enrichedPickupLocations,
+    productOptions: enrichedOptions,
+  };
+}
+
 /**
  * Queues normalized catalog pickup and meeting-point exceptions into the existing
  * DCC Research Review Desk (`synchronizeReviewDeskToDurableStore`) with
  * `status: "needs confirmation"`, `verified_on: null`, `verified_by: null`.
+ * Automatically deduplicates exceptions by `(providerProductCode, exceptionCode)` so only
+ * unique cases needing human judgment are sent to the Review Desk.
  */
 export async function queueCatalogPickupExceptionsToReviewDesk(
   exceptions: CatalogPickupExceptionRecord[],
-  options?: { maxRowsToQueue?: number },
+  options?: { maxRowsToQueue?: number; deduplicate?: boolean },
 ): Promise<{
   queuedCount: number;
+  deduplicatedFromCount: number;
   persistedToDurableStore: boolean;
   reviewDeskCandidateRows: RawResearchDeskFactRow[];
 }> {
   const limit = options?.maxRowsToQueue ?? 250;
-  const slice = exceptions.slice(0, limit);
+  const deduped =
+    options?.deduplicate === false
+      ? exceptions
+      : deduplicatePickupExceptionsForReviewDesk(exceptions);
+  const slice = deduped.slice(0, limit);
   const nowIso = new Date().toISOString();
   const rows = slice.map((exc) =>
     convertPickupExceptionToReviewDeskRow(exc, nowIso),
@@ -546,6 +981,7 @@ export async function queueCatalogPickupExceptionsToReviewDesk(
   if (rows.length === 0) {
     return {
       queuedCount: 0,
+      deduplicatedFromCount: exceptions.length,
       persistedToDurableStore: false,
       reviewDeskCandidateRows: [],
     };
@@ -559,6 +995,7 @@ export async function queueCatalogPickupExceptionsToReviewDesk(
 
   return {
     queuedCount: rows.length,
+    deduplicatedFromCount: exceptions.length,
     persistedToDurableStore: syncResult.persisted,
     reviewDeskCandidateRows: rows,
   };

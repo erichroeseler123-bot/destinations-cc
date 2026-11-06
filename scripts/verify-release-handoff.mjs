@@ -184,8 +184,15 @@ async function verifyStorefrontSelectionAndHandoff({ label, date, partySize }) {
   const referralId = handoffRes.headers.get("x-dcc-referral-id") || "";
   assert.match(
     referralId,
-    /^clk_qa_[0-9a-f]{16,24}$/,
-    `${label}: Expected QA referral ID clk_qa_<hex>, got ${referralId}`,
+    /^clk_qa_[0-9a-f]{20}$/,
+    `${label}: Expected QA referral ID clk_qa_<20hex>, got ${referralId}`,
+  );
+  const expectedCampaignToken = referralId.replace(/^clk_qa_/, "clkqa");
+  const campaignHeader = handoffRes.headers.get("x-dcc-campaign-value") || "";
+  assert.equal(
+    campaignHeader,
+    expectedCampaignToken,
+    `${label}: Expected X-DCC-Campaign-Value ${expectedCampaignToken}, got ${campaignHeader}`,
   );
 
   const checkoutLocation = handoffRes.headers.get("location") || "";
@@ -196,18 +203,15 @@ async function verifyStorefrontSelectionAndHandoff({ label, date, partySize }) {
   );
 
   const checkoutUrl = new URL(checkoutLocation);
-  assert.equal(checkoutUrl.searchParams.get("date"), date);
-  assert.equal(checkoutUrl.searchParams.get("dcc_date"), date);
-  assert.equal(checkoutUrl.searchParams.get("adults"), partySize);
-  assert.equal(checkoutUrl.searchParams.get("dcc_adults"), partySize);
-  assert.equal(checkoutUrl.searchParams.get("optionCode"), "TG10");
   assert.equal(checkoutUrl.searchParams.get("pid"), "P00306962");
   assert.equal(checkoutUrl.searchParams.get("mcid"), "42383");
-  assert.equal(checkoutUrl.searchParams.get("campaign"), referralId);
-  assert.equal(
-    checkoutUrl.searchParams.get("placementId"),
-    "fp-wno-swamp-tours",
-  );
+  assert.equal(checkoutUrl.searchParams.get("medium"), "api");
+  assert.equal(checkoutUrl.searchParams.get("api_version"), "2.0");
+  assert.equal(checkoutUrl.searchParams.get("campaign"), expectedCampaignToken);
+  assert.equal(handoffRes.headers.get("x-dcc-selected-date"), date);
+  assert.equal(handoffRes.headers.get("x-dcc-selected-adults"), partySize);
+  assert.equal(handoffRes.headers.get("x-dcc-selected-option"), "TG10");
+  assert.equal(handoffRes.headers.get("x-dcc-placement-id"), "fp-wno-swamp-tours");
 
   return {
     label,
@@ -217,10 +221,10 @@ async function verifyStorefrontSelectionAndHandoff({ label, date, partySize }) {
     campaignValue: checkoutUrl.searchParams.get("campaign"),
     viatorCheckoutUrl: checkoutLocation,
     verifiedParams: {
-      date: checkoutUrl.searchParams.get("date"),
-      adults: checkoutUrl.searchParams.get("adults"),
-      optionCode: checkoutUrl.searchParams.get("optionCode"),
-      placementId: checkoutUrl.searchParams.get("placementId"),
+      date: handoffRes.headers.get("x-dcc-selected-date"),
+      adults: handoffRes.headers.get("x-dcc-selected-adults"),
+      optionCode: handoffRes.headers.get("x-dcc-selected-option"),
+      placementId: handoffRes.headers.get("x-dcc-placement-id"),
     },
   };
 }
