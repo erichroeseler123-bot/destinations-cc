@@ -18,16 +18,30 @@ export function classifyWnoEntrySource({
   explicitSource,
   utmSource,
   referrer,
+  search,
+  gadCampaignId,
 }: {
   pathname: string;
   explicitSource?: string | null;
   utmSource?: string | null;
   referrer?: string;
+  search?: string | null;
+  gadCampaignId?: string | null;
 }) {
+  const sp = search ? new URLSearchParams(search.startsWith("?") ? search.slice(1) : search) : null;
+  const resolvedExplicit = explicitSource || sp?.get("src") || sp?.get("source");
   // Preserve WNO's explicit internal attribution tags when present.
-  if (explicitSource) return explicitSource.slice(0, 80);
+  if (resolvedExplicit) return resolvedExplicit.trim().slice(0, 80);
 
-  const classifiedUtm = classifyKnownSource(utmSource);
+  const resolvedGadCampaign = (gadCampaignId || sp?.get("gad_campaignid") || "").trim();
+  if (resolvedGadCampaign) {
+    return `google-ads-${resolvedGadCampaign}`.slice(0, 80);
+  }
+  if (sp?.get("gclid") || sp?.get("gbraid") || sp?.get("gad_source")) {
+    return "google-ads";
+  }
+
+  const classifiedUtm = classifyKnownSource(utmSource || sp?.get("utm_source"));
   if (classifiedUtm) return classifiedUtm;
 
   try {
@@ -46,3 +60,4 @@ export function classifyWnoEntrySource({
   const clean = pathname.replace(/^\/guides\//, "").replace(/^\//, "") || "home";
   return `wtonot-entry-${clean}`.slice(0, 80);
 }
+

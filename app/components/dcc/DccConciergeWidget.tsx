@@ -393,12 +393,29 @@ export default function DccConciergeWidget({
       sp.get("isTest") === "1" ||
       sp.get("trafficClass") === "test" ||
       window.location.pathname.includes("/demo/");
+    const storedWnoVisitorId =
+      typeof sessionStorage !== "undefined"
+        ? sessionStorage.getItem("wno_funnel_session")
+        : null;
+    const storedWnoSource =
+      typeof sessionStorage !== "undefined"
+        ? sessionStorage.getItem("wno_entry_source")
+        : null;
+    const inferredTrafficSource =
+      sp.get("src") ||
+      sp.get("source") ||
+      (sp.get("gad_campaignid") ? `google-ads-${sp.get("gad_campaignid")}` : null) ||
+      (sp.get("gclid") || sp.get("gbraid") || sp.get("gad_source") ? "google-ads" : null) ||
+      storedWnoSource ||
+      null;
 
     void fetch("/api/v1/commerce/click-attribution", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         action: "record_visitor",
+        visitorId: storedWnoVisitorId || undefined,
+        trafficSource: inferredTrafficSource || undefined,
         sourcePage: `${window.location.pathname}${window.location.search}`,
         placementId: effectivePlacement || null,
         propertySlug: surface === "hotel_concierge" ? propertySlug : null,

@@ -392,4 +392,82 @@ test("5. WNO guide visits, storefront visits, Viator clicks, and booking/settlem
   assert.equal(reportAfterSettlement.production.paidCommissionsCount, 1);
 });
 
+test("6. WNO traffic source tracking classifies active Google Ads campaign (gad_campaignid=24412478365) and tracks visitors through to Viator clicks and settled commission", async () => {
+  const { classifyWnoEntrySource } = await import("../../app/new-orleans/lib/trafficSource");
+  const {
+    recordFunnelVisitorSession,
+    issueOpaqueClickAttribution,
+    reconcilePartnerCsvBatchByClickId,
+    getFunnelMetricsReport,
+    inferTrafficSource,
+  } = await import("../../lib/dcc/commerce/opaqueAttributionLedger");
+
+  assert.equal(
+    classifyWnoEntrySource({
+      pathname: "/swamp-tours",
+      search: "?gad_source=1&gad_campaignid=24412478365&gclid=EAIaIQobChMI",
+      referrer: "https://www.google.com/",
+    }),
+    "google-ads-24412478365",
+  );
+
+  assert.equal(
+    inferTrafficSource({
+      sourcePage: "/swamp-tours?gad_source=1&gad_campaignid=24412478365&gclid=EAIaIQobChMI",
+    }),
+    "google-ads-24412478365",
+  );
+
+  const placementId = "fp-wno-swamp-tours-source-tracking-check";
+
+  recordFunnelVisitorSession({
+    visitorId: "wno_test_gad_visitor_1",
+    sourcePage: "/swamp-tours?gad_source=1&gad_campaignid=24412478365&gclid=EAIaIQobChMI",
+    trafficSource: "google-ads-24412478365",
+    placementId,
+    surface: "welcometoneworleanstours",
+    isTest: false,
+  });
+
+  const gadClick = issueOpaqueClickAttribution({
+    decisionReceiptId: "rcpt:wno:gad:24412478365:1",
+    recommendedOperatorId: "louisiana-tour-company",
+    recommendedOperatorName: "Louisiana Tour Company",
+    evidenceVersion: "dcc_catalog_v2",
+    originatingSite: "welcometoneworleanstours.com",
+    originatingPage: "https://www.welcometoneworleanstours.com/swamp-tours?gad_source=1&gad_campaignid=24412478365",
+    trafficSource: "google-ads-24412478365",
+    visitorId: "wno_test_gad_visitor_1",
+    placementId,
+    propertySlug: "hotel-monteleone-nola",
+    surface: "welcometoneworleanstours",
+    recordStage: "outbound_click",
+    isTest: false,
+    provider: "viator",
+    productCode: "15200P6",
+    productDestinationUrl:
+      "https://www.viator.com/tours/New-Orleans/New-Orleans-Swamp-Tour-Boat-Adventure-With-Pickup/d675-15200P6",
+  });
+  assert.equal(gadClick.trafficSource, "google-ads-24412478365");
+
+  const settledCsv = [
+    "booking_ref,campaign_value,status,gross_amount,commission_amount,paid_commission_usd,currency,occurred_at",
+    `BR-WNO-GAD-2001,${gadClick.campaignValue},SETTLED,120.00,9.60,9.60,USD,2026-11-26T15:00:00Z`,
+  ].join("\n");
+  reconcilePartnerCsvBatchByClickId({
+    csvText: settledCsv,
+    provider: "viator",
+  });
+
+  const report = getFunnelMetricsReport({ placementId });
+  const gadSourceMetrics = report.production.byTrafficSource["google-ads-24412478365"];
+  assert.ok(gadSourceMetrics);
+  assert.equal(gadSourceMetrics.visitors, 1);
+  assert.equal(gadSourceMetrics.storefrontVisits, 1);
+  assert.equal(gadSourceMetrics.viatorClicks, 1);
+  assert.equal(gadSourceMetrics.providerConfirmedBookings, 1);
+  assert.equal(gadSourceMetrics.settledCommissionUsd, 9.6);
+});
+
+
 

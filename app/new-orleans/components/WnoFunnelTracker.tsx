@@ -19,6 +19,7 @@ function classifyClick(href: string) {
   if (href.startsWith("tel:")) return "phone_click";
   if (href.startsWith("sms:")) return "sms_click";
   if (href.includes("fareharbor.com")) return "fareharbor_click";
+  if (href.includes("/api/v1/ads/click") || href.includes("viator.com")) return "viator_click";
   return null;
 }
 
@@ -70,20 +71,28 @@ export default function WnoFunnelTracker() {
     const context = getWnoFunnelContext();
     if (!context) return;
 
+    const classifiedNow = classifyWnoEntrySource({
+      pathname: window.location.pathname,
+      // `src` is the existing WNO convention. `source` is accepted too so
+      // QR cards, briefs, hotels and partner links can use readable tags
+      // such as ?source=str_card without losing attribution.
+      explicitSource: params.get("src") || params.get("source"),
+      utmSource: params.get("utm_source"),
+      referrer: document.referrer,
+      search: window.location.search,
+      gadCampaignId: params.get("gad_campaignid"),
+    });
+
     if (!sessionStorage.getItem(ENTRY_PATH_KEY)) {
       sessionStorage.setItem(ENTRY_PATH_KEY, window.location.pathname);
-      sessionStorage.setItem(
-        ENTRY_SOURCE_KEY,
-        classifyWnoEntrySource({
-          pathname: window.location.pathname,
-          // `src` is the existing WNO convention. `source` is accepted too so
-          // QR cards, briefs, hotels and partner links can use readable tags
-          // such as ?source=str_card without losing attribution.
-          explicitSource: params.get("src") || params.get("source"),
-          utmSource: params.get("utm_source"),
-          referrer: document.referrer,
-        }),
-      );
+      sessionStorage.setItem(ENTRY_SOURCE_KEY, classifiedNow);
+    } else if (
+      params.get("src") ||
+      params.get("source") ||
+      params.get("gad_campaignid") ||
+      params.get("gclid")
+    ) {
+      sessionStorage.setItem(ENTRY_SOURCE_KEY, classifiedNow);
     }
 
     if (inboundDccContext) {
@@ -110,7 +119,20 @@ export default function WnoFunnelTracker() {
       const anchor = target.closest<HTMLAnchorElement>("a[href]");
       if (!anchor) return;
 
-      const href = anchor.getAttribute("href") || "";
+      const latestContext = getWnoFunnelContext() || context;
+      let href = anchor.getAttribute("href") || "";
+      if (href.includes("/api/v1/ads/click")) {
+        const hasSrc = /[?&](src|source|trafficSource)=/i.test(href);
+        const sep = href.includes("?") ? "&" : "?";
+        if (!hasSrc && latestContext.source) {
+          href = `${href}${sep}src=${encodeURIComponent(latestContext.source)}`;
+        }
+        if (!/[?&]visitorId=/i.test(href) && latestContext.sessionId) {
+          href = `${href}${href.includes("?") ? "&" : "?"}visitorId=${encodeURIComponent(latestContext.sessionId)}`;
+        }
+        anchor.setAttribute("href", href);
+      }
+
       const customEventName = anchor.dataset.wnoEvent;
       const label = anchor.dataset.wnoLabel || (anchor.textContent || "").trim().replace(/\s+/g, " ").slice(0, 120);
       const productSlug = anchor.dataset.wnoProduct;
@@ -125,8 +147,8 @@ export default function WnoFunnelTracker() {
           cta_label: label,
           product_slug: productSlug,
           signal,
-          entry_source: context.source,
-          entry_path: context.landingPath,
+          entry_source: latestContext.source,
+          entry_path: latestContext.landingPath,
         };
         trackEvent(customEventName, eventPayload);
         sendWnoTelemetry({

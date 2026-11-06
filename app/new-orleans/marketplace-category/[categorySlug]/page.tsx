@@ -312,6 +312,20 @@ export default async function CategoryPage({
     firstStr(resolvedSearch.isTest) === "true" ||
     firstStr(resolvedSearch.isTest) === "1" ||
     firstStr(resolvedSearch.trafficClass) === "test";
+  const gadCampaignIdParam = firstStr(resolvedSearch.gad_campaignid);
+  const gadSourceParam = firstStr(resolvedSearch.gad_source);
+  const gclidParam = firstStr(resolvedSearch.gclid);
+  const gbraidParam = firstStr(resolvedSearch.gbraid);
+  const utmSourceParam = firstStr(resolvedSearch.utm_source);
+  const utmMediumParam = firstStr(resolvedSearch.utm_medium);
+  const utmCampaignParam = firstStr(resolvedSearch.utm_campaign);
+  const entrySourceParam =
+    firstStr(resolvedSearch.src) ||
+    firstStr(resolvedSearch.source) ||
+    (gadCampaignIdParam ? `google-ads-${gadCampaignIdParam}` : "") ||
+    (gclidParam || gbraidParam || gadSourceParam ? "google-ads" : "") ||
+    utmSourceParam ||
+    "";
 
   const optionsSection = (
     <section id="options" data-wno-section="options" className="mt-16 scroll-mt-24">
@@ -345,6 +359,15 @@ export default async function CategoryPage({
         action={`/${resolvedParams.categorySlug}`}
         className="mx-auto mt-6 max-w-4xl border border-[#342b1d] bg-[#12110e] p-5 space-y-3"
       >
+        {entrySourceParam && <input type="hidden" name="src" value={entrySourceParam} />}
+        {gadCampaignIdParam && <input type="hidden" name="gad_campaignid" value={gadCampaignIdParam} />}
+        {gadSourceParam && <input type="hidden" name="gad_source" value={gadSourceParam} />}
+        {gclidParam && <input type="hidden" name="gclid" value={gclidParam} />}
+        {gbraidParam && <input type="hidden" name="gbraid" value={gbraidParam} />}
+        {utmSourceParam && <input type="hidden" name="utm_source" value={utmSourceParam} />}
+        {utmMediumParam && <input type="hidden" name="utm_medium" value={utmMediumParam} />}
+        {utmCampaignParam && <input type="hidden" name="utm_campaign" value={utmCampaignParam} />}
+        {isTestParam && <input type="hidden" name="isTest" value="true" />}
         <div className="flex flex-wrap items-center justify-between gap-2">
           <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#c9a86a]">
             Active Tour Date &amp; Party Size
@@ -409,7 +432,7 @@ export default async function CategoryPage({
             const cardImageAlt = resolvedImg?.alt || `${product.title} in New Orleans`;
             const dynamicBookingHref =
               sourceProduct?.slug === "louisiana-tour-company-swamp-tour-hotel-pickup"
-                ? `/api/v1/ads/click?offer=15200P6&option=TG10&placementId=fp-wno-swamp-tours&property=hotel-monteleone-nola&date=${encodeURIComponent(selectedDate)}&adults=${encodeURIComponent(selectedPartySize)}&departureTime=08%3A00${isTestParam ? "&isTest=true" : ""}`
+                ? `/api/v1/ads/click?offer=15200P6&option=TG10&placementId=fp-wno-swamp-tours&property=hotel-monteleone-nola&date=${encodeURIComponent(selectedDate)}&adults=${encodeURIComponent(selectedPartySize)}&departureTime=08%3A00${entrySourceParam ? `&src=${encodeURIComponent(entrySourceParam)}` : ""}${isTestParam ? "&isTest=true" : ""}`
                 : sourceProduct?.bookingVariants?.[0]?.bookingUrl;
             const bookingReselectionNote =
               sourceProduct?.slug === "louisiana-tour-company-swamp-tour-hotel-pickup"

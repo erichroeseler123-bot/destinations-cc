@@ -51,6 +51,7 @@ export interface HandoffTripDetails {
   returnPickupTime?: string | null;
   returnRouteId?: string | null;
   originatingPage?: string | null;
+  trafficSource?: string | null;
   placementId?: string | null;
   propertySlug?: string | null;
   surface?: string | null;
@@ -99,6 +100,8 @@ export interface OpaqueClickAttributionRecord {
   applicabilityOutcomeHash: string | null;
   originatingSite: string;
   originatingPage?: string;
+  trafficSource?: string | null;
+  visitorId?: string | null;
   placementId?: string | null;
   propertySlug?: string | null;
   surface?: string | null;
@@ -137,6 +140,8 @@ export interface IssueOpaqueClickAttributionInput {
   applicabilityOutcomeHash?: string | null;
   originatingSite?: string | null;
   originatingPage?: string | null;
+  trafficSource?: string | null;
+  visitorId?: string | null;
   placementId?: string | null;
   propertySlug?: string | null;
   surface?: string | null;
@@ -185,6 +190,16 @@ export interface PartnerCsvReconciliationSummary {
   }>;
 }
 
+export interface TrafficSourceFunnelBreakdown {
+  visitors: number;
+  guestVisits: number;
+  guideVisits: number;
+  storefrontVisits: number;
+  viatorClicks: number;
+  providerConfirmedBookings: number;
+  settledCommissionUsd: number;
+}
+
 export interface FunnelClassMetrics {
   trafficClass: TrafficClass;
   newVisitors: number;
@@ -205,6 +220,7 @@ export interface FunnelClassMetrics {
   estimatedUnsettledCommissionUsd: number;
   settledReconciledCommissionUsd: number;
   reversedCommissionUsd: number;
+  byTrafficSource: Record<string, TrafficSourceFunnelBreakdown>;
   byDirection: {
     OUTBOUND: { handoffs: number; confirmedPaidBookings: number };
     RETURN: { handoffs: number; confirmedPaidBookings: number };
@@ -861,6 +877,59 @@ export function isDemoOrAutomatedVerificationTraffic(params: {
   return false;
 }
 
+export function inferTrafficSource(params: {
+  trafficSource?: string | null;
+  sourcePage?: string | null;
+  originatingPage?: string | null;
+  referer?: string | null;
+}): string {
+  const candidates = [
+    params.sourcePage,
+    params.originatingPage,
+    params.referer,
+  ].filter((v): v is string => typeof v === "string" && v.trim().length > 0);
+
+  for (const raw of candidates) {
+    const qIdx = raw.indexOf("?");
+    if (qIdx >= 0) {
+      const sp = new URLSearchParams(raw.slice(qIdx + 1));
+      const gadCamp = sp.get("gad_campaignid")?.trim();
+      if (gadCamp) return `google-ads-${gadCamp}`.slice(0, 80);
+      if (sp.get("gclid") || sp.get("gbraid") || sp.get("gad_source")) {
+        return "google-ads";
+      }
+      const explicitSrc = (sp.get("src") || sp.get("source") || sp.get("trafficSource") || "").trim();
+      if (explicitSrc) return explicitSrc.slice(0, 80);
+      const utmSrc = sp.get("utm_source")?.trim().toLowerCase();
+      if (utmSrc) {
+        if (utmSrc === "google" || utmSrc.includes("google.")) return "google-search";
+        return utmSrc.slice(0, 80);
+      }
+    }
+  }
+
+  const explicit = (params.trafficSource || "").trim();
+  if (explicit && explicit !== "wtonot-unknown") {
+    return explicit.slice(0, 80);
+  }
+
+  for (const raw of candidates) {
+    const lower = raw.toLowerCase();
+    if (
+      lower.includes("/guides/best-swamp-tour-with-transportation") ||
+      lower.includes("best-swamp-tour-with-transportation") ||
+      lower.includes("/guides/")
+    ) {
+      return "wno-swamp-guide";
+    }
+    if (lower.includes("/swamp-tours")) {
+      return "wno-swamp-storefront";
+    }
+  }
+
+  return "direct-or-other";
+}
+
 export function issueOpaqueClickAttribution(
   input: IssueOpaqueClickAttributionInput,
 ): OpaqueClickAttributionRecord {
@@ -908,6 +977,10 @@ export function issueOpaqueClickAttribution(
       inferredTripDetails?.surface ||
       input.originatingSite?.trim() ||
       null;
+    const resolvedTrafficSource = inferTrafficSource({
+      trafficSource: input.trafficSource || inferredTripDetails?.trafficSource,
+      originatingPage: resolvedOriginatingPage,
+    });
     const isTest =
       isQaReferralId(clickId) ||
       isDemoOrAutomatedVerificationTraffic({
@@ -940,10 +1013,14 @@ export function issueOpaqueClickAttribution(
       originatingSite:
         input.originatingSite?.trim() || "destinationcommandcenter.com",
       originatingPage: resolvedOriginatingPage,
+      trafficSource: resolvedTrafficSource,
+      visitorId: input.visitorId?.trim() || null,
       placementId: resolvedPlacementId,
       propertySlug: resolvedPropertySlug,
       surface: resolvedSurface,
-      tripDetails: inferredTripDetails,
+      tripDetails: inferredTripDetails
+        ? { ...inferredTripDetails, trafficSource: resolvedTrafficSource }
+        : null,
       isTest,
       trafficClass,
       recordStage,
@@ -978,6 +1055,8 @@ export function recordOutboundClickFollow(
     referer?: string | null;
     placementId?: string | null;
     propertySlug?: string | null;
+    trafficSource?: string | null;
+    visitorId?: string | null;
   },
 ): OpaqueClickAttributionRecord | null {
   const norm = extractClickIdFromTrackingValue(clickIdInput) || clickIdInput.trim().toLowerCase();
@@ -1009,6 +1088,16 @@ export function recordOutboundClickFollow(
     }
     if (options?.propertySlug && !rec.propertySlug) {
       rec.propertySlug = options.propertySlug.trim();
+    }
+    if (options?.trafficSource || options?.referer) {
+      rec.trafficSource = inferTrafficSource({
+        trafficSource: options?.trafficSource || rec.trafficSource,
+        originatingPage: rec.originatingPage,
+        referer: options?.referer || rec.referer,
+      });
+    }
+    if (options?.visitorId && !rec.visitorId) {
+      rec.visitorId = options.visitorId.trim();
     }
     return rec;
   });
@@ -1449,6 +1538,7 @@ function isStorefrontSourcePage(sourcePage?: string | null): boolean {
 export function recordFunnelVisitorSession(input: {
   visitorId?: string | null;
   sourcePage?: string | null;
+  trafficSource?: string | null;
   placementId?: string | null;
   propertySlug?: string | null;
   surface?: string | null;
@@ -1459,6 +1549,10 @@ export function recordFunnelVisitorSession(input: {
   const visitorId =
     input.visitorId?.trim() || `vis_${crypto.randomBytes(10).toString("hex")}`;
   const sourcePage = input.sourcePage?.trim() || "/transportation/colorado";
+  const resolvedTrafficSource = inferTrafficSource({
+    trafficSource: input.trafficSource,
+    sourcePage,
+  });
   const placementId = input.placementId?.trim() || null;
   const propertySlug = input.propertySlug?.trim() || null;
   const surface = input.surface?.trim() || null;
@@ -1509,6 +1603,9 @@ export function recordFunnelVisitorSession(input: {
               : 0;
         existing.storefrontVisitCount = base + 1;
       }
+      if (resolvedTrafficSource && (!existing.trafficSource || existing.trafficSource === "wno-swamp-storefront" || existing.trafficSource === "direct-or-other")) {
+        existing.trafficSource = resolvedTrafficSource;
+      }
       if (planCode) existing.planCode = planCode;
       if (placementId) existing.placementId = placementId;
       if (propertySlug) existing.propertySlug = propertySlug;
@@ -1518,6 +1615,7 @@ export function recordFunnelVisitorSession(input: {
     const created: FunnelVisitorRecord = {
       visitorId,
       sourcePage,
+      trafficSource: resolvedTrafficSource,
       placementId,
       propertySlug,
       surface,
@@ -1554,6 +1652,25 @@ export function recordPlanOpenEvent(input: {
   });
 }
 
+function getOrCreateTrafficSourceBucket(
+  map: Record<string, TrafficSourceFunnelBreakdown>,
+  sourceKey: string,
+): TrafficSourceFunnelBreakdown {
+  const key = sourceKey || "direct-or-other";
+  if (!map[key]) {
+    map[key] = {
+      visitors: 0,
+      guestVisits: 0,
+      guideVisits: 0,
+      storefrontVisits: 0,
+      viatorClicks: 0,
+      providerConfirmedBookings: 0,
+      settledCommissionUsd: 0,
+    };
+  }
+  return map[key];
+}
+
 function createEmptyFunnelClassMetrics(
   trafficClass: TrafficClass,
 ): FunnelClassMetrics {
@@ -1577,6 +1694,7 @@ function createEmptyFunnelClassMetrics(
     estimatedUnsettledCommissionUsd: 0,
     settledReconciledCommissionUsd: 0,
     reversedCommissionUsd: 0,
+    byTrafficSource: {},
     byDirection: {
       OUTBOUND: { handoffs: 0, confirmedPaidBookings: 0 },
       RETURN: { handoffs: 0, confirmedPaidBookings: 0 },
@@ -1630,19 +1748,20 @@ export function getFunnelMetricsReport(options?: {
         }),
     );
     const bucket = isTestVisitor ? test : production;
+    const visitCount = Math.max(1, vis.visitCount || 1);
     bucket.newVisitors += 1;
-    bucket.guestVisits += Math.max(1, vis.visitCount || 1);
+    bucket.guestVisits += visitCount;
     const explicitGuideVisits =
       typeof vis.guideVisitCount === "number" && vis.guideVisitCount > 0
         ? vis.guideVisitCount
         : isGuideSourcePage(vis.sourcePage)
-          ? Math.max(1, vis.visitCount || 1)
+          ? visitCount
           : 0;
     const explicitStorefrontVisits =
       typeof vis.storefrontVisitCount === "number" && vis.storefrontVisitCount > 0
         ? vis.storefrontVisitCount
         : isStorefrontSourcePage(vis.sourcePage)
-          ? Math.max(1, vis.visitCount || 1)
+          ? visitCount
           : 0;
     bucket.guideVisits += explicitGuideVisits;
     bucket.storefrontVisits += explicitStorefrontVisits;
@@ -1651,9 +1770,19 @@ export function getFunnelMetricsReport(options?: {
         ? vis.planOpenCount
         : vis.sourcePage?.startsWith("/p/") ||
             vis.sourcePage?.includes("winter-excursion-planner")
-          ? Math.max(1, vis.visitCount || 1)
+          ? visitCount
           : 0;
     bucket.planOpens += explicitPlanOpens;
+
+    const srcKey = inferTrafficSource({
+      trafficSource: vis.trafficSource,
+      sourcePage: vis.sourcePage,
+    });
+    const srcBucket = getOrCreateTrafficSourceBucket(bucket.byTrafficSource, srcKey);
+    srcBucket.visitors += 1;
+    srcBucket.guestVisits += visitCount;
+    srcBucket.guideVisits += explicitGuideVisits;
+    srcBucket.storefrontVisits += explicitStorefrontVisits;
   }
 
   const clicks = Object.values(state.opaqueClicksById || {});
@@ -1713,6 +1842,12 @@ export function getFunnelMetricsReport(options?: {
     bucket.recommendationsIssued += 1;
     bucket.duplicateDeliveriesIgnored += click.duplicateDeliveryCount || 0;
 
+    const clickSrcKey = inferTrafficSource({
+      trafficSource: click.trafficSource || click.tripDetails?.trafficSource,
+      originatingPage: click.originatingPage,
+      referer: click.referer,
+    });
+
     const isUnfollowedRecommendation =
       click.recordStage === "recommendation" ||
       (!click.recordStage &&
@@ -1736,6 +1871,8 @@ export function getFunnelMetricsReport(options?: {
       bucket.actualOutboundClicks += 1;
       if (click.provider === "viator") {
         bucket.viatorClicks += 1;
+        const srcBucket = getOrCreateTrafficSourceBucket(bucket.byTrafficSource, clickSrcKey);
+        srcBucket.viatorClicks += 1;
       }
       bucket.byDirection[dirKey].handoffs += 1;
     }
@@ -1809,6 +1946,9 @@ export function getFunnelMetricsReport(options?: {
       } else if (confirmedOutcome) {
         bucket.confirmedPaidBookings += 1;
         bucket.byDirection[dirKey].confirmedPaidBookings += 1;
+        const srcBucket = getOrCreateTrafficSourceBucket(bucket.byTrafficSource, clickSrcKey);
+        srcBucket.providerConfirmedBookings += 1;
+
         const grossOutcome =
           [...outcomes]
             .reverse()
@@ -1836,6 +1976,9 @@ export function getFunnelMetricsReport(options?: {
             }
             bucket.settledReconciledCommissionUsd = Number(
               (bucket.settledReconciledCommissionUsd + paidComm).toFixed(2),
+            );
+            srcBucket.settledCommissionUsd = Number(
+              (srcBucket.settledCommissionUsd + paidComm).toFixed(2),
             );
           } else {
             bucket.reversedCommissionUsd = Number(

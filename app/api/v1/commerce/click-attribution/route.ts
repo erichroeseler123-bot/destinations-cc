@@ -151,6 +151,14 @@ export async function POST(request: Request) {
             : typeof body.visitor_id === "string"
               ? body.visitor_id
               : null,
+        trafficSource:
+          typeof body.trafficSource === "string"
+            ? body.trafficSource
+            : typeof body.src === "string"
+              ? body.src
+              : typeof body.source === "string"
+                ? body.source
+                : null,
         sourcePage:
           typeof body.sourcePage === "string"
             ? body.sourcePage

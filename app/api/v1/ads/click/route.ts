@@ -126,6 +126,18 @@ export async function GET(request: Request) {
   const adultsParam = url.searchParams.get("adults")?.trim() || null;
   const departureTimeParam = url.searchParams.get("departureTime")?.trim() || null;
   const sigParam = url.searchParams.get("sig")?.trim() || null;
+  const trafficSourceParam =
+    url.searchParams.get("src")?.trim() ||
+    url.searchParams.get("source")?.trim() ||
+    url.searchParams.get("trafficSource")?.trim() ||
+    (url.searchParams.get("gad_campaignid")?.trim()
+      ? `google-ads-${url.searchParams.get("gad_campaignid")?.trim()}`
+      : null) ||
+    null;
+  const visitorIdParam =
+    url.searchParams.get("visitorId")?.trim() ||
+    url.searchParams.get("visitor_id")?.trim() ||
+    null;
 
   if (!rawClickId && !offerParam) {
     return NextResponse.json(
@@ -398,6 +410,8 @@ export async function GET(request: Request) {
           isTest: effectiveIsTest,
           placementId: placementIdParam,
           propertySlug: propertySlugParam,
+          trafficSource: trafficSourceParam,
+          visitorId: visitorIdParam,
         })
       : null;
 
@@ -472,6 +486,8 @@ export async function GET(request: Request) {
       evidenceVersion: "dcc_catalog_v2",
       originatingSite: "destinationcommandcenter.com",
       originatingPage: referer || `/tours/${catalogRecord.destinationSlug}`,
+      trafficSource: trafficSourceParam,
+      visitorId: visitorIdParam,
       placementId: placementIdParam,
       propertySlug: propertySlugParam || catalogRecord.destinationSlug,
       tripDetails: {
@@ -480,6 +496,7 @@ export async function GET(request: Request) {
         passengerCount: effectiveAdults,
         offerId: `${catalogRecord.providerProductCode}:${effectiveOptionCode}`,
         originatingPage: referer || `/tours/${catalogRecord.destinationSlug}`,
+        trafficSource: trafficSourceParam,
         placementId: placementIdParam || null,
         propertySlug: propertySlugParam || catalogRecord.destinationSlug,
       },
@@ -501,6 +518,8 @@ export async function GET(request: Request) {
       applicabilityOutcomeHash: existingRecord.applicabilityOutcomeHash,
       originatingSite: existingRecord.originatingSite,
       originatingPage: referer || existingRecord.originatingPage,
+      trafficSource: trafficSourceParam || existingRecord.trafficSource,
+      visitorId: visitorIdParam || existingRecord.visitorId,
       placementId: placementIdParam || existingRecord.placementId,
       propertySlug: propertySlugParam || existingRecord.propertySlug,
       surface: existingRecord.surface,

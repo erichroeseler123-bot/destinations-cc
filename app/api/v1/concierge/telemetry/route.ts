@@ -34,6 +34,7 @@ function formatPlacementFunnelSummary(funnel: ReturnType<typeof getFunnelMetrics
       estimatedUnsettledCommissionUsd: funnel.production.estimatedUnsettledCommissionUsd,
       settledCommissionUsd: funnel.production.settledReconciledCommissionUsd,
       reversedCommissionUsd: funnel.production.reversedCommissionUsd,
+      byTrafficSource: funnel.production.byTrafficSource,
     },
     test: {
       planOpens: funnel.test.planOpens,
@@ -52,6 +53,7 @@ function formatPlacementFunnelSummary(funnel: ReturnType<typeof getFunnelMetrics
       estimatedUnsettledCommissionUsd: funnel.test.estimatedUnsettledCommissionUsd,
       settledCommissionUsd: funnel.test.settledReconciledCommissionUsd,
       reversedCommissionUsd: funnel.test.reversedCommissionUsd,
+      byTrafficSource: funnel.test.byTrafficSource,
     },
   };
 }
@@ -136,6 +138,9 @@ export async function GET(request: NextRequest) {
           .slice(0, 15)
           .map((r) => ({
             clickId: r.clickId,
+            campaignValue: r.campaignValue,
+            trafficSource: r.trafficSource,
+            visitorId: r.visitorId,
             placementId: r.placementId,
             propertySlug: r.propertySlug,
             surface: r.surface,
