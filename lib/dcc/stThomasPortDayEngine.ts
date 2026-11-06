@@ -6,14 +6,23 @@
  * Crown Bay, and when does a St. John ferry or beach day fit my ship window?"
  *
  * Enforces:
- * 1. Public answer comparing Havensight (WICO), Crown Bay (AMSS/AMNS), and
- *    Charlotte Amalie Inner/Outer Harbor tender anchorages (IANCH/OANCH).
- * 2. Deterministic trip-window math using the traveler's actual sailing date,
- *    ship arrival/all-aboard times, dock, party ages, and mobility level.
- * 3. Free / self-guided options ($0 Charlotte Amalie Historic District walk and
- *    $0-admission VIPA Lindbergh Bay / $7 Magens Bay Authority park pass).
- * 4. Explicit `unknown` markers for unsupported or unconfirmed operator/port facts.
- * 5. Zero commercial ranking influence (`commercialWeightApplied: 0`).
+ * 1. St. Thomas (`st-thomas`) is the main destination; St. John (`st-john`) is
+ *    offered as a day-trip choice when both ferry legs (outbound Red Hook ->
+ *    Cruz Bay and return Cruz Bay -> Red Hook) fit the sailing.
+ * 2. Strict product separation between Viator `5199KSML` (Mangrove Lagoon Kayak
+ *    & Snorkel — 150 min, $89, self_drive to 6526 Estate Nadir, d965-5199KSML)
+ *    and `5199P27` (Cas Cay Kayak, Hike & Snorkel — 180 min, $99, self_drive to
+ *    6526 Estate Nadir, d965-5199P27), plus `5199PRTSTTKSML` (210 min, $79,
+ *    shore excursion w/ transport) and `5199P36` (120 min, $89, Sea Turtles).
+ * 3. VIPA ferry schedule rule (https://www.viport.com/schedules-ferrycargoschedules):
+ *    The temporary VIPA notice (July 26, 2026 through October 31, 2026) ended
+ *    October 31 (`2026-10-31`). Evaluates schedules applicable to the trip date
+ *    and shows `Needs confirmation` (`qualified_needs_confirmation`) where the
+ *    return leg is unresolved.
+ * 4. Free / self-guided options ($0 Charlotte Amalie Historic District walk,
+ *    $0-admission VIPA Lindbergh Bay, and $7 Magens Bay Authority park pass).
+ * 5. Explicit `unknown` markers for unsupported or unconfirmed operator/port facts.
+ * 6. Zero commercial ranking influence (`commercialWeightApplied: 0`).
  */
 
 export type StThomasArrivalDock =
@@ -45,6 +54,13 @@ export type StThomasOptionFitStatus =
   | "tight_buffer"
   | "qualified_needs_confirmation"
   | "does_not_fit";
+
+export type StThomasPickupMode =
+  | "self_drive"
+  | "pier_pickup"
+  | "hotel_pickup"
+  | "public_walk_or_safari_taxi"
+  | "public_ferry_and_safari_taxi";
 
 export interface StThomasPortDayScenarioInput {
   travelDate?: string | null; // YYYY-MM-DD in America/St_Thomas (AST, UTC-04:00 year-round)
@@ -91,17 +107,67 @@ export interface StThomasTimingBreakdown {
   targetAllAboardCutoffTime: string;
 }
 
+export interface StJohnFerryLegEvaluation {
+  travelDate: string;
+  dayOfWeekLabel: string;
+  isWeekdaySailing: boolean;
+  temporaryVipaNoticeWindow: {
+    startDate: "2026-07-26";
+    endDate: "2026-10-31";
+    temporaryVipaNoticeEndedOn: "2026-10-31";
+    isPastTemporaryNoticeEndDate: boolean;
+  };
+  applicableScheduleSummary: string;
+  outboundLeg: {
+    originTerminal: "Red Hook (Urman Victor Fredericks Marine Terminal)";
+    destinationTerminal: "Cruz Bay, St. John (Loredon Lorence Boynes Sr. Dock)";
+    earliestReachableRedHookArrivalTime: string;
+    selectedDepartureTime: string | null;
+    arrivalAtCruzBayTime: string | null;
+    crossingMinutes: 15;
+    fitsOutbound: boolean;
+  };
+  returnLeg: {
+    originTerminal: "Cruz Bay, St. John (Loredon Lorence Boynes Sr. Dock)";
+    destinationTerminal: "Red Hook (Urman Victor Fredericks Marine Terminal)";
+    latestSafeCruzBayDepartureCutoffTime: string;
+    selectedReturnDepartureTime: string | null;
+    arrivalAtRedHookTime: string | null;
+    estimatedBackAtShipDockTime: string | null;
+    crossingMinutes: 15;
+    fitsReturn: boolean;
+    returnLegResolved: boolean;
+    returnLegStatus: "resolved" | "unresolved_needs_confirmation" | "does_not_fit";
+    unresolvedReason: string | null;
+  };
+  bothFerryLegsFit: boolean;
+  offerAsDayTripChoice: boolean;
+  statusLabel: "Fits Comfortably" | "Needs confirmation" | "Does Not Fit Ship Window";
+  sourceUrl: "https://www.viport.com/schedules-ferrycargoschedules";
+  checkedOn: string;
+}
+
 export interface StThomasEvaluatedOption {
   optionId: string;
+  productCode: string | null;
+  tourId: string | null;
   title: string;
   shortLabel: string;
   category: StThomasOptionCategory;
   isFreeOrSelfGuided: boolean;
+  isDayTripChoice: boolean;
+  dayTripDestination: "st-john" | null;
+  pickupMode: StThomasPickupMode;
+  pickupSummary: string;
+  exactMeetingPointOrPickup: string;
+  listingPriceUsd: number;
+  checkoutUrl: string | null;
   fitStatus: StThomasOptionFitStatus;
   fitBadgeLabel: string;
   conciseVerdict: string;
   dockComparisonNote: string;
   timing: StThomasTimingBreakdown;
+  ferryLegs?: StJohnFerryLegEvaluation;
   estimatedCostPerAdultUsd: number;
   estimatedCostTotalPartyUsd: number;
   costBasisSummary: string;
@@ -138,6 +204,7 @@ export interface StThomasPublicAnswerSummary {
 
 export interface StThomasPortDayEvaluationResult {
   portSlug: "st-thomas";
+  mainDestination: "st-thomas";
   timeZone: "America/St_Thomas";
   evaluatedInput: Required<StThomasPortDayScenarioInput>;
   isExampleScenario: boolean;
@@ -145,6 +212,15 @@ export interface StThomasPortDayEvaluationResult {
   isWeekdaySailing: boolean;
   publicAnswer: StThomasPublicAnswerSummary;
   conciseVerdict: string;
+  stJohnDayTripChoice: {
+    mainDestination: "st-thomas";
+    dayTripDestination: "st-john";
+    offeredForSailing: boolean;
+    bothFerryLegsFit: boolean;
+    fitStatus: StThomasOptionFitStatus;
+    fitBadgeLabel: string;
+    ferryLegs: StJohnFerryLegEvaluation;
+  };
   recommendedOptions: StThomasEvaluatedOption[];
   eliminatedOptions: StThomasEvaluatedOption[];
   allOptions: StThomasEvaluatedOption[];
@@ -158,7 +234,7 @@ export interface StThomasPortDayEvaluationResult {
 
 export const DEFAULT_ST_THOMAS_SCENARIO_INPUT: Required<StThomasPortDayScenarioInput> =
   {
-    travelDate: "2026-11-18",
+    travelDate: "2027-01-28",
     shipArrivalTime: "08:00",
     allAboardTime: "16:30",
     arrivalDock: "havensight_wico",
@@ -173,7 +249,7 @@ export const ST_THOMAS_PUBLIC_ANSWER_SUMMARY: StThomasPublicAnswerSummary = {
   question:
     "Which St. Thomas excursions fit my sailing from Havensight (WICO) versus Crown Bay, and when does a St. John ferry or beach day fit my ship window?",
   directAnswer:
-    "Your St. Thomas cruise berth changes East End transfer times by 15–20 minutes each way and changes which low-cost beach or walking option works best. Ships at Havensight (WICO) sit 1.5 miles east of Historic Charlotte Amalie (walkable along the flat Veterans Drive waterfront promenade) and are 20–25 minutes from Red Hook (St. John ferry) and Mangrove Lagoon (VI Ecotours kayak/snorkel). Ships at Crown Bay (Austin 'Babe' Monsanto Marine Terminal, AMSS/AMNS) dock 1.7 miles west of downtown in Sub Base: Crown Bay is 5–8 minutes by taxi from VIPA's free-entry Lindbergh Bay (Emerald Beach), but adds 35–45 minutes of cross-island traffic to reach Red Hook. Crucially, VIPA's Crown Bay -> Cruz Bay (St. John) ferry only departs at 2:15 PM (Sat/Sun), 3:30 PM, and 5:30 PM, so morning Crown Bay cruise passengers cannot use the Crown Bay ferry to visit St. John and need at least a 6.5–7.0 hour port window to cross via Red Hook.",
+    "St. Thomas is your primary cruise destination, and your berth changes East End transfer times by 15–20 minutes each way. Ships at Havensight (WICO) sit 1.5 miles east of Historic Charlotte Amalie (walkable along the flat Veterans Drive waterfront promenade) and are 20–25 minutes from Red Hook (St. John ferry) and Mangrove Lagoon Marina (6526 Estate Nadir, where VI Ecotours runs separate 2.5-hour 5199KSML and 3-hour 5199P27 kayak/snorkel tours). Ships at Crown Bay (Austin 'Babe' Monsanto Marine Terminal, AMSS/AMNS) dock 1.7 miles west of downtown in Sub Base: Crown Bay is 5–8 minutes by taxi from VIPA's free-entry Lindbergh Bay (Emerald Beach), but adds 35–45 minutes of cross-island traffic to reach Red Hook. St. John is offered as a day-trip choice only when both Red Hook <-> Cruz Bay ferry legs fit your sailing window with a 90-minute return buffer, and shows 'Needs confirmation' where the post-October 31 return leg schedule is unresolved on VIPA's published notice.",
   dockRules: {
     havensight_wico: {
       dockCode: "WICO",
@@ -182,10 +258,12 @@ export const ST_THOMAS_PUBLIC_ANSWER_SUMMARY: StThomasPublicAnswerSummary = {
       walkabilityToDowntown:
         "Walkable ~1.5 miles (30 min each way) along the flat Veterans Drive harbourfront sidewalk into Historic Downtown Charlotte Amalie, or 8–12 min shared safari taxi.",
       bestFitExcursions: [
-        "VI Ecotours Cas Cay Kayak, Hike & Snorkel at Mangrove Lagoon (6526 Estate Nadir — ~20–25 min taxi each way)",
+        "VI Ecotours Mangrove Lagoon Kayak & Snorkel (5199KSML — 2h 30m, $89, self-drive/taxi to 6526 Estate Nadir)",
+        "VI Ecotours Cas Cay Kayak, Hike & Snorkel (5199P27 — 3h 00m, $99, self-drive/taxi to 6526 Estate Nadir)",
+        "Shore Excursion: Mangrove Lagoon Kayak & Snorkel w/ transportation (5199PRTSTTKSML — 3h 30m, $79, pickup included)",
         "Self-Guided Historic Charlotte Amalie, Fort Christian Exterior & 99 Steps Walk ($0 walking route)",
         "Magens Bay Park Beach Day ($7/adult, kids <12 free, ~25 min safari taxi each way)",
-        "St. John via Red Hook Passenger Ferry (only when total port window is >= 6.5 hours)",
+        "St. John Day-Trip via Red Hook Passenger Ferry (offered when both outbound and return ferry legs fit; shows Needs confirmation where return leg is unresolved)",
       ],
       watchouts: [
         "Afternoon return traffic along Veterans Drive between 2:30 PM and 4:30 PM can add 15–20 minutes returning from downtown or Magens Bay.",
@@ -200,12 +278,12 @@ export const ST_THOMAS_PUBLIC_ANSWER_SUMMARY: StThomasPublicAnswerSummary = {
         "Not a shaded leisure walk to Historic Charlotte Amalie (~1.7 miles along industrial Sub Base / Harwood Highway); budget a 10–15 min shared safari taxi each way into downtown.",
       bestFitExcursions: [
         "Self-Guided Lindbergh Bay Park & Beach / Emerald Beach ($0 beach entry, ~5–8 min taxi from Crown Bay)",
-        "Half-Day Buck Island / Turtle Cove Catamaran Sail & Snorkel",
         "Magens Bay Park Beach Day ($7/adult, kids <12 free, ~30–35 min safari taxi each way)",
+        "Snorkeling with Sea Turtles at St. Thomas (5199P36 — 2h 00m, $89, meet at 6526 Estate Nadir)",
       ],
       watchouts: [
-        "Do NOT rely on the Crown Bay -> Cruz Bay (St. John) ferry for a daytime port call: VIPA's published schedule departs Crown Bay only at 2:15 PM (weekends), 3:30 PM, and 5:30 PM.",
-        "Reaching Red Hook or Mangrove Lagoon from Crown Bay requires crossing through Charlotte Amalie bottleneck traffic (~35–45 min each way).",
+        "Do NOT rely on the Crown Bay -> Cruz Bay (St. John) ferry for a morning/daytime port call: VIPA's published schedule departs Crown Bay only at 2:15 PM (weekends), 3:30 PM, and 5:30 PM.",
+        "Reaching Red Hook or Mangrove Lagoon (6526 Estate Nadir) from Crown Bay requires crossing through Charlotte Amalie bottleneck traffic (~35–45 min each way).",
       ],
     },
     charlotte_amalie_tender: {
@@ -230,7 +308,7 @@ export const ST_THOMAS_PUBLIC_ANSWER_SUMMARY: StThomasPublicAnswerSummary = {
         "Unknown until berth is confirmed; planner applies conservative Crown Bay / tender transfer allowances so you do not miss all-aboard.",
       bestFitExcursions: [
         "Magens Bay or Lindbergh Bay Self-Guided Beach Half-Day",
-        "Half-Day Catamaran Turtle Snorkel (180–240 min)",
+        "Mangrove Lagoon Kayak & Snorkel (5199KSML 2.5h or 5199P27 3h) once dock is confirmed",
       ],
       watchouts: [
         "Verify whether your ship docks at WICO (Havensight) or Crown Bay (AMSS/AMNS) on VIPA's seaport schedule before booking East End or St. John transfers.",
@@ -238,7 +316,7 @@ export const ST_THOMAS_PUBLIC_ANSWER_SUMMARY: StThomasPublicAnswerSummary = {
     },
   },
   freeAndSelfGuidedSummary:
-    "Two free/low-cost self-guided paths work without a commercial tour: (1) the $0 Historic Charlotte Amalie Waterfront, Fort Christian Exterior, Emancipation Garden & 99 Steps walking loop (walkable from WICO or tender; short safari taxi from Crown Bay), and (2) a self-guided beach transfer to VIPA's free-entry Lindbergh Bay (Emerald Beach, 5–8 min from Crown Bay) or Magens Bay Authority Park ($7/adult non-resident, kids under 12 free, open 7:00 AM–5:30 PM).",
+    "Two free/low-cost self-guided St. Thomas paths work without a commercial tour: (1) the $0 Historic Charlotte Amalie Waterfront, Fort Christian Exterior, Emancipation Garden & 99 Steps walking loop (walkable from WICO or tender; short safari taxi from Crown Bay), and (2) a self-guided beach transfer to VIPA's free-entry Lindbergh Bay (Emerald Beach, 5–8 min from Crown Bay) or Magens Bay Authority Park ($7/adult non-resident, kids under 12 free, open 7:00 AM–5:30 PM).",
 };
 
 function parseHmToMinutes(hm: string): number | null {
@@ -277,7 +355,7 @@ function getDayOfWeekInfo(ymd: string | null | undefined): {
   ];
   const dayIdx = dt.getUTCDay();
   return {
-    label: names[dayIdx] ?? "Wednesday",
+    label: names[dayIdx] ?? "Thursday",
     isWeekday: dayIdx >= 1 && dayIdx <= 5,
   };
 }
@@ -289,12 +367,260 @@ const DOCK_DISEMBARK_MINUTES: Record<StThomasArrivalDock, number> = {
   unknown_dock: 30,
 };
 
+/**
+ * Evaluates both St. John passenger ferry legs (Red Hook -> Cruz Bay and
+ * Cruz Bay -> Red Hook) against the traveler's actual sailing window and trip date.
+ *
+ * Enforces the VIPA Ferry Schedule Rule:
+ * - The temporary VIPA notice (July 26, 2026 through October 31, 2026) ended October 31.
+ * - Uses schedules applicable to the trip date (`travelDate`).
+ * - Shows `Needs confirmation` where the return leg is unresolved (including all post-Oct 31
+ *   dates while VIPA's published schedule page still displays the expired July 26–Oct 31 notice
+ *   or weekday midday return gaps).
+ */
+export function evaluateStJohnFerryLegsForSailing(input: {
+  travelDate: string;
+  shipArrivalTime: string;
+  allAboardTime: string;
+  arrivalDock: StThomasArrivalDock;
+  returnBufferMinutes?: number;
+}): StJohnFerryLegEvaluation {
+  const dayInfo = getDayOfWeekInfo(input.travelDate);
+  const arrivalMin = parseHmToMinutes(input.shipArrivalTime) ?? 8 * 60;
+  const allAboardMin = parseHmToMinutes(input.allAboardTime) ?? 16 * 60 + 30;
+  const disembarkMin = DOCK_DISEMBARK_MINUTES[input.arrivalDock];
+  const redHookTransferEachWay =
+    input.arrivalDock === "havensight_wico"
+      ? 25
+      : input.arrivalDock === "charlotte_amalie_tender"
+        ? 30
+        : 40; // crown_bay or unknown_dock
+  const mandatoryReturnBufferMin = Math.max(
+    90,
+    Number(input.returnBufferMinutes ?? 90),
+  );
+
+  const isPastTemporaryNoticeEndDate =
+    input.travelDate.trim() > "2026-10-31";
+
+  // Earliest passenger arrival at Red Hook Terminal (Urman Fredericks) including 15m ticket/boarding lead
+  const earliestRedHookReadyMin =
+    arrivalMin + disembarkMin + redHookTransferEachWay + 15;
+
+  // Standard hourly Red Hook -> Cruz Bay departures (06:00 to 23:00 on the hour, plus 05:30)
+  // During the temporary notice (Jul 26 - Oct 31) Mon-Fri omitted 09:00, 11:00, 13:00 outbound.
+  const standardHourlyDeparturesMin = [
+    5 * 60 + 30,
+    6 * 60,
+    7 * 60,
+    8 * 60,
+    9 * 60,
+    10 * 60,
+    11 * 60,
+    12 * 60,
+    13 * 60,
+    14 * 60,
+    15 * 60,
+    16 * 60,
+    17 * 60,
+    18 * 60,
+  ];
+  const weekdayReducedOutboundMin = standardHourlyDeparturesMin.filter(
+    (m) => m !== 9 * 60 && m !== 11 * 60 && m !== 13 * 60,
+  );
+
+  // Use schedule applicable to travelDate:
+  // If within temporary notice window (<= 2026-10-31) and weekday, use weekdayReducedOutboundMin;
+  // Post-Oct 31, standard winter hourly departures apply on the hour, but weekday reduced slots are checked for conservative safety.
+  const applicableOutboundDeparturesMin =
+    !isPastTemporaryNoticeEndDate && dayInfo.isWeekday
+      ? weekdayReducedOutboundMin
+      : standardHourlyDeparturesMin;
+
+  const selectedOutboundMin =
+    applicableOutboundDeparturesMin.find(
+      (dep) => dep >= earliestRedHookReadyMin,
+    ) ?? null;
+  const arrivalAtCruzBayMin =
+    selectedOutboundMin !== null ? selectedOutboundMin + 15 : null;
+
+  // Minimum time on St. John for a meaningful Trunk Bay / Cruz Bay visit:
+  // 15m Cruz Bay->Trunk Bay taxi + 120m beach/park stay + 15m return taxi + 15m dock boarding lead = 165m after Cruz Bay arrival
+  const earliestCruzBayReturnReadyMin =
+    arrivalAtCruzBayMin !== null ? arrivalAtCruzBayMin + 165 : null;
+
+  // Latest safe Cruz Bay departure so that (departure + 15m crossing + redHookTransferEachWay <= allAboardMin - mandatoryReturnBufferMin)
+  const latestSafeCruzBayDepartureMin =
+    allAboardMin - mandatoryReturnBufferMin - redHookTransferEachWay - 15;
+
+  // Standard hourly Cruz Bay -> Red Hook return departures (06:00 to 23:00 on the hour)
+  // Temporary notice (Jul 26 - Oct 31) Mon-Fri omitted 10:00, 12:00, 14:00 returns.
+  const standardHourlyReturnsMin = [
+    7 * 60,
+    8 * 60,
+    9 * 60,
+    10 * 60,
+    11 * 60,
+    12 * 60,
+    13 * 60,
+    14 * 60,
+    15 * 60,
+    16 * 60,
+    17 * 60,
+    18 * 60,
+  ];
+  const weekdayReducedReturnsMin = standardHourlyReturnsMin.filter(
+    (m) => m !== 10 * 60 && m !== 12 * 60 && m !== 14 * 60,
+  );
+
+  const candidateReturnDepartures = standardHourlyReturnsMin.filter(
+    (dep) =>
+      earliestCruzBayReturnReadyMin !== null &&
+      dep >= earliestCruzBayReturnReadyMin &&
+      dep <= latestSafeCruzBayDepartureMin,
+  );
+
+  // Pick latest safe return that still respects the 90m ship buffer, or earliest after beach stay
+  const selectedReturnMin =
+    candidateReturnDepartures.length > 0
+      ? candidateReturnDepartures[0]!
+      : null;
+
+  const arrivalAtRedHookMin =
+    selectedReturnMin !== null ? selectedReturnMin + 15 : null;
+  const estimatedBackAtShipDockMin =
+    arrivalAtRedHookMin !== null
+      ? arrivalAtRedHookMin + redHookTransferEachWay
+      : null;
+
+  const fitsOutbound = selectedOutboundMin !== null;
+  const fitsReturn =
+    selectedReturnMin !== null &&
+    estimatedBackAtShipDockMin !== null &&
+    estimatedBackAtShipDockMin <= allAboardMin - mandatoryReturnBufferMin;
+
+  const bothFerryLegsFit = fitsOutbound && fitsReturn;
+
+  // Determine whether the return leg is resolved or unresolved ("Needs confirmation") for the trip date:
+  // 1. The temporary VIPA notice (July 26 – October 31, 2026) ended October 31.
+  // 2. For any trip date after October 31, 2026, VIPA's live schedule page (https://www.viport.com/schedules-ferrycargoschedules)
+  //    has not yet replaced the expired October 31 notice banner with a verified winter post-Oct 31 return timetable,
+  //    or the selected return leg falls in/near the midday Cruz Bay -> Red Hook window where weekday boats (10:00, 12:00, 14:00)
+  //    were suspended under the temporary notice.
+  const returnHitsTemporaryWeekdayGap =
+    selectedReturnMin !== null &&
+    dayInfo.isWeekday &&
+    !weekdayReducedReturnsMin.includes(selectedReturnMin);
+
+  const returnLegResolved =
+    bothFerryLegsFit &&
+    !isPastTemporaryNoticeEndDate &&
+    !returnHitsTemporaryWeekdayGap;
+
+  let returnLegStatus:
+    | "resolved"
+    | "unresolved_needs_confirmation"
+    | "does_not_fit";
+  let unresolvedReason: string | null = null;
+
+  if (!bothFerryLegsFit) {
+    returnLegStatus = "does_not_fit";
+    unresolvedReason =
+      "Outbound Red Hook -> Cruz Bay crossing, 2-hour St. John visit, and return Cruz Bay -> Red Hook leg do not both fit inside the ship's port window with the mandatory 90-minute two-island buffer.";
+  } else if (isPastTemporaryNoticeEndDate) {
+    returnLegStatus = "unresolved_needs_confirmation";
+    unresolvedReason = `The temporary VIPA notice (July 26, 2026 through October 31, 2026) ended October 31, and VIPA's official schedule page (https://www.viport.com/schedules-ferrycargoschedules) has not yet published a replacement winter return timetable for ${input.travelDate} (${dayInfo.label}). Target Cruz Bay -> Red Hook return (${formatMinutesToHm(selectedReturnMin!)}) fits the sailing window mathematically, but the return leg is marked Needs confirmation until VIPA confirms post-October 31 return departures.`;
+  } else if (returnHitsTemporaryWeekdayGap) {
+    returnLegStatus = "unresolved_needs_confirmation";
+    unresolvedReason = `Target Cruz Bay -> Red Hook return (${formatMinutesToHm(selectedReturnMin!)}) falls on a weekday midday slot that requires operator confirmation.`;
+  } else {
+    returnLegStatus = "resolved";
+  }
+
+  const applicableScheduleSummary = isPastTemporaryNoticeEndDate
+    ? `Post-October 31 sailing date (${input.travelDate}, ${dayInfo.label}): VIPA's temporary notice (July 26–October 31, 2026) ended October 31. Outbound Red Hook -> Cruz Bay (${selectedOutboundMin !== null ? formatMinutesToHm(selectedOutboundMin) : "none"}) and return Cruz Bay -> Red Hook (${selectedReturnMin !== null ? formatMinutesToHm(selectedReturnMin) : "none"}) are evaluated against the post-Oct 31 hourly baseline; return leg shows 'Needs confirmation' until VIPA publishes the updated winter schedule notice.`
+    : `Within July 26–October 31, 2026 VIPA schedule window (${input.travelDate}, ${dayInfo.label}).`;
+
+  return {
+    travelDate: input.travelDate,
+    dayOfWeekLabel: dayInfo.label,
+    isWeekdaySailing: dayInfo.isWeekday,
+    temporaryVipaNoticeWindow: {
+      startDate: "2026-07-26",
+      endDate: "2026-10-31",
+      temporaryVipaNoticeEndedOn: "2026-10-31",
+      isPastTemporaryNoticeEndDate,
+    },
+    applicableScheduleSummary,
+    outboundLeg: {
+      originTerminal: "Red Hook (Urman Victor Fredericks Marine Terminal)",
+      destinationTerminal:
+        "Cruz Bay, St. John (Loredon Lorence Boynes Sr. Dock)",
+      earliestReachableRedHookArrivalTime: formatMinutesToHm(
+        earliestRedHookReadyMin,
+      ),
+      selectedDepartureTime:
+        selectedOutboundMin !== null
+          ? formatMinutesToHm(selectedOutboundMin)
+          : null,
+      arrivalAtCruzBayTime:
+        arrivalAtCruzBayMin !== null
+          ? formatMinutesToHm(arrivalAtCruzBayMin)
+          : null,
+      crossingMinutes: 15,
+      fitsOutbound,
+    },
+    returnLeg: {
+      originTerminal: "Cruz Bay, St. John (Loredon Lorence Boynes Sr. Dock)",
+      destinationTerminal:
+        "Red Hook (Urman Victor Fredericks Marine Terminal)",
+      latestSafeCruzBayDepartureCutoffTime: formatMinutesToHm(
+        latestSafeCruzBayDepartureMin,
+      ),
+      selectedReturnDepartureTime:
+        selectedReturnMin !== null
+          ? formatMinutesToHm(selectedReturnMin)
+          : null,
+      arrivalAtRedHookTime:
+        arrivalAtRedHookMin !== null
+          ? formatMinutesToHm(arrivalAtRedHookMin)
+          : null,
+      estimatedBackAtShipDockTime:
+        estimatedBackAtShipDockMin !== null
+          ? formatMinutesToHm(estimatedBackAtShipDockMin)
+          : null,
+      crossingMinutes: 15,
+      fitsReturn,
+      returnLegResolved,
+      returnLegStatus,
+      unresolvedReason,
+    },
+    bothFerryLegsFit,
+    offerAsDayTripChoice: bothFerryLegsFit,
+    statusLabel: !bothFerryLegsFit
+      ? "Does Not Fit Ship Window"
+      : returnLegResolved
+        ? "Fits Comfortably"
+        : "Needs confirmation",
+    sourceUrl: "https://www.viport.com/schedules-ferrycargoschedules",
+    checkedOn: "2026-11-06",
+  };
+}
+
 interface InternalStThomasOptionSpec {
   optionId: string;
+  productCode: string | null;
+  tourId: string | null;
   title: string;
   shortLabel: string;
   category: StThomasOptionCategory;
   isFreeOrSelfGuided: boolean;
+  isDayTripChoice: boolean;
+  dayTripDestination: "st-john" | null;
+  pickupMode: StThomasPickupMode;
+  pickupSummary: string;
+  exactMeetingPointOrPickup: string;
+  checkoutUrl: string | null;
   focusTags: StThomasExcursionFocus[];
   activityDurationMinutes: number;
   checkInLeadMinutes: number;
@@ -324,11 +650,21 @@ interface InternalStThomasOptionSpec {
 const ST_THOMAS_OPTION_SPECS: InternalStThomasOptionSpec[] = [
   {
     optionId: "stt-opt-charlotte-amalie-historic-self-guided",
+    productCode: null,
+    tourId: null,
     title:
       "Free / Self-Guided Charlotte Amalie Historic District, Emancipation Garden & 99 Steps Walk",
     shortLabel: "Self-Guided Historic Charlotte Amalie ($0 Walk)",
     category: "free_or_self_guided",
     isFreeOrSelfGuided: true,
+    isDayTripChoice: false,
+    dayTripDestination: null,
+    pickupMode: "public_walk_or_safari_taxi",
+    pickupSummary:
+      "Self-guided public walk from WICO/Tender or shared safari taxi from Crown Bay",
+    exactMeetingPointOrPickup:
+      "Emancipation Garden & Fort Christian Exterior, Downtown Charlotte Amalie, St. Thomas",
+    checkoutUrl: null,
     focusTags: ["any_excursion_or_beach", "free_or_self_guided_walk"],
     activityDurationMinutes: 120,
     checkInLeadMinutes: 0,
@@ -373,11 +709,20 @@ const ST_THOMAS_OPTION_SPECS: InternalStThomasOptionSpec[] = [
   },
   {
     optionId: "stt-opt-lindbergh-emerald-beach-self-guided",
+    productCode: null,
+    tourId: null,
     title:
       "Self-Guided Lindbergh Bay Park & Beach (Emerald Beach — Free Entry, Best for Crown Bay)",
     shortLabel: "Self-Guided Lindbergh / Emerald Beach ($0 Entry)",
     category: "free_or_self_guided",
     isFreeOrSelfGuided: true,
+    isDayTripChoice: false,
+    dayTripDestination: null,
+    pickupMode: "public_walk_or_safari_taxi",
+    pickupSummary: "Regulated shared safari taxi from cruise dock",
+    exactMeetingPointOrPickup:
+      "Lindbergh Bay Park and Beach (Emerald Beach), West of Crown Bay, St. Thomas",
+    checkoutUrl: null,
     focusTags: [
       "any_excursion_or_beach",
       "magens_or_lindbergh_beach",
@@ -426,11 +771,21 @@ const ST_THOMAS_OPTION_SPECS: InternalStThomasOptionSpec[] = [
   },
   {
     optionId: "stt-opt-magens-bay-self-guided-safari",
+    productCode: null,
+    tourId: null,
     title:
       "Self-Guided Magens Bay Authority Park Beach Day ($7 Adult / Kids Under 12 Free)",
     shortLabel: "Self-Guided Magens Bay Beach ($7 Entry)",
     category: "free_or_self_guided",
     isFreeOrSelfGuided: true,
+    isDayTripChoice: false,
+    dayTripDestination: null,
+    pickupMode: "public_walk_or_safari_taxi",
+    pickupSummary:
+      "Regulated shared safari taxi from WICO or Crown Bay taxi dispatch stand",
+    exactMeetingPointOrPickup:
+      "Magens Bay Authority Park Gate (Open 7:00 AM–5:30 PM Daily), North Shore, St. Thomas",
+    checkoutUrl: "https://magensbayauthority.org/passes/",
     focusTags: ["any_excursion_or_beach", "magens_or_lindbergh_beach"],
     activityDurationMinutes: 180,
     checkInLeadMinutes: 0,
@@ -475,14 +830,25 @@ const ST_THOMAS_OPTION_SPECS: InternalStThomasOptionSpec[] = [
     bookingChannelLabel: "Magens Bay Authority Official Gate / Online Pass",
   },
   {
-    optionId: "stt-opt-viecotours-cas-cay-kayak-snorkel",
+    optionId: "stt-opt-viecotours-mangrove-lagoon-5199ksml",
+    productCode: "5199KSML",
+    tourId: "dcc:tour:viator:5199KSML",
     title:
-      "VI Ecotours — Cas Cay Kayak, Hike & Snorkel Adventure at Mangrove Lagoon (5199KSML)",
-    shortLabel: "VI Ecotours Cas Cay Kayak & Snorkel (3h / $99)",
+      "St Thomas Mangrove Lagoon Kayak and Snorkel Tour in the US Virgin Islands (5199KSML)",
+    shortLabel: "Mangrove Lagoon Kayak & Snorkel (5199KSML • 2h 30m • $89)",
     category: "guided_eco_or_marine",
     isFreeOrSelfGuided: false,
+    isDayTripChoice: false,
+    dayTripDestination: null,
+    pickupMode: "self_drive",
+    pickupSummary:
+      "Pickup NOT included (self_drive / taxi to 6526 Estate Nadir Mangrove Lagoon Marina)",
+    exactMeetingPointOrPickup:
+      "Virgin Islands Ecotours Marina, 6526 Estate Nadir, St. Thomas, VI 00802 (15 min before departure)",
+    checkoutUrl:
+      "https://www.viator.com/tours/St-Thomas/St-Thomas-Mangrove-Lagoon-Kayak-and-Snorkel-Tour/d965-5199KSML?mcid=42383&pid=P00306962&medium=api&api_version=2.0&campaign=dcc-st-thomas-5199ksml&utm_source=destinationcommandcenter&utm_medium=affiliate&utm_campaign=cities&locale=en-US",
     focusTags: ["any_excursion_or_beach", "mangrove_lagoon_kayak_snorkel"],
-    activityDurationMinutes: 180, // Observed 3 Hours on viecotours.com (2026-11-06), up from 150m on 2026-10-30
+    activityDurationMinutes: 150, // Exact listing duration for 5199KSML: 2 hours 30 minutes (150m)
     checkInLeadMinutes: 15,
     transferEachWayByDock: {
       havensight_wico: 25, // 6526 Estate Nadir is ~20-25m east of WICO
@@ -491,30 +857,97 @@ const ST_THOMAS_OPTION_SPECS: InternalStThomasOptionSpec[] = [
       unknown_dock: 35,
     },
     minimumReturnBufferMinutes: 60,
-    adultPriceUsd: 99,
+    adultPriceUsd: 89, // Exact listing price for 5199KSML: $89.00
+    childUnder12PriceUsd: 89,
+    child12PlusPriceUsd: 89,
+    estimatedRoundTripTaxiPerPersonUsd: 24,
+    costBasisSummary:
+      "Exact Viator listing 5199KSML: $89.00/person, 2 hours 30 minutes (150 min), pickup NOT included (meet at 6526 Estate Nadir Mangrove Lagoon Marina; budget ~$24/person R/T taxi).",
+    dockComparisonByDock: {
+      havensight_wico:
+        "From Havensight (WICO), 6526 Estate Nadir is ~20–25 minutes east by taxi. Total required window for 5199KSML (150m tour + 20m disembark + 15m check-in + 50m R/T taxi + 60m buffer) is 295 minutes (4h 55m).",
+      crown_bay:
+        "From Crown Bay (AMSS/AMNS), taxi transfer to 6526 Estate Nadir is ~35 minutes each way across Charlotte Amalie (total required window: 315 minutes / 5h 15m).",
+      charlotte_amalie_tender:
+        "Requires 35m tender ashore + 30m taxi each way to 6526 Estate Nadir (total required window: 320 minutes / 5h 20m).",
+      unknown_dock:
+        "Budget 315 minutes total dock-to-dock for the 150-minute 5199KSML tour until your berth (WICO vs. Crown Bay) is confirmed.",
+    },
+    accessibilitySummary:
+      "Requires active tandem kayaking through Inner Mangrove Lagoon channels and reef snorkeling; not step-free.",
+    supportsStepFreeWheelchair: false,
+    requiresActiveStairsOrPaddle: true,
+    qualifyPendingHumanConfirmation: false,
+    supportingSources: [
+      {
+        organization: "Virgin Islands Ecotours / Viator 5199KSML",
+        title:
+          "St Thomas Mangrove Lagoon Kayak and Snorkel Tour in the US Virgin Islands (5199KSML — 150m, $89)",
+        url: "https://www.viator.com/tours/St-Thomas/St-Thomas-Mangrove-Lagoon-Kayak-and-Snorkel-Tour/d965-5199KSML?mcid=42383&pid=P00306962&medium=api&api_version=2.0&campaign=dcc-st-thomas-5199ksml&utm_source=destinationcommandcenter&utm_medium=affiliate&utm_campaign=cities&locale=en-US",
+        checkedOn: "2026-11-06",
+      },
+    ],
+    bookingHandoffUrl:
+      "https://www.viator.com/tours/St-Thomas/St-Thomas-Mangrove-Lagoon-Kayak-and-Snorkel-Tour/d965-5199KSML?mcid=42383&pid=P00306962&medium=api&api_version=2.0&campaign=dcc-st-thomas-5199ksml&utm_source=destinationcommandcenter&utm_medium=affiliate&utm_campaign=cities&locale=en-US",
+    bookingChannelLabel: "Book Exact Listing 5199KSML (2h 30m • $89)",
+  },
+  {
+    optionId: "stt-opt-viecotours-cas-cay-5199p27",
+    productCode: "5199P27",
+    tourId: "dcc:tour:viator:5199P27",
+    title:
+      "Cas Cay Kayak, Hike, and Snorkel Adventure in St. Thomas (5199P27)",
+    shortLabel: "Cas Cay Kayak, Hike & Snorkel (5199P27 • 3h 00m • $99)",
+    category: "guided_eco_or_marine",
+    isFreeOrSelfGuided: false,
+    isDayTripChoice: false,
+    dayTripDestination: null,
+    pickupMode: "self_drive",
+    pickupSummary:
+      "Pickup NOT included (self_drive / taxi to 6526 Estate Nadir Mangrove Lagoon Marina)",
+    exactMeetingPointOrPickup:
+      "Virgin Islands Ecotours Marina, 6526 Estate Nadir, St. Thomas, VI 00802 (15 min before departure)",
+    checkoutUrl:
+      "https://www.viator.com/tours/St-Thomas/Cas-Cay-Kayak-Hike-and-Snorkel-in-St-Thomas/d965-5199P27?mcid=42383&pid=P00306962&medium=api&api_version=2.0&campaign=dcc-st-thomas-5199p27&utm_source=destinationcommandcenter&utm_medium=affiliate&utm_campaign=cities&locale=en-US",
+    focusTags: ["any_excursion_or_beach", "mangrove_lagoon_kayak_snorkel"],
+    activityDurationMinutes: 180, // Exact listing duration for 5199P27: 3 hours (180m)
+    checkInLeadMinutes: 15,
+    transferEachWayByDock: {
+      havensight_wico: 25,
+      crown_bay: 35,
+      charlotte_amalie_tender: 30,
+      unknown_dock: 35,
+    },
+    minimumReturnBufferMinutes: 60,
+    adultPriceUsd: 99, // Exact listing price for 5199P27: $99.00
     childUnder12PriceUsd: 99,
     child12PlusPriceUsd: 99,
     estimatedRoundTripTaxiPerPersonUsd: 24,
     costBasisSummary:
-      "Published operator rate From $99/person (3 Hours on viecotours.com checked 2026-11-06; transfers to 6526 Estate Nadir Mangrove Lagoon Marina not included in base rate).",
+      "Exact Viator listing 5199P27: $99.00/person, 3 hours (180 min including Cas Cay volcanic cliff & blowhole hike), pickup NOT included (meet at 6526 Estate Nadir Mangrove Lagoon Marina; budget ~$24/person R/T taxi).",
     dockComparisonByDock: {
       havensight_wico:
-        "Fits 5.5+ hour Havensight (WICO) port calls: Mangrove Lagoon Marina (6526 Estate Nadir) is ~20–25 minutes east of WICO (total required window: 305 minutes including 180m tour, 15m check-in, 50m round-trip taxi, and 60m ship buffer).",
+        "From Havensight (WICO), 6526 Estate Nadir is ~20–25 minutes east by taxi. Total required window for 5199P27 (180m tour + 20m disembark + 15m check-in + 50m R/T taxi + 60m buffer) is 325 minutes (5h 25m).",
       crown_bay:
-        "From Crown Bay (AMSS/AMNS), East End taxi transfer increases to ~35 minutes each way (total required window: 325 minutes / 5h 25m); tight or ineligible on short 5-hour Crown Bay calls.",
+        "From Crown Bay (AMSS/AMNS), East End taxi transfer increases to ~35 minutes each way (total required window: 345 minutes / 5h 45m).",
       charlotte_amalie_tender:
-        "Requires 35m tender ashore + 30m taxi each way to Mangrove Lagoon; only viable on 6+ hour tender port calls.",
+        "Requires 35m tender ashore + 30m taxi each way to Mangrove Lagoon (total required window: 350 minutes / 5h 50m).",
       unknown_dock:
-        "Budget 325 minutes total dock-to-dock until your berth (WICO vs. Crown Bay) and the 150m-vs-180m duration change are confirmed.",
+        "Budget 345 minutes total dock-to-dock for the 180-minute 5199P27 Cas Cay tour until your berth (WICO vs. Crown Bay) is confirmed.",
     },
     accessibilitySummary:
       "Requires active tandem kayaking through mangrove channels, hiking across uneven volcanic coral trails on Cas Cay, and open-water snorkeling.",
     supportsStepFreeWheelchair: false,
     requiresActiveStairsOrPaddle: true,
-    qualifyPendingHumanConfirmation: true,
-    qualificationReason:
-      "Material change queued 2026-11-06: https://www.viecotours.com/ (published Nov 5, 2026) lists Cas Cay Kayak, Hike & Snorkel as 3 Hours (180 min, From $99) vs. 2h 30m (150 min) in our 2026-10-30 snapshot. Timing uses the conservative 180-minute duration pending human review.",
+    qualifyPendingHumanConfirmation: false,
     supportingSources: [
+      {
+        organization: "Virgin Islands Ecotours / Viator 5199P27",
+        title:
+          "Cas Cay Kayak, Hike, and Snorkel Adventure in St. Thomas (5199P27 — 180m, $99)",
+        url: "https://www.viator.com/tours/St-Thomas/Cas-Cay-Kayak-Hike-and-Snorkel-in-St-Thomas/d965-5199P27?mcid=42383&pid=P00306962&medium=api&api_version=2.0&campaign=dcc-st-thomas-5199p27&utm_source=destinationcommandcenter&utm_medium=affiliate&utm_campaign=cities&locale=en-US",
+        checkedOn: "2026-11-06",
+      },
       {
         organization: "Virgin Islands Ecotours (VI Ecotours)",
         title:
@@ -524,69 +957,154 @@ const ST_THOMAS_OPTION_SPECS: InternalStThomasOptionSpec[] = [
       },
     ],
     bookingHandoffUrl:
-      "/tours?q=St.+Thomas+Mangrove+Lagoon+Kayak+Hike+Snorkel+5199KSML",
-    bookingChannelLabel: "Compare VI Ecotours / Viator 5199KSML",
+      "https://www.viator.com/tours/St-Thomas/Cas-Cay-Kayak-Hike-and-Snorkel-in-St-Thomas/d965-5199P27?mcid=42383&pid=P00306962&medium=api&api_version=2.0&campaign=dcc-st-thomas-5199p27&utm_source=destinationcommandcenter&utm_medium=affiliate&utm_campaign=cities&locale=en-US",
+    bookingChannelLabel: "Book Exact Listing 5199P27 (3h 00m • $99)",
   },
   {
-    optionId: "stt-opt-catamaran-turtle-buck-island",
+    optionId: "stt-opt-viecotours-shorex-transport-5199prtsttksml",
+    productCode: "5199PRTSTTKSML",
+    tourId: "dcc:tour:viator:5199PRTSTTKSML",
     title:
-      "Half-Day Buck Island / Turtle Cove Catamaran Snorkel & Sail (180–240 min)",
-    shortLabel: "Buck Island Catamaran Snorkel (3.5–4h)",
+      "Shore Excursion: Mangrove Lagoon Kayak & Snorkel w transportation (5199PRTSTTKSML)",
+    shortLabel:
+      "Shore Excursion: Mangrove Kayak & Snorkel w/ Transport (5199PRTSTTKSML • 3h 30m • $79)",
     category: "guided_eco_or_marine",
     isFreeOrSelfGuided: false,
-    focusTags: ["any_excursion_or_beach", "st_john_ferry_or_catamaran"],
-    activityDurationMinutes: 210,
-    checkInLeadMinutes: 20,
+    isDayTripChoice: false,
+    dayTripDestination: null,
+    pickupMode: "hotel_pickup",
+    pickupSummary:
+      "Round-trip transportation included in listing (confirm exact WICO vs. Crown Bay gate stop)",
+    exactMeetingPointOrPickup:
+      "Cruise port / hotel pickup included per 5199PRTSTTKSML listing (confirm exact WICO Gate vs. Crown Bay Windmill dispatch stop on voucher)",
+    checkoutUrl:
+      "https://www.viator.com/tours/St-Thomas/Shore-Excursion-Mangrove-Lagoon-Kayak-and-Snorkel-w-transportation/d965-5199PRTSTTKSML?mcid=42383&pid=P00306962&medium=api&api_version=2.0&campaign=dcc-st-thomas-5199prtsttksml&utm_source=destinationcommandcenter&utm_medium=affiliate&utm_campaign=cities&locale=en-US",
+    focusTags: ["any_excursion_or_beach", "mangrove_lagoon_kayak_snorkel"],
+    activityDurationMinutes: 210, // Exact listing duration for 5199PRTSTTKSML: 3h 30m (includes bundled transfer window)
+    checkInLeadMinutes: 15,
     transferEachWayByDock: {
-      havensight_wico: 15,
-      crown_bay: 20,
+      havensight_wico: 10,
+      crown_bay: 15,
       charlotte_amalie_tender: 20,
-      unknown_dock: 25,
+      unknown_dock: 15,
     },
     minimumReturnBufferMinutes: 60,
-    adultPriceUsd: 129,
-    childUnder12PriceUsd: 99,
-    child12PlusPriceUsd: 129,
+    adultPriceUsd: 79, // Exact listing price for 5199PRTSTTKSML: $79.00
+    childUnder12PriceUsd: 79,
+    child12PlusPriceUsd: 79,
     estimatedRoundTripTaxiPerPersonUsd: 0,
     costBasisSummary:
-      "Indicative $119–$149 per adult across St. Thomas half-day catamaran turtle snorkel departures; pier pickup vs. marina check-in varies by selected vessel and option.",
+      "Exact Viator listing 5199PRTSTTKSML: $79.00/person, 3 hours 30 minutes (210 min with round-trip transport included).",
     dockComparisonByDock: {
       havensight_wico:
-        "From Havensight (WICO), Yacht Haven Grande / Frenchtown / East End marina departures require 10–25 minutes transfer each way.",
+        "From Havensight (WICO), 5199PRTSTTKSML bundles round-trip port transfer into a 210-minute shore excursion window.",
       crown_bay:
-        "From Crown Bay (AMSS/AMNS), Crown Bay Marina / Frenchtown departures are 5–15 minutes away, while East End marinas require 35–40 minutes.",
+        "From Crown Bay (AMSS/AMNS), verify on your voucher that Crown Bay pickup is confirmed for your departure slot.",
       charlotte_amalie_tender:
-        "Allow 35 minutes tender ashore plus 15–20 minutes transfer to the departure marina.",
+        "Budget 35m tender ashore to meet the downtown/port pickup point.",
       unknown_dock:
-        "Confirm exact departure marina (Crown Bay Marina, Yacht Haven Grande, or Sapphire/Red Hook) against your ship's assigned dock before checkout.",
+        "Confirm whether your ship docks at WICO or Crown Bay when selecting your pickup point at checkout.",
     },
     accessibilitySummary:
-      "Requires boarding a sailing catamaran via gangway and climbing swim ladders from the water; not step-free for motorized wheelchairs.",
+      "Requires tandem kayaking and reef snorkeling; not step-free.",
     supportsStepFreeWheelchair: false,
-    requiresActiveStairsOrPaddle: false,
-    qualifyPendingHumanConfirmation: true,
-    qualificationReason:
-      "Pier-pickup equivalence between WICO and Crown Bay is unconfirmed ('unknown') across third-party catamaran listings until option-level meeting coordinates are verified.",
+    requiresActiveStairsOrPaddle: true,
+    qualifyPendingHumanConfirmation: false,
     supportingSources: [
       {
-        organization: "Cruz Bay Watersports & St. Thomas Catalog Snapshot",
-        title: "St. Thomas Snorkel & Catamaran Departures (Checked 2026-11-06)",
-        url: "https://cruzbaywatersports.com/",
+        organization: "Virgin Islands Ecotours / Viator 5199PRTSTTKSML",
+        title:
+          "Shore Excursion: Mangrove Lagoon Kayak & Snorkel w transportation (5199PRTSTTKSML — 210m, $79)",
+        url: "https://www.viator.com/tours/St-Thomas/Shore-Excursion-Mangrove-Lagoon-Kayak-and-Snorkel-w-transportation/d965-5199PRTSTTKSML?mcid=42383&pid=P00306962&medium=api&api_version=2.0&campaign=dcc-st-thomas-5199prtsttksml&utm_source=destinationcommandcenter&utm_medium=affiliate&utm_campaign=cities&locale=en-US",
         checkedOn: "2026-11-06",
       },
     ],
-    bookingHandoffUrl: "/tours?q=St.+Thomas+Catamaran+Turtle+Snorkel",
-    bookingChannelLabel: "Browse St. Thomas Catamaran Snorkel Options",
+    bookingHandoffUrl:
+      "https://www.viator.com/tours/St-Thomas/Shore-Excursion-Mangrove-Lagoon-Kayak-and-Snorkel-w-transportation/d965-5199PRTSTTKSML?mcid=42383&pid=P00306962&medium=api&api_version=2.0&campaign=dcc-st-thomas-5199prtsttksml&utm_source=destinationcommandcenter&utm_medium=affiliate&utm_campaign=cities&locale=en-US",
+    bookingChannelLabel: "Book Exact Listing 5199PRTSTTKSML (3h 30m • $79)",
+  },
+  {
+    optionId: "stt-opt-snorkeling-with-sea-turtles-5199p36",
+    productCode: "5199P36",
+    tourId: "dcc:tour:viator:5199P36",
+    title: "Snorkeling with Sea Turtles at St. Thomas (5199P36)",
+    shortLabel: "Snorkeling with Sea Turtles (5199P36 • 2h 00m • $89)",
+    category: "guided_eco_or_marine",
+    isFreeOrSelfGuided: false,
+    isDayTripChoice: false,
+    dayTripDestination: null,
+    pickupMode: "self_drive",
+    pickupSummary:
+      "Pickup NOT included (self_drive / taxi to 6526 Estate Nadir Mangrove Lagoon Marina)",
+    exactMeetingPointOrPickup:
+      "Virgin Islands Ecotours Marina, 6526 Estate Nadir, St. Thomas, VI 00802 (15 min before departure)",
+    checkoutUrl:
+      "https://www.viator.com/tours/St-Thomas/Snorkeling-with-Sea-Turtles-at-St.Thomas/d965-5199P36?mcid=42383&pid=P00306962&medium=api&api_version=2.0&campaign=dcc-st-thomas-5199p36&utm_source=destinationcommandcenter&utm_medium=affiliate&utm_campaign=cities&locale=en-US".replace(
+        "St.Thomas",
+        "St-Thomas",
+      ),
+    focusTags: ["any_excursion_or_beach", "st_john_ferry_or_catamaran"],
+    activityDurationMinutes: 120, // Exact listing duration for 5199P36: 2 hours (120m)
+    checkInLeadMinutes: 15,
+    transferEachWayByDock: {
+      havensight_wico: 25,
+      crown_bay: 35,
+      charlotte_amalie_tender: 30,
+      unknown_dock: 35,
+    },
+    minimumReturnBufferMinutes: 60,
+    adultPriceUsd: 89, // Exact listing price for 5199P36: $89.00
+    childUnder12PriceUsd: 89,
+    child12PlusPriceUsd: 89,
+    estimatedRoundTripTaxiPerPersonUsd: 24,
+    costBasisSummary:
+      "Exact Viator listing 5199P36: $89.00/person, 2 hours (120 min), pickup NOT included (meet at 6526 Estate Nadir; budget ~$24/person R/T taxi).",
+    dockComparisonByDock: {
+      havensight_wico:
+        "From Havensight (WICO), 20–25 minutes east by taxi to 6526 Estate Nadir (total required window: 265 minutes / 4h 25m).",
+      crown_bay:
+        "From Crown Bay (AMSS/AMNS), allow 35 minutes each way by taxi (total required window: 285 minutes / 4h 45m).",
+      charlotte_amalie_tender:
+        "Allow 35m tender ashore + 30m taxi each way (total required window: 290 minutes / 4h 50m).",
+      unknown_dock:
+        "Fits 5+ hour St. Thomas calls from either WICO or Crown Bay.",
+    },
+    accessibilitySummary:
+      "Boat boarding and open-water sea turtle snorkeling; not step-free.",
+    supportsStepFreeWheelchair: false,
+    requiresActiveStairsOrPaddle: false,
+    qualifyPendingHumanConfirmation: false,
+    supportingSources: [
+      {
+        organization: "Virgin Islands Ecotours / Viator 5199P36",
+        title: "Snorkeling with Sea Turtles at St. Thomas (5199P36 — 120m, $89)",
+        url: "https://www.viator.com/tours/St-Thomas/Snorkeling-with-Sea-Turtles-at-St-Thomas/d965-5199P36?mcid=42383&pid=P00306962&medium=api&api_version=2.0&campaign=dcc-st-thomas-5199p36&utm_source=destinationcommandcenter&utm_medium=affiliate&utm_campaign=cities&locale=en-US",
+        checkedOn: "2026-11-06",
+      },
+    ],
+    bookingHandoffUrl:
+      "https://www.viator.com/tours/St-Thomas/Snorkeling-with-Sea-Turtles-at-St-Thomas/d965-5199P36?mcid=42383&pid=P00306962&medium=api&api_version=2.0&campaign=dcc-st-thomas-5199p36&utm_source=destinationcommandcenter&utm_medium=affiliate&utm_campaign=cities&locale=en-US",
+    bookingChannelLabel: "Book Exact Listing 5199P36 (2h 00m • $89)",
   },
   {
     optionId: "stt-opt-st-john-trunk-bay-red-hook-ferry",
+    productCode: null,
+    tourId: null,
     title:
-      "St. John & Trunk Bay (Virgin Islands National Park) via VIPA Red Hook Passenger Ferry",
-    shortLabel: "St. John & Trunk Bay via Red Hook Ferry (6.5h+ Call)",
+      "St. John Day-Trip Choice: Trunk Bay (Virgin Islands National Park) via VIPA Red Hook Passenger Ferry",
+    shortLabel: "St. John Day-Trip via Red Hook Ferry (Both Ferry Legs Checked)",
     category: "two_island_ferry_excursion",
     isFreeOrSelfGuided: true,
+    isDayTripChoice: true,
+    dayTripDestination: "st-john",
+    pickupMode: "public_ferry_and_safari_taxi",
+    pickupSummary:
+      "Shared safari taxi to Red Hook (Urman Fredericks Terminal) + VIPA 15-min ferry to Cruz Bay + St. John safari taxi",
+    exactMeetingPointOrPickup:
+      "Urman Victor Fredericks Marine Terminal (Red Hook, St. Thomas) <-> Loredon Lorence Boynes Sr. Dock (Cruz Bay, St. John)",
+    checkoutUrl: "https://www.viport.com/schedules-ferrycargoschedules",
     focusTags: ["any_excursion_or_beach", "st_john_ferry_or_catamaran"],
-    // 15m Red Hook check-in + 15m outbound ferry + 15m Cruz Bay->Trunk Bay taxi + 120m Trunk Bay beach + 15m return taxi + 15m return ferry wait + 15m return crossing = 210m from Red Hook terminal
+    // 15m Red Hook check-in + 15m outbound ferry + 15m Cruz Bay->Trunk Bay taxi + 120m Trunk Bay beach + 15m return taxi + 15m return ferry wait + 15m return crossing = 195m activity from Red Hook check-in completion
     activityDurationMinutes: 195,
     checkInLeadMinutes: 15,
     transferEachWayByDock: {
@@ -604,7 +1122,7 @@ const ST_THOMAS_OPTION_SPECS: InternalStThomasOptionSpec[] = [
       "VIPA Red Hook <-> Cruz Bay passenger ferry: $8.15/adult one-way ($16.30 R/T), $1.00/child (ages 2–11) one-way ($2.00 R/T), $4.00/luggage piece, plus St. Thomas dock<->Red Hook and Cruz Bay<->Trunk Bay shared safari taxis (~$40–$48/person combined R/T estimate).",
     dockComparisonByDock: {
       havensight_wico:
-        "From Havensight (WICO), Red Hook (Urman Fredericks Marine Terminal) is ~25 minutes east by taxi. With 15m ferry check-in, 15m crossing, St. John taxi to Trunk Bay, 2h beach time, and a mandatory 90-minute two-island return buffer, you need at least 370 minutes (6h 10m) of port time.",
+        "From Havensight (WICO), Red Hook (Urman Fredericks Marine Terminal) is ~25 minutes east by taxi. Offered as a St. John day-trip choice when both outbound (Red Hook -> Cruz Bay) and return (Cruz Bay -> Red Hook) ferry legs fit your sailing with a 90-minute return buffer.",
       crown_bay:
         "From Crown Bay (AMSS/AMNS), do NOT attempt to take the Crown Bay -> Cruz Bay ferry outbound (VIPA schedule only departs Crown Bay at 2:15 PM Sat/Sun, 3:30 PM, and 5:30 PM). Riding a taxi across island to Red Hook takes ~40 minutes each way, requiring at least 400 minutes (6h 40m) of port time.",
       charlotte_amalie_tender:
@@ -618,7 +1136,7 @@ const ST_THOMAS_OPTION_SPECS: InternalStThomasOptionSpec[] = [
     requiresActiveStairsOrPaddle: false,
     qualifyPendingHumanConfirmation: true,
     qualificationReason:
-      "VIPA's ferry page (checked 2026-11-06) still displays the temporary off-season schedule banner ('July 26, 2026 through October 31, 2026') with Mon–Fri midday return gaps from Cruz Bay to Red Hook (no 10:00 AM, 12:00 PM, or 2:00 PM weekday departures). Weekday return timing is flagged 'unknown / needs confirmation' until VIPA posts the winter 2026/2027 update.",
+      "The temporary VIPA notice (July 26, 2026 through October 31, 2026) ended October 31. Where the post-October 31 Cruz Bay -> Red Hook return leg schedule is unresolved on VIPA's published page, St. John is shown as 'Needs confirmation'.",
     supportingSources: [
       {
         organization: "Virgin Islands Port Authority (VIPA)",
@@ -641,8 +1159,8 @@ const ST_THOMAS_OPTION_SPECS: InternalStThomasOptionSpec[] = [
 
 /**
  * Evaluates a traveler's actual St. Thomas cruise port day and returns ranked options,
- * eliminated options, dock-specific transfer math, free/self-guided choices, and
- * explicit `unknown` markers for unsupported facts.
+ * eliminated options, dock-specific transfer math, free/self-guided choices,
+ * St. John day-trip ferry-leg evaluation, and explicit `unknown` markers.
  */
 export function evaluateStThomasPortDayScenario(
   rawInput?: Partial<StThomasPortDayScenarioInput>,
@@ -688,6 +1206,14 @@ export function evaluateStThomasPortDayScenario(
   const dayInfo = getDayOfWeekInfo(input.travelDate);
   const hasChildUnder5 = input.childAges.some((age) => age < 5);
 
+  const stJohnFerryEvaluation = evaluateStJohnFerryLegsForSailing({
+    travelDate: input.travelDate,
+    shipArrivalTime: input.shipArrivalTime,
+    allAboardTime: input.allAboardTime,
+    arrivalDock: input.arrivalDock,
+    returnBufferMinutes: Math.max(input.returnBufferMinutes, 90),
+  });
+
   const globalUnknownFacts: StThomasUnknownFact[] = [
     {
       factId: "stt-unknown-usvi-taxi-tariff-and-dispatch-wait",
@@ -705,21 +1231,10 @@ export function evaluateStThomasPortDayScenario(
       status: "unknown",
       category: "source_change_pending_human_review",
       summary:
-        "VIPA's ferry schedule page (checked 2026-11-06) still displays the 'July 26, 2026 through October 31, 2026' temporary off-season passenger ferry notice with Mon–Fri midday Cruz Bay -> Red Hook return gaps (no 10:00 AM, 12:00 PM, or 2:00 PM weekday boats).",
+        "The temporary VIPA passenger ferry notice ('July 26, 2026 through October 31, 2026') ended October 31, and VIPA's schedule page (checked 2026-11-06) has not yet published the replacement winter 2026/2027 Cruz Bay -> Red Hook return timetable.",
       impactOnDecision:
-        "On weekday sailings, missing the 11:00 AM or 1:00 PM Cruz Bay return ferry can cause a 2-hour wait until the next Red Hook crossing unless winter hourly midday service is confirmed.",
+        "St. John day-trip return ferry timing shows 'Needs confirmation' where the post-October 31 return leg is unresolved.",
       sourceUrl: "https://www.viport.com/schedules-ferrycargoschedules",
-      checkedOn: "2026-11-06",
-    },
-    {
-      factId: "stt-unknown-viecotours-duration-delta-150m-vs-180m",
-      status: "unknown",
-      category: "source_change_pending_human_review",
-      summary:
-        "Virgin Islands Ecotours' live site (published Nov 5, 2026, checked 2026-11-06) lists Cas Cay Kayak, Hike & Snorkel as 3 Hours (180 min) vs. 2 hours 30 minutes (150 min) in our 2026-10-30 snapshot.",
-      impactOnDecision:
-        "Planner uses the conservative 180-minute duration (+30 min) until human review confirms whether 180m is on-water time or includes safety/gear staging.",
-      sourceUrl: "https://www.viecotours.com/",
       checkedOn: "2026-11-06",
     },
     {
@@ -727,7 +1242,7 @@ export function evaluateStThomasPortDayScenario(
       status: "unknown",
       category: "operator_confirmation_required",
       summary:
-        "Third-party Viator / catamaran listings in St. Thomas do not uniformly guarantee that Crown Bay (AMSS/AMNS) pier pickup is included at the same time or price as Havensight (WICO) pickup.",
+        "Third-party Viator shore excursion listings in St. Thomas do not uniformly guarantee that Crown Bay (AMSS/AMNS) pier pickup is included at the same time or price as Havensight (WICO) pickup.",
       impactOnDecision:
         "Travelers docked at Crown Bay must verify the exact option-level pickup point before assuming pier-side boarding.",
       sourceUrl: "https://www.viport.com/schedule-cruise-ports",
@@ -741,7 +1256,7 @@ export function evaluateStThomasPortDayScenario(
       status: "unknown",
       category: "missing_traveler_input",
       summary:
-        "Traveler sailing date was not supplied; evaluating against default winter example date (2026-11-18).",
+        "Traveler sailing date was not supplied; evaluating against default winter sailing date (2027-01-28).",
       impactOnDecision:
         "Weekday vs. weekend ferry frequencies (especially Cruz Bay -> Red Hook midday returns and Crown Bay 2:15 PM weekend boat) depend on your exact sailing date.",
       sourceUrl: null,
@@ -838,7 +1353,25 @@ export function evaluateStThomasPortDayScenario(
       let fitBadgeLabel: string;
       let conciseVerdict: string;
 
-      if (!accessibilityCompatible) {
+      if (spec.optionId === "stt-opt-st-john-trunk-bay-red-hook-ferry") {
+        if (!accessibilityCompatible) {
+          fitStatus = "does_not_fit";
+          fitBadgeLabel = "Eliminated — Accessibility / Mobility Constraint";
+          conciseVerdict = `Eliminated for ${input.mobilityLevel}: ${spec.accessibilitySummary}`;
+        } else if (!stJohnFerryEvaluation.bothFerryLegsFit || netMarginMinutes < 0) {
+          fitStatus = "does_not_fit";
+          fitBadgeLabel = "Does Not Fit Ship Window";
+          conciseVerdict = `St. John day-trip requires both outbound (Red Hook -> Cruz Bay) and return (Cruz Bay -> Red Hook) ferry legs to fit with a ${requiredReturnBufferMinutes}m return buffer (${totalRequiredMinutes}m total required vs. ${totalPortWindowMinutes}m port window).`;
+        } else if (!stJohnFerryEvaluation.returnLeg.returnLegResolved) {
+          fitStatus = "qualified_needs_confirmation";
+          fitBadgeLabel = "Needs confirmation";
+          conciseVerdict = `St. John offered as a day-trip choice (outbound Red Hook ferry ${stJohnFerryEvaluation.outboundLeg.selectedDepartureTime}, target Cruz Bay return ${stJohnFerryEvaluation.returnLeg.selectedReturnDepartureTime}, +${netMarginMinutes}m slack), but shows 'Needs confirmation': ${stJohnFerryEvaluation.returnLeg.unresolvedReason}`;
+        } else {
+          fitStatus = "fits_comfortably";
+          fitBadgeLabel = "Fits Comfortably";
+          conciseVerdict = `Both St. John ferry legs fit your sailing (${stJohnFerryEvaluation.outboundLeg.selectedDepartureTime} Red Hook -> Cruz Bay; ${stJohnFerryEvaluation.returnLeg.selectedReturnDepartureTime} Cruz Bay -> Red Hook) with +${netMarginMinutes}m slack beyond the ${requiredReturnBufferMinutes}m two-island buffer.`;
+        }
+      } else if (!accessibilityCompatible) {
         fitStatus = "does_not_fit";
         fitBadgeLabel = "Eliminated — Accessibility / Mobility Constraint";
         conciseVerdict = `Eliminated for ${input.mobilityLevel}: ${spec.accessibilitySummary}`;
@@ -851,14 +1384,8 @@ export function evaluateStThomasPortDayScenario(
         fitBadgeLabel = "Outside Selected Excursion Focus";
         conciseVerdict = `Fits time window (+${netMarginMinutes}m slack) but does not match selected focus (${input.excursionFocus}).`;
       } else if (spec.qualifyPendingHumanConfirmation) {
-        fitStatus =
-          netMarginMinutes < 30
-            ? "tight_buffer"
-            : "qualified_needs_confirmation";
-        fitBadgeLabel =
-          netMarginMinutes < 30
-            ? "Tight Buffer • Needs Confirmation"
-            : "Fits Window • Pending Source Confirmation";
+        fitStatus = "qualified_needs_confirmation";
+        fitBadgeLabel = "Needs confirmation";
         conciseVerdict = `${spec.qualificationReason} Net margin from ${input.arrivalDock}: +${netMarginMinutes} min.`;
       } else if (netMarginMinutes < 40) {
         fitStatus = "tight_buffer";
@@ -877,21 +1404,24 @@ export function evaluateStThomasPortDayScenario(
         ) {
           return false;
         }
-        if (
-          u.factId === "stt-unknown-viecotours-duration-delta-150m-vs-180m" &&
-          spec.optionId !== "stt-opt-viecotours-cas-cay-kayak-snorkel"
-        ) {
-          return false;
-        }
         return true;
       });
 
       return {
         optionId: spec.optionId,
+        productCode: spec.productCode,
+        tourId: spec.tourId,
         title: spec.title,
         shortLabel: spec.shortLabel,
         category: spec.category,
         isFreeOrSelfGuided: spec.isFreeOrSelfGuided,
+        isDayTripChoice: spec.isDayTripChoice,
+        dayTripDestination: spec.dayTripDestination,
+        pickupMode: spec.pickupMode,
+        pickupSummary: spec.pickupSummary,
+        exactMeetingPointOrPickup: spec.exactMeetingPointOrPickup,
+        listingPriceUsd: spec.adultPriceUsd,
+        checkoutUrl: spec.checkoutUrl,
         fitStatus,
         fitBadgeLabel,
         conciseVerdict,
@@ -914,6 +1444,9 @@ export function evaluateStThomasPortDayScenario(
           estimatedBackAtPierTime: formatMinutesToHm(estimatedBackAtPierMin),
           targetAllAboardCutoffTime: formatMinutesToHm(cutoffMin),
         },
+        ...(spec.optionId === "stt-opt-st-john-trunk-bay-red-hook-ferry"
+          ? { ferryLegs: stJohnFerryEvaluation }
+          : {}),
         estimatedCostPerAdultUsd,
         estimatedCostTotalPartyUsd,
         costBasisSummary: spec.costBasisSummary,
@@ -928,7 +1461,7 @@ export function evaluateStThomasPortDayScenario(
     },
   );
 
-  // Rank viable options: focus match first, then fit tier, then net margin, with zero commercial weight
+  // Rank viable options: keep St. Thomas main destination options ahead of St. John day-trip choice unless user focused on St. John, then fit tier, then net margin, with zero commercial weight
   const fitOrder: Record<StThomasOptionFitStatus, number> = {
     fits_comfortably: 1,
     qualified_needs_confirmation: 2,
@@ -939,7 +1472,6 @@ export function evaluateStThomasPortDayScenario(
   const recommendedOptions = allOptions
     .filter((o) => o.fitStatus !== "does_not_fit")
     .sort((a, b) => {
-      // If user specifically asked forCrown Bay + beach, prefer Lindbergh Bay when dock === crown_bay and short window
       if (
         input.arrivalDock === "crown_bay" &&
         input.excursionFocus === "free_or_self_guided_walk"
@@ -958,6 +1490,10 @@ export function evaluateStThomasPortDayScenario(
     (o) => o.fitStatus === "does_not_fit",
   );
 
+  const stJohnOpt = allOptions.find(
+    (o) => o.optionId === "stt-opt-st-john-trunk-bay-red-hook-ferry",
+  )!;
+
   const topOption = recommendedOptions[0] ?? null;
   const dockName =
     ST_THOMAS_PUBLIC_ANSWER_SUMMARY.dockRules[input.arrivalDock].officialName;
@@ -968,6 +1504,7 @@ export function evaluateStThomasPortDayScenario(
 
   return {
     portSlug: "st-thomas",
+    mainDestination: "st-thomas",
     timeZone: "America/St_Thomas",
     evaluatedInput: input,
     isExampleScenario,
@@ -975,6 +1512,17 @@ export function evaluateStThomasPortDayScenario(
     isWeekdaySailing: dayInfo.isWeekday,
     publicAnswer: ST_THOMAS_PUBLIC_ANSWER_SUMMARY,
     conciseVerdict,
+    stJohnDayTripChoice: {
+      mainDestination: "st-thomas",
+      dayTripDestination: "st-john",
+      offeredForSailing:
+        stJohnOpt.fitStatus !== "does_not_fit" &&
+        stJohnFerryEvaluation.bothFerryLegsFit,
+      bothFerryLegsFit: stJohnFerryEvaluation.bothFerryLegsFit,
+      fitStatus: stJohnOpt.fitStatus,
+      fitBadgeLabel: stJohnOpt.fitBadgeLabel,
+      ferryLegs: stJohnFerryEvaluation,
+    },
     recommendedOptions,
     eliminatedOptions,
     allOptions,

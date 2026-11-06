@@ -482,7 +482,13 @@ test("Viator live availability adapter never reports 401/403 or missing API key 
   }
 });
 
-test("Extend /operators/onboarding with two choices: Send guests to our checkout (Jean Lafitte #763318 pilot) and Apply for API booking access, tracking 4 readiness statuses and tracing referral to provider checkout", async () => {
+import {
+  getFunnelMetricsReport,
+  resetOpaqueAttributionLedgerForTests,
+} from "../../lib/dcc/commerce/opaqueAttributionLedger";
+import { listOperatorOnboardingReviewQueue } from "../../lib/dcc/operatorOnboardingStore";
+
+test("Extend /operators/onboarding with two choices: Read-only Jean Lafitte (#763318) sample demo on public preview (leaving queue & ledger untouched) and authenticated QA end-to-end lifecycle test", async () => {
   const originalToken = process.env.EARTHOS_API_KEY;
   process.env.EARTHOS_API_KEY = "test-admin-review-queue-token";
 
@@ -490,11 +496,19 @@ test("Extend /operators/onboarding with two choices: Send guests to our checkout
   let checkoutRetrievalToken = "";
 
   try {
+    resetOpaqueAttributionLedgerForTests();
+    const queueBeforePublicPreview = await listOperatorOnboardingReviewQueue({
+      limit: 200,
+    });
+    const ledgerBeforePublicPreview = getFunnelMetricsReport();
+
     // 1. UI renders both choices ("Send guests to our checkout" and "Apply for API booking access"),
-    //    Jean Lafitte #763318 example, FareHarbor next action, and the 4 initial statuses
+    //    the read-only SAMPLE DATA banner, Jean Lafitte #763318 example, FareHarbor next action, and the 4 initial statuses
     const formMarkup = renderToStaticMarkup(createElement(OperatorOnboardingForm, {}));
     assert.match(formMarkup, /Send guests to our checkout/);
     assert.match(formMarkup, /Apply for API booking access/);
+    assert.match(formMarkup, /SAMPLE DATA — READ-ONLY DEMO/);
+    assert.match(formMarkup, /Queue &amp; Attribution Ledger Untouched/);
     assert.match(formMarkup, /Jean Lafitte Swamp Tours/);
     assert.match(formMarkup, /763318/);
     assert.match(formMarkup, /Checkout tested/);
@@ -506,12 +520,89 @@ test("Extend /operators/onboarding with two choices: Send guests to our checkout
       /Approve the FareHarbor affiliate connection for this specific offer and confirm the eligible hotel pickup stops/i,
     );
 
-    // 2. Submit Jean Lafitte (#763318) via Choice 1 ("send_guests_to_checkout")
-    const submitReq = new NextRequest(
+    // 2. Public GET /api/operators/onboarding?preview=jean-lafitte-763318 returns read-only sample data
+    //    and leaves the application queue and attribution ledger completely untouched
+    const publicPreviewReq = new NextRequest(
+      "https://www.destinationcommandcenter.com/api/operators/onboarding?preview=jean-lafitte-763318",
+      { method: "GET" },
+    );
+    const publicPreviewRes = await getOnboardingRoute(publicPreviewReq);
+    assert.equal(publicPreviewRes.status, 200);
+    const publicPreviewBody = await publicPreviewRes.json();
+    assert.equal(publicPreviewBody.ok, true);
+    assert.equal(publicPreviewBody.mode, "public_read_only_sample");
+    assert.equal(publicPreviewBody.readOnlyDemo, true);
+    assert.equal(publicPreviewBody.isSampleData, true);
+    assert.equal(publicPreviewBody.queueAndLedgerUntouched, true);
+    assert.equal(publicPreviewBody.preview.isSampleData, true);
+    assert.equal(publicPreviewBody.preview.readOnlyDemo, true);
+    assert.equal(
+      publicPreviewBody.preview.stage1Submission.applicationId,
+      "sample_onb_jean_lafitte_763318_demo",
+    );
+    assert.equal(
+      publicPreviewBody.preview.stage3ReferralTrace.clickId,
+      "clk_000000000000763318de0001",
+    );
+    assert.equal(
+      publicPreviewBody.preview.stage3ReferralTrace.ledgerVerification.verifiedInLedger,
+      false,
+    );
+
+    // 3. Unauthenticated QA test mode and unauthenticated Jean Lafitte POST submission are blocked
+    const unauthQaTestReq = new NextRequest(
+      "https://www.destinationcommandcenter.com/api/operators/onboarding?preview=jean-lafitte-763318&mode=qa_live_test",
+      { method: "GET" },
+    );
+    const unauthQaTestRes = await getOnboardingRoute(unauthQaTestReq);
+    assert.equal(unauthQaTestRes.status, 401);
+
+    const unauthDemoPostReq = new NextRequest(
       "https://www.destinationcommandcenter.com/api/operators/onboarding",
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...JEAN_LAFITTE_763318_ONBOARDING_EXAMPLE,
+        }),
+      },
+    );
+    const unauthDemoPostRes = await postOnboardingRoute(unauthDemoPostReq);
+    assert.equal(unauthDemoPostRes.status, 403);
+    const unauthDemoPostBody = await unauthDemoPostRes.json();
+    assert.equal(unauthDemoPostBody.errorCode, "read_only_demo_submission_blocked");
+    assert.equal(unauthDemoPostBody.queueAndLedgerUntouched, true);
+
+    // Prove that opening the public preview and hitting unauthenticated endpoints left the queue and ledger untouched
+    const queueAfterPublicPreview = await listOperatorOnboardingReviewQueue({
+      limit: 200,
+    });
+    const ledgerAfterPublicPreview = getFunnelMetricsReport();
+    assert.equal(
+      queueAfterPublicPreview.length,
+      queueBeforePublicPreview.length,
+      "Public preview must leave the application queue untouched",
+    );
+    assert.deepEqual(
+      ledgerAfterPublicPreview.production,
+      ledgerBeforePublicPreview.production,
+      "Public preview must leave the production attribution ledger untouched",
+    );
+    assert.deepEqual(
+      ledgerAfterPublicPreview.test,
+      ledgerBeforePublicPreview.test,
+      "Public preview must leave the test attribution ledger untouched",
+    );
+
+    // 4. Authenticated QA can submit Jean Lafitte (#763318) and run the full end-to-end test
+    const submitReq = new NextRequest(
+      "https://www.destinationcommandcenter.com/api/operators/onboarding",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer test-admin-review-queue-token",
+        },
         body: JSON.stringify({
           ...JEAN_LAFITTE_763318_ONBOARDING_EXAMPLE,
         }),
@@ -569,7 +660,7 @@ test("Extend /operators/onboarding with two choices: Send guests to our checkout
     checkoutAppId = submitBody.applicationId;
     checkoutRetrievalToken = submitBody.retrievalToken;
 
-    // 3. Reuse the existing review process (PATCH /api/operators/onboarding) to record
+    // 5. Reuse the existing review process (PATCH /api/operators/onboarding) to record
     //    affiliate account, commission, refund treatment, payout timing, and referral booking record delivery,
     //    plus trace the referral to the provider checkout
     const reviewReq = new NextRequest(
@@ -621,8 +712,6 @@ test("Extend /operators/onboarding with two choices: Send guests to our checkout
       /online_booking_references/,
     );
 
-    // Verify ONLY the capability with new evidence ("Commission terms confirmed") changed;
-    // seatAvailability and apiBooking remain unchanged until evidence for those capabilities is supplied
     assert.equal(
       reviewBody.application.readinessStatuses.checkout.label,
       "Checkout tested",
@@ -642,7 +731,7 @@ test("Extend /operators/onboarding with two choices: Send guests to our checkout
     );
     assert.equal(reviewBody.application.readinessStatuses.apiBooking.ready, false);
 
-    // 4. Verify the referral trace to the exact provider checkout & attribution ledger
+    // 6. Verify the referral trace to the exact provider checkout & attribution ledger
     const trace = reviewBody.referralTrace;
     assert.ok(trace, "Expected referralTrace in PATCH response");
     assert.equal(trace.ok, true);
@@ -677,7 +766,7 @@ test("Extend /operators/onboarding with two choices: Send guests to our checkout
     );
     assert.equal(trace.ledgerVerification.recordedTrafficClass, "test");
 
-    // 5. Verify that supplying evidence for seatAvailability and apiBooking transitions each status independently
+    // 7. Verify that supplying evidence for seatAvailability and apiBooking transitions each status independently
     const capUpdateReq = new NextRequest(
       "https://www.destinationcommandcenter.com/api/operators/onboarding",
       {
@@ -720,25 +809,31 @@ test("Extend /operators/onboarding with two choices: Send guests to our checkout
     );
     assert.equal(capUpdateBody.application.readinessStatuses.apiBooking.ready, true);
 
-    // 6. Verify GET /api/operators/onboarding?preview=jean-lafitte-763318 returns end-to-end submission-to-review preview
-    const previewReq = new NextRequest(
-      "https://www.destinationcommandcenter.com/api/operators/onboarding?preview=jean-lafitte-763318",
-      { method: "GET" },
+    // 8. Verify authenticated QA GET /api/operators/onboarding?preview=jean-lafitte-763318&mode=qa_live_test
+    const qaPreviewReq = new NextRequest(
+      "https://www.destinationcommandcenter.com/api/operators/onboarding?preview=jean-lafitte-763318&mode=qa_live_test",
+      {
+        method: "GET",
+        headers: { Authorization: "Bearer test-admin-review-queue-token" },
+      },
     );
-    const previewRes = await getOnboardingRoute(previewReq);
-    assert.equal(previewRes.status, 200);
-    const previewBody = await previewRes.json();
-    assert.equal(previewBody.ok, true);
+    const qaPreviewRes = await getOnboardingRoute(qaPreviewReq);
+    assert.equal(qaPreviewRes.status, 200);
+    const qaPreviewBody = await qaPreviewRes.json();
+    assert.equal(qaPreviewBody.ok, true);
+    assert.equal(qaPreviewBody.mode, "authenticated_qa_live_test");
+    assert.equal(qaPreviewBody.readOnlyDemo, false);
+    assert.equal(qaPreviewBody.isSampleData, false);
     assert.equal(
-      previewBody.preview.stage1Submission.readinessStatuses.commissionTerms.label,
+      qaPreviewBody.preview.stage1Submission.readinessStatuses.commissionTerms.label,
       "Commission terms pending",
     );
     assert.equal(
-      previewBody.preview.stage2ReviewRecorded.readinessStatuses.commissionTerms.label,
+      qaPreviewBody.preview.stage2ReviewRecorded.readinessStatuses.commissionTerms.label,
       "Commission terms confirmed",
     );
     assert.equal(
-      previewBody.preview.stage3ReferralTrace.ledgerVerification.verifiedInLedger,
+      qaPreviewBody.preview.stage3ReferralTrace.ledgerVerification.verifiedInLedger,
       true,
     );
   } finally {
@@ -761,4 +856,5 @@ test("Extend /operators/onboarding with two choices: Send guests to our checkout
     }
   }
 });
+
 

@@ -26,6 +26,7 @@ import { getViatorActionForPlace } from "@/lib/dcc/internal/viatorAction";
 import TravelReferenceExperience from "@/app/components/dcc/TravelReferenceExperience";
 import DccConciergeWidget from "@/app/components/dcc/DccConciergeWidget";
 import StThomasPortDayPlanner from "@/app/components/dcc/StThomasPortDayPlanner";
+import WinterPortDayPlanner from "@/app/components/dcc/WinterPortDayPlanner";
 import { resolveEarthOSDestinationNode } from "@/lib/dcc/catalog/durableCatalogStore";
 import { getPublishedTravelReferenceNodeById } from "@/lib/dcc/travelReference";
 import { getPublicationManifestEntry } from "@/src/data/publication-manifest";
@@ -400,7 +401,60 @@ export async function renderPortPage(slug: string, isLfse = false) {
         }}
       />
       <PortAuthorityTemplate port={port} config={config} />
+      {port.slug === "nassau" ||
+      port.slug === "st-thomas" ||
+      port.slug === "cozumel" ||
+      port.slug === "roatan" ||
+      port.slug === "grand-cayman" ||
+      port.slug === "george-town-grand-cayman" ? (
+        <section className="max-w-6xl mx-auto px-6 pt-6">
+          <div className="rounded-2xl border border-cyan-500/35 bg-slate-900/90 p-5 shadow-lg">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <div className="text-xs font-bold uppercase tracking-wider text-cyan-300">
+                  Five-Port Winter Excursion Planner · Whole-Sailing Group Share
+                </div>
+                <h2 className="mt-1 text-lg font-bold text-white">
+                  Planning a full Caribbean sailing stopping at {port.name}?
+                </h2>
+                <p className="mt-1 text-xs sm:text-sm text-slate-300">
+                  Enter your ship and sailing date once, compare live-checked Viator
+                  departures with tender/transfer buffers across{" "}
+                  <strong>Nassau, St. Thomas, Cozumel, Roatán, and Grand Cayman</strong>,
+                  and share one group plan. Featured example:{" "}
+                  <strong>Jan 24, 2027 Independence of the Seas (INDY-2027-01-24)</strong>{" "}
+                  with Nassau &amp; St. Thomas saved.
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2.5">
+                <Link
+                  href={`/cruises/winter-excursion-planner?plan=INDY-2027-01-24`}
+                  className="rounded-xl bg-cyan-500 px-4 py-2.5 text-xs font-bold text-slate-950 hover:bg-cyan-400 transition"
+                >
+                  Open Five-Port Winter Planner →
+                </Link>
+                <a
+                  href="https://cruisepromenade.com/p/INDY-2027-01-24"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded-xl border border-emerald-500/40 bg-emerald-950/50 px-4 py-2.5 text-xs font-bold text-emerald-200 hover:bg-emerald-900/60 transition"
+                >
+                  View Jan 24 Shareable Plan on Cruise Promenade ↗
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+      ) : null}
       {port.slug === "st-thomas" ? <StThomasPortDayPlanner /> : null}
+      {port.slug === "nassau" ||
+      port.slug === "cozumel" ||
+      port.slug === "roatan" ||
+      port.slug === "grand-cayman" ? (
+        <WinterPortDayPlanner portSlug={port.slug} />
+      ) : port.slug === "george-town-grand-cayman" ? (
+        <WinterPortDayPlanner portSlug="grand-cayman" />
+      ) : null}
       {earthosDestination ? (
         <section className="max-w-6xl mx-auto px-6 py-8">
           <DccConciergeWidget

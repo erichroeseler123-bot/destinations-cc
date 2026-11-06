@@ -1397,7 +1397,11 @@ export function getPortAuthorityConfig(port: {
   region?: string;
   country?: string;
 }): ResolvedPortAuthorityConfig {
-  const configured = PORT_AUTHORITY_CONFIG[port.slug];
+  const configured =
+    PORT_AUTHORITY_CONFIG[port.slug] ||
+    (port.slug === "grand-cayman"
+      ? PORT_AUTHORITY_CONFIG["george-town-grand-cayman"]
+      : undefined);
   if (configured) return { ...configured, isFallback: false };
 
   const portName = port.name.replace(/^Port of\s+/i, "").trim();

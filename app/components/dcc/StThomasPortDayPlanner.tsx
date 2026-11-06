@@ -342,6 +342,37 @@ export default function StThomasPortDayPlanner({
           {evaluation.conciseVerdict}
         </div>
 
+        {/* St. John Day-Trip Ferry Leg Check Banner */}
+        <div
+          data-testid="st-john-ferry-leg-status-banner"
+          className="rounded-2xl border border-amber-400/30 bg-amber-500/10 p-4 space-y-1 text-xs text-zinc-200"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="font-bold uppercase tracking-wider text-amber-300">
+              Main Destination: St. Thomas • St. John Day-Trip Ferry Leg Check (VIPA Notice Ended{" "}
+              {evaluation.stJohnDayTripChoice.ferryLegs.temporaryVipaNoticeWindow.temporaryVipaNoticeEndedOn})
+            </span>
+            <span className="rounded bg-amber-500/30 px-2 py-0.5 font-bold text-amber-100">
+              {evaluation.stJohnDayTripChoice.ferryLegs.statusLabel}
+            </span>
+          </div>
+          <p>
+            <strong>Outbound (Red Hook → Cruz Bay):</strong>{" "}
+            {evaluation.stJohnDayTripChoice.ferryLegs.outboundLeg.selectedDepartureTime ??
+              "No fitting boat"}{" "}
+            • <strong>Return (Cruz Bay → Red Hook):</strong>{" "}
+            {evaluation.stJohnDayTripChoice.ferryLegs.returnLeg.selectedReturnDepartureTime ??
+              "No fitting boat"}{" "}
+            • <strong>Both Ferry Legs Fit:</strong>{" "}
+            {evaluation.stJohnDayTripChoice.bothFerryLegsFit ? "Yes" : "No"}
+          </p>
+          {evaluation.stJohnDayTripChoice.ferryLegs.returnLeg.unresolvedReason ? (
+            <p className="text-amber-200/90">
+              {evaluation.stJohnDayTripChoice.ferryLegs.returnLeg.unresolvedReason}
+            </p>
+          ) : null}
+        </div>
+
         {/* Viable Options */}
         <div className="space-y-4">
           <h4 className="text-sm font-bold uppercase tracking-wider text-emerald-300">
@@ -361,13 +392,25 @@ export default function StThomasPortDayPlanner({
                     >
                       {opt.fitBadgeLabel}
                     </span>
-                    {opt.isFreeOrSelfGuided ? (
-                      <span className="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-200">
-                        Free / Self-Guided Option
-                      </span>
-                    ) : null}
+                    <div className="flex flex-wrap gap-1.5">
+                      {opt.productCode ? (
+                        <span className="rounded-full border border-cyan-400/30 bg-cyan-500/10 px-2.5 py-0.5 font-mono text-[11px] font-semibold text-cyan-200">
+                          {opt.productCode} • {opt.timing.activityDurationMinutes}m • $
+                          {opt.listingPriceUsd}
+                        </span>
+                      ) : null}
+                      {opt.isFreeOrSelfGuided ? (
+                        <span className="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-200">
+                          Free / Self-Guided Option
+                        </span>
+                      ) : null}
+                    </div>
                   </div>
                   <h5 className="text-base font-bold text-white">{opt.title}</h5>
+                  <p className="text-xs text-amber-200/90">
+                    <strong>Pickup / Meeting ({opt.pickupMode}):</strong>{" "}
+                    {opt.pickupSummary}
+                  </p>
                   <p className="text-xs text-zinc-300 leading-relaxed">
                     {opt.conciseVerdict}
                   </p>

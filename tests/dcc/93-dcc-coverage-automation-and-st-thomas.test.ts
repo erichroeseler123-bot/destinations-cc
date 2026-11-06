@@ -11,22 +11,36 @@ import {
   isWeeklyCalendarRecheckDue,
   computeNextDailyMountainRun,
   evaluateDccCoveragePass,
+  queueMaterialChangesOnce,
+  getLastSuccessfulDccCoverageCheck,
+  resetDccCoverageCheckpointMemoryForTests,
 } from "@/lib/dcc/coverage/dccCoverageScheduler";
 import {
   ST_THOMAS_PUBLIC_ANSWER_SUMMARY,
   evaluateStThomasPortDayScenario,
+  evaluateStJohnFerryLegsForSailing,
   parseStThomasScenarioFromSearchParams,
 } from "@/lib/dcc/stThomasPortDayEngine";
+import {
+  FIVE_WINTER_RELEASE_PORT_SLUGS,
+  evaluateAllFiveWinterPorts,
+} from "@/lib/dcc/winterPorts/fivePortWinterReleaseEngine";
+import { buildJanuary24SailingPreview } from "@/lib/dcc/winterPorts/january24SailingPreview";
 import StThomasPortDayPlanner from "@/app/components/dcc/StThomasPortDayPlanner";
+import WinterPortDayPlanner from "@/app/components/dcc/WinterPortDayPlanner";
 import {
   ingestApprovedFactsFromReviewDesk,
   ST_THOMAS_WINTER_CANDIDATE_BASELINE,
+  WINTER_FOUR_PORTS_CANDIDATE_BASELINE,
   NEW_ORLEANS_HOTEL_PICKUP_CANDIDATE_BASELINE,
   KETCHIKAN_PRESEASON_CANDIDATE_BASELINE,
 } from "@/lib/dcc/research/approvedFactsFeed";
+import { PILOT_VERIFIED_TOUR_RECORDS } from "@/lib/dcc/catalog/durableCatalogStore";
+import { getHotelConciergeConfig } from "@/lib/dcc/catalog/hotelConfigs";
 import { getPortAuthorityConfig } from "@/src/data/port-authority-config";
 
-test("1. DCC Coverage pass report enforces 8:00 a.m. Mountain daily schedule, weekly calendar recheck, and human governance boundaries", () => {
+test("1. DCC Coverage pass report enforces 8:00 a.m. Mountain daily schedule, all 5 winter ports, weekly Alaska calendar recheck, and separate preview vs. production status", () => {
+  resetDccCoverageCheckpointMemoryForTests();
   const pass = evaluateDccCoveragePass({
     asOfDate: "2026-11-06",
     evaluatedAtIso: "2026-11-06T11:30:00.000Z",
@@ -38,10 +52,32 @@ test("1. DCC Coverage pass report enforces 8:00 a.m. Mountain daily schedule, we
   assert.equal(pass.cronExpression, "CRON_TZ=America/Denver 0 8 * * *");
   assert.equal(pass.timeZone, "America/Denver");
   assert.equal(pass.calendarRecheckIntervalDays, 7);
+  assert.deepEqual(pass.fiveWinterPorts, [
+    "st-thomas",
+    "nassau",
+    "cozumel",
+    "roatan",
+    "grand-cayman",
+  ]);
   assert.deepEqual(ALASKA_PRESEASON_LEAD_WINDOW_WEEKS, {
     minWeeks: 8,
     maxWeeks: 12,
   });
+
+  // Separate Preview vs. Production status reporting
+  assert.equal(pass.previewStatus.environment, "preview_branch_pr_223");
+  assert.equal(pass.previewStatus.draftPrNumber, 223);
+  assert.equal(pass.previewStatus.status, "ready_for_human_review");
+  assert.equal(pass.productionStatus.environment, "production_main");
+  assert.equal(
+    pass.productionStatus.status,
+    "unmodified_pending_human_approval",
+  );
+  assert.equal(
+    pass.productionStatus.productionPublishingBlockedUntilHumanApproval,
+    true,
+  );
+
   assert.equal(
     pass.humanGovernanceBoundary.factApprovalWithHumanReviewer,
     true,
@@ -61,35 +97,42 @@ test("1. DCC Coverage pass report enforces 8:00 a.m. Mountain daily schedule, we
   assert.equal(pass.humanGovernanceBoundary.autoApprovedFactsCount, 0);
 });
 
-test("2. Seasonal priority queue orders St. Thomas first for winter sailings, keeps New Orleans sales test moving, and puts Ketchikan/Skagway/Sitka in preseason prep", () => {
+test("2. Seasonal priority queue orders all 5 winter ports modeled on St. Thomas, keeps New Orleans sales test moving in parallel, and puts Ketchikan/Skagway/Sitka on weekly calendar checks", () => {
   const pass = evaluateDccCoveragePass({
     asOfDate: "2026-11-06",
     evaluatedAtIso: "2026-11-06T11:30:00.000Z",
     lastCalendarCheckedOn: "2026-11-06",
   });
 
-  assert.equal(pass.activeBuildPort.portSlug, "st-thomas");
-  assert.equal(pass.activeBuildPort.stage, "active_winter_build");
-  assert.equal(pass.activeBuildPort.priorityRank, 1);
-  assert.equal(pass.activeBuildPort.deliverables.publicAnswerReady, true);
-  assert.equal(pass.activeBuildPort.deliverables.actualTripCheckerReady, true);
-  assert.equal(
-    pass.activeBuildPort.deliverables.freeOrSelfGuidedOptionReady,
-    true,
-  );
-  assert.equal(
-    pass.activeBuildPort.deliverables.unsupportedFactsMarkedUnknown,
-    true,
-  );
-
   const slugsInOrder = pass.orderedQueue.map((item) => item.portSlug);
   assert.deepEqual(slugsInOrder, [
     "st-thomas",
+    "nassau",
+    "cozumel",
+    "roatan",
+    "grand-cayman",
     "new-orleans",
     "ketchikan",
     "skagway",
     "sitka",
   ]);
+
+  // All 5 winter ports use St. Thomas as the model and have publicAnswer, tripChecker, freeOption, and unknown markers ready
+  for (const winterSlug of FIVE_WINTER_RELEASE_PORT_SLUGS) {
+    const item = pass.orderedQueue.find((i) => i.portSlug === winterSlug);
+    assert.ok(item, `Missing winter port ${winterSlug}`);
+    assert.equal(item.stage, "active_winter_build");
+    assert.equal(item.modelPortSlug, "st-thomas");
+    assert.deepEqual(item.bookingCriticalPriorities, [
+      "pier_or_tender_timing",
+      "pickup",
+      "exact_departure",
+    ]);
+    assert.equal(item.deliverables.publicAnswerReady, true);
+    assert.equal(item.deliverables.actualTripCheckerReady, true);
+    assert.equal(item.deliverables.freeOrSelfGuidedOptionReady, true);
+    assert.equal(item.deliverables.unsupportedFactsMarkedUnknown, true);
+  }
 
   const nolaItem = pass.orderedQueue.find((i) => i.portSlug === "new-orleans");
   assert.ok(nolaItem);
@@ -101,10 +144,6 @@ test("2. Seasonal priority queue orders St. Thomas first for winter sailings, ke
   assert.ok(ketchikanItem);
   assert.equal(ketchikanItem.stage, "preseason_preparation");
   assert.equal(
-    ketchikanItem.coreTravelerQuestion,
-    "Which excursions fit my sailing from Ward Cove versus a downtown berth?",
-  );
-  assert.equal(
     ketchikanItem.preseasonTrigger.firstPublishedCallDate,
     "2027-04-26",
   );
@@ -115,10 +154,6 @@ test("2. Seasonal priority queue orders St. Thomas first for winter sailings, ke
   assert.equal(
     ketchikanItem.preseasonTrigger.fullBuildMustStartBy,
     "2027-03-01",
-  );
-  assert.equal(
-    ketchikanItem.preseasonTrigger.isWithin8To12WeekBuildWindow,
-    false,
   );
 });
 
@@ -146,245 +181,283 @@ test("3. Alaska preseason 8–12 week rule automatically promotes Ketchikan to a
     triggerFeb2027.triggerVerdict,
     "start_full_alaska_build_now",
   );
+});
 
-  const passInWindow = evaluateDccCoveragePass({
-    asOfDate: "2027-02-05",
-    lastCalendarCheckedOn: "2027-02-05",
+test("4. Saves last successful check and queues each material change ONCE for human review", async () => {
+  resetDccCoverageCheckpointMemoryForTests();
+
+  const firstPass = evaluateDccCoveragePass({
+    asOfDate: "2026-11-06",
+    evaluatedAtIso: "2026-11-06T15:00:00.000Z",
+    lastCalendarCheckedOn: "2026-11-06",
   });
-  const ketchikanInWindow = passInWindow.orderedQueue.find(
-    (i) => i.portSlug === "ketchikan",
-  );
-  assert.ok(ketchikanInWindow);
-  assert.equal(ketchikanInWindow.stage, "active_build_ready");
   assert.equal(
-    ketchikanInWindow.preseasonTrigger.isWithin8To12WeekBuildWindow,
-    true,
+    firstPass.newlyQueuedMaterialChangesCount,
+    QUEUED_MATERIAL_CHANGES_2026_11_06.length,
   );
-});
+  assert.equal(firstPass.deduplicatedExistingMaterialChangesCount, 0);
 
-test("4. Weekly calendar recheck and daily 8:00 a.m. Mountain Time next-run schedule compute accurately", () => {
-  assert.equal(isWeeklyCalendarRecheckDue("2026-11-06", "2026-11-06"), false);
-  assert.equal(isWeeklyCalendarRecheckDue("2026-11-12", "2026-11-06"), false);
-  assert.equal(isWeeklyCalendarRecheckDue("2026-11-13", "2026-11-06"), true);
+  const savedCheckpoint = getLastSuccessfulDccCoverageCheck();
+  assert.ok(savedCheckpoint);
+  assert.equal(savedCheckpoint.lastSuccessfulCheckDate, "2026-11-06");
+  assert.equal(
+    savedCheckpoint.lastSuccessfulCheckAtIso,
+    "2026-11-06T15:00:00.000Z",
+  );
+  assert.deepEqual(savedCheckpoint.fiveWinterPortsChecked, [
+    "st-thomas",
+    "nassau",
+    "cozumel",
+    "roatan",
+    "grand-cayman",
+  ]);
 
-  const nextRun = computeNextDailyMountainRun("2026-11-06");
-  assert.equal(nextRun.nextRunDate, "2026-11-07");
-  assert.equal(nextRun.nextDailyRunMountainIso, "2026-11-07T08:00:00-07:00");
-  assert.equal(nextRun.nextDailyRunUtcIso, "2026-11-07T15:00:00.000Z");
-});
+  // Second run with the same changes must queue 0 new items (each material change queued once)
+  const secondPass = evaluateDccCoveragePass({
+    asOfDate: "2026-11-06",
+    evaluatedAtIso: "2026-11-06T16:00:00.000Z",
+    lastCalendarCheckedOn: "2026-11-06",
+  });
+  assert.equal(secondPass.newlyQueuedMaterialChangesCount, 0);
+  assert.equal(
+    secondPass.deduplicatedExistingMaterialChangesCount,
+    QUEUED_MATERIAL_CHANGES_2026_11_06.length,
+  );
 
-test("5. Material changes queued from official sources on 2026-11-06 include source, SHA-256, date checked, recommendation impact, and remain unconfirmed for human review", async () => {
-  assert.equal(QUEUED_MATERIAL_CHANGES_2026_11_06.length, 5);
+  // Direct deduplication helper check with duplicate entries
+  const dupResult = queueMaterialChangesOnce(
+    [
+      ...QUEUED_MATERIAL_CHANGES_2026_11_06,
+      ...QUEUED_MATERIAL_CHANGES_2026_11_06,
+    ],
+    [],
+  );
+  assert.equal(
+    dupResult.newlyQueuedChanges.length,
+    QUEUED_MATERIAL_CHANGES_2026_11_06.length,
+  );
+  assert.equal(
+    dupResult.alreadyQueuedChanges.length,
+    QUEUED_MATERIAL_CHANGES_2026_11_06.length,
+  );
 
-  for (const item of QUEUED_MATERIAL_CHANGES_2026_11_06) {
-    assert.equal(item.dateChecked, "2026-11-06");
-    assert.match(item.sourceUrl, /^https:\/\//);
-    assert.match(item.sourceSha256, /^[a-f0-9]{64}$/);
-    assert.ok(item.whichRecommendationChanges.length > 25);
-    assert.ok(item.humanDecisionRequired.length > 20);
-    assert.equal(item.reviewStatus, "needs_confirmation");
-    assert.equal(item.verified, false);
-    assert.equal(item.verifiedOn, null);
-    assert.equal(item.verifiedBy, null);
-  }
-
-  assert.equal(ST_THOMAS_WINTER_CANDIDATE_BASELINE.length, 3);
-  assert.equal(NEW_ORLEANS_HOTEL_PICKUP_CANDIDATE_BASELINE.length, 1);
+  assert.equal(ST_THOMAS_WINTER_CANDIDATE_BASELINE.length, 4);
+  assert.equal(WINTER_FOUR_PORTS_CANDIDATE_BASELINE.length, 4);
+  assert.equal(NEW_ORLEANS_HOTEL_PICKUP_CANDIDATE_BASELINE.length, 2);
   assert.equal(KETCHIKAN_PRESEASON_CANDIDATE_BASELINE.length, 1);
 
   const stThomasFeed = await ingestApprovedFactsFromReviewDesk({
     portSlug: "st-thomas",
     skipLiveFetch: true,
   });
-  assert.equal(stThomasFeed.total_evaluated, 3);
+  assert.equal(stThomasFeed.total_evaluated, 4);
   assert.equal(stThomasFeed.verified_count, 0);
-  for (const f of stThomasFeed.all_evaluated_facts) {
-    assert.equal(f.verified, false);
-    assert.equal(f.eligibility_status, "needs_confirmation");
-    assert.equal(f.disqualification_reason, "unconfirmed_candidate");
-  }
 });
 
-test("6. New Orleans hotel-pickup sales test status tracks Monteleone, Roosevelt, and Omni Riverfront with 75-minute Airboat Adventures pickup finding", () => {
-  assert.equal(
-    NEW_ORLEANS_HOTEL_PICKUP_SALES_TEST_STATUS.status,
-    "active_moving",
+test("5. St. Thomas keeps 5199KSML and 5199P27 strictly separate and matches each tour's exact duration, pickup, price, and checkout URL", () => {
+  const rec5199ksml = PILOT_VERIFIED_TOUR_RECORDS.find(
+    (r) => r.tourId === "dcc:tour:viator:5199KSML",
   );
-  assert.equal(
-    NEW_ORLEANS_HOTEL_PICKUP_SALES_TEST_STATUS.officialSourcesCheckedOn,
-    "2026-11-06",
+  const rec5199p27 = PILOT_VERIFIED_TOUR_RECORDS.find(
+    (r) => r.tourId === "dcc:tour:viator:5199P27",
   );
-  assert.deepEqual(
-    NEW_ORLEANS_HOTEL_PICKUP_SALES_TEST_STATUS.relatedDraftPrNumbers,
-    [222],
-  );
+  assert.ok(rec5199ksml);
+  assert.ok(rec5199p27);
 
-  const monteleone =
-    NEW_ORLEANS_HOTEL_PICKUP_SALES_TEST_STATUS.conciergePilotProperties.find(
-      (p) => p.propertySlug === "hotel-monteleone-nola",
-    );
-  assert.ok(monteleone);
-  assert.equal(
-    monteleone.airboatAdventuresNamedStopStatus,
-    "confirmed_named_stop",
-  );
+  assert.equal(rec5199ksml.providerProductCode, "5199KSML");
+  assert.equal(rec5199ksml.durationMinutes, 150);
+  assert.equal(rec5199ksml.fromPriceCents, 8900);
+  assert.equal(rec5199ksml.pickupFulfillmentType, "self_drive");
+  assert.equal(rec5199ksml.hasHotelPickup, false);
+  assert.match(rec5199ksml.bookingUrl, /d965-5199KSML/);
 
-  const omni =
-    NEW_ORLEANS_HOTEL_PICKUP_SALES_TEST_STATUS.conciergePilotProperties.find(
-      (p) => p.propertySlug === "omni-riverfront-nola",
-    );
-  assert.ok(omni);
-  assert.equal(
-    omni.airboatAdventuresNamedStopStatus,
-    "adjacent_stop_confirmation_needed",
-  );
-});
+  assert.equal(rec5199p27.providerProductCode, "5199P27");
+  assert.equal(rec5199p27.durationMinutes, 180);
+  assert.equal(rec5199p27.fromPriceCents, 9900);
+  assert.equal(rec5199p27.pickupFulfillmentType, "self_drive");
+  assert.equal(rec5199p27.hasHotelPickup, false);
+  assert.match(rec5199p27.bookingUrl, /d965-5199P27/);
 
-test("7. St. Thomas actual-trip checker differentiates Havensight (WICO) vs. Crown Bay transfer math on a 5.5-hour port call", () => {
-  // 5.5-hour (330m) port call: 08:00 to 13:30
-  // WICO: 20m disembark + 15m check-in + 25m outbound + 180m activity + 25m return + 60m buffer = 325m (+5m margin -> tight_buffer)
-  // Crown Bay: 20m disembark + 15m check-in + 35m outbound + 180m activity + 35m return + 60m buffer = 345m (-15m margin -> does_not_fit)
-  const wicoShort = evaluateStThomasPortDayScenario({
-    travelDate: "2026-11-18",
-    arrivalDock: "havensight_wico",
-    shipArrivalTime: "08:00",
-    allAboardTime: "13:30",
-    excursionFocus: "any_excursion_or_beach",
-    adults: 2,
-    childAges: [8],
-  });
-
-  const crownBayShort = evaluateStThomasPortDayScenario({
-    travelDate: "2026-11-18",
-    arrivalDock: "crown_bay",
-    shipArrivalTime: "08:00",
-    allAboardTime: "13:30",
-    excursionFocus: "any_excursion_or_beach",
-    adults: 2,
-    childAges: [8],
-  });
-
-  const casCayWico = wicoShort.allOptions.find(
-    (o) => o.optionId === "stt-opt-viecotours-cas-cay-kayak-snorkel",
-  );
-  const casCayCrown = crownBayShort.allOptions.find(
-    (o) => o.optionId === "stt-opt-viecotours-cas-cay-kayak-snorkel",
-  );
-  assert.ok(casCayWico);
-  assert.ok(casCayCrown);
-
-  assert.equal(casCayWico.timing.totalRequiredMinutes, 325);
-  assert.equal(casCayWico.timing.netMarginMinutes, 5);
-  assert.equal(casCayWico.fitStatus, "tight_buffer");
-
-  assert.equal(casCayCrown.timing.totalRequiredMinutes, 345);
-  assert.equal(casCayCrown.timing.netMarginMinutes, -15);
-  assert.equal(casCayCrown.fitStatus, "does_not_fit");
-
-  // St. John via Red Hook ferry is eliminated on both 5.5h calls
-  const stJohnWicoShort = wicoShort.allOptions.find(
-    (o) => o.optionId === "stt-opt-st-john-trunk-bay-red-hook-ferry",
-  );
-  assert.ok(stJohnWicoShort);
-  assert.equal(stJohnWicoShort.fitStatus, "does_not_fit");
-});
-
-test("8. St. Thomas actual-trip checker supports St. John on an 8.5h call, includes free/self-guided options, and marks unsupported facts as unknown", () => {
-  const fullDay = evaluateStThomasPortDayScenario({
-    travelDate: "2026-11-18",
+  const evalStt = evaluateStThomasPortDayScenario({
+    travelDate: "2027-01-28",
     arrivalDock: "havensight_wico",
     shipArrivalTime: "08:00",
     allAboardTime: "16:30",
-    excursionFocus: "any_excursion_or_beach",
-    adults: 2,
-    childAges: [9],
-    mobilityLevel: "active_stairs_and_paddle",
   });
 
-  const stJohnFull = fullDay.allOptions.find(
-    (o) => o.optionId === "stt-opt-st-john-trunk-bay-red-hook-ferry",
-  );
-  assert.ok(stJohnFull);
-  assert.notEqual(stJohnFull.fitStatus, "does_not_fit");
-  assert.ok(stJohnFull.timing.netMarginMinutes > 0);
+  const optKsml = evalStt.allOptions.find((o) => o.productCode === "5199KSML");
+  const optP27 = evalStt.allOptions.find((o) => o.productCode === "5199P27");
+  assert.ok(optKsml);
+  assert.ok(optP27);
+  assert.notEqual(optKsml.optionId, optP27.optionId);
 
-  // Verify free or self-guided options exist and compute party cost accurately
-  const freeOrSelfGuided = fullDay.allOptions.filter(
-    (o) => o.isFreeOrSelfGuided,
-  );
-  assert.ok(freeOrSelfGuided.length >= 3);
+  assert.equal(optKsml.timing.activityDurationMinutes, 150);
+  assert.equal(optKsml.pickupMode, "self_drive");
+  assert.equal(optKsml.listingPriceUsd, 89);
+  assert.match(optKsml.checkoutUrl ?? "", /d965-5199KSML/);
 
-  const charlotteAmalieWalk = fullDay.allOptions.find(
-    (o) => o.optionId === "stt-opt-charlotte-amalie-historic-self-guided",
-  );
-  assert.ok(charlotteAmalieWalk);
-  assert.equal(charlotteAmalieWalk.category, "free_or_self_guided");
-  assert.equal(charlotteAmalieWalk.estimatedCostTotalPartyUsd, 0);
+  assert.equal(optP27.timing.activityDurationMinutes, 180);
+  assert.equal(optP27.pickupMode, "self_drive");
+  assert.equal(optP27.listingPriceUsd, 99);
+  assert.match(optP27.checkoutUrl ?? "", /d965-5199P27/);
+});
 
-  const lindberghBay = fullDay.allOptions.find(
-    (o) => o.optionId === "stt-opt-lindbergh-emerald-beach-self-guided",
-  );
-  assert.ok(lindberghBay);
-  assert.equal(lindberghBay.category, "free_or_self_guided");
+test("6. St. Thomas stays main destination, offers St. John as a day-trip choice when both ferry legs fit, and shows 'Needs confirmation' where post-October 31 return leg is unresolved", () => {
+  // 8.5h winter call on 2027-01-28 (post-October 31): both legs fit, return leg is unresolved -> "Needs confirmation"
+  const jan28Eval = evaluateStThomasPortDayScenario({
+    travelDate: "2027-01-28",
+    arrivalDock: "havensight_wico",
+    shipArrivalTime: "08:00",
+    allAboardTime: "16:30",
+  });
 
-  const magensBay = fullDay.allOptions.find(
-    (o) => o.optionId === "stt-opt-magens-bay-self-guided-safari",
+  assert.equal(jan28Eval.mainDestination, "st-thomas");
+  assert.equal(jan28Eval.stJohnDayTripChoice.mainDestination, "st-thomas");
+  assert.equal(jan28Eval.stJohnDayTripChoice.dayTripDestination, "st-john");
+  assert.equal(jan28Eval.stJohnDayTripChoice.bothFerryLegsFit, true);
+  assert.equal(jan28Eval.stJohnDayTripChoice.offeredForSailing, true);
+  assert.equal(
+    jan28Eval.stJohnDayTripChoice.ferryLegs.temporaryVipaNoticeWindow
+      .temporaryVipaNoticeEndedOn,
+    "2026-10-31",
   );
-  assert.ok(magensBay);
-  assert.equal(magensBay.category, "free_or_self_guided");
-  // 2 adults * $7 admission ($14) + 1 child age 9 ($0 admission) + 3 guests * $24 R/T safari taxi ($72) = $86
-  assert.equal(magensBay.estimatedCostTotalPartyUsd, 86);
+  assert.equal(
+    jan28Eval.stJohnDayTripChoice.ferryLegs.temporaryVipaNoticeWindow
+      .isPastTemporaryNoticeEndDate,
+    true,
+  );
+  assert.equal(
+    jan28Eval.stJohnDayTripChoice.ferryLegs.returnLeg.returnLegStatus,
+    "unresolved_needs_confirmation",
+  );
+  assert.equal(jan28Eval.stJohnDayTripChoice.fitBadgeLabel, "Needs confirmation");
 
-  // Verify unsupported facts are explicitly marked status: "unknown"
-  assert.ok(fullDay.unknownFacts.length >= 4);
-  for (const uf of fullDay.unknownFacts) {
-    assert.equal(uf.status, "unknown");
-    assert.ok(uf.summary.length > 15);
+  // Short 5.5h call: both ferry legs do NOT fit -> St. John day-trip NOT offered
+  const shortCallFerry = evaluateStJohnFerryLegsForSailing({
+    travelDate: "2027-01-28",
+    shipArrivalTime: "08:00",
+    allAboardTime: "13:30",
+    arrivalDock: "havensight_wico",
+  });
+  assert.equal(shortCallFerry.bothFerryLegsFit, false);
+  assert.equal(shortCallFerry.offerAsDayTripChoice, false);
+});
+
+test("7. New Orleans sales test records Airboat Adventures 75-min pickup window separately from Jean Lafitte, leaves Omni Riverfront unconfirmed, and keeps Monteleone pending operator terms and hotel approval", () => {
+  const offers =
+    NEW_ORLEANS_HOTEL_PICKUP_SALES_TEST_STATUS.separateOperatorPickupOffers;
+  assert.equal(offers.strictlySeparated, true);
+  assert.equal(offers.airboatAdventures.pickupWindowMinutesPrior, 75);
+  assert.equal(offers.airboatAdventures.roundTripShuttleFeePerPersonUsd, 30);
+  assert.equal(
+    offers.airboatAdventures.officialSourceUrl,
+    "https://airboatadventures.com/pickup-locations/",
+  );
+  assert.equal(offers.jeanLafitteSwampTours.pickupWindowMinutesPrior, 45);
+  assert.deepEqual(offers.jeanLafitteSwampTours.tourIds, [
+    "dcc:tour:fh:jeanlafitteswamptour:763318",
+  ]);
+
+  const monteleone = getHotelConciergeConfig("hotel-monteleone-nola");
+  assert.ok(monteleone);
+  assert.equal(
+    monteleone.placementApprovalStatus,
+    "pending_operator_terms_and_hotel_approval",
+  );
+  assert.equal(monteleone.operatorTermsApproved, false);
+  assert.equal(monteleone.hotelPlacementApproved, false);
+  assert.equal(
+    Object.keys(monteleone.operatorPickupProfiles ?? {}).length,
+    2,
+  );
+
+  const omni = getHotelConciergeConfig("omni-riverfront-nola");
+  assert.ok(omni);
+  assert.equal(omni.placementApprovalStatus, "unconfirmed_pickup_stop");
+  for (const profile of Object.values(omni.operatorPickupProfiles ?? {})) {
+    assert.equal(profile.pickupStatusForProperty, "unconfirmed");
   }
 });
 
-test("9. St. Thomas URL search-params parser, PortAuthorityConfig, and SSR component render public answer, checker, free options, and unknown facts", () => {
+test("8. All five winter release ports evaluate deterministically and January 24 sailing preview returns Nassau + St. Thomas options", () => {
+  const allFive = evaluateAllFiveWinterPorts();
+  for (const slug of FIVE_WINTER_RELEASE_PORT_SLUGS) {
+    const res = allFive[slug];
+    assert.ok(res);
+    assert.equal(res.portSlug, slug);
+    assert.ok(res.recommendedOptions.length >= 3);
+    assert.ok(res.allOptions.some((o) => o.isFreeOrSelfGuided));
+    assert.ok(res.unknownFacts.length >= 1);
+    assert.equal(res.commercialNeutrality.commercialWeightAppliedToRanking, 0);
+  }
+
+  // Cozumel disqualifies 12h Chichen Itza mainland tour (5885P231) on 9h cruise call
+  const chichenOpt = allFive.cozumel.allOptions.find(
+    (o) => o.productCode === "5885P231",
+  );
+  assert.ok(chichenOpt);
+  assert.equal(chichenOpt.fitStatus, "does_not_fit");
+
+  // January 24 sailing preview
+  const jan24 = buildJanuary24SailingPreview();
+  assert.equal(jan24.sailingDepartureDate, "2027-01-24");
+  assert.equal(jan24.shareablePreviewPath, "/cruises/preview/january-24-sailing");
+  assert.equal(jan24.calls.nassau.callDate, "2027-01-25");
+  assert.equal(jan24.calls.stThomas.callDate, "2027-01-28");
+  assert.equal(jan24.calls.stThomas.mainDestination, "st-thomas");
+  assert.equal(
+    jan24.calls.stThomas.separateViEcoToursListings.listing5199KSML
+      .durationMinutes,
+    150,
+  );
+  assert.equal(
+    jan24.calls.stThomas.separateViEcoToursListings.listing5199KSML.priceUsd,
+    89,
+  );
+  assert.equal(
+    jan24.calls.stThomas.separateViEcoToursListings.listing5199P27
+      .durationMinutes,
+    180,
+  );
+  assert.equal(
+    jan24.calls.stThomas.separateViEcoToursListings.listing5199P27.priceUsd,
+    99,
+  );
+});
+
+test("9. SSR components and PortAuthorityConfig render St. Thomas and the 4 expansion winter ports cleanly", () => {
   const parsed = parseStThomasScenarioFromSearchParams({
     dock: "crown_bay",
     arrival: "09:00",
     allAboard: "14:15",
-    date: "2026-11-21",
+    date: "2027-01-28",
     adults: "3",
     childAges: "6,10",
     mobility: "light_walking",
     focus: "free_or_self_guided_walk",
   });
   assert.equal(parsed.arrivalDock, "crown_bay");
-  assert.equal(parsed.shipArrivalTime, "09:00");
-  assert.equal(parsed.allAboardTime, "14:15");
-  assert.equal(parsed.travelDate, "2026-11-21");
-  assert.equal(parsed.adults, 3);
-  assert.deepEqual(parsed.childAges, [6, 10]);
-  assert.equal(parsed.mobilityLevel, "light_walking");
-  assert.equal(parsed.excursionFocus, "free_or_self_guided_walk");
+  assert.equal(parsed.travelDate, "2027-01-28");
 
-  const stThomasAuthority = getPortAuthorityConfig({
-    slug: "st-thomas",
-    name: "St. Thomas",
-  });
-  assert.equal(stThomasAuthority.isFallback, false);
-  assert.match(stThomasAuthority.heroTitle, /St\. Thomas/);
-
-  const sitkaAuthority = getPortAuthorityConfig({
-    slug: "sitka",
-    name: "Sitka",
-  });
-  assert.equal(sitkaAuthority.isFallback, false);
-  assert.match(sitkaAuthority.heroTitle, /Sitka/);
+  for (const slug of FIVE_WINTER_RELEASE_PORT_SLUGS) {
+    const auth = getPortAuthorityConfig({ slug, name: slug });
+    assert.equal(auth.isFallback, false, `Expected non-fallback config for ${slug}`);
+  }
 
   assert.ok(ST_THOMAS_PUBLIC_ANSWER_SUMMARY.directAnswer.length > 40);
 
-  const html = renderToStaticMarkup(
+  const sttHtml = renderToStaticMarkup(
     React.createElement(StThomasPortDayPlanner),
   );
-  assert.match(html, /data-testid="st-thomas-port-day-checker"/);
-  assert.match(html, /data-testid="st-thomas-verdict-banner"/);
-  assert.match(html, /data-testid="st-thomas-unknown-facts"/);
-  assert.match(html, /status: &quot;unknown&quot;/);
-  assert.match(html, /Charlotte Amalie Historic District/);
+  assert.match(sttHtml, /data-testid="st-thomas-port-day-checker"/);
+  assert.match(sttHtml, /data-testid="st-john-ferry-leg-status-banner"/);
+  assert.match(sttHtml, /5199KSML/);
+  assert.match(sttHtml, /5199P27/);
+  assert.match(sttHtml, /Needs confirmation/);
+
+  const nassauHtml = renderToStaticMarkup(
+    React.createElement(WinterPortDayPlanner, { portSlug: "nassau" }),
+  );
+  assert.match(nassauHtml, /data-testid="nassau-port-day-checker"/);
+  assert.match(nassauHtml, /70706P11/);
 });

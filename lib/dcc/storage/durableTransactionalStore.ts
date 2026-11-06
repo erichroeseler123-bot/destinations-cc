@@ -26,6 +26,8 @@ export interface FunnelVisitorRecord {
   placementId?: string | null;
   propertySlug?: string | null;
   surface?: string | null;
+  planCode?: string | null;
+  planOpenCount?: number;
   trafficClass: "production" | "test";
   isTest: boolean;
   firstSeenAt: string;

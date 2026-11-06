@@ -1,0 +1,29 @@
+{
+  "automationId": "dcc-coverage",
+  "lastSuccessfulCheckDate": "2026-11-06",
+  "lastSuccessfulCheckAtIso": "2026-11-06T16:00:00.000Z",
+  "lastWeeklyCalendarCheckedOn": "2026-11-06",
+  "fiveWinterPortsChecked": [
+    "st-thomas",
+    "nassau",
+    "cozumel",
+    "roatan",
+    "grand-cayman"
+  ],
+  "alaskaWeeklyCalendarPorts": [
+    "ketchikan",
+    "skagway",
+    "sitka"
+  ],
+  "queuedMaterialChangeIds": [
+    "mc-stt-separate-5199ksml-150m-and-5199p27-180m-20261106",
+    "mc-stt-vipa-ferry-oct31-expired-notice-and-return-leg-20261106",
+    "mc-stt-magens-bay-nonresident-admission-20261106",
+    "mc-nas-prince-george-wharf-berths-1-6-exit-walk-20261106",
+    "mc-czm-three-pier-dispatch-and-mainland-ferry-cutoff-20261106",
+    "mc-rtb-mahogany-bay-outside-gate-vs-coxen-hole-20261106",
+    "mc-gcm-royal-watler-tender-buffer-and-spotts-diversion-20261106",
+    "mc-nola-airboat-adventures-75min-pickup-separate-from-jean-lafitte-20261106",
+    "mc-ktn-ward-cove-shuttle-and-2027-preseason-20261106"
+  ]
+}

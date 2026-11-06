@@ -186,11 +186,13 @@ export interface FunnelClassMetrics {
   trafficClass: TrafficClass;
   newVisitors: number;
   guestVisits: number;
+  planOpens: number;
   recommendationsIssued: number;
   recommendationOnlyRecords: number;
   followedHandoffs: number;
   actualOutboundClicks: number;
   confirmedPaidBookings: number;
+  paidCommissionsCount: number;
   cancelledOrRefundedBookings: number;
   duplicateDeliveriesIgnored: number;
   grossConfirmedRevenueUsd: number;
@@ -1143,6 +1145,8 @@ export function recordFunnelVisitorSession(input: {
   placementId?: string | null;
   propertySlug?: string | null;
   surface?: string | null;
+  planCode?: string | null;
+  isPlanOpen?: boolean;
   isTest?: boolean;
 }): FunnelVisitorRecord {
   const visitorId =
@@ -1151,6 +1155,13 @@ export function recordFunnelVisitorSession(input: {
   const placementId = input.placementId?.trim() || null;
   const propertySlug = input.propertySlug?.trim() || null;
   const surface = input.surface?.trim() || null;
+  const planCode = input.planCode?.trim() || null;
+  const isPlanOpen = Boolean(
+    input.isPlanOpen ||
+      planCode ||
+      sourcePage.startsWith("/p/") ||
+      sourcePage.includes("winter-excursion-planner"),
+  );
   const isTest = Boolean(
     input.isTest ||
       /^(test|sim|qa)[-_]/i.test(visitorId) ||
@@ -1168,6 +1179,10 @@ export function recordFunnelVisitorSession(input: {
     if (existing) {
       existing.lastSeenAt = nowIso;
       existing.visitCount += 1;
+      if (isPlanOpen) {
+        existing.planOpenCount = (existing.planOpenCount || 0) + 1;
+      }
+      if (planCode) existing.planCode = planCode;
       if (placementId) existing.placementId = placementId;
       if (propertySlug) existing.propertySlug = propertySlug;
       if (surface) existing.surface = surface;
@@ -1179,6 +1194,8 @@ export function recordFunnelVisitorSession(input: {
       placementId,
       propertySlug,
       surface,
+      planCode,
+      planOpenCount: isPlanOpen ? 1 : 0,
       trafficClass,
       isTest,
       firstSeenAt: nowIso,
@@ -1190,6 +1207,24 @@ export function recordFunnelVisitorSession(input: {
   });
 }
 
+export function recordPlanOpenEvent(input: {
+  visitorId?: string | null;
+  planCode?: string | null;
+  sourcePage?: string | null;
+  placementId?: string | null;
+  propertySlug?: string | null;
+  surface?: string | null;
+  isTest?: boolean;
+}): FunnelVisitorRecord {
+  return recordFunnelVisitorSession({
+    ...input,
+    isPlanOpen: true,
+    sourcePage:
+      input.sourcePage?.trim() ||
+      `/cruises/winter-excursion-planner${input.planCode ? `?plan=${input.planCode}` : ""}`,
+  });
+}
+
 function createEmptyFunnelClassMetrics(
   trafficClass: TrafficClass,
 ): FunnelClassMetrics {
@@ -1197,11 +1232,13 @@ function createEmptyFunnelClassMetrics(
     trafficClass,
     newVisitors: 0,
     guestVisits: 0,
+    planOpens: 0,
     recommendationsIssued: 0,
     recommendationOnlyRecords: 0,
     followedHandoffs: 0,
     actualOutboundClicks: 0,
     confirmedPaidBookings: 0,
+    paidCommissionsCount: 0,
     cancelledOrRefundedBookings: 0,
     duplicateDeliveriesIgnored: 0,
     grossConfirmedRevenueUsd: 0,
@@ -1263,6 +1300,14 @@ export function getFunnelMetricsReport(options?: {
     const bucket = isTestVisitor ? test : production;
     bucket.newVisitors += 1;
     bucket.guestVisits += Math.max(1, vis.visitCount || 1);
+    const explicitPlanOpens =
+      typeof vis.planOpenCount === "number" && vis.planOpenCount >= 0
+        ? vis.planOpenCount
+        : vis.sourcePage?.startsWith("/p/") ||
+            vis.sourcePage?.includes("winter-excursion-planner")
+          ? Math.max(1, vis.visitCount || 1)
+          : 0;
+    bucket.planOpens += explicitPlanOpens;
   }
 
   const clicks = Object.values(state.opaqueClicksById || {});
@@ -1436,6 +1481,9 @@ export function getFunnelMetricsReport(options?: {
         if (outcomeWithPaidCommission?.paidCommissionUsd != null) {
           const paidComm = outcomeWithPaidCommission.paidCommissionUsd;
           if (paidComm >= 0) {
+            if (paidComm > 0) {
+              bucket.paidCommissionsCount += 1;
+            }
             bucket.settledReconciledCommissionUsd = Number(
               (bucket.settledReconciledCommissionUsd + paidComm).toFixed(2),
             );

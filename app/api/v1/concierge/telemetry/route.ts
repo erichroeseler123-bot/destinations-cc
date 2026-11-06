@@ -18,11 +18,14 @@ export const dynamic = "force-dynamic";
 function formatPlacementFunnelSummary(funnel: ReturnType<typeof getFunnelMetricsReport>) {
   return {
     production: {
+      planOpens: funnel.production.planOpens,
       guestVisits: funnel.production.guestVisits,
       recommendationsIssued: funnel.production.recommendationsIssued,
       recommendationOnlyRecords: funnel.production.recommendationOnlyRecords,
       outboundClicks: funnel.production.actualOutboundClicks,
       providerConfirmedBookings: funnel.production.confirmedPaidBookings,
+      paidCommissionsCount: funnel.production.paidCommissionsCount,
+      paidCommissionUsd: funnel.production.settledReconciledCommissionUsd,
       duplicateDeliveriesIgnored: funnel.production.duplicateDeliveriesIgnored,
       grossConfirmedRevenueUsd: funnel.production.grossConfirmedRevenueUsd,
       estimatedUnsettledCommissionUsd: funnel.production.estimatedUnsettledCommissionUsd,
@@ -30,11 +33,14 @@ function formatPlacementFunnelSummary(funnel: ReturnType<typeof getFunnelMetrics
       reversedCommissionUsd: funnel.production.reversedCommissionUsd,
     },
     test: {
+      planOpens: funnel.test.planOpens,
       guestVisits: funnel.test.guestVisits,
       recommendationsIssued: funnel.test.recommendationsIssued,
       recommendationOnlyRecords: funnel.test.recommendationOnlyRecords,
       outboundClicks: funnel.test.actualOutboundClicks,
       providerConfirmedBookings: funnel.test.confirmedPaidBookings,
+      paidCommissionsCount: funnel.test.paidCommissionsCount,
+      paidCommissionUsd: funnel.test.settledReconciledCommissionUsd,
       duplicateDeliveriesIgnored: funnel.test.duplicateDeliveriesIgnored,
       grossConfirmedRevenueUsd: funnel.test.grossConfirmedRevenueUsd,
       estimatedUnsettledCommissionUsd: funnel.test.estimatedUnsettledCommissionUsd,
@@ -81,6 +87,7 @@ export async function GET(request: NextRequest) {
     wnoTransFunnel,
     wttsTransFunnel,
     dccSwampFunnel,
+    winterPlannerFunnel,
     catalogSummary,
   ] = await Promise.all([
     Promise.resolve(getFunnelMetricsReport()),
@@ -94,6 +101,7 @@ export async function GET(request: NextRequest) {
     Promise.resolve(getFunnelMetricsReport({ placementId: "fp-wno-swamp-transportation" })),
     Promise.resolve(getFunnelMetricsReport({ placementId: "fp-wtts-transportation" })),
     Promise.resolve(getFunnelMetricsReport({ placementId: "fp-dcc-nola-swamp-tours" })),
+    Promise.resolve(getFunnelMetricsReport({ placementId: "fp-cp-winter-excursion-planner" })),
     getDurableCatalogSummaryReport(),
   ]);
 
@@ -281,6 +289,16 @@ export async function GET(request: NextRequest) {
           secondaryPayableOfferTourId: "dcc:tour:viator:6953SWAMPTRANS",
           pendingDirectFareHarborOfferTourId: "dcc:tour:fh:jeanlafitteswamptour:763318",
           funnelByTrafficClass: formatPlacementFunnelSummary(dccSwampFunnel),
+        },
+        "fp-cp-winter-excursion-planner": {
+          liveUrl: "https://cruisepromenade.com/p/INDY-2027-01-24",
+          dccPlannerUrl: "https://www.destinationcommandcenter.com/cruises/winter-excursion-planner?plan=INDY-2027-01-24",
+          surface: "cruisepromenade",
+          shareablePlanCode: "INDY-2027-01-24",
+          sailingId: "ID07MIA-1982128855",
+          sailDate: "2027-01-24",
+          savedOfferTourIds: ["dcc:tour:viator:254526P1", "dcc:tour:viator:7452P2"],
+          funnelByTrafficClass: formatPlacementFunnelSummary(winterPlannerFunnel),
         },
       },
       overallFunnel: formatPlacementFunnelSummary(overallFunnel),

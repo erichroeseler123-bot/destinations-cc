@@ -1,3 +1,22 @@
+import fs from "node:fs";
+import path from "node:path";
+
+try {
+  if (
+    !process.env.VIATOR_API_KEY &&
+    !process.env.VIATOR_API &&
+    !process.env.VIATOR_KEY &&
+    typeof process.loadEnvFile === "function"
+  ) {
+    const envLocalPath = path.join(process.cwd(), ".env.local");
+    if (fs.existsSync(envLocalPath)) {
+      process.loadEnvFile(envLocalPath);
+    }
+  }
+} catch {
+  // Ignore if .env.local cannot be read
+}
+
 export type ViatorMedium = "link" | "widget" | "banner" | "api";
 
 export type ViatorLocale =
