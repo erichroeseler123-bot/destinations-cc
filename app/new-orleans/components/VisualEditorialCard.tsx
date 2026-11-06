@@ -144,7 +144,7 @@ export default function VisualEditorialCard({
             >
               Check Dates & Prices
             </FareHarborBookingButton>
-          ) : bookingHref && bookingHref.startsWith("http") ? (
+          ) : bookingHref && (bookingHref.startsWith("http") || bookingHref.startsWith("/api/")) ? (
             <a
               href={bookingHref}
               target="_blank"
