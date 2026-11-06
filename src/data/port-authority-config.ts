@@ -1175,6 +1175,208 @@ export const PORT_AUTHORITY_CONFIG: Record<string, PortAuthorityConfig> = {
     ],
     relatedLinks: baseLinks("Puerto Vallarta"),
   },
+  "st-thomas": {
+    updatedAt: "2026-11-06",
+    refreshIntervalDays: 30,
+    heroTitle: "St. Thomas Cruise Port (Havensight WICO & Crown Bay)",
+    summary:
+      "A peak winter USVI cruise hub split between two distinct docks—Havensight (WICO) east of Charlotte Amalie and Crown Bay (Austin 'Babe' Monsanto Marine Terminal, AMSS/AMNS) west of downtown—plus St. John ferry access via Red Hook.",
+    cruiseRelevance:
+      "Your St. Thomas berth changes East End transfer times by 15–20 minutes each way and determines whether you can walk to Historic Charlotte Amalie (from WICO), hop a 5–8 minute taxi to free-entry Lindbergh Bay / Emerald Beach (from Crown Bay), or fit a two-island ferry trip to St. John.",
+    tripPlanningSnapshot: [
+      {
+        label: "Which dock matters",
+        value:
+          "Havensight (WICO) is 20–25 min from Red Hook & Mangrove Lagoon and walkable (1.5 mi) to downtown; Crown Bay (AMSS/AMNS) is 5–8 min from free Lindbergh Bay beach but 35–45 min across traffic to Red Hook.",
+      },
+      {
+        label: "St. John ferry rule",
+        value:
+          "Use Red Hook (Urman Fredericks Terminal, 15m crossing, $8.15/adult). Never rely on the Crown Bay -> Cruz Bay ferry outbound (departs only at 2:15 PM Sat/Sun, 3:30 PM, and 5:30 PM).",
+      },
+      {
+        label: "Free & self-guided",
+        value:
+          "$0 Charlotte Amalie Historic District & 99 Steps walk • $0 VIPA Lindbergh Bay (Emerald Beach) • $7/adult Magens Bay Park ($0 under age 12, open 7:00 AM–5:30 PM).",
+      },
+      {
+        label: "Guided eco & snorkel",
+        value:
+          "VI Ecotours Cas Cay Kayak, Hike & Snorkel at Mangrove Lagoon (6526 Estate Nadir, 3h / $99 observed 2026-11-06) • Half-day Buck Island / Turtle Cove catamarans.",
+      },
+      {
+        label: "Unsupported / unknown",
+        value:
+          "Exact day-of safari taxi dispatch waits, unconfirmed post-Oct-31 weekday midday Cruz Bay return ferries (10 AM / 12 PM / 2 PM), and WICO-vs-Crown Bay pier pickup equivalence remain marked unknown.",
+      },
+    ],
+    tenderDock:
+      "Dual-dock port: West Indian Company Dock (WICO / Havensight) and VIPA Austin 'Babe' Monsanto Marine Terminal (Crown Bay AMSS/AMNS), plus occasional Inner/Outer Charlotte Amalie Harbor tender anchorages (IANCH/OANCH).",
+    excursionLength:
+      "2.5 to 4 hours for single-island beach, kayak, or catamaran tours; 6.5 to 7+ hours required for independent St. John (Trunk Bay) via Red Hook ferry.",
+    nearbyTown:
+      "Historic Charlotte Amalie (1.5 mi west of WICO along Veterans Drive; 1.7 mi east of Crown Bay via Sub Base).",
+    excursionCategories: [
+      category(
+        "Mangrove Lagoon Kayak & Snorkel",
+        "St. Thomas Mangrove Lagoon Kayak Hike Snorkel 5199KSML",
+        "5199KSML",
+      ),
+      category(
+        "Catamaran & Turtle Snorkel",
+        "St. Thomas Catamaran Turtle Snorkel",
+        "7452P2",
+      ),
+      category(
+        "St. John & Trunk Bay Excursions",
+        "St. Thomas to St. John Trunk Bay snorkel",
+      ),
+      category(
+        "Charlotte Amalie History & Food",
+        "St. Thomas Charlotte Amalie walking tour",
+      ),
+    ],
+    cruiseSeason:
+      "Year-round Caribbean calls with peak winter volume from November through April (VIPA FY2027 schedule active Oct 1, 2026 – Sep 30, 2027).",
+    knownFor: [
+      "Havensight (WICO) vs. Crown Bay (AMSS/AMNS) dock-specific routing",
+      "Magens Bay Authority Park ($7 non-resident adult, kids under 12 free) and Lindbergh Bay ($0 beach entry near Crown Bay)",
+      "Mangrove Lagoon & Cas Cay kayaking, hiking, and reef snorkeling (VI Ecotours)",
+      "Red Hook to Cruz Bay passenger ferry gateway to Virgin Islands National Park on St. John",
+      "Historic Downtown Charlotte Amalie, Emancipation Garden, Fort Christian, and the 99 Steps",
+    ],
+    nearbyZones: [
+      "Havensight (WICO Dock)",
+      "Crown Bay (AMSS/AMNS) & Sub Base",
+      "Historic Charlotte Amalie & 99 Steps",
+      "Lindbergh Bay (Emerald Beach)",
+      "Magens Bay Park (North Shore)",
+      "Mangrove Lagoon / Estate Nadir",
+      "Red Hook Ferry Terminal (East End)",
+      "Cruz Bay & Trunk Bay (St. John)",
+    ],
+    logistics: [
+      "Havensight (WICO) sits on the eastern edge of Charlotte Amalie harbor (~20–25 min taxi to Red Hook or Mangrove Lagoon; walkable 1.5 mi along Veterans Drive into downtown).",
+      "Crown Bay (AMSS/AMNS) sits west of downtown (~5–8 min taxi to free-entry Lindbergh Bay / Emerald Beach, but ~35–45 min across downtown traffic to Red Hook or Mangrove Lagoon).",
+      "VIPA's Crown Bay -> Cruz Bay (St. John) ferry (Inter Island Boat Services, $20 adult) departs only at 2:15 PM (Sat/Sun), 3:30 PM, and 5:30 PM—unusable for morning cruise arrivals.",
+      "VIPA's Red Hook -> Cruz Bay ferry ($8.15 non-resident adult, $1 child 2–11, 15m crossing) requires arriving 15 minutes before departure; weekday midday Cruz Bay return gaps (10 AM, 12 PM, 2 PM) on the temporary off-season notice remain marked unknown until confirmed.",
+    ],
+    realityCheckSummary: [
+      "Crown Bay is NOT a step-off walk into historic downtown Charlotte Amalie (~1.7 miles along industrial Sub Base road without continuous shade), whereas Lindbergh Bay (Emerald Beach) is just 5–8 minutes away.",
+      "Going to St. John on your own chains four separate transfers (dock taxi -> Red Hook ferry -> Cruz Bay taxi -> return ferry + taxi); never attempt it on a port call under 6.5–7.0 hours.",
+      "Open-air shared safari taxis often hold at the pier dispatch area until multi-passenger benches fill, and exact date-specific dispatch waits are marked unknown.",
+    ],
+    realityCheckEvidence: [
+      evidence(
+        "VIPA Official Ferry & Cargo Schedules — Red Hook vs. Crown Bay to St. John",
+        "https://www.viport.com/schedules-ferrycargoschedules",
+        "Virgin Islands Port Authority (Checked 2026-11-06)",
+        "Verifies $8.15 adult / $1.00 child Red Hook crossing, 15-minute check-in lead, and afternoon-only Crown Bay -> Cruz Bay departures (2:15 PM Sat/Sun, 3:30 PM, 5:30 PM).",
+        { type: "official-notice", tags: ["ferry", "crown-bay", "red-hook", "st-john"] },
+      ),
+      evidence(
+        "Magens Bay Authority Official Park Passes & Operating Hours",
+        "https://magensbayauthority.org/passes/",
+        "Magens Bay Authority (Checked 2026-11-06)",
+        "Verifies $7.00 per non-resident adult daily entry, free entry for children under 12, $2.00 parking, and 7:00 AM – 5:30 PM daily hours.",
+        { type: "official-notice", tags: ["beach", "tariff", "magens-bay"] },
+      ),
+      evidence(
+        "Virgin Islands Ecotours — Cas Cay Kayak, Hike & Snorkel (Mangrove Lagoon)",
+        "https://www.viecotours.com/",
+        "VI Ecotours Official Site (Published Nov 5, 2026 • Checked 2026-11-06)",
+        "Lists 3-Hour Cas Cay Kayak, Hike & Snorkel Adventure (From $99) departing 6526 Estate Nadir; queued for human review against the prior 2h 30m snapshot.",
+        { type: "official-notice", tags: ["kayak", "snorkel", "duration"] },
+      ),
+    ],
+    faq: [
+      {
+        question:
+          "Which St. Thomas excursions fit my sailing from Havensight (WICO) versus Crown Bay?",
+        answer:
+          "From Havensight (WICO), East End excursions like VI Ecotours' Mangrove Lagoon Kayak & Snorkel (20–25 min taxi), Red Hook St. John ferries (on 6.5h+ calls), Magens Bay (~25 min taxi), and the $0 Historic Charlotte Amalie waterfront walk (1.5 mi) fit well. From Crown Bay (AMSS/AMNS), free-entry Lindbergh Bay / Emerald Beach (5–8 min taxi), half-day catamaran sails, and Magens Bay (~30–35 min taxi) fit best, while East End / Red Hook trips add 35–45 minutes each way across Charlotte Amalie traffic.",
+      },
+      {
+        question:
+          "Can I take the ferry directly from Crown Bay Cruise Dock to St. John in the morning?",
+        answer:
+          "No. Per the Virgin Islands Port Authority (VIPA) published schedule (checked 2026-11-06), the Crown Bay to Cruz Bay ferry departs only at 2:15 PM (weekends), 3:30 PM, and 5:30 PM. Morning cruise guests must taxi across the island to Red Hook (Urman Fredericks Terminal) or book a direct catamaran excursion.",
+      },
+      {
+        question:
+          "What is the best free or self-guided option in St. Thomas?",
+        answer:
+          "For history and harbour views, walk the $0 Charlotte Amalie Historic District, Emancipation Garden, Fort Christian exterior, and 99 Steps route (walkable from WICO or tender; short safari taxi from Crown Bay). For a low-cost beach day, take a shared taxi to VIPA's Lindbergh Bay / Emerald Beach ($0 beach entry, 5–8 min from Crown Bay) or Magens Bay Park ($7/adult non-resident, kids under 12 free).",
+      },
+    ],
+    relatedLinks: [
+      ...baseLinks("St. Thomas"),
+      { label: "St. Thomas Port-Day Checker", href: "/ports/st-thomas#st-thomas-port-day-checker" },
+    ],
+    excursionCtaLabel: "Browse St. Thomas Shore Excursions",
+    excursionCtaHref: "/tours?q=St.+Thomas+shore+excursions",
+    transferCtaLabel: "Check St. Thomas Dock & Ferry Timing",
+    transferCtaHref: "/ports/st-thomas#st-thomas-port-day-checker",
+  },
+  sitka: {
+    updatedAt: "2026-11-06",
+    refreshIntervalDays: 60,
+    heroTitle: "Sitka Cruise Port (Preseason 2027 Preparation)",
+    summary:
+      "An outer-coast Southeast Alaska port where ships berth at the Sitka Sound Cruise Terminal (Halibut Point Road, ~6 miles north of downtown via shuttle) or tender directly to downtown harbors.",
+    cruiseRelevance:
+      "Sitka is in 2027 preseason preparation (full build triggers 8–12 weeks before the late-April 2027 season opener). The core decision is whether your excursion dispatches directly from Sitka Sound Cruise Terminal or requires the round-trip downtown shuttle.",
+    tenderDock:
+      "Primarily docks at Sitka Sound Cruise Terminal (Halibut Point Rd, ~15–20 min shuttle to downtown Harrigan Centennial Hall), with smaller vessels tendering to downtown.",
+    excursionLength: "2.5 to 4.5 hours for Sea Otter & Wildlife quests, Fortress of the Bear, and Alaska Raptor Center combos.",
+    nearbyTown: "Downtown Sitka, Sitka National Historical Park (Totem Park), and Harrigan Centennial Hall.",
+    excursionCategories: [
+      category("Sea otter & wildlife cruises", "Sitka wildlife boat tour"),
+      category("Fortress of the Bear & Raptor Center", "Sitka bear and raptor tour"),
+      category("Guided kayaking & coastal walks", "Sitka kayak tour"),
+    ],
+    cruiseSeason:
+      "Alaska season runs late April through October (2027 preseason preparation active; full build starts February 2027, 8–12 weeks before first published call).",
+    knownFor: [
+      "Sitka Sound Cruise Terminal shuttle vs. direct dock-dispatch tours",
+      "Sea otter, humpback whale, and puffin marine wildlife",
+      "Sitka National Historical Park ($0 free coastal totem trail walk from downtown)",
+      "Alaska Raptor Center and Fortress of the Bear",
+    ],
+    nearbyZones: [
+      "Sitka Sound Cruise Terminal (Halibut Point Rd)",
+      "Downtown Sitka & Harrigan Centennial Hall",
+      "Sitka National Historical Park (Totem Park)",
+      "Alaska Raptor Center",
+      "Fortress of the Bear",
+    ],
+    logistics: [
+      "Sitka Sound Cruise Terminal sits ~6 miles north of downtown Sitka; factor 15–20 minutes shuttle transit each way plus queue time when booking independent downtown-meeting tours.",
+      "Sitka National Historical Park (Totem Park) is a flat, free ($0) coastal rainforest walk ~0.7 miles east of the downtown shuttle drop-off at Harrigan Centennial Hall.",
+      "Exact 2027 Sitka Sound Cruise Terminal shuttle headways and berth assignments are marked unknown during winter preseason preparation until confirmed 8–12 weeks before the April 2027 opener.",
+    ],
+    faq: [
+      {
+        question: "How far is the Sitka cruise dock from downtown?",
+        answer:
+          "Sitka Sound Cruise Terminal on Halibut Point Road is about 6 miles north of downtown Sitka (~15–20 minutes each way via complimentary port shuttle to Harrigan Centennial Hall).",
+      },
+      {
+        question: "Is there a free or self-guided option in Sitka?",
+        answer:
+          "Yes. Once the port shuttle drops you in downtown Sitka, the coastal seawalk to Sitka National Historical Park (Totem Park) and Russian Bishop's House exterior is free ($0 trail admission).",
+      },
+      {
+        question: "When does the full 2027 Sitka excursion checker open?",
+        answer:
+          "Sitka is in preseason preparation and enters full build 8–12 weeks before its first published late-April 2027 ship call.",
+      },
+    ],
+    relatedLinks: [
+      ...baseLinks("Sitka"),
+      { label: "Alaska guide", href: "/alaska" },
+    ],
+  },
 };
 
 function titleFromPortName(name: string): string {
@@ -1193,7 +1395,11 @@ export function getPortAuthorityConfig(port: {
   region?: string;
   country?: string;
 }): ResolvedPortAuthorityConfig {
-  const configured = PORT_AUTHORITY_CONFIG[port.slug];
+  const configured =
+    PORT_AUTHORITY_CONFIG[port.slug] ||
+    (port.slug === "grand-cayman"
+      ? PORT_AUTHORITY_CONFIG["george-town-grand-cayman"]
+      : undefined);
   if (configured) return { ...configured, isFallback: false };
 
   const portName = port.name.replace(/^Port of\s+/i, "").trim();

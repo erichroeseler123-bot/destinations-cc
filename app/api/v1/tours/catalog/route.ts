@@ -3,6 +3,8 @@ import {
   EARTHOS_DESTINATION_NODES,
   getDurableCatalogSummaryReport,
   getDurableTourByIdOrAlias,
+  normalizeCatalogBatchPickupAndMeeting,
+  queueCatalogPickupExceptionsToReviewDesk,
   queryDurableTourCatalog,
   type TourCapabilityTier,
 } from "@/lib/dcc/catalog/durableCatalogStore";
@@ -11,6 +13,7 @@ import {
   runIncrementalViatorCatalogRefresh,
   runUniversalCatalogIngestion,
 } from "@/lib/dcc/catalog/ingest";
+import { authenticateCommerceAdminRequest } from "@/lib/dcc/commerce/opaqueAttributionLedger";
 
 export const dynamic = "force-dynamic";
 
@@ -27,11 +30,24 @@ export async function OPTIONS() {
 export async function GET(request: NextRequest) {
   try {
     const sp = request.nextUrl.searchParams;
+    if (sp.get("queueReviewDesk") === "true" || sp.get("queueReviewDesk") === "1") {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "catalog_get_is_read_only",
+          message:
+            "GET /api/v1/tours/catalog is strictly read-only. Review Desk writes require an authenticated POST /api/v1/tours/catalog request.",
+        },
+        { status: 405, headers: CORS_HEADERS },
+      );
+    }
+
     if (sp.get("summary") === "true" || sp.get("summary") === "1") {
       const report = await getDurableCatalogSummaryReport();
       return NextResponse.json(
         {
           ok: true,
+          readOnly: true,
           ...report,
           earthosDestinations: EARTHOS_DESTINATION_NODES,
         },
@@ -48,7 +64,10 @@ export async function GET(request: NextRequest) {
           { status: 404, headers: CORS_HEADERS },
         );
       }
-      return NextResponse.json({ ok: true, tour }, { status: 200, headers: CORS_HEADERS });
+      return NextResponse.json(
+        { ok: true, readOnly: true, tour },
+        { status: 200, headers: CORS_HEADERS },
+      );
     }
 
     const approvedRaw = sp.get("approvedTourIds") || "";
@@ -72,9 +91,25 @@ export async function GET(request: NextRequest) {
       limit: Number.isFinite(limit) ? limit : undefined,
     });
 
+    if (sp.get("exceptions") === "true" || sp.get("exceptions") === "1") {
+      const batch = normalizeCatalogBatchPickupAndMeeting(result.records);
+      return NextResponse.json(
+        {
+          ok: true,
+          readOnly: true,
+          storageSource: result.storageSource,
+          summary: batch.summary,
+          exceptions: batch.exceptions.slice(0, limit ?? 100),
+          reviewDeskQueue: null,
+        },
+        { status: 200, headers: CORS_HEADERS },
+      );
+    }
+
     return NextResponse.json(
       {
         ok: true,
+        readOnly: true,
         storageSource: result.storageSource,
         totalMatched: result.totalMatched,
         count: result.records.length,
@@ -95,13 +130,22 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const authHeader = request.headers.get("authorization") || "";
-    const adminHeader = request.headers.get("x-dcc-admin-secret") || "";
-    const expectedSecret =
-      process.env.DCC_COMMERCE_ADMIN_SECRET || process.env.CRON_SECRET || "";
-
-    const token = authHeader.replace(/^Bearer\s+/i, "").trim() || adminHeader.trim();
-    if (!expectedSecret || token !== expectedSecret) {
+    let isAuthorized = false;
+    try {
+      const auth = authenticateCommerceAdminRequest(request);
+      isAuthorized = Boolean(auth.authorized);
+    } catch {
+      const authHeader = request.headers.get("authorization") || "";
+      const adminHeader = request.headers.get("x-dcc-admin-secret") || "";
+      const expectedSecret =
+        process.env.DCC_COMMERCE_ADMIN_SECRET ||
+        process.env.CRON_SECRET ||
+        process.env.INTERNAL_API_SECRET ||
+        "";
+      const token = authHeader.replace(/^Bearer\s+/i, "").trim() || adminHeader.trim();
+      isAuthorized = Boolean(expectedSecret && token === expectedSecret);
+    }
+    if (!isAuthorized) {
       return NextResponse.json(
         { ok: false, error: "unauthorized_catalog_sync" },
         { status: 401, headers: CORS_HEADERS },
@@ -109,7 +153,11 @@ export async function POST(request: NextRequest) {
     }
 
     const body = (await request.json().catch(() => ({}))) as {
-      mode?: "full_or_paginated" | "incremental_refresh" | "schedule_pricing_refresh";
+      mode?:
+        | "full_or_paginated"
+        | "incremental_refresh"
+        | "schedule_pricing_refresh"
+        | "normalize_pickup_and_queue_review_desk";
       cursor?: string;
       count?: number;
       scheduleRefreshLimit?: number;
@@ -119,7 +167,30 @@ export async function POST(request: NextRequest) {
       startOffset?: number;
       maxPagesPerDestination?: number;
       resumeFromCheckpoint?: boolean;
+      maxRowsToQueue?: number;
     };
+
+    if (body.mode === "normalize_pickup_and_queue_review_desk") {
+      const result = await queryDurableTourCatalog({
+        destinationSlug: body.destinations?.[0],
+      });
+      const batch = normalizeCatalogBatchPickupAndMeeting(result.records);
+      const reviewDeskResult = await queueCatalogPickupExceptionsToReviewDesk(
+        batch.exceptions,
+        { maxRowsToQueue: body.maxRowsToQueue ?? 250 },
+      );
+      return NextResponse.json(
+        {
+          ok: true,
+          mode: "normalize_pickup_and_queue_review_desk",
+          summary: batch.summary,
+          queuedToReviewDeskCount: reviewDeskResult.queuedCount,
+          persistedToDurableStore: reviewDeskResult.persistedToDurableStore,
+          sampleExceptions: batch.exceptions.slice(0, 20),
+        },
+        { status: 200, headers: CORS_HEADERS },
+      );
+    }
 
     if (body.mode === "schedule_pricing_refresh") {
       const schedRun = await runIncrementalScheduleAndPricingRefresh({

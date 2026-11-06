@@ -122,6 +122,11 @@ export default function IntentTourPage({
         <p className="mt-6 max-w-3xl text-lg leading-8 text-[#dcd5ca]">{intro}</p>
         <div className="mt-8 flex flex-wrap gap-3">
           <Link href="#tour-options" className="bg-[var(--nola-gold)] px-5 py-3 text-xs font-bold uppercase tracking-widest text-[#171717] hover:bg-[#ffe494] transition">Check Tour Options</Link>
+          {conciergePlacementId && (
+            <Link href="/swamp-tours" className="border border-[var(--nola-gold)] bg-[#1c1812] px-5 py-3 text-xs font-bold uppercase tracking-widest text-[var(--nola-gold)] hover:bg-[var(--nola-gold)] hover:text-[#171717] transition">
+              Open Swamp Tours Storefront (Choose Date &amp; Party Size) →
+            </Link>
+          )}
           <Link href="/help-me-choose" className="border border-[rgba(212,175,55,0.5)] px-5 py-3 text-xs font-bold uppercase tracking-widest text-[#fdfbf7] hover:border-[var(--nola-gold)] transition">Help Me Choose</Link>
         </div>
       </section>

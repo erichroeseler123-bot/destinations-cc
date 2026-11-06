@@ -27,6 +27,10 @@ import {
   recordOutboundClickFollow,
   resetOpaqueAttributionLedgerForTests,
 } from "../../lib/dcc/commerce/opaqueAttributionLedger";
+import {
+  evaluateWinterSailingPlan,
+  runWinterAttributionReplayAndNolaStatusTrace,
+} from "../../lib/dcc/winterExcursionPlanner";
 
 test("1. Durable Shared Tour Catalog covers all 15 EarthOS destinations, completes all 5 Alaska destinations (100% of connected provider catalog), and labels coverage against connected provider totals", async () => {
   const summary = await getDurableCatalogSummaryReport();
@@ -513,4 +517,133 @@ test("5. Cruise schedule fit requires transferEvidenceSource + applicableBerthOr
   assert.equal(metrics.production.settledReconciledCommissionUsd, 0);
   assert.equal(metrics.production.reversedCommissionUsd, 24);
 });
+
+test("6. Five-Port Winter Excursion Planner (INDY-2027-01-24), Tender/Transfer Math, Needs Confirmation when All-Aboard Missing, and 4-Stage Attribution Replay", async () => {
+  resetOpaqueAttributionLedgerForTests();
+
+  const planRes = await evaluateWinterSailingPlan({
+    planCode: "INDY-2027-01-24",
+    adults: 2,
+    surface: "cruisepromenade",
+    enableShortlistLiveCheck: true,
+    isTest: true,
+  });
+
+  assert.equal(planRes.ok, true);
+  assert.equal(planRes.plan.planCode, "INDY-2027-01-24");
+  assert.equal(planRes.plan.sailingId, "ID07MIA-1982128855");
+  assert.equal(planRes.shipName, "Independence of the Seas");
+  assert.equal(planRes.sailDate, "2027-01-24");
+  assert.deepEqual(planRes.savedPortsSummary.savedPortSlugs, ["nassau", "st-thomas"]);
+  assert.equal(planRes.savedPortsSummary.savedToursCount, 2);
+
+  const nassauSaved = planRes.savedPortsSummary.savedSelections.find(
+    (s) => s.portSlug === "nassau",
+  );
+  assert.ok(nassauSaved);
+  assert.equal(nassauSaved.providerProductCode, "254526P1");
+  assert.equal(nassauSaved.optionCode, "TG4");
+  assert.equal(nassauSaved.verifiedDepartureTime, "10:00");
+  assert.equal(nassauSaved.totalPartyPriceCents, 33800);
+  assert.equal(nassauSaved.totalPartyPriceFormatted, "$338.00");
+  assert.equal(nassauSaved.debarkOrTenderClearanceMinutes, 30);
+  assert.equal(nassauSaved.transferBeforeMinutes, 15);
+  assert.equal(nassauSaved.suitability, "recommended");
+  assert.equal(nassauSaved.checkoutProvider, "viator");
+  assert.ok(nassauSaved.trackedViatorCheckoutUrl?.includes("/api/v1/ads/click?"));
+
+  const stThomasSaved = planRes.savedPortsSummary.savedSelections.find(
+    (s) => s.portSlug === "st-thomas",
+  );
+  assert.ok(stThomasSaved);
+  assert.equal(stThomasSaved.providerProductCode, "7452P2");
+  assert.equal(stThomasSaved.optionCode, "DEFAULT");
+  assert.equal(stThomasSaved.verifiedDepartureTime, "13:00");
+  assert.equal(stThomasSaved.totalPartyPriceCents, 23800);
+  assert.equal(stThomasSaved.totalPartyPriceFormatted, "$238.00");
+  assert.equal(stThomasSaved.debarkOrTenderClearanceMinutes, 30);
+  assert.equal(stThomasSaved.transferBeforeMinutes, null);
+  assert.equal(stThomasSaved.suitability, "needs_confirmation");
+  assert.equal(stThomasSaved.trackedViatorCheckoutUrl, null);
+  assert.equal(stThomasSaved.checkoutProvider, "viator");
+
+  assert.equal(planRes.savedPortsSummary.combinedPartyTotalCents, 33800);
+  assert.equal(planRes.savedPortsSummary.combinedPartyTotalFormatted, "$338.00");
+
+  // Verify Grand Cayman tender port enforces 45m tender clearance on WESTERN-2027-01-24
+  const westernPlan = await evaluateWinterSailingPlan({
+    planCode: "WESTERN-2027-01-24",
+    adults: 2,
+    surface: "cruisepromenade",
+    enableShortlistLiveCheck: false,
+    isTest: true,
+  });
+  const grandCaymanSlot = westernPlan.fivePortsBySlug["grand-cayman"];
+  assert.equal(grandCaymanSlot.portSpec.isTenderPort, true);
+  assert.equal(grandCaymanSlot.portSpec.defaultClearanceMinutes, 45);
+  assert.equal(grandCaymanSlot.selectedOption?.providerProductCode, "10309P3");
+  assert.equal(
+    grandCaymanSlot.selectedOption?.cruiseScheduleFit?.debarkClearanceMinutes,
+    45,
+  );
+  assert.equal(grandCaymanSlot.selectedOption?.suitability, "recommended");
+
+  // Verify missing allAboardTime forces "needs_confirmation" ("Needs confirmation")
+  const missingAllAboardPlan = await evaluateWinterSailingPlan({
+    planCode: "INDY-2027-01-24",
+    adults: 2,
+    surface: "cruisepromenade",
+    enableShortlistLiveCheck: false,
+    missingAllAboardPorts: ["nassau", "grand-cayman"],
+    isTest: true,
+  });
+
+  const nassauMissingSlot = missingAllAboardPlan.fivePortsBySlug.nassau;
+  assert.equal(nassauMissingSlot.allAboardStatus, "missing_needs_confirmation");
+  assert.equal(nassauMissingSlot.selectedOption?.suitability, "needs_confirmation");
+  assert.ok(
+    nassauMissingSlot.selectedOption?.missingInformation.includes(
+      "ship_all_aboard_time_missing",
+    ),
+  );
+
+  // Verify 4-stage attribution replay trace and New Orleans pending approvals
+  resetOpaqueAttributionLedgerForTests();
+  const replayTrace = runWinterAttributionReplayAndNolaStatusTrace();
+  assert.equal(replayTrace.ok, true);
+  assert.equal(replayTrace.placementId, "fp-cp-winter-excursion-planner");
+  assert.equal(replayTrace.firstDelivery.matched, true);
+  assert.equal(replayTrace.firstDelivery.duplicateDelivery, false);
+  assert.equal(replayTrace.secondDeliveryReplay.matched, true);
+  assert.equal(replayTrace.secondDeliveryReplay.duplicateDelivery, true);
+  assert.equal(replayTrace.secondDeliveryReplay.replayIgnored, true);
+  assert.equal(replayTrace.commissionSettlementDelivery.paidCommissionUsd, 27.04);
+
+  // Production records the 2 isolated guest intents while confirmed bookings stay 0 and test bucket tracks QA replay separately
+  assert.equal(replayTrace.funnelSnapshotAfterReplay.production.planOpens, 0);
+  assert.equal(replayTrace.funnelSnapshotAfterReplay.production.actualOutboundClicks, 2);
+  assert.equal(replayTrace.funnelSnapshotAfterReplay.production.confirmedPaidBookings, 0);
+  assert.equal(replayTrace.funnelSnapshotAfterReplay.production.paidCommissionsCount, 0);
+
+  assert.equal(replayTrace.funnelSnapshotAfterReplay.test.planOpens, 1);
+  assert.equal(replayTrace.funnelSnapshotAfterReplay.test.actualOutboundClicks, 1);
+  assert.equal(replayTrace.funnelSnapshotAfterReplay.test.confirmedPaidBookings, 1);
+  assert.equal(replayTrace.funnelSnapshotAfterReplay.test.paidCommissionsCount, 1);
+  assert.equal(
+    replayTrace.funnelSnapshotAfterReplay.test.settledReconciledCommissionUsd,
+    27.04,
+  );
+  assert.equal(replayTrace.funnelSnapshotAfterReplay.test.duplicateDeliveriesIgnored, 1);
+
+  assert.equal(
+    replayTrace.newOrleansParallelStatus.monteleoneApprovalStatus,
+    "unverified_demo_preset_pending_hotel_approval",
+  );
+  assert.equal(replayTrace.newOrleansParallelStatus.monteleoneIsDemoPreset, true);
+  assert.equal(
+    replayTrace.newOrleansParallelStatus.specificApprovalsStillNeeded.length,
+    3,
+  );
+});
+
 

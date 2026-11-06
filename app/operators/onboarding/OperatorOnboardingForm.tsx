@@ -244,7 +244,8 @@ export default function OperatorOnboardingForm({
 }: Props) {
   const [selectedChoice, setSelectedChoice] = useState<OnboardingChoice>(initialChoice);
 
-  // Choice 1: Send guests to our checkout (1-tour intake, preloaded with Jean Lafitte 763318)
+  // Choice 1: Send guests to our checkout (1-tour intake, preloaded with Jean Lafitte 763318 in Read-Only Sample Demo mode)
+  const [isReadOnlyDemo, setIsReadOnlyDemo] = useState(true);
   const [checkoutOperatorName, setCheckoutOperatorName] = useState(
     JEAN_LAFITTE_DEFAULT.operatorName,
   );
@@ -263,7 +264,7 @@ export default function OperatorOnboardingForm({
   const [checkoutSubmitting, setCheckoutSubmitting] = useState(false);
   const [checkoutResult, setCheckoutResult] = useState<Record<string, any> | null>(null);
 
-  // Interactive Submission -> Review -> Referral Trace Preview State
+  // Interactive Submission -> Review -> Referral Trace Sample Preview State
   const [previewLoading, setPreviewLoading] = useState(false);
   const [lifecyclePreview, setLifecyclePreview] = useState<Record<string, any> | null>(null);
 
@@ -339,6 +340,7 @@ export default function OperatorOnboardingForm({
   })();
 
   function loadJeanLafitteExample() {
+    setIsReadOnlyDemo(true);
     setCheckoutOperatorName(JEAN_LAFITTE_DEFAULT.operatorName);
     setCheckoutBusinessEmail(JEAN_LAFITTE_DEFAULT.businessEmail);
     setCheckoutBookingSystem(JEAN_LAFITTE_DEFAULT.bookingSystem);
@@ -348,8 +350,22 @@ export default function OperatorOnboardingForm({
     setLifecyclePreview(null);
   }
 
+  function unlockLiveOperatorIntake() {
+    setIsReadOnlyDemo(false);
+    setCheckoutOperatorName("");
+    setCheckoutBusinessEmail("");
+    setCheckoutBookingSystem("FareHarbor");
+    setExactTourOption("");
+    setExistingCheckoutLink("");
+    setCheckoutResult(null);
+    setLifecyclePreview(null);
+  }
+
   async function handleCheckoutOnboardingSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isReadOnlyDemo) {
+      return;
+    }
     setCheckoutSubmitting(true);
     setCheckoutResult(null);
     try {
@@ -509,6 +525,29 @@ export default function OperatorOnboardingForm({
 
       {selectedChoice === "send_guests_to_checkout" ? (
         <div className="space-y-8" data-testid="panel-send-guests-to-checkout">
+          {/* Read-Only Sample Demo Banner */}
+          <div
+            data-testid="read-only-sample-banner"
+            className="rounded-2xl border border-amber-400/40 bg-amber-950/25 p-5 space-y-2"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className="rounded-full border border-amber-300/50 bg-amber-400/20 px-3 py-0.5 text-[11px] font-mono font-black uppercase tracking-widest text-amber-200">
+                  SAMPLE DATA — READ-ONLY DEMO
+                </span>
+                <span className="rounded-full border border-emerald-400/40 bg-emerald-400/10 px-2.5 py-0.5 text-[11px] font-mono font-bold text-emerald-300">
+                  Queue &amp; Attribution Ledger Untouched
+                </span>
+              </div>
+              <span className="text-[11px] font-mono text-zinc-400">
+                End-to-end write test gated behind Authenticated QA (<code className="text-cyan-300">mode=qa_live_test</code>)
+              </span>
+            </div>
+            <p className="text-xs leading-5 text-zinc-200">
+              The pre-loaded <strong>Jean Lafitte Swamp Tours (Item #763318)</strong> example below is a <strong>read-only sample preview</strong>. Opening or inspecting this public preview never creates an onboarding application or writes to the attribution ledger. Real operators can click <strong>Enter Your Own Tour (Live Intake)</strong> to submit a tour.
+            </p>
+          </div>
+
           {/* 1. Add One Tour */}
           <form
             onSubmit={handleCheckoutOnboardingSubmit}
@@ -517,22 +556,36 @@ export default function OperatorOnboardingForm({
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <span className="text-xs font-mono font-bold uppercase tracking-widest text-emerald-300">
-                  1. Add One Tour · New Orleans Pilot Intake
+                  1. Add One Tour · New Orleans Pilot Intake{" "}
+                  {isReadOnlyDemo ? "(SAMPLE DATA — READ-ONLY DEMO)" : "(LIVE INTAKE)"}
                 </span>
                 <h3 className="mt-1 text-xl font-black text-white">
                   Send Guests to Your Existing Checkout
                 </h3>
                 <p className="mt-1 text-xs text-zinc-300">
-                  Pre-loaded with Jean Lafitte&apos;s covered swamp tour with transportation (<code className="text-emerald-200">763318</code>) as the first example. Keep the intake limited to business and product details—arrange any credentials through the provider&apos;s approved secure process.
+                  Pre-loaded with Jean Lafitte&apos;s covered swamp tour with transportation (<code className="text-emerald-200">763318</code>) as a read-only sample example. Keep the intake limited to business and product details—arrange any credentials through the provider&apos;s approved secure process.
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={loadJeanLafitteExample}
-                className="rounded-xl border border-emerald-400/40 bg-emerald-400/10 px-3.5 py-2 text-xs font-bold text-emerald-200 hover:bg-emerald-400/20"
-              >
-                Load Jean Lafitte (#763318) Example
-              </button>
+              <div className="flex flex-wrap items-center gap-2">
+                {isReadOnlyDemo ? (
+                  <button
+                    type="button"
+                    data-testid="unlock-live-intake-btn"
+                    onClick={unlockLiveOperatorIntake}
+                    className="rounded-xl border border-cyan-400/50 bg-cyan-400/15 px-3.5 py-2 text-xs font-bold text-cyan-200 hover:bg-cyan-400/25"
+                  >
+                    Enter Your Own Tour (Live Intake)
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={loadJeanLafitteExample}
+                    className="rounded-xl border border-amber-400/40 bg-amber-400/10 px-3.5 py-2 text-xs font-bold text-amber-200 hover:bg-amber-400/20"
+                  >
+                    Return to Read-Only Jean Lafitte (#763318) Sample Demo
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="rounded-xl border border-amber-400/30 bg-amber-400/10 p-3.5 text-xs leading-5 text-amber-100">
@@ -545,16 +598,26 @@ export default function OperatorOnboardingForm({
                   className="block text-xs font-bold uppercase tracking-wider text-white/80 mb-1.5"
                   htmlFor="checkout-operator-name"
                 >
-                  Operator Name *
+                  Operator Name *{" "}
+                  {isReadOnlyDemo ? (
+                    <span className="ml-1 font-mono text-[10px] text-amber-300">
+                      [SAMPLE — READ-ONLY]
+                    </span>
+                  ) : null}
                 </label>
                 <input
                   id="checkout-operator-name"
                   type="text"
                   required
+                  readOnly={isReadOnlyDemo}
                   value={checkoutOperatorName}
                   onChange={(e) => setCheckoutOperatorName(e.target.value)}
-                  placeholder="Jean Lafitte Swamp Tours"
-                  className="w-full rounded-xl border border-white/15 bg-black/60 px-4 py-3 text-sm text-white outline-none focus:border-emerald-400"
+                  placeholder="Your Tour Company Name"
+                  className={`w-full rounded-xl border px-4 py-3 text-sm text-white outline-none ${
+                    isReadOnlyDemo
+                      ? "border-amber-400/30 bg-black/40 text-zinc-300 cursor-not-allowed"
+                      : "border-white/15 bg-black/60 focus:border-emerald-400"
+                  }`}
                 />
               </div>
 
@@ -563,16 +626,26 @@ export default function OperatorOnboardingForm({
                   className="block text-xs font-bold uppercase tracking-wider text-white/80 mb-1.5"
                   htmlFor="checkout-business-email"
                 >
-                  Business Email *
+                  Business Email *{" "}
+                  {isReadOnlyDemo ? (
+                    <span className="ml-1 font-mono text-[10px] text-amber-300">
+                      [SAMPLE — READ-ONLY]
+                    </span>
+                  ) : null}
                 </label>
                 <input
                   id="checkout-business-email"
                   type="email"
                   required
+                  readOnly={isReadOnlyDemo}
                   value={checkoutBusinessEmail}
                   onChange={(e) => setCheckoutBusinessEmail(e.target.value)}
-                  placeholder="sales@jeanlafitteswamptour.com"
-                  className="w-full rounded-xl border border-white/15 bg-black/60 px-4 py-3 text-sm text-white outline-none focus:border-emerald-400"
+                  placeholder="reservations@yourcompany.com"
+                  className={`w-full rounded-xl border px-4 py-3 text-sm text-white outline-none ${
+                    isReadOnlyDemo
+                      ? "border-amber-400/30 bg-black/40 text-zinc-300 cursor-not-allowed"
+                      : "border-white/15 bg-black/60 focus:border-emerald-400"
+                  }`}
                 />
               </div>
 
@@ -585,9 +658,14 @@ export default function OperatorOnboardingForm({
                 </label>
                 <select
                   id="checkout-booking-system"
+                  disabled={isReadOnlyDemo}
                   value={checkoutBookingSystem}
                   onChange={(e) => setCheckoutBookingSystem(e.target.value)}
-                  className="w-full rounded-xl border border-white/15 bg-black/80 px-4 py-3 text-sm text-white outline-none focus:border-emerald-400"
+                  className={`w-full rounded-xl border px-4 py-3 text-sm text-white outline-none ${
+                    isReadOnlyDemo
+                      ? "border-amber-400/30 bg-black/50 text-zinc-300 cursor-not-allowed"
+                      : "border-white/15 bg-black/80 focus:border-emerald-400"
+                  }`}
                 >
                   <option value="FareHarbor">FareHarbor (Active for New Orleans Pilot)</option>
                   <option value="Rezdy">Rezdy</option>
@@ -601,16 +679,26 @@ export default function OperatorOnboardingForm({
                   className="block text-xs font-bold uppercase tracking-wider text-white/80 mb-1.5"
                   htmlFor="checkout-exact-tour-option"
                 >
-                  Exact Tour Option *
+                  Exact Tour Option *{" "}
+                  {isReadOnlyDemo ? (
+                    <span className="ml-1 font-mono text-[10px] text-amber-300">
+                      [SAMPLE — READ-ONLY]
+                    </span>
+                  ) : null}
                 </label>
                 <input
                   id="checkout-exact-tour-option"
                   type="text"
                   required
+                  readOnly={isReadOnlyDemo}
                   value={exactTourOption}
                   onChange={(e) => setExactTourOption(e.target.value)}
-                  placeholder="Covered Swamp Tour with Transportation (763318)"
-                  className="w-full rounded-xl border border-white/15 bg-black/60 px-4 py-3 text-sm text-white outline-none focus:border-emerald-400"
+                  placeholder="Exact Tour Name & Option ID"
+                  className={`w-full rounded-xl border px-4 py-3 text-sm text-white outline-none ${
+                    isReadOnlyDemo
+                      ? "border-amber-400/30 bg-black/40 text-zinc-300 cursor-not-allowed"
+                      : "border-white/15 bg-black/60 focus:border-emerald-400"
+                  }`}
                 />
               </div>
             </div>
@@ -620,28 +708,49 @@ export default function OperatorOnboardingForm({
                 className="block text-xs font-bold uppercase tracking-wider text-white/80 mb-1.5"
                 htmlFor="checkout-existing-link"
               >
-                Existing Checkout Link *
+                Existing Checkout Link *{" "}
+                {isReadOnlyDemo ? (
+                  <span className="ml-1 font-mono text-[10px] text-amber-300">
+                    [SAMPLE — READ-ONLY]
+                  </span>
+                ) : null}
               </label>
               <input
                 id="checkout-existing-link"
                 type="url"
                 required
+                readOnly={isReadOnlyDemo}
                 value={existingCheckoutLink}
                 onChange={(e) => setExistingCheckoutLink(e.target.value)}
-                placeholder="https://fareharbor.com/embeds/book/jeanlafitteswamptour/items/763318/?full-items=yes"
-                className="w-full rounded-xl border border-white/15 bg-black/60 px-4 py-3 text-sm font-mono text-emerald-200 outline-none focus:border-emerald-400"
+                placeholder="https://..."
+                className={`w-full rounded-xl border px-4 py-3 text-sm font-mono text-emerald-200 outline-none ${
+                  isReadOnlyDemo
+                    ? "border-amber-400/30 bg-black/40 cursor-not-allowed"
+                    : "border-white/15 bg-black/60 focus:border-emerald-400"
+                }`}
               />
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              <button
-                type="submit"
-                disabled={checkoutSubmitting}
-                data-testid="submit-checkout-onboarding-btn"
-                className="rounded-xl bg-emerald-400 px-6 py-3 text-xs font-black uppercase tracking-wider text-black hover:bg-emerald-300 transition disabled:opacity-60"
-              >
-                {checkoutSubmitting ? "Submitting Tour…" : "Submit One Tour for Checkout Referral"}
-              </button>
+              {isReadOnlyDemo ? (
+                <button
+                  type="button"
+                  disabled
+                  data-testid="submit-checkout-onboarding-btn"
+                  className="rounded-xl border border-amber-400/40 bg-amber-400/15 px-6 py-3 text-xs font-black uppercase tracking-wider text-amber-200 opacity-80 cursor-not-allowed"
+                >
+                  Read-Only Sample Demo (Queue &amp; Ledger Untouched)
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  disabled={checkoutSubmitting}
+                  data-testid="submit-checkout-onboarding-btn"
+                  className="rounded-xl bg-emerald-400 px-6 py-3 text-xs font-black uppercase tracking-wider text-black hover:bg-emerald-300 transition disabled:opacity-60"
+                >
+                  {checkoutSubmitting ? "Submitting Tour…" : "Submit One Tour for Checkout Referral"}
+                </button>
+              )}
 
               <button
                 type="button"
@@ -651,8 +760,8 @@ export default function OperatorOnboardingForm({
                 className="rounded-xl border border-cyan-400/50 bg-cyan-400/10 px-5 py-3 text-xs font-bold text-cyan-200 hover:bg-cyan-400/20 transition disabled:opacity-60"
               >
                 {previewLoading
-                  ? "Running Submission → Review → Trace…"
-                  : "Preview Submission Through Review & Referral Trace"}
+                  ? "Loading Read-Only Sample Preview…"
+                  : "Inspect Read-Only Sample Walkthrough (Stages 1–3)"}
               </button>
             </div>
 
@@ -757,7 +866,7 @@ export default function OperatorOnboardingForm({
             {/* Existing Review Process Fields Recorded */}
             <div className="rounded-xl border border-white/10 bg-black/60 p-4 space-y-3">
               <p className="text-xs font-mono font-bold uppercase tracking-wider text-emerald-300">
-                Recorded in Existing Review Queue (earthosControlMapFindings):
+                Recorded in Existing Review Queue (earthosControlMapFindings) — Sample Schema:
               </p>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 text-xs">
                 <div className="rounded-lg border border-white/10 bg-white/[0.02] p-3">
@@ -776,7 +885,7 @@ export default function OperatorOnboardingForm({
                   <strong className="text-white">
                     {lifecyclePreview?.stage2ReviewRecorded?.reviewRecord
                       ?.commissionRatePercent
-                      ? `${lifecyclePreview.stage2ReviewRecorded.reviewRecord.commissionRatePercent}% confirmed ASN commission`
+                      ? `${lifecyclePreview.stage2ReviewRecorded.reviewRecord.commissionRatePercent}% confirmed ASN commission (SAMPLE)`
                       : "Pending FareHarbor ASN price sheet confirmation"}
                   </strong>
                 </div>
@@ -879,19 +988,22 @@ export default function OperatorOnboardingForm({
               ))}
             </div>
 
-            {/* Submission -> Review -> Traced Referral Preview Panel */}
+            {/* Submission -> Review -> Traced Referral Read-Only Sample Preview Panel */}
             <div
               data-testid="lifecycle-preview-panel"
               className="rounded-xl border border-cyan-400/30 bg-cyan-950/15 p-5 space-y-4"
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
-                  <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-cyan-300">
-                    End-to-End Application → Review → Referral Trace Preview (Jean Lafitte #763318)
+                  <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-amber-300">
+                    SAMPLE DATA · READ-ONLY DEMO WALKTHROUGH (Jean Lafitte #763318)
                   </span>
                   <h4 className="text-base font-bold text-white">
                     How One Application Moves From Submission Through Review &amp; Checkout Attribution
                   </h4>
+                  <p className="text-[11px] text-zinc-400 mt-0.5">
+                    Public preview serves labeled sample data (<code className="text-amber-200">sample_onb_jean_lafitte_763318_demo</code>) and leaves the live application queue and attribution ledger untouched. The live end-to-end test runs behind authenticated QA (<code className="text-cyan-200">mode=qa_live_test</code>).
+                  </p>
                 </div>
                 <button
                   type="button"
@@ -899,17 +1011,17 @@ export default function OperatorOnboardingForm({
                   disabled={previewLoading}
                   className="rounded-lg border border-cyan-400/40 bg-cyan-400/15 px-3 py-1.5 text-xs font-bold text-cyan-200 hover:bg-cyan-400/25"
                 >
-                  {previewLoading ? "Running Live Trace…" : "Run Live Verification Trace"}
+                  {previewLoading ? "Loading Sample…" : "Load Read-Only Sample Data"}
                 </button>
               </div>
 
               <div className="grid gap-4 md:grid-cols-3 text-xs">
                 <div className="rounded-xl border border-white/10 bg-black/50 p-4 space-y-1.5">
                   <p className="font-mono text-[11px] font-bold text-amber-300 uppercase">
-                    Stage 1 · Submitted (Initial State)
+                    Stage 1 · Sample Submission (Initial State)
                   </p>
                   <p className="font-bold text-white">
-                    Jean Lafitte Swamp Tours · Item #763318
+                    Jean Lafitte Swamp Tours · Item #763318 (Sample)
                   </p>
                   <ul className="space-y-1 text-zinc-300 pt-1">
                     <li>
@@ -932,7 +1044,7 @@ export default function OperatorOnboardingForm({
 
                 <div className="rounded-xl border border-white/10 bg-black/50 p-4 space-y-1.5">
                   <p className="font-mono text-[11px] font-bold text-emerald-300 uppercase">
-                    Stage 2 · Reviewer Records Commercial Evidence
+                    Stage 2 · Sample Review Record (Illustrative)
                   </p>
                   <p className="font-bold text-white">
                     Affiliate + Pickup + Payout Terms Recorded
@@ -944,13 +1056,13 @@ export default function OperatorOnboardingForm({
                         {lifecyclePreview?.stage2ReviewRecorded?.reviewRecord
                           ?.affiliateAccount || "aktourcenter"}
                       </code>{" "}
-                      (15% ASN)
+                      (15% ASN — Sample)
                     </li>
                     <li>• Pickup: Hotel Monteleone (#22056428)</li>
                     <li>
                       • Commission:{" "}
                       <strong className="text-emerald-300">
-                        Commission terms confirmed
+                        Commission terms confirmed (Sample)
                       </strong>
                     </li>
                     <li>
@@ -963,25 +1075,25 @@ export default function OperatorOnboardingForm({
 
                 <div className="rounded-xl border border-white/10 bg-black/50 p-4 space-y-1.5">
                   <p className="font-mono text-[11px] font-bold text-cyan-300 uppercase">
-                    Stage 3 · Traced Provider Checkout Referral
+                    Stage 3 · Sample Referral Trace (Read-Only)
                   </p>
                   <p className="font-bold text-white">
-                    Matcher + Click Redirect + Attribution Ledger
+                    Matcher + Click Redirect + Attribution Format
                   </p>
                   <p className="text-zinc-300 leading-5">
                     Placement{" "}
                     <code className="text-cyan-200">nola-hotel-monteleone-demo-pilot</code>{" "}
-                    routes through <code className="text-cyan-200">/api/v1/ads/click</code> to FareHarbor item <code className="text-emerald-200">763318</code> with{" "}
+                    routes through <code className="text-cyan-200">/api/v1/ads/click</code> to FareHarbor item <code className="text-emerald-200">763318</code> with sample{" "}
                     <code className="text-emerald-200">
                       ref=
                       {lifecyclePreview?.stage3ReferralTrace?.referralReferenceTag ||
-                        "nola-hotel-monteleone-demo-pilot-clk_<24hex>"}
+                        "nola-hotel-monteleone-demo-pilot-clk_000000000000763318de0001"}
                     </code>
                     .
                   </p>
                   {lifecyclePreview?.stage3ReferralTrace?.providerCheckoutUrl ? (
                     <p className="font-mono text-[10px] break-all text-emerald-300 pt-1">
-                      Verified URL: {lifecyclePreview.stage3ReferralTrace.providerCheckoutUrl}
+                      Sample URL: {lifecyclePreview.stage3ReferralTrace.providerCheckoutUrl}
                     </p>
                   ) : null}
                 </div>

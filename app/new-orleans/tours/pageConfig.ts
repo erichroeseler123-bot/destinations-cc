@@ -258,10 +258,10 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     ],
     bookingVariants: [
       {
-        label: "CHECK HOTEL PICKUP AVAILABILITY ($120.00 FOR 2 ADULTS)",
+        label: "CHOOSE DATE & PARTY SIZE ($60/ADULT · PICKUP INCLUDED)",
         itemId: "15200P6",
         flowId: "no",
-        bookingUrl: "https://www.viator.com/tours/New-Orleans/New-Orleans-Swamp-Tour-Boat-Adventure-With-Pickup/d675-15200P6?mcid=42383&pid=P00306962&medium=api&api_version=2.0&campaign=welcometoneworleanstours-fp-wno-swamp-tours-15200p6&utm_source=destinationcommandcenter&utm_medium=affiliate&utm_campaign=cities&locale=en-US"
+        bookingUrl: "/api/v1/ads/click?offer=15200P6&option=TG10&placementId=fp-wno-swamp-tours&property=hotel-monteleone-nola&adults=2&departureTime=08%3A00"
       }
     ]
   },

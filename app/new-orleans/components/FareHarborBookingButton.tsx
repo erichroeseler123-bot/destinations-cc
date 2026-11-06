@@ -131,6 +131,15 @@ export default function FareHarborBookingButton({
       return;
     }
 
+    if (
+      shortname === "viator" ||
+      effectiveFallbackHref.startsWith("/api/v1/ads/click") ||
+      effectiveFallbackHref.includes("viator.com")
+    ) {
+      trackEvent("fareharbor_direct_fallback_used");
+      return;
+    }
+
     trackEvent("fareharbor_open_attempted");
     if (!window.FH?.open) {
       trackEvent("fareharbor_script_failed");

@@ -46,6 +46,11 @@ const PORT_GEO_FALLBACK_BY_SLUG: Record<string, { lat: number; lon: number }> = 
   "key-west": { lat: 24.5592, lon: -81.8077 },
   "fort-lauderdale": { lat: 26.0912, lon: -80.1189 },
   "st-thomas": { lat: 18.3303, lon: -64.9221 },
+  nassau: { lat: 25.0782, lon: -77.3386 },
+  cozumel: { lat: 20.4763, lon: -86.9736 },
+  roatan: { lat: 16.3168, lon: -86.5376 },
+  "grand-cayman": { lat: 19.295, lon: -81.3838 },
+  "george-town-grand-cayman": { lat: 19.295, lon: -81.3838 },
   seattle: { lat: 47.6114, lon: -122.3508 },
   vancouver: { lat: 49.2888, lon: -123.1111 },
 };
@@ -117,13 +122,28 @@ export function getPortBySlug(slug: string): PortView | null {
     // no-op: fall through
   }
   if (!LEGACY_FALLBACK_ENABLED) return null;
-  return getLegacyPorts().find((p) => p.slug === slug) || null;
+  const direct = getLegacyPorts().find((p) => p.slug === slug);
+  if (direct) return direct;
+  if (slug === "grand-cayman") {
+    const gc = getLegacyPorts().find(
+      (p) => p.slug === "george-town-grand-cayman",
+    );
+    if (gc) {
+      return {
+        ...gc,
+        slug: "grand-cayman",
+        name: "Grand Cayman (George Town)",
+      };
+    }
+  }
+  return null;
 }
 
 export function getPortSlugs(): string[] {
   const slugs = new Set<string>();
   if (LEGACY_FALLBACK_ENABLED) {
     for (const p of getLegacyPorts()) slugs.add(p.slug);
+    slugs.add("grand-cayman");
   }
   try {
     const bySlugClass = loadBySlugClassIndex();

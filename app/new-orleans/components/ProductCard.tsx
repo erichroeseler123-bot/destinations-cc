@@ -51,7 +51,8 @@ export default function ProductCard({
   const canBook = Boolean(sourceProduct && !isHeldProduct(product.slug));
   const cardFlowId = sourceProduct?.flowId || sourceProduct?.bookingVariants?.[0]?.flowId;
   const bookingHref = sourceProduct
-    ? getFareHarborUrl(sourceProduct.companyShortname, sourceProduct.itemId, cardFlowId)
+    ? sourceProduct.bookingVariants?.[0]?.bookingUrl ||
+      getFareHarborUrl(sourceProduct.companyShortname, sourceProduct.itemId, cardFlowId)
     : "";
   const bookingLabel = sourceProduct?.bookingVariants && sourceProduct.bookingVariants.length > 1
     ? "View Booking Options"

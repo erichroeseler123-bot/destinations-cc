@@ -71,12 +71,31 @@ const MANIFEST = {
 } as const;
 
 export async function GET() {
-  return NextResponse.json(MANIFEST, {
-    status: 200,
-    headers: {
-      "Cache-Control": "public, max-age=300, stale-while-revalidate=600",
-      "X-DCC-Manifest-Schema": MANIFEST.schemaVersion,
-      "X-DCC-Site-Id": MANIFEST.siteId,
+  const commitSha =
+    process.env.VERCEL_GIT_COMMIT_SHA ||
+    process.env.DCC_BUILD_GIT_COMMIT ||
+    process.env.GITHUB_SHA ||
+    "local";
+  return NextResponse.json(
+    {
+      ...MANIFEST,
+      build: {
+        commitSha,
+        shortCommitSha: commitSha.slice(0, 8),
+        projectName: "welcometoneworleanstours",
+        environment:
+          process.env.VERCEL_ENV || process.env.NODE_ENV || "production",
+      },
     },
-  });
+    {
+      status: 200,
+      headers: {
+        "Cache-Control": "no-store, max-age=0",
+        "X-DCC-Manifest-Schema": MANIFEST.schemaVersion,
+        "X-DCC-Site-Id": MANIFEST.siteId,
+        "X-DCC-Git-Commit": commitSha,
+        "X-DCC-Project-Name": "welcometoneworleanstours",
+      },
+    },
+  );
 }

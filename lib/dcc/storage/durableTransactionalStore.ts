@@ -26,6 +26,8 @@ export interface FunnelVisitorRecord {
   placementId?: string | null;
   propertySlug?: string | null;
   surface?: string | null;
+  planCode?: string | null;
+  planOpenCount?: number;
   trafficClass: "production" | "test";
   isTest: boolean;
   firstSeenAt: string;
@@ -195,11 +197,34 @@ function releaseCrossProcessLock(fd: number, lockPath: string): void {
   }
 }
 
+const AUTOMATED_VERIFICATION_SCRIPT_CLICK_IDS = new Set([
+  "clk_4fdca16a282d2c8f784f69d5",
+  "clk_7e6a5576c953158475eac966",
+  "clk_40138f7e2d251f013ae21981",
+  "clk_f8d18ac5f2c291188073f718",
+  "clk_23145740401ed122a99e67af",
+  "clk_84b32294ed9614fe626829d3",
+]);
+
 function normalizeLoadedState(raw: unknown): DurableLedgerState {
   if (!raw || typeof raw !== "object") {
     return createInitialDurableLedgerState(true);
   }
   const obj = raw as Partial<DurableLedgerState>;
+  const rawClicks =
+    obj.opaqueClicksById && typeof obj.opaqueClicksById === "object"
+      ? obj.opaqueClicksById
+      : {};
+  for (const [cid, rec] of Object.entries(rawClicks)) {
+    if (
+      rec &&
+      (AUTOMATED_VERIFICATION_SCRIPT_CLICK_IDS.has(cid.toLowerCase()) ||
+        cid.toLowerCase().startsWith("clk_qa_"))
+    ) {
+      rec.isTest = true;
+      rec.trafficClass = "test";
+    }
+  }
   return {
     schemaVersion: "dcc-durable-transactional-store/1.0",
     txSequence: typeof obj.txSequence === "number" ? obj.txSequence : 1,
@@ -207,10 +232,7 @@ function normalizeLoadedState(raw: unknown): DurableLedgerState {
       typeof obj.updatedAt === "string"
         ? obj.updatedAt
         : new Date().toISOString(),
-    opaqueClicksById:
-      obj.opaqueClicksById && typeof obj.opaqueClicksById === "object"
-        ? obj.opaqueClicksById
-        : {},
+    opaqueClicksById: rawClicks,
     opaqueClickIdsByHandoffId:
       obj.opaqueClickIdsByHandoffId &&
       typeof obj.opaqueClickIdsByHandoffId === "object"
@@ -589,6 +611,15 @@ export async function syncDurableLedgerWithPostgres(options?: {
           );
           const resolvedPlacement = existing.placementId || v.placementId || null;
           const resolvedProperty = existing.propertySlug || v.propertySlug || null;
+          const resolvedIsTest = Boolean(
+            existing.isTest ||
+              v.isTest ||
+              existing.trafficClass === "test" ||
+              v.trafficClass === "test" ||
+              AUTOMATED_VERIFICATION_SCRIPT_CLICK_IDS.has(k.toLowerCase()) ||
+              k.toLowerCase().startsWith("clk_qa_"),
+          );
+          const resolvedTrafficClass = resolvedIsTest ? "test" : "production";
           if (
             v.reconciledOutcomes.length > existing.reconciledOutcomes.length ||
             (existing.reconciliationState === "pending_partner_event" &&
@@ -604,12 +635,16 @@ export async function syncDurableLedgerWithPostgres(options?: {
               propertySlug: resolvedProperty,
               clickCount: maxClicks,
               duplicateDeliveryCount: maxDupes,
+              isTest: resolvedIsTest,
+              trafficClass: resolvedTrafficClass,
             };
           } else {
             existing.placementId = resolvedPlacement;
             existing.propertySlug = resolvedProperty;
             existing.clickCount = maxClicks;
             existing.duplicateDeliveryCount = maxDupes;
+            existing.isTest = resolvedIsTest;
+            existing.trafficClass = resolvedTrafficClass;
           }
         }
       }

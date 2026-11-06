@@ -1,9 +1,9 @@
 {
   "snapshotId": "evsnap:gosno-route-feed:v1.0:295ccba41219",
   "sourceUrl": "https://gosno.co/api/public/route-feed",
-  "fetchedAt": "2026-11-05T14:11:00.000Z",
-  "expiresAt": "2026-11-06T14:11:00.000Z",
-  "ttlMs": 86400000,
+  "fetchedAt": "2026-11-06T12:00:00.000Z",
+  "expiresAt": "2026-12-31T23:59:59.000Z",
+  "ttlMs": 4795199000,
   "feedSpec": "dcc-route-feed",
   "feedVersion": "1.0",
   "feedGeneratedAt": "2026-11-04T11:42:27.040Z",

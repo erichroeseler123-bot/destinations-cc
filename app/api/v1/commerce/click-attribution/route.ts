@@ -254,6 +254,20 @@ export async function POST(request: Request) {
 
       const result = reconcilePartnerWebhookByClickId({
         clickId: String(body.clickId ?? body.click_id ?? ""),
+        referralId:
+          typeof body.referralId === "string"
+            ? body.referralId
+            : typeof body.referral_id === "string"
+              ? body.referral_id
+              : null,
+        campaignValue:
+          typeof body.campaignValue === "string"
+            ? body.campaignValue
+            : typeof body.campaign_value === "string"
+              ? body.campaign_value
+              : typeof body.campaign === "string"
+                ? body.campaign
+                : null,
         trackingParamValue:
           typeof body.trackingParamValue === "string"
             ? body.trackingParamValue

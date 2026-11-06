@@ -1,3 +1,18 @@
+try {
+  if (
+    typeof process !== "undefined" &&
+    process.env &&
+    !process.env.VIATOR_API_KEY &&
+    !process.env.VIATOR_API &&
+    !process.env.VIATOR_KEY &&
+    typeof process.loadEnvFile === "function"
+  ) {
+    process.loadEnvFile(".env.local");
+  }
+} catch {
+  // Ignore if .env.local cannot be read
+}
+
 export type ViatorMedium = "link" | "widget" | "banner" | "api";
 
 export type ViatorLocale =
@@ -167,7 +182,7 @@ function normalizeAccessTier(value: string): ViatorAccessTier {
 export function sanitizeViatorCampaignValue(value: string | null | undefined): string {
   const cleaned = String(value || "")
     .toLowerCase()
-    .replace(/[^a-z0-9-]+/g, "-")
+    .replace(/[^a-z0-9_-]+/g, "-")
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "");
   return cleaned || DEFAULT_CONFIG.campaign;

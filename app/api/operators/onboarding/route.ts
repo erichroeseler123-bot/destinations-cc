@@ -6,6 +6,7 @@ import {
 import {
   deleteOperatorOnboardingApplicationById,
   getOperatorOnboardingApplicationById,
+  isJeanLafitte763318Offer,
   listOperatorOnboardingReviewQueue,
   reviewOperatorOnboardingApplication,
   submitOperatorOnboardingApplication,
@@ -14,6 +15,7 @@ import {
 } from "@/lib/dcc/operatorOnboardingStore";
 import {
   buildJeanLafitteOnboardingLifecyclePreview,
+  getReadOnlyJeanLafitteSamplePreview,
   traceCheckoutOnboardingReferral,
 } from "@/lib/dcc/operatorOnboardingPreview";
 
@@ -25,6 +27,66 @@ export async function POST(req: NextRequest) {
 
     if (body.action === "review_application") {
       return handleReviewRequest(req, body);
+    }
+
+    if (body.action === "qa_lifecycle_test") {
+      const auth = await verifyEarthOSAuthorization(req);
+      const isAuthorizedReviewer = auth.authorized && auth.actor !== "vercel:cron";
+      if (!isAuthorizedReviewer) {
+        return NextResponse.json(
+          {
+            ok: false,
+            errorCode: "qa_authentication_required",
+            message:
+              "The end-to-end Jean Lafitte (#763318) onboarding lifecycle and attribution ledger test is restricted to authenticated QA.",
+          },
+          { status: 401 },
+        );
+      }
+      const preview = await buildJeanLafitteOnboardingLifecyclePreview();
+      return NextResponse.json({
+        ok: true,
+        mode: "authenticated_qa_live_test",
+        actor: auth.actor,
+        preview,
+      });
+    }
+
+    // Block unauthenticated public POST submissions of the read-only Jean Lafitte (#763318) demo preset
+    const isJeanLafitteDemoOffer = isJeanLafitte763318Offer({
+      operatorName:
+        typeof body.operatorName === "string"
+          ? body.operatorName
+          : typeof body.companyName === "string"
+            ? body.companyName
+            : undefined,
+      exactTourOption:
+        typeof body.exactTourOption === "string" ? body.exactTourOption : undefined,
+      existingCheckoutLink:
+        typeof body.existingCheckoutLink === "string"
+          ? body.existingCheckoutLink
+          : undefined,
+      tourId: typeof body.tourId === "string" ? body.tourId : undefined,
+      offerItemId: typeof body.offerItemId === "string" ? body.offerItemId : undefined,
+    });
+
+    if (isJeanLafitteDemoOffer) {
+      const auth = await verifyEarthOSAuthorization(req);
+      const isAuthorizedReviewer = auth.authorized && auth.actor !== "vercel:cron";
+      if (!isAuthorizedReviewer) {
+        return NextResponse.json(
+          {
+            ok: false,
+            readOnlyDemo: true,
+            isSampleData: true,
+            queueAndLedgerUntouched: true,
+            errorCode: "read_only_demo_submission_blocked",
+            message:
+              "Jean Lafitte (#763318) is a read-only sample demo on the public page and leaves the application queue and attribution ledger untouched. Switch to 'Enter Your Own Tour (Live Intake)' to submit a real tour, or authenticate with QA credentials to run the end-to-end test.",
+          },
+          { status: 403 },
+        );
+      }
     }
 
     const result = await submitOperatorOnboardingApplication(body);
@@ -158,11 +220,43 @@ export async function PATCH(req: NextRequest) {
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const previewSlug = url.searchParams.get("preview")?.trim();
+  const mode = url.searchParams.get("mode")?.trim();
+
   if (previewSlug === "jean-lafitte-763318") {
-    const preview = await buildJeanLafitteOnboardingLifecyclePreview();
+    if (mode === "qa_live_test") {
+      const auth = await verifyEarthOSAuthorization(req);
+      const isAuthorizedReviewer = auth.authorized && auth.actor !== "vercel:cron";
+      if (!isAuthorizedReviewer) {
+        return NextResponse.json(
+          {
+            ok: false,
+            errorCode: "qa_authentication_required",
+            message:
+              "Running the live end-to-end Jean Lafitte (#763318) submission-through-review test requires authenticated QA authorization.",
+          },
+          { status: 401 },
+        );
+      }
+      const preview = await buildJeanLafitteOnboardingLifecyclePreview();
+      return NextResponse.json({
+        ok: true,
+        mode: "authenticated_qa_live_test",
+        readOnlyDemo: false,
+        isSampleData: false,
+        actor: auth.actor,
+        preview,
+      });
+    }
+
+    // Default public preview: strictly read-only sample data; leaves queue and attribution ledger untouched
+    const samplePreview = getReadOnlyJeanLafitteSamplePreview();
     return NextResponse.json({
       ok: true,
-      preview,
+      mode: "public_read_only_sample",
+      readOnlyDemo: true,
+      isSampleData: true,
+      queueAndLedgerUntouched: true,
+      preview: samplePreview,
     });
   }
 
