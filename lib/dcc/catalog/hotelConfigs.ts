@@ -31,12 +31,13 @@ export const HOTEL_CONCIERGE_CONFIGS: Record<string, HotelConciergePropertyConfi
     demoStatusLabel: "DEMO PRESET — Pending Hotel Approval",
     defaultPlacementId: "nola-hotel-monteleone-demo-pilot",
     approvedTourIds: [
-      "dcc:tour:fh:jeanlafitteswamptour:763318",
+      "dcc:tour:viator:15200P6",
       "dcc:tour:viator:6953SWAMPTRANS",
+      "dcc:tour:viator:6455NOLAAIR",
+      "dcc:tour:fh:jeanlafitteswamptour:763318",
       "dcc:tour:viator:3780AIRBOAT",
       "dcc:tour:viator:3780SWAMP",
       "dcc:tour:viator:3780STEAM",
-      "dcc:tour:viator:6455NOLAAIR",
     ],
     approvedCategories: [
       "Swamp & Bayou",
@@ -45,7 +46,7 @@ export const HOTEL_CONCIERGE_CONFIGS: Record<string, HotelConciergePropertyConfi
       "Food, Drink & Culture",
     ],
     conciergeDeskNote:
-      "DEMO PRESET (Pending Hotel Approval): Royal Street shuttle pickup zone is directly outside main lobby doors (214 Royal St — FareHarbor pickup option #22056428); Toulouse Street Wharf is within a 6-minute walk.",
+      "DEMO PRESET (Pending Hotel Approval): Royal Street shuttle pickup zone is directly outside main lobby doors (214 Royal St — Viator pickup location LOC-6eKJ+or5y8o99Qw0C8xWyGAjWJk3qp08H7OnT0MLhOs= for 15200P6 / 6455NOLAAIR; FareHarbor pickup option #22056428 for 763318); Toulouse Street Wharf is within a 6-minute walk.",
   },
   "roosevelt-new-orleans": {
     propertySlug: "roosevelt-new-orleans",
@@ -58,6 +59,7 @@ export const HOTEL_CONCIERGE_CONFIGS: Record<string, HotelConciergePropertyConfi
     lng: -90.0725,
     defaultRequiresHotelPickup: true,
     approvedTourIds: [
+      "dcc:tour:viator:15200P6",
       "dcc:tour:viator:6953SWAMPTRANS",
       "dcc:tour:viator:3780AIRBOAT",
       "dcc:tour:viator:3780SWAMP",
@@ -79,6 +81,7 @@ export const HOTEL_CONCIERGE_CONFIGS: Record<string, HotelConciergePropertyConfi
     lng: -90.0637,
     defaultRequiresHotelPickup: true,
     approvedTourIds: [
+      "dcc:tour:viator:15200P6",
       "dcc:tour:viator:6953SWAMPTRANS",
       "dcc:tour:viator:3780SWAMP",
       "dcc:tour:viator:3780AIRBOAT",

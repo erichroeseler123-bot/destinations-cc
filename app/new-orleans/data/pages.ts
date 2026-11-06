@@ -1128,6 +1128,7 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "weatherNotes": "Covered boats provide rain and sun protection. Airboats are fully open-air and run weather permitting.",
     "itineraryCombinations": [],
     "liveProductIds": [
+      "louisiana-tour-company-swamp-tour-hotel-pickup",
       "jeanlafitte-swamp-tour-with-hotel-pickup",
       "swamp-bayou-tour",
       "small-airboat-swamp-adventure",

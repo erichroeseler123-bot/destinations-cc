@@ -144,6 +144,15 @@ export default function VisualEditorialCard({
             >
               Check Dates & Prices
             </FareHarborBookingButton>
+          ) : bookingHref && bookingHref.startsWith("http") ? (
+            <a
+              href={bookingHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex min-h-11 items-center bg-[#c9a86a] px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.14em] text-[#17130c] transition hover:bg-[#f3dfb3] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f3dfb3]"
+            >
+              Check Dates & Prices
+            </a>
           ) : (
             <Link
               href={href}

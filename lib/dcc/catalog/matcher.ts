@@ -1861,7 +1861,14 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
     // Tour-fit ranking is strictly independent of commission: score reflects data completeness, verified transfer evidence & guest rating only
     if (quotedDurationMinutes !== null) score += 4;
     if (effectiveMeetingLat !== null && effectiveMeetingLng !== null) score += 4;
-    if (hasVerifiedTransferSupport && (hasCruiseWindowInput || requiresPierPickup)) score += 8;
+    if (
+      hasVerifiedTransferSupport &&
+      (hasCruiseWindowInput ||
+        requiresPierPickup ||
+        (requiresHotelPickup && effectivePickupFulfillmentType === "hotel_pickup"))
+    ) {
+      score += 8;
+    }
     if (typeof rec.ratingAverage === "number" && rec.ratingAverage >= 4.7) score += 4;
     if (surface === "hotel_concierge" && input.propertySlug) {
       const hotelCfg = HOTEL_CONCIERGE_CONFIGS[input.propertySlug];
@@ -2088,8 +2095,23 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
   }
 
   // Sort by suitability first, then tour-fit matchScore descending (independent of commission),
-  // using direct checkout preference as a tie-breaker when tour-fit is equivalent.
+  // using verified live seat availability and verified transfer evidence as tie-breakers when tour-fit is equivalent.
   const suitabilityOrder = { recommended: 0, needs_confirmation: 1, ineligible: 2 };
+  const liveStatusRank = (status: ShortlistLiveStatus["status"]): number => {
+    switch (status) {
+      case "verified_available":
+        return 0;
+      case "check_at_provider":
+        return 1;
+      case "unknown_unchecked":
+        return 2;
+      case "unknown_error":
+        return 3;
+      case "verified_unavailable":
+      default:
+        return 4;
+    }
+  };
   const compareEvaluatedCandidates = (
     a: { record: DurableTourRecord; option: MatchedTourOption },
     b: { record: DurableTourRecord; option: MatchedTourOption },
@@ -2100,6 +2122,22 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
     if (Math.abs(b.option.matchScore - a.option.matchScore) > 2) {
       return b.option.matchScore - a.option.matchScore;
     }
+    if (a.option.shortlistLiveCheck.checked || b.option.shortlistLiveCheck.checked) {
+      const la = liveStatusRank(a.option.shortlistLiveCheck.status);
+      const lb = liveStatusRank(b.option.shortlistLiveCheck.status);
+      if (la !== lb) return la - lb;
+    }
+    const aVerifiedTransfer =
+      a.option.boundOffer.transferTimeSource === "verified_pier_pickup" ||
+      a.option.boundOffer.transferTimeSource === "verified_meeting_point"
+        ? 0
+        : 1;
+    const bVerifiedTransfer =
+      b.option.boundOffer.transferTimeSource === "verified_pier_pickup" ||
+      b.option.boundOffer.transferTimeSource === "verified_meeting_point"
+        ? 0
+        : 1;
+    if (aVerifiedTransfer !== bVerifiedTransfer) return aVerifiedTransfer - bVerifiedTransfer;
     const da = directCheckoutPreferenceRank(a.option.capabilityTier);
     const db = directCheckoutPreferenceRank(b.option.capabilityTier);
     if (da !== db) return da - db;

@@ -208,6 +208,64 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     historicalContextNote: "Plantation sites in Louisiana are inextricably connected to the history of slavery and forced labor. The depth and focus of historical interpretation vary by site. We encourage visitors to review the selected plantation’s specific historical program and educational approach."
   },
   {
+    id: "louisiana-tour-company-swamp-tour-hotel-pickup",
+    companyShortname: "",
+    title: "New Orleans Swamp Tour Boat Adventure with Hotel Pickup",
+    category: "Swamp Tours",
+    operatorName: "Louisiana Tour Company",
+    description: "Covered bayou swamp boat excursion through the Barataria Bayou with confirmed round-trip French Quarter & Downtown hotel shuttle pickup (including Hotel Monteleone, 214 Royal St — pickup ref LOC-6eKJ+or5y8o99Qw0C8xWyGAjWJk3qp08H7OnT0MLhOs=).",
+    bestFor: "French Quarter & Downtown hotel guests seeking door-to-door pickup ($120 total for 2 adults, $0 booking fee)",
+    priceFrom: 60,
+    priceUnit: "adult ($120.00 total for 2 adults · $0 booking fee)",
+    isFlatRate: true,
+    badges: [
+      { type: "concierge-pick", label: "🏆 Concierge Pick · Verified Hotel Pickup" },
+      { type: "logistics", label: "🚐 $120.00 Total for 2 Adults (Pickup Included)" },
+    ],
+    imageUrl: "/images/travel-markets/new-orleans/hotel-pickup-swamp-boat.png",
+    imageAlt: "Louisiana Tour Company covered swamp tour boat with French Quarter hotel pickup",
+    slug: "louisiana-tour-company-swamp-tour-hotel-pickup",
+    relatedTourSlug: "jeanlafitte-swamp-tour-with-hotel-pickup",
+    detailPageTitle: "New Orleans Swamp Tour Boat Adventure with Hotel Pickup | Welcome to New Orleans Tours",
+    metaDescription: "Book the New Orleans Swamp Tour Boat Adventure with round-trip French Quarter & Downtown hotel pickup ($60/adult · $120.00 total for 2 adults, including Hotel Monteleone at 214 Royal St).",
+    durationLabel: "4 hours door-to-door (~1h 45m on the water)",
+    transportationSummary: "Round-trip French Quarter & Downtown hotel shuttle pickup included",
+    pickupSummary: "Confirmed pickup at Hotel Monteleone (214 Royal St) and 13+ French Quarter/CBD hotels. Windows: 8:00–8:30 AM (9:40 AM tour), 10:20–10:50 AM (12:10 PM tour), 12:30–1:00 PM (2:10 PM tour).",
+    highlights: [
+      "Confirmed door-to-door pickup at Hotel Monteleone (214 Royal St) & French Quarter/Downtown hotels",
+      "Shaded, covered swamp boat through the Barataria Bayou (all ages welcome)",
+      "All-in transparent pricing: $60.00/adult ($120.00 total for 2 adults, $0 booking fee)"
+    ],
+    detailSummary: "A 4-hour door-to-door covered bayou boat tour with confirmed round-trip French Quarter and Downtown hotel pickup operated by Louisiana Tour Company (product #15200P6). Total price for 2 adults is $120.00 ($60.00/adult, $0 booking fee).",
+    bestFit: [
+      "French Quarter and Downtown hotel guests (including Hotel Monteleone, 214 Royal St) wanting confirmed door-to-door pickup",
+      "Families, seniors, and all-ages groups seeking a shaded, calm bayou boat cruise"
+    ],
+    notIdealFor: [
+      "Visitors strictly seeking a high-speed open-air airboat ride"
+    ],
+    childrenConsiderations: [
+      "All ages welcome on the covered swamp boat; Adult, Child (4–12), and Infant (0–3) tickets available."
+    ],
+    confirmedInclusions: [
+      "Round-trip hotel shuttle pickup from Hotel Monteleone (214 Royal St) and participating French Quarter/Downtown hotels",
+      "Guided covered swamp boat tour in the Barataria Bayou"
+    ],
+    bookingConfirmations: [
+      "Departure & pickup window (e.g. TG10: 8:00–8:30 AM pickup for 9:40 AM tour; TG9: 10:20–10:50 AM pickup for 12:10 PM tour)",
+      "Selected hotel pickup stop (Hotel Monteleone, 214 Royal St — LOC-6eKJ+or5y8o99Qw0C8xWyGAjWJk3qp08H7OnT0MLhOs=)",
+      "Total checkout price ($120.00 for 2 adults, $0 booking fee)"
+    ],
+    bookingVariants: [
+      {
+        label: "CHECK HOTEL PICKUP AVAILABILITY ($120.00 FOR 2 ADULTS)",
+        itemId: "15200P6",
+        flowId: "no",
+        bookingUrl: "https://www.viator.com/tours/New-Orleans/New-Orleans-Swamp-Tour-Boat-Adventure-With-Pickup/d675-15200P6?mcid=42383&pid=P00306962&medium=api&api_version=2.0&campaign=welcometoneworleanstours-fp-wno-swamp-tours-15200p6&utm_source=destinationcommandcenter&utm_medium=affiliate&utm_campaign=cities&locale=en-US"
+      }
+    ]
+  },
+  {
     id: "jeanlafitte-swamp-tour-with-hotel-pickup",
     companyShortname: "jeanlafitteswamptour",
     itemId: "763318",

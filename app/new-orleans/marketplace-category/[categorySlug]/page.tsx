@@ -423,6 +423,7 @@ export default async function CategoryPage({
                 priceFrom={sourceProduct?.priceFrom}
                 priceUnit={sourceProduct?.priceUnit}
                 isFlatRate={sourceProduct?.isFlatRate}
+                bookingHref={sourceProduct?.bookingVariants?.[0]?.bookingUrl}
                 bookingItemId={sourceProduct?.itemId}
                 bookingFlowId={sourceProduct?.flowId}
                 companyShortname={sourceProduct?.companyShortname}

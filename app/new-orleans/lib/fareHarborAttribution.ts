@@ -17,6 +17,8 @@ export type FareHarborSource =
   (typeof FAREHARBOR_SOURCES)[keyof typeof FAREHARBOR_SOURCES];
 
 export const APPROVED_PRODUCT_SLUGS = [
+  "louisiana-tour-company-swamp-tour-hotel-pickup",
+  "jeanlafitte-swamp-tour-with-hotel-pickup",
   "city-tour-of-new-orleans",
   "oak-alley-or-laura-plantation-tour",
   "covered-tour-boat",
@@ -54,6 +56,8 @@ const EXPECTED_ASN_BY_SHORTNAME: Record<string, string> = {
 const CANONICAL_STEAMBOAT_REF = "WelcomeToNewOrleansTours";
 
 const DEFAULT_DETAIL_SOURCE_BY_SLUG: Record<ApprovedProductSlug, FareHarborSource> = {
+  "louisiana-tour-company-swamp-tour-hotel-pickup": FAREHARBOR_SOURCES.detailCovered,
+  "jeanlafitte-swamp-tour-with-hotel-pickup": FAREHARBOR_SOURCES.detailCovered,
   "city-tour-of-new-orleans": FAREHARBOR_SOURCES.detailCity,
   "oak-alley-or-laura-plantation-tour": FAREHARBOR_SOURCES.detailPlantation,
   "covered-tour-boat": FAREHARBOR_SOURCES.detailCovered,

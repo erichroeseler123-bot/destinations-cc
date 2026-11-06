@@ -192,7 +192,45 @@ export async function GET(request: NextRequest) {
         ...(isAuthenticatedAdmin
           ? {
               providerAttributionMechanism: {
+                viator: {
+                  payoutAccount: {
+                    pid: "P00306962",
+                    mcid: "42383",
+                    accessTier: "full_access",
+                    activeCommissionRatePercent: 8.0,
+                    verifiedPayableOffers: [
+                      {
+                        tourId: "dcc:tour:viator:15200P6",
+                        productCode: "15200P6",
+                        title: "New Orleans Swamp Tour Boat Adventure with Transportation",
+                        operatorName: "Louisiana Tour Company",
+                        verifiedHotelMonteleonePickupRef:
+                          "LOC-6eKJ+or5y8o99Qw0C8xWyGAjWJk3qp08H7OnT0MLhOs= (214 Royal St)",
+                        retailPrice2AdultsUsd: 120.0,
+                        partnerNetPrice2AdultsUsd: 110.4,
+                        verifiedCommission2AdultsUsd: 9.6,
+                      },
+                      {
+                        tourId: "dcc:tour:viator:6953SWAMPTRANS",
+                        productCode: "6953SWAMPTRANS",
+                        title: "New Orleans Swamp and Bayou Boat Tour with Transportation",
+                        operatorName: "Cajun Encounters Tour Co.",
+                        retailPrice2AdultsUsd: 151.04,
+                        partnerNetPrice2AdultsUsd: 138.96,
+                        verifiedCommission2AdultsUsd: 12.08,
+                      },
+                    ],
+                  },
+                  bookingUrlPattern:
+                    "https://www.viator.com/tours/New-Orleans/New-Orleans-Swamp-Tour-Boat-Adventure-With-Pickup/d675-15200P6?mcid=42383&pid=P00306962&medium=api&api_version=2.0&campaign=<surface>-<placementId>-<optionCode>-clk_<24hex>",
+                  supportedWebhookAndBatchEndpoint:
+                    "POST https://www.destinationcommandcenter.com/api/v1/commerce/click-attribution (action: 'reconcile_webhook' | 'reconcile_csv')",
+                  providerReport:
+                    "Viator Partner API v2 /bookings/modified-since & Affiliate Campaign Booking Report ('campaign' containing <placementId>-...-clk_<24hex>)",
+                },
                 fareharbor: {
+                  jeanLafitte763318AsnStatus:
+                    "pending_operator_asn_activation (is_affiliate_rules_applied: false on aktourcenter & welcometoneworleanstours)",
                   bookingUrlPattern:
                     "https://fareharbor.com/embeds/book/jeanlafitteswamptour/items/763318/availability/<slotPk>/book/?asn=aktourcenter&ref=<placementId>-clk_<24hex>&custom-tracking=<placementId>-clk_<24hex>&full-items=yes",
                   onlineBookingReferencesField:
@@ -204,15 +242,7 @@ export async function GET(request: NextRequest) {
                   supportedCsvBatchEndpoint:
                     "POST https://www.destinationcommandcenter.com/api/v1/commerce/click-attribution (action: 'reconcile_csv')",
                   providerReport:
-                    "FareHarbor Dashboard -> Reports -> Bookings -> Affiliate / ASN ('aktourcenter') export by online_booking_references / Reference ('ref' / 'custom-tracking' containing <placementId>-clk_<24hex>)",
-                },
-                viator: {
-                  bookingUrlPattern:
-                    "https://www.viator.com/tours/...?pid=P00296995&mcid=42383&medium=api&campaign=hotel_concierge-<placementId>-<optionCode>-clk_<24hex>",
-                  supportedWebhookAndBatchEndpoint:
-                    "POST https://www.destinationcommandcenter.com/api/v1/commerce/click-attribution (action: 'reconcile_webhook' | 'reconcile_csv')",
-                  providerReport:
-                    "Viator Partner API v2 /bookings/modified-since & Affiliate Campaign Booking Report ('campaign' containing <placementId>-...-clk_<24hex>)",
+                    "FareHarbor Dashboard -> Reports -> Bookings -> Affiliate / ASN ('aktourcenter' or 'welcometoneworleanstours') export by online_booking_references / Reference ('ref' / 'custom-tracking' containing <placementId>-clk_<24hex>)",
                 },
               },
             }
@@ -223,25 +253,33 @@ export async function GET(request: NextRequest) {
         "fp-wno-swamp-tours": {
           liveUrl: "https://www.welcometoneworleanstours.com/swamp-tours",
           surface: "welcometoneworleanstours",
-          offerTourId: "dcc:tour:fh:jeanlafitteswamptour:763318",
+          offerTourId: "dcc:tour:viator:15200P6",
+          secondaryPayableOfferTourId: "dcc:tour:viator:6953SWAMPTRANS",
+          pendingDirectFareHarborOfferTourId: "dcc:tour:fh:jeanlafitteswamptour:763318",
           funnelByTrafficClass: formatPlacementFunnelSummary(wnoSwampFunnel),
         },
         "fp-wno-swamp-transportation": {
           liveUrl: "https://www.welcometoneworleanstours.com/guides/best-swamp-tour-with-transportation",
           surface: "welcometoneworleanstours",
-          offerTourId: "dcc:tour:fh:jeanlafitteswamptour:763318",
+          offerTourId: "dcc:tour:viator:15200P6",
+          secondaryPayableOfferTourId: "dcc:tour:viator:6953SWAMPTRANS",
+          pendingDirectFareHarborOfferTourId: "dcc:tour:fh:jeanlafitteswamptour:763318",
           funnelByTrafficClass: formatPlacementFunnelSummary(wnoTransFunnel),
         },
         "fp-wtts-transportation": {
           liveUrl: "https://welcometotheswamp.com/transportation",
           surface: "welcometotheswamp",
-          offerTourId: "dcc:tour:fh:jeanlafitteswamptour:763318",
+          offerTourId: "dcc:tour:viator:15200P6",
+          secondaryPayableOfferTourId: "dcc:tour:viator:6953SWAMPTRANS",
+          pendingDirectFareHarborOfferTourId: "dcc:tour:fh:jeanlafitteswamptour:763318",
           funnelByTrafficClass: formatPlacementFunnelSummary(wttsTransFunnel),
         },
         "fp-dcc-nola-swamp-tours": {
           liveUrl: "https://www.destinationcommandcenter.com/new-orleans/swamp-tours",
           surface: "dcc",
-          offerTourId: "dcc:tour:fh:jeanlafitteswamptour:763318",
+          offerTourId: "dcc:tour:viator:15200P6",
+          secondaryPayableOfferTourId: "dcc:tour:viator:6953SWAMPTRANS",
+          pendingDirectFareHarborOfferTourId: "dcc:tour:fh:jeanlafitteswamptour:763318",
           funnelByTrafficClass: formatPlacementFunnelSummary(dccSwampFunnel),
         },
       },
