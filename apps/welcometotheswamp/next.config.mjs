@@ -26,7 +26,19 @@ const nextConfig = {
       { protocol: "https", hostname: "www.destinationcommandcenter.com" },
       { protocol: "https", hostname: "destinationcommandcenter.com" }
     ]
-  }
+  },
+  async rewrites() {
+    return [
+      {
+        source: "/api/v1/:path*",
+        destination: "https://www.destinationcommandcenter.com/api/v1/:path*",
+      },
+      {
+        source: "/embed/:path*",
+        destination: "https://www.destinationcommandcenter.com/embed/:path*",
+      },
+    ];
+  },
 };
 
 export default nextConfig;

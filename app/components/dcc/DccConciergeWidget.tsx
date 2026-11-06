@@ -117,7 +117,10 @@ export default function DccConciergeWidget({
   const [propertySlug, setPropertySlug] = useState<string>(defaultHotel.propertySlug);
   const [propertyName, setPropertyName] = useState<string>(defaultHotel.propertyName);
   const [placementId, setPlacementId] = useState<string>(
-    initialPlacementId || defaultHotel.defaultPlacementId || "",
+    initialPlacementId ||
+      (initialSurface === "hotel_concierge"
+        ? defaultHotel.defaultPlacementId || "nola-hotel-monteleone-demo-pilot"
+        : `fp-${initialSurface}`),
   );
   const [destination, setDestination] = useState<string>(
     initialDestination || defaultHotel.destinationSlug,
@@ -1204,11 +1207,6 @@ export default function DccConciergeWidget({
                       ? `Check Availability at ${opt.primaryProvider === "fareharbor" ? "FareHarbor" : "Provider"} (${bound?.optionCode || opt.primaryProvider}) ↗`
                       : `Continue to Checkout (${bound?.optionCode || opt.primaryProvider}) ↗`}
                 </a>
-                {opt.bookingPath.clickId && (
-                  <div className="text-[10px] font-mono text-slate-400">
-                    Trace ID: {opt.bookingPath.clickId}
-                  </div>
-                )}
               </div>
 
               {/* Cheaper / Alternative Option Tradeoffs */}

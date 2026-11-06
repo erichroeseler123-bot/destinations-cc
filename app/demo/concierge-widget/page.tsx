@@ -4,7 +4,6 @@ import Script from "next/script";
 import DccConciergeWidget from "@/app/components/dcc/DccConciergeWidget";
 import {
   getFunnelMetricsReport,
-  listAttributionRecordsForPlacement,
 } from "@/lib/dcc/commerce/opaqueAttributionLedger";
 import { getDurableCatalogSummaryReport } from "@/lib/dcc/catalog/durableCatalogStore";
 import { getWidgetPlacementReport } from "@/lib/dcc/catalog/widgetPlacements";
@@ -24,23 +23,31 @@ export default async function ConciergeWidgetDemoPage({ searchParams }: DemoPage
   const query = searchParams ? await searchParams : {};
   const pilotPlacementId =
     query.placementId?.trim() || "nola-hotel-monteleone-demo-pilot";
-  const pilotPropertySlug = query.property?.trim() || "hotel-monteleone-nola";
+  const explicitProperty = query.property?.trim() || null;
+  const pilotPropertySlug = explicitProperty || "hotel-monteleone-nola";
 
-  const [funnelReport, pilotFunnelReport, catalogSummary] = await Promise.all([
+  const [
+    funnelReport,
+    pilotFunnelReport,
+    wnoSwampFunnel,
+    wnoTransFunnel,
+    wttsTransFunnel,
+    dccSwampFunnel,
+    catalogSummary,
+  ] = await Promise.all([
     Promise.resolve(getFunnelMetricsReport()),
     Promise.resolve(
       getFunnelMetricsReport({
         placementId: pilotPlacementId,
-        propertySlug: pilotPropertySlug,
+        propertySlug: explicitProperty,
       }),
     ),
+    Promise.resolve(getFunnelMetricsReport({ placementId: "fp-wno-swamp-tours" })),
+    Promise.resolve(getFunnelMetricsReport({ placementId: "fp-wno-swamp-transportation" })),
+    Promise.resolve(getFunnelMetricsReport({ placementId: "fp-wtts-transportation" })),
+    Promise.resolve(getFunnelMetricsReport({ placementId: "fp-dcc-nola-swamp-tours" })),
     getDurableCatalogSummaryReport(),
   ]);
-  const pilotRecords = listAttributionRecordsForPlacement({
-    placementId: pilotPlacementId,
-    propertySlug: pilotPropertySlug,
-    limit: 10,
-  });
   const placementReport = catalogSummary.widgetPlacements ?? getWidgetPlacementReport();
 
   const standaloneGuestLink = `https://www.destinationcommandcenter.com/embed/concierge?destination=new-orleans&property=hotel-monteleone-nola&surface=hotel_concierge&pickupMode=hotel_pickup&category=Swamp+%26+Bayou&placementId=${encodeURIComponent(pilotPlacementId)}`;
@@ -108,7 +115,7 @@ export default async function ConciergeWidgetDemoPage({ searchParams }: DemoPage
                 target="_blank"
                 className="rounded-lg bg-emerald-500/20 border border-emerald-500/40 px-3 py-1.5 font-semibold text-emerald-300 hover:bg-emerald-500/30"
               >
-                Live JSON Telemetry Report (/api/v1/concierge/telemetry) ↗
+                Live Aggregate JSON Telemetry (/api/v1/concierge/telemetry) ↗
               </Link>
               <Link
                 href={`/embed/concierge?destination=new-orleans&property=hotel-monteleone-nola&surface=hotel_concierge&pickupMode=hotel_pickup&category=Swamp+%26+Bayou&placementId=${encodeURIComponent(pilotPlacementId)}&isTest=true`}
@@ -125,12 +132,14 @@ export default async function ConciergeWidgetDemoPage({ searchParams }: DemoPage
               New Orleans Hotel Pilot & Multi-Surface Concierge Funnel Report
             </h1>
             <p className="mt-1.5 text-sm text-slate-300 max-w-4xl leading-relaxed">
-              This page tracks the{" "}
+              This public dashboard reports <strong>aggregate-only</strong> funnel metrics for the{" "}
               <strong>Hotel Monteleone — French Quarter (Demo Preset)</strong> pilot placement (
-              <code className="text-indigo-300">{pilotPlacementId}</code>) alongside the shared
-              concierge network. Guest visits, outbound clicks, provider-confirmed bookings, and
-              settled commissions are separated below for both <code className="text-emerald-300">production</code> and{" "}
-              <code className="text-amber-300">test</code> traffic.
+              <code className="text-indigo-300">{pilotPlacementId}</code>) and live first-party Jean
+              Lafitte hotel-pickup sales placements. Guest visits, checkout clicks,
+              provider-confirmed bookings, and settled commissions are separated below for both{" "}
+              <code className="text-emerald-300">production</code> and{" "}
+              <code className="text-amber-300">test</code> traffic. Individual visitor records, click
+              IDs, outbound URLs, and booking details require commerce admin authentication.
             </p>
           </div>
 
@@ -142,7 +151,7 @@ export default async function ConciergeWidgetDemoPage({ searchParams }: DemoPage
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
                 <span className="text-xs font-bold uppercase tracking-wider text-indigo-300">
-                  Pilot Placement Funnel Report — {pilotPlacementId} ({pilotPropertySlug})
+                  Pilot Placement Funnel Report (Aggregate-Only) — {pilotPlacementId} ({pilotPropertySlug})
                 </span>
                 <p className="text-xs text-slate-400 mt-0.5">
                   Tracks visits and handoffs from both the standalone guest link and the{" "}
@@ -175,7 +184,7 @@ export default async function ConciergeWidgetDemoPage({ searchParams }: DemoPage
 
               <div className="rounded-lg border border-slate-800 bg-slate-900/90 p-3.5">
                 <div className="text-[11px] uppercase font-semibold text-slate-400">
-                  2. Actual Outbound Clicks (Placement)
+                  2. Checkout Clicks (Placement)
                 </div>
                 <div
                   data-testid="pilot-prod-outbound-clicks"
@@ -241,55 +250,73 @@ export default async function ConciergeWidgetDemoPage({ searchParams }: DemoPage
               </div>
             </div>
 
-            {pilotRecords.attributionRecords.length > 0 && (
-              <div className="pt-2 border-t border-slate-800/80 space-y-1.5">
-                <div className="text-[11px] font-bold uppercase text-slate-400">
-                  Recent Attribution Ledger Records for {pilotPlacementId} (
-                  {pilotRecords.attributionRecords.length})
-                </div>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-[11px] font-mono text-slate-300">
-                    <thead>
-                      <tr className="border-b border-slate-800 text-slate-400">
-                        <th className="py-1 pr-3">click_id</th>
-                        <th className="py-1 pr-3">placementId</th>
-                        <th className="py-1 pr-3">stage</th>
-                        <th className="py-1 pr-3">traffic</th>
-                        <th className="py-1 pr-3">provider / product</th>
-                        <th className="py-1 pr-3">online_booking_references / reconciliation</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {pilotRecords.attributionRecords.slice(0, 6).map((rec) => {
-                        const latestOutcome = rec.reconciledOutcomes[0];
-                        return (
-                          <tr key={rec.clickId} className="border-b border-slate-900">
-                            <td className="py-1 pr-3 text-cyan-300">{rec.clickId}</td>
-                            <td className="py-1 pr-3 text-indigo-300">{rec.placementId}</td>
-                            <td className="py-1 pr-3">
-                              {rec.recordStage} (clicks: {rec.clickCount})
-                            </td>
-                            <td className="py-1 pr-3 text-amber-300">{rec.trafficClass}</td>
-                            <td className="py-1 pr-3">
-                              {rec.provider} · {rec.productCode}
-                            </td>
-                            <td className="py-1 pr-3 text-emerald-300">
-                              {rec.reconciliationState} ({rec.reconciledOutcomes.length} unique ·{" "}
-                              {rec.duplicateDeliveryCount || 0} replay dupes ignored)
-                              {latestOutcome?.onlineBookingReferences?.length ? (
-                                <span className="block text-[10px] text-cyan-300">
-                                  refs: [{latestOutcome.onlineBookingReferences.join(", ")}]
-                                </span>
-                              ) : null}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+            {/* First-Party Sales Test Placements Summary */}
+            <div className="pt-3 border-t border-slate-800/80 space-y-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="text-[11px] font-bold uppercase text-emerald-300">
+                  First-Party Jean Lafitte Hotel-Pickup Sales Test Placements (Live Aggregate Funnel)
+                </span>
+                <span className="text-[11px] font-mono text-slate-400">
+                  Public Access: Aggregate-Only (Visitor records, click IDs, outbound URLs &amp; booking refs gated behind admin auth)
+                </span>
               </div>
-            )}
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-[11px] font-mono text-slate-300">
+                  <thead>
+                    <tr className="border-b border-slate-800 text-slate-400">
+                      <th className="py-1.5 pr-3">Placement ID</th>
+                      <th className="py-1.5 pr-3">Live First-Party Page</th>
+                      <th className="py-1.5 pr-3">Guest Visits (Prod / Test)</th>
+                      <th className="py-1.5 pr-3">Checkout Clicks (Prod / Test)</th>
+                      <th className="py-1.5 pr-3">Confirmed Bookings (Prod / Test)</th>
+                      <th className="py-1.5 pr-3">Settled Commission (Prod / Test)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      {
+                        id: "fp-wno-swamp-tours",
+                        url: "https://www.welcometoneworleanstours.com/swamp-tours",
+                        report: wnoSwampFunnel,
+                      },
+                      {
+                        id: "fp-wno-swamp-transportation",
+                        url: "https://www.welcometoneworleanstours.com/guides/best-swamp-tour-with-transportation",
+                        report: wnoTransFunnel,
+                      },
+                      {
+                        id: "fp-wtts-transportation",
+                        url: "https://welcometotheswamp.com/transportation",
+                        report: wttsTransFunnel,
+                      },
+                      {
+                        id: "fp-dcc-nola-swamp-tours",
+                        url: "https://www.destinationcommandcenter.com/new-orleans/swamp-tours",
+                        report: dccSwampFunnel,
+                      },
+                    ].map((row) => (
+                      <tr key={row.id} className="border-b border-slate-900">
+                        <td className="py-1.5 pr-3 text-indigo-300">{row.id}</td>
+                        <td className="py-1.5 pr-3 text-cyan-300">{row.url}</td>
+                        <td className="py-1.5 pr-3">
+                          {row.report.production.guestVisits} Prod / {row.report.test.guestVisits} Test
+                        </td>
+                        <td className="py-1.5 pr-3">
+                          {row.report.production.actualOutboundClicks} Prod / {row.report.test.actualOutboundClicks} Test
+                        </td>
+                        <td className="py-1.5 pr-3 text-emerald-300">
+                          {row.report.production.confirmedPaidBookings} Prod / {row.report.test.confirmedPaidBookings} Test
+                        </td>
+                        <td className="py-1.5 pr-3 text-emerald-300">
+                          ${row.report.production.settledReconciledCommissionUsd.toFixed(2)} Prod / $
+                          {row.report.test.settledReconciledCommissionUsd.toFixed(2)} Test
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
 
           {/* Separate Engineering, Placement & Commercial Telemetry Grid */}

@@ -208,6 +208,65 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     historicalContextNote: "Plantation sites in Louisiana are inextricably connected to the history of slavery and forced labor. The depth and focus of historical interpretation vary by site. We encourage visitors to review the selected plantation’s specific historical program and educational approach."
   },
   {
+    id: "jeanlafitte-swamp-tour-with-hotel-pickup",
+    companyShortname: "jeanlafitteswamptour",
+    itemId: "763318",
+    title: "Jean Lafitte Swamp Tour with Hotel Pickup",
+    category: "Swamp Tours",
+    operatorName: "Jean Lafitte Swamp Tours",
+    description: "Covered bayou swamp boat excursion through the Jean Lafitte National Historical Park & Preserve with round-trip French Quarter & Downtown hotel shuttle pickup (including Hotel Monteleone, 214 Royal St).",
+    bestFor: "Families, all ages & French Quarter guests without a car",
+    priceFrom: 62,
+    priceUnit: "adult ($65.72 w/ 6% fees · $131.44 total for 2 adults)",
+    isFlatRate: true,
+    badges: [
+      { type: "concierge-pick", label: "🏆 Concierge Pick · Hotel Pickup" },
+      { type: "logistics", label: "🚐 $131.44 Total for 2 Adults (Incl. Fees)" },
+    ],
+    imageUrl: "/images/travel-markets/new-orleans/hotel-pickup-swamp-boat.png",
+    imageAlt: "Jean Lafitte covered swamp tour boat with hotel pickup from New Orleans",
+    slug: "jeanlafitte-swamp-tour-with-hotel-pickup",
+    relatedTourSlug: "swamp-bayou-tour",
+    detailPageTitle: "Jean Lafitte Swamp Tour with Hotel Pickup | Welcome to New Orleans Tours",
+    metaDescription: "Book the Jean Lafitte Swamp Tour with round-trip French Quarter & Downtown New Orleans hotel shuttle pickup ($62/adult subtotal + 6% fees = $131.44 total for 2 adults).",
+    durationLabel: "3 hours 45 minutes door-to-door (~1h 45m on the water)",
+    transportationSummary: "Round-trip French Quarter & Downtown hotel shuttle pickup included",
+    pickupSummary: "Select your French Quarter or Downtown hotel during checkout (e.g., Hotel Monteleone — 214 Royal St, option #22056428). $124.00 subtotal + $7.44 (6% fees) = $131.44 total for 2 adults.",
+    highlights: [
+      "Round-trip shuttle pickup from French Quarter & Downtown hotels (including Hotel Monteleone, 214 Royal St)",
+      "Shaded, covered swamp boat through Jean Lafitte National Historical Park & Preserve",
+      "Transparent total pricing: $62.00/adult subtotal ($124.00 for 2 adults) + 6% ($7.44) fees = $131.44 checkout total"
+    ],
+    detailSummary: "A 3h 45m covered bayou boat tour with round-trip French Quarter and Downtown hotel pickup operated by Jean Lafitte Swamp Tours (item #763318). Checkout total for 2 adults is $131.44 ($124.00 subtotal + $7.44 fees).",
+    bestFit: [
+      "French Quarter and Downtown hotel guests who want door-to-door shuttle pickup",
+      "Families, seniors, and all-ages groups seeking a shaded, calm bayou cruise"
+    ],
+    notIdealFor: [
+      "Visitors strictly seeking a high-speed open-air airboat ride"
+    ],
+    childrenConsiderations: [
+      "All ages welcome on the covered swamp boat; select Adult and Child seats during checkout."
+    ],
+    confirmedInclusions: [
+      "Round-trip hotel shuttle pickup from participating French Quarter & Downtown hotels",
+      "Guided covered swamp boat tour in the Jean Lafitte bayou"
+    ],
+    bookingConfirmations: [
+      "Departure slot (e.g. 8:30 AM pickup / 10:00 AM tour)",
+      "Selected hotel pickup stop (customFieldInstance12258400, e.g. Hotel Monteleone #22056428)",
+      "Total checkout price including 6% booking fees ($131.44 for 2 adults)"
+    ],
+    bookingVariants: [
+      {
+        label: "CHECK HOTEL PICKUP AVAILABILITY ($131.44 FOR 2 INCL. FEES)",
+        itemId: "763318",
+        flowId: "no",
+        bookingUrl: "https://fareharbor.com/embeds/book/jeanlafitteswamptour/items/763318/?asn=aktourcenter&ref=fp-wno-swamp-tours&custom-tracking=fp-wno-swamp-tours&full-items=yes"
+      }
+    ]
+  },
+  {
     id: "ragincajun-covered-boat",
     companyShortname: "ragincajuntours",
     itemId: "590176",

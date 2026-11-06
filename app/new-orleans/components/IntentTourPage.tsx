@@ -5,6 +5,7 @@ import GeoDirectAnswerCard from "./GeoDirectAnswerCard";
 import { getNolaGeoFact } from "../data/nolaGeoFacts";
 import WnoBreadcrumbs from "./WnoBreadcrumbs";
 import type { WnoBreadcrumbItem } from "../lib/structuredData";
+import DccConciergeWidget from "@/app/components/dcc/DccConciergeWidget";
 
 type IntentLink = { href: string; label: string };
 type IntentFaq = { question: string; answer: string };
@@ -28,6 +29,7 @@ type IntentTourPageProps = {
   decisionTitle: string;
   decisionPoints: string[];
   productSlugs: string[];
+  conciergePlacementId?: string;
   relatedLinks?: IntentLink[];
   faq?: IntentFaq[];
   geoFactKey?: string;
@@ -63,6 +65,7 @@ export default function IntentTourPage({
   decisionTitle,
   decisionPoints,
   productSlugs,
+  conciergePlacementId,
   relatedLinks = [],
   faq = [],
   geoFactKey,
@@ -171,6 +174,22 @@ export default function IntentTourPage({
           <h2 className="mt-3 font-serif text-3xl md:text-4xl text-[#fdfbf7]">Tours worth comparing for this plan</h2>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-[#dcd5ca]">Schedules, live pricing, pickup details, eligibility and availability are confirmed during booking and can change by operator and departure.</p>
         </div>
+
+        {conciergePlacementId && (
+          <div className="mb-10">
+            <DccConciergeWidget
+              widgetId="wno-transportation-hotel-pickup-matcher"
+              initialDestination="new-orleans"
+              initialPropertySlug="hotel-monteleone-nola"
+              initialPlacementId={conciergePlacementId}
+              initialSurface="welcometoneworleanstours"
+              initialPickupMode="hotel_pickup"
+              initialCategory="Swamp & Bayou"
+              theme="dark"
+            />
+          </div>
+        )}
+
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {products.map((product) => product && (
             <ProductCard

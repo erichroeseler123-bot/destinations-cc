@@ -11,6 +11,7 @@ import { buildSeoMetadata } from "../../lib/buildSeoMetadata";
 import GeoDirectAnswerCard from "../../components/GeoDirectAnswerCard";
 import { getNolaGeoFact } from "../../data/nolaGeoFacts";
 import PortfolioAssuranceBanner from "@/app/components/dcc/PortfolioAssuranceBanner";
+import DccConciergeWidget from "@/app/components/dcc/DccConciergeWidget";
 import { evaluatePortfolioAssuranceSummary } from "@/lib/dcc/commerce/portfolio";
 
 import { STOREFRONT_PRODUCTS } from "../../tours/pageConfig";
@@ -306,6 +307,11 @@ export default async function CategoryPage({
     </section>
   ) : null;
 
+  const isTestParam =
+    firstStr(resolvedSearch.isTest) === "true" ||
+    firstStr(resolvedSearch.isTest) === "1" ||
+    firstStr(resolvedSearch.trafficClass) === "test";
+
   const optionsSection = (
     <section id="options" data-wno-section="options" className="mt-16 scroll-mt-24">
       <div data-wno-options-heading className="text-center">
@@ -313,6 +319,25 @@ export default async function CategoryPage({
         <h2 className="mt-2 font-serif text-3xl text-[#f3dfb3] md:text-4xl">{copy.optionsTitle}</h2>
         <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-[#9d9587]">{copy.optionsIntro}</p>
       </div>
+
+      {["swamp-tours", "airboat-tours", "covered-swamp-boat-tours"].includes(
+        resolvedParams.categorySlug,
+      ) && (
+        <div className="mt-8">
+          <DccConciergeWidget
+            widgetId="wno-swamp-hotel-pickup-matcher"
+            initialDestination="new-orleans"
+            initialPropertySlug="hotel-monteleone-nola"
+            initialPlacementId="fp-wno-swamp-tours"
+            initialSurface="welcometoneworleanstours"
+            initialPickupMode="hotel_pickup"
+            initialDate={selectedDate}
+            initialCategory="Swamp & Bayou"
+            isTest={isTestParam}
+            theme="dark"
+          />
+        </div>
+      )}
 
       <form
         method="get"

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { FAMILY_TOURS } from "../../lib/familyTours";
 import { FactEvidence } from "../components/FamilyTourFacts";
 import { getTodayNewOrleansDate } from "../../lib/timezone";
+import DccConciergeWidget from "@/app/components/dcc/DccConciergeWidget";
 export const revalidate = 86400;
 
 const CANONICAL_URL = "https://welcometotheswamp.com/transportation";
@@ -72,6 +73,20 @@ export default function TransportationPage() {
         <p className="lede">
           Choose a product that offers hotel transportation or a central departure you can reach, then confirm the exact meeting point, full outing time and return arrangement. Hotel pickup is not included in every ticket, and a rental address may not qualify. Compare the actual product before booking.
         </p>
+      </section>
+
+      <section id="hotel-pickup-matcher" className="panel">
+        <p className="eyebrow">Direct Hotel Pickup Booking — First-Party Placement (fp-wtts-transportation)</p>
+        <DccConciergeWidget
+          widgetId="wtts-transportation-hotel-pickup-matcher"
+          initialDestination="new-orleans"
+          initialPropertySlug="hotel-monteleone-nola"
+          initialPlacementId="fp-wtts-transportation"
+          initialSurface="welcometotheswamp"
+          initialPickupMode="hotel_pickup"
+          initialCategory="Swamp & Bayou"
+          theme="dark"
+        />
       </section>
 
       {/* The Rideshare Warning */}

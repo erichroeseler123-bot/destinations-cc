@@ -611,7 +611,7 @@ export async function syncDurableLedgerWithPostgres(options?: {
       if (remoteState.funnelVisitorsById) {
         for (const [vid, vrec] of Object.entries(remoteState.funnelVisitorsById)) {
           const existingVis = localDraft.funnelVisitorsById[vid];
-          if (!existingVis || vrec.visitCount > existingVis.visitCount) {
+          if (!existingVis || vrec.visitCount >= existingVis.visitCount) {
             localDraft.funnelVisitorsById[vid] = vrec;
           }
         }

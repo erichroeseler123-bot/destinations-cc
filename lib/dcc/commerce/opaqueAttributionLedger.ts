@@ -1506,7 +1506,15 @@ export function listAttributionRecordsForPlacement(options?: {
       }
       return true;
     })
-    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .sort((a, b) => {
+      const aOutcomes = a.reconciledOutcomes?.length || 0;
+      const bOutcomes = b.reconciledOutcomes?.length || 0;
+      if (bOutcomes !== aOutcomes) return bOutcomes - aOutcomes;
+      const aFollowed = a.recordStage === "outbound_click" || (a.clickCount || 0) > 0 ? 1 : 0;
+      const bFollowed = b.recordStage === "outbound_click" || (b.clickCount || 0) > 0 ? 1 : 0;
+      if (bFollowed !== aFollowed) return bFollowed - aFollowed;
+      return b.createdAt.localeCompare(a.createdAt);
+    })
     .slice(0, limit);
 
   return { visitors, attributionRecords };

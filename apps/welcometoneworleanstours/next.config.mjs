@@ -43,6 +43,18 @@ const nextConfig = {
       { source: "/tours/airboat-small", destination: "/tours/small-airboat-swamp-adventure", permanent: true },
     ];
   },
+  async rewrites() {
+    return [
+      {
+        source: "/api/v1/:path*",
+        destination: "https://www.destinationcommandcenter.com/api/v1/:path*",
+      },
+      {
+        source: "/embed/:path*",
+        destination: "https://www.destinationcommandcenter.com/embed/:path*",
+      },
+    ];
+  },
 };
 
 export default nextConfig;

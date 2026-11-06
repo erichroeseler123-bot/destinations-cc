@@ -15,7 +15,47 @@ import {
 
 export const dynamic = "force-dynamic";
 
+function formatPlacementFunnelSummary(funnel: ReturnType<typeof getFunnelMetricsReport>) {
+  return {
+    production: {
+      guestVisits: funnel.production.guestVisits,
+      recommendationsIssued: funnel.production.recommendationsIssued,
+      recommendationOnlyRecords: funnel.production.recommendationOnlyRecords,
+      outboundClicks: funnel.production.actualOutboundClicks,
+      providerConfirmedBookings: funnel.production.confirmedPaidBookings,
+      duplicateDeliveriesIgnored: funnel.production.duplicateDeliveriesIgnored,
+      grossConfirmedRevenueUsd: funnel.production.grossConfirmedRevenueUsd,
+      estimatedUnsettledCommissionUsd: funnel.production.estimatedUnsettledCommissionUsd,
+      settledCommissionUsd: funnel.production.settledReconciledCommissionUsd,
+      reversedCommissionUsd: funnel.production.reversedCommissionUsd,
+    },
+    test: {
+      guestVisits: funnel.test.guestVisits,
+      recommendationsIssued: funnel.test.recommendationsIssued,
+      recommendationOnlyRecords: funnel.test.recommendationOnlyRecords,
+      outboundClicks: funnel.test.actualOutboundClicks,
+      providerConfirmedBookings: funnel.test.confirmedPaidBookings,
+      duplicateDeliveriesIgnored: funnel.test.duplicateDeliveriesIgnored,
+      grossConfirmedRevenueUsd: funnel.test.grossConfirmedRevenueUsd,
+      estimatedUnsettledCommissionUsd: funnel.test.estimatedUnsettledCommissionUsd,
+      settledCommissionUsd: funnel.test.settledReconciledCommissionUsd,
+      reversedCommissionUsd: funnel.test.reversedCommissionUsd,
+    },
+  };
+}
+
 export async function GET(request: NextRequest) {
+  let adminActor: string | null = null;
+  try {
+    const auth = authenticateCommerceAdminRequest(request);
+    if (auth.authorized) {
+      adminActor = auth.actor;
+    }
+  } catch {
+    adminActor = null;
+  }
+  const isAuthenticatedAdmin = Boolean(adminActor);
+
   const ledgerState = await syncDurableLedgerWithPostgres();
 
   const sp = request.nextUrl.searchParams;
@@ -24,38 +64,96 @@ export async function GET(request: NextRequest) {
     sp.get("placement_id")?.trim() ||
     sp.get("placement")?.trim() ||
     "nola-hotel-monteleone-demo-pilot";
-  const requestedPropertySlug =
+  const explicitPropertyParam =
     sp.get("property")?.trim() ||
     sp.get("propertySlug")?.trim() ||
-    "hotel-monteleone-nola";
+    null;
+  const requestedPropertySlug =
+    explicitPropertyParam ||
+    (requestedPlacementId === "nola-hotel-monteleone-demo-pilot"
+      ? "hotel-monteleone-nola"
+      : null);
 
-  const [overallFunnel, placementFunnel, catalogSummary] = await Promise.all([
+  const [
+    overallFunnel,
+    placementFunnel,
+    wnoSwampFunnel,
+    wnoTransFunnel,
+    wttsTransFunnel,
+    dccSwampFunnel,
+    catalogSummary,
+  ] = await Promise.all([
     Promise.resolve(getFunnelMetricsReport()),
     Promise.resolve(
       getFunnelMetricsReport({
         placementId: requestedPlacementId,
-        propertySlug: requestedPropertySlug,
+        propertySlug: explicitPropertyParam,
       }),
     ),
+    Promise.resolve(getFunnelMetricsReport({ placementId: "fp-wno-swamp-tours" })),
+    Promise.resolve(getFunnelMetricsReport({ placementId: "fp-wno-swamp-transportation" })),
+    Promise.resolve(getFunnelMetricsReport({ placementId: "fp-wtts-transportation" })),
+    Promise.resolve(getFunnelMetricsReport({ placementId: "fp-dcc-nola-swamp-tours" })),
     getDurableCatalogSummaryReport(),
   ]);
 
   const placementRecords = listAttributionRecordsForPlacement({
     placementId: requestedPlacementId,
-    propertySlug: requestedPropertySlug,
+    propertySlug: explicitPropertyParam,
     limit: 50,
   });
 
-  const hotelConfig = HOTEL_CONCIERGE_CONFIGS[requestedPropertySlug] || null;
+  const hotelConfig = requestedPropertySlug
+    ? HOTEL_CONCIERGE_CONFIGS[requestedPropertySlug] || null
+    : null;
   const placementApproval =
     ledgerState.placementApprovalsById?.[requestedPlacementId] || null;
   const isApprovedLive = placementApproval?.status === "verified_partner_live";
   const placementReport = catalogSummary.widgetPlacements ?? getWidgetPlacementReport();
 
+  const recentLedgerActivity = isAuthenticatedAdmin
+    ? {
+        accessLevel: "admin_full" as const,
+        redactedForPublic: false,
+        visitorSessionsCount: placementRecords.visitors.length,
+        attributionRecordsCount: placementRecords.attributionRecords.length,
+        visitors: placementRecords.visitors.slice(0, 15),
+        attributionRecords: placementRecords.attributionRecords
+          .slice(0, 15)
+          .map((r) => ({
+            clickId: r.clickId,
+            placementId: r.placementId,
+            propertySlug: r.propertySlug,
+            surface: r.surface,
+            trafficClass: r.trafficClass,
+            isTest: r.isTest,
+            recordStage: r.recordStage,
+            followedAt: r.followedAt,
+            clickCount: r.clickCount,
+            duplicateDeliveryCount: r.duplicateDeliveryCount || 0,
+            provider: r.provider,
+            productCode: r.productCode,
+            outboundPartnerUrl: r.outboundPartnerUrl,
+            reconciliationState: r.reconciliationState,
+            reconciledOutcomes: r.reconciledOutcomes,
+            createdAt: r.createdAt,
+          })),
+      }
+    : {
+        accessLevel: "public_aggregate_only" as const,
+        redactedForPublic: true,
+        visitorSessionsCount: placementRecords.visitors.length,
+        attributionRecordsCount: placementRecords.attributionRecords.length,
+        note: "Visitor records, click IDs, outbound URLs, and booking details are restricted behind commerce admin authentication.",
+      };
+
   return NextResponse.json(
     {
       ok: true,
       generatedAt: new Date().toISOString(),
+      accessLevel: isAuthenticatedAdmin ? "admin_full" : "public_aggregate_only",
+      authenticatedAdmin: isAuthenticatedAdmin,
+      ...(isAuthenticatedAdmin ? { authenticatedActorId: adminActor } : {}),
       pilotPlacement: {
         placementId: requestedPlacementId,
         propertySlug: requestedPropertySlug,
@@ -65,15 +163,23 @@ export async function GET(request: NextRequest) {
               "Hotel Monteleone — French Quarter"
             ).replace(/\s*\(Demo Preset\)/i, "")
           : hotelConfig?.propertyName ||
-            "Hotel Monteleone — French Quarter (Demo Preset)",
-        isDemoPreset: !isApprovedLive && (hotelConfig?.isDemoPreset ?? true),
-        demoStatusLabel: isApprovedLive
-          ? "APPROVED PARTNER PLACEMENT — Live"
-          : hotelConfig?.demoStatusLabel ||
-            "DEMO PRESET — Pending Hotel Approval",
-        approvalStatus: isApprovedLive
-          ? "verified_partner_live"
-          : "unverified_demo_preset_pending_hotel_approval",
+            (requestedPlacementId.startsWith("fp-")
+              ? `First-Party Placement (${requestedPlacementId})`
+              : "Hotel Monteleone — French Quarter (Demo Preset)"),
+        isDemoPreset: requestedPlacementId.startsWith("fp-")
+          ? false
+          : !isApprovedLive && (hotelConfig?.isDemoPreset ?? true),
+        demoStatusLabel: requestedPlacementId.startsWith("fp-")
+          ? "FIRST-PARTY LIVE PLACEMENT"
+          : isApprovedLive
+            ? "APPROVED PARTNER PLACEMENT — Live"
+            : hotelConfig?.demoStatusLabel ||
+              "DEMO PRESET — Pending Hotel Approval",
+        approvalStatus: requestedPlacementId.startsWith("fp-")
+          ? "live_first_party"
+          : isApprovedLive
+            ? "verified_partner_live"
+            : "unverified_demo_preset_pending_hotel_approval",
         approvedAt: placementApproval?.approvedAt || null,
         approvedBy: placementApproval?.approvedBy || null,
         standaloneGuestLink:
@@ -82,132 +188,64 @@ export async function GET(request: NextRequest) {
           "https://www.destinationcommandcenter.com/embed/dcc-concierge-widget.js",
         activationEndpoint:
           "POST https://www.destinationcommandcenter.com/api/v1/concierge/telemetry (action: 'activate_placement')",
-        funnelByTrafficClass: {
-          production: {
-            guestVisits: placementFunnel.production.guestVisits,
-            recommendationsIssued: placementFunnel.production.recommendationsIssued,
-            recommendationOnlyRecords:
-              placementFunnel.production.recommendationOnlyRecords,
-            outboundClicks: placementFunnel.production.actualOutboundClicks,
-            providerConfirmedBookings:
-              placementFunnel.production.confirmedPaidBookings,
-            duplicateDeliveriesIgnored:
-              placementFunnel.production.duplicateDeliveriesIgnored,
-            grossConfirmedRevenueUsd:
-              placementFunnel.production.grossConfirmedRevenueUsd,
-            estimatedUnsettledCommissionUsd:
-              placementFunnel.production.estimatedUnsettledCommissionUsd,
-            settledCommissionUsd:
-              placementFunnel.production.settledReconciledCommissionUsd,
-            reversedCommissionUsd:
-              placementFunnel.production.reversedCommissionUsd,
-          },
-          test: {
-            guestVisits: placementFunnel.test.guestVisits,
-            recommendationsIssued: placementFunnel.test.recommendationsIssued,
-            recommendationOnlyRecords:
-              placementFunnel.test.recommendationOnlyRecords,
-            outboundClicks: placementFunnel.test.actualOutboundClicks,
-            providerConfirmedBookings:
-              placementFunnel.test.confirmedPaidBookings,
-            duplicateDeliveriesIgnored:
-              placementFunnel.test.duplicateDeliveriesIgnored,
-            grossConfirmedRevenueUsd:
-              placementFunnel.test.grossConfirmedRevenueUsd,
-            estimatedUnsettledCommissionUsd:
-              placementFunnel.test.estimatedUnsettledCommissionUsd,
-            settledCommissionUsd:
-              placementFunnel.test.settledReconciledCommissionUsd,
-            reversedCommissionUsd: placementFunnel.test.reversedCommissionUsd,
-          },
+        funnelByTrafficClass: formatPlacementFunnelSummary(placementFunnel),
+        ...(isAuthenticatedAdmin
+          ? {
+              providerAttributionMechanism: {
+                fareharbor: {
+                  bookingUrlPattern:
+                    "https://fareharbor.com/embeds/book/jeanlafitteswamptour/items/763318/availability/<slotPk>/book/?asn=aktourcenter&ref=<placementId>-clk_<24hex>&custom-tracking=<placementId>-clk_<24hex>&full-items=yes",
+                  onlineBookingReferencesField:
+                    "booking.online_booking_references: ['<placementId>-clk_<24hex>', 'asn:aktourcenter']",
+                  hotelPickupVerificationField:
+                    "customFieldInstance12258400 = number:22056428 (Hotel Monteleone, 214 Royal St)",
+                  supportedWebhookEndpoint:
+                    "POST https://www.destinationcommandcenter.com/api/v1/commerce/click-attribution (action: 'reconcile_webhook')",
+                  supportedCsvBatchEndpoint:
+                    "POST https://www.destinationcommandcenter.com/api/v1/commerce/click-attribution (action: 'reconcile_csv')",
+                  providerReport:
+                    "FareHarbor Dashboard -> Reports -> Bookings -> Affiliate / ASN ('aktourcenter') export by online_booking_references / Reference ('ref' / 'custom-tracking' containing <placementId>-clk_<24hex>)",
+                },
+                viator: {
+                  bookingUrlPattern:
+                    "https://www.viator.com/tours/...?pid=P00296995&mcid=42383&medium=api&campaign=hotel_concierge-<placementId>-<optionCode>-clk_<24hex>",
+                  supportedWebhookAndBatchEndpoint:
+                    "POST https://www.destinationcommandcenter.com/api/v1/commerce/click-attribution (action: 'reconcile_webhook' | 'reconcile_csv')",
+                  providerReport:
+                    "Viator Partner API v2 /bookings/modified-since & Affiliate Campaign Booking Report ('campaign' containing <placementId>-...-clk_<24hex>)",
+                },
+              },
+            }
+          : {}),
+        recentLedgerActivity,
+      },
+      firstPartySalesTestPlacements: {
+        "fp-wno-swamp-tours": {
+          liveUrl: "https://www.welcometoneworleanstours.com/swamp-tours",
+          surface: "welcometoneworleanstours",
+          offerTourId: "dcc:tour:fh:jeanlafitteswamptour:763318",
+          funnelByTrafficClass: formatPlacementFunnelSummary(wnoSwampFunnel),
         },
-        providerAttributionMechanism: {
-          fareharbor: {
-            bookingUrlPattern:
-              "https://fareharbor.com/embeds/book/jeanlafitteswamptour/items/763318/availability/<slotPk>/book/?asn=aktourcenter&ref=nola-hotel-monteleone-demo-pilot-clk_<24hex>&custom-tracking=nola-hotel-monteleone-demo-pilot-clk_<24hex>&full-items=yes",
-            onlineBookingReferencesField:
-              "booking.online_booking_references: ['nola-hotel-monteleone-demo-pilot-clk_<24hex>', 'asn:aktourcenter']",
-            hotelPickupVerificationField:
-              "customFieldInstance12258400 = number:22056428 (Hotel Monteleone, 214 Royal St)",
-            supportedWebhookEndpoint:
-              "POST https://www.destinationcommandcenter.com/api/v1/commerce/click-attribution (action: 'reconcile_webhook')",
-            supportedCsvBatchEndpoint:
-              "POST https://www.destinationcommandcenter.com/api/v1/commerce/click-attribution (action: 'reconcile_csv')",
-            providerReport:
-              "FareHarbor Dashboard -> Reports -> Bookings -> Affiliate / ASN ('aktourcenter') export by online_booking_references / Reference ('ref' / 'custom-tracking' containing nola-hotel-monteleone-demo-pilot-clk_<24hex>)",
-          },
-          viator: {
-            bookingUrlPattern:
-              "https://www.viator.com/tours/...?pid=P00296995&mcid=42383&medium=api&campaign=hotel_concierge-nola-hotel-monteleone-demo-pilot-<optionCode>-clk_<24hex>",
-            supportedWebhookAndBatchEndpoint:
-              "POST https://www.destinationcommandcenter.com/api/v1/commerce/click-attribution (action: 'reconcile_webhook' | 'reconcile_csv')",
-            providerReport:
-              "Viator Partner API v2 /bookings/modified-since & Affiliate Campaign Booking Report ('campaign' containing nola-hotel-monteleone-demo-pilot-...-clk_<24hex>)",
-          },
+        "fp-wno-swamp-transportation": {
+          liveUrl: "https://www.welcometoneworleanstours.com/guides/best-swamp-tour-with-transportation",
+          surface: "welcometoneworleanstours",
+          offerTourId: "dcc:tour:fh:jeanlafitteswamptour:763318",
+          funnelByTrafficClass: formatPlacementFunnelSummary(wnoTransFunnel),
         },
-        recentLedgerActivity: {
-          visitorSessionsCount: placementRecords.visitors.length,
-          attributionRecordsCount: placementRecords.attributionRecords.length,
-          visitors: placementRecords.visitors.slice(0, 15),
-          attributionRecords: placementRecords.attributionRecords
-            .slice(0, 15)
-            .map((r) => ({
-              clickId: r.clickId,
-              placementId: r.placementId,
-              propertySlug: r.propertySlug,
-              surface: r.surface,
-              trafficClass: r.trafficClass,
-              isTest: r.isTest,
-              recordStage: r.recordStage,
-              followedAt: r.followedAt,
-              clickCount: r.clickCount,
-              duplicateDeliveryCount: r.duplicateDeliveryCount || 0,
-              provider: r.provider,
-              productCode: r.productCode,
-              outboundPartnerUrl: r.outboundPartnerUrl,
-              reconciliationState: r.reconciliationState,
-              reconciledOutcomes: r.reconciledOutcomes,
-              createdAt: r.createdAt,
-            })),
+        "fp-wtts-transportation": {
+          liveUrl: "https://welcometotheswamp.com/transportation",
+          surface: "welcometotheswamp",
+          offerTourId: "dcc:tour:fh:jeanlafitteswamptour:763318",
+          funnelByTrafficClass: formatPlacementFunnelSummary(wttsTransFunnel),
+        },
+        "fp-dcc-nola-swamp-tours": {
+          liveUrl: "https://www.destinationcommandcenter.com/new-orleans/swamp-tours",
+          surface: "dcc",
+          offerTourId: "dcc:tour:fh:jeanlafitteswamptour:763318",
+          funnelByTrafficClass: formatPlacementFunnelSummary(dccSwampFunnel),
         },
       },
-      overallFunnel: {
-        production: {
-          guestVisits: overallFunnel.production.guestVisits,
-          recommendationsIssued: overallFunnel.production.recommendationsIssued,
-          recommendationOnlyRecords:
-            overallFunnel.production.recommendationOnlyRecords,
-          outboundClicks: overallFunnel.production.actualOutboundClicks,
-          providerConfirmedBookings:
-            overallFunnel.production.confirmedPaidBookings,
-          duplicateDeliveriesIgnored:
-            overallFunnel.production.duplicateDeliveriesIgnored,
-          grossConfirmedRevenueUsd:
-            overallFunnel.production.grossConfirmedRevenueUsd,
-          estimatedUnsettledCommissionUsd:
-            overallFunnel.production.estimatedUnsettledCommissionUsd,
-          settledCommissionUsd:
-            overallFunnel.production.settledReconciledCommissionUsd,
-          reversedCommissionUsd: overallFunnel.production.reversedCommissionUsd,
-        },
-        test: {
-          guestVisits: overallFunnel.test.guestVisits,
-          recommendationsIssued: overallFunnel.test.recommendationsIssued,
-          recommendationOnlyRecords:
-            overallFunnel.test.recommendationOnlyRecords,
-          outboundClicks: overallFunnel.test.actualOutboundClicks,
-          providerConfirmedBookings: overallFunnel.test.confirmedPaidBookings,
-          duplicateDeliveriesIgnored:
-            overallFunnel.test.duplicateDeliveriesIgnored,
-          grossConfirmedRevenueUsd:
-            overallFunnel.test.grossConfirmedRevenueUsd,
-          estimatedUnsettledCommissionUsd:
-            overallFunnel.test.estimatedUnsettledCommissionUsd,
-          settledCommissionUsd:
-            overallFunnel.test.settledReconciledCommissionUsd,
-          reversedCommissionUsd: overallFunnel.test.reversedCommissionUsd,
-        },
-      },
+      overallFunnel: formatPlacementFunnelSummary(overallFunnel),
       widgetPlacements: {
         firstPartyInstallationsCount:
           placementReport.firstPartyInstallationsCount,

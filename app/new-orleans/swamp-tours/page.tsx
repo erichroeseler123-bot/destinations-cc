@@ -162,9 +162,9 @@ export default async function NewOrleansSwampToursPage(props: {
     originatingSite: "destinationcommandcenter.com",
     provider: "fareharbor",
     providerAccount: "aktourcenter",
-    productCode: "ragincajun-airboat",
-    destinationUrl: "https://fareharbor.com/embeds/book/ragincajuntours/items/228524/?asn=aktourcenter&ref=dcc-swamp-tours",
-    campaign: "dcc-swamp-tours-fh",
+    productCode: "jeanlafitteswamptour:763318",
+    destinationUrl: "https://fareharbor.com/embeds/book/jeanlafitteswamptour/items/763318/?asn=aktourcenter&ref=fp-dcc-nola-swamp-tours&full-items=yes",
+    campaign: "fp-dcc-nola-swamp-tours",
     contextId: carriedContext.contextId,
     evaluationRunId: assurance.evaluationRunId,
     receiptId: assurance.receiptId,
@@ -207,7 +207,7 @@ export default async function NewOrleansSwampToursPage(props: {
           carriedContext={carriedContext}
           handoffActions={[
             {
-              label: "Book Ragin Cajun Airboat via FareHarbor",
+              label: "Book Jean Lafitte Swamp Tour w/ Hotel Pickup ($131.44 for 2 incl. fees)",
               href: fhHandoffHref,
               providerLabel: "FareHarbor",
               accountLabel: "asn=aktourcenter",
@@ -222,11 +222,11 @@ export default async function NewOrleansSwampToursPage(props: {
           crossSiteLinks={[
             {
               label: "Open Welcome to the Swamp Specialist Storefront",
-              href: `https://welcometotheswamp.com/tours/airboat-tour${ctxQuery}`,
+              href: `https://welcometotheswamp.com/transportation${ctxQuery}`,
             },
             {
-              label: "Open Welcome to New Orleans Tours",
-              href: `https://www.welcometoneworleanstours.com/tours/small-airboat-swamp-adventure${ctxQuery}`,
+              label: "Open Welcome to New Orleans Swamp Tours",
+              href: `https://www.welcometoneworleanstours.com/swamp-tours${ctxQuery}`,
             },
           ]}
         />
@@ -289,7 +289,8 @@ export default async function NewOrleansSwampToursPage(props: {
           widgetId="swamp-date-matcher"
           initialDestination="new-orleans"
           initialPropertySlug="hotel-monteleone-nola"
-          initialSurface="welcometotheswamp"
+          initialPlacementId="fp-dcc-nola-swamp-tours"
+          initialSurface="dcc"
           initialPickupMode="hotel_pickup"
           initialDate={carriedDate}
           initialShipArrival={carriedShipArrival}
