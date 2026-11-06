@@ -273,6 +273,12 @@ export async function GET(request: Request) {
 
   const userAgent = request.headers.get("user-agent");
   const referer = request.headers.get("referer");
+  const isAutomatedUa = Boolean(
+    userAgent &&
+      (/^(node|undici|curl\/|python-requests)/i.test(userAgent.trim()) ||
+        /headlesschrome|playwright|puppeteer/i.test(userAgent)),
+  );
+  const effectiveIsTest = Boolean(isTestParam || isAutomatedUa);
 
   const existingRecord = incomingClickId
     ? getOpaqueClickAttributionById(incomingClickId)
@@ -367,18 +373,18 @@ export async function GET(request: Request) {
     existingRecord &&
       (existingRecord.followedAt ||
         (existingRecord.clickCount || 0) >= 1 ||
-        Boolean(existingRecord.isTest) !== Boolean(isTestParam)),
+        Boolean(existingRecord.isTest) !== Boolean(effectiveIsTest)),
   );
 
   const shouldMintFreshPerIntentClickId = Boolean(
     !incomingClickId ||
       isDeterministicOfferTemplate ||
       alreadyConsumedByAnotherClick ||
-      Boolean(isQaReferralId(incomingClickId)) !== Boolean(isTestParam),
+      Boolean(isQaReferralId(incomingClickId)) !== Boolean(effectiveIsTest),
   );
 
   const effectiveClickId = shouldMintFreshPerIntentClickId
-    ? generateOpaqueClickId({ isTest: isTestParam })
+    ? generateOpaqueClickId({ isTest: effectiveIsTest })
     : incomingClickId;
 
   let updated =
@@ -386,7 +392,7 @@ export async function GET(request: Request) {
       ? recordOutboundClickFollow(effectiveClickId, {
           userAgent,
           referer,
-          isTest: isTestParam,
+          isTest: effectiveIsTest,
           placementId: placementIdParam,
           propertySlug: propertySlugParam,
         })
@@ -465,7 +471,7 @@ export async function GET(request: Request) {
       provider,
       productCode: catalogRecord.providerProductCode,
       productDestinationUrl: destObj.toString(),
-      isTest: isTestParam,
+      isTest: effectiveIsTest,
       recordStage: "outbound_click",
     });
   } else if (!updated && existingRecord) {
@@ -487,7 +493,7 @@ export async function GET(request: Request) {
       provider: existingRecord.provider,
       productCode: existingRecord.productCode,
       productDestinationUrl: existingRecord.outboundPartnerUrl,
-      isTest: isTestParam,
+      isTest: effectiveIsTest,
       recordStage: "outbound_click",
     });
   }

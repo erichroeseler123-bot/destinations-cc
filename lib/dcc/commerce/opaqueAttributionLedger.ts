@@ -775,7 +775,17 @@ function inferTripDetailsFromUrlAndInput(
   }
 }
 
+const VERIFICATION_SCRIPT_CLICK_IDS = new Set([
+  "clk_4fdca16a282d2c8f784f69d5",
+  "clk_7e6a5576c953158475eac966",
+  "clk_40138f7e2d251f013ae21981",
+  "clk_f8d18ac5f2c291188073f718",
+  "clk_23145740401ed122a99e67af",
+  "clk_84b32294ed9614fe626829d3",
+]);
+
 export function isDemoOrAutomatedVerificationTraffic(params: {
+  clickId?: string | null;
   isTest?: boolean;
   originatingPage?: string | null;
   decisionReceiptId?: string | null;
@@ -784,6 +794,10 @@ export function isDemoOrAutomatedVerificationTraffic(params: {
   referer?: string | null;
 }): boolean {
   if (params.isTest === true) return true;
+  const cid = String(params.clickId || "").trim().toLowerCase();
+  if (cid && (isQaReferralId(cid) || VERIFICATION_SCRIPT_CLICK_IDS.has(cid))) {
+    return true;
+  }
   const page = String(params.originatingPage || "").toLowerCase();
   if (
     page.includes("/demo/") ||
@@ -797,8 +811,16 @@ export function isDemoOrAutomatedVerificationTraffic(params: {
   if (ref.includes("/demo/concierge-widget") || ref.includes("/demo/")) {
     return true;
   }
-  const ua = String(params.userAgent || "").toLowerCase();
-  if (ua.includes("headlesschrome") || ua.includes("playwright") || ua.includes("puppeteer")) {
+  const ua = String(params.userAgent || "").trim().toLowerCase();
+  if (
+    ua.includes("headlesschrome") ||
+    ua.includes("playwright") ||
+    ua.includes("puppeteer") ||
+    /^node\b/.test(ua) ||
+    ua.includes("undici") ||
+    ua.startsWith("curl/") ||
+    ua.includes("python-requests")
+  ) {
     return true;
   }
   const rcpt = String(params.decisionReceiptId || "");
@@ -1507,6 +1529,7 @@ export function getFunnelMetricsReport(options?: {
       click.isTest ||
         click.trafficClass === "test" ||
         isDemoOrAutomatedVerificationTraffic({
+          clickId: click.clickId,
           isTest: click.isTest,
           originatingPage: click.originatingPage,
           decisionReceiptId: click.decisionReceiptId,

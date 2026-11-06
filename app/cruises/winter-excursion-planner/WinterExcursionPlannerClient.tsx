@@ -155,17 +155,17 @@ export default function WinterExcursionPlannerClient({ initialData }: Props) {
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <span className="rounded-full bg-cyan-500/20 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-cyan-300 border border-cyan-500/40">
-                Shareable Whole-Sailing Plan · {data.plan.planCode}
+                Planning Preview · Shareable Whole-Sailing Plan · {data.plan.planCode}
               </span>
               <span className="rounded-full bg-emerald-500/20 px-3 py-1 text-xs font-semibold text-emerald-300 border border-emerald-500/40">
                 Driven Strictly by Verified Sailing Port Calls ({data.sailingPortCallSlugs.join(" · ")})
               </span>
               <span className="rounded-full bg-amber-500/20 px-3 py-1 text-xs font-semibold text-amber-300 border border-amber-500/40">
-                Tender & Pier Transfer Math Enforced
+                Conditional Cutoff & Return Buffer Until Ship Gangway Confirmation
               </span>
             </div>
             <h1 className="mt-3 text-2xl sm:text-3xl font-bold text-white">
-              {data.shipName} · {data.plan.itineraryTitle}
+              {data.shipName} · {data.plan.itineraryTitle} (Planning Preview)
             </h1>
             <p className="mt-1 text-sm text-slate-300">
               Sailing Date:{" "}
@@ -176,6 +176,39 @@ export default function WinterExcursionPlannerClient({ initialData }: Props) {
                 {data.party.adults} {data.party.adults === 1 ? "Adult" : "Adults"}
               </span>
             </p>
+            <div
+              data-testid="nassau-all-aboard-source-banner"
+              className="mt-3 rounded-xl border border-amber-500/40 bg-amber-950/30 p-3 text-xs text-amber-100"
+            >
+              <strong>Nassau 3:15 PM All-Aboard Source &amp; Conditional Planning Preview:</strong>{" "}
+              Royal Caribbean’s{" "}
+              <a
+                href={data.plan.officialCruiseLineItineraryUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline font-semibold text-cyan-300"
+              >
+                public itinerary ({data.plan.sailingId})
+              </a>{" "}
+              publishes <strong>only docked port hours (7:00 AM – 4:00 PM / 07:00–16:00)</strong> for
+              Day 2 in Nassau and does not list a port-specific all-aboard timestamp. Royal
+              Caribbean’s{" "}
+              <a
+                href="https://www.royalcaribbean.com/faq/questions/onboard-ship-arrival-time"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline font-semibold text-cyan-300"
+              >
+                general port-of-call policy FAQ
+              </a>{" "}
+              requires boarding at least <strong>30 minutes before departure (3:30 PM)</strong>, with
+              the binding cutoff announced onboard in the daily <em>Cruise Compass</em> and at the
+              gangway. The planner’s <strong>3:15 PM (15:15)</strong> cutoff is a{" "}
+              <strong>conditional 45-minute pre-departure planning heuristic</strong>, and the{" "}
+              <strong>60-minute return buffer</strong> (from the 2:15 PM return to Prince George
+              Wharf; 75 minutes before 3:30 PM) remains <strong>conditional</strong> until confirmed
+              onboard.
+            </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">

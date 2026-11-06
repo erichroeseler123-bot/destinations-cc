@@ -56,6 +56,10 @@ export interface WinterPortLogisticsSpec {
   defaultDepartureTime: string;
   defaultAllAboardTime: string;
   defaultLastTenderTime: string | null;
+  allAboardSource?: string;
+  allAboardSourceUrl?: string;
+  allAboardPolicyUrl?: string;
+  allAboardIsConditionalHeuristic?: boolean;
   logisticsSummary: string;
 }
 
@@ -80,8 +84,15 @@ export const ALL_WINTER_PORT_LOGISTICS_SPECS: Record<
     defaultDepartureTime: "16:00",
     defaultAllAboardTime: "15:15",
     defaultLastTenderTime: null,
+    allAboardSource:
+      "Planner 45-minute pre-departure conservative heuristic (16:00 departure - 45m = 15:15). Royal Caribbean's public itinerary (ID07MIA-1982128855) publishes only docked port hours (7:00 AM – 4:00 PM / 07:00–16:00); RCI's general port-of-call policy specifies at least 30 minutes prior to departure (3:30 PM / 15:30), with the binding all-aboard time announced onboard in the daily Cruise Compass and posted at the gangway.",
+    allAboardSourceUrl:
+      "https://www.royalcaribbean.com/itinerary/7-night-eastern-caribbean-from-miami-on-independence-ID07MIA-1982128855?country=USA&currencyCode=USD&sailDate=2027-01-24",
+    allAboardPolicyUrl:
+      "https://www.royalcaribbean.com/faq/questions/onboard-ship-arrival-time",
+    allAboardIsConditionalHeuristic: true,
     logisticsSummary:
-      "Docked at Prince George Wharf (7:00 AM – 4:00 PM; All-Aboard 3:15 PM). Requires 30m ship debark clearance + 15m verified terminal shuttle to Montague Foreshore Marina on Option TG4.",
+      "Planning Preview · Docked at Prince George Wharf (7:00 AM – 4:00 PM on Royal Caribbean itinerary ID07MIA-1982128855). The 3:15 PM (15:15) cutoff is a conditional 45-minute pre-departure planner heuristic (RCI general policy is >=30m before departure, i.e. 3:30 PM, confirmed onboard via Cruise Compass / gangway sign). Requires 30m ship debark clearance + 15m verified terminal shuttle to Montague Foreshore Marina on Option TG4 (returns to pier ~2:15 PM; conditional 60m buffer vs. 3:15 PM heuristic / 75m vs. 3:30 PM standard rule).",
   },
   "san-juan": {
     portSlug: "san-juan",
@@ -295,7 +306,7 @@ export const INDEPENDENCE_JAN_24_2027_SHAREABLE_PLAN: ShareableWinterSailingDefi
       savedTourId: "dcc:tour:viator:254526P1",
       savedOptionCode: "TG4",
       notes:
-        "Docked at Prince George Wharf (7:00 AM – 4:00 PM; All-Aboard 3:15 PM). Saved excursion: Nassau Swimming Pigs and Private Beach Club Escape (254526P1 · Option TG4 with Cruise Pier Pickup).",
+        "Planning Preview · Docked at Prince George Wharf (7:00 AM – 4:00 PM on Royal Caribbean public itinerary ID07MIA-1982128855). All-Aboard 3:15 PM (15:15) is a conditional 45-minute pre-departure planner heuristic (RCI general port-of-call policy is >=30m prior to departure, i.e. 3:30 PM, with the binding time posted onboard in the Cruise Compass / gangway sign). Saved excursion: Nassau Swimming Pigs and Private Beach Club Escape (254526P1 · Option TG4 with Cruise Pier Pickup · returns ~2:15 PM; conditional 60m buffer vs. 3:15 PM heuristic / 75m vs. 3:30 PM RCI rule).",
     },
     {
       dayNumber: 3,

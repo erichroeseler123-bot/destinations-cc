@@ -406,6 +406,10 @@ export default async function CategoryPage({
             const resolvedImg = resolveProductImage(sourceProduct || product);
             const cardImageUrl = resolvedImg?.src || null;
             const cardImageAlt = resolvedImg?.alt || `${product.title} in New Orleans`;
+            const dynamicBookingHref =
+              sourceProduct?.slug === "louisiana-tour-company-swamp-tour-hotel-pickup"
+                ? `/api/v1/ads/click?offer=15200P6&option=TG10&placementId=fp-wno-swamp-tours&property=hotel-monteleone-nola&date=${encodeURIComponent(selectedDate)}&adults=${encodeURIComponent(selectedPartySize)}&departureTime=08%3A00${isTestParam ? "&isTest=true" : ""}`
+                : sourceProduct?.bookingVariants?.[0]?.bookingUrl;
             return (
               <VisualEditorialCard
                 key={product.id}
@@ -423,7 +427,7 @@ export default async function CategoryPage({
                 priceFrom={sourceProduct?.priceFrom}
                 priceUnit={sourceProduct?.priceUnit}
                 isFlatRate={sourceProduct?.isFlatRate}
-                bookingHref={sourceProduct?.bookingVariants?.[0]?.bookingUrl}
+                bookingHref={dynamicBookingHref}
                 bookingItemId={sourceProduct?.itemId}
                 bookingFlowId={sourceProduct?.flowId}
                 companyShortname={sourceProduct?.companyShortname}
