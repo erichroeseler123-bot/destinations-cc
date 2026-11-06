@@ -1220,22 +1220,20 @@ export const PORT_AUTHORITY_CONFIG: Record<string, PortAuthorityConfig> = {
       category(
         "Mangrove Lagoon Kayak & Snorkel",
         "St. Thomas Mangrove Lagoon Kayak Hike Snorkel 5199KSML",
-        { destinationSlug: "st-thomas" },
+        "5199KSML",
       ),
       category(
         "Catamaran & Turtle Snorkel",
         "St. Thomas Catamaran Turtle Snorkel",
-        { destinationSlug: "st-thomas" },
+        "7452P2",
       ),
       category(
         "St. John & Trunk Bay Excursions",
         "St. Thomas to St. John Trunk Bay snorkel",
-        { destinationSlug: "st-thomas" },
       ),
       category(
         "Charlotte Amalie History & Food",
         "St. Thomas Charlotte Amalie walking tour",
-        { destinationSlug: "st-thomas" },
       ),
     ],
     cruiseSeason:
@@ -1288,7 +1286,7 @@ export const PORT_AUTHORITY_CONFIG: Record<string, PortAuthorityConfig> = {
         "https://www.viecotours.com/",
         "VI Ecotours Official Site (Published Nov 5, 2026 • Checked 2026-11-06)",
         "Lists 3-Hour Cas Cay Kayak, Hike & Snorkel Adventure (From $99) departing 6526 Estate Nadir; queued for human review against the prior 2h 30m snapshot.",
-        { type: "route", tags: ["kayak", "snorkel", "duration"] },
+        { type: "official-notice", tags: ["kayak", "snorkel", "duration"] },
       ),
     ],
     faq: [

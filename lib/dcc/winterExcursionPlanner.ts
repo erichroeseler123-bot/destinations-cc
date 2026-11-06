@@ -3,6 +3,7 @@ import {
   type MatchedTourOption,
   type TripMatchResponse,
 } from "./catalog/matcher";
+import { PILOT_VERIFIED_TOUR_RECORDS } from "./catalog/durableCatalogStore";
 import {
   getFunnelMetricsReport,
   issueOpaqueClickAttribution,
@@ -10,7 +11,6 @@ import {
   recordOutboundClickFollow,
   recordPlanOpenEvent,
   type FunnelMetricsReport,
-  type OpaqueClickReconciledOutcome,
 } from "./commerce/opaqueAttributionLedger";
 import { HOTEL_CONCIERGE_CONFIGS } from "./catalog/hotelConfigs";
 import { readDurableLedgerState } from "./storage/durableTransactionalStore";
@@ -25,8 +25,19 @@ export const WINTER_EXCURSION_PORT_SLUGS = [
 
 export type WinterExcursionPortSlug = (typeof WINTER_EXCURSION_PORT_SLUGS)[number];
 
+export const ALL_WINTER_SAILING_PORT_SLUGS = [
+  "nassau",
+  "san-juan",
+  "st-thomas",
+  "cozumel",
+  "roatan",
+  "grand-cayman",
+] as const;
+
+export type WinterSailingPortSlug = (typeof ALL_WINTER_SAILING_PORT_SLUGS)[number];
+
 export interface WinterPortLogisticsSpec {
-  portSlug: WinterExcursionPortSlug;
+  portSlug: WinterSailingPortSlug;
   portName: string;
   countryOrTerritory: string;
   dockOrTender: "dock" | "tender";
@@ -36,16 +47,17 @@ export interface WinterPortLogisticsSpec {
   dccPortGuidePath: string;
   dccPortGuideUrl: string;
   cruisePromenadePortUrl: string;
-  defaultFeaturedTourId: string;
-  defaultFeaturedProductCode: string;
+  defaultFeaturedTourId: string | null;
+  defaultFeaturedProductCode: string | null;
   defaultArrivalTime: string;
   defaultDepartureTime: string;
   defaultAllAboardTime: string;
+  defaultLastTenderTime: string | null;
   logisticsSummary: string;
 }
 
-export const WINTER_PORT_LOGISTICS_SPECS: Record<
-  WinterExcursionPortSlug,
+export const ALL_WINTER_PORT_LOGISTICS_SPECS: Record<
+  WinterSailingPortSlug,
   WinterPortLogisticsSpec
 > = {
   nassau: {
@@ -64,8 +76,29 @@ export const WINTER_PORT_LOGISTICS_SPECS: Record<
     defaultArrivalTime: "07:00",
     defaultDepartureTime: "16:00",
     defaultAllAboardTime: "15:15",
+    defaultLastTenderTime: null,
     logisticsSummary:
       "Docked at Prince George Wharf. Requires 30m ship debark clearance + 15m verified terminal shuttle to Montague Foreshore Marina on Option TG4.",
+  },
+  "san-juan": {
+    portSlug: "san-juan",
+    portName: "San Juan, Puerto Rico",
+    countryOrTerritory: "Puerto Rico (U.S.)",
+    dockOrTender: "dock",
+    isTenderPort: false,
+    defaultClearanceMinutes: 30,
+    terminalOrBerthName: "Old San Juan Pier 3 (Step-Off Walkable into Historic District)",
+    dccPortGuidePath: "/ports/san-juan",
+    dccPortGuideUrl: "https://www.destinationcommandcenter.com/ports/san-juan",
+    cruisePromenadePortUrl: "https://cruisepromenade.com/ports/san-juan-puerto-rico",
+    defaultFeaturedTourId: null,
+    defaultFeaturedProductCode: null,
+    defaultArrivalTime: "11:30",
+    defaultDepartureTime: "19:00",
+    defaultAllAboardTime: "18:15",
+    defaultLastTenderTime: null,
+    logisticsSummary:
+      "Docked at Old San Juan Pier 3 (11:30 AM – 7:00 PM; All-Aboard 6:15 PM). Step-off walkable into Old San Juan; 0 matched commercial catalog tours currently configured for this call.",
   },
   "st-thomas": {
     portSlug: "st-thomas",
@@ -83,6 +116,7 @@ export const WINTER_PORT_LOGISTICS_SPECS: Record<
     defaultArrivalTime: "08:00",
     defaultDepartureTime: "18:00",
     defaultAllAboardTime: "17:15",
+    defaultLastTenderTime: null,
     logisticsSummary:
       "Docked at Havensight (WICO) or Crown Bay. Requires 30m debark clearance + 20m verified open-air safari shuttle transfer each way.",
   },
@@ -102,6 +136,7 @@ export const WINTER_PORT_LOGISTICS_SPECS: Record<
     defaultArrivalTime: "07:00",
     defaultDepartureTime: "17:00",
     defaultAllAboardTime: "16:15",
+    defaultLastTenderTime: null,
     logisticsSummary:
       "Docked at International Pier / Puerta Maya. Requires 30m debark clearance + 15m verified excursion staging transfer each way.",
   },
@@ -121,6 +156,7 @@ export const WINTER_PORT_LOGISTICS_SPECS: Record<
     defaultArrivalTime: "08:00",
     defaultDepartureTime: "17:00",
     defaultAllAboardTime: "16:15",
+    defaultLastTenderTime: null,
     logisticsSummary:
       "Docked at Coxen Hole or Mahogany Bay. Requires 30m debark clearance + 15m verified excursion gate transfer each way.",
   },
@@ -140,21 +176,34 @@ export const WINTER_PORT_LOGISTICS_SPECS: Record<
     defaultArrivalTime: "07:30",
     defaultDepartureTime: "16:00",
     defaultAllAboardTime: "15:00",
+    defaultLastTenderTime: "14:45",
     logisticsSummary:
       "TENDER PORT at George Town Harbour. Requires 45m ship-to-shore tender clearance + 20m North Sound marina shuttle each way before last tender.",
   },
+};
+
+export const WINTER_PORT_LOGISTICS_SPECS: Record<
+  WinterExcursionPortSlug,
+  WinterPortLogisticsSpec
+> = {
+  nassau: ALL_WINTER_PORT_LOGISTICS_SPECS.nassau,
+  "st-thomas": ALL_WINTER_PORT_LOGISTICS_SPECS["st-thomas"],
+  cozumel: ALL_WINTER_PORT_LOGISTICS_SPECS.cozumel,
+  roatan: ALL_WINTER_PORT_LOGISTICS_SPECS.roatan,
+  "grand-cayman": ALL_WINTER_PORT_LOGISTICS_SPECS["grand-cayman"],
 };
 
 export interface WinterSailingItineraryDay {
   dayNumber: number;
   date: string;
   stopType: "embarkation" | "port" | "sea" | "debarkation";
-  portSlug: WinterExcursionPortSlug | null;
+  portSlug: WinterSailingPortSlug | null;
   portLabel: string;
   dockOrTender: "dock" | "tender" | "n/a";
   arrivalTime: string | null;
   departureTime: string | null;
   allAboardTime: string | null;
+  lastTenderTime?: string | null;
   savedTourId: string | null;
   savedOptionCode: string | null;
   notes: string;
@@ -180,7 +229,7 @@ export interface ShareableWinterSailingDefinition {
   itineraryDays: WinterSailingItineraryDay[];
   savedExcursionsByPort: Partial<
     Record<
-      WinterExcursionPortSlug,
+      WinterSailingPortSlug,
       {
         tourId: string;
         providerProductCode: string;
@@ -189,6 +238,7 @@ export interface ShareableWinterSailingDefinition {
         arrivalTime: string;
         departureTime: string;
         allAboardTime: string;
+        lastTenderTime?: string | null;
       }
     >
   >;
@@ -261,7 +311,7 @@ export const INDEPENDENCE_JAN_24_2027_SHAREABLE_PLAN: ShareableWinterSailingDefi
       dayNumber: 4,
       date: "2027-01-27",
       stopType: "port",
-      portSlug: null,
+      portSlug: "san-juan",
       portLabel: "San Juan, Puerto Rico",
       dockOrTender: "dock",
       arrivalTime: "11:30",
@@ -269,7 +319,8 @@ export const INDEPENDENCE_JAN_24_2027_SHAREABLE_PLAN: ShareableWinterSailingDefi
       allAboardTime: "18:15",
       savedTourId: null,
       savedOptionCode: null,
-      notes: "Docked at Old San Juan Pier 3 (11:30 AM – 7:00 PM; All-Aboard 6:15 PM).",
+      notes:
+        "Docked at Old San Juan Pier 3 (11:30 AM – 7:00 PM; All-Aboard 6:15 PM). Shown on itinerary; 0 matched commercial catalog tours configured (step-off walkable into Old San Juan).",
     },
     {
       dayNumber: 5,
@@ -351,16 +402,217 @@ export const INDEPENDENCE_JAN_24_2027_SHAREABLE_PLAN: ShareableWinterSailingDefi
   },
 };
 
+export const WESTERN_CARIBBEAN_JAN_24_2027_SHAREABLE_PLAN: ShareableWinterSailingDefinition = {
+  planCode: "WESTERN-2027-01-24",
+  sailingId: "WC07MIA-20270124",
+  cruiseLine: "Royal Caribbean International",
+  shipName: "Symphony of the Seas",
+  shipSlug: "symphony-of-the-seas",
+  itineraryTitle: "7-Night Western Caribbean (Cozumel · Roatán · Grand Cayman)",
+  sailDate: "2027-01-24",
+  returnDate: "2027-01-31",
+  durationNights: 7,
+  embarkationPort: "Miami, Florida",
+  officialCruiseLineItineraryUrl: "https://www.royalcaribbean.com/cruises",
+  cruisePromenadeShareUrl: "https://cruisepromenade.com/p/WESTERN-2027-01-24",
+  dccShareUrl:
+    "https://www.destinationcommandcenter.com/cruises/winter-excursion-planner?plan=WESTERN-2027-01-24",
+  defaultAdults: 2,
+  defaultChildAges: [],
+  placementId: "fp-cp-winter-excursion-planner",
+  itineraryDays: [
+    {
+      dayNumber: 1,
+      date: "2027-01-24",
+      stopType: "embarkation",
+      portSlug: null,
+      portLabel: "Miami, Florida (PortMiami)",
+      dockOrTender: "dock",
+      arrivalTime: null,
+      departureTime: "16:30",
+      allAboardTime: "15:30",
+      savedTourId: null,
+      savedOptionCode: null,
+      notes: "Embarkation at PortMiami.",
+    },
+    {
+      dayNumber: 2,
+      date: "2027-01-25",
+      stopType: "sea",
+      portSlug: null,
+      portLabel: "Cruising (Day at Sea)",
+      dockOrTender: "n/a",
+      arrivalTime: null,
+      departureTime: null,
+      allAboardTime: null,
+      savedTourId: null,
+      savedOptionCode: null,
+      notes: "At sea.",
+    },
+    {
+      dayNumber: 3,
+      date: "2027-01-26",
+      stopType: "port",
+      portSlug: "cozumel",
+      portLabel: "Cozumel, Mexico",
+      dockOrTender: "dock",
+      arrivalTime: "07:00",
+      departureTime: "17:00",
+      allAboardTime: "16:15",
+      savedTourId: "dcc:tour:viator:5553274P1",
+      savedOptionCode: "TG2",
+      notes: "Docked at International Pier / Puerta Maya (7:00 AM – 5:00 PM; All-Aboard 4:15 PM).",
+    },
+    {
+      dayNumber: 4,
+      date: "2027-01-27",
+      stopType: "port",
+      portSlug: "roatan",
+      portLabel: "Roatán, Honduras",
+      dockOrTender: "dock",
+      arrivalTime: "08:00",
+      departureTime: "17:00",
+      allAboardTime: "16:15",
+      savedTourId: "dcc:tour:viator:62963P76",
+      savedOptionCode: "DEFAULT",
+      notes: "Docked at Coxen Hole / Mahogany Bay (8:00 AM – 5:00 PM; All-Aboard 4:15 PM).",
+    },
+    {
+      dayNumber: 5,
+      date: "2027-01-28",
+      stopType: "port",
+      portSlug: "grand-cayman",
+      portLabel: "George Town, Grand Cayman",
+      dockOrTender: "tender",
+      arrivalTime: "07:30",
+      departureTime: "16:00",
+      allAboardTime: "15:00",
+      lastTenderTime: "14:45",
+      savedTourId: "dcc:tour:viator:10309P3",
+      savedOptionCode: "TG1",
+      notes: "Tender port at George Town Harbour (7:30 AM – 4:00 PM; Last Tender 2:45 PM).",
+    },
+    {
+      dayNumber: 6,
+      date: "2027-01-29",
+      stopType: "sea",
+      portSlug: null,
+      portLabel: "Cruising (Day at Sea)",
+      dockOrTender: "n/a",
+      arrivalTime: null,
+      departureTime: null,
+      allAboardTime: null,
+      savedTourId: null,
+      savedOptionCode: null,
+      notes: "At sea.",
+    },
+    {
+      dayNumber: 7,
+      date: "2027-01-30",
+      stopType: "sea",
+      portSlug: null,
+      portLabel: "Cruising (Day at Sea)",
+      dockOrTender: "n/a",
+      arrivalTime: null,
+      departureTime: null,
+      allAboardTime: null,
+      savedTourId: null,
+      savedOptionCode: null,
+      notes: "At sea.",
+    },
+    {
+      dayNumber: 8,
+      date: "2027-01-31",
+      stopType: "debarkation",
+      portSlug: null,
+      portLabel: "Miami, Florida (PortMiami)",
+      dockOrTender: "dock",
+      arrivalTime: "06:30",
+      departureTime: null,
+      allAboardTime: null,
+      savedTourId: null,
+      savedOptionCode: null,
+      notes: "Debarkation at PortMiami.",
+    },
+  ],
+  savedExcursionsByPort: {
+    cozumel: {
+      tourId: "dcc:tour:viator:5553274P1",
+      providerProductCode: "5553274P1",
+      optionCode: "TG2",
+      date: "2027-01-26",
+      arrivalTime: "07:00",
+      departureTime: "17:00",
+      allAboardTime: "16:15",
+    },
+    roatan: {
+      tourId: "dcc:tour:viator:62963P76",
+      providerProductCode: "62963P76",
+      optionCode: "DEFAULT",
+      date: "2027-01-27",
+      arrivalTime: "08:00",
+      departureTime: "17:00",
+      allAboardTime: "16:15",
+    },
+    "grand-cayman": {
+      tourId: "dcc:tour:viator:10309P3",
+      providerProductCode: "10309P3",
+      optionCode: "TG1",
+      date: "2027-01-28",
+      arrivalTime: "07:30",
+      departureTime: "16:00",
+      allAboardTime: "15:00",
+      lastTenderTime: "14:45",
+    },
+  },
+};
+
+export const SHAREABLE_WINTER_SAILING_PLANS_BY_CODE: Record<
+  string,
+  ShareableWinterSailingDefinition
+> = {
+  "INDY-2027-01-24": INDEPENDENCE_JAN_24_2027_SHAREABLE_PLAN,
+  "WESTERN-2027-01-24": WESTERN_CARIBBEAN_JAN_24_2027_SHAREABLE_PLAN,
+};
+
+export function resolveShareableWinterSailingPlan(
+  planCode?: string | null,
+): ShareableWinterSailingDefinition {
+  const normalized = (planCode || "INDY-2027-01-24").trim().toUpperCase();
+  return (
+    SHAREABLE_WINTER_SAILING_PLANS_BY_CODE[normalized] ||
+    INDEPENDENCE_JAN_24_2027_SHAREABLE_PLAN
+  );
+}
+
+export interface RejectedOffItineraryTourRequest {
+  requestedPortSlug: string;
+  requestedTourId: string;
+  actualTourPortSlug: string | null;
+  activePlanCode: string;
+  activeSailingPortSlugs: WinterSailingPortSlug[];
+  reason: string;
+  applicablePortGuideUrl: string | null;
+  applicableSailingPlanUrl: string | null;
+}
+
 export interface WinterPortEvaluatedPlanSlot {
-  portSlug: WinterExcursionPortSlug;
+  portSlug: WinterSailingPortSlug;
   portSpec: WinterPortLogisticsSpec;
+  dayNumber: number | null;
   date: string;
   onActiveSailingItinerary: boolean;
   savedInShareablePlan: boolean;
   shipArrival: string;
   shipDeparture: string;
   allAboardTime: string | null;
+  lastTenderTime: string | null;
   allAboardStatus: "confirmed" | "missing_needs_confirmation";
+  lastTenderStatus: "confirmed" | "missing_needs_confirmation" | "not_applicable";
+  cruiseFitRecommendationWithheld: boolean;
+  checkoutEligible: boolean;
+  matchedToursCount: number;
+  noMatchedToursReason: string | null;
   selectedOption: MatchedTourOption | null;
   needsConfirmationSampleOption: MatchedTourOption | null;
   allMatchedOptions: MatchedTourOption[];
@@ -373,20 +625,46 @@ export interface EvaluatedWinterSailingPlanResponse {
   plan: ShareableWinterSailingDefinition;
   shipName: string;
   sailDate: string;
+  organizerShareLinks: {
+    cruisePromenadeOrganizerUrl: string;
+    dccOrganizerUrl: string;
+    placementId: string;
+    tracksSeparately: readonly [
+      "planOpens",
+      "outboundClicks",
+      "providerConfirmedBookings",
+      "paidCommissions",
+    ];
+  };
   party: {
     adults: number;
     childAges: number[];
     totalGuests: number;
   };
   surface: "cruisepromenade" | "dcc";
+  sailingPortCallSlugs: WinterSailingPortSlug[];
+  sailingPortCalls: WinterPortEvaluatedPlanSlot[];
+  otherWinterPortGuides: Array<{
+    portSlug: WinterExcursionPortSlug;
+    portName: string;
+    dockOrTender: "dock" | "tender";
+    dccPortGuidePath: string;
+    dccPortGuideUrl: string;
+    cruisePromenadePortUrl: string;
+    applicableSailingPlanCode: string;
+    applicableSailingPlanUrl: string;
+  }>;
+  offItineraryBlocked: boolean;
+  rejectedOffItineraryRequests: RejectedOffItineraryTourRequest[];
   savedPortsSummary: {
-    savedPortSlugs: WinterExcursionPortSlug[];
+    savedPortSlugs: WinterSailingPortSlug[];
     savedToursCount: number;
+    bookableSavedToursCount: number;
     combinedPartyTotalCents: number;
     combinedPartyTotalFormatted: string;
     currency: "USD";
     savedSelections: Array<{
-      portSlug: WinterExcursionPortSlug;
+      portSlug: WinterSailingPortSlug;
       portName: string;
       date: string;
       tourId: string;
@@ -396,6 +674,8 @@ export interface EvaluatedWinterSailingPlanResponse {
       optionTitle: string | null;
       suitability: "recommended" | "needs_confirmation" | "ineligible";
       suitabilityLabel: "Recommended" | "Needs confirmation" | "Ineligible";
+      cruiseFitRecommendationWithheld: boolean;
+      checkoutEligible: boolean;
       verifiedDepartureTime: string | null;
       availableDepartureTimes: string[];
       pickupFulfillmentType: string;
@@ -408,25 +688,41 @@ export interface EvaluatedWinterSailingPlanResponse {
       shipArrival: string;
       shipDeparture: string;
       allAboardTime: string | null;
+      lastTenderTime: string | null;
       unitPriceCents: number | null;
       totalPartyPriceCents: number | null;
       totalPartyPriceFormatted: string;
       priceVerifiedLive: boolean;
       checkoutProvider: "viator";
-      trackedViatorCheckoutUrl: string;
+      placementId: string;
+      trackedViatorCheckoutUrl: string | null;
       clickId: string | null;
     }>;
   };
   fivePortsBySlug: Record<WinterExcursionPortSlug, WinterPortEvaluatedPlanSlot>;
 }
 
-const DEFAULT_FIVE_PORT_DATES_FOR_JAN_24_WEEK: Record<WinterExcursionPortSlug, string> = {
+const DEFAULT_FIVE_PORT_DATES_FOR_JAN_24_WEEK: Record<WinterSailingPortSlug, string> = {
   nassau: "2027-01-25",
   cozumel: "2027-01-26",
+  "san-juan": "2027-01-27",
   roatan: "2027-01-27",
   "st-thomas": "2027-01-28",
   "grand-cayman": "2027-01-29",
 };
+
+function findCatalogTourRecord(tourIdOrProductCode: string) {
+  const needle = tourIdOrProductCode.trim();
+  if (!needle) return null;
+  return (
+    PILOT_VERIFIED_TOUR_RECORDS.find(
+      (r) =>
+        r.tourId.toLowerCase() === needle.toLowerCase() ||
+        r.providerProductCode.toLowerCase() === needle.toLowerCase() ||
+        r.compatibilityAliases.some((a) => a.toLowerCase() === needle.toLowerCase()),
+    ) || null
+  );
+}
 
 export async function evaluateWinterSailingPlan(params?: {
   planCode?: string | null;
@@ -436,13 +732,14 @@ export async function evaluateWinterSailingPlan(params?: {
   childAges?: number[];
   surface?: "cruisepromenade" | "dcc";
   enableShortlistLiveCheck?: boolean;
-  savedPortOverrides?: Partial<Record<WinterExcursionPortSlug, string | null>>;
-  missingAllAboardPorts?: WinterExcursionPortSlug[];
+  savedPortOverrides?: Record<string, string | null | undefined>;
+  missingAllAboardPorts?: string[];
+  missingLastTenderPorts?: string[];
   recordOpen?: boolean;
   visitorId?: string | null;
   isTest?: boolean;
 }): Promise<EvaluatedWinterSailingPlanResponse> {
-  const plan = INDEPENDENCE_JAN_24_2027_SHAREABLE_PLAN;
+  const plan = resolveShareableWinterSailingPlan(params?.planCode);
   const shipName = params?.shipName?.trim() || plan.shipName;
   const sailDate = params?.sailDate?.trim() || plan.sailDate;
   const adults =
@@ -453,14 +750,97 @@ export async function evaluateWinterSailingPlan(params?: {
   const totalGuests = adults + childAges.length;
   const surface = params?.surface || "cruisepromenade";
   const enableLiveCheck = params?.enableShortlistLiveCheck !== false;
-  const missingAllAboardSet = new Set<WinterExcursionPortSlug>(
-    params?.missingAllAboardPorts || [],
+
+  const missingAllAboardSet = new Set<string>(
+    (params?.missingAllAboardPorts || []).map((p) => p.trim().toLowerCase()).filter(Boolean),
   );
+  const missingLastTenderSet = new Set<string>(
+    (params?.missingLastTenderPorts || []).map((p) => p.trim().toLowerCase()).filter(Boolean),
+  );
+
+  // Derive the active sailing's verified port calls strictly from the sailing's itineraryDays
+  const itineraryPortDays = plan.itineraryDays.filter(
+    (d): d is WinterSailingItineraryDay & { portSlug: WinterSailingPortSlug } =>
+      d.stopType === "port" && d.portSlug !== null,
+  );
+  const sailingPortCallSlugs = itineraryPortDays.map((d) => d.portSlug);
+  const sailingPortCallSet = new Set<string>(sailingPortCallSlugs);
+
+  // Inspect any incoming savedPortOverrides and block off-itinerary ports or cross-port tour IDs
+  const rejectedOffItineraryRequests: RejectedOffItineraryTourRequest[] = [];
+  const validatedOverrides: Partial<Record<WinterSailingPortSlug, string | null>> = {};
+
+  if (params?.savedPortOverrides && typeof params.savedPortOverrides === "object") {
+    for (const [rawPortKey, rawTourVal] of Object.entries(params.savedPortOverrides)) {
+      if (rawTourVal === undefined) continue;
+      const normalizedPort = rawPortKey.trim().toLowerCase();
+      if (rawTourVal === null || rawTourVal.trim() === "" || rawTourVal.trim() === "none") {
+        if (sailingPortCallSet.has(normalizedPort)) {
+          validatedOverrides[normalizedPort as WinterSailingPortSlug] = null;
+        }
+        continue;
+      }
+
+      const trimmedTour = rawTourVal.trim();
+      const catalogRec = findCatalogTourRecord(trimmedTour);
+      const actualTourPortSlug = catalogRec?.portSlug || catalogRec?.destinationSlug || null;
+
+      // Case 1: Port itself is not on the active sailing's itinerary (e.g. cozumel on INDY-2027-01-24)
+      if (!sailingPortCallSet.has(normalizedPort)) {
+        const offPortSpec =
+          ALL_WINTER_PORT_LOGISTICS_SPECS[normalizedPort as WinterSailingPortSlug] || null;
+        rejectedOffItineraryRequests.push({
+          requestedPortSlug: normalizedPort,
+          requestedTourId: trimmedTour,
+          actualTourPortSlug,
+          activePlanCode: plan.planCode,
+          activeSailingPortSlugs: sailingPortCallSlugs,
+          reason: `Port "${normalizedPort}" is not on the verified ${plan.shipName} (${plan.planCode}) sailing itinerary (${sailingPortCallSlugs.join(", ")}). Off-itinerary tours cannot be saved or added to this sailing plan.`,
+          applicablePortGuideUrl: offPortSpec?.dccPortGuideUrl || null,
+          applicableSailingPlanUrl:
+            normalizedPort === "cozumel" ||
+            normalizedPort === "roatan" ||
+            normalizedPort === "grand-cayman"
+              ? WESTERN_CARIBBEAN_JAN_24_2027_SHAREABLE_PLAN.dccShareUrl
+              : null,
+        });
+        continue;
+      }
+
+      // Case 2: Tour belongs to a different port (e.g. Cozumel tour 5553274P1 passed under tour_nassau)
+      if (!catalogRec || (actualTourPortSlug && actualTourPortSlug !== normalizedPort)) {
+        const offPortSpec =
+          actualTourPortSlug && actualTourPortSlug in ALL_WINTER_PORT_LOGISTICS_SPECS
+            ? ALL_WINTER_PORT_LOGISTICS_SPECS[actualTourPortSlug as WinterSailingPortSlug]
+            : null;
+        rejectedOffItineraryRequests.push({
+          requestedPortSlug: normalizedPort,
+          requestedTourId: trimmedTour,
+          actualTourPortSlug,
+          activePlanCode: plan.planCode,
+          activeSailingPortSlugs: sailingPortCallSlugs,
+          reason: catalogRec
+            ? `Tour "${trimmedTour}" belongs to port "${actualTourPortSlug}", which does not match sailing port call "${normalizedPort}" on ${plan.planCode}.`
+            : `Tour "${trimmedTour}" is not a verified catalog tour for port call "${normalizedPort}" on ${plan.planCode}.`,
+          applicablePortGuideUrl: offPortSpec?.dccPortGuideUrl || null,
+          applicableSailingPlanUrl:
+            actualTourPortSlug === "cozumel" ||
+            actualTourPortSlug === "roatan" ||
+            actualTourPortSlug === "grand-cayman"
+              ? WESTERN_CARIBBEAN_JAN_24_2027_SHAREABLE_PLAN.dccShareUrl
+              : null,
+        });
+        continue;
+      }
+
+      validatedOverrides[normalizedPort as WinterSailingPortSlug] = catalogRec.tourId;
+    }
+  }
 
   if (params?.recordOpen) {
     recordPlanOpenEvent({
       visitorId: params.visitorId,
-      planCode: params.planCode || plan.planCode,
+      planCode: plan.planCode,
       sourcePage:
         surface === "cruisepromenade"
           ? `/p/${plan.planCode}`
@@ -468,29 +848,95 @@ export async function evaluateWinterSailingPlan(params?: {
       placementId: plan.placementId,
       propertySlug: plan.shipSlug,
       surface,
-      isTest: params.isTest,
+      isTest: params.isTest === true,
     });
   }
 
-  const fivePortsBySlug = {} as Record<WinterExcursionPortSlug, WinterPortEvaluatedPlanSlot>;
+  const evaluatedByPortSlug = {} as Record<WinterSailingPortSlug, WinterPortEvaluatedPlanSlot>;
 
-  for (const portSlug of WINTER_EXCURSION_PORT_SLUGS) {
-    const spec = WINTER_PORT_LOGISTICS_SPECS[portSlug];
-    const savedPreset = plan.savedExcursionsByPort[portSlug];
+  for (const portSlug of ALL_WINTER_SAILING_PORT_SLUGS) {
+    const spec = ALL_WINTER_PORT_LOGISTICS_SPECS[portSlug];
+    const itineraryDay = itineraryPortDays.find((d) => d.portSlug === portSlug) || null;
+    const onActiveSailingItinerary = Boolean(itineraryDay);
+    const savedPreset = onActiveSailingItinerary ? plan.savedExcursionsByPort[portSlug] : undefined;
     const overrideTourId =
-      params?.savedPortOverrides && portSlug in params.savedPortOverrides
-        ? params.savedPortOverrides[portSlug]
-        : undefined;
-    const effectiveSavedTourId =
-      overrideTourId !== undefined ? overrideTourId : savedPreset?.tourId || null;
+      portSlug in validatedOverrides ? validatedOverrides[portSlug] : undefined;
 
-    const date = savedPreset?.date || DEFAULT_FIVE_PORT_DATES_FOR_JAN_24_WEEK[portSlug];
-    const shipArrival = savedPreset?.arrivalTime || spec.defaultArrivalTime;
-    const shipDeparture = savedPreset?.departureTime || spec.defaultDepartureTime;
+    // Only allow saving a tour if the port is on the active sailing itinerary!
+    const effectiveSavedTourId = onActiveSailingItinerary
+      ? overrideTourId !== undefined
+        ? overrideTourId
+        : savedPreset?.tourId || null
+      : null;
+
+    const date =
+      itineraryDay?.date ||
+      savedPreset?.date ||
+      DEFAULT_FIVE_PORT_DATES_FOR_JAN_24_WEEK[portSlug];
+    const shipArrival =
+      itineraryDay?.arrivalTime || savedPreset?.arrivalTime || spec.defaultArrivalTime;
+    const shipDeparture =
+      itineraryDay?.departureTime || savedPreset?.departureTime || spec.defaultDepartureTime;
+
     const omitAllAboard = missingAllAboardSet.has(portSlug);
-    const allAboardTime = omitAllAboard
-      ? undefined
-      : savedPreset?.allAboardTime || spec.defaultAllAboardTime;
+    const omitLastTender = spec.isTenderPort && missingLastTenderSet.has(portSlug);
+    const allAboardTime =
+      omitAllAboard || omitLastTender
+        ? undefined
+        : itineraryDay?.allAboardTime ||
+          savedPreset?.allAboardTime ||
+          spec.defaultAllAboardTime;
+    const lastTenderTime = spec.isTenderPort
+      ? omitLastTender || omitAllAboard
+        ? ""
+        : itineraryDay?.lastTenderTime ||
+          savedPreset?.lastTenderTime ||
+          spec.defaultLastTenderTime ||
+          allAboardTime ||
+          null
+      : null;
+
+    if (portSlug === "san-juan") {
+      // San Juan has 0 matched commercial catalog tours; show on itinerary with explicit 0 matched tours
+      evaluatedByPortSlug[portSlug] = {
+        portSlug,
+        portSpec: spec,
+        dayNumber: itineraryDay?.dayNumber ?? 4,
+        date,
+        onActiveSailingItinerary,
+        savedInShareablePlan: false,
+        shipArrival,
+        shipDeparture,
+        allAboardTime: allAboardTime || null,
+        lastTenderTime: null,
+        allAboardStatus: allAboardTime ? "confirmed" : "missing_needs_confirmation",
+        lastTenderStatus: "not_applicable",
+        cruiseFitRecommendationWithheld: !allAboardTime,
+        checkoutEligible: false,
+        matchedToursCount: 0,
+        noMatchedToursReason:
+          "No matched catalog tours for this port call window; Old San Juan Pier 3 is step-off walkable into the historic district.",
+        selectedOption: null,
+        needsConfirmationSampleOption: null,
+        allMatchedOptions: [],
+        matchMetrics: {
+          storageSource: "memory_seed",
+          totalCatalogCandidates: 0,
+          eligibleCount: 0,
+          needsConfirmationCount: 0,
+          ineligibleCount: 0,
+          shortlistCheckedCount: 0,
+          supportedVerifiedTransferCount: 0,
+          liveDepartureVerifiedCount: 0,
+          fullySupportedCruiseFitCount: 0,
+          upstreamRequestsMade: 0,
+          cachedCatalogSearchMs: 0,
+          shortlistLiveCheckMs: 0,
+          totalResponseMs: 0,
+        },
+      };
+      continue;
+    }
 
     const matchRes = await matchToursForTrip({
       destination: portSlug,
@@ -503,6 +949,7 @@ export async function evaluateWinterSailingPlan(params?: {
       shipArrival,
       shipDeparture,
       allAboardTime,
+      lastTenderTime: spec.isTenderPort ? (lastTenderTime ?? "") : undefined,
       isTenderPort: spec.isTenderPort,
       tenderClearanceMinutes: spec.defaultClearanceMinutes,
       surface,
@@ -514,53 +961,155 @@ export async function evaluateWinterSailingPlan(params?: {
       isTest: params?.isTest ?? true,
     });
 
-    const selectedOption =
-      (effectiveSavedTourId
-        ? matchRes.options.find(
-            (o) =>
-              o.tourId === effectiveSavedTourId ||
-              o.providerProductCode === effectiveSavedTourId,
-          )
-        : null) ||
-      matchRes.options.find(
-        (o) =>
-          o.tourId === spec.defaultFeaturedTourId ||
-          o.providerProductCode === spec.defaultFeaturedProductCode,
-      ) ||
-      matchRes.options[0] ||
-      null;
+    const timingMissing = !allAboardTime || (spec.isTenderPort && !lastTenderTime);
 
-    // Also compute a deterministic "Needs confirmation" comparison when allAboardTime is missing
+    // Where the ship's all-aboard or last-tender time is missing, or the port is not on the active sailing itinerary,
+    // withhold the cruise-fit booking recommendation on options.
+    const processedOptions: MatchedTourOption[] = matchRes.options.map((opt) => {
+      if (timingMissing || opt.suitability !== "recommended") {
+        return {
+          ...opt,
+          suitability: opt.suitability === "ineligible" ? "ineligible" : "needs_confirmation",
+          cruiseScheduleFit: opt.cruiseScheduleFit
+            ? {
+                ...opt.cruiseScheduleFit,
+                fitStatus:
+                  opt.cruiseScheduleFit.fitStatus === "ineligible"
+                    ? "ineligible"
+                    : "needs_confirmation",
+                allAboardConfirmed: Boolean(allAboardTime),
+                lastTenderConfirmed: spec.isTenderPort ? Boolean(lastTenderTime) : true,
+                cruiseFitRecommendationWithheld: true,
+              }
+            : undefined,
+          bookingPath: {
+            ...opt.bookingPath,
+            clickId: null,
+            trackedClickUrl: "",
+          },
+        };
+      }
+      return opt;
+    });
+
+    const selectedOption = onActiveSailingItinerary
+      ? (effectiveSavedTourId
+          ? processedOptions.find(
+              (o) =>
+                o.tourId === effectiveSavedTourId ||
+                o.providerProductCode === effectiveSavedTourId,
+            )
+          : null) ||
+        processedOptions.find(
+          (o) =>
+            o.tourId === spec.defaultFeaturedTourId ||
+            o.providerProductCode === spec.defaultFeaturedProductCode,
+        ) ||
+        processedOptions[0] ||
+        null
+      : processedOptions.find(
+          (o) =>
+            o.tourId === spec.defaultFeaturedTourId ||
+            o.providerProductCode === spec.defaultFeaturedProductCode,
+        ) ||
+        processedOptions[0] ||
+        null;
+
     const needsConfirmationSampleOption =
-      matchRes.options.find((o) => o.suitability === "needs_confirmation") || null;
+      processedOptions.find((o) => o.suitability === "needs_confirmation") || null;
 
-    fivePortsBySlug[portSlug] = {
+    const slotCheckoutEligible = Boolean(
+      onActiveSailingItinerary &&
+        !timingMissing &&
+        selectedOption &&
+        selectedOption.suitability === "recommended" &&
+        selectedOption.bookingPath.trackedClickUrl,
+    );
+
+    evaluatedByPortSlug[portSlug] = {
       portSlug,
       portSpec: spec,
+      dayNumber: itineraryDay?.dayNumber ?? null,
       date,
-      onActiveSailingItinerary: Boolean(savedPreset),
-      savedInShareablePlan: Boolean(effectiveSavedTourId),
+      onActiveSailingItinerary,
+      savedInShareablePlan: Boolean(onActiveSailingItinerary && effectiveSavedTourId && selectedOption),
       shipArrival,
       shipDeparture,
       allAboardTime: allAboardTime || null,
+      lastTenderTime: spec.isTenderPort ? lastTenderTime : null,
       allAboardStatus: allAboardTime ? "confirmed" : "missing_needs_confirmation",
+      lastTenderStatus: spec.isTenderPort
+        ? lastTenderTime
+          ? "confirmed"
+          : "missing_needs_confirmation"
+        : "not_applicable",
+      cruiseFitRecommendationWithheld:
+        timingMissing || selectedOption?.suitability !== "recommended",
+      checkoutEligible: slotCheckoutEligible,
+      matchedToursCount: processedOptions.length,
+      noMatchedToursReason: null,
       selectedOption,
       needsConfirmationSampleOption,
-      allMatchedOptions: matchRes.options.slice(0, 5),
+      allMatchedOptions: processedOptions.slice(0, 5),
       matchMetrics: matchRes.metrics,
     };
   }
 
+  const sailingPortCalls: WinterPortEvaluatedPlanSlot[] = sailingPortCallSlugs.map(
+    (slug) => evaluatedByPortSlug[slug],
+  );
+
+  const fivePortsBySlug: Record<WinterExcursionPortSlug, WinterPortEvaluatedPlanSlot> = {
+    nassau: evaluatedByPortSlug.nassau,
+    "st-thomas": evaluatedByPortSlug["st-thomas"],
+    cozumel: evaluatedByPortSlug.cozumel,
+    roatan: evaluatedByPortSlug.roatan,
+    "grand-cayman": evaluatedByPortSlug["grand-cayman"],
+  };
+
+  const otherWinterPortGuides = WINTER_EXCURSION_PORT_SLUGS.filter(
+    (slug) => !sailingPortCallSet.has(slug),
+  ).map((slug) => {
+    const spec = WINTER_PORT_LOGISTICS_SPECS[slug];
+    const applicablePlan =
+      slug === "cozumel" || slug === "roatan" || slug === "grand-cayman"
+        ? WESTERN_CARIBBEAN_JAN_24_2027_SHAREABLE_PLAN
+        : INDEPENDENCE_JAN_24_2027_SHAREABLE_PLAN;
+    return {
+      portSlug: slug,
+      portName: spec.portName,
+      dockOrTender: spec.dockOrTender,
+      dccPortGuidePath: spec.dccPortGuidePath,
+      dccPortGuideUrl: spec.dccPortGuideUrl,
+      cruisePromenadePortUrl: spec.cruisePromenadePortUrl,
+      applicableSailingPlanCode: applicablePlan.planCode,
+      applicableSailingPlanUrl: applicablePlan.dccShareUrl,
+    };
+  });
+
   const savedSelections: EvaluatedWinterSailingPlanResponse["savedPortsSummary"]["savedSelections"] =
     [];
   let combinedPartyTotalCents = 0;
+  let bookableSavedToursCount = 0;
 
-  for (const portSlug of WINTER_EXCURSION_PORT_SLUGS) {
-    const slot = fivePortsBySlug[portSlug];
-    if (!slot.savedInShareablePlan || !slot.selectedOption) continue;
+  // Drive saves, totals, and checkout eligibility strictly from the verified sailing's actual port calls
+  for (const slot of sailingPortCalls) {
+    if (!slot.onActiveSailingItinerary || !slot.savedInShareablePlan || !slot.selectedOption) {
+      continue;
+    }
     const opt = slot.selectedOption;
-    const partyCents = opt.boundOffer.totalPartyPriceCents ?? 0;
-    combinedPartyTotalCents += partyCents;
+    const isCheckoutEligible =
+      slot.checkoutEligible &&
+      opt.suitability === "recommended" &&
+      !slot.cruiseFitRecommendationWithheld &&
+      Boolean(opt.bookingPath.trackedClickUrl);
+
+    if (isCheckoutEligible) {
+      const partyCents = opt.boundOffer.totalPartyPriceCents ?? 0;
+      combinedPartyTotalCents += partyCents;
+      bookableSavedToursCount += 1;
+    }
+
     const suitabilityLabel =
       opt.suitability === "recommended"
         ? "Recommended"
@@ -569,7 +1118,7 @@ export async function evaluateWinterSailingPlan(params?: {
           : "Ineligible";
 
     savedSelections.push({
-      portSlug,
+      portSlug: slot.portSlug,
       portName: slot.portSpec.portName,
       date: slot.date,
       tourId: opt.tourId,
@@ -579,6 +1128,8 @@ export async function evaluateWinterSailingPlan(params?: {
       optionTitle: opt.boundOffer.optionTitle,
       suitability: opt.suitability,
       suitabilityLabel,
+      cruiseFitRecommendationWithheld: !isCheckoutEligible,
+      checkoutEligible: isCheckoutEligible,
       verifiedDepartureTime:
         opt.boundOffer.departureTime ||
         opt.boundOffer.fittingDepartureTimes[0] ||
@@ -596,6 +1147,7 @@ export async function evaluateWinterSailingPlan(params?: {
       shipArrival: slot.shipArrival,
       shipDeparture: slot.shipDeparture,
       allAboardTime: slot.allAboardTime,
+      lastTenderTime: slot.lastTenderTime,
       unitPriceCents: opt.boundOffer.unitPriceCents,
       totalPartyPriceCents: opt.boundOffer.totalPartyPriceCents,
       totalPartyPriceFormatted:
@@ -604,9 +1156,11 @@ export async function evaluateWinterSailingPlan(params?: {
           : "Check at Viator",
       priceVerifiedLive: opt.boundOffer.priceVerifiedLive,
       checkoutProvider: "viator",
-      trackedViatorCheckoutUrl:
-        opt.bookingPath.trackedClickUrl || opt.bookingPath.handoffUrl || "",
-      clickId: opt.bookingPath.clickId,
+      placementId: plan.placementId,
+      trackedViatorCheckoutUrl: isCheckoutEligible
+        ? opt.bookingPath.trackedClickUrl || opt.bookingPath.handoffUrl || null
+        : null,
+      clickId: isCheckoutEligible ? opt.bookingPath.clickId : null,
     });
   }
 
@@ -616,15 +1170,32 @@ export async function evaluateWinterSailingPlan(params?: {
     plan,
     shipName,
     sailDate,
+    organizerShareLinks: {
+      cruisePromenadeOrganizerUrl: `${plan.cruisePromenadeShareUrl}?utm_source=cruise_organizer_share&utm_medium=group_link&utm_campaign=indy_2027_01_24_organizers`,
+      dccOrganizerUrl: `${plan.dccShareUrl}&utm_source=cruise_organizer_share&utm_medium=group_link&utm_campaign=indy_2027_01_24_organizers`,
+      placementId: plan.placementId,
+      tracksSeparately: [
+        "planOpens",
+        "outboundClicks",
+        "providerConfirmedBookings",
+        "paidCommissions",
+      ],
+    },
     party: {
       adults,
       childAges,
       totalGuests,
     },
     surface,
+    sailingPortCallSlugs,
+    sailingPortCalls,
+    otherWinterPortGuides,
+    offItineraryBlocked: rejectedOffItineraryRequests.length > 0,
+    rejectedOffItineraryRequests,
     savedPortsSummary: {
       savedPortSlugs: savedSelections.map((s) => s.portSlug),
       savedToursCount: savedSelections.length,
+      bookableSavedToursCount,
       combinedPartyTotalCents,
       combinedPartyTotalFormatted: `$${(combinedPartyTotalCents / 100).toFixed(2)}`,
       currency: "USD",
@@ -671,6 +1242,26 @@ export interface WinterAttributionReplayTraceResult {
     jeanLafitteTourId: string;
     jeanLafitteOfferItemId: string;
     payableFallbackOfferTourId: string;
+    alreadyApprovedFirstPartyPlacement: {
+      placementId: string;
+      liveGuestUrl: string;
+      secondaryLiveGuestUrl: string;
+      tourId: string;
+      providerProductCode: string;
+      title: string;
+      operatorName: string;
+      commissionStatus: "verified_active_8pct";
+      placementApprovalStatus: "live_first_party";
+      verifiedHotelMonteleonePickupStop: string;
+      totalPartyPrice2AdultsUsd: number;
+      expectedPartnerCommission2AdultsUsd: number;
+    };
+    jeanLafitte763318PickupAddressResolution: {
+      hotelMonteleoneShuttleOptionAddress: string;
+      selfDriveBaratariaDockOptionAddress: string;
+      why810ToulouseAppearedInNotes: string;
+      resolutionSummary: string;
+    };
     specificApprovalsStillNeeded: Array<{
       approvalId: string;
       party: string;
@@ -687,7 +1278,7 @@ export interface WinterAttributionReplayTraceResult {
  * 1) Plan opens, outbound clicks, provider-confirmed bookings, and paid commissions are tracked separately,
  * 2) Replaying the same provider event credits the placement (`fp-cp-winter-excursion-planner`) exactly once
  *    (`duplicateDelivery: true` on the second replay, `duplicateDeliveriesIgnored: 1`),
- * 3) Production counters remain untouched (`0`), and
+ * 3) Production counters remain untouched (`0` from test replay), and
  * 4) The Hotel Monteleone New Orleans pilot remains pending until operator terms and hotel placement are approved.
  */
 export function runWinterAttributionReplayAndNolaStatusTrace(): WinterAttributionReplayTraceResult {
@@ -830,13 +1421,38 @@ export function runWinterAttributionReplayAndNolaStatusTrace(): WinterAttributio
       jeanLafitteTourId: "dcc:tour:fh:jeanlafitteswamptour:763318",
       jeanLafitteOfferItemId: "763318",
       payableFallbackOfferTourId: "dcc:tour:viator:15200P6",
+      alreadyApprovedFirstPartyPlacement: {
+        placementId: "fp-wno-swamp-tours",
+        liveGuestUrl: "https://www.welcometoneworleanstours.com/swamp-tours",
+        secondaryLiveGuestUrl: "https://www.destinationcommandcenter.com/new-orleans/swamp-tours",
+        tourId: "dcc:tour:viator:15200P6",
+        providerProductCode: "15200P6",
+        title: "New Orleans Swamp Tour Boat Adventure With Pickup",
+        operatorName: "Louisiana Tour Company",
+        commissionStatus: "verified_active_8pct",
+        placementApprovalStatus: "live_first_party",
+        verifiedHotelMonteleonePickupStop:
+          "Hotel Monteleone (214 Royal St, New Orleans, LA 70130 — Viator pickup ref LOC-6eKJ+or5y8o99Qw0C8xWyGAjWJk3qp08H7OnT0MLhOs=)",
+        totalPartyPrice2AdultsUsd: 120.0,
+        expectedPartnerCommission2AdultsUsd: 9.6,
+      },
+      jeanLafitte763318PickupAddressResolution: {
+        hotelMonteleoneShuttleOptionAddress:
+          "214 Royal St, New Orleans, LA 70130 (Hotel Monteleone — FareHarbor Custom Field #12258400 Option #22056428 'Hotel Monteleone', +$30/person round-trip shuttle)",
+        selfDriveBaratariaDockOptionAddress:
+          "6601 Leo Kerner Lafitte Pkwy, Marrero, LA 70072 (Jean Lafitte Swamp Tour Dock at Barataria Preserve — Self-Drive Option #SELF_DRIVE_6601, $32/adult)",
+        why810ToulouseAppearedInNotes:
+          "FareHarbor's live API for item #763318 returns Option #22056428 with title 'Hotel Monteleone' and empty description/booking_notes, whereas 810 Toulouse St is a French Quarter motorcoach corner staging reference used when shuttles cannot curb on Royal Street pedestrian mall blocks.",
+        resolutionSummary:
+          "In durableCatalogStore.ts, WITH_HOTEL_PICKUP (214 Royal St, New Orleans, LA 70130) and SELF_DRIVE_6601 (6601 Leo Kerner Lafitte Pkwy, Marrero, LA 70072) are strictly separated by option rather than concatenated, and exact Royal St entrance vs corner curb boarding for Option #22056428 is explicitly included in the operator & hotel approval checklists.",
+      },
       specificApprovalsStillNeeded: [
         {
           approvalId: "nola_approval_1_jean_lafitte_fareharbor_asn_terms",
           party: "Jean Lafitte Swamp Tours (jeanlafitteswamptour)",
           status: "pending_approval",
           requiredAction:
-            "Confirm the authorized FareHarbor affiliate shortname ('aktourcenter' or 'welcometoneworleanstours') for item #763318, enable affiliate rules (is_affiliate_rules_applied: true), confirm commission rate & Net-30 ASN payout terms, and authorize monthly booking report / webhook delivery carrying online_booking_references (<placementId>-clk_<24hex>).",
+            "Confirm the authorized FareHarbor affiliate shortname ('aktourcenter' or 'welcometoneworleanstours') for item #763318, enable affiliate rules (is_affiliate_rules_applied: true), confirm commission rate & Net-30 ASN payout terms, confirm exact Hotel Monteleone pickup curb instructions for Option #22056428 (214 Royal St entrance vs adjacent French Quarter corner), and authorize booking report / webhook delivery carrying online_booking_references (<placementId>-clk_<24hex>).",
           unlocksCapability:
             "Transitions Jean Lafitte #763318 from 'Commission terms pending' to 'Commission terms confirmed' for direct FareHarbor checkout.",
         },
@@ -845,7 +1461,7 @@ export function runWinterAttributionReplayAndNolaStatusTrace(): WinterAttributio
           party: "Hotel Monteleone Concierge & Guest Services (214 Royal St, New Orleans)",
           status: "pending_approval",
           requiredAction:
-            "Written confirmation from Hotel Monteleone approving pre-arrival email/concierge distribution of the guest link for placement 'nola-hotel-monteleone-demo-pilot' and confirming 214 Royal St Royal Street main entrance shuttle staging.",
+            "Written confirmation from Hotel Monteleone approving pre-arrival email/concierge distribution of the guest link for placement 'nola-hotel-monteleone-demo-pilot' and confirming the approved guest shuttle waiting spot for 214 Royal St.",
           unlocksCapability:
             "Transitions placement 'nola-hotel-monteleone-demo-pilot' from 'unverified_demo_preset_pending_hotel_approval' to 'verified_partner_live' via POST /api/v1/concierge/telemetry (action: 'activate_placement').",
         },

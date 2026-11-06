@@ -212,12 +212,33 @@ export default async function January24SailingPreviewPage({
         </div>
       </section>
 
-      {/* Call 2: St. Thomas (Jan 28, 2027) */}
+      {/* Call 2: San Juan, Puerto Rico (Jan 27, 2027 — 0 Matched Catalog Tours) */}
+      <section className="mb-10 rounded-3xl border border-white/10 bg-zinc-900/70 p-6">
+        <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-white/10 pb-4">
+          <div>
+            <span className="text-xs font-bold uppercase tracking-widest text-cyan-300">
+              Port Call #2 • Wednesday, January 27, 2027 ({preview.calls.sanJuan.callDate})
+            </span>
+            <h2 className="mt-1 text-2xl font-black text-white">
+              San Juan, Puerto Rico — {preview.calls.sanJuan.dock}
+            </h2>
+          </div>
+          <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-zinc-200">
+            Ship Window: {preview.calls.sanJuan.shipArrivalTime}–19:00 AST (All-Aboard{" "}
+            {preview.calls.sanJuan.allAboardTime}) • 0 Matched Catalog Tours
+          </span>
+        </div>
+        <p className="mt-4 text-sm leading-relaxed text-zinc-300">
+          {preview.calls.sanJuan.summary}
+        </p>
+      </section>
+
+      {/* Call 3: St. Thomas (Jan 28, 2027) */}
       <section className="rounded-3xl border border-white/10 bg-zinc-900/70 p-6">
         <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-white/10 pb-4">
           <div>
             <span className="text-xs font-bold uppercase tracking-widest text-cyan-300">
-              Port Call #2 • Thursday, January 28, 2027 ({preview.calls.stThomas.callDate}) • Main Destination: St. Thomas
+              Port Call #3 • Thursday, January 28, 2027 ({preview.calls.stThomas.callDate}) • Main Destination: St. Thomas
             </span>
             <h2 className="mt-1 text-2xl font-black text-white">
               St. Thomas, USVI (Havensight WICO vs. Crown Bay) + St. John Day-Trip Choice

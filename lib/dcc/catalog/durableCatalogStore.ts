@@ -1493,11 +1493,10 @@ export const PILOT_VERIFIED_TOUR_RECORDS: DurableTourRecord[] = [
     pickupFulfillmentType: "hotel_pickup",
     pickupType: "HOTEL_OR_MEETING_POINT",
     pickupSummary:
-      "Round-trip French Quarter hotel shuttle pickup confirmed at Hotel Monteleone (214 Royal St — FareHarbor pickup option #22056428, +$30/person), or self-drive to 6601 Leo Kerner Lafitte Pkwy ($32/adult).",
+      "Round-trip French Quarter hotel shuttle pickup at Hotel Monteleone (214 Royal St, New Orleans, LA 70130 — FareHarbor pickup option #22056428 'Hotel Monteleone', +$30/person; exact Royal St entrance vs adjacent French Quarter corner curb staging pending operator & hotel confirmation), or separate self-drive option at 6601 Leo Kerner Lafitte Pkwy, Marrero, LA 70072 ($32/adult).",
     meetingPointName:
-      "Hotel Monteleone — Royal Street Main Entrance (214 Royal St) / Jean Lafitte Barataria Dock",
-    meetingPointAddress:
-      "214 Royal St, New Orleans, LA 70130 (Shuttle) / 6601 Leo Kerner Lafitte Pkwy, Marrero, LA 70072 (Dock)",
+      "Hotel Monteleone (214 Royal St, French Quarter — FareHarbor Pickup Option #22056428)",
+    meetingPointAddress: "214 Royal St, New Orleans, LA 70130",
     meetingPointLat: 29.9542,
     meetingPointLng: -90.0681,
     locationPrecision: "exact",
@@ -1513,7 +1512,7 @@ export const PILOT_VERIFIED_TOUR_RECORDS: DurableTourRecord[] = [
       },
       {
         ref: "fh_dock:6601_leo_kerner",
-        name: "Jean Lafitte Swamp Tour Dock (Barataria Preserve)",
+        name: "Jean Lafitte Swamp Tour Dock (Barataria Preserve — Self-Drive Option Only)",
         address: "6601 Leo Kerner Lafitte Pkwy, Marrero, LA 70072",
         lat: 29.7495,
         lng: -90.1112,
@@ -1546,7 +1545,7 @@ export const PILOT_VERIFIED_TOUR_RECORDS: DurableTourRecord[] = [
       transferTimeSource: "verified_meeting_point",
       transferEvidenceSource: "fareharbor_custom_field_12258400:hotel_monteleone_22056428",
       applicableBerthOrMeetingPoint:
-        "Hotel Monteleone (214 Royal St, French Quarter — FareHarbor Pickup Option #22056428) <-> Jean Lafitte Barataria Dock (6601 Leo Kerner Lafitte Pkwy)",
+        "Hotel Monteleone (214 Royal St, New Orleans, LA 70130 — FareHarbor Pickup Option #22056428)",
       planningEstimateTransferMinutes: 45,
       weatherDependent: true,
       requiresClosedToeShoes: false,
@@ -1595,11 +1594,11 @@ export const PILOT_VERIFIED_TOUR_RECORDS: DurableTourRecord[] = [
         optionCode: "WITH_HOTEL_PICKUP",
         title: "Swamp Boat Tour + Hotel Monteleone Round-Trip Shuttle ($32 Tour + $30 Shuttle)",
         description:
-          "90-minute guided covered bayou boat tour ($32/adult) plus round-trip hotel shuttle pickup at Hotel Monteleone (+$30/person; FareHarbor hotel pickup option #22056428).",
+          "90-minute guided covered bayou boat tour ($32/adult) plus round-trip hotel shuttle pickup at Hotel Monteleone (214 Royal St, New Orleans, LA 70130; +$30/person via FareHarbor hotel pickup option #22056428).",
         includesPickup: true,
         pickupFulfillmentType: "hotel_pickup",
         meetingPointName:
-          "Hotel Monteleone — Royal Street Main Entrance (214 Royal St, New Orleans, LA 70130)",
+          "Hotel Monteleone (214 Royal St, New Orleans, LA 70130 — FareHarbor Option #22056428)",
         meetingPointLat: 29.9542,
         meetingPointLng: -90.0681,
         transferBeforeMinutes: 45,
@@ -1607,7 +1606,7 @@ export const PILOT_VERIFIED_TOUR_RECORDS: DurableTourRecord[] = [
         transferTimeSource: "verified_meeting_point",
         transferEvidenceSource: "fareharbor_custom_field_12258400:hotel_monteleone_22056428",
         applicableBerthOrMeetingPoint:
-          "Hotel Monteleone (214 Royal St, French Quarter — FareHarbor Pickup Option #22056428)",
+          "Hotel Monteleone (214 Royal St, New Orleans, LA 70130 — FareHarbor Pickup Option #22056428)",
         planningEstimateTransferMinutes: 45,
         durationMinutes: 90,
         fromPriceCents: 6200,
@@ -1618,7 +1617,7 @@ export const PILOT_VERIFIED_TOUR_RECORDS: DurableTourRecord[] = [
         optionCode: "SELF_DRIVE_6601",
         title: "Self-Drive / Meet on Site (6601 Leo Kerner Lafitte Pkwy)",
         description:
-          "90-minute guided covered bayou boat tour ($32/adult) meeting directly at the Barataria Preserve dock (no hotel shuttle).",
+          "90-minute guided covered bayou boat tour ($32/adult) meeting directly at the Barataria Preserve dock at 6601 Leo Kerner Lafitte Pkwy, Marrero, LA 70072 (no hotel shuttle).",
         includesPickup: false,
         pickupFulfillmentType: "self_drive",
         meetingPointName:
@@ -1649,6 +1648,14 @@ export const PILOT_VERIFIED_TOUR_RECORDS: DurableTourRecord[] = [
       fareharborHotelMonteleoneOptionValue: "number:22056428",
       fareharborTransportationCountCustomFieldId: 12210745,
       onlineBookingFeeRate: 0.06,
+      pickupAddressResolution: {
+        hotelMonteleoneShuttleOptionAddress: "214 Royal St, New Orleans, LA 70130",
+        fareHarborOptionId: 22056428,
+        fareHarborOptionTitle: "Hotel Monteleone",
+        selfDriveDockOptionAddress: "6601 Leo Kerner Lafitte Pkwy, Marrero, LA 70072",
+        whyTwoAddressesAppearedInReports:
+          "1) In the catalog record, the Hotel Monteleone shuttle option (214 Royal St, New Orleans, LA 70130) and the self-drive Barataria dock option (6601 Leo Kerner Lafitte Pkwy, Marrero, LA 70072) were previously concatenated into a single meetingPointAddress string; they are now strictly separated by option (WITH_HOTEL_PICKUP vs SELF_DRIVE_6601). 2) In narrative notes, 810 Toulouse St was cited as a French Quarter motorcoach corner staging stop because FareHarbor Option #22056428 is titled 'Hotel Monteleone' with blank description/booking_notes; exact boarding (214 Royal St main entrance vs adjacent French Quarter corner curb) must be confirmed in writing by Jean Lafitte Swamp Tours and Hotel Monteleone before live placement.",
+      },
     },
     inclusions: [
       "90-minute guided covered swamp boat tour",
@@ -2058,7 +2065,7 @@ export const PILOT_VERIFIED_TOUR_RECORDS: DurableTourRecord[] = [
         lat: 25.0805,
         lng: -77.3408,
         precision: "exact",
-        pickupType: "PORT",
+        pickupType: "CRUISE_PORT",
       },
     ],
     ageBands: [
@@ -2274,7 +2281,7 @@ export const PILOT_VERIFIED_TOUR_RECORDS: DurableTourRecord[] = [
         lat: 18.3323,
         lng: -64.9207,
         precision: "exact",
-        pickupType: "PORT",
+        pickupType: "CRUISE_PORT",
       },
       {
         ref: "st_thomas_crown_bay_pier",
@@ -2283,7 +2290,7 @@ export const PILOT_VERIFIED_TOUR_RECORDS: DurableTourRecord[] = [
         lat: 18.3272,
         lng: -64.9522,
         precision: "exact",
-        pickupType: "PORT",
+        pickupType: "CRUISE_PORT",
       },
     ],
     ageBands: [
@@ -2478,7 +2485,7 @@ export const PILOT_VERIFIED_TOUR_RECORDS: DurableTourRecord[] = [
         lat: 20.4764,
         lng: -86.9739,
         precision: "exact",
-        pickupType: "PORT",
+        pickupType: "CRUISE_PORT",
       },
     ],
     ageBands: [
@@ -2672,7 +2679,7 @@ export const PILOT_VERIFIED_TOUR_RECORDS: DurableTourRecord[] = [
         lat: 16.3168,
         lng: -86.5367,
         precision: "exact",
-        pickupType: "PORT",
+        pickupType: "CRUISE_PORT",
       },
     ],
     ageBands: [
@@ -2869,7 +2876,7 @@ export const PILOT_VERIFIED_TOUR_RECORDS: DurableTourRecord[] = [
         lat: 19.2952,
         lng: -81.3831,
         precision: "exact",
-        pickupType: "PORT",
+        pickupType: "CRUISE_PORT",
       },
     ],
     ageBands: [

@@ -1283,7 +1283,7 @@ export function evaluateWinterPortDayScenario(
       timeZone: "America/St_Thomas",
       utcOffsetString: "-04:00",
       evaluatedInput: {
-        travelDate: sttRes.evaluatedInput.travelDate,
+        travelDate: sttRes.evaluatedInput.travelDate ?? "2026-12-10",
         shipArrivalTime: sttRes.evaluatedInput.shipArrivalTime,
         allAboardTime: sttRes.evaluatedInput.allAboardTime,
         arrivalDock: sttRes.evaluatedInput.arrivalDock,

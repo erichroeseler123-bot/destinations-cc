@@ -51,6 +51,7 @@ export type TripMatchRequest = {
   shipArrival?: string;
   shipDeparture?: string;
   allAboardTime?: string;
+  lastTenderTime?: string;
   isTenderPort?: boolean;
   tenderClearanceMinutes?: number | null;
   flightArrivalTime?: string;
@@ -97,6 +98,8 @@ export type CruiseScheduleFitEvaluation = {
   arrivalMinutesOfDay: number | null;
   returnDeadlineMinutesOfDay: number | null;
   allAboardConfirmed?: boolean;
+  lastTenderConfirmed?: boolean;
+  cruiseFitRecommendationWithheld?: boolean;
   isTenderPort?: boolean;
   debarkClearanceMinutes: number;
   transferBeforeMinutes: number | null;
@@ -576,17 +579,35 @@ function computePartyPriceBreakdownCents(
 function appendBoundOfferQueryParams(
   rawUrl: string,
   bound: BoundTourOfferTuple,
+  placementId?: string | null,
 ): string {
   if (!rawUrl) return rawUrl;
   try {
     const isRelative = rawUrl.startsWith("/");
     const urlObj = new URL(rawUrl, isRelative ? "https://www.destinationcommandcenter.com" : undefined);
-    if (bound.optionCode) urlObj.searchParams.set("dcc_option_code", bound.optionCode);
-    if (bound.date) urlObj.searchParams.set("dcc_date", bound.date);
-    if (bound.departureTime) urlObj.searchParams.set("dcc_departure_time", bound.departureTime);
+    if (bound.optionCode) {
+      urlObj.searchParams.set("dcc_option_code", bound.optionCode);
+      urlObj.searchParams.set("optionCode", bound.optionCode);
+    }
+    if (bound.date) {
+      urlObj.searchParams.set("dcc_date", bound.date);
+      if (!urlObj.searchParams.has("date")) {
+        urlObj.searchParams.set("date", bound.date);
+      }
+    }
+    if (bound.departureTime) {
+      urlObj.searchParams.set("dcc_departure_time", bound.departureTime);
+      urlObj.searchParams.set("departureTime", bound.departureTime);
+    }
     urlObj.searchParams.set("dcc_adults", String(bound.adults));
+    urlObj.searchParams.set("adults", String(bound.adults));
     if (bound.childAges.length > 0) {
       urlObj.searchParams.set("dcc_child_ages", bound.childAges.join(","));
+      urlObj.searchParams.set("childAges", bound.childAges.join(","));
+    }
+    if (placementId) {
+      urlObj.searchParams.set("dcc_placement_id", placementId);
+      urlObj.searchParams.set("placementId", placementId);
     }
     urlObj.searchParams.set("dcc_pickup_mode", bound.pickupFulfillmentType);
     if (bound.unitPriceCents !== null) {
@@ -666,6 +687,7 @@ export function evaluateCruiseScheduleFit(params: {
   shipArrival?: string;
   shipDeparture?: string;
   allAboardTime?: string;
+  lastTenderTime?: string | null;
   isTenderPort?: boolean;
   tenderClearanceMinutes?: number | null;
   durationMinutes: number | null;
@@ -679,11 +701,22 @@ export function evaluateCruiseScheduleFit(params: {
 }): CruiseScheduleFitEvaluation {
   const arrivalMin = parseClockMinutesOfDay(params.shipArrival);
   const explicitAllAboardMin = parseClockMinutesOfDay(params.allAboardTime);
+  const explicitLastTenderMin = parseClockMinutesOfDay(params.lastTenderTime);
   const shipDepartureMin = parseClockMinutesOfDay(params.shipDeparture);
   const allAboardConfirmed = explicitAllAboardMin !== null;
-  const returnDeadlineMin =
-    explicitAllAboardMin ?? (shipDepartureMin !== null ? shipDepartureMin - 45 : null);
   const isTenderPort = Boolean(params.isTenderPort);
+  const lastTenderExplicitlyMissing =
+    isTenderPort &&
+    "lastTenderTime" in params &&
+    (params.lastTenderTime === null ||
+      (typeof params.lastTenderTime === "string" && !params.lastTenderTime.trim()));
+  const lastTenderConfirmed = isTenderPort
+    ? !lastTenderExplicitlyMissing && (explicitLastTenderMin !== null || explicitAllAboardMin !== null)
+    : true;
+  const returnDeadlineMin =
+    explicitLastTenderMin ??
+    explicitAllAboardMin ??
+    (shipDepartureMin !== null ? shipDepartureMin - 45 : null);
   const tenderClearanceUnconfirmed =
     isTenderPort &&
     "tenderClearanceMinutes" in params &&
@@ -1019,17 +1052,21 @@ export function evaluateCruiseScheduleFit(params: {
   const firstFitMin = parseClockMinutesOfDay(fittingDepartureTimes[0])!;
   const backAtPierMin = firstFitMin + params.durationMinutes + params.transferAfterMinutes;
 
-  // If the ship's explicit all-aboard time or tender clearance is missing, show Needs confirmation
-  if (!allAboardConfirmed || tenderClearanceUnconfirmed) {
-    const missingWhy = !allAboardConfirmed
-      ? `ship all-aboard time is missing (estimated ${formatMinutesOfDay(returnDeadlineMin)} deadline derived from ${params.shipDeparture} ship departure; confirm official ship all-aboard time before booking)`
-      : `ship-to-shore tender clearance time is unconfirmed for this tender port`;
+  // If the ship's explicit all-aboard time, last-tender time, or tender clearance is missing, show Needs confirmation and withhold the cruise-fit recommendation
+  if (!allAboardConfirmed || !lastTenderConfirmed || tenderClearanceUnconfirmed) {
+    const missingWhy = !lastTenderConfirmed
+      ? `ship last-tender time is missing for this tender port (confirm official last tender time before booking)`
+      : !allAboardConfirmed
+        ? `ship all-aboard time is missing (estimated ${formatMinutesOfDay(returnDeadlineMin)} deadline derived from ${params.shipDeparture} ship departure; confirm official ship all-aboard time before booking)`
+        : `ship-to-shore tender clearance time is unconfirmed for this tender port`;
     return {
       evaluated: true,
       fitStatus: "needs_confirmation",
       arrivalMinutesOfDay: arrivalMin,
       returnDeadlineMinutesOfDay: returnDeadlineMin,
       allAboardConfirmed,
+      lastTenderConfirmed,
+      cruiseFitRecommendationWithheld: true,
       isTenderPort,
       debarkClearanceMinutes,
       transferBeforeMinutes: params.transferBeforeMinutes,
@@ -1041,7 +1078,7 @@ export function evaluateCruiseScheduleFit(params: {
       durationMinutes: params.durationMinutes,
       verifiedDepartureTimes: validStartTimes,
       fittingDepartureTimes,
-      reason: `Needs confirmation: ${missingWhy}. Departure(s) [${fittingDepartureTimes.join(", ")}] + ${params.durationMinutes}m duration + ${params.transferAfterMinutes}m return transfer return to pier by ${formatMinutesOfDay(backAtPierMin)}.`,
+      reason: `Needs confirmation (cruise-fit booking recommendation withheld): ${missingWhy}. Departure(s) [${fittingDepartureTimes.join(", ")}] + ${params.durationMinutes}m duration + ${params.transferAfterMinutes}m return transfer return to pier by ${formatMinutesOfDay(backAtPierMin)}.`,
     };
   }
 
@@ -1051,6 +1088,8 @@ export function evaluateCruiseScheduleFit(params: {
     arrivalMinutesOfDay: arrivalMin,
     returnDeadlineMinutesOfDay: returnDeadlineMin,
     allAboardConfirmed,
+    lastTenderConfirmed,
+    cruiseFitRecommendationWithheld: false,
     isTenderPort,
     debarkClearanceMinutes,
     transferBeforeMinutes: params.transferBeforeMinutes,
@@ -1867,6 +1906,7 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
         shipArrival: input.shipArrival,
         shipDeparture: input.shipDeparture,
         allAboardTime: input.allAboardTime,
+        lastTenderTime: input.lastTenderTime,
         isTenderPort,
         tenderClearanceMinutes,
         durationMinutes: quotedDurationMinutes,
@@ -1876,7 +1916,7 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
         transferEvidenceSource: cruiseVerifiedEvidenceSource,
         applicableBerthOrMeetingPoint: effectiveApplicableBerthOrMeetingPoint,
         planningEstimateTransferMinutes: effectivePlanningEstimateTransferMinutes,
-        verifiedDepartureTimes: [],
+        verifiedDepartureTimes: selectedProductOption?.scheduledStartTimes || [],
       });
       if (cruiseFit.fitStatus === "ineligible") {
         suitability = "ineligible";
@@ -1885,6 +1925,9 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
       } else if (cruiseFit.fitStatus === "needs_confirmation") {
         if (!input.allAboardTime) {
           missingInformation.push("ship_all_aboard_time_missing");
+        }
+        if (isTenderPort && cruiseFit.lastTenderConfirmed === false) {
+          missingInformation.push("ship_last_tender_time_missing");
         }
         if (isTenderPort && tenderClearanceMinutes === null) {
           missingInformation.push("tender_clearance_time_missing");
@@ -1906,6 +1949,8 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
         if (suitability === "recommended") {
           suitability = "needs_confirmation";
         }
+        explanations.push(cruiseFit.reason);
+      } else if (cruiseFit.fitStatus === "recommended") {
         explanations.push(cruiseFit.reason);
       }
     } else if (quotedDurationMinutes === null) {
@@ -2016,6 +2061,8 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
       explanations.push(`Cheaper option tradeoff: ${cheapestSavingAlt.tradeoffSummary}`);
     }
 
+    const initialFittingDepartures = cruiseFit?.fittingDepartureTimes || [];
+    const initialCatalogDepartures = selectedProductOption?.scheduledStartTimes || [];
     const boundOffer: BoundTourOfferTuple = {
       provider: rec.primaryProvider,
       tourId: rec.tourId,
@@ -2026,9 +2073,9 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
       pickupBadgeLabel: effectivePickupBadgeLabel,
       includesPickup: selectedProductOption?.includesPickup ?? rec.hasHotelPickup,
       date: input.date || null,
-      departureTime: null,
-      availableDepartureTimes: selectedProductOption?.scheduledStartTimes || [],
-      fittingDepartureTimes: [],
+      departureTime: initialFittingDepartures[0] || initialCatalogDepartures[0] || null,
+      availableDepartureTimes: initialCatalogDepartures,
+      fittingDepartureTimes: initialFittingDepartures,
       optionTitleTimeSemantics: initialTitleTimeSemantics,
       adults,
       childAges,
@@ -2709,6 +2756,7 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
           shipArrival: input.shipArrival,
           shipDeparture: input.shipDeparture,
           allAboardTime: input.allAboardTime,
+          lastTenderTime: input.lastTenderTime,
           isTenderPort: itemIsTenderPort,
           tenderClearanceMinutes: itemTenderClearanceMinutes,
           durationMinutes: option.boundOffer.durationMinutes,
@@ -2808,6 +2856,7 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
         option.bookingPath.handoffUrl = appendBoundOfferQueryParams(
           issued.outboundPartnerUrl,
           option.boundOffer,
+          effectivePlacementId,
         );
         option.bookingPath.trackedClickUrl = `/api/v1/ads/click?clickId=${encodeURIComponent(issued.clickId)}${effectivePlacementId ? `&placementId=${encodeURIComponent(effectivePlacementId)}` : ""}${input.propertySlug ? `&property=${encodeURIComponent(input.propertySlug)}` : ""}${isTestTraffic ? "&isTest=true" : ""}&target=${encodeURIComponent(option.bookingPath.handoffUrl)}`;
       } else {
@@ -2828,6 +2877,7 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
           preparedDestinationUrl = appendBoundOfferQueryParams(
             viatorUrl,
             option.boundOffer,
+            effectivePlacementId,
           );
         } else if (record.primaryProvider === "fareharbor") {
           const asnRefTag = `${placementOrPropertyTag}-${preClickId}`.slice(0, 120);
@@ -2840,11 +2890,13 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
           preparedDestinationUrl = appendBoundOfferQueryParams(
             fhPreselected,
             option.boundOffer,
+            effectivePlacementId,
           );
         } else {
           preparedDestinationUrl = appendBoundOfferQueryParams(
             preparedDestinationUrl,
             option.boundOffer,
+            effectivePlacementId,
           );
         }
 

@@ -412,26 +412,43 @@ export async function renderPortPage(slug: string, isLfse = false) {
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
                 <div className="text-xs font-bold uppercase tracking-wider text-cyan-300">
-                  Five-Port Winter Excursion Planner · Whole-Sailing Group Share
+                  Winter Excursion Sailing Planner · Driven by Verified Port Calls
                 </div>
                 <h2 className="mt-1 text-lg font-bold text-white">
                   Planning a full Caribbean sailing stopping at {port.name}?
                 </h2>
                 <p className="mt-1 text-xs sm:text-sm text-slate-300">
-                  Enter your ship and sailing date once, compare live-checked Viator
-                  departures with tender/transfer buffers across{" "}
-                  <strong>Nassau, St. Thomas, Cozumel, Roatán, and Grand Cayman</strong>,
-                  and share one group plan. Featured example:{" "}
-                  <strong>Jan 24, 2027 Independence of the Seas (INDY-2027-01-24)</strong>{" "}
-                  with Nassau &amp; St. Thomas saved.
+                  {port.slug === "nassau" || port.slug === "st-thomas" ? (
+                    <>
+                      <strong>{port.name}</strong> is a verified port call on the{" "}
+                      <strong>Jan 24, 2027 Independence of the Seas (INDY-2027-01-24)</strong>{" "}
+                      Eastern Caribbean sailing (Nassau · San Juan · St. Thomas). Compare
+                      live-checked Viator departures with pier transfer math and share one
+                      group plan:
+                    </>
+                  ) : (
+                    <>
+                      <strong>{port.name}</strong> is available in this port guide and on
+                      applicable Western Caribbean sailings (
+                      <strong>WESTERN-2027-01-24</strong>: Cozumel · Roatán · Grand Cayman).
+                      Off-itinerary ports are never mixed into the Eastern Caribbean{" "}
+                      <code>INDY-2027-01-24</code> plan.
+                    </>
+                  )}
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2.5">
                 <Link
-                  href={`/cruises/winter-excursion-planner?plan=INDY-2027-01-24`}
+                  href={
+                    port.slug === "nassau" || port.slug === "st-thomas"
+                      ? `/cruises/winter-excursion-planner?plan=INDY-2027-01-24`
+                      : `/cruises/winter-excursion-planner?plan=WESTERN-2027-01-24`
+                  }
                   className="rounded-xl bg-cyan-500 px-4 py-2.5 text-xs font-bold text-slate-950 hover:bg-cyan-400 transition"
                 >
-                  Open Five-Port Winter Planner →
+                  {port.slug === "nassau" || port.slug === "st-thomas"
+                    ? "Open Jan 24 Sailing Plan (INDY-2027-01-24) →"
+                    : "Open Applicable Western Sailing Plan (WESTERN-2027-01-24) →"}
                 </Link>
                 <a
                   href="https://cruisepromenade.com/p/INDY-2027-01-24"
@@ -439,7 +456,7 @@ export async function renderPortPage(slug: string, isLfse = false) {
                   rel="noopener noreferrer"
                   className="rounded-xl border border-emerald-500/40 bg-emerald-950/50 px-4 py-2.5 text-xs font-bold text-emerald-200 hover:bg-emerald-900/60 transition"
                 >
-                  View Jan 24 Shareable Plan on Cruise Promenade ↗
+                  View Jan 24 Eastern Plan on Cruise Promenade ↗
                 </a>
               </div>
             </div>

@@ -1207,7 +1207,7 @@ export function evaluateStThomasPortDayScenario(
   const hasChildUnder5 = input.childAges.some((age) => age < 5);
 
   const stJohnFerryEvaluation = evaluateStJohnFerryLegsForSailing({
-    travelDate: input.travelDate,
+    travelDate: input.travelDate ?? "2026-12-10",
     shipArrivalTime: input.shipArrivalTime,
     allAboardTime: input.allAboardTime,
     arrivalDock: input.arrivalDock,

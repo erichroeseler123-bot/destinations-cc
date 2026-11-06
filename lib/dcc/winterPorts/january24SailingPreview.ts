@@ -72,6 +72,16 @@ export interface January24SailingPreviewReport {
       dayOfWeek: "Monday";
       evaluation: WinterPortEvaluationResult;
     };
+    sanJuan: {
+      callDate: "2027-01-27";
+      dayOfWeek: "Wednesday";
+      portName: "San Juan, Puerto Rico";
+      dock: "Old San Juan Pier 3";
+      shipArrivalTime: "11:30";
+      allAboardTime: "18:15";
+      matchedToursCount: 0;
+      summary: string;
+    };
     stThomas: {
       callDate: "2027-01-28";
       dayOfWeek: "Thursday";
@@ -152,7 +162,7 @@ export function buildJanuary24SailingPreview(
   return {
     sailingId: "january-24-eastern-caribbean-sailing-preview",
     sailingTitle:
-      "January 24 Winter Sailing Preview — Nassau (Jan 25) & St. Thomas (Jan 28) Port-Day Fit Report",
+      "January 24 Winter Sailing Preview — Nassau (Jan 25), San Juan (Jan 27) & St. Thomas (Jan 28) Port-Day Fit Report",
     sailingDepartureDate: "2027-01-24",
     shareablePreviewPath: "/cruises/preview/january-24-sailing",
     shareableQueryExample: `/cruises/preview/january-24-sailing?adults=${adults}&nassauDock=${nassauDock}&stThomasDock=${stThomasDock}&stThomasArrival=${stThomasArrivalTime}&stThomasAllAboard=${stThomasAllAboardTime}`,
@@ -192,6 +202,17 @@ export function buildJanuary24SailingPreview(
         callDate: "2027-01-25",
         dayOfWeek: "Monday",
         evaluation: nassauEval,
+      },
+      sanJuan: {
+        callDate: "2027-01-27",
+        dayOfWeek: "Wednesday",
+        portName: "San Juan, Puerto Rico",
+        dock: "Old San Juan Pier 3",
+        shipArrivalTime: "11:30",
+        allAboardTime: "18:15",
+        matchedToursCount: 0,
+        summary:
+          "Docked at Old San Juan Pier 3 (11:30 AM – 7:00 PM; All-Aboard 6:15 PM). Shown on the verified sailing itinerary with 0 matched commercial catalog tours (step-off walkable into Old San Juan).",
       },
       stThomas: {
         callDate: "2027-01-28",

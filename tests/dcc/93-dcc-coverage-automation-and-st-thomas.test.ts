@@ -461,3 +461,128 @@ test("9. SSR components and PortAuthorityConfig render St. Thomas and the 4 expa
   assert.match(nassauHtml, /data-testid="nassau-port-day-checker"/);
   assert.match(nassauHtml, /70706P11/);
 });
+
+test("10. INDY-2027-01-24 drives recommendations, saves, totals, and checkout strictly from verified port calls, blocks off-itinerary additions, withholds checkout when all-aboard or last-tender is missing, and resolves Jean Lafitte 763318 pickup addresses", async () => {
+  const {
+    evaluateWinterSailingPlan,
+    runWinterAttributionReplayAndNolaStatusTrace,
+  } = await import("../../lib/dcc/winterExcursionPlanner");
+
+  const indyDefault = await evaluateWinterSailingPlan({
+    planCode: "INDY-2027-01-24",
+    adults: 2,
+    surface: "dcc",
+    enableShortlistLiveCheck: false,
+  });
+  assert.deepEqual(indyDefault.sailingPortCallSlugs, [
+    "nassau",
+    "san-juan",
+    "st-thomas",
+  ]);
+  assert.equal(indyDefault.savedPortsSummary.combinedPartyTotalCents, 57600);
+  assert.equal(indyDefault.offItineraryBlocked, false);
+
+  const sanJuanCall = indyDefault.sailingPortCalls.find(
+    (p) => p.portSlug === "san-juan",
+  );
+  assert.ok(sanJuanCall);
+  assert.equal(sanJuanCall.matchedToursCount, 0);
+  assert.ok(sanJuanCall.noMatchedToursReason);
+
+  // Off-itinerary injection attempt (Cozumel 5553274P1 on INDY-2027-01-24)
+  const indyBlocked = await evaluateWinterSailingPlan({
+    planCode: "INDY-2027-01-24",
+    adults: 2,
+    surface: "dcc",
+    enableShortlistLiveCheck: false,
+    savedPortOverrides: {
+      cozumel: "dcc:tour:viator:5553274P1",
+      nassau: "dcc:tour:viator:5553274P1",
+    },
+  });
+  assert.equal(indyBlocked.offItineraryBlocked, true);
+  assert.equal(indyBlocked.rejectedOffItineraryRequests.length, 2);
+  assert.equal(indyBlocked.savedPortsSummary.combinedPartyTotalCents, 57600);
+  assert.deepEqual(
+    indyBlocked.savedPortsSummary.savedSelections.map((s) => s.portSlug),
+    ["nassau", "st-thomas"],
+  );
+
+  // Missing all-aboard withholds cruise-fit booking recommendation
+  const indyMissingAllAboard = await evaluateWinterSailingPlan({
+    planCode: "INDY-2027-01-24",
+    adults: 2,
+    surface: "dcc",
+    enableShortlistLiveCheck: false,
+    missingAllAboardPorts: ["nassau"],
+  });
+  const nassauMissing = indyMissingAllAboard.sailingPortCalls.find(
+    (p) => p.portSlug === "nassau",
+  );
+  assert.ok(nassauMissing);
+  assert.equal(nassauMissing.allAboardStatus, "missing_needs_confirmation");
+  assert.equal(nassauMissing.cruiseFitRecommendationWithheld, true);
+  assert.equal(nassauMissing.checkoutEligible, false);
+  const nassauSavedMissing =
+    indyMissingAllAboard.savedPortsSummary.savedSelections.find(
+      (s) => s.portSlug === "nassau",
+    );
+  assert.ok(nassauSavedMissing);
+  assert.equal(nassauSavedMissing.suitability, "needs_confirmation");
+  assert.equal(nassauSavedMissing.trackedViatorCheckoutUrl, null);
+
+  // Missing last-tender on Grand Cayman (WESTERN-2027-01-24) withholds checkout
+  const westernMissingTender = await evaluateWinterSailingPlan({
+    planCode: "WESTERN-2027-01-24",
+    adults: 2,
+    surface: "dcc",
+    enableShortlistLiveCheck: false,
+    missingLastTenderPorts: ["grand-cayman"],
+  });
+  const gcMissing = westernMissingTender.sailingPortCalls.find(
+    (p) => p.portSlug === "grand-cayman",
+  );
+  assert.ok(gcMissing);
+  assert.equal(gcMissing.lastTenderStatus, "missing_needs_confirmation");
+  assert.equal(gcMissing.cruiseFitRecommendationWithheld, true);
+  assert.equal(gcMissing.checkoutEligible, false);
+  const gcSavedMissing =
+    westernMissingTender.savedPortsSummary.savedSelections.find(
+      (s) => s.portSlug === "grand-cayman",
+    );
+  assert.ok(gcSavedMissing);
+  assert.equal(gcSavedMissing.suitability, "needs_confirmation");
+  assert.equal(gcSavedMissing.trackedViatorCheckoutUrl, null);
+
+  // Eligible checkout URL carries date, adults, optionCode, departureTime, and placementId
+  const sttEligible = indyDefault.savedPortsSummary.savedSelections.find(
+    (s) => s.portSlug === "st-thomas",
+  );
+  assert.ok(sttEligible?.trackedViatorCheckoutUrl);
+  const decodedSttTarget = decodeURIComponent(
+    sttEligible.trackedViatorCheckoutUrl,
+  );
+  assert.match(decodedSttTarget, /date=2027-01-28/);
+  assert.match(decodedSttTarget, /adults=2/);
+  assert.match(decodedSttTarget, /optionCode=DEFAULT/);
+  assert.match(decodedSttTarget, /departureTime=(09|13)%3A00/);
+  assert.match(decodedSttTarget, /placementId=fp-cp-winter-excursion-planner/);
+
+  // Jean Lafitte 763318 pickup address resolution & already-approved first-party placement
+  const replayRes = runWinterAttributionReplayAndNolaStatusTrace();
+  assert.equal(replayRes.secondDeliveryReplay.replayIgnored, true);
+  const res763318 =
+    replayRes.newOrleansParallelStatus.jeanLafitte763318PickupAddressResolution;
+  assert.match(res763318.hotelMonteleoneShuttleOptionAddress, /214 Royal St/);
+  assert.match(
+    res763318.selfDriveBaratariaDockOptionAddress,
+    /6601 Leo Kerner Lafitte Pkwy/,
+  );
+  assert.match(res763318.why810ToulouseAppearedInNotes, /810 Toulouse St/);
+  assert.equal(
+    replayRes.newOrleansParallelStatus.alreadyApprovedFirstPartyPlacement
+      .placementId,
+    "fp-wno-swamp-tours",
+  );
+});
+
