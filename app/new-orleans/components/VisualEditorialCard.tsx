@@ -22,6 +22,7 @@ type VisualEditorialCardProps = {
   companyShortname?: string;
   asn?: string;
   refCode?: string;
+  bookingReselectionNote?: string;
 };
 
 export default function VisualEditorialCard({
@@ -45,6 +46,7 @@ export default function VisualEditorialCard({
   companyShortname,
   asn,
   refCode = "wtonot-category",
+  bookingReselectionNote,
 }: VisualEditorialCardProps) {
   const href = `/tours/${slug}`;
   const effectiveBookingHref = bookingHref || href;
@@ -167,6 +169,14 @@ export default function VisualEditorialCard({
           >
             Tour Details →
           </Link>
+          {bookingReselectionNote && (
+            <p
+              data-testid="wno-booking-reselection-note"
+              className="w-full rounded border border-[#c9a86a]/40 bg-[#1a160f] px-3 py-2 text-[11px] leading-relaxed text-[#f3dfb3]"
+            >
+              {bookingReselectionNote}
+            </p>
+          )}
         </div>
       </div>
     </article>

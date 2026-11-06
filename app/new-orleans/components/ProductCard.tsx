@@ -166,21 +166,40 @@ export default function ProductCard({
               <Link href={detailHref} className={visualStyles.productCardDetailCta}>
                 Tour details
               </Link>
-              <FareHarborBookingButton
-                productTitle={sourceProduct.title}
-                productSlug={sourceProduct.slug}
-                shortname={sourceProduct.companyShortname}
-                itemId={sourceProduct.itemId}
-                flowId={cardFlowId}
-                asn="aktourcenter"
-                refCode={attributionSource}
-                fallbackHref={bookingHref}
-                fullItems="yes"
-                placement="tour_catalog_card"
-                className={visualStyles.productCardCta}
-              >
-                {bookingLabel}
-              </FareHarborBookingButton>
+              {!sourceProduct.companyShortname && bookingHref && (bookingHref.startsWith("/api/") || bookingHref.startsWith("http")) ? (
+                <a
+                  href={bookingHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={visualStyles.productCardCta}
+                >
+                  {bookingLabel}
+                </a>
+              ) : (
+                <FareHarborBookingButton
+                  productTitle={sourceProduct.title}
+                  productSlug={sourceProduct.slug}
+                  shortname={sourceProduct.companyShortname}
+                  itemId={sourceProduct.itemId}
+                  flowId={cardFlowId}
+                  asn="aktourcenter"
+                  refCode={attributionSource}
+                  fallbackHref={bookingHref}
+                  fullItems="yes"
+                  placement="tour_catalog_card"
+                  className={visualStyles.productCardCta}
+                >
+                  {bookingLabel}
+                </FareHarborBookingButton>
+              )}
+              {bookingHref && bookingHref.startsWith("/api/v1/ads/click") && (
+                <p
+                  data-testid="wno-guide-card-reselection-note"
+                  className="mt-2 w-full rounded border border-[#c9a86a]/40 bg-[#1a160f] px-2.5 py-1.5 text-[11px] leading-relaxed text-[#f3dfb3]"
+                >
+                  Viator opens to its default product screen — reselect your date, group size, and tour option (9:40 AM Tour w/ 8:00–8:30 AM Hotel Pickup · Option TG10) on Viator.
+                </p>
+              )}
             </div>
           ) : product.ctaLabel ? (
             <Link href={detailHref} className={visualStyles.productCardCta}>

@@ -411,6 +411,10 @@ export default async function CategoryPage({
               sourceProduct?.slug === "louisiana-tour-company-swamp-tour-hotel-pickup"
                 ? `/api/v1/ads/click?offer=15200P6&option=TG10&placementId=fp-wno-swamp-tours&property=hotel-monteleone-nola&date=${encodeURIComponent(selectedDate)}&adults=${encodeURIComponent(selectedPartySize)}&departureTime=08%3A00${isTestParam ? "&isTest=true" : ""}`
                 : sourceProduct?.bookingVariants?.[0]?.bookingUrl;
+            const bookingReselectionNote =
+              sourceProduct?.slug === "louisiana-tour-company-swamp-tour-hotel-pickup"
+                ? `Viator opens to its default product screen — reselect your date (${selectedDate}), group size (${selectedPartySize} ${Number(selectedPartySize) === 1 ? "guest" : "guests"}), and tour option (9:40 AM Tour w/ 8:00–8:30 AM Hotel Pickup · Option TG10) on Viator.`
+                : undefined;
             return (
               <VisualEditorialCard
                 key={product.id}
@@ -432,6 +436,7 @@ export default async function CategoryPage({
                 bookingItemId={sourceProduct?.itemId}
                 bookingFlowId={sourceProduct?.flowId}
                 companyShortname={sourceProduct?.companyShortname}
+                bookingReselectionNote={bookingReselectionNote}
               />
             );
           })}

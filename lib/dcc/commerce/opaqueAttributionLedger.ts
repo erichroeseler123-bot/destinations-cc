@@ -189,11 +189,14 @@ export interface FunnelClassMetrics {
   trafficClass: TrafficClass;
   newVisitors: number;
   guestVisits: number;
+  guideVisits: number;
+  storefrontVisits: number;
   planOpens: number;
   recommendationsIssued: number;
   recommendationOnlyRecords: number;
   followedHandoffs: number;
   actualOutboundClicks: number;
+  viatorClicks: number;
   confirmedPaidBookings: number;
   paidCommissionsCount: number;
   cancelledOrRefundedBookings: number;
@@ -1422,6 +1425,27 @@ export function reconcilePartnerCsvBatchByClickId(params: {
   };
 }
 
+function isGuideSourcePage(sourcePage?: string | null): boolean {
+  if (!sourcePage) return false;
+  const p = sourcePage.toLowerCase();
+  return (
+    p.includes("/guides/") ||
+    p.includes("best-swamp-tour-with-transportation") ||
+    p.includes("new-orleans-tours-with-transportation")
+  );
+}
+
+function isStorefrontSourcePage(sourcePage?: string | null): boolean {
+  if (!sourcePage) return false;
+  const p = sourcePage.split("?")[0].toLowerCase();
+  return (
+    p === "/swamp-tours" ||
+    p === "/new-orleans/swamp-tours" ||
+    p.endsWith("/swamp-tours") ||
+    p.includes("/marketplace-category/swamp-tours")
+  );
+}
+
 export function recordFunnelVisitorSession(input: {
   visitorId?: string | null;
   sourcePage?: string | null;
@@ -1445,6 +1469,8 @@ export function recordFunnelVisitorSession(input: {
       sourcePage.startsWith("/p/") ||
       sourcePage.includes("winter-excursion-planner"),
   );
+  const isGuideVisit = isGuideSourcePage(sourcePage);
+  const isStorefrontVisit = isStorefrontSourcePage(sourcePage);
   const isTest = Boolean(
     input.isTest ||
       /^(test|sim|qa)[-_]/i.test(visitorId) ||
@@ -1465,6 +1491,24 @@ export function recordFunnelVisitorSession(input: {
       if (isPlanOpen) {
         existing.planOpenCount = (existing.planOpenCount || 0) + 1;
       }
+      if (isGuideVisit) {
+        const base =
+          typeof existing.guideVisitCount === "number"
+            ? existing.guideVisitCount
+            : isGuideSourcePage(existing.sourcePage)
+              ? Math.max(1, (existing.visitCount || 1) - 1)
+              : 0;
+        existing.guideVisitCount = base + 1;
+      }
+      if (isStorefrontVisit) {
+        const base =
+          typeof existing.storefrontVisitCount === "number"
+            ? existing.storefrontVisitCount
+            : isStorefrontSourcePage(existing.sourcePage)
+              ? Math.max(1, (existing.visitCount || 1) - 1)
+              : 0;
+        existing.storefrontVisitCount = base + 1;
+      }
       if (planCode) existing.planCode = planCode;
       if (placementId) existing.placementId = placementId;
       if (propertySlug) existing.propertySlug = propertySlug;
@@ -1479,6 +1523,8 @@ export function recordFunnelVisitorSession(input: {
       surface,
       planCode,
       planOpenCount: isPlanOpen ? 1 : 0,
+      guideVisitCount: isGuideVisit ? 1 : 0,
+      storefrontVisitCount: isStorefrontVisit ? 1 : 0,
       trafficClass,
       isTest,
       firstSeenAt: nowIso,
@@ -1515,11 +1561,14 @@ function createEmptyFunnelClassMetrics(
     trafficClass,
     newVisitors: 0,
     guestVisits: 0,
+    guideVisits: 0,
+    storefrontVisits: 0,
     planOpens: 0,
     recommendationsIssued: 0,
     recommendationOnlyRecords: 0,
     followedHandoffs: 0,
     actualOutboundClicks: 0,
+    viatorClicks: 0,
     confirmedPaidBookings: 0,
     paidCommissionsCount: 0,
     cancelledOrRefundedBookings: 0,
@@ -1583,6 +1632,20 @@ export function getFunnelMetricsReport(options?: {
     const bucket = isTestVisitor ? test : production;
     bucket.newVisitors += 1;
     bucket.guestVisits += Math.max(1, vis.visitCount || 1);
+    const explicitGuideVisits =
+      typeof vis.guideVisitCount === "number" && vis.guideVisitCount > 0
+        ? vis.guideVisitCount
+        : isGuideSourcePage(vis.sourcePage)
+          ? Math.max(1, vis.visitCount || 1)
+          : 0;
+    const explicitStorefrontVisits =
+      typeof vis.storefrontVisitCount === "number" && vis.storefrontVisitCount > 0
+        ? vis.storefrontVisitCount
+        : isStorefrontSourcePage(vis.sourcePage)
+          ? Math.max(1, vis.visitCount || 1)
+          : 0;
+    bucket.guideVisits += explicitGuideVisits;
+    bucket.storefrontVisits += explicitStorefrontVisits;
     const explicitPlanOpens =
       typeof vis.planOpenCount === "number" && vis.planOpenCount >= 0
         ? vis.planOpenCount
@@ -1671,6 +1734,9 @@ export function getFunnelMetricsReport(options?: {
     } else {
       bucket.followedHandoffs += 1;
       bucket.actualOutboundClicks += 1;
+      if (click.provider === "viator") {
+        bucket.viatorClicks += 1;
+      }
       bucket.byDirection[dirKey].handoffs += 1;
     }
 

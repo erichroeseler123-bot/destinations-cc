@@ -28,6 +28,8 @@ export interface FunnelVisitorRecord {
   surface?: string | null;
   planCode?: string | null;
   planOpenCount?: number;
+  guideVisitCount?: number;
+  storefrontVisitCount?: number;
   trafficClass: "production" | "test";
   isTest: boolean;
   firstSeenAt: string;
@@ -662,8 +664,38 @@ export async function syncDurableLedgerWithPostgres(options?: {
           const existingVis = localDraft.funnelVisitorsById[vid];
           if (!existingVis) {
             localDraft.funnelVisitorsById[vid] = vrec;
-          } else if (!options?.forcePushLocal && vrec.visitCount >= existingVis.visitCount) {
-            localDraft.funnelVisitorsById[vid] = vrec;
+          } else {
+            const hasGuideCount =
+              typeof existingVis.guideVisitCount === "number" ||
+              typeof vrec.guideVisitCount === "number";
+            const hasStorefrontCount =
+              typeof existingVis.storefrontVisitCount === "number" ||
+              typeof vrec.storefrontVisitCount === "number";
+            const mergedGuideVisits = hasGuideCount
+              ? Math.max(existingVis.guideVisitCount || 0, vrec.guideVisitCount || 0)
+              : undefined;
+            const mergedStorefrontVisits = hasStorefrontCount
+              ? Math.max(
+                  existingVis.storefrontVisitCount || 0,
+                  vrec.storefrontVisitCount || 0,
+                )
+              : undefined;
+            if (!options?.forcePushLocal && vrec.visitCount >= existingVis.visitCount) {
+              localDraft.funnelVisitorsById[vid] = {
+                ...vrec,
+                ...(mergedGuideVisits !== undefined ? { guideVisitCount: mergedGuideVisits } : {}),
+                ...(mergedStorefrontVisits !== undefined
+                  ? { storefrontVisitCount: mergedStorefrontVisits }
+                  : {}),
+              };
+            } else {
+              if (mergedGuideVisits !== undefined) {
+                existingVis.guideVisitCount = mergedGuideVisits;
+              }
+              if (mergedStorefrontVisits !== undefined) {
+                existingVis.storefrontVisitCount = mergedStorefrontVisits;
+              }
+            }
           }
         }
       }

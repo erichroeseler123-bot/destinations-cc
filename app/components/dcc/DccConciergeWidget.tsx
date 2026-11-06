@@ -333,6 +333,17 @@ export default function DccConciergeWidget({
       }
       if (sp.get("isTest") === "true" || sp.get("isTest") === "1" || sp.get("trafficClass") === "test") {
         setRuntimeIsTest(true);
+        document
+          .querySelectorAll<HTMLAnchorElement>('a[href="/swamp-tours"], a[href^="/api/v1/ads/click"]')
+          .forEach((anchor) => {
+            const rawHref = anchor.getAttribute("href") || "";
+            if (!rawHref.includes("isTest=")) {
+              anchor.setAttribute(
+                "href",
+                `${rawHref}${rawHref.includes("?") ? "&" : "?"}isTest=true`,
+              );
+            }
+          });
       }
     };
     syncFromUrl();
@@ -372,7 +383,7 @@ export default function DccConciergeWidget({
       (surface === "hotel_concierge" && propertySlug === "hotel-monteleone-nola"
         ? "nola-hotel-monteleone-demo-pilot"
         : "");
-    const visitKey = `${effectivePlacement}::${propertySlug}::${surface}`;
+    const visitKey = `${effectivePlacement}::${propertySlug}::${surface}::${window.location.pathname}`;
     if (visitorRecordedRef.current === visitKey) return;
     visitorRecordedRef.current = visitKey;
 
@@ -1196,6 +1207,21 @@ export default function DccConciergeWidget({
                       ? `Check Availability at ${opt.primaryProvider === "fareharbor" ? "FareHarbor" : "Provider"} (${bound?.optionCode || opt.primaryProvider}) ↗`
                       : `Continue to Checkout (${bound?.optionCode || opt.primaryProvider}) ↗`}
                 </a>
+                {opt.primaryProvider === "viator" && (
+                  <span
+                    data-testid="concierge-viator-reselection-note"
+                    className="text-[11px] leading-snug text-amber-200/95 bg-amber-950/35 border border-amber-500/30 rounded-md px-2.5 py-1.5"
+                  >
+                    Viator opens to its default product screen — reselect your date (
+                    <strong>{bound?.date || date}</strong>), group size (
+                    <strong>
+                      {bound?.totalGuests || adults}{" "}
+                      {(bound?.totalGuests || adults) === 1 ? "guest" : "guests"}
+                    </strong>
+                    ), and tour option (
+                    <strong>{bound?.optionTitle || `Option ${bound?.optionCode || "TG10"}`}</strong>) on Viator.
+                  </span>
+                )}
               </div>
 
               {/* Cheaper / Alternative Option Tradeoffs */}

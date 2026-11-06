@@ -243,3 +243,153 @@ test("4. GET /api/v1/tours/catalog enforces read-only semantics (405 on queueRev
   assert.equal(postRes.status, 401);
 });
 
+test("5. WNO guide visits, storefront visits, Viator clicks, and booking/settlement imports are tracked separately from QA with reselection notice beside booking buttons", async () => {
+  const fs = await import("node:fs");
+  const path = await import("node:path");
+  const {
+    recordFunnelVisitorSession,
+    issueOpaqueClickAttribution,
+    reconcilePartnerCsvBatchByClickId,
+    getFunnelMetricsReport,
+  } = await import("../../lib/dcc/commerce/opaqueAttributionLedger");
+
+  const cardSrc = fs.readFileSync(
+    path.join(process.cwd(), "app/new-orleans/components/VisualEditorialCard.tsx"),
+    "utf8",
+  );
+  const categorySrc = fs.readFileSync(
+    path.join(process.cwd(), "app/new-orleans/marketplace-category/[categorySlug]/page.tsx"),
+    "utf8",
+  );
+  const widgetSrc = fs.readFileSync(
+    path.join(process.cwd(), "app/components/dcc/DccConciergeWidget.tsx"),
+    "utf8",
+  );
+  assert.match(cardSrc, /wno-booking-reselection-note/);
+  assert.match(categorySrc, /reselect your date.*group size.*tour option/i);
+  assert.match(widgetSrc, /concierge-viator-reselection-note/);
+
+  const testPlacementId = "fp-wno-swamp-tours-unit-check";
+
+  // 1. Record QA walkthrough: guide -> storefront -> Viator click
+  recordFunnelVisitorSession({
+    sourcePage: "/guides/best-swamp-tour-with-transportation?isTest=true",
+    placementId: testPlacementId,
+    surface: "welcometoneworleanstours",
+    isTest: true,
+  });
+  recordFunnelVisitorSession({
+    sourcePage: "/swamp-tours?isTest=true",
+    placementId: testPlacementId,
+    surface: "welcometoneworleanstours",
+    isTest: true,
+  });
+  const qaClick = issueOpaqueClickAttribution({
+    decisionReceiptId: "rcpt:wno:qa:walkthrough",
+    recommendedOperatorId: "louisiana-tour-company",
+    recommendedOperatorName: "Louisiana Tour Company",
+    evidenceVersion: "dcc-evidence/v1",
+    originatingSite: "welcometoneworleanstours.com",
+    originatingPage: "/swamp-tours",
+    placementId: testPlacementId,
+    propertySlug: "hotel-monteleone-nola",
+    surface: "welcometoneworleanstours",
+    recordStage: "outbound_click",
+    isTest: true,
+    provider: "viator",
+    productCode: "15200P6",
+    productDestinationUrl:
+      "https://www.viator.com/tours/New-Orleans/New-Orleans-Swamp-Tour-Boat-Adventure-With-Pickup/d675-15200P6",
+  });
+  assert.match(qaClick.campaignValue || "", /^clkqa[a-f0-9]{20}$/);
+
+  // 2. Record real guest traffic: guide -> storefront -> Viator click
+  recordFunnelVisitorSession({
+    sourcePage: "/guides/best-swamp-tour-with-transportation",
+    placementId: testPlacementId,
+    surface: "welcometoneworleanstours",
+    isTest: false,
+  });
+  recordFunnelVisitorSession({
+    sourcePage: "/swamp-tours",
+    placementId: testPlacementId,
+    surface: "welcometoneworleanstours",
+    isTest: false,
+  });
+  const prodClick = issueOpaqueClickAttribution({
+    decisionReceiptId: "rcpt:wno:prod:guest1",
+    recommendedOperatorId: "louisiana-tour-company",
+    recommendedOperatorName: "Louisiana Tour Company",
+    evidenceVersion: "dcc-evidence/v1",
+    originatingSite: "welcometoneworleanstours.com",
+    originatingPage: "/swamp-tours",
+    placementId: testPlacementId,
+    propertySlug: "hotel-monteleone-nola",
+    surface: "welcometoneworleanstours",
+    recordStage: "outbound_click",
+    isTest: false,
+    provider: "viator",
+    productCode: "15200P6",
+    productDestinationUrl:
+      "https://www.viator.com/tours/New-Orleans/New-Orleans-Swamp-Tour-Boat-Adventure-With-Pickup/d675-15200P6",
+  });
+  assert.match(prodClick.campaignValue || "", /^clk[a-f0-9]{24}$/);
+
+  // 3. Import confirmed Viator booking by campaign_value (unsettled commission first)
+  const confirmedCsv = [
+    "booking_ref,campaign_value,status,gross_amount,commission_amount,currency,occurred_at",
+    `BR-WNO-REAL-1001,${prodClick.campaignValue},CONFIRMED,120.00,9.60,USD,2026-11-18T15:00:00Z`,
+  ].join("\n");
+
+  const importPass1 = reconcilePartnerCsvBatchByClickId({
+    csvText: confirmedCsv,
+    provider: "viator",
+  });
+  assert.equal(importPass1.matchedCount, 1);
+  assert.equal(importPass1.deduplicatedCount, 0);
+
+  // Rerun exact same import -> counts once
+  const importPass2 = reconcilePartnerCsvBatchByClickId({
+    csvText: confirmedCsv,
+    provider: "viator",
+  });
+  assert.equal(importPass2.matchedCount, 0);
+  assert.equal(importPass2.deduplicatedCount, 1);
+
+  const reportBeforeSettlement = getFunnelMetricsReport({
+    placementId: testPlacementId,
+  });
+  assert.equal(reportBeforeSettlement.production.guideVisits, 1);
+  assert.equal(reportBeforeSettlement.production.storefrontVisits, 1);
+  assert.equal(reportBeforeSettlement.production.viatorClicks, 1);
+  assert.equal(reportBeforeSettlement.production.confirmedPaidBookings, 1);
+  assert.equal(reportBeforeSettlement.production.duplicateDeliveriesIgnored, 1);
+  assert.equal(reportBeforeSettlement.production.estimatedUnsettledCommissionUsd, 9.6);
+  assert.equal(reportBeforeSettlement.production.settledReconciledCommissionUsd, 0);
+
+  assert.equal(reportBeforeSettlement.test.guideVisits, 1);
+  assert.equal(reportBeforeSettlement.test.storefrontVisits, 1);
+  assert.equal(reportBeforeSettlement.test.viatorClicks, 1);
+  assert.equal(reportBeforeSettlement.test.confirmedPaidBookings, 0);
+
+  // 4. Import settlement payout row when commission settles -> reports settled commission separately
+  const settledCsv = [
+    "booking_ref,campaign_value,status,gross_amount,commission_amount,paid_commission_usd,currency,occurred_at",
+    `BR-WNO-REAL-1001,${prodClick.campaignValue},SETTLED,120.00,9.60,9.60,USD,2026-11-25T15:00:00Z`,
+  ].join("\n");
+  const settlementPass = reconcilePartnerCsvBatchByClickId({
+    csvText: settledCsv,
+    provider: "viator",
+  });
+  assert.equal(settlementPass.matchedCount, 1);
+
+  const reportAfterSettlement = getFunnelMetricsReport({
+    placementId: testPlacementId,
+  });
+  assert.equal(reportAfterSettlement.production.confirmedPaidBookings, 1);
+  assert.equal(reportAfterSettlement.production.estimatedUnsettledCommissionUsd, 0);
+  assert.equal(reportAfterSettlement.production.settledReconciledCommissionUsd, 9.6);
+  assert.equal(reportAfterSettlement.production.paidCommissionsCount, 1);
+});
+
+

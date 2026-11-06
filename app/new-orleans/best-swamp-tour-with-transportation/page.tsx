@@ -44,6 +44,7 @@ export default function Page() {
       ]}
       conciergePlacementId="fp-wno-swamp-tours"
       productSlugs={[
+        "louisiana-tour-company-swamp-tour-hotel-pickup",
         "jeanlafitte-swamp-tour-with-hotel-pickup",
         "swamp-bayou-tour",
         "covered-tour-boat",
