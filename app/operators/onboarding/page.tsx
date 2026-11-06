@@ -58,11 +58,15 @@ const VERIFICATION_GATES = [
 export default async function OperatorOnboardingPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ operator?: string }>;
+  searchParams?: Promise<{ operator?: string; choice?: string }>;
 }) {
   const sp = (await searchParams) || {};
   const prefilledOperator = sp.operator ? getOperatorManifest(sp.operator) : null;
   const pilot = GOSNO_DIRECT_PILOT_MANIFEST.directPilot!;
+  const initialChoice =
+    sp.choice === "apply_for_api_access" || sp.choice === "api"
+      ? "apply_for_api_access"
+      : "send_guests_to_checkout";
 
   return (
     <main className="min-h-screen bg-[#070b10] text-white">
@@ -72,13 +76,13 @@ export default async function OperatorOnboardingPage({
             <Link href="/operators" className="text-xs font-bold text-cyan-300 hover:underline">
               ← Back to Operator Partnership Overview
             </Link>
-            <span className="rounded-full border border-cyan-400/40 bg-cyan-400/10 px-3 py-0.5 text-xs font-mono font-bold text-cyan-300 uppercase tracking-widest">
-              API-Only Direct Partnership Onboarding
+            <span className="rounded-full border border-emerald-400/40 bg-emerald-400/10 px-3 py-0.5 text-xs font-mono font-bold text-emerald-300 uppercase tracking-widest">
+              Checkout Referral Pilot &amp; Direct API Onboarding
             </span>
           </div>
 
           <h1 className="text-3xl font-black tracking-tight sm:text-5xl text-white">
-            Operator API Onboarding &amp; Integration Verification
+            Operator Onboarding: Send Guests to Checkout or Apply for API Access
           </h1>
 
           <blockquote className="rounded-2xl border border-cyan-400/30 bg-cyan-950/20 p-5 text-base sm:text-lg font-bold text-white">
@@ -86,7 +90,7 @@ export default async function OperatorOnboardingPage({
           </blockquote>
 
           <p className="text-sm text-zinc-300 max-w-3xl leading-6">
-            Direct partnerships are API-only. Without an authorized API connection, we cannot switch an operator to direct bookings, and any existing verified Viator listings can continue through Viator. Submitting an onboarding application initiates technical and commercial review—it never automatically authorizes sales.
+            Choose <strong>Send guests to our checkout</strong> to onboard one tour with your existing hosted checkout link for the New Orleans pilot (starting with Jean Lafitte&apos;s covered swamp tour with transportation, item <code className="text-emerald-300">763318</code>), or choose <strong>Apply for API booking access</strong> to route through our full direct API intake. Intake is strictly limited to business and product details—arrange any credentials through the provider&apos;s approved secure process.
           </p>
         </div>
       </div>
@@ -96,13 +100,13 @@ export default async function OperatorOnboardingPage({
         <section className="rounded-3xl border border-cyan-500/30 bg-white/[0.025] p-6 sm:p-8 space-y-6">
           <div>
             <span className="text-xs font-mono font-bold uppercase tracking-widest text-cyan-300">
-              Step 1 · Operator Application (No API Secrets Collected Here)
+              Step 1 · Choose Your Onboarding Path (No Credentials Collected Here)
             </span>
             <h2 className="mt-2 text-2xl font-black text-white">
-              Submit Company, Booking System &amp; API Documentation Details
+              Send Guests to Your Checkout · Or Apply for API Booking Access
             </h2>
             <p className="mt-1 text-xs text-zinc-400">
-              We welcome operators worldwide. Please provide your company contact details, destinations, reservation system, and API documentation link.
+              Select <strong>Send guests to our checkout</strong> to add a single tour offer and review affiliate, pickup, and payout terms, or select <strong>Apply for API booking access</strong> for direct API integration review.
             </p>
           </div>
 
@@ -115,8 +119,10 @@ export default async function OperatorOnboardingPage({
                 ? "FareHarbor External API v1"
                 : "Rezdy Native REST API v1"
             }
+            initialChoice={initialChoice}
           />
         </section>
+
 
         {/* 7 Verification Gates Required Before Switching */}
         <section className="rounded-3xl border border-white/10 bg-white/[0.025] p-6 sm:p-8 space-y-6">

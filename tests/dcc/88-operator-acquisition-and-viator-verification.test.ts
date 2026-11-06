@@ -71,9 +71,14 @@ test("Seasonal pages preserve supplier identity, disclose public evidence, and r
 import {
   DELETE as deleteOnboardingRoute,
   GET as getOnboardingRoute,
+  PATCH as patchOnboardingRoute,
   POST as postOnboardingRoute,
 } from "../../app/api/operators/onboarding/route";
-import { validateOperatorOnboardingApplication } from "../../lib/dcc/operatorOnboardingStore";
+import {
+  JEAN_LAFITTE_763318_ONBOARDING_EXAMPLE,
+  validateOperatorOnboardingApplication,
+} from "../../lib/dcc/operatorOnboardingStore";
+import OperatorOnboardingForm from "../../app/operators/onboarding/OperatorOnboardingForm";
 
 test("Homepage copy stays calm, factual, and decision-focused without salesy hero offers", () => {
   const homePath = path.join(process.cwd(), "app/components/dcc/LocationFirstHomeFast.tsx");
@@ -476,3 +481,284 @@ test("Viator live availability adapter never reports 401/403 or missing API key 
     global.fetch = originalFetch;
   }
 });
+
+test("Extend /operators/onboarding with two choices: Send guests to our checkout (Jean Lafitte #763318 pilot) and Apply for API booking access, tracking 4 readiness statuses and tracing referral to provider checkout", async () => {
+  const originalToken = process.env.EARTHOS_API_KEY;
+  process.env.EARTHOS_API_KEY = "test-admin-review-queue-token";
+
+  let checkoutAppId = "";
+  let checkoutRetrievalToken = "";
+
+  try {
+    // 1. UI renders both choices ("Send guests to our checkout" and "Apply for API booking access"),
+    //    Jean Lafitte #763318 example, FareHarbor next action, and the 4 initial statuses
+    const formMarkup = renderToStaticMarkup(createElement(OperatorOnboardingForm, {}));
+    assert.match(formMarkup, /Send guests to our checkout/);
+    assert.match(formMarkup, /Apply for API booking access/);
+    assert.match(formMarkup, /Jean Lafitte Swamp Tours/);
+    assert.match(formMarkup, /763318/);
+    assert.match(formMarkup, /Checkout tested/);
+    assert.match(formMarkup, /Check seats at FareHarbor/);
+    assert.match(formMarkup, /Commission terms pending/);
+    assert.match(formMarkup, /API booking requires approval/);
+    assert.match(
+      formMarkup,
+      /Approve the FareHarbor affiliate connection for this specific offer and confirm the eligible hotel pickup stops/i,
+    );
+
+    // 2. Submit Jean Lafitte (#763318) via Choice 1 ("send_guests_to_checkout")
+    const submitReq = new NextRequest(
+      "https://www.destinationcommandcenter.com/api/operators/onboarding",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...JEAN_LAFITTE_763318_ONBOARDING_EXAMPLE,
+        }),
+      },
+    );
+    const submitRes = await postOnboardingRoute(submitReq);
+    assert.equal(submitRes.status, 201);
+    const submitBody = await submitRes.json();
+
+    assert.equal(submitBody.ok, true);
+    assert.equal(submitBody.persisted, true);
+    assert.equal(submitBody.onboardingPath, "send_guests_to_checkout");
+    assert.equal(submitBody.applicationStatus, "checkout_onboarding_pending_review");
+    assert.equal(submitBody.reviewQueueState, "pending_review");
+    assert.equal(submitBody.salesAuthorized, false);
+    assert.equal(submitBody.commercialTermsSigned, false);
+    assert.equal(submitBody.credentialsCollectedPublicly, false);
+    assert.equal(
+      submitBody.checkoutOffer.tourId,
+      "dcc:tour:fh:jeanlafitteswamptour:763318",
+    );
+    assert.equal(submitBody.checkoutOffer.offerItemId, "763318");
+
+    // Verify initial 4 readiness statuses for Jean Lafitte (#763318)
+    assert.equal(submitBody.readinessStatuses.checkout.label, "Checkout tested");
+    assert.equal(submitBody.readinessStatuses.checkout.ready, true);
+    assert.equal(
+      submitBody.readinessStatuses.seatAvailability.label,
+      "Check seats at FareHarbor",
+    );
+    assert.equal(submitBody.readinessStatuses.seatAvailability.ready, false);
+    assert.equal(
+      submitBody.readinessStatuses.commissionTerms.label,
+      "Commission terms pending",
+    );
+    assert.equal(submitBody.readinessStatuses.commissionTerms.ready, false);
+    assert.equal(
+      submitBody.readinessStatuses.apiBooking.label,
+      "API booking requires approval",
+    );
+    assert.equal(submitBody.readinessStatuses.apiBooking.ready, false);
+
+    // Verify FareHarbor next action steps
+    assert.equal(submitBody.nextAction.providerKey, "fareharbor");
+    assert.equal(submitBody.nextAction.approvalSteps.length, 3);
+    assert.match(
+      submitBody.nextAction.approvalSteps[0].title,
+      /Approve FareHarbor affiliate connection/i,
+    );
+    assert.match(
+      submitBody.nextAction.approvalSteps[1].title,
+      /Confirm eligible hotel pickup stops/i,
+    );
+
+    checkoutAppId = submitBody.applicationId;
+    checkoutRetrievalToken = submitBody.retrievalToken;
+
+    // 3. Reuse the existing review process (PATCH /api/operators/onboarding) to record
+    //    affiliate account, commission, refund treatment, payout timing, and referral booking record delivery,
+    //    plus trace the referral to the provider checkout
+    const reviewReq = new NextRequest(
+      "https://www.destinationcommandcenter.com/api/operators/onboarding",
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer test-admin-review-queue-token",
+        },
+        body: JSON.stringify({
+          applicationId: checkoutAppId,
+          affiliateAccount: "aktourcenter",
+          commissionRatePercent: 15,
+          refundTreatment:
+            "No commission owed on cancelled or refunded bookings; reversed on BOOKING_CANCELLED / BOOKING_REFUNDED.",
+          payoutTiming:
+            "Monthly FareHarbor ASN statement & payout (Net-30 after completed tour).",
+          bookingRecordDeliveryMethod:
+            "FareHarbor Affiliate/ASN booking report CSV & webhook carrying online_booking_references (<placementId>-clk_<24hex>).",
+          eligiblePickupStopsConfirmed: [
+            "Hotel Monteleone — 214 Royal St (#22056428)",
+          ],
+          commissionEvidence: {
+            termsConfirmed: true,
+            evidence:
+              "Operator confirmed FareHarbor affiliate account aktourcenter for item #763318 at 15% commission, Net-30 ASN payout, and online_booking_references delivery.",
+            evidenceSource: "test_operator_review:jeanlafitteswamptour:763318",
+          },
+          traceReferral: true,
+          placementId: "nola-hotel-monteleone-demo-pilot",
+        }),
+      },
+    );
+
+    const reviewRes = await patchOnboardingRoute(reviewReq);
+    assert.equal(reviewRes.status, 200);
+    const reviewBody = await reviewRes.json();
+
+    assert.equal(reviewBody.ok, true);
+    assert.equal(reviewBody.application.applicationStatus, "checkout_onboarding_reviewed");
+    assert.equal(reviewBody.application.reviewQueueState, "checkout_terms_confirmed");
+    assert.equal(reviewBody.application.commercialTermsSigned, true);
+    assert.equal(reviewBody.application.salesAuthorized, true);
+    assert.equal(reviewBody.application.reviewRecord.affiliateAccount, "aktourcenter");
+    assert.equal(reviewBody.application.reviewRecord.commissionRatePercent, 15);
+    assert.match(
+      reviewBody.application.reviewRecord.bookingRecordDeliveryMethod,
+      /online_booking_references/,
+    );
+
+    // Verify ONLY the capability with new evidence ("Commission terms confirmed") changed;
+    // seatAvailability and apiBooking remain unchanged until evidence for those capabilities is supplied
+    assert.equal(
+      reviewBody.application.readinessStatuses.checkout.label,
+      "Checkout tested",
+    );
+    assert.equal(
+      reviewBody.application.readinessStatuses.seatAvailability.label,
+      "Check seats at FareHarbor",
+    );
+    assert.equal(
+      reviewBody.application.readinessStatuses.commissionTerms.label,
+      "Commission terms confirmed",
+    );
+    assert.equal(reviewBody.application.readinessStatuses.commissionTerms.ready, true);
+    assert.equal(
+      reviewBody.application.readinessStatuses.apiBooking.label,
+      "API booking requires approval",
+    );
+    assert.equal(reviewBody.application.readinessStatuses.apiBooking.ready, false);
+
+    // 4. Verify the referral trace to the exact provider checkout & attribution ledger
+    const trace = reviewBody.referralTrace;
+    assert.ok(trace, "Expected referralTrace in PATCH response");
+    assert.equal(trace.ok, true);
+    assert.equal(trace.tourId, "dcc:tour:fh:jeanlafitteswamptour:763318");
+    assert.equal(trace.offerItemId, "763318");
+    assert.equal(trace.placementId, "nola-hotel-monteleone-demo-pilot");
+    assert.equal(trace.affiliateAccountUsed, "aktourcenter");
+    assert.match(trace.clickId, /^clk_[a-f0-9]{24}$/);
+    assert.equal(
+      trace.referralReferenceTag,
+      `nola-hotel-monteleone-demo-pilot-${trace.clickId}`,
+    );
+    assert.equal(trace.providerHostname, "fareharbor.com");
+    assert.match(
+      trace.providerPath,
+      /^\/embeds\/book\/jeanlafitteswamptour\/items\/763318\//,
+    );
+    assert.equal(trace.queryParamsVerified.asn, "aktourcenter");
+    assert.equal(trace.queryParamsVerified.ref, trace.referralReferenceTag);
+    assert.equal(trace.queryParamsVerified.customTracking, trace.referralReferenceTag);
+    assert.equal(trace.pricingSummary.subtotalPartyPriceCents, 12400);
+    assert.equal(trace.pricingSummary.totalPartyPriceIncludingFeesCents, 13144);
+    assert.equal(trace.ledgerVerification.verifiedInLedger, true);
+    assert.equal(
+      trace.ledgerVerification.recordedPlacementId,
+      "nola-hotel-monteleone-demo-pilot",
+    );
+    assert.equal(trace.ledgerVerification.recordedProvider, "fareharbor");
+    assert.equal(
+      trace.ledgerVerification.recordedProductCode,
+      "jeanlafitteswamptour:763318",
+    );
+    assert.equal(trace.ledgerVerification.recordedTrafficClass, "test");
+
+    // 5. Verify that supplying evidence for seatAvailability and apiBooking transitions each status independently
+    const capUpdateReq = new NextRequest(
+      "https://www.destinationcommandcenter.com/api/operators/onboarding",
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer test-admin-review-queue-token",
+        },
+        body: JSON.stringify({
+          applicationId: checkoutAppId,
+          seatAvailabilityEvidence: {
+            numericCapacityVerified: true,
+            evidence:
+              "FareHarbor External API /availabilities/ returned numeric capacity=18 for item #763318.",
+            evidenceSource: "fareharbor_external_api_capacity_check",
+          },
+          apiBookingEvidence: {
+            apiBookingApproved: true,
+            evidence:
+              "Provider-approved FareHarbor External API user key provisioned securely and sandbox booking write verified.",
+            evidenceSource: "fareharbor_external_api_booking_test",
+          },
+        }),
+      },
+    );
+    const capUpdateRes = await patchOnboardingRoute(capUpdateReq);
+    assert.equal(capUpdateRes.status, 200);
+    const capUpdateBody = await capUpdateRes.json();
+    assert.equal(
+      capUpdateBody.application.readinessStatuses.seatAvailability.label,
+      "Live seat count verified",
+    );
+    assert.equal(
+      capUpdateBody.application.readinessStatuses.seatAvailability.ready,
+      true,
+    );
+    assert.equal(
+      capUpdateBody.application.readinessStatuses.apiBooking.label,
+      "API booking approved",
+    );
+    assert.equal(capUpdateBody.application.readinessStatuses.apiBooking.ready, true);
+
+    // 6. Verify GET /api/operators/onboarding?preview=jean-lafitte-763318 returns end-to-end submission-to-review preview
+    const previewReq = new NextRequest(
+      "https://www.destinationcommandcenter.com/api/operators/onboarding?preview=jean-lafitte-763318",
+      { method: "GET" },
+    );
+    const previewRes = await getOnboardingRoute(previewReq);
+    assert.equal(previewRes.status, 200);
+    const previewBody = await previewRes.json();
+    assert.equal(previewBody.ok, true);
+    assert.equal(
+      previewBody.preview.stage1Submission.readinessStatuses.commissionTerms.label,
+      "Commission terms pending",
+    );
+    assert.equal(
+      previewBody.preview.stage2ReviewRecorded.readinessStatuses.commissionTerms.label,
+      "Commission terms confirmed",
+    );
+    assert.equal(
+      previewBody.preview.stage3ReferralTrace.ledgerVerification.verifiedInLedger,
+      true,
+    );
+  } finally {
+    if (checkoutAppId) {
+      const delReq = new NextRequest(
+        `https://www.destinationcommandcenter.com/api/operators/onboarding?applicationId=${encodeURIComponent(
+          checkoutAppId,
+        )}&retrievalToken=${encodeURIComponent(checkoutRetrievalToken)}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: "Bearer test-admin-review-queue-token" },
+        },
+      );
+      await deleteOnboardingRoute(delReq);
+    }
+    if (originalToken !== undefined) {
+      process.env.EARTHOS_API_KEY = originalToken;
+    } else {
+      delete process.env.EARTHOS_API_KEY;
+    }
+  }
+});
+
