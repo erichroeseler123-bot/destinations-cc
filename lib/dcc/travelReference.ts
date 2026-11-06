@@ -1,4 +1,5 @@
 import { eq } from "drizzle-orm";
+import { hasConfiguredDatabaseUrl } from "@/lib/db/client";
 import { earthosControlMapFindings } from "@/lib/db/schema";
 import { getGoSnoRouteSnapshotDisplayPricing } from "@/lib/dcc/applicability";
 import { getRequiredEarthosDb } from "@/lib/dcc/earthos/ensureEarthosSchema";
@@ -23,6 +24,9 @@ export async function readPublishedReferenceNodeOverrideFromDb(
   id: TravelReferenceNode["id"],
   scope: EarthosEnvironmentScope = resolveEarthosEnvironmentScope(),
 ): Promise<PublishedReferenceNodeOverride | null> {
+  if (!hasConfiguredDatabaseUrl()) {
+    return null;
+  }
   const db = await getRequiredEarthosDb();
 
   const rows = await db
