@@ -29,16 +29,25 @@ export function classifyWnoEntrySource({
   gadCampaignId?: string | null;
 }) {
   const sp = search ? new URLSearchParams(search.startsWith("?") ? search.slice(1) : search) : null;
-  const resolvedExplicit = explicitSource || sp?.get("src") || sp?.get("source");
-  // Preserve WNO's explicit internal attribution tags when present.
-  if (resolvedExplicit) return resolvedExplicit.trim().slice(0, 80);
-
   const resolvedGadCampaign = (gadCampaignId || sp?.get("gad_campaignid") || "").trim();
+  const hasActualGoogleAdsClick = Boolean(
+    resolvedGadCampaign ||
+      sp?.get("gclid") ||
+      sp?.get("gbraid") ||
+      sp?.get("wbraid") ||
+      sp?.get("gad_source"),
+  );
   if (resolvedGadCampaign) {
     return `google-ads-${resolvedGadCampaign}`.slice(0, 80);
   }
-  if (sp?.get("gclid") || sp?.get("gbraid") || sp?.get("gad_source")) {
+  if (hasActualGoogleAdsClick) {
     return "google-ads";
+  }
+
+  const resolvedExplicit = (explicitSource || sp?.get("src") || sp?.get("source") || "").trim();
+  // Preserve WNO's explicit internal attribution tags when present, but reserve google-ads* strictly for actual ad traffic.
+  if (resolvedExplicit && !/^google[-_]?ads/i.test(resolvedExplicit)) {
+    return resolvedExplicit.slice(0, 80);
   }
 
   const classifiedUtm = classifyKnownSource(utmSource || sp?.get("utm_source"));

@@ -895,11 +895,13 @@ export function inferTrafficSource(params: {
       const sp = new URLSearchParams(raw.slice(qIdx + 1));
       const gadCamp = sp.get("gad_campaignid")?.trim();
       if (gadCamp) return `google-ads-${gadCamp}`.slice(0, 80);
-      if (sp.get("gclid") || sp.get("gbraid") || sp.get("gad_source")) {
+      if (sp.get("gclid") || sp.get("gbraid") || sp.get("wbraid") || sp.get("gad_source")) {
         return "google-ads";
       }
       const explicitSrc = (sp.get("src") || sp.get("source") || sp.get("trafficSource") || "").trim();
-      if (explicitSrc) return explicitSrc.slice(0, 80);
+      if (explicitSrc && !/^google[-_]?ads/i.test(explicitSrc)) {
+        return explicitSrc.slice(0, 80);
+      }
       const utmSrc = sp.get("utm_source")?.trim().toLowerCase();
       if (utmSrc) {
         if (utmSrc === "google" || utmSrc.includes("google.")) return "google-search";
@@ -909,7 +911,7 @@ export function inferTrafficSource(params: {
   }
 
   const explicit = (params.trafficSource || "").trim();
-  if (explicit && explicit !== "wtonot-unknown") {
+  if (explicit && explicit !== "wtonot-unknown" && !/^google[-_]?ads/i.test(explicit)) {
     return explicit.slice(0, 80);
   }
 

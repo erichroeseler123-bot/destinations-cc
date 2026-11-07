@@ -126,12 +126,25 @@ export async function GET(request: Request) {
   const adultsParam = url.searchParams.get("adults")?.trim() || null;
   const departureTimeParam = url.searchParams.get("departureTime")?.trim() || null;
   const sigParam = url.searchParams.get("sig")?.trim() || null;
-  const trafficSourceParam =
+  const rawExplicitSrcParam =
     url.searchParams.get("src")?.trim() ||
     url.searchParams.get("source")?.trim() ||
     url.searchParams.get("trafficSource")?.trim() ||
-    (url.searchParams.get("gad_campaignid")?.trim()
-      ? `google-ads-${url.searchParams.get("gad_campaignid")?.trim()}`
+    "";
+  const gadCampaignIdParam = url.searchParams.get("gad_campaignid")?.trim() || "";
+  const gclidParam =
+    url.searchParams.get("gclid")?.trim() ||
+    url.searchParams.get("gbraid")?.trim() ||
+    url.searchParams.get("wbraid")?.trim() ||
+    "";
+  const hasActualGoogleAdsClick = Boolean(
+    gadCampaignIdParam || gclidParam || url.searchParams.get("gad_source")?.trim(),
+  );
+  const trafficSourceParam =
+    (gadCampaignIdParam ? `google-ads-${gadCampaignIdParam}` : null) ||
+    (hasActualGoogleAdsClick ? "google-ads" : null) ||
+    (rawExplicitSrcParam && !/^google[-_]?ads/i.test(rawExplicitSrcParam)
+      ? rawExplicitSrcParam
       : null) ||
     null;
   const visitorIdParam =
@@ -286,7 +299,13 @@ export async function GET(request: Request) {
   }
 
   const userAgent = request.headers.get("user-agent");
-  const referer = request.headers.get("referer");
+  const rawReferer = request.headers.get("referer");
+  const referer =
+    hasActualGoogleAdsClick && rawReferer && !/[?&](gad_campaignid|gclid)=/i.test(rawReferer)
+      ? `${rawReferer}${rawReferer.includes("?") ? "&" : "?"}${gadCampaignIdParam ? `gad_campaignid=${encodeURIComponent(gadCampaignIdParam)}` : `gclid=${encodeURIComponent(gclidParam)}`}`
+      : hasActualGoogleAdsClick && !rawReferer
+        ? `/swamp-tours?${gadCampaignIdParam ? `gad_campaignid=${encodeURIComponent(gadCampaignIdParam)}` : `gclid=${encodeURIComponent(gclidParam)}`}`
+        : rawReferer;
   const isAutomatedUa = Boolean(
     userAgent &&
       (/^(node|undici|curl\/|python-requests)/i.test(userAgent.trim()) ||

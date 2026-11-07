@@ -316,14 +316,24 @@ export default async function CategoryPage({
   const gadSourceParam = firstStr(resolvedSearch.gad_source);
   const gclidParam = firstStr(resolvedSearch.gclid);
   const gbraidParam = firstStr(resolvedSearch.gbraid);
+  const wbraidParam = firstStr(resolvedSearch.wbraid);
   const utmSourceParam = firstStr(resolvedSearch.utm_source);
   const utmMediumParam = firstStr(resolvedSearch.utm_medium);
   const utmCampaignParam = firstStr(resolvedSearch.utm_campaign);
-  const entrySourceParam =
+  const hasActualGoogleAdsClick = Boolean(
+    gadCampaignIdParam || gadSourceParam || gclidParam || gbraidParam || wbraidParam,
+  );
+  const rawExplicitSrc = (
     firstStr(resolvedSearch.src) ||
     firstStr(resolvedSearch.source) ||
+    ""
+  ).trim();
+  const nonAdsExplicitSrc =
+    rawExplicitSrc && !/^google[-_]?ads/i.test(rawExplicitSrc) ? rawExplicitSrc : "";
+  const entrySourceParam =
     (gadCampaignIdParam ? `google-ads-${gadCampaignIdParam}` : "") ||
-    (gclidParam || gbraidParam || gadSourceParam ? "google-ads" : "") ||
+    (hasActualGoogleAdsClick ? "google-ads" : "") ||
+    nonAdsExplicitSrc ||
     utmSourceParam ||
     "";
 
@@ -359,11 +369,12 @@ export default async function CategoryPage({
         action={`/${resolvedParams.categorySlug}`}
         className="mx-auto mt-6 max-w-4xl border border-[#342b1d] bg-[#12110e] p-5 space-y-3"
       >
-        {entrySourceParam && <input type="hidden" name="src" value={entrySourceParam} />}
+        {nonAdsExplicitSrc && <input type="hidden" name="src" value={nonAdsExplicitSrc} />}
         {gadCampaignIdParam && <input type="hidden" name="gad_campaignid" value={gadCampaignIdParam} />}
         {gadSourceParam && <input type="hidden" name="gad_source" value={gadSourceParam} />}
         {gclidParam && <input type="hidden" name="gclid" value={gclidParam} />}
         {gbraidParam && <input type="hidden" name="gbraid" value={gbraidParam} />}
+        {wbraidParam && <input type="hidden" name="wbraid" value={wbraidParam} />}
         {utmSourceParam && <input type="hidden" name="utm_source" value={utmSourceParam} />}
         {utmMediumParam && <input type="hidden" name="utm_medium" value={utmMediumParam} />}
         {utmCampaignParam && <input type="hidden" name="utm_campaign" value={utmCampaignParam} />}

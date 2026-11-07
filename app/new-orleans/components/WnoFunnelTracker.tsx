@@ -9,6 +9,8 @@ const TELEMETRY_URL = "https://destinationcommandcenter.com/api/wno/telemetry";
 const SESSION_KEY = "wno_funnel_session";
 const ENTRY_PATH_KEY = "wno_entry_path";
 const ENTRY_SOURCE_KEY = "wno_entry_source";
+const ENTRY_GAD_CAMPAIGN_KEY = "wno_entry_gad_campaignid";
+const ENTRY_GCLID_KEY = "wno_entry_gclid";
 const LANDING_SENT_KEY = "wno_landing_sent";
 
 function id() {
@@ -42,6 +44,8 @@ export function getWnoFunnelContext() {
     sessionId,
     landingPath: sessionStorage.getItem(ENTRY_PATH_KEY) || window.location.pathname,
     source: sessionStorage.getItem(ENTRY_SOURCE_KEY) || "wtonot-unknown",
+    gadCampaignId: sessionStorage.getItem(ENTRY_GAD_CAMPAIGN_KEY) || null,
+    gclid: sessionStorage.getItem(ENTRY_GCLID_KEY) || null,
     dccContext: getStoredDccTravelerContext(),
   };
 }
@@ -71,6 +75,11 @@ export default function WnoFunnelTracker() {
     const context = getWnoFunnelContext();
     if (!context) return;
 
+    const gadCamp = (params.get("gad_campaignid") || "").trim();
+    const gclid = (params.get("gclid") || params.get("gbraid") || params.get("wbraid") || "").trim();
+    if (gadCamp) sessionStorage.setItem(ENTRY_GAD_CAMPAIGN_KEY, gadCamp);
+    if (gclid) sessionStorage.setItem(ENTRY_GCLID_KEY, gclid);
+
     const classifiedNow = classifyWnoEntrySource({
       pathname: window.location.pathname,
       // `src` is the existing WNO convention. `source` is accepted too so
@@ -80,18 +89,19 @@ export default function WnoFunnelTracker() {
       utmSource: params.get("utm_source"),
       referrer: document.referrer,
       search: window.location.search,
-      gadCampaignId: params.get("gad_campaignid"),
+      gadCampaignId: gadCamp || undefined,
     });
+
+    const explicitSrc = (params.get("src") || params.get("source") || "").trim();
+    const hasValidExplicitSrc = Boolean(explicitSrc && !/^google[-_]?ads/i.test(explicitSrc));
+    const hasActualGoogleAdsClick = Boolean(
+      gadCamp || gclid || params.get("gad_source"),
+    );
 
     if (!sessionStorage.getItem(ENTRY_PATH_KEY)) {
       sessionStorage.setItem(ENTRY_PATH_KEY, window.location.pathname);
       sessionStorage.setItem(ENTRY_SOURCE_KEY, classifiedNow);
-    } else if (
-      params.get("src") ||
-      params.get("source") ||
-      params.get("gad_campaignid") ||
-      params.get("gclid")
-    ) {
+    } else if (hasActualGoogleAdsClick || hasValidExplicitSrc) {
       sessionStorage.setItem(ENTRY_SOURCE_KEY, classifiedNow);
     }
 
@@ -123,9 +133,14 @@ export default function WnoFunnelTracker() {
       let href = anchor.getAttribute("href") || "";
       if (href.includes("/api/v1/ads/click")) {
         const hasSrc = /[?&](src|source|trafficSource)=/i.test(href);
-        const sep = href.includes("?") ? "&" : "?";
-        if (!hasSrc && latestContext.source) {
-          href = `${href}${sep}src=${encodeURIComponent(latestContext.source)}`;
+        if (!hasSrc && latestContext.source && !/^google[-_]?ads/i.test(latestContext.source)) {
+          href = `${href}${href.includes("?") ? "&" : "?"}src=${encodeURIComponent(latestContext.source)}`;
+        }
+        if (!/[?&]gad_campaignid=/i.test(href) && latestContext.gadCampaignId) {
+          href = `${href}${href.includes("?") ? "&" : "?"}gad_campaignid=${encodeURIComponent(latestContext.gadCampaignId)}`;
+        }
+        if (!/[?&]gclid=/i.test(href) && latestContext.gclid) {
+          href = `${href}${href.includes("?") ? "&" : "?"}gclid=${encodeURIComponent(latestContext.gclid)}`;
         }
         if (!/[?&]visitorId=/i.test(href) && latestContext.sessionId) {
           href = `${href}${href.includes("?") ? "&" : "?"}visitorId=${encodeURIComponent(latestContext.sessionId)}`;

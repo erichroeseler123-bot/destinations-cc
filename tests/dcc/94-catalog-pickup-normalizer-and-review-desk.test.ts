@@ -418,6 +418,23 @@ test("6. WNO traffic source tracking classifies active Google Ads campaign (gad_
     "google-ads-24412478365",
   );
 
+  // Manual ?src=google-ads-24412478365 without actual ad click parameters (gad_campaignid, gclid, gbraid, wbraid, gad_source) is rejected so general sharing stays separate from paid ad traffic
+  assert.equal(
+    classifyWnoEntrySource({
+      pathname: "/swamp-tours",
+      explicitSource: "google-ads-24412478365",
+      search: "?src=google-ads-24412478365",
+    }),
+    "wtonot-entry-swamp-tours",
+  );
+  assert.equal(
+    inferTrafficSource({
+      sourcePage: "/swamp-tours?src=google-ads-24412478365",
+      trafficSource: "google-ads-24412478365",
+    }),
+    "wno-swamp-storefront",
+  );
+
   const placementId = "fp-wno-swamp-tours-source-tracking-check";
 
   recordFunnelVisitorSession({
