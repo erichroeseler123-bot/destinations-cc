@@ -194,6 +194,14 @@ export async function POST(request: Request) {
       const customCandidates = Array.isArray(rawInputs.candidateDepartures)
         ? (rawInputs.candidateDepartures as Dcc412CandidateDepartureInput[])
         : null;
+      const requestedCutoff =
+        typeof rawInputs.destinationCutoffLocal === "string"
+          ? rawInputs.destinationCutoffLocal
+          : typeof rawInputs.tajCutoffLocal === "string"
+            ? rawInputs.tajCutoffLocal
+            : typeof rawInputs.cutoff === "string"
+              ? rawInputs.cutoff
+              : undefined;
       const dcc412Result = customCandidates
         ? evaluateDcc412ItineraryRecheck({
             corridorId:
@@ -221,12 +229,23 @@ export async function POST(request: Request) {
             absoluteEta:
               typeof rawInputs.absoluteEta === "string"
                 ? rawInputs.absoluteEta
-                : null,
+                : typeof rawInputs.eta === "string"
+                  ? rawInputs.eta
+                  : null,
             transferBufferMinutes:
               typeof rawInputs.transferBufferMinutes === "number"
                 ? rawInputs.transferBufferMinutes
                 : 15,
+            destinationCutoffLocal: requestedCutoff,
             criticalUpdateMissing: Boolean(rawInputs.criticalUpdateMissing),
+            staleUpdate: Boolean(rawInputs.staleUpdate),
+            staleOrMissingUpdateCouldChangeAnswer: Boolean(
+              rawInputs.staleOrMissingUpdateCouldChangeAnswer,
+            ),
+            evaluatedAtUtc:
+              typeof rawInputs.evaluatedAtUtc === "string"
+                ? rawInputs.evaluatedAtUtc
+                : null,
             candidateDepartures: customCandidates,
           })
         : evaluateSyntheticDelhiAgraDcc412Test({
@@ -247,12 +266,27 @@ export async function POST(request: Request) {
             absoluteEta:
               typeof rawInputs.absoluteEta === "string"
                 ? rawInputs.absoluteEta
-                : null,
+                : typeof rawInputs.eta === "string"
+                  ? rawInputs.eta
+                  : null,
             transferBufferMinutes:
               typeof rawInputs.transferBufferMinutes === "number"
                 ? rawInputs.transferBufferMinutes
                 : 15,
+            destinationCutoffLocal: requestedCutoff,
             criticalUpdateMissing: Boolean(rawInputs.criticalUpdateMissing),
+            staleUpdate: Boolean(rawInputs.staleUpdate),
+            staleOrMissingUpdateCouldChangeAnswer: Boolean(
+              rawInputs.staleOrMissingUpdateCouldChangeAnswer,
+            ),
+            evaluatedAtUtc:
+              typeof rawInputs.evaluatedAtUtc === "string"
+                ? rawInputs.evaluatedAtUtc
+                : null,
+            includeBackup1130:
+              typeof rawInputs.includeBackup1130 === "boolean"
+                ? rawInputs.includeBackup1130
+                : requestedCutoff !== "11:00" && requestedCutoff !== "11:30",
           });
       sharedTripRecheck = dcc412Result;
       receiptLegProvenance = dcc412Result.legProvenance;

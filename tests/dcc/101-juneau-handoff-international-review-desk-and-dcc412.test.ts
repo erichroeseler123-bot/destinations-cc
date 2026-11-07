@@ -4,7 +4,9 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { gzipSync } from "node:zlib";
 import {
+  DELHI_AGRA_CORRIDOR_PLACES,
   evaluateDcc412ItineraryRecheck,
+  evaluateDelhiAgra20261210CorridorFixture,
   evaluateSyntheticDelhiAgraDcc412Test,
   evaluateUnifiedJuneauTripRecheck,
   recheckSavedJuneauTripContextBeforeCheckout,
@@ -28,9 +30,16 @@ import {
   ICELAND_KEF_VIK_OPERATOR_PROFILES,
   ICELAND_KEF_VIK_SAMPLE_TELEMETRY,
   ICELAND_OPERATOR_OUTREACH_DRAFT,
+  OFFICIAL_NTES_LIVE_TRAIN_LOOKUP,
   verifyDatedSourceOrOperatorConfirmation,
 } from "@/lib/dcc/corridors/internationalCorridorQualifications";
 import { ingestApprovedFactsFromReviewDesk } from "@/lib/dcc/research/approvedFactsFeed";
+import { previewWnoRaginCajunAirboatPilot } from "@/lib/dcc/catalog/ingest";
+import { PROVIDERS } from "@/app/new-orleans/data/providers";
+import {
+  getProductPrimaryBookingHref,
+  STOREFRONT_PRODUCTS,
+} from "@/app/new-orleans/tours/pageConfig";
 import KeflavikToVikRoutePage from "@/app/routes/keflavik-to-vik/page";
 import DelhiToAgraRoutePage from "@/app/routes/delhi-to-agra/page";
 import HongKongToMacaoRoutePage from "@/app/routes/hong-kong-to-macao/page";
@@ -659,3 +668,467 @@ test("101.6 — DCC-412 Inside sharedTripRecheck: Synthetic Delhi–Agra Test (9
   assert.ok(delhiMobileHtml.includes("2026-11-18T05:17:00Z"));
   assert.equal(delhiMobileHtml.includes("wa.me/919810000000"), false);
 });
+
+test("101.7 — Table-Driven Delhi → Agra 2026-12-10 Corridor Suite (3 Distinct Places, 3 Cutoff/Delay Cases, Absolute 10:32 ETA Parity, Stale/Missing Update Baseline, Cross-Timezone Planner & API Parity, Public Guide NTES + Labeled ETA)", async () => {
+  // 1. Model the Delhi rail station, Agra Cantt, and the Taj entry gate as 3 distinct places
+  const distinctPlaceIds = new Set([
+    DELHI_AGRA_CORRIDOR_PLACES.delhiRailStation.placeId,
+    DELHI_AGRA_CORRIDOR_PLACES.agraCantt.placeId,
+    DELHI_AGRA_CORRIDOR_PLACES.tajEntryGate.placeId,
+  ]);
+  assert.equal(distinctPlaceIds.size, 3);
+  assert.equal(
+    DELHI_AGRA_CORRIDOR_PLACES.delhiRailStation.placeId,
+    "dcc:place:in-del-nzm-rail-station",
+  );
+  assert.equal(
+    DELHI_AGRA_CORRIDOR_PLACES.delhiRailStation.role,
+    "origin_rail_station",
+  );
+  assert.equal(
+    DELHI_AGRA_CORRIDOR_PLACES.agraCantt.placeId,
+    "dcc:place:in-agr-agc-rail-station",
+  );
+  assert.equal(
+    DELHI_AGRA_CORRIDOR_PLACES.agraCantt.role,
+    "arrival_and_interchange_station",
+  );
+  assert.equal(
+    DELHI_AGRA_CORRIDOR_PLACES.tajEntryGate.placeId,
+    "dcc:place:in-agr-taj-entry-gate",
+  );
+  assert.equal(
+    DELHI_AGRA_CORRIDOR_PLACES.tajEntryGate.role,
+    "destination_cutoff_gate",
+  );
+
+  // 2. Table-driven 2026-12-10 fixture in Asia/Kolkata:
+  //    Scheduled arrival 09:50, 15m exit station, onward departures 10:30 & 11:00, 25m from departure to ready at gate
+  const tableCases: Array<{
+    caseName: string;
+    delayMinutes?: number;
+    absoluteEta?: string;
+    tajCutoffLocal: string;
+    expectedReadyLocal: string;
+    expectedReadyUtc: string;
+    expectedServiceId: string;
+    expectedServiceDepartureLocal: string;
+    expectedGateArrivalLocal: string;
+    expectedGateArrivalUtc: string;
+    expectedCutoffMarginMinutes: number;
+    expectedFitsCutoff: boolean;
+    expectedVerdictLabel: string;
+  }> = [
+    {
+      caseName: "Train on time, 11:00 a.m. cutoff",
+      delayMinutes: 0,
+      tajCutoffLocal: "11:00",
+      expectedReadyLocal: "10:05",
+      expectedReadyUtc: "2026-12-10T04:35:00Z",
+      expectedServiceId: "agc-conn-1030-missed",
+      expectedServiceDepartureLocal: "10:30",
+      expectedGateArrivalLocal: "10:55",
+      expectedGateArrivalUtc: "2026-12-10T05:25:00Z",
+      expectedCutoffMarginMinutes: 5,
+      expectedFitsCutoff: true,
+      expectedVerdictLabel: "Fits by 5 minutes.",
+    },
+    {
+      caseName: "Train 42 minutes late, same cutoff (11:00 a.m.)",
+      delayMinutes: 42,
+      tajCutoffLocal: "11:00",
+      expectedReadyLocal: "10:47",
+      expectedReadyUtc: "2026-12-10T05:17:00Z",
+      expectedServiceId: "agc-conn-1100-catchable",
+      expectedServiceDepartureLocal: "11:00",
+      expectedGateArrivalLocal: "11:25",
+      expectedGateArrivalUtc: "2026-12-10T05:55:00Z",
+      expectedCutoffMarginMinutes: -25,
+      expectedFitsCutoff: false,
+      expectedVerdictLabel: "Misses cutoff by 25 minutes.",
+    },
+    {
+      caseName: "Same delay (42 minutes late), 11:30 a.m. cutoff",
+      delayMinutes: 42,
+      tajCutoffLocal: "11:30",
+      expectedReadyLocal: "10:47",
+      expectedReadyUtc: "2026-12-10T05:17:00Z",
+      expectedServiceId: "agc-conn-1100-catchable",
+      expectedServiceDepartureLocal: "11:00",
+      expectedGateArrivalLocal: "11:25",
+      expectedGateArrivalUtc: "2026-12-10T05:55:00Z",
+      expectedCutoffMarginMinutes: 5,
+      expectedFitsCutoff: true,
+      expectedVerdictLabel: "Fits by 5 minutes.",
+    },
+  ];
+
+  const originalTz = process.env.TZ;
+  const deviceTimeZones = ["America/Los_Angeles", "UTC", "Asia/Kolkata"];
+
+  try {
+    for (const row of tableCases) {
+      for (const tz of deviceTimeZones) {
+        process.env.TZ = tz;
+
+        // Shared evaluator run
+        const evalRes = evaluateDelhiAgra20261210CorridorFixture({
+          delayMinutes: row.delayMinutes,
+          absoluteEta: row.absoluteEta,
+          tajCutoffLocal: row.tajCutoffLocal,
+        });
+
+        assert.equal(
+          evalRes.serviceDate,
+          "2026-12-10",
+          `[${row.caseName} | TZ=${tz}] serviceDate`,
+        );
+        assert.equal(
+          evalRes.ianaTimeZone,
+          "Asia/Kolkata",
+          `[${row.caseName} | TZ=${tz}] ianaTimeZone`,
+        );
+        assert.ok(evalRes.places);
+        assert.equal(Object.keys(evalRes.places).length, 3);
+        assert.equal(
+          evalRes.travelerReadyAt.localTime24,
+          row.expectedReadyLocal,
+          `[${row.caseName} | TZ=${tz}] ready localTime24`,
+        );
+        assert.equal(
+          evalRes.travelerReadyAt.utcIso,
+          row.expectedReadyUtc,
+          `[${row.caseName} | TZ=${tz}] ready utcIso`,
+        );
+        assert.ok(evalRes.nextServiceAfterReady);
+        assert.equal(
+          evalRes.nextServiceAfterReady.candidateId,
+          row.expectedServiceId,
+          `[${row.caseName} | TZ=${tz}] nextServiceAfterReady.candidateId`,
+        );
+        assert.equal(
+          evalRes.nextServiceAfterReady.departureLocal,
+          row.expectedServiceDepartureLocal,
+          `[${row.caseName} | TZ=${tz}] nextServiceAfterReady.departureLocal`,
+        );
+        assert.equal(
+          evalRes.gateArrivalLocal,
+          row.expectedGateArrivalLocal,
+          `[${row.caseName} | TZ=${tz}] gateArrivalLocal`,
+        );
+        assert.equal(
+          evalRes.gateArrivalUtc,
+          row.expectedGateArrivalUtc,
+          `[${row.caseName} | TZ=${tz}] gateArrivalUtc`,
+        );
+        assert.equal(
+          evalRes.cutoffMarginMinutes,
+          row.expectedCutoffMarginMinutes,
+          `[${row.caseName} | TZ=${tz}] cutoffMarginMinutes`,
+        );
+        assert.equal(
+          evalRes.fitsDestinationCutoff,
+          row.expectedFitsCutoff,
+          `[${row.caseName} | TZ=${tz}] fitsDestinationCutoff`,
+        );
+        assert.equal(
+          evalRes.cutoffVerdictLabel,
+          row.expectedVerdictLabel,
+          `[${row.caseName} | TZ=${tz}] cutoffVerdictLabel`,
+        );
+
+        // Agent API POST /api/v1/v03/evaluate parity across device time zones
+        const apiRes = await postV03Evaluate(
+          new Request("https://destinationcommandcenter.com/api/v1/v03/evaluate", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+              engineId: "dcc-412",
+              inputs: {
+                serviceDate: "2026-12-10",
+                ianaTimeZone: "Asia/Kolkata",
+                scheduledArrivalLocal: "09:50",
+                delayMinutes: row.delayMinutes,
+                absoluteEta: row.absoluteEta ?? null,
+                transferBufferMinutes: 15,
+                tajCutoffLocal: row.tajCutoffLocal,
+              },
+            }),
+          }),
+        );
+        assert.equal(apiRes.status, 200);
+        const apiBody = (await apiRes.json()) as {
+          ok: boolean;
+          sharedTripRecheck: ReturnType<
+            typeof evaluateDelhiAgra20261210CorridorFixture
+          >;
+          receipt: V03SignedDecisionReceipt;
+        };
+        assert.equal(apiBody.ok, true);
+        assert.equal(
+          apiBody.sharedTripRecheck.travelerReadyAt.utcIso,
+          row.expectedReadyUtc,
+        );
+        assert.equal(
+          apiBody.sharedTripRecheck.gateArrivalLocal,
+          row.expectedGateArrivalLocal,
+        );
+        assert.equal(
+          apiBody.sharedTripRecheck.cutoffMarginMinutes,
+          row.expectedCutoffMarginMinutes,
+        );
+        assert.equal(
+          apiBody.sharedTripRecheck.cutoffVerdictLabel,
+          row.expectedVerdictLabel,
+        );
+
+        // Planner SSR page parity across device time zones
+        const plannerHtml = renderToStaticMarkup(
+          await DelhiToAgraRoutePage({
+            searchParams: Promise.resolve({
+              date: "2026-12-10",
+              arrival: "09:50",
+              delay: String(row.delayMinutes ?? 0),
+              eta: row.absoluteEta ?? "",
+              exit_buffer: "15",
+              cutoff: row.tajCutoffLocal,
+            }),
+          }),
+        );
+        assert.ok(
+          plannerHtml.includes(row.expectedReadyUtc),
+          `Planner HTML should include ready UTC ${row.expectedReadyUtc} in TZ=${tz}`,
+        );
+        assert.ok(
+          plannerHtml.includes(row.expectedGateArrivalLocal),
+          `Planner HTML should include gate arrival ${row.expectedGateArrivalLocal} in TZ=${tz}`,
+        );
+        assert.ok(
+          plannerHtml.includes(row.expectedVerdictLabel),
+          `Planner HTML should include verdict '${row.expectedVerdictLabel}' in TZ=${tz}`,
+        );
+      }
+    }
+  } finally {
+    if (originalTz === undefined) {
+      delete process.env.TZ;
+    } else {
+      process.env.TZ = originalTz;
+    }
+  }
+
+  // 3. Verify that an absolute 10:32 a.m. ETA yields the exact same result as the 42-minute delay
+  for (const cutoff of ["11:00", "11:30"]) {
+    const fromDelay42 = evaluateDelhiAgra20261210CorridorFixture({
+      delayMinutes: 42,
+      tajCutoffLocal: cutoff,
+    });
+    const fromAbsEta1032 = evaluateDelhiAgra20261210CorridorFixture({
+      delayMinutes: 0,
+      absoluteEta: "10:32",
+      tajCutoffLocal: cutoff,
+    });
+
+    assert.equal(fromAbsEta1032.etaResolutionMode, "absolute_eta");
+    assert.equal(
+      fromAbsEta1032.effectiveArrivalLocal,
+      fromDelay42.effectiveArrivalLocal,
+    );
+    assert.equal(
+      fromAbsEta1032.effectiveArrivalUtc,
+      fromDelay42.effectiveArrivalUtc,
+    );
+    assert.equal(
+      fromAbsEta1032.travelerReadyAt.utcIso,
+      fromDelay42.travelerReadyAt.utcIso,
+    );
+    assert.equal(
+      fromAbsEta1032.travelerReadyAt.formattedSummary,
+      fromDelay42.travelerReadyAt.formattedSummary,
+    );
+    assert.equal(
+      fromAbsEta1032.nextServiceAfterReady?.candidateId,
+      fromDelay42.nextServiceAfterReady?.candidateId,
+    );
+    assert.equal(fromAbsEta1032.gateArrivalLocal, fromDelay42.gateArrivalLocal);
+    assert.equal(fromAbsEta1032.gateArrivalUtc, fromDelay42.gateArrivalUtc);
+    assert.equal(
+      fromAbsEta1032.cutoffMarginMinutes,
+      fromDelay42.cutoffMarginMinutes,
+    );
+    assert.equal(
+      fromAbsEta1032.fitsDestinationCutoff,
+      fromDelay42.fitsDestinationCutoff,
+    );
+    assert.equal(
+      fromAbsEta1032.cutoffVerdictLabel,
+      fromDelay42.cutoffVerdictLabel,
+    );
+  }
+
+  // 4. Verify missing or stale update sets scheduleBaselineStatus to 'Needs verification'
+  const missingUpdateEval = evaluateDelhiAgra20261210CorridorFixture({
+    delayMinutes: 0,
+    tajCutoffLocal: "11:00",
+    criticalUpdateMissing: true,
+  });
+  assert.equal(missingUpdateEval.scheduleBaselineStatus, "Needs verification");
+
+  const staleFlagEval = evaluateDelhiAgra20261210CorridorFixture({
+    delayMinutes: 0,
+    tajCutoffLocal: "11:00",
+    staleUpdate: true,
+  });
+  assert.equal(staleFlagEval.scheduleBaselineStatus, "Needs verification");
+
+  const expiredTimestampEval = evaluateDelhiAgra20261210CorridorFixture({
+    delayMinutes: 0,
+    tajCutoffLocal: "11:00",
+    inboundSourceExpiry: "2026-12-10T04:15:00Z",
+    evaluatedAtUtc: "2026-12-10T04:20:00Z",
+  });
+  assert.equal(expiredTimestampEval.scheduleBaselineStatus, "Needs verification");
+
+  // 5. Public guide requirements: official NTES lookup, labeled traveler-entered ETA, checkout disabled until verified
+  assert.equal(
+    OFFICIAL_NTES_LIVE_TRAIN_LOOKUP.officialMobileAndWebUrl,
+    "https://enquiry.indianrail.gov.in/mntes/",
+  );
+  const publicGuideHtml = renderToStaticMarkup(
+    await DelhiToAgraRoutePage({
+      searchParams: Promise.resolve({
+        date: "2026-12-10",
+        arrival: "09:50",
+        eta: "10:32",
+        cutoff: "11:00",
+        stale_update: "1",
+      }),
+    }),
+  );
+  assert.ok(publicGuideHtml.includes("https://enquiry.indianrail.gov.in/mntes/"));
+  assert.ok(publicGuideHtml.includes("Traveler-Entered ETA"));
+  assert.ok(publicGuideHtml.includes("Needs verification"));
+  assert.ok(publicGuideHtml.includes("dcc:place:in-del-nzm-rail-station"));
+  assert.ok(publicGuideHtml.includes("dcc:place:in-agr-agc-rail-station"));
+  assert.ok(publicGuideHtml.includes("dcc:place:in-agr-taj-entry-gate"));
+
+  // Commercial private car checkout remains withheld while operator, price, and booking link are pending Review Desk verification
+  const privateCarOption = DELHI_AGRA_QUALIFIED_OPTIONS.find(
+    (o) => o.optionId === "agra-cantt-station-to-taj-private-car",
+  );
+  assert.ok(privateCarOption);
+  assert.equal(privateCarOption.pricingVerificationGate.verified, false);
+  assert.equal(privateCarOption.bookingLinkVerificationGate.verified, false);
+  assert.equal(privateCarOption.bookingOrWhatsappHref, null);
+});
+
+test("101.8 — WNO First Pilot: Ragin Cajun Airboat Tours (ragincajuntours Item 228561 Importer Preview & aktourcenter Checkout Handoff)", async () => {
+  // 1. Verify WNO provider and tour configuration
+  const raginProvider = PROVIDERS["ragin-cajun-tours"];
+  assert.ok(raginProvider);
+  assert.equal(raginProvider.fareHarborShortname, "ragincajuntours");
+
+  const raginTour = STOREFRONT_PRODUCTS.find(
+    (t) => t.id === "ragincajun-airboat",
+  );
+  assert.ok(raginTour);
+  assert.equal(raginTour.companyShortname, "ragincajuntours");
+  assert.equal(raginTour.itemId, "228561");
+  assert.equal(raginTour.flowId, "940162");
+  assert.equal(raginTour.fareharborAsnActive, true);
+  const primaryHref = getProductPrimaryBookingHref(raginTour);
+  assert.ok(
+    primaryHref.includes(
+      "https://fareharbor.com/embeds/book/ragincajuntours/items/228561/",
+    ),
+  );
+  assert.ok(primaryHref.includes("asn=aktourcenter"));
+
+  // 2. Run the DCC importer preview for one date (2026-11-18) and two guests (2)
+  const pilot = await previewWnoRaginCajunAirboatPilot({
+    date: "2026-11-18",
+    guests: 2,
+    itemPk: 228561,
+  });
+
+  assert.equal(pilot.pilotId, "wno-ragin-cajun-airboat-pilot");
+  assert.equal(pilot.wnoAccountShortname, "aktourcenter");
+  assert.equal(pilot.supplierShortname, "ragincajuntours");
+  assert.equal(pilot.supplierName, "Ragin Cajun Airboat Tours");
+  assert.equal(pilot.supplierCompanyPk, 56511);
+  assert.equal(pilot.credentialsUsed.account, "aktourcenter");
+  assert.equal(pilot.credentialsUsed.alaskaCredentialsExcluded, true);
+  assert.equal(pilot.accessStatus.asnReferralAccessible, true);
+  assert.equal(pilot.accessStatus.externalApiV1Status, 403);
+  assert.equal(
+    pilot.accessStatus.capabilityMode,
+    "referral_only_existing_wno_checkout",
+  );
+
+  // Exact product ID, date, and guests
+  assert.equal(pilot.productPreview.fareHarborItemPk, 228561);
+  assert.equal(
+    pilot.productPreview.exactProductId,
+    "dcc:tour:fh:ragincajuntours:228561",
+  );
+  assert.equal(pilot.productPreview.title, "Ragin' Cajun Large Airboat Tour");
+  assert.equal(pilot.date, "2026-11-18");
+  assert.equal(pilot.guests, 2);
+  assert.ok(pilot.departures.length >= 2);
+
+  // Self-drive departure (1774334571)
+  const selfDriveDep = pilot.departures.find((d) => d.pickupIncluded === false);
+  assert.ok(selfDriveDep);
+  assert.equal(selfDriveDep.availabilityPk, 1774334571);
+  assert.equal(selfDriveDep.startAtLocal, "2026-11-18T10:00:00");
+  assert.equal(selfDriveDep.endAtLocal, "2026-11-18T11:45:00");
+  assert.equal(selfDriveDep.isBookable, true);
+  assert.equal(selfDriveDep.isSoldOut, false);
+  assert.equal(selfDriveDep.exactRemainingCapacity, null);
+  assert.equal(selfDriveDep.pickupIncluded, false);
+  assert.equal(selfDriveDep.perPersonBaseUsd, 65);
+  assert.equal(selfDriveDep.subtotalBaseUsd, 130);
+  assert.equal(selfDriveDep.onlineBookingFeeUsd, 7.8);
+  assert.equal(selfDriveDep.totalEstimatedUsdBeforeLocalTax, 137.8);
+  assert.ok(
+    selfDriveDep.slotCheckoutUrl.includes(
+      "https://fareharbor.com/embeds/book/ragincajuntours/items/228561/availability/1774334571/book/?asn=aktourcenter&flow=940162&full-items=yes",
+    ),
+  );
+
+  // Hotel pickup / Shuttle Service departure (1774340210)
+  const shuttleDep = pilot.departures.find((d) => d.pickupIncluded === true);
+  assert.ok(shuttleDep);
+  assert.equal(shuttleDep.availabilityPk, 1774340210);
+  assert.equal(shuttleDep.startAtLocal, "2026-11-18T10:00:00");
+  assert.equal(shuttleDep.endAtLocal, "2026-11-18T11:45:00");
+  assert.equal(shuttleDep.isBookable, true);
+  assert.equal(shuttleDep.isSoldOut, false);
+  assert.equal(shuttleDep.pickupIncluded, true);
+  assert.equal(shuttleDep.perPersonBaseUsd, 90);
+  assert.equal(shuttleDep.subtotalBaseUsd, 180);
+  assert.equal(shuttleDep.onlineBookingFeeUsd, 10.8);
+  assert.equal(shuttleDep.totalEstimatedUsdBeforeLocalTax, 190.8);
+
+  // Verify existing WNO checkout handoff links carry aktourcenter attribution
+  assert.equal(
+    pilot.productPreview.existingWnoItemCheckoutUrl,
+    "https://fareharbor.com/embeds/book/ragincajuntours/items/228561/?asn=aktourcenter&flow=940162&full-items=yes",
+  );
+  assert.equal(
+    pilot.productPreview.existingWnoFlowCheckoutUrl,
+    "https://fareharbor.com/embeds/book/ragincajuntours/?asn=aktourcenter&flow=940162&full-items=yes",
+  );
+  assert.equal(
+    pilot.accessStatus.requiredApiPermissionsForLiveAvailabilityAndPricing
+      .length,
+    2,
+  );
+  assert.ok(
+    pilot.accessStatus.requiredApiPermissionsForLiveAvailabilityAndPricing[0]?.includes(
+      "aktourcenter",
+    ),
+  );
+});
+
+

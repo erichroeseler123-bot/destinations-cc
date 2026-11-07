@@ -4,6 +4,7 @@ import {
   DELHI_AGRA_QUALIFIED_OPTIONS,
   evaluateDelhiAgraCorridorRecheck,
   getReviewDeskItemsForInternationalCorridor,
+  OFFICIAL_NTES_LIVE_TRAIN_LOOKUP,
   TAJ_MAHAL_VISITING_RULES,
 } from "@/lib/dcc/corridors/internationalCorridorQualifications";
 
@@ -13,7 +14,7 @@ export const metadata: Metadata = {
   title:
     "Delhi → Agra Rail & Private Car Qualification (DCC-412 Connection Recheck) | Destination Command Center",
   description:
-    "Plan Delhi to Agra day trips: DCC-412 station exit readiness (travelerReadyAt in Asia/Kolkata & UTC ISO-8601), missed 10:30 connection vs. catchable 11:00 cohort, Taj Mahal Friday closure rules, and Review Desk verification.",
+    "Plan Delhi to Agra day trips: DCC-412 station exit readiness (travelerReadyAt in Asia/Kolkata & UTC ISO-8601), official NTES lookup, traveler-entered ETA, Taj entry gate cutoffs, and Review Desk verification.",
   alternates: {
     canonical: "https://destinationcommandcenter.com/routes/delhi-to-agra",
   },
@@ -30,12 +31,18 @@ function firstStr(val: string | string[] | undefined, fallback: string): string 
 
 export default async function DelhiToAgraPage({ searchParams }: PageProps = {}) {
   const resolved = searchParams ? await searchParams : {};
-  const date = firstStr(resolved.date, "2026-11-18");
-  const trainDelayMinutes = Math.max(
-    0,
-    Number.parseInt(firstStr(resolved.delay, "42"), 10) || 0,
+  const date = firstStr(resolved.date, "2026-12-10");
+  const rawDelayStr = firstStr(resolved.delay, "42");
+  const parsedDelay = Number.parseInt(rawDelayStr, 10);
+  const trainDelayMinutes = Number.isFinite(parsedDelay)
+    ? Math.max(0, parsedDelay)
+    : 42;
+  const scheduledArrivalLocal = firstStr(
+    resolved.scheduled_arrival || resolved.arrival,
+    "09:50",
   );
-  const scheduledArrivalLocal = firstStr(resolved.scheduled_arrival, "09:50");
+  const travelerEtaParam = firstStr(resolved.eta || resolved.absolute_eta, "");
+  const destinationCutoffLocal = firstStr(resolved.cutoff, "16:30");
   const transferBufferMinutes = Math.max(
     0,
     Number.parseInt(firstStr(resolved.exit_buffer, "15"), 10) || 15,
@@ -43,6 +50,9 @@ export default async function DelhiToAgraPage({ searchParams }: PageProps = {}) 
   const criticalUpdateMissing =
     firstStr(resolved.missing_update, "0") === "1" ||
     firstStr(resolved.missing_update, "false") === "true";
+  const staleUpdate =
+    firstStr(resolved.stale_update, "0") === "1" ||
+    firstStr(resolved.stale_update, "false") === "true";
   const partySize = Math.max(
     1,
     Number.parseInt(firstStr(resolved.passengers, "2"), 10) || 2,
@@ -52,8 +62,11 @@ export default async function DelhiToAgraPage({ searchParams }: PageProps = {}) 
     date,
     trainDelayMinutes,
     scheduledArrivalLocal,
+    absoluteEta: travelerEtaParam || null,
+    destinationCutoffLocal,
     transferBufferMinutes,
     criticalUpdateMissing,
+    staleUpdate,
     partySize,
   });
   const dcc412 = recheck.dcc412Recheck;
@@ -80,26 +93,187 @@ export default async function DelhiToAgraPage({ searchParams }: PageProps = {}) 
         </div>
 
         {/* Hero */}
-        <header className="rounded-2xl border border-white/15 bg-slate-900/85 p-6">
+        <header className="rounded-2xl border border-white/15 bg-slate-900/85 p-6 space-y-3">
           <p className="text-xs font-bold uppercase tracking-wider text-cyan-300">
-            International Corridor 2 — New Delhi (NZM / DEL) → Agra Cantt (AGC) &amp; Taj Mahal
+            International Corridor 2 — {dcc412.places.delhiRailStation.name} →{" "}
+            {dcc412.places.agraCantt.name} → {dcc412.places.tajEntryGate.name}
           </p>
           <h1 className="mt-1 text-2xl font-black tracking-tight text-white sm:text-3xl">
             Delhi → Agra Rail, Station Exit &amp; Taj Mahal Cutoff Guide
           </h1>
-          <p className="mt-2 max-w-3xl text-sm text-zinc-300">
+          <p className="max-w-3xl text-sm text-zinc-300">
             Powered by <code>DCC-412</code> inside <code>sharedTripRecheck</code>.
-            Resolves local times in <code>Asia/Kolkata</code> to UTC ISO-8601
-            timestamps, adds the station exit buffer <strong>once</strong> to compute{" "}
-            <code>travelerReadyAt</code>, carries <code>travelerReadyAt</code>{" "}
-            through every candidate connection, and enforces dated official sources
-            while keeping unconfirmed private-car tariffs and WhatsApp links in the{" "}
+            Models the three distinct corridor places (
+            <strong>{dcc412.places.delhiRailStation.name}</strong>,{" "}
+            <strong>{dcc412.places.agraCantt.name}</strong>, and{" "}
+            <strong>{dcc412.places.tajEntryGate.name}</strong>), resolves local
+            times in <code>Asia/Kolkata</code> to UTC ISO-8601 timestamps, adds
+            the station exit buffer <strong>once</strong> to compute{" "}
+            <code>travelerReadyAt</code>, and checks onward departures (`10:30`
+            and `11:00` a.m. + `25m` to gate) against the Taj entry gate cutoff.
+            While official CRIS/NTES machine feed access is pending, use the{" "}
+            <a
+              href={OFFICIAL_NTES_LIVE_TRAIN_LOOKUP.officialMobileAndWebUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-cyan-300 underline font-semibold"
+            >
+              Official NTES Lookup ↗
+            </a>{" "}
+            and enter your revised ETA below. Commercial transfer checkout is
+            enabled only once the operator, price, and booking link are verified
+            in the{" "}
             <a href="#review-desk" className="text-cyan-300 underline">
               DCC Review Desk
             </a>
             .
           </p>
+
+          {/* 3 Distinct Corridor Places Banner */}
+          <div
+            data-testid="delhi-agra-three-places"
+            className="grid gap-2.5 sm:grid-cols-3 pt-1 text-xs"
+          >
+            <div className="rounded-xl border border-white/10 bg-slate-950/75 p-3">
+              <div className="font-mono text-[10px] uppercase text-cyan-300">
+                1. Origin Rail Station ({dcc412.places.delhiRailStation.placeId})
+              </div>
+              <div className="mt-0.5 font-bold text-white">
+                {dcc412.places.delhiRailStation.name}
+              </div>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-slate-950/75 p-3">
+              <div className="font-mono text-[10px] uppercase text-cyan-300">
+                2. Arrival &amp; Interchange ({dcc412.places.agraCantt.placeId})
+              </div>
+              <div className="mt-0.5 font-bold text-white">
+                {dcc412.places.agraCantt.name} (+{dcc412.transferBufferMinutes}m exit)
+              </div>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-slate-950/75 p-3">
+              <div className="font-mono text-[10px] uppercase text-cyan-300">
+                3. Destination Gate ({dcc412.places.tajEntryGate.placeId})
+              </div>
+              <div className="mt-0.5 font-bold text-white">
+                {dcc412.places.tajEntryGate.name} (+25m from AGC departure)
+              </div>
+            </div>
+          </div>
         </header>
+
+        {/* Official NTES Lookup + Labeled Traveler-Entered ETA Form */}
+        <section
+          aria-label="Official NTES Lookup and Labeled Traveler-Entered ETA"
+          data-testid="delhi-agra-ntes-and-eta-form"
+          className="rounded-2xl border border-white/15 bg-slate-900/80 p-5 space-y-4"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-sm font-bold uppercase tracking-wider text-cyan-300">
+                Official NTES Train Running Lookup &amp; Labeled Traveler-Entered ETA
+              </h2>
+              <p className="mt-0.5 text-xs text-zinc-300">
+                Live CRIS/NTES API feed access is currently pending approval (
+                <code>status: pending_approved_machine_access</code>). Check your
+                train’s live running status on the official Indian Railways NTES
+                portal, then enter your <strong>Traveler-Entered Revised ETA (IST)</strong>{" "}
+                or delay minutes to recheck your Agra Cantt connection and Taj entry gate cutoff:
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2 text-xs">
+              <a
+                href={OFFICIAL_NTES_LIVE_TRAIN_LOOKUP.officialMobileAndWebUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-testid="official-ntes-lookup-link"
+                className="rounded-lg border border-cyan-400/40 bg-cyan-500/15 px-3 py-1.5 font-bold text-cyan-200 hover:bg-cyan-500/25"
+              >
+                Open Official NTES Live Lookup (enquiry.indianrail.gov.in) ↗
+              </a>
+              <a
+                href={OFFICIAL_NTES_LIVE_TRAIN_LOOKUP.crisPortalUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-lg border border-white/15 bg-slate-950 px-3 py-1.5 text-zinc-300 hover:text-white"
+              >
+                CRIS proNTES Info ↗
+              </a>
+            </div>
+          </div>
+
+          <form
+            method="get"
+            action="/routes/delhi-to-agra"
+            className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6 text-xs items-end"
+          >
+            <label className="space-y-1">
+              <span className="block font-semibold text-zinc-200">
+                Service Date (IST)
+              </span>
+              <input
+                type="text"
+                name="date"
+                defaultValue={date}
+                className="w-full rounded-lg border border-white/15 bg-slate-950 px-2.5 py-1.5 font-mono text-white"
+              />
+            </label>
+            <label className="space-y-1">
+              <span className="block font-semibold text-zinc-200">
+                Scheduled AGC Arrival
+              </span>
+              <input
+                type="text"
+                name="scheduled_arrival"
+                defaultValue={scheduledArrivalLocal}
+                className="w-full rounded-lg border border-white/15 bg-slate-950 px-2.5 py-1.5 font-mono text-white"
+              />
+            </label>
+            <label className="space-y-1">
+              <span
+                data-testid="traveler-entered-eta-label"
+                className="block font-semibold text-cyan-300"
+              >
+                Traveler-Entered ETA (IST)
+              </span>
+              <input
+                type="text"
+                name="eta"
+                placeholder="e.g. 10:32 (optional)"
+                defaultValue={travelerEtaParam}
+                aria-label="Traveler-Entered Revised ETA (IST — while official CRIS/NTES machine feed access is pending)"
+                className="w-full rounded-lg border border-cyan-400/40 bg-slate-950 px-2.5 py-1.5 font-mono text-white"
+              />
+            </label>
+            <label className="space-y-1">
+              <span className="block font-semibold text-zinc-200">
+                Or Delay (Minutes)
+              </span>
+              <input
+                type="number"
+                name="delay"
+                defaultValue={String(trainDelayMinutes)}
+                className="w-full rounded-lg border border-white/15 bg-slate-950 px-2.5 py-1.5 font-mono text-white"
+              />
+            </label>
+            <label className="space-y-1">
+              <span className="block font-semibold text-zinc-200">
+                Taj Gate Cutoff (IST)
+              </span>
+              <input
+                type="text"
+                name="cutoff"
+                defaultValue={destinationCutoffLocal}
+                className="w-full rounded-lg border border-white/15 bg-slate-950 px-2.5 py-1.5 font-mono text-white"
+              />
+            </label>
+            <button
+              type="submit"
+              className="rounded-lg border border-cyan-400/50 bg-cyan-500/20 px-3 py-1.5 font-bold text-white hover:bg-cyan-500/30"
+            >
+              Recheck Connection →
+            </button>
+          </form>
+        </section>
 
         {/* DCC-412 Readiness & Connection Recheck Panel */}
         <section
@@ -124,15 +298,31 @@ export default async function DelhiToAgraPage({ searchParams }: PageProps = {}) 
                 >
                   Schedule Baseline: {dcc412.scheduleBaselineStatus}
                 </span>
+                <span
+                  data-testid="dcc412-cutoff-verdict-badge"
+                  className={`rounded-full border px-2.5 py-0.5 text-[11px] font-bold ${
+                    dcc412.fitsDestinationCutoff
+                      ? "border-emerald-400/40 bg-emerald-500/20 text-emerald-200"
+                      : "border-rose-400/40 bg-rose-500/20 text-rose-200"
+                  }`}
+                >
+                  Gate Arrival {dcc412.gateArrivalLocal || "—"} vs. Cutoff{" "}
+                  {dcc412.destinationCutoffLocal || "16:30"}:{" "}
+                  {dcc412.cutoffVerdictLabel}
+                </span>
               </div>
               <p className="mt-1 text-xs text-zinc-300">
                 Scheduled arrival{" "}
                 <strong>{dcc412.scheduledArrivalLocal} local</strong> (
                 <code>{dcc412.scheduledArrivalUtc}</code>) +{" "}
-                <strong>{dcc412.delayMinutesApplied} min delay</strong> → effective
-                arrival <strong>{dcc412.effectiveArrivalLocal} local</strong> (
+                <strong>{dcc412.delayMinutesApplied} min delay</strong> (
+                <code>etaResolutionMode={dcc412.etaResolutionMode}</code>) →
+                effective arrival{" "}
+                <strong>{dcc412.effectiveArrivalLocal} local</strong> (
                 <code>{dcc412.effectiveArrivalUtcShort}</code>) +{" "}
-                <strong>{dcc412.transferBufferMinutes} min station exit buffer</strong>{" "}
+                <strong>
+                  {dcc412.transferBufferMinutes} min station exit buffer
+                </strong>{" "}
                 (added once:{" "}
                 <code>
                   transferBufferAddedOnce={String(dcc412.transferBufferAddedOnce)}
@@ -144,41 +334,82 @@ export default async function DelhiToAgraPage({ searchParams }: PageProps = {}) 
                 >
                   travelerReadyAt {dcc412.travelerReadyAt.formattedSummary}
                 </strong>{" "}
-                (<code data-testid="dcc412-traveler-ready-utc">{dcc412.travelerReadyAt.utcIso}</code>).
+                (
+                <code data-testid="dcc412-traveler-ready-utc">
+                  {dcc412.travelerReadyAt.utcIso}
+                </code>
+                ). Next service:{" "}
+                <strong>
+                  {dcc412.nextServiceAfterReady?.departureLocal || "—"}
+                </strong>{" "}
+                → reaches{" "}
+                <strong>{dcc412.places.tajEntryGate.name}</strong> at{" "}
+                <strong data-testid="dcc412-gate-arrival-local">
+                  {dcc412.gateArrivalLocal || "—"}
+                </strong>{" "}
+                (
+                <strong data-testid="dcc412-cutoff-verdict-text">
+                  {dcc412.cutoffVerdictLabel}
+                </strong>
+                ).
               </p>
             </div>
             <div className="flex flex-wrap gap-1.5 text-xs">
               <Link
-                href="/routes/delhi-to-agra?date=2026-11-18&scheduled_arrival=09:50&delay=42&exit_buffer=15"
+                href="/routes/delhi-to-agra?date=2026-12-10&scheduled_arrival=09:50&delay=0&exit_buffer=15&cutoff=11:00"
                 className={`rounded-lg border px-2.5 py-1 ${
-                  !recheck.isFridayTajClosed &&
-                  trainDelayMinutes === 42 &&
-                  !criticalUpdateMissing
-                    ? "border-cyan-300 bg-cyan-500/20 text-white font-bold"
+                  date === "2026-12-10" &&
+                  dcc412.delayMinutesApplied === 0 &&
+                  destinationCutoffLocal === "11:00"
+                    ? "border-emerald-300 bg-emerald-500/20 text-white font-bold"
                     : "border-white/15 bg-slate-900 text-zinc-300"
                 }`}
               >
-                Synthetic Test: 9:50 + 42m Delay + 15m Exit → 10:47 (05:17Z)
+                Dec 10 Case 1: On Time + 11:00 Cutoff (Fits by 5m)
               </Link>
               <Link
-                href="/routes/delhi-to-agra?date=2026-11-18&scheduled_arrival=09:50&delay=42&exit_buffer=15&missing_update=1"
+                href="/routes/delhi-to-agra?date=2026-12-10&scheduled_arrival=09:50&delay=42&exit_buffer=15&cutoff=11:00"
                 className={`rounded-lg border px-2.5 py-1 ${
-                  criticalUpdateMissing
-                    ? "border-amber-300 bg-amber-500/20 text-white font-bold"
-                    : "border-white/15 bg-slate-900 text-zinc-300"
-                }`}
-              >
-                Missing Live Update (Needs Verification)
-              </Link>
-              <Link
-                href="/routes/delhi-to-agra?date=2026-11-20&delay=0"
-                className={`rounded-lg border px-2.5 py-1 ${
-                  recheck.isFridayTajClosed
+                  date === "2026-12-10" &&
+                  dcc412.delayMinutesApplied === 42 &&
+                  destinationCutoffLocal === "11:00"
                     ? "border-rose-300 bg-rose-500/20 text-white font-bold"
                     : "border-white/15 bg-slate-900 text-zinc-300"
                 }`}
               >
-                Friday Closure Test (2026-11-20)
+                Dec 10 Case 2: +42m Delay + 11:00 Cutoff (Misses by 25m)
+              </Link>
+              <Link
+                href="/routes/delhi-to-agra?date=2026-12-10&scheduled_arrival=09:50&delay=42&exit_buffer=15&cutoff=11:30"
+                className={`rounded-lg border px-2.5 py-1 ${
+                  date === "2026-12-10" &&
+                  dcc412.delayMinutesApplied === 42 &&
+                  destinationCutoffLocal === "11:30"
+                    ? "border-cyan-300 bg-cyan-500/20 text-white font-bold"
+                    : "border-white/15 bg-slate-900 text-zinc-300"
+                }`}
+              >
+                Dec 10 Case 3: +42m Delay + 11:30 Cutoff (Fits by 5m)
+              </Link>
+              <Link
+                href="/routes/delhi-to-agra?date=2026-12-10&scheduled_arrival=09:50&eta=10:32&exit_buffer=15&cutoff=11:00"
+                className={`rounded-lg border px-2.5 py-1 ${
+                  Boolean(travelerEtaParam)
+                    ? "border-cyan-300 bg-cyan-500/20 text-white font-bold"
+                    : "border-white/15 bg-slate-900 text-zinc-300"
+                }`}
+              >
+                Traveler ETA 10:32 (= +42m Delay)
+              </Link>
+              <Link
+                href="/routes/delhi-to-agra?date=2026-12-10&scheduled_arrival=09:50&delay=42&exit_buffer=15&cutoff=11:30&missing_update=1"
+                className={`rounded-lg border px-2.5 py-1 ${
+                  criticalUpdateMissing || staleUpdate
+                    ? "border-amber-300 bg-amber-500/20 text-white font-bold"
+                    : "border-white/15 bg-slate-900 text-zinc-300"
+                }`}
+              >
+                Missing/Stale Update (Needs Verification)
               </Link>
             </div>
           </div>
@@ -214,8 +445,8 @@ export default async function DelhiToAgraPage({ searchParams }: PageProps = {}) 
                 <tr className="border-b border-white/15 text-[11px] uppercase tracking-wider text-zinc-400">
                   <th className="py-2 pr-3">Candidate Itinerary</th>
                   <th className="py-2 px-3">Carried travelerReadyAt</th>
-                  <th className="py-2 px-3">Departure &amp; Cutoffs (Local / UTC)</th>
-                  <th className="py-2 px-3">Connection Verdict</th>
+                  <th className="py-2 px-3">Departure &amp; Gate Arrival (Local / UTC)</th>
+                  <th className="py-2 px-3">Connection &amp; Gate Cutoff Verdict</th>
                   <th className="py-2 pl-3">Leg Receipt Provenance (Source / Timestamp / Expiry)</th>
                 </tr>
               </thead>
@@ -239,12 +470,13 @@ export default async function DelhiToAgraPage({ searchParams }: PageProps = {}) 
                     </td>
                     <td className="py-3 px-3 align-top font-mono text-[11px] text-zinc-200">
                       <div>
-                        Departs: <strong>{cand.departureLocal}</strong> (
+                        Departs AGC: <strong>{cand.departureLocal}</strong> (
                         {cand.departureUtcShort})
                       </div>
                       <div>
-                        Ticket cutoff: <strong>{cand.ticketCutoffLocal}</strong> (
-                        {cand.ticketCutoffUtcShort})
+                        Reaches Taj Gate:{" "}
+                        <strong>{cand.arrivalAtDestinationLocal}</strong> (
+                        {cand.arrivalAtDestinationUtc})
                       </div>
                       <div>
                         Taj entry cutoff:{" "}
@@ -260,8 +492,10 @@ export default async function DelhiToAgraPage({ searchParams }: PageProps = {}) 
                         }`}
                       >
                         {cand.catchable
-                          ? `Catchable (+${cand.slackToDepartureMinutes}m)`
-                          : `Missed (${cand.slackToDepartureMinutes}m)`}
+                          ? `Catchable (+${cand.slackToDepartureMinutes}m dep / +${cand.slackToDestinationCutoffMinutes ?? 0}m gate)`
+                          : !cand.passesDepartureTime
+                            ? `Missed Departure (${cand.slackToDepartureMinutes}m)`
+                            : `Misses Gate Cutoff (${cand.slackToDestinationCutoffMinutes}m)`}
                       </span>
                       <div className="mt-1 text-[11px] text-zinc-300">
                         {cand.reasonSummary}

@@ -506,10 +506,31 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
   {
     id: "ragincajun-airboat",
     companyShortname: "ragincajuntours",
+    itemId: "228561",
     flowId: "940162",
     viatorProductCode: "15200P1",
     viatorPlacementId: "fp-wno-swamp-tours",
     fareharborAsnActive: true,
+    bookingVariants: [
+      {
+        label: "LARGE AIRBOAT (ITEM 228561) · $65 SELF-DRIVE / $90 WITH HOTEL PICKUP",
+        itemId: "228561",
+        flowId: "940162",
+        bookingUrl: "https://fareharbor.com/embeds/book/ragincajuntours/items/228561/?asn=aktourcenter&flow=940162&full-items=yes",
+      },
+      {
+        label: "STANDARD 10-PASSENGER AIRBOAT (ITEM 228524) · $85 SELF-DRIVE / $110 WITH HOTEL PICKUP",
+        itemId: "228524",
+        flowId: "940162",
+        bookingUrl: "https://fareharbor.com/embeds/book/ragincajuntours/items/228524/?asn=aktourcenter&flow=940162&full-items=yes",
+      },
+      {
+        label: "PREMIUM SMALL 6-PASSENGER AIRBOAT (ITEM 448291) · $95 SELF-DRIVE / $120 WITH HOTEL PICKUP",
+        itemId: "448291",
+        flowId: "940162",
+        bookingUrl: "https://fareharbor.com/embeds/book/ragincajuntours/items/448291/?asn=aktourcenter&flow=940162&full-items=yes",
+      },
+    ],
     viatorVariants: [
       {
         label: "LARGE AIRBOAT · SELF-DRIVE ($65/PERSON · VIATOR #15200P1)",

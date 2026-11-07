@@ -1053,12 +1053,24 @@ export const DELHI_AGRA_QUALIFIED_OPTIONS: DelhiAgraOptionProfile[] = [
   },
 ];
 
+export const OFFICIAL_NTES_LIVE_TRAIN_LOOKUP = {
+  portalName: "CRIS National Train Enquiry System (NTES) Official Live Train Status",
+  officialMobileAndWebUrl: "https://enquiry.indianrail.gov.in/mntes/",
+  crisPortalUrl: "https://cris.org.in/loadpage?page=proNTES",
+  feedAccessStatus: "pending_approved_machine_access" as const,
+  travelerEtaFieldLabel:
+    "Traveler-Entered Revised ETA (IST — while official CRIS/NTES machine feed access is pending)",
+} as const;
+
 export interface DelhiAgraCorridorRecheckResult {
   corridorId: "delhi-to-agra";
   travelDate: string;
   dayOfWeekName: string;
   isFridayTajClosed: boolean;
   trainRunningDelayMinutes: number;
+  travelerEnteredEtaLocal: string | null;
+  ntesLookupUrl: string;
+  travelerEtaFieldLabel: string;
   recommendedPrimaryMode: string;
   dcc412Recheck: Dcc412ItineraryRecheckResult;
   recheckCard: CompactTripRecheckCardModel;
@@ -1068,14 +1080,19 @@ export function evaluateDelhiAgraCorridorRecheck(params?: {
   date?: string;
   trainDelayMinutes?: number;
   scheduledArrivalLocal?: string;
+  absoluteEta?: string | null;
+  destinationCutoffLocal?: string;
   transferBufferMinutes?: number;
   criticalUpdateMissing?: boolean;
+  staleUpdate?: boolean;
+  evaluatedAtUtc?: string | null;
+  includeBackup1130?: boolean;
   partySize?: number;
 }): DelhiAgraCorridorRecheckResult {
   const date =
     params?.date && /^\d{4}-\d{2}-\d{2}$/.test(params.date.trim())
       ? params.date.trim()
-      : "2026-11-18"; // Wednesday default; 2026-11-20 is Friday
+      : "2026-12-10"; // Thursday synthetic fixture default; 2026-11-20 is Friday
   const trainDelayMinutes = Math.max(
     0,
     Math.round(params?.trainDelayMinutes ?? 42),
@@ -1093,15 +1110,23 @@ export function evaluateDelhiAgraCorridorRecheck(params?: {
     "Friday",
     "Saturday",
   ];
-  const dayOfWeekName = dayNames[dayIndex] || "Wednesday";
+  const dayOfWeekName = dayNames[dayIndex] || "Thursday";
   const isFridayTajClosed = dayIndex === 5;
 
   const dcc412Recheck = evaluateSyntheticDelhiAgraDcc412Test({
     serviceDate: date,
     scheduledArrivalLocal: params?.scheduledArrivalLocal || "09:50",
     delayMinutes: trainDelayMinutes,
+    absoluteEta: params?.absoluteEta ?? null,
+    destinationCutoffLocal: params?.destinationCutoffLocal || "16:30",
     transferBufferMinutes: params?.transferBufferMinutes ?? 15,
     criticalUpdateMissing: params?.criticalUpdateMissing ?? false,
+    staleUpdate: params?.staleUpdate ?? false,
+    evaluatedAtUtc: params?.evaluatedAtUtc ?? null,
+    includeBackup1130:
+      params?.includeBackup1130 ??
+      (params?.destinationCutoffLocal !== "11:00" &&
+        params?.destinationCutoffLocal !== "11:30"),
   });
 
   const recommendedPrimaryMode = isFridayTajClosed
@@ -1123,7 +1148,7 @@ export function evaluateDelhiAgraCorridorRecheck(params?: {
     : dcc412Recheck.recheckCard.primaryNextActionLabel;
 
   const primaryHref = isFridayTajClosed
-    ? `/routes/delhi-to-agra?date=2026-11-19&passengers=${partySize}`
+    ? `/routes/delhi-to-agra?date=2026-12-10&passengers=${partySize}`
     : dcc412Recheck.recheckCard.primaryNextActionHref;
 
   return {
@@ -1131,7 +1156,13 @@ export function evaluateDelhiAgraCorridorRecheck(params?: {
     travelDate: date,
     dayOfWeekName,
     isFridayTajClosed,
-    trainRunningDelayMinutes: trainDelayMinutes,
+    trainRunningDelayMinutes: dcc412Recheck.delayMinutesApplied,
+    travelerEnteredEtaLocal:
+      params?.absoluteEta && params.absoluteEta.trim()
+        ? dcc412Recheck.effectiveArrivalLocal
+        : null,
+    ntesLookupUrl: OFFICIAL_NTES_LIVE_TRAIN_LOOKUP.officialMobileAndWebUrl,
+    travelerEtaFieldLabel: OFFICIAL_NTES_LIVE_TRAIN_LOOKUP.travelerEtaFieldLabel,
     recommendedPrimaryMode,
     dcc412Recheck,
     recheckCard: {

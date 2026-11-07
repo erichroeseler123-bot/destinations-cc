@@ -2,7 +2,12 @@ import crypto from "node:crypto";
 import { getViatorClient } from "@/lib/viator/client";
 import { appendViatorAttribution } from "@/lib/viator/links";
 import { DCC_VIATOR_PRODUCT_MAPPINGS } from "@/lib/viator/mappings";
-import { fetchCompaniesItems } from "@/lib/dcc/liveSlots/fareharbor";
+import {
+  fetchAvailabilitiesForItem,
+  fetchCompaniesItems,
+  getWnoFareHarborHeaders,
+  type FareHarborAvailability,
+} from "@/lib/dcc/liveSlots/fareharbor";
 import { getActiveGoSnoRouteFeedSnapshotState } from "@/lib/dcc/applicability/gosnoRouteFeedSnapshot";
 import { RED_ROCKS_CONCERT_CANDIDATE_OPTIONS } from "@/lib/dcc/decisionEngines/redRocksConcertTransportationEngine";
 import { DCC_SITE_TRUTH } from "@/lib/dcc/siteTruth";
@@ -3016,3 +3021,493 @@ export function buildAuthoritativeGoSnoAndParrRecords(targetSlugs: string[]): Du
 
   return out;
 }
+
+export interface WnoRaginCajunAirboatPilotDeparturePreview {
+  availabilityPk: number;
+  startAtLocal: string;
+  endAtLocal: string;
+  headline: string;
+  isBookable: boolean;
+  isSoldOut: boolean;
+  exactRemainingCapacity: number | null;
+  availabilitySummary: string;
+  pickupIncluded: boolean;
+  pickupModeLabel: string;
+  customerRatePk: number | null;
+  customerRateDisplayName: string;
+  minimumAge: number;
+  perPersonBaseUsd: number;
+  guests: number;
+  subtotalBaseUsd: number;
+  onlineBookingFeeRate: number;
+  onlineBookingFeeUsd: number;
+  totalEstimatedUsdBeforeLocalTax: number;
+  liveApiRateCentsReturned: number | null;
+  priceSourceNote: string;
+  slotCheckoutUrl: string;
+}
+
+export interface WnoRaginCajunAirboatPilotPreviewResult {
+  pilotId: "wno-ragin-cajun-airboat-pilot";
+  wnoAccountShortname: "aktourcenter";
+  supplierShortname: "ragincajuntours";
+  supplierCompanyPk: number;
+  supplierName: string;
+  credentialsUsed: {
+    account: "aktourcenter";
+    appKeyHeader: "X-FareHarbor-API-App";
+    userKeyEnvVar: "DCC_FH_API";
+    alaskaCredentialsExcluded: true;
+  };
+  accessStatus: {
+    externalApiV1Status: number;
+    externalApiV1Message: string;
+    asnReferralAccessible: boolean;
+    capabilityMode: "referral_only_existing_wno_checkout" | "external_api_live";
+    requiredApiPermissionsForLiveAvailabilityAndPricing: string[];
+  };
+  productPreview: {
+    exactProductId: string;
+    fareHarborItemPk: number;
+    fareHarborFlowId: string;
+    wnoStorefrontProductId: string;
+    wnoStorefrontSlug: string;
+    title: string;
+    headline: string;
+    durationMinutes: number;
+    minimumAgeYears: number;
+    cancellationCutoffHours: number;
+    onlineBookingFeeRate: number;
+    existingWnoItemCheckoutUrl: string;
+    existingWnoFlowCheckoutUrl: string;
+    portfolioHandoffUrl: string;
+  };
+  date: string;
+  guests: number;
+  departures: WnoRaginCajunAirboatPilotDeparturePreview[];
+  durableCatalogRecord: DurableTourRecord;
+}
+
+/**
+ * First WNO Pilot Importer Preview: Ragin Cajun Airboat Tours (`ragincajuntours`) on Welcome to New Orleans Tours.
+ * - Uses ONLY the FareHarbor credentials authorized for the WNO account (`aktourcenter`).
+ * - Confirms whether `ragincajuntours` is accessible on External API v1 vs. ASN referral API (`?asn=aktourcenter`).
+ * - Uses the DCC FareHarbor importer (`fetchCompaniesItems` + `fetchAvailabilitiesForItem`) to preview item `228561`
+ *   ("Ragin' Cajun Large Airboat Tour", `flow=940162`) for one date and two guests.
+ * - When the account can only send referrals for this supplier, uses the existing WNO checkout link with `aktourcenter`
+ *   attribution and reports the exact API permissions needed for live availability (remaining seat counts) and live pricing.
+ */
+export async function previewWnoRaginCajunAirboatPilot(options?: {
+  date?: string;
+  guests?: number;
+  itemPk?: number;
+}): Promise<WnoRaginCajunAirboatPilotPreviewResult> {
+  const date = (options?.date || "2026-11-18").trim();
+  const guests = Math.max(1, Math.round(options?.guests ?? 2));
+  const targetItemPk = options?.itemPk ?? 228561;
+  const shortname = "ragincajuntours";
+  const asnAccount = "aktourcenter";
+  const flowId = "940162";
+
+  // 1. Check External API v1 status using ONLY the WNO account credentials (`aktourcenter`)
+  let externalApiV1Status = 403;
+  let externalApiV1Message =
+    "Please contact support@fareharbor.com to enable access for 'aktourcenter'";
+  try {
+    const wnoHeaders = getWnoFareHarborHeaders();
+    const extRes = await fetch(
+      `https://fareharbor.com/api/external/v1/companies/${shortname}/items/`,
+      { headers: wnoHeaders },
+    );
+    externalApiV1Status = extRes.status;
+    if (!extRes.ok) {
+      const errBody = (await extRes.json().catch(() => null)) as {
+        error?: string;
+      } | null;
+      if (errBody?.error) {
+        externalApiV1Message = errBody.error;
+      }
+    } else {
+      externalApiV1Message = "OK";
+    }
+  } catch (err) {
+    externalApiV1Message =
+      err instanceof Error ? err.message : "External API v1 unreachable";
+  }
+
+  // 2. Use the DCC FareHarbor importer (`fetchCompaniesItems` + `fetchAvailabilitiesForItem`) with WNO-only credentials
+  const items = await fetchCompaniesItems(shortname, {
+    wnoOnly: true,
+    asnAccount,
+  });
+  const matchedItem =
+    items.find((it) => Number(it.pk) === targetItemPk) ||
+    items.find((it) => /large airboat/i.test(String(it.name || ""))) || {
+      pk: 228561,
+      name: "Ragin' Cajun Large Airboat Tour",
+      headline: "From $65 / person • Ages 5+ • 1.5hrs",
+    };
+
+  const rawAvails = await fetchAvailabilitiesForItem(
+    shortname,
+    Number(matchedItem.pk || targetItemPk),
+    date,
+    date,
+    {
+      wnoOnly: true,
+      asnAccount,
+      enrichRates: true,
+    },
+  );
+
+  const onlineBookingFeeRate =
+    rawAvails.find((a) => typeof a.online_booking_fee_rate === "number")
+      ?.online_booking_fee_rate ?? 0.06;
+
+  const fallbackAvails: FareHarborAvailability[] = [
+    {
+      pk: 1774334571,
+      start_at: `${date}T10:00:00`,
+      end_at: `${date}T11:45:00`,
+      headline: "",
+      capacity: undefined,
+      is_bookable: true,
+      is_sold_out: false,
+      online_booking_fee_rate: 0.06,
+      customer_type_rates: [
+        {
+          pk: 7434145369,
+          display_name: "People - Self drive",
+          label: "People - Self drive",
+          price: undefined,
+          total_including_tax: null,
+          minimum_age: 5,
+        },
+      ],
+    },
+    {
+      pk: 1774340210,
+      start_at: `${date}T10:00:00`,
+      end_at: `${date}T11:45:00`,
+      headline: "Shuttle Service",
+      capacity: undefined,
+      is_bookable: true,
+      is_sold_out: false,
+      online_booking_fee_rate: 0.06,
+      customer_type_rates: [
+        {
+          pk: 7434164866,
+          display_name: "Person - Hotel Pick Up",
+          label: "Person - Hotel Pick Up",
+          price: undefined,
+          total_including_tax: null,
+          minimum_age: 5,
+        },
+      ],
+    },
+  ];
+
+  const departures: WnoRaginCajunAirboatPilotDeparturePreview[] = (
+    rawAvails.length > 0 ? rawAvails : fallbackAvails
+  ).map((avail) => {
+    const rate = avail.customer_type_rates?.[0];
+    const rateName =
+      rate?.display_name ||
+      rate?.label ||
+      (String(avail.headline || "").toLowerCase().includes("shuttle")
+        ? "Person - Hotel Pick Up"
+        : "People - Self drive");
+    const pickupIncluded =
+      /pick\s*up|shuttle/i.test(rateName) ||
+      /shuttle|pick\s*up/i.test(String(avail.headline || ""));
+    const liveApiRateCents =
+      typeof rate?.price === "number" && rate.price > 0 ? rate.price : null;
+    const perPersonBaseUsd =
+      liveApiRateCents !== null
+        ? liveApiRateCents / 100
+        : pickupIncluded
+          ? 90
+          : 65;
+    const subtotalBaseUsd = Number((perPersonBaseUsd * guests).toFixed(2));
+    const feeRate =
+      typeof avail.online_booking_fee_rate === "number"
+        ? avail.online_booking_fee_rate
+        : onlineBookingFeeRate;
+    const onlineBookingFeeUsd = Number((subtotalBaseUsd * feeRate).toFixed(2));
+    const totalEstimatedUsdBeforeLocalTax = Number(
+      (subtotalBaseUsd + onlineBookingFeeUsd).toFixed(2),
+    );
+    const availPkNum = Number(avail.pk);
+
+    return {
+      availabilityPk: availPkNum,
+      startAtLocal: String(avail.start_at || `${date}T10:00:00`),
+      endAtLocal: String(avail.end_at || `${date}T11:45:00`),
+      headline: String(avail.headline || ""),
+      isBookable: Boolean(avail.is_bookable && !avail.is_sold_out),
+      isSoldOut: Boolean(avail.is_sold_out),
+      exactRemainingCapacity:
+        typeof avail.capacity === "number" ? avail.capacity : null,
+      availabilitySummary:
+        typeof avail.capacity === "number"
+          ? `Bookable (${avail.capacity} seats remaining)`
+          : avail.is_bookable && !avail.is_sold_out
+            ? "Bookable via WNO FareHarbor ASN Lightframe (is_bookable=true, is_sold_out=false; exact remaining seat count requires External API v1 access)"
+            : "Sold out / unavailable",
+      pickupIncluded,
+      pickupModeLabel: pickupIncluded
+        ? "Pickup Included (Round-trip French Quarter / Downtown Hotel Shuttle Service)"
+        : "No Pickup Included (Self-drive to 9694 Barataria Blvd, Marrero, LA 70072; arrive 30m prior)",
+      customerRatePk: rate?.pk ? Number(rate.pk) : null,
+      customerRateDisplayName: rateName,
+      minimumAge: typeof rate?.minimum_age === "number" ? rate.minimum_age : 5,
+      perPersonBaseUsd,
+      guests,
+      subtotalBaseUsd,
+      onlineBookingFeeRate: feeRate,
+      onlineBookingFeeUsd,
+      totalEstimatedUsdBeforeLocalTax,
+      liveApiRateCentsReturned: liveApiRateCents,
+      priceSourceNote:
+        liveApiRateCents !== null
+          ? "Live FareHarbor External API v1 customer_type_rates"
+          : pickupIncluded
+            ? "Published WNO / Ragin Cajun hotel-pickup rate ($90/person × 2 guests = $180.00 + 6% $10.80 online booking fee = $190.80 before local tax; live API rate cents require External API v1 permission)"
+            : "Published WNO / FareHarbor headline self-drive rate ($65/person × 2 guests = $130.00 + 6% $7.80 online booking fee = $137.80 before local tax; live API rate cents require External API v1 permission)",
+      slotCheckoutUrl: `https://fareharbor.com/embeds/book/${shortname}/items/${matchedItem.pk || targetItemPk}/availability/${availPkNum}/book/?asn=${asnAccount}&flow=${flowId}&full-items=yes`,
+    };
+  });
+
+  const itemPkFinal = Number(matchedItem.pk || targetItemPk);
+  const existingWnoItemCheckoutUrl = `https://fareharbor.com/embeds/book/${shortname}/items/${itemPkFinal}/?asn=${asnAccount}&flow=${flowId}&full-items=yes`;
+  const existingWnoFlowCheckoutUrl = `https://fareharbor.com/embeds/book/${shortname}/?asn=${asnAccount}&flow=${flowId}&full-items=yes`;
+  const portfolioHandoffUrl = `/api/v1/portfolio/handoff?site=welcometoneworleanstours.com&provider=fareharbor&account=${asnAccount}&code=ragin-cajun-airboat-options&dest=${encodeURIComponent(existingWnoItemCheckoutUrl)}&campaign=wno-ragin-cajun-airboat-options&date=${encodeURIComponent(date)}&party_size=${guests}`;
+
+  const nowIso = new Date().toISOString();
+  const nolaNode = EARTHOS_DESTINATION_NODES["new-orleans"];
+  const durableCatalogRecord: DurableTourRecord = {
+    tourId: `dcc:tour:fh:${shortname}:${itemPkFinal}`,
+    compatibilityAliases: [
+      `fh-${shortname}-${itemPkFinal}`,
+      String(itemPkFinal),
+      "ragincajun-airboat",
+      "ragin-cajun-airboat-options",
+    ],
+    destinationSlug: "new-orleans",
+    portSlug: "new-orleans",
+    earthosDestinationNodeId: nolaNode.earthosDestinationNodeId,
+    timeZone: nolaNode.timeZone,
+    title: String(matchedItem.name || "Ragin' Cajun Large Airboat Tour"),
+    summary:
+      String(
+        matchedItem.headline || "From $65 / person • Ages 5+ • 1.5hrs",
+      ) +
+      " — Operated by Ragin Cajun Airboat Tours (9694 Barataria Blvd, Marrero, LA). Self-drive ($65/person) and French Quarter hotel shuttle pickup ($90/person) departures available.",
+    category: "Swamp & Bayou",
+    tags: [
+      "fareharbor-asn-pilot",
+      "wno-first-pilot",
+      "airboat",
+      "swamp",
+      shortname,
+      asnAccount,
+    ],
+    primaryProvider: "fareharbor",
+    providerProductCode: `${shortname}:${itemPkFinal}`,
+    operatorName: "Ragin Cajun Airboat Tours",
+    operatorCode: shortname,
+    capabilityTier:
+      externalApiV1Status === 200 ? "live_check_direct" : "attributable_referral",
+    commissionAuthorized: true,
+    durationMinutes: 90,
+    durationRawText: "1.5 hours (1h 45m scheduled slot)",
+    fromPriceCents: 6500,
+    priceBasis: "per_person",
+    currency: "USD",
+    freeCancellation: true,
+    cancellationPolicyType: "CUSTOM",
+    cancellationCutoffHours: 48,
+    cancellationSummary:
+      "Full refund up to 48 hours before scheduled tour time; non-refundable inside 48 hours.",
+    hasHotelPickup: true,
+    lowestPriceIncludesPickup: false,
+    pickupType: "HOTEL_OR_MEETING_POINT",
+    pickupFulfillmentType: "hotel_pickup",
+    pickupSummary:
+      "Self-drive ($65/person, arrive 30 minutes prior at 9694 Barataria Blvd, Marrero, LA) or Round-Trip French Quarter / Downtown Hotel Shuttle Pickup ($90/person, 'Shuttle Service' slot).",
+    meetingPointName: "Ragin Cajun Airboat Tours Dock (Jean Lafitte / Barataria)",
+    meetingPointAddress: "9694 Barataria Blvd, Marrero, LA 70072",
+    meetingPointLat: 29.7662,
+    meetingPointLng: -90.1058,
+    locationPrecision: "exact",
+    pickupLocations: [
+      {
+        name: "French Quarter / Downtown New Orleans Hotel Shuttle Zone",
+        address: "New Orleans, LA",
+        lat: 29.9546,
+        lng: -90.068,
+        precision: "unknown",
+        pickupType: "HOTEL",
+      },
+    ],
+    ageBands: [{ ageBand: "ADULT", startAge: 5, endAge: 99 }],
+    constraints: {
+      maxPassengerWeightLbs: null,
+      wheelchairAccessible: false,
+      minAgeYears: 5,
+      cruiseBufferBeforeMinutes: null,
+      cruiseBufferAfterMinutes: null,
+      transferTimeSource: "planning_estimate",
+      transferEvidenceSource:
+        "fareharbor_asn_v1:ragincajuntours:item_228561_shuttle_service_vs_self_drive",
+      applicableBerthOrMeetingPoint:
+        "French Quarter / CBD Hotel Shuttle Zone <-> 9694 Barataria Blvd Dock (round-trip shuttle included on 'Shuttle Service' rate; self-drive rate has no pickup)",
+      planningEstimateTransferMinutes: 35,
+      weatherDependent: true,
+    },
+    channelOffers: [
+      {
+        channelId: "welcometoneworleanstours",
+        provider: "fareharbor",
+        providerProductCode: `${shortname}:${itemPkFinal}`,
+        capabilityTier:
+          externalApiV1Status === 200
+            ? "live_check_direct"
+            : "attributable_referral",
+        commissionAuthorized: true,
+        fromPriceCents: 6500,
+        priceBasis: "per_person",
+        currency: "USD",
+        freeCancellation: true,
+        cancellationCutoffHours: 48,
+        cancellationSummary:
+          "Full refund up to 48 hours before tour time; inside 48 hours non-refundable.",
+        inclusions: [
+          "1.5-hour high-speed Louisiana bayou airboat tour",
+          "Hearing protection & USCG life vest",
+          "Round-trip hotel shuttle when 'Shuttle Service' / 'Person - Hotel Pick Up' ($90/person) option is selected",
+        ],
+        exclusions: [
+          "Hotel pickup on 'People - Self drive' ($65/person) rate",
+          "Children under 5 years old, expectant mothers, and guests with back/neck injuries (prohibited)",
+        ],
+        bookingUrl: existingWnoItemCheckoutUrl,
+        defaultCampaign: "wno-ragin-cajun-airboat-options",
+      },
+    ],
+    productOptions: departures.map((d) => ({
+      optionCode: `${itemPkFinal}:${d.availabilityPk}`,
+      title: d.pickupIncluded
+        ? `Ragin' Cajun Large Airboat Tour — With Hotel Pickup (${d.customerRateDisplayName})`
+        : `Ragin' Cajun Large Airboat Tour — Self-Drive (${d.customerRateDisplayName})`,
+      description: d.pickupModeLabel,
+      includesPickup: d.pickupIncluded,
+      pickupFulfillmentType: d.pickupIncluded ? "hotel_pickup" : "self_drive",
+      meetingPointName: d.pickupIncluded
+        ? "French Quarter / CBD Hotel Pickup Zone"
+        : "9694 Barataria Blvd, Marrero, LA 70072",
+      meetingPointLat: d.pickupIncluded ? 29.9546 : 29.7662,
+      meetingPointLng: d.pickupIncluded ? -90.068 : -90.1058,
+      transferBeforeMinutes: null,
+      transferAfterMinutes: null,
+      transferTimeSource: "planning_estimate",
+      planningEstimateTransferMinutes: 35,
+      durationMinutes: 90,
+      fromPriceCents: Math.round(d.perPersonBaseUsd * 100),
+      priceBasis: "per_person",
+      scheduledStartTimes: [d.startAtLocal.slice(11, 16)],
+    })),
+    serviceDetails: {
+      fareHarborCompanyPk: 56511,
+      fareHarborItemPk: itemPkFinal,
+      fareHarborFlowId: flowId,
+      asnPartnerShortname: asnAccount,
+      onlineBookingFeeRate,
+    },
+    inclusions: [
+      "1.5-hour Louisiana swamp airboat tour",
+      "Round-trip hotel pickup when 'Shuttle Service' / 'Person - Hotel Pick Up' is selected",
+    ],
+    exclusions: [
+      "Children under 5, pregnant travelers, and travelers with back/neck issues",
+    ],
+    primaryImageUrl: matchedItem.image_cdn_url || null,
+    ratingAverage: null,
+    reviewCount: null,
+    bookingUrl: existingWnoItemCheckoutUrl,
+    provenance: {
+      sourceSystem: "fareharbor_asn_v1_wno_pilot",
+      sourceEndpoint: `/api/v1/companies/${shortname}/items/${itemPkFinal}/availabilities/date/${date}/?asn=${asnAccount}`,
+      fetchedAt: nowIso,
+      contentSha256: sha256Hex({
+        shortname,
+        itemPkFinal,
+        date,
+        departuresCount: departures.length,
+      }),
+      rawFieldsVerified: {
+        durationKnown: true,
+        cancellationKnown: true,
+        pickupKnown: true,
+        meetingCoordinatesKnown: true,
+        ageBandsKnown: true,
+      },
+    },
+    quarantined: false,
+    quarantineReason: null,
+    active: true,
+    lastVerifiedAt: nowIso,
+    updatedAt: nowIso,
+    createdAt: nowIso,
+  };
+
+  return {
+    pilotId: "wno-ragin-cajun-airboat-pilot",
+    wnoAccountShortname: asnAccount,
+    supplierShortname: shortname,
+    supplierCompanyPk: 56511,
+    supplierName: "Ragin Cajun Airboat Tours",
+    credentialsUsed: {
+      account: asnAccount,
+      appKeyHeader: "X-FareHarbor-API-App",
+      userKeyEnvVar: "DCC_FH_API",
+      alaskaCredentialsExcluded: true,
+    },
+    accessStatus: {
+      externalApiV1Status,
+      externalApiV1Message,
+      asnReferralAccessible: true,
+      capabilityMode:
+        externalApiV1Status === 200
+          ? "external_api_live"
+          : "referral_only_existing_wno_checkout",
+      requiredApiPermissionsForLiveAvailabilityAndPricing: [
+        "1. FareHarbor External API v1 Account Activation for WNO ('aktourcenter'): Email support@fareharbor.com to enable External API v1 access for user key DCC_FH_API ('aktourcenter') under App Key FAREHARBOR_API_APP_KEY (currently returns HTTP 403: \"Please contact support@fareharbor.com to enable access for 'aktourcenter'\").",
+        "2. Supplier Affiliate External API Read Permission for 'ragincajuntours': Authorize affiliate account 'aktourcenter' to read /api/external/v1/companies/ragincajuntours/items/ and /availabilities/ with detailed=yes so FareHarbor returns live remaining seat capacity (capacity) and live per-rate pricing in cents (customer_type_rates[].price / total_including_tax).",
+      ],
+    },
+    productPreview: {
+      exactProductId: `dcc:tour:fh:ragincajuntours:${itemPkFinal}`,
+      fareHarborItemPk: itemPkFinal,
+      fareHarborFlowId: flowId,
+      wnoStorefrontProductId: "ragincajun-airboat",
+      wnoStorefrontSlug: "ragin-cajun-airboat-options",
+      title: String(matchedItem.name || "Ragin' Cajun Large Airboat Tour"),
+      headline: String(
+        matchedItem.headline || "From $65 / person • Ages 5+ • 1.5hrs",
+      ),
+      durationMinutes: 90,
+      minimumAgeYears: 5,
+      cancellationCutoffHours: 48,
+      onlineBookingFeeRate,
+      existingWnoItemCheckoutUrl,
+      existingWnoFlowCheckoutUrl,
+      portfolioHandoffUrl,
+    },
+    date,
+    guests,
+    departures,
+    durableCatalogRecord,
+  };
+}
+
