@@ -105,6 +105,16 @@ export default async function NewOrleansToursPage({
   const wnoAllToursNextStepHref = `https://www.welcometoneworleanstours.com/tours?src=dcc-authority-nola-tours&from=dcc-new-orleans-tours&date=${encodeURIComponent(selectedDate)}&party_size=${encodeURIComponent(selectedPartySize)}`;
   const directViator15200P6Href = `/api/v1/ads/click?offer=15200P6&option=TG10&placementId=fp-dcc-authority-nola-tours&property=hotel-monteleone-nola&src=dcc-authority-nola-tours&date=${encodeURIComponent(selectedDate)}&adults=${encodeURIComponent(selectedPartySize)}&departureTime=08%3A00`;
 
+  const nwsFlagParam = firstStr(resolvedSearch.nws_flood_warning);
+  const gaugeFeetParam = firstStr(resolvedSearch.water_level_ft);
+  const allAboardParam = firstStr(resolvedSearch.all_aboard);
+  const berthParam = firstStr(resolvedSearch.berth);
+
+  const bayouFlagged =
+    nwsFlagParam === "1" ||
+    nwsFlagParam === "true" ||
+    (gaugeFeetParam !== undefined && Number(gaugeFeetParam) >= 3.2);
+
   return (
     <>
       <JsonLd data={{
@@ -159,7 +169,7 @@ export default async function NewOrleansToursPage({
                   </h2>
                 </div>
                 <span className="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3.5 py-1 text-xs font-bold text-emerald-200">
-                  23 Catalog Tours · Evidence Checked 2026-11-06
+                  23 Catalog Tours · Gray Line, Ragin Cajun &amp; Southern Style Live on WNO
                 </span>
               </div>
 
@@ -169,7 +179,7 @@ export default async function NewOrleansToursPage({
                     1. No Car or Kids Under 5 → Covered Swamp Boat + Pickup
                   </p>
                   <p className="text-white/85 leading-6">
-                    Swamp docks in Slidell, Manchac, and Jean Lafitte sit <strong>30–45 min outside New Orleans with no return Uber/Lyft coverage</strong>. Choose a pickup-included covered pontoon boat (<strong>15200P6 Option TG10</strong> $60 w/ 8:00–8:30 AM FQ/Downtown hotel pickup; <strong>6953SWAMPTRANS</strong> $75.52; or <strong>Gray Line</strong> $65 w/ coach from 400 Toulouse St.). All ages welcome.
+                    Swamp docks in Slidell, Manchac, and Jean Lafitte sit <strong>30–45 min outside New Orleans with no return Uber/Lyft coverage</strong>. Choose a pickup-included covered pontoon boat (<strong>Gray Line Swamp &amp; Bayou Tour</strong> $65 w/ coach from 400 Toulouse St.; <strong>Ragin Cajun Covered Tour Boat</strong> $35; <strong>15200P6 Option TG10</strong> $60 w/ 8:00–8:30 AM FQ hotel pickup; or <strong>6953SWAMPTRANS</strong> $75.52). All ages welcome.
                   </p>
                 </article>
                 <article className="rounded-2xl border border-white/10 bg-black/35 p-4 space-y-2">
@@ -177,15 +187,15 @@ export default async function NewOrleansToursPage({
                     2. Thrill-First (Age 5+ Only) → Small or Large Airboat
                   </p>
                   <p className="text-white/85 leading-6">
-                    High-speed marsh airboats (<strong>Airboat Adventures</strong> from $89, <strong>Ragin Cajun 6363P15</strong> from $69) enforce a <strong>strict minimum age of 5 years</strong>, prohibit pregnancy and neck/back injuries, require unassisted boarding, and have no roof shade. Hotel shuttle on Airboat Adventures is <strong>$30/person extra</strong> (Downtown/FQ hotels only—no Airbnbs).
+                    High-speed marsh airboats (<strong>Ragin Cajun Airboat Options</strong> from $65; <strong>Gray Line Large Airboat</strong> $90 &amp; <strong>Small Airboat</strong> $119; <strong>Ragin Cajun 6363P15</strong>) enforce a <strong>strict minimum age of 5 years</strong>, prohibit pregnancy and neck/back injuries, require unassisted boarding, and have no roof shade.
                   </p>
                 </article>
                 <article className="rounded-2xl border border-white/10 bg-black/35 p-4 space-y-2">
                   <p className="text-[11px] font-black uppercase tracking-wider text-cyan-300">
-                    3. River Road Plantations → Pick by Historical Focus
+                    3. River Road Plantations &amp; City → Gray Line &amp; Southern Style
                   </p>
                   <p className="text-white/85 leading-6">
-                    <strong>Whitney Plantation (5348WHITNEY, $79)</strong> is dedicated exclusively to the history of slavery; <strong>Oak Alley (37124P3, $82)</strong> centers on the 28-oak avenue and antebellum mansion; <strong>Laura (37124P1, $89)</strong> focuses on Creole family history. All require ~4.5–7.5 hrs with coach pickup (no public transit).
+                    <strong>Gray Line Whitney Plantation ($89)</strong> focuses exclusively on the history of slavery; <strong>Gray Line Oak Alley ($89)</strong> centers on the 28-oak avenue; <strong>Southern Style Tours</strong> runs the <strong>City Tour ($50)</strong>, <strong>Oak Alley or Laura Plantation ($67)</strong>, and <strong>All-Day City + Plantation ($99)</strong>.
                   </p>
                 </article>
                 <article className="rounded-2xl border border-white/10 bg-black/35 p-4 space-y-2">
@@ -196,6 +206,208 @@ export default async function NewOrleansToursPage({
                     Effective <strong>Feb 2, 2026 for ~2 years</strong>, the <strong>NPS Barataria Preserve Visitor Center and most trails are closed</strong> (only Twin Canals trail/canoe launch is free with no restrooms; relocated Wetland Trace Boardwalk at 4917 City Park Dr charges $10/adult and requires a car). Without a car, ride the <strong>$1.25 RTA streetcar</strong> to City Park.
                   </p>
                 </article>
+              </div>
+
+              {/* Exact WNO Offers: Gray Line, Ragin Cajun, and Southern Style */}
+              <div
+                data-testid="dcc-nola-exact-wno-offers"
+                className="rounded-2xl border border-white/15 bg-black/45 p-5 space-y-4"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <p className="text-[11px] font-black uppercase tracking-[0.2em] text-emerald-300">
+                      Bookable Today on WNO · Exact Gray Line, Ragin Cajun &amp; Southern Style Offers
+                    </p>
+                    <p className="text-xs text-white/75 mt-0.5">
+                      Each link routes from DCC directly to the exact offer on Welcome to New Orleans Tours (<code>welcometoneworleanstours.com</code>) with its preserved FareHarbor checkout link and partner tracking intact.
+                    </p>
+                  </div>
+                  <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[11px] font-semibold text-white/80">
+                    Seat counts shown only when provider-confirmed
+                  </span>
+                </div>
+
+                <div className="grid gap-3 md:grid-cols-3 text-xs">
+                  <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4 space-y-2.5">
+                    <p className="font-black uppercase tracking-wider text-cyan-300">
+                      Gray Line / New Orleans Steamboat Co.
+                    </p>
+                    <p className="text-[11px] text-white/65">
+                      Preserved tracking: <code>asn=welcometoneworleanstours&amp;ref=WelcomeToNewOrleansTours</code>
+                    </p>
+                    <ul className="space-y-1.5 text-white/90">
+                      <li>
+                        <a
+                          href={`https://www.welcometoneworleanstours.com/tours/swamp-bayou-tour?src=dcc-authority-nola-tours&date=${encodeURIComponent(selectedDate)}&party_size=${encodeURIComponent(selectedPartySize)}`}
+                          data-testid="dcc-wno-offer-grayline-swamp"
+                          className="text-emerald-300 hover:underline font-semibold"
+                        >
+                          Swamp &amp; Bayou Tour ($65 · Item 561484) →
+                        </a>
+                      </li>
+                      <li>
+                        <a
+                          href={`https://www.welcometoneworleanstours.com/tours/small-airboat-swamp-adventure?src=dcc-authority-nola-tours&date=${encodeURIComponent(selectedDate)}&party_size=${encodeURIComponent(selectedPartySize)}`}
+                          data-testid="dcc-wno-offer-grayline-small-airboat"
+                          className="text-emerald-300 hover:underline font-semibold"
+                        >
+                          Small Airboat Swamp Adventure ($119 · Item 561547) →
+                        </a>
+                      </li>
+                      <li>
+                        <a
+                          href={`https://www.welcometoneworleanstours.com/tours/large-airboat-swamp-adventure?src=dcc-authority-nola-tours&date=${encodeURIComponent(selectedDate)}&party_size=${encodeURIComponent(selectedPartySize)}`}
+                          data-testid="dcc-wno-offer-grayline-large-airboat"
+                          className="text-emerald-300 hover:underline font-semibold"
+                        >
+                          Large Airboat Swamp Adventure ($90 · Item 562175) →
+                        </a>
+                      </li>
+                      <li>
+                        <a
+                          href={`https://www.welcometoneworleanstours.com/tours/oak-alley-plantation-tour-grey-line?src=dcc-authority-nola-tours&date=${encodeURIComponent(selectedDate)}&party_size=${encodeURIComponent(selectedPartySize)}`}
+                          data-testid="dcc-wno-offer-grayline-oak-alley"
+                          className="text-emerald-300 hover:underline font-semibold"
+                        >
+                          Oak Alley Plantation Tour ($89 · Item 561477) →
+                        </a>
+                      </li>
+                      <li>
+                        <a
+                          href={`https://www.welcometoneworleanstours.com/tours/whitney-plantation-tour?src=dcc-authority-nola-tours&date=${encodeURIComponent(selectedDate)}&party_size=${encodeURIComponent(selectedPartySize)}`}
+                          data-testid="dcc-wno-offer-grayline-whitney"
+                          className="text-emerald-300 hover:underline font-semibold"
+                        >
+                          Whitney Plantation Tour ($89 · Item 561539) →
+                        </a>
+                      </li>
+                      <li>
+                        <a
+                          href={`https://www.welcometoneworleanstours.com/tours/evening-jazz-cruise?src=dcc-authority-nola-tours&date=${encodeURIComponent(selectedDate)}&party_size=${encodeURIComponent(selectedPartySize)}`}
+                          data-testid="dcc-wno-offer-grayline-evening-jazz"
+                          className="text-emerald-300 hover:underline font-semibold"
+                        >
+                          Evening Jazz Cruise ($58 · Item 560825) →
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4 space-y-2.5">
+                    <p className="font-black uppercase tracking-wider text-amber-300">
+                      Ragin Cajun Tours
+                    </p>
+                    <p className="text-[11px] text-white/65">
+                      Preserved tracking: <code>company=ragincajuntours&amp;asn=aktourcenter</code>
+                    </p>
+                    <ul className="space-y-1.5 text-white/90">
+                      <li>
+                        <a
+                          href={`https://www.welcometoneworleanstours.com/tours/covered-tour-boat?src=dcc-authority-nola-tours&date=${encodeURIComponent(selectedDate)}&party_size=${encodeURIComponent(selectedPartySize)}`}
+                          data-testid="dcc-wno-offer-ragincajun-covered-boat"
+                          className="text-emerald-300 hover:underline font-semibold"
+                        >
+                          Covered Tour Boat ($35 · Item 590176 / Flow 392449) →
+                        </a>
+                      </li>
+                      <li>
+                        <a
+                          href={`https://www.welcometoneworleanstours.com/tours/ragin-cajun-airboat-options?src=dcc-authority-nola-tours&date=${encodeURIComponent(selectedDate)}&party_size=${encodeURIComponent(selectedPartySize)}`}
+                          data-testid="dcc-wno-offer-ragincajun-airboat"
+                          className="text-emerald-300 hover:underline font-semibold"
+                        >
+                          Ragin Cajun Airboat Options ($65 · Flow 940162) →
+                        </a>
+                      </li>
+                      <li>
+                        <a
+                          href={`https://www.welcometoneworleanstours.com/tours/covered-boat-plantation-combo?src=dcc-authority-nola-tours&date=${encodeURIComponent(selectedDate)}&party_size=${encodeURIComponent(selectedPartySize)}`}
+                          data-testid="dcc-wno-offer-ragincajun-combo"
+                          className="text-emerald-300 hover:underline font-semibold"
+                        >
+                          Covered Boat + Plantation Combo ($130 · Item 603090) →
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4 space-y-2.5">
+                    <p className="font-black uppercase tracking-wider text-purple-300">
+                      Southern Style Tours
+                    </p>
+                    <p className="text-[11px] text-white/65">
+                      Preserved tracking: <code>company=southernstyletours&amp;asn=aktourcenter&amp;flow=4344</code>
+                    </p>
+                    <ul className="space-y-1.5 text-white/90">
+                      <li>
+                        <a
+                          href={`https://www.welcometoneworleanstours.com/tours/city-tour-of-new-orleans?src=dcc-authority-nola-tours&date=${encodeURIComponent(selectedDate)}&party_size=${encodeURIComponent(selectedPartySize)}`}
+                          data-testid="dcc-wno-offer-southernstyle-city"
+                          className="text-emerald-300 hover:underline font-semibold"
+                        >
+                          City Tour Of New Orleans ($50 · Item 51942) →
+                        </a>
+                      </li>
+                      <li>
+                        <a
+                          href={`https://www.welcometoneworleanstours.com/tours/oak-alley-or-laura-plantation-tour?src=dcc-authority-nola-tours&date=${encodeURIComponent(selectedDate)}&party_size=${encodeURIComponent(selectedPartySize)}`}
+                          data-testid="dcc-wno-offer-southernstyle-plantation"
+                          className="text-emerald-300 hover:underline font-semibold"
+                        >
+                          Oak Alley Or Laura Plantation Tour ($67 · Item 83002) →
+                        </a>
+                      </li>
+                      <li>
+                        <a
+                          href={`https://www.welcometoneworleanstours.com/tours/all-day-city-plantation-combo?src=dcc-authority-nola-tours&date=${encodeURIComponent(selectedDate)}&party_size=${encodeURIComponent(selectedPartySize)}`}
+                          data-testid="dcc-wno-offer-southernstyle-combo"
+                          className="text-emerald-300 hover:underline font-semibold"
+                        >
+                          All-Day City + Plantation Combo ($99 · Item 51953) →
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              {/* Cruise Timing & April 24 Dock Rollout NWS Flood / Bayou Water-Level Monitor */}
+              <div className="grid gap-4 md:grid-cols-2 text-xs">
+                <div
+                  data-testid="dcc-nola-cruise-timing-gate"
+                  className="rounded-2xl border border-amber-400/30 bg-amber-500/10 p-4 space-y-1.5"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-black uppercase tracking-wider text-amber-200">
+                      Port of New Orleans Cruise Timing Gate (60–90 Min DCC Buffer)
+                    </span>
+                    <span className="rounded-full border border-amber-300/40 bg-black/40 px-2.5 py-0.5 text-[11px] font-bold text-amber-200">
+                      {allAboardParam && berthParam ? "Fits cruise window" : "Confirm ship timing"}
+                    </span>
+                  </div>
+                  <p className="text-white/85 leading-5">
+                    Passengers disembarking at Erato Street or Julia Street Cruise Terminals must complete berth-to-check-in transfer, the full excursion, and return to the gangway <strong>60–90 minutes before confirmed ship all-aboard</strong>. When your ship’s confirmed all-aboard cutoff or terminal transfer is not provided, DCC shows <strong>Confirm ship timing</strong>.
+                  </p>
+                </div>
+
+                <div
+                  data-testid="dcc-nola-nws-water-level-monitor"
+                  className="rounded-2xl border border-cyan-400/30 bg-cyan-500/10 p-4 space-y-1.5"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-black uppercase tracking-wider text-cyan-200">
+                      April 24 Dock Rollout · NWS Flood &amp; Bayou Water-Level Flag
+                    </span>
+                    <span className="rounded-full border border-cyan-300/40 bg-black/40 px-2.5 py-0.5 text-[11px] font-bold text-cyan-100">
+                      {bayouFlagged
+                        ? "Operator check required — NWS flood / water-level advisory"
+                        : "USGS 07380335 & 02492620 Monitored"}
+                    </span>
+                  </div>
+                  <p className="text-white/85 leading-5">
+                    DCC monitors <strong>NWS New Orleans/Baton Rouge (LIX) flood warnings</strong> and <strong>USGS water-level gauges</strong> at Bayou Barataria at Lafitte (<code>07380335</code>, action stage 3.2 ft) and West Pearl River (<code>02492620</code>, action stage 12.0 ft) to flag affected bayou trips for an <strong>operator check</strong> prior to dispatch.
+                  </p>
+                </div>
               </div>
 
               <div className="overflow-x-auto rounded-2xl border border-white/10 bg-black/40">
@@ -226,24 +438,24 @@ export default async function NewOrleansToursPage({
                     </tr>
                     <tr>
                       <td className="px-4 py-3 font-semibold text-white">Gray Line Swamp &amp; Bayou Boat</td>
-                      <td className="px-4 py-3"><code>Gray Line Direct</code></td>
+                      <td className="px-4 py-3"><code>FH #561484 / Flow 1220421</code></td>
                       <td className="px-4 py-3">Included motorcoach from Steamboat NATCHEZ Dock (400 Toulouse St.; 3.75 hrs total)</td>
                       <td className="px-4 py-3">All ages ($32 ages 6–12; infants 2–5 free)</td>
                       <td className="px-4 py-3 font-bold text-emerald-300">$65 / adult</td>
                     </tr>
                     <tr>
-                      <td className="px-4 py-3 font-semibold text-white">Ragin Cajun / Airboat Adventures</td>
-                      <td className="px-4 py-3"><code>6363P15 / 5736P2</code></td>
-                      <td className="px-4 py-3">Hotel pickup SKU or $30/pp Downtown/FQ hotel shuttle add-on (no Airbnbs)</td>
-                      <td className="px-4 py-3 text-amber-200">Min age 5+ · No pregnancy or back/neck injury · Unassisted boarding</td>
-                      <td className="px-4 py-3 font-bold text-emerald-300">$69–$135 / adult</td>
+                      <td className="px-4 py-3 font-semibold text-white">Ragin Cajun Covered Boat &amp; Airboats</td>
+                      <td className="px-4 py-3"><code>FH #590176 / Flow 940162 / 6363P15</code></td>
+                      <td className="px-4 py-3">Self-drive or FQ hotel pickup package on WNO</td>
+                      <td className="px-4 py-3 text-amber-200">Covered boat all ages ($35) · Airboat min age 5+ ($65–$120)</td>
+                      <td className="px-4 py-3 font-bold text-emerald-300">$35–$130 / person</td>
                     </tr>
                     <tr>
-                      <td className="px-4 py-3 font-semibold text-white">Steamboat NATCHEZ Jazz Cruise</td>
-                      <td className="px-4 py-3"><code>6770JAZZ / DAY</code></td>
-                      <td className="px-4 py-3">Walk-up French Quarter Toulouse St. Wharf (400 Toulouse St.; board 30–60 min prior)</td>
-                      <td className="px-4 py-3">All ages · Multi-deck riverboat · Optional meal upgrade</td>
-                      <td className="px-4 py-3 font-bold text-emerald-300">$45.50–$61 / adult</td>
+                      <td className="px-4 py-3 font-semibold text-white">Southern Style City &amp; Plantation Tours</td>
+                      <td className="px-4 py-3"><code>FH #51942 / #83002 / #51953</code></td>
+                      <td className="px-4 py-3">Minibus transportation w/ 8:00–8:30 AM morning pickup window on full-day combo</td>
+                      <td className="px-4 py-3">Ages 4+ on 8-hr City + Plantation combo · Calmer minibus format</td>
+                      <td className="px-4 py-3 font-bold text-emerald-300">$50–$99 / person</td>
                     </tr>
                   </tbody>
                 </table>
@@ -255,7 +467,7 @@ export default async function NewOrleansToursPage({
                     Next Step · Move From DCC Authority to Verified Storefront or Checkout
                   </p>
                   <p className="text-xs text-white/80">
-                    Welcome to New Orleans Tours (WNO) carries your date (<strong>{selectedDate}</strong>) and party size (<strong>{selectedPartySize}</strong>) directly into live availability. On Viator, you will reselect your date, group size, and tour option before payment.
+                    Welcome to New Orleans Tours (WNO) carries your date (<strong>{selectedDate}</strong>) and party size (<strong>{selectedPartySize}</strong>) directly into live availability with preserved FareHarbor and Viator checkout tracking.
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2.5">

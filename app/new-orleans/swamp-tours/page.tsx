@@ -401,6 +401,126 @@ export default async function NewOrleansSwampToursPage(props: {
             </article>
           </div>
 
+          {/* Exact WNO Offers + NWS Flood / Water-Level Bayou Flag */}
+          <div
+            data-testid="dcc-swamp-exact-wno-offers"
+            className="rounded-2xl border border-emerald-400/30 bg-emerald-950/25 p-5 space-y-4"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.2em] text-emerald-300">
+                  Route to Exact Offers on WNO · Preserved Checkout Links &amp; Tracking
+                </p>
+                <p className="text-xs text-white/75 mt-1">
+                  Choose the exact Gray Line, Ragin Cajun, or Southern Style offer on Welcome to New Orleans Tours (<code>welcometoneworleanstours.com</code>). Seat counts are displayed only when confirmed by the provider.
+                </p>
+              </div>
+              <span className="rounded-full border border-cyan-400/30 bg-cyan-500/10 px-3 py-1 text-[11px] font-bold text-cyan-200">
+                {carriedAllAboard && carriedShipArrival ? "Fits cruise window" : "Confirm ship timing"}
+              </span>
+            </div>
+
+            <div className="grid gap-3 md:grid-cols-3 text-xs">
+              <div className="rounded-xl border border-white/10 bg-black/40 p-3.5 space-y-1.5">
+                <p className="font-bold text-cyan-300">Gray Line Swamp &amp; Airboats (WNO)</p>
+                <ul className="space-y-1">
+                  <li>
+                    <a
+                      href={`https://www.welcometoneworleanstours.com/tours/swamp-bayou-tour?src=dcc-authority-swamp-tours&from=dcc-swamp-tours${carriedDate ? `&date=${encodeURIComponent(carriedDate)}` : ""}`}
+                      className="text-emerald-300 hover:underline font-semibold"
+                    >
+                      Swamp &amp; Bayou Tour ($65 · FH #561484) →
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href={`https://www.welcometoneworleanstours.com/tours/small-airboat-swamp-adventure?src=dcc-authority-swamp-tours&from=dcc-swamp-tours${carriedDate ? `&date=${encodeURIComponent(carriedDate)}` : ""}`}
+                      className="text-emerald-300 hover:underline font-semibold"
+                    >
+                      Small Airboat Adventure ($119 · FH #561547) →
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href={`https://www.welcometoneworleanstours.com/tours/large-airboat-swamp-adventure?src=dcc-authority-swamp-tours&from=dcc-swamp-tours${carriedDate ? `&date=${encodeURIComponent(carriedDate)}` : ""}`}
+                      className="text-emerald-300 hover:underline font-semibold"
+                    >
+                      Large Airboat Adventure ($90 · FH #562175) →
+                    </a>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="rounded-xl border border-white/10 bg-black/40 p-3.5 space-y-1.5">
+                <p className="font-bold text-amber-300">Ragin Cajun Swamp &amp; Combos (WNO)</p>
+                <ul className="space-y-1">
+                  <li>
+                    <a
+                      href={`https://www.welcometoneworleanstours.com/tours/covered-tour-boat?src=dcc-authority-swamp-tours&from=dcc-swamp-tours${carriedDate ? `&date=${encodeURIComponent(carriedDate)}` : ""}`}
+                      className="text-emerald-300 hover:underline font-semibold"
+                    >
+                      Covered Tour Boat ($35 · FH #590176) →
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href={`https://www.welcometoneworleanstours.com/tours/ragin-cajun-airboat-options?src=dcc-authority-swamp-tours&from=dcc-swamp-tours${carriedDate ? `&date=${encodeURIComponent(carriedDate)}` : ""}`}
+                      className="text-emerald-300 hover:underline font-semibold"
+                    >
+                      Ragin Cajun Airboat Options ($65 · Flow 940162) →
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href={`https://www.welcometoneworleanstours.com/tours/covered-boat-plantation-combo?src=dcc-authority-swamp-tours&from=dcc-swamp-tours${carriedDate ? `&date=${encodeURIComponent(carriedDate)}` : ""}`}
+                      className="text-emerald-300 hover:underline font-semibold"
+                    >
+                      Covered Boat + Plantation Combo ($130 · FH #603090) →
+                    </a>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="rounded-xl border border-white/10 bg-black/40 p-3.5 space-y-1.5">
+                <p className="font-bold text-purple-300">Southern Style Tours (WNO)</p>
+                <ul className="space-y-1">
+                  <li>
+                    <a
+                      href={`https://www.welcometoneworleanstours.com/tours/city-tour-of-new-orleans?src=dcc-authority-swamp-tours&from=dcc-swamp-tours${carriedDate ? `&date=${encodeURIComponent(carriedDate)}` : ""}`}
+                      className="text-emerald-300 hover:underline font-semibold"
+                    >
+                      City Tour Of New Orleans ($50 · FH #51942) →
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href={`https://www.welcometoneworleanstours.com/tours/oak-alley-or-laura-plantation-tour?src=dcc-authority-swamp-tours&from=dcc-swamp-tours${carriedDate ? `&date=${encodeURIComponent(carriedDate)}` : ""}`}
+                      className="text-emerald-300 hover:underline font-semibold"
+                    >
+                      Oak Alley Or Laura Plantation ($67 · FH #83002) →
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href={`https://www.welcometoneworleanstours.com/tours/all-day-city-plantation-combo?src=dcc-authority-swamp-tours&from=dcc-swamp-tours${carriedDate ? `&date=${encodeURIComponent(carriedDate)}` : ""}`}
+                      className="text-emerald-300 hover:underline font-semibold"
+                    >
+                      All-Day City + Plantation ($99 · FH #51953) →
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div
+              data-testid="dcc-swamp-nws-water-level-flag"
+              className="rounded-xl border border-cyan-400/25 bg-black/45 p-3 text-xs text-white/85"
+            >
+              <strong className="text-cyan-300">April 24 Dock Rollout · NWS Flood &amp; Water-Level Bayou Monitor:</strong>{" "}
+              Active NWS New Orleans/Baton Rouge (<code>LIX</code>) flood warnings and USGS water-level observations at Bayou Barataria at Lafitte (<code>07380335</code>) and West Pearl River (<code>02492620</code>) automatically flag affected bayou departures for an <strong>operator check</strong> before dispatch. Cruise passengers without a confirmed all-aboard time and terminal transfer show <strong>Confirm ship timing</strong> (60–90 minute DCC gangway buffer).
+            </div>
+          </div>
+
           <div className="rounded-2xl border border-amber-400/25 bg-amber-500/[0.06] p-4 text-xs leading-6 text-amber-100/90">
             <strong>Explicit Assumptions &amp; Unknowns:</strong> Until you specify your youngest child&rsquo;s exact age, your hotel location, and your travel date, DCC cannot verify airboat eligibility or confirm which hotel shuttle stop applies. Swamp docks in Slidell (Honey Island), Manchac/LaPlace, and Jean Lafitte are 30–45 minutes outside New Orleans where return cab/Uber/Lyft service is unavailable—never book a &ldquo;Self-Drive / Meet at Dock&rdquo; ticket if you do not have a car. A weather forecast never guarantees a departure will run.
           </div>

@@ -329,6 +329,50 @@ export default async function ActivityPage({
 
           <ExcursionComparisonTable excursions={fallbackExcursions} />
 
+          {port === "juneau" && activity === "whale-watching" && (
+            <div
+              data-testid="lfse-juneau-whale-deck-callout"
+              style={{
+                marginTop: 24,
+                padding: "20px 22px",
+                background: "#eef6f7",
+                borderRadius: "10px",
+                border: "1px solid #bcd4d8",
+              }}
+            >
+              <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                <strong style={{ color: "var(--deep)", fontSize: "15px" }}>
+                  Whale Deck &amp; Direct Operator Rollout · Juneau Tours &amp; Whale Watch
+                </strong>
+                <span
+                  style={{
+                    background: "#ffffff",
+                    border: "1px solid #9bbec4",
+                    borderRadius: "999px",
+                    padding: "4px 10px",
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    color: "var(--deep)",
+                  }}
+                >
+                  Confirm ship timing · 60–90m DCC Buffer
+                </span>
+              </div>
+              <p style={{ margin: "0 0 10px", fontSize: "14px", color: "var(--ink)", lineHeight: 1.6 }}>
+                We check whether passengers can get from their Juneau berth to tour check-in, complete the tour, and return to the gangway before all-aboard with a <strong>60–90 minute DCC buffer</strong> using the published <strong>CLAA Juneau calendar</strong> and the ship&apos;s <strong>confirmed all-aboard time</strong> (showing <strong>Confirm ship timing</strong> when the cutoff or transfer is unknown). Seat counts are displayed only when confirmed by the provider.
+              </p>
+              <p style={{ margin: "0 0 12px", fontSize: "13px", color: "#3d5159", lineHeight: 1.55 }}>
+                <strong>Pending Direct Checkout Path:</strong> Direct 10% Rezgo checkout / exclusive seat-block integration with <strong>Juneau Tours &amp; Whale Watch</strong> will be added as soon as the approved checkout path is finalized. Today, book the approved checkout links above (<code>#331813P1</code> Small-Group Whale Watching Cruise and <code>#466119P3</code> Whale Watching &amp; Mendenhall Glacier Combo) or open the{" "}
+                <a
+                  href="https://juneauflightdeck.com/juneau-whale-watching-tours?src=lfse-juneau-whale"
+                  style={{ color: "var(--forest)", fontWeight: 700, textDecoration: "underline" }}
+                >
+                  Juneau Flight Deck Whale Deck &amp; Flight-Canceled Backup Flow →
+                </a>
+              </p>
+            </div>
+          )}
+
           {/* Explicit Browse More Tours Fallback */}
           <div style={{ marginTop: 24, marginBottom: 20, padding: "16px 20px", background: "#f8fbfb", borderRadius: "8px", border: "1px dashed var(--line)", textAlign: "center" }}>
             <p style={{ margin: "0 0 8px", fontSize: "14px", color: "var(--muted)" }}>

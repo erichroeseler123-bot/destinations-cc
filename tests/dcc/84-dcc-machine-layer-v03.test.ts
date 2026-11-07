@@ -53,6 +53,7 @@ import {
   verifyRfc8785ConformanceVectors,
   verifyShadowDecisionAuthorizationJws,
   verifyV03DecisionReceiptJws,
+  V03OperatorDirectCheckoutEngine,
 } from "@/lib/dcc/machine";
 import { runDccV03TenOperationBenchmarks } from "@/scripts/dcc/benchmark-machine-layer-v03";
 import { runBlackBoxCanaryVerificationV03 } from "@/scripts/dcc/blackbox-verify-canary-v03";
@@ -735,3 +736,95 @@ test("v0.3 Gate 10 (Standalone Black-Box Verification Client V0.3 & 10-Operation
   assert.equal(bench.operations.rfc8785Canonicalization.sampleCount, 100);
   assert.equal(bench.operations.jwsEdDsaSigning.sampleCount, 50);
 });
+
+test("v0.3 Gate 11 (Operator-by-Operator Direct Checkout, dcc_ctx_ Trip Context, 15-Minute Holds, Manual Dispatch 'Booking requested', Sold-Out/Expired/Duplicate/Cancellation & Separate Referral/Booking/Commission Tracking)", () => {
+  const engine = new V03OperatorDirectCheckoutEngine();
+  engine.registerDeparture({
+    departureId: "JNU-JTWW-2026-04-24-1330",
+    operatorId: "juneau-tours-whale-watch",
+    serviceDate: "2026-04-24",
+    departureLocal: "13:30",
+    durationMinutes: 210,
+    baseFarePerSeatUsd: 180,
+    taxesAndFeesPerSeatUsd: 14,
+    seatLockSource: "RESERVED_SEAT_BLOCK",
+    providerConfirmedSeats: true,
+    totalConfirmedSeats: 4,
+    remainingSeats: 4,
+  });
+
+  engine.recordDccReferral({
+    dccContextId: "dcc_ctx_gate11_01",
+    operatorId: "juneau-tours-whale-watch",
+    departureId: "JNU-JTWW-2026-04-24-1330",
+    nowIso: "2026-04-24T18:00:00Z",
+  });
+
+  const hold = engine.submitDirectCheckout({
+    idempotencyKey: "gate11_idem_1",
+    tripContext: {
+      contextId: "dcc_ctx_gate11_01",
+      portSlug: "juneau",
+      serviceDate: "2026-04-24",
+      partySize: 2,
+      berthCode: "CT",
+      claaArrivalLocal: "12:30",
+      claaDepartureLocal: "22:00",
+      confirmedAllAboardLocal: "21:30",
+    },
+    operatorId: "juneau-tours-whale-watch",
+    departureId: "JNU-JTWW-2026-04-24-1330",
+    nowIso: "2026-04-24T18:01:00Z",
+  });
+  assert.equal(hold.ok, true);
+  assert.equal(hold.displayStatus, "Booking requested");
+  assert.equal(hold.seatCountDisplay, "2 provider-confirmed seats remaining");
+
+  // Duplicate submission blocked
+  const dup = engine.submitDirectCheckout({
+    idempotencyKey: "gate11_idem_1",
+    tripContext: {
+      contextId: "dcc_ctx_gate11_01",
+      portSlug: "juneau",
+      serviceDate: "2026-04-24",
+      partySize: 2,
+    },
+    operatorId: "juneau-tours-whale-watch",
+    departureId: "JNU-JTWW-2026-04-24-1330",
+    nowIso: "2026-04-24T18:02:00Z",
+  });
+  assert.equal(dup.ok, false);
+  assert.equal(dup.code, "DUPLICATE_SUBMISSION");
+
+  // Sold-out departure rejected when requesting 3 seats (only 2 remain)
+  const soldOut = engine.submitDirectCheckout({
+    idempotencyKey: "gate11_idem_2",
+    tripContext: {
+      contextId: "dcc_ctx_gate11_02",
+      portSlug: "juneau",
+      serviceDate: "2026-04-24",
+      partySize: 3,
+    },
+    operatorId: "juneau-tours-whale-watch",
+    departureId: "JNU-JTWW-2026-04-24-1330",
+    nowIso: "2026-04-24T18:03:00Z",
+  });
+  assert.equal(soldOut.ok, false);
+  assert.equal(soldOut.code, "SOLD_OUT_DEPARTURE");
+
+  // Confirm manual dispatch within 15-minute hold
+  const confirmed = engine.confirmManualDispatchBooking({
+    reservationId: hold.reservation!.reservationId,
+    operatorDispatchConfirmationRef: "DISP-OK-11",
+    nowIso: "2026-04-24T18:05:00Z",
+    settleCommissionImmediately: true,
+  });
+  assert.equal(confirmed.ok, true);
+  assert.equal(confirmed.displayStatus, "Confirmed");
+
+  const summary = engine.getDirectCheckoutLedgerSummary();
+  assert.equal(summary.dccReferralsCount, 1);
+  assert.equal(summary.confirmedBookingsCount, 1);
+  assert.equal(summary.settledCommissionUsd, 36);
+});
+

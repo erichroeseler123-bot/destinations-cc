@@ -291,10 +291,21 @@ export function getProductActiveBookingVariants(
       },
     ];
   }
-  return (canonical.bookingVariants || []).map((v) => ({
-    ...v,
-    isViator: false,
-  }));
+  if (canonical.bookingVariants && canonical.bookingVariants.length > 0) {
+    return canonical.bookingVariants.map((v) => ({
+      ...v,
+      isViator: false,
+    }));
+  }
+  return [
+    {
+      label: canonical.ctaLabel || "CHECK AVAILABILITY & RATES",
+      itemId: canonical.itemId || canonical.id,
+      flowId: canonical.flowId || "DEFAULT",
+      bookingUrl: getFareHarborUrl(canonical.companyShortname, canonical.itemId, canonical.flowId),
+      isViator: false,
+    },
+  ];
 }
 
 export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
@@ -305,7 +316,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     flowId: "4344",
     viatorProductCode: "8013P1",
     viatorPlacementId: "fp-wno-city-tours",
-    fareharborAsnActive: false,
+    fareharborAsnActive: true,
     title: "City Tour Of New Orleans",
     category: "City Tours",
     operatorName: "Southern Style Tours",
@@ -366,7 +377,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     flowId: "4344",
     viatorProductCode: "8013P8",
     viatorPlacementId: "fp-wno-plantation-tours",
-    fareharborAsnActive: false,
+    fareharborAsnActive: true,
     title: "Oak Alley Or Laura Plantation Tour",
     category: "Plantation Tours",
     operatorName: "Southern Style Tours",
@@ -429,7 +440,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     flowId: "392449",
     viatorProductCode: "15200P5",
     viatorPlacementId: "fp-wno-swamp-tours",
-    fareharborAsnActive: false,
+    fareharborAsnActive: true,
     viatorVariants: [
       {
         label: "CHECK SELF-DRIVE COVERED BOAT ($35/PERSON · VIATOR #15200P5)",
@@ -498,7 +509,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     flowId: "940162",
     viatorProductCode: "15200P1",
     viatorPlacementId: "fp-wno-swamp-tours",
-    fareharborAsnActive: false,
+    fareharborAsnActive: true,
     viatorVariants: [
       {
         label: "LARGE AIRBOAT · SELF-DRIVE ($65/PERSON · VIATOR #15200P1)",
@@ -579,7 +590,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     flowId: "4344",
     viatorProductCode: "8013P3",
     viatorPlacementId: "fp-wno-combo-tours",
-    fareharborAsnActive: false,
+    fareharborAsnActive: true,
     title: "All-Day City + Plantation",
     category: "Combo Tours",
     operatorName: "Southern Style Tours",
@@ -643,7 +654,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     flowId: "392449",
     viatorProductCode: "15200P9",
     viatorPlacementId: "fp-wno-combo-tours",
-    fareharborAsnActive: false,
+    fareharborAsnActive: true,
     title: "Covered Boat + Plantation",
     category: "Combo Tours",
     operatorName: "Ragin Cajun Airboat Tours",
@@ -859,7 +870,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     viatorProductCode: "3780STEAMDIN",
     viatorOptionCode: "TG9",
     viatorPlacementId: "fp-wno-riverboat-cruises",
-    fareharborAsnActive: false,
+    fareharborAsnActive: true,
     viatorVariants: [
       {
         label: "CHECK SIGHTSEEING AVAILABILITY (OPTION TG9)",
@@ -945,7 +956,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     viatorProductCode: "3780STEAM",
     viatorOptionCode: "TG31",
     viatorPlacementId: "fp-wno-riverboat-cruises",
-    fareharborAsnActive: false,
+    fareharborAsnActive: true,
     viatorVariants: [
       {
         label: "CHECK SIGHTSEEING AVAILABILITY (OPTION TG31)",
@@ -1049,7 +1060,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     companyShortname: "neworleanssteamboatcompany",
     viatorProductCode: "3780STEAMBRU",
     viatorPlacementId: "fp-wno-riverboat-cruises",
-    fareharborAsnActive: false,
+    fareharborAsnActive: true,
     viatorVariants: [
       {
         label: "CHECK SUNDAY JAZZ BRUNCH AVAILABILITY (VIATOR #3780STEAMBRU)",
@@ -1114,7 +1125,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     flowId: "1578687",
     viatorProductCode: "3780OAK",
     viatorPlacementId: "fp-wno-plantation-tours",
-    fareharborAsnActive: false,
+    fareharborAsnActive: true,
     title: "Oak Alley Plantation Tour",
     category: "Plantation Tours",
     operatorName: "Gray Line",
@@ -1148,7 +1159,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     flowId: "1578687",
     viatorProductCode: "3780P41",
     viatorPlacementId: "fp-wno-plantation-tours",
-    fareharborAsnActive: false,
+    fareharborAsnActive: true,
     title: "Whitney Plantation Tour",
     category: "Plantation Tours",
     operatorName: "Gray Line",
@@ -1183,7 +1194,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     viatorProductCode: "3780SWAMP",
     viatorOptionCode: "10:45AM",
     viatorPlacementId: "fp-wno-swamp-tours",
-    fareharborAsnActive: false,
+    fareharborAsnActive: true,
     title: "Swamp & Bayou Tour",
     category: "Swamp Tours",
     operatorName: "Gray Line",
@@ -1217,7 +1228,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     viatorProductCode: "3780AIRBOAT",
     viatorOptionCode: "TG3",
     viatorPlacementId: "fp-wno-swamp-tours",
-    fareharborAsnActive: false,
+    fareharborAsnActive: true,
     title: "Small Airboat Swamp Adventure",
     category: "Airboat Rides",
     operatorName: "Gray Line",
@@ -1251,7 +1262,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     viatorProductCode: "3780AIRBOAT",
     viatorOptionCode: "TG1",
     viatorPlacementId: "fp-wno-swamp-tours",
-    fareharborAsnActive: false,
+    fareharborAsnActive: true,
     title: "Large Airboat Swamp Adventure",
     category: "Airboat Rides",
     operatorName: "Gray Line",
@@ -1281,7 +1292,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     flowId: "1220421",
     viatorProductCode: "3780SWPL",
     viatorPlacementId: "fp-wno-combo-tours",
-    fareharborAsnActive: false,
+    fareharborAsnActive: true,
     title: "Swamp Boat and Oak Alley Combination",
     category: "Combo Tours",
     operatorName: "Gray Line",
@@ -1316,7 +1327,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     flowId: "1220421",
     viatorProductCode: "3780P91",
     viatorPlacementId: "fp-wno-combo-tours",
-    fareharborAsnActive: false,
+    fareharborAsnActive: true,
     title: "Swamp Boat and Whitney Combination",
     category: "Combo Tours",
     operatorName: "Gray Line",
@@ -1352,7 +1363,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     viatorProductCode: "3780ST",
     viatorOptionCode: "TG1",
     viatorPlacementId: "fp-wno-walking-tours",
-    fareharborAsnActive: false,
+    fareharborAsnActive: true,
     title: "Cocktail Walking Tour",
     category: "Walking Tours",
     operatorName: "Gray Line",
@@ -1382,7 +1393,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     viatorProductCode: "3780ST",
     viatorOptionCode: "04PM",
     viatorPlacementId: "fp-wno-walking-tours",
-    fareharborAsnActive: false,
+    fareharborAsnActive: true,
     title: "Craft Cocktail Walking Tour",
     category: "Walking Tours",
     operatorName: "Gray Line",
@@ -1411,7 +1422,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     flowId: "1578708",
     viatorProductCode: "3780GHOSTS",
     viatorPlacementId: "fp-wno-walking-tours",
-    fareharborAsnActive: false,
+    fareharborAsnActive: true,
     title: "Ghosts & Spirits Walking Tour",
     category: "Walking Tours",
     operatorName: "Gray Line",
@@ -1444,7 +1455,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     flowId: "1578708",
     viatorProductCode: "3780HAUNT",
     viatorPlacementId: "fp-wno-city-tours",
-    fareharborAsnActive: false,
+    fareharborAsnActive: true,
     title: "City, Cemetery and Garden District Tour",
     category: "City Tours",
     operatorName: "Gray Line",
@@ -1474,7 +1485,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     flowId: "1621347",
     viatorProductCode: "3780P45",
     viatorPlacementId: "fp-wno-riverboat-cruises",
-    fareharborAsnActive: false,
+    fareharborAsnActive: true,
     title: "CITY of NEW ORLEANS Riverboat Cruise",
     category: "River Cruises",
     operatorName: "New Orleans Steamboat Company",

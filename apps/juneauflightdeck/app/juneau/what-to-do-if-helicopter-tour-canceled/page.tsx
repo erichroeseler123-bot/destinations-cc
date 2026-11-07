@@ -55,7 +55,23 @@ const faqSchema = {
   ],
 };
 
-export default function JuneauHelicopterCanceledPage() {
+export const dynamic = "force-dynamic";
+
+export default async function JuneauHelicopterCanceledPage({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const resolvedSearch = searchParams ? await searchParams : {};
+  const firstStr = (v: string | string[] | undefined) =>
+    Array.isArray(v) ? v[0] : v;
+  const flightCanceledParam = firstStr(resolvedSearch.flight_canceled);
+  const cancelRefParam = firstStr(resolvedSearch.cancel_ref);
+  const isBackupActive =
+    flightCanceledParam === "1" ||
+    flightCanceledParam === "true" ||
+    Boolean(cancelRefParam && cancelRefParam.trim().length > 0);
+
   return (
     <main className="page-shell" style={{ maxWidth: 940, margin: "0 auto", padding: "40px 20px 80px" }}>
       <script
@@ -65,7 +81,7 @@ export default function JuneauHelicopterCanceledPage() {
 
       <div style={{ marginBottom: 32 }}>
         <p className="eyebrow" style={{ color: "var(--accent, #f0b35b)", marginBottom: 8 }}>
-          Juneau Flight Deck · Weather Guidance &amp; Backup Planning
+          Juneau Flight Deck · Weather Guidance &amp; April 24 Dock Rollout Backup Flow
         </p>
         <h1
           style={{
@@ -88,20 +104,62 @@ export default function JuneauHelicopterCanceledPage() {
             margin: "0 0 16px",
           }}
         >
-          Southeast Alaska mountain weather can change quickly. A cloudy morning doesn&apos;t have to mean a lost port day.
+          Southeast Alaska mountain weather can change quickly. Use your{" "}
+          <strong>My flight was canceled</strong> selection or your operator&apos;s tracked cancellation link (<code>?cancel_ref=...</code>) below to open the same-day{" "}
+          <strong>Whale Deck Backup Flow</strong>.
         </p>
         <div
+          data-testid="jfd-canceled-backup-panel"
           style={{
-            padding: "16px 20px",
-            background: "rgba(240, 179, 91, 0.12)",
-            border: "1px solid rgba(240, 179, 91, 0.35)",
+            padding: "18px 20px",
+            background: isBackupActive ? "rgba(14, 165, 233, 0.18)" : "rgba(240, 179, 91, 0.12)",
+            border: isBackupActive ? "2px solid rgba(56, 189, 248, 0.55)" : "1px solid rgba(240, 179, 91, 0.35)",
             borderRadius: 12,
             color: "#ffffff",
             fontSize: "0.95rem",
             lineHeight: 1.6,
           }}
         >
-          <strong>Our Policy &amp; Commitment:</strong> If weather cancels your helicopter flight, we help you explore available alternatives that fit your remaining port time. Backup tours are optional, booked separately, and subject to availability. Refunds follow your booking&apos;s cancellation terms.
+          <div style={{ marginBottom: 10 }}>
+            <strong>
+              {cancelRefParam
+                ? `Backup Flow Active — Operator Tracked Cancellation Link (${cancelRefParam})`
+                : isBackupActive
+                  ? "Backup Flow Active — My Flight Was Canceled"
+                  : "Our Policy & Immediate Backup Flow:"}
+            </strong>{" "}
+            If weather cancels your helicopter flight, we help you explore available alternatives that fit your remaining CLAA port time and confirmed ship all-aboard cutoff (60–90 minute DCC buffer; shows <strong>Confirm ship timing</strong> when cutoff or transfer is unknown).
+          </div>
+          <div
+            data-testid="jfd-canceled-pajn-metar"
+            style={{
+              background: "rgba(3, 14, 23, 0.72)",
+              borderRadius: 8,
+              padding: "10px 14px",
+              fontSize: "0.82rem",
+              color: "#cbd5e1",
+              marginBottom: 12,
+            }}
+          >
+            <strong style={{ color: "#7dd3fc" }}>PAJN METAR Weather Context:</strong>{" "}
+            <code>PAJN 241653Z 11014G22KT 2SM -RA BR OVC009 06/05 A2968 RMK AO2</code> — PAJN METAR is shown strictly as aviation weather context; cancellation status comes from you or your operator.
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+            <Link
+              href={`/juneau-whale-watching-tours?flight_canceled=1${cancelRefParam ? `&cancel_ref=${encodeURIComponent(cancelRefParam)}` : ""}#backup-flow`}
+              className="button button-primary"
+              style={{ fontSize: "0.85rem", padding: "9px 16px", fontWeight: 800 }}
+            >
+              My flight was canceled → Open Whale Deck Backup Flow &rarr;
+            </Link>
+            <a
+              href="https://www.lastfrontiershoreexcursions.com/juneau/whale-watching?src=jfd-flight-canceled"
+              className="button button-secondary"
+              style={{ fontSize: "0.85rem", padding: "9px 16px" }}
+            >
+              Open Alaska Storefront (Last Frontier) &nearr;
+            </a>
+          </div>
         </div>
       </div>
 
