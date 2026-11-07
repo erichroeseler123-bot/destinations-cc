@@ -373,9 +373,12 @@ export function buildJuneauTideTelemetryState(params: {
     };
   }
 
-  const liveStation = params.liveCoopsResult?.data?.find(
-    (s: any) => String(s.id) === JUNEAU_NOAA_STATION_ID,
-  ) || params.liveCoopsResult?.data?.[0];
+  const dataList = Array.isArray(params.liveCoopsResult?.data)
+    ? params.liveCoopsResult.data
+    : [];
+  const liveStation =
+    dataList.find((s: any) => String(s.id) === JUNEAU_NOAA_STATION_ID) ||
+    dataList[0];
 
   const predictedHighLow: JuneauTidePredictionPoint[] =
     liveStation &&
@@ -1038,26 +1041,20 @@ export async function evaluateUnifiedJuneauTripRecheck(
           attribution: "Tides, water levels and coastal stations: NOAA CO-OPS",
           available: true,
           checkedAt: new Date().toISOString(),
-          data: {
-            station: {
+          data: [
+            {
               id: JUNEAU_NOAA_STATION_ID,
               name: JUNEAU_NOAA_STATION_NAME,
-              state: "AK",
-              lat: JUNEAU_COORDINATE.lat,
-              lng: JUNEAU_COORDINATE.lng,
               distanceKm: 0.4,
-            },
-            observation: null,
-            predictions: {
-              requestedDate: date,
+              waterLevelM: null,
               datum: JUNEAU_NOAA_DATUM,
-              timeZone: "lst_ldt",
-              units: "feet_and_meters",
-              highLow: preds,
+              requestedDate: date,
+              predictionTimeZone: "lst_ldt",
+              highLowPredictions: preds,
             },
-          },
+          ],
           error: null,
-        };
+        } as unknown as Awaited<ReturnType<typeof readCoops>>;
       }
     }
   } catch {
