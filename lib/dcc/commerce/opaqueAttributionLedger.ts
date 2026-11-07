@@ -2203,10 +2203,10 @@ export function getDccAuthorityScorecard(): DccAuthorityScorecardReport {
       isDemoOrAutomatedVerificationTraffic({
         clickId: visitor.visitorId,
         isTest: visitor.isTest,
-        originatingPage: visitor.originatingPage,
+        originatingPage: visitor.sourcePage,
       });
     const bucket = isVisitorTest ? test : production;
-    const page = String(visitor.originatingPage || "");
+    const page = String(visitor.sourcePage || "");
     const placementId = visitor.placementId || null;
     const trafficSource = String(visitor.trafficSource || "").toLowerCase();
     const visitCount = Math.max(1, visitor.visitCount || 1);
@@ -2306,7 +2306,7 @@ export function getDccAuthorityScorecard(): DccAuthorityScorecardReport {
     const hasConfirmed = nonDuplicateOutcomes.some(
       (o) =>
         o.eventType === "BOOKING_CONFIRMED" ||
-        o.eventType === "COMMISSION_SETTLED",
+        o.eventType === "BOOKING_FULFILLED",
     );
     const hasCancelled = nonDuplicateOutcomes.some(
       (o) =>
@@ -2329,7 +2329,6 @@ export function getDccAuthorityScorecard(): DccAuthorityScorecardReport {
       }
       const paidOutcome = nonDuplicateOutcomes.find(
         (o) =>
-          o.eventType === "COMMISSION_SETTLED" &&
           o.paidCommissionUsd != null &&
           o.paidCommissionUsd > 0,
       );
