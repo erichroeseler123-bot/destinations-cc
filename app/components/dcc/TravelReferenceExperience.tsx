@@ -256,9 +256,9 @@ export default async function TravelReferenceExperience({
 
       {/* JUNEAU INTERACTIVE PORT-DAY DECISION ENGINE */}
       {node.id === "juneau" && (
-        < React.Suspense fallback={null}>
+        <React.Suspense fallback={null}>
           <JuneauPortDayPlanner
-            node={node}
+            evidenceCount={node.evidenceRegistry.length}
             initialSearchParams={initialSearchParams}
           />
         </React.Suspense>

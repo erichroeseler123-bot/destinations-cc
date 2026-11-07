@@ -18,7 +18,8 @@ import {
 } from "@/lib/dcc/juneauPortDayEngine";
 
 interface JuneauPortDayPlannerProps {
-  node: TravelReferenceNode;
+  node?: TravelReferenceNode;
+  evidenceCount?: number;
   initialSearchParams?: Record<string, string | string[] | undefined>;
 }
 
@@ -75,6 +76,7 @@ const BASIS_BADGE_MAP: Record<
 
 export default function JuneauPortDayPlanner({
   node,
+  evidenceCount,
   initialSearchParams,
 }: JuneauPortDayPlannerProps) {
   const [input, setInput] = useState<JuneauPortDayScenarioInput>(() =>
@@ -106,7 +108,7 @@ export default function JuneauPortDayPlanner({
   }, []);
 
   const evaluation = useMemo(
-    () => evaluateJuneauPortDayScenario(input, { node }),
+    () => evaluateJuneauPortDayScenario(input, node ? { node } : undefined),
     [input, node]
   );
 
@@ -226,7 +228,7 @@ export default function JuneauPortDayPlanner({
             href="#sources-and-verification"
             className="rounded-xl border border-white/15 bg-white/5 px-3.5 py-2 text-xs font-semibold text-slate-200 transition hover:bg-white/10"
           >
-            Sources &amp; Verification ({node.evidenceRegistry.length})
+            Sources &amp; Verification ({node?.evidenceRegistry.length ?? evidenceCount ?? 13})
           </a>
         </div>
       </div>

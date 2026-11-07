@@ -15,6 +15,12 @@ import {
   syncDurableLedgerWithPostgres,
 } from "@/lib/dcc/storage/durableTransactionalStore";
 import { SHARED_MARKET_TEMPLATES } from "@/lib/dcc/sharedMarketTemplate";
+import { buildDccAiCrawlerAndCitationAuditReport } from "@/lib/dcc/aiCrawlerAndCitationAudit";
+import { LOW_BANDWIDTH_JUNEAU_COMPRESSED_TARGET_BYTES } from "@/lib/dcc/lowBandwidthJuneauReplan";
+import {
+  CDOT_I70_VERIFIED_FACTS,
+  COLORADO_TRANSFER_FACT_COMPARISON,
+} from "@/lib/dcc/coloradoFactComparison";
 
 export const dynamic = "force-dynamic";
 
@@ -332,6 +338,12 @@ export async function GET(request: NextRequest) {
       dccAuthorityScorecard,
       dccNetworkDemandToRevenueReport,
       sharedMarketTemplates: SHARED_MARKET_TEMPLATES,
+      aiSearchAndCitationAudit: buildDccAiCrawlerAndCitationAuditReport(),
+      lowBandwidthJuneauTargetBytes: LOW_BANDWIDTH_JUNEAU_COMPRESSED_TARGET_BYTES,
+      coloradoFactComparison: {
+        cdotVerifiedFacts: CDOT_I70_VERIFIED_FACTS,
+        options: COLORADO_TRANSFER_FACT_COMPARISON,
+      },
       overallFunnel: formatPlacementFunnelSummary(overallFunnel),
       widgetPlacements: {
         firstPartyInstallationsCount:

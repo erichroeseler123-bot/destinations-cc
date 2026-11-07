@@ -2579,7 +2579,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
             dateAndValidityRule: "Automatically in effect for all passenger vehicles from September 1 through May 31 (and whenever activated by CDOT during storms).",
           },
           officialRequirementSummary:
-            "Under Colorado Statute (C.R.S. § 42-4-106), from September 1 to May 31 on I-70 between Morrison and Dotsero, ALL motorists must carry either: (1) 4WD or AWD vehicle with tires having at least 3/16-inch tread depth; OR (2) 2WD vehicle with winter tires (3PMSF) or Mud+Snow (M+S) all-weather tires having at least 3/16-inch tread depth; OR (3) chains or an approved traction device (like AutoSock) on board. Under severe blizzards, Code 16 (Passenger Vehicle Chain Law) requires every vehicle to physically install chains/traction devices. Fines start at $130+ and escalate above $650 if an non-compliant vehicle blocks a lane.",
+            "Under Colorado Statute (C.R.S. § 42-4-106), from September 1 to May 31 on I-70 between Morrison and Dotsero, ALL motorists must carry either: (1) 4WD or AWD vehicle with tires having at least 3/16-inch tread depth; OR (2) 2WD vehicle with winter tires (3PMSF) or Mud+Snow (M+S) all-weather tires having at least 3/16-inch tread depth; OR (3) chains or an approved traction device (like AutoSock) on board. Under severe blizzards, Code 16 (Passenger Vehicle Chain Law) requires every vehicle to physically install chains/traction devices. CDOT passenger guidance lists a $100 fine plus a $33 surcharge ($133 total) for noncompliance, with higher penalties ($500 fine plus a $156 surcharge = $656 total) when noncompliance causes a lane closure.",
           dccPracticalExplanation:
             "DCC's coordinate weather feed shows temperature and modeled snow depth, NOT active CDOT Code 15/16 status or safety closures. Before driving west of Golden, always check official CDOT COtrip alerts and physically inspect rental car tire sidewalls for the M+S or 3PMSF symbol and 3/16\" tread.",
           officialLinks: [
@@ -2587,7 +2587,13 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
               label: "CDOT Official Traction Law & Chain Law Requirements",
               url: "https://www.codot.gov/travel/winter-driving/tractionlaw",
               issuingOrganization: "Colorado Department of Transportation (CDOT)",
-              note: "Statutory tire tread, AWD/4WD, and penalty rules for I-70.",
+              note: "Statutory tire tread, AWD/4WD, and penalty rules for I-70 ($100 fine + $33 surcharge for passenger noncompliance; $500 + $156 surcharge if it causes a lane closure).",
+            },
+            {
+              label: "CDOT Eisenhower–Johnson Memorial Tunnel (EJMT) Traffic Metering",
+              url: "https://www.codot.gov/travel/ejmt/metering",
+              issuingOrganization: "Colorado Department of Transportation (CDOT)",
+              note: "CDOT metering stops traffic entering the affected tunnel to prevent backups inside the tunnel bore.",
             },
             {
               label: "COtrip Live I-70 Road Conditions & Cameras",
@@ -2684,11 +2690,11 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
           windowOrScope: "Westbound Fri 1:30–7:00 PM & Sat 5:30–10:00 AM • Eastbound Sun 1:30–7:30 PM",
           authorityType: "dcc_interpretation",
           factualBasis:
-            "All four lanes of mountain resort traffic funnel into two westbound and two eastbound lanes through the Eisenhower–Johnson Memorial Tunnel and Twin Tunnels at Idaho Springs. During peak demand or snow removal, CDOT meters traffic at tunnel portals.",
+            "All four lanes of mountain resort traffic funnel into two westbound and two eastbound lanes through the Eisenhower–Johnson Memorial Tunnel (EJMT) and Twin Tunnels at Idaho Springs. Per CDOT (https://www.codot.gov/travel/ejmt/metering), tunnel metering stops traffic entering the affected tunnel at the portal signals to prevent standing backups inside the tunnel bore—affecting all vehicles on I-70 equally.",
           dccInterpretation:
-            "Leaving Denver after 2:00 PM on Friday or leaving Breckenridge between 1:30 PM and 6:00 PM on Sunday routinely doubles travel time from 1h 45m to 3.5–4.5 hours. Either travel before 6:00 AM / after 7:00 PM on peak days, or book an evening dinner in Breckenridge/Idaho Springs on Sunday before heading east.",
-          officialUrl: "https://www.codot.gov/travel/i70mountain",
-          officialUrlLabel: "CDOT I-70 Mountain Corridor Travel Tips & Forecast",
+            "Leaving Denver after 2:00 PM on Friday or leaving Breckenridge between 1:30 PM and 6:00 PM on Sunday routinely extends I-70 highway travel time from 1h 45m–2h 15m in clear conditions to 3.5–4.5 hours for every vehicle on the road. Either travel before 6:00 AM / after 7:00 PM on peak days, or book an evening dinner in Breckenridge/Idaho Springs on Sunday before heading east.",
+          officialUrl: "https://www.codot.gov/travel/ejmt/metering",
+          officialUrlLabel: "CDOT Eisenhower–Johnson Memorial Tunnel (EJMT) Metering",
           citationIds: ["db-cdot-express-lanes"],
         },
         {
@@ -2879,7 +2885,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
     evidenceRegistry: [
       {
         id: "db-cdot-traction",
-        claimSummary: "Colorado Passenger Vehicle Traction Law (Code 15) mandatory Sept 1 – May 31 on I-70 (MP 133 Dotsero to MP 259 Morrison), 3/16-inch tread requirement, and Code 16 Chain Law rules.",
+        claimSummary: "Colorado Passenger Vehicle Traction Law (Code 15) mandatory Sept 1 – May 31 on I-70 (MP 133 Dotsero to MP 259 Morrison), 3/16-inch tread requirement, and CDOT passenger guidance ($100 fine plus $33 surcharge = $133 total for noncompliance; $500 fine plus $156 surcharge = $656 total when causing a lane closure).",
         sourceTitle: "CDOT — Passenger Vehicle Traction & Chain Laws",
         sourceUrl: "https://www.codot.gov/travel/winter-driving/tractionlaw",
         issuingOrganization: "Colorado Department of Transportation (CDOT)",
@@ -2893,9 +2899,9 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
       },
       {
         id: "db-cdot-express-lanes",
-        claimSummary: "I-70 Mountain Express Lanes operating rules, weekend congestion patterns, and Eisenhower–Johnson Memorial Tunnel metering.",
-        sourceTitle: "CDOT — I-70 Mountain Corridor Travel & Express Lanes",
-        sourceUrl: "https://www.codot.gov/travel/i70mountain",
+        claimSummary: "CDOT Eisenhower–Johnson Memorial Tunnel (EJMT) metering stops traffic entering the affected tunnel to prevent standing backups inside the tunnel bore, alongside I-70 Mountain Express Lanes and weekend congestion patterns.",
+        sourceTitle: "CDOT — Eisenhower–Johnson Memorial Tunnel (EJMT) Metering & I-70 Mountain Corridor",
+        sourceUrl: "https://www.codot.gov/travel/ejmt/metering",
         issuingOrganization: "Colorado Department of Transportation (CDOT)",
         authorityType: "official_rule",
         integrationStatus: "linked_official_resource",
@@ -2903,7 +2909,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "All motorists traveling between Denver and Summit County",
         publishedOrUpdatedDate: "2025-11-15",
         lastCheckedAt: "2026-10-23",
-        expectedSourceTerms: ["I-70", "Mountain Corridor", "Colorado"],
+        expectedSourceTerms: ["I-70", "metering", "tunnel"],
       },
       {
         id: "db-cdot-bustang",
@@ -4224,18 +4230,18 @@ export const TRANSPORT_MODE_COMPARISON_BY_ID: Record<
       });
       return `Fixed shared-van fare (~$59–$115 one-way from DEN) or flat private GoSno transfer (${breck.suvOneWayLabel} SUV / ${breck.vanOneWayLabel} van published; quoteOnly: true on /api/availability for vans).`;
     },
-    egressOrTransitTiming: "2 hr 00 min – 2 hr 30 min in clear flow (104 mi via I-70 & CO-9); allow 3.5–4.5 hrs before DEN flight departure in winter.",
+    egressOrTransitTiming: "Same verified I-70 road conditions for all vehicles on the road: 1 hr 45 min – 2 hr 15 min in clear flow; 3.0–4.5+ hrs during weekend peak waves or CDOT EJMT tunnel metering (which stops traffic entering the affected tunnel).",
     statutoryOrOperationalRule: "Commercial passenger carriers operate 4WD/AWD winter-equipped fleets compliant with CDOT Code 15/16 traction and chain mandates.",
   },
   "db-bustang-pegasus": {
     pricingModel: "CDOT Bustang West Line / Pegasus Express: ~$12–$22 one-way from Denver Union Station / Federal Center to Frisco.",
-    egressOrTransitTiming: "1 hr 45 min Union Station to Frisco Transfer Center + 25–30 min free Summit Stage connection to Breckenridge.",
+    egressOrTransitTiming: "Same verified I-70 road conditions (1 hr 45 min – 2 hr 15 min clear; 3.0–4.5+ hrs during weekend peak or CDOT EJMT tunnel metering) plus 37 min RTD A-Line transfer & 25–30 min free Summit Stage connection to Breckenridge.",
     statutoryOrOperationalRule: "Pegasus Express uses the I-70 Mountain Express Lane when open; requires pre-reserved seat and connects to free Summit Stage.",
   },
   "db-rental-car-driving": {
-    pricingModel: "Daily rental rate + fuel + I-70 Express Lane tolls + Breckenridge overnight town parking fees ($15–$45/night).",
-    egressOrTransitTiming: "1 hr 45 min clear; 3–5+ hrs during weekend ski peak or Eisenhower Tunnel / Vail Pass safety holds and traction checks.",
-    statutoryOrOperationalRule: "C.R.S. § 42-4-106 Passenger Vehicle Traction Law (Code 15) mandatory Sep 1–May 31 (I-70 Morrison to Dotsero): requires 4WD/AWD or 3PMSF/M+S tires with ≥3/16\" tread, or chains. Standard airport rentals often violate this statute.",
+    pricingModel: "Daily rental rate + fuel + I-70 Express Lane tolls + Breckenridge overnight town parking fees ($15–$45/night; Vail Village $40–$65+/night).",
+    egressOrTransitTiming: "Same verified I-70 road conditions (1 hr 45 min – 2 hr 15 min clear; 3.0–4.5+ hrs during weekend peak or CDOT EJMT tunnel metering) plus 45–90+ min DEN off-site rental shuttle and counter collection.",
+    statutoryOrOperationalRule: "C.R.S. § 42-4-106 Passenger Vehicle Traction Law (Code 15) mandatory Sep 1–May 31 (I-70 Morrison to Dotsero): requires 4WD/AWD or 3PMSF/M+S tires with ≥3/16\" tread, or chains. CDOT passenger guidance lists a $100 fine plus a $33 surcharge ($133 total) for noncompliance, or $500 plus a $156 surcharge ($656 total) when causing a lane closure.",
   },
   "db-summit-stage-free-ride": {
     pricingModel: "$0.00 (100% tax-funded free public transit across Summit County and Town of Breckenridge).",

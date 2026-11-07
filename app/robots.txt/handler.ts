@@ -16,6 +16,7 @@ const ALLOWED_HOSTS = new Set([
 
 const PUBLIC_CRAWL_RULES = [
   "Allow: /",
+  "Allow: /llms.txt",
   "Allow: /api/location/",
   "Allow: /api/v2/feeds/",
   "Disallow: /admin/",
@@ -48,11 +49,15 @@ export function buildRobotsTxt(host: string) {
 
   const groups = [crawlerGroup("*")];
 
-  if (isWno) {
+  if (isWno || isDcc || !host) {
     groups.push(crawlerGroup("OAI-SearchBot"));
+    groups.push(crawlerGroup("GPTBot"));
+    groups.push(crawlerGroup("ChatGPT-User"));
     groups.push(crawlerGroup("PerplexityBot"));
+    groups.push(crawlerGroup("Perplexity-User"));
     groups.push(crawlerGroup("Claude-SearchBot"));
     groups.push(crawlerGroup("Claude-User"));
+    groups.push(crawlerGroup("Googlebot"));
   }
 
   const sitemaps = [`Sitemap: ${sitemapUrl}`];

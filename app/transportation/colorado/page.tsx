@@ -14,6 +14,7 @@ import { getTransportEntriesByRegion } from "@/src/data/transport-directory";
 import { getPublicationManifestEntry } from "@/src/data/publication-manifest";
 import PartnerSharePlanningBar from "@/app/components/dcc/PartnerSharePlanningBar";
 import PortableTripNetworkBar from "@/app/components/dcc/PortableTripNetworkBar";
+import ColoradoFactComparisonTable from "@/app/components/dcc/ColoradoFactComparisonTable";
 
 export const dynamic = "force-dynamic";
 
@@ -110,7 +111,7 @@ export default async function ColoradoTransportationPage({
               </h2>
             </div>
             <span className="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3.5 py-1 text-xs font-bold text-emerald-200">
-              Sources Checked: 2026-11-03 (CDOT · GoSno · Epic · Bustang)
+              Sources Checked: 2026-11-06 (CDOT · GoSno · Epic · Bustang)
             </span>
           </div>
 
@@ -141,10 +142,10 @@ export default async function ColoradoTransportationPage({
             </article>
             <article className="rounded-2xl border border-white/10 bg-black/35 p-4 space-y-2">
               <p className="text-[11px] font-black uppercase tracking-wider text-rose-300">
-                4. Public Transit &amp; Statutory Traction Law
+                4. CDOT EJMT Metering &amp; Traction Fine ($100 + $33)
               </p>
               <p className="text-zinc-200 leading-6">
-                <strong>C.R.S. § 42-4-106 (Code 15)</strong> requires AWD/4WD or winter tires (&ge; 3/16&quot; tread) on I-70 (MP 133–259) Sept 1–May 31. Budget alternative: <strong>RTD A-Line ($10.50) + CDOT Bustang ($17)</strong>, plus <strong>100% free in-town Vail &amp; Breck buses</strong>.
+                <strong>CDOT tunnel metering stops traffic entering the affected tunnel</strong> for all vehicles on I-70. <strong>C.R.S. § 42-4-106 (Code 15)</strong> requires AWD/4WD or winter tires (&ge; 3/16&quot; tread) Sept 1–May 31: passenger noncompliance carries a <strong>$100 fine + $33 surcharge ($133 total)</strong>, or <strong>$500 + $156 surcharge ($656)</strong> if it causes a lane closure.
               </p>
             </article>
           </div>
@@ -194,6 +195,8 @@ export default async function ColoradoTransportationPage({
             </div>
           </div>
         </section>
+
+        <ColoradoFactComparisonTable />
 
         <PartnerSharePlanningBar
           market="colorado-mountain"

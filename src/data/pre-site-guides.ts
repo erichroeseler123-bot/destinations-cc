@@ -248,9 +248,9 @@ export const PRE_SITE_GUIDES: PreSiteGuide[] = [
     description: "Compare the real capacity, winter-driving, and pricing tradeoffs between private vans/SUVs, shared shuttles, rental cars, and public transit from Denver Airport to Vail.",
     get answer() {
       const vail = getGoSnoRouteSnapshotDisplayPricing({ routeId: "DEN-VAIL" });
-      return `Never conflate passenger seat count with winter ski-bag capacity. On the ~100-mile I-70 climb from Denver International Airport (DEN) to Vail over the 11,158-ft Eisenhower Tunnel and 10,662-ft Vail Pass, 7 people with ski/snowboard bags and winter suitcases physically cannot fit in a single standard private SUV (capped at 5–6 passengers max, or 4–5 with ski gear) or a single 7-seat minivan/midsize SUV. For 7 travelers with ski bags, compare four realistic choices: (1) a private passenger van (up to 10 passengers on GoSno, subject to luggage and ski-gear fit and availability; groups of 11+ are ineligible for a single GoSno van) that keeps all 7 people and ski bags together door-to-door (on GoSno, private SUVs up to 6 pax list at ${vail.suvOneWayLabel} DEN–Vail, while private vans up to 10 pax publish at ${vail.vanOneWayLabel} on gosno.co/vail and return quoteOnly: true on GoSno's live /api/availability endpoint); (2) a per-seat shared shuttle such as Epic Mountain Express (published DEN–Vail rates vary by travel date and peak/holiday periods from $59–$129/guest to Vail Transfer Center or $69–$139/guest door-to-door before 20% Epic Pass discount on non-blackout dates, allowing 2 baggage items including a ski/snowboard bag plus 1 small personal item per guest), which works best when flight arrivals are staggered; (3) two AWD/4WD rental SUVs with ski racks, which must comply with the Colorado Statutory Traction Law (C.R.S. § 42-4-106, Code 15, mandatory Sept 1–May 31 on I-70) while accounting for rental-contract chain prohibitions and $40–$65+/night per-vehicle Vail Village parking (where in-town Vail buses are free); or (4) public transit via the RTD A-Line ($10.50/person) to Denver Union Station plus CDOT Bustang West Line ($17/person) to Vail Transportation Center. Unknowns to confirm: travel date, flight arrival windows, exact count of ski bags + suitcases, child car-seat needs, and live vehicle/quote availability.`;
+      return `Never conflate passenger seat count with winter ski-bag capacity, and compare options on facts you can use: pickup wait, rental collection, parking, vehicle and gear fit, confirmed pricing, and availability. Where choices use the same road (I-70 over the 11,158-ft Eisenhower–Johnson Memorial Tunnel and 10,662-ft Vail Pass), they share the exact same road conditions: CDOT EJMT metering stops traffic entering the affected tunnel for all vehicles on that road (https://www.codot.gov/travel/ejmt/metering). For 7 travelers with ski bags, compare four realistic choices: (1) a private passenger van (up to 10 passengers on GoSno, subject to luggage and ski-gear fit and availability; groups of 11+ are ineligible for a single GoSno van) that keeps all 7 people and ski bags together door-to-door with zero rental shuttle or multi-stop delay (on GoSno, private SUVs up to 6 pax list at ${vail.suvOneWayLabel} DEN–Vail, while private vans up to 10 pax publish at ${vail.vanOneWayLabel} on gosno.co/vail and return quoteOnly: true on GoSno's live /api/availability endpoint); (2) a per-seat shared shuttle such as Epic Mountain Express (published DEN–Vail rates vary by travel date and peak/holiday periods from $59–$129/guest to Vail Transfer Center or $69–$139/guest door-to-door before 20% Epic Pass discount on non-blackout dates, allowing 2 baggage items including a ski/snowboard bag plus 1 small personal item per guest), which works best when flight arrivals are staggered; (3) two AWD/4WD rental SUVs with ski racks, which require a 45–90+ min DEN off-site rental shuttle/counter collection, $40–$65+/night per-vehicle Vail Village parking (where in-town Vail buses are free), and compliance with the Colorado Statutory Traction Law (C.R.S. § 42-4-106, Code 15, mandatory Sept 1–May 31 on I-70 — CDOT passenger guidance lists a $100 fine plus a $33 surcharge [$133 total] for noncompliance, rising to a $500 fine plus a $156 surcharge [$656 total] when a noncompliant vehicle causes a lane closure); or (4) public transit via the RTD A-Line ($10.50/person) to Denver Union Station plus CDOT Bustang West Line ($17/person) to Vail Transportation Center. Unknowns to confirm: travel date, flight arrival windows, exact count of ski bags + suitcases, child car-seat needs, and live vehicle/quote availability.`;
     },
-    verifiedAt: "2026-11-03",
+    verifiedAt: "2026-11-06",
     get assumptionsAndUnknowns() {
       const vail = getGoSnoRouteSnapshotDisplayPricing({ routeId: "DEN-VAIL" });
       return [
@@ -258,7 +258,7 @@ export const PRE_SITE_GUIDES: PreSiteGuide[] = [
         "Unknown: Travel date, DEN flight arrival time(s), and whether all 7 travelers land together — staggered arrivals across terminals/hours often favor per-seat shared shuttles over holding one private van, and shared shuttle fares vary by travel date and peak/holiday periods.",
         `Unknown: Live vehicle availability and van dispatch confirmation — GoSno lists private SUVs (up to 6 pax) at ${vail.suvOneWayLabel} and private vans (up to 10 pax, subject to luggage and ski-gear fit) at ${vail.vanOneWayLabel} on gosno.co/vail, while GoSno's /api/availability endpoint returns quoteOnly: true for van requests.`,
         "Unknown: Child car-seat/booster requirements (GoSno provides up to 1 booster + 1 forward-facing seat on request; rear-facing infant seats are not provided) and exact Vail lodging location (pedestrian Vail Village vs. outlying condo with parking).",
-        "Planning Assumption: Sept 1–May 31 travel on I-70 (MP 133 Dotsero to MP 259 Morrison) is subject to Colorado Statutory Traction Law (C.R.S. § 42-4-106 Code 15), and winter storms or tunnel metering can extend the 2h 00m–2h 30m baseline drive to 3.5+ hours.",
+        "Shared I-70 Road Conditions: Every option traveling I-70 West (private SUV/van, shared shuttle, rental car, or Bustang) shares the same highway flow (1h 45m–2h 15m in clear conditions; 3.0–4.5+ hrs during weekend peak waves or winter storms). CDOT EJMT metering stops traffic entering the affected tunnel (https://www.codot.gov/travel/ejmt/metering), and C.R.S. § 42-4-106 Code 15 passenger noncompliance carries a $100 fine plus a $33 surcharge ($133 total), rising to $500 plus a $156 surcharge ($656 total) if noncompliance causes a lane closure.",
       ];
     },
     get citations(): PreSiteGuideCitation[] {
@@ -269,7 +269,7 @@ export const PRE_SITE_GUIDES: PreSiteGuide[] = [
           label: "GoSno Private Mountain Transfer — DEN to Vail Vehicle Capacity & Quote-Only Van Rule",
           organization: "GoSno LLC (CO PUC LL-03577)",
           url: "https://gosno.co/vail",
-          checkedAt: "2026-11-03",
+          checkedAt: "2026-11-06",
           claimSupported: `GoSno operates 100% private SUVs (up to 6 passengers, ${vail.suvOneWayLabel} DEN–Vail) and private passenger vans (up to 10 passengers, subject to luggage and ski-gear fit; ${vail.vanOneWayLabel} published on gosno.co/vail while /api/availability marks vans quoteOnly: true; 11+ passengers are ineligible for a single GoSno van; never shared per-seat shuttles).`,
         },
         {
@@ -277,23 +277,31 @@ export const PRE_SITE_GUIDES: PreSiteGuide[] = [
           label: "Epic Mountain Express — Official Shuttle Service Rates & Bag Policy (DEN to Vail)",
           organization: "Epic Mountain Express",
           url: "https://www.epicmountainexpress.com/shuttle-rates",
-          checkedAt: "2026-11-02",
+          checkedAt: "2026-11-06",
           claimSupported: "Published DEN–Vail shared shuttle rates vary by travel date and peak/holiday periods from $59–$129/guest (Vail Transfer Center) to $69–$139/guest (door-to-door), or $55–$111 door-to-door with 20% Epic Mountain Rewards on non-blackout dates; each guest is allowed 2 baggage items (including a ski/snowboard bag) plus 1 small personal item.",
+        },
+        {
+          id: "col-cdot-ejmt-metering",
+          label: "CDOT — Eisenhower–Johnson Memorial Tunnel (EJMT) Traffic Metering",
+          organization: "Colorado Department of Transportation (CDOT)",
+          url: "https://www.codot.gov/travel/ejmt/metering",
+          checkedAt: "2026-11-06",
+          claimSupported: "CDOT tunnel metering stops traffic entering the affected tunnel at the portal signals to prevent slowdowns and standing backups inside the tunnel bore; all vehicles traveling I-70 share this highway condition.",
         },
         {
           id: "col-cdot-traction",
           label: "CDOT Passenger Vehicle Traction & Chain Laws (C.R.S. § 42-4-106)",
           organization: "Colorado Department of Transportation (CDOT)",
           url: "https://www.codot.gov/travel/winter-driving/tractionlaw",
-          checkedAt: "2026-10-23",
-          claimSupported: "From Sept 1 to May 31 on I-70 (MP 133 to MP 259), all passenger vehicles must have AWD/4WD or M+S/3PMSF winter tires with at least 3/16-inch tread depth.",
+          checkedAt: "2026-11-06",
+          claimSupported: "From Sept 1 to May 31 on I-70 (MP 133 to MP 259), all passenger vehicles must have AWD/4WD or M+S/3PMSF winter tires with at least 3/16-inch tread depth; CDOT passenger guidance lists a $100 fine plus a $33 surcharge ($133 total) for noncompliance, with higher penalties ($500 fine plus a $156 surcharge = $656 total) when noncompliance causes a lane closure.",
         },
         {
           id: "col-cdot-bustang",
           label: "CDOT Bustang West Line — Denver Union Station to Vail Transportation Center",
           organization: "Colorado Department of Transportation (CDOT)",
           url: "https://www.codot.gov/travel/bustang",
-          checkedAt: "2026-10-23",
+          checkedAt: "2026-11-06",
           claimSupported: "Public motorcoach service from Denver Union Station ($10.50 RTD A-Line from DEN) to Vail Transportation Center ($17 one-way) with under-coach ski/luggage bays.",
         },
       ];

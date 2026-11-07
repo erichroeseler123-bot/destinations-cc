@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import ApplicableRouteDecisionPanel from "@/app/components/dcc/ApplicableRouteDecisionPanel";
+import ColoradoFactComparisonTable from "@/app/components/dcc/ColoradoFactComparisonTable";
 import JsonLd from "@/app/components/dcc/JsonLd";
 import NextStepEngine from "@/app/components/dcc/NextStepEngine";
 import PublicMaterialChangeTimeline from "@/app/components/dcc/PublicMaterialChangeTimeline";
@@ -116,6 +117,8 @@ export default async function DenverToVailShuttleGuidePage() {
           }}
           basePartnerDestinationUrl={basePartnerDestinationUrl}
         />
+
+        <ColoradoFactComparisonTable />
 
         <section className="rounded-3xl border border-amber-400/25 bg-amber-500/[0.06] p-6">
           <p className="text-xs font-bold uppercase tracking-[0.22em] text-amber-300">

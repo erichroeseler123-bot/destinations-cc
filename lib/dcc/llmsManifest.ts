@@ -69,7 +69,10 @@ export function buildTravelReferenceNodeLlmsTxt(node: TravelReferenceNode): stri
 
   if (node.id === "juneau") {
     lines.push("");
-    lines.push("### Juneau Cruise Port-Day Buffer Math (Deterministic Rules)");
+    lines.push("### Juneau Cruise Port-Day Buffer Math & Low-Bandwidth Replan (Deterministic Rules)");
+    lines.push(
+      `- **Low-Bandwidth Replan Surface (Weak Wi-Fi / Dock Changes, <= 50 KB compressed target)**: ${ORIGIN}/juneau/replan and ${ORIGIN}/juneau?low_bw=1 — text-first replanning with ship arrival/all-aboard updates, offline last-saved plan snapshot, and direct continuation to Juneau Flight Deck via ${ORIGIN}/go/dcc-to-juneau-flight-deck.`,
+    );
     lines.push(
       "- **Docked Berths (CT, AS, FKL)**: Require **60–90 minute** return buffer before ship all-aboard time.",
     );
@@ -93,9 +96,12 @@ export function buildTravelReferenceNodeLlmsTxt(node: TravelReferenceNode): stri
     );
   } else if (node.id === "denver-breckenridge") {
     lines.push("");
-    lines.push("### I-70 Mountain Corridor Statutory Traction & Chain Math");
+    lines.push("### I-70 Mountain Corridor Statutory Traction, EJMT Metering & Shared Road Conditions");
     lines.push(
-      "- **Colorado Passenger Vehicle Traction Law (Code 15, C.R.S. § 42-4-106)**: Active annually **September 1 – May 31** on I-70 from Morrison (MP 259) to Dotsero (MP 133). Requires 4WD/AWD or 3PMSF/M+S tires with minimum **3/16-inch tread depth**, or chains/AutoSock.",
+      "- **CDOT Eisenhower–Johnson Memorial Tunnel (EJMT) Metering (https://www.codot.gov/travel/ejmt/metering)**: CDOT tunnel metering stops traffic entering the affected tunnel at portal signals to prevent standing backups inside the tunnel bore. All vehicles on I-70 share this exact road condition.",
+    );
+    lines.push(
+      "- **Colorado Passenger Vehicle Traction Law (Code 15, C.R.S. § 42-4-106)**: Active annually **September 1 – May 31** on I-70 from Morrison (MP 259) to Dotsero (MP 133). Requires 4WD/AWD or 3PMSF/M+S tires with minimum **3/16-inch tread depth**, or chains/AutoSock. CDOT passenger guidance lists a **$100 fine plus a $33 surcharge ($133 total)** for noncompliance, with higher penalties (**$500 fine plus a $156 surcharge = $656 total**) when noncompliance causes a lane closure.",
     );
     lines.push(
       "- **Passenger Vehicle Chain Law (Code 16)**: Requires chains or alternative traction devices on ALL vehicles during severe storm holds.",

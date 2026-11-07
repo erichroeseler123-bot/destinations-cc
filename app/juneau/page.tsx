@@ -67,20 +67,50 @@ function JsonLdGraph() {
   );
 }
 
-export default async function JuneauCommercialHubPage() {
+import JuneauLowBandwidthReplanView from "@/app/components/dcc/JuneauLowBandwidthReplanView";
+
+export default async function JuneauCommercialHubPage({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const sp = searchParams ? await searchParams : {};
+  const lowBwParam = Array.isArray(sp.low_bw) ? sp.low_bw[0] : sp.low_bw;
+  const modeParam = Array.isArray(sp.mode) ? sp.mode[0] : sp.mode;
+  const isTextFirstOnly =
+    lowBwParam === "1" || lowBwParam === "true" || modeParam === "replan";
+
+  if (isTextFirstOnly) {
+    return (
+      <main className="min-h-screen bg-[#041018] text-white">
+        <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
+          <JuneauLowBandwidthReplanView
+            searchParams={sp}
+            fullPageMode
+            actionPath="/juneau"
+          />
+        </div>
+      </main>
+    );
+  }
+
   const juneauReference = await getPublishedTravelReferenceNodeById("juneau");
 
   return (
     <main className="min-h-screen overflow-hidden bg-[#041018] text-white">
       <JsonLdGraph />
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
+        <JuneauLowBandwidthReplanView
+          searchParams={sp}
+          actionPath="/juneau"
+        />
         {juneauReference ? (
           <TravelReferenceExperience
             node={juneauReference}
+            initialSearchParams={sp}
           />
         ) : null}
       </div>
-
 
       <section className="mx-auto max-w-7xl px-6 pb-16">
         <div className="rounded-[1.8rem] border border-white/10 bg-black/[0.24] p-6">
