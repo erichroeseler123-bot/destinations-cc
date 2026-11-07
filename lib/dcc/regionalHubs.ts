@@ -168,7 +168,7 @@ const REGIONAL_HUB_CONFIGS: readonly RegionalHubConfig[] = [
     heroHeadline:
       "Louisiana Destination Hub — New Orleans Cultural Reference, Port NOLA Cruise Terminals & Barataria Swamp Decision Guides",
     heroSummary:
-      "Manifest-driven regional guidebook uniting New Orleans (/new-orleans), Port of New Orleans Erato/Julia cruise terminals, MSY statutory $36 flat-rate taxi rules, French Quarter coach restrictions, and Barataria swamp tour decision guides.",
+      "Manifest-driven regional guidebook uniting New Orleans (/new-orleans), Port of New Orleans Erato/Julia cruise terminals, MSY posted taxi fares ($36 total for 1–2 passengers and $15 per person for 3 or more, or $75 for 5 when one suitable cab can carry the group and its luggage west of Elysian Fields), French Quarter coach restrictions, and Barataria swamp tour decision guides.",
     referenceNodeIds: ["new-orleans"],
     citySlugsForVenues: ["new-orleans"],
     portSlugs: ["new-orleans"],

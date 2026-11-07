@@ -16,6 +16,8 @@ import {
   type JuneauPortDayScenarioInput,
   type JuneauWeatherInputState,
 } from "@/lib/dcc/juneauPortDayEngine";
+import { evaluateUnifiedJuneauTripRecheckSync } from "@/lib/dcc/sharedTripRecheck";
+import SharedTripRecheckCard from "@/app/components/dcc/SharedTripRecheckCard";
 
 interface JuneauPortDayPlannerProps {
   node?: TravelReferenceNode;
@@ -185,6 +187,21 @@ export default function JuneauPortDayPlanner({
   const tzRes = evaluation.timezoneResolution;
   const allReviewsUnavailable = evaluation.options.every(
     (o) => o.recentReviewSummary.state === "unavailable"
+  );
+  const unifiedRecheck = useMemo(
+    () =>
+      evaluateUnifiedJuneauTripRecheckSync({
+        date: norm.travelDate || "2027-07-15",
+        arrivalTime: norm.shipArrivalTime,
+        allAboardTime: norm.allAboardTime,
+        berth: norm.arrivalDock,
+        returnBufferMinutes: norm.returnBufferMinutes,
+        partySize: norm.partySize,
+        flightCanceled: norm.weatherCondition === "low_ceiling_rain_fog",
+        simulateNoaaTimeout:
+          norm.weatherCondition === "provider_telemetry_unavailable",
+      }),
+    [norm]
   );
 
   return (
@@ -600,6 +617,15 @@ export default function JuneauPortDayPlanner({
           </ul>
         </div>
       )}
+
+      {/* Shared Trip Recheck Card (What changed / What still fits / Next step) */}
+      <div className="mt-4">
+        <SharedTripRecheckCard
+          card={unifiedRecheck.recheckCard}
+          tides={unifiedRecheck.tides}
+          testId="dcc-juneau-full-planner-recheck-card"
+        />
+      </div>
 
       {/* 3. Concise Answer Banner (Clearly Labeled Example Scenario until Traveler Enters Date) */}
       <div className="mt-4 rounded-2xl border border-cyan-400/30 bg-cyan-950/30 p-4 md:p-5">

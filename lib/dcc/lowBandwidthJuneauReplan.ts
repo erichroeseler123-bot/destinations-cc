@@ -1,13 +1,15 @@
 import {
   CLAA_JUNEAU_PORT_SCHEDULE,
-  evaluateCruiseTimingWindow,
   type CruiseTimingEvaluationResult,
   type JuneauBerthCode,
 } from "@/lib/dcc/cruiseTimingGate";
+import type { JuneauBackupFlowContext } from "@/lib/dcc/dockRolloutContext";
 import {
-  evaluateJuneauBackupFlow,
-  type JuneauBackupFlowContext,
-} from "@/lib/dcc/dockRolloutContext";
+  evaluateUnifiedJuneauTripRecheckSync,
+  type CompactTripRecheckCardModel,
+  type JuneauTideTelemetryState,
+  type UnifiedJuneauOptionRecheck,
+} from "@/lib/dcc/sharedTripRecheck";
 
 export const LOW_BANDWIDTH_JUNEAU_COMPRESSED_TARGET_BYTES = 50 * 1024; // 50 KB compressed first-load target
 export const LOW_BANDWIDTH_JUNEAU_OFFLINE_STORAGE_KEY =
@@ -23,10 +25,13 @@ export interface LowBandwidthJuneauInput {
   flightCanceled: boolean;
   cancelRef: string | null;
   dccContextId: string | null;
+  operatorConfirmedTideLimitFt?: number | null;
+  simulateNoaaTimeout?: boolean;
 }
 
 export interface LowBandwidthJuneauOptionResult {
   optionId: string;
+  engineOptionId: string;
   title: string;
   categoryLabel: string;
   durationMinutes: number;
@@ -36,6 +41,10 @@ export interface LowBandwidthJuneauOptionResult {
   requiresClearCeiling: boolean;
   fitsNow: boolean;
   deprioritizedByFlightCancel: boolean;
+  remainingMinutesAfterBuffer: number;
+  operatingStatus: UnifiedJuneauOptionRecheck["operatingStatus"];
+  seatAvailability: UnifiedJuneauOptionRecheck["seatAvailability"];
+  tideGate: UnifiedJuneauOptionRecheck["tideGate"];
   timing: CruiseTimingEvaluationResult;
   flightDeckInterest:
     | "helicopter"
@@ -49,101 +58,20 @@ export interface LowBandwidthJuneauOptionResult {
 
 export interface LowBandwidthJuneauPlanEvaluation {
   checkedAtIso: string;
+  calculationEngine: "evaluateJuneauPortDayScenario";
   compressedTargetBytes: number;
   offlinePolicyNote: string;
   input: LowBandwidthJuneauInput;
   availablePortMinutes: number | null;
   timeWindowParam: string;
+  tides: JuneauTideTelemetryState;
+  recheckCard: CompactTripRecheckCardModel;
   backupFlow: JuneauBackupFlowContext;
   summaryHeadline: string;
   summaryDetail: string;
   primaryHandoffHref: string;
   primaryHandoffLabel: string;
   options: LowBandwidthJuneauOptionResult[];
-}
-
-const RAW_REPLAN_OPTIONS: Array<{
-  optionId: string;
-  title: string;
-  categoryLabel: string;
-  durationMinutes: number;
-  durationLabel: string;
-  priceFromLabel: string;
-  weatherResilienceLabel: string;
-  requiresClearCeiling: boolean;
-  flightDeckInterest:
-    | "helicopter"
-    | "dogsled"
-    | "whale-watching"
-    | "weather-backup"
-    | "compare-operators";
-}> = [
-  {
-    optionId: "whale-watching-auke-bay",
-    title: "Auke Bay Small-Group Whale Watching (Whale Deck)",
-    categoryLabel: "Marine Wildlife · Surface Vessel",
-    durationMinutes: 210,
-    durationLabel: "3.5 hrs dock-to-dock",
-    priceFromLabel: "From $189 / adult",
-    weatherResilienceLabel: "Operates under marine visibility when low ceilings ground aircraft",
-    requiresClearCeiling: false,
-    flightDeckInterest: "whale-watching",
-  },
-  {
-    optionId: "mendenhall-glacier-shuttle",
-    title: "Mendenhall Glacier Express Shuttle & Visitor Center",
-    categoryLabel: "Glacier Land Access · Surface Coach",
-    durationMinutes: 180,
-    durationLabel: "3.0 hrs dock-to-dock",
-    priceFromLabel: "From $80 / adult",
-    weatherResilienceLabel: "All-weather road access (3.0 hr minimum port window)",
-    requiresClearCeiling: false,
-    flightDeckInterest: "weather-backup",
-  },
-  {
-    optionId: "helicopter-glacier-walk",
-    title: "Icefield Helicopter Flight & Guided Glacier Walkabout",
-    categoryLabel: "Rotorcraft Part 135 · Glacier Landing",
-    durationMinutes: 195,
-    durationLabel: "3.25 hrs dock-to-dock",
-    priceFromLabel: "From $419 / person",
-    weatherResilienceLabel: "Requires FAA Part 135 VFR ceiling & visibility minimums at PAJN",
-    requiresClearCeiling: true,
-    flightDeckInterest: "helicopter",
-  },
-  {
-    optionId: "helicopter-dogsled",
-    title: "Helicopter Glacier Dogsled Camp Excursion",
-    categoryLabel: "Rotorcraft Part 135 · Upper Icefield Snow Camp",
-    durationMinutes: 240,
-    durationLabel: "4.0 hrs dock-to-dock",
-    priceFromLabel: "From $679 / person",
-    weatherResilienceLabel: "Highest ceiling sensitivity (upper snowfield camp)",
-    requiresClearCeiling: true,
-    flightDeckInterest: "dogsled",
-  },
-  {
-    optionId: "whale-mendenhall-combo",
-    title: "Whale Watching + Mendenhall Glacier Two-Activity Combo",
-    categoryLabel: "Surface Combo · Auke Bay + Mendenhall Valley",
-    durationMinutes: 330,
-    durationLabel: "5.5 hrs dock-to-dock",
-    priceFromLabel: "From $225 / adult",
-    weatherResilienceLabel: "All-weather surface combo; requires 90-min multi-leg return buffer",
-    requiresClearCeiling: false,
-    flightDeckInterest: "whale-watching",
-  },
-];
-
-function parseHhMmToMinutes(value: string | null | undefined): number | null {
-  if (!value || !/^\d{1,2}:\d{2}$/.test(value.trim())) return null;
-  const [hStr, mStr] = value.trim().split(":");
-  const h = Number(hStr);
-  const m = Number(mStr);
-  if (!Number.isFinite(h) || !Number.isFinite(m) || h < 0 || h > 23 || m < 0 || m > 59) {
-    return null;
-  }
-  return h * 60 + m;
 }
 
 function firstString(
@@ -257,6 +185,15 @@ export function parseLowBandwidthJuneauInput(
   const ctxRaw = (getParam("ctx") || getParam("dcc_ctx") || "").trim();
   const dccContextId = ctxRaw.length > 0 ? ctxRaw : null;
 
+  const rawTideLimit = getParam("tide_limit_ft") || getParam("operatorConfirmedTideLimitFt");
+  const operatorConfirmedTideLimitFt =
+    rawTideLimit !== undefined && rawTideLimit !== "" && Number.isFinite(Number(rawTideLimit))
+      ? Number(rawTideLimit)
+      : null;
+
+  const rawTimeout = (getParam("simulate_noaa_timeout") || "").trim().toLowerCase();
+  const simulateNoaaTimeout = rawTimeout === "1" || rawTimeout === "true";
+
   return {
     ship: matchedClaa ? matchedClaa.shipName : shipParam || "Custom Ship",
     date,
@@ -267,6 +204,8 @@ export function parseLowBandwidthJuneauInput(
     flightCanceled,
     cancelRef,
     dccContextId,
+    operatorConfirmedTideLimitFt,
+    simulateNoaaTimeout,
   };
 }
 
@@ -312,6 +251,10 @@ export function buildJuneauFlightDeckReplanHandoffUrl(params: {
   return `/go/dcc-to-juneau-flight-deck?${qs.toString()}`;
 }
 
+/**
+ * Evaluates the low-bandwidth Juneau replanner using the ONE unified calculation
+ * (`evaluateJuneauPortDayScenario` via `evaluateUnifiedJuneauTripRecheckSync`).
+ */
 export function evaluateLowBandwidthJuneauReplan(
   rawInput?:
     | Partial<LowBandwidthJuneauInput>
@@ -341,6 +284,12 @@ export function evaluateLowBandwidthJuneauReplan(
             (rawInput as Partial<LowBandwidthJuneauInput>).cancelRef ?? null,
           dccContextId:
             (rawInput as Partial<LowBandwidthJuneauInput>).dccContextId ?? null,
+          operatorConfirmedTideLimitFt:
+            (rawInput as Partial<LowBandwidthJuneauInput>)
+              .operatorConfirmedTideLimitFt ?? null,
+          simulateNoaaTimeout: Boolean(
+            (rawInput as Partial<LowBandwidthJuneauInput>).simulateNoaaTimeout,
+          ),
         }
       : parseLowBandwidthJuneauInput(
           rawInput as
@@ -349,97 +298,88 @@ export function evaluateLowBandwidthJuneauReplan(
             | undefined,
         );
 
-  const checkedAtIso = options?.checkedAtIso || new Date().toISOString();
-
-  const arrMins = parseHhMmToMinutes(input.arrivalTime);
-  const allAboardMins = parseHhMmToMinutes(input.allAboardTime);
-  const availablePortMinutes =
-    arrMins !== null && allAboardMins !== null && allAboardMins > arrMins
-      ? allAboardMins - arrMins
-      : null;
-
-  const timeWindowParam =
-    availablePortMinutes !== null
-      ? `${input.arrivalTime}-${input.allAboardTime} (${(
-          availablePortMinutes / 60
-        ).toFixed(1)}h)`
-      : `${input.arrivalTime}-unconfirmed`;
-
-  const backupFlow = evaluateJuneauBackupFlow({
-    travelerSelectedCanceled: input.flightCanceled,
-    operatorCancelRef: input.cancelRef,
+  const unified = evaluateUnifiedJuneauTripRecheckSync({
+    ship: input.ship,
+    date: input.date,
+    arrivalTime: input.arrivalTime,
+    allAboardTime: input.allAboardTime,
+    berth: input.berth,
+    partySize: input.partySize,
+    flightCanceled: input.flightCanceled,
+    cancelRef: input.cancelRef,
+    dccContextId: input.dccContextId,
+    operatorConfirmedTideLimitFt: input.operatorConfirmedTideLimitFt,
+    simulateNoaaTimeout: input.simulateNoaaTimeout,
+    checkedAtIso: options?.checkedAtIso,
   });
 
-  const evaluatedOptions: LowBandwidthJuneauOptionResult[] =
-    RAW_REPLAN_OPTIONS.map((rawOpt) => {
-      const timing = evaluateCruiseTimingWindow({
-        claaArrivalLocal: input.arrivalTime,
-        confirmedAllAboardLocal: input.allAboardTime || null,
-        berthCode: input.berth,
-        tourDurationMinutes: rawOpt.durationMinutes,
-      });
+  const evaluatedOptions: LowBandwidthJuneauOptionResult[] = unified.options.map(
+    (uOpt) => {
+      const statusMap: CruiseTimingEvaluationResult["status"] =
+        uOpt.timeFit.status === "confirm_ship_timing"
+          ? "CONFIRM_SHIP_TIMING"
+          : uOpt.timeFit.fitsTimeWindow
+            ? "FITS_CRUISE_WINDOW"
+            : "OUTSIDE_CRUISE_WINDOW";
 
-      const deprioritizedByFlightCancel =
-        input.flightCanceled && rawOpt.requiresClearCeiling;
-      const fitsNow =
-        timing.status === "FITS_CRUISE_WINDOW" && !deprioritizedByFlightCancel;
+      const durationMinutes =
+        uOpt.timeFit.checkInMinutes +
+        uOpt.timeFit.outboundTransferMinutes +
+        uOpt.timeFit.activityDurationMinutes +
+        uOpt.timeFit.interActivityTransferMinutes +
+        uOpt.timeFit.returnTransferMinutes;
 
-      const effectiveInterest =
-        input.flightCanceled && rawOpt.requiresClearCeiling
-          ? "weather-backup"
-          : rawOpt.flightDeckInterest;
-
-      const handoffHref = buildJuneauFlightDeckReplanHandoffUrl({
-        input,
-        interest: effectiveInterest,
-        optionId: rawOpt.optionId,
-        timeWindowParam,
-      });
-
-      const destPath =
-        effectiveInterest === "whale-watching"
-          ? "/juneau-whale-watching-tours"
-          : effectiveInterest === "dogsled"
-            ? "/juneau-dogsled-helicopter-tours"
-            : effectiveInterest === "weather-backup"
-              ? "/juneau/what-to-do-if-helicopter-tour-canceled"
-              : effectiveInterest === "compare-operators"
-                ? "/temsco-vs-coastal-vs-northstar-juneau"
-                : "/helicopter";
+      const timing: CruiseTimingEvaluationResult = {
+        status: statusMap,
+        statusBadgeLabel:
+          statusMap === "CONFIRM_SHIP_TIMING"
+            ? "Confirm ship timing"
+            : statusMap === "FITS_CRUISE_WINDOW"
+              ? "Fits cruise window"
+              : "Outside safe buffer",
+        dccBufferMinutes:
+          uOpt.timeFit.configuredReturnBufferMinutes === 60 ? 60 : 90,
+        earliestCheckInLocal: uOpt.timeFit.earliestShoreReadyLocal,
+        estimatedGangwayReturnLocal: uOpt.timeFit.estimatedBackAtDockLocal,
+        latestSafeGangwayReturnLocal: uOpt.timeFit.targetAllAboardBufferCutoffLocal,
+        confirmedAllAboardLocal: uOpt.timeFit.confirmedAllAboardLocal,
+        marginBeforeAllAboardMinutes:
+          uOpt.timeFit.confirmedAllAboardLocal !== null
+            ? uOpt.timeFit.remainingMinutesAfterBuffer +
+              uOpt.timeFit.configuredReturnBufferMinutes
+            : null,
+        reason: uOpt.timeFit.reasonSummary,
+        seatCountDisplay:
+          uOpt.seatAvailability.confirmedSeatsCount !== null
+            ? `${uOpt.seatAvailability.confirmedSeatsCount} seats confirmed by provider`
+            : null,
+      };
 
       return {
-        optionId: rawOpt.optionId,
-        title: rawOpt.title,
-        categoryLabel: rawOpt.categoryLabel,
-        durationMinutes: rawOpt.durationMinutes,
-        durationLabel: rawOpt.durationLabel,
-        priceFromLabel: rawOpt.priceFromLabel,
-        weatherResilienceLabel: rawOpt.weatherResilienceLabel,
-        requiresClearCeiling: rawOpt.requiresClearCeiling,
-        fitsNow,
-        deprioritizedByFlightCancel,
+        optionId: uOpt.legacyReplanId,
+        engineOptionId: uOpt.optionId,
+        title: uOpt.title,
+        categoryLabel: uOpt.categoryLabel,
+        durationMinutes,
+        durationLabel: `${(durationMinutes / 60).toFixed(1)} hrs dock-to-dock (${uOpt.timeFit.activityDurationMinutes}m activity + transfers/check-in)`,
+        priceFromLabel: uOpt.priceFromLabel,
+        weatherResilienceLabel: uOpt.weatherResilienceLabel,
+        requiresClearCeiling: uOpt.weatherCeilingSensitive,
+        fitsNow: uOpt.fitsOverallForSelection,
+        deprioritizedByFlightCancel:
+          uOpt.operatingStatus.status ===
+          "paused_traveler_or_operator_flight_canceled",
+        remainingMinutesAfterBuffer: uOpt.timeFit.remainingMinutesAfterBuffer,
+        operatingStatus: uOpt.operatingStatus,
+        seatAvailability: uOpt.seatAvailability,
+        tideGate: uOpt.tideGate,
         timing,
-        flightDeckInterest: effectiveInterest,
-        handoffHref,
-        directDestinationPreviewUrl: `https://juneauflightdeck.com${destPath}`,
+        flightDeckInterest: uOpt.flightDeckInterest,
+        handoffHref: uOpt.handoffHref,
+        directDestinationPreviewUrl: uOpt.directBookingOrQuoteUrl,
       };
-    });
-
-  // Sort so options that fit now and match flight-cancellation state come first
-  evaluatedOptions.sort((a, b) => {
-    const score = (opt: LowBandwidthJuneauOptionResult) => {
-      if (opt.fitsNow) return 3;
-      if (
-        opt.timing.status === "CONFIRM_SHIP_TIMING" &&
-        !opt.deprioritizedByFlightCancel
-      ) {
-        return 2;
-      }
-      if (opt.timing.status === "FITS_CRUISE_WINDOW") return 1;
-      return 0;
-    };
-    return score(b) - score(a);
-  });
+    },
+  );
 
   const fittingCount = evaluatedOptions.filter((o) => o.fitsNow).length;
   const needsTimingConfirm = evaluatedOptions.some(
@@ -457,47 +397,32 @@ export function evaluateLowBandwidthJuneauReplan(
   } else if (fittingCount > 0) {
     summaryHeadline = input.flightCanceled
       ? `${fittingCount} surface backup option${fittingCount === 1 ? "" : "s"} fit your ${input.arrivalTime}–${input.allAboardTime} window after flight cancellation`
-      : `${fittingCount} Juneau option${fittingCount === 1 ? "" : "s"} fit your ${input.arrivalTime}–${input.allAboardTime} ship window with full 60–90m buffer`;
+      : `${fittingCount} Juneau option${fittingCount === 1 ? "" : "s"} fit your ${input.arrivalTime}–${input.allAboardTime} ship window with full ${unified.input.configuredReturnBufferMinutes}m buffer`;
     summaryDetail = input.flightCanceled
       ? "Helicopter departures are paused for your canceled-flight pivot. Surface Auke Bay whale watching and Mendenhall shuttle options below clear your gangway buffer."
-      : `Evaluated for ${input.ship} at berth ${input.berth} for ${input.partySize} traveler${input.partySize === 1 ? "" : "s"}.`;
+      : `Evaluated via evaluateJuneauPortDayScenario for ${input.ship} at berth ${input.berth} on ${input.date} (${input.partySize} traveler${input.partySize === 1 ? "" : "s"}).`;
   } else {
-    summaryHeadline = `Tight port window (${input.arrivalTime}–${input.allAboardTime}) — standard guided blocks fall inside your 60–90m gangway buffer`;
+    summaryHeadline = `Tight port window (${input.arrivalTime}–${input.allAboardTime}) — standard guided blocks fall inside your ${unified.input.configuredReturnBufferMinutes}m gangway buffer`;
     summaryDetail =
-      "Standard 3.0–5.5h tours do not clear the mandatory return buffer. Walk downtown or check custom short-window recovery options on Juneau Flight Deck.";
+      "Standard valley/marine tours do not clear the mandatory return buffer. Walk downtown or check custom short-window recovery options on Juneau Flight Deck.";
   }
 
-  const topOption = evaluatedOptions[0];
-  const primaryInterest = input.flightCanceled
-    ? "weather-backup"
-    : topOption?.flightDeckInterest || "helicopter";
-
-  const primaryHandoffHref = buildJuneauFlightDeckReplanHandoffUrl({
-    input,
-    interest: primaryInterest,
-    optionId: topOption?.optionId,
-    timeWindowParam,
-  });
-
-  const primaryHandoffLabel = input.flightCanceled
-    ? "Continue to Juneau Flight Deck Weather Backup with Trip Details →"
-    : topOption?.flightDeckInterest === "whale-watching"
-      ? "Continue to Juneau Flight Deck Whale Deck with Trip Details →"
-      : "Continue to Juneau Flight Deck with Trip Details →";
-
   return {
-    checkedAtIso,
+    checkedAtIso: unified.evaluatedAt,
+    calculationEngine: "evaluateJuneauPortDayScenario",
     compressedTargetBytes: LOW_BANDWIDTH_JUNEAU_COMPRESSED_TARGET_BYTES,
     offlinePolicyNote:
       "Offline copy shows your last saved plan and when it was checked. Updated availability and booking require an active connection.",
     input,
-    availablePortMinutes,
-    timeWindowParam,
-    backupFlow,
+    availablePortMinutes: unified.availablePortMinutes,
+    timeWindowParam: unified.timeWindowParam,
+    tides: unified.tides,
+    recheckCard: unified.recheckCard,
+    backupFlow: unified.backupFlow,
     summaryHeadline,
     summaryDetail,
-    primaryHandoffHref,
-    primaryHandoffLabel,
+    primaryHandoffHref: unified.recheckCard.primaryNextActionHref,
+    primaryHandoffLabel: unified.recheckCard.primaryNextActionLabel,
     options: evaluatedOptions,
   };
 }

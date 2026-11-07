@@ -15,6 +15,9 @@ import { getPublicationManifestEntry } from "@/src/data/publication-manifest";
 import PartnerSharePlanningBar from "@/app/components/dcc/PartnerSharePlanningBar";
 import PortableTripNetworkBar from "@/app/components/dcc/PortableTripNetworkBar";
 import ColoradoFactComparisonTable from "@/app/components/dcc/ColoradoFactComparisonTable";
+import ColoradoSeasonalSpotlightCard from "@/app/components/dcc/ColoradoSeasonalSpotlightCard";
+import SharedTripRecheckCard from "@/app/components/dcc/SharedTripRecheckCard";
+import { evaluateDenArrivalTripRecheck } from "@/lib/dcc/sharedTripRecheck";
 
 export const dynamic = "force-dynamic";
 
@@ -67,6 +70,15 @@ export default async function ColoradoTransportationPage({
   const entries = getTransportEntriesByRegion("Colorado");
   const bySlug = new Map(entries.map((entry) => [entry.slug, entry]));
   const corridorRef = getTravelReferenceNodeById("denver-breckenridge");
+  const denRecheck = evaluateDenArrivalTripRecheck({
+    date: firstStr(sp.date) || "2026-12-19",
+    flightNumber: firstStr(sp.flight) || "UA 1482",
+    scheduledEtaLocal: firstStr(sp.scheduled_eta) || "13:30",
+    revisedEtaLocal: firstStr(sp.revised_eta) || "14:45",
+    destination: firstStr(sp.destination) || "Vail",
+    partySize: Number(firstStr(sp.party_size) || firstStr(sp.passengers)) || 4,
+    skiBags: Number(firstStr(sp.ski_bags)) || 2,
+  });
 
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
@@ -94,6 +106,19 @@ export default async function ColoradoTransportationPage({
           defaultPartySize={Number(firstStr(sp.party_size) || firstStr(sp.passengers)) || 4}
           defaultPickupHub={firstStr(sp.origin) || "DEN (Denver International Airport)"}
           defaultDestination={firstStr(sp.destination) || "Vail / Breckenridge"}
+        />
+
+        <ColoradoSeasonalSpotlightCard
+          initialDateOrMonth={firstStr(sp.date) || firstStr(sp.month) || null}
+          initialDestinationOrVenue={firstStr(sp.destination) || firstStr(sp.venue) || null}
+          initialPartySize={Number(firstStr(sp.party_size) || firstStr(sp.passengers)) || 4}
+          initialSkiBags={Number(firstStr(sp.ski_bags)) || 0}
+          initialTripIntent={firstStr(sp.intent) || "unspecified"}
+        />
+
+        <SharedTripRecheckCard
+          card={denRecheck.recheckCard}
+          testId="dcc-den-arrival-recheck-card"
         />
 
         <section

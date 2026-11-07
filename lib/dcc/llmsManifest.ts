@@ -113,7 +113,7 @@ export function buildTravelReferenceNodeLlmsTxt(node: TravelReferenceNode): stri
     lines.push("");
     lines.push("### New Orleans Statutory Transit & Excursion Rules");
     lines.push(
-      "- **MSY Airport Flat-Rate Taxi Ordinance (City Code Sec. 162-609)**: Mandatory **$36.00 flat fare** for 1–2 passengers from Louis Armstrong International Airport (MSY) to the French Quarter / CBD (west of Elysian Fields Ave), plus $15 per additional passenger.",
+      "- **MSY Airport Posted Taxi Fare (City Code Sec. 162-609 · https://flymsy.com/taxis-2/)**: From Louis Armstrong International Airport (MSY) to the CBD or French Quarter west of Elysian Fields Ave, the posted fare is **$36.00 total for 1 or 2 passengers** and **$15.00 per person for 3 or more passengers** ($45 for 3, $60 for 4, and **$75 for 5 passengers when one suitable cab can carry the group and its luggage**). Compare with a verified private van quote when available.",
     );
     lines.push(
       "- **Vieux Carré (French Quarter) Coach Restriction**: Motorcoaches exceeding **32 feet** are prohibited inside the historic French Quarter grid; swamp and plantation tour pickups stage at perimeter hotels or the Steamboat Natchez riverfront dock.",

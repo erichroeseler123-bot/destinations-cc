@@ -4,6 +4,10 @@ export type Coordinate = { lat: number; lng: number };
 
 export type TelemetryReadOptions = {
   minRevalidateSeconds?: number;
+  targetDate?: string;
+  coopsTimeZone?: "lst_ldt" | "gmt";
+  timeoutMs?: number;
+  simulateNoaaTimeout?: boolean;
 };
 
 export type UpstreamFetchMetrics = {

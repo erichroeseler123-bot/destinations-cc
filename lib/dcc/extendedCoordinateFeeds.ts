@@ -248,37 +248,124 @@ function stationDistance(origin: Coordinate, station: any) {
   return haversineKm(origin, { lat, lng });
 }
 
+function normalizeCoopsTargetDate(rawDate?: string): {
+  yyyymmdd: string;
+  isoDate: string;
+} | null {
+  if (!rawDate || typeof rawDate !== "string") return null;
+  const trimmed = rawDate.trim();
+  const isoMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(trimmed);
+  if (isoMatch) {
+    return {
+      yyyymmdd: `${isoMatch[1]}${isoMatch[2]}${isoMatch[3]}`,
+      isoDate: trimmed,
+    };
+  }
+  const compactMatch = /^(\d{4})(\d{2})(\d{2})$/.exec(trimmed);
+  if (compactMatch) {
+    return {
+      yyyymmdd: trimmed,
+      isoDate: `${compactMatch[1]}-${compactMatch[2]}-${compactMatch[3]}`,
+    };
+  }
+  return null;
+}
+
+const KNOWN_COOPS_FALLBACK_STATIONS = [
+  {
+    id: "9452210",
+    name: "Juneau",
+    state: "AK",
+    lat: 58.2983,
+    lng: -134.4117,
+    tidal: true,
+    portscode: "JNU",
+  },
+];
+
 export async function readCoops(coordinate: Coordinate, options?: TelemetryReadOptions) {
   return source("noaa-coops", "Tides, water levels and coastal stations: NOAA CO-OPS", async () => {
-    const payload: any = await readJson("https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations.json?type=waterlevels", resolveRevalidate(21600, options), 12000);
-    const stations = (payload?.stations || [])
+    if (options?.simulateNoaaTimeout) {
+      throw new Error("NOAA CO-OPS request timed out (simulated timeout)");
+    }
+
+    const timeoutMs = options?.timeoutMs ?? 12000;
+    const targetDateSpec = normalizeCoopsTargetDate(options?.targetDate);
+    const predictionTimeZone =
+      options?.coopsTimeZone ?? (targetDateSpec ? "lst_ldt" : "gmt");
+
+    const payload: any = await readJson(
+      "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations.json?type=waterlevels",
+      resolveRevalidate(21600, options),
+      timeoutMs,
+    ).catch(() => ({ stations: KNOWN_COOPS_FALLBACK_STATIONS }));
+
+    const rawStations =
+      Array.isArray(payload?.stations) && payload.stations.length > 0
+        ? payload.stations
+        : KNOWN_COOPS_FALLBACK_STATIONS;
+
+    const stations = rawStations
       .map((station: any) => ({ ...station, distanceKm: stationDistance(coordinate, station) }))
       .filter((station: any) => Number.isFinite(station.distanceKm) && station.distanceKm <= 125)
       .sort((a: any, b: any) => a.distanceKm - b.distanceKm)
       .slice(0, 3);
     if (!stations.length) throw new Error("no NOAA CO-OPS water-level stations within 125 km");
 
-    return Promise.all(stations.map(async (station: any) => {
-      const common = `station=${encodeURIComponent(station.id)}&time_zone=gmt&units=metric&format=json&application=DestinationCommandCenter`;
-      const observationUrl = `https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?date=latest&product=water_level&datum=MLLW&${common}`;
-      const predictionUrl = `https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?date=today&product=predictions&datum=MLLW&interval=hilo&${common}`;
-      const [observation, prediction] = await Promise.all([
-        readJson(observationUrl, resolveRevalidate(360, options)).catch(() => null),
-        station.tidal ? readJson(predictionUrl, resolveRevalidate(1800, options)).catch(() => null) : Promise.resolve(null),
-      ]);
-      return {
-        id: station.id,
-        name: station.name,
-        lat: Number(station.lat),
-        lng: Number(station.lng),
-        distanceKm: Math.round(station.distanceKm),
-        tidal: Boolean(station.tidal),
-        portscode: station.portscode || null,
-        observation: observation?.data?.[0] || null,
-        predictions: (prediction?.predictions || []).slice(0, 6),
-        pageUrl: `https://tidesandcurrents.noaa.gov/stationhome.html?id=${station.id}`,
-      };
-    }));
+    return Promise.all(
+      stations.map(async (station: any) => {
+        const obsCommon = `station=${encodeURIComponent(station.id)}&time_zone=gmt&units=metric&format=json&application=DestinationCommandCenter`;
+        const predCommon = `station=${encodeURIComponent(station.id)}&time_zone=${predictionTimeZone}&units=metric&format=json&application=DestinationCommandCenter`;
+        const observationUrl = `https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?date=latest&product=water_level&datum=MLLW&${obsCommon}`;
+        const predictionDateQuery = targetDateSpec
+          ? `begin_date=${targetDateSpec.yyyymmdd}&end_date=${targetDateSpec.yyyymmdd}`
+          : "date=today";
+        const predictionUrl = `https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?${predictionDateQuery}&product=predictions&datum=MLLW&interval=hilo&${predCommon}`;
+
+        const [observation, prediction] = await Promise.all([
+          readJson(observationUrl, resolveRevalidate(360, options), timeoutMs).catch(() => null),
+          station.tidal
+            ? readJson(predictionUrl, resolveRevalidate(1800, options), timeoutMs).catch(() => null)
+            : Promise.resolve(null),
+        ]);
+
+        const rawPreds: Array<{ t: string; v: string; type?: "H" | "L" | string }> = (
+          prediction?.predictions || []
+        ).slice(0, 6);
+
+        const highLowPredictions = rawPreds.map((row) => {
+          const heightM = Number(row.v);
+          const heightFt = Number.isFinite(heightM)
+            ? Number((heightM * 3.28084).toFixed(2))
+            : 0;
+          const tideType = row.type === "L" ? ("L" as const) : ("H" as const);
+          return {
+            time: String(row.t || ""),
+            heightM: Number.isFinite(heightM) ? Number(heightM.toFixed(2)) : 0,
+            heightFt,
+            type: tideType,
+            label: tideType === "H" ? ("High" as const) : ("Low" as const),
+          };
+        });
+
+        return {
+          id: String(station.id),
+          name: String(station.name),
+          datum: "MLLW" as const,
+          requestedDate: targetDateSpec ? targetDateSpec.isoDate : "today",
+          predictionTimeZone,
+          lat: Number(station.lat),
+          lng: Number(station.lng),
+          distanceKm: Math.round(station.distanceKm),
+          tidal: Boolean(station.tidal),
+          portscode: station.portscode || null,
+          observation: observation?.data?.[0] || null,
+          predictions: rawPreds,
+          highLowPredictions,
+          pageUrl: `https://tidesandcurrents.noaa.gov/stationhome.html?id=${station.id}`,
+        };
+      }),
+    );
   });
 }
 

@@ -8,6 +8,7 @@ import {
 import JuneauLowBandwidthOfflineBridge, {
   type OfflineJuneauPlanSnapshot,
 } from "@/app/components/dcc/JuneauLowBandwidthOfflineBridge";
+import SharedTripRecheckCard from "@/app/components/dcc/SharedTripRecheckCard";
 
 export default function JuneauLowBandwidthReplanView({
   searchParams,
@@ -50,6 +51,7 @@ export default function JuneauLowBandwidthReplanView({
     <section
       id="juneau-low-bandwidth-replan"
       data-testid="dcc-juneau-low-bandwidth-replan"
+      data-calculation-engine={plan.calculationEngine}
       data-compressed-budget-bytes={plan.compressedTargetBytes}
       className="rounded-2xl border border-cyan-400/40 bg-[#071521] p-4 sm:p-5 text-white space-y-4"
     >
@@ -196,6 +198,14 @@ export default function JuneauLowBandwidthReplanView({
           </button>
         </div>
       </form>
+
+      {/* Unified What Changed / What Still Fits / Next Step Card + NOAA Station 9452210 Tides */}
+      <SharedTripRecheckCard
+        card={plan.recheckCard}
+        tides={plan.tides}
+        compact
+        testId="dcc-juneau-replan-recheck-card"
+      />
 
       {/* Decision Verdict & Primary Juneau Flight Deck Handoff */}
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/15 bg-black/40 p-3.5">

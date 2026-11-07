@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import TravelReferenceExperience from "@/app/components/dcc/TravelReferenceExperience";
+import MsyTaxiFareScheduleCard from "@/app/components/dcc/MsyTaxiFareScheduleCard";
 import { getPublishedTravelReferenceNodeById } from "@/lib/dcc/travelReference";
 import visualStyles from "./components/newOrleansVisual.module.css";
 import NewOrleansRecommendationFlow from "./components/NewOrleansRecommendationFlow";
@@ -106,6 +107,7 @@ export default async function NewOrleansHomePage() {
             </Link>
           </div>
         </section>
+        <MsyTaxiFareScheduleCard />
       </div>
       <section className={visualStyles.homeHero}>
         <div className={visualStyles.homeHeroBackground} aria-hidden="true" />

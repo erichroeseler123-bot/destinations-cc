@@ -2,6 +2,8 @@ import React from "react";
 import Link from "next/link";
 import JsonLd from "@/app/components/dcc/JsonLd";
 import TransitComparisonTable from "@/app/components/dcc/TransitComparisonTable";
+import MsyTaxiFareScheduleCard from "@/app/components/dcc/MsyTaxiFareScheduleCard";
+import ColoradoSeasonalSpotlightCard from "@/app/components/dcc/ColoradoSeasonalSpotlightCard";
 import {
   buildBreadcrumbJsonLd,
   buildCollectionPageJsonLd,
@@ -170,6 +172,9 @@ export default function RegionalHubTemplate({
             </div>
           </div>
         </header>
+
+        {hub.slug === "louisiana" && <MsyTaxiFareScheduleCard />}
+        {hub.slug === "colorado" && <ColoradoSeasonalSpotlightCard />}
 
         {/* Section 1: Verified Reference Nodes & Side-by-Side Transit Comparisons */}
         {hub.referenceNodes.length > 0 && (

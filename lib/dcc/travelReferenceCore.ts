@@ -3091,7 +3091,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
       },
       {
         label: "MSY Official Taxi Rule",
-        value: "$36 flat rate (1–2 passengers) between MSY and Downtown / French Quarter ($15/person for 3+)",
+        value: "$36 total (1–2 passengers) or $15/person for 3+ ($45 for 3, $60 for 4, $75 for 5 when one suitable cab fits group & luggage) to CBD / French Quarter west of Elysian Fields",
         authorityType: "official_rule",
       },
       {
@@ -3131,13 +3131,13 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
           routeOrCoverage: "MSY North Terminal (Kenner) ↔ French Quarter / CBD / Cruise Terminals via I-10 East (11–14 miles, 20–35 min off-peak)",
           scheduleAndStatusIntegration: "live_integrated",
           whatWorksInPractice:
-            "City ordinance sets a mandatory flat taxi rate of $36 for 1–2 passengers ($15 per passenger for 3–5 passengers) from MSY Baggage Claim Door 7 to anywhere in the French Quarter, CBD, or Erato/Julia cruise terminals west of Elysian Fields. Rideshare (Uber/Lyft) picks up outside Level 1 Baggage Claim Doors 7–11.",
+            "From MSY to the CBD or French Quarter west of Elysian Fields, the posted taxi fare (https://flymsy.com/taxis-2/) is $36 total for 1 or 2 passengers and $15 per person for 3 or more passengers ($45 for 3, $60 for 4, and $75 for 5 when one suitable cab can carry the group and its luggage). Compare with a verified private van quote when available. Rideshare (Uber/Lyft) picks up outside Level 1 Baggage Claim Doors 7–11.",
           practicalConstraints: [
             "I-10 East bottlenecks heavily between Williams Blvd, Causeway Blvd, and the Claiborne/Poydras exits during weekday rush hours (7:30–9:00 AM, 4:00–6:30 PM) and on cruise embarkation mornings.",
             "Public transit option: RTA Airport Express Bus (Route E1 / 202) runs between MSY and the Downtown Walk-Up / Main Library hub for $1.25–$1.50, taking ~45 minutes.",
           ],
-          officialResourceUrl: "https://flymsy.com/ground-transportation/",
-          officialResourceLabel: "FlyMSY Official Ground Transportation & Flat Taxi Rates",
+          officialResourceUrl: "https://flymsy.com/taxis-2/",
+          officialResourceLabel: "FlyMSY Official Posted Taxi Rates (https://flymsy.com/taxis-2/)",
           citationIds: ["nola-msy-ground"],
         },
         {
@@ -3536,17 +3536,17 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
       },
       {
         id: "nola-msy-ground",
-        claimSummary: "City of New Orleans sets a regulated flat taxi fare of $36 for 1–2 passengers ($15/person for 3+) between MSY Airport and the French Quarter/CBD.",
-        sourceTitle: "Louis Armstrong New Orleans International Airport — Ground Transportation",
-        sourceUrl: "https://flymsy.com/ground-transportation/",
+        claimSummary: "From MSY to the CBD or French Quarter west of Elysian Fields, the posted taxi fare is $36 total for 1 or 2 passengers and $15 per person for 3 or more passengers ($45 for 3, $60 for 4, $75 for 5 when one suitable cab can carry the group and its luggage).",
+        sourceTitle: "Louis Armstrong New Orleans International Airport — Official Taxi Fares",
+        sourceUrl: "https://flymsy.com/taxis-2/",
         issuingOrganization: "New Orleans Aviation Board (NOAB) / City of New Orleans",
         authorityType: "official_rule",
         integrationStatus: "curated_verified",
-        geographicScope: "MSY Airport (Kenner) to New Orleans CBD, French Quarter, and Cruise Terminals",
+        geographicScope: "MSY Airport (Kenner) to New Orleans CBD, French Quarter (west of Elysian Fields), and Cruise Terminals",
         applicableTravelerContext: "Air travelers transferring between MSY and New Orleans hotels or cruise terminals",
         publishedOrUpdatedDate: "2026",
-        lastCheckedAt: "2026-10-24",
-        expectedSourceTerms: ["Ground Transportation", "Taxi", "Rideshare"],
+        lastCheckedAt: "2026-11-07",
+        expectedSourceTerms: ["Taxi", "36", "15", "Elysian Fields"],
       },
       {
         id: "nola-rta-transit",
@@ -4251,9 +4251,9 @@ export const TRANSPORT_MODE_COMPARISON_BY_ID: Record<
 
   // New Orleans
   "nola-mode-air-msy": {
-    pricingModel: "Statutory $36.00 flat taxi rate (1–2 pax to French Quarter/CBD, +$15/extra pax); RTA E2 bus $1.25; rideshare $34–$55+.",
+    pricingModel: "Posted MSY taxi fare (https://flymsy.com/taxis-2/): $36.00 total for 1–2 passengers and $15.00 per person for 3 or more passengers ($45 for 3, $60 for 4, $75 for 5 when one suitable cab can carry the group and its luggage) to the CBD or French Quarter west of Elysian Fields; compare with a verified private van quote when available. RTA E2 bus $1.25; rideshare $34–$55+.",
     egressOrTransitTiming: "20–30 min via I-10 East (11 mi); allow 45–60 min during Mardi Gras parade closures or Superdome event egress.",
-    statutoryOrOperationalRule: "New Orleans City Code Sec. 162-609 mandates $36 flat rate from MSY to Downtown/French Quarter (west of Elysian Fields) for 1–2 passengers and requires credit card acceptance.",
+    statutoryOrOperationalRule: "New Orleans City Code Sec. 162-609 & FlyMSY Official Taxi Schedule (https://flymsy.com/taxis-2/) set the posted fare from MSY to the CBD or French Quarter (west of Elysian Fields) at $36 total for 1 or 2 passengers and $15 per person for 3 or more passengers ($75 for 5 when one suitable cab can carry the group and its luggage), with mandatory credit card acceptance.",
   },
   "nola-mode-cruise-port": {
     pricingModel: "Terminal parking ~$25/day at Erato/Julia garages; short metered/zone taxi or pedicab from CBD/Warehouse District hotels.",
