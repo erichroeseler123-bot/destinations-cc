@@ -18,6 +18,7 @@ import {
 } from "@/lib/dcc/machine";
 import {
   evaluateDcc412ItineraryRecheck,
+  evaluateDelhiAgraRealTripRecheck,
   evaluateDenArrivalTripRecheck,
   evaluateRedRocksRideHomeRecheck,
   evaluateSyntheticDelhiAgraDcc412Test,
@@ -202,22 +203,43 @@ export async function POST(request: Request) {
             : typeof rawInputs.cutoff === "string"
               ? rawInputs.cutoff
               : undefined;
+      const resolvedServiceDate =
+        typeof rawInputs.serviceDate === "string"
+          ? rawInputs.serviceDate
+          : typeof rawInputs.date === "string"
+            ? rawInputs.date
+            : "2026-12-10";
+      const resolvedAbsoluteEta =
+        typeof rawInputs.absoluteEta === "string"
+          ? rawInputs.absoluteEta
+          : typeof rawInputs.eta === "string"
+            ? rawInputs.eta
+            : null;
+      const useRealTripMode =
+        rawInputs.realTrip === true ||
+        rawInputs.isExampleScenario === false ||
+        ((requestedEngineId === "delhi-to-agra" ||
+          requestedEngineId === "delhi-to-agra-recheck") &&
+          rawInputs.isExampleScenario !== true &&
+          rawInputs.exampleScenario !== true);
+
       const dcc412Result = customCandidates
         ? evaluateDcc412ItineraryRecheck({
             corridorId:
               typeof rawInputs.corridorId === "string"
                 ? rawInputs.corridorId
                 : "delhi-to-agra",
-            serviceDate:
-              typeof rawInputs.serviceDate === "string"
-                ? rawInputs.serviceDate
-                : typeof rawInputs.date === "string"
-                  ? rawInputs.date
-                  : "2026-11-18",
+            serviceDate: resolvedServiceDate,
             ianaTimeZone:
               typeof rawInputs.ianaTimeZone === "string"
                 ? rawInputs.ianaTimeZone
                 : "Asia/Kolkata",
+            isExampleScenario: Boolean(
+              rawInputs.isExampleScenario ?? rawInputs.exampleScenario ?? false,
+            ),
+            requireTravelerEtaForVerification: Boolean(
+              rawInputs.requireTravelerEtaForVerification ?? useRealTripMode,
+            ),
             scheduledArrivalLocal:
               typeof rawInputs.scheduledArrivalLocal === "string"
                 ? rawInputs.scheduledArrivalLocal
@@ -225,13 +247,8 @@ export async function POST(request: Request) {
             delayMinutes:
               typeof rawInputs.delayMinutes === "number"
                 ? rawInputs.delayMinutes
-                : 42,
-            absoluteEta:
-              typeof rawInputs.absoluteEta === "string"
-                ? rawInputs.absoluteEta
-                : typeof rawInputs.eta === "string"
-                  ? rawInputs.eta
-                  : null,
+                : 0,
+            absoluteEta: resolvedAbsoluteEta,
             transferBufferMinutes:
               typeof rawInputs.transferBufferMinutes === "number"
                 ? rawInputs.transferBufferMinutes
@@ -248,46 +265,63 @@ export async function POST(request: Request) {
                 : null,
             candidateDepartures: customCandidates,
           })
-        : evaluateSyntheticDelhiAgraDcc412Test({
-            serviceDate:
-              typeof rawInputs.serviceDate === "string"
-                ? rawInputs.serviceDate
-                : typeof rawInputs.date === "string"
-                  ? rawInputs.date
-                  : "2026-11-18",
-            scheduledArrivalLocal:
-              typeof rawInputs.scheduledArrivalLocal === "string"
-                ? rawInputs.scheduledArrivalLocal
-                : "09:50",
-            delayMinutes:
-              typeof rawInputs.delayMinutes === "number"
-                ? rawInputs.delayMinutes
-                : 42,
-            absoluteEta:
-              typeof rawInputs.absoluteEta === "string"
-                ? rawInputs.absoluteEta
-                : typeof rawInputs.eta === "string"
-                  ? rawInputs.eta
+        : useRealTripMode
+          ? evaluateDelhiAgraRealTripRecheck({
+              serviceDate: resolvedServiceDate,
+              scheduledArrivalLocal:
+                typeof rawInputs.scheduledArrivalLocal === "string"
+                  ? rawInputs.scheduledArrivalLocal
+                  : "09:50",
+              delayMinutes:
+                typeof rawInputs.delayMinutes === "number"
+                  ? rawInputs.delayMinutes
+                  : 0,
+              absoluteEta: resolvedAbsoluteEta,
+              transferBufferMinutes:
+                typeof rawInputs.transferBufferMinutes === "number"
+                  ? rawInputs.transferBufferMinutes
+                  : 15,
+              destinationCutoffLocal: requestedCutoff,
+              criticalUpdateMissing: Boolean(rawInputs.criticalUpdateMissing),
+              staleUpdate: Boolean(rawInputs.staleUpdate),
+              staleOrMissingUpdateCouldChangeAnswer: Boolean(
+                rawInputs.staleOrMissingUpdateCouldChangeAnswer,
+              ),
+              evaluatedAtUtc:
+                typeof rawInputs.evaluatedAtUtc === "string"
+                  ? rawInputs.evaluatedAtUtc
                   : null,
-            transferBufferMinutes:
-              typeof rawInputs.transferBufferMinutes === "number"
-                ? rawInputs.transferBufferMinutes
-                : 15,
-            destinationCutoffLocal: requestedCutoff,
-            criticalUpdateMissing: Boolean(rawInputs.criticalUpdateMissing),
-            staleUpdate: Boolean(rawInputs.staleUpdate),
-            staleOrMissingUpdateCouldChangeAnswer: Boolean(
-              rawInputs.staleOrMissingUpdateCouldChangeAnswer,
-            ),
-            evaluatedAtUtc:
-              typeof rawInputs.evaluatedAtUtc === "string"
-                ? rawInputs.evaluatedAtUtc
-                : null,
-            includeBackup1130:
-              typeof rawInputs.includeBackup1130 === "boolean"
-                ? rawInputs.includeBackup1130
-                : requestedCutoff !== "11:00" && requestedCutoff !== "11:30",
-          });
+            })
+          : evaluateSyntheticDelhiAgraDcc412Test({
+              serviceDate: resolvedServiceDate,
+              scheduledArrivalLocal:
+                typeof rawInputs.scheduledArrivalLocal === "string"
+                  ? rawInputs.scheduledArrivalLocal
+                  : "09:50",
+              delayMinutes:
+                typeof rawInputs.delayMinutes === "number"
+                  ? rawInputs.delayMinutes
+                  : 42,
+              absoluteEta: resolvedAbsoluteEta,
+              transferBufferMinutes:
+                typeof rawInputs.transferBufferMinutes === "number"
+                  ? rawInputs.transferBufferMinutes
+                  : 15,
+              destinationCutoffLocal: requestedCutoff,
+              criticalUpdateMissing: Boolean(rawInputs.criticalUpdateMissing),
+              staleUpdate: Boolean(rawInputs.staleUpdate),
+              staleOrMissingUpdateCouldChangeAnswer: Boolean(
+                rawInputs.staleOrMissingUpdateCouldChangeAnswer,
+              ),
+              evaluatedAtUtc:
+                typeof rawInputs.evaluatedAtUtc === "string"
+                  ? rawInputs.evaluatedAtUtc
+                  : null,
+              includeBackup1130:
+                typeof rawInputs.includeBackup1130 === "boolean"
+                  ? rawInputs.includeBackup1130
+                  : requestedCutoff !== "11:00" && requestedCutoff !== "11:30",
+            });
       sharedTripRecheck = dcc412Result;
       receiptLegProvenance = dcc412Result.legProvenance;
     } else if (

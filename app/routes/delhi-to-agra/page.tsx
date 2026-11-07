@@ -32,11 +32,11 @@ function firstStr(val: string | string[] | undefined, fallback: string): string 
 export default async function DelhiToAgraPage({ searchParams }: PageProps = {}) {
   const resolved = searchParams ? await searchParams : {};
   const date = firstStr(resolved.date, "2026-12-10");
-  const rawDelayStr = firstStr(resolved.delay, "42");
+  const rawDelayStr = firstStr(resolved.delay, "0");
   const parsedDelay = Number.parseInt(rawDelayStr, 10);
   const trainDelayMinutes = Number.isFinite(parsedDelay)
     ? Math.max(0, parsedDelay)
-    : 42;
+    : 0;
   const scheduledArrivalLocal = firstStr(
     resolved.scheduled_arrival || resolved.arrival,
     "09:50",
@@ -58,6 +58,9 @@ export default async function DelhiToAgraPage({ searchParams }: PageProps = {}) 
     Number.parseInt(firstStr(resolved.passengers, "2"), 10) || 2,
   );
 
+  // Real-trip evaluation:
+  // - For a traveler who hasn't entered an ETA (`!travelerEtaParam`), shows `Needs verification`.
+  // - Keeps sample onward departures (`10:30` and `11:00` Agra Cantt cohorts) OUT of the real-trip result until verified.
   const recheck = evaluateDelhiAgraCorridorRecheck({
     date,
     trainDelayMinutes,
@@ -68,8 +71,28 @@ export default async function DelhiToAgraPage({ searchParams }: PageProps = {}) 
     criticalUpdateMissing,
     staleUpdate,
     partySize,
+    isExampleScenario: false,
   });
   const dcc412 = recheck.dcc412Recheck;
+
+  // Labeled December 10, 2026 Example Scenario (explicitly labeled as Example)
+  const exampleDelayMinutes =
+    resolved.delay !== undefined ? trainDelayMinutes : 42;
+  const exampleCutoffLocal =
+    resolved.cutoff !== undefined ? destinationCutoffLocal : "11:00";
+  const exampleRecheck = evaluateDelhiAgraCorridorRecheck({
+    date,
+    trainDelayMinutes: exampleDelayMinutes,
+    scheduledArrivalLocal,
+    absoluteEta: travelerEtaParam || null,
+    destinationCutoffLocal: exampleCutoffLocal,
+    transferBufferMinutes,
+    criticalUpdateMissing,
+    staleUpdate,
+    partySize,
+    isExampleScenario: true,
+  }).dcc412Recheck;
+
   const reviewDeskRows =
     getReviewDeskItemsForInternationalCorridor("india-delhi-agra");
 
@@ -107,11 +130,10 @@ export default async function DelhiToAgraPage({ searchParams }: PageProps = {}) 
             <strong>{dcc412.places.delhiRailStation.name}</strong>,{" "}
             <strong>{dcc412.places.agraCantt.name}</strong>, and{" "}
             <strong>{dcc412.places.tajEntryGate.name}</strong>), resolves local
-            times in <code>Asia/Kolkata</code> to UTC ISO-8601 timestamps, adds
-            the station exit buffer <strong>once</strong> to compute{" "}
-            <code>travelerReadyAt</code>, and checks onward departures (`10:30`
-            and `11:00` a.m. + `25m` to gate) against the Taj entry gate cutoff.
-            While official CRIS/NTES machine feed access is pending, use the{" "}
+            times in <code>Asia/Kolkata</code> to UTC ISO-8601 timestamps, and
+            adds the station exit buffer <strong>once</strong> to compute{" "}
+            <code>travelerReadyAt</code>. While official CRIS/NTES machine feed
+            access is pending, use the{" "}
             <a
               href={OFFICIAL_NTES_LIVE_TRAIN_LOOKUP.officialMobileAndWebUrl}
               target="_blank"
@@ -120,9 +142,11 @@ export default async function DelhiToAgraPage({ searchParams }: PageProps = {}) 
             >
               Official NTES Lookup ↗
             </a>{" "}
-            and enter your revised ETA below. Commercial transfer checkout is
-            enabled only once the operator, price, and booking link are verified
-            in the{" "}
+            and enter your revised ETA below. For a traveler who hasn’t entered
+            an ETA, the real-trip baseline shows{" "}
+            <strong>Needs verification</strong>, and sample onward departures are
+            kept out of the real-trip result until those onward transfer services
+            are verified in the{" "}
             <a href="#review-desk" className="text-cyan-300 underline">
               DCC Review Desk
             </a>
@@ -176,8 +200,10 @@ export default async function DelhiToAgraPage({ searchParams }: PageProps = {}) 
                 Live CRIS/NTES API feed access is currently pending approval (
                 <code>status: pending_approved_machine_access</code>). Check your
                 train’s live running status on the official Indian Railways NTES
-                portal, then enter your <strong>Traveler-Entered Revised ETA (IST)</strong>{" "}
-                or delay minutes to recheck your Agra Cantt connection and Taj entry gate cutoff:
+                portal, then enter your{" "}
+                <strong>Traveler-Entered Revised ETA (IST)</strong> below. If you
+                have not entered an ETA yet, the schedule baseline displays{" "}
+                <strong>Needs verification</strong>.
               </p>
             </div>
             <div className="flex flex-wrap gap-2 text-xs">
@@ -238,7 +264,7 @@ export default async function DelhiToAgraPage({ searchParams }: PageProps = {}) 
               <input
                 type="text"
                 name="eta"
-                placeholder="e.g. 10:32 (optional)"
+                placeholder="Required to verify ETA (e.g. 10:32)"
                 defaultValue={travelerEtaParam}
                 aria-label="Traveler-Entered Revised ETA (IST — while official CRIS/NTES machine feed access is pending)"
                 className="w-full rounded-lg border border-cyan-400/40 bg-slate-950 px-2.5 py-1.5 font-mono text-white"
@@ -275,18 +301,18 @@ export default async function DelhiToAgraPage({ searchParams }: PageProps = {}) 
           </form>
         </section>
 
-        {/* DCC-412 Readiness & Connection Recheck Panel */}
+        {/* 1. REAL-TRIP RECHECK RESULT (No Sample Onward Departures; Needs Verification When Traveler Has Not Entered ETA) */}
         <section
           id="connection-recheck"
-          aria-label="DCC-412 Delhi to Agra Readiness and Connection Recheck"
-          data-testid="delhi-agra-dcc412-panel"
+          aria-label="Real-Trip Delhi to Agra Readiness Recheck Result"
+          data-testid="delhi-agra-real-trip-panel"
           className="rounded-2xl border border-cyan-400/35 bg-cyan-950/20 p-6 space-y-4"
         >
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs font-bold uppercase tracking-wider text-cyan-300">
-                  DCC-412 Multi-Leg Readiness &amp; Cutoff Recheck (sharedTripRecheck)
+                  Real-Trip Recheck Result (DCC-412 inside sharedTripRecheck)
                 </span>
                 <span
                   data-testid="dcc412-schedule-baseline-badge"
@@ -299,24 +325,29 @@ export default async function DelhiToAgraPage({ searchParams }: PageProps = {}) 
                   Schedule Baseline: {dcc412.scheduleBaselineStatus}
                 </span>
                 <span
-                  data-testid="dcc412-cutoff-verdict-badge"
-                  className={`rounded-full border px-2.5 py-0.5 text-[11px] font-bold ${
-                    dcc412.fitsDestinationCutoff
-                      ? "border-emerald-400/40 bg-emerald-500/20 text-emerald-200"
-                      : "border-rose-400/40 bg-rose-500/20 text-rose-200"
-                  }`}
+                  data-testid="dcc412-real-trip-onward-gate-badge"
+                  className="rounded-full border border-amber-400/40 bg-amber-500/20 px-2.5 py-0.5 text-[11px] font-bold text-amber-200"
                 >
-                  Gate Arrival {dcc412.gateArrivalLocal || "—"} vs. Cutoff{" "}
-                  {dcc412.destinationCutoffLocal || "16:30"}:{" "}
-                  {dcc412.cutoffVerdictLabel}
+                  Onward Services: Sample Departures Excluded Until Verified (
+                  {dcc412.candidates.length} verified onward departures)
                 </span>
               </div>
               <p className="mt-1 text-xs text-zinc-300">
+                {!dcc412.travelerEtaEntered ? (
+                  <>
+                    <strong>No Traveler-Entered ETA provided:</strong> Showing
+                    schedule baseline as <strong>Needs verification</strong>{" "}
+                    while official CRIS/NTES machine feed access is pending.{" "}
+                  </>
+                ) : (
+                  <>
+                    <strong>Traveler-Entered ETA active:</strong>{" "}
+                  </>
+                )}
                 Scheduled arrival{" "}
                 <strong>{dcc412.scheduledArrivalLocal} local</strong> (
                 <code>{dcc412.scheduledArrivalUtc}</code>) +{" "}
-                <strong>{dcc412.delayMinutesApplied} min delay</strong> (
-                <code>etaResolutionMode={dcc412.etaResolutionMode}</code>) →
+                <strong>{dcc412.delayMinutesApplied} min delay</strong> →
                 effective arrival{" "}
                 <strong>{dcc412.effectiveArrivalLocal} local</strong> (
                 <code>{dcc412.effectiveArrivalUtcShort}</code>) +{" "}
@@ -338,83 +369,21 @@ export default async function DelhiToAgraPage({ searchParams }: PageProps = {}) 
                 <code data-testid="dcc412-traveler-ready-utc">
                   {dcc412.travelerReadyAt.utcIso}
                 </code>
-                ). Next service:{" "}
-                <strong>
-                  {dcc412.nextServiceAfterReady?.departureLocal || "—"}
-                </strong>{" "}
-                → reaches{" "}
-                <strong>{dcc412.places.tajEntryGate.name}</strong> at{" "}
-                <strong data-testid="dcc412-gate-arrival-local">
-                  {dcc412.gateArrivalLocal || "—"}
-                </strong>{" "}
-                (
-                <strong data-testid="dcc412-cutoff-verdict-text">
-                  {dcc412.cutoffVerdictLabel}
-                </strong>
                 ).
               </p>
             </div>
-            <div className="flex flex-wrap gap-1.5 text-xs">
-              <Link
-                href="/routes/delhi-to-agra?date=2026-12-10&scheduled_arrival=09:50&delay=0&exit_buffer=15&cutoff=11:00"
-                className={`rounded-lg border px-2.5 py-1 ${
-                  date === "2026-12-10" &&
-                  dcc412.delayMinutesApplied === 0 &&
-                  destinationCutoffLocal === "11:00"
-                    ? "border-emerald-300 bg-emerald-500/20 text-white font-bold"
-                    : "border-white/15 bg-slate-900 text-zinc-300"
-                }`}
-              >
-                Dec 10 Case 1: On Time + 11:00 Cutoff (Fits by 5m)
-              </Link>
-              <Link
-                href="/routes/delhi-to-agra?date=2026-12-10&scheduled_arrival=09:50&delay=42&exit_buffer=15&cutoff=11:00"
-                className={`rounded-lg border px-2.5 py-1 ${
-                  date === "2026-12-10" &&
-                  dcc412.delayMinutesApplied === 42 &&
-                  destinationCutoffLocal === "11:00"
-                    ? "border-rose-300 bg-rose-500/20 text-white font-bold"
-                    : "border-white/15 bg-slate-900 text-zinc-300"
-                }`}
-              >
-                Dec 10 Case 2: +42m Delay + 11:00 Cutoff (Misses by 25m)
-              </Link>
-              <Link
-                href="/routes/delhi-to-agra?date=2026-12-10&scheduled_arrival=09:50&delay=42&exit_buffer=15&cutoff=11:30"
-                className={`rounded-lg border px-2.5 py-1 ${
-                  date === "2026-12-10" &&
-                  dcc412.delayMinutesApplied === 42 &&
-                  destinationCutoffLocal === "11:30"
-                    ? "border-cyan-300 bg-cyan-500/20 text-white font-bold"
-                    : "border-white/15 bg-slate-900 text-zinc-300"
-                }`}
-              >
-                Dec 10 Case 3: +42m Delay + 11:30 Cutoff (Fits by 5m)
-              </Link>
-              <Link
-                href="/routes/delhi-to-agra?date=2026-12-10&scheduled_arrival=09:50&eta=10:32&exit_buffer=15&cutoff=11:00"
-                className={`rounded-lg border px-2.5 py-1 ${
-                  Boolean(travelerEtaParam)
-                    ? "border-cyan-300 bg-cyan-500/20 text-white font-bold"
-                    : "border-white/15 bg-slate-900 text-zinc-300"
-                }`}
-              >
-                Traveler ETA 10:32 (= +42m Delay)
-              </Link>
-              <Link
-                href="/routes/delhi-to-agra?date=2026-12-10&scheduled_arrival=09:50&delay=42&exit_buffer=15&cutoff=11:30&missing_update=1"
-                className={`rounded-lg border px-2.5 py-1 ${
-                  criticalUpdateMissing || staleUpdate
-                    ? "border-amber-300 bg-amber-500/20 text-white font-bold"
-                    : "border-white/15 bg-slate-900 text-zinc-300"
-                }`}
-              >
-                Missing/Stale Update (Needs Verification)
-              </Link>
-            </div>
           </div>
 
-          {/* Compact What Changed / What Still Fits / Next Step */}
+          <div
+            data-testid="real-trip-sample-departures-excluded-notice"
+            className="rounded-xl border border-amber-400/35 bg-amber-500/10 p-3.5 text-xs text-amber-100"
+          >
+            <strong>Real-Trip Onward Services Gate:</strong>{" "}
+            {dcc412.onwardServicesVerificationNote ||
+              "Sample onward departures (10:30 and 11:00 Agra Cantt feeder cohorts) are kept out of the real-trip result until those onward transfer services are verified in the Review Desk."}
+          </div>
+
+          {/* Compact What Changed / What Still Fits / Next Step (Real-Trip Result) */}
           <div className="grid gap-3 md:grid-cols-3 text-xs">
             <div className="rounded-xl border border-white/10 bg-slate-950/75 p-3.5">
               <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
@@ -437,13 +406,128 @@ export default async function DelhiToAgraPage({ searchParams }: PageProps = {}) 
               <p className="mt-1 text-zinc-100">{recheck.recheckCard.nextStep}</p>
             </div>
           </div>
+        </section>
 
-          {/* Candidate Connections Table */}
+        {/* 2. LABELED EXAMPLE SCENARIO: Example — December 10, 2026 Scenario */}
+        <section
+          id="december-10-example-scenario"
+          aria-label="Example — December 10, 2026 Scenario"
+          data-testid="delhi-agra-dcc412-panel"
+          className="rounded-2xl border border-white/15 bg-slate-900/75 p-6 space-y-4"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <span
+                  data-testid="december-10-example-scenario-badge"
+                  className="rounded-full border border-amber-400/50 bg-amber-500/20 px-2.5 py-0.5 text-[11px] font-bold uppercase text-amber-200"
+                >
+                  {exampleRecheck.scenarioLabel}
+                </span>
+                <span
+                  data-testid="dcc412-cutoff-verdict-badge"
+                  className={`rounded-full border px-2.5 py-0.5 text-[11px] font-bold ${
+                    exampleRecheck.fitsDestinationCutoff
+                      ? "border-emerald-400/40 bg-emerald-500/20 text-emerald-200"
+                      : "border-rose-400/40 bg-rose-500/20 text-rose-200"
+                  }`}
+                >
+                  Example Gate Arrival {exampleRecheck.gateArrivalLocal || "—"} vs.
+                  Cutoff {exampleRecheck.destinationCutoffLocal || "11:00"}:{" "}
+                  {exampleRecheck.cutoffVerdictLabel}
+                </span>
+              </div>
+              <p className="mt-1 text-xs text-zinc-300">
+                <strong>Example Scenario Only:</strong> Illustrates how{" "}
+                <code>DCC-412</code> evaluates the December 10, 2026 (
+                <code>2026-12-10</code>) synthetic fixture in{" "}
+                <code>Asia/Kolkata</code> with sample onward departures at{" "}
+                <code>10:30</code> and <code>11:00</code> a.m. (+25m to Taj entry
+                gate). In this example: scheduled arrival{" "}
+                <strong>{exampleRecheck.scheduledArrivalLocal} local</strong> +{" "}
+                <strong>{exampleRecheck.delayMinutesApplied} min delay</strong> +{" "}
+                <strong>
+                  {exampleRecheck.transferBufferMinutes} min station exit buffer
+                </strong>{" "}
+                ={" "}
+                <strong className="text-cyan-200">
+                  travelerReadyAt {exampleRecheck.travelerReadyAt.formattedSummary}
+                </strong>{" "}
+                (<code>{exampleRecheck.travelerReadyAt.utcIso}</code>). Next
+                example service:{" "}
+                <strong>
+                  {exampleRecheck.nextServiceAfterReady?.departureLocal || "—"}
+                </strong>{" "}
+                → reaches{" "}
+                <strong>{exampleRecheck.places.tajEntryGate.name}</strong> at{" "}
+                <strong data-testid="dcc412-gate-arrival-local">
+                  {exampleRecheck.gateArrivalLocal || "—"}
+                </strong>{" "}
+                (
+                <strong data-testid="dcc412-cutoff-verdict-text">
+                  {exampleRecheck.cutoffVerdictLabel}
+                </strong>
+                ).
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-1.5 text-xs">
+              <Link
+                href="/routes/delhi-to-agra?date=2026-12-10&scheduled_arrival=09:50&delay=0&exit_buffer=15&cutoff=11:00#december-10-example-scenario"
+                className={`rounded-lg border px-2.5 py-1 ${
+                  date === "2026-12-10" &&
+                  exampleRecheck.delayMinutesApplied === 0 &&
+                  exampleCutoffLocal === "11:00"
+                    ? "border-emerald-300 bg-emerald-500/20 text-white font-bold"
+                    : "border-white/15 bg-slate-900 text-zinc-300"
+                }`}
+              >
+                Example Dec 10 Case 1: On Time + 11:00 Cutoff (Fits by 5m)
+              </Link>
+              <Link
+                href="/routes/delhi-to-agra?date=2026-12-10&scheduled_arrival=09:50&delay=42&exit_buffer=15&cutoff=11:00#december-10-example-scenario"
+                className={`rounded-lg border px-2.5 py-1 ${
+                  date === "2026-12-10" &&
+                  exampleRecheck.delayMinutesApplied === 42 &&
+                  exampleCutoffLocal === "11:00"
+                    ? "border-rose-300 bg-rose-500/20 text-white font-bold"
+                    : "border-white/15 bg-slate-900 text-zinc-300"
+                }`}
+              >
+                Example Dec 10 Case 2: +42m Delay + 11:00 Cutoff (Misses by 25m)
+              </Link>
+              <Link
+                href="/routes/delhi-to-agra?date=2026-12-10&scheduled_arrival=09:50&delay=42&exit_buffer=15&cutoff=11:30#december-10-example-scenario"
+                className={`rounded-lg border px-2.5 py-1 ${
+                  date === "2026-12-10" &&
+                  exampleRecheck.delayMinutesApplied === 42 &&
+                  exampleCutoffLocal === "11:30"
+                    ? "border-cyan-300 bg-cyan-500/20 text-white font-bold"
+                    : "border-white/15 bg-slate-900 text-zinc-300"
+                }`}
+              >
+                Example Dec 10 Case 3: +42m Delay + 11:30 Cutoff (Fits by 5m)
+              </Link>
+              <Link
+                href="/routes/delhi-to-agra?date=2026-12-10&scheduled_arrival=09:50&eta=10:32&exit_buffer=15&cutoff=11:00#december-10-example-scenario"
+                className={`rounded-lg border px-2.5 py-1 ${
+                  Boolean(travelerEtaParam)
+                    ? "border-cyan-300 bg-cyan-500/20 text-white font-bold"
+                    : "border-white/15 bg-slate-900 text-zinc-300"
+                }`}
+              >
+                Example Traveler ETA 10:32 (= +42m Delay)
+              </Link>
+            </div>
+          </div>
+
+          {/* Example Candidate Connections Table */}
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-left text-xs">
               <thead>
                 <tr className="border-b border-white/15 text-[11px] uppercase tracking-wider text-zinc-400">
-                  <th className="py-2 pr-3">Candidate Itinerary</th>
+                  <th className="py-2 pr-3">
+                    Example Candidate Itinerary (Not in Real-Trip Result)
+                  </th>
                   <th className="py-2 px-3">Carried travelerReadyAt</th>
                   <th className="py-2 px-3">Departure &amp; Gate Arrival (Local / UTC)</th>
                   <th className="py-2 px-3">Connection &amp; Gate Cutoff Verdict</th>
@@ -451,7 +535,7 @@ export default async function DelhiToAgraPage({ searchParams }: PageProps = {}) 
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/10">
-                {dcc412.candidates.map((cand) => (
+                {exampleRecheck.candidates.map((cand) => (
                   <tr
                     key={cand.candidateId}
                     data-testid={`dcc412-candidate-${cand.candidateId}`}
@@ -460,8 +544,10 @@ export default async function DelhiToAgraPage({ searchParams }: PageProps = {}) 
                     <td className="py-3 pr-3 align-top">
                       <div className="font-bold text-white">{cand.title}</div>
                       <div className="text-[11px] text-zinc-400">
-                        {cand.operatorName} · Schedule baseline:{" "}
-                        <strong>{cand.scheduleBaselineStatus}</strong>
+                        {cand.operatorName} ·{" "}
+                        <span className="text-amber-300 font-semibold">
+                          Example Scenario Only
+                        </span>
                       </div>
                     </td>
                     <td className="py-3 px-3 align-top font-mono text-[11px] text-cyan-200">
@@ -480,7 +566,7 @@ export default async function DelhiToAgraPage({ searchParams }: PageProps = {}) 
                       </div>
                       <div>
                         Taj entry cutoff:{" "}
-                        <strong>{cand.destinationCutoffLocal || "16:30"}</strong>
+                        <strong>{cand.destinationCutoffLocal || "11:00"}</strong>
                       </div>
                     </td>
                     <td className="py-3 px-3 align-top">

@@ -513,19 +513,19 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     fareharborAsnActive: true,
     bookingVariants: [
       {
-        label: "LARGE AIRBOAT (ITEM 228561) · $65 SELF-DRIVE / $90 WITH HOTEL PICKUP",
+        label: "Check dates and prices on FareHarbor — Large Airboat (Item 228561 · $65 self-drive / $90 with hotel pickup pre-tax estimate)",
         itemId: "228561",
         flowId: "940162",
         bookingUrl: "https://fareharbor.com/embeds/book/ragincajuntours/items/228561/?asn=aktourcenter&flow=940162&full-items=yes",
       },
       {
-        label: "STANDARD 10-PASSENGER AIRBOAT (ITEM 228524) · $85 SELF-DRIVE / $110 WITH HOTEL PICKUP",
+        label: "Check dates and prices on FareHarbor — Standard 10-Passenger Airboat (Item 228524 · $85 self-drive / $110 with hotel pickup pre-tax estimate)",
         itemId: "228524",
         flowId: "940162",
         bookingUrl: "https://fareharbor.com/embeds/book/ragincajuntours/items/228524/?asn=aktourcenter&flow=940162&full-items=yes",
       },
       {
-        label: "PREMIUM SMALL 6-PASSENGER AIRBOAT (ITEM 448291) · $95 SELF-DRIVE / $120 WITH HOTEL PICKUP",
+        label: "Check dates and prices on FareHarbor — Premium Small 6-Passenger Airboat (Item 448291 · $95 self-drive / $120 with hotel pickup pre-tax estimate)",
         itemId: "448291",
         flowId: "940162",
         bookingUrl: "https://fareharbor.com/embeds/book/ragincajuntours/items/448291/?asn=aktourcenter&flow=940162&full-items=yes",
@@ -559,26 +559,26 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     description: "The faster, more adventurous, open-air swamp format.",
     bestFor: "Airboat options",
     priceFrom: 65,
-    priceUnit: "person",
+    priceUnit: "person (pre-tax estimate)",
     badges: [
       { type: "urgency", label: "⚡ Likely to Sell Out" },
       { type: "logistics", label: "🚐 Pickup Available" },
     ],
     imageUrl: "/images/travel-markets/new-orleans/airboat-swamp.png",
     imageAlt: "Airboat traveling through a Louisiana swamp",
-    ctaLabel: "View Airboat Options →",
+    ctaLabel: "Check dates and prices on FareHarbor",
     slug: "ragin-cajun-airboat-options",
     relatedTourSlug: "covered-tour-boat",
     detailPageTitle: "Ragin Cajun Airboat Options | Welcome to New Orleans Tours",
     metaDescription: "Airboat tour options in the Louisiana swamp with Ragin Cajun Tours. Self-drive and French Quarter hotel pickup options available.",
     durationLabel: "Duration confirmed during booking.",
     transportationSummary: "Boat formats confirmed during booking.",
-    pickupSummary: "Transportation options confirmed during booking.",
-    bookingNote: "Confirm the current format and participation requirements during booking.",
+    pickupSummary: "Self-drive or round-trip hotel shuttle available. The operator lists two Luling, LA locations and provides the launch address with the booking; confirm the exact meeting point for item 228561 before displaying directions.",
+    bookingNote: "Displayed rates are pre-tax estimates. When live inventory is unavailable, check dates and prices on FareHarbor. The operator lists two Luling locations and provides the launch address with the booking.",
     highlights: [
       "The operator describes the route as traveling through privately accessed swamp property"
     ],
-    detailSummary: "Airboat options through private Louisiana bayous. Self-drive tour-only rates are $65 (large 16-passenger), $85 (medium 10-passenger), and $95 (small 6–10 passenger) flat rate per rider. Round-trip French Quarter hotel shuttle packages are $90, $110, and $120 respectively. Standard bookings require at least 48 hours notice for a full refund; inside 48 hours is non-refundable (optional Trip Protection purchased at checkout allows cancellation up to 24 hours prior, excluding protection and processing fees).",
+    detailSummary: "Airboat options through private Louisiana bayous. Pre-tax estimate self-drive tour-only rates are $65 (large 16-passenger, item 228561), $85 (medium 10-passenger, item 228524), and $95 (small 6–10 passenger, item 448291) per rider before local taxes and fees. Pre-tax estimate round-trip French Quarter hotel shuttle packages are $90, $110, and $120 per rider respectively. The operator lists two Luling locations and provides the launch address with the booking — confirm the exact meeting point for item 228561 before displaying directions. Standard bookings require at least 48 hours notice for a full refund; inside 48 hours is non-refundable.",
     bestFit: [
       "Visitors looking for a fast, adventurous ride",
       "Those who prefer an open-air outdoor experience"
@@ -588,19 +588,20 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
       "Visitors sensitive to loud noises"
     ],
     childrenConsiderations: [
-      "Verify age minimums and child eligibility directly in the operator checkout before booking."
+      "Verify age minimums (ages 5+) and child eligibility directly in the operator checkout before booking."
     ],
     confirmedInclusions: [],
     bookingConfirmations: [
-      "Confirm the current format and participation requirements during booking.",
-      "Meeting or transportation location",
-      "Weather conditions and cancellation policy"
+      "Confirm the exact meeting point for item 228561 before displaying directions (the operator lists two Luling locations and provides the launch address with the booking).",
+      "Pre-tax estimates exclude applicable local taxes and booking fees; check dates and prices on FareHarbor.",
+      "Weather conditions and 48-hour cancellation policy"
     ],
     physicalFormat: {
       riding: "Airboat ride",
       exposure: "Open-air exposure"
     },
     logistics: {
+      meetingPoint: "Confirm the exact meeting point for item 228561 before displaying directions. The operator lists two Luling locations and provides the launch address with the booking.",
       transportation: "Transportation options confirmed during booking."
     },
   },

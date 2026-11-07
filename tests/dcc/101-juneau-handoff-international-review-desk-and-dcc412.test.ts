@@ -7,6 +7,7 @@ import {
   DELHI_AGRA_CORRIDOR_PLACES,
   evaluateDcc412ItineraryRecheck,
   evaluateDelhiAgra20261210CorridorFixture,
+  evaluateDelhiAgraRealTripRecheck,
   evaluateSyntheticDelhiAgraDcc412Test,
   evaluateUnifiedJuneauTripRecheck,
   recheckSavedJuneauTripContextBeforeCheckout,
@@ -24,6 +25,7 @@ import {
 } from "@/lib/dcc/machine/v03/rfc8785AndJws";
 import {
   DELHI_AGRA_QUALIFIED_OPTIONS,
+  evaluateDelhiAgraCorridorRecheck,
   getReviewDeskItemsForInternationalCorridor,
   HONG_KONG_MACAO_QUALIFIED_OPTIONS,
   HONG_KONG_MACAO_SAMPLE_TELEMETRY,
@@ -35,6 +37,7 @@ import {
 } from "@/lib/dcc/corridors/internationalCorridorQualifications";
 import { ingestApprovedFactsFromReviewDesk } from "@/lib/dcc/research/approvedFactsFeed";
 import { previewWnoRaginCajunAirboatPilot } from "@/lib/dcc/catalog/ingest";
+import type { FareHarborAvailability } from "@/lib/dcc/liveSlots/fareharbor";
 import { PROVIDERS } from "@/app/new-orleans/data/providers";
 import {
   getProductPrimaryBookingHref,
@@ -784,6 +787,15 @@ test("101.7 — Table-Driven Delhi → Agra 2026-12-10 Corridor Suite (3 Distinc
           `[${row.caseName} | TZ=${tz}] serviceDate`,
         );
         assert.equal(
+          evalRes.isExampleScenario,
+          true,
+          `[${row.caseName} | TZ=${tz}] December 10 scenario must be labeled as an example`,
+        );
+        assert.ok(
+          evalRes.scenarioLabel.includes("Example — December 10, 2026 Scenario"),
+          `[${row.caseName} | TZ=${tz}] scenarioLabel must explicitly label December 10 as an example`,
+        );
+        assert.equal(
           evalRes.ianaTimeZone,
           "Asia/Kolkata",
           `[${row.caseName} | TZ=${tz}] ianaTimeZone`,
@@ -865,6 +877,12 @@ test("101.7 — Table-Driven Delhi → Agra 2026-12-10 Corridor Suite (3 Distinc
           receipt: V03SignedDecisionReceipt;
         };
         assert.equal(apiBody.ok, true);
+        assert.equal(apiBody.sharedTripRecheck.isExampleScenario, true);
+        assert.ok(
+          apiBody.sharedTripRecheck.scenarioLabel.includes(
+            "Example — December 10, 2026 Scenario",
+          ),
+        );
         assert.equal(
           apiBody.sharedTripRecheck.travelerReadyAt.utcIso,
           row.expectedReadyUtc,
@@ -894,6 +912,10 @@ test("101.7 — Table-Driven Delhi → Agra 2026-12-10 Corridor Suite (3 Distinc
               cutoff: row.tajCutoffLocal,
             }),
           }),
+        );
+        assert.ok(
+          plannerHtml.includes("Example — December 10, 2026 Scenario"),
+          `Planner HTML should label the December 10 scenario as an example in TZ=${tz}`,
         );
         assert.ok(
           plannerHtml.includes(row.expectedReadyUtc),
@@ -966,7 +988,85 @@ test("101.7 — Table-Driven Delhi → Agra 2026-12-10 Corridor Suite (3 Distinc
     );
   }
 
-  // 4. Verify missing or stale update sets scheduleBaselineStatus to 'Needs verification'
+  // 4. Verify real-trip rules:
+  //    a) For a traveler who hasn't entered an ETA, show 'Needs verification'
+  //    b) Keep the sample onward departures out of the real-trip result until those services are verified
+  const realTripNoEta = evaluateDelhiAgraRealTripRecheck({
+    serviceDate: "2026-12-10",
+    scheduledArrivalLocal: "09:50",
+    absoluteEta: null,
+  });
+  assert.equal(realTripNoEta.isExampleScenario, false);
+  assert.equal(realTripNoEta.travelerEtaEntered, false);
+  assert.equal(realTripNoEta.scheduleBaselineStatus, "Needs verification");
+  assert.equal(realTripNoEta.sampleOnwardDeparturesExcluded, true);
+  assert.equal(realTripNoEta.candidates.length, 0);
+  assert.equal(realTripNoEta.nextServiceAfterReady, null);
+  assert.equal(realTripNoEta.nextCatchableDeparture, null);
+
+  const realTripWithEta = evaluateDelhiAgraRealTripRecheck({
+    serviceDate: "2026-12-10",
+    scheduledArrivalLocal: "09:50",
+    absoluteEta: "10:32",
+  });
+  assert.equal(realTripWithEta.isExampleScenario, false);
+  assert.equal(realTripWithEta.travelerEtaEntered, true);
+  assert.equal(realTripWithEta.travelerReadyAt.utcIso, "2026-12-10T05:17:00Z");
+  // Sample onward departures (10:30, 11:00) remain excluded from real-trip result until verified
+  assert.equal(realTripWithEta.sampleOnwardDeparturesExcluded, true);
+  assert.equal(realTripWithEta.candidates.length, 0);
+
+  const corridorRealTrip = evaluateDelhiAgraCorridorRecheck({
+    date: "2026-12-10",
+    scheduledArrivalLocal: "09:50",
+    absoluteEta: null,
+  });
+  assert.equal(
+    corridorRealTrip.dcc412Recheck.scheduleBaselineStatus,
+    "Needs verification",
+  );
+  assert.equal(corridorRealTrip.dcc412Recheck.candidates.length, 0);
+  assert.equal(corridorRealTrip.sampleOnwardDeparturesExcludedFromRealTrip, true);
+  assert.equal(corridorRealTrip.december10ExampleScenario.isExampleScenario, true);
+  assert.ok(
+    corridorRealTrip.december10ExampleScenario.scenarioLabel.includes(
+      "Example — December 10, 2026 Scenario",
+    ),
+  );
+
+  // Verify API real-trip call (engineId: 'delhi-to-agra' without ETA) shows 'Needs verification' and excludes sample onward departures
+  const realTripApiRes = await postV03Evaluate(
+    new Request("https://destinationcommandcenter.com/api/v1/v03/evaluate", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        engineId: "delhi-to-agra",
+        inputs: {
+          serviceDate: "2026-12-10",
+          scheduledArrivalLocal: "09:50",
+        },
+      }),
+    }),
+  );
+  assert.equal(realTripApiRes.status, 200);
+  const realTripApiBody = (await realTripApiRes.json()) as {
+    ok: boolean;
+    sharedTripRecheck: ReturnType<typeof evaluateDelhiAgraRealTripRecheck>;
+  };
+  assert.equal(realTripApiBody.ok, true);
+  assert.equal(realTripApiBody.sharedTripRecheck.isExampleScenario, false);
+  assert.equal(realTripApiBody.sharedTripRecheck.travelerEtaEntered, false);
+  assert.equal(
+    realTripApiBody.sharedTripRecheck.scheduleBaselineStatus,
+    "Needs verification",
+  );
+  assert.equal(
+    realTripApiBody.sharedTripRecheck.sampleOnwardDeparturesExcluded,
+    true,
+  );
+  assert.equal(realTripApiBody.sharedTripRecheck.candidates.length, 0);
+
+  // Verify missing or stale update sets scheduleBaselineStatus to 'Needs verification'
   const missingUpdateEval = evaluateDelhiAgra20261210CorridorFixture({
     delayMinutes: 0,
     tajCutoffLocal: "11:00",
@@ -989,11 +1089,30 @@ test("101.7 — Table-Driven Delhi → Agra 2026-12-10 Corridor Suite (3 Distinc
   });
   assert.equal(expiredTimestampEval.scheduleBaselineStatus, "Needs verification");
 
-  // 5. Public guide requirements: official NTES lookup, labeled traveler-entered ETA, checkout disabled until verified
+  // 5. Public guide requirements: official NTES lookup, labeled traveler-entered ETA, Needs verification when no ETA entered, checkout disabled until verified
   assert.equal(
     OFFICIAL_NTES_LIVE_TRAIN_LOOKUP.officialMobileAndWebUrl,
     "https://enquiry.indianrail.gov.in/mntes/",
   );
+  const defaultGuideNoEtaHtml = renderToStaticMarkup(
+    await DelhiToAgraRoutePage({
+      searchParams: Promise.resolve({
+        date: "2026-12-10",
+      }),
+    }),
+  );
+  assert.ok(
+    defaultGuideNoEtaHtml.includes("Schedule Baseline: Needs verification"),
+  );
+  assert.ok(
+    defaultGuideNoEtaHtml.includes("Example — December 10, 2026 Scenario"),
+  );
+  assert.ok(
+    defaultGuideNoEtaHtml.includes(
+      "Onward Services: Sample Departures Excluded Until Verified (0 verified onward departures)",
+    ),
+  );
+
   const publicGuideHtml = renderToStaticMarkup(
     await DelhiToAgraRoutePage({
       searchParams: Promise.resolve({
@@ -1022,8 +1141,76 @@ test("101.7 — Table-Driven Delhi → Agra 2026-12-10 Corridor Suite (3 Distinc
   assert.equal(privateCarOption.bookingOrWhatsappHref, null);
 });
 
-test("101.8 — WNO First Pilot: Ragin Cajun Airboat Tours (ragincajuntours Item 228561 Importer Preview & aktourcenter Checkout Handoff)", async () => {
-  // 1. Verify WNO provider and tour configuration
+const SAMPLE_RAGIN_CAJUN_228561_DEPARTURES: FareHarborAvailability[] = [
+  {
+    pk: 1774334571,
+    start_at: "2026-11-18T10:00:00-0600",
+    end_at: "2026-11-18T11:45:00-0600",
+    capacity: undefined,
+    minimum_party_size: 1,
+    maximum_party_size: null,
+    headline: "10:00 AM — Large Airboat Tour (Drive Yourself / Self-Drive)",
+    customer_type_rates: [
+      {
+        pk: 650101,
+        capacity: null,
+        minimum_party_size: 1,
+        maximum_party_size: null,
+        total: 6500,
+        total_including_tax: 6890,
+        customer_prototype: {
+          pk: 499047,
+          display_name: "General",
+          note: "48 inches and taller (Pre-tax estimate $65.00 + 6% online booking fee)",
+          total: 6500,
+          total_including_tax: 6890,
+        },
+        customer_type: {
+          pk: 1001,
+          singular: "General",
+          plural: "General",
+          note: "Drive yourself (Pre-tax estimate)",
+        },
+      },
+    ],
+  },
+  {
+    pk: 1774340210,
+    start_at: "2026-11-18T10:00:00-0600",
+    end_at: "2026-11-18T11:45:00-0600",
+    capacity: undefined,
+    minimum_party_size: 1,
+    maximum_party_size: null,
+    headline:
+      "10:00 AM — Large Airboat Tour with Downtown New Orleans Hotel Pickup (Shuttle Service)",
+    customer_type_rates: [
+      {
+        pk: 650102,
+        capacity: null,
+        minimum_party_size: 1,
+        maximum_party_size: null,
+        total: 9000,
+        total_including_tax: 9540,
+        customer_prototype: {
+          pk: 499051,
+          display_name: "General - Shuttle Service",
+          note: "Includes round-trip hotel pickup ($65.00 base + $25.00 Shuttle Service = $90.00/person pre-tax estimate)",
+          total: 9000,
+          total_including_tax: 9540,
+        },
+        customer_type: {
+          pk: 1002,
+          singular: "General - Shuttle Service",
+          plural: "General - Shuttle Service",
+          note: "Hotel pickup included (Pre-tax estimate)",
+        },
+      },
+    ],
+  },
+];
+
+test("101.8 — WNO First Pilot: Ragin Cajun Airboat Tours (Keep aktourcenter Links, Move Sample Departures to Tests, 'Check dates and prices on FareHarbor' When Inventory Unavailable, Pre-Tax Estimate Labels, and Luling Meeting Point Gate)", async () => {
+  // 1. Verify WNO provider and tour configuration keep existing aktourcenter checkout links
   const raginProvider = PROVIDERS["ragin-cajun-tours"];
   assert.ok(raginProvider);
   assert.equal(raginProvider.fareHarborShortname, "ragincajuntours");
@@ -1036,6 +1223,19 @@ test("101.8 — WNO First Pilot: Ragin Cajun Airboat Tours (ragincajuntours Item
   assert.equal(raginTour.itemId, "228561");
   assert.equal(raginTour.flowId, "940162");
   assert.equal(raginTour.fareharborAsnActive, true);
+  assert.equal(raginTour.ctaLabel, "Check dates and prices on FareHarbor");
+  assert.ok(raginTour.priceUnit.toLowerCase().includes("pre-tax estimate"));
+  assert.ok(raginTour.logistics.meetingPoint.includes("two Luling"));
+  assert.ok(
+    raginTour.logistics.meetingPoint.includes(
+      "provides the launch address with the booking",
+    ),
+  );
+  assert.equal(
+    raginTour.logistics.meetingPoint.includes("9694 Barataria"),
+    false,
+  );
+
   const primaryHref = getProductPrimaryBookingHref(raginTour);
   assert.ok(
     primaryHref.includes(
@@ -1044,39 +1244,99 @@ test("101.8 — WNO First Pilot: Ragin Cajun Airboat Tours (ragincajuntours Item
   );
   assert.ok(primaryHref.includes("asn=aktourcenter"));
 
-  // 2. Run the DCC importer preview for one date (2026-11-18) and two guests (2)
+  // 2. Verify when live inventory is unavailable, no sample departures are returned in production and CTA is 'Check dates and prices on FareHarbor'
+  const pilotUnavailable = await previewWnoRaginCajunAirboatPilot({
+    date: "2026-11-18",
+    guests: 2,
+    itemPk: 228561,
+    skipLiveFetch: true,
+  });
+
+  assert.equal(pilotUnavailable.pilotId, "wno-ragin-cajun-airboat-pilot");
+  assert.equal(pilotUnavailable.wnoAccountShortname, "aktourcenter");
+  assert.equal(pilotUnavailable.supplierShortname, "ragincajuntours");
+  assert.equal(pilotUnavailable.inventoryAvailable, false);
+  assert.equal(pilotUnavailable.departures.length, 0);
+  assert.equal(
+    pilotUnavailable.whenInventoryUnavailableCtaLabel,
+    "Check dates and prices on FareHarbor",
+  );
+  assert.equal(
+    pilotUnavailable.primaryActionLabel,
+    "Check dates and prices on FareHarbor",
+  );
+  assert.equal(
+    pilotUnavailable.primaryActionHref,
+    "https://fareharbor.com/embeds/book/ragincajuntours/items/228561/?asn=aktourcenter&flow=940162&full-items=yes",
+  );
+
+  // Verify meeting point confirmation gate for item 228561 (two Luling locations, launch address provided with booking, no unconfirmed directions)
+  assert.equal(
+    pilotUnavailable.productPreview.meetingPointConfirmationGate
+      .exactMeetingPointConfirmed,
+    false,
+  );
+  assert.equal(
+    pilotUnavailable.productPreview.meetingPointConfirmationGate
+      .displayDirectionsAllowed,
+    false,
+  );
+  assert.equal(
+    pilotUnavailable.productPreview.meetingPointConfirmationGate
+      .twoLulingLocationsListedByOperator,
+    true,
+  );
+  assert.equal(
+    pilotUnavailable.productPreview.meetingPointConfirmationGate
+      .launchAddressProvidedWithBooking,
+    true,
+  );
+  assert.ok(
+    pilotUnavailable.productPreview.meetingPointConfirmationGate.directionsHoldNote.includes(
+      "two Luling",
+    ),
+  );
+  assert.equal(
+    pilotUnavailable.productPreview.normalizedCatalogItem.meetingPointAddress,
+    null,
+  );
+  assert.equal(
+    pilotUnavailable.productPreview.normalizedCatalogItem.meetingPointLat,
+    null,
+  );
+  assert.equal(
+    pilotUnavailable.productPreview.normalizedCatalogItem.meetingPointLng,
+    null,
+  );
+  assert.equal(
+    pilotUnavailable.productPreview.normalizedCatalogItem.locationPrecision,
+    "unknown",
+  );
+
+  // 3. Inject sample departures strictly from this test via availabilitiesOverride
   const pilot = await previewWnoRaginCajunAirboatPilot({
     date: "2026-11-18",
     guests: 2,
     itemPk: 228561,
+    availabilitiesOverride: SAMPLE_RAGIN_CAJUN_228561_DEPARTURES,
   });
 
-  assert.equal(pilot.pilotId, "wno-ragin-cajun-airboat-pilot");
-  assert.equal(pilot.wnoAccountShortname, "aktourcenter");
-  assert.equal(pilot.supplierShortname, "ragincajuntours");
-  assert.equal(pilot.supplierName, "Ragin Cajun Airboat Tours");
-  assert.equal(pilot.supplierCompanyPk, 56511);
-  assert.equal(pilot.credentialsUsed.account, "aktourcenter");
-  assert.equal(pilot.credentialsUsed.alaskaCredentialsExcluded, true);
-  assert.equal(pilot.accessStatus.asnReferralAccessible, true);
-  assert.equal(pilot.accessStatus.externalApiV1Status, 403);
-  assert.equal(
-    pilot.accessStatus.capabilityMode,
-    "referral_only_existing_wno_checkout",
-  );
-
-  // Exact product ID, date, and guests
+  assert.equal(pilot.inventoryAvailable, true);
   assert.equal(pilot.productPreview.fareHarborItemPk, 228561);
   assert.equal(
     pilot.productPreview.exactProductId,
     "dcc:tour:fh:ragincajuntours:228561",
   );
   assert.equal(pilot.productPreview.title, "Ragin' Cajun Large Airboat Tour");
+  assert.equal(pilot.productPreview.isPreTaxEstimate, true);
+  assert.ok(
+    pilot.productPreview.priceEstimateLabel.includes("Pre-tax estimate"),
+  );
   assert.equal(pilot.date, "2026-11-18");
   assert.equal(pilot.guests, 2);
-  assert.ok(pilot.departures.length >= 2);
+  assert.equal(pilot.departures.length, 2);
 
-  // Self-drive departure (1774334571)
+  // Self-drive sample departure (1774334571)
   const selfDriveDep = pilot.departures.find((d) => d.pickupIncluded === false);
   assert.ok(selfDriveDep);
   assert.equal(selfDriveDep.availabilityPk, 1774334571);
@@ -1086,6 +1346,8 @@ test("101.8 — WNO First Pilot: Ragin Cajun Airboat Tours (ragincajuntours Item
   assert.equal(selfDriveDep.isSoldOut, false);
   assert.equal(selfDriveDep.exactRemainingCapacity, null);
   assert.equal(selfDriveDep.pickupIncluded, false);
+  assert.equal(selfDriveDep.isPreTaxEstimate, true);
+  assert.ok(selfDriveDep.priceEstimateLabel.includes("Pre-tax estimate"));
   assert.equal(selfDriveDep.perPersonBaseUsd, 65);
   assert.equal(selfDriveDep.subtotalBaseUsd, 130);
   assert.equal(selfDriveDep.onlineBookingFeeUsd, 7.8);
@@ -1096,7 +1358,7 @@ test("101.8 — WNO First Pilot: Ragin Cajun Airboat Tours (ragincajuntours Item
     ),
   );
 
-  // Hotel pickup / Shuttle Service departure (1774340210)
+  // Hotel pickup / Shuttle Service sample departure (1774340210)
   const shuttleDep = pilot.departures.find((d) => d.pickupIncluded === true);
   assert.ok(shuttleDep);
   assert.equal(shuttleDep.availabilityPk, 1774340210);
@@ -1105,6 +1367,8 @@ test("101.8 — WNO First Pilot: Ragin Cajun Airboat Tours (ragincajuntours Item
   assert.equal(shuttleDep.isBookable, true);
   assert.equal(shuttleDep.isSoldOut, false);
   assert.equal(shuttleDep.pickupIncluded, true);
+  assert.equal(shuttleDep.isPreTaxEstimate, true);
+  assert.ok(shuttleDep.priceEstimateLabel.includes("Pre-tax estimate"));
   assert.equal(shuttleDep.perPersonBaseUsd, 90);
   assert.equal(shuttleDep.subtotalBaseUsd, 180);
   assert.equal(shuttleDep.onlineBookingFeeUsd, 10.8);

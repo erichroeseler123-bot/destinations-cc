@@ -20,9 +20,26 @@ export type FareHarborCustomerTypeRate = {
   label?: string;
   display_name?: string;
   price?: number;
+  total?: number | null;
   total_including_tax?: number | null;
+  capacity?: number | null;
+  minimum_party_size?: number | null;
+  maximum_party_size?: number | null;
   minimum_age?: number | null;
   maximum_age?: number | null;
+  customer_prototype?: {
+    pk?: string | number;
+    display_name?: string;
+    note?: string;
+    total?: number | null;
+    total_including_tax?: number | null;
+  };
+  customer_type?: {
+    pk?: string | number;
+    singular?: string;
+    plural?: string;
+    note?: string;
+  };
 };
 
 export type FareHarborAvailability = {
@@ -32,6 +49,8 @@ export type FareHarborAvailability = {
   start?: string;
   headline?: string;
   capacity?: number;
+  minimum_party_size?: number | null;
+  maximum_party_size?: number | null;
   booked_count?: number;
   is_bookable?: boolean;
   is_sold_out?: boolean;

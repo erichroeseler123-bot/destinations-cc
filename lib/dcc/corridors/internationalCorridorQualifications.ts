@@ -15,7 +15,10 @@
 
 import type { CompactTripRecheckCardModel } from "@/lib/dcc/sharedTripRecheck";
 import {
+  evaluateDelhiAgra20261210CorridorFixture,
+  evaluateDelhiAgraRealTripRecheck,
   evaluateSyntheticDelhiAgraDcc412Test,
+  type Dcc412CandidateDepartureInput,
   type Dcc412ItineraryRecheckResult,
 } from "@/lib/dcc/sharedTripRecheck";
 import {
@@ -1069,10 +1072,21 @@ export interface DelhiAgraCorridorRecheckResult {
   isFridayTajClosed: boolean;
   trainRunningDelayMinutes: number;
   travelerEnteredEtaLocal: string | null;
+  travelerEtaEntered: boolean;
+  sampleOnwardDeparturesExcludedFromRealTrip: boolean;
   ntesLookupUrl: string;
   travelerEtaFieldLabel: string;
   recommendedPrimaryMode: string;
+  /**
+   * Real-trip evaluation result:
+   * - For a traveler who hasn't entered an ETA (`!absoluteEta`), `scheduleBaselineStatus` is `"Needs verification"`.
+   * - Keeps sample onward departures (`10:30`, `11:00`, `11:30` Agra Cantt feeder cohorts) OUT of the real-trip result (`candidates: []`) until those onward services are verified.
+   */
   dcc412Recheck: Dcc412ItineraryRecheckResult;
+  /**
+   * Explicitly labeled December 10, 2026 (`2026-12-10`) Example Scenario (`isExampleScenario: true`, `scenarioLabel: "Example — December 10, 2026 Scenario (2026-12-10 Synthetic Fixture)"`).
+   */
+  december10ExampleScenario: Dcc412ItineraryRecheckResult;
   recheckCard: CompactTripRecheckCardModel;
 }
 
@@ -1088,14 +1102,21 @@ export function evaluateDelhiAgraCorridorRecheck(params?: {
   evaluatedAtUtc?: string | null;
   includeBackup1130?: boolean;
   partySize?: number;
+  isExampleScenario?: boolean;
+  verifiedCandidateDepartures?: Dcc412CandidateDepartureInput[];
 }): DelhiAgraCorridorRecheckResult {
   const date =
     params?.date && /^\d{4}-\d{2}-\d{2}$/.test(params.date.trim())
       ? params.date.trim()
-      : "2026-12-10"; // Thursday synthetic fixture default; 2026-11-20 is Friday
+      : "2026-12-10"; // 2026-11-20 is Friday
+  const hasTravelerEta = Boolean(
+    params?.absoluteEta && params.absoluteEta.trim(),
+  );
   const trainDelayMinutes = Math.max(
     0,
-    Math.round(params?.trainDelayMinutes ?? 42),
+    Math.round(
+      params?.trainDelayMinutes ?? (params?.isExampleScenario ? 42 : 0),
+    ),
   );
   const partySize = Math.max(1, Math.round(params?.partySize || 2));
 
@@ -1113,27 +1134,52 @@ export function evaluateDelhiAgraCorridorRecheck(params?: {
   const dayOfWeekName = dayNames[dayIndex] || "Thursday";
   const isFridayTajClosed = dayIndex === 5;
 
-  const dcc412Recheck = evaluateSyntheticDelhiAgraDcc412Test({
-    serviceDate: date,
-    scheduledArrivalLocal: params?.scheduledArrivalLocal || "09:50",
-    delayMinutes: trainDelayMinutes,
-    absoluteEta: params?.absoluteEta ?? null,
-    destinationCutoffLocal: params?.destinationCutoffLocal || "16:30",
-    transferBufferMinutes: params?.transferBufferMinutes ?? 15,
-    criticalUpdateMissing: params?.criticalUpdateMissing ?? false,
-    staleUpdate: params?.staleUpdate ?? false,
-    evaluatedAtUtc: params?.evaluatedAtUtc ?? null,
-    includeBackup1130:
-      params?.includeBackup1130 ??
-      (params?.destinationCutoffLocal !== "11:00" &&
-        params?.destinationCutoffLocal !== "11:30"),
+  const dcc412Recheck = params?.isExampleScenario
+    ? evaluateSyntheticDelhiAgraDcc412Test({
+        serviceDate: date,
+        scenarioLabel:
+          date === "2026-12-10"
+            ? "Example — December 10, 2026 Scenario (2026-12-10 Synthetic Fixture)"
+            : `Example — ${date} Synthetic Scenario`,
+        scheduledArrivalLocal: params?.scheduledArrivalLocal || "09:50",
+        delayMinutes: trainDelayMinutes,
+        absoluteEta: params?.absoluteEta ?? null,
+        destinationCutoffLocal: params?.destinationCutoffLocal || "16:30",
+        transferBufferMinutes: params?.transferBufferMinutes ?? 15,
+        criticalUpdateMissing: params?.criticalUpdateMissing ?? false,
+        staleUpdate: params?.staleUpdate ?? false,
+        evaluatedAtUtc: params?.evaluatedAtUtc ?? null,
+        includeBackup1130:
+          params?.includeBackup1130 ??
+          (params?.destinationCutoffLocal !== "11:00" &&
+            params?.destinationCutoffLocal !== "11:30"),
+      })
+    : evaluateDelhiAgraRealTripRecheck({
+        serviceDate: date,
+        scheduledArrivalLocal: params?.scheduledArrivalLocal || "09:50",
+        delayMinutes: trainDelayMinutes,
+        absoluteEta: params?.absoluteEta ?? null,
+        destinationCutoffLocal: params?.destinationCutoffLocal || "16:30",
+        transferBufferMinutes: params?.transferBufferMinutes ?? 15,
+        criticalUpdateMissing: params?.criticalUpdateMissing ?? false,
+        staleUpdate: params?.staleUpdate ?? false,
+        evaluatedAtUtc: params?.evaluatedAtUtc ?? null,
+        verifiedCandidateDepartures: params?.verifiedCandidateDepartures ?? [],
+      });
+
+  const december10ExampleScenario = evaluateDelhiAgra20261210CorridorFixture({
+    delayMinutes: params?.trainDelayMinutes ?? 42,
+    absoluteEta: params?.isExampleScenario ? (params?.absoluteEta ?? null) : null,
+    destinationCutoffLocal: params?.destinationCutoffLocal || "11:00",
+    criticalUpdateMissing: false,
+    staleUpdate: false,
   });
 
   const recommendedPrimaryMode = isFridayTajClosed
     ? "Reschedule to Non-Friday OR Book Yamuna Expressway Private Car for Agra Fort & Mehtab Bagh Sunset View"
     : dcc412Recheck.nextCatchableDeparture
       ? `${dcc412Recheck.nextCatchableDeparture.title} (departs ${dcc412Recheck.nextCatchableDeparture.departureLocal} IST / ${dcc412Recheck.nextCatchableDeparture.departureUtcShort}, after travelerReadyAt ${dcc412Recheck.travelerReadyAt.formattedSummary})`
-      : "Train 12050 Gatimaan Express + Agra Cantt Station Transfer";
+      : "Train 12050 Gatimaan Express + Agra Cantt Station Transfer (Enter NTES ETA — Onward Services Pending Verification in Review Desk)";
 
   const whatChanged = isFridayTajClosed
     ? `Selected date ${date} is a FRIDAY: Taj Mahal is CLOSED to general visitors every Friday, and Train 12050 Gatimaan Express does not operate on Fridays.`
@@ -1157,14 +1203,17 @@ export function evaluateDelhiAgraCorridorRecheck(params?: {
     dayOfWeekName,
     isFridayTajClosed,
     trainRunningDelayMinutes: dcc412Recheck.delayMinutesApplied,
-    travelerEnteredEtaLocal:
-      params?.absoluteEta && params.absoluteEta.trim()
-        ? dcc412Recheck.effectiveArrivalLocal
-        : null,
+    travelerEnteredEtaLocal: hasTravelerEta
+      ? dcc412Recheck.effectiveArrivalLocal
+      : null,
+    travelerEtaEntered: dcc412Recheck.travelerEtaEntered,
+    sampleOnwardDeparturesExcludedFromRealTrip:
+      dcc412Recheck.sampleOnwardDeparturesExcluded,
     ntesLookupUrl: OFFICIAL_NTES_LIVE_TRAIN_LOOKUP.officialMobileAndWebUrl,
     travelerEtaFieldLabel: OFFICIAL_NTES_LIVE_TRAIN_LOOKUP.travelerEtaFieldLabel,
     recommendedPrimaryMode,
     dcc412Recheck,
+    december10ExampleScenario,
     recheckCard: {
       corridorId: "delhi-to-agra",
       whatChanged,
@@ -1643,6 +1692,7 @@ export function evaluateDelhiAgraTajVisit(input: {
   scheduledArrivalAgc: string;
   revisedArrivalAgc?: string;
   partySize?: number;
+  isExampleScenario?: boolean;
 }) {
   const dayOfWeek = new Date(`${input.date}T00:00:00Z`).getUTCDay();
   const isFridayClosed = dayOfWeek === 5;
@@ -1656,8 +1706,10 @@ export function evaluateDelhiAgraTajVisit(input: {
   const recheck = evaluateDelhiAgraCorridorRecheck({
     date: input.date,
     scheduledArrivalLocal: input.scheduledArrivalAgc,
+    absoluteEta: input.revisedArrivalAgc || null,
     trainDelayMinutes: delayMinutes,
     partySize: input.partySize || 2,
+    isExampleScenario: input.isExampleScenario ?? false,
   });
   return {
     isFridayClosed,
@@ -1671,10 +1723,11 @@ export function evaluateDelhiAgraTajVisit(input: {
 }
 
 export const DELHI_AGRA_SAMPLE_TRIP_FITS = evaluateDelhiAgraTajVisit({
-  date: "2026-11-18",
+  date: "2026-12-10",
   scheduledArrivalAgc: "09:50",
   revisedArrivalAgc: "10:32",
   partySize: 2,
+  isExampleScenario: true,
 });
 
 export const DELHI_AGRA_SAMPLE_TRIP_NEEDS_VERIFICATION = {

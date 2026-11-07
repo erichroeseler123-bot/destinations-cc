@@ -1733,6 +1733,11 @@ export interface Dcc412ItineraryRecheckInput {
   staleOrMissingUpdateCouldChangeAnswer?: boolean;
   evaluatedAtUtc?: string | null;
   criticalUpdateMissingReason?: string | null;
+  isExampleScenario?: boolean;
+  scenarioLabel?: string | null;
+  requireTravelerEtaForVerification?: boolean;
+  sampleOnwardDeparturesExcluded?: boolean;
+  onwardServicesVerificationNote?: string | null;
   inboundSource?: string;
   inboundSourceTimestamp?: string;
   inboundSourceExpiry?: string;
@@ -1794,6 +1799,11 @@ export interface Dcc412ItineraryRecheckResult {
   evaluatedAt: string;
   serviceDate: string;
   ianaTimeZone: string;
+  isExampleScenario: boolean;
+  scenarioLabel: string;
+  travelerEtaEntered: boolean;
+  sampleOnwardDeparturesExcluded: boolean;
+  onwardServicesVerificationNote: string | null;
   places: {
     delhiRailStation: Dcc412CorridorPlace;
     agraCantt: Dcc412CorridorPlace;
@@ -1984,7 +1994,7 @@ export function resolveLocalTimeInIanaZoneToUtc(
  * - Adds `transferBufferMinutes` strictly ONCE (`transferBufferAddedOnce: true`).
  * - Carries `travelerReadyAt` through each candidate itinerary.
  * - Finds the next departure the traveler can actually catch and checks ticket & destination cutoffs.
- * - Shows schedule baseline as `Needs verification` when a missing or stale update could change the answer.
+ * - Shows schedule baseline as `Needs verification` when a missing or stale update could change the answer, or when a real-trip traveler has not entered an ETA.
  * - Includes each leg's `source`, `timestamp`, and `expiry` for the signed decision receipt.
  */
 export function evaluateDcc412ItineraryRecheck(
@@ -1995,6 +2005,24 @@ export function evaluateDcc412ItineraryRecheck(
   const ianaTimeZone = input.ianaTimeZone.trim() || "Asia/Kolkata";
   const transferBufferMinutes = Math.max(0, Math.round(input.transferBufferMinutes));
   const places = input.places || DELHI_AGRA_CORRIDOR_PLACES;
+  const isExampleScenario = Boolean(input.isExampleScenario);
+  const scenarioLabel =
+    input.scenarioLabel?.trim() ||
+    (isExampleScenario
+      ? `Example — ${serviceDate === "2026-12-10" ? "December 10, 2026" : serviceDate} Scenario`
+      : "Real-Trip Evaluation (Official NTES Lookup + Traveler-Entered ETA)");
+  const travelerEtaEntered = Boolean(input.absoluteEta && input.absoluteEta.trim());
+  const missingTravelerEtaInRealTrip = Boolean(
+    input.requireTravelerEtaForVerification && !travelerEtaEntered,
+  );
+  const sampleOnwardDeparturesExcluded = Boolean(
+    input.sampleOnwardDeparturesExcluded,
+  );
+  const onwardServicesVerificationNote =
+    input.onwardServicesVerificationNote ??
+    (sampleOnwardDeparturesExcluded
+      ? "Sample onward departures (10:30, 11:00, and 11:30 Agra Cantt station feeder cohorts) are kept out of the real-trip result until those onward transfer services are verified in the Review Desk."
+      : null);
 
   const scheduledResolved = resolveLocalTimeInIanaZoneToUtc(
     serviceDate,
@@ -2069,7 +2097,12 @@ export function evaluateDcc412ItineraryRecheck(
   };
 
   const inboundSource =
-    input.inboundSource || "NTES / Indian Railways Live Train Status (Sample)";
+    input.inboundSource ||
+    (isExampleScenario
+      ? "NTES / Indian Railways Live Train Status (Example Scenario)"
+      : travelerEtaEntered
+        ? "Traveler-Entered ETA via Official CRIS / NTES Lookup"
+        : "Published Train Schedule Baseline (Pending Traveler-Entered ETA / Live NTES Feed)");
   const inboundSourceTimestamp =
     input.inboundSourceTimestamp || `${serviceDate}T04:45:00Z`;
   const inboundSourceExpiry =
@@ -2100,6 +2133,7 @@ export function evaluateDcc412ItineraryRecheck(
     Boolean(input.criticalUpdateMissing) ||
     Boolean(input.staleUpdate) ||
     Boolean(input.staleOrMissingUpdateCouldChangeAnswer) ||
+    missingTravelerEtaInRealTrip ||
     isInboundExpired ||
     anyCandidateMissingCritical;
   const scheduleBaselineStatus: "Verified" | "Needs verification" =
@@ -2108,9 +2142,11 @@ export function evaluateDcc412ItineraryRecheck(
     ? input.criticalUpdateMissingReason ||
       input.candidateDepartures.find((c) => c.criticalUpdateMissing)
         ?.criticalUpdateMissingReason ||
-      (isInboundExpired || input.staleUpdate
-        ? "Inbound train status update is stale/expired and could change connection or gate cutoff eligibility — showing schedule baseline as Needs verification."
-        : "Critical live telemetry or operator dispatch update is missing — showing schedule baseline as Needs verification.")
+      (missingTravelerEtaInRealTrip
+        ? "Traveler has not entered an ETA while official CRIS/NTES live machine feed access is pending — showing schedule baseline as Needs verification."
+        : isInboundExpired || input.staleUpdate
+          ? "Inbound train status update is stale/expired and could change connection or gate cutoff eligibility — showing schedule baseline as Needs verification."
+          : "Critical live telemetry or operator dispatch update is missing — showing schedule baseline as Needs verification.")
     : null;
 
   const evaluatedCandidates: Dcc412EvaluatedCandidateItinerary[] =
@@ -2298,13 +2334,15 @@ export function evaluateDcc412ItineraryRecheck(
       ? cutoffMarginMinutes >= 0
       : nextCatchableDeparture !== null;
   const cutoffVerdictLabel =
-    cutoffMarginMinutes !== null
-      ? cutoffMarginMinutes >= 0
-        ? `Fits by ${cutoffMarginMinutes} minutes.`
-        : `Misses cutoff by ${Math.abs(cutoffMarginMinutes)} minutes.`
-      : nextCatchableDeparture
-        ? "Fits cutoff."
-        : "Misses cutoff.";
+    evaluatedCandidates.length === 0 && sampleOnwardDeparturesExcluded
+      ? "Sample onward departures excluded from real-trip result until onward services are verified."
+      : cutoffMarginMinutes !== null
+        ? cutoffMarginMinutes >= 0
+          ? `Fits by ${cutoffMarginMinutes} minutes.`
+          : `Misses cutoff by ${Math.abs(cutoffMarginMinutes)} minutes.`
+        : nextCatchableDeparture
+          ? "Fits cutoff."
+          : "Misses cutoff.";
 
   const legProvenance: Dcc412LegReceiptProvenance[] = [
     inboundLegProvenance,
@@ -2319,17 +2357,25 @@ export function evaluateDcc412ItineraryRecheck(
       ? `Missed: ${missedAtStation.map((m) => `${m.departureLocal} (${m.title})`).join(", ")}.`
       : "No scheduled connections missed.";
 
-  const whatChanged = `Scheduled arrival ${format12HourClock(input.scheduledArrivalLocal)} (${input.scheduledArrivalLocal}) + ${delayMinutesApplied}m delay + ${transferBufferMinutes}m station exit buffer (added once) → travelerReadyAt ${travelerReadyAt.formattedSummary} [${travelerReadyAt.utcIso}].${scheduleBaselineStatus === "Needs verification" ? " Schedule baseline: Needs verification." : ""}`;
+  const whatChanged = `${isExampleScenario ? `[${scenarioLabel}] ` : ""}Scheduled arrival ${format12HourClock(input.scheduledArrivalLocal)} (${input.scheduledArrivalLocal}) + ${delayMinutesApplied}m delay + ${transferBufferMinutes}m station exit buffer (added once) → travelerReadyAt ${travelerReadyAt.formattedSummary} [${travelerReadyAt.utcIso}].${scheduleBaselineStatus === "Needs verification" ? " Schedule baseline: Needs verification." : ""}`;
 
-  const whatStillFits = nextCatchableDeparture
-    ? `${missedSummary} Next catchable departure: ${nextCatchableDeparture.title} at ${nextCatchableDeparture.departureLocal} local (${nextCatchableDeparture.departureUtcShort}, +${nextCatchableDeparture.slackToDepartureMinutes}m slack; reaches ${places.tajEntryGate.name} at ${nextCatchableDeparture.arrivalAtDestinationLocal} local). ${cutoffVerdictLabel}`
-    : nextServiceAfterReady
-      ? `${missedSummary} Next service at ${nextServiceAfterReady.departureLocal} local reaches ${places.tajEntryGate.name} at ${nextServiceAfterReady.arrivalAtDestinationLocal} local (${nextServiceAfterReady.arrivalAtDestinationUtc}). ${cutoffVerdictLabel}`
-      : `${missedSummary} 0 candidate departures clear travelerReadyAt ${travelerReadyAt.formattedSummary} and applicable cutoffs.`;
+  const whatStillFits =
+    evaluatedCandidates.length === 0 && sampleOnwardDeparturesExcluded
+      ? `${onwardServicesVerificationNote || "Sample onward departures are kept out of the real-trip result until those services are verified."} ${!travelerEtaEntered ? "Traveler has not entered an ETA — schedule baseline is Needs verification." : `Traveler-entered ETA sets travelerReadyAt to ${travelerReadyAt.formattedSummary} (${travelerReadyAt.utcIso}).`}`
+      : nextCatchableDeparture
+        ? `${missedSummary} Next catchable departure: ${nextCatchableDeparture.title} at ${nextCatchableDeparture.departureLocal} local (${nextCatchableDeparture.departureUtcShort}, +${nextCatchableDeparture.slackToDepartureMinutes}m slack; reaches ${places.tajEntryGate.name} at ${nextCatchableDeparture.arrivalAtDestinationLocal} local). ${cutoffVerdictLabel}`
+        : nextServiceAfterReady
+          ? `${missedSummary} Next service at ${nextServiceAfterReady.departureLocal} local reaches ${places.tajEntryGate.name} at ${nextServiceAfterReady.arrivalAtDestinationLocal} local (${nextServiceAfterReady.arrivalAtDestinationUtc}). ${cutoffVerdictLabel}`
+          : `${missedSummary} 0 candidate departures clear travelerReadyAt ${travelerReadyAt.formattedSummary} and applicable cutoffs.`;
 
-  const nextStep = nextCatchableDeparture
-    ? `${nextCatchableDeparture.nextStepLabel} (travelerReadyAt ${travelerReadyAt.utcIso}, schedule baseline: ${scheduleBaselineStatus}).`
-    : `View options that fit on /routes/${corridorId} (schedule baseline: ${scheduleBaselineStatus}).`;
+  const nextStep =
+    evaluatedCandidates.length === 0 && sampleOnwardDeparturesExcluded
+      ? !travelerEtaEntered
+        ? `Check official NTES live train status and enter your revised arrival ETA on /routes/${corridorId} (schedule baseline: Needs verification; sample onward departures excluded from real-trip result until verified).`
+        : `Compare Taj entry window against travelerReadyAt ${travelerReadyAt.utcIso} on /routes/${corridorId} (sample onward departures excluded from real-trip result until onward services are verified).`
+      : nextCatchableDeparture
+        ? `${nextCatchableDeparture.nextStepLabel} (travelerReadyAt ${travelerReadyAt.utcIso}, schedule baseline: ${scheduleBaselineStatus}).`
+        : `View options that fit on /routes/${corridorId} (schedule baseline: ${scheduleBaselineStatus}).`;
 
   return {
     specId: "DCC-412",
@@ -2337,6 +2383,11 @@ export function evaluateDcc412ItineraryRecheck(
     evaluatedAt: inboundSourceTimestamp,
     serviceDate,
     ianaTimeZone,
+    isExampleScenario,
+    scenarioLabel,
+    travelerEtaEntered,
+    sampleOnwardDeparturesExcluded,
+    onwardServicesVerificationNote,
     places,
     scheduleBaselineStatus,
     criticalUpdateMissing,
@@ -2378,11 +2429,74 @@ export function evaluateDcc412ItineraryRecheck(
 }
 
 /**
- * Canonical Synthetic Delhi–Agra Test for DCC-412:
+ * Real-trip Delhi → Agra Recheck Evaluator:
+ * - For a traveler who hasn't entered an ETA (`!absoluteEta`), shows `scheduleBaselineStatus = "Needs verification"`.
+ * - Keeps the sample onward departures (`10:30`, `11:00`, `11:30` Agra Cantt feeder cohorts) OUT of the real-trip result (`candidates: []`) until those onward services are verified.
+ */
+export function evaluateDelhiAgraRealTripRecheck(params?: {
+  serviceDate?: string;
+  scheduledArrivalLocal?: string;
+  delayMinutes?: number;
+  absoluteEta?: string | null;
+  transferBufferMinutes?: number;
+  destinationCutoffLocal?: string;
+  tajCutoffLocal?: string;
+  criticalUpdateMissing?: boolean;
+  staleUpdate?: boolean;
+  staleOrMissingUpdateCouldChangeAnswer?: boolean;
+  inboundSourceExpiry?: string | null;
+  evaluatedAtUtc?: string | null;
+  verifiedCandidateDepartures?: Dcc412CandidateDepartureInput[];
+}): Dcc412ItineraryRecheckResult {
+  const serviceDate = params?.serviceDate || "2026-12-10";
+  const effectiveDestCutoff =
+    params?.destinationCutoffLocal || params?.tajCutoffLocal || "16:30";
+  const verifiedCandidateDepartures = params?.verifiedCandidateDepartures ?? [];
+  const hasTravelerEta = Boolean(params?.absoluteEta && params.absoluteEta.trim());
+
+  return evaluateDcc412ItineraryRecheck({
+    corridorId: "delhi-to-agra",
+    serviceDate,
+    ianaTimeZone: "Asia/Kolkata",
+    isExampleScenario: false,
+    scenarioLabel: "Real-Trip Evaluation (Official NTES Lookup + Traveler-Entered ETA)",
+    requireTravelerEtaForVerification: true,
+    sampleOnwardDeparturesExcluded: verifiedCandidateDepartures.length === 0,
+    onwardServicesVerificationNote:
+      verifiedCandidateDepartures.length === 0
+        ? "Sample onward departures (10:30, 11:00, and 11:30 Agra Cantt station feeder cohorts) are kept out of the real-trip result until those onward transfer services are verified in the Review Desk."
+        : null,
+    places: DELHI_AGRA_CORRIDOR_PLACES,
+    inboundLegId: "leg-1-gatimaan-express-12050-agc",
+    inboundLegTitle: "Train 12050 Gatimaan Express (NZM → Agra Cantt AGC)",
+    scheduledArrivalLocal: params?.scheduledArrivalLocal || "09:50",
+    delayMinutes: hasTravelerEta ? (params?.delayMinutes ?? 0) : (params?.delayMinutes ?? 0),
+    absoluteEta: params?.absoluteEta ?? null,
+    transferBufferMinutes: params?.transferBufferMinutes ?? 15,
+    criticalUpdateMissing: params?.criticalUpdateMissing ?? false,
+    staleUpdate: params?.staleUpdate ?? false,
+    staleOrMissingUpdateCouldChangeAnswer:
+      params?.staleOrMissingUpdateCouldChangeAnswer ?? false,
+    evaluatedAtUtc: params?.evaluatedAtUtc ?? null,
+    inboundSource: hasTravelerEta
+      ? "Traveler-Entered ETA via Official CRIS / NTES Lookup"
+      : "Published Train Schedule Baseline (Pending Traveler-Entered ETA / Live NTES Feed)",
+    inboundSourceTimestamp: `${serviceDate}T04:45:00Z`,
+    inboundSourceExpiry:
+      params?.inboundSourceExpiry || `${serviceDate}T05:30:00Z`,
+    destinationCutoffLocal: effectiveDestCutoff,
+    destinationCutoffLabel: "Taj Mahal East/West Gate Entry Cutoff",
+    candidateDepartures: verifiedCandidateDepartures,
+  });
+}
+
+/**
+ * Canonical Synthetic Delhi–Agra Example Scenario for DCC-412:
+ * - Explicitly labeled as an Example Scenario (`isExampleScenario: true`).
  * - Models 3 distinct places: Delhi Rail Station (`NZM`), Agra Cantt (`AGC`), and Taj Entry Gate (`East Gate / Shilpgram`)
  * - 9:50 a.m. (`09:50`) scheduled arrival in `Asia/Kolkata` (`04:20Z`)
  * - + 15 minutes to exit the station (added once)
- * - Onward departures at `10:30` and `11:00` a.m., with `25 minutes` from departure to being ready at the Taj entry gate (`10:55` and `11:25`).
+ * - Sample onward departures at `10:30` and `11:00` a.m. (kept strictly inside example/test evaluations), with `25 minutes` from departure to being ready at the Taj entry gate (`10:55` and `11:25`).
  */
 export function evaluateSyntheticDelhiAgraDcc412Test(overrides?: {
   serviceDate?: string;
@@ -2399,8 +2513,9 @@ export function evaluateSyntheticDelhiAgraDcc412Test(overrides?: {
   inboundSourceExpiry?: string | null;
   evaluatedAtUtc?: string | null;
   includeBackup1130?: boolean;
+  scenarioLabel?: string | null;
 }): Dcc412ItineraryRecheckResult {
-  const serviceDate = overrides?.serviceDate || "2026-11-18";
+  const serviceDate = overrides?.serviceDate || "2026-12-10";
   const effectiveDestCutoff =
     overrides?.destinationCutoffLocal || overrides?.tajCutoffLocal || "16:30";
   const gateReadyMins = overrides?.gateReadyMinutesFromDeparture ?? 25;
@@ -2428,8 +2543,8 @@ export function evaluateSyntheticDelhiAgraDcc412Test(overrides?: {
   const candidateDepartures: Dcc412CandidateDepartureInput[] = [
     {
       candidateId: "agc-conn-1030-missed",
-      title: "10:30 Agra Cantt Pre-Booked Station Feeder Transfer (Taj East Gate)",
-      operatorName: "Agra Cantt Station Feeder Cohort (Sample)",
+      title: "10:30 Agra Cantt Pre-Booked Station Feeder Transfer (Taj East Gate — Example)",
+      operatorName: "Agra Cantt Station Feeder Cohort (Example Scenario)",
       originPlaceId: DELHI_AGRA_CORRIDOR_PLACES.agraCantt.placeId,
       destinationPlaceId: DELHI_AGRA_CORRIDOR_PLACES.tajEntryGate.placeId,
       departureLocal: "10:30",
@@ -2437,16 +2552,16 @@ export function evaluateSyntheticDelhiAgraDcc412Test(overrides?: {
       gateReadyMinutesFromDeparture: gateReadyMins,
       ticketCutoffBeforeDepartureMinutes: 5,
       destinationCutoffLocal: effectiveDestCutoff,
-      source: "Agra Cantt Feeder Schedule Baseline (Sample)",
+      source: "Agra Cantt Feeder Schedule Baseline (Example Scenario)",
       sourceTimestamp: `${serviceDate}T04:00:00Z`,
       sourceExpiry: `${serviceDate}T06:00:00Z`,
       nextStepHref: `/routes/delhi-to-agra?date=${encodeURIComponent(serviceDate)}&cohort=1030#connection-recheck`,
-      nextStepLabel: "Select 10:30 Transfer Cohort (Reaches Gate at 10:55)",
+      nextStepLabel: "Select 10:30 Transfer Cohort (Reaches Gate at 10:55 — Example)",
     },
     {
       candidateId: "agc-conn-1100-catchable",
-      title: "11:00 Agra Cantt Catchable Transfer Cohort (Taj East Gate)",
-      operatorName: "Agra Cantt Verified Station Transfer Cohort (Sample)",
+      title: "11:00 Agra Cantt Catchable Transfer Cohort (Taj East Gate — Example)",
+      operatorName: "Agra Cantt Station Transfer Cohort (Example Scenario)",
       originPlaceId: DELHI_AGRA_CORRIDOR_PLACES.agraCantt.placeId,
       destinationPlaceId: DELHI_AGRA_CORRIDOR_PLACES.tajEntryGate.placeId,
       departureLocal: "11:00",
@@ -2454,19 +2569,19 @@ export function evaluateSyntheticDelhiAgraDcc412Test(overrides?: {
       gateReadyMinutesFromDeparture: gateReadyMins,
       ticketCutoffBeforeDepartureMinutes: 5,
       destinationCutoffLocal: effectiveDestCutoff,
-      source: "Agra Cantt Dispatch Schedule Baseline (Sample)",
+      source: "Agra Cantt Dispatch Schedule Baseline (Example Scenario)",
       sourceTimestamp: `${serviceDate}T04:45:00Z`,
       sourceExpiry: `${serviceDate}T06:30:00Z`,
       nextStepHref: `/routes/delhi-to-agra?date=${encodeURIComponent(serviceDate)}&cohort=1100#connection-recheck`,
-      nextStepLabel: "Select 11:00 Catchable Transfer Cohort (Clears 10:55 Cutoff)",
+      nextStepLabel: "Select 11:00 Catchable Transfer Cohort (Clears Cutoff — Example)",
     },
   ];
 
   if (includeBackup1130) {
     candidateDepartures.push({
       candidateId: "agc-conn-1130-backup",
-      title: "11:30 Agra Cantt Secondary Backup Transfer (Taj East Gate)",
-      operatorName: "Agra Cantt Secondary Station Cohort (Sample)",
+      title: "11:30 Agra Cantt Secondary Backup Transfer (Taj East Gate — Example)",
+      operatorName: "Agra Cantt Secondary Station Cohort (Example Scenario)",
       originPlaceId: DELHI_AGRA_CORRIDOR_PLACES.agraCantt.placeId,
       destinationPlaceId: DELHI_AGRA_CORRIDOR_PLACES.tajEntryGate.placeId,
       departureLocal: "11:30",
@@ -2474,11 +2589,11 @@ export function evaluateSyntheticDelhiAgraDcc412Test(overrides?: {
       gateReadyMinutesFromDeparture: gateReadyMins,
       ticketCutoffBeforeDepartureMinutes: 5,
       destinationCutoffLocal: effectiveDestCutoff,
-      source: "Agra Cantt Dispatch Schedule Baseline (Sample)",
+      source: "Agra Cantt Dispatch Schedule Baseline (Example Scenario)",
       sourceTimestamp: `${serviceDate}T04:45:00Z`,
       sourceExpiry: `${serviceDate}T07:00:00Z`,
       nextStepHref: `/routes/delhi-to-agra?date=${encodeURIComponent(serviceDate)}&cohort=1130#connection-recheck`,
-      nextStepLabel: "Select 11:30 Backup Transfer Cohort",
+      nextStepLabel: "Select 11:30 Backup Transfer Cohort (Example)",
     });
   }
 
@@ -2486,6 +2601,14 @@ export function evaluateSyntheticDelhiAgraDcc412Test(overrides?: {
     corridorId: "delhi-to-agra",
     serviceDate,
     ianaTimeZone: "Asia/Kolkata",
+    isExampleScenario: true,
+    scenarioLabel:
+      overrides?.scenarioLabel ||
+      (serviceDate === "2026-12-10"
+        ? "Example — December 10, 2026 Scenario (2026-12-10 Synthetic Fixture)"
+        : `Example — ${serviceDate} Synthetic Scenario`),
+    requireTravelerEtaForVerification: false,
+    sampleOnwardDeparturesExcluded: false,
     places: DELHI_AGRA_CORRIDOR_PLACES,
     inboundLegId: "leg-1-gatimaan-express-12050-agc",
     inboundLegTitle: "Train 12050 Gatimaan Express (NZM → Agra Cantt AGC)",
@@ -2498,7 +2621,7 @@ export function evaluateSyntheticDelhiAgraDcc412Test(overrides?: {
     staleOrMissingUpdateCouldChangeAnswer:
       overrides?.staleOrMissingUpdateCouldChangeAnswer ?? false,
     evaluatedAtUtc: overrides?.evaluatedAtUtc ?? null,
-    inboundSource: "Indian Railways NTES / CRIS Live Running Status (Sample)",
+    inboundSource: "Indian Railways NTES / CRIS Live Running Status (Example Scenario)",
     inboundSourceTimestamp: `${serviceDate}T04:45:00Z`,
     inboundSourceExpiry:
       overrides?.inboundSourceExpiry || `${serviceDate}T05:30:00Z`,
@@ -2509,10 +2632,11 @@ export function evaluateSyntheticDelhiAgraDcc412Test(overrides?: {
 }
 
 /**
- * Table-driven December 10, 2026 (`2026-12-10`) Delhi → Agra Corridor Fixture in `Asia/Kolkata`:
+ * Table-driven December 10, 2026 (`2026-12-10`) Delhi → Agra Corridor Example Scenario in `Asia/Kolkata`:
+ * - Explicitly labeled as `Example — December 10, 2026 Scenario` (`isExampleScenario: true`).
  * - Train scheduled into Agra Cantt (`AGC`) at `09:50` a.m.
  * - `15` minutes to exit the station.
- * - Onward departures at `10:30` and `11:00` a.m., with `25` minutes from departure to being ready at the Taj entry gate (`10:55` and `11:25`).
+ * - Sample onward departures at `10:30` and `11:00` a.m., with `25` minutes from departure to being ready at the Taj entry gate (`10:55` and `11:25`).
  */
 export function evaluateDelhiAgra20261210CorridorFixture(params: {
   delayMinutes?: number;
@@ -2526,6 +2650,7 @@ export function evaluateDelhiAgra20261210CorridorFixture(params: {
 }): Dcc412ItineraryRecheckResult {
   return evaluateSyntheticDelhiAgraDcc412Test({
     serviceDate: "2026-12-10",
+    scenarioLabel: "Example — December 10, 2026 Scenario (2026-12-10 Synthetic Fixture)",
     scheduledArrivalLocal: "09:50",
     delayMinutes: params.delayMinutes ?? 0,
     absoluteEta: params.absoluteEta ?? null,
