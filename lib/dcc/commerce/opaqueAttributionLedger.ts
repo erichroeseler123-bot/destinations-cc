@@ -2200,8 +2200,9 @@ export function getDccAuthorityScorecard(): DccAuthorityScorecardReport {
     const isVisitorTest =
       visitor.isTest === true ||
       visitor.trafficClass === "test" ||
-      isAutomatedOrQaRecord({
-        visitorId: visitor.visitorId,
+      isDemoOrAutomatedVerificationTraffic({
+        clickId: visitor.visitorId,
+        isTest: visitor.isTest,
         originatingPage: visitor.originatingPage,
       });
     const bucket = isVisitorTest ? test : production;
@@ -2246,11 +2247,22 @@ export function getDccAuthorityScorecard(): DccAuthorityScorecardReport {
     const isRecordTest =
       record.isTest === true ||
       record.trafficClass === "test" ||
-      isAutomatedOrQaRecord(record);
+      isDemoOrAutomatedVerificationTraffic({
+        clickId: record.clickId,
+        isTest: record.isTest,
+        originatingPage: record.originatingPage,
+        decisionReceiptId: record.decisionReceiptId,
+        userAgent: record.userAgent,
+        referer: record.referer,
+      });
     const bucket = isRecordTest ? test : production;
     const page = String(record.originatingPage || "");
     const placementId = extractRecordPlacementId(record);
-    const trafficSource = extractRecordTrafficSource(record);
+    const trafficSource = inferTrafficSource({
+      trafficSource: record.trafficSource || record.tripDetails?.trafficSource,
+      originatingPage: record.originatingPage,
+      referer: record.referer,
+    }).toLowerCase();
     const isFollowed =
       record.recordStage === "outbound_click" || (record.clickCount || 0) > 0;
 
