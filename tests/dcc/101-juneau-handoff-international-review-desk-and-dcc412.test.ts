@@ -50,7 +50,9 @@ import fs from "node:fs";
 import path from "node:path";
 import { NextRequest } from "next/server";
 import {
+  deleteSupplierProductCheckRecord,
   listPortfolioSupplierConnections,
+  readSupplierProductCheckRecords,
   runSupplierBookingLinkCheck,
   runSupplierLiveInventoryCheck,
 } from "@/lib/dcc/operatorOnboardingStore";
@@ -1405,295 +1407,392 @@ test("101.8 — WNO First Pilot: Ragin Cajun Airboat Tours (Keep aktourcenter Li
   );
 });
 
-test("101.9 — Portfolio Cockpit Supplier Connections: Real per-product check times, 'Not checked' when no record exists, what each check proves, separate planner live display check, and 'Check booking link' / 'Check live inventory' actions", async () => {
+test("101.9 — Portfolio Cockpit Supplier Connections: Durable check persistence, real HTTP checkout handoff verification, GoSno /api/availability trip check, and distinct FareHarbor states (missing_credentials, http_403, empty_date, timeout)", async () => {
   const checksFilePath = path.join(
     process.cwd(),
     "data",
     "memory",
     "supplier-connection-checks.json",
   );
-  const originalChecksJson = fs.readFileSync(checksFilePath, "utf8");
+  const originalChecksJson = fs.existsSync(checksFilePath)
+    ? fs.readFileSync(checksFilePath, "utf8")
+    : "[]\n";
+
+  const createdKeys: Array<{
+    companyId: string;
+    productId: string;
+    checkType: "booking_link" | "live_inventory";
+  }> = [
+    {
+      companyId: "southern-style-tours",
+      productId: "southernstyle-city-tour",
+      checkType: "booking_link",
+    },
+    {
+      companyId: "southern-style-tours",
+      productId: "southernstyle-city-tour",
+      checkType: "live_inventory",
+    },
+    {
+      companyId: "ragin-cajun-tours",
+      productId: "ragincajun-airboat",
+      checkType: "booking_link",
+    },
+    {
+      companyId: "ragin-cajun-tours",
+      productId: "ragincajun-airboat",
+      checkType: "live_inventory",
+    },
+    {
+      companyId: "gosno",
+      productId: "gosno-colorado-planner-vail-booking",
+      checkType: "booking_link",
+    },
+    {
+      companyId: "gosno",
+      productId: "gosno-colorado-planner-vail-booking",
+      checkType: "live_inventory",
+    },
+  ];
 
   try {
-    const connections = await listPortfolioSupplierConnections();
-    assert.ok(connections.length >= 6);
-
-    // Verify rows do NOT share a single preset timestamp
-    const checkedRows = connections.filter((c) => c.lastChecked !== null);
-    const distinctLastChecked = new Set(checkedRows.map((c) => c.lastChecked));
-    assert.equal(
-      distinctLastChecked.size,
-      checkedRows.length,
-      "Each checked company must have its own distinct actual check timestamp rather than a shared preset time",
-    );
-
-    // 1. Southern Style Tours: booking links & AKTOURCENTER attribution verified; live inventory not checked yet (null)
-    const southernStyle = connections.find(
-      (c) => c.companyId === "southern-style-tours",
-    );
-    assert.ok(southernStyle);
-    assert.equal(southernStyle.companyName, "Southern Style Tours");
-    assert.equal(southernStyle.providerShortname, "southernstyletours");
-    assert.equal(southernStyle.productsAndBookingLinks.length, 3);
-    assert.equal(
-      southernStyle.productsAndBookingLinks[0]?.bookingLinkCheck?.checkedAt,
-      "2026-11-07T22:14:12.000Z",
-    );
-    assert.equal(
-      southernStyle.productsAndBookingLinks[1]?.bookingLinkCheck?.checkedAt,
-      "2026-11-07T22:14:29.000Z",
-    );
-    assert.equal(
-      southernStyle.productsAndBookingLinks[2]?.bookingLinkCheck?.checkedAt,
-      "2026-11-07T22:14:46.000Z",
-    );
-    for (const prod of southernStyle.productsAndBookingLinks) {
-      assert.ok(
-        prod.bookingHref?.includes(
-          "fareharbor.com/embeds/book/southernstyletours/items/",
-        ),
-      );
-      assert.ok(prod.bookingHref?.includes("asn=aktourcenter"));
-      assert.equal(prod.bookingLinkCheck?.verified, true);
-      assert.ok(
-        prod.bookingLinkCheck?.whatItProves.includes("asn=aktourcenter"),
-      );
-      assert.equal(prod.liveInventoryCheck, null);
+    for (const k of createdKeys) {
+      await deleteSupplierProductCheckRecord(k);
     }
-    assert.equal(southernStyle.checkoutVerified.verified, true);
-    assert.ok(
-      southernStyle.checkoutVerified.whatItProves.includes("asn=aktourcenter"),
-    );
-    assert.equal(
-      southernStyle.checkoutVerified.checkedAt,
-      "2026-11-07T22:14:46.000Z",
-    );
-    assert.equal(southernStyle.livePricesAndSeatsVerified.verified, false);
-    assert.equal(southernStyle.livePricesAndSeatsVerified.checkedAt, null);
-    assert.equal(southernStyle.liveInventoryLastChecked, null);
-    assert.equal(southernStyle.lastChecked, "2026-11-07T22:14:46.000Z");
 
-    // 2. Ragin Cajun Airboat Tours: Airboat options & Covered swamp boat booking links verified with AKTOURCENTER;
-    // Airboat live inventory checked (HTTP 403); combo product not checked yet (null)
-    const raginCajun = connections.find(
-      (c) => c.companyId === "ragin-cajun-tours",
-    );
-    assert.ok(raginCajun);
-    assert.equal(raginCajun.companyName, "Ragin Cajun Airboat Tours");
-    assert.equal(raginCajun.providerShortname, "ragincajuntours");
-    const rcAirboat = raginCajun.productsAndBookingLinks.find(
-      (p) => p.productId === "ragincajun-airboat",
-    );
-    const rcCovered = raginCajun.productsAndBookingLinks.find(
-      (p) => p.productId === "ragincajun-covered-boat",
-    );
-    const rcCombo = raginCajun.productsAndBookingLinks.find(
-      (p) => p.productId === "ragincajun-covered-plantation-combo",
-    );
-    assert.ok(rcAirboat);
-    assert.ok(rcCovered);
-    assert.ok(rcCombo);
-    assert.equal(
-      rcAirboat.bookingLinkCheck?.checkedAt,
-      "2026-11-07T22:15:08.000Z",
-    );
-    assert.ok(
-      rcAirboat.bookingLinkCheck?.whatItProves.includes("asn=aktourcenter"),
-    );
-    assert.equal(
-      rcAirboat.liveInventoryCheck?.checkedAt,
-      "2026-11-07T22:15:24.000Z",
-    );
-    assert.equal(rcAirboat.liveInventoryCheck?.verified, false);
-    assert.ok(
-      rcAirboat.liveInventoryCheck?.whatItProves.includes("HTTP 403"),
-    );
-    assert.equal(
-      rcCovered.bookingLinkCheck?.checkedAt,
-      "2026-11-07T22:15:41.000Z",
-    );
-    assert.equal(rcCovered.liveInventoryCheck, null);
-    assert.equal(rcCombo.bookingLinkCheck, null);
-    assert.equal(rcCombo.liveInventoryCheck, null);
-    assert.equal(raginCajun.checkoutVerified.verified, true);
-    assert.equal(raginCajun.livePricesAndSeatsVerified.verified, false);
-    assert.equal(
-      raginCajun.liveInventoryLastChecked,
-      "2026-11-07T22:15:24.000Z",
-    );
-    assert.equal(raginCajun.lastChecked, "2026-11-07T22:15:41.000Z");
+    // 1. Before any check is saved, unchecked products show null (Not checked)
+    const initialConnections = await listPortfolioSupplierConnections();
+    assert.ok(initialConnections.length >= 6);
 
-    // 3. GoSno: booking links verified AND dated price & availability response from its API verified;
-    // whether DCC displays that live result in the planner is a separate check (plannerLiveDisplayVerified.verified === false)
-    const gosno = connections.find((c) => c.companyId === "gosno");
-    assert.ok(gosno);
-    assert.equal(gosno.companyName, "GoSno");
-    assert.equal(gosno.checkoutVerified.verified, true);
-    assert.ok(
-      gosno.checkoutVerified.whatItProves.includes(
-        "src=dcc-authority-colorado",
-      ),
-    );
-    assert.equal(gosno.livePricesAndSeatsVerified.verified, true);
-    assert.equal(
-      gosno.livePricesAndSeatsVerified.code,
-      "live_seats_verified",
-    );
-    assert.ok(
-      gosno.livePricesAndSeatsVerified.whatItProves.includes(
-        "https://gosno.co/api/public/route-feed",
-      ),
-    );
-    assert.ok(
-      gosno.livePricesAndSeatsVerified.whatItProves.includes(
-        "2026-11-04T11:42:27.040Z",
-      ),
-    );
-    assert.equal(gosno.plannerLiveDisplayVerified.verified, false);
-    assert.ok(
-      gosno.plannerLiveDisplayVerified.whatItProves.includes(
-        "Whether DCC displays that live API result in the planner is a separate check",
-      ),
-    );
-    assert.equal(gosno.lastChecked, "2026-11-07T22:17:09.000Z");
-
-    // 4. Unchecked companies show null (Not checked) when no record exists
-    const steamboat = connections.find(
+    const steamboatInitial = initialConnections.find(
       (c) => c.companyId === "new-orleans-steamboat-gray-line",
     );
-    assert.ok(steamboat);
-    assert.equal(steamboat.lastChecked, null);
-    assert.equal(steamboat.bookingLinksLastChecked, null);
-    assert.equal(steamboat.liveInventoryLastChecked, null);
-    assert.equal(steamboat.checkoutVerified.verified, false);
-    assert.equal(steamboat.checkoutVerified.checkedAt, null);
+    assert.ok(steamboatInitial);
+    assert.equal(steamboatInitial.lastChecked, null);
+    assert.equal(steamboatInitial.bookingLinksLastChecked, null);
+    assert.equal(steamboatInitial.liveInventoryLastChecked, null);
+    assert.equal(steamboatInitial.checkoutVerified.verified, false);
+    assert.equal(steamboatInitial.checkoutVerified.checkedAt, null);
 
-    // 5. Render /admin/portfolio and verify Not checked, whatItProves, separate planner display check, and action buttons
-    const portfolioElement = await PortfolioDesktopPage({});
-    const portfolioHtml = renderToStaticMarkup(portfolioElement);
-    assert.ok(
-      portfolioHtml.includes('data-testid="portfolio-supplier-connections"'),
-    );
-    assert.ok(portfolioHtml.includes("Not checked"));
-    assert.ok(portfolioHtml.includes("What this check proves"));
-    assert.ok(portfolioHtml.includes("Planner live display (separate check)"));
-    assert.ok(portfolioHtml.includes("Check booking link"));
-    assert.ok(portfolioHtml.includes("Check live inventory"));
-    assert.ok(
-      portfolioHtml.includes(
-        'data-testid="action-check-booking-link-southernstyle-city-tour"',
-      ),
-    );
-    assert.ok(
-      portfolioHtml.includes(
-        'data-testid="action-check-live-inventory-ragincajun-airboat"',
-      ),
-    );
-
-    // 6. Execute 'Check booking link' on an unchecked product and verify it saves the product, result, and actual check time
-    const customCheckIso = "2026-11-07T23:05:19.000Z";
-    const bookingCheckResult = await runSupplierBookingLinkCheck({
-      companyId: "new-orleans-steamboat-gray-line",
-      productId: steamboat.productsAndBookingLinks[0]!.productId,
-      nowIso: customCheckIso,
-    });
-    assert.equal(bookingCheckResult.ok, true);
-    assert.equal(bookingCheckResult.status, 200);
-    assert.equal(
-      bookingCheckResult.checkRecord?.productId,
-      steamboat.productsAndBookingLinks[0]!.productId,
-    );
-    assert.equal(bookingCheckResult.checkRecord?.checkedAt, customCheckIso);
-    assert.equal(bookingCheckResult.checkRecord?.verified, true);
-    assert.equal(
-      bookingCheckResult.companyConnection?.lastChecked,
-      customCheckIso,
-    );
-    assert.equal(
-      bookingCheckResult.companyConnection?.bookingLinksLastChecked,
-      customCheckIso,
-    );
-
-    // 7. Execute 'Check live inventory' via POST /admin/portfolio/supplier-check route handler
-    const routeCheckIso = "2026-11-07T23:06:44.000Z";
-    const jsonReq = new NextRequest(
-      "https://www.destinationcommandcenter.com/admin/portfolio/supplier-check",
-      {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-          accept: "application/json",
+    // 2. Open the actual checkout: follow redirects and verify supplier, product, and tracking tag intact
+    const redirectFetchMock: typeof fetch = async (input) => {
+      const url = typeof input === "string" ? input : input.toString();
+      if (!url.includes("hop=2")) {
+        return new Response(null, {
+          status: 302,
+          headers: {
+            location: `${url}&hop=2`,
+          },
+        });
+      }
+      return new Response(
+        "<html><body>FareHarbor southernstyletours item 51942 asn=aktourcenter</body></html>",
+        {
+          status: 200,
+          headers: { "content-type": "text/html" },
         },
-        body: JSON.stringify({
-          companyId: "gosno",
-          productId: "gosno-colorado-planner-vail-booking",
-          checkType: "live_inventory",
-          nowIso: routeCheckIso,
-        }),
-      },
-    );
-    const jsonRes = await postPortfolioSupplierCheck(jsonReq);
-    assert.equal(jsonRes.status, 200);
-    const jsonBody = (await jsonRes.json()) as {
-      ok: boolean;
-      checkRecord: {
-        productId: string;
-        checkedAt: string;
-        verified: boolean;
-        whatItProves: string;
-      };
+      );
     };
-    assert.equal(jsonBody.ok, true);
+
+    const sstCheckIso = "2026-11-07T23:10:11.000Z";
+    const sstBookingRes = await runSupplierBookingLinkCheck({
+      companyId: "southern-style-tours",
+      productId: "southernstyle-city-tour",
+      nowIso: sstCheckIso,
+      fetchImpl: redirectFetchMock,
+    });
+    assert.equal(sstBookingRes.ok, true);
+    assert.equal(sstBookingRes.persisted, true);
+    assert.equal(sstBookingRes.status, 200);
+    assert.equal(sstBookingRes.checkRecord?.verified, true);
+    assert.equal(sstBookingRes.checkRecord?.failureReason, null);
+    assert.equal(sstBookingRes.checkRecord?.httpStatus, 200);
+    assert.equal(sstBookingRes.checkRecord?.supplierMatched, true);
+    assert.equal(sstBookingRes.checkRecord?.productMatched, true);
+    assert.equal(sstBookingRes.checkRecord?.attributionVerified, true);
+    assert.equal(sstBookingRes.checkRecord?.attributionTag, "asn=aktourcenter");
+    assert.equal(sstBookingRes.checkRecord?.handoffChain?.length, 2);
+    assert.ok(sstBookingRes.checkRecord?.finalReachedUrl?.includes("hop=2"));
+
+    // Verify if a redirect strips the tracking tag, booking check fails with tracking_tag_missing
+    const strippedTagFetchMock: typeof fetch = async () =>
+      new Response(
+        "<html><body>ragincajuntours item 228561</body></html>",
+        {
+          status: 302,
+          headers: {
+            location:
+              "https://fareharbor.com/embeds/book/ragincajuntours/items/228561/?full-items=yes",
+          },
+        },
+      );
+    let hopCount = 0;
+    const strippedRedirectLoopMock: typeof fetch = async (input) => {
+      hopCount += 1;
+      if (hopCount === 1) {
+        return strippedTagFetchMock(input);
+      }
+      return new Response(
+        "<html><body>ragincajuntours item 228561 without asn</body></html>",
+        { status: 200 },
+      );
+    };
+
+    const strippedRes = await runSupplierBookingLinkCheck({
+      companyId: "ragin-cajun-tours",
+      productId: "ragincajun-airboat",
+      nowIso: "2026-11-07T23:10:25.000Z",
+      fetchImpl: strippedRedirectLoopMock,
+    });
+    assert.equal(strippedRes.ok, true);
+    assert.equal(strippedRes.checkRecord?.verified, false);
+    assert.equal(strippedRes.checkRecord?.failureReason, "tracking_tag_missing");
+
+    // Verify GoSno booking link check reaches gosno.co/vail with src=dcc-authority-colorado intact
+    const gosnoBookingMock: typeof fetch = async () =>
+      new Response("<html><body>GoSno Vail Transfer Booking</body></html>", {
+        status: 200,
+      });
+    const gosnoBookingRes = await runSupplierBookingLinkCheck({
+      companyId: "gosno",
+      productId: "gosno-colorado-planner-vail-booking",
+      nowIso: "2026-11-07T23:11:02.000Z",
+      fetchImpl: gosnoBookingMock,
+    });
+    assert.equal(gosnoBookingRes.ok, true);
+    assert.equal(gosnoBookingRes.persisted, true);
+    assert.equal(gosnoBookingRes.checkRecord?.verified, true);
+    assert.equal(gosnoBookingRes.checkRecord?.supplierMatched, true);
+    assert.equal(gosnoBookingRes.checkRecord?.productMatched, true);
     assert.equal(
-      jsonBody.checkRecord.productId,
-      "gosno-colorado-planner-vail-booking",
-    );
-    assert.equal(jsonBody.checkRecord.checkedAt, routeCheckIso);
-    assert.equal(jsonBody.checkRecord.verified, true);
-    assert.ok(
-      jsonBody.checkRecord.whatItProves.includes(
-        "https://gosno.co/api/public/route-feed",
-      ),
+      gosnoBookingRes.checkRecord?.attributionTag,
+      "src=dcc-authority-colorado",
     );
 
-    // Also verify HTML form submission redirects back to /admin/portfolio#supplier-connections and renders confirmation banner
-    const formData = new FormData();
-    formData.set("companyId", "southern-style-tours");
-    formData.set("productId", "southernstyle-city-tour");
-    formData.set("checkType", "booking_link");
-    const formReq = new NextRequest(
-      "https://www.destinationcommandcenter.com/admin/portfolio/supplier-check",
-      {
-        method: "POST",
-        body: formData,
-      },
+    // 3. Check inventory for a specific trip on GoSno via /api/availability
+    let capturedGosnoUrl = "";
+    const gosnoAvailabilityMock: typeof fetch = async (input) => {
+      capturedGosnoUrl = typeof input === "string" ? input : input.toString();
+      return new Response(
+        JSON.stringify({
+          routeId: "DEN-VAIL",
+          date: "2026-12-15",
+          time: "10:00",
+          passengers: 4,
+          availability: {
+            suv: {
+              available: true,
+              priceCents: 49900,
+              availabilityToken: "tok_test_vail_suv",
+              tokenExpiresAt: "2026-12-15T10:15:00.000Z",
+            },
+            van: {
+              available: true,
+              priceCents: 59900,
+              availabilityToken: "tok_test_vail_van",
+              tokenExpiresAt: "2026-12-15T10:15:00.000Z",
+            },
+          },
+        }),
+        { status: 200, headers: { "content-type": "application/json" } },
+      );
+    };
+
+    const gosnoInvIso = "2026-11-07T23:12:00.000Z";
+    const gosnoInvRes = await runSupplierLiveInventoryCheck({
+      companyId: "gosno",
+      productId: "gosno-colorado-planner-vail-booking",
+      route: "DEN-VAIL",
+      pickupDate: "2026-12-15",
+      pickupTime: "10:00",
+      partySize: 4,
+      vehicleClass: "suv",
+      nowIso: gosnoInvIso,
+      fetchImpl: gosnoAvailabilityMock,
+    });
+    assert.equal(gosnoInvRes.ok, true);
+    assert.equal(gosnoInvRes.persisted, true);
+    assert.ok(capturedGosnoUrl.startsWith("https://gosno.co/api/availability?"));
+    const parsedGosnoUrl = new URL(capturedGosnoUrl);
+    assert.equal(parsedGosnoUrl.searchParams.get("routeId"), "DEN-VAIL");
+    assert.equal(parsedGosnoUrl.searchParams.get("date"), "2026-12-15");
+    assert.equal(parsedGosnoUrl.searchParams.get("time"), "10:00");
+    assert.equal(parsedGosnoUrl.searchParams.get("passengers"), "4");
+    assert.equal(parsedGosnoUrl.searchParams.get("vehicleClass"), "suv");
+    assert.equal(gosnoInvRes.checkRecord?.verified, true);
+    assert.equal(gosnoInvRes.checkRecord?.failureReason, null);
+    assert.equal(gosnoInvRes.checkRecord?.httpStatus, 200);
+    assert.deepEqual(gosnoInvRes.checkRecord?.tripQuery, {
+      route: "DEN-VAIL",
+      origin: "DEN",
+      destination: "Vail",
+      pickupDate: "2026-12-15",
+      pickupTime: "10:00",
+      partySize: 4,
+      vehicleClass: "suv",
+    });
+    assert.ok(gosnoInvRes.checkRecord?.whatItProves.includes("$499"));
+    assert.equal(
+      gosnoInvRes.companyConnection?.plannerLiveDisplayVerified.verified,
+      false,
+      "Displayed in the DCC planner must remain a separate status from live inventory verified",
     );
-    const formRes = await postPortfolioSupplierCheck(formReq);
-    assert.equal(formRes.status, 303);
-    const location = formRes.headers.get("location") || "";
+
+    // 4. For Ragin Cajun and Southern Style, report missing_credentials, http_403, empty_date, and timeout separately
+    // Case A: missing_credentials
+    const missingCredsRes = await runSupplierLiveInventoryCheck({
+      companyId: "ragin-cajun-tours",
+      productId: "ragincajun-airboat",
+      pickupDate: "2026-11-18",
+      partySize: 2,
+      nowIso: "2026-11-07T23:13:01.000Z",
+      forceMissingWnoCredentials: true,
+    });
+    assert.equal(missingCredsRes.ok, true);
+    assert.equal(missingCredsRes.checkRecord?.verified, false);
+    assert.equal(missingCredsRes.checkRecord?.failureReason, "missing_credentials");
+    assert.equal(
+      missingCredsRes.checkRecord?.httpStatus,
+      null,
+      "missing_credentials must not be labeled HTTP 403",
+    );
+
+    // Temporarily ensure WNO credentials exist in env for Cases B, C, D if not already set
+    const origAppKey = process.env.FAREHARBOR_WNO_APP_KEY;
+    const origUserKey = process.env.FAREHARBOR_WNO_USER_KEY;
+    if (!origAppKey && !process.env.DCC_FH_API) {
+      process.env.FAREHARBOR_WNO_APP_KEY = "test_app_key";
+      process.env.FAREHARBOR_WNO_USER_KEY = "test_user_key";
+    }
+
+    try {
+      // Case B: actual HTTP 403
+      const fh403Mock: typeof fetch = async () =>
+        new Response('{"error":"Not authorized for company ragincajuntours"}', {
+          status: 403,
+        });
+      const http403Res = await runSupplierLiveInventoryCheck({
+        companyId: "ragin-cajun-tours",
+        productId: "ragincajun-airboat",
+        pickupDate: "2026-11-18",
+        partySize: 2,
+        nowIso: "2026-11-07T23:13:15.000Z",
+        fetchImpl: fh403Mock,
+      });
+      assert.equal(http403Res.ok, true);
+      assert.equal(http403Res.checkRecord?.verified, false);
+      assert.equal(http403Res.checkRecord?.failureReason, "http_403");
+      assert.equal(http403Res.checkRecord?.httpStatus, 403);
+
+      // Case C: empty_date (HTTP 200 with availabilities: [])
+      const fhEmptyDateMock: typeof fetch = async () =>
+        new Response(JSON.stringify({ availabilities: [] }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        });
+      const emptyDateRes = await runSupplierLiveInventoryCheck({
+        companyId: "southern-style-tours",
+        productId: "southernstyle-city-tour",
+        pickupDate: "2026-12-25",
+        partySize: 2,
+        nowIso: "2026-11-07T23:13:30.000Z",
+        fetchImpl: fhEmptyDateMock,
+      });
+      assert.equal(emptyDateRes.ok, true);
+      assert.equal(emptyDateRes.checkRecord?.verified, false);
+      assert.equal(emptyDateRes.checkRecord?.failureReason, "empty_date");
+      assert.equal(
+        emptyDateRes.checkRecord?.httpStatus,
+        200,
+        "empty_date must record HTTP 200, not 403",
+      );
+
+      // Case D: timeout
+      const fhTimeoutMock: typeof fetch = async () => {
+        const err = new Error("The operation was aborted due to timeout");
+        err.name = "TimeoutError";
+        throw err;
+      };
+      const timeoutRes = await runSupplierLiveInventoryCheck({
+        companyId: "southern-style-tours",
+        productId: "southernstyle-city-tour",
+        pickupDate: "2026-11-18",
+        partySize: 2,
+        nowIso: "2026-11-07T23:13:45.000Z",
+        timeoutMs: 2500,
+        fetchImpl: fhTimeoutMock,
+      });
+      assert.equal(timeoutRes.ok, true);
+      assert.equal(timeoutRes.checkRecord?.verified, false);
+      assert.equal(timeoutRes.checkRecord?.failureReason, "timeout");
+      assert.equal(
+        timeoutRes.checkRecord?.httpStatus,
+        null,
+        "timeout must have httpStatus null, not 403",
+      );
+    } finally {
+      if (origAppKey === undefined) {
+        delete process.env.FAREHARBOR_WNO_APP_KEY;
+      } else {
+        process.env.FAREHARBOR_WNO_APP_KEY = origAppKey;
+      }
+      if (origUserKey === undefined) {
+        delete process.env.FAREHARBOR_WNO_USER_KEY;
+      } else {
+        process.env.FAREHARBOR_WNO_USER_KEY = origUserKey;
+      }
+    }
+
+    // 5. Verify persisted records read back from durable storage and render on /admin/portfolio
+    const persistedRecords = await readSupplierProductCheckRecords();
     assert.ok(
-      location.includes("checkedCompany=southern-style-tours"),
-      `Expected redirect location to include checkedCompany, got ${location}`,
+      persistedRecords.some(
+        (r) =>
+          r.companyId === "gosno" &&
+          r.productId === "gosno-colorado-planner-vail-booking" &&
+          r.checkType === "live_inventory" &&
+          r.checkedAt === gosnoInvIso,
+      ),
     );
-    assert.ok(location.includes("checkedProduct=southernstyle-city-tour"));
-    assert.ok(location.includes("checkType=booking_link"));
 
     const bannerPageHtml = renderToStaticMarkup(
       await PortfolioDesktopPage({
         searchParams: Promise.resolve({
-          checkedCompany: "southern-style-tours",
-          checkedProduct: "southernstyle-city-tour",
-          checkType: "booking_link",
+          checkSaved: "1",
+          checkedCompany: "gosno",
+          checkedProduct: "gosno-colorado-planner-vail-booking",
+          checkType: "live_inventory",
+          checkedAt: gosnoInvIso,
         }),
       }),
     );
-    assert.ok(
-      bannerPageHtml.includes('data-testid="supplier-check-saved-banner"'),
+    assert.ok(bannerPageHtml.includes('data-testid="supplier-check-saved-banner"'));
+    assert.ok(bannerPageHtml.includes("Checkout reachable"));
+    assert.ok(bannerPageHtml.includes("Live inventory verified"));
+    assert.ok(bannerPageHtml.includes("Displayed in DCC planner"));
+
+    // Verify failed write banner when checkSaved=0
+    const failedBannerHtml = renderToStaticMarkup(
+      await PortfolioDesktopPage({
+        searchParams: Promise.resolve({
+          checkSaved: "0",
+          checkError: "Database write failed in test",
+        }),
+      }),
+    );
+    assert.ok(failedBannerHtml.includes('data-testid="supplier-check-error-banner"'));
+    assert.equal(
+      failedBannerHtml.includes('data-testid="supplier-check-saved-banner"'),
+      false,
     );
   } finally {
+    for (const k of createdKeys) {
+      await deleteSupplierProductCheckRecord(k);
+    }
     fs.writeFileSync(checksFilePath, originalChecksJson, "utf8");
   }
 });
+
 
 
 

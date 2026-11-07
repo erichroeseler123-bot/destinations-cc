@@ -92,6 +92,31 @@ export type OperatorOfferReadinessStatuses = {
 
 export type SupplierCheckType = "booking_link" | "live_inventory";
 
+export type SupplierCheckFailureReason =
+  | "missing_credentials"
+  | "http_403"
+  | "empty_date"
+  | "timeout"
+  | "quote_only_or_capacity_limit"
+  | "unavailable_for_trip"
+  | "no_api_configured"
+  | "http_error"
+  | "network_error"
+  | "missing_booking_url"
+  | "supplier_or_product_mismatch"
+  | "tracking_tag_missing"
+  | null;
+
+export type SupplierLiveInventoryTripQuery = {
+  route?: string | null;
+  origin?: string | null;
+  destination?: string | null;
+  pickupDate: string;
+  pickupTime?: string | null;
+  partySize: number;
+  vehicleClass?: "suv" | "van" | string | null;
+};
+
 export type SupplierPlannerLiveDisplayCheck = {
   verified: boolean;
   statusLabel: string;
@@ -100,6 +125,7 @@ export type SupplierPlannerLiveDisplayCheck = {
 
 export type SupplierProductCheckRecord = {
   checkId: string;
+  findingId?: string;
   companyId: string;
   productId: string;
   productTitle: string;
@@ -107,14 +133,24 @@ export type SupplierProductCheckRecord = {
   checkedAt: string;
   verified: boolean;
   code: string;
+  failureReason?: SupplierCheckFailureReason;
   statusLabel: string;
   whatItProves: string;
   targetUrl: string | null;
+  finalReachedUrl?: string | null;
+  handoffChain?: string[];
   httpStatus: number | null;
+  supplierMatched?: boolean | null;
+  productMatched?: boolean | null;
   attributionVerified: boolean | null;
   attributionTag: string | null;
+  tripQuery?: SupplierLiveInventoryTripQuery | null;
   datedApiResponseAt: string | null;
   plannerLiveDisplayCheck: SupplierPlannerLiveDisplayCheck | null;
+  storageBackend?:
+    | "earthos_control_map_findings"
+    | "neon_postgres"
+    | "local_file_nonprod";
 };
 
 export type SupplierConnectionProductLink = {
@@ -1949,8 +1985,6 @@ const SUPPLIER_CHECKS_LOCAL_PATH = path.resolve(
   "supplier-connection-checks.json",
 );
 
-const runtimeSupplierChecksOverlay = new Map<string, SupplierProductCheckRecord>();
-
 function supplierCheckKey(
   companyId: string,
   productId: string,
@@ -1959,62 +1993,258 @@ function supplierCheckKey(
   return `${companyId.trim().toLowerCase()}::${productId.trim().toLowerCase()}::${checkType}`;
 }
 
-export function readSupplierProductCheckRecords(): SupplierProductCheckRecord[] {
-  const byKey = new Map<string, SupplierProductCheckRecord>();
+export function buildSupplierCheckFindingId(
+  companyId: string,
+  productId: string,
+  checkType: SupplierCheckType,
+): string {
+  const cleanCompany = companyId.trim().toLowerCase().replace(/[^a-z0-9_-]+/g, "-");
+  const cleanProduct = productId.trim().toLowerCase().replace(/[^a-z0-9_-]+/g, "-");
+  return `control-map:supplier-check:${cleanCompany}:${cleanProduct}:${checkType}`;
+}
+
+function parseSupplierCheckFromFindingRow(
+  row: typeof earthosControlMapFindings.$inferSelect,
+): SupplierProductCheckRecord | null {
+  const meta = row.metadata as Partial<SupplierProductCheckRecord> | null;
+  if (
+    !meta ||
+    typeof meta.companyId !== "string" ||
+    typeof meta.productId !== "string" ||
+    (meta.checkType !== "booking_link" && meta.checkType !== "live_inventory") ||
+    typeof meta.checkedAt !== "string"
+  ) {
+    return null;
+  }
+  return {
+    ...(meta as SupplierProductCheckRecord),
+    findingId: row.findingId,
+    storageBackend: "earthos_control_map_findings",
+  };
+}
+
+function readLocalNonProdSupplierChecks(): SupplierProductCheckRecord[] {
   try {
-    if (fs.existsSync(SUPPLIER_CHECKS_LOCAL_PATH)) {
-      const raw = fs.readFileSync(SUPPLIER_CHECKS_LOCAL_PATH, "utf8");
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) {
-        for (const item of parsed as SupplierProductCheckRecord[]) {
-          if (item && item.companyId && item.productId && item.checkType && item.checkedAt) {
-            byKey.set(
-              supplierCheckKey(item.companyId, item.productId, item.checkType),
-              item,
-            );
-          }
-        }
+    if (!fs.existsSync(SUPPLIER_CHECKS_LOCAL_PATH)) return [];
+    const raw = fs.readFileSync(SUPPLIER_CHECKS_LOCAL_PATH, "utf8");
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return (parsed as SupplierProductCheckRecord[]).filter(
+      (item) =>
+        Boolean(item && item.companyId && item.productId && item.checkType && item.checkedAt),
+    );
+  } catch {
+    return [];
+  }
+}
+
+function writeLocalNonProdSupplierChecks(records: SupplierProductCheckRecord[]): void {
+  const dir = path.dirname(SUPPLIER_CHECKS_LOCAL_PATH);
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+  fs.writeFileSync(
+    SUPPLIER_CHECKS_LOCAL_PATH,
+    JSON.stringify(records, null, 2),
+    "utf8",
+  );
+}
+
+export async function readSupplierProductCheckRecords(): Promise<SupplierProductCheckRecord[]> {
+  const byKey = new Map<string, SupplierProductCheckRecord>();
+
+  if (hasConfiguredDatabaseUrl()) {
+    const db = await getRequiredEarthosDb();
+    const rows = await db
+      .select()
+      .from(earthosControlMapFindings)
+      .where(eq(earthosControlMapFindings.owner, SUPPLIER_CONNECTION_CHECKS_OWNER))
+      .orderBy(desc(earthosControlMapFindings.updatedAt));
+
+    for (const row of rows) {
+      const parsed = parseSupplierCheckFromFindingRow(row);
+      if (!parsed) continue;
+      const key = supplierCheckKey(parsed.companyId, parsed.productId, parsed.checkType);
+      if (!byKey.has(key)) {
+        byKey.set(key, parsed);
       }
     }
-  } catch {
-    // ignore file read error
+    return Array.from(byKey.values());
   }
 
-  for (const [k, v] of runtimeSupplierChecksOverlay.entries()) {
-    byKey.set(k, v);
+  for (const item of readLocalNonProdSupplierChecks()) {
+    byKey.set(
+      supplierCheckKey(item.companyId, item.productId, item.checkType),
+      {
+        ...item,
+        storageBackend: item.storageBackend || "local_file_nonprod",
+      },
+    );
   }
-
   return Array.from(byKey.values());
 }
 
-export function saveSupplierProductCheckRecord(
+export async function saveSupplierProductCheckRecord(
   record: SupplierProductCheckRecord,
-): SupplierProductCheckRecord {
+): Promise<SupplierProductCheckRecord> {
+  const findingId =
+    record.findingId ||
+    buildSupplierCheckFindingId(record.companyId, record.productId, record.checkType);
+  const useDatabase = hasConfiguredDatabaseUrl();
+
+  if (!useDatabase && process.env.VERCEL_ENV === "production") {
+    throw new Error(
+      "Durable database storage (DATABASE_URL) is required in production to persist supplier connection checks.",
+    );
+  }
+
+  if (useDatabase) {
+    const db = await getRequiredEarthosDb();
+    const persistedRecord: SupplierProductCheckRecord = {
+      ...record,
+      findingId,
+      storageBackend: "earthos_control_map_findings",
+    };
+    const findingStatus = persistedRecord.verified ? "resolved" : "open";
+    const summaryNote = `[${persistedRecord.checkType}] ${persistedRecord.companyId}/${persistedRecord.productId}: ${persistedRecord.statusLabel} (${persistedRecord.checkedAt})`;
+    const recordedDate = new Date(persistedRecord.checkedAt);
+
+    await db
+      .insert(earthosControlMapFindings)
+      .values({
+        findingId,
+        status: findingStatus,
+        severity: "watch",
+        owner: SUPPLIER_CONNECTION_CHECKS_OWNER,
+        note: summaryNote,
+        metadata: persistedRecord as unknown as Record<string, unknown>,
+        updatedAt: recordedDate,
+      })
+      .onConflictDoUpdate({
+        target: earthosControlMapFindings.findingId,
+        set: {
+          status: findingStatus,
+          severity: "watch",
+          owner: SUPPLIER_CONNECTION_CHECKS_OWNER,
+          note: summaryNote,
+          metadata: persistedRecord as unknown as Record<string, unknown>,
+          updatedAt: recordedDate,
+        },
+      });
+
+    await db.insert(earthosControlMapFindingHistory).values({
+      findingId,
+      event:
+        persistedRecord.checkType === "booking_link"
+          ? "supplier_booking_link_checked"
+          : "supplier_live_inventory_checked",
+      status: findingStatus,
+      severity: "watch",
+      owner: SUPPLIER_CONNECTION_CHECKS_OWNER,
+      nodeSlug: "portfolio",
+      corridor: "supplier-connections",
+      recordedAt: recordedDate,
+      summary: summaryNote,
+      approvedAt: null,
+      approvedBy: null,
+      controlSurface: "/admin/portfolio",
+      metadata: persistedRecord as unknown as Record<string, unknown>,
+    });
+
+    const verifyRows = await db
+      .select()
+      .from(earthosControlMapFindings)
+      .where(
+        and(
+          eq(earthosControlMapFindings.findingId, findingId),
+          eq(earthosControlMapFindings.owner, SUPPLIER_CONNECTION_CHECKS_OWNER),
+        ),
+      )
+      .limit(1);
+
+    const verifiedBack = verifyRows[0]
+      ? parseSupplierCheckFromFindingRow(verifyRows[0])
+      : null;
+    if (
+      !verifiedBack ||
+      verifiedBack.checkedAt !== persistedRecord.checkedAt ||
+      verifiedBack.productId !== persistedRecord.productId
+    ) {
+      throw new Error(
+        `Post-write database verification failed for supplier check ${findingId}.`,
+      );
+    }
+
+    return verifiedBack;
+  }
+
+  const persistedLocal: SupplierProductCheckRecord = {
+    ...record,
+    findingId,
+    storageBackend: "local_file_nonprod",
+  };
   const key = supplierCheckKey(record.companyId, record.productId, record.checkType);
-  const existing = readSupplierProductCheckRecords();
+  const existing = readLocalNonProdSupplierChecks();
   const byKey = new Map<string, SupplierProductCheckRecord>();
   for (const item of existing) {
     byKey.set(supplierCheckKey(item.companyId, item.productId, item.checkType), item);
   }
-  byKey.set(key, record);
-  runtimeSupplierChecksOverlay.set(key, record);
+  byKey.set(key, persistedLocal);
+  writeLocalNonProdSupplierChecks(Array.from(byKey.values()));
 
-  const allRecords = Array.from(byKey.values());
-  try {
-    const dir = path.dirname(SUPPLIER_CHECKS_LOCAL_PATH);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    fs.writeFileSync(
-      SUPPLIER_CHECKS_LOCAL_PATH,
-      JSON.stringify(allRecords, null, 2),
-      "utf8",
+  const verifyLocal = readLocalNonProdSupplierChecks().find(
+    (item) =>
+      supplierCheckKey(item.companyId, item.productId, item.checkType) === key &&
+      item.checkedAt === persistedLocal.checkedAt,
+  );
+  if (!verifyLocal) {
+    throw new Error(
+      `Post-write local file verification failed for supplier check ${findingId}.`,
     );
-  } catch {
-    // ignore read-only filesystem in serverless runtime; runtimeSupplierChecksOverlay retains it
   }
+  return verifyLocal;
+}
 
-  return record;
+export async function deleteSupplierProductCheckRecord(params: {
+  companyId: string;
+  productId: string;
+  checkType: SupplierCheckType;
+}): Promise<void> {
+  const findingId = buildSupplierCheckFindingId(
+    params.companyId,
+    params.productId,
+    params.checkType,
+  );
+  if (hasConfiguredDatabaseUrl()) {
+    const db = await getRequiredEarthosDb();
+    await db
+      .delete(earthosControlMapFindings)
+      .where(
+        and(
+          eq(earthosControlMapFindings.findingId, findingId),
+          eq(earthosControlMapFindings.owner, SUPPLIER_CONNECTION_CHECKS_OWNER),
+        ),
+      );
+    await db
+      .delete(earthosControlMapFindingHistory)
+      .where(
+        and(
+          eq(earthosControlMapFindingHistory.findingId, findingId),
+          eq(earthosControlMapFindingHistory.owner, SUPPLIER_CONNECTION_CHECKS_OWNER),
+        ),
+      );
+  } else {
+    const targetKey = supplierCheckKey(
+      params.companyId,
+      params.productId,
+      params.checkType,
+    );
+    const remaining = readLocalNonProdSupplierChecks().filter(
+      (item) =>
+        supplierCheckKey(item.companyId, item.productId, item.checkType) !== targetKey,
+    );
+    writeLocalNonProdSupplierChecks(remaining);
+  }
 }
 
 function maxIsoTimestamp(
@@ -2124,7 +2354,7 @@ function buildCompanyRecordFromProductsAndChecks(params: {
 
   const checkoutWhatItProves =
     bookingChecks.length === 0
-      ? "No booking link check recorded yet. Use 'Check booking link' to verify the DCC page and outbound checkout attribution."
+      ? "No booking link check recorded yet. Use 'Check booking link' to follow the live handoff and verify supplier, product, and tracking tag."
       : bookingChecks.map((c) => `${c.productTitle}: ${c.whatItProves}`).join(" · ");
 
   const checkoutReadinessItem: CapabilityReadinessItem<
@@ -2135,7 +2365,8 @@ function buildCompanyRecordFromProductsAndChecks(params: {
     label: checkoutLabel,
     ready: anyBookingVerified,
     evidence: checkoutWhatItProves,
-    evidenceSource: bookingChecks[0]?.targetUrl || null,
+    evidenceSource:
+      bookingChecks[0]?.finalReachedUrl || bookingChecks[0]?.targetUrl || null,
     updatedAt: bookingLinksLastChecked || "not_checked",
   };
 
@@ -2161,7 +2392,7 @@ function buildCompanyRecordFromProductsAndChecks(params: {
 
   const seatWhatItProves =
     inventoryChecks.length === 0
-      ? "No live inventory check recorded yet. Use 'Check live inventory' to test the supplier API/feed and record a check time."
+      ? "No live inventory check recorded yet. Use 'Check live inventory' to query the supplier API for a specific trip and record a check time."
       : inventoryChecks
           .map((c) => `${c.productTitle}: ${c.whatItProves}`)
           .join(" · ");
@@ -2233,8 +2464,10 @@ function buildCompanyRecordFromProductsAndChecks(params: {
   };
 }
 
-export function buildBaselinePortfolioSupplierConnections(): SupplierConnectionRecord[] {
-  const savedChecks = readSupplierProductCheckRecords();
+export async function buildBaselinePortfolioSupplierConnections(
+  preloadedChecks?: SupplierProductCheckRecord[],
+): Promise<SupplierConnectionRecord[]> {
+  const savedChecks = preloadedChecks ?? (await readSupplierProductCheckRecords());
   const checkMap = new Map<string, SupplierProductCheckRecord>();
   for (const rec of savedChecks) {
     checkMap.set(
@@ -2396,7 +2629,7 @@ export function buildBaselinePortfolioSupplierConnections(): SupplierConnectionR
         evidence:
           "FareHarbor ASN referral links active under aktourcenter across items 51942, 83002, and 51953.",
         evidenceSource: "fareharbor_asn:aktourcenter:southernstyletours",
-        updatedAt: "2026-11-07T22:14:46.000Z",
+        updatedAt: "not_checked",
       },
       apiBooking: {
         capability: "api_booking",
@@ -2415,7 +2648,7 @@ export function buildBaselinePortfolioSupplierConnections(): SupplierConnectionR
           "Separate planner display check: DCC storefront displays static baseline rates ($50–$99) and opens FareHarbor checkout rather than rendering live API seat counts.",
       },
       defaultNeedsAttentionNote:
-        "Booking links and AKTOURCENTER attribution verified; run 'Check live inventory' or enable FareHarbor External API v1 read permission for live seat counts and prices.",
+        "Run 'Check booking link' to follow the live FareHarbor handoff and 'Check live inventory' to test WNO External API v1 access.",
     }),
     buildCompanyRecordFromProductsAndChecks({
       companyId: "ragin-cajun-tours",
@@ -2433,7 +2666,7 @@ export function buildBaselinePortfolioSupplierConnections(): SupplierConnectionR
         evidence:
           "FareHarbor ASN referral links active under aktourcenter across airboat options (228561, 228524, 448291), covered tour boat (590176), and combo (603090).",
         evidenceSource: "fareharbor_asn:aktourcenter:ragincajuntours",
-        updatedAt: "2026-11-07T22:15:41.000Z",
+        updatedAt: "not_checked",
       },
       apiBooking: {
         capability: "api_booking",
@@ -2443,7 +2676,7 @@ export function buildBaselinePortfolioSupplierConnections(): SupplierConnectionR
         evidence:
           "Requires Ragin Cajun Tours / FareHarbor Support to grant External API v1 affiliate read/booking permission for user key onto company shortname ragincajuntours.",
         evidenceSource: null,
-        updatedAt: "2026-11-07T22:15:24.000Z",
+        updatedAt: "not_checked",
       },
       defaultPlannerDisplayCheck: {
         verified: false,
@@ -2452,14 +2685,14 @@ export function buildBaselinePortfolioSupplierConnections(): SupplierConnectionR
           "Separate planner display check: because live API inventory is unavailable, the storefront labels pre-tax estimates, gates item 228561 Luling meeting point directions, and shows 'Check dates and prices on FareHarbor'.",
       },
       defaultNeedsAttentionNote:
-        "Airboat options and Covered swamp boat booking links verified with AKTOURCENTER attribution; External API v1 returns HTTP 403 until ragincajuntours grants API read access.",
+        "Airboat options and Covered swamp boat booking links use AKTOURCENTER attribution; External API v1 returns HTTP 403 until ragincajuntours grants API read access.",
     }),
     buildCompanyRecordFromProductsAndChecks({
       companyId: "gosno",
       companyName: "GoSno",
       providerShortname: "gosno",
       market: "Colorado (DCC Mountain Corridor)",
-      bookingSystem: "GoSno Direct Booking & Quote + Route Feed API",
+      bookingSystem: "GoSno Direct Booking & Quote + /api/availability",
       rawProducts: gosnoRawProducts,
       checkMap,
       commissionTerms: {
@@ -2470,7 +2703,7 @@ export function buildBaselinePortfolioSupplierConnections(): SupplierConnectionR
         evidence:
           "Two-way satellite handoff telemetry and src=dcc-authority-colorado attribution active between DCC and GoSno.",
         evidenceSource: "dcc_satellite_handoffs:gosno",
-        updatedAt: "2026-11-07T22:16:58.000Z",
+        updatedAt: "not_checked",
       },
       apiBooking: {
         capability: "api_booking",
@@ -2480,16 +2713,16 @@ export function buildBaselinePortfolioSupplierConnections(): SupplierConnectionR
         evidence:
           "Payment, Rezdy provisioning, and operations queue stay inside GoSno.",
         evidenceSource: null,
-        updatedAt: "2026-11-07T22:17:09.000Z",
+        updatedAt: "not_checked",
       },
       defaultPlannerDisplayCheck: {
         verified: false,
         statusLabel: "Separate check: planner displays static reference baseline",
         whatItProves:
-          "Whether DCC displays that live API result in the planner is a separate check: /transportation/colorado currently renders static reference copy ($499 DEN–Vail SUV baseline) and handoff links rather than binding the live GoSno API route-feed prices ($399 Breckenridge SUV, $449 Vail SUV, $549 Vail Van) directly into the planner UI.",
+          "Whether DCC displays that live API result in the planner is a separate check: /transportation/colorado currently renders static reference copy ($499 DEN–Vail SUV baseline) and handoff links rather than binding live GoSno /api/availability prices directly into the planner UI.",
       },
       defaultNeedsAttentionNote:
-        "GoSno booking/quote links and dated API price & availability response (https://gosno.co/api/public/route-feed) are verified; /transportation/colorado still displays static baseline copy rather than live API feed prices.",
+        "Use 'Check booking link' to verify the live GoSno handoff and 'Check live inventory' to query GoSno /api/availability for a specific route, pickup date/time, party size, and vehicle class.",
     }),
     buildCompanyRecordFromProductsAndChecks({
       companyId: "jean-lafitte-swamp-tours",
@@ -2572,7 +2805,8 @@ export function buildBaselinePortfolioSupplierConnections(): SupplierConnectionR
 export async function listPortfolioSupplierConnections(options: {
   environmentScope?: EarthosEnvironmentScope | "all";
 } = {}): Promise<SupplierConnectionRecord[]> {
-  const baseline = buildBaselinePortfolioSupplierConnections();
+  const savedChecks = await readSupplierProductCheckRecords();
+  const baseline = await buildBaselinePortfolioSupplierConnections(savedChecks);
   let persistedQueue: PublicOperatorOnboardingRecord[] = [];
   try {
     persistedQueue = await listOperatorOnboardingReviewQueue({
@@ -2587,7 +2821,6 @@ export async function listPortfolioSupplierConnections(options: {
     return baseline;
   }
 
-  const savedChecks = readSupplierProductCheckRecords();
   const checkMap = new Map<string, SupplierProductCheckRecord>();
   for (const rec of savedChecks) {
     checkMap.set(
@@ -2617,8 +2850,6 @@ export async function listPortfolioSupplierConnections(options: {
       (shortnameKey && byKey.get(shortnameKey)) || byKey.get(nameKey) || null;
 
     if (existing) {
-      // Do NOT overwrite existing.lastChecked with app.updatedAt || app.submittedAt!
-      // Only update commercial/API readiness statuses from the review record; check times come strictly from recorded product checks.
       existing.readinessStatuses = {
         ...existing.readinessStatuses,
         commissionTerms: app.readinessStatuses.commissionTerms,
@@ -2667,18 +2898,78 @@ export async function listPortfolioSupplierConnections(options: {
   return [...baseline, ...extraRecords];
 }
 
+async function followCheckoutHandoffUrl(
+  initialUrl: string,
+  fetchFn: typeof fetch,
+  timeoutMs: number,
+): Promise<{
+  httpStatus: number;
+  finalUrl: string;
+  handoffChain: string[];
+  bodyText: string;
+}> {
+  const handoffChain: string[] = [initialUrl];
+  let currentUrl = initialUrl;
+  let lastStatus = 0;
+  let bodyText = "";
+
+  for (let hop = 0; hop < 8; hop += 1) {
+    const response = await fetchFn(currentUrl, {
+      method: "GET",
+      redirect: "manual",
+      headers: {
+        "user-agent": "DCC-SupplierConnections-Verifier/1.0 (+https://www.destinationcommandcenter.com)",
+        accept: "text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8",
+      },
+      signal: AbortSignal.timeout(timeoutMs),
+      cache: "no-store",
+    });
+
+    lastStatus = response.status;
+    if ([301, 302, 303, 307, 308].includes(response.status)) {
+      const location = response.headers.get("location");
+      if (!location) break;
+      const nextUrl = new URL(location, currentUrl).toString();
+      handoffChain.push(nextUrl);
+      currentUrl = nextUrl;
+      continue;
+    }
+
+    try {
+      const rawText = await response.text();
+      bodyText = rawText.slice(0, 65536);
+    } catch {
+      bodyText = "";
+    }
+    break;
+  }
+
+  return {
+    httpStatus: lastStatus,
+    finalUrl: currentUrl,
+    handoffChain,
+    bodyText,
+  };
+}
+
 export async function runSupplierBookingLinkCheck(params: {
   companyId: string;
   productId: string;
   nowIso?: string;
+  fetchImpl?: typeof fetch;
+  timeoutMs?: number;
 }): Promise<{
   ok: boolean;
-  status: 200 | 404;
+  persisted: boolean;
+  status: 200 | 404 | 500;
   message?: string;
   checkRecord?: SupplierProductCheckRecord;
   companyConnection?: SupplierConnectionRecord;
 }> {
   const checkedAt = params.nowIso || new Date().toISOString();
+  const fetchFn = params.fetchImpl || fetch;
+  const timeoutMs = params.timeoutMs ?? 10000;
+
   const connections = await listPortfolioSupplierConnections();
   const company = connections.find(
     (c) => c.companyId.toLowerCase() === params.companyId.trim().toLowerCase(),
@@ -2686,6 +2977,7 @@ export async function runSupplierBookingLinkCheck(params: {
   if (!company) {
     return {
       ok: false,
+      persisted: false,
       status: 404,
       message: `Company "${params.companyId}" not found in Supplier Connections.`,
     };
@@ -2696,60 +2988,166 @@ export async function runSupplierBookingLinkCheck(params: {
   if (!product) {
     return {
       ok: false,
+      persisted: false,
       status: 404,
       message: `Product "${params.productId}" not found under company "${company.companyName}".`,
     };
   }
 
   let verified = false;
+  let failureReason: SupplierCheckFailureReason = "missing_booking_url";
   let code = "booking_link_missing";
   let statusLabel = "No booking link configured";
   let whatItProves = `Checked ${product.title} (${product.dccPageHref}) at ${checkedAt}: no outbound booking URL is configured on this catalog product.`;
   let httpStatus: number | null = null;
+  let finalReachedUrl: string | null = null;
+  let handoffChain: string[] = [];
+  let supplierMatched = false;
+  let productMatched = false;
   let attributionVerified = false;
   let attributionTag: string | null = product.attributionTag || null;
 
   if (product.bookingHref) {
     try {
-      const parsed = new URL(product.bookingHref);
-      const asn = parsed.searchParams.get("asn");
-      const src = parsed.searchParams.get("src");
-      const ref = parsed.searchParams.get("ref");
-      httpStatus = 200;
+      const initialParsed = new URL(product.bookingHref);
+      const followed = await followCheckoutHandoffUrl(
+        initialParsed.toString(),
+        fetchFn,
+        timeoutMs,
+      );
+      httpStatus = followed.httpStatus;
+      finalReachedUrl = followed.finalUrl;
+      handoffChain = followed.handoffChain;
 
-      if (asn === "aktourcenter") {
-        verified = true;
+      const finalParsed = new URL(followed.finalUrl);
+      const lowerFinalUrl = followed.finalUrl.toLowerCase();
+      const lowerBody = followed.bodyText.toLowerCase();
+
+      const expectedShortname = (company.providerShortname || "").trim().toLowerCase();
+      if (company.companyId === "gosno" || expectedShortname === "gosno") {
+        supplierMatched =
+          finalParsed.hostname === "gosno.co" ||
+          finalParsed.hostname.endsWith(".gosno.co") ||
+          lowerBody.includes("gosno");
+        if (product.productId.includes("vail")) {
+          productMatched =
+            finalParsed.pathname.toLowerCase().includes("/vail") ||
+            finalParsed.searchParams.get("destination")?.toLowerCase() === "vail";
+        } else if (product.productId.includes("breckenridge")) {
+          productMatched =
+            finalParsed.pathname.toLowerCase().includes("/breckenridge") ||
+            finalParsed.searchParams.get("destination")?.toLowerCase() === "breckenridge";
+        } else if (product.productId.includes("quote")) {
+          productMatched = finalParsed.pathname.toLowerCase().includes("/request-quote");
+        } else {
+          productMatched = supplierMatched;
+        }
+      } else if (expectedShortname) {
+        supplierMatched =
+          lowerFinalUrl.includes(expectedShortname) ||
+          lowerBody.includes(expectedShortname);
+        if (product.itemId) {
+          const itemToken = String(product.itemId).trim().toLowerCase();
+          productMatched =
+            lowerFinalUrl.includes(`/items/${itemToken}`) ||
+            lowerFinalUrl.includes(itemToken) ||
+            lowerBody.includes(itemToken);
+        } else {
+          productMatched = supplierMatched;
+        }
+      } else {
+        supplierMatched = followed.httpStatus >= 200 && followed.httpStatus < 400;
+        productMatched = supplierMatched;
+      }
+
+      const finalAsn = finalParsed.searchParams.get("asn");
+      const finalSrc = finalParsed.searchParams.get("src");
+      const finalRef = finalParsed.searchParams.get("ref");
+
+      const expectedTag = (product.attributionTag || "").trim();
+      if (expectedTag.startsWith("asn=")) {
+        const expectedAsn = expectedTag.slice("asn=".length);
+        attributionVerified =
+          finalAsn === expectedAsn ||
+          lowerBody.includes(`asn=${expectedAsn.toLowerCase()}`) ||
+          lowerBody.includes(`"${expectedAsn.toLowerCase()}"`);
+        if (attributionVerified) {
+          attributionTag = `asn=${expectedAsn}`;
+        }
+      } else if (expectedTag.startsWith("src=")) {
+        const expectedSrc = expectedTag.slice("src=".length);
+        attributionVerified = finalSrc === expectedSrc;
+        if (attributionVerified) {
+          attributionTag = `src=${expectedSrc}`;
+        }
+      } else if (expectedTag.startsWith("ref=")) {
+        const expectedRef = expectedTag.slice("ref=".length);
+        attributionVerified =
+          finalRef === expectedRef ||
+          lowerBody.includes(expectedRef.toLowerCase());
+        if (attributionVerified) {
+          attributionTag = `ref=${expectedRef}`;
+        }
+      } else if (finalAsn || finalSrc || finalRef) {
         attributionVerified = true;
-        attributionTag = "asn=aktourcenter";
-        code = "booking_link_and_aktourcenter_verified";
-        statusLabel = "Booking link & AKTOURCENTER attribution verified";
-        whatItProves = `Proves ${product.dccPageHref} opens FareHarbor (${parsed.pathname}) with asn=aktourcenter${product.flowId ? ` and flow=${product.flowId}` : ""} attribution.`;
-      } else if (src === "dcc-authority-colorado") {
-        verified = true;
-        attributionVerified = true;
-        attributionTag = "src=dcc-authority-colorado";
-        code = "booking_link_and_gosno_attribution_verified";
-        statusLabel = "Planner handoff link & GoSno attribution verified";
-        whatItProves = `Proves ${product.dccPageHref} routes to ${parsed.origin}${parsed.pathname} with src=dcc-authority-colorado attribution.`;
-      } else if (asn || ref) {
-        verified = true;
-        attributionVerified = true;
-        attributionTag = asn ? `asn=${asn}` : `ref=${ref}`;
-        code = "booking_link_and_attribution_verified";
-        statusLabel = `Booking link & attribution (${attributionTag}) verified`;
-        whatItProves = `Proves ${product.dccPageHref} opens ${parsed.origin}${parsed.pathname} with ${attributionTag} attribution.`;
+        attributionTag = finalAsn
+          ? `asn=${finalAsn}`
+          : finalSrc
+            ? `src=${finalSrc}`
+            : `ref=${finalRef}`;
+      }
+
+      const httpOk = followed.httpStatus >= 200 && followed.httpStatus < 400;
+
+      if (!httpOk) {
+        verified = false;
+        failureReason = followed.httpStatus === 403 ? "http_403" : "http_error";
+        code = "booking_link_http_error";
+        statusLabel = `Checkout returned HTTP ${followed.httpStatus}`;
+        whatItProves = `Followed handoff from ${product.dccPageHref} to ${followed.finalUrl} (${followed.handoffChain.length} hop${followed.handoffChain.length === 1 ? "" : "s"}): endpoint returned HTTP ${followed.httpStatus}.`;
+      } else if (!supplierMatched || !productMatched) {
+        verified = false;
+        failureReason = "supplier_or_product_mismatch";
+        code = "booking_link_target_mismatch";
+        statusLabel = !supplierMatched
+          ? "Checkout did not reach expected supplier"
+          : "Checkout did not match expected product/item";
+        whatItProves = `Followed handoff to ${followed.finalUrl} (HTTP ${followed.httpStatus}), but supplierMatched=${supplierMatched}, productMatched=${productMatched} (expected supplier=${company.providerShortname || company.companyId}, item=${product.itemId || product.productId}).`;
+      } else if (!attributionVerified) {
+        verified = false;
+        failureReason = "tracking_tag_missing";
+        code = "booking_link_verified_attribution_pending";
+        statusLabel = "Checkout reached supplier, but tracking tag missing";
+        whatItProves = `Followed handoff to ${followed.finalUrl} (HTTP ${followed.httpStatus}) and matched ${company.companyName} (${product.itemId || product.productId}), but expected tracking tag (${product.attributionTag || "asn/src"}) was not intact on the destination URL.`;
       } else {
         verified = true;
-        attributionVerified = false;
-        code = "booking_link_verified_attribution_pending";
-        statusLabel = "Booking link resolves (affiliate tag pending)";
-        whatItProves = `Proves ${product.dccPageHref} opens ${parsed.origin}${parsed.pathname}, but no affiliate ASN/src parameter is attached yet.`;
+        failureReason = null;
+        if (attributionTag === "asn=aktourcenter") {
+          code = "booking_link_and_aktourcenter_verified";
+          statusLabel = `Checkout reachable (HTTP ${followed.httpStatus}) & AKTOURCENTER verified`;
+        } else if (attributionTag === "src=dcc-authority-colorado") {
+          code = "booking_link_and_gosno_attribution_verified";
+          statusLabel = `GoSno checkout reachable (HTTP ${followed.httpStatus}) & attribution verified`;
+        } else {
+          code = "booking_link_and_attribution_verified";
+          statusLabel = `Checkout reachable (HTTP ${followed.httpStatus}) & ${attributionTag} verified`;
+        }
+        whatItProves = `Followed live handoff (${followed.handoffChain.length} hop${followed.handoffChain.length === 1 ? "" : "s"}) to ${followed.finalUrl} → HTTP ${followed.httpStatus}; verified supplier (${company.providerShortname || company.companyId}), product (${product.itemId || product.productId}), and ${attributionTag} tracking tag intact.`;
       }
-    } catch {
+    } catch (err) {
+      const isTimeout =
+        err instanceof Error &&
+        (err.name === "TimeoutError" ||
+          err.name === "AbortError" ||
+          /timed?\s*out|aborted/i.test(err.message));
       verified = false;
-      code = "booking_link_invalid_url";
-      statusLabel = "Invalid booking URL";
-      whatItProves = `Checked ${product.title} at ${checkedAt}: bookingHref "${product.bookingHref}" is not a valid URL.`;
+      failureReason = isTimeout ? "timeout" : "network_error";
+      httpStatus = null;
+      code = isTimeout ? "booking_link_timeout" : "booking_link_network_error";
+      statusLabel = isTimeout
+        ? `Checkout handoff timed out (${timeoutMs}ms)`
+        : "Checkout handoff request failed";
+      whatItProves = `Attempted live handoff fetch to ${product.bookingHref} at ${checkedAt}: ${err instanceof Error ? err.message : "network error"}.`;
     }
   }
 
@@ -2761,10 +3159,15 @@ export async function runSupplierBookingLinkCheck(params: {
     checkType: "booking_link",
     checkedAt,
     verified,
+    failureReason,
     code,
     statusLabel,
     whatItProves,
     targetUrl: product.bookingHref || null,
+    finalReachedUrl,
+    handoffChain,
+    supplierMatched,
+    productMatched,
     httpStatus,
     attributionVerified,
     attributionTag,
@@ -2772,32 +3175,57 @@ export async function runSupplierBookingLinkCheck(params: {
     plannerLiveDisplayCheck: null,
   };
 
-  saveSupplierProductCheckRecord(checkRecord);
-  const refreshed = await listPortfolioSupplierConnections();
-  const updatedCompany = refreshed.find((c) => c.companyId === company.companyId);
+  try {
+    const saved = await saveSupplierProductCheckRecord(checkRecord);
+    const refreshed = await listPortfolioSupplierConnections();
+    const updatedCompany = refreshed.find((c) => c.companyId === company.companyId);
 
-  return {
-    ok: true,
-    status: 200,
-    checkRecord,
-    companyConnection: updatedCompany,
-  };
+    return {
+      ok: true,
+      persisted: true,
+      status: 200,
+      checkRecord: saved,
+      companyConnection: updatedCompany,
+    };
+  } catch (err) {
+    return {
+      ok: false,
+      persisted: false,
+      status: 500,
+      message:
+        err instanceof Error
+          ? `Failed to save booking link check durably: ${err.message}`
+          : "Failed to save booking link check durably.",
+      checkRecord,
+    };
+  }
 }
 
 export async function runSupplierLiveInventoryCheck(params: {
   companyId: string;
   productId: string;
+  route?: string;
+  pickupDate?: string;
   date?: string;
+  pickupTime?: string;
+  partySize?: number;
+  vehicleClass?: string;
   nowIso?: string;
+  fetchImpl?: typeof fetch;
+  timeoutMs?: number;
+  forceMissingWnoCredentials?: boolean;
 }): Promise<{
   ok: boolean;
-  status: 200 | 404;
+  persisted: boolean;
+  status: 200 | 404 | 500;
   message?: string;
   checkRecord?: SupplierProductCheckRecord;
   companyConnection?: SupplierConnectionRecord;
 }> {
   const checkedAt = params.nowIso || new Date().toISOString();
-  const targetDate = params.date || "2026-11-18";
+  const fetchFn = params.fetchImpl || fetch;
+  const timeoutMs = params.timeoutMs ?? 10000;
+
   const connections = await listPortfolioSupplierConnections();
   const company = connections.find(
     (c) => c.companyId.toLowerCase() === params.companyId.trim().toLowerCase(),
@@ -2805,6 +3233,7 @@ export async function runSupplierLiveInventoryCheck(params: {
   if (!company) {
     return {
       ok: false,
+      persisted: false,
       status: 404,
       message: `Company "${params.companyId}" not found in Supplier Connections.`,
     };
@@ -2815,18 +3244,21 @@ export async function runSupplierLiveInventoryCheck(params: {
   if (!product) {
     return {
       ok: false,
+      persisted: false,
       status: 404,
       message: `Product "${params.productId}" not found under company "${company.companyName}".`,
     };
   }
 
   let verified = false;
+  let failureReason: SupplierCheckFailureReason = "no_api_configured";
   let code = "check_seats_at_provider";
   let statusLabel = "Live inventory not available via API";
   let whatItProves = `Checked ${product.title} at ${checkedAt}: no live inventory API is connected for this product.`;
   let targetUrl: string | null = product.bookingHref || null;
   let httpStatus: number | null = null;
   let datedApiResponseAt: string | null = null;
+  let tripQuery: SupplierLiveInventoryTripQuery | null = null;
   let plannerLiveDisplayCheck: SupplierPlannerLiveDisplayCheck = {
     verified: false,
     statusLabel: "Planner does not display live API inventory",
@@ -2835,108 +3267,260 @@ export async function runSupplierLiveInventoryCheck(params: {
   };
 
   if (company.companyId === "gosno" || company.providerShortname === "gosno") {
-    const gosnoState = getActiveGoSnoRouteFeedSnapshotState();
-    const snap = gosnoState.snapshot;
-    targetUrl = snap.sourceUrl;
-    datedApiResponseAt = snap.feedGeneratedAt;
-    httpStatus = gosnoState.isExpired ? 503 : 200;
+    const isBreck = product.productId.toLowerCase().includes("breckenridge");
+    const isQuote = product.productId.toLowerCase().includes("quote");
+    const routeId = (
+      params.route || (isBreck ? "DEN-BRECKENRIDGE" : "DEN-VAIL")
+    ).trim();
+    const origin = "DEN";
+    const dest = routeId.toUpperCase().includes("BRECK") ? "Breckenridge" : "Vail";
+    const pickupDate = (params.pickupDate || params.date || "2026-12-15").trim();
+    const pickupTime = (params.pickupTime || "10:00").trim();
+    const defaultPartySize = isQuote ? 16 : isBreck ? 6 : 4;
+    const partySize =
+      typeof params.partySize === "number" && Number.isFinite(params.partySize) && params.partySize > 0
+        ? Math.floor(params.partySize)
+        : defaultPartySize;
+    const defaultVehicleClass = isQuote
+      ? "van"
+      : isBreck
+        ? "suv"
+        : partySize > 6
+          ? "van"
+          : "suv";
+    const vehicleClass = (params.vehicleClass || defaultVehicleClass)
+      .trim()
+      .toLowerCase();
 
-    if (!gosnoState.isExpired && snap.feed.routes.length > 0) {
-      verified = true;
-      code = "live_seats_verified";
-      if (product.productId.includes("vail")) {
-        const vailSuv = snap.feed.routes.find(
-          (r) => r.route_id === "DEN-VAIL" && r.vehicle_class === "suv",
-        );
-        const vailVan = snap.feed.routes.find(
-          (r) => r.route_id === "DEN-VAIL" && r.vehicle_class === "van",
-        );
-        statusLabel = "Dated GoSno API price & availability response verified";
-        whatItProves = `Proves GoSno API (${snap.sourceUrl}, generated ${snap.feedGeneratedAt}, fetched ${snap.fetchedAt}) returned dated price and availability: DEN–Vail Private SUV $${vailSuv?.pricing.amount_usd ?? 449} (up to ${vailSuv?.seating_limit ?? 6} pax) and Private Van $${vailVan?.pricing.amount_usd ?? 549} (up to ${vailVan?.seating_limit ?? 10} pax), status ${vailSuv?.status ?? "available_for_online_booking"}.`;
-        plannerLiveDisplayCheck = {
-          verified: false,
-          statusLabel: "Separate check: planner displays static reference baseline",
-          whatItProves:
-            "Whether DCC displays that live API result in the planner is a separate check: /transportation/colorado currently renders static reference copy ($499 DEN–Vail SUV baseline) and handoff links rather than binding the live GoSno API route-feed prices directly into the planner UI.",
-        };
-      } else if (product.productId.includes("breckenridge")) {
-        const breckSuv = snap.feed.routes.find(
-          (r) => r.route_id === "DEN-BRECKENRIDGE" && r.vehicle_class === "suv",
-        );
-        const breckVan = snap.feed.routes.find(
-          (r) => r.route_id === "DEN-BRECKENRIDGE" && r.vehicle_class === "van",
-        );
-        statusLabel = "Dated GoSno API price & availability response verified";
-        whatItProves = `Proves GoSno API (${snap.sourceUrl}, generated ${snap.feedGeneratedAt}, fetched ${snap.fetchedAt}) returned dated price and availability: DEN–Breckenridge Private SUV $${breckSuv?.pricing.amount_usd ?? 399} (up to ${breckSuv?.seating_limit ?? 6} pax) and Private Van $${breckVan?.pricing.amount_usd ?? 499} (up to ${breckVan?.seating_limit ?? 10} pax), status ${breckSuv?.status ?? "available_for_online_booking"}.`;
-        plannerLiveDisplayCheck = {
-          verified: false,
-          statusLabel: "Separate check: planner displays static reference baseline",
-          whatItProves:
-            "Whether DCC displays that live API result in the planner is a separate check: /transportation/colorado links to GoSno Breckenridge booking with src=dcc-authority-colorado rather than rendering live API route-feed prices inside the planner.",
-        };
+    tripQuery = {
+      route: routeId,
+      origin,
+      destination: dest,
+      pickupDate,
+      pickupTime,
+      partySize,
+      vehicleClass,
+    };
+
+    const availabilityUrl = new URL("https://gosno.co/api/availability");
+    availabilityUrl.searchParams.set("routeId", routeId);
+    availabilityUrl.searchParams.set("origin", origin);
+    availabilityUrl.searchParams.set("dest", dest);
+    availabilityUrl.searchParams.set("date", pickupDate);
+    availabilityUrl.searchParams.set("time", pickupTime);
+    availabilityUrl.searchParams.set("passengers", String(partySize));
+    availabilityUrl.searchParams.set("vehicleClass", vehicleClass);
+    availabilityUrl.searchParams.set("tripType", "ONE_WAY");
+    availabilityUrl.searchParams.set("direction", "OUTBOUND");
+    availabilityUrl.searchParams.set(
+      "clientCorrelationId",
+      `dcc-check-${product.productId.slice(0, 20)}-${Date.now().toString(36)}`,
+    );
+
+    targetUrl = availabilityUrl.toString();
+
+    try {
+      const response = await fetchFn(targetUrl, {
+        method: "GET",
+        headers: {
+          accept: "application/json",
+          "user-agent": "DCC-SupplierConnections-Verifier/1.0",
+        },
+        signal: AbortSignal.timeout(timeoutMs),
+        cache: "no-store",
+      });
+
+      httpStatus = response.status;
+      const payload = (await response.json().catch(() => null)) as
+        | {
+            error?: string;
+            message?: string;
+            availability?: Record<
+              string,
+              {
+                available?: boolean;
+                priceCents?: number;
+                availabilityToken?: string;
+                tokenExpiresAt?: string;
+                unavailableReason?: string;
+              }
+            >;
+          }
+        | null;
+
+      if (response.status === 200 && payload?.availability) {
+        const slot =
+          payload.availability[vehicleClass] ||
+          payload.availability.suv ||
+          payload.availability.van;
+        if (slot && slot.available === true && typeof slot.priceCents === "number") {
+          const priceUsd = (slot.priceCents / 100).toFixed(0);
+          verified = true;
+          failureReason = null;
+          code = "live_seats_verified";
+          datedApiResponseAt = checkedAt;
+          statusLabel = `Live /api/availability verified ($${priceUsd} ${vehicleClass.toUpperCase()}, ${partySize} pax on ${pickupDate} ${pickupTime})`;
+          whatItProves = `Proves GoSno live /api/availability (${targetUrl}) returned HTTP 200 for route=${routeId}, pickupDate=${pickupDate}, pickupTime=${pickupTime}, partySize=${partySize}, vehicleClass=${vehicleClass}: available=true, price=$${priceUsd} (${slot.priceCents} cents), tokenExpiresAt=${slot.tokenExpiresAt || "issued"}.`;
+        } else {
+          verified = false;
+          failureReason = "unavailable_for_trip";
+          code = "check_seats_at_provider";
+          datedApiResponseAt = checkedAt;
+          const reason = slot?.unavailableReason || "unavailable";
+          statusLabel = `No ${vehicleClass.toUpperCase()} inventory on ${pickupDate} ${pickupTime} (${reason})`;
+          whatItProves = `Proves GoSno /api/availability (${targetUrl}) responded HTTP 200 for route=${routeId}, pickupDate=${pickupDate} ${pickupTime}, partySize=${partySize}, vehicleClass=${vehicleClass}, but available=false (${reason}).`;
+        }
+      } else if (
+        response.status === 400 &&
+        (payload?.error === "INVALID_PASSENGER_COUNT" || partySize >= 11)
+      ) {
+        verified = false;
+        failureReason = "quote_only_or_capacity_limit";
+        code = "check_seats_at_provider";
+        datedApiResponseAt = checkedAt;
+        statusLabel = `11+ pax (${partySize} pax) capped by /api/availability (HTTP 400 quote-only)`;
+        whatItProves = `Proves GoSno /api/availability (${targetUrl}) enforces the 1–10 passenger single-vehicle cap (HTTP 400 ${payload?.error || "INVALID_PASSENGER_COUNT"}: "${payload?.message || "Passenger count must be between 1 and 10."}"); ${partySize}-passenger trips must use /request-quote.`;
       } else {
-        statusLabel = "Dated GoSno API group-quote policy verified";
-        whatItProves = `Proves GoSno API (${snap.sourceUrl}, generated ${snap.feedGeneratedAt}, fetched ${snap.fetchedAt}) returned dated large_group_policy: threshold 11+ passengers, status quote_only via https://gosno.co/request-quote.`;
-        plannerLiveDisplayCheck = {
+        verified = false;
+        failureReason = response.status === 403 ? "http_403" : "http_error";
+        code = "check_seats_at_provider";
+        statusLabel = `GoSno /api/availability returned HTTP ${response.status}`;
+        whatItProves = `Queried GoSno /api/availability (${targetUrl}) for route=${routeId}, pickupDate=${pickupDate} ${pickupTime}, partySize=${partySize}, vehicleClass=${vehicleClass}: received HTTP ${response.status}${payload?.message ? ` (${payload.message})` : ""}.`;
+      }
+    } catch (err) {
+      const isTimeout =
+        err instanceof Error &&
+        (err.name === "TimeoutError" ||
+          err.name === "AbortError" ||
+          /timed?\s*out|aborted/i.test(err.message));
+      verified = false;
+      failureReason = isTimeout ? "timeout" : "network_error";
+      httpStatus = null;
+      code = "check_seats_at_provider";
+      statusLabel = isTimeout
+        ? `GoSno /api/availability timed out (${timeoutMs}ms)`
+        : "GoSno /api/availability request failed";
+      whatItProves = `Queried GoSno /api/availability (${targetUrl}) at ${checkedAt}: ${err instanceof Error ? err.message : "network error"}.`;
+    }
+
+    plannerLiveDisplayCheck = isQuote
+      ? {
           verified: true,
           statusLabel: "Planner displays 11+ pax quote-only rule",
           whatItProves:
             "Separate check: /transportation/colorado enforces the 10-passenger single-van cap and routes 11+ passenger groups to GoSno multi-vehicle quote.",
+        }
+      : {
+          verified: false,
+          statusLabel: "Separate check: planner displays static reference baseline",
+          whatItProves:
+            "Whether DCC displays that live /api/availability result in the planner is a separate check: /transportation/colorado currently renders static reference copy ($499 DEN–Vail SUV baseline) and handoff links rather than binding live /api/availability prices directly into the planner UI.",
         };
-      }
-    } else {
-      verified = false;
-      code = "check_seats_at_provider";
-      statusLabel = "GoSno route-feed snapshot expired";
-      whatItProves = `Checked GoSno API snapshot (${snap.sourceUrl}) at ${checkedAt}: snapshot generated ${snap.feedGeneratedAt} is expired.`;
-    }
   } else if (company.providerShortname && product.itemId) {
     const shortname = company.providerShortname;
     const itemId = product.itemId;
-    targetUrl = `https://fareharbor.com/api/external/v1/companies/${shortname}/items/${itemId}/minimal/availabilities/date/${targetDate}/`;
-    let hasWnoHeaders = false;
-    try {
-      getWnoFareHarborHeaders();
-      hasWnoHeaders = true;
-    } catch {
-      hasWnoHeaders = false;
+    const pickupDate = (params.pickupDate || params.date || "2026-11-18").trim();
+    const partySize =
+      typeof params.partySize === "number" && Number.isFinite(params.partySize) && params.partySize > 0
+        ? Math.floor(params.partySize)
+        : 2;
+
+    tripQuery = {
+      route: `${shortname}:${itemId}`,
+      origin: null,
+      destination: company.market,
+      pickupDate,
+      pickupTime: params.pickupTime || null,
+      partySize,
+      vehicleClass: null,
+    };
+
+    targetUrl = `https://fareharbor.com/api/external/v1/companies/${shortname}/items/${itemId}/minimal/availabilities/date/${pickupDate}/`;
+
+    let wnoHeaders: HeadersInit | null = null;
+    if (!params.forceMissingWnoCredentials) {
+      try {
+        wnoHeaders = getWnoFareHarborHeaders();
+      } catch {
+        wnoHeaders = null;
+      }
     }
 
-    if (!hasWnoHeaders) {
+    if (!wnoHeaders) {
       verified = false;
+      failureReason = "missing_credentials";
+      httpStatus = null;
       code = "check_seats_at_fareharbor";
-      httpStatus = 403;
-      statusLabel = "API 403 / no supplier API read access — check on FareHarbor";
-      whatItProves = `Probed FareHarbor External API v1 for ${shortname} item #${itemId} on ${targetDate}: supplier API read access is not enabled for aktourcenter (referral-only / HTTP 403). Booking link works, but live prices and seats must be checked on FareHarbor.`;
+      statusLabel = "Missing WNO FareHarbor API credentials";
+      whatItProves = `Cannot query FareHarbor External API v1 for ${shortname} item #${itemId} on ${pickupDate}: WNO FareHarbor credentials (FAREHARBOR_WNO_APP_KEY / FAREHARBOR_WNO_USER_KEY or DCC_FH_API) are missing in this environment.`;
     } else {
       try {
-        const availabilities = await fetchAvailabilitiesForItem(
-          shortname,
-          itemId,
-          targetDate,
-          targetDate,
-          { wnoOnly: true },
-        );
-        if (Array.isArray(availabilities) && availabilities.length > 0) {
-          verified = true;
-          code = "live_seats_verified";
-          httpStatus = 200;
+        const response = await fetchFn(targetUrl, {
+          method: "GET",
+          headers: wnoHeaders,
+          signal: AbortSignal.timeout(timeoutMs),
+          cache: "no-store",
+        });
+
+        httpStatus = response.status;
+        const rawText = await response.text().catch(() => "");
+
+        if (response.status === 403) {
+          verified = false;
+          failureReason = "http_403";
+          code = "check_seats_at_fareharbor";
+          statusLabel = `HTTP 403 Forbidden from FareHarbor API (${shortname})`;
+          whatItProves = `Proves FareHarbor External API v1 (${targetUrl}) returned an actual HTTP 403 Forbidden using WNO credentials for ${shortname} item #${itemId} on ${pickupDate}${rawText ? ` (${rawText.slice(0, 140).trim()})` : ""}. Supplier API read permission is not yet granted; check dates and prices on FareHarbor.`;
+        } else if (response.status === 200) {
+          let availabilities: Array<Record<string, unknown>> = [];
+          try {
+            const parsed = JSON.parse(rawText) as {
+              availabilities?: Array<Record<string, unknown>>;
+            };
+            if (Array.isArray(parsed.availabilities)) {
+              availabilities = parsed.availabilities;
+            }
+          } catch {
+            availabilities = [];
+          }
+
           datedApiResponseAt = checkedAt;
-          statusLabel = `Live FareHarbor API verified (${availabilities.length} departures)`;
-          whatItProves = `Proves FareHarbor External API v1 returned ${availabilities.length} live departure(s) with capacity and customer_type_rates for ${shortname} item #${itemId} on ${targetDate}.`;
+          if (availabilities.length === 0) {
+            verified = false;
+            failureReason = "empty_date";
+            code = "check_seats_at_fareharbor";
+            statusLabel = `Empty date (HTTP 200, 0 departures on ${pickupDate})`;
+            whatItProves = `Proves FareHarbor External API v1 (${targetUrl}) authorized WNO credentials with HTTP 200, but returned 0 departures (availabilities: []) for ${shortname} item #${itemId} on ${pickupDate}.`;
+          } else {
+            verified = true;
+            failureReason = null;
+            code = "live_seats_verified";
+            statusLabel = `Live FareHarbor API verified (HTTP 200, ${availabilities.length} departures on ${pickupDate})`;
+            whatItProves = `Proves FareHarbor External API v1 (${targetUrl}) returned HTTP 200 with ${availabilities.length} live departure(s) for ${shortname} item #${itemId} on ${pickupDate} (${partySize} guests).`;
+          }
         } else {
           verified = false;
+          failureReason = "http_error";
           code = "check_seats_at_fareharbor";
-          httpStatus = 403;
-          statusLabel = "API 403 for aktourcenter — check dates & prices on FareHarbor";
-          whatItProves = `Proves FareHarbor External API v1 returned HTTP 403 Not Authorized (or 0 authorized slots) for aktourcenter on ${shortname} item #${itemId}; supplier API read permission is not yet granted.`;
+          statusLabel = `FareHarbor API returned HTTP ${response.status}`;
+          whatItProves = `Queried FareHarbor External API v1 (${targetUrl}) with WNO credentials for ${shortname} item #${itemId} on ${pickupDate}: received HTTP ${response.status}${rawText ? ` (${rawText.slice(0, 120).trim()})` : ""}.`;
         }
-      } catch {
+      } catch (err) {
+        const isTimeout =
+          err instanceof Error &&
+          (err.name === "TimeoutError" ||
+            err.name === "AbortError" ||
+            /timed?\s*out|aborted/i.test(err.message));
         verified = false;
+        failureReason = isTimeout ? "timeout" : "network_error";
+        httpStatus = null;
         code = "check_seats_at_fareharbor";
-        httpStatus = 403;
-        statusLabel = "API 403 for aktourcenter — check dates & prices on FareHarbor";
-        whatItProves = `Proves FareHarbor External API v1 returned HTTP 403 Not Authorized for aktourcenter on ${shortname} item #${itemId}; supplier API read permission is not yet granted.`;
+        statusLabel = isTimeout
+          ? `FareHarbor API timed out (${timeoutMs}ms)`
+          : "FareHarbor API network error";
+        whatItProves = isTimeout
+          ? `Queried FareHarbor External API v1 (${targetUrl}) with WNO credentials for ${shortname} item #${itemId} on ${pickupDate}, but the request timed out after ${timeoutMs}ms.`
+          : `Queried FareHarbor External API v1 (${targetUrl}) for ${shortname} item #${itemId} on ${pickupDate}: ${err instanceof Error ? err.message : "network error"}.`;
       }
     }
 
@@ -2961,6 +3545,7 @@ export async function runSupplierLiveInventoryCheck(params: {
     checkType: "live_inventory",
     checkedAt,
     verified,
+    failureReason,
     code,
     statusLabel,
     whatItProves,
@@ -2969,20 +3554,32 @@ export async function runSupplierLiveInventoryCheck(params: {
     attributionVerified: product.bookingLinkCheck?.attributionVerified ?? null,
     attributionTag: product.attributionTag || null,
     datedApiResponseAt,
+    tripQuery,
     plannerLiveDisplayCheck,
   };
 
-  saveSupplierProductCheckRecord(checkRecord);
-  const refreshed = await listPortfolioSupplierConnections();
-  const updatedCompany = refreshed.find((c) => c.companyId === company.companyId);
+  try {
+    const saved = await saveSupplierProductCheckRecord(checkRecord);
+    const refreshed = await listPortfolioSupplierConnections();
+    const updatedCompany = refreshed.find((c) => c.companyId === company.companyId);
 
-  return {
-    ok: true,
-    status: 200,
-    checkRecord,
-    companyConnection: updatedCompany,
-  };
+    return {
+      ok: true,
+      persisted: true,
+      status: 200,
+      checkRecord: saved,
+      companyConnection: updatedCompany,
+    };
+  } catch (err) {
+    return {
+      ok: false,
+      persisted: false,
+      status: 500,
+      message:
+        err instanceof Error
+          ? `Failed to save live inventory check durably: ${err.message}`
+          : "Failed to save live inventory check durably.",
+      checkRecord,
+    };
+  }
 }
-
-
-

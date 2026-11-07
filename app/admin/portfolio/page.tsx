@@ -85,6 +85,8 @@ export default async function PortfolioDesktopPage(props: {
   const resolvedSearchParams = props?.searchParams
     ? await props.searchParams
     : undefined;
+  const checkSavedParam = pickParam(resolvedSearchParams, "checkSaved");
+  const checkErrorParam = pickParam(resolvedSearchParams, "checkError");
   const checkedCompanyId = pickParam(resolvedSearchParams, "checkedCompany");
   const checkedProductId = pickParam(resolvedSearchParams, "checkedProduct");
   const checkedType = pickParam(resolvedSearchParams, "checkType");
@@ -103,9 +105,13 @@ export default async function PortfolioDesktopPage(props: {
           ?.productsAndBookingLinks.find((p) => p.productId === checkedProductId)
       : undefined;
   const recentCheckRecord =
-    recentCheckBannerProduct && checkedType === "booking_link"
+    checkSavedParam !== "0" &&
+    recentCheckBannerProduct &&
+    checkedType === "booking_link"
       ? recentCheckBannerProduct.bookingLinkCheck
-      : recentCheckBannerProduct && checkedType === "live_inventory"
+      : checkSavedParam !== "0" &&
+          recentCheckBannerProduct &&
+          checkedType === "live_inventory"
         ? recentCheckBannerProduct.liveInventoryCheck
         : null;
 
@@ -151,6 +157,9 @@ export default async function PortfolioDesktopPage(props: {
   const livePricesAndSeatsVerifiedCount = supplierConnections.filter(
     (s) => s.livePricesAndSeatsVerified.verified,
   ).length;
+  const plannerDisplayVerifiedCount = supplierConnections.filter(
+    (s) => s.plannerLiveDisplayVerified.verified,
+  ).length;
   const supplierAttentionCount = supplierConnections.filter(
     (s) => !s.checkoutVerified.verified || !s.livePricesAndSeatsVerified.verified,
   ).length;
@@ -186,16 +195,31 @@ export default async function PortfolioDesktopPage(props: {
               <div className="text-xs font-black uppercase tracking-[0.18em] text-[#f5c66c]">Catalog + Operator Readiness</div>
               <h2 className="mt-2 text-2xl font-black">Supplier Connections</h2>
               <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-300">
-                Unifies the DCC storefront catalog and operator readiness records (<code className="rounded bg-black/40 px-1.5 py-0.5 text-xs text-zinc-200">lib/dcc/operatorOnboardingStore.ts</code>) so each company shows its products and booking links, checkout verified, live prices and seats verified (plus whether DCC displays that live result in the planner as a separate check), and real check times (<code className="rounded bg-black/40 px-1.5 py-0.5 text-xs text-zinc-200">Not checked</code> when no record exists). Use <strong>Check booking link</strong> and <strong>Check live inventory</strong> to save the product, result, and actual check time.
+                Unifies the DCC storefront catalog and operator readiness records (<code className="rounded bg-black/40 px-1.5 py-0.5 text-xs text-zinc-200">lib/dcc/operatorOnboardingStore.ts</code>) and saves every product check durably in DCC&apos;s Postgres database (<code className="rounded bg-black/40 px-1.5 py-0.5 text-xs text-zinc-200">earthos_control_map_findings</code>). Tracks <strong>Checkout reachable</strong>, <strong>Live inventory verified</strong>, and <strong>Displayed in DCC planner</strong> as separate statuses with real check timestamps (<code className="rounded bg-black/40 px-1.5 py-0.5 text-xs text-zinc-200">Not checked</code> when no record exists).
               </p>
             </div>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
               <MiniMetric label="Companies" value={supplierConnections.length} />
-              <MiniMetric label="Checkout verified" value={`${checkoutVerifiedCount}/${supplierConnections.length}`} />
-              <MiniMetric label="Live prices & seats" value={`${livePricesAndSeatsVerifiedCount}/${supplierConnections.length}`} />
+              <MiniMetric label="Checkout reachable" value={`${checkoutVerifiedCount}/${supplierConnections.length}`} />
+              <MiniMetric label="Live inventory" value={`${livePricesAndSeatsVerifiedCount}/${supplierConnections.length}`} />
+              <MiniMetric label="In DCC planner" value={`${plannerDisplayVerifiedCount}/${supplierConnections.length}`} />
               <MiniMetric label="Needs attention" value={supplierAttentionCount} />
             </div>
           </div>
+
+          {checkSavedParam === "0" || checkErrorParam ? (
+            <div
+              data-testid="supplier-check-error-banner"
+              className="mt-4 rounded-xl border border-rose-400/40 bg-rose-500/10 p-4 text-xs leading-5 text-rose-100"
+            >
+              <div className="font-black uppercase tracking-[0.14em] text-rose-300">
+                Check persistence failed — result was not saved
+              </div>
+              <div className="mt-1 text-rose-100/90">
+                {checkErrorParam || "Database write did not succeed."}
+              </div>
+            </div>
+          ) : null}
 
           {recentCheckRecord ? (
             <div
@@ -203,7 +227,7 @@ export default async function PortfolioDesktopPage(props: {
               className="mt-4 rounded-xl border border-emerald-400/35 bg-emerald-500/10 p-4 text-xs leading-5 text-emerald-100"
             >
               <div className="font-black uppercase tracking-[0.14em] text-emerald-300">
-                Saved {recentCheckRecord.checkType === "booking_link" ? "booking link check" : "live inventory check"} · {formatLastChecked(recentCheckRecord.checkedAt || checkedAtParam)}
+                Saved {recentCheckRecord.checkType === "booking_link" ? "booking link check" : "live inventory check"} · {formatLastChecked(recentCheckRecord.checkedAt || checkedAtParam)} · DB finding: {recentCheckRecord.findingId || "verified"}
               </div>
               <div className="mt-1 font-bold text-white">
                 {recentCheckRecord.productTitle} ({recentCheckRecord.productId}) — {recentCheckRecord.statusLabel}
@@ -213,13 +237,14 @@ export default async function PortfolioDesktopPage(props: {
           ) : null}
 
           <div className="mt-6 overflow-x-auto rounded-xl border border-white/10 bg-black/20">
-            <table className="w-full min-w-[1140px] border-collapse text-left text-sm">
+            <table className="w-full min-w-[1260px] border-collapse text-left text-sm">
               <thead>
                 <tr className="border-b border-white/10 bg-white/[0.03] text-[11px] font-black uppercase tracking-[0.16em] text-zinc-400">
                   <th className="px-4 py-3.5">Company</th>
                   <th className="px-4 py-3.5">Products and booking links</th>
-                  <th className="px-4 py-3.5">Checkout verified</th>
-                  <th className="px-4 py-3.5">Live prices and seats verified</th>
+                  <th className="px-4 py-3.5">Checkout reachable</th>
+                  <th className="px-4 py-3.5">Live inventory verified</th>
+                  <th className="px-4 py-3.5">Displayed in DCC planner</th>
                   <th className="px-4 py-3.5">Last checked</th>
                 </tr>
               </thead>
@@ -376,111 +401,151 @@ function SupplierConnectionRow({ company }: { company: SupplierConnectionRecord 
 
       <td className="px-4 py-4" data-testid={`supplier-products-${company.companyId}`}>
         <ul className="space-y-3">
-          {company.productsAndBookingLinks.map((prod) => (
-            <li
-              key={prod.productId}
-              data-testid={`supplier-product-item-${prod.productId}`}
-              className="rounded-lg border border-white/10 bg-white/[0.03] p-3"
-            >
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="font-bold text-white">{prod.title}</div>
-                <span className="font-mono text-[11px] text-zinc-500">{prod.productId}</span>
-              </div>
-              <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs">
-                <Link
-                  href={prod.dccPageHref}
-                  className="inline-flex items-center rounded border border-cyan-400/30 bg-cyan-500/10 px-2 py-0.5 font-semibold text-cyan-200 hover:bg-cyan-500/20"
-                >
-                  DCC page: {prod.dccPageHref} →
-                </Link>
-                {prod.bookingHref ? (
-                  <a
-                    href={prod.bookingHref}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center rounded border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 font-semibold text-emerald-200 hover:bg-emerald-500/20"
-                  >
-                    {prod.bookingLinkLabel} ↗
-                  </a>
-                ) : (
-                  <span className="inline-flex items-center rounded border border-amber-400/25 bg-amber-500/10 px-2 py-0.5 text-amber-200">
-                    {prod.bookingLinkLabel}
-                  </span>
-                )}
-              </div>
+          {company.productsAndBookingLinks.map((prod) => {
+            const isGoSno = company.companyId === "gosno" || company.providerShortname === "gosno";
+            const defaultRoute = prod.productId.includes("breckenridge")
+              ? "DEN-BRECKENRIDGE"
+              : "DEN-VAIL";
+            const defaultPickupDate = isGoSno ? "2026-12-15" : "2026-11-18";
+            const defaultPickupTime = "10:00";
+            const defaultPartySize = prod.productId.includes("quote")
+              ? 16
+              : prod.productId.includes("breckenridge")
+                ? 6
+                : isGoSno
+                  ? 4
+                  : 2;
+            const defaultVehicleClass = prod.productId.includes("quote")
+              ? "van"
+              : prod.productId.includes("breckenridge")
+                ? "suv"
+                : "suv";
 
-              <div className="mt-2.5 grid gap-2 rounded-md border border-white/10 bg-black/30 p-2 text-[11px] leading-4 text-zinc-300">
-                <div data-testid={`product-booking-check-${prod.productId}`}>
-                  <span className="font-bold text-zinc-200">Booking link check: </span>
-                  {prod.bookingLinkCheck ? (
-                    <>
-                      <span className={prod.bookingLinkCheck.verified ? "font-semibold text-emerald-300" : "font-semibold text-amber-300"}>
-                        {prod.bookingLinkCheck.statusLabel}
-                      </span>{" "}
-                      <span className="font-mono text-zinc-400">
-                        ({formatLastChecked(prod.bookingLinkCheck.checkedAt)})
-                      </span>
-                      <div className="mt-0.5 text-zinc-400">{prod.bookingLinkCheck.whatItProves}</div>
-                    </>
+            return (
+              <li
+                key={prod.productId}
+                data-testid={`supplier-product-item-${prod.productId}`}
+                className="rounded-lg border border-white/10 bg-white/[0.03] p-3"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="font-bold text-white">{prod.title}</div>
+                  <span className="font-mono text-[11px] text-zinc-500">{prod.productId}</span>
+                </div>
+                <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs">
+                  <Link
+                    href={prod.dccPageHref}
+                    className="inline-flex items-center rounded border border-cyan-400/30 bg-cyan-500/10 px-2 py-0.5 font-semibold text-cyan-200 hover:bg-cyan-500/20"
+                  >
+                    DCC page: {prod.dccPageHref} →
+                  </Link>
+                  {prod.bookingHref ? (
+                    <a
+                      href={prod.bookingHref}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center rounded border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 font-semibold text-emerald-200 hover:bg-emerald-500/20"
+                    >
+                      {prod.bookingLinkLabel} ↗
+                    </a>
                   ) : (
-                    <span className="font-mono text-zinc-400">Not checked</span>
+                    <span className="inline-flex items-center rounded border border-amber-400/25 bg-amber-500/10 px-2 py-0.5 text-amber-200">
+                      {prod.bookingLinkLabel}
+                    </span>
                   )}
                 </div>
-                <div data-testid={`product-inventory-check-${prod.productId}`}>
-                  <span className="font-bold text-zinc-200">Live inventory check: </span>
-                  {prod.liveInventoryCheck ? (
-                    <>
-                      <span className={prod.liveInventoryCheck.verified ? "font-semibold text-emerald-300" : "font-semibold text-amber-300"}>
-                        {prod.liveInventoryCheck.statusLabel}
-                      </span>{" "}
-                      <span className="font-mono text-zinc-400">
-                        ({formatLastChecked(prod.liveInventoryCheck.checkedAt)})
-                      </span>
-                      <div className="mt-0.5 text-zinc-400">{prod.liveInventoryCheck.whatItProves}</div>
-                    </>
-                  ) : (
-                    <span className="font-mono text-zinc-400">Not checked</span>
-                  )}
-                </div>
-              </div>
 
-              <div className="mt-2.5 flex flex-wrap items-center gap-2">
-                <form action="/admin/portfolio/supplier-check" method="post">
-                  <input type="hidden" name="companyId" value={company.companyId} />
-                  <input type="hidden" name="productId" value={prod.productId} />
-                  <input type="hidden" name="checkType" value="booking_link" />
-                  <button
-                    type="submit"
-                    data-testid={`action-check-booking-link-${prod.productId}`}
-                    className="inline-flex items-center rounded-md border border-white/20 bg-white/[0.06] px-2.5 py-1 text-[11px] font-bold text-white hover:bg-white/15"
-                  >
-                    Check booking link
-                  </button>
-                </form>
-                <form action="/admin/portfolio/supplier-check" method="post">
-                  <input type="hidden" name="companyId" value={company.companyId} />
-                  <input type="hidden" name="productId" value={prod.productId} />
-                  <input type="hidden" name="checkType" value="live_inventory" />
-                  <button
-                    type="submit"
-                    data-testid={`action-check-live-inventory-${prod.productId}`}
-                    className="inline-flex items-center rounded-md border border-cyan-400/30 bg-cyan-500/10 px-2.5 py-1 text-[11px] font-bold text-cyan-100 hover:bg-cyan-500/20"
-                  >
-                    Check live inventory
-                  </button>
-                </form>
-              </div>
-            </li>
-          ))}
+                <div className="mt-2.5 grid gap-2 rounded-md border border-white/10 bg-black/30 p-2 text-[11px] leading-4 text-zinc-300">
+                  <div data-testid={`product-booking-check-${prod.productId}`}>
+                    <span className="font-bold text-zinc-200">Booking link check: </span>
+                    {prod.bookingLinkCheck ? (
+                      <>
+                        <span className={prod.bookingLinkCheck.verified ? "font-semibold text-emerald-300" : "font-semibold text-amber-300"}>
+                          {prod.bookingLinkCheck.statusLabel}
+                        </span>{" "}
+                        <span className="font-mono text-zinc-400">
+                          ({formatLastChecked(prod.bookingLinkCheck.checkedAt)})
+                        </span>
+                        <div className="mt-0.5 text-zinc-400">{prod.bookingLinkCheck.whatItProves}</div>
+                      </>
+                    ) : (
+                      <span className="font-mono text-zinc-400">Not checked</span>
+                    )}
+                  </div>
+                  <div data-testid={`product-inventory-check-${prod.productId}`}>
+                    <span className="font-bold text-zinc-200">Live inventory check: </span>
+                    {prod.liveInventoryCheck ? (
+                      <>
+                        <span className={prod.liveInventoryCheck.verified ? "font-semibold text-emerald-300" : "font-semibold text-amber-300"}>
+                          {prod.liveInventoryCheck.statusLabel}
+                        </span>{" "}
+                        <span className="font-mono text-zinc-400">
+                          ({formatLastChecked(prod.liveInventoryCheck.checkedAt)})
+                        </span>
+                        {prod.liveInventoryCheck.failureReason ? (
+                          <span className="ml-1.5 rounded bg-amber-500/20 px-1.5 py-0.5 font-mono text-[10px] text-amber-200">
+                            reason: {prod.liveInventoryCheck.failureReason}
+                          </span>
+                        ) : null}
+                        <div className="mt-0.5 text-zinc-400">{prod.liveInventoryCheck.whatItProves}</div>
+                      </>
+                    ) : (
+                      <span className="font-mono text-zinc-400">Not checked</span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                  <form action="/admin/portfolio/supplier-check" method="post">
+                    <input type="hidden" name="companyId" value={company.companyId} />
+                    <input type="hidden" name="productId" value={prod.productId} />
+                    <input type="hidden" name="checkType" value="booking_link" />
+                    <button
+                      type="submit"
+                      data-testid={`action-check-booking-link-${prod.productId}`}
+                      className="inline-flex items-center rounded-md border border-white/20 bg-white/[0.06] px-2.5 py-1 text-[11px] font-bold text-white hover:bg-white/15"
+                    >
+                      Check booking link
+                    </button>
+                  </form>
+                  <form action="/admin/portfolio/supplier-check" method="post" className="flex flex-wrap items-center gap-1.5">
+                    <input type="hidden" name="companyId" value={company.companyId} />
+                    <input type="hidden" name="productId" value={prod.productId} />
+                    <input type="hidden" name="checkType" value="live_inventory" />
+                    {isGoSno ? (
+                      <>
+                        <input type="hidden" name="route" value={defaultRoute} />
+                        <input type="hidden" name="pickupDate" value={defaultPickupDate} />
+                        <input type="hidden" name="pickupTime" value={defaultPickupTime} />
+                        <input type="hidden" name="partySize" value={String(defaultPartySize)} />
+                        <input type="hidden" name="vehicleClass" value={defaultVehicleClass} />
+                      </>
+                    ) : (
+                      <>
+                        <input type="hidden" name="pickupDate" value={defaultPickupDate} />
+                        <input type="hidden" name="partySize" value={String(defaultPartySize)} />
+                      </>
+                    )}
+                    <button
+                      type="submit"
+                      data-testid={`action-check-live-inventory-${prod.productId}`}
+                      className="inline-flex items-center rounded-md border border-cyan-400/30 bg-cyan-500/10 px-2.5 py-1 text-[11px] font-bold text-cyan-100 hover:bg-cyan-500/20"
+                    >
+                      Check live inventory
+                    </button>
+                  </form>
+                </div>
+              </li>
+            );
+          })}
         </ul>
       </td>
 
       <td className="px-4 py-4" data-testid={`supplier-checkout-verified-${company.companyId}`}>
         <span className={`inline-flex rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] ${checkoutTone}`}>
           {company.checkoutVerified.verified
-            ? "Yes · Verified"
+            ? "Yes · Reachable"
             : company.checkoutVerified.checkedAt
-              ? "No · Pending"
+              ? "No · Check Failed"
               : "Not checked"}
         </span>
         <div className="mt-2 text-xs font-bold text-zinc-200">{company.checkoutVerified.label}</div>
@@ -502,7 +567,7 @@ function SupplierConnectionRow({ company }: { company: SupplierConnectionRecord 
       <td className="px-4 py-4" data-testid={`supplier-live-prices-seats-verified-${company.companyId}`}>
         <span className={`inline-flex rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] ${seatsTone}`}>
           {company.livePricesAndSeatsVerified.verified
-            ? "Yes · API Response Verified"
+            ? "Yes · Trip Inventory Verified"
             : company.livePricesAndSeatsVerified.checkedAt
               ? "No · Check Provider"
               : "Not checked"}
@@ -521,16 +586,22 @@ function SupplierConnectionRow({ company }: { company: SupplierConnectionRecord 
         <div className="mt-1.5 font-mono text-[11px] text-zinc-400">
           Checked: {formatLastChecked(company.livePricesAndSeatsVerified.checkedAt)}
         </div>
+      </td>
 
-        <div
-          data-testid={`supplier-planner-live-display-${company.companyId}`}
-          className={`mt-3 rounded-lg border p-2.5 text-xs leading-5 ${plannerTone}`}
-        >
-          <div className="text-[10px] font-black uppercase tracking-[0.12em]">
-            Planner live display (separate check): {company.plannerLiveDisplayVerified.verified ? "Yes" : "No"}
-          </div>
-          <div className="mt-0.5 font-bold">{company.plannerLiveDisplayVerified.statusLabel}</div>
-          <div className="mt-1 text-[11px] opacity-90">{company.plannerLiveDisplayVerified.whatItProves}</div>
+      <td className="px-4 py-4" data-testid={`supplier-planner-live-display-${company.companyId}`}>
+        <span className={`inline-flex rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] ${plannerTone}`}>
+          {company.plannerLiveDisplayVerified.verified
+            ? "Yes · Displayed in Planner"
+            : "No · Static / Handoff"}
+        </span>
+        <div className="mt-2 text-xs font-bold text-zinc-200">
+          {company.plannerLiveDisplayVerified.statusLabel}
+        </div>
+        <div className="mt-2 rounded-md border border-white/10 bg-black/30 p-2 text-xs leading-5 text-zinc-300">
+          <strong className="block text-[10px] uppercase tracking-[0.12em] text-zinc-400">
+            Separate planner display status
+          </strong>
+          {company.plannerLiveDisplayVerified.whatItProves}
         </div>
       </td>
 
@@ -560,6 +631,7 @@ function SupplierConnectionRow({ company }: { company: SupplierConnectionRecord 
     </tr>
   );
 }
+
 
 function Metric({ label, value, detail, alert = false }: { label: string; value: number | string; detail?: string; alert?: boolean }) {
   return <div className={`rounded-2xl border p-5 ${alert ? "border-amber-300/30 bg-amber-400/10" : "border-white/10 bg-white/[0.04]"}`}><div className="text-xs uppercase tracking-[0.16em] text-zinc-500">{label}</div><div className="mt-2 text-3xl font-black">{value}</div>{detail ? <div className="mt-2 text-xs text-zinc-400">{detail}</div> : null}</div>;
