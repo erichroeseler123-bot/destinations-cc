@@ -14,7 +14,11 @@ import PortfolioAssuranceBanner from "@/app/components/dcc/PortfolioAssuranceBan
 import DccConciergeWidget from "@/app/components/dcc/DccConciergeWidget";
 import { evaluatePortfolioAssuranceSummary } from "@/lib/dcc/commerce/portfolio";
 
-import { STOREFRONT_PRODUCTS } from "../../tours/pageConfig";
+import {
+  STOREFRONT_PRODUCTS,
+  getProductPrimaryBookingHref,
+  getProductViatorReselectionNote,
+} from "../../tours/pageConfig";
 import DailyBriefSignup from "../../components/DailyBriefSignup";
 import { resolveProductImage } from "../../lib/imageResolver";
 
@@ -441,14 +445,27 @@ export default async function CategoryPage({
             const resolvedImg = resolveProductImage(sourceProduct || product);
             const cardImageUrl = resolvedImg?.src || null;
             const cardImageAlt = resolvedImg?.alt || `${product.title} in New Orleans`;
-            const dynamicBookingHref =
-              sourceProduct?.slug === "louisiana-tour-company-swamp-tour-hotel-pickup"
-                ? `/api/v1/ads/click?offer=15200P6&option=TG10&placementId=fp-wno-swamp-tours&property=hotel-monteleone-nola&date=${encodeURIComponent(selectedDate)}&adults=${encodeURIComponent(selectedPartySize)}&departureTime=08%3A00${entrySourceParam ? `&src=${encodeURIComponent(entrySourceParam)}` : ""}${isTestParam ? "&isTest=true" : ""}`
-                : sourceProduct?.bookingVariants?.[0]?.bookingUrl;
-            const bookingReselectionNote =
-              sourceProduct?.slug === "louisiana-tour-company-swamp-tour-hotel-pickup"
-                ? `Viator opens to its default product screen — reselect your date (${selectedDate}), group size (${selectedPartySize} ${Number(selectedPartySize) === 1 ? "guest" : "guests"}), and tour option (9:40 AM Tour w/ 8:00–8:30 AM Hotel Pickup · Option TG10) on Viator.`
-                : undefined;
+            const isSwampCategory = [
+              "swamp-tours",
+              "airboat-tours",
+              "covered-swamp-boat-tours",
+            ].includes(resolvedParams.categorySlug);
+            const dynamicBookingHref = sourceProduct
+              ? getProductPrimaryBookingHref(sourceProduct, {
+                  date: selectedDate,
+                  adults: selectedPartySize,
+                  placementId: isSwampCategory ? "fp-wno-swamp-tours" : undefined,
+                  src: entrySourceParam || undefined,
+                  isTest: isTestParam,
+                })
+              : undefined;
+            // Surfaces note beside CTA when guests need to reselect your date, group size, or tour option on Viator
+            const bookingReselectionNote = sourceProduct
+              ? getProductViatorReselectionNote(sourceProduct, {
+                  date: selectedDate,
+                  adults: selectedPartySize,
+                })
+              : undefined;
             return (
               <VisualEditorialCard
                 key={product.id}

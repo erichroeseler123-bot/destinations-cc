@@ -40,6 +40,12 @@ export default function DccRootShell({
           Skip to main content
         </a>
         <div id="main-content">{children}</div>
+        {!pathname.startsWith("/embed") ? (
+          <ConsentManagedAnalytics
+            gaMeasurementId={gaMeasurementId}
+            gygPartnerId={gygPartnerId ?? undefined}
+          />
+        ) : null}
       </>
     );
   }

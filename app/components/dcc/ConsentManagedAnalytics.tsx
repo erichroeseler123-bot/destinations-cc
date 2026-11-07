@@ -79,29 +79,30 @@ export default function ConsentManagedAnalytics({
 
   return (
     <>
-      {hydrated && consent === "accepted" ? (
+      {hydrated && gaMeasurementId ? (
         <>
-          <Script
-            id="dcc-ga-gtag"
-            src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`}
-            strategy="afterInteractive"
-          />
           <Script
             id="dcc-ga-init"
             src={`/ga-init.js?id=${gaMeasurementId}`}
             strategy="afterInteractive"
           />
-          {gygPartnerId ? (
-            <Script
-              id="getyourguide-partner-analytics"
-              src="https://widget.getyourguide.com/dist/pa.umd.production.min.js"
-              strategy="afterInteractive"
-              async
-              defer
-              data-gyg-partner-id={gygPartnerId}
-            />
-          ) : null}
+          <Script
+            id="dcc-ga-gtag"
+            src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`}
+            strategy="afterInteractive"
+          />
         </>
+      ) : null}
+
+      {hydrated && consent === "accepted" && gygPartnerId ? (
+        <Script
+          id="getyourguide-partner-analytics"
+          src="https://widget.getyourguide.com/dist/pa.umd.production.min.js"
+          strategy="afterInteractive"
+          async
+          defer
+          data-gyg-partner-id={gygPartnerId}
+        />
       ) : null}
 
       {hydrated && consent === "unset" ? (

@@ -1,7 +1,12 @@
 import React from 'react';
 import Link from 'next/link';
 import { ProductCardProps } from '../data/types';
-import { getFareHarborUrl, STOREFRONT_PRODUCTS } from '../tours/pageConfig';
+import {
+  getFareHarborUrl,
+  getProductPrimaryBookingHref,
+  getProductViatorReselectionNote,
+  STOREFRONT_PRODUCTS,
+} from '../tours/pageConfig';
 import WikimediaImageCredit from './WikimediaImageCredit';
 import FareHarborBookingButton from './FareHarborBookingButton';
 import visualStyles from './newOrleansVisual.module.css';
@@ -51,9 +56,13 @@ export default function ProductCard({
   const canBook = Boolean(sourceProduct && !isHeldProduct(product.slug));
   const cardFlowId = sourceProduct?.flowId || sourceProduct?.bookingVariants?.[0]?.flowId;
   const bookingHref = sourceProduct
-    ? sourceProduct.bookingVariants?.[0]?.bookingUrl ||
+    ? getProductPrimaryBookingHref(sourceProduct) ||
+      sourceProduct.bookingVariants?.[0]?.bookingUrl ||
       getFareHarborUrl(sourceProduct.companyShortname, sourceProduct.itemId, cardFlowId)
     : "";
+  const reselectionNote = sourceProduct
+    ? getProductViatorReselectionNote(sourceProduct)
+    : undefined;
   const bookingLabel = sourceProduct?.bookingVariants && sourceProduct.bookingVariants.length > 1
     ? "View Booking Options"
     : "Check Dates & Prices";
@@ -192,12 +201,12 @@ export default function ProductCard({
                   {bookingLabel}
                 </FareHarborBookingButton>
               )}
-              {bookingHref && bookingHref.startsWith("/api/v1/ads/click") && (
+              {bookingHref && bookingHref.startsWith("/api/v1/ads/click") && reselectionNote && (
                 <p
                   data-testid="wno-guide-card-reselection-note"
                   className="mt-2 w-full rounded border border-[#b8860b]/50 bg-[#fcf5e3] px-2.5 py-1.5 text-[11px] font-medium leading-relaxed !text-[#2b2110]"
                 >
-                  Viator opens to its default product screen — reselect your date, group size, and tour option (9:40 AM Tour w/ 8:00–8:30 AM Hotel Pickup · Option TG10) on Viator.
+                  {reselectionNote}
                 </p>
               )}
             </div>

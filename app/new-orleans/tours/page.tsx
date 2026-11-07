@@ -190,7 +190,15 @@ export default async function NewOrleansToursPage({
           </section>
 
           {sections.map((section, sectionIndex) => {
-            const sectionProducts = STOREFRONT_PRODUCTS.filter((p) => p.category === section.id);
+            const sectionProducts = STOREFRONT_PRODUCTS.filter((p) => p.category === section.id).sort((a, b) => {
+              const priority = (slug: string) =>
+                slug === "louisiana-tour-company-swamp-tour-hotel-pickup"
+                  ? 0
+                  : slug === "jeanlafitte-swamp-tour-with-hotel-pickup"
+                    ? 1
+                    : 2;
+              return priority(a.slug) - priority(b.slug);
+            });
             if (sectionProducts.length === 0) return null;
             return (
               <section id={section.id.toLowerCase().replace(/\s+/g, "-")} key={section.id} className="space-y-8 scroll-mt-28">

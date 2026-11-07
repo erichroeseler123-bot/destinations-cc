@@ -7,8 +7,8 @@ import { normalizeFareHarborFallbackHref } from "../../app/new-orleans/lib/fareH
 import { generateCategorySchemaGraph } from "../../app/new-orleans/lib/structuredData";
 
 test("Conversion Card Actions & Booking Integrity Suite", async (t) => {
-  await t.test("1. All 21 storefront products have unique detail routes", () => {
-    assert.strictEqual(STOREFRONT_PRODUCTS.length, 21);
+  await t.test("1. All 23 storefront products have unique detail routes", () => {
+    assert.strictEqual(STOREFRONT_PRODUCTS.length, 23);
     const slugs = new Set<string>();
     for (const product of STOREFRONT_PRODUCTS) {
       assert.ok(product.slug, `Product ${product.id} must have a valid slug`);
@@ -18,13 +18,13 @@ test("Conversion Card Actions & Booking Integrity Suite", async (t) => {
     }
   });
 
-  await t.test("2. Exactly 18 products are direct-book and 3 are multi-variant", () => {
+  await t.test("2. Exactly 20 products are direct-book and 3 are multi-variant", () => {
     const direct = STOREFRONT_PRODUCTS.filter((p) => {
       const variants = p.bookingVariants || [];
       return variants.length === 1 || (!variants.length && (p.itemId || p.flowId));
     });
     const multi = STOREFRONT_PRODUCTS.filter((p) => (p.bookingVariants || []).length > 1);
-    assert.strictEqual(direct.length, 18);
+    assert.strictEqual(direct.length, 20);
     assert.strictEqual(multi.length, 3);
   });
 

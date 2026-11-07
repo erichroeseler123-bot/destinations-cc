@@ -89,7 +89,11 @@ export default function FareHarborBookingButton({
       (entries) => {
         if (entries[0].isIntersecting) {
           trackEvent("fareharbor_cta_seen");
-          if (typeof window !== "undefined") {
+          const isViatorHandoff =
+            shortname === "viator" ||
+            effectiveFallbackHref.startsWith("/api/v1/ads/click") ||
+            effectiveFallbackHref.includes("viator.com");
+          if (typeof window !== "undefined" && !isViatorHandoff) {
             window.dispatchEvent(new Event("wno:load-fareharbor"));
           }
           observer.disconnect();
@@ -100,7 +104,7 @@ export default function FareHarborBookingButton({
 
     observer.observe(buttonRef.current);
     return () => observer.disconnect();
-  }, [trackEvent]);
+  }, [effectiveFallbackHref, shortname, trackEvent]);
 
   const handleClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
     const context = getWnoFunnelContext();

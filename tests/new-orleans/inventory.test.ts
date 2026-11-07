@@ -25,16 +25,16 @@ describe("New Orleans Inventory Integrity", () => {
     }
   });
 
-  test("Exactly 15 Gray Line parent products and 21 total storefront products", () => {
+  test("Exactly 15 Gray Line parent products and 23 total storefront products", () => {
     const grayLineProducts = STOREFRONT_PRODUCTS.filter(p => p.bookingVariants !== undefined);
     assert.strictEqual(grayLineProducts.length, 15, "Exactly 15 Gray Line parent products");
-    assert.strictEqual(STOREFRONT_PRODUCTS.length, 21, "Exactly 21 total storefront products");
+    assert.strictEqual(STOREFRONT_PRODUCTS.length, 23, "Exactly 23 total storefront products");
   });
 
-  test("All 21 appear in or are discoverable through /tours", () => {
+  test("All 23 appear in or are discoverable through /tours", () => {
     const toursPagePath = path.join(process.cwd(), "app/new-orleans/tours/page.tsx");
     const toursPageContent = fs.readFileSync(toursPagePath, "utf8");
-    assert.ok(toursPageContent.includes("STOREFRONT_PRODUCTS.map"), "Catalog loops over STOREFRONT_PRODUCTS to render all 21 items");
+    assert.ok(toursPageContent.includes("STOREFRONT_PRODUCTS.map"), "Catalog loops over STOREFRONT_PRODUCTS to render all 23 items");
   });
 
   test("Every catalog slug resolves through the detail registry", () => {

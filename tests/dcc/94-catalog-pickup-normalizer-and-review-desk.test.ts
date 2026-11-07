@@ -486,5 +486,53 @@ test("6. WNO traffic source tracking classifies active Google Ads campaign (gad_
   assert.equal(gadSourceMetrics.settledCommissionUsd, 9.6);
 });
 
+test("7. Move 1: All 23 WNO products route primary booking CTAs to payable Viator handoffs and Google Consent Mode v2 is active", async () => {
+  const {
+    STOREFRONT_PRODUCTS,
+    getProductPrimaryBookingHref,
+    getProductViatorReselectionNote,
+  } = await import("../../app/new-orleans/tours/pageConfig");
+  const { getDurableTourByIdOrAlias } = await import("../../lib/dcc/catalog/durableCatalogStore");
 
+  assert.equal(STOREFRONT_PRODUCTS.length, 23);
 
+  for (const product of STOREFRONT_PRODUCTS) {
+    assert.ok(product.viatorProductCode, `${product.slug} must have a payable viatorProductCode`);
+    const catalogTour = await getDurableTourByIdOrAlias(`dcc:tour:viator:${product.viatorProductCode}`);
+    assert.ok(catalogTour, `${product.slug} -> dcc:tour:viator:${product.viatorProductCode} must exist in durable catalog`);
+
+    const primaryHref = getProductPrimaryBookingHref(product, {
+      date: "2026-11-18",
+      adults: 2,
+      src: "google-ads-24412478365",
+    });
+    assert.match(primaryHref, /^\/api\/v1\/ads\/click\?/);
+    assert.ok(
+      primaryHref.includes(encodeURIComponent(`dcc:tour:viator:${product.viatorProductCode}`)),
+      `${product.slug} primaryHref must target dcc:tour:viator:${product.viatorProductCode}`,
+    );
+
+    const note = getProductViatorReselectionNote(product, {
+      date: "2026-11-18",
+      adults: 2,
+    });
+    assert.ok(note && note.includes("Viator"), `${product.slug} must provide a Viator reselection note`);
+  }
+
+  const fs = await import("node:fs");
+  const path = await import("node:path");
+  const gaInitSrc = fs.readFileSync(path.join(process.cwd(), "public/ga-init.js"), "utf8");
+  assert.match(gaInitSrc, /window\.gtag\("consent",\s*"default"/);
+  assert.match(gaInitSrc, /analytics_storage:\s*defaultStatus/);
+  assert.match(gaInitSrc, /ad_storage:\s*defaultStatus/);
+  assert.match(gaInitSrc, /ad_user_data:\s*defaultStatus/);
+  assert.match(gaInitSrc, /ad_personalization:\s*defaultStatus/);
+  assert.match(gaInitSrc, /window\.gtag\("consent",\s*"update"/);
+
+  const rootShellSrc = fs.readFileSync(
+    path.join(process.cwd(), "app/components/dcc/DccRootShell.tsx"),
+    "utf8",
+  );
+  const consentOccurrences = rootShellSrc.split("<ConsentManagedAnalytics").length - 1;
+  assert.equal(consentOccurrences, 2, "DccRootShell must mount ConsentManagedAnalytics in both standard and bare-shell branches");
+});

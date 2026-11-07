@@ -45,7 +45,7 @@ describe("WNO search and AI discovery", () => {
   test("public tour catalog mirrors the complete live storefront registry", () => {
     const catalog = buildPublicTourCatalog();
     assert.strictEqual(catalog.products.length, STOREFRONT_PRODUCTS.length);
-    assert.strictEqual(catalog.products.length, 21);
+    assert.strictEqual(catalog.products.length, 23);
     assert.match(catalog.canonicalCatalogUrl, /^https:\/\/(www\.)?welcometoneworleanstours\.com\/guides\/tour-catalog$/);
   });
 

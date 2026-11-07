@@ -130,11 +130,12 @@ export default function VisualEditorialCard({
 
       <div className="p-5 pt-0 md:p-6 md:pt-0">
         <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#2f291f] pt-4">
-          {companyShortname && bookingItemId ? (
+          {(companyShortname && (bookingItemId || bookingFlowId)) ||
+          (bookingHref && (bookingHref.startsWith("http") || bookingHref.startsWith("/api/"))) ? (
             <FareHarborBookingButton
               productTitle={title}
               productSlug={slug}
-              shortname={companyShortname}
+              shortname={companyShortname || "viator"}
               itemId={bookingItemId}
               flowId={bookingFlowId}
               asn={asn || "welcometoneworleanstours"}
@@ -146,15 +147,6 @@ export default function VisualEditorialCard({
             >
               Check Dates & Prices
             </FareHarborBookingButton>
-          ) : bookingHref && (bookingHref.startsWith("http") || bookingHref.startsWith("/api/")) ? (
-            <a
-              href={bookingHref}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex min-h-11 items-center bg-[#c9a86a] px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.14em] text-[#17130c] transition hover:bg-[#f3dfb3] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f3dfb3]"
-            >
-              Check Dates & Prices
-            </a>
           ) : (
             <Link
               href={href}

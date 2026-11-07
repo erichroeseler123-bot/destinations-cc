@@ -69,7 +69,7 @@ function buildRequest(pathname: string) {
 test("New Orleans sitemap and support-page coverage", async (t) => {
   await t.test("sitemap contains every live storefront tour slug", () => {
     const paths = buildWtonotSitemapPaths();
-    assert.strictEqual(STOREFRONT_PRODUCTS.length, 21);
+    assert.strictEqual(STOREFRONT_PRODUCTS.length, 23);
 
     for (const product of STOREFRONT_PRODUCTS) {
       assert.ok(paths.includes(`/tours/${product.slug}`), `missing tour slug ${product.slug}`);

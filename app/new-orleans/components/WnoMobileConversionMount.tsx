@@ -2,7 +2,11 @@
 
 import { usePathname, useSearchParams } from "next/navigation";
 import StickyMobileBookingBar from "./StickyMobileBookingBar";
-import { STOREFRONT_PRODUCTS, getFareHarborUrl } from "../tours/pageConfig";
+import {
+  STOREFRONT_PRODUCTS,
+  getFareHarborUrl,
+  getProductPrimaryBookingHref,
+} from "../tours/pageConfig";
 import {
   isApprovedProductSlug,
   resolveFareHarborSource,
@@ -28,7 +32,14 @@ export default function WnoMobileConversionMount() {
     requestedSource,
     hasValidRecommendation: Boolean(recommendationContext),
   });
-  const fallbackHref = getFareHarborUrl(product.companyShortname, product.itemId, product.flowId);
+  const selectedDate = searchParams.get("date") || searchParams.get("arrivalDate") || undefined;
+  const selectedPartySize =
+    searchParams.get("party_size") || searchParams.get("adults") || undefined;
+  const fallbackHref =
+    getProductPrimaryBookingHref(product, {
+      date: selectedDate,
+      adults: selectedPartySize,
+    }) || getFareHarborUrl(product.companyShortname, product.itemId, product.flowId);
 
   return (
     <StickyMobileBookingBar

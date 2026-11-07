@@ -20,6 +20,8 @@ import {
 } from "../../app/new-orleans/tours/pageConfig";
 
 const expectedDefaults = {
+  "louisiana-tour-company-swamp-tour-hotel-pickup": "wtonot-detail-covered",
+  "jeanlafitte-swamp-tour-with-hotel-pickup": "wtonot-detail-covered",
   "city-tour-of-new-orleans": "wtonot-detail-city",
   "oak-alley-or-laura-plantation-tour": "wtonot-detail-plantation",
   "covered-tour-boat": "wtonot-detail-covered",

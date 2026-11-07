@@ -5,6 +5,15 @@ export interface ProductBadge {
   label: string;
 }
 
+export interface ViatorBookingVariant {
+  label: string;
+  offer: string;
+  option?: string;
+  departureTime?: string;
+  placementId?: string;
+  reselectionNote?: string;
+}
+
 export interface NolaFareHarborProduct {
   id: string;
   title: string;
@@ -27,13 +36,22 @@ export interface NolaFareHarborProduct {
   // Conversion badges — rendered on tour cards and category pages
   badges?: ProductBadge[];
 
-  // Booking variants for multi-option products
+  // Booking variants for multi-option products (FareHarbor operator metadata)
   bookingVariants?: {
     label: string;
     itemId: string;
     flowId: string;
     bookingUrl: string;
   }[];
+
+  // Payable Viator Partner API v2 mapping (primary checkout while FareHarbor ASN is inactive)
+  viatorProductCode?: string;
+  viatorOptionCode?: string;
+  viatorDepartureTime?: string;
+  viatorPlacementId?: string;
+  viatorReselectionNote?: string;
+  viatorVariants?: ViatorBookingVariant[];
+  fareharborAsnActive?: boolean;
 
   // New optional detail fields for Step 4
   detailSummary?: string;
@@ -88,12 +106,208 @@ export const getFareHarborUrl = (companyShortname: string, itemId?: string | num
   return `${url}?${params.toString()}`;
 };
 
+export function getDefaultWnoPlacementId(category?: string, slug?: string): string {
+  if (
+    slug === "louisiana-tour-company-swamp-tour-hotel-pickup" ||
+    slug === "jeanlafitte-swamp-tour-with-hotel-pickup" ||
+    category === "Swamp Tours" ||
+    category === "Airboat Rides"
+  ) {
+    return "fp-wno-swamp-tours";
+  }
+  if (category === "Plantation Tours") return "fp-wno-plantation-tours";
+  if (category === "River Cruises") return "fp-wno-riverboat-cruises";
+  if (category === "Walking Tours") return "fp-wno-walking-tours";
+  if (category === "Combo Tours") return "fp-wno-combo-tours";
+  if (category === "City Tours") return "fp-wno-city-tours";
+  return "fp-wno-swamp-tours";
+}
+
+export function buildPayableViatorClickHref(params: {
+  offer: string;
+  option?: string;
+  placementId?: string;
+  property?: string;
+  date?: string;
+  adults?: number | string;
+  departureTime?: string;
+  src?: string;
+  isTest?: boolean;
+}): string {
+  const query = new URLSearchParams();
+  const normalizedOffer = params.offer.startsWith("dcc:tour:viator:")
+    ? params.offer
+    : `dcc:tour:viator:${params.offer}`;
+  query.set("offer", normalizedOffer);
+  if (params.option) {
+    query.set("option", params.option);
+  }
+  query.set("placementId", params.placementId || "fp-wno-swamp-tours");
+  query.set("property", params.property || "hotel-monteleone-nola");
+  if (params.date) {
+    query.set("date", params.date);
+  }
+  query.set("adults", String(params.adults ?? 2));
+  if (params.departureTime) {
+    query.set("departureTime", params.departureTime);
+  }
+  if (params.src) {
+    query.set("src", params.src);
+  }
+  if (params.isTest) {
+    query.set("isTest", "true");
+  }
+  return `/api/v1/ads/click?${query.toString()}`;
+}
+
+export function getProductPrimaryBookingHref(
+  product: Pick<
+    NolaFareHarborProduct,
+    | "slug"
+    | "category"
+    | "companyShortname"
+    | "itemId"
+    | "flowId"
+    | "bookingVariants"
+    | "viatorProductCode"
+    | "viatorOptionCode"
+    | "viatorDepartureTime"
+    | "viatorPlacementId"
+    | "fareharborAsnActive"
+  >,
+  overrides?: {
+    date?: string;
+    adults?: number | string;
+    placementId?: string;
+    src?: string;
+    isTest?: boolean;
+  },
+): string {
+  const canonical = STOREFRONT_PRODUCTS.find((p) => p.slug === product.slug) || product;
+  if (canonical.fareharborAsnActive !== true && canonical.viatorProductCode) {
+    return buildPayableViatorClickHref({
+      offer: canonical.viatorProductCode,
+      option: canonical.viatorOptionCode,
+      placementId:
+        overrides?.placementId ||
+        canonical.viatorPlacementId ||
+        getDefaultWnoPlacementId(canonical.category, canonical.slug),
+      property: "hotel-monteleone-nola",
+      date: overrides?.date,
+      adults: overrides?.adults ?? 2,
+      departureTime: canonical.viatorDepartureTime,
+      src: overrides?.src,
+      isTest: overrides?.isTest,
+    });
+  }
+  return (
+    canonical.bookingVariants?.[0]?.bookingUrl ||
+    getFareHarborUrl(canonical.companyShortname, canonical.itemId, canonical.flowId)
+  );
+}
+
+export function getProductViatorReselectionNote(
+  product: Pick<
+    NolaFareHarborProduct,
+    | "slug"
+    | "title"
+    | "viatorProductCode"
+    | "viatorOptionCode"
+    | "viatorReselectionNote"
+    | "fareharborAsnActive"
+  >,
+  overrides?: {
+    date?: string;
+    adults?: number | string;
+  },
+): string | undefined {
+  const canonical = STOREFRONT_PRODUCTS.find((p) => p.slug === product.slug) || product;
+  if (canonical.fareharborAsnActive === true || !canonical.viatorProductCode) {
+    return undefined;
+  }
+  const adultsCount = Number(overrides?.adults || 2);
+  const guestLabel = `${adultsCount} ${adultsCount === 1 ? "guest" : "guests"}`;
+  if (canonical.slug === "louisiana-tour-company-swamp-tour-hotel-pickup" && overrides?.date) {
+    return `Viator opens to its default product screen — reselect your date (${overrides.date}), group size (${guestLabel}), and tour option (9:40 AM Tour w/ 8:00–8:30 AM Hotel Pickup · Option TG10) on Viator.`;
+  }
+  if (overrides?.date) {
+    return `Viator opens to its default product screen — reselect your date (${overrides.date}), group size (${guestLabel})${canonical.viatorOptionCode ? `, and tour option (${canonical.viatorOptionCode})` : ", and tour option"} on Viator.`;
+  }
+  return (
+    canonical.viatorReselectionNote ||
+    `Viator opens to its default product screen — reselect your preferred date, group size${canonical.viatorOptionCode ? `, and tour option (${canonical.viatorOptionCode})` : ", and tour option"} on Viator.`
+  );
+}
+
+export function getProductActiveBookingVariants(
+  product: NolaFareHarborProduct,
+  overrides?: {
+    date?: string;
+    adults?: number | string;
+    placementId?: string;
+    src?: string;
+    isTest?: boolean;
+  },
+): {
+  label: string;
+  itemId: string;
+  flowId: string;
+  bookingUrl: string;
+  isViator: boolean;
+  reselectionNote?: string;
+}[] {
+  const canonical = STOREFRONT_PRODUCTS.find((p) => p.slug === product.slug) || product;
+  if (canonical.fareharborAsnActive !== true && canonical.viatorProductCode) {
+    if (canonical.viatorVariants && canonical.viatorVariants.length > 0) {
+      return canonical.viatorVariants.map((v) => ({
+        label: v.label,
+        itemId: v.offer,
+        flowId: v.option || "DEFAULT",
+        bookingUrl: buildPayableViatorClickHref({
+          offer: v.offer,
+          option: v.option,
+          placementId:
+            overrides?.placementId ||
+            v.placementId ||
+            canonical.viatorPlacementId ||
+            getDefaultWnoPlacementId(canonical.category, canonical.slug),
+          property: "hotel-monteleone-nola",
+          date: overrides?.date,
+          adults: overrides?.adults ?? 2,
+          departureTime: v.departureTime || canonical.viatorDepartureTime,
+          src: overrides?.src,
+          isTest: overrides?.isTest,
+        }),
+        isViator: true,
+        reselectionNote: v.reselectionNote || getProductViatorReselectionNote(canonical, overrides),
+      }));
+    }
+    return [
+      {
+        label: canonical.ctaLabel || "CHECK AVAILABILITY & RATES",
+        itemId: canonical.viatorProductCode,
+        flowId: canonical.viatorOptionCode || "DEFAULT",
+        bookingUrl: getProductPrimaryBookingHref(canonical, overrides),
+        isViator: true,
+        reselectionNote: getProductViatorReselectionNote(canonical, overrides),
+      },
+    ];
+  }
+  return (canonical.bookingVariants || []).map((v) => ({
+    ...v,
+    isViator: false,
+  }));
+}
+
 export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
   {
     id: "southernstyle-city-tour",
     companyShortname: "southernstyletours",
     itemId: "51942",
     flowId: "4344",
+    viatorProductCode: "8013P1",
+    viatorPlacementId: "fp-wno-city-tours",
+    fareharborAsnActive: false,
     title: "City Tour Of New Orleans",
     category: "City Tours",
     operatorName: "Southern Style Tours",
@@ -152,6 +366,9 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     companyShortname: "southernstyletours",
     itemId: "83002",
     flowId: "4344",
+    viatorProductCode: "8013P8",
+    viatorPlacementId: "fp-wno-plantation-tours",
+    fareharborAsnActive: false,
     title: "Oak Alley Or Laura Plantation Tour",
     category: "Plantation Tours",
     operatorName: "Southern Style Tours",
@@ -208,127 +425,27 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     historicalContextNote: "Plantation sites in Louisiana are inextricably connected to the history of slavery and forced labor. The depth and focus of historical interpretation vary by site. We encourage visitors to review the selected plantation’s specific historical program and educational approach."
   },
   {
-    id: "louisiana-tour-company-swamp-tour-hotel-pickup",
-    companyShortname: "",
-    title: "New Orleans Swamp Tour Boat Adventure with Hotel Pickup",
-    category: "Swamp Tours",
-    operatorName: "Louisiana Tour Company",
-    description: "Covered bayou swamp boat excursion through the Barataria Bayou with confirmed round-trip French Quarter & Downtown hotel shuttle pickup (including Hotel Monteleone, 214 Royal St — pickup ref LOC-6eKJ+or5y8o99Qw0C8xWyGAjWJk3qp08H7OnT0MLhOs=).",
-    bestFor: "French Quarter & Downtown hotel guests seeking door-to-door pickup ($120 total for 2 adults, $0 booking fee)",
-    priceFrom: 60,
-    priceUnit: "adult ($120.00 total for 2 adults · $0 booking fee)",
-    isFlatRate: true,
-    badges: [
-      { type: "concierge-pick", label: "🏆 Concierge Pick · Verified Hotel Pickup" },
-      { type: "logistics", label: "🚐 $120.00 Total for 2 Adults (Pickup Included)" },
-    ],
-    imageUrl: "/images/travel-markets/new-orleans/hotel-pickup-swamp-boat.png",
-    imageAlt: "Louisiana Tour Company covered swamp tour boat with French Quarter hotel pickup",
-    slug: "louisiana-tour-company-swamp-tour-hotel-pickup",
-    relatedTourSlug: "jeanlafitte-swamp-tour-with-hotel-pickup",
-    detailPageTitle: "New Orleans Swamp Tour Boat Adventure with Hotel Pickup | Welcome to New Orleans Tours",
-    metaDescription: "Book the New Orleans Swamp Tour Boat Adventure with round-trip French Quarter & Downtown hotel pickup ($60/adult · $120.00 total for 2 adults, including Hotel Monteleone at 214 Royal St).",
-    durationLabel: "4 hours door-to-door (~1h 45m on the water)",
-    transportationSummary: "Round-trip French Quarter & Downtown hotel shuttle pickup included",
-    pickupSummary: "Confirmed pickup at Hotel Monteleone (214 Royal St) and 13+ French Quarter/CBD hotels. Windows: 8:00–8:30 AM (9:40 AM tour), 10:20–10:50 AM (12:10 PM tour), 12:30–1:00 PM (2:10 PM tour).",
-    highlights: [
-      "Confirmed door-to-door pickup at Hotel Monteleone (214 Royal St) & French Quarter/Downtown hotels",
-      "Shaded, covered swamp boat through the Barataria Bayou (all ages welcome)",
-      "All-in transparent pricing: $60.00/adult ($120.00 total for 2 adults, $0 booking fee)"
-    ],
-    detailSummary: "A 4-hour door-to-door covered bayou boat tour with confirmed round-trip French Quarter and Downtown hotel pickup operated by Louisiana Tour Company (product #15200P6). Total price for 2 adults is $120.00 ($60.00/adult, $0 booking fee).",
-    bestFit: [
-      "French Quarter and Downtown hotel guests (including Hotel Monteleone, 214 Royal St) wanting confirmed door-to-door pickup",
-      "Families, seniors, and all-ages groups seeking a shaded, calm bayou boat cruise"
-    ],
-    notIdealFor: [
-      "Visitors strictly seeking a high-speed open-air airboat ride"
-    ],
-    childrenConsiderations: [
-      "All ages welcome on the covered swamp boat; Adult, Child (4–12), and Infant (0–3) tickets available."
-    ],
-    confirmedInclusions: [
-      "Round-trip hotel shuttle pickup from Hotel Monteleone (214 Royal St) and participating French Quarter/Downtown hotels",
-      "Guided covered swamp boat tour in the Barataria Bayou"
-    ],
-    bookingConfirmations: [
-      "Departure & pickup window (e.g. TG10: 8:00–8:30 AM pickup for 9:40 AM tour; TG9: 10:20–10:50 AM pickup for 12:10 PM tour)",
-      "Selected hotel pickup stop (Hotel Monteleone, 214 Royal St — LOC-6eKJ+or5y8o99Qw0C8xWyGAjWJk3qp08H7OnT0MLhOs=)",
-      "Total checkout price ($120.00 for 2 adults, $0 booking fee)"
-    ],
-    bookingVariants: [
-      {
-        label: "CHOOSE DATE & PARTY SIZE ($60/ADULT · PICKUP INCLUDED)",
-        itemId: "15200P6",
-        flowId: "no",
-        bookingUrl: "/api/v1/ads/click?offer=15200P6&option=TG10&placementId=fp-wno-swamp-tours&property=hotel-monteleone-nola&adults=2&departureTime=08%3A00"
-      }
-    ]
-  },
-  {
-    id: "jeanlafitte-swamp-tour-with-hotel-pickup",
-    companyShortname: "jeanlafitteswamptour",
-    itemId: "763318",
-    title: "Jean Lafitte Swamp Tour with Hotel Pickup",
-    category: "Swamp Tours",
-    operatorName: "Jean Lafitte Swamp Tours",
-    description: "Covered bayou swamp boat excursion through the Jean Lafitte National Historical Park & Preserve with round-trip French Quarter & Downtown hotel shuttle pickup (including Hotel Monteleone, 214 Royal St).",
-    bestFor: "Families, all ages & French Quarter guests without a car",
-    priceFrom: 62,
-    priceUnit: "adult ($65.72 w/ 6% fees · $131.44 total for 2 adults)",
-    isFlatRate: true,
-    badges: [
-      { type: "concierge-pick", label: "🏆 Concierge Pick · Hotel Pickup" },
-      { type: "logistics", label: "🚐 $131.44 Total for 2 Adults (Incl. Fees)" },
-    ],
-    imageUrl: "/images/travel-markets/new-orleans/hotel-pickup-swamp-boat.png",
-    imageAlt: "Jean Lafitte covered swamp tour boat with hotel pickup from New Orleans",
-    slug: "jeanlafitte-swamp-tour-with-hotel-pickup",
-    relatedTourSlug: "swamp-bayou-tour",
-    detailPageTitle: "Jean Lafitte Swamp Tour with Hotel Pickup | Welcome to New Orleans Tours",
-    metaDescription: "Book the Jean Lafitte Swamp Tour with round-trip French Quarter & Downtown New Orleans hotel shuttle pickup ($62/adult subtotal + 6% fees = $131.44 total for 2 adults).",
-    durationLabel: "3 hours 45 minutes door-to-door (~1h 45m on the water)",
-    transportationSummary: "Round-trip French Quarter & Downtown hotel shuttle pickup included",
-    pickupSummary: "Select your French Quarter or Downtown hotel during checkout (e.g., Hotel Monteleone — 214 Royal St, option #22056428). $124.00 subtotal + $7.44 (6% fees) = $131.44 total for 2 adults.",
-    highlights: [
-      "Round-trip shuttle pickup from French Quarter & Downtown hotels (including Hotel Monteleone, 214 Royal St)",
-      "Shaded, covered swamp boat through Jean Lafitte National Historical Park & Preserve",
-      "Transparent total pricing: $62.00/adult subtotal ($124.00 for 2 adults) + 6% ($7.44) fees = $131.44 checkout total"
-    ],
-    detailSummary: "A 3h 45m covered bayou boat tour with round-trip French Quarter and Downtown hotel pickup operated by Jean Lafitte Swamp Tours (item #763318). Checkout total for 2 adults is $131.44 ($124.00 subtotal + $7.44 fees).",
-    bestFit: [
-      "French Quarter and Downtown hotel guests who want door-to-door shuttle pickup",
-      "Families, seniors, and all-ages groups seeking a shaded, calm bayou cruise"
-    ],
-    notIdealFor: [
-      "Visitors strictly seeking a high-speed open-air airboat ride"
-    ],
-    childrenConsiderations: [
-      "All ages welcome on the covered swamp boat; select Adult and Child seats during checkout."
-    ],
-    confirmedInclusions: [
-      "Round-trip hotel shuttle pickup from participating French Quarter & Downtown hotels",
-      "Guided covered swamp boat tour in the Jean Lafitte bayou"
-    ],
-    bookingConfirmations: [
-      "Departure slot (e.g. 8:30 AM pickup / 10:00 AM tour)",
-      "Selected hotel pickup stop (customFieldInstance12258400, e.g. Hotel Monteleone #22056428)",
-      "Total checkout price including 6% booking fees ($131.44 for 2 adults)"
-    ],
-    bookingVariants: [
-      {
-        label: "CHECK HOTEL PICKUP AVAILABILITY ($131.44 FOR 2 INCL. FEES)",
-        itemId: "763318",
-        flowId: "no",
-        bookingUrl: "https://fareharbor.com/embeds/book/jeanlafitteswamptour/items/763318/?asn=aktourcenter&ref=fp-wno-swamp-tours&custom-tracking=fp-wno-swamp-tours&full-items=yes"
-      }
-    ]
-  },
-  {
     id: "ragincajun-covered-boat",
     companyShortname: "ragincajuntours",
     itemId: "590176",
     flowId: "392449",
+    viatorProductCode: "15200P5",
+    viatorPlacementId: "fp-wno-swamp-tours",
+    fareharborAsnActive: false,
+    viatorVariants: [
+      {
+        label: "CHECK SELF-DRIVE COVERED BOAT ($35/PERSON · VIATOR #15200P5)",
+        offer: "15200P5",
+        placementId: "fp-wno-swamp-tours",
+      },
+      {
+        label: "CHECK WITH HOTEL PICKUP ($60/ADULT · OPTION TG10 · VIATOR #15200P6)",
+        offer: "15200P6",
+        option: "TG10",
+        departureTime: "08:00",
+        placementId: "fp-wno-swamp-tours",
+      },
+    ],
     title: "Covered Tour Boat",
     category: "Swamp Tours",
     operatorName: "Ragin Cajun Tours",
@@ -381,6 +498,31 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     id: "ragincajun-airboat",
     companyShortname: "ragincajuntours",
     flowId: "940162",
+    viatorProductCode: "15200P1",
+    viatorPlacementId: "fp-wno-swamp-tours",
+    fareharborAsnActive: false,
+    viatorVariants: [
+      {
+        label: "LARGE AIRBOAT · SELF-DRIVE ($65/PERSON · VIATOR #15200P1)",
+        offer: "15200P1",
+        placementId: "fp-wno-swamp-tours",
+      },
+      {
+        label: "LARGE AIRBOAT · WITH HOTEL PICKUP ($90/PERSON · VIATOR #15200P2)",
+        offer: "15200P2",
+        placementId: "fp-wno-swamp-tours",
+      },
+      {
+        label: "SMALL AIRBOAT · SELF-DRIVE ($89/PERSON · VIATOR #15200P3)",
+        offer: "15200P3",
+        placementId: "fp-wno-swamp-tours",
+      },
+      {
+        label: "SMALL AIRBOAT · WITH HOTEL PICKUP ($115/PERSON · VIATOR #15200P4)",
+        offer: "15200P4",
+        placementId: "fp-wno-swamp-tours",
+      },
+    ],
     title: "Ragin Cajun Airboat Options",
     category: "Airboat Rides",
     operatorName: "Ragin Cajun Tours",
@@ -437,6 +579,9 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     companyShortname: "southernstyletours",
     itemId: "51953",
     flowId: "4344",
+    viatorProductCode: "8013P3",
+    viatorPlacementId: "fp-wno-combo-tours",
+    fareharborAsnActive: false,
     title: "All-Day City + Plantation",
     category: "Combo Tours",
     operatorName: "Southern Style Tours",
@@ -498,6 +643,9 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     companyShortname: "ragincajuntours",
     itemId: "603090",
     flowId: "392449",
+    viatorProductCode: "15200P9",
+    viatorPlacementId: "fp-wno-combo-tours",
+    fareharborAsnActive: false,
     title: "Covered Boat + Plantation",
     category: "Combo Tours",
     operatorName: "Ragin Cajun Airboat Tours",
@@ -557,8 +705,183 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     historicalContextNote: "Plantation sites in Louisiana are inextricably connected to the history of slavery and forced labor. The depth and focus of historical interpretation vary by site. We encourage visitors to review the selected plantation’s specific historical program and educational approach."
   },
   {
+    id: "louisiana-tour-company-swamp-tour-hotel-pickup",
+    companyShortname: "ragincajuntours",
+    itemId: "590176",
+    flowId: "392449",
+    viatorProductCode: "15200P6",
+    viatorOptionCode: "TG10",
+    viatorDepartureTime: "08:00",
+    viatorPlacementId: "fp-wno-swamp-tours",
+    fareharborAsnActive: false,
+    viatorVariants: [
+      {
+        label: "CHOOSE DATE & PARTY SIZE ($60/ADULT · 9:40 AM TOUR / 8:00 AM PICKUP · TG10)",
+        offer: "15200P6",
+        option: "TG10",
+        departureTime: "08:00",
+        placementId: "fp-wno-swamp-tours",
+      },
+      {
+        label: "12:10 PM TOUR (10:20 AM HOTEL PICKUP · OPTION TG9)",
+        offer: "15200P6",
+        option: "TG9",
+        departureTime: "10:20",
+        placementId: "fp-wno-swamp-tours",
+      },
+      {
+        label: "2:10 PM TOUR (12:30 PM HOTEL PICKUP · OPTION TG8)",
+        offer: "15200P6",
+        option: "TG8",
+        departureTime: "12:30",
+        placementId: "fp-wno-swamp-tours",
+      },
+    ],
+    title: "New Orleans Swamp Tour Boat Adventure with Hotel Pickup",
+    category: "Swamp Tours",
+    operatorName: "Louisiana Tour Company",
+    description: "Covered bayou swamp boat excursion through the Barataria Bayou with confirmed round-trip French Quarter & Downtown hotel shuttle pickup (including Hotel Monteleone, 214 Royal St — pickup ref LOC-6eKJ+or5y8o99Qw0C8xWyGAjWJk3qp08H7OnT0MLhOs=).",
+    bestFor: "French Quarter & Downtown hotel guests seeking door-to-door pickup ($120 total for 2 adults, $0 booking fee)",
+    priceFrom: 60,
+    priceUnit: "adult ($120.00 total for 2 adults · $0 booking fee)",
+    isFlatRate: true,
+    badges: [
+      { type: "concierge-pick", label: "🏆 Concierge Pick · Verified Hotel Pickup" },
+      { type: "logistics", label: "🚐 $120.00 Total for 2 Adults (Pickup Included)" },
+    ],
+    imageUrl: "/images/travel-markets/new-orleans/hotel-pickup-swamp-boat.png",
+    imageAlt: "Louisiana Tour Company covered swamp tour boat with French Quarter hotel pickup",
+    slug: "louisiana-tour-company-swamp-tour-hotel-pickup",
+    relatedTourSlug: "jeanlafitte-swamp-tour-with-hotel-pickup",
+    detailPageTitle: "New Orleans Swamp Tour Boat Adventure with Hotel Pickup | Welcome to New Orleans Tours",
+    metaDescription: "Book the New Orleans Swamp Tour Boat Adventure with round-trip French Quarter & Downtown hotel pickup ($60/adult · $120.00 total for 2 adults, including Hotel Monteleone at 214 Royal St).",
+    durationLabel: "4 hours door-to-door (~1h 45m on the water)",
+    transportationSummary: "Round-trip French Quarter & Downtown hotel shuttle pickup included",
+    pickupSummary: "Confirmed pickup at Hotel Monteleone (214 Royal St) and 13+ French Quarter/CBD hotels. Windows: 8:00–8:30 AM (9:40 AM tour), 10:20–10:50 AM (12:10 PM tour), 12:30–1:00 PM (2:10 PM tour).",
+    highlights: [
+      "Confirmed door-to-door pickup at Hotel Monteleone (214 Royal St) & French Quarter/Downtown hotels",
+      "Shaded, covered swamp boat through the Barataria Bayou (all ages welcome)",
+      "All-in transparent pricing: $60.00/adult ($120.00 total for 2 adults, $0 booking fee)"
+    ],
+    detailSummary: "A 4-hour door-to-door covered bayou boat tour with confirmed round-trip French Quarter and Downtown hotel pickup operated by Louisiana Tour Company (product #15200P6). Total price for 2 adults is $120.00 ($60.00/adult, $0 booking fee).",
+    bestFit: [
+      "French Quarter and Downtown hotel guests (including Hotel Monteleone, 214 Royal St) wanting confirmed door-to-door pickup",
+      "Families, seniors, and all-ages groups seeking a shaded, calm bayou boat cruise"
+    ],
+    notIdealFor: [
+      "Visitors strictly seeking a high-speed open-air airboat ride"
+    ],
+    childrenConsiderations: [
+      "All ages welcome on the covered swamp boat; Adult, Child (4–12), and Infant (0–3) tickets available."
+    ],
+    confirmedInclusions: [
+      "Round-trip hotel shuttle pickup from Hotel Monteleone (214 Royal St) and participating French Quarter/Downtown hotels",
+      "Guided covered swamp boat tour in the Barataria Bayou"
+    ],
+    bookingConfirmations: [
+      "Departure & pickup window (e.g. TG10: 8:00–8:30 AM pickup for 9:40 AM tour; TG9: 10:20–10:50 AM pickup for 12:10 PM tour)",
+      "Selected hotel pickup stop (Hotel Monteleone, 214 Royal St — LOC-6eKJ+or5y8o99Qw0C8xWyGAjWJk3qp08H7OnT0MLhOs=)",
+      "Total checkout price ($120.00 for 2 adults, $0 booking fee)"
+    ],
+  },
+  {
+    id: "jeanlafitte-swamp-tour-with-hotel-pickup",
+    companyShortname: "jeanlafitteswamptour",
+    itemId: "763318",
+    flowId: "no",
+    viatorProductCode: "15200P6",
+    viatorOptionCode: "TG10",
+    viatorDepartureTime: "08:00",
+    viatorPlacementId: "fp-wno-swamp-tours",
+    fareharborAsnActive: false,
+    viatorVariants: [
+      {
+        label: "BOOK COVERED SWAMP BOAT WITH HOTEL PICKUP ($60/ADULT · VIATOR #15200P6 · TG10)",
+        offer: "15200P6",
+        option: "TG10",
+        departureTime: "08:00",
+        placementId: "fp-wno-swamp-tours",
+      },
+      {
+        label: "BOOK JEAN LAFITTE 90-MIN SELF-DRIVE SWAMP TOUR ($32/ADULT · VIATOR #88100P4)",
+        offer: "88100P4",
+        placementId: "fp-wno-swamp-tours",
+      },
+    ],
+    title: "Jean Lafitte Swamp Tour with Hotel Pickup",
+    category: "Swamp Tours",
+    operatorName: "Jean Lafitte Swamp Tours",
+    description: "Covered bayou swamp boat excursion through the Jean Lafitte National Historical Park & Preserve with round-trip French Quarter & Downtown hotel shuttle pickup (including Hotel Monteleone, 214 Royal St).",
+    bestFor: "Families, all ages & French Quarter guests without a car",
+    priceFrom: 62,
+    priceUnit: "adult ($65.72 w/ 6% fees · $131.44 total for 2 adults)",
+    isFlatRate: true,
+    badges: [
+      { type: "concierge-pick", label: "🏆 Concierge Pick · Hotel Pickup" },
+      { type: "logistics", label: "🚐 $131.44 Total for 2 Adults (Incl. Fees)" },
+    ],
+    imageUrl: "/images/travel-markets/new-orleans/hotel-pickup-swamp-boat.png",
+    imageAlt: "Jean Lafitte covered swamp tour boat with hotel pickup from New Orleans",
+    slug: "jeanlafitte-swamp-tour-with-hotel-pickup",
+    relatedTourSlug: "swamp-bayou-tour",
+    detailPageTitle: "Jean Lafitte Swamp Tour with Hotel Pickup | Welcome to New Orleans Tours",
+    metaDescription: "Book the Jean Lafitte Swamp Tour with round-trip French Quarter & Downtown New Orleans hotel shuttle pickup ($62/adult subtotal + 6% fees = $131.44 total for 2 adults).",
+    durationLabel: "3 hours 45 minutes door-to-door (~1h 45m on the water)",
+    transportationSummary: "Round-trip French Quarter & Downtown hotel shuttle pickup included",
+    pickupSummary: "Select your French Quarter or Downtown hotel during checkout (e.g., Hotel Monteleone — 214 Royal St, option #22056428). $124.00 subtotal + $7.44 (6% fees) = $131.44 total for 2 adults.",
+    highlights: [
+      "Round-trip shuttle pickup from French Quarter & Downtown hotels (including Hotel Monteleone, 214 Royal St)",
+      "Shaded, covered swamp boat through Jean Lafitte National Historical Park & Preserve",
+      "Transparent total pricing: $62.00/adult subtotal ($124.00 for 2 adults) + 6% ($7.44) fees = $131.44 checkout total"
+    ],
+    detailSummary: "A 3h 45m covered bayou boat tour with round-trip French Quarter and Downtown hotel pickup operated by Jean Lafitte Swamp Tours (item #763318). Checkout total for 2 adults is $131.44 ($124.00 subtotal + $7.44 fees).",
+    bestFit: [
+      "French Quarter and Downtown hotel guests who want door-to-door shuttle pickup",
+      "Families, seniors, and all-ages groups seeking a shaded, calm bayou cruise"
+    ],
+    notIdealFor: [
+      "Visitors strictly seeking a high-speed open-air airboat ride"
+    ],
+    childrenConsiderations: [
+      "All ages welcome on the covered swamp boat; select Adult and Child seats during checkout."
+    ],
+    confirmedInclusions: [
+      "Round-trip hotel shuttle pickup from participating French Quarter & Downtown hotels",
+      "Guided covered swamp boat tour in the Jean Lafitte bayou"
+    ],
+    bookingConfirmations: [
+      "Departure slot (e.g. 8:30 AM pickup / 10:00 AM tour)",
+      "Selected hotel pickup stop (customFieldInstance12258400, e.g. Hotel Monteleone #22056428)",
+      "Total checkout price including 6% booking fees ($131.44 for 2 adults)"
+    ],
+  },
+  {
     id: "evening-jazz-cruise",
     companyShortname: "neworleanssteamboatcompany",
+    viatorProductCode: "3780STEAMDIN",
+    viatorOptionCode: "TG9",
+    viatorPlacementId: "fp-wno-riverboat-cruises",
+    fareharborAsnActive: false,
+    viatorVariants: [
+      {
+        label: "CHECK SIGHTSEEING AVAILABILITY (OPTION TG9)",
+        offer: "3780STEAMDIN",
+        option: "TG9",
+        placementId: "fp-wno-riverboat-cruises",
+      },
+      {
+        label: "CHECK EARLY DINNER (6:00 PM · OPTION TG3)",
+        offer: "3780STEAMDIN",
+        option: "TG3",
+        placementId: "fp-wno-riverboat-cruises",
+      },
+      {
+        label: "CHECK LATE DINNER (7:45 PM · OPTION TG4)",
+        offer: "3780STEAMDIN",
+        option: "TG4",
+        placementId: "fp-wno-riverboat-cruises",
+      },
+    ],
     title: "Evening Jazz Cruise",
     category: "River Cruises",
     operatorName: "New Orleans Steamboat Company",
@@ -621,6 +944,42 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
   {
     id: "daytime-jazz-cruise",
     companyShortname: "neworleanssteamboatcompany",
+    viatorProductCode: "3780STEAM",
+    viatorOptionCode: "TG31",
+    viatorPlacementId: "fp-wno-riverboat-cruises",
+    fareharborAsnActive: false,
+    viatorVariants: [
+      {
+        label: "CHECK SIGHTSEEING AVAILABILITY (OPTION TG31)",
+        offer: "3780STEAM",
+        option: "TG31",
+        placementId: "fp-wno-riverboat-cruises",
+      },
+      {
+        label: "CHECK 11:00 AM LUNCH SEATING (OPTION TG12)",
+        offer: "3780STEAM",
+        option: "TG12",
+        placementId: "fp-wno-riverboat-cruises",
+      },
+      {
+        label: "CHECK 12:15 PM LUNCH SEATING (OPTION TG13)",
+        offer: "3780STEAM",
+        option: "TG13",
+        placementId: "fp-wno-riverboat-cruises",
+      },
+      {
+        label: "CHECK 2:00 PM LUNCH SEATING (OPTION TG24)",
+        offer: "3780STEAM",
+        option: "TG24",
+        placementId: "fp-wno-riverboat-cruises",
+      },
+      {
+        label: "CHECK 3:15 PM LUNCH SEATING (OPTION TG25)",
+        offer: "3780STEAM",
+        option: "TG25",
+        placementId: "fp-wno-riverboat-cruises",
+      },
+    ],
     title: "Daytime Jazz Cruise",
     category: "River Cruises",
     operatorName: "New Orleans Steamboat Company",
@@ -690,6 +1049,22 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
   {
     id: "sunday-jazz-brunch-cruise",
     companyShortname: "neworleanssteamboatcompany",
+    viatorProductCode: "3780STEAMBRU",
+    viatorPlacementId: "fp-wno-riverboat-cruises",
+    fareharborAsnActive: false,
+    viatorVariants: [
+      {
+        label: "CHECK SUNDAY JAZZ BRUNCH AVAILABILITY (VIATOR #3780STEAMBRU)",
+        offer: "3780STEAMBRU",
+        placementId: "fp-wno-riverboat-cruises",
+      },
+      {
+        label: "CHECK DAYTIME SIGHTSEEING AVAILABILITY (VIATOR #3780STEAM · TG31)",
+        offer: "3780STEAM",
+        option: "TG31",
+        placementId: "fp-wno-riverboat-cruises",
+      },
+    ],
     title: "Sunday Jazz Brunch Cruise",
     category: "River Cruises",
     operatorName: "New Orleans Steamboat Company",
@@ -739,6 +1114,9 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     companyShortname: "neworleanssteamboatcompany",
     itemId: "561477",
     flowId: "1578687",
+    viatorProductCode: "3780OAK",
+    viatorPlacementId: "fp-wno-plantation-tours",
+    fareharborAsnActive: false,
     title: "Oak Alley Plantation Tour",
     category: "Plantation Tours",
     operatorName: "Gray Line",
@@ -770,6 +1148,9 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     companyShortname: "neworleanssteamboatcompany",
     itemId: "561539",
     flowId: "1578687",
+    viatorProductCode: "3780P41",
+    viatorPlacementId: "fp-wno-plantation-tours",
+    fareharborAsnActive: false,
     title: "Whitney Plantation Tour",
     category: "Plantation Tours",
     operatorName: "Gray Line",
@@ -801,6 +1182,10 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     companyShortname: "neworleanssteamboatcompany",
     itemId: "561484",
     flowId: "1220421",
+    viatorProductCode: "3780SWAMP",
+    viatorOptionCode: "10:45AM",
+    viatorPlacementId: "fp-wno-swamp-tours",
+    fareharborAsnActive: false,
     title: "Swamp & Bayou Tour",
     category: "Swamp Tours",
     operatorName: "Gray Line",
@@ -831,6 +1216,10 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     companyShortname: "neworleanssteamboatcompany",
     itemId: "561547",
     flowId: "1220421",
+    viatorProductCode: "3780AIRBOAT",
+    viatorOptionCode: "TG3",
+    viatorPlacementId: "fp-wno-swamp-tours",
+    fareharborAsnActive: false,
     title: "Small Airboat Swamp Adventure",
     category: "Airboat Rides",
     operatorName: "Gray Line",
@@ -861,6 +1250,10 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     companyShortname: "neworleanssteamboatcompany",
     itemId: "562175",
     flowId: "1220421",
+    viatorProductCode: "3780AIRBOAT",
+    viatorOptionCode: "TG1",
+    viatorPlacementId: "fp-wno-swamp-tours",
+    fareharborAsnActive: false,
     title: "Large Airboat Swamp Adventure",
     category: "Airboat Rides",
     operatorName: "Gray Line",
@@ -888,6 +1281,9 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     companyShortname: "neworleanssteamboatcompany",
     itemId: "562191",
     flowId: "1220421",
+    viatorProductCode: "3780SWPL",
+    viatorPlacementId: "fp-wno-combo-tours",
+    fareharborAsnActive: false,
     title: "Swamp Boat and Oak Alley Combination",
     category: "Combo Tours",
     operatorName: "Gray Line",
@@ -920,6 +1316,9 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     companyShortname: "neworleanssteamboatcompany",
     itemId: "670738",
     flowId: "1220421",
+    viatorProductCode: "3780P91",
+    viatorPlacementId: "fp-wno-combo-tours",
+    fareharborAsnActive: false,
     title: "Swamp Boat and Whitney Combination",
     category: "Combo Tours",
     operatorName: "Gray Line",
@@ -952,6 +1351,10 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     companyShortname: "neworleanssteamboatcompany",
     itemId: "682856",
     flowId: "1578708",
+    viatorProductCode: "3780ST",
+    viatorOptionCode: "TG1",
+    viatorPlacementId: "fp-wno-walking-tours",
+    fareharborAsnActive: false,
     title: "Cocktail Walking Tour",
     category: "Walking Tours",
     operatorName: "Gray Line",
@@ -978,6 +1381,10 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     companyShortname: "neworleanssteamboatcompany",
     itemId: "562204",
     flowId: "1578708",
+    viatorProductCode: "3780ST",
+    viatorOptionCode: "04PM",
+    viatorPlacementId: "fp-wno-walking-tours",
+    fareharborAsnActive: false,
     title: "Craft Cocktail Walking Tour",
     category: "Walking Tours",
     operatorName: "Gray Line",
@@ -1004,6 +1411,9 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     companyShortname: "neworleanssteamboatcompany",
     itemId: "562250",
     flowId: "1578708",
+    viatorProductCode: "3780GHOSTS",
+    viatorPlacementId: "fp-wno-walking-tours",
+    fareharborAsnActive: false,
     title: "Ghosts & Spirits Walking Tour",
     category: "Walking Tours",
     operatorName: "Gray Line",
@@ -1034,6 +1444,9 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     companyShortname: "neworleanssteamboatcompany",
     itemId: "564661",
     flowId: "1578708",
+    viatorProductCode: "3780HAUNT",
+    viatorPlacementId: "fp-wno-city-tours",
+    fareharborAsnActive: false,
     title: "City, Cemetery and Garden District Tour",
     category: "City Tours",
     operatorName: "Gray Line",
@@ -1061,6 +1474,9 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     companyShortname: "neworleanssteamboatcompany",
     itemId: "694782",
     flowId: "1621347",
+    viatorProductCode: "3780P45",
+    viatorPlacementId: "fp-wno-riverboat-cruises",
+    fareharborAsnActive: false,
     title: "CITY of NEW ORLEANS Riverboat Cruise",
     category: "River Cruises",
     operatorName: "New Orleans Steamboat Company",

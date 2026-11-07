@@ -70,19 +70,19 @@ test("WNO SEO, Telemetry, and Inventory Integrity Audit", async (t) => {
     assert.strictEqual(restaurantRedirect.permanent, true);
 
     // Proxy redirects test
-    const wnoRedirect1 = wnoProxy(mockRequest("/new-orleans/tonight"));
+    const wnoRedirect1 = await wnoProxy(mockRequest("/new-orleans/tonight"));
     assert.strictEqual(wnoRedirect1.status, 308);
     assert.strictEqual(wnoRedirect1.headers.get("location"), "https://www.welcometoneworleanstours.com/guides/tonight");
 
-    const wnoRedirect2 = wnoProxy(mockRequest("/new-orleans/this-weekend"));
+    const wnoRedirect2 = await wnoProxy(mockRequest("/new-orleans/this-weekend"));
     assert.strictEqual(wnoRedirect2.status, 308);
     assert.strictEqual(wnoRedirect2.headers.get("location"), "https://www.welcometoneworleanstours.com/guides/this-weekend");
 
-    const wnoRedirect3 = wnoProxy(mockRequest("/plantation-tours/oak-alley-vs-laura"));
+    const wnoRedirect3 = await wnoProxy(mockRequest("/plantation-tours/oak-alley-vs-laura"));
     assert.strictEqual(wnoRedirect3.status, 308);
     assert.strictEqual(wnoRedirect3.headers.get("location"), "https://www.welcometoneworleanstours.com/guides/oak-alley-plantation-tour-from-new-orleans");
 
-    const wnoRedirect4 = wnoProxy(mockRequest("/new-orleans/restaurant-partners"));
+    const wnoRedirect4 = await wnoProxy(mockRequest("/new-orleans/restaurant-partners"));
     assert.strictEqual(wnoRedirect4.status, 308);
     assert.strictEqual(wnoRedirect4.headers.get("location"), "https://www.welcometoneworleanstours.com/contact");
 
@@ -92,9 +92,9 @@ test("WNO SEO, Telemetry, and Inventory Integrity Audit", async (t) => {
     assert.strictEqual(rootRedirect1.headers.get("location"), "https://www.welcometoneworleanstours.com/guides/tonight");
   });
 
-  await t.test("2. Sitemap URLs count is exactly 113 and contains all candidate guides", () => {
+  await t.test("2. Sitemap URLs count is exactly 117 and contains all candidate guides", () => {
     const paths = buildWtonotSitemapPaths();
-    assert.strictEqual(paths.length, 113, `Expected 113 sitemap paths, got ${paths.length}`);
+    assert.strictEqual(paths.length, 117, `Expected 117 sitemap paths, got ${paths.length}`);
 
     const expectedPaths = [
       "/operators",
@@ -257,7 +257,7 @@ test("WNO SEO, Telemetry, and Inventory Integrity Audit", async (t) => {
   });
 
   await t.test("4. Commercial inventory groups preserve exact FareHarbor ASN/item/flow/ref values", () => {
-    assert.strictEqual(STOREFRONT_PRODUCTS.length, 21, "Must have exactly 21 storefront products");
+    assert.strictEqual(STOREFRONT_PRODUCTS.length, 23, "Must have exactly 23 storefront products");
 
     for (const product of STOREFRONT_PRODUCTS) {
       assert.ok(product.slug, "Product must have a slug");
@@ -283,7 +283,7 @@ test("WNO SEO, Telemetry, and Inventory Integrity Audit", async (t) => {
 
     const products = getWnoProductsFeed(WTONOT_ORIGIN);
     assert.ok(Array.isArray(products));
-    assert.strictEqual(products.length, 21);
+    assert.strictEqual(products.length, 23);
 
     const locations = getWnoLocationsFeed(WTONOT_ORIGIN);
     assert.ok(Array.isArray(locations));
@@ -291,14 +291,14 @@ test("WNO SEO, Telemetry, and Inventory Integrity Audit", async (t) => {
 
     const pricing = getWnoPricingFeed(WTONOT_ORIGIN);
     assert.ok(Array.isArray(pricing));
-    assert.strictEqual(pricing.length, 21);
+    assert.strictEqual(pricing.length, 23);
 
     const policies = getWnoPoliciesFeed(WTONOT_ORIGIN);
     assert.ok(Array.isArray(policies));
-    assert.strictEqual(policies.length, 21);
+    assert.strictEqual(policies.length, 23);
 
     const operatingWindows = getWnoOperatingWindowsFeed(WTONOT_ORIGIN);
     assert.ok(Array.isArray(operatingWindows));
-    assert.strictEqual(operatingWindows.length, 21);
+    assert.strictEqual(operatingWindows.length, 23);
   });
 });

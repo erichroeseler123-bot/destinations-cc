@@ -2,7 +2,14 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import TourDetailBookingAction from "./TourDetailBookingAction";
 import { headers } from "next/headers";
-import { STOREFRONT_PRODUCTS, getFareHarborUrl, NEW_ORLEANS_TOURS_PATH } from "../pageConfig";
+import {
+  STOREFRONT_PRODUCTS,
+  getFareHarborUrl,
+  getProductPrimaryBookingHref,
+  getProductActiveBookingVariants,
+  getProductViatorReselectionNote,
+  NEW_ORLEANS_TOURS_PATH,
+} from "../pageConfig";
 import JsonLd from "@/app/components/dcc/JsonLd";
 import { buildBreadcrumbJsonLd, buildWebPageJsonLd } from "@/lib/dcc/jsonld";
 import WikimediaImageCredit from "../../components/WikimediaImageCredit";
@@ -78,7 +85,7 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
   const siteDomain = isWto ? "welcometoneworleanstours.com" : "destinationcommandcenter.com";
   const basePath = isWto ? "" : NEW_ORLEANS_TOURS_PATH;
   const pagePath = `${basePath}/tours/${slug}`;
-  const fallbackHref = getFareHarborUrl(product.companyShortname, product.itemId, product.flowId);
+  const fareHarborDirectHref = getFareHarborUrl(product.companyShortname, product.itemId, product.flowId);
   const ctaText = product.ctaLabel || "Check Dates & Prices";
   const resolvedImage = resolveProductImage(product);
   const decisionCopy = TOUR_DECISION_COPY[product.slug];
@@ -92,6 +99,19 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
     claimingOwner: siteDomain,
     issueIfParamsPresent: true,
     defaultPortSlug: "new-orleans",
+  });
+  const fallbackHref =
+    getProductPrimaryBookingHref(product, {
+      date: carriedContext.payload.date || undefined,
+      adults: carriedContext.payload.partySize || undefined,
+    }) || fareHarborDirectHref;
+  const activeVariants = getProductActiveBookingVariants(product, {
+    date: carriedContext.payload.date || undefined,
+    adults: carriedContext.payload.partySize || undefined,
+  });
+  const viatorReselectionNote = getProductViatorReselectionNote(product, {
+    date: carriedContext.payload.date || undefined,
+    adults: carriedContext.payload.partySize || undefined,
   });
   const normalizedCategory = product.category.toLowerCase();
   const isSwampProduct =
@@ -112,7 +132,7 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
     provider: "fareharbor",
     providerAccount: "aktourcenter",
     productCode: slug,
-    destinationUrl: fallbackHref,
+    destinationUrl: fareHarborDirectHref,
     campaign: `${isWto ? "wno" : "dcc"}-${slug}`,
     contextId: carriedContext.contextId,
     evaluationRunId: assurance.evaluationRunId,
@@ -121,20 +141,22 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
     partySize: carriedContext.payload.partySize || null,
     useRelativePath: !isWto,
   });
-  const viatorHandoffHref = buildPortfolioHandoffUrl({
-    originatingSite: siteDomain,
-    provider: "viator",
-    providerAccount: "P00058396",
-    productCode: slug,
-    destinationUrl: "https://www.viator.com/New-Orleans/d675-ttd?pid=P00058396&mcid=42383",
-    campaign: `${isWto ? "wno" : "dcc"}-${slug}-viator`,
-    contextId: carriedContext.contextId,
-    evaluationRunId: assurance.evaluationRunId,
-    receiptId: assurance.receiptId,
-    intendedDate: carriedContext.payload.date || null,
-    partySize: carriedContext.payload.partySize || null,
-    useRelativePath: !isWto,
-  });
+  const viatorHandoffHref = fallbackHref.startsWith("/api/v1/ads/click")
+    ? fallbackHref
+    : buildPortfolioHandoffUrl({
+        originatingSite: siteDomain,
+        provider: "viator",
+        providerAccount: "P00306962",
+        productCode: product.viatorProductCode || slug,
+        destinationUrl: fallbackHref,
+        campaign: `${isWto ? "wno" : "dcc"}-${slug}-viator`,
+        contextId: carriedContext.contextId,
+        evaluationRunId: assurance.evaluationRunId,
+        receiptId: assurance.receiptId,
+        intendedDate: carriedContext.payload.date || null,
+        partySize: carriedContext.payload.partySize || null,
+        useRelativePath: !isWto,
+      });
   const crossSiteParams = new URLSearchParams();
   if (carriedContext.contextId) {
     crossSiteParams.set("ctx", carriedContext.contextId);
@@ -177,9 +199,10 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
     hasValidRecommendation: Boolean(recommendationExplanation),
   });
 
-  const bookingActions = (className: string) =>
-    product.bookingVariants && product.bookingVariants.length > 0
-      ? product.bookingVariants.map((variant: any, idx: number) => (
+  const bookingActions = (className: string) => (
+    <>
+      {activeVariants && activeVariants.length > 0 ? (
+        activeVariants.map((variant: any, idx: number) => (
           <TourDetailBookingAction
             key={idx}
             product={product}
@@ -192,15 +215,25 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
             className={className}
           />
         ))
-      : (
-          <TourDetailBookingAction
-            product={product}
-            refCode={refCode}
-            fallbackHref={fallbackHref}
-            ctaText={ctaText}
-            className={className}
-          />
-        );
+      ) : (
+        <TourDetailBookingAction
+          product={product}
+          refCode={refCode}
+          fallbackHref={fallbackHref}
+          ctaText={ctaText}
+          className={className}
+        />
+      )}
+      {viatorReselectionNote && (
+        <p
+          data-testid="wno-detail-reselection-note"
+          className="mt-2 w-full rounded border border-[#b8860b]/50 bg-[#fcf5e3] px-3 py-2 text-[11px] font-medium leading-relaxed !text-[#2b2110]"
+        >
+          {viatorReselectionNote}
+        </p>
+      )}
+    </>
+  );
 
   const identityGraph = isWto
     ? [
@@ -282,16 +315,16 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
           carriedContext={carriedContext}
           handoffActions={[
             {
-              label: `Book ${product.title} via FareHarbor`,
+              label: `Book ${product.title} on Viator`,
+              href: viatorHandoffHref,
+              providerLabel: "Viator",
+              accountLabel: "pid=P00306962",
+            },
+            {
+              label: `Operator Direct Fallback (FareHarbor)`,
               href: fhHandoffHref,
               providerLabel: "FareHarbor",
               accountLabel: "asn=aktourcenter",
-            },
-            {
-              label: "Compare New Orleans Options on Viator",
-              href: viatorHandoffHref,
-              providerLabel: "Viator",
-              accountLabel: "pid=P00058396",
             },
           ]}
           crossSiteLinks={[
