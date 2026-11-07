@@ -492,6 +492,14 @@ export interface V03SigningKeyEntry {
   providerKind: "vercel_kms_es256" | "local_ed25519_conformance";
 }
 
+export interface V03DecisionReceiptLegProvenance {
+  legId: string;
+  legTitle?: string;
+  source: string;
+  timestamp: string;
+  expiry: string;
+}
+
 export interface V03PinnedReceiptPayload {
   spec: "dcc-decision-receipt/0.3";
   receiptId: string;
@@ -527,6 +535,7 @@ export interface V03PinnedReceiptPayload {
     totalScore: number | null;
     reasonCodes: string[];
   }>;
+  legProvenance?: V03DecisionReceiptLegProvenance[];
   resultHash: string;
   traceHash: string;
   epistemicLimitationStatement: string;
@@ -546,6 +555,7 @@ export interface V03SignedDecisionReceipt {
   rfc8785CanonicalPayload: string;
   rfc8785PayloadSha256: string;
   jwsCompact: string;
+  legProvenance?: V03DecisionReceiptLegProvenance[];
   payload: V03PinnedReceiptPayload;
 }
 
@@ -1237,6 +1247,9 @@ export async function signV03DecisionReceiptJws(
     recommendedCandidateDccId: inputPayload.recommendedCandidateDccId,
     recommendedCandidateLegacyCode: inputPayload.recommendedCandidateLegacyCode,
     candidateDispositionSummary: inputPayload.candidateDispositionSummary,
+    ...(Array.isArray(inputPayload.legProvenance)
+      ? { legProvenance: inputPayload.legProvenance }
+      : {}),
     resultHash: inputPayload.resultHash,
     traceHash: inputPayload.traceHash,
     epistemicLimitationStatement: inputPayload.epistemicLimitationStatement,
@@ -1266,6 +1279,9 @@ export async function signV03DecisionReceiptJws(
       rfc8785CanonicalPayload,
       rfc8785PayloadSha256,
       jwsCompact: kmsSigned.jwsCompact,
+      ...(Array.isArray(payload.legProvenance)
+        ? { legProvenance: payload.legProvenance }
+        : {}),
       payload,
     };
   }
@@ -1302,6 +1318,9 @@ export async function signV03DecisionReceiptJws(
     rfc8785CanonicalPayload,
     rfc8785PayloadSha256,
     jwsCompact,
+    ...(Array.isArray(payload.legProvenance)
+      ? { legProvenance: payload.legProvenance }
+      : {}),
     payload,
   };
 }

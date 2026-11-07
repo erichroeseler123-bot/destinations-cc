@@ -1,339 +1,470 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import SharedTripRecheckCard from "@/app/components/dcc/SharedTripRecheckCard";
 import {
-  DELHI_AGRA_MACHINE_FEEDS,
-  DELHI_AGRA_QUALIFIED_OPERATORS,
-  DELHI_AGRA_SAMPLE_TRIP_FITS,
-  DELHI_AGRA_SAMPLE_TRIP_NEEDS_VERIFICATION,
-  TAJ_MAHAL_OFFICIAL_RULES,
-  evaluateDelhiAgraTajVisit,
+  DELHI_AGRA_QUALIFIED_OPTIONS,
+  evaluateDelhiAgraCorridorRecheck,
+  getReviewDeskItemsForInternationalCorridor,
+  TAJ_MAHAL_VISITING_RULES,
 } from "@/lib/dcc/corridors/internationalCorridorQualifications";
 
 export const dynamic = "force-dynamic";
 
-const BASE_URL = "https://destinationcommandcenter.com";
-
 export const metadata: Metadata = {
   title:
-    "Delhi to Agra: Will I Still Make My Taj Mahal Visit? | Destination Command Center",
+    "Delhi → Agra Rail & Private Car Qualification (DCC-412 Connection Recheck) | Destination Command Center",
   description:
-    "Answer 'Will I still make my Taj Mahal visit?' using your Gatimaan / Vande Bharat train and date, revised Agra Cantt (AGC) arrival, last-mile Shilpgram East Gate transfer, and official ASI Taj Mahal visiting hours (opens 30m before sunrise, closes 30m before sunset, closed Fridays, 3-hour ticket limit).",
-  alternates: { canonical: "/routes/delhi-to-agra" },
+    "Plan Delhi to Agra day trips: DCC-412 station exit readiness (travelerReadyAt in Asia/Kolkata & UTC ISO-8601), missed 10:30 connection vs. catchable 11:00 cohort, Taj Mahal Friday closure rules, and Review Desk verification.",
+  alternates: {
+    canonical: "https://destinationcommandcenter.com/routes/delhi-to-agra",
+  },
 };
 
-export default async function DelhiToAgraPage({
-  searchParams,
-}: {
+type PageProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
-}) {
-  const sp = searchParams ? await searchParams : {};
-  const firstStr = (v: string | string[] | undefined) =>
-    Array.isArray(v) ? v[0] : v;
+};
 
-  const customEval = evaluateDelhiAgraTajVisit({
-    date: firstStr(sp.date) || "2026-11-18",
-    trainNumberAndName: firstStr(sp.train) || "12002 Gatimaan Express",
-    scheduledArrivalAgc: firstStr(sp.scheduled_eta) || "09:50",
-    revisedArrivalAgc: firstStr(sp.revised_eta) || "10:15",
-    sunriseLocal: firstStr(sp.sunrise) || "06:45",
-    sunsetLocal: firstStr(sp.sunset) || "17:30",
-    returnTrainDepartureAgc: firstStr(sp.return_train) || "17:45",
-    partySize: Number(firstStr(sp.party_size)) || 3,
-    fogAdvisoryActive: firstStr(sp.fog) === "1",
+function firstStr(val: string | string[] | undefined, fallback: string): string {
+  if (Array.isArray(val)) return val[0] || fallback;
+  return typeof val === "string" && val.trim() ? val.trim() : fallback;
+}
+
+export default async function DelhiToAgraPage({ searchParams }: PageProps = {}) {
+  const resolved = searchParams ? await searchParams : {};
+  const date = firstStr(resolved.date, "2026-11-18");
+  const trainDelayMinutes = Math.max(
+    0,
+    Number.parseInt(firstStr(resolved.delay, "42"), 10) || 0,
+  );
+  const scheduledArrivalLocal = firstStr(resolved.scheduled_arrival, "09:50");
+  const transferBufferMinutes = Math.max(
+    0,
+    Number.parseInt(firstStr(resolved.exit_buffer, "15"), 10) || 15,
+  );
+  const criticalUpdateMissing =
+    firstStr(resolved.missing_update, "0") === "1" ||
+    firstStr(resolved.missing_update, "false") === "true";
+  const partySize = Math.max(
+    1,
+    Number.parseInt(firstStr(resolved.passengers, "2"), 10) || 2,
+  );
+
+  const recheck = evaluateDelhiAgraCorridorRecheck({
+    date,
+    trainDelayMinutes,
+    scheduledArrivalLocal,
+    transferBufferMinutes,
+    criticalUpdateMissing,
+    partySize,
   });
-
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: [
-      {
-        "@type": "Question",
-        name: "Will I still make my Taj Mahal visit if my Delhi–Agra train is delayed?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: "Taj Mahal opens 30 minutes before sunrise, closes 30 minutes before sunset, is closed every Friday for general viewing, and enforces a 3-hour (180-minute) maximum stay per ticket. Allow 60 minutes from Agra Cantt (AGC) arrival to Taj East Gate entry (platform exit + car to Shilpgram + battery golf cart + ASI security).",
-        },
-      },
-    ],
-  };
+  const dcc412 = recheck.dcc412Recheck;
+  const reviewDeskRows =
+    getReviewDeskItemsForInternationalCorridor("india-delhi-agra");
 
   return (
-    <main
-      data-testid="dcc-delhi-agra-corridor-page"
-      className="min-h-screen bg-slate-950 text-white"
-    >
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
-      <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 space-y-8">
-        <header className="rounded-3xl border border-cyan-500/30 bg-slate-900/90 p-6 md:p-8 shadow-2xl space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="text-xs font-black uppercase tracking-[0.22em] text-cyan-300">
-              DCC International Booking Candidate · Delhi → Agra (AGC)
+    <main className="min-h-screen bg-[#070b12] text-zinc-100">
+      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 space-y-8">
+        {/* Breadcrumb */}
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4 text-xs text-zinc-400">
+          <div className="flex items-center gap-2">
+            <Link href="/" className="text-cyan-300 hover:underline">
+              DCC Home
+            </Link>
+            <span>/</span>
+            <span className="text-zinc-200 font-semibold">
+              India Qualification: Delhi → Agra (DCC-412 Readiness &amp; Cutoff Engine)
             </span>
-            <a
-              href={TAJ_MAHAL_OFFICIAL_RULES.officialUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-full border border-emerald-400/40 bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-200 underline"
-            >
-              Official ASI Visiting Hours Source
-            </a>
           </div>
-          <h1 className="text-3xl font-black tracking-tight md:text-4xl">
-            Delhi → Agra: &ldquo;Will I still make my Taj Mahal visit?&rdquo;
+          <span className="rounded-full border border-cyan-400/30 bg-cyan-500/10 px-3 py-1 font-mono text-[11px] text-cyan-200">
+            DCC-412 Active · Timezone: {dcc412.ianaTimeZone} → UTC ISO-8601
+          </span>
+        </div>
+
+        {/* Hero */}
+        <header className="rounded-2xl border border-white/15 bg-slate-900/85 p-6">
+          <p className="text-xs font-bold uppercase tracking-wider text-cyan-300">
+            International Corridor 2 — New Delhi (NZM / DEL) → Agra Cantt (AGC) &amp; Taj Mahal
+          </p>
+          <h1 className="mt-1 text-2xl font-black tracking-tight text-white sm:text-3xl">
+            Delhi → Agra Rail, Station Exit &amp; Taj Mahal Cutoff Guide
           </h1>
-          <p className="max-w-4xl text-sm leading-relaxed text-slate-300">
-            Evaluates your{" "}
-            <strong>train and date</strong>,{" "}
-            <strong>revised Agra Cantt (AGC) station arrival</strong>,{" "}
-            <strong>
-              60-minute last-mile transfer (AGC → Shilpgram East Gate parking +
-              ASI battery golf cart + security queue)
-            </strong>
-            , and{" "}
-            <strong>official Taj Mahal visiting hours and ticket rules</strong>{" "}
-            (opens 30 minutes before sunrise, closes 30 minutes before sunset,{" "}
-            <strong>closed every Friday</strong>, and a{" "}
-            <strong>3-hour maximum stay per ticket</strong>). Mobile text and{" "}
-            <strong>WhatsApp</strong> dispatch actions work on low-signal station
-            connections.
+          <p className="mt-2 max-w-3xl text-sm text-zinc-300">
+            Powered by <code>DCC-412</code> inside <code>sharedTripRecheck</code>.
+            Resolves local times in <code>Asia/Kolkata</code> to UTC ISO-8601
+            timestamps, adds the station exit buffer <strong>once</strong> to compute{" "}
+            <code>travelerReadyAt</code>, carries <code>travelerReadyAt</code>{" "}
+            through every candidate connection, and enforces dated official sources
+            while keeping unconfirmed private-car tariffs and WhatsApp links in the{" "}
+            <a href="#review-desk" className="text-cyan-300 underline">
+              DCC Review Desk
+            </a>
+            .
           </p>
         </header>
 
-        {/* Interactive / Query-Driven Recheck Form + SharedTripRecheckCard */}
-        <section className="rounded-2xl border border-white/15 bg-slate-900/80 p-5 space-y-4">
-          <form
-            method="GET"
-            action="/routes/delhi-to-agra"
-            className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5 text-xs"
-          >
-            <label className="space-y-1">
-              <span className="font-bold text-slate-300">Visit Date</span>
-              <input
-                type="date"
-                name="date"
-                defaultValue={firstStr(sp.date) || "2026-11-18"}
-                className="w-full rounded-lg border border-white/20 bg-slate-950 px-3 py-2 text-white"
-              />
-            </label>
-            <label className="space-y-1">
-              <span className="font-bold text-slate-300">Train Number</span>
-              <input
-                type="text"
-                name="train"
-                defaultValue={firstStr(sp.train) || "12002 Gatimaan Express"}
-                className="w-full rounded-lg border border-white/20 bg-slate-950 px-3 py-2 text-white"
-              />
-            </label>
-            <label className="space-y-1">
-              <span className="font-bold text-slate-300">
-                Revised AGC Arrival (NTES)
-              </span>
-              <input
-                type="time"
-                name="revised_eta"
-                defaultValue={firstStr(sp.revised_eta) || "10:15"}
-                className="w-full rounded-lg border border-white/20 bg-slate-950 px-3 py-2 text-white"
-              />
-            </label>
-            <label className="space-y-1">
-              <span className="font-bold text-slate-300">Party Size</span>
-              <input
-                type="number"
-                min={1}
-                max={12}
-                name="party_size"
-                defaultValue={Number(firstStr(sp.party_size)) || 3}
-                className="w-full rounded-lg border border-white/20 bg-slate-950 px-3 py-2 text-white"
-              />
-            </label>
-            <div className="flex items-end">
-              <button
-                type="submit"
-                className="w-full rounded-lg bg-cyan-500 px-4 py-2 font-black text-slate-950 hover:bg-cyan-400"
-              >
-                Recheck Taj Window
-              </button>
+        {/* DCC-412 Readiness & Connection Recheck Panel */}
+        <section
+          id="connection-recheck"
+          aria-label="DCC-412 Delhi to Agra Readiness and Connection Recheck"
+          data-testid="delhi-agra-dcc412-panel"
+          className="rounded-2xl border border-cyan-400/35 bg-cyan-950/20 p-6 space-y-4"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-cyan-300">
+                  DCC-412 Multi-Leg Readiness &amp; Cutoff Recheck (sharedTripRecheck)
+                </span>
+                <span
+                  data-testid="dcc412-schedule-baseline-badge"
+                  className={`rounded-full border px-2.5 py-0.5 text-[11px] font-bold ${
+                    dcc412.scheduleBaselineStatus === "Needs verification"
+                      ? "border-amber-400/40 bg-amber-500/20 text-amber-200"
+                      : "border-emerald-400/40 bg-emerald-500/20 text-emerald-200"
+                  }`}
+                >
+                  Schedule Baseline: {dcc412.scheduleBaselineStatus}
+                </span>
+              </div>
+              <p className="mt-1 text-xs text-zinc-300">
+                Scheduled arrival{" "}
+                <strong>{dcc412.scheduledArrivalLocal} local</strong> (
+                <code>{dcc412.scheduledArrivalUtc}</code>) +{" "}
+                <strong>{dcc412.delayMinutesApplied} min delay</strong> → effective
+                arrival <strong>{dcc412.effectiveArrivalLocal} local</strong> (
+                <code>{dcc412.effectiveArrivalUtcShort}</code>) +{" "}
+                <strong>{dcc412.transferBufferMinutes} min station exit buffer</strong>{" "}
+                (added once:{" "}
+                <code>
+                  transferBufferAddedOnce={String(dcc412.transferBufferAddedOnce)}
+                </code>
+                ) ={" "}
+                <strong
+                  data-testid="dcc412-traveler-ready-summary"
+                  className="text-cyan-200"
+                >
+                  travelerReadyAt {dcc412.travelerReadyAt.formattedSummary}
+                </strong>{" "}
+                (<code data-testid="dcc412-traveler-ready-utc">{dcc412.travelerReadyAt.utcIso}</code>).
+              </p>
             </div>
-          </form>
+            <div className="flex flex-wrap gap-1.5 text-xs">
+              <Link
+                href="/routes/delhi-to-agra?date=2026-11-18&scheduled_arrival=09:50&delay=42&exit_buffer=15"
+                className={`rounded-lg border px-2.5 py-1 ${
+                  !recheck.isFridayTajClosed &&
+                  trainDelayMinutes === 42 &&
+                  !criticalUpdateMissing
+                    ? "border-cyan-300 bg-cyan-500/20 text-white font-bold"
+                    : "border-white/15 bg-slate-900 text-zinc-300"
+                }`}
+              >
+                Synthetic Test: 9:50 + 42m Delay + 15m Exit → 10:47 (05:17Z)
+              </Link>
+              <Link
+                href="/routes/delhi-to-agra?date=2026-11-18&scheduled_arrival=09:50&delay=42&exit_buffer=15&missing_update=1"
+                className={`rounded-lg border px-2.5 py-1 ${
+                  criticalUpdateMissing
+                    ? "border-amber-300 bg-amber-500/20 text-white font-bold"
+                    : "border-white/15 bg-slate-900 text-zinc-300"
+                }`}
+              >
+                Missing Live Update (Needs Verification)
+              </Link>
+              <Link
+                href="/routes/delhi-to-agra?date=2026-11-20&delay=0"
+                className={`rounded-lg border px-2.5 py-1 ${
+                  recheck.isFridayTajClosed
+                    ? "border-rose-300 bg-rose-500/20 text-white font-bold"
+                    : "border-white/15 bg-slate-900 text-zinc-300"
+                }`}
+              >
+                Friday Closure Test (2026-11-20)
+              </Link>
+            </div>
+          </div>
 
-          <SharedTripRecheckCard
-            card={customEval.recheckCard}
-            testId="dcc-delhi-agra-active-recheck-card"
-          />
+          {/* Compact What Changed / What Still Fits / Next Step */}
+          <div className="grid gap-3 md:grid-cols-3 text-xs">
+            <div className="rounded-xl border border-white/10 bg-slate-950/75 p-3.5">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+                1. What Changed
+              </div>
+              <p className="mt-1 text-zinc-100">{recheck.recheckCard.whatChanged}</p>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-slate-950/75 p-3.5">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-emerald-300">
+                2. What Still Fits
+              </div>
+              <p className="mt-1 text-zinc-100">
+                {recheck.recheckCard.whatStillFits}
+              </p>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-slate-950/75 p-3.5">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-cyan-300">
+                3. Next Step
+              </div>
+              <p className="mt-1 text-zinc-100">{recheck.recheckCard.nextStep}</p>
+            </div>
+          </div>
+
+          {/* Candidate Connections Table */}
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-left text-xs">
+              <thead>
+                <tr className="border-b border-white/15 text-[11px] uppercase tracking-wider text-zinc-400">
+                  <th className="py-2 pr-3">Candidate Itinerary</th>
+                  <th className="py-2 px-3">Carried travelerReadyAt</th>
+                  <th className="py-2 px-3">Departure &amp; Cutoffs (Local / UTC)</th>
+                  <th className="py-2 px-3">Connection Verdict</th>
+                  <th className="py-2 pl-3">Leg Receipt Provenance (Source / Timestamp / Expiry)</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/10">
+                {dcc412.candidates.map((cand) => (
+                  <tr
+                    key={cand.candidateId}
+                    data-testid={`dcc412-candidate-${cand.candidateId}`}
+                    data-catchable={String(cand.catchable)}
+                  >
+                    <td className="py-3 pr-3 align-top">
+                      <div className="font-bold text-white">{cand.title}</div>
+                      <div className="text-[11px] text-zinc-400">
+                        {cand.operatorName} · Schedule baseline:{" "}
+                        <strong>{cand.scheduleBaselineStatus}</strong>
+                      </div>
+                    </td>
+                    <td className="py-3 px-3 align-top font-mono text-[11px] text-cyan-200">
+                      <div>{cand.travelerReadyAt.formattedSummary}</div>
+                      <div className="text-zinc-400">{cand.travelerReadyAt.utcIso}</div>
+                    </td>
+                    <td className="py-3 px-3 align-top font-mono text-[11px] text-zinc-200">
+                      <div>
+                        Departs: <strong>{cand.departureLocal}</strong> (
+                        {cand.departureUtcShort})
+                      </div>
+                      <div>
+                        Ticket cutoff: <strong>{cand.ticketCutoffLocal}</strong> (
+                        {cand.ticketCutoffUtcShort})
+                      </div>
+                      <div>
+                        Taj entry cutoff:{" "}
+                        <strong>{cand.destinationCutoffLocal || "16:30"}</strong>
+                      </div>
+                    </td>
+                    <td className="py-3 px-3 align-top">
+                      <span
+                        className={`inline-block rounded px-2 py-0.5 text-[11px] font-bold uppercase ${
+                          cand.catchable
+                            ? "border border-emerald-400/40 bg-emerald-500/20 text-emerald-200"
+                            : "border border-rose-400/40 bg-rose-500/20 text-rose-200"
+                        }`}
+                      >
+                        {cand.catchable
+                          ? `Catchable (+${cand.slackToDepartureMinutes}m)`
+                          : `Missed (${cand.slackToDepartureMinutes}m)`}
+                      </span>
+                      <div className="mt-1 text-[11px] text-zinc-300">
+                        {cand.reasonSummary}
+                      </div>
+                    </td>
+                    <td className="py-3 pl-3 align-top font-mono text-[11px] text-zinc-300">
+                      <div>
+                        Source: <strong>{cand.legProvenance.source}</strong>
+                      </div>
+                      <div>Timestamp: {cand.legProvenance.timestamp}</div>
+                      <div>Expiry: {cand.legProvenance.expiry}</div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </section>
 
-        {/* Official ASI Visiting Hours + IMD / CRIS proNTES Machine Access Status */}
+        {/* Taj Mahal Official Visiting Rules (Dated Official Source) */}
         <section
-          data-testid="dcc-delhi-agra-official-sources"
-          className="grid gap-5 lg:grid-cols-2"
+          aria-label="Taj Mahal Official Visiting Rules"
+          className="rounded-2xl border border-white/15 bg-slate-900/75 p-6 space-y-3"
         >
-          <div className="rounded-2xl border border-white/15 bg-slate-900/80 p-5 space-y-3 text-xs">
-            <div className="text-xs font-bold uppercase tracking-wider text-cyan-300">
-              Official Taj Mahal Rules (Archaeological Survey of India)
-            </div>
-            <h2 className="text-lg font-black text-white">
-              Visiting Hours, Friday Closure &amp; 3-Hour Ticket Limit
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-lg font-bold text-white">
+              Taj Mahal Official Entry Rules &amp; Friday Closure Gate (Dated Source:{" "}
+              {TAJ_MAHAL_VISITING_RULES.verifiedOnDate})
             </h2>
-            <ul className="space-y-2 text-slate-200">
-              <li>
-                • <strong>Daylight Gate Hours:</strong> Opens{" "}
-                <strong>30 minutes before sunrise</strong> and closes{" "}
-                <strong>30 minutes before sunset</strong> during normal operating
-                days.
-              </li>
-              <li>
-                • <strong>Friday Closure:</strong>{" "}
-                {TAJ_MAHAL_OFFICIAL_RULES.closedDayNote}
-              </li>
-              <li>
-                • <strong>3-Hour Ticket Rule:</strong>{" "}
-                {TAJ_MAHAL_OFFICIAL_RULES.ticketValidityNote}
-              </li>
-              <li>
-                • <strong>Shilpgram / West Gate Last Mile:</strong>{" "}
-                {TAJ_MAHAL_OFFICIAL_RULES.lastMileGateRule}
-              </li>
-            </ul>
             <a
-              href={TAJ_MAHAL_OFFICIAL_RULES.officialUrl}
+              href={TAJ_MAHAL_VISITING_RULES.officialWebsiteUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block font-bold text-cyan-300 underline"
+              className="text-xs font-semibold text-cyan-300 underline"
             >
-              Verify at tajmahal.gov.in/visiting-hours.aspx ↗
+              Official ASI Portal ({TAJ_MAHAL_VISITING_RULES.officialWebsiteUrl}) ↗
             </a>
           </div>
-
-          <div className="rounded-2xl border border-white/15 bg-slate-900/80 p-5 space-y-3 text-xs">
-            <div className="text-xs font-bold uppercase tracking-wider text-amber-300">
-              Machine Feed Verification Status (IMD &amp; CRIS proNTES)
+          <div className="grid gap-3 md:grid-cols-2 text-xs">
+            <div className="rounded-xl border border-white/10 bg-slate-950/70 p-3.5 space-y-1.5">
+              <div>
+                <strong className="text-amber-300">Weekly Friday Closure:</strong>{" "}
+                {TAJ_MAHAL_VISITING_RULES.weeklyClosureDetail}
+              </div>
+              <div>
+                <strong className="text-zinc-200">Sunrise–Sunset Window:</strong>{" "}
+                {TAJ_MAHAL_VISITING_RULES.sunriseToSunsetWindowNote}
+              </div>
+              <div>
+                <strong className="text-zinc-200">Statutory Entry Fee:</strong>{" "}
+                {TAJ_MAHAL_VISITING_RULES.foreignerEntryFeeInr} +{" "}
+                {TAJ_MAHAL_VISITING_RULES.mausoleumAddonInr}
+              </div>
             </div>
-            <h2 className="text-lg font-black text-white">
-              Official Lookups &amp; Traveler-Entered Revised ETA Fallback
-            </h2>
-            <div className="space-y-3">
-              {DELHI_AGRA_MACHINE_FEEDS.map((feed) => (
-                <div
-                  key={feed.providerId}
-                  className="rounded-xl border border-white/10 bg-black/35 p-3 space-y-1"
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-2 font-bold text-white">
-                    <span>{feed.providerName}</span>
-                    <span className="rounded bg-amber-500/20 px-2 py-0.5 text-[10px] font-mono uppercase text-amber-200">
-                      {feed.approvedMachineAccessStatus}
-                    </span>
-                  </div>
-                  <p className="text-slate-300">{feed.fallbackBehavior}</p>
-                  <div className="flex flex-wrap gap-3 pt-1">
-                    <a
-                      href={feed.documentationOrPortalUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-cyan-300 underline"
-                    >
-                      API Portal ({feed.documentationOrPortalUrl})
-                    </a>
-                    <a
-                      href={feed.officialPublicLookupUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-bold text-emerald-300 underline"
-                    >
-                      Open Official Live Lookup ↗
-                    </a>
-                  </div>
-                </div>
-              ))}
+            <div className="rounded-xl border border-white/10 bg-slate-950/70 p-3.5 space-y-1.5">
+              <div>
+                <strong className="text-cyan-300">
+                  TTZ 500m Electric Golf-Cart Rule:
+                </strong>{" "}
+                {TAJ_MAHAL_VISITING_RULES.eastAndWestGateElectricShuttleRule}
+              </div>
+              <div>
+                <strong className="text-rose-300">CISF Prohibited Items:</strong>{" "}
+                {TAJ_MAHAL_VISITING_RULES.strictProhibitedItems.join("; ")}.
+              </div>
             </div>
           </div>
         </section>
 
-        {/* Qualified Transfer Operators in INR + WhatsApp Mobile Text Support */}
+        {/* Transport Options (Dated Official Rail vs. Pending Private Car Items in Review Desk) */}
         <section
-          data-testid="dcc-delhi-agra-qualified-operators"
-          className="rounded-2xl border border-cyan-500/30 bg-slate-900/80 p-6 space-y-4"
+          aria-label="Delhi to Agra Transport Options"
+          data-testid="delhi-agra-options"
+          className="rounded-2xl border border-white/15 bg-slate-900/75 p-6 space-y-4"
         >
-          <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-cyan-300">
-              Qualified Transfer Operators (Priced in INR · Text &amp; WhatsApp Ready)
-            </p>
-            <h2 className="mt-1 text-xl font-black text-white">
-              Pre-Qualified Car Offers (Offered When Road, Operator &amp; Taj
-              Visit Window Support It)
-            </h2>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-2">
-            {DELHI_AGRA_QUALIFIED_OPERATORS.map((op) => (
-              <article
-                key={op.operatorId}
-                className="rounded-2xl border border-white/15 bg-black/35 p-5 space-y-2.5 text-xs"
+          <h2 className="text-lg font-bold text-white">
+            Transport Options &amp; Dated Source / Operator Confirmation Gate
+          </h2>
+          <div className="grid gap-4 md:grid-cols-3">
+            {DELHI_AGRA_QUALIFIED_OPTIONS.map((opt) => (
+              <div
+                key={opt.optionId}
+                data-testid={`delhi-agra-option-${opt.optionId}`}
+                className="rounded-xl border border-white/10 bg-slate-950/75 p-4 text-xs space-y-2"
               >
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <h3 className="text-base font-black text-white">
-                    {op.operatorName}
-                  </h3>
-                  <span className="rounded-full border border-emerald-400/40 bg-emerald-500/15 px-3 py-0.5 font-mono font-bold text-emerald-200">
-                    ₹{op.priceInr.toLocaleString()} INR
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-mono text-[10px] uppercase text-cyan-300">
+                    {opt.mode.replace(/_/g, " ")}
+                  </span>
+                  <span
+                    className={`rounded px-2 py-0.5 text-[10px] font-bold ${
+                      opt.pricingVerificationGate.verified
+                        ? "border border-emerald-400/30 bg-emerald-500/15 text-emerald-200"
+                        : "border border-amber-400/30 bg-amber-500/15 text-amber-200"
+                    }`}
+                  >
+                    {opt.pricingVerificationGate.statusLabel}
                   </span>
                 </div>
-                <div className="text-slate-300">{op.pricingScope}</div>
-                <div className="text-slate-400">
-                  <strong className="text-amber-200">
-                    Winter Fog &amp; Delay Policy:
-                  </strong>{" "}
-                  {op.fogAndDelayPolicy}
+                <h3 className="text-sm font-bold text-white">{opt.title}</h3>
+                <div>
+                  <strong className="text-zinc-200">Schedule:</strong>{" "}
+                  {opt.scheduleAndDuration}
                 </div>
-                <div className="flex flex-wrap gap-2 pt-2">
-                  <Link
-                    href={op.bookingHref}
-                    className="rounded-xl bg-cyan-500 px-3.5 py-2 font-black text-slate-950 hover:bg-cyan-400"
+                <div>
+                  <strong className="text-zinc-200">Price Gate:</strong>{" "}
+                  <span
+                    className={
+                      opt.pricingVerificationGate.verified
+                        ? "text-emerald-200"
+                        : "text-amber-200"
+                    }
                   >
-                    Select Transfer (₹{op.priceInr.toLocaleString()} INR)
-                  </Link>
-                  <a
-                    href={op.whatsappHref}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="rounded-xl border border-emerald-400/40 bg-emerald-500/10 px-3.5 py-2 font-bold text-emerald-200 hover:bg-emerald-500/20"
-                  >
-                    WhatsApp Text Dispatch
-                  </a>
+                    {opt.pricingVerificationGate.publicDisplayValue}
+                  </span>
                 </div>
-              </article>
+                <div>
+                  <strong className="text-zinc-200">Permit Gate:</strong>{" "}
+                  <span
+                    className={
+                      opt.permitVerificationGate.verified
+                        ? "text-zinc-200"
+                        : "text-amber-200"
+                    }
+                  >
+                    {opt.permitVerificationGate.publicDisplayValue}
+                  </span>
+                </div>
+                <div>
+                  <strong className="text-zinc-200">Refund / Delay Gate:</strong>{" "}
+                  <span
+                    className={
+                      opt.refundTermsVerificationGate.verified
+                        ? "text-zinc-200"
+                        : "text-amber-200"
+                    }
+                  >
+                    {opt.refundTermsVerificationGate.publicDisplayValue}
+                  </span>
+                </div>
+                <div className="pt-1">
+                  {opt.bookingOrWhatsappHref ? (
+                    <a
+                      href={opt.bookingOrWhatsappHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block rounded-lg border border-cyan-400/40 bg-cyan-500/15 px-3 py-1.5 font-bold text-cyan-200 hover:bg-cyan-500/25"
+                    >
+                      {opt.bookingOrWhatsappChannelLabel} ↗
+                    </a>
+                  ) : (
+                    <a
+                      href="#review-desk"
+                      className="inline-block rounded-lg border border-amber-400/40 bg-amber-500/15 px-3 py-1.5 font-bold text-amber-200"
+                    >
+                      {opt.bookingOrWhatsappChannelLabel}
+                    </a>
+                  )}
+                </div>
+              </div>
             ))}
           </div>
         </section>
 
-        {/* 1 Trip That Fits vs. 1 Trip That Needs Verification */}
+        {/* Review Desk Open Items */}
         <section
-          data-testid="dcc-delhi-agra-sample-comparisons"
-          className="grid gap-5 lg:grid-cols-2"
+          id="review-desk"
+          aria-label="Delhi to Agra Review Desk Open Items"
+          data-testid="delhi-agra-review-desk"
+          className="rounded-2xl border border-amber-400/35 bg-amber-950/15 p-6 space-y-3"
         >
-          <div className="rounded-2xl border border-emerald-500/30 bg-emerald-950/20 p-5 space-y-3">
-            <div className="text-xs font-bold uppercase tracking-wider text-emerald-300">
-              Sample 1 · Trip That Fits (12002 Gatimaan Express · Full 3-Hr Taj
-              Visit Fits)
-            </div>
-            <SharedTripRecheckCard
-              card={DELHI_AGRA_SAMPLE_TRIP_FITS.recheckCard}
-              testId="dcc-delhi-agra-sample-fits"
-            />
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-lg font-bold text-amber-200">
+              DCC Review Desk — Open Qualification Items (Delhi → Agra)
+            </h2>
+            <span className="font-mono text-xs text-amber-200">
+              {reviewDeskRows.length} open item(s) · status: needs confirmation
+            </span>
           </div>
-
-          <div className="rounded-2xl border border-amber-500/30 bg-amber-950/20 p-5 space-y-3">
-            <div className="text-xs font-bold uppercase tracking-wider text-amber-300">
-              Sample 2 · Trip That Needs Verification (Severe Fog Delay · Under
-              90m Before Sunset Cutoff)
-            </div>
-            <SharedTripRecheckCard
-              card={DELHI_AGRA_SAMPLE_TRIP_NEEDS_VERIFICATION.recheckCard}
-              testId="dcc-delhi-agra-sample-needs-verification"
-            />
+          <p className="text-xs text-zinc-300">
+            Unverified commercial car tariffs, AITP permit numbers, and placeholder
+            WhatsApp links are withheld from confirmed claims and tracked in{" "}
+            <code>/api/internal/research/approved-facts?port=delhi-to-agra</code>:
+          </p>
+          <div className="space-y-2.5">
+            {reviewDeskRows.map((row) => (
+              <div
+                key={row.fact_id}
+                data-testid={`review-desk-row-${row.fact_id}`}
+                className="rounded-xl border border-white/10 bg-slate-950/80 p-3.5 text-xs space-y-1"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="font-mono font-bold text-cyan-300">
+                    {row.fact_id}
+                  </span>
+                  <span className="rounded border border-amber-400/40 bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold uppercase text-amber-200">
+                    {row.status}
+                  </span>
+                </div>
+                <div className="font-semibold text-white">{row.value}</div>
+                <div className="text-zinc-300">{row.source_excerpt}</div>
+              </div>
+            ))}
           </div>
         </section>
       </div>

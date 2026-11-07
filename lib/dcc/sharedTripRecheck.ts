@@ -69,8 +69,10 @@ export interface CompactTripRecheckCardModel {
     | "den-mountain-arrival"
     | "red-rocks-ride-home"
     | "keflavik-to-vik"
+    | "iceland-kef-to-vik"
     | "delhi-to-agra"
-    | "hong-kong-to-macao";
+    | "hong-kong-to-macao"
+    | string;
   whatChanged: string;
   whatStillFits: string;
   nextStep: string;
@@ -167,6 +169,10 @@ export interface UnifiedJuneauOptionRecheck {
     summary: string;
   };
   fitsOverallForSelection: boolean;
+  flightDeckHandoffAllowed: boolean;
+  allowedNextStepType: "continue_to_flight_deck" | "view_options_that_fit";
+  allowedNextStepLabel: string;
+  allowedNextStepHref: string;
   flightDeckInterest:
     | "helicopter"
     | "dogsled"
@@ -538,9 +544,12 @@ export interface EvaluateUnifiedJuneauInput {
   ship?: string;
   date?: string;
   arrivalTime?: string;
+  claaScheduledArrivalTime?: string;
   allAboardTime?: string | null;
   berth?: JuneauBerthCode | JuneauArrivalDock | string;
-  returnBufferMinutes?: number;
+  berthCode?: JuneauBerthCode | JuneauArrivalDock | string;
+  returnBufferMinutes?: number | null;
+  configuredReturnBufferMinutes?: number | null;
   partySize?: number;
   flightCanceled?: boolean;
   cancelRef?: string | null;
@@ -588,14 +597,21 @@ export function evaluateUnifiedJuneauTripRecheckSync(
   const effectiveAllAboardForMath = allAboardConfirmed ? rawAllAboard : "16:30";
 
   const berthMapping = mapBerthCodeToEngineDock(
-    raw.berth || matchedClaa?.berthCode || "FKL",
+    raw.berth || raw.berthCode || matchedClaa?.berthCode || "FKL",
   );
 
-  const configuredReturnBufferMinutes =
+  const requestedBuffer =
     typeof raw.returnBufferMinutes === "number" &&
-    Number.isFinite(raw.returnBufferMinutes) &&
-    raw.returnBufferMinutes >= 30
-      ? Math.round(raw.returnBufferMinutes)
+    Number.isFinite(raw.returnBufferMinutes)
+      ? raw.returnBufferMinutes
+      : typeof raw.configuredReturnBufferMinutes === "number" &&
+          Number.isFinite(raw.configuredReturnBufferMinutes)
+        ? raw.configuredReturnBufferMinutes
+        : null;
+
+  const configuredReturnBufferMinutes =
+    typeof requestedBuffer === "number" && requestedBuffer >= 30
+      ? Math.round(requestedBuffer)
       : berthMapping.defaultReturnBufferMinutes;
 
   const partySize =
@@ -783,6 +799,7 @@ export function evaluateUnifiedJuneauTripRecheckSync(
       if (allAboardConfirmed) {
         qs.set("all_aboard", rawAllAboard);
       }
+      qs.set("return_buffer", String(configuredReturnBufferMinutes));
       qs.set("time_window", timeWindowParam);
       qs.set("interest", effectiveInterest);
       qs.set("option_id", meta.legacyReplanId);
@@ -803,7 +820,50 @@ export function evaluateUnifiedJuneauTripRecheckSync(
         `jnu_replan_${date.replace(/-/g, "")}_${effectiveInterest}`,
       );
 
-      const handoffHref = `/go/dcc-to-juneau-flight-deck?${qs.toString()}`;
+      const flightDeckHandoffHref = `/go/dcc-to-juneau-flight-deck?${qs.toString()}`;
+
+      // Build 'View options that fit' URL preserving all trip details when this option fails
+      const fitOptionsQs = new URLSearchParams();
+      fitOptionsQs.set("date", date);
+      fitOptionsQs.set("party_size", String(partySize));
+      fitOptionsQs.set("ship", ship);
+      fitOptionsQs.set("berth", berthMapping.berthCode);
+      fitOptionsQs.set("arrival", arrivalTime);
+      fitOptionsQs.set("claa_arrival", arrivalTime);
+      if (allAboardConfirmed) {
+        fitOptionsQs.set("all_aboard", rawAllAboard);
+      }
+      fitOptionsQs.set("return_buffer", String(configuredReturnBufferMinutes));
+      fitOptionsQs.set("time_window", timeWindowParam);
+      fitOptionsQs.set("failed_option_id", meta.legacyReplanId);
+      fitOptionsQs.set("failed_engine_option_id", engOpt.optionId);
+      if (flightCanceled) {
+        fitOptionsQs.set("flight_canceled", "1");
+      }
+      if (cancelRef) {
+        fitOptionsQs.set("cancel_ref", cancelRef);
+      }
+      if (dccContextId) {
+        fitOptionsQs.set("ctx", dccContextId);
+      }
+      fitOptionsQs.set("filter", "fits_only");
+      const viewOptionsThatFitHref = `/juneau/replan?${fitOptionsQs.toString()}#fitting-options`;
+
+      const flightDeckHandoffAllowed = fitsOverallForSelection;
+      const allowedNextStepType: UnifiedJuneauOptionRecheck["allowedNextStepType"] =
+        flightDeckHandoffAllowed
+          ? "continue_to_flight_deck"
+          : "view_options_that_fit";
+      const allowedNextStepLabel = flightDeckHandoffAllowed
+        ? "Continue to Juneau Flight Deck →"
+        : "View options that fit";
+      const allowedNextStepHref = flightDeckHandoffAllowed
+        ? flightDeckHandoffHref
+        : viewOptionsThatFitHref;
+
+      // On any failed row, replace the Flight Deck link with View options that fit
+      const handoffHref = allowedNextStepHref;
+
       const directUrl = new URL(meta.directPath);
       directUrl.searchParams.set("date", date);
       directUrl.searchParams.set("party_size", String(partySize));
@@ -862,6 +922,10 @@ export function evaluateUnifiedJuneauTripRecheckSync(
         seatAvailability,
         tideGate,
         fitsOverallForSelection,
+        flightDeckHandoffAllowed,
+        allowedNextStepType,
+        allowedNextStepLabel,
+        allowedNextStepHref,
         flightDeckInterest: effectiveInterest,
         handoffHref,
         directBookingOrQuoteUrl: directUrl.toString(),
@@ -1310,3 +1374,919 @@ export function evaluateRedRocksRideHomeRecheck(
     },
   };
 }
+
+// ============================================================================
+// 4. Saved Juneau Trip Context Pre-Checkout Recheck Guard
+// ============================================================================
+
+export interface SavedJuneauTripContextInput {
+  ship?: string | null;
+  date?: string | null;
+  arrival?: string | null;
+  arrivalTime?: string | null;
+  claa_arrival?: string | null;
+  all_aboard?: string | null;
+  allAboardTime?: string | null;
+  time_window?: string | null;
+  berth?: string | null;
+  berthCode?: string | null;
+  return_buffer?: string | number | null;
+  party_size?: string | number | null;
+  partySize?: string | number | null;
+  option_id?: string | null;
+  optionId?: string | null;
+  engine_option_id?: string | null;
+  engineOptionId?: string | null;
+  interest?: string | null;
+  flight_canceled?: string | boolean | null;
+  cancel_ref?: string | null;
+  ctx?: string | null;
+  dcc_ctx?: string | null;
+}
+
+export interface SavedJuneauTripContextRecheckResult {
+  checkoutAllowed: boolean;
+  evaluatedAt: string;
+  matchedOption: UnifiedJuneauOptionRecheck | null;
+  allowedNextStepType: "continue_to_flight_deck" | "view_options_that_fit";
+  allowedNextStepLabel: string;
+  allowedNextStepHref: string;
+  reasonSummary: string;
+  recheckResult: UnifiedJuneauTripRecheckResult;
+}
+
+function decodeBase64UrlJsonSafe(encoded: string): Record<string, unknown> | null {
+  try {
+    const normalized = encoded.replace(/-/g, "+").replace(/_/g, "/");
+    const padLen = (4 - (normalized.length % 4)) % 4;
+    const padded = normalized + "=".repeat(padLen);
+    let jsonText = "";
+    if (typeof globalThis.atob === "function") {
+      jsonText = globalThis.atob(padded);
+    } else if (typeof Buffer !== "undefined") {
+      jsonText = Buffer.from(padded, "base64").toString("utf8");
+    }
+    if (!jsonText) return null;
+    const parsed = JSON.parse(jsonText);
+    return parsed && typeof parsed === "object" ? (parsed as Record<string, unknown>) : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Rechecks saved trip context before a Juneau checkout or Flight Deck handoff can proceed.
+ * If the selected excursion fails the ship's port time window (e.g., 2027-07-15 08:00–13:30 at AJ Dock
+ * for Auke Bay Whale Watch), checkout progression is blocked and the caller receives the
+ * `View options that fit` redirect preserving all trip details.
+ */
+export function recheckSavedJuneauTripContextBeforeCheckout(
+  raw: SavedJuneauTripContextInput,
+): SavedJuneauTripContextRecheckResult {
+  const decodedCtx =
+    typeof raw.dcc_ctx === "string" && raw.dcc_ctx.trim()
+      ? decodeBase64UrlJsonSafe(raw.dcc_ctx.trim())
+      : null;
+
+  const pickStr = (
+    directVal: string | null | undefined,
+    ctxKey: string,
+    fallback: string,
+  ): string => {
+    if (typeof directVal === "string" && directVal.trim()) return directVal.trim();
+    const fromCtx = decodedCtx?.[ctxKey];
+    if (typeof fromCtx === "string" && fromCtx.trim()) return fromCtx.trim();
+    return fallback;
+  };
+
+  const ship = pickStr(raw.ship, "ship", "Norwegian Bliss");
+  const date = pickStr(raw.date, "date", "2027-07-15");
+  const berth = pickStr(raw.berth || raw.berthCode, "berth", "FKL");
+  const timeWindow = pickStr(raw.time_window, "time_window", "");
+
+  let arrivalFromWindow = "";
+  let allAboardFromWindow = "";
+  if (timeWindow && timeWindow.includes("-")) {
+    const [arrPart, abPart] = timeWindow.split("-", 2);
+    if (arrPart && /^\d{1,2}:\d{2}$/.test(arrPart.trim())) {
+      arrivalFromWindow = arrPart.trim();
+    }
+    if (abPart && /^\d{1,2}:\d{2}$/.test(abPart.trim())) {
+      allAboardFromWindow = abPart.trim();
+    }
+  }
+
+  const arrivalTime =
+    pickStr(raw.arrival || raw.arrivalTime || raw.claa_arrival, "arrival", "") ||
+    pickStr(null, "claa_arrival", "") ||
+    arrivalFromWindow ||
+    "08:00";
+
+  const allAboardTime =
+    pickStr(raw.all_aboard || raw.allAboardTime, "all_aboard", "") ||
+    allAboardFromWindow ||
+    "13:30";
+
+  const rawParty =
+    raw.party_size ??
+    raw.partySize ??
+    (typeof decodedCtx?.party_size === "number" || typeof decodedCtx?.party_size === "string"
+      ? (decodedCtx.party_size as number | string)
+      : 2);
+  const partySize = Math.max(1, Number.parseInt(String(rawParty), 10) || 2);
+
+  const rawReturnBuffer =
+    raw.return_buffer ??
+    (typeof decodedCtx?.return_buffer === "number" || typeof decodedCtx?.return_buffer === "string"
+      ? (decodedCtx.return_buffer as number | string)
+      : null);
+  const configuredReturnBufferMinutes =
+    rawReturnBuffer !== null && rawReturnBuffer !== undefined && String(rawReturnBuffer).trim() !== ""
+      ? Number.parseInt(String(rawReturnBuffer), 10) || null
+      : null;
+
+  const flightCanceled =
+    raw.flight_canceled === true ||
+    raw.flight_canceled === "1" ||
+    raw.flight_canceled === "true" ||
+    decodedCtx?.flight_canceled === true ||
+    decodedCtx?.flight_canceled === "1";
+
+  const cancelRef = pickStr(raw.cancel_ref, "cancel_ref", "") || null;
+  const dccContextId = pickStr(raw.ctx, "ctx", "") || null;
+  const requestedOptionId = pickStr(raw.option_id || raw.optionId, "option_id", "");
+  const requestedEngineOptionId = pickStr(raw.engine_option_id || raw.engineOptionId, "engine_option_id", "");
+  const requestedInterest = pickStr(raw.interest, "interest", "");
+
+  const recheckResult = evaluateUnifiedJuneauTripRecheckSync({
+    ship,
+    date,
+    arrivalTime,
+    allAboardTime,
+    berthCode: berth,
+    configuredReturnBufferMinutes,
+    partySize,
+    flightCanceled,
+    cancelRef,
+    dccContextId,
+  });
+
+  let matchedOption: UnifiedJuneauOptionRecheck | null = null;
+  if (requestedEngineOptionId) {
+    matchedOption =
+      recheckResult.options.find((o) => o.optionId === requestedEngineOptionId) ||
+      null;
+  }
+  if (!matchedOption && requestedOptionId) {
+    matchedOption =
+      recheckResult.options.find(
+        (o) =>
+          o.legacyReplanId === requestedOptionId ||
+          o.optionId === requestedOptionId,
+      ) || null;
+  }
+  if (!matchedOption && requestedInterest) {
+    if (requestedInterest === "whale-watching") {
+      matchedOption =
+        recheckResult.options.find(
+          (o) => o.optionId === "jun-opt-auke-bay-whale-direct",
+        ) || null;
+    } else if (requestedInterest === "dogsled") {
+      matchedOption =
+        recheckResult.options.find(
+          (o) => o.optionId === "jun-opt-heli-dogsled-combo",
+        ) || null;
+    } else if (requestedInterest === "helicopter") {
+      matchedOption =
+        recheckResult.options.find(
+          (o) => o.optionId === "jun-opt-heli-glacier-walkabout",
+        ) || null;
+    }
+  }
+
+  // If a specific option was selected and fails recheck, block checkout and return 'View options that fit'
+  if (matchedOption && !matchedOption.fitsOverallForSelection) {
+    return {
+      checkoutAllowed: false,
+      evaluatedAt: recheckResult.evaluatedAt,
+      matchedOption,
+      allowedNextStepType: "view_options_that_fit",
+      allowedNextStepLabel: "View options that fit",
+      allowedNextStepHref: matchedOption.allowedNextStepHref,
+      reasonSummary: `Saved trip recheck blocked checkout for ${matchedOption.shortLabel}: ${matchedOption.timeFit.statusBadgeLabel}. Redirecting to View options that fit with trip details preserved.`,
+      recheckResult,
+    };
+  }
+
+  // If no option fits at all, block checkout and direct to fitting-options view
+  const anyFitting = recheckResult.options.some((o) => o.fitsOverallForSelection);
+  if (!anyFitting) {
+    const fallbackFailed = matchedOption || recheckResult.options[0] || null;
+    const fallbackHref =
+      fallbackFailed?.allowedNextStepHref ||
+      `/juneau/replan?date=${encodeURIComponent(date)}&party_size=${partySize}&ship=${encodeURIComponent(ship)}&berth=${encodeURIComponent(recheckResult.input.berthCode)}&arrival=${encodeURIComponent(arrivalTime)}&claa_arrival=${encodeURIComponent(arrivalTime)}&all_aboard=${encodeURIComponent(allAboardTime)}&filter=fits_only#fitting-options`;
+    return {
+      checkoutAllowed: false,
+      evaluatedAt: recheckResult.evaluatedAt,
+      matchedOption: fallbackFailed,
+      allowedNextStepType: "view_options_that_fit",
+      allowedNextStepLabel: "View options that fit",
+      allowedNextStepHref: fallbackHref,
+      reasonSummary: `Saved trip recheck found 0 excursions clearing the ${recheckResult.input.configuredReturnBufferMinutes}m return buffer for ${arrivalTime}–${allAboardTime} at Berth ${recheckResult.input.berthCode}.`,
+      recheckResult,
+    };
+  }
+
+  const effectiveOption =
+    matchedOption ||
+    recheckResult.options.find((o) => o.fitsOverallForSelection) ||
+    recheckResult.options[0];
+
+  return {
+    checkoutAllowed: true,
+    evaluatedAt: recheckResult.evaluatedAt,
+    matchedOption: effectiveOption,
+    allowedNextStepType: "continue_to_flight_deck",
+    allowedNextStepLabel: "Continue to Juneau Flight Deck →",
+    allowedNextStepHref: effectiveOption.allowedNextStepHref,
+    reasonSummary: `Saved trip recheck passed for ${effectiveOption.shortLabel} (+${effectiveOption.timeFit.remainingMinutesAfterBuffer}m after ${recheckResult.input.configuredReturnBufferMinutes}m buffer).`,
+    recheckResult,
+  };
+}
+
+// ============================================================================
+// 5. DCC-412 Multi-Leg Readiness, Connection & Cutoff Recheck Engine
+//    (Inside `sharedTripRecheck` — Timezone-Independent IANA → UTC ISO-8601)
+// ============================================================================
+
+export interface Dcc412LegReceiptProvenance {
+  legId: string;
+  legTitle: string;
+  source: string;
+  timestamp: string;
+  expiry: string;
+}
+
+export interface Dcc412CandidateDepartureInput {
+  candidateId: string;
+  title: string;
+  operatorName: string;
+  departureLocal: string; // HH:mm in `ianaTimeZone` on `serviceDate`
+  arrivalAtDestinationLocal: string; // HH:mm in `ianaTimeZone` on `serviceDate`
+  /**
+   * Ticket / boarding cutoff before departure in minutes (e.g. 10 min before departure, or 0 for pre-staged private car)
+   */
+  ticketCutoffBeforeDepartureMinutes?: number;
+  /**
+   * Or explicit ticket cutoff local time (HH:mm)
+   */
+  ticketCutoffLocal?: string | null;
+  /**
+   * Destination / monument entry cutoff local time (e.g. "16:30" for Taj Mahal ticket/entry cutoff)
+   */
+  destinationCutoffLocal?: string | null;
+  /**
+   * Whether a critical live update (e.g. live train running status or road closure feed) is missing
+   */
+  criticalUpdateMissing?: boolean;
+  criticalUpdateMissingReason?: string | null;
+  source: string;
+  sourceTimestamp: string;
+  sourceExpiry: string;
+  nextStepHref?: string;
+  nextStepLabel?: string;
+}
+
+export interface Dcc412ItineraryRecheckInput {
+  corridorId?: string;
+  serviceDate: string; // YYYY-MM-DD
+  ianaTimeZone: string; // e.g. "Asia/Kolkata"
+  inboundLegId?: string;
+  inboundLegTitle?: string;
+  scheduledArrivalLocal: string; // HH:mm in `ianaTimeZone`, e.g. "09:50"
+  /**
+   * Optional absolute ETA (either local HH:mm or full ISO-8601 UTC string).
+   * When provided, DCC-412 uses `absoluteEta` directly; otherwise it uses `scheduledArrivalLocal + delayMinutes`.
+   */
+  absoluteEta?: string | null;
+  delayMinutes?: number | null;
+  /**
+   * Station exit / terminal transfer buffer in minutes — added strictly ONCE to compute `travelerReadyAt`.
+   */
+  transferBufferMinutes: number;
+  /**
+   * Whether the critical inbound status update is missing (triggers `Needs verification` on schedule baseline).
+   */
+  criticalUpdateMissing?: boolean;
+  criticalUpdateMissingReason?: string | null;
+  inboundSource?: string;
+  inboundSourceTimestamp?: string;
+  inboundSourceExpiry?: string;
+  destinationCutoffLocal?: string | null;
+  destinationCutoffLabel?: string | null;
+  candidateDepartures: Dcc412CandidateDepartureInput[];
+}
+
+export interface Dcc412EvaluatedCandidateItinerary {
+  candidateId: string;
+  title: string;
+  operatorName: string;
+  /**
+   * `travelerReadyAt` carried explicitly through each candidate itinerary
+   */
+  travelerReadyAt: {
+    localDate: string;
+    localTime24: string;
+    localTime12: string;
+    ianaTimeZone: string;
+    utcIso: string;
+    utcShort: string;
+    formattedSummary: string;
+  };
+  departureLocal: string;
+  departureUtc: string;
+  departureUtcShort: string;
+  arrivalAtDestinationLocal: string;
+  arrivalAtDestinationUtc: string;
+  ticketCutoffLocal: string;
+  ticketCutoffUtc: string;
+  ticketCutoffUtcShort: string;
+  destinationCutoffLocal: string | null;
+  destinationCutoffUtc: string | null;
+  slackToTicketCutoffMinutes: number;
+  slackToDepartureMinutes: number;
+  slackToDestinationCutoffMinutes: number | null;
+  passesTicketCutoff: boolean;
+  passesDepartureTime: boolean;
+  passesDestinationCutoff: boolean;
+  catchable: boolean;
+  connectionStatus: "catchable" | "missed_connection" | "missed_ticket_cutoff" | "missed_destination_cutoff";
+  scheduleBaselineStatus: "Verified" | "Needs verification";
+  reasonSummary: string;
+  legProvenance: Dcc412LegReceiptProvenance;
+  nextStepLabel: string;
+  nextStepHref: string;
+}
+
+export interface Dcc412ItineraryRecheckResult {
+  specId: "DCC-412";
+  corridorId: string;
+  evaluatedAt: string;
+  serviceDate: string;
+  ianaTimeZone: string;
+  scheduleBaselineStatus: "Verified" | "Needs verification";
+  criticalUpdateMissing: boolean;
+  criticalUpdateMissingReason: string | null;
+  etaResolutionMode: "absolute_eta" | "scheduled_plus_delay";
+  scheduledArrivalLocal: string;
+  scheduledArrivalUtc: string;
+  effectiveArrivalLocal: string;
+  effectiveArrivalUtc: string;
+  effectiveArrivalUtcShort: string;
+  delayMinutesApplied: number;
+  transferBufferMinutes: number;
+  transferBufferAddedOnce: true;
+  travelerReadyAt: {
+    localDate: string;
+    localTime24: string;
+    localTime12: string;
+    ianaTimeZone: string;
+    utcIso: string;
+    utcShort: string;
+    formattedSummary: string;
+  };
+  candidates: Dcc412EvaluatedCandidateItinerary[];
+  missedConnections: Dcc412EvaluatedCandidateItinerary[];
+  catchableCandidates: Dcc412EvaluatedCandidateItinerary[];
+  nextCatchableDeparture: Dcc412EvaluatedCandidateItinerary | null;
+  legProvenance: Dcc412LegReceiptProvenance[];
+  recheckCard: CompactTripRecheckCardModel;
+}
+
+function format12HourClock(hhmm24: string): string {
+  const m = /^(\d{1,2}):(\d{2})$/.exec(hhmm24.trim());
+  if (!m) return hhmm24;
+  const h24 = Number(m[1]);
+  const mins = m[2];
+  const period = h24 >= 12 ? "p.m." : "a.m.";
+  const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
+  return `${h12}:${mins} ${period}`;
+}
+
+function extractWallClockPartsInZone(
+  utcMs: number,
+  ianaTimeZone: string,
+): {
+  year: number;
+  month: number;
+  day: number;
+  hour: number;
+  minute: number;
+  second: number;
+} {
+  const dtf = new Intl.DateTimeFormat("en-US", {
+    timeZone: ianaTimeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23",
+  });
+  const parts = dtf.formatToParts(new Date(utcMs));
+  const map: Record<string, number> = {};
+  for (const p of parts) {
+    if (
+      p.type === "year" ||
+      p.type === "month" ||
+      p.type === "day" ||
+      p.type === "hour" ||
+      p.type === "minute" ||
+      p.type === "second"
+    ) {
+      map[p.type] = Number.parseInt(p.value, 10);
+    }
+  }
+  return {
+    year: map.year || 1970,
+    month: map.month || 1,
+    day: map.day || 1,
+    hour: map.hour === 24 ? 0 : map.hour || 0,
+    minute: map.minute || 0,
+    second: map.second || 0,
+  };
+}
+
+/**
+ * Resolves a local date (`YYYY-MM-DD`) and local clock (`HH:mm`, plus optional minute delta)
+ * in `ianaTimeZone` to a deterministic UTC timestamp — 100% independent of the host/device timezone.
+ */
+export function resolveLocalTimeInIanaZoneToUtc(
+  serviceDate: string,
+  localClockHhMm: string,
+  ianaTimeZone: string,
+  additionalMinutes = 0,
+): {
+  utcMs: number;
+  utcIso: string;
+  utcShort: string;
+  localDate: string;
+  localTime24: string;
+  localTime12: string;
+  ianaTimeZone: string;
+} {
+  const dateMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(serviceDate.trim());
+  const year = dateMatch ? Number(dateMatch[1]) : 2026;
+  const month = dateMatch ? Number(dateMatch[2]) : 11;
+  const day = dateMatch ? Number(dateMatch[3]) : 18;
+
+  const clockMatch = /^(\d{1,2}):(\d{2})$/.exec(localClockHhMm.trim());
+  const hour = clockMatch ? Number(clockMatch[1]) : 9;
+  const minute = clockMatch ? Number(clockMatch[2]) : 50;
+
+  const targetWallUtcMs =
+    Date.UTC(year, month - 1, day, hour, minute, 0, 0) +
+    Math.round(additionalMinutes) * 60_000;
+
+  // Two-pass offset refinement using Intl.DateTimeFormat for `ianaTimeZone`
+  const p1 = extractWallClockPartsInZone(targetWallUtcMs, ianaTimeZone);
+  const wallAtTarget = Date.UTC(
+    p1.year,
+    p1.month - 1,
+    p1.day,
+    p1.hour,
+    p1.minute,
+    p1.second,
+    0,
+  );
+  const offset1 = wallAtTarget - targetWallUtcMs;
+  const estUtcMs = targetWallUtcMs - offset1;
+
+  const p2 = extractWallClockPartsInZone(estUtcMs, ianaTimeZone);
+  const wallAtEst = Date.UTC(
+    p2.year,
+    p2.month - 1,
+    p2.day,
+    p2.hour,
+    p2.minute,
+    p2.second,
+    0,
+  );
+  const offset2 = wallAtEst - estUtcMs;
+  const finalUtcMs = targetWallUtcMs - offset2;
+
+  const finalLocalParts = extractWallClockPartsInZone(finalUtcMs, ianaTimeZone);
+  const localDate = `${String(finalLocalParts.year).padStart(4, "0")}-${String(finalLocalParts.month).padStart(2, "0")}-${String(finalLocalParts.day).padStart(2, "0")}`;
+  const localTime24 = `${String(finalLocalParts.hour).padStart(2, "0")}:${String(finalLocalParts.minute).padStart(2, "0")}`;
+  const localTime12 = format12HourClock(localTime24);
+
+  const utcDate = new Date(finalUtcMs);
+  const utcIso = utcDate.toISOString().replace(/\.\d{3}Z$/, "Z");
+  const utcShort = `${String(utcDate.getUTCHours()).padStart(2, "0")}:${String(utcDate.getUTCMinutes()).padStart(2, "0")}Z`;
+
+  return {
+    utcMs: finalUtcMs,
+    utcIso,
+    utcShort,
+    localDate,
+    localTime24,
+    localTime12,
+    ianaTimeZone,
+  };
+}
+
+/**
+ * DCC-412 Multi-Leg Readiness, Connection & Cutoff Evaluator inside `sharedTripRecheck`.
+ * - Resolves local times using `serviceDate` and `ianaTimeZone` and passes readiness times & deadlines as UTC ISO-8601 timestamps.
+ * - Uses `absoluteEta` when available, or `scheduledArrivalLocal + delayMinutes`.
+ * - Adds `transferBufferMinutes` strictly ONCE (`transferBufferAddedOnce: true`).
+ * - Carries `travelerReadyAt` through each candidate itinerary.
+ * - Finds the next departure the traveler can actually catch and checks ticket & destination cutoffs.
+ * - Shows schedule baseline as `Needs verification` when a critical update is missing.
+ * - Includes each leg's `source`, `timestamp`, and `expiry` for the signed decision receipt.
+ */
+export function evaluateDcc412ItineraryRecheck(
+  input: Dcc412ItineraryRecheckInput,
+): Dcc412ItineraryRecheckResult {
+  const corridorId = input.corridorId?.trim() || "delhi-to-agra";
+  const serviceDate = input.serviceDate.trim();
+  const ianaTimeZone = input.ianaTimeZone.trim() || "Asia/Kolkata";
+  const transferBufferMinutes = Math.max(0, Math.round(input.transferBufferMinutes));
+
+  const scheduledResolved = resolveLocalTimeInIanaZoneToUtc(
+    serviceDate,
+    input.scheduledArrivalLocal,
+    ianaTimeZone,
+    0,
+  );
+
+  let effectiveArrivalResolved: ReturnType<typeof resolveLocalTimeInIanaZoneToUtc>;
+  let etaResolutionMode: "absolute_eta" | "scheduled_plus_delay" = "scheduled_plus_delay";
+  let delayMinutesApplied = Math.max(0, Math.round(input.delayMinutes ?? 0));
+
+  if (input.absoluteEta && input.absoluteEta.trim()) {
+    etaResolutionMode = "absolute_eta";
+    const trimmedEta = input.absoluteEta.trim();
+    if (/^\d{1,2}:\d{2}$/.test(trimmedEta)) {
+      effectiveArrivalResolved = resolveLocalTimeInIanaZoneToUtc(
+        serviceDate,
+        trimmedEta,
+        ianaTimeZone,
+        0,
+      );
+    } else {
+      const parsedMs = Date.parse(trimmedEta);
+      if (Number.isFinite(parsedMs)) {
+        const localParts = extractWallClockPartsInZone(parsedMs, ianaTimeZone);
+        const hhmm = `${String(localParts.hour).padStart(2, "0")}:${String(localParts.minute).padStart(2, "0")}`;
+        const ymd = `${String(localParts.year).padStart(4, "0")}-${String(localParts.month).padStart(2, "0")}-${String(localParts.day).padStart(2, "0")}`;
+        effectiveArrivalResolved = resolveLocalTimeInIanaZoneToUtc(
+          ymd,
+          hhmm,
+          ianaTimeZone,
+          0,
+        );
+      } else {
+        effectiveArrivalResolved = resolveLocalTimeInIanaZoneToUtc(
+          serviceDate,
+          input.scheduledArrivalLocal,
+          ianaTimeZone,
+          delayMinutesApplied,
+        );
+      }
+    }
+    delayMinutesApplied = Math.round(
+      (effectiveArrivalResolved.utcMs - scheduledResolved.utcMs) / 60_000,
+    );
+  } else {
+    effectiveArrivalResolved = resolveLocalTimeInIanaZoneToUtc(
+      serviceDate,
+      input.scheduledArrivalLocal,
+      ianaTimeZone,
+      delayMinutesApplied,
+    );
+  }
+
+  // Add the transfer/exit buffer strictly ONCE to effective arrival
+  const readyResolved = resolveLocalTimeInIanaZoneToUtc(
+    effectiveArrivalResolved.localDate,
+    effectiveArrivalResolved.localTime24,
+    ianaTimeZone,
+    transferBufferMinutes,
+  );
+
+  const travelerReadyAt = {
+    localDate: readyResolved.localDate,
+    localTime24: readyResolved.localTime24,
+    localTime12: readyResolved.localTime12,
+    ianaTimeZone,
+    utcIso: readyResolved.utcIso,
+    utcShort: readyResolved.utcShort,
+    formattedSummary: `${readyResolved.localTime12} local (${readyResolved.utcShort})`,
+  };
+
+  const inboundSource =
+    input.inboundSource || "NTES / Indian Railways Live Train Status (Sample)";
+  const inboundSourceTimestamp =
+    input.inboundSourceTimestamp || "2026-11-18T04:45:00Z";
+  const inboundSourceExpiry =
+    input.inboundSourceExpiry || "2026-11-18T05:30:00Z";
+
+  const inboundLegProvenance: Dcc412LegReceiptProvenance = {
+    legId: input.inboundLegId || "leg-inbound-rail-arrival",
+    legTitle:
+      input.inboundLegTitle ||
+      "Inbound Rail Arrival & Station Exit (Agra Cantt AGC)",
+    source: inboundSource,
+    timestamp: inboundSourceTimestamp,
+    expiry: inboundSourceExpiry,
+  };
+
+  const anyCandidateMissingCritical = input.candidateDepartures.some(
+    (c) => Boolean(c.criticalUpdateMissing),
+  );
+  const criticalUpdateMissing =
+    Boolean(input.criticalUpdateMissing) || anyCandidateMissingCritical;
+  const scheduleBaselineStatus: "Verified" | "Needs verification" =
+    criticalUpdateMissing ? "Needs verification" : "Verified";
+  const criticalUpdateMissingReason = criticalUpdateMissing
+    ? input.criticalUpdateMissingReason ||
+      input.candidateDepartures.find((c) => c.criticalUpdateMissing)
+        ?.criticalUpdateMissingReason ||
+      "Critical live telemetry or operator dispatch update is missing — showing schedule baseline as Needs verification."
+    : null;
+
+  const evaluatedCandidates: Dcc412EvaluatedCandidateItinerary[] =
+    input.candidateDepartures.map((cand) => {
+      const depResolved = resolveLocalTimeInIanaZoneToUtc(
+        serviceDate,
+        cand.departureLocal,
+        ianaTimeZone,
+        0,
+      );
+      const arrResolved = resolveLocalTimeInIanaZoneToUtc(
+        serviceDate,
+        cand.arrivalAtDestinationLocal,
+        ianaTimeZone,
+        0,
+      );
+
+      const cutoffLeadMins = Math.max(
+        0,
+        Math.round(cand.ticketCutoffBeforeDepartureMinutes ?? 0),
+      );
+      const ticketCutoffResolved = cand.ticketCutoffLocal
+        ? resolveLocalTimeInIanaZoneToUtc(
+            serviceDate,
+            cand.ticketCutoffLocal,
+            ianaTimeZone,
+            0,
+          )
+        : resolveLocalTimeInIanaZoneToUtc(
+            serviceDate,
+            cand.departureLocal,
+            ianaTimeZone,
+            -cutoffLeadMins,
+          );
+
+      const effectiveDestCutoffLocal =
+        cand.destinationCutoffLocal ?? input.destinationCutoffLocal ?? null;
+      const destCutoffResolved = effectiveDestCutoffLocal
+        ? resolveLocalTimeInIanaZoneToUtc(
+            serviceDate,
+            effectiveDestCutoffLocal,
+            ianaTimeZone,
+            0,
+          )
+        : null;
+
+      const slackToTicketCutoffMinutes = Math.round(
+        (ticketCutoffResolved.utcMs - readyResolved.utcMs) / 60_000,
+      );
+      const slackToDepartureMinutes = Math.round(
+        (depResolved.utcMs - readyResolved.utcMs) / 60_000,
+      );
+      const slackToDestinationCutoffMinutes = destCutoffResolved
+        ? Math.round((destCutoffResolved.utcMs - arrResolved.utcMs) / 60_000)
+        : null;
+
+      const passesDepartureTime = slackToDepartureMinutes >= 0;
+      const passesTicketCutoff = slackToTicketCutoffMinutes >= 0;
+      const passesDestinationCutoff =
+        slackToDestinationCutoffMinutes === null ||
+        slackToDestinationCutoffMinutes >= 0;
+
+      const catchable =
+        passesDepartureTime && passesTicketCutoff && passesDestinationCutoff;
+
+      const connectionStatus: Dcc412EvaluatedCandidateItinerary["connectionStatus"] =
+        !passesDepartureTime
+          ? "missed_connection"
+          : !passesTicketCutoff
+            ? "missed_ticket_cutoff"
+            : !passesDestinationCutoff
+              ? "missed_destination_cutoff"
+              : "catchable";
+
+      const candScheduleStatus: "Verified" | "Needs verification" =
+        criticalUpdateMissing || cand.criticalUpdateMissing
+          ? "Needs verification"
+          : "Verified";
+
+      const legProvenance: Dcc412LegReceiptProvenance = {
+        legId: cand.candidateId,
+        legTitle: cand.title,
+        source: cand.source,
+        timestamp: cand.sourceTimestamp,
+        expiry: cand.sourceExpiry,
+      };
+
+      const reasonSummary = !passesDepartureTime
+        ? `Missed connection: departs at ${cand.departureLocal} local (${depResolved.utcShort}), which is ${Math.abs(slackToDepartureMinutes)} min before travelerReadyAt ${travelerReadyAt.localTime12} local (${travelerReadyAt.utcShort}).`
+        : !passesTicketCutoff
+          ? `Missed ticket cutoff: ticket/boarding cutoff at ${ticketCutoffResolved.localTime24} local (${ticketCutoffResolved.utcShort}) closes ${Math.abs(slackToTicketCutoffMinutes)} min before travelerReadyAt ${travelerReadyAt.localTime12} local (${travelerReadyAt.utcShort}).`
+          : !passesDestinationCutoff
+            ? `Misses destination cutoff: arrives at ${cand.arrivalAtDestinationLocal} local (${arrResolved.utcShort}), ${Math.abs(slackToDestinationCutoffMinutes || 0)} min after ${effectiveDestCutoffLocal} destination cutoff.`
+            : `Catchable departure: departs at ${cand.departureLocal} local (${depResolved.utcShort}), +${slackToDepartureMinutes} min after travelerReadyAt ${travelerReadyAt.localTime12} local (${travelerReadyAt.utcShort}) and clears ticket cutoff (${ticketCutoffResolved.localTime24} local)${effectiveDestCutoffLocal ? ` & destination cutoff (${effectiveDestCutoffLocal} local)` : ""}.`;
+
+      const nextStepHref =
+        cand.nextStepHref ||
+        `/routes/delhi-to-agra?date=${encodeURIComponent(serviceDate)}&ready_utc=${encodeURIComponent(travelerReadyAt.utcIso)}&candidate=${encodeURIComponent(cand.candidateId)}`;
+      const nextStepLabel = catchable
+        ? cand.nextStepLabel || `Select ${cand.title} (${cand.departureLocal} local)`
+        : "View options that fit";
+
+      return {
+        candidateId: cand.candidateId,
+        title: cand.title,
+        operatorName: cand.operatorName,
+        travelerReadyAt,
+        departureLocal: cand.departureLocal,
+        departureUtc: depResolved.utcIso,
+        departureUtcShort: depResolved.utcShort,
+        arrivalAtDestinationLocal: cand.arrivalAtDestinationLocal,
+        arrivalAtDestinationUtc: arrResolved.utcIso,
+        ticketCutoffLocal: ticketCutoffResolved.localTime24,
+        ticketCutoffUtc: ticketCutoffResolved.utcIso,
+        ticketCutoffUtcShort: ticketCutoffResolved.utcShort,
+        destinationCutoffLocal: effectiveDestCutoffLocal,
+        destinationCutoffUtc: destCutoffResolved ? destCutoffResolved.utcIso : null,
+        slackToTicketCutoffMinutes,
+        slackToDepartureMinutes,
+        slackToDestinationCutoffMinutes,
+        passesTicketCutoff,
+        passesDepartureTime,
+        passesDestinationCutoff,
+        catchable,
+        connectionStatus,
+        scheduleBaselineStatus: candScheduleStatus,
+        reasonSummary,
+        legProvenance,
+        nextStepLabel,
+        nextStepHref,
+      };
+    });
+
+  const missedConnections = evaluatedCandidates.filter((c) => !c.catchable);
+  const catchableCandidates = evaluatedCandidates
+    .filter((c) => c.catchable)
+    .sort((a, b) => a.slackToDepartureMinutes - b.slackToDepartureMinutes);
+  const nextCatchableDeparture = catchableCandidates[0] || null;
+
+  const legProvenance: Dcc412LegReceiptProvenance[] = [
+    inboundLegProvenance,
+    ...evaluatedCandidates.map((c) => c.legProvenance),
+  ];
+
+  const missedSummary =
+    missedConnections.length > 0
+      ? `Missed: ${missedConnections.map((m) => `${m.departureLocal} (${m.title})`).join(", ")}.`
+      : "No scheduled connections missed.";
+
+  const whatChanged = `Scheduled arrival ${ format12HourClock(input.scheduledArrivalLocal) } (${input.scheduledArrivalLocal}) + ${delayMinutesApplied}m delay + ${transferBufferMinutes}m station exit buffer (added once) → travelerReadyAt ${travelerReadyAt.formattedSummary} [${travelerReadyAt.utcIso}].${scheduleBaselineStatus === "Needs verification" ? " Schedule baseline: Needs verification." : ""}`;
+
+  const whatStillFits = nextCatchableDeparture
+    ? `${missedSummary} Next catchable departure: ${nextCatchableDeparture.title} at ${nextCatchableDeparture.departureLocal} local (${nextCatchableDeparture.departureUtcShort}, +${nextCatchableDeparture.slackToDepartureMinutes}m slack; clears ${nextCatchableDeparture.ticketCutoffLocal} ticket cutoff${nextCatchableDeparture.destinationCutoffLocal ? ` & ${nextCatchableDeparture.destinationCutoffLocal} destination cutoff` : ""}).`
+    : `${missedSummary} 0 candidate departures clear travelerReadyAt ${travelerReadyAt.formattedSummary} and applicable cutoffs.`;
+
+  const nextStep = nextCatchableDeparture
+    ? `${nextCatchableDeparture.nextStepLabel} (travelerReadyAt ${travelerReadyAt.utcIso}, schedule baseline: ${scheduleBaselineStatus}).`
+    : `Review alternate departures on /routes/${corridorId} (schedule baseline: ${scheduleBaselineStatus}).`;
+
+  return {
+    specId: "DCC-412",
+    corridorId,
+    evaluatedAt: inboundSourceTimestamp,
+    serviceDate,
+    ianaTimeZone,
+    scheduleBaselineStatus,
+    criticalUpdateMissing,
+    criticalUpdateMissingReason,
+    etaResolutionMode,
+    scheduledArrivalLocal: input.scheduledArrivalLocal,
+    scheduledArrivalUtc: scheduledResolved.utcIso,
+    effectiveArrivalLocal: effectiveArrivalResolved.localTime24,
+    effectiveArrivalUtc: effectiveArrivalResolved.utcIso,
+    effectiveArrivalUtcShort: effectiveArrivalResolved.utcShort,
+    delayMinutesApplied,
+    transferBufferMinutes,
+    transferBufferAddedOnce: true,
+    travelerReadyAt,
+    candidates: evaluatedCandidates,
+    missedConnections,
+    catchableCandidates,
+    nextCatchableDeparture,
+    legProvenance,
+    recheckCard: {
+      corridorId,
+      whatChanged,
+      whatStillFits,
+      nextStep,
+      primaryNextActionLabel:
+        nextCatchableDeparture?.nextStepLabel || "View Catchable Connections →",
+      primaryNextActionHref:
+        nextCatchableDeparture?.nextStepHref || `/routes/${corridorId}`,
+    },
+  };
+}
+
+/**
+ * Canonical Synthetic Delhi–Agra Test for DCC-412:
+ * - 9:50 a.m. (`09:50`) scheduled arrival in `Asia/Kolkata` (`04:20Z`)
+ * - + 42 minutes delay → `10:32` a.m. local (`05:02Z`)
+ * - + 15 minutes to exit the station (added once) → `travelerReadyAt` = `10:47 a.m. local (05:17Z)` (`2026-11-18T05:17:00Z`)
+ * - Therefore the `10:30` connection (`05:00Z`) is missed (`-17` min slack), and the `11:00` connection (`05:30Z`) is the next catchable departure (`+13` min slack).
+ */
+export function evaluateSyntheticDelhiAgraDcc412Test(overrides?: {
+  serviceDate?: string;
+  scheduledArrivalLocal?: string;
+  delayMinutes?: number;
+  absoluteEta?: string | null;
+  transferBufferMinutes?: number;
+  criticalUpdateMissing?: boolean;
+}): Dcc412ItineraryRecheckResult {
+  const serviceDate = overrides?.serviceDate || "2026-11-18";
+  return evaluateDcc412ItineraryRecheck({
+    corridorId: "delhi-to-agra",
+    serviceDate,
+    ianaTimeZone: "Asia/Kolkata",
+    inboundLegId: "leg-1-gatimaan-express-12050-agc",
+    inboundLegTitle: "Train 12050 Gatimaan Express (NZM → Agra Cantt AGC)",
+    scheduledArrivalLocal: overrides?.scheduledArrivalLocal || "09:50",
+    delayMinutes: overrides?.delayMinutes ?? 42,
+    absoluteEta: overrides?.absoluteEta ?? null,
+    transferBufferMinutes: overrides?.transferBufferMinutes ?? 15,
+    criticalUpdateMissing: overrides?.criticalUpdateMissing ?? false,
+    inboundSource: "Indian Railways NTES / CRIS Live Running Status (Sample)",
+    inboundSourceTimestamp: `${serviceDate}T04:45:00Z`,
+    inboundSourceExpiry: `${serviceDate}T05:30:00Z`,
+    destinationCutoffLocal: "16:30",
+    destinationCutoffLabel: "Taj Mahal East/West Gate Daylight Entry Cutoff",
+    candidateDepartures: [
+      {
+        candidateId: "agc-conn-1030-missed",
+        title: "10:30 Agra Cantt Pre-Booked Station Feeder Transfer",
+        operatorName: "Agra Cantt Station Feeder Cohort (Sample)",
+        departureLocal: "10:30",
+        arrivalAtDestinationLocal: "11:00",
+        ticketCutoffBeforeDepartureMinutes: 5,
+        destinationCutoffLocal: "16:30",
+        source: "Agra Cantt Feeder Schedule Baseline (Sample)",
+        sourceTimestamp: `${serviceDate}T04:00:00Z`,
+        sourceExpiry: `${serviceDate}T06:00:00Z`,
+        nextStepHref: "/routes/delhi-to-agra#connection-recheck",
+        nextStepLabel: "View options that fit",
+      },
+      {
+        candidateId: "agc-conn-1100-catchable",
+        title: "11:00 Agra Cantt Catchable Transfer Cohort (Taj East Gate)",
+        operatorName: "Agra Cantt Verified Station Transfer Cohort (Sample)",
+        departureLocal: "11:00",
+        arrivalAtDestinationLocal: "11:30",
+        ticketCutoffBeforeDepartureMinutes: 5,
+        destinationCutoffLocal: "16:30",
+        source: "Agra Cantt Dispatch Schedule Baseline (Sample)",
+        sourceTimestamp: `${serviceDate}T04:45:00Z`,
+        sourceExpiry: `${serviceDate}T06:30:00Z`,
+        nextStepHref: "/routes/delhi-to-agra?cohort=1100#connection-recheck",
+        nextStepLabel: "Select 11:00 Catchable Transfer Cohort (Clears 10:55 Cutoff)",
+      },
+      {
+        candidateId: "agc-conn-1130-backup",
+        title: "11:30 Agra Cantt Secondary Backup Transfer (Taj East Gate)",
+        operatorName: "Agra Cantt Secondary Station Cohort (Sample)",
+        departureLocal: "11:30",
+        arrivalAtDestinationLocal: "12:00",
+        ticketCutoffBeforeDepartureMinutes: 5,
+        destinationCutoffLocal: "16:30",
+        source: "Agra Cantt Dispatch Schedule Baseline (Sample)",
+        sourceTimestamp: `${serviceDate}T04:45:00Z`,
+        sourceExpiry: `${serviceDate}T07:00:00Z`,
+        nextStepHref: "/routes/delhi-to-agra?cohort=1130#connection-recheck",
+        nextStepLabel: "Select 11:30 Backup Transfer Cohort",
+      },
+    ],
+  });
+}
+

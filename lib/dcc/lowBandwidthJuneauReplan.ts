@@ -14,13 +14,18 @@ import {
 export const LOW_BANDWIDTH_JUNEAU_COMPRESSED_TARGET_BYTES = 50 * 1024; // 50 KB compressed first-load target
 export const LOW_BANDWIDTH_JUNEAU_OFFLINE_STORAGE_KEY =
   "dcc_juneau_offline_plan_v1";
+export const JUNEAU_LOW_BW_OFFLINE_STORAGE_KEY =
+  LOW_BANDWIDTH_JUNEAU_OFFLINE_STORAGE_KEY;
+export type LowBandwidthJuneauBerth = JuneauBerthCode;
 
 export interface LowBandwidthJuneauInput {
   ship: string;
   date: string;
   arrivalTime: string;
+  claaScheduledArrivalTime?: string;
   allAboardTime: string;
   berth: JuneauBerthCode;
+  berthCode?: JuneauBerthCode;
   partySize: number;
   flightCanceled: boolean;
   cancelRef: string | null;
@@ -53,6 +58,10 @@ export interface LowBandwidthJuneauOptionResult {
     | "weather-backup"
     | "compare-operators";
   handoffHref: string;
+  flightDeckHandoffAllowed: boolean;
+  allowedNextStepType: "continue_to_flight_deck" | "view_options_that_fit";
+  allowedNextStepLabel: string;
+  allowedNextStepHref: string;
   directDestinationPreviewUrl: string;
 }
 
@@ -275,7 +284,10 @@ export function evaluateLowBandwidthJuneauReplan(
             (rawInput as Partial<LowBandwidthJuneauInput>).arrivalTime || "08:00",
           allAboardTime:
             (rawInput as Partial<LowBandwidthJuneauInput>).allAboardTime ?? "16:30",
-          berth: (rawInput as Partial<LowBandwidthJuneauInput>).berth || "FKL",
+          berth:
+            (rawInput as Partial<LowBandwidthJuneauInput>).berth ||
+            (rawInput as Partial<LowBandwidthJuneauInput>).berthCode ||
+            "FKL",
           partySize: (rawInput as Partial<LowBandwidthJuneauInput>).partySize || 2,
           flightCanceled: Boolean(
             (rawInput as Partial<LowBandwidthJuneauInput>).flightCanceled,
@@ -376,6 +388,10 @@ export function evaluateLowBandwidthJuneauReplan(
         timing,
         flightDeckInterest: uOpt.flightDeckInterest,
         handoffHref: uOpt.handoffHref,
+        flightDeckHandoffAllowed: uOpt.flightDeckHandoffAllowed,
+        allowedNextStepType: uOpt.allowedNextStepType,
+        allowedNextStepLabel: uOpt.allowedNextStepLabel,
+        allowedNextStepHref: uOpt.allowedNextStepHref,
         directDestinationPreviewUrl: uOpt.directBookingOrQuoteUrl,
       };
     },
@@ -426,3 +442,14 @@ export function evaluateLowBandwidthJuneauReplan(
     options: evaluatedOptions,
   };
 }
+
+export async function evaluateLowBandwidthJuneauPlanAsync(
+  rawInput?:
+    | Partial<LowBandwidthJuneauInput>
+    | Record<string, string | string[] | undefined>
+    | URLSearchParams,
+  options?: { checkedAtIso?: string },
+): Promise<LowBandwidthJuneauPlanEvaluation> {
+  return evaluateLowBandwidthJuneauReplan(rawInput, options);
+}
+

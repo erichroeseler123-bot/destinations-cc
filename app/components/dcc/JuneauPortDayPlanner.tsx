@@ -689,17 +689,21 @@ export default function JuneauPortDayPlanner({
       )}
 
       {/* 4. Compact Option Comparisons */}
-      <div className="mt-5 space-y-4">
+      <div id="fitting-options" className="mt-5 space-y-4">
         {evaluation.options.map((option) => {
           const style = FIT_BADGE_STYLES[option.fitStatus];
           const minPrice = option.bookingTransparency.indicativePriceRangePerPersonUsd.min;
           const maxPrice = option.bookingTransparency.indicativePriceRangePerPersonUsd.max;
+          const unifiedOpt = unifiedRecheck.options.find(
+            (u) => u.optionId === option.optionId,
+          );
 
           return (
             <article
               key={option.optionId}
               data-option-id={option.optionId}
               data-fit-status={option.fitStatus}
+              data-allowed-next-step={unifiedOpt?.allowedNextStepType}
               data-double-counting-status={option.timing.durationAudit.doubleCountingStatus}
               className={`rounded-2xl border p-4 sm:p-5 transition ${style.borderClass}`}
             >
@@ -739,6 +743,22 @@ export default function JuneauPortDayPlanner({
                   <div className="mt-0.5 max-w-xs text-[11px] text-slate-400">
                     {option.bookingTransparency.durationLabel.split("(")[0].trim()}
                   </div>
+                  {unifiedOpt && (
+                    <div className="mt-2.5">
+                      <a
+                        href={unifiedOpt.allowedNextStepHref}
+                        data-testid={`planner-next-step-${option.optionId}`}
+                        data-allowed-next-step={unifiedOpt.allowedNextStepType}
+                        className={
+                          unifiedOpt.flightDeckHandoffAllowed
+                            ? "inline-block rounded-lg border border-cyan-300/40 bg-cyan-500/20 px-3 py-1.5 text-xs font-bold text-cyan-100 hover:bg-cyan-500/30"
+                            : "inline-block rounded-lg border border-amber-300/40 bg-amber-500/20 px-3 py-1.5 text-xs font-bold text-amber-100 hover:bg-amber-500/30"
+                        }
+                      >
+                        {unifiedOpt.allowedNextStepLabel}
+                      </a>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -1048,52 +1068,71 @@ export default function JuneauPortDayPlanner({
                       </span>
                     </div>
                   </div>
-                  <div className="grid gap-2.5 md:grid-cols-2">
-                    {option.bookingTransparency.channels.map((book) => (
-                      <div
-                        key={`${option.optionId}-${book.label}`}
-                        className="flex flex-col justify-between rounded-lg border border-white/10 bg-slate-900/90 p-3 text-xs"
-                      >
-                        <div>
-                          <div className="flex flex-wrap items-center gap-1.5">
-                            <span className="rounded border border-white/15 bg-white/5 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-slate-200">
-                              {book.channelType.replace(/_/g, " ")}
-                            </span>
-                            <span className="text-[11px] text-slate-400">
-                              {book.operatorOrProviderName}
-                            </span>
-                          </div>
-                          <a
-                            href={book.url}
-                            target={book.url.startsWith("http") ? "_blank" : undefined}
-                            rel={
-                              book.url.startsWith("http")
-                                ? "noopener noreferrer"
-                                : undefined
-                            }
-                            onClick={() =>
-                              trackEvent("operator_cta_clicked", {
-                                surface: "juneau",
-                                corridor: "juneau",
-                                page: "/juneau",
-                                target_path: book.url,
-                                product_code: option.optionId,
-                                decision_option: option.fitStatus,
-                                channel_type: book.channelType,
-                                operator_name: book.operatorOrProviderName,
-                              })
-                            }
-                            className="mt-1.5 inline-block font-semibold text-cyan-300 underline decoration-cyan-400/50 underline-offset-4 hover:text-cyan-200"
-                          >
-                            {book.label}
-                          </a>
-                        </div>
-                        <div className="mt-2 border-t border-white/5 pt-1.5 text-[10px] text-slate-400">
-                          {book.relationshipDisclosure}
-                        </div>
+                  {unifiedOpt && !unifiedOpt.flightDeckHandoffAllowed ? (
+                    <div className="rounded-lg border border-amber-400/35 bg-amber-950/30 p-3 text-xs text-amber-100">
+                      <div className="font-semibold text-amber-200">
+                        This excursion does not clear your port time window ({unifiedOpt.timeFit.statusBadgeLabel}).
                       </div>
-                    ))}
-                  </div>
+                      <p className="mt-1 text-[11px] text-amber-100/90">
+                        Juneau Flight Deck checkout handoff is disabled for this row so you do not book an excursion that misses your ship&apos;s all-aboard buffer.
+                      </p>
+                      <a
+                        href={unifiedOpt.allowedNextStepHref}
+                        data-testid={`planner-channel-fallback-${option.optionId}`}
+                        data-allowed-next-step={unifiedOpt.allowedNextStepType}
+                        className="mt-2 inline-block rounded-lg border border-amber-300/40 bg-amber-500/20 px-3 py-1.5 text-xs font-bold text-amber-100 hover:bg-amber-500/30"
+                      >
+                        {unifiedOpt.allowedNextStepLabel}
+                      </a>
+                    </div>
+                  ) : (
+                    <div className="grid gap-2.5 md:grid-cols-2">
+                      {option.bookingTransparency.channels.map((book) => (
+                        <div
+                          key={`${option.optionId}-${book.label}`}
+                          className="flex flex-col justify-between rounded-lg border border-white/10 bg-slate-900/90 p-3 text-xs"
+                        >
+                          <div>
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              <span className="rounded border border-white/15 bg-white/5 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-slate-200">
+                                {book.channelType.replace(/_/g, " ")}
+                              </span>
+                              <span className="text-[11px] text-slate-400">
+                                {book.operatorOrProviderName}
+                              </span>
+                            </div>
+                            <a
+                              href={book.url}
+                              target={book.url.startsWith("http") ? "_blank" : undefined}
+                              rel={
+                                book.url.startsWith("http")
+                                  ? "noopener noreferrer"
+                                  : undefined
+                              }
+                              onClick={() =>
+                                trackEvent("operator_cta_clicked", {
+                                  surface: "juneau",
+                                  corridor: "juneau",
+                                  page: "/juneau",
+                                  target_path: book.url,
+                                  product_code: option.optionId,
+                                  decision_option: option.fitStatus,
+                                  channel_type: book.channelType,
+                                  operator_name: book.operatorOrProviderName,
+                                })
+                              }
+                              className="mt-1.5 inline-block font-semibold text-cyan-300 underline decoration-cyan-400/50 underline-offset-4 hover:text-cyan-200"
+                            >
+                              {book.label}
+                            </a>
+                          </div>
+                          <div className="mt-2 border-t border-white/5 pt-1.5 text-[10px] text-slate-400">
+                            {book.relationshipDisclosure}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </details>
             </article>

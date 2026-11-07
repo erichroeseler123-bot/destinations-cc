@@ -234,7 +234,7 @@ export default function JuneauLowBandwidthReplanView({
       </div>
 
       {/* Text-First Table of What Still Fits */}
-      <div className="overflow-x-auto">
+      <div id="fitting-options" className="overflow-x-auto">
         <table className="w-full border-collapse text-left text-xs">
           <thead>
             <tr className="border-b border-white/15 text-[11px] uppercase tracking-wider text-zinc-400">
@@ -242,7 +242,7 @@ export default function JuneauLowBandwidthReplanView({
               <th className="py-2 px-3">Cruise Window Fit</th>
               <th className="py-2 px-3">Check-In &amp; Gangway Return</th>
               <th className="py-2 px-3">Buffer &amp; Weather Rule</th>
-              <th className="py-2 pl-3">Next Step (Requires Connection)</th>
+              <th className="py-2 pl-3">Next Step</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-white/10">
@@ -302,15 +302,24 @@ export default function JuneauLowBandwidthReplanView({
                   </td>
                   <td className="py-2.5 pl-3 align-top">
                     <a
-                      href={opt.handoffHref}
+                      href={opt.allowedNextStepHref}
                       data-testid={`replan-handoff-${opt.optionId}`}
-                      data-dcc-requires-connection="true"
-                      className="inline-block rounded-lg border border-cyan-300/40 bg-cyan-500/15 px-3 py-1.5 text-[11px] font-bold text-cyan-100 hover:bg-cyan-500/25"
+                      data-allowed-next-step={opt.allowedNextStepType}
+                      data-dcc-requires-connection={
+                        opt.flightDeckHandoffAllowed ? "true" : undefined
+                      }
+                      className={
+                        opt.flightDeckHandoffAllowed
+                          ? "inline-block rounded-lg border border-cyan-300/40 bg-cyan-500/15 px-3 py-1.5 text-[11px] font-bold text-cyan-100 hover:bg-cyan-500/25"
+                          : "inline-block rounded-lg border border-amber-300/40 bg-amber-500/15 px-3 py-1.5 text-[11px] font-bold text-amber-100 hover:bg-amber-500/25"
+                      }
                     >
-                      Continue to Juneau Flight Deck →
+                      {opt.allowedNextStepLabel}
                     </a>
                     <div className="mt-1 text-[10px] text-zinc-400">
-                      Carries ship, arrival, all-aboard &amp; party size
+                      {opt.flightDeckHandoffAllowed
+                        ? "Carries ship, arrival, all-aboard & party size"
+                        : "Preserves ship, arrival, all-aboard & berth"}
                     </div>
                   </td>
                 </tr>

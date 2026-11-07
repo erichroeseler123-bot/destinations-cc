@@ -9,7 +9,10 @@ export type ResearchClusterId =
   | "bahamas-nassau"
   | "mexico-cozumel"
   | "honduras-roatan"
-  | "cayman-grand-cayman";
+  | "cayman-grand-cayman"
+  | "iceland-kef-vik"
+  | "india-delhi-agra"
+  | "china-hk-macao";
 
 export type ResearchPortSlug =
   | "juneau"
@@ -20,7 +23,10 @@ export type ResearchPortSlug =
   | "nassau"
   | "cozumel"
   | "roatan"
-  | "grand-cayman";
+  | "grand-cayman"
+  | "keflavik-to-vik"
+  | "delhi-to-agra"
+  | "hong-kong-to-macao";
 
 export type ResearchConstraintType =
   | "total_duration"
@@ -839,6 +845,76 @@ export const EXPLICIT_RESEARCH_PRODUCT_REGISTRY: Record<
     officialSourceUrls: ["https://www.caymanport.com/ship-schedules/"],
     nonTransferableNote:
       "Applies strictly to Grand Cayman mandatory ship-to-shore tender queue allowance (35–45m each way at Royal Watler; +20m road transfer when winter swells divert ships to Spotts Bay).",
+  },
+  "northtrip-kef-vik-private-suv": {
+    productId: "northtrip-kef-vik-private-suv",
+    productName:
+      "NorthTrip — Private KEF Airport to Vík South Coast Transfer (4x4 SUV / Mercedes Sprinter)",
+    operatorId: "northtrip-iceland",
+    operatorName: "NorthTrip ehf.",
+    portSlug: "keflavik-to-vik",
+    clusterId: "iceland-kef-vik",
+    bookingChannel: "direct_operator",
+    officialSourceUrls: ["https://northtrip.is/"],
+    nonTransferableNote:
+      "Applies strictly to NorthTrip direct KEF → Vík private transfer pricing (ISK), KEF delayed-flight wait policy, Vegagerðin Route 1 closure refund terms, and checkout/quote link.",
+  },
+  "drive-reykjavik-kef-vik-private-minibus": {
+    productId: "drive-reykjavik-kef-vik-private-minibus",
+    productName:
+      "Drive Reykjavík — Private South Coast Transfer (KEF → Vík Executive SUV / Minibus)",
+    operatorId: "drive-reykjavik",
+    operatorName: "Drive Reykjavík ehf.",
+    portSlug: "keflavik-to-vik",
+    clusterId: "iceland-kef-vik",
+    bookingChannel: "direct_operator",
+    officialSourceUrls: [
+      "https://drivereykjavik.is/",
+      "https://drivereykjavik.is/faq/",
+    ],
+    nonTransferableNote:
+      "Applies strictly to Drive Reykjavík private KEF → Vík transfer terms, reconciling published FAQ pickup rules (Reykjavík hotel/bus-stop pickups start 30m before departure) with unconfirmed KEF airport arrival monitoring, ISK rate card, and Route 1 closure refund policy.",
+  },
+  "agra-cantt-station-to-taj-private-car": {
+    productId: "agra-cantt-station-to-taj-private-car",
+    productName:
+      "Agra Cantt (AGC) Station Exit → Taj Mahal East/West Gate Pre-Booked Private Car Transfer",
+    operatorId: "agra-verified-station-transfer",
+    operatorName: "Agra Cantt Verified Station Transfer Cohort",
+    portSlug: "delhi-to-agra",
+    clusterId: "india-delhi-agra",
+    bookingChannel: "direct_operator",
+    officialSourceUrls: ["https://www.tajmahal.gov.in/"],
+    nonTransferableNote:
+      "Applies strictly to Agra Cantt (AGC) station exit pickup, All-India Tourist Permit (AITP) verification, INR tariff, NTES delay wait policy, and verified booking/WhatsApp dispatch link.",
+  },
+  "delhi-to-agra-yamuna-expressway-private-car": {
+    productId: "delhi-to-agra-yamuna-expressway-private-car",
+    productName:
+      "New Delhi (DEL / Central Delhi) → Agra Private Car via Yamuna Expressway",
+    operatorId: "delhi-agra-expressway-fleet",
+    operatorName: "Delhi–Agra Yamuna Expressway Commercial Tourist Fleet",
+    portSlug: "delhi-to-agra",
+    clusterId: "india-delhi-agra",
+    bookingChannel: "direct_operator",
+    officialSourceUrls: ["https://www.tajmahal.gov.in/"],
+    nonTransferableNote:
+      "Applies strictly to Delhi–Agra Yamuna Expressway private car INR tariff, AITP permit, winter fog closure refund policy, and verified booking link.",
+  },
+  "hk-macao-cross-boundary-private-mpv": {
+    productId: "hk-macao-cross-boundary-private-mpv",
+    productName:
+      "Hong Kong → Macao Door-to-Door Dual-Plate Private 6-Pax Alphard/Vellfire MPV via HZMB",
+    operatorId: "hk-macao-cross-boundary-limo",
+    operatorName: "Licensed HK–Macao Cross-Boundary Chauffeur Operator",
+    portSlug: "hong-kong-to-macao",
+    clusterId: "china-hk-macao",
+    bookingChannel: "direct_operator",
+    officialSourceUrls: [
+      "https://www.td.gov.hk/en/transport_in_hong_kong/land_based_cross_boundary_transport/access_to_hzmb/index.html",
+    ],
+    nonTransferableNote:
+      "Applies strictly to Hong Kong Transport Department (TD) + Macao DSAT dual-plate Cross-Boundary Hire Car Permit verification, HKD tariff, Typhoon Signal No. 8 refund policy, and verified booking/WhatsApp link.",
   },
 };
 
@@ -1698,6 +1774,170 @@ export const WINTER_FOUR_PORTS_CANDIDATE_BASELINE: RawResearchDeskFactRow[] = [
   },
 ];
 
+export const INTERNATIONAL_CORRIDOR_REVIEW_DESK_CANDIDATE_BASELINE: RawResearchDeskFactRow[] = [
+  {
+    id: "mc-ice-northtrip-kef-vik-pricing-and-terms-20261107",
+    fact_id: "mc-ice-northtrip-kef-vik-pricing-and-terms-20261107",
+    cluster: "iceland-kef-vik",
+    product_id: "northtrip-kef-vik-private-suv",
+    constraint_type: "price_and_pickup_terms",
+    source_url: "https://northtrip.is/",
+    source_excerpt:
+      "NorthTrip ehf. (Reykjavík): pending written operator confirmation or dated public tariff for KEF → Vík direct private transfer rate card in ISK, KEF post-landing delayed-flight wait window, Vegagerðin Route 1 (Ófært/Lokað) closure refund/reschedule policy, and direct checkout URL.",
+    source_hash:
+      "e11a22b33c44d55e66f7708899a00b11c22d33e44f55a66b77c88d99e00f11a2",
+    current_source_hash:
+      "e11a22b33c44d55e66f7708899a00b11c22d33e44f55a66b77c88d99e00f11a2",
+    checked_at: "2026-11-07T08:00:00.000Z",
+    value:
+      "Pending operator confirmation: KEF → Vík ISK tariff, KEF flight-delay wait window, Route 1 closure refund terms, and direct checkout/quote URL",
+    unit: "operator_commercial_and_policy_confirmation",
+    conditions:
+      "Withheld from public confirmed claims on /routes/keflavik-to-vik until dated source or written operator confirmation is logged in the Review Desk.",
+    status: "needs confirmation",
+    verified_on: null,
+    verified_by: null,
+    reviewer_id: null,
+    review_due_on: null,
+    revision: 1,
+    active: 1,
+    healthy: 1,
+    consumers: [
+      "dcc:routes/keflavik-to-vik",
+      "dcc:api/internal/research/approved-facts?port=keflavik-to-vik",
+    ],
+  },
+  {
+    id: "mc-ice-drive-reykjavik-kef-vik-pickup-and-pricing-20261107",
+    fact_id: "mc-ice-drive-reykjavik-kef-vik-pickup-and-pricing-20261107",
+    cluster: "iceland-kef-vik",
+    product_id: "drive-reykjavik-kef-vik-private-minibus",
+    constraint_type: "pickup_rules",
+    source_url: "https://drivereykjavik.is/faq/",
+    source_excerpt:
+      "Drive Reykjavík published FAQ states Reykjavík capital-area hotel and designated tour-bus-stop pickups begin 30 minutes prior to departure; private KEF International Airport arrival monitoring, post-landing grace window, KEF → Vík direct ISK rate card, and Route 1 closure refund terms are not published as self-serve FAQ rules and require written operator confirmation.",
+    source_hash:
+      "f22b33c44d55e66f7708899a00b11c22d33e44f55a66b77c88d99e00f11a22b3",
+    current_source_hash:
+      "f22b33c44d55e66f7708899a00b11c22d33e44f55a66b77c88d99e00f11a22b3",
+    checked_at: "2026-11-07T08:00:00.000Z",
+    value:
+      "Published FAQ confirms 30-min Reykjavík hotel/bus-stop pickup window; private KEF arrival wait policy, ISK rate card, and Route 1 closure refund terms require operator confirmation",
+    unit: "pickup_and_pricing_reconciliation",
+    conditions:
+      "Reconciled with Drive Reykjavík FAQ on /routes/keflavik-to-vik; unconfirmed KEF arrival wait policy, ISK pricing, and refund terms remain queued in Review Desk.",
+    status: "needs confirmation",
+    verified_on: null,
+    verified_by: null,
+    reviewer_id: null,
+    review_due_on: null,
+    revision: 1,
+    active: 1,
+    healthy: 1,
+    consumers: [
+      "dcc:routes/keflavik-to-vik",
+      "dcc:api/internal/research/approved-facts?port=keflavik-to-vik",
+    ],
+  },
+  {
+    id: "mc-ind-agra-cantt-private-car-pricing-and-whatsapp-20261107",
+    fact_id: "mc-ind-agra-cantt-private-car-pricing-and-whatsapp-20261107",
+    cluster: "india-delhi-agra",
+    product_id: "agra-cantt-station-to-taj-private-car",
+    constraint_type: "price_permit_and_booking_link",
+    source_url: "https://www.tajmahal.gov.in/",
+    source_excerpt:
+      "Agra Cantt (AGC) station exit to Taj Mahal East/West Gate: requires verified commercial All-India Tourist Permit (AITP) registration, dated INR tariff, NTES train-delay wait policy, and verified operator booking or WhatsApp dispatch link (unverified placeholder links withheld).",
+    source_hash:
+      "a33c44d55e66f7708899a00b11c22d33e44f55a66b77c88d99e00f11a22b33c4",
+    current_source_hash:
+      "a33c44d55e66f7708899a00b11c22d33e44f55a66b77c88d99e00f11a22b33c4",
+    checked_at: "2026-11-07T08:00:00.000Z",
+    value:
+      "Pending operator confirmation: Agra Cantt → Taj Mahal INR tariff, AITP commercial permit number, NTES delay wait terms, and verified booking/WhatsApp link",
+    unit: "operator_commercial_and_permit_confirmation",
+    conditions:
+      "Placeholder WhatsApp links and unverified INR tariffs are withheld on /routes/delhi-to-agra until operator confirmation and dated source are approved in Review Desk.",
+    status: "needs confirmation",
+    verified_on: null,
+    verified_by: null,
+    reviewer_id: null,
+    review_due_on: null,
+    revision: 1,
+    active: 1,
+    healthy: 1,
+    consumers: [
+      "dcc:routes/delhi-to-agra",
+      "dcc:api/internal/research/approved-facts?port=delhi-to-agra",
+    ],
+  },
+  {
+    id: "mc-ind-yamuna-expressway-private-car-pricing-and-booking-20261107",
+    fact_id: "mc-ind-yamuna-expressway-private-car-pricing-and-booking-20261107",
+    cluster: "india-delhi-agra",
+    product_id: "delhi-to-agra-yamuna-expressway-private-car",
+    constraint_type: "price_permit_and_refund_terms",
+    source_url: "https://www.tajmahal.gov.in/",
+    source_excerpt:
+      "New Delhi (DEL / Central Delhi) to Agra via Yamuna Expressway: requires dated INR tariff, UP/Delhi All-India Tourist Permit (AITP) verification, winter fog closure refund terms, and verified operator checkout link.",
+    source_hash:
+      "b44d55e66f7708899a00b11c22d33e44f55a66b77c88d99e00f11a22b33c44d5",
+    current_source_hash:
+      "b44d55e66f7708899a00b11c22d33e44f55a66b77c88d99e00f11a22b33c44d5",
+    checked_at: "2026-11-07T08:00:00.000Z",
+    value:
+      "Pending operator confirmation: Delhi–Agra Yamuna Expressway INR tariff, AITP permit number, winter fog refund terms, and direct booking link",
+    unit: "operator_commercial_and_permit_confirmation",
+    conditions:
+      "Withheld from confirmed claims on /routes/delhi-to-agra until dated source or operator confirmation is approved in Review Desk.",
+    status: "needs confirmation",
+    verified_on: null,
+    verified_by: null,
+    reviewer_id: null,
+    review_due_on: null,
+    revision: 1,
+    active: 1,
+    healthy: 1,
+    consumers: [
+      "dcc:routes/delhi-to-agra",
+      "dcc:api/internal/research/approved-facts?port=delhi-to-agra",
+    ],
+  },
+  {
+    id: "mc-hkm-cross-boundary-mpv-permit-pricing-and-booking-20261107",
+    fact_id: "mc-hkm-cross-boundary-mpv-permit-pricing-and-booking-20261107",
+    cluster: "china-hk-macao",
+    product_id: "hk-macao-cross-boundary-private-mpv",
+    constraint_type: "price_permit_and_booking_link",
+    source_url:
+      "https://www.td.gov.hk/en/transport_in_hong_kong/land_based_cross_boundary_transport/access_to_hzmb/index.html",
+    source_excerpt:
+      "Hong Kong to Macao private 6-passenger MPV via HZMB: requires verified HK Transport Department Closed Road Permit (CRP) + Macao DSAT cross-boundary hire-car quota number, dated HKD tariff, Typhoon Signal No. 8 refund policy, and verified booking/WhatsApp link.",
+    source_hash:
+      "c55e66f7708899a00b11c22d33e44f55a66b77c88d99e00f11a22b33c44d55e6",
+    current_source_hash:
+      "c55e66f7708899a00b11c22d33e44f55a66b77c88d99e00f11a22b33c44d55e6",
+    checked_at: "2026-11-07T08:00:00.000Z",
+    value:
+      "Pending operator confirmation: HK–Macao dual-plate CRP/DSAT permit number, HKD tariff, T8 bridge closure refund terms, and verified booking/WhatsApp link",
+    unit: "operator_commercial_and_permit_confirmation",
+    conditions:
+      "Placeholder WhatsApp links and unverified HKD private MPV tariffs are withheld on /routes/hong-kong-to-macao until operator confirmation and dated source are approved in Review Desk.",
+    status: "needs confirmation",
+    verified_on: null,
+    verified_by: null,
+    reviewer_id: null,
+    review_due_on: null,
+    revision: 1,
+    active: 1,
+    healthy: 1,
+    consumers: [
+      "dcc:routes/hong-kong-to-macao",
+      "dcc:api/internal/research/approved-facts?port=hong-kong-to-macao",
+    ],
+  },
+];
+
 export const ALL_RESEARCH_CANDIDATE_BASELINES: RawResearchDeskFactRow[] = [
   ...COASTAL_HELICOPTERS_ICEFIELD_CANDIDATE_BASELINE,
   ...WISCONSIN_CHETEK_CANDIDATE_BASELINE,
@@ -1705,6 +1945,7 @@ export const ALL_RESEARCH_CANDIDATE_BASELINES: RawResearchDeskFactRow[] = [
   ...WINTER_FOUR_PORTS_CANDIDATE_BASELINE,
   ...NEW_ORLEANS_HOTEL_PICKUP_CANDIDATE_BASELINE,
   ...KETCHIKAN_PRESEASON_CANDIDATE_BASELINE,
+  ...INTERNATIONAL_CORRIDOR_REVIEW_DESK_CANDIDATE_BASELINE,
 ];
 
 const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -1783,7 +2024,10 @@ export function evaluateResearchFactRecord(
     rawCluster === "bahamas-nassau" ||
     rawCluster === "mexico-cozumel" ||
     rawCluster === "honduras-roatan" ||
-    rawCluster === "cayman-grand-cayman"
+    rawCluster === "cayman-grand-cayman" ||
+    rawCluster === "iceland-kef-vik" ||
+    rawCluster === "india-delhi-agra" ||
+    rawCluster === "china-hk-macao"
       ? rawCluster
       : "alaska-juneau";
   const fallbackPort: ResearchPortSlug =
@@ -1803,7 +2047,13 @@ export function evaluateResearchFactRecord(
                   ? "roatan"
                   : fallbackCluster === "cayman-grand-cayman"
                     ? "grand-cayman"
-                    : "juneau";
+                    : fallbackCluster === "iceland-kef-vik"
+                      ? "keflavik-to-vik"
+                      : fallbackCluster === "india-delhi-agra"
+                        ? "delhi-to-agra"
+                        : fallbackCluster === "china-hk-macao"
+                          ? "hong-kong-to-macao"
+                          : "juneau";
 
   const active =
     row.active === undefined || row.active === null

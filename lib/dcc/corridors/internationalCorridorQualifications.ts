@@ -1,836 +1,1089 @@
 /**
- * International Corridor Qualification & Trip Evaluation Engine
+ * International Corridor Qualification & Routing Engine
+ * - Corridor 1: Iceland — Keflavík Airport (KEF) → Vík (South Coast Route 1)
+ * - Corridor 2: India — Delhi → Agra (Gatimaan / Vande Bharat Rail + Station Transfer vs. Yamuna Expressway)
+ * - Corridor 3: China — Hong Kong → Macao (HZMB Bus / Cross-Boundary MPV vs. High-Speed Ferry)
  *
- * Covers:
- * 1. Step 3 — Iceland (KEF → Vík, `/routes/keflavik-to-vik`):
- *    - Strictly scoped to Keflavík Airport (KEF) → Vík along Route 41 & Route 1.
- *    - Explicitly separates Reykjavík Airport (RKV), Golden Circle, Blue Lagoon,
- *      and glacier excursions as separate trips.
- *    - Qualifies NorthTrip and Drive Reykjavík on licensed business identity,
- *      ISK pricing, vehicle & luggage limits, delayed-flight pickup policy, and
- *      road-closure / refund terms.
- *    - Maps Vegagerðin DATEX II segment, direction, and timestamp to KEF → Vík,
- *      keeping road closures, road-surface reports, and Icelandic Met Office (IMO)
- *      warnings strictly separate. A closure blocks the affected departure.
- *    - Includes the 10% referral commission outreach draft before enabling direct checkout.
- *
- * 2. Step 4A — Delhi → Agra (`/routes/delhi-to-agra`, Booking Candidate):
- *    - Answers "Will I still make my Taj Mahal visit?" using train + date,
- *      revised station arrival (AGC), last-mile transfer, and official Taj Mahal
- *      visiting hours and ticket rules (closed Fridays, opens 30m before sunrise,
- *      closes 30m before sunset, 3-hour max stay limit).
- *    - Documents IMD and CRIS proNTES machine access verification status, links
- *      to official lookups, and accepts traveler-entered revised ETA.
- *    - Qualifies transfer operators on INR price, vehicle fit, weather/fog policy,
- *      and exact booking/WhatsApp link.
- *
- * 3. Step 4B — Hong Kong → Macao (`/routes/hong-kong-to-macao`, Planning Guide):
- *    - Compares HZMB Bridge Shuttle ("Golden Bus") and authorized cross-boundary
- *      private hire car (HK Transport Department Closed Road Permit verification).
- *    - Shows published HK ImmD checkpoint wait as a timestamped estimate for the
- *      relevant direction and traveler category.
- *    - Reuses the 6-factor entry dependency model and verifies Macao entry (CPSP/FSM)
- *      and Hong Kong re-entry (HK ImmD) separately.
- *    - Explicitly states that a private hire trip still includes immigration clearance,
- *      and treats Shenzhen as a separate route with its own mainland China entry rules.
- *    - Supports mobile text usability and Amap, WhatsApp, and WeChat channels.
+ * Enforces:
+ * 1. Drive Reykjavík pickup policy reconciled with its published FAQ (`https://drivereykjavik.is/faq/`).
+ * 2. Dated source (`verifiedOnDate` + `sourceUrl`) or explicit operator confirmation (`operatorConfirmedBy` + `verifiedOnDate`)
+ *    required before publishing operator prices, permits, refund terms, or booking/WhatsApp links.
+ * 3. Open operator/feed items queued in the existing Review Desk (`INTERNATIONAL_CORRIDOR_REVIEW_DESK_CANDIDATE_BASELINE`).
+ * 4. Iceland road (`Vegagerðin DATEX II` / `IMO`) and Hong Kong checkpoint (`HK ImmD`) examples labeled as Samples everywhere.
+ * 5. The 10% referral proposal kept strictly in `ICELAND_OPERATOR_OUTREACH_DRAFT` (`visibility: "private_outreach_only"`).
  */
 
-import type { SharedTripRecheckCardModel } from "../sharedTripRecheck";
+import type { CompactTripRecheckCardModel } from "@/lib/dcc/sharedTripRecheck";
+import {
+  evaluateSyntheticDelhiAgraDcc412Test,
+  type Dcc412ItineraryRecheckResult,
+} from "@/lib/dcc/sharedTripRecheck";
+import {
+  INTERNATIONAL_CORRIDOR_REVIEW_DESK_CANDIDATE_BASELINE,
+  type RawResearchDeskFactRow,
+} from "@/lib/dcc/research/approvedFactsFeed";
 
 // ============================================================================
-// 1. ICELAND: KEFLAVÍK AIRPORT (KEF) → VÍK (`/routes/keflavik-to-vik`)
+// 0. Dated Source or Operator Confirmation Gate + Review Desk Integration
 // ============================================================================
 
-export interface SeparatedIcelandTripNotice {
-  tripId: "reykjavik_rkv_domestic" | "golden_circle" | "blue_lagoon" | "glacier_excursions";
-  title: string;
-  whySeparateFromKefToVik: string;
-  routeOrHubCode: string;
+export interface DatedSourceOrOperatorConfirmationGate {
+  fieldCategory:
+    | "published_price"
+    | "permit"
+    | "refund_terms"
+    | "booking_or_whatsapp_link"
+    | "pickup_policy";
+  verified: boolean;
+  statusLabel:
+    | "Verified (Dated Official Source)"
+    | "Confirmed by Operator"
+    | "Pending operator confirmation (Queued in Review Desk)";
+  verifiedOnDate: string | null;
+  sourceUrl: string | null;
+  operatorConfirmedBy: string | null;
+  reviewDeskFactId: string | null;
+  publicDisplayValue: string;
 }
 
-export const SEPARATED_ICELAND_TRIPS: SeparatedIcelandTripNotice[] = [
+export function verifyDatedSourceOrOperatorConfirmation(params: {
+  fieldCategory: DatedSourceOrOperatorConfirmationGate["fieldCategory"];
+  proposedValue: string | null | undefined;
+  verifiedOnDate?: string | null;
+  sourceUrl?: string | null;
+  operatorConfirmedBy?: string | null;
+  reviewDeskFactId?: string | null;
+  pendingFallbackLabel: string;
+}): DatedSourceOrOperatorConfirmationGate {
+  const hasDatedSource = Boolean(
+    params.verifiedOnDate &&
+      /^\d{4}-\d{2}-\d{2}$/.test(params.verifiedOnDate.trim()) &&
+      params.sourceUrl &&
+      /^https?:\/\//i.test(params.sourceUrl.trim()),
+  );
+  const hasOperatorConfirmation = Boolean(
+    params.verifiedOnDate &&
+      /^\d{4}-\d{2}-\d{2}$/.test(params.verifiedOnDate.trim()) &&
+      params.operatorConfirmedBy &&
+      params.operatorConfirmedBy.trim().length > 0,
+  );
+  const verified = Boolean(
+    params.proposedValue &&
+      params.proposedValue.trim().length > 0 &&
+      (hasDatedSource || hasOperatorConfirmation),
+  );
+
+  return {
+    fieldCategory: params.fieldCategory,
+    verified,
+    statusLabel: hasOperatorConfirmation
+      ? "Confirmed by Operator"
+      : hasDatedSource
+        ? "Verified (Dated Official Source)"
+        : "Pending operator confirmation (Queued in Review Desk)",
+    verifiedOnDate: verified ? params.verifiedOnDate!.trim() : null,
+    sourceUrl: verified && params.sourceUrl ? params.sourceUrl.trim() : null,
+    operatorConfirmedBy:
+      verified && params.operatorConfirmedBy
+        ? params.operatorConfirmedBy.trim()
+        : null,
+    reviewDeskFactId: params.reviewDeskFactId || null,
+    publicDisplayValue: verified
+      ? params.proposedValue!.trim()
+      : params.pendingFallbackLabel,
+  };
+}
+
+export function getReviewDeskItemsForInternationalCorridor(
+  cluster: "iceland-kef-vik" | "india-delhi-agra" | "china-hk-macao",
+): RawResearchDeskFactRow[] {
+  return INTERNATIONAL_CORRIDOR_REVIEW_DESK_CANDIDATE_BASELINE.filter(
+    (row) => row.cluster === cluster,
+  );
+}
+
+// ============================================================================
+// 1. ICELAND: Keflavík Airport (KEF) → Vík (South Coast Route 1)
+// ============================================================================
+
+export interface IcelandSeparateTripBoundary {
+  tripSlug: string;
+  title: string;
+  corridorDistinctReason: string;
+  dedicatedRouteOrPlannedPath: string;
+}
+
+export const ICELAND_SEPARATE_TRIP_BOUNDARIES: IcelandSeparateTripBoundary[] = [
   {
-    tripId: "reykjavik_rkv_domestic",
-    title: "Reykjavík Domestic Airport (RKV)",
-    whySeparateFromKefToVik:
-      "RKV is the downtown Vatnsmýri domestic air hub (50 km northeast of KEF) serving Akureyri, Ísafjörður, Egilsstaðir, and Vestmannaeyjar. Never mix RKV domestic flight transfers with KEF international South Coast arrivals.",
-    routeOrHubCode: "RKV (BIRK) · Downtown Reykjavík",
+    tripSlug: "reykjavik-domestic-airport-rkv",
+    title: "Reykjavík Domestic Airport (RKV) Transfers & Eagle Air / Icelandair Domestic",
+    corridorDistinctReason:
+      "RKV sits in central Reykjavík (101) for domestic Westfjords/Akureyri/Hornafjörður flights — 50 km northeast of Keflavík International (KEF).",
+    dedicatedRouteOrPlannedPath: "/iceland#rkv-domestic-separation",
   },
   {
-    tripId: "golden_circle",
-    title: "Golden Circle (Þingvellir, Geysir & Gullfoss)",
-    whySeparateFromKefToVik:
-      "The Golden Circle follows inland Routes 36, 365, 37, and 35 north of Selfoss. Adding it to an arrival-day KEF → Vík transfer adds 3.5–4.5 hours of driving plus winter mountain pass exposure on Lyngdalsheiði.",
-    routeOrHubCode: "Routes 36 / 37 / 35 · Inland Loop",
+    tripSlug: "golden-circle-day-loop",
+    title: "Golden Circle (Þingvellir, Geysir, Gullfoss — Routes 36 / 365 / 35)",
+    corridorDistinctReason:
+      "Inland mountain-plateau loop via Mosfellsheiði (Route 36), distinct from the South Coast Ring Road (Route 1) across Hellisheiði to Vík.",
+    dedicatedRouteOrPlannedPath: "/iceland#golden-circle-separation",
   },
   {
-    tripId: "blue_lagoon",
-    title: "Blue Lagoon (Bláa Lónið / Grindavík)",
-    whySeparateFromKefToVik:
-      "Located on Route 43 (Grindavíkurvegur) on the Reykjanes Peninsula with separate timed-entry tickets, luggage storage rules, and active volcanic hazard / road-closure monitoring distinct from Route 1 South Coast.",
-    routeOrHubCode: "Route 43 · Svartsengi / Grindavík",
+    tripSlug: "blue-lagoon-reykjanes-stopover",
+    title: "Blue Lagoon (Grindavíkurvegur Route 43 — Reykjanes Peninsula)",
+    corridorDistinctReason:
+      "20-minute Reykjanes Peninsula transfer subject to Grindavík volcanic hazard zone closures and luggage-storage rules; not a South Coast Vík transfer.",
+    dedicatedRouteOrPlannedPath: "/iceland#blue-lagoon-separation",
   },
   {
-    tripId: "glacier_excursions",
-    title: "Glacier Excursions (Sólheimajökull, Mýrdalsjökull / Katla & Vatnajökull)",
-    whySeparateFromKefToVik:
-      "Guided glacier hikes, ice caves, and snowmobiling require certified glacier guides, crampon/helmet fitting, fixed daylight departure slots, and gravel access roads (Route 221 / F-roads) evaluated separately from point-to-point KEF → Vík road transfers.",
-    routeOrHubCode: "Route 221 / Katla Geopark · Activity Add-On",
+    tripSlug: "solheimajokull-katla-glacier-excursions",
+    title: "Sólheimajökull & Katla Ice Cave Guided Glacier Excursions",
+    corridorDistinctReason:
+      "Specialized crampon/super-jeep glacier activity staging from Sólheimajökull parking lot or Vík basecamp, separate from point-to-point KEF → Vík highway transport.",
+    dedicatedRouteOrPlannedPath: "/iceland#glacier-excursions-separation",
   },
 ];
 
 export interface IcelandQualifiedOperatorProfile {
-  operatorId: "northtrip" | "drive-reykjavik";
+  operatorId: string;
   brandName: string;
-  legalBusinessName: string;
-  licenseStatus: string;
-  regulatoryAuthorityUrl: string;
-  serviceType: "private_transfer" | "private_and_small_group_transfer";
-  pricingCurrency: "ISK";
-  publishedPriceScheduleIsk: {
-    vehicleClass: string;
+  licensedLegalEntity: string;
+  kennitalaOrLicenseNote: string;
+  authorizedPermitAuthority: string;
+  reviewDeskFactId: string;
+  corridorScope: "KEF_TO_VIK_DIRECT_OR_VIA_REYKJAVIK";
+  priceIskLabel: string;
+  priceUsdReferenceNote: string;
+  pricingVerificationGate: DatedSourceOrOperatorConfirmationGate;
+  permitVerificationGate: DatedSourceOrOperatorConfirmationGate;
+  refundTermsVerificationGate: DatedSourceOrOperatorConfirmationGate;
+  bookingLinkVerificationGate: DatedSourceOrOperatorConfirmationGate;
+  vehicleClasses: Array<{
+    classId: string;
+    name: string;
     maxPassengers: number;
-    maxStandardSuitcases: number;
+    maxCheckedBags: number;
     maxCarryOnBags: number;
-    oneWayKefToVikIsk: number;
-    pricingModel: "fixed_per_vehicle_isk" | "verified_quote_per_vehicle_isk";
-    notes: string;
-  }[];
-  delayedFlightPickupPolicy: {
-    monitorsKefFlightNumber: boolean;
-    includedWaitMinutesAfterLanding: number;
-    extendedDelayPolicy: string;
+    winterStuddedTiresIncluded: boolean;
+  }>;
+  /**
+   * Reconciled pickup policy distinguishing published FAQ rules from unconfirmed airport/transfer terms
+   */
+  faqPickupPolicyReconciliation: {
+    publishedFaqRuleSummary: string;
+    faqSourceUrl: string;
+    faqVerifiedOnDate: string;
+    privateKefArrivalPolicyStatus: "pending_operator_confirmation";
+    reconciledSummary: string;
   };
-  roadClosureAndRefundTerms: {
-    vegagerdinClosureTrigger: string;
-    rescheduleOrHoldOption: string;
-    refundPolicyOnImpassableRoad: string;
-  };
+  delayedFlightPickupPolicy: string;
+  roadClosureAndRefundTerms: string;
+  /**
+   * Null when direct checkout/WhatsApp link is not yet confirmed with a dated source or operator sign-off
+   */
+  confirmedBookingOrQuoteUrl: string | null;
+  officialWebsiteUrl: string;
+  acceptedHandoffFields: string[];
+  bookingAndRefundReportingMethod: string;
+  verificationStatus: "verified_operator_pending_commercial_signoff";
+  pricingCurrency: "ISK";
+  publishedPriceScheduleIsk: Array<{
+    vehicleClass: string;
+    verificationStatus: "pending_operator_confirmation_in_review_desk";
+    note: string;
+  }>;
   directCheckoutStatus: "qualification_complete_pending_10pct_partner_agreement";
-  acceptedHandoffFields: ("date" | "party_size" | "flight" | "destination" | "luggage")[];
-  quoteOrContactUrl: string;
 }
 
 export const ICELAND_KEF_VIK_OPERATOR_PROFILES: IcelandQualifiedOperatorProfile[] = [
   {
-    operatorId: "northtrip",
-    brandName: "NorthTrip Iceland",
-    legalBusinessName: "NorthTrip ehf. (Icelandic Travel Agency & Licensed Passenger Transport Operator)",
-    licenseStatus:
-      "Verified Icelandic Tourist Board (Ferðamálastofa) licensed tour/transfer operator & Samgöngustofa commercial passenger transport permit holder",
-    regulatoryAuthorityUrl: "https://www.ferdamalastofa.is/en/licences-legislation/travel-agencies",
-    serviceType: "private_transfer",
+    operatorId: "northtrip-iceland",
+    brandName: "NorthTrip",
+    licensedLegalEntity:
+      "NorthTrip ehf. (Icelandic Tourist Board / Ferðamálastofa Authorized Tour Operator & Day-Tour Carrier)",
+    kennitalaOrLicenseNote:
+      "Ferðamálastofa (Icelandic Tourist Board) & Samgöngustofa commercial passenger transport registration — license number pending written operator confirmation in Review Desk (`mc-ice-northtrip-kef-vik-pricing-and-terms-20261107`).",
+    authorizedPermitAuthority:
+      "Ferðamálastofa (Icelandic Tourist Board) & Samgöngustofa (Icelandic Transport Authority)",
+    reviewDeskFactId: "mc-ice-northtrip-kef-vik-pricing-and-terms-20261107",
+    corridorScope: "KEF_TO_VIK_DIRECT_OR_VIA_REYKJAVIK",
+    priceIskLabel:
+      "Rate card in ISK pending operator confirmation / dated source (Queued in Review Desk)",
+    priceUsdReferenceNote:
+      "Published ISK tariff withheld until NorthTrip confirms dated KEF → Vík direct private transfer rate card in Review Desk.",
+    pricingVerificationGate: verifyDatedSourceOrOperatorConfirmation({
+      fieldCategory: "published_price",
+      proposedValue: null,
+      reviewDeskFactId: "mc-ice-northtrip-kef-vik-pricing-and-terms-20261107",
+      pendingFallbackLabel:
+        "Pending operator confirmation / dated source in Review Desk (mc-ice-northtrip-kef-vik-pricing-and-terms-20261107)",
+    }),
+    permitVerificationGate: verifyDatedSourceOrOperatorConfirmation({
+      fieldCategory: "permit",
+      proposedValue: null,
+      reviewDeskFactId: "mc-ice-northtrip-kef-vik-pricing-and-terms-20261107",
+      pendingFallbackLabel:
+        "Ferðamálastofa / Samgöngustofa commercial license number pending written operator confirmation in Review Desk",
+    }),
+    refundTermsVerificationGate: verifyDatedSourceOrOperatorConfirmation({
+      fieldCategory: "refund_terms",
+      proposedValue: null,
+      reviewDeskFactId: "mc-ice-northtrip-kef-vik-pricing-and-terms-20261107",
+      pendingFallbackLabel:
+        "Vegagerðin Route 1 closure (Ófært / Lokað) refund & re-accommodation terms pending written operator confirmation in Review Desk",
+    }),
+    bookingLinkVerificationGate: verifyDatedSourceOrOperatorConfirmation({
+      fieldCategory: "booking_or_whatsapp_link",
+      proposedValue: null,
+      reviewDeskFactId: "mc-ice-northtrip-kef-vik-pricing-and-terms-20261107",
+      pendingFallbackLabel:
+        "Direct KEF → Vík checkout/quote link pending operator confirmation in Review Desk",
+    }),
+    vehicleClasses: [
+      {
+        classId: "iceland-4x4-suv",
+        name: "Private 4x4 Winter SUV (Land Cruiser / Defender Class)",
+        maxPassengers: 4,
+        maxCheckedBags: 4,
+        maxCarryOnBags: 4,
+        winterStuddedTiresIncluded: true,
+      },
+      {
+        classId: "iceland-mercedes-sprinter-4x4",
+        name: "Private 4x4 Mercedes Sprinter Minibus",
+        maxPassengers: 12,
+        maxCheckedBags: 12,
+        maxCarryOnBags: 12,
+        winterStuddedTiresIncluded: true,
+      },
+    ],
+    faqPickupPolicyReconciliation: {
+      publishedFaqRuleSummary:
+        "NorthTrip public tour pages list Reykjavík pickup coordination; direct KEF International Airport arrival monitoring and post-landing wait grace window for KEF → Vík private transfers require written operator confirmation.",
+      faqSourceUrl: "https://northtrip.is/",
+      faqVerifiedOnDate: "2026-11-07",
+      privateKefArrivalPolicyStatus: "pending_operator_confirmation",
+      reconciledSummary:
+        "KEF post-landing wait window and delayed-flight staging rule are marked Pending operator confirmation in Review Desk (`mc-ice-northtrip-kef-vik-pricing-and-terms-20261107`).",
+    },
+    delayedFlightPickupPolicy:
+      "Pending operator confirmation in Review Desk: KEF flight-arrival monitoring and post-customs wait window for direct KEF → Vík transfers must be confirmed in writing by NorthTrip before publishing as a guaranteed grace window.",
+    roadClosureAndRefundTerms:
+      "Pending operator confirmation in Review Desk: When Vegagerðin marks Route 1 (Hellisheiði or Seljalandsfoss–Vík) as Impassable (Ófært) or Closed (Lokað), refund vs. next-day re-accommodation terms require written operator confirmation.",
+    confirmedBookingOrQuoteUrl: null,
+    officialWebsiteUrl: "https://northtrip.is/",
+    acceptedHandoffFields: [
+      "origin",
+      "destination",
+      "date",
+      "flight",
+      "eta",
+      "passengers",
+      "luggage",
+      "vehicle_class",
+      "dcc_handoff_id",
+      "utm_source",
+    ],
+    bookingAndRefundReportingMethod:
+      "Pending partner sign-off (monthly CSV reconciliation + webhook/email confirmation carrying `dcc_handoff_id`).",
+    verificationStatus: "verified_operator_pending_commercial_signoff",
     pricingCurrency: "ISK",
     publishedPriceScheduleIsk: [
       {
-        vehicleClass: "AWD Executive SUV / Crossover (1–3 pax)",
-        maxPassengers: 3,
-        maxStandardSuitcases: 3,
-        maxCarryOnBags: 3,
-        oneWayKefToVikIsk: 89000,
-        pricingModel: "fixed_per_vehicle_isk",
-        notes: "Includes KEF arrivals meet-and-greet, studded winter tires (Nov–Apr), and direct drive to Vík accommodation.",
-      },
-      {
-        vehicleClass: "Mercedes-Benz V-Class 4MATIC Van (1–6 pax)",
-        maxPassengers: 6,
-        maxStandardSuitcases: 6,
-        maxCarryOnBags: 6,
-        oneWayKefToVikIsk: 114000,
-        pricingModel: "fixed_per_vehicle_isk",
-        notes: "Fits up to 6 passengers with 6 standard 23 kg checked bags; oversized ski/camera cases require advance cargo check.",
+        vehicleClass: "Private 4x4 Winter SUV (1–4 Pax)",
+        verificationStatus: "pending_operator_confirmation_in_review_desk",
+        note: "ISK tariff queued in Review Desk (`mc-ice-northtrip-kef-vik-pricing-and-terms-20261107`)",
       },
     ],
-    delayedFlightPickupPolicy: {
-      monitorsKefFlightNumber: true,
-      includedWaitMinutesAfterLanding: 90,
-      extendedDelayPolicy:
-        "Driver tracks live Isavia KEF arrival time by flight number. Includes 90 minutes post-landing for customs and baggage claim. Flights delayed >3 hours are moved to the next safe daylight/weather dispatch window at no rebooking fee when Vegagerðin roads remain open.",
-    },
-    roadClosureAndRefundTerms: {
-      vegagerdinClosureTrigger:
-        "Triggered when Vegagerðin DATEX II marks Route 41 or Route 1 (Hellisheiði / Þrengsli or Under Eyjafjöll) as Closed (Lokað) or Impassable (Ófært).",
-      rescheduleOrHoldOption:
-        "Traveler may hold departure in Reykjavík/KEF until Vegagerðin reopens the segment or reroute via Route 39 (Þrengsli) when only Hellisheiði is closed and operator confirms Þrengsli is open.",
-      refundPolicyOnImpassableRoad:
-        "100% full refund in ISK (or free next-day reschedule) if Vegagerðin road closure prevents completing the KEF → Vík transfer on the booked travel date.",
-    },
-    directCheckoutStatus: "qualification_complete_pending_10pct_partner_agreement",
-    acceptedHandoffFields: ["date", "party_size", "flight", "destination", "luggage"],
-    quoteOrContactUrl: "https://destinationcommandcenter.com/routes/keflavik-to-vik?operator=northtrip",
+    directCheckoutStatus:
+      "qualification_complete_pending_10pct_partner_agreement",
   },
   {
     operatorId: "drive-reykjavik",
     brandName: "Drive Reykjavík",
-    legalBusinessName: "Drive Reykjavík ehf. (Licensed Commercial Chauffeur & Minibus Operator)",
-    licenseStatus:
-      "Verified Ferðamálastofa Authorized Day Tour / Transfer Operator & Samgöngustofa Commercial Bus/Chauffeur License",
-    regulatoryAuthorityUrl: "https://www.ferdamalastofa.is/en/licences-legislation/travel-agencies",
-    serviceType: "private_and_small_group_transfer",
+    licensedLegalEntity:
+      "Drive Reykjavík ehf. (Licensed Icelandic Private Transfer & Excursion Carrier)",
+    kennitalaOrLicenseNote:
+      "Registered Reykjavík passenger transport & tour operator under Samgöngustofa commercial operating permit — specific permit number queued in Review Desk (`mc-ice-drive-reykjavik-kef-vik-pickup-and-pricing-20261107`).",
+    authorizedPermitAuthority:
+      "Samgöngustofa (Icelandic Transport Authority) & Ferðamálastofa",
+    reviewDeskFactId: "mc-ice-drive-reykjavik-kef-vik-pickup-and-pricing-20261107",
+    corridorScope: "KEF_TO_VIK_DIRECT_OR_VIA_REYKJAVIK",
+    priceIskLabel:
+      "Rate card in ISK pending operator confirmation / dated source (Queued in Review Desk)",
+    priceUsdReferenceNote:
+      "Published ISK tariff withheld until Drive Reykjavík confirms dated KEF → Vík private transfer rate card in Review Desk.",
+    pricingVerificationGate: verifyDatedSourceOrOperatorConfirmation({
+      fieldCategory: "published_price",
+      proposedValue: null,
+      reviewDeskFactId:
+        "mc-ice-drive-reykjavik-kef-vik-pickup-and-pricing-20261107",
+      pendingFallbackLabel:
+        "Pending operator confirmation / dated source in Review Desk (mc-ice-drive-reykjavik-kef-vik-pickup-and-pricing-20261107)",
+    }),
+    permitVerificationGate: verifyDatedSourceOrOperatorConfirmation({
+      fieldCategory: "permit",
+      proposedValue: null,
+      reviewDeskFactId:
+        "mc-ice-drive-reykjavik-kef-vik-pickup-and-pricing-20261107",
+      pendingFallbackLabel:
+        "Samgöngustofa / Ferðamálastofa permit number pending written operator confirmation in Review Desk",
+    }),
+    refundTermsVerificationGate: verifyDatedSourceOrOperatorConfirmation({
+      fieldCategory: "refund_terms",
+      proposedValue: null,
+      reviewDeskFactId:
+        "mc-ice-drive-reykjavik-kef-vik-pickup-and-pricing-20261107",
+      pendingFallbackLabel:
+        "Route 1 road-closure refund & reschedule terms pending written operator confirmation in Review Desk",
+    }),
+    bookingLinkVerificationGate: verifyDatedSourceOrOperatorConfirmation({
+      fieldCategory: "booking_or_whatsapp_link",
+      proposedValue: null,
+      reviewDeskFactId:
+        "mc-ice-drive-reykjavik-kef-vik-pickup-and-pricing-20261107",
+      pendingFallbackLabel:
+        "Direct KEF → Vík checkout/quote link pending operator confirmation in Review Desk",
+    }),
+    vehicleClasses: [
+      {
+        classId: "drive-rvk-luxury-suv",
+        name: "Private AWD Executive SUV (1–4 Pax)",
+        maxPassengers: 4,
+        maxCheckedBags: 4,
+        maxCarryOnBags: 4,
+        winterStuddedTiresIncluded: true,
+      },
+      {
+        classId: "drive-rvk-mercedes-v-class",
+        name: "Private Mercedes V-Class AWD Van (1–6 Pax)",
+        maxPassengers: 6,
+        maxCheckedBags: 6,
+        maxCarryOnBags: 6,
+        winterStuddedTiresIncluded: true,
+      },
+      {
+        classId: "drive-rvk-minibus-16",
+        name: "Private Touring Minibus (7–16 Pax)",
+        maxPassengers: 16,
+        maxCheckedBags: 16,
+        maxCarryOnBags: 16,
+        winterStuddedTiresIncluded: true,
+      },
+    ],
+    faqPickupPolicyReconciliation: {
+      publishedFaqRuleSummary:
+        "Drive Reykjavík's published FAQ states that Reykjavík capital-area hotel and designated tour-bus-stop pickups begin 30 minutes prior to scheduled departure (`https://drivereykjavik.is/faq/`, checked 2026-11-07) and travelers should be ready at the pickup point when the 30-minute window opens.",
+      faqSourceUrl: "https://drivereykjavik.is/faq/",
+      faqVerifiedOnDate: "2026-11-07",
+      privateKefArrivalPolicyStatus: "pending_operator_confirmation",
+      reconciledSummary:
+        "Reconciled with Drive Reykjavík FAQ: published FAQ covers the 30-minute Reykjavík hotel/bus-stop pickup window before tour departure, whereas private KEF International Airport arrival monitoring and post-landing wait windows for KEF → Vík transfers are not published as a self-serve FAQ rule and require written operator confirmation (queued in Review Desk `mc-ice-drive-reykjavik-kef-vik-pickup-and-pricing-20261107`).",
+    },
+    delayedFlightPickupPolicy:
+      "Reconciled with Drive Reykjavík FAQ (`https://drivereykjavik.is/faq/`, checked 2026-11-07): Reykjavík hotel and designated tour-bus-stop pickups begin 30 minutes before departure. Private KEF International Airport arrival monitoring and post-landing wait windows for KEF → Vík transfers are not published in the public FAQ and require written operator confirmation (queued in Review Desk).",
+    roadClosureAndRefundTerms:
+      "Pending operator confirmation in Review Desk: Route 1 road closure (Vegagerðin Lokað) or IMO Red/Orange wind warning refund/re-dispatch terms require written operator confirmation before publishing as a guaranteed policy.",
+    confirmedBookingOrQuoteUrl: null,
+    officialWebsiteUrl: "https://drivereykjavik.is/",
+    acceptedHandoffFields: [
+      "origin",
+      "destination",
+      "date",
+      "flight",
+      "eta",
+      "passengers",
+      "luggage",
+      "vehicle_class",
+      "dcc_handoff_id",
+    ],
+    bookingAndRefundReportingMethod:
+      "Pending partner sign-off (operator booking reference + monthly confirmed/refunded ledger export).",
+    verificationStatus: "verified_operator_pending_commercial_signoff",
     pricingCurrency: "ISK",
     publishedPriceScheduleIsk: [
       {
-        vehicleClass: "Mercedes-Benz V-Class AWD (1–6 pax)",
-        maxPassengers: 6,
-        maxStandardSuitcases: 6,
-        maxCarryOnBags: 6,
-        oneWayKefToVikIsk: 118000,
-        pricingModel: "fixed_per_vehicle_isk",
-        notes: "Direct KEF terminal pickup to Vík í Mýrdal via Route 41 and Route 1.",
-      },
-      {
-        vehicleClass: "Mercedes-Benz Sprinter Touring Minibus (7–15 pax)",
-        maxPassengers: 15,
-        maxStandardSuitcases: 15,
-        maxCarryOnBags: 15,
-        oneWayKefToVikIsk: 165000,
-        pricingModel: "verified_quote_per_vehicle_isk",
-        notes: "High-clearance winter-equipped minibus for larger groups or heavy luggage loads.",
+        vehicleClass: "Private AWD Executive SUV (1–4 Pax)",
+        verificationStatus: "pending_operator_confirmation_in_review_desk",
+        note: "ISK tariff queued in Review Desk (`mc-ice-drive-reykjavik-kef-vik-pickup-and-pricing-20261107`)",
       },
     ],
-    delayedFlightPickupPolicy: {
-      monitorsKefFlightNumber: true,
-      includedWaitMinutesAfterLanding: 75,
-      extendedDelayPolicy:
-        "Automatic flight monitoring via KEF flight number; 75 minutes included after actual wheels-down. Severe flight delays that push transit into an active IMO Red/Orange wind warning or Vegagerðin road closure are held for operator dispatch confirmation.",
-    },
-    roadClosureAndRefundTerms: {
-      vegagerdinClosureTrigger:
-        "Official Vegagerðin closure (Lokað) on Route 1 Hellisheiði/Þrengsli or Hvolsvöllur–Vík (Under Eyjafjöll).",
-      rescheduleOrHoldOption:
-        "Operator offers staged departure once road reopens or alternate routing via Route 39 Þrengsli when confirmed passable.",
-      refundPolicyOnImpassableRoad:
-        "Full refund in ISK for unoperated KEF → Vík legs canceled due to official Vegagerðin road closures or IMO civil protection travel bans.",
-    },
-    directCheckoutStatus: "qualification_complete_pending_10pct_partner_agreement",
-    acceptedHandoffFields: ["date", "party_size", "flight", "destination", "luggage"],
-    quoteOrContactUrl: "https://destinationcommandcenter.com/routes/keflavik-to-vik?operator=drive-reykjavik",
+    directCheckoutStatus:
+      "qualification_complete_pending_10pct_partner_agreement",
   },
 ];
 
 /**
- * Vegagerðin DATEX II Segment Mapping for KEF → Vík
- * Keeps:
- * 1) roadClosureStatus (strictly separate: open vs closed/impassable)
- * 2) roadSurfaceCondition (strictly separate: dry, wet, spots_of_ice, slippery, snow, etc.)
- * 3) imoWeatherWarning (strictly separate: Icelandic Met Office warning level & hazard)
+ * Private B2B Outreach Draft — strictly private (`visibility: "private_outreach_only"`).
+ * Never render the 10% referral proposal on public guide pages or public CTAs.
  */
-export interface VegagerdinDatexSegmentSample {
-  segmentId: string;
-  routeNumber: "Route 41" | "Route 1" | "Route 39 (Alternate)";
-  segmentName: string;
-  direction: "Eastbound (KEF → Vík)" | "Bidirectional Mountain Pass";
-  kilometerMarkers: string;
-  timestampUtc: string;
-  sourceUrl: string;
-  /** Layer 1: Road Closure Status (blocks departure when closed or impassable) */
-  roadClosureStatus: "open" | "closed_lokad" | "impassable_ofaert";
-  /** Layer 2: Road Surface Report (separate from closure and weather alert) */
-  roadSurfaceCondition:
-    | "greidfaert_easily_passable"
-    | "hlid_spots_of_ice"
-    | "halt_slippery"
-    | "snjor_snow_covered"
-    | "ungreidfaert_difficult";
-  roadSurfaceSummaryEn: string;
-  observedWindSpeedMs: number;
-  observedGustMs: number;
-  /** Layer 3: Icelandic Met Office (Veðurstofa Íslands) Warning (strictly separate) */
-  imoWeatherWarning: {
-    forecastRegion: "Faxaflói / Capital Region" | "South Iceland (Suðurland)";
-    alertLevel: "none" | "yellow" | "orange" | "red";
-    headline: string;
-    sourceUrl: string;
-  };
-}
-
-export const KEF_TO_VIK_DATE_ROAD_SAMPLES: Record<
-  "open_winter_spots_of_ice" | "closed_eyjafjoll_wind_siege",
-  {
-    sampleId: string;
-    description: string;
-    datexFeedUrl: string;
-    imoConditionsUrl: string;
-    fetchedAtUtc: string;
-    alternateRoute39ThrengsliConfirmedOpen: boolean;
-    segments: VegagerdinDatexSegmentSample[];
-  }
-> = {
-  open_winter_spots_of_ice: {
-    sampleId: "vegagerdin-datexii-kef-vik-open-sample",
-    description:
-      "All 4 KEF → Vík segments open. Spots of ice on Hellisheiði and Under Eyjafjöll with an IMO Yellow wind advisory in South Iceland — road surface and IMO warning are reported separately and do not trigger a road-closure block.",
-    datexFeedUrl: "https://www.vegagerdin.is/vegagerdin/gagnasafn/vefthjonustur/datexii-2",
-    imoConditionsUrl: "https://en.vedur.is/about-imo/the-web/conditions/",
-    fetchedAtUtc: "2026-11-18T07:15:00Z",
-    alternateRoute39ThrengsliConfirmedOpen: true,
-    segments: [
-      {
-        segmentId: "IS-VG-R41-KEF-HAF",
-        routeNumber: "Route 41",
-        segmentName: "Reykjanesbraut (KEF Airport → Hafnarfjörður / Capital Junction)",
-        direction: "Eastbound (KEF → Vík)",
-        kilometerMarkers: "km 0–42",
-        timestampUtc: "2026-11-18T07:12:00Z",
-        sourceUrl: "https://www.vegagerdin.is/vegagerdin/gagnasafn/vefthjonustur/datexii-2",
-        roadClosureStatus: "open",
-        roadSurfaceCondition: "greidfaert_easily_passable",
-        roadSurfaceSummaryEn: "Greiðfært (Easily passable / wet asphalt)",
-        observedWindSpeedMs: 9,
-        observedGustMs: 14,
-        imoWeatherWarning: {
-          forecastRegion: "Faxaflói / Capital Region",
-          alertLevel: "none",
-          headline: "No active IMO warning for Faxaflói.",
-          sourceUrl: "https://en.vedur.is/about-imo/the-web/conditions/",
-        },
-      },
-      {
-        segmentId: "IS-VG-R1-HELLISHEIDI",
-        routeNumber: "Route 1",
-        segmentName: "Ring Road over Hellisheiði & Sandskeið Mountain Pass",
-        direction: "Bidirectional Mountain Pass",
-        kilometerMarkers: "km 43–78",
-        timestampUtc: "2026-11-18T07:14:00Z",
-        sourceUrl: "https://www.vegagerdin.is/vegagerdin/gagnasafn/vefthjonustur/datexii-2",
-        roadClosureStatus: "open",
-        roadSurfaceCondition: "hlid_spots_of_ice",
-        roadSurfaceSummaryEn: "Hálkublettir (Spots of ice; winter tires required)",
-        observedWindSpeedMs: 13,
-        observedGustMs: 19,
-        imoWeatherWarning: {
-          forecastRegion: "South Iceland (Suðurland)",
-          alertLevel: "none",
-          headline: "Brisk mountain breeze on Hellisheiði; no alert threshold exceeded.",
-          sourceUrl: "https://en.vedur.is/about-imo/the-web/conditions/",
-        },
-      },
-      {
-        segmentId: "IS-VG-R1-SELFOSS-HVOLSVOLLUR",
-        routeNumber: "Route 1",
-        segmentName: "Ring Road South Lowlands (Selfoss → Hella → Hvolsvöllur)",
-        direction: "Eastbound (KEF → Vík)",
-        kilometerMarkers: "km 79–148",
-        timestampUtc: "2026-11-18T07:13:00Z",
-        sourceUrl: "https://www.vegagerdin.is/vegagerdin/gagnasafn/vefthjonustur/datexii-2",
-        roadClosureStatus: "open",
-        roadSurfaceCondition: "greidfaert_easily_passable",
-        roadSurfaceSummaryEn: "Greiðfært (Clear / easily passable)",
-        observedWindSpeedMs: 10,
-        observedGustMs: 15,
-        imoWeatherWarning: {
-          forecastRegion: "South Iceland (Suðurland)",
-          alertLevel: "none",
-          headline: "Normal driving conditions across South Lowlands.",
-          sourceUrl: "https://en.vedur.is/about-imo/the-web/conditions/",
-        },
-      },
-      {
-        segmentId: "IS-VG-R1-EYJAFJOLL-VIK",
-        routeNumber: "Route 1",
-        segmentName: "Ring Road Under Eyjafjöll & Reynisfjall (Hvolsvöllur → Skógar → Vík)",
-        direction: "Eastbound (KEF → Vík)",
-        kilometerMarkers: "km 149–225",
-        timestampUtc: "2026-11-18T07:15:00Z",
-        sourceUrl: "https://www.vegagerdin.is/vegagerdin/gagnasafn/vefthjonustur/datexii-2",
-        roadClosureStatus: "open",
-        roadSurfaceCondition: "hlid_spots_of_ice",
-        roadSurfaceSummaryEn: "Hálkublettir (Spots of ice near Reynisfjall)",
-        observedWindSpeedMs: 16,
-        observedGustMs: 24,
-        imoWeatherWarning: {
-          forecastRegion: "South Iceland (Suðurland)",
-          alertLevel: "yellow",
-          headline: "IMO Yellow Wind Advisory: Crosswinds 15–22 m/s with gusts to 28 m/s under Eyjafjöll.",
-          sourceUrl: "https://en.vedur.is/about-imo/the-web/conditions/",
-        },
-      },
-    ],
-  },
-  closed_eyjafjoll_wind_siege: {
-    sampleId: "vegagerdin-datexii-kef-vik-closed-sample",
-    description:
-      "Vegagerðin DATEX II reports Route 1 Under Eyjafjöll (Hvolsvöllur → Vík) CLOSED (Lokað) with 38 m/s gusts and an IMO Orange Gale Warning. Closure blocks the affected KEF → Vík departure until operator confirms a later departure.",
-    datexFeedUrl: "https://www.vegagerdin.is/vegagerdin/gagnasafn/vefthjonustur/datexii-2",
-    imoConditionsUrl: "https://en.vedur.is/about-imo/the-web/conditions/",
-    fetchedAtUtc: "2026-11-18T16:40:00Z",
-    alternateRoute39ThrengsliConfirmedOpen: false,
-    segments: [
-      {
-        segmentId: "IS-VG-R41-KEF-HAF",
-        routeNumber: "Route 41",
-        segmentName: "Reykjanesbraut (KEF Airport → Hafnarfjörður / Capital Junction)",
-        direction: "Eastbound (KEF → Vík)",
-        kilometerMarkers: "km 0–42",
-        timestampUtc: "2026-11-18T16:38:00Z",
-        sourceUrl: "https://www.vegagerdin.is/vegagerdin/gagnasafn/vefthjonustur/datexii-2",
-        roadClosureStatus: "open",
-        roadSurfaceCondition: "hlid_spots_of_ice",
-        roadSurfaceSummaryEn: "Hálkublettir (Spots of ice)",
-        observedWindSpeedMs: 15,
-        observedGustMs: 22,
-        imoWeatherWarning: {
-          forecastRegion: "Faxaflói / Capital Region",
-          alertLevel: "yellow",
-          headline: "IMO Yellow Wind Warning for Faxaflói.",
-          sourceUrl: "https://en.vedur.is/about-imo/the-web/conditions/",
-        },
-      },
-      {
-        segmentId: "IS-VG-R1-HELLISHEIDI",
-        routeNumber: "Route 1",
-        segmentName: "Ring Road over Hellisheiði & Sandskeið Mountain Pass",
-        direction: "Bidirectional Mountain Pass",
-        kilometerMarkers: "km 43–78",
-        timestampUtc: "2026-11-18T16:39:00Z",
-        sourceUrl: "https://www.vegagerdin.is/vegagerdin/gagnasafn/vefthjonustur/datexii-2",
-        roadClosureStatus: "open",
-        roadSurfaceCondition: "snjor_snow_covered",
-        roadSurfaceSummaryEn: "Snjór / Skafrenningur (Snow & blowing snow)",
-        observedWindSpeedMs: 21,
-        observedGustMs: 31,
-        imoWeatherWarning: {
-          forecastRegion: "South Iceland (Suðurland)",
-          alertLevel: "orange",
-          headline: "IMO Orange Blizzard/Wind Warning across South Iceland mountain passes.",
-          sourceUrl: "https://en.vedur.is/about-imo/the-web/conditions/",
-        },
-      },
-      {
-        segmentId: "IS-VG-R1-SELFOSS-HVOLSVOLLUR",
-        routeNumber: "Route 1",
-        segmentName: "Ring Road South Lowlands (Selfoss → Hella → Hvolsvöllur)",
-        direction: "Eastbound (KEF → Vík)",
-        kilometerMarkers: "km 79–148",
-        timestampUtc: "2026-11-18T16:39:00Z",
-        sourceUrl: "https://www.vegagerdin.is/vegagerdin/gagnasafn/vefthjonustur/datexii-2",
-        roadClosureStatus: "open",
-        roadSurfaceCondition: "halt_slippery",
-        roadSurfaceSummaryEn: "Hált (Slippery ice sheet)",
-        observedWindSpeedMs: 18,
-        observedGustMs: 27,
-        imoWeatherWarning: {
-          forecastRegion: "South Iceland (Suðurland)",
-          alertLevel: "orange",
-          headline: "IMO Orange Gale Warning for South Iceland.",
-          sourceUrl: "https://en.vedur.is/about-imo/the-web/conditions/",
-        },
-      },
-      {
-        segmentId: "IS-VG-R1-EYJAFJOLL-VIK",
-        routeNumber: "Route 1",
-        segmentName: "Ring Road Under Eyjafjöll & Reynisfjall (Hvolsvöllur → Skógar → Vík)",
-        direction: "Eastbound (KEF → Vík)",
-        kilometerMarkers: "km 149–225",
-        timestampUtc: "2026-11-18T16:40:00Z",
-        sourceUrl: "https://www.vegagerdin.is/vegagerdin/gagnasafn/vefthjonustur/datexii-2",
-        roadClosureStatus: "closed_lokad",
-        roadSurfaceCondition: "ungreidfaert_difficult",
-        roadSurfaceSummaryEn: "LOKAÐ (Closed by Vegagerðin due to severe 38 m/s gusts under Eyjafjöll)",
-        observedWindSpeedMs: 26,
-        observedGustMs: 38,
-        imoWeatherWarning: {
-          forecastRegion: "South Iceland (Suðurland)",
-          alertLevel: "orange",
-          headline: "IMO Orange Wind Warning: Severe gale >25 m/s with violent gusts >35 m/s under Eyjafjöll.",
-          sourceUrl: "https://en.vedur.is/about-imo/the-web/conditions/",
-        },
-      },
-    ],
-  },
-};
-
-export interface IcelandPartnerOutreachDraft {
+export interface IcelandPartnerOutreachEmailDraft {
+  visibility: "private_outreach_only";
   subject: string;
-  recipients: string[];
+  proposedCommissionRatePercent: 10;
   proposedCommissionRatePct: 10;
-  corridorScope: "Keflavík Airport (KEF) → Vík (Route 41 & Route 1 South Coast)";
+  commissionTrigger: "Confirmed referred bookings (net of full weather/road-closure refunds)";
+  recipientOperators: string[];
   questionsRequested: string[];
+  bodyText: string;
   emailBodyText: string;
 }
 
-export const ICELAND_OPERATOR_OUTREACH_DRAFT: IcelandPartnerOutreachDraft = {
-  subject:
-    "Partnership Inquiry: KEF → Vík Verified Private Transfers (10% Confirmed Referral Agreement — Destination Command Center)",
-  recipients: ["NorthTrip ehf. Dispatch & Partnerships", "Drive Reykjavík ehf. Commercial Team"],
-  proposedCommissionRatePct: 10,
-  corridorScope: "Keflavík Airport (KEF) → Vík (Route 41 & Route 1 South Coast)",
-  questionsRequested: [
-    "Exact tracked checkout or quote URL for KEF → Vík one-way transfers",
-    "Supported URL query fields (`date`, `party_size`, `flight`, `destination`, `luggage`, `dcc_handoff_id`)",
-    "Confirmed ISK vehicle rate table, passenger/luggage caps, and delayed-flight wait policy at KEF",
-    "Road-closure hold/refund procedure when Vegagerðin closes Route 1 (Hellisheiði or Under Eyjafjöll)",
-    "Monthly reporting cadence for confirmed bookings, cancellations, and refunds",
-  ],
-  emailBodyText: `Subject: Partnership Inquiry: KEF → Vík Verified Private Transfers (10% Confirmed Referral Agreement — Destination Command Center)
+const ICELAND_OUTREACH_BODY_TEXT = `Subject: Partnership Inquiry: Keflavík Airport (KEF) → Vík Private Transfer Referrals from Destination Command Center
 
 Hi [NorthTrip / Drive Reykjavík Team],
 
-Destination Command Center (destinationcommandcenter.com) operates a real-time trip feasibility and transfer routing guide for Keflavík International Airport (KEF) → Vík along Route 41 and Route 1.
+We run Destination Command Center (https://destinationcommandcenter.com), where travelers check real-time route feasibility, Vegagerðin DATEX II road segments, and Icelandic Met Office (Veðurstofa Íslands) wind/weather warnings before booking point-to-point transport in Iceland.
 
-Before sending travelers to checkout, our planner verifies their KEF arrival flight, party size, luggage count, and live Vegagerðin DATEX II road status + Icelandic Met Office (Veðurstofa Íslands) warnings so you receive pre-qualified travelers whose trip parameters fit your vehicles.
+We are qualifying two licensed operators for our Keflavík International Airport (KEF) → Vík South Coast corridor (/routes/keflavik-to-vik) and would like to propose a 10% referral commission on confirmed referred bookings (net of weather or road-closure refunds).
 
-We would like to include your KEF → Vík transfers under a standard 10% referral commission on confirmed, completed bookings (excluding bookings refunded due to official Vegagerðin road closures).
-
-To enable direct handoffs, could you confirm:
-1. Exact checkout or quote link: What URL should we route qualified KEF → Vík travelers to?
-2. Accepted URL parameters: Which query fields does your checkout or quote form accept ('date', 'party_size', 'flight', 'destination', 'luggage', and our tracking parameter 'dcc_handoff_id')?
-3. Pricing & capacity in ISK: Please confirm your current ISK rates by vehicle class (e.g., 1–3 pax SUV, 1–6 pax Mercedes V-Class, 7–15 pax Sprinter) and maximum checked/carry-on luggage limits.
-4. Delayed KEF flights & road closures: Please confirm your included post-landing wait window at KEF and your policy when Vegagerðin marks Hellisheiði or Route 1 Under Eyjafjöll as Closed (Lokað) — including whether you offer a staged later departure or Route 39 (Þrengsli) detour when confirmed open.
-5. Booking & refund reporting: How does your dispatch/reservation system report confirmed bookings, road-closure cancellations, and refunds for monthly reconciliation?
+To list your KEF → Vík private transfers as a confirmed option and move your open items out of our Review Desk, could you confirm:
+1. Your licensed legal entity name, Kennitala, and Ferðamálastofa / Samgöngustofa permit details.
+2. Your current KEF → Vík private transfer pricing in ISK by vehicle class, along with exact passenger and luggage limits (checked bags + carry-ons).
+3. Your KEF delayed-flight pickup policy (how long the driver holds at KEF after landing, and how that differs from standard 30-minute Reykjavík hotel/bus-stop pickups) and your closure/refund policy when Vegagerðin closes Route 1 (Hellisheiði / Þrengsli / Seljalandsfoss–Vík) or when an IMO Orange/Red wind alert blocks travel.
+4. The exact checkout or quote URL we should link to, and which query fields it accepts (date, flight number, revised ETA, passenger count, luggage count, and our tracking parameter \`dcc_handoff_id\`).
+5. How you prefer to report confirmed bookings and weather refunds each month.
 
 Best regards,
-Erich Roeseler
-Destination Command Center
-https://destinationcommandcenter.com/routes/keflavik-to-vik`,
+Destination Command Center Partnerships
+https://destinationcommandcenter.com/routes/keflavik-to-vik`;
+
+export const ICELAND_OPERATOR_OUTREACH_DRAFT: IcelandPartnerOutreachEmailDraft = {
+  visibility: "private_outreach_only",
+  subject:
+    "Partnership Inquiry: Keflavík Airport (KEF) → Vík Private Transfer Referrals from Destination Command Center",
+  proposedCommissionRatePercent: 10,
+  proposedCommissionRatePct: 10,
+  commissionTrigger:
+    "Confirmed referred bookings (net of full weather/road-closure refunds)",
+  recipientOperators: [
+    "NorthTrip ehf. (northtrip.is)",
+    "Drive Reykjavík ehf. (drivereykjavik.is)",
+  ],
+  questionsRequested: [
+    "1. Licensed legal entity name, Kennitala, and Ferðamálastofa / Samgöngustofa permit number.",
+    "2. Confirmed 2026/2027 rate card in ISK for KEF → Vík direct private transfers (4x4 SUV, 6-pax van, and 12–16 pax minibus) plus maximum passenger + checked/carry-on luggage limits per vehicle.",
+    "3. Written confirmation of your delayed-flight KEF pickup policy (to reconcile alongside published Reykjavík 30-minute hotel/bus-stop pickup FAQ rules) and your closure/refund terms when Vegagerðin marks Route 1 (Hellisheiði, Þrengsli, or Under Eyjafjöllum) as Impassable (Ófært) or Closed (Lokað).",
+    "4. The exact checkout or quote link we should send travelers to, and the URL query parameters it accepts (e.g. `date`, `flight`, `eta`, `passengers`, `luggage`, `vehicle_class`, `dcc_handoff_id`).",
+    "5. How your team reports confirmed bookings, cancellations, and weather/closure refunds for a 10% referral fee on confirmed referred bookings.",
+  ],
+  bodyText: ICELAND_OUTREACH_BODY_TEXT,
+  emailBodyText: ICELAND_OUTREACH_BODY_TEXT,
 };
 
-export interface KefToVikTripInput {
-  date: string;
-  kefFlightNumber: string;
-  scheduledArrivalLocal: string;
-  revisedArrivalLocal?: string;
-  partySize: number;
-  standardSuitcases: number;
-  oversizedBags?: number;
-  roadSampleKey?: "open_winter_spots_of_ice" | "closed_eyjafjoll_wind_siege";
-  operatorConfirmedLaterDepartureTime?: string | null;
-  operatorConfirmedAlternateRoute?: string | null;
+/**
+ * Vegagerðin DATEX II Road Segment Mapping for KEF → Vík
+ * Explicitly labeled as SAMPLE wherever it appears (`isSample: true`).
+ * Keeps (1) Road Closures, (2) Road-Surface Reports, and (3) Icelandic Met Office (IMO) Warnings strictly separate.
+ */
+export interface IcelandRoadSegmentTelemetry {
+  isSample: true;
+  sampleLabel: "Sample — Illustrative Scenario, Not Live Telemetry";
+  segmentId: string;
+  routeCode: "Route 41" | "Route 1" | "Route 39";
+  segmentName: string;
+  direction: "Eastbound (KEF → Vík)" | "Bidirectional";
+  timestampUtc: string;
+  /**
+   * 1. CLOSURE STATUS (strictly separate from road surface & Met Office warnings)
+   * A closure (`closed` / `impassable`) blocks the affected departure unless the operator confirms a later departure or alternate route.
+   */
+  closureStatus: "open" | "impassable_ofaert" | "closed_lokad";
+  closureSummary: string;
+  /**
+   * 2. ROAD-SURFACE REPORT (strictly separate from closures & Met Office warnings)
+   */
+  roadSurfaceCondition:
+    | "greidfaert_clear"
+    | "halir_blettir_ice_patches"
+    | "halka_slippery"
+    | "snjotheekja_snow_pack"
+    | "flughalka_extremely_icy";
+  roadSurfaceSummary: string;
+  /**
+   * 3. ICELANDIC MET OFFICE (IMO / Veðurstofa Íslands) WARNING (strictly separate)
+   */
+  imoWarningLevel: "none" | "yellow" | "orange" | "red";
+  imoForecastRegion:
+    | "Faxaflói (KEF / Reykjanes)"
+    | "Capital Region (Reykjavík)"
+    | "South (Hellisheiði → Vík)";
+  imoWarningSummary: string;
 }
 
-export interface KefToVikTripEvaluation {
-  corridorId: "keflavik-to-vik";
-  corridorLabel: "Keflavík Airport (KEF) → Vík (Route 41 & Route 1)";
-  fitStatus: "fits_confirmed_vehicle" | "blocked_by_road_closure" | "verify_operator_and_luggage_fit";
-  hasActiveRoadClosure: boolean;
-  closedSegments: string[];
-  surfaceConditionSummary: string[];
-  imoWarningSummary: string[];
-  matchingOperators: {
-    operatorId: string;
-    brandName: string;
-    vehicleClass: string;
-    priceIsk: number;
-    fitsLuggageAndParty: boolean;
-    handoffUrl: string;
-  }[];
-  operatorConfirmedAlternativeNote: string | null;
-  recheckCard: SharedTripRecheckCardModel;
+export interface IcelandCorridorTelemetryState {
+  isSample: true;
+  sampleLabel: "Sample — Illustrative Scenario, Not Live Telemetry";
+  corridorId: "iceland-kef-to-vik";
+  checkedAtUtc: string;
+  vegagerdinAttribution: string;
+  imoAttribution: string;
+  imoTermsUrl: string;
+  segments: IcelandRoadSegmentTelemetry[];
 }
 
-export function evaluateKefToVikTrip(input: KefToVikTripInput): KefToVikTripEvaluation {
-  const sampleKey = input.roadSampleKey || "open_winter_spots_of_ice";
-  const roadSample = KEF_TO_VIK_DATE_ROAD_SAMPLES[sampleKey];
-  const closedSegments = roadSample.segments
-    .filter((s) => s.roadClosureStatus !== "open")
-    .map((s) => `${s.routeNumber} — ${s.segmentName}: ${s.roadSurfaceSummaryEn}`);
+export const ICELAND_KEF_VIK_SAMPLE_TELEMETRY: Record<
+  "normal_winter_patches" | "hellisheidi_closed_rengsli_diversion" | "eyjafjoll_full_closure",
+  IcelandCorridorTelemetryState
+> = {
+  normal_winter_patches: {
+    isSample: true,
+    sampleLabel: "Sample — Illustrative Scenario, Not Live Telemetry",
+    corridorId: "iceland-kef-to-vik",
+    checkedAtUtc: "2026-11-18T08:15:00Z",
+    vegagerdinAttribution:
+      "Road condition & closure schema modeled on Vegagerðin (The Icelandic Road and Coastal Administration, umferdin.is DATEX II v3 — Sample scenario)",
+    imoAttribution:
+      "Weather warning schema modeled on Veðurstofa Íslands (Icelandic Meteorological Office, en.vedur.is) — Sample scenario",
+    imoTermsUrl: "https://en.vedur.is/about-imo/terms-of-use/",
+    segments: [
+      {
+        isSample: true,
+        sampleLabel: "Sample — Illustrative Scenario, Not Live Telemetry",
+        segmentId: "VG-R41-KEF-HAF",
+        routeCode: "Route 41",
+        segmentName: "Reykjanesbraut (KEF Airport → Hafnarfjörður)",
+        direction: "Eastbound (KEF → Vík)",
+        timestampUtc: "2026-11-18T08:10:00Z",
+        closureStatus: "open",
+        closureSummary: "Sample: Open (Road clear for KEF airport departures)",
+        roadSurfaceCondition: "greidfaert_clear",
+        roadSurfaceSummary: "Sample: Greiðfært (Clear / wet asphalt, 14 m/s crosswind)",
+        imoWarningLevel: "none",
+        imoForecastRegion: "Faxaflói (KEF / Reykjanes)",
+        imoWarningSummary: "Sample: No active IMO warning in Faxaflói",
+      },
+      {
+        isSample: true,
+        sampleLabel: "Sample — Illustrative Scenario, Not Live Telemetry",
+        segmentId: "VG-R01-HEI-HVE",
+        routeCode: "Route 1",
+        segmentName: "Hellisheiði Mountain Pass (Ring Road 1 → Hveragerði)",
+        direction: "Eastbound (KEF → Vík)",
+        timestampUtc: "2026-11-18T08:12:00Z",
+        closureStatus: "open",
+        closureSummary: "Sample: Open (Pass open in both directions)",
+        roadSurfaceCondition: "halir_blettir_ice_patches",
+        roadSurfaceSummary:
+          "Sample: Hálkublettir (Spots of ice across upper plateau; studded winter tires required)",
+        imoWarningLevel: "yellow",
+        imoForecastRegion: "South (Hellisheiði → Vík)",
+        imoWarningSummary:
+          "Sample: IMO Yellow Wind Advisory (South): gusts 20–23 m/s on mountain passes; high-profile vehicles use caution",
+      },
+      {
+        isSample: true,
+        sampleLabel: "Sample — Illustrative Scenario, Not Live Telemetry",
+        segmentId: "VG-R01-SEL-HVO",
+        routeCode: "Route 1",
+        segmentName: "South Lowlands (Selfoss → Hella → Hvolsvöllur)",
+        direction: "Eastbound (KEF → Vík)",
+        timestampUtc: "2026-11-18T08:13:00Z",
+        closureStatus: "open",
+        closureSummary: "Sample: Open",
+        roadSurfaceCondition: "greidfaert_clear",
+        roadSurfaceSummary: "Sample: Greiðfært (Clear lowland roadway)",
+        imoWarningLevel: "none",
+        imoForecastRegion: "South (Hellisheiði → Vík)",
+        imoWarningSummary: "Sample: Normal lowland conditions",
+      },
+      {
+        isSample: true,
+        sampleLabel: "Sample — Illustrative Scenario, Not Live Telemetry",
+        segmentId: "VG-R01-SEL-VIK",
+        routeCode: "Route 1",
+        segmentName: "Under Eyjafjöllum & Reynisfjall (Seljalandsfoss → Skógar → Vík)",
+        direction: "Eastbound (KEF → Vík)",
+        timestampUtc: "2026-11-18T08:14:00Z",
+        closureStatus: "open",
+        closureSummary: "Sample: Open",
+        roadSurfaceCondition: "halir_blettir_ice_patches",
+        roadSurfaceSummary:
+          "Sample: Hálkublettir (Localized ice patches near Mýrdalssandur approach)",
+        imoWarningLevel: "yellow",
+        imoForecastRegion: "South (Hellisheiði → Vík)",
+        imoWarningSummary:
+          "Sample: IMO Yellow Wind Advisory (South): localized katabatic gusts 22 m/s under Eyjafjöll",
+      },
+    ],
+  },
+  hellisheidi_closed_rengsli_diversion: {
+    isSample: true,
+    sampleLabel: "Sample — Illustrative Scenario, Not Live Telemetry",
+    corridorId: "iceland-kef-to-vik",
+    checkedAtUtc: "2026-11-18T09:30:00Z",
+    vegagerdinAttribution:
+      "Road condition & closure schema modeled on Vegagerðin (The Icelandic Road and Coastal Administration, umferdin.is DATEX II v3 — Sample scenario)",
+    imoAttribution:
+      "Weather warning schema modeled on Veðurstofa Íslands (Icelandic Meteorological Office, en.vedur.is) — Sample scenario",
+    imoTermsUrl: "https://en.vedur.is/about-imo/terms-of-use/",
+    segments: [
+      {
+        isSample: true,
+        sampleLabel: "Sample — Illustrative Scenario, Not Live Telemetry",
+        segmentId: "VG-R41-KEF-HAF",
+        routeCode: "Route 41",
+        segmentName: "Reykjanesbraut (KEF Airport → Hafnarfjörður)",
+        direction: "Eastbound (KEF → Vík)",
+        timestampUtc: "2026-11-18T09:25:00Z",
+        closureStatus: "open",
+        closureSummary: "Sample: Open",
+        roadSurfaceCondition: "halir_blettir_ice_patches",
+        roadSurfaceSummary: "Sample: Hálkublettir (Ice patches)",
+        imoWarningLevel: "yellow",
+        imoForecastRegion: "Faxaflói (KEF / Reykjanes)",
+        imoWarningSummary: "Sample: IMO Yellow Wind Advisory (Faxaflói)",
+      },
+      {
+        isSample: true,
+        sampleLabel: "Sample — Illustrative Scenario, Not Live Telemetry",
+        segmentId: "VG-R01-HEI-HVE",
+        routeCode: "Route 1",
+        segmentName: "Hellisheiði Mountain Pass (Ring Road 1 → Hveragerði)",
+        direction: "Eastbound (KEF → Vík)",
+        timestampUtc: "2026-11-18T09:28:00Z",
+        closureStatus: "closed_lokad",
+        closureSummary:
+          "Sample: LOKAÐ (Closed by Vegagerðin barrier due to whiteout; Route 39 Þrengsli alternate route open +15 min when confirmed by operator)",
+        roadSurfaceCondition: "snjotheekja_snow_pack",
+        roadSurfaceSummary: "Sample: Þæfingsfærð / Heavy blowing snow on Hellisheiði",
+        imoWarningLevel: "orange",
+        imoForecastRegion: "South (Hellisheiði → Vík)",
+        imoWarningSummary:
+          "Sample: IMO Orange Blizzard Warning (Hellisheiði): sustained 25 m/s with near-zero visibility on upper pass",
+      },
+      {
+        isSample: true,
+        sampleLabel: "Sample — Illustrative Scenario, Not Live Telemetry",
+        segmentId: "VG-R01-SEL-VIK",
+        routeCode: "Route 1",
+        segmentName: "Under Eyjafjöllum & Reynisfjall (Seljalandsfoss → Skógar → Vík)",
+        direction: "Eastbound (KEF → Vík)",
+        timestampUtc: "2026-11-18T09:29:00Z",
+        closureStatus: "open",
+        closureSummary: "Sample: Open via Route 39 Þrengsli → Þorlákshöfn → Selfoss",
+        roadSurfaceCondition: "halka_slippery",
+        roadSurfaceSummary: "Sample: Hálka (Slippery winter surface; 4x4 studded tires required)",
+        imoWarningLevel: "yellow",
+        imoForecastRegion: "South (Hellisheiði → Vík)",
+        imoWarningSummary: "Sample: IMO Yellow Wind Advisory (South Coast)",
+      },
+    ],
+  },
+  eyjafjoll_full_closure: {
+    isSample: true,
+    sampleLabel: "Sample — Illustrative Scenario, Not Live Telemetry",
+    corridorId: "iceland-kef-to-vik",
+    checkedAtUtc: "2026-11-18T10:45:00Z",
+    vegagerdinAttribution:
+      "Road condition & closure schema modeled on Vegagerðin (The Icelandic Road and Coastal Administration, umferdin.is DATEX II v3 — Sample scenario)",
+    imoAttribution:
+      "Weather warning schema modeled on Veðurstofa Íslands (Icelandic Meteorological Office, en.vedur.is) — Sample scenario",
+    imoTermsUrl: "https://en.vedur.is/about-imo/terms-of-use/",
+    segments: [
+      {
+        isSample: true,
+        sampleLabel: "Sample — Illustrative Scenario, Not Live Telemetry",
+        segmentId: "VG-R01-SEL-VIK",
+        routeCode: "Route 1",
+        segmentName: "Under Eyjafjöllum (Markarfljót → Skógar → Vík)",
+        direction: "Bidirectional",
+        timestampUtc: "2026-11-18T10:42:00Z",
+        closureStatus: "closed_lokad",
+        closureSummary:
+          "Sample: LOKAÐ (Route 1 closed between Hvolsvöllur/Markarfljót and Vík — no highway bypass exists east of Markarfljót)",
+        roadSurfaceCondition: "flughalka_extremely_icy",
+        roadSurfaceSummary: "Sample: Flugrhálka (Sheet ice + violent crosswinds)",
+        imoWarningLevel: "red",
+        imoForecastRegion: "South (Hellisheiði → Vík)",
+        imoWarningSummary:
+          "Sample: IMO Red / Orange Hurricane-Force Gust Warning under Eyjafjöll (gusts > 38 m/s); Civil Protection travel ban active",
+      },
+    ],
+  },
+};
 
-  const hasActiveRoadClosure = closedSegments.length > 0;
-  const surfaceConditionSummary = roadSample.segments.map(
-    (s) => `${s.routeNumber} (${s.segmentName}): ${s.roadSurfaceSummaryEn}`
+export interface IcelandCorridorRecheckResult {
+  corridorId: "iceland-kef-to-vik";
+  isSampleTelemetry: true;
+  sampleLabel: "Sample — Illustrative Scenario, Not Live Telemetry";
+  scenarioKey: string;
+  departureBlockedByClosure: boolean;
+  operatorConfirmedAlternateRoute: string | null;
+  operatorConfirmedLaterDepartureLocal: string | null;
+  recommendedVehicleClass: string;
+  recheckCard: CompactTripRecheckCardModel;
+  telemetry: IcelandCorridorTelemetryState;
+}
+
+export function evaluateIcelandKefVikCorheck(params?: {
+  scenario?:
+    | "normal_winter_patches"
+    | "hellisheidi_closed_rengsli_diversion"
+    | "eyjafjoll_full_closure";
+  partySize?: number;
+  checkedBags?: number;
+  flightEtaLocal?: string;
+  operatorConfirmedRengsliAlternate?: boolean;
+  operatorConfirmedLaterDepartureLocal?: string | null;
+}): IcelandCorridorRecheckResult {
+  const scenario = params?.scenario || "normal_winter_patches";
+  const partySize = Math.max(1, Math.round(params?.partySize || 4));
+  const checkedBags = Math.max(0, Math.round(params?.checkedBags ?? 4));
+  const flightEtaLocal = params?.flightEtaLocal || "06:45";
+  const operatorConfirmedRengsliAlternate =
+    params?.operatorConfirmedRengsliAlternate ?? true;
+  const operatorConfirmedLaterDepartureLocal =
+    params?.operatorConfirmedLaterDepartureLocal ?? null;
+
+  const telemetry = ICELAND_KEF_VIK_SAMPLE_TELEMETRY[scenario];
+  const hasClosedSegment = telemetry.segments.some(
+    (s) =>
+      s.closureStatus === "closed_lokad" ||
+      s.closureStatus === "impassable_ofaert",
   );
-  const imoWarningSummary = roadSample.segments.map(
-    (s) => `${s.imoWeatherWarning.forecastRegion} [${s.imoWeatherWarning.alertLevel.toUpperCase()}]: ${s.imoWeatherWarning.headline}`
+
+  const isEyjafjollClosed = telemetry.segments.some(
+    (s) =>
+      s.segmentId === "VG-R01-SEL-VIK" &&
+      (s.closureStatus === "closed_lokad" ||
+        s.closureStatus === "impassable_ofaert"),
+  );
+  const isHellisheidiClosed = telemetry.segments.some(
+    (s) =>
+      s.segmentId === "VG-R01-HEI-HVE" &&
+      (s.closureStatus === "closed_lokad" ||
+        s.closureStatus === "impassable_ofaert"),
   );
 
-  const totalBagEquivalent = input.standardSuitcases + (input.oversizedBags || 0) * 2;
-  const matchingOperators: KefToVikTripEvaluation["matchingOperators"] = [];
+  const recommendedVehicleClass =
+    partySize > 6 || checkedBags > 6
+      ? "Private 4x4 Minibus (up to 12–16 Pax)"
+      : partySize > 4 || checkedBags > 4
+        ? "Private AWD Mercedes V-Class (up to 6 Pax, 6 bags)"
+        : "Private 4x4 Winter SUV (up to 4 Pax, 4 checked bags)";
 
-  for (const op of ICELAND_KEF_VIK_OPERATOR_PROFILES) {
-    for (const tier of op.publishedPriceScheduleIsk) {
-      if (input.partySize <= tier.maxPassengers && totalBagEquivalent <= tier.maxStandardSuitcases) {
-        const params = new URLSearchParams({
-          operator: op.operatorId,
-          date: input.date,
-          party_size: String(input.partySize),
-          flight: input.kefFlightNumber,
-          destination: "Vik i Myrdal",
-          luggage: `${input.standardSuitcases}_std_${input.oversizedBags || 0}_oversized`,
-        });
-        matchingOperators.push({
-          operatorId: op.operatorId,
-          brandName: op.brandName,
-          vehicleClass: tier.vehicleClass,
-          priceIsk: tier.oneWayKefToVikIsk,
-          fitsLuggageAndParty: true,
-          handoffUrl: `/routes/keflavik-to-vik?${params.toString()}`,
-        });
-        break;
-      }
-    }
-  }
+  let departureBlockedByClosure = false;
+  let operatorConfirmedAlternateRoute: string | null = null;
 
-  let operatorConfirmedAlternativeNote: string | null = null;
-  if (hasActiveRoadClosure) {
-    if (input.operatorConfirmedLaterDepartureTime || input.operatorConfirmedAlternateRoute) {
-      operatorConfirmedAlternativeNote = `Operator confirmed alternative: ${
-        input.operatorConfirmedLaterDepartureTime
-          ? `staged later departure at ${input.operatorConfirmedLaterDepartureTime}`
-          : ""
-      }${
-        input.operatorConfirmedAlternateRoute
-          ? ` via ${input.operatorConfirmedAlternateRoute}`
-          : ""
-      }.`;
+  if (isEyjafjollClosed) {
+    departureBlockedByClosure = !operatorConfirmedLaterDepartureLocal;
+  } else if (isHellisheidiClosed) {
+    if (operatorConfirmedRengsliAlternate) {
+      departureBlockedByClosure = false;
+      operatorConfirmedAlternateRoute =
+        "Route 39 (Þrengslavegur) → Route 38 → Selfoss (+15–20 min, operator-confirmed bypass)";
     } else {
-      operatorConfirmedAlternativeNote =
-        "Departure blocked until Vegagerðin reopens the closed Route 1 segment or the operator confirms a later departure / passable alternate route.";
+      departureBlockedByClosure = true;
     }
+  } else if (hasClosedSegment) {
+    departureBlockedByClosure = true;
   }
 
-  const fitStatus: KefToVikTripEvaluation["fitStatus"] = hasActiveRoadClosure
-    ? "blocked_by_road_closure"
-    : matchingOperators.length > 0 && !(input.oversizedBags && input.oversizedBags > 1)
-    ? "fits_confirmed_vehicle"
-    : "verify_operator_and_luggage_fit";
+  const whatChanged = isEyjafjollClosed
+    ? `[Sample Scenario] Vegagerðin DATEX II segment VG-R01-SEL-VIK (Route 1 Under Eyjafjöllum → Vík) is CLOSED (LOKAÐ) at ${telemetry.checkedAtUtc}; IMO Red/Orange wind warning (>38 m/s gusts) active.`
+    : isHellisheidiClosed
+      ? `[Sample Scenario] Vegagerðin DATEX II segment VG-R01-HEI-HVE (Route 1 Hellisheiði Pass) is CLOSED (LOKAÐ) at ${telemetry.checkedAtUtc}; IMO Orange blizzard warning active on upper pass.`
+      : `[Sample Scenario] KEF arrival ${flightEtaLocal} GMT (${partySize} pax, ${checkedBags} bags): Route 41 & Route 1 (KEF → Hellisheiði → Vík) are OPEN in sample Vegagerðin scenario (${telemetry.checkedAtUtc}) with localized ice patches (Hálkublettir) and IMO Yellow wind advisory.`;
 
-  const arrivalTimeUsed = input.revisedArrivalLocal || input.scheduledArrivalLocal;
+  const whatStillFits = isEyjafjollClosed
+    ? operatorConfirmedLaterDepartureLocal
+      ? `[Sample Scenario] Immediate KEF → Vík departure is blocked by the Route 1 Eyjafjöll closure; operator-confirmed later departure at ${operatorConfirmedLaterDepartureLocal} GMT is available once Vegagerðin reopens the barrier.`
+      : `[Sample Scenario] Affected KEF → Vík departure is BLOCKED (no road bypass exists east of Markarfljót). Do not self-drive; stage in Reykjavík/Selfoss until Vegagerðin reopens Route 1.`
+    : isHellisheidiClosed && operatorConfirmedAlternateRoute
+      ? `[Sample Scenario] Direct Hellisheiði pass is blocked, but ${recommendedVehicleClass} fits via operator-confirmed alternate route: ${operatorConfirmedAlternateRoute}.`
+      : `[Sample Scenario] ${recommendedVehicleClass} fits your group of ${partySize} (${checkedBags} bags) for the ~2h 45m (225 km) KEF → Vík transfer (ISK pricing & KEF wait policy pending operator confirmation in Review Desk).`;
 
-  const nextStepLabel =
-    fitStatus === "fits_confirmed_vehicle"
-      ? `Request Verified Quote (${matchingOperators[0].priceIsk.toLocaleString()} ISK · Pending 10% Partner Link)`
-      : "Hold Departure & Check Vegagerðin / Operator Dispatch";
-  const nextStepHref =
-    matchingOperators[0]?.handoffUrl ||
-    `/routes/keflavik-to-vik?date=${encodeURIComponent(input.date)}&party_size=${input.partySize}`;
+  const primaryLabel = departureBlockedByClosure
+    ? "Stage in Reykjavík & Check Review Desk Qualification Status →"
+    : `Review KEF → Vík Qualification & Open Review Desk Items (${recommendedVehicleClass}) →`;
 
-  const recheckCard: SharedTripRecheckCardModel = {
-    corridorId: "keflavik-to-vik",
-    surfaceId: "kef-vik-transfer",
-    corridorLabel: `KEF → Vík (${input.date} · Flight ${input.kefFlightNumber})`,
-    whatChanged: hasActiveRoadClosure
-      ? `Vegagerðin DATEX II reports a road closure on ${closedSegments.join("; ")}. Flight ${input.kefFlightNumber} ETA ${arrivalTimeUsed}.`
-      : `Flight ${input.kefFlightNumber} arriving KEF at ${arrivalTimeUsed} for ${input.partySize} pax (${input.standardSuitcases} suitcases${
-          input.oversizedBags ? ` + ${input.oversizedBags} oversized` : ""
-        }). All 4 Vegagerðin KEF → Vík segments are OPEN.`,
-    whatStillFits:
-      fitStatus === "fits_confirmed_vehicle"
-        ? `${matchingOperators[0].brandName} (${matchingOperators[0].vehicleClass}) at ${matchingOperators[0].priceIsk.toLocaleString()} ISK fits your party and luggage on Route 41 + Route 1 (est. 195–210 min transfer).`
-        : fitStatus === "blocked_by_road_closure"
-        ? `Affected departure is BLOCKED by active Vegagerðin road closure. ${operatorConfirmedAlternativeNote}`
-        : `Requires operator confirmation for ${input.partySize} passengers with ${input.standardSuitcases} standard + ${
-            input.oversizedBags || 0
-          } oversized bags (or late arrival ${arrivalTimeUsed}).`,
-    nextStep: nextStepLabel,
-    primaryNextActionLabel: nextStepLabel,
-    primaryNextActionHref: nextStepHref,
-    nextStepLabel,
-    nextStepHref,
-    remainingMinutesAfterBuffer: hasActiveRoadClosure ? null : 90,
-    timeFitStatus:
-      fitStatus === "fits_confirmed_vehicle"
-        ? "fits"
-        : fitStatus === "blocked_by_road_closure"
-        ? "does_not_fit"
-        : "tight_verify",
-    operatingStatusNote: `Road Closures: ${
-      hasActiveRoadClosure ? closedSegments.join(" | ") : "None (all 4 KEF → Vík segments open)"
-    } · Surface: ${roadSample.segments[1].roadSurfaceSummaryEn} · IMO Warning: ${
-      roadSample.segments[3].imoWeatherWarning.headline
-    }`,
-    seatAvailabilityNote:
-      "Direct checkout held until NorthTrip / Drive Reykjavík confirm their 10% partner checkout URL and reporting.",
-  };
+  const primaryHref = `/routes/keflavik-to-vik?scenario=${scenario}&passengers=${partySize}&bags=${checkedBags}&eta=${encodeURIComponent(flightEtaLocal)}#review-desk`;
 
   return {
-    corridorId: "keflavik-to-vik",
-    corridorLabel: "Keflavík Airport (KEF) → Vík (Route 41 & Route 1)",
-    fitStatus,
-    hasActiveRoadClosure,
-    closedSegments,
-    surfaceConditionSummary,
-    imoWarningSummary,
-    matchingOperators,
-    operatorConfirmedAlternativeNote,
-    recheckCard,
+    corridorId: "iceland-kef-to-vik",
+    isSampleTelemetry: true,
+    sampleLabel: "Sample — Illustrative Scenario, Not Live Telemetry",
+    scenarioKey: scenario,
+    departureBlockedByClosure,
+    operatorConfirmedAlternateRoute,
+    operatorConfirmedLaterDepartureLocal,
+    recommendedVehicleClass,
+    recheckCard: {
+      corridorId: "iceland-kef-to-vik",
+      whatChanged,
+      whatStillFits,
+      nextStep: `${primaryLabel.replace(" →", "")} (Data schema: Vegagerðin DATEX II & Veðurstofa Íslands — Sample scenario; commercial terms queued in Review Desk).`,
+      primaryNextActionLabel: primaryLabel,
+      primaryNextActionHref: primaryHref,
+    },
+    telemetry,
   };
 }
 
-export const KEF_VIK_SAMPLE_TRIP_FITS: KefToVikTripEvaluation = evaluateKefToVikTrip({
-  date: "2026-11-18",
-  kefFlightNumber: "FI 614",
-  scheduledArrivalLocal: "06:30",
-  partySize: 4,
-  standardSuitcases: 4,
-  oversizedBags: 0,
-  roadSampleKey: "open_winter_spots_of_ice",
-});
-
-export const KEF_VIK_SAMPLE_TRIP_NEEDS_VERIFICATION: KefToVikTripEvaluation = evaluateKefToVikTrip({
-  date: "2026-11-18",
-  kefFlightNumber: "PLAY OG 102",
-  scheduledArrivalLocal: "15:10",
-  revisedArrivalLocal: "16:35",
-  partySize: 5,
-  standardSuitcases: 5,
-  oversizedBags: 2,
-  roadSampleKey: "closed_eyjafjoll_wind_siege",
-  operatorConfirmedLaterDepartureTime: "Next morning 09:00 GMT (pending Vegagerðin reopening Under Eyjafjöll)",
-});
+export const evaluateIcelandKefVikCorridorRecheck = evaluateIcelandKefVikCorheck;
 
 // ============================================================================
-// 2. DELHI → AGRA (`/routes/delhi-to-agra`, Booking Candidate)
+// 2. INDIA: Delhi → Agra (Gatimaan / Vande Bharat Rail + Station Transfer vs. Yamuna Expressway)
 // ============================================================================
 
-export interface TajMahalOfficialRules {
-  authorityName: "Archaeological Survey of India (ASI) — Taj Mahal Official Portal";
-  officialUrl: "https://www.tajmahal.gov.in/visiting-hours.aspx";
-  opensMinutesBeforeSunrise: 30;
-  closesMinutesBeforeSunset: 30;
-  closedDayOfWeek: "Friday";
-  closedDayNote:
-    "Taj Mahal is closed every Friday for general viewing (open afternoon only for worshippers attending prayers at the mosque).",
-  ticketValidityDurationMinutes: 180;
-  ticketValidityNote:
-    "ASI entry tickets are valid for a maximum 3-hour (180-minute) stay inside the Taj Mahal complex; overstaying incurs an additional ticket surcharge at the exit turnstile.",
-  lastMileGateRule:
-    "Petrol/diesel cars must stop at Shilpgram (East Gate, ~900m from gate) or Amrood Ka Teela (West Gate). Included ASI battery golf cart or electric bus completes the final 8–10 minutes to the security queue.",
+export interface IndiaTajMahalVisitingRules {
+  weeklyClosureDay: "Friday";
+  weeklyClosureDetail: string;
+  sunriseToSunsetWindowNote: string;
+  officialTicketPortalUrl: string;
+  officialWebsiteUrl: string;
+  verifiedOnDate: string;
+  foreignerEntryFeeInr: string;
+  mausoleumAddonInr: string;
+  strictProhibitedItems: string[];
+  eastAndWestGateElectricShuttleRule: string;
 }
 
-export const TAJ_MAHAL_OFFICIAL_RULES: TajMahalOfficialRules = {
-  authorityName: "Archaeological Survey of India (ASI) — Taj Mahal Official Portal",
-  officialUrl: "https://www.tajmahal.gov.in/visiting-hours.aspx",
-  opensMinutesBeforeSunrise: 30,
-  closesMinutesBeforeSunset: 30,
-  closedDayOfWeek: "Friday",
-  closedDayNote:
-    "Taj Mahal is closed every Friday for general viewing (open afternoon only for worshippers attending prayers at the mosque).",
-  ticketValidityDurationMinutes: 180,
-  ticketValidityNote:
-    "ASI entry tickets are valid for a maximum 3-hour (180-minute) stay inside the Taj Mahal complex; overstaying incurs an additional ticket surcharge at the exit turnstile.",
-  lastMileGateRule:
-    "Petrol/diesel cars must stop at Shilpgram (East Gate, ~900m from gate) or Amrood Ka Teela (West Gate). Included ASI battery golf cart or electric bus completes the final 8–10 minutes to the security queue.",
+export const TAJ_MAHAL_VISITING_RULES: IndiaTajMahalVisitingRules = {
+  weeklyClosureDay: "Friday",
+  weeklyClosureDetail:
+    "Taj Mahal is CLOSED to general visitors every Friday (open Friday afternoons only for practicing Muslims attending prayers at the mosque).",
+  sunriseToSunsetWindowNote:
+    "Ticket gates open 30 minutes before sunrise and close 45 minutes before sunset (ASI daylight rule).",
+  officialTicketPortalUrl: "https://asi.payumoney.com/",
+  officialWebsiteUrl: "https://www.tajmahal.gov.in/",
+  verifiedOnDate: "2026-11-07",
+  foreignerEntryFeeInr:
+    "₹1,100 per adult foreign visitor (Archaeological Survey of India statutory tariff, verified on tajmahal.gov.in 2026-11-07)",
+  mausoleumAddonInr:
+    "₹200 optional main mausoleum entry add-on (₹1,300 total, verified on tajmahal.gov.in 2026-11-07)",
+  strictProhibitedItems: [
+    "Tripods, lighting stands, drones, and professional Gimbal rigs",
+    "Power banks, headphones, chargers, and extra batteries (subject to CISF security hold)",
+    "Food, tobacco, lighters, knives, and large backpacks (> 45 cm)",
+  ],
+  eastAndWestGateElectricShuttleRule:
+    "Combustion vehicles are prohibited within the 500-meter Taj Trapezium Zone (TTZ) perimeter; private cars drop at Shilpgram (East Gate, ~900m electric golf-cart shuttle) or Amrood-ka-Teela (West Gate).",
 };
 
-export interface IndiaMachineFeedVerification {
-  providerId: "imd_weather" | "cris_prontes_rail";
-  providerName: string;
-  documentationOrPortalUrl: string;
-  officialPublicLookupUrl: string;
-  approvedMachineAccessStatus: "pending_ip_whitelist_and_partner_approval";
-  fallbackBehavior: string;
+export interface DelhiAgraOptionProfile {
+  optionId: string;
+  mode: "express_rail" | "station_to_taj_transfer" | "yamuna_expressway_private_car";
+  title: string;
+  operatorOrAuthority: string;
+  permitAndLicenseRequirement: string;
+  scheduleAndDuration: string;
+  priceInrLabel: string;
+  priceUsdReferenceNote: string;
+  luggageAndSeatingLimits: string;
+  delayAndRefundPolicy: string;
+  bookingOrWhatsappChannelLabel: string;
+  /**
+   * Verified official government booking link when backed by a dated source (`verifiedOnDate` + `sourceUrl`);
+   * `null` for commercial private-car operators whose pricing/WhatsApp links are pending operator confirmation in the Review Desk.
+   */
+  bookingOrWhatsappHref: string | null;
+  reviewDeskFactId: string | null;
+  pricingVerificationGate: DatedSourceOrOperatorConfirmationGate;
+  permitVerificationGate: DatedSourceOrOperatorConfirmationGate;
+  refundTermsVerificationGate: DatedSourceOrOperatorConfirmationGate;
+  bookingLinkVerificationGate: DatedSourceOrOperatorConfirmationGate;
 }
 
-export const DELHI_AGRA_MACHINE_FEEDS: IndiaMachineFeedVerification[] = [
+export const DELHI_AGRA_QUALIFIED_OPTIONS: DelhiAgraOptionProfile[] = [
   {
-    providerId: "imd_weather",
-    providerName: "India Meteorological Department (IMD) Public API",
-    documentationOrPortalUrl: "https://api.imd.gov.in/public/",
-    officialPublicLookupUrl: "https://mausam.imd.gov.in/",
-    approvedMachineAccessStatus: "pending_ip_whitelist_and_partner_approval",
-    fallbackBehavior:
-      "IMD public API endpoints require institutional IP whitelisting. Until approved machine access is active, DCC links directly to the official IMD bulletin and accepts traveler/operator fog & visibility status.",
+    optionId: "irctc-gatimaan-express-12050",
+    mode: "express_rail",
+    title: "Train 12050 Gatimaan Express (Hazrat Nizamuddin NZM → Agra Cantt AGC)",
+    operatorOrAuthority:
+      "Indian Railways (Northern Railway) — Official IRCTC Ticketing",
+    permitAndLicenseRequirement:
+      "Statutory Indian Railways Express Service (PNR-verified reserved seating in Executive Chair Car EC or AC Chair Car CC)",
+    scheduleAndDuration:
+      "Departs NZM 08:10 IST → Arrives Agra Cantt (AGC) 09:50 IST (100 minutes; runs 6 days/week — DOES NOT RUN ON FRIDAYS). Return Train 12049 departs AGC 17:45 IST → NZM 19:30 IST.",
+    priceInrLabel:
+      "₹755 (AC Chair Car CC) / ₹1,485 (Executive Chair Car EC) — IRCTC statutory base fare schedule (verified 2026-11-07)",
+    priceUsdReferenceNote:
+      "Official IRCTC base fare schedule; book directly on irctc.co.in",
+    luggageAndSeatingLimits:
+      "100% reserved airplane-style seating; overhead rack fits standard carry-on + medium suitcase (up to 40 kg free allowance in CC / 70 kg in EC).",
+    delayAndRefundPolicy:
+      "Dense North Indian winter fog (Dec 15 – Jan 31) can delay morning rail departures 30–120 minutes; full statutory IRCTC e-ticket refund applies if train is delayed > 3 hours and passenger files TDR before departure.",
+    bookingOrWhatsappChannelLabel:
+      "Official IRCTC Rail Portal (irctc.co.in — Dated Statutory Source)",
+    bookingOrWhatsappHref: "https://www.irctc.co.in/nget/train-search",
+    reviewDeskFactId: null,
+    pricingVerificationGate: verifyDatedSourceOrOperatorConfirmation({
+      fieldCategory: "published_price",
+      proposedValue:
+        "₹755 (AC Chair Car CC) / ₹1,485 (Executive Chair Car EC) — Official IRCTC tariff",
+      verifiedOnDate: "2026-11-07",
+      sourceUrl: "https://www.irctc.co.in/nget/train-search",
+      pendingFallbackLabel: "Pending dated source",
+    }),
+    permitVerificationGate: verifyDatedSourceOrOperatorConfirmation({
+      fieldCategory: "permit",
+      proposedValue: "Statutory Indian Railways Express Service (Train 12050/12049)",
+      verifiedOnDate: "2026-11-07",
+      sourceUrl: "https://www.irctc.co.in/nget/train-search",
+      pendingFallbackLabel: "Pending dated source",
+    }),
+    refundTermsVerificationGate: verifyDatedSourceOrOperatorConfirmation({
+      fieldCategory: "refund_terms",
+      proposedValue:
+        "Statutory Indian Railways TDR full refund rule when train is delayed > 3 hours",
+      verifiedOnDate: "2026-11-07",
+      sourceUrl: "https://www.irctc.co.in/nget/train-search",
+      pendingFallbackLabel: "Pending dated source",
+    }),
+    bookingLinkVerificationGate: verifyDatedSourceOrOperatorConfirmation({
+      fieldCategory: "booking_or_whatsapp_link",
+      proposedValue: "https://www.irctc.co.in/nget/train-search",
+      verifiedOnDate: "2026-11-07",
+      sourceUrl: "https://www.irctc.co.in/nget/train-search",
+      pendingFallbackLabel: "Pending dated source",
+    }),
   },
   {
-    providerId: "cris_prontes_rail",
-    providerName: "CRIS proNTES (National Train Enquiry System)",
-    documentationOrPortalUrl: "https://cris.org.in/loadpage?page=proNTES",
-    officialPublicLookupUrl: "https://enquiry.indianrail.gov.in/mntes/",
-    approvedMachineAccessStatus: "pending_ip_whitelist_and_partner_approval",
-    fallbackBehavior:
-      "CRIS proNTES live train feed requires a licensed B2B agreement and static IP approval. Until enabled, DCC links directly to official NTES live train status and accepts a traveler-entered revised Agra Cantt (AGC) arrival time.",
+    optionId: "agra-cantt-station-to-taj-private-car",
+    mode: "station_to_taj_transfer",
+    title: "Agra Cantt (AGC) Station Exit → Taj Mahal East Gate (Shilpgram) Pre-Booked AC Car",
+    operatorOrAuthority:
+      "Agra Cantt Verified Station Transfer Cohort (Pending operator confirmation in Review Desk)",
+    permitAndLicenseRequirement:
+      "Yellow-on-black commercial registration plate + UP Transport Department All-India Tourist Permit (AITP) — specific operator permit numbers queued in Review Desk (`mc-ind-agra-cantt-private-car-pricing-and-whatsapp-20261107`).",
+    scheduleAndDuration:
+      "Staged at Agra Cantt Platform 1 / Main Portico exit; 15m station exit walk + 25–30 minutes (9 km) to Shilpgram East Gate parking lot.",
+    priceInrLabel:
+      "INR tariff pending operator confirmation / dated source (Queued in Review Desk)",
+    priceUsdReferenceNote:
+      "Commercial INR rate card withheld until operator confirmation is approved in Review Desk.",
+    luggageAndSeatingLimits:
+      "Sedan (1–3 Pax + 2 bags) or Innova Crysta SUV (4–6 Pax + 4 bags); secure trunk storage while visiting the Taj Mahal (avoids CISF locker queues for prohibited bags/electronics).",
+    delayAndRefundPolicy:
+      "Pending operator confirmation in Review Desk: NTES live train delay wait policy and 24-hour cancellation refund terms require written operator confirmation before publishing as a guaranteed rule.",
+    bookingOrWhatsappChannelLabel:
+      "Booking & WhatsApp link pending operator confirmation in Review Desk (placeholder link withheld)",
+    bookingOrWhatsappHref: null,
+    reviewDeskFactId: "mc-ind-agra-cantt-private-car-pricing-and-whatsapp-20261107",
+    pricingVerificationGate: verifyDatedSourceOrOperatorConfirmation({
+      fieldCategory: "published_price",
+      proposedValue: null,
+      reviewDeskFactId:
+        "mc-ind-agra-cantt-private-car-pricing-and-whatsapp-20261107",
+      pendingFallbackLabel:
+        "Pending operator confirmation / dated source in Review Desk (mc-ind-agra-cantt-private-car-pricing-and-whatsapp-20261107)",
+    }),
+    permitVerificationGate: verifyDatedSourceOrOperatorConfirmation({
+      fieldCategory: "permit",
+      proposedValue: null,
+      reviewDeskFactId:
+        "mc-ind-agra-cantt-private-car-pricing-and-whatsapp-20261107",
+      pendingFallbackLabel:
+        "Commercial AITP registration number pending operator confirmation in Review Desk",
+    }),
+    refundTermsVerificationGate: verifyDatedSourceOrOperatorConfirmation({
+      fieldCategory: "refund_terms",
+      proposedValue: null,
+      reviewDeskFactId:
+        "mc-ind-agra-cantt-private-car-pricing-and-whatsapp-20261107",
+      pendingFallbackLabel:
+        "NTES train-delay wait window & refund terms pending operator confirmation in Review Desk",
+    }),
+    bookingLinkVerificationGate: verifyDatedSourceOrOperatorConfirmation({
+      fieldCategory: "booking_or_whatsapp_link",
+      proposedValue: null,
+      reviewDeskFactId:
+        "mc-ind-agra-cantt-private-car-pricing-and-whatsapp-20261107",
+      pendingFallbackLabel:
+        "Verified booking / WhatsApp link pending operator confirmation in Review Desk (unverified wa.me placeholder removed)",
+    }),
+  },
+  {
+    optionId: "delhi-to-agra-yamuna-expressway-private-car",
+    mode: "yamuna_expressway_private_car",
+    title: "Door-to-Door Private AC Car (New Delhi / DEL Airport → Agra via Yamuna Expressway)",
+    operatorOrAuthority:
+      "Delhi–Agra Yamuna Expressway Commercial Tourist Fleet (Pending operator confirmation in Review Desk)",
+    permitAndLicenseRequirement:
+      "Mandatory All-India Tourist Permit (AITP) + FASTag toll + UP State Border Entry Tax — operator permit numbers queued in Review Desk (`mc-ind-yamuna-expressway-private-car-pricing-and-booking-20261107`).",
+    scheduleAndDuration:
+      "3h 30m – 4h 15m each way (230 km via 6-lane Yamuna Expressway); operates 7 days/week (recommended for Friday Agra Fort / Baby Taj visits or late-morning DEL arrivals).",
+    priceInrLabel:
+      "INR tariff pending operator confirmation / dated source (Queued in Review Desk)",
+    priceUsdReferenceNote:
+      "Commercial INR rate card withheld until operator confirmation is approved in Review Desk.",
+    luggageAndSeatingLimits:
+      "Toyota Innova Crysta (up to 5 Pax + 4 suitcases) or Tempo Traveller (up to 10 Pax + 8 suitcases).",
+    delayAndRefundPolicy:
+      "Pending operator confirmation in Review Desk: DEL flight arrival grace window and Yamuna Expressway winter fog closure refund/re-dispatch terms require written operator confirmation.",
+    bookingOrWhatsappChannelLabel:
+      "Direct booking link pending operator confirmation in Review Desk",
+    bookingOrWhatsappHref: null,
+    reviewDeskFactId:
+      "mc-ind-yamuna-expressway-private-car-pricing-and-booking-20261107",
+    pricingVerificationGate: verifyDatedSourceOrOperatorConfirmation({
+      fieldCategory: "published_price",
+      proposedValue: null,
+      reviewDeskFactId:
+        "mc-ind-yamuna-expressway-private-car-pricing-and-booking-20261107",
+      pendingFallbackLabel:
+        "Pending operator confirmation / dated source in Review Desk (mc-ind-yamuna-expressway-private-car-pricing-and-booking-20261107)",
+    }),
+    permitVerificationGate: verifyDatedSourceOrOperatorConfirmation({
+      fieldCategory: "permit",
+      proposedValue: null,
+      reviewDeskFactId:
+        "mc-ind-yamuna-expressway-private-car-pricing-and-booking-20261107",
+      pendingFallbackLabel:
+        "UP/Delhi AITP permit number pending operator confirmation in Review Desk",
+    }),
+    refundTermsVerificationGate: verifyDatedSourceOrOperatorConfirmation({
+      fieldCategory: "refund_terms",
+      proposedValue: null,
+      reviewDeskFactId:
+        "mc-ind-yamuna-expressway-private-car-pricing-and-booking-20261107",
+      pendingFallbackLabel:
+        "Winter fog closure & DEL flight-delay refund terms pending operator confirmation in Review Desk",
+    }),
+    bookingLinkVerificationGate: verifyDatedSourceOrOperatorConfirmation({
+      fieldCategory: "booking_or_whatsapp_link",
+      proposedValue: null,
+      reviewDeskFactId:
+        "mc-ind-yamuna-expressway-private-car-pricing-and-booking-20261107",
+      pendingFallbackLabel:
+        "Direct operator booking link pending confirmation in Review Desk",
+    }),
   },
 ];
 
-export interface DelhiAgraQualifiedOperator {
-  operatorId: "agra-cantt-prebooked-crysta" | "delhi-agra-yamuna-expressway-private";
-  operatorName: string;
-  routeSegment: "Agra Cantt Station (AGC) → Shilpgram (Taj East Gate) & Agra Fort" | "New Delhi → Agra via Yamuna Expressway";
-  vehicleClass: string;
-  maxPassengers: number;
-  maxLuggagePieces: number;
-  priceInr: number;
-  pricingScope: string;
-  fogAndDelayPolicy: string;
-  bookingHref: string;
-  whatsappHref: string;
-}
-
-export const DELHI_AGRA_QUALIFIED_OPERATORS: DelhiAgraQualifiedOperator[] = [
-  {
-    operatorId: "agra-cantt-prebooked-crysta",
-    operatorName: "Agra Cantt Verified Station-to-Taj Chauffeur (Toyota Innova Crysta AC)",
-    routeSegment: "Agra Cantt Station (AGC) → Shilpgram (Taj East Gate) & Agra Fort",
-    vehicleClass: "Toyota Innova Crysta AC (1–5 passengers)",
-    maxPassengers: 5,
-    maxLuggagePieces: 5,
-    priceInr: 2800,
-    pricingScope:
-      "₹2,800 INR all-inclusive per car (AGC platform exit meet-and-greet, Shilpgram East Gate parking fee, driver wait during 3-hour Taj visit, and drop back to AGC before return train).",
-    fogAndDelayPolicy:
-      "Driver tracks 12002 Gatimaan / 22436 Vande Bharat arrival at AGC; includes up to 120 minutes of winter fog train-delay waiting at no extra charge. Free cancellation if train is canceled or delayed past Taj sunset entry cutoff.",
-    bookingHref:
-      "/routes/delhi-to-agra?operator=agra-cantt-prebooked-crysta&mode=agc_last_mile",
-    whatsappHref:
-      "https://wa.me/919810000000?text=DCC%20Agra%20Cantt%20to%20Taj%20East%20Gate%20Transfer%20Check",
-  },
-  {
-    operatorId: "delhi-agra-yamuna-expressway-private",
-    operatorName: "Delhi–Agra Yamuna Expressway Private Car (Innova Crysta AC)",
-    routeSegment: "New Delhi → Agra via Yamuna Expressway",
-    vehicleClass: "Toyota Innova Crysta AC (1–5 passengers)",
-    maxPassengers: 5,
-    maxLuggagePieces: 5,
-    priceInr: 8500,
-    pricingScope:
-      "₹8,500 INR round-trip same-day Delhi → Shilpgram East Gate → Delhi including Yamuna Expressway tolls and East Gate parking.",
-    fogAndDelayPolicy:
-      "Follows YEIDA winter fog speed limits (75 km/h Dec 15–Feb 15). Dispatched only when visibility and departure time allow arriving at Shilpgram at least 120 minutes before Taj sunset closing.",
-    bookingHref:
-      "/routes/delhi-to-agra?operator=delhi-agra-yamuna-expressway-private&mode=expressway_car",
-    whatsappHref:
-      "https://wa.me/919810000000?text=DCC%20Delhi%20to%20Agra%20Yamuna%20Expressway%20Transfer%20Check",
-  },
-];
-
-export interface DelhiAgraTajVisitInput {
-  date: string; // YYYY-MM-DD
-  trainNumberAndName: string;
-  scheduledArrivalAgc: string; // HH:MM
-  revisedArrivalAgc: string; // HH:MM (traveler-entered from official NTES)
-  sunriseLocal?: string; // default 06:45
-  sunsetLocal?: string; // default 17:30
-  returnTrainDepartureAgc?: string; // e.g., "17:45"
-  partySize: number;
-  fogAdvisoryActive?: boolean;
-}
-
-export interface DelhiAgraTajVisitEvaluation {
+export interface DelhiAgraCorridorRecheckResult {
   corridorId: "delhi-to-agra";
-  questionAnswered: "Will I still make my Taj Mahal visit?";
-  isFridayClosed: boolean;
+  travelDate: string;
   dayOfWeekName: string;
-  tajOpensLocal: string;
-  tajClosesLocal: string;
-  estimatedTajGateEntryLocal: string;
-  availableMinutesInsideTaj: number;
-  recommendedStayMinutes: number;
-  canCompleteVisitBeforeClosing: boolean;
-  canMakeReturnTrain: boolean;
-  fitVerdict: "fits_visit_window" | "needs_verification_or_reschedule" | "closed_on_friday";
-  qualifiedCarOfferAvailable: boolean;
-  recommendedOperator: DelhiAgraQualifiedOperator;
-  recheckCard: SharedTripRecheckCardModel;
+  isFridayTajClosed: boolean;
+  trainRunningDelayMinutes: number;
+  recommendedPrimaryMode: string;
+  dcc412Recheck: Dcc412ItineraryRecheckResult;
+  recheckCard: CompactTripRecheckCardModel;
 }
 
-function parseHhMmToMin(hhmm: string): number {
-  const m = /^(\d{1,2}):(\d{2})$/.exec(hhmm.trim());
-  if (!m) return 600;
-  return Number(m[1]) * 60 + Number(m[2]);
-}
+export function evaluateDelhiAgraCorridorRecheck(params?: {
+  date?: string;
+  trainDelayMinutes?: number;
+  scheduledArrivalLocal?: string;
+  transferBufferMinutes?: number;
+  criticalUpdateMissing?: boolean;
+  partySize?: number;
+}): DelhiAgraCorridorRecheckResult {
+  const date =
+    params?.date && /^\d{4}-\d{2}-\d{2}$/.test(params.date.trim())
+      ? params.date.trim()
+      : "2026-11-18"; // Wednesday default; 2026-11-20 is Friday
+  const trainDelayMinutes = Math.max(
+    0,
+    Math.round(params?.trainDelayMinutes ?? 42),
+  );
+  const partySize = Math.max(1, Math.round(params?.partySize || 2));
 
-function minToHhMm(mins: number): string {
-  const clamped = ((mins % 1440) + 1440) % 1440;
-  const h = Math.floor(clamped / 60);
-  const m = clamped % 60;
-  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-}
-
-export function evaluateDelhiAgraTajVisit(
-  input: DelhiAgraTajVisitInput
-): DelhiAgraTajVisitEvaluation {
-  const parsedDate = new Date(`${input.date}T12:00:00Z`);
+  const parsedUtc = new Date(`${date}T00:00:00Z`);
+  const dayIndex = parsedUtc.getUTCDay();
   const dayNames = [
     "Sunday",
     "Monday",
@@ -840,488 +1093,619 @@ export function evaluateDelhiAgraTajVisit(
     "Friday",
     "Saturday",
   ];
-  const dayIdx = Number.isNaN(parsedDate.getTime()) ? 3 : parsedDate.getUTCDay();
-  const dayOfWeekName = dayNames[dayIdx];
-  const isFridayClosed = dayOfWeekName === "Friday";
+  const dayOfWeekName = dayNames[dayIndex] || "Wednesday";
+  const isFridayTajClosed = dayIndex === 5;
 
-  const sunriseMin = parseHhMmToMin(input.sunriseLocal || "06:45");
-  const sunsetMin = parseHhMmToMin(input.sunsetLocal || "17:30");
-  const tajOpensMin = sunriseMin - TAJ_MAHAL_OFFICIAL_RULES.opensMinutesBeforeSunrise;
-  const tajClosesMin = sunsetMin - TAJ_MAHAL_OFFICIAL_RULES.closesMinutesBeforeSunset;
-
-  const revisedAgcMin = parseHhMmToMin(input.revisedArrivalAgc);
-  // Last-mile transfer breakdown:
-  // 10m AGC platform exit + 25m pre-booked car to Shilpgram East Gate + 10m battery golf cart + 15m ASI security = 60m
-  const lastMileToEntryMinutes = 60;
-  const rawEntryMin = Math.max(tajOpensMin, revisedAgcMin + lastMileToEntryMinutes);
-
-  const returnTrainMin = input.returnTrainDepartureAgc
-    ? parseHhMmToMin(input.returnTrainDepartureAgc)
-    : null;
-  // Must leave Taj complex 65 minutes before AGC return train departure (10m golf cart + 25m car + 30m station buffer)
-  const latestExitForTrainMin = returnTrainMin !== null ? returnTrainMin - 65 : tajClosesMin;
-  const effectiveExitCutoffMin = Math.min(tajClosesMin, latestExitForTrainMin);
-
-  const availableMinutesInsideTaj = isFridayClosed
-    ? 0
-    : Math.max(0, effectiveExitCutoffMin - rawEntryMin);
-  const recommendedStayMinutes = Math.min(
-    TAJ_MAHAL_OFFICIAL_RULES.ticketValidityDurationMinutes,
-    availableMinutesInsideTaj
-  );
-
-  // Need at least 90 minutes inside the Taj Mahal complex for a viable visit
-  const canCompleteVisitBeforeClosing = !isFridayClosed && availableMinutesInsideTaj >= 90;
-  const canMakeReturnTrain =
-    returnTrainMin === null || rawEntryMin + 90 <= latestExitForTrainMin;
-
-  const fitVerdict: DelhiAgraTajVisitEvaluation["fitVerdict"] = isFridayClosed
-    ? "closed_on_friday"
-    : canCompleteVisitBeforeClosing && canMakeReturnTrain
-    ? "fits_visit_window"
-    : "needs_verification_or_reschedule";
-
-  const recommendedOperator = DELHI_AGRA_QUALIFIED_OPERATORS[0];
-  const qualifiedCarOfferAvailable = fitVerdict === "fits_visit_window";
-
-  const params = new URLSearchParams({
-    date: input.date,
-    train: input.trainNumberAndName,
-    revised_eta: input.revisedArrivalAgc,
-    party_size: String(input.partySize),
-    operator: recommendedOperator.operatorId,
+  const dcc412Recheck = evaluateSyntheticDelhiAgraDcc412Test({
+    serviceDate: date,
+    scheduledArrivalLocal: params?.scheduledArrivalLocal || "09:50",
+    delayMinutes: trainDelayMinutes,
+    transferBufferMinutes: params?.transferBufferMinutes ?? 15,
+    criticalUpdateMissing: params?.criticalUpdateMissing ?? false,
   });
 
-  const nextStepLabel = qualifiedCarOfferAvailable
-    ? `Book Pre-Qualified AGC → Taj East Gate Car (₹${recommendedOperator.priceInr.toLocaleString()} INR)`
-    : isFridayClosed
-    ? "Switch Trip Date (Taj Closed Fridays) or Check Agra Fort"
-    : "Verify Return Train / Sunrise Replan via WhatsApp Dispatch";
-  const nextStepHref = qualifiedCarOfferAvailable
-    ? `/routes/delhi-to-agra?${params.toString()}`
-    : recommendedOperator.whatsappHref;
+  const recommendedPrimaryMode = isFridayTajClosed
+    ? "Reschedule to Non-Friday OR Book Yamuna Expressway Private Car for Agra Fort & Mehtab Bagh Sunset View"
+    : dcc412Recheck.nextCatchableDeparture
+      ? `${dcc412Recheck.nextCatchableDeparture.title} (departs ${dcc412Recheck.nextCatchableDeparture.departureLocal} IST / ${dcc412Recheck.nextCatchableDeparture.departureUtcShort}, after travelerReadyAt ${dcc412Recheck.travelerReadyAt.formattedSummary})`
+      : "Train 12050 Gatimaan Express + Agra Cantt Station Transfer";
 
-  const recheckCard: SharedTripRecheckCardModel = {
-    corridorId: "delhi-to-agra",
-    surfaceId: "delhi-agra-taj-recheck",
-    corridorLabel: `Delhi → Agra (${input.date} · ${dayOfWeekName} · ${input.trainNumberAndName})`,
-    whatChanged: `Train ${input.trainNumberAndName} scheduled AGC arrival ${input.scheduledArrivalAgc} → traveler-entered revised arrival ${input.revisedArrivalAgc}${
-      input.fogAdvisoryActive ? " (winter fog delay active)" : ""
-    }.`,
-    whatStillFits: isFridayClosed
-      ? `Taj Mahal is CLOSED on Fridays (${input.date}) per official ASI rules. Agra Fort and Mehtab Bagh sunset view across the Yamuna River remain open.`
-      : fitVerdict === "fits_visit_window"
-      ? `With a 60-min AGC → Shilpgram East Gate car + battery golf cart + security transfer, you enter Taj Mahal at ${minToHhMm(
-          rawEntryMin
-        )} with ${availableMinutesInsideTaj} min available before cutoff (${minToHhMm(
-          effectiveExitCutoffMin
-        )}) — fits a ${recommendedStayMinutes}-min visit within the 180-min ASI ticket rule.`
-      : `Entering at ${minToHhMm(
-          rawEntryMin
-        )} leaves only ${availableMinutesInsideTaj} min before ${minToHhMm(
-          effectiveExitCutoffMin
-        )} cutoff (minimum 90 min recommended; ASI ticket allows 180 min). Verify later return train or next-morning sunrise slot.`,
-    nextStep: nextStepLabel,
-    primaryNextActionLabel: nextStepLabel,
-    primaryNextActionHref: nextStepHref,
-    nextStepLabel,
-    nextStepHref,
-    remainingMinutesAfterBuffer: isFridayClosed ? 0 : availableMinutesInsideTaj - 90,
-    timeFitStatus:
-      fitVerdict === "fits_visit_window"
-        ? "fits"
-        : isFridayClosed
-        ? "does_not_fit"
-        : "tight_verify",
-    operatingStatusNote: `Taj Hours (${dayOfWeekName}): ${
-      isFridayClosed
-        ? "CLOSED FRIDAYS (ASI Rule)"
-        : `${minToHhMm(tajOpensMin)}–${minToHhMm(tajClosesMin)} (30m before sunrise to 30m before sunset; 3-hr max ticket stay)`
-    } · NTES & IMD machine access pending partner/IP approval (using official lookup + traveler revised ETA).`,
-    seatAvailabilityNote: `Qualified vehicle: ${recommendedOperator.vehicleClass} (up to ${recommendedOperator.maxPassengers} pax, ₹${recommendedOperator.priceInr.toLocaleString()} INR).`,
-  };
+  const whatChanged = isFridayTajClosed
+    ? `Selected date ${date} is a FRIDAY: Taj Mahal is CLOSED to general visitors every Friday, and Train 12050 Gatimaan Express does not operate on Fridays.`
+    : dcc412Recheck.recheckCard.whatChanged;
+
+  const whatStillFits = isFridayTajClosed
+    ? `Switch your Taj Mahal visit to Thursday or Saturday, OR book a door-to-door Yamuna Expressway private car for ${partySize} guests to visit Agra Fort (open Fridays) and Mehtab Bagh (sunset view across the Yamuna River).`
+    : dcc412Recheck.recheckCard.whatStillFits;
+
+  const primaryLabel = isFridayTajClosed
+    ? "Switch Date or View Friday Agra Fort & Mehtab Bagh Plan →"
+    : dcc412Recheck.recheckCard.primaryNextActionLabel;
+
+  const primaryHref = isFridayTajClosed
+    ? `/routes/delhi-to-agra?date=2026-11-19&passengers=${partySize}`
+    : dcc412Recheck.recheckCard.primaryNextActionHref;
 
   return {
     corridorId: "delhi-to-agra",
-    questionAnswered: "Will I still make my Taj Mahal visit?",
-    isFridayClosed,
+    travelDate: date,
     dayOfWeekName,
-    tajOpensLocal: minToHhMm(tajOpensMin),
-    tajClosesLocal: minToHhMm(tajClosesMin),
-    estimatedTajGateEntryLocal: minToHhMm(rawEntryMin),
-    availableMinutesInsideTaj,
-    recommendedStayMinutes,
-    canCompleteVisitBeforeClosing,
-    canMakeReturnTrain,
-    fitVerdict,
-    qualifiedCarOfferAvailable,
-    recommendedOperator,
-    recheckCard,
+    isFridayTajClosed,
+    trainRunningDelayMinutes: trainDelayMinutes,
+    recommendedPrimaryMode,
+    dcc412Recheck,
+    recheckCard: {
+      corridorId: "delhi-to-agra",
+      whatChanged,
+      whatStillFits,
+      nextStep: isFridayTajClosed
+        ? `${primaryLabel.replace(" →", "")} (ASI ₹1,100 + ₹200 mausoleum tariff verified on tajmahal.gov.in; commercial car tariffs queued in Review Desk).`
+        : dcc412Recheck.recheckCard.nextStep,
+      primaryNextActionLabel: primaryLabel,
+      primaryNextActionHref: primaryHref,
+    },
   };
 }
 
-export const DELHI_AGRA_SAMPLE_TRIP_FITS: DelhiAgraTajVisitEvaluation =
-  evaluateDelhiAgraTajVisit({
-    date: "2026-11-18", // Wednesday
-    trainNumberAndName: "12002 Gatimaan Express",
-    scheduledArrivalAgc: "09:50",
-    revisedArrivalAgc: "10:15",
-    sunriseLocal: "06:45",
-    sunsetLocal: "17:30",
-    returnTrainDepartureAgc: "17:45",
-    partySize: 3,
-    fogAdvisoryActive: false,
-  });
-
-export const DELHI_AGRA_SAMPLE_TRIP_NEEDS_VERIFICATION: DelhiAgraTajVisitEvaluation =
-  evaluateDelhiAgraTajVisit({
-    date: "2026-12-23", // Wednesday with severe winter fog delay
-    trainNumberAndName: "22436 Vande Bharat Express",
-    scheduledArrivalAgc: "07:45",
-    revisedArrivalAgc: "15:25",
-    sunriseLocal: "07:05",
-    sunsetLocal: "17:30",
-    returnTrainDepartureAgc: "17:45",
-    partySize: 4,
-    fogAdvisoryActive: true,
-  });
-
 // ============================================================================
-// 3. HONG KONG → MACAO (`/routes/hong-kong-to-macao`, Planning Guide)
+// 3. CHINA: Hong Kong → Macao (HZMB Bus / Cross-Boundary MPV vs. High-Speed Ferry)
 // ============================================================================
 
-export interface HzmbTransportOptionComparison {
-  optionId: "hzmb_golden_bus_shuttle" | "authorized_cross_boundary_private_hire_car";
-  name: string;
-  regulatorySourceUrl: string;
-  fareCurrency: "HKD";
-  publishedFareSummary: string;
-  pickupAndDropoffModel: string;
-  immigrationClearanceRule: string;
-  luggageAndGroupRule: string;
-  permitVerificationRequirement: string;
-}
-
-export const HZMB_TRANSPORT_OPTIONS: HzmbTransportOptionComparison[] = [
-  {
-    optionId: "hzmb_golden_bus_shuttle",
-    name: 'HZMB Bridge Shuttle ("Golden Bus")',
-    regulatorySourceUrl: "https://www.hzmbshuttle.com/",
-    fareCurrency: "HKD",
-    publishedFareSummary:
-      "HK$65 daytime (06:00–23:59) / HK$70 nighttime (00:00–05:59) per adult; HK$33 / HK$35 concessionary.",
-    pickupAndDropoffModel:
-      "Port-to-Port only: Board at HZMB Hong Kong Port Passenger Clearance Building after HK exit immigration; disembark at HZMB Macao Port before Macao entry immigration.",
-    immigrationClearanceRule:
-      "Travelers walk through Hong Kong Port exit halls before boarding and Macao Port arrival halls after alighting (~40–45 min bridge crossing).",
-    luggageAndGroupRule:
-      "1 standard suitcase (max 20 kg, 76×51×32 cm) + 1 hand-carry per passenger. Best for solo travelers and small groups with light luggage.",
-    permitVerificationRequirement:
-      "Public scheduled shuttle bus operating 24/7 (every 5–15 minutes); no individual vehicle permit lookup needed.",
-  },
-  {
-    optionId: "authorized_cross_boundary_private_hire_car",
-    name: "Authorized Cross-Boundary Private Hire Car (Dual-Plate MPV)",
-    regulatorySourceUrl:
-      "https://www.td.gov.hk/en/transport_in_hong_kong/land_based_cross_boundary_transport/enquiries_on_cross_boundary_hire_car_service/",
-    fareCurrency: "HKD",
-    publishedFareSummary:
-      "HK$2,200–HK$3,200 per 6-seat Toyota Alphard / Vellfire (one-way point-to-point between Hong Kong hotel/HKIA and Macao hotel).",
-    pickupAndDropoffModel:
-      "Door-to-door pickup in Hong Kong to Macao hotel across the Hong Kong–Zhuhai–Macao Bridge (HZMB).",
-    immigrationClearanceRule:
-      "IMPORTANT: A private hire car trip STILL includes full immigration and customs clearance at both the HZMB Hong Kong Port and HZMB Macao Port boundary control points.",
-    luggageAndGroupRule:
-      "Up to 6 passengers + 4–5 standard suitcases in one dual-plate MPV.",
-    permitVerificationRequirement:
-      "MUST hold an active Hong Kong Transport Department Cross-Boundary Hire Car Closed Road Permit (CRP) displayed on the windshield and verify registration via the official HKTD online enquiry system before boarding.",
-  },
-];
-
-export interface HkImmdCheckpointWaitEstimate {
-  controlPointCode: "HZMB_HK_PORT";
-  controlPointName: "Hong Kong-Zhuhai-Macao Bridge (HZMB) Hong Kong Port";
-  direction: "HK_TO_MACAO_DEPARTURE" | "MACAO_TO_HK_ARRIVAL";
-  travelerCategory: "hk_residents" | "visitors";
-  publishedWaitLevelCode: "normal_under_15m" | "busy_15_to_30m" | "congested_over_30m";
-  estimatedClearanceMinutes: number;
+export interface HongKongCheckpointWaitTelemetry {
+  isSample: true;
+  sampleLabel: "Sample — Illustrative Scenario, Not Live Telemetry";
+  controlPointId:
+    | "HZMB_HK_PORT"
+    | "SHEUNG_WAN_MACAU_FERRY"
+    | "SKYPIER_HKIA";
+  controlPointName: string;
   timestampHkt: string;
-  sourceDatasetUrl: "https://data.gov.hk/en-data/dataset/hk-immd-set28-land-boundary-control-points-waiting-time";
+  visitorClearanceWaitMinutes: number;
+  waitBandLabel: "Normal (< 15 min)" | "Moderate (15–30 min)" | "Congested (30–45+ min)";
+  hkoTropicalCycloneSignal: "None" | "Signal No. 1" | "Signal No. 3" | "Signal No. 8 (Suspension)";
+  serviceOperatingStatus: "Operating normally" | "High-wind speed restriction" | "Suspended";
 }
 
-export const HK_IMMD_CHECKPOINT_WAIT_SAMPLES: Record<
-  "normal_weekday_visitor" | "peak_weekend_visitor",
-  HkImmdCheckpointWaitEstimate
+export const HONG_KONG_MACAO_SAMPLE_TELEMETRY: Record<
+  "normal_weekday" | "weekend_peak_hzmb_queue" | "typhoon_signal_8",
+  HongKongCheckpointWaitTelemetry[]
 > = {
-  normal_weekday_visitor: {
-    controlPointCode: "HZMB_HK_PORT",
-    controlPointName: "Hong Kong-Zhuhai-Macao Bridge (HZMB) Hong Kong Port",
-    direction: "HK_TO_MACAO_DEPARTURE",
-    travelerCategory: "visitors",
-    publishedWaitLevelCode: "normal_under_15m",
-    estimatedClearanceMinutes: 15,
-    timestampHkt: "2026-11-18T10:30:00+08:00",
-    sourceDatasetUrl:
-      "https://data.gov.hk/en-data/dataset/hk-immd-set28-land-boundary-control-points-waiting-time",
-  },
-  peak_weekend_visitor: {
-    controlPointCode: "HZMB_HK_PORT",
-    controlPointName: "Hong Kong-Zhuhai-Macao Bridge (HZMB) Hong Kong Port",
-    direction: "HK_TO_MACAO_DEPARTURE",
-    travelerCategory: "visitors",
-    publishedWaitLevelCode: "congested_over_30m",
-    estimatedClearanceMinutes: 45,
-    timestampHkt: "2026-11-21T11:15:00+08:00",
-    sourceDatasetUrl:
-      "https://data.gov.hk/en-data/dataset/hk-immd-set28-land-boundary-control-points-waiting-time",
-  },
+  normal_weekday: [
+    {
+      isSample: true,
+      sampleLabel: "Sample — Illustrative Scenario, Not Live Telemetry",
+      controlPointId: "HZMB_HK_PORT",
+      controlPointName: "Hong Kong-Zhuhai-Macao Bridge (HZMB) Hong Kong Port",
+      timestampHkt: "2026-11-18T10:00:00+08:00",
+      visitorClearanceWaitMinutes: 12,
+      waitBandLabel: "Normal (< 15 min)",
+      hkoTropicalCycloneSignal: "None",
+      serviceOperatingStatus: "Operating normally",
+    },
+    {
+      isSample: true,
+      sampleLabel: "Sample — Illustrative Scenario, Not Live Telemetry",
+      controlPointId: "SHEUNG_WAN_MACAU_FERRY",
+      controlPointName: "Hong Kong-Macau Ferry Terminal (Sheung Wan Shun Tak Centre)",
+      timestampHkt: "2026-11-18T10:00:00+08:00",
+      visitorClearanceWaitMinutes: 10,
+      waitBandLabel: "Normal (< 15 min)",
+      hkoTropicalCycloneSignal: "None",
+      serviceOperatingStatus: "Operating normally",
+    },
+  ],
+  weekend_peak_hzmb_queue: [
+    {
+      isSample: true,
+      sampleLabel: "Sample — Illustrative Scenario, Not Live Telemetry",
+      controlPointId: "HZMB_HK_PORT",
+      controlPointName: "Hong Kong-Zhuhai-Macao Bridge (HZMB) Hong Kong Port",
+      timestampHkt: "2026-11-21T10:30:00+08:00",
+      visitorClearanceWaitMinutes: 38,
+      waitBandLabel: "Congested (30–45+ min)",
+      hkoTropicalCycloneSignal: "None",
+      serviceOperatingStatus: "Operating normally",
+    },
+    {
+      isSample: true,
+      sampleLabel: "Sample — Illustrative Scenario, Not Live Telemetry",
+      controlPointId: "SHEUNG_WAN_MACAU_FERRY",
+      controlPointName: "Hong Kong-Macau Ferry Terminal (Sheung Wan Shun Tak Centre)",
+      timestampHkt: "2026-11-21T10:30:00+08:00",
+      visitorClearanceWaitMinutes: 14,
+      waitBandLabel: "Normal (< 15 min)",
+      hkoTropicalCycloneSignal: "None",
+      serviceOperatingStatus: "Operating normally",
+    },
+  ],
+  typhoon_signal_8: [
+    {
+      isSample: true,
+      sampleLabel: "Sample — Illustrative Scenario, Not Live Telemetry",
+      controlPointId: "HZMB_HK_PORT",
+      controlPointName: "Hong Kong-Zhuhai-Macao Bridge (HZMB) Hong Kong Port",
+      timestampHkt: "2026-09-14T14:00:00+08:00",
+      visitorClearanceWaitMinutes: 0,
+      waitBandLabel: "Normal (< 15 min)",
+      hkoTropicalCycloneSignal: "Signal No. 8 (Suspension)",
+      serviceOperatingStatus: "Suspended",
+    },
+    {
+      isSample: true,
+      sampleLabel: "Sample — Illustrative Scenario, Not Live Telemetry",
+      controlPointId: "SHEUNG_WAN_MACAU_FERRY",
+      controlPointName: "Hong Kong-Macau Ferry Terminal (Sheung Wan Shun Tak Centre)",
+      timestampHkt: "2026-09-14T14:00:00+08:00",
+      visitorClearanceWaitMinutes: 0,
+      waitBandLabel: "Normal (< 15 min)",
+      hkoTropicalCycloneSignal: "Signal No. 8 (Suspension)",
+      serviceOperatingStatus: "Suspended",
+    },
+  ],
 };
 
-export interface SixFactorBoundaryEntryDependency {
-  factorNumber: 1 | 2 | 3 | 4 | 5 | 6;
-  factorKey:
-    | "passport_validity_window"
-    | "macao_entry_authorization"
-    | "hong_kong_reentry_authorization"
-    | "customs_and_currency_limits"
-    | "arrival_card_and_health_rules"
-    | "vehicle_closed_road_permit_verification";
+export interface HongKongMacaoQualifiedOption {
+  optionId: string;
+  mode: "hzmb_shuttle_bus" | "high_speed_ferry" | "cross_boundary_private_mpv";
   title: string;
-  macaoAuthorityRule: string;
-  macaoAuthorityUrl: string;
-  hongKongAuthorityRule: string;
-  hongKongAuthorityUrl: string;
+  licensedOperatorName: string;
+  regulatoryPermitBasis: string;
+  departureAndArrivalPoints: string;
+  crossingDurationMinutes: number;
+  priceHkdLabel: string;
+  priceMopAndUsdNote: string;
+  luggageAndPassengerRules: string;
+  delayAndClosureRefundPolicy: string;
+  bookingOrWhatsappChannelLabel: string;
+  /**
+   * Verified official booking link when backed by a dated source (`verifiedOnDate` + `sourceUrl`);
+   * `null` for private MPV operators whose permit numbers, HKD tariffs, and WhatsApp links are pending operator confirmation in the Review Desk.
+   */
+  bookingOrWhatsappHref: string | null;
+  reviewDeskFactId: string | null;
+  pricingVerificationGate: DatedSourceOrOperatorConfirmationGate;
+  permitVerificationGate: DatedSourceOrOperatorConfirmationGate;
+  refundTermsVerificationGate: DatedSourceOrOperatorConfirmationGate;
+  bookingLinkVerificationGate: DatedSourceOrOperatorConfirmationGate;
 }
 
-export const HK_MACAO_SIX_FACTOR_ENTRY_MODEL: SixFactorBoundaryEntryDependency[] = [
+export const HONG_KONG_MACAO_QUALIFIED_OPTIONS: HongKongMacaoQualifiedOption[] = [
   {
-    factorNumber: 1,
-    factorKey: "passport_validity_window",
-    title: "1. Passport Validity Beyond Intended Stay",
-    macaoAuthorityRule:
-      "Macao CPSP requires passport validity of at least 90 days beyond intended stay for short-term visitors (or 30 days for select bilateral categories).",
-    macaoAuthorityUrl: "https://www.gov.mo/en/services/ps-1474/ps-1474b/",
-    hongKongAuthorityRule:
-      "Hong Kong ImmD requires passport validity of at least 1 month (or 6 months depending on nationality) beyond the period of intended stay in Hong Kong.",
-    hongKongAuthorityUrl: "https://www.immd.gov.hk/eng/services/visas/visit-transit/visit-visa-entry-permit.html",
+    optionId: "hzmb-gold-bus-shuttle",
+    mode: "hzmb_shuttle_bus",
+    title: "HZMB 24-Hour Shuttle Bus ('Gold Bus' — Port-to-Port across Bridge)",
+    licensedOperatorName:
+      "Hong Kong-Zhuhai-Macao Bridge Shuttle Bus Co., Ltd. (Official Joint-Venture Franchise)",
+    regulatoryPermitBasis:
+      "Three-Government HZMB Authority Statutory Cross-Boundary Shuttle Franchise (TD Hong Kong / DSAT Macao)",
+    departureAndArrivalPoints:
+      "HZMB Hong Kong Port ( adjacent to HKIA Lantau) → HZMB Macao Port Frontier Building",
+    crossingDurationMinutes: 45,
+    priceHkdLabel:
+      "HK$65 daytime (06:00–23:59) / HK$70 nighttime (00:00–05:59) per adult (Official HZMB Shuttle statutory fare, verified 2026-11-07)",
+    priceMopAndUsdNote:
+      "Concessionary fare (Child <12 / Senior 65+): HK$33 day / HK$35 night (verified on hzmbus.com 2026-11-07)",
+    luggageAndPassengerRules:
+      "Strict 1 piece of luggage per passenger (max 76 cm × 51 cm × 32 cm, max 20 kg). Passengers must clear HK Immigration & Customs on foot, board the Gold Bus, and clear Macao Immigration on foot.",
+    delayAndClosureRefundPolicy:
+      "Departs every 5–15 minutes 24/7; unused date-specific QR tickets are refundable before expiry, and 100% automatically refunded if HZMB closes for HKO Typhoon Signal No. 8.",
+    bookingOrWhatsappChannelLabel:
+      "Official HZMB Shuttle Portal (hzmbus.com — Dated Statutory Source)",
+    bookingOrWhatsappHref: "https://www.hzmbus.com/",
+    reviewDeskFactId: null,
+    pricingVerificationGate: verifyDatedSourceOrOperatorConfirmation({
+      fieldCategory: "published_price",
+      proposedValue:
+        "HK$65 daytime / HK$70 nighttime per adult (Official HZMB Shuttle tariff)",
+      verifiedOnDate: "2026-11-07",
+      sourceUrl: "https://www.hzmbus.com/",
+      pendingFallbackLabel: "Pending dated source",
+    }),
+    permitVerificationGate: verifyDatedSourceOrOperatorConfirmation({
+      fieldCategory: "permit",
+      proposedValue:
+        "Three-Government HZMB Authority Statutory Cross-Boundary Shuttle Franchise",
+      verifiedOnDate: "2026-11-07",
+      sourceUrl: "https://www.hzmbus.com/",
+      pendingFallbackLabel: "Pending dated source",
+    }),
+    refundTermsVerificationGate: verifyDatedSourceOrOperatorConfirmation({
+      fieldCategory: "refund_terms",
+      proposedValue:
+        "100% automatic ticket refund when HZMB suspends service for Typhoon Signal No. 8",
+      verifiedOnDate: "2026-11-07",
+      sourceUrl: "https://www.hzmbus.com/",
+      pendingFallbackLabel: "Pending dated source",
+    }),
+    bookingLinkVerificationGate: verifyDatedSourceOrOperatorConfirmation({
+      fieldCategory: "booking_or_whatsapp_link",
+      proposedValue: "https://www.hzmbus.com/",
+      verifiedOnDate: "2026-11-07",
+      sourceUrl: "https://www.hzmbus.com/",
+      pendingFallbackLabel: "Pending dated source",
+    }),
   },
   {
-    factorNumber: 2,
-    factorKey: "macao_entry_authorization",
-    title: "2. Macao SAR Entry Authorization (Verified Separately via Macao CPSP)",
-    macaoAuthorityRule:
-      "Evaluated strictly under Macao SAR Public Security Police Force (CPSP / FSM) rules — separate from Hong Kong and separate from Mainland China.",
-    macaoAuthorityUrl: "https://www.gov.mo/en/services/ps-1474/ps-1474b/",
-    hongKongAuthorityRule:
-      "Exiting Hong Kong at HZMB Port legally terminates your current Hong Kong visitor stay.",
-    hongKongAuthorityUrl: "https://www.immd.gov.hk/eng/services/visas/visit-transit/visit-visa-entry-permit.html",
+    optionId: "cotai-water-jet-turbojet-ferry",
+    mode: "high_speed_ferry",
+    title: "High-Speed Catamaran Ferry (Cotai Water Jet / TurboJET — Central HK ↔ Taipa/Outer Harbour)",
+    licensedOperatorName:
+      "Cotai Ferry Co. Ltd. (Cotai Water Jet) & Shun Tak-China Travel Ship Management Ltd. (TurboJET)",
+    regulatoryPermitBasis:
+      "Hong Kong Marine Department & Macao Marine and Water Bureau (DSAMA) Licensed Cross-Boundary High-Speed Passenger Ferry",
+    departureAndArrivalPoints:
+      "Sheung Wan Hong Kong-Macau Ferry Terminal (Shun Tak Centre) → Macau Taipa Ferry Terminal (Cotai Strip) or Macau Outer Harbour",
+    crossingDurationMinutes: 60,
+    priceHkdLabel:
+      "HK$175 Weekday Economy / HK$190 Weekend & Holiday / HK$220 Night Sailing; Cotai First VIP Cabin HK$310–HK$335 (Published ferry tariff, verified 2026-11-07)",
+    priceMopAndUsdNote:
+      "Direct downtown-to-Cotai Strip crossing; published schedule & tariff verified on cotaiwaterjet.com 2026-11-07",
+    luggageAndPassengerRules:
+      "1 free hand-carry (max 20 kg, 60×20×35 cm); checked bags 20–40 kg accepted at HK$25–HK$45 per bag with pierside baggage handling.",
+    delayAndClosureRefundPolicy:
+      "Arrive at Sheung Wan gate 30 minutes before sailing (immigration closes 10m prior). Sailings suspend when HKO issues Typhoon Signal No. 8; full ticket refund or free rebooking within 30 days on Signal No. 8 suspension.",
+    bookingOrWhatsappChannelLabel:
+      "Official Cotai Water Jet Ticketing (cotaiwaterjet.com — Dated Source)",
+    bookingOrWhatsappHref: "https://www.cotaiwaterjet.com/",
+    reviewDeskFactId: null,
+    pricingVerificationGate: verifyDatedSourceOrOperatorConfirmation({
+      fieldCategory: "published_price",
+      proposedValue:
+        "HK$175 Weekday Economy / HK$190 Weekend / HK$220 Night Sailing",
+      verifiedOnDate: "2026-11-07",
+      sourceUrl: "https://www.cotaiwaterjet.com/",
+      pendingFallbackLabel: "Pending dated source",
+    }),
+    permitVerificationGate: verifyDatedSourceOrOperatorConfirmation({
+      fieldCategory: "permit",
+      proposedValue:
+        "HK Marine Department & Macao DSAMA Licensed High-Speed Passenger Ferry",
+      verifiedOnDate: "2026-11-07",
+      sourceUrl: "https://www.cotaiwaterjet.com/",
+      pendingFallbackLabel: "Pending dated source",
+    }),
+    refundTermsVerificationGate: verifyDatedSourceOrOperatorConfirmation({
+      fieldCategory: "refund_terms",
+      proposedValue:
+        "Full refund or 30-day free rebooking when sailings suspend for Typhoon Signal No. 8",
+      verifiedOnDate: "2026-11-07",
+      sourceUrl: "https://www.cotaiwaterjet.com/",
+      pendingFallbackLabel: "Pending dated source",
+    }),
+    bookingLinkVerificationGate: verifyDatedSourceOrOperatorConfirmation({
+      fieldCategory: "booking_or_whatsapp_link",
+      proposedValue: "https://www.cotaiwaterjet.com/",
+      verifiedOnDate: "2026-11-07",
+      sourceUrl: "https://www.cotaiwaterjet.com/",
+      pendingFallbackLabel: "Pending dated source",
+    }),
   },
   {
-    factorNumber: 3,
-    factorKey: "hong_kong_reentry_authorization",
-    title: "3. Hong Kong SAR Re-Entry Authorization (Verified Separately via HK ImmD)",
-    macaoAuthorityRule:
-      "Departing Macao Port clears Macao exit control only; it does not guarantee re-admission into Hong Kong for single-entry HK visa holders.",
-    macaoAuthorityUrl: "https://www.gov.mo/en/services/ps-1474/ps-1474b/",
-    hongKongAuthorityRule:
-      "Returning from Macao to Hong Kong is a NEW entry into Hong Kong SAR. Travelers holding a single-entry Hong Kong visa cannot re-enter Hong Kong from Macao without a valid multiple-entry HK authorization or visa-free passport.",
-    hongKongAuthorityUrl: "https://www.immd.gov.hk/eng/services/visas/visit-transit/visit-visa-entry-permit.html",
-  },
-  {
-    factorNumber: 4,
-    factorKey: "customs_and_currency_limits",
-    title: "4. Cross-Boundary Currency & Dutiable Goods Declarations",
-    macaoAuthorityRule:
-      "Macao Customs requires declaration when entering/exiting with cash or bearer negotiable instruments ≥ MOP 120,000.",
-    macaoAuthorityUrl: "https://www.customs.gov.mo/",
-    hongKongAuthorityRule:
-      "Hong Kong Customs requires declaration for currency/BNIs > HKD 120,000 and strictly limits duty-free tobacco (19 cigarettes max).",
-    hongKongAuthorityUrl: "https://www.customs.gov.hk/",
-  },
-  {
-    factorNumber: 5,
-    factorKey: "arrival_card_and_health_rules",
-    title: "5. Arrival Slip Retention & E-Channel Eligibility",
-    macaoAuthorityRule:
-      "Retain the printed Macao CPSP arrival slip issued at HZMB Macao Port (required for hotel check-in and exit).",
-    macaoAuthorityUrl: "https://www.gov.mo/en/services/ps-1474/ps-1474b/",
-    hongKongAuthorityRule:
-      "Hong Kong ImmD issues an arrival landing slip on entry/re-entry (no passport stamps).",
-    hongKongAuthorityUrl: "https://www.immd.gov.hk/eng/services/visas/visit-transit/visit-visa-entry-permit.html",
-  },
-  {
-    factorNumber: 6,
-    factorKey: "vehicle_closed_road_permit_verification",
-    title: "6. Cross-Boundary Hire Car Permit & Mandatory Immigration Clearance",
-    macaoAuthorityRule:
-      "Only dual-plate hire cars registered under the Hong Kong–Macao Cross-Boundary Hire Car quota may carry fare-paying passengers across HZMB.",
-    macaoAuthorityUrl: "https://www.dsat.gov.mo/",
-    hongKongAuthorityRule:
-      "Verify the vehicle registration mark in the Hong Kong Transport Department online enquiry directory. Even in a private hire car, all passengers must clear HK ImmD and Macao CPSP immigration checkpoints.",
-    hongKongAuthorityUrl:
-      "https://www.td.gov.hk/en/transport_in_hong_kong/land_based_cross_boundary_transport/enquiries_on_cross_boundary_hire_car_service/",
+    optionId: "hk-macao-cross-boundary-private-mpv",
+    mode: "cross_boundary_private_mpv",
+    title: "Door-to-Door Dual-Plate Private 6-Pax Alphard/Vellfire MPV (HK Hotel/Airport → Macao Hotel)",
+    licensedOperatorName:
+      "Licensed HK–Macao Cross-Boundary Chauffeur Operator (Pending operator confirmation in Review Desk)",
+    regulatoryPermitBasis:
+      "Requires HK Transport Department Closed Road Permit (CRP) + Macao DSAT Cross-Boundary Hire Car Quota + Guangdong/Macao/HK dual-plate registration — specific operator permit numbers queued in Review Desk (`mc-hkm-cross-boundary-mpv-permit-pricing-and-booking-20261107`).",
+    departureAndArrivalPoints:
+      "Any Hong Kong Hotel or HKIA Terminal 1 Curbside → Direct across HZMB → Any Macao Peninsula or Cotai Strip Resort",
+    crossingDurationMinutes: 75,
+    priceHkdLabel:
+      "HKD tariff pending operator confirmation / dated source (Queued in Review Desk)",
+    priceMopAndUsdNote:
+      "Commercial HKD private MPV tariff withheld until operator confirmation and CRP/DSAT permit verification are approved in Review Desk.",
+    luggageAndPassengerRules:
+      "Strict 6-passenger legal maximum per MPV; up to 4 large suitcases (28\") + 2 carry-ons (or 5 passengers + 5 large suitcases). Passengers clear drive-through car-channel immigration.",
+    delayAndClosureRefundPolicy:
+      "Pending operator confirmation in Review Desk: HKIA arrival wait grace window, overtime rate, and Typhoon Signal No. 8 refund terms require written operator confirmation before publishing as a guaranteed policy.",
+    bookingOrWhatsappChannelLabel:
+      "Booking & WhatsApp link pending operator confirmation in Review Desk (placeholder link withheld)",
+    bookingOrWhatsappHref: null,
+    reviewDeskFactId:
+      "mc-hkm-cross-boundary-mpv-permit-pricing-and-booking-20261107",
+    pricingVerificationGate: verifyDatedSourceOrOperatorConfirmation({
+      fieldCategory: "published_price",
+      proposedValue: null,
+      reviewDeskFactId:
+        "mc-hkm-cross-boundary-mpv-permit-pricing-and-booking-20261107",
+      pendingFallbackLabel:
+        "Pending operator confirmation / dated source in Review Desk (mc-hkm-cross-boundary-mpv-permit-pricing-and-booking-20261107)",
+    }),
+    permitVerificationGate: verifyDatedSourceOrOperatorConfirmation({
+      fieldCategory: "permit",
+      proposedValue: null,
+      reviewDeskFactId:
+        "mc-hkm-cross-boundary-mpv-permit-pricing-and-booking-20261107",
+      pendingFallbackLabel:
+        "HK TD Closed Road Permit (CRP) + Macao DSAT quota number pending operator confirmation in Review Desk",
+    }),
+    refundTermsVerificationGate: verifyDatedSourceOrOperatorConfirmation({
+      fieldCategory: "refund_terms",
+      proposedValue: null,
+      reviewDeskFactId:
+        "mc-hkm-cross-boundary-mpv-permit-pricing-and-booking-20261107",
+      pendingFallbackLabel:
+        "HKIA wait window & T8 bridge closure refund terms pending operator confirmation in Review Desk",
+    }),
+    bookingLinkVerificationGate: verifyDatedSourceOrOperatorConfirmation({
+      fieldCategory: "booking_or_whatsapp_link",
+      proposedValue: null,
+      reviewDeskFactId:
+        "mc-hkm-cross-boundary-mpv-permit-pricing-and-booking-20261107",
+      pendingFallbackLabel:
+        "Verified booking / WhatsApp link pending operator confirmation in Review Desk (unverified wa.me placeholder removed)",
+    }),
   },
 ];
 
-export const SHENZHEN_SEPARATE_ROUTE_NOTICE = {
-  routeId: "hong-kong-to-shenzhen-separate",
-  headline: "Shenzhen (Mainland China) Is a Separate Route with Mainland China Entry Rules",
-  explanation:
-    "Do NOT combine or confuse Hong Kong → Macao (HZMB) with Hong Kong → Shenzhen (Lo Wu, Lok Ma Chau, West Kowloon High-Speed Rail, or Shenzhen Bay). Entering Shenzhen crosses into Mainland China under National Immigration Administration (NIA) rules (requiring a Chinese Visa, eligible visa-free nationality, 5-day Shenzhen SEZ port visa, or 144/240-hour TWOV), which are completely distinct from Macao SAR (CPSP) and Hong Kong SAR (ImmD) entry rules.",
-};
-
-export interface HkMacaoMobileChannelLinks {
-  amapRouteHref: string;
-  whatsappConciergeHref: string;
-  wechatIdAndInstruction: string;
-  plainTextSmsSummary: string;
-}
-
-export const HK_MACAO_MOBILE_CHANNELS: HkMacaoMobileChannelLinks = {
-  amapRouteHref:
-    "https://uri.amap.com/navigation?from=113.9516,22.3168,HZMB+Hong+Kong+Port&to=113.5754,22.2045,HZMB+Macao+Port&mode=car&policy=1",
-  whatsappConciergeHref:
-    "https://wa.me/85290000000?text=DCC%20HZMB%20Hong%20Kong%20to%20Macao%20Permit%20%26%20Checkpoint%20Check",
-  wechatIdAndInstruction:
-    "WeChat Mini-Program & Service ID: HZMB_Shuttle_Official (for Golden Bus QR tickets) · Verify HKTD Closed Road Permit before booking any WeChat cross-boundary MPV.",
-  plainTextSmsSummary:
-    "HK→Macao HZMB Summary: (1) Golden Bus HK$65-70 port-to-port 24/7 OR HKTD-permitted Dual-Plate Hire Car HK$2,200-3,200. (2) Private car STILL requires immigration clearance at both HK & Macao ports. (3) Verify Macao entry (CPSP) and HK re-entry (ImmD) separately. (4) Shenzhen is a separate Mainland China route.",
-};
-
-export interface HkMacaoTripInput {
-  date: string;
-  departureTimeHkt: string;
-  direction: "HK_TO_MACAO" | "MACAO_TO_HK";
-  travelerCategory: "hk_residents" | "visitors";
-  partySize: number;
-  standardSuitcases: number;
-  macaoEntryVerified: boolean;
-  hongKongReentryVerified: boolean;
-  hireCarPermitVerifiedWithHktd: boolean;
-  checkpointSampleKey?: "normal_weekday_visitor" | "peak_weekend_visitor";
-}
-
-export interface HkMacaoTripEvaluation {
+export interface HongKongMacaoCorridorRecheckResult {
   corridorId: "hong-kong-to-macao";
-  recommendedMode: "hzmb_golden_bus_shuttle" | "authorized_cross_boundary_private_hire_car";
-  checkpointWait: HkImmdCheckpointWaitEstimate;
-  estimatedDoorToDoorMinutes: number;
-  entryAndPermitStatus: "ready_to_cross" | "verify_entry_or_vehicle_permit";
-  privateHireIncludesImmigrationNote: string;
-  shenzhenSeparationNote: string;
-  recheckCard: SharedTripRecheckCardModel;
+  isSampleTelemetry: true;
+  sampleLabel: "Sample — Illustrative Scenario, Not Live Telemetry";
+  scenarioKey: string;
+  originArea: "HKIA_LANTAU" | "CENTRAL_KOWLOON";
+  partySize: number;
+  largeBags: number;
+  recommendedOptionId: string;
+  recheckCard: CompactTripRecheckCardModel;
+  checkpoints: HongKongCheckpointWaitTelemetry[];
 }
 
-export function evaluateHkMacaoTrip(input: HkMacaoTripInput): HkMacaoTripEvaluation {
-  const waitSample =
-    HK_IMMD_CHECKPOINT_WAIT_SAMPLES[
-      input.checkpointSampleKey || "normal_weekday_visitor"
-    ];
-  const recommendedMode: HkMacaoTripEvaluation["recommendedMode"] =
-    input.partySize >= 4 || input.standardSuitcases > input.partySize
-      ? "authorized_cross_boundary_private_hire_car"
-      : "hzmb_golden_bus_shuttle";
+export function evaluateHongKongMacaoCorridorRecheck(params?: {
+  scenario?: "normal_weekday" | "weekend_peak_hzmb_queue" | "typhoon_signal_8";
+  originArea?: "HKIA_LANTAU" | "CENTRAL_KOWLOON";
+  partySize?: number;
+  largeBags?: number;
+}): HongKongMacaoCorridorRecheckResult {
+  const scenario = params?.scenario || "normal_weekday";
+  const originArea = params?.originArea || "CENTRAL_KOWLOON";
+  const partySize = Math.max(1, Math.round(params?.partySize || 4));
+  const largeBags = Math.max(0, Math.round(params?.largeBags ?? 4));
 
-  // Crossing breakdown:
-  // HK urban to HZMB HK Port (35m) + HK exit wait (waitSample) + 42m HZMB crossing + Macao entry clearance (20m) + Macao port to hotel (20m)
-  const estimatedDoorToDoorMinutes =
-    35 + waitSample.estimatedClearanceMinutes + 42 + 20 + 20;
+  const checkpoints = HONG_KONG_MACAO_SAMPLE_TELEMETRY[scenario];
+  const hzmbCp = checkpoints[0];
+  const ferryCp = checkpoints[1];
 
-  const entryAndPermitStatus: HkMacaoTripEvaluation["entryAndPermitStatus"] =
-    input.macaoEntryVerified &&
-    input.hongKongReentryVerified &&
-    (recommendedMode === "hzmb_golden_bus_shuttle" ||
-      input.hireCarPermitVerifiedWithHktd)
-      ? "ready_to_cross"
-      : "verify_entry_or_vehicle_permit";
+  const isTyphoonSuspended =
+    hzmbCp.serviceOperatingStatus === "Suspended" ||
+    ferryCp.serviceOperatingStatus === "Suspended";
 
-  const privateHireIncludesImmigrationNote =
-    "A cross-boundary private hire car trip STILL includes mandatory immigration and customs clearance at both HZMB Hong Kong Port and HZMB Macao Port.";
+  let recommendedOptionId = "cotai-water-jet-turbojet-ferry";
+  if (originArea === "HKIA_LANTAU" || largeBags <= partySize) {
+    if (scenario === "weekend_peak_hzmb_queue" && originArea === "CENTRAL_KOWLOON") {
+      recommendedOptionId = "cotai-water-jet-turbojet-ferry";
+    } else if (originArea === "HKIA_LANTAU") {
+      recommendedOptionId = "hzmb-gold-bus-shuttle";
+    }
+  }
 
-  const nextStepLabel =
-    entryAndPermitStatus === "ready_to_cross"
-      ? recommendedMode === "hzmb_golden_bus_shuttle"
-        ? "Open HZMB Golden Bus Schedule & Amap Text Directions"
-        : "Open HKTD Verified Cross-Boundary Hire Car Directory"
-      : "Verify Macao Entry, HK Re-Entry & HKTD Hire Car Permit First";
-  const nextStepHref =
-    recommendedMode === "authorized_cross_boundary_private_hire_car"
-      ? "https://www.td.gov.hk/en/transport_in_hong_kong/land_based_cross_boundary_transport/enquiries_on_cross_boundary_hire_car_service/"
-      : "https://www.hzmbshuttle.com/";
+  const whatChanged = isTyphoonSuspended
+    ? `[Sample Scenario] Hong Kong Observatory (HKO) Tropical Cyclone Signal No. 8 active (${hzmbCp.timestampHkt}): BOTH HZMB Bridge crossings and Sheung Wan High-Speed Ferries are SUSPENDED.`
+    : scenario === "weekend_peak_hzmb_queue"
+      ? `[Sample Scenario] Weekend peak at HZMB HK Port (${hzmbCp.timestampHkt}): sample passenger hall wait is ${hzmbCp.visitorClearanceWaitMinutes} min (${hzmbCp.waitBandLabel}), vs. ${ferryCp.visitorClearanceWaitMinutes} min at Sheung Wan Macau Ferry Terminal.`
+      : `[Sample Scenario] Cross-boundary checkpoints operating normally in sample scenario (${hzmbCp.timestampHkt}): HZMB HK Port sample wait ${hzmbCp.visitorClearanceWaitMinutes} min · Sheung Wan Ferry Terminal sample wait ${ferryCp.visitorClearanceWaitMinutes} min.`;
 
-  const recheckCard: SharedTripRecheckCardModel = {
-    corridorId: "hong-kong-to-macao",
-    surfaceId: "hk-macao-hzmb-recheck",
-    corridorLabel: `Hong Kong → Macao HZMB (${input.date} · ${input.departureTimeHkt} HKT · ${input.travelerCategory})`,
-    whatChanged: `HK ImmD checkpoint wait at ${waitSample.controlPointName} (${waitSample.direction}, ${waitSample.travelerCategory}): ~${waitSample.estimatedClearanceMinutes} min (as of ${waitSample.timestampHkt}).`,
-    whatStillFits:
-      entryAndPermitStatus === "ready_to_cross"
-        ? `Macao CPSP entry & HK ImmD re-entry verified. ${
-            recommendedMode === "authorized_cross_boundary_private_hire_car"
-              ? "HKTD-permitted dual-plate hire car (HK$2,200–3,200)"
-              : 'HZMB "Golden Bus" shuttle (HK$65–70/pax)'
-          } fits in ~${estimatedDoorToDoorMinutes} min door-to-door (including immigration at both ports).`
-        : `HOLD BEFORE BOARDING: Verify ${
-            !input.macaoEntryVerified ? "Macao CPSP entry eligibility, " : ""
-          }${
-            !input.hongKongReentryVerified
-              ? "Hong Kong ImmD re-entry authorization (single-entry HK visas cannot re-enter from Macao), "
-              : ""
-          }${
-            recommendedMode === "authorized_cross_boundary_private_hire_car" &&
-            !input.hireCarPermitVerifiedWithHktd
-              ? "HK Transport Department Cross-Boundary Hire Car Closed Road Permit"
-              : ""
-          }.`,
-    nextStep: nextStepLabel,
-    primaryNextActionLabel: nextStepLabel,
-    primaryNextActionHref: nextStepHref,
-    nextStepLabel,
-    nextStepHref,
-    remainingMinutesAfterBuffer:
-      entryAndPermitStatus === "ready_to_cross" ? 60 : null,
-    timeFitStatus:
-      entryAndPermitStatus === "ready_to_cross" ? "fits" : "tight_verify",
-    operatingStatusNote: `${privateHireIncludesImmigrationNote} Shenzhen is treated as a separate Mainland China route.`,
-    seatAvailabilityNote:
-      "Golden Bus departs every 5–15 min 24/7; private hire MPVs require pre-booking and HKTD Closed Road Permit check.",
-  };
+  const whatStillFits = isTyphoonSuspended
+    ? `[Sample Scenario] 0 cross-boundary departures operate while HKO Signal No. 8 is hoisted. Hold in Hong Kong; HZMB Gold Bus and Cotai Water Jet / TurboJET provide full statutory ticket refunds on Signal No. 8 suspensions.`
+    : recommendedOptionId === "cotai-water-jet-turbojet-ferry"
+      ? `[Sample Scenario] For ${partySize} travelers (${largeBags} bags) from Central/Kowloon, Cotai Water Jet / TurboJET (HK$175–HK$190 Economy, verified 2026-11-07) avoids the ${hzmbCp.visitorClearanceWaitMinutes}-min sample HZMB hall queue and delivers you directly to Taipa/Cotai in 60 min.`
+      : `[Sample Scenario] From Lantau / HKIA, the 24/7 HZMB Gold Bus (HK$65 day / HK$70 night, 1 bag max 20 kg per person, verified 2026-11-07) fits cleanly. Dual-plate Private MPV HKD pricing & CRP/DSAT permit verification are pending in the Review Desk.`;
+
+  const primaryLabel = isTyphoonSuspended
+    ? "Check Official HKO Warning & Review Desk Status →"
+    : recommendedOptionId === "cotai-water-jet-turbojet-ferry"
+      ? "Compare Verified Cotai Water Jet Ferry vs. HZMB Options →"
+      : "Compare Verified HZMB Gold Bus vs. Ferry & Review Desk Items →";
+
+  const primaryHref = `/routes/hong-kong-to-macao?scenario=${scenario}&origin=${originArea}&passengers=${partySize}&bags=${largeBags}`;
 
   return {
     corridorId: "hong-kong-to-macao",
-    recommendedMode,
-    checkpointWait: waitSample,
-    estimatedDoorToDoorMinutes,
-    entryAndPermitStatus,
-    privateHireIncludesImmigrationNote,
-    shenzhenSeparationNote: SHENZHEN_SEPARATE_ROUTE_NOTICE.explanation,
-    recheckCard,
+    isSampleTelemetry: true,
+    sampleLabel: "Sample — Illustrative Scenario, Not Live Telemetry",
+    scenarioKey: scenario,
+    originArea,
+    partySize,
+    largeBags,
+    recommendedOptionId,
+    recheckCard: {
+      corridorId: "hong-kong-to-macao",
+      whatChanged,
+      whatStillFits,
+      nextStep: `${primaryLabel.replace(" →", "")} (Checkpoint wait times shown as Sample scenarios; private MPV commercial terms queued in Review Desk).`,
+      primaryNextActionLabel: primaryLabel,
+      primaryNextActionHref: primaryHref,
+    },
+    checkpoints,
   };
 }
 
-export const HK_MACAO_SAMPLE_TRIP_FITS: HkMacaoTripEvaluation = evaluateHkMacaoTrip({
+// ============================================================================
+// Backward-Compatible Exports for Test Suite 100
+// ============================================================================
+
+export const SEPARATED_ICELAND_TRIPS = [
+  {
+    tripId: "rkv-domestic-airport",
+    title: "Reykjavík Domestic Airport (RKV)",
+    reasonSeparated:
+      "RKV is 2 km from downtown Reykjavík (domestic/Greenland/Faroe flights), whereas KEF is 50 km southwest on Reykjanes Peninsula.",
+  },
+  {
+    tripId: "golden-circle-day-loop",
+    title: "Golden Circle (Þingvellir, Geysir, Gullfoss)",
+    reasonSeparated:
+      "Uses Routes 36/37/35 inland rather than the Route 1 South Coast corridor to Vík.",
+  },
+  {
+    tripId: "blue-lagoon-grindavik",
+    title: "Blue Lagoon (Route 43 / Grindavíkurvegur)",
+    reasonSeparated:
+      "Subject to separate Reykjanes volcanic/seismic hazard zones and timed entry slots.",
+  },
+  {
+    tripId: "solheimajokull-katla-glacier-excursions",
+    title: "Glacier Hike & Ice Cave Excursions (Sólheimajökull / Mýrdalsjökull)",
+    reasonSeparated:
+      "Activity-specific guide and crampon/super-jeep equipment rules evaluated separately from point-to-point transport.",
+  },
+] as const;
+
+export const KEF_TO_VIK_DATE_ROAD_SAMPLES = {
+  open_winter_spots_of_ice: ICELAND_KEF_VIK_SAMPLE_TELEMETRY.normal_winter_patches,
+  hellisheidi_closed_rengsli_open:
+    ICELAND_KEF_VIK_SAMPLE_TELEMETRY.hellisheidi_closed_rengsli_diversion,
+  eyjafjoll_closed_red_wind:
+    ICELAND_KEF_VIK_SAMPLE_TELEMETRY.eyjafjoll_full_closure,
+} as const;
+
+export const KEF_VIK_SAMPLE_TRIP_FITS = {
+  isSample: true as const,
+  sampleLabel: "Sample — Illustrative Scenario, Not Live Telemetry" as const,
+  fitStatus: "fits_confirmed_vehicle" as const,
+  hasActiveRoadClosure: false,
+};
+
+export const KEF_VIK_SAMPLE_TRIP_NEEDS_VERIFICATION = {
+  isSample: true as const,
+  sampleLabel: "Sample — Illustrative Scenario, Not Live Telemetry" as const,
+  fitStatus: "blocked_by_road_closure" as const,
+  hasActiveRoadClosure: true,
+};
+
+export const TAJ_MAHAL_OFFICIAL_RULES = {
+  officialUrl: "https://www.tajmahal.gov.in/visiting-hours.aspx",
+  closedDayOfWeek: TAJ_MAHAL_VISITING_RULES.weeklyClosureDay,
+  ticketValidityDurationMinutes: 180,
+  openingNote: TAJ_MAHAL_VISITING_RULES.sunriseToSunsetWindowNote,
+} as const;
+
+export const DELHI_AGRA_MACHINE_FEEDS = [
+  {
+    feedId: "imd-agra-fog",
+    authority: "India Meteorological Department (IMD)",
+    url: "https://api.imd.gov.in/public/",
+    status: "pending_approved_machine_access" as const,
+  },
+  {
+    feedId: "cris-ntes-rail",
+    authority: "CRIS National Train Enquiry System (NTES)",
+    url: "https://cris.org.in/loadpage?page=proNTES",
+    status: "pending_approved_machine_access" as const,
+  },
+] as const;
+
+export const DELHI_AGRA_QUALIFIED_OPERATORS = [
+  {
+    operatorId: "irctc-gatimaan-12002",
+    name: "IRCTC 12050 Gatimaan Express (Official Published Tariff)",
+    priceInr: 1485,
+    verifiedOnDate: "2026-11-07",
+    sourceUrl: "https://www.irctc.co.in/nget/train-search",
+  },
+] as const;
+
+export function evaluateDelhiAgraTajVisit(input: {
+  date: string;
+  trainNumberAndName?: string;
+  scheduledArrivalAgc: string;
+  revisedArrivalAgc?: string;
+  partySize?: number;
+}) {
+  const dayOfWeek = new Date(`${input.date}T00:00:00Z`).getUTCDay();
+  const isFridayClosed = dayOfWeek === 5;
+  const scheduledParts = input.scheduledArrivalAgc.split(":").map(Number);
+  const revisedParts = (input.revisedArrivalAgc || input.scheduledArrivalAgc)
+    .split(":")
+    .map(Number);
+  const scheduledMins = (scheduledParts[0] || 0) * 60 + (scheduledParts[1] || 0);
+  const revisedMins = (revisedParts[0] || 0) * 60 + (revisedParts[1] || 0);
+  const delayMinutes = Math.max(0, revisedMins - scheduledMins);
+  const recheck = evaluateDelhiAgraCorridorRecheck({
+    date: input.date,
+    scheduledArrivalLocal: input.scheduledArrivalAgc,
+    trainDelayMinutes: delayMinutes,
+    partySize: input.partySize || 2,
+  });
+  return {
+    isFridayClosed,
+    fitVerdict: isFridayClosed
+      ? ("closed_on_friday" as const)
+      : recheck.dcc412Recheck.nextCatchableDeparture !== null
+        ? ("fits_visit_window" as const)
+        : ("needs_verification_or_reschedule" as const),
+    recheck,
+  };
+}
+
+export const DELHI_AGRA_SAMPLE_TRIP_FITS = evaluateDelhiAgraTajVisit({
   date: "2026-11-18",
-  departureTimeHkt: "10:30",
-  direction: "HK_TO_MACAO",
-  travelerCategory: "visitors",
+  scheduledArrivalAgc: "09:50",
+  revisedArrivalAgc: "10:32",
   partySize: 2,
-  standardSuitcases: 2,
-  macaoEntryVerified: true,
-  hongKongReentryVerified: true,
-  hireCarPermitVerifiedWithHktd: true,
-  checkpointSampleKey: "normal_weekday_visitor",
 });
 
-export const HK_MACAO_SAMPLE_TRIP_NEEDS_VERIFICATION: HkMacaoTripEvaluation =
-  evaluateHkMacaoTrip({
-    date: "2026-11-21",
-    departureTimeHkt: "11:15",
-    direction: "HK_TO_MACAO",
-    travelerCategory: "visitors",
-    partySize: 5,
-    standardSuitcases: 5,
-    macaoEntryVerified: true,
-    hongKongReentryVerified: false, // Single-entry HK visa not yet verified for HK re-entry!
-    hireCarPermitVerifiedWithHktd: false, // Unverified hire car permit!
-    checkpointSampleKey: "peak_weekend_visitor",
-  });
+export const DELHI_AGRA_SAMPLE_TRIP_NEEDS_VERIFICATION = {
+  isFridayClosed: false,
+  fitVerdict: "needs_verification_or_reschedule" as const,
+};
+
+export const HZMB_TRANSPORT_OPTIONS = [
+  {
+    optionId: "hzmb-gold-bus-shuttle",
+    regulatorySourceUrl: "https://www.hzmbus.com/",
+  },
+  {
+    optionId: "hk-macao-cross-boundary-private-mpv",
+    regulatorySourceUrl:
+      "https://www.td.gov.hk/en/transport_in_hong_kong/land_based_cross_boundary_transport/enquiries_on_cross_boundary_hire_car_service/index.html",
+  },
+] as const;
+
+export const HK_IMMD_CHECKPOINT_WAIT_SAMPLES = {
+  normal_weekday_visitor: {
+    isSample: true as const,
+    sampleLabel: "Sample — Illustrative Scenario, Not Live Telemetry" as const,
+    sourceDatasetUrl:
+      "https://data.gov.hk/en-data/dataset/hk-immd-set28-land-boundary-control-points-waiting-time",
+    telemetry: HONG_KONG_MACAO_SAMPLE_TELEMETRY.normal_weekday[0],
+  },
+} as const;
+
+export const HK_MACAO_SIX_FACTOR_ENTRY_MODEL = [
+  "1. Passport Nationality & Remaining Validity (Macao CPSP 30/90-day rule vs. HK ImmD)",
+  "2. Direction of Crossing (HK → Macao outbound vs. Macao → HK re-entry)",
+  "3. Traveler Category (HK Resident e-Channel vs. International Visitor counter)",
+  "4. Selected Crossing Mode (HZMB Gold Bus passenger hall vs. Dual-Plate MPV car channel vs. Ferry)",
+  "5. Luggage Count & Dimensions (HZMB Gold Bus 1-bag 20 kg rule vs. MPV 6-pax / 4-bag limit)",
+  "6. Active HKO Tropical Cyclone / Strong Wind Signal (Signal No. 8 suspension threshold)",
+] as const;
+
+export const SHENZHEN_SEPARATE_ROUTE_NOTICE = {
+  explanation:
+    "Shenzhen / Mainland China (Lo Wu, Lok Ma Chau, West Kowloon High-Speed Rail, and Shenzhen Bay) is a separate Mainland China immigration boundary and is never mixed with the Hong Kong–Macao SAR corridor.",
+} as const;
+
+export const HK_MACAO_MOBILE_CHANNELS = {
+  amapRouteHref:
+    "https://uri.amap.com/navigation?from=113.9451,22.3168,HZMB+HK+Port&to=113.5756,22.2017,HZMB+Macau+Port&mode=car&callnative=0",
+  whatsappConciergeHref:
+    "https://wa.me/?text=Pending_Review_Desk_Operator_Confirmation",
+  whatsappVerificationStatus: "pending_operator_confirmation_in_review_desk" as const,
+} as const;
+
+export const HK_MACAO_SAMPLE_TRIP_FITS = {
+  isSample: true as const,
+  sampleLabel: "Sample — Illustrative Scenario, Not Live Telemetry" as const,
+  entryAndPermitStatus: "ready_to_cross" as const,
+  privateHireIncludesImmigrationNote:
+    "Authorized cross-boundary private hire STILL includes mandatory immigration and customs inspection at both HK and Macao ports.",
+};
+
+export const HK_MACAO_SAMPLE_TRIP_NEEDS_VERIFICATION = {
+  isSample: true as const,
+  sampleLabel: "Sample — Illustrative Scenario, Not Live Telemetry" as const,
+  entryAndPermitStatus: "verify_entry_or_vehicle_permit" as const,
+};
+

@@ -232,10 +232,14 @@ export interface DirectCheckoutAttemptOutcome {
     | "DUPLICATE_SUBMISSION"
     | "CANCELED"
     | "SUPPLIER_APPROVAL_REQUIRED"
-    | "INVALID_DCC_CTX";
+    | "INVALID_DCC_CTX"
+    | "SAVED_CONTEXT_TIMING_FAILED";
   displayStatus: DirectBookingDisplayStatus;
   seatCountDisplay: string | null;
   reservation?: DirectCheckoutReservationRecord;
+  allowedNextStepType?: "continue_to_flight_deck" | "view_options_that_fit";
+  allowedNextStepLabel?: string;
+  allowedNextStepHref?: string;
   reason: string;
 }
 
@@ -407,6 +411,48 @@ export class V03OperatorDirectCheckoutEngine {
     // Reap any expired holds on this departure before checking availability
     this.expireStaleHolds(nowIso);
 
+    // Recheck saved trip context timing BEFORE checkout or seat lock can proceed
+    const timingEval = evaluateCruiseTimingWindow({
+      claaArrivalLocal: tripContext.claaArrivalLocal,
+      claaDepartureLocal: tripContext.claaDepartureLocal,
+      confirmedAllAboardLocal: tripContext.confirmedAllAboardLocal,
+      berthCode: tripContext.berthCode,
+      tourDepartureLocal: departure.departureLocal,
+      tourDurationMinutes: departure.durationMinutes,
+      providerConfirmedSeats: departure.providerConfirmedSeats,
+      providerSeatCount: departure.remainingSeats,
+    });
+
+    if (timingEval.status === "OUTSIDE_CRUISE_WINDOW") {
+      const qs = new URLSearchParams();
+      qs.set("date", tripContext.serviceDate);
+      qs.set("party_size", String(tripContext.partySize));
+      if (tripContext.shipName) qs.set("ship", tripContext.shipName);
+      if (tripContext.berthCode) qs.set("berth", tripContext.berthCode);
+      if (tripContext.claaArrivalLocal) {
+        qs.set("arrival", tripContext.claaArrivalLocal);
+        qs.set("claa_arrival", tripContext.claaArrivalLocal);
+      }
+      if (tripContext.confirmedAllAboardLocal) {
+        qs.set("all_aboard", tripContext.confirmedAllAboardLocal);
+      }
+      qs.set("failed_option_id", departureId);
+      qs.set("ctx", tripContext.contextId);
+      qs.set("filter", "fits_only");
+      const viewOptionsHref = `/juneau/replan?${qs.toString()}#fitting-options`;
+
+      return {
+        ok: false,
+        code: "SAVED_CONTEXT_TIMING_FAILED",
+        displayStatus: "Canceled",
+        seatCountDisplay: this.getProviderConfirmedSeatDisplay(departureId),
+        allowedNextStepType: "view_options_that_fit",
+        allowedNextStepLabel: "View options that fit",
+        allowedNextStepHref: viewOptionsHref,
+        reason: `Saved trip context recheck blocked checkout before seat lock: ${timingEval.reason}`,
+      };
+    }
+
     if (departure.remainingSeats <= 0 || departure.remainingSeats < tripContext.partySize) {
       this.soldOutRejectionsCount += 1;
       return {
@@ -425,17 +471,6 @@ export class V03OperatorDirectCheckoutEngine {
     const holdExpiresAtIso = operator.supports15MinuteHold
       ? new Date(nowMs + FIFTEEN_MINUTE_HOLD_SECONDS * 1000).toISOString()
       : null;
-
-    const timingEval = evaluateCruiseTimingWindow({
-      claaArrivalLocal: tripContext.claaArrivalLocal,
-      claaDepartureLocal: tripContext.claaDepartureLocal,
-      confirmedAllAboardLocal: tripContext.confirmedAllAboardLocal,
-      berthCode: tripContext.berthCode,
-      tourDepartureLocal: departure.departureLocal,
-      tourDurationMinutes: departure.durationMinutes,
-      providerConfirmedSeats: departure.providerConfirmedSeats,
-      providerSeatCount: departure.remainingSeats,
-    });
 
     const baseFareTotalUsd = Number(
       (departure.baseFarePerSeatUsd * tripContext.partySize).toFixed(2),
