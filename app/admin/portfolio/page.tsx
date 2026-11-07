@@ -59,18 +59,55 @@ function originalName(event: any) {
   return String(metadataOf(event).original_event_name || event?.eventName || "");
 }
 
-function formatLastChecked(isoString: string) {
+function formatLastChecked(isoString: string | null | undefined) {
+  if (!isoString) return "Not checked";
   const date = new Date(isoString);
-  if (Number.isNaN(date.getTime())) return isoString;
-  return `${date.toISOString().slice(0, 10)} · ${date.toISOString().slice(11, 16)} UTC`;
+  if (Number.isNaN(date.getTime())) return "Not checked";
+  return `${date.toISOString().slice(0, 10)} · ${date.toISOString().slice(11, 19)} UTC`;
 }
 
-export default async function PortfolioDesktopPage() {
+function pickParam(
+  params: Record<string, string | string[] | undefined> | undefined,
+  key: string,
+): string | null {
+  if (!params) return null;
+  const val = params[key];
+  if (typeof val === "string" && val.trim()) return val.trim();
+  if (Array.isArray(val) && typeof val[0] === "string" && val[0].trim()) {
+    return val[0].trim();
+  }
+  return null;
+}
+
+export default async function PortfolioDesktopPage(props: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const resolvedSearchParams = props?.searchParams
+    ? await props.searchParams
+    : undefined;
+  const checkedCompanyId = pickParam(resolvedSearchParams, "checkedCompany");
+  const checkedProductId = pickParam(resolvedSearchParams, "checkedProduct");
+  const checkedType = pickParam(resolvedSearchParams, "checkType");
+  const checkedAtParam = pickParam(resolvedSearchParams, "checkedAt");
+
   const [events, missions, supplierConnections] = await Promise.all([
     listRecentProductionCorridorEvents(10000),
     listWorkflowMissions(),
     listPortfolioSupplierConnections(),
   ]);
+
+  const recentCheckBannerProduct =
+    checkedCompanyId && checkedProductId
+      ? supplierConnections
+          .find((c) => c.companyId === checkedCompanyId)
+          ?.productsAndBookingLinks.find((p) => p.productId === checkedProductId)
+      : undefined;
+  const recentCheckRecord =
+    recentCheckBannerProduct && checkedType === "booking_link"
+      ? recentCheckBannerProduct.bookingLinkCheck
+      : recentCheckBannerProduct && checkedType === "live_inventory"
+        ? recentCheckBannerProduct.liveInventoryCheck
+        : null;
 
   sweepExpiredSignals(new Date());
   const signals = readRuntimeSignals();
@@ -149,7 +186,7 @@ export default async function PortfolioDesktopPage() {
               <div className="text-xs font-black uppercase tracking-[0.18em] text-[#f5c66c]">Catalog + Operator Readiness</div>
               <h2 className="mt-2 text-2xl font-black">Supplier Connections</h2>
               <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-300">
-                Unifies the DCC storefront catalog and operator readiness records (<code className="rounded bg-black/40 px-1.5 py-0.5 text-xs text-zinc-200">lib/dcc/operatorOnboardingStore.ts</code>) so each company shows its products and booking links, checkout verified, live prices and seats verified, and last checked as separate fields.
+                Unifies the DCC storefront catalog and operator readiness records (<code className="rounded bg-black/40 px-1.5 py-0.5 text-xs text-zinc-200">lib/dcc/operatorOnboardingStore.ts</code>) so each company shows its products and booking links, checkout verified, live prices and seats verified (plus whether DCC displays that live result in the planner as a separate check), and real check times (<code className="rounded bg-black/40 px-1.5 py-0.5 text-xs text-zinc-200">Not checked</code> when no record exists). Use <strong>Check booking link</strong> and <strong>Check live inventory</strong> to save the product, result, and actual check time.
               </p>
             </div>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -160,8 +197,23 @@ export default async function PortfolioDesktopPage() {
             </div>
           </div>
 
+          {recentCheckRecord ? (
+            <div
+              data-testid="supplier-check-saved-banner"
+              className="mt-4 rounded-xl border border-emerald-400/35 bg-emerald-500/10 p-4 text-xs leading-5 text-emerald-100"
+            >
+              <div className="font-black uppercase tracking-[0.14em] text-emerald-300">
+                Saved {recentCheckRecord.checkType === "booking_link" ? "booking link check" : "live inventory check"} · {formatLastChecked(recentCheckRecord.checkedAt || checkedAtParam)}
+              </div>
+              <div className="mt-1 font-bold text-white">
+                {recentCheckRecord.productTitle} ({recentCheckRecord.productId}) — {recentCheckRecord.statusLabel}
+              </div>
+              <div className="mt-0.5 text-emerald-100/90">{recentCheckRecord.whatItProves}</div>
+            </div>
+          ) : null}
+
           <div className="mt-6 overflow-x-auto rounded-xl border border-white/10 bg-black/20">
-            <table className="w-full min-w-[1040px] border-collapse text-left text-sm">
+            <table className="w-full min-w-[1140px] border-collapse text-left text-sm">
               <thead>
                 <tr className="border-b border-white/10 bg-white/[0.03] text-[11px] font-black uppercase tracking-[0.16em] text-zinc-400">
                   <th className="px-4 py-3.5">Company</th>
@@ -293,11 +345,19 @@ export default async function PortfolioDesktopPage() {
 function SupplierConnectionRow({ company }: { company: SupplierConnectionRecord }) {
   const checkoutTone = company.checkoutVerified.verified
     ? "border-emerald-400/30 bg-emerald-500/10 text-emerald-100"
-    : "border-amber-400/30 bg-amber-500/10 text-amber-100";
+    : company.checkoutVerified.checkedAt
+      ? "border-amber-400/30 bg-amber-500/10 text-amber-100"
+      : "border-zinc-500/30 bg-zinc-500/10 text-zinc-300";
 
   const seatsTone = company.livePricesAndSeatsVerified.verified
     ? "border-emerald-400/30 bg-emerald-500/10 text-emerald-100"
-    : "border-amber-400/30 bg-amber-500/10 text-amber-100";
+    : company.livePricesAndSeatsVerified.checkedAt
+      ? "border-amber-400/30 bg-amber-500/10 text-amber-100"
+      : "border-zinc-500/30 bg-zinc-500/10 text-zinc-300";
+
+  const plannerTone = company.plannerLiveDisplayVerified.verified
+    ? "border-emerald-400/30 bg-emerald-500/10 text-emerald-100"
+    : "border-cyan-400/25 bg-cyan-500/10 text-cyan-100";
 
   return (
     <tr data-testid={`supplier-connection-row-${company.companyId}`} className="align-top">
@@ -315,10 +375,17 @@ function SupplierConnectionRow({ company }: { company: SupplierConnectionRecord 
       </td>
 
       <td className="px-4 py-4" data-testid={`supplier-products-${company.companyId}`}>
-        <ul className="space-y-2.5">
+        <ul className="space-y-3">
           {company.productsAndBookingLinks.map((prod) => (
-            <li key={prod.productId} className="rounded-lg border border-white/10 bg-white/[0.03] p-2.5">
-              <div className="font-bold text-white">{prod.title}</div>
+            <li
+              key={prod.productId}
+              data-testid={`supplier-product-item-${prod.productId}`}
+              className="rounded-lg border border-white/10 bg-white/[0.03] p-3"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="font-bold text-white">{prod.title}</div>
+                <span className="font-mono text-[11px] text-zinc-500">{prod.productId}</span>
+              </div>
               <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs">
                 <Link
                   href={prod.dccPageHref}
@@ -341,6 +408,68 @@ function SupplierConnectionRow({ company }: { company: SupplierConnectionRecord 
                   </span>
                 )}
               </div>
+
+              <div className="mt-2.5 grid gap-2 rounded-md border border-white/10 bg-black/30 p-2 text-[11px] leading-4 text-zinc-300">
+                <div data-testid={`product-booking-check-${prod.productId}`}>
+                  <span className="font-bold text-zinc-200">Booking link check: </span>
+                  {prod.bookingLinkCheck ? (
+                    <>
+                      <span className={prod.bookingLinkCheck.verified ? "font-semibold text-emerald-300" : "font-semibold text-amber-300"}>
+                        {prod.bookingLinkCheck.statusLabel}
+                      </span>{" "}
+                      <span className="font-mono text-zinc-400">
+                        ({formatLastChecked(prod.bookingLinkCheck.checkedAt)})
+                      </span>
+                      <div className="mt-0.5 text-zinc-400">{prod.bookingLinkCheck.whatItProves}</div>
+                    </>
+                  ) : (
+                    <span className="font-mono text-zinc-400">Not checked</span>
+                  )}
+                </div>
+                <div data-testid={`product-inventory-check-${prod.productId}`}>
+                  <span className="font-bold text-zinc-200">Live inventory check: </span>
+                  {prod.liveInventoryCheck ? (
+                    <>
+                      <span className={prod.liveInventoryCheck.verified ? "font-semibold text-emerald-300" : "font-semibold text-amber-300"}>
+                        {prod.liveInventoryCheck.statusLabel}
+                      </span>{" "}
+                      <span className="font-mono text-zinc-400">
+                        ({formatLastChecked(prod.liveInventoryCheck.checkedAt)})
+                      </span>
+                      <div className="mt-0.5 text-zinc-400">{prod.liveInventoryCheck.whatItProves}</div>
+                    </>
+                  ) : (
+                    <span className="font-mono text-zinc-400">Not checked</span>
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                <form action="/admin/portfolio/supplier-check" method="post">
+                  <input type="hidden" name="companyId" value={company.companyId} />
+                  <input type="hidden" name="productId" value={prod.productId} />
+                  <input type="hidden" name="checkType" value="booking_link" />
+                  <button
+                    type="submit"
+                    data-testid={`action-check-booking-link-${prod.productId}`}
+                    className="inline-flex items-center rounded-md border border-white/20 bg-white/[0.06] px-2.5 py-1 text-[11px] font-bold text-white hover:bg-white/15"
+                  >
+                    Check booking link
+                  </button>
+                </form>
+                <form action="/admin/portfolio/supplier-check" method="post">
+                  <input type="hidden" name="companyId" value={company.companyId} />
+                  <input type="hidden" name="productId" value={prod.productId} />
+                  <input type="hidden" name="checkType" value="live_inventory" />
+                  <button
+                    type="submit"
+                    data-testid={`action-check-live-inventory-${prod.productId}`}
+                    className="inline-flex items-center rounded-md border border-cyan-400/30 bg-cyan-500/10 px-2.5 py-1 text-[11px] font-bold text-cyan-100 hover:bg-cyan-500/20"
+                  >
+                    Check live inventory
+                  </button>
+                </form>
+              </div>
             </li>
           ))}
         </ul>
@@ -348,25 +477,77 @@ function SupplierConnectionRow({ company }: { company: SupplierConnectionRecord 
 
       <td className="px-4 py-4" data-testid={`supplier-checkout-verified-${company.companyId}`}>
         <span className={`inline-flex rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] ${checkoutTone}`}>
-          {company.checkoutVerified.verified ? "Yes · Verified" : "No · Pending"}
+          {company.checkoutVerified.verified
+            ? "Yes · Verified"
+            : company.checkoutVerified.checkedAt
+              ? "No · Pending"
+              : "Not checked"}
         </span>
         <div className="mt-2 text-xs font-bold text-zinc-200">{company.checkoutVerified.label}</div>
         <div className="mt-1 font-mono text-[11px] text-zinc-500">{company.checkoutVerified.code}</div>
-        <p className="mt-1.5 max-w-xs text-xs leading-5 text-zinc-400">{company.checkoutVerified.evidence}</p>
+        <div
+          data-testid={`supplier-checkout-what-it-proves-${company.companyId}`}
+          className="mt-2 rounded-md border border-white/10 bg-black/30 p-2 text-xs leading-5 text-zinc-300"
+        >
+          <strong className="block text-[10px] uppercase tracking-[0.12em] text-zinc-400">
+            What this check proves
+          </strong>
+          {company.checkoutVerified.whatItProves}
+        </div>
+        <div className="mt-1.5 font-mono text-[11px] text-zinc-400">
+          Checked: {formatLastChecked(company.checkoutVerified.checkedAt)}
+        </div>
       </td>
 
       <td className="px-4 py-4" data-testid={`supplier-live-prices-seats-verified-${company.companyId}`}>
         <span className={`inline-flex rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] ${seatsTone}`}>
-          {company.livePricesAndSeatsVerified.verified ? "Yes · Live Verified" : "No · Check Provider"}
+          {company.livePricesAndSeatsVerified.verified
+            ? "Yes · API Response Verified"
+            : company.livePricesAndSeatsVerified.checkedAt
+              ? "No · Check Provider"
+              : "Not checked"}
         </span>
         <div className="mt-2 text-xs font-bold text-zinc-200">{company.livePricesAndSeatsVerified.label}</div>
         <div className="mt-1 font-mono text-[11px] text-zinc-500">{company.livePricesAndSeatsVerified.code}</div>
-        <p className="mt-1.5 max-w-xs text-xs leading-5 text-zinc-400">{company.livePricesAndSeatsVerified.evidence}</p>
+        <div
+          data-testid={`supplier-live-what-it-proves-${company.companyId}`}
+          className="mt-2 rounded-md border border-white/10 bg-black/30 p-2 text-xs leading-5 text-zinc-300"
+        >
+          <strong className="block text-[10px] uppercase tracking-[0.12em] text-zinc-400">
+            What this check proves
+          </strong>
+          {company.livePricesAndSeatsVerified.whatItProves}
+        </div>
+        <div className="mt-1.5 font-mono text-[11px] text-zinc-400">
+          Checked: {formatLastChecked(company.livePricesAndSeatsVerified.checkedAt)}
+        </div>
+
+        <div
+          data-testid={`supplier-planner-live-display-${company.companyId}`}
+          className={`mt-3 rounded-lg border p-2.5 text-xs leading-5 ${plannerTone}`}
+        >
+          <div className="text-[10px] font-black uppercase tracking-[0.12em]">
+            Planner live display (separate check): {company.plannerLiveDisplayVerified.verified ? "Yes" : "No"}
+          </div>
+          <div className="mt-0.5 font-bold">{company.plannerLiveDisplayVerified.statusLabel}</div>
+          <div className="mt-1 text-[11px] opacity-90">{company.plannerLiveDisplayVerified.whatItProves}</div>
+        </div>
       </td>
 
       <td className="px-4 py-4" data-testid={`supplier-last-checked-${company.companyId}`}>
-        <div className="font-mono text-xs font-bold text-white">{formatLastChecked(company.lastChecked)}</div>
-        <div className="mt-1 font-mono text-[11px] text-zinc-500">{company.lastChecked}</div>
+        <div
+          data-testid={`supplier-last-checked-label-${company.companyId}`}
+          className="font-mono text-xs font-bold text-white"
+        >
+          {formatLastChecked(company.lastChecked)}
+        </div>
+        {company.lastChecked ? (
+          <div className="mt-0.5 font-mono text-[11px] text-zinc-500">{company.lastChecked}</div>
+        ) : null}
+        <div className="mt-2 space-y-1 border-t border-white/10 pt-2 font-mono text-[11px] text-zinc-400">
+          <div>Booking links: {formatLastChecked(company.bookingLinksLastChecked)}</div>
+          <div>Live inventory: {formatLastChecked(company.liveInventoryLastChecked)}</div>
+        </div>
         {company.needsAttentionNote ? (
           <div className="mt-2.5 max-w-xs rounded-lg border border-amber-300/20 bg-amber-400/10 p-2 text-xs leading-5 text-amber-100">
             <strong className="block text-[10px] uppercase tracking-[0.12em] text-amber-300">Needs attention</strong>

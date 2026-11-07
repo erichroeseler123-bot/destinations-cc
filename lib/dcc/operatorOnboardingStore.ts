@@ -18,6 +18,11 @@ import {
   getProductPrimaryBookingHref,
 } from "@/app/new-orleans/tours/pageConfig";
 import { PROVIDERS } from "@/app/new-orleans/data/providers";
+import { getActiveGoSnoRouteFeedSnapshotState } from "@/lib/dcc/applicability/gosnoRouteFeedSnapshot";
+import {
+  fetchAvailabilitiesForItem,
+  getWnoFareHarborHeaders,
+} from "@/lib/dcc/liveSlots/fareharbor";
 
 export const OPERATOR_ONBOARDING_OWNER = "dcc-operator-onboarding-queue";
 
@@ -85,6 +90,33 @@ export type OperatorOfferReadinessStatuses = {
   >;
 };
 
+export type SupplierCheckType = "booking_link" | "live_inventory";
+
+export type SupplierPlannerLiveDisplayCheck = {
+  verified: boolean;
+  statusLabel: string;
+  whatItProves: string;
+};
+
+export type SupplierProductCheckRecord = {
+  checkId: string;
+  companyId: string;
+  productId: string;
+  productTitle: string;
+  checkType: SupplierCheckType;
+  checkedAt: string;
+  verified: boolean;
+  code: string;
+  statusLabel: string;
+  whatItProves: string;
+  targetUrl: string | null;
+  httpStatus: number | null;
+  attributionVerified: boolean | null;
+  attributionTag: string | null;
+  datedApiResponseAt: string | null;
+  plannerLiveDisplayCheck: SupplierPlannerLiveDisplayCheck | null;
+};
+
 export type SupplierConnectionProductLink = {
   productId: string;
   title: string;
@@ -94,14 +126,19 @@ export type SupplierConnectionProductLink = {
   itemId?: string | null;
   flowId?: string | null;
   attributionTag?: string | null;
+  bookingLinkCheck: SupplierProductCheckRecord | null;
+  liveInventoryCheck: SupplierProductCheckRecord | null;
+  lastCheckedAt: string | null;
 };
 
 export type SupplierConnectionVerificationField<TCode extends string = string> = {
   verified: boolean;
   code: TCode;
   label: string;
+  whatItProves: string;
   evidence: string;
   evidenceSource: string | null;
+  checkedAt: string | null;
   readinessItem: CapabilityReadinessItem<TCode>;
 };
 
@@ -119,7 +156,10 @@ export type SupplierConnectionRecord = {
   livePricesAndSeatsVerified: SupplierConnectionVerificationField<
     "check_seats_at_fareharbor" | "check_seats_at_provider" | "live_seats_verified"
   >;
-  lastChecked: string;
+  plannerLiveDisplayVerified: SupplierPlannerLiveDisplayCheck;
+  bookingLinksLastChecked: string | null;
+  liveInventoryLastChecked: string | null;
+  lastChecked: string | null;
   needsAttentionNote: string | null;
   readinessStatuses: OperatorOfferReadinessStatuses;
 };
@@ -1900,85 +1940,325 @@ export async function deleteOperatorOnboardingApplicationById(
   };
 }
 
-function toVerificationField<TCode extends string>(
-  item: CapabilityReadinessItem<TCode>,
-): SupplierConnectionVerificationField<TCode> {
+export const SUPPLIER_CONNECTION_CHECKS_OWNER = "dcc-supplier-connection-checks";
+
+const SUPPLIER_CHECKS_LOCAL_PATH = path.resolve(
+  process.cwd(),
+  "data",
+  "memory",
+  "supplier-connection-checks.json",
+);
+
+const runtimeSupplierChecksOverlay = new Map<string, SupplierProductCheckRecord>();
+
+function supplierCheckKey(
+  companyId: string,
+  productId: string,
+  checkType: SupplierCheckType,
+): string {
+  return `${companyId.trim().toLowerCase()}::${productId.trim().toLowerCase()}::${checkType}`;
+}
+
+export function readSupplierProductCheckRecords(): SupplierProductCheckRecord[] {
+  const byKey = new Map<string, SupplierProductCheckRecord>();
+  try {
+    if (fs.existsSync(SUPPLIER_CHECKS_LOCAL_PATH)) {
+      const raw = fs.readFileSync(SUPPLIER_CHECKS_LOCAL_PATH, "utf8");
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        for (const item of parsed as SupplierProductCheckRecord[]) {
+          if (item && item.companyId && item.productId && item.checkType && item.checkedAt) {
+            byKey.set(
+              supplierCheckKey(item.companyId, item.productId, item.checkType),
+              item,
+            );
+          }
+        }
+      }
+    }
+  } catch {
+    // ignore file read error
+  }
+
+  for (const [k, v] of runtimeSupplierChecksOverlay.entries()) {
+    byKey.set(k, v);
+  }
+
+  return Array.from(byKey.values());
+}
+
+export function saveSupplierProductCheckRecord(
+  record: SupplierProductCheckRecord,
+): SupplierProductCheckRecord {
+  const key = supplierCheckKey(record.companyId, record.productId, record.checkType);
+  const existing = readSupplierProductCheckRecords();
+  const byKey = new Map<string, SupplierProductCheckRecord>();
+  for (const item of existing) {
+    byKey.set(supplierCheckKey(item.companyId, item.productId, item.checkType), item);
+  }
+  byKey.set(key, record);
+  runtimeSupplierChecksOverlay.set(key, record);
+
+  const allRecords = Array.from(byKey.values());
+  try {
+    const dir = path.dirname(SUPPLIER_CHECKS_LOCAL_PATH);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    fs.writeFileSync(
+      SUPPLIER_CHECKS_LOCAL_PATH,
+      JSON.stringify(allRecords, null, 2),
+      "utf8",
+    );
+  } catch {
+    // ignore read-only filesystem in serverless runtime; runtimeSupplierChecksOverlay retains it
+  }
+
+  return record;
+}
+
+function maxIsoTimestamp(
+  timestamps: Array<string | null | undefined>,
+): string | null {
+  let bestIso: string | null = null;
+  let bestMs = -Infinity;
+  for (const raw of timestamps) {
+    if (!raw || typeof raw !== "string") continue;
+    const ms = Date.parse(raw);
+    if (Number.isFinite(ms) && ms > bestMs) {
+      bestMs = ms;
+      bestIso = raw;
+    }
+  }
+  return bestIso;
+}
+
+type RawProductSpec = Omit<
+  SupplierConnectionProductLink,
+  "bookingLinkCheck" | "liveInventoryCheck" | "lastCheckedAt"
+>;
+
+function attachChecksToProducts(
+  companyId: string,
+  rawProducts: RawProductSpec[],
+  checkMap: Map<string, SupplierProductCheckRecord>,
+): SupplierConnectionProductLink[] {
+  return rawProducts.map((prod) => {
+    const bookingLinkCheck =
+      checkMap.get(supplierCheckKey(companyId, prod.productId, "booking_link")) ||
+      null;
+    const liveInventoryCheck =
+      checkMap.get(supplierCheckKey(companyId, prod.productId, "live_inventory")) ||
+      null;
+    const lastCheckedAt = maxIsoTimestamp([
+      bookingLinkCheck?.checkedAt,
+      liveInventoryCheck?.checkedAt,
+    ]);
+    return {
+      ...prod,
+      bookingLinkCheck,
+      liveInventoryCheck,
+      lastCheckedAt,
+    };
+  });
+}
+
+function buildCompanyRecordFromProductsAndChecks(params: {
+  companyId: string;
+  companyName: string;
+  providerShortname: string | null;
+  market: string;
+  bookingSystem: string;
+  rawProducts: RawProductSpec[];
+  checkMap: Map<string, SupplierProductCheckRecord>;
+  commissionTerms: CapabilityReadinessItem<
+    "commission_terms_pending" | "commission_terms_confirmed"
+  >;
+  apiBooking: CapabilityReadinessItem<
+    "api_booking_requires_approval" | "api_booking_approved"
+  >;
+  defaultPlannerDisplayCheck: SupplierPlannerLiveDisplayCheck;
+  defaultNeedsAttentionNote: string | null;
+}): SupplierConnectionRecord {
+  const products = attachChecksToProducts(
+    params.companyId,
+    params.rawProducts,
+    params.checkMap,
+  );
+
+  const bookingChecks = products
+    .map((p) => p.bookingLinkCheck)
+    .filter((c): c is SupplierProductCheckRecord => c !== null);
+  const inventoryChecks = products
+    .map((p) => p.liveInventoryCheck)
+    .filter((c): c is SupplierProductCheckRecord => c !== null);
+
+  const bookingLinksLastChecked = maxIsoTimestamp(
+    bookingChecks.map((c) => c.checkedAt),
+  );
+  const liveInventoryLastChecked = maxIsoTimestamp(
+    inventoryChecks.map((c) => c.checkedAt),
+  );
+  const lastChecked = maxIsoTimestamp([
+    bookingLinksLastChecked,
+    liveInventoryLastChecked,
+  ]);
+
+  const anyBookingVerified =
+    bookingChecks.length > 0 && bookingChecks.some((c) => c.verified);
+  const allBookingVerified =
+    products.length > 0 &&
+    products.every((p) => p.bookingLinkCheck?.verified === true);
+
+  const checkoutCode: "checkout_tested" | "checkout_pending_test" =
+    anyBookingVerified ? "checkout_tested" : "checkout_pending_test";
+
+  const checkoutLabel =
+    bookingChecks.length === 0
+      ? "Not checked"
+      : allBookingVerified
+        ? bookingChecks[0].statusLabel
+        : anyBookingVerified
+          ? `${bookingChecks.filter((c) => c.verified).length}/${products.length} product booking links verified`
+          : bookingChecks[0].statusLabel;
+
+  const checkoutWhatItProves =
+    bookingChecks.length === 0
+      ? "No booking link check recorded yet. Use 'Check booking link' to verify the DCC page and outbound checkout attribution."
+      : bookingChecks.map((c) => `${c.productTitle}: ${c.whatItProves}`).join(" · ");
+
+  const checkoutReadinessItem: CapabilityReadinessItem<
+    "checkout_tested" | "checkout_pending_test"
+  > = {
+    capability: "checkout",
+    code: checkoutCode,
+    label: checkoutLabel,
+    ready: anyBookingVerified,
+    evidence: checkoutWhatItProves,
+    evidenceSource: bookingChecks[0]?.targetUrl || null,
+    updatedAt: bookingLinksLastChecked || "not_checked",
+  };
+
+  const anyInventoryVerified =
+    inventoryChecks.length > 0 && inventoryChecks.some((c) => c.verified);
+  const isFareHarbor =
+    params.bookingSystem.toLowerCase().includes("fareharbor") ||
+    Boolean(params.providerShortname && params.providerShortname !== "gosno");
+
+  const seatCode:
+    | "check_seats_at_fareharbor"
+    | "check_seats_at_provider"
+    | "live_seats_verified" = anyInventoryVerified
+    ? "live_seats_verified"
+    : isFareHarbor
+      ? "check_seats_at_fareharbor"
+      : "check_seats_at_provider";
+
+  const seatLabel =
+    inventoryChecks.length === 0
+      ? "Not checked"
+      : inventoryChecks[0].statusLabel;
+
+  const seatWhatItProves =
+    inventoryChecks.length === 0
+      ? "No live inventory check recorded yet. Use 'Check live inventory' to test the supplier API/feed and record a check time."
+      : inventoryChecks
+          .map((c) => `${c.productTitle}: ${c.whatItProves}`)
+          .join(" · ");
+
+  const seatReadinessItem: CapabilityReadinessItem<
+    "check_seats_at_fareharbor" | "check_seats_at_provider" | "live_seats_verified"
+  > = {
+    capability: "seat_availability",
+    code: seatCode,
+    label: seatLabel,
+    ready: anyInventoryVerified,
+    evidence: seatWhatItProves,
+    evidenceSource: inventoryChecks[0]?.targetUrl || null,
+    updatedAt: liveInventoryLastChecked || "not_checked",
+  };
+
+  const plannerDisplayFromChecks =
+    inventoryChecks.find((c) => c.plannerLiveDisplayCheck)?.plannerLiveDisplayCheck ||
+    params.defaultPlannerDisplayCheck;
+
+  const readinessStatuses: OperatorOfferReadinessStatuses = {
+    checkout: checkoutReadinessItem,
+    seatAvailability: seatReadinessItem,
+    commissionTerms: params.commissionTerms,
+    apiBooking: params.apiBooking,
+  };
+
+  const connectionStatus: SupplierConnectionRecord["connectionStatus"] =
+    anyBookingVerified && anyInventoryVerified
+      ? "connected"
+      : anyBookingVerified
+        ? "checkout_only"
+        : "needs_attention";
+
   return {
-    verified: item.ready,
-    code: item.code,
-    label: item.label,
-    evidence: item.evidence,
-    evidenceSource: item.evidenceSource,
-    readinessItem: item,
+    companyId: params.companyId,
+    companyName: params.companyName,
+    providerShortname: params.providerShortname,
+    market: params.market,
+    bookingSystem: params.bookingSystem,
+    connectionStatus,
+    productsAndBookingLinks: products,
+    checkoutVerified: {
+      verified: anyBookingVerified,
+      code: checkoutCode,
+      label: checkoutLabel,
+      whatItProves: checkoutWhatItProves,
+      evidence: checkoutWhatItProves,
+      evidenceSource: checkoutReadinessItem.evidenceSource,
+      checkedAt: bookingLinksLastChecked,
+      readinessItem: checkoutReadinessItem,
+    },
+    livePricesAndSeatsVerified: {
+      verified: anyInventoryVerified,
+      code: seatCode,
+      label: seatLabel,
+      whatItProves: seatWhatItProves,
+      evidence: seatWhatItProves,
+      evidenceSource: seatReadinessItem.evidenceSource,
+      checkedAt: liveInventoryLastChecked,
+      readinessItem: seatReadinessItem,
+    },
+    plannerLiveDisplayVerified: plannerDisplayFromChecks,
+    bookingLinksLastChecked,
+    liveInventoryLastChecked,
+    lastChecked,
+    needsAttentionNote: params.defaultNeedsAttentionNote,
+    readinessStatuses,
   };
 }
 
 export function buildBaselinePortfolioSupplierConnections(): SupplierConnectionRecord[] {
-  const checkedAt = "2026-11-07T15:30:00Z";
+  const savedChecks = readSupplierProductCheckRecords();
+  const checkMap = new Map<string, SupplierProductCheckRecord>();
+  for (const rec of savedChecks) {
+    checkMap.set(
+      supplierCheckKey(rec.companyId, rec.productId, rec.checkType),
+      rec,
+    );
+  }
 
-  const southernStyleProducts: SupplierConnectionProductLink[] = STOREFRONT_PRODUCTS.filter(
+  const southernStyleRawProducts: RawProductSpec[] = STOREFRONT_PRODUCTS.filter(
     (p) => p.companyShortname === "southernstyletours" && p.fareharborAsnActive === true,
-  ).map((product) => {
-    const bookingHref = getProductPrimaryBookingHref(product);
-    return {
-      productId: product.id,
-      title: product.title,
-      dccPageHref: `/new-orleans/tours/${product.slug}`,
-      bookingHref,
-      bookingLinkLabel: `FareHarbor #${product.itemId || product.id} (asn=aktourcenter)`,
-      itemId: product.itemId || null,
-      flowId: product.flowId || null,
-      attributionTag: "asn=aktourcenter",
-    };
-  });
+  ).map((product) => ({
+    productId: product.id,
+    title: product.title,
+    dccPageHref: `/new-orleans/tours/${product.slug}`,
+    bookingHref: getProductPrimaryBookingHref(product),
+    bookingLinkLabel: `FareHarbor #${product.itemId || product.id} (asn=aktourcenter)`,
+    itemId: product.itemId || null,
+    flowId: product.flowId || null,
+    attributionTag: "asn=aktourcenter",
+  }));
 
-  const southernStyleReadiness: OperatorOfferReadinessStatuses = {
-    checkout: {
-      capability: "checkout",
-      code: "checkout_tested",
-      label: "Checkout verified (asn=aktourcenter)",
-      ready: true,
-      evidence:
-        "Verified live on DCC storefront (/new-orleans/tours/city-tour-of-new-orleans, /new-orleans/tours/oak-alley-or-laura-plantation-tour, /new-orleans/tours/all-day-city-plantation-combo) — FareHarbor links carry asn=aktourcenter attribution.",
-      evidenceSource: "fareharbor_live_checkout_verification:southernstyletours",
-      updatedAt: checkedAt,
-    },
-    seatAvailability: {
-      capability: "seat_availability",
-      code: "check_seats_at_fareharbor",
-      label: "Check seats & live prices at FareHarbor",
-      ready: false,
-      evidence:
-        "Storefront displays baseline per-person rates ($50–$99); live departure seats and dynamic pricing require FareHarbor External API v1 supplier read access.",
-      evidenceSource: "fareharbor_asn_embed:southernstyletours",
-      updatedAt: checkedAt,
-    },
-    commissionTerms: {
-      capability: "commission_terms",
-      code: "commission_terms_confirmed",
-      label: "ASN attribution active (aktourcenter)",
-      ready: true,
-      evidence:
-        "FareHarbor ASN referral links active under aktourcenter across items 51942, 83002, and 51953.",
-      evidenceSource: "fareharbor_asn:aktourcenter:southernstyletours",
-      updatedAt: checkedAt,
-    },
-    apiBooking: {
-      capability: "api_booking",
-      code: "api_booking_requires_approval",
-      label: "External API v1 read/write pending supplier grant",
-      ready: false,
-      evidence:
-        "Guests complete checkout on FareHarbor with aktourcenter attribution; External API v1 access requires supplier-granted API key permission.",
-      evidenceSource: null,
-      updatedAt: checkedAt,
-    },
-  };
-
-  const raginCajunProducts: SupplierConnectionProductLink[] = STOREFRONT_PRODUCTS.filter(
+  const raginCajunRawProducts: RawProductSpec[] = STOREFRONT_PRODUCTS.filter(
     (p) => p.companyShortname === "ragincajuntours" && p.fareharborAsnActive === true,
   ).map((product) => {
-    const bookingHref = getProductPrimaryBookingHref(product);
     const variantItemIds =
       product.bookingVariants && product.bookingVariants.length > 1
         ? product.bookingVariants.map((v) => `#${v.itemId}`).join(" / ")
@@ -1987,7 +2267,7 @@ export function buildBaselinePortfolioSupplierConnections(): SupplierConnectionR
       productId: product.id,
       title: product.title,
       dccPageHref: `/new-orleans/tours/${product.slug}`,
-      bookingHref,
+      bookingHref: getProductPrimaryBookingHref(product),
       bookingLinkLabel: `FareHarbor ${variantItemIds} (asn=aktourcenter)`,
       itemId: product.itemId || null,
       flowId: product.flowId || null,
@@ -1995,50 +2275,7 @@ export function buildBaselinePortfolioSupplierConnections(): SupplierConnectionR
     };
   });
 
-  const raginCajunReadiness: OperatorOfferReadinessStatuses = {
-    checkout: {
-      capability: "checkout",
-      code: "checkout_tested",
-      label: "Checkout verified (asn=aktourcenter)",
-      ready: true,
-      evidence:
-        "Verified live on DCC storefront (/new-orleans/tours/ragin-cajun-airboat-options, /new-orleans/tours/covered-tour-boat, /new-orleans/tours/covered-boat-plantation-combo) — FareHarbor links carry asn=aktourcenter attribution.",
-      evidenceSource: "fareharbor_live_checkout_verification:ragincajuntours",
-      updatedAt: checkedAt,
-    },
-    seatAvailability: {
-      capability: "seat_availability",
-      code: "check_seats_at_fareharbor",
-      label: "Check dates, prices & seats at FareHarbor",
-      ready: false,
-      evidence:
-        "External API v1 returned HTTP 403 Not Authorized for aktourcenter on ragincajuntours; storefront labels pre-tax estimates, gates item 228561 Luling meeting point, and shows 'Check dates and prices on FareHarbor' until supplier read access is enabled.",
-      evidenceSource: "fareharbor_external_api_v1_probe:ragincajuntours:403",
-      updatedAt: checkedAt,
-    },
-    commissionTerms: {
-      capability: "commission_terms",
-      code: "commission_terms_confirmed",
-      label: "ASN attribution active (aktourcenter)",
-      ready: true,
-      evidence:
-        "FareHarbor ASN referral links active under aktourcenter across airboat options (228561, 228524, 448291), covered tour boat (590176), and combo (603090).",
-      evidenceSource: "fareharbor_asn:aktourcenter:ragincajuntours",
-      updatedAt: checkedAt,
-    },
-    apiBooking: {
-      capability: "api_booking",
-      code: "api_booking_requires_approval",
-      label: "External API v1 permission required",
-      ready: false,
-      evidence:
-        "Requires Ragin Cajun Tours / FareHarbor Support to grant External API v1 affiliate read/booking permission for user key onto company shortname ragincajuntours.",
-      evidenceSource: null,
-      updatedAt: checkedAt,
-    },
-  };
-
-  const gosnoProducts: SupplierConnectionProductLink[] = [
+  const gosnoRawProducts: RawProductSpec[] = [
     {
       productId: "gosno-colorado-planner-vail-booking",
       title: "DCC Colorado Planner — Vail Private SUV / Van Booking (1–10 Pax)",
@@ -2074,60 +2311,20 @@ export function buildBaselinePortfolioSupplierConnections(): SupplierConnectionR
     },
   ];
 
-  const gosnoReadiness: OperatorOfferReadinessStatuses = {
-    checkout: {
-      capability: "checkout",
-      code: "checkout_tested",
-      label: "Checkout & quote handoff verified",
-      ready: true,
-      evidence:
-        "Verified live on /transportation/colorado — DCC Colorado planner routes 1–10 guest trips to GoSno booking and 11+ guest trips to GoSno multi-vehicle quote with src=dcc-authority-colorado.",
-      evidenceSource: "dcc_colorado_planner_verification:gosno",
-      updatedAt: checkedAt,
+  const jeanLafitteRawProducts: RawProductSpec[] = [
+    {
+      productId: "jeanlafitte-swamp-tour-with-hotel-pickup",
+      title: "Jean Lafitte Swamp Tour with Hotel Pickup (Item #763318)",
+      dccPageHref: "/new-orleans/tours/jeanlafitte-swamp-tour-with-hotel-pickup",
+      bookingHref: JEAN_LAFITTE_763318_ONBOARDING_EXAMPLE.existingCheckoutLink,
+      bookingLinkLabel: "FareHarbor #763318 ($131.44 / 2 adults walkthrough)",
+      itemId: JEAN_LAFITTE_763318_ONBOARDING_EXAMPLE.offerItemId,
+      flowId: "no",
+      attributionTag: "ref=WelcomeToNewOrleansTours",
     },
-    seatAvailability: {
-      capability: "seat_availability",
-      code: "check_seats_at_provider",
-      label: "Route snapshot active · live fleet on GoSno",
-      ready: false,
-      evidence:
-        "GoSno route feed snapshot verifies baseline private SUV ($499) and van quote rules; live vehicle assignment and custom 11+ pax quote pricing are confirmed on GoSno.",
-      evidenceSource: "gosno_route_feed_snapshot",
-      updatedAt: checkedAt,
-    },
-    commissionTerms: {
-      capability: "commission_terms",
-      code: "commission_terms_confirmed",
-      label: "Portfolio satellite attribution active",
-      ready: true,
-      evidence:
-        "Two-way satellite handoff telemetry and src=dcc-authority-colorado attribution active between DCC and GoSno.",
-      evidenceSource: "dcc_satellite_handoffs:gosno",
-      updatedAt: checkedAt,
-    },
-    apiBooking: {
-      capability: "api_booking",
-      code: "api_booking_requires_approval",
-      label: "Checkout & quote completed on GoSno",
-      ready: false,
-      evidence:
-        "Payment, Rezdy provisioning, and operations queue stay inside GoSno.",
-      evidenceSource: null,
-      updatedAt: checkedAt,
-    },
-  };
+  ];
 
-  const jeanLafitteReadiness = buildInitialOfferReadinessStatuses({
-    bookingSystem: JEAN_LAFITTE_763318_ONBOARDING_EXAMPLE.bookingSystem,
-    operatorName: JEAN_LAFITTE_763318_ONBOARDING_EXAMPLE.operatorName,
-    exactTourOption: JEAN_LAFITTE_763318_ONBOARDING_EXAMPLE.exactTourOption,
-    existingCheckoutLink: JEAN_LAFITTE_763318_ONBOARDING_EXAMPLE.existingCheckoutLink,
-    tourId: JEAN_LAFITTE_763318_ONBOARDING_EXAMPLE.tourId,
-    offerItemId: JEAN_LAFITTE_763318_ONBOARDING_EXAMPLE.offerItemId,
-    nowIso: "2026-11-06T21:42:51Z",
-  });
-
-  const steamboatProducts: SupplierConnectionProductLink[] = STOREFRONT_PRODUCTS.filter(
+  const steamboatRawProducts: RawProductSpec[] = STOREFRONT_PRODUCTS.filter(
     (p) => p.companyShortname === "neworleanssteamboatcompany",
   )
     .slice(0, 4)
@@ -2142,65 +2339,21 @@ export function buildBaselinePortfolioSupplierConnections(): SupplierConnectionR
       attributionTag: "asn=welcometoneworleanstours",
     }));
 
-  const steamboatReadiness: OperatorOfferReadinessStatuses = {
-    checkout: {
-      capability: "checkout",
-      code: "checkout_tested",
-      label: "Checkout verified (asn=welcometoneworleanstours)",
-      ready: true,
-      evidence:
-        "FareHarbor ASN embed links active for New Orleans Steamboat Company and Gray Line riverboat, plantation, swamp, and walking tours.",
-      evidenceSource: "fareharbor_asn:neworleanssteamboatcompany",
-      updatedAt: "2026-11-06T21:42:51Z",
-    },
-    seatAvailability: {
-      capability: "seat_availability",
-      code: "check_seats_at_fareharbor",
-      label: "Check seats at FareHarbor",
-      ready: false,
-      evidence:
-        "Published flat rates verified in catalog; remaining departure seat capacity is confirmed inside FareHarbor checkout.",
-      evidenceSource: "fareharbor_asn:neworleanssteamboatcompany",
-      updatedAt: "2026-11-06T21:42:51Z",
-    },
-    commissionTerms: {
-      capability: "commission_terms",
-      code: "commission_terms_confirmed",
-      label: "ASN attribution active (welcometoneworleanstours)",
-      ready: true,
-      evidence:
-        "Configured with ref=WelcomeToNewOrleansTours and asn=welcometoneworleanstours across 12 catalog products.",
-      evidenceSource: "fareharbor_asn:neworleanssteamboatcompany",
-      updatedAt: "2026-11-06T21:42:51Z",
-    },
-    apiBooking: {
-      capability: "api_booking",
-      code: "api_booking_requires_approval",
-      label: "Hosted FareHarbor checkout",
-      ready: false,
-      evidence:
-        "Bookings complete on New Orleans Steamboat Company / Gray Line hosted FareHarbor flows.",
-      evidenceSource: null,
-      updatedAt: "2026-11-06T21:42:51Z",
-    },
-  };
-
   const pendingCatalogProviders: SupplierConnectionRecord[] = Object.values(PROVIDERS)
     .filter((provider) => provider.status === "pending_inventory")
     .map((provider) => {
       const readiness = buildInitialOfferReadinessStatuses({
         bookingSystem: provider.bookingPlatform || "other",
         operatorName: provider.displayName,
-        nowIso: checkedAt,
+        nowIso: "not_checked",
       });
-      return {
+      return buildCompanyRecordFromProductsAndChecks({
         companyId: provider.id,
         companyName: provider.displayName,
         providerShortname: provider.fareHarborShortname,
         market: "New Orleans (WNO Catalog)",
         bookingSystem: provider.bookingPlatform || "Pending onboarding",
-        connectionStatus: "needs_attention" as const,
-        productsAndBookingLinks: provider.productIds.map((pid) => ({
+        rawProducts: provider.productIds.map((pid) => ({
           productId: pid,
           title: pid
             .replaceAll("-", " ")
@@ -2212,110 +2365,206 @@ export function buildBaselinePortfolioSupplierConnections(): SupplierConnectionR
           flowId: null,
           attributionTag: null,
         })),
-        checkoutVerified: toVerificationField(readiness.checkout),
-        livePricesAndSeatsVerified: toVerificationField(readiness.seatAvailability),
-        lastChecked: checkedAt,
-        needsAttentionNote:
+        checkMap,
+        commissionTerms: readiness.commissionTerms,
+        apiBooking: readiness.apiBooking,
+        defaultPlannerDisplayCheck: {
+          verified: false,
+          statusLabel: "Not displayed — pending inventory onboarding",
+          whatItProves:
+            "Separate planner display check: no live inventory or checkout link is connected for this provider yet.",
+        },
+        defaultNeedsAttentionNote:
           "Catalog provider marked pending_inventory — needs verified checkout links, dated rate sheet, and live seat availability.",
-        readinessStatuses: readiness,
-      };
+      });
     });
 
   return [
-    {
+    buildCompanyRecordFromProductsAndChecks({
       companyId: "southern-style-tours",
       companyName: "Southern Style Tours",
       providerShortname: "southernstyletours",
       market: "New Orleans (DCC / WNO)",
       bookingSystem: "FareHarbor (ASN: aktourcenter)",
-      connectionStatus: "checkout_only",
-      productsAndBookingLinks: southernStyleProducts,
-      checkoutVerified: toVerificationField(southernStyleReadiness.checkout),
-      livePricesAndSeatsVerified: toVerificationField(
-        southernStyleReadiness.seatAvailability,
-      ),
-      lastChecked: checkedAt,
-      needsAttentionNote:
-        "Checkout links verified live with AKTOURCENTER attribution; enable FareHarbor External API v1 read permission for live seat counts and prices.",
-      readinessStatuses: southernStyleReadiness,
-    },
-    {
+      rawProducts: southernStyleRawProducts,
+      checkMap,
+      commissionTerms: {
+        capability: "commission_terms",
+        code: "commission_terms_confirmed",
+        label: "ASN attribution active (aktourcenter)",
+        ready: true,
+        evidence:
+          "FareHarbor ASN referral links active under aktourcenter across items 51942, 83002, and 51953.",
+        evidenceSource: "fareharbor_asn:aktourcenter:southernstyletours",
+        updatedAt: "2026-11-07T22:14:46.000Z",
+      },
+      apiBooking: {
+        capability: "api_booking",
+        code: "api_booking_requires_approval",
+        label: "External API v1 read/write pending supplier grant",
+        ready: false,
+        evidence:
+          "Guests complete checkout on FareHarbor with aktourcenter attribution; External API v1 access requires supplier-granted API key permission.",
+        evidenceSource: null,
+        updatedAt: "not_checked",
+      },
+      defaultPlannerDisplayCheck: {
+        verified: false,
+        statusLabel: "Storefront shows static baseline rates ($50–$99)",
+        whatItProves:
+          "Separate planner display check: DCC storefront displays static baseline rates ($50–$99) and opens FareHarbor checkout rather than rendering live API seat counts.",
+      },
+      defaultNeedsAttentionNote:
+        "Booking links and AKTOURCENTER attribution verified; run 'Check live inventory' or enable FareHarbor External API v1 read permission for live seat counts and prices.",
+    }),
+    buildCompanyRecordFromProductsAndChecks({
       companyId: "ragin-cajun-tours",
       companyName: "Ragin Cajun Airboat Tours",
       providerShortname: "ragincajuntours",
       market: "New Orleans (DCC / WNO)",
       bookingSystem: "FareHarbor (ASN: aktourcenter)",
-      connectionStatus: "checkout_only",
-      productsAndBookingLinks: raginCajunProducts,
-      checkoutVerified: toVerificationField(raginCajunReadiness.checkout),
-      livePricesAndSeatsVerified: toVerificationField(
-        raginCajunReadiness.seatAvailability,
-      ),
-      lastChecked: checkedAt,
-      needsAttentionNote:
-        "Checkout links verified live with AKTOURCENTER attribution; External API v1 returns HTTP 403 until ragincajuntours grants API read access and confirms item 228561 Luling meeting point.",
-      readinessStatuses: raginCajunReadiness,
-    },
-    {
+      rawProducts: raginCajunRawProducts,
+      checkMap,
+      commissionTerms: {
+        capability: "commission_terms",
+        code: "commission_terms_confirmed",
+        label: "ASN attribution active (aktourcenter)",
+        ready: true,
+        evidence:
+          "FareHarbor ASN referral links active under aktourcenter across airboat options (228561, 228524, 448291), covered tour boat (590176), and combo (603090).",
+        evidenceSource: "fareharbor_asn:aktourcenter:ragincajuntours",
+        updatedAt: "2026-11-07T22:15:41.000Z",
+      },
+      apiBooking: {
+        capability: "api_booking",
+        code: "api_booking_requires_approval",
+        label: "External API v1 permission required",
+        ready: false,
+        evidence:
+          "Requires Ragin Cajun Tours / FareHarbor Support to grant External API v1 affiliate read/booking permission for user key onto company shortname ragincajuntours.",
+        evidenceSource: null,
+        updatedAt: "2026-11-07T22:15:24.000Z",
+      },
+      defaultPlannerDisplayCheck: {
+        verified: false,
+        statusLabel: "Fallback active: pre-tax estimates + Check dates and prices on FareHarbor",
+        whatItProves:
+          "Separate planner display check: because live API inventory is unavailable, the storefront labels pre-tax estimates, gates item 228561 Luling meeting point directions, and shows 'Check dates and prices on FareHarbor'.",
+      },
+      defaultNeedsAttentionNote:
+        "Airboat options and Covered swamp boat booking links verified with AKTOURCENTER attribution; External API v1 returns HTTP 403 until ragincajuntours grants API read access.",
+    }),
+    buildCompanyRecordFromProductsAndChecks({
       companyId: "gosno",
       companyName: "GoSno",
       providerShortname: "gosno",
       market: "Colorado (DCC Mountain Corridor)",
-      bookingSystem: "GoSno Direct Booking & Quote",
-      connectionStatus: "checkout_only",
-      productsAndBookingLinks: gosnoProducts,
-      checkoutVerified: toVerificationField(gosnoReadiness.checkout),
-      livePricesAndSeatsVerified: toVerificationField(gosnoReadiness.seatAvailability),
-      lastChecked: checkedAt,
-      needsAttentionNote:
-        "DCC Colorado planner routes to GoSno booking (1–10 pax) or quote (11+ pax); live vehicle dispatch and custom quote totals confirm on GoSno.",
-      readinessStatuses: gosnoReadiness,
-    },
-    {
+      bookingSystem: "GoSno Direct Booking & Quote + Route Feed API",
+      rawProducts: gosnoRawProducts,
+      checkMap,
+      commissionTerms: {
+        capability: "commission_terms",
+        code: "commission_terms_confirmed",
+        label: "Portfolio satellite attribution active",
+        ready: true,
+        evidence:
+          "Two-way satellite handoff telemetry and src=dcc-authority-colorado attribution active between DCC and GoSno.",
+        evidenceSource: "dcc_satellite_handoffs:gosno",
+        updatedAt: "2026-11-07T22:16:58.000Z",
+      },
+      apiBooking: {
+        capability: "api_booking",
+        code: "api_booking_requires_approval",
+        label: "Checkout & quote completed on GoSno",
+        ready: false,
+        evidence:
+          "Payment, Rezdy provisioning, and operations queue stay inside GoSno.",
+        evidenceSource: null,
+        updatedAt: "2026-11-07T22:17:09.000Z",
+      },
+      defaultPlannerDisplayCheck: {
+        verified: false,
+        statusLabel: "Separate check: planner displays static reference baseline",
+        whatItProves:
+          "Whether DCC displays that live API result in the planner is a separate check: /transportation/colorado currently renders static reference copy ($499 DEN–Vail SUV baseline) and handoff links rather than binding the live GoSno API route-feed prices ($399 Breckenridge SUV, $449 Vail SUV, $549 Vail Van) directly into the planner UI.",
+      },
+      defaultNeedsAttentionNote:
+        "GoSno booking/quote links and dated API price & availability response (https://gosno.co/api/public/route-feed) are verified; /transportation/colorado still displays static baseline copy rather than live API feed prices.",
+    }),
+    buildCompanyRecordFromProductsAndChecks({
       companyId: "jean-lafitte-swamp-tours",
       companyName: JEAN_LAFITTE_763318_ONBOARDING_EXAMPLE.operatorName,
       providerShortname: JEAN_LAFITTE_763318_ONBOARDING_EXAMPLE.providerShortname,
       market: "New Orleans (DCC / WNO)",
       bookingSystem: "FareHarbor (Item #763318) + Viator Fallback",
-      connectionStatus: "checkout_only",
-      productsAndBookingLinks: [
-        {
-          productId: "jeanlafitte-swamp-tour-with-hotel-pickup",
-          title: "Jean Lafitte Swamp Tour with Hotel Pickup (Item #763318)",
-          dccPageHref: "/new-orleans/tours/jeanlafitte-swamp-tour-with-hotel-pickup",
-          bookingHref: JEAN_LAFITTE_763318_ONBOARDING_EXAMPLE.existingCheckoutLink,
-          bookingLinkLabel: "FareHarbor #763318 ($131.44 / 2 adults tested)",
-          itemId: JEAN_LAFITTE_763318_ONBOARDING_EXAMPLE.offerItemId,
-          flowId: "no",
-          attributionTag: "ref=WelcomeToNewOrleansTours",
-        },
-      ],
-      checkoutVerified: toVerificationField(jeanLafitteReadiness.checkout),
-      livePricesAndSeatsVerified: toVerificationField(
-        jeanLafitteReadiness.seatAvailability,
-      ),
-      lastChecked: "2026-11-06T21:42:51Z",
-      needsAttentionNote:
-        "Checkout tested ($131.44 for 2 adults with Hotel Monteleone pickup #22056428); awaiting ASN affiliate rules activation and live numeric seat feed.",
-      readinessStatuses: jeanLafitteReadiness,
-    },
-    {
+      rawProducts: jeanLafitteRawProducts,
+      checkMap,
+      commissionTerms: {
+        capability: "commission_terms",
+        code: "commission_terms_pending",
+        label: "Commission terms pending",
+        ready: false,
+        evidence:
+          "FareHarbor item #763318 currently returns is_affiliate_rules_applied: false; awaiting operator confirmation of affiliate account and commission terms.",
+        evidenceSource: null,
+        updatedAt: "not_checked",
+      },
+      apiBooking: {
+        capability: "api_booking",
+        code: "api_booking_requires_approval",
+        label: "API booking requires approval",
+        ready: false,
+        evidence:
+          "Guests are routed to hosted checkout; direct API booking requires provider-approved API access.",
+        evidenceSource: null,
+        updatedAt: "not_checked",
+      },
+      defaultPlannerDisplayCheck: {
+        verified: false,
+        statusLabel: "Storefront shows walkthrough flat rate ($131.44 / 2 adults)",
+        whatItProves:
+          "Separate planner display check: storefront shows static walkthrough total ($131.44 for 2 adults) rather than live API seat counts.",
+      },
+      defaultNeedsAttentionNote:
+        "Run 'Check booking link' and 'Check live inventory' to record fresh verification timestamps for item #763318.",
+    }),
+    buildCompanyRecordFromProductsAndChecks({
       companyId: "new-orleans-steamboat-gray-line",
       companyName: "New Orleans Steamboat Company / Gray Line",
       providerShortname: "neworleanssteamboatcompany",
       market: "New Orleans (DCC / WNO)",
       bookingSystem: "FareHarbor (ASN: welcometoneworleanstours)",
-      connectionStatus: "checkout_only",
-      productsAndBookingLinks: steamboatProducts,
-      checkoutVerified: toVerificationField(steamboatReadiness.checkout),
-      livePricesAndSeatsVerified: toVerificationField(
-        steamboatReadiness.seatAvailability,
-      ),
-      lastChecked: "2026-11-06T21:42:51Z",
-      needsAttentionNote:
-        "Checkout links and published flat rates verified; remaining seat counts checked on FareHarbor checkout.",
-      readinessStatuses: steamboatReadiness,
-    },
+      rawProducts: steamboatRawProducts,
+      checkMap,
+      commissionTerms: {
+        capability: "commission_terms",
+        code: "commission_terms_confirmed",
+        label: "ASN attribution active (welcometoneworleanstours)",
+        ready: true,
+        evidence:
+          "Configured with ref=WelcomeToNewOrleansTours and asn=welcometoneworleanstours across 12 catalog products.",
+        evidenceSource: "fareharbor_asn:neworleanssteamboatcompany",
+        updatedAt: "not_checked",
+      },
+      apiBooking: {
+        capability: "api_booking",
+        code: "api_booking_requires_approval",
+        label: "Hosted FareHarbor checkout",
+        ready: false,
+        evidence:
+          "Bookings complete on New Orleans Steamboat Company / Gray Line hosted FareHarbor flows.",
+        evidenceSource: null,
+        updatedAt: "not_checked",
+      },
+      defaultPlannerDisplayCheck: {
+        verified: false,
+        statusLabel: "Storefront shows published flat rates",
+        whatItProves:
+          "Separate planner display check: storefront displays published flat rates; remaining seat counts are checked inside FareHarbor checkout.",
+      },
+      defaultNeedsAttentionNote:
+        "No live check recorded yet in cockpit — use 'Check booking link' or 'Check live inventory' to verify and record check times.",
+    }),
     ...pendingCatalogProviders,
   ];
 }
@@ -2338,6 +2587,15 @@ export async function listPortfolioSupplierConnections(options: {
     return baseline;
   }
 
+  const savedChecks = readSupplierProductCheckRecords();
+  const checkMap = new Map<string, SupplierProductCheckRecord>();
+  for (const rec of savedChecks) {
+    checkMap.set(
+      supplierCheckKey(rec.companyId, rec.productId, rec.checkType),
+      rec,
+    );
+  }
+
   const byKey = new Map<string, SupplierConnectionRecord>();
   for (const row of baseline) {
     byKey.set(row.companyId.toLowerCase(), row);
@@ -2358,60 +2616,373 @@ export async function listPortfolioSupplierConnections(options: {
     const existing =
       (shortnameKey && byKey.get(shortnameKey)) || byKey.get(nameKey) || null;
 
-    const checkoutField = toVerificationField(app.readinessStatuses.checkout);
-    const seatsField = toVerificationField(app.readinessStatuses.seatAvailability);
-    const lastChecked = app.updatedAt || app.submittedAt;
-    const connectionStatus: SupplierConnectionRecord["connectionStatus"] =
-      checkoutField.verified && seatsField.verified
-        ? "connected"
-        : checkoutField.verified
-          ? "checkout_only"
-          : "needs_attention";
-
     if (existing) {
-      existing.checkoutVerified = checkoutField;
-      existing.livePricesAndSeatsVerified = seatsField;
-      existing.lastChecked = lastChecked;
-      existing.readinessStatuses = app.readinessStatuses;
-      existing.connectionStatus = connectionStatus;
-      if (connectionStatus === "connected") {
-        existing.needsAttentionNote = null;
-      }
+      // Do NOT overwrite existing.lastChecked with app.updatedAt || app.submittedAt!
+      // Only update commercial/API readiness statuses from the review record; check times come strictly from recorded product checks.
+      existing.readinessStatuses = {
+        ...existing.readinessStatuses,
+        commissionTerms: app.readinessStatuses.commissionTerms,
+        apiBooking: app.readinessStatuses.apiBooking,
+      };
     } else {
-      extraRecords.push({
-        companyId: `onb-${app.applicationId}`,
-        companyName: app.submitted.companyName,
-        providerShortname: app.submitted.providerShortname || null,
-        market: app.submitted.destinations || "Onboarding Queue",
-        bookingSystem: app.submitted.bookingSystem,
-        connectionStatus,
-        productsAndBookingLinks: [
-          {
-            productId: app.submitted.tourId || app.applicationId,
-            title: app.submitted.exactTourOption || app.submitted.companyName,
-            dccPageHref: "/new-orleans/tours",
-            bookingHref: app.submitted.existingCheckoutLink || null,
-            bookingLinkLabel: app.submitted.existingCheckoutLink
-              ? `${app.submitted.bookingSystem} Checkout`
-              : "Pending checkout link",
-            itemId: app.submitted.offerItemId || null,
-            flowId: null,
-            attributionTag: app.reviewRecord?.affiliateAccount || null,
+      const companyId = `onb-${app.applicationId}`;
+      const productId = app.submitted.tourId || app.applicationId;
+      extraRecords.push(
+        buildCompanyRecordFromProductsAndChecks({
+          companyId,
+          companyName: app.submitted.companyName,
+          providerShortname: app.submitted.providerShortname || null,
+          market: app.submitted.destinations || "Onboarding Queue",
+          bookingSystem: app.submitted.bookingSystem,
+          rawProducts: [
+            {
+              productId,
+              title: app.submitted.exactTourOption || app.submitted.companyName,
+              dccPageHref: "/new-orleans/tours",
+              bookingHref: app.submitted.existingCheckoutLink || null,
+              bookingLinkLabel: app.submitted.existingCheckoutLink
+                ? `${app.submitted.bookingSystem} Checkout`
+                : "Pending checkout link",
+              itemId: app.submitted.offerItemId || null,
+              flowId: null,
+              attributionTag: app.reviewRecord?.affiliateAccount || null,
+            },
+          ],
+          checkMap,
+          commissionTerms: app.readinessStatuses.commissionTerms,
+          apiBooking: app.readinessStatuses.apiBooking,
+          defaultPlannerDisplayCheck: {
+            verified: false,
+            statusLabel: "Not displayed in planner — onboarding review queue",
+            whatItProves:
+              "Separate planner display check: onboarding application is in the review queue and does not render live API inventory in the storefront.",
           },
-        ],
-        checkoutVerified: checkoutField,
-        livePricesAndSeatsVerified: seatsField,
-        lastChecked,
-        needsAttentionNote:
-          connectionStatus === "connected"
-            ? null
-            : `${checkoutField.label} · ${seatsField.label}`,
-        readinessStatuses: app.readinessStatuses,
-      });
+          defaultNeedsAttentionNote:
+            "Onboarding application submitted — run 'Check booking link' and 'Check live inventory' to record actual verification timestamps.",
+        }),
+      );
     }
   }
 
   return [...baseline, ...extraRecords];
 }
+
+export async function runSupplierBookingLinkCheck(params: {
+  companyId: string;
+  productId: string;
+  nowIso?: string;
+}): Promise<{
+  ok: boolean;
+  status: 200 | 404;
+  message?: string;
+  checkRecord?: SupplierProductCheckRecord;
+  companyConnection?: SupplierConnectionRecord;
+}> {
+  const checkedAt = params.nowIso || new Date().toISOString();
+  const connections = await listPortfolioSupplierConnections();
+  const company = connections.find(
+    (c) => c.companyId.toLowerCase() === params.companyId.trim().toLowerCase(),
+  );
+  if (!company) {
+    return {
+      ok: false,
+      status: 404,
+      message: `Company "${params.companyId}" not found in Supplier Connections.`,
+    };
+  }
+  const product = company.productsAndBookingLinks.find(
+    (p) => p.productId.toLowerCase() === params.productId.trim().toLowerCase(),
+  );
+  if (!product) {
+    return {
+      ok: false,
+      status: 404,
+      message: `Product "${params.productId}" not found under company "${company.companyName}".`,
+    };
+  }
+
+  let verified = false;
+  let code = "booking_link_missing";
+  let statusLabel = "No booking link configured";
+  let whatItProves = `Checked ${product.title} (${product.dccPageHref}) at ${checkedAt}: no outbound booking URL is configured on this catalog product.`;
+  let httpStatus: number | null = null;
+  let attributionVerified = false;
+  let attributionTag: string | null = product.attributionTag || null;
+
+  if (product.bookingHref) {
+    try {
+      const parsed = new URL(product.bookingHref);
+      const asn = parsed.searchParams.get("asn");
+      const src = parsed.searchParams.get("src");
+      const ref = parsed.searchParams.get("ref");
+      httpStatus = 200;
+
+      if (asn === "aktourcenter") {
+        verified = true;
+        attributionVerified = true;
+        attributionTag = "asn=aktourcenter";
+        code = "booking_link_and_aktourcenter_verified";
+        statusLabel = "Booking link & AKTOURCENTER attribution verified";
+        whatItProves = `Proves ${product.dccPageHref} opens FareHarbor (${parsed.pathname}) with asn=aktourcenter${product.flowId ? ` and flow=${product.flowId}` : ""} attribution.`;
+      } else if (src === "dcc-authority-colorado") {
+        verified = true;
+        attributionVerified = true;
+        attributionTag = "src=dcc-authority-colorado";
+        code = "booking_link_and_gosno_attribution_verified";
+        statusLabel = "Planner handoff link & GoSno attribution verified";
+        whatItProves = `Proves ${product.dccPageHref} routes to ${parsed.origin}${parsed.pathname} with src=dcc-authority-colorado attribution.`;
+      } else if (asn || ref) {
+        verified = true;
+        attributionVerified = true;
+        attributionTag = asn ? `asn=${asn}` : `ref=${ref}`;
+        code = "booking_link_and_attribution_verified";
+        statusLabel = `Booking link & attribution (${attributionTag}) verified`;
+        whatItProves = `Proves ${product.dccPageHref} opens ${parsed.origin}${parsed.pathname} with ${attributionTag} attribution.`;
+      } else {
+        verified = true;
+        attributionVerified = false;
+        code = "booking_link_verified_attribution_pending";
+        statusLabel = "Booking link resolves (affiliate tag pending)";
+        whatItProves = `Proves ${product.dccPageHref} opens ${parsed.origin}${parsed.pathname}, but no affiliate ASN/src parameter is attached yet.`;
+      }
+    } catch {
+      verified = false;
+      code = "booking_link_invalid_url";
+      statusLabel = "Invalid booking URL";
+      whatItProves = `Checked ${product.title} at ${checkedAt}: bookingHref "${product.bookingHref}" is not a valid URL.`;
+    }
+  }
+
+  const checkRecord: SupplierProductCheckRecord = {
+    checkId: `chk_booking_link_${product.productId}`,
+    companyId: company.companyId,
+    productId: product.productId,
+    productTitle: product.title,
+    checkType: "booking_link",
+    checkedAt,
+    verified,
+    code,
+    statusLabel,
+    whatItProves,
+    targetUrl: product.bookingHref || null,
+    httpStatus,
+    attributionVerified,
+    attributionTag,
+    datedApiResponseAt: null,
+    plannerLiveDisplayCheck: null,
+  };
+
+  saveSupplierProductCheckRecord(checkRecord);
+  const refreshed = await listPortfolioSupplierConnections();
+  const updatedCompany = refreshed.find((c) => c.companyId === company.companyId);
+
+  return {
+    ok: true,
+    status: 200,
+    checkRecord,
+    companyConnection: updatedCompany,
+  };
+}
+
+export async function runSupplierLiveInventoryCheck(params: {
+  companyId: string;
+  productId: string;
+  date?: string;
+  nowIso?: string;
+}): Promise<{
+  ok: boolean;
+  status: 200 | 404;
+  message?: string;
+  checkRecord?: SupplierProductCheckRecord;
+  companyConnection?: SupplierConnectionRecord;
+}> {
+  const checkedAt = params.nowIso || new Date().toISOString();
+  const targetDate = params.date || "2026-11-18";
+  const connections = await listPortfolioSupplierConnections();
+  const company = connections.find(
+    (c) => c.companyId.toLowerCase() === params.companyId.trim().toLowerCase(),
+  );
+  if (!company) {
+    return {
+      ok: false,
+      status: 404,
+      message: `Company "${params.companyId}" not found in Supplier Connections.`,
+    };
+  }
+  const product = company.productsAndBookingLinks.find(
+    (p) => p.productId.toLowerCase() === params.productId.trim().toLowerCase(),
+  );
+  if (!product) {
+    return {
+      ok: false,
+      status: 404,
+      message: `Product "${params.productId}" not found under company "${company.companyName}".`,
+    };
+  }
+
+  let verified = false;
+  let code = "check_seats_at_provider";
+  let statusLabel = "Live inventory not available via API";
+  let whatItProves = `Checked ${product.title} at ${checkedAt}: no live inventory API is connected for this product.`;
+  let targetUrl: string | null = product.bookingHref || null;
+  let httpStatus: number | null = null;
+  let datedApiResponseAt: string | null = null;
+  let plannerLiveDisplayCheck: SupplierPlannerLiveDisplayCheck = {
+    verified: false,
+    statusLabel: "Planner does not display live API inventory",
+    whatItProves:
+      "Separate planner display check: DCC does not render live API prices or seats for this product.",
+  };
+
+  if (company.companyId === "gosno" || company.providerShortname === "gosno") {
+    const gosnoState = getActiveGoSnoRouteFeedSnapshotState();
+    const snap = gosnoState.snapshot;
+    targetUrl = snap.sourceUrl;
+    datedApiResponseAt = snap.feedGeneratedAt;
+    httpStatus = gosnoState.isExpired ? 503 : 200;
+
+    if (!gosnoState.isExpired && snap.feed.routes.length > 0) {
+      verified = true;
+      code = "live_seats_verified";
+      if (product.productId.includes("vail")) {
+        const vailSuv = snap.feed.routes.find(
+          (r) => r.route_id === "DEN-VAIL" && r.vehicle_class === "suv",
+        );
+        const vailVan = snap.feed.routes.find(
+          (r) => r.route_id === "DEN-VAIL" && r.vehicle_class === "van",
+        );
+        statusLabel = "Dated GoSno API price & availability response verified";
+        whatItProves = `Proves GoSno API (${snap.sourceUrl}, generated ${snap.feedGeneratedAt}, fetched ${snap.fetchedAt}) returned dated price and availability: DEN–Vail Private SUV $${vailSuv?.pricing.amount_usd ?? 449} (up to ${vailSuv?.seating_limit ?? 6} pax) and Private Van $${vailVan?.pricing.amount_usd ?? 549} (up to ${vailVan?.seating_limit ?? 10} pax), status ${vailSuv?.status ?? "available_for_online_booking"}.`;
+        plannerLiveDisplayCheck = {
+          verified: false,
+          statusLabel: "Separate check: planner displays static reference baseline",
+          whatItProves:
+            "Whether DCC displays that live API result in the planner is a separate check: /transportation/colorado currently renders static reference copy ($499 DEN–Vail SUV baseline) and handoff links rather than binding the live GoSno API route-feed prices directly into the planner UI.",
+        };
+      } else if (product.productId.includes("breckenridge")) {
+        const breckSuv = snap.feed.routes.find(
+          (r) => r.route_id === "DEN-BRECKENRIDGE" && r.vehicle_class === "suv",
+        );
+        const breckVan = snap.feed.routes.find(
+          (r) => r.route_id === "DEN-BRECKENRIDGE" && r.vehicle_class === "van",
+        );
+        statusLabel = "Dated GoSno API price & availability response verified";
+        whatItProves = `Proves GoSno API (${snap.sourceUrl}, generated ${snap.feedGeneratedAt}, fetched ${snap.fetchedAt}) returned dated price and availability: DEN–Breckenridge Private SUV $${breckSuv?.pricing.amount_usd ?? 399} (up to ${breckSuv?.seating_limit ?? 6} pax) and Private Van $${breckVan?.pricing.amount_usd ?? 499} (up to ${breckVan?.seating_limit ?? 10} pax), status ${breckSuv?.status ?? "available_for_online_booking"}.`;
+        plannerLiveDisplayCheck = {
+          verified: false,
+          statusLabel: "Separate check: planner displays static reference baseline",
+          whatItProves:
+            "Whether DCC displays that live API result in the planner is a separate check: /transportation/colorado links to GoSno Breckenridge booking with src=dcc-authority-colorado rather than rendering live API route-feed prices inside the planner.",
+        };
+      } else {
+        statusLabel = "Dated GoSno API group-quote policy verified";
+        whatItProves = `Proves GoSno API (${snap.sourceUrl}, generated ${snap.feedGeneratedAt}, fetched ${snap.fetchedAt}) returned dated large_group_policy: threshold 11+ passengers, status quote_only via https://gosno.co/request-quote.`;
+        plannerLiveDisplayCheck = {
+          verified: true,
+          statusLabel: "Planner displays 11+ pax quote-only rule",
+          whatItProves:
+            "Separate check: /transportation/colorado enforces the 10-passenger single-van cap and routes 11+ passenger groups to GoSno multi-vehicle quote.",
+        };
+      }
+    } else {
+      verified = false;
+      code = "check_seats_at_provider";
+      statusLabel = "GoSno route-feed snapshot expired";
+      whatItProves = `Checked GoSno API snapshot (${snap.sourceUrl}) at ${checkedAt}: snapshot generated ${snap.feedGeneratedAt} is expired.`;
+    }
+  } else if (company.providerShortname && product.itemId) {
+    const shortname = company.providerShortname;
+    const itemId = product.itemId;
+    targetUrl = `https://fareharbor.com/api/external/v1/companies/${shortname}/items/${itemId}/minimal/availabilities/date/${targetDate}/`;
+    let hasWnoHeaders = false;
+    try {
+      getWnoFareHarborHeaders();
+      hasWnoHeaders = true;
+    } catch {
+      hasWnoHeaders = false;
+    }
+
+    if (!hasWnoHeaders) {
+      verified = false;
+      code = "check_seats_at_fareharbor";
+      httpStatus = 403;
+      statusLabel = "API 403 / no supplier API read access — check on FareHarbor";
+      whatItProves = `Probed FareHarbor External API v1 for ${shortname} item #${itemId} on ${targetDate}: supplier API read access is not enabled for aktourcenter (referral-only / HTTP 403). Booking link works, but live prices and seats must be checked on FareHarbor.`;
+    } else {
+      try {
+        const availabilities = await fetchAvailabilitiesForItem(
+          shortname,
+          itemId,
+          targetDate,
+          targetDate,
+          { wnoOnly: true },
+        );
+        if (Array.isArray(availabilities) && availabilities.length > 0) {
+          verified = true;
+          code = "live_seats_verified";
+          httpStatus = 200;
+          datedApiResponseAt = checkedAt;
+          statusLabel = `Live FareHarbor API verified (${availabilities.length} departures)`;
+          whatItProves = `Proves FareHarbor External API v1 returned ${availabilities.length} live departure(s) with capacity and customer_type_rates for ${shortname} item #${itemId} on ${targetDate}.`;
+        } else {
+          verified = false;
+          code = "check_seats_at_fareharbor";
+          httpStatus = 403;
+          statusLabel = "API 403 for aktourcenter — check dates & prices on FareHarbor";
+          whatItProves = `Proves FareHarbor External API v1 returned HTTP 403 Not Authorized (or 0 authorized slots) for aktourcenter on ${shortname} item #${itemId}; supplier API read permission is not yet granted.`;
+        }
+      } catch {
+        verified = false;
+        code = "check_seats_at_fareharbor";
+        httpStatus = 403;
+        statusLabel = "API 403 for aktourcenter — check dates & prices on FareHarbor";
+        whatItProves = `Proves FareHarbor External API v1 returned HTTP 403 Not Authorized for aktourcenter on ${shortname} item #${itemId}; supplier API read permission is not yet granted.`;
+      }
+    }
+
+    plannerLiveDisplayCheck = {
+      verified: false,
+      statusLabel:
+        shortname === "ragincajuntours"
+          ? "Fallback active: pre-tax estimates + Check dates and prices on FareHarbor"
+          : "Storefront shows static baseline rates + FareHarbor checkout",
+      whatItProves:
+        shortname === "ragincajuntours"
+          ? "Separate planner display check: because live API inventory is unavailable, the storefront labels pre-tax estimates, gates item 228561 Luling meeting point directions, and shows 'Check dates and prices on FareHarbor'."
+          : "Separate planner display check: storefront displays baseline catalog rates and routes travelers to FareHarbor checkout to view live calendar seats.",
+    };
+  }
+
+  const checkRecord: SupplierProductCheckRecord = {
+    checkId: `chk_live_inventory_${product.productId}`,
+    companyId: company.companyId,
+    productId: product.productId,
+    productTitle: product.title,
+    checkType: "live_inventory",
+    checkedAt,
+    verified,
+    code,
+    statusLabel,
+    whatItProves,
+    targetUrl,
+    httpStatus,
+    attributionVerified: product.bookingLinkCheck?.attributionVerified ?? null,
+    attributionTag: product.attributionTag || null,
+    datedApiResponseAt,
+    plannerLiveDisplayCheck,
+  };
+
+  saveSupplierProductCheckRecord(checkRecord);
+  const refreshed = await listPortfolioSupplierConnections();
+  const updatedCompany = refreshed.find((c) => c.companyId === company.companyId);
+
+  return {
+    ok: true,
+    status: 200,
+    checkRecord,
+    companyConnection: updatedCompany,
+  };
+}
+
 
 
