@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import JsonLd from "@/app/components/dcc/JsonLd";
 import PartnerSharePlanningBar from "@/app/components/dcc/PartnerSharePlanningBar";
+import PortableTripNetworkBar from "@/app/components/dcc/PortableTripNetworkBar";
 import {
   CLAA_JUNEAU_PORT_SCHEDULE,
   evaluateCruiseTimingWindow,
@@ -135,6 +136,16 @@ export default async function JuneauShortPortCallGuidePage({
             </Link>
           </div>
         </header>
+
+        <PortableTripNetworkBar
+          marketId="juneau"
+          searchParams={sp}
+          defaultDate="2026-06-18"
+          defaultPartySize={2}
+          defaultShipName="Norwegian Bliss"
+          defaultBerthCode={berthParam}
+          defaultAllAboard={allAboardParam}
+        />
 
         {/* Direct Comparison Matrix for Short Port Calls */}
         <section

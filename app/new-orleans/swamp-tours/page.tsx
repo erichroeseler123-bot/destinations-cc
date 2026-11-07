@@ -15,6 +15,7 @@ import {
 import { buildSwampPlanHref } from "@/lib/dcc/warmTransfer";
 import PortfolioAssuranceBanner from "@/app/components/dcc/PortfolioAssuranceBanner";
 import PartnerSharePlanningBar from "@/app/components/dcc/PartnerSharePlanningBar";
+import PortableTripNetworkBar from "@/app/components/dcc/PortableTripNetworkBar";
 import {
   buildPortfolioHandoffUrl,
   evaluatePortfolioAssuranceSummary,
@@ -264,6 +265,15 @@ export default async function NewOrleansSwampToursPage(props: {
               href: `https://welcometotheswamp.com/transportation${ctxQuery}`,
             },
           ]}
+        />
+        <PortableTripNetworkBar
+          marketId="new-orleans"
+          searchParams={resolvedSearchParams}
+          defaultDate={wno15200P6Date}
+          defaultPartySize={wno15200P6Adults}
+          defaultPickupHub="French Quarter / Hotel Monteleone"
+          defaultShipName={carriedContext.payload.shipSlug || null}
+          defaultAllAboard={carriedAllAboard || null}
         />
         <header className="rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(125,211,252,0.12),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(74,222,128,0.10),transparent_24%),linear-gradient(180deg,rgba(9,17,24,0.97),rgba(5,8,22,0.99))] p-8 shadow-[0_28px_90px_rgba(0,0,0,0.45)] md:p-10">
           <div className="flex flex-wrap items-center justify-between gap-3">

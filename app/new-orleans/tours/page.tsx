@@ -21,6 +21,7 @@ import { isHeldProduct } from "../data/truthPolicy";
 import { FAREHARBOR_SOURCES } from "../lib/fareHarborAttribution";
 import DccConciergeWidget from "@/app/components/dcc/DccConciergeWidget";
 import PartnerSharePlanningBar from "@/app/components/dcc/PartnerSharePlanningBar";
+import PortableTripNetworkBar from "@/app/components/dcc/PortableTripNetworkBar";
 
 const BOOKABLE_PRODUCT_COUNT = STOREFRONT_PRODUCTS.filter((product) => !isHeldProduct(product.slug)).length;
 const CURRENT_TOURS_DESCRIPTION =
@@ -153,11 +154,21 @@ export default async function NewOrleansToursPage({
           }
         />
 
+        <div className="max-w-7xl mx-auto px-6 pt-4">
+          <PortableTripNetworkBar
+            marketId="new-orleans"
+            searchParams={resolvedSearch}
+            defaultDate={selectedDate}
+            defaultPartySize={Number(selectedPartySize) || 2}
+            defaultPickupHub="French Quarter / Hotel Monteleone"
+          />
+        </div>
+
         {!isWto ? (
           <section
             data-testid="dcc-nola-authority-brief"
             data-dcc-authority-market="new-orleans"
-            className="max-w-7xl mx-auto px-6 pt-10"
+            className="max-w-7xl mx-auto px-6 pt-6"
           >
             <div className="rounded-3xl border border-cyan-400/30 bg-[#0d141d] p-6 md:p-8 space-y-6 shadow-[0_24px_70px_rgba(0,0,0,0.45)]">
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">

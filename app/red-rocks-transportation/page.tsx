@@ -15,6 +15,7 @@ import {
 import { buildDecisionContinuationParams } from "@/lib/dcc/contracts/decisionContinuation";
 import { mapDecisionToDestination } from "@/lib/dcc/mapping";
 import PartnerSharePlanningBar from "@/app/components/dcc/PartnerSharePlanningBar";
+import PortableTripNetworkBar from "@/app/components/dcc/PortableTripNetworkBar";
 
 export const metadata: Metadata = {
   title: "Red Rocks Transportation — Solved | Easiest Way To Get There And Back",
@@ -308,6 +309,15 @@ export default async function RedRocksTransportationPage({
             activePartnerRoleParam={getFirstSearchParam(sp.partner_role)}
             activeCancelRefParam={getFirstSearchParam(sp.cancel_ref)}
             activeTrafficSourceParam={getFirstSearchParam(sp.src)}
+          />
+
+          <PortableTripNetworkBar
+            marketId="red-rocks"
+            searchParams={sp}
+            defaultDate={getFirstSearchParam(sp.date) || "2026-07-17"}
+            defaultPartySize={Number(getFirstSearchParam(sp.partySize) || getFirstSearchParam(sp.qty)) || 4}
+            defaultPickupHub={getFirstSearchParam(sp.pickupHub) || "Denver Union Station"}
+            defaultDestination="Red Rocks Amphitheatre"
           />
         </div>
       }

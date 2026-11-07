@@ -15,6 +15,7 @@ import {
 } from "@/lib/dcc/cruiseTimingGate";
 import { evaluateJuneauBackupFlow } from "@/lib/dcc/dockRolloutContext";
 import PartnerSharePlanningBar from "@/app/components/dcc/PartnerSharePlanningBar";
+import PortableTripNetworkBar from "@/app/components/dcc/PortableTripNetworkBar";
 
 export const metadata: Metadata = {
   title: "Juneau Whale Watching Tours & Whale Deck Authority | CLAA Port Timing & Flight Backups | DCC",
@@ -230,6 +231,16 @@ export default async function JuneauWhaleWatchingToursPage({
             </a>
           </div>
         </header>
+
+        <PortableTripNetworkBar
+          marketId="juneau"
+          searchParams={resolvedSearch}
+          defaultDate="2026-06-18"
+          defaultPartySize={2}
+          defaultShipName="Royal Princess"
+          defaultBerthCode={berthParam || "FKL"}
+          defaultAllAboard={allAboardParam || "20:30"}
+        />
 
         {/* April 24 Dock Rollout: Flight Cancellation Backup Flow + PAJN METAR Weather Context */}
         <section

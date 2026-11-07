@@ -13,6 +13,7 @@ import { getTransportEntriesByRegion } from "@/src/data/transport-directory";
 
 import { getPublicationManifestEntry } from "@/src/data/publication-manifest";
 import PartnerSharePlanningBar from "@/app/components/dcc/PartnerSharePlanningBar";
+import PortableTripNetworkBar from "@/app/components/dcc/PortableTripNetworkBar";
 
 export const dynamic = "force-dynamic";
 
@@ -84,6 +85,15 @@ export default async function ColoradoTransportationPage({
             , alongside staged Denver and Boulder venue pages.
           </p>
         </header>
+
+        <PortableTripNetworkBar
+          marketId="gosno"
+          searchParams={sp}
+          defaultDate={firstStr(sp.date) || "2026-12-19"}
+          defaultPartySize={Number(firstStr(sp.party_size) || firstStr(sp.passengers)) || 4}
+          defaultPickupHub={firstStr(sp.origin) || "DEN (Denver International Airport)"}
+          defaultDestination={firstStr(sp.destination) || "Vail / Breckenridge"}
+        />
 
         <section
           data-testid="dcc-colorado-authority-brief"

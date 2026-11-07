@@ -10,7 +10,8 @@ export type DirectCheckoutBookingPath =
   | "RESERVED_SEAT_BLOCK_MANUAL_DISPATCH"
   | "FAREHARBOR_ASN_EMBED"
   | "FAREHARBOR_SUPPLIER_API"
-  | "VIATOR_APPROVED_CHECKOUT";
+  | "VIATOR_APPROVED_CHECKOUT"
+  | "OWNED_FLEET_STRIPE_DIRECT";
 
 export type SeatLockSource = "PROVIDER_CHECKOUT" | "RESERVED_SEAT_BLOCK";
 
@@ -26,7 +27,7 @@ export type DirectBookingDisplayStatus =
 export interface DccTripContextEnvelope {
   /** Must start with `dcc_ctx_` */
   contextId: string;
-  portSlug: "juneau" | "new-orleans" | string;
+  portSlug: "juneau" | "new-orleans" | "red-rocks" | "gosno" | string;
   serviceDate: string; // YYYY-MM-DD
   partySize: number;
   shipName?: string | null;
@@ -36,19 +37,25 @@ export interface DccTripContextEnvelope {
   confirmedAllAboardLocal?: string | null;
   flightCanceled?: boolean;
   operatorCancelRef?: string | null;
+  pickupHub?: string | null;
+  destinationResortOrVenue?: string | null;
+  skiBagsCount?: number | null;
+  partnerId?: string | null;
+  completedLegs?: string[];
+  purchaseStep?: number;
 }
 
 export interface OperatorDirectDealConfig {
   operatorId: string;
   operatorName: string;
-  market: "juneau" | "new-orleans";
+  market: "juneau" | "new-orleans" | "red-rocks" | "gosno";
   bookingPath: DirectCheckoutBookingPath;
   directCheckoutEnabled: boolean;
   pendingReason?: string;
   seatLockSource: SeatLockSource;
   supports15MinuteHold: boolean;
   manualDispatchRequired: boolean;
-  /** Standard 10% direct deal rate (0.10) */
+  /** Standard 10% direct deal rate (0.10) for partner deals, or 1.00 for owned & operated fleet */
   commissionRateDecimal: number;
   commissionBasis: "BASE_FARE_EXCL_TAX_FEES" | "GROSS_RETAIL";
   paymentAndRefundHandler: "OPERATOR_MERCHANT_OF_RECORD" | "DCC_STRIPE_CONNECT" | "VIATOR_MERCHANT";
@@ -141,6 +148,40 @@ export const OPERATOR_DIRECT_CHECKOUT_REGISTRY: Record<string, OperatorDirectDea
     credentialScope: "PUBLIC_TRACKED_LINK",
     fareharborSupplierApproved: true,
     providerConfirmedSeats: false,
+  },
+  "party-at-red-rocks": {
+    operatorId: "party-at-red-rocks",
+    operatorName: "Party at Red Rocks (Owned & Operated Fleet)",
+    market: "red-rocks",
+    bookingPath: "OWNED_FLEET_STRIPE_DIRECT",
+    directCheckoutEnabled: true,
+    seatLockSource: "RESERVED_SEAT_BLOCK",
+    supports15MinuteHold: true,
+    manualDispatchRequired: false,
+    commissionRateDecimal: 1.0,
+    commissionBasis: "GROSS_RETAIL",
+    paymentAndRefundHandler: "DCC_STRIPE_CONNECT",
+    credentialScope: "SERVER_SIDE_SCOPED_ONLY",
+    providerConfirmedSeats: true,
+    exclusiveSeatBlockCapacity: 28,
+    unsoldSeatReleaseHoursBeforeDeparture: 1,
+  },
+  "gosno-mountain-transfer": {
+    operatorId: "gosno-mountain-transfer",
+    operatorName: "GoSno Mountain Transport (Owned & Operated AWD Fleet)",
+    market: "gosno",
+    bookingPath: "OWNED_FLEET_STRIPE_DIRECT",
+    directCheckoutEnabled: true,
+    seatLockSource: "RESERVED_SEAT_BLOCK",
+    supports15MinuteHold: true,
+    manualDispatchRequired: false,
+    commissionRateDecimal: 1.0,
+    commissionBasis: "GROSS_RETAIL",
+    paymentAndRefundHandler: "DCC_STRIPE_CONNECT",
+    credentialScope: "SERVER_SIDE_SCOPED_ONLY",
+    providerConfirmedSeats: true,
+    exclusiveSeatBlockCapacity: 14,
+    unsoldSeatReleaseHoursBeforeDeparture: 2,
   },
 };
 
@@ -651,4 +692,62 @@ export class V03OperatorDirectCheckoutEngine {
       settledCommissionUsd: Number(settledCommissionUsd.toFixed(2)),
     };
   }
+
+  /**
+   * Carries a traveler's portable `DccTripContextEnvelope` (`dcc_ctx_...`) into a second or subsequent
+   * purchase across the same market or a companion market without re-entering trip details.
+   */
+  public buildPortableTripContextForNextPurchase(
+    previousContext: DccTripContextEnvelope,
+    overrides?: {
+      nextPortSlug?: "juneau" | "new-orleans" | "red-rocks" | "gosno" | string;
+      nextServiceDate?: string;
+      nextPickupHub?: string | null;
+      nextDestinationResortOrVenue?: string | null;
+      nextSkiBagsCount?: number | null;
+      completedLegId?: string;
+    },
+  ): DccTripContextEnvelope {
+    const priorLegs = previousContext.completedLegs ?? [];
+    const legToAppend = overrides?.completedLegId ?? previousContext.portSlug;
+    const completedLegs = priorLegs.includes(legToAppend)
+      ? [...priorLegs]
+      : [...priorLegs, legToAppend];
+
+    return {
+      ...previousContext,
+      portSlug: overrides?.nextPortSlug ?? previousContext.portSlug,
+      serviceDate: overrides?.nextServiceDate ?? previousContext.serviceDate,
+      pickupHub:
+        overrides?.nextPickupHub !== undefined
+          ? overrides.nextPickupHub
+          : previousContext.pickupHub,
+      destinationResortOrVenue:
+        overrides?.nextDestinationResortOrVenue !== undefined
+          ? overrides.nextDestinationResortOrVenue
+          : previousContext.destinationResortOrVenue,
+      skiBagsCount:
+        overrides?.nextSkiBagsCount !== undefined
+          ? overrides.nextSkiBagsCount
+          : previousContext.skiBagsCount,
+      completedLegs,
+      purchaseStep: Math.max((previousContext.purchaseStep ?? 1) + 1, completedLegs.length + 1),
+    };
+  }
+
+  /**
+   * Returns all reservations tied to the same portable `dcc_ctx_` token across one or more purchases.
+   */
+  public getReservationsByDccContextId(
+    dccContextId: string,
+  ): DirectCheckoutReservationRecord[] {
+    const matches: DirectCheckoutReservationRecord[] = [];
+    for (const res of this.reservationsById.values()) {
+      if (res.dccContextId === dccContextId) {
+        matches.push({ ...res });
+      }
+    }
+    return matches;
+  }
 }
+

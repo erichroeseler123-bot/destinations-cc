@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import JsonLd from "@/app/components/dcc/JsonLd";
 import PartnerSharePlanningBar from "@/app/components/dcc/PartnerSharePlanningBar";
+import PortableTripNetworkBar from "@/app/components/dcc/PortableTripNetworkBar";
 import { evaluateJuneauBackupFlow } from "@/lib/dcc/dockRolloutContext";
 import {
   buildBreadcrumbJsonLd,
@@ -142,6 +143,16 @@ export default async function DccJuneauHelicopterCanceledGuidePage({
             </Link>
           </div>
         </header>
+
+        <PortableTripNetworkBar
+          marketId="juneau"
+          searchParams={sp}
+          defaultDate="2026-06-18"
+          defaultPartySize={2}
+          defaultShipName="Royal Princess"
+          defaultBerthCode="FKL"
+          defaultAllAboard="20:30"
+        />
 
         {/* Step-by-Step Recovery Plan by Remaining Port Hours */}
         <section

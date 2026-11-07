@@ -14,6 +14,7 @@ import {
   runDurableLedgerTransaction,
   syncDurableLedgerWithPostgres,
 } from "@/lib/dcc/storage/durableTransactionalStore";
+import { SHARED_MARKET_TEMPLATES } from "@/lib/dcc/sharedMarketTemplate";
 
 export const dynamic = "force-dynamic";
 
@@ -330,6 +331,7 @@ export async function GET(request: NextRequest) {
       },
       dccAuthorityScorecard,
       dccNetworkDemandToRevenueReport,
+      sharedMarketTemplates: SHARED_MARKET_TEMPLATES,
       overallFunnel: formatPlacementFunnelSummary(overallFunnel),
       widgetPlacements: {
         firstPartyInstallationsCount:
