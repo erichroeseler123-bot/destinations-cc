@@ -10,7 +10,9 @@ import { resolveCanonicalCityKey } from "@/src/data/city-aliases";
 type Params = { city: string };
 
 export async function generateStaticParams() {
-  return Object.keys(aliases).map((city) => ({ city }));
+  return Object.keys(aliases)
+    .filter((city) => city !== "new-orleans" && city !== "las-vegas")
+    .map((city) => ({ city }));
 }
 
 function titleCase(s: string) {
