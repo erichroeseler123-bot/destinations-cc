@@ -3,6 +3,10 @@ import { getHandoffAnalyticsSnapshot } from "@/lib/dcc/handoffAnalytics";
 import { readRuntimeSignals, sweepExpiredSignals } from "@/lib/dcc/livePulse/store";
 import { listRecentProductionCorridorEvents } from "@/lib/dcc/telemetry/corridorEvents";
 import { listWorkflowMissions } from "@/lib/dcc/earthos/workflows/service";
+import {
+  listPortfolioSupplierConnections,
+  type SupplierConnectionRecord,
+} from "@/lib/dcc/operatorOnboardingStore";
 
 export const dynamic = "force-dynamic";
 export const metadata = { robots: { index: false, follow: false } };
@@ -18,6 +22,7 @@ type ConsoleCard = {
 };
 
 const consoles: ConsoleCard[] = [
+  { name: "Portfolio Activity", site: "Destination Command Center", href: "/admin/portfolio/activity", purpose: "Shows recent activity, handoffs, and booking intent by site.", status: "live" },
   { name: "DCC Command View", site: "Destination Command Center", href: "/command", purpose: "Public network pulse, corridor health, destination status, alerts, tactical recommendations, and event stream.", status: "live" },
   { name: "Portfolio Handoffs", site: "Destination Command Center", href: "/admin/satellite-handoffs", purpose: "Cross-site handoffs, lifecycle events, failures, revenue, partner outcomes, and source-page performance.", status: "live" },
   { name: "Live Pulse Admin", site: "Destination Command Center", href: "/admin/live-pulse", purpose: "Post and inspect short-lived destination signals for cities, ports, venues, and events.", status: "live" },
@@ -54,10 +59,17 @@ function originalName(event: any) {
   return String(metadataOf(event).original_event_name || event?.eventName || "");
 }
 
+function formatLastChecked(isoString: string) {
+  const date = new Date(isoString);
+  if (Number.isNaN(date.getTime())) return isoString;
+  return `${date.toISOString().slice(0, 10)} · ${date.toISOString().slice(11, 16)} UTC`;
+}
+
 export default async function PortfolioDesktopPage() {
-  const [events, missions] = await Promise.all([
+  const [events, missions, supplierConnections] = await Promise.all([
     listRecentProductionCorridorEvents(10000),
     listWorkflowMissions(),
+    listPortfolioSupplierConnections(),
   ]);
 
   sweepExpiredSignals(new Date());
@@ -96,6 +108,16 @@ export default async function PortfolioDesktopPage() {
     legacy: consoles.filter((x) => x.status === "legacy").length,
   };
 
+  const checkoutVerifiedCount = supplierConnections.filter(
+    (s) => s.checkoutVerified.verified,
+  ).length;
+  const livePricesAndSeatsVerifiedCount = supplierConnections.filter(
+    (s) => s.livePricesAndSeatsVerified.verified,
+  ).length;
+  const supplierAttentionCount = supplierConnections.filter(
+    (s) => !s.checkoutVerified.verified || !s.livePricesAndSeatsVerified.verified,
+  ).length;
+
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
       <div className="mx-auto max-w-7xl px-6 py-12">
@@ -104,10 +126,11 @@ export default async function PortfolioDesktopPage() {
             <div className="text-xs font-black uppercase tracking-[0.24em] text-[#f5c66c]">DCC Portfolio Desktop</div>
             <h1 className="mt-3 text-4xl font-black tracking-tight md:text-5xl">Portfolio cockpit</h1>
             <p className="mt-4 max-w-3xl text-sm leading-6 text-zinc-300 md:text-base">
-              One protected screen for network activity, money signals, site handoffs, live conditions, mission attention, and the specialist admin consoles already built across the portfolio.
+              One protected screen for supplier connections, network activity, money signals, site handoffs, live conditions, mission attention, and the specialist admin consoles already built across the portfolio.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
+            <Link href="/admin/portfolio/activity" className="inline-flex min-h-11 items-center justify-center rounded-xl border border-white/20 px-5 py-3 text-sm font-black text-white hover:bg-white/10">Portfolio activity →</Link>
             <Link href="/admin/satellite-handoffs" className="inline-flex min-h-11 items-center justify-center rounded-xl border border-white/20 px-5 py-3 text-sm font-black text-white hover:bg-white/10">Handoffs →</Link>
             <Link href="/command" className="inline-flex min-h-11 items-center justify-center rounded-xl bg-white px-5 py-3 text-sm font-black text-black">Command View →</Link>
           </div>
@@ -118,6 +141,43 @@ export default async function PortfolioDesktopPage() {
           <Metric label="Gross handoff revenue" value={`$${snapshot.grossRevenue.toLocaleString()}`} detail={`$${snapshot.partnerRevenue.toLocaleString()} partner revenue`} />
           <Metric label="Needs attention" value={attention} detail={`${snapshot.urgentAlerts.length} alerts · ${missionWaiting} approvals · ${missionFailed} failed missions`} alert={attention > 0} />
           <Metric label="Active live signals" value={activeSignals.length} detail={`${signals.length} stored signals`} />
+        </section>
+
+        <section id="supplier-connections" data-testid="portfolio-supplier-connections" className="mt-8 rounded-2xl border border-white/10 bg-white/[0.04] p-6">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <div className="text-xs font-black uppercase tracking-[0.18em] text-[#f5c66c]">Catalog + Operator Readiness</div>
+              <h2 className="mt-2 text-2xl font-black">Supplier Connections</h2>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-300">
+                Unifies the DCC storefront catalog and operator readiness records (<code className="rounded bg-black/40 px-1.5 py-0.5 text-xs text-zinc-200">lib/dcc/operatorOnboardingStore.ts</code>) so each company shows its products and booking links, checkout verified, live prices and seats verified, and last checked as separate fields.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <MiniMetric label="Companies" value={supplierConnections.length} />
+              <MiniMetric label="Checkout verified" value={`${checkoutVerifiedCount}/${supplierConnections.length}`} />
+              <MiniMetric label="Live prices & seats" value={`${livePricesAndSeatsVerifiedCount}/${supplierConnections.length}`} />
+              <MiniMetric label="Needs attention" value={supplierAttentionCount} />
+            </div>
+          </div>
+
+          <div className="mt-6 overflow-x-auto rounded-xl border border-white/10 bg-black/20">
+            <table className="w-full min-w-[1040px] border-collapse text-left text-sm">
+              <thead>
+                <tr className="border-b border-white/10 bg-white/[0.03] text-[11px] font-black uppercase tracking-[0.16em] text-zinc-400">
+                  <th className="px-4 py-3.5">Company</th>
+                  <th className="px-4 py-3.5">Products and booking links</th>
+                  <th className="px-4 py-3.5">Checkout verified</th>
+                  <th className="px-4 py-3.5">Live prices and seats verified</th>
+                  <th className="px-4 py-3.5">Last checked</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/10">
+                {supplierConnections.map((company) => (
+                  <SupplierConnectionRow key={company.companyId} company={company} />
+                ))}
+              </tbody>
+            </table>
+          </div>
         </section>
 
         <section className="mt-8">
@@ -230,6 +290,96 @@ export default async function PortfolioDesktopPage() {
   );
 }
 
+function SupplierConnectionRow({ company }: { company: SupplierConnectionRecord }) {
+  const checkoutTone = company.checkoutVerified.verified
+    ? "border-emerald-400/30 bg-emerald-500/10 text-emerald-100"
+    : "border-amber-400/30 bg-amber-500/10 text-amber-100";
+
+  const seatsTone = company.livePricesAndSeatsVerified.verified
+    ? "border-emerald-400/30 bg-emerald-500/10 text-emerald-100"
+    : "border-amber-400/30 bg-amber-500/10 text-amber-100";
+
+  return (
+    <tr data-testid={`supplier-connection-row-${company.companyId}`} className="align-top">
+      <td className="px-4 py-4">
+        <div className="font-black text-white">{company.companyName}</div>
+        <div className="mt-1 text-xs text-zinc-400">{company.market}</div>
+        <div className="mt-2 inline-flex rounded-md border border-white/10 bg-white/[0.05] px-2 py-0.5 text-[11px] font-semibold text-zinc-300">
+          {company.bookingSystem}
+        </div>
+        {company.providerShortname ? (
+          <div className="mt-1.5 text-[11px] font-mono text-zinc-500">
+            shortname: {company.providerShortname}
+          </div>
+        ) : null}
+      </td>
+
+      <td className="px-4 py-4" data-testid={`supplier-products-${company.companyId}`}>
+        <ul className="space-y-2.5">
+          {company.productsAndBookingLinks.map((prod) => (
+            <li key={prod.productId} className="rounded-lg border border-white/10 bg-white/[0.03] p-2.5">
+              <div className="font-bold text-white">{prod.title}</div>
+              <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs">
+                <Link
+                  href={prod.dccPageHref}
+                  className="inline-flex items-center rounded border border-cyan-400/30 bg-cyan-500/10 px-2 py-0.5 font-semibold text-cyan-200 hover:bg-cyan-500/20"
+                >
+                  DCC page: {prod.dccPageHref} →
+                </Link>
+                {prod.bookingHref ? (
+                  <a
+                    href={prod.bookingHref}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center rounded border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 font-semibold text-emerald-200 hover:bg-emerald-500/20"
+                  >
+                    {prod.bookingLinkLabel} ↗
+                  </a>
+                ) : (
+                  <span className="inline-flex items-center rounded border border-amber-400/25 bg-amber-500/10 px-2 py-0.5 text-amber-200">
+                    {prod.bookingLinkLabel}
+                  </span>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </td>
+
+      <td className="px-4 py-4" data-testid={`supplier-checkout-verified-${company.companyId}`}>
+        <span className={`inline-flex rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] ${checkoutTone}`}>
+          {company.checkoutVerified.verified ? "Yes · Verified" : "No · Pending"}
+        </span>
+        <div className="mt-2 text-xs font-bold text-zinc-200">{company.checkoutVerified.label}</div>
+        <div className="mt-1 font-mono text-[11px] text-zinc-500">{company.checkoutVerified.code}</div>
+        <p className="mt-1.5 max-w-xs text-xs leading-5 text-zinc-400">{company.checkoutVerified.evidence}</p>
+      </td>
+
+      <td className="px-4 py-4" data-testid={`supplier-live-prices-seats-verified-${company.companyId}`}>
+        <span className={`inline-flex rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] ${seatsTone}`}>
+          {company.livePricesAndSeatsVerified.verified ? "Yes · Live Verified" : "No · Check Provider"}
+        </span>
+        <div className="mt-2 text-xs font-bold text-zinc-200">{company.livePricesAndSeatsVerified.label}</div>
+        <div className="mt-1 font-mono text-[11px] text-zinc-500">{company.livePricesAndSeatsVerified.code}</div>
+        <p className="mt-1.5 max-w-xs text-xs leading-5 text-zinc-400">{company.livePricesAndSeatsVerified.evidence}</p>
+      </td>
+
+      <td className="px-4 py-4" data-testid={`supplier-last-checked-${company.companyId}`}>
+        <div className="font-mono text-xs font-bold text-white">{formatLastChecked(company.lastChecked)}</div>
+        <div className="mt-1 font-mono text-[11px] text-zinc-500">{company.lastChecked}</div>
+        {company.needsAttentionNote ? (
+          <div className="mt-2.5 max-w-xs rounded-lg border border-amber-300/20 bg-amber-400/10 p-2 text-xs leading-5 text-amber-100">
+            <strong className="block text-[10px] uppercase tracking-[0.12em] text-amber-300">Needs attention</strong>
+            {company.needsAttentionNote}
+          </div>
+        ) : (
+          <div className="mt-2.5 text-xs text-emerald-300">All readiness gates verified.</div>
+        )}
+      </td>
+    </tr>
+  );
+}
+
 function Metric({ label, value, detail, alert = false }: { label: string; value: number | string; detail?: string; alert?: boolean }) {
   return <div className={`rounded-2xl border p-5 ${alert ? "border-amber-300/30 bg-amber-400/10" : "border-white/10 bg-white/[0.04]"}`}><div className="text-xs uppercase tracking-[0.16em] text-zinc-500">{label}</div><div className="mt-2 text-3xl font-black">{value}</div>{detail ? <div className="mt-2 text-xs text-zinc-400">{detail}</div> : null}</div>;
 }
@@ -242,3 +392,4 @@ function SiteMetricCard({ site, headline, stats, href, source, external = false 
   const body = <><div className="text-xs font-black uppercase tracking-[0.18em] text-zinc-500">{site}</div><div className="mt-2 text-2xl font-black text-white">{headline}</div><ul className="mt-4 space-y-2 text-sm text-zinc-300">{stats.map((stat) => <li key={stat}>• {stat}</li>)}</ul><div className="mt-5 text-[10px] uppercase tracking-[0.14em] text-zinc-500">{source}</div></>;
   return external ? <a href={href} target="_blank" rel="noreferrer" className="rounded-2xl border border-white/10 bg-white/[0.04] p-6 transition hover:border-white/25 hover:bg-white/[0.07]">{body}</a> : <Link href={href} className="rounded-2xl border border-white/10 bg-white/[0.04] p-6 transition hover:border-white/25 hover:bg-white/[0.07]">{body}</Link>;
 }
+

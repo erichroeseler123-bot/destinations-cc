@@ -46,6 +46,8 @@ import {
 import KeflavikToVikRoutePage from "@/app/routes/keflavik-to-vik/page";
 import DelhiToAgraRoutePage from "@/app/routes/delhi-to-agra/page";
 import HongKongToMacaoRoutePage from "@/app/routes/hong-kong-to-macao/page";
+import { listPortfolioSupplierConnections } from "@/lib/dcc/operatorOnboardingStore";
+import PortfolioDesktopPage from "@/app/admin/portfolio/page";
 
 test("101.1 — Juneau Replay (2027-07-15, 08:00 arrival at AJ Dock): Auke Bay Whale Watch fails at 13:30 all-aboard (-35m) and replaces Flight Deck link with 'View options that fit' across both planners and API", async () => {
   const unified1330 = await evaluateUnifiedJuneauTripRecheck({
@@ -1394,5 +1396,125 @@ test("101.8 — WNO First Pilot: Ragin Cajun Airboat Tours (Keep aktourcenter Li
     ),
   );
 });
+
+test("101.9 — Portfolio Cockpit Supplier Connections: Combines DCC catalog and operator readiness records with separate fields for products & booking links, checkoutVerified, livePricesAndSeatsVerified, and lastChecked", async () => {
+  const connections = await listPortfolioSupplierConnections();
+  assert.ok(connections.length >= 6);
+
+  // 1. Southern Style Tours
+  const southernStyle = connections.find(
+    (c) => c.companyId === "southern-style-tours",
+  );
+  assert.ok(southernStyle);
+  assert.equal(southernStyle.companyName, "Southern Style Tours");
+  assert.equal(southernStyle.providerShortname, "southernstyletours");
+  assert.equal(southernStyle.productsAndBookingLinks.length, 3);
+  const sstPaths = southernStyle.productsAndBookingLinks.map(
+    (p) => p.dccPageHref,
+  );
+  assert.ok(sstPaths.includes("/new-orleans/tours/city-tour-of-new-orleans"));
+  assert.ok(
+    sstPaths.includes("/new-orleans/tours/oak-alley-or-laura-plantation-tour"),
+  );
+  assert.ok(
+    sstPaths.includes("/new-orleans/tours/all-day-city-plantation-combo"),
+  );
+  for (const prod of southernStyle.productsAndBookingLinks) {
+    assert.ok(prod.bookingHref?.includes("fareharbor.com/embeds/book/southernstyletours/items/"));
+    assert.ok(prod.bookingHref?.includes("asn=aktourcenter"));
+  }
+  assert.equal(southernStyle.checkoutVerified.verified, true);
+  assert.equal(southernStyle.checkoutVerified.code, "checkout_tested");
+  assert.equal(southernStyle.livePricesAndSeatsVerified.verified, false);
+  assert.equal(
+    southernStyle.livePricesAndSeatsVerified.code,
+    "check_seats_at_fareharbor",
+  );
+  assert.equal(typeof southernStyle.lastChecked, "string");
+  assert.ok(southernStyle.lastChecked.startsWith("2026-11-07"));
+
+  // 2. Ragin Cajun Airboat Tours
+  const raginCajun = connections.find(
+    (c) => c.companyId === "ragin-cajun-tours",
+  );
+  assert.ok(raginCajun);
+  assert.equal(raginCajun.companyName, "Ragin Cajun Airboat Tours");
+  assert.equal(raginCajun.providerShortname, "ragincajuntours");
+  const rcPaths = raginCajun.productsAndBookingLinks.map((p) => p.dccPageHref);
+  assert.ok(rcPaths.includes("/new-orleans/tours/ragin-cajun-airboat-options"));
+  assert.ok(rcPaths.includes("/new-orleans/tours/covered-tour-boat"));
+  for (const prod of raginCajun.productsAndBookingLinks) {
+    assert.ok(prod.bookingHref?.includes("fareharbor.com/embeds/book/ragincajuntours/items/"));
+    assert.ok(prod.bookingHref?.includes("asn=aktourcenter"));
+  }
+  assert.equal(raginCajun.checkoutVerified.verified, true);
+  assert.equal(raginCajun.checkoutVerified.code, "checkout_tested");
+  assert.equal(raginCajun.livePricesAndSeatsVerified.verified, false);
+  assert.equal(
+    raginCajun.livePricesAndSeatsVerified.code,
+    "check_seats_at_fareharbor",
+  );
+  assert.ok(raginCajun.lastChecked.startsWith("2026-11-07"));
+
+  // 3. GoSno
+  const gosno = connections.find((c) => c.companyId === "gosno");
+  assert.ok(gosno);
+  assert.equal(gosno.companyName, "GoSno");
+  assert.ok(
+    gosno.productsAndBookingLinks.every(
+      (p) => p.dccPageHref === "/transportation/colorado",
+    ),
+  );
+  assert.ok(
+    gosno.productsAndBookingLinks.some((p) =>
+      p.bookingHref?.startsWith("https://gosno.co/vail"),
+    ),
+  );
+  assert.ok(
+    gosno.productsAndBookingLinks.some((p) =>
+      p.bookingHref?.startsWith("https://gosno.co/breckenridge"),
+    ),
+  );
+  assert.ok(
+    gosno.productsAndBookingLinks.some((p) =>
+      p.bookingHref?.startsWith("https://gosno.co/request-quote"),
+    ),
+  );
+  assert.equal(gosno.checkoutVerified.verified, true);
+  assert.equal(gosno.checkoutVerified.code, "checkout_tested");
+  assert.equal(gosno.livePricesAndSeatsVerified.verified, false);
+  assert.equal(
+    gosno.livePricesAndSeatsVerified.code,
+    "check_seats_at_provider",
+  );
+  assert.ok(gosno.lastChecked.startsWith("2026-11-07"));
+
+  // 4. Render /admin/portfolio and verify Supplier Connections table & separate columns
+  const portfolioElement = await PortfolioDesktopPage();
+  const portfolioHtml = renderToStaticMarkup(portfolioElement);
+  assert.ok(
+    portfolioHtml.includes('data-testid="portfolio-supplier-connections"'),
+  );
+  assert.ok(portfolioHtml.includes("Supplier Connections"));
+  assert.ok(portfolioHtml.includes("Products and booking links"));
+  assert.ok(portfolioHtml.includes("Checkout verified"));
+  assert.ok(portfolioHtml.includes("Live prices and seats verified"));
+  assert.ok(portfolioHtml.includes("Last checked"));
+  assert.ok(
+    portfolioHtml.includes(
+      'data-testid="supplier-connection-row-southern-style-tours"',
+    ),
+  );
+  assert.ok(
+    portfolioHtml.includes(
+      'data-testid="supplier-connection-row-ragin-cajun-tours"',
+    ),
+  );
+  assert.ok(
+    portfolioHtml.includes('data-testid="supplier-connection-row-gosno"'),
+  );
+  assert.ok(portfolioHtml.includes("/admin/portfolio/activity"));
+});
+
 
 

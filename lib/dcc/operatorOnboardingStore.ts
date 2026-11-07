@@ -13,6 +13,11 @@ import {
   type EarthosEnvironmentScope,
 } from "@/lib/dcc/travelReference";
 import { FLAGGED_PRIOR_OUTREACH_OPERATORS } from "@/lib/dcc/operators";
+import {
+  STOREFRONT_PRODUCTS,
+  getProductPrimaryBookingHref,
+} from "@/app/new-orleans/tours/pageConfig";
+import { PROVIDERS } from "@/app/new-orleans/data/providers";
 
 export const OPERATOR_ONBOARDING_OWNER = "dcc-operator-onboarding-queue";
 
@@ -78,6 +83,45 @@ export type OperatorOfferReadinessStatuses = {
   apiBooking: CapabilityReadinessItem<
     "api_booking_requires_approval" | "api_booking_approved"
   >;
+};
+
+export type SupplierConnectionProductLink = {
+  productId: string;
+  title: string;
+  dccPageHref: string;
+  bookingHref: string | null;
+  bookingLinkLabel: string;
+  itemId?: string | null;
+  flowId?: string | null;
+  attributionTag?: string | null;
+};
+
+export type SupplierConnectionVerificationField<TCode extends string = string> = {
+  verified: boolean;
+  code: TCode;
+  label: string;
+  evidence: string;
+  evidenceSource: string | null;
+  readinessItem: CapabilityReadinessItem<TCode>;
+};
+
+export type SupplierConnectionRecord = {
+  companyId: string;
+  companyName: string;
+  providerShortname: string | null;
+  market: string;
+  bookingSystem: string;
+  connectionStatus: "connected" | "checkout_only" | "needs_attention";
+  productsAndBookingLinks: SupplierConnectionProductLink[];
+  checkoutVerified: SupplierConnectionVerificationField<
+    "checkout_tested" | "checkout_pending_test"
+  >;
+  livePricesAndSeatsVerified: SupplierConnectionVerificationField<
+    "check_seats_at_fareharbor" | "check_seats_at_provider" | "live_seats_verified"
+  >;
+  lastChecked: string;
+  needsAttentionNote: string | null;
+  readinessStatuses: OperatorOfferReadinessStatuses;
 };
 
 export type ProviderApprovalStep = {
@@ -1855,4 +1899,519 @@ export async function deleteOperatorOnboardingApplicationById(
     deletedId: applicationId,
   };
 }
+
+function toVerificationField<TCode extends string>(
+  item: CapabilityReadinessItem<TCode>,
+): SupplierConnectionVerificationField<TCode> {
+  return {
+    verified: item.ready,
+    code: item.code,
+    label: item.label,
+    evidence: item.evidence,
+    evidenceSource: item.evidenceSource,
+    readinessItem: item,
+  };
+}
+
+export function buildBaselinePortfolioSupplierConnections(): SupplierConnectionRecord[] {
+  const checkedAt = "2026-11-07T15:30:00Z";
+
+  const southernStyleProducts: SupplierConnectionProductLink[] = STOREFRONT_PRODUCTS.filter(
+    (p) => p.companyShortname === "southernstyletours" && p.fareharborAsnActive === true,
+  ).map((product) => {
+    const bookingHref = getProductPrimaryBookingHref(product);
+    return {
+      productId: product.id,
+      title: product.title,
+      dccPageHref: `/new-orleans/tours/${product.slug}`,
+      bookingHref,
+      bookingLinkLabel: `FareHarbor #${product.itemId || product.id} (asn=aktourcenter)`,
+      itemId: product.itemId || null,
+      flowId: product.flowId || null,
+      attributionTag: "asn=aktourcenter",
+    };
+  });
+
+  const southernStyleReadiness: OperatorOfferReadinessStatuses = {
+    checkout: {
+      capability: "checkout",
+      code: "checkout_tested",
+      label: "Checkout verified (asn=aktourcenter)",
+      ready: true,
+      evidence:
+        "Verified live on DCC storefront (/new-orleans/tours/city-tour-of-new-orleans, /new-orleans/tours/oak-alley-or-laura-plantation-tour, /new-orleans/tours/all-day-city-plantation-combo) — FareHarbor links carry asn=aktourcenter attribution.",
+      evidenceSource: "fareharbor_live_checkout_verification:southernstyletours",
+      updatedAt: checkedAt,
+    },
+    seatAvailability: {
+      capability: "seat_availability",
+      code: "check_seats_at_fareharbor",
+      label: "Check seats & live prices at FareHarbor",
+      ready: false,
+      evidence:
+        "Storefront displays baseline per-person rates ($50–$99); live departure seats and dynamic pricing require FareHarbor External API v1 supplier read access.",
+      evidenceSource: "fareharbor_asn_embed:southernstyletours",
+      updatedAt: checkedAt,
+    },
+    commissionTerms: {
+      capability: "commission_terms",
+      code: "commission_terms_confirmed",
+      label: "ASN attribution active (aktourcenter)",
+      ready: true,
+      evidence:
+        "FareHarbor ASN referral links active under aktourcenter across items 51942, 83002, and 51953.",
+      evidenceSource: "fareharbor_asn:aktourcenter:southernstyletours",
+      updatedAt: checkedAt,
+    },
+    apiBooking: {
+      capability: "api_booking",
+      code: "api_booking_requires_approval",
+      label: "External API v1 read/write pending supplier grant",
+      ready: false,
+      evidence:
+        "Guests complete checkout on FareHarbor with aktourcenter attribution; External API v1 access requires supplier-granted API key permission.",
+      evidenceSource: null,
+      updatedAt: checkedAt,
+    },
+  };
+
+  const raginCajunProducts: SupplierConnectionProductLink[] = STOREFRONT_PRODUCTS.filter(
+    (p) => p.companyShortname === "ragincajuntours" && p.fareharborAsnActive === true,
+  ).map((product) => {
+    const bookingHref = getProductPrimaryBookingHref(product);
+    const variantItemIds =
+      product.bookingVariants && product.bookingVariants.length > 1
+        ? product.bookingVariants.map((v) => `#${v.itemId}`).join(" / ")
+        : `#${product.itemId || product.id}`;
+    return {
+      productId: product.id,
+      title: product.title,
+      dccPageHref: `/new-orleans/tours/${product.slug}`,
+      bookingHref,
+      bookingLinkLabel: `FareHarbor ${variantItemIds} (asn=aktourcenter)`,
+      itemId: product.itemId || null,
+      flowId: product.flowId || null,
+      attributionTag: "asn=aktourcenter",
+    };
+  });
+
+  const raginCajunReadiness: OperatorOfferReadinessStatuses = {
+    checkout: {
+      capability: "checkout",
+      code: "checkout_tested",
+      label: "Checkout verified (asn=aktourcenter)",
+      ready: true,
+      evidence:
+        "Verified live on DCC storefront (/new-orleans/tours/ragin-cajun-airboat-options, /new-orleans/tours/covered-tour-boat, /new-orleans/tours/covered-boat-plantation-combo) — FareHarbor links carry asn=aktourcenter attribution.",
+      evidenceSource: "fareharbor_live_checkout_verification:ragincajuntours",
+      updatedAt: checkedAt,
+    },
+    seatAvailability: {
+      capability: "seat_availability",
+      code: "check_seats_at_fareharbor",
+      label: "Check dates, prices & seats at FareHarbor",
+      ready: false,
+      evidence:
+        "External API v1 returned HTTP 403 Not Authorized for aktourcenter on ragincajuntours; storefront labels pre-tax estimates, gates item 228561 Luling meeting point, and shows 'Check dates and prices on FareHarbor' until supplier read access is enabled.",
+      evidenceSource: "fareharbor_external_api_v1_probe:ragincajuntours:403",
+      updatedAt: checkedAt,
+    },
+    commissionTerms: {
+      capability: "commission_terms",
+      code: "commission_terms_confirmed",
+      label: "ASN attribution active (aktourcenter)",
+      ready: true,
+      evidence:
+        "FareHarbor ASN referral links active under aktourcenter across airboat options (228561, 228524, 448291), covered tour boat (590176), and combo (603090).",
+      evidenceSource: "fareharbor_asn:aktourcenter:ragincajuntours",
+      updatedAt: checkedAt,
+    },
+    apiBooking: {
+      capability: "api_booking",
+      code: "api_booking_requires_approval",
+      label: "External API v1 permission required",
+      ready: false,
+      evidence:
+        "Requires Ragin Cajun Tours / FareHarbor Support to grant External API v1 affiliate read/booking permission for user key onto company shortname ragincajuntours.",
+      evidenceSource: null,
+      updatedAt: checkedAt,
+    },
+  };
+
+  const gosnoProducts: SupplierConnectionProductLink[] = [
+    {
+      productId: "gosno-colorado-planner-vail-booking",
+      title: "DCC Colorado Planner — Vail Private SUV / Van Booking (1–10 Pax)",
+      dccPageHref: "/transportation/colorado",
+      bookingHref:
+        "https://gosno.co/vail?origin=DEN&destination=Vail&passengers=7&passengerCount=7&vehicleClass=van&src=dcc-authority-colorado",
+      bookingLinkLabel: "GoSno Vail Booking (src=dcc-authority-colorado)",
+      itemId: "gosno-vail-private",
+      flowId: "direct-booking",
+      attributionTag: "src=dcc-authority-colorado",
+    },
+    {
+      productId: "gosno-colorado-planner-breckenridge-booking",
+      title: "DCC Colorado Planner — Breckenridge Private SUV Booking (1–6 Pax)",
+      dccPageHref: "/transportation/colorado",
+      bookingHref:
+        "https://gosno.co/breckenridge?origin=DEN&destination=Breckenridge&passengers=6&passengerCount=6&vehicleClass=suv&src=dcc-authority-colorado",
+      bookingLinkLabel: "GoSno Breckenridge Booking (src=dcc-authority-colorado)",
+      itemId: "gosno-breckenridge-private",
+      flowId: "direct-booking",
+      attributionTag: "src=dcc-authority-colorado",
+    },
+    {
+      productId: "gosno-colorado-planner-group-quote",
+      title: "DCC Colorado Planner — Multi-Vehicle Group Quote (11+ Pax)",
+      dccPageHref: "/transportation/colorado",
+      bookingHref:
+        "https://gosno.co/request-quote?origin=DEN&destination=Vail&passengers=16&passengerCount=16&party_size=16&vehicleType=van&src=dcc-authority-colorado",
+      bookingLinkLabel: "GoSno Request Quote (src=dcc-authority-colorado)",
+      itemId: "gosno-group-quote",
+      flowId: "request-quote",
+      attributionTag: "src=dcc-authority-colorado",
+    },
+  ];
+
+  const gosnoReadiness: OperatorOfferReadinessStatuses = {
+    checkout: {
+      capability: "checkout",
+      code: "checkout_tested",
+      label: "Checkout & quote handoff verified",
+      ready: true,
+      evidence:
+        "Verified live on /transportation/colorado — DCC Colorado planner routes 1–10 guest trips to GoSno booking and 11+ guest trips to GoSno multi-vehicle quote with src=dcc-authority-colorado.",
+      evidenceSource: "dcc_colorado_planner_verification:gosno",
+      updatedAt: checkedAt,
+    },
+    seatAvailability: {
+      capability: "seat_availability",
+      code: "check_seats_at_provider",
+      label: "Route snapshot active · live fleet on GoSno",
+      ready: false,
+      evidence:
+        "GoSno route feed snapshot verifies baseline private SUV ($499) and van quote rules; live vehicle assignment and custom 11+ pax quote pricing are confirmed on GoSno.",
+      evidenceSource: "gosno_route_feed_snapshot",
+      updatedAt: checkedAt,
+    },
+    commissionTerms: {
+      capability: "commission_terms",
+      code: "commission_terms_confirmed",
+      label: "Portfolio satellite attribution active",
+      ready: true,
+      evidence:
+        "Two-way satellite handoff telemetry and src=dcc-authority-colorado attribution active between DCC and GoSno.",
+      evidenceSource: "dcc_satellite_handoffs:gosno",
+      updatedAt: checkedAt,
+    },
+    apiBooking: {
+      capability: "api_booking",
+      code: "api_booking_requires_approval",
+      label: "Checkout & quote completed on GoSno",
+      ready: false,
+      evidence:
+        "Payment, Rezdy provisioning, and operations queue stay inside GoSno.",
+      evidenceSource: null,
+      updatedAt: checkedAt,
+    },
+  };
+
+  const jeanLafitteReadiness = buildInitialOfferReadinessStatuses({
+    bookingSystem: JEAN_LAFITTE_763318_ONBOARDING_EXAMPLE.bookingSystem,
+    operatorName: JEAN_LAFITTE_763318_ONBOARDING_EXAMPLE.operatorName,
+    exactTourOption: JEAN_LAFITTE_763318_ONBOARDING_EXAMPLE.exactTourOption,
+    existingCheckoutLink: JEAN_LAFITTE_763318_ONBOARDING_EXAMPLE.existingCheckoutLink,
+    tourId: JEAN_LAFITTE_763318_ONBOARDING_EXAMPLE.tourId,
+    offerItemId: JEAN_LAFITTE_763318_ONBOARDING_EXAMPLE.offerItemId,
+    nowIso: "2026-11-06T21:42:51Z",
+  });
+
+  const steamboatProducts: SupplierConnectionProductLink[] = STOREFRONT_PRODUCTS.filter(
+    (p) => p.companyShortname === "neworleanssteamboatcompany",
+  )
+    .slice(0, 4)
+    .map((product) => ({
+      productId: product.id,
+      title: product.title,
+      dccPageHref: `/new-orleans/tours/${product.slug}`,
+      bookingHref: getProductPrimaryBookingHref(product),
+      bookingLinkLabel: `FareHarbor #${product.itemId || product.bookingVariants?.[0]?.itemId || product.id} (asn=welcometoneworleanstours)`,
+      itemId: product.itemId || product.bookingVariants?.[0]?.itemId || null,
+      flowId: product.flowId || product.bookingVariants?.[0]?.flowId || null,
+      attributionTag: "asn=welcometoneworleanstours",
+    }));
+
+  const steamboatReadiness: OperatorOfferReadinessStatuses = {
+    checkout: {
+      capability: "checkout",
+      code: "checkout_tested",
+      label: "Checkout verified (asn=welcometoneworleanstours)",
+      ready: true,
+      evidence:
+        "FareHarbor ASN embed links active for New Orleans Steamboat Company and Gray Line riverboat, plantation, swamp, and walking tours.",
+      evidenceSource: "fareharbor_asn:neworleanssteamboatcompany",
+      updatedAt: "2026-11-06T21:42:51Z",
+    },
+    seatAvailability: {
+      capability: "seat_availability",
+      code: "check_seats_at_fareharbor",
+      label: "Check seats at FareHarbor",
+      ready: false,
+      evidence:
+        "Published flat rates verified in catalog; remaining departure seat capacity is confirmed inside FareHarbor checkout.",
+      evidenceSource: "fareharbor_asn:neworleanssteamboatcompany",
+      updatedAt: "2026-11-06T21:42:51Z",
+    },
+    commissionTerms: {
+      capability: "commission_terms",
+      code: "commission_terms_confirmed",
+      label: "ASN attribution active (welcometoneworleanstours)",
+      ready: true,
+      evidence:
+        "Configured with ref=WelcomeToNewOrleansTours and asn=welcometoneworleanstours across 12 catalog products.",
+      evidenceSource: "fareharbor_asn:neworleanssteamboatcompany",
+      updatedAt: "2026-11-06T21:42:51Z",
+    },
+    apiBooking: {
+      capability: "api_booking",
+      code: "api_booking_requires_approval",
+      label: "Hosted FareHarbor checkout",
+      ready: false,
+      evidence:
+        "Bookings complete on New Orleans Steamboat Company / Gray Line hosted FareHarbor flows.",
+      evidenceSource: null,
+      updatedAt: "2026-11-06T21:42:51Z",
+    },
+  };
+
+  const pendingCatalogProviders: SupplierConnectionRecord[] = Object.values(PROVIDERS)
+    .filter((provider) => provider.status === "pending_inventory")
+    .map((provider) => {
+      const readiness = buildInitialOfferReadinessStatuses({
+        bookingSystem: provider.bookingPlatform || "other",
+        operatorName: provider.displayName,
+        nowIso: checkedAt,
+      });
+      return {
+        companyId: provider.id,
+        companyName: provider.displayName,
+        providerShortname: provider.fareHarborShortname,
+        market: "New Orleans (WNO Catalog)",
+        bookingSystem: provider.bookingPlatform || "Pending onboarding",
+        connectionStatus: "needs_attention" as const,
+        productsAndBookingLinks: provider.productIds.map((pid) => ({
+          productId: pid,
+          title: pid
+            .replaceAll("-", " ")
+            .replace(/\b\w/g, (char) => char.toUpperCase()),
+          dccPageHref: "/new-orleans/tours",
+          bookingHref: null,
+          bookingLinkLabel: "Booking link pending operator onboarding",
+          itemId: null,
+          flowId: null,
+          attributionTag: null,
+        })),
+        checkoutVerified: toVerificationField(readiness.checkout),
+        livePricesAndSeatsVerified: toVerificationField(readiness.seatAvailability),
+        lastChecked: checkedAt,
+        needsAttentionNote:
+          "Catalog provider marked pending_inventory — needs verified checkout links, dated rate sheet, and live seat availability.",
+        readinessStatuses: readiness,
+      };
+    });
+
+  return [
+    {
+      companyId: "southern-style-tours",
+      companyName: "Southern Style Tours",
+      providerShortname: "southernstyletours",
+      market: "New Orleans (DCC / WNO)",
+      bookingSystem: "FareHarbor (ASN: aktourcenter)",
+      connectionStatus: "checkout_only",
+      productsAndBookingLinks: southernStyleProducts,
+      checkoutVerified: toVerificationField(southernStyleReadiness.checkout),
+      livePricesAndSeatsVerified: toVerificationField(
+        southernStyleReadiness.seatAvailability,
+      ),
+      lastChecked: checkedAt,
+      needsAttentionNote:
+        "Checkout links verified live with AKTOURCENTER attribution; enable FareHarbor External API v1 read permission for live seat counts and prices.",
+      readinessStatuses: southernStyleReadiness,
+    },
+    {
+      companyId: "ragin-cajun-tours",
+      companyName: "Ragin Cajun Airboat Tours",
+      providerShortname: "ragincajuntours",
+      market: "New Orleans (DCC / WNO)",
+      bookingSystem: "FareHarbor (ASN: aktourcenter)",
+      connectionStatus: "checkout_only",
+      productsAndBookingLinks: raginCajunProducts,
+      checkoutVerified: toVerificationField(raginCajunReadiness.checkout),
+      livePricesAndSeatsVerified: toVerificationField(
+        raginCajunReadiness.seatAvailability,
+      ),
+      lastChecked: checkedAt,
+      needsAttentionNote:
+        "Checkout links verified live with AKTOURCENTER attribution; External API v1 returns HTTP 403 until ragincajuntours grants API read access and confirms item 228561 Luling meeting point.",
+      readinessStatuses: raginCajunReadiness,
+    },
+    {
+      companyId: "gosno",
+      companyName: "GoSno",
+      providerShortname: "gosno",
+      market: "Colorado (DCC Mountain Corridor)",
+      bookingSystem: "GoSno Direct Booking & Quote",
+      connectionStatus: "checkout_only",
+      productsAndBookingLinks: gosnoProducts,
+      checkoutVerified: toVerificationField(gosnoReadiness.checkout),
+      livePricesAndSeatsVerified: toVerificationField(gosnoReadiness.seatAvailability),
+      lastChecked: checkedAt,
+      needsAttentionNote:
+        "DCC Colorado planner routes to GoSno booking (1–10 pax) or quote (11+ pax); live vehicle dispatch and custom quote totals confirm on GoSno.",
+      readinessStatuses: gosnoReadiness,
+    },
+    {
+      companyId: "jean-lafitte-swamp-tours",
+      companyName: JEAN_LAFITTE_763318_ONBOARDING_EXAMPLE.operatorName,
+      providerShortname: JEAN_LAFITTE_763318_ONBOARDING_EXAMPLE.providerShortname,
+      market: "New Orleans (DCC / WNO)",
+      bookingSystem: "FareHarbor (Item #763318) + Viator Fallback",
+      connectionStatus: "checkout_only",
+      productsAndBookingLinks: [
+        {
+          productId: "jeanlafitte-swamp-tour-with-hotel-pickup",
+          title: "Jean Lafitte Swamp Tour with Hotel Pickup (Item #763318)",
+          dccPageHref: "/new-orleans/tours/jeanlafitte-swamp-tour-with-hotel-pickup",
+          bookingHref: JEAN_LAFITTE_763318_ONBOARDING_EXAMPLE.existingCheckoutLink,
+          bookingLinkLabel: "FareHarbor #763318 ($131.44 / 2 adults tested)",
+          itemId: JEAN_LAFITTE_763318_ONBOARDING_EXAMPLE.offerItemId,
+          flowId: "no",
+          attributionTag: "ref=WelcomeToNewOrleansTours",
+        },
+      ],
+      checkoutVerified: toVerificationField(jeanLafitteReadiness.checkout),
+      livePricesAndSeatsVerified: toVerificationField(
+        jeanLafitteReadiness.seatAvailability,
+      ),
+      lastChecked: "2026-11-06T21:42:51Z",
+      needsAttentionNote:
+        "Checkout tested ($131.44 for 2 adults with Hotel Monteleone pickup #22056428); awaiting ASN affiliate rules activation and live numeric seat feed.",
+      readinessStatuses: jeanLafitteReadiness,
+    },
+    {
+      companyId: "new-orleans-steamboat-gray-line",
+      companyName: "New Orleans Steamboat Company / Gray Line",
+      providerShortname: "neworleanssteamboatcompany",
+      market: "New Orleans (DCC / WNO)",
+      bookingSystem: "FareHarbor (ASN: welcometoneworleanstours)",
+      connectionStatus: "checkout_only",
+      productsAndBookingLinks: steamboatProducts,
+      checkoutVerified: toVerificationField(steamboatReadiness.checkout),
+      livePricesAndSeatsVerified: toVerificationField(
+        steamboatReadiness.seatAvailability,
+      ),
+      lastChecked: "2026-11-06T21:42:51Z",
+      needsAttentionNote:
+        "Checkout links and published flat rates verified; remaining seat counts checked on FareHarbor checkout.",
+      readinessStatuses: steamboatReadiness,
+    },
+    ...pendingCatalogProviders,
+  ];
+}
+
+export async function listPortfolioSupplierConnections(options: {
+  environmentScope?: EarthosEnvironmentScope | "all";
+} = {}): Promise<SupplierConnectionRecord[]> {
+  const baseline = buildBaselinePortfolioSupplierConnections();
+  let persistedQueue: PublicOperatorOnboardingRecord[] = [];
+  try {
+    persistedQueue = await listOperatorOnboardingReviewQueue({
+      environmentScope: options.environmentScope || "all",
+      limit: 100,
+    });
+  } catch {
+    persistedQueue = [];
+  }
+
+  if (persistedQueue.length === 0) {
+    return baseline;
+  }
+
+  const byKey = new Map<string, SupplierConnectionRecord>();
+  for (const row of baseline) {
+    byKey.set(row.companyId.toLowerCase(), row);
+    if (row.providerShortname) {
+      byKey.set(row.providerShortname.toLowerCase(), row);
+    }
+  }
+
+  const extraRecords: SupplierConnectionRecord[] = [];
+
+  for (const app of persistedQueue) {
+    if (!app.readinessStatuses) continue;
+    const shortnameKey = (app.submitted.providerShortname || "").trim().toLowerCase();
+    const nameKey = app.submitted.companyName
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-");
+    const existing =
+      (shortnameKey && byKey.get(shortnameKey)) || byKey.get(nameKey) || null;
+
+    const checkoutField = toVerificationField(app.readinessStatuses.checkout);
+    const seatsField = toVerificationField(app.readinessStatuses.seatAvailability);
+    const lastChecked = app.updatedAt || app.submittedAt;
+    const connectionStatus: SupplierConnectionRecord["connectionStatus"] =
+      checkoutField.verified && seatsField.verified
+        ? "connected"
+        : checkoutField.verified
+          ? "checkout_only"
+          : "needs_attention";
+
+    if (existing) {
+      existing.checkoutVerified = checkoutField;
+      existing.livePricesAndSeatsVerified = seatsField;
+      existing.lastChecked = lastChecked;
+      existing.readinessStatuses = app.readinessStatuses;
+      existing.connectionStatus = connectionStatus;
+      if (connectionStatus === "connected") {
+        existing.needsAttentionNote = null;
+      }
+    } else {
+      extraRecords.push({
+        companyId: `onb-${app.applicationId}`,
+        companyName: app.submitted.companyName,
+        providerShortname: app.submitted.providerShortname || null,
+        market: app.submitted.destinations || "Onboarding Queue",
+        bookingSystem: app.submitted.bookingSystem,
+        connectionStatus,
+        productsAndBookingLinks: [
+          {
+            productId: app.submitted.tourId || app.applicationId,
+            title: app.submitted.exactTourOption || app.submitted.companyName,
+            dccPageHref: "/new-orleans/tours",
+            bookingHref: app.submitted.existingCheckoutLink || null,
+            bookingLinkLabel: app.submitted.existingCheckoutLink
+              ? `${app.submitted.bookingSystem} Checkout`
+              : "Pending checkout link",
+            itemId: app.submitted.offerItemId || null,
+            flowId: null,
+            attributionTag: app.reviewRecord?.affiliateAccount || null,
+          },
+        ],
+        checkoutVerified: checkoutField,
+        livePricesAndSeatsVerified: seatsField,
+        lastChecked,
+        needsAttentionNote:
+          connectionStatus === "connected"
+            ? null
+            : `${checkoutField.label} · ${seatsField.label}`,
+        readinessStatuses: app.readinessStatuses,
+      });
+    }
+  }
+
+  return [...baseline, ...extraRecords];
+}
+
 
