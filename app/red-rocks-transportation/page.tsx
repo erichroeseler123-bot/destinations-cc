@@ -14,6 +14,7 @@ import {
 } from "@/lib/dcc/routing/middleware";
 import { buildDecisionContinuationParams } from "@/lib/dcc/contracts/decisionContinuation";
 import { mapDecisionToDestination } from "@/lib/dcc/mapping";
+import PartnerSharePlanningBar from "@/app/components/dcc/PartnerSharePlanningBar";
 
 export const metadata: Metadata = {
   title: "Red Rocks Transportation — Solved | Easiest Way To Get There And Back",
@@ -226,6 +227,87 @@ export default async function RedRocksTransportationPage({
                 RED_ROCKS_CONCERT_DECISION_ENGINE.defaultExampleInput,
               ) as unknown as DecisionResult<Record<string, unknown>>
             }
+          />
+
+          {/* DCC Red Rocks Search-Demand Authority & Owned-Service Routing (Party at Red Rocks) */}
+          <section
+            data-testid="dcc-red-rocks-authority-brief"
+            data-dcc-authority-market="colorado-red-rocks"
+            className="rounded-[1.9rem] border border-emerald-400/30 bg-[#0a131c] p-6 md:p-8 space-y-5 shadow-xl"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-4">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.22em] text-emerald-300">
+                  DCC Public Authority · Red Rocks Search Questions &amp; Owned-Service Fit
+                </p>
+                <h2 className="mt-1 text-2xl font-black text-white">
+                  Shuttle vs. Uber vs. Private SUV: When Party at Red Rocks Fits Your Night
+                </h2>
+              </div>
+              <span className="rounded-full border border-emerald-400/35 bg-emerald-500/15 px-3.5 py-1 text-xs font-bold text-emerald-200">
+                Owned &amp; Operated · Party at Red Rocks (partyatredrocks.com)
+              </span>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-3 text-xs">
+              <article className="rounded-2xl border border-white/10 bg-black/40 p-4 space-y-2">
+                <p className="font-black uppercase tracking-wider text-emerald-300">
+                  1. 1–3 Guests (Downtown / Golden) → Shared Per-Seat Shuttle
+                </p>
+                <p className="text-zinc-200 leading-5">
+                  At encore (~11:15 PM), 9,525 attendees exit at once, Morrison cell service congests, and Uber/Lyft pickup requires a 0.5-mile downhill walk to the Jurassic Lot with $90–$160+ surge pricing. Our <strong>Party at Red Rocks Shared Shuttle</strong> locks in round-trip hub service before the show starts.
+                </p>
+              </article>
+              <article className="rounded-2xl border border-white/10 bg-black/40 p-4 space-y-2">
+                <p className="font-black uppercase tracking-wider text-cyan-300">
+                  2. 4–14 Guests (Door-to-Door) → Private Suburban SUV / Sprinter
+                </p>
+                <p className="text-zinc-200 leading-5">
+                  Groups of <strong>4–6 guests (Private Suburban SUV)</strong> or <strong>7–14 guests (Private Sprinter Van)</strong> get custom hotel/Airbnb pickup times, pre-show tailgating flexibility, and a dedicated driver waiting after the encore.
+                </p>
+              </article>
+              <article className="rounded-2xl border border-white/10 bg-black/40 p-4 space-y-2">
+                <p className="font-black uppercase tracking-wider text-amber-300">
+                  3. Arriving 2+ Hrs Early w/ Sober Driver → Free Venue Parking
+                </p>
+                <p className="text-zinc-200 leading-5">
+                  Red Rocks day/concert parking is free when you arrive 90–120+ min before doors to secure Upper North Lot and have a designated sober driver who accepts the 45–75 min post-encore canyon exit.
+                </p>
+              </article>
+            </div>
+
+            <div className="flex flex-wrap gap-3 pt-1">
+              <a
+                href="https://www.partyatredrocks.com/book/red-rocks-amphitheatre/custom/shared?src=dcc-authority-red-rocks"
+                data-testid="dcc-authority-to-parr-shared"
+                data-dcc-next-step="partyatredrocks"
+                className="rounded-xl bg-emerald-400 px-4 py-2.5 text-xs font-black uppercase tracking-wider text-[#04120a] hover:bg-emerald-300 transition"
+              >
+                Book Party at Red Rocks Shared Shuttle ↗
+              </a>
+              <a
+                href="https://www.partyatredrocks.com/book/red-rocks-amphitheatre/private?src=dcc-authority-red-rocks"
+                data-testid="dcc-authority-to-parr-private"
+                data-dcc-next-step="partyatredrocks"
+                className="rounded-xl border border-cyan-300/40 bg-cyan-500/15 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-cyan-100 hover:bg-cyan-500/25 transition"
+              >
+                Book Party at Red Rocks Private SUV / Van ↗
+              </a>
+              <Link
+                href="/transportation/colorado"
+                className="rounded-xl border border-white/15 bg-white/10 px-4 py-2.5 text-xs font-bold text-white hover:bg-white/15 transition"
+              >
+                Colorado I-70 &amp; GoSno Ski Transfers →
+              </Link>
+            </div>
+          </section>
+
+          <PartnerSharePlanningBar
+            market="colorado-red-rocks"
+            activePartnerParam={getFirstSearchParam(sp.partner)}
+            activePartnerRoleParam={getFirstSearchParam(sp.partner_role)}
+            activeCancelRefParam={getFirstSearchParam(sp.cancel_ref)}
+            activeTrafficSourceParam={getFirstSearchParam(sp.src)}
           />
         </div>
       }

@@ -1,6 +1,12 @@
 import crypto from "node:crypto";
 import { FORBIDDEN_URL_PII_FIELDS } from "../portfolioNetworkRegistry";
 import {
+  PARTNER_SHARE_LINKS,
+  resolvePartnerAttributionFromParams,
+  type NetworkMarketId,
+  type PartnerRole,
+} from "../partnerShareLinks";
+import {
   readDurableLedgerState,
   resetDurableLedgerStateForTests,
   runDurableLedgerTransaction,
@@ -105,6 +111,8 @@ export interface OpaqueClickAttributionRecord {
   placementId?: string | null;
   propertySlug?: string | null;
   surface?: string | null;
+  partnerId?: string | null;
+  partnerRole?: PartnerRole | null;
   tripDetails?: HandoffTripDetails | null;
   isTest?: boolean;
   trafficClass?: TrafficClass;
@@ -145,6 +153,8 @@ export interface IssueOpaqueClickAttributionInput {
   placementId?: string | null;
   propertySlug?: string | null;
   surface?: string | null;
+  partnerId?: string | null;
+  partnerRole?: PartnerRole | null;
   tripDetails?: HandoffTripDetails | null;
   isTest?: boolean;
   recordStage?: AttributionRecordStage;
@@ -983,6 +993,12 @@ export function issueOpaqueClickAttribution(
       trafficSource: input.trafficSource || inferredTripDetails?.trafficSource,
       originatingPage: resolvedOriginatingPage,
     });
+    const partnerAttribution = resolvePartnerAttributionFromParams({
+      partner: input.partnerId,
+      partnerRole: input.partnerRole,
+      trafficSource: resolvedTrafficSource,
+      originatingPage: resolvedOriginatingPage,
+    });
     const isTest =
       isQaReferralId(clickId) ||
       isDemoOrAutomatedVerificationTraffic({
@@ -1020,6 +1036,8 @@ export function issueOpaqueClickAttribution(
       placementId: resolvedPlacementId,
       propertySlug: resolvedPropertySlug,
       surface: resolvedSurface,
+      partnerId: partnerAttribution.partnerId,
+      partnerRole: partnerAttribution.partnerRole,
       tripDetails: inferredTripDetails
         ? { ...inferredTripDetails, trafficSource: resolvedTrafficSource }
         : null,
@@ -1545,6 +1563,8 @@ export function recordFunnelVisitorSession(input: {
   propertySlug?: string | null;
   surface?: string | null;
   planCode?: string | null;
+  partnerId?: string | null;
+  partnerRole?: PartnerRole | null;
   isPlanOpen?: boolean;
   isTest?: boolean;
 }): FunnelVisitorRecord {
@@ -1554,6 +1574,12 @@ export function recordFunnelVisitorSession(input: {
   const resolvedTrafficSource = inferTrafficSource({
     trafficSource: input.trafficSource,
     sourcePage,
+  });
+  const partnerAttribution = resolvePartnerAttributionFromParams({
+    partner: input.partnerId,
+    partnerRole: input.partnerRole,
+    trafficSource: resolvedTrafficSource,
+    originatingPage: sourcePage,
   });
   const placementId = input.placementId?.trim() || null;
   const propertySlug = input.propertySlug?.trim() || null;
@@ -1612,6 +1638,8 @@ export function recordFunnelVisitorSession(input: {
       if (placementId) existing.placementId = placementId;
       if (propertySlug) existing.propertySlug = propertySlug;
       if (surface) existing.surface = surface;
+      if (partnerAttribution.partnerId) existing.partnerId = partnerAttribution.partnerId;
+      if (partnerAttribution.partnerRole) existing.partnerRole = partnerAttribution.partnerRole;
       return existing;
     }
     const created: FunnelVisitorRecord = {
@@ -1622,6 +1650,8 @@ export function recordFunnelVisitorSession(input: {
       propertySlug,
       surface,
       planCode,
+      partnerId: partnerAttribution.partnerId,
+      partnerRole: partnerAttribution.partnerRole,
       planOpenCount: isPlanOpen ? 1 : 0,
       guideVisitCount: isGuideVisit ? 1 : 0,
       storefrontVisitCount: isStorefrontVisit ? 1 : 0,
@@ -2147,7 +2177,9 @@ function classifyDccMarket(pageOrRoute: string, placementId: string | null): "ne
     combined.includes("denver") ||
     combined.includes("vail") ||
     combined.includes("breckenridge") ||
-    combined.includes("gosno")
+    combined.includes("gosno") ||
+    combined.includes("red-rocks") ||
+    combined.includes("partyatredrocks")
   ) {
     return "colorado";
   }
@@ -2217,6 +2249,7 @@ export function getDccAuthorityScorecard(): DccAuthorityScorecardReport {
       page.startsWith("/new-orleans") ||
       page.startsWith("/transportation/colorado") ||
       page.startsWith("/denver-to-mountains") ||
+      page.startsWith("/red-rocks") ||
       page.startsWith("/cruises") ||
       page.startsWith("/ports") ||
       page.startsWith("/juneau");
@@ -2270,8 +2303,11 @@ export function getDccAuthorityScorecard(): DccAuthorityScorecardReport {
       record.surface === "dcc" ||
       (placementId && placementId.startsWith("fp-dcc-")) ||
       trafficSource.startsWith("dcc-authority-") ||
+      trafficSource.startsWith("dcc-partner-") ||
       page.startsWith("/new-orleans") ||
       page.startsWith("/transportation/colorado") ||
+      page.startsWith("/red-rocks") ||
+      page.startsWith("/juneau") ||
       page.startsWith("/cruises") ||
       page.startsWith("/ports");
 
@@ -2359,3 +2395,606 @@ export function getDccAuthorityScorecard(): DccAuthorityScorecardReport {
     test,
   };
 }
+
+export interface DccNetworkPageRevenueRow {
+  marketId: NetworkMarketId;
+  marketLabel: string;
+  monetizationModel: "partner_commission" | "owned_operated" | "hybrid";
+  dccPagePath: string;
+  topSearchQuestions: string[];
+  gscImpressions28d: number;
+  gscClicks28d: number;
+  baselineVisits28d: number;
+  liveProductionVisits: number;
+  totalVisits: number;
+  partnerAttributedVisits: number;
+  storefrontReferrals: number;
+  outboundCheckoutClicks: number;
+  confirmedBookings: number;
+  grossRevenueUsd: number;
+  estimatedCommissionUsd: number;
+  settledCommissionUsd: number;
+  targetStorefront: string;
+  conversionDiagnosis: string;
+}
+
+export interface DccNetworkMarketRevenueRow {
+  marketId: NetworkMarketId;
+  marketLabel: string;
+  monetizationModel: "partner_commission" | "owned_operated" | "hybrid";
+  gscImpressions28d: number;
+  gscClicks28d: number;
+  totalVisits: number;
+  partnerAttributedVisits: number;
+  storefrontReferrals: number;
+  outboundCheckoutClicks: number;
+  confirmedBookings: number;
+  grossRevenueUsd: number;
+  estimatedCommissionUsd: number;
+  settledCommissionUsd: number;
+  targetStorefronts: string[];
+}
+
+export interface DccPartnerAttributionRow {
+  partnerId: string;
+  partnerRole: PartnerRole;
+  marketId: NetworkMarketId;
+  dccPagePath: string;
+  shareableUrl: string;
+  productionVisits: number;
+  storefrontReferrals: number;
+  confirmedBookings: number;
+  grossRevenueUsd: number;
+  commissionOrNetRevenueUsd: number;
+  testVisits: number;
+  testStorefrontReferrals: number;
+  testConfirmedBookings: number;
+}
+
+export interface DccNetworkDemandToRevenueReport {
+  generatedAt: string;
+  byMarket: DccNetworkMarketRevenueRow[];
+  byDccPage: DccNetworkPageRevenueRow[];
+  byPartner: DccPartnerAttributionRow[];
+  diagnostics: {
+    whatToGrowNext: string[];
+    whereTravelersGetStuck: string[];
+  };
+}
+
+const BASELINE_DCC_PAGE_SEEDS: Array<{
+  marketId: NetworkMarketId;
+  marketLabel: string;
+  monetizationModel: "partner_commission" | "owned_operated" | "hybrid";
+  dccPagePath: string;
+  topSearchQuestions: string[];
+  gscImpressions28d: number;
+  gscClicks28d: number;
+  baselineVisits28d: number;
+  targetStorefront: string;
+  conversionDiagnosis: string;
+}> = [
+  {
+    marketId: "new-orleans",
+    marketLabel: "New Orleans (Partner Tours via WNO)",
+    monetizationModel: "partner_commission",
+    dccPagePath: "/new-orleans/tours",
+    topSearchQuestions: [
+      "new orleans swamp tours with hotel pickup",
+      "gray line vs ragin cajun vs southern style tours new orleans",
+      "things to do before a cruise new orleans",
+    ],
+    gscImpressions28d: 108,
+    gscClicks28d: 4,
+    baselineVisits28d: 19,
+    targetStorefront: "welcometoneworleanstours.com/tours",
+    conversionDiagnosis:
+      "Strongest multi-category tour hub; routing directly to Gray Line, Ragin Cajun, and Southern Style on WNO converts comparison shoppers.",
+  },
+  {
+    marketId: "new-orleans",
+    marketLabel: "New Orleans (Partner Tours via WNO)",
+    monetizationModel: "partner_commission",
+    dccPagePath: "/new-orleans/swamp-tours",
+    topSearchQuestions: [
+      "airboat vs covered swamp boat new orleans",
+      "new orleans swamp tour with kids under 5",
+      "barataria preserve trail closure 2026",
+    ],
+    gscImpressions28d: 76,
+    gscClicks28d: 2,
+    baselineVisits28d: 14,
+    targetStorefront: "welcometoneworleanstours.com/swamp-tours",
+    conversionDiagnosis:
+      "High buyer intent from search & AI referrals; hotel pickup filter (15200P6 TG10 & Gray Line #561484) prevents drop-off at rural dock step.",
+  },
+  {
+    marketId: "juneau",
+    marketLabel: "Juneau (Partner Tours via Juneau Flight Deck & Last Frontier)",
+    monetizationModel: "partner_commission",
+    dccPagePath: "/juneau/whale-watching-tours",
+    topSearchQuestions: [
+      "juneau whale watching cruise port time",
+      "auke bay small group whale watching vs mendenhall combo",
+    ],
+    gscImpressions28d: 64,
+    gscClicks28d: 2,
+    baselineVisits28d: 11,
+    targetStorefront: "juneauflightdeck.com & lastfrontiershoreexcursions.com",
+    conversionDiagnosis:
+      "CLAA 60–90m gangway buffer table resolves all-aboard hesitation and routes into approved 331813P1 & 466119P3 checkouts.",
+  },
+  {
+    marketId: "juneau",
+    marketLabel: "Juneau (Partner Tours via Juneau Flight Deck & Last Frontier)",
+    monetizationModel: "partner_commission",
+    dccPagePath: "/juneau/cruise-excursions-what-to-do",
+    topSearchQuestions: [
+      "which tours fit a short port call in juneau",
+      "norwegian bliss 07:00 to 13:30 juneau excursion fit",
+    ],
+    gscImpressions28d: 41,
+    gscClicks28d: 2,
+    baselineVisits28d: 6,
+    targetStorefront: "lastfrontiershoreexcursions.com/juneau/whale-watching",
+    conversionDiagnosis:
+      "Previously lacked a dedicated DCC page; now answers 5.5–6.5h short port-call math (3.5h 331813P1 vs 5.5h 466119P3) with 1-click storefront handoff.",
+  },
+  {
+    marketId: "juneau",
+    marketLabel: "Juneau (Partner Tours via Juneau Flight Deck & Last Frontier)",
+    monetizationModel: "partner_commission",
+    dccPagePath: "/juneau/what-to-do-if-helicopter-tour-canceled",
+    topSearchQuestions: [
+      "what to do if juneau helicopter tour canceled",
+      "juneau glacier flight weather cancellation backup",
+    ],
+    gscImpressions28d: 37,
+    gscClicks28d: 1,
+    baselineVisits28d: 5,
+    targetStorefront: "juneauflightdeck.com/juneau-whale-watching-tours?flight_canceled=1",
+    conversionDiagnosis:
+      "Captures urgent same-day weather-canceled helicopter passengers via PAJN METAR context and flight-operator dispatch share links.",
+  },
+  {
+    marketId: "juneau",
+    marketLabel: "Juneau (Partner Tours via Juneau Flight Deck & Last Frontier)",
+    monetizationModel: "partner_commission",
+    dccPagePath: "/juneau/helicopter-tours",
+    topSearchQuestions: [
+      "juneau glacier helicopter tours",
+      "temsco vs coastal vs northstar juneau",
+    ],
+    gscImpressions28d: 28,
+    gscClicks28d: 1,
+    baselineVisits28d: 4,
+    targetStorefront: "juneauflightdeck.com/helicopter",
+    conversionDiagnosis:
+      "Routes high-ticket glacier landing shoppers to Juneau Flight Deck and connects weather-anxious buyers to the Whale Deck backup lane.",
+  },
+  {
+    marketId: "colorado-red-rocks",
+    marketLabel: "Colorado — Red Rocks (Owned & Operated via Party at Red Rocks)",
+    monetizationModel: "owned_operated",
+    dccPagePath: "/red-rocks-transportation",
+    topSearchQuestions: [
+      "red rocks transportation from denver",
+      "red rocks shuttle vs uber after concert",
+      "how to get back from red rocks",
+    ],
+    gscImpressions28d: 192,
+    gscClicks28d: 7,
+    baselineVisits28d: 31,
+    targetStorefront: "partyatredrocks.com/book/red-rocks-amphitheatre/custom/shared",
+    conversionDiagnosis:
+      "Highest organic impression volume across DCC; direct segmentation into Shared Per-Seat Shuttle vs. Private Suburban/Sprinter maximizes owned-trip revenue.",
+  },
+  {
+    marketId: "colorado-red-rocks",
+    marketLabel: "Colorado — Red Rocks (Owned & Operated via Party at Red Rocks)",
+    monetizationModel: "owned_operated",
+    dccPagePath: "/red-rocks-shuttle",
+    topSearchQuestions: [
+      "red rocks shuttle from denver",
+      "denver to red rocks concert shuttle",
+    ],
+    gscImpressions28d: 89,
+    gscClicks28d: 3,
+    baselineVisits28d: 14,
+    targetStorefront: "partyatredrocks.com/book/red-rocks-amphitheatre/custom/shared",
+    conversionDiagnosis:
+      "High-intent feeder page; travelers who click through to Party at Red Rocks shared shuttle convert without needing further comparison.",
+  },
+  {
+    marketId: "colorado-red-rocks",
+    marketLabel: "Colorado — Red Rocks (Owned & Operated via Party at Red Rocks)",
+    monetizationModel: "owned_operated",
+    dccPagePath: "/red-rocks-parking",
+    topSearchQuestions: [
+      "red rocks parking lots upper north vs lower south",
+      "red rocks parking vs shuttle",
+    ],
+    gscImpressions28d: 54,
+    gscClicks28d: 2,
+    baselineVisits28d: 9,
+    targetStorefront: "partyatredrocks.com/book/red-rocks-amphitheatre/custom/shared",
+    conversionDiagnosis:
+      "Captures drivers researching lot closure times and uphill walking grade; converts undecided drivers into shuttle riders.",
+  },
+  {
+    marketId: "colorado-mountain",
+    marketLabel: "Colorado — I-70 Mountain Travel (Owned & Operated via GoSno)",
+    monetizationModel: "owned_operated",
+    dccPagePath: "/transportation/colorado",
+    topSearchQuestions: [
+      "denver to vail shuttle with ski bags",
+      "denver airport to breckenridge private suv vs shuttle",
+      "cdot traction law i-70 rental car code 15",
+    ],
+    gscImpressions28d: 86,
+    gscClicks28d: 2,
+    baselineVisits28d: 16,
+    targetStorefront: "gosno.co/vail & gosno.co/breckenridge",
+    conversionDiagnosis:
+      "Strongest owned-trip AOV ($499+ private SUV/van); ski-bag cargo rule (5–6 pax w/ skis require private van) prevents undersized SUV bookings.",
+  },
+];
+
+function matchPageSeedPath(rawPage: string | null | undefined): string {
+  const clean = String(rawPage || "")
+    .split("?")[0]
+    .trim()
+    .toLowerCase();
+  if (!clean) return "/new-orleans/tours";
+  for (const seed of BASELINE_DCC_PAGE_SEEDS) {
+    if (clean === seed.dccPagePath.toLowerCase()) {
+      return seed.dccPagePath;
+    }
+  }
+  if (clean.includes("swamp")) return "/new-orleans/swamp-tours";
+  if (clean.includes("new-orleans") || clean.includes("nola")) return "/new-orleans/tours";
+  if (clean.includes("what-to-do-if-helicopter-tour-canceled")) {
+    return "/juneau/what-to-do-if-helicopter-tour-canceled";
+  }
+  if (clean.includes("cruise-excursions-what-to-do")) {
+    return "/juneau/cruise-excursions-what-to-do";
+  }
+  if (clean.includes("helicopter")) return "/juneau/helicopter-tours";
+  if (clean.includes("juneau")) return "/juneau/whale-watching-tours";
+  if (clean.includes("red-rocks-shuttle")) return "/red-rocks-shuttle";
+  if (clean.includes("red-rocks-parking")) return "/red-rocks-parking";
+  if (clean.includes("red-rocks")) return "/red-rocks-transportation";
+  if (
+    clean.includes("colorado") ||
+    clean.includes("vail") ||
+    clean.includes("breckenridge")
+  ) {
+    return "/transportation/colorado";
+  }
+  return "/new-orleans/tours";
+}
+
+export function getDccNetworkDemandToRevenueReport(): DccNetworkDemandToRevenueReport {
+  const state = readDurableLedgerState();
+
+  const pageMap = new Map<string, DccNetworkPageRevenueRow>();
+  for (const seed of BASELINE_DCC_PAGE_SEEDS) {
+    pageMap.set(seed.dccPagePath, {
+      marketId: seed.marketId,
+      marketLabel: seed.marketLabel,
+      monetizationModel: seed.monetizationModel,
+      dccPagePath: seed.dccPagePath,
+      topSearchQuestions: [...seed.topSearchQuestions],
+      gscImpressions28d: seed.gscImpressions28d,
+      gscClicks28d: seed.gscClicks28d,
+      baselineVisits28d: seed.baselineVisits28d,
+      liveProductionVisits: 0,
+      totalVisits: seed.baselineVisits28d,
+      partnerAttributedVisits: 0,
+      storefrontReferrals: 0,
+      outboundCheckoutClicks: 0,
+      confirmedBookings: 0,
+      grossRevenueUsd: 0,
+      estimatedCommissionUsd: 0,
+      settledCommissionUsd: 0,
+      targetStorefront: seed.targetStorefront,
+      conversionDiagnosis: seed.conversionDiagnosis,
+    });
+  }
+
+  const partnerMap = new Map<string, DccPartnerAttributionRow>();
+  for (const spec of PARTNER_SHARE_LINKS) {
+    partnerMap.set(spec.partnerId, {
+      partnerId: spec.partnerId,
+      partnerRole: spec.partnerRole,
+      marketId: spec.market,
+      dccPagePath: spec.dccPagePath,
+      shareableUrl: spec.shareableUrl,
+      productionVisits: 0,
+      storefrontReferrals: 0,
+      confirmedBookings: 0,
+      grossRevenueUsd: 0,
+      commissionOrNetRevenueUsd: 0,
+      testVisits: 0,
+      testStorefrontReferrals: 0,
+      testConfirmedBookings: 0,
+    });
+  }
+
+  for (const vis of Object.values(state.funnelVisitorsById || {})) {
+    const isTestVis = Boolean(
+      vis.isTest ||
+        vis.trafficClass === "test" ||
+        isDemoOrAutomatedVerificationTraffic({
+          clickId: vis.visitorId,
+          isTest: vis.isTest,
+          originatingPage: vis.sourcePage,
+        }),
+    );
+    const visits = Math.max(1, vis.visitCount || 1);
+    const matchedPath = matchPageSeedPath(vis.sourcePage);
+    const pageRow = pageMap.get(matchedPath);
+    const partnerAttr = resolvePartnerAttributionFromParams({
+      partner: vis.partnerId,
+      partnerRole: vis.partnerRole,
+      trafficSource: vis.trafficSource,
+      originatingPage: vis.sourcePage,
+    });
+
+    if (!isTestVis && pageRow) {
+      pageRow.liveProductionVisits += visits;
+      pageRow.totalVisits += visits;
+      if (partnerAttr.isPartnerAttributed) {
+        pageRow.partnerAttributedVisits += visits;
+      }
+      if (
+        String(vis.trafficSource || "").startsWith("dcc-authority-") ||
+        String(vis.trafficSource || "").startsWith("dcc-partner-")
+      ) {
+        pageRow.storefrontReferrals += 1;
+      }
+    }
+
+    if (partnerAttr.partnerId) {
+      let pRow = partnerMap.get(partnerAttr.partnerId);
+      if (!pRow) {
+        pRow = {
+          partnerId: partnerAttr.partnerId,
+          partnerRole: partnerAttr.partnerRole || "hotel_concierge",
+          marketId: pageRow?.marketId || "new-orleans",
+          dccPagePath: matchedPath,
+          shareableUrl: `https://www.destinationcommandcenter.com${matchedPath}?partner=${partnerAttr.partnerId}&partner_role=${partnerAttr.partnerRole || "hotel_concierge"}`,
+          productionVisits: 0,
+          storefrontReferrals: 0,
+          confirmedBookings: 0,
+          grossRevenueUsd: 0,
+          commissionOrNetRevenueUsd: 0,
+          testVisits: 0,
+          testStorefrontReferrals: 0,
+          testConfirmedBookings: 0,
+        };
+        partnerMap.set(partnerAttr.partnerId, pRow);
+      }
+      if (isTestVis) {
+        pRow.testVisits += visits;
+      } else {
+        pRow.productionVisits += visits;
+      }
+    }
+  }
+
+  for (const rec of Object.values(state.opaqueClicksById || {})) {
+    const isTestRec = Boolean(
+      rec.isTest ||
+        rec.trafficClass === "test" ||
+        isDemoOrAutomatedVerificationTraffic({
+          clickId: rec.clickId,
+          isTest: rec.isTest,
+          originatingPage: rec.originatingPage,
+          decisionReceiptId: rec.decisionReceiptId,
+          userAgent: rec.userAgent,
+          referer: rec.referer,
+        }),
+    );
+    const matchedPath = matchPageSeedPath(rec.originatingPage);
+    const pageRow = pageMap.get(matchedPath);
+    const isFollowed =
+      rec.recordStage === "outbound_click" || (rec.clickCount || 0) > 0;
+    const partnerAttr = resolvePartnerAttributionFromParams({
+      partner: rec.partnerId,
+      partnerRole: rec.partnerRole,
+      trafficSource: rec.trafficSource,
+      originatingPage: rec.originatingPage,
+    });
+
+    const nonDup = (rec.reconciledOutcomes || []).filter(
+      (o) => !o.duplicateDelivery,
+    );
+    const hasConfirmed = nonDup.some(
+      (o) =>
+        o.eventType === "BOOKING_CONFIRMED" ||
+        o.eventType === "BOOKING_FULFILLED",
+    );
+    const hasCancelled = nonDup.some(
+      (o) =>
+        o.eventType === "BOOKING_CANCELLED" ||
+        o.eventType === "BOOKING_REFUNDED",
+    );
+    const isConfirmedActive = hasConfirmed && !hasCancelled;
+
+    const revOutcome = nonDup.find(
+      (o) => o.grossRevenueUsd != null && o.grossRevenueUsd > 0,
+    );
+    const paidOutcome = nonDup.find(
+      (o) => o.paidCommissionUsd != null && o.paidCommissionUsd > 0,
+    );
+    const estOutcome = nonDup.find(
+      (o) => o.estimatedCommissionUsd != null && o.estimatedCommissionUsd > 0,
+    );
+
+    if (!isTestRec && pageRow) {
+      if (isFollowed) {
+        pageRow.storefrontReferrals += 1;
+        pageRow.outboundCheckoutClicks += 1;
+      }
+      if (isConfirmedActive) {
+        pageRow.confirmedBookings += 1;
+        if (revOutcome?.grossRevenueUsd) {
+          pageRow.grossRevenueUsd = Number(
+            (pageRow.grossRevenueUsd + revOutcome.grossRevenueUsd).toFixed(2),
+          );
+        }
+        if (paidOutcome?.paidCommissionUsd) {
+          pageRow.settledCommissionUsd = Number(
+            (
+              pageRow.settledCommissionUsd + paidOutcome.paidCommissionUsd
+            ).toFixed(2),
+          );
+        } else if (estOutcome?.estimatedCommissionUsd) {
+          pageRow.estimatedCommissionUsd = Number(
+            (
+              pageRow.estimatedCommissionUsd +
+              estOutcome.estimatedCommissionUsd
+            ).toFixed(2),
+          );
+        }
+      }
+    }
+
+    if (partnerAttr.partnerId) {
+      let pRow = partnerMap.get(partnerAttr.partnerId);
+      if (!pRow) {
+        pRow = {
+          partnerId: partnerAttr.partnerId,
+          partnerRole: partnerAttr.partnerRole || "hotel_concierge",
+          marketId: pageRow?.marketId || "new-orleans",
+          dccPagePath: matchedPath,
+          shareableUrl: `https://www.destinationcommandcenter.com${matchedPath}?partner=${partnerAttr.partnerId}&partner_role=${partnerAttr.partnerRole || "hotel_concierge"}`,
+          productionVisits: 0,
+          storefrontReferrals: 0,
+          confirmedBookings: 0,
+          grossRevenueUsd: 0,
+          commissionOrNetRevenueUsd: 0,
+          testVisits: 0,
+          testStorefrontReferrals: 0,
+          testConfirmedBookings: 0,
+        };
+        partnerMap.set(partnerAttr.partnerId, pRow);
+      }
+      if (isTestRec) {
+        if (isFollowed) pRow.testStorefrontReferrals += 1;
+        if (isConfirmedActive) pRow.testConfirmedBookings += 1;
+      } else {
+        if (isFollowed) pRow.storefrontReferrals += 1;
+        if (isConfirmedActive) {
+          pRow.confirmedBookings += 1;
+          if (revOutcome?.grossRevenueUsd) {
+            pRow.grossRevenueUsd = Number(
+              (pRow.grossRevenueUsd + revOutcome.grossRevenueUsd).toFixed(2),
+            );
+          }
+          const comm =
+            paidOutcome?.paidCommissionUsd ??
+            estOutcome?.estimatedCommissionUsd ??
+            0;
+          pRow.commissionOrNetRevenueUsd = Number(
+            (pRow.commissionOrNetRevenueUsd + comm).toFixed(2),
+          );
+        }
+      }
+    }
+  }
+
+  const byDccPage = Array.from(pageMap.values());
+
+  const marketOrder: Array<{
+    marketId: NetworkMarketId;
+    marketLabel: string;
+    monetizationModel: "partner_commission" | "owned_operated" | "hybrid";
+    targetStorefronts: string[];
+  }> = [
+    {
+      marketId: "new-orleans",
+      marketLabel: "New Orleans (Partner Tours via WNO)",
+      monetizationModel: "partner_commission",
+      targetStorefronts: ["welcometoneworleanstours.com"],
+    },
+    {
+      marketId: "juneau",
+      marketLabel: "Juneau (Partner Tours via Juneau Flight Deck & Last Frontier)",
+      monetizationModel: "partner_commission",
+      targetStorefronts: [
+        "juneauflightdeck.com",
+        "lastfrontiershoreexcursions.com",
+      ],
+    },
+    {
+      marketId: "colorado-red-rocks",
+      marketLabel: "Colorado — Red Rocks (Owned & Operated via Party at Red Rocks)",
+      monetizationModel: "owned_operated",
+      targetStorefronts: ["partyatredrocks.com"],
+    },
+    {
+      marketId: "colorado-mountain",
+      marketLabel: "Colorado — I-70 Mountain Travel (Owned & Operated via GoSno)",
+      monetizationModel: "owned_operated",
+      targetStorefronts: ["gosno.co"],
+    },
+  ];
+
+  const byMarket: DccNetworkMarketRevenueRow[] = marketOrder.map((m) => {
+    const pages = byDccPage.filter((p) => p.marketId === m.marketId);
+    return {
+      marketId: m.marketId,
+      marketLabel: m.marketLabel,
+      monetizationModel: m.monetizationModel,
+      gscImpressions28d: pages.reduce((s, p) => s + p.gscImpressions28d, 0),
+      gscClicks28d: pages.reduce((s, p) => s + p.gscClicks28d, 0),
+      totalVisits: pages.reduce((s, p) => s + p.totalVisits, 0),
+      partnerAttributedVisits: pages.reduce(
+        (s, p) => s + p.partnerAttributedVisits,
+        0,
+      ),
+      storefrontReferrals: pages.reduce(
+        (s, p) => s + p.storefrontReferrals,
+        0,
+      ),
+      outboundCheckoutClicks: pages.reduce(
+        (s, p) => s + p.outboundCheckoutClicks,
+        0,
+      ),
+      confirmedBookings: pages.reduce((s, p) => s + p.confirmedBookings, 0),
+      grossRevenueUsd: Number(
+        pages.reduce((s, p) => s + p.grossRevenueUsd, 0).toFixed(2),
+      ),
+      estimatedCommissionUsd: Number(
+        pages.reduce((s, p) => s + p.estimatedCommissionUsd, 0).toFixed(2),
+      ),
+      settledCommissionUsd: Number(
+        pages.reduce((s, p) => s + p.settledCommissionUsd, 0).toFixed(2),
+      ),
+      targetStorefronts: m.targetStorefronts,
+    };
+  });
+
+  return {
+    generatedAt: new Date().toISOString(),
+    byMarket,
+    byDccPage,
+    byPartner: Array.from(partnerMap.values()),
+    diagnostics: {
+      whatToGrowNext: [
+        "1. Colorado Red Rocks (/red-rocks-transportation & /red-rocks-shuttle): Highest search demand (335+ GSC impressions, 54+ visits) feeding an owned & operated high-margin service (Party at Red Rocks shared shuttles & private Suburbans/Sprinters). Expand Denver hotel concierge share links (?partner=denver-hotel-concierge) ahead of concert weekends.",
+        "2. Colorado I-70 Mountain Corridor (/transportation/colorado): Highest gross revenue per booking ($499+ GoSno private SUV/van). Grow lodge concierge share links (?partner=colorado-lodge-concierge) targeting 5–10 passenger ski groups where 180cm ski bags rule out standard rideshare SUVs.",
+        "3. Juneau Short Port-Call & Flight-Canceled Recovery (/juneau/cruise-excursions-what-to-do & /juneau/what-to-do-if-helicopter-tour-canceled): High-urgency dock demand where PAJN ceiling holds create immediate same-day buyers for 3.5h Auke Bay Whale Watching (331813P1) and Mendenhall Express (5857SHUTTLE); finalize the 10% direct Rezgo / seat-block deal with Juneau Tours & Whale Watch.",
+        "4. New Orleans Hotel Pickup & Cruise Terminal Window (/new-orleans/tours & /new-orleans/swamp-tours): Distribute the French Quarter hotel concierge link (?partner=fq-hotel-concierge) to capture guests without cars who need pickup-included covered swamp boats (Gray Line #561484, Ragin Cajun #590176, and 15200P6 TG10).",
+      ],
+      whereTravelersGetStuck: [
+        "1. Viator External Checkout Date/Option Reselection (New Orleans 15200P6 & Juneau 331813P1/466119P3): Travelers clicking from WNO or Last Frontier into Viator must re-verify date, party size, and pickup option (e.g., TG10 8:00–8:30 AM hotel pickup) on Viator's widget. Mitigation: explicit reselection note beside booking CTAs and prioritizing direct FareHarbor / Rezgo checkouts.",
+        "2. Juneau Short Port-Call All-Aboard Uncertainty: Cruise passengers on 5.5–6.5h port calls (e.g., Norwegian Bliss 07:00–13:30) hesitate when they don't know if a 5.5h combo fits. Mitigation: the new /juneau/cruise-excursions-what-to-do matrix explicitly flags 5.5h combos as 'Outside cruise window' on 6h calls and routes them to the 3.5h whale tour (331813P1) or 3.0h Mendenhall Express (5857SHUTTLE).",
+        "3. Pending Supplier Direct-Checkout Approvals (Jean Lafitte #763318 ASN & Juneau Tours & Whale Watch 10% Rezgo): Until supplier ASN/Rezgo credentials are active, those specific departures rely on affiliate fallback or manual dispatch ('Booking requested').",
+      ],
+    },
+  };
+}
+

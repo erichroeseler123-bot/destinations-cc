@@ -28,6 +28,8 @@ export interface FunnelVisitorRecord {
   propertySlug?: string | null;
   surface?: string | null;
   planCode?: string | null;
+  partnerId?: string | null;
+  partnerRole?: "hotel_concierge" | "cruise_planner" | "flight_operator" | null;
   planOpenCount?: number;
   guideVisitCount?: number;
   storefrontVisitCount?: number;

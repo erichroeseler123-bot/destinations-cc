@@ -20,6 +20,7 @@ import { generateCategorySchemaGraph } from "../lib/schema";
 import { isHeldProduct } from "../data/truthPolicy";
 import { FAREHARBOR_SOURCES } from "../lib/fareHarborAttribution";
 import DccConciergeWidget from "@/app/components/dcc/DccConciergeWidget";
+import PartnerSharePlanningBar from "@/app/components/dcc/PartnerSharePlanningBar";
 
 const BOOKABLE_PRODUCT_COUNT = STOREFRONT_PRODUCTS.filter((product) => !isHeldProduct(product.slug)).length;
 const CURRENT_TOURS_DESCRIPTION =
@@ -499,6 +500,14 @@ export default async function NewOrleansToursPage({
                   </a>
                 </div>
               </div>
+
+              <PartnerSharePlanningBar
+                market="new-orleans"
+                activePartnerParam={firstStr(resolvedSearch.partner)}
+                activePartnerRoleParam={firstStr(resolvedSearch.partner_role)}
+                activeCancelRefParam={firstStr(resolvedSearch.cancel_ref)}
+                activeTrafficSourceParam={firstStr(resolvedSearch.src)}
+              />
             </div>
           </section>
         ) : null}

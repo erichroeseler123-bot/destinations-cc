@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   authenticateCommerceAdminRequest,
   getDccAuthorityScorecard,
+  getDccNetworkDemandToRevenueReport,
   getFunnelMetricsReport,
   listAttributionRecordsForPlacement,
 } from "@/lib/dcc/commerce/opaqueAttributionLedger";
@@ -99,6 +100,7 @@ export async function GET(request: NextRequest) {
     dccAuthorityNolaToursFunnel,
     winterPlannerFunnel,
     dccAuthorityScorecard,
+    dccNetworkDemandToRevenueReport,
     catalogSummary,
   ] = await Promise.all([
     Promise.resolve(getFunnelMetricsReport()),
@@ -115,6 +117,7 @@ export async function GET(request: NextRequest) {
     Promise.resolve(getFunnelMetricsReport({ placementId: "fp-dcc-authority-nola-tours" })),
     Promise.resolve(getFunnelMetricsReport({ placementId: "fp-cp-winter-excursion-planner" })),
     Promise.resolve(getDccAuthorityScorecard()),
+    Promise.resolve(getDccNetworkDemandToRevenueReport()),
     getDurableCatalogSummaryReport(),
   ]);
 
@@ -326,6 +329,7 @@ export async function GET(request: NextRequest) {
         },
       },
       dccAuthorityScorecard,
+      dccNetworkDemandToRevenueReport,
       overallFunnel: formatPlacementFunnelSummary(overallFunnel),
       widgetPlacements: {
         firstPartyInstallationsCount:

@@ -14,6 +14,7 @@ import {
 } from "@/lib/dcc/jsonld";
 import { buildSwampPlanHref } from "@/lib/dcc/warmTransfer";
 import PortfolioAssuranceBanner from "@/app/components/dcc/PortfolioAssuranceBanner";
+import PartnerSharePlanningBar from "@/app/components/dcc/PartnerSharePlanningBar";
 import {
   buildPortfolioHandoffUrl,
   evaluatePortfolioAssuranceSummary,
@@ -689,6 +690,14 @@ export default async function NewOrleansSwampToursPage(props: {
               NOLA_SWAMP_DECISION_ENGINE.defaultExampleInput,
             ) as unknown as DecisionResult<Record<string, unknown>>
           }
+        />
+
+        <PartnerSharePlanningBar
+          market="new-orleans"
+          activePartnerParam={pickFirstParam(resolvedSearchParams.partner)}
+          activePartnerRoleParam={pickFirstParam(resolvedSearchParams.partner_role)}
+          activeCancelRefParam={pickFirstParam(resolvedSearchParams.cancel_ref)}
+          activeTrafficSourceParam={pickFirstParam(resolvedSearchParams.src)}
         />
 
         <p className="text-center text-sm font-semibold uppercase tracking-[0.18em] text-white/46">

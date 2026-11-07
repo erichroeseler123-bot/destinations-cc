@@ -14,6 +14,7 @@ import {
   evaluateCruiseTimingWindow,
 } from "@/lib/dcc/cruiseTimingGate";
 import { evaluateJuneauBackupFlow } from "@/lib/dcc/dockRolloutContext";
+import PartnerSharePlanningBar from "@/app/components/dcc/PartnerSharePlanningBar";
 
 export const metadata: Metadata = {
   title: "Juneau Whale Watching Tours & Whale Deck Authority | CLAA Port Timing & Flight Backups | DCC",
@@ -507,8 +508,30 @@ export default async function JuneauWhaleWatchingToursPage({
             >
               Excursions by Cruise Ship Time ↗
             </a>
+            <Link
+              href="/juneau/cruise-excursions-what-to-do"
+              data-testid="dcc-juneau-short-port-call-link"
+              className="rounded-full border border-amber-400/35 bg-amber-500/15 px-5 py-3 text-sm font-bold text-amber-200 transition hover:bg-amber-500/25"
+            >
+              Which Tours Fit a Short Port Call? →
+            </Link>
+            <Link
+              href="/juneau/what-to-do-if-helicopter-tour-canceled"
+              data-testid="dcc-juneau-flight-canceled-guide-link"
+              className="rounded-full border border-cyan-400/35 bg-cyan-500/15 px-5 py-3 text-sm font-bold text-cyan-200 transition hover:bg-cyan-500/25"
+            >
+              What to Do If Helicopter Canceled →
+            </Link>
           </div>
         </section>
+
+        <PartnerSharePlanningBar
+          market="juneau"
+          activePartnerParam={firstStr(resolvedSearch.partner)}
+          activePartnerRoleParam={firstStr(resolvedSearch.partner_role)}
+          activeCancelRefParam={cancelRefParam}
+          activeTrafficSourceParam={firstStr(resolvedSearch.src)}
+        />
       </div>
     </main>
   );

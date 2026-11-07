@@ -12,6 +12,7 @@ import { getTravelReferenceNodeById } from "@/lib/dcc/travelReference";
 import { getTransportEntriesByRegion } from "@/src/data/transport-directory";
 
 import { getPublicationManifestEntry } from "@/src/data/publication-manifest";
+import PartnerSharePlanningBar from "@/app/components/dcc/PartnerSharePlanningBar";
 
 export const dynamic = "force-dynamic";
 
@@ -51,7 +52,14 @@ const GROUPS = [
   },
 ];
 
-export default async function ColoradoTransportationPage() {
+export default async function ColoradoTransportationPage({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const sp = searchParams ? await searchParams : {};
+  const firstStr = (v: string | string[] | undefined) =>
+    Array.isArray(v) ? v[0] : v;
   await syncDurableLedgerWithPostgres();
   const actions = getColoradoTransferRecommendationActions();
   const entries = getTransportEntriesByRegion("Colorado");
@@ -165,9 +173,25 @@ export default async function ColoradoTransportationPage() {
               >
                 GoSno 11+ Pax Multi-Vehicle Quote ↗
               </a>
+              <a
+                href="https://www.partyatredrocks.com/book/red-rocks-amphitheatre/custom/shared?src=dcc-authority-colorado"
+                data-testid="dcc-authority-to-parr-from-colorado"
+                data-dcc-next-step="partyatredrocks"
+                className="rounded-xl border border-amber-400/40 bg-amber-500/15 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-amber-200 hover:bg-amber-500/25 transition"
+              >
+                Open Party at Red Rocks Concert Shuttles ↗
+              </a>
             </div>
           </div>
         </section>
+
+        <PartnerSharePlanningBar
+          market="colorado-mountain"
+          activePartnerParam={firstStr(sp.partner)}
+          activePartnerRoleParam={firstStr(sp.partner_role)}
+          activeCancelRefParam={firstStr(sp.cancel_ref)}
+          activeTrafficSourceParam={firstStr(sp.src)}
+        />
 
         <section className="rounded-3xl border border-white/10 bg-white/5 p-6">
           <h2 className="text-2xl font-bold">Flagship Colorado Reference Guides</h2>

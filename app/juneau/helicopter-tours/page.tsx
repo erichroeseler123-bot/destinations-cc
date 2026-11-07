@@ -12,11 +12,16 @@ import {
   JUNEAU_HELICOPTER_SIGNAL_SUBJECT_IDS,
   resolveGoRedirect,
 } from "@/lib/dcc/routing/middleware";
+import PartnerSharePlanningBar from "@/app/components/dcc/PartnerSharePlanningBar";
 
 const PAGE_URL = "https://destinationcommandcenter.com/juneau/helicopter-tours";
 
 type SearchParams = {
   date?: string;
+  partner?: string;
+  partner_role?: string;
+  cancel_ref?: string;
+  src?: string;
 };
 
 const EXPERIENCE_LANES = [
@@ -245,16 +250,36 @@ export default async function JuneauHelicopterToursPage({
             >
               {primaryCtaLabel}
             </a>
+            <Link
+              href="/juneau/what-to-do-if-helicopter-tour-canceled"
+              className="rounded-2xl border border-cyan-400/35 bg-cyan-500/15 px-5 py-3 text-sm font-bold text-cyan-200 hover:bg-cyan-500/25"
+            >
+              What to do if your helicopter flight cancels (DCC Same-Day Backup) →
+            </Link>
+            <Link
+              href="/juneau/cruise-excursions-what-to-do"
+              className="rounded-2xl border border-amber-400/35 bg-amber-500/15 px-5 py-3 text-sm font-bold text-amber-200 hover:bg-amber-500/25"
+            >
+              Which Juneau tours fit a short port call? →
+            </Link>
             <a
               href="https://juneauflightdeck.com/juneau/what-to-do-if-helicopter-tour-canceled"
               target="_blank"
               rel="noopener noreferrer"
               className="rounded-2xl border border-white/12 bg-white/6 px-5 py-3 text-sm text-white/88 hover:bg-white/10"
             >
-              What to do if your helicopter flight cancels (Juneau Flight Deck) ↗
+              Open Juneau Flight Deck Backup Guide ↗
             </a>
           </div>
         </section>
+
+        <PartnerSharePlanningBar
+          market="juneau"
+          activePartnerParam={sp.partner}
+          activePartnerRoleParam={sp.partner_role}
+          activeCancelRefParam={sp.cancel_ref}
+          activeTrafficSourceParam={sp.src}
+        />
 
         <section className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 text-sm leading-7 text-white/78 space-y-3">
           <div className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-300">
