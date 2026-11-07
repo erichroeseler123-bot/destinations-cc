@@ -26,7 +26,7 @@ import {
   evaluateJuneauBackupFlow,
   type JuneauBackupFlowContext,
 } from "@/lib/dcc/dockRolloutContext";
-import { readCoops } from "@/lib/dcc/extendedCoordinateFeeds";
+import type { readCoops } from "@/lib/dcc/extendedCoordinateFeeds";
 
 export const JUNEAU_COORDINATE = { lat: 58.3019, lng: -134.4197 } as const;
 export const JUNEAU_NOAA_STATION_ID = "9452210";
@@ -977,19 +977,92 @@ export async function evaluateUnifiedJuneauTripRecheck(
       ? raw.date.trim()
       : "2027-07-15";
 
-  const liveCoopsResult = await readCoops(JUNEAU_COORDINATE, {
-    targetDate: date,
-    coopsTimeZone: "lst_ldt",
-    simulateNoaaTimeout: raw.simulateNoaaTimeout,
-    timeoutMs: 6000,
-  }).catch((err) => ({
-    provider: "noaa-coops",
-    attribution: "Tides, water levels and coastal stations: NOAA CO-OPS",
-    available: false,
-    checkedAt: new Date().toISOString(),
-    data: null,
-    error: err instanceof Error ? err.message : "NOAA CO-OPS timeout",
-  }));
+  if (raw.liveCoopsResult !== undefined) {
+    return evaluateUnifiedJuneauTripRecheckSync({
+      ...raw,
+      date,
+      liveCoopsResult: raw.liveCoopsResult,
+    });
+  }
+
+  if (raw.simulateNoaaTimeout) {
+    return evaluateUnifiedJuneauTripRecheckSync({
+      ...raw,
+      date,
+      simulateNoaaTimeout: true,
+      liveCoopsResult: {
+        provider: "noaa-coops",
+        attribution: "Tides, water levels and coastal stations: NOAA CO-OPS",
+        available: false,
+        checkedAt: new Date().toISOString(),
+        data: null,
+        error: "NOAA CO-OPS tide prediction request timed out",
+      },
+    });
+  }
+
+  const ymd = date.replace(/-/g, "");
+  let liveCoopsResult: Awaited<ReturnType<typeof readCoops>> | null = null;
+  try {
+    const predUrl = `https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?station=${JUNEAU_NOAA_STATION_ID}&begin_date=${ymd}&end_date=${ymd}&product=predictions&datum=${JUNEAU_NOAA_DATUM}&interval=hilo&units=english&time_zone=lst_ldt&format=json&application=destinationcommandcenter`;
+    const res = await fetch(predUrl, {
+      signal: AbortSignal.timeout(3500),
+    });
+    if (res.ok) {
+      const json = (await res.json()) as {
+        predictions?: Array<{ t?: string; v?: string; type?: "H" | "L" }>;
+      };
+      const preds = Array.isArray(json.predictions)
+        ? json.predictions
+            .filter(
+              (p): p is { t: string; v: string; type: "H" | "L" } =>
+                typeof p?.t === "string" &&
+                typeof p?.v === "string" &&
+                (p?.type === "H" || p?.type === "L"),
+            )
+            .map((p) => {
+              const heightFt = Number(Number.parseFloat(p.v).toFixed(2));
+              const heightM = Number((heightFt * 0.3048).toFixed(2));
+              return {
+                time: p.t,
+                heightFt,
+                heightM,
+                type: p.type,
+                label: (p.type === "H" ? "High" : "Low") as "High" | "Low",
+              };
+            })
+        : [];
+      if (preds.length > 0) {
+        liveCoopsResult = {
+          provider: "noaa-coops",
+          attribution: "Tides, water levels and coastal stations: NOAA CO-OPS",
+          available: true,
+          checkedAt: new Date().toISOString(),
+          data: {
+            station: {
+              id: JUNEAU_NOAA_STATION_ID,
+              name: JUNEAU_NOAA_STATION_NAME,
+              state: "AK",
+              lat: JUNEAU_COORDINATE.lat,
+              lng: JUNEAU_COORDINATE.lng,
+              distanceKm: 0.4,
+            },
+            observation: null,
+            predictions: {
+              requestedDate: date,
+              datum: JUNEAU_NOAA_DATUM,
+              timeZone: "lst_ldt",
+              units: "feet_and_meters",
+              highLow: preds,
+            },
+          },
+          error: null,
+        };
+      }
+    }
+  } catch {
+    // Fall back to deterministic NOAA Station 9452210 table when network is offline
+  }
 
   return evaluateUnifiedJuneauTripRecheckSync({
     ...raw,

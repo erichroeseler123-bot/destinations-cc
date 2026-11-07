@@ -16,7 +16,9 @@ import {
   evaluateDenArrivalTripRecheck,
   evaluateRedRocksRideHomeRecheck,
   evaluateUnifiedJuneauTripRecheck,
+  JUNEAU_COORDINATE,
 } from "@/lib/dcc/sharedTripRecheck";
+import { readCoops } from "@/lib/dcc/extendedCoordinateFeeds";
 
 export const dynamic = "force-dynamic";
 
@@ -171,15 +173,31 @@ export async function POST(request: Request) {
       requestedEngineId === "juneau-port-day" ||
       requestedEngineId === "juneau-port-day-recheck"
     ) {
+      const targetDate =
+        typeof rawInputs.date === "string"
+          ? rawInputs.date
+          : typeof rawInputs.travelDate === "string"
+            ? rawInputs.travelDate
+            : "2027-07-15";
+      const simulateNoaaTimeout = Boolean(rawInputs.simulateNoaaTimeout);
+      const liveCoopsResult = await readCoops(JUNEAU_COORDINATE, {
+        targetDate,
+        coopsTimeZone: "lst_ldt",
+        simulateNoaaTimeout,
+        timeoutMs: 4500,
+      }).catch((err) => ({
+        provider: "noaa-coops",
+        attribution: "Tides, water levels and coastal stations: NOAA CO-OPS",
+        available: false,
+        checkedAt: new Date().toISOString(),
+        data: null,
+        error: err instanceof Error ? err.message : "NOAA CO-OPS timeout",
+      }));
+
       sharedTripRecheck = await evaluateUnifiedJuneauTripRecheck({
         ship:
           typeof rawInputs.ship === "string" ? rawInputs.ship : "Royal Princess",
-        date:
-          typeof rawInputs.date === "string"
-            ? rawInputs.date
-            : typeof rawInputs.travelDate === "string"
-              ? rawInputs.travelDate
-              : "2027-07-15",
+        date: targetDate,
         arrivalTime:
           typeof rawInputs.arrival === "string"
             ? rawInputs.arrival
@@ -217,7 +235,8 @@ export async function POST(request: Request) {
           typeof rawInputs.operatorConfirmedTideLimitFt === "number"
             ? rawInputs.operatorConfirmedTideLimitFt
             : null,
-        simulateNoaaTimeout: Boolean(rawInputs.simulateNoaaTimeout),
+        simulateNoaaTimeout,
+        liveCoopsResult,
       });
     } else if (
       requestedEngineId === "den-arrival-recheck" ||
