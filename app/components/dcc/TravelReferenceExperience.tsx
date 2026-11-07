@@ -22,10 +22,96 @@ import TransitComparisonTable from "@/app/components/dcc/TransitComparisonTable"
 
 async function fetchCoordinateTelemetrySummary(lat: number, lng: number) {
   try {
-    const [core, extended] = await Promise.all([
+    const [coreRaw, extendedRaw] = await Promise.all([
       readLocationIntelligence({ lat, lng }, { minRevalidateSeconds: 3600 }),
       readExtendedCoordinateFeeds({ lat, lng }, { minRevalidateSeconds: 3600 }),
     ]);
+    const rawCoreAny = coreRaw as any;
+    const rawExtAny = extendedRaw as any;
+    const firstSnowItem = Array.isArray(rawCoreAny?.conditions?.next12Hours)
+      ? rawCoreAny.conditions.next12Hours.find(
+          (h: any) => typeof h?.snowDepthM === "number",
+        )
+      : null;
+
+    const core = rawCoreAny
+      ? {
+          checkedAt: rawCoreAny.checkedAt || null,
+          now: {
+            weather: rawCoreAny.now?.weather
+              ? {
+                  temperature_2m: rawCoreAny.now.weather.temperature_2m ?? null,
+                  apparent_temperature:
+                    rawCoreAny.now.weather.apparent_temperature ?? null,
+                  description: rawCoreAny.now.weather.description ?? null,
+                  wind_speed_10m: rawCoreAny.now.weather.wind_speed_10m ?? null,
+                }
+              : null,
+            airQuality: rawCoreAny.now?.airQuality
+              ? { us_aqi: rawCoreAny.now.airQuality.us_aqi ?? null }
+              : null,
+          },
+          conditions: {
+            next12Hours: firstSnowItem
+              ? [{ snowDepthM: firstSnowItem.snowDepthM }]
+              : [],
+            next3Days: [],
+          },
+          hazards: {
+            alerts: Array.isArray(rawCoreAny.hazards?.alerts)
+              ? rawCoreAny.hazards.alerts.slice(0, 3).map((a: any) => ({
+                  id: a.id,
+                  event: a.event,
+                  headline: a.headline,
+                }))
+              : [],
+          },
+          sources: Array.isArray(rawCoreAny.sources)
+            ? rawCoreAny.sources
+                .filter(
+                  (s: any) =>
+                    s?.provider === "nws" || s?.provider === "open-meteo",
+                )
+                .map((s: any) => ({
+                  provider: s.provider,
+                  available: Boolean(s.available),
+                  checkedAt: s.checkedAt || null,
+                  error: s.error || null,
+                }))
+            : [],
+        }
+      : null;
+
+    const extended = rawExtAny
+      ? {
+          coastal: {
+            coops: Array.isArray(rawExtAny.coastal?.coops)
+              ? rawExtAny.coastal.coops.slice(0, 1).map((c: any) => ({
+                  id: c.id,
+                  name: c.name,
+                  pageUrl: c.pageUrl,
+                  observation: c.observation?.v
+                    ? { v: c.observation.v }
+                    : undefined,
+                }))
+              : [],
+            ndbc: [],
+          },
+          aviation: Array.isArray(rawExtAny.aviation)
+            ? rawExtAny.aviation.slice(0, 1).map((av: any) => ({
+                airport: av.airport?.icao ? { icao: av.airport.icao } : undefined,
+                metar: av.metar
+                  ? {
+                      rawOb: av.metar.rawOb || null,
+                      fltCat: av.metar.fltCat || null,
+                    }
+                  : undefined,
+              }))
+            : [],
+          sources: [],
+        }
+      : null;
+
     return { core, extended, fetchError: null };
   } catch (err) {
     return {
