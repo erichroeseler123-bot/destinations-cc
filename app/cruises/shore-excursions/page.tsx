@@ -74,6 +74,109 @@ export default function CruiseShoreExcursionsPage() {
 
         <PageActionBar title="Useful excursion actions" actions={actions} />
 
+        {/* DCC Cruise Shore Excursions Decision & Evidence Brief */}
+        <section
+          aria-label="DCC Cruise Shore Excursions Decision & Evidence Brief"
+          data-testid="dcc-cruise-authority-brief"
+          data-dcc-authority-market="cruise-ports"
+          className="rounded-[1.75rem] border border-emerald-400/30 bg-emerald-950/20 p-6 md:p-8"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-emerald-300">
+                DCC Public Authority · Direct Answer &amp; Verified Port Timing Evidence
+              </p>
+              <h2 className="mt-1 text-2xl font-black tracking-tight text-white md:text-3xl">
+                How to Choose a Cruise Shore Excursion Without Missing All-Aboard
+              </h2>
+            </div>
+            <span className="rounded-full border border-emerald-400/35 bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-200">
+              Verified Dock Clearance · 90m Buffer Rule · Cruise Promenade Handoff
+            </span>
+          </div>
+
+          <div className="mt-5 grid gap-4 md:grid-cols-2">
+            <div className="rounded-2xl border border-white/10 bg-black/35 p-4">
+              <div className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-300">
+                1. Berth &amp; Tender Friction Changes Your Real Clock (Juneau / Ketchikan)
+              </div>
+              <p className="mt-2 text-sm leading-relaxed text-zinc-200">
+                In Juneau, downtown walk-off docks (<strong>CT, FKL, AS</strong>) clear in <strong>20–25 min</strong>, whereas <strong>AJ Dock requires a 35-min shuttle transfer</strong> and <strong>anchor/tender calls require ~50 min outbound + ~40 min return queue</strong>. Always deduct dock clearance + a <strong>mandatory 90-minute return-to-ship buffer</strong> before booking independent excursions.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-black/35 p-4">
+              <div className="text-xs font-bold uppercase tracking-[0.16em] text-cyan-300">
+                2. Juneau Whale Watching vs. Helicopter Glacier Landing Windows
+              </div>
+              <p className="mt-2 text-sm leading-relaxed text-zinc-200">
+                <strong>Auke Bay Whale Watching</strong> requires <strong>210–240 min dock-to-dock</strong> (including 25–30 min road transfer each way). <strong>Mendenhall Helicopter Glacier Landings</strong> require <strong>180–255 min dock-to-dock</strong> (including mandatory 30–45 min flight check-in/weigh-in at JNU heliport). Never stack both unless your ship is berthed <strong>9+ hours</strong> at a walk-off pier.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-5 overflow-x-auto rounded-2xl border border-white/10 bg-black/40">
+            <table className="w-full text-left text-xs text-zinc-200">
+              <thead className="border-b border-white/10 bg-white/[0.04] uppercase tracking-wider text-zinc-400">
+                <tr>
+                  <th className="px-4 py-3">Port / Excursion Corridor</th>
+                  <th className="px-4 py-3">Dock-to-Dock Window</th>
+                  <th className="px-4 py-3">Berth / Transfer Constraint</th>
+                  <th className="px-4 py-3">Verified Status / Reference</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/10">
+                <tr>
+                  <td className="px-4 py-3 font-semibold text-white">Juneau · Auke Bay Whale Watching</td>
+                  <td className="px-4 py-3 text-emerald-300">210–240 min total</td>
+                  <td className="px-4 py-3">25–30m transfer to Auke Bay each way + 90m ship buffer</td>
+                  <td className="px-4 py-3">Safe on 7h+ port call; tight on tender calls</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-3 font-semibold text-white">Juneau · Helicopter Glacier Landing (JNU)</td>
+                  <td className="px-4 py-3 text-cyan-300">180–255 min total</td>
+                  <td className="px-4 py-3">30–45m mandatory pre-flight weigh-in &amp; safety briefing</td>
+                  <td className="px-4 py-3">High ceiling/visibility dependency; book morning slot</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-3 font-semibold text-white">Eastern Caribbean · Nassau &amp; St. Thomas (`INDY-2027-01-24`)</td>
+                  <td className="px-4 py-3 text-amber-300">Verified Port Call Windows</td>
+                  <td className="px-4 py-3">Nassau (`254526P1` $150) &amp; St. Thomas (`7452P2` $89.99)</td>
+                  <td className="px-4 py-3">San Juan held in preview until exact ship berth window locks</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-emerald-400/25 bg-black/40 p-4">
+            <div className="space-y-1">
+              <div className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-300">
+                Recommended Next Step · Cruise Promenade Sailing &amp; Port Planner
+              </div>
+              <p className="text-xs text-zinc-300">
+                Inspect sailing-specific port windows, verified shore excursions, and safety holds where port timing is unresolved on <strong>Cruise Promenade</strong>.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2.5">
+              <a
+                href="https://cruisepromenade.com/p/INDY-2027-01-24?src=dcc-authority-cruise&from=dcc-cruises-shore-excursions"
+                data-testid="dcc-authority-to-cp-indy"
+                data-dcc-next-step="cruisepromenade"
+                className="inline-flex items-center gap-2 rounded-xl bg-emerald-400 px-4 py-2.5 text-xs font-black uppercase tracking-wider text-zinc-950 hover:bg-emerald-300"
+              >
+                Open Cruise Promenade Sailing Plan (`INDY-2027-01-24`) →
+              </a>
+              <a
+                href="https://cruisepromenade.com?src=dcc-authority-cruise&from=dcc-cruises-shore-excursions"
+                data-testid="dcc-authority-to-cp-home"
+                data-dcc-next-step="cruisepromenade"
+                className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-white hover:bg-white/15"
+              >
+                Explore Cruise Promenade →
+              </a>
+            </div>
+          </div>
+        </section>
+
         <section className="grid gap-4 md:grid-cols-3">
           <article className="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-5">
             <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Best for</p>
@@ -103,6 +206,7 @@ export default function CruiseShoreExcursionsPage() {
             <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
               <div className="text-xs uppercase tracking-[0.18em] text-emerald-300">Best next clicks</div>
               <div className="mt-4 grid gap-3">
+                <a href="https://cruisepromenade.com/p/INDY-2027-01-24?src=dcc-authority-cruise" className="rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm font-semibold text-emerald-200 hover:bg-emerald-400/20">Cruise Promenade Sailing Planner →</a>
                 <Link href="/ports" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Ports directory</Link>
                 <Link href="/cruises/tendering" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Tendering guide</Link>
                 <Link href="/ports/juneau" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Juneau example</Link>

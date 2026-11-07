@@ -1360,15 +1360,15 @@ export function getColoradoTransferRecommendationActions(): RecommendationAction
     },
     {
       id: "gosno-execution",
-      label: "Move Into Ski Transfer Execution",
-      href: "/transportation/colorado/denver-to-vail-shuttle-guide",
-      kind: "internal",
+      label: "Continue to GoSno Private Mountain Transfer",
+      href: "https://gosno.co/vail?origin=DEN&destination=Vail&passengers=7&passengerCount=7&vehicleClass=van&src=dcc-authority-colorado",
+      kind: "external",
       score: gosnoCorridorScore - gosnoPenalty,
       laneState: gosnoPenalty > 0 ? "degraded" : "healthy",
       reason:
         gosnoPenalty > 0
           ? "Recent GOSNO health signals suggest holding travelers in DCC until the lane stabilizes."
-          : "Best when corridor demand is clear and partner execution is healthy.",
+          : "Best next step when DEN-to-resort private SUV (up to 6 pax) or van (up to 10 pax, subject to gear fit) intent is clear.",
     },
   ];
 

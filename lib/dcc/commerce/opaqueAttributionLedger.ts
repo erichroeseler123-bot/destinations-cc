@@ -2063,4 +2063,288 @@ export function listAttributionRecordsForPlacement(options?: {
   return { visitors, attributionRecords };
 }
 
+export interface DccAuthorityScorecardBucket {
+  foundDcc: {
+    visitors: number;
+    pageVisits: number;
+    byMarket: {
+      newOrleans: { visitors: number; visits: number };
+      colorado: { visitors: number; visits: number };
+      cruisePorts: { visitors: number; visits: number };
+      otherDcc: { visitors: number; visits: number };
+    };
+    byAcquisitionChannel: {
+      search: number;
+      aiReferral: number;
+      directOrReferral: number;
+    };
+  };
+  choseNextStep: {
+    totalNextStepSelections: number;
+    wnoStorefrontHandoffs: number;
+    gosnoHandoffs: number;
+    cruisePromenadeHandoffs: number;
+    directVerifiablePartnerCheckouts: number;
+  };
+  bookedWhereVerifiable: {
+    confirmedBookings: number;
+    grossConfirmedRevenueUsd: number;
+    estimatedUnsettledCommissionUsd: number;
+    settledCommissionUsd: number;
+  };
+}
 
+export interface DccAuthorityScorecardReport {
+  generatedAt: string;
+  production: DccAuthorityScorecardBucket;
+  test: DccAuthorityScorecardBucket;
+}
+
+function createEmptyScorecardBucket(): DccAuthorityScorecardBucket {
+  return {
+    foundDcc: {
+      visitors: 0,
+      pageVisits: 0,
+      byMarket: {
+        newOrleans: { visitors: 0, visits: 0 },
+        colorado: { visitors: 0, visits: 0 },
+        cruisePorts: { visitors: 0, visits: 0 },
+        otherDcc: { visitors: 0, visits: 0 },
+      },
+      byAcquisitionChannel: {
+        search: 0,
+        aiReferral: 0,
+        directOrReferral: 0,
+      },
+    },
+    choseNextStep: {
+      totalNextStepSelections: 0,
+      wnoStorefrontHandoffs: 0,
+      gosnoHandoffs: 0,
+      cruisePromenadeHandoffs: 0,
+      directVerifiablePartnerCheckouts: 0,
+    },
+    bookedWhereVerifiable: {
+      confirmedBookings: 0,
+      grossConfirmedRevenueUsd: 0,
+      estimatedUnsettledCommissionUsd: 0,
+      settledCommissionUsd: 0,
+    },
+  };
+}
+
+function classifyDccMarket(pageOrRoute: string, placementId: string | null): "newOrleans" | "colorado" | "cruisePorts" | "otherDcc" {
+  const combined = `${pageOrRoute} ${placementId || ""}`.toLowerCase();
+  if (
+    combined.includes("new-orleans") ||
+    combined.includes("nola") ||
+    combined.includes("swamp")
+  ) {
+    return "newOrleans";
+  }
+  if (
+    combined.includes("colorado") ||
+    combined.includes("denver") ||
+    combined.includes("vail") ||
+    combined.includes("breckenridge") ||
+    combined.includes("gosno")
+  ) {
+    return "colorado";
+  }
+  if (
+    combined.includes("cruise") ||
+    combined.includes("port") ||
+    combined.includes("juneau") ||
+    combined.includes("ketchikan") ||
+    combined.includes("santorini") ||
+    combined.includes("indy-")
+  ) {
+    return "cruisePorts";
+  }
+  return "otherDcc";
+}
+
+function classifyAcquisitionChannel(sourceRaw: string | null | undefined): "search" | "aiReferral" | "directOrReferral" {
+  const src = String(sourceRaw || "").toLowerCase();
+  if (
+    src.includes("chatgpt") ||
+    src.includes("openai") ||
+    src.includes("gemini") ||
+    src.includes("perplexity") ||
+    src.includes("claude") ||
+    src.includes("copilot") ||
+    src.includes("ai")
+  ) {
+    return "aiReferral";
+  }
+  if (
+    src.includes("google") ||
+    src.includes("bing") ||
+    src.includes("yahoo") ||
+    src.includes("duckduckgo") ||
+    src.includes("organic") ||
+    src.includes("search") ||
+    src.includes("gsc")
+  ) {
+    return "search";
+  }
+  return "directOrReferral";
+}
+
+export function getDccAuthorityScorecard(): DccAuthorityScorecardReport {
+  const state = readDurableLedgerState();
+  const production = createEmptyScorecardBucket();
+  const test = createEmptyScorecardBucket();
+
+  for (const visitor of Object.values(state.funnelVisitorsById || {})) {
+    const isVisitorTest =
+      visitor.isTest === true ||
+      visitor.trafficClass === "test" ||
+      isAutomatedOrQaRecord({
+        visitorId: visitor.visitorId,
+        originatingPage: visitor.originatingPage,
+      });
+    const bucket = isVisitorTest ? test : production;
+    const page = String(visitor.originatingPage || "");
+    const placementId = visitor.placementId || null;
+    const trafficSource = String(visitor.trafficSource || "").toLowerCase();
+    const visitCount = Math.max(1, visitor.visitCount || 1);
+
+    const isDccAuthoritySurface =
+      visitor.surface === "dcc" ||
+      (placementId && placementId.startsWith("fp-dcc-")) ||
+      page.startsWith("/new-orleans") ||
+      page.startsWith("/transportation/colorado") ||
+      page.startsWith("/denver-to-mountains") ||
+      page.startsWith("/cruises") ||
+      page.startsWith("/ports") ||
+      page.startsWith("/juneau");
+
+    if (isDccAuthoritySurface) {
+      bucket.foundDcc.visitors += 1;
+      bucket.foundDcc.pageVisits += visitCount;
+      const market = classifyDccMarket(page, placementId);
+      bucket.foundDcc.byMarket[market].visitors += 1;
+      bucket.foundDcc.byMarket[market].visits += visitCount;
+      const channel = classifyAcquisitionChannel(trafficSource);
+      bucket.foundDcc.byAcquisitionChannel[channel] += visitCount;
+    }
+
+    // Track visitors who landed on a portfolio satellite directly from a DCC authority page (src=dcc-authority-*)
+    if (trafficSource.startsWith("dcc-authority-") || trafficSource.startsWith("dcc-")) {
+      if (visitor.surface === "welcometoneworleanstours" || (placementId && placementId.startsWith("fp-wno-"))) {
+        bucket.choseNextStep.wnoStorefrontHandoffs += 1;
+        bucket.choseNextStep.totalNextStepSelections += 1;
+      } else if (visitor.surface === "cruisepromenade" || (placementId && placementId.startsWith("fp-cp-"))) {
+        bucket.choseNextStep.cruisePromenadeHandoffs += 1;
+        bucket.choseNextStep.totalNextStepSelections += 1;
+      }
+    }
+  }
+
+  for (const record of Object.values(state.opaqueClicksById || {})) {
+    const isRecordTest =
+      record.isTest === true ||
+      record.trafficClass === "test" ||
+      isAutomatedOrQaRecord(record);
+    const bucket = isRecordTest ? test : production;
+    const page = String(record.originatingPage || "");
+    const placementId = extractRecordPlacementId(record);
+    const trafficSource = extractRecordTrafficSource(record);
+    const isFollowed =
+      record.recordStage === "outbound_click" || (record.clickCount || 0) > 0;
+
+    const isFromDccAuthority =
+      record.surface === "dcc" ||
+      (placementId && placementId.startsWith("fp-dcc-")) ||
+      trafficSource.startsWith("dcc-authority-") ||
+      page.startsWith("/new-orleans") ||
+      page.startsWith("/transportation/colorado") ||
+      page.startsWith("/cruises") ||
+      page.startsWith("/ports");
+
+    if (!isFromDccAuthority) continue;
+
+    if (isFollowed) {
+      const outUrl = String(record.outboundPartnerUrl || "").toLowerCase();
+      const prodCode = String(record.productCode || "").toLowerCase();
+      if (outUrl.includes("welcometoneworleanstours.com")) {
+        bucket.choseNextStep.wnoStorefrontHandoffs += 1;
+        bucket.choseNextStep.totalNextStepSelections += 1;
+      } else if (
+        outUrl.includes("gosno.co") ||
+        page.startsWith("/transportation/colorado") ||
+        prodCode.startsWith("veh:") ||
+        prodCode.startsWith("opt:")
+      ) {
+        bucket.choseNextStep.gosnoHandoffs += 1;
+        bucket.choseNextStep.totalNextStepSelections += 1;
+      } else if (outUrl.includes("cruisepromenade.com")) {
+        bucket.choseNextStep.cruisePromenadeHandoffs += 1;
+        bucket.choseNextStep.totalNextStepSelections += 1;
+      } else {
+        bucket.choseNextStep.directVerifiablePartnerCheckouts += 1;
+        bucket.choseNextStep.totalNextStepSelections += 1;
+      }
+    }
+
+    const nonDuplicateOutcomes = (record.reconciledOutcomes || []).filter(
+      (o) => !o.duplicateDelivery,
+    );
+    const hasConfirmed = nonDuplicateOutcomes.some(
+      (o) =>
+        o.eventType === "BOOKING_CONFIRMED" ||
+        o.eventType === "COMMISSION_SETTLED",
+    );
+    const hasCancelled = nonDuplicateOutcomes.some(
+      (o) =>
+        o.eventType === "BOOKING_CANCELLED" ||
+        o.eventType === "BOOKING_REFUNDED",
+    );
+
+    if (hasConfirmed && !hasCancelled) {
+      bucket.bookedWhereVerifiable.confirmedBookings += 1;
+      const revOutcome = nonDuplicateOutcomes.find(
+        (o) => o.grossRevenueUsd != null && o.grossRevenueUsd > 0,
+      );
+      if (revOutcome?.grossRevenueUsd) {
+        bucket.bookedWhereVerifiable.grossConfirmedRevenueUsd = Number(
+          (
+            bucket.bookedWhereVerifiable.grossConfirmedRevenueUsd +
+            revOutcome.grossRevenueUsd
+          ).toFixed(2),
+        );
+      }
+      const paidOutcome = nonDuplicateOutcomes.find(
+        (o) =>
+          o.eventType === "COMMISSION_SETTLED" &&
+          o.paidCommissionUsd != null &&
+          o.paidCommissionUsd > 0,
+      );
+      const estOutcome = nonDuplicateOutcomes.find(
+        (o) => o.estimatedCommissionUsd != null && o.estimatedCommissionUsd > 0,
+      );
+      if (paidOutcome?.paidCommissionUsd) {
+        bucket.bookedWhereVerifiable.settledCommissionUsd = Number(
+          (
+            bucket.bookedWhereVerifiable.settledCommissionUsd +
+            paidOutcome.paidCommissionUsd
+          ).toFixed(2),
+        );
+      } else if (estOutcome?.estimatedCommissionUsd) {
+        bucket.bookedWhereVerifiable.estimatedUnsettledCommissionUsd = Number(
+          (
+            bucket.bookedWhereVerifiable.estimatedUnsettledCommissionUsd +
+            estOutcome.estimatedCommissionUsd
+          ).toFixed(2),
+        );
+      }
+    }
+  }
+
+  return {
+    generatedAt: new Date().toISOString(),
+    production,
+    test,
+  };
+}

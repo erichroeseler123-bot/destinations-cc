@@ -58,8 +58,54 @@ export default async function NewOrleansHomePage() {
 
   return (
     <div className="bg-[var(--nola-bg-charcoal)] text-[var(--nola-ivory)] font-sans overflow-hidden">
-      <div className="mx-auto max-w-7xl px-4 py-8 md:px-6">
+      <div className="mx-auto max-w-7xl px-4 py-8 md:px-6 space-y-6">
         <TravelReferenceExperience node={nolaReference} />
+        <section
+          data-testid="dcc-new-orleans-hub-authority-card"
+          data-dcc-authority-market="new-orleans"
+          className="rounded-3xl border border-cyan-400/30 bg-[#0d141d] p-6 md:p-8 space-y-4 shadow-xl"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="text-xs font-black uppercase tracking-[0.22em] text-cyan-300">
+              DCC Public Authority · Direct Answer &amp; Portfolio Next Step
+            </span>
+            <span className="text-xs font-semibold text-emerald-300">
+              Evidence Verified: 2026-11-06
+            </span>
+          </div>
+          <h2 className="text-2xl md:text-3xl font-black text-white">
+            How to choose the right New Orleans excursion before you book
+          </h2>
+          <p className="text-sm leading-6 text-white/85">
+            <strong>1. Swamp &amp; Bayou without a car or with kids under 5:</strong> Choose a covered pontoon boat with round-trip French Quarter/Downtown hotel pickup (<strong>15200P6 Option TG10</strong> $60 w/ 8:00–8:30 AM pickup; <strong>6953SWAMPTRANS</strong> $75.52; or <strong>Gray Line</strong> $65 w/ coach from 400 Toulouse St.). Rural bayou docks 30–45 min outside the city have <strong>no return Uber/Lyft coverage</strong>, and the <strong>NPS Barataria Preserve Visitor Center &amp; most trails are closed for ~2 years starting Feb 2, 2026</strong>.{" "}
+            <strong>2. High-speed Airboats (Age 5+ only):</strong> Enforce a strict minimum age of 5, prohibit pregnancy and back/neck injuries, and charge $30/pp extra for Downtown/FQ hotel shuttle on Airboat Adventures (no Airbnbs).{" "}
+            <strong>3. Plantations:</strong> Pick <strong>Whitney ($79)</strong> for the museum of slavery, <strong>Oak Alley ($82)</strong> for antebellum architecture, or <strong>Laura ($89)</strong> for Creole history.
+          </p>
+          <div className="flex flex-wrap gap-3 pt-1">
+            <a
+              href="https://www.welcometoneworleanstours.com/swamp-tours?src=dcc-authority-new-orleans&from=dcc-new-orleans"
+              data-testid="dcc-hub-to-wno-swamp"
+              data-dcc-next-step="welcometoneworleanstours"
+              className="rounded-xl bg-emerald-400 px-5 py-2.5 text-xs font-black uppercase tracking-wider text-[#04120a] hover:bg-emerald-300 transition"
+            >
+              Compare Swamp Tours on Welcome to New Orleans Tours →
+            </a>
+            <a
+              href="https://www.welcometoneworleanstours.com/tours?src=dcc-authority-new-orleans&from=dcc-new-orleans"
+              data-testid="dcc-hub-to-wno-tours"
+              data-dcc-next-step="welcometoneworleanstours"
+              className="rounded-xl border border-cyan-300/40 bg-cyan-500/15 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-cyan-100 hover:bg-cyan-500/25 transition"
+            >
+              Open Full WNO Storefront (23 Verified Tours) →
+            </a>
+            <Link
+              href="/new-orleans/swamp-tours"
+              className="rounded-xl border border-white/20 bg-white/10 px-5 py-2.5 text-xs font-bold text-white hover:bg-white/15 transition"
+            >
+              Inspect DCC Swamp Decision Matrix →
+            </Link>
+          </div>
+        </section>
       </div>
       <section className={visualStyles.homeHero}>
         <div className={visualStyles.homeHeroBackground} aria-hidden="true" />

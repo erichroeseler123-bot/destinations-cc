@@ -219,6 +219,7 @@ export default async function NewOrleansSwampToursPage(props: {
   });
   const viatorHandoffHref = `/api/v1/ads/click?offer=15200P6&option=TG10&placementId=${encodeURIComponent(effectivePlacementId)}&property=hotel-monteleone-nola&date=${encodeURIComponent(wno15200P6Date)}&adults=${encodeURIComponent(String(wno15200P6Adults))}&departureTime=08%3A00&sig=${encodeURIComponent(wno15200P6Sig)}${isTestParam ? "&isTest=true" : ""}`;
   const ctxQuery = carriedContext.contextId ? `?ctx=${encodeURIComponent(carriedContext.contextId)}` : "";
+  const wnoSwampStorefrontHref = `https://www.welcometoneworleanstours.com/swamp-tours${ctxQuery ? `${ctxQuery}&src=dcc-authority-swamp-tours&from=dcc-swamp-tours` : "?src=dcc-authority-swamp-tours&from=dcc-swamp-tours"}`;
 
   const satelliteHref = buildSwampPlanHref({
     intent: "compare",
@@ -254,12 +255,12 @@ export default async function NewOrleansSwampToursPage(props: {
           ]}
           crossSiteLinks={[
             {
-              label: "Open Welcome to the Swamp Specialist Storefront",
-              href: `https://welcometotheswamp.com/transportation${ctxQuery}`,
+              label: "Open Welcome to New Orleans Swamp Tours",
+              href: wnoSwampStorefrontHref,
             },
             {
-              label: "Open Welcome to New Orleans Swamp Tours",
-              href: `https://www.welcometoneworleanstours.com/swamp-tours${ctxQuery}`,
+              label: "Open Welcome to the Swamp Specialist Storefront",
+              href: `https://welcometotheswamp.com/transportation${ctxQuery}`,
             },
           ]}
         />
@@ -276,7 +277,7 @@ export default async function NewOrleansSwampToursPage(props: {
           </p>
           <p className="mt-4 max-w-3xl text-lg leading-8 text-white/82">{page.intro}</p>
           <p className="mt-5 max-w-3xl text-sm leading-7 text-white/68">
-            DCC is the source-backed decision and routing layer—not a live inventory calendar. Use the comparison below to verify boat type, child age restrictions, hotel shuttle inclusion, and current NPS trail closures before handing off to a direct operator, marketplace, or self-guided preserve.
+            DCC is the source-backed decision and routing layer—not a live inventory calendar. Use the comparison below to verify boat type, child age restrictions, hotel shuttle inclusion, and current NPS trail closures before handing off to Welcome to New Orleans Tours (WNO), a direct operator, or a self-guided preserve.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <a
@@ -290,6 +291,14 @@ export default async function NewOrleansSwampToursPage(props: {
             >
               Find tours for my date
               {carriedDate ? ` (${carriedDate})` : ""} →
+            </a>
+            <a
+              href={wnoSwampStorefrontHref}
+              data-testid="dcc-to-wno-swamp-cta"
+              data-dcc-next-step="welcometoneworleanstours"
+              className="rounded-2xl border border-amber-300/40 bg-amber-400/20 px-5 py-3 text-sm font-black uppercase tracking-[0.14em] text-amber-100 transition hover:bg-amber-400/30"
+            >
+              Open WNO Swamp Storefront →
             </a>
             <a
               href={satelliteHref}
@@ -494,8 +503,15 @@ export default async function NewOrleansSwampToursPage(props: {
         <PageIntentRouter
           intent={PAGE_INTENT}
           title="What is the best next step after this swamp-tour page?"
-          summary="This DCC lane should either send visitors into the dedicated decision surface, broaden them to the full New Orleans tours layer, or move them back into city context if they are not ready to compare."
+          summary="This DCC lane should either send visitors into the dedicated decision surface, move them to the Welcome to New Orleans Tours (WNO) booking storefront, broaden them to the full New Orleans tours layer, or move them back into city context."
           options={[
+            {
+              title: "Open Welcome to New Orleans Swamp Storefront",
+              description: "Best next step when you are ready to compare live dates, verified hotel pickup options, and direct Viator checkouts on WNO.",
+              href: wnoSwampStorefrontHref,
+              kind: "external",
+              emphasis: "primary",
+            },
             {
               title: "Compare on Welcome to the Swamp",
               description: "Best next step if the visitor is already close to booking and needs narrowing help, not more broad context.",
@@ -507,7 +523,6 @@ export default async function NewOrleansSwampToursPage(props: {
                 sourcePage: PAGE_PATH,
               }),
               kind: "external",
-              emphasis: "primary",
             },
             {
               title: "Open live swamp options",

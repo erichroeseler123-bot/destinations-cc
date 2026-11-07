@@ -77,6 +77,98 @@ export default async function ColoradoTransportationPage() {
           </p>
         </header>
 
+        <section
+          data-testid="dcc-colorado-authority-brief"
+          data-dcc-authority-market="colorado"
+          className="rounded-3xl border border-cyan-400/30 bg-[#0d141d] p-6 md:p-8 space-y-5 shadow-xl"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-4">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-300">
+                DCC Public Authority · Direct Answer &amp; Verified I-70 Evidence
+              </p>
+              <h2 className="mt-1 text-2xl md:text-3xl font-black text-white">
+                DEN to Vail, Breckenridge &amp; I-70 Resorts: Which transfer fits your group and ski gear?
+              </h2>
+            </div>
+            <span className="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3.5 py-1 text-xs font-bold text-emerald-200">
+              Sources Checked: 2026-11-03 (CDOT · GoSno · Epic · Bustang)
+            </span>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4 text-sm">
+            <article className="rounded-2xl border border-white/10 bg-black/35 p-4 space-y-2">
+              <p className="text-[11px] font-black uppercase tracking-wider text-emerald-300">
+                1. 7–10 Pax (or 5–6 w/ Ski Bags) → Private Van
+              </p>
+              <p className="text-zinc-200 leading-6">
+                Never conflate seats with ski-bag cargo: a 6-seat SUV holds only 4–5 passengers once 170–190 cm ski bags are loaded. On <strong>GoSno</strong>, private passenger vans carry <strong>up to 10 passengers (subject to luggage &amp; ski-gear fit; 11+ pax exceed a single GoSno van)</strong> door-to-door from DEN.
+              </p>
+            </article>
+            <article className="rounded-2xl border border-white/10 bg-black/35 p-4 space-y-2">
+              <p className="text-[11px] font-black uppercase tracking-wider text-cyan-300">
+                2. 1–4 Pax (or up to 6 Light) → Private SUV
+              </p>
+              <p className="text-zinc-200 leading-6">
+                A 100% private AWD SUV on <strong>GoSno</strong> caps at <strong>6 passengers max</strong> ($499 DEN–Vail one-way baseline) with an experienced mountain driver and optional 20–30 min grocery stop on advance request.
+              </p>
+            </article>
+            <article className="rounded-2xl border border-white/10 bg-black/35 p-4 space-y-2">
+              <p className="text-[11px] font-black uppercase tracking-wider text-amber-300">
+                3. Staggered Flights → Shared Per-Seat Shuttle
+              </p>
+              <p className="text-zinc-200 leading-6">
+                <strong>Epic Mountain Express</strong> ($59–$139/guest DEN–Vail by date) allows <strong>2 baggage items (including a ski/snowboard bag) + 1 personal item per guest</strong> and works best when travelers land on different flights.
+              </p>
+            </article>
+            <article className="rounded-2xl border border-white/10 bg-black/35 p-4 space-y-2">
+              <p className="text-[11px] font-black uppercase tracking-wider text-rose-300">
+                4. Public Transit &amp; Statutory Traction Law
+              </p>
+              <p className="text-zinc-200 leading-6">
+                <strong>C.R.S. § 42-4-106 (Code 15)</strong> requires AWD/4WD or winter tires (&ge; 3/16&quot; tread) on I-70 (MP 133–259) Sept 1–May 31. Budget alternative: <strong>RTD A-Line ($10.50) + CDOT Bustang ($17)</strong>, plus <strong>100% free in-town Vail &amp; Breck buses</strong>.
+              </p>
+            </article>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-emerald-400/30 bg-emerald-950/30 p-4">
+            <div className="space-y-1">
+              <p className="text-xs font-black uppercase tracking-wider text-emerald-300">
+                Next Step · Move From DCC Corridor Authority to GoSno Private Execution
+              </p>
+              <p className="text-xs text-zinc-300">
+                When a private SUV (up to 6 pax) or private van (up to 10 pax, subject to gear fit) is the right fit, continue to GoSno with your route and party context prefilled.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2.5">
+              <a
+                href="https://gosno.co/vail?origin=DEN&destination=Vail&passengers=7&passengerCount=7&vehicleClass=van&src=dcc-authority-colorado"
+                data-testid="dcc-authority-to-gosno-vail"
+                data-dcc-next-step="gosno"
+                className="rounded-xl bg-emerald-400 px-4 py-2.5 text-xs font-black uppercase tracking-wider text-[#04120a] hover:bg-emerald-300 transition"
+              >
+                Open GoSno Vail Private Van / SUV →
+              </a>
+              <a
+                href="https://gosno.co/breckenridge?origin=DEN&destination=Breckenridge&passengers=6&passengerCount=6&vehicleClass=suv&src=dcc-authority-colorado"
+                data-testid="dcc-authority-to-gosno-breck"
+                data-dcc-next-step="gosno"
+                className="rounded-xl border border-cyan-300/40 bg-cyan-500/15 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-cyan-100 hover:bg-cyan-500/25 transition"
+              >
+                Open GoSno Breckenridge Transfer →
+              </a>
+              <a
+                href="https://gosno.co/request-quote?origin=DEN&destination=Vail&passengers=16&passengerCount=16&party_size=16&vehicleType=van&src=dcc-authority-colorado"
+                data-testid="dcc-authority-to-gosno-group"
+                data-dcc-next-step="gosno"
+                className="rounded-xl border border-white/20 bg-white/10 px-4 py-2.5 text-xs font-bold text-white hover:bg-white/15 transition"
+              >
+                GoSno 11+ Pax Multi-Vehicle Quote ↗
+              </a>
+            </div>
+          </div>
+        </section>
+
         <section className="rounded-3xl border border-white/10 bg-white/5 p-6">
           <h2 className="text-2xl font-bold">Flagship Colorado Reference Guides</h2>
           <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">

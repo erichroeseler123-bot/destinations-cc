@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   authenticateCommerceAdminRequest,
+  getDccAuthorityScorecard,
   getFunnelMetricsReport,
   listAttributionRecordsForPlacement,
 } from "@/lib/dcc/commerce/opaqueAttributionLedger";
@@ -95,7 +96,9 @@ export async function GET(request: NextRequest) {
     wnoTransFunnel,
     wttsTransFunnel,
     dccSwampFunnel,
+    dccAuthorityNolaToursFunnel,
     winterPlannerFunnel,
+    dccAuthorityScorecard,
     catalogSummary,
   ] = await Promise.all([
     Promise.resolve(getFunnelMetricsReport()),
@@ -109,7 +112,9 @@ export async function GET(request: NextRequest) {
     Promise.resolve(getFunnelMetricsReport({ placementId: "fp-wno-swamp-transportation" })),
     Promise.resolve(getFunnelMetricsReport({ placementId: "fp-wtts-transportation" })),
     Promise.resolve(getFunnelMetricsReport({ placementId: "fp-dcc-nola-swamp-tours" })),
+    Promise.resolve(getFunnelMetricsReport({ placementId: "fp-dcc-authority-nola-tours" })),
     Promise.resolve(getFunnelMetricsReport({ placementId: "fp-cp-winter-excursion-planner" })),
+    Promise.resolve(getDccAuthorityScorecard()),
     getDurableCatalogSummaryReport(),
   ]);
 
@@ -301,6 +306,14 @@ export async function GET(request: NextRequest) {
           pendingDirectFareHarborOfferTourId: "dcc:tour:fh:jeanlafitteswamptour:763318",
           funnelByTrafficClass: formatPlacementFunnelSummary(dccSwampFunnel),
         },
+        "fp-dcc-authority-nola-tours": {
+          liveUrl: "https://www.destinationcommandcenter.com/new-orleans/tours",
+          surface: "dcc",
+          offerTourId: "dcc:tour:viator:15200P6",
+          secondaryPayableOfferTourId: "dcc:tour:viator:6953SWAMPTRANS",
+          nextStepStorefrontUrl: "https://www.welcometoneworleanstours.com/swamp-tours?src=dcc-authority-nola-tours",
+          funnelByTrafficClass: formatPlacementFunnelSummary(dccAuthorityNolaToursFunnel),
+        },
         "fp-cp-winter-excursion-planner": {
           liveUrl: "https://cruisepromenade.com/p/INDY-2027-01-24",
           dccPlannerUrl: "https://www.destinationcommandcenter.com/cruises/winter-excursion-planner?plan=INDY-2027-01-24",
@@ -312,6 +325,7 @@ export async function GET(request: NextRequest) {
           funnelByTrafficClass: formatPlacementFunnelSummary(winterPlannerFunnel),
         },
       },
+      dccAuthorityScorecard,
       overallFunnel: formatPlacementFunnelSummary(overallFunnel),
       widgetPlacements: {
         firstPartyInstallationsCount:

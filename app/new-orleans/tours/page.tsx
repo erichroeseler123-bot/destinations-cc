@@ -24,6 +24,8 @@ import DccConciergeWidget from "@/app/components/dcc/DccConciergeWidget";
 const BOOKABLE_PRODUCT_COUNT = STOREFRONT_PRODUCTS.filter((product) => !isHeldProduct(product.slug)).length;
 const CURRENT_TOURS_DESCRIPTION =
   `Compare ${BOOKABLE_PRODUCT_COUNT} bookable New Orleans tours across river cruises, city tours, swamps, airboats, plantation history, walking tours, and full-day combinations. Check live dates and prices without leaving WNO.`;
+const DCC_AUTHORITY_TOURS_DESCRIPTION =
+  `DCC New Orleans Tours & Swamp Decision Authority: verify hotel pickup vs. self-drive dock rules, covered pontoon (all ages) vs. airboat (age 5+) limits, 2026–2028 NPS Barataria closures, and plantation context before moving to Welcome to New Orleans Tours.`;
 
 export async function generateMetadata(): Promise<Metadata> {
   const requestHeaders = await headers();
@@ -32,16 +34,21 @@ export async function generateMetadata(): Promise<Metadata> {
   const isWto = host === "welcometoneworleanstours.com" || host === "www.welcometoneworleanstours.com";
   const origin = isWto ? "https://www.welcometoneworleanstours.com" : "https://destinationcommandcenter.com";
   const canonical = isWto ? "/tours" : NEW_ORLEANS_TOURS_PATH;
+  const siteName = isWto ? "Welcome to New Orleans Tours" : "Destination Command Center";
+  const pageTitle = isWto
+    ? METADATA.title
+    : "New Orleans Tours & Swamp Decision Authority | Verified Pickup, Age Rules & Evidence | DCC";
+  const pageDescription = isWto ? CURRENT_TOURS_DESCRIPTION : DCC_AUTHORITY_TOURS_DESCRIPTION;
 
   return {
-    applicationName: "Welcome to New Orleans Tours",
-    title: METADATA.title,
-    description: CURRENT_TOURS_DESCRIPTION,
+    applicationName: siteName,
+    title: pageTitle,
+    description: pageDescription,
     keywords: METADATA.keywords,
     metadataBase: new URL(origin),
     alternates: { canonical },
-    openGraph: { siteName: "Welcome to New Orleans Tours", title: METADATA.title, description: CURRENT_TOURS_DESCRIPTION, url: canonical, type: "website" },
-    twitter: { card: "summary_large_image", title: METADATA.title, description: CURRENT_TOURS_DESCRIPTION },
+    openGraph: { siteName, title: pageTitle, description: pageDescription, url: canonical, type: "website" },
+    twitter: { card: "summary_large_image", title: pageTitle, description: pageDescription },
   };
 }
 
@@ -89,10 +96,14 @@ export default async function NewOrleansToursPage({
   const productItems = STOREFRONT_PRODUCTS.map((item) => ({ name: item.title, description: item.description, url: `${basePath}/tours/${item.slug}`, slug: item.slug, providerName: item.operatorName }));
   const pageSchema = isWto
     ? buildWnoWebPageJsonLd({ path: "/tours", name: "Welcome To New Orleans Tours", description: CURRENT_TOURS_DESCRIPTION })
-    : buildWebPageJsonLd({ path: NEW_ORLEANS_TOURS_PATH, name: "Welcome To New Orleans Tours", description: CURRENT_TOURS_DESCRIPTION, isPartOfPath: "/new-orleans" });
+    : buildWebPageJsonLd({ path: NEW_ORLEANS_TOURS_PATH, name: "New Orleans Tours & Swamp Decision Authority | DCC", description: DCC_AUTHORITY_TOURS_DESCRIPTION, isPartOfPath: "/new-orleans" });
   const breadcrumbSchema = isWto
     ? buildWnoBreadcrumbJsonLd([{ name: "New Orleans Tours", path: "/tours" }])
     : buildBreadcrumbJsonLd([{ name: "New Orleans", item: "/new-orleans" }, { name: "Tours", item: NEW_ORLEANS_TOURS_PATH }]);
+
+  const wnoSwampNextStepHref = `https://www.welcometoneworleanstours.com/swamp-tours?src=dcc-authority-nola-tours&from=dcc-new-orleans-tours&date=${encodeURIComponent(selectedDate)}&party_size=${encodeURIComponent(selectedPartySize)}`;
+  const wnoAllToursNextStepHref = `https://www.welcometoneworleanstours.com/tours?src=dcc-authority-nola-tours&from=dcc-new-orleans-tours&date=${encodeURIComponent(selectedDate)}&party_size=${encodeURIComponent(selectedPartySize)}`;
+  const directViator15200P6Href = `/api/v1/ads/click?offer=15200P6&option=TG10&placementId=fp-dcc-authority-nola-tours&property=hotel-monteleone-nola&src=dcc-authority-nola-tours&date=${encodeURIComponent(selectedDate)}&adults=${encodeURIComponent(selectedPartySize)}&departureTime=08%3A00`;
 
   return (
     <>
@@ -101,23 +112,184 @@ export default async function NewOrleansToursPage({
         "@graph": [
           pageSchema,
           breadcrumbSchema,
-          ...generateCategorySchemaGraph({ urlPath: isWto ? "/tours" : NEW_ORLEANS_TOURS_PATH, name: "Welcome To New Orleans Tours", description: CURRENT_TOURS_DESCRIPTION, items: productItems.map((p: any) => ({ slug: p.slug, name: p.name, description: p.description, providerName: p.providerName })) })["@graph"],
+          ...generateCategorySchemaGraph({ urlPath: isWto ? "/tours" : NEW_ORLEANS_TOURS_PATH, name: isWto ? "Welcome To New Orleans Tours" : "New Orleans Tours & Swamp Decision Authority | DCC", description: isWto ? CURRENT_TOURS_DESCRIPTION : DCC_AUTHORITY_TOURS_DESCRIPTION, items: productItems.map((p: any) => ({ slug: p.slug, name: p.name, description: p.description, providerName: p.providerName })) })["@graph"],
         ],
       }} />
 
       <main className="w-full min-h-screen bg-[#080708] text-[#fdfbf7] font-[var(--font-sans)]">
         <CinematicPageHero
-          eyebrow="The complete collection"
-          title="New Orleans Tours"
-          script="find your kind of New Orleans"
-          intro="Compare bookable experiences by type, or tell us what kind of day you want. When you are ready, check live operator dates and prices directly from the tour card."
+          eyebrow={isWto ? "The complete collection" : "Destination Command Center · Public Authority"}
+          title={isWto ? "New Orleans Tours" : "New Orleans Tours & Bayou Decision Authority"}
+          script={isWto ? "find your kind of New Orleans" : "answer the constraint first, then book with confidence"}
+          intro={
+            isWto
+              ? "Compare bookable experiences by type, or tell us what kind of day you want. When you are ready, check live operator dates and prices directly from the tour card."
+              : "Before you book a New Orleans swamp, airboat, plantation, or riverboat tour, check the four physical rules that make or break the day: rural dock return transportation, child age & medical limits, plantation focus, and 2026–2028 NPS trail closures."
+          }
           image="/images/travel-markets/new-orleans/french-quarter-street.jpg"
-          actions={[
-            { href: "#tour-collection", label: "Browse Tours", detail: `${BOOKABLE_PRODUCT_COUNT} bookable experiences`, primary: true },
-            { href: "/help-me-choose", label: "Help Me Choose", detail: "Narrow it down for me" },
-            { href: "tel:+15044849687", label: "Ask Us", detail: "504-484-9687" },
-          ]}
+          actions={
+            isWto
+              ? [
+                  { href: "#tour-collection", label: "Browse Tours", detail: `${BOOKABLE_PRODUCT_COUNT} bookable experiences`, primary: true },
+                  { href: "/help-me-choose", label: "Help Me Choose", detail: "Narrow it down for me" },
+                  { href: "tel:+15044849687", label: "Ask Us", detail: "504-484-9687" },
+                ]
+              : [
+                  { href: wnoSwampNextStepHref, label: "Open WNO Swamp Storefront", detail: "Verified pickup & boat comparison", primary: true },
+                  { href: wnoAllToursNextStepHref, label: "Open Full WNO Storefront", detail: `${BOOKABLE_PRODUCT_COUNT} verified New Orleans tours` },
+                  { href: "/new-orleans/swamp-tours", label: "Swamp Decision Matrix", detail: "Covered boat vs. airboat rules" },
+                ]
+          }
         />
+
+        {!isWto ? (
+          <section
+            data-testid="dcc-nola-authority-brief"
+            data-dcc-authority-market="new-orleans"
+            className="max-w-7xl mx-auto px-6 pt-10"
+          >
+            <div className="rounded-3xl border border-cyan-400/30 bg-[#0d141d] p-6 md:p-8 space-y-6 shadow-[0_24px_70px_rgba(0,0,0,0.45)]">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
+                <div>
+                  <p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-300">
+                    DCC Public Authority · Direct Decision Answer &amp; Verified Evidence
+                  </p>
+                  <h2 className="mt-1 text-2xl md:text-3xl font-black text-white">
+                    Which New Orleans tour fits your group, transport, and schedule?
+                  </h2>
+                </div>
+                <span className="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3.5 py-1 text-xs font-bold text-emerald-200">
+                  23 Catalog Tours · Evidence Checked 2026-11-06
+                </span>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4 text-sm">
+                <article className="rounded-2xl border border-white/10 bg-black/35 p-4 space-y-2">
+                  <p className="text-[11px] font-black uppercase tracking-wider text-emerald-300">
+                    1. No Car or Kids Under 5 → Covered Swamp Boat + Pickup
+                  </p>
+                  <p className="text-white/85 leading-6">
+                    Swamp docks in Slidell, Manchac, and Jean Lafitte sit <strong>30–45 min outside New Orleans with no return Uber/Lyft coverage</strong>. Choose a pickup-included covered pontoon boat (<strong>15200P6 Option TG10</strong> $60 w/ 8:00–8:30 AM FQ/Downtown hotel pickup; <strong>6953SWAMPTRANS</strong> $75.52; or <strong>Gray Line</strong> $65 w/ coach from 400 Toulouse St.). All ages welcome.
+                  </p>
+                </article>
+                <article className="rounded-2xl border border-white/10 bg-black/35 p-4 space-y-2">
+                  <p className="text-[11px] font-black uppercase tracking-wider text-amber-300">
+                    2. Thrill-First (Age 5+ Only) → Small or Large Airboat
+                  </p>
+                  <p className="text-white/85 leading-6">
+                    High-speed marsh airboats (<strong>Airboat Adventures</strong> from $89, <strong>Ragin Cajun 6363P15</strong> from $69) enforce a <strong>strict minimum age of 5 years</strong>, prohibit pregnancy and neck/back injuries, require unassisted boarding, and have no roof shade. Hotel shuttle on Airboat Adventures is <strong>$30/person extra</strong> (Downtown/FQ hotels only—no Airbnbs).
+                  </p>
+                </article>
+                <article className="rounded-2xl border border-white/10 bg-black/35 p-4 space-y-2">
+                  <p className="text-[11px] font-black uppercase tracking-wider text-cyan-300">
+                    3. River Road Plantations → Pick by Historical Focus
+                  </p>
+                  <p className="text-white/85 leading-6">
+                    <strong>Whitney Plantation (5348WHITNEY, $79)</strong> is dedicated exclusively to the history of slavery; <strong>Oak Alley (37124P3, $82)</strong> centers on the 28-oak avenue and antebellum mansion; <strong>Laura (37124P1, $89)</strong> focuses on Creole family history. All require ~4.5–7.5 hrs with coach pickup (no public transit).
+                  </p>
+                </article>
+                <article className="rounded-2xl border border-white/10 bg-black/35 p-4 space-y-2">
+                  <p className="text-[11px] font-black uppercase tracking-wider text-rose-300">
+                    4. Public / Free &amp; No-Purchase Reality Check
+                  </p>
+                  <p className="text-white/85 leading-6">
+                    Effective <strong>Feb 2, 2026 for ~2 years</strong>, the <strong>NPS Barataria Preserve Visitor Center and most trails are closed</strong> (only Twin Canals trail/canoe launch is free with no restrooms; relocated Wetland Trace Boardwalk at 4917 City Park Dr charges $10/adult and requires a car). Without a car, ride the <strong>$1.25 RTA streetcar</strong> to City Park.
+                  </p>
+                </article>
+              </div>
+
+              <div className="overflow-x-auto rounded-2xl border border-white/10 bg-black/40">
+                <table className="w-full text-left text-xs text-white/85">
+                  <thead className="border-b border-white/10 bg-white/[0.04] text-[11px] uppercase tracking-wider text-cyan-200">
+                    <tr>
+                      <th className="px-4 py-3">Lane &amp; Operator</th>
+                      <th className="px-4 py-3">Verified Code</th>
+                      <th className="px-4 py-3">Pickup / Meeting Evidence</th>
+                      <th className="px-4 py-3">Age &amp; Physical Rules</th>
+                      <th className="px-4 py-3">Verified Rate</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/10">
+                    <tr>
+                      <td className="px-4 py-3 font-semibold text-white">Louisiana Tour Co. Covered Swamp Boat</td>
+                      <td className="px-4 py-3"><code>15200P6 · TG10</code></td>
+                      <td className="px-4 py-3">8:00–8:30 AM FQ &amp; Downtown hotel pickup (214 Royal St verified) for 9:40 AM tour</td>
+                      <td className="px-4 py-3">All ages · Shaded flat-bottom boat w/ restroom at dock</td>
+                      <td className="px-4 py-3 font-bold text-emerald-300">$60 / adult</td>
+                    </tr>
+                    <tr>
+                      <td className="px-4 py-3 font-semibold text-white">Cajun Encounters Honey Island Swamp</td>
+                      <td className="px-4 py-3"><code>6953SWAMPTRANS</code></td>
+                      <td className="px-4 py-3">Round-trip FQ/Downtown hotel shuttle to Slidell (~45 min each way; 4–5 hrs total)</td>
+                      <td className="px-4 py-3">All ages on Original Tour (VIP Small-Boat requires age 13+ unless private)</td>
+                      <td className="px-4 py-3 font-bold text-emerald-300">$75.52 / adult</td>
+                    </tr>
+                    <tr>
+                      <td className="px-4 py-3 font-semibold text-white">Gray Line Swamp &amp; Bayou Boat</td>
+                      <td className="px-4 py-3"><code>Gray Line Direct</code></td>
+                      <td className="px-4 py-3">Included motorcoach from Steamboat NATCHEZ Dock (400 Toulouse St.; 3.75 hrs total)</td>
+                      <td className="px-4 py-3">All ages ($32 ages 6–12; infants 2–5 free)</td>
+                      <td className="px-4 py-3 font-bold text-emerald-300">$65 / adult</td>
+                    </tr>
+                    <tr>
+                      <td className="px-4 py-3 font-semibold text-white">Ragin Cajun / Airboat Adventures</td>
+                      <td className="px-4 py-3"><code>6363P15 / 5736P2</code></td>
+                      <td className="px-4 py-3">Hotel pickup SKU or $30/pp Downtown/FQ hotel shuttle add-on (no Airbnbs)</td>
+                      <td className="px-4 py-3 text-amber-200">Min age 5+ · No pregnancy or back/neck injury · Unassisted boarding</td>
+                      <td className="px-4 py-3 font-bold text-emerald-300">$69–$135 / adult</td>
+                    </tr>
+                    <tr>
+                      <td className="px-4 py-3 font-semibold text-white">Steamboat NATCHEZ Jazz Cruise</td>
+                      <td className="px-4 py-3"><code>6770JAZZ / DAY</code></td>
+                      <td className="px-4 py-3">Walk-up French Quarter Toulouse St. Wharf (400 Toulouse St.; board 30–60 min prior)</td>
+                      <td className="px-4 py-3">All ages · Multi-deck riverboat · Optional meal upgrade</td>
+                      <td className="px-4 py-3 font-bold text-emerald-300">$45.50–$61 / adult</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-emerald-400/30 bg-emerald-950/30 p-4">
+                <div className="space-y-1">
+                  <p className="text-xs font-black uppercase tracking-wider text-emerald-300">
+                    Next Step · Move From DCC Authority to Verified Storefront or Checkout
+                  </p>
+                  <p className="text-xs text-white/80">
+                    Welcome to New Orleans Tours (WNO) carries your date (<strong>{selectedDate}</strong>) and party size (<strong>{selectedPartySize}</strong>) directly into live availability. On Viator, you will reselect your date, group size, and tour option before payment.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2.5">
+                  <a
+                    href={wnoSwampNextStepHref}
+                    data-testid="dcc-authority-to-wno-swamp"
+                    data-dcc-next-step="welcometoneworleanstours"
+                    className="rounded-xl bg-emerald-400 px-4 py-2.5 text-xs font-black uppercase tracking-wider text-[#04120a] hover:bg-emerald-300 transition"
+                  >
+                    Compare Swamp Tours on WNO →
+                  </a>
+                  <a
+                    href={wnoAllToursNextStepHref}
+                    data-testid="dcc-authority-to-wno-tours"
+                    data-dcc-next-step="welcometoneworleanstours"
+                    className="rounded-xl border border-cyan-300/40 bg-cyan-500/15 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-cyan-100 hover:bg-cyan-500/25 transition"
+                  >
+                    Open Full WNO Storefront →
+                  </a>
+                  <a
+                    href={directViator15200P6Href}
+                    data-testid="dcc-authority-direct-viator-15200p6"
+                    data-dcc-next-step="viator"
+                    target="_blank"
+                    rel="sponsored noopener noreferrer"
+                    className="rounded-xl border border-white/20 bg-white/10 px-4 py-2.5 text-xs font-bold text-white hover:bg-white/15 transition"
+                  >
+                    Book 15200P6 w/ Hotel Pickup ($60) ↗
+                  </a>
+                </div>
+              </div>
+            </div>
+          </section>
+        ) : null}
 
         <div id="tour-collection" className="max-w-7xl mx-auto px-6 py-14 md:py-20 space-y-20 scroll-mt-24">
           <form
