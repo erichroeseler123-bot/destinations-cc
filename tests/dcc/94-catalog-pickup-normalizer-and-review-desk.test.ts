@@ -508,8 +508,8 @@ test("7. Move 1: All 23 WNO products route primary booking CTAs to payable Viato
     });
     assert.match(primaryHref, /^\/api\/v1\/ads\/click\?/);
     assert.ok(
-      primaryHref.includes(encodeURIComponent(`dcc:tour:viator:${product.viatorProductCode}`)),
-      `${product.slug} primaryHref must target dcc:tour:viator:${product.viatorProductCode}`,
+      primaryHref.includes(`offer=${encodeURIComponent(product.viatorProductCode)}`),
+      `${product.slug} primaryHref must target offer=${product.viatorProductCode}`,
     );
 
     const note = getProductViatorReselectionNote(product, {

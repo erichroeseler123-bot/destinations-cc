@@ -135,10 +135,8 @@ export function buildPayableViatorClickHref(params: {
   isTest?: boolean;
 }): string {
   const query = new URLSearchParams();
-  const normalizedOffer = params.offer.startsWith("dcc:tour:viator:")
-    ? params.offer
-    : `dcc:tour:viator:${params.offer}`;
-  query.set("offer", normalizedOffer);
+  const cleanOffer = params.offer.replace(/^dcc:tour:viator:/i, "");
+  query.set("offer", cleanOffer);
   if (params.option) {
     query.set("option", params.option);
   }
