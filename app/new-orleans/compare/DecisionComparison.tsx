@@ -38,6 +38,21 @@ export type TopCard = {
   imageAlt?: string;
 };
 
+function inferBoatTelemetryAttrs(href: string): {
+  productSlug: string;
+  boat?: string;
+  itemId?: string;
+} {
+  const productSlug = href.replace(/^\/?(new-orleans\/)?tours\//, "").split("?")[0];
+  if (productSlug === "daytime-jazz-cruise") {
+    return { productSlug, boat: "natchez", itemId: "561220" };
+  }
+  if (productSlug === "city-of-new-orleans-riverboat-cruise") {
+    return { productSlug, boat: "city_of_new_orleans", itemId: "694782" };
+  }
+  return { productSlug };
+}
+
 export default function DecisionComparison({
   eyebrow,
   title,
@@ -187,15 +202,23 @@ export default function DecisionComparison({
                 </div>
                 <div className="p-6 pt-0">
                   <div className="pt-4 border-t border-[#333]">
-                    <Link
-                      href={topCards.left.href}
-                      data-wno-event="booking_button_clicked"
-                      data-wno-label={topCards.left.ctaText}
-                      data-wno-product={topCards.left.href.replace("/tours/", "").split("?")[0]}
-                      className="block w-full text-center bg-[#d4af37] px-5 py-3.5 text-sm font-bold uppercase tracking-wider text-[#151515] transition hover:bg-[#fff8eb] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]"
-                    >
-                      {topCards.left.ctaText}
-                    </Link>
+                    {(() => {
+                      const attrs = inferBoatTelemetryAttrs(topCards.left.href);
+                      return (
+                        <Link
+                          href={topCards.left.href}
+                          data-wno-event="comparison_boat_selected"
+                          data-wno-label={topCards.left.ctaText}
+                          data-wno-product={attrs.productSlug}
+                          data-wno-boat={attrs.boat}
+                          data-wno-item-id={attrs.itemId}
+                          data-cta-location="comparison_top_card"
+                          className="block w-full text-center bg-[#d4af37] px-5 py-3.5 text-sm font-bold uppercase tracking-wider text-[#151515] transition hover:bg-[#fff8eb] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]"
+                        >
+                          {topCards.left.ctaText}
+                        </Link>
+                      );
+                    })()}
                     <p className="mt-2 text-center text-[11px] text-[#888]">
                       Verified live inventory · Hand-off to operator FareHarbor checkout
                     </p>
@@ -249,15 +272,23 @@ export default function DecisionComparison({
                 </div>
                 <div className="p-6 pt-0">
                   <div className="pt-4 border-t border-[#333]">
-                    <Link
-                      href={topCards.right.href}
-                      data-wno-event="booking_button_clicked"
-                      data-wno-label={topCards.right.ctaText}
-                      data-wno-product={topCards.right.href.replace("/tours/", "").split("?")[0]}
-                      className="block w-full text-center bg-[#d4af37] px-5 py-3.5 text-sm font-bold uppercase tracking-wider text-[#151515] transition hover:bg-[#fff8eb] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]"
-                    >
-                      {topCards.right.ctaText}
-                    </Link>
+                    {(() => {
+                      const attrs = inferBoatTelemetryAttrs(topCards.right.href);
+                      return (
+                        <Link
+                          href={topCards.right.href}
+                          data-wno-event="comparison_boat_selected"
+                          data-wno-label={topCards.right.ctaText}
+                          data-wno-product={attrs.productSlug}
+                          data-wno-boat={attrs.boat}
+                          data-wno-item-id={attrs.itemId}
+                          data-cta-location="comparison_top_card"
+                          className="block w-full text-center bg-[#d4af37] px-5 py-3.5 text-sm font-bold uppercase tracking-wider text-[#151515] transition hover:bg-[#fff8eb] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]"
+                        >
+                          {topCards.right.ctaText}
+                        </Link>
+                      );
+                    })()}
                     <p className="mt-2 text-center text-[11px] text-[#888]">
                       Verified live inventory · Hand-off to operator FareHarbor checkout
                     </p>
@@ -314,14 +345,46 @@ export default function DecisionComparison({
             <ul className="mt-5 space-y-3 text-[#ccc]">
               {bestFit.left.map((item) => <li key={item} className="flex gap-3"><span className="text-[#d4af37]">✓</span><span>{item}</span></li>)}
             </ul>
-            <Link href={left.href} className="mt-7 inline-block bg-[#d4af37] px-5 py-3 text-sm font-bold uppercase tracking-wider text-[#151515] hover:bg-[#fdfbf7]">{left.cta}</Link>
+            {(() => {
+              const attrs = inferBoatTelemetryAttrs(left.href);
+              return (
+                <Link
+                  href={left.href}
+                  data-wno-event="comparison_boat_selected"
+                  data-wno-label={left.cta}
+                  data-wno-product={attrs.productSlug}
+                  data-wno-boat={attrs.boat}
+                  data-wno-item-id={attrs.itemId}
+                  data-cta-location="comparison_bottom_verdict"
+                  className="mt-7 inline-block bg-[#d4af37] px-5 py-3 text-sm font-bold uppercase tracking-wider text-[#151515] hover:bg-[#fdfbf7]"
+                >
+                  {left.cta}
+                </Link>
+              );
+            })()}
           </div>
           <div className="border border-[#333] bg-[#1a1a1a] p-6">
             <h2 className="font-[var(--font-accent)] text-2xl font-bold">Choose {right.heading} if…</h2>
             <ul className="mt-5 space-y-3 text-[#ccc]">
               {bestFit.right.map((item) => <li key={item} className="flex gap-3"><span className="text-[#d4af37]">✓</span><span>{item}</span></li>)}
             </ul>
-            <Link href={right.href} className="mt-7 inline-block bg-[#d4af37] px-5 py-3 text-sm font-bold uppercase tracking-wider text-[#151515] hover:bg-[#fdfbf7]">{right.cta}</Link>
+            {(() => {
+              const attrs = inferBoatTelemetryAttrs(right.href);
+              return (
+                <Link
+                  href={right.href}
+                  data-wno-event="comparison_boat_selected"
+                  data-wno-label={right.cta}
+                  data-wno-product={attrs.productSlug}
+                  data-wno-boat={attrs.boat}
+                  data-wno-item-id={attrs.itemId}
+                  data-cta-location="comparison_bottom_verdict"
+                  className="mt-7 inline-block bg-[#d4af37] px-5 py-3 text-sm font-bold uppercase tracking-wider text-[#151515] hover:bg-[#fdfbf7]"
+                >
+                  {right.cta}
+                </Link>
+              );
+            })()}
           </div>
         </section>
 

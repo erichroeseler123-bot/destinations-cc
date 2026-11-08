@@ -123,6 +123,9 @@ export default function FareHarborBookingButton({
       itemId: String(itemId || ""),
       flowId: String(flowId || ""),
       ctaLocation: placement,
+      funnelStage: "checkout_opened",
+      comparisonSlug: context?.comparisonSlug,
+      selectedBoat: context?.selectedBoat,
       entrySource: context?.source,
       entryPath: context?.landingPath,
     });

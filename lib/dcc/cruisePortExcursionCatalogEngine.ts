@@ -55,6 +55,8 @@ export interface CruisePortExcursionProfile {
   viatorDestinationName: string;
   defaultPierName: string;
   defaultPierAddress: string;
+  berthLat?: number;
+  berthLng?: number;
   defaultSailingDate: string;
   defaultShipArrivalTime: string;
   defaultShipAllAboardTime: string;
@@ -62,6 +64,21 @@ export interface CruisePortExcursionProfile {
   defaultOneWayPierTransferMinutes: number;
   defaultCheckInCutoffMinutes: number;
   requiredReturnBufferMinutes: number;
+}
+
+export interface PortDayEvidenceReviewPriority {
+  withinOneMileOfBerth: boolean;
+  distanceFromBerthMiles: number | null;
+  berthCoordinates: { lat: number; lng: number };
+  meetingPointCoordinates: { lat: number; lng: number } | null;
+  priorityTier:
+    | "priority_1_within_one_mile"
+    | "priority_2_pier_or_pickup_signal"
+    | "priority_3_beyond_one_mile"
+    | "priority_4_missing_coordinates";
+  priorityRank: 1 | 2 | 3 | 4;
+  spatialMethod: "haversine_sql_and_js_no_postgis";
+  automatedEvidenceNotes: string[];
 }
 
 export interface PortDayTimeFitEvaluation {
@@ -102,6 +119,7 @@ export interface PortDayTimeFitEvaluation {
   hasVerifiedReturnBuffer: boolean;
   missingFields: string[];
   reasonSummary: string;
+  evidenceReviewPriority?: PortDayEvidenceReviewPriority;
 }
 
 export interface PortDaySeatAvailabilityEvaluation {
@@ -118,9 +136,22 @@ export interface PortDaySeatAvailabilityEvaluation {
   fromPriceUsd: number | null;
   totalPriceUsd: number | null;
   currency: string;
-  exactProductUrl: string;
-  dccTrackedHref: string;
-  providerStatus?: "confirmed" | "timeout" | "missing_data" | "unconfigured" | "error";
+  exactProductUrl?: string;
+  dccTrackedHref?: string;
+  pastDepartureRejected?: boolean;
+  rejectionReason?: string | null;
+  providerStatus?:
+    | "confirmed"
+    | "live_confirmed"
+    | "past_departure_rejected"
+    | "past_departure"
+    | "timeout"
+    | "missing_data"
+    | "option_or_departure_unconfirmed"
+    | "provider_unconfirmed"
+    | "unconfigured"
+    | "error"
+    | "unverified";
   options: Array<{
     optionCode: string;
     title: string;
@@ -215,6 +246,17 @@ export interface PortDayExcursionCatalogResponse {
       previousCronCheckpointExplanation?: string;
       currentActiveInventoryExplanation: string;
     };
+    importerCheckpoint?: {
+      destinationSearchPaginationModel: "start_and_count";
+      incrementalFeedPaginationModel: "nextCursor";
+      batchSizeCount: number;
+      lastStartOffset: number;
+      nextStartOffset: number | null;
+      providerTotalCount: number;
+      incrementalUpdateCursor: string | null;
+      checkpointStatus: "complete" | "bounded_batch_paused";
+      note: string;
+    };
     pendingOperatorNotes?: string[];
   };
   sharedHandoffLedgerSummary?: SharedHandoffLedgerSummary;
@@ -225,6 +267,7 @@ export interface PortDayExcursionCatalogResponse {
     needsVerificationCountOnPage: number;
     missingOperatorInfoCountOnPage: number;
     liveAvailabilitySupportedCountOnPage: number;
+    withinOneMileReviewQueueCountOnPage?: number;
   };
   tours: PortDayExcursionCard[];
 }
@@ -860,6 +903,158 @@ function extractVerifiedCandidateDepartures(
   };
 }
 
+const PORT_BERTH_COORDINATES: Record<string, { lat: number; lng: number }> = {
+  reykjavik: { lat: 64.1558, lng: -21.8697 }, // Skarfabakki Berths 312/313
+  kahului: { lat: 20.8961, lng: -156.4728 }, // Kahului Harbor Cruise Terminal Pier 1/2
+  juneau: { lat: 58.2994, lng: -134.4067 }, // Juneau Cruise Ship Docks
+  skagway: { lat: 59.4506, lng: -135.3219 }, // Skagway Cruise Docks
+  ketchikan: { lat: 55.3422, lng: -131.6461 }, // Ketchikan Downtown Berths 1–4
+  seward: { lat: 60.1211, lng: -149.4339 }, // Seward Cruise Ship Terminal
+  "new-orleans": { lat: 29.9389, lng: -90.0619 }, // Erato/Julia Cruise Terminals (Port NOLA)
+  miami: { lat: 25.7781, lng: -80.1704 }, // PortMiami Dodge Island
+  tampa: { lat: 27.9438, lng: -82.4452 }, // Port Tampa Bay Channelside
+  seattle: { lat: 47.6122, lng: -122.3508 }, // Pier 66 / Pier 91
+  cozumel: { lat: 20.4767, lng: -86.9736 }, // Puerta Maya / International Pier
+  roatan: { lat: 16.3176, lng: -86.5378 }, // Port of Roatán / Mahogany Bay
+  nassau: { lat: 25.0805, lng: -77.3408 }, // Nassau Cruise Port (Prince George Wharf)
+  "st-thomas": { lat: 18.3315, lng: -64.9219 }, // WICO Havensight / Crown Bay
+  "grand-cayman": { lat: 19.2952, lng: -81.3831 }, // Royal Watler Tender Terminal
+};
+
+export function resolvePortBerthCoordinates(profile: CruisePortExcursionProfile): {
+  lat: number;
+  lng: number;
+} {
+  if (
+    typeof profile.berthLat === "number" &&
+    Number.isFinite(profile.berthLat) &&
+    typeof profile.berthLng === "number" &&
+    Number.isFinite(profile.berthLng)
+  ) {
+    return { lat: profile.berthLat, lng: profile.berthLng };
+  }
+  const byPort = PORT_BERTH_COORDINATES[profile.portSlug];
+  if (byPort) return byPort;
+  const byDest = PORT_BERTH_COORDINATES[profile.destinationSlug];
+  if (byDest) return byDest;
+  return { lat: 0, lng: 0 };
+}
+
+export function computeHaversineDistanceMiles(
+  lat1: number,
+  lng1: number,
+  lat2: number,
+  lng2: number
+): number {
+  const toRad = (deg: number) => (deg * Math.PI) / 180;
+  const earthRadiusMiles = 3958.7613;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) *
+      Math.cos(toRad(lat2)) *
+      Math.sin(dLng / 2) *
+      Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(Math.max(0, 1 - a)));
+  return Number((earthRadiusMiles * c).toFixed(3));
+}
+
+export function evaluateEvidenceReviewPriority(params: {
+  rec: DurableTourRecord;
+  profile: CruisePortExcursionProfile;
+  missingFields: string[];
+}): PortDayEvidenceReviewPriority {
+  const { rec, profile, missingFields } = params;
+  const berthCoordinates = resolvePortBerthCoordinates(profile);
+
+  let meetingCoords: { lat: number; lng: number } | null = null;
+  if (
+    typeof rec.meetingPointLat === "number" &&
+    Number.isFinite(rec.meetingPointLat) &&
+    typeof rec.meetingPointLng === "number" &&
+    Number.isFinite(rec.meetingPointLng)
+  ) {
+    meetingCoords = { lat: rec.meetingPointLat, lng: rec.meetingPointLng };
+  } else if (Array.isArray(rec.pickupLocations)) {
+    const firstWithCoords = rec.pickupLocations.find(
+      (loc) =>
+        typeof loc?.lat === "number" &&
+        Number.isFinite(loc.lat) &&
+        typeof loc?.lng === "number" &&
+        Number.isFinite(loc.lng)
+    );
+    if (firstWithCoords && firstWithCoords.lat !== null && firstWithCoords.lng !== null) {
+      meetingCoords = { lat: firstWithCoords.lat, lng: firstWithCoords.lng };
+    }
+  }
+
+  const distanceFromBerthMiles = meetingCoords
+    ? computeHaversineDistanceMiles(
+        berthCoordinates.lat,
+        berthCoordinates.lng,
+        meetingCoords.lat,
+        meetingCoords.lng
+      )
+    : null;
+
+  const withinOneMileOfBerth =
+    distanceFromBerthMiles !== null && distanceFromBerthMiles <= 1.0;
+
+  const hasPierOrPickupSignal =
+    rec.pickupFulfillmentType === "pier_pickup" ||
+    rec.pickupType === "CRUISE_PIER_PICKUP" ||
+    Boolean(rec.hasHotelPickup) ||
+    /cruise|pier|port|harbor|harbour|dock|terminal|skarfabakki|midbakki|miðbakki/i.test(
+      `${rec.pickupSummary || ""} ${rec.meetingPointName || ""} ${rec.meetingPointAddress || ""}`
+    );
+
+  let priorityTier: PortDayEvidenceReviewPriority["priorityTier"];
+  let priorityRank: 1 | 2 | 3 | 4;
+  if (withinOneMileOfBerth) {
+    priorityTier = "priority_1_within_one_mile";
+    priorityRank = 1;
+  } else if (hasPierOrPickupSignal) {
+    priorityTier = "priority_2_pier_or_pickup_signal";
+    priorityRank = 2;
+  } else if (distanceFromBerthMiles !== null) {
+    priorityTier = "priority_3_beyond_one_mile";
+    priorityRank = 3;
+  } else {
+    priorityTier = "priority_4_missing_coordinates";
+    priorityRank = 4;
+  }
+
+  const notes: string[] = [];
+  if (distanceFromBerthMiles !== null) {
+    notes.push(
+      withinOneMileOfBerth
+        ? `Within 1-mile rule (${distanceFromBerthMiles} mi from ${profile.defaultPierName})`
+        : `${distanceFromBerthMiles} mi from ${profile.defaultPierName} (> 1.0 mi)`
+    );
+  } else {
+    notes.push("Missing meeting_point_lat/meeting_point_lng coordinates in catalog row");
+  }
+  if (missingFields.length > 0) {
+    notes.push(
+      `Requires verification of ${missingFields.join(", ")} (ship berth, option meeting point, option check-in, two-way route, and all-aboard buffer)`
+    );
+  } else {
+    notes.push("All 5 sailing-fit evidence pillars verified");
+  }
+
+  return {
+    withinOneMileOfBerth,
+    distanceFromBerthMiles,
+    berthCoordinates,
+    meetingPointCoordinates: meetingCoords,
+    priorityTier,
+    priorityRank,
+    spatialMethod: "haversine_sql_and_js_no_postgis",
+    automatedEvidenceNotes: notes,
+  };
+}
+
 export function evaluateTourPortDayTimeFit(params: {
   rec: DurableTourRecord;
   profile: CruisePortExcursionProfile;
@@ -925,7 +1120,17 @@ export function evaluateTourPortDayTimeFit(params: {
     typeof rec.meetingPointAddress === "string" && rec.meetingPointAddress.trim()
       ? rec.meetingPointAddress.trim()
       : null;
-  const hasVerifiedMeetingPoint = Boolean(meetingPointName);
+  const hasVerifiedMeetingPoint =
+    Boolean(meetingPointName) &&
+    Boolean(
+      (chosenOption?.applicableBerthOrMeetingPoint &&
+        chosenOption.applicableBerthOrMeetingPoint.trim()) ||
+        (rec.constraints?.applicableBerthOrMeetingPoint &&
+          rec.constraints.applicableBerthOrMeetingPoint.trim())
+    ) &&
+    rec.pickupFulfillmentType !== "unknown" &&
+    rec.pickupType !== "UNKNOWN" &&
+    rec.provenance?.rawFieldsVerified?.pickupKnown === true;
   const meetingPointEvidenceSource = hasVerifiedMeetingPoint
     ? `product_logistics_meeting_point:${rec.providerProductCode || rec.tourId}`
     : null;
@@ -1004,6 +1209,12 @@ export function evaluateTourPortDayTimeFit(params: {
     missingFields.push("returnBuffer");
   }
 
+  const evidenceReviewPriority = evaluateEvidenceReviewPriority({
+    rec,
+    profile,
+    missingFields,
+  });
+
   if (
     missingFields.length > 0 ||
     !durationMinutes ||
@@ -1054,6 +1265,7 @@ export function evaluateTourPortDayTimeFit(params: {
       reasonSummary: `Needs verification: missing verified ${missingFields.join(
         ", "
       )}. ${meetingContext} Confirm exact product/option departure, check-in, pier transfers, and return buffer before booking for your sailing.`,
+      evidenceReviewPriority,
     };
   }
 
@@ -1134,6 +1346,7 @@ export function evaluateTourPortDayTimeFit(params: {
         )} (${bufferBeforeAllAboard}m vs ${allAboardTime} all-aboard; requires +${
           profile.requiredReturnBufferMinutes
         }m buffer).`,
+    evidenceReviewPriority,
   };
 }
 
@@ -1255,6 +1468,52 @@ function deriveTourCategories(rec: DurableTourRecord): {
   };
 }
 
+export function evaluateDeparturePastStatus(params: {
+  date: string;
+  departureTime?: string | null;
+  timeZone?: string;
+}): { isPast: boolean; reason: string | null } {
+  const rawDate = String(params.date || "").trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(rawDate)) {
+    return {
+      isPast: true,
+      reason: `Invalid departure date "${rawDate}". Expected YYYY-MM-DD in the future.`,
+    };
+  }
+  const tz = params.timeZone || "UTC";
+  const now = new Date();
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: tz,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(now);
+  const getPart = (t: string) => parts.find((p) => p.type === t)?.value || "00";
+  const todayStr = `${getPart("year")}-${getPart("month")}-${getPart("day")}`;
+  const nowHour = Number(getPart("hour")) % 24;
+  const nowMin = nowHour * 60 + Number(getPart("minute"));
+
+  if (rawDate < todayStr) {
+    return {
+      isPast: true,
+      reason: `Departure date ${rawDate} is in the past (current date in ${tz} is ${todayStr}). Past departures are rejected.`,
+    };
+  }
+  if (rawDate === todayStr && params.departureTime) {
+    const depMin = parseHhMm(params.departureTime);
+    if (depMin !== null && depMin <= nowMin) {
+      return {
+        isPast: true,
+        reason: `Departure time ${params.departureTime} on ${rawDate} has already passed in ${tz} (${formatHhMm(nowMin)}). Past departures are rejected.`,
+      };
+    }
+  }
+  return { isPast: false, reason: null };
+}
+
 export async function verifyLiveExcursionAvailability(params: {
   portSlug: string;
   tourId: string;
@@ -1276,7 +1535,10 @@ export async function verifyLiveExcursionAvailability(params: {
     (params.tourId ? await getDurableTourByIdOrAlias(params.tourId) : null) ||
     (params.productCode ? await getDurableTourByIdOrAlias(params.productCode) : null);
 
-  const code = params.productCode || rec?.providerProductCode || params.tourId;
+  const node = resolveEarthOSDestinationNode(params.portSlug);
+  const timeZone = rec?.timeZone || node?.timeZone || "UTC";
+
+  const code = (params.productCode || rec?.providerProductCode || params.tourId || "").trim();
   const partySize = Math.max(1, Number(params.partySize) || 2);
   const checkedDate = String(params.date || "").trim();
 
@@ -1294,16 +1556,21 @@ export async function verifyLiveExcursionAvailability(params: {
     null;
 
   const requestedOptionCode =
-    params.optionCode ||
-    chosenOption?.optionCode ||
-    (typeof (rec?.serviceDetails as any)?.optionCode === "string"
-      ? (rec?.serviceDetails as any).optionCode
-      : null);
+    (
+      params.optionCode ||
+      chosenOption?.optionCode ||
+      (typeof (rec?.serviceDetails as any)?.optionCode === "string"
+        ? (rec?.serviceDetails as any).optionCode
+        : null) ||
+      null
+    )?.trim() || null;
 
   const requestedDepartureTime =
-    params.departureTime ||
-    chosenOption?.scheduledStartTimes?.find((t) => t && t !== "00:00") ||
-    null;
+    (
+      params.departureTime ||
+      chosenOption?.scheduledStartTimes?.find((t) => t && t !== "00:00") ||
+      null
+    )?.trim() || null;
 
   const fallbackRecord: DurableTourRecord =
     rec ||
@@ -1328,8 +1595,47 @@ export async function verifyLiveExcursionAvailability(params: {
     surface: params.surface,
   });
 
+  const pastCheck = evaluateDeparturePastStatus({
+    date: checkedDate,
+    departureTime: requestedDepartureTime,
+    timeZone,
+  });
+
+  if (pastCheck.isPast) {
+    return {
+      status: "check_availability",
+      statusLabel: "Check availability",
+      supportsLiveCheck: true,
+      liveCheckedAt: new Date().toISOString(),
+      checkedDate: checkedDate || null,
+      checkedPartySize: partySize,
+      selectedOptionCode: requestedOptionCode,
+      selectedDepartureTime: requestedDepartureTime,
+      available: null,
+      remainingSeats: null,
+      fromPriceUsd: null,
+      totalPriceUsd: null,
+      currency: rec?.currency || "USD",
+      exactProductUrl: handoff.exactProductUrl,
+      dccTrackedHref: handoff.dccTrackedHref,
+      pastDepartureRejected: true,
+      rejectionReason: pastCheck.reason,
+      providerStatus: "past_departure_rejected",
+      options: [],
+      detailNote:
+        pastCheck.reason ||
+        "Past departure rejected. Select a future sailing date and departure time.",
+    };
+  }
+
   const buildCheckAvailabilityFallback = (
-    providerStatus: "timeout" | "missing_data" | "unconfigured" | "error",
+    providerStatus:
+      | "timeout"
+      | "missing_data"
+      | "option_or_departure_unconfirmed"
+      | "provider_unconfirmed"
+      | "unconfigured"
+      | "error",
     detailNote: string
   ): PortDaySeatAvailabilityEvaluation => ({
     status: "check_availability",
@@ -1347,26 +1653,31 @@ export async function verifyLiveExcursionAvailability(params: {
     currency: rec?.currency || "USD",
     exactProductUrl: handoff.exactProductUrl,
     dccTrackedHref: handoff.dccTrackedHref,
+    pastDepartureRejected: false,
+    rejectionReason: null,
     providerStatus,
     options: [],
     detailNote,
   });
 
+  const timeoutMs =
+    typeof params.timeoutMs === "number" && Number.isFinite(params.timeoutMs)
+      ? Math.max(1, Math.min(15000, params.timeoutMs))
+      : 6000;
+
   if (params.simulateTimeout) {
     return buildCheckAvailabilityFallback(
       "timeout",
-      `Provider availability check timed out for ${code}. Check availability directly on the exact product link.`
+      `Provider availability check timed out after ${timeoutMs}ms for ${code || "tour"}. Showing Check availability with unknown seat count.`
     );
   }
 
-  if (!checkedDate || !requestedDepartureTime || !requestedOptionCode || partySize < 1) {
+  if (!code || !checkedDate || !requestedDepartureTime || !requestedOptionCode || partySize < 1) {
     return buildCheckAvailabilityFallback(
-      "missing_data",
-      `Missing exact option, departure time, date, or party size for live availability verification. Check availability on the exact product link.`
+      "option_or_departure_unconfirmed",
+      `Provider could not confirm exact option, departure time, date, and party size. Showing Check availability.`
     );
   }
-
-  const timeoutMs = Math.max(50, Math.min(10000, params.timeoutMs ?? 6000));
 
   // Direct FareHarbor live slot verification when operator credentials and item ID are configured
   const sd = (rec?.serviceDetails || {}) as Record<string, any>;
@@ -1411,7 +1722,9 @@ export async function verifyLiveExcursionAvailability(params: {
             currency: rec.currency || "USD",
             exactProductUrl: handoff.exactProductUrl,
             dccTrackedHref: handoff.dccTrackedHref,
-            providerStatus: "confirmed",
+            pastDepartureRejected: false,
+            rejectionReason: null,
+            providerStatus: "live_confirmed",
             options: [],
             detailNote: `Provider confirmed ${cap} remaining seats for ${requestedDepartureTime} on ${checkedDate} (party size ${partySize}).`,
           };
@@ -1433,7 +1746,9 @@ export async function verifyLiveExcursionAvailability(params: {
             currency: rec.currency || "USD",
             exactProductUrl: handoff.exactProductUrl,
             dccTrackedHref: handoff.dccTrackedHref,
-            providerStatus: "confirmed",
+            pastDepartureRejected: false,
+            rejectionReason: null,
+            providerStatus: "live_confirmed",
             options: [
               {
                 optionCode: requestedOptionCode,
@@ -1449,13 +1764,13 @@ export async function verifyLiveExcursionAvailability(params: {
         }
       }
       return buildCheckAvailabilityFallback(
-        "missing_data",
+        "option_or_departure_unconfirmed",
         `Provider did not return an exact slot match for option ${requestedOptionCode} (${requestedDepartureTime}) on ${checkedDate}. Check availability on the exact product link.`
       );
     } catch (err: any) {
       const isTimeout = String(err?.message || "").includes("PROVIDER_TIMEOUT");
       return buildCheckAvailabilityFallback(
-        isTimeout ? "timeout" : "error",
+        isTimeout ? "timeout" : "provider_unconfirmed",
         isTimeout
           ? `Provider availability check timed out after ${timeoutMs}ms. Check availability on the exact product link.`
           : `Provider availability check unavailable. Check availability on the exact product link.`
@@ -1480,17 +1795,26 @@ export async function verifyLiveExcursionAvailability(params: {
       const items = Array.isArray(checkRes?.bookableItems) ? checkRes.bookableItems : [];
 
       const exactItem = items.find((it: any) => {
-        const itemOpt = String(it?.productOptionCode || "TG1").trim().toUpperCase();
+        const itemOpt = String(it?.productOptionCode || "DEFAULT").trim().toUpperCase();
         const itemTime = String(it?.startTime || "").trim().slice(0, 5);
+        const itemDate = it?.travelDate ? String(it.travelDate).trim() : checkedDate;
+        const lineItemTravelers = Array.isArray(it?.lineItems)
+          ? it.lineItems.reduce(
+              (acc: number, li: any) => acc + (Number(li?.numberOfTravelers) || 0),
+              0
+            )
+          : partySize;
         return (
           itemOpt === requestedOptionCode.trim().toUpperCase() &&
-          itemTime === requestedDepartureTime.trim().slice(0, 5)
+          itemTime === requestedDepartureTime.trim().slice(0, 5) &&
+          itemDate === checkedDate &&
+          lineItemTravelers === partySize
         );
       });
 
       if (!exactItem) {
         return buildCheckAvailabilityFallback(
-          "missing_data",
+          "option_or_departure_unconfirmed",
           `Viator /availability/check did not confirm exact option ${requestedOptionCode} at ${requestedDepartureTime} on ${checkedDate} for ${partySize} guests. Check availability on the exact product link.`
         );
       }
@@ -1515,7 +1839,9 @@ export async function verifyLiveExcursionAvailability(params: {
           currency: String(checkRes?.currency || "USD"),
           exactProductUrl: handoff.exactProductUrl,
           dccTrackedHref: handoff.dccTrackedHref,
-          providerStatus: "confirmed",
+          pastDepartureRejected: false,
+          rejectionReason: null,
+          providerStatus: "live_confirmed",
           options: [
             {
               optionCode: String(exactItem.productOptionCode || requestedOptionCode),
@@ -1545,20 +1871,28 @@ export async function verifyLiveExcursionAvailability(params: {
           typeof exactItem?.remainingSeats === "number" &&
           Number.isFinite(exactItem.remainingSeats)
             ? exactItem.remainingSeats
-            : null;
+            : typeof exactItem?.availableSeats === "number" &&
+                Number.isFinite(exactItem.availableSeats)
+              ? exactItem.availableSeats
+              : null;
+
+        const matchedOptionCode = String(exactItem.productOptionCode || requestedOptionCode);
+        const matchedStartTime = String(exactItem.startTime || requestedDepartureTime).slice(0, 5);
 
         return {
           status: "live_verified",
-          statusLabel: "Live verified",
+          statusLabel:
+            providerRemainingSeats !== null
+              ? `Live Verified — ${providerRemainingSeats} seats for ${partySize} guests (${matchedOptionCode} · ${matchedStartTime} on ${checkedDate})`
+              : `Live Verified — Available for ${partySize} ${
+                  partySize === 1 ? "guest" : "guests"
+                } (${matchedOptionCode} · ${matchedStartTime} on ${checkedDate})`,
           supportsLiveCheck: true,
           liveCheckedAt: new Date().toISOString(),
           checkedDate,
           checkedPartySize: partySize,
-          selectedOptionCode: String(exactItem.productOptionCode || requestedOptionCode),
-          selectedDepartureTime: String(exactItem.startTime || requestedDepartureTime).slice(
-            0,
-            5
-          ),
+          selectedOptionCode: matchedOptionCode,
+          selectedDepartureTime: matchedStartTime,
           available: true,
           remainingSeats: providerRemainingSeats,
           fromPriceUsd: perPersonPriceUsd,
@@ -1566,19 +1900,25 @@ export async function verifyLiveExcursionAvailability(params: {
           currency: String(checkRes?.currency || "USD"),
           exactProductUrl: handoff.exactProductUrl,
           dccTrackedHref: handoff.dccTrackedHref,
-          providerStatus: "confirmed",
+          pastDepartureRejected: false,
+          rejectionReason: null,
+          providerStatus: "live_confirmed",
           options: [
             {
-              optionCode: String(exactItem.productOptionCode || requestedOptionCode),
+              optionCode: matchedOptionCode,
               title: chosenOption?.title || `Option ${requestedOptionCode}`,
-              startTime: String(exactItem.startTime || requestedDepartureTime).slice(0, 5),
+              startTime: matchedStartTime,
               available: true,
               remainingSeats: providerRemainingSeats,
               priceUsd: perPersonPriceUsd,
             },
           ],
-          detailNote: `Live Viator Partner API /availability/check confirmed availability for ${code} option ${requestedOptionCode} at ${requestedDepartureTime} on ${checkedDate} for ${partySize} guests${
-            totalPriceUsd !== null ? ` ($${totalPriceUsd.toFixed(2)} total)` : ""
+          detailNote: `Provider-confirmed via Viator Partner API /availability/check for ${code} (option ${matchedOptionCode}, departure ${matchedStartTime}, date ${checkedDate}, party size ${partySize}${
+            totalPriceUsd !== null ? `, $${totalPriceUsd.toFixed(2)} total` : ""
+          }). Seat count is ${
+            providerRemainingSeats !== null
+              ? providerRemainingSeats
+              : "unknown (not returned by provider)"
           }.`,
         };
       }
@@ -1587,17 +1927,17 @@ export async function verifyLiveExcursionAvailability(params: {
         String(err?.message || "").includes("PROVIDER_TIMEOUT") ||
         String(err?.name || "") === "AbortError";
       return buildCheckAvailabilityFallback(
-        isTimeout ? "timeout" : "error",
+        isTimeout ? "timeout" : "provider_unconfirmed",
         isTimeout
-          ? `Viator availability check timed out after ${timeoutMs}ms for ${code}. Check availability on the exact product link.`
-          : `Viator availability check could not confirm ${code} on ${checkedDate}. Check availability on the exact product link.`
+          ? `Provider availability check timed out after ${timeoutMs}ms for ${code}. Showing Check availability with unknown seat count.`
+          : `Provider could not confirm exact option (${requestedOptionCode}), departure (${requestedDepartureTime}), date (${checkedDate}), and party size (${partySize}). Showing Check availability.`
       );
     }
   }
 
   return buildCheckAvailabilityFallback(
-    "unconfigured",
-    `Live provider availability check is not configured for ${code}. Check availability on the exact product link.`
+    "option_or_departure_unconfirmed",
+    `Provider could not confirm exact option (${requestedOptionCode}), departure (${requestedDepartureTime}), date (${checkedDate}), and party size (${partySize}). Showing Check availability.`
   );
 }
 
@@ -1635,6 +1975,7 @@ export async function queryPortDayExcursionCatalog(params: {
       destinationSlug: profile.destinationSlug,
       category: category === "all" ? undefined : category,
       searchQuery: params.search,
+      requireVerifiedCruiseLogistics: viewMode === "fits_sailing",
       verifiedTimingOnly: viewMode === "fits_sailing" ? true : undefined,
       sortBy,
       limit,
@@ -1687,6 +2028,12 @@ export async function queryPortDayExcursionCatalog(params: {
       (rec.primaryProvider === "viator" || rec.primaryProvider === "operator_direct") &&
       rec.capabilityTier !== "discovery_only";
 
+    const pastDepCheck = evaluateDeparturePastStatus({
+      date: sailingDate,
+      departureTime: timeFit.selectedDepartureTime,
+      timeZone: rec.timeZone,
+    });
+
     return {
       tourId: rec.tourId,
       productCode: rec.providerProductCode || null,
@@ -1726,12 +2073,17 @@ export async function queryPortDayExcursionCatalog(params: {
         currency: rec.currency || "USD",
         exactProductUrl: handoff.exactProductUrl,
         dccTrackedHref: handoff.dccTrackedHref,
+        pastDepartureRejected: pastDepCheck.isPast,
+        rejectionReason: pastDepCheck.reason,
+        providerStatus: pastDepCheck.isPast ? "past_departure_rejected" : "unverified",
         options: [],
-        detailNote: supportsLiveCheck
-          ? `Check live availability for option ${
-              chosenOptionCode || "default"
-            } (${timeFit.selectedDepartureTime || "select time"}) on ${sailingDate} for ${partySize} guests, or open the exact product link. Time fit and seat availability are tracked separately.`
-          : "Check availability on the exact product link for your date and group size.",
+        detailNote: pastDepCheck.isPast
+          ? pastDepCheck.reason || "Past departure rejected."
+          : supportsLiveCheck
+            ? `Check live availability for option ${
+                chosenOptionCode || "default"
+              } (${timeFit.selectedDepartureTime || "select time"}) on ${sailingDate} for ${partySize} guests, or open the exact product link. Time fit and seat availability are tracked separately.`
+            : "Check availability on the exact product link for your date and group size.",
       },
       handoff,
     };
@@ -1739,7 +2091,7 @@ export async function queryPortDayExcursionCatalog(params: {
 
   const visibleTours =
     viewMode === "fits_sailing"
-      ? evaluatedCards.filter((c) => c.timeFit.status === "fits")
+      ? evaluatedCards.filter((c) => c.timeFit.status === "fits" && c.timeFit.fitsSailing)
       : evaluatedCards;
 
   const fallbackCounts = AUTHORITATIVE_PORT_PROVIDER_COUNTS[profile.portSlug] || {
@@ -1839,6 +2191,23 @@ export async function queryPortDayExcursionCatalog(params: {
       nextStartOffset: liveProviderCounts?.nextStartOffset ?? null,
       checkpointUpdatedAt: liveProviderCounts?.checkpointUpdatedAt ?? null,
       reconciliationBreakdown,
+      importerCheckpoint: {
+        destinationSearchPaginationModel: "start_and_count",
+        incrementalFeedPaginationModel: "nextCursor",
+        batchSizeCount: 100,
+        lastStartOffset: Math.max(1, activeViatorCount - 99),
+        nextStartOffset: reconciledWithAuthorizedSource
+          ? null
+          : (liveProviderCounts?.nextStartOffset ?? activeViatorCount + 1),
+        providerTotalCount: authorizedSourceTotal,
+        incrementalUpdateCursor: null,
+        checkpointStatus: reconciledWithAuthorizedSource
+          ? "complete"
+          : "bounded_batch_paused",
+        note: reconciledWithAuthorizedSource
+          ? `Full destination search catalog imported via bounded start+count batches (${activeViatorCount}/${authorizedSourceTotal} Viator products).`
+          : `Bounded 100-item batch checkpoint saved (nextStartOffset=${liveProviderCounts?.nextStartOffset ?? activeViatorCount + 1} of ${authorizedSourceTotal}); partial count reflects bounded batch checkpointing rather than an importer timeout.`,
+      },
       pendingOperatorNotes:
         profile.portSlug === "reykjavik"
           ? [
@@ -1863,8 +2232,78 @@ export async function queryPortDayExcursionCatalog(params: {
       liveAvailabilitySupportedCountOnPage: evaluatedCards.filter(
         (c) => c.seatAvailability.supportsLiveCheck
       ).length,
+      withinOneMileReviewQueueCountOnPage: evaluatedCards.filter(
+        (c) => c.timeFit.evidenceReviewPriority?.withinOneMileOfBerth
+      ).length,
     },
     tours: visibleTours,
   };
 }
 
+export async function buildAutomatedPortEvidenceReviewQueue(params: {
+  portSlug: string;
+  limit?: number;
+}): Promise<{
+  portSlug: string;
+  portName: string;
+  berthCoordinates: { lat: number; lng: number };
+  spatialMethod: "haversine_sql_and_js_no_postgis";
+  totalCandidatesEvaluated: number;
+  withinOneMileCount: number;
+  queue: Array<{
+    tourId: string;
+    productCode: string | null;
+    title: string;
+    priorityTier: PortDayEvidenceReviewPriority["priorityTier"];
+    priorityRank: 1 | 2 | 3 | 4;
+    withinOneMileOfBerth: boolean;
+    distanceFromBerthMiles: number | null;
+    missingFields: string[];
+    fitsSailing: boolean;
+    status: PortDayTimeFitStatus;
+  }>;
+} | null> {
+  const profile = resolveCruisePortExcursionProfile(params.portSlug);
+  if (!profile) return null;
+  const berthCoordinates = resolvePortBerthCoordinates(profile);
+  const res = await queryPortDayExcursionCatalog({
+    portSlug: profile.portSlug,
+    viewMode: "browse_all",
+    limit: params.limit || 100,
+    offset: 0,
+  });
+  if (!res) return null;
+
+  const queue = res.tours
+    .map((card) => {
+      const prio = card.timeFit.evidenceReviewPriority!;
+      return {
+        tourId: card.tourId,
+        productCode: card.productCode,
+        title: card.title,
+        priorityTier: prio.priorityTier,
+        priorityRank: prio.priorityRank,
+        withinOneMileOfBerth: prio.withinOneMileOfBerth,
+        distanceFromBerthMiles: prio.distanceFromBerthMiles,
+        missingFields: card.timeFit.missingFields,
+        fitsSailing: card.timeFit.fitsSailing,
+        status: card.timeFit.status,
+      };
+    })
+    .sort((a, b) => {
+      if (a.priorityRank !== b.priorityRank) return a.priorityRank - b.priorityRank;
+      const distA = a.distanceFromBerthMiles ?? Number.POSITIVE_INFINITY;
+      const distB = b.distanceFromBerthMiles ?? Number.POSITIVE_INFINITY;
+      return distA - distB;
+    });
+
+  return {
+    portSlug: profile.portSlug,
+    portName: profile.portName,
+    berthCoordinates,
+    spatialMethod: "haversine_sql_and_js_no_postgis",
+    totalCandidatesEvaluated: queue.length,
+    withinOneMileCount: queue.filter((q) => q.withinOneMileOfBerth).length,
+    queue,
+  };
+}

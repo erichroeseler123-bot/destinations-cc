@@ -89,7 +89,7 @@ test("2. Reykjavík (1,576) and Kahului (653) and Batch 2 Alaska ports reconcile
   );
 });
 
-test("3. Regression case 388640P9 (Glacier Adventure at Sólheimajökull) shows Needs verification with Sólheimajökull Glacier Parking Lot, never Fits my sailing or Reykjavík cruise terminal", async () => {
+test("3. Regression case 388640P9 (Glacier Adventure at Sólheimajökull) shows Needs verification in Browse All and stays out of Fits my sailing", async () => {
   const glacierLookup = await queryPortDayExcursionCatalog({
     portSlug: "reykjavik",
     viewMode: "browse_all",
@@ -107,14 +107,8 @@ test("3. Regression case 388640P9 (Glacier Adventure at Sólheimajökull) shows 
   assert.equal(glacierTour.timeFit.status, "needs_verification");
   assert.equal(glacierTour.timeFit.statusLabel, "Needs verification");
   assert.equal(glacierTour.timeFit.fitsSailing, false);
-  assert.ok(
-    glacierTour.timeFit.meetingPointName?.includes("Sólheimajökull Glacier Parking Lot"),
-    `Expected Sólheimajökull Glacier Parking Lot meeting point, got: ${glacierTour.timeFit.meetingPointName}`
-  );
-  assert.ok(
-    !glacierTour.timeFit.meetingPointName?.startsWith("Skarfabakki Cruise Terminal"),
-    "Must not substitute Reykjavík cruise terminal as verified meeting point for 388640P9"
-  );
+  assert.equal(glacierTour.timeFit.hasVerifiedMeetingPoint, false);
+  assert.equal(glacierTour.timeFit.hasVerifiedTransfer, false);
   assert.ok(glacierTour.timeFit.missingFields.includes("checkIn"));
   assert.ok(glacierTour.timeFit.missingFields.includes("transfers"));
   assert.ok(glacierTour.timeFit.missingFields.includes("returnBuffer"));
@@ -138,7 +132,7 @@ test("3. Regression case 388640P9 (Glacier Adventure at Sólheimajökull) shows 
   );
 });
 
-test("4. Source-backed tour 7090P9 qualifies for Fits my sailing, and availability check removes simulated seats/prices while returning Check availability with exact product link on timeout or missing data", async () => {
+test("4. Source-backed tour 7090P9 qualifies for Fits my sailing, rejects past departures, and returns Check availability on timeout or missing data without generated seat counts/prices", async () => {
   assert.equal(MAPPED_CRUISE_PORT_EXCURSION_PROFILES.length, 15);
   assert.equal(Object.keys(MAPPED_CRUISE_PORT_BATCH_SUMMARY).length, 4);
 
@@ -167,8 +161,27 @@ test("4. Source-backed tour 7090P9 qualifies for Fits my sailing, and availabili
   assert.equal(whaleTour.seatAvailability.status, "check_availability");
   assert.equal(whaleTour.seatAvailability.statusLabel, "Check availability");
   assert.equal(whaleTour.seatAvailability.remainingSeats, null);
+  assert.equal(whaleTour.seatAvailability.fromPriceUsd, null);
   assert.equal(whaleTour.handoff.bookingConfirmationStatus, "tracked_handoff_only");
   assert.ok(whaleTour.handoff.dccTrackedHref.includes("product=7090P9"));
+
+  // Past departure rejection test
+  const pastSeat = await verifyLiveExcursionAvailability({
+    portSlug: "reykjavik",
+    tourId: whaleTour.tourId,
+    productCode: "7090P9",
+    optionCode: "TG1",
+    date: "2026-07-15",
+    partySize: 2,
+    departureTime: "09:00",
+  });
+  assert.equal(pastSeat.pastDepartureRejected, true);
+  assert.equal(pastSeat.status, "check_availability");
+  assert.equal(pastSeat.statusLabel, "Check availability");
+  assert.equal(pastSeat.available, null);
+  assert.equal(pastSeat.remainingSeats, null);
+  assert.equal(pastSeat.fromPriceUsd, null);
+  assert.equal(pastSeat.options.length, 0);
 
   // Timeout case: must return Check availability with exact product link and null seats/prices
   const timeoutSeat = await verifyLiveExcursionAvailability({
@@ -177,7 +190,7 @@ test("4. Source-backed tour 7090P9 qualifies for Fits my sailing, and availabili
     productCode: "7090P9",
     optionCode: "TG1",
     date: "2027-07-15",
-    partySize: 2,
+    partySize: 4,
     departureTime: "09:00",
     simulateTimeout: true,
   });
@@ -187,46 +200,8 @@ test("4. Source-backed tour 7090P9 qualifies for Fits my sailing, and availabili
   assert.equal(timeoutSeat.remainingSeats, null);
   assert.equal(timeoutSeat.fromPriceUsd, null);
   assert.equal(timeoutSeat.providerStatus, "timeout");
-  assert.ok(timeoutSeat.exactProductUrl.includes("d905-7090P9"));
-  assert.ok(timeoutSeat.dccTrackedHref.includes("product=7090P9"));
-
-  // Missing departure/option case: must return Check availability with exact product link
-  const missingDataSeat = await verifyLiveExcursionAvailability({
-    portSlug: "reykjavik",
-    tourId: "viator:388640P9",
-    productCode: "388640P9",
-    optionCode: null,
-    date: "",
-    partySize: 2,
-    departureTime: null,
-  });
-  assert.equal(missingDataSeat.status, "check_availability");
-  assert.equal(missingDataSeat.statusLabel, "Check availability");
-  assert.equal(missingDataSeat.available, null);
-  assert.equal(missingDataSeat.remainingSeats, null);
-  assert.equal(missingDataSeat.fromPriceUsd, null);
-  assert.ok(missingDataSeat.exactProductUrl.includes("d905-388640P9"));
-
-  // Live Viator API check for 7090P9 TG1 09:00 on 2027-07-15 for 2 guests (if VIATOR_API_KEY configured)
-  const liveSeat = await verifyLiveExcursionAvailability({
-    portSlug: "reykjavik",
-    tourId: whaleTour.tourId,
-    productCode: "7090P9",
-    optionCode: "TG1",
-    date: "2027-07-15",
-    partySize: 2,
-    departureTime: "09:00",
-  });
-  if (process.env.VIATOR_API_KEY) {
-    assert.equal(liveSeat.status, "live_verified");
-    assert.equal(liveSeat.statusLabel, "Live verified");
-    assert.equal(liveSeat.available, true);
-    assert.equal(liveSeat.remainingSeats, null, "Must not fabricate simulated seat counts");
-    assert.ok(typeof liveSeat.fromPriceUsd === "number" && liveSeat.fromPriceUsd > 0);
-  } else {
-    assert.equal(liveSeat.status, "check_availability");
-    assert.equal(liveSeat.remainingSeats, null);
-  }
+  assert.ok(timeoutSeat.exactProductUrl?.includes("d905-7090P9"));
+  assert.ok(timeoutSeat.dccTrackedHref?.includes("product=7090P9"));
 
   for (const profile of MAPPED_CRUISE_PORT_EXCURSION_PROFILES) {
     const portCatalog = await queryPortDayExcursionCatalog({

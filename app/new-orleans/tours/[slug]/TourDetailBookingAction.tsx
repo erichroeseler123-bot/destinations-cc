@@ -38,6 +38,8 @@ export default function TourDetailBookingAction({ product, refCode, fallbackHref
 
   return (
     <FareHarborBookingButton
+      productTitle={product.title}
+      productSlug={product.slug}
       shortname={product.companyShortname}
       itemId={itemId || product.itemId}
       flowId={finalFlow}
@@ -45,6 +47,7 @@ export default function TourDetailBookingAction({ product, refCode, fallbackHref
       refCode={finalRef}
       scheduleUuid={scheduleUuid}
       fullItems={fullItems}
+      placement={variantLabel || "tour_detail_primary"}
       fallbackHref={fallbackHref}
       className={`${className} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37] focus-visible:ring-offset-2 focus-visible:ring-offset-[#1a1a1a]`}
       onBookingClick={() => {

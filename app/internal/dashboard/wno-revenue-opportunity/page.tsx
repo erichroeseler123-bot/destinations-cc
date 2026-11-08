@@ -1,5 +1,6 @@
 import { listRecentProductionCorridorEvents } from "@/lib/dcc/telemetry/corridorEvents";
 import { buildUnifiedPortfolioFunnelReport } from "@/lib/dcc/commerce/portfolioFunnelReport";
+import { buildRiverboatComparisonFunnelReport } from "@/lib/wno/riverboatComparisonFunnel";
 
 export const dynamic = "force-dynamic";
 
@@ -20,9 +21,10 @@ function isWithinWindow(iso: string | null | undefined, startMs: number, endMs: 
 }
 
 export default async function WnoRevenueOpportunityPage() {
-  const [all, unifiedReport] = await Promise.all([
+  const [all, unifiedReport, riverboatFunnel] = await Promise.all([
     listRecentProductionCorridorEvents(10000),
     buildUnifiedPortfolioFunnelReport({ windowPreset: "28d" }),
+    buildRiverboatComparisonFunnelReport({ windowDays: 28 }),
   ]);
 
   const startMs = Date.parse(unifiedReport.reportingWindow.startIso);
@@ -72,6 +74,98 @@ export default async function WnoRevenueOpportunityPage() {
           <Metric label="Owned gross sales" value={`$${(wnoSpoke?.ownedGrossSalesUsd ?? 0).toLocaleString()}`} />
           <Metric label="Commissions earned" value={String(wnoSpoke?.commissionsEarnedUsd ?? "unknown")} />
           <Metric label="Payouts received" value={String(wnoSpoke?.payoutsReceivedUsd ?? "unknown")} />
+        </section>
+
+        <section className="mt-10 rounded-2xl border border-amber-500/30 bg-amber-500/[0.04] p-6">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-300">
+                Dedicated Comparison Funnel · /compare/{riverboatFunnel.comparisonSlug}
+              </p>
+              <h2 className="mt-1 text-xl font-bold">
+                Steamboat NATCHEZ (FH 561220) vs Riverboat CITY of NEW ORLEANS (FH 694782)
+              </h2>
+            </div>
+            <span className="font-mono text-xs text-zinc-400">
+              comparison visit → boat selected → checkout opened → provider-confirmed booking
+            </span>
+          </div>
+
+          <div className="mt-5 grid gap-4 md:grid-cols-4">
+            <Metric label="1. Comparison visits" value={riverboatFunnel.stages.comparisonVisits.totalEvents} />
+            <Metric label="2. Boat selected" value={riverboatFunnel.stages.boatSelected.totalEvents} />
+            <Metric label="3. Checkout opened (561220 / 694782)" value={riverboatFunnel.stages.checkoutOpened.primaryItems561220And694782Events} />
+            <Metric label="4. Provider-confirmed bookings" value={riverboatFunnel.stages.providerConfirmedBookings.totalConfirmedBookings} />
+          </div>
+
+          <div className="mt-6 overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead>
+                <tr className="border-b border-white/10 text-zinc-400">
+                  <th className="py-2 pr-4">Vessel</th>
+                  <th className="py-2 pr-4">Detail route</th>
+                  <th className="py-2 pr-4">FareHarbor item / flow</th>
+                  <th className="py-2 pr-4">Boat selected</th>
+                  <th className="py-2 pr-4">Tour detail opens</th>
+                  <th className="py-2 pr-4">Checkout opened (primary item)</th>
+                  <th className="py-2 pr-4">Checkout opened (from comparison)</th>
+                  <th className="py-2 pr-4">Provider-confirmed bookings</th>
+                  <th className="py-2">Confirmed gross USD</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/10">
+                {[riverboatFunnel.vessels.natchez, riverboatFunnel.vessels.cityOfNewOrleans].map((v) => (
+                  <tr key={v.vesselKey}>
+                    <td className="py-2.5 pr-4 font-bold text-amber-200">{v.vesselLabel}</td>
+                    <td className="py-2.5 pr-4 font-mono text-zinc-300">{v.tourDetailPath}</td>
+                    <td className="py-2.5 pr-4 font-mono text-zinc-300">
+                      {v.primaryFareHarborItemId} / {v.primaryFareHarborFlowId}
+                    </td>
+                    <td className="py-2.5 pr-4">{v.boatSelectedEvents} ({v.boatSelectedUniqueSessions} sess)</td>
+                    <td className="py-2.5 pr-4">{v.tourDetailOpenedEvents}</td>
+                    <td className="py-2.5 pr-4 font-bold text-white">{v.checkoutOpenedPrimaryItemEvents}</td>
+                    <td className="py-2.5 pr-4 text-amber-300">{v.checkoutOpenedFromComparisonSessions}</td>
+                    <td className="py-2.5 pr-4 font-mono text-emerald-300">{v.providerConfirmedBookingsCount}</td>
+                    <td className="py-2.5 font-mono text-emerald-300">${v.confirmedGrossSalesUsd.toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {riverboatFunnel.entryPageBreakdown.length > 0 && (
+            <div className="mt-6 overflow-x-auto">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+                Riverboat comparison funnel by visitor entry page (preserved into checkout)
+              </h3>
+              <table className="mt-2 w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-white/10 text-zinc-400">
+                    <th className="py-2 pr-4">Entry page</th>
+                    <th className="py-2 pr-4">Comparison visits</th>
+                    <th className="py-2 pr-4">Natchez selected</th>
+                    <th className="py-2 pr-4">City selected</th>
+                    <th className="py-2 pr-4">Natchez checkout (561220)</th>
+                    <th className="py-2 pr-4">City checkout (694782)</th>
+                    <th className="py-2">Provider-confirmed</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/10">
+                  {riverboatFunnel.entryPageBreakdown.slice(0, 12).map((row) => (
+                    <tr key={row.entryPage}>
+                      <td className="py-2 pr-4 font-mono text-zinc-200">{row.entryPage}</td>
+                      <td className="py-2 pr-4">{row.comparisonVisits}</td>
+                      <td className="py-2 pr-4">{row.natchezSelected}</td>
+                      <td className="py-2 pr-4">{row.citySelected}</td>
+                      <td className="py-2 pr-4 font-bold text-white">{row.natchezCheckoutOpened561220}</td>
+                      <td className="py-2 pr-4 font-bold text-white">{row.cityCheckoutOpened694782}</td>
+                      <td className="py-2 font-mono text-emerald-300">{row.providerConfirmedBookings}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </section>
 
         <section className="mt-10 grid gap-6 lg:grid-cols-3">
