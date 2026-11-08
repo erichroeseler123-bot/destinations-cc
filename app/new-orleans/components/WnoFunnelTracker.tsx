@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { trackEvent } from "@/lib/analytics";
 import { captureDccTravelerContext, getStoredDccTravelerContext } from "@/lib/dcc/travelerContext";
 import { classifyWnoEntrySource } from "../lib/trafficSource";
@@ -12,9 +13,19 @@ const ENTRY_SOURCE_KEY = "wno_entry_source";
 const ENTRY_GAD_CAMPAIGN_KEY = "wno_entry_gad_campaignid";
 const ENTRY_GCLID_KEY = "wno_entry_gclid";
 const LANDING_SENT_KEY = "wno_landing_sent";
+const COMPARISON_SLUG_KEY = "wno_comparison_slug";
+const COMPARISON_PATH_KEY = "wno_comparison_path";
+const SELECTED_BOAT_KEY = "wno_selected_boat";
+const SELECTED_PRODUCT_KEY = "wno_selected_product_slug";
+const SELECTED_ITEM_ID_KEY = "wno_selected_item_id";
 
 function id() {
   return `wno_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function extractComparisonSlugFromPath(pathname: string): string | null {
+  const match = pathname.match(/^\/(?:new-orleans\/)?compare\/([^/?#]+)/i);
+  return match ? match[1].toLowerCase() : null;
 }
 
 function classifyClick(href: string) {
@@ -46,6 +57,8 @@ export function getWnoFunnelContext() {
     source: sessionStorage.getItem(ENTRY_SOURCE_KEY) || "wtonot-unknown",
     gadCampaignId: sessionStorage.getItem(ENTRY_GAD_CAMPAIGN_KEY) || null,
     gclid: sessionStorage.getItem(ENTRY_GCLID_KEY) || null,
+    comparisonSlug: sessionStorage.getItem(COMPARISON_SLUG_KEY) || undefined,
+    selectedBoat: sessionStorage.getItem(SELECTED_BOAT_KEY) || undefined,
     dccContext: getStoredDccTravelerContext(),
   };
 }
@@ -69,6 +82,8 @@ export function sendWnoTelemetry(event: Record<string, unknown>) {
 }
 
 export default function WnoFunnelTracker() {
+  const pathname = usePathname();
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const inboundDccContext = captureDccTravelerContext(window.location.search);
@@ -151,9 +166,22 @@ export default function WnoFunnelTracker() {
       const customEventName = anchor.dataset.wnoEvent;
       const label = anchor.dataset.wnoLabel || (anchor.textContent || "").trim().replace(/\s+/g, " ").slice(0, 120);
       const productSlug = anchor.dataset.wnoProduct;
+      const selectedBoat = anchor.dataset.wnoBoat;
+      const itemId = anchor.dataset.wnoItemId;
       const signal = anchor.dataset.wnoSignal;
+      const activeComparisonSlug =
+        extractComparisonSlugFromPath(window.location.pathname) || latestContext.comparisonSlug;
+
+      if (customEventName === "comparison_boat_selected") {
+        if (activeComparisonSlug) sessionStorage.setItem(COMPARISON_SLUG_KEY, activeComparisonSlug);
+        if (selectedBoat) sessionStorage.setItem(SELECTED_BOAT_KEY, selectedBoat);
+        if (productSlug) sessionStorage.setItem(SELECTED_PRODUCT_KEY, productSlug);
+        if (itemId) sessionStorage.setItem(SELECTED_ITEM_ID_KEY, itemId);
+      }
 
       if (customEventName) {
+        const funnelStage =
+          customEventName === "comparison_boat_selected" ? "boat_selected" : undefined;
         const eventPayload = {
           surface: "welcome_to_new_orleans_tours",
           page: window.location.pathname,
@@ -161,6 +189,10 @@ export default function WnoFunnelTracker() {
           cta_location: ctaLocation(anchor),
           cta_label: label,
           product_slug: productSlug,
+          selected_boat: selectedBoat,
+          item_id: itemId,
+          comparison_slug: activeComparisonSlug,
+          funnel_stage: funnelStage,
           signal,
           entry_source: latestContext.source,
           entry_path: latestContext.landingPath,
@@ -173,6 +205,10 @@ export default function WnoFunnelTracker() {
           ctaLocation: ctaLocation(anchor),
           ctaLabel: label,
           productSlug,
+          selectedBoat,
+          itemId,
+          comparisonSlug: activeComparisonSlug,
+          funnelStage,
           signal,
         });
       }
@@ -195,6 +231,29 @@ export default function WnoFunnelTracker() {
     document.addEventListener("click", handleClick, { capture: true });
     return () => document.removeEventListener("click", handleClick, { capture: true });
   }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const currentPath = pathname || window.location.pathname;
+    const comparisonSlug = extractComparisonSlugFromPath(currentPath);
+    if (!comparisonSlug) return;
+
+    sessionStorage.setItem(COMPARISON_SLUG_KEY, comparisonSlug);
+    sessionStorage.setItem(COMPARISON_PATH_KEY, currentPath);
+
+    const viewedKey = `wno_comparison_viewed_${comparisonSlug}`;
+    if (!sessionStorage.getItem(viewedKey)) {
+      sessionStorage.setItem(viewedKey, "1");
+      const updated = getWnoFunnelContext();
+      sendWnoTelemetry({
+        eventName: "comparison_viewed",
+        sourcePage: updated?.source,
+        targetPath: currentPath,
+        comparisonSlug,
+        funnelStage: "comparison_visit",
+      });
+    }
+  }, [pathname]);
 
   return null;
 }

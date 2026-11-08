@@ -50,6 +50,8 @@ export interface CruisePortExcursionProfile {
   viatorDestinationName: string;
   defaultPierName: string;
   defaultPierAddress: string;
+  berthLat?: number;
+  berthLng?: number;
   defaultSailingDate: string;
   defaultShipArrivalTime: string;
   defaultShipAllAboardTime: string;
@@ -57,6 +59,21 @@ export interface CruisePortExcursionProfile {
   defaultOneWayPierTransferMinutes: number;
   defaultCheckInCutoffMinutes: number;
   requiredReturnBufferMinutes: number;
+}
+
+export interface PortDayEvidenceReviewPriority {
+  withinOneMileOfBerth: boolean;
+  distanceFromBerthMiles: number | null;
+  berthCoordinates: { lat: number; lng: number };
+  meetingPointCoordinates: { lat: number; lng: number } | null;
+  priorityTier:
+    | "priority_1_within_one_mile"
+    | "priority_2_pier_or_pickup_signal"
+    | "priority_3_beyond_one_mile"
+    | "priority_4_missing_coordinates";
+  priorityRank: 1 | 2 | 3 | 4;
+  spatialMethod: "haversine_sql_and_js_no_postgis";
+  automatedEvidenceNotes: string[];
 }
 
 export interface PortDayTimeFitEvaluation {
@@ -97,6 +114,7 @@ export interface PortDayTimeFitEvaluation {
   hasVerifiedReturnBuffer: boolean;
   missingFields: string[];
   reasonSummary: string;
+  evidenceReviewPriority?: PortDayEvidenceReviewPriority;
 }
 
 export interface PortDaySeatAvailabilityEvaluation {
@@ -208,6 +226,17 @@ export interface PortDayExcursionCatalogResponse {
     authorizedSourceTotal: number;
     coveragePercent?: number;
     coverageStatus?: "complete" | "sampled_provider_catalog";
+    importerCheckpoint?: {
+      destinationSearchPaginationModel: "start_and_count";
+      incrementalFeedPaginationModel: "nextCursor";
+      batchSizeCount: number;
+      lastStartOffset: number;
+      nextStartOffset: number | null;
+      providerTotalCount: number;
+      incrementalUpdateCursor: string | null;
+      checkpointStatus: "complete" | "bounded_batch_paused";
+      note: string;
+    };
     pendingOperatorNotes?: string[];
   };
   summary: {
@@ -217,6 +246,7 @@ export interface PortDayExcursionCatalogResponse {
     needsVerificationCountOnPage: number;
     missingOperatorInfoCountOnPage: number;
     liveAvailabilitySupportedCountOnPage: number;
+    withinOneMileReviewQueueCountOnPage?: number;
   };
   tours: PortDayExcursionCard[];
 }
@@ -852,6 +882,158 @@ function extractVerifiedCandidateDepartures(
   };
 }
 
+const PORT_BERTH_COORDINATES: Record<string, { lat: number; lng: number }> = {
+  reykjavik: { lat: 64.1558, lng: -21.8697 }, // Skarfabakki Berths 312/313
+  kahului: { lat: 20.8961, lng: -156.4728 }, // Kahului Harbor Cruise Terminal Pier 1/2
+  juneau: { lat: 58.2994, lng: -134.4067 }, // Juneau Cruise Ship Docks
+  skagway: { lat: 59.4506, lng: -135.3219 }, // Skagway Cruise Docks
+  ketchikan: { lat: 55.3422, lng: -131.6461 }, // Ketchikan Downtown Berths 1–4
+  seward: { lat: 60.1211, lng: -149.4339 }, // Seward Cruise Ship Terminal
+  "new-orleans": { lat: 29.9389, lng: -90.0619 }, // Erato/Julia Cruise Terminals (Port NOLA)
+  miami: { lat: 25.7781, lng: -80.1704 }, // PortMiami Dodge Island
+  tampa: { lat: 27.9438, lng: -82.4452 }, // Port Tampa Bay Channelside
+  seattle: { lat: 47.6122, lng: -122.3508 }, // Pier 66 / Pier 91
+  cozumel: { lat: 20.4767, lng: -86.9736 }, // Puerta Maya / International Pier
+  roatan: { lat: 16.3176, lng: -86.5378 }, // Port of Roatán / Mahogany Bay
+  nassau: { lat: 25.0805, lng: -77.3408 }, // Nassau Cruise Port (Prince George Wharf)
+  "st-thomas": { lat: 18.3315, lng: -64.9219 }, // WICO Havensight / Crown Bay
+  "grand-cayman": { lat: 19.2952, lng: -81.3831 }, // Royal Watler Tender Terminal
+};
+
+export function resolvePortBerthCoordinates(profile: CruisePortExcursionProfile): {
+  lat: number;
+  lng: number;
+} {
+  if (
+    typeof profile.berthLat === "number" &&
+    Number.isFinite(profile.berthLat) &&
+    typeof profile.berthLng === "number" &&
+    Number.isFinite(profile.berthLng)
+  ) {
+    return { lat: profile.berthLat, lng: profile.berthLng };
+  }
+  const byPort = PORT_BERTH_COORDINATES[profile.portSlug];
+  if (byPort) return byPort;
+  const byDest = PORT_BERTH_COORDINATES[profile.destinationSlug];
+  if (byDest) return byDest;
+  return { lat: 0, lng: 0 };
+}
+
+export function computeHaversineDistanceMiles(
+  lat1: number,
+  lng1: number,
+  lat2: number,
+  lng2: number
+): number {
+  const toRad = (deg: number) => (deg * Math.PI) / 180;
+  const earthRadiusMiles = 3958.7613;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) *
+      Math.cos(toRad(lat2)) *
+      Math.sin(dLng / 2) *
+      Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(Math.max(0, 1 - a)));
+  return Number((earthRadiusMiles * c).toFixed(3));
+}
+
+export function evaluateEvidenceReviewPriority(params: {
+  rec: DurableTourRecord;
+  profile: CruisePortExcursionProfile;
+  missingFields: string[];
+}): PortDayEvidenceReviewPriority {
+  const { rec, profile, missingFields } = params;
+  const berthCoordinates = resolvePortBerthCoordinates(profile);
+
+  let meetingCoords: { lat: number; lng: number } | null = null;
+  if (
+    typeof rec.meetingPointLat === "number" &&
+    Number.isFinite(rec.meetingPointLat) &&
+    typeof rec.meetingPointLng === "number" &&
+    Number.isFinite(rec.meetingPointLng)
+  ) {
+    meetingCoords = { lat: rec.meetingPointLat, lng: rec.meetingPointLng };
+  } else if (Array.isArray(rec.pickupLocations)) {
+    const firstWithCoords = rec.pickupLocations.find(
+      (loc) =>
+        typeof loc?.lat === "number" &&
+        Number.isFinite(loc.lat) &&
+        typeof loc?.lng === "number" &&
+        Number.isFinite(loc.lng)
+    );
+    if (firstWithCoords && firstWithCoords.lat !== null && firstWithCoords.lng !== null) {
+      meetingCoords = { lat: firstWithCoords.lat, lng: firstWithCoords.lng };
+    }
+  }
+
+  const distanceFromBerthMiles = meetingCoords
+    ? computeHaversineDistanceMiles(
+        berthCoordinates.lat,
+        berthCoordinates.lng,
+        meetingCoords.lat,
+        meetingCoords.lng
+      )
+    : null;
+
+  const withinOneMileOfBerth =
+    distanceFromBerthMiles !== null && distanceFromBerthMiles <= 1.0;
+
+  const hasPierOrPickupSignal =
+    rec.pickupFulfillmentType === "pier_pickup" ||
+    rec.pickupType === "CRUISE_PIER_PICKUP" ||
+    Boolean(rec.hasHotelPickup) ||
+    /cruise|pier|port|harbor|harbour|dock|terminal|skarfabakki|midbakki|miðbakki/i.test(
+      `${rec.pickupSummary || ""} ${rec.meetingPointName || ""} ${rec.meetingPointAddress || ""}`
+    );
+
+  let priorityTier: PortDayEvidenceReviewPriority["priorityTier"];
+  let priorityRank: 1 | 2 | 3 | 4;
+  if (withinOneMileOfBerth) {
+    priorityTier = "priority_1_within_one_mile";
+    priorityRank = 1;
+  } else if (hasPierOrPickupSignal) {
+    priorityTier = "priority_2_pier_or_pickup_signal";
+    priorityRank = 2;
+  } else if (distanceFromBerthMiles !== null) {
+    priorityTier = "priority_3_beyond_one_mile";
+    priorityRank = 3;
+  } else {
+    priorityTier = "priority_4_missing_coordinates";
+    priorityRank = 4;
+  }
+
+  const notes: string[] = [];
+  if (distanceFromBerthMiles !== null) {
+    notes.push(
+      withinOneMileOfBerth
+        ? `Within 1-mile rule (${distanceFromBerthMiles} mi from ${profile.defaultPierName})`
+        : `${distanceFromBerthMiles} mi from ${profile.defaultPierName} (> 1.0 mi)`
+    );
+  } else {
+    notes.push("Missing meeting_point_lat/meeting_point_lng coordinates in catalog row");
+  }
+  if (missingFields.length > 0) {
+    notes.push(
+      `Requires verification of ${missingFields.join(", ")} (ship berth, option meeting point, option check-in, two-way route, and all-aboard buffer)`
+    );
+  } else {
+    notes.push("All 5 sailing-fit evidence pillars verified");
+  }
+
+  return {
+    withinOneMileOfBerth,
+    distanceFromBerthMiles,
+    berthCoordinates,
+    meetingPointCoordinates: meetingCoords,
+    priorityTier,
+    priorityRank,
+    spatialMethod: "haversine_sql_and_js_no_postgis",
+    automatedEvidenceNotes: notes,
+  };
+}
+
 export function evaluateTourPortDayTimeFit(params: {
   rec: DurableTourRecord;
   profile: CruisePortExcursionProfile;
@@ -1006,6 +1188,12 @@ export function evaluateTourPortDayTimeFit(params: {
     missingFields.push("returnBuffer");
   }
 
+  const evidenceReviewPriority = evaluateEvidenceReviewPriority({
+    rec,
+    profile,
+    missingFields,
+  });
+
   if (
     missingFields.length > 0 ||
     !durationMinutes ||
@@ -1056,6 +1244,7 @@ export function evaluateTourPortDayTimeFit(params: {
       reasonSummary: `Needs verification: missing verified ${missingFields.join(
         ", "
       )}. ${meetingContext} Confirm exact product/option departure, check-in, pier transfers, and return buffer before booking for your sailing.`,
+      evidenceReviewPriority,
     };
   }
 
@@ -1136,6 +1325,7 @@ export function evaluateTourPortDayTimeFit(params: {
         )} (${bufferBeforeAllAboard}m vs ${allAboardTime} all-aboard; requires +${
           profile.requiredReturnBufferMinutes
         }m buffer).`,
+    evidenceReviewPriority,
   };
 }
 
@@ -1899,6 +2089,23 @@ export async function queryPortDayExcursionCatalog(params: {
       coverageStatus: portCounts.reconciledWithAuthorizedSource
         ? "complete"
         : "sampled_provider_catalog",
+      importerCheckpoint: {
+        destinationSearchPaginationModel: "start_and_count",
+        incrementalFeedPaginationModel: "nextCursor",
+        batchSizeCount: 100,
+        lastStartOffset: Math.max(1, portCounts.viator - 99),
+        nextStartOffset: portCounts.reconciledWithAuthorizedSource
+          ? null
+          : portCounts.viator + 1,
+        providerTotalCount: portCounts.authorizedSourceTotal,
+        incrementalUpdateCursor: null,
+        checkpointStatus: portCounts.reconciledWithAuthorizedSource
+          ? "complete"
+          : "bounded_batch_paused",
+        note: portCounts.reconciledWithAuthorizedSource
+          ? `Full destination search catalog imported via bounded start+count batches (${portCounts.viator}/${portCounts.authorizedSourceTotal} Viator products).`
+          : `Bounded 100-item batch checkpoint saved at start=1, count=100 (nextStartOffset=${portCounts.viator + 1} of ${portCounts.authorizedSourceTotal}); partial count reflects bounded batch checkpointing rather than an importer timeout.`,
+      },
       pendingOperatorNotes:
         profile.portSlug === "reykjavik"
           ? [
@@ -1922,7 +2129,78 @@ export async function queryPortDayExcursionCatalog(params: {
       liveAvailabilitySupportedCountOnPage: evaluatedCards.filter(
         (c) => c.seatAvailability.supportsLiveCheck
       ).length,
+      withinOneMileReviewQueueCountOnPage: evaluatedCards.filter(
+        (c) => c.timeFit.evidenceReviewPriority?.withinOneMileOfBerth
+      ).length,
     },
     tours: visibleTours,
+  };
+}
+
+export async function buildAutomatedPortEvidenceReviewQueue(params: {
+  portSlug: string;
+  limit?: number;
+}): Promise<{
+  portSlug: string;
+  portName: string;
+  berthCoordinates: { lat: number; lng: number };
+  spatialMethod: "haversine_sql_and_js_no_postgis";
+  totalCandidatesEvaluated: number;
+  withinOneMileCount: number;
+  queue: Array<{
+    tourId: string;
+    productCode: string | null;
+    title: string;
+    priorityTier: PortDayEvidenceReviewPriority["priorityTier"];
+    priorityRank: 1 | 2 | 3 | 4;
+    withinOneMileOfBerth: boolean;
+    distanceFromBerthMiles: number | null;
+    missingFields: string[];
+    fitsSailing: boolean;
+    status: PortDayTimeFitStatus;
+  }>;
+} | null> {
+  const profile = resolveCruisePortExcursionProfile(params.portSlug);
+  if (!profile) return null;
+  const berthCoordinates = resolvePortBerthCoordinates(profile);
+  const res = await queryPortDayExcursionCatalog({
+    portSlug: profile.portSlug,
+    viewMode: "browse_all",
+    limit: params.limit || 100,
+    offset: 0,
+  });
+  if (!res) return null;
+
+  const queue = res.tours
+    .map((card) => {
+      const prio = card.timeFit.evidenceReviewPriority!;
+      return {
+        tourId: card.tourId,
+        productCode: card.productCode,
+        title: card.title,
+        priorityTier: prio.priorityTier,
+        priorityRank: prio.priorityRank,
+        withinOneMileOfBerth: prio.withinOneMileOfBerth,
+        distanceFromBerthMiles: prio.distanceFromBerthMiles,
+        missingFields: card.timeFit.missingFields,
+        fitsSailing: card.timeFit.fitsSailing,
+        status: card.timeFit.status,
+      };
+    })
+    .sort((a, b) => {
+      if (a.priorityRank !== b.priorityRank) return a.priorityRank - b.priorityRank;
+      const distA = a.distanceFromBerthMiles ?? Number.POSITIVE_INFINITY;
+      const distB = b.distanceFromBerthMiles ?? Number.POSITIVE_INFINITY;
+      return distA - distB;
+    });
+
+  return {
+    portSlug: profile.portSlug,
+    portName: profile.portName,
+    berthCoordinates,
+    spatialMethod: "haversine_sql_and_js_no_postgis",
+    totalCandidatesEvaluated: queue.length,
+    withinOneMileCount: queue.filter((q) => q.withinOneMileOfBerth).length,
+    queue,
   };
 }

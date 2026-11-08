@@ -15,9 +15,69 @@ import {
   WtaAffiliateProductionGateError,
   WtaReferralKeyCannotWriteOutcomeError,
   type FareHarborExternalBookingRecord,
+  type CommercialOutcomeRecord,
 } from "@/lib/dcc/commerce";
+import { appendCorridorEventDurably } from "@/lib/dcc/telemetry/corridorEvents";
 
 export const dynamic = "force-dynamic";
+
+async function recordWnoProviderConfirmedRiverboatEvent(args: {
+  companyShortname: string;
+  bookingOutcome: CommercialOutcomeRecord & { duplicateDelivery?: boolean };
+  sessionId?: string | null;
+  landingPath?: string | null;
+}): Promise<void> {
+  if (args.bookingOutcome.duplicateDelivery) return;
+  if (
+    args.bookingOutcome.eventType !== "BOOKING_CONFIRMED" &&
+    args.bookingOutcome.eventType !== "BOOKING_FULFILLED"
+  ) {
+    return;
+  }
+  const itemId = String(
+    args.bookingOutcome.bookedOption || args.bookingOutcome.bookedProductCode || "",
+  ).trim();
+  const isNatchez = itemId === "561220";
+  const isCity = itemId === "694782";
+  if (args.companyShortname !== "neworleanssteamboatcompany" && !isNatchez && !isCity) {
+    return;
+  }
+  const selectedBoat = isNatchez
+    ? "natchez"
+    : isCity
+      ? "city_of_new_orleans"
+      : undefined;
+  const productSlug = isNatchez
+    ? "daytime-jazz-cruise"
+    : isCity
+      ? "city-of-new-orleans-riverboat-cruise"
+      : undefined;
+  const amountUsd = args.bookingOutcome.bookingValue?.amount ?? 0;
+  await appendCorridorEventDurably({
+    corridor_id: "wno-commerce",
+    event_name: "booking_completed",
+    session_id:
+      args.sessionId ||
+      args.bookingOutcome.handoffId ||
+      `fh_${args.bookingOutcome.providerBookingRef}`,
+    source_page: "/compare/natchez-vs-city-of-new-orleans-riverboat",
+    landing_path: args.landingPath || undefined,
+    clicked_product_slug: productSlug,
+    route_target: "neworleanssteamboatcompany",
+    metadata: {
+      surface: "wno-commerce",
+      original_event_name: "provider_confirmed_booking",
+      funnel_stage: "provider_confirmed_booking",
+      comparison_slug: "natchez-vs-city-of-new-orleans-riverboat",
+      selected_boat: selectedBoat,
+      operator_id: "neworleanssteamboatcompany",
+      item_id: itemId,
+      external_order_id: args.bookingOutcome.providerBookingRef,
+      outcome_id: args.bookingOutcome.outcomeId,
+      booking_value_usd: amountUsd,
+    },
+  }).catch(() => undefined);
+}
 
 function detectWtaReferralCallerIfPresent(request: Request): string | null {
   const hasKeyHeader = Boolean(
@@ -176,6 +236,13 @@ export async function POST(request: Request) {
             )
           : null;
 
+        await recordWnoProviderConfirmedRiverboatEvent({
+          companyShortname,
+          bookingOutcome: lookupConfirmation.bookingOutcome,
+          sessionId: typeof body.sessionId === "string" ? body.sessionId : null,
+          landingPath: typeof body.landingPath === "string" ? body.landingPath : null,
+        });
+
         return buildMachineJsonResponse(
           {
             ok: true,
@@ -246,6 +313,13 @@ export async function POST(request: Request) {
     const lifecycleProof = bookingOutcome.handoffId
       ? await inspectWtaReferralLifecycleSeparation(bookingOutcome.handoffId)
       : null;
+
+    await recordWnoProviderConfirmedRiverboatEvent({
+      companyShortname,
+      bookingOutcome,
+      sessionId: typeof body.sessionId === "string" ? body.sessionId : null,
+      landingPath: typeof body.landingPath === "string" ? body.landingPath : null,
+    });
 
     return buildMachineJsonResponse(
       {

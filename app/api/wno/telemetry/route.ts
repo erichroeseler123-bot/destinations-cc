@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { appendCorridorEventDurably } from "@/lib/dcc/telemetry/corridorEvents";
 import { sanitizeDccTravelerContext } from "@/lib/dcc/travelerContext";
+import { buildRiverboatComparisonFunnelReport } from "@/lib/wno/riverboatComparisonFunnel";
 
 const MAX_TEXT = 160;
 const CANONICAL_EVENTS = new Set([
   "landing_viewed",
   "product_opened",
   "booking_opened",
+  "booking_completed",
   "lead_captured",
 ]);
 
@@ -68,6 +70,9 @@ function cleanRecommendationOutput(value: unknown) {
 
 function mapEventName(eventName: string) {
   if (CANONICAL_EVENTS.has(eventName)) return eventName;
+  if (eventName === "comparison_viewed") return "page_viewed";
+  if (eventName === "comparison_boat_selected" || eventName === "boat_selected") return "cta_clicked_primary";
+  if (eventName === "provider_confirmed_booking") return "booking_completed";
   if (eventName.includes("booking") || eventName.includes("fareharbor")) return "booking_opened";
   if (eventName.includes("recommendation") && eventName.includes("click")) return "recommendation_clicked";
   if (eventName.includes("bundle") && eventName.includes("click")) return "recommendation_clicked";
@@ -79,13 +84,38 @@ function mapEventName(eventName: string) {
 
 function withCors(response: NextResponse) {
   response.headers.set("Access-Control-Allow-Origin", "*");
-  response.headers.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+  response.headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
   return response;
 }
 
 export async function OPTIONS() {
   return withCors(new NextResponse(null, { status: 204 }));
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const windowDaysRaw = Number(request.nextUrl.searchParams.get("windowDays") || 28);
+    const windowDays = Number.isFinite(windowDaysRaw) && windowDaysRaw > 0 ? Math.min(windowDaysRaw, 90) : 28;
+    const report = await buildRiverboatComparisonFunnelReport({ windowDays });
+    return withCors(
+      NextResponse.json({
+        ok: true,
+        funnel: report,
+      }),
+    );
+  } catch (err) {
+    return withCors(
+      NextResponse.json(
+        {
+          ok: false,
+          error: "funnel_report_failed",
+          message: err instanceof Error ? err.message : String(err),
+        },
+        { status: 500 },
+      ),
+    );
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -121,6 +151,7 @@ export async function POST(request: NextRequest) {
         | "landing_viewed"
         | "product_opened"
         | "booking_opened"
+        | "booking_completed"
         | "lead_captured"
         | "recommendation_clicked"
         | "recommendation_rendered"
@@ -128,7 +159,7 @@ export async function POST(request: NextRequest) {
         | "page_viewed",
       session_id: sessionId,
       source_page: clean(body.sourcePage),
-      landing_path: clean(body.landingPath),
+      landing_path: clean(body.landingPath || body.entryPath),
       target_path: clean(body.targetPath),
       clicked_product_slug: clean(body.productSlug),
       route_target: clean(body.operatorId),
@@ -136,6 +167,9 @@ export async function POST(request: NextRequest) {
       metadata: {
         surface: "wno-commerce",
         original_event_name: originalEventName,
+        funnel_stage: clean(body.funnelStage || body.funnel_stage, 64),
+        comparison_slug: clean(body.comparisonSlug || body.comparison_slug, 120),
+        selected_boat: clean(body.selectedBoat || body.selected_boat, 64),
         operator_id: clean(body.operatorId),
         variant_label: clean(body.variantLabel),
         item_id: clean(body.itemId),
