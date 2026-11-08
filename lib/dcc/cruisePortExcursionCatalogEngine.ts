@@ -2,6 +2,7 @@ import { getViatorClient } from "@/lib/viator/client";
 import { appendViatorAttribution } from "@/lib/viator/links";
 import {
   EARTHOS_DESTINATION_NODES,
+  getActiveDestinationProviderCounts,
   getDurableTourByIdOrAlias,
   queryDurableTourCatalog,
   resolveEarthOSDestinationNode,
@@ -9,6 +10,10 @@ import {
   type DurableTourRecord,
   type TourProductOptionRecord,
 } from "@/lib/dcc/catalog/durableCatalogStore";
+import {
+  getSharedHandoffLedgerSummary,
+  type SharedHandoffLedgerSummary,
+} from "@/lib/dcc/commerce";
 import { HREYFILL_REYKJAVIK_SHORE_EXCURSION_QUALIFICATION } from "@/lib/dcc/corridors/internationalCorridorQualifications";
 import { JUNEAU_PRODUCT_SUPPLIER_RECONCILIATION } from "@/lib/dcc/machine/v03/operatorDirectCheckout";
 import { fetchAvailabilitiesForItem } from "@/lib/dcc/liveSlots/fareharbor";
@@ -135,6 +140,8 @@ export interface PortDayExcursionHandoffLinks {
   productCode: string | null;
   optionCode: string | null;
   handoffTrackingTag: string;
+  originatingSite?: string;
+  approvedAffiliateAccount?: string;
   bookingConfirmationStatus: "tracked_handoff_only" | "provider_confirmed_booking";
   referralCreditStatus: "active" | "pending_operator_match_confirmation";
 }
@@ -195,8 +202,22 @@ export interface PortDayExcursionCatalogResponse {
     authorizedSourceTotal: number;
     coveragePercent?: number;
     coverageStatus?: "complete" | "sampled_provider_catalog";
+    source?: "postgres_live_sql" | "snapshot_fallback" | "static_fallback";
+    nextStartOffset?: number | null;
+    checkpointUpdatedAt?: string | null;
+    reconciliationBreakdown?: {
+      activeSqlTotal: number;
+      activeViatorInSql: number;
+      activeOperatorDirectInSql: number;
+      legacyStaticSummaryCount?: number;
+      legacyStaticSummaryExplanation?: string;
+      previousCronCheckpointCount?: number;
+      previousCronCheckpointExplanation?: string;
+      currentActiveInventoryExplanation: string;
+    };
     pendingOperatorNotes?: string[];
   };
+  sharedHandoffLedgerSummary?: SharedHandoffLedgerSummary;
   summary: {
     totalEvaluatedOnPage: number;
     fitsSailingCountOnPage: number;
@@ -572,14 +593,14 @@ export const AUTHORITATIVE_PORT_PROVIDER_COUNTS: Record<
     reconciledWithAuthorizedSource: true,
   },
   "new-orleans": {
-    viator: 100,
-    operator_direct: 11,
+    viator: 448,
+    operator_direct: 1,
     bokun_pending: 0,
-    authorizedSourceTotal: 728,
+    authorizedSourceTotal: 717,
     reconciledWithAuthorizedSource: false,
   },
   miami: {
-    viator: 100,
+    viator: 90,
     operator_direct: 0,
     bokun_pending: 0,
     authorizedSourceTotal: 1176,
@@ -593,21 +614,21 @@ export const AUTHORITATIVE_PORT_PROVIDER_COUNTS: Record<
     reconciledWithAuthorizedSource: true,
   },
   seattle: {
-    viator: 100,
+    viator: 504,
     operator_direct: 0,
     bokun_pending: 0,
     authorizedSourceTotal: 504,
-    reconciledWithAuthorizedSource: false,
+    reconciledWithAuthorizedSource: true,
   },
   cozumel: {
-    viator: 100,
+    viator: 632,
     operator_direct: 0,
     bokun_pending: 0,
     authorizedSourceTotal: 632,
-    reconciledWithAuthorizedSource: false,
+    reconciledWithAuthorizedSource: true,
   },
   roatan: {
-    viator: 100,
+    viator: 487,
     operator_direct: 0,
     bokun_pending: 0,
     authorizedSourceTotal: 616,
@@ -621,11 +642,11 @@ export const AUTHORITATIVE_PORT_PROVIDER_COUNTS: Record<
     reconciledWithAuthorizedSource: true,
   },
   "st-thomas": {
-    viator: 100,
+    viator: 355,
     operator_direct: 0,
     bokun_pending: 0,
     authorizedSourceTotal: 355,
-    reconciledWithAuthorizedSource: false,
+    reconciledWithAuthorizedSource: true,
   },
   "grand-cayman": {
     viator: 230,
@@ -1123,10 +1144,30 @@ export function buildExactExcursionHandoffLinks(params: {
   sailingDate: string;
   shipArrivalTime: string;
   shipAllAboardTime: string;
+  originatingSite?: string | null;
+  surface?: string | null;
 }): PortDayExcursionHandoffLinks {
   const { rec, profile, optionCode, sailingDate, shipArrivalTime, shipAllAboardTime } = params;
   const code = rec.providerProductCode || rec.tourId;
   const isJuneau466119P3 = code.toUpperCase() === "466119P3";
+
+  const rawOrigin = String(params.originatingSite || "").toLowerCase();
+  const rawSurface = String(params.surface || "").toLowerCase();
+  const isCruisePromenade =
+    rawOrigin.includes("cruisepromenade") ||
+    rawSurface.includes("cruisepromenade") ||
+    rawSurface.startsWith("cp_");
+  const resolvedOriginatingSite = isCruisePromenade
+    ? "cruisepromenade.com"
+    : "destinationcommandcenter.com";
+  const resolvedSurface =
+    params.surface?.trim() ||
+    (isCruisePromenade ? "cruisepromenade_port_day" : "dcc_port_day_catalog");
+  const tagPrefix = isCruisePromenade ? "cp_port_day" : "dcc_port_day";
+
+  const handoffTag = `${tagPrefix}_${profile.portSlug}_${code}${
+    optionCode ? `_${optionCode}` : ""
+  }`;
 
   const rawUrl =
     rec.bookingUrl ||
@@ -1136,21 +1177,23 @@ export function buildExactExcursionHandoffLinks(params: {
   const attributedUrl =
     rec.primaryProvider === "viator"
       ? appendViatorAttribution(rawUrl, {
-          campaign: `dcc_port_day_${profile.portSlug}_${code}`,
+          campaign: handoffTag,
+          pid: "P00306962",
+          mcid: "42383",
         })
       : rawUrl;
 
-  const handoffTag = `dcc_port_day_${profile.portSlug}_${code}${
-    optionCode ? `_${optionCode}` : ""
-  }`;
-
   const dccTrackedHref = `/go/out?u=${encodeURIComponent(
     attributedUrl
-  )}&surface=dcc_port_day_catalog&port=${encodeURIComponent(
+  )}&originatingSite=${encodeURIComponent(
+    resolvedOriginatingSite
+  )}&surface=${encodeURIComponent(resolvedSurface)}&port=${encodeURIComponent(
     profile.portSlug
   )}&product=${encodeURIComponent(code)}${
     optionCode ? `&option=${encodeURIComponent(optionCode)}` : ""
-  }&trackingTag=${encodeURIComponent(handoffTag)}`;
+  }&date=${encodeURIComponent(sailingDate)}&trackingTag=${encodeURIComponent(
+    handoffTag
+  )}`;
 
   const cruisePromenadeTrackedHref = `https://cruisepromenade.com/ports/${
     profile.portSlug
@@ -1166,6 +1209,9 @@ export function buildExactExcursionHandoffLinks(params: {
     productCode: rec.providerProductCode || null,
     optionCode,
     handoffTrackingTag: handoffTag,
+    originatingSite: resolvedOriginatingSite,
+    approvedAffiliateAccount:
+      rec.primaryProvider === "operator_direct" ? "operator_direct" : "P00306962",
     bookingConfirmationStatus: "tracked_handoff_only",
     referralCreditStatus: isJuneau466119P3
       ? "pending_operator_match_confirmation"
@@ -1219,6 +1265,8 @@ export async function verifyLiveExcursionAvailability(params: {
   departureTime?: string | null;
   timeoutMs?: number;
   simulateTimeout?: boolean;
+  originatingSite?: string | null;
+  surface?: string | null;
 }): Promise<PortDaySeatAvailabilityEvaluation> {
   const profile =
     resolveCruisePortExcursionProfile(params.portSlug) ||
@@ -1276,6 +1324,8 @@ export async function verifyLiveExcursionAvailability(params: {
     sailingDate: checkedDate || profile.defaultSailingDate,
     shipArrivalTime: profile.defaultShipArrivalTime,
     shipAllAboardTime: profile.defaultShipAllAboardTime,
+    originatingSite: params.originatingSite,
+    surface: params.surface,
   });
 
   const buildCheckAvailabilityFallback = (
@@ -1563,6 +1613,8 @@ export async function queryPortDayExcursionCatalog(params: {
   offset?: number;
   sortBy?: "recommended" | "rating_desc" | "price_asc" | "duration_asc";
   search?: string;
+  originatingSite?: string | null;
+  surface?: string | null;
 }): Promise<PortDayExcursionCatalogResponse | null> {
   const profile = resolveCruisePortExcursionProfile(params.portSlug);
   if (!profile) return null;
@@ -1578,15 +1630,22 @@ export async function queryPortDayExcursionCatalog(params: {
   const offset = Math.max(0, params.offset || 0);
   const sortBy: DurableCatalogSortBy = params.sortBy || "recommended";
 
-  const sqlRes = await queryDurableTourCatalog({
-    destinationSlug: profile.destinationSlug,
-    category: category === "all" ? undefined : category,
-    searchQuery: params.search,
-    verifiedTimingOnly: viewMode === "fits_sailing" ? true : undefined,
-    sortBy,
-    limit,
-    offset,
-  });
+  const [sqlRes, liveProviderCounts, sharedHandoffLedgerSummary] = await Promise.all([
+    queryDurableTourCatalog({
+      destinationSlug: profile.destinationSlug,
+      category: category === "all" ? undefined : category,
+      searchQuery: params.search,
+      verifiedTimingOnly: viewMode === "fits_sailing" ? true : undefined,
+      sortBy,
+      limit,
+      offset,
+    }),
+    getActiveDestinationProviderCounts(profile.destinationSlug),
+    getSharedHandoffLedgerSummary({
+      originatingSite: params.originatingSite || null,
+      portSlug: profile.portSlug,
+    }),
+  ]);
 
   const evaluatedCards: PortDayExcursionCard[] = sqlRes.records.map((rec) => {
     const timeFit = evaluateTourPortDayTimeFit({
@@ -1605,6 +1664,8 @@ export async function queryPortDayExcursionCatalog(params: {
       sailingDate,
       shipArrivalTime,
       shipAllAboardTime,
+      originatingSite: params.originatingSite,
+      surface: params.surface,
     });
 
     const { categories, primaryCategory } = deriveTourCategories(rec);
@@ -1635,7 +1696,9 @@ export async function queryPortDayExcursionCatalog(params: {
         rec.summary ||
         `${rec.title} — shore excursion in ${profile.portName} evaluated against ${shipArrivalTime}–${shipAllAboardTime} port window.`,
       provider:
-        rec.primaryProvider === "operator_direct" ? "operator_direct" : "viator",
+        rec.primaryProvider === "operator_direct" || rec.primaryProvider === "fareharbor"
+          ? "operator_direct"
+          : "viator",
       operatorName,
       categories,
       primaryCategory,
@@ -1679,19 +1742,33 @@ export async function queryPortDayExcursionCatalog(params: {
       ? evaluatedCards.filter((c) => c.timeFit.status === "fits")
       : evaluatedCards;
 
-  const portCounts = AUTHORITATIVE_PORT_PROVIDER_COUNTS[profile.portSlug] || {
+  const fallbackCounts = AUTHORITATIVE_PORT_PROVIDER_COUNTS[profile.portSlug] || {
     viator: sqlRes.totalMatched,
     operator_direct: evaluatedCards.filter((c) => c.provider === "operator_direct").length,
     bokun_pending: 0,
     authorizedSourceTotal: sqlRes.totalMatched,
     reconciledWithAuthorizedSource: true,
   };
-  const totalImportedForPort = portCounts.viator + portCounts.operator_direct;
+
+  const activeViatorCount = liveProviderCounts
+    ? liveProviderCounts.viator
+    : fallbackCounts.viator;
+  const activeOperatorDirectCount = liveProviderCounts
+    ? liveProviderCounts.operator_direct
+    : fallbackCounts.operator_direct;
+  const totalImportedForPort = activeViatorCount + activeOperatorDirectCount;
+  const authorizedSourceTotal = liveProviderCounts
+    ? liveProviderCounts.authorizedSourceTotal
+    : fallbackCounts.authorizedSourceTotal;
+  const reconciledWithAuthorizedSource = liveProviderCounts
+    ? liveProviderCounts.reconciledWithAuthorizedSource
+    : fallbackCounts.reconciledWithAuthorizedSource;
+
   const coveragePercent =
-    portCounts.authorizedSourceTotal > 0
+    authorizedSourceTotal > 0
       ? Math.min(
           100,
-          Math.round((totalImportedForPort / portCounts.authorizedSourceTotal) * 1000) / 10
+          Math.round((totalImportedForPort / authorizedSourceTotal) * 1000) / 10
         )
       : 100;
 
@@ -1700,6 +1777,27 @@ export async function queryPortDayExcursionCatalog(params: {
       c.timeFit.status === "needs_verification" ||
       c.timeFit.status === "missing_operator_info"
   ).length;
+
+  const reconciliationBreakdown =
+    profile.portSlug === "new-orleans"
+      ? {
+          activeSqlTotal: totalImportedForPort,
+          activeViatorInSql: activeViatorCount,
+          activeOperatorDirectInSql: activeOperatorDirectCount,
+          legacyStaticSummaryCount: 111,
+          legacyStaticSummaryExplanation:
+            "Legacy static summary (111) counted the Nov 5 initial seed of 100 Viator products (startOffset 1..100) plus 11 Welcome to New Orleans (WNO) FareHarbor/direct entries (of which 1 is active in dcc_tour_catalog: dcc:tour:fh:jeanlafitteswamptour:763318, 3 are quarantined legacy fixtures excluded by QUARANTINED_TOUR_IDS, and 7 are WNO FareHarbor checkout-referral links in app/new-orleans/tours/pageConfig.ts).",
+          previousCronCheckpointCount: 351,
+          previousCronCheckpointExplanation:
+            "At the 2026-11-08T08:00:41Z resumable catalog-refresh cron checkpoint (nextStartOffset: 351), active SQL inventory in dcc_tour_catalog reached 351 matches (350 active Viator products + 1 active FareHarbor product).",
+          currentActiveInventoryExplanation: `Live SQL inventory in dcc_tour_catalog has ${totalImportedForPort} active products (${activeViatorCount} active Viator products + ${activeOperatorDirectCount} active FareHarbor/direct product out of ${authorizedSourceTotal} authorized source products; coverage ${coveragePercent}%).`,
+        }
+      : {
+          activeSqlTotal: totalImportedForPort,
+          activeViatorInSql: activeViatorCount,
+          activeOperatorDirectInSql: activeOperatorDirectCount,
+          currentActiveInventoryExplanation: `Live SQL inventory in dcc_tour_catalog has ${totalImportedForPort} active products (${activeViatorCount} Viator + ${activeOperatorDirectCount} operator_direct out of ${authorizedSourceTotal} authorized source products; coverage ${coveragePercent}%).`,
+        };
 
   return {
     ok: true,
@@ -1727,16 +1825,20 @@ export async function queryPortDayExcursionCatalog(params: {
       storageSource: sqlRes.storageSource,
     },
     providerCounts: {
-      viator: portCounts.viator,
-      operator_direct: portCounts.operator_direct,
-      bokun_pending: portCounts.bokun_pending,
+      viator: activeViatorCount,
+      operator_direct: activeOperatorDirectCount,
+      bokun_pending: fallbackCounts.bokun_pending,
       total: totalImportedForPort,
-      reconciledWithAuthorizedSource: portCounts.reconciledWithAuthorizedSource,
-      authorizedSourceTotal: portCounts.authorizedSourceTotal,
+      reconciledWithAuthorizedSource,
+      authorizedSourceTotal,
       coveragePercent,
-      coverageStatus: portCounts.reconciledWithAuthorizedSource
+      coverageStatus: reconciledWithAuthorizedSource
         ? "complete"
         : "sampled_provider_catalog",
+      source: liveProviderCounts ? liveProviderCounts.source : "static_fallback",
+      nextStartOffset: liveProviderCounts?.nextStartOffset ?? null,
+      checkpointUpdatedAt: liveProviderCounts?.checkpointUpdatedAt ?? null,
+      reconciliationBreakdown,
       pendingOperatorNotes:
         profile.portSlug === "reykjavik"
           ? [
@@ -1748,6 +1850,7 @@ export async function queryPortDayExcursionCatalog(params: {
               ]
             : undefined,
     },
+    sharedHandoffLedgerSummary,
     summary: {
       totalEvaluatedOnPage: evaluatedCards.length,
       fitsSailingCountOnPage: evaluatedCards.filter((c) => c.timeFit.status === "fits")
@@ -1764,3 +1867,4 @@ export async function queryPortDayExcursionCatalog(params: {
     tours: visibleTours,
   };
 }
+

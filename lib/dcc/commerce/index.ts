@@ -31,6 +31,7 @@ import {
   resetOpaqueAttributionLedgerForTests,
   sanitizeOutboundPartnerUrlWithOpaqueClickId,
 } from "./opaqueAttributionLedger";
+import { readDurableLedgerState } from "../storage/durableTransactionalStore";
 
 export * from "./opaqueAttributionLedger";
 export * from "./wtaAffiliateEnrollment";
@@ -349,13 +350,13 @@ const SITE_DEFAULT_ACCOUNTS: Record<
   }
 > = {
   "destinationcommandcenter.com": {
-    viatorPid: process.env.NEXT_PUBLIC_VIATOR_PID || "P00058396",
+    viatorPid: process.env.NEXT_PUBLIC_VIATOR_PID || "P00306962",
     viatorMcid: process.env.NEXT_PUBLIC_VIATOR_MCID || "42383",
     fareharborAsn: "",
     gygPartnerId: process.env.NEXT_PUBLIC_GYG_PARTNER_ID || "F2MMUUH",
   },
   "cruisepromenade.com": {
-    viatorPid: process.env.NEXT_PUBLIC_VIATOR_PID || "P00058396",
+    viatorPid: process.env.NEXT_PUBLIC_VIATOR_PID || "P00306962",
     viatorMcid: process.env.NEXT_PUBLIC_VIATOR_MCID || "42383",
     fareharborAsn: "",
     gygPartnerId: process.env.NEXT_PUBLIC_GYG_PARTNER_ID || "F2MMUUH",
@@ -1357,6 +1358,22 @@ export async function createCommercialHandoff(
         ? `${versionedCandidate.universeId}@${versionedCandidate.universeVersion}`
         : "dcc-evidence-bundle/2026.11.02"),
     originatingSite,
+    originatingPage:
+      typeof input.metadata?.originatingPage === "string"
+        ? input.metadata.originatingPage
+        : typeof input.metadata?.portSlug === "string"
+          ? `/ports/${input.metadata.portSlug}`
+          : undefined,
+    surface:
+      typeof input.metadata?.surface === "string"
+        ? input.metadata.surface
+        : originatingSite === "cruisepromenade.com"
+          ? "cruisepromenade_port_day"
+          : undefined,
+    propertySlug:
+      typeof input.metadata?.portSlug === "string"
+        ? input.metadata.portSlug
+        : undefined,
     provider: input.provider,
     productCode: input.productCode,
     productDestinationUrl: urlBuilt.outboundAffiliateUrl,
@@ -3555,5 +3572,249 @@ export async function revalidateCommercialHandoffBeforeCommitment(
     revalidatedAt: new Date().toISOString(),
   };
 }
+
+export interface SharedHandoffLedgerSummary {
+  generatedAt: string;
+  originatingSiteFilter: string | null;
+  portSlugFilter: string | null;
+  clickIsBooking: false;
+  approvedViatorAccountForSite: {
+    site: string;
+    viatorPid: string;
+    viatorMcid: string;
+  };
+  redirects: {
+    total: number;
+    forOriginatingSite: number;
+    forPortSlug: number;
+    byOriginatingSite: Record<string, number>;
+    byProvider: Record<string, number>;
+  };
+  providerConfirmedBookings: {
+    displayValue: number | "unknown";
+    confirmedCount: number;
+    forOriginatingSiteConfirmedCount: number;
+    unreportedRedirectsCount: number;
+    reportingStatus: "reported" | "unknown";
+    note: string;
+  };
+  earnedCommissions: {
+    displayValue: number | "unknown";
+    confirmedEarnedUsd: number;
+    settledPaidUsd: number;
+    forOriginatingSiteEarnedUsd: number;
+    reportingStatus: "reported" | "unknown";
+    note: string;
+  };
+}
+
+export async function getSharedHandoffLedgerSummary(options?: {
+  originatingSite?: string | null;
+  portSlug?: string | null;
+}): Promise<SharedHandoffLedgerSummary> {
+  const siteFilter = options?.originatingSite
+    ? normalizeOriginatingSite(options.originatingSite)
+    : null;
+  const portFilter = options?.portSlug ? options.portSlug.trim().toLowerCase() : null;
+  const siteDefaults =
+    SITE_DEFAULT_ACCOUNTS[siteFilter || "cruisepromenade.com"] ||
+    SITE_DEFAULT_ACCOUNTS["destinationcommandcenter.com"];
+
+  const seenHandoffIds = new Set<string>();
+  const seenClickIds = new Set<string>();
+  const byOriginatingSite: Record<string, number> = {};
+  const byProvider: Record<string, number> = {};
+  let totalRedirects = 0;
+  let forOriginatingSite = 0;
+  let forPortSlug = 0;
+  let unreportedRedirectsCount = 0;
+
+  const handoffOriginById = new Map<string, string>();
+
+  // 1. Load from Postgres dcc_commercial_handoffs when available
+  const pool = getCommercePool();
+  const hasDb = await ensureCommerceTables();
+  if (pool && hasDb) {
+    try {
+      const res = await pool.query<{
+        handoff_id: string;
+        originating_site: string;
+        provider: string;
+        attribution_param_value: string;
+        metadata_json: Record<string, any> | null;
+      }>(
+        `SELECT handoff_id, originating_site, provider, attribution_param_value, metadata_json FROM dcc_commercial_handoffs ORDER BY created_at DESC LIMIT 2000`,
+      );
+      for (const row of res.rows) {
+        const hid = String(row.handoff_id || "").trim();
+        if (!hid || seenHandoffIds.has(hid)) continue;
+        seenHandoffIds.add(hid);
+        const meta = row.metadata_json || {};
+        if (typeof meta.clickId === "string" && meta.clickId.trim()) {
+          seenClickIds.add(meta.clickId.trim().toLowerCase());
+        }
+        const orig = normalizeOriginatingSite(row.originating_site || "destinationcommandcenter.com");
+        handoffOriginById.set(hid, orig);
+        totalRedirects += 1;
+        byOriginatingSite[orig] = (byOriginatingSite[orig] || 0) + 1;
+        const prov = String(row.provider || "viator").toLowerCase();
+        byProvider[prov] = (byProvider[prov] || 0) + 1;
+        if (!siteFilter || orig === siteFilter) {
+          forOriginatingSite += 1;
+        }
+        const rowPort =
+          typeof meta.portSlug === "string"
+            ? meta.portSlug.toLowerCase()
+            : String(row.attribution_param_value || "").toLowerCase();
+        if (portFilter && rowPort.includes(portFilter)) {
+          forPortSlug += 1;
+        }
+        const outcomeStatus = meta.outcomeState?.bookingOutcome || "unknown";
+        if (outcomeStatus === "unknown" || outcomeStatus === "pending") {
+          unreportedRedirectsCount += 1;
+        }
+      }
+    } catch {
+      // Fallback to memory + durable ledger below
+    }
+  }
+
+  // 2. Merge in-memory handoffs not yet in seenHandoffIds
+  for (const h of memoryHandoffs.values()) {
+    if (seenHandoffIds.has(h.handoffId)) continue;
+    seenHandoffIds.add(h.handoffId);
+    if (h.clickId) seenClickIds.add(h.clickId.toLowerCase());
+    const orig = normalizeOriginatingSite(h.originatingSite);
+    handoffOriginById.set(h.handoffId, orig);
+    totalRedirects += 1;
+    byOriginatingSite[orig] = (byOriginatingSite[orig] || 0) + 1;
+    byProvider[h.provider] = (byProvider[h.provider] || 0) + 1;
+    if (!siteFilter || orig === siteFilter) {
+      forOriginatingSite += 1;
+    }
+    const metaPort =
+      typeof h.metadata?.portSlug === "string"
+        ? h.metadata.portSlug.toLowerCase()
+        : h.attributionParameterValue.toLowerCase();
+    if (portFilter && metaPort.includes(portFilter)) {
+      forPortSlug += 1;
+    }
+    if (h.outcomeState.bookingOutcome === "unknown" || h.outcomeState.bookingOutcome === "pending") {
+      unreportedRedirectsCount += 1;
+    }
+  }
+
+  // 3. Merge DurableLedgerState opaqueClicksById (excluding recommendation-only and test records)
+  try {
+    const ledger = readDurableLedgerState();
+    for (const clk of Object.values(ledger.opaqueClicksById || {})) {
+      if (clk.isTest || clk.trafficClass === "test") continue;
+      if (clk.recordStage === "recommendation" && !clk.followedAt && (clk.clickCount ?? 0) === 0) {
+        continue;
+      }
+      const cid = clk.clickId.toLowerCase();
+      const hid = clk.handoffId ? clk.handoffId.trim() : null;
+      if (seenClickIds.has(cid) || (hid && seenHandoffIds.has(hid))) continue;
+      seenClickIds.add(cid);
+      if (hid) seenHandoffIds.add(hid);
+      const orig = normalizeOriginatingSite(clk.originatingSite || "destinationcommandcenter.com");
+      if (hid) handoffOriginById.set(hid, orig);
+      totalRedirects += 1;
+      byOriginatingSite[orig] = (byOriginatingSite[orig] || 0) + 1;
+      byProvider[clk.provider] = (byProvider[clk.provider] || 0) + 1;
+      if (!siteFilter || orig === siteFilter) {
+        forOriginatingSite += 1;
+      }
+      const clkPort = `${clk.propertySlug || ""} ${clk.originatingPage || ""} ${clk.outboundPartnerUrl || ""}`.toLowerCase();
+      if (portFilter && clkPort.includes(portFilter)) {
+        forPortSlug += 1;
+      }
+      if (!clk.reconciledOutcomes || clk.reconciledOutcomes.length === 0) {
+        unreportedRedirectsCount += 1;
+      }
+    }
+  } catch {
+    // Non-fatal
+  }
+
+  // 4. Summarize authenticated provider-confirmed outcomes & earned commissions separately
+  const outcomes = await listCommercialOutcomes({ limit: 100 });
+  let confirmedCount = 0;
+  let forOriginatingSiteConfirmedCount = 0;
+  let confirmedEarnedUsd = 0;
+  let settledPaidUsd = 0;
+  let forOriginatingSiteEarnedUsd = 0;
+
+  for (const out of outcomes) {
+    const evt = out.eventType.toUpperCase();
+    const isConfirmed =
+      evt.includes("CONFIRM") || evt.includes("FULFILL") || evt.includes("COMMISSION_RECONCILED");
+    if (!isConfirmed) continue;
+    if (
+      !hasAuthenticatedProviderPaymentOrOperationalEvidence({
+        reporterClientId: out.reporterClientId,
+        reporterProvenance: out.reporterProvenance,
+        providerBookingRef: out.providerBookingRef,
+      })
+    ) {
+      continue;
+    }
+    confirmedCount += 1;
+    const est = out.estimatedCommission.amount ?? 0;
+    const paid = out.paidCommission.amount ?? 0;
+    const earned = paid > 0 ? paid : est;
+    confirmedEarnedUsd = Number((confirmedEarnedUsd + earned).toFixed(2));
+    settledPaidUsd = Number((settledPaidUsd + paid).toFixed(2));
+
+    const matchedOrig = out.handoffId ? handoffOriginById.get(out.handoffId) : null;
+    if (!siteFilter || matchedOrig === siteFilter) {
+      forOriginatingSiteConfirmedCount += 1;
+      forOriginatingSiteEarnedUsd = Number((forOriginatingSiteEarnedUsd + earned).toFixed(2));
+    }
+  }
+
+  const effectiveConfirmedCount = siteFilter ? forOriginatingSiteConfirmedCount : confirmedCount;
+  const effectiveEarnedUsd = siteFilter ? forOriginatingSiteEarnedUsd : confirmedEarnedUsd;
+  const effectiveRedirects = siteFilter ? forOriginatingSite : totalRedirects;
+  const hasUnreported = effectiveRedirects > 0 && effectiveConfirmedCount === 0;
+
+  return {
+    generatedAt: new Date().toISOString(),
+    originatingSiteFilter: siteFilter,
+    portSlugFilter: portFilter,
+    clickIsBooking: false,
+    approvedViatorAccountForSite: {
+      site: siteFilter || "cruisepromenade.com",
+      viatorPid: siteDefaults.viatorPid,
+      viatorMcid: siteDefaults.viatorMcid,
+    },
+    redirects: {
+      total: totalRedirects,
+      forOriginatingSite,
+      forPortSlug,
+      byOriginatingSite,
+      byProvider,
+    },
+    providerConfirmedBookings: {
+      displayValue:
+        effectiveConfirmedCount > 0 ? effectiveConfirmedCount : hasUnreported ? "unknown" : 0,
+      confirmedCount,
+      forOriginatingSiteConfirmedCount,
+      unreportedRedirectsCount,
+      reportingStatus: hasUnreported ? "unknown" : "reported",
+      note: "Outbound handoff redirects are never counted as bookings. Provider-confirmed bookings require authenticated Viator /bookings/modified-since or operator webhook confirmation.",
+    },
+    earnedCommissions: {
+      displayValue:
+        effectiveEarnedUsd > 0 ? effectiveEarnedUsd : hasUnreported ? "unknown" : 0,
+      confirmedEarnedUsd,
+      settledPaidUsd,
+      forOriginatingSiteEarnedUsd,
+      reportingStatus: hasUnreported ? "unknown" : "reported",
+      note: "Earned commissions are reported separately from outbound redirects and settled payouts; unreported affiliate outcomes remain unknown until provider reconciliation.",
+    },
+  };
+}
+
 
 

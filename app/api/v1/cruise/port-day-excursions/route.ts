@@ -95,6 +95,9 @@ export async function GET(request: NextRequest) {
         : "recommended";
 
     const search = searchParams.get("search") || searchParams.get("q") || undefined;
+    const originatingSite =
+      searchParams.get("originatingSite") || searchParams.get("site") || undefined;
+    const surface = searchParams.get("surface") || undefined;
 
     const result = await queryPortDayExcursionCatalog({
       portSlug,
@@ -108,6 +111,8 @@ export async function GET(request: NextRequest) {
       offset,
       sortBy,
       search,
+      originatingSite,
+      surface,
     });
 
     if (!result) {
@@ -149,6 +154,8 @@ export async function POST(request: NextRequest) {
         : undefined;
     const simulateTimeout =
       body.simulateTimeout === true || body.simulateTimeout === "true";
+    const originatingSite = body.originatingSite ? String(body.originatingSite) : null;
+    const surface = body.surface ? String(body.surface) : null;
 
     if (!tourId && !productCode) {
       return NextResponse.json(
@@ -170,6 +177,8 @@ export async function POST(request: NextRequest) {
       departureTime,
       timeoutMs,
       simulateTimeout,
+      originatingSite,
+      surface,
     });
 
     return NextResponse.json(

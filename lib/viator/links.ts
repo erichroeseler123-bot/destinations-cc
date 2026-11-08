@@ -11,6 +11,8 @@ type ViatorAttributionOptions = {
   preserveExistingCampaign?: boolean;
   locale?: string | null;
   currency?: string | null;
+  pid?: string | null;
+  mcid?: string | null;
 };
 
 function normalizeUrl(url: string): URL | null {
@@ -34,6 +36,8 @@ export function appendViatorAttribution(
   if (!normalized) return url;
 
   const config = getViatorPublicConfig();
+  const pid = options.pid || config.pid;
+  const mcid = options.mcid || config.mcid;
   const medium = options.medium || config.medium;
   const existingCampaign = normalized.searchParams.get("campaign");
   const campaign =
@@ -41,8 +45,8 @@ export function appendViatorAttribution(
       ? sanitizeViatorCampaignValue(existingCampaign)
       : sanitizeViatorCampaignValue(options.campaign || config.campaign);
 
-  if (config.pid) normalized.searchParams.set("pid", config.pid);
-  if (config.mcid) normalized.searchParams.set("mcid", config.mcid);
+  if (pid) normalized.searchParams.set("pid", pid);
+  if (mcid) normalized.searchParams.set("mcid", mcid);
   normalized.searchParams.set("medium", medium);
   normalized.searchParams.set("campaign", campaign);
   normalized.searchParams.set("utm_source", config.utmSource);

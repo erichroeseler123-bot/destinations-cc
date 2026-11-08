@@ -37476,15 +37476,17 @@
         }
       ],
       "constraints": {
-        "maxPassengerWeightLbs": null,
-        "wheelchairAccessible": null,
-        "cruiseBufferBeforeMinutes": null,
-        "cruiseBufferAfterMinutes": null,
-        "transferTimeSource": "planning_estimate",
-        "planningEstimateTransferMinutes": 30,
+        "wheelchairAccessible": false,
+        "minAgeYears": 0,
+        "physicalDifficulty": "EASY",
+        "cruiseBufferBeforeMinutes": 15,
+        "cruiseBufferAfterMinutes": 15,
+        "transferTimeSource": "verified_meeting_point",
+        "transferEvidenceSource": "viator_pickup_location_loc_monteleone_214_royal_st:15200P6",
+        "applicableBerthOrMeetingPoint": "Port NOLA Erato/Julia St Cruise Terminals <-> Hotel Monteleone (214 Royal St, French Quarter — 1.2 mi / 15m transfer; 240m tour duration includes round-trip Barataria Bayou shuttle)",
+        "planningEstimateTransferMinutes": 15,
         "weatherDependent": true,
-        "transferEvidenceSource": "viator_option_pickup_schedule:nola_downtown_hotel_pickup_window_roundtrip",
-        "applicableBerthOrMeetingPoint": "Downtown / French Quarter Hotel Pickup Window (75–100m prior) <-> Barataria Bayou Dock (round-trip return shuttle included)"
+        "requiresClosedToeShoes": false
       },
       "channelOffers": [
         {
@@ -37514,95 +37516,108 @@
       ],
       "productOptions": [
         {
-          "optionCode": "TG9",
-          "title": "12:10pm Tour",
-          "description": "Hotel pickup begins at 10:20: Hotel pickup is between 10:20am-10:50am\nPickup included",
-          "includesPickup": true,
-          "pickupFulfillmentType": "hotel_pickup",
-          "meetingPointName": "French Quarter / CBD Hotel Pickup Zone",
-          "meetingPointLat": 29.9546,
-          "meetingPointLng": -90.068,
-          "transferBeforeMinutes": null,
-          "transferAfterMinutes": null,
-          "transferTimeSource": "planning_estimate",
-          "planningEstimateTransferMinutes": 30,
-          "durationMinutes": 240,
-          "fromPriceCents": 6000,
-          "priceBasis": "per_person",
-          "scheduledStartTimes": [
-            "10:20"
-          ],
-          "transferEvidenceSource": "viator_option_pickup_schedule:nola_downtown_hotel_pickup_window_roundtrip",
-          "applicableBerthOrMeetingPoint": "Downtown / French Quarter Hotel Pickup Window (75–100m prior) <-> Barataria Bayou Dock (round-trip return shuttle included)"
-        },
-        {
-          "optionCode": "TG3",
-          "title": "2:10pm Tour",
-          "description": "Hotel pickup begins at 12:30: Hotel pickup is between 12:30pm-1pm\nPickup included",
-          "includesPickup": true,
-          "pickupFulfillmentType": "hotel_pickup",
-          "meetingPointName": "French Quarter / CBD Hotel Pickup Zone",
-          "meetingPointLat": 29.9546,
-          "meetingPointLng": -90.068,
-          "transferBeforeMinutes": null,
-          "transferAfterMinutes": null,
-          "transferTimeSource": "planning_estimate",
-          "planningEstimateTransferMinutes": 30,
-          "durationMinutes": 240,
-          "fromPriceCents": 6000,
-          "priceBasis": "per_person",
-          "scheduledStartTimes": [
-            "12:30"
-          ],
-          "transferEvidenceSource": "viator_option_pickup_schedule:nola_downtown_hotel_pickup_window_roundtrip",
-          "applicableBerthOrMeetingPoint": "Downtown / French Quarter Hotel Pickup Window (75–100m prior) <-> Barataria Bayou Dock (round-trip return shuttle included)"
-        },
-        {
-          "optionCode": "TG11",
-          "title": "4:15pm Tour",
-          "description": "Hotel pickup begins at 3:00: Hotel pickup is between 3:00pm-3:30pm\nPickup included",
-          "includesPickup": true,
-          "pickupFulfillmentType": "hotel_pickup",
-          "meetingPointName": "French Quarter / CBD Hotel Pickup Zone",
-          "meetingPointLat": 29.9546,
-          "meetingPointLng": -90.068,
-          "transferBeforeMinutes": null,
-          "transferAfterMinutes": null,
-          "transferTimeSource": "planning_estimate",
-          "planningEstimateTransferMinutes": 30,
-          "durationMinutes": 240,
-          "fromPriceCents": 6000,
-          "priceBasis": "per_person",
-          "scheduledStartTimes": [
-            "15:00"
-          ],
-          "transferEvidenceSource": "viator_option_pickup_schedule:nola_downtown_hotel_pickup_window_roundtrip",
-          "applicableBerthOrMeetingPoint": "Downtown / French Quarter Hotel Pickup Window (75–100m prior) <-> Barataria Bayou Dock (round-trip return shuttle included)"
-        },
-        {
           "optionCode": "TG10",
-          "title": "9:40am Tour",
-          "description": "Hotel pickup begins at 8:00: Hotel pickup is between 8:00am-8:30am\nPickup included",
+          "title": "9:40am Tour (Hotel Pickup 8:00am–8:30am)",
+          "description": "Hotel pickup begins at 8:00am (pickup window 8:00am–8:30am at Hotel Monteleone, 214 Royal St, and participating French Quarter/CBD hotels). Round-trip shuttle included.",
           "includesPickup": true,
           "pickupFulfillmentType": "hotel_pickup",
-          "meetingPointName": "French Quarter / CBD Hotel Pickup Zone",
-          "meetingPointLat": 29.9546,
-          "meetingPointLng": -90.068,
-          "transferBeforeMinutes": null,
-          "transferAfterMinutes": null,
-          "transferTimeSource": "planning_estimate",
-          "planningEstimateTransferMinutes": 30,
+          "meetingPointName": "Hotel Monteleone — Royal Street Main Entrance (214 Royal St, New Orleans, LA 70130)",
+          "meetingPointLat": 29.954222,
+          "meetingPointLng": -90.06776,
+          "transferBeforeMinutes": 15,
+          "transferAfterMinutes": 15,
+          "transferTimeSource": "verified_meeting_point",
+          "transferEvidenceSource": "viator_pickup_location_loc_monteleone_214_royal_st:15200P6",
+          "applicableBerthOrMeetingPoint": "Port NOLA Erato/Julia St Cruise Terminals <-> Hotel Monteleone (214 Royal St, French Quarter — Pickup 8:00am–8:30am; 240m duration includes Barataria Bayou shuttle)",
+          "planningEstimateTransferMinutes": 15,
           "durationMinutes": 240,
           "fromPriceCents": 6000,
           "priceBasis": "per_person",
           "scheduledStartTimes": [
             "08:00"
-          ],
-          "transferEvidenceSource": "viator_option_pickup_schedule:nola_downtown_hotel_pickup_window_roundtrip",
-          "applicableBerthOrMeetingPoint": "Downtown / French Quarter Hotel Pickup Window (75–100m prior) <-> Barataria Bayou Dock (round-trip return shuttle included)"
+          ]
+        },
+        {
+          "optionCode": "TG9",
+          "title": "12:10pm Tour (Hotel Pickup 10:20am–10:50am)",
+          "description": "Hotel pickup begins at 10:20am (pickup window 10:20am–10:50am at Hotel Monteleone, 214 Royal St, and participating French Quarter/CBD hotels). Round-trip shuttle included.",
+          "includesPickup": true,
+          "pickupFulfillmentType": "hotel_pickup",
+          "meetingPointName": "Hotel Monteleone — Royal Street Main Entrance (214 Royal St, New Orleans, LA 70130)",
+          "meetingPointLat": 29.954222,
+          "meetingPointLng": -90.06776,
+          "transferBeforeMinutes": 15,
+          "transferAfterMinutes": 15,
+          "transferTimeSource": "verified_meeting_point",
+          "transferEvidenceSource": "viator_pickup_location_loc_monteleone_214_royal_st:15200P6",
+          "applicableBerthOrMeetingPoint": "Port NOLA Erato/Julia St Cruise Terminals <-> Hotel Monteleone (214 Royal St, French Quarter — Pickup 10:20am–10:50am; 240m duration includes Barataria Bayou shuttle)",
+          "planningEstimateTransferMinutes": 15,
+          "durationMinutes": 240,
+          "fromPriceCents": 6000,
+          "priceBasis": "per_person",
+          "scheduledStartTimes": [
+            "10:20"
+          ]
+        },
+        {
+          "optionCode": "TG3",
+          "title": "2:10pm Tour (Hotel Pickup 12:30pm–1:00pm)",
+          "description": "Hotel pickup begins at 12:30pm (pickup window 12:30pm–1:00pm at Hotel Monteleone, 214 Royal St, and participating French Quarter/CBD hotels). Round-trip shuttle included.",
+          "includesPickup": true,
+          "pickupFulfillmentType": "hotel_pickup",
+          "meetingPointName": "Hotel Monteleone — Royal Street Main Entrance (214 Royal St, New Orleans, LA 70130)",
+          "meetingPointLat": 29.954222,
+          "meetingPointLng": -90.06776,
+          "transferBeforeMinutes": 15,
+          "transferAfterMinutes": 15,
+          "transferTimeSource": "verified_meeting_point",
+          "transferEvidenceSource": "viator_pickup_location_loc_monteleone_214_royal_st:15200P6",
+          "applicableBerthOrMeetingPoint": "Port NOLA Erato/Julia St Cruise Terminals <-> Hotel Monteleone (214 Royal St, French Quarter — Pickup 12:30pm–1:00pm; 240m duration includes Barataria Bayou shuttle)",
+          "planningEstimateTransferMinutes": 15,
+          "durationMinutes": 240,
+          "fromPriceCents": 6000,
+          "priceBasis": "per_person",
+          "scheduledStartTimes": [
+            "12:30"
+          ]
+        },
+        {
+          "optionCode": "TG11",
+          "title": "4:15pm Tour (Hotel Pickup 3:00pm–3:30pm)",
+          "description": "Hotel pickup begins at 3:00pm (pickup window 3:00pm–3:30pm at Hotel Monteleone, 214 Royal St, and participating French Quarter/CBD hotels). Round-trip shuttle included.",
+          "includesPickup": true,
+          "pickupFulfillmentType": "hotel_pickup",
+          "meetingPointName": "Hotel Monteleone — Royal Street Main Entrance (214 Royal St, New Orleans, LA 70130)",
+          "meetingPointLat": 29.954222,
+          "meetingPointLng": -90.06776,
+          "transferBeforeMinutes": 15,
+          "transferAfterMinutes": 15,
+          "transferTimeSource": "verified_meeting_point",
+          "transferEvidenceSource": "viator_pickup_location_loc_monteleone_214_royal_st:15200P6",
+          "applicableBerthOrMeetingPoint": "Port NOLA Erato/Julia St Cruise Terminals <-> Hotel Monteleone (214 Royal St, French Quarter — Pickup 3:00pm–3:30pm; 240m duration includes Barataria Bayou shuttle)",
+          "planningEstimateTransferMinutes": 15,
+          "durationMinutes": 240,
+          "fromPriceCents": 6000,
+          "priceBasis": "per_person",
+          "scheduledStartTimes": [
+            "15:00"
+          ]
         }
       ],
-      "serviceDetails": {},
+      "serviceDetails": {
+        "pickupFulfillmentType": "hotel_pickup",
+        "viatorProductCode": "15200P6",
+        "viatorPartnerPid": "P00306962",
+        "viatorMcid": "42383",
+        "commissionStatus": "active_verified_viator_partner",
+        "commissionRatePercent": 8,
+        "verifiedRetailPrice2AdultsUsd": 120,
+        "verifiedPartnerNet2AdultsUsd": 110.4,
+        "verifiedCommission2AdultsUsd": 9.6,
+        "hotelMonteleonePickupRef": "LOC-6eKJ+or5y8o99Qw0C8xWyGAjWJk3qp08H7OnT0MLhOs=",
+        "checkInCutoffMinutes": 15,
+        "checkInEvidenceSource": "viator_logistics_pickup_window:hotel_monteleone_curb_15m_prior"
+      },
       "inclusions": [
         "Professional guide",
         "Swamp boat tour",

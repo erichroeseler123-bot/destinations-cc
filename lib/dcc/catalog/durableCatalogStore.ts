@@ -1324,14 +1324,14 @@ export const PILOT_VERIFIED_TOUR_RECORDS: DurableTourRecord[] = [
       wheelchairAccessible: false,
       minAgeYears: 0,
       physicalDifficulty: "EASY",
-      cruiseBufferBeforeMinutes: 75,
-      cruiseBufferAfterMinutes: 45,
+      cruiseBufferBeforeMinutes: 15,
+      cruiseBufferAfterMinutes: 15,
       transferTimeSource: "verified_meeting_point",
       transferEvidenceSource:
         "viator_pickup_location_loc_monteleone_214_royal_st:15200P6",
       applicableBerthOrMeetingPoint:
-        "Hotel Monteleone (214 Royal St, French Quarter — Viator Pickup Ref LOC-6eKJ+or5y8o99Qw0C8xWyGAjWJk3qp08H7OnT0MLhOs=) <-> Barataria Bayou Covered Boat Dock (round-trip shuttle included)",
-      planningEstimateTransferMinutes: 30,
+        "Port NOLA Erato/Julia St Cruise Terminals <-> Hotel Monteleone (214 Royal St, French Quarter — 1.2 mi / 15m transfer; 240m tour duration includes round-trip Barataria Bayou shuttle)",
+      planningEstimateTransferMinutes: 15,
       weatherDependent: true,
       requiresClosedToeShoes: false,
     },
@@ -1409,14 +1409,14 @@ export const PILOT_VERIFIED_TOUR_RECORDS: DurableTourRecord[] = [
           "Hotel Monteleone — Royal Street Main Entrance (214 Royal St, New Orleans, LA 70130)",
         meetingPointLat: 29.954222,
         meetingPointLng: -90.06776,
-        transferBeforeMinutes: 75,
-        transferAfterMinutes: 45,
+        transferBeforeMinutes: 15,
+        transferAfterMinutes: 15,
         transferTimeSource: "verified_meeting_point",
         transferEvidenceSource:
           "viator_pickup_location_loc_monteleone_214_royal_st:15200P6",
         applicableBerthOrMeetingPoint:
-          "Hotel Monteleone (214 Royal St, French Quarter — Pickup 8:00am–8:30am) <-> Barataria Bayou Dock (round-trip return shuttle included)",
-        planningEstimateTransferMinutes: 30,
+          "Port NOLA Erato/Julia St Cruise Terminals <-> Hotel Monteleone (214 Royal St, French Quarter — Pickup 8:00am–8:30am; 240m duration includes Barataria Bayou shuttle)",
+        planningEstimateTransferMinutes: 15,
         durationMinutes: 240,
         fromPriceCents: 6000,
         priceBasis: "per_person",
@@ -1433,14 +1433,14 @@ export const PILOT_VERIFIED_TOUR_RECORDS: DurableTourRecord[] = [
           "Hotel Monteleone — Royal Street Main Entrance (214 Royal St, New Orleans, LA 70130)",
         meetingPointLat: 29.954222,
         meetingPointLng: -90.06776,
-        transferBeforeMinutes: 75,
-        transferAfterMinutes: 45,
+        transferBeforeMinutes: 15,
+        transferAfterMinutes: 15,
         transferTimeSource: "verified_meeting_point",
         transferEvidenceSource:
           "viator_pickup_location_loc_monteleone_214_royal_st:15200P6",
         applicableBerthOrMeetingPoint:
-          "Hotel Monteleone (214 Royal St, French Quarter — Pickup 10:20am–10:50am) <-> Barataria Bayou Dock (round-trip return shuttle included)",
-        planningEstimateTransferMinutes: 30,
+          "Port NOLA Erato/Julia St Cruise Terminals <-> Hotel Monteleone (214 Royal St, French Quarter — Pickup 10:20am–10:50am; 240m duration includes Barataria Bayou shuttle)",
+        planningEstimateTransferMinutes: 15,
         durationMinutes: 240,
         fromPriceCents: 6000,
         priceBasis: "per_person",
@@ -1457,14 +1457,14 @@ export const PILOT_VERIFIED_TOUR_RECORDS: DurableTourRecord[] = [
           "Hotel Monteleone — Royal Street Main Entrance (214 Royal St, New Orleans, LA 70130)",
         meetingPointLat: 29.954222,
         meetingPointLng: -90.06776,
-        transferBeforeMinutes: 75,
-        transferAfterMinutes: 45,
+        transferBeforeMinutes: 15,
+        transferAfterMinutes: 15,
         transferTimeSource: "verified_meeting_point",
         transferEvidenceSource:
           "viator_pickup_location_loc_monteleone_214_royal_st:15200P6",
         applicableBerthOrMeetingPoint:
-          "Hotel Monteleone (214 Royal St, French Quarter — Pickup 12:30pm–1:00pm) <-> Barataria Bayou Dock (round-trip return shuttle included)",
-        planningEstimateTransferMinutes: 30,
+          "Port NOLA Erato/Julia St Cruise Terminals <-> Hotel Monteleone (214 Royal St, French Quarter — Pickup 12:30pm–1:00pm; 240m duration includes Barataria Bayou shuttle)",
+        planningEstimateTransferMinutes: 15,
         durationMinutes: 240,
         fromPriceCents: 6000,
         priceBasis: "per_person",
@@ -1481,14 +1481,14 @@ export const PILOT_VERIFIED_TOUR_RECORDS: DurableTourRecord[] = [
           "Hotel Monteleone — Royal Street Main Entrance (214 Royal St, New Orleans, LA 70130)",
         meetingPointLat: 29.954222,
         meetingPointLng: -90.06776,
-        transferBeforeMinutes: 75,
-        transferAfterMinutes: 45,
+        transferBeforeMinutes: 15,
+        transferAfterMinutes: 15,
         transferTimeSource: "verified_meeting_point",
         transferEvidenceSource:
           "viator_pickup_location_loc_monteleone_214_royal_st:15200P6",
         applicableBerthOrMeetingPoint:
-          "Hotel Monteleone (214 Royal St, French Quarter — Pickup 3:00pm–3:30pm) <-> Barataria Bayou Dock (round-trip return shuttle included)",
-        planningEstimateTransferMinutes: 30,
+          "Port NOLA Erato/Julia St Cruise Terminals <-> Hotel Monteleone (214 Royal St, French Quarter — Pickup 3:00pm–3:30pm; 240m duration includes Barataria Bayou shuttle)",
+        planningEstimateTransferMinutes: 15,
         durationMinutes: 240,
         fromPriceCents: 6000,
         priceBasis: "per_person",
@@ -4254,6 +4254,160 @@ export async function getDurableTourByIdOrAlias(idOrAlias: string): Promise<Dura
           r.compatibilityAliases.some((a) => a.toLowerCase() === norm)),
     ) || null
   );
+}
+
+export interface ActiveDestinationProviderCounts {
+  destinationSlug: string;
+  viator: number;
+  fareharbor: number;
+  operator_direct: number;
+  total: number;
+  viatorProviderTotalCount: number;
+  authorizedSourceTotal: number;
+  reconciledWithAuthorizedSource: boolean;
+  nextStartOffset: number | null;
+  checkpointUpdatedAt: string | null;
+  source: "postgres_live_sql" | "snapshot_fallback";
+}
+
+const activeDestinationCountsCache = new Map<
+  string,
+  { expiresAtMs: number; data: ActiveDestinationProviderCounts }
+>();
+
+export async function getActiveDestinationProviderCounts(
+  destinationSlug: string,
+): Promise<ActiveDestinationProviderCounts | null> {
+  const slug = destinationSlug.trim().toLowerCase();
+  if (!slug) return null;
+
+  const nowMs = Date.now();
+  const cached = activeDestinationCountsCache.get(slug);
+  if (cached && cached.expiresAtMs > nowMs) {
+    return cached.data;
+  }
+
+  if (shouldUsePostgres()) {
+    try {
+      const sql = getSqlClient();
+      const quarantinedArray = Array.from(QUARANTINED_TOUR_IDS);
+      const [providerRows, ckptRows, syncRows] = await Promise.all([
+        sql.query(
+          `
+            SELECT primary_provider, COUNT(*)::int AS cnt
+            FROM dcc_tour_catalog
+            WHERE active = true
+              AND quarantined = false
+              AND NOT (tour_id = ANY($1::text[]))
+              AND LOWER(destination_slug) = $2
+            GROUP BY primary_provider
+          `,
+          [quarantinedArray, slug],
+        ) as unknown as Promise<Array<{ primary_provider: string; cnt: number }>>,
+        sql.query(
+          `
+            SELECT provider_total_count, next_start_offset, updated_at
+            FROM dcc_catalog_refresh_checkpoints
+            WHERE LOWER(destination_slug) = $1
+              AND provider = 'viator'
+            ORDER BY updated_at DESC
+            LIMIT 1
+          `,
+          [slug],
+        ) as unknown as Promise<
+          Array<{
+            provider_total_count: number | null;
+            next_start_offset: number | null;
+            updated_at: Date | string | null;
+          }>
+        >,
+        sql.query(
+          `
+            SELECT metadata_json, completed_at
+            FROM dcc_catalog_sync_runs
+            WHERE LOWER(destination_slug) = $1
+              AND provider = 'viator'
+              AND status = 'completed'
+            ORDER BY started_at DESC
+            LIMIT 1
+          `,
+          [slug],
+        ) as unknown as Promise<
+          Array<{
+            metadata_json: Record<string, any> | null;
+            completed_at: Date | string | null;
+          }>
+        >,
+      ]);
+
+      let viator = 0;
+      let fareharbor = 0;
+      let operatorDirectOther = 0;
+      for (const row of providerRows) {
+        const p = String(row.primary_provider || "").toLowerCase();
+        const c = Number(row.cnt || 0);
+        if (p === "viator") {
+          viator += c;
+        } else if (p === "fareharbor") {
+          fareharbor += c;
+        } else {
+          operatorDirectOther += c;
+        }
+      }
+      const operator_direct = fareharbor + operatorDirectOther;
+      const total = viator + operator_direct;
+
+      if (total > 0) {
+        const ckpt = ckptRows[0];
+        const syncMeta = syncRows[0]?.metadata_json || {};
+        const rawProviderTotal =
+          (typeof ckpt?.provider_total_count === "number" && ckpt.provider_total_count > 0
+            ? ckpt.provider_total_count
+            : null) ??
+          (typeof syncMeta.providerTotalCount === "number" && syncMeta.providerTotalCount > 0
+            ? syncMeta.providerTotalCount
+            : null) ??
+          viator;
+        const viatorProviderTotalCount = Math.max(viator, rawProviderTotal);
+        const authorizedSourceTotal = viatorProviderTotalCount + operator_direct;
+        const reconciledWithAuthorizedSource = viator >= viatorProviderTotalCount;
+        const nextStartOffset =
+          typeof ckpt?.next_start_offset === "number"
+            ? ckpt.next_start_offset
+            : typeof syncMeta.nextStartOffset === "number"
+              ? syncMeta.nextStartOffset
+              : null;
+        const checkpointUpdatedAt = ckpt?.updated_at
+          ? new Date(ckpt.updated_at).toISOString()
+          : syncRows[0]?.completed_at
+            ? new Date(syncRows[0].completed_at).toISOString()
+            : null;
+
+        const result: ActiveDestinationProviderCounts = {
+          destinationSlug: slug,
+          viator,
+          fareharbor,
+          operator_direct,
+          total,
+          viatorProviderTotalCount,
+          authorizedSourceTotal,
+          reconciledWithAuthorizedSource,
+          nextStartOffset,
+          checkpointUpdatedAt,
+          source: "postgres_live_sql",
+        };
+        activeDestinationCountsCache.set(slug, {
+          expiresAtMs: nowMs + 30_000,
+          data: result,
+        });
+        return result;
+      }
+    } catch (err) {
+      console.warn("[durableCatalogStore] getActiveDestinationProviderCounts fallback:", err);
+    }
+  }
+
+  return null;
 }
 
 export type CatalogRefreshCheckpointRecord = {

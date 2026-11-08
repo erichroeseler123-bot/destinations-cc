@@ -235,14 +235,14 @@ export default function PortDayExcursionCatalogSection({
         {data?.providerCounts ? (
           <div
             data-testid="provider-reconciliation-box"
-            className="min-w-[270px] rounded-2xl border border-white/10 bg-slate-900/90 p-4 text-xs"
+            className="min-w-[290px] max-w-[440px] rounded-2xl border border-white/10 bg-slate-900/90 p-4 text-xs"
           >
             <div className="font-bold uppercase tracking-wider text-cyan-300">
-              Authorized Catalog Reconciliation
+              Active SQL Inventory &amp; Authorized Catalog Reconciliation
             </div>
-            <div className="mt-2 grid grid-cols-3 gap-2 text-center">
+            <div className="mt-2 grid grid-cols-4 gap-2 text-center">
               <div className="rounded-xl bg-slate-950/80 p-2">
-                <div className="text-[11px] text-slate-400">Viator API</div>
+                <div className="text-[11px] text-slate-400">Viator SQL</div>
                 <div className="text-base font-black text-white">
                   {data.providerCounts.viator.toLocaleString()}
                 </div>
@@ -254,12 +254,49 @@ export default function PortDayExcursionCatalogSection({
                 </div>
               </div>
               <div className="rounded-xl bg-slate-950/80 p-2">
-                <div className="text-[11px] text-slate-400">Total Active</div>
+                <div className="text-[11px] text-slate-400">Active Total</div>
                 <div className="text-base font-black text-cyan-300">
                   {data.providerCounts.total.toLocaleString()}
                 </div>
               </div>
+              <div className="rounded-xl bg-slate-950/80 p-2">
+                <div className="text-[11px] text-slate-400">Source Total</div>
+                <div className="text-base font-black text-violet-300">
+                  {data.providerCounts.authorizedSourceTotal.toLocaleString()}
+                </div>
+              </div>
             </div>
+            {data.providerCounts.reconciliationBreakdown?.currentActiveInventoryExplanation ? (
+              <div className="mt-2 text-[11px] leading-snug text-slate-300">
+                {data.providerCounts.reconciliationBreakdown.currentActiveInventoryExplanation}
+              </div>
+            ) : null}
+            {data.sharedHandoffLedgerSummary ? (
+              <div
+                data-testid="shared-handoff-ledger-summary"
+                className="mt-2.5 flex flex-wrap gap-x-3 gap-y-1 border-t border-white/10 pt-2 text-[11px] text-slate-300"
+              >
+                <span>
+                  <strong className="text-cyan-300">Redirects:</strong>{" "}
+                  {data.sharedHandoffLedgerSummary.redirects.total}
+                </span>
+                <span>
+                  <strong className="text-emerald-300">Confirmed Bookings:</strong>{" "}
+                  {String(
+                    data.sharedHandoffLedgerSummary.providerConfirmedBookings.displayValue
+                  )}
+                </span>
+                <span>
+                  <strong className="text-amber-300">Earned Commissions:</strong>{" "}
+                  {typeof data.sharedHandoffLedgerSummary.earnedCommissions
+                    .displayValue === "number"
+                    ? `$${data.sharedHandoffLedgerSummary.earnedCommissions.displayValue.toFixed(
+                        2
+                      )}`
+                    : data.sharedHandoffLedgerSummary.earnedCommissions.displayValue}
+                </span>
+              </div>
+            ) : null}
             {data.providerCounts.pendingOperatorNotes &&
             data.providerCounts.pendingOperatorNotes.length > 0 ? (
               <div className="mt-2.5 rounded-xl border border-amber-400/30 bg-amber-950/40 p-2 text-[11px] leading-relaxed text-amber-200">

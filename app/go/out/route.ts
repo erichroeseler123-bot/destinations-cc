@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { resolveOrGenerateW3cTraceparent } from "@/lib/dcc/machine";
 import {
   createCommercialHandoff,
+  getSharedHandoffLedgerSummary,
   type CommercialProvider,
 } from "@/lib/dcc/commerce";
 import { getDurableTourByIdOrAlias } from "@/lib/dcc/catalog/durableCatalogStore";
@@ -59,12 +60,33 @@ export async function GET(request: Request) {
     sp.get("surface")?.trim() ||
     sp.get("s")?.trim() ||
     "dcc_port_day_catalog";
+
+  const explicitOrigin =
+    sp.get("originatingSite")?.trim() ||
+    sp.get("site")?.trim() ||
+    sp.get("origin")?.trim() ||
+    "";
+  const surfaceLower = surface.toLowerCase();
+  const isCruisePromenadeOrigin =
+    explicitOrigin.toLowerCase().includes("cruisepromenade") ||
+    surfaceLower.includes("cruisepromenade") ||
+    surfaceLower.startsWith("cp_");
+
+  const resolvedOriginatingSite =
+    explicitOrigin ||
+    (isCruisePromenadeOrigin
+      ? "cruisepromenade.com"
+      : request.headers.get("referer") ||
+        url.hostname ||
+        "destinationcommandcenter.com");
+
+  const defaultTagPrefix = isCruisePromenadeOrigin ? "cp_port_day" : "dcc_port_day";
   const trackingTag =
     sp.get("trackingTag")?.trim() ||
     sp.get("c")?.trim() ||
     (productCode
-      ? `dcc_port_day_${portSlug || "port"}_${productCode}${optionCode ? `_${optionCode}` : ""}`
-      : "dcc_port_day_handoff");
+      ? `${defaultTagPrefix}_${portSlug || "port"}_${productCode}${optionCode ? `_${optionCode}` : ""}`
+      : `${defaultTagPrefix}_handoff`);
 
   const catalogTour = productCode
     ? await getDurableTourByIdOrAlias(productCode)
@@ -118,17 +140,30 @@ export async function GET(request: Request) {
       ? "fareharbor"
       : "direct";
 
+  const incomingPid = parsedTarget.searchParams.get("pid");
+  const incomingAsn = parsedTarget.searchParams.get("asn");
+  const providerAccount =
+    provider === "viator"
+      ? incomingPid && incomingPid !== "P00290915"
+        ? incomingPid
+        : process.env.NEXT_PUBLIC_VIATOR_PID || "P00306962"
+      : incomingAsn || null;
+
+  if (provider === "viator") {
+    parsedTarget.searchParams.set("pid", providerAccount || "P00306962");
+    parsedTarget.searchParams.set("mcid", process.env.NEXT_PUBLIC_VIATOR_MCID || "42383");
+    parsedTarget.searchParams.set("medium", "api");
+  }
+
+  const originatingPage =
+    sp.get("originatingPage")?.trim() ||
+    (portSlug ? `/ports/${portSlug}` : null);
+
   const handoff = await createCommercialHandoff({
-    originatingSite:
-      request.headers.get("referer") ||
-      url.hostname ||
-      "destinationcommandcenter.com",
+    originatingSite: resolvedOriginatingSite,
     targetSite: parsedTarget.hostname,
     provider,
-    providerAccount:
-      parsedTarget.searchParams.get("pid") ||
-      parsedTarget.searchParams.get("asn") ||
-      null,
+    providerAccount,
     productCode: productCode || catalogTour?.providerProductCode || "dcc-product",
     productTitle: catalogTour?.title || null,
     productDestinationUrl: parsedTarget.toString(),
@@ -138,9 +173,58 @@ export async function GET(request: Request) {
     partySize: Number(sp.get("partySize") || sp.get("adults") || 2) || 2,
     callerClientId: `client:${surface}`,
     traceparent,
+    metadata: {
+      portSlug,
+      optionCode,
+      surface,
+      trackingTag,
+      originatingPage,
+    },
   });
 
   await syncDurableLedgerWithPostgres({ forcePushLocal: true });
+
+  const outboundUrlObj = new URL(handoff.outboundAffiliateUrl);
+  const resolvedCampaign =
+    outboundUrlObj.searchParams.get("campaign") || handoff.attributionParameterValue || trackingTag;
+  const resolvedClickId =
+    outboundUrlObj.searchParams.get("click_id") || handoff.clickId;
+  const resolvedPid =
+    outboundUrlObj.searchParams.get("pid") || handoff.providerAccount || "";
+
+  if (sp.get("mode") === "json" || sp.get("inspect") === "1") {
+    const ledgerSummary = await getSharedHandoffLedgerSummary({
+      originatingSite: handoff.originatingSite,
+      portSlug,
+    });
+    return NextResponse.json(
+      {
+        ok: true,
+        handoff: {
+          ...handoff,
+          resolvedOutboundCampaign: resolvedCampaign,
+          resolvedOutboundClickId: resolvedClickId,
+          resolvedProviderAccount: resolvedPid,
+          portSlug,
+          surface,
+          originatingPage,
+        },
+        ledgerSummary,
+      },
+      {
+        headers: {
+          "Cache-Control": "no-store",
+          traceparent,
+          "X-DCC-Handoff-Id": handoff.handoffId,
+          "X-DCC-Click-Id": handoff.clickId,
+          "X-DCC-Originating-Site": handoff.originatingSite,
+          "X-DCC-Provider": handoff.provider,
+          "X-DCC-Provider-Account": resolvedPid,
+          "X-DCC-Attribution-Campaign": resolvedCampaign,
+        },
+      }
+    );
+  }
 
   return NextResponse.redirect(handoff.outboundAffiliateUrl, {
     status: 302,
@@ -149,7 +233,10 @@ export async function GET(request: Request) {
       traceparent,
       "X-DCC-Handoff-Id": handoff.handoffId,
       "X-DCC-Click-Id": handoff.clickId,
+      "X-DCC-Originating-Site": handoff.originatingSite,
       "X-DCC-Provider": handoff.provider,
+      "X-DCC-Provider-Account": resolvedPid,
+      "X-DCC-Attribution-Campaign": resolvedCampaign,
       "X-DCC-Product-Code": productCode || catalogTour?.providerProductCode || "",
       "X-DCC-Option-Code": optionCode || "",
     },
