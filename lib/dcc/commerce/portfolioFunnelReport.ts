@@ -624,7 +624,7 @@ export async function buildUnifiedPortfolioFunnelReport(options?: {
   const ledgerState = loadProductionOrActiveLedgerState();
   const [allCorridorEvents, allCommercialOutcomes] = await Promise.all([
     listRecentProductionCorridorEvents(5000).catch(() => [] as DccCorridorEventRow[]),
-    listCommercialOutcomes({ limit: 100 }).catch(() => [] as CommercialOutcomeRecord[]),
+    listCommercialOutcomes({ limit: 100, excludeQa: true }).catch(() => [] as CommercialOutcomeRecord[]),
   ]);
   const allSatelliteSummaries = listAllSatelliteHandoffSummaries(2000);
 

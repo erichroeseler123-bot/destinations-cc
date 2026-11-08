@@ -292,7 +292,7 @@ function scopeMatches(
   return false;
 }
 
-function resolveConfiguredApiKeys(): RegisteredMachineApiKey[] {
+function resolveConfiguredApiKeys(allowDefaultApiKeys = true): RegisteredMachineApiKey[] {
   const customJson = process.env.DCC_MACHINE_API_KEYS_JSON?.trim();
   const dynamicKeys: RegisteredMachineApiKey[] = [];
   const wtaPreviewToken = process.env.DCC_WTA_AFFILIATE_PREVIEW_API_KEY?.trim();
@@ -328,7 +328,9 @@ function resolveConfiguredApiKeys(): RegisteredMachineApiKey[] {
       const parsed = JSON.parse(customJson) as Record<string, MachineApiKeyScope[]>;
       for (const [token, scopes] of Object.entries(parsed)) {
         if (Array.isArray(scopes)) {
-          const shortId = token.slice(0, 12);
+          const shortId = allowDefaultApiKeys
+            ? token.slice(0, 12)
+            : crypto.createHash("sha256").update(token).digest("hex").slice(0, 24);
           dynamicKeys.push({
             keyId: `key:env:${shortId}`,
             clientId: `client:env:${shortId}`,
@@ -344,7 +346,14 @@ function resolveConfiguredApiKeys(): RegisteredMachineApiKey[] {
       // ignore invalid JSON
     }
   }
-  return [...dynamicKeys, ...DEFAULT_API_KEYS];
+  if (allowDefaultApiKeys) return [...dynamicKeys, ...DEFAULT_API_KEYS];
+
+  // Keep the configured canary credential available without enabling its fixture fallback.
+  const configuredCanarySecret = process.env.DCC_MACHINE_EVAL_API_KEY?.trim();
+  const configuredCanary = configuredCanarySecret && DEFAULT_API_KEYS.find((key) =>
+    key.keyId === "key:dcc-canary-eval-default" && key.secretToken === configuredCanarySecret,
+  );
+  return configuredCanary ? [...dynamicKeys, configuredCanary] : dynamicKeys;
 }
 
 export type AuthAndRateLimitResult = {
@@ -367,6 +376,7 @@ export function verifyEvaluationAuthAndRateLimit(
         requiredScope: MachineApiKeyScope;
         clientIdentifier?: string;
         requireExplicitApiKey?: boolean;
+        allowDefaultApiKeys?: boolean;
         maxRequestsPerMinuteOverride?: number;
         nowMs?: number;
       },
@@ -384,6 +394,7 @@ export function verifyEvaluationAuthAndRateLimit(
           requiredScope: MachineApiKeyScope;
           clientIdentifier?: string;
           requireExplicitApiKey?: boolean;
+          allowDefaultApiKeys?: boolean;
           maxRequestsPerMinuteOverride?: number;
           nowMs?: number;
         });
@@ -414,7 +425,7 @@ export function verifyEvaluationAuthAndRateLimit(
 
   let resolvedKey: RegisteredMachineApiKey | null = null;
   if (providedToken) {
-    const allKeys = resolveConfiguredApiKeys();
+    const allKeys = resolveConfiguredApiKeys(params.allowDefaultApiKeys);
     resolvedKey = allKeys.find((k) => k.secretToken === providedToken) ?? null;
     if (!resolvedKey || resolvedKey.revoked) {
       throw new MachineSecurityLimitError({

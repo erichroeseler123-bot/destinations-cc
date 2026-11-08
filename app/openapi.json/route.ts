@@ -533,9 +533,9 @@ export async function GET() {
         },
         post: {
           operationId: "checkPortDayExcursionAvailability",
-          summary: "Check live option, date, departure time, and party size availability for a cruise port excursion (strictly read-only)",
+          summary: "Check live availability or prepare an approved New Orleans checkout handoff",
           description:
-            "Strictly read-only live availability check (`readOnly: true`, `createsCommercialHandoff: false`). Queries the upstream provider (Viator Partner API v2 `/availability/check` or direct FareHarbor slot API) for an exact product option, date, departure time, and party size. Keeps seat/price availability completely separate from sailing-window timing fit and preserves unknown seat counts (`remainingSeats: null`) when the provider does not report exact remaining capacity. Never creates a commercial handoff; use `dcc_prepare_tour_checkout` when the traveler chooses Continue to checkout.",
+            "The default request only checks availability. Set action=prepare_checkout after traveler approval to prepare a durable checkout handoff for New Orleans 15200P6 / TG10. Checkout requires a configured API key scoped to dcc:commerce:handoff, travelerApprovedCheckout=true, an idempotency key, and a matching sailing or supplied arrival and all-aboard times. Reuse the key for the same approved selection.",
           requestBody: {
             required: true,
             content: {
@@ -544,6 +544,7 @@ export async function GET() {
                   type: "object",
                   required: ["port", "productCode", "date", "partySize"],
                   properties: {
+                    action: { type: "string", enum: ["prepare_checkout"] },
                     port: { type: "string", example: "new-orleans" },
                     productCode: { type: "string", example: "15200P6" },
                     tourId: { type: "string" },
@@ -551,6 +552,12 @@ export async function GET() {
                     date: { type: "string", format: "date", example: "2027-07-15" },
                     departureTime: { type: "string", example: "08:00" },
                     partySize: { type: "integer", minimum: 1, example: 2 },
+                    travelerApprovedCheckout: { type: "boolean", const: true },
+                    idempotencyKey: { type: "string", maxLength: 128 },
+                    shipArrival: { type: "string", example: "07:00" },
+                    allAboard: { type: "string", example: "13:15" },
+                    sailing: { type: "string" },
+                    isQaTraffic: { type: "boolean" },
                     timeoutMs: { type: "integer", minimum: 1, maximum: 15000, default: 6000 },
                   },
                 },
@@ -567,14 +574,32 @@ export async function GET() {
           },
           responses: {
             "200": {
-              description: "Live seat and price availability result (`seatAvailability`), preserving `remainingSeats: null` when seat count is unknown",
+              description: "Live seat and price availability or the saved checkout handoff. Unknown seat counts remain null.",
               content: {
                 "application/json": {
-                  schema: { $ref: "#/components/schemas/PortDayAvailabilityCheckResponse" },
+                  schema: {
+                    oneOf: [
+                      { $ref: "#/components/schemas/PortDayAvailabilityCheckResponse" },
+                      {
+                        type: "object",
+                        required: ["checkoutPrepared", "handoffId", "clickId", "outboundAffiliateUrl"],
+                        properties: {
+                          checkoutPrepared: { const: true },
+                          handoffId: { type: "string" },
+                          clickId: { type: "string" },
+                          outboundAffiliateUrl: { type: "string", format: "uri" },
+                        },
+                      },
+                    ],
+                  },
                 },
               },
             },
             "400": { description: "Missing productCode/tourId or past departure rejected" },
+            "401": { description: "Missing or invalid checkout credential" },
+            "403": { description: "Checkout credential lacks the handoff scope" },
+            "409": { description: "Checkout selection, sailing fit, availability, or approval could not be confirmed" },
+            "503": { description: "Durable checkout storage is unavailable" },
           },
         },
       },

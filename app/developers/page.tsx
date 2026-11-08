@@ -221,6 +221,7 @@ curl -s -X POST "https://www.destinationcommandcenter.com/api/v1/mcp" \\
 # 6. Call dcc_prepare_tour_checkout (Continue to checkout — idempotent, returns handoffId, clickId, and absolute outboundAffiliateUrl)
 curl -s -X POST "https://www.destinationcommandcenter.com/api/v1/mcp" \\
   -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer $DCC_COMMERCE_API_KEY" \\
   -d '{"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"dcc_prepare_tour_checkout","arguments":{"port":"new-orleans","productCode":"15200P6","optionCode":"TG10","date":"2027-07-15","departureTime":"08:00","partySize":3,"shipArrival":"07:00","allAboard":"15:30","travelerApprovedCheckout":true,"idempotencyKey":"nola-15200p6-tg10-2027-07-15-p3-001"}}}'`}</pre>
             </div>
 

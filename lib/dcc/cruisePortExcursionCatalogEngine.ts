@@ -1,4 +1,6 @@
+import { createHash } from "node:crypto";
 import { getViatorClient } from "@/lib/viator/client";
+import { getViatorPublicConfig } from "@/lib/viator/config";
 import { appendViatorAttribution } from "@/lib/viator/links";
 import {
   EARTHOS_DESTINATION_NODES,
@@ -11,10 +13,13 @@ import {
   type TourProductOptionRecord,
 } from "@/lib/dcc/catalog/durableCatalogStore";
 import {
-  countCommercialHandoffsByIdempotencyKey,
+  CommercialHandoffStorageError,
   createCommercialHandoff,
+  getDurableCommercialHandoff,
   getSharedHandoffLedgerSummary,
+  isCommercialQaTraffic,
   recordMachineFunnelEvent,
+  type CommercialHandoffRecord,
   type SharedHandoffLedgerSummary,
 } from "@/lib/dcc/commerce";
 import { HREYFILL_REYKJAVIK_SHORE_EXCURSION_QUALIFICATION } from "@/lib/dcc/corridors/internationalCorridorQualifications";
@@ -183,6 +188,7 @@ export interface PortDaySeatAvailabilityEvaluation {
   fromPriceUsd: number | null;
   totalPriceUsd: number | null;
   currency: string;
+  providerRetailTotal?: number;
   exactProductUrl?: string;
   dccTrackedHref?: string;
   pastDepartureRejected?: boolean;
@@ -2309,6 +2315,7 @@ export async function verifyLiveExcursionAvailability(params: {
   departureTime?: string | null;
   timeoutMs?: number;
   simulateTimeout?: boolean;
+  retailOnly?: boolean;
   originatingSite?: string | null;
   surface?: string | null;
 }): Promise<PortDaySeatAvailabilityEvaluation> {
@@ -2642,10 +2649,10 @@ export async function verifyLiveExcursionAvailability(params: {
       }
 
       if (exactItem.available === true) {
+        const retailPrice = exactItem?.totalPrice?.price?.recommendedRetailPrice;
         const rawTotalRetail =
-          exactItem?.totalPrice?.price?.recommendedRetailPrice ??
-          exactItem?.totalPrice?.price?.partnerTotalPrice ??
-          null;
+          retailPrice ??
+          (params.retailOnly ? null : exactItem?.totalPrice?.price?.partnerTotalPrice ?? null);
         const totalPriceUsd =
           typeof rawTotalRetail === "number" && Number.isFinite(rawTotalRetail)
             ? Number(rawTotalRetail.toFixed(2))
@@ -2683,6 +2690,9 @@ export async function verifyLiveExcursionAvailability(params: {
           fromPriceUsd: perPersonPriceUsd,
           totalPriceUsd,
           currency: String(checkRes?.currency || "USD"),
+          ...(typeof retailPrice === "number" && Number.isFinite(retailPrice) && retailPrice >= 0
+            ? { providerRetailTotal: retailPrice }
+            : {}),
           exactProductUrl: handoff.exactProductUrl,
           dccTrackedHref: handoff.dccTrackedHref,
           pastDepartureRejected: false,
@@ -3183,7 +3193,9 @@ export interface PreparePortDayTourCheckoutResult {
     | "UNSUPPORTED_CHECKOUT_PRODUCT"
     | "INVALID_CHECKOUT_SELECTION"
     | "SAILING_FIT_NOT_VERIFIED"
-    | "AVAILABILITY_NOT_CONFIRMED";
+    | "AVAILABILITY_NOT_CONFIRMED"
+    | "IDEMPOTENCY_CONFLICT"
+    | "DURABLE_HANDOFF_UNAVAILABLE";
   message: string;
   handoffId: string | null;
   clickId: string | null;
@@ -3229,466 +3241,253 @@ export interface PreparePortDayTourCheckoutResult {
 export async function preparePortDayTourCheckout(
   params: PreparePortDayTourCheckoutParams
 ): Promise<PreparePortDayTourCheckoutResult> {
-  const callerClientId =
-    params.callerClientId?.trim() || "client:dcc_mcp_authenticated_client";
-  const originatingSite = (
-    params.originatingSite || "destinationcommandcenter.com"
-  )
-    .trim()
-    .toLowerCase();
-  const surface = params.surface?.trim() || "dcc_mcp_prepare_tour_checkout";
+  const callerClientId = params.callerClientId?.trim() || "";
+  const originatingSite = params.originatingSite || "destinationcommandcenter.com";
+  const surface = params.surface || "dcc_mcp_prepare_tour_checkout";
+  const idempotencyKey = params.idempotencyKey?.trim() || null;
+
+  const reject = (
+    errorCode: NonNullable<PreparePortDayTourCheckoutResult["errorCode"]>,
+    message: string,
+    details?: Pick<Partial<PreparePortDayTourCheckoutResult>, "sailingWindow" | "timeFit" | "seatAvailability">,
+  ): PreparePortDayTourCheckoutResult => ({
+    ok: false,
+    checkoutPrepared: false,
+    errorCode,
+    message,
+    handoffId: null,
+    clickId: null,
+    outboundAffiliateUrl: null,
+    duplicateSubmission: false,
+    idempotencyKey,
+    durableRecordCount: 0,
+    authenticatedCallerClientId: callerClientId,
+    serverResolvedProvider: null,
+    validatedSelection: null,
+    pricing: null,
+    sailingWindow: null,
+    timeFit: null,
+    seatAvailability: null,
+    viatorCheckoutFieldCarryover: null,
+    ...details,
+  });
 
   if (params.travelerApprovedCheckout !== true) {
-    return {
-      ok: false,
-      checkoutPrepared: false,
-      errorCode: "TRAVELER_APPROVAL_REQUIRED",
-      message:
-        "Traveler must explicitly approve 'Continue to checkout' (travelerApprovedCheckout: true) before a commercial handoff record is created.",
-      handoffId: null,
-      clickId: null,
-      outboundAffiliateUrl: null,
-      duplicateSubmission: false,
-      idempotencyKey: params.idempotencyKey?.trim() || null,
-      durableRecordCount: 0,
-      authenticatedCallerClientId: callerClientId,
-      serverResolvedProvider: null,
-      validatedSelection: null,
-      pricing: null,
-      sailingWindow: null,
-      timeFit: null,
-      seatAvailability: null,
-      viatorCheckoutFieldCarryover: null,
-    };
+    return reject("TRAVELER_APPROVAL_REQUIRED", "Traveler approval is required before preparing checkout.");
+  }
+  if (!idempotencyKey || idempotencyKey.length > 128) {
+    return reject("IDEMPOTENCY_KEY_REQUIRED", "Provide an idempotency key of at most 128 characters.");
   }
 
-  const idempotencyKey = params.idempotencyKey?.trim() || "";
-  if (!idempotencyKey) {
-    return {
-      ok: false,
-      checkoutPrepared: false,
-      errorCode: "IDEMPOTENCY_KEY_REQUIRED",
-      message:
-        "An explicit idempotencyKey is required on dcc_prepare_tour_checkout so retries return the same handoffId and clickId without creating duplicate ledger rows.",
-      handoffId: null,
-      clickId: null,
-      outboundAffiliateUrl: null,
-      duplicateSubmission: false,
-      idempotencyKey: null,
-      durableRecordCount: 0,
-      authenticatedCallerClientId: callerClientId,
-      serverResolvedProvider: null,
-      validatedSelection: null,
-      pricing: null,
-      sailingWindow: null,
-      timeFit: null,
-      seatAvailability: null,
-      viatorCheckoutFieldCarryover: null,
-    };
+  const port = params.portSlug?.trim().toLowerCase();
+  const productCode = params.productCode?.trim().toUpperCase();
+  const optionCode = params.optionCode?.trim().toUpperCase();
+  const date = params.date?.trim() || "";
+  const dateAtUtcMidnight = new Date(`${date}T00:00:00Z`);
+  const departureMinutes = parseHhMm(params.departureTime);
+  const departureTime = departureMinutes === null ? null : formatHhMm(departureMinutes);
+  const partySize = params.partySize;
+  if (port !== "new-orleans" || productCode !== "15200P6") {
+    return reject("UNSUPPORTED_CHECKOUT_PRODUCT", "Checkout is available for New Orleans 15200P6 / TG10.");
   }
-
-  const normalizedPort = (params.portSlug || "new-orleans").trim().toLowerCase();
-  const normalizedProduct = (params.productCode || "").trim().toUpperCase();
-  const normalizedOption = (params.optionCode || "").trim().toUpperCase();
-  const normalizedDate = (params.date || "").trim();
-  const rawDepMin = params.departureTime ? parseHhMm(params.departureTime) : null;
-  const normalizedDeparture =
-    rawDepMin !== null ? formatHhMm(rawDepMin) : (params.departureTime || "").trim();
-  const rawPartySize = Number(params.partySize);
-
-  if (normalizedPort !== "new-orleans" || normalizedProduct !== "15200P6") {
-    return {
-      ok: false,
-      checkoutPrepared: false,
-      errorCode: "UNSUPPORTED_CHECKOUT_PRODUCT",
-      message: `dcc_prepare_tour_checkout is currently scoped to live Viator product New Orleans 15200P6 / TG10 (received port='${normalizedPort}', productCode='${normalizedProduct}').`,
-      handoffId: null,
-      clickId: null,
-      outboundAffiliateUrl: null,
-      duplicateSubmission: false,
-      idempotencyKey,
-      durableRecordCount: 0,
-      authenticatedCallerClientId: callerClientId,
-      serverResolvedProvider: null,
-      validatedSelection: null,
-      pricing: null,
-      sailingWindow: null,
-      timeFit: null,
-      seatAvailability: null,
-      viatorCheckoutFieldCarryover: null,
-    };
-  }
-
   if (
-    normalizedOption !== "TG10" ||
-    normalizedDeparture !== "08:00" ||
-    !/^\d{4}-\d{2}-\d{2}$/.test(normalizedDate) ||
-    !Number.isInteger(rawPartySize) ||
-    rawPartySize < 1 ||
-    rawPartySize > 15
+    optionCode !== "TG10" || departureTime !== "08:00" ||
+    !/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isFinite(dateAtUtcMidnight.getTime()) ||
+    dateAtUtcMidnight.toISOString().slice(0, 10) !== date ||
+    typeof partySize !== "number" || !Number.isInteger(partySize) || partySize < 1 || partySize > 15
   ) {
-    return {
-      ok: false,
-      checkoutPrepared: false,
-      errorCode: "INVALID_CHECKOUT_SELECTION",
-      message: `Exact option, date, departure time, and party size are required for New Orleans 15200P6 (expected optionCode='TG10', departureTime='08:00', date='YYYY-MM-DD', partySize=1..15; received optionCode='${normalizedOption}', departureTime='${normalizedDeparture}', date='${normalizedDate}', partySize=${params.partySize}).`,
-      handoffId: null,
-      clickId: null,
-      outboundAffiliateUrl: null,
-      duplicateSubmission: false,
-      idempotencyKey,
-      durableRecordCount: 0,
-      authenticatedCallerClientId: callerClientId,
-      serverResolvedProvider: null,
-      validatedSelection: null,
-      pricing: null,
-      sailingWindow: null,
-      timeFit: null,
-      seatAvailability: null,
-      viatorCheckoutFieldCarryover: null,
-    };
+    return reject("INVALID_CHECKOUT_SELECTION", "Provide TG10, a valid port date, the 08:00 departure, and 1 to 15 adult travelers.");
   }
 
-  const profile = resolveCruisePortExcursionProfile("new-orleans")!;
-  const rec = await getDurableTourByIdOrAlias("15200P6");
-  if (!rec) {
-    return {
-      ok: false,
-      checkoutPrepared: false,
-      errorCode: "UNSUPPORTED_CHECKOUT_PRODUCT",
-      message: "Catalog record for New Orleans 15200P6 was not found.",
-      handoffId: null,
-      clickId: null,
-      outboundAffiliateUrl: null,
-      duplicateSubmission: false,
-      idempotencyKey,
-      durableRecordCount: 0,
-      authenticatedCallerClientId: callerClientId,
-      serverResolvedProvider: null,
-      validatedSelection: null,
-      pricing: null,
-      sailingWindow: null,
-      timeFit: null,
-      seatAvailability: null,
-      viatorCheckoutFieldCarryover: null,
-    };
+  const profile = resolveCruisePortExcursionProfile(port)!;
+  const rec = await getDurableTourByIdOrAlias(productCode);
+  if (!rec?.active || rec.primaryProvider !== "viator" || rec.providerProductCode !== productCode || !rec.commissionAuthorized) {
+    return reject("UNSUPPORTED_CHECKOUT_PRODUCT", "The authorized Viator product is unavailable in the catalog.");
   }
 
-  const pastCheck = evaluateDeparturePastStatus({
-    date: normalizedDate,
-    departureTime: normalizedDeparture,
-    timeZone: rec.timeZone || "America/Chicago",
-  });
-  if (pastCheck.isPast) {
-    return {
-      ok: false,
-      checkoutPrepared: false,
-      errorCode: "INVALID_CHECKOUT_SELECTION",
-      message: pastCheck.reason || "Past departure date/time cannot be prepared for checkout.",
-      handoffId: null,
-      clickId: null,
-      outboundAffiliateUrl: null,
-      duplicateSubmission: false,
-      idempotencyKey,
-      durableRecordCount: 0,
-      authenticatedCallerClientId: callerClientId,
-      serverResolvedProvider: null,
-      validatedSelection: null,
-      pricing: null,
-      sailingWindow: null,
-      timeFit: null,
-      seatAvailability: null,
-      viatorCheckoutFieldCarryover: null,
-    };
-  }
-
-  // Resolve sailing window from a matched sailing or supplied arrival and all-aboard times
-  const portCallResolution = resolveScheduledPortCall({
-    portSlug: "new-orleans",
-    sailingDate: normalizedDate,
-    shipSlug: params.shipSlug || params.ship || null,
-    sailingId: params.sailingId || null,
-    shipArrivalTime: params.shipArrivalTime || null,
-    shipAllAboardTime: params.shipAllAboardTime || null,
-    shipDepartureTime: params.shipDepartureTime ?? null,
+  const window = resolveScheduledPortCall({
+    portSlug: port,
+    sailingDate: date,
+    shipSlug: params.shipSlug || params.ship,
+    sailingId: params.sailingId,
+    shipArrivalTime: params.shipArrivalTime,
+    shipAllAboardTime: params.shipAllAboardTime,
+    shipDepartureTime: params.shipDepartureTime,
     profile,
   });
-
   const sailingWindow: PortDayExcursionCatalogResponse["sailingWindow"] = {
-    shipArrivalTime: portCallResolution.shipArrivalTime,
-    shipArrivalTimeLabel: portCallResolution.shipArrivalTimeLabel,
-    arrivalTimeSource: portCallResolution.arrivalTimeSource,
-    shipAllAboardTime: portCallResolution.shipAllAboardTime,
-    shipAllAboardTimeLabel: portCallResolution.shipAllAboardTimeLabel,
-    allAboardTimeSource: portCallResolution.allAboardTimeSource,
-    shipDepartureTime: portCallResolution.shipDepartureTime,
-    allAboardToShipDepartureMinutes: portCallResolution.allAboardToShipDepartureMinutes,
-    departureTimeSource: portCallResolution.departureTimeSource,
-    sailingDate: normalizedDate,
-    partySize: rawPartySize,
-    shipSlug: portCallResolution.shipSlug,
-    shipName: portCallResolution.shipName,
-    sailingId: portCallResolution.sailingId,
+    shipArrivalTime: window.shipArrivalTime,
+    shipArrivalTimeLabel: window.shipArrivalTimeLabel,
+    arrivalTimeSource: window.arrivalTimeSource,
+    shipAllAboardTime: window.shipAllAboardTime,
+    shipAllAboardTimeLabel: window.shipAllAboardTimeLabel,
+    allAboardTimeSource: window.allAboardTimeSource,
+    shipDepartureTime: window.shipDepartureTime,
+    allAboardToShipDepartureMinutes: window.allAboardToShipDepartureMinutes,
+    departureTimeSource: window.departureTimeSource,
+    sailingDate: date,
+    partySize,
+    shipSlug: window.shipSlug,
+    shipName: window.shipName,
+    sailingId: window.sailingId,
   };
 
-  // Reuse existing sailing-fit evaluation
-  const timeFit = evaluateTourPortDayTimeFit({
-    rec,
-    profile,
-    shipArrivalTime: portCallResolution.shipArrivalTime,
-    arrivalTimeSource: portCallResolution.arrivalTimeSource,
-    shipAllAboardTime: portCallResolution.shipAllAboardTime,
-    allAboardTimeSource: portCallResolution.allAboardTimeSource,
-    shipDepartureTime: portCallResolution.shipDepartureTime,
-    departureTimeSource: portCallResolution.departureTimeSource,
-  });
-
-  if (timeFit.status !== "fits" || !timeFit.fitsSailing) {
-    return {
-      ok: false,
-      checkoutPrepared: false,
-      errorCode: "SAILING_FIT_NOT_VERIFIED",
-      message: `Checkout handoff blocked because tour timing status is '${timeFit.status}' (${timeFit.statusLabel}): ${timeFit.reasonSummary}`,
-      handoffId: null,
-      clickId: null,
-      outboundAffiliateUrl: null,
-      duplicateSubmission: false,
-      idempotencyKey,
-      durableRecordCount: 0,
-      authenticatedCallerClientId: callerClientId,
-      serverResolvedProvider: null,
-      validatedSelection: null,
-      pricing: null,
-      sailingWindow,
-      timeFit,
-      seatAvailability: null,
-      viatorCheckoutFieldCarryover: null,
-    };
-  }
-
-  // Reuse existing live availability verification
-  let seatAvailability = await verifyLiveExcursionAvailability({
-    portSlug: "new-orleans",
-    tourId: rec.tourId,
-    productCode: "15200P6",
-    optionCode: "TG10",
-    date: normalizedDate,
-    partySize: rawPartySize,
-    departureTime: "08:00",
-    simulateTimeout: Boolean(params.simulateTimeout),
-    originatingSite,
-    surface,
-  });
-
-  // In offline local unit test environments where VIATOR_API_KEY is not present and timeout is not simulated,
-  // allow the catalog-verified 15200P6/TG10 option pricing so local tests can verify checkout idempotency.
+  const timeFit = evaluateTourPortDayTimeFit({ rec, profile, ...sailingWindow, optionCode });
+  const hasMatchedSailing = Boolean(window.matchedPortCall && (params.sailingId || params.shipSlug || params.ship));
+  const hasSuppliedTimes = parseHhMm(params.shipArrivalTime) !== null && parseHhMm(params.shipAllAboardTime) !== null;
   if (
-    !process.env.VIATOR_API_KEY &&
-    !params.simulateTimeout &&
-    seatAvailability.providerStatus === "option_or_departure_unconfirmed"
+    (!hasMatchedSailing && !hasSuppliedTimes) ||
+    timeFit.status !== "fits" || timeFit.selectedOptionCode !== optionCode ||
+    timeFit.selectedDepartureTime !== departureTime
   ) {
-    const unitPrice =
-      rec.fromPriceCents !== null && rec.fromPriceCents !== undefined
-        ? Number((rec.fromPriceCents / 100).toFixed(2))
-        : 60;
-    const totalPrice = Number((unitPrice * rawPartySize).toFixed(2));
-    seatAvailability = {
-      ...seatAvailability,
-      status: "live_verified",
-      statusLabel: `Live Verified — Available for ${rawPartySize} ${
-        rawPartySize === 1 ? "guest" : "guests"
-      } (TG10 · 08:00 on ${normalizedDate})`,
-      liveCheckedAt: new Date().toISOString(),
-      available: true,
-      remainingSeats: null,
-      fromPriceUsd: unitPrice,
-      totalPriceUsd: totalPrice,
-      currency: rec.currency || "USD",
-      providerStatus: "live_confirmed",
-      options: [
-        {
-          optionCode: "TG10",
-          title: "Swamp Tour with Pickup 8:00 AM",
-          startTime: "08:00",
-          available: true,
-          remainingSeats: null,
-          priceUsd: unitPrice,
-        },
-      ],
-    };
+    return reject("SAILING_FIT_NOT_VERIFIED", "This departure requires a verified sailing window and time fit.", { sailingWindow, timeFit });
+  }
+  if (evaluateDeparturePastStatus({ date, departureTime, timeZone: rec.timeZone }).isPast) {
+    return reject("INVALID_CHECKOUT_SELECTION", "Choose a future departure.");
   }
 
-  if (seatAvailability.status !== "live_verified" || seatAvailability.available !== true) {
-    return {
-      ok: false,
-      checkoutPrepared: false,
-      errorCode: "AVAILABILITY_NOT_CONFIRMED",
-      message: `Checkout handoff blocked because live availability status is '${seatAvailability.status}' (${seatAvailability.providerStatus}): ${seatAvailability.detailNote}`,
-      handoffId: null,
-      clickId: null,
-      outboundAffiliateUrl: null,
-      duplicateSubmission: false,
-      idempotencyKey,
-      durableRecordCount: 0,
-      authenticatedCallerClientId: callerClientId,
-      serverResolvedProvider: null,
-      validatedSelection: null,
-      pricing: null,
-      sailingWindow,
-      timeFit,
-      seatAvailability,
-      viatorCheckoutFieldCarryover: null,
-    };
-  }
-
-  const priceBasis: "per_person" | "per_group" | "unknown" =
-    rec.priceBasis === "per_person" || rec.priceBasis === "per_group"
-      ? rec.priceBasis
-      : "per_person";
-  const currency = seatAvailability.currency || rec.currency || "USD";
-  const unitPriceUsd = seatAvailability.fromPriceUsd ?? null;
-  const totalPriceUsd = seatAvailability.totalPriceUsd ?? null;
-  const timeChecked = seatAvailability.liveCheckedAt ?? null;
-
-  // Resolve provider URL and affiliate account strictly server-side
-  const canonicalProductUrl =
-    "https://www.viator.com/tours/New-Orleans/New-Orleans-Swamp-Tour-Boat-Adventure-With-Pickup/d675-15200P6";
-  const approvedAffiliateAccount = "P00306962";
-  const approvedMcid = "42383";
-  const baseCampaign = "dcc_port_day_new-orleans_15200P6_TG10";
-
-  const handoff = await createCommercialHandoff({
-    originatingSite,
-    targetSite: "www.viator.com",
-    provider: "viator",
-    providerAccount: approvedAffiliateAccount,
-    viatorProductCode: "15200P6",
-    productCode: "15200P6",
-    productTitle: rec.title,
-    productDestinationUrl: canonicalProductUrl,
-    campaign: baseCampaign,
-    intendedDate: normalizedDate,
-    intendedOption: "TG10",
-    intendedDepartureTime: "08:00",
-    partySize: rawPartySize,
+  const isQaTraffic = isCommercialQaTraffic({ isQaTraffic: params.isQaTraffic, idempotencyKey, callerClientId });
+  const key = { originatingSite, callerClientId, idempotencyKey };
+  const requestHash = createHash("sha256").update(JSON.stringify({
+    port, productCode, optionCode, date, departureTime, partySize, isQaTraffic,
+    sailingId: sailingWindow.sailingId,
     shipArrivalTime: sailingWindow.shipArrivalTime,
+    shipAllAboardTime: sailingWindow.shipAllAboardTime,
     shipDepartureTime: sailingWindow.shipDepartureTime,
-    quotedPriceAmount: totalPriceUsd,
-    quotedPriceCurrency: currency,
-    callerClientId,
-    idempotencyKey,
-    metadata: {
-      portSlug: "new-orleans",
-      optionCode: "TG10",
-      departureTime: "08:00",
-      priceBasis,
-      unitPriceUsd,
-      totalPriceUsd,
-      timeChecked,
-      surface,
-      originatingPage: "/ports/new-orleans",
-      ...(params.isQaTraffic ? { isQaTraffic: true } : {}),
-    },
-  });
+  })).digest("hex");
 
-  // Record checkout_handoff event (deduplicated by idempotencyKey so retries never double-count)
-  await recordMachineFunnelEvent({
-    stage: "checkout_handoff",
-    originatingSite,
-    callerClientId,
-    portSlug: "new-orleans",
-    productCode: "15200P6",
-    optionCode: "TG10",
-    intendedDate: normalizedDate,
-    departureTime: "08:00",
-    partySize: rawPartySize,
-    handoffId: handoff.handoffId,
-    clickId: handoff.clickId,
-    idempotencyKey,
-    isQaTraffic: Boolean(params.isQaTraffic),
-    metadata: {
-      priceBasis,
-      currency,
-      unitPriceUsd,
-      totalPriceUsd,
-      timeChecked,
+  type Snapshot = Pick<PreparePortDayTourCheckoutResult, "validatedSelection" | "pricing" | "sailingWindow" | "timeFit" | "seatAvailability">;
+  async function replayOrReturn(handoff: CommercialHandoffRecord): Promise<PreparePortDayTourCheckoutResult> {
+    const saved = handoff.metadata.portDayCheckoutSelection as { requestHash: string; snapshot: Snapshot } | undefined;
+    if (saved?.requestHash !== requestHash) {
+      return reject("IDEMPOTENCY_CONFLICT", "Use a new idempotency key for a changed selection.");
+    }
+    await recordMachineFunnelEvent({
+      stage: "checkout_handoff",
+      ...key,
+      portSlug: port,
+      productCode,
+      optionCode,
+      intendedDate: date,
+      departureTime,
+      partySize,
+      handoffId: handoff.handoffId,
+      clickId: handoff.clickId,
+      isQaTraffic,
+      metadata: saved.snapshot.pricing,
+    });
+
+    const affiliateUrl = new URL(handoff.outboundAffiliateUrl);
+    return {
+      ...saved.snapshot,
+      ok: true,
+      checkoutPrepared: true,
+      message: "The selected departure fits and Viator confirmed availability at the time shown. Select the saved date, option, departure and travelers on Viator.",
+      handoffId: handoff.handoffId,
+      clickId: handoff.clickId,
       outboundAffiliateUrl: handoff.outboundAffiliateUrl,
-    },
-  });
+      duplicateSubmission: handoff.duplicateSubmission === true,
+      idempotencyKey,
+      durableRecordCount: 1,
+      authenticatedCallerClientId: callerClientId,
+      serverResolvedProvider: {
+        provider: "viator",
+        providerAccount: handoff.providerAccount,
+        mcid: affiliateUrl.searchParams.get("mcid") || "",
+        canonicalProductUrl: handoff.destinationUrl,
+        campaignParam: handoff.attributionParameterValue,
+      },
+      viatorCheckoutFieldCarryover: {
+        carriedInAffiliateUrlQuery: ["pid", "mcid", "medium", "campaign", "click_id", "startDate", "numTravelers"],
+        preboundByViatorWebLanding: ["Exact Viator product 15200P6"],
+        requiresTravelerConfirmationInViatorWidget: ["date", "optionCode", "departureTime", "partySize", "pickup point"],
+      },
+    };
+  }
 
-  const idempotencyCheck = await countCommercialHandoffsByIdempotencyKey({
-    idempotencyKey,
-    originatingSite,
-    callerClientId,
-  });
+  try {
+    const existing = await getDurableCommercialHandoff(key);
+    if (existing) return await replayOrReturn({ ...existing, duplicateSubmission: true });
 
-  const chosenOpt = rec.productOptions?.find((o) => o.optionCode === "TG10");
+    const seatAvailability = await verifyLiveExcursionAvailability({
+      portSlug: port, tourId: rec.tourId, productCode, optionCode, date, partySize, departureTime,
+      simulateTimeout: params.simulateTimeout === true,
+      retailOnly: true,
+      originatingSite, surface,
+    });
+    await recordMachineFunnelEvent({
+      stage: "availability_check", ...key, portSlug: port, productCode, optionCode,
+      intendedDate: date, departureTime, partySize, isQaTraffic,
+      simulateTimeout: params.simulateTimeout,
+      metadata: { surface, availabilityStatus: seatAvailability.status, checkoutRecheck: true },
+    });
 
-  return {
-    ok: true,
-    checkoutPrepared: true,
-    message: handoff.duplicateSubmission
-      ? `Idempotent retry matched existing commercial handoff ${handoff.handoffId} (clickId ${handoff.clickId}) with 1 durable record.`
-      : `Prepared Viator checkout handoff ${handoff.handoffId} (clickId ${handoff.clickId}) for New Orleans 15200P6 / TG10 on ${normalizedDate} at 08:00 for ${rawPartySize} guests.`,
-    handoffId: handoff.handoffId,
-    clickId: handoff.clickId,
-    outboundAffiliateUrl: handoff.outboundAffiliateUrl,
-    duplicateSubmission: Boolean(handoff.duplicateSubmission),
-    idempotencyKey,
-    durableRecordCount: idempotencyCheck.durableRecordCount,
-    authenticatedCallerClientId: callerClientId,
-    serverResolvedProvider: {
+    if (
+      seatAvailability.status !== "live_verified" || seatAvailability.available !== true ||
+      seatAvailability.providerStatus !== "live_confirmed" || seatAvailability.checkedDate !== date ||
+      seatAvailability.selectedOptionCode !== optionCode || seatAvailability.selectedDepartureTime !== departureTime ||
+      seatAvailability.checkedPartySize !== partySize
+    ) {
+      return reject("AVAILABILITY_NOT_CONFIRMED", "Viator did not confirm availability for this exact selection.", {
+        sailingWindow, timeFit, seatAvailability,
+      });
+    }
+
+    const affiliate = getViatorPublicConfig();
+    const canonicalProductUrl = "https://www.viator.com/tours/New-Orleans/New-Orleans-Swamp-Tour-Boat-Adventure-With-Pickup/d675-15200P6";
+    const destinationUrl = new URL(canonicalProductUrl);
+    destinationUrl.searchParams.set("mcid", affiliate.mcid);
+    const retailTotal = seatAvailability.providerRetailTotal ?? null;
+    const pricing: PreparePortDayTourCheckoutResult["pricing"] = {
+      priceBasis: retailTotal === null ? "unknown" : "per_person",
+      currency: seatAvailability.currency,
+      unitPriceUsd: retailTotal === null ? null : Number((retailTotal / partySize).toFixed(2)),
+      totalPriceUsd: retailTotal,
+      timeChecked: seatAvailability.liveCheckedAt,
+    };
+    const snapshot: Snapshot = {
+      validatedSelection: {
+        portSlug: port, productCode, optionCode, date, departureTime, partySize,
+        optionTitle: timeFit.selectedOptionTitle || optionCode,
+        pickupLocation: timeFit.meetingPointName || "",
+      },
+      pricing, sailingWindow, timeFit, seatAvailability,
+    };
+    const handoff = await createCommercialHandoff({
+      ...key,
+      requireDurableRecord: true,
+      targetSite: "viator.com",
       provider: "viator",
-      providerAccount: approvedAffiliateAccount,
-      mcid: approvedMcid,
-      canonicalProductUrl,
-      campaignParam: handoff.attributionParameterValue,
-    },
-    validatedSelection: {
-      portSlug: "new-orleans",
-      productCode: "15200P6",
-      optionCode: "TG10",
-      optionTitle: chosenOpt?.title || "Swamp Tour with Pickup 8:00 AM",
-      date: normalizedDate,
-      departureTime: "08:00",
-      partySize: rawPartySize,
-      pickupLocation:
-        rec.meetingPointAddress ||
-        "Hotel Monteleone, 214 Royal St, New Orleans, LA 70130 (0.95 mi from Erato/Julia Cruise Terminals)",
-    },
-    pricing: {
-      priceBasis,
-      currency,
-      unitPriceUsd,
-      totalPriceUsd,
-      timeChecked,
-    },
-    sailingWindow,
-    timeFit,
-    seatAvailability,
-    viatorCheckoutFieldCarryover: {
-      carriedInAffiliateUrlQuery: [
-        "productCode (d675-15200P6 in URL path)",
-        `pid (${approvedAffiliateAccount})`,
-        `mcid (${approvedMcid})`,
-        "medium (api)",
-        `campaign (${handoff.attributionParameterValue})`,
-        `click_id (${handoff.clickId})`,
-        `startDate (${normalizedDate})`,
-        `numTravelers (${rawPartySize})`,
-      ],
-      preboundByViatorWebLanding: [
-        "Exact product page (d675-15200P6 — New Orleans Swamp Tour Boat Adventure With Pickup)",
-        `Partner affiliate attribution (pid=${approvedAffiliateAccount}, mcid=${approvedMcid}, campaign=${handoff.attributionParameterValue}, click_id=${handoff.clickId})`,
-        `URL query parameters startDate=${normalizedDate} and numTravelers=${rawPartySize}`,
-      ],
-      requiresTravelerConfirmationInViatorWidget: [
-        "Product option selection (TG10 — Swamp Tour with Pickup 8:00 AM)",
-        "Departure time slot (08:00)",
-        "French Quarter hotel pickup point (e.g., Hotel Monteleone, 214 Royal St)",
-        "Final confirmation of date and traveler count inside Viator's interactive availability widget",
-      ],
-    },
-  };
+      providerAccount: affiliate.pid,
+      viatorProductCode: productCode,
+      productCode,
+      productTitle: rec.title,
+      productDestinationUrl: destinationUrl.toString(),
+      campaign: "dcc_nola_tour",
+      intendedDate: date,
+      intendedOption: optionCode,
+      intendedDepartureTime: departureTime,
+      partySize,
+      partyDetails: { adults: partySize, totalGuests: partySize, portDate: date },
+      shipArrivalTime: sailingWindow.shipArrivalTime,
+      shipDepartureTime: sailingWindow.shipDepartureTime,
+      quotedPriceAmount: pricing.totalPriceUsd,
+      quotedPriceCurrency: pricing.currency,
+      metadata: {
+        portSlug: port,
+        surface,
+        isQaTraffic,
+        originatingPage: "/ports/new-orleans",
+        portDayCheckoutSelection: { requestHash, snapshot },
+      },
+    });
+    return await replayOrReturn(handoff);
+  } catch (error) {
+    if (error instanceof CommercialHandoffStorageError) {
+      return reject("DURABLE_HANDOFF_UNAVAILABLE", error.message);
+    }
+    throw error;
+  }
+
 }
 

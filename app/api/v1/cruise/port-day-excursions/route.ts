@@ -8,13 +8,15 @@ import {
   type PortDayExcursionCategoryFilter,
 } from "@/lib/dcc/cruisePortExcursionCatalogEngine";
 import { recordMachineFunnelEvent } from "@/lib/dcc/commerce";
+import { enforceEvaluationRequestSizeLimit, MachineSecurityLimitError } from "@/lib/dcc/machine/securityLimits";
+import { prepareTourCheckoutFromRequest } from "@/lib/dcc/machine/v03/prepareTourCheckoutRequest";
 
 export const dynamic = "force-dynamic";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-DCC-API-Key",
   "Cache-Control": "no-store, max-age=0",
 };
 
@@ -206,7 +208,21 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json().catch(() => ({}));
+    const rawBody = await request.text();
+    let body;
+    try {
+      body = JSON.parse(rawBody);
+    } catch {
+      body = {};
+    }
+    if (body?.action === "prepare_checkout") {
+      enforceEvaluationRequestSizeLimit(rawBody);
+      const checkout = await prepareTourCheckoutFromRequest(request, body, "dcc_rest_prepare_tour_checkout");
+      return NextResponse.json(checkout, {
+        status: checkout.ok ? 200 : checkout.errorCode === "DURABLE_HANDOFF_UNAVAILABLE" ? 503 : 409,
+        headers: CORS_HEADERS,
+      });
+    }
     const portSlug = String(body.portSlug || body.port || "reykjavik");
     const tourId = String(body.tourId || "");
     const productCode = body.productCode ? String(body.productCode) : null;
@@ -309,6 +325,12 @@ export async function POST(request: NextRequest) {
       { headers: CORS_HEADERS }
     );
   } catch (err: any) {
+    if (err instanceof MachineSecurityLimitError) {
+      return NextResponse.json(
+        { ok: false, error: err.code, message: err.message },
+        { status: err.statusCode, headers: CORS_HEADERS },
+      );
+    }
     return NextResponse.json(
       {
         ok: false,

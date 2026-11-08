@@ -27,12 +27,13 @@ import {
 } from "@/lib/dcc/commerce";
 import {
   MAPPED_CRUISE_PORT_EXCURSION_PROFILES,
-  preparePortDayTourCheckout,
   queryPortDayExcursionCatalog,
   verifyLiveExcursionAvailability,
   type PortDayExcursionCategoryFilter,
   type PortDayExcursionViewMode,
 } from "@/lib/dcc/cruisePortExcursionCatalogEngine";
+
+import { prepareTourCheckoutFromRequest } from "@/lib/dcc/machine/v03/prepareTourCheckoutRequest";
 
 export const dynamic = "force-dynamic";
 
@@ -572,86 +573,13 @@ export async function POST(request: Request) {
       }
 
       if (toolName === "dcc_prepare_tour_checkout") {
-        const auth = verifyEvaluationAuthAndRateLimit(request, "dcc:commerce:handoff");
-        const portSlug = String(args.port ?? args.portSlug ?? "new-orleans").trim();
-        const productCode =
-          typeof args.productCode === "string" ? args.productCode.trim() : null;
-        const optionCode =
-          typeof (args.optionCode ?? args.option) === "string"
-            ? String(args.optionCode ?? args.option).trim()
-            : null;
-        const date =
-          typeof (args.date ?? args.sailingDate) === "string"
-            ? String(args.date ?? args.sailingDate).trim()
-            : null;
-        const departureTime =
-          typeof (args.departureTime ?? args.selectedDepartureTime) === "string"
-            ? String(args.departureTime ?? args.selectedDepartureTime).trim()
-            : null;
-        const partySize =
-          args.partySize !== undefined && args.partySize !== null
-            ? Number(args.partySize)
-            : null;
-        const travelerApprovedCheckout =
-          args.travelerApprovedCheckout === true ||
-          args.travelerApprovedCheckout === "true";
-        const idempotencyKey =
-          typeof args.idempotencyKey === "string" ? args.idempotencyKey.trim() : null;
-        const sailingId =
-          typeof (args.sailing ?? args.sailingId) === "string"
-            ? String(args.sailing ?? args.sailingId).trim()
-            : null;
-        const shipSlug =
-          typeof (args.ship ?? args.shipSlug) === "string"
-            ? String(args.ship ?? args.shipSlug).trim()
-            : null;
-        const shipArrivalTime =
-          typeof (args.shipArrival ?? args.shipArrivalTime) === "string"
-            ? String(args.shipArrival ?? args.shipArrivalTime).trim()
-            : null;
-        const shipAllAboardTime =
-          typeof (args.allAboard ?? args.shipAllAboardTime) === "string"
-            ? String(args.allAboard ?? args.shipAllAboardTime).trim()
-            : null;
-        const shipDepartureTime =
-          typeof (args.shipDeparture ?? args.shipDepartureTime) === "string"
-            ? String(args.shipDeparture ?? args.shipDepartureTime).trim()
-            : null;
-        const originatingSite =
-          typeof args.originatingSite === "string" && args.originatingSite.trim()
-            ? args.originatingSite.trim()
-            : "destinationcommandcenter.com";
-        const surface =
-          typeof args.surface === "string" && args.surface.trim()
-            ? args.surface.trim()
-            : "dcc_mcp_prepare_tour_checkout";
-        const isQaTraffic =
-          args.isQaTraffic === true ||
-          args.qaTraffic === true ||
-          args.isTest === true;
-        const simulateTimeout =
-          args.simulateTimeout === true || args.simulateTimeout === "true";
-
-        const checkoutRes = await preparePortDayTourCheckout({
-          portSlug,
-          productCode,
-          optionCode,
-          date,
-          departureTime,
-          partySize,
-          travelerApprovedCheckout,
-          idempotencyKey,
-          sailingId,
-          shipSlug,
-          shipArrivalTime,
-          shipAllAboardTime,
-          shipDepartureTime,
-          callerClientId: auth.clientId,
-          originatingSite,
-          surface,
-          isQaTraffic,
-          simulateTimeout,
-        });
+        if (typeof rpcId !== "string" && typeof rpcId !== "number") {
+          return buildMachineJsonResponse(
+            { jsonrpc: "2.0", id: null, error: { code: -32600, message: "Checkout requires a request ID." } },
+            { status: 400, cacheControl: "no-store", extraHeaders: { traceparent } },
+          );
+        }
+        const checkoutRes = await prepareTourCheckoutFromRequest(request, args, "dcc_mcp_prepare_tour_checkout");
 
         return buildMachineJsonResponse(
           {
@@ -667,7 +595,7 @@ export async function POST(request: Request) {
             cacheControl: "no-store",
             extraHeaders: {
               traceparent,
-              "X-DCC-Client-Id": auth.clientId,
+              "X-DCC-Client-Id": checkoutRes.authenticatedCallerClientId,
               "X-DCC-Surface-Class": "commercial_handoff",
               "X-DCC-RateLimit-Backend": rateDecision.coordinationBackend,
             },

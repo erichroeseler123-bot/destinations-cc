@@ -22,6 +22,7 @@ import {
 } from "../machine/v03/runtimeStoreV03";
 import { getViatorAccessCapabilities } from "../../viator/access";
 import { getViatorClient } from "../../viator/client";
+import { getViatorPublicConfig } from "../../viator/config";
 import {
   extractClickIdFromTrackingValue,
   generateOpaqueClickId,
@@ -140,6 +141,7 @@ export interface CreateCommercialHandoffInput {
   evaluationRunId?: string | null;
   receiptId?: string | null;
   idempotencyKey?: string | null;
+  requireDurableRecord?: boolean;
   intendedDate?: string | null;
   intendedOption?: string | null;
   intendedDepartureId?: string | null;
@@ -862,6 +864,23 @@ export function generateOpaqueHandoffId(): string {
   return `hndf_${crypto.randomBytes(12).toString("hex")}`;
 }
 
+type DurableHandoffKey = { originatingSite: string; callerClientId: string; idempotencyKey: string };
+
+function durableHandoffId(key: DurableHandoffKey): string {
+  const scope = ["dcc-durable-handoff", normalizeOriginatingSite(key.originatingSite), key.callerClientId, key.idempotencyKey];
+  return `hndf_${crypto.createHash("sha256").update(JSON.stringify(scope)).digest("hex").slice(0, 24)}`;
+}
+
+export class CommercialHandoffStorageError extends Error {
+  constructor() {
+    super("Durable checkout handoff storage is unavailable. Retry with the same idempotency key.");
+  }
+}
+
+export function getDurableCommercialHandoff(key: DurableHandoffKey) {
+  return getCommercialHandoffById(durableHandoffId(key), { durableOnly: true });
+}
+
 export function extractHandoffIdFromTrackingValue(value?: string | null): string | null {
   if (!value || typeof value !== "string") return null;
   const match = value.match(/(hndf_[0-9a-f]{24})/i);
@@ -924,7 +943,7 @@ export function buildProviderAffiliateHandoffUrl(params: {
     params.campaign || `${siteKey.replace(/\..*$/, "")}-${params.productCode}`
   );
   const clickId =
-    params.clickId && /^clk_[0-9a-f]{24}$/i.test(params.clickId.trim())
+    params.clickId && /^clk_(?:[0-9a-f]{24}|qa_[0-9a-f]{20})$/i.test(params.clickId.trim())
       ? params.clickId.trim().toLowerCase()
       : generateOpaqueClickId();
 
@@ -1377,11 +1396,18 @@ export async function createCommercialHandoff(
     input.metadata.idempotencyKey.trim()) ||
     null;
 
-  if (rawIdempotencyKey) {
+  let durableId: string | null = null;
+  if (input.requireDurableRecord) {
+    if (!rawIdempotencyKey || !input.callerClientId) throw new CommercialHandoffStorageError();
+    durableId = durableHandoffId({ originatingSite, callerClientId, idempotencyKey: rawIdempotencyKey });
+    const existing = await getCommercialHandoffById(durableId, { durableOnly: true });
+    if (existing) return { ...existing, duplicateSubmission: true };
+  } else if (rawIdempotencyKey) {
     for (const existing of memoryHandoffs.values()) {
       if (
         (existing.originatingSite === originatingSite ||
           existing.callerClientId === callerClientId) &&
+        !existing.metadata.portDayCheckoutSelection &&
         existing.metadata?.idempotencyKey === rawIdempotencyKey
       ) {
         return {
@@ -1396,7 +1422,11 @@ export async function createCommercialHandoff(
     if (poolCheck && hasDbCheck) {
       try {
         const dupRes = await poolCheck.query<{ handoff_id: string }>(
-          `SELECT handoff_id FROM dcc_commercial_handoffs WHERE (originating_site = $1 OR caller_client_id = $2) AND metadata_json->>'idempotencyKey' = $3 ORDER BY created_at ASC LIMIT 1`,
+          `SELECT handoff_id FROM dcc_commercial_handoffs
+           WHERE (originating_site = $1 OR caller_client_id = $2)
+             AND metadata_json->>'idempotencyKey' = $3
+             AND NOT (metadata_json ? 'portDayCheckoutSelection')
+           ORDER BY created_at ASC LIMIT 1`,
           [originatingSite, callerClientId, rawIdempotencyKey]
         );
         if (dupRes.rows[0]?.handoff_id) {
@@ -1461,7 +1491,7 @@ export async function createCommercialHandoff(
       ? input.intendedOption.trim()
       : null);
 
-  const handoffId = generateOpaqueHandoffId();
+  const handoffId = durableId ?? generateOpaqueHandoffId();
   const urlBuilt = buildProviderAffiliateHandoffUrl({
     originatingSite,
     provider: input.provider,
@@ -1472,7 +1502,7 @@ export async function createCommercialHandoff(
     productCode: input.productCode,
     productDestinationUrl: input.productDestinationUrl,
     handoffId,
-    clickId: input.clickId ?? null,
+    clickId: durableId && isQaTraffic ? generateOpaqueClickId({ isTest: true }) : input.clickId,
     campaign: input.campaign,
     receiptId: input.receiptId ?? null,
     intendedDate: input.intendedDate ?? null,
@@ -1483,7 +1513,7 @@ export async function createCommercialHandoff(
     quotedPriceAmount: input.quotedPriceAmount ?? null,
   });
 
-  const opaqueAttribution = issueOpaqueClickAttribution({
+  const issueAttribution = () => issueOpaqueClickAttribution({
     clickId: urlBuilt.clickId,
     handoffId,
     decisionReceiptId: input.receiptId?.trim() || `rcpt:sha256:handoff_${handoffId}`,
@@ -1522,7 +1552,9 @@ export async function createCommercialHandoff(
     productCode: input.productCode,
     productDestinationUrl: urlBuilt.outboundAffiliateUrl,
     isTest: isQaTraffic,
+    ...(durableId ? { recordStage: "recommendation" as const } : {}),
   });
+  const clickId = durableId ? urlBuilt.clickId : issueAttribution().clickId;
 
   let derivedTargetSite: string | null = input.targetSite
     ? normalizeOriginatingSite(input.targetSite)
@@ -1626,7 +1658,9 @@ export async function createCommercialHandoff(
               : versionedCandidate?.viatorAffiliatePid ?? null,
           viatorAffiliateMcid: versionedCandidate?.viatorAffiliateMcid ?? "42383",
           viatorWorryFreeShoreExcursion,
-          travelerReselectionRequirements: [...JUNEAU_VIATOR_RESELECTION_REQUIREMENTS],
+          travelerReselectionRequirements: input.metadata?.portDayCheckoutSelection
+            ? ["Select the saved date, option, departure time, and travelers on Viator."]
+            : [...JUNEAU_VIATOR_RESELECTION_REQUIREMENTS],
           operatorSourceUrl: versionedCandidate?.operatorSourceUrl ?? null,
           operatorFaqUrl: versionedCandidate?.operatorFaqUrl ?? null,
           operatorShortname:
@@ -1667,7 +1701,7 @@ export async function createCommercialHandoff(
 
   const enrichedMetadata: Record<string, unknown> = {
     ...(input.metadata ?? {}),
-    clickId: opaqueAttribution.clickId,
+    clickId,
     ...(rawIdempotencyKey ? { idempotencyKey: rawIdempotencyKey } : {}),
     ...(isQaTraffic ? { isQaTraffic: true } : {}),
     ...(derivedTargetSite ? { targetSite: derivedTargetSite } : {}),
@@ -1693,6 +1727,7 @@ export async function createCommercialHandoff(
   let createdAtIso = new Date().toISOString();
   const pool = getCommercePool();
   const hasDb = await ensureCommerceTables();
+  if (durableId && (!pool || !hasDb)) throw new CommercialHandoffStorageError();
 
   if (pool && hasDb) {
     try {
@@ -1726,6 +1761,7 @@ export async function createCommercialHandoff(
           $1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
           $11, $12, $13, $14, $15, $16, $17::jsonb, $18, $19, $20, $21, $22::jsonb, clock_timestamp()
         )
+        ${durableId ? "ON CONFLICT (handoff_id) DO NOTHING" : ""}
         RETURNING created_at
         `,
         [
@@ -1755,15 +1791,20 @@ export async function createCommercialHandoff(
       );
       if (res.rows[0]?.created_at) {
         createdAtIso = new Date(res.rows[0].created_at).toISOString();
+      } else if (durableId) {
+        const existing = await getCommercialHandoffById(durableId, { durableOnly: true });
+        if (!existing) throw new CommercialHandoffStorageError();
+        return { ...existing, duplicateSubmission: true };
       }
     } catch {
+      if (durableId) throw new CommercialHandoffStorageError();
       // Fallback to in-memory map if transient DB error occurs
     }
   }
 
   const record: CommercialHandoffRecord = {
     handoffId,
-    clickId: opaqueAttribution.clickId,
+    clickId,
     originatingSite,
     targetSite: derivedTargetSite,
     provider: input.provider,
@@ -1806,6 +1847,7 @@ export async function createCommercialHandoff(
   };
 
   memoryHandoffs.set(handoffId, record);
+  if (durableId) issueAttribution();
   return record;
 }
 
@@ -1889,20 +1931,6 @@ export async function recordMachineFunnelEvent(input: {
   );
   const callerClientId = input.callerClientId?.trim() || "client:dcc_mcp_client";
   const idempotencyKey = input.idempotencyKey?.trim() || null;
-
-  // Deduplicate checkout_handoff events by idempotencyKey + stage so retries never create a second event
-  if (input.stage === "checkout_handoff" && idempotencyKey) {
-    for (const existing of memoryMachineFunnelEvents.values()) {
-      if (
-        existing.stage === "checkout_handoff" &&
-        existing.idempotencyKey === idempotencyKey &&
-        (existing.originatingSite === originatingSite ||
-          existing.callerClientId === callerClientId)
-      ) {
-        return existing;
-      }
-    }
-  }
 
   const isQa = isCommercialQaTraffic({
     isQaTraffic: input.isQaTraffic,
@@ -2003,15 +2031,19 @@ export async function recordMachineFunnelEvent(input: {
 }
 
 export async function getCommercialHandoffById(
-  handoffId: string
+  handoffId: string,
+  options?: { durableOnly?: boolean },
 ): Promise<CommercialHandoffRecord | null> {
   const normalized = handoffId.trim().toLowerCase();
   const mem = memoryHandoffs.get(normalized);
-  if (mem) return mem;
+  if (mem && !options?.durableOnly) return mem;
 
   const pool = getCommercePool();
   const hasDb = await ensureCommerceTables();
-  if (!pool || !hasDb) return null;
+  if (!pool || !hasDb) {
+    if (options?.durableOnly) throw new CommercialHandoffStorageError();
+    return null;
+  }
 
   try {
     const res = await pool.query<{
@@ -2126,6 +2158,7 @@ export async function getCommercialHandoffById(
     memoryHandoffs.set(loaded.handoffId, loaded);
     return loaded;
   } catch {
+    if (options?.durableOnly) throw new CommercialHandoffStorageError();
     return null;
   }
 }
@@ -2320,9 +2353,16 @@ export async function recordCommercialOutcome(
     }
   }
 
-  const matchedHandoff = resolvedHandoffId
-    ? await getCommercialHandoffById(resolvedHandoffId)
+  const isPilotProviderEvent = input.reporterProvenance === "viator_modified_since_poller" &&
+    input.campaignOrRefValue?.startsWith("dcc_nola_tour__") === true;
+  const candidateHandoff = resolvedHandoffId
+    ? await getCommercialHandoffById(resolvedHandoffId, { durableOnly: isPilotProviderEvent })
     : null;
+  const matchedHandoff = candidateHandoff?.metadata.portDayCheckoutSelection && (
+    !isPilotProviderEvent || input.provider !== "viator" ||
+    input.providerAccount !== candidateHandoff.providerAccount ||
+    input.campaignOrRefValue !== candidateHandoff.attributionParameterValue
+  ) ? null : candidateHandoff;
 
   const dedupeKey = computeOutcomeDedupeKey({
     provider: input.provider,
@@ -2362,6 +2402,7 @@ export async function recordCommercialOutcome(
 
   const pool = getCommercePool();
   const hasDb = await ensureCommerceTables();
+  if (isPilotProviderEvent && (!pool || !hasDb)) throw new CommercialHandoffStorageError();
 
   if (pool && hasDb) {
     try {
@@ -2458,6 +2499,7 @@ export async function recordCommercialOutcome(
         dccRecordedAt = new Date(insertRes.rows[0].dcc_recorded_at).toISOString();
       }
     } catch {
+      if (isPilotProviderEvent) throw new CommercialHandoffStorageError();
       // Fallback to in-memory
     }
   }
@@ -2536,6 +2578,7 @@ export async function recordCommercialOutcome(
           [matchedHandoff.handoffId, JSON.stringify(nextOutcomeState)]
         );
       } catch {
+        if (isPilotProviderEvent) throw new CommercialHandoffStorageError();
         // Non-fatal
       }
     }
@@ -2760,9 +2803,15 @@ export interface ViatorBookingModifiedEventItem {
   travelDate?: string;
   productCode?: string;
   tourGradeCode?: string;
+  campaignValue?: string;
   campaign?: string;
   partnerBookingRef?: string;
   handoffId?: string;
+  bookedItem?: {
+    productCode?: string;
+    productOptionCode?: string;
+    travelDate?: string;
+  };
   partySize?: number;
   travelerCount?: number;
   currency?: string;
@@ -2795,7 +2844,7 @@ export async function pollViatorModifiedSinceWithCheckpoint(options?: {
   const capabilities = getViatorAccessCapabilities();
   const pollerId = options?.pollerId || "viator_modified_since_primary";
   const providerAccount =
-    options?.providerAccount || process.env.NEXT_PUBLIC_VIATOR_PID || "P00058396";
+    options?.providerAccount || getViatorPublicConfig().pid;
   const holderId = `poller_${crypto.randomBytes(6).toString("hex")}`;
   const leaseDurationMs = options?.leaseDurationMs ?? 30_000;
 
@@ -2868,10 +2917,9 @@ export async function pollViatorModifiedSinceWithCheckpoint(options?: {
     let unmatchedCount = 0;
 
     for (const item of rawItems) {
-      const bookingRef = String(
-        item.bookingRef || item.transactionRef || `viator_evt_${crypto.randomBytes(6).toString("hex")}`
-      );
-      const eventType = String(item.eventType || item.status || "BOOKING_CONFIRMED").toUpperCase();
+      const bookingRef = String(item.bookingRef || item.transactionRef || "").trim();
+      const eventType = String(item.eventType || item.status || "").trim().toUpperCase();
+      if (!bookingRef || !eventType) continue;
       const providerEventTime =
         typeof item.lastUpdated === "string"
           ? item.lastUpdated
@@ -2880,11 +2928,8 @@ export async function pollViatorModifiedSinceWithCheckpoint(options?: {
             : null;
 
       const campaignValue =
-        typeof item.campaign === "string"
-          ? item.campaign
-          : typeof item.partnerBookingRef === "string"
-            ? item.partnerBookingRef
-            : null;
+        [item.campaignValue, item.campaign, item.partnerBookingRef]
+          .find((value) => typeof value === "string" && value.trim())?.trim() ?? null;
 
       const currency = typeof item.currency === "string" ? item.currency : "USD";
       const bookingValueAmount =
@@ -2908,9 +2953,9 @@ export async function pollViatorModifiedSinceWithCheckpoint(options?: {
         providerEventTime,
         handoffId: typeof item.handoffId === "string" ? item.handoffId : null,
         campaignOrRefValue: campaignValue,
-        bookedProductCode: typeof item.productCode === "string" ? item.productCode : null,
-        bookedDate: typeof item.travelDate === "string" ? item.travelDate : null,
-        bookedOption: typeof item.tourGradeCode === "string" ? item.tourGradeCode : null,
+        bookedProductCode: item.bookedItem?.productCode ?? item.productCode ?? null,
+        bookedDate: item.bookedItem?.travelDate ?? item.travelDate ?? null,
+        bookedOption: item.bookedItem?.productOptionCode ?? item.tourGradeCode ?? null,
         bookedPartySize:
           typeof item.partySize === "number"
             ? item.partySize
@@ -3032,6 +3077,7 @@ export async function listCommercialOutcomes(options?: {
   handoffId?: string;
   receiptId?: string;
   provider?: CommercialProvider;
+  excludeQa?: boolean;
   limit?: number;
 }): Promise<CommercialOutcomeRecord[]> {
   const limit = Math.min(Math.max(1, options?.limit ?? 25), 100);
@@ -3042,6 +3088,13 @@ export async function listCommercialOutcomes(options?: {
     try {
       const clauses: string[] = [];
       const values: unknown[] = [];
+      if (options?.excludeQa) {
+        clauses.push(`NOT EXISTS (
+          SELECT 1 FROM dcc_commercial_handoffs h
+          WHERE h.handoff_id = dcc_commercial_outcomes.handoff_id
+            AND h.metadata_json @> '{"isQaTraffic":true}'::jsonb
+        )`);
+      }
       if (options?.handoffId) {
         values.push(options.handoffId);
         clauses.push(`handoff_id = $${values.length}`);
@@ -3165,12 +3218,17 @@ export async function listCommercialOutcomes(options?: {
   }
 
   const allMem = Array.from(memoryOutcomesById.values());
-  const filtered = allMem.filter((item) => {
-    if (options?.handoffId && item.handoffId !== options.handoffId) return false;
-    if (options?.receiptId && item.receiptId !== options.receiptId) return false;
-    if (options?.provider && item.provider !== options.provider) return false;
-    return true;
-  });
+  const filtered: CommercialOutcomeRecord[] = [];
+  for (const item of allMem) {
+    if (options?.handoffId && item.handoffId !== options.handoffId) continue;
+    if (options?.receiptId && item.receiptId !== options.receiptId) continue;
+    if (options?.provider && item.provider !== options.provider) continue;
+    if (options?.excludeQa && item.handoffId) {
+      const handoff = await getCommercialHandoffById(item.handoffId);
+      if (handoff?.metadata.isQaTraffic === true) continue;
+    }
+    filtered.push(item);
+  }
   filtered.sort((a, b) => a.dccRecordedAt.localeCompare(b.dccRecordedAt));
   return filtered.slice(0, limit);
 }
@@ -4283,7 +4341,7 @@ export async function getSharedHandoffLedgerSummary(options?: {
   }
 
   // 4. Summarize authenticated provider-confirmed outcomes, estimated commissions, confirmed earnings, and payouts separately
-  const outcomes = await listCommercialOutcomes({ limit: 100 });
+  const outcomes = await listCommercialOutcomes({ limit: 100, excludeQa: true });
   let confirmedCount = 0;
   let forOriginatingSiteConfirmedCount = 0;
   let estimatedCommissionUsd = 0;
