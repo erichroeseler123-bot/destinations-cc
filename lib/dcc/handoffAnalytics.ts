@@ -2,10 +2,14 @@ import {
   SATELLITE_IDS,
   listAllSatelliteHandoffSummaries,
   listRecentSatelliteEvents,
-  type DccHandoffEventType,
+  type DccSatelliteEventType as DccHandoffEventType,
   type DccSatelliteId,
   type SatelliteHandoffSummary,
 } from "@/lib/dcc/satelliteHandoffs";
+
+type SatelliteHandoffSummaryWithHistory = SatelliteHandoffSummary & {
+  statusHistory?: Array<{ eventType?: DccHandoffEventType }>;
+};
 
 const SYNTHETIC_TEST_HANDOFF_PREFIXES = [
   "test-handoff-",
@@ -58,16 +62,17 @@ export function buildEventTypesBySummaryKey(
   const satellites = new Set<DccSatelliteId>();
 
   for (const summary of summaries) {
+    const summaryWithHistory = summary as SatelliteHandoffSummaryWithHistory;
     const key = `${summary.satelliteId}:${summary.handoffId}`;
     const set = lookup.get(key) || new Set<DccHandoffEventType>();
     set.add(summary.latestEventType);
-    if (Array.isArray(summary.statusHistory)) {
-      for (const item of summary.statusHistory) {
+    if (Array.isArray(summaryWithHistory.statusHistory)) {
+      for (const item of summaryWithHistory.statusHistory) {
         if (item?.eventType) set.add(item.eventType);
       }
     }
     lookup.set(key, set);
-    if (!summary.statusHistory || summary.statusHistory.length === 0) {
+    if (!summaryWithHistory.statusHistory || summaryWithHistory.statusHistory.length === 0) {
       satellites.add(summary.satelliteId);
     }
   }
@@ -92,9 +97,10 @@ export function hasSummaryReachedEventType(
   eventLookup?: Map<string, Set<DccHandoffEventType>>
 ): boolean {
   if (summary.latestEventType === eventType) return true;
+  const summaryWithHistory = summary as SatelliteHandoffSummaryWithHistory;
   if (
-    Array.isArray(summary.statusHistory) &&
-    summary.statusHistory.some((entry) => entry?.eventType === eventType)
+    Array.isArray(summaryWithHistory.statusHistory) &&
+    summaryWithHistory.statusHistory.some((entry) => entry?.eventType === eventType)
   ) {
     return true;
   }
