@@ -704,6 +704,13 @@ export default function PortDayExcursionCatalogSection({
                         : `Open Exact Tour Checkout (${tour.productCode || tour.optionCode || "Direct"}) ↗`}
                     </a>
                     <a
+                      href={`/tours/${encodeURIComponent(tour.productCode || tour.tourId)}`}
+                      data-testid={`tour-detail-link-${tour.productCode || tour.tourId}`}
+                      className="rounded-xl border border-cyan-400/35 bg-slate-900 px-3 py-2.5 text-xs font-semibold text-cyan-200 hover:bg-slate-800 transition"
+                    >
+                      Tour Details →
+                    </a>
+                    <a
                       href={tour.handoff.cruisePromenadeTrackedHref}
                       className="rounded-xl border border-white/15 bg-slate-950 px-3 py-2.5 text-xs font-semibold text-slate-200 hover:bg-slate-800 transition"
                     >
