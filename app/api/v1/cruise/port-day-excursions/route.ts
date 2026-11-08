@@ -187,7 +187,7 @@ export async function GET(request: NextRequest) {
         surface: surface || "/api/v1/cruise/port-day-excursions",
         viewMode,
         timeFitStatus: result.tours[0]?.timeFit?.status ?? null,
-        totalCatalogTours: result.pagination.totalCatalogTours,
+        totalCatalogTours: result.pagination.totalMatchedInSql,
         totalFittingSailing: result.pagination.totalFittingSailing,
       },
     }).catch(() => {});
