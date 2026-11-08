@@ -85,11 +85,29 @@ export async function GET(request: NextRequest) {
       searchParams.get("shipAllAboardTime") ||
       searchParams.get("allAboardTime") ||
       undefined;
+    const shipDepartureTime =
+      searchParams.get("shipDeparture") ||
+      searchParams.get("shipDepartureTime") ||
+      searchParams.get("departureTime") ||
+      searchParams.get("departure") ||
+      undefined;
     const sailingDate =
       searchParams.get("date") || searchParams.get("sailingDate") || undefined;
-    const partySizeRaw = searchParams.get("partySize") || searchParams.get("party_size");
+    const shipSlug =
+      searchParams.get("ship") ||
+      searchParams.get("shipSlug") ||
+      searchParams.get("shipName") ||
+      undefined;
+    const sailingId =
+      searchParams.get("sailing") ||
+      searchParams.get("sailingId") ||
+      searchParams.get("plan") ||
+      searchParams.get("planCode") ||
+      undefined;
+    const partySizeRaw =
+      searchParams.get("partySize") || searchParams.get("party_size");
     const partySize = partySizeRaw ? Math.max(1, Number(partySizeRaw) || 2) : 2;
-    const ship = searchParams.get("ship") || undefined;
+    const ship = searchParams.get("ship") || shipSlug || undefined;
     const cruiseSailDate =
       searchParams.get("sailing_date") ||
       searchParams.get("cruiseSailDate") ||
@@ -130,7 +148,10 @@ export async function GET(request: NextRequest) {
       category,
       shipArrivalTime,
       shipAllAboardTime,
+      shipDepartureTime,
       sailingDate,
+      shipSlug,
+      sailingId,
       partySize,
       ship,
       cruiseSailDate,

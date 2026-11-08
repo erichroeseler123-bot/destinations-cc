@@ -65,13 +65,14 @@ export default async function PortPage({
     shipArrival?: string;
     allAboard?: string;
     shipDeparture?: string;
+    ship?: string;
+    sailing?: string;
     viewMode?: string;
     category?: string;
     date?: string;
     port_date?: string;
     partySize?: string;
     party_size?: string;
-    ship?: string;
     sailing_date?: string;
   }>;
 }) {
@@ -115,7 +116,10 @@ export default async function PortPage({
         category: initialCategory,
         shipArrivalTime: query.shipArrival,
         shipAllAboardTime: query.allAboard,
+        shipDepartureTime: query.shipDeparture,
         sailingDate: resolvedPortDate,
+        shipSlug: query.ship,
+        sailingId: query.sailing,
         partySize: initialPartySize,
         ship: query.ship,
         cruiseSailDate: query.sailing_date,
@@ -156,7 +160,10 @@ export default async function PortPage({
           initialCategory={initialCategory}
           initialShipArrivalTime={query.shipArrival}
           initialShipAllAboardTime={query.allAboard}
+          initialShipDepartureTime={query.shipDeparture}
           initialSailingDate={resolvedPortDate}
+          initialShipSlug={query.ship}
+          initialSailingId={query.sailing}
           initialPartySize={initialPartySize}
           initialShip={query.ship}
           initialCruiseSailingDate={query.sailing_date}

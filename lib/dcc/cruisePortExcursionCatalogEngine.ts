@@ -81,6 +81,27 @@ export interface PortDayEvidenceReviewPriority {
   automatedEvidenceNotes: string[];
 }
 
+export type PortDayDepartureTimeSource =
+  | "scheduled_port_call"
+  | "request"
+  | "missing"
+  | "ambiguous"
+  | "invalid";
+
+export interface ScheduledCruisePortCall {
+  sailingId: string;
+  planCode?: string;
+  shipSlug: string;
+  shipName: string;
+  cruiseLine: string;
+  portSlug: string;
+  date: string;
+  arrivalTime: string | null;
+  allAboardTime: string | null;
+  departureTime: string;
+  source: string;
+}
+
 export interface PortDayTimeFitEvaluation {
   status: PortDayTimeFitStatus;
   statusLabel: string;
@@ -89,6 +110,9 @@ export interface PortDayTimeFitEvaluation {
   selectedOptionTitle: string | null;
   shipArrivalTime: string;
   shipAllAboardTime: string;
+  shipDepartureTime: string | null;
+  departureTimeSource?: PortDayDepartureTimeSource;
+  allAboardToShipDepartureMinutes: number | null;
   earliestDisembarkationTime: string;
   selectedDepartureTime: string | null;
   availableDepartureTimes: string[];
@@ -116,10 +140,12 @@ export interface PortDayTimeFitEvaluation {
   estimatedBackAtPierTime: string | null;
   requiredReturnBufferMinutes: number;
   bufferBeforeAllAboardMinutes: number | null;
+  bufferBeforeShipDepartureMinutes: number | null;
   returnBufferReconciliation?: {
     requiredAllAboardBufferMinutes: number;
-    allAboardToShipDepartureMinutes: number;
-    equivalentShipDepartureBufferMinutes: number;
+    shipDepartureTime: string | null;
+    allAboardToShipDepartureMinutes: number | null;
+    equivalentShipDepartureBufferMinutes: number | null;
     bufferBeforeAllAboardMinutes: number | null;
     bufferBeforeShipDepartureMinutes: number | null;
     reconciliationNote: string;
@@ -214,8 +240,14 @@ export interface PortDayExcursionCatalogResponse {
   sailingWindow: {
     shipArrivalTime: string;
     shipAllAboardTime: string;
+    shipDepartureTime: string | null;
+    allAboardToShipDepartureMinutes: number | null;
+    departureTimeSource: PortDayDepartureTimeSource;
     sailingDate: string;
     partySize: number;
+    shipSlug?: string | null;
+    shipName?: string | null;
+    sailingId?: string | null;
   };
   viewMode: PortDayExcursionViewMode;
   category: PortDayExcursionCategoryFilter;
@@ -781,9 +813,19 @@ export function resolveCruisePortExcursionProfile(
 }
 
 function parseHhMm(hhmm: string | undefined | null): number | null {
-  const m = String(hhmm || "")
-    .trim()
-    .match(/^(\d{1,2}):(\d{2})$/);
+  const raw = String(hhmm || "").trim();
+  if (!raw) return null;
+  const m12 = raw.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (m12) {
+    let h = Number(m12[1]);
+    const min = Number(m12[2]);
+    const meridiem = m12[3].toUpperCase();
+    if (h < 1 || h > 12 || min < 0 || min > 59) return null;
+    if (meridiem === "AM" && h === 12) h = 0;
+    if (meridiem === "PM" && h < 12) h += 12;
+    return h * 60 + min;
+  }
+  const m = raw.match(/^(\d{1,2}):(\d{2})$/);
   if (!m) return null;
   const h = Number(m[1]);
   const min = Number(m[2]);
@@ -1065,11 +1107,495 @@ export function evaluateEvidenceReviewPriority(params: {
   };
 }
 
+export const SCHEDULED_CRUISE_PORT_CALLS: ScheduledCruisePortCall[] = [
+  // Independence of the Seas — 7-Night Eastern Caribbean & Perfect Day (INDY-2027-01-24 / ID07MIA-1982128855)
+  {
+    sailingId: "INDY-2027-01-24",
+    sailingAliases: ["ID07MIA-1982128855", "independence-of-the-seas-20270124"],
+    shipName: "Independence of the Seas",
+    shipSlug: "independence-of-the-seas",
+    portSlug: "miami",
+    sailingDate: "2027-01-24",
+    arrivalTime: "07:00",
+    allAboardTime: "15:00",
+    departureTime: "16:00",
+  },
+  {
+    sailingId: "INDY-2027-01-24",
+    sailingAliases: ["ID07MIA-1982128855", "independence-of-the-seas-20270124"],
+    shipName: "Independence of the Seas",
+    shipSlug: "independence-of-the-seas",
+    portSlug: "nassau",
+    sailingDate: "2027-01-25",
+    arrivalTime: "07:00",
+    allAboardTime: "15:15",
+    departureTime: "16:00",
+  },
+  {
+    sailingId: "INDY-2027-01-24",
+    sailingAliases: ["ID07MIA-1982128855", "independence-of-the-seas-20270124"],
+    shipName: "Independence of the Seas",
+    shipSlug: "independence-of-the-seas",
+    portSlug: "st-thomas",
+    sailingDate: "2027-01-28",
+    arrivalTime: "08:00",
+    allAboardTime: "17:15",
+    departureTime: "18:00",
+  },
+  // Symphony of the Seas — 7-Night Western Caribbean (WESTERN-2027-01-24 / WC07MIA-20270124)
+  {
+    sailingId: "WESTERN-2027-01-24",
+    sailingAliases: ["WC07MIA-20270124", "symphony-of-the-seas-20270124"],
+    shipName: "Symphony of the Seas",
+    shipSlug: "symphony-of-the-seas",
+    portSlug: "miami",
+    sailingDate: "2027-01-24",
+    arrivalTime: "07:00",
+    allAboardTime: "15:30",
+    departureTime: "16:30",
+  },
+  {
+    sailingId: "WESTERN-2027-01-24",
+    sailingAliases: ["WC07MIA-20270124", "symphony-of-the-seas-20270124"],
+    shipName: "Symphony of the Seas",
+    shipSlug: "symphony-of-the-seas",
+    portSlug: "cozumel",
+    sailingDate: "2027-01-26",
+    arrivalTime: "07:00",
+    allAboardTime: "16:15",
+    departureTime: "17:00",
+  },
+  {
+    sailingId: "WESTERN-2027-01-24",
+    sailingAliases: ["WC07MIA-20270124", "symphony-of-the-seas-20270124"],
+    shipName: "Symphony of the Seas",
+    shipSlug: "symphony-of-the-seas",
+    portSlug: "roatan",
+    sailingDate: "2027-01-27",
+    arrivalTime: "08:00",
+    allAboardTime: "16:15",
+    departureTime: "17:00",
+  },
+  {
+    sailingId: "WESTERN-2027-01-24",
+    sailingAliases: ["WC07MIA-20270124", "symphony-of-the-seas-20270124"],
+    shipName: "Symphony of the Seas",
+    shipSlug: "symphony-of-the-seas",
+    portSlug: "grand-cayman",
+    sailingDate: "2027-01-28",
+    arrivalTime: "07:30",
+    allAboardTime: "15:00",
+    departureTime: "16:00",
+  },
+  // Carnival Liberty — New Orleans 7-Night Western Caribbean
+  {
+    sailingId: "carnival-carnival-liberty-20260719",
+    sailingAliases: ["carnival-liberty-20260719", "CCL-LIBERTY-2026-07-19"],
+    shipName: "Carnival Liberty",
+    shipSlug: "carnival-liberty",
+    portSlug: "new-orleans",
+    sailingDate: "2026-07-19",
+    arrivalTime: "07:00",
+    allAboardTime: "14:30",
+    departureTime: "15:30",
+  },
+  {
+    sailingId: "carnival-carnival-liberty-20260719",
+    sailingAliases: ["carnival-liberty-20260719", "CCL-LIBERTY-2026-07-19"],
+    shipName: "Carnival Liberty",
+    shipSlug: "carnival-liberty",
+    portSlug: "cozumel",
+    sailingDate: "2026-07-23",
+    arrivalTime: "08:00",
+    allAboardTime: "15:30",
+    departureTime: "16:00",
+  },
+  {
+    sailingId: "carnival-liberty-20270516",
+    sailingAliases: ["carnival-carnival-liberty-20270516", "CCL-LIBERTY-2027-05-16"],
+    shipName: "Carnival Liberty",
+    shipSlug: "carnival-liberty",
+    portSlug: "new-orleans",
+    sailingDate: "2027-05-16",
+    arrivalTime: "07:00",
+    allAboardTime: "14:30",
+    departureTime: "15:30",
+  },
+  // Carnival Breeze — New Orleans 5-Night Western Caribbean
+  {
+    sailingId: "carnival-breeze-20260725",
+    sailingAliases: ["carnival-carnival-breeze-20260725"],
+    shipName: "Carnival Breeze",
+    shipSlug: "carnival-breeze",
+    portSlug: "new-orleans",
+    sailingDate: "2026-07-25",
+    arrivalTime: "08:00",
+    allAboardTime: "15:00",
+    departureTime: "16:00",
+  },
+  // Carnival Paradise — Tampa 5-Night Western Caribbean
+  {
+    sailingId: "carnival-paradise-20260806",
+    sailingAliases: ["carnival-carnival-paradise-20260806"],
+    shipName: "Carnival Paradise",
+    shipSlug: "carnival-paradise",
+    portSlug: "tampa",
+    sailingDate: "2026-08-06",
+    arrivalTime: "08:00",
+    allAboardTime: "15:00",
+    departureTime: "16:00",
+  },
+  // Celebrity Edge — Seattle 7-Night Dawes Glacier
+  {
+    sailingId: "widgety-celebeg07a396-240726",
+    sailingAliases: ["celebrity-edge-20260724", "celebrity-celebrity-edge-20260724"],
+    shipName: "Celebrity Edge",
+    shipSlug: "celebrity-edge",
+    portSlug: "seattle",
+    sailingDate: "2026-07-24",
+    arrivalTime: "07:00",
+    allAboardTime: "15:00",
+    departureTime: "16:00",
+  },
+  {
+    sailingId: "widgety-celebeg07a396-240726",
+    sailingAliases: ["celebrity-edge-20260724", "celebrity-celebrity-edge-20260724"],
+    shipName: "Celebrity Edge",
+    shipSlug: "celebrity-edge",
+    portSlug: "ketchikan",
+    sailingDate: "2026-07-26",
+    arrivalTime: "07:00",
+    allAboardTime: "15:15",
+    departureTime: "16:00",
+  },
+  {
+    sailingId: "widgety-celebeg07a396-240726",
+    sailingAliases: ["celebrity-edge-20260724", "celebrity-celebrity-edge-20260724"],
+    shipName: "Celebrity Edge",
+    shipSlug: "celebrity-edge",
+    portSlug: "juneau",
+    sailingDate: "2026-07-27",
+    arrivalTime: "13:30",
+    allAboardTime: "21:30",
+    departureTime: "22:00",
+  },
+  {
+    sailingId: "widgety-celebeg07a396-240726",
+    sailingAliases: ["celebrity-edge-20260724", "celebrity-celebrity-edge-20260724"],
+    shipName: "Celebrity Edge",
+    shipSlug: "celebrity-edge",
+    portSlug: "skagway",
+    sailingDate: "2026-07-28",
+    arrivalTime: "07:00",
+    allAboardTime: "17:15",
+    departureTime: "18:00",
+  },
+  // Norwegian Encore — Seattle 7-Night Alaska
+  {
+    sailingId: "ncl-norwegian-encore-20260510",
+    sailingAliases: ["norwegian-encore-20260510"],
+    shipName: "Norwegian Encore",
+    shipSlug: "norwegian-encore",
+    portSlug: "seattle",
+    sailingDate: "2026-05-10",
+    arrivalTime: "06:00",
+    allAboardTime: "15:00",
+    departureTime: "16:00",
+  },
+  {
+    sailingId: "ncl-norwegian-encore-20260510",
+    sailingAliases: ["norwegian-encore-20260510"],
+    shipName: "Norwegian Encore",
+    shipSlug: "norwegian-encore",
+    portSlug: "juneau",
+    sailingDate: "2026-05-12",
+    arrivalTime: "14:30",
+    allAboardTime: "22:30",
+    departureTime: "23:00",
+  },
+  {
+    sailingId: "ncl-norwegian-encore-20260510",
+    sailingAliases: ["norwegian-encore-20260510"],
+    shipName: "Norwegian Encore",
+    shipSlug: "norwegian-encore",
+    portSlug: "skagway",
+    sailingDate: "2026-05-13",
+    arrivalTime: "07:00",
+    allAboardTime: "19:30",
+    departureTime: "20:00",
+  },
+  {
+    sailingId: "ncl-norwegian-encore-20260510",
+    sailingAliases: ["norwegian-encore-20260510"],
+    shipName: "Norwegian Encore",
+    shipSlug: "norwegian-encore",
+    portSlug: "ketchikan",
+    sailingDate: "2026-05-15",
+    arrivalTime: "07:00",
+    allAboardTime: "12:45",
+    departureTime: "13:15",
+  },
+  // Discovery Princess — Seattle 7-Night Inside Passage
+  {
+    sailingId: "princess-discovery-princess-20260510",
+    sailingAliases: ["discovery-princess-20260510"],
+    shipName: "Discovery Princess",
+    shipSlug: "discovery-princess",
+    portSlug: "seattle",
+    sailingDate: "2026-05-10",
+    arrivalTime: "07:00",
+    allAboardTime: "14:00",
+    departureTime: "15:00",
+  },
+  {
+    sailingId: "princess-discovery-princess-20260510",
+    sailingAliases: ["discovery-princess-20260510"],
+    shipName: "Discovery Princess",
+    shipSlug: "discovery-princess",
+    portSlug: "ketchikan",
+    sailingDate: "2026-05-12",
+    arrivalTime: "06:30",
+    allAboardTime: "14:30",
+    departureTime: "15:00",
+  },
+  {
+    sailingId: "princess-discovery-princess-20260510",
+    sailingAliases: ["discovery-princess-20260510"],
+    shipName: "Discovery Princess",
+    shipSlug: "discovery-princess",
+    portSlug: "juneau",
+    sailingDate: "2026-05-13",
+    arrivalTime: "12:30",
+    allAboardTime: "21:30",
+    departureTime: "22:00",
+  },
+  {
+    sailingId: "princess-discovery-princess-20260510",
+    sailingAliases: ["discovery-princess-20260510"],
+    shipName: "Discovery Princess",
+    shipSlug: "discovery-princess",
+    portSlug: "skagway",
+    sailingDate: "2026-05-14",
+    arrivalTime: "06:00",
+    allAboardTime: "16:30",
+    departureTime: "17:00",
+  },
+  // Icon of the Seas — Miami 7-Night Western Caribbean
+  {
+    sailingId: "rccl-icon-of-the-seas-20260509",
+    sailingAliases: ["icon-of-the-seas-20260509", "royal-caribbean-icon-of-the-seas-20260509"],
+    shipName: "Icon of the Seas",
+    shipSlug: "icon-of-the-seas",
+    portSlug: "miami",
+    sailingDate: "2026-05-09",
+    arrivalTime: "06:00",
+    allAboardTime: "15:30",
+    departureTime: "16:30",
+  },
+  {
+    sailingId: "rccl-icon-of-the-seas-20260509",
+    sailingAliases: ["icon-of-the-seas-20260509", "royal-caribbean-icon-of-the-seas-20260509"],
+    shipName: "Icon of the Seas",
+    shipSlug: "icon-of-the-seas",
+    portSlug: "cozumel",
+    sailingDate: "2026-05-11",
+    arrivalTime: "07:00",
+    allAboardTime: "16:30",
+    departureTime: "17:00",
+  },
+  {
+    sailingId: "rccl-icon-of-the-seas-20260509",
+    sailingAliases: ["icon-of-the-seas-20260509", "royal-caribbean-icon-of-the-seas-20260509"],
+    shipName: "Icon of the Seas",
+    shipSlug: "icon-of-the-seas",
+    portSlug: "roatan",
+    sailingDate: "2026-05-12",
+    arrivalTime: "08:00",
+    allAboardTime: "16:30",
+    departureTime: "17:00",
+  },
+];
+
+function normalizeShipSlug(input: string | undefined | null): string {
+  return String(input || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+export function resolveScheduledPortCall(params: {
+  portSlug: string;
+  sailingDate?: string | null;
+  shipSlug?: string | null;
+  sailingId?: string | null;
+  shipArrivalTime?: string | null;
+  shipAllAboardTime?: string | null;
+  shipDepartureTime?: string | null;
+  profile: CruisePortExcursionProfile;
+}): {
+  matchedPortCall: ScheduledCruisePortCall | null;
+  shipArrivalTime: string;
+  shipAllAboardTime: string;
+  shipDepartureTime: string | null;
+  allAboardToShipDepartureMinutes: number | null;
+  departureTimeSource: PortDayDepartureTimeSource;
+  sailingDate: string;
+  shipSlug: string | null;
+  shipName: string | null;
+  sailingId: string | null;
+} {
+  const { profile } = params;
+  const rawSailingId = params.sailingId ? String(params.sailingId).trim() : null;
+  const rawShipSlug = params.shipSlug ? normalizeShipSlug(params.shipSlug) : null;
+  const rawDate = params.sailingDate ? String(params.sailingDate).trim() : null;
+  const explicitArrivalMin = parseHhMm(params.shipArrivalTime);
+  const explicitAllAboardMin = parseHhMm(params.shipAllAboardTime);
+  const explicitDepartureMin = parseHhMm(params.shipDepartureTime);
+  const hasExplicitDepartureParam =
+    typeof params.shipDepartureTime === "string" && params.shipDepartureTime.trim().length > 0;
+
+  let candidates = SCHEDULED_CRUISE_PORT_CALLS.filter(
+    (c) => c.portSlug === profile.portSlug
+  );
+
+  if (rawSailingId) {
+    const idLower = rawSailingId.toLowerCase();
+    candidates = candidates.filter(
+      (c) =>
+        c.sailingId.toLowerCase() === idLower ||
+        Boolean(c.sailingAliases?.some((a) => a.toLowerCase() === idLower))
+    );
+  }
+  if (rawShipSlug) {
+    candidates = candidates.filter(
+      (c) =>
+        c.shipSlug === rawShipSlug ||
+        normalizeShipSlug(c.shipName) === rawShipSlug
+    );
+  }
+  if (rawDate) {
+    candidates = candidates.filter((c) => c.sailingDate === rawDate);
+  }
+
+  let matchedPortCall: ScheduledCruisePortCall | null = null;
+  let isAmbiguousSchedule = false;
+
+  if (rawSailingId || rawShipSlug || rawDate) {
+    if (candidates.length === 1) {
+      const candidate = candidates[0];
+      // If only date was provided (no sailingId/shipSlug) and caller passed custom arrival/all-aboard that conflict with the candidate, do not assume that ship's schedule
+      const arrivalConflict =
+        !rawSailingId &&
+        !rawShipSlug &&
+        explicitArrivalMin !== null &&
+        parseHhMm(candidate.arrivalTime) !== explicitArrivalMin;
+      const allAboardConflict =
+        !rawSailingId &&
+        !rawShipSlug &&
+        explicitAllAboardMin !== null &&
+        parseHhMm(candidate.allAboardTime) !== explicitAllAboardMin;
+      if (!arrivalConflict && !allAboardConflict) {
+        matchedPortCall = candidate;
+      }
+    } else if (candidates.length > 1) {
+      const distinctDepartures = new Set(candidates.map((c) => c.departureTime));
+      const distinctAllAboards = new Set(candidates.map((c) => c.allAboardTime));
+      if (distinctDepartures.size === 1 && distinctAllAboards.size === 1) {
+        matchedPortCall = candidates[0];
+      } else {
+        isAmbiguousSchedule = true;
+      }
+    }
+  }
+
+  const resolvedArrivalTime =
+    explicitArrivalMin !== null
+      ? formatHhMm(explicitArrivalMin)
+      : matchedPortCall?.arrivalTime || profile.defaultShipArrivalTime;
+  const resolvedAllAboardTime =
+    explicitAllAboardMin !== null
+      ? formatHhMm(explicitAllAboardMin)
+      : matchedPortCall?.allAboardTime || profile.defaultShipAllAboardTime;
+  const resolvedSailingDate =
+    rawDate || matchedPortCall?.sailingDate || profile.defaultSailingDate || "2027-07-15";
+
+  const arrivalMin = parseHhMm(resolvedArrivalTime);
+  const allAboardMin = parseHhMm(resolvedAllAboardTime);
+
+  let shipDepartureTime: string | null = null;
+  let allAboardToShipDepartureMinutes: number | null = null;
+  let departureTimeSource: PortDayDepartureTimeSource = "missing";
+
+  if (hasExplicitDepartureParam) {
+    if (
+      explicitDepartureMin !== null &&
+      allAboardMin !== null &&
+      arrivalMin !== null &&
+      allAboardMin > arrivalMin &&
+      explicitDepartureMin > allAboardMin &&
+      explicitDepartureMin - allAboardMin <= 240
+    ) {
+      shipDepartureTime = formatHhMm(explicitDepartureMin);
+      allAboardToShipDepartureMinutes = explicitDepartureMin - allAboardMin;
+      departureTimeSource =
+        matchedPortCall && matchedPortCall.departureTime === shipDepartureTime
+          ? "scheduled_port_call"
+          : "request_param";
+    } else {
+      shipDepartureTime = null;
+      allAboardToShipDepartureMinutes = null;
+      departureTimeSource = "invalid";
+    }
+  } else if (isAmbiguousSchedule) {
+    shipDepartureTime = null;
+    allAboardToShipDepartureMinutes = null;
+    departureTimeSource = "ambiguous";
+  } else if (matchedPortCall) {
+    const scheduledDepMin = parseHhMm(matchedPortCall.departureTime);
+    if (
+      scheduledDepMin !== null &&
+      allAboardMin !== null &&
+      arrivalMin !== null &&
+      allAboardMin > arrivalMin &&
+      scheduledDepMin > allAboardMin &&
+      scheduledDepMin - allAboardMin <= 240
+    ) {
+      shipDepartureTime = formatHhMm(scheduledDepMin);
+      allAboardToShipDepartureMinutes = scheduledDepMin - allAboardMin;
+      departureTimeSource = "scheduled_port_call";
+    } else {
+      shipDepartureTime = null;
+      allAboardToShipDepartureMinutes = null;
+      departureTimeSource = "invalid";
+    }
+  } else {
+    shipDepartureTime = null;
+    allAboardToShipDepartureMinutes = null;
+    departureTimeSource = "missing";
+  }
+
+  return {
+    matchedPortCall,
+    shipArrivalTime: resolvedArrivalTime,
+    shipAllAboardTime: resolvedAllAboardTime,
+    shipDepartureTime,
+    allAboardToShipDepartureMinutes,
+    departureTimeSource,
+    sailingDate: resolvedSailingDate,
+    shipSlug: matchedPortCall?.shipSlug || rawShipSlug || null,
+    shipName: matchedPortCall?.shipName || null,
+    sailingId: matchedPortCall?.sailingId || rawSailingId || null,
+  };
+}
+
 export function evaluateTourPortDayTimeFit(params: {
   rec: DurableTourRecord;
   profile: CruisePortExcursionProfile;
   shipArrivalTime?: string;
   shipAllAboardTime?: string;
+  shipDepartureTime?: string | null;
+  departureTimeSource?: PortDayDepartureTimeSource;
   optionCode?: string | null;
 }): PortDayTimeFitEvaluation {
   const { rec, profile } = params;
@@ -1078,6 +1604,25 @@ export function evaluateTourPortDayTimeFit(params: {
   const arrivalMin = parseHhMm(arrivalTime) ?? 480;
   const allAboardMin = parseHhMm(allAboardTime) ?? 1050;
   const earliestDisembarkMin = arrivalMin + 25;
+
+  const rawDepartureMin = parseHhMm(params.shipDepartureTime);
+  const hasValidShipDeparture =
+    rawDepartureMin !== null &&
+    allAboardMin > arrivalMin &&
+    rawDepartureMin > allAboardMin &&
+    rawDepartureMin - allAboardMin <= 240 &&
+    params.departureTimeSource !== "ambiguous" &&
+    params.departureTimeSource !== "invalid" &&
+    params.departureTimeSource !== "missing";
+
+  const validShipDepartureTime = hasValidShipDeparture ? formatHhMm(rawDepartureMin!) : null;
+  const allAboardToShipDepartureMinutes = hasValidShipDeparture
+    ? rawDepartureMin! - allAboardMin
+    : null;
+  const equivalentShipDepartureBufferMinutes =
+    allAboardToShipDepartureMinutes !== null
+      ? profile.requiredReturnBufferMinutes + allAboardToShipDepartureMinutes
+      : null;
 
   const chosenOption: TourProductOptionRecord | null =
     (params.optionCode &&
@@ -1243,6 +1788,7 @@ export function evaluateTourPortDayTimeFit(params: {
       selectedOptionTitle,
       shipArrivalTime: arrivalTime,
       shipAllAboardTime: allAboardTime,
+      shipDepartureTime: validShipDepartureTime,
       earliestDisembarkationTime: formatHhMm(earliestDisembarkMin),
       selectedDepartureTime: departures[0] || null,
       availableDepartureTimes: departures,
@@ -1272,11 +1818,16 @@ export function evaluateTourPortDayTimeFit(params: {
       bufferBeforeAllAboardMinutes: null,
       returnBufferReconciliation: {
         requiredAllAboardBufferMinutes: profile.requiredReturnBufferMinutes,
-        allAboardToShipDepartureMinutes: 30,
-        equivalentShipDepartureBufferMinutes: profile.requiredReturnBufferMinutes + 30,
+        allAboardToShipDepartureMinutes,
+        equivalentShipDepartureBufferMinutes,
         bufferBeforeAllAboardMinutes: null,
         bufferBeforeShipDepartureMinutes: null,
-        reconciliationNote: `Canonical return buffer is ${profile.requiredReturnBufferMinutes}m before All Aboard (${allAboardTime}), which equals ${profile.requiredReturnBufferMinutes + 30}m before Ship Departure (assuming standard 30m gangway-up interval after all-aboard).`,
+        reconciliationNote:
+          validShipDepartureTime !== null &&
+          allAboardToShipDepartureMinutes !== null &&
+          equivalentShipDepartureBufferMinutes !== null
+            ? `Tour fit requires returning to the pier at least ${profile.requiredReturnBufferMinutes}m before All Aboard (${allAboardTime}), or ${equivalentShipDepartureBufferMinutes}m before scheduled ship departure (${validShipDepartureTime}, ${allAboardToShipDepartureMinutes}m after All Aboard).`
+            : `Tour fit requires returning to the pier at least ${profile.requiredReturnBufferMinutes}m before All Aboard (${allAboardTime}).`,
       },
       hasVerifiedReturnBuffer: false,
       missingFields,
@@ -1314,8 +1865,10 @@ export function evaluateTourPortDayTimeFit(params: {
   const tourEndMin = selectedDepMin + durationMinutes;
   const backAtPierMin = tourEndMin + meetingToPierMinutes;
   const bufferBeforeAllAboard = allAboardMin - backAtPierMin;
-  const allAboardToSailAwayMin = 30;
-  const bufferBeforeShipDeparture = bufferBeforeAllAboard + allAboardToSailAwayMin;
+  const bufferBeforeShipDeparture =
+    hasValidShipDeparture && allAboardToShipDepartureMinutes !== null
+      ? bufferBeforeAllAboard + allAboardToShipDepartureMinutes
+      : null;
   const fits = fittingDepartures.includes(selectedDep);
 
   return {
@@ -1326,6 +1879,7 @@ export function evaluateTourPortDayTimeFit(params: {
     selectedOptionTitle,
     shipArrivalTime: arrivalTime,
     shipAllAboardTime: allAboardTime,
+    shipDepartureTime: validShipDepartureTime,
     earliestDisembarkationTime: formatHhMm(earliestDisembarkMin),
     selectedDepartureTime: selectedDep,
     availableDepartureTimes: departures,
@@ -1355,30 +1909,50 @@ export function evaluateTourPortDayTimeFit(params: {
     bufferBeforeAllAboardMinutes: bufferBeforeAllAboard,
     returnBufferReconciliation: {
       requiredAllAboardBufferMinutes: profile.requiredReturnBufferMinutes,
-      allAboardToShipDepartureMinutes: allAboardToSailAwayMin,
-      equivalentShipDepartureBufferMinutes:
-        profile.requiredReturnBufferMinutes + allAboardToSailAwayMin,
+      allAboardToShipDepartureMinutes,
+      equivalentShipDepartureBufferMinutes,
       bufferBeforeAllAboardMinutes: bufferBeforeAllAboard,
       bufferBeforeShipDepartureMinutes: bufferBeforeShipDeparture,
-      reconciliationNote: `Canonical return buffer is ${profile.requiredReturnBufferMinutes}m before All Aboard (${allAboardTime}), which equals ${profile.requiredReturnBufferMinutes + allAboardToSailAwayMin}m before Ship Departure (${formatHhMm(allAboardMin + allAboardToSailAwayMin)}). Earlier report text cited ${profile.requiredReturnBufferMinutes + allAboardToSailAwayMin}m against all-aboard by mistake; ${profile.requiredReturnBufferMinutes}m before All Aboard (${profile.requiredReturnBufferMinutes + allAboardToSailAwayMin}m before Ship Departure) is the reconciled rule.`,
+      reconciliationNote:
+        validShipDepartureTime !== null &&
+        allAboardToShipDepartureMinutes !== null &&
+        bufferBeforeShipDeparture !== null
+          ? `Tour fit requires returning to the pier at least ${profile.requiredReturnBufferMinutes}m before All Aboard (${allAboardTime}). With scheduled ship departure at ${validShipDepartureTime} (${allAboardToShipDepartureMinutes}m after All Aboard), this tour returns at ${formatHhMm(
+              backAtPierMin
+            )} with ${bufferBeforeAllAboard}m before All Aboard and ${bufferBeforeShipDeparture}m before ship departure.`
+          : `Tour fit requires returning to the pier at least ${profile.requiredReturnBufferMinutes}m before All Aboard (${allAboardTime}). This tour returns at ${formatHhMm(
+              backAtPierMin
+            )} with ${bufferBeforeAllAboard}m before All Aboard.`,
     },
     hasVerifiedReturnBuffer: true,
     missingFields: [],
     reasonSummary: fits
-      ? `Departs ${selectedDep} (option ${selectedOptionCode || "default"}, check in by ${formatHhMm(
-          checkInMin
-        )} at ${meetingPointName}), ${roundTripTransferMinutes}m round-trip transfer, returns to pier at ${formatHhMm(
-          backAtPierMin
-        )} with +${bufferBeforeAllAboard}m buffer before ${allAboardTime} all-aboard (requires +${
-          profile.requiredReturnBufferMinutes
-        }m before all-aboard / +${
-          profile.requiredReturnBufferMinutes + allAboardToSailAwayMin
-        }m before ship departure).`
-      : `Departure ${selectedDep} returns to pier at ${formatHhMm(
-          backAtPierMin
-        )} (${bufferBeforeAllAboard}m vs ${allAboardTime} all-aboard; requires +${
-          profile.requiredReturnBufferMinutes
-        }m buffer before all-aboard).`,
+      ? validShipDepartureTime !== null && bufferBeforeShipDeparture !== null
+        ? `Departs ${selectedDep} (option ${selectedOptionCode || "default"}, check in by ${formatHhMm(
+            checkInMin
+          )} at ${meetingPointName}), ${roundTripTransferMinutes}m round-trip transfer, returns to pier at ${formatHhMm(
+            backAtPierMin
+          )} with +${bufferBeforeAllAboard}m before ${allAboardTime} all-aboard and +${bufferBeforeShipDeparture}m before ${validShipDepartureTime} ship departure (requires +${
+            profile.requiredReturnBufferMinutes
+          }m before all-aboard).`
+        : `Departs ${selectedDep} (option ${selectedOptionCode || "default"}, check in by ${formatHhMm(
+            checkInMin
+          )} at ${meetingPointName}), ${roundTripTransferMinutes}m round-trip transfer, returns to pier at ${formatHhMm(
+            backAtPierMin
+          )} with +${bufferBeforeAllAboard}m before ${allAboardTime} all-aboard (requires +${
+            profile.requiredReturnBufferMinutes
+          }m before all-aboard).`
+      : validShipDepartureTime !== null && bufferBeforeShipDeparture !== null
+        ? `Departure ${selectedDep} returns to pier at ${formatHhMm(
+            backAtPierMin
+          )} (${bufferBeforeAllAboard}m before ${allAboardTime} all-aboard and ${bufferBeforeShipDeparture}m before ${validShipDepartureTime} ship departure; requires +${
+            profile.requiredReturnBufferMinutes
+          }m before all-aboard).`
+        : `Departure ${selectedDep} returns to pier at ${formatHhMm(
+            backAtPierMin
+          )} (${bufferBeforeAllAboard}m before ${allAboardTime} all-aboard; requires +${
+            profile.requiredReturnBufferMinutes
+          }m before all-aboard).`,
     evidenceReviewPriority,
   };
 }
@@ -1995,7 +2569,10 @@ export async function queryPortDayExcursionCatalog(params: {
   category?: PortDayExcursionCategoryFilter;
   shipArrivalTime?: string;
   shipAllAboardTime?: string;
+  shipDepartureTime?: string | null;
   sailingDate?: string;
+  shipSlug?: string | null;
+  sailingId?: string | null;
   partySize?: number;
   ship?: string;
   cruiseSailDate?: string;
@@ -2011,10 +2588,24 @@ export async function queryPortDayExcursionCatalog(params: {
 
   const viewMode: PortDayExcursionViewMode = params.viewMode || "browse_all";
   const category: PortDayExcursionCategoryFilter = params.category || "all";
-  const shipArrivalTime = params.shipArrivalTime || profile.defaultShipArrivalTime;
-  const shipAllAboardTime = params.shipAllAboardTime || profile.defaultShipAllAboardTime;
-  const sailingDate =
-    params.sailingDate || profile.defaultSailingDate || "2027-07-15";
+  const portCallResolution = resolveScheduledPortCall({
+    portSlug: profile.portSlug,
+    sailingDate: params.sailingDate || null,
+    shipSlug: params.shipSlug || params.ship || null,
+    sailingId: params.sailingId || null,
+    shipArrivalTime: params.shipArrivalTime || null,
+    shipAllAboardTime: params.shipAllAboardTime || null,
+    shipDepartureTime: params.shipDepartureTime ?? null,
+    profile,
+  });
+
+  const shipArrivalTime = portCallResolution.shipArrivalTime;
+  const shipAllAboardTime = portCallResolution.shipAllAboardTime;
+  const shipDepartureTime = portCallResolution.shipDepartureTime;
+  const allAboardToShipDepartureMinutes =
+    portCallResolution.allAboardToShipDepartureMinutes;
+  const departureTimeSource = portCallResolution.departureTimeSource;
+  const sailingDate = portCallResolution.sailingDate;
   const partySize = Math.max(1, params.partySize || 2);
   const limit = Math.max(1, Math.min(100, params.limit || 12));
   const offset = Math.max(0, params.offset || 0);
@@ -2046,6 +2637,8 @@ export async function queryPortDayExcursionCatalog(params: {
       profile,
       shipArrivalTime,
       shipAllAboardTime,
+      shipDepartureTime,
+      departureTimeSource,
     });
 
     const chosenOptionCode = timeFit.selectedOptionCode;
@@ -2228,8 +2821,14 @@ export async function queryPortDayExcursionCatalog(params: {
     sailingWindow: {
       shipArrivalTime,
       shipAllAboardTime,
+      shipDepartureTime,
+      allAboardToShipDepartureMinutes,
+      departureTimeSource,
       sailingDate,
       partySize,
+      shipSlug: portCallResolution.shipSlug,
+      shipName: portCallResolution.shipName,
+      sailingId: portCallResolution.sailingId,
     },
     viewMode,
     category,

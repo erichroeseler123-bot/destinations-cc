@@ -16,7 +16,10 @@ interface PortDayExcursionCatalogSectionProps {
   initialCategory?: PortDayExcursionCategoryFilter;
   initialShipArrivalTime?: string;
   initialShipAllAboardTime?: string;
+  initialShipDepartureTime?: string | null;
   initialSailingDate?: string;
+  initialShipSlug?: string | null;
+  initialSailingId?: string | null;
   initialPartySize?: number;
   initialShip?: string;
   initialCruiseSailingDate?: string;
@@ -42,7 +45,10 @@ export default function PortDayExcursionCatalogSection({
   initialCategory = "all",
   initialShipArrivalTime,
   initialShipAllAboardTime,
+  initialShipDepartureTime,
   initialSailingDate,
+  initialShipSlug,
+  initialSailingId,
   initialPartySize = 2,
   initialShip = "",
   initialCruiseSailingDate = "",
@@ -64,10 +70,21 @@ export default function PortDayExcursionCatalogSection({
       initialCatalogData?.sailingWindow.shipAllAboardTime ||
       "17:30"
   );
+  const [shipDeparture] = useState<string | null>(
+    initialShipDepartureTime ??
+      initialCatalogData?.sailingWindow.shipDepartureTime ??
+      null
+  );
   const [sailingDate, setSailingDate] = useState<string>(
     initialSailingDate ||
       initialCatalogData?.sailingWindow.sailingDate ||
       "2027-07-15"
+  );
+  const [shipSlug] = useState<string | null>(
+    initialShipSlug ?? initialCatalogData?.sailingWindow.shipSlug ?? null
+  );
+  const [sailingId] = useState<string | null>(
+    initialSailingId ?? initialCatalogData?.sailingWindow.sailingId ?? null
   );
   const [partySize, setPartySize] = useState<number>(
     initialCatalogData?.sailingWindow.partySize || initialPartySize
@@ -136,12 +153,22 @@ export default function PortDayExcursionCatalogSection({
           offset: String(opts?.nextOffset ?? offset),
           sortBy: opts?.nextSortBy ?? sortBy,
         });
-        const nextShipVal = (opts?.nextShip ?? ship).trim();
+        const nextShipVal = (opts?.nextShip ?? (ship || shipSlug || "")).trim();
         const nextCruiseSailDateVal = (
           opts?.nextCruiseSailingDate ?? cruiseSailingDate
         ).trim();
-        if (nextShipVal) params.set("ship", nextShipVal);
-        if (nextCruiseSailDateVal) params.set("sailing_date", nextCruiseSailDateVal);
+        if (shipDeparture) {
+          params.set("shipDeparture", shipDeparture);
+        }
+        if (nextShipVal) {
+          params.set("ship", nextShipVal);
+        }
+        if (sailingId) {
+          params.set("sailing", sailingId);
+        }
+        if (nextCruiseSailDateVal) {
+          params.set("sailing_date", nextCruiseSailDateVal);
+        }
         const res = await fetch(
           `/api/v1/cruise/port-day-excursions?${params.toString()}`,
           { cache: "no-store" }
@@ -163,7 +190,10 @@ export default function PortDayExcursionCatalogSection({
       category,
       shipArrival,
       allAboard,
+      shipDeparture,
       sailingDate,
+      shipSlug,
+      sailingId,
       partySize,
       ship,
       cruiseSailingDate,
@@ -758,7 +788,15 @@ export default function PortDayExcursionCatalogSection({
                               (tour.timeFit.bufferBeforeAllAboardMinutes ?? 0) >= 0
                                 ? `+${tour.timeFit.bufferBeforeAllAboardMinutes}m buffer`
                                 : `${tour.timeFit.bufferBeforeAllAboardMinutes}m past`
-                            } vs ${allAboard})`
+                            } vs ${allAboard}${
+                              tour.timeFit.shipDepartureTime &&
+                              tour.timeFit.returnBufferReconciliation
+                                ?.bufferBeforeShipDepartureMinutes !== null &&
+                              tour.timeFit.returnBufferReconciliation
+                                ?.bufferBeforeShipDepartureMinutes !== undefined
+                                ? ` · +${tour.timeFit.returnBufferReconciliation.bufferBeforeShipDepartureMinutes}m vs ${tour.timeFit.shipDepartureTime} departure`
+                                : ""
+                            })`
                           : "Needs verification (cannot compute return buffer without full evidence)"}
                       </span>
                     </div>
