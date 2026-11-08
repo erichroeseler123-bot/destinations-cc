@@ -33,14 +33,15 @@ function readableSite(site: string) {
     "vibing-around": "Vibing Around",
     gosno: "GoSno",
     "party-at-red-rocks": "Party at Red Rocks",
-    "last-frontier": "Last Frontier",
-    "juneau-flight-deck": "Juneau Flight Deck",
-    "welcome-to-the-swamp": "Welcome to the Swamp",
-    "welcome-to-the-dells": "Welcome to the Dells",
-    "french-quarter-orientation": "French Quarter Orientation",
-    shuttleya: "ShuttleYa",
-    "420-airport-pickup": "420 Friendly Airport Pickup",
+    "red-rocks-amphitheatre": "Red Rocks Amphitheatre",
+    "national-park-authority": "National Park Authority",
     "save-on-the-strip": "Save On The Strip",
+    "save-on-vegas": "Save On Vegas",
+    "welcome-to-alaska-tours": "Welcome to Alaska Tours",
+    "alaska-cruise-ports": "Alaska Cruise Ports",
+    "juneau-flight-deck": "Juneau Helicopter Tours",
+    "colorado-ski-authority": "Colorado Ski Authority",
+    "welcome-to-new-orleans-tours": "Welcome to New Orleans Tours",
     wno: "Welcome to New Orleans Tours",
   };
   return labels[site] || site || "DCC";
@@ -81,7 +82,7 @@ export default function SinceLastVisit({ events, snapshot }: { events: ChangeEve
         <div className="grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
           <Mini label="Handoffs" value={snapshot.trackedHandoffs} />
           <Mini label="Completed" value={snapshot.completedHandoffs} />
-          <Mini label="Revenue" value={`$${snapshot.grossRevenue.toLocaleString()}`} />
+          <Mini label="Owned gross sales" value={`$${snapshot.grossRevenue.toLocaleString()}`} />
           <Mini label="Attention" value={snapshot.attention} alert={snapshot.attention > 0} />
         </div>
       </div>
@@ -104,7 +105,7 @@ export default function SinceLastVisit({ events, snapshot }: { events: ChangeEve
         <div>
           <div className="text-xs font-bold uppercase tracking-[0.15em] text-zinc-500">Current commercial pulse</div>
           <div className="mt-3 space-y-2 text-sm text-zinc-300">
-            <Pulse label="WNO FareHarbor opens" value={snapshot.wnoFareHarborOpens} />
+            <Pulse label="WNO FareHarbor checkout referrals" value={snapshot.wnoFareHarborOpens} />
             <Pulse label="Cruise planner saves" value={snapshot.cruisePlannerSaves} />
             <Pulse label="Cruise planner shares" value={snapshot.cruisePlannerShares} />
           </div>

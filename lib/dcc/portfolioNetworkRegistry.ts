@@ -1807,6 +1807,192 @@ export function isParticipatingPortfolioSite(siteIdOrDomain: string): boolean {
   return getDccSiteManifestV1(siteIdOrDomain) !== null;
 }
 
+export const PORTFOLIO_NETWORK_SITES = DCC_PORTFOLIO_NETWORK_SITES;
+
+export interface PortfolioSiteCommercialClassification {
+  siteId: DccPortfolioSiteId;
+  siteName: string;
+  canonicalDomain: string;
+  ownershipModel:
+    | "owned_direct_checkout"
+    | "owned_storefront_external_checkout"
+    | "owned_planning_hub"
+    | "owned_inquiry_feeder";
+  defaultOutcomeReporting:
+    | "direct_checkout_boundary"
+    | "modified_since_poller"
+    | "click_level_only"
+    | "request_or_inquiry_only";
+  reportsConfirmedOutcomes: boolean;
+  reportsOwnedGrossSales: boolean;
+  reportsCommissionsEarned: "reported" | "unknown" | "not_applicable";
+  reportsPayoutsReceived: "reported" | "unknown" | "not_applicable";
+  defaultHandoffLinkType:
+    | "owned_checkout"
+    | "direct_api_10pct"
+    | "checkout_referral"
+    | "affiliate_checkout"
+    | "spoke_handoff";
+}
+
+const PORTFOLIO_SITE_CLASSIFICATIONS: Record<
+  DccPortfolioSiteId,
+  Omit<PortfolioSiteCommercialClassification, "siteId" | "siteName" | "canonicalDomain">
+> = {
+  destinationcommandcenter: {
+    ownershipModel: "owned_planning_hub",
+    defaultOutcomeReporting: "modified_since_poller",
+    reportsConfirmedOutcomes: true,
+    reportsOwnedGrossSales: false,
+    reportsCommissionsEarned: "unknown",
+    reportsPayoutsReceived: "unknown",
+    defaultHandoffLinkType: "spoke_handoff",
+  },
+  cruisepromenade: {
+    ownershipModel: "owned_planning_hub",
+    defaultOutcomeReporting: "click_level_only",
+    reportsConfirmedOutcomes: false,
+    reportsOwnedGrossSales: false,
+    reportsCommissionsEarned: "unknown",
+    reportsPayoutsReceived: "unknown",
+    defaultHandoffLinkType: "affiliate_checkout",
+  },
+  lastfrontiershoreexcursions: {
+    ownershipModel: "owned_storefront_external_checkout",
+    defaultOutcomeReporting: "click_level_only",
+    reportsConfirmedOutcomes: false,
+    reportsOwnedGrossSales: false,
+    reportsCommissionsEarned: "unknown",
+    reportsPayoutsReceived: "unknown",
+    defaultHandoffLinkType: "affiliate_checkout",
+  },
+  juneauflightdeck: {
+    ownershipModel: "owned_storefront_external_checkout",
+    defaultOutcomeReporting: "click_level_only",
+    reportsConfirmedOutcomes: false,
+    reportsOwnedGrossSales: false,
+    reportsCommissionsEarned: "unknown",
+    reportsPayoutsReceived: "unknown",
+    defaultHandoffLinkType: "checkout_referral",
+  },
+  welcometoneworleanstours: {
+    ownershipModel: "owned_storefront_external_checkout",
+    defaultOutcomeReporting: "click_level_only",
+    reportsConfirmedOutcomes: false,
+    reportsOwnedGrossSales: false,
+    reportsCommissionsEarned: "unknown",
+    reportsPayoutsReceived: "unknown",
+    defaultHandoffLinkType: "checkout_referral",
+  },
+  welcometotheswamp: {
+    ownershipModel: "owned_storefront_external_checkout",
+    defaultOutcomeReporting: "modified_since_poller",
+    reportsConfirmedOutcomes: true,
+    reportsOwnedGrossSales: false,
+    reportsCommissionsEarned: "reported",
+    reportsPayoutsReceived: "unknown",
+    defaultHandoffLinkType: "direct_api_10pct",
+  },
+  vibearoundtown: {
+    ownershipModel: "owned_inquiry_feeder",
+    defaultOutcomeReporting: "request_or_inquiry_only",
+    reportsConfirmedOutcomes: false,
+    reportsOwnedGrossSales: false,
+    reportsCommissionsEarned: "unknown",
+    reportsPayoutsReceived: "unknown",
+    defaultHandoffLinkType: "spoke_handoff",
+  },
+  gosno: {
+    ownershipModel: "owned_direct_checkout",
+    defaultOutcomeReporting: "direct_checkout_boundary",
+    reportsConfirmedOutcomes: true,
+    reportsOwnedGrossSales: true,
+    reportsCommissionsEarned: "not_applicable",
+    reportsPayoutsReceived: "reported",
+    defaultHandoffLinkType: "owned_checkout",
+  },
+  feastlyspread: {
+    ownershipModel: "owned_direct_checkout",
+    defaultOutcomeReporting: "direct_checkout_boundary",
+    reportsConfirmedOutcomes: true,
+    reportsOwnedGrossSales: true,
+    reportsCommissionsEarned: "not_applicable",
+    reportsPayoutsReceived: "reported",
+    defaultHandoffLinkType: "owned_checkout",
+  },
+  brinkberry: {
+    ownershipModel: "owned_inquiry_feeder",
+    defaultOutcomeReporting: "click_level_only",
+    reportsConfirmedOutcomes: false,
+    reportsOwnedGrossSales: false,
+    reportsCommissionsEarned: "not_applicable",
+    reportsPayoutsReceived: "not_applicable",
+    defaultHandoffLinkType: "spoke_handoff",
+  },
+  partyatredrocks: {
+    ownershipModel: "owned_direct_checkout",
+    defaultOutcomeReporting: "direct_checkout_boundary",
+    reportsConfirmedOutcomes: true,
+    reportsOwnedGrossSales: true,
+    reportsCommissionsEarned: "not_applicable",
+    reportsPayoutsReceived: "reported",
+    defaultHandoffLinkType: "owned_checkout",
+  },
+  "420friendlyairportpickup": {
+    ownershipModel: "owned_direct_checkout",
+    defaultOutcomeReporting: "direct_checkout_boundary",
+    reportsConfirmedOutcomes: true,
+    reportsOwnedGrossSales: true,
+    reportsCommissionsEarned: "not_applicable",
+    reportsPayoutsReceived: "reported",
+    defaultHandoffLinkType: "owned_checkout",
+  },
+};
+
+export function getPortfolioSiteCommercialClassification(
+  siteId: DccPortfolioSiteId
+): PortfolioSiteCommercialClassification {
+  const manifest = DCC_PORTFOLIO_NETWORK_SITES.find((s) => s.site_id === siteId)!;
+  const base = PORTFOLIO_SITE_CLASSIFICATIONS[siteId];
+  return {
+    siteId,
+    siteName: manifest.site_name,
+    canonicalDomain: manifest.canonical_domains[0],
+    ...base,
+  };
+}
+
+export function resolveActivePortfolioSiteId(input?: string | null): DccPortfolioSiteId | null {
+  if (!input) return null;
+  const trimmed = input.trim().toLowerCase();
+  if (!trimmed || isExcludedPortfolioSite(trimmed)) {
+    return null;
+  }
+  const strippedOp = trimmed.replace(/^op:/, "");
+  if (isExcludedPortfolioSite(strippedOp)) {
+    return null;
+  }
+  const direct = getDccSiteManifestV1(strippedOp);
+  if (direct) return direct.site_id;
+
+  if (strippedOp.includes("gosno")) return "gosno";
+  if (strippedOp.includes("partyatredrocks") || strippedOp === "parr") return "partyatredrocks";
+  if (strippedOp.includes("420friendly") || strippedOp.includes("420airport") || strippedOp.includes("420-airport")) {
+    return "420friendlyairportpickup";
+  }
+  if (strippedOp.includes("feastly")) return "feastlyspread";
+  if (strippedOp.includes("brinkberry")) return "brinkberry";
+  if (strippedOp.includes("welcometoneworleans") || strippedOp === "wno") return "welcometoneworleanstours";
+  if (strippedOp.includes("welcometotheswamp") || strippedOp === "wts") return "welcometotheswamp";
+  if (strippedOp.includes("juneauflightdeck") || strippedOp === "jfd") return "juneauflightdeck";
+  if (strippedOp.includes("lastfrontier") || strippedOp === "lfse") return "lastfrontiershoreexcursions";
+  if (strippedOp.includes("cruisepromenade")) return "cruisepromenade";
+  if (strippedOp.includes("vibearoundtown")) return "vibearoundtown";
+  if (strippedOp.includes("destinationcommandcenter") || strippedOp === "dcc") return "destinationcommandcenter";
+
+  return null;
+}
+
 export function validateUrlFreeOfPersonalData(urlInput: string | URL): {
   valid: boolean;
   violatingParams: string[];
@@ -1832,3 +2018,4 @@ export function validateUrlFreeOfPersonalData(urlInput: string | URL): {
     violatingParams,
   };
 }
+

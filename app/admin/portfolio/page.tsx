@@ -7,6 +7,7 @@ import {
   listPortfolioSupplierConnections,
   type SupplierConnectionRecord,
 } from "@/lib/dcc/operatorOnboardingStore";
+import { buildUnifiedPortfolioFunnelReport } from "@/lib/dcc/commerce/portfolioFunnelReport";
 
 export const dynamic = "force-dynamic";
 export const metadata = { robots: { index: false, follow: false } };
@@ -22,12 +23,12 @@ type ConsoleCard = {
 };
 
 const consoles: ConsoleCard[] = [
-  { name: "Portfolio Activity", site: "Destination Command Center", href: "/admin/portfolio/activity", purpose: "Shows recent activity, handoffs, and booking intent by site.", status: "live" },
+  { name: "Portfolio Activity", site: "Destination Command Center", href: "/admin/portfolio/activity", purpose: "Shows recent activity, handoffs, and booking intent across all 12 active spokes.", status: "live" },
   { name: "DCC Command View", site: "Destination Command Center", href: "/command", purpose: "Public network pulse, corridor health, destination status, alerts, tactical recommendations, and event stream.", status: "live" },
   { name: "Portfolio Handoffs", site: "Destination Command Center", href: "/admin/satellite-handoffs", purpose: "Cross-site handoffs, lifecycle events, failures, revenue, partner outcomes, and source-page performance.", status: "live" },
   { name: "Live Pulse Admin", site: "Destination Command Center", href: "/admin/live-pulse", purpose: "Post and inspect short-lived destination signals for cities, ports, venues, and events.", status: "live" },
   { name: "EarthOS Mission Control", site: "Destination Command Center", href: "/internal/dashboard", purpose: "Mission queue, running/completed/failed states, approvals, launch panel, and priority rail.", status: "existing" },
-  { name: "WNO Revenue Opportunity", site: "Welcome to New Orleans Tours", href: "/internal/dashboard/wno-revenue-opportunity", purpose: "Entry sessions, tour-detail opens, FareHarbor opens, funnel ratios, top sources, pages, and products.", status: "live" },
+  { name: "WNO Revenue Opportunity", site: "Welcome to New Orleans Tours", href: "/internal/dashboard/wno-revenue-opportunity", purpose: "Entry sessions, tour-detail opens, FareHarbor checkout referrals, funnel ratios, top sources, pages, and products.", status: "live" },
   { name: "WNO Concierge QA", site: "Welcome to New Orleans Tours", href: "/new-orleans/admin/qa", purpose: "Internal chooser and tour QA surface for the New Orleans storefront.", status: "existing" },
   { name: "Vibing Around Admin", site: "Vibe Around Town", href: "https://vibearoundtown.com/admin", purpose: "Admin dashboard backed by Supabase admin authentication, with driver and marketplace operations.", status: "existing", external: true, note: "Private reservation/driver counts stay behind Vibe admin auth. DCC shows network activity here without weakening that boundary." },
   { name: "Founding Driver Applications", site: "Vibe Around Town", href: "https://vibearoundtown.com/admin/drivers", purpose: "Review founding driver applications and recruiting pipeline state.", status: "existing", external: true, note: "Requires a valid Vibe Around Town admin user." },
@@ -66,6 +67,11 @@ function formatLastChecked(isoString: string | null | undefined) {
   return `${date.toISOString().slice(0, 10)} · ${date.toISOString().slice(11, 19)} UTC`;
 }
 
+function formatUsdOrUnknown(value: number | "unknown"): string {
+  if (value === "unknown") return "unknown";
+  return `$${value.toLocaleString()}`;
+}
+
 function pickParam(
   params: Record<string, string | string[] | undefined> | undefined,
   key: string,
@@ -92,10 +98,11 @@ export default async function PortfolioDesktopPage(props: {
   const checkedType = pickParam(resolvedSearchParams, "checkType");
   const checkedAtParam = pickParam(resolvedSearchParams, "checkedAt");
 
-  const [events, missions, supplierConnections] = await Promise.all([
+  const [events, missions, supplierConnections, unifiedFunnelReport] = await Promise.all([
     listRecentProductionCorridorEvents(10000),
     listWorkflowMissions(),
     listPortfolioSupplierConnections(),
+    buildUnifiedPortfolioFunnelReport({ windowPreset: "28d" }),
   ]);
 
   const recentCheckBannerProduct =
@@ -118,10 +125,22 @@ export default async function PortfolioDesktopPage(props: {
   sweepExpiredSignals(new Date());
   const signals = readRuntimeSignals();
   const activeSignals = signals.filter((signal) => signal.status === "active");
-  const snapshot = getHandoffAnalyticsSnapshot(500);
+  const snapshot = getHandoffAnalyticsSnapshot(500, {
+    startIso: unifiedFunnelReport.reportingWindow.startIso,
+    endIso: unifiedFunnelReport.reportingWindow.endIso,
+  });
 
-  const portfolioEvents = events.filter((event: any) => event.corridorId === "portfolio-network");
-  const wno = events.filter((event: any) => event.corridorId === "wno-commerce");
+  const startMs = Date.parse(unifiedFunnelReport.reportingWindow.startIso);
+  const endMs = Date.parse(unifiedFunnelReport.reportingWindow.endIso);
+  const windowedEvents = events.filter((event: any) => {
+    const raw = event?.occurredAt || event?.createdAt;
+    if (!raw) return false;
+    const ms = Date.parse(raw);
+    return Number.isFinite(ms) && ms >= startMs && ms <= endMs;
+  });
+
+  const portfolioEvents = windowedEvents.filter((event: any) => event.corridorId === "portfolio-network");
+  const wno = windowedEvents.filter((event: any) => event.corridorId === "wno-commerce");
   const wnoLanding = wno.filter((event: any) => event.eventName === "landing_viewed");
   const wnoProduct = wno.filter((event: any) => event.eventName === "product_opened");
   const wnoBooking = wno.filter((event: any) => event.eventName === "booking_opened");
@@ -164,15 +183,19 @@ export default async function PortfolioDesktopPage(props: {
     (s) => !s.checkoutVerified.verified || !s.livePricesAndSeatsVerified.verified,
   ).length;
 
+  const { totals, reconciliation, unmatchedAttributionDrops } = unifiedFunnelReport;
+
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
       <div className="mx-auto max-w-7xl px-6 py-12">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <div className="text-xs font-black uppercase tracking-[0.24em] text-[#f5c66c]">DCC Portfolio Desktop</div>
+            <div className="text-xs font-black uppercase tracking-[0.24em] text-[#f5c66c]">
+              DCC Portfolio Desktop · Shared Window: {unifiedFunnelReport.reportingWindow.label} ({unifiedFunnelReport.reportingWindow.startIso.slice(0, 10)} → {unifiedFunnelReport.reportingWindow.endIso.slice(0, 10)})
+            </div>
             <h1 className="mt-3 text-4xl font-black tracking-tight md:text-5xl">Portfolio cockpit</h1>
             <p className="mt-4 max-w-3xl text-sm leading-6 text-zinc-300 md:text-base">
-              One protected screen for supplier connections, network activity, money signals, site handoffs, live conditions, mission attention, and the specialist admin consoles already built across the portfolio.
+              One protected screen for supplier connections, unified 28-day funnel &amp; revenue separation across all 12 active spokes, entry-to-checkout attribution traces, unmatched drop-offs, live conditions, and specialist admin consoles.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -183,10 +206,257 @@ export default async function PortfolioDesktopPage(props: {
         </div>
 
         <section className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Metric label="Tracked handoffs" value={snapshot.totalHandoffs} detail={`${snapshot.completed} completed`} />
-          <Metric label="Gross handoff revenue" value={`$${snapshot.grossRevenue.toLocaleString()}`} detail={`$${snapshot.partnerRevenue.toLocaleString()} partner revenue`} />
-          <Metric label="Needs attention" value={attention} detail={`${snapshot.urgentAlerts.length} alerts · ${missionWaiting} approvals · ${missionFailed} failed missions`} alert={attention > 0} />
-          <Metric label="Active live signals" value={activeSignals.length} detail={`${signals.length} stored signals`} />
+          <Metric
+            label="Unique visitors (28d)"
+            value={totals.uniqueVisitors}
+            detail={`${totals.pageviewBearingVisitorsCount} pageview visitors (${totals.rawPageviewEvents} pv) + ${totals.clickOnlyHandoffSessionsCount} click-only handoff sessions · ${totals.storefrontArrivals} storefront arrivals`}
+          />
+          <Metric
+            label="Outbound clicks (28d)"
+            value={totals.outboundClicks.total}
+            detail={`Deduplicated (${totals.outboundClicks.sumOfSpokeRowClicks} across spoke rows: ${totals.outboundClicks.crossSpokeDualAttributedClicksOverlap} cross-spoke overlap + ${totals.outboundClicks.corridorBookingOpenedClicks} corridor opens)`}
+          />
+          <Metric
+            label="Owned gross sales (28d)"
+            value={`$${totals.ownedGrossSalesUsd.toLocaleString()}`}
+            detail={`Settled payouts: $${totals.confirmedSettledPayoutsUsd.toLocaleString()} ($${totals.pendingOwnedSettlementUsd.toLocaleString()} pending settlement) · Affiliate commissions & payouts: ${formatUsdOrUnknown(totals.commissionsEarnedUsd)}`}
+          />
+          <Metric
+            label="Needs attention"
+            value={attention}
+            detail={`${snapshot.urgentAlerts.length} alerts · ${missionWaiting} approvals · ${missionFailed} failed missions · ${activeSignals.length} live signals`}
+            alert={attention > 0}
+          />
+        </section>
+
+        <section
+          id="unified-funnel-report"
+          data-testid="portfolio-unified-funnel-report"
+          className="mt-8 rounded-2xl border border-white/10 bg-white/[0.04] p-6"
+        >
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <div className="text-xs font-black uppercase tracking-[0.18em] text-[#f5c66c]">
+                Unified Network Funnel &amp; Revenue Separation ({unifiedFunnelReport.reportingWindow.label})
+              </div>
+              <h2 className="mt-2 text-2xl font-black">12 Active Spokes — Shared Reporting Window</h2>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-300">
+                Applies one reporting window (<code className="rounded bg-black/40 px-1.5 py-0.5 text-xs text-zinc-200">{unifiedFunnelReport.reportingWindow.startIso.slice(0, 10)} → {unifiedFunnelReport.reportingWindow.endIso.slice(0, 10)}</code>) across all 12 active spokes in <code className="rounded bg-black/40 px-1.5 py-0.5 text-xs text-zinc-200">DCC_PORTFOLIO_NETWORK_SITES</code>. Strictly separates <strong>unique visitors</strong>, <strong>outbound clicks</strong> (with explicit cross-spoke overlap labels), <strong>storefront arrivals</strong>, <strong>provider confirmations</strong>, <strong>owned gross sales</strong>, <strong>commissions earned</strong>, and <strong>confirmed settled payouts</strong>. Unverified affiliate outcomes remain <code className="rounded bg-black/40 px-1.5 py-0.5 text-xs text-amber-200">unknown</code> instead of <code className="rounded bg-black/40 px-1.5 py-0.5 text-xs text-zinc-200">0</code>.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <MiniMetric label="Active spokes" value={unifiedFunnelReport.spokes.length} />
+              <MiniMetric label="Confirmed bookings" value={`${totals.knownProviderConfirmations} (${totals.spokesWithUnknownProviderConfirmations} unknown)`} />
+              <MiniMetric label="Commissions earned" value={formatUsdOrUnknown(totals.commissionsEarnedUsd)} />
+              <MiniMetric label="Payouts received" value={`$${totals.confirmedSettledPayoutsUsd} settled (${formatUsdOrUnknown(totals.payoutsReceivedUsd)})`} />
+            </div>
+          </div>
+
+          <div
+            data-testid="portfolio-funnel-reconciliation"
+            className="mt-5 grid gap-3 rounded-xl border border-cyan-400/25 bg-cyan-950/20 p-4 text-xs md:grid-cols-3"
+          >
+            <div className="space-y-1">
+              <div className="font-black uppercase tracking-wider text-cyan-300">
+                Visitor &amp; Pageview Reconciliation ({reconciliation.visitorsAndPageviews.portfolioUniqueVisitors} Visitors vs {reconciliation.visitorsAndPageviews.rawPageviewEvents} Pageviews)
+              </div>
+              <p className="leading-5 text-zinc-200">
+                {reconciliation.visitorsAndPageviews.explanation}
+              </p>
+            </div>
+            <div className="space-y-1">
+              <div className="font-black uppercase tracking-wider text-cyan-300">
+                Click Overlap Reconciliation ({reconciliation.outboundClicksOverlap.portfolioDeduplicatedClicks} Portfolio vs {reconciliation.outboundClicksOverlap.sumOfSpokeRowClicks} Spoke Row Sum)
+              </div>
+              <p className="leading-5 text-zinc-200">
+                {reconciliation.outboundClicksOverlap.explanation}
+              </p>
+            </div>
+            <div className="space-y-1">
+              <div className="font-black uppercase tracking-wider text-cyan-300">
+                Confirmed Settlements vs Unknown Affiliate Outcomes
+              </div>
+              <p className="leading-5 text-zinc-200">
+                {reconciliation.settlementsAndAffiliateOutcomes.explanation}
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-6 overflow-x-auto rounded-xl border border-white/10 bg-black/20">
+            <table className="w-full min-w-[1180px] border-collapse text-left text-xs">
+              <thead>
+                <tr className="border-b border-white/10 bg-white/[0.03] text-[11px] font-black uppercase tracking-[0.14em] text-zinc-400">
+                  <th className="px-4 py-3">Spoke</th>
+                  <th className="px-4 py-3">Commercial model</th>
+                  <th className="px-4 py-3">Unique visitors (PV / Click-only / Shared)</th>
+                  <th className="px-4 py-3">Outbound clicks (Originated / Cross-spoke overlap)</th>
+                  <th className="px-4 py-3">Storefront arrivals</th>
+                  <th className="px-4 py-3">Provider confirmations</th>
+                  <th className="px-4 py-3">Owned gross sales</th>
+                  <th className="px-4 py-3">Commissions earned</th>
+                  <th className="px-4 py-3">Payouts received (Settled)</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/10">
+                {unifiedFunnelReport.spokes.map((spoke) => (
+                  <tr key={spoke.siteId} data-testid={`funnel-spoke-row-${spoke.siteId}`}>
+                    <td className="px-4 py-3">
+                      <div className="font-bold text-white">{spoke.label}</div>
+                      <div className="font-mono text-[11px] text-zinc-500">{spoke.primaryDomain}</div>
+                    </td>
+                    <td className="px-4 py-3 font-mono text-[11px] text-zinc-300">{spoke.commercialModel}</td>
+                    <td className="px-4 py-3 font-bold text-white">
+                      {spoke.uniqueVisitors}
+                      <span className="ml-1 text-[11px] font-normal text-zinc-400">
+                        ({spoke.rawPageviewEvents} pv · {spoke.visitorBreakdown.clickOnlyHandoffSessions} click-only
+                        {spoke.visitorBreakdown.crossSpokeSharedVisitors > 0
+                          ? ` · ${spoke.visitorBreakdown.crossSpokeSharedVisitors} cross-spoke overlap`
+                          : ""})
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="font-bold text-white">{spoke.outboundClicks.total}</span>
+                      <span className="ml-1.5 text-[11px] text-zinc-400">
+                        ({spoke.outboundClicks.originatedClicks} orig
+                        {spoke.outboundClicks.receivedCrossSpokeClicks > 0
+                          ? ` + ${spoke.outboundClicks.receivedCrossSpokeClicks} cross-spoke overlap`
+                          : ""}
+                        {spoke.outboundClicks.corridorBookingOpenedClicks > 0
+                          ? ` · incl. ${spoke.outboundClicks.corridorBookingOpenedClicks} corridor opens`
+                          : ""}
+                        {" · "}
+                        {spoke.outboundClicks.fareharborCheckoutReferrals} FH ref · {spoke.outboundClicks.viatorAffiliateClicks} Viator · {spoke.outboundClicks.ownedCheckoutClicks} owned)
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 font-bold text-white">{spoke.storefrontArrivals}</td>
+                    <td className="px-4 py-3 font-mono font-bold text-amber-200">{String(spoke.providerConfirmations)}</td>
+                    <td className="px-4 py-3 font-mono text-emerald-300">${spoke.ownedGrossSalesUsd.toLocaleString()}</td>
+                    <td className="px-4 py-3 font-mono text-zinc-300">{formatUsdOrUnknown(spoke.commissionsEarnedUsd)}</td>
+                    <td className="px-4 py-3 font-mono text-zinc-300">
+                      {formatUsdOrUnknown(spoke.payoutsReceivedUsd)}
+                      {spoke.pendingOwnedSettlementUsd > 0 ? (
+                        <span className="ml-1 text-[10px] text-amber-300">
+                          (${spoke.pendingOwnedSettlementUsd.toLocaleString()} pending settlement)
+                        </span>
+                      ) : null}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section
+          id="entry-to-checkout-traces"
+          data-testid="portfolio-entry-to-checkout-traces"
+          className="mt-8 rounded-2xl border border-white/10 bg-white/[0.04] p-6"
+        >
+          <div className="text-xs font-black uppercase tracking-[0.18em] text-[#f5c66c]">
+            End-to-End Attribution Trace ({unifiedFunnelReport.reportingWindow.label})
+          </div>
+          <h2 className="mt-2 text-2xl font-black">
+            DCC Entry Page → Storefront Destination → Checkout Destination → Provider-Confirmed Booking
+          </h2>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-300">
+            Preserves exact DCC entry pages without collapsing unrecognized pages into <code className="rounded bg-black/40 px-1.5 py-0.5 text-xs text-zinc-200">/new-orleans/tours</code>, and isolates legacy fallback records where <code className="rounded bg-black/40 px-1.5 py-0.5 text-xs text-zinc-200">tripDetails.originatingPage === null</code> from true <code className="rounded bg-black/40 px-1.5 py-0.5 text-xs text-zinc-200">/transportation/colorado</code> entries.
+          </p>
+
+          <div className="mt-5 overflow-x-auto rounded-xl border border-white/10 bg-black/20">
+            <table className="w-full min-w-[1180px] border-collapse text-left text-xs">
+              <thead>
+                <tr className="border-b border-white/10 bg-white/[0.03] text-[11px] font-black uppercase tracking-[0.14em] text-zinc-400">
+                  <th className="px-4 py-3">DCC entry page</th>
+                  <th className="px-4 py-3">Storefront destination</th>
+                  <th className="px-4 py-3">Checkout destination</th>
+                  <th className="px-4 py-3">Visitors</th>
+                  <th className="px-4 py-3">Storefront clicks</th>
+                  <th className="px-4 py-3">Storefront arrivals</th>
+                  <th className="px-4 py-3">Checkout referrals / clicks</th>
+                  <th className="px-4 py-3">Provider confirmations</th>
+                  <th className="px-4 py-3">Sales / Comm / Payouts</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/10">
+                {unifiedFunnelReport.entryToCheckoutTraces.slice(0, 20).map((trace) => (
+                  <tr key={trace.traceKey} data-testid={`attribution-trace-row-${trace.traceKey}`}>
+                    <td className="px-4 py-2.5 font-mono text-zinc-200">{trace.dccEntryPage}</td>
+                    <td className="px-4 py-2.5 text-zinc-200">{trace.storefrontDestination}</td>
+                    <td className="px-4 py-2.5 text-amber-200">{trace.checkoutChannelLabel}</td>
+                    <td className="px-4 py-2.5">{trace.uniqueVisitors}</td>
+                    <td className="px-4 py-2.5">{trace.outboundStorefrontClicks}</td>
+                    <td className="px-4 py-2.5">{trace.storefrontArrivals}</td>
+                    <td className="px-4 py-2.5 font-bold text-white">
+                      {trace.checkoutReferrals + trace.ownedCheckoutClicks}
+                    </td>
+                    <td className="px-4 py-2.5 font-mono font-bold text-amber-200">
+                      {String(trace.providerConfirmations)}
+                    </td>
+                    <td className="px-4 py-2.5 font-mono text-zinc-300">
+                      ${trace.ownedGrossSalesUsd.toLocaleString()} / {formatUsdOrUnknown(trace.commissionsEarnedUsd)} / {formatUsdOrUnknown(trace.payoutsReceivedUsd)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section
+          id="unmatched-attribution-records"
+          data-testid="portfolio-unmatched-records"
+          className="mt-8 rounded-2xl border border-amber-300/20 bg-amber-400/[0.06] p-6"
+        >
+          <div className="text-xs font-black uppercase tracking-[0.18em] text-amber-200">
+            Unmatched Attribution Drops ({unifiedFunnelReport.reportingWindow.label})
+          </div>
+          <h2 className="mt-2 text-2xl font-black">Where attribution drops off across the funnel</h2>
+          <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <div className="rounded-xl border border-white/10 bg-black/30 p-4">
+              <div className="text-[11px] font-black uppercase tracking-[0.14em] text-amber-200">
+                1. Outbound clicks without storefront arrival
+              </div>
+              <div className="mt-2 text-2xl font-black text-white">
+                {unmatchedAttributionDrops.outboundClicksWithoutStorefrontArrival.count}
+              </div>
+              <p className="mt-1 text-xs leading-5 text-zinc-300">
+                {unmatchedAttributionDrops.outboundClicksWithoutStorefrontArrival.description}
+              </p>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-black/30 p-4">
+              <div className="text-[11px] font-black uppercase tracking-[0.14em] text-amber-200">
+                2. Storefront arrivals without DCC entry
+              </div>
+              <div className="mt-2 text-2xl font-black text-white">
+                {unmatchedAttributionDrops.storefrontArrivalsWithoutDccEntry.count}
+              </div>
+              <p className="mt-1 text-xs leading-5 text-zinc-300">
+                {unmatchedAttributionDrops.storefrontArrivalsWithoutDccEntry.description}
+              </p>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-black/30 p-4">
+              <div className="text-[11px] font-black uppercase tracking-[0.14em] text-amber-200">
+                3. Checkout referrals without provider outcome
+              </div>
+              <div className="mt-2 text-2xl font-black text-white">
+                {unmatchedAttributionDrops.checkoutReferralsWithoutProviderOutcome.count}
+              </div>
+              <p className="mt-1 text-xs leading-5 text-zinc-300">
+                {unmatchedAttributionDrops.checkoutReferralsWithoutProviderOutcome.description}
+              </p>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-black/30 p-4">
+              <div className="text-[11px] font-black uppercase tracking-[0.14em] text-amber-200">
+                4. Unmatched provider outcomes (null originatingPage)
+              </div>
+              <div className="mt-2 text-2xl font-black text-white">
+                {unmatchedAttributionDrops.unmatchedProviderOutcomes.count}
+              </div>
+              <p className="mt-1 text-xs leading-5 text-zinc-300">
+                {unmatchedAttributionDrops.unmatchedProviderOutcomes.description}
+              </p>
+            </div>
+          </div>
         </section>
 
         <section id="supplier-connections" data-testid="portfolio-supplier-connections" className="mt-8 rounded-2xl border border-white/10 bg-white/[0.04] p-6">
@@ -267,10 +537,14 @@ export default async function PortfolioDesktopPage(props: {
           <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             <SiteMetricCard
               site="Welcome to New Orleans Tours"
-              headline={`${wnoBooking.length} FareHarbor opens`}
-              stats={[`Entry sessions: ${wnoLanding.length}`, `Tour opens: ${wnoProduct.length}`, `Entry → FareHarbor: ${pct(wnoBooking.length, wnoLanding.length)}`]}
+              headline={`${totals.outboundClicks.fareharborCheckoutReferrals} FareHarbor checkout referrals`}
+              stats={[
+                `Entry pageviews: ${wnoLanding.length}`,
+                `Tour opens: ${wnoProduct.length}`,
+                `Entry → FareHarbor referral: ${pct(wnoBooking.length, wnoLanding.length)} (confirmations: unknown)`,
+              ]}
               href="/internal/dashboard/wno-revenue-opportunity"
-              source="Direct DCC commerce telemetry"
+              source="Direct DCC commerce telemetry (checkout referrals)"
             />
             <SiteMetricCard
               site="Cruise Promenade"

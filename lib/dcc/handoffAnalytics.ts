@@ -1,12 +1,110 @@
 import {
   SATELLITE_IDS,
   listAllSatelliteHandoffSummaries,
+  listRecentSatelliteEvents,
+  type DccHandoffEventType,
   type DccSatelliteId,
   type SatelliteHandoffSummary,
 } from "@/lib/dcc/satelliteHandoffs";
 
+const SYNTHETIC_TEST_HANDOFF_PREFIXES = [
+  "test-handoff-",
+  "sots-clickout-",
+  "degraded-handoff-",
+  "red-rocks-fallback-",
+  "gosno-fallback-",
+  "partner-forward-",
+  "wta-parr-loop-",
+  "widget-analytics-",
+  "ops-alert-",
+  "accepted-no-outcome-",
+  "broken-loop-",
+  "analytics-breakdown-",
+  "analytics-revenue-",
+  "analytics-seo-",
+  "analytics-highest-revenue-",
+  "smoke_",
+  "clean-check-",
+  "real-parr-test-",
+  "parr-live-verify-",
+] as const;
+
+export function isDiagnosticOrTestSatelliteSummary(summary: SatelliteHandoffSummary): boolean {
+  const id = (summary.handoffId || "").trim().toLowerCase();
+  if (!id) return true;
+  if (SYNTHETIC_TEST_HANDOFF_PREFIXES.some((prefix) => id.startsWith(prefix))) {
+    return true;
+  }
+  if (id.includes("test") || id.includes("smoke") || id.includes("verify")) {
+    return true;
+  }
+  if (summary.traveler?.email?.toLowerCase() === "traveler@example.com") {
+    return true;
+  }
+  const embedDomain =
+    typeof summary.metadata?.embedDomain === "string"
+      ? summary.metadata.embedDomain.toLowerCase()
+      : "";
+  if (embedDomain === "friendsite.com" || embedDomain === "weaksite.com") {
+    return true;
+  }
+  return false;
+}
+
+export function buildEventTypesBySummaryKey(
+  summaries: SatelliteHandoffSummary[]
+): Map<string, Set<DccHandoffEventType>> {
+  const lookup = new Map<string, Set<DccHandoffEventType>>();
+  const satellites = new Set<DccSatelliteId>();
+
+  for (const summary of summaries) {
+    const key = `${summary.satelliteId}:${summary.handoffId}`;
+    const set = lookup.get(key) || new Set<DccHandoffEventType>();
+    set.add(summary.latestEventType);
+    if (Array.isArray(summary.statusHistory)) {
+      for (const item of summary.statusHistory) {
+        if (item?.eventType) set.add(item.eventType);
+      }
+    }
+    lookup.set(key, set);
+    if (!summary.statusHistory || summary.statusHistory.length === 0) {
+      satellites.add(summary.satelliteId);
+    }
+  }
+
+  for (const satelliteId of satellites) {
+    const events = listRecentSatelliteEvents(satelliteId, 500);
+    for (const event of events) {
+      const key = `${event.satelliteId}:${event.handoffId}`;
+      const existing = lookup.get(key);
+      if (existing) {
+        existing.add(event.eventType);
+      }
+    }
+  }
+
+  return lookup;
+}
+
+export function hasSummaryReachedEventType(
+  summary: SatelliteHandoffSummary,
+  eventType: DccHandoffEventType,
+  eventLookup?: Map<string, Set<DccHandoffEventType>>
+): boolean {
+  if (summary.latestEventType === eventType) return true;
+  if (
+    Array.isArray(summary.statusHistory) &&
+    summary.statusHistory.some((entry) => entry?.eventType === eventType)
+  ) {
+    return true;
+  }
+  const key = `${summary.satelliteId}:${summary.handoffId}`;
+  return Boolean(eventLookup?.get(key)?.has(eventType));
+}
+
 export type HandoffAnalyticsSnapshot = {
   totalHandoffs: number;
+  viewed: number;
   completed: number;
   started: number;
   leads: number;
@@ -244,15 +342,22 @@ function groupByHandoffId(summaries: SatelliteHandoffSummary[]) {
   return grouped;
 }
 
-function getBrokenPartnerLoops(summaries: SatelliteHandoffSummary[]) {
+function getBrokenPartnerLoops(
+  summaries: SatelliteHandoffSummary[],
+  eventLookup?: Map<string, Set<DccHandoffEventType>>
+) {
   return Array.from(groupByHandoffId(summaries).entries())
     .flatMap(([handoffId, group]) => {
-      const forwarded = group.find((summary) => summary.latestEventType === "forwarded_to_partner");
-      const accepted = group.find((summary) => summary.latestEventType === "accepted_from_partner");
+      const forwarded = group.find((summary) =>
+        hasSummaryReachedEventType(summary, "forwarded_to_partner", eventLookup)
+      );
+      const accepted = group.find((summary) =>
+        hasSummaryReachedEventType(summary, "accepted_from_partner", eventLookup)
+      );
       const outcome = group.find(
         (summary) =>
-          summary.latestEventType === "partner_booking_completed" ||
-          summary.latestEventType === "partner_booking_failed"
+          hasSummaryReachedEventType(summary, "partner_booking_completed", eventLookup) ||
+          hasSummaryReachedEventType(summary, "partner_booking_failed", eventLookup)
       );
 
       if (!forwarded || accepted || outcome) return [];
@@ -269,14 +374,19 @@ function getBrokenPartnerLoops(summaries: SatelliteHandoffSummary[]) {
     .sort((a, b) => new Date(b.lastEventAt).getTime() - new Date(a.lastEventAt).getTime());
 }
 
-function getMissingOutcomeLoops(summaries: SatelliteHandoffSummary[]) {
+function getMissingOutcomeLoops(
+  summaries: SatelliteHandoffSummary[],
+  eventLookup?: Map<string, Set<DccHandoffEventType>>
+) {
   return Array.from(groupByHandoffId(summaries).entries())
     .flatMap(([handoffId, group]) => {
-      const accepted = group.find((summary) => summary.latestEventType === "accepted_from_partner");
+      const accepted = group.find((summary) =>
+        hasSummaryReachedEventType(summary, "accepted_from_partner", eventLookup)
+      );
       const outcome = group.find(
         (summary) =>
-          summary.latestEventType === "partner_booking_completed" ||
-          summary.latestEventType === "partner_booking_failed"
+          hasSummaryReachedEventType(summary, "partner_booking_completed", eventLookup) ||
+          hasSummaryReachedEventType(summary, "partner_booking_failed", eventLookup)
       );
 
       if (!accepted || outcome) return [];
@@ -562,10 +672,12 @@ function getOperatorWinningPages(summaries: SatelliteHandoffSummary[]) {
     .slice(0, 10);
 }
 
-function summarizeFunnelRows(
+export function summarizeFunnelRows(
   summaries: SatelliteHandoffSummary[],
-  keyFn: (summary: SatelliteHandoffSummary) => string | null
+  keyFn: (summary: SatelliteHandoffSummary) => string | null,
+  eventLookup?: Map<string, Set<DccHandoffEventType>>
 ) {
+  const lookup = eventLookup || buildEventTypesBySummaryKey(summaries);
   const rows = new Map<
     string,
     {
@@ -593,14 +705,14 @@ function summarizeFunnelRows(
       revenue: 0,
     };
 
-    if (summary.latestEventType === "handoff_viewed") row.viewed += 1;
-    if (summary.latestEventType === "lead_captured") row.leads += 1;
-    if (summary.latestEventType === "booking_started") row.started += 1;
-    if (summary.latestEventType === "booking_completed") {
+    if (hasSummaryReachedEventType(summary, "handoff_viewed", lookup)) row.viewed += 1;
+    if (hasSummaryReachedEventType(summary, "lead_captured", lookup)) row.leads += 1;
+    if (hasSummaryReachedEventType(summary, "booking_started", lookup)) row.started += 1;
+    if (hasSummaryReachedEventType(summary, "booking_completed", lookup)) {
       row.completions += 1;
       row.revenue += summary.booking.amount || 0;
     }
-    if (summary.latestEventType === "partner_booking_completed") {
+    if (hasSummaryReachedEventType(summary, "partner_booking_completed", lookup)) {
       row.partnerCompletions += 1;
       row.revenue += summary.booking.amount || 0;
     }
@@ -617,11 +729,15 @@ function summarizeFunnelRows(
   return rows;
 }
 
-function getTopOriginPages(summaries: SatelliteHandoffSummary[]) {
+function getTopOriginPages(
+  summaries: SatelliteHandoffSummary[],
+  eventLookup?: Map<string, Set<DccHandoffEventType>>
+) {
   return Array.from(
     summarizeFunnelRows(
       summaries,
-      (summary) => summary.attribution.sourcePage || summary.attribution.sourceSlug
+      (summary) => summary.attribution.sourcePage || summary.attribution.sourceSlug,
+      eventLookup
     ).entries()
   )
     .map(([key, value]) => ({
@@ -641,9 +757,16 @@ function getTopOriginPages(summaries: SatelliteHandoffSummary[]) {
     .slice(0, 10);
 }
 
-function getTopConvertingEmbedDomains(summaries: SatelliteHandoffSummary[]) {
+function getTopConvertingEmbedDomains(
+  summaries: SatelliteHandoffSummary[],
+  eventLookup?: Map<string, Set<DccHandoffEventType>>
+) {
   return Array.from(
-    summarizeFunnelRows(summaries, (summary) => getMetadataString(summary, "embedDomain")).entries()
+    summarizeFunnelRows(
+      summaries,
+      (summary) => getMetadataString(summary, "embedDomain"),
+      eventLookup
+    ).entries()
   )
     .map(([key, value]) => {
       const totalCompletions = value.completions + value.partnerCompletions;
@@ -666,14 +789,21 @@ function getTopConvertingEmbedDomains(summaries: SatelliteHandoffSummary[]) {
     .slice(0, 10);
 }
 
-function getTopPlacements(summaries: SatelliteHandoffSummary[]) {
-  const rows = summarizeFunnelRows(summaries, (summary) => {
-    const embedPath = getMetadataString(summary, "embedPath");
-    if (!embedPath) return null;
-    const domain = getMetadataString(summary, "embedDomain");
-    const placement = getMetadataString(summary, "widgetPlacement");
-    return [domain || "unknown-domain", embedPath, placement || "default"].join(" | ");
-  });
+function getTopPlacements(
+  summaries: SatelliteHandoffSummary[],
+  eventLookup?: Map<string, Set<DccHandoffEventType>>
+) {
+  const rows = summarizeFunnelRows(
+    summaries,
+    (summary) => {
+      const embedPath = getMetadataString(summary, "embedPath");
+      if (!embedPath) return null;
+      const domain = getMetadataString(summary, "embedDomain");
+      const placement = getMetadataString(summary, "widgetPlacement");
+      return [domain || "unknown-domain", embedPath, placement || "default"].join(" | ");
+    },
+    eventLookup
+  );
 
   return Array.from(rows.entries())
     .map(([key, value]) => {
@@ -697,14 +827,21 @@ function getTopPlacements(summaries: SatelliteHandoffSummary[]) {
     .slice(0, 10);
 }
 
-function getWeakestEmbeds(summaries: SatelliteHandoffSummary[]) {
-  const rows = summarizeFunnelRows(summaries, (summary) => {
-    const domain = getMetadataString(summary, "embedDomain");
-    if (!domain) return null;
-    const embedPath = getMetadataString(summary, "embedPath") || "/";
-    const placement = getMetadataString(summary, "widgetPlacement") || "default";
-    return [domain, embedPath, placement].join(" | ");
-  });
+function getWeakestEmbeds(
+  summaries: SatelliteHandoffSummary[],
+  eventLookup?: Map<string, Set<DccHandoffEventType>>
+) {
+  const rows = summarizeFunnelRows(
+    summaries,
+    (summary) => {
+      const domain = getMetadataString(summary, "embedDomain");
+      if (!domain) return null;
+      const embedPath = getMetadataString(summary, "embedPath") || "/";
+      const placement = getMetadataString(summary, "widgetPlacement") || "default";
+      return [domain, embedPath, placement].join(" | ");
+    },
+    eventLookup
+  );
 
   return Array.from(rows.entries())
     .map(([key, value]) => {
@@ -775,14 +912,21 @@ function getProductPortWinners(summaries: SatelliteHandoffSummary[]) {
     .slice(0, 10);
 }
 
-function getLeakagePoints(summaries: SatelliteHandoffSummary[]) {
+function getLeakagePoints(
+  summaries: SatelliteHandoffSummary[],
+  eventLookup?: Map<string, Set<DccHandoffEventType>>
+) {
   return Array.from(
-    summarizeFunnelRows(summaries, (summary) => {
-      const domain = getMetadataString(summary, "embedDomain");
-      const path = getMetadataString(summary, "embedPath");
-      if (domain || path) return [domain || "unknown-domain", path || "/"].join(" | ");
-      return summary.attribution.sourcePage || summary.attribution.sourceSlug;
-    }).entries()
+    summarizeFunnelRows(
+      summaries,
+      (summary) => {
+        const domain = getMetadataString(summary, "embedDomain");
+        const path = getMetadataString(summary, "embedPath");
+        if (domain || path) return [domain || "unknown-domain", path || "/"].join(" | ");
+        return summary.attribution.sourcePage || summary.attribution.sourceSlug;
+      },
+      eventLookup
+    ).entries()
   )
     .map(([key, value]) => {
       const denominator = Math.max(value.viewed, value.leads, value.started, 1);
@@ -848,7 +992,10 @@ function getOperatorLeakingLanes(
     .slice(0, 10);
 }
 
-function getPartnerScorecards(summaries: SatelliteHandoffSummary[]) {
+function getPartnerScorecards(
+  summaries: SatelliteHandoffSummary[],
+  eventLookup?: Map<string, Set<DccHandoffEventType>>
+) {
   const rows = new Map<
     DccSatelliteId,
     {
@@ -878,12 +1025,12 @@ function getPartnerScorecards(summaries: SatelliteHandoffSummary[]) {
 
   for (const summary of summaries) {
     const row = rows.get(summary.satelliteId)!;
-    if (summary.latestEventType === "booking_completed") {
+    if (hasSummaryReachedEventType(summary, "booking_completed", eventLookup)) {
       row.completions += 1;
       row.revenue += summary.booking.amount || 0;
       row.score += 5;
     }
-    if (summary.latestEventType === "partner_booking_completed") {
+    if (hasSummaryReachedEventType(summary, "partner_booking_completed", eventLookup)) {
       row.partnerCompletions += 1;
       row.revenue += summary.booking.amount || 0;
       row.score += 7;
@@ -895,11 +1042,11 @@ function getPartnerScorecards(summaries: SatelliteHandoffSummary[]) {
       row.failures += 1;
       row.score -= 4;
     }
-    if (summary.latestEventType === "forwarded_to_partner") {
+    if (hasSummaryReachedEventType(summary, "forwarded_to_partner", eventLookup)) {
       row.forwarded += 1;
       row.score += 1;
     }
-    if (summary.latestEventType === "accepted_from_partner") {
+    if (hasSummaryReachedEventType(summary, "accepted_from_partner", eventLookup)) {
       row.accepted += 1;
       row.score += 2;
     }
@@ -961,7 +1108,12 @@ function getUrgentAlerts(
   return alerts.slice(0, 8);
 }
 
-function summarizeStatuses(summaries: SatelliteHandoffSummary[]) {
+export function summarizeStatuses(
+  summaries: SatelliteHandoffSummary[],
+  eventLookup?: Map<string, Set<DccHandoffEventType>>
+) {
+  const lookup = eventLookup || buildEventTypesBySummaryKey(summaries);
+  let viewed = 0;
   let completed = 0;
   let started = 0;
   let leads = 0;
@@ -975,23 +1127,27 @@ function summarizeStatuses(summaries: SatelliteHandoffSummary[]) {
   let partnerRevenue = 0;
 
   for (const summary of summaries) {
-    if (summary.latestEventType === "booking_completed") completed += 1;
-    if (summary.latestEventType === "booking_started") started += 1;
-    if (summary.latestEventType === "lead_captured") leads += 1;
+    if (hasSummaryReachedEventType(summary, "handoff_viewed", lookup)) viewed += 1;
+    if (hasSummaryReachedEventType(summary, "booking_completed", lookup)) completed += 1;
+    if (hasSummaryReachedEventType(summary, "booking_started", lookup)) started += 1;
+    if (hasSummaryReachedEventType(summary, "lead_captured", lookup)) leads += 1;
     if (summary.latestEventType === "booking_failed") failed += 1;
     if (summary.degraded) degraded += 1;
-    if (summary.latestEventType === "forwarded_to_partner") forwardedToPartner += 1;
-    if (summary.latestEventType === "accepted_from_partner") acceptedFromPartner += 1;
-    if (summary.latestEventType === "partner_booking_completed") partnerCompleted += 1;
+    if (hasSummaryReachedEventType(summary, "forwarded_to_partner", lookup)) forwardedToPartner += 1;
+    if (hasSummaryReachedEventType(summary, "accepted_from_partner", lookup)) acceptedFromPartner += 1;
+    if (hasSummaryReachedEventType(summary, "partner_booking_completed", lookup)) partnerCompleted += 1;
     if (summary.latestEventType === "partner_booking_failed") partnerFailed += 1;
-    if (summary.latestEventType === "booking_completed") grossRevenue += summary.booking.amount || 0;
-    if (summary.latestEventType === "partner_booking_completed") {
+    if (hasSummaryReachedEventType(summary, "booking_completed", lookup)) {
+      grossRevenue += summary.booking.amount || 0;
+    }
+    if (hasSummaryReachedEventType(summary, "partner_booking_completed", lookup)) {
       grossRevenue += summary.booking.amount || 0;
       partnerRevenue += summary.booking.amount || 0;
     }
   }
 
   return {
+    viewed,
     completed,
     started,
     leads,
@@ -1006,8 +1162,37 @@ function summarizeStatuses(summaries: SatelliteHandoffSummary[]) {
   };
 }
 
-export function getHandoffAnalyticsSnapshot(limit = 300): HandoffAnalyticsSnapshot {
-  const summaries = listAllSatelliteHandoffSummaries(limit);
+export function getHandoffAnalyticsSnapshot(
+  limit = 300,
+  options?: {
+    excludeDiagnosticAndExcludedSites?: boolean;
+    startIso?: string;
+    endIso?: string;
+  }
+): HandoffAnalyticsSnapshot {
+  let summaries = listAllSatelliteHandoffSummaries(limit);
+
+  if (options?.excludeDiagnosticAndExcludedSites) {
+    summaries = summaries.filter(
+      (summary) =>
+        summary.satelliteId !== "welcome-to-alaska" &&
+        summary.partner?.fromSite !== "welcome-to-alaska" &&
+        summary.partner?.toSite !== "welcome-to-alaska" &&
+        !isDiagnosticOrTestSatelliteSummary(summary)
+    );
+  }
+
+  if (options?.startIso || options?.endIso) {
+    const startMs = options.startIso ? Date.parse(options.startIso) : Number.NEGATIVE_INFINITY;
+    const endMs = options.endIso ? Date.parse(options.endIso) : Number.POSITIVE_INFINITY;
+    summaries = summaries.filter((summary) => {
+      const ts = Date.parse(summary.lastEventAt || summary.firstEventAt || "");
+      if (!Number.isFinite(ts)) return false;
+      return ts >= startMs && ts <= endMs;
+    });
+  }
+
+  const eventLookup = buildEventTypesBySummaryKey(summaries);
   const bySatellite = Object.fromEntries(SATELLITE_IDS.map((satelliteId) => [satelliteId, 0])) as Record<
     DccSatelliteId,
     number
@@ -1017,9 +1202,9 @@ export function getHandoffAnalyticsSnapshot(limit = 300): HandoffAnalyticsSnapsh
     bySatellite[summary.satelliteId] += 1;
   }
 
-  const statusCounts = summarizeStatuses(summaries);
-  const brokenPartnerLoops = getBrokenPartnerLoops(summaries);
-  const missingOutcomeLoops = getMissingOutcomeLoops(summaries);
+  const statusCounts = summarizeStatuses(summaries, eventLookup);
+  const brokenPartnerLoops = getBrokenPartnerLoops(summaries, eventLookup);
+  const missingOutcomeLoops = getMissingOutcomeLoops(summaries, eventLookup);
 
   return {
     totalHandoffs: summaries.length,
@@ -1084,15 +1269,15 @@ export function getHandoffAnalyticsSnapshot(limit = 300): HandoffAnalyticsSnapsh
         return `${fromSite}->${toSite}`;
       })
     ),
-    topOriginPages: getTopOriginPages(summaries),
-    topConvertingEmbedDomains: getTopConvertingEmbedDomains(summaries),
-    topPlacements: getTopPlacements(summaries),
-    weakestEmbeds: getWeakestEmbeds(summaries),
+    topOriginPages: getTopOriginPages(summaries, eventLookup),
+    topConvertingEmbedDomains: getTopConvertingEmbedDomains(summaries, eventLookup),
+    topPlacements: getTopPlacements(summaries, eventLookup),
+    weakestEmbeds: getWeakestEmbeds(summaries, eventLookup),
     productPortWinners: getProductPortWinners(summaries),
-    leakagePoints: getLeakagePoints(summaries),
+    leakagePoints: getLeakagePoints(summaries, eventLookup),
     operatorWinningPages: getOperatorWinningPages(summaries),
     operatorLeakingLanes: getOperatorLeakingLanes(summaries, brokenPartnerLoops),
-    partnerScorecards: getPartnerScorecards(summaries),
+    partnerScorecards: getPartnerScorecards(summaries, eventLookup),
     urgentAlerts: getUrgentAlerts(summaries, brokenPartnerLoops, missingOutcomeLoops),
     brokenPartnerLoops,
     expansionPriorityPages: getExpansionPriorityPages(summaries),
@@ -1262,6 +1447,22 @@ function resolveLfsePortDeepLink(portSlug: string): string | null {
 }
 
 export function getPortRecommendationActions(portSlug: string): RecommendationAction[] {
+  const summaries = listAllSatelliteHandoffSummaries(400);
+  const wtaMatcher = (summary: SatelliteHandoffSummary) =>
+    summary.booking.portSlug === portSlug ||
+    summary.attribution.sourcePage === `/cruises/port/${portSlug}`;
+  const brokenPartnerCount = countBrokenPartnerLoopsForContext(summaries, wtaMatcher);
+  const partnerLoopScore = scorePartnerLoop(summaries, wtaMatcher);
+  const wtaScore = scoreContext(
+    summaries,
+    (summary) => summary.satelliteId === "welcome-to-alaska" && wtaMatcher(summary)
+  );
+  const wtaPenalty = penaltyForDegradedContext(
+    summaries,
+    (summary) => summary.satelliteId === "welcome-to-alaska" && wtaMatcher(summary)
+  );
+  const wtaDegraded = brokenPartnerCount > 0 || wtaPenalty > 0;
+
   const lfseDeepLink = resolveLfsePortDeepLink(portSlug);
   const isJuneau = portSlug.toLowerCase().startsWith("juneau");
   const actions: RecommendationAction[] = [
@@ -1270,8 +1471,8 @@ export function getPortRecommendationActions(portSlug: string): RecommendationAc
       label: isJuneau ? "Juneau Port-Day Planner" : "Cruise Port Guide",
       href: isJuneau ? "/juneau" : `/cruises/port/${portSlug}`,
       kind: "internal",
-      score: 3,
-      laneState: "healthy",
+      score: 3 + (wtaDegraded ? 2 : 0),
+      laneState: wtaDegraded ? "fallback" : "healthy",
       reason: "Keep the traveler on the DCC authority layer until the shore-day window and buffer math are clear.",
     },
     {
@@ -1279,9 +1480,23 @@ export function getPortRecommendationActions(portSlug: string): RecommendationAc
       label: "Browse Shore Excursions",
       href: "/cruises/shore-excursions",
       kind: "internal",
-      score: 2,
-      laneState: "healthy",
+      score: 2 + (wtaDegraded ? 1 : 0),
+      laneState: wtaDegraded ? "fallback" : "healthy",
       reason: "Best when the traveler wants broader excursion fit before committing.",
+    },
+    {
+      id: "wta-execution",
+      label: "Welcome to Alaska Tours",
+      href: `https://welcometoalaskatours.com/ports/${portSlug}`,
+      kind: "external",
+      score: wtaScore + partnerLoopScore - wtaPenalty - brokenPartnerCount * 4,
+      laneState: wtaDegraded ? "degraded" : "healthy",
+      reason:
+        brokenPartnerCount > 0
+          ? "Partner handoffs from WTA are not being fully accepted downstream, so hold or reroute before sending more demand."
+          : partnerLoopScore > 0
+            ? "Strong WTA to PARR downstream outcomes make this a proven multi-corridor partner lane."
+            : "Direct Welcome to Alaska Tours execution lane for port-day shore excursions.",
     },
   ];
 
