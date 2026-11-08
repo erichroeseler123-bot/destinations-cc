@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import CategoryDecisionEngineExperience from "@/app/components/dcc/CategoryDecisionEngineExperience";
+import KahuluiMaalaeaWhaleWatchingPlanner from "@/app/components/dcc/KahuluiMaalaeaWhaleWatchingPlanner";
 import { HAWAII_WHALE_DECISION_ENGINE } from "@/lib/dcc/decisionEngines/hawaiiWhaleWatchingEngine";
 import type { DecisionResult } from "@/lib/dcc/decisionEngines/types";
 
@@ -41,6 +42,7 @@ export default function HawaiiWhaleWatchingDecisionEnginePage() {
         significantLink: [
           "https://destinationcommandcenter.com/api/v1/decision-engines/hawaii-whale-watching",
           "https://destinationcommandcenter.com/api/v1/decision-engines/hawaii-whale-watching/evaluate",
+          "https://destinationcommandcenter.com/api/v1/cruise/kahului-maalaea-whale-watching",
         ],
       },
       {
@@ -82,6 +84,9 @@ export default function HawaiiWhaleWatchingDecisionEnginePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      <div className="mx-auto max-w-6xl px-4 pt-8 sm:px-6 lg:px-8">
+        <KahuluiMaalaeaWhaleWatchingPlanner contextSurface="hawaii_whale_engine" />
+      </div>
       <CategoryDecisionEngineExperience
         engineId="hawaii-whale-watching"
         initialResult={initialResult}

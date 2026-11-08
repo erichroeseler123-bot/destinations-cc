@@ -237,14 +237,14 @@ export const HAWAII_WHALE_SOURCES: SourceRecord[] = [
     sourceId: "src-pacwhale-eco-adventures-2026",
     sourceOrganization: "PacWhale Eco-Adventures (Pacific Whale Foundation — Maui)",
     sourceTitle:
-      "Maʻalaea Harbor Catamaran Whale Watch Specifications, Accessibility, Sighting Guarantee & Cancellation Policy",
-    sourceUrl: "https://www.pacificwhale.org/cruises/maui-whale-watch/",
+      "Maʻalaea Harbor Classic Whale Watch (FareHarbor Item 410840): 45-Min Check-In Cutoff at Ocean Store (300 Maʻalaea Rd), 2-Hr Duration, Accessibility & Just a Fluke Guarantee",
+    sourceUrl: "https://pacwhale.com/ecotour/whalewatch-maalaea/",
     claimsSupported: [
       "claim-hi-pacwhale-catamaran-specs",
       "claim-hi-pacwhale-recent-reviews",
     ],
-    retrievedAt: "2026-04-15T14:00:00Z",
-    verifiedAt: "2026-04-15T14:00:00Z",
+    retrievedAt: "2026-11-07T20:10:00Z",
+    verifiedAt: "2026-11-07T20:10:00Z",
     expiresAt: "2027-05-15T23:59:59Z",
     freshnessCategory: "operator_tariff_and_policy",
     status: "current",
@@ -878,23 +878,23 @@ export const HAWAII_WHALE_CANDIDATE_OPTIONS: CandidateOption[] = [
       hotelPickupAvailable: false,
       cruisePortShuttleAvailable: false,
       selfDriveParkingNote:
-        "Paid meter parking at Maʻalaea Harbor ($1/hr); ~22 min taxi/ride-share from Kahului Cruise Pier or Wailea.",
+        "No operator cruise-pier shuttle included. Check in 45m prior inside PacWhale Ocean Store, Maʻalaea Harbor Shops, 300 Maʻalaea Rd, Wailuku, HI 96793 (next to Maui Ocean Center; paid parking via PARKLINQ/SECURE); 25 min each way (50 min round-trip) by taxi/rideshare from Kahului Harbor Cruise Pier.",
     },
     cancellationTerms: "Full refund or reschedule with 24+ hours advance notice; 100% refund if captain cancels for high wind warning.",
     whaleSightingOrReRidePolicy:
-      "Guaranteed whale sighting or receive a free Whalewatch voucher valid for 1 year.",
+      "Guaranteed whale sighting or receive a free Whalewatch voucher valid for 1 year (Just a Fluke program).",
     indicativePriceUsd: {
       min: 68,
       max: 99,
-      basisLabel: "per adult (children 3–12 discounted; under 3 free)",
+      basisLabel: "per adult ($99.05 regular / $55.55 child ages 5–12; ages 4 and under free with paying adult)",
     },
     comparisonValues: {
-      islandAndHarbor: "Maui — Maʻalaea Small Boat Harbor (Slip boarding)",
-      vesselAndCapacity: "65-ft Double-Deck Power Catamaran (65–110 guests)",
+      islandAndHarbor: "Maui — Maʻalaea Harbor (Check-in: Ocean Store, 300 Maʻalaea Rd → slip)",
+      vesselAndCapacity: "65-ft Double-Deck Power Catamaran (65–110 guests, capped at 67%)",
       rideStabilityAndViewing: "High twin-hull stability, shaded main cabin, underwater hydrophone",
       ageAndMedicalRules: "All ages welcome; suitable for expectant mothers",
       accessibilityAndBoarding: "Confirmed step-free harbor ramp boarding (advance notice)",
-      durationAndGuarantee: "2.0 hrs | $68–$99 pp | Free 1-year re-ride guarantee",
+      durationAndGuarantee: "2.0 hrs | $68–$99.05 pp | 45m check-in cutoff | Free 1-year re-ride",
     },
     tradeoffs: {
       strengths: [
@@ -904,7 +904,7 @@ export const HAWAII_WHALE_CANDIDATE_OPTIONS: CandidateOption[] = [
       ],
       limitations: [
         "Larger passenger count (65–110 guests) means sharing rail space during surface breaches",
-        "Does not include hotel shuttle pickup (requires rental car or 20–25 min ride-share to Maʻalaea)",
+        "Does not include cruise-pier or hotel shuttle pickup (requires 25 min each way / 50 min round-trip transfer from Kahului Harbor to 300 Maʻalaea Rd)",
       ],
     },
     claimIds: [
@@ -929,10 +929,23 @@ export const HAWAII_WHALE_CANDIDATE_OPTIONS: CandidateOption[] = [
         sellerType: "direct_operator",
         sellerName: "PacWhale Eco-Adventures (Direct Operator)",
         actualOperatorName: "PacWhale Eco-Adventures",
-        label: "Book direct with PacWhale Eco-Adventures",
-        url: "https://www.pacificwhale.org/cruises/maui-whale-watch/",
+        label: "Book direct with PacWhale Eco-Adventures (Maʻalaea Classic Whale Watch)",
+        url: "https://pacwhale.com/ecotour/whalewatch-maalaea/",
         supportedContextParams: [],
         relationshipDisclosure: "Direct operator link — no DCC commission bias.",
+        isCommercialPartner: false,
+        commissionInfluenceOnRanking: 0,
+      },
+      {
+        destinationId: "dest-pacwhale-fareharbor-410840",
+        optionId: "hi-whale-maui-pacwhale-catamaran",
+        sellerType: "direct_operator",
+        sellerName: "PacWhale Eco-Adventures FareHarbor Calendar (Item 410840)",
+        actualOperatorName: "PacWhale Eco-Adventures",
+        label: "Check dates and prices on FareHarbor (Item 410840)",
+        url: "https://fareharbor.com/embeds/book/pacific-whale/items/410840/?flow=828938&full-items=yes",
+        supportedContextParams: [],
+        relationshipDisclosure: "Direct operator FareHarbor checkout — check live seats separately from schedule fit.",
         isCommercialPartner: false,
         commissionInfluenceOnRanking: 0,
       },
@@ -2489,3 +2502,588 @@ export const HAWAII_WHALE_DECISION_ENGINE: DecisionEngineDefinition<HawaiiWhaleW
       );
     },
   };
+
+export type KahuluiMaalaeaAllAboardFitStatus =
+  | "fits_all_aboard"
+  | "runs_too_late"
+  | "needs_verification";
+
+export type KahuluiMaalaeaSeatAvailabilityStatus =
+  | "check_live_seats_on_fareharbor"
+  | "live_seats_verified"
+  | "unverified_operator_inventory";
+
+export interface KahuluiCruiseSailingWindow {
+  portSlug: "kahului";
+  portName: string;
+  cruiseTerminalLabel: string;
+  shipArrivalTime: string; // HH:MM (24h)
+  debarkClearanceMinutes: number;
+  shipAllAboardTime: string; // HH:MM (24h)
+  shipDepartureTime: string; // HH:MM (24h)
+  cruiseReturnBufferMinutes: number;
+  pierGateAllowanceEachWayMinutes: number;
+  travelMonth: number;
+  groupSize: number;
+}
+
+export interface KahuluiMaalaeaTripCandidate {
+  tripId: string;
+  scenarioRole: "fits" | "runs_too_late" | "missing_operator_info";
+  engineOptionId: string | null;
+  operatorName: string;
+  productTitle: string;
+  fareHarborItemId: string | null;
+  officialUrl: string;
+  bookingUrl: string | null;
+  maalaeaDepartureTime: string | null; // HH:MM (24h)
+  activityDurationMinutes: number | null;
+  checkInLeadMinutes: number | null;
+  pickupIncludedFromPier: boolean | null;
+  meetingPointAddress: string | null;
+  meetingPointConfirmed: boolean;
+  roadTransferEachWayMinutes: number | null;
+  publishedPriceNote: string;
+  seatAvailabilityMode: KahuluiMaalaeaSeatAvailabilityStatus;
+  liveSeatsRemaining?: number | null;
+  operatorNotes: string[];
+}
+
+export interface KahuluiMaalaeaTripEvaluation {
+  tripId: string;
+  scenarioRole: "fits" | "runs_too_late" | "missing_operator_info";
+  engineOptionId: string | null;
+  reusedEngineOptionTitle: string | null;
+  operatorName: string;
+  productTitle: string;
+  fareHarborItemId: string | null;
+  officialUrl: string;
+  bookingUrl: string | null;
+  publishedPriceNote: string;
+  verifiedLogistics: {
+    maalaeaDepartureTime: string | null;
+    maalaeaDepartureDisplay: string;
+    activityDurationMinutes: number | null;
+    pickupOrMeetingPoint: string;
+    pickupIncludedFromPier: boolean | null;
+    meetingPointConfirmed: boolean;
+    checkInLeadMinutes: number | null;
+    checkInCutoffTime: string | null;
+    checkInCutoffDisplay: string;
+    roadTransferEachWayMinutes: number | null;
+    roadTransferRoundTripMinutes: number | null;
+    pierGateAllowanceEachWayMinutes: number;
+    effectiveTransferEachWayMinutes: number | null;
+    effectiveTransferRoundTripMinutes: number | null;
+  };
+  allAboardFit: {
+    status: KahuluiMaalaeaAllAboardFitStatus;
+    fitsAllAboard: boolean;
+    verdictBadgeLabel: string;
+    summary: string;
+    missingOperatorFields: string[];
+    timeline: {
+      shipArrivalTime: string;
+      shipArrivalDisplay: string;
+      earliestPierExitTime: string;
+      earliestPierExitDisplay: string;
+      latestLeaveKahuluiPierTime: string | null;
+      latestLeaveKahuluiPierDisplay: string;
+      checkInCutoffTime: string | null;
+      checkInCutoffDisplay: string;
+      maalaeaDepartureTime: string | null;
+      maalaeaDepartureDisplay: string;
+      maalaeaDockReturnTime: string | null;
+      maalaeaDockReturnDisplay: string;
+      plannedKahuluiPierReturnTime: string | null;
+      plannedKahuluiPierReturnDisplay: string;
+      shipAllAboardTime: string;
+      shipAllAboardDisplay: string;
+      shipDepartureTime: string;
+      shipDepartureDisplay: string;
+      minutesBeforeAllAboard: number | null;
+      netSlackAfterBufferMinutes: number | null;
+      requiredReturnBufferMinutes: number;
+    };
+    engineTimingCalculation: TimingCalculationResult | null;
+  };
+  seatAvailability: {
+    status: KahuluiMaalaeaSeatAvailabilityStatus;
+    seatsVerified: boolean;
+    liveSeatsRemaining: number | null;
+    badgeLabel: string;
+    actionLabel: string;
+    summary: string;
+    bookingUrl: string | null;
+  };
+  operatorNotes: string[];
+}
+
+export interface KahuluiMaalaeaPortDayComparison {
+  portSlug: "kahului";
+  corridorTitle: string;
+  reusedDecisionEngineId: string;
+  reusedDecisionEnginePath: string;
+  sailingWindow: KahuluiCruiseSailingWindow;
+  trips: KahuluiMaalaeaTripEvaluation[];
+  summaryCounts: {
+    totalEvaluated: number;
+    fitsCount: number;
+    runsTooLateCount: number;
+    needsVerificationCount: number;
+  };
+}
+
+function parseClockMinutes(clock: string | null | undefined): number | null {
+  if (!clock) return null;
+  const match = /^(\d{1,2}):(\d{2})$/.exec(clock.trim());
+  if (!match) return null;
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  if (
+    !Number.isInteger(hours) ||
+    !Number.isInteger(minutes) ||
+    hours < 0 ||
+    hours > 23 ||
+    minutes < 0 ||
+    minutes > 59
+  ) {
+    return null;
+  }
+  return hours * 60 + minutes;
+}
+
+function formatMinutesAs24h(totalMinutes: number): string {
+  const clamped = ((Math.round(totalMinutes) % 1440) + 1440) % 1440;
+  const h = Math.floor(clamped / 60);
+  const m = clamped % 60;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+}
+
+export function formatMinutesAs12h(totalMinutes: number | null): string {
+  if (totalMinutes === null || !Number.isFinite(totalMinutes)) {
+    return "Unconfirmed";
+  }
+  const clamped = ((Math.round(totalMinutes) % 1440) + 1440) % 1440;
+  const h24 = Math.floor(clamped / 60);
+  const m = clamped % 60;
+  const period = h24 >= 12 ? "PM" : "AM";
+  const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
+  return `${h12}:${String(m).padStart(2, "0")} ${period}`;
+}
+
+export const KAHULUI_MAALAEA_DEFAULT_SAILING_WINDOW: KahuluiCruiseSailingWindow =
+  {
+    portSlug: "kahului",
+    portName: "Kahului Harbor, Maui",
+    cruiseTerminalLabel: "Kahului Harbor Cruise Ship Terminal (Pier 1 / Pier 2)",
+    shipArrivalTime: "08:00",
+    debarkClearanceMinutes: 30,
+    shipAllAboardTime: "16:15",
+    shipDepartureTime: "17:00",
+    cruiseReturnBufferMinutes: 60,
+    pierGateAllowanceEachWayMinutes: 5,
+    travelMonth: 2,
+    groupSize: 2,
+  };
+
+export const KAHULUI_MAALAEA_VERIFIED_TRIP_CANDIDATES: KahuluiMaalaeaTripCandidate[] =
+  [
+    {
+      tripId: "kahului-maalaea-pacwhale-1030-fits",
+      scenarioRole: "fits",
+      engineOptionId: "hi-whale-maui-pacwhale-catamaran",
+      operatorName: "PacWhale Eco-Adventures (Pacific Whale Foundation)",
+      productTitle:
+        "Classic Whale Watch from Maʻalaea Harbor — 10:30 AM Morning Departure",
+      fareHarborItemId: "410840",
+      officialUrl: "https://pacwhale.com/ecotour/whalewatch-maalaea/",
+      bookingUrl:
+        "https://fareharbor.com/embeds/book/pacific-whale/items/410840/?flow=828938&full-items=yes",
+      maalaeaDepartureTime: "10:30",
+      activityDurationMinutes: 120,
+      checkInLeadMinutes: 45,
+      pickupIncludedFromPier: false,
+      meetingPointAddress:
+        "PacWhale Eco-Adventures Ocean Store, Maʻalaea Harbor Shops, 300 Maʻalaea Rd, Wailuku, HI 96793 (courtyard level next to Maui Ocean Center; crew escorts guests to assigned Maʻalaea Harbor slip)",
+      meetingPointConfirmed: true,
+      roadTransferEachWayMinutes: 25,
+      publishedPriceNote:
+        "$99.05/adult regular · $55.55/child (ages 5–12) · Free ages 4 & under (pre-tax published tariff)",
+      seatAvailabilityMode: "check_live_seats_on_fareharbor",
+      liveSeatsRemaining: null,
+      operatorNotes: [
+        "Verified against PacWhale Eco-Adventures live Maʻalaea Classic Whale Watch page (FareHarbor item 410840, schedule UUID ae025499-d334-4779-a94f-998640be3be2).",
+        "No cruise-pier shuttle pickup is included; requires 25-minute taxi/rideshare each way (50 minutes road round-trip; 60 minutes including 5-minute cruise pier gate clearance each way) via Hwy 380 & Hwy 30.",
+        "Check in 45 minutes prior (9:45 AM) inside the Ocean Store at 300 Maʻalaea Rd before walking with the crew to the Maʻalaea Small Boat Harbor slip.",
+      ],
+    },
+    {
+      tripId: "kahului-maalaea-pacwhale-1400-runs-too-late",
+      scenarioRole: "runs_too_late",
+      engineOptionId: "hi-whale-maui-pacwhale-catamaran",
+      operatorName: "PacWhale Eco-Adventures (Pacific Whale Foundation)",
+      productTitle:
+        "Classic Whale Watch from Maʻalaea Harbor — 2:00 PM Afternoon Departure",
+      fareHarborItemId: "410840",
+      officialUrl: "https://pacwhale.com/ecotour/whalewatch-maalaea/",
+      bookingUrl:
+        "https://fareharbor.com/embeds/book/pacific-whale/items/410840/?flow=828938&full-items=yes",
+      maalaeaDepartureTime: "14:00",
+      activityDurationMinutes: 120,
+      checkInLeadMinutes: 45,
+      pickupIncludedFromPier: false,
+      meetingPointAddress:
+        "PacWhale Eco-Adventures Ocean Store, Maʻalaea Harbor Shops, 300 Maʻalaea Rd, Wailuku, HI 96793 (courtyard level next to Maui Ocean Center; crew escorts guests to assigned Maʻalaea Harbor slip)",
+      meetingPointConfirmed: true,
+      roadTransferEachWayMinutes: 25,
+      publishedPriceNote:
+        "$99.05/adult regular · $55.55/child (ages 5–12) · Free ages 4 & under (pre-tax published tariff)",
+      seatAvailabilityMode: "check_live_seats_on_fareharbor",
+      liveSeatsRemaining: null,
+      operatorNotes: [
+        "Same verified Maʻalaea operator and vessel (FareHarbor item 410840), but the 2:00 PM (14:00) afternoon departure docks at 4:00 PM (16:00) and reaches Kahului Cruise Pier at 4:25–4:30 PM — missing a 4:15 PM (16:15) ship all-aboard cutoff and violating the 60-minute return buffer.",
+        "Federal 100-yard humpback approach rules (50 CFR § 224.103(a)) also require captains to hold engines in neutral during whale 'mugging' encounters, which can extend afternoon return times by an additional 10–20 minutes.",
+      ],
+    },
+    {
+      tripId: "kahului-maalaea-missing-operator-info",
+      scenarioRole: "missing_operator_info",
+      engineOptionId: null,
+      operatorName:
+        "Unverified Maʻalaea Harbor Reseller Listing (Slip & Check-In Unconfirmed)",
+      productTitle:
+        "Maʻalaea Harbor Catamaran Whale Watch — Unconfirmed Slip, Cutoff & Return Transfer",
+      fareHarborItemId: null,
+      officialUrl: "https://dlnr.hawaii.gov/dobor/maui-harbors/",
+      bookingUrl: null,
+      maalaeaDepartureTime: "11:30",
+      activityDurationMinutes: 120,
+      checkInLeadMinutes: null,
+      pickupIncludedFromPier: null,
+      meetingPointAddress: null,
+      meetingPointConfirmed: false,
+      roadTransferEachWayMinutes: null,
+      publishedPriceNote:
+        "Unverified third-party listing — exact Maʻalaea slip (#1–#99), check-in cutoff, and Kahului pier transfer not confirmed",
+      seatAvailabilityMode: "unverified_operator_inventory",
+      liveSeatsRemaining: null,
+      operatorNotes: [
+        "Maʻalaea Small Boat Harbor spans slips #1 through #99 along the south breakwater and inner marginal wharf; without a confirmed check-in store or slip number and check-in cutoff, port-day fit cannot be established.",
+        "Held back as Needs verification until the operator's exact Maʻalaea meeting point, check-in cutoff lead time, and Kahului Harbor round-trip transfer window are confirmed.",
+      ],
+    },
+  ];
+
+export function evaluateKahuluiMaalaeaWhaleWatchingTrip(
+  candidate: KahuluiMaalaeaTripCandidate,
+  sailingWindow: KahuluiCruiseSailingWindow = KAHULUI_MAALAEA_DEFAULT_SAILING_WINDOW,
+): KahuluiMaalaeaTripEvaluation {
+  const reusedOption = candidate.engineOptionId
+    ? HAWAII_WHALE_CANDIDATE_OPTIONS.find(
+        (opt) => opt.optionId === candidate.engineOptionId,
+      ) ?? null
+    : null;
+
+  const activityDurationMinutes =
+    candidate.activityDurationMinutes ??
+    reusedOption?.durationMinutes.activity ??
+    null;
+  const checkInLeadMinutes =
+    candidate.checkInLeadMinutes !== undefined
+      ? candidate.checkInLeadMinutes
+      : (reusedOption?.durationMinutes.checkInLead ?? null);
+  const roadTransferEachWayMinutes =
+    candidate.roadTransferEachWayMinutes !== undefined
+      ? candidate.roadTransferEachWayMinutes
+      : (reusedOption?.durationMinutes.typicalTransferEachWay ?? null);
+
+  const missingOperatorFields: string[] = [];
+  if (!candidate.maalaeaDepartureTime) {
+    missingOperatorFields.push(
+      "maalaeaDepartureTime (exact Maʻalaea departure time not confirmed)",
+    );
+  }
+  if (
+    !candidate.meetingPointConfirmed ||
+    !candidate.meetingPointAddress ||
+    candidate.meetingPointAddress.trim().length === 0
+  ) {
+    missingOperatorFields.push(
+      "meetingPoint (exact Maʻalaea Harbor check-in location or slip #1–#99 not confirmed)",
+    );
+  }
+  if (checkInLeadMinutes === null || checkInLeadMinutes <= 0) {
+    missingOperatorFields.push(
+      "checkInLeadMinutes (operator check-in cutoff lead time not confirmed)",
+    );
+  }
+  if (activityDurationMinutes === null || activityDurationMinutes <= 0) {
+    missingOperatorFields.push(
+      "activityDurationMinutes (on-water excursion duration not confirmed)",
+    );
+  }
+  if (roadTransferEachWayMinutes === null || roadTransferEachWayMinutes <= 0) {
+    missingOperatorFields.push(
+      "roundTripTransfer (Kahului Harbor ↔ Maʻalaea Harbor round-trip transfer time not confirmed)",
+    );
+  }
+
+  const shipArrivalMin = parseClockMinutes(sailingWindow.shipArrivalTime) ?? 480;
+  const earliestPierExitMin =
+    shipArrivalMin + sailingWindow.debarkClearanceMinutes;
+  const shipAllAboardMin =
+    parseClockMinutes(sailingWindow.shipAllAboardTime) ?? 975;
+  const shipDepartureMin =
+    parseClockMinutes(sailingWindow.shipDepartureTime) ?? 1020;
+  const departureMin = parseClockMinutes(candidate.maalaeaDepartureTime);
+
+  const pierGateEachWay = sailingWindow.pierGateAllowanceEachWayMinutes;
+  const effectiveTransferEachWayMinutes =
+    roadTransferEachWayMinutes !== null
+      ? roadTransferEachWayMinutes + pierGateEachWay
+      : null;
+  const effectiveTransferRoundTripMinutes =
+    effectiveTransferEachWayMinutes !== null
+      ? effectiveTransferEachWayMinutes * 2
+      : null;
+  const roadTransferRoundTripMinutes =
+    roadTransferEachWayMinutes !== null ? roadTransferEachWayMinutes * 2 : null;
+
+  const availablePortWindowMinutes = Math.max(
+    60,
+    shipAllAboardMin - earliestPierExitMin,
+  );
+
+  const engineTimingCalculation = reusedOption
+    ? computeHawaiiWhaleOptionTiming(reusedOption, {
+        ...HAWAII_WHALE_DEFAULT_EXAMPLE_INPUT,
+        island: "maui",
+        departureArea: "maalaea_harbor",
+        travelMonth: sailingWindow.travelMonth,
+        startingPoint: "cruise_ship_pier",
+        availableWindowMinutes: availablePortWindowMinutes,
+        cruiseReturnBufferMinutes: sailingWindow.cruiseReturnBufferMinutes,
+        groupSize: sailingWindow.groupSize,
+      })
+    : null;
+
+  let checkInCutoffMin: number | null = null;
+  let latestLeaveKahuluiPierMin: number | null = null;
+  let maalaeaDockReturnMin: number | null = null;
+  let plannedKahuluiPierReturnMin: number | null = null;
+  let minutesBeforeAllAboard: number | null = null;
+  let netSlackAfterBufferMinutes: number | null = null;
+
+  if (
+    departureMin !== null &&
+    checkInLeadMinutes !== null &&
+    activityDurationMinutes !== null &&
+    effectiveTransferEachWayMinutes !== null
+  ) {
+    checkInCutoffMin = departureMin - checkInLeadMinutes;
+    latestLeaveKahuluiPierMin =
+      checkInCutoffMin - effectiveTransferEachWayMinutes;
+    maalaeaDockReturnMin = departureMin + activityDurationMinutes;
+    plannedKahuluiPierReturnMin =
+      maalaeaDockReturnMin + effectiveTransferEachWayMinutes;
+    minutesBeforeAllAboard = shipAllAboardMin - plannedKahuluiPierReturnMin;
+    netSlackAfterBufferMinutes =
+      minutesBeforeAllAboard - sailingWindow.cruiseReturnBufferMinutes;
+  }
+
+  let status: KahuluiMaalaeaAllAboardFitStatus;
+  let fitsAllAboard = false;
+  let verdictBadgeLabel: string;
+  let fitSummary: string;
+
+  if (
+    missingOperatorFields.length > 0 ||
+    departureMin === null ||
+    checkInCutoffMin === null ||
+    latestLeaveKahuluiPierMin === null ||
+    maalaeaDockReturnMin === null ||
+    plannedKahuluiPierReturnMin === null ||
+    minutesBeforeAllAboard === null ||
+    netSlackAfterBufferMinutes === null
+  ) {
+    status = "needs_verification";
+    fitsAllAboard = false;
+    verdictBadgeLabel = "Needs verification — missing operator information";
+    fitSummary = `Cannot mark as fitting the ${formatMinutesAs12h(shipAllAboardMin)} all-aboard cutoff because required operator logistics are missing: ${missingOperatorFields.join("; ")}.`;
+  } else if (latestLeaveKahuluiPierMin < earliestPierExitMin) {
+    status = "runs_too_late";
+    fitsAllAboard = false;
+    verdictBadgeLabel = "Does not fit — departs before ship gangway clearance";
+    fitSummary = `Requires leaving Kahului Cruise Pier by ${formatMinutesAs12h(latestLeaveKahuluiPierMin)} to meet the ${formatMinutesAs12h(checkInCutoffMin)} check-in cutoff at Maʻalaea, which is before earliest pier exit (${formatMinutesAs12h(earliestPierExitMin)}).`;
+  } else if (minutesBeforeAllAboard < 0) {
+    status = "runs_too_late";
+    fitsAllAboard = false;
+    verdictBadgeLabel = "Runs too late — returns after ship all-aboard time";
+    fitSummary = `${formatMinutesAs12h(departureMin)} Maʻalaea departure docks at ${formatMinutesAs12h(maalaeaDockReturnMin)} and returns to Kahului Cruise Pier at ${formatMinutesAs12h(plannedKahuluiPierReturnMin)} (${roadTransferEachWayMinutes}m road transfer + ${pierGateEachWay}m pier gate clearance) — ${Math.abs(minutesBeforeAllAboard)} minutes AFTER the ship's ${formatMinutesAs12h(shipAllAboardMin)} all-aboard cutoff (${Math.abs(netSlackAfterBufferMinutes)}m past the ${sailingWindow.cruiseReturnBufferMinutes}m return safety buffer).`;
+  } else if (netSlackAfterBufferMinutes < 0) {
+    status = "runs_too_late";
+    fitsAllAboard = false;
+    verdictBadgeLabel = "Runs too late — fails pre-all-aboard safety buffer";
+    fitSummary = `${formatMinutesAs12h(departureMin)} Maʻalaea departure returns to Kahului Cruise Pier at ${formatMinutesAs12h(plannedKahuluiPierReturnMin)}, leaving only ${minutesBeforeAllAboard} minutes before the ${formatMinutesAs12h(shipAllAboardMin)} all-aboard time (short of the mandatory ${sailingWindow.cruiseReturnBufferMinutes}-minute return buffer by ${Math.abs(netSlackAfterBufferMinutes)} minutes).`;
+  } else {
+    status = "fits_all_aboard";
+    fitsAllAboard = true;
+    verdictBadgeLabel = `Fits ship’s all-aboard time (${minutesBeforeAllAboard}m before all-aboard)`;
+    fitSummary = `Leave Kahului Cruise Pier by ${formatMinutesAs12h(latestLeaveKahuluiPierMin)} (${roadTransferEachWayMinutes}m road transfer + ${pierGateEachWay}m pier gate) → meet ${formatMinutesAs12h(checkInCutoffMin)} check-in cutoff (45m prior) at Ocean Store (300 Maʻalaea Rd) → ${formatMinutesAs12h(departureMin)}–${formatMinutesAs12h(maalaeaDockReturnMin)} on water (${activityDurationMinutes}m) → back at Kahului Cruise Pier by ${formatMinutesAs12h(plannedKahuluiPierReturnMin)}, leaving ${minutesBeforeAllAboard} minutes before ${formatMinutesAs12h(shipAllAboardMin)} all-aboard (+${netSlackAfterBufferMinutes}m slack beyond the ${sailingWindow.cruiseReturnBufferMinutes}m buffer).`;
+  }
+
+  const seatAvailability: KahuluiMaalaeaTripEvaluation["seatAvailability"] =
+    candidate.seatAvailabilityMode === "live_seats_verified" &&
+    typeof candidate.liveSeatsRemaining === "number"
+      ? {
+          status: "live_seats_verified",
+          seatsVerified: candidate.liveSeatsRemaining >= sailingWindow.groupSize,
+          liveSeatsRemaining: candidate.liveSeatsRemaining,
+          badgeLabel: `Seat Availability: ${candidate.liveSeatsRemaining} live seats verified`,
+          actionLabel: "Book verified departure on FareHarbor",
+          summary: `Live seat availability verified separately from schedule fit (${candidate.liveSeatsRemaining} seats open for party of ${sailingWindow.groupSize}).`,
+          bookingUrl: candidate.bookingUrl,
+        }
+      : candidate.seatAvailabilityMode === "check_live_seats_on_fareharbor"
+        ? {
+            status: "check_live_seats_on_fareharbor",
+            seatsVerified: false,
+            liveSeatsRemaining: null,
+            badgeLabel:
+              "Seat Availability: Check dates and prices on FareHarbor (separate check)",
+            actionLabel: "Check dates and prices on FareHarbor",
+            summary:
+              "Seat availability is tracked separately from all-aboard schedule fit. Live FareHarbor seat counts are not pre-fetched in DCC — open FareHarbor item 410840 to confirm open seats for your sailing date and party size.",
+            bookingUrl: candidate.bookingUrl,
+          }
+        : {
+            status: "unverified_operator_inventory",
+            seatsVerified: false,
+            liveSeatsRemaining: null,
+            badgeLabel:
+              "Seat Availability: Needs verification (operator inventory unverified)",
+            actionLabel: "Needs verification before booking",
+            summary:
+              "Both operator logistics (slip/check-in cutoff/transfer) and live seat inventory are unverified for this listing.",
+            bookingUrl: null,
+          };
+
+  return {
+    tripId: candidate.tripId,
+    scenarioRole: candidate.scenarioRole,
+    engineOptionId: candidate.engineOptionId,
+    reusedEngineOptionTitle: reusedOption?.title ?? null,
+    operatorName: candidate.operatorName,
+    productTitle: candidate.productTitle,
+    fareHarborItemId: candidate.fareHarborItemId,
+    officialUrl: candidate.officialUrl,
+    bookingUrl: candidate.bookingUrl,
+    publishedPriceNote: candidate.publishedPriceNote,
+    verifiedLogistics: {
+      maalaeaDepartureTime: candidate.maalaeaDepartureTime,
+      maalaeaDepartureDisplay: formatMinutesAs12h(departureMin),
+      activityDurationMinutes,
+      pickupOrMeetingPoint:
+        candidate.meetingPointConfirmed && candidate.meetingPointAddress
+          ? `No pier pickup — self-transfer to ${candidate.meetingPointAddress}`
+          : "Missing / unconfirmed (exact Maʻalaea Harbor slip #1–#99 and check-in location not provided)",
+      pickupIncludedFromPier: candidate.pickupIncludedFromPier,
+      meetingPointConfirmed: candidate.meetingPointConfirmed,
+      checkInLeadMinutes,
+      checkInCutoffTime:
+        checkInCutoffMin !== null ? formatMinutesAs24h(checkInCutoffMin) : null,
+      checkInCutoffDisplay:
+        checkInCutoffMin !== null && checkInLeadMinutes !== null
+          ? `${formatMinutesAs12h(checkInCutoffMin)} (${checkInLeadMinutes} min prior to departure)`
+          : "Missing check-in cutoff time — Needs verification",
+      roadTransferEachWayMinutes,
+      roadTransferRoundTripMinutes,
+      pierGateAllowanceEachWayMinutes: pierGateEachWay,
+      effectiveTransferEachWayMinutes,
+      effectiveTransferRoundTripMinutes,
+    },
+    allAboardFit: {
+      status,
+      fitsAllAboard,
+      verdictBadgeLabel,
+      summary: fitSummary,
+      missingOperatorFields,
+      timeline: {
+        shipArrivalTime: sailingWindow.shipArrivalTime,
+        shipArrivalDisplay: formatMinutesAs12h(shipArrivalMin),
+        earliestPierExitTime: formatMinutesAs24h(earliestPierExitMin),
+        earliestPierExitDisplay: formatMinutesAs12h(earliestPierExitMin),
+        latestLeaveKahuluiPierTime:
+          latestLeaveKahuluiPierMin !== null
+            ? formatMinutesAs24h(latestLeaveKahuluiPierMin)
+            : null,
+        latestLeaveKahuluiPierDisplay: formatMinutesAs12h(
+          latestLeaveKahuluiPierMin,
+        ),
+        checkInCutoffTime:
+          checkInCutoffMin !== null
+            ? formatMinutesAs24h(checkInCutoffMin)
+            : null,
+        checkInCutoffDisplay: formatMinutesAs12h(checkInCutoffMin),
+        maalaeaDepartureTime: candidate.maalaeaDepartureTime,
+        maalaeaDepartureDisplay: formatMinutesAs12h(departureMin),
+        maalaeaDockReturnTime:
+          maalaeaDockReturnMin !== null
+            ? formatMinutesAs24h(maalaeaDockReturnMin)
+            : null,
+        maalaeaDockReturnDisplay: formatMinutesAs12h(maalaeaDockReturnMin),
+        plannedKahuluiPierReturnTime:
+          plannedKahuluiPierReturnMin !== null
+            ? formatMinutesAs24h(plannedKahuluiPierReturnMin)
+            : null,
+        plannedKahuluiPierReturnDisplay: formatMinutesAs12h(
+          plannedKahuluiPierReturnMin,
+        ),
+        shipAllAboardTime: sailingWindow.shipAllAboardTime,
+        shipAllAboardDisplay: formatMinutesAs12h(shipAllAboardMin),
+        shipDepartureTime: sailingWindow.shipDepartureTime,
+        shipDepartureDisplay: formatMinutesAs12h(shipDepartureMin),
+        minutesBeforeAllAboard,
+        netSlackAfterBufferMinutes,
+        requiredReturnBufferMinutes: sailingWindow.cruiseReturnBufferMinutes,
+      },
+      engineTimingCalculation,
+    },
+    seatAvailability,
+    operatorNotes: candidate.operatorNotes,
+  };
+}
+
+export function evaluateKahuluiMaalaeaPortDay(
+  windowOverrides?: Partial<KahuluiCruiseSailingWindow>,
+  candidates: KahuluiMaalaeaTripCandidate[] = KAHULUI_MAALAEA_VERIFIED_TRIP_CANDIDATES,
+): KahuluiMaalaeaPortDayComparison {
+  const sailingWindow: KahuluiCruiseSailingWindow = {
+    ...KAHULUI_MAALAEA_DEFAULT_SAILING_WINDOW,
+    ...windowOverrides,
+  };
+  const trips = candidates.map((candidate) =>
+    evaluateKahuluiMaalaeaWhaleWatchingTrip(candidate, sailingWindow),
+  );
+  return {
+    portSlug: "kahului",
+    corridorTitle: "Kahului Harbor → Maʻalaea Harbor Whale Watching",
+    reusedDecisionEngineId: HAWAII_WHALE_DECISION_ENGINE.engineId,
+    reusedDecisionEnginePath: HAWAII_WHALE_DECISION_ENGINE.canonicalPath,
+    sailingWindow,
+    trips,
+    summaryCounts: {
+      totalEvaluated: trips.length,
+      fitsCount: trips.filter((t) => t.allAboardFit.status === "fits_all_aboard")
+        .length,
+      runsTooLateCount: trips.filter(
+        (t) => t.allAboardFit.status === "runs_too_late",
+      ).length,
+      needsVerificationCount: trips.filter(
+        (t) => t.allAboardFit.status === "needs_verification",
+      ).length,
+    },
+  };
+}
+
