@@ -4995,7 +4995,11 @@
       "aliases": [
         "Kahului, Maui",
         "OGG"
-      ]
+      ],
+      "viatorDestination": {
+        "id": 671,
+        "name": "Maui"
+      }
     },
     {
       "slug": "kampot",
@@ -9654,6 +9658,36 @@
         "REG",
         "Reggio Calabria, Italy"
       ]
+    },
+    {
+      "slug": "reykjavik",
+      "name": "Reykjavík",
+      "sources": [
+        {
+          "line": "Norwegian Cruise Line",
+          "url": "https://www.ncl.com/cruises-to/reykjavik-iceland",
+          "portCode": "REK"
+        },
+        {
+          "line": "Princess Cruises",
+          "url": "https://www.princess.com/cruise-destinations/european-cruises/cruises-to-reykjavik"
+        }
+      ],
+      "country": "Iceland",
+      "area": "Iceland",
+      "aliases": [
+        "REK",
+        "RKV",
+        "Reykjavik",
+        "Reykjavik, Iceland",
+        "Reykjavík, Iceland",
+        "Skarfabakki",
+        "Miðbakki"
+      ],
+      "viatorDestination": {
+        "id": 905,
+        "name": "Reykjavik"
+      }
     },
     {
       "slug": "rhodes",

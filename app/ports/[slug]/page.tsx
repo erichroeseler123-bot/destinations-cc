@@ -11,6 +11,13 @@ import {
 } from "@/app/ports/[slug]/PortPageShared";
 
 import KahuluiMaalaeaWhaleWatchingPlanner from "@/app/components/dcc/KahuluiMaalaeaWhaleWatchingPlanner";
+import PortDayExcursionCatalogSection from "@/app/components/dcc/PortDayExcursionCatalogSection";
+import {
+  resolveCruisePortExcursionProfile,
+  queryPortDayExcursionCatalog,
+  type PortDayExcursionViewMode,
+  type PortDayExcursionCategoryFilter,
+} from "@/lib/dcc/cruisePortExcursionCatalogEngine";
 
 function getReferencePage(slug: string) {
   const reference = getCruisePortReference(slug);
@@ -30,15 +37,21 @@ export async function generateMetadata({
   const reference = getReferencePage(slug);
   if (!reference) return buildPortPageMetadata(slug, false);
   const isKahului = reference.slug === "kahului";
+  const isReykjavik = reference.slug === "reykjavik";
+  const excursionProfile = resolveCruisePortExcursionProfile(reference.slug);
   return {
     title: isKahului
       ? "Kahului Harbor → Maʻalaea Whale Watching & Cruise Port Guide | Destination Command Center"
-      : `${reference.name} cruise port | Destination Command Center`,
+      : isReykjavik
+        ? "Reykjavík Cruise Port (Skarfabakki & Miðbakki) Shore Excursions & All-Aboard Fit Checker | Destination Command Center"
+        : `${reference.name} cruise port | Destination Command Center`,
     description: isKahului
       ? "Kahului Harbor (Maui) cruise port guide and Maʻalaea Harbor whale-watching all-aboard checker: verified PacWhale Ocean Store meeting point (300 Maʻalaea Rd), 45-minute check-in cutoff, 50-minute round-trip transfer, all-aboard schedule fit, and separate seat availability."
-      : `Cruise-line port references and planning links for ${reference.name}.`,
+      : isReykjavik
+        ? "Reykjavík cruise port shore-excursion catalog (Viator destination 905 · 1,576 reconciled tours) with Skarfabakki & Miðbakki pier transfer checks, departure & check-in cutoffs, all-aboard fit verification, and separate live seat availability."
+        : `Cruise-line port references and planning links for ${reference.name}.`,
     alternates: { canonical: `/ports/${reference.slug}` },
-    robots: { index: isKahului, follow: true },
+    robots: { index: Boolean(isKahului || isReykjavik || excursionProfile), follow: true },
   };
 }
 
@@ -52,6 +65,10 @@ export default async function PortPage({
     shipArrival?: string;
     allAboard?: string;
     shipDeparture?: string;
+    viewMode?: string;
+    category?: string;
+    date?: string;
+    partySize?: string;
   }>;
 }) {
   const { slug } = await params;
@@ -60,6 +77,7 @@ export default async function PortPage({
   if (!reference) return renderPortPage(slug, false);
   const viatorUrl = getCruisePortViatorSearch(reference);
   const isKahului = reference.slug === "kahului";
+  const excursionProfile = resolveCruisePortExcursionProfile(reference.slug);
   const initialScenarioFilter =
     query.scenario === "fits" ||
     query.scenario === "runs_too_late" ||
@@ -67,8 +85,39 @@ export default async function PortPage({
       ? query.scenario
       : "all";
 
+  const initialViewMode: PortDayExcursionViewMode =
+    query.viewMode === "fits_sailing" || query.viewMode === "fits"
+      ? "fits_sailing"
+      : "browse_all";
+
+  const initialCategory: PortDayExcursionCategoryFilter =
+    query.category === "sightseeing" ||
+    query.category === "wildlife" ||
+    query.category === "food" ||
+    query.category === "culture" ||
+    query.category === "adventure" ||
+    query.category === "family"
+      ? query.category
+      : "all";
+
+  const initialPartySize = query.partySize ? Math.max(1, Number(query.partySize) || 2) : 2;
+
+  const initialCatalogData = excursionProfile
+    ? await queryPortDayExcursionCatalog({
+        portSlug: reference.slug,
+        viewMode: initialViewMode,
+        category: initialCategory,
+        shipArrivalTime: query.shipArrival,
+        shipAllAboardTime: query.allAboard,
+        sailingDate: query.date,
+        partySize: initialPartySize,
+        limit: 12,
+        offset: 0,
+      })
+    : null;
+
   return (
-    <main className="mx-auto max-w-5xl space-y-8 px-6 py-14 text-zinc-100">
+    <main className="mx-auto max-w-6xl space-y-8 px-6 py-14 text-zinc-100">
       <Link href="/ports" className="text-sm text-cyan-300">← Browse cruise ports</Link>
       <header className="space-y-3">
         <p className="text-xs uppercase tracking-widest text-cyan-300">Cruise port reference</p>
@@ -88,6 +137,19 @@ export default async function PortPage({
           initialShipArrivalTime={query.shipArrival}
           initialShipAllAboardTime={query.allAboard}
           initialShipDepartureTime={query.shipDeparture}
+        />
+      ) : null}
+
+      {excursionProfile ? (
+        <PortDayExcursionCatalogSection
+          portSlug={reference.slug}
+          initialCatalogData={initialCatalogData}
+          initialViewMode={initialViewMode}
+          initialCategory={initialCategory}
+          initialShipArrivalTime={query.shipArrival}
+          initialShipAllAboardTime={query.allAboard}
+          initialSailingDate={query.date}
+          initialPartySize={initialPartySize}
         />
       ) : null}
 
@@ -116,3 +178,4 @@ export default async function PortPage({
     </main>
   );
 }
+

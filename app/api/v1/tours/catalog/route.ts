@@ -6,7 +6,7 @@ import {
   normalizeCatalogBatchPickupAndMeeting,
   queueCatalogPickupExceptionsToReviewDesk,
   queryDurableTourCatalog,
-  type CatalogQueryFilter,
+  type DurableCatalogSortBy,
   type TourCapabilityTier,
 } from "@/lib/dcc/catalog/durableCatalogStore";
 import {
@@ -97,23 +97,13 @@ export async function GET(request: NextRequest) {
       .filter(Boolean);
 
     const limitRaw = sp.get("limit");
-    const limit = limitRaw && Number.isFinite(Number(limitRaw)) ? Number(limitRaw) : undefined;
+    const limit = limitRaw ? Number(limitRaw) : undefined;
     const offsetRaw = sp.get("offset");
-    const offset = offsetRaw && Number.isFinite(Number(offsetRaw)) ? Number(offsetRaw) : undefined;
+    const offset = offsetRaw ? Number(offsetRaw) : undefined;
     const pageRaw = sp.get("page");
-    const page = pageRaw && Number.isFinite(Number(pageRaw)) ? Number(pageRaw) : undefined;
-    const maxDurationRaw = sp.get("maxDurationMinutes");
-    const maxDurationMinutes =
-      maxDurationRaw && Number.isFinite(Number(maxDurationRaw))
-        ? Number(maxDurationRaw)
-        : undefined;
-    const maxPriceRaw = sp.get("maxPriceCents");
-    const maxPriceCents =
-      maxPriceRaw && Number.isFinite(Number(maxPriceRaw)) ? Number(maxPriceRaw) : undefined;
-    const freeCancellationOnly =
-      sp.get("freeCancellationOnly") === "true" || sp.get("freeCancellationOnly") === "1";
-    const commissionAuthorizedOnly =
-      sp.get("commissionAuthorizedOnly") === "true" || sp.get("commissionAuthorizedOnly") === "1";
+    const page = pageRaw ? Number(pageRaw) : undefined;
+    const sortByRaw = (sp.get("sortBy") || sp.get("sort") || "") as DurableCatalogSortBy;
+    const searchQuery = sp.get("q") || sp.get("search") || undefined;
 
     const result = await queryDurableTourCatalog({
       destinationSlug: sp.get("destination") || sp.get("destinationSlug") || undefined,
@@ -122,18 +112,13 @@ export async function GET(request: NextRequest) {
       provider: sp.get("provider") || undefined,
       capabilityTier: (sp.get("capabilityTier") as TourCapabilityTier) || undefined,
       category: sp.get("category") || undefined,
-      q: sp.get("q") || sp.get("search") || undefined,
-      pickupMode: (sp.get("pickupMode") as CatalogQueryFilter["pickupMode"]) || undefined,
-      maxDurationMinutes,
-      maxPriceCents,
-      freeCancellationOnly: freeCancellationOnly ? true : undefined,
-      commissionAuthorizedOnly: commissionAuthorizedOnly ? true : undefined,
+      searchQuery,
       approvedTourIds: approvedTourIds.length > 0 ? approvedTourIds : undefined,
       includeDiscoveryOnly: sp.get("includeDiscoveryOnly") !== "false",
-      sort: (sp.get("sort") as CatalogQueryFilter["sort"]) || undefined,
-      limit,
-      offset,
-      page,
+      sortBy: sortByRaw || undefined,
+      limit: Number.isFinite(limit) ? limit : undefined,
+      offset: Number.isFinite(offset) ? offset : undefined,
+      page: Number.isFinite(page) ? page : undefined,
     });
 
     if (sp.get("exceptions") === "true" || sp.get("exceptions") === "1") {
@@ -169,17 +154,17 @@ export async function GET(request: NextRequest) {
         ok: true,
         readOnly: true,
         storageSource: result.storageSource,
+        executedInSql: result.executedInSql,
+        rowsLoadedIntoApp: result.rowsLoadedIntoApp,
+        fullCatalogLoadedIntoApp: result.fullCatalogLoadedIntoApp,
+        sqlQueryMs: result.sqlQueryMs,
         totalMatched: result.totalMatched,
-        count: enrichedRecords.length,
-        returnedCount: enrichedRecords.length,
+        count: result.records.length,
         limit: result.limit,
         offset: result.offset,
-        page: result.page,
-        totalPages: result.totalPages,
         hasMore: result.hasMore,
-        categoriesAvailable: result.categoriesAvailable,
-        records: enrichedRecords,
-        tours: enrichedRecords,
+        nextOffset: result.nextOffset,
+        records: result.records,
       },
       { status: 200, headers: CORS_HEADERS },
     );

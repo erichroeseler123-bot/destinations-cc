@@ -781,7 +781,7 @@ export async function buildUnifiedPortfolioFunnelReport(options?: {
       label: manifest.site_name,
       canonicalDomain: primaryDomain,
       primaryDomain,
-      commercialModel: classification.revenueModel,
+      commercialModel: classification.ownershipModel,
       classification,
       uniqueVisitors: 0,
       rawPageviewEvents: 0,
@@ -905,7 +905,7 @@ export async function buildUnifiedPortfolioFunnelReport(options?: {
 
     if (event.eventName === "landing_viewed" || event.eventName === "page_viewed") {
       const visitorKey =
-        event.userId || event.sessionId || event.handoffId || String(event.id);
+        event.userId || event.sessionId || event.handoffId || String(event.eventId);
       const cKey = `cor:${visitorKey}`;
       spokeVisitorSets.get(siteId)?.add(cKey);
       spokePageviewVisitorSets.get(siteId)?.add(cKey);
@@ -957,7 +957,7 @@ export async function buildUnifiedPortfolioFunnelReport(options?: {
       if (!event.handoffId || !arrivalHandoffIds.has(event.handoffId)) {
         const originSiteId = resolveCorridorEventSiteId(event);
         outboundClicksWithoutArrival.push({
-          id: String(event.id),
+          id: String(event.eventId),
           dropStage: "outbound_click_without_storefront_arrival",
           siteId: originSiteId,
           dccEntryPage: event.sourcePage || event.landingPath || null,
@@ -995,7 +995,7 @@ export async function buildUnifiedPortfolioFunnelReport(options?: {
           dropStage: "storefront_arrival_without_dcc_entry",
           siteId,
           dccEntryPage: null,
-          storefrontDestination: summary.latestSourcePath || metrics.canonicalDomain,
+          storefrontDestination: summary.attribution?.sourcePage || metrics.canonicalDomain,
           checkoutDestination: null,
           provider: "direct_provider",
           reason: `Satellite handoff ${summary.handoffId} arrived on ${siteId} without attribution.sourcePage.`,
@@ -1538,7 +1538,7 @@ export async function buildUnifiedPortfolioFunnelReport(options?: {
       dccEntryPage: s.attribution?.sourcePage || null,
       storefrontDestination: s.satelliteId,
       checkoutDestination: s.booking?.productSlug || null,
-      provider: s.source || null,
+      provider: s.satelliteId || null,
       reason: isExcludedPortfolioSite(s.satelliteId)
         ? `Excluded site (${s.satelliteId}) omitted from active spoke totals.`
         : `Diagnostic/synthetic test handoff (${s.handoffId}) omitted from active spoke totals.`,

@@ -34,6 +34,11 @@ import {
 import { buildCatalogTourDirectHandoff } from "@/lib/dcc/catalog/matcher";
 import { getPublishedTravelReferenceNodeById } from "@/lib/dcc/travelReference";
 import { getPublicationManifestEntry } from "@/src/data/publication-manifest";
+import PortDayExcursionCatalogSection from "@/app/components/dcc/PortDayExcursionCatalogSection";
+import {
+  resolveCruisePortExcursionProfile,
+  queryPortDayExcursionCatalog,
+} from "@/lib/dcc/cruisePortExcursionCatalogEngine";
 
 const BASE_URL = "https://destinationcommandcenter.com";
 
@@ -371,15 +376,16 @@ export async function renderPortPage(slug: string, isLfse = false) {
   const earthosDestination =
     resolveEarthOSDestinationNode(port.slug) ||
     resolveEarthOSDestinationNode(port.slug.replace(/-alaska$/, ""));
-  const reykjavikCatalog =
-    port.slug === "reykjavik"
-      ? await queryDurableTourCatalog({
-          destinationSlug: "reykjavik",
-          sort: "recommended",
-          limit: 8,
-          page: 1,
-        })
-      : null;
+  const excursionProfile = resolveCruisePortExcursionProfile(port.slug);
+  const initialCatalogData = excursionProfile
+    ? await queryPortDayExcursionCatalog({
+        portSlug: excursionProfile.portSlug,
+        viewMode: "browse_all",
+        category: "all",
+        limit: 12,
+        offset: 0,
+      })
+    : null;
   const portLat = port.lat ?? portReferenceNode?.primaryCoordinate.lat;
   const portLng = port.lng ?? port.lon ?? portReferenceNode?.primaryCoordinate.lng;
 
@@ -414,121 +420,13 @@ export async function renderPortPage(slug: string, isLfse = false) {
         }}
       />
       <PortAuthorityTemplate port={port} config={config} />
-      {port.slug === "reykjavik" && reykjavikCatalog ? (
-        <section
-          className="max-w-6xl mx-auto px-6 pt-6 space-y-6"
-          data-testid="reykjavik-port-catalog-section"
-        >
-          <div className="rounded-2xl border border-cyan-500/35 bg-slate-900/90 p-6 shadow-lg">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div className="max-w-2xl">
-                <div className="text-xs font-bold uppercase tracking-wider text-cyan-300">
-                  Authorized Reykjavík Shore Excursion Catalog · Neon Postgres ({reykjavikCatalog.totalMatched} Tours)
-                </div>
-                <h2 className="mt-1 text-xl font-bold text-white">
-                  Explore Reykjavík Shore Excursions on Cruise Promenade
-                </h2>
-                <p className="mt-1 text-xs sm:text-sm text-slate-300">
-                  Detailed filtering (category, Skarfabakki pier pickup vs. downtown Tour Bus Stop,
-                  duration, price, and free cancellation) and cruise-schedule matching live in the
-                  Cruise Promenade app. Choose <strong>Browse all tours</strong> for the full
-                  Neon-paginated catalog or <strong>Fits my sailing</strong> to check your ship
-                  arrival and all-aboard cutoff before checkout.
-                </p>
-              </div>
-              <div className="flex flex-wrap items-center gap-3">
-                <a
-                  href="https://cruisepromenade.com/ports/reykjavik?mode=browse_all"
-                  data-testid="reykjavik-browse-all-tours-cta"
-                  className="rounded-xl bg-cyan-500 px-4 py-2.5 text-xs font-bold text-slate-950 hover:bg-cyan-400 transition"
-                >
-                  Browse all tours ({reykjavikCatalog.totalMatched}) →
-                </a>
-                <a
-                  href="https://cruisepromenade.com/ports/reykjavik?mode=fits_my_sailing"
-                  data-testid="reykjavik-fits-my-sailing-cta"
-                  className="rounded-xl border border-emerald-500/40 bg-emerald-950/60 px-4 py-2.5 text-xs font-bold text-emerald-200 hover:bg-emerald-900/60 transition"
-                >
-                  Fits my sailing (Skarfabakki / Miðbakki) →
-                </a>
-              </div>
-            </div>
-          </div>
-
-          <div
-            className="grid gap-4 md:grid-cols-2"
-            data-testid="reykjavik-authorized-tour-list"
-          >
-            {reykjavikCatalog.records.map((tour) => {
-              const handoff = buildCatalogTourDirectHandoff(tour, {
-                surface: "cruisepromenade",
-                propertySlug: "reykjavik",
-              });
-              const priceLabel =
-                typeof tour.fromPriceCents === "number"
-                  ? `$${(tour.fromPriceCents / 100).toFixed(0)}`
-                  : "Check price";
-              const durationLabel =
-                typeof tour.durationMinutes === "number"
-                  ? `${(tour.durationMinutes / 60).toFixed(1).replace(/\.0$/, "")}h`
-                  : tour.durationRawText || "Flexible";
-              const detailSlug = encodeURIComponent(tour.providerProductCode.toLowerCase());
-              return (
-                <article
-                  key={tour.tourId}
-                  data-testid={`reykjavik-tour-card-${tour.providerProductCode}`}
-                  className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 flex flex-col justify-between gap-4"
-                >
-                  <div className="space-y-2">
-                    <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-zinc-400">
-                      <span className="rounded-full border border-cyan-400/30 bg-cyan-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-cyan-200">
-                        {tour.category}
-                      </span>
-                      <span className="font-mono text-[11px] text-zinc-400">
-                        Code: {tour.providerProductCode} · {durationLabel}
-                      </span>
-                    </div>
-                    <h3 className="text-base font-bold text-white leading-snug">
-                      {tour.title}
-                    </h3>
-                    {tour.summary ? (
-                      <p className="text-xs text-zinc-300 line-clamp-2 leading-relaxed">
-                        {tour.summary}
-                      </p>
-                    ) : null}
-                    <div className="flex flex-wrap items-center gap-3 pt-1 text-xs text-zinc-300">
-                      <span className="font-bold text-emerald-300">From {priceLabel}</span>
-                      {typeof tour.ratingAverage === "number" ? (
-                        <span>
-                          ★ {tour.ratingAverage.toFixed(1)} ({tour.reviewCount || 0} reviews)
-                        </span>
-                      ) : null}
-                      {tour.freeCancellation ? (
-                        <span className="text-sky-300">Free cancellation</span>
-                      ) : null}
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-white/10">
-                    <Link
-                      href={`/tours/${encodeURIComponent(tour.providerProductCode)}`}
-                      data-testid={`reykjavik-tour-detail-${tour.providerProductCode}`}
-                      className="text-xs font-semibold text-cyan-300 hover:text-cyan-200 underline underline-offset-4"
-                    >
-                      View tour details ({tour.providerProductCode}) →
-                    </Link>
-                    <a
-                      href={handoff.trackedClickUrl}
-                      data-testid={`reykjavik-exact-checkout-${tour.providerProductCode}`}
-                      className="rounded-xl bg-emerald-500 px-3.5 py-2 text-xs font-bold text-slate-950 hover:bg-emerald-400 transition"
-                    >
-                      Exact-Product Checkout ({tour.providerProductCode}) ↗
-                    </a>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
-        </section>
+      {excursionProfile ? (
+        <div className="max-w-6xl mx-auto px-6 pt-6">
+          <PortDayExcursionCatalogSection
+            portSlug={excursionProfile.portSlug}
+            initialCatalogData={initialCatalogData}
+          />
+        </div>
       ) : null}
       {port.slug === "nassau" ||
       port.slug === "st-thomas" ||

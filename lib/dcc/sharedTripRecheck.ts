@@ -895,13 +895,14 @@ export function evaluateUnifiedJuneauTripRecheckSync(
           const checkoutAllowed =
             fitsOverallForSelection &&
             (offer.checkoutLinkEnabled ||
-              offer.channelType === "public_transit");
+              offer.channelType === "public_free" ||
+              (offer.channelType as string) === "public_transit");
           return {
             ...offer,
             offerFitsOverall: fitsOverallForSelection,
             checkoutLinkEnabled: checkoutAllowed,
             href: checkoutAllowed
-              ? offer.channelType === "dcc_to_flight_deck"
+              ? (offer.channelType as string) === "dcc_to_flight_deck"
                 ? flightDeckHandoffHref
                 : offer.href
               : null,

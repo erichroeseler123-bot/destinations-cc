@@ -548,83 +548,81 @@ export function resolveVerifiedLandmarkCoordinatesAndPierTransfer(
     };
   }
   if (
-    (!destinationSlug || destinationSlug === "reykjavik") &&
-    /\bskarfabakki\b|\bsundah[oö]fn\b|\bsundabakki\b|\bkleppsbakki\b|\breykjav[ií]k\s+cruise\s+(?:port|pier|dock|terminal)\b/i.test(
+    destinationSlug === "reykjavik" &&
+    /\bskarfabakki\b|\bsundah[oö]fn\b|\bfaxafl[oó]ahafnir\b|\b312\b.*\b313\b|\bcruise\s+terminal\b.*\breykjav[ií]k\b/i.test(
       norm,
     )
   ) {
     return {
-      name: "Skarfabakki Cruise Terminal (Sundahöfn)",
-      address: "Skarfabakki 312, 104 Reykjavík, Iceland",
-      lat: 64.1562,
-      lng: -21.8685,
+      name: "Skarfabakki Cruise Terminal (Faxaflóahafnir Berths 312/313)",
+      address: "Skarfabakki, 104 Reykjavík, Iceland",
+      lat: 64.1558,
+      lng: -21.8697,
       transferMinutesFromPier: 15,
       transferTimeSource: "verified_pier_pickup",
-      evidenceSource: "verified_landmark_registry:reykjavik_skarfabakki_sundahofn_cruise_terminal",
+      evidenceSource: "verified_landmark_registry:reykjavik_skarfabakki_cruise_terminal",
       applicableBerthOrMeetingPoint:
-        "Skarfabakki Cruise Terminal (Sundahöfn Berth 312–315) — Direct Pier Pickup",
+        "Faxaflóahafnir Skarfabakki Cruise Terminal (Berths 312/313, 104 Reykjavík)",
       planningEstimateTransferMinutes: 15,
       isPierAdjacent: true,
     };
   }
   if (
-    (!destinationSlug || destinationSlug === "reykjavik") &&
-    /\bmi[dð]bakki\b|\bold\s+harbou?r\b|\b[aæ]gisgar[dð]ur\b|\bgeirsgata\b|\bspecial\s+tours\s+ticket\s+office\b|\belding\b/i.test(
+    destinationSlug === "reykjavik" &&
+    /\bmi[dð]bakki\b|\bold\s+harbou?r\b|\b[aæ]gisgar[dð]ur\b|\bgeirsgata\b|\bsu[dð]urbugt\b|\bspecial\s+tours\b|\belding\b|\bharpa\b/i.test(
       norm,
     )
   ) {
     return {
-      name: "Miðbakki / Reykjavík Old Harbour (Ægisgarður)",
-      address: "Geirsgata / Ægisgarður, 101 Reykjavík, Iceland",
-      lat: 64.1508,
-      lng: -21.9406,
-      transferMinutesFromPier: 18,
+      name: "Reykjavík Old Harbour (Ægisgarður / Geirsgata) & Miðbakki / Harpa",
+      address: "Ægisgarður 13 / Geirsgata 11, 101 Reykjavík, Iceland",
+      lat: 64.1516,
+      lng: -21.9438,
+      transferMinutesFromPier: 15,
       transferTimeSource: "verified_meeting_point",
-      evidenceSource: "verified_landmark_registry:reykjavik_old_harbour_midbakki_aegisgardur",
+      evidenceSource: "verified_landmark_registry:reykjavik_old_harbour_aegisgardur_midbakki",
       applicableBerthOrMeetingPoint:
-        "Skarfabakki Cruise Terminal <-> Reykjavík Old Harbour / Miðbakki (Ægisgarður Whale Watching & Downtown Berth)",
-      planningEstimateTransferMinutes: 18,
-      isDowntownShuttleHub: true,
+        "Skarfabakki / Miðbakki Cruise Terminals <-> Reykjavík Old Harbour (Ægisgarður / Geirsgata) & Harpa (15m transfer)",
+      planningEstimateTransferMinutes: 15,
     };
   }
   if (
-    (!destinationSlug || destinationSlug === "reykjavik") &&
-    /\bbs[ií]\s+bus\s+terminal\b|\bvatnsm[yý]rarvegur\s+10\b|\breykjav[ií]k\s+excursions\b/i.test(
+    destinationSlug === "reykjavik" &&
+    /\bbs[ií]\s+bus\s+terminal\b|\bvatnsm[yý]rarvegur\s+10\b|\breykjav[ií]k\s+terminal\b|\bsk[oó]garhl[ií][dð]\s+10\b|\btour\s+bus\s+stop\b/i.test(
       norm,
     )
   ) {
     return {
-      name: "BSÍ Bus Terminal (Reykjavík Central Coach Hub)",
-      address: "Vatnsmýrarvegur 10, 101 Reykjavík, Iceland",
-      lat: 64.1373,
+      name: "BSÍ Bus Terminal / Reykjavík Tour Bus Hub",
+      address: "Vatnsmýrarvegur 10 / Skógarhlíð 10, 101 Reykjavík, Iceland",
+      lat: 64.1376,
       lng: -21.9348,
-      transferMinutesFromPier: 20,
+      transferMinutesFromPier: 15,
       transferTimeSource: "verified_meeting_point",
-      evidenceSource: "verified_landmark_registry:reykjavik_bsi_bus_terminal_vatnsmyrarvegur_10",
+      evidenceSource: "verified_landmark_registry:reykjavik_bsi_bus_terminal_tour_hub",
       applicableBerthOrMeetingPoint:
-        "Skarfabakki Cruise Terminal <-> BSÍ Bus Terminal (Vatnsmýrarvegur 10 Coach Hub)",
-      planningEstimateTransferMinutes: 20,
+        "Skarfabakki Cruise Terminal <-> BSÍ Bus Terminal / Reykjavík Tour Bus Stops (15m transfer)",
+      planningEstimateTransferMinutes: 15,
       isDowntownShuttleHub: true,
     };
   }
   if (
-    (!destinationSlug || destinationSlug === "reykjavik") &&
-    /\bbus\s+stop\s*(?:#?\s*)?(?:12|8|1|6|14)\b|\bh[oö]f[dð]atorg\b|\bharpa\s+concert\s+hall\b|\bhallgr[ií]mskirkja\b|\bausturbakki\s+2\b/i.test(
+    destinationSlug === "kahului" &&
+    /\b300\s+ma['ʻ]?alaea\b|\bpacwhale\s+ocean\s+store\b|\bharbor\s+shops\s+at\s+ma['ʻ]?alaea\b|\bma['ʻ]?alaea\s+harbor\b/i.test(
       norm,
     )
   ) {
     return {
-      name: "Reykjavík Downtown Tour Bus Stop (Harpa / Höfðatorg Stop 12 / Hallgrímskirkja Stop 8)",
-      address: "Austurbakki 2 / Þórunnartún 1, 101–105 Reykjavík, Iceland",
-      lat: 64.1504,
-      lng: -21.9326,
-      transferMinutesFromPier: 18,
+      name: "PacWhale Ocean Store — Harbor Shops at Maʻalaea (300 Maʻalaea Rd)",
+      address: "300 Maʻalaea Rd, Wailuku, HI 96793, USA",
+      lat: 20.7922,
+      lng: -156.5113,
+      transferMinutesFromPier: 25,
       transferTimeSource: "verified_meeting_point",
-      evidenceSource: "verified_landmark_registry:reykjavik_city_tour_bus_stops_harpa_hofdatorg",
+      evidenceSource: "verified_landmark_registry:kahului_to_maalaea_harbor_300_maalaea_rd",
       applicableBerthOrMeetingPoint:
-        "Skarfabakki Cruise Terminal <-> Reykjavík Authorized Tour Bus Stop (#1 Harpa / #8 Hallgrímskirkja / #12 Höfðatorg)",
-      planningEstimateTransferMinutes: 18,
-      isDowntownShuttleHub: true,
+        "Kahului Harbor Cruise Terminal (Pier 1/2) <-> Maʻalaea Harbor Shops (300 Maʻalaea Rd — 25m each way / 50m round-trip)",
+      planningEstimateTransferMinutes: 25,
     };
   }
 
@@ -1195,6 +1193,61 @@ function parseAgeBandsFromViator(detail: any): TourAgeBandRecord[] {
   return out;
 }
 
+export function inferShoreExcursionFacets(
+  title: string,
+  summary: string | null,
+  category: string,
+): string[] {
+  const text = `${title} ${summary || ""} ${category}`.toLowerCase();
+  const facets = new Set<string>();
+  if (
+    /sightseeing|golden circle|south coast|city tour|panoramic|highlights|bus tour|hop-on|walking tour|scenic|landmark|lagoon|sky lagoon|blue lagoon|waterfall|geyser|trolley|tram|harbor cruise|island tour|guided/i.test(
+      text,
+    )
+  ) {
+    facets.add("sightseeing");
+  }
+  if (
+    /wildlife|whale|puffin|dolphin|seal|marine|bird|turtle|bear|eagle|nature|reef|snorkeling|swamp|alligator|safari|stingray|sea lion/i.test(
+      text,
+    )
+  ) {
+    facets.add("wildlife");
+  }
+  if (
+    /food|culinary|tasting|beer|brewery|distillery|wine|dining|gastronomy|cooking|lunch|dinner|bakery|chocolate|coffee|cocktail|feast|salmon bake|luau/i.test(
+      text,
+    )
+  ) {
+    facets.add("food");
+  }
+  if (
+    /culture|cultural|history|historical|museum|heritage|viking|folklore|saga|ghost|jazz|plantation|architecture|art|local|native|totem|mayan|ruins|polynesian/i.test(
+      text,
+    )
+  ) {
+    facets.add("culture");
+  }
+  if (
+    /adventure|glacier|ice cave|snowmobile|atv|buggy|zipline|kayak|rafting|snorkel|scuba|diving|hiking|trek|volcano|lava|caving|helicopter|airboat|4x4|super jeep|horseback|jet boat|catamaran|rib boat/i.test(
+      text,
+    )
+  ) {
+    facets.add("adventure");
+  }
+  if (
+    /family|all ages|kid|children|easy|aquarium|zoo|whale|lagoon|museum|train|tram|trolley|boat tour|puffin|show|beach|glass bottom|park/i.test(
+      text,
+    )
+  ) {
+    facets.add("family");
+  }
+  if (facets.size === 0) {
+    facets.add("sightseeing");
+  }
+  return Array.from(facets);
+}
+
 function inferCategoryFromTitleAndSummary(title: string, summary: string | null): string {
   const text = `${title} ${summary || ""}`.toLowerCase();
   if (
@@ -1242,7 +1295,18 @@ function inferCategoryFromTitleAndSummary(title: string, summary: string | null)
   ) {
     return "Whale Watching & Marine Wildlife";
   }
-  if (text.includes("glacier") || text.includes("dogsled") || text.includes("icefield") || text.includes("lava")) {
+  if (
+    text.includes("glacier") ||
+    text.includes("ice cave") ||
+    text.includes("snowmobile") ||
+    text.includes("dogsled") ||
+    text.includes("icefield") ||
+    text.includes("volcano") ||
+    text.includes("atv") ||
+    text.includes("buggy") ||
+    text.includes("super jeep") ||
+    text.includes("lava")
+  ) {
     return "Glacier & Adventure";
   }
   if (text.includes("ghost") || text.includes("vampire") || text.includes("haunted") || text.includes("cemetery")) {
@@ -1251,8 +1315,32 @@ function inferCategoryFromTitleAndSummary(title: string, summary: string | null)
   if (text.includes("jazz") || text.includes("steamboat") || text.includes("riverboat") || text.includes("music")) {
     return "Music & Riverboat Cruises";
   }
-  if (text.includes("food") || text.includes("culinary") || text.includes("cooking") || text.includes("cocktail")) {
+  if (
+    text.includes("food") ||
+    text.includes("culinary") ||
+    text.includes("cooking") ||
+    text.includes("cocktail") ||
+    text.includes("tasting") ||
+    text.includes("brewery") ||
+    text.includes("beer") ||
+    text.includes("wine") ||
+    text.includes("bakery")
+  ) {
     return "Food, Drink & Culture";
+  }
+  if (
+    text.includes("museum") ||
+    text.includes("viking") ||
+    text.includes("folklore") ||
+    text.includes("cultural") ||
+    text.includes("heritage") ||
+    text.includes("history") ||
+    text.includes("historical")
+  ) {
+    return "Culture & Heritage";
+  }
+  if (text.includes("family") || text.includes("all ages") || text.includes("kids")) {
+    return "Family & All-Ages Excursions";
   }
   if (text.includes("snorkel") || text.includes("reef") || text.includes("catamaran") || text.includes("beach")) {
     return "Snorkeling, Reef & Beach";
@@ -1312,10 +1400,6 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
   const maxPages = Math.max(options.maxPagesPerDestination ?? 1, 1);
   const enrichLimit = options.enrichDetailLimitPerDestination ?? 6;
 
-  // Load durable catalog records from Postgres (with snapshot fallback in local test mode)
-  const { records: durableRecords } = await queryDurableTourCatalog({
-    includeDiscoveryOnly: true,
-  });
   const allUpsertedRecords: DurableTourRecord[] = [];
   const allSyncRuns: CatalogSyncRunRecord[] = [];
 
@@ -1633,6 +1717,10 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
         const textLower = `${title} ${summary || ""}`.toLowerCase();
         const isHeli = textLower.includes("helicopter") || textLower.includes("flightseeing");
 
+        const rawTags = Array.isArray(item?.tags) ? item.tags.map((t: any) => String(t)) : [];
+        const facetTags = inferShoreExcursionFacets(title, summary, category);
+        const combinedTags = Array.from(new Set([...rawTags, ...facetTags]));
+
         const record: DurableTourRecord = {
           tourId: `dcc:tour:viator:${productCode}`,
           compatibilityAliases,
@@ -1643,7 +1731,7 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
           title,
           summary,
           category,
-          tags: Array.isArray(item?.tags) ? item.tags.map((t: any) => String(t)) : [],
+          tags: combinedTags,
           primaryProvider: "viator",
           providerProductCode: productCode,
           operatorName: supplierName,
@@ -1736,15 +1824,14 @@ export async function runUniversalCatalogIngestion(options: IngestionOptions = {
       }
 
       // Count total Viator records for this destination from durable Postgres + current batch
+      const { records: existingForDest } = await queryDurableTourCatalog({
+        destinationSlug: destSlug,
+        provider: "viator",
+        includeDiscoveryOnly: true,
+      });
       const existingViatorCodesForDest = new Set(
-        durableRecords
-          .filter(
-            (r) =>
-              r.destinationSlug === destSlug &&
-              r.primaryProvider === "viator" &&
-              r.active &&
-              !r.quarantined,
-          )
+        existingForDest
+          .filter((r) => r.active && !r.quarantined)
           .map((r) => r.providerProductCode.toUpperCase()),
       );
       for (const r of allUpsertedRecords) {

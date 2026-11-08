@@ -38,7 +38,7 @@ test("1. Durable Shared Tour Catalog covers all 15 EarthOS destinations, complet
     summary.totalImportedRecords >= 1450,
     `Expected >= 1450 records after Alaska completion and multi-destination backfill, got ${summary.totalImportedRecords}`,
   );
-  assert.equal(summary.totalDestinationsCovered, 15);
+  assert.equal(summary.totalDestinationsCovered, 17);
   assert.equal(summary.wtaStatus, "paused");
   assert.ok(summary.quarantinedRecordsExcludedCount >= 6);
   assert.equal(summary.destinationCoverageBreakdown.coverageBasis, "connected_provider_catalog_total");
@@ -46,7 +46,7 @@ test("1. Durable Shared Tour Catalog covers all 15 EarthOS destinations, complet
   assert.ok(
     summary.destinationCoverageBreakdown.sampledDestinationsCount +
       summary.destinationCoverageBreakdown.completeDestinationsCount ===
-      15,
+      17,
   );
 
   // All 5 Alaska destinations (Juneau, Skagway, Ketchikan, Seward, Denali) are 100% complete against connected provider totals

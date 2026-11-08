@@ -3180,6 +3180,41 @@ export const HK_MACAO_SAMPLE_TRIP_NEEDS_VERIFICATION = {
   entryAndPermitStatus: "verify_entry_or_vehicle_permit" as const,
 };
 
+export const HREYFILL_REYKJAVIK_SHORE_EXCURSION_QUALIFICATION = {
+  operatorId: "hreyfill-reykjavik",
+  brandName: "Hreyfill (Hreyfill Taxi & Private Sightseeing Tours)",
+  officialWebsiteUrl: "https://www.hreyfill.is/en/private-tours/",
+  portSlug: "reykjavik",
+  viatorDestinationId: 905,
+  reviewDeskFactId: "mc-ice-hreyfill-golden-circle-south-coast-bokun-links-20261107",
+  status: "pending_operator_reply_and_bokun_link_confirmation" as const,
+  trackedBokunLinksConfirmed: false,
+  directCatalogImportEnabled: false,
+  candidateTours: [
+    {
+      tourSlug: "hreyfill-golden-circle-private-tour",
+      title: "Hreyfill Private Golden Circle Tour from Reykjavík (Skarfabakki / Miðbakki Pier Pickup)",
+      durationMinutes: 390,
+      bokunBookingChannelStatus: "pending_operator_reply_and_tracked_bokun_link_confirmation" as const,
+      confirmedTrackedBokunUrl: null,
+    },
+    {
+      tourSlug: "hreyfill-south-coast-private-tour",
+      title: "Hreyfill Private South Coast Tour from Reykjavík (Seljalandsfoss, Skógafoss & Reynisfjara)",
+      durationMinutes: 540,
+      bokunBookingChannelStatus: "pending_operator_reply_and_tracked_bokun_link_confirmation" as const,
+      confirmedTrackedBokunUrl: null,
+    },
+  ],
+  bookingLinkVerificationGate: verifyDatedSourceOrOperatorConfirmation({
+    fieldCategory: "booking_or_whatsapp_link",
+    proposedValue: null,
+    reviewDeskFactId: "mc-ice-hreyfill-golden-circle-south-coast-bokun-links-20261107",
+    pendingFallbackLabel:
+      "Pending Hreyfill operator reply & confirmation of exact tracked Bókun checkout links for Golden Circle and South Coast tours",
+  }),
+} as const;
+
 // ============================================================================
 // 4. PERU: Cusco / Ollantaytambo → Aguas Calientes → Machu Picchu Qualification
 // ============================================================================
