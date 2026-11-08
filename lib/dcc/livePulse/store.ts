@@ -15,21 +15,29 @@ const STORE_PATH = path.join(ROOT, "data", "live-pulse", "runtime.json");
 const MAX_NOTE_LEN = 140;
 
 function ensureStore(): RuntimeStore {
-  if (!fs.existsSync(STORE_PATH)) {
-    fs.mkdirSync(path.dirname(STORE_PATH), { recursive: true });
-    const initial: RuntimeStore = { version: 1, posts: [] };
-    fs.writeFileSync(STORE_PATH, JSON.stringify(initial, null, 2));
-    return initial;
+  try {
+    if (!fs.existsSync(STORE_PATH)) {
+      fs.mkdirSync(path.dirname(STORE_PATH), { recursive: true });
+      const initial: RuntimeStore = { version: 1, posts: [] };
+      fs.writeFileSync(STORE_PATH, JSON.stringify(initial, null, 2));
+      return initial;
+    }
+    const parsed = JSON.parse(fs.readFileSync(STORE_PATH, "utf8")) as RuntimeStore;
+    return {
+      version: 1,
+      posts: Array.isArray(parsed.posts) ? parsed.posts : [],
+    };
+  } catch {
+    return { version: 1, posts: [] };
   }
-  const parsed = JSON.parse(fs.readFileSync(STORE_PATH, "utf8")) as RuntimeStore;
-  return {
-    version: 1,
-    posts: Array.isArray(parsed.posts) ? parsed.posts : [],
-  };
 }
 
 function saveStore(store: RuntimeStore): void {
-  fs.writeFileSync(STORE_PATH, JSON.stringify(store, null, 2) + "\n");
+  try {
+    fs.writeFileSync(STORE_PATH, JSON.stringify(store, null, 2) + "\n");
+  } catch {
+    // Ignore EROFS on read-only serverless filesystem (/var/task)
+  }
 }
 
 function toTitle(signalType: LivePulseCreateInput["signalType"], location: string): string {
@@ -136,7 +144,9 @@ export function sweepExpiredSignals(now: Date): {
     return post;
   });
 
-  writeRuntimeSignals(updated);
+  if (expired > 0) {
+    writeRuntimeSignals(updated);
+  }
 
   return {
     updated: updated.length,
