@@ -139,9 +139,16 @@ export async function POST(request: NextRequest) {
     const portSlug = String(body.portSlug || body.port || "reykjavik");
     const tourId = String(body.tourId || "");
     const productCode = body.productCode ? String(body.productCode) : null;
-    const date = String(body.date || "2026-07-15");
+    const optionCode = body.optionCode ? String(body.optionCode) : null;
+    const date = String(body.date || "2027-07-15");
     const partySize = Math.max(1, Number(body.partySize) || 2);
     const departureTime = body.departureTime ? String(body.departureTime) : null;
+    const timeoutMs =
+      typeof body.timeoutMs === "number" && Number.isFinite(body.timeoutMs)
+        ? body.timeoutMs
+        : undefined;
+    const simulateTimeout =
+      body.simulateTimeout === true || body.simulateTimeout === "true";
 
     if (!tourId && !productCode) {
       return NextResponse.json(
@@ -157,9 +164,12 @@ export async function POST(request: NextRequest) {
       portSlug,
       tourId,
       productCode,
+      optionCode,
       date,
       partySize,
       departureTime,
+      timeoutMs,
+      simulateTimeout,
     });
 
     return NextResponse.json(
@@ -168,6 +178,7 @@ export async function POST(request: NextRequest) {
         portSlug,
         tourId,
         productCode,
+        optionCode: seatAvailability.selectedOptionCode,
         seatAvailability,
       },
       { headers: CORS_HEADERS }

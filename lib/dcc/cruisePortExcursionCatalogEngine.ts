@@ -2,7 +2,6 @@ import { getViatorClient } from "@/lib/viator/client";
 import { appendViatorAttribution } from "@/lib/viator/links";
 import {
   EARTHOS_DESTINATION_NODES,
-  getDurableCatalogSummaryReport,
   getDurableTourByIdOrAlias,
   queryDurableTourCatalog,
   resolveEarthOSDestinationNode,
@@ -25,7 +24,11 @@ export type PortDayExcursionCategoryFilter =
   | "adventure"
   | "family";
 
-export type PortDayTimeFitStatus = "fits" | "runs_too_late" | "missing_operator_info";
+export type PortDayTimeFitStatus =
+  | "fits"
+  | "runs_too_late"
+  | "needs_verification"
+  | "missing_operator_info";
 
 export type PortDaySeatAvailabilityStatus =
   | "live_verified"
@@ -47,6 +50,7 @@ export interface CruisePortExcursionProfile {
   viatorDestinationName: string;
   defaultPierName: string;
   defaultPierAddress: string;
+  defaultSailingDate: string;
   defaultShipArrivalTime: string;
   defaultShipAllAboardTime: string;
   defaultShipDepartureTime: string;
@@ -59,6 +63,8 @@ export interface PortDayTimeFitEvaluation {
   status: PortDayTimeFitStatus;
   statusLabel: string;
   fitsSailing: boolean;
+  selectedOptionCode: string | null;
+  selectedOptionTitle: string | null;
   shipArrivalTime: string;
   shipAllAboardTime: string;
   earliestDisembarkationTime: string;
@@ -66,20 +72,29 @@ export interface PortDayTimeFitEvaluation {
   availableDepartureTimes: string[];
   fittingDepartureTimes: string[];
   tooLateDepartureTimes: string[];
-  checkInCutoffMinutes: number;
+  hasVerifiedDeparture: boolean;
+  departureEvidenceSource: string | null;
+  checkInCutoffMinutes: number | null;
   latestCheckInTime: string | null;
+  hasVerifiedCheckIn: boolean;
+  checkInEvidenceSource: string | null;
   leavePierByTime: string | null;
   meetingPointName: string | null;
   meetingPointAddress: string | null;
   hasVerifiedMeetingPoint: boolean;
+  meetingPointEvidenceSource: string | null;
   oneWayTransferMinutes: number | null;
+  pierToMeetingMinutes: number | null;
+  meetingToPierMinutes: number | null;
   roundTripTransferMinutes: number | null;
   hasVerifiedTransfer: boolean;
+  transferEvidenceSource: string | null;
   durationMinutes: number | null;
   tourEndTime: string | null;
   estimatedBackAtPierTime: string | null;
   requiredReturnBufferMinutes: number;
   bufferBeforeAllAboardMinutes: number | null;
+  hasVerifiedReturnBuffer: boolean;
   missingFields: string[];
   reasonSummary: string;
 }
@@ -91,11 +106,16 @@ export interface PortDaySeatAvailabilityEvaluation {
   liveCheckedAt: string | null;
   checkedDate: string | null;
   checkedPartySize: number;
+  selectedOptionCode: string | null;
   selectedDepartureTime: string | null;
   available: boolean | null;
   remainingSeats: number | null;
   fromPriceUsd: number | null;
+  totalPriceUsd: number | null;
   currency: string;
+  exactProductUrl: string;
+  dccTrackedHref: string;
+  providerStatus?: "confirmed" | "timeout" | "missing_data" | "unconfigured" | "error";
   options: Array<{
     optionCode: string;
     title: string;
@@ -173,12 +193,15 @@ export interface PortDayExcursionCatalogResponse {
     total: number;
     reconciledWithAuthorizedSource: boolean;
     authorizedSourceTotal: number;
+    coveragePercent?: number;
+    coverageStatus?: "complete" | "sampled_provider_catalog";
     pendingOperatorNotes?: string[];
   };
   summary: {
     totalEvaluatedOnPage: number;
     fitsSailingCountOnPage: number;
     runsTooLateCountOnPage: number;
+    needsVerificationCountOnPage: number;
     missingOperatorInfoCountOnPage: number;
     liveAvailabilitySupportedCountOnPage: number;
   };
@@ -197,6 +220,7 @@ export const MAPPED_CRUISE_PORT_EXCURSION_PROFILES: CruisePortExcursionProfile[]
     viatorDestinationName: "Reykjavik",
     defaultPierName: "Skarfabakki Cruise Terminal (Berths 312/313) & Miðbakki Downtown Berth",
     defaultPierAddress: "Skarfabakki 312–313, Sundahöfn, 104 Reykjavík, Iceland",
+    defaultSailingDate: "2027-07-15",
     defaultShipArrivalTime: "08:00",
     defaultShipAllAboardTime: "17:30",
     defaultShipDepartureTime: "18:00",
@@ -215,6 +239,7 @@ export const MAPPED_CRUISE_PORT_EXCURSION_PROFILES: CruisePortExcursionProfile[]
     viatorDestinationName: "Maui",
     defaultPierName: "Kahului Harbor Cruise Terminal (Pier 1 / Pier 2)",
     defaultPierAddress: "103 Ala Luina St, Kahului, HI 96732",
+    defaultSailingDate: "2027-06-22",
     defaultShipArrivalTime: "08:00",
     defaultShipAllAboardTime: "17:00",
     defaultShipDepartureTime: "18:00",
@@ -233,6 +258,7 @@ export const MAPPED_CRUISE_PORT_EXCURSION_PROFILES: CruisePortExcursionProfile[]
     viatorDestinationName: "Juneau",
     defaultPierName: "Juneau Cruise Ship Docks (CT / AS / FKL / AJ Dock)",
     defaultPierAddress: "490 S Franklin St, Juneau, AK 99801",
+    defaultSailingDate: "2027-07-15",
     defaultShipArrivalTime: "08:00",
     defaultShipAllAboardTime: "16:30",
     defaultShipDepartureTime: "17:00",
@@ -251,6 +277,7 @@ export const MAPPED_CRUISE_PORT_EXCURSION_PROFILES: CruisePortExcursionProfile[]
     viatorDestinationName: "Skagway",
     defaultPierName: "Skagway Cruise Docks (Ore / Broadway / Railroad Dock)",
     defaultPierAddress: "Broadway St, Skagway, AK 99840",
+    defaultSailingDate: "2027-07-15",
     defaultShipArrivalTime: "07:00",
     defaultShipAllAboardTime: "19:30",
     defaultShipDepartureTime: "20:00",
@@ -269,6 +296,7 @@ export const MAPPED_CRUISE_PORT_EXCURSION_PROFILES: CruisePortExcursionProfile[]
     viatorDestinationName: "Ketchikan",
     defaultPierName: "Ketchikan Downtown Berths 1–4 & Ward Cove",
     defaultPierAddress: "131 Front St, Ketchikan, AK 99901",
+    defaultSailingDate: "2027-07-15",
     defaultShipArrivalTime: "07:00",
     defaultShipAllAboardTime: "15:30",
     defaultShipDepartureTime: "16:00",
@@ -287,6 +315,7 @@ export const MAPPED_CRUISE_PORT_EXCURSION_PROFILES: CruisePortExcursionProfile[]
     viatorDestinationName: "Seward",
     defaultPierName: "Seward Cruise Ship Terminal",
     defaultPierAddress: "913 Port Ave, Seward, AK 99664",
+    defaultSailingDate: "2027-07-15",
     defaultShipArrivalTime: "06:00",
     defaultShipAllAboardTime: "19:30",
     defaultShipDepartureTime: "20:00",
@@ -305,6 +334,7 @@ export const MAPPED_CRUISE_PORT_EXCURSION_PROFILES: CruisePortExcursionProfile[]
     viatorDestinationName: "New Orleans",
     defaultPierName: "Erato Street & Julia Street Cruise Terminals (Port NOLA)",
     defaultPierAddress: "1100 Port of New Orleans Pl, New Orleans, LA 70130",
+    defaultSailingDate: "2027-05-15",
     defaultShipArrivalTime: "07:00",
     defaultShipAllAboardTime: "15:30",
     defaultShipDepartureTime: "16:00",
@@ -323,6 +353,7 @@ export const MAPPED_CRUISE_PORT_EXCURSION_PROFILES: CruisePortExcursionProfile[]
     viatorDestinationName: "Miami",
     defaultPierName: "PortMiami Cruise Terminals (Dodge Island)",
     defaultPierAddress: "1015 N America Way, Miami, FL 33132",
+    defaultSailingDate: "2027-05-15",
     defaultShipArrivalTime: "07:00",
     defaultShipAllAboardTime: "15:30",
     defaultShipDepartureTime: "16:00",
@@ -341,6 +372,7 @@ export const MAPPED_CRUISE_PORT_EXCURSION_PROFILES: CruisePortExcursionProfile[]
     viatorDestinationName: "Tampa",
     defaultPierName: "Port Tampa Bay Cruise Terminals 2, 3 & 6",
     defaultPierAddress: "815 Channelside Dr, Tampa, FL 33602",
+    defaultSailingDate: "2027-05-15",
     defaultShipArrivalTime: "07:00",
     defaultShipAllAboardTime: "15:30",
     defaultShipDepartureTime: "16:00",
@@ -359,6 +391,7 @@ export const MAPPED_CRUISE_PORT_EXCURSION_PROFILES: CruisePortExcursionProfile[]
     viatorDestinationName: "Seattle",
     defaultPierName: "Pier 66 (Bell Street) & Pier 91 (Smith Cove)",
     defaultPierAddress: "2225 Alaskan Way / 2001 W Garfield St, Seattle, WA",
+    defaultSailingDate: "2027-07-15",
     defaultShipArrivalTime: "07:00",
     defaultShipAllAboardTime: "15:30",
     defaultShipDepartureTime: "16:00",
@@ -377,6 +410,7 @@ export const MAPPED_CRUISE_PORT_EXCURSION_PROFILES: CruisePortExcursionProfile[]
     viatorDestinationName: "Cozumel",
     defaultPierName: "Puerta Maya, International Pier & Punta Langosta",
     defaultPierAddress: "Costera Sur, Cozumel, Quintana Roo, Mexico",
+    defaultSailingDate: "2027-05-15",
     defaultShipArrivalTime: "08:00",
     defaultShipAllAboardTime: "17:00",
     defaultShipDepartureTime: "18:00",
@@ -395,6 +429,7 @@ export const MAPPED_CRUISE_PORT_EXCURSION_PROFILES: CruisePortExcursionProfile[]
     viatorDestinationName: "Roatan",
     defaultPierName: "Port of Roatán (Coxen Hole) & Mahogany Bay",
     defaultPierAddress: "Carretera Principal, Coxen Hole, Roatán, Honduras",
+    defaultSailingDate: "2027-05-15",
     defaultShipArrivalTime: "08:00",
     defaultShipAllAboardTime: "16:30",
     defaultShipDepartureTime: "17:00",
@@ -413,6 +448,7 @@ export const MAPPED_CRUISE_PORT_EXCURSION_PROFILES: CruisePortExcursionProfile[]
     viatorDestinationName: "Nassau",
     defaultPierName: "Nassau Cruise Port (Prince George Wharf)",
     defaultPierAddress: "Woodes Rodgers Walk, Nassau, Bahamas",
+    defaultSailingDate: "2027-05-15",
     defaultShipArrivalTime: "08:00",
     defaultShipAllAboardTime: "16:30",
     defaultShipDepartureTime: "17:00",
@@ -431,6 +467,7 @@ export const MAPPED_CRUISE_PORT_EXCURSION_PROFILES: CruisePortExcursionProfile[]
     viatorDestinationName: "St. Thomas",
     defaultPierName: "West Indian Company Dock (Havensight) & Crown Bay",
     defaultPierAddress: "Havensight / Crown Bay, Charlotte Amalie, St. Thomas, USVI",
+    defaultSailingDate: "2027-05-15",
     defaultShipArrivalTime: "08:00",
     defaultShipAllAboardTime: "16:30",
     defaultShipDepartureTime: "17:00",
@@ -449,6 +486,7 @@ export const MAPPED_CRUISE_PORT_EXCURSION_PROFILES: CruisePortExcursionProfile[]
     viatorDestinationName: "Grand Cayman",
     defaultPierName: "George Town Cruise Tender Terminals (Royal Watler / North / South)",
     defaultPierAddress: "Harbour Drive, George Town, Grand Cayman",
+    defaultSailingDate: "2027-05-15",
     defaultShipArrivalTime: "08:00",
     defaultShipAllAboardTime: "15:30",
     defaultShipDepartureTime: "16:30",
@@ -480,6 +518,123 @@ export const MAPPED_CRUISE_PORT_BATCH_SUMMARY = {
     ports: ["cozumel", "roatan", "nassau", "st-thomas", "grand-cayman"],
   },
 } as const;
+
+export const AUTHORITATIVE_PORT_PROVIDER_COUNTS: Record<
+  string,
+  {
+    viator: number;
+    operator_direct: number;
+    bokun_pending: number;
+    authorizedSourceTotal: number;
+    reconciledWithAuthorizedSource: boolean;
+  }
+> = {
+  reykjavik: {
+    viator: 1576,
+    operator_direct: 0,
+    bokun_pending: HREYFILL_REYKJAVIK_SHORE_EXCURSION_QUALIFICATION.candidateTours.length,
+    authorizedSourceTotal: 1576,
+    reconciledWithAuthorizedSource: true,
+  },
+  kahului: {
+    viator: 652,
+    operator_direct: 1,
+    bokun_pending: 0,
+    authorizedSourceTotal: 653,
+    reconciledWithAuthorizedSource: true,
+  },
+  juneau: {
+    viator: 104,
+    operator_direct: 19,
+    bokun_pending: 0,
+    authorizedSourceTotal: 123,
+    reconciledWithAuthorizedSource: true,
+  },
+  skagway: {
+    viator: 65,
+    operator_direct: 2,
+    bokun_pending: 0,
+    authorizedSourceTotal: 67,
+    reconciledWithAuthorizedSource: true,
+  },
+  ketchikan: {
+    viator: 147,
+    operator_direct: 0,
+    bokun_pending: 0,
+    authorizedSourceTotal: 147,
+    reconciledWithAuthorizedSource: true,
+  },
+  seward: {
+    viator: 57,
+    operator_direct: 0,
+    bokun_pending: 0,
+    authorizedSourceTotal: 57,
+    reconciledWithAuthorizedSource: true,
+  },
+  "new-orleans": {
+    viator: 100,
+    operator_direct: 11,
+    bokun_pending: 0,
+    authorizedSourceTotal: 728,
+    reconciledWithAuthorizedSource: false,
+  },
+  miami: {
+    viator: 100,
+    operator_direct: 0,
+    bokun_pending: 0,
+    authorizedSourceTotal: 1176,
+    reconciledWithAuthorizedSource: false,
+  },
+  tampa: {
+    viator: 175,
+    operator_direct: 0,
+    bokun_pending: 0,
+    authorizedSourceTotal: 175,
+    reconciledWithAuthorizedSource: true,
+  },
+  seattle: {
+    viator: 100,
+    operator_direct: 0,
+    bokun_pending: 0,
+    authorizedSourceTotal: 504,
+    reconciledWithAuthorizedSource: false,
+  },
+  cozumel: {
+    viator: 100,
+    operator_direct: 0,
+    bokun_pending: 0,
+    authorizedSourceTotal: 632,
+    reconciledWithAuthorizedSource: false,
+  },
+  roatan: {
+    viator: 100,
+    operator_direct: 0,
+    bokun_pending: 0,
+    authorizedSourceTotal: 616,
+    reconciledWithAuthorizedSource: false,
+  },
+  nassau: {
+    viator: 208,
+    operator_direct: 0,
+    bokun_pending: 0,
+    authorizedSourceTotal: 208,
+    reconciledWithAuthorizedSource: true,
+  },
+  "st-thomas": {
+    viator: 100,
+    operator_direct: 0,
+    bokun_pending: 0,
+    authorizedSourceTotal: 355,
+    reconciledWithAuthorizedSource: false,
+  },
+  "grand-cayman": {
+    viator: 230,
+    operator_direct: 0,
+    bokun_pending: 0,
+    authorizedSourceTotal: 230,
+    reconciledWithAuthorizedSource: true,
+  },
+};
 
 export function resolveCruisePortExcursionProfile(
   rawPortSlugOrAlias: string | undefined | null
@@ -569,50 +724,119 @@ function formatHhMm(totalMinutes: number): string {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
-function inferCheckInCutoffMinutes(rec: DurableTourRecord, profile: CruisePortExcursionProfile): number {
-  const explicitServiceCutoff = (rec.serviceDetails as any)?.checkInCutoffMinutes;
-  if (typeof explicitServiceCutoff === "number" && explicitServiceCutoff > 0) {
-    return explicitServiceCutoff;
+function extractVerifiedCheckInCutoff(
+  rec: DurableTourRecord,
+  option: TourProductOptionRecord | null
+): {
+  checkInCutoffMinutes: number | null;
+  checkInEvidenceSource: string | null;
+} {
+  const optCutoff = (option as any)?.checkInCutoffMinutes;
+  if (typeof optCutoff === "number" && optCutoff >= 0) {
+    return {
+      checkInCutoffMinutes: optCutoff,
+      checkInEvidenceSource:
+        (option as any)?.checkInEvidenceSource ||
+        `option_${option?.optionCode || "default"}_check_in_cutoff`,
+    };
   }
-  const text = `${rec.title} ${rec.pickupSummary || ""} ${rec.meetingPointName || ""}`;
-  if (/\b45\s*min(?:ute)?s?\s*(?:prior|before|early)/i.test(text)) return 45;
-  if (/\b30\s*min(?:ute)?s?\s*(?:prior|before|early)/i.test(text)) return 30;
-  if (/\b20\s*min(?:ute)?s?\s*(?:prior|before|early)/i.test(text)) return 20;
-  if (/\b15\s*min(?:ute)?s?\s*(?:prior|before|early)/i.test(text)) return 15;
-  if (rec.destinationSlug === "kahului" && /whale/i.test(rec.title)) return 45;
-  return profile.defaultCheckInCutoffMinutes;
+  const sd = (rec.serviceDetails || {}) as Record<string, any>;
+  if (typeof sd.checkInCutoffMinutes === "number" && sd.checkInCutoffMinutes >= 0) {
+    return {
+      checkInCutoffMinutes: sd.checkInCutoffMinutes,
+      checkInEvidenceSource:
+        typeof sd.checkInEvidenceSource === "string" && sd.checkInEvidenceSource.trim()
+          ? sd.checkInEvidenceSource
+          : `service_details_check_in_cutoff:${rec.providerProductCode || rec.tourId}`,
+    };
+  }
+  if (
+    typeof sd.checkInBeforeDepartureMinutes === "number" &&
+    sd.checkInBeforeDepartureMinutes >= 0
+  ) {
+    return {
+      checkInCutoffMinutes: sd.checkInBeforeDepartureMinutes,
+      checkInEvidenceSource:
+        typeof sd.checkInEvidenceSource === "string" && sd.checkInEvidenceSource.trim()
+          ? sd.checkInEvidenceSource
+          : `service_details_check_in_before_departure:${rec.providerProductCode || rec.tourId}`,
+    };
+  }
+
+  const text = `${rec.pickupSummary || ""} ${option?.description || ""} ${
+    typeof sd.checkInInstructions === "string" ? sd.checkInInstructions : ""
+  }`;
+  const match =
+    text.match(/\b(10|15|20|30|45|60)\s*min(?:ute)?s?\s*(?:prior|before|early|in advance|ahead)/i) ||
+    text.match(/arrive\s+at\s+least\s+(\d{1,2})\s*min/i);
+  if (match) {
+    return {
+      checkInCutoffMinutes: Number(match[1]),
+      checkInEvidenceSource: `parsed_operator_check_in_text:${rec.providerProductCode || rec.tourId}`,
+    };
+  }
+
+  return {
+    checkInCutoffMinutes: null,
+    checkInEvidenceSource: null,
+  };
 }
 
-function extractCandidateDepartures(rec: DurableTourRecord): string[] {
+function extractVerifiedCandidateDepartures(
+  rec: DurableTourRecord,
+  option: TourProductOptionRecord | null
+): {
+  departures: string[];
+  departureEvidenceSource: string | null;
+} {
   const times = new Set<string>();
-  if (Array.isArray(rec.productOptions)) {
+  let evidenceSource: string | null = null;
+
+  if (option && Array.isArray(option.scheduledStartTimes)) {
+    for (const raw of option.scheduledStartTimes) {
+      const trimmed = String(raw || "").trim();
+      if (trimmed && trimmed !== "00:00" && parseHhMm(trimmed) !== null) {
+        times.add(trimmed);
+        evidenceSource =
+          evidenceSource ||
+          `product_option_${option.optionCode || "default"}_scheduled_start_times`;
+      }
+    }
+  }
+
+  if (times.size === 0 && Array.isArray(rec.productOptions)) {
     for (const opt of rec.productOptions) {
       if (Array.isArray(opt.scheduledStartTimes)) {
-        for (const t of opt.scheduledStartTimes) {
-          if (parseHhMm(t) !== null) times.add(t.trim());
+        for (const raw of opt.scheduledStartTimes) {
+          const trimmed = String(raw || "").trim();
+          if (trimmed && trimmed !== "00:00" && parseHhMm(trimmed) !== null) {
+            times.add(trimmed);
+            evidenceSource =
+              evidenceSource ||
+              `product_option_${opt.optionCode || "default"}_scheduled_start_times`;
+          }
         }
       }
     }
   }
-  const scheduleTimes = (rec.serviceDetails as any)?.verifiedDepartureTimesLocal;
-  if (Array.isArray(scheduleTimes)) {
-    for (const t of scheduleTimes) {
-      if (typeof t === "string" && parseHhMm(t) !== null) times.add(t.trim());
+
+  const sd = (rec.serviceDetails || {}) as Record<string, any>;
+  if (Array.isArray(sd.verifiedDepartureTimesLocal)) {
+    for (const raw of sd.verifiedDepartureTimesLocal) {
+      const trimmed = String(raw || "").trim();
+      if (trimmed && trimmed !== "00:00" && parseHhMm(trimmed) !== null) {
+        times.add(trimmed);
+        evidenceSource =
+          evidenceSource ||
+          `service_details_verified_departure_times:${rec.providerProductCode || rec.tourId}`;
+      }
     }
   }
 
-  if (times.size === 0) {
-    if (/northern lights|aurora|evening|night/i.test(rec.title)) {
-      times.add("20:30");
-    } else if ((rec.durationMinutes || 0) >= 480) {
-      times.add("08:30");
-    } else {
-      times.add("09:00");
-      times.add("11:00");
-    }
-  }
-
-  return Array.from(times).sort((a, b) => (parseHhMm(a) ?? 0) - (parseHhMm(b) ?? 0));
+  return {
+    departures: Array.from(times).sort((a, b) => (parseHhMm(a) ?? 0) - (parseHhMm(b) ?? 0)),
+    departureEvidenceSource: evidenceSource,
+  };
 }
 
 export function evaluateTourPortDayTimeFit(params: {
@@ -620,6 +844,7 @@ export function evaluateTourPortDayTimeFit(params: {
   profile: CruisePortExcursionProfile;
   shipArrivalTime?: string;
   shipAllAboardTime?: string;
+  optionCode?: string | null;
 }): PortDayTimeFitEvaluation {
   const { rec, profile } = params;
   const arrivalTime = params.shipArrivalTime || profile.defaultShipArrivalTime;
@@ -628,40 +853,152 @@ export function evaluateTourPortDayTimeFit(params: {
   const allAboardMin = parseHhMm(allAboardTime) ?? 1050;
   const earliestDisembarkMin = arrivalMin + 25;
 
-  const checkInCutoff = inferCheckInCutoffMinutes(rec, profile);
-  const oneWayTransfer =
-    rec.constraints?.cruiseBufferBeforeMinutes ??
-    rec.constraints?.planningEstimateTransferMinutes ??
-    profile.defaultOneWayPierTransferMinutes;
-  const roundTripTransfer =
-    typeof oneWayTransfer === "number" ? oneWayTransfer * 2 : null;
+  const chosenOption: TourProductOptionRecord | null =
+    (params.optionCode &&
+      rec.productOptions?.find(
+        (o) => o.optionCode.toUpperCase() === params.optionCode!.toUpperCase()
+      )) ||
+    rec.productOptions?.find(
+      (o) =>
+        Array.isArray(o.scheduledStartTimes) &&
+        o.scheduledStartTimes.some((t) => t && t !== "00:00")
+    ) ||
+    rec.productOptions?.[0] ||
+    null;
 
-  const meetingPointName =
+  const selectedOptionCode =
+    chosenOption?.optionCode ||
+    (typeof (rec.serviceDetails as any)?.optionCode === "string"
+      ? (rec.serviceDetails as any).optionCode
+      : null);
+  const selectedOptionTitle = chosenOption?.title || null;
+
+  // 1. Exact departure schedule evidence (never fabricate defaults)
+  const { departures, departureEvidenceSource } = extractVerifiedCandidateDepartures(
+    rec,
+    chosenOption
+  );
+  const hasVerifiedDeparture = departures.length > 0;
+
+  // 2. Exact check-in cutoff evidence (never fall back to port profile default)
+  const { checkInCutoffMinutes, checkInEvidenceSource } = extractVerifiedCheckInCutoff(
+    rec,
+    chosenOption
+  );
+  const hasVerifiedCheckIn =
+    typeof checkInCutoffMinutes === "number" &&
+    Number.isFinite(checkInCutoffMinutes) &&
+    Boolean(checkInEvidenceSource);
+
+  // 3. Exact meeting point evidence (never fall back to port profile default pier)
+  const rawMeetingPointName =
+    chosenOption?.meetingPointName ||
     rec.meetingPointName ||
     rec.constraints?.applicableBerthOrMeetingPoint ||
-    profile.defaultPierName;
+    null;
+  const meetingPointName =
+    typeof rawMeetingPointName === "string" && rawMeetingPointName.trim()
+      ? rawMeetingPointName.trim()
+      : null;
   const meetingPointAddress =
-    rec.meetingPointAddress || profile.defaultPierAddress;
+    typeof rec.meetingPointAddress === "string" && rec.meetingPointAddress.trim()
+      ? rec.meetingPointAddress.trim()
+      : null;
+  const hasVerifiedMeetingPoint = Boolean(meetingPointName);
+  const meetingPointEvidenceSource = hasVerifiedMeetingPoint
+    ? `product_logistics_meeting_point:${rec.providerProductCode || rec.tourId}`
+    : null;
 
-  const durationMinutes = rec.durationMinutes;
-  const departures = extractCandidateDepartures(rec);
+  // 4. Exact pier <-> meeting point transfer evidence (never fall back to planningEstimate or port default)
+  const sd = (rec.serviceDetails || {}) as Record<string, any>;
+  const transferSource =
+    chosenOption?.transferTimeSource || rec.constraints?.transferTimeSource || "unknown";
+  const rawTransferBefore =
+    chosenOption?.transferBeforeMinutes ??
+    sd.transferBeforeMinutes ??
+    rec.constraints?.cruiseBufferBeforeMinutes ??
+    null;
+  const rawTransferAfter =
+    chosenOption?.transferAfterMinutes ??
+    sd.transferAfterMinutes ??
+    rec.constraints?.cruiseBufferAfterMinutes ??
+    rawTransferBefore;
+  const rawTransferEvidence =
+    chosenOption?.transferEvidenceSource ||
+    sd.transferEvidenceSource ||
+    rec.constraints?.transferEvidenceSource ||
+    null;
+
+  const hasVerifiedTransfer =
+    (transferSource === "verified_pier_pickup" ||
+      transferSource === "verified_meeting_point") &&
+    typeof rawTransferBefore === "number" &&
+    Number.isFinite(rawTransferBefore) &&
+    typeof rawTransferAfter === "number" &&
+    Number.isFinite(rawTransferAfter) &&
+    Boolean(rawTransferEvidence);
+
+  const pierToMeetingMinutes = hasVerifiedTransfer ? rawTransferBefore : null;
+  const meetingToPierMinutes = hasVerifiedTransfer ? rawTransferAfter : null;
+  const oneWayTransferMinutes = pierToMeetingMinutes;
+  const roundTripTransferMinutes =
+    pierToMeetingMinutes !== null && meetingToPierMinutes !== null
+      ? pierToMeetingMinutes + meetingToPierMinutes
+      : null;
+  const transferEvidenceSource = hasVerifiedTransfer ? String(rawTransferEvidence) : null;
+
+  // 5. Duration & return buffer evidence
+  const durationMinutes =
+    typeof chosenOption?.durationMinutes === "number" && chosenOption.durationMinutes > 0
+      ? chosenOption.durationMinutes
+      : typeof rec.durationMinutes === "number" && rec.durationMinutes > 0
+        ? rec.durationMinutes
+        : null;
 
   const missingFields: string[] = [];
-  if (!durationMinutes || durationMinutes <= 0) {
-    missingFields.push("durationMinutes");
+  if (!hasVerifiedDeparture) {
+    missingFields.push("departure");
   }
-  if (departures.length === 0) {
-    missingFields.push("departureSchedule");
+  if (!hasVerifiedCheckIn) {
+    missingFields.push("checkIn");
   }
-  if (!meetingPointName) {
-    missingFields.push("meetingPointOrPickup");
+  if (!hasVerifiedMeetingPoint) {
+    missingFields.push("meetingPoint");
+  }
+  if (!hasVerifiedTransfer) {
+    missingFields.push("transfers");
+  }
+  if (!durationMinutes) {
+    missingFields.push("duration");
   }
 
-  if (missingFields.length > 0 || !durationMinutes) {
+  const hasVerifiedReturnBuffer =
+    hasVerifiedDeparture &&
+    hasVerifiedCheckIn &&
+    hasVerifiedMeetingPoint &&
+    hasVerifiedTransfer &&
+    Boolean(durationMinutes);
+
+  if (!hasVerifiedReturnBuffer) {
+    missingFields.push("returnBuffer");
+  }
+
+  if (
+    missingFields.length > 0 ||
+    !durationMinutes ||
+    checkInCutoffMinutes === null ||
+    pierToMeetingMinutes === null ||
+    meetingToPierMinutes === null
+  ) {
+    const meetingContext = meetingPointName
+      ? `Listed meeting point: ${meetingPointName}.`
+      : "No verified operator meeting point on record.";
     return {
-      status: "missing_operator_info",
-      statusLabel: "Missing Operator Timing Info",
+      status: "needs_verification",
+      statusLabel: "Needs verification",
       fitsSailing: false,
+      selectedOptionCode,
+      selectedOptionTitle,
       shipArrivalTime: arrivalTime,
       shipAllAboardTime: allAboardTime,
       earliestDisembarkationTime: formatHhMm(earliestDisembarkMin),
@@ -669,22 +1006,33 @@ export function evaluateTourPortDayTimeFit(params: {
       availableDepartureTimes: departures,
       fittingDepartureTimes: [],
       tooLateDepartureTimes: [],
-      checkInCutoffMinutes: checkInCutoff,
+      hasVerifiedDeparture,
+      departureEvidenceSource,
+      checkInCutoffMinutes: hasVerifiedCheckIn ? checkInCutoffMinutes : null,
       latestCheckInTime: null,
+      hasVerifiedCheckIn,
+      checkInEvidenceSource,
       leavePierByTime: null,
       meetingPointName,
       meetingPointAddress,
-      hasVerifiedMeetingPoint: Boolean(meetingPointName),
-      oneWayTransferMinutes: oneWayTransfer,
-      roundTripTransferMinutes: roundTripTransfer,
-      hasVerifiedTransfer: typeof oneWayTransfer === "number",
-      durationMinutes: durationMinutes ?? null,
+      hasVerifiedMeetingPoint,
+      meetingPointEvidenceSource,
+      oneWayTransferMinutes,
+      pierToMeetingMinutes,
+      meetingToPierMinutes,
+      roundTripTransferMinutes,
+      hasVerifiedTransfer,
+      transferEvidenceSource,
+      durationMinutes,
       tourEndTime: null,
       estimatedBackAtPierTime: null,
       requiredReturnBufferMinutes: profile.requiredReturnBufferMinutes,
       bufferBeforeAllAboardMinutes: null,
+      hasVerifiedReturnBuffer: false,
       missingFields,
-      reasonSummary: `Missing verified ${missingFields.join(", ")}. Confirm exact departure, meeting point, and return time before booking for your sailing.`,
+      reasonSummary: `Needs verification: missing verified ${missingFields.join(
+        ", "
+      )}. ${meetingContext} Confirm exact product/option departure, check-in, pier transfers, and return buffer before booking for your sailing.`,
     };
   }
 
@@ -694,8 +1042,8 @@ export function evaluateTourPortDayTimeFit(params: {
   for (const dep of departures) {
     const depMin = parseHhMm(dep);
     if (depMin === null) continue;
-    const leavePierMin = depMin - checkInCutoff - oneWayTransfer;
-    const backAtPierMin = depMin + durationMinutes + oneWayTransfer;
+    const leavePierMin = depMin - checkInCutoffMinutes - pierToMeetingMinutes;
+    const backAtPierMin = depMin + durationMinutes + meetingToPierMinutes;
     const bufferMin = allAboardMin - backAtPierMin;
 
     if (
@@ -708,19 +1056,21 @@ export function evaluateTourPortDayTimeFit(params: {
     }
   }
 
-  const selectedDep = fittingDepartures[0] || departures[0] || "09:00";
+  const selectedDep = fittingDepartures[0] || departures[0];
   const selectedDepMin = parseHhMm(selectedDep) ?? 540;
-  const checkInMin = selectedDepMin - checkInCutoff;
-  const leavePierMin = checkInMin - oneWayTransfer;
+  const checkInMin = selectedDepMin - checkInCutoffMinutes;
+  const leavePierMin = checkInMin - pierToMeetingMinutes;
   const tourEndMin = selectedDepMin + durationMinutes;
-  const backAtPierMin = tourEndMin + oneWayTransfer;
+  const backAtPierMin = tourEndMin + meetingToPierMinutes;
   const bufferBeforeAllAboard = allAboardMin - backAtPierMin;
   const fits = fittingDepartures.includes(selectedDep);
 
   return {
     status: fits ? "fits" : "runs_too_late",
-    statusLabel: fits ? "Fits My Sailing" : "Runs Too Late for All-Aboard",
+    statusLabel: fits ? "Fits my sailing" : "Runs too late",
     fitsSailing: fits,
+    selectedOptionCode,
+    selectedOptionTitle,
     shipArrivalTime: arrivalTime,
     shipAllAboardTime: allAboardTime,
     earliestDisembarkationTime: formatHhMm(earliestDisembarkMin),
@@ -728,24 +1078,41 @@ export function evaluateTourPortDayTimeFit(params: {
     availableDepartureTimes: departures,
     fittingDepartureTimes: fittingDepartures,
     tooLateDepartureTimes: tooLateDepartures,
-    checkInCutoffMinutes: checkInCutoff,
+    hasVerifiedDeparture: true,
+    departureEvidenceSource,
+    checkInCutoffMinutes,
     latestCheckInTime: formatHhMm(checkInMin),
+    hasVerifiedCheckIn: true,
+    checkInEvidenceSource,
     leavePierByTime: formatHhMm(leavePierMin),
     meetingPointName,
     meetingPointAddress,
     hasVerifiedMeetingPoint: true,
-    oneWayTransferMinutes: oneWayTransfer,
-    roundTripTransferMinutes: roundTripTransfer,
+    meetingPointEvidenceSource,
+    oneWayTransferMinutes,
+    pierToMeetingMinutes,
+    meetingToPierMinutes,
+    roundTripTransferMinutes,
     hasVerifiedTransfer: true,
+    transferEvidenceSource,
     durationMinutes,
     tourEndTime: formatHhMm(tourEndMin),
     estimatedBackAtPierTime: formatHhMm(backAtPierMin),
     requiredReturnBufferMinutes: profile.requiredReturnBufferMinutes,
     bufferBeforeAllAboardMinutes: bufferBeforeAllAboard,
+    hasVerifiedReturnBuffer: true,
     missingFields: [],
     reasonSummary: fits
-      ? `Departs ${selectedDep} (check in by ${formatHhMm(checkInMin)} at ${meetingPointName}), ${roundTripTransfer}m round-trip transfer, returns to pier at ${formatHhMm(backAtPierMin)} with +${bufferBeforeAllAboard}m buffer before ${allAboardTime} all-aboard.`
-      : `Departure ${selectedDep} returns to pier at ${formatHhMm(backAtPierMin)} (${bufferBeforeAllAboard}m vs ${allAboardTime} all-aboard; requires +${profile.requiredReturnBufferMinutes}m buffer).`,
+      ? `Departs ${selectedDep} (option ${selectedOptionCode || "default"}, check in by ${formatHhMm(
+          checkInMin
+        )} at ${meetingPointName}), ${roundTripTransferMinutes}m round-trip transfer, returns to pier at ${formatHhMm(
+          backAtPierMin
+        )} with +${bufferBeforeAllAboard}m buffer before ${allAboardTime} all-aboard.`
+      : `Departure ${selectedDep} returns to pier at ${formatHhMm(
+          backAtPierMin
+        )} (${bufferBeforeAllAboard}m vs ${allAboardTime} all-aboard; requires +${
+          profile.requiredReturnBufferMinutes
+        }m buffer).`,
   };
 }
 
@@ -846,108 +1213,342 @@ export async function verifyLiveExcursionAvailability(params: {
   portSlug: string;
   tourId: string;
   productCode?: string | null;
+  optionCode?: string | null;
   date: string;
   partySize: number;
   departureTime?: string | null;
+  timeoutMs?: number;
+  simulateTimeout?: boolean;
 }): Promise<PortDaySeatAvailabilityEvaluation> {
+  const profile =
+    resolveCruisePortExcursionProfile(params.portSlug) ||
+    MAPPED_CRUISE_PORT_EXCURSION_PROFILES[0];
+
   const rec =
     (params.tourId ? await getDurableTourByIdOrAlias(params.tourId) : null) ||
     (params.productCode ? await getDurableTourByIdOrAlias(params.productCode) : null);
 
   const code = params.productCode || rec?.providerProductCode || params.tourId;
-  const partySize = Math.max(1, params.partySize || 2);
-  const selectedDep = params.departureTime || "09:00";
-  const fromPriceUsd =
-    rec?.fromPriceCents !== null && rec?.fromPriceCents !== undefined
-      ? Number((rec.fromPriceCents / 100).toFixed(2))
-      : 105.0;
+  const partySize = Math.max(1, Number(params.partySize) || 2);
+  const checkedDate = String(params.date || "").trim();
 
-  if (process.env.VIATOR_API_KEY && code && !code.startsWith("PACWHALE-")) {
+  const chosenOption =
+    (params.optionCode &&
+      rec?.productOptions?.find(
+        (o) => o.optionCode.toUpperCase() === params.optionCode!.toUpperCase()
+      )) ||
+    rec?.productOptions?.find(
+      (o) =>
+        Array.isArray(o.scheduledStartTimes) &&
+        o.scheduledStartTimes.some((t) => t && t !== "00:00")
+    ) ||
+    rec?.productOptions?.[0] ||
+    null;
+
+  const requestedOptionCode =
+    params.optionCode ||
+    chosenOption?.optionCode ||
+    (typeof (rec?.serviceDetails as any)?.optionCode === "string"
+      ? (rec?.serviceDetails as any).optionCode
+      : null);
+
+  const requestedDepartureTime =
+    params.departureTime ||
+    chosenOption?.scheduledStartTimes?.find((t) => t && t !== "00:00") ||
+    null;
+
+  const fallbackRecord: DurableTourRecord =
+    rec ||
+    ({
+      tourId: params.tourId || code,
+      providerProductCode: code,
+      primaryProvider: "viator",
+      title: code,
+      bookingUrl: `https://www.viator.com/searchResults/all?text=${encodeURIComponent(
+        `${profile.portName} ${code}`
+      )}`,
+    } as DurableTourRecord);
+
+  const handoff = buildExactExcursionHandoffLinks({
+    rec: fallbackRecord,
+    profile,
+    optionCode: requestedOptionCode,
+    sailingDate: checkedDate || profile.defaultSailingDate,
+    shipArrivalTime: profile.defaultShipArrivalTime,
+    shipAllAboardTime: profile.defaultShipAllAboardTime,
+  });
+
+  const buildCheckAvailabilityFallback = (
+    providerStatus: "timeout" | "missing_data" | "unconfigured" | "error",
+    detailNote: string
+  ): PortDaySeatAvailabilityEvaluation => ({
+    status: "check_availability",
+    statusLabel: "Check availability",
+    supportsLiveCheck: true,
+    liveCheckedAt: new Date().toISOString(),
+    checkedDate: checkedDate || null,
+    checkedPartySize: partySize,
+    selectedOptionCode: requestedOptionCode,
+    selectedDepartureTime: requestedDepartureTime,
+    available: null,
+    remainingSeats: null,
+    fromPriceUsd: null,
+    totalPriceUsd: null,
+    currency: rec?.currency || "USD",
+    exactProductUrl: handoff.exactProductUrl,
+    dccTrackedHref: handoff.dccTrackedHref,
+    providerStatus,
+    options: [],
+    detailNote,
+  });
+
+  if (params.simulateTimeout) {
+    return buildCheckAvailabilityFallback(
+      "timeout",
+      `Provider availability check timed out for ${code}. Check availability directly on the exact product link.`
+    );
+  }
+
+  if (!checkedDate || !requestedDepartureTime || !requestedOptionCode || partySize < 1) {
+    return buildCheckAvailabilityFallback(
+      "missing_data",
+      `Missing exact option, departure time, date, or party size for live availability verification. Check availability on the exact product link.`
+    );
+  }
+
+  const timeoutMs = Math.max(50, Math.min(10000, params.timeoutMs ?? 6000));
+
+  // Direct FareHarbor live slot verification when operator credentials and item ID are configured
+  const sd = (rec?.serviceDetails || {}) as Record<string, any>;
+  if (
+    rec?.primaryProvider === "operator_direct" &&
+    typeof sd.fareharborCompanyShortname === "string" &&
+    typeof sd.fareharborItemId === "number"
+  ) {
     try {
-      const client = getViatorClient();
-      const checkRes: any = await client.checkAvailability({
-        productCode: code,
-        travelDate: params.date,
-        currency: "USD",
-        paxMix: [{ ageBand: "ADULT", numberOfTravelers: partySize }],
+      const fhPromise = fetchAvailabilitiesForItem(
+        sd.fareharborCompanyShortname,
+        sd.fareharborItemId,
+        checkedDate,
+        checkedDate
+      );
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("PROVIDER_TIMEOUT")), timeoutMs)
+      );
+      const slots = await Promise.race([fhPromise, timeoutPromise]);
+      const matchingSlot = (Array.isArray(slots) ? slots : []).find((s: any) => {
+        const startAt = String(s?.start_at || "");
+        const hhmm = startAt.includes("T") ? startAt.split("T")[1]?.slice(0, 5) : "";
+        return hhmm === requestedDepartureTime.slice(0, 5);
       });
-      const items = Array.isArray(checkRes?.bookableItems) ? checkRes.bookableItems : [];
-      const openItems = items.filter((i: any) => i?.available !== false);
-      if (openItems.length > 0) {
-        return {
-          status: "live_verified",
-          statusLabel: `Live Verified — ${openItems.length} option(s) open for ${partySize} guests on ${params.date}`,
-          supportsLiveCheck: true,
-          liveCheckedAt: new Date().toISOString(),
-          checkedDate: params.date,
-          checkedPartySize: partySize,
-          selectedDepartureTime: selectedDep,
-          available: true,
-          remainingSeats: Math.max(partySize + 4, 8),
-          fromPriceUsd,
-          currency: "USD",
-          options: openItems.slice(0, 4).map((it: any, idx: number) => ({
-            optionCode: String(it.productOptionCode || `TG${idx + 1}`),
-            title: `Option ${it.productOptionCode || idx + 1}`,
-            startTime: String(it.startTime || selectedDep),
+      if (matchingSlot) {
+        const cap =
+          typeof matchingSlot.capacity === "number" ? matchingSlot.capacity : null;
+        if (cap !== null && cap < partySize) {
+          return {
+            status: "sold_out",
+            statusLabel: "Sold out",
+            supportsLiveCheck: true,
+            liveCheckedAt: new Date().toISOString(),
+            checkedDate,
+            checkedPartySize: partySize,
+            selectedOptionCode: requestedOptionCode,
+            selectedDepartureTime: requestedDepartureTime,
+            available: false,
+            remainingSeats: cap,
+            fromPriceUsd: null,
+            totalPriceUsd: null,
+            currency: rec.currency || "USD",
+            exactProductUrl: handoff.exactProductUrl,
+            dccTrackedHref: handoff.dccTrackedHref,
+            providerStatus: "confirmed",
+            options: [],
+            detailNote: `Provider confirmed ${cap} remaining seats for ${requestedDepartureTime} on ${checkedDate} (party size ${partySize}).`,
+          };
+        }
+        if (cap !== null && cap >= partySize) {
+          return {
+            status: "live_verified",
+            statusLabel: "Live verified",
+            supportsLiveCheck: true,
+            liveCheckedAt: new Date().toISOString(),
+            checkedDate,
+            checkedPartySize: partySize,
+            selectedOptionCode: requestedOptionCode,
+            selectedDepartureTime: requestedDepartureTime,
             available: true,
-            remainingSeats: null,
-            priceUsd:
-              typeof it?.totalPrice?.price?.recommendedRetailPrice === "number"
-                ? Number(
-                    (it.totalPrice.price.recommendedRetailPrice / partySize).toFixed(2)
-                  )
-                : fromPriceUsd,
-          })),
-          detailNote: `Live Viator Partner API /availability/check confirmed open inventory for ${code} on ${params.date} (${partySize} guests).`,
-        };
+            remainingSeats: cap,
+            fromPriceUsd: null,
+            totalPriceUsd: null,
+            currency: rec.currency || "USD",
+            exactProductUrl: handoff.exactProductUrl,
+            dccTrackedHref: handoff.dccTrackedHref,
+            providerStatus: "confirmed",
+            options: [
+              {
+                optionCode: requestedOptionCode,
+                title: chosenOption?.title || rec.title,
+                startTime: requestedDepartureTime,
+                available: true,
+                remainingSeats: cap,
+                priceUsd: null,
+              },
+            ],
+            detailNote: `Live FareHarbor API confirmed availability for option ${requestedOptionCode} at ${requestedDepartureTime} on ${checkedDate} for ${partySize} guests.`,
+          };
+        }
       }
-    } catch {
-      // Fall back to schedule-backed verification below
+      return buildCheckAvailabilityFallback(
+        "missing_data",
+        `Provider did not return an exact slot match for option ${requestedOptionCode} (${requestedDepartureTime}) on ${checkedDate}. Check availability on the exact product link.`
+      );
+    } catch (err: any) {
+      const isTimeout = String(err?.message || "").includes("PROVIDER_TIMEOUT");
+      return buildCheckAvailabilityFallback(
+        isTimeout ? "timeout" : "error",
+        isTimeout
+          ? `Provider availability check timed out after ${timeoutMs}ms. Check availability on the exact product link.`
+          : `Provider availability check unavailable. Check availability on the exact product link.`
+      );
     }
   }
 
-  const options =
-    rec?.productOptions && rec.productOptions.length > 0
-      ? rec.productOptions.slice(0, 4).map((o, idx) => ({
-          optionCode: o.optionCode || `TG${idx + 1}`,
-          title: o.title || `${rec.title} (${selectedDep})`,
-          startTime: o.scheduledStartTimes?.[0] || selectedDep,
-          available: true,
-          remainingSeats: Math.max(partySize + 6, 12),
-          priceUsd:
-            o.fromPriceCents !== null && o.fromPriceCents !== undefined
-              ? Number((o.fromPriceCents / 100).toFixed(2))
-              : fromPriceUsd,
-        }))
-      : [
-          {
-            optionCode: "TG1",
-            title: `Verified Departure (${selectedDep})`,
-            startTime: selectedDep,
-            available: true,
-            remainingSeats: Math.max(partySize + 6, 12),
-            priceUsd: fromPriceUsd,
-          },
-        ];
+  // Live Viator Partner API v2 /availability/check
+  if (process.env.VIATOR_API_KEY && code && !code.startsWith("PACWHALE-")) {
+    try {
+      const client = getViatorClient();
+      const checkPromise = client.checkAvailability({
+        productCode: code,
+        travelDate: checkedDate,
+        currency: "USD",
+        paxMix: [{ ageBand: "ADULT", numberOfTravelers: partySize }],
+      });
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("PROVIDER_TIMEOUT")), timeoutMs)
+      );
+      const checkRes: any = await Promise.race([checkPromise, timeoutPromise]);
+      const items = Array.isArray(checkRes?.bookableItems) ? checkRes.bookableItems : [];
 
-  return {
-    status: "live_verified",
-    statusLabel: `Live Verified — Seats Available for ${partySize} ${
-      partySize === 1 ? "guest" : "guests"
-    } on ${params.date}`,
-    supportsLiveCheck: true,
-    liveCheckedAt: new Date().toISOString(),
-    checkedDate: params.date,
-    checkedPartySize: partySize,
-    selectedDepartureTime: selectedDep,
-    available: true,
-    remainingSeats: Math.max(partySize + 6, 12),
-    fromPriceUsd,
-    currency: "USD",
-    options,
-    detailNote: `Verified schedule & option availability for ${partySize} guests on ${params.date} (${selectedDep} departure). Time fit and seat availability remain separate.`,
-  };
+      const exactItem = items.find((it: any) => {
+        const itemOpt = String(it?.productOptionCode || "TG1").trim().toUpperCase();
+        const itemTime = String(it?.startTime || "").trim().slice(0, 5);
+        return (
+          itemOpt === requestedOptionCode.trim().toUpperCase() &&
+          itemTime === requestedDepartureTime.trim().slice(0, 5)
+        );
+      });
+
+      if (!exactItem) {
+        return buildCheckAvailabilityFallback(
+          "missing_data",
+          `Viator /availability/check did not confirm exact option ${requestedOptionCode} at ${requestedDepartureTime} on ${checkedDate} for ${partySize} guests. Check availability on the exact product link.`
+        );
+      }
+
+      if (exactItem.available === false) {
+        return {
+          status: "sold_out",
+          statusLabel: "Sold out",
+          supportsLiveCheck: true,
+          liveCheckedAt: new Date().toISOString(),
+          checkedDate,
+          checkedPartySize: partySize,
+          selectedOptionCode: String(exactItem.productOptionCode || requestedOptionCode),
+          selectedDepartureTime: String(exactItem.startTime || requestedDepartureTime).slice(
+            0,
+            5
+          ),
+          available: false,
+          remainingSeats: 0,
+          fromPriceUsd: null,
+          totalPriceUsd: null,
+          currency: String(checkRes?.currency || "USD"),
+          exactProductUrl: handoff.exactProductUrl,
+          dccTrackedHref: handoff.dccTrackedHref,
+          providerStatus: "confirmed",
+          options: [
+            {
+              optionCode: String(exactItem.productOptionCode || requestedOptionCode),
+              title: chosenOption?.title || `Option ${requestedOptionCode}`,
+              startTime: String(exactItem.startTime || requestedDepartureTime).slice(0, 5),
+              available: false,
+              remainingSeats: 0,
+              priceUsd: null,
+            },
+          ],
+          detailNote: `Live Viator Partner API confirmed option ${requestedOptionCode} at ${requestedDepartureTime} on ${checkedDate} is sold out for ${partySize} guests.`,
+        };
+      }
+
+      if (exactItem.available === true) {
+        const rawTotalRetail =
+          exactItem?.totalPrice?.price?.recommendedRetailPrice ??
+          exactItem?.totalPrice?.price?.partnerTotalPrice ??
+          null;
+        const totalPriceUsd =
+          typeof rawTotalRetail === "number" && Number.isFinite(rawTotalRetail)
+            ? Number(rawTotalRetail.toFixed(2))
+            : null;
+        const perPersonPriceUsd =
+          totalPriceUsd !== null ? Number((totalPriceUsd / partySize).toFixed(2)) : null;
+        const providerRemainingSeats =
+          typeof exactItem?.remainingSeats === "number" &&
+          Number.isFinite(exactItem.remainingSeats)
+            ? exactItem.remainingSeats
+            : null;
+
+        return {
+          status: "live_verified",
+          statusLabel: "Live verified",
+          supportsLiveCheck: true,
+          liveCheckedAt: new Date().toISOString(),
+          checkedDate,
+          checkedPartySize: partySize,
+          selectedOptionCode: String(exactItem.productOptionCode || requestedOptionCode),
+          selectedDepartureTime: String(exactItem.startTime || requestedDepartureTime).slice(
+            0,
+            5
+          ),
+          available: true,
+          remainingSeats: providerRemainingSeats,
+          fromPriceUsd: perPersonPriceUsd,
+          totalPriceUsd,
+          currency: String(checkRes?.currency || "USD"),
+          exactProductUrl: handoff.exactProductUrl,
+          dccTrackedHref: handoff.dccTrackedHref,
+          providerStatus: "confirmed",
+          options: [
+            {
+              optionCode: String(exactItem.productOptionCode || requestedOptionCode),
+              title: chosenOption?.title || `Option ${requestedOptionCode}`,
+              startTime: String(exactItem.startTime || requestedDepartureTime).slice(0, 5),
+              available: true,
+              remainingSeats: providerRemainingSeats,
+              priceUsd: perPersonPriceUsd,
+            },
+          ],
+          detailNote: `Live Viator Partner API /availability/check confirmed availability for ${code} option ${requestedOptionCode} at ${requestedDepartureTime} on ${checkedDate} for ${partySize} guests${
+            totalPriceUsd !== null ? ` ($${totalPriceUsd.toFixed(2)} total)` : ""
+          }.`,
+        };
+      }
+    } catch (err: any) {
+      const isTimeout =
+        String(err?.message || "").includes("PROVIDER_TIMEOUT") ||
+        String(err?.name || "") === "AbortError";
+      return buildCheckAvailabilityFallback(
+        isTimeout ? "timeout" : "error",
+        isTimeout
+          ? `Viator availability check timed out after ${timeoutMs}ms for ${code}. Check availability on the exact product link.`
+          : `Viator availability check could not confirm ${code} on ${checkedDate}. Check availability on the exact product link.`
+      );
+    }
+  }
+
+  return buildCheckAvailabilityFallback(
+    "unconfigured",
+    `Live provider availability check is not configured for ${code}. Check availability on the exact product link.`
+  );
 }
 
 export async function queryPortDayExcursionCatalog(params: {
@@ -970,7 +1571,8 @@ export async function queryPortDayExcursionCatalog(params: {
   const category: PortDayExcursionCategoryFilter = params.category || "all";
   const shipArrivalTime = params.shipArrivalTime || profile.defaultShipArrivalTime;
   const shipAllAboardTime = params.shipAllAboardTime || profile.defaultShipAllAboardTime;
-  const sailingDate = params.sailingDate || "2026-07-15";
+  const sailingDate =
+    params.sailingDate || profile.defaultSailingDate || "2027-07-15";
   const partySize = Math.max(1, params.partySize || 2);
   const limit = Math.max(1, Math.min(100, params.limit || 12));
   const offset = Math.max(0, params.offset || 0);
@@ -980,6 +1582,7 @@ export async function queryPortDayExcursionCatalog(params: {
     destinationSlug: profile.destinationSlug,
     category: category === "all" ? undefined : category,
     searchQuery: params.search,
+    verifiedTimingOnly: viewMode === "fits_sailing" ? true : undefined,
     sortBy,
     limit,
     offset,
@@ -993,9 +1596,7 @@ export async function queryPortDayExcursionCatalog(params: {
       shipAllAboardTime,
     });
 
-    const chosenOptionCode =
-      rec.productOptions?.[0]?.optionCode ||
-      (rec.primaryProvider === "viator" ? "TG1" : null);
+    const chosenOptionCode = timeFit.selectedOptionCode;
 
     const handoff = buildExactExcursionHandoffLinks({
       rec,
@@ -1022,8 +1623,7 @@ export async function queryPortDayExcursionCatalog(params: {
           : `${profile.portName} Direct Operator`);
 
     const supportsLiveCheck =
-      rec.primaryProvider === "viator" ||
-      rec.primaryProvider === "operator_direct" ||
+      (rec.primaryProvider === "viator" || rec.primaryProvider === "operator_direct") &&
       rec.capabilityTier !== "discovery_only";
 
     return {
@@ -1049,35 +1649,26 @@ export async function queryPortDayExcursionCatalog(params: {
       timeFit,
       seatAvailability: {
         status: "check_availability",
-        statusLabel: supportsLiveCheck
-          ? "Check Availability (Verify Live Seats)"
-          : "Check Availability",
+        statusLabel: "Check availability",
         supportsLiveCheck,
         liveCheckedAt: null,
         checkedDate: sailingDate,
         checkedPartySize: partySize,
+        selectedOptionCode: chosenOptionCode,
         selectedDepartureTime: timeFit.selectedDepartureTime,
         available: null,
         remainingSeats: null,
-        fromPriceUsd,
+        fromPriceUsd: null,
+        totalPriceUsd: null,
         currency: rec.currency || "USD",
-        options: (rec.productOptions || []).slice(0, 4).map((o, idx) => ({
-          optionCode: o.optionCode || `TG${idx + 1}`,
-          title: o.title || rec.title,
-          startTime:
-            o.scheduledStartTimes?.[0] ||
-            timeFit.selectedDepartureTime ||
-            "09:00",
-          available: true,
-          remainingSeats: null,
-          priceUsd:
-            o.fromPriceCents !== null && o.fromPriceCents !== undefined
-              ? Number((o.fromPriceCents / 100).toFixed(2))
-              : fromPriceUsd,
-        })),
+        exactProductUrl: handoff.exactProductUrl,
+        dccTrackedHref: handoff.dccTrackedHref,
+        options: [],
         detailNote: supportsLiveCheck
-          ? `Live availability verification supported for ${partySize} guests on ${sailingDate}. Time fit and seat availability are tracked separately.`
-          : "Check availability on provider checkout for your date and group size.",
+          ? `Check live availability for option ${
+              chosenOptionCode || "default"
+            } (${timeFit.selectedDepartureTime || "select time"}) on ${sailingDate} for ${partySize} guests, or open the exact product link. Time fit and seat availability are tracked separately.`
+          : "Check availability on the exact product link for your date and group size.",
       },
       handoff,
     };
@@ -1088,17 +1679,27 @@ export async function queryPortDayExcursionCatalog(params: {
       ? evaluatedCards.filter((c) => c.timeFit.status === "fits")
       : evaluatedCards;
 
-  const isReykjavik = profile.portSlug === "reykjavik";
-  const isKahului = profile.portSlug === "kahului";
+  const portCounts = AUTHORITATIVE_PORT_PROVIDER_COUNTS[profile.portSlug] || {
+    viator: sqlRes.totalMatched,
+    operator_direct: evaluatedCards.filter((c) => c.provider === "operator_direct").length,
+    bokun_pending: 0,
+    authorizedSourceTotal: sqlRes.totalMatched,
+    reconciledWithAuthorizedSource: true,
+  };
+  const totalImportedForPort = portCounts.viator + portCounts.operator_direct;
+  const coveragePercent =
+    portCounts.authorizedSourceTotal > 0
+      ? Math.min(
+          100,
+          Math.round((totalImportedForPort / portCounts.authorizedSourceTotal) * 1000) / 10
+        )
+      : 100;
 
-  const viatorCount = isReykjavik
-    ? 1576
-    : isKahului
-      ? 100
-      : sqlRes.totalMatched;
-  const directCount = isKahului
-    ? 1
-    : evaluatedCards.filter((c) => c.provider === "operator_direct").length;
+  const needsVerificationCount = evaluatedCards.filter(
+    (c) =>
+      c.timeFit.status === "needs_verification" ||
+      c.timeFit.status === "missing_operator_info"
+  ).length;
 
   return {
     ok: true,
@@ -1126,23 +1727,26 @@ export async function queryPortDayExcursionCatalog(params: {
       storageSource: sqlRes.storageSource,
     },
     providerCounts: {
-      viator: viatorCount,
-      operator_direct: directCount,
-      bokun_pending: isReykjavik
-        ? HREYFILL_REYKJAVIK_SHORE_EXCURSION_QUALIFICATION.candidateTours.length
-        : 0,
-      total: viatorCount + directCount,
-      reconciledWithAuthorizedSource: true,
-      authorizedSourceTotal: viatorCount,
-      pendingOperatorNotes: isReykjavik
-        ? [
-            `Hreyfill (${HREYFILL_REYKJAVIK_SHORE_EXCURSION_QUALIFICATION.candidateTours.length} candidate Golden Circle & South Coast tours): ${HREYFILL_REYKJAVIK_SHORE_EXCURSION_QUALIFICATION.bookingLinkVerificationGate.publicDisplayValue}`,
-          ]
-        : profile.portSlug === "juneau"
+      viator: portCounts.viator,
+      operator_direct: portCounts.operator_direct,
+      bokun_pending: portCounts.bokun_pending,
+      total: totalImportedForPort,
+      reconciledWithAuthorizedSource: portCounts.reconciledWithAuthorizedSource,
+      authorizedSourceTotal: portCounts.authorizedSourceTotal,
+      coveragePercent,
+      coverageStatus: portCounts.reconciledWithAuthorizedSource
+        ? "complete"
+        : "sampled_provider_catalog",
+      pendingOperatorNotes:
+        profile.portSlug === "reykjavik"
           ? [
-              JUNEAU_PRODUCT_SUPPLIER_RECONCILIATION["466119P3"].reconciliationNote,
+              `Hreyfill (${HREYFILL_REYKJAVIK_SHORE_EXCURSION_QUALIFICATION.candidateTours.length} candidate Golden Circle & South Coast tours): ${HREYFILL_REYKJAVIK_SHORE_EXCURSION_QUALIFICATION.bookingLinkVerificationGate.publicDisplayValue}`,
             ]
-          : undefined,
+          : profile.portSlug === "juneau"
+            ? [
+                JUNEAU_PRODUCT_SUPPLIER_RECONCILIATION["466119P3"].reconciliationNote,
+              ]
+            : undefined,
     },
     summary: {
       totalEvaluatedOnPage: evaluatedCards.length,
@@ -1151,9 +1755,8 @@ export async function queryPortDayExcursionCatalog(params: {
       runsTooLateCountOnPage: evaluatedCards.filter(
         (c) => c.timeFit.status === "runs_too_late"
       ).length,
-      missingOperatorInfoCountOnPage: evaluatedCards.filter(
-        (c) => c.timeFit.status === "missing_operator_info"
-      ).length,
+      needsVerificationCountOnPage: needsVerificationCount,
+      missingOperatorInfoCountOnPage: needsVerificationCount,
       liveAvailabilitySupportedCountOnPage: evaluatedCards.filter(
         (c) => c.seatAvailability.supportsLiveCheck
       ).length,

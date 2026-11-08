@@ -1506,6 +1506,8 @@ export const PILOT_VERIFIED_TOUR_RECORDS: DurableTourRecord[] = [
       verifiedPartnerNet2AdultsUsd: 110.4,
       verifiedCommission2AdultsUsd: 9.6,
       hotelMonteleonePickupRef: "LOC-6eKJ+or5y8o99Qw0C8xWyGAjWJk3qp08H7OnT0MLhOs=",
+      checkInCutoffMinutes: 15,
+      checkInEvidenceSource: "viator_logistics_pickup_window:hotel_monteleone_curb_15m_prior",
     },
     inclusions: [
       "Guided covered swamp boat tour in the Barataria Bayou",
@@ -2280,6 +2282,8 @@ export const PILOT_VERIFIED_TOUR_RECORDS: DurableTourRecord[] = [
       pickupFulfillmentType: "pier_pickup",
       viatorProductCode: "254526P1",
       verifiedPortSlug: "nassau",
+      checkInCutoffMinutes: 15,
+      checkInEvidenceSource: "viator_logistics_start_description:prince_george_wharf_terminal_gate_15m_prior",
     },
     inclusions: [
       "4-hour swimming pigs & private beach club experience",
@@ -2671,6 +2675,8 @@ export const PILOT_VERIFIED_TOUR_RECORDS: DurableTourRecord[] = [
       pickupFulfillmentType: "pier_pickup",
       viatorProductCode: "5553274P1",
       verifiedPortSlug: "cozumel",
+      checkInCutoffMinutes: 15,
+      checkInEvidenceSource: "viator_logistics_start_description:puerta_maya_ssa_excursion_gate_15m_prior",
     },
     inclusions: [
       "3.5-hour ATV jungle & cenote tour",
@@ -2865,6 +2871,8 @@ export const PILOT_VERIFIED_TOUR_RECORDS: DurableTourRecord[] = [
       pickupFulfillmentType: "pier_pickup",
       viatorProductCode: "62963P76",
       verifiedPortSlug: "roatan",
+      checkInCutoffMinutes: 15,
+      checkInEvidenceSource: "viator_logistics_start_description:coxen_hole_mahogany_bay_excursion_gate_15m_prior",
     },
     inclusions: [
       "16-line canopy zip line & monkey/sloth sanctuary",
@@ -3066,6 +3074,8 @@ export const PILOT_VERIFIED_TOUR_RECORDS: DurableTourRecord[] = [
       verifiedPortSlug: "grand-cayman",
       tenderPort: true,
       tenderClearanceMinutes: 45,
+      checkInCutoffMinutes: 15,
+      checkInEvidenceSource: "viator_logistics_start_description:royal_watler_tender_terminal_15m_prior",
     },
     inclusions: [
       "3.5-hour Stingray City, Starfish Point & Coral Reef Snorkel",
@@ -3242,6 +3252,8 @@ export const PILOT_VERIFIED_TOUR_RECORDS: DurableTourRecord[] = [
       viatorPartnerPid: "P00306962",
       viatorMcid: "42383",
       commissionStatus: "active_verified_viator_partner",
+      checkInCutoffMinutes: 15,
+      checkInEvidenceSource: "viator_logistics_pickup_window:french_quarter_hotel_curb_15m_prior",
     },
     inclusions: [
       "Guided New Orleans City & Cemetery sightseeing tour",
@@ -3406,6 +3418,8 @@ export const PILOT_VERIFIED_TOUR_RECORDS: DurableTourRecord[] = [
       viatorPartnerPid: "P00306962",
       viatorMcid: "42383",
       commissionStatus: "active_verified_viator_partner",
+      checkInCutoffMinutes: 15,
+      checkInEvidenceSource: "viator_logistics_start_description:gray_line_lighthouse_400_toulouse_st_15m_prior",
     },
     inclusions: [
       "2-hour guided French Quarter ghost & haunted history walking tour",
@@ -3696,6 +3710,7 @@ export type DurableCatalogQueryFilter = {
   searchQuery?: string;
   approvedTourIds?: string[];
   includeDiscoveryOnly?: boolean;
+  verifiedTimingOnly?: boolean;
   sortBy?: DurableCatalogSortBy;
   limit?: number;
   offset?: number;
@@ -3934,6 +3949,11 @@ export async function queryDurableTourCatalog(
       if (filter.includeDiscoveryOnly === false) {
         whereClauses.push("capability_tier <> 'discovery_only'");
       }
+      if (filter.verifiedTimingOnly === true) {
+        whereClauses.push(
+          "meeting_point_name IS NOT NULL AND duration_minutes IS NOT NULL AND duration_minutes > 0 AND COALESCE(constraints_json->>'transferTimeSource', '') IN ('verified_pier_pickup', 'verified_meeting_point') AND COALESCE(service_details_json->>'checkInCutoffMinutes', '') <> ''",
+        );
+      }
       if (resolvedDest) {
         const pDest = addParam(resolvedDest);
         whereClauses.push(`LOWER(destination_slug) = ${pDest}`);
@@ -4064,6 +4084,17 @@ export async function queryDurableTourCatalog(
     if (!rec.active || isQuarantinedTourRecord(rec)) return false;
     if (filter.includeDiscoveryOnly === false && rec.capabilityTier === "discovery_only") {
       return false;
+    }
+    if (filter.verifiedTimingOnly === true) {
+      const hasCheckIn =
+        typeof (rec.serviceDetails as any)?.checkInCutoffMinutes === "number" ||
+        typeof (rec.serviceDetails as any)?.checkInBeforeDepartureMinutes === "number";
+      const hasTransfer =
+        rec.constraints?.transferTimeSource === "verified_pier_pickup" ||
+        rec.constraints?.transferTimeSource === "verified_meeting_point";
+      if (!rec.meetingPointName || !rec.durationMinutes || rec.durationMinutes <= 0 || !hasCheckIn || !hasTransfer) {
+        return false;
+      }
     }
     if (filter.commissionAuthorizedOnly === true && !rec.commissionAuthorized) {
       return false;

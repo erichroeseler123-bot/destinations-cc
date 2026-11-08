@@ -63,7 +63,7 @@ export default function PortDayExcursionCatalogSection({
   const [sailingDate, setSailingDate] = useState<string>(
     initialSailingDate ||
       initialCatalogData?.sailingWindow.sailingDate ||
-      "2026-07-15"
+      "2027-07-15"
   );
   const [partySize, setPartySize] = useState<number>(
     initialCatalogData?.sailingWindow.partySize || initialPartySize
@@ -154,6 +154,7 @@ export default function PortDayExcursionCatalogSection({
           portSlug,
           tourId: tour.tourId,
           productCode: tour.productCode,
+          optionCode: tour.optionCode || tour.timeFit.selectedOptionCode,
           date: sailingDate,
           partySize,
           departureTime: tour.timeFit.selectedDepartureTime,
@@ -429,7 +430,7 @@ export default function PortDayExcursionCatalogSection({
       {data?.summary ? (
         <div className="grid grid-cols-2 gap-3 rounded-2xl border border-white/10 bg-slate-900/50 p-3.5 text-xs sm:grid-cols-4">
           <div>
-            <span className="text-slate-400">Fits Sailing on Page:</span>{" "}
+            <span className="text-slate-400">Fits My Sailing:</span>{" "}
             <strong className="text-emerald-400">
               {data.summary.fitsSailingCountOnPage}
             </strong>
@@ -441,9 +442,10 @@ export default function PortDayExcursionCatalogSection({
             </strong>
           </div>
           <div>
-            <span className="text-slate-400">Missing Operator Timing:</span>{" "}
+            <span className="text-slate-400">Needs Verification:</span>{" "}
             <strong className="text-amber-300">
-              {data.summary.missingOperatorInfoCountOnPage}
+              {data.summary.needsVerificationCountOnPage ??
+                data.summary.missingOperatorInfoCountOnPage}
             </strong>
           </div>
           <div>
@@ -583,12 +585,18 @@ export default function PortDayExcursionCatalogSection({
                     </div>
                   </div>
 
-                  {/* Detailed Maui-style Timing Verification Breakdown */}
+                  {/* Detailed Timing Verification Breakdown */}
                   <div className="space-y-1.5 rounded-xl border border-white/10 bg-slate-950/80 p-3 text-xs text-slate-300">
                     <div className="flex flex-wrap justify-between gap-2">
                       <span className="text-slate-400">Selected Departure:</span>
                       <span className="font-semibold text-white">
-                        {tour.timeFit.selectedDepartureTime || "Unverified schedule"}
+                        {tour.timeFit.selectedDepartureTime
+                          ? `${tour.timeFit.selectedDepartureTime}${
+                              tour.timeFit.selectedOptionCode
+                                ? ` (Option ${tour.timeFit.selectedOptionCode})`
+                                : ""
+                            }`
+                          : "Needs verification (missing departure time)"}
                         {tour.timeFit.fittingDepartureTimes.length > 1
                           ? ` (Fits: ${tour.timeFit.fittingDepartureTimes.join(", ")})`
                           : ""}
@@ -597,16 +605,20 @@ export default function PortDayExcursionCatalogSection({
                     <div className="flex flex-wrap justify-between gap-2">
                       <span className="text-slate-400">Check-In Cutoff:</span>
                       <span className="font-semibold text-white">
-                        {tour.timeFit.checkInCutoffMinutes} min before departure
-                        {tour.timeFit.latestCheckInTime
-                          ? ` (Check in by ${tour.timeFit.latestCheckInTime})`
-                          : ""}
+                        {tour.timeFit.checkInCutoffMinutes !== null
+                          ? `${tour.timeFit.checkInCutoffMinutes} min before departure${
+                              tour.timeFit.latestCheckInTime
+                                ? ` (Check in by ${tour.timeFit.latestCheckInTime})`
+                                : ""
+                            }`
+                          : "Needs verification (missing check-in cutoff)"}
                       </span>
                     </div>
                     <div className="flex flex-wrap justify-between gap-2">
                       <span className="text-slate-400">Meeting Point / Pickup:</span>
                       <span className="font-semibold text-white">
-                        {tour.timeFit.meetingPointName || "Missing operator meeting point"}
+                        {tour.timeFit.meetingPointName ||
+                          "Needs verification (missing operator meeting point)"}
                       </span>
                     </div>
                     <div className="flex flex-wrap justify-between gap-2">
@@ -614,7 +626,7 @@ export default function PortDayExcursionCatalogSection({
                       <span className="font-semibold text-white">
                         {tour.timeFit.roundTripTransferMinutes !== null
                           ? `${tour.timeFit.oneWayTransferMinutes}m each way (${tour.timeFit.roundTripTransferMinutes}m round-trip)`
-                          : "Missing transfer time"}
+                          : "Needs verification (missing verified pier transfer)"}
                       </span>
                     </div>
                     <div className="flex flex-wrap justify-between gap-2">
@@ -634,7 +646,7 @@ export default function PortDayExcursionCatalogSection({
                                 ? `+${tour.timeFit.bufferBeforeAllAboardMinutes}m buffer`
                                 : `${tour.timeFit.bufferBeforeAllAboardMinutes}m past`
                             } vs ${allAboard})`
-                          : "Cannot compute return without full timing"}
+                          : "Needs verification (cannot compute return buffer without full evidence)"}
                       </span>
                     </div>
                     <p className="pt-1 text-[11px] leading-relaxed text-slate-400">
@@ -645,24 +657,39 @@ export default function PortDayExcursionCatalogSection({
                   {/* Live Seat Availability Details & Verify Button */}
                   <div className="rounded-xl border border-white/10 bg-slate-950/60 p-3 text-xs">
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <div className="space-y-0.5">
+                      <div className="space-y-1">
                         <div className="font-semibold text-slate-200">
                           {seatState.detailNote}
                         </div>
-                        {seatState.options.length > 0 ? (
+                        {seatState.status === "live_verified" &&
+                        seatState.options.length > 0 ? (
                           <div className="text-[11px] text-emerald-300">
-                            Verified options:{" "}
+                            Provider-confirmed option:{" "}
                             {seatState.options
-                              .slice(0, 3)
                               .map(
                                 (o) =>
                                   `${o.optionCode} (${o.startTime}${
-                                    o.priceUsd ? ` · $${o.priceUsd.toFixed(2)}` : ""
+                                    o.priceUsd !== null
+                                      ? ` · $${o.priceUsd.toFixed(2)}/guest`
+                                      : ""
                                   })`
                               )
                               .join(" · ")}
                           </div>
-                        ) : null}
+                        ) : (
+                          <div className="text-[11px] text-cyan-300">
+                            <a
+                              href={
+                                seatState.dccTrackedHref || tour.handoff.dccTrackedHref
+                              }
+                              target="_blank"
+                              rel="sponsored nofollow noopener noreferrer"
+                              className="underline hover:text-cyan-200"
+                            >
+                              Check availability on exact product ({tour.productCode || tour.tourId}) ↗
+                            </a>
+                          </div>
+                        )}
                       </div>
 
                       {seatState.supportsLiveCheck ? (
@@ -680,9 +707,14 @@ export default function PortDayExcursionCatalogSection({
                               : "Verify Live Availability"}
                         </button>
                       ) : (
-                        <span className="rounded-xl border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-semibold text-slate-300">
-                          Check availability on provider
-                        </span>
+                        <a
+                          href={seatState.dccTrackedHref || tour.handoff.dccTrackedHref}
+                          target="_blank"
+                          rel="sponsored nofollow noopener noreferrer"
+                          className="rounded-xl border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-semibold text-slate-200 hover:bg-white/10"
+                        >
+                          Check availability ↗
+                        </a>
                       )}
                     </div>
                   </div>
