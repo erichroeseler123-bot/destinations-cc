@@ -27,7 +27,11 @@ import TravelReferenceExperience from "@/app/components/dcc/TravelReferenceExper
 import DccConciergeWidget from "@/app/components/dcc/DccConciergeWidget";
 import StThomasPortDayPlanner from "@/app/components/dcc/StThomasPortDayPlanner";
 import WinterPortDayPlanner from "@/app/components/dcc/WinterPortDayPlanner";
-import { resolveEarthOSDestinationNode } from "@/lib/dcc/catalog/durableCatalogStore";
+import {
+  queryDurableTourCatalog,
+  resolveEarthOSDestinationNode,
+} from "@/lib/dcc/catalog/durableCatalogStore";
+import { buildCatalogTourDirectHandoff } from "@/lib/dcc/catalog/matcher";
 import { getPublishedTravelReferenceNodeById } from "@/lib/dcc/travelReference";
 import { getPublicationManifestEntry } from "@/src/data/publication-manifest";
 import PortDayExcursionCatalogSection from "@/app/components/dcc/PortDayExcursionCatalogSection";
@@ -495,7 +499,7 @@ export async function renderPortPage(slug: string, isLfse = false) {
       ) : port.slug === "george-town-grand-cayman" ? (
         <WinterPortDayPlanner portSlug="grand-cayman" />
       ) : null}
-      {earthosDestination ? (
+      {earthosDestination && port.slug !== "reykjavik" ? (
         <section className="max-w-6xl mx-auto px-6 py-8">
           <DccConciergeWidget
             initialDestination={earthosDestination.destinationSlug}

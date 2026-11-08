@@ -1793,6 +1793,111 @@ test("101.9 — Portfolio Cockpit Supplier Connections: Durable check persistenc
   }
 });
 
+test("101.10 — Reykjavík: Neon catalog filtering & pagination, crawlable /ports/reykjavik, existing /tours/[id] route, and exact-product checkout handoff", async () => {
+  const { GET: getCatalogRoute } = await import("@/app/api/v1/tours/catalog/route");
+  const { GET: getMatchRoute } = await import("@/app/api/v1/tours/match/route");
+  const { GET: getAdsClickRoute } = await import("@/app/api/v1/ads/click/route");
+  const { PUBLICATION_MANIFEST } = await import("@/src/data/publication-manifest");
+  const PortPageModule = await import("@/app/ports/[slug]/page");
+  const TourDetailPageModule = await import("@/app/tours/[id]/page");
+
+  // 1. Verify /ports/reykjavik is public_indexable & index_follow in PUBLICATION_MANIFEST
+  const reykjavikPub = PUBLICATION_MANIFEST.find((r) => r.route === "/ports/reykjavik");
+  assert.ok(reykjavikPub, "/ports/reykjavik must exist in PUBLICATION_MANIFEST");
+  assert.equal(reykjavikPub.acceptanceState, "public_indexable");
+  assert.equal(reykjavikPub.indexingState, "index_follow");
+  assert.equal(reykjavikPub.includeInSitemap, true);
+
+  // 2. Verify Neon-filtered and paginated /api/v1/tours/catalog for Reykjavík
+  const page1Res = await getCatalogRoute(
+    new NextRequest(
+      "https://destinationcommandcenter.com/api/v1/tours/catalog?port=reykjavik&limit=6&offset=0&sort=recommended&surface=cruisepromenade",
+    ),
+  );
+  assert.equal(page1Res.status, 200);
+  const page1Json = await page1Res.json();
+  assert.equal(page1Json.ok, true);
+  assert.equal(page1Json.totalMatched, 1576);
+  assert.equal(page1Json.returnedCount, 6);
+  assert.equal(page1Json.hasMore, true);
+  assert.equal(page1Json.fullCatalogLoadedIntoApp, false);
+
+  const page2Res = await getCatalogRoute(
+    new NextRequest(
+      "https://destinationcommandcenter.com/api/v1/tours/catalog?port=reykjavik&limit=6&offset=6&sort=recommended&surface=cruisepromenade",
+    ),
+  );
+  const page2Json = await page2Res.json();
+  assert.equal(page2Json.offset, 6);
+  assert.equal(page2Json.returnedCount, 6);
+  assert.notEqual(page1Json.tours[0].tourId, page2Json.tours[0].tourId);
+
+  // Verify category filter on catalog route
+  const catRes = await getCatalogRoute(
+    new NextRequest(
+      "https://destinationcommandcenter.com/api/v1/tours/catalog?port=reykjavik&category=wildlife&limit=12",
+    ),
+  );
+  const catJson = await catRes.json();
+  assert.equal(catJson.ok, true);
+  assert.ok(catJson.totalMatched >= 1);
+  assert.equal(catJson.fullCatalogLoadedIntoApp, false);
+
+  // 3. Verify Fits my sailing (/api/v1/tours/match) for Reykjavík cruise arrival/all-aboard
+  const matchRes = await getMatchRoute(
+    new NextRequest(
+      "https://destinationcommandcenter.com/api/v1/tours/match?port=reykjavik&shipArrival=07:30&shipDeparture=19:00&allAboardTime=18:30&date=2027-07-15&adults=2&limit=24&page=1&enableShortlistLiveCheck=false",
+    ),
+  );
+  assert.equal(matchRes.status, 200);
+  const matchJson = await matchRes.json();
+  assert.equal(matchJson.ok, true);
+  assert.equal(matchJson.destination.destinationSlug, "reykjavik");
+  assert.ok(matchJson.metrics.totalCatalogCandidates >= 20);
+  assert.ok(matchJson.options.length >= 10);
+
+  // 4. Verify crawlable /ports/reykjavik renders PortAuthorityTemplate + PortDayExcursionCatalogSection
+  const firstTour = page1Json.tours[0] as {
+    providerProductCode: string;
+    title: string;
+    bookingPath: { trackedClickUrl: string };
+  };
+  assert.ok(firstTour?.providerProductCode, "page 1 of Reykjavík catalog must return a first tour");
+  const portElement = await PortPageModule.default({
+    params: Promise.resolve({ slug: "reykjavik" }),
+    searchParams: Promise.resolve({}),
+  });
+  const portHtml = renderToStaticMarkup(portElement);
+  assert.ok(portHtml.includes('data-testid="tab-browse-all-tours"'));
+  assert.ok(portHtml.includes('data-testid="tab-fits-my-sailing"'));
+  assert.ok(portHtml.includes('data-testid="provider-reconciliation-box"'));
+
+  // 5. Verify existing /tours/[id] route resolves 7090P9 from Neon durable catalog
+  const tourDetailElement = await TourDetailPageModule.default({
+    params: Promise.resolve({ id: "7090P9" }),
+  });
+  const tourDetailHtml = renderToStaticMarkup(tourDetailElement);
+  assert.ok(tourDetailHtml.includes("The Original Classic Whale Watching from Reykjavik"));
+  assert.ok(tourDetailHtml.includes('data-testid="tour-detail-durable-catalog-panel"'));
+  assert.ok(tourDetailHtml.includes('data-testid="tour-detail-exact-checkout-cta"'));
+
+  // 6. Verify exact-product checkout handoff (/api/v1/ads/click -> 302 to exact Viator product URL)
+  assert.ok(
+    firstTour.bookingPath.trackedClickUrl.startsWith("/api/v1/ads/click?"),
+    "trackedClickUrl must use signed /api/v1/ads/click handoff",
+  );
+  const clickRes = await getAdsClickRoute(
+    new NextRequest(`https://destinationcommandcenter.com${firstTour.bookingPath.trackedClickUrl}`),
+  );
+  assert.equal(clickRes.status, 302);
+  const redirectLocation = clickRes.headers.get("location") || "";
+  assert.ok(
+    redirectLocation.includes(`d905-${firstTour.providerProductCode}`),
+    `Expected exact-product Viator redirect for ${firstTour.providerProductCode}, got: ${redirectLocation}`,
+  );
+});
+
+
 
 
 

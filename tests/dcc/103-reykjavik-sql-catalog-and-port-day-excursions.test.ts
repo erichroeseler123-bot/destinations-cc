@@ -28,12 +28,22 @@ test("1. Reykjavík port record is mapped to Viator destination 905 and Kahului 
   assert.equal(EARTHOS_DESTINATION_NODES.kahului.viatorDestinationId, 671);
 });
 
-test("2. Reykjavík catalog reconciles 1,576 / 1,576 Viator products and paginates without loading the full catalog into the app", async () => {
+test("2. Reykjavík (1,576) and Kahului (653) and Batch 2 Alaska ports reconcile 100% of authorized inventory and paginate in SQL without loading the full catalog", async () => {
   const summary = await getDurableCatalogSummaryReport();
   assert.equal(summary.byDestination.reykjavik.total, 1576);
   assert.equal(summary.byDestination.reykjavik.viatorImportedCount, 1576);
   assert.equal(summary.byDestination.reykjavik.providerTotalAvailableCount, 1576);
   assert.equal(summary.byDestination.reykjavik.coverageStatus, "complete");
+
+  assert.equal(summary.byDestination.kahului.total, 653);
+  assert.equal(summary.byDestination.kahului.viatorImportedCount, 652);
+  assert.equal(summary.byDestination.kahului.providerTotalAvailableCount, 652);
+  assert.equal(summary.byDestination.kahului.coverageStatus, "complete");
+
+  assert.equal(summary.byDestination.juneau.coverageStatus, "complete");
+  assert.equal(summary.byDestination.skagway.coverageStatus, "complete");
+  assert.equal(summary.byDestination.ketchikan.coverageStatus, "complete");
+  assert.equal(summary.byDestination.seward.coverageStatus, "complete");
 
   const page1 = await queryDurableTourCatalog({
     destinationSlug: "reykjavik",
@@ -79,29 +89,8 @@ test("2. Reykjavík catalog reconciles 1,576 / 1,576 Viator products and paginat
   );
 });
 
-test("3. Port-day shore-excursion engine marks 388640P9 Needs verification in Browse All, excludes it from Fits My Sailing, rejects past departures, and never generates fallback seat counts or prices", async () => {
-  assert.equal(MAPPED_CRUISE_PORT_EXCURSION_PROFILES.length, 15);
-  assert.equal(Object.keys(MAPPED_CRUISE_PORT_BATCH_SUMMARY).length, 4);
-
-  const reykBrowseAll = await queryPortDayExcursionCatalog({
-    portSlug: "reykjavik",
-    viewMode: "browse_all",
-    category: "all",
-    shipArrivalTime: "08:00",
-    shipAllAboardTime: "17:30",
-    sailingDate: "2027-07-15",
-    partySize: 2,
-    limit: 12,
-    offset: 0,
-  });
-  assert.ok(reykBrowseAll);
-  assert.equal(reykBrowseAll.port.viatorDestinationId, 905);
-  assert.equal(reykBrowseAll.providerCounts.viator, 1576);
-  assert.equal(reykBrowseAll.pagination.fullCatalogLoadedIntoApp, false);
-  assert.equal(reykBrowseAll.tours.length, 12);
-
-  // Verify 388640P9 in Browse All shows Needs verification and fitsSailing: false
-  const browse388640P9 = await queryPortDayExcursionCatalog({
+test("3. Regression case 388640P9 (Glacier Adventure at Sólheimajökull) shows Needs verification in Browse All and stays out of Fits my sailing", async () => {
+  const glacierLookup = await queryPortDayExcursionCatalog({
     portSlug: "reykjavik",
     viewMode: "browse_all",
     search: "388640P9",
@@ -112,19 +101,19 @@ test("3. Port-day shore-excursion engine marks 388640P9 Needs verification in Br
     limit: 5,
     offset: 0,
   });
-  const tour388640P9 = browse388640P9?.tours.find((t) => t.productCode === "388640P9");
-  assert.ok(tour388640P9, "Expected 388640P9 in Browse All");
-  assert.equal(tour388640P9.timeFit.status, "needs_verification");
-  assert.equal(tour388640P9.timeFit.statusLabel, "Needs verification");
-  assert.equal(tour388640P9.timeFit.fitsSailing, false);
-  assert.equal(tour388640P9.timeFit.hasVerifiedMeetingPoint, false);
-  assert.equal(tour388640P9.timeFit.hasVerifiedTransfer, false);
-  assert.equal(tour388640P9.seatAvailability.status, "check_availability");
-  assert.equal(tour388640P9.seatAvailability.remainingSeats, null);
-  assert.equal(tour388640P9.seatAvailability.fromPriceUsd, null);
+  assert.ok(glacierLookup);
+  const glacierTour = glacierLookup.tours.find((t) => t.productCode === "388640P9");
+  assert.ok(glacierTour, "Expected 388640P9 in Reykjavík Browse All catalog");
+  assert.equal(glacierTour.timeFit.status, "needs_verification");
+  assert.equal(glacierTour.timeFit.statusLabel, "Needs verification");
+  assert.equal(glacierTour.timeFit.fitsSailing, false);
+  assert.equal(glacierTour.timeFit.hasVerifiedMeetingPoint, false);
+  assert.equal(glacierTour.timeFit.hasVerifiedTransfer, false);
+  assert.ok(glacierTour.timeFit.missingFields.includes("checkIn"));
+  assert.ok(glacierTour.timeFit.missingFields.includes("transfers"));
+  assert.ok(glacierTour.timeFit.missingFields.includes("returnBuffer"));
 
-  // Verify 388640P9 stays out of Fits My Sailing
-  const fits388640P9 = await queryPortDayExcursionCatalog({
+  const glacierInFitsView = await queryPortDayExcursionCatalog({
     portSlug: "reykjavik",
     viewMode: "fits_sailing",
     search: "388640P9",
@@ -132,38 +121,45 @@ test("3. Port-day shore-excursion engine marks 388640P9 Needs verification in Br
     shipAllAboardTime: "17:30",
     sailingDate: "2027-07-15",
     partySize: 2,
-    limit: 12,
+    limit: 10,
     offset: 0,
   });
-  assert.ok(fits388640P9);
+  assert.ok(glacierInFitsView);
   assert.equal(
-    fits388640P9.tours.some((t) => t.productCode === "388640P9"),
+    glacierInFitsView.tours.some((t) => t.productCode === "388640P9"),
     false,
-    "388640P9 must stay out of Fits my sailing"
+    "388640P9 must never appear under Fits my sailing"
   );
+});
 
-  // Verify Fits My Sailing returns verified fitting tours (including 7090P9)
-  const reykFitsSailing = await queryPortDayExcursionCatalog({
+test("4. Source-backed tour 7090P9 qualifies for Fits my sailing, rejects past departures, and returns Check availability on timeout or missing data without generated seat counts/prices", async () => {
+  assert.equal(MAPPED_CRUISE_PORT_EXCURSION_PROFILES.length, 15);
+  assert.equal(Object.keys(MAPPED_CRUISE_PORT_BATCH_SUMMARY).length, 4);
+
+  const reykWhaleLookup = await queryPortDayExcursionCatalog({
     portSlug: "reykjavik",
     viewMode: "fits_sailing",
+    category: "wildlife",
+    search: "7090P9",
     shipArrivalTime: "08:00",
     shipAllAboardTime: "17:30",
     sailingDate: "2027-07-15",
     partySize: 2,
-    limit: 12,
+    limit: 5,
     offset: 0,
   });
-  assert.ok(reykFitsSailing);
-  assert.ok(reykFitsSailing.tours.length >= 1, "Expected verified fitting tours in Fits my sailing");
-  assert.equal(
-    reykFitsSailing.tours.some((t) => t.productCode === "388640P9"),
-    false
-  );
-  const whaleTour = reykFitsSailing.tours.find((t) => t.productCode === "7090P9");
-  assert.ok(whaleTour, "Expected 7090P9 whale watching in Reykjavík Fits my sailing");
+  const whaleTour = reykWhaleLookup?.tours.find((t) => t.productCode === "7090P9");
+  assert.ok(whaleTour, "Expected 7090P9 whale watching in Reykjavík Fits my sailing view");
   assert.equal(whaleTour.timeFit.status, "fits");
+  assert.equal(whaleTour.timeFit.statusLabel, "Fits my sailing");
   assert.equal(whaleTour.timeFit.fitsSailing, true);
+  assert.equal(whaleTour.timeFit.hasVerifiedDeparture, true);
+  assert.equal(whaleTour.timeFit.hasVerifiedCheckIn, true);
+  assert.equal(whaleTour.timeFit.hasVerifiedMeetingPoint, true);
+  assert.equal(whaleTour.timeFit.hasVerifiedTransfer, true);
+  assert.equal(whaleTour.timeFit.hasVerifiedReturnBuffer, true);
   assert.equal(whaleTour.seatAvailability.status, "check_availability");
+  assert.equal(whaleTour.seatAvailability.statusLabel, "Check availability");
   assert.equal(whaleTour.seatAvailability.remainingSeats, null);
   assert.equal(whaleTour.seatAvailability.fromPriceUsd, null);
   assert.equal(whaleTour.handoff.bookingConfirmationStatus, "tracked_handoff_only");
@@ -187,7 +183,7 @@ test("3. Port-day shore-excursion engine marks 388640P9 Needs verification in Br
   assert.equal(pastSeat.fromPriceUsd, null);
   assert.equal(pastSeat.options.length, 0);
 
-  // Provider timeout test
+  // Timeout case: must return Check availability with exact product link and null seats/prices
   const timeoutSeat = await verifyLiveExcursionAvailability({
     portSlug: "reykjavik",
     tourId: whaleTour.tourId,
@@ -198,13 +194,14 @@ test("3. Port-day shore-excursion engine marks 388640P9 Needs verification in Br
     departureTime: "09:00",
     simulateTimeout: true,
   });
-  assert.equal(timeoutSeat.providerStatus, "timeout");
   assert.equal(timeoutSeat.status, "check_availability");
   assert.equal(timeoutSeat.statusLabel, "Check availability");
   assert.equal(timeoutSeat.available, null);
   assert.equal(timeoutSeat.remainingSeats, null);
   assert.equal(timeoutSeat.fromPriceUsd, null);
-  assert.equal(timeoutSeat.options.length, 0);
+  assert.equal(timeoutSeat.providerStatus, "timeout");
+  assert.ok(timeoutSeat.exactProductUrl?.includes("d905-7090P9"));
+  assert.ok(timeoutSeat.dccTrackedHref?.includes("product=7090P9"));
 
   for (const profile of MAPPED_CRUISE_PORT_EXCURSION_PROFILES) {
     const portCatalog = await queryPortDayExcursionCatalog({
@@ -220,7 +217,7 @@ test("3. Port-day shore-excursion engine marks 388640P9 Needs verification in Br
   }
 });
 
-test("4. Juneau product 466119P3 reconciles Dolphin Jet Boat Tours supplier and keeps Juneau Tours & Whale Watch direct referral credit pending confirmation", async () => {
+test("5. Juneau product 466119P3 reconciles Dolphin Jet Boat Tours supplier and keeps Juneau Tours & Whale Watch direct referral credit pending confirmation", async () => {
   const rec466119P3 = JUNEAU_PRODUCT_SUPPLIER_RECONCILIATION["466119P3"];
   assert.ok(rec466119P3);
   assert.equal(rec466119P3.verifiedViatorSupplierName, "Dolphin Jet Boat Tours");

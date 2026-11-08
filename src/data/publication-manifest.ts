@@ -639,6 +639,16 @@ function compilePublicationManifest(): readonly PublicationManifestRecord[] {
     }),
   );
 
+  register(
+    createRecord({
+      route: "/ports/reykjavik",
+      acceptanceState: "public_indexable",
+      blockingReasonCodes: [],
+      evidenceSnapshotId: "evidence:port:reykjavik:d905:2026-11-07",
+      materialChangeDate: "2026-11-07",
+    }),
+  );
+
   const venuesHealthy =
     nodeRecordsByCanonicalPath.get("/red-rocks")?.acceptanceState === "public_indexable";
   register(

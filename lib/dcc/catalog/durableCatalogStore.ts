@@ -544,6 +544,11 @@ export function resolveEarthOSDestinationNode(slugOrName: string): EarthOSDestin
     .replace(/[\u0300-\u036f]/g, "")
     .trim()
     .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/ð/g, "d")
+    .replace(/þ/g, "th")
+    .replace(/æ/g, "ae")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
   if (EARTHOS_DESTINATION_NODES[norm]) {
@@ -1501,6 +1506,8 @@ export const PILOT_VERIFIED_TOUR_RECORDS: DurableTourRecord[] = [
       verifiedPartnerNet2AdultsUsd: 110.4,
       verifiedCommission2AdultsUsd: 9.6,
       hotelMonteleonePickupRef: "LOC-6eKJ+or5y8o99Qw0C8xWyGAjWJk3qp08H7OnT0MLhOs=",
+      checkInCutoffMinutes: 15,
+      checkInEvidenceSource: "viator_logistics_pickup_window:hotel_monteleone_curb_15m_prior",
     },
     inclusions: [
       "Guided covered swamp boat tour in the Barataria Bayou",
@@ -2275,6 +2282,8 @@ export const PILOT_VERIFIED_TOUR_RECORDS: DurableTourRecord[] = [
       pickupFulfillmentType: "pier_pickup",
       viatorProductCode: "254526P1",
       verifiedPortSlug: "nassau",
+      checkInCutoffMinutes: 15,
+      checkInEvidenceSource: "viator_logistics_start_description:prince_george_wharf_terminal_gate_15m_prior",
     },
     inclusions: [
       "4-hour swimming pigs & private beach club experience",
@@ -2666,6 +2675,8 @@ export const PILOT_VERIFIED_TOUR_RECORDS: DurableTourRecord[] = [
       pickupFulfillmentType: "pier_pickup",
       viatorProductCode: "5553274P1",
       verifiedPortSlug: "cozumel",
+      checkInCutoffMinutes: 15,
+      checkInEvidenceSource: "viator_logistics_start_description:puerta_maya_ssa_excursion_gate_15m_prior",
     },
     inclusions: [
       "3.5-hour ATV jungle & cenote tour",
@@ -2860,6 +2871,8 @@ export const PILOT_VERIFIED_TOUR_RECORDS: DurableTourRecord[] = [
       pickupFulfillmentType: "pier_pickup",
       viatorProductCode: "62963P76",
       verifiedPortSlug: "roatan",
+      checkInCutoffMinutes: 15,
+      checkInEvidenceSource: "viator_logistics_start_description:coxen_hole_mahogany_bay_excursion_gate_15m_prior",
     },
     inclusions: [
       "16-line canopy zip line & monkey/sloth sanctuary",
@@ -3061,6 +3074,8 @@ export const PILOT_VERIFIED_TOUR_RECORDS: DurableTourRecord[] = [
       verifiedPortSlug: "grand-cayman",
       tenderPort: true,
       tenderClearanceMinutes: 45,
+      checkInCutoffMinutes: 15,
+      checkInEvidenceSource: "viator_logistics_start_description:royal_watler_tender_terminal_15m_prior",
     },
     inclusions: [
       "3.5-hour Stingray City, Starfish Point & Coral Reef Snorkel",
@@ -3237,6 +3252,8 @@ export const PILOT_VERIFIED_TOUR_RECORDS: DurableTourRecord[] = [
       viatorPartnerPid: "P00306962",
       viatorMcid: "42383",
       commissionStatus: "active_verified_viator_partner",
+      checkInCutoffMinutes: 15,
+      checkInEvidenceSource: "viator_logistics_pickup_window:french_quarter_hotel_curb_15m_prior",
     },
     inclusions: [
       "Guided New Orleans City & Cemetery sightseeing tour",
@@ -3401,6 +3418,8 @@ export const PILOT_VERIFIED_TOUR_RECORDS: DurableTourRecord[] = [
       viatorPartnerPid: "P00306962",
       viatorMcid: "42383",
       commissionStatus: "active_verified_viator_partner",
+      checkInCutoffMinutes: 15,
+      checkInEvidenceSource: "viator_logistics_start_description:gray_line_lighthouse_400_toulouse_st_15m_prior",
     },
     inclusions: [
       "2-hour guided French Quarter ghost & haunted history walking tour",
@@ -3689,10 +3708,18 @@ export type DurableCatalogQueryFilter = {
   capabilityTier?: TourCapabilityTier;
   category?: string;
   searchQuery?: string;
+  q?: string;
+  pickupMode?: string;
+  maxDurationMinutes?: number;
+  maxPriceCents?: number;
+  commissionAuthorizedOnly?: boolean;
+  freeCancellationOnly?: boolean;
   approvedTourIds?: string[];
   includeDiscoveryOnly?: boolean;
   requireVerifiedCruiseLogistics?: boolean;
+  verifiedTimingOnly?: boolean;
   sortBy?: DurableCatalogSortBy;
+  sort?: DurableCatalogSortBy;
   limit?: number;
   offset?: number;
   page?: number;
@@ -3732,10 +3759,13 @@ export function hasVerifiedCruisePortLogistics(rec: DurableTourRecord): boolean 
 export type DurableCatalogQueryResult = {
   records: DurableTourRecord[];
   totalMatched: number;
-  storageSource: "postgres" | "snapshot_hydrated_to_postgres" | "local_snapshot";
   limit: number;
   offset: number;
+  page?: number;
+  totalPages?: number;
   hasMore: boolean;
+  categoriesAvailable?: string[];
+  storageSource: "postgres" | "snapshot_hydrated_to_postgres" | "local_snapshot";
   nextOffset: number | null;
   executedInSql: boolean;
   rowsLoadedIntoApp: number;
@@ -3887,16 +3917,38 @@ export async function queryDurableTourCatalog(
 ): Promise<DurableCatalogQueryResult> {
   const resolvedDest = filter.destinationSlug
     ? resolveEarthOSDestinationNode(filter.destinationSlug)?.destinationSlug ||
-      filter.destinationSlug.toLowerCase()
+      filter.destinationSlug.trim().toLowerCase()
     : null;
   const resolvedPort = filter.portSlug
-    ? resolveEarthOSDestinationNode(filter.portSlug)?.portSlug || filter.portSlug.toLowerCase()
+    ? resolveEarthOSDestinationNode(filter.portSlug)?.portSlug ||
+      filter.portSlug.trim().toLowerCase()
     : null;
   const approvedList =
     Array.isArray(filter.approvedTourIds) && filter.approvedTourIds.length > 0
       ? Array.from(new Set(filter.approvedTourIds.map((id) => id.trim().toLowerCase()).filter(Boolean)))
       : null;
-
+  const searchNorm = filter.q && filter.q.trim() ? filter.q.trim().toLowerCase() : null;
+  const categoryNorm =
+    filter.category && filter.category.trim() && filter.category.trim().toLowerCase() !== "all"
+      ? filter.category
+          .trim()
+          .toLowerCase()
+          .replace(/\s+(?:tours|excursions)$/i, "")
+      : null;
+  const pickupMode =
+    filter.pickupMode && filter.pickupMode !== "any" ? filter.pickupMode : null;
+  const maxDuration =
+    typeof filter.maxDurationMinutes === "number" &&
+    Number.isFinite(filter.maxDurationMinutes) &&
+    filter.maxDurationMinutes > 0
+      ? Math.round(filter.maxDurationMinutes)
+      : null;
+  const maxPriceCents =
+    typeof filter.maxPriceCents === "number" &&
+    Number.isFinite(filter.maxPriceCents) &&
+    filter.maxPriceCents > 0
+      ? Math.round(filter.maxPriceCents)
+      : null;
   const requestedLimit =
     typeof filter.limit === "number" && Number.isFinite(filter.limit) && filter.limit > 0
       ? Math.floor(filter.limit)
@@ -3910,7 +3962,7 @@ export async function queryDurableTourCatalog(
           requestedLimit !== null
         ? (Math.floor(filter.page) - 1) * requestedLimit
         : 0;
-  const sortBy: DurableCatalogSortBy = filter.sortBy || "recommended";
+  const sortBy: DurableCatalogSortBy = filter.sortBy || filter.sort || "recommended";
 
   if (shouldUsePostgres()) {
     try {
@@ -3930,6 +3982,11 @@ export async function queryDurableTourCatalog(
 
       if (filter.includeDiscoveryOnly === false) {
         whereClauses.push("capability_tier <> 'discovery_only'");
+      }
+      if (filter.verifiedTimingOnly === true) {
+        whereClauses.push(
+          "meeting_point_name IS NOT NULL AND duration_minutes IS NOT NULL AND duration_minutes > 0 AND COALESCE(constraints_json->>'transferTimeSource', '') IN ('verified_pier_pickup', 'verified_meeting_point') AND COALESCE(service_details_json->>'checkInCutoffMinutes', '') <> ''",
+        );
       }
       if (resolvedDest) {
         const pDest = addParam(resolvedDest);
@@ -4080,6 +4137,20 @@ export async function queryDurableTourCatalog(
     if (filter.includeDiscoveryOnly === false && rec.capabilityTier === "discovery_only") {
       return false;
     }
+    if (filter.verifiedTimingOnly === true) {
+      const hasCheckIn =
+        typeof (rec.serviceDetails as any)?.checkInCutoffMinutes === "number" ||
+        typeof (rec.serviceDetails as any)?.checkInBeforeDepartureMinutes === "number";
+      const hasTransfer =
+        rec.constraints?.transferTimeSource === "verified_pier_pickup" ||
+        rec.constraints?.transferTimeSource === "verified_meeting_point";
+      if (!rec.meetingPointName || !rec.durationMinutes || rec.durationMinutes <= 0 || !hasCheckIn || !hasTransfer) {
+        return false;
+      }
+    }
+    if (filter.commissionAuthorizedOnly === true && !rec.commissionAuthorized) {
+      return false;
+    }
     if (resolvedDest && rec.destinationSlug.toLowerCase() !== resolvedDest) {
       return false;
     }
@@ -4104,6 +4175,38 @@ export async function queryDurableTourCatalog(
     if (searchLower) {
       const hay = `${rec.title} ${rec.summary || ""} ${rec.category} ${rec.providerProductCode} ${rec.operatorName || ""}`.toLowerCase();
       if (!hay.includes(searchLower)) return false;
+    }
+    if (searchNorm) {
+      const hay = `${rec.title} ${rec.summary || ""} ${rec.operatorName || ""} ${rec.providerProductCode} ${rec.category}`.toLowerCase();
+      if (!hay.includes(searchNorm)) return false;
+    }
+    if (pickupMode) {
+      const optMatch = (rec.productOptions || []).some((o) => {
+        if (pickupMode === "hotel_pickup") {
+          return o.pickupFulfillmentType === "hotel_pickup" || o.includesPickup === true;
+        }
+        return o.pickupFulfillmentType === pickupMode;
+      });
+      const recMatch =
+        rec.pickupFulfillmentType === pickupMode ||
+        (pickupMode === "pier_pickup" && rec.pickupType === "CRUISE_PIER_PICKUP") ||
+        (pickupMode === "hotel_pickup" &&
+          (rec.hasHotelPickup === true ||
+            rec.pickupType === "HOTEL_PICKUP" ||
+            rec.pickupType === "HOTEL_OR_MEETING_POINT")) ||
+        (pickupMode === "downtown_shuttle_departure" &&
+          rec.pickupType === "DOWNTOWN_SHUTTLE_DEPARTURE") ||
+        (pickupMode === "self_drive" && rec.pickupType === "MEETING_POINT_ONLY");
+      if (!recMatch && !optMatch) return false;
+    }
+    if (maxDuration !== null) {
+      if (rec.durationMinutes === null || rec.durationMinutes > maxDuration) return false;
+    }
+    if (maxPriceCents !== null) {
+      if (rec.fromPriceCents === null || rec.fromPriceCents > maxPriceCents) return false;
+    }
+    if (filter.freeCancellationOnly === true && rec.freeCancellation !== true) {
+      return false;
     }
     if (approvedSet) {
       const idMatch = approvedSet.has(rec.tourId.toLowerCase());

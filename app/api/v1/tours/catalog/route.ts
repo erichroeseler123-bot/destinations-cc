@@ -14,6 +14,7 @@ import {
   runIncrementalViatorCatalogRefresh,
   runUniversalCatalogIngestion,
 } from "@/lib/dcc/catalog/ingest";
+import { buildCatalogTourDirectHandoff } from "@/lib/dcc/catalog/matcher";
 import { authenticateCommerceAdminRequest } from "@/lib/dcc/commerce/opaqueAttributionLedger";
 
 export const dynamic = "force-dynamic";
@@ -56,6 +57,15 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const surface = sp.get("surface") || "cruisepromenade";
+    const propertySlug = sp.get("propertySlug") || sp.get("property") || undefined;
+    const placementId = sp.get("placementId") || sp.get("placement") || undefined;
+    const sailingCode = sp.get("sailing") || sp.get("sailingCode") || undefined;
+    const date = sp.get("date") || undefined;
+    const adultsRaw = sp.get("adults");
+    const adults = adultsRaw && Number.isFinite(Number(adultsRaw)) ? Number(adultsRaw) : 2;
+    const isTest = sp.get("isTest") === "true" || sp.get("isTest") === "1";
+
     const singleId = sp.get("id") || sp.get("tourId") || sp.get("alias");
     if (singleId) {
       const tour = await getDurableTourByIdOrAlias(singleId);
@@ -65,8 +75,17 @@ export async function GET(request: NextRequest) {
           { status: 404, headers: CORS_HEADERS },
         );
       }
+      const bookingPath = buildCatalogTourDirectHandoff(tour, {
+        surface,
+        propertySlug,
+        placementId,
+        sailingCode,
+        date,
+        adults,
+        isTest,
+      });
       return NextResponse.json(
-        { ok: true, readOnly: true, tour },
+        { ok: true, readOnly: true, tour: { ...tour, bookingPath }, bookingPath },
         { status: 200, headers: CORS_HEADERS },
       );
     }
@@ -117,6 +136,19 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const enrichedRecords = result.records.map((rec) => ({
+      ...rec,
+      bookingPath: buildCatalogTourDirectHandoff(rec, {
+        surface,
+        propertySlug,
+        placementId,
+        sailingCode,
+        date,
+        adults,
+        isTest,
+      }),
+    }));
+
     return NextResponse.json(
       {
         ok: true,
@@ -127,12 +159,14 @@ export async function GET(request: NextRequest) {
         fullCatalogLoadedIntoApp: result.fullCatalogLoadedIntoApp,
         sqlQueryMs: result.sqlQueryMs,
         totalMatched: result.totalMatched,
-        count: result.records.length,
+        count: enrichedRecords.length,
+        returnedCount: enrichedRecords.length,
         limit: result.limit,
         offset: result.offset,
         hasMore: result.hasMore,
         nextOffset: result.nextOffset,
-        records: result.records,
+        records: enrichedRecords,
+        tours: enrichedRecords,
       },
       { status: 200, headers: CORS_HEADERS },
     );

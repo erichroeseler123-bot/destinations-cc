@@ -109,7 +109,12 @@ function getCanonicalPorts(): PortView[] {
 export function getEffectivePorts(): PortView[] {
   try {
     const canonical = getCanonicalPorts();
-    if (canonical.length > 0) return canonical;
+    if (canonical.length > 0) {
+      if (!LEGACY_FALLBACK_ENABLED) return canonical;
+      const seen = new Set(canonical.map((p) => p.slug));
+      const extras = getLegacyPorts().filter((p) => !seen.has(p.slug));
+      return [...canonical, ...extras];
+    }
   } catch {
     // no-op: fall through
   }

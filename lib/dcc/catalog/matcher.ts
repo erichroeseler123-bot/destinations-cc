@@ -49,6 +49,14 @@ export type TripMatchRequest = {
   hotelLng?: number;
   approvedTourIds?: string[];
   category?: string;
+  q?: string;
+  maxDurationMinutes?: number;
+  maxPriceCents?: number;
+  freeCancellationOnly?: boolean;
+  commissionAuthorizedOnly?: boolean;
+  sort?: "recommended" | "price_asc" | "price_desc" | "duration_asc" | "rating_desc";
+  offset?: number;
+  page?: number;
   maxPassengerWeightLbs?: number;
   requiresWheelchair?: boolean;
   shipArrival?: string;
@@ -332,6 +340,15 @@ export type TripMatchResponse = {
     cachedCatalogSearchMs: number;
     shortlistLiveCheckMs: number;
     totalResponseMs: number;
+  };
+  categoriesAvailable?: string[];
+  pagination?: {
+    totalEligible: number;
+    limit: number;
+    offset: number;
+    page: number;
+    totalPages: number;
+    hasMore: boolean;
   };
   options: MatchedTourOption[];
   ineligibleOptions: MatchedTourOption[];
@@ -1444,7 +1461,13 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
     destinationSlug: node.destinationSlug,
     approvedTourIds: input.approvedTourIds,
     category: input.category,
+    q: input.q,
+    maxDurationMinutes: input.maxDurationMinutes,
+    maxPriceCents: input.maxPriceCents,
+    freeCancellationOnly: input.freeCancellationOnly,
+    commissionAuthorizedOnly: input.commissionAuthorizedOnly,
     includeDiscoveryOnly: input.includeDiscoveryOnly !== false,
+    limit: 500,
   });
 
   const cachedCatalogSearchMs = Date.now() - tStart;
@@ -1908,10 +1931,18 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
       node.destinationSlug === "st-thomas" ||
       node.destinationSlug === "cozumel" ||
       node.destinationSlug === "roatan" ||
-      node.destinationSlug === "grand-cayman";
+      node.destinationSlug === "grand-cayman" ||
+      node.destinationSlug === "reykjavik";
 
     let cruiseFit: CruiseScheduleFitEvaluation | undefined = undefined;
     if (hasCruiseWindowInput) {
+      const candidateStartTimes = isWinterCaribbeanPort
+        ? selectedProductOption?.scheduledStartTimes?.length
+          ? selectedProductOption.scheduledStartTimes
+          : Array.from(
+              new Set(productOptions.flatMap((o) => o.scheduledStartTimes || [])),
+            ).sort()
+        : [];
       cruiseFit = evaluateCruiseScheduleFit({
         shipArrival: input.shipArrival,
         shipDeparture: input.shipDeparture,
@@ -1926,10 +1957,51 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
         transferEvidenceSource: cruiseVerifiedEvidenceSource,
         applicableBerthOrMeetingPoint: effectiveApplicableBerthOrMeetingPoint,
         planningEstimateTransferMinutes: effectivePlanningEstimateTransferMinutes,
-        verifiedDepartureTimes: isWinterCaribbeanPort
-          ? selectedProductOption?.scheduledStartTimes || []
-          : [],
+        verifiedDepartureTimes: candidateStartTimes,
       });
+      if (
+        cruiseFit.fitStatus === "ineligible" &&
+        isWinterCaribbeanPort &&
+        productOptions.length > 1
+      ) {
+        const compatibleAlternates = sortProductOptionsByPrice(
+          productOptions.filter(
+            (o) =>
+              o.optionCode !== selectedProductOption?.optionCode &&
+              (effectivePickupMode === "any" || o.pickupFulfillmentType === effectivePickupMode),
+          ),
+        );
+        for (const altOpt of compatibleAlternates) {
+          const altDuration = altOpt.durationMinutes ?? rec.durationMinutes;
+          const altFit = evaluateCruiseScheduleFit({
+            shipArrival: input.shipArrival,
+            shipDeparture: input.shipDeparture,
+            allAboardTime: input.allAboardTime,
+            lastTenderTime: input.lastTenderTime,
+            isTenderPort,
+            tenderClearanceMinutes,
+            durationMinutes: altDuration,
+            transferBeforeMinutes: effectiveTransferBeforeMinutes,
+            transferAfterMinutes: effectiveTransferAfterMinutes,
+            transferTimeSource: effectiveTransferTimeSource,
+            transferEvidenceSource: cruiseVerifiedEvidenceSource,
+            applicableBerthOrMeetingPoint: effectiveApplicableBerthOrMeetingPoint,
+            planningEstimateTransferMinutes: effectivePlanningEstimateTransferMinutes,
+            verifiedDepartureTimes: altOpt.scheduledStartTimes || [],
+          });
+          if (altFit.fitStatus !== "ineligible") {
+            selectedProductOption = altOpt;
+            if (altOpt.fromPriceCents !== null) {
+              quotedFromPriceCents = altOpt.fromPriceCents;
+            }
+            if (altOpt.durationMinutes !== null) {
+              quotedDurationMinutes = altOpt.durationMinutes;
+            }
+            cruiseFit = altFit;
+            break;
+          }
+        }
+      }
       if (cruiseFit.fitStatus === "ineligible") {
         suitability = "ineligible";
         score -= 50;
@@ -2804,15 +2876,81 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
     }
   }
 
-  // Re-sort after live check updates
-  evaluated.sort(compareEvaluatedCandidates);
+  // Re-sort after live check updates (respecting explicit sort mode when requested)
+  const sortMode = input.sort || "recommended";
+  if (sortMode === "price_asc") {
+    evaluated.sort((a, b) => {
+      const sa = suitabilityOrder[a.option.suitability];
+      const sb = suitabilityOrder[b.option.suitability];
+      if (sa !== sb) return sa - sb;
+      const pa = a.option.pricing.fromPriceCents ?? Number.MAX_SAFE_INTEGER;
+      const pb = b.option.pricing.fromPriceCents ?? Number.MAX_SAFE_INTEGER;
+      if (pa !== pb) return pa - pb;
+      return compareEvaluatedCandidates(a, b);
+    });
+  } else if (sortMode === "price_desc") {
+    evaluated.sort((a, b) => {
+      const sa = suitabilityOrder[a.option.suitability];
+      const sb = suitabilityOrder[b.option.suitability];
+      if (sa !== sb) return sa - sb;
+      const pa = a.option.pricing.fromPriceCents ?? -1;
+      const pb = b.option.pricing.fromPriceCents ?? -1;
+      if (pa !== pb) return pb - pa;
+      return compareEvaluatedCandidates(a, b);
+    });
+  } else if (sortMode === "duration_asc") {
+    evaluated.sort((a, b) => {
+      const sa = suitabilityOrder[a.option.suitability];
+      const sb = suitabilityOrder[b.option.suitability];
+      if (sa !== sb) return sa - sb;
+      const da = a.option.duration.durationMinutes ?? Number.MAX_SAFE_INTEGER;
+      const db = b.option.duration.durationMinutes ?? Number.MAX_SAFE_INTEGER;
+      if (da !== db) return da - db;
+      return compareEvaluatedCandidates(a, b);
+    });
+  } else if (sortMode === "rating_desc") {
+    evaluated.sort((a, b) => {
+      const sa = suitabilityOrder[a.option.suitability];
+      const sb = suitabilityOrder[b.option.suitability];
+      if (sa !== sb) return sa - sb;
+      const ra = a.option.ratingAverage ?? -1;
+      const rb = b.option.ratingAverage ?? -1;
+      if (ra !== rb) return rb - ra;
+      return compareEvaluatedCandidates(a, b);
+    });
+  } else {
+    evaluated.sort(compareEvaluatedCandidates);
+  }
 
   const shortlistLiveCheckMs = shouldLiveCheck ? Date.now() - tLiveStart : 0;
 
   // 7. Issue traceable booking/referral handoff URLs for eligible options, binding the exact tuple
   const limit = typeof input.limit === "number" && input.limit > 0 ? input.limit : 20;
-  const eligibleOptions: MatchedTourOption[] = [];
+  const offset =
+    typeof input.offset === "number" && input.offset >= 0
+      ? Math.floor(input.offset)
+      : typeof input.page === "number" && input.page >= 1
+        ? (Math.floor(input.page) - 1) * limit
+        : 0;
+  const page = Math.floor(offset / limit) + 1;
+  const allEligibleEvaluated: Array<{ record: DurableTourRecord; option: MatchedTourOption }> = [];
   const ineligibleOptions: MatchedTourOption[] = [];
+  for (const item of evaluated) {
+    if (item.option.suitability === "ineligible") {
+      ineligibleOptions.push(item.option);
+    } else {
+      allEligibleEvaluated.push(item);
+    }
+  }
+  const totalEligible = allEligibleEvaluated.length;
+  const totalRecommended = allEligibleEvaluated.filter(
+    ({ option }) => option.suitability === "recommended",
+  ).length;
+  const totalNeedsConfirmation = allEligibleEvaluated.filter(
+    ({ option }) => option.suitability === "needs_confirmation",
+  ).length;
+  const paginatedEligible = allEligibleEvaluated.slice(offset, offset + limit);
+  const eligibleOptions: MatchedTourOption[] = [];
   const originatingPagePath = `/${surface}/${input.propertySlug || node.destinationSlug}`;
   const effectivePlacementId =
     input.placementId?.trim() ||
@@ -2826,13 +2964,7 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
     referer: input.referer,
   });
 
-  for (const { record, option } of evaluated) {
-    if (option.suitability === "ineligible") {
-      ineligibleOptions.push(option);
-      continue;
-    }
-    if (eligibleOptions.length >= limit) continue;
-
+  for (const { record, option } of paginatedEligible) {
     if (option.capabilityTier !== "discovery_only") {
       if (record.primaryProvider === "gosno") {
         const resortSlug =
@@ -3008,6 +3140,8 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
     (o) => o.cruiseScheduleFit?.fitStatus === "recommended",
   ).length;
 
+  const totalPages = totalEligible > 0 ? Math.ceil(totalEligible / limit) : 0;
+
   return {
     ok: true,
     destination: {
@@ -3031,9 +3165,8 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
     metrics: {
       storageSource: catalogResult.storageSource,
       totalCatalogCandidates: catalogResult.totalMatched,
-      eligibleCount: eligibleOptions.filter((o) => o.suitability === "recommended").length,
-      needsConfirmationCount: eligibleOptions.filter((o) => o.suitability === "needs_confirmation")
-        .length,
+      eligibleCount: totalRecommended,
+      needsConfirmationCount: totalNeedsConfirmation,
       ineligibleCount: ineligibleOptions.length,
       shortlistCheckedCount,
       supportedVerifiedTransferCount,
@@ -3044,7 +3177,93 @@ export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMa
       shortlistLiveCheckMs,
       totalResponseMs: Date.now() - tStart,
     },
+    categoriesAvailable: catalogResult.categoriesAvailable,
+    pagination: {
+      totalEligible,
+      limit,
+      offset,
+      page,
+      totalPages,
+      hasMore: offset + eligibleOptions.length < totalEligible,
+    },
     options: eligibleOptions,
     ineligibleOptions,
   };
 }
+
+export function buildCatalogTourDirectHandoff(
+  record: DurableTourRecord,
+  params?: {
+    surface?: string;
+    propertySlug?: string;
+    placementId?: string;
+    sailingCode?: string;
+    date?: string;
+    adults?: number;
+    isTest?: boolean;
+  },
+): {
+  clickId: string;
+  handoffUrl: string;
+  trackedClickUrl: string;
+  optionCode: string;
+  optionTitle: string;
+  sellerIdentity: string;
+  operatorIdentity: string;
+  capabilityTier: TourCapabilityTier;
+} {
+  const surface = params?.surface || "cruisepromenade";
+  const adults = typeof params?.adults === "number" && params.adults >= 1 ? Math.floor(params.adults) : 2;
+  const propertySlug = params?.propertySlug || record.portSlug || record.destinationSlug;
+  const placementId = params?.placementId || "";
+  const sailingCode = params?.sailingCode || "";
+  const date = params?.date || "";
+  const isTest = Boolean(params?.isTest);
+
+  const selectedOffer = selectChannelOfferForSurface(record, surface);
+  const firstOpt = Array.isArray(record.productOptions) && record.productOptions.length > 0
+    ? sortProductOptionsByPrice(record.productOptions)[0]
+    : null;
+  const optionCode = firstOpt?.optionCode || "DEFAULT";
+  const optionTitle = firstOpt?.title || record.title;
+  const baseUrl = selectedOffer.bookingUrl || record.bookingUrl;
+  const preClickId = generateOpaqueClickId({ isTest });
+
+  let preparedUrl = baseUrl;
+  if (record.primaryProvider === "viator") {
+    preparedUrl = appendViatorAttribution(baseUrl, {
+      preserveExistingCampaign: false,
+      campaign: preClickId,
+    });
+  }
+
+  const sig = signApprovedCheckoutHandoff({
+    clickId: preClickId,
+    offer: record.providerProductCode,
+    option: optionCode,
+    sailing: sailingCode,
+    placementId,
+    property: propertySlug,
+    date,
+    adults: String(adults),
+  });
+
+  const trackedClickUrl = `/api/v1/ads/click?clickId=${encodeURIComponent(preClickId)}&offer=${encodeURIComponent(record.providerProductCode)}&option=${encodeURIComponent(optionCode)}${sailingCode ? `&sailing=${encodeURIComponent(sailingCode)}` : ""}${placementId ? `&placementId=${encodeURIComponent(placementId)}` : ""}&property=${encodeURIComponent(propertySlug)}${date ? `&date=${encodeURIComponent(date)}` : ""}&adults=${encodeURIComponent(String(adults))}&sig=${encodeURIComponent(sig)}${isTest ? "&isTest=true" : ""}&target=${encodeURIComponent(preparedUrl)}`;
+
+  return {
+    clickId: preClickId,
+    handoffUrl: preparedUrl,
+    trackedClickUrl,
+    optionCode,
+    optionTitle,
+    sellerIdentity:
+      selectedOffer.provider === "viator"
+        ? "Viator (Tracked Affiliate Checkout)"
+        : selectedOffer.provider === "fareharbor"
+          ? "FareHarbor Authorized Direct Checkout"
+          : record.operatorName || "Operator Direct",
+    operatorIdentity: record.operatorName || record.primaryProvider,
+    capabilityTier: record.capabilityTier,
+  };
+}
+

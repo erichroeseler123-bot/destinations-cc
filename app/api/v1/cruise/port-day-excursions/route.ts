@@ -168,8 +168,14 @@ export async function POST(request: NextRequest) {
         ? String(body.departureTime || body.selectedDepartureTime)
         : null;
     const timeoutMs =
-      body.timeoutMs !== undefined ? Number(body.timeoutMs) : undefined;
-    const simulateTimeout = Boolean(body.simulateTimeout || body.providerTimeout);
+      body.timeoutMs !== undefined && Number.isFinite(Number(body.timeoutMs))
+        ? Number(body.timeoutMs)
+        : undefined;
+    const simulateTimeout =
+      body.simulateTimeout === true ||
+      body.simulateTimeout === "true" ||
+      body.providerTimeout === true ||
+      body.providerTimeout === "true";
 
     if (!tourId && !productCode) {
       return NextResponse.json(

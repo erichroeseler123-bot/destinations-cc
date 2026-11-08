@@ -1250,6 +1250,36 @@ export function inferShoreExcursionFacets(
 
 function inferCategoryFromTitleAndSummary(title: string, summary: string | null): string {
   const text = `${title} ${summary || ""}`.toLowerCase();
+  if (
+    text.includes("golden circle") ||
+    text.includes("gullfoss") ||
+    text.includes("geysir") ||
+    text.includes("thingvellir") ||
+    text.includes("þingvellir")
+  ) {
+    return "Golden Circle, Geysers & Waterfalls";
+  }
+  if (
+    text.includes("sky lagoon") ||
+    text.includes("blue lagoon") ||
+    text.includes("hvammsvik") ||
+    text.includes("secret lagoon") ||
+    text.includes("geothermal") ||
+    text.includes("hot spring")
+  ) {
+    return "Geothermal Spas & Lagoons";
+  }
+  if (
+    text.includes("south coast") ||
+    text.includes("seljalandsfoss") ||
+    text.includes("skógafoss") ||
+    text.includes("skogafoss") ||
+    text.includes("reynisfjara") ||
+    text.includes("snaefellsnes") ||
+    text.includes("snæfellsnes")
+  ) {
+    return "South Coast, Waterfalls & Volcanoes";
+  }
   if (text.includes("swamp") || text.includes("bayou") || text.includes("airboat")) {
     return "Swamp & Bayou";
   }
