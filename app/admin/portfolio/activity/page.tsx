@@ -113,7 +113,9 @@ export default async function PortfolioActivityPage() {
     endIso: unifiedReport.reportingWindow.endIso,
   });
 
-  const spokeBySiteId = new Map(unifiedReport.spokes.map((s) => [s.siteId, s]));
+  const spokeBySiteId = new Map<string, (typeof unifiedReport.spokes)[number]>(
+    unifiedReport.spokes.map((s) => [s.siteId, s]),
+  );
 
   const siteRows = SITES.map((site) => {
     const siteEvents = portfolioEvents.filter((event: any) => siteOf(event) === site.id);
