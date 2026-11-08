@@ -83,6 +83,7 @@ export interface PortDayEvidenceReviewPriority {
 
 export type PortDayDepartureTimeSource =
   | "scheduled_port_call"
+  | "request_param"
   | "request"
   | "missing"
   | "ambiguous"
@@ -90,16 +91,14 @@ export type PortDayDepartureTimeSource =
 
 export interface ScheduledCruisePortCall {
   sailingId: string;
-  planCode?: string;
+  sailingAliases?: string[];
   shipSlug: string;
   shipName: string;
-  cruiseLine: string;
   portSlug: string;
-  date: string;
-  arrivalTime: string | null;
-  allAboardTime: string | null;
+  sailingDate: string;
+  arrivalTime: string;
+  allAboardTime: string;
   departureTime: string;
-  source: string;
 }
 
 export interface PortDayTimeFitEvaluation {
@@ -1789,6 +1788,8 @@ export function evaluateTourPortDayTimeFit(params: {
       shipArrivalTime: arrivalTime,
       shipAllAboardTime: allAboardTime,
       shipDepartureTime: validShipDepartureTime,
+      departureTimeSource: params.departureTimeSource,
+      allAboardToShipDepartureMinutes,
       earliestDisembarkationTime: formatHhMm(earliestDisembarkMin),
       selectedDepartureTime: departures[0] || null,
       availableDepartureTimes: departures,
@@ -1816,8 +1817,10 @@ export function evaluateTourPortDayTimeFit(params: {
       estimatedBackAtPierTime: null,
       requiredReturnBufferMinutes: profile.requiredReturnBufferMinutes,
       bufferBeforeAllAboardMinutes: null,
+      bufferBeforeShipDepartureMinutes: null,
       returnBufferReconciliation: {
         requiredAllAboardBufferMinutes: profile.requiredReturnBufferMinutes,
+        shipDepartureTime: validShipDepartureTime,
         allAboardToShipDepartureMinutes,
         equivalentShipDepartureBufferMinutes,
         bufferBeforeAllAboardMinutes: null,
@@ -1880,6 +1883,8 @@ export function evaluateTourPortDayTimeFit(params: {
     shipArrivalTime: arrivalTime,
     shipAllAboardTime: allAboardTime,
     shipDepartureTime: validShipDepartureTime,
+    departureTimeSource: params.departureTimeSource,
+    allAboardToShipDepartureMinutes,
     earliestDisembarkationTime: formatHhMm(earliestDisembarkMin),
     selectedDepartureTime: selectedDep,
     availableDepartureTimes: departures,
@@ -1907,8 +1912,10 @@ export function evaluateTourPortDayTimeFit(params: {
     estimatedBackAtPierTime: formatHhMm(backAtPierMin),
     requiredReturnBufferMinutes: profile.requiredReturnBufferMinutes,
     bufferBeforeAllAboardMinutes: bufferBeforeAllAboard,
+    bufferBeforeShipDepartureMinutes: bufferBeforeShipDeparture,
     returnBufferReconciliation: {
       requiredAllAboardBufferMinutes: profile.requiredReturnBufferMinutes,
+      shipDepartureTime: validShipDepartureTime,
       allAboardToShipDepartureMinutes,
       equivalentShipDepartureBufferMinutes,
       bufferBeforeAllAboardMinutes: bufferBeforeAllAboard,
