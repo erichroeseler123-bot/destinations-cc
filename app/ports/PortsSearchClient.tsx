@@ -11,10 +11,18 @@ type Port = {
   city?: string;
   country?: string;
   tags?: string[];
+  aliases?: string[];
+  coverage?: "guide" | "reference";
 };
 
+const PAGE_SIZE = 60;
+
+function normalizeSearch(value: string): string {
+  return value.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+}
+
 function tokenizePort(port: Port): string {
-  return [
+  return normalizeSearch([
     port.name,
     port.slug,
     port.area,
@@ -22,15 +30,16 @@ function tokenizePort(port: Port): string {
     port.city,
     port.country,
     ...(port.tags || []),
+    ...(port.aliases || []),
   ]
     .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
+    .join(" "));
 }
 
 export default function PortsSearchClient({ ports }: { ports: Port[] }) {
   const [query, setQuery] = useState("");
-  const q = query.trim().toLowerCase();
+  const [limit, setLimit] = useState(PAGE_SIZE);
+  const q = normalizeSearch(query);
 
   const filtered = useMemo(() => {
     if (!q) return ports;
@@ -39,12 +48,12 @@ export default function PortsSearchClient({ ports }: { ports: Port[] }) {
 
   const byArea = useMemo(() => {
     const map = new Map<string, Port[]>();
-    for (const p of filtered) {
+    for (const p of filtered.slice(0, limit)) {
       const key = p.area || "Other";
       map.set(key, [...(map.get(key) || []), p]);
     }
     return map;
-  }, [filtered]);
+  }, [filtered, limit]);
 
   const areas = useMemo(
     () => [...byArea.keys()].sort((a, b) => a.localeCompare(b)),
@@ -59,15 +68,19 @@ export default function PortsSearchClient({ ports }: { ports: Port[] }) {
           <p className="text-xs uppercase tracking-[0.22em] text-cyan-300">Browse ports</p>
           <h3 className="text-2xl font-bold text-white">Search embarkation and call ports</h3>
           <p className="max-w-3xl text-sm text-zinc-400">
-            Filter ports by name, region, area, or country, then move into the right embarkation or shore-day guide.
+            Filter ports by name, region, country, or code. Open a detailed guide or a cruise-line port reference.
           </p>
         </div>
 
         <input
           id="ports-search"
+          aria-label="Search cruise ports"
           type="text"
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(event) => {
+            setQuery(event.target.value);
+            setLimit(PAGE_SIZE);
+          }}
           placeholder="Search by port, region, country, or code"
           className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-cyan-600/40"
         />
@@ -76,7 +89,7 @@ export default function PortsSearchClient({ ports }: { ports: Port[] }) {
           <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
             <div className="text-xs uppercase tracking-[0.16em] text-zinc-500">Visible ports</div>
             <div className="mt-2 text-sm font-medium text-zinc-100">
-              Showing {filtered.length} of {ports.length} ports.
+              {filtered.length} of {ports.length} ports match.
             </div>
           </div>
           <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
@@ -109,12 +122,14 @@ export default function PortsSearchClient({ ports }: { ports: Port[] }) {
                   >
                     <div className="text-lg font-bold text-white">{p.name}</div>
                     <div className="mt-2 text-sm text-zinc-400">
-                      {[p.city, p.area, p.country].filter(Boolean).join(" • ") || "Port guide"}
+                      {[...new Set([p.city, p.area, p.country].filter(Boolean))].join(" • ") || "Cruise port"}
                     </div>
                     <div className="mt-3 inline-flex rounded-full border border-white/10 bg-black/20 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-zinc-400">
                       /ports/{p.slug}
                     </div>
-                    <div className="mt-4 text-sm text-cyan-300">Open guide →</div>
+                    <div className="mt-4 text-sm text-cyan-300">
+                      {p.coverage === "reference" ? "Open port reference →" : "Open guide →"}
+                    </div>
                   </Link>
                 ))}
               </div>
@@ -122,6 +137,15 @@ export default function PortsSearchClient({ ports }: { ports: Port[] }) {
           );
         })
       )}
+      {filtered.length > limit ? (
+        <button
+          type="button"
+          onClick={() => setLimit((current) => current + PAGE_SIZE)}
+          className="rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm text-cyan-300 hover:bg-white/10"
+        >
+          Show more ports ({filtered.length - limit} remaining)
+        </button>
+      ) : null}
     </section>
   );
 }
