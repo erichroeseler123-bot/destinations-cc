@@ -79,7 +79,7 @@ test("2. Reykjavík catalog reconciles 1,576 / 1,576 Viator products and paginat
   );
 });
 
-test("3. Port-day shore-excursion engine evaluates Browse All vs Fits My Sailing, keeps Time Fit and Seat Availability separate, and rolls out across all 15 mapped major ports in 4 batches", async () => {
+test("3. Port-day shore-excursion engine marks 388640P9 Needs verification in Browse All, excludes it from Fits My Sailing, rejects past departures, and never generates fallback seat counts or prices", async () => {
   assert.equal(MAPPED_CRUISE_PORT_EXCURSION_PROFILES.length, 15);
   assert.equal(Object.keys(MAPPED_CRUISE_PORT_BATCH_SUMMARY).length, 4);
 
@@ -89,7 +89,7 @@ test("3. Port-day shore-excursion engine evaluates Browse All vs Fits My Sailing
     category: "all",
     shipArrivalTime: "08:00",
     shipAllAboardTime: "17:30",
-    sailingDate: "2026-07-15",
+    sailingDate: "2027-07-15",
     partySize: 2,
     limit: 12,
     offset: 0,
@@ -99,38 +99,112 @@ test("3. Port-day shore-excursion engine evaluates Browse All vs Fits My Sailing
   assert.equal(reykBrowseAll.providerCounts.viator, 1576);
   assert.equal(reykBrowseAll.pagination.fullCatalogLoadedIntoApp, false);
   assert.equal(reykBrowseAll.tours.length, 12);
-  assert.ok(reykBrowseAll.summary.fitsSailingCountOnPage >= 1);
 
-  const reykWhaleLookup = await queryPortDayExcursionCatalog({
+  // Verify 388640P9 in Browse All shows Needs verification and fitsSailing: false
+  const browse388640P9 = await queryPortDayExcursionCatalog({
     portSlug: "reykjavik",
     viewMode: "browse_all",
-    category: "wildlife",
-    search: "7090P9",
+    search: "388640P9",
     shipArrivalTime: "08:00",
     shipAllAboardTime: "17:30",
-    sailingDate: "2026-07-15",
+    sailingDate: "2027-07-15",
     partySize: 2,
     limit: 5,
     offset: 0,
   });
-  const whaleTour = reykWhaleLookup?.tours.find((t) => t.productCode === "7090P9");
-  assert.ok(whaleTour, "Expected 7090P9 whale watching in Reykjavík wildlife catalog");
+  const tour388640P9 = browse388640P9?.tours.find((t) => t.productCode === "388640P9");
+  assert.ok(tour388640P9, "Expected 388640P9 in Browse All");
+  assert.equal(tour388640P9.timeFit.status, "needs_verification");
+  assert.equal(tour388640P9.timeFit.statusLabel, "Needs verification");
+  assert.equal(tour388640P9.timeFit.fitsSailing, false);
+  assert.equal(tour388640P9.timeFit.hasVerifiedMeetingPoint, false);
+  assert.equal(tour388640P9.timeFit.hasVerifiedTransfer, false);
+  assert.equal(tour388640P9.seatAvailability.status, "check_availability");
+  assert.equal(tour388640P9.seatAvailability.remainingSeats, null);
+  assert.equal(tour388640P9.seatAvailability.fromPriceUsd, null);
+
+  // Verify 388640P9 stays out of Fits My Sailing
+  const fits388640P9 = await queryPortDayExcursionCatalog({
+    portSlug: "reykjavik",
+    viewMode: "fits_sailing",
+    search: "388640P9",
+    shipArrivalTime: "08:00",
+    shipAllAboardTime: "17:30",
+    sailingDate: "2027-07-15",
+    partySize: 2,
+    limit: 12,
+    offset: 0,
+  });
+  assert.ok(fits388640P9);
+  assert.equal(
+    fits388640P9.tours.some((t) => t.productCode === "388640P9"),
+    false,
+    "388640P9 must stay out of Fits my sailing"
+  );
+
+  // Verify Fits My Sailing returns verified fitting tours (including 7090P9)
+  const reykFitsSailing = await queryPortDayExcursionCatalog({
+    portSlug: "reykjavik",
+    viewMode: "fits_sailing",
+    shipArrivalTime: "08:00",
+    shipAllAboardTime: "17:30",
+    sailingDate: "2027-07-15",
+    partySize: 2,
+    limit: 12,
+    offset: 0,
+  });
+  assert.ok(reykFitsSailing);
+  assert.ok(reykFitsSailing.tours.length >= 1, "Expected verified fitting tours in Fits my sailing");
+  assert.equal(
+    reykFitsSailing.tours.some((t) => t.productCode === "388640P9"),
+    false
+  );
+  const whaleTour = reykFitsSailing.tours.find((t) => t.productCode === "7090P9");
+  assert.ok(whaleTour, "Expected 7090P9 whale watching in Reykjavík Fits my sailing");
   assert.equal(whaleTour.timeFit.status, "fits");
   assert.equal(whaleTour.timeFit.fitsSailing, true);
   assert.equal(whaleTour.seatAvailability.status, "check_availability");
+  assert.equal(whaleTour.seatAvailability.remainingSeats, null);
+  assert.equal(whaleTour.seatAvailability.fromPriceUsd, null);
   assert.equal(whaleTour.handoff.bookingConfirmationStatus, "tracked_handoff_only");
   assert.ok(whaleTour.handoff.dccTrackedHref.includes("product=7090P9"));
 
-  const liveSeat = await verifyLiveExcursionAvailability({
+  // Past departure rejection test
+  const pastSeat = await verifyLiveExcursionAvailability({
     portSlug: "reykjavik",
     tourId: whaleTour.tourId,
     productCode: "7090P9",
+    optionCode: "TG1",
     date: "2026-07-15",
     partySize: 2,
-    departureTime: whaleTour.timeFit.selectedDepartureTime,
+    departureTime: "09:00",
   });
-  assert.equal(liveSeat.status, "live_verified");
-  assert.equal(liveSeat.available, true);
+  assert.equal(pastSeat.pastDepartureRejected, true);
+  assert.equal(pastSeat.status, "check_availability");
+  assert.equal(pastSeat.statusLabel, "Check availability");
+  assert.equal(pastSeat.available, null);
+  assert.equal(pastSeat.remainingSeats, null);
+  assert.equal(pastSeat.fromPriceUsd, null);
+  assert.equal(pastSeat.options.length, 0);
+
+  // Provider timeout test
+  const timeoutSeat = await verifyLiveExcursionAvailability({
+    portSlug: "reykjavik",
+    tourId: whaleTour.tourId,
+    productCode: "7090P9",
+    optionCode: "TG1",
+    date: "2027-07-15",
+    partySize: 4,
+    departureTime: "09:00",
+    simulateTimeout: true,
+  });
+  assert.equal(timeoutSeat.providerStatus, "timeout");
+  assert.equal(timeoutSeat.status, "check_availability");
+  assert.equal(timeoutSeat.statusLabel, "Check availability");
+  assert.equal(timeoutSeat.available, null);
+  assert.equal(timeoutSeat.remainingSeats, null);
+  assert.equal(timeoutSeat.fromPriceUsd, null);
+  assert.equal(timeoutSeat.options.length, 0);
 
   for (const profile of MAPPED_CRUISE_PORT_EXCURSION_PROFILES) {
     const portCatalog = await queryPortDayExcursionCatalog({

@@ -63,7 +63,7 @@ export default function PortDayExcursionCatalogSection({
   const [sailingDate, setSailingDate] = useState<string>(
     initialSailingDate ||
       initialCatalogData?.sailingWindow.sailingDate ||
-      "2026-07-15"
+      "2027-07-15"
   );
   const [partySize, setPartySize] = useState<number>(
     initialCatalogData?.sailingWindow.partySize || initialPartySize
@@ -154,6 +154,7 @@ export default function PortDayExcursionCatalogSection({
           portSlug,
           tourId: tour.tourId,
           productCode: tour.productCode,
+          optionCode: tour.optionCode,
           date: sailingDate,
           partySize,
           departureTime: tour.timeFit.selectedDepartureTime,

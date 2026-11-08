@@ -3691,11 +3691,43 @@ export type DurableCatalogQueryFilter = {
   searchQuery?: string;
   approvedTourIds?: string[];
   includeDiscoveryOnly?: boolean;
+  requireVerifiedCruiseLogistics?: boolean;
   sortBy?: DurableCatalogSortBy;
   limit?: number;
   offset?: number;
   page?: number;
 };
+
+export function hasVerifiedCruisePortLogistics(rec: DurableTourRecord): boolean {
+  const hasDuration = typeof rec.durationMinutes === "number" && rec.durationMinutes > 0;
+  const hasMeetingPoint =
+    Boolean(rec.meetingPointName && rec.meetingPointName.trim()) &&
+    Boolean(
+      rec.constraints?.applicableBerthOrMeetingPoint &&
+        rec.constraints.applicableBerthOrMeetingPoint.trim(),
+    ) &&
+    rec.pickupFulfillmentType !== "unknown" &&
+    rec.pickupType !== "UNKNOWN" &&
+    rec.provenance?.rawFieldsVerified?.pickupKnown === true;
+  const hasTransfer =
+    (rec.constraints?.transferTimeSource === "verified_pier_pickup" ||
+      rec.constraints?.transferTimeSource === "verified_meeting_point") &&
+    Boolean(
+      rec.constraints?.transferEvidenceSource &&
+        rec.constraints.transferEvidenceSource.trim(),
+    ) &&
+    typeof rec.constraints?.cruiseBufferBeforeMinutes === "number" &&
+    Number.isFinite(rec.constraints.cruiseBufferBeforeMinutes);
+  const hasSchedule =
+    (Array.isArray(rec.productOptions) &&
+      rec.productOptions.some(
+        (opt) =>
+          Array.isArray(opt.scheduledStartTimes) && opt.scheduledStartTimes.length > 0,
+      )) ||
+    (Array.isArray((rec.serviceDetails as any)?.verifiedDepartureTimesLocal) &&
+      (rec.serviceDetails as any).verifiedDepartureTimesLocal.length > 0);
+  return hasDuration && hasMeetingPoint && hasTransfer && hasSchedule;
+}
 
 export type DurableCatalogQueryResult = {
   records: DurableTourRecord[];
@@ -3951,6 +3983,19 @@ export async function queryDurableTourCatalog(
           `(LOWER(tour_id) = ANY(${pApproved}::text[]) OR LOWER(provider_product_code) = ANY(${pApproved}::text[]) OR EXISTS (SELECT 1 FROM jsonb_array_elements_text(compatibility_aliases) a WHERE LOWER(a) = ANY(${pApproved}::text[])))`,
         );
       }
+      if (filter.requireVerifiedCruiseLogistics) {
+        whereClauses.push(
+          `duration_minutes IS NOT NULL AND duration_minutes > 0`,
+          `COALESCE(TRIM(meeting_point_name), '') <> ''`,
+          `COALESCE(TRIM(constraints_json->>'applicableBerthOrMeetingPoint'), '') <> ''`,
+          `COALESCE(constraints_json->>'transferTimeSource', '') IN ('verified_pier_pickup', 'verified_meeting_point')`,
+          `COALESCE(TRIM(constraints_json->>'transferEvidenceSource'), '') <> ''`,
+          `(constraints_json->>'cruiseBufferBeforeMinutes') IS NOT NULL`,
+          `COALESCE(pickup_type, 'UNKNOWN') <> 'UNKNOWN'`,
+          `COALESCE((provenance_json->'rawFieldsVerified'->>'pickupKnown')::boolean, false) = true`,
+          `(jsonb_array_length(COALESCE(product_options_json, '[]'::jsonb)) > 0 OR jsonb_typeof(service_details_json->'verifiedDepartureTimesLocal') = 'array')`,
+        );
+      }
 
       const whereSql = whereClauses.join(" AND ");
       const orderBySql = buildSqlOrderByClause(sortBy);
@@ -3995,7 +4040,12 @@ export async function queryDurableTourCatalog(
           }
           return normalizeCatalogTourPickupAndMeeting(mapPgRowToDurableTourRecord(r)).normalizedRecord;
         })
-        .filter((r) => r.active && !isQuarantinedTourRecord(r));
+        .filter(
+          (r) =>
+            r.active &&
+            !isQuarantinedTourRecord(r) &&
+            (!filter.requireVerifiedCruiseLogistics || hasVerifiedCruisePortLogistics(r)),
+        );
 
       const effectiveLimit = requestedLimit ?? totalMatched;
       const hasMore = requestedOffset + mappedRecords.length < totalMatched;
@@ -4062,6 +4112,9 @@ export async function queryDurableTourCatalog(
       if (!idMatch && !codeMatch && !aliasMatch) {
         return false;
       }
+    }
+    if (filter.requireVerifiedCruiseLogistics && !hasVerifiedCruisePortLogistics(rec)) {
+      return false;
     }
     return true;
   });
