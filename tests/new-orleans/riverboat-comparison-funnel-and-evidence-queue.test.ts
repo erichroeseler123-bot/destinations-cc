@@ -474,7 +474,7 @@ test("New Orleans Riverboat Comparison Funnel & One-Mile Evidence Prioritizer Su
 
   await t.test("5. WNO & FareHarbor webhook strictly separate estimatedCommissionUsd, confirmedEarningsUsd, and payoutsUsd (confirmed commission field never includes an estimate)", async () => {
     const { separateFareHarborCommissionBreakdown } = await import(
-      "../../app/api/v1/commerce/webhooks/fareharbor/route"
+      "../../lib/wno/riverboatComparisonFunnel"
     );
 
     // Case A: BOOKING_CONFIRMED with an estimatedCommission ($13.20) and no paidCommission

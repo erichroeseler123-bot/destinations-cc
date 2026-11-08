@@ -1,5 +1,50 @@
 import { listRecentCorridorEvents } from "@/lib/dcc/telemetry/corridorEvents";
-import { listCommercialOutcomes } from "@/lib/dcc/commerce";
+import { listCommercialOutcomes, type CommercialOutcomeRecord } from "@/lib/dcc/commerce";
+
+export function separateFareHarborCommissionBreakdown(
+  bookingOutcome: Pick<
+    CommercialOutcomeRecord,
+    "eventType" | "estimatedCommission" | "paidCommission"
+  >,
+): {
+  estimatedCommissionUsd: number;
+  confirmedEarningsUsd: number;
+  payoutsUsd: number;
+  commissionStage: "estimated_only" | "confirmed_earned" | "payout_settled";
+} {
+  const estimatedCommissionUsd =
+    typeof bookingOutcome.estimatedCommission?.amount === "number" &&
+    Number.isFinite(bookingOutcome.estimatedCommission.amount)
+      ? bookingOutcome.estimatedCommission.amount
+      : 0;
+  const paidAmount =
+    typeof bookingOutcome.paidCommission?.amount === "number" &&
+    Number.isFinite(bookingOutcome.paidCommission.amount) &&
+    bookingOutcome.paidCommission.amount > 0
+      ? bookingOutcome.paidCommission.amount
+      : 0;
+
+  // Never include an unconfirmed booking estimate inside confirmedEarningsUsd or payoutsUsd
+  const isFulfilledOrReconciled =
+    bookingOutcome.eventType === "BOOKING_FULFILLED" ||
+    bookingOutcome.eventType === "COMMISSION_RECONCILED";
+  const isSettledPayout = bookingOutcome.eventType === "COMMISSION_RECONCILED" && paidAmount > 0;
+
+  const confirmedEarningsUsd = isFulfilledOrReconciled ? paidAmount : 0;
+  const payoutsUsd = isSettledPayout ? paidAmount : 0;
+  const commissionStage = isSettledPayout
+    ? "payout_settled"
+    : confirmedEarningsUsd > 0
+      ? "confirmed_earned"
+      : "estimated_only";
+
+  return {
+    estimatedCommissionUsd,
+    confirmedEarningsUsd,
+    payoutsUsd,
+    commissionStage,
+  };
+}
 
 export const RIVERBOAT_COMPARISON_SLUG = "natchez-vs-city-of-new-orleans-riverboat" as const;
 export const DCC_AUTHORITY_NOLA_RIVERBOATS_SRC = "dcc-authority-nola-riverboats" as const;
@@ -951,10 +996,11 @@ export async function buildRiverboatComparisonFunnelReport(options?: {
     ) {
       continue;
     }
-    const rawPayload =
-      outcome.rawPayload && typeof outcome.rawPayload === "object"
-        ? (outcome.rawPayload as Record<string, unknown>)
-        : {};
+    const outcomeAny = outcome as unknown as Record<string, unknown>;
+    const rawPayload = (outcomeAny.rawPayload || outcomeAny.rawProviderPayload || {}) as Record<
+      string,
+      unknown
+    >;
     const vessel = inferRiverboatVesselFromData({
       productSlug: outcome.bookedProductCode,
       itemId: rawPayload.itemPk || outcome.bookedOption || outcome.bookedProductCode,

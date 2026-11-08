@@ -18,48 +18,9 @@ import {
   type CommercialOutcomeRecord,
 } from "@/lib/dcc/commerce";
 import { appendCorridorEventDurably } from "@/lib/dcc/telemetry/corridorEvents";
+import { separateFareHarborCommissionBreakdown } from "@/lib/wno/riverboatComparisonFunnel";
 
 export const dynamic = "force-dynamic";
-
-export function separateFareHarborCommissionBreakdown(bookingOutcome: CommercialOutcomeRecord): {
-  estimatedCommissionUsd: number;
-  confirmedEarningsUsd: number;
-  payoutsUsd: number;
-  commissionStage: "estimated_only" | "confirmed_earned" | "payout_settled";
-} {
-  const estimatedCommissionUsd =
-    typeof bookingOutcome.estimatedCommission?.amount === "number" &&
-    Number.isFinite(bookingOutcome.estimatedCommission.amount)
-      ? bookingOutcome.estimatedCommission.amount
-      : 0;
-  const paidAmount =
-    typeof bookingOutcome.paidCommission?.amount === "number" &&
-    Number.isFinite(bookingOutcome.paidCommission.amount) &&
-    bookingOutcome.paidCommission.amount > 0
-      ? bookingOutcome.paidCommission.amount
-      : 0;
-
-  // Never include an unconfirmed booking estimate inside confirmedEarningsUsd or payoutsUsd
-  const isFulfilledOrReconciled =
-    bookingOutcome.eventType === "BOOKING_FULFILLED" ||
-    bookingOutcome.eventType === "COMMISSION_RECONCILED";
-  const isSettledPayout = bookingOutcome.eventType === "COMMISSION_RECONCILED" && paidAmount > 0;
-
-  const confirmedEarningsUsd = isFulfilledOrReconciled ? paidAmount : 0;
-  const payoutsUsd = isSettledPayout ? paidAmount : 0;
-  const commissionStage = isSettledPayout
-    ? "payout_settled"
-    : confirmedEarningsUsd > 0
-      ? "confirmed_earned"
-      : "estimated_only";
-
-  return {
-    estimatedCommissionUsd,
-    confirmedEarningsUsd,
-    payoutsUsd,
-    commissionStage,
-  };
-}
 
 async function recordWnoProviderConfirmedRiverboatEvent(args: {
   companyShortname: string;
@@ -76,7 +37,11 @@ async function recordWnoProviderConfirmedRiverboatEvent(args: {
   ) {
     return;
   }
-  const rawPayload = (args.bookingOutcome.rawPayload || {}) as Record<string, unknown>;
+  const outcomeAny = args.bookingOutcome as unknown as Record<string, unknown>;
+  const rawPayload = (outcomeAny.rawPayload || outcomeAny.rawProviderPayload || {}) as Record<
+    string,
+    unknown
+  >;
   const rawItemPk = rawPayload.itemPk != null ? String(rawPayload.itemPk).trim() : "";
   const candidateStr = `${rawItemPk} ${args.bookingOutcome.bookedProductCode || ""} ${args.bookingOutcome.bookedOption || ""}`;
   const matchedRiverboatItem = candidateStr.match(
