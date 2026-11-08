@@ -362,11 +362,13 @@ export const SHARED_MARKET_TEMPLATES: Record<
       secondaryBookingAuthority: "REZGO_TRACKED_CHECKOUT_OR_SEAT_BLOCK",
       activeDirectCheckoutOperatorIds: [
         "alaska-galore-whale-331813P1",
+        "dolphin-jet-boat-tours-466119P3",
         "juneau-tours-whale-watch",
       ],
       activeStorefrontOfferCodes: [
         "331813P1",
         "466119P3",
+        "5857P22",
         "5857SHUTTLE",
         "juneau-tours-whale-watch",
       ],

@@ -389,7 +389,7 @@ export default async function WhaleWatchingPage({
             </div>
           </article>
 
-          {/* Card 2: Approved 466119P3 Whale Watching & Mendenhall Glacier Combo */}
+          {/* Card 2: Approved 466119P3 Mendenhall Glacier Waterfall and Whale Watching Tour (Dolphin Jet Boat Tours) */}
           <article
             data-testid="jfd-offer-466119P3"
             style={{
@@ -404,17 +404,17 @@ export default async function WhaleWatchingPage({
             <div style={{ padding: 24, flex: 1, display: "flex", flexDirection: "column" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
                 <span style={{ fontSize: "0.75rem", fontWeight: 800, color: "var(--accent, #f0b35b)", textTransform: "uppercase" }}>
-                  Approved Checkout · #466119P3
+                  Approved Checkout · #466119P3 · Dolphin Jet Boat Tours
                 </span>
                 <span style={{ fontSize: "0.78rem", color: "#ffd596", fontWeight: 700 }}>
                   {timingStatusLabel}
                 </span>
               </div>
               <h3 style={{ fontSize: "1.25rem", fontWeight: 800, color: "#ffffff", margin: "0 0 8px" }}>
-                Juneau Whale Watching &amp; Mendenhall Glacier Combo
+                Mendenhall Glacier Waterfall and Whale Watching Tour (Dolphin Jet Boat Tours)
               </h3>
               <p style={{ fontSize: "0.88rem", color: "var(--muted)", lineHeight: 1.55, margin: "0 0 14px" }}>
-                Combined Auke Bay whale watching cruise and Mendenhall Glacier / Nugget Falls visit with coordinated valley shuttle transfers.
+                Combined Auke Bay whale watching cruise and Mendenhall Glacier / Nugget Falls visit operated by <strong>Dolphin Jet Boat Tours</strong> (verified Viator supplier for #466119P3; direct referral credit for Juneau Tours &amp; Whale Watch remains pending until match confirmation).
               </p>
 
               <div style={{ marginTop: "auto", paddingTop: 14, borderTop: "1px solid var(--line)", marginBottom: 16 }}>
@@ -422,7 +422,7 @@ export default async function WhaleWatchingPage({
                   ⏱ <strong>Duration:</strong> 5.5 hours (330 min) + 90m multi-leg DCC buffer
                 </div>
                 <div style={{ fontSize: "0.82rem", color: "var(--ice)", marginBottom: 4 }}>
-                  🚐 <strong>Transfers:</strong> Ship to boat, boat to Mendenhall Glacier, return to ship
+                  🚐 <strong>Transfers:</strong> Mt. Roberts Tramway lower parking garage (Dolphin blue &amp; yellow sign)
                 </div>
                 <div style={{ fontSize: "0.82rem", color: "#86efac" }}>
                   ✓ Guaranteed Whale Sightings · USFS entry included
@@ -432,7 +432,7 @@ export default async function WhaleWatchingPage({
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
                 <div>
                   <div style={{ fontSize: "0.72rem", color: "var(--muted)", textTransform: "uppercase" }}>From</div>
-                  <div style={{ fontSize: "1.25rem", fontWeight: 800, color: "var(--accent-strong, #ffd596)" }}>$225</div>
+                  <div style={{ fontSize: "1.25rem", fontWeight: 800, color: "var(--accent-strong, #ffd596)" }}>$199–$225</div>
                 </div>
                 <a
                   href="https://www.viator.com/tours/Juneau/Mendenhall-Glacier-Waterfall-and-Whale-Watching-Tour/d941-466119P3?pid=P00281144&mcid=42383&medium=link&campaign=last-frontier-juneau-whale-mendenhall-combo"
@@ -447,7 +447,7 @@ export default async function WhaleWatchingPage({
             </div>
           </article>
 
-          {/* Card 3: Juneau Tours & Whale Watch (Direct 10% Path Pending + Approved 5857SHUTTLE) */}
+          {/* Card 3: Juneau Tours & Whale Watch (Direct 10% Path & Referral Credit Pending Match Confirmation + Approved 5857SHUTTLE) */}
           <article
             data-testid="jfd-offer-juneau-tours-direct-pending"
             style={{
@@ -465,22 +465,22 @@ export default async function WhaleWatchingPage({
                   Juneau Tours &amp; Whale Watch
                 </span>
                 <span style={{ fontSize: "0.75rem", color: "#ffd596", fontWeight: 700 }}>
-                  Direct 10% Path Pending
+                  Direct Referral Credit Pending
                 </span>
               </div>
               <h3 style={{ fontSize: "1.25rem", fontWeight: 800, color: "#ffffff", margin: "0 0 8px" }}>
-                Juneau Tours &amp; Whale Watch (Direct Rezgo / Seat-Block Slot + Express Shuttle)
+                Juneau Tours &amp; Whale Watch (Viator #5857 Prefix + Express Shuttle)
               </h3>
               <p style={{ fontSize: "0.88rem", color: "var(--muted)", lineHeight: 1.55, margin: "0 0 14px" }}>
-                Direct 10% Rezgo checkout link or exclusive reserved seat block will go live as soon as owner checkout approval is finalized. Today, book the approved Mendenhall Express (#5857SHUTTLE) or Whale + Glacier Combo (#466119P3).
+                Viator product records confirm <strong>Juneau Tours &amp; Whale Watch</strong> operates prefix <code>5857</code> (<code>#5857SHUTTLE</code> Mendenhall Glacier Express, <code>#5857P22</code> Mendenhall Glacier Park &amp; Ultimate Whale Watch Combo, and <code>#5857P23</code> Ultimate Juneau Whale Watch), while <code>#466119P3</code> is supplied by <strong>Dolphin Jet Boat Tours</strong>. Direct 10% Rezgo / seat-block referral credit stays pending until the operator match is confirmed.
               </p>
 
               <div style={{ marginTop: "auto", paddingTop: 14, borderTop: "1px solid var(--line)", marginBottom: 16 }}>
                 <div style={{ fontSize: "0.82rem", color: "var(--ice)", marginBottom: 4 }}>
-                  ⏱ <strong>Status:</strong> Pending approved direct Rezgo / seat-block checkout path
+                  ⏱ <strong>Status:</strong> Direct referral credit pending operator match confirmation
                 </div>
                 <div style={{ fontSize: "0.82rem", color: "var(--ice)", marginBottom: 4 }}>
-                  🚐 <strong>Approved Today:</strong> #5857SHUTTLE ($80) &amp; #466119P3 ($225)
+                  🚐 <strong>Verified 5857 Products:</strong> #5857SHUTTLE ($79–$80) &amp; #5857P22 ($199)
                 </div>
                 <div style={{ fontSize: "0.82rem", color: "#ffd596" }}>
                   ✓ 15-minute hold &amp; manual dispatch (&ldquo;Booking requested&rdquo;) ready in v0.3
@@ -490,7 +490,7 @@ export default async function WhaleWatchingPage({
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
                 <div>
                   <div style={{ fontSize: "0.72rem", color: "var(--muted)", textTransform: "uppercase" }}>Shuttle From</div>
-                  <div style={{ fontSize: "1.25rem", fontWeight: 800, color: "var(--accent-strong, #ffd596)" }}>$80</div>
+                  <div style={{ fontSize: "1.25rem", fontWeight: 800, color: "var(--accent-strong, #ffd596)" }}>$79–$80</div>
                 </div>
                 <a
                   href="https://www.viator.com/tours/Juneau/Mendenhall-Glacier-Express/d941-5857SHUTTLE?pid=P00281144&mcid=42383&medium=link&campaign=last-frontier-juneau-mendenhall-shuttle"

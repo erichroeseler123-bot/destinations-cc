@@ -209,12 +209,13 @@ export default async function DccJuneauHelicopterCanceledGuidePage({
                 Option 3 · 7.0+ Hours Left (Full Port Day)
               </span>
               <h3 className="text-lg font-bold text-white">
-                5.5-Hour Whale + Mendenhall Combo (466119P3 · $225)
+                5.5-Hour Waterfall &amp; Whale Combo (466119P3 · Dolphin Jet Boat Tours · $199–$225)
               </h3>
               <p className="text-xs leading-6 text-white/80">
                 If your morning flight was canceled early on a long port call (e.g.,
                 08:00–21:00), combine both Auke Bay whale watching and Mendenhall
-                Glacier in one coordinated shore block.
+                Glacier in one coordinated shore block operated by{" "}
+                <strong>Dolphin Jet Boat Tours</strong> (Viator #466119P3).
               </p>
               <a
                 href={`https://www.lastfrontiershoreexcursions.com/juneau/whale-watching?flight_canceled=1&src=dcc-juneau-flight-canceled&offer=466119P3${partnerSuffix}`}

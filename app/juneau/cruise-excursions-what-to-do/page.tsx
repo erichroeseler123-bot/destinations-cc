@@ -220,10 +220,10 @@ export default async function JuneauShortPortCallGuidePage({
                 </span>
               </div>
               <h3 className="text-lg font-bold text-white">
-                Whale Watching + Mendenhall Combo ($225)
+                Mendenhall Glacier Waterfall &amp; Whale Watching (Dolphin Jet Boat Tours · $199–$225)
               </h3>
               <p className="text-xs leading-6 text-white/80">
-                330 min duration requires a <strong>7.5+ hour port call</strong> (such as
+                330 min duration (Viator supplier: <strong>Dolphin Jet Boat Tours</strong>) requires a <strong>7.5+ hour port call</strong> (such as
                 Royal Princess 08:00–21:00 or Celebrity Edge 07:30–19:00). Do not book
                 on a 6-hour morning call.
               </p>

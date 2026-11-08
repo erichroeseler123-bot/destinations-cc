@@ -66,6 +66,134 @@ export interface OperatorDirectDealConfig {
   unsoldSeatReleaseHoursBeforeDeparture?: number | null;
 }
 
+export interface JuneauProductSupplierReconciliationRecord {
+  productCode: string;
+  title: string;
+  viatorProductUrl: string;
+  verifiedViatorSupplierName: string;
+  operatorId: string;
+  relationshipToJuneauToursWhaleWatch:
+    | "separate_viator_supplier_unconfirmed_direct_match"
+    | "verified_same_operator_viator_5857_prefix"
+    | "separate_viator_supplier";
+  juneauToursOperatorConfirmationStatus:
+    | "pending_operator_confirmation"
+    | "pending_direct_checkout_confirmation"
+    | "not_applicable";
+  directReferralCreditStatus:
+    | "pending_until_match_confirmed"
+    | "viator_affiliate_only";
+  directReferralCreditEligible: boolean;
+  activeCheckoutChannel: DirectCheckoutBookingPath;
+  meetingPointSummary: string;
+  reconciliationNote: string;
+}
+
+export const JUNEAU_PRODUCT_SUPPLIER_RECONCILIATION: Record<
+  string,
+  JuneauProductSupplierReconciliationRecord
+> = {
+  "466119P3": {
+    productCode: "466119P3",
+    title: "Mendenhall Glacier Waterfall and Whale Watching Tour",
+    viatorProductUrl:
+      "https://www.viator.com/tours/Juneau/Mendenhall-Glacier-Waterfall-and-Whale-Watching-Tour/d941-466119P3",
+    verifiedViatorSupplierName: "Dolphin Jet Boat Tours",
+    operatorId: "dolphin-jet-boat-tours-466119P3",
+    relationshipToJuneauToursWhaleWatch:
+      "separate_viator_supplier_unconfirmed_direct_match",
+    juneauToursOperatorConfirmationStatus: "pending_operator_confirmation",
+    directReferralCreditStatus: "pending_until_match_confirmed",
+    directReferralCreditEligible: false,
+    activeCheckoutChannel: "VIATOR_APPROVED_CHECKOUT",
+    meetingPointSummary:
+      "Mount Roberts Tramway lower parking garage — look for a Dolphin representative with a blue sign and yellow letters 15 minutes before departure.",
+    reconciliationNote:
+      "Viator product d941-466119P3 lists Dolphin Jet Boat Tours as the verified supplier (along with 466119P2 and 466119P4). Juneau Tours & Whale Watch operates under Viator supplier prefix 5857 (5857P22, 5857P23, 5857SHUTTLE). Checkouts on 466119P3 route via Viator affiliate attribution for Dolphin Jet Boat Tours, and direct referral credit for Juneau Tours & Whale Watch remains pending until operator confirmation of any sub-charter or product match.",
+  },
+  "5857P22": {
+    productCode: "5857P22",
+    title: "Mendenhall Glacier Park and Ultimate Whale Watch Combo",
+    viatorProductUrl:
+      "https://www.viator.com/tours/Juneau/Whale-Watch-and-Mendenhall-Glacier-Combo-Tour/d941-5857P22",
+    verifiedViatorSupplierName: "Juneau Tours & Whale Watch",
+    operatorId: "juneau-tours-whale-watch",
+    relationshipToJuneauToursWhaleWatch:
+      "verified_same_operator_viator_5857_prefix",
+    juneauToursOperatorConfirmationStatus:
+      "pending_direct_checkout_confirmation",
+    directReferralCreditStatus: "pending_until_match_confirmed",
+    directReferralCreditEligible: false,
+    activeCheckoutChannel: "VIATOR_APPROVED_CHECKOUT",
+    meetingPointSummary:
+      "Under the cables of the Goldbelt Mount Roberts Tramway — Juneau Tours & Whale Watch representatives wearing bright blue hats holding 'Juneau Tours and Whale Watch' signs.",
+    reconciliationNote:
+      "Verified Juneau Tours & Whale Watch combo listing on Viator (5857P22, 300 min). Direct 10% Rezgo / seat-block referral credit remains pending until direct checkout confirmation is finalized with the operator.",
+  },
+  "5857P23": {
+    productCode: "5857P23",
+    title: "Ultimate Juneau Whale Watch",
+    viatorProductUrl:
+      "https://www.viator.com/tours/Juneau/Juneau-Whale-Watching-Tour/d941-5857P23",
+    verifiedViatorSupplierName: "Juneau Tours & Whale Watch",
+    operatorId: "juneau-tours-whale-watch",
+    relationshipToJuneauToursWhaleWatch:
+      "verified_same_operator_viator_5857_prefix",
+    juneauToursOperatorConfirmationStatus:
+      "pending_direct_checkout_confirmation",
+    directReferralCreditStatus: "pending_until_match_confirmed",
+    directReferralCreditEligible: false,
+    activeCheckoutChannel: "VIATOR_APPROVED_CHECKOUT",
+    meetingPointSummary:
+      "Under the cables of the Goldbelt Mount Roberts Tramway — Juneau Tours & Whale Watch representatives in bright blue hats.",
+    reconciliationNote:
+      "Verified Juneau Tours & Whale Watch standalone whale watching listing on Viator (5857P23, 180 min). Direct referral credit remains pending until operator checkout confirmation.",
+  },
+  "5857SHUTTLE": {
+    productCode: "5857SHUTTLE",
+    title: "Mendenhall Glacier Express Shuttle & Visitor Center",
+    viatorProductUrl:
+      "https://www.viator.com/tours/Juneau/Mendenhall-Glacier-Express/d941-5857SHUTTLE",
+    verifiedViatorSupplierName: "Juneau Tours & Whale Watch",
+    operatorId: "juneau-tours-whale-watch",
+    relationshipToJuneauToursWhaleWatch:
+      "verified_same_operator_viator_5857_prefix",
+    juneauToursOperatorConfirmationStatus:
+      "pending_direct_checkout_confirmation",
+    directReferralCreditStatus: "pending_until_match_confirmed",
+    directReferralCreditEligible: false,
+    activeCheckoutChannel: "VIATOR_APPROVED_CHECKOUT",
+    meetingPointSummary:
+      "Franklin Dock / Mount Roberts Tramway parking plaza — Juneau Tours Blue Bus / Trolley representative.",
+    reconciliationNote:
+      "Verified Juneau Tours & Whale Watch glacier shuttle listing on Viator (5857SHUTTLE, 180 min). Direct referral credit remains pending until operator checkout confirmation.",
+  },
+  "331813P1": {
+    productCode: "331813P1",
+    title: "Small-Group Juneau Whale Watching Cruise",
+    viatorProductUrl:
+      "https://www.viator.com/tours/Juneau/Whale-Tours-in-Juneau-Alaska/d941-331813P1",
+    verifiedViatorSupplierName: "Alaska Galore Tours",
+    operatorId: "alaska-galore-whale-331813P1",
+    relationshipToJuneauToursWhaleWatch: "separate_viator_supplier",
+    juneauToursOperatorConfirmationStatus: "not_applicable",
+    directReferralCreditStatus: "viator_affiliate_only",
+    directReferralCreditEligible: false,
+    activeCheckoutChannel: "VIATOR_APPROVED_CHECKOUT",
+    meetingPointSummary:
+      "Mount Roberts Tramway Parking Plaza (Franklin Dock) — Alaska Galore Tours shuttle to Auke Bay.",
+    reconciliationNote:
+      "Verified Alaska Galore Tours small-group whale watching listing on Viator (331813P1, 210 min).",
+  },
+};
+
+export function resolveJuneauProductSupplierReconciliation(
+  productCode: string,
+): JuneauProductSupplierReconciliationRecord | null {
+  const normalized = productCode.trim().toUpperCase();
+  return JUNEAU_PRODUCT_SUPPLIER_RECONCILIATION[normalized] ?? null;
+}
+
 export const OPERATOR_DIRECT_CHECKOUT_REGISTRY: Record<string, OperatorDirectDealConfig> = {
   "juneau-tours-whale-watch": {
     operatorId: "juneau-tours-whale-watch",
@@ -74,7 +202,7 @@ export const OPERATOR_DIRECT_CHECKOUT_REGISTRY: Record<string, OperatorDirectDea
     bookingPath: "REZGO_TRACKED_CHECKOUT",
     directCheckoutEnabled: false,
     pendingReason:
-      "Pending owner sign-off today on 10% direct deal (Choice 1: tracked Rezgo checkout link / Rezgo reseller connection; Choice 2: exclusive reserved seat block with manual dispatch confirmation).",
+      "Pending owner sign-off and operator product match confirmation on 10% direct deal (Choice 1: tracked Rezgo checkout link / Rezgo reseller connection; Choice 2: exclusive reserved seat block with manual dispatch confirmation). Viator records confirm Juneau Tours & Whale Watch operates prefix 5857 (5857P22, 5857P23, 5857SHUTTLE), while 466119P3 is supplied by Dolphin Jet Boat Tours; direct referral credit remains pending until match confirmation.",
     seatLockSource: "RESERVED_SEAT_BLOCK",
     supports15MinuteHold: true,
     manualDispatchRequired: true,
@@ -85,6 +213,23 @@ export const OPERATOR_DIRECT_CHECKOUT_REGISTRY: Record<string, OperatorDirectDea
     providerConfirmedSeats: true,
     exclusiveSeatBlockCapacity: 12,
     unsoldSeatReleaseHoursBeforeDeparture: 2,
+  },
+  "dolphin-jet-boat-tours-466119P3": {
+    operatorId: "dolphin-jet-boat-tours-466119P3",
+    operatorName: "Dolphin Jet Boat Tours (Approved Viator #466119P3)",
+    market: "juneau",
+    bookingPath: "VIATOR_APPROVED_CHECKOUT",
+    directCheckoutEnabled: true,
+    pendingReason:
+      "Viator lists Dolphin Jet Boat Tours as the supplier for d941-466119P3. Direct referral credit for Juneau Tours & Whale Watch is held pending until any operator relationship or product match is confirmed.",
+    seatLockSource: "PROVIDER_CHECKOUT",
+    supports15MinuteHold: true,
+    manualDispatchRequired: false,
+    commissionRateDecimal: 0.08,
+    commissionBasis: "GROSS_RETAIL",
+    paymentAndRefundHandler: "VIATOR_MERCHANT",
+    credentialScope: "PUBLIC_TRACKED_LINK",
+    providerConfirmedSeats: false,
   },
   "alaska-galore-whale-331813P1": {
     operatorId: "alaska-galore-whale-331813P1",

@@ -56,11 +56,12 @@ const APPROVED_WHALE_OFFERS = [
   },
   {
     code: "466119P3",
-    title: "Juneau Whale Watching & Mendenhall Glacier Combo",
-    operator: "Juneau Tours & Whale Watch (Approved Viator Checkout)",
+    title: "Mendenhall Glacier Waterfall and Whale Watching Tour",
+    operator:
+      "Dolphin Jet Boat Tours (Verified Viator Supplier — Direct Referral Credit Pending Match Confirmation)",
     durationMinutes: 330,
     durationLabel: "5.5 hours dock-to-dock",
-    priceLabel: "From $225 / adult",
+    priceLabel: "From $199–$225 / adult",
     providerConfirmedSeats: false,
     providerSeatCount: null,
     checkoutHref:
@@ -71,10 +72,11 @@ const APPROVED_WHALE_OFFERS = [
   {
     code: "5857SHUTTLE",
     title: "Mendenhall Glacier Express Shuttle & Visitor Center",
-    operator: "Juneau Tours (Approved Viator Checkout)",
+    operator:
+      "Juneau Tours & Whale Watch (Viator #5857SHUTTLE — Direct Referral Credit Pending Confirmation)",
     durationMinutes: 180,
     durationLabel: "3.0 hours dock-to-dock",
-    priceLabel: "From $80 / adult",
+    priceLabel: "From $79–$80 / adult",
     providerConfirmedSeats: false,
     providerSeatCount: null,
     checkoutHref:
@@ -437,21 +439,21 @@ export default async function JuneauWhaleWatchingToursPage({
             ))}
           </div>
 
-          {/* Pending Direct Checkout Path: Juneau Tours & Whale Watch (10% Direct Deal) */}
+          {/* Pending Direct Checkout Path: Juneau Tours & Whale Watch (10% Direct Deal + 466119P3 Supplier Reconciliation) */}
           <div
             data-testid="dcc-juneau-tours-pending-direct"
             className="rounded-2xl border border-amber-400/35 bg-amber-500/10 p-5 space-y-2"
           >
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="text-xs font-black uppercase tracking-wider text-amber-200">
-                Operator-by-Operator Direct Rollout · Juneau Tours &amp; Whale Watch
+                Supplier Reconciliation &amp; Direct Rollout · Juneau Tours &amp; Whale Watch vs. Dolphin Jet Boat Tours (466119P3)
               </span>
               <span className="rounded-full border border-amber-300/40 bg-black/40 px-3 py-0.5 text-[11px] font-bold text-amber-200">
-                Pending Approved Direct Checkout Path (10% Rezgo / Exclusive Seat Block)
+                Direct Referral Credit Pending Match Confirmation
               </span>
             </div>
             <p className="text-xs text-white/85 leading-6">
-              <strong>Juneau Tours &amp; Whale Watch</strong> direct checkout (tracked Rezgo checkout link, Rezgo reseller API connection, or exclusive reserved seat block at 10% commission) will be enabled as soon as owner checkout approval is finalized. Today, travelers can book the approved Viator combo path (<code>466119P3</code>) or Mendenhall Express Shuttle (<code>5857SHUTTLE</code>) above.
+              <strong>Supplier Record Reconciliation:</strong> Viator product <code>466119P3</code> (<em>Mendenhall Glacier Waterfall and Whale Watching Tour</em>) lists <strong>Dolphin Jet Boat Tours</strong> as the verified supplier, whereas <strong>Juneau Tours &amp; Whale Watch</strong> operates Viator supplier prefix <code>5857</code> (<code>5857P22</code> <em>Mendenhall Glacier Park and Ultimate Whale Watch Combo</em>, <code>5857P23</code> <em>Ultimate Juneau Whale Watch</em>, and <code>5857SHUTTLE</code> <em>Mendenhall Glacier Express</em>). Direct 10% Rezgo / seat-block referral credit for <strong>Juneau Tours &amp; Whale Watch</strong> remains <strong>pending until the operator match is confirmed</strong>; <code>466119P3</code> checkouts route via Viator affiliate attribution for Dolphin Jet Boat Tours.
             </p>
           </div>
         </section>
