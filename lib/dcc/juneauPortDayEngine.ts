@@ -11,6 +11,10 @@ import {
   type EvaluatedCitationFreshness,
   type TravelReferenceNode,
 } from "@/lib/dcc/travelReferenceCore";
+import {
+  resolveJuneauProductSupplierReconciliation,
+  type JuneauProductSupplierReconciliationRecord,
+} from "@/lib/dcc/machine/v03/operatorDirectCheckout";
 
 export type JuneauArrivalDock =
   | "downtown_walkoff"
@@ -235,12 +239,139 @@ export type JuneauTimingBreakdown = {
   mathematicalFeasibilityDisclaimer: string;
 };
 
+export type JuneauEvaluatedCandidateDeparture = {
+  departureId: string;
+  optionId: string;
+  departureTimeLocal: string;
+  checkInDeadlineLocal: string;
+  earliestShoreReadyLocal: string;
+  canReachCheckInAfterDisembark: boolean;
+  checkInLeadMinutes: number;
+  outboundTransferMinutes: number;
+  activityDurationMinutes: number;
+  interActivityTransferMinutes: number;
+  returnTransferMinutes: number;
+  returnDockQueueMinutes: number;
+  estimatedBackAtDockLocal: string;
+  targetAllAboardCutoffLocal: string;
+  allAboardLocal: string;
+  requiredReturnBufferMinutes: number;
+  remainingMinutesAfterBuffer: number;
+  /**
+   * 1. TIME FIT (strictly separate from Seat Availability)
+   */
+  timeFit: {
+    fitsTimeWindow: boolean;
+    status:
+      | "fits_comfortably"
+      | "tight_buffer"
+      | "misses_check_in_after_arrival"
+      | "exceeds_all_aboard_buffer"
+      | "blocked_by_constraint";
+    stepByStepMathSummary: string;
+  };
+  /**
+   * 2. SEAT AVAILABILITY (strictly separate from Time Fit)
+   */
+  seatAvailability: {
+    status: "unverified_live_inventory" | "public_walk_up_no_seat_hold";
+    verifiedRemainingSeats: null;
+    summary: string;
+  };
+};
+
+export type JuneauEvaluatedOfferBeforeCheckout = {
+  offerId: string;
+  optionId: string;
+  channelType: JuneauBookingChannelOption["channelType"];
+  isViatorOffer: boolean;
+  viatorProductCode: string | null;
+  label: string;
+  providerName: string;
+  relationshipDisclosure: string;
+  supplierReconciliation?: JuneauProductSupplierReconciliationRecord | null;
+  /**
+   * 1. TIME FIT (strictly separate from Seat Availability)
+   */
+  timeFit: {
+    fitsTimeWindow: boolean;
+    remainingMinutesAfterBuffer: number;
+    summary: string;
+  };
+  /**
+   * 2. SEAT AVAILABILITY (strictly separate from Time Fit)
+   */
+  seatAvailability: {
+    status: "unverified_live_inventory" | "public_walk_up_no_seat_hold";
+    verifiedRemainingSeats: null;
+    summary: string;
+  };
+  offerFitsOverall: boolean;
+  checkoutLinkEnabled: boolean;
+  href: string | null;
+  withheldReason: string | null;
+};
+
+export type JuneauTripVerdictBeforeCheckout = {
+  verdictStatus:
+    | "fits_port_window"
+    | "tight_buffer_fits"
+    | "does_not_fit_port_window"
+    | "needs_verification";
+  verdictHeadline: string;
+  stepByStepMath: {
+    shipArrivalLocal: string;
+    disembarkationMinutes: number;
+    earliestShoreReadyLocal: string;
+    checkInLeadMinutes: number;
+    outboundTransferMinutes: number;
+    activityDurationMinutes: number;
+    interActivityTransferMinutes: number;
+    returnTransferMinutes: number;
+    returnDockQueueMinutes: number;
+    estimatedGangwayReturnLocal: string;
+    targetAllAboardCutoffLocal: string;
+    allAboardLocal: string;
+    requiredReturnBufferMinutes: number;
+    remainingMinutesAfterBuffer: number;
+    equationSummary: string;
+  };
+  /**
+   * 1. TIME FIT BADGE (strictly separate from Seat Availability)
+   */
+  timeFitBadge: {
+    fitsTimeWindow: boolean;
+    status: string;
+    label: string;
+  };
+  /**
+   * 2. SEAT AVAILABILITY BADGE (strictly separate from Time Fit)
+   */
+  seatAvailabilityBadge: {
+    seatsVerified: false;
+    status: "unverified_live_inventory" | "public_walk_up_no_seat_hold";
+    label: string;
+  };
+  commercialOffersEnabled: boolean;
+  whenNoOfferFitsFallback: {
+    verifiedFittingAlternative: {
+      optionId: string;
+      title: string;
+      remainingMinutesAfterBuffer: number;
+      summary: string;
+      replanHref: string;
+    } | null;
+    exactDetailToVerify: string;
+  } | null;
+};
+
 export type JuneauEvaluatedDecisionOption = {
   optionId: string;
   title: string;
   shortLabel: string;
   category: JuneauOptionCategory;
   corridor: string;
+  viatorProductCode: string | null;
   fitStatus: JuneauEvaluatedOptionFit;
   fitBadgeLabel: string;
   conciseVerdict: string;
@@ -274,6 +405,9 @@ export type JuneauEvaluatedDecisionOption = {
   evidenceQualificationNote: string | null;
   recentReviewSummary: RecentReviewSummaryResult;
   bookingTransparency: JuneauOptionBookingTransparency;
+  evaluatedDepartures: JuneauEvaluatedCandidateDeparture[];
+  evaluatedOffers: JuneauEvaluatedOfferBeforeCheckout[];
+  tripVerdictBeforeCheckout: JuneauTripVerdictBeforeCheckout;
   rankingAudit: {
     fitTierScore: number;
     netMarginMinutes: number;
@@ -2896,12 +3030,248 @@ export function evaluateJuneauPortDayScenario(
             }
           : def.bookingTransparency;
 
+      const optionFitsOverall =
+        fitStatus === "fits_comfortably" || fitStatus === "tight_buffer";
+      const isPublicWalkUp = def.category === "public_free_or_municipal";
+
+      // Evaluate concrete candidate departures (earliest shore-ready departure + standard 09:00, 09:30, 11:00, 11:30, 13:00 slots)
+      const earliestSlotMinutes =
+        earliestShoreReadyMinutes + def.checkInLeadMinutes;
+      const earliestSlotClock = formatMinutesAsClock(earliestSlotMinutes);
+      const rawCandidateClocks = Array.from(
+        new Set([earliestSlotClock, "09:00", "09:30", "11:00", "11:30", "13:00"]),
+      );
+
+      const evaluatedDepartures: JuneauEvaluatedCandidateDeparture[] =
+        rawCandidateClocks.map((depClock) => {
+          const depParts = depClock.split(":").map(Number);
+          const depMins = (depParts[0] || 0) * 60 + (depParts[1] || 0);
+          const checkInMins = depMins - def.checkInLeadMinutes;
+          const checkInDeadlineLocal = formatMinutesAsClock(checkInMins);
+          const canReachCheckInAfterDisembark =
+            earliestShoreReadyMinutes <= checkInMins;
+          const backAtDockMins =
+            depMins +
+            def.outboundTransferMinutes +
+            def.activityDurationMinutes +
+            def.interActivityTransferMinutes +
+            def.returnTransferMinutes +
+            returnDockQueueMinutes;
+          const estimatedBackAtDockLocal = formatMinutesAsClock(backAtDockMins);
+          const slotRemainingMinutes =
+            targetAllAboardBufferCutoffMinutes - backAtDockMins;
+          const slotFitsTime =
+            inputValidationErrors.length === 0 &&
+            !missingScheduleSet.has(def.optionId) &&
+            def.operatingMonths.includes(normalizedInput.travelMonth) &&
+            !mobilityMismatch &&
+            !excludedByPublicFreeFilter &&
+            canReachCheckInAfterDisembark &&
+            slotRemainingMinutes >= 0;
+
+          const slotTimeFitStatus: JuneauEvaluatedCandidateDeparture["timeFit"]["status"] =
+            !canReachCheckInAfterDisembark
+              ? "misses_check_in_after_arrival"
+              : slotRemainingMinutes < 0
+                ? "exceeds_all_aboard_buffer"
+                : !slotFitsTime
+                  ? "blocked_by_constraint"
+                  : slotRemainingMinutes < 45
+                    ? "tight_buffer"
+                    : "fits_comfortably";
+
+          return {
+            departureId: `${def.optionId}-dep-${depClock.replace(":", "")}`,
+            optionId: def.optionId,
+            departureTimeLocal: depClock,
+            checkInDeadlineLocal,
+            earliestShoreReadyLocal: timing.earliestShoreReadyTime,
+            canReachCheckInAfterDisembark,
+            checkInLeadMinutes: def.checkInLeadMinutes,
+            outboundTransferMinutes: def.outboundTransferMinutes,
+            activityDurationMinutes: def.activityDurationMinutes,
+            interActivityTransferMinutes: def.interActivityTransferMinutes,
+            returnTransferMinutes: def.returnTransferMinutes,
+            returnDockQueueMinutes,
+            estimatedBackAtDockLocal,
+            targetAllAboardCutoffLocal: timing.targetAllAboardBufferCutoffTime,
+            allAboardLocal: timing.allAboardTime,
+            requiredReturnBufferMinutes,
+            remainingMinutesAfterBuffer: slotRemainingMinutes,
+            timeFit: {
+              fitsTimeWindow: slotFitsTime,
+              status: slotTimeFitStatus,
+              stepByStepMathSummary: `Ashore ${timing.earliestShoreReadyTime} → Check-in ${checkInDeadlineLocal} (${def.checkInLeadMinutes}m lead) → Depart ${depClock} + ${def.outboundTransferMinutes}m out + ${def.activityDurationMinutes}m activity${def.interActivityTransferMinutes > 0 ? ` + ${def.interActivityTransferMinutes}m transfer` : ""} + ${def.returnTransferMinutes}m return + ${returnDockQueueMinutes}m dock queue = ${estimatedBackAtDockLocal} at ship vs. ${timing.targetAllAboardBufferCutoffTime} buffer cutoff (${slotRemainingMinutes >= 0 ? `+${slotRemainingMinutes}m` : `${slotRemainingMinutes}m`})`,
+            },
+            seatAvailability: {
+              status: isPublicWalkUp
+                ? "public_walk_up_no_seat_hold"
+                : "unverified_live_inventory",
+              verifiedRemainingSeats: null,
+              summary: isPublicWalkUp
+                ? "Seat Availability: Walk-up public infrastructure (no commercial seat reservation required)."
+                : "Seat Availability: Unverified live inventory — time fit does not confirm open seats.",
+            },
+          };
+        });
+
+      const reconciledViatorCodesForOption: string[] =
+        def.optionId === "jun-opt-combo-whale-and-mendenhall"
+          ? ["466119P3", "5857P22"]
+          : def.optionId === "jun-opt-auke-bay-whale-direct"
+            ? ["5857P23", "331813P1"]
+            : def.optionId === "jun-opt-mendenhall-blue-bus"
+              ? ["5857SHUTTLE"]
+              : [];
+
+      const baseChannelOffers: JuneauEvaluatedOfferBeforeCheckout[] =
+        resolvedBookingTransparency.channels.map((ch, idx) => {
+          const isPublicAgency = ch.channelType === "public_free";
+          const offerFitsOverall = isPublicAgency ? true : optionFitsOverall;
+          return {
+            offerId: `${def.optionId}-offer-${idx + 1}-${ch.channelType}`,
+            optionId: def.optionId,
+            channelType: ch.channelType,
+            isViatorOffer: ch.channelType === "affiliate_partner",
+            viatorProductCode:
+              ch.channelType === "affiliate_partner" ? def.viatorProductCode : null,
+            label: ch.label,
+            providerName: ch.operatorOrProviderName,
+            relationshipDisclosure: ch.relationshipDisclosure,
+            supplierReconciliation: null,
+            timeFit: {
+              fitsTimeWindow: optionFitsOverall,
+              remainingMinutesAfterBuffer: netMarginMinutes,
+              summary: statusDimensions.timeFit.summary,
+            },
+            seatAvailability: {
+              status: isPublicAgency
+                ? "public_walk_up_no_seat_hold"
+                : "unverified_live_inventory",
+              verifiedRemainingSeats: null,
+              summary: isPublicAgency
+                ? "Public agency resource — no commercial seat hold."
+                : "Live seat inventory not verified in planner; check seats on provider checkout only after time fit passes.",
+            },
+            offerFitsOverall,
+            checkoutLinkEnabled: offerFitsOverall,
+            href: offerFitsOverall ? ch.url : null,
+            withheldReason: offerFitsOverall
+              ? null
+              : `Commercial offer link (${ch.operatorOrProviderName}) is withheld because ${def.shortLabel} does not fit your current port window (${netMarginMinutes}m vs. ${requiredReturnBufferMinutes}m return buffer).`,
+          };
+        });
+
+      const reconciledViatorOffers: JuneauEvaluatedOfferBeforeCheckout[] =
+        reconciledViatorCodesForOption
+          .map((code) => resolveJuneauProductSupplierReconciliation(code))
+          .filter((rec): rec is JuneauProductSupplierReconciliationRecord => rec !== null)
+          .map((rec) => ({
+            offerId: `${def.optionId}-viator-${rec.productCode.toLowerCase()}`,
+            optionId: def.optionId,
+            channelType: "affiliate_partner" as const,
+            isViatorOffer: true,
+            viatorProductCode: rec.productCode,
+            label: `${rec.title} (${rec.productCode} — Verified Supplier: ${rec.verifiedViatorSupplierName})`,
+            providerName: `${rec.verifiedViatorSupplierName} (via Viator ${rec.productCode})`,
+            relationshipDisclosure: rec.reconciliationNote,
+            supplierReconciliation: rec,
+            timeFit: {
+              fitsTimeWindow: optionFitsOverall,
+              remainingMinutesAfterBuffer: netMarginMinutes,
+              summary: statusDimensions.timeFit.summary,
+            },
+            seatAvailability: {
+              status: "unverified_live_inventory" as const,
+              verifiedRemainingSeats: null,
+              summary:
+                "Live seat inventory not verified in planner; check seats on provider checkout only after time fit passes.",
+            },
+            offerFitsOverall: optionFitsOverall,
+            checkoutLinkEnabled: optionFitsOverall,
+            href: optionFitsOverall ? rec.viatorProductUrl : null,
+            withheldReason: optionFitsOverall
+              ? null
+              : `Viator offer ${rec.productCode} (${rec.verifiedViatorSupplierName}) is withheld because ${def.shortLabel} does not fit your current port window (${netMarginMinutes}m vs. ${requiredReturnBufferMinutes}m return buffer).`,
+          }));
+
+      const evaluatedOffers: JuneauEvaluatedOfferBeforeCheckout[] = [
+        ...baseChannelOffers,
+        ...reconciledViatorOffers,
+      ];
+
+      const equationSummary = `Ship arrival ${timing.shipArrivalTime} + ${disembarkationAndDockMinutes}m disembark = ${timing.earliestShoreReadyTime} ashore + ${def.checkInLeadMinutes}m check-in + ${def.outboundTransferMinutes}m outbound + ${def.activityDurationMinutes}m activity${def.interActivityTransferMinutes > 0 ? ` + ${def.interActivityTransferMinutes}m transfer` : ""} + ${def.returnTransferMinutes}m return + ${returnDockQueueMinutes}m dock queue = ${timing.estimatedBackAtDockTime} back at gangway vs. ${timing.targetAllAboardBufferCutoffTime} cutoff (${timing.allAboardTime} all-aboard − ${requiredReturnBufferMinutes}m buffer) → ${netMarginMinutes >= 0 ? `+${netMarginMinutes}m slack` : `${netMarginMinutes}m deficit`}`;
+
+      const exactDetailToVerify =
+        netMarginMinutes < 0
+          ? `Check whether your ship's all-aboard time is at least ${formatMinutesAsClock(allAboardMinutes + Math.abs(netMarginMinutes))} ${timezoneResolution.tzAbbreviation} (or whether your ship berths at a downtown walk-off dock AS/CTF instead of ${dockSpec.label}) before booking ${def.shortLabel}.`
+          : normalizedInput.arrivalDock === "unknown_dock"
+            ? "Verify your ship's assigned Juneau berth on the official CBJ Docks & Harbors schedule (downtown walk-off AS/CTF vs. AJ Dock shuttle vs. tendering)."
+            : def.weatherCeilingSensitive
+              ? "Verify morning FAA Part 135 helicopter icefield ceiling dispatch and exact check-in cutoff directly with the operator."
+              : `Verify exact departure time and live seat count for your sailing date (${effectiveDateForTz}).`;
+
+      const tripVerdictBeforeCheckout: JuneauTripVerdictBeforeCheckout = {
+        verdictStatus:
+          fitStatus === "fits_comfortably"
+            ? "fits_port_window"
+            : fitStatus === "tight_buffer"
+              ? "tight_buffer_fits"
+              : fitStatus === "withdrawn_or_qualified_evidence"
+                ? "needs_verification"
+                : "does_not_fit_port_window",
+        verdictHeadline: optionFitsOverall
+          ? `Trip Verdict Before Checkout: ${def.shortLabel} FITS your port window (${netMarginMinutes >= 0 ? `+${netMarginMinutes}m` : `${netMarginMinutes}m`} after ${requiredReturnBufferMinutes}m return buffer; est. gangway return ${timing.estimatedBackAtDockTime} ${timezoneResolution.tzAbbreviation}).`
+          : `Trip Verdict Before Checkout: ${def.shortLabel} DOES NOT FIT your port window (${netMarginMinutes}m deficit; est. gangway return ${timing.estimatedBackAtDockTime} misses ${timing.targetAllAboardBufferCutoffTime} buffer cutoff). Commercial & Viator checkout links are withheld.`,
+        stepByStepMath: {
+          shipArrivalLocal: timing.shipArrivalTime,
+          disembarkationMinutes: disembarkationAndDockMinutes,
+          earliestShoreReadyLocal: timing.earliestShoreReadyTime,
+          checkInLeadMinutes: def.checkInLeadMinutes,
+          outboundTransferMinutes: def.outboundTransferMinutes,
+          activityDurationMinutes: def.activityDurationMinutes,
+          interActivityTransferMinutes: def.interActivityTransferMinutes,
+          returnTransferMinutes: def.returnTransferMinutes,
+          returnDockQueueMinutes,
+          estimatedGangwayReturnLocal: timing.estimatedBackAtDockTime,
+          targetAllAboardCutoffLocal: timing.targetAllAboardBufferCutoffTime,
+          allAboardLocal: timing.allAboardTime,
+          requiredReturnBufferMinutes,
+          remainingMinutesAfterBuffer: netMarginMinutes,
+          equationSummary,
+        },
+        timeFitBadge: {
+          fitsTimeWindow: optionFitsOverall,
+          status: statusDimensions.timeFit.status,
+          label: optionFitsOverall
+            ? `Time Fit: Passes (${netMarginMinutes >= 0 ? `+${netMarginMinutes}` : netMarginMinutes} min after ${requiredReturnBufferMinutes}m buffer)`
+            : `Time Fit: Fails (${netMarginMinutes} min vs. ${requiredReturnBufferMinutes}m buffer)`,
+        },
+        seatAvailabilityBadge: {
+          seatsVerified: false,
+          status: isPublicWalkUp
+            ? "public_walk_up_no_seat_hold"
+            : "unverified_live_inventory",
+          label: isPublicWalkUp
+            ? "Seat Availability: Walk-up public access (no seat hold required)"
+            : "Seat Availability: Unverified live inventory (separate from time fit)",
+        },
+        commercialOffersEnabled: optionFitsOverall,
+        whenNoOfferFitsFallback: optionFitsOverall
+          ? null
+          : {
+              verifiedFittingAlternative: null,
+              exactDetailToVerify,
+            },
+      };
+
       return {
         optionId: def.optionId,
         title: def.title,
         shortLabel: def.shortLabel,
         category: def.category,
         corridor: def.corridor,
+        viatorProductCode: def.viatorProductCode,
         fitStatus,
         fitBadgeLabel,
         conciseVerdict,
@@ -2921,6 +3291,9 @@ export function evaluateJuneauPortDayScenario(
         evidenceQualificationNote,
         recentReviewSummary,
         bookingTransparency: resolvedBookingTransparency,
+        evaluatedDepartures,
+        evaluatedOffers,
+        tripVerdictBeforeCheckout,
         rankingAudit: {
           fitTierScore,
           netMarginMinutes,
@@ -2979,6 +3352,39 @@ export function evaluateJuneauPortDayScenario(
     }
     return b.rankingAudit.netMarginMinutes - a.rankingAudit.netMarginMinutes;
   });
+
+  const topFittingOption =
+    evaluatedOptions.find(
+      (o) => o.fitStatus === "fits_comfortably" || o.fitStatus === "tight_buffer",
+    ) ?? null;
+
+  for (const opt of evaluatedOptions) {
+    if (
+      !opt.tripVerdictBeforeCheckout.commercialOffersEnabled &&
+      opt.tripVerdictBeforeCheckout.whenNoOfferFitsFallback
+    ) {
+      opt.tripVerdictBeforeCheckout.whenNoOfferFitsFallback.verifiedFittingAlternative =
+        topFittingOption
+          ? {
+              optionId: topFittingOption.optionId,
+              title: topFittingOption.shortLabel,
+              remainingMinutesAfterBuffer:
+                topFittingOption.timing.netMarginMinutes,
+              summary: `${topFittingOption.shortLabel} fits your current port window (+${topFittingOption.timing.netMarginMinutes}m after ${normalizedInput.returnBufferMinutes}m return buffer; back at gangway ${topFittingOption.timing.estimatedBackAtDockTime} ${timezoneResolution.tzAbbreviation}).`,
+              replanHref: `/juneau/replan?date=${encodeURIComponent(effectiveDateForTz)}&arrival=${encodeURIComponent(timingOrRawArrival(rawArrivalStr))}&all_aboard=${encodeURIComponent(timingOrRawAllAboard(rawAllAboardStr))}&failed_engine_option_id=${encodeURIComponent(opt.optionId)}&filter=fits_only#fitting-options`,
+            }
+          : null;
+    }
+  }
+
+  function timingOrRawArrival(s: string): string {
+    return parsedArrivalMinutes !== null ? formatMinutesAsClock(arrivalMinutes) : s;
+  }
+  function timingOrRawAllAboard(s: string): string {
+    return parsedAllAboardMinutes !== null
+      ? formatMinutesAsClock(allAboardMinutes)
+      : s;
+  }
 
   const fittingCount = evaluatedOptions.filter(
     (o) => o.fitStatus === "fits_comfortably" || o.fitStatus === "tight_buffer",

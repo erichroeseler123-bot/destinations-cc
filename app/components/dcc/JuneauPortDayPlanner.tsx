@@ -743,22 +743,6 @@ export default function JuneauPortDayPlanner({
                   <div className="mt-0.5 max-w-xs text-[11px] text-slate-400">
                     {option.bookingTransparency.durationLabel.split("(")[0].trim()}
                   </div>
-                  {unifiedOpt && (
-                    <div className="mt-2.5">
-                      <a
-                        href={unifiedOpt.allowedNextStepHref}
-                        data-testid={`planner-next-step-${option.optionId}`}
-                        data-allowed-next-step={unifiedOpt.allowedNextStepType}
-                        className={
-                          unifiedOpt.flightDeckHandoffAllowed
-                            ? "inline-block rounded-lg border border-cyan-300/40 bg-cyan-500/20 px-3 py-1.5 text-xs font-bold text-cyan-100 hover:bg-cyan-500/30"
-                            : "inline-block rounded-lg border border-amber-300/40 bg-amber-500/20 px-3 py-1.5 text-xs font-bold text-amber-100 hover:bg-amber-500/30"
-                        }
-                      >
-                        {unifiedOpt.allowedNextStepLabel}
-                      </a>
-                    </div>
-                  )}
                 </div>
               </div>
 
@@ -1042,7 +1026,193 @@ export default function JuneauPortDayPlanner({
                 </div>
               </details>
 
-              {/* Expandable Section 2: Optional Booking & Official Provider Links */}
+              {/* Trip Verdict Before Checkout (Mandatory Pre-Checkout Gate) */}
+              {(() => {
+                const verdict =
+                  unifiedOpt?.tripVerdictBeforeCheckout ??
+                  option.tripVerdictBeforeCheckout;
+                const departures =
+                  unifiedOpt?.evaluatedDepartures ?? option.evaluatedDepartures;
+                const offers =
+                  unifiedOpt?.evaluatedOffers ?? option.evaluatedOffers;
+                const fitsOverall = verdict.commercialOffersEnabled;
+                const fittingDeparturesCount = departures.filter(
+                  (d) => d.timeFit.fitsTimeWindow,
+                ).length;
+                return (
+                  <div
+                    data-testid={`trip-verdict-before-checkout-${option.optionId}`}
+                    data-verdict-fits={String(fitsOverall)}
+                    data-time-fit-verdict={verdict.verdictStatus}
+                    data-seat-availability-status={
+                      verdict.seatAvailabilityBadge.status
+                    }
+                    className={`mt-3 rounded-xl border p-3.5 text-xs ${
+                      fitsOverall
+                        ? "border-emerald-400/35 bg-emerald-950/20"
+                        : "border-amber-400/40 bg-amber-950/25"
+                    }`}
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="font-bold uppercase tracking-wider text-white">
+                        Trip Verdict Before Checkout
+                      </div>
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span
+                          data-testid={`verdict-time-fit-badge-${option.optionId}`}
+                          className={`rounded-full border px-2.5 py-0.5 text-[11px] font-bold ${
+                            fitsOverall
+                              ? "border-emerald-400/50 bg-emerald-500/20 text-emerald-100"
+                              : "border-rose-400/50 bg-rose-500/20 text-rose-100"
+                          }`}
+                        >
+                          Time Fit: {verdict.timeFitBadge.label}
+                        </span>
+                        <span
+                          data-testid={`verdict-seat-badge-${option.optionId}`}
+                          className="rounded-full border border-cyan-400/40 bg-cyan-950/60 px-2.5 py-0.5 text-[11px] font-semibold text-cyan-100"
+                        >
+                          {verdict.seatAvailabilityBadge.label}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div
+                      data-testid={`verdict-equation-${option.optionId}`}
+                      className="mt-2 rounded-lg border border-white/10 bg-slate-950/80 px-3 py-2 font-mono text-[11px] text-slate-200"
+                    >
+                      {verdict.stepByStepMath.equationSummary}
+                    </div>
+
+                    <div className="mt-2 flex flex-wrap gap-1.5 text-[11px] text-slate-300">
+                      <span className="rounded border border-white/10 bg-slate-900/80 px-2 py-0.5">
+                        Arrival: <strong className="text-white">{verdict.stepByStepMath.shipArrivalLocal}</strong>
+                      </span>
+                      <span className="rounded border border-white/10 bg-slate-900/80 px-2 py-0.5">
+                        Disembark: <strong className="text-white">{verdict.stepByStepMath.disembarkationMinutes}m</strong>
+                      </span>
+                      <span className="rounded border border-white/10 bg-slate-900/80 px-2 py-0.5">
+                        Outbound Transfer: <strong className="text-white">{verdict.stepByStepMath.outboundTransferMinutes}m</strong>
+                      </span>
+                      <span className="rounded border border-white/10 bg-slate-900/80 px-2 py-0.5">
+                        Check-In Buffer: <strong className="text-white">{verdict.stepByStepMath.checkInLeadMinutes}m</strong>
+                      </span>
+                      <span className="rounded border border-white/10 bg-slate-900/80 px-2 py-0.5">
+                        Activity: <strong className="text-white">{verdict.stepByStepMath.activityDurationMinutes}m</strong>
+                        {verdict.stepByStepMath.interActivityTransferMinutes > 0
+                          ? ` (+${verdict.stepByStepMath.interActivityTransferMinutes}m link)`
+                          : ""}
+                      </span>
+                      <span className="rounded border border-white/10 bg-slate-900/80 px-2 py-0.5">
+                        Return Transfer: <strong className="text-white">{verdict.stepByStepMath.returnTransferMinutes}m</strong>
+                      </span>
+                      <span className="rounded border border-white/10 bg-slate-900/80 px-2 py-0.5">
+                        Gangway Queue: <strong className="text-white">{verdict.stepByStepMath.returnDockQueueMinutes}m</strong>
+                      </span>
+                      <span className="rounded border border-white/10 bg-slate-900/80 px-2 py-0.5">
+                        Mandatory Return Buffer: <strong className="text-white">{verdict.stepByStepMath.requiredReturnBufferMinutes}m</strong>
+                      </span>
+                      <span
+                        className={`rounded border px-2 py-0.5 font-semibold ${
+                          verdict.stepByStepMath.remainingMinutesAfterBuffer >= 0
+                            ? "border-emerald-400/40 bg-emerald-950/50 text-emerald-200"
+                            : "border-rose-400/40 bg-rose-950/50 text-rose-200"
+                        }`}
+                      >
+                        {verdict.stepByStepMath.remainingMinutesAfterBuffer >= 0
+                          ? `Remaining Margin: +${verdict.stepByStepMath.remainingMinutesAfterBuffer}m`
+                          : `Deficit: ${verdict.stepByStepMath.remainingMinutesAfterBuffer}m`}
+                      </span>
+                    </div>
+
+                    {/* Concrete Candidate Departures */}
+                    {departures.length > 0 && (
+                      <div className="mt-2.5 flex flex-wrap items-center gap-1.5 text-[11px]">
+                        <span className="font-semibold text-slate-300">
+                          Candidate Departures ({fittingDeparturesCount}/{departures.length} fit):
+                        </span>
+                        {departures.map((slot) => (
+                          <span
+                            key={slot.departureId}
+                            data-testid={`departure-slot-${slot.departureId}`}
+                            data-departure-fits={String(slot.timeFit.fitsTimeWindow)}
+                            className={`rounded border px-2 py-0.5 font-mono text-[10px] ${
+                              slot.timeFit.fitsTimeWindow
+                                ? "border-emerald-400/40 bg-emerald-950/50 text-emerald-100"
+                                : "border-rose-400/30 bg-rose-950/40 text-rose-200"
+                            }`}
+                          >
+                            {slot.departureTimeLocal}→Dock {slot.estimatedBackAtDockLocal} (
+                            {slot.remainingMinutesAfterBuffer >= 0
+                              ? `+${slot.remainingMinutesAfterBuffer}m`
+                              : `${slot.remainingMinutesAfterBuffer}m`}
+                            ) • {slot.seatAvailability.status === "unverified_live_inventory" ? "Seats Unconfirmed" : slot.seatAvailability.summary}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Non-Dead-End Fallback when option does not fit */}
+                    {!fitsOverall &&
+                      verdict.whenNoOfferFitsFallback && (
+                        <div
+                          data-testid={`verdict-no-fit-fallback-${option.optionId}`}
+                          className="mt-2.5 rounded-lg border border-amber-400/40 bg-amber-950/40 p-2.5 text-[11px] text-amber-100 space-y-1"
+                        >
+                          <div>
+                            <strong className="text-amber-300">
+                              Why Commercial Checkout Is Locked:{" "}
+                            </strong>
+                            {verdict.verdictHeadline}
+                          </div>
+                          <div>
+                            <strong className="text-emerald-300">
+                              Verified Alternative That Fits:{" "}
+                            </strong>
+                            {verdict.whenNoOfferFitsFallback
+                              .verifiedFittingAlternative?.summary ??
+                              "Stay within the immediate downtown walk-off zone (Mount Roberts Tramway / waterfront)."}
+                          </div>
+                          <div>
+                            <strong className="text-cyan-300">
+                              Exact Detail to Check:{" "}
+                            </strong>
+                            {verdict.whenNoOfferFitsFallback.exactDetailToVerify}
+                          </div>
+                        </div>
+                      )}
+
+                    {/* Evaluated Offer Summary & Post-Verdict Action */}
+                    <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2 border-t border-white/10 pt-2">
+                      <div className="text-[10px] text-slate-400">
+                        Offers evaluated: {offers.length} (
+                        {offers.filter((o) => o.checkoutLinkEnabled).length}{" "}
+                        unlocked after Trip Verdict •{" "}
+                        {option.viatorProductCode
+                          ? `Viator ref ${option.viatorProductCode}`
+                          : "Direct/Municipal"}
+                        )
+                      </div>
+                      {unifiedOpt && (
+                        <a
+                          href={unifiedOpt.allowedNextStepHref}
+                          data-testid={`planner-next-step-${option.optionId}`}
+                          data-allowed-next-step={unifiedOpt.allowedNextStepType}
+                          className={
+                            unifiedOpt.flightDeckHandoffAllowed
+                              ? "inline-block rounded-lg border border-cyan-300/40 bg-cyan-500/20 px-3 py-1.5 text-xs font-bold text-cyan-100 hover:bg-cyan-500/30"
+                              : "inline-block rounded-lg border border-amber-300/40 bg-amber-500/20 px-3 py-1.5 text-xs font-bold text-amber-100 hover:bg-amber-500/30"
+                          }
+                        >
+                          {unifiedOpt.allowedNextStepLabel}
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Expandable Section 2: Optional Booking & Official Provider Links (Strictly After Trip Verdict) */}
               <details className="mt-2 rounded-xl border border-white/10 bg-slate-950/60 p-3 text-xs">
                 <summary className="cursor-pointer font-semibold text-slate-200 hover:text-white">
                   Optional Booking &amp; Direct Provider Links ({option.bookingTransparency.channels.length} options —{" "}
@@ -1068,69 +1238,123 @@ export default function JuneauPortDayPlanner({
                       </span>
                     </div>
                   </div>
-                  {unifiedOpt && !unifiedOpt.flightDeckHandoffAllowed ? (
-                    <div className="rounded-lg border border-amber-400/35 bg-amber-950/30 p-3 text-xs text-amber-100">
+                  {(unifiedOpt && !unifiedOpt.flightDeckHandoffAllowed) ||
+                  !option.tripVerdictBeforeCheckout.commercialOffersEnabled ? (
+                    <div className="rounded-lg border border-amber-400/35 bg-amber-950/30 p-3 text-xs text-amber-100 space-y-1.5">
                       <div className="font-semibold text-amber-200">
-                        This excursion does not clear your port time window ({unifiedOpt.timeFit.statusBadgeLabel}).
+                        This excursion does not clear your port time window (
+                        {unifiedOpt?.timeFit.statusBadgeLabel ??
+                          option.tripVerdictBeforeCheckout.timeFitBadge.label}
+                        ).
                       </div>
-                      <p className="mt-1 text-[11px] text-amber-100/90">
-                        Juneau Flight Deck checkout handoff is disabled for this row so you do not book an excursion that misses your ship&apos;s all-aboard buffer.
+                      <p className="text-[11px] text-amber-100/90">
+                        Commercial, Viator, and Juneau Flight Deck checkout links are withheld for this row so you do not book a departure that misses your ship&apos;s all-aboard buffer.
                       </p>
-                      <a
-                        href={unifiedOpt.allowedNextStepHref}
-                        data-testid={`planner-channel-fallback-${option.optionId}`}
-                        data-allowed-next-step={unifiedOpt.allowedNextStepType}
-                        className="mt-2 inline-block rounded-lg border border-amber-300/40 bg-amber-500/20 px-3 py-1.5 text-xs font-bold text-amber-100 hover:bg-amber-500/30"
-                      >
-                        {unifiedOpt.allowedNextStepLabel}
-                      </a>
+                      {(unifiedOpt?.tripVerdictBeforeCheckout
+                        .whenNoOfferFitsFallback ??
+                        option.tripVerdictBeforeCheckout
+                          .whenNoOfferFitsFallback) && (
+                        <div className="rounded border border-white/10 bg-slate-950/60 p-2 text-[11px] space-y-1">
+                          <div>
+                            <strong className="text-emerald-300">
+                              Verified Alternative That Fits:{" "}
+                            </strong>
+                            {(
+                              unifiedOpt?.tripVerdictBeforeCheckout
+                                .whenNoOfferFitsFallback ??
+                              option.tripVerdictBeforeCheckout
+                                .whenNoOfferFitsFallback
+                            )?.verifiedFittingAlternative?.summary ??
+                              "Stay within the immediate downtown walk-off zone."}
+                          </div>
+                          <div>
+                            <strong className="text-cyan-300">
+                              Exact Detail to Check:{" "}
+                            </strong>
+                            {
+                              (
+                                unifiedOpt?.tripVerdictBeforeCheckout
+                                  .whenNoOfferFitsFallback ??
+                                option.tripVerdictBeforeCheckout
+                                  .whenNoOfferFitsFallback
+                              )?.exactDetailToVerify
+                            }
+                          </div>
+                        </div>
+                      )}
+                      {unifiedOpt && (
+                        <a
+                          href={unifiedOpt.allowedNextStepHref}
+                          data-testid={`planner-channel-fallback-${option.optionId}`}
+                          data-allowed-next-step={unifiedOpt.allowedNextStepType}
+                          className="mt-2 inline-block rounded-lg border border-amber-300/40 bg-amber-500/20 px-3 py-1.5 text-xs font-bold text-amber-100 hover:bg-amber-500/30"
+                        >
+                          {unifiedOpt.allowedNextStepLabel}
+                        </a>
+                      )}
                     </div>
                   ) : (
                     <div className="grid gap-2.5 md:grid-cols-2">
-                      {option.bookingTransparency.channels.map((book) => (
-                        <div
-                          key={`${option.optionId}-${book.label}`}
-                          className="flex flex-col justify-between rounded-lg border border-white/10 bg-slate-900/90 p-3 text-xs"
-                        >
-                          <div>
-                            <div className="flex flex-wrap items-center gap-1.5">
-                              <span className="rounded border border-white/15 bg-white/5 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-slate-200">
-                                {book.channelType.replace(/_/g, " ")}
-                              </span>
-                              <span className="text-[11px] text-slate-400">
-                                {book.operatorOrProviderName}
-                              </span>
+                      {(unifiedOpt?.evaluatedOffers ?? option.evaluatedOffers)
+                        .filter((offer) => offer.checkoutLinkEnabled && offer.href)
+                        .map((offer) => (
+                          <div
+                            key={offer.offerId}
+                            data-testid={`evaluated-offer-${offer.offerId}`}
+                            className="flex flex-col justify-between rounded-lg border border-white/10 bg-slate-900/90 p-3 text-xs"
+                          >
+                            <div>
+                              <div className="flex flex-wrap items-center gap-1.5">
+                                <span className="rounded border border-white/15 bg-white/5 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-slate-200">
+                                  {offer.channelType.replace(/_/g, " ")}
+                                </span>
+                                <span className="text-[11px] text-slate-400">
+                                  {offer.providerName}
+                                </span>
+                              </div>
+                              <div className="mt-1 flex flex-wrap gap-1 text-[10px]">
+                                <span className="rounded bg-emerald-950/60 px-1.5 py-0.5 text-emerald-200">
+                                  {offer.timeFit.summary}
+                                </span>
+                                <span className="rounded bg-cyan-950/60 px-1.5 py-0.5 text-cyan-200">
+                                  {offer.seatAvailability.summary}
+                                </span>
+                              </div>
+                              <a
+                                href={offer.href!}
+                                target={
+                                  offer.href!.startsWith("http")
+                                    ? "_blank"
+                                    : undefined
+                                }
+                                rel={
+                                  offer.href!.startsWith("http")
+                                    ? "noopener noreferrer"
+                                    : undefined
+                                }
+                                onClick={() =>
+                                  trackEvent("operator_cta_clicked", {
+                                    surface: "juneau",
+                                    corridor: "juneau",
+                                    page: "/juneau",
+                                    target_path: offer.href!,
+                                    product_code:
+                                      offer.viatorProductCode ?? option.optionId,
+                                    decision_option: option.fitStatus,
+                                    channel_type: offer.channelType,
+                                    operator_name: offer.providerName,
+                                  })
+                                }
+                                className="mt-1.5 inline-block font-semibold text-cyan-300 underline decoration-cyan-400/50 underline-offset-4 hover:text-cyan-200"
+                              >
+                                {offer.label}
+                              </a>
                             </div>
-                            <a
-                              href={book.url}
-                              target={book.url.startsWith("http") ? "_blank" : undefined}
-                              rel={
-                                book.url.startsWith("http")
-                                  ? "noopener noreferrer"
-                                  : undefined
-                              }
-                              onClick={() =>
-                                trackEvent("operator_cta_clicked", {
-                                  surface: "juneau",
-                                  corridor: "juneau",
-                                  page: "/juneau",
-                                  target_path: book.url,
-                                  product_code: option.optionId,
-                                  decision_option: option.fitStatus,
-                                  channel_type: book.channelType,
-                                  operator_name: book.operatorOrProviderName,
-                                })
-                              }
-                              className="mt-1.5 inline-block font-semibold text-cyan-300 underline decoration-cyan-400/50 underline-offset-4 hover:text-cyan-200"
-                            >
-                              {book.label}
-                            </a>
+                            <div className="mt-2 border-t border-white/5 pt-1.5 text-[10px] text-slate-400">
+                              {offer.relationshipDisclosure}
+                            </div>
                           </div>
-                          <div className="mt-2 border-t border-white/5 pt-1.5 text-[10px] text-slate-400">
-                            {book.relationshipDisclosure}
-                          </div>
-                        </div>
-                      ))}
+                        ))}
                     </div>
                   )}
                 </div>
