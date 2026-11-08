@@ -18,9 +18,26 @@ const COMPARISON_PATH_KEY = "wno_comparison_path";
 const SELECTED_BOAT_KEY = "wno_selected_boat";
 const SELECTED_PRODUCT_KEY = "wno_selected_product_slug";
 const SELECTED_ITEM_ID_KEY = "wno_selected_item_id";
+const IS_TEST_SESSION_KEY = "wno_is_test_session";
 
-function id() {
-  return `wno_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+function id(isTest = false) {
+  const prefix = isTest ? "wno_test" : "wno";
+  return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function detectTestQueryParam(search: string): boolean {
+  if (!search) return false;
+  const sp = new URLSearchParams(search.startsWith("?") ? search.slice(1) : search);
+  return (
+    sp.get("test") === "1" ||
+    sp.get("test") === "true" ||
+    sp.get("isTest") === "1" ||
+    sp.get("isTest") === "true" ||
+    sp.get("is_test") === "1" ||
+    sp.get("is_test") === "true" ||
+    sp.get("synthetic_test") === "1" ||
+    sp.get("trafficClass") === "test"
+  );
 }
 
 function extractComparisonSlugFromPath(pathname: string): string | null {
@@ -46,9 +63,14 @@ function ctaLocation(anchor: HTMLAnchorElement) {
 
 export function getWnoFunnelContext() {
   if (typeof window === "undefined") return null;
+  const queryIsTest = detectTestQueryParam(window.location.search);
+  if (queryIsTest) {
+    sessionStorage.setItem(IS_TEST_SESSION_KEY, "1");
+  }
+  const isTest = sessionStorage.getItem(IS_TEST_SESSION_KEY) === "1" || queryIsTest;
   let sessionId = sessionStorage.getItem(SESSION_KEY);
-  if (!sessionId) {
-    sessionId = id();
+  if (!sessionId || (isTest && !sessionId.startsWith("wno_test_"))) {
+    sessionId = id(isTest);
     sessionStorage.setItem(SESSION_KEY, sessionId);
   }
   return {
@@ -59,6 +81,7 @@ export function getWnoFunnelContext() {
     gclid: sessionStorage.getItem(ENTRY_GCLID_KEY) || null,
     comparisonSlug: sessionStorage.getItem(COMPARISON_SLUG_KEY) || undefined,
     selectedBoat: sessionStorage.getItem(SELECTED_BOAT_KEY) || undefined,
+    isTest,
     dccContext: getStoredDccTravelerContext(),
   };
 }
@@ -67,7 +90,13 @@ export function sendWnoTelemetry(event: Record<string, unknown>) {
   if (typeof window === "undefined") return;
   const context = getWnoFunnelContext();
   if (!context) return;
-  const body = JSON.stringify({ ...event, ...context, dccContext: context.dccContext || undefined });
+  const body = JSON.stringify({
+    ...context,
+    ...event,
+    entrySource: (event.entrySource as string) || context.source,
+    isTest: context.isTest || Boolean(event.isTest),
+    dccContext: context.dccContext || undefined,
+  });
   if (typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
     const blob = new Blob([body], { type: "text/plain;charset=UTF-8" });
     if (navigator.sendBeacon(TELEMETRY_URL, blob)) return;

@@ -26,6 +26,7 @@ async function recordWnoProviderConfirmedRiverboatEvent(args: {
   bookingOutcome: CommercialOutcomeRecord & { duplicateDelivery?: boolean };
   sessionId?: string | null;
   landingPath?: string | null;
+  entrySource?: string | null;
 }): Promise<void> {
   if (args.bookingOutcome.duplicateDelivery) return;
   if (
@@ -53,6 +54,10 @@ async function recordWnoProviderConfirmedRiverboatEvent(args: {
       ? "city-of-new-orleans-riverboat-cruise"
       : undefined;
   const amountUsd = args.bookingOutcome.bookingValue?.amount ?? 0;
+  const commissionUsd =
+    args.bookingOutcome.paidCommission?.amount ??
+    args.bookingOutcome.estimatedCommission?.amount ??
+    0;
   await appendCorridorEventDurably({
     corridor_id: "wno-commerce",
     event_name: "booking_completed",
@@ -70,11 +75,13 @@ async function recordWnoProviderConfirmedRiverboatEvent(args: {
       funnel_stage: "provider_confirmed_booking",
       comparison_slug: "natchez-vs-city-of-new-orleans-riverboat",
       selected_boat: selectedBoat,
+      entry_source: args.entrySource || undefined,
       operator_id: "neworleanssteamboatcompany",
       item_id: itemId,
       external_order_id: args.bookingOutcome.providerBookingRef,
       outcome_id: args.bookingOutcome.outcomeId,
       booking_value_usd: amountUsd,
+      commission_amount_usd: commissionUsd,
     },
   }).catch(() => undefined);
 }
@@ -241,6 +248,12 @@ export async function POST(request: Request) {
           bookingOutcome: lookupConfirmation.bookingOutcome,
           sessionId: typeof body.sessionId === "string" ? body.sessionId : null,
           landingPath: typeof body.landingPath === "string" ? body.landingPath : null,
+          entrySource:
+            typeof body.entrySource === "string"
+              ? body.entrySource
+              : typeof body.source === "string"
+                ? body.source
+                : null,
         });
 
         return buildMachineJsonResponse(
@@ -319,6 +332,12 @@ export async function POST(request: Request) {
       bookingOutcome,
       sessionId: typeof body.sessionId === "string" ? body.sessionId : null,
       landingPath: typeof body.landingPath === "string" ? body.landingPath : null,
+      entrySource:
+        typeof body.entrySource === "string"
+          ? body.entrySource
+          : typeof body.source === "string"
+            ? body.source
+            : null,
     });
 
     return buildMachineJsonResponse(

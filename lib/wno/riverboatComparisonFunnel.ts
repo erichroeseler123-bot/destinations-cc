@@ -1,7 +1,8 @@
-import { listRecentProductionCorridorEvents } from "@/lib/dcc/telemetry/corridorEvents";
+import { listRecentCorridorEvents } from "@/lib/dcc/telemetry/corridorEvents";
 import { listCommercialOutcomes } from "@/lib/dcc/commerce";
 
 export const RIVERBOAT_COMPARISON_SLUG = "natchez-vs-city-of-new-orleans-riverboat" as const;
+export const DCC_AUTHORITY_NOLA_RIVERBOATS_SRC = "dcc-authority-nola-riverboats" as const;
 export const RIVERBOAT_COMPARISON_PATHS = [
   "/compare/natchez-vs-city-of-new-orleans-riverboat",
   "/new-orleans/compare/natchez-vs-city-of-new-orleans-riverboat",
@@ -51,6 +52,7 @@ export interface RiverboatVesselFunnelMetrics {
   providerConfirmedBookingsCount: number;
   providerConfirmedFromComparisonCount: number;
   confirmedGrossSalesUsd: number;
+  confirmedCommissionsUsd: number;
   unconfirmedCheckoutOpensCount: number;
   providerConfirmationStatus: "confirmed_bookings_present" | "awaiting_provider_confirmation";
 }
@@ -63,6 +65,67 @@ export interface RiverboatEntryPageBreakdownRow {
   natchezCheckoutOpened561220: number;
   cityCheckoutOpened694782: number;
   providerConfirmedBookings: number;
+  confirmedGrossSalesUsd: number;
+  confirmedCommissionsUsd: number;
+}
+
+export interface RiverboatEntrySourceBreakdownRow {
+  entrySource: string;
+  comparisonVisits: number;
+  uniqueVisitorSessions: number;
+  natchezSelected: number;
+  citySelected: number;
+  natchezCheckoutOpened561220: number;
+  cityCheckoutOpened694782: number;
+  providerConfirmedBookings: number;
+  confirmedGrossSalesUsd: number;
+  confirmedCommissionsUsd: number;
+}
+
+export interface DccAuthorityRiverboatsCohortSummary {
+  sourceTag: typeof DCC_AUTHORITY_NOLA_RIVERBOATS_SRC;
+  dccGuideUrl: string;
+  targetComparisonUrl: string;
+  excludedTestSessionsFromCustomerTotals: true;
+  visitorsArrived: {
+    totalEvents: number;
+    uniqueSessions: number;
+  };
+  boatChosen: {
+    totalEvents: number;
+    uniqueSessions: number;
+    natchezEvents: number;
+    natchezUniqueSessions: number;
+    cityOfNewOrleansEvents: number;
+    cityOfNewOrleansUniqueSessions: number;
+  };
+  exactFareHarborItemOpened: {
+    totalEvents: number;
+    uniqueSessions: number;
+    natchez561220Events: number;
+    natchez561220UniqueSessions: number;
+    city694782Events: number;
+    city694782UniqueSessions: number;
+  };
+  providerConfirmedOutcomes: {
+    confirmedBookingsCount: number;
+    confirmedGrossSalesUsd: number;
+    confirmedCommissionsUsd: number;
+    status: "confirmed_bookings_present" | "awaiting_provider_confirmation";
+  };
+}
+
+export interface VerifiedRiverboatTestSessionRecord {
+  sessionId: string;
+  entrySource: string;
+  landingPath: string | null;
+  comparisonVisited: boolean;
+  boatSelected: RiverboatVesselKey | null;
+  tourDetailOpened: string | null;
+  checkoutOpenedItemId: string | null;
+  completedAllStagesThroughCheckout: boolean;
+  excludedFromCustomerTotals: true;
+  lastEventAt: string;
 }
 
 export interface RiverboatComparisonFunnelReport {
@@ -72,6 +135,7 @@ export interface RiverboatComparisonFunnelReport {
   comparisonUrl: string;
   windowDays: number;
   includeSyntheticTests: boolean;
+  customerTotalsExcludeTestSessions: true;
   stages: {
     comparisonVisits: {
       totalEvents: number;
@@ -93,15 +157,25 @@ export interface RiverboatComparisonFunnelReport {
       totalConfirmedBookings: number;
       confirmedFromComparisonSessions: number;
       confirmedGrossSalesUsd: number;
+      confirmedCommissionsUsd: number;
       conversionFromCheckoutOpenedPct: number | null;
       status: "confirmed_bookings_present" | "awaiting_provider_confirmation";
     };
   };
+  dccAuthorityRiverboatsCorridor: DccAuthorityRiverboatsCohortSummary;
   vessels: {
     natchez: RiverboatVesselFunnelMetrics;
     cityOfNewOrleans: RiverboatVesselFunnelMetrics;
   };
   entryPageBreakdown: RiverboatEntryPageBreakdownRow[];
+  entrySourceBreakdown: RiverboatEntrySourceBreakdownRow[];
+  verifiedTestSessions: {
+    excludedFromCustomerTotals: true;
+    totalTestSessionsCount: number;
+    dccAuthorityRiverboatsTestSessionsCount: number;
+    verifiedCheckoutTestSessionsCount: number;
+    sessions: VerifiedRiverboatTestSessionRecord[];
+  };
   recentFunnelEvents: Array<{
     occurredAt: string;
     sessionId: string | null;
@@ -109,6 +183,7 @@ export interface RiverboatComparisonFunnelReport {
     vesselKey: RiverboatVesselKey | null;
     productSlug: string | null;
     itemId: string | null;
+    entrySource: string | null;
     landingPath: string | null;
     sourcePage: string | null;
     targetPath: string | null;
@@ -135,6 +210,27 @@ export function isRiverboatComparisonPath(pathOrUrl: unknown): boolean {
   );
 }
 
+export function isRiverboatTestEvent(ev: any): boolean {
+  const sessionId = String(ev?.sessionId || ev?.session_id || "").trim().toLowerCase();
+  const handoffId = String(ev?.handoffId || ev?.handoff_id || "").trim().toLowerCase();
+  if (
+    sessionId.startsWith("wno_test_") ||
+    sessionId.startsWith("wno_verify_") ||
+    sessionId.startsWith("test_") ||
+    sessionId.startsWith("smoke_") ||
+    handoffId.startsWith("wno_test_") ||
+    handoffId.startsWith("test_") ||
+    handoffId.startsWith("smoke_")
+  ) {
+    return true;
+  }
+  const meta =
+    ev?.metadata && typeof ev.metadata === "object"
+      ? (ev.metadata as Record<string, unknown>)
+      : {};
+  return Boolean(meta.is_test === true || meta.test === true || meta.synthetic === true);
+}
+
 export function inferRiverboatVesselFromData(input: {
   productSlug?: unknown;
   targetPath?: unknown;
@@ -145,9 +241,10 @@ export function inferRiverboatVesselFromData(input: {
   if (boat === "natchez" || boat === "steamboat_natchez") return "natchez";
   if (boat === "city_of_new_orleans" || boat === "city") return "city_of_new_orleans";
 
-  const itemId = typeof input.itemId === "string" || typeof input.itemId === "number"
-    ? String(input.itemId).trim()
-    : "";
+  const itemId =
+    typeof input.itemId === "string" || typeof input.itemId === "number"
+      ? String(input.itemId).trim()
+      : "";
   if (itemId && NATCHEZ_ALL_ITEM_IDS.has(itemId)) return "natchez";
   if (itemId && CITY_RIVERBOAT_ALL_ITEM_IDS.has(itemId)) return "city_of_new_orleans";
 
@@ -194,6 +291,30 @@ function pct(num: number, den: number): number | null {
   return Math.round((num / den) * 1000) / 10;
 }
 
+function roundUsd(amount: number): number {
+  return Math.round(amount * 100) / 100;
+}
+
+function extractRawSourceTag(ev: any): string | null {
+  const meta =
+    ev?.metadata && typeof ev.metadata === "object"
+      ? (ev.metadata as Record<string, unknown>)
+      : {};
+  const explicitEntrySource = String(meta.entry_source || meta.entrySource || "").trim();
+  if (explicitEntrySource) return explicitEntrySource;
+
+  const rawSourcePage = String(ev?.sourcePage || ev?.source_page || "").trim();
+  if (
+    rawSourcePage &&
+    !rawSourcePage.startsWith("/") &&
+    !rawSourcePage.startsWith("http://") &&
+    !rawSourcePage.startsWith("https://")
+  ) {
+    return rawSourcePage;
+  }
+  return null;
+}
+
 export async function buildRiverboatComparisonFunnelReport(options?: {
   windowDays?: number;
   customEvents?: any[];
@@ -201,21 +322,26 @@ export async function buildRiverboatComparisonFunnelReport(options?: {
   const windowDays = options?.windowDays ?? 28;
   const cutoffMs = Date.now() - windowDays * 24 * 60 * 60 * 1000;
 
-  const rawEvents = options?.customEvents ?? (await listRecentProductionCorridorEvents(10000));
+  const rawEvents = options?.customEvents ?? (await listRecentCorridorEvents(10000));
   const outcomes = await listCommercialOutcomes().catch(() => []);
 
-  const wnoEvents = rawEvents.filter((ev: any) => {
+  const allWnoEvents = rawEvents.filter((ev: any) => {
     const cid = ev.corridorId || ev.corridor_id;
     if (cid !== "wno-commerce") return false;
     const ts = Date.parse(ev.occurredAt || ev.occurred_at || ev.createdAt || ev.created_at || "");
     return !Number.isFinite(ts) || ts >= cutoffMs;
   });
 
-  // Track sessions that visited the riverboat comparison page
+  // Partition customer events vs tagged test events so test sessions are excluded from customer totals
+  const wnoEvents = allWnoEvents.filter((ev: any) => !isRiverboatTestEvent(ev));
+  const wnoTestEvents = allWnoEvents.filter((ev: any) => isRiverboatTestEvent(ev));
+
+  // Track sessions that visited the riverboat comparison page and map sessionId -> entrySource
   const comparisonSessions = new Set<string>();
+  const sessionEntrySourceMap = new Map<string, string>();
   let comparisonVisitEvents = 0;
 
-  // First pass: identify all sessions that touched /compare/natchez-vs-city-of-new-orleans-riverboat
+  // First pass on customer events: identify all sessions that touched /compare/natchez-vs-city-of-new-orleans-riverboat and their entrySource
   for (const ev of wnoEvents) {
     const sessionId = String(ev.sessionId || ev.session_id || "").trim();
     const landingPath = ev.landingPath || ev.landing_path || "";
@@ -235,6 +361,16 @@ export async function buildRiverboatComparisonFunnelReport(options?: {
 
     if (touchedComparison && sessionId) {
       comparisonSessions.add(sessionId);
+    }
+
+    const rawSourceTag = extractRawSourceTag(ev);
+    if (sessionId && rawSourceTag) {
+      if (
+        !sessionEntrySourceMap.has(sessionId) ||
+        rawSourceTag === DCC_AUTHORITY_NOLA_RIVERBOATS_SRC
+      ) {
+        sessionEntrySourceMap.set(sessionId, rawSourceTag);
+      }
     }
   }
 
@@ -260,6 +396,7 @@ export async function buildRiverboatComparisonFunnelReport(options?: {
       confirmedCount: number;
       confirmedFromCompCount: number;
       confirmedGrossSalesUsd: number;
+      confirmedCommissionsUsd: number;
     }
   > = {
     natchez: {
@@ -273,6 +410,7 @@ export async function buildRiverboatComparisonFunnelReport(options?: {
       confirmedCount: 0,
       confirmedFromCompCount: 0,
       confirmedGrossSalesUsd: 0,
+      confirmedCommissionsUsd: 0,
     },
     city_of_new_orleans: {
       boatSelectedEvents: 0,
@@ -285,6 +423,7 @@ export async function buildRiverboatComparisonFunnelReport(options?: {
       confirmedCount: 0,
       confirmedFromCompCount: 0,
       confirmedGrossSalesUsd: 0,
+      confirmedCommissionsUsd: 0,
     },
   };
 
@@ -301,11 +440,60 @@ export async function buildRiverboatComparisonFunnelReport(options?: {
         natchezCheckoutOpened561220: 0,
         cityCheckoutOpened694782: 0,
         providerConfirmedBookings: 0,
+        confirmedGrossSalesUsd: 0,
+        confirmedCommissionsUsd: 0,
       };
       entryPageMap.set(key, row);
     }
     return row;
   }
+
+  const entrySourceMap = new Map<
+    string,
+    RiverboatEntrySourceBreakdownRow & { sessions: Set<string> }
+  >();
+  function getSourceRow(entrySource: string) {
+    const key = entrySource || "direct-or-untagged";
+    let row = entrySourceMap.get(key);
+    if (!row) {
+      row = {
+        entrySource: key,
+        comparisonVisits: 0,
+        uniqueVisitorSessions: 0,
+        natchezSelected: 0,
+        citySelected: 0,
+        natchezCheckoutOpened561220: 0,
+        cityCheckoutOpened694782: 0,
+        providerConfirmedBookings: 0,
+        confirmedGrossSalesUsd: 0,
+        confirmedCommissionsUsd: 0,
+        sessions: new Set<string>(),
+      };
+      entrySourceMap.set(key, row);
+    }
+    return row;
+  }
+
+  // Dedicated accumulator for src=dcc-authority-nola-riverboats
+  const dccCohortAcc = {
+    arrivedEvents: 0,
+    arrivedSessions: new Set<string>(),
+    boatChosenEvents: 0,
+    boatChosenSessions: new Set<string>(),
+    natchezChosenEvents: 0,
+    natchezChosenSessions: new Set<string>(),
+    cityChosenEvents: 0,
+    cityChosenSessions: new Set<string>(),
+    checkoutOpenedEvents: 0,
+    checkoutOpenedSessions: new Set<string>(),
+    natchez561220Events: 0,
+    natchez561220Sessions: new Set<string>(),
+    city694782Events: 0,
+    city694782Sessions: new Set<string>(),
+    confirmedBookingsCount: 0,
+    confirmedGrossSalesUsd: 0,
+    confirmedCommissionsUsd: 0,
+  };
 
   const recentFunnelEvents: RiverboatComparisonFunnelReport["recentFunnelEvents"] = [];
 
@@ -327,6 +515,13 @@ export async function buildRiverboatComparisonFunnelReport(options?: {
     const occurredAt = String(
       ev.occurredAt || ev.occurred_at || ev.createdAt || ev.created_at || new Date().toISOString(),
     );
+
+    const resolvedEntrySource =
+      extractRawSourceTag(ev) ||
+      (sessionId ? sessionEntrySourceMap.get(sessionId) : undefined) ||
+      "direct-or-untagged";
+
+    const isDccRiverboatsSource = resolvedEntrySource === DCC_AUTHORITY_NOLA_RIVERBOATS_SRC;
 
     const isFromComparisonSession =
       (sessionId !== null && comparisonSessions.has(sessionId)) ||
@@ -365,6 +560,15 @@ export async function buildRiverboatComparisonFunnelReport(options?: {
       comparisonVisitEvents++;
       if (sessionId) comparisonSessions.add(sessionId);
       getEntryRow(entryKey).comparisonVisits++;
+      const sRow = getSourceRow(resolvedEntrySource);
+      sRow.comparisonVisits++;
+      if (sessionId) sRow.sessions.add(sessionId);
+
+      if (isDccRiverboatsSource) {
+        dccCohortAcc.arrivedEvents++;
+        if (sessionId) dccCohortAcc.arrivedSessions.add(sessionId);
+      }
+
       recentFunnelEvents.push({
         occurredAt,
         sessionId,
@@ -372,6 +576,7 @@ export async function buildRiverboatComparisonFunnelReport(options?: {
         vesselKey: null,
         productSlug: null,
         itemId: null,
+        entrySource: resolvedEntrySource,
         landingPath,
         sourcePage,
         targetPath,
@@ -398,8 +603,27 @@ export async function buildRiverboatComparisonFunnelReport(options?: {
       }
       vesselAcc[vessel].boatSelectedEvents++;
       const row = getEntryRow(entryKey);
-      if (vessel === "natchez") row.natchezSelected++;
-      else row.citySelected++;
+      const sRow = getSourceRow(resolvedEntrySource);
+      if (sessionId) sRow.sessions.add(sessionId);
+      if (vessel === "natchez") {
+        row.natchezSelected++;
+        sRow.natchezSelected++;
+      } else {
+        row.citySelected++;
+        sRow.citySelected++;
+      }
+
+      if (isDccRiverboatsSource) {
+        dccCohortAcc.boatChosenEvents++;
+        if (sessionId) dccCohortAcc.boatChosenSessions.add(sessionId);
+        if (vessel === "natchez") {
+          dccCohortAcc.natchezChosenEvents++;
+          if (sessionId) dccCohortAcc.natchezChosenSessions.add(sessionId);
+        } else {
+          dccCohortAcc.cityChosenEvents++;
+          if (sessionId) dccCohortAcc.cityChosenSessions.add(sessionId);
+        }
+      }
 
       recentFunnelEvents.push({
         occurredAt,
@@ -410,6 +634,7 @@ export async function buildRiverboatComparisonFunnelReport(options?: {
           vessel === "natchez" ? NATCHEZ_DAYTIME_PRODUCT_SLUG : CITY_RIVERBOAT_PRODUCT_SLUG,
         itemId:
           vessel === "natchez" ? NATCHEZ_DAYTIME_PRIMARY_ITEM_ID : CITY_RIVERBOAT_PRIMARY_ITEM_ID,
+        entrySource: resolvedEntrySource,
         landingPath,
         sourcePage,
         targetPath,
@@ -427,8 +652,26 @@ export async function buildRiverboatComparisonFunnelReport(options?: {
           vesselAcc[vessel].boatSelectedSessions.add(sessionId);
           boatSelectedEvents++;
           const row = getEntryRow(entryKey);
-          if (vessel === "natchez") row.natchezSelected++;
-          else row.citySelected++;
+          const sRow = getSourceRow(resolvedEntrySource);
+          sRow.sessions.add(sessionId);
+          if (vessel === "natchez") {
+            row.natchezSelected++;
+            sRow.natchezSelected++;
+          } else {
+            row.citySelected++;
+            sRow.citySelected++;
+          }
+          if (isDccRiverboatsSource) {
+            dccCohortAcc.boatChosenEvents++;
+            dccCohortAcc.boatChosenSessions.add(sessionId);
+            if (vessel === "natchez") {
+              dccCohortAcc.natchezChosenEvents++;
+              dccCohortAcc.natchezChosenSessions.add(sessionId);
+            } else {
+              dccCohortAcc.cityChosenEvents++;
+              dccCohortAcc.cityChosenSessions.add(sessionId);
+            }
+          }
         }
       }
       continue;
@@ -456,10 +699,29 @@ export async function buildRiverboatComparisonFunnelReport(options?: {
         vesselAcc[vessel].checkoutFromCompSessions.add(sessionId);
       }
       const row = getEntryRow(entryKey);
+      const sRow = getSourceRow(resolvedEntrySource);
+      if (sessionId) sRow.sessions.add(sessionId);
       if (vessel === "natchez" && itemId === NATCHEZ_DAYTIME_PRIMARY_ITEM_ID) {
         row.natchezCheckoutOpened561220++;
+        sRow.natchezCheckoutOpened561220++;
       } else if (vessel === "city_of_new_orleans" && itemId === CITY_RIVERBOAT_PRIMARY_ITEM_ID) {
         row.cityCheckoutOpened694782++;
+        sRow.cityCheckoutOpened694782++;
+      }
+
+      if (isDccRiverboatsSource && isPrimaryItem) {
+        dccCohortAcc.checkoutOpenedEvents++;
+        if (sessionId) dccCohortAcc.checkoutOpenedSessions.add(sessionId);
+        if (vessel === "natchez" && itemId === NATCHEZ_DAYTIME_PRIMARY_ITEM_ID) {
+          dccCohortAcc.natchez561220Events++;
+          if (sessionId) dccCohortAcc.natchez561220Sessions.add(sessionId);
+        } else if (
+          vessel === "city_of_new_orleans" &&
+          itemId === CITY_RIVERBOAT_PRIMARY_ITEM_ID
+        ) {
+          dccCohortAcc.city694782Events++;
+          if (sessionId) dccCohortAcc.city694782Sessions.add(sessionId);
+        }
       }
 
       recentFunnelEvents.push({
@@ -470,6 +732,7 @@ export async function buildRiverboatComparisonFunnelReport(options?: {
         productSlug:
           vessel === "natchez" ? NATCHEZ_DAYTIME_PRODUCT_SLUG : CITY_RIVERBOAT_PRODUCT_SLUG,
         itemId,
+        entrySource: resolvedEntrySource,
         landingPath,
         sourcePage,
         targetPath,
@@ -490,13 +753,42 @@ export async function buildRiverboatComparisonFunnelReport(options?: {
           : typeof meta.booking_value_cents === "number"
             ? meta.booking_value_cents / 100
             : 0;
+      const commissionUsd =
+        typeof meta.commission_amount_usd === "number"
+          ? meta.commission_amount_usd
+          : typeof meta.commission_amount_cents === "number"
+            ? meta.commission_amount_cents / 100
+            : 0;
+
       vesselAcc[vessel].confirmedCount++;
       vesselAcc[vessel].confirmedGrossSalesUsd += grossUsd;
+      vesselAcc[vessel].confirmedCommissionsUsd += commissionUsd;
       if (isFromComparisonSession) {
         vesselAcc[vessel].confirmedFromCompCount++;
         if (sessionId) confirmedFromCompSessions.add(sessionId);
       }
-      getEntryRow(entryKey).providerConfirmedBookings++;
+
+      const row = getEntryRow(entryKey);
+      row.providerConfirmedBookings++;
+      row.confirmedGrossSalesUsd = roundUsd(row.confirmedGrossSalesUsd + grossUsd);
+      row.confirmedCommissionsUsd = roundUsd(row.confirmedCommissionsUsd + commissionUsd);
+
+      const sRow = getSourceRow(resolvedEntrySource);
+      if (sessionId) sRow.sessions.add(sessionId);
+      sRow.providerConfirmedBookings++;
+      sRow.confirmedGrossSalesUsd = roundUsd(sRow.confirmedGrossSalesUsd + grossUsd);
+      sRow.confirmedCommissionsUsd = roundUsd(sRow.confirmedCommissionsUsd + commissionUsd);
+
+      if (isDccRiverboatsSource) {
+        dccCohortAcc.confirmedBookingsCount++;
+        dccCohortAcc.confirmedGrossSalesUsd = roundUsd(
+          dccCohortAcc.confirmedGrossSalesUsd + grossUsd,
+        );
+        dccCohortAcc.confirmedCommissionsUsd = roundUsd(
+          dccCohortAcc.confirmedCommissionsUsd + commissionUsd,
+        );
+      }
+
       recentFunnelEvents.push({
         occurredAt,
         sessionId,
@@ -505,6 +797,7 @@ export async function buildRiverboatComparisonFunnelReport(options?: {
         productSlug:
           vessel === "natchez" ? NATCHEZ_DAYTIME_PRODUCT_SLUG : CITY_RIVERBOAT_PRODUCT_SLUG,
         itemId,
+        entrySource: resolvedEntrySource,
         landingPath,
         sourcePage,
         targetPath,
@@ -519,6 +812,10 @@ export async function buildRiverboatComparisonFunnelReport(options?: {
     if (outcome.eventType !== "BOOKING_CONFIRMED" && outcome.eventType !== "BOOKING_FULFILLED") {
       continue;
     }
+    const refLower = String(outcome.providerBookingRef || "").toLowerCase();
+    if (refLower.startsWith("test_") || refLower.startsWith("wno_test_") || refLower.includes("synthetic")) {
+      continue;
+    }
     if (seenOutcomeRefs.has(outcome.providerBookingRef)) continue;
     const vessel = inferRiverboatVesselFromData({
       productSlug: outcome.bookedProductCode,
@@ -530,16 +827,127 @@ export async function buildRiverboatComparisonFunnelReport(options?: {
     if (outcome.bookingValue?.amount) {
       vesselAcc[vessel].confirmedGrossSalesUsd += outcome.bookingValue.amount;
     }
+    const outcomeCommission =
+      outcome.paidCommission?.amount ?? outcome.estimatedCommission?.amount ?? 0;
+    if (outcomeCommission) {
+      vesselAcc[vessel].confirmedCommissionsUsd += outcomeCommission;
+    }
   }
+
+  // Summarize verified test sessions separately so they can be verified without polluting customer totals
+  const testSessionsMap = new Map<string, VerifiedRiverboatTestSessionRecord>();
+  for (const ev of wnoTestEvents) {
+    const sessionId = String(ev.sessionId || ev.session_id || "").trim();
+    if (!sessionId) continue;
+    const eventName = String(ev.eventName || ev.event_name || "").trim();
+    const landingPath = normalizePath(ev.landingPath || ev.landing_path || "") || null;
+    const sourcePage = normalizePath(ev.sourcePage || ev.source_page || "") || null;
+    const targetPath = String(ev.targetPath || ev.target_path || "").trim() || null;
+    const clickedProductSlug =
+      String(ev.clickedProductSlug || ev.clicked_product_slug || "").trim() || null;
+    const meta = (ev.metadata && typeof ev.metadata === "object" ? ev.metadata : {}) as Record<
+      string,
+      unknown
+    >;
+    const originalEventName = String(meta.original_event_name || eventName).trim();
+    const funnelStageMeta = String(meta.funnel_stage || "").trim();
+    const compSlug = String(meta.comparison_slug || meta.comparisonSlug || "").trim();
+    const occurredAt = String(
+      ev.occurredAt || ev.occurred_at || ev.createdAt || ev.created_at || new Date().toISOString(),
+    );
+    const rawSource = extractRawSourceTag(ev);
+
+    let rec = testSessionsMap.get(sessionId);
+    if (!rec) {
+      rec = {
+        sessionId,
+        entrySource: rawSource || "direct-or-untagged",
+        landingPath,
+        comparisonVisited: false,
+        boatSelected: null,
+        tourDetailOpened: null,
+        checkoutOpenedItemId: null,
+        completedAllStagesThroughCheckout: false,
+        excludedFromCustomerTotals: true,
+        lastEventAt: occurredAt,
+      };
+      testSessionsMap.set(sessionId, rec);
+    }
+    if (rawSource && (rec.entrySource === "direct-or-untagged" || rawSource === DCC_AUTHORITY_NOLA_RIVERBOATS_SRC)) {
+      rec.entrySource = rawSource;
+    }
+    if (!rec.landingPath && landingPath) {
+      rec.landingPath = landingPath;
+    }
+    if (occurredAt > rec.lastEventAt) {
+      rec.lastEventAt = occurredAt;
+    }
+
+    const vessel = inferRiverboatVesselFromData({
+      productSlug: clickedProductSlug || meta.product_slug,
+      targetPath,
+      itemId: meta.item_id,
+      selectedBoat: meta.selected_boat,
+    });
+    const itemId = extractFareHarborItemId({
+      itemId: meta.item_id,
+      targetPath,
+      productSlug: clickedProductSlug || meta.product_slug,
+    });
+
+    if (
+      funnelStageMeta === "comparison_visit" ||
+      originalEventName === "comparison_viewed" ||
+      isRiverboatComparisonPath(targetPath) ||
+      isRiverboatComparisonPath(landingPath) ||
+      compSlug === RIVERBOAT_COMPARISON_SLUG
+    ) {
+      rec.comparisonVisited = true;
+    }
+
+    if (
+      (funnelStageMeta === "boat_selected" ||
+        originalEventName === "comparison_boat_selected" ||
+        originalEventName === "boat_selected" ||
+        eventName === "product_opened") &&
+      vessel
+    ) {
+      rec.boatSelected = vessel;
+      if (eventName === "product_opened") {
+        rec.tourDetailOpened =
+          vessel === "natchez" ? "/tours/daytime-jazz-cruise" : "/tours/city-of-new-orleans-riverboat-cruise";
+      }
+    }
+
+    if (
+      (eventName === "booking_opened" ||
+        funnelStageMeta === "checkout_opened" ||
+        originalEventName === "fareharbor_checkout_opened") &&
+      !isRiverboatComparisonPath(sourcePage) &&
+      vessel
+    ) {
+      rec.checkoutOpenedItemId = itemId;
+    }
+
+    rec.completedAllStagesThroughCheckout = Boolean(
+      rec.comparisonVisited && rec.boatSelected && rec.checkoutOpenedItemId,
+    );
+  }
+
+  const verifiedTestSessionList = Array.from(testSessionsMap.values()).sort((a, b) =>
+    b.lastEventAt.localeCompare(a.lastEventAt),
+  );
 
   const totalConfirmedBookings =
     vesselAcc.natchez.confirmedCount + vesselAcc.city_of_new_orleans.confirmedCount;
-  const totalConfirmedGrossUsd =
-    Math.round(
-      (vesselAcc.natchez.confirmedGrossSalesUsd +
-        vesselAcc.city_of_new_orleans.confirmedGrossSalesUsd) *
-        100,
-    ) / 100;
+  const totalConfirmedGrossUsd = roundUsd(
+    vesselAcc.natchez.confirmedGrossSalesUsd +
+      vesselAcc.city_of_new_orleans.confirmedGrossSalesUsd,
+  );
+  const totalConfirmedCommissionsUsd = roundUsd(
+    vesselAcc.natchez.confirmedCommissionsUsd +
+      vesselAcc.city_of_new_orleans.confirmedCommissionsUsd,
+  );
 
   return {
     generatedAt: new Date().toISOString(),
@@ -549,6 +957,7 @@ export async function buildRiverboatComparisonFunnelReport(options?: {
       "https://www.welcometoneworleanstours.com/compare/natchez-vs-city-of-new-orleans-riverboat",
     windowDays,
     includeSyntheticTests: Boolean(options?.customEvents),
+    customerTotalsExcludeTestSessions: true,
     stages: {
       comparisonVisits: {
         totalEvents: comparisonVisitEvents,
@@ -573,9 +982,46 @@ export async function buildRiverboatComparisonFunnelReport(options?: {
         totalConfirmedBookings,
         confirmedFromComparisonSessions: confirmedFromCompSessions.size,
         confirmedGrossSalesUsd: totalConfirmedGrossUsd,
+        confirmedCommissionsUsd: totalConfirmedCommissionsUsd,
         conversionFromCheckoutOpenedPct: pct(totalConfirmedBookings, checkoutOpenedTotalEvents),
         status:
           totalConfirmedBookings > 0
+            ? "confirmed_bookings_present"
+            : "awaiting_provider_confirmation",
+      },
+    },
+    dccAuthorityRiverboatsCorridor: {
+      sourceTag: DCC_AUTHORITY_NOLA_RIVERBOATS_SRC,
+      dccGuideUrl: "https://www.destinationcommandcenter.com/new-orleans/tours#river-cruises",
+      targetComparisonUrl:
+        "https://www.welcometoneworleanstours.com/compare/natchez-vs-city-of-new-orleans-riverboat?src=dcc-authority-nola-riverboats",
+      excludedTestSessionsFromCustomerTotals: true,
+      visitorsArrived: {
+        totalEvents: dccCohortAcc.arrivedEvents,
+        uniqueSessions: dccCohortAcc.arrivedSessions.size,
+      },
+      boatChosen: {
+        totalEvents: dccCohortAcc.boatChosenEvents,
+        uniqueSessions: dccCohortAcc.boatChosenSessions.size,
+        natchezEvents: dccCohortAcc.natchezChosenEvents,
+        natchezUniqueSessions: dccCohortAcc.natchezChosenSessions.size,
+        cityOfNewOrleansEvents: dccCohortAcc.cityChosenEvents,
+        cityOfNewOrleansUniqueSessions: dccCohortAcc.cityChosenSessions.size,
+      },
+      exactFareHarborItemOpened: {
+        totalEvents: dccCohortAcc.checkoutOpenedEvents,
+        uniqueSessions: dccCohortAcc.checkoutOpenedSessions.size,
+        natchez561220Events: dccCohortAcc.natchez561220Events,
+        natchez561220UniqueSessions: dccCohortAcc.natchez561220Sessions.size,
+        city694782Events: dccCohortAcc.city694782Events,
+        city694782UniqueSessions: dccCohortAcc.city694782Sessions.size,
+      },
+      providerConfirmedOutcomes: {
+        confirmedBookingsCount: dccCohortAcc.confirmedBookingsCount,
+        confirmedGrossSalesUsd: dccCohortAcc.confirmedGrossSalesUsd,
+        confirmedCommissionsUsd: dccCohortAcc.confirmedCommissionsUsd,
+        status:
+          dccCohortAcc.confirmedBookingsCount > 0
             ? "confirmed_bookings_present"
             : "awaiting_provider_confirmation",
       },
@@ -599,7 +1045,8 @@ export async function buildRiverboatComparisonFunnelReport(options?: {
         checkoutOpenedFromComparisonSessions: vesselAcc.natchez.checkoutFromCompSessions.size,
         providerConfirmedBookingsCount: vesselAcc.natchez.confirmedCount,
         providerConfirmedFromComparisonCount: vesselAcc.natchez.confirmedFromCompCount,
-        confirmedGrossSalesUsd: Math.round(vesselAcc.natchez.confirmedGrossSalesUsd * 100) / 100,
+        confirmedGrossSalesUsd: roundUsd(vesselAcc.natchez.confirmedGrossSalesUsd),
+        confirmedCommissionsUsd: roundUsd(vesselAcc.natchez.confirmedCommissionsUsd),
         unconfirmedCheckoutOpensCount: Math.max(
           0,
           vesselAcc.natchez.checkoutAllVariantsEvents - vesselAcc.natchez.confirmedCount,
@@ -629,8 +1076,8 @@ export async function buildRiverboatComparisonFunnelReport(options?: {
           vesselAcc.city_of_new_orleans.checkoutFromCompSessions.size,
         providerConfirmedBookingsCount: vesselAcc.city_of_new_orleans.confirmedCount,
         providerConfirmedFromComparisonCount: vesselAcc.city_of_new_orleans.confirmedFromCompCount,
-        confirmedGrossSalesUsd:
-          Math.round(vesselAcc.city_of_new_orleans.confirmedGrossSalesUsd * 100) / 100,
+        confirmedGrossSalesUsd: roundUsd(vesselAcc.city_of_new_orleans.confirmedGrossSalesUsd),
+        confirmedCommissionsUsd: roundUsd(vesselAcc.city_of_new_orleans.confirmedCommissionsUsd),
         unconfirmedCheckoutOpensCount: Math.max(
           0,
           vesselAcc.city_of_new_orleans.checkoutAllVariantsEvents -
@@ -649,6 +1096,29 @@ export async function buildRiverboatComparisonFunnelReport(options?: {
         b.citySelected -
         (a.comparisonVisits + a.natchezSelected + a.citySelected),
     ),
+    entrySourceBreakdown: Array.from(entrySourceMap.values())
+      .map(({ sessions, ...rest }) => ({
+        ...rest,
+        uniqueVisitorSessions: sessions.size,
+      }))
+      .sort(
+        (a, b) =>
+          b.comparisonVisits +
+          b.natchezSelected +
+          b.citySelected -
+          (a.comparisonVisits + a.natchezSelected + a.citySelected),
+      ),
+    verifiedTestSessions: {
+      excludedFromCustomerTotals: true,
+      totalTestSessionsCount: verifiedTestSessionList.length,
+      dccAuthorityRiverboatsTestSessionsCount: verifiedTestSessionList.filter(
+        (s) => s.entrySource === DCC_AUTHORITY_NOLA_RIVERBOATS_SRC,
+      ).length,
+      verifiedCheckoutTestSessionsCount: verifiedTestSessionList.filter(
+        (s) => s.completedAllStagesThroughCheckout,
+      ).length,
+      sessions: verifiedTestSessionList.slice(0, 20),
+    },
     recentFunnelEvents: recentFunnelEvents.slice(0, 25),
   };
 }

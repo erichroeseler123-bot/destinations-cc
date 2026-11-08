@@ -145,6 +145,11 @@ export async function POST(request: NextRequest) {
 
   try {
     const mappedEventName = mapEventName(originalEventName);
+    const isTestSession = Boolean(
+      cleanBoolean(body.isTest ?? body.is_test ?? body.test) ||
+        sessionId.toLowerCase().startsWith("wno_test_") ||
+        sessionId.toLowerCase().startsWith("wno_verify_"),
+    );
     const stored = await appendCorridorEventDurably({
       corridor_id: "wno-commerce",
       event_name: mappedEventName as
@@ -170,10 +175,15 @@ export async function POST(request: NextRequest) {
         funnel_stage: clean(body.funnelStage || body.funnel_stage, 64),
         comparison_slug: clean(body.comparisonSlug || body.comparison_slug, 120),
         selected_boat: clean(body.selectedBoat || body.selected_boat, 64),
+        entry_source: clean(body.entrySource || body.source, 120),
+        is_test: isTestSession || undefined,
+        test: isTestSession || undefined,
         operator_id: clean(body.operatorId),
         variant_label: clean(body.variantLabel),
         item_id: clean(body.itemId),
         flow_id: clean(body.flowId),
+        booking_value_usd: cleanNumber(body.bookingValueUsd ?? body.booking_value_usd),
+        commission_amount_usd: cleanNumber(body.commissionAmountUsd ?? body.commission_amount_usd),
         cta_location: clean(body.ctaLocation),
         cta_label: clean(body.ctaLabel),
         signal: clean(body.signal),
@@ -208,7 +218,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return withCors(NextResponse.json({ ok: stored.ok }));
+    return withCors(NextResponse.json({ ok: stored.ok, isTestSession }));
   } catch (err) {
     console.error("WNO telemetry route error:", err);
     return withCors(

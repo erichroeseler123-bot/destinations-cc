@@ -269,4 +269,199 @@ test("New Orleans Riverboat Comparison Funnel & One-Mile Evidence Prioritizer Su
       "bounded_batch_paused",
     );
   });
+
+  await t.test("4. DCC New Orleans tours guide links to Compare Natchez and City of New Orleans with src=dcc-authority-nola-riverboats, excludes test sessions from customer totals, and records provider-confirmed bookings and commissions", async () => {
+    const toursPage = fs.readFileSync(
+      path.join(process.cwd(), "app/new-orleans/tours/page.tsx"),
+      "utf8",
+    );
+    assert.match(
+      toursPage,
+      /https:\/\/www\.welcometoneworleanstours\.com\/compare\/natchez-vs-city-of-new-orleans-riverboat\?src=dcc-authority-nola-riverboats/,
+    );
+    assert.match(toursPage, /Compare Natchez and City of New Orleans/);
+    assert.match(toursPage, /section\.id === "River Cruises"/);
+
+    const nowIso = new Date().toISOString();
+    const comparisonPath = RIVERBOAT_COMPARISON_PATHS[0];
+
+    const customEvents = [
+      // Customer Session A: Arrives from DCC riverboat section (src=dcc-authority-nola-riverboats), selects Natchez, opens FH 561220, provider confirms booking + commission
+      {
+        corridorId: "wno-commerce",
+        eventName: "page_viewed",
+        sessionId: "wno_cust_dcc_nola_1",
+        sourcePage: "dcc-authority-nola-riverboats",
+        landingPath: comparisonPath,
+        targetPath: comparisonPath,
+        occurredAt: nowIso,
+        metadata: {
+          original_event_name: "comparison_viewed",
+          funnel_stage: "comparison_visit",
+          comparison_slug: RIVERBOAT_COMPARISON_SLUG,
+          entry_source: "dcc-authority-nola-riverboats",
+        },
+      },
+      {
+        corridorId: "wno-commerce",
+        eventName: "cta_clicked_primary",
+        sessionId: "wno_cust_dcc_nola_1",
+        sourcePage: comparisonPath,
+        landingPath: comparisonPath,
+        targetPath: "/tours/daytime-jazz-cruise",
+        clickedProductSlug: "daytime-jazz-cruise",
+        occurredAt: nowIso,
+        metadata: {
+          original_event_name: "comparison_boat_selected",
+          funnel_stage: "boat_selected",
+          comparison_slug: RIVERBOAT_COMPARISON_SLUG,
+          selected_boat: "natchez",
+          item_id: "561220",
+          entry_source: "dcc-authority-nola-riverboats",
+        },
+      },
+      {
+        corridorId: "wno-commerce",
+        eventName: "booking_opened",
+        sessionId: "wno_cust_dcc_nola_1",
+        sourcePage: "/tours/daytime-jazz-cruise",
+        landingPath: comparisonPath,
+        targetPath:
+          "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/561220/?asn=welcometoneworleanstours&ref=WelcomeToNewOrleansTours&flow=1621342&full-items=yes",
+        clickedProductSlug: "daytime-jazz-cruise",
+        occurredAt: nowIso,
+        metadata: {
+          original_event_name: "booking_opened",
+          funnel_stage: "checkout_opened",
+          comparison_slug: RIVERBOAT_COMPARISON_SLUG,
+          selected_boat: "natchez",
+          item_id: "561220",
+          flow_id: "1621342",
+          entry_source: "dcc-authority-nola-riverboats",
+        },
+      },
+      {
+        corridorId: "wno-commerce",
+        eventName: "booking_completed",
+        sessionId: "wno_cust_dcc_nola_1",
+        sourcePage: comparisonPath,
+        landingPath: comparisonPath,
+        clickedProductSlug: "daytime-jazz-cruise",
+        occurredAt: nowIso,
+        metadata: {
+          original_event_name: "provider_confirmed_booking",
+          funnel_stage: "provider_confirmed_booking",
+          comparison_slug: RIVERBOAT_COMPARISON_SLUG,
+          selected_boat: "natchez",
+          item_id: "561220",
+          entry_source: "dcc-authority-nola-riverboats",
+          booking_value_usd: 88,
+          commission_amount_usd: 13.2,
+        },
+      },
+
+      // Tagged Test Session B: Verified through checkout with src=dcc-authority-nola-riverboats, MUST be excluded from customer totals
+      {
+        corridorId: "wno-commerce",
+        eventName: "page_viewed",
+        sessionId: "wno_test_dcc_authority_nola_riverboats_1",
+        sourcePage: "dcc-authority-nola-riverboats",
+        landingPath: comparisonPath,
+        targetPath: comparisonPath,
+        occurredAt: nowIso,
+        metadata: {
+          original_event_name: "comparison_viewed",
+          funnel_stage: "comparison_visit",
+          comparison_slug: RIVERBOAT_COMPARISON_SLUG,
+          entry_source: "dcc-authority-nola-riverboats",
+          is_test: true,
+          test: true,
+        },
+      },
+      {
+        corridorId: "wno-commerce",
+        eventName: "cta_clicked_primary",
+        sessionId: "wno_test_dcc_authority_nola_riverboats_1",
+        sourcePage: comparisonPath,
+        landingPath: comparisonPath,
+        targetPath: "/tours/city-of-new-orleans-riverboat-cruise",
+        clickedProductSlug: "city-of-new-orleans-riverboat-cruise",
+        occurredAt: nowIso,
+        metadata: {
+          original_event_name: "comparison_boat_selected",
+          funnel_stage: "boat_selected",
+          comparison_slug: RIVERBOAT_COMPARISON_SLUG,
+          selected_boat: "city_of_new_orleans",
+          item_id: "694782",
+          entry_source: "dcc-authority-nola-riverboats",
+          is_test: true,
+          test: true,
+        },
+      },
+      {
+        corridorId: "wno-commerce",
+        eventName: "booking_opened",
+        sessionId: "wno_test_dcc_authority_nola_riverboats_1",
+        sourcePage: "/tours/city-of-new-orleans-riverboat-cruise",
+        landingPath: comparisonPath,
+        targetPath:
+          "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/694782/?asn=welcometoneworleanstours&ref=WelcomeToNewOrleansTours&flow=1621347&full-items=yes",
+        clickedProductSlug: "city-of-new-orleans-riverboat-cruise",
+        occurredAt: nowIso,
+        metadata: {
+          original_event_name: "booking_opened",
+          funnel_stage: "checkout_opened",
+          comparison_slug: RIVERBOAT_COMPARISON_SLUG,
+          selected_boat: "city_of_new_orleans",
+          item_id: "694782",
+          flow_id: "1621347",
+          entry_source: "dcc-authority-nola-riverboats",
+          is_test: true,
+          test: true,
+        },
+      },
+    ];
+
+    const report = await buildRiverboatComparisonFunnelReport({
+      windowDays: 28,
+      customEvents,
+    });
+
+    // Customer totals must ONLY count wno_cust_dcc_nola_1 (1 session, not 2!)
+    assert.strictEqual(report.customerTotalsExcludeTestSessions, true);
+    assert.strictEqual(report.stages.comparisonVisits.uniqueSessions, 1);
+    assert.strictEqual(report.stages.boatSelected.uniqueSessions, 1);
+    assert.strictEqual(report.stages.checkoutOpened.primaryItems561220And694782Events, 1);
+    assert.strictEqual(report.stages.providerConfirmedBookings.totalConfirmedBookings, 1);
+    assert.strictEqual(report.stages.providerConfirmedBookings.confirmedGrossSalesUsd, 88);
+    assert.strictEqual(report.stages.providerConfirmedBookings.confirmedCommissionsUsd, 13.2);
+
+    // DCC Authority Riverboats corridor summary
+    const dccCorridor = report.dccAuthorityRiverboatsCorridor;
+    assert.strictEqual(dccCorridor.sourceTag, "dcc-authority-nola-riverboats");
+    assert.strictEqual(dccCorridor.excludedTestSessionsFromCustomerTotals, true);
+    assert.strictEqual(dccCorridor.visitorsArrived.uniqueSessions, 1);
+    assert.strictEqual(dccCorridor.boatChosen.natchezEvents, 1);
+    assert.strictEqual(dccCorridor.boatChosen.cityOfNewOrleansEvents, 0);
+    assert.strictEqual(dccCorridor.exactFareHarborItemOpened.natchez561220Events, 1);
+    assert.strictEqual(dccCorridor.exactFareHarborItemOpened.city694782Events, 0);
+    assert.strictEqual(dccCorridor.providerConfirmedOutcomes.confirmedBookingsCount, 1);
+    assert.strictEqual(dccCorridor.providerConfirmedOutcomes.confirmedGrossSalesUsd, 88);
+    assert.strictEqual(dccCorridor.providerConfirmedOutcomes.confirmedCommissionsUsd, 13.2);
+
+    // Verified test session must be recorded separately and marked excludedFromCustomerTotals: true
+    assert.strictEqual(report.verifiedTestSessions.excludedFromCustomerTotals, true);
+    assert.strictEqual(report.verifiedTestSessions.totalTestSessionsCount, 1);
+    assert.strictEqual(report.verifiedTestSessions.dccAuthorityRiverboatsTestSessionsCount, 1);
+    assert.strictEqual(report.verifiedTestSessions.verifiedCheckoutTestSessionsCount, 1);
+    const verifiedSess = report.verifiedTestSessions.sessions[0];
+    assert.strictEqual(verifiedSess.sessionId, "wno_test_dcc_authority_nola_riverboats_1");
+    assert.strictEqual(verifiedSess.entrySource, "dcc-authority-nola-riverboats");
+    assert.strictEqual(verifiedSess.comparisonVisited, true);
+    assert.strictEqual(verifiedSess.boatSelected, "city_of_new_orleans");
+    assert.strictEqual(verifiedSess.checkoutOpenedItemId, "694782");
+    assert.strictEqual(verifiedSess.completedAllStagesThroughCheckout, true);
+    assert.strictEqual(verifiedSess.excludedFromCustomerTotals, true);
+  });
 });
+

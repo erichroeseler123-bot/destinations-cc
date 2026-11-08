@@ -302,6 +302,15 @@ export default async function NewOrleansToursPage({
                           Evening Jazz Cruise ($58 · Item 560825) →
                         </a>
                       </li>
+                      <li>
+                        <a
+                          href="https://www.welcometoneworleanstours.com/compare/natchez-vs-city-of-new-orleans-riverboat?src=dcc-authority-nola-riverboats"
+                          data-testid="dcc-wno-offer-compare-natchez-city"
+                          className="text-amber-300 hover:underline font-bold"
+                        >
+                          Compare Natchez and City of New Orleans →
+                        </a>
+                      </li>
                     </ul>
                   </div>
 
@@ -613,6 +622,30 @@ export default async function NewOrleansToursPage({
                   </div>
                   <p className="md:text-right text-sm text-[#9f9588]">{section.note}</p>
                 </div>
+                {section.id === "River Cruises" && (
+                  <div
+                    data-testid="dcc-riverboat-comparison-callout"
+                    className="rounded-2xl border border-[#d4af37]/40 bg-[#14110c] p-5 md:p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+                  >
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#d4af37]">
+                        Mississippi Riverboat Comparison · Steamboat NATCHEZ (Item 561220) vs Riverboat CITY of NEW ORLEANS (Item 694782)
+                      </p>
+                      <p className="text-sm text-[#e8dfcf]">
+                        Comparing the 2-hour authentic steamboat jazz cruise ($44) against the 75-minute sightseeing riverboat ($25.75) from Toulouse St. Wharf?
+                      </p>
+                    </div>
+                    <a
+                      href="https://www.welcometoneworleanstours.com/compare/natchez-vs-city-of-new-orleans-riverboat?src=dcc-authority-nola-riverboats"
+                      data-testid="dcc-compare-natchez-city-link"
+                      data-wno-event="riverboat_comparison_link_clicked"
+                      data-wno-label="Compare Natchez and City of New Orleans"
+                      className="shrink-0 inline-flex items-center justify-center rounded-xl bg-[#d4af37] px-5 py-3 text-xs font-black uppercase tracking-wider text-[#17130c] hover:bg-[#f3dfb3] transition"
+                    >
+                      Compare Natchez and City of New Orleans
+                    </a>
+                  </div>
+                )}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {sectionProducts.map((product) => (
                     <ProductCard

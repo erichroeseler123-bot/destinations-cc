@@ -213,7 +213,10 @@ function isSmokeIdentifier(value: string | null | undefined) {
 }
 
 function isTestMetadata(metadata: Record<string, unknown> | null | undefined) {
-  return Boolean(metadata && (metadata.test === true || metadata.synthetic === true));
+  return Boolean(
+    metadata &&
+      (metadata.test === true || metadata.is_test === true || metadata.synthetic === true),
+  );
 }
 
 function isProductionLikeEvent(event: DccCorridorEventRow) {

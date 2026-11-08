@@ -87,15 +87,64 @@ export default async function WnoRevenueOpportunityPage() {
               </h2>
             </div>
             <span className="font-mono text-xs text-zinc-400">
-              comparison visit → boat selected → checkout opened → provider-confirmed booking
+              comparison visit → boat selected → checkout opened → provider-confirmed booking &amp; commission
             </span>
           </div>
 
-          <div className="mt-5 grid gap-4 md:grid-cols-4">
+          <div className="mt-5 grid gap-4 md:grid-cols-5">
             <Metric label="1. Comparison visits" value={riverboatFunnel.stages.comparisonVisits.totalEvents} />
             <Metric label="2. Boat selected" value={riverboatFunnel.stages.boatSelected.totalEvents} />
             <Metric label="3. Checkout opened (561220 / 694782)" value={riverboatFunnel.stages.checkoutOpened.primaryItems561220And694782Events} />
             <Metric label="4. Provider-confirmed bookings" value={riverboatFunnel.stages.providerConfirmedBookings.totalConfirmedBookings} />
+            <Metric label="Confirmed commissions" value={`$${riverboatFunnel.stages.providerConfirmedBookings.confirmedCommissionsUsd.toLocaleString()}`} />
+          </div>
+
+          <div className="mt-6 rounded-xl border border-cyan-400/30 bg-cyan-500/[0.06] p-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-cyan-300">
+                  DCC New Orleans Tours Guide Corridor · src=dcc-authority-nola-riverboats
+                </p>
+                <p className="mt-0.5 text-xs text-zinc-300">
+                  Tracks customer visitors from <code className="text-cyan-200">/new-orleans/tours#river-cruises</code> arriving on the comparison page, choosing a boat, and opening the exact FareHarbor item (test sessions excluded from customer totals).
+                </p>
+              </div>
+              <span className="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1 font-mono text-[11px] text-emerald-200">
+                Verified test sessions excluded: {riverboatFunnel.verifiedTestSessions.verifiedCheckoutTestSessionsCount} checkout-verified ({riverboatFunnel.verifiedTestSessions.totalTestSessionsCount} total test)
+              </span>
+            </div>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5 text-xs">
+              <div className="rounded-lg border border-white/10 bg-black/30 p-3">
+                <div className="text-zinc-400">Arrived from DCC guide</div>
+                <div className="mt-1 text-lg font-black text-white">
+                  {riverboatFunnel.dccAuthorityRiverboatsCorridor.visitorsArrived.uniqueSessions} sess ({riverboatFunnel.dccAuthorityRiverboatsCorridor.visitorsArrived.totalEvents} ev)
+                </div>
+              </div>
+              <div className="rounded-lg border border-white/10 bg-black/30 p-3">
+                <div className="text-zinc-400">Boat chosen (Natchez / City)</div>
+                <div className="mt-1 text-lg font-black text-amber-200">
+                  {riverboatFunnel.dccAuthorityRiverboatsCorridor.boatChosen.natchezEvents} Natchez · {riverboatFunnel.dccAuthorityRiverboatsCorridor.boatChosen.cityOfNewOrleansEvents} City
+                </div>
+              </div>
+              <div className="rounded-lg border border-white/10 bg-black/30 p-3">
+                <div className="text-zinc-400">FH 561220 opened (Natchez)</div>
+                <div className="mt-1 text-lg font-black text-white">
+                  {riverboatFunnel.dccAuthorityRiverboatsCorridor.exactFareHarborItemOpened.natchez561220Events}
+                </div>
+              </div>
+              <div className="rounded-lg border border-white/10 bg-black/30 p-3">
+                <div className="text-zinc-400">FH 694782 opened (City)</div>
+                <div className="mt-1 text-lg font-black text-white">
+                  {riverboatFunnel.dccAuthorityRiverboatsCorridor.exactFareHarborItemOpened.city694782Events}
+                </div>
+              </div>
+              <div className="rounded-lg border border-white/10 bg-black/30 p-3">
+                <div className="text-zinc-400">Confirmed bookings / comm.</div>
+                <div className="mt-1 text-lg font-black text-emerald-300">
+                  {riverboatFunnel.dccAuthorityRiverboatsCorridor.providerConfirmedOutcomes.confirmedBookingsCount} · ${riverboatFunnel.dccAuthorityRiverboatsCorridor.providerConfirmedOutcomes.confirmedCommissionsUsd.toLocaleString()}
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="mt-6 overflow-x-auto">
@@ -110,7 +159,8 @@ export default async function WnoRevenueOpportunityPage() {
                   <th className="py-2 pr-4">Checkout opened (primary item)</th>
                   <th className="py-2 pr-4">Checkout opened (from comparison)</th>
                   <th className="py-2 pr-4">Provider-confirmed bookings</th>
-                  <th className="py-2">Confirmed gross USD</th>
+                  <th className="py-2 pr-4">Confirmed gross USD</th>
+                  <th className="py-2">Confirmed commissions USD</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/10">
@@ -126,12 +176,49 @@ export default async function WnoRevenueOpportunityPage() {
                     <td className="py-2.5 pr-4 font-bold text-white">{v.checkoutOpenedPrimaryItemEvents}</td>
                     <td className="py-2.5 pr-4 text-amber-300">{v.checkoutOpenedFromComparisonSessions}</td>
                     <td className="py-2.5 pr-4 font-mono text-emerald-300">{v.providerConfirmedBookingsCount}</td>
-                    <td className="py-2.5 font-mono text-emerald-300">${v.confirmedGrossSalesUsd.toLocaleString()}</td>
+                    <td className="py-2.5 pr-4 font-mono text-emerald-300">${v.confirmedGrossSalesUsd.toLocaleString()}</td>
+                    <td className="py-2.5 font-mono text-emerald-300">${v.confirmedCommissionsUsd.toLocaleString()}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+
+          {riverboatFunnel.entrySourceBreakdown.length > 0 && (
+            <div className="mt-6 overflow-x-auto">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+                Riverboat comparison funnel by traffic source tag (e.g. src=dcc-authority-nola-riverboats)
+              </h3>
+              <table className="mt-2 w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-white/10 text-zinc-400">
+                    <th className="py-2 pr-4">Entry source tag</th>
+                    <th className="py-2 pr-4">Comparison visits</th>
+                    <th className="py-2 pr-4">Natchez selected</th>
+                    <th className="py-2 pr-4">City selected</th>
+                    <th className="py-2 pr-4">Natchez checkout (561220)</th>
+                    <th className="py-2 pr-4">City checkout (694782)</th>
+                    <th className="py-2 pr-4">Confirmed bookings</th>
+                    <th className="py-2">Confirmed commissions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/10">
+                  {riverboatFunnel.entrySourceBreakdown.slice(0, 12).map((row) => (
+                    <tr key={row.entrySource}>
+                      <td className="py-2 pr-4 font-mono text-cyan-200">{row.entrySource}</td>
+                      <td className="py-2 pr-4">{row.comparisonVisits} ({row.uniqueVisitorSessions} sess)</td>
+                      <td className="py-2 pr-4">{row.natchezSelected}</td>
+                      <td className="py-2 pr-4">{row.citySelected}</td>
+                      <td className="py-2 pr-4 font-bold text-white">{row.natchezCheckoutOpened561220}</td>
+                      <td className="py-2 pr-4 font-bold text-white">{row.cityCheckoutOpened694782}</td>
+                      <td className="py-2 pr-4 font-mono text-emerald-300">{row.providerConfirmedBookings}</td>
+                      <td className="py-2 font-mono text-emerald-300">${row.confirmedCommissionsUsd.toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
 
           {riverboatFunnel.entryPageBreakdown.length > 0 && (
             <div className="mt-6 overflow-x-auto">
@@ -147,7 +234,8 @@ export default async function WnoRevenueOpportunityPage() {
                     <th className="py-2 pr-4">City selected</th>
                     <th className="py-2 pr-4">Natchez checkout (561220)</th>
                     <th className="py-2 pr-4">City checkout (694782)</th>
-                    <th className="py-2">Provider-confirmed</th>
+                    <th className="py-2 pr-4">Provider-confirmed</th>
+                    <th className="py-2">Commissions USD</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/10">
@@ -159,7 +247,8 @@ export default async function WnoRevenueOpportunityPage() {
                       <td className="py-2 pr-4">{row.citySelected}</td>
                       <td className="py-2 pr-4 font-bold text-white">{row.natchezCheckoutOpened561220}</td>
                       <td className="py-2 pr-4 font-bold text-white">{row.cityCheckoutOpened694782}</td>
-                      <td className="py-2 font-mono text-emerald-300">{row.providerConfirmedBookings}</td>
+                      <td className="py-2 pr-4 font-mono text-emerald-300">{row.providerConfirmedBookings}</td>
+                      <td className="py-2 font-mono text-emerald-300">${row.confirmedCommissionsUsd.toLocaleString()}</td>
                     </tr>
                   ))}
                 </tbody>
