@@ -1377,6 +1377,90 @@ export const PORT_AUTHORITY_CONFIG: Record<string, PortAuthorityConfig> = {
       { label: "Alaska guide", href: "/alaska" },
     ],
   },
+  reykjavik: {
+    updatedAt: "2026-11-07",
+    refreshIntervalDays: 30,
+    heroTitle: "Reykjavík Cruise Port (Skarfabakki & Miðbakki)",
+    summary:
+      "Iceland's primary turnaround and transit cruise port, splitting calls between Skarfabakki Cruise Terminal in Sundahöfn (large vessels, ~4 km east of downtown) and Miðbakki at the Old Harbour (small/expedition ships). Shore days center on the Golden Circle, Sky Lagoon & Blue Lagoon geothermal transfers, Faxaflói whale and puffin watching, and South Coast waterfalls.",
+    cruiseRelevance:
+      "Verify whether your ship berths at Skarfabakki (Sundahöfn Berth 312–315) or Miðbakki (Old Harbour) before selecting pier pickup vs. downtown Tour Bus Stop meeting points. Golden Circle tours require 6 to 8 hours; South Coast to Vík requires 10+ hours and only fits long port calls or overnight turnarounds.",
+    tripPlanningSnapshot: [
+      { label: "Primary Terminal", value: "Skarfabakki (Sundahöfn Berth 312–315) — 10m shuttle / 4 km east of Harpa" },
+      { label: "Downtown Berth", value: "Miðbakki (Old Harbour) — 5m walk to Ægisgarður whale-watch docks & Harpa" },
+      { label: "Golden Circle Fit", value: "6–8 hours total (Þingvellir, Geysir, Gullfoss) + 30m return buffer" },
+      { label: "Airport / South Coast", value: "KEF Airport is 45–50m via Route 41; KEF → Vík South Coast is 180m+ via Route 1" },
+    ],
+    tenderDock:
+      "Docking port for almost all calls at Skarfabakki (Sundahöfn Berth 312–315) or Miðbakki (Old Harbour); overflow anchorages tender into Skarfabakki.",
+    excursionLength:
+      "2.5–3.5 hours for Faxaflói whale/puffin cruises or Sky Lagoon; 6–8 hours for the Golden Circle; 10+ hours for South Coast (overnight or 12h+ calls only).",
+    nearbyTown:
+      "Miðborg (Downtown Reykjavík), Old Harbour (Ægisgarður), Harpa Concert Hall, and Laugavegur.",
+    excursionCategories: [
+      category("Golden Circle, Geysers & Waterfalls", "Reykjavik Golden Circle shore excursion", "2970GOLDEN"),
+      category("Geothermal Spas & Lagoons", "Reykjavik Sky Lagoon Blue Lagoon transfer", "5592654P1"),
+      category("Whale Watching & Marine Wildlife", "Reykjavik whale watching Old Harbour", "13489P1"),
+      category("South Coast, Waterfalls & Volcanoes", "Reykjavik South Coast waterfalls tour", "21188P1"),
+    ],
+    cruiseSeason:
+      "Peak North Atlantic, Arctic, and Transatlantic cruise calls run May through September, with expedition and Northern Lights turnaround calls extending into October and winter.",
+    excursionCtaLabel: "Compare Reykjavík Tours on Cruise Promenade",
+    excursionCtaHref: "https://cruisepromenade.com/ports/reykjavik",
+    transferCtaLabel: "Check KEF → Vík Corridor & Road Gate",
+    transferCtaHref: "/routes/keflavik-to-vik",
+    knownFor: [
+      "Golden Circle loop: Þingvellir National Park, Geysir geothermal area, and Gullfoss waterfall",
+      "Sky Lagoon (Kársnes, 15–20m from port) and Blue Lagoon (Reykjanes, 45–50m from port) geothermal soaking",
+      "Faxaflói Bay minke/humpback whale watching and summer Atlantic puffin cruises from Old Harbour (Ægisgarður)",
+      "South Coast waterfalls (Seljalandsfoss, Skógafoss) and Reynisfjara black-sand beach on long or overnight calls",
+      "Turnaround embarkation/debarkation transfers between Keflavík International Airport (KEF) and Skarfabakki",
+    ],
+    nearbyZones: [
+      "Skarfabakki Cruise Terminal (Sundahöfn)",
+      "Miðbakki / Old Harbour (Ægisgarður)",
+      "Harpa Concert Hall & Tour Bus Stop #1",
+      "BSÍ Bus Terminal (Vatnsmýrarvegur 10)",
+      "Sky Lagoon (Kársnes, Kópavogur)",
+      "Golden Circle (Þingvellir, Geysir, Gullfoss)",
+    ],
+    logistics: [
+      "Large cruise ships dock at Skarfabakki (Sundahöfn, Berth 312–315), ~4 km east of downtown Reykjavík; shore-excursion coaches load directly on the pier apron while independent travelers use the port shuttle or taxi (~10–15 minutes) to Harpa.",
+      "Downtown Reykjavík enforces a commercial coach ban inside the historic core: independent tours that do not pick up at Skarfabakki require meeting at designated city Tour Bus Stops (#1 Harpa, #8 Hallgrímskirkja, #12 Höfðatorg) or BSÍ Bus Terminal.",
+      "Whale watching and puffin boats depart from Ægisgarður at the Old Harbour (~15–18 minutes by taxi/shuttle from Skarfabakki, or a 5-minute walk from Miðbakki).",
+      "Always check Vegagerðin (umferdin.is) road status and IMO weather alerts before booking long-distance Route 1 South Coast or Hellisheiði mountain pass excursions.",
+    ],
+    realityCheckSummary: [
+      "Skarfabakki is not walkable to the Old Harbour whale-watching piers in wet or windy weather (~4.5 km along industrial/coastal roads); plan a 15–18 minute transfer or book a tour with Skarfabakki cruise port pickup.",
+      "Standard 10–11 hour South Coast tours to Vík and Reynisfjara are too tight for 8-hour transit calls once debarkation and a 45-minute all-aboard buffer are applied; choose a 6–7.5 hour Golden Circle tour instead unless your ship stays 12+ hours or overnight.",
+    ],
+    faq: [
+      {
+        question: "Where do cruise ships dock in Reykjavík?",
+        answer:
+          "Most medium and large cruise ships berth at Skarfabakki Cruise Terminal in Sundahöfn (Berths 312–315), about 4 km (10–15 minutes by shuttle or taxi) east of downtown Reykjavík. Smaller luxury and expedition vessels often dock downtown at Miðbakki right beside Harpa and the Old Harbour.",
+      },
+      {
+        question: "Does a Golden Circle tour fit a standard Reykjavík cruise day?",
+        answer:
+          "Yes. Express and cruise-timed Golden Circle excursions run 6 to 7.5 hours, visiting Þingvellir National Park, Geysir, and Gullfoss with direct Skarfabakki pier pickup and return buffer before all-aboard.",
+      },
+      {
+        question: "How do I choose between 'Browse all tours' and 'Fits my sailing'?",
+        answer:
+          "Use Cruise Promenade's 'Browse all tours' mode to filter the full Neon-backed Reykjavík catalog by category, pickup mode, price, and duration, or switch to 'Fits my sailing' to enter your ship arrival and all-aboard cutoff so transfers and tour durations are checked before checkout.",
+      },
+    ],
+    relatedLinks: [
+      { label: "Reykjavík Shore Excursions (Cruise Promenade)", href: "https://cruisepromenade.com/ports/reykjavik" },
+      { label: "Fits My Sailing Planner (Cruise Promenade)", href: "https://cruisepromenade.com/ports/reykjavik?mode=fits_my_sailing" },
+      { label: "KEF → Vík South Coast Corridor & Road Gate", href: "/routes/keflavik-to-vik" },
+      { label: "Cruise explorer", href: "/cruises" },
+      { label: "Ports directory", href: "/ports" },
+    ],
+    cruisePortHref: "https://cruisepromenade.com/ports/reykjavik",
+    canonicalCruisePortSlug: "reykjavik",
+  },
 };
 
 function titleFromPortName(name: string): string {

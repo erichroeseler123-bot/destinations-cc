@@ -665,5 +665,18 @@
     "area": "USA • Washington",
     "country": "US",
     "tags": []
+  },
+  {
+    "slug": "reykjavik",
+    "name": "Reykjavík",
+    "area": "Northern Europe • Iceland",
+    "country": "IS",
+    "tags": [
+      "turnaround",
+      "transatlantic",
+      "arctic"
+    ],
+    "lat": 64.1562,
+    "lon": -21.8685
   }
 ]

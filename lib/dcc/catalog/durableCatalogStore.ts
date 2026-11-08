@@ -261,7 +261,7 @@ export type EarthOSDestinationNode = {
   destinationSlug: string;
   portSlug: string | null;
   displayName: string;
-  region: "gulf_coast" | "alaska" | "caribbean" | "us_mainland_ports" | "colorado_rockies";
+  region: "gulf_coast" | "alaska" | "caribbean" | "us_mainland_ports" | "colorado_rockies" | "north_atlantic";
   earthosDestinationNodeId: string;
   timeZone: string;
   viatorDestinationId: number;
@@ -499,12 +499,32 @@ export const EARTHOS_DESTINATION_NODES: Record<string, EarthOSDestinationNode> =
     cruisePierLng: null,
     specialistSites: ["gosno", "partyatredrocks", "dcc"],
   },
+  reykjavik: {
+    destinationSlug: "reykjavik",
+    portSlug: "reykjavik",
+    displayName: "Reykjavík, Iceland",
+    region: "north_atlantic",
+    earthosDestinationNodeId: "earthos:node:is-1-reykjavik",
+    timeZone: "Atlantic/Reykjavik",
+    viatorDestinationId: 905,
+    hubLat: 64.1466,
+    hubLng: -21.9426,
+    cruisePierName: "Skarfabakki Cruise Terminal (Sundahöfn) / Miðbakki",
+    cruisePierLat: 64.1562,
+    cruisePierLng: -21.8685,
+    specialistSites: ["dcc", "cruisepromenade"],
+  },
 };
 
 export function resolveEarthOSDestinationNode(slugOrName: string): EarthOSDestinationNode | null {
   const norm = slugOrName
     .trim()
     .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/ð/g, "d")
+    .replace(/þ/g, "th")
+    .replace(/æ/g, "ae")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
   if (EARTHOS_DESTINATION_NODES[norm]) {
@@ -535,6 +555,11 @@ export function resolveEarthOSDestinationNode(slugOrName: string): EarthOSDestin
     "winter-park": "denver-colorado",
     "red-rocks": "denver-colorado",
     colorado: "denver-colorado",
+    "reykjavik-iceland": "reykjavik",
+    "reykjav-k": "reykjavik",
+    skarfabakki: "reykjavik",
+    sundahofn: "reykjavik",
+    midbakki: "reykjavik",
   };
   const mapped = aliases[norm];
   return mapped ? EARTHOS_DESTINATION_NODES[mapped] || null : null;
@@ -3462,6 +3487,13 @@ async function loadAllCatalogRecordsWithPgHydration(): Promise<{
   return { records: activeRecords, source: "local_snapshot" };
 }
 
+export type DurableCatalogSortMode =
+  | "recommended"
+  | "price_asc"
+  | "price_desc"
+  | "duration_asc"
+  | "rating_desc";
+
 export type DurableCatalogQueryFilter = {
   destinationSlug?: string;
   portSlug?: string;
@@ -3469,33 +3501,295 @@ export type DurableCatalogQueryFilter = {
   provider?: string;
   capabilityTier?: TourCapabilityTier;
   category?: string;
+  q?: string;
+  pickupMode?:
+    | "any"
+    | "pier_pickup"
+    | "hotel_pickup"
+    | "downtown_shuttle_departure"
+    | "self_drive"
+    | "walkable_from_pier";
+  maxDurationMinutes?: number;
+  maxPriceCents?: number;
+  freeCancellationOnly?: boolean;
+  commissionAuthorizedOnly?: boolean;
   approvedTourIds?: string[];
   includeDiscoveryOnly?: boolean;
+  sort?: DurableCatalogSortMode;
   limit?: number;
+  offset?: number;
+  page?: number;
 };
 
-export async function queryDurableTourCatalog(filter: DurableCatalogQueryFilter = {}): Promise<{
+export type DurableCatalogQueryResult = {
   records: DurableTourRecord[];
   totalMatched: number;
+  limit: number;
+  offset: number;
+  page: number;
+  totalPages: number;
+  hasMore: boolean;
+  categoriesAvailable: string[];
   storageSource: "postgres" | "snapshot_hydrated_to_postgres" | "local_snapshot";
-}> {
-  const { records: allRecords, source } = await loadAllCatalogRecordsWithPgHydration();
+};
 
+async function ensurePgCatalogSeededOnce(): Promise<void> {
+  await ensureCatalogSchema();
+  const sql = getSqlClient();
+  if (!pilotRecordsUpsertedToPg) {
+    pilotRecordsUpsertedToPg = true;
+    for (const pilot of PILOT_VERIFIED_TOUR_RECORDS) {
+      await upsertSingleTourToPg(
+        sql,
+        normalizeCatalogTourPickupAndMeeting(pilot).normalizedRecord,
+      );
+    }
+  }
+  if (!pgHydratedFromSnapshot) {
+    const countRows = await sql`
+      SELECT COUNT(*)::int AS cnt FROM dcc_tour_catalog WHERE active = true AND quarantined = false
+    `;
+    const currentCount = Number(countRows[0]?.cnt || 0);
+    if (currentCount <= PILOT_VERIFIED_TOUR_RECORDS.length) {
+      pgHydratedFromSnapshot = true;
+      const snapshot = readLocalCatalogSnapshot();
+      const activeSnapshotRecords = mergePilotVerifiedRecords(
+        snapshot.records.filter((r) => r.active && !isQuarantinedTourRecord(r)),
+      );
+      for (const rec of activeSnapshotRecords) {
+        await upsertSingleTourToPg(sql, rec);
+      }
+      for (const run of snapshot.syncRuns) {
+        await recordCatalogSyncRun(run);
+      }
+    } else {
+      pgHydratedFromSnapshot = true;
+    }
+  }
+}
+
+export async function queryDurableTourCatalog(
+  filter: DurableCatalogQueryFilter = {},
+): Promise<DurableCatalogQueryResult> {
   const resolvedDest = filter.destinationSlug
     ? resolveEarthOSDestinationNode(filter.destinationSlug)?.destinationSlug ||
-      filter.destinationSlug.toLowerCase()
+      filter.destinationSlug.trim().toLowerCase()
     : null;
   const resolvedPort = filter.portSlug
-    ? resolveEarthOSDestinationNode(filter.portSlug)?.portSlug || filter.portSlug.toLowerCase()
+    ? resolveEarthOSDestinationNode(filter.portSlug)?.portSlug ||
+      filter.portSlug.trim().toLowerCase()
     : null;
-  const approvedSet =
+  const approvedList =
     Array.isArray(filter.approvedTourIds) && filter.approvedTourIds.length > 0
-      ? new Set(filter.approvedTourIds.map((id) => id.trim().toLowerCase()))
+      ? filter.approvedTourIds.map((id) => id.trim().toLowerCase()).filter(Boolean)
       : null;
+  const searchNorm = filter.q && filter.q.trim() ? filter.q.trim().toLowerCase() : null;
+  const categoryNorm =
+    filter.category && filter.category.trim() && filter.category.trim().toLowerCase() !== "all"
+      ? filter.category
+          .trim()
+          .toLowerCase()
+          .replace(/\s+(?:tours|excursions)$/i, "")
+      : null;
+  const pickupMode =
+    filter.pickupMode && filter.pickupMode !== "any" ? filter.pickupMode : null;
+  const maxDuration =
+    typeof filter.maxDurationMinutes === "number" &&
+    Number.isFinite(filter.maxDurationMinutes) &&
+    filter.maxDurationMinutes > 0
+      ? Math.round(filter.maxDurationMinutes)
+      : null;
+  const maxPriceCents =
+    typeof filter.maxPriceCents === "number" &&
+    Number.isFinite(filter.maxPriceCents) &&
+    filter.maxPriceCents > 0
+      ? Math.round(filter.maxPriceCents)
+      : null;
+  const sortMode: DurableCatalogSortMode = filter.sort || "recommended";
 
-  const filtered = allRecords.filter((rec) => {
+  // Execute filtering, sorting, and pagination directly in Neon Postgres when enabled
+  if (shouldUsePostgres()) {
+    try {
+      await ensurePgCatalogSeededOnce();
+      const sql = getSqlClient();
+      const whereClauses: string[] = ["active = true", "quarantined = false"];
+      const params: unknown[] = [];
+
+      const quarantinedIds = Array.from(QUARANTINED_TOUR_IDS);
+      if (quarantinedIds.length > 0) {
+        params.push(quarantinedIds);
+        whereClauses.push(`NOT (tour_id = ANY($${params.length}::text[]))`);
+      }
+      if (filter.includeDiscoveryOnly === false) {
+        whereClauses.push(`capability_tier <> 'discovery_only'`);
+      }
+      if (filter.commissionAuthorizedOnly === true) {
+        whereClauses.push(`commission_authorized = true`);
+      }
+      if (resolvedDest) {
+        params.push(resolvedDest);
+        whereClauses.push(`LOWER(destination_slug) = $${params.length}`);
+      }
+      if (resolvedPort) {
+        params.push(resolvedPort);
+        whereClauses.push(`LOWER(COALESCE(port_slug, '')) = $${params.length}`);
+      }
+      if (filter.earthosDestinationNodeId) {
+        params.push(filter.earthosDestinationNodeId);
+        whereClauses.push(`earthos_destination_node_id = $${params.length}`);
+      }
+      if (filter.provider) {
+        params.push(filter.provider);
+        whereClauses.push(`primary_provider = $${params.length}`);
+      }
+      if (filter.capabilityTier) {
+        params.push(filter.capabilityTier);
+        whereClauses.push(`capability_tier = $${params.length}`);
+      }
+
+      // Capture destination/port-scoped clauses for available categories before applying category filter
+      const baseWhereSql = whereClauses.join(" AND ");
+      const baseParams = [...params];
+
+      if (categoryNorm) {
+        params.push(`%${categoryNorm}%`);
+        const likeIdx = params.length;
+        params.push(categoryNorm);
+        const exactIdx = params.length;
+        whereClauses.push(
+          `(LOWER(category) LIKE $${likeIdx} OR $${exactIdx} LIKE '%' || LOWER(category) || '%')`,
+        );
+      }
+      if (searchNorm) {
+        params.push(`%${searchNorm}%`);
+        const qIdx = params.length;
+        whereClauses.push(
+          `(LOWER(title) LIKE $${qIdx} OR LOWER(COALESCE(summary, '')) LIKE $${qIdx} OR LOWER(COALESCE(operator_name, '')) LIKE $${qIdx} OR LOWER(provider_product_code) LIKE $${qIdx} OR LOWER(category) LIKE $${qIdx})`,
+        );
+      }
+      if (pickupMode === "pier_pickup") {
+        whereClauses.push(
+          `(pickup_type = 'CRUISE_PIER_PICKUP' OR COALESCE(service_details_json->>'pickupFulfillmentType', '') = 'pier_pickup' OR EXISTS (SELECT 1 FROM jsonb_array_elements(product_options_json) AS opt WHERE opt->>'pickupFulfillmentType' = 'pier_pickup'))`,
+        );
+      } else if (pickupMode === "hotel_pickup") {
+        whereClauses.push(
+          `(has_hotel_pickup = true OR pickup_type IN ('HOTEL_PICKUP', 'HOTEL_OR_MEETING_POINT') OR COALESCE(service_details_json->>'pickupFulfillmentType', '') = 'hotel_pickup' OR EXISTS (SELECT 1 FROM jsonb_array_elements(product_options_json) AS opt WHERE opt->>'pickupFulfillmentType' = 'hotel_pickup' OR COALESCE(opt->>'includesPickup', '') = 'true'))`,
+        );
+      } else if (pickupMode === "downtown_shuttle_departure") {
+        whereClauses.push(
+          `(pickup_type = 'DOWNTOWN_SHUTTLE_DEPARTURE' OR COALESCE(service_details_json->>'pickupFulfillmentType', '') = 'downtown_shuttle_departure' OR EXISTS (SELECT 1 FROM jsonb_array_elements(product_options_json) AS opt WHERE opt->>'pickupFulfillmentType' = 'downtown_shuttle_departure'))`,
+        );
+      } else if (pickupMode === "self_drive") {
+        whereClauses.push(
+          `(pickup_type = 'MEETING_POINT_ONLY' OR COALESCE(service_details_json->>'pickupFulfillmentType', '') = 'self_drive' OR EXISTS (SELECT 1 FROM jsonb_array_elements(product_options_json) AS opt WHERE opt->>'pickupFulfillmentType' = 'self_drive'))`,
+        );
+      } else if (pickupMode === "walkable_from_pier") {
+        whereClauses.push(
+          `(COALESCE(service_details_json->>'pickupFulfillmentType', '') = 'walkable_from_pier' OR EXISTS (SELECT 1 FROM jsonb_array_elements(product_options_json) AS opt WHERE opt->>'pickupFulfillmentType' = 'walkable_from_pier'))`,
+        );
+      }
+      if (maxDuration !== null) {
+        params.push(maxDuration);
+        whereClauses.push(`(duration_minutes IS NOT NULL AND duration_minutes <= $${params.length})`);
+      }
+      if (maxPriceCents !== null) {
+        params.push(maxPriceCents);
+        whereClauses.push(`(from_price_cents IS NOT NULL AND from_price_cents <= $${params.length})`);
+      }
+      if (filter.freeCancellationOnly === true) {
+        whereClauses.push(`free_cancellation = true`);
+      }
+      if (approvedList && approvedList.length > 0) {
+        params.push(approvedList);
+        const appIdx = params.length;
+        whereClauses.push(
+          `(LOWER(tour_id) = ANY($${appIdx}::text[]) OR LOWER(provider_product_code) = ANY($${appIdx}::text[]) OR EXISTS (SELECT 1 FROM jsonb_array_elements_text(compatibility_aliases) AS a WHERE LOWER(a) = ANY($${appIdx}::text[])))`,
+        );
+      }
+
+      const whereSql = whereClauses.join(" AND ");
+      const orderBySql =
+        sortMode === "price_asc"
+          ? "from_price_cents ASC NULLS LAST, COALESCE(review_count, 0) DESC, tour_id ASC"
+          : sortMode === "price_desc"
+            ? "from_price_cents DESC NULLS LAST, COALESCE(review_count, 0) DESC, tour_id ASC"
+            : sortMode === "duration_asc"
+              ? "duration_minutes ASC NULLS LAST, from_price_cents ASC NULLS LAST, tour_id ASC"
+              : sortMode === "rating_desc"
+                ? "rating_average DESC NULLS LAST, COALESCE(review_count, 0) DESC, tour_id ASC"
+                : "commission_authorized DESC, COALESCE(review_count, 0) DESC, COALESCE(rating_average, 0) DESC, destination_slug ASC, tour_id ASC";
+
+      const countRows = await sql.query(
+        `SELECT COUNT(*)::int AS total_matched FROM dcc_tour_catalog WHERE ${whereSql}`,
+        params,
+      );
+      const totalMatched = Number((countRows as any[])[0]?.total_matched || 0);
+
+      const catRows = await sql.query(
+        `SELECT DISTINCT category FROM dcc_tour_catalog WHERE ${baseWhereSql} ORDER BY category ASC`,
+        baseParams,
+      );
+      const categoriesAvailable = (catRows as any[])
+        .map((r) => String(r.category || "").trim())
+        .filter(Boolean);
+
+      const effectiveLimit =
+        typeof filter.limit === "number" && Number.isFinite(filter.limit) && filter.limit > 0
+          ? Math.min(Math.round(filter.limit), 500)
+          : Math.max(totalMatched, 1);
+      const effectiveOffset =
+        typeof filter.offset === "number" && Number.isFinite(filter.offset) && filter.offset >= 0
+          ? Math.round(filter.offset)
+          : typeof filter.page === "number" && Number.isFinite(filter.page) && filter.page >= 1
+            ? (Math.round(filter.page) - 1) * effectiveLimit
+            : 0;
+      const effectivePage =
+        effectiveLimit > 0 ? Math.floor(effectiveOffset / effectiveLimit) + 1 : 1;
+      const totalPages =
+        effectiveLimit > 0 ? Math.max(1, Math.ceil(totalMatched / effectiveLimit)) : 1;
+
+      const pageParams = [...params, effectiveLimit, effectiveOffset];
+      const limitIdx = pageParams.length - 1;
+      const offsetIdx = pageParams.length;
+      const rows = await sql.query(
+        `SELECT * FROM dcc_tour_catalog WHERE ${whereSql} ORDER BY ${orderBySql} LIMIT $${limitIdx} OFFSET $${offsetIdx}`,
+        pageParams,
+      );
+
+      const mappedRecords = (rows as any[])
+        .map(mapPgRowToDurableTourRecord)
+        .filter((r) => r.active && !isQuarantinedTourRecord(r))
+        .map((r) => normalizeCatalogTourPickupAndMeeting(r).normalizedRecord);
+
+      return {
+        records: mappedRecords,
+        totalMatched,
+        limit: effectiveLimit,
+        offset: effectiveOffset,
+        page: effectivePage,
+        totalPages,
+        hasMore: effectiveOffset + mappedRecords.length < totalMatched,
+        categoriesAvailable,
+        storageSource: "postgres",
+      };
+    } catch (err) {
+      console.warn(
+        "[durableCatalogStore] Falling back to snapshot in queryDurableTourCatalog after Postgres query error:",
+        err,
+      );
+    }
+  }
+
+  // Fallback / isolated unit-test path with identical filtering, sorting, and pagination semantics
+  const { records: allRecords, source } = await loadAllCatalogRecordsWithPgHydration();
+  const approvedSet = approvedList ? new Set(approvedList) : null;
+
+  const baseDestinationFiltered = allRecords.filter((rec) => {
     if (!rec.active || isQuarantinedTourRecord(rec)) return false;
     if (filter.includeDiscoveryOnly === false && rec.capabilityTier === "discovery_only") {
+      return false;
+    }
+    if (filter.commissionAuthorizedOnly === true && !rec.commissionAuthorized) {
       return false;
     }
     if (resolvedDest && rec.destinationSlug.toLowerCase() !== resolvedDest) {
@@ -3516,15 +3810,51 @@ export async function queryDurableTourCatalog(filter: DurableCatalogQueryFilter 
     if (filter.capabilityTier && rec.capabilityTier !== filter.capabilityTier) {
       return false;
     }
-    if (filter.category) {
+    return true;
+  });
+
+  const categoriesAvailable = Array.from(
+    new Set(baseDestinationFiltered.map((r) => r.category.trim()).filter(Boolean)),
+  ).sort();
+
+  const filtered = baseDestinationFiltered.filter((rec) => {
+    if (categoryNorm) {
       const recCat = rec.category.trim().toLowerCase();
-      const filterCat = filter.category
-        .trim()
-        .toLowerCase()
-        .replace(/\s+(?:tours|excursions)$/i, "");
-      if (!recCat.includes(filterCat) && !filterCat.includes(recCat)) {
+      if (!recCat.includes(categoryNorm) && !categoryNorm.includes(recCat)) {
         return false;
       }
+    }
+    if (searchNorm) {
+      const hay = `${rec.title} ${rec.summary || ""} ${rec.operatorName || ""} ${rec.providerProductCode} ${rec.category}`.toLowerCase();
+      if (!hay.includes(searchNorm)) return false;
+    }
+    if (pickupMode) {
+      const optMatch = (rec.productOptions || []).some((o) => {
+        if (pickupMode === "hotel_pickup") {
+          return o.pickupFulfillmentType === "hotel_pickup" || o.includesPickup === true;
+        }
+        return o.pickupFulfillmentType === pickupMode;
+      });
+      const recMatch =
+        rec.pickupFulfillmentType === pickupMode ||
+        (pickupMode === "pier_pickup" && rec.pickupType === "CRUISE_PIER_PICKUP") ||
+        (pickupMode === "hotel_pickup" &&
+          (rec.hasHotelPickup === true ||
+            rec.pickupType === "HOTEL_PICKUP" ||
+            rec.pickupType === "HOTEL_OR_MEETING_POINT")) ||
+        (pickupMode === "downtown_shuttle_departure" &&
+          rec.pickupType === "DOWNTOWN_SHUTTLE_DEPARTURE") ||
+        (pickupMode === "self_drive" && rec.pickupType === "MEETING_POINT_ONLY");
+      if (!recMatch && !optMatch) return false;
+    }
+    if (maxDuration !== null) {
+      if (rec.durationMinutes === null || rec.durationMinutes > maxDuration) return false;
+    }
+    if (maxPriceCents !== null) {
+      if (rec.fromPriceCents === null || rec.fromPriceCents > maxPriceCents) return false;
+    }
+    if (filter.freeCancellationOnly === true && rec.freeCancellation !== true) {
+      return false;
     }
     if (approvedSet) {
       const idMatch = approvedSet.has(rec.tourId.toLowerCase());
@@ -3537,10 +3867,68 @@ export async function queryDurableTourCatalog(filter: DurableCatalogQueryFilter 
     return true;
   });
 
-  const limit = filter.limit && filter.limit > 0 ? filter.limit : filtered.length;
+  const sorted = [...filtered].sort((a, b) => {
+    if (sortMode === "price_asc") {
+      if (a.fromPriceCents === null && b.fromPriceCents === null) return a.tourId.localeCompare(b.tourId);
+      if (a.fromPriceCents === null) return 1;
+      if (b.fromPriceCents === null) return -1;
+      if (a.fromPriceCents !== b.fromPriceCents) return a.fromPriceCents - b.fromPriceCents;
+      return (b.reviewCount || 0) - (a.reviewCount || 0);
+    }
+    if (sortMode === "price_desc") {
+      if (a.fromPriceCents === null && b.fromPriceCents === null) return a.tourId.localeCompare(b.tourId);
+      if (a.fromPriceCents === null) return 1;
+      if (b.fromPriceCents === null) return -1;
+      if (a.fromPriceCents !== b.fromPriceCents) return b.fromPriceCents - a.fromPriceCents;
+      return (b.reviewCount || 0) - (a.reviewCount || 0);
+    }
+    if (sortMode === "duration_asc") {
+      if (a.durationMinutes === null && b.durationMinutes === null) return a.tourId.localeCompare(b.tourId);
+      if (a.durationMinutes === null) return 1;
+      if (b.durationMinutes === null) return -1;
+      return a.durationMinutes - b.durationMinutes;
+    }
+    if (sortMode === "rating_desc") {
+      const rDiff = (b.ratingAverage || 0) - (a.ratingAverage || 0);
+      if (rDiff !== 0) return rDiff;
+      return (b.reviewCount || 0) - (a.reviewCount || 0);
+    }
+    if (a.commissionAuthorized !== b.commissionAuthorized) {
+      return a.commissionAuthorized ? -1 : 1;
+    }
+    const revDiff = (b.reviewCount || 0) - (a.reviewCount || 0);
+    if (revDiff !== 0) return revDiff;
+    const ratDiff = (b.ratingAverage || 0) - (a.ratingAverage || 0);
+    if (ratDiff !== 0) return ratDiff;
+    return a.tourId.localeCompare(b.tourId);
+  });
+
+  const totalMatched = sorted.length;
+  const effectiveLimit =
+    typeof filter.limit === "number" && Number.isFinite(filter.limit) && filter.limit > 0
+      ? Math.round(filter.limit)
+      : Math.max(totalMatched, 1);
+  const effectiveOffset =
+    typeof filter.offset === "number" && Number.isFinite(filter.offset) && filter.offset >= 0
+      ? Math.round(filter.offset)
+      : typeof filter.page === "number" && Number.isFinite(filter.page) && filter.page >= 1
+        ? (Math.round(filter.page) - 1) * effectiveLimit
+        : 0;
+  const effectivePage =
+    effectiveLimit > 0 ? Math.floor(effectiveOffset / effectiveLimit) + 1 : 1;
+  const totalPages =
+    effectiveLimit > 0 ? Math.max(1, Math.ceil(totalMatched / effectiveLimit)) : 1;
+  const sliced = sorted.slice(effectiveOffset, effectiveOffset + effectiveLimit);
+
   return {
-    records: filtered.slice(0, limit),
-    totalMatched: filtered.length,
+    records: sliced,
+    totalMatched,
+    limit: effectiveLimit,
+    offset: effectiveOffset,
+    page: effectivePage,
+    totalPages,
+    hasMore: effectiveOffset + sliced.length < totalMatched,
+    categoriesAvailable,
     storageSource: source,
   };
 }
@@ -3548,6 +3936,39 @@ export async function queryDurableTourCatalog(filter: DurableCatalogQueryFilter 
 export async function getDurableTourByIdOrAlias(idOrAlias: string): Promise<DurableTourRecord | null> {
   const norm = idOrAlias.trim().toLowerCase();
   if (!norm) return null;
+
+  if (shouldUsePostgres()) {
+    try {
+      await ensurePgCatalogSeededOnce();
+      const sql = getSqlClient();
+      const rows = await sql.query(
+        `SELECT * FROM dcc_tour_catalog
+         WHERE active = true AND quarantined = false
+           AND (
+             LOWER(tour_id) = $1
+             OR LOWER(provider_product_code) = $1
+             OR EXISTS (
+               SELECT 1 FROM jsonb_array_elements_text(compatibility_aliases) AS a
+               WHERE LOWER(a) = $1
+             )
+           )
+         LIMIT 1`,
+        [norm],
+      );
+      if (Array.isArray(rows) && rows.length > 0) {
+        const rec = mapPgRowToDurableTourRecord(rows[0] as Record<string, any>);
+        if (rec.active && !isQuarantinedTourRecord(rec)) {
+          return normalizeCatalogTourPickupAndMeeting(rec).normalizedRecord;
+        }
+      }
+    } catch (err) {
+      console.warn(
+        "[durableCatalogStore] Falling back to snapshot in getDurableTourByIdOrAlias:",
+        err,
+      );
+    }
+  }
+
   const { records } = await loadAllCatalogRecordsWithPgHydration();
   return (
     records.find(

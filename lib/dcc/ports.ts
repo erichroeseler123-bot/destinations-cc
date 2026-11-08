@@ -53,6 +53,7 @@ const PORT_GEO_FALLBACK_BY_SLUG: Record<string, { lat: number; lon: number }> = 
   "george-town-grand-cayman": { lat: 19.295, lon: -81.3838 },
   seattle: { lat: 47.6114, lon: -122.3508 },
   vancouver: { lat: 49.2888, lon: -123.1111 },
+  reykjavik: { lat: 64.1562, lon: -21.8685 },
 };
 
 const LEGACY_COORDS_BY_SLUG = new Map<string, { lat: number; lon: number }>(
@@ -107,7 +108,12 @@ function getCanonicalPorts(): PortView[] {
 export function getEffectivePorts(): PortView[] {
   try {
     const canonical = getCanonicalPorts();
-    if (canonical.length > 0) return canonical;
+    if (canonical.length > 0) {
+      if (!LEGACY_FALLBACK_ENABLED) return canonical;
+      const seen = new Set(canonical.map((p) => p.slug));
+      const extras = getLegacyPorts().filter((p) => !seen.has(p.slug));
+      return [...canonical, ...extras];
+    }
   } catch {
     // no-op: fall through
   }

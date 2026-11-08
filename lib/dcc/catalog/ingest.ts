@@ -547,6 +547,86 @@ export function resolveVerifiedLandmarkCoordinatesAndPierTransfer(
       isPierAdjacent: true,
     };
   }
+  if (
+    (!destinationSlug || destinationSlug === "reykjavik") &&
+    /\bskarfabakki\b|\bsundah[oö]fn\b|\bsundabakki\b|\bkleppsbakki\b|\breykjav[ií]k\s+cruise\s+(?:port|pier|dock|terminal)\b/i.test(
+      norm,
+    )
+  ) {
+    return {
+      name: "Skarfabakki Cruise Terminal (Sundahöfn)",
+      address: "Skarfabakki 312, 104 Reykjavík, Iceland",
+      lat: 64.1562,
+      lng: -21.8685,
+      transferMinutesFromPier: 15,
+      transferTimeSource: "verified_pier_pickup",
+      evidenceSource: "verified_landmark_registry:reykjavik_skarfabakki_sundahofn_cruise_terminal",
+      applicableBerthOrMeetingPoint:
+        "Skarfabakki Cruise Terminal (Sundahöfn Berth 312–315) — Direct Pier Pickup",
+      planningEstimateTransferMinutes: 15,
+      isPierAdjacent: true,
+    };
+  }
+  if (
+    (!destinationSlug || destinationSlug === "reykjavik") &&
+    /\bmi[dð]bakki\b|\bold\s+harbou?r\b|\b[aæ]gisgar[dð]ur\b|\bgeirsgata\b|\bspecial\s+tours\s+ticket\s+office\b|\belding\b/i.test(
+      norm,
+    )
+  ) {
+    return {
+      name: "Miðbakki / Reykjavík Old Harbour (Ægisgarður)",
+      address: "Geirsgata / Ægisgarður, 101 Reykjavík, Iceland",
+      lat: 64.1508,
+      lng: -21.9406,
+      transferMinutesFromPier: 18,
+      transferTimeSource: "verified_meeting_point",
+      evidenceSource: "verified_landmark_registry:reykjavik_old_harbour_midbakki_aegisgardur",
+      applicableBerthOrMeetingPoint:
+        "Skarfabakki Cruise Terminal <-> Reykjavík Old Harbour / Miðbakki (Ægisgarður Whale Watching & Downtown Berth)",
+      planningEstimateTransferMinutes: 18,
+      isDowntownShuttleHub: true,
+    };
+  }
+  if (
+    (!destinationSlug || destinationSlug === "reykjavik") &&
+    /\bbs[ií]\s+bus\s+terminal\b|\bvatnsm[yý]rarvegur\s+10\b|\breykjav[ií]k\s+excursions\b/i.test(
+      norm,
+    )
+  ) {
+    return {
+      name: "BSÍ Bus Terminal (Reykjavík Central Coach Hub)",
+      address: "Vatnsmýrarvegur 10, 101 Reykjavík, Iceland",
+      lat: 64.1373,
+      lng: -21.9348,
+      transferMinutesFromPier: 20,
+      transferTimeSource: "verified_meeting_point",
+      evidenceSource: "verified_landmark_registry:reykjavik_bsi_bus_terminal_vatnsmyrarvegur_10",
+      applicableBerthOrMeetingPoint:
+        "Skarfabakki Cruise Terminal <-> BSÍ Bus Terminal (Vatnsmýrarvegur 10 Coach Hub)",
+      planningEstimateTransferMinutes: 20,
+      isDowntownShuttleHub: true,
+    };
+  }
+  if (
+    (!destinationSlug || destinationSlug === "reykjavik") &&
+    /\bbus\s+stop\s*(?:#?\s*)?(?:12|8|1|6|14)\b|\bh[oö]f[dð]atorg\b|\bharpa\s+concert\s+hall\b|\bhallgr[ií]mskirkja\b|\bausturbakki\s+2\b/i.test(
+      norm,
+    )
+  ) {
+    return {
+      name: "Reykjavík Downtown Tour Bus Stop (Harpa / Höfðatorg Stop 12 / Hallgrímskirkja Stop 8)",
+      address: "Austurbakki 2 / Þórunnartún 1, 101–105 Reykjavík, Iceland",
+      lat: 64.1504,
+      lng: -21.9326,
+      transferMinutesFromPier: 18,
+      transferTimeSource: "verified_meeting_point",
+      evidenceSource: "verified_landmark_registry:reykjavik_city_tour_bus_stops_harpa_hofdatorg",
+      applicableBerthOrMeetingPoint:
+        "Skarfabakki Cruise Terminal <-> Reykjavík Authorized Tour Bus Stop (#1 Harpa / #8 Hallgrímskirkja / #12 Höfðatorg)",
+      planningEstimateTransferMinutes: 18,
+      isDowntownShuttleHub: true,
+    };
+  }
 
   return null;
 }
@@ -1117,16 +1197,52 @@ function parseAgeBandsFromViator(detail: any): TourAgeBandRecord[] {
 
 function inferCategoryFromTitleAndSummary(title: string, summary: string | null): string {
   const text = `${title} ${summary || ""}`.toLowerCase();
+  if (
+    text.includes("golden circle") ||
+    text.includes("gullfoss") ||
+    text.includes("geysir") ||
+    text.includes("thingvellir") ||
+    text.includes("þingvellir")
+  ) {
+    return "Golden Circle, Geysers & Waterfalls";
+  }
+  if (
+    text.includes("sky lagoon") ||
+    text.includes("blue lagoon") ||
+    text.includes("hvammsvik") ||
+    text.includes("secret lagoon") ||
+    text.includes("geothermal") ||
+    text.includes("hot spring")
+  ) {
+    return "Geothermal Spas & Lagoons";
+  }
+  if (
+    text.includes("south coast") ||
+    text.includes("seljalandsfoss") ||
+    text.includes("skógafoss") ||
+    text.includes("skogafoss") ||
+    text.includes("reynisfjara") ||
+    text.includes("snaefellsnes") ||
+    text.includes("snæfellsnes")
+  ) {
+    return "South Coast, Waterfalls & Volcanoes";
+  }
   if (text.includes("swamp") || text.includes("bayou") || text.includes("airboat")) {
     return "Swamp & Bayou";
   }
   if (text.includes("helicopter") || text.includes("flightseeing") || text.includes("floatplane")) {
     return "Helicopter & Flightseeing";
   }
-  if (text.includes("whale") || text.includes("dolphin") || text.includes("wildlife") || text.includes("marine")) {
+  if (
+    text.includes("whale") ||
+    text.includes("puffin") ||
+    text.includes("dolphin") ||
+    text.includes("wildlife") ||
+    text.includes("marine")
+  ) {
     return "Whale Watching & Marine Wildlife";
   }
-  if (text.includes("glacier") || text.includes("dogsled") || text.includes("icefield")) {
+  if (text.includes("glacier") || text.includes("dogsled") || text.includes("icefield") || text.includes("lava")) {
     return "Glacier & Adventure";
   }
   if (text.includes("ghost") || text.includes("vampire") || text.includes("haunted") || text.includes("cemetery")) {

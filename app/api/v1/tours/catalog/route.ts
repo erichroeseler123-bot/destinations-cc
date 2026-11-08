@@ -6,6 +6,7 @@ import {
   normalizeCatalogBatchPickupAndMeeting,
   queueCatalogPickupExceptionsToReviewDesk,
   queryDurableTourCatalog,
+  type CatalogQueryFilter,
   type TourCapabilityTier,
 } from "@/lib/dcc/catalog/durableCatalogStore";
 import {
@@ -13,6 +14,7 @@ import {
   runIncrementalViatorCatalogRefresh,
   runUniversalCatalogIngestion,
 } from "@/lib/dcc/catalog/ingest";
+import { buildCatalogTourDirectHandoff } from "@/lib/dcc/catalog/matcher";
 import { authenticateCommerceAdminRequest } from "@/lib/dcc/commerce/opaqueAttributionLedger";
 
 export const dynamic = "force-dynamic";
@@ -55,6 +57,15 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const surface = sp.get("surface") || "cruisepromenade";
+    const propertySlug = sp.get("propertySlug") || sp.get("property") || undefined;
+    const placementId = sp.get("placementId") || sp.get("placement") || undefined;
+    const sailingCode = sp.get("sailing") || sp.get("sailingCode") || undefined;
+    const date = sp.get("date") || undefined;
+    const adultsRaw = sp.get("adults");
+    const adults = adultsRaw && Number.isFinite(Number(adultsRaw)) ? Number(adultsRaw) : 2;
+    const isTest = sp.get("isTest") === "true" || sp.get("isTest") === "1";
+
     const singleId = sp.get("id") || sp.get("tourId") || sp.get("alias");
     if (singleId) {
       const tour = await getDurableTourByIdOrAlias(singleId);
@@ -64,8 +75,17 @@ export async function GET(request: NextRequest) {
           { status: 404, headers: CORS_HEADERS },
         );
       }
+      const bookingPath = buildCatalogTourDirectHandoff(tour, {
+        surface,
+        propertySlug,
+        placementId,
+        sailingCode,
+        date,
+        adults,
+        isTest,
+      });
       return NextResponse.json(
-        { ok: true, readOnly: true, tour },
+        { ok: true, readOnly: true, tour: { ...tour, bookingPath }, bookingPath },
         { status: 200, headers: CORS_HEADERS },
       );
     }
@@ -77,7 +97,23 @@ export async function GET(request: NextRequest) {
       .filter(Boolean);
 
     const limitRaw = sp.get("limit");
-    const limit = limitRaw ? Number(limitRaw) : undefined;
+    const limit = limitRaw && Number.isFinite(Number(limitRaw)) ? Number(limitRaw) : undefined;
+    const offsetRaw = sp.get("offset");
+    const offset = offsetRaw && Number.isFinite(Number(offsetRaw)) ? Number(offsetRaw) : undefined;
+    const pageRaw = sp.get("page");
+    const page = pageRaw && Number.isFinite(Number(pageRaw)) ? Number(pageRaw) : undefined;
+    const maxDurationRaw = sp.get("maxDurationMinutes");
+    const maxDurationMinutes =
+      maxDurationRaw && Number.isFinite(Number(maxDurationRaw))
+        ? Number(maxDurationRaw)
+        : undefined;
+    const maxPriceRaw = sp.get("maxPriceCents");
+    const maxPriceCents =
+      maxPriceRaw && Number.isFinite(Number(maxPriceRaw)) ? Number(maxPriceRaw) : undefined;
+    const freeCancellationOnly =
+      sp.get("freeCancellationOnly") === "true" || sp.get("freeCancellationOnly") === "1";
+    const commissionAuthorizedOnly =
+      sp.get("commissionAuthorizedOnly") === "true" || sp.get("commissionAuthorizedOnly") === "1";
 
     const result = await queryDurableTourCatalog({
       destinationSlug: sp.get("destination") || sp.get("destinationSlug") || undefined,
@@ -86,9 +122,18 @@ export async function GET(request: NextRequest) {
       provider: sp.get("provider") || undefined,
       capabilityTier: (sp.get("capabilityTier") as TourCapabilityTier) || undefined,
       category: sp.get("category") || undefined,
+      q: sp.get("q") || sp.get("search") || undefined,
+      pickupMode: (sp.get("pickupMode") as CatalogQueryFilter["pickupMode"]) || undefined,
+      maxDurationMinutes,
+      maxPriceCents,
+      freeCancellationOnly: freeCancellationOnly ? true : undefined,
+      commissionAuthorizedOnly: commissionAuthorizedOnly ? true : undefined,
       approvedTourIds: approvedTourIds.length > 0 ? approvedTourIds : undefined,
       includeDiscoveryOnly: sp.get("includeDiscoveryOnly") !== "false",
-      limit: Number.isFinite(limit) ? limit : undefined,
+      sort: (sp.get("sort") as CatalogQueryFilter["sort"]) || undefined,
+      limit,
+      offset,
+      page,
     });
 
     if (sp.get("exceptions") === "true" || sp.get("exceptions") === "1") {
@@ -106,14 +151,35 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const enrichedRecords = result.records.map((rec) => ({
+      ...rec,
+      bookingPath: buildCatalogTourDirectHandoff(rec, {
+        surface,
+        propertySlug,
+        placementId,
+        sailingCode,
+        date,
+        adults,
+        isTest,
+      }),
+    }));
+
     return NextResponse.json(
       {
         ok: true,
         readOnly: true,
         storageSource: result.storageSource,
         totalMatched: result.totalMatched,
-        count: result.records.length,
-        records: result.records,
+        count: enrichedRecords.length,
+        returnedCount: enrichedRecords.length,
+        limit: result.limit,
+        offset: result.offset,
+        page: result.page,
+        totalPages: result.totalPages,
+        hasMore: result.hasMore,
+        categoriesAvailable: result.categoriesAvailable,
+        records: enrichedRecords,
+        tours: enrichedRecords,
       },
       { status: 200, headers: CORS_HEADERS },
     );
