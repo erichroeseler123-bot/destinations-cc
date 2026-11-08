@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import JsonLd from "@/app/components/dcc/JsonLd";
 import { getEffectivePorts } from "@/lib/dcc/ports";
+import { getCruisePortDirectory } from "@/lib/dcc/cruisePortDirectory";
 import PortsSearchClient from "@/app/ports/PortsSearchClient";
 import { SITE_IDENTITY } from "@/src/data/site-identity";
 import { buildArticleJsonLd, buildBreadcrumbJsonLd } from "@/lib/dcc/jsonld";
@@ -54,21 +55,20 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-type Port = { slug: string; name: string; area?: string; country?: string; tags?: string[] };
-
 export default async function PortsIndex() {
   const hostHeader = (await headers()).get("x-forwarded-host") || (await headers()).get("host") || "";
   const host = hostHeader.split(":")[0];
   const isLfse = host === "lastfrontiershoreexcursions.com" || host === "www.lastfrontiershoreexcursions.com";
 
-  let ports = getEffectivePorts() as Port[];
-  if (isLfse) {
-    const allowedLfseSlugs = new Set(["juneau", "skagway", "ketchikan"]);
-    ports = ports.filter((p) => allowedLfseSlugs.has(p.slug));
-  }
+  const alaskaSlugs = new Set(["juneau", "skagway", "ketchikan"]);
+  const ports = isLfse
+    ? getEffectivePorts().filter((port) => alaskaSlugs.has(port.slug))
+    : getCruisePortDirectory().map(({ slug, name, area, region, city, country, tags, aliases, coverage }) => ({
+        slug, name, area, region, city, country, tags, aliases, coverage,
+      }));
 
   const uniqueAreas = new Set(ports.map((port) => port.area).filter(Boolean));
-  const usPorts = ports.filter((port) => port.country === "US").length;
+  const usPorts = ports.filter((port) => port.country === "US" || port.country === "United States").length;
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-zinc-950 text-white">
@@ -94,7 +94,9 @@ export default async function PortsIndex() {
         <header className="space-y-3">
           <RouteHeroMark eyebrow="Destination Command Center" title="PORTS" tone="emerald" />
           <p className="text-xs uppercase tracking-wider text-zinc-500">Cruise planning</p>
-          <h1 className="text-4xl md:text-6xl font-black tracking-tight">Cruise ports and embarkation guides</h1>
+          <h1 className="text-4xl md:text-6xl font-black tracking-tight">
+            {isLfse ? "Alaska cruise ports and embarkation guides" : "Worldwide cruise ports and embarkation guides"}
+          </h1>
           <p className="max-w-3xl text-zinc-300">
             Use this hub to compare embarkation ports, understand what is nearby, and move into the right cruise-planning surface quickly.
           </p>
@@ -175,6 +177,11 @@ export default async function PortsIndex() {
         </section>
 
         <PortsSearchClient ports={ports} />
+        {!isLfse ? (
+          <p className="text-sm text-zinc-400">
+            Includes DCC guides and ports listed by cruise lines. Find your sailing’s call dates and terminal in your cruise documents.
+          </p>
+        ) : null}
 
         <section className="grid gap-4 md:grid-cols-3">
           <Link href="/cruises" className="rounded-2xl border border-cyan-400/20 bg-cyan-500/10 p-5 hover:bg-cyan-500/20">
