@@ -89,6 +89,11 @@ export type PortDayDepartureTimeSource =
   | "ambiguous"
   | "invalid";
 
+export type PortDayWindowTimeSource =
+  | "request_param"
+  | "scheduled_port_call"
+  | "port_estimate";
+
 export interface ScheduledCruisePortCall {
   sailingId: string;
   sailingAliases?: string[];
@@ -108,7 +113,11 @@ export interface PortDayTimeFitEvaluation {
   selectedOptionCode: string | null;
   selectedOptionTitle: string | null;
   shipArrivalTime: string;
+  shipArrivalTimeLabel?: string;
+  arrivalTimeSource?: PortDayWindowTimeSource;
   shipAllAboardTime: string;
+  shipAllAboardTimeLabel?: string;
+  allAboardTimeSource?: PortDayWindowTimeSource;
   shipDepartureTime: string | null;
   departureTimeSource?: PortDayDepartureTimeSource;
   allAboardToShipDepartureMinutes: number | null;
@@ -142,6 +151,8 @@ export interface PortDayTimeFitEvaluation {
   bufferBeforeShipDepartureMinutes: number | null;
   returnBufferReconciliation?: {
     requiredAllAboardBufferMinutes: number;
+    allAboardTimeSource?: PortDayWindowTimeSource;
+    shipAllAboardTimeLabel?: string;
     shipDepartureTime: string | null;
     allAboardToShipDepartureMinutes: number | null;
     equivalentShipDepartureBufferMinutes: number | null;
@@ -238,7 +249,11 @@ export interface PortDayExcursionCatalogResponse {
   port: CruisePortExcursionProfile;
   sailingWindow: {
     shipArrivalTime: string;
+    shipArrivalTimeLabel?: string;
+    arrivalTimeSource?: PortDayWindowTimeSource;
     shipAllAboardTime: string;
+    shipAllAboardTimeLabel?: string;
+    allAboardTimeSource?: PortDayWindowTimeSource;
     shipDepartureTime: string | null;
     allAboardToShipDepartureMinutes: number | null;
     departureTimeSource: PortDayDepartureTimeSource;
@@ -1435,7 +1450,11 @@ export function resolveScheduledPortCall(params: {
 }): {
   matchedPortCall: ScheduledCruisePortCall | null;
   shipArrivalTime: string;
+  shipArrivalTimeLabel: string;
+  arrivalTimeSource: PortDayWindowTimeSource;
   shipAllAboardTime: string;
+  shipAllAboardTimeLabel: string;
+  allAboardTimeSource: PortDayWindowTimeSource;
   shipDepartureTime: string | null;
   allAboardToShipDepartureMinutes: number | null;
   departureTimeSource: PortDayDepartureTimeSource;
@@ -1508,6 +1527,19 @@ export function resolveScheduledPortCall(params: {
     }
   }
 
+  const arrivalTimeSource: PortDayWindowTimeSource =
+    explicitArrivalMin !== null
+      ? "request_param"
+      : matchedPortCall?.arrivalTime
+        ? "scheduled_port_call"
+        : "port_estimate";
+  const allAboardTimeSource: PortDayWindowTimeSource =
+    explicitAllAboardMin !== null
+      ? "request_param"
+      : matchedPortCall?.allAboardTime
+        ? "scheduled_port_call"
+        : "port_estimate";
+
   const resolvedArrivalTime =
     explicitArrivalMin !== null
       ? formatHhMm(explicitArrivalMin)
@@ -1516,6 +1548,14 @@ export function resolveScheduledPortCall(params: {
     explicitAllAboardMin !== null
       ? formatHhMm(explicitAllAboardMin)
       : matchedPortCall?.allAboardTime || profile.defaultShipAllAboardTime;
+  const shipArrivalTimeLabel =
+    arrivalTimeSource === "port_estimate"
+      ? `${resolvedArrivalTime} (port estimate)`
+      : resolvedArrivalTime;
+  const shipAllAboardTimeLabel =
+    allAboardTimeSource === "port_estimate"
+      ? `${resolvedAllAboardTime} (port estimate)`
+      : resolvedAllAboardTime;
   const resolvedSailingDate =
     rawDate || matchedPortCall?.sailingDate || profile.defaultSailingDate || "2027-07-15";
 
@@ -1577,7 +1617,11 @@ export function resolveScheduledPortCall(params: {
   return {
     matchedPortCall,
     shipArrivalTime: resolvedArrivalTime,
+    shipArrivalTimeLabel,
+    arrivalTimeSource,
     shipAllAboardTime: resolvedAllAboardTime,
+    shipAllAboardTimeLabel,
+    allAboardTimeSource,
     shipDepartureTime,
     allAboardToShipDepartureMinutes,
     departureTimeSource,
@@ -1592,7 +1636,9 @@ export function evaluateTourPortDayTimeFit(params: {
   rec: DurableTourRecord;
   profile: CruisePortExcursionProfile;
   shipArrivalTime?: string;
+  arrivalTimeSource?: PortDayWindowTimeSource;
   shipAllAboardTime?: string;
+  allAboardTimeSource?: PortDayWindowTimeSource;
   shipDepartureTime?: string | null;
   departureTimeSource?: PortDayDepartureTimeSource;
   optionCode?: string | null;
@@ -1600,6 +1646,20 @@ export function evaluateTourPortDayTimeFit(params: {
   const { rec, profile } = params;
   const arrivalTime = params.shipArrivalTime || profile.defaultShipArrivalTime;
   const allAboardTime = params.shipAllAboardTime || profile.defaultShipAllAboardTime;
+  const arrivalTimeSource: PortDayWindowTimeSource =
+    params.arrivalTimeSource || (params.shipArrivalTime ? "request_param" : "port_estimate");
+  const allAboardTimeSource: PortDayWindowTimeSource =
+    params.allAboardTimeSource ||
+    (params.shipAllAboardTime ? "request_param" : "port_estimate");
+  const shipArrivalTimeLabel =
+    arrivalTimeSource === "port_estimate"
+      ? `${arrivalTime} (port estimate)`
+      : arrivalTime;
+  const shipAllAboardTimeLabel =
+    allAboardTimeSource === "port_estimate"
+      ? `${allAboardTime} (port estimate)`
+      : allAboardTime;
+  const isAllAboardPortEstimate = allAboardTimeSource === "port_estimate";
   const arrivalMin = parseHhMm(arrivalTime) ?? 480;
   const allAboardMin = parseHhMm(allAboardTime) ?? 1050;
   const earliestDisembarkMin = arrivalMin + 25;
@@ -1776,6 +1836,9 @@ export function evaluateTourPortDayTimeFit(params: {
     pierToMeetingMinutes === null ||
     meetingToPierMinutes === null
   ) {
+    const effectiveMissingFields = isAllAboardPortEstimate
+      ? [...missingFields, "allAboard"]
+      : missingFields;
     const meetingContext = meetingPointName
       ? `Listed meeting point: ${meetingPointName}.`
       : "No verified operator meeting point on record.";
@@ -1786,7 +1849,11 @@ export function evaluateTourPortDayTimeFit(params: {
       selectedOptionCode,
       selectedOptionTitle,
       shipArrivalTime: arrivalTime,
+      shipArrivalTimeLabel,
+      arrivalTimeSource,
       shipAllAboardTime: allAboardTime,
+      shipAllAboardTimeLabel,
+      allAboardTimeSource,
       shipDepartureTime: validShipDepartureTime,
       departureTimeSource: params.departureTimeSource,
       allAboardToShipDepartureMinutes,
@@ -1820,23 +1887,28 @@ export function evaluateTourPortDayTimeFit(params: {
       bufferBeforeShipDepartureMinutes: null,
       returnBufferReconciliation: {
         requiredAllAboardBufferMinutes: profile.requiredReturnBufferMinutes,
+        allAboardTimeSource,
+        shipAllAboardTimeLabel,
         shipDepartureTime: validShipDepartureTime,
         allAboardToShipDepartureMinutes,
         equivalentShipDepartureBufferMinutes,
         bufferBeforeAllAboardMinutes: null,
         bufferBeforeShipDepartureMinutes: null,
-        reconciliationNote:
-          validShipDepartureTime !== null &&
-          allAboardToShipDepartureMinutes !== null &&
-          equivalentShipDepartureBufferMinutes !== null
+        reconciliationNote: isAllAboardPortEstimate
+          ? `All Aboard time (${allAboardTime}) is a port estimate because no traveler all-aboard deadline or matching sailing schedule was provided. Tour fit requires returning to the pier at least ${profile.requiredReturnBufferMinutes}m before All Aboard and remains Needs verification until the all-aboard deadline and tour logistics are confirmed.`
+          : validShipDepartureTime !== null &&
+              allAboardToShipDepartureMinutes !== null &&
+              equivalentShipDepartureBufferMinutes !== null
             ? `Tour fit requires returning to the pier at least ${profile.requiredReturnBufferMinutes}m before All Aboard (${allAboardTime}), or ${equivalentShipDepartureBufferMinutes}m before scheduled ship departure (${validShipDepartureTime}, ${allAboardToShipDepartureMinutes}m after All Aboard).`
             : `Tour fit requires returning to the pier at least ${profile.requiredReturnBufferMinutes}m before All Aboard (${allAboardTime}).`,
       },
       hasVerifiedReturnBuffer: false,
-      missingFields,
-      reasonSummary: `Needs verification: missing verified ${missingFields.join(
+      missingFields: effectiveMissingFields,
+      reasonSummary: `Needs verification: missing verified ${effectiveMissingFields.join(
         ", "
-      )}. ${meetingContext} Confirm exact product/option departure, check-in, pier transfers, and return buffer before booking for your sailing.`,
+      )}${
+        isAllAboardPortEstimate ? ` (All Aboard ${allAboardTime} is a port estimate)` : ""
+      }. ${meetingContext} Confirm exact product/option departure, check-in, pier transfers, and return buffer before booking for your sailing.`,
       evidenceReviewPriority,
     };
   }
@@ -1872,6 +1944,81 @@ export function evaluateTourPortDayTimeFit(params: {
     hasValidShipDeparture && allAboardToShipDepartureMinutes !== null
       ? bufferBeforeAllAboard + allAboardToShipDepartureMinutes
       : null;
+
+  if (isAllAboardPortEstimate) {
+    return {
+      status: "needs_verification",
+      statusLabel: "Needs verification",
+      fitsSailing: false,
+      selectedOptionCode,
+      selectedOptionTitle,
+      shipArrivalTime: arrivalTime,
+      shipArrivalTimeLabel,
+      arrivalTimeSource,
+      shipAllAboardTime: allAboardTime,
+      shipAllAboardTimeLabel,
+      allAboardTimeSource,
+      shipDepartureTime: validShipDepartureTime,
+      departureTimeSource: params.departureTimeSource,
+      allAboardToShipDepartureMinutes,
+      earliestDisembarkationTime: formatHhMm(earliestDisembarkMin),
+      selectedDepartureTime: selectedDep,
+      availableDepartureTimes: departures,
+      fittingDepartureTimes: [],
+      tooLateDepartureTimes: tooLateDepartures,
+      hasVerifiedDeparture: true,
+      departureEvidenceSource,
+      checkInCutoffMinutes,
+      latestCheckInTime: formatHhMm(checkInMin),
+      hasVerifiedCheckIn: true,
+      checkInEvidenceSource,
+      leavePierByTime: formatHhMm(leavePierMin),
+      meetingPointName,
+      meetingPointAddress,
+      hasVerifiedMeetingPoint: true,
+      meetingPointEvidenceSource,
+      oneWayTransferMinutes,
+      pierToMeetingMinutes,
+      meetingToPierMinutes,
+      roundTripTransferMinutes,
+      hasVerifiedTransfer: true,
+      transferEvidenceSource,
+      durationMinutes,
+      tourEndTime: formatHhMm(tourEndMin),
+      estimatedBackAtPierTime: formatHhMm(backAtPierMin),
+      requiredReturnBufferMinutes: profile.requiredReturnBufferMinutes,
+      bufferBeforeAllAboardMinutes: bufferBeforeAllAboard,
+      bufferBeforeShipDepartureMinutes: bufferBeforeShipDeparture,
+      returnBufferReconciliation: {
+        requiredAllAboardBufferMinutes: profile.requiredReturnBufferMinutes,
+        allAboardTimeSource,
+        shipAllAboardTimeLabel,
+        shipDepartureTime: validShipDepartureTime,
+        allAboardToShipDepartureMinutes,
+        equivalentShipDepartureBufferMinutes,
+        bufferBeforeAllAboardMinutes: bufferBeforeAllAboard,
+        bufferBeforeShipDepartureMinutes: bufferBeforeShipDeparture,
+        reconciliationNote: `All Aboard time (${allAboardTime}) is a port estimate because no traveler all-aboard deadline or matching sailing schedule was provided. This tour returns to the pier at ${formatHhMm(
+          backAtPierMin
+        )} (${bufferBeforeAllAboard}m before the ${allAboardTime} port estimate; port requires ${
+          profile.requiredReturnBufferMinutes
+        }m before All Aboard). Sailing fit is Needs verification until the traveler supplies the all-aboard deadline or the sailing schedule provides it.`,
+      },
+      hasVerifiedReturnBuffer: true,
+      missingFields: ["allAboard"],
+      reasonSummary: `Needs verification: All Aboard time (${allAboardTime}) is a port estimate. Departs ${selectedDep} (option ${
+        selectedOptionCode || "default"
+      }, check in by ${formatHhMm(
+        checkInMin
+      )} at ${meetingPointName}), ${roundTripTransferMinutes}m round-trip transfer, returns to pier at ${formatHhMm(
+        backAtPierMin
+      )} (${bufferBeforeAllAboard}m before ${allAboardTime} port estimate; requires +${
+        profile.requiredReturnBufferMinutes
+      }m before confirmed all-aboard). Supply your all-aboard deadline or select a sailing schedule to confirm sailing fit.`,
+      evidenceReviewPriority,
+    };
+  }
+
   const fits = fittingDepartures.includes(selectedDep);
 
   return {
@@ -1881,7 +2028,11 @@ export function evaluateTourPortDayTimeFit(params: {
     selectedOptionCode,
     selectedOptionTitle,
     shipArrivalTime: arrivalTime,
+    shipArrivalTimeLabel,
+    arrivalTimeSource,
     shipAllAboardTime: allAboardTime,
+    shipAllAboardTimeLabel,
+    allAboardTimeSource,
     shipDepartureTime: validShipDepartureTime,
     departureTimeSource: params.departureTimeSource,
     allAboardToShipDepartureMinutes,
@@ -1915,6 +2066,8 @@ export function evaluateTourPortDayTimeFit(params: {
     bufferBeforeShipDepartureMinutes: bufferBeforeShipDeparture,
     returnBufferReconciliation: {
       requiredAllAboardBufferMinutes: profile.requiredReturnBufferMinutes,
+      allAboardTimeSource,
+      shipAllAboardTimeLabel,
       shipDepartureTime: validShipDepartureTime,
       allAboardToShipDepartureMinutes,
       equivalentShipDepartureBufferMinutes,
@@ -2643,7 +2796,9 @@ export async function queryPortDayExcursionCatalog(params: {
       rec,
       profile,
       shipArrivalTime,
+      arrivalTimeSource: portCallResolution.arrivalTimeSource,
       shipAllAboardTime,
+      allAboardTimeSource: portCallResolution.allAboardTimeSource,
       shipDepartureTime,
       departureTimeSource,
     });
@@ -2696,7 +2851,7 @@ export async function queryPortDayExcursionCatalog(params: {
       title: rec.title,
       shortDescription:
         rec.summary ||
-        `${rec.title} — shore excursion in ${profile.portName} evaluated against ${shipArrivalTime}–${shipAllAboardTime} port window.`,
+        `${rec.title} — shore excursion in ${profile.portName} evaluated against ${shipArrivalTime}–${portCallResolution.shipAllAboardTimeLabel} port window.`,
       provider:
         rec.primaryProvider === "operator_direct" || rec.primaryProvider === "fareharbor"
           ? "operator_direct"
@@ -2827,7 +2982,11 @@ export async function queryPortDayExcursionCatalog(params: {
     port: profile,
     sailingWindow: {
       shipArrivalTime,
+      shipArrivalTimeLabel: portCallResolution.shipArrivalTimeLabel,
+      arrivalTimeSource: portCallResolution.arrivalTimeSource,
       shipAllAboardTime,
+      shipAllAboardTimeLabel: portCallResolution.shipAllAboardTimeLabel,
+      allAboardTimeSource: portCallResolution.allAboardTimeSource,
       shipDepartureTime,
       allAboardToShipDepartureMinutes,
       departureTimeSource,

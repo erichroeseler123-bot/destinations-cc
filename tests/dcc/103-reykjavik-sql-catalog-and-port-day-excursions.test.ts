@@ -320,6 +320,8 @@ test("103.6: Batch 3 ports (New Orleans, Miami, Tampa, Seattle) reconcile provid
     const fitsRes = await queryPortDayExcursionCatalog({
       portSlug: item.portSlug,
       viewMode: "fits_sailing",
+      shipArrivalTime: "07:00",
+      shipAllAboardTime: "15:30",
       limit: 12,
       offset: 0,
       originatingSite: "cruisepromenade.com",
@@ -581,5 +583,63 @@ test("103.9: Scheduled departure from matching ship, sailing, and port call repl
   assert.equal(miamiRecon.equivalentShipDepartureBufferMinutes, null);
   assert.equal(miamiRecon.bufferBeforeShipDepartureMinutes, null);
 });
+
+test("103.10: Blank all-aboard time labels 15:30 as a port estimate and uses Needs verification for sailing fit until traveler or sailing schedule provides the deadline", async () => {
+  const { queryPortDayExcursionCatalog } = await import(
+    "@/lib/dcc/cruisePortExcursionCatalogEngine"
+  );
+
+  // Live blank-time test URL:
+  // ?port=new-orleans&date=2027-07-15&shipArrival=07:00&productCode=15200P6
+  const blankAllAboardRes = await queryPortDayExcursionCatalog({
+    portSlug: "new-orleans",
+    viewMode: "browse_all",
+    sailingDate: "2027-07-15",
+    shipArrivalTime: "07:00",
+    search: "15200P6",
+    limit: 5,
+    offset: 0,
+  });
+  assert.ok(blankAllAboardRes, "Expected response for blank all-aboard time query");
+  assert.equal(blankAllAboardRes.sailingWindow.shipArrivalTime, "07:00");
+  assert.equal(blankAllAboardRes.sailingWindow.arrivalTimeSource, "request_param");
+  assert.equal(blankAllAboardRes.sailingWindow.shipAllAboardTime, "15:30");
+  assert.equal(
+    blankAllAboardRes.sailingWindow.shipAllAboardTimeLabel,
+    "15:30 (port estimate)"
+  );
+  assert.equal(blankAllAboardRes.sailingWindow.allAboardTimeSource, "port_estimate");
+  assert.equal(blankAllAboardRes.summary.fitsSailingCountOnPage, 0);
+
+  const tour15200P6 = blankAllAboardRes.tours.find((t) => t.productCode === "15200P6");
+  assert.ok(tour15200P6, "Expected 15200P6 in New Orleans browse_all results");
+  assert.equal(tour15200P6.timeFit.status, "needs_verification");
+  assert.equal(tour15200P6.timeFit.statusLabel, "Needs verification");
+  assert.equal(tour15200P6.timeFit.fitsSailing, false);
+  assert.equal(tour15200P6.timeFit.allAboardTimeSource, "port_estimate");
+  assert.equal(tour15200P6.timeFit.shipAllAboardTimeLabel, "15:30 (port estimate)");
+  assert.ok(tour15200P6.timeFit.missingFields.includes("allAboard"));
+  assert.ok(
+    tour15200P6.timeFit.returnBufferReconciliation?.reconciliationNote.includes(
+      "port estimate"
+    )
+  );
+  assert.ok(tour15200P6.timeFit.reasonSummary.includes("port estimate"));
+
+  // Fits my sailing view with blank all-aboard must return 0 fitting tours
+  const blankFitsRes = await queryPortDayExcursionCatalog({
+    portSlug: "new-orleans",
+    viewMode: "fits_sailing",
+    sailingDate: "2027-07-15",
+    shipArrivalTime: "07:00",
+    search: "15200P6",
+    limit: 5,
+    offset: 0,
+  });
+  assert.ok(blankFitsRes);
+  assert.equal(blankFitsRes.tours.length, 0);
+  assert.equal(blankFitsRes.pagination.totalFittingSailing, 0);
+});
+
 
 

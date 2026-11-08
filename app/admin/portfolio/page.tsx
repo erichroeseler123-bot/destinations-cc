@@ -148,6 +148,15 @@ export default async function PortfolioDesktopPage(props: {
   const cruise = portfolioEvents.filter((event: any) => siteOf(event) === "cruise-promenade");
   const cruisePlannerSaves = cruise.filter((event: any) => originalName(event) === "planner_saved").length;
   const cruisePlannerShares = cruise.filter((event: any) => originalName(event) === "planner_shared").length;
+  const cruiseSharedPlanOpens = cruise.filter(
+    (event: any) => originalName(event) === "shared_plan_visited" || originalName(event) === "shared_plan_viewed",
+  ).length;
+  const cruiseGuestRsvps = cruise.filter(
+    (event: any) => originalName(event) === "passenger_responded" || originalName(event) === "passenger_identified",
+  ).length;
+  const gosnoSpoke = unifiedFunnelReport.spokes.find((spoke) => spoke.siteId === "gosno");
+  const gosnoConfirmedBookings =
+    typeof gosnoSpoke?.providerConfirmations === "number" ? gosnoSpoke.providerConfirmations : 0;
 
   const vibe = portfolioEvents.filter((event: any) => siteOf(event) === "vibing-around");
   const vibeHandoffs = vibe.filter((event: any) => originalName(event).includes("handoff")).length;
@@ -548,11 +557,15 @@ export default async function PortfolioDesktopPage(props: {
             />
             <SiteMetricCard
               site="Cruise Promenade"
-              headline={`${cruisePlannerSaves} planner saves`}
-              stats={[`Planner shares: ${cruisePlannerShares}`, `Network events: ${cruise.length}`, "Planner state is now flowing into DCC"]}
+              headline={`${cruisePlannerShares} plans shared (${cruisePlannerSaves} saved)`}
+              stats={[
+                `Guests opening shared plans: ${cruiseSharedPlanOpens} (guest responses: ${cruiseGuestRsvps})`,
+                `Network events: ${cruise.length}`,
+                "Planner shares, guest opens, and RSVPs flow into DCC",
+              ]}
               href="https://cruisepromenade.com/internal/dashboard/"
               external
-              source="DCC portfolio telemetry"
+              source="DCC portfolio telemetry (investor demand funnel)"
             />
             <SiteMetricCard
               site="Vibing Around"
@@ -564,8 +577,12 @@ export default async function PortfolioDesktopPage(props: {
             />
             <SiteMetricCard
               site="GoSno"
-              headline={`${gosnoHandoffs} tracked handoffs`}
-              stats={[`Network events: ${gosno.length}`, `Booking-intent events: ${gosnoBookingIntent}`, "Exception details remain inside GoSno ops"]}
+              headline={`${gosnoConfirmedBookings} confirmed Colorado transfer bookings (${gosnoHandoffs} handoffs)`}
+              stats={[
+                `Owned gross sales: $${(gosnoSpoke?.ownedGrossSalesUsd ?? 0).toLocaleString()}`,
+                `Booking-intent events: ${gosnoBookingIntent} (${gosno.length} network events)`,
+                "Confirmed bookings when a traveler needs a Colorado transfer",
+              ]}
               href="https://gosno.co/admin/operations-queue"
               external
               source="DCC handoffs + network telemetry"

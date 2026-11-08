@@ -61,6 +61,15 @@ export async function GET(request: NextRequest) {
   const cruise = portfolio.filter((event: any) => siteOf(event) === "cruise-promenade");
   const cruisePlannerSaves = cruise.filter((event: any) => originalName(event) === "planner_saved").length;
   const cruisePlannerShares = cruise.filter((event: any) => originalName(event) === "planner_shared").length;
+  const cruiseSharedPlanOpens = cruise.filter(
+    (event: any) => originalName(event) === "shared_plan_visited" || originalName(event) === "shared_plan_viewed",
+  ).length;
+  const cruiseGuestRsvps = cruise.filter(
+    (event: any) => originalName(event) === "passenger_responded" || originalName(event) === "passenger_identified",
+  ).length;
+  const gosnoSpoke = unifiedFunnelReport.spokes.find((spoke) => spoke.siteId === "gosno");
+  const gosnoConfirmedBookings =
+    typeof gosnoSpoke?.providerConfirmations === "number" ? gosnoSpoke.providerConfirmations : 0;
   const missionWaiting = missions.filter((mission: any) => mission.status === "waiting").length;
   const missionFailed = missions.filter((mission: any) => mission.status === "failed").length;
 
@@ -68,6 +77,15 @@ export async function GET(request: NextRequest) {
     ok: true,
     reportingWindow: unifiedFunnelReport.reportingWindow,
     unifiedFunnelReport,
+    investorStoryFunnel: {
+      plansShared: cruisePlannerShares,
+      plansSaved: cruisePlannerSaves,
+      guestsWhoOpenedSharedPlans: cruiseSharedPlanOpens,
+      guestResponsesRecorded: cruiseGuestRsvps,
+      confirmedBookingsTotal: unifiedFunnelReport.totals.knownProviderConfirmations,
+      gosnoColoradoTransferBookings: gosnoConfirmedBookings,
+      gosnoOwnedGrossSalesUsd: gosnoSpoke?.ownedGrossSalesUsd ?? 0,
+    },
     events: changes,
     snapshot: {
       trackedHandoffs: snapshot.totalHandoffs,
@@ -81,6 +99,10 @@ export async function GET(request: NextRequest) {
       wnoFareHarborCheckoutReferrals: unifiedFunnelReport.totals.outboundClicks.fareharborCheckoutReferrals,
       cruisePlannerSaves,
       cruisePlannerShares,
+      cruiseSharedPlanOpens,
+      cruiseGuestRsvps,
+      confirmedBookingsTotal: unifiedFunnelReport.totals.knownProviderConfirmations,
+      gosnoConfirmedBookings,
     },
   });
 }

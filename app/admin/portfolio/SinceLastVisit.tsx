@@ -18,6 +18,10 @@ type Snapshot = {
   wnoFareHarborOpens: number;
   cruisePlannerSaves: number;
   cruisePlannerShares: number;
+  cruiseSharedPlanOpens?: number;
+  cruiseGuestRsvps?: number;
+  confirmedBookingsTotal?: number;
+  gosnoConfirmedBookings?: number;
 };
 
 function formatWhen(value: string | null) {
@@ -105,9 +109,11 @@ export default function SinceLastVisit({ events, snapshot }: { events: ChangeEve
         <div>
           <div className="text-xs font-bold uppercase tracking-[0.15em] text-zinc-500">Current commercial pulse</div>
           <div className="mt-3 space-y-2 text-sm text-zinc-300">
+            <Pulse label="Plans shared (Cruise Promenade)" value={snapshot.cruisePlannerShares} />
+            <Pulse label="Guests opening shared plans" value={snapshot.cruiseSharedPlanOpens ?? 0} />
+            <Pulse label="Confirmed bookings (incl. GoSno)" value={snapshot.confirmedBookingsTotal ?? snapshot.completedHandoffs} />
             <Pulse label="WNO FareHarbor checkout referrals" value={snapshot.wnoFareHarborOpens} />
             <Pulse label="Cruise planner saves" value={snapshot.cruisePlannerSaves} />
-            <Pulse label="Cruise planner shares" value={snapshot.cruisePlannerShares} />
           </div>
         </div>
       </div>
