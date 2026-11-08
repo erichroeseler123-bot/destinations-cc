@@ -116,6 +116,14 @@ export interface PortDayTimeFitEvaluation {
   estimatedBackAtPierTime: string | null;
   requiredReturnBufferMinutes: number;
   bufferBeforeAllAboardMinutes: number | null;
+  returnBufferReconciliation?: {
+    requiredAllAboardBufferMinutes: number;
+    allAboardToShipDepartureMinutes: number;
+    equivalentShipDepartureBufferMinutes: number;
+    bufferBeforeAllAboardMinutes: number | null;
+    bufferBeforeShipDepartureMinutes: number | null;
+    reconciliationNote: string;
+  };
   hasVerifiedReturnBuffer: boolean;
   missingFields: string[];
   reasonSummary: string;
@@ -216,6 +224,8 @@ export interface PortDayExcursionCatalogResponse {
     offset: number;
     page: number;
     totalMatchedInSql: number;
+    totalFittingSailing?: number;
+    verifiedTimingCandidatesInSql?: number;
     rowsLoadedIntoApp: number;
     fullCatalogLoadedIntoApp: boolean;
     executedInSql: boolean;
@@ -1260,6 +1270,14 @@ export function evaluateTourPortDayTimeFit(params: {
       estimatedBackAtPierTime: null,
       requiredReturnBufferMinutes: profile.requiredReturnBufferMinutes,
       bufferBeforeAllAboardMinutes: null,
+      returnBufferReconciliation: {
+        requiredAllAboardBufferMinutes: profile.requiredReturnBufferMinutes,
+        allAboardToShipDepartureMinutes: 30,
+        equivalentShipDepartureBufferMinutes: profile.requiredReturnBufferMinutes + 30,
+        bufferBeforeAllAboardMinutes: null,
+        bufferBeforeShipDepartureMinutes: null,
+        reconciliationNote: `Canonical return buffer is ${profile.requiredReturnBufferMinutes}m before All Aboard (${allAboardTime}), which equals ${profile.requiredReturnBufferMinutes + 30}m before Ship Departure (assuming standard 30m gangway-up interval after all-aboard).`,
+      },
       hasVerifiedReturnBuffer: false,
       missingFields,
       reasonSummary: `Needs verification: missing verified ${missingFields.join(
@@ -1296,6 +1314,8 @@ export function evaluateTourPortDayTimeFit(params: {
   const tourEndMin = selectedDepMin + durationMinutes;
   const backAtPierMin = tourEndMin + meetingToPierMinutes;
   const bufferBeforeAllAboard = allAboardMin - backAtPierMin;
+  const allAboardToSailAwayMin = 30;
+  const bufferBeforeShipDeparture = bufferBeforeAllAboard + allAboardToSailAwayMin;
   const fits = fittingDepartures.includes(selectedDep);
 
   return {
@@ -1333,6 +1353,15 @@ export function evaluateTourPortDayTimeFit(params: {
     estimatedBackAtPierTime: formatHhMm(backAtPierMin),
     requiredReturnBufferMinutes: profile.requiredReturnBufferMinutes,
     bufferBeforeAllAboardMinutes: bufferBeforeAllAboard,
+    returnBufferReconciliation: {
+      requiredAllAboardBufferMinutes: profile.requiredReturnBufferMinutes,
+      allAboardToShipDepartureMinutes: allAboardToSailAwayMin,
+      equivalentShipDepartureBufferMinutes:
+        profile.requiredReturnBufferMinutes + allAboardToSailAwayMin,
+      bufferBeforeAllAboardMinutes: bufferBeforeAllAboard,
+      bufferBeforeShipDepartureMinutes: bufferBeforeShipDeparture,
+      reconciliationNote: `Canonical return buffer is ${profile.requiredReturnBufferMinutes}m before All Aboard (${allAboardTime}), which equals ${profile.requiredReturnBufferMinutes + allAboardToSailAwayMin}m before Ship Departure (${formatHhMm(allAboardMin + allAboardToSailAwayMin)}). Earlier report text cited ${profile.requiredReturnBufferMinutes + allAboardToSailAwayMin}m against all-aboard by mistake; ${profile.requiredReturnBufferMinutes}m before All Aboard (${profile.requiredReturnBufferMinutes + allAboardToSailAwayMin}m before Ship Departure) is the reconciled rule.`,
+    },
     hasVerifiedReturnBuffer: true,
     missingFields: [],
     reasonSummary: fits
@@ -1340,12 +1369,16 @@ export function evaluateTourPortDayTimeFit(params: {
           checkInMin
         )} at ${meetingPointName}), ${roundTripTransferMinutes}m round-trip transfer, returns to pier at ${formatHhMm(
           backAtPierMin
-        )} with +${bufferBeforeAllAboard}m buffer before ${allAboardTime} all-aboard.`
+        )} with +${bufferBeforeAllAboard}m buffer before ${allAboardTime} all-aboard (requires +${
+          profile.requiredReturnBufferMinutes
+        }m before all-aboard / +${
+          profile.requiredReturnBufferMinutes + allAboardToSailAwayMin
+        }m before ship departure).`
       : `Departure ${selectedDep} returns to pier at ${formatHhMm(
           backAtPierMin
         )} (${bufferBeforeAllAboard}m vs ${allAboardTime} all-aboard; requires +${
           profile.requiredReturnBufferMinutes
-        }m buffer).`,
+        }m buffer before all-aboard).`,
     evidenceReviewPriority,
   };
 }
@@ -1970,16 +2003,18 @@ export async function queryPortDayExcursionCatalog(params: {
   const offset = Math.max(0, params.offset || 0);
   const sortBy: DurableCatalogSortBy = params.sortBy || "recommended";
 
+  const isFitsSailingMode = viewMode === "fits_sailing";
+
   const [sqlRes, liveProviderCounts, sharedHandoffLedgerSummary] = await Promise.all([
     queryDurableTourCatalog({
       destinationSlug: profile.destinationSlug,
       category: category === "all" ? undefined : category,
       searchQuery: params.search,
-      requireVerifiedCruiseLogistics: viewMode === "fits_sailing",
-      verifiedTimingOnly: viewMode === "fits_sailing" ? true : undefined,
+      requireVerifiedCruiseLogistics: isFitsSailingMode,
+      verifiedTimingOnly: isFitsSailingMode ? true : undefined,
       sortBy,
-      limit,
-      offset,
+      limit: isFitsSailingMode ? 500 : limit,
+      offset: isFitsSailingMode ? 0 : offset,
     }),
     getActiveDestinationProviderCounts(profile.destinationSlug),
     getSharedHandoffLedgerSummary({
@@ -2089,10 +2124,24 @@ export async function queryPortDayExcursionCatalog(params: {
     };
   });
 
-  const visibleTours =
-    viewMode === "fits_sailing"
-      ? evaluatedCards.filter((c) => c.timeFit.status === "fits" && c.timeFit.fitsSailing)
-      : evaluatedCards;
+  const allFittingCards = evaluatedCards.filter(
+    (c) => c.timeFit.status === "fits" && c.timeFit.fitsSailing
+  );
+  const visibleTours = isFitsSailingMode
+    ? allFittingCards.slice(offset, offset + limit)
+    : evaluatedCards;
+
+  const effectiveTotalMatched = isFitsSailingMode
+    ? allFittingCards.length
+    : sqlRes.totalMatched;
+  const effectiveHasMore = isFitsSailingMode
+    ? offset + visibleTours.length < allFittingCards.length
+    : sqlRes.hasMore;
+  const effectiveNextOffset = isFitsSailingMode
+    ? effectiveHasMore
+      ? offset + visibleTours.length
+      : null
+    : sqlRes.nextOffset;
 
   const fallbackCounts = AUTHORITATIVE_PORT_PROVIDER_COUNTS[profile.portSlug] || {
     viator: sqlRes.totalMatched,
@@ -2124,7 +2173,8 @@ export async function queryPortDayExcursionCatalog(params: {
         )
       : 100;
 
-  const needsVerificationCount = evaluatedCards.filter(
+  const summarySourceCards = isFitsSailingMode ? visibleTours : evaluatedCards;
+  const needsVerificationCount = summarySourceCards.filter(
     (c) =>
       c.timeFit.status === "needs_verification" ||
       c.timeFit.status === "missing_operator_info"
@@ -2167,13 +2217,19 @@ export async function queryPortDayExcursionCatalog(params: {
       limit,
       offset,
       page: Math.floor(offset / limit) + 1,
-      totalMatchedInSql: sqlRes.totalMatched,
-      rowsLoadedIntoApp: sqlRes.rowsLoadedIntoApp,
+      totalMatchedInSql: effectiveTotalMatched,
+      ...(isFitsSailingMode
+        ? {
+            totalFittingSailing: allFittingCards.length,
+            verifiedTimingCandidatesInSql: sqlRes.totalMatched,
+          }
+        : {}),
+      rowsLoadedIntoApp: visibleTours.length,
       fullCatalogLoadedIntoApp: sqlRes.fullCatalogLoadedIntoApp,
       executedInSql: sqlRes.executedInSql,
       sqlQueryMs: sqlRes.sqlQueryMs ?? 0,
-      hasMore: sqlRes.hasMore,
-      nextOffset: sqlRes.nextOffset,
+      hasMore: effectiveHasMore,
+      nextOffset: effectiveNextOffset,
       storageSource: sqlRes.storageSource,
     },
     providerCounts: {
@@ -2221,18 +2277,18 @@ export async function queryPortDayExcursionCatalog(params: {
     },
     sharedHandoffLedgerSummary,
     summary: {
-      totalEvaluatedOnPage: evaluatedCards.length,
-      fitsSailingCountOnPage: evaluatedCards.filter((c) => c.timeFit.status === "fits")
+      totalEvaluatedOnPage: summarySourceCards.length,
+      fitsSailingCountOnPage: summarySourceCards.filter((c) => c.timeFit.status === "fits")
         .length,
-      runsTooLateCountOnPage: evaluatedCards.filter(
+      runsTooLateCountOnPage: summarySourceCards.filter(
         (c) => c.timeFit.status === "runs_too_late"
       ).length,
       needsVerificationCountOnPage: needsVerificationCount,
       missingOperatorInfoCountOnPage: needsVerificationCount,
-      liveAvailabilitySupportedCountOnPage: evaluatedCards.filter(
+      liveAvailabilitySupportedCountOnPage: summarySourceCards.filter(
         (c) => c.seatAvailability.supportsLiveCheck
       ).length,
-      withinOneMileReviewQueueCountOnPage: evaluatedCards.filter(
+      withinOneMileReviewQueueCountOnPage: summarySourceCards.filter(
         (c) => c.timeFit.evidenceReviewPriority?.withinOneMileOfBerth
       ).length,
     },

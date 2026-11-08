@@ -1199,12 +1199,13 @@ export async function buildUnifiedPortfolioFunnelReport(options?: {
         } else {
           clickPendingOwnedSettlementUsd += gross;
         }
-      } else if (channelInfo.handoffLinkType === "direct_api_10pct") {
-        const earned =
-          typeof rec.estimatedCommissionUsd === "number"
-            ? rec.estimatedCommissionUsd
-            : Math.round(gross * 0.1 * 100) / 100;
-        clickCommissionsUsd += earned;
+      } else {
+        // Confirmed earnings require verified provider commission (paidCommissionUsd > 0), never an unconfirmed estimate.
+        const verifiedEarned =
+          typeof rec.paidCommissionUsd === "number" && rec.paidCommissionUsd > 0
+            ? rec.paidCommissionUsd
+            : 0;
+        clickCommissionsUsd += verifiedEarned;
       }
     }
 
@@ -1214,6 +1215,15 @@ export async function buildUnifiedPortfolioFunnelReport(options?: {
         const paid =
           typeof settled.paidCommissionUsd === "number" ? settled.paidCommissionUsd : 0;
         clickSettledPayoutsUsd += paid;
+        const alreadyEarnedInConfirmed = confirmedRecs.some(
+          (c) =>
+            c.providerBookingRef === settled.providerBookingRef &&
+            typeof c.paidCommissionUsd === "number" &&
+            c.paidCommissionUsd > 0,
+        );
+        if (!alreadyEarnedInConfirmed && paid > 0) {
+          clickCommissionsUsd += paid;
+        }
       }
     }
 

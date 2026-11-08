@@ -21,6 +21,46 @@ import { appendCorridorEventDurably } from "@/lib/dcc/telemetry/corridorEvents";
 
 export const dynamic = "force-dynamic";
 
+export function separateFareHarborCommissionBreakdown(bookingOutcome: CommercialOutcomeRecord): {
+  estimatedCommissionUsd: number;
+  confirmedEarningsUsd: number;
+  payoutsUsd: number;
+  commissionStage: "estimated_only" | "confirmed_earned" | "payout_settled";
+} {
+  const estimatedCommissionUsd =
+    typeof bookingOutcome.estimatedCommission?.amount === "number" &&
+    Number.isFinite(bookingOutcome.estimatedCommission.amount)
+      ? bookingOutcome.estimatedCommission.amount
+      : 0;
+  const paidAmount =
+    typeof bookingOutcome.paidCommission?.amount === "number" &&
+    Number.isFinite(bookingOutcome.paidCommission.amount) &&
+    bookingOutcome.paidCommission.amount > 0
+      ? bookingOutcome.paidCommission.amount
+      : 0;
+
+  // Never include an unconfirmed booking estimate inside confirmedEarningsUsd or payoutsUsd
+  const isFulfilledOrReconciled =
+    bookingOutcome.eventType === "BOOKING_FULFILLED" ||
+    bookingOutcome.eventType === "COMMISSION_RECONCILED";
+  const isSettledPayout = bookingOutcome.eventType === "COMMISSION_RECONCILED" && paidAmount > 0;
+
+  const confirmedEarningsUsd = isFulfilledOrReconciled ? paidAmount : 0;
+  const payoutsUsd = isSettledPayout ? paidAmount : 0;
+  const commissionStage = isSettledPayout
+    ? "payout_settled"
+    : confirmedEarningsUsd > 0
+      ? "confirmed_earned"
+      : "estimated_only";
+
+  return {
+    estimatedCommissionUsd,
+    confirmedEarningsUsd,
+    payoutsUsd,
+    commissionStage,
+  };
+}
+
 async function recordWnoProviderConfirmedRiverboatEvent(args: {
   companyShortname: string;
   bookingOutcome: CommercialOutcomeRecord & { duplicateDelivery?: boolean };
@@ -31,14 +71,31 @@ async function recordWnoProviderConfirmedRiverboatEvent(args: {
   if (args.bookingOutcome.duplicateDelivery) return;
   if (
     args.bookingOutcome.eventType !== "BOOKING_CONFIRMED" &&
-    args.bookingOutcome.eventType !== "BOOKING_FULFILLED"
+    args.bookingOutcome.eventType !== "BOOKING_FULFILLED" &&
+    args.bookingOutcome.eventType !== "COMMISSION_RECONCILED"
   ) {
     return;
   }
-  const itemId = String(
-    args.bookingOutcome.bookedOption || args.bookingOutcome.bookedProductCode || "",
-  ).trim();
-  const isNatchez = itemId === "561220";
+  const rawPayload = (args.bookingOutcome.rawPayload || {}) as Record<string, unknown>;
+  const rawItemPk = rawPayload.itemPk != null ? String(rawPayload.itemPk).trim() : "";
+  const candidateStr = `${rawItemPk} ${args.bookingOutcome.bookedProductCode || ""} ${args.bookingOutcome.bookedOption || ""}`;
+  const matchedRiverboatItem = candidateStr.match(
+    /\b(561220|561185|561216|566787|566794|561392|694782)\b/,
+  )?.[1];
+  const itemId =
+    matchedRiverboatItem ||
+    rawItemPk ||
+    String(
+      args.bookingOutcome.bookedOption || args.bookingOutcome.bookedProductCode || "",
+    ).trim();
+  const isNatchez = [
+    "561220",
+    "561185",
+    "561216",
+    "566787",
+    "566794",
+    "561392",
+  ].includes(itemId);
   const isCity = itemId === "694782";
   if (args.companyShortname !== "neworleanssteamboatcompany" && !isNatchez && !isCity) {
     return;
@@ -54,10 +111,8 @@ async function recordWnoProviderConfirmedRiverboatEvent(args: {
       ? "city-of-new-orleans-riverboat-cruise"
       : undefined;
   const amountUsd = args.bookingOutcome.bookingValue?.amount ?? 0;
-  const commissionUsd =
-    args.bookingOutcome.paidCommission?.amount ??
-    args.bookingOutcome.estimatedCommission?.amount ??
-    0;
+  const commissionBreakdown = separateFareHarborCommissionBreakdown(args.bookingOutcome);
+
   await appendCorridorEventDurably({
     corridor_id: "wno-commerce",
     event_name: "booking_completed",
@@ -81,7 +136,10 @@ async function recordWnoProviderConfirmedRiverboatEvent(args: {
       external_order_id: args.bookingOutcome.providerBookingRef,
       outcome_id: args.bookingOutcome.outcomeId,
       booking_value_usd: amountUsd,
-      commission_amount_usd: commissionUsd,
+      estimated_commission_usd: commissionBreakdown.estimatedCommissionUsd,
+      confirmed_earnings_usd: commissionBreakdown.confirmedEarningsUsd,
+      payouts_usd: commissionBreakdown.payoutsUsd,
+      commission_stage: commissionBreakdown.commissionStage,
     },
   }).catch(() => undefined);
 }
@@ -266,6 +324,9 @@ export async function POST(request: Request) {
             extractedHandoffId: lookupConfirmation.extractedHandoffId,
             authorizedBooking: lookupConfirmation.booking,
             bookingOutcome: lookupConfirmation.bookingOutcome,
+            commissionBreakdown: separateFareHarborCommissionBreakdown(
+              lookupConfirmation.bookingOutcome,
+            ),
             lifecycleProof,
             traceparent,
           },
@@ -350,6 +411,7 @@ export async function POST(request: Request) {
           : "webhook_url_query_token",
         extractedHandoffId,
         bookingOutcome,
+        commissionBreakdown: separateFareHarborCommissionBreakdown(bookingOutcome),
         lifecycleProof,
         traceparent,
       },

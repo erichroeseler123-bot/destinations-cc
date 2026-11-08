@@ -356,7 +356,9 @@ test("New Orleans Riverboat Comparison Funnel & One-Mile Evidence Prioritizer Su
           item_id: "561220",
           entry_source: "dcc-authority-nola-riverboats",
           booking_value_usd: 88,
-          commission_amount_usd: 13.2,
+          estimated_commission_usd: 13.2,
+          confirmed_earnings_usd: 13.2,
+          payouts_usd: 0,
         },
       },
 
@@ -434,6 +436,9 @@ test("New Orleans Riverboat Comparison Funnel & One-Mile Evidence Prioritizer Su
     assert.strictEqual(report.stages.checkoutOpened.primaryItems561220And694782Events, 1);
     assert.strictEqual(report.stages.providerConfirmedBookings.totalConfirmedBookings, 1);
     assert.strictEqual(report.stages.providerConfirmedBookings.confirmedGrossSalesUsd, 88);
+    assert.strictEqual(report.stages.providerConfirmedBookings.estimatedCommissionUsd, 13.2);
+    assert.strictEqual(report.stages.providerConfirmedBookings.confirmedEarningsUsd, 13.2);
+    assert.strictEqual(report.stages.providerConfirmedBookings.payoutsUsd, 0);
     assert.strictEqual(report.stages.providerConfirmedBookings.confirmedCommissionsUsd, 13.2);
 
     // DCC Authority Riverboats corridor summary
@@ -447,6 +452,9 @@ test("New Orleans Riverboat Comparison Funnel & One-Mile Evidence Prioritizer Su
     assert.strictEqual(dccCorridor.exactFareHarborItemOpened.city694782Events, 0);
     assert.strictEqual(dccCorridor.providerConfirmedOutcomes.confirmedBookingsCount, 1);
     assert.strictEqual(dccCorridor.providerConfirmedOutcomes.confirmedGrossSalesUsd, 88);
+    assert.strictEqual(dccCorridor.providerConfirmedOutcomes.estimatedCommissionUsd, 13.2);
+    assert.strictEqual(dccCorridor.providerConfirmedOutcomes.confirmedEarningsUsd, 13.2);
+    assert.strictEqual(dccCorridor.providerConfirmedOutcomes.payoutsUsd, 0);
     assert.strictEqual(dccCorridor.providerConfirmedOutcomes.confirmedCommissionsUsd, 13.2);
 
     // Verified test session must be recorded separately and marked excludedFromCustomerTotals: true
@@ -463,5 +471,118 @@ test("New Orleans Riverboat Comparison Funnel & One-Mile Evidence Prioritizer Su
     assert.strictEqual(verifiedSess.completedAllStagesThroughCheckout, true);
     assert.strictEqual(verifiedSess.excludedFromCustomerTotals, true);
   });
+
+  await t.test("5. WNO & FareHarbor webhook strictly separate estimatedCommissionUsd, confirmedEarningsUsd, and payoutsUsd (confirmed commission field never includes an estimate)", async () => {
+    const { separateFareHarborCommissionBreakdown } = await import(
+      "../../app/api/v1/commerce/webhooks/fareharbor/route"
+    );
+
+    // Case A: BOOKING_CONFIRMED with an estimatedCommission ($13.20) and no paidCommission
+    const confirmedEstOnly = separateFareHarborCommissionBreakdown({
+      eventType: "BOOKING_CONFIRMED",
+      estimatedCommission: { amount: 13.2, currency: "USD" },
+      paidCommission: { amount: null, currency: null },
+    } as any);
+    assert.strictEqual(confirmedEstOnly.estimatedCommissionUsd, 13.2);
+    assert.strictEqual(confirmedEstOnly.confirmedEarningsUsd, 0);
+    assert.strictEqual(confirmedEstOnly.payoutsUsd, 0);
+    assert.strictEqual(confirmedEstOnly.commissionStage, "estimated_only");
+
+    // Case B: BOOKING_FULFILLED with verified paidCommission ($15.00)
+    const fulfilledPaid = separateFareHarborCommissionBreakdown({
+      eventType: "BOOKING_FULFILLED",
+      estimatedCommission: { amount: 13.2, currency: "USD" },
+      paidCommission: { amount: 15.0, currency: "USD" },
+    } as any);
+    assert.strictEqual(fulfilledPaid.estimatedCommissionUsd, 13.2);
+    assert.strictEqual(fulfilledPaid.confirmedEarningsUsd, 15.0);
+    assert.strictEqual(fulfilledPaid.payoutsUsd, 0);
+    assert.strictEqual(fulfilledPaid.commissionStage, "confirmed_earned");
+
+    // Case C: COMMISSION_RECONCILED with settled payout ($15.00)
+    const reconciledPayout = separateFareHarborCommissionBreakdown({
+      eventType: "COMMISSION_RECONCILED",
+      estimatedCommission: { amount: 13.2, currency: "USD" },
+      paidCommission: { amount: 15.0, currency: "USD" },
+    } as any);
+    assert.strictEqual(reconciledPayout.estimatedCommissionUsd, 13.2);
+    assert.strictEqual(reconciledPayout.confirmedEarningsUsd, 15.0);
+    assert.strictEqual(reconciledPayout.payoutsUsd, 15.0);
+    assert.strictEqual(reconciledPayout.commissionStage, "payout_settled");
+
+    // Verify funnel report with an unconfirmed estimate in both corridor events and commercial outcomes
+    const nowIso = new Date().toISOString();
+    const comparisonPath = RIVERBOAT_COMPARISON_PATHS[0];
+    const report = await buildRiverboatComparisonFunnelReport({
+      windowDays: 28,
+      customEvents: [
+        {
+          corridorId: "wno-commerce",
+          eventName: "booking_completed",
+          sessionId: "wno_est_only_sess",
+          sourcePage: comparisonPath,
+          landingPath: comparisonPath,
+          clickedProductSlug: "daytime-jazz-cruise",
+          occurredAt: nowIso,
+          metadata: {
+            original_event_name: "provider_confirmed_booking",
+            funnel_stage: "provider_confirmed_booking",
+            comparison_slug: RIVERBOAT_COMPARISON_SLUG,
+            selected_boat: "natchez",
+            item_id: "561220",
+            entry_source: "dcc-authority-nola-riverboats",
+            provider_booking_ref: "FH_REF_EST_1",
+            outcome_event_type: "BOOKING_CONFIRMED",
+            booking_value_usd: 88,
+            // Even if legacy commission_amount_usd or estimated_commission_usd is present, confirmedEarningsUsd MUST remain 0
+            estimated_commission_usd: 13.2,
+            commission_amount_usd: 13.2,
+          },
+        },
+      ],
+      customOutcomes: [
+        {
+          provider: "fareharbor",
+          eventType: "BOOKING_CONFIRMED",
+          providerBookingRef: "FH_REF_CITY_EST_2",
+          bookedProductCode: "city-of-new-orleans-riverboat-cruise",
+          bookedOption: "694782",
+          bookingValue: { amount: 51.5, currency: "USD" },
+          estimatedCommission: { amount: 7.73, currency: "USD" },
+          paidCommission: { amount: null, currency: null },
+        },
+        {
+          provider: "fareharbor",
+          eventType: "COMMISSION_RECONCILED",
+          providerBookingRef: "FH_REF_CITY_PAID_3",
+          bookedProductCode: "city-of-new-orleans-riverboat-cruise",
+          bookedOption: "694782",
+          bookingValue: { amount: 103.0, currency: "USD" },
+          estimatedCommission: { amount: 15.45, currency: "USD" },
+          paidCommission: { amount: 15.45, currency: "USD" },
+        },
+      ],
+    });
+
+    assert.strictEqual(report.commissionBreakdown.confirmedFieldIncludesEstimate, false);
+    // Natchez had only an estimate ($13.20): confirmedEarningsUsd and confirmedCommissionsUsd must be 0
+    assert.strictEqual(report.vessels.natchez.estimatedCommissionUsd, 13.2);
+    assert.strictEqual(report.vessels.natchez.confirmedEarningsUsd, 0);
+    assert.strictEqual(report.vessels.natchez.confirmedCommissionsUsd, 0);
+    assert.strictEqual(report.vessels.natchez.payoutsUsd, 0);
+
+    // City of New Orleans had $7.73 + $15.45 = $23.18 estimated, and $15.45 confirmed/settled on FH_REF_CITY_PAID_3
+    assert.strictEqual(report.vessels.cityOfNewOrleans.estimatedCommissionUsd, 23.18);
+    assert.strictEqual(report.vessels.cityOfNewOrleans.confirmedEarningsUsd, 15.45);
+    assert.strictEqual(report.vessels.cityOfNewOrleans.confirmedCommissionsUsd, 15.45);
+    assert.strictEqual(report.vessels.cityOfNewOrleans.payoutsUsd, 15.45);
+
+    // Overall totals: $36.38 estimated, $15.45 confirmed earnings, $15.45 payouts
+    assert.strictEqual(report.stages.providerConfirmedBookings.estimatedCommissionUsd, 36.38);
+    assert.strictEqual(report.stages.providerConfirmedBookings.confirmedEarningsUsd, 15.45);
+    assert.strictEqual(report.stages.providerConfirmedBookings.confirmedCommissionsUsd, 15.45);
+    assert.strictEqual(report.stages.providerConfirmedBookings.payoutsUsd, 15.45);
+  });
 });
+
 

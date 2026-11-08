@@ -438,3 +438,52 @@ test("103.7: Shared handoff ledger records Cruise Promenade as originatingSite, 
   assert.equal(summary.earnedCommissions.displayValue, "unknown");
 });
 
+test("103.8: Sailing-fit pagination counts and paginates only tours that actually fit the sailing window (New Orleans limit=1 on 2027-07-15 07:00-15:30) and reconciles 60m all-aboard buffer with 90m ship-departure buffer", async () => {
+  const { queryPortDayExcursionCatalog } = await import(
+    "@/lib/dcc/cruisePortExcursionCatalogEngine"
+  );
+
+  // Exact live test case from user prompt:
+  // port=new-orleans&viewMode=fits_sailing&date=2027-07-15&shipArrival=07:00&allAboard=15:30&partySize=2&limit=1
+  const resPage1 = await queryPortDayExcursionCatalog({
+    portSlug: "new-orleans",
+    viewMode: "fits_sailing",
+    sailingDate: "2027-07-15",
+    shipArrivalTime: "07:00",
+    shipAllAboardTime: "15:30",
+    partySize: 2,
+    limit: 1,
+    offset: 0,
+    originatingSite: "cruisepromenade.com",
+    surface: "cruisepromenade_port_day",
+  });
+
+  assert.ok(resPage1, "Expected response for New Orleans fits_sailing limit=1");
+  assert.equal(
+    resPage1.tours.length,
+    1,
+    "First page (limit=1, offset=0) must return the first fitting tour instead of an empty page"
+  );
+  assert.equal(resPage1.tours[0].productCode, "15200P6");
+  assert.equal(resPage1.tours[0].timeFit.status, "fits");
+  assert.equal(resPage1.tours[0].timeFit.fitsSailing, true);
+
+  // Pagination must count and paginate over the tours that actually fit the sailing window
+  assert.equal(resPage1.pagination.totalMatchedInSql, 1);
+  assert.equal(resPage1.pagination.totalFittingSailing, 1);
+  assert.equal(resPage1.pagination.rowsLoadedIntoApp, 1);
+  assert.equal(resPage1.pagination.hasMore, false);
+
+  // Reconcile 60-minute all-aboard buffer with 90-minute ship-departure buffer
+  assert.equal(resPage1.tours[0].timeFit.requiredReturnBufferMinutes, 60);
+  const recon = resPage1.tours[0].timeFit.returnBufferReconciliation;
+  assert.ok(recon, "Expected returnBufferReconciliation on timeFit");
+  assert.equal(recon.requiredAllAboardBufferMinutes, 60);
+  assert.equal(recon.allAboardToShipDepartureMinutes, 30);
+  assert.equal(recon.equivalentShipDepartureBufferMinutes, 90);
+  assert.equal(recon.bufferBeforeAllAboardMinutes, 195);
+  assert.equal(recon.bufferBeforeShipDepartureMinutes, 225);
+  assert.ok(recon.reconciliationNote.includes("60m before All Aboard"));
+  assert.ok(recon.reconciliationNote.includes("90m before Ship Departure"));
+});
+

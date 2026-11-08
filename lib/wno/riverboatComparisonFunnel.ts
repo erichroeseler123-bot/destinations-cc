@@ -52,6 +52,9 @@ export interface RiverboatVesselFunnelMetrics {
   providerConfirmedBookingsCount: number;
   providerConfirmedFromComparisonCount: number;
   confirmedGrossSalesUsd: number;
+  estimatedCommissionUsd: number;
+  confirmedEarningsUsd: number;
+  payoutsUsd: number;
   confirmedCommissionsUsd: number;
   unconfirmedCheckoutOpensCount: number;
   providerConfirmationStatus: "confirmed_bookings_present" | "awaiting_provider_confirmation";
@@ -66,6 +69,9 @@ export interface RiverboatEntryPageBreakdownRow {
   cityCheckoutOpened694782: number;
   providerConfirmedBookings: number;
   confirmedGrossSalesUsd: number;
+  estimatedCommissionUsd: number;
+  confirmedEarningsUsd: number;
+  payoutsUsd: number;
   confirmedCommissionsUsd: number;
 }
 
@@ -79,6 +85,9 @@ export interface RiverboatEntrySourceBreakdownRow {
   cityCheckoutOpened694782: number;
   providerConfirmedBookings: number;
   confirmedGrossSalesUsd: number;
+  estimatedCommissionUsd: number;
+  confirmedEarningsUsd: number;
+  payoutsUsd: number;
   confirmedCommissionsUsd: number;
 }
 
@@ -110,6 +119,9 @@ export interface DccAuthorityRiverboatsCohortSummary {
   providerConfirmedOutcomes: {
     confirmedBookingsCount: number;
     confirmedGrossSalesUsd: number;
+    estimatedCommissionUsd: number;
+    confirmedEarningsUsd: number;
+    payoutsUsd: number;
     confirmedCommissionsUsd: number;
     status: "confirmed_bookings_present" | "awaiting_provider_confirmation";
   };
@@ -136,6 +148,13 @@ export interface RiverboatComparisonFunnelReport {
   windowDays: number;
   includeSyntheticTests: boolean;
   customerTotalsExcludeTestSessions: true;
+  commissionBreakdown: {
+    estimatedCommissionUsd: number;
+    confirmedEarningsUsd: number;
+    payoutsUsd: number;
+    confirmedFieldIncludesEstimate: false;
+    policyNote: string;
+  };
   stages: {
     comparisonVisits: {
       totalEvents: number;
@@ -157,6 +176,9 @@ export interface RiverboatComparisonFunnelReport {
       totalConfirmedBookings: number;
       confirmedFromComparisonSessions: number;
       confirmedGrossSalesUsd: number;
+      estimatedCommissionUsd: number;
+      confirmedEarningsUsd: number;
+      payoutsUsd: number;
       confirmedCommissionsUsd: number;
       conversionFromCheckoutOpenedPct: number | null;
       status: "confirmed_bookings_present" | "awaiting_provider_confirmation";
@@ -318,12 +340,15 @@ function extractRawSourceTag(ev: any): string | null {
 export async function buildRiverboatComparisonFunnelReport(options?: {
   windowDays?: number;
   customEvents?: any[];
+  customOutcomes?: any[];
 }): Promise<RiverboatComparisonFunnelReport> {
   const windowDays = options?.windowDays ?? 28;
   const cutoffMs = Date.now() - windowDays * 24 * 60 * 60 * 1000;
 
   const rawEvents = options?.customEvents ?? (await listRecentCorridorEvents(10000));
-  const outcomes = await listCommercialOutcomes().catch(() => []);
+  const outcomes =
+    options?.customOutcomes ??
+    (options?.customEvents ? [] : await listCommercialOutcomes().catch(() => []));
 
   const allWnoEvents = rawEvents.filter((ev: any) => {
     const cid = ev.corridorId || ev.corridor_id;
@@ -396,6 +421,9 @@ export async function buildRiverboatComparisonFunnelReport(options?: {
       confirmedCount: number;
       confirmedFromCompCount: number;
       confirmedGrossSalesUsd: number;
+      estimatedCommissionUsd: number;
+      confirmedEarningsUsd: number;
+      payoutsUsd: number;
       confirmedCommissionsUsd: number;
     }
   > = {
@@ -410,6 +438,9 @@ export async function buildRiverboatComparisonFunnelReport(options?: {
       confirmedCount: 0,
       confirmedFromCompCount: 0,
       confirmedGrossSalesUsd: 0,
+      estimatedCommissionUsd: 0,
+      confirmedEarningsUsd: 0,
+      payoutsUsd: 0,
       confirmedCommissionsUsd: 0,
     },
     city_of_new_orleans: {
@@ -423,6 +454,9 @@ export async function buildRiverboatComparisonFunnelReport(options?: {
       confirmedCount: 0,
       confirmedFromCompCount: 0,
       confirmedGrossSalesUsd: 0,
+      estimatedCommissionUsd: 0,
+      confirmedEarningsUsd: 0,
+      payoutsUsd: 0,
       confirmedCommissionsUsd: 0,
     },
   };
@@ -441,6 +475,9 @@ export async function buildRiverboatComparisonFunnelReport(options?: {
         cityCheckoutOpened694782: 0,
         providerConfirmedBookings: 0,
         confirmedGrossSalesUsd: 0,
+        estimatedCommissionUsd: 0,
+        confirmedEarningsUsd: 0,
+        payoutsUsd: 0,
         confirmedCommissionsUsd: 0,
       };
       entryPageMap.set(key, row);
@@ -466,6 +503,9 @@ export async function buildRiverboatComparisonFunnelReport(options?: {
         cityCheckoutOpened694782: 0,
         providerConfirmedBookings: 0,
         confirmedGrossSalesUsd: 0,
+        estimatedCommissionUsd: 0,
+        confirmedEarningsUsd: 0,
+        payoutsUsd: 0,
         confirmedCommissionsUsd: 0,
         sessions: new Set<string>(),
       };
@@ -492,10 +532,17 @@ export async function buildRiverboatComparisonFunnelReport(options?: {
     city694782Sessions: new Set<string>(),
     confirmedBookingsCount: 0,
     confirmedGrossSalesUsd: 0,
+    estimatedCommissionUsd: 0,
+    confirmedEarningsUsd: 0,
+    payoutsUsd: 0,
     confirmedCommissionsUsd: 0,
   };
 
   const recentFunnelEvents: RiverboatComparisonFunnelReport["recentFunnelEvents"] = [];
+  const seenCorridorBookingRefs = new Set<string>();
+  const seenCorridorEstimatedRefs = new Set<string>();
+  const seenCorridorEarnedRefs = new Set<string>();
+  const seenCorridorPayoutRefs = new Set<string>();
 
   for (const ev of wnoEvents) {
     const eventName = String(ev.eventName || ev.event_name || "").trim();
@@ -747,46 +794,120 @@ export async function buildRiverboatComparisonFunnelReport(options?: {
         funnelStageMeta === "provider_confirmed_booking") &&
       vessel
     ) {
+      const bookingRef =
+        typeof meta.provider_booking_ref === "string" && meta.provider_booking_ref.trim()
+          ? meta.provider_booking_ref.trim()
+          : null;
+      const outcomeEventType =
+        typeof meta.outcome_event_type === "string"
+          ? meta.outcome_event_type.trim().toUpperCase()
+          : "BOOKING_CONFIRMED";
       const grossUsd =
         typeof meta.booking_value_usd === "number"
           ? meta.booking_value_usd
           : typeof meta.booking_value_cents === "number"
             ? meta.booking_value_cents / 100
             : 0;
-      const commissionUsd =
+
+      // Strictly separate estimated commission, confirmed earnings, and settled payouts.
+      // Legacy commission_amount_usd without explicit confirmed_earnings_usd is treated as an estimate, NEVER confirmed earnings.
+      const legacyCommissionUsd =
         typeof meta.commission_amount_usd === "number"
           ? meta.commission_amount_usd
           : typeof meta.commission_amount_cents === "number"
             ? meta.commission_amount_cents / 100
             : 0;
 
-      vesselAcc[vessel].confirmedCount++;
-      vesselAcc[vessel].confirmedGrossSalesUsd += grossUsd;
-      vesselAcc[vessel].confirmedCommissionsUsd += commissionUsd;
-      if (isFromComparisonSession) {
-        vesselAcc[vessel].confirmedFromCompCount++;
-        if (sessionId) confirmedFromCompSessions.add(sessionId);
+      const estimatedUsd =
+        typeof meta.estimated_commission_usd === "number"
+          ? meta.estimated_commission_usd
+          : typeof meta.estimated_commission_cents === "number"
+            ? meta.estimated_commission_cents / 100
+            : typeof meta.confirmed_earnings_usd !== "number" &&
+                typeof meta.payouts_usd !== "number" &&
+                legacyCommissionUsd > 0
+              ? legacyCommissionUsd
+              : 0;
+
+      const confirmedEarningsUsd =
+        typeof meta.confirmed_earnings_usd === "number"
+          ? meta.confirmed_earnings_usd
+          : typeof meta.confirmed_earnings_cents === "number"
+            ? meta.confirmed_earnings_cents / 100
+            : typeof meta.paid_commission_usd === "number" &&
+                (outcomeEventType === "BOOKING_FULFILLED" ||
+                  outcomeEventType === "COMMISSION_RECONCILED")
+              ? meta.paid_commission_usd
+              : 0;
+
+      const payoutsUsd =
+        typeof meta.payouts_usd === "number"
+          ? meta.payouts_usd
+          : typeof meta.payouts_cents === "number"
+            ? meta.payouts_cents / 100
+            : typeof meta.paid_commission_usd === "number" &&
+                outcomeEventType === "COMMISSION_RECONCILED"
+              ? meta.paid_commission_usd
+              : 0;
+
+      const isDuplicateBookingCount =
+        bookingRef !== null && seenCorridorBookingRefs.has(bookingRef);
+      if (bookingRef) {
+        seenCorridorBookingRefs.add(bookingRef);
+        if (estimatedUsd > 0) seenCorridorEstimatedRefs.add(bookingRef);
+        if (confirmedEarningsUsd > 0) seenCorridorEarnedRefs.add(bookingRef);
+        if (payoutsUsd > 0) seenCorridorPayoutRefs.add(bookingRef);
       }
 
+      if (!isDuplicateBookingCount) {
+        vesselAcc[vessel].confirmedCount++;
+        vesselAcc[vessel].confirmedGrossSalesUsd += grossUsd;
+        if (isFromComparisonSession) {
+          vesselAcc[vessel].confirmedFromCompCount++;
+          if (sessionId) confirmedFromCompSessions.add(sessionId);
+        }
+      }
+      vesselAcc[vessel].estimatedCommissionUsd += estimatedUsd;
+      vesselAcc[vessel].confirmedEarningsUsd += confirmedEarningsUsd;
+      vesselAcc[vessel].payoutsUsd += payoutsUsd;
+      vesselAcc[vessel].confirmedCommissionsUsd += confirmedEarningsUsd;
+
       const row = getEntryRow(entryKey);
-      row.providerConfirmedBookings++;
-      row.confirmedGrossSalesUsd = roundUsd(row.confirmedGrossSalesUsd + grossUsd);
-      row.confirmedCommissionsUsd = roundUsd(row.confirmedCommissionsUsd + commissionUsd);
+      if (!isDuplicateBookingCount) {
+        row.providerConfirmedBookings++;
+        row.confirmedGrossSalesUsd = roundUsd(row.confirmedGrossSalesUsd + grossUsd);
+      }
+      row.estimatedCommissionUsd = roundUsd(row.estimatedCommissionUsd + estimatedUsd);
+      row.confirmedEarningsUsd = roundUsd(row.confirmedEarningsUsd + confirmedEarningsUsd);
+      row.payoutsUsd = roundUsd(row.payoutsUsd + payoutsUsd);
+      row.confirmedCommissionsUsd = row.confirmedEarningsUsd;
 
       const sRow = getSourceRow(resolvedEntrySource);
       if (sessionId) sRow.sessions.add(sessionId);
-      sRow.providerConfirmedBookings++;
-      sRow.confirmedGrossSalesUsd = roundUsd(sRow.confirmedGrossSalesUsd + grossUsd);
-      sRow.confirmedCommissionsUsd = roundUsd(sRow.confirmedCommissionsUsd + commissionUsd);
+      if (!isDuplicateBookingCount) {
+        sRow.providerConfirmedBookings++;
+        sRow.confirmedGrossSalesUsd = roundUsd(sRow.confirmedGrossSalesUsd + grossUsd);
+      }
+      sRow.estimatedCommissionUsd = roundUsd(sRow.estimatedCommissionUsd + estimatedUsd);
+      sRow.confirmedEarningsUsd = roundUsd(sRow.confirmedEarningsUsd + confirmedEarningsUsd);
+      sRow.payoutsUsd = roundUsd(sRow.payoutsUsd + payoutsUsd);
+      sRow.confirmedCommissionsUsd = sRow.confirmedEarningsUsd;
 
       if (isDccRiverboatsSource) {
-        dccCohortAcc.confirmedBookingsCount++;
-        dccCohortAcc.confirmedGrossSalesUsd = roundUsd(
-          dccCohortAcc.confirmedGrossSalesUsd + grossUsd,
+        if (!isDuplicateBookingCount) {
+          dccCohortAcc.confirmedBookingsCount++;
+          dccCohortAcc.confirmedGrossSalesUsd = roundUsd(
+            dccCohortAcc.confirmedGrossSalesUsd + grossUsd,
+          );
+        }
+        dccCohortAcc.estimatedCommissionUsd = roundUsd(
+          dccCohortAcc.estimatedCommissionUsd + estimatedUsd,
         );
-        dccCohortAcc.confirmedCommissionsUsd = roundUsd(
-          dccCohortAcc.confirmedCommissionsUsd + commissionUsd,
+        dccCohortAcc.confirmedEarningsUsd = roundUsd(
+          dccCohortAcc.confirmedEarningsUsd + confirmedEarningsUsd,
         );
+        dccCohortAcc.payoutsUsd = roundUsd(dccCohortAcc.payoutsUsd + payoutsUsd);
+        dccCohortAcc.confirmedCommissionsUsd = dccCohortAcc.confirmedEarningsUsd;
       }
 
       recentFunnelEvents.push({
@@ -806,31 +927,85 @@ export async function buildRiverboatComparisonFunnelReport(options?: {
   }
 
   // Also check commercial outcomes ledger for any authenticated FareHarbor outcomes on 561220 / 694782 not yet in corridor events
-  const seenOutcomeRefs = new Set<string>();
+  const seenOutcomeBookingRefs = new Set<string>(seenCorridorBookingRefs);
+  const seenOutcomeEstimatedRefs = new Set<string>(seenCorridorEstimatedRefs);
+  const seenOutcomeEarnedRefs = new Set<string>(seenCorridorEarnedRefs);
+  const seenOutcomePayoutRefs = new Set<string>(seenCorridorPayoutRefs);
+
   for (const outcome of outcomes) {
     if (outcome.provider !== "fareharbor") continue;
-    if (outcome.eventType !== "BOOKING_CONFIRMED" && outcome.eventType !== "BOOKING_FULFILLED") {
+    if (
+      outcome.eventType !== "BOOKING_CONFIRMED" &&
+      outcome.eventType !== "BOOKING_FULFILLED" &&
+      outcome.eventType !== "COMMISSION_RECONCILED"
+    ) {
       continue;
     }
-    const refLower = String(outcome.providerBookingRef || "").toLowerCase();
-    if (refLower.startsWith("test_") || refLower.startsWith("wno_test_") || refLower.includes("synthetic")) {
+    const ref = String(outcome.providerBookingRef || "").trim();
+    const refLower = ref.toLowerCase();
+    if (
+      !ref ||
+      refLower.startsWith("test_") ||
+      refLower.startsWith("wno_test_") ||
+      refLower.includes("synthetic")
+    ) {
       continue;
     }
-    if (seenOutcomeRefs.has(outcome.providerBookingRef)) continue;
+    const rawPayload =
+      outcome.rawPayload && typeof outcome.rawPayload === "object"
+        ? (outcome.rawPayload as Record<string, unknown>)
+        : {};
     const vessel = inferRiverboatVesselFromData({
       productSlug: outcome.bookedProductCode,
-      itemId: outcome.bookedOption || outcome.bookedProductCode,
+      itemId: rawPayload.itemPk || outcome.bookedOption || outcome.bookedProductCode,
     });
     if (!vessel) continue;
-    seenOutcomeRefs.add(outcome.providerBookingRef);
-    vesselAcc[vessel].confirmedCount++;
-    if (outcome.bookingValue?.amount) {
-      vesselAcc[vessel].confirmedGrossSalesUsd += outcome.bookingValue.amount;
+
+    if (!seenOutcomeBookingRefs.has(ref)) {
+      seenOutcomeBookingRefs.add(ref);
+      vesselAcc[vessel].confirmedCount++;
+      if (outcome.bookingValue?.amount) {
+        vesselAcc[vessel].confirmedGrossSalesUsd += outcome.bookingValue.amount;
+      }
     }
-    const outcomeCommission =
-      outcome.paidCommission?.amount ?? outcome.estimatedCommission?.amount ?? 0;
-    if (outcomeCommission) {
-      vesselAcc[vessel].confirmedCommissionsUsd += outcomeCommission;
+
+    // Strictly separate estimated commission, confirmed earnings, and settled payouts:
+    // - BOOKING_CONFIRMED: estimatedCommission is an estimate only; NEVER added to confirmedEarningsUsd or payoutsUsd.
+    // - BOOKING_FULFILLED: verified paidCommission is added to confirmedEarningsUsd (never fallback to estimatedCommission).
+    // - COMMISSION_RECONCILED: settled paidCommission is added to payoutsUsd (and confirmedEarningsUsd if not already recorded).
+    const estAmount =
+      typeof outcome.estimatedCommission?.amount === "number" &&
+      outcome.estimatedCommission.amount > 0
+        ? outcome.estimatedCommission.amount
+        : 0;
+    const paidAmount =
+      typeof outcome.paidCommission?.amount === "number" && outcome.paidCommission.amount > 0
+        ? outcome.paidCommission.amount
+        : 0;
+
+    if (estAmount > 0 && !seenOutcomeEstimatedRefs.has(ref)) {
+      seenOutcomeEstimatedRefs.add(ref);
+      vesselAcc[vessel].estimatedCommissionUsd += estAmount;
+    }
+
+    if (
+      (outcome.eventType === "BOOKING_FULFILLED" ||
+        outcome.eventType === "COMMISSION_RECONCILED") &&
+      paidAmount > 0 &&
+      !seenOutcomeEarnedRefs.has(ref)
+    ) {
+      seenOutcomeEarnedRefs.add(ref);
+      vesselAcc[vessel].confirmedEarningsUsd += paidAmount;
+      vesselAcc[vessel].confirmedCommissionsUsd += paidAmount;
+    }
+
+    if (
+      outcome.eventType === "COMMISSION_RECONCILED" &&
+      paidAmount > 0 &&
+      !seenOutcomePayoutRefs.has(ref)
+    ) {
+      seenOutcomePayoutRefs.add(ref);
+      vesselAcc[vessel].payoutsUsd += paidAmount;
     }
   }
 
@@ -873,7 +1048,10 @@ export async function buildRiverboatComparisonFunnelReport(options?: {
       };
       testSessionsMap.set(sessionId, rec);
     }
-    if (rawSource && (rec.entrySource === "direct-or-untagged" || rawSource === DCC_AUTHORITY_NOLA_RIVERBOATS_SRC)) {
+    if (
+      rawSource &&
+      (rec.entrySource === "direct-or-untagged" || rawSource === DCC_AUTHORITY_NOLA_RIVERBOATS_SRC)
+    ) {
       rec.entrySource = rawSource;
     }
     if (!rec.landingPath && landingPath) {
@@ -915,7 +1093,9 @@ export async function buildRiverboatComparisonFunnelReport(options?: {
       rec.boatSelected = vessel;
       if (eventName === "product_opened") {
         rec.tourDetailOpened =
-          vessel === "natchez" ? "/tours/daytime-jazz-cruise" : "/tours/city-of-new-orleans-riverboat-cruise";
+          vessel === "natchez"
+            ? "/tours/daytime-jazz-cruise"
+            : "/tours/city-of-new-orleans-riverboat-cruise";
       }
     }
 
@@ -944,9 +1124,16 @@ export async function buildRiverboatComparisonFunnelReport(options?: {
     vesselAcc.natchez.confirmedGrossSalesUsd +
       vesselAcc.city_of_new_orleans.confirmedGrossSalesUsd,
   );
-  const totalConfirmedCommissionsUsd = roundUsd(
-    vesselAcc.natchez.confirmedCommissionsUsd +
-      vesselAcc.city_of_new_orleans.confirmedCommissionsUsd,
+  const totalEstimatedCommissionUsd = roundUsd(
+    vesselAcc.natchez.estimatedCommissionUsd +
+      vesselAcc.city_of_new_orleans.estimatedCommissionUsd,
+  );
+  const totalConfirmedEarningsUsd = roundUsd(
+    vesselAcc.natchez.confirmedEarningsUsd +
+      vesselAcc.city_of_new_orleans.confirmedEarningsUsd,
+  );
+  const totalPayoutsUsd = roundUsd(
+    vesselAcc.natchez.payoutsUsd + vesselAcc.city_of_new_orleans.payoutsUsd,
   );
 
   return {
@@ -958,6 +1145,14 @@ export async function buildRiverboatComparisonFunnelReport(options?: {
     windowDays,
     includeSyntheticTests: Boolean(options?.customEvents),
     customerTotalsExcludeTestSessions: true,
+    commissionBreakdown: {
+      estimatedCommissionUsd: totalEstimatedCommissionUsd,
+      confirmedEarningsUsd: totalConfirmedEarningsUsd,
+      payoutsUsd: totalPayoutsUsd,
+      confirmedFieldIncludesEstimate: false,
+      policyNote:
+        "Estimated commissions on confirmed bookings are tracked separately from confirmed earnings (fulfilled bookings with verified provider commission) and settled payouts (reconciled commission disbursements). Unconfirmed estimates are never included in confirmedEarningsUsd or confirmedCommissionsUsd.",
+    },
     stages: {
       comparisonVisits: {
         totalEvents: comparisonVisitEvents,
@@ -982,7 +1177,10 @@ export async function buildRiverboatComparisonFunnelReport(options?: {
         totalConfirmedBookings,
         confirmedFromComparisonSessions: confirmedFromCompSessions.size,
         confirmedGrossSalesUsd: totalConfirmedGrossUsd,
-        confirmedCommissionsUsd: totalConfirmedCommissionsUsd,
+        estimatedCommissionUsd: totalEstimatedCommissionUsd,
+        confirmedEarningsUsd: totalConfirmedEarningsUsd,
+        payoutsUsd: totalPayoutsUsd,
+        confirmedCommissionsUsd: totalConfirmedEarningsUsd,
         conversionFromCheckoutOpenedPct: pct(totalConfirmedBookings, checkoutOpenedTotalEvents),
         status:
           totalConfirmedBookings > 0
@@ -1019,7 +1217,10 @@ export async function buildRiverboatComparisonFunnelReport(options?: {
       providerConfirmedOutcomes: {
         confirmedBookingsCount: dccCohortAcc.confirmedBookingsCount,
         confirmedGrossSalesUsd: dccCohortAcc.confirmedGrossSalesUsd,
-        confirmedCommissionsUsd: dccCohortAcc.confirmedCommissionsUsd,
+        estimatedCommissionUsd: dccCohortAcc.estimatedCommissionUsd,
+        confirmedEarningsUsd: dccCohortAcc.confirmedEarningsUsd,
+        payoutsUsd: dccCohortAcc.payoutsUsd,
+        confirmedCommissionsUsd: dccCohortAcc.confirmedEarningsUsd,
         status:
           dccCohortAcc.confirmedBookingsCount > 0
             ? "confirmed_bookings_present"
@@ -1046,7 +1247,10 @@ export async function buildRiverboatComparisonFunnelReport(options?: {
         providerConfirmedBookingsCount: vesselAcc.natchez.confirmedCount,
         providerConfirmedFromComparisonCount: vesselAcc.natchez.confirmedFromCompCount,
         confirmedGrossSalesUsd: roundUsd(vesselAcc.natchez.confirmedGrossSalesUsd),
-        confirmedCommissionsUsd: roundUsd(vesselAcc.natchez.confirmedCommissionsUsd),
+        estimatedCommissionUsd: roundUsd(vesselAcc.natchez.estimatedCommissionUsd),
+        confirmedEarningsUsd: roundUsd(vesselAcc.natchez.confirmedEarningsUsd),
+        payoutsUsd: roundUsd(vesselAcc.natchez.payoutsUsd),
+        confirmedCommissionsUsd: roundUsd(vesselAcc.natchez.confirmedEarningsUsd),
         unconfirmedCheckoutOpensCount: Math.max(
           0,
           vesselAcc.natchez.checkoutAllVariantsEvents - vesselAcc.natchez.confirmedCount,
@@ -1077,7 +1281,10 @@ export async function buildRiverboatComparisonFunnelReport(options?: {
         providerConfirmedBookingsCount: vesselAcc.city_of_new_orleans.confirmedCount,
         providerConfirmedFromComparisonCount: vesselAcc.city_of_new_orleans.confirmedFromCompCount,
         confirmedGrossSalesUsd: roundUsd(vesselAcc.city_of_new_orleans.confirmedGrossSalesUsd),
-        confirmedCommissionsUsd: roundUsd(vesselAcc.city_of_new_orleans.confirmedCommissionsUsd),
+        estimatedCommissionUsd: roundUsd(vesselAcc.city_of_new_orleans.estimatedCommissionUsd),
+        confirmedEarningsUsd: roundUsd(vesselAcc.city_of_new_orleans.confirmedEarningsUsd),
+        payoutsUsd: roundUsd(vesselAcc.city_of_new_orleans.payoutsUsd),
+        confirmedCommissionsUsd: roundUsd(vesselAcc.city_of_new_orleans.confirmedEarningsUsd),
         unconfirmedCheckoutOpensCount: Math.max(
           0,
           vesselAcc.city_of_new_orleans.checkoutAllVariantsEvents -

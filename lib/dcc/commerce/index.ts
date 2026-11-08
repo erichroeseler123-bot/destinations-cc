@@ -3600,9 +3600,26 @@ export interface SharedHandoffLedgerSummary {
   };
   earnedCommissions: {
     displayValue: number | "unknown";
+    estimatedCommissionUsd: number;
     confirmedEarnedUsd: number;
     settledPaidUsd: number;
+    forOriginatingSiteEstimatedUsd: number;
     forOriginatingSiteEarnedUsd: number;
+    forOriginatingSitePayoutsUsd: number;
+    reportingStatus: "reported" | "unknown";
+    note: string;
+  };
+  estimatedCommissions: {
+    displayValue: number | "unknown";
+    estimatedCommissionUsd: number;
+    forOriginatingSiteEstimatedUsd: number;
+    reportingStatus: "reported" | "unknown";
+    note: string;
+  };
+  payouts: {
+    displayValue: number | "unknown";
+    settledPaidUsd: number;
+    forOriginatingSitePayoutsUsd: number;
     reportingStatus: "reported" | "unknown";
     note: string;
   };
@@ -3737,13 +3754,16 @@ export async function getSharedHandoffLedgerSummary(options?: {
     // Non-fatal
   }
 
-  // 4. Summarize authenticated provider-confirmed outcomes & earned commissions separately
+  // 4. Summarize authenticated provider-confirmed outcomes, estimated commissions, confirmed earnings, and payouts separately
   const outcomes = await listCommercialOutcomes({ limit: 100 });
   let confirmedCount = 0;
   let forOriginatingSiteConfirmedCount = 0;
+  let estimatedCommissionUsd = 0;
   let confirmedEarnedUsd = 0;
   let settledPaidUsd = 0;
+  let forOriginatingSiteEstimatedUsd = 0;
   let forOriginatingSiteEarnedUsd = 0;
+  let forOriginatingSitePayoutsUsd = 0;
 
   for (const out of outcomes) {
     const evt = out.eventType.toUpperCase();
@@ -3762,19 +3782,28 @@ export async function getSharedHandoffLedgerSummary(options?: {
     confirmedCount += 1;
     const est = out.estimatedCommission.amount ?? 0;
     const paid = out.paidCommission.amount ?? 0;
-    const earned = paid > 0 ? paid : est;
+    // Never include an unconfirmed estimate in confirmedEarnedUsd or settledPaidUsd!
+    const earned =
+      (evt.includes("FULFILL") || evt.includes("COMMISSION_RECONCILED")) && paid > 0 ? paid : 0;
+    const payout = evt.includes("COMMISSION_RECONCILED") && paid > 0 ? paid : 0;
+
+    estimatedCommissionUsd = Number((estimatedCommissionUsd + est).toFixed(2));
     confirmedEarnedUsd = Number((confirmedEarnedUsd + earned).toFixed(2));
-    settledPaidUsd = Number((settledPaidUsd + paid).toFixed(2));
+    settledPaidUsd = Number((settledPaidUsd + payout).toFixed(2));
 
     const matchedOrig = out.handoffId ? handoffOriginById.get(out.handoffId) : null;
     if (!siteFilter || matchedOrig === siteFilter) {
       forOriginatingSiteConfirmedCount += 1;
+      forOriginatingSiteEstimatedUsd = Number((forOriginatingSiteEstimatedUsd + est).toFixed(2));
       forOriginatingSiteEarnedUsd = Number((forOriginatingSiteEarnedUsd + earned).toFixed(2));
+      forOriginatingSitePayoutsUsd = Number((forOriginatingSitePayoutsUsd + payout).toFixed(2));
     }
   }
 
   const effectiveConfirmedCount = siteFilter ? forOriginatingSiteConfirmedCount : confirmedCount;
+  const effectiveEstimatedUsd = siteFilter ? forOriginatingSiteEstimatedUsd : estimatedCommissionUsd;
   const effectiveEarnedUsd = siteFilter ? forOriginatingSiteEarnedUsd : confirmedEarnedUsd;
+  const effectivePayoutsUsd = siteFilter ? forOriginatingSitePayoutsUsd : settledPaidUsd;
   const effectiveRedirects = siteFilter ? forOriginatingSite : totalRedirects;
   const hasUnreported = effectiveRedirects > 0 && effectiveConfirmedCount === 0;
 
@@ -3807,11 +3836,30 @@ export async function getSharedHandoffLedgerSummary(options?: {
     earnedCommissions: {
       displayValue:
         effectiveEarnedUsd > 0 ? effectiveEarnedUsd : hasUnreported ? "unknown" : 0,
+      estimatedCommissionUsd,
       confirmedEarnedUsd,
       settledPaidUsd,
+      forOriginatingSiteEstimatedUsd,
       forOriginatingSiteEarnedUsd,
+      forOriginatingSitePayoutsUsd,
       reportingStatus: hasUnreported ? "unknown" : "reported",
-      note: "Earned commissions are reported separately from outbound redirects and settled payouts; unreported affiliate outcomes remain unknown until provider reconciliation.",
+      note: "Confirmed earnings require verified provider commission on fulfilled or reconciled bookings and never include unconfirmed booking estimates.",
+    },
+    estimatedCommissions: {
+      displayValue:
+        effectiveEstimatedUsd > 0 ? effectiveEstimatedUsd : hasUnreported ? "unknown" : 0,
+      estimatedCommissionUsd,
+      forOriginatingSiteEstimatedUsd,
+      reportingStatus: hasUnreported ? "unknown" : "reported",
+      note: "Estimated commissions on confirmed bookings prior to fulfillment/settlement reconciliation.",
+    },
+    payouts: {
+      displayValue:
+        effectivePayoutsUsd > 0 ? effectivePayoutsUsd : hasUnreported ? "unknown" : 0,
+      settledPaidUsd,
+      forOriginatingSitePayoutsUsd,
+      reportingStatus: hasUnreported ? "unknown" : "reported",
+      note: "Settled payouts require COMMISSION_RECONCILED confirmation from the provider.",
     },
   };
 }
