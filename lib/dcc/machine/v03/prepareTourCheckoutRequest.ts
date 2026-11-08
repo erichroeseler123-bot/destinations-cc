@@ -29,7 +29,10 @@ export function prepareTourCheckoutFromRequest(
     shipAllAboardTime: str(args.allAboard ?? args.shipAllAboardTime),
     shipDepartureTime: str(args.shipDeparture ?? args.shipDepartureTime),
     callerClientId: auth.clientId,
-    originatingSite: "destinationcommandcenter.com",
+    originatingSite:
+      str(args.originatingSite) === "cruisepromenade.com"
+        ? "cruisepromenade.com"
+        : "destinationcommandcenter.com",
     surface,
     isQaTraffic: args.isQaTraffic === true || args.qaTraffic === true || args.isTest === true,
     simulateTimeout: args.simulateTimeout === true,
