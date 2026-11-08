@@ -15,8 +15,11 @@
 import {
   evaluateJuneauPortDayScenario,
   type JuneauArrivalDock,
+  type JuneauEvaluatedCandidateDeparture,
   type JuneauEvaluatedDecisionOption,
+  type JuneauEvaluatedOfferBeforeCheckout,
   type JuneauPortDayEvaluationResult,
+  type JuneauTripVerdictBeforeCheckout,
 } from "@/lib/dcc/juneauPortDayEngine";
 import {
   CLAA_JUNEAU_PORT_SCHEDULE,
@@ -99,6 +102,7 @@ export interface UnifiedJuneauOptionRecheck {
   shortLabel: string;
   category: string;
   categoryLabel: string;
+  viatorProductCode: string | null;
   priceFromLabel: string;
   weatherCeilingSensitive: boolean;
   weatherResilienceLabel: string;
@@ -168,6 +172,9 @@ export interface UnifiedJuneauOptionRecheck {
       | "unverified_noaa_timeout";
     summary: string;
   };
+  evaluatedDepartures: JuneauEvaluatedCandidateDeparture[];
+  evaluatedOffers: JuneauEvaluatedOfferBeforeCheckout[];
+  tripVerdictBeforeCheckout: JuneauTripVerdictBeforeCheckout;
   fitsOverallForSelection: boolean;
   flightDeckHandoffAllowed: boolean;
   allowedNextStepType: "continue_to_flight_deck" | "view_options_that_fit";
@@ -871,6 +878,99 @@ export function evaluateUnifiedJuneauTripRecheckSync(
       directUrl.searchParams.set("berth", berthMapping.berthCode);
       directUrl.searchParams.set("time_window", timeWindowParam);
 
+      const blockReasonForOffers = !fitsOverallForSelection
+        ? rawTimeFitStatus === "confirm_ship_timing"
+          ? "Confirm ship timing: enter your ship's confirmed all-aboard cutoff and assigned berth before opening commercial or Viator checkout."
+          : pausedByFlightCancel
+            ? operatingStatus.summary
+            : seatAvailability.status === "provider_sold_out"
+              ? seatAvailability.summary
+              : tideBlockingThisOption
+                ? tideGate.summary
+                : engOpt.statusDimensions.timeFit.summary
+        : null;
+
+      const evaluatedOffers: JuneauEvaluatedOfferBeforeCheckout[] =
+        engOpt.evaluatedOffers.map((offer) => {
+          const checkoutAllowed =
+            fitsOverallForSelection &&
+            (offer.checkoutLinkEnabled ||
+              offer.channelType === "public_transit");
+          return {
+            ...offer,
+            offerFitsOverall: fitsOverallForSelection,
+            checkoutLinkEnabled: checkoutAllowed,
+            href: checkoutAllowed
+              ? offer.channelType === "dcc_to_flight_deck"
+                ? flightDeckHandoffHref
+                : offer.href
+              : null,
+            seatAvailability:
+              seatAvailability.status === "provider_confirmed_seats"
+                ? {
+                    ...offer.seatAvailability,
+                    summary: `Seats: ${seatAvailability.confirmedSeatsCount} confirmed by provider`,
+                  }
+                : seatAvailability.status === "provider_sold_out"
+                  ? {
+                      ...offer.seatAvailability,
+                      summary: "Seats: Sold out (0 seats confirmed by provider)",
+                    }
+                  : offer.seatAvailability,
+            withheldReason: checkoutAllowed
+              ? null
+              : blockReasonForOffers || offer.withheldReason,
+          };
+        });
+
+      const exactDetailToVerify =
+        rawTimeFitStatus === "confirm_ship_timing"
+          ? "Verify your ship's confirmed all-aboard cutoff time and assigned Juneau berth on your cruise daily program before booking."
+          : pausedByFlightCancel
+            ? "Verify surface transfer pickup time at your pier after helicopter weather cancellation."
+            : seatAvailability.status === "provider_sold_out"
+              ? "Provider reported 0 seats remaining; check standby release or select the verified fitting alternative."
+              : tideBlockingThisOption
+                ? `Verify Auke Bay ramp tide clearance (${tides.tideSummaryText}) with operator dispatch.`
+                : engOpt.tripVerdictBeforeCheckout.whenNoOfferFitsFallback
+                    ?.exactDetailToVerify ||
+                  `Confirm whether your ship grants an extended all-aboard cutoff (+${Math.abs(remainingMinutesAfterBuffer)}m needed to clear the ${configuredReturnBufferMinutes}m return buffer).`;
+
+      const tripVerdictBeforeCheckout: JuneauTripVerdictBeforeCheckout = {
+        ...engOpt.tripVerdictBeforeCheckout,
+        verdictStatus:
+          rawTimeFitStatus === "confirm_ship_timing"
+            ? "needs_verification"
+            : fitsOverallForSelection
+              ? remainingMinutesAfterBuffer >= 30
+                ? "fits_port_window"
+                : "tight_buffer_fits"
+              : "does_not_fit_port_window",
+        timeFitBadge: {
+          fitsTimeWindow,
+          status: rawTimeFitStatus,
+          label: statusBadgeLabel,
+        },
+        seatAvailabilityBadge: {
+          ...engOpt.tripVerdictBeforeCheckout.seatAvailabilityBadge,
+          label:
+            seatAvailability.status === "provider_confirmed_seats"
+              ? `Seat Availability: ${seatAvailability.confirmedSeatsCount} confirmed by provider`
+              : seatAvailability.status === "provider_sold_out"
+                ? "Seat Availability: Sold out (0 confirmed)"
+                : engOpt.tripVerdictBeforeCheckout.seatAvailabilityBadge.label,
+        },
+        commercialOffersEnabled: fitsOverallForSelection,
+        whenNoOfferFitsFallback: fitsOverallForSelection
+          ? null
+          : {
+              verifiedFittingAlternative:
+                engOpt.tripVerdictBeforeCheckout.whenNoOfferFitsFallback
+                  ?.verifiedFittingAlternative ?? null,
+              exactDetailToVerify,
+            },
+      };
+
       return {
         optionId: engOpt.optionId,
         legacyReplanId: meta.legacyReplanId,
@@ -886,6 +986,7 @@ export function evaluateUnifiedJuneauTripRecheckSync(
                 ? "Direct Shuttle"
                 : "Public / Municipal",
         priceFromLabel: meta.priceFromLabel,
+        viatorProductCode: engOpt.viatorProductCode,
         weatherCeilingSensitive,
         weatherResilienceLabel: meta.weatherResilienceLabel,
         timeFit: {
@@ -921,6 +1022,9 @@ export function evaluateUnifiedJuneauTripRecheckSync(
         operatingStatus,
         seatAvailability,
         tideGate,
+        evaluatedDepartures: engOpt.evaluatedDepartures,
+        evaluatedOffers,
+        tripVerdictBeforeCheckout,
         fitsOverallForSelection,
         flightDeckHandoffAllowed,
         allowedNextStepType,
@@ -952,6 +1056,23 @@ export function evaluateUnifiedJuneauTripRecheckSync(
 
   const fittingOptions = mappedOptions.filter((o) => o.fitsOverallForSelection);
   const topOption = fittingOptions[0] || mappedOptions[0] || null;
+  const topFittingOption = fittingOptions[0] || null;
+
+  for (const opt of mappedOptions) {
+    if (!opt.fitsOverallForSelection && opt.tripVerdictBeforeCheckout.whenNoOfferFitsFallback) {
+      opt.tripVerdictBeforeCheckout.whenNoOfferFitsFallback.verifiedFittingAlternative =
+        topFittingOption
+          ? {
+              optionId: topFittingOption.optionId,
+              title: topFittingOption.title,
+              remainingMinutesAfterBuffer:
+                topFittingOption.timeFit.remainingMinutesAfterBuffer,
+              summary: `Switch to ${topFittingOption.title} (Est. back at dock ${topFittingOption.timeFit.estimatedBackAtDockLocal}, +${topFittingOption.timeFit.remainingMinutesAfterBuffer}m margin after ${topFittingOption.timeFit.configuredReturnBufferMinutes}m return buffer).`,
+              replanHref: opt.allowedNextStepHref,
+            }
+          : null;
+    }
+  }
 
   const whatChanged = flightCanceled
     ? `Flight Canceled Backup Mode on ${date} (${ship}, ${arrivalTime}–${allAboardConfirmed ? rawAllAboard : "Unconfirmed"} AKDT, Berth ${berthMapping.berthCode}, ${configuredReturnBufferMinutes}m return buffer).`

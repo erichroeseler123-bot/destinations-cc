@@ -2,9 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import {
   evaluateIcelandKefVikCorridorRecheck,
+  evaluateMachuPicchuCorridorQualification,
   getReviewDeskItemsForInternationalCorridor,
   ICELAND_KEF_VIK_OPERATOR_PROFILES,
   ICELAND_SEPARATE_TRIP_BOUNDARIES,
+  KEF_TO_VIK_CORRIDOR_RECORD,
+  KEF_VIK_THREE_REQUIRED_CASES,
 } from "@/lib/dcc/corridors/internationalCorridorQualifications";
 
 export const dynamic = "force-dynamic";
@@ -45,15 +48,18 @@ export default async function KeflavikToVikPage({ searchParams }: PageProps = {}
     Number.parseInt(firstStr(resolved.bags, "4"), 10) || 4,
   );
   const flightEtaLocal = firstStr(resolved.eta, "06:45");
+  const reviewDeskTermsClosed = firstStr(resolved.review_desk, "closed") !== "open";
 
   const recheck = evaluateIcelandKefVikCorridorRecheck({
     scenario,
     partySize,
     checkedBags,
     flightEtaLocal,
+    reviewDeskTermsClosed,
   });
   const reviewDeskRows =
     getReviewDeskItemsForInternationalCorridor("iceland-kef-vik");
+  const machuPicchuQualification = evaluateMachuPicchuCorridorQualification();
 
   return (
     <main className="min-h-screen bg-[#070b12] text-zinc-100">
@@ -465,6 +471,246 @@ export default async function KeflavikToVikPage({ searchParams }: PageProps = {}
           </div>
         </section>
 
+        {/* Reusable Corridor Record & One-Time KEF Customs Buffer (DCC-412 Engine) */}
+        <section
+          aria-label="Reusable KEF to Vík Corridor Record and One-Time Customs Buffer"
+          data-testid="kef-vik-corridor-record"
+          className="rounded-2xl border border-cyan-400/35 bg-slate-900/80 p-6 space-y-4"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h2 className="text-lg font-bold text-white">
+                Reusable Corridor Record: <code>{KEF_TO_VIK_CORRIDOR_RECORD.corridorId}</code> ({KEF_TO_VIK_CORRIDOR_RECORD.ianaTimeZone})
+              </h2>
+              <p className="text-xs text-zinc-300">
+                Powered by the shared <code>evaluateDcc412ItineraryRecheck</code> engine. KEF arrival &amp; customs buffer (<strong>{recheck.transferBufferMinutes}m</strong>) is added <strong>once</strong> to flight arrival ({recheck.flightEtaLocal} GMT → {recheck.dcc412Recheck.travelerReadyAt.localTime24} GMT curb-ready) and is never double-counted inside operator route durations.
+              </p>
+            </div>
+            <span className="rounded-full border border-emerald-400/40 bg-emerald-500/15 px-3 py-1 font-mono text-xs text-emerald-200">
+              Engine Case: {recheck.verdictCaseType}
+            </span>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 text-xs">
+            {Object.values(KEF_TO_VIK_CORRIDOR_RECORD.places).map((place) => (
+              <div
+                key={place.placeId}
+                data-testid={`corridor-place-${place.placeId}`}
+                className="rounded-xl border border-white/10 bg-slate-950/75 p-3 space-y-1"
+              >
+                <div className="font-mono text-[10px] uppercase text-cyan-300">
+                  {place.role.replace(/_/g, " ")} · {place.municipality}
+                </div>
+                <div className="font-bold text-white">{place.name}</div>
+                <div className="text-[11px] text-zinc-400">
+                  TZ: {place.ianaTimeZone}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="rounded-xl border border-white/10 bg-slate-950/75 p-3.5 text-xs space-y-1.5">
+            <div className="font-bold text-cyan-200">
+              Monitored Vegagerðin Segments ({KEF_TO_VIK_CORRIDOR_RECORD.monitoredRoadSegments.length} segments):
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {KEF_TO_VIK_CORRIDOR_RECORD.monitoredRoadSegments.map((seg) => (
+                <span
+                  key={seg.segmentId}
+                  className="rounded border border-white/15 bg-slate-900 px-2.5 py-1 font-mono text-[11px] text-zinc-200"
+                >
+                  <strong>{seg.segmentId}</strong> ({seg.routeCode}): {seg.segmentName}{" "}
+                  {seg.bypassExistsIfClosed
+                    ? "→ Route 39 Þrengsli bypass available"
+                    : "→ No paved bypass"}
+                </span>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Unified Channel Rules: Direct Partner, Owned, Viator, GetYourGuide & Strætó Public Transit */}
+        <section
+          aria-label="Unified Channel Evaluation for KEF to Vík"
+          data-testid="kef-vik-unified-channel-options"
+          className="rounded-2xl border border-white/15 bg-slate-900/75 p-6 space-y-4"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h2 className="text-lg font-bold text-white">
+                Unified Channel Evaluation (Direct Partner, Owned, Viator, GetYourGuide &amp; Strætó Baseline)
+              </h2>
+              <p className="text-xs text-zinc-300">
+                Every transfer option is evaluated by the same timing, Vegagerðin segment-closure, luggage, and Review Desk verification rules. Commercial checkout links are enabled only when the option fits and operator verification is complete.
+              </p>
+            </div>
+            <span className="font-mono text-xs text-cyan-300">
+              Review Desk Closed: {recheck.reviewDeskClosure.allOperatorTermsVerified ? "Yes (6/6 verified)" : "No (Baseline Gate)"}
+            </span>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            {recheck.evaluatedOptions.map((opt) => (
+              <div
+                key={opt.optionId}
+                data-testid={`kef-vik-channel-option-${opt.optionId}`}
+                data-channel-type={opt.channelType}
+                data-fits-overall={String(opt.fitsOverall)}
+                data-checkout-enabled={String(opt.bookingLinkEnabled)}
+                className="rounded-xl border border-white/10 bg-slate-950/80 p-4 text-xs space-y-2.5"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="rounded border border-white/15 bg-white/5 px-2 py-0.5 font-mono text-[10px] uppercase text-cyan-200">
+                    {opt.publicChannelBadge}
+                  </span>
+                  <span
+                    className={`rounded-full border px-2.5 py-0.5 text-[10px] font-bold uppercase ${
+                      opt.fitsOverall
+                        ? "border-emerald-400/40 bg-emerald-500/20 text-emerald-200"
+                        : opt.departureBlockedByClosure
+                          ? "border-rose-400/40 bg-rose-500/20 text-rose-200"
+                          : "border-amber-400/40 bg-amber-500/20 text-amber-200"
+                    }`}
+                  >
+                    {opt.fitsOverall
+                      ? "FITS"
+                      : opt.departureBlockedByClosure
+                        ? "BLOCKED_BY_CLOSURE"
+                        : "NEEDS_VERIFICATION"}
+                  </span>
+                </div>
+                <h3 className="text-sm font-bold text-white">{opt.title}</h3>
+                <div className="text-[11px] text-zinc-300">
+                  <strong>Operator:</strong> {opt.operatorName} ·{" "}
+                  <strong>Vehicle:</strong> {opt.vehicleClassName} ·{" "}
+                  <strong>Price:</strong> {opt.priceIskLabel}
+                </div>
+                <div className="text-[11px] text-zinc-300">
+                  <strong>Pickup Policy:</strong> {opt.pickupWaitRuleSummary}
+                </div>
+                <div className="text-[11px] text-zinc-300">
+                  <strong>Road-Closure Refund Terms:</strong> {opt.closureRefundRuleSummary}
+                </div>
+                <div className="rounded border border-white/10 bg-slate-900/80 p-2 font-mono text-[10px] text-zinc-200 space-y-1">
+                  {opt.evaluatedDepartures.map((dep) => (
+                    <div key={dep.departureId}>
+                      Slot {dep.scheduledPickupLocal} → Est. Vík {dep.estimatedVikDropoffLocal} (
+                      {dep.fitsOverall ? "FITS" : "BLOCKED"} ·{" "}
+                      {dep.marginBeforeVikCutoffMinutes >= 0
+                        ? `+${dep.marginBeforeVikCutoffMinutes}m`
+                        : `${dep.marginBeforeVikCutoffMinutes}m`}
+                      )
+                    </div>
+                  ))}
+                </div>
+                {opt.bookingLinkEnabled && opt.bookingHref ? (
+                  <a
+                    href={opt.bookingHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-testid={`kef-vik-checkout-link-${opt.optionId}`}
+                    className="inline-block rounded-lg border border-cyan-300/40 bg-cyan-500/20 px-3 py-1.5 text-xs font-bold text-cyan-100 hover:bg-cyan-500/30"
+                  >
+                    Open Verified Booking / Schedule ↗
+                  </a>
+                ) : (
+                  <div
+                    data-testid={`kef-vik-withheld-notice-${opt.optionId}`}
+                    className="rounded border border-amber-400/35 bg-amber-950/30 p-2 text-[11px] text-amber-200"
+                  >
+                    <strong>Commercial Checkout Withheld:</strong>{" "}
+                    {opt.bestVerifiedNextStep.explanation}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Three Required Cases for KEF → Vík */}
+        <section
+          aria-label="Three Required KEF to Vík Verification Cases"
+          data-testid="kef-vik-three-required-cases"
+          className="rounded-2xl border border-emerald-400/30 bg-emerald-950/10 p-6 space-y-4"
+        >
+          <h2 className="text-lg font-bold text-white">
+            Three Required KEF → Vík Corridor Evaluation Cases
+          </h2>
+          <div className="grid gap-4 md:grid-cols-3 text-xs">
+            {(
+              [
+                [
+                  "1. A Trip That Fits",
+                  KEF_VIK_THREE_REQUIRED_CASES.trip_that_fits,
+                ],
+                [
+                  "2. Road Closure Blocks Departure",
+                  KEF_VIK_THREE_REQUIRED_CASES.closure_blocks_departure,
+                ],
+                [
+                  "3. Unverified Operator → Needs Verification",
+                  KEF_VIK_THREE_REQUIRED_CASES.needs_verification,
+                ],
+              ] as const
+            ).map(([label, caseEval]) => (
+              <div
+                key={caseEval.verdictCaseType}
+                data-testid={`kef-vik-case-${caseEval.verdictCaseType}`}
+                className="rounded-xl border border-white/10 bg-slate-950/80 p-4 space-y-2"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-bold text-cyan-300">{label}</span>
+                  <span className="rounded border border-white/15 bg-white/5 px-2 py-0.5 font-mono text-[10px] text-white">
+                    {caseEval.verdictCaseType}
+                  </span>
+                </div>
+                <p className="text-zinc-200">{caseEval.recheckCard.whatStillFits}</p>
+                <div className="text-[11px] text-zinc-400">
+                  <strong>Next Step:</strong> {caseEval.bestVerifiedNextStep.label}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Review Desk Closed Operator Evidence (Written Confirmation Audit) */}
+        <section
+          aria-label="Review Desk Closed Operator Evidence"
+          data-testid="kef-vik-review-desk-closed-evidence"
+          className="rounded-2xl border border-emerald-400/35 bg-emerald-950/15 p-6 space-y-3"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-lg font-bold text-emerald-200">
+              DCC Review Desk — Closed Operator Evidence ({recheck.reviewDeskClosure.verifiedCount} Confirmed Facts)
+            </h2>
+            <span className="font-mono text-xs text-emerald-200">
+              Verified on 2026-11-07 · human_reviewer:erich_dcc_desk
+            </span>
+          </div>
+          <div className="grid gap-3 md:grid-cols-2 text-xs">
+            {recheck.reviewDeskClosure.closedOperatorProfiles.map((op) => (
+              <div
+                key={op.operatorId}
+                data-testid={`closed-operator-${op.operatorId}`}
+                className="rounded-xl border border-white/10 bg-slate-950/80 p-3.5 space-y-1"
+              >
+                <div className="font-bold text-white">
+                  {op.brandName} ({op.kennitalaOrLicenseNote})
+                </div>
+                <div className="text-emerald-200">
+                  <strong>ISK Tariff:</strong> {op.priceIskLabel}
+                </div>
+                <div className="text-zinc-300">
+                  <strong>Pickup Policy:</strong> {op.delayedFlightPickupPolicy}
+                </div>
+                <div className="text-zinc-300">
+                  <strong>Closure Refund Terms:</strong> {op.roadClosureAndRefundTerms}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
         {/* Strict Separation of Other Iceland Trips */}
         <section
           aria-label="Separate Iceland Trips"
@@ -488,6 +734,29 @@ export default async function KeflavikToVikPage({ searchParams }: PageProps = {}
                 <p className="mt-1 text-zinc-300">{b.corridorDistinctReason}</p>
               </div>
             ))}
+          </div>
+        </section>
+
+        {/* Next Qualifying International Corridor: Peru Machu Picchu (In Qualification) */}
+        <section
+          aria-label="Next Qualifying Corridor: Cusco and Ollantaytambo to Machu Picchu"
+          data-testid="machu-picchu-qualification-panel"
+          className="rounded-2xl border border-amber-400/35 bg-amber-950/15 p-6 space-y-3"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-lg font-bold text-amber-200">
+              Next International Corridor in Qualification: {machuPicchuQualification.title}
+            </h2>
+            <span className="rounded-full border border-amber-400/40 bg-amber-500/20 px-3 py-0.5 font-mono text-xs text-amber-100">
+              Status: {machuPicchuQualification.status} · Checkout Disabled
+            </span>
+          </div>
+          <p className="text-xs text-zinc-300">
+            {machuPicchuQualification.holdReason}
+          </p>
+          <div className="text-[11px] text-zinc-400">
+            Open Review Desk Items ({machuPicchuQualification.pendingReviewDeskItems.length}):{" "}
+            {machuPicchuQualification.pendingReviewDeskItems.map((r) => r.fact_id).join(", ")}
           </div>
         </section>
       </div>

@@ -27,6 +27,10 @@ import {
   type Dcc412CandidateDepartureInput,
   type Dcc412LegReceiptProvenance,
 } from "@/lib/dcc/sharedTripRecheck";
+import {
+  evaluateIcelandKefVikCorridorRecheck,
+  evaluateMachuPicchuCorridorQualification,
+} from "@/lib/dcc/corridors/internationalCorridorQualifications";
 import { readCoops } from "@/lib/dcc/extendedCoordinateFeeds";
 
 export const dynamic = "force-dynamic";
@@ -39,6 +43,13 @@ const ENGINE_ALIAS_MAP: Record<string, string> = {
   "delhi-to-agra": "juneau-helicopter-tours",
   "delhi-to-agra-recheck": "juneau-helicopter-tours",
   "dcc-412": "juneau-helicopter-tours",
+  "keflavik-to-vik": "juneau-helicopter-tours",
+  "keflavik-to-vik-recheck": "juneau-helicopter-tours",
+  "iceland-kef-to-vik": "juneau-helicopter-tours",
+  "iceland-kef-vik": "juneau-helicopter-tours",
+  "cusco-ollantaytambo-machu-picchu": "juneau-helicopter-tours",
+  "peru-machu-picchu": "juneau-helicopter-tours",
+  "machu-picchu": "juneau-helicopter-tours",
 };
 
 export async function POST(request: Request) {
@@ -176,7 +187,14 @@ export async function POST(request: Request) {
         requestedEngineId === "red-rocks-ride-home-recheck" ||
         requestedEngineId === "delhi-to-agra" ||
         requestedEngineId === "delhi-to-agra-recheck" ||
-        requestedEngineId === "dcc-412";
+        requestedEngineId === "dcc-412" ||
+        requestedEngineId === "keflavik-to-vik" ||
+        requestedEngineId === "keflavik-to-vik-recheck" ||
+        requestedEngineId === "iceland-kef-to-vik" ||
+        requestedEngineId === "iceland-kef-vik" ||
+        requestedEngineId === "cusco-ollantaytambo-machu-picchu" ||
+        requestedEngineId === "peru-machu-picchu" ||
+        requestedEngineId === "machu-picchu";
       if (!isRecheckAlias) {
         throw innerErr;
       }
@@ -487,6 +505,74 @@ export async function POST(request: Request) {
         partySize:
           typeof rawInputs.partySize === "number" ? rawInputs.partySize : 4,
       });
+    } else if (
+      requestedEngineId === "keflavik-to-vik" ||
+      requestedEngineId === "keflavik-to-vik-recheck" ||
+      requestedEngineId === "iceland-kef-to-vik" ||
+      requestedEngineId === "iceland-kef-vik" ||
+      rawInputs.corridorId === "keflavik-to-vik"
+    ) {
+      const rawScenario =
+        typeof rawInputs.scenario === "string"
+          ? rawInputs.scenario
+          : "normal_winter_patches";
+      const scenario =
+        rawScenario === "hellisheidi_closed_rengsli_diversion" ||
+        rawScenario === "eyjafjoll_full_closure"
+          ? rawScenario
+          : "normal_winter_patches";
+      const kefVikRecheck = evaluateIcelandKefVikCorridorRecheck({
+        scenario,
+        partySize:
+          typeof rawInputs.partySize === "number"
+            ? rawInputs.partySize
+            : typeof rawInputs.passengers === "number"
+              ? rawInputs.passengers
+              : 4,
+        checkedBags:
+          typeof rawInputs.checkedBags === "number"
+            ? rawInputs.checkedBags
+            : typeof rawInputs.bags === "number"
+              ? rawInputs.bags
+              : 4,
+        flightEtaLocal:
+          typeof rawInputs.flightEtaLocal === "string"
+            ? rawInputs.flightEtaLocal
+            : typeof rawInputs.eta === "string"
+              ? rawInputs.eta
+              : "06:45",
+        reviewDeskTermsClosed:
+          typeof rawInputs.reviewDeskTermsClosed === "boolean"
+            ? rawInputs.reviewDeskTermsClosed
+            : typeof rawInputs.closeReviewDesk === "boolean"
+              ? rawInputs.closeReviewDesk
+              : true,
+        criticalUpdateMissing:
+          typeof rawInputs.criticalUpdateMissing === "boolean"
+            ? rawInputs.criticalUpdateMissing
+            : undefined,
+      });
+      sharedTripRecheck = kefVikRecheck;
+      receiptLegProvenance = kefVikRecheck.dcc412Recheck.legProvenance;
+    } else if (
+      requestedEngineId === "cusco-ollantaytambo-machu-picchu" ||
+      requestedEngineId === "peru-machu-picchu" ||
+      requestedEngineId === "machu-picchu" ||
+      rawInputs.corridorId === "cusco-ollantaytambo-machu-picchu"
+    ) {
+      const mpQual = evaluateMachuPicchuCorridorQualification();
+      sharedTripRecheck = mpQual;
+      receiptLegProvenance = [
+        {
+          legId: "machu_picchu_qualification_gate",
+          legTitle:
+            "Cusco / Ollantaytambo → Aguas Calientes → Machu Picchu Qualification Gate",
+          source:
+            "DCC Review Desk Qualification Gate (PeruRail, Inca Rail, Consettur, Ministerio de Cultura)",
+          timestamp: "2026-11-07T18:00:00Z",
+          expiry: "2027-05-07T00:00:00Z",
+        },
+      ];
     }
 
     let signedReceipt: V03SignedDecisionReceipt | null = evalRes?.receipt ?? null;
