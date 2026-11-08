@@ -30,6 +30,11 @@ import WinterPortDayPlanner from "@/app/components/dcc/WinterPortDayPlanner";
 import { resolveEarthOSDestinationNode } from "@/lib/dcc/catalog/durableCatalogStore";
 import { getPublishedTravelReferenceNodeById } from "@/lib/dcc/travelReference";
 import { getPublicationManifestEntry } from "@/src/data/publication-manifest";
+import PortDayExcursionCatalogSection from "@/app/components/dcc/PortDayExcursionCatalogSection";
+import {
+  resolveCruisePortExcursionProfile,
+  queryPortDayExcursionCatalog,
+} from "@/lib/dcc/cruisePortExcursionCatalogEngine";
 
 const BASE_URL = "https://destinationcommandcenter.com";
 
@@ -367,6 +372,16 @@ export async function renderPortPage(slug: string, isLfse = false) {
   const earthosDestination =
     resolveEarthOSDestinationNode(port.slug) ||
     resolveEarthOSDestinationNode(port.slug.replace(/-alaska$/, ""));
+  const excursionProfile = resolveCruisePortExcursionProfile(port.slug);
+  const initialCatalogData = excursionProfile
+    ? await queryPortDayExcursionCatalog({
+        portSlug: excursionProfile.portSlug,
+        viewMode: "browse_all",
+        category: "all",
+        limit: 12,
+        offset: 0,
+      })
+    : null;
   const portLat = port.lat ?? portReferenceNode?.primaryCoordinate.lat;
   const portLng = port.lng ?? port.lon ?? portReferenceNode?.primaryCoordinate.lng;
 
@@ -401,6 +416,14 @@ export async function renderPortPage(slug: string, isLfse = false) {
         }}
       />
       <PortAuthorityTemplate port={port} config={config} />
+      {excursionProfile ? (
+        <div className="max-w-6xl mx-auto px-6 pt-6">
+          <PortDayExcursionCatalogSection
+            portSlug={excursionProfile.portSlug}
+            initialCatalogData={initialCatalogData}
+          />
+        </div>
+      ) : null}
       {port.slug === "nassau" ||
       port.slug === "st-thomas" ||
       port.slug === "cozumel" ||

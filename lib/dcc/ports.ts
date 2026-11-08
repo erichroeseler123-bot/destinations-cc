@@ -53,6 +53,8 @@ const PORT_GEO_FALLBACK_BY_SLUG: Record<string, { lat: number; lon: number }> = 
   "george-town-grand-cayman": { lat: 19.295, lon: -81.3838 },
   seattle: { lat: 47.6114, lon: -122.3508 },
   vancouver: { lat: 49.2888, lon: -123.1111 },
+  kahului: { lat: 20.8947, lon: -156.47 },
+  reykjavik: { lat: 64.1558, lon: -21.8697 },
 };
 
 const LEGACY_COORDS_BY_SLUG = new Map<string, { lat: number; lon: number }>(

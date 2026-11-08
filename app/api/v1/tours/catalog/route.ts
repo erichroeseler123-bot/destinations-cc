@@ -6,6 +6,7 @@ import {
   normalizeCatalogBatchPickupAndMeeting,
   queueCatalogPickupExceptionsToReviewDesk,
   queryDurableTourCatalog,
+  type DurableCatalogSortBy,
   type TourCapabilityTier,
 } from "@/lib/dcc/catalog/durableCatalogStore";
 import {
@@ -78,6 +79,12 @@ export async function GET(request: NextRequest) {
 
     const limitRaw = sp.get("limit");
     const limit = limitRaw ? Number(limitRaw) : undefined;
+    const offsetRaw = sp.get("offset");
+    const offset = offsetRaw ? Number(offsetRaw) : undefined;
+    const pageRaw = sp.get("page");
+    const page = pageRaw ? Number(pageRaw) : undefined;
+    const sortByRaw = (sp.get("sortBy") || sp.get("sort") || "") as DurableCatalogSortBy;
+    const searchQuery = sp.get("q") || sp.get("search") || undefined;
 
     const result = await queryDurableTourCatalog({
       destinationSlug: sp.get("destination") || sp.get("destinationSlug") || undefined,
@@ -86,9 +93,13 @@ export async function GET(request: NextRequest) {
       provider: sp.get("provider") || undefined,
       capabilityTier: (sp.get("capabilityTier") as TourCapabilityTier) || undefined,
       category: sp.get("category") || undefined,
+      searchQuery,
       approvedTourIds: approvedTourIds.length > 0 ? approvedTourIds : undefined,
       includeDiscoveryOnly: sp.get("includeDiscoveryOnly") !== "false",
+      sortBy: sortByRaw || undefined,
       limit: Number.isFinite(limit) ? limit : undefined,
+      offset: Number.isFinite(offset) ? offset : undefined,
+      page: Number.isFinite(page) ? page : undefined,
     });
 
     if (sp.get("exceptions") === "true" || sp.get("exceptions") === "1") {
@@ -111,8 +122,16 @@ export async function GET(request: NextRequest) {
         ok: true,
         readOnly: true,
         storageSource: result.storageSource,
+        executedInSql: result.executedInSql,
+        rowsLoadedIntoApp: result.rowsLoadedIntoApp,
+        fullCatalogLoadedIntoApp: result.fullCatalogLoadedIntoApp,
+        sqlQueryMs: result.sqlQueryMs,
         totalMatched: result.totalMatched,
         count: result.records.length,
+        limit: result.limit,
+        offset: result.offset,
+        hasMore: result.hasMore,
+        nextOffset: result.nextOffset,
         records: result.records,
       },
       { status: 200, headers: CORS_HEADERS },
