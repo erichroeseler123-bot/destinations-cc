@@ -266,16 +266,57 @@ export default function JuneauLowBandwidthReplanView({
                     <div className="text-[11px] text-zinc-400">
                       {opt.categoryLabel} · {opt.durationLabel} · {opt.priceFromLabel}
                     </div>
+                    <div
+                      data-testid={`replan-verdict-math-${opt.optionId}`}
+                      className="mt-1 rounded border border-white/10 bg-black/40 px-2 py-1 font-mono text-[10px] text-zinc-300"
+                    >
+                      <strong>Trip Verdict Before Checkout:</strong>{" "}
+                      {opt.tripVerdictBeforeCheckout.stepByStepMath.equationSummary}
+                    </div>
                   </td>
                   <td className="py-2.5 px-3 align-top">
-                    <span
-                      className={`inline-block rounded border px-2 py-0.5 text-[11px] font-bold ${badgeColor}`}
-                    >
-                      {statusText}
-                    </span>
+                    <div className="flex flex-wrap gap-1">
+                      <span
+                        className={`inline-block rounded border px-2 py-0.5 text-[11px] font-bold ${badgeColor}`}
+                      >
+                        Time Fit: {statusText}
+                      </span>
+                      <span
+                        data-testid={`replan-seat-badge-${opt.optionId}`}
+                        className="inline-block rounded border border-cyan-400/35 bg-cyan-950/50 px-2 py-0.5 text-[10px] font-semibold text-cyan-100"
+                      >
+                        {opt.tripVerdictBeforeCheckout.seatAvailabilityBadge.label}
+                      </span>
+                    </div>
                     <div className="mt-1 text-[11px] text-zinc-300">
                       {opt.timing.reason}
                     </div>
+                    {!opt.fitsNow &&
+                      opt.tripVerdictBeforeCheckout.whenNoOfferFitsFallback && (
+                        <div
+                          data-testid={`replan-no-fit-fallback-${opt.optionId}`}
+                          className="mt-1.5 rounded border border-amber-400/30 bg-amber-950/30 p-1.5 text-[10px] text-amber-100 space-y-0.5"
+                        >
+                          <div>
+                            <strong className="text-emerald-300">
+                              Fitting Alternative:{" "}
+                            </strong>
+                            {opt.tripVerdictBeforeCheckout
+                              .whenNoOfferFitsFallback
+                              .verifiedFittingAlternative?.summary ??
+                              "Stay within the downtown walk-off zone."}
+                          </div>
+                          <div>
+                            <strong className="text-cyan-300">
+                              Detail to Verify:{" "}
+                            </strong>
+                            {
+                              opt.tripVerdictBeforeCheckout
+                                .whenNoOfferFitsFallback.exactDetailToVerify
+                            }
+                          </div>
+                        </div>
+                      )}
                   </td>
                   <td className="py-2.5 px-3 align-top font-mono text-[11px] text-zinc-200">
                     <div>

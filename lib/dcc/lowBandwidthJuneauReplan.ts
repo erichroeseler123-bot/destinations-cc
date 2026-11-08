@@ -42,6 +42,7 @@ export interface LowBandwidthJuneauOptionResult {
   durationMinutes: number;
   durationLabel: string;
   priceFromLabel: string;
+  viatorProductCode: string | null;
   weatherResilienceLabel: string;
   requiresClearCeiling: boolean;
   fitsNow: boolean;
@@ -50,6 +51,9 @@ export interface LowBandwidthJuneauOptionResult {
   operatingStatus: UnifiedJuneauOptionRecheck["operatingStatus"];
   seatAvailability: UnifiedJuneauOptionRecheck["seatAvailability"];
   tideGate: UnifiedJuneauOptionRecheck["tideGate"];
+  evaluatedDepartures: UnifiedJuneauOptionRecheck["evaluatedDepartures"];
+  evaluatedOffers: UnifiedJuneauOptionRecheck["evaluatedOffers"];
+  tripVerdictBeforeCheckout: UnifiedJuneauOptionRecheck["tripVerdictBeforeCheckout"];
   timing: CruiseTimingEvaluationResult;
   flightDeckInterest:
     | "helicopter"
@@ -375,6 +379,7 @@ export function evaluateLowBandwidthJuneauReplan(
         durationMinutes,
         durationLabel: `${(durationMinutes / 60).toFixed(1)} hrs dock-to-dock (${uOpt.timeFit.activityDurationMinutes}m activity + transfers/check-in)`,
         priceFromLabel: uOpt.priceFromLabel,
+        viatorProductCode: uOpt.viatorProductCode,
         weatherResilienceLabel: uOpt.weatherResilienceLabel,
         requiresClearCeiling: uOpt.weatherCeilingSensitive,
         fitsNow: uOpt.fitsOverallForSelection,
@@ -385,6 +390,9 @@ export function evaluateLowBandwidthJuneauReplan(
         operatingStatus: uOpt.operatingStatus,
         seatAvailability: uOpt.seatAvailability,
         tideGate: uOpt.tideGate,
+        evaluatedDepartures: uOpt.evaluatedDepartures,
+        evaluatedOffers: uOpt.evaluatedOffers,
+        tripVerdictBeforeCheckout: uOpt.tripVerdictBeforeCheckout,
         timing,
         flightDeckInterest: uOpt.flightDeckInterest,
         handoffHref: uOpt.handoffHref,

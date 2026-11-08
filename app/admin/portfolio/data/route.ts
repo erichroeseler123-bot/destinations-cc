@@ -3,6 +3,7 @@ import { ADMIN_SESSION_COOKIE, isValidAdminSession } from "@/lib/adminAccess";
 import { getHandoffAnalyticsSnapshot } from "@/lib/dcc/handoffAnalytics";
 import { listRecentProductionCorridorEvents } from "@/lib/dcc/telemetry/corridorEvents";
 import { listWorkflowMissions } from "@/lib/dcc/earthos/workflows/service";
+import { buildUnifiedPortfolioFunnelReport } from "@/lib/dcc/commerce/portfolioFunnelReport";
 
 export const dynamic = "force-dynamic";
 
@@ -33,11 +34,15 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
   }
 
-  const [events, missions] = await Promise.all([
+  const [events, missions, unifiedFunnelReport] = await Promise.all([
     listRecentProductionCorridorEvents(10000),
     listWorkflowMissions(),
+    buildUnifiedPortfolioFunnelReport({ windowPreset: "28d" }),
   ]);
-  const snapshot = getHandoffAnalyticsSnapshot(500);
+  const snapshot = getHandoffAnalyticsSnapshot(500, {
+    startIso: unifiedFunnelReport.reportingWindow.startIso,
+    endIso: unifiedFunnelReport.reportingWindow.endIso,
+  });
 
   const relevant = events.filter((event: any) => event.corridorId === "portfolio-network" || event.corridorId === "wno-commerce");
   const changes = relevant
@@ -61,13 +66,19 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json({
     ok: true,
+    reportingWindow: unifiedFunnelReport.reportingWindow,
+    unifiedFunnelReport,
     events: changes,
     snapshot: {
       trackedHandoffs: snapshot.totalHandoffs,
       completedHandoffs: snapshot.completed,
       grossRevenue: snapshot.grossRevenue,
+      ownedGrossSalesUsd: unifiedFunnelReport.totals.ownedGrossSalesUsd,
+      commissionsEarnedUsd: unifiedFunnelReport.totals.commissionsEarnedUsd,
+      payoutsReceivedUsd: unifiedFunnelReport.totals.payoutsReceivedUsd,
       attention: snapshot.urgentAlerts.length + missionWaiting + missionFailed,
       wnoFareHarborOpens,
+      wnoFareHarborCheckoutReferrals: unifiedFunnelReport.totals.outboundClicks.fareharborCheckoutReferrals,
       cruisePlannerSaves,
       cruisePlannerShares,
     },

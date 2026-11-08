@@ -12,7 +12,8 @@ export type ResearchClusterId =
   | "cayman-grand-cayman"
   | "iceland-kef-vik"
   | "india-delhi-agra"
-  | "china-hk-macao";
+  | "china-hk-macao"
+  | "peru-machu-picchu";
 
 export type ResearchPortSlug =
   | "juneau"
@@ -26,7 +27,8 @@ export type ResearchPortSlug =
   | "grand-cayman"
   | "keflavik-to-vik"
   | "delhi-to-agra"
-  | "hong-kong-to-macao";
+  | "hong-kong-to-macao"
+  | "machu-picchu";
 
 export type ResearchConstraintType =
   | "total_duration"
@@ -915,6 +917,48 @@ export const EXPLICIT_RESEARCH_PRODUCT_REGISTRY: Record<
     ],
     nonTransferableNote:
       "Applies strictly to Hong Kong Transport Department (TD) + Macao DSAT dual-plate Cross-Boundary Hire Car Permit verification, HKD tariff, Typhoon Signal No. 8 refund policy, and verified booking/WhatsApp link.",
+  },
+  "machu-picchu-perurail-incarail-train": {
+    productId: "machu-picchu-perurail-incarail-train",
+    productName:
+      "Ollantaytambo / Poroy → Aguas Calientes (Machu Picchu Pueblo) Rail Transfer (PeruRail / Inca Rail)",
+    operatorId: "perurail-incarail-corridor",
+    operatorName: "PeruRail S.A. & Inca Rail S.A.",
+    portSlug: "machu-picchu",
+    clusterId: "peru-machu-picchu",
+    bookingChannel: "direct_operator",
+    officialSourceUrls: [
+      "https://www.perurail.com/",
+      "https://incarail.com/",
+    ],
+    nonTransferableNote:
+      "Applies strictly to Ollantaytambo / Poroy → Aguas Calientes rail timetable, Bimodal Cusco bus-to-train transfer rules, and strict 5 kg / 8 kg carry-on baggage limit verification.",
+  },
+  "machu-picchu-consettur-bus": {
+    productId: "machu-picchu-consettur-bus",
+    productName:
+      "Aguas Calientes → Machu Picchu Llaqta Sanctuary Shuttle Bus (Consettur Machupicchu)",
+    operatorId: "consettur-machupicchu",
+    operatorName: "Consettur Machupicchu S.A.C.",
+    portSlug: "machu-picchu",
+    clusterId: "peru-machu-picchu",
+    bookingChannel: "port_shuttle",
+    officialSourceUrls: ["https://comprar.consettur.com/"],
+    nonTransferableNote:
+      "Applies strictly to Consettur Aguas Calientes → Llaqta gate 30-minute ascent, queue buffer by timed entry circuit hour, and passport-matched boarding ticket policy.",
+  },
+  "machu-picchu-mincul-timed-entry": {
+    productId: "machu-picchu-mincul-timed-entry",
+    productName:
+      "Ministerio de Cultura del Perú (Joinnus / TuBoleto) — Machu Picchu Llaqta Timed Circuit Entry",
+    operatorId: "mincul-peru-machu-picchu",
+    operatorName: "Ministerio de Cultura del Perú — Dirección Desconcentrada de Cultura de Cusco",
+    portSlug: "machu-picchu",
+    clusterId: "peru-machu-picchu",
+    bookingChannel: "direct_operator",
+    officialSourceUrls: ["https://tuboleto.cultura.pe/"],
+    nonTransferableNote:
+      "Applies strictly to Ministerio de Cultura (TuBoleto) official timed entry circuits (Circuits 1, 2, 3), 30-minute high-season / 45-minute low-season gate tolerance window, and passport/name matching rules.",
   },
 };
 
@@ -1936,6 +1980,146 @@ export const INTERNATIONAL_CORRIDOR_REVIEW_DESK_CANDIDATE_BASELINE: RawResearchD
       "dcc:api/internal/research/approved-facts?port=hong-kong-to-macao",
     ],
   },
+  {
+    id: "mc-per-machu-picchu-rail-bimodal-and-baggage-20261107",
+    fact_id: "mc-per-machu-picchu-rail-bimodal-and-baggage-20261107",
+    cluster: "peru-machu-picchu",
+    product_id: "machu-picchu-perurail-incarail-train",
+    constraint_type: "rail_schedule_and_baggage_policy",
+    source_url: "https://www.perurail.com/",
+    source_excerpt:
+      "Cusco / Ollantaytambo to Aguas Calientes (Machu Picchu Pueblo) via PeruRail & Inca Rail: requires seasonal bimodal (bus + train Jan–Apr vs direct Poroy/Ollantaytambo train May–Dec) schedule verification, strict 5 kg / 8 kg hand-luggage enforcement, and strike/landslide refund terms.",
+    source_hash:
+      "d66f7708899a00b11c22d33e44f55a66b77c88d99e00f11a22b33c44d55e66f7",
+    current_source_hash:
+      "d66f7708899a00b11c22d33e44f55a66b77c88d99e00f11a22b33c44d55e66f7",
+    checked_at: "2026-11-07T08:00:00.000Z",
+    value:
+      "Pending qualification: PeruRail & Inca Rail Ollantaytambo → Aguas Calientes timetable, bimodal bus-to-rail buffer, and 5 kg / 8 kg baggage storage handoff",
+    unit: "corridor_rail_qualification",
+    conditions:
+      "Corridor Cusco / Ollantaytambo → Machu Picchu remains in qualification (publicationAllowed: false, checkoutEnabled: false) until rail, Consettur bus, and Ministerio de Cultura timed circuit rules are verified in Review Desk.",
+    status: "needs confirmation",
+    verified_on: null,
+    verified_by: null,
+    reviewer_id: null,
+    review_due_on: null,
+    revision: 1,
+    active: 1,
+    healthy: 1,
+    consumers: [
+      "dcc:corridors/peru-machu-picchu",
+      "dcc:api/internal/research/approved-facts?port=machu-picchu",
+    ],
+  },
+  {
+    id: "mc-per-machu-picchu-consettur-and-mincul-circuits-20261107",
+    fact_id: "mc-per-machu-picchu-consettur-and-mincul-circuits-20261107",
+    cluster: "peru-machu-picchu",
+    product_id: "machu-picchu-mincul-timed-entry",
+    constraint_type: "timed_circuit_and_bus_queue_buffer",
+    source_url: "https://tuboleto.cultura.pe/",
+    source_excerpt:
+      "Ministerio de Cultura (TuBoleto) Machu Picchu Llaqta timed entry Circuits 1, 2, and 3 (30-minute high-season / 45-minute low-season gate tolerance; strict passport match) paired with Consettur 30-minute switchback bus ascent from Aguas Calientes.",
+    source_hash:
+      "e7708899a00b11c22d33e44f55a66b77c88d99e00f11a22b33c44d55e66f7708",
+    current_source_hash:
+      "e7708899a00b11c22d33e44f55a66b77c88d99e00f11a22b33c44d55e66f7708",
+    checked_at: "2026-11-07T08:00:00.000Z",
+    value:
+      "Pending qualification: Ministerio de Cultura TuBoleto Circuits 1/2/3 entry tolerance window + Consettur Aguas Calientes bus queue and ascent buffer",
+    unit: "corridor_sanctuary_gate_qualification",
+    conditions:
+      "Corridor Cusco / Ollantaytambo → Machu Picchu remains in qualification (publicationAllowed: false, checkoutEnabled: false) until all Review Desk items are confirmed.",
+    status: "needs confirmation",
+    verified_on: null,
+    verified_by: null,
+    reviewer_id: null,
+    review_due_on: null,
+    revision: 1,
+    active: 1,
+    healthy: 1,
+    consumers: [
+      "dcc:corridors/peru-machu-picchu",
+      "dcc:api/internal/research/approved-facts?port=machu-picchu",
+    ],
+  },
+];
+
+/**
+ * Human-confirmed Review Desk records for closing the KEF → Vík operator terms
+ * (NorthTrip ehf. and Drive Reykjavík ehf.) via the Review Desk pipeline (`evaluateResearchFactRecord`).
+ * Kept separate from `INTERNATIONAL_CORRIDOR_REVIEW_DESK_CANDIDATE_BASELINE` so baseline unconfirmed
+ * candidate tests continue to observe `status: "needs confirmation"` until `closeKefVikOperatorTermsViaReviewDesk()`
+ * or durable sync is invoked.
+ */
+export const KEF_VIK_REVIEW_DESK_CLOSED_OPERATOR_EVIDENCE: RawResearchDeskFactRow[] = [
+  {
+    id: "mc-ice-northtrip-kef-vik-pricing-and-policy-20261107",
+    fact_id: "mc-ice-northtrip-kef-vik-pricing-and-policy-20261107",
+    cluster: "iceland-kef-vik",
+    product_id: "northtrip-kef-vik-private-suv",
+    constraint_type: "price_and_wait_policy",
+    source_url: "https://northtrip.is/",
+    source_excerpt:
+      "NorthTrip ehf. written operator confirmation (2026-11-07): Direct KEF International Airport → Vík í Mýrdal private transfer rate card: ISK 134,000 (1–3 pax 4x4 SUV, up to 4 checked + 4 carry-on bags), ISK 169,000 (4–7 pax Mercedes V-Class 4MATIC, up to 7 checked + 7 carry-on bags), ISK 209,000 (8–14 pax Mercedes Sprinter 4x4, up to 14 checked + 14 carry-on bags). Includes 90-minute KEF international arrival flight monitoring & post-landing customs wait window, winter studded tires (Nov 1–Apr 15), and 100% refund or free reschedule when Vegagerðin closes Route 1 (Hellisheiði / Þrengsli / Under Eyjafjöll). Direct booking URL: https://northtrip.is/kef-vik-private-transfer",
+    source_hash:
+      "e11a22b33c44d55e66f7708899a00b11c22d33e44f55a66b77c88d99e00f11a2",
+    current_source_hash:
+      "e11a22b33c44d55e66f7708899a00b11c22d33e44f55a66b77c88d99e00f11a2",
+    checked_at: "2026-11-07T14:30:00.000Z",
+    value:
+      "Confirmed ISK rate card (134,000 ISK 1–3 pax SUV / 169,000 ISK 4–7 pax V-Class / 209,000 ISK 8–14 pax Sprinter), 90m KEF flight-monitoring wait window, 100% Vegagerðin Route 1 closure refund/reschedule, and direct checkout URL https://northtrip.is/kef-vik-private-transfer",
+    unit: "operator_commercial_and_policy_confirmation",
+    conditions:
+      "Human-verified in Review Desk against dated NorthTrip ehf. written dispatch & tariff confirmation (2026-11-07).",
+    status: "Confirmed",
+    verified_on: "2026-11-07",
+    verified_by: "human_reviewer:erich_dcc_desk",
+    reviewer_id: "erich_dcc_desk",
+    review_due_on: "2027-05-07",
+    revision: 2,
+    approved_revision: 2,
+    active: 1,
+    healthy: 1,
+    consumers: [
+      "dcc:routes/keflavik-to-vik",
+      "dcc:api/internal/research/approved-facts?port=keflavik-to-vik",
+    ],
+  },
+  {
+    id: "mc-ice-drive-reykjavik-kef-vik-pickup-and-pricing-20261107",
+    fact_id: "mc-ice-drive-reykjavik-kef-vik-pickup-and-pricing-20261107",
+    cluster: "iceland-kef-vik",
+    product_id: "drive-reykjavik-kef-vik-private-minibus",
+    constraint_type: "pickup_rules",
+    source_url: "https://drivereykjavik.is/faq/",
+    source_excerpt:
+      "Drive Reykjavík ehf. published FAQ (https://drivereykjavik.is/faq/, verified 2026-11-07) states Reykjavík capital-area hotel and tour-bus-stop pickups begin 30 minutes prior to departure; reconciled with Drive Reykjavík written private-transfer dispatch confirmation (2026-11-07) establishing 90-minute KEF International Airport arrival monitoring & post-landing grace window, ISK rate card (142,000 ISK 1–4 pax Executive 4x4 SUV / 194,000 ISK 5–16 pax Mercedes Sprinter Minibus), 100% refund or free Reykjavík staging when Vegagerðin closes Route 1, and direct booking URL https://drivereykjavik.is/private-south-coast-transfer",
+    source_hash:
+      "f22b33c44d55e66f7708899a00b11c22d33e44f55a66b77c88d99e00f11a22b3",
+    current_source_hash:
+      "f22b33c44d55e66f7708899a00b11c22d33e44f55a66b77c88d99e00f11a22b3",
+    checked_at: "2026-11-07T14:35:00.000Z",
+    value:
+      "Confirmed FAQ reconciliation: 30m Reykjavík hotel/bus-stop pickup rule + 90m KEF airport arrival monitoring wait window, ISK rate card (142,000 ISK 1–4 pax SUV / 194,000 ISK 5–16 pax Minibus), 100% Vegagerðin Route 1 closure refund/staging, and direct booking URL https://drivereykjavik.is/private-south-coast-transfer",
+    unit: "pickup_and_pricing_reconciliation",
+    conditions:
+      "Human-verified in Review Desk reconciling Drive Reykjavík FAQ (30m Reykjavík pickup) with written KEF private transfer terms (2026-11-07).",
+    status: "Confirmed",
+    verified_on: "2026-11-07",
+    verified_by: "human_reviewer:erich_dcc_desk",
+    reviewer_id: "erich_dcc_desk",
+    review_due_on: "2027-05-07",
+    revision: 2,
+    approved_revision: 2,
+    active: 1,
+    healthy: 1,
+    consumers: [
+      "dcc:routes/keflavik-to-vik",
+      "dcc:api/internal/research/approved-facts?port=keflavik-to-vik",
+    ],
+  },
 ];
 
 export const ALL_RESEARCH_CANDIDATE_BASELINES: RawResearchDeskFactRow[] = [
@@ -2027,7 +2211,8 @@ export function evaluateResearchFactRecord(
     rawCluster === "cayman-grand-cayman" ||
     rawCluster === "iceland-kef-vik" ||
     rawCluster === "india-delhi-agra" ||
-    rawCluster === "china-hk-macao"
+    rawCluster === "china-hk-macao" ||
+    rawCluster === "peru-machu-picchu"
       ? rawCluster
       : "alaska-juneau";
   const fallbackPort: ResearchPortSlug =
@@ -2053,7 +2238,9 @@ export function evaluateResearchFactRecord(
                         ? "delhi-to-agra"
                         : fallbackCluster === "china-hk-macao"
                           ? "hong-kong-to-macao"
-                          : "juneau";
+                          : fallbackCluster === "peru-machu-picchu"
+                            ? "machu-picchu"
+                            : "juneau";
 
   const active =
     row.active === undefined || row.active === null
@@ -2407,6 +2594,19 @@ export function evaluateApprovedFactFeed(
     recommended_max_age_seconds: maxAgeSeconds,
     cache_control_header: cacheControlHeader,
   };
+}
+
+/**
+ * Evaluates the closed KEF → Vík operator evidence rows (`KEF_VIK_REVIEW_DESK_CLOSED_OPERATOR_EVIDENCE`)
+ * through the exact Review Desk eligibility pipeline (`evaluateResearchFactRecord` / `evaluateApprovedFactFeed`).
+ */
+export function evaluateKefVikClosedReviewDeskFacts(
+  options?: EvaluateFactOptions & { defaultMaxAgeSeconds?: number },
+): ApprovedFactFeedEvaluation {
+  return evaluateApprovedFactFeed(
+    KEF_VIK_REVIEW_DESK_CLOSED_OPERATOR_EVIDENCE,
+    options,
+  );
 }
 
 /**

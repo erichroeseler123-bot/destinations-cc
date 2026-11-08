@@ -681,3 +681,6 @@ export async function executePortfolioCrossSiteJourney(params: {
     },
   };
 }
+
+export * from "./portfolioFunnelReport";
+

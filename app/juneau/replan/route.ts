@@ -77,14 +77,22 @@ export async function GET(request: Request) {
             ? ' class="row-failed-highlight"'
             : "";
 
+      const fallbackHtml =
+        !opt.fitsNow && opt.tripVerdictBeforeCheckout.whenNoOfferFitsFallback
+          ? `<div class="opt-subnote" data-testid="replan-no-fit-fallback-${esc(opt.optionId)}"><strong>Alt:</strong> ${esc(opt.tripVerdictBeforeCheckout.whenNoOfferFitsFallback.verifiedFittingAlternative?.summary ?? "Downtown walk-off zone")}<br/><strong>Check:</strong> ${esc(opt.tripVerdictBeforeCheckout.whenNoOfferFitsFallback.exactDetailToVerify)}</div>`
+          : "";
+
       return `<tr${rowHighlight} data-testid="replan-row-${esc(opt.optionId)}" data-engine-option-id="${esc(opt.engineOptionId)}" data-fits-now="${opt.fitsNow ? "true" : "false"}">
         <td>
           <div class="opt-title">${esc(opt.title)}</div>
           <div class="opt-meta">${esc(opt.categoryLabel)} · ${esc(opt.durationLabel)} · ${esc(opt.priceFromLabel)}</div>
+          <div class="opt-subnote mono" data-testid="replan-verdict-math-${esc(opt.optionId)}"><strong>Verdict Math:</strong> ${esc(opt.tripVerdictBeforeCheckout.stepByStepMath.equationSummary)}</div>
         </td>
         <td>
           <span class="badge ${badgeClass}">${esc(statusText)}</span>
+          <span class="badge badge-sky" data-testid="replan-seat-badge-${esc(opt.optionId)}">${esc(opt.tripVerdictBeforeCheckout.seatAvailabilityBadge.label)}</span>
           <div class="opt-reason">${esc(opt.timing.reason)}</div>
+          ${fallbackHtml}
         </td>
         <td class="mono">
           <div>Earliest check-in: <strong>${esc(opt.timing.earliestCheckInLocal || "Confirm")}</strong></div>

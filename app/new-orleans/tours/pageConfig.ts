@@ -52,6 +52,8 @@ export interface NolaFareHarborProduct {
   viatorReselectionNote?: string;
   viatorVariants?: ViatorBookingVariant[];
   fareharborAsnActive?: boolean;
+  handoffLinkType?: "checkout_referral" | "affiliate_checkout";
+  bookingChannelLabel?: string;
 
   // New optional detail fields for Step 4
   detailSummary?: string;
@@ -91,6 +93,33 @@ export interface NolaFareHarborProduct {
 export const NEW_ORLEANS_ORIGIN = "https://www.welcometoneworleanstours.com";
 export const NEW_ORLEANS_TOURS_PATH = "/new-orleans/tours";
 export const FAREHARBOR_ASN = "aktourcenter";
+export const WNO_FAREHARBOR_HANDOFF_LINK_TYPE = "checkout_referral" as const;
+export const WNO_FAREHARBOR_BOOKING_CHANNEL_LABEL = "FareHarbor checkout referral" as const;
+
+export function getProductHandoffLinkType(
+  product: Pick<NolaFareHarborProduct, "slug" | "fareharborAsnActive" | "viatorProductCode" | "handoffLinkType">
+): "checkout_referral" | "affiliate_checkout" {
+  const canonical = STOREFRONT_PRODUCTS.find((p) => p.slug === product.slug) || product;
+  if (canonical.handoffLinkType) return canonical.handoffLinkType;
+  if (canonical.fareharborAsnActive !== true && canonical.viatorProductCode) {
+    return "affiliate_checkout";
+  }
+  return WNO_FAREHARBOR_HANDOFF_LINK_TYPE;
+}
+
+export function getProductBookingChannelLabel(
+  product: Pick<
+    NolaFareHarborProduct,
+    "slug" | "fareharborAsnActive" | "viatorProductCode" | "bookingChannelLabel"
+  >
+): string {
+  const canonical = STOREFRONT_PRODUCTS.find((p) => p.slug === product.slug) || product;
+  if (canonical.bookingChannelLabel) return canonical.bookingChannelLabel;
+  if (canonical.fareharborAsnActive !== true && canonical.viatorProductCode) {
+    return "Viator affiliate checkout";
+  }
+  return WNO_FAREHARBOR_BOOKING_CHANNEL_LABEL;
+}
 
 export const getFareHarborUrl = (companyShortname: string, itemId?: string | number, flowId?: string | number) => {
   let url = `https://fareharbor.com/embeds/book/${companyShortname}/`;
@@ -252,6 +281,8 @@ export function getProductActiveBookingVariants(
   flowId: string;
   bookingUrl: string;
   isViator: boolean;
+  handoffLinkType: "checkout_referral" | "affiliate_checkout";
+  bookingChannelLabel: string;
   reselectionNote?: string;
 }[] {
   const canonical = STOREFRONT_PRODUCTS.find((p) => p.slug === product.slug) || product;
@@ -277,6 +308,8 @@ export function getProductActiveBookingVariants(
           isTest: overrides?.isTest,
         }),
         isViator: true,
+        handoffLinkType: "affiliate_checkout",
+        bookingChannelLabel: "Viator affiliate checkout",
         reselectionNote: v.reselectionNote || getProductViatorReselectionNote(canonical, overrides),
       }));
     }
@@ -287,6 +320,8 @@ export function getProductActiveBookingVariants(
         flowId: canonical.viatorOptionCode || "DEFAULT",
         bookingUrl: getProductPrimaryBookingHref(canonical, overrides),
         isViator: true,
+        handoffLinkType: "affiliate_checkout",
+        bookingChannelLabel: "Viator affiliate checkout",
         reselectionNote: getProductViatorReselectionNote(canonical, overrides),
       },
     ];
@@ -295,6 +330,8 @@ export function getProductActiveBookingVariants(
     return canonical.bookingVariants.map((v) => ({
       ...v,
       isViator: false,
+      handoffLinkType: WNO_FAREHARBOR_HANDOFF_LINK_TYPE,
+      bookingChannelLabel: WNO_FAREHARBOR_BOOKING_CHANNEL_LABEL,
     }));
   }
   return [
@@ -304,6 +341,8 @@ export function getProductActiveBookingVariants(
       flowId: canonical.flowId || "DEFAULT",
       bookingUrl: getFareHarborUrl(canonical.companyShortname, canonical.itemId, canonical.flowId),
       isViator: false,
+      handoffLinkType: WNO_FAREHARBOR_HANDOFF_LINK_TYPE,
+      bookingChannelLabel: WNO_FAREHARBOR_BOOKING_CHANNEL_LABEL,
     },
   ];
 }
@@ -317,6 +356,8 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     viatorProductCode: "8013P1",
     viatorPlacementId: "fp-wno-city-tours",
     fareharborAsnActive: true,
+    handoffLinkType: "checkout_referral",
+    bookingChannelLabel: "FareHarbor checkout referral",
     title: "City Tour Of New Orleans",
     category: "City Tours",
     operatorName: "Southern Style Tours",
@@ -378,6 +419,8 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     viatorProductCode: "8013P8",
     viatorPlacementId: "fp-wno-plantation-tours",
     fareharborAsnActive: true,
+    handoffLinkType: "checkout_referral",
+    bookingChannelLabel: "FareHarbor checkout referral",
     title: "Oak Alley Or Laura Plantation Tour",
     category: "Plantation Tours",
     operatorName: "Southern Style Tours",
@@ -441,6 +484,8 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     viatorProductCode: "15200P5",
     viatorPlacementId: "fp-wno-swamp-tours",
     fareharborAsnActive: true,
+    handoffLinkType: "checkout_referral",
+    bookingChannelLabel: "FareHarbor checkout referral",
     viatorVariants: [
       {
         label: "CHECK SELF-DRIVE COVERED BOAT ($35/PERSON · VIATOR #15200P5)",
@@ -511,6 +556,8 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     viatorProductCode: "15200P1",
     viatorPlacementId: "fp-wno-swamp-tours",
     fareharborAsnActive: true,
+    handoffLinkType: "checkout_referral",
+    bookingChannelLabel: "FareHarbor checkout referral",
     bookingVariants: [
       {
         label: "Check dates and prices on FareHarbor — Large Airboat (Item 228561 · $65 self-drive / $90 with hotel pickup pre-tax estimate)",
@@ -613,6 +660,8 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     viatorProductCode: "8013P3",
     viatorPlacementId: "fp-wno-combo-tours",
     fareharborAsnActive: true,
+    handoffLinkType: "checkout_referral",
+    bookingChannelLabel: "FareHarbor checkout referral",
     title: "All-Day City + Plantation",
     category: "Combo Tours",
     operatorName: "Southern Style Tours",
@@ -677,6 +726,8 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     viatorProductCode: "15200P9",
     viatorPlacementId: "fp-wno-combo-tours",
     fareharborAsnActive: true,
+    handoffLinkType: "checkout_referral",
+    bookingChannelLabel: "FareHarbor checkout referral",
     title: "Covered Boat + Plantation",
     category: "Combo Tours",
     operatorName: "Ragin Cajun Airboat Tours",
@@ -893,6 +944,8 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     viatorOptionCode: "TG9",
     viatorPlacementId: "fp-wno-riverboat-cruises",
     fareharborAsnActive: true,
+    handoffLinkType: "checkout_referral",
+    bookingChannelLabel: "FareHarbor checkout referral",
     viatorVariants: [
       {
         label: "CHECK SIGHTSEEING AVAILABILITY (OPTION TG9)",
@@ -979,6 +1032,8 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     viatorOptionCode: "TG31",
     viatorPlacementId: "fp-wno-riverboat-cruises",
     fareharborAsnActive: true,
+    handoffLinkType: "checkout_referral",
+    bookingChannelLabel: "FareHarbor checkout referral",
     viatorVariants: [
       {
         label: "CHECK SIGHTSEEING AVAILABILITY (OPTION TG31)",
@@ -1083,6 +1138,8 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     viatorProductCode: "3780STEAMBRU",
     viatorPlacementId: "fp-wno-riverboat-cruises",
     fareharborAsnActive: true,
+    handoffLinkType: "checkout_referral",
+    bookingChannelLabel: "FareHarbor checkout referral",
     viatorVariants: [
       {
         label: "CHECK SUNDAY JAZZ BRUNCH AVAILABILITY (VIATOR #3780STEAMBRU)",
@@ -1148,6 +1205,8 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     viatorProductCode: "3780OAK",
     viatorPlacementId: "fp-wno-plantation-tours",
     fareharborAsnActive: true,
+    handoffLinkType: "checkout_referral",
+    bookingChannelLabel: "FareHarbor checkout referral",
     title: "Oak Alley Plantation Tour",
     category: "Plantation Tours",
     operatorName: "Gray Line",
@@ -1182,6 +1241,8 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     viatorProductCode: "3780P41",
     viatorPlacementId: "fp-wno-plantation-tours",
     fareharborAsnActive: true,
+    handoffLinkType: "checkout_referral",
+    bookingChannelLabel: "FareHarbor checkout referral",
     title: "Whitney Plantation Tour",
     category: "Plantation Tours",
     operatorName: "Gray Line",
@@ -1217,6 +1278,8 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     viatorOptionCode: "10:45AM",
     viatorPlacementId: "fp-wno-swamp-tours",
     fareharborAsnActive: true,
+    handoffLinkType: "checkout_referral",
+    bookingChannelLabel: "FareHarbor checkout referral",
     title: "Swamp & Bayou Tour",
     category: "Swamp Tours",
     operatorName: "Gray Line",
@@ -1251,6 +1314,8 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     viatorOptionCode: "TG3",
     viatorPlacementId: "fp-wno-swamp-tours",
     fareharborAsnActive: true,
+    handoffLinkType: "checkout_referral",
+    bookingChannelLabel: "FareHarbor checkout referral",
     title: "Small Airboat Swamp Adventure",
     category: "Airboat Rides",
     operatorName: "Gray Line",
@@ -1285,6 +1350,8 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     viatorOptionCode: "TG1",
     viatorPlacementId: "fp-wno-swamp-tours",
     fareharborAsnActive: true,
+    handoffLinkType: "checkout_referral",
+    bookingChannelLabel: "FareHarbor checkout referral",
     title: "Large Airboat Swamp Adventure",
     category: "Airboat Rides",
     operatorName: "Gray Line",
@@ -1315,6 +1382,8 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     viatorProductCode: "3780SWPL",
     viatorPlacementId: "fp-wno-combo-tours",
     fareharborAsnActive: true,
+    handoffLinkType: "checkout_referral",
+    bookingChannelLabel: "FareHarbor checkout referral",
     title: "Swamp Boat and Oak Alley Combination",
     category: "Combo Tours",
     operatorName: "Gray Line",
@@ -1350,6 +1419,8 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     viatorProductCode: "3780P91",
     viatorPlacementId: "fp-wno-combo-tours",
     fareharborAsnActive: true,
+    handoffLinkType: "checkout_referral",
+    bookingChannelLabel: "FareHarbor checkout referral",
     title: "Swamp Boat and Whitney Combination",
     category: "Combo Tours",
     operatorName: "Gray Line",
@@ -1386,6 +1457,8 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     viatorOptionCode: "TG1",
     viatorPlacementId: "fp-wno-walking-tours",
     fareharborAsnActive: true,
+    handoffLinkType: "checkout_referral",
+    bookingChannelLabel: "FareHarbor checkout referral",
     title: "Cocktail Walking Tour",
     category: "Walking Tours",
     operatorName: "Gray Line",
@@ -1416,6 +1489,8 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     viatorOptionCode: "04PM",
     viatorPlacementId: "fp-wno-walking-tours",
     fareharborAsnActive: true,
+    handoffLinkType: "checkout_referral",
+    bookingChannelLabel: "FareHarbor checkout referral",
     title: "Craft Cocktail Walking Tour",
     category: "Walking Tours",
     operatorName: "Gray Line",
@@ -1445,6 +1520,8 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     viatorProductCode: "3780GHOSTS",
     viatorPlacementId: "fp-wno-walking-tours",
     fareharborAsnActive: true,
+    handoffLinkType: "checkout_referral",
+    bookingChannelLabel: "FareHarbor checkout referral",
     title: "Ghosts & Spirits Walking Tour",
     category: "Walking Tours",
     operatorName: "Gray Line",
@@ -1478,6 +1555,8 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     viatorProductCode: "3780HAUNT",
     viatorPlacementId: "fp-wno-city-tours",
     fareharborAsnActive: true,
+    handoffLinkType: "checkout_referral",
+    bookingChannelLabel: "FareHarbor checkout referral",
     title: "City, Cemetery and Garden District Tour",
     category: "City Tours",
     operatorName: "Gray Line",
@@ -1508,6 +1587,8 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     viatorProductCode: "3780P45",
     viatorPlacementId: "fp-wno-riverboat-cruises",
     fareharborAsnActive: true,
+    handoffLinkType: "checkout_referral",
+    bookingChannelLabel: "FareHarbor checkout referral",
     title: "CITY of NEW ORLEANS Riverboat Cruise",
     category: "River Cruises",
     operatorName: "New Orleans Steamboat Company",
