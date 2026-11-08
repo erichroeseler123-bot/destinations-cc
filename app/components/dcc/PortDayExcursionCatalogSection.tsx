@@ -18,6 +18,8 @@ interface PortDayExcursionCatalogSectionProps {
   initialShipAllAboardTime?: string;
   initialSailingDate?: string;
   initialPartySize?: number;
+  initialShip?: string;
+  initialCruiseSailingDate?: string;
 }
 
 const CATEGORY_OPTIONS: Array<{
@@ -42,6 +44,8 @@ export default function PortDayExcursionCatalogSection({
   initialShipAllAboardTime,
   initialSailingDate,
   initialPartySize = 2,
+  initialShip = "",
+  initialCruiseSailingDate = "",
 }: PortDayExcursionCatalogSectionProps) {
   const [data, setData] = useState<PortDayExcursionCatalogResponse | null>(initialCatalogData);
   const [viewMode, setViewMode] = useState<PortDayExcursionViewMode>(
@@ -68,6 +72,10 @@ export default function PortDayExcursionCatalogSection({
   const [partySize, setPartySize] = useState<number>(
     initialCatalogData?.sailingWindow.partySize || initialPartySize
   );
+  const [ship, setShip] = useState<string>(initialShip);
+  const [cruiseSailingDate, setCruiseSailingDate] = useState<string>(
+    initialCruiseSailingDate
+  );
   const [sortBy, setSortBy] = useState<
     "recommended" | "rating_desc" | "price_asc" | "duration_asc"
   >("recommended");
@@ -83,6 +91,23 @@ export default function PortDayExcursionCatalogSection({
   const [checkingTourIds, setCheckingTourIds] = useState<Record<string, boolean>>({});
   const [handoffLoggedIds, setHandoffLoggedIds] = useState<Record<string, string>>({});
 
+  const buildPlanWithMyGroupHref = useCallback(
+    (tourCode?: string) => {
+      const params = new URLSearchParams({
+        port: portSlug,
+        port_date: sailingDate,
+        party_size: String(partySize),
+      });
+      if (ship.trim()) params.set("ship", ship.trim());
+      if (cruiseSailingDate.trim()) {
+        params.set("sailing_date", cruiseSailingDate.trim());
+      }
+      if (tourCode) params.set("tour_code", tourCode);
+      return `/go/dcc-to-cruise-promenade?${params.toString()}`;
+    },
+    [portSlug, sailingDate, partySize, ship, cruiseSailingDate]
+  );
+
   const fetchCatalog = useCallback(
     async (opts?: {
       nextViewMode?: PortDayExcursionViewMode;
@@ -93,6 +118,8 @@ export default function PortDayExcursionCatalogSection({
       nextAllAboard?: string;
       nextSailingDate?: string;
       nextPartySize?: number;
+      nextShip?: string;
+      nextCruiseSailingDate?: string;
     }) => {
       setLoading(true);
       setError(null);
@@ -109,6 +136,12 @@ export default function PortDayExcursionCatalogSection({
           offset: String(opts?.nextOffset ?? offset),
           sortBy: opts?.nextSortBy ?? sortBy,
         });
+        const nextShipVal = (opts?.nextShip ?? ship).trim();
+        const nextCruiseSailDateVal = (
+          opts?.nextCruiseSailingDate ?? cruiseSailingDate
+        ).trim();
+        if (nextShipVal) params.set("ship", nextShipVal);
+        if (nextCruiseSailDateVal) params.set("sailing_date", nextCruiseSailDateVal);
         const res = await fetch(
           `/api/v1/cruise/port-day-excursions?${params.toString()}`,
           { cache: "no-store" }
@@ -132,6 +165,8 @@ export default function PortDayExcursionCatalogSection({
       allAboard,
       sailingDate,
       partySize,
+      ship,
+      cruiseSailingDate,
       offset,
       sortBy,
     ]
@@ -308,109 +343,150 @@ export default function PortDayExcursionCatalogSection({
       </div>
 
       {/* View Mode Tabs & Sailing Window Controls */}
-      <div className="grid gap-4 rounded-2xl border border-white/10 bg-slate-900/70 p-4 lg:grid-cols-12 lg:items-end">
-        <div className="space-y-2 lg:col-span-5">
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-400">
-            Port-Day View Mode
-          </label>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              data-testid="tab-browse-all-tours"
-              onClick={() => {
-                setViewMode("browse_all");
-                setOffset(0);
-                void fetchCatalog({ nextViewMode: "browse_all", nextOffset: 0 });
-              }}
-              className={`rounded-xl px-4 py-2.5 text-xs font-bold transition ${
-                viewMode === "browse_all"
-                  ? "bg-cyan-500 text-slate-950 shadow-lg"
-                  : "border border-white/15 bg-slate-950/70 text-slate-200 hover:bg-slate-800"
-              }`}
-            >
-              Browse all tours (
-              {data?.pagination.totalMatchedInSql?.toLocaleString() || "…"})
-            </button>
-            <button
-              type="button"
-              data-testid="tab-fits-my-sailing"
-              onClick={() => {
-                setViewMode("fits_sailing");
-                setOffset(0);
-                void fetchCatalog({ nextViewMode: "fits_sailing", nextOffset: 0 });
-              }}
-              className={`rounded-xl px-4 py-2.5 text-xs font-bold transition ${
-                viewMode === "fits_sailing"
-                  ? "bg-emerald-500 text-slate-950 shadow-lg"
-                  : "border border-white/15 bg-slate-950/70 text-slate-200 hover:bg-slate-800"
-              }`}
-            >
-              Fits my sailing ({data?.summary.fitsSailingCountOnPage ?? "…"} on page)
-            </button>
+      <div className="space-y-3 rounded-2xl border border-white/10 bg-slate-900/70 p-4">
+        <div className="grid gap-4 lg:grid-cols-12 lg:items-end">
+          <div className="space-y-2 lg:col-span-5">
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-400">
+              Port-Day View Mode
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                data-testid="tab-browse-all-tours"
+                onClick={() => {
+                  setViewMode("browse_all");
+                  setOffset(0);
+                  void fetchCatalog({ nextViewMode: "browse_all", nextOffset: 0 });
+                }}
+                className={`rounded-xl px-4 py-2.5 text-xs font-bold transition ${
+                  viewMode === "browse_all"
+                    ? "bg-cyan-500 text-slate-950 shadow-lg"
+                    : "border border-white/15 bg-slate-950/70 text-slate-200 hover:bg-slate-800"
+                }`}
+              >
+                Browse all tours (
+                {data?.pagination.totalMatchedInSql?.toLocaleString() || "…"})
+              </button>
+              <button
+                type="button"
+                data-testid="tab-fits-my-sailing"
+                onClick={() => {
+                  setViewMode("fits_sailing");
+                  setOffset(0);
+                  void fetchCatalog({ nextViewMode: "fits_sailing", nextOffset: 0 });
+                }}
+                className={`rounded-xl px-4 py-2.5 text-xs font-bold transition ${
+                  viewMode === "fits_sailing"
+                    ? "bg-emerald-500 text-slate-950 shadow-lg"
+                    : "border border-white/15 bg-slate-950/70 text-slate-200 hover:bg-slate-800"
+                }`}
+              >
+                Fits my sailing ({data?.summary.fitsSailingCountOnPage ?? "…"} on page)
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-5 lg:col-span-7">
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-400">
+                Ship Arrival
+              </label>
+              <input
+                type="time"
+                value={shipArrival}
+                onChange={(e) => setShipArrival(e.target.value)}
+                className="mt-1 w-full rounded-xl border border-white/15 bg-slate-950 px-2.5 py-2 text-xs text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-400">
+                All-Aboard
+              </label>
+              <input
+                type="time"
+                value={allAboard}
+                onChange={(e) => setAllAboard(e.target.value)}
+                className="mt-1 w-full rounded-xl border border-white/15 bg-slate-950 px-2.5 py-2 text-xs text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-400">
+                Port Date
+              </label>
+              <input
+                type="date"
+                value={sailingDate}
+                onChange={(e) => setSailingDate(e.target.value)}
+                className="mt-1 w-full rounded-xl border border-white/15 bg-slate-950 px-2.5 py-2 text-xs text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-400">
+                Party Size
+              </label>
+              <select
+                value={partySize}
+                onChange={(e) => setPartySize(Number(e.target.value))}
+                className="mt-1 w-full rounded-xl border border-white/15 bg-slate-950 px-2.5 py-2 text-xs text-white"
+              >
+                {[1, 2, 3, 4, 5, 6, 8, 10].map((n) => (
+                  <option key={n} value={n}>
+                    {n} {n === 1 ? "guest" : "guests"}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="col-span-2 flex items-end sm:col-span-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setOffset(0);
+                  void fetchCatalog({ nextOffset: 0 });
+                }}
+                className="w-full rounded-xl bg-sky-600 px-3 py-2 text-xs font-bold text-white hover:bg-sky-500 transition"
+              >
+                Recalculate
+              </button>
+            </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-5 lg:col-span-7">
-          <div>
-            <label className="block text-[11px] font-semibold text-slate-400">
-              Ship Arrival
-            </label>
-            <input
-              type="time"
-              value={shipArrival}
-              onChange={(e) => setShipArrival(e.target.value)}
-              className="mt-1 w-full rounded-xl border border-white/15 bg-slate-950 px-2.5 py-2 text-xs text-white"
-            />
+        {/* Group Sailing Handoff Row */}
+        <div className="flex flex-wrap items-end justify-between gap-3 border-t border-white/10 pt-3">
+          <div className="grid flex-1 grid-cols-1 gap-2 sm:grid-cols-2 md:max-w-xl">
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-400">
+                Ship Name (optional for full sailing match)
+              </label>
+              <input
+                type="text"
+                value={ship}
+                onChange={(e) => setShip(e.target.value)}
+                placeholder="e.g. Icon of the Seas or Symphony of the Seas"
+                className="mt-1 w-full rounded-xl border border-white/15 bg-slate-950 px-2.5 py-2 text-xs text-white placeholder:text-slate-500"
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-400">
+                Cruise Embarkation Date (optional)
+              </label>
+              <input
+                type="date"
+                value={cruiseSailingDate}
+                onChange={(e) => setCruiseSailingDate(e.target.value)}
+                className="mt-1 w-full rounded-xl border border-white/15 bg-slate-950 px-2.5 py-2 text-xs text-white"
+              />
+            </div>
           </div>
-          <div>
-            <label className="block text-[11px] font-semibold text-slate-400">
-              All-Aboard
-            </label>
-            <input
-              type="time"
-              value={allAboard}
-              onChange={(e) => setAllAboard(e.target.value)}
-              className="mt-1 w-full rounded-xl border border-white/15 bg-slate-950 px-2.5 py-2 text-xs text-white"
-            />
-          </div>
-          <div>
-            <label className="block text-[11px] font-semibold text-slate-400">
-              Port Date
-            </label>
-            <input
-              type="date"
-              value={sailingDate}
-              onChange={(e) => setSailingDate(e.target.value)}
-              className="mt-1 w-full rounded-xl border border-white/15 bg-slate-950 px-2.5 py-2 text-xs text-white"
-            />
-          </div>
-          <div>
-            <label className="block text-[11px] font-semibold text-slate-400">
-              Party Size
-            </label>
-            <select
-              value={partySize}
-              onChange={(e) => setPartySize(Number(e.target.value))}
-              className="mt-1 w-full rounded-xl border border-white/15 bg-slate-950 px-2.5 py-2 text-xs text-white"
+
+          <div className="flex flex-wrap items-center gap-2">
+            <a
+              href={buildPlanWithMyGroupHref()}
+              data-testid="dcc-plan-with-my-group-cta"
+              className="inline-flex items-center gap-2 rounded-xl border border-emerald-400/50 bg-emerald-500/20 px-4 py-2.5 text-xs font-bold text-emerald-200 hover:bg-emerald-500/30 transition shadow-sm"
             >
-              {[1, 2, 3, 4, 5, 6, 8, 10].map((n) => (
-                <option key={n} value={n}>
-                  {n} {n === 1 ? "guest" : "guests"}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="col-span-2 flex items-end sm:col-span-1">
-            <button
-              type="button"
-              onClick={() => {
-                setOffset(0);
-                void fetchCatalog({ nextOffset: 0 });
-              }}
-              className="w-full rounded-xl bg-sky-600 px-3 py-2 text-xs font-bold text-white hover:bg-sky-500 transition"
-            >
-              Recalculate
-            </button>
+              Plan with my group →
+            </a>
           </div>
         </div>
       </div>
@@ -780,10 +856,11 @@ export default function PortDayExcursionCatalogSection({
                       Tour Details →
                     </a>
                     <a
-                      href={tour.handoff.cruisePromenadeTrackedHref}
-                      className="rounded-xl border border-white/15 bg-slate-950 px-3 py-2.5 text-xs font-semibold text-slate-200 hover:bg-slate-800 transition"
+                      href={buildPlanWithMyGroupHref(tour.productCode || tour.tourId)}
+                      data-testid={`dcc-card-plan-with-my-group-${tour.productCode || tour.tourId}`}
+                      className="rounded-xl border border-emerald-400/40 bg-emerald-500/15 px-3 py-2.5 text-xs font-bold text-emerald-200 hover:bg-emerald-500/25 transition"
                     >
-                      Port Day in Cruise Promenade →
+                      Plan with my group →
                     </a>
                   </div>
 

@@ -183,8 +183,15 @@ export default function WinterPortDayPlanner({
           </label>
         </div>
 
-        <div className="rounded-2xl border border-cyan-400/30 bg-cyan-500/10 p-4 text-sm font-semibold text-cyan-100">
-          {evaluation.conciseVerdict}
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-cyan-400/30 bg-cyan-500/10 p-4 text-sm font-semibold text-cyan-100">
+          <span>{evaluation.conciseVerdict}</span>
+          <a
+            href={`/go/dcc-to-cruise-promenade?port=${encodeURIComponent(portSlug)}&party_size=${encodeURIComponent(String(adults))}`}
+            data-testid={`winter-planner-plan-with-my-group-${portSlug}`}
+            className="rounded-xl border border-emerald-400/40 bg-emerald-500/20 px-3.5 py-2 text-xs font-bold text-emerald-200 hover:bg-emerald-500/30"
+          >
+            Plan with my group →
+          </a>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">

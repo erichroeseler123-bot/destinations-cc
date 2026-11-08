@@ -68,13 +68,17 @@ export default async function PortPage({
     viewMode?: string;
     category?: string;
     date?: string;
+    port_date?: string;
     partySize?: string;
+    party_size?: string;
+    ship?: string;
+    sailing_date?: string;
   }>;
 }) {
   const { slug } = await params;
   const query = searchParams ? await searchParams : {};
   const reference = getReferencePage(slug);
-  if (!reference) return renderPortPage(slug, false);
+  if (!reference) return renderPortPage(slug, false, query);
   const viatorUrl = getCruisePortViatorSearch(reference);
   const isKahului = reference.slug === "kahului";
   const excursionProfile = resolveCruisePortExcursionProfile(reference.slug);
@@ -100,7 +104,9 @@ export default async function PortPage({
       ? query.category
       : "all";
 
-  const initialPartySize = query.partySize ? Math.max(1, Number(query.partySize) || 2) : 2;
+  const rawPartySize = query.partySize || query.party_size;
+  const initialPartySize = rawPartySize ? Math.max(1, Number(rawPartySize) || 2) : 2;
+  const resolvedPortDate = query.date || query.port_date || query.sailing_date;
 
   const initialCatalogData = excursionProfile
     ? await queryPortDayExcursionCatalog({
@@ -109,8 +115,10 @@ export default async function PortPage({
         category: initialCategory,
         shipArrivalTime: query.shipArrival,
         shipAllAboardTime: query.allAboard,
-        sailingDate: query.date,
+        sailingDate: resolvedPortDate,
         partySize: initialPartySize,
+        ship: query.ship,
+        cruiseSailDate: query.sailing_date,
         limit: 12,
         offset: 0,
       })
@@ -148,8 +156,10 @@ export default async function PortPage({
           initialCategory={initialCategory}
           initialShipArrivalTime={query.shipArrival}
           initialShipAllAboardTime={query.allAboard}
-          initialSailingDate={query.date}
+          initialSailingDate={resolvedPortDate}
           initialPartySize={initialPartySize}
+          initialShip={query.ship}
+          initialCruiseSailingDate={query.sailing_date}
         />
       ) : null}
 

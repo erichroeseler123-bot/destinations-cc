@@ -1390,6 +1390,9 @@ export function buildExactExcursionHandoffLinks(params: {
   sailingDate: string;
   shipArrivalTime: string;
   shipAllAboardTime: string;
+  partySize?: number;
+  ship?: string | null;
+  cruiseSailDate?: string | null;
   originatingSite?: string | null;
   surface?: string | null;
 }): PortDayExcursionHandoffLinks {
@@ -1441,11 +1444,23 @@ export function buildExactExcursionHandoffLinks(params: {
     handoffTag
   )}`;
 
-  const cruisePromenadeTrackedHref = `https://cruisepromenade.com/ports/${
-    profile.portSlug
-  }?date=${encodeURIComponent(sailingDate)}&shipArrival=${encodeURIComponent(
-    shipArrivalTime
-  )}&allAboard=${encodeURIComponent(shipAllAboardTime)}`;
+  const cpHandoffParams = new URLSearchParams({
+    port: profile.portSlug,
+    port_date: sailingDate,
+    party_size: String(Math.max(1, params.partySize || 2)),
+  });
+  if (params.ship?.trim()) {
+    cpHandoffParams.set("ship", params.ship.trim());
+  }
+  if (params.cruiseSailDate?.trim()) {
+    cpHandoffParams.set("sailing_date", params.cruiseSailDate.trim());
+  } else if (params.ship?.trim() && sailingDate) {
+    cpHandoffParams.set("sailing_date", sailingDate);
+  }
+  if (code) {
+    cpHandoffParams.set("tour_code", code);
+  }
+  const cruisePromenadeTrackedHref = `/go/dcc-to-cruise-promenade?${cpHandoffParams.toString()}`;
 
   return {
     exactProductUrl: attributedUrl,
@@ -1982,6 +1997,8 @@ export async function queryPortDayExcursionCatalog(params: {
   shipAllAboardTime?: string;
   sailingDate?: string;
   partySize?: number;
+  ship?: string;
+  cruiseSailDate?: string;
   limit?: number;
   offset?: number;
   sortBy?: "recommended" | "rating_desc" | "price_asc" | "duration_asc";
@@ -2038,6 +2055,9 @@ export async function queryPortDayExcursionCatalog(params: {
       profile,
       optionCode: chosenOptionCode,
       sailingDate,
+      partySize,
+      ship: params.ship,
+      cruiseSailDate: params.cruiseSailDate,
       shipArrivalTime,
       shipAllAboardTime,
       originatingSite: params.originatingSite,

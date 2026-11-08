@@ -146,6 +146,13 @@ export default function StThomasPortDayPlanner({
             >
               Preset: Unknown Dock + St. John Check
             </button>
+            <a
+              href={`/go/dcc-to-cruise-promenade?port=st-thomas&port_date=${encodeURIComponent(input.travelDate || "2026-12-09")}&party_size=${encodeURIComponent(String((input.adults || 2) + (input.childAges?.length || 0)))}`}
+              data-testid="st-thomas-plan-with-my-group-cta"
+              className="rounded-xl border border-emerald-400/40 bg-emerald-500/20 px-3 py-1.5 text-xs font-bold text-emerald-200 hover:bg-emerald-500/30"
+            >
+              Plan with my group →
+            </a>
           </div>
         </div>
 

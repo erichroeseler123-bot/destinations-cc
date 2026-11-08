@@ -234,6 +234,13 @@ export default function JuneauPortDayPlanner({
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          <a
+            href={`/go/dcc-to-cruise-promenade?port=juneau-alaska&port_date=${encodeURIComponent(norm.travelDate || "2027-07-15")}&party_size=${encodeURIComponent(String(norm.partySize || 2))}`}
+            data-testid="juneau-plan-with-my-group-cta"
+            className="rounded-xl border border-emerald-400/40 bg-emerald-500/20 px-3.5 py-2 text-xs font-bold text-emerald-200 transition hover:bg-emerald-500/30"
+          >
+            Plan with my group →
+          </a>
           <button
             type="button"
             onClick={handleShareScenario}

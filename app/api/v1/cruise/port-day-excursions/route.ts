@@ -87,8 +87,13 @@ export async function GET(request: NextRequest) {
       undefined;
     const sailingDate =
       searchParams.get("date") || searchParams.get("sailingDate") || undefined;
-    const partySizeRaw = searchParams.get("partySize");
+    const partySizeRaw = searchParams.get("partySize") || searchParams.get("party_size");
     const partySize = partySizeRaw ? Math.max(1, Number(partySizeRaw) || 2) : 2;
+    const ship = searchParams.get("ship") || undefined;
+    const cruiseSailDate =
+      searchParams.get("sailing_date") ||
+      searchParams.get("cruiseSailDate") ||
+      undefined;
 
     const limitRaw = searchParams.get("limit");
     const limit = limitRaw ? Math.max(1, Math.min(100, Number(limitRaw) || 12)) : 12;
@@ -127,6 +132,8 @@ export async function GET(request: NextRequest) {
       shipAllAboardTime,
       sailingDate,
       partySize,
+      ship,
+      cruiseSailDate,
       limit,
       offset,
       sortBy,

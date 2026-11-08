@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import DccMachineContractExplainer from "@/app/components/dcc/DccMachineContractExplainer";
 import LocationFirstHomeFast from "@/app/components/dcc/LocationFirstHomeFast";
+import { getCruisePortDirectory } from "@/lib/dcc/cruisePortDirectory";
 import { getOrganizationSchema, getWebsiteSchema } from "@/src/data/site-identity";
 
 export const revalidate = 3600;
@@ -21,6 +22,7 @@ export const metadata: Metadata = {
 };
 
 export default function HomePage() {
+  const cruisePortCount = getCruisePortDirectory().length;
   const jsonLd = {
     "@context": "https://schema.org",
     "@graph": [
@@ -35,7 +37,7 @@ export default function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <LocationFirstHomeFast />
+      <LocationFirstHomeFast cruisePortCount={cruisePortCount} />
       <DccMachineContractExplainer />
     </>
   );

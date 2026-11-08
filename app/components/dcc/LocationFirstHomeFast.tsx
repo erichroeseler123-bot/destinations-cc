@@ -21,7 +21,11 @@ function locationPath(lat: number, lng: number) {
   return `/location/${canonicalCoordinate(lat)}/${canonicalCoordinate(lng)}`;
 }
 
-export default function LocationFirstHomeFast() {
+export default function LocationFirstHomeFast({
+  cruisePortCount = 632,
+}: {
+  cruisePortCount?: number;
+}) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<ResolvedLocation[]>([]);
@@ -111,15 +115,25 @@ export default function LocationFirstHomeFast() {
             <AskDccEntry />
           </div>
 
-          {/* Existing planning tools and destination guides */}
-          <div className="mt-8 flex flex-wrap gap-3">
+          {/* Primary Cruise & Port-Day Entry Flows */}
+          <div className="mt-8 flex flex-wrap items-center gap-3">
             <Link
-              href="/juneau#port-day-decision-engine"
+              href="/ports/juneau#shared-port-day-excursion-catalog"
+              data-testid="dcc-hero-check-port-day"
               className="px-6 py-4 bg-gradient-to-r from-cyan-400 to-emerald-400 text-black font-black text-sm uppercase tracking-wider rounded-2xl shadow-xl shadow-cyan-500/25 hover:brightness-110 transition flex items-center gap-2"
             >
-              <span>Check what fits your Juneau port day</span>
+              <span>Check a port day</span>
               <span>→</span>
             </Link>
+
+            <a
+              href="/go/dcc-to-cruise-promenade"
+              data-testid="dcc-hero-plan-my-cruise"
+              className="px-6 py-4 bg-emerald-500/20 text-emerald-200 font-black text-sm uppercase tracking-wider rounded-2xl border border-emerald-400/40 hover:bg-emerald-500/30 transition flex items-center gap-2 shadow-lg shadow-emerald-500/10"
+            >
+              <span>Plan my cruise</span>
+              <span>→</span>
+            </a>
 
             <Link
               href="#featured-destinations"
@@ -128,6 +142,30 @@ export default function LocationFirstHomeFast() {
               <span>See destination guides</span>
               <span>↓</span>
             </Link>
+
+            <Link
+              href="/ports"
+              data-testid="dcc-browse-cruise-ports-label"
+              className="rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3.5 py-2 text-xs font-bold text-cyan-200 hover:bg-cyan-400/20 transition"
+              title="Directory cruise port reference count — kept distinct from reconciled tour inventory and verified sailing-fit counts"
+            >
+              Browse {cruisePortCount} cruise ports →
+            </Link>
+          </div>
+
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-white/60">
+            <span className="font-semibold text-cyan-300/90">Quick port-day timing checks:</span>
+            <Link href="/ports/juneau#shared-port-day-excursion-catalog" className="underline hover:text-white">Juneau</Link>
+            <span>·</span>
+            <Link href="/ports/st-thomas#shared-port-day-excursion-catalog" className="underline hover:text-white">St. Thomas</Link>
+            <span>·</span>
+            <Link href="/ports/nassau#shared-port-day-excursion-catalog" className="underline hover:text-white">Nassau</Link>
+            <span>·</span>
+            <Link href="/ports/cozumel#shared-port-day-excursion-catalog" className="underline hover:text-white">Cozumel</Link>
+            <span>·</span>
+            <Link href="/ports/reykjavik#shared-port-day-excursion-catalog" className="underline hover:text-white">Reykjavík</Link>
+            <span>·</span>
+            <Link href="/ports/kahului" className="underline hover:text-white">Kahului (Maui)</Link>
           </div>
 
           {/* Coordinate Search Engine Form */}
@@ -224,8 +262,8 @@ export default function LocationFirstHomeFast() {
             </Link>
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-3">
-            {/* Flagship 1: Juneau */}
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Flagship 1: Juneau & Alaska (includes Last Frontier Shore Excursions) */}
             <article className="rounded-3xl border border-cyan-400/25 bg-gradient-to-b from-cyan-950/25 to-black/50 p-6 flex flex-col justify-between">
               <div>
                 <div className="flex flex-wrap items-center justify-between gap-2">
@@ -257,6 +295,13 @@ export default function LocationFirstHomeFast() {
                 >
                   Port View
                 </Link>
+                <a
+                  href="https://www.lastfrontiershoreexcursions.com"
+                  data-testid="dcc-destination-last-frontier-link"
+                  className="rounded-xl border border-emerald-400/30 bg-emerald-500/10 px-3.5 py-2.5 text-xs font-bold text-emerald-200 hover:bg-emerald-500/20"
+                >
+                  Last Frontier Shore Excursions ↗
+                </a>
                 <Link
                   href="/location/58.30190/-134.41970"
                   className="rounded-xl border border-white/15 bg-white/[0.04] px-3.5 py-2.5 text-xs font-mono text-cyan-200 hover:bg-white/[0.08]"
@@ -266,7 +311,50 @@ export default function LocationFirstHomeFast() {
               </div>
             </article>
 
-            {/* Flagship 2: Red Rocks */}
+            {/* Flagship 2: New Orleans & Lower Mississippi (includes New Orleans Tours) */}
+            <article className="rounded-3xl border border-cyan-400/25 bg-gradient-to-b from-cyan-950/25 to-black/50 p-6 flex flex-col justify-between">
+              <div>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-cyan-200">
+                    River Port &amp; Cultural Corridor · Louisiana
+                  </span>
+                  <span className="font-mono text-xs text-white/45">29.95107, -90.07153</span>
+                </div>
+                <h3 className="mt-4 text-2xl font-black text-white">New Orleans &amp; Mississippi Riverfront</h3>
+                <p className="mt-2.5 text-sm leading-6 text-white/70">
+                  French Quarter, Toulouse Street Wharf, Erato/Julia cruise terminals, and Honey Island / Jean Lafitte swamp corridors: compare Steamboat Natchez vs. Creole Queen / City of New Orleans riverboats, airboat pickup windows, and walking-distance tradeoffs.
+                </p>
+                <ul className="mt-4 space-y-1.5 text-xs text-white/65">
+                  <li>• <strong>Riverboat Comparison:</strong> Toulouse St. Wharf vs. Canal St. Dock boarding &amp; steam calliope schedules</li>
+                  <li>• <strong>Swamp Logistics:</strong> French Quarter hotel shuttle pickup vs. self-drive bayou staging</li>
+                  <li>• <strong>Cruise Turnaround:</strong> Port NOLA luggage drop &amp; pre-/post-sailing time fit</li>
+                </ul>
+              </div>
+              <div className="mt-6 pt-4 border-t border-white/10 flex flex-wrap gap-2">
+                <Link
+                  href="/new-orleans/tours"
+                  data-testid="dcc-destination-nola-tours-guide-link"
+                  className="rounded-xl bg-cyan-400 px-4 py-2.5 text-xs font-black uppercase tracking-wider text-black hover:bg-cyan-300"
+                >
+                  New Orleans Tours Guide →
+                </Link>
+                <a
+                  href="https://www.welcometoneworleanstours.com"
+                  data-testid="dcc-destination-wno-link"
+                  className="rounded-xl border border-emerald-400/30 bg-emerald-500/10 px-3.5 py-2.5 text-xs font-bold text-emerald-200 hover:bg-emerald-500/20"
+                >
+                  Welcome to New Orleans Tours ↗
+                </a>
+                <Link
+                  href="/ports/new-orleans"
+                  className="rounded-xl border border-white/15 bg-white/[0.04] px-3.5 py-2.5 text-xs font-bold text-white/80 hover:bg-white/[0.08]"
+                >
+                  Port View
+                </Link>
+              </div>
+            </article>
+
+            {/* Flagship 3: Red Rocks */}
             <article className="rounded-3xl border border-cyan-400/25 bg-gradient-to-b from-cyan-950/25 to-black/50 p-6 flex flex-col justify-between">
               <div>
                 <div className="flex flex-wrap items-center justify-between gap-2">
@@ -307,7 +395,7 @@ export default function LocationFirstHomeFast() {
               </div>
             </article>
 
-            {/* Flagship 3: Denver-Breckenridge Corridor */}
+            {/* Flagship 4: Denver-Breckenridge Corridor */}
             <article className="rounded-3xl border border-cyan-400/25 bg-gradient-to-b from-cyan-950/25 to-black/50 p-6 flex flex-col justify-between">
               <div>
                 <div className="flex flex-wrap items-center justify-between gap-2">

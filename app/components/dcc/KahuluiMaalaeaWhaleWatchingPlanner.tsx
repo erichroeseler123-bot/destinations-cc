@@ -186,10 +186,11 @@ export default function KahuluiMaalaeaWhaleWatchingPlanner({
             </Link>
           )}
           <a
-            href="/go/dcc-to-cruise-promenade?port=kahului"
+            href="/go/dcc-to-cruise-promenade?port=kahului&party_size=2"
+            data-testid="kahului-plan-with-my-group-cta"
             className="rounded-lg border border-emerald-400/40 bg-emerald-500/15 px-3 py-1.5 font-semibold text-emerald-200 hover:bg-emerald-500/25"
           >
-            Open Kahului on Cruise Promenade →
+            Plan with my group →
           </a>
         </div>
       </div>
