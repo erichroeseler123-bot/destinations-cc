@@ -3708,10 +3708,17 @@ export type DurableCatalogQueryFilter = {
   capabilityTier?: TourCapabilityTier;
   category?: string;
   searchQuery?: string;
+  q?: string;
+  pickupMode?: string;
+  maxDurationMinutes?: number;
+  maxPriceCents?: number;
+  commissionAuthorizedOnly?: boolean;
+  freeCancellationOnly?: boolean;
   approvedTourIds?: string[];
   includeDiscoveryOnly?: boolean;
   verifiedTimingOnly?: boolean;
   sortBy?: DurableCatalogSortBy;
+  sort?: DurableCatalogSortBy;
   limit?: number;
   offset?: number;
   page?: number;
@@ -3722,14 +3729,11 @@ export type DurableCatalogQueryResult = {
   totalMatched: number;
   limit: number;
   offset: number;
-  page: number;
-  totalPages: number;
+  page?: number;
+  totalPages?: number;
   hasMore: boolean;
-  categoriesAvailable: string[];
+  categoriesAvailable?: string[];
   storageSource: "postgres" | "snapshot_hydrated_to_postgres" | "local_snapshot";
-  limit: number;
-  offset: number;
-  hasMore: boolean;
   nextOffset: number | null;
   executedInSql: boolean;
   rowsLoadedIntoApp: number;
@@ -3913,8 +3917,6 @@ export async function queryDurableTourCatalog(
     filter.maxPriceCents > 0
       ? Math.round(filter.maxPriceCents)
       : null;
-  const sortMode: DurableCatalogSortMode = filter.sort || "recommended";
-
   const requestedLimit =
     typeof filter.limit === "number" && Number.isFinite(filter.limit) && filter.limit > 0
       ? Math.floor(filter.limit)
@@ -3928,7 +3930,7 @@ export async function queryDurableTourCatalog(
           requestedLimit !== null
         ? (Math.floor(filter.page) - 1) * requestedLimit
         : 0;
-  const sortBy: DurableCatalogSortBy = filter.sortBy || "recommended";
+  const sortBy: DurableCatalogSortBy = filter.sortBy || filter.sort || "recommended";
 
   if (shouldUsePostgres()) {
     try {

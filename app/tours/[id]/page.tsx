@@ -108,14 +108,24 @@ export default async function TourDetailPage({
   }
   const seededTour = allTours.find((t) => String(t.id) === resolvedParams.id);
   const durableTour = seededTour ? null : await getDurableTourByIdOrAlias(resolvedParams.id);
+  const durableDestinationLabel = durableTour
+    ? durableTour.destinationSlug === "reykjavik"
+      ? "Reykjavík"
+      : durableTour.destinationSlug
+          .split("-")
+          .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+          .join(" ")
+    : undefined;
+  const durableScheduledDepartures =
+    durableTour?.productOptions?.flatMap((o) => o.scheduledStartTimes || []).filter(Boolean) || [];
   const durableMappedTour: Tour | null = durableTour
     ? {
         id: durableTour.providerProductCode,
         product_code: durableTour.providerProductCode,
         name: durableTour.title,
         description: durableTour.summary || undefined,
-        image_url: durableTour.heroImageUrl || undefined,
-        city: durableTour.destinationName,
+        image_url: durableTour.primaryImageUrl || undefined,
+        city: durableDestinationLabel,
         region: durableTour.destinationSlug === "reykjavik" ? "Iceland" : undefined,
         price_from:
           typeof durableTour.fromPriceCents === "number"
@@ -123,8 +133,8 @@ export default async function TourDetailPage({
             : undefined,
         rating: durableTour.ratingAverage ?? undefined,
         review_count: durableTour.reviewCount ?? undefined,
-        lat: durableTour.pickupLat ?? undefined,
-        lng: durableTour.pickupLng ?? undefined,
+        lat: durableTour.meetingPointLat ?? undefined,
+        lng: durableTour.meetingPointLng ?? undefined,
         timezone: durableTour.timeZone || undefined,
         duration:
           durableTour.durationRawText ||
@@ -538,13 +548,13 @@ export default async function TourDetailPage({
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <div className="text-xs font-bold uppercase tracking-wider text-cyan-300">
-                Authorized Shore Excursion · {durableTour.destinationName} ({durableTour.providerProductCode})
+                Authorized Shore Excursion · {durableDestinationLabel} ({durableTour.providerProductCode})
               </div>
               <p className="mt-1 text-xs text-zinc-300">
                 Category: <strong>{durableTour.category}</strong> · Pickup:{" "}
-                <strong>{durableTour.pickupMode}</strong>
-                {durableTour.scheduledDepartures?.length
-                  ? ` · Scheduled departures: ${durableTour.scheduledDepartures.join(", ")}`
+                <strong>{durableTour.pickupFulfillmentType || durableTour.pickupType || "unknown"}</strong>
+                {durableScheduledDepartures.length
+                  ? ` · Scheduled departures: ${durableScheduledDepartures.join(", ")}`
                   : ""}
               </p>
             </div>
@@ -553,7 +563,7 @@ export default async function TourDetailPage({
                 href={`/ports/${durableTour.destinationSlug}`}
                 className="rounded-xl border border-white/15 bg-white/5 px-3.5 py-2 text-xs font-semibold text-white hover:bg-white/10"
               >
-                ← {durableTour.destinationName} Port Guide
+                ← {durableDestinationLabel} Port Guide
               </Link>
               <a
                 href={`https://cruisepromenade.com/ports/${durableTour.destinationSlug}?mode=fits_my_sailing`}
