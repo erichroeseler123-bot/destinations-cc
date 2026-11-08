@@ -887,10 +887,15 @@ export function buildApiCatalogDocument(baseUrl = DCC_V03_SITE_URL) {
           {
             href: `${base}/openapi.json`,
             type: "application/vnd.oai.openapi+json;version=3.1",
-            title: "DCC Machine Layer v0.3 OpenAPI 3.1 Specification",
+            title: "DCC Machine Layer v0.3 & Port-Day Excursion OpenAPI 3.1 Specification",
           },
         ],
         "service-doc": [
+          {
+            href: `${base}/developers`,
+            type: "text/html",
+            title: "DCC Developer Documentation & Runnable Port-Day MCP/REST Examples",
+          },
           {
             href: `${base}/api/v1/docs/receipt-verification`,
             type: "application/json",
@@ -919,6 +924,16 @@ export function buildApiCatalogDocument(baseUrl = DCC_V03_SITE_URL) {
             title: "DCC Model Context Protocol (MCP) Discovery Manifest",
           },
           {
+            href: `${base}/api/v1/mcp`,
+            type: "application/json",
+            title: "DCC Model Context Protocol (MCP) Streamable HTTP / JSON-RPC 2.0 Endpoint",
+          },
+          {
+            href: `${base}/api/v1/cruise/port-day-excursions`,
+            type: "application/json",
+            title: "DCC Cruise Port-Day Shore Excursion Catalog (GET) & Live Availability Check (POST)",
+          },
+          {
             href: `${base}/api/v1/conformance/fixtures`,
             type: "application/json",
             title: "DCC Language-Neutral Conformance Vectors (RFC 8785, JWS, Bitemporal, Selectors)",
@@ -936,20 +951,165 @@ export function buildMcpDiscoveryDocument(baseUrl = DCC_V03_SITE_URL) {
   const base = baseUrl.replace(/\/+$/, "");
   return {
     mcpVersion: "2025-03-26",
+    protocolVersion: "2025-03-26",
+    supportedProtocolVersions: ["2025-03-26", "2025-06-18", "2024-11-05"],
     serverInfo: {
       name: "dcc-machine-layer-v03",
       version: "0.3.0",
       description:
-        "Destination Command Center Machine Layer v0.3 — Append-only temporal evidence ledger, deterministic Decision IR evaluator, RFC 8785 + JWS EdDSA receipt verifier, and shadow-mode DecisionAuthorization service.",
+        "Destination Command Center Machine Layer v0.3 — Cruise port-day shore excursion catalog & sailing-fit evaluator (dcc_search_port_excursions), live option/date/departure/partySize availability verifier (dcc_check_tour_availability), append-only temporal evidence ledger, deterministic Decision IR evaluator, and RFC 8785 + JWS EdDSA receipt verifier.",
+    },
+    capabilities: {
+      tools: {
+        listChanged: false,
+      },
     },
     transport: {
       type: "streamable-http",
       endpoint: `${base}/api/v1/mcp`,
+      supportedJsonRpcMethods: [
+        "initialize",
+        "notifications/initialized",
+        "ping",
+        "tools/list",
+        "tools/call",
+      ],
     },
     a2aDelegatedAgentSupported: false,
     a2aExclusionRationale:
       "DCC is a synchronous evidence, decision, and receipt-verification fabric rather than an asynchronous delegated agent; A2A is intentionally not advertised.",
     tools: [
+      {
+        name: "dcc_search_port_excursions",
+        requiredScope: "dcc:read:public",
+        description:
+          "Searches DCC's SQL-backed cruise port-day shore excursion catalog and evaluates deterministic sailing-window timing fit (status: 'fits', 'runs_too_late', or 'needs_verification') using verified departure times, check-in cutoffs, meeting point coordinates, round-trip pier transfers, and port return buffers. When allAboard is blank and no matching sailing schedule supplies it, labels the port default as a port estimate and returns 'needs_verification'. Keeps timing fit strictly separate from live seat availability.",
+        inputSchema: {
+          type: "object",
+          required: ["port"],
+          properties: {
+            port: {
+              type: "string",
+              description:
+                "Cruise port slug or name (e.g. 'new-orleans', 'reykjavik', 'kahului', 'juneau', 'skagway', 'ketchikan', 'seward', 'miami', 'tampa', 'seattle', 'cozumel', 'roatan', 'nassau', 'st-thomas', 'grand-cayman').",
+            },
+            viewMode: {
+              type: "string",
+              enum: ["browse_all", "fits_sailing"],
+              default: "browse_all",
+              description:
+                "'browse_all' returns all catalog tours with their evaluated timeFit status; 'fits_sailing' counts and paginates only tours with timeFit.status === 'fits'.",
+            },
+            category: {
+              type: "string",
+              enum: ["all", "sightseeing", "wildlife", "food", "culture", "adventure", "family"],
+              default: "all",
+            },
+            date: {
+              type: "string",
+              description: "Port call date in YYYY-MM-DD format (e.g. '2027-07-15').",
+            },
+            shipArrival: {
+              type: "string",
+              description: "Ship arrival time in HH:MM or 12-hour format (e.g. '07:00' or '7:00 a.m.').",
+            },
+            allAboard: {
+              type: "string",
+              description:
+                "All-aboard deadline in HH:MM or 12-hour format (e.g. '13:15', '1:15 p.m.', '13:14', '1:14 p.m.'). If omitted/blank and no sailing schedule matches, defaults to a labeled port estimate and returns status='needs_verification'.",
+            },
+            shipDeparture: {
+              type: "string",
+              description: "Optional scheduled ship departure time in HH:MM or 12-hour format.",
+            },
+            sailing: {
+              type: "string",
+              description: "Optional sailing ID (e.g. 'INDY-2027-01-24') to resolve scheduled arrival, all-aboard, and departure times.",
+            },
+            ship: {
+              type: "string",
+              description: "Optional ship slug or name (e.g. 'independence-of-the-seas').",
+            },
+            partySize: {
+              type: "integer",
+              minimum: 1,
+              default: 2,
+            },
+            productCode: {
+              type: "string",
+              description: "Optional exact provider product code filter (e.g. '15200P6').",
+            },
+            search: {
+              type: "string",
+              description: "Optional keyword or product code search query.",
+            },
+            limit: {
+              type: "integer",
+              minimum: 1,
+              maximum: 100,
+              default: 12,
+            },
+            offset: {
+              type: "integer",
+              minimum: 0,
+              default: 0,
+            },
+            sortBy: {
+              type: "string",
+              enum: ["recommended", "rating_desc", "price_asc", "duration_asc"],
+              default: "recommended",
+            },
+          },
+        },
+      },
+      {
+        name: "dcc_check_tour_availability",
+        requiredScope: "dcc:read:public",
+        description:
+          "Checks live seat and price availability for a specific cruise port excursion option, date, departure time, and party size using DCC's upstream availability handler (POST /api/v1/cruise/port-day-excursions). Keeps availability strictly separate from sailing-window timing fit and preserves unknown seat counts (remainingSeats: null) when the provider does not report exact remaining capacity.",
+        inputSchema: {
+          type: "object",
+          required: ["port", "productCode", "date", "partySize"],
+          properties: {
+            port: {
+              type: "string",
+              description: "Cruise port slug (e.g. 'new-orleans').",
+            },
+            productCode: {
+              type: "string",
+              description: "Exact provider product code (e.g. '15200P6').",
+            },
+            tourId: {
+              type: "string",
+              description: "Optional internal DCC tourId if productCode is not supplied.",
+            },
+            optionCode: {
+              type: "string",
+              description: "Exact product option code (e.g. 'TG10').",
+            },
+            date: {
+              type: "string",
+              description: "Travel date in YYYY-MM-DD format (e.g. '2027-07-15').",
+            },
+            departureTime: {
+              type: "string",
+              description: "Exact departure start time in HH:MM format (e.g. '08:00').",
+            },
+            partySize: {
+              type: "integer",
+              minimum: 1,
+              default: 2,
+              description: "Number of travelers (e.g. 2).",
+            },
+            timeoutMs: {
+              type: "integer",
+              minimum: 1,
+              maximum: 15000,
+              default: 6000,
+            },
+          },
+        },
+      },
       {
         name: "dcc_evaluate_category",
         requiredScope: "dcc:evaluate",
@@ -1064,6 +1224,109 @@ export function buildMcpDiscoveryDocument(baseUrl = DCC_V03_SITE_URL) {
         },
       },
     ],
+    runnableExamples: {
+      initialize: {
+        endpoint: `${base}/api/v1/mcp`,
+        method: "POST",
+        body: {
+          jsonrpc: "2.0",
+          id: 1,
+          method: "initialize",
+          params: {
+            protocolVersion: "2025-03-26",
+            capabilities: {},
+            clientInfo: { name: "standard-mcp-client", version: "1.0.0" },
+          },
+        },
+      },
+      notificationsInitialized: {
+        endpoint: `${base}/api/v1/mcp`,
+        method: "POST",
+        body: {
+          jsonrpc: "2.0",
+          method: "notifications/initialized",
+        },
+      },
+      searchPortExcursionsFitsAt115Pm: {
+        endpoint: `${base}/api/v1/mcp`,
+        method: "POST",
+        body: {
+          jsonrpc: "2.0",
+          id: 2,
+          method: "tools/call",
+          params: {
+            name: "dcc_search_port_excursions",
+            arguments: {
+              port: "new-orleans",
+              date: "2027-07-15",
+              shipArrival: "07:00",
+              allAboard: "1:15 p.m.",
+              partySize: 2,
+              productCode: "15200P6",
+            },
+          },
+        },
+      },
+      searchPortExcursionsRunsTooLateAt114Pm: {
+        endpoint: `${base}/api/v1/mcp`,
+        method: "POST",
+        body: {
+          jsonrpc: "2.0",
+          id: 3,
+          method: "tools/call",
+          params: {
+            name: "dcc_search_port_excursions",
+            arguments: {
+              port: "new-orleans",
+              date: "2027-07-15",
+              shipArrival: "07:00",
+              allAboard: "1:14 p.m.",
+              partySize: 2,
+              productCode: "15200P6",
+            },
+          },
+        },
+      },
+      searchPortExcursionsBlankDeadlineNeedsVerification: {
+        endpoint: `${base}/api/v1/mcp`,
+        method: "POST",
+        body: {
+          jsonrpc: "2.0",
+          id: 4,
+          method: "tools/call",
+          params: {
+            name: "dcc_search_port_excursions",
+            arguments: {
+              port: "new-orleans",
+              date: "2027-07-15",
+              shipArrival: "07:00",
+              partySize: 2,
+              productCode: "15200P6",
+            },
+          },
+        },
+      },
+      checkTourAvailability: {
+        endpoint: `${base}/api/v1/mcp`,
+        method: "POST",
+        body: {
+          jsonrpc: "2.0",
+          id: 5,
+          method: "tools/call",
+          params: {
+            name: "dcc_check_tour_availability",
+            arguments: {
+              port: "new-orleans",
+              productCode: "15200P6",
+              optionCode: "TG10",
+              date: "2027-07-15",
+              departureTime: "08:00",
+              partySize: 2,
+            },
+          },
+        },
+      },
+    },
   };
 }
 

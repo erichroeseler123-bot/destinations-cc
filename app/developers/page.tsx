@@ -147,14 +147,88 @@ export default function DevelopersPage() {
           </div>
         </section>
 
+        <section className="mt-8 rounded-[28px] border border-emerald-400/20 bg-emerald-500/[0.04] p-6 sm:p-8">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-2xl font-black text-white">Cruise Port-Day Excursion API &amp; Standard MCP Server</h2>
+            <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-xs font-bold text-emerald-300">
+              MCP 2025-03-26 · REST + JSON-RPC 2.0
+            </span>
+          </div>
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-white/60">
+            Standard MCP clients connect to <code className="text-emerald-200">/api/v1/mcp</code> (<code className="text-emerald-200">initialize</code> → <code className="text-emerald-200">notifications/initialized</code> → <code className="text-emerald-200">tools/list</code> → <code className="text-emerald-200">tools/call</code>) or call the REST endpoint <code className="text-emerald-200">/api/v1/cruise/port-day-excursions</code> directly. Timing fit (<code className="text-emerald-200">fits</code>, <code className="text-emerald-200">runs_too_late</code>, <code className="text-emerald-200">needs_verification</code>) is evaluated deterministically and kept strictly separate from live seat/price availability (<code className="text-emerald-200">remainingSeats: null</code> when seat count is unknown).
+          </p>
+
+          <div className="mt-6 grid gap-4 sm:grid-cols-2">
+            <div className="rounded-2xl border border-white/10 bg-black/30 p-4">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-emerald-300">GET /api/v1/cruise/port-day-excursions · MCP: dcc_search_port_excursions</span>
+              <p className="mt-1 text-xs text-white/60">SQL-backed port-day excursion search and sailing-window timing fit evaluator. Labels blank all-aboard times as port estimates with <code className="text-emerald-200">needs_verification</code>.</p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-black/30 p-4">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-emerald-300">POST /api/v1/cruise/port-day-excursions · MCP: dcc_check_tour_availability</span>
+              <p className="mt-1 text-xs text-white/60">Live availability check for an exact product option, date, departure time, and party size. Preserves unknown seat counts (<code className="text-emerald-200">remainingSeats: null</code>).</p>
+            </div>
+          </div>
+
+          <div className="mt-6 space-y-4">
+            <div className="rounded-2xl border border-white/10 bg-black/40 p-4">
+              <p className="text-xs font-bold uppercase tracking-wider text-emerald-200">1. Runnable REST Examples (New Orleans · Product 15200P6 · Option TG10 · 08:00 Departure)</p>
+              <pre className="mt-3 overflow-x-auto text-xs leading-5 text-cyan-100">{`# A) 1:15 p.m. (13:15) All Aboard -> status: "fits" (returns to pier at 12:15 with +60m buffer)
+curl -s "https://www.destinationcommandcenter.com/api/v1/cruise/port-day-excursions?port=new-orleans&date=2027-07-15&shipArrival=07:00&allAboard=13:15&partySize=2&productCode=15200P6"
+
+# B) 1:14 p.m. (13:14) All Aboard -> status: "runs_too_late" (+59m buffer < 60m required)
+curl -s "https://www.destinationcommandcenter.com/api/v1/cruise/port-day-excursions?port=new-orleans&date=2027-07-15&shipArrival=07:00&allAboard=13:14&partySize=2&productCode=15200P6"
+
+# C) Blank All Aboard -> status: "needs_verification", shipAllAboardTimeLabel: "15:30 (port estimate)"
+curl -s "https://www.destinationcommandcenter.com/api/v1/cruise/port-day-excursions?port=new-orleans&date=2027-07-15&shipArrival=07:00&partySize=2&productCode=15200P6"
+
+# D) Live Availability Check (Option TG10, 2027-07-15, 08:00, Party Size 2 — separate from timing fit)
+curl -s -X POST "https://www.destinationcommandcenter.com/api/v1/cruise/port-day-excursions" \\
+  -H "Content-Type: application/json" \\
+  -d '{"port":"new-orleans","productCode":"15200P6","optionCode":"TG10","date":"2027-07-15","departureTime":"08:00","partySize":2}'`}</pre>
+            </div>
+
+            <div className="rounded-2xl border border-white/10 bg-black/40 p-4">
+              <p className="text-xs font-bold uppercase tracking-wider text-emerald-200">2. Runnable MCP Client Handshake &amp; Tool Calls (POST /api/v1/mcp)</p>
+              <pre className="mt-3 overflow-x-auto text-xs leading-5 text-cyan-100">{`# 1. Initialize MCP session
+curl -s -X POST "https://www.destinationcommandcenter.com/api/v1/mcp" \\
+  -H "Content-Type: application/json" \\
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"mcp-client","version":"1.0.0"}}}'
+
+# 2. Send notifications/initialized
+curl -s -X POST "https://www.destinationcommandcenter.com/api/v1/mcp" \\
+  -H "Content-Type: application/json" \\
+  -d '{"jsonrpc":"2.0","method":"notifications/initialized"}'
+
+# 3. List tools (includes dcc_search_port_excursions and dcc_check_tour_availability)
+curl -s -X POST "https://www.destinationcommandcenter.com/api/v1/mcp" \\
+  -H "Content-Type: application/json" \\
+  -d '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}'
+
+# 4. Call dcc_search_port_excursions (1:15 p.m. -> fits | 1:14 p.m. -> runs_too_late | blank -> needs_verification)
+curl -s -X POST "https://www.destinationcommandcenter.com/api/v1/mcp" \\
+  -H "Content-Type: application/json" \\
+  -d '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"dcc_search_port_excursions","arguments":{"port":"new-orleans","date":"2027-07-15","shipArrival":"07:00","allAboard":"1:15 p.m.","partySize":2,"productCode":"15200P6"}}}'
+
+# 5. Call dcc_check_tour_availability (Option TG10, 2027-07-15, 08:00, partySize 2)
+curl -s -X POST "https://www.destinationcommandcenter.com/api/v1/mcp" \\
+  -H "Content-Type: application/json" \\
+  -d '{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"dcc_check_tour_availability","arguments":{"port":"new-orleans","productCode":"15200P6","optionCode":"TG10","date":"2027-07-15","departureTime":"08:00","partySize":2}}}'`}</pre>
+            </div>
+          </div>
+        </section>
+
         <section className="mt-8 rounded-[28px] border border-white/10 bg-white/[0.025] p-6 sm:p-8">
           <h2 className="text-2xl font-black">Machine discovery</h2>
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
             {[
               ["Agent contract", "/agent.json"],
               ["Well-known agent contract", "/.well-known/agent.json"],
+              ["MCP Discovery Manifest", "/.well-known/mcp.json"],
+              ["MCP JSON-RPC Endpoint", "/api/v1/mcp"],
+              ["Port-Day Excursions API", "/api/v1/cruise/port-day-excursions?port=new-orleans&limit=1"],
               ["LLM instructions", "/llms.txt"],
               ["OpenAPI schema", "/openapi.json"],
+              ["API Catalog (RFC 9264)", "/.well-known/api-catalog"],
               ["OCTO Participant Registry", "/api/octo/participants"],
               ["Authorized Operators", "/operators"],
             ].map(([label, href]) => (

@@ -641,5 +641,180 @@ test("103.10: Blank all-aboard time labels 15:30 as a port estimate and uses Nee
   assert.equal(blankFitsRes.pagination.totalFittingSailing, 0);
 });
 
+test("103.11: Standard MCP client lifecycle on /api/v1/mcp supports initialize, notifications/initialized, tools/list, dcc_search_port_excursions (1:15 p.m. fits, 1:14 p.m. runs_too_late, blank needs_verification), and dcc_check_tour_availability", async () => {
+  const { POST } = await import("@/app/api/v1/mcp/route");
+
+  async function callMcp(payload: Record<string, unknown>) {
+    const req = new Request("https://www.destinationcommandcenter.com/api/v1/mcp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const res = await POST(req);
+    const json = await res.json();
+    return { status: res.status, json };
+  }
+
+  // 1. initialize
+  const initRes = await callMcp({
+    jsonrpc: "2.0",
+    id: 1,
+    method: "initialize",
+    params: {
+      protocolVersion: "2025-03-26",
+      capabilities: {},
+      clientInfo: { name: "mcp-test-client", version: "1.0.0" },
+    },
+  });
+  assert.equal(initRes.status, 200);
+  assert.equal(initRes.json.result.protocolVersion, "2025-03-26");
+  assert.equal(initRes.json.result.serverInfo.name, "dcc-machine-layer-v03");
+  assert.ok(initRes.json.result.capabilities.tools);
+
+  // 2. notifications/initialized (standard notification without id -> 202, and with id -> 200)
+  const notifNoId = await callMcp({
+    jsonrpc: "2.0",
+    method: "notifications/initialized",
+  });
+  assert.equal(notifNoId.status, 202);
+  assert.equal(notifNoId.json.result.ok, true);
+  assert.equal(notifNoId.json.result.status, "initialized");
+
+  const notifWithId = await callMcp({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "notifications/initialized",
+  });
+  assert.equal(notifWithId.status, 200);
+  assert.equal(notifWithId.json.result.ok, true);
+  assert.equal(notifWithId.json.result.status, "initialized");
+
+  // 3. tools/list
+  const listRes = await callMcp({
+    jsonrpc: "2.0",
+    id: 3,
+    method: "tools/list",
+    params: {},
+  });
+  assert.equal(listRes.status, 200);
+  const toolNames = (listRes.json.result.tools as Array<{ name: string }>).map(
+    (t) => t.name
+  );
+  assert.ok(toolNames.includes("dcc_search_port_excursions"));
+  assert.ok(toolNames.includes("dcc_check_tour_availability"));
+
+  // 4a. dcc_search_port_excursions at 1:15 p.m. all aboard -> fits
+  const searchFits = await callMcp({
+    jsonrpc: "2.0",
+    id: 4,
+    method: "tools/call",
+    params: {
+      name: "dcc_search_port_excursions",
+      arguments: {
+        port: "new-orleans",
+        date: "2027-07-15",
+        shipArrival: "07:00",
+        allAboard: "1:15 p.m.",
+        partySize: 2,
+        productCode: "15200P6",
+      },
+    },
+  });
+  assert.equal(searchFits.status, 200);
+  assert.equal(searchFits.json.result.isError, false);
+  const fitsTour = searchFits.json.result.structuredContent.tours[0];
+  assert.ok(fitsTour);
+  assert.equal(fitsTour.productCode, "15200P6");
+  assert.equal(fitsTour.timeFit.status, "fits");
+  assert.equal(fitsTour.timeFit.selectedOptionCode, "TG10");
+  assert.equal(fitsTour.timeFit.selectedDepartureTime, "08:00");
+  assert.equal(fitsTour.timeFit.estimatedBackAtPierTime, "12:15");
+  assert.equal(fitsTour.timeFit.bufferBeforeAllAboardMinutes, 60);
+  assert.equal(fitsTour.timeFit.requiredReturnBufferMinutes, 60);
+
+  // 4b. dcc_search_port_excursions at 1:14 p.m. all aboard -> runs_too_late
+  const searchTooLate = await callMcp({
+    jsonrpc: "2.0",
+    id: 5,
+    method: "tools/call",
+    params: {
+      name: "dcc_search_port_excursions",
+      arguments: {
+        port: "new-orleans",
+        date: "2027-07-15",
+        shipArrival: "07:00",
+        allAboard: "1:14 p.m.",
+        partySize: 2,
+        productCode: "15200P6",
+      },
+    },
+  });
+  assert.equal(searchTooLate.status, 200);
+  assert.equal(searchTooLate.json.result.isError, false);
+  const tooLateTour = searchTooLate.json.result.structuredContent.tours[0];
+  assert.ok(tooLateTour);
+  assert.equal(tooLateTour.productCode, "15200P6");
+  assert.equal(tooLateTour.timeFit.status, "runs_too_late");
+  assert.equal(tooLateTour.timeFit.selectedOptionCode, "TG10");
+  assert.equal(tooLateTour.timeFit.selectedDepartureTime, "08:00");
+  assert.equal(tooLateTour.timeFit.estimatedBackAtPierTime, "12:15");
+  assert.equal(tooLateTour.timeFit.bufferBeforeAllAboardMinutes, 59);
+  assert.equal(tooLateTour.timeFit.requiredReturnBufferMinutes, 60);
+
+  // 4c. dcc_search_port_excursions with blank all aboard -> needs_verification
+  const searchBlank = await callMcp({
+    jsonrpc: "2.0",
+    id: 6,
+    method: "tools/call",
+    params: {
+      name: "dcc_search_port_excursions",
+      arguments: {
+        port: "new-orleans",
+        date: "2027-07-15",
+        shipArrival: "07:00",
+        partySize: 2,
+        productCode: "15200P6",
+      },
+    },
+  });
+  assert.equal(searchBlank.status, 200);
+  assert.equal(searchBlank.json.result.isError, false);
+  const blankTour = searchBlank.json.result.structuredContent.tours[0];
+  assert.ok(blankTour);
+  assert.equal(blankTour.productCode, "15200P6");
+  assert.equal(blankTour.timeFit.status, "needs_verification");
+  assert.equal(blankTour.timeFit.shipAllAboardTimeLabel, "15:30 (port estimate)");
+  assert.equal(blankTour.timeFit.allAboardTimeSource, "port_estimate");
+  assert.ok(blankTour.timeFit.missingFields.includes("allAboard"));
+
+  // 5. dcc_check_tour_availability keeps timing fit separate and preserves unknown seat counts
+  const availRes = await callMcp({
+    jsonrpc: "2.0",
+    id: 7,
+    method: "tools/call",
+    params: {
+      name: "dcc_check_tour_availability",
+      arguments: {
+        port: "new-orleans",
+        productCode: "15200P6",
+        optionCode: "TG10",
+        date: "2027-07-15",
+        departureTime: "08:00",
+        partySize: 2,
+        simulateTimeout: true,
+      },
+    },
+  });
+  assert.equal(availRes.status, 200);
+  assert.equal(availRes.json.result.isError, false);
+  const availPayload = availRes.json.result.structuredContent;
+  assert.equal(availPayload.ok, true);
+  assert.equal(availPayload.timingFitIncluded, false);
+  assert.equal(availPayload.seatCountStatus, "unknown");
+  assert.equal(availPayload.seatAvailability.remainingSeats, null);
+  assert.ok(!("timeFit" in availPayload));
+});
+
+
 
 

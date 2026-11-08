@@ -24,8 +24,35 @@ import {
   recordCommercialOutcome,
   type CommercialProvider,
 } from "@/lib/dcc/commerce";
+import {
+  MAPPED_CRUISE_PORT_EXCURSION_PROFILES,
+  queryPortDayExcursionCatalog,
+  verifyLiveExcursionAvailability,
+  type PortDayExcursionCategoryFilter,
+  type PortDayExcursionViewMode,
+} from "@/lib/dcc/cruisePortExcursionCatalogEngine";
 
 export const dynamic = "force-dynamic";
+
+const SUPPORTED_MCP_PROTOCOL_VERSIONS = [
+  "2025-03-26",
+  "2025-06-18",
+  "2024-11-05",
+] as const;
+
+export async function OPTIONS() {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
+      "Access-Control-Allow-Headers":
+        "Content-Type, Accept, Authorization, Mcp-Session-Id, MCP-Protocol-Version, traceparent, x-dcc-admin-simulation-token",
+      "Access-Control-Expose-Headers":
+        "Mcp-Session-Id, MCP-Protocol-Version, traceparent, X-DCC-Surface-Class",
+    },
+  });
+}
 
 export async function GET(request: Request) {
   const flagBlocked = enforceMachineLayerFeatureFlag();
@@ -103,12 +130,98 @@ export async function POST(request: Request) {
     );
   }
 
+  const hasExplicitId = body.id !== undefined && body.id !== null;
   const rpcId = (body.id as string | number | null) ?? null;
   const method = String(body.method ?? "");
   const params = (body.params as Record<string, unknown>) ?? {};
 
   const url = new URL(request.url);
   const baseUrl = `${url.protocol}//${url.host}`;
+
+  if (method === "initialize") {
+    const doc = buildMcpDiscoveryDocument(baseUrl);
+    const requestedVersion =
+      typeof params.protocolVersion === "string" && params.protocolVersion.trim()
+        ? params.protocolVersion.trim()
+        : "2025-03-26";
+    const negotiatedProtocolVersion = (
+      SUPPORTED_MCP_PROTOCOL_VERSIONS as readonly string[]
+    ).includes(requestedVersion)
+      ? requestedVersion
+      : "2025-03-26";
+
+    return buildMachineJsonResponse(
+      {
+        jsonrpc: "2.0",
+        id: rpcId,
+        result: {
+          protocolVersion: negotiatedProtocolVersion,
+          capabilities: {
+            tools: {
+              listChanged: false,
+            },
+          },
+          serverInfo: doc.serverInfo,
+          instructions:
+            "Destination Command Center (DCC) Machine Layer & Port-Day Excursion MCP Server. Use dcc_search_port_excursions to search cruise port excursions and evaluate deterministic sailing-window timing fit (fits, runs_too_late, needs_verification), and use dcc_check_tour_availability to verify live seat/price availability separately from timing fit while preserving unknown seat counts (remainingSeats: null).",
+        },
+      },
+      {
+        cacheControl: "no-store",
+        extraHeaders: {
+          traceparent,
+          "MCP-Protocol-Version": negotiatedProtocolVersion,
+          "X-DCC-Surface-Class": "public_discovery",
+          "X-DCC-RateLimit-Backend": rateDecision.coordinationBackend,
+        },
+      },
+    );
+  }
+
+  if (
+    method === "notifications/initialized" ||
+    method === "initialized" ||
+    method.startsWith("notifications/")
+  ) {
+    return buildMachineJsonResponse(
+      {
+        jsonrpc: "2.0",
+        id: rpcId,
+        result: {
+          ok: true,
+          status: "initialized",
+          method,
+        },
+      },
+      {
+        status: hasExplicitId ? 200 : 202,
+        cacheControl: "no-store",
+        extraHeaders: {
+          traceparent,
+          "X-DCC-Surface-Class": "public_discovery",
+          "X-DCC-RateLimit-Backend": rateDecision.coordinationBackend,
+        },
+      },
+    );
+  }
+
+  if (method === "ping") {
+    return buildMachineJsonResponse(
+      {
+        jsonrpc: "2.0",
+        id: rpcId,
+        result: {},
+      },
+      {
+        cacheControl: "no-store",
+        extraHeaders: {
+          traceparent,
+          "X-DCC-Surface-Class": "public_discovery",
+          "X-DCC-RateLimit-Backend": rateDecision.coordinationBackend,
+        },
+      },
+    );
+  }
 
   if (method === "tools/list") {
     const doc = buildMcpDiscoveryDocument(baseUrl);
@@ -136,6 +249,286 @@ export async function POST(request: Request) {
     const args = (params.arguments as Record<string, unknown>) ?? {};
 
     try {
+      if (toolName === "dcc_search_port_excursions") {
+        const portSlug = String(
+          args.port ?? args.portSlug ?? args.destination ?? "reykjavik",
+        ).trim();
+        const rawViewMode = String(
+          args.viewMode ?? args.view ?? "browse_all",
+        )
+          .trim()
+          .toLowerCase();
+        const viewMode: PortDayExcursionViewMode =
+          rawViewMode === "fits_sailing" ||
+          rawViewMode === "fits_my_sailing" ||
+          rawViewMode === "fits"
+            ? "fits_sailing"
+            : "browse_all";
+
+        const rawCategory = String(args.category ?? "all").trim().toLowerCase();
+        const allowedCategories = new Set<PortDayExcursionCategoryFilter>([
+          "all",
+          "sightseeing",
+          "wildlife",
+          "food",
+          "culture",
+          "adventure",
+          "family",
+        ]);
+        const category: PortDayExcursionCategoryFilter = allowedCategories.has(
+          rawCategory as PortDayExcursionCategoryFilter,
+        )
+          ? (rawCategory as PortDayExcursionCategoryFilter)
+          : "all";
+
+        const rawArrival =
+          args.shipArrival ?? args.shipArrivalTime ?? undefined;
+        const shipArrivalTime =
+          typeof rawArrival === "string" && rawArrival.trim()
+            ? rawArrival.trim()
+            : undefined;
+
+        const rawAllAboard =
+          args.allAboard ?? args.shipAllAboardTime ?? args.allAboardTime ?? undefined;
+        const shipAllAboardTime =
+          typeof rawAllAboard === "string" && rawAllAboard.trim()
+            ? rawAllAboard.trim()
+            : undefined;
+
+        const rawDeparture =
+          args.shipDeparture ??
+          args.shipDepartureTime ??
+          args.departureTime ??
+          args.departure ??
+          undefined;
+        const shipDepartureTime =
+          typeof rawDeparture === "string" && rawDeparture.trim()
+            ? rawDeparture.trim()
+            : undefined;
+
+        const rawDate = args.date ?? args.sailingDate ?? undefined;
+        const sailingDate =
+          typeof rawDate === "string" && rawDate.trim()
+            ? rawDate.trim()
+            : undefined;
+
+        const rawShip =
+          args.ship ?? args.shipSlug ?? args.shipName ?? undefined;
+        const shipSlug =
+          typeof rawShip === "string" && rawShip.trim()
+            ? rawShip.trim()
+            : undefined;
+
+        const rawSailing =
+          args.sailing ?? args.sailingId ?? args.plan ?? args.planCode ?? undefined;
+        const sailingId =
+          typeof rawSailing === "string" && rawSailing.trim()
+            ? rawSailing.trim()
+            : undefined;
+
+        const partySizeRaw = args.partySize ?? args.party_size;
+        const partySize =
+          partySizeRaw !== undefined && partySizeRaw !== null
+            ? Math.max(1, Number(partySizeRaw) || 2)
+            : 2;
+
+        const limitRaw = args.limit;
+        const limit =
+          limitRaw !== undefined && limitRaw !== null
+            ? Math.max(1, Math.min(100, Number(limitRaw) || 12))
+            : 12;
+
+        const offsetRaw = args.offset;
+        const pageRaw = args.page;
+        const offset =
+          offsetRaw !== undefined && offsetRaw !== null
+            ? Math.max(0, Number(offsetRaw) || 0)
+            : pageRaw !== undefined && pageRaw !== null
+              ? Math.max(0, (Math.max(1, Number(pageRaw) || 1) - 1) * limit)
+              : 0;
+
+        const rawSortBy = String(args.sortBy ?? "recommended");
+        const sortBy =
+          rawSortBy === "rating_desc" ||
+          rawSortBy === "price_asc" ||
+          rawSortBy === "duration_asc"
+            ? rawSortBy
+            : "recommended";
+
+        const rawSearch = args.productCode ?? args.search ?? args.q ?? undefined;
+        const search =
+          typeof rawSearch === "string" && rawSearch.trim()
+            ? rawSearch.trim()
+            : undefined;
+
+        const originatingSite =
+          typeof args.originatingSite === "string" && args.originatingSite.trim()
+            ? args.originatingSite.trim()
+            : "destinationcommandcenter.com";
+        const surface =
+          typeof args.surface === "string" && args.surface.trim()
+            ? args.surface.trim()
+            : "mcp_port_day_excursions";
+
+        const result = await queryPortDayExcursionCatalog({
+          portSlug,
+          viewMode,
+          category,
+          shipArrivalTime,
+          shipAllAboardTime,
+          shipDepartureTime,
+          sailingDate,
+          shipSlug,
+          sailingId,
+          partySize,
+          ship: shipSlug,
+          limit,
+          offset,
+          sortBy,
+          search,
+          originatingSite,
+          surface,
+        });
+
+        if (!result) {
+          return buildMachineJsonResponse(
+            {
+              jsonrpc: "2.0",
+              id: rpcId,
+              error: {
+                code: -32602,
+                message: `Unsupported or unmapped cruise port slug: ${portSlug}`,
+                data: {
+                  supportedPorts: MAPPED_CRUISE_PORT_EXCURSION_PROFILES.map(
+                    (p) => p.portSlug,
+                  ),
+                },
+              },
+            },
+            { status: 400, cacheControl: "no-store", extraHeaders: { traceparent } },
+          );
+        }
+
+        return buildMachineJsonResponse(
+          {
+            jsonrpc: "2.0",
+            id: rpcId,
+            result: {
+              content: [{ type: "text", text: JSON.stringify(result) }],
+              structuredContent: result,
+              isError: false,
+            },
+          },
+          {
+            cacheControl: "no-store",
+            extraHeaders: {
+              traceparent,
+              "X-DCC-Surface-Class": "public_discovery",
+              "X-DCC-RateLimit-Backend": rateDecision.coordinationBackend,
+            },
+          },
+        );
+      }
+
+      if (toolName === "dcc_check_tour_availability") {
+        const portSlug = String(args.port ?? args.portSlug ?? "reykjavik").trim();
+        const tourId = typeof args.tourId === "string" ? args.tourId.trim() : "";
+        const productCode =
+          typeof args.productCode === "string" && args.productCode.trim()
+            ? args.productCode.trim()
+            : null;
+        const optionCode =
+          typeof (args.optionCode ?? args.option) === "string" &&
+          String(args.optionCode ?? args.option).trim()
+            ? String(args.optionCode ?? args.option).trim()
+            : null;
+        const date = String(args.date ?? args.sailingDate ?? "2027-07-15").trim();
+        const partySize = Math.max(1, Number(args.partySize ?? 2) || 2);
+        const departureTime =
+          typeof (args.departureTime ?? args.selectedDepartureTime) === "string" &&
+          String(args.departureTime ?? args.selectedDepartureTime).trim()
+            ? String(args.departureTime ?? args.selectedDepartureTime).trim()
+            : null;
+        const timeoutMs =
+          args.timeoutMs !== undefined && Number.isFinite(Number(args.timeoutMs))
+            ? Number(args.timeoutMs)
+            : undefined;
+        const simulateTimeout =
+          args.simulateTimeout === true ||
+          args.simulateTimeout === "true" ||
+          args.providerTimeout === true ||
+          args.providerTimeout === "true";
+        const originatingSite =
+          typeof args.originatingSite === "string" && args.originatingSite.trim()
+            ? args.originatingSite.trim()
+            : "destinationcommandcenter.com";
+        const surface =
+          typeof args.surface === "string" && args.surface.trim()
+            ? args.surface.trim()
+            : "mcp_port_day_availability";
+
+        if (!tourId && !productCode) {
+          return buildMachineJsonResponse(
+            {
+              jsonrpc: "2.0",
+              id: rpcId,
+              error: {
+                code: -32602,
+                message:
+                  "Missing required tourId or productCode for live availability check.",
+              },
+            },
+            { status: 400, cacheControl: "no-store", extraHeaders: { traceparent } },
+          );
+        }
+
+        const seatAvailability = await verifyLiveExcursionAvailability({
+          portSlug,
+          tourId,
+          productCode,
+          optionCode,
+          date,
+          partySize,
+          departureTime,
+          timeoutMs,
+          simulateTimeout,
+          originatingSite,
+          surface,
+        });
+
+        const payload = {
+          ok: !seatAvailability.pastDepartureRejected,
+          portSlug,
+          tourId: tourId || null,
+          productCode,
+          optionCode: seatAvailability.selectedOptionCode ?? optionCode,
+          timingFitIncluded: false,
+          seatCountStatus:
+            seatAvailability.remainingSeats !== null ? "reported_by_provider" : "unknown",
+          seatAvailability,
+        };
+
+        return buildMachineJsonResponse(
+          {
+            jsonrpc: "2.0",
+            id: rpcId,
+            result: {
+              content: [{ type: "text", text: JSON.stringify(payload) }],
+              structuredContent: payload,
+              isError: Boolean(seatAvailability.pastDepartureRejected),
+            },
+          },
+          {
+            cacheControl: "no-store",
+            extraHeaders: {
+              traceparent,
+              "X-DCC-Surface-Class": "public_discovery",
+              "X-DCC-RateLimit-Backend": rateDecision.coordinationBackend,
+            },
+          },
+        );
+      }
+
       if (toolName === "dcc_evaluate_category" || toolName === "dcc_evaluate_current") {
         const auth = verifyEvaluationAuthAndRateLimit(request, "evaluate:single");
         const isSim = args.mode === "admin_simulation";

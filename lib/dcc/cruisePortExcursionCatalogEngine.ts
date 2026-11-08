@@ -829,14 +829,14 @@ export function resolveCruisePortExcursionProfile(
 function parseHhMm(hhmm: string | undefined | null): number | null {
   const raw = String(hhmm || "").trim();
   if (!raw) return null;
-  const m12 = raw.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  const m12 = raw.match(/^(\d{1,2}):(\d{2})\s*([ap])\.?m\.?$/i);
   if (m12) {
     let h = Number(m12[1]);
     const min = Number(m12[2]);
     const meridiem = m12[3].toUpperCase();
     if (h < 1 || h > 12 || min < 0 || min > 59) return null;
-    if (meridiem === "AM" && h === 12) h = 0;
-    if (meridiem === "PM" && h < 12) h += 12;
+    if (meridiem === "A" && h === 12) h = 0;
+    if (meridiem === "P" && h < 12) h += 12;
     return h * 60 + min;
   }
   const m = raw.match(/^(\d{1,2}):(\d{2})$/);
