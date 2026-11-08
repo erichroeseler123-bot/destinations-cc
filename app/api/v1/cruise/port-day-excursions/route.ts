@@ -7,6 +7,7 @@ import {
   type PortDayExcursionViewMode,
   type PortDayExcursionCategoryFilter,
 } from "@/lib/dcc/cruisePortExcursionCatalogEngine";
+import { recordMachineFunnelEvent } from "@/lib/dcc/commerce";
 
 export const dynamic = "force-dynamic";
 
@@ -174,6 +175,23 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    await recordMachineFunnelEvent({
+      stage: "search",
+      callerClientId: originatingSite || "rest:anonymous",
+      originatingSite: originatingSite || "destinationcommandcenter.com",
+      portSlug: result.port.portSlug,
+      productCode: searchParams.get("productCode") || null,
+      intendedDate: sailingDate || null,
+      partySize,
+      metadata: {
+        surface: surface || "/api/v1/cruise/port-day-excursions",
+        viewMode,
+        timeFitStatus: result.tours[0]?.timeFit?.status ?? null,
+        totalCatalogTours: result.pagination.totalCatalogTours,
+        totalFittingSailing: result.pagination.totalFittingSailing,
+      },
+    }).catch(() => {});
+
     return NextResponse.json(result, { headers: CORS_HEADERS });
   } catch (err: any) {
     return NextResponse.json(
@@ -236,10 +254,35 @@ export async function POST(request: NextRequest) {
       surface,
     });
 
+    await recordMachineFunnelEvent({
+      stage: "availability_check",
+      callerClientId: originatingSite || "rest:anonymous",
+      originatingSite: originatingSite || "destinationcommandcenter.com",
+      portSlug,
+      productCode: productCode || tourId || null,
+      optionCode: seatAvailability.selectedOptionCode ?? optionCode,
+      intendedDate: date,
+      departureTime: seatAvailability.selectedDepartureTime ?? departureTime,
+      partySize,
+      isQaTraffic: Boolean(body.isQaTraffic || body.isTest || simulateTimeout),
+      simulateTimeout,
+      metadata: {
+        surface: surface || "/api/v1/cruise/port-day-excursions",
+        availabilityStatus: seatAvailability.status,
+        unitPriceUsd: seatAvailability.fromPriceUsd,
+        totalPriceUsd: seatAvailability.totalPriceUsd,
+        currency: seatAvailability.currency,
+        readOnly: true,
+        createsCommercialHandoff: false,
+      },
+    }).catch(() => {});
+
     if (seatAvailability.pastDepartureRejected) {
       return NextResponse.json(
         {
           ok: false,
+          readOnly: true,
+          createsCommercialHandoff: false,
           error: "past_departure_rejected",
           message: seatAvailability.rejectionReason,
           portSlug,
@@ -255,6 +298,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         ok: true,
+        readOnly: true,
+        createsCommercialHandoff: false,
         portSlug,
         tourId,
         productCode,

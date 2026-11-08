@@ -581,12 +581,123 @@ export function deriveHandoffOutcomeStateFromOutcome(
   };
 }
 
+export type MachineFunnelStage = "search" | "availability_check" | "checkout_handoff";
+
+export interface MachineFunnelEventRecord {
+  eventId: string;
+  stage: MachineFunnelStage;
+  originatingSite: string;
+  callerClientId: string;
+  portSlug: string | null;
+  productCode: string | null;
+  optionCode: string | null;
+  intendedDate: string | null;
+  departureTime: string | null;
+  partySize: number | null;
+  handoffId: string | null;
+  clickId: string | null;
+  idempotencyKey: string | null;
+  isQaTraffic: boolean;
+  metadata: Record<string, unknown>;
+  createdAt: string;
+}
+
+export interface MachineCommerceFunnelSummary {
+  searchEvents: number;
+  availabilityCheckEvents: number;
+  checkoutHandoffEvents: number;
+  matchedConfirmedBookings: number;
+  qaExcludedEvents: {
+    searchEvents: number;
+    availabilityCheckEvents: number;
+    checkoutHandoffEvents: number;
+    total: number;
+  };
+  note: string;
+}
+
+export function isCommercialQaTraffic(input: {
+  isQaTraffic?: boolean | null;
+  qaTraffic?: boolean | null;
+  isTest?: boolean | null;
+  simulateTimeout?: boolean | null;
+  trafficClass?: string | null;
+  idempotencyKey?: string | null;
+  callerClientId?: string | null;
+  handoffId?: string | null;
+  clickId?: string | null;
+  metadata?: Record<string, unknown> | null;
+}): boolean {
+  if (
+    input.isQaTraffic === true ||
+    input.qaTraffic === true ||
+    input.isTest === true ||
+    input.simulateTimeout === true
+  ) {
+    return true;
+  }
+  const meta = input.metadata || {};
+  if (
+    meta.isQaTraffic === true ||
+    meta.qaTraffic === true ||
+    meta.isTest === true ||
+    meta.simulateTimeout === true ||
+    meta.trafficClass === "test" ||
+    meta.trafficClass === "qa"
+  ) {
+    return true;
+  }
+  const tc = String(input.trafficClass || "").trim().toLowerCase();
+  if (tc === "test" || tc === "qa") return true;
+
+  const idem = String(input.idempotencyKey || meta.idempotencyKey || "")
+    .trim()
+    .toLowerCase();
+  if (
+    idem.startsWith("qa_") ||
+    idem.startsWith("qa-") ||
+    idem.startsWith("test_") ||
+    idem.startsWith("test-") ||
+    idem.startsWith("vitest_") ||
+    idem.startsWith("smoke_")
+  ) {
+    return true;
+  }
+
+  const client = String(input.callerClientId || "")
+    .trim()
+    .toLowerCase();
+  if (
+    client.includes("qa_test") ||
+    client.includes("qa-test") ||
+    client.startsWith("qa_") ||
+    client.startsWith("test_") ||
+    client.includes("vitest")
+  ) {
+    return true;
+  }
+
+  const hid = String(input.handoffId || "").trim().toLowerCase();
+  const cid = String(input.clickId || meta.clickId || "").trim().toLowerCase();
+  if (
+    hid.startsWith("test") ||
+    hid.startsWith("qa_") ||
+    cid.startsWith("test") ||
+    cid.startsWith("qa_")
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
 // In-memory store synchronized with Neon PostgreSQL when DATABASE_URL is configured
 const memoryHandoffs = new Map<string, CommercialHandoffRecord>();
 const memoryOutcomesByDedupeKey = new Map<string, CommercialOutcomeRecord>();
 const memoryOutcomesById = new Map<string, CommercialOutcomeRecord>();
 const memoryCheckpoints = new Map<string, PollerCheckpointRecord>();
 const memoryActiveLeases = new Map<string, { holderId: string; expiresAtMs: number }>();
+const memoryMachineFunnelEvents = new Map<string, MachineFunnelEventRecord>();
 
 export function resetCommercialMemoryStoreForTests(): void {
   memoryHandoffs.clear();
@@ -594,6 +705,7 @@ export function resetCommercialMemoryStoreForTests(): void {
   memoryOutcomesById.clear();
   memoryCheckpoints.clear();
   memoryActiveLeases.clear();
+  memoryMachineFunnelEvents.clear();
   resetOpaqueAttributionLedgerForTests();
 }
 
@@ -707,6 +819,30 @@ export async function ensureCommerceTables(): Promise<boolean> {
           locked_until TIMESTAMPTZ,
           updated_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp()
         );
+
+        CREATE TABLE IF NOT EXISTS dcc_machine_funnel_events (
+          event_id TEXT PRIMARY KEY,
+          stage TEXT NOT NULL,
+          originating_site TEXT NOT NULL,
+          caller_client_id TEXT NOT NULL,
+          port_slug TEXT,
+          product_code TEXT,
+          option_code TEXT,
+          intended_date TEXT,
+          departure_time TEXT,
+          party_size INTEGER,
+          handoff_id TEXT,
+          click_id TEXT,
+          idempotency_key TEXT,
+          is_qa_traffic BOOLEAN NOT NULL DEFAULT FALSE,
+          metadata_json JSONB NOT NULL DEFAULT '{}'::jsonb,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp()
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_dcc_machine_funnel_stage
+          ON dcc_machine_funnel_events(stage, is_qa_traffic);
+        CREATE INDEX IF NOT EXISTS idx_dcc_machine_funnel_handoff
+          ON dcc_machine_funnel_events(handoff_id);
       `);
       return true;
     } catch {
@@ -1233,6 +1369,7 @@ export async function createCommercialHandoff(
   input: CreateCommercialHandoffInput
 ): Promise<CommercialHandoffRecord> {
   const originatingSite = normalizeOriginatingSite(input.originatingSite);
+  const callerClientId = input.callerClientId?.trim() || "public_traveler_browser";
   const rawIdempotencyKey =
     (typeof input.idempotencyKey === "string" && input.idempotencyKey.trim()) ||
     (input.metadata &&
@@ -1243,7 +1380,8 @@ export async function createCommercialHandoff(
   if (rawIdempotencyKey) {
     for (const existing of memoryHandoffs.values()) {
       if (
-        existing.originatingSite === originatingSite &&
+        (existing.originatingSite === originatingSite ||
+          existing.callerClientId === callerClientId) &&
         existing.metadata?.idempotencyKey === rawIdempotencyKey
       ) {
         return {
@@ -1258,8 +1396,8 @@ export async function createCommercialHandoff(
     if (poolCheck && hasDbCheck) {
       try {
         const dupRes = await poolCheck.query<{ handoff_id: string }>(
-          `SELECT handoff_id FROM dcc_commercial_handoffs WHERE originating_site = $1 AND metadata_json->>'idempotencyKey' = $2 LIMIT 1`,
-          [originatingSite, rawIdempotencyKey]
+          `SELECT handoff_id FROM dcc_commercial_handoffs WHERE (originating_site = $1 OR caller_client_id = $2) AND metadata_json->>'idempotencyKey' = $3 ORDER BY created_at ASC LIMIT 1`,
+          [originatingSite, callerClientId, rawIdempotencyKey]
         );
         if (dupRes.rows[0]?.handoff_id) {
           const loaded = await getCommercialHandoffById(dupRes.rows[0].handoff_id);
@@ -1275,6 +1413,12 @@ export async function createCommercialHandoff(
       }
     }
   }
+
+  const isQaTraffic = isCommercialQaTraffic({
+    idempotencyKey: rawIdempotencyKey,
+    callerClientId,
+    metadata: input.metadata ?? null,
+  });
 
   const partySize =
     typeof input.partySize === "number" && Number.isFinite(input.partySize)
@@ -1377,6 +1521,7 @@ export async function createCommercialHandoff(
     provider: input.provider,
     productCode: input.productCode,
     productDestinationUrl: urlBuilt.outboundAffiliateUrl,
+    isTest: isQaTraffic,
   });
 
   let derivedTargetSite: string | null = input.targetSite
@@ -1524,6 +1669,7 @@ export async function createCommercialHandoff(
     ...(input.metadata ?? {}),
     clickId: opaqueAttribution.clickId,
     ...(rawIdempotencyKey ? { idempotencyKey: rawIdempotencyKey } : {}),
+    ...(isQaTraffic ? { isQaTraffic: true } : {}),
     ...(derivedTargetSite ? { targetSite: derivedTargetSite } : {}),
     ...(viatorProductCode ? { viatorProductCode } : {}),
     ...(fareharborShortname ? { fareharborShortname } : {}),
@@ -1602,7 +1748,7 @@ export async function createCommercialHandoff(
           JSON.stringify(input.partyDetails ?? null),
           input.quotedPriceAmount ?? null,
           input.quotedPriceCurrency ?? null,
-          input.callerClientId || "public_traveler_browser",
+          callerClientId,
           input.traceparent ?? null,
           JSON.stringify(enrichedMetadata),
         ]
@@ -1650,7 +1796,7 @@ export async function createCommercialHandoff(
     checkoutBookingBinding,
     approvedPartnerAttribution,
     outcomeState,
-    callerClientId: input.callerClientId || "public_traveler_browser",
+    callerClientId,
     traceparent: input.traceparent ?? null,
     dccBookingAdapterMode: "shadow_only_no_side_effects",
     requiresDecisionAuthorization: false,
@@ -1660,6 +1806,199 @@ export async function createCommercialHandoff(
   };
 
   memoryHandoffs.set(handoffId, record);
+  return record;
+}
+
+export async function countCommercialHandoffsByIdempotencyKey(params: {
+  idempotencyKey: string;
+  originatingSite?: string | null;
+  callerClientId?: string | null;
+}): Promise<{
+  durableRecordCount: number;
+  handoffIds: string[];
+}> {
+  const key = params.idempotencyKey.trim();
+  if (!key) {
+    return { durableRecordCount: 0, handoffIds: [] };
+  }
+  const orig = params.originatingSite
+    ? normalizeOriginatingSite(params.originatingSite)
+    : null;
+  const client = params.callerClientId?.trim() || null;
+
+  const ids = new Set<string>();
+  for (const h of memoryHandoffs.values()) {
+    if (h.metadata?.idempotencyKey === key) {
+      if (!orig && !client) {
+        ids.add(h.handoffId);
+      } else if (
+        (orig && h.originatingSite === orig) ||
+        (client && h.callerClientId === client)
+      ) {
+        ids.add(h.handoffId);
+      }
+    }
+  }
+
+  const pool = getCommercePool();
+  const hasDb = await ensureCommerceTables();
+  if (pool && hasDb) {
+    try {
+      const res = await pool.query<{ handoff_id: string }>(
+        orig && client
+          ? `SELECT handoff_id FROM dcc_commercial_handoffs WHERE (originating_site = $1 OR caller_client_id = $2) AND metadata_json->>'idempotencyKey' = $3`
+          : orig
+            ? `SELECT handoff_id FROM dcc_commercial_handoffs WHERE originating_site = $1 AND metadata_json->>'idempotencyKey' = $2`
+            : `SELECT handoff_id FROM dcc_commercial_handoffs WHERE metadata_json->>'idempotencyKey' = $1`,
+        orig && client ? [orig, client, key] : orig ? [orig, key] : [key]
+      );
+      for (const r of res.rows) {
+        if (r.handoff_id) ids.add(r.handoff_id);
+      }
+    } catch {
+      // Non-fatal
+    }
+  }
+
+  const handoffIds = Array.from(ids);
+  return {
+    durableRecordCount: handoffIds.length,
+    handoffIds,
+  };
+}
+
+export async function recordMachineFunnelEvent(input: {
+  stage: MachineFunnelStage;
+  originatingSite?: string | null;
+  callerClientId?: string | null;
+  portSlug?: string | null;
+  productCode?: string | null;
+  optionCode?: string | null;
+  intendedDate?: string | null;
+  departureTime?: string | null;
+  partySize?: number | null;
+  handoffId?: string | null;
+  clickId?: string | null;
+  idempotencyKey?: string | null;
+  isQaTraffic?: boolean | null;
+  simulateTimeout?: boolean | null;
+  metadata?: Record<string, unknown> | null;
+}): Promise<MachineFunnelEventRecord> {
+  const originatingSite = normalizeOriginatingSite(
+    input.originatingSite || "destinationcommandcenter.com"
+  );
+  const callerClientId = input.callerClientId?.trim() || "client:dcc_mcp_client";
+  const idempotencyKey = input.idempotencyKey?.trim() || null;
+
+  // Deduplicate checkout_handoff events by idempotencyKey + stage so retries never create a second event
+  if (input.stage === "checkout_handoff" && idempotencyKey) {
+    for (const existing of memoryMachineFunnelEvents.values()) {
+      if (
+        existing.stage === "checkout_handoff" &&
+        existing.idempotencyKey === idempotencyKey &&
+        (existing.originatingSite === originatingSite ||
+          existing.callerClientId === callerClientId)
+      ) {
+        return existing;
+      }
+    }
+  }
+
+  const isQa = isCommercialQaTraffic({
+    isQaTraffic: input.isQaTraffic,
+    simulateTimeout: input.simulateTimeout,
+    idempotencyKey,
+    callerClientId,
+    handoffId: input.handoffId,
+    clickId: input.clickId,
+    metadata: input.metadata,
+  });
+
+  const eventId =
+    input.stage === "checkout_handoff" && idempotencyKey
+      ? `mf_chk_${crypto
+          .createHash("sha256")
+          .update(`${originatingSite}:${callerClientId}:${idempotencyKey}`)
+          .digest("hex")
+          .slice(0, 24)}`
+      : `mf_${input.stage.slice(0, 3)}_${crypto.randomBytes(10).toString("hex")}`;
+
+  const createdAt = new Date().toISOString();
+  const record: MachineFunnelEventRecord = {
+    eventId,
+    stage: input.stage,
+    originatingSite,
+    callerClientId,
+    portSlug: input.portSlug?.trim().toLowerCase() || null,
+    productCode: input.productCode?.trim() || null,
+    optionCode: input.optionCode?.trim() || null,
+    intendedDate: input.intendedDate?.trim() || null,
+    departureTime: input.departureTime?.trim() || null,
+    partySize:
+      typeof input.partySize === "number" && Number.isFinite(input.partySize)
+        ? Math.max(1, Math.round(input.partySize))
+        : null,
+    handoffId: input.handoffId?.trim() || null,
+    clickId: input.clickId?.trim() || null,
+    idempotencyKey,
+    isQaTraffic: isQa,
+    metadata: input.metadata || {},
+    createdAt,
+  };
+
+  memoryMachineFunnelEvents.set(eventId, record);
+
+  const pool = getCommercePool();
+  const hasDb = await ensureCommerceTables();
+  if (pool && hasDb) {
+    try {
+      await pool.query(
+        `
+        INSERT INTO dcc_machine_funnel_events (
+          event_id,
+          stage,
+          originating_site,
+          caller_client_id,
+          port_slug,
+          product_code,
+          option_code,
+          intended_date,
+          departure_time,
+          party_size,
+          handoff_id,
+          click_id,
+          idempotency_key,
+          is_qa_traffic,
+          metadata_json,
+          created_at
+        ) VALUES (
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15::jsonb, clock_timestamp()
+        )
+        ON CONFLICT (event_id) DO NOTHING
+        `,
+        [
+          record.eventId,
+          record.stage,
+          record.originatingSite,
+          record.callerClientId,
+          record.portSlug,
+          record.productCode,
+          record.optionCode,
+          record.intendedDate,
+          record.departureTime,
+          record.partySize,
+          record.handoffId,
+          record.clickId,
+          record.idempotencyKey,
+          record.isQaTraffic,
+          JSON.stringify(record.metadata),
+        ]
+      );
+    } catch {
+      // Non-fatal
+    }
+  }
+
   return record;
 }
 
@@ -1949,11 +2288,37 @@ export async function recordCommercialOutcome(
     ? getOpaqueClickAttributionById(resolvedClickId)
     : null;
 
-  const resolvedHandoffId =
+  let resolvedHandoffId =
     extractHandoffIdFromTrackingValue(input.handoffId) ||
     extractHandoffIdFromTrackingValue(input.campaignOrRefValue) ||
     opaqueRecord?.handoffId ||
     null;
+
+  if (!resolvedHandoffId && resolvedClickId) {
+    for (const h of memoryHandoffs.values()) {
+      if (h.clickId?.toLowerCase() === resolvedClickId.toLowerCase()) {
+        resolvedHandoffId = h.handoffId;
+        break;
+      }
+    }
+    if (!resolvedHandoffId) {
+      const poolLookup = getCommercePool();
+      const hasDbLookup = await ensureCommerceTables();
+      if (poolLookup && hasDbLookup) {
+        try {
+          const clkRes = await poolLookup.query<{ handoff_id: string }>(
+            `SELECT handoff_id FROM dcc_commercial_handoffs WHERE LOWER(metadata_json->>'clickId') = $1 LIMIT 1`,
+            [resolvedClickId.toLowerCase()]
+          );
+          if (clkRes.rows[0]?.handoff_id) {
+            resolvedHandoffId = clkRes.rows[0].handoff_id;
+          }
+        } catch {
+          // Non-fatal
+        }
+      }
+    }
+  }
 
   const matchedHandoff = resolvedHandoffId
     ? await getCommercialHandoffById(resolvedHandoffId)
@@ -3589,6 +3954,7 @@ export interface SharedHandoffLedgerSummary {
     forPortSlug: number;
     byOriginatingSite: Record<string, number>;
     byProvider: Record<string, number>;
+    qaExcludedCount?: number;
   };
   providerConfirmedBookings: {
     displayValue: number | "unknown";
@@ -3623,6 +3989,132 @@ export interface SharedHandoffLedgerSummary {
     reportingStatus: "reported" | "unknown";
     note: string;
   };
+  machineFunnel?: MachineCommerceFunnelSummary;
+}
+
+export async function getMachineCommerceFunnelSummary(options?: {
+  originatingSite?: string | null;
+  portSlug?: string | null;
+  productCode?: string | null;
+}): Promise<MachineCommerceFunnelSummary> {
+  const siteFilter = options?.originatingSite
+    ? normalizeOriginatingSite(options.originatingSite)
+    : null;
+  const portFilter = options?.portSlug ? options.portSlug.trim().toLowerCase() : null;
+  const prodFilter = options?.productCode ? options.productCode.trim().toUpperCase() : null;
+
+  const seenEventIds = new Set<string>();
+  const nonQaHandoffIds = new Set<string>();
+  let searchEvents = 0;
+  let availabilityCheckEvents = 0;
+  let checkoutHandoffEvents = 0;
+  let qaSearch = 0;
+  let qaAvail = 0;
+  let qaCheckout = 0;
+
+  const applyEvent = (evt: {
+    eventId: string;
+    stage: string;
+    originatingSite: string;
+    portSlug: string | null;
+    productCode: string | null;
+    handoffId: string | null;
+    isQaTraffic: boolean;
+  }) => {
+    if (!evt.eventId || seenEventIds.has(evt.eventId)) return;
+    seenEventIds.add(evt.eventId);
+
+    const orig = normalizeOriginatingSite(evt.originatingSite || "destinationcommandcenter.com");
+    if (siteFilter && orig !== siteFilter) return;
+    if (portFilter && (evt.portSlug || "").toLowerCase() !== portFilter) return;
+    if (prodFilter && (evt.productCode || "").toUpperCase() !== prodFilter) return;
+
+    if (evt.isQaTraffic) {
+      if (evt.stage === "search") qaSearch += 1;
+      else if (evt.stage === "availability_check") qaAvail += 1;
+      else if (evt.stage === "checkout_handoff") qaCheckout += 1;
+      return;
+    }
+
+    if (evt.stage === "search") searchEvents += 1;
+    else if (evt.stage === "availability_check") availabilityCheckEvents += 1;
+    else if (evt.stage === "checkout_handoff") {
+      checkoutHandoffEvents += 1;
+      if (evt.handoffId) nonQaHandoffIds.add(evt.handoffId);
+    }
+  };
+
+  const pool = getCommercePool();
+  const hasDb = await ensureCommerceTables();
+  if (pool && hasDb) {
+    try {
+      const res = await pool.query<{
+        event_id: string;
+        stage: string;
+        originating_site: string;
+        port_slug: string | null;
+        product_code: string | null;
+        handoff_id: string | null;
+        is_qa_traffic: boolean;
+      }>(
+        `SELECT event_id, stage, originating_site, port_slug, product_code, handoff_id, is_qa_traffic FROM dcc_machine_funnel_events ORDER BY created_at DESC LIMIT 5000`
+      );
+      for (const r of res.rows) {
+        applyEvent({
+          eventId: r.event_id,
+          stage: r.stage,
+          originatingSite: r.originating_site,
+          portSlug: r.port_slug,
+          productCode: r.product_code,
+          handoffId: r.handoff_id,
+          isQaTraffic: Boolean(r.is_qa_traffic),
+        });
+      }
+    } catch {
+      // Fallback to in-memory
+    }
+  }
+
+  for (const evt of memoryMachineFunnelEvents.values()) {
+    applyEvent(evt);
+  }
+
+  const outcomes = await listCommercialOutcomes({ limit: 200 });
+  let matchedConfirmedBookings = 0;
+  for (const out of outcomes) {
+    const evtType = out.eventType.toUpperCase();
+    const isConfirmed =
+      evtType.includes("CONFIRM") ||
+      evtType.includes("FULFILL") ||
+      evtType.includes("COMMISSION_RECONCILED");
+    if (!isConfirmed) continue;
+    if (
+      !hasAuthenticatedProviderPaymentOrOperationalEvidence({
+        reporterClientId: out.reporterClientId,
+        reporterProvenance: out.reporterProvenance,
+        providerBookingRef: out.providerBookingRef,
+      })
+    ) {
+      continue;
+    }
+    if (out.handoffId && nonQaHandoffIds.has(out.handoffId)) {
+      matchedConfirmedBookings += 1;
+    }
+  }
+
+  return {
+    searchEvents,
+    availabilityCheckEvents,
+    checkoutHandoffEvents,
+    matchedConfirmedBookings,
+    qaExcludedEvents: {
+      searchEvents: qaSearch,
+      availabilityCheckEvents: qaAvail,
+      checkoutHandoffEvents: qaCheckout,
+      total: qaSearch + qaAvail + qaCheckout,
+    },
+    note: "Search (dcc_search_port_excursions), read-only availability check (dcc_check_tour_availability), and checkout handoff (dcc_prepare_tour_checkout) are recorded as separate funnel stages. QA/synthetic test traffic is excluded from production counts.",
+  };
 }
 
 export async function getSharedHandoffLedgerSummary(options?: {
@@ -3639,12 +4131,14 @@ export async function getSharedHandoffLedgerSummary(options?: {
 
   const seenHandoffIds = new Set<string>();
   const seenClickIds = new Set<string>();
+  const qaHandoffIds = new Set<string>();
   const byOriginatingSite: Record<string, number> = {};
   const byProvider: Record<string, number> = {};
   let totalRedirects = 0;
   let forOriginatingSite = 0;
   let forPortSlug = 0;
   let unreportedRedirectsCount = 0;
+  let qaExcludedCount = 0;
 
   const handoffOriginById = new Map<string, string>();
 
@@ -3658,9 +4152,10 @@ export async function getSharedHandoffLedgerSummary(options?: {
         originating_site: string;
         provider: string;
         attribution_param_value: string;
+        caller_client_id: string;
         metadata_json: Record<string, any> | null;
       }>(
-        `SELECT handoff_id, originating_site, provider, attribution_param_value, metadata_json FROM dcc_commercial_handoffs ORDER BY created_at DESC LIMIT 2000`,
+        `SELECT handoff_id, originating_site, provider, attribution_param_value, caller_client_id, metadata_json FROM dcc_commercial_handoffs ORDER BY created_at DESC LIMIT 2000`,
       );
       for (const row of res.rows) {
         const hid = String(row.handoff_id || "").trim();
@@ -3669,6 +4164,20 @@ export async function getSharedHandoffLedgerSummary(options?: {
         const meta = row.metadata_json || {};
         if (typeof meta.clickId === "string" && meta.clickId.trim()) {
           seenClickIds.add(meta.clickId.trim().toLowerCase());
+        }
+        if (
+          isCommercialQaTraffic({
+            handoffId: hid,
+            clickId: typeof meta.clickId === "string" ? meta.clickId : null,
+            callerClientId: row.caller_client_id,
+            idempotencyKey:
+              typeof meta.idempotencyKey === "string" ? meta.idempotencyKey : null,
+            metadata: meta,
+          })
+        ) {
+          qaHandoffIds.add(hid);
+          qaExcludedCount += 1;
+          continue;
         }
         const orig = normalizeOriginatingSite(row.originating_site || "destinationcommandcenter.com");
         handoffOriginById.set(hid, orig);
@@ -3701,6 +4210,22 @@ export async function getSharedHandoffLedgerSummary(options?: {
     if (seenHandoffIds.has(h.handoffId)) continue;
     seenHandoffIds.add(h.handoffId);
     if (h.clickId) seenClickIds.add(h.clickId.toLowerCase());
+    if (
+      isCommercialQaTraffic({
+        handoffId: h.handoffId,
+        clickId: h.clickId,
+        callerClientId: h.callerClientId,
+        idempotencyKey:
+          typeof h.metadata?.idempotencyKey === "string"
+            ? h.metadata.idempotencyKey
+            : null,
+        metadata: h.metadata,
+      })
+    ) {
+      qaHandoffIds.add(h.handoffId);
+      qaExcludedCount += 1;
+      continue;
+    }
     const orig = normalizeOriginatingSite(h.originatingSite);
     handoffOriginById.set(h.handoffId, orig);
     totalRedirects += 1;
@@ -3725,7 +4250,10 @@ export async function getSharedHandoffLedgerSummary(options?: {
   try {
     const ledger = readDurableLedgerState();
     for (const clk of Object.values(ledger.opaqueClicksById || {})) {
-      if (clk.isTest || clk.trafficClass === "test") continue;
+      if (clk.isTest || clk.trafficClass === "test") {
+        qaExcludedCount += 1;
+        continue;
+      }
       if (clk.recordStage === "recommendation" && !clk.followedAt && (clk.clickCount ?? 0) === 0) {
         continue;
       }
@@ -3766,6 +4294,9 @@ export async function getSharedHandoffLedgerSummary(options?: {
   let forOriginatingSitePayoutsUsd = 0;
 
   for (const out of outcomes) {
+    if (out.handoffId && qaHandoffIds.has(out.handoffId)) {
+      continue;
+    }
     const evt = out.eventType.toUpperCase();
     const isConfirmed =
       evt.includes("CONFIRM") || evt.includes("FULFILL") || evt.includes("COMMISSION_RECONCILED");
@@ -3807,6 +4338,11 @@ export async function getSharedHandoffLedgerSummary(options?: {
   const effectiveRedirects = siteFilter ? forOriginatingSite : totalRedirects;
   const hasUnreported = effectiveRedirects > 0 && effectiveConfirmedCount === 0;
 
+  const machineFunnel = await getMachineCommerceFunnelSummary({
+    originatingSite: siteFilter,
+    portSlug: portFilter,
+  });
+
   return {
     generatedAt: new Date().toISOString(),
     originatingSiteFilter: siteFilter,
@@ -3823,6 +4359,7 @@ export async function getSharedHandoffLedgerSummary(options?: {
       forPortSlug,
       byOriginatingSite,
       byProvider,
+      qaExcludedCount,
     },
     providerConfirmedBookings: {
       displayValue:
@@ -3861,8 +4398,10 @@ export async function getSharedHandoffLedgerSummary(options?: {
       reportingStatus: hasUnreported ? "unknown" : "reported",
       note: "Settled payouts require COMMISSION_RECONCILED confirmation from the provider.",
     },
+    machineFunnel,
   };
 }
+
 
 
 

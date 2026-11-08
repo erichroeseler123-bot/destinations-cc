@@ -533,9 +533,9 @@ export async function GET() {
         },
         post: {
           operationId: "checkPortDayExcursionAvailability",
-          summary: "Check live option, date, departure time, and party size availability for a cruise port excursion",
+          summary: "Check live option, date, departure time, and party size availability for a cruise port excursion (strictly read-only)",
           description:
-            "Queries the upstream provider (Viator Partner API v2 `/availability/check` or direct FareHarbor slot API) for an exact product option, date, departure time, and party size. Keeps seat/price availability completely separate from sailing-window timing fit and preserves unknown seat counts (`remainingSeats: null`) when the provider does not report exact remaining capacity.",
+            "Strictly read-only live availability check (`readOnly: true`, `createsCommercialHandoff: false`). Queries the upstream provider (Viator Partner API v2 `/availability/check` or direct FareHarbor slot API) for an exact product option, date, departure time, and party size. Keeps seat/price availability completely separate from sailing-window timing fit and preserves unknown seat counts (`remainingSeats: null`) when the provider does not report exact remaining capacity. Never creates a commercial handoff; use `dcc_prepare_tour_checkout` when the traveler chooses Continue to checkout.",
           requestBody: {
             required: true,
             content: {
@@ -582,7 +582,12 @@ export async function GET() {
         get: {
           operationId: "getMcpDiscoveryManifest",
           summary: "Discover DCC Model Context Protocol (MCP) server metadata, supported tools, and runnable examples",
-          responses: { "200": { description: "MCP discovery manifest including dcc_search_port_excursions and dcc_check_tour_availability" } },
+          responses: {
+            "200": {
+              description:
+                "MCP discovery manifest including dcc_search_port_excursions, dcc_check_tour_availability (read-only), and dcc_prepare_tour_checkout",
+            },
+          },
         },
       },
       "/api/v1/mcp": {
@@ -595,7 +600,7 @@ export async function GET() {
           operationId: "callMcpJsonRpc",
           summary: "Execute standard MCP JSON-RPC 2.0 requests (initialize, notifications/initialized, ping, tools/list, tools/call)",
           description:
-            "Standard MCP Streamable HTTP JSON-RPC 2.0 endpoint supporting `initialize`, `notifications/initialized`, `ping`, `tools/list`, and `tools/call` (including `dcc_search_port_excursions` and `dcc_check_tour_availability`).",
+            "Standard MCP Streamable HTTP JSON-RPC 2.0 endpoint supporting `initialize`, `notifications/initialized`, `ping`, `tools/list`, and `tools/call` (including `dcc_search_port_excursions`, read-only `dcc_check_tour_availability`, and `dcc_prepare_tour_checkout` for New Orleans `15200P6` / `TG10` checkout handoff).",
           responses: {
             "200": { description: "JSON-RPC 2.0 response" },
             "202": { description: "JSON-RPC 2.0 notification accepted (e.g. notifications/initialized)" },

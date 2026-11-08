@@ -1066,7 +1066,7 @@ export function buildMcpDiscoveryDocument(baseUrl = DCC_V03_SITE_URL) {
         name: "dcc_check_tour_availability",
         requiredScope: "dcc:read:public",
         description:
-          "Checks live seat and price availability for a specific cruise port excursion option, date, departure time, and party size using DCC's upstream availability handler (POST /api/v1/cruise/port-day-excursions). Keeps availability strictly separate from sailing-window timing fit and preserves unknown seat counts (remainingSeats: null) when the provider does not report exact remaining capacity.",
+          "Read-only live seat and price availability check for a specific cruise port excursion option, date, departure time, and party size using DCC's upstream availability handler (POST /api/v1/cruise/port-day-excursions). Strictly read-only (never creates a commercial handoff record). Keeps availability separate from sailing-window timing fit and preserves unknown seat counts (remainingSeats: null) when the provider does not report exact remaining capacity.",
         inputSchema: {
           type: "object",
           required: ["port", "productCode", "date", "partySize"],
@@ -1106,6 +1106,87 @@ export function buildMcpDiscoveryDocument(baseUrl = DCC_V03_SITE_URL) {
               minimum: 1,
               maximum: 15000,
               default: 6000,
+            },
+          },
+        },
+      },
+      {
+        name: "dcc_prepare_tour_checkout",
+        requiredScope: "dcc:commerce:handoff",
+        description:
+          "Prepares an attributed checkout handoff for live Viator product New Orleans 15200P6 / TG10 AFTER the traveler explicitly approves 'Continue to checkout' (travelerApprovedCheckout: true). Validates the exact option (TG10), date, departure time (08:00), and party size; resolves the sailing window from a matched sailing or supplied arrival and all-aboard times; reuses sailing-fit and live availability checks; shows priceBasis, currency, and timeChecked when the provider supplies them; resolves the canonical provider URL and affiliate account (P00306962 / mcid 42383) server-side; reuses createCommercialHandoff with the authenticated client ID and idempotencyKey; and returns handoffId, clickId, and the record's absolute outboundAffiliateUrl.",
+        inputSchema: {
+          type: "object",
+          required: [
+            "port",
+            "productCode",
+            "optionCode",
+            "date",
+            "departureTime",
+            "partySize",
+            "travelerApprovedCheckout",
+            "idempotencyKey",
+          ],
+          properties: {
+            port: {
+              type: "string",
+              enum: ["new-orleans"],
+              default: "new-orleans",
+              description: "Cruise port slug ('new-orleans').",
+            },
+            productCode: {
+              type: "string",
+              enum: ["15200P6"],
+              description: "Exact live Viator product code ('15200P6').",
+            },
+            optionCode: {
+              type: "string",
+              enum: ["TG10"],
+              description: "Exact Viator product option code ('TG10' — Swamp Tour with Pickup 8:00 AM).",
+            },
+            date: {
+              type: "string",
+              description: "Port call date in YYYY-MM-DD format (e.g. '2027-07-15').",
+            },
+            departureTime: {
+              type: "string",
+              description: "Exact departure time in HH:MM format ('08:00').",
+            },
+            partySize: {
+              type: "integer",
+              minimum: 1,
+              maximum: 15,
+              description: "Number of guests (e.g. 3).",
+            },
+            travelerApprovedCheckout: {
+              type: "boolean",
+              description:
+                "Must be true. Confirms the traveler explicitly chose 'Continue to checkout' before creating a commercial handoff record.",
+            },
+            idempotencyKey: {
+              type: "string",
+              description:
+                "Client-supplied idempotency key so retries return the exact same handoffId, clickId, and outboundAffiliateUrl with one durable record.",
+            },
+            sailing: {
+              type: "string",
+              description: "Optional matched sailing ID (e.g. 'carnival-liberty-20270516').",
+            },
+            ship: {
+              type: "string",
+              description: "Optional ship slug or name.",
+            },
+            shipArrival: {
+              type: "string",
+              description: "Ship arrival time in HH:MM or 12-hour format (e.g. '07:00').",
+            },
+            allAboard: {
+              type: "string",
+              description: "All-aboard deadline in HH:MM or 12-hour format (e.g. '15:30' or '1:15 p.m.').",
+            },
+            shipDeparture: {
+              type: "string",
+              description: "Optional scheduled ship departure time in HH:MM or 12-hour format.",
             },
           },
         },
@@ -1322,6 +1403,30 @@ export function buildMcpDiscoveryDocument(baseUrl = DCC_V03_SITE_URL) {
               date: "2027-07-15",
               departureTime: "08:00",
               partySize: 2,
+            },
+          },
+        },
+      },
+      prepareTourCheckout: {
+        endpoint: `${base}/api/v1/mcp`,
+        method: "POST",
+        body: {
+          jsonrpc: "2.0",
+          id: 6,
+          method: "tools/call",
+          params: {
+            name: "dcc_prepare_tour_checkout",
+            arguments: {
+              port: "new-orleans",
+              productCode: "15200P6",
+              optionCode: "TG10",
+              date: "2027-07-15",
+              departureTime: "08:00",
+              partySize: 3,
+              shipArrival: "07:00",
+              allAboard: "15:30",
+              travelerApprovedCheckout: true,
+              idempotencyKey: "nola-15200p6-tg10-20270715-party3",
             },
           },
         },

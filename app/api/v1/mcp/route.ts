@@ -22,10 +22,12 @@ import {
 import {
   createCommercialHandoff,
   recordCommercialOutcome,
+  recordMachineFunnelEvent,
   type CommercialProvider,
 } from "@/lib/dcc/commerce";
 import {
   MAPPED_CRUISE_PORT_EXCURSION_PROFILES,
+  preparePortDayTourCheckout,
   queryPortDayExcursionCatalog,
   verifyLiveExcursionAvailability,
   type PortDayExcursionCategoryFilter,
@@ -163,7 +165,7 @@ export async function POST(request: Request) {
           },
           serverInfo: doc.serverInfo,
           instructions:
-            "Destination Command Center (DCC) Machine Layer & Port-Day Excursion MCP Server. Use dcc_search_port_excursions to search cruise port excursions and evaluate deterministic sailing-window timing fit (fits, runs_too_late, needs_verification), and use dcc_check_tour_availability to verify live seat/price availability separately from timing fit while preserving unknown seat counts (remainingSeats: null).",
+            "Destination Command Center (DCC) Machine Layer & Port-Day Excursion MCP Server. Use dcc_search_port_excursions to search cruise port excursions and evaluate deterministic sailing-window timing fit (fits, runs_too_late, needs_verification), use dcc_check_tour_availability for read-only live seat/price availability verification, and use dcc_prepare_tour_checkout only after the traveler approves Continue to checkout.",
         },
       },
       {
@@ -250,6 +252,7 @@ export async function POST(request: Request) {
 
     try {
       if (toolName === "dcc_search_port_excursions") {
+        const auth = verifyEvaluationAuthAndRateLimit(request, "dcc:read:public");
         const portSlug = String(
           args.port ?? args.portSlug ?? args.destination ?? "reykjavik",
         ).trim();
@@ -369,6 +372,22 @@ export async function POST(request: Request) {
           typeof args.surface === "string" && args.surface.trim()
             ? args.surface.trim()
             : "mcp_port_day_excursions";
+        const isQaTraffic =
+          args.isQaTraffic === true ||
+          args.qaTraffic === true ||
+          args.isTest === true;
+
+        await recordMachineFunnelEvent({
+          stage: "search",
+          originatingSite,
+          callerClientId: auth.clientId,
+          portSlug,
+          productCode: typeof args.productCode === "string" ? args.productCode : null,
+          intendedDate: sailingDate ?? null,
+          partySize,
+          isQaTraffic,
+          metadata: { viewMode, category, search: search ?? null, surface },
+        });
 
         const result = await queryPortDayExcursionCatalog({
           portSlug,
@@ -431,6 +450,7 @@ export async function POST(request: Request) {
       }
 
       if (toolName === "dcc_check_tour_availability") {
+        const auth = verifyEvaluationAuthAndRateLimit(request, "dcc:read:public");
         const portSlug = String(args.port ?? args.portSlug ?? "reykjavik").trim();
         const tourId = typeof args.tourId === "string" ? args.tourId.trim() : "";
         const productCode =
@@ -458,6 +478,11 @@ export async function POST(request: Request) {
           args.simulateTimeout === "true" ||
           args.providerTimeout === true ||
           args.providerTimeout === "true";
+        const isQaTraffic =
+          args.isQaTraffic === true ||
+          args.qaTraffic === true ||
+          args.isTest === true ||
+          simulateTimeout;
         const originatingSite =
           typeof args.originatingSite === "string" && args.originatingSite.trim()
             ? args.originatingSite.trim()
@@ -482,6 +507,21 @@ export async function POST(request: Request) {
           );
         }
 
+        await recordMachineFunnelEvent({
+          stage: "availability_check",
+          originatingSite,
+          callerClientId: auth.clientId,
+          portSlug,
+          productCode,
+          optionCode,
+          intendedDate: date,
+          departureTime,
+          partySize,
+          isQaTraffic,
+          simulateTimeout,
+          metadata: { surface, readOnly: true },
+        });
+
         const seatAvailability = await verifyLiveExcursionAvailability({
           portSlug,
           tourId,
@@ -498,6 +538,8 @@ export async function POST(request: Request) {
 
         const payload = {
           ok: !seatAvailability.pastDepartureRejected,
+          readOnly: true,
+          createsCommercialHandoff: false,
           portSlug,
           tourId: tourId || null,
           productCode,
@@ -523,6 +565,110 @@ export async function POST(request: Request) {
             extraHeaders: {
               traceparent,
               "X-DCC-Surface-Class": "public_discovery",
+              "X-DCC-RateLimit-Backend": rateDecision.coordinationBackend,
+            },
+          },
+        );
+      }
+
+      if (toolName === "dcc_prepare_tour_checkout") {
+        const auth = verifyEvaluationAuthAndRateLimit(request, "dcc:commerce:handoff");
+        const portSlug = String(args.port ?? args.portSlug ?? "new-orleans").trim();
+        const productCode =
+          typeof args.productCode === "string" ? args.productCode.trim() : null;
+        const optionCode =
+          typeof (args.optionCode ?? args.option) === "string"
+            ? String(args.optionCode ?? args.option).trim()
+            : null;
+        const date =
+          typeof (args.date ?? args.sailingDate) === "string"
+            ? String(args.date ?? args.sailingDate).trim()
+            : null;
+        const departureTime =
+          typeof (args.departureTime ?? args.selectedDepartureTime) === "string"
+            ? String(args.departureTime ?? args.selectedDepartureTime).trim()
+            : null;
+        const partySize =
+          args.partySize !== undefined && args.partySize !== null
+            ? Number(args.partySize)
+            : null;
+        const travelerApprovedCheckout =
+          args.travelerApprovedCheckout === true ||
+          args.travelerApprovedCheckout === "true";
+        const idempotencyKey =
+          typeof args.idempotencyKey === "string" ? args.idempotencyKey.trim() : null;
+        const sailingId =
+          typeof (args.sailing ?? args.sailingId) === "string"
+            ? String(args.sailing ?? args.sailingId).trim()
+            : null;
+        const shipSlug =
+          typeof (args.ship ?? args.shipSlug) === "string"
+            ? String(args.ship ?? args.shipSlug).trim()
+            : null;
+        const shipArrivalTime =
+          typeof (args.shipArrival ?? args.shipArrivalTime) === "string"
+            ? String(args.shipArrival ?? args.shipArrivalTime).trim()
+            : null;
+        const shipAllAboardTime =
+          typeof (args.allAboard ?? args.shipAllAboardTime) === "string"
+            ? String(args.allAboard ?? args.shipAllAboardTime).trim()
+            : null;
+        const shipDepartureTime =
+          typeof (args.shipDeparture ?? args.shipDepartureTime) === "string"
+            ? String(args.shipDeparture ?? args.shipDepartureTime).trim()
+            : null;
+        const originatingSite =
+          typeof args.originatingSite === "string" && args.originatingSite.trim()
+            ? args.originatingSite.trim()
+            : "destinationcommandcenter.com";
+        const surface =
+          typeof args.surface === "string" && args.surface.trim()
+            ? args.surface.trim()
+            : "dcc_mcp_prepare_tour_checkout";
+        const isQaTraffic =
+          args.isQaTraffic === true ||
+          args.qaTraffic === true ||
+          args.isTest === true;
+        const simulateTimeout =
+          args.simulateTimeout === true || args.simulateTimeout === "true";
+
+        const checkoutRes = await preparePortDayTourCheckout({
+          portSlug,
+          productCode,
+          optionCode,
+          date,
+          departureTime,
+          partySize,
+          travelerApprovedCheckout,
+          idempotencyKey,
+          sailingId,
+          shipSlug,
+          shipArrivalTime,
+          shipAllAboardTime,
+          shipDepartureTime,
+          callerClientId: auth.clientId,
+          originatingSite,
+          surface,
+          isQaTraffic,
+          simulateTimeout,
+        });
+
+        return buildMachineJsonResponse(
+          {
+            jsonrpc: "2.0",
+            id: rpcId,
+            result: {
+              content: [{ type: "text", text: JSON.stringify(checkoutRes) }],
+              structuredContent: checkoutRes,
+              isError: !checkoutRes.ok,
+            },
+          },
+          {
+            cacheControl: "no-store",
+            extraHeaders: {
+              traceparent,
+              "X-DCC-Client-Id": auth.clientId,
+              "X-DCC-Surface-Class": "commercial_handoff",
               "X-DCC-RateLimit-Backend": rateDecision.coordinationBackend,
             },
           },

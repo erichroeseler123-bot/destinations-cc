@@ -1907,6 +1907,9 @@ export const PILOT_VERIFIED_TOUR_RECORDS: DurableTourRecord[] = [
       viatorProductCode: "5199KSML",
       distinctFromProductCode: "5199P27",
       includesCasCayHike: false,
+      verifiedPortSlug: "st-thomas",
+      checkInCutoffMinutes: 15,
+      checkInEvidenceSource: "viator_logistics_start_description:estate_nadir_marina_15m_prior",
     },
     inclusions: ["2.5-hour guided kayak and snorkel tour", "Snorkel gear and safety equipment"],
     exclusions: ["Round-trip taxi/shuttle to 6526 Estate Nadir", "Gratuities"],
@@ -2069,6 +2072,9 @@ export const PILOT_VERIFIED_TOUR_RECORDS: DurableTourRecord[] = [
       viatorProductCode: "5199P27",
       distinctFromProductCode: "5199KSML",
       includesCasCayHike: true,
+      verifiedPortSlug: "st-thomas",
+      checkInCutoffMinutes: 15,
+      checkInEvidenceSource: "viator_logistics_start_description:estate_nadir_marina_15m_prior",
     },
     inclusions: ["3-hour guided kayak, Cas Cay hike, and snorkel tour", "Snorkel gear and safety equipment"],
     exclusions: ["Round-trip taxi/shuttle to 6526 Estate Nadir", "Gratuities"],
@@ -3600,6 +3606,735 @@ export const PILOT_VERIFIED_TOUR_RECORDS: DurableTourRecord[] = [
     updatedAt: "2026-11-07T18:00:00.000Z",
     createdAt: "2026-11-07T18:00:00.000Z",
   },
+  {
+    tourId: "dcc:tour:viator:344869P2",
+    compatibilityAliases: [
+      "344869P2",
+      "viator:344869P2",
+      "st-thomas-half-day-luxury-catamaran-turtle-snorkel-344869p2",
+    ],
+    destinationSlug: "st-thomas",
+    portSlug: "st-thomas",
+    earthosDestinationNodeId: "earthos:node:vi-st-thomas",
+    timeZone: "America/St_Thomas",
+    title: "Half Day Luxury Catamaran Turtle Snorkel And Beach",
+    summary:
+      "4-hour (240-minute) luxury sailing catamaran sea turtle snorkel and honeymoon beach excursion departing directly from the Havensight / WICO Cruise Ship Dock Marina (9009 Havensight Mall, Charlotte Amalie, St. Thomas 00802; 10-minute walk from WICO berths or 25-minute taxi from Crown Bay; mandatory 15-minute check-in cutoff before departure).",
+    category: "Water & Wildlife",
+    tags: [
+      "catamaran",
+      "turtle-snorkel",
+      "beach",
+      "st-thomas",
+      "havensight",
+      "wico",
+      "pier-pickup",
+      "viator",
+    ],
+    primaryProvider: "viator",
+    providerProductCode: "344869P2",
+    operatorName: "Seas the Day Charters USVI",
+    operatorCode: "seas-the-day-charters-usvi",
+    capabilityTier: "live_check_referral",
+    commissionAuthorized: true,
+    durationMinutes: 240,
+    durationRawText:
+      "4 hours (240 minutes) plus 10-minute walk from WICO / Havensight Cruise Ship Dock (or 25-minute taxi from Crown Bay) and 15-minute check-in cutoff",
+    fromPriceCents: 14500,
+    priceBasis: "per_person",
+    currency: "USD",
+    freeCancellation: true,
+    cancellationPolicyType: "STANDARD",
+    cancellationCutoffHours: 24,
+    cancellationSummary: "Free cancellation up to 24 hours before scheduled departure.",
+    hasHotelPickup: false,
+    lowestPriceIncludesPickup: true,
+    pickupFulfillmentType: "pier_pickup",
+    pickupType: "CRUISE_PIER_PICKUP",
+    pickupSummary:
+      "Meet at WICO / Havensight Cruise Ship Dock Excursion Gate (9009 Havensight Mall, Charlotte Amalie, St. Thomas 00802) 15 minutes before departure (10-minute dockside walk from WICO berths; 25-minute taxi from Crown Bay).",
+    meetingPointName:
+      "WICO / Havensight Cruise Ship Dock Excursion Gate (9009 Havensight Mall, St. Thomas, VI 00802)",
+    meetingPointAddress: "9009 Havensight Mall, Charlotte Amalie, St. Thomas 00802, USVI",
+    meetingPointLat: 18.3318,
+    meetingPointLng: -64.9208,
+    locationPrecision: "exact",
+    pickupLocations: [
+      {
+        ref: "st_thomas_wico_havensight_excursion_gate",
+        name: "WICO / Havensight Cruise Ship Dock Excursion Gate",
+        address: "9009 Havensight Mall, Charlotte Amalie, St. Thomas 00802, USVI",
+        lat: 18.3318,
+        lng: -64.9208,
+        precision: "exact",
+        pickupType: "CRUISE_PORT",
+      },
+    ],
+    ageBands: [
+      {
+        ageBand: "ADULT",
+        startAge: 13,
+        endAge: 99,
+        minTravelersPerBooking: 1,
+        maxTravelersPerBooking: 12,
+      },
+      {
+        ageBand: "CHILD",
+        startAge: 3,
+        endAge: 12,
+        minTravelersPerBooking: 0,
+        maxTravelersPerBooking: 12,
+      },
+    ],
+    constraints: {
+      wheelchairAccessible: false,
+      minAgeYears: 3,
+      physicalDifficulty: "EASY",
+      cruiseBufferBeforeMinutes: 10,
+      cruiseBufferAfterMinutes: 10,
+      transferTimeSource: "verified_pier_pickup",
+      transferEvidenceSource:
+        "viator_logistics_start_description:wico_havensight_dock_9009_havensight_mall:344869P2",
+      applicableBerthOrMeetingPoint:
+        "WICO / Havensight Cruise Ship Dock Excursion Gate (9009 Havensight Mall — 10m walk from WICO berths / 25m taxi from Crown Bay; 15m check-in cutoff)",
+      planningEstimateTransferMinutes: 10,
+      weatherDependent: true,
+      requiresClosedToeShoes: false,
+    },
+    channelOffers: [
+      {
+        channelId: "cruisepromenade",
+        provider: "viator",
+        providerProductCode: "344869P2",
+        capabilityTier: "live_check_referral",
+        commissionAuthorized: true,
+        fromPriceCents: 14500,
+        priceBasis: "per_person",
+        currency: "USD",
+        freeCancellation: true,
+        cancellationCutoffHours: 24,
+        cancellationSummary: "Free cancellation up to 24 hours before scheduled departure.",
+        inclusions: [
+          "4-hour luxury catamaran sail, sea turtle snorkel & beach stop",
+          "Snorkel gear, open bar, and tropical snacks",
+        ],
+        exclusions: ["Gratuities", "Taxi from Crown Bay if berthed at Crown Bay"],
+        bookingUrl:
+          "https://www.viator.com/tours/St-Thomas/Half-Day-Luxury-Catamaran-Snorkel-And-Beach/d965-344869P2?mcid=42383&pid=P00306962&medium=api&api_version=2.0&campaign=cp-st-thomas-344869p2&utm_source=destinationcommandcenter&utm_medium=affiliate&utm_campaign=cities&locale=en-US",
+      },
+      {
+        channelId: "dcc",
+        provider: "viator",
+        providerProductCode: "344869P2",
+        capabilityTier: "live_check_referral",
+        commissionAuthorized: true,
+        fromPriceCents: 14500,
+        priceBasis: "per_person",
+        currency: "USD",
+        freeCancellation: true,
+        cancellationCutoffHours: 24,
+        cancellationSummary: "Free cancellation up to 24 hours before scheduled departure.",
+        inclusions: [
+          "4-hour luxury catamaran sail, sea turtle snorkel & beach stop",
+          "Snorkel gear, open bar, and tropical snacks",
+        ],
+        exclusions: ["Gratuities", "Taxi from Crown Bay if berthed at Crown Bay"],
+        bookingUrl:
+          "https://www.viator.com/tours/St-Thomas/Half-Day-Luxury-Catamaran-Snorkel-And-Beach/d965-344869P2?mcid=42383&pid=P00306962&medium=api&api_version=2.0&campaign=dcc-st-thomas-344869p2&utm_source=destinationcommandcenter&utm_medium=affiliate&utm_campaign=cities&locale=en-US",
+      },
+    ],
+    productOptions: [
+      {
+        optionCode: "TG1",
+        title: "Morning Half-Day Catamaran Turtle Snorkel & Beach (9:00 AM • WICO Havensight Dock)",
+        description:
+          "4-hour morning luxury catamaran sail and turtle snorkel departing from WICO / Havensight Cruise Ship Dock (check in by 8:45 AM; 10m walk from WICO berths).",
+        includesPickup: true,
+        pickupFulfillmentType: "pier_pickup",
+        meetingPointName:
+          "WICO / Havensight Cruise Ship Dock Excursion Gate (9009 Havensight Mall, St. Thomas, VI 00802)",
+        meetingPointLat: 18.3318,
+        meetingPointLng: -64.9208,
+        transferBeforeMinutes: 10,
+        transferAfterMinutes: 10,
+        transferTimeSource: "verified_pier_pickup",
+        transferEvidenceSource:
+          "viator_logistics_start_description:wico_havensight_dock_9009_havensight_mall:344869P2",
+        applicableBerthOrMeetingPoint:
+          "WICO / Havensight Cruise Ship Dock Excursion Gate (10m walk each way; 15m check-in cutoff)",
+        planningEstimateTransferMinutes: 10,
+        durationMinutes: 240,
+        fromPriceCents: 14500,
+        priceBasis: "per_person",
+        scheduledStartTimes: ["09:00", "13:30"],
+      },
+    ],
+    serviceDetails: {
+      pickupFulfillmentType: "pier_pickup",
+      viatorProductCode: "344869P2",
+      verifiedPortSlug: "st-thomas",
+      checkInCutoffMinutes: 15,
+      checkInEvidenceSource:
+        "viator_logistics_start_description:wico_havensight_dock_15m_prior_checkin",
+    },
+    inclusions: [
+      "4-hour luxury catamaran sail, sea turtle snorkel & beach stop",
+      "Snorkel equipment, open bar, and snacks",
+    ],
+    exclusions: ["Gratuities"],
+    primaryImageUrl: null,
+    ratingAverage: 4.91,
+    reviewCount: 862,
+    bookingUrl:
+      "https://www.viator.com/tours/St-Thomas/Half-Day-Luxury-Catamaran-Snorkel-And-Beach/d965-344869P2?mcid=42383&pid=P00306962&medium=api&api_version=2.0&campaign=dcc-st-thomas-344869p2&utm_source=destinationcommandcenter&utm_medium=affiliate&utm_campaign=cities&locale=en-US",
+    provenance: {
+      sourceSystem: "viator_partner_v2_live",
+      sourceEndpoint: "https://api.viator.com/partner/products/344869P2",
+      fetchedAt: "2026-11-08T10:00:00.000Z",
+      contentSha256: "viator_344869p2_st_thomas_wico_havensight_verified",
+      rawFieldsVerified: {
+        durationKnown: true,
+        cancellationKnown: true,
+        pickupKnown: true,
+        meetingCoordinatesKnown: true,
+        ageBandsKnown: true,
+      },
+    },
+    quarantined: false,
+    quarantineReason: null,
+    active: true,
+    lastVerifiedAt: "2026-11-08T10:00:00.000Z",
+    updatedAt: "2026-11-08T10:00:00.000Z",
+    createdAt: "2026-11-08T10:00:00.000Z",
+  },
+  {
+    tourId: "dcc:tour:viator:33976P2",
+    compatibilityAliases: [
+      "33976P2",
+      "viator:33976P2",
+      "st-thomas-snorkeling-adventure-saga-haven-33976p2",
+    ],
+    destinationSlug: "st-thomas",
+    portSlug: "st-thomas",
+    earthosDestinationNodeId: "earthos:node:vi-st-thomas",
+    timeZone: "America/St_Thomas",
+    title: "Snorkeling Adventure in St Thomas",
+    summary:
+      "3.5-hour (210-minute) two-stop coral reef and sea turtle powerboat snorkeling excursion departing from Aqua Marine Dive Center at Saga Haven Marina (6118 Estate Frydenhoj, St. Thomas, VI 00802; 25-minute taxi from WICO Havensight / 35-minute taxi from Crown Bay; mandatory 30-minute check-in cutoff before departure).",
+    category: "Water & Wildlife",
+    tags: [
+      "snorkel",
+      "saga-haven-marina",
+      "sea-turtles",
+      "coral-reef",
+      "st-thomas",
+      "meeting-point",
+      "viator",
+    ],
+    primaryProvider: "viator",
+    providerProductCode: "33976P2",
+    operatorName: "Aqua Marine St. Thomas",
+    operatorCode: "aqua-marine-st-thomas",
+    capabilityTier: "live_check_referral",
+    commissionAuthorized: true,
+    durationMinutes: 210,
+    durationRawText:
+      "3 hours 30 minutes (210 minutes) plus 25-minute taxi each way from WICO Havensight (35 minutes from Crown Bay) and 30-minute mandatory check-in at Saga Haven Marina",
+    fromPriceCents: 11500,
+    priceBasis: "per_person",
+    currency: "USD",
+    freeCancellation: true,
+    cancellationPolicyType: "STANDARD",
+    cancellationCutoffHours: 24,
+    cancellationSummary: "Free cancellation up to 24 hours before scheduled departure.",
+    hasHotelPickup: false,
+    lowestPriceIncludesPickup: false,
+    pickupFulfillmentType: "self_drive",
+    pickupType: "MEETING_POINT_ONLY",
+    pickupSummary:
+      "Meet at Aqua Marine Dive Center inside Saga Haven Marina (6118 Estate Frydenhoj, St. Thomas, VI 00802) 30 minutes before departure (~25m taxi from WICO Havensight / ~35m taxi from Crown Bay).",
+    meetingPointName:
+      "Saga Haven Marina — Aqua Marine Dive Center (6118 Estate Frydenhoj, St. Thomas, VI 00802)",
+    meetingPointAddress: "6118 Estate Frydenhoj, St. Thomas 00802, USVI",
+    meetingPointLat: 18.3239,
+    meetingPointLng: -64.8647,
+    locationPrecision: "exact",
+    pickupLocations: [],
+    ageBands: [
+      {
+        ageBand: "ADULT",
+        startAge: 13,
+        endAge: 99,
+        minTravelersPerBooking: 1,
+        maxTravelersPerBooking: 12,
+      },
+      {
+        ageBand: "CHILD",
+        startAge: 5,
+        endAge: 12,
+        minTravelersPerBooking: 0,
+        maxTravelersPerBooking: 12,
+      },
+    ],
+    constraints: {
+      wheelchairAccessible: false,
+      minAgeYears: 5,
+      physicalDifficulty: "MODERATE",
+      cruiseBufferBeforeMinutes: 25,
+      cruiseBufferAfterMinutes: 25,
+      transferTimeSource: "verified_meeting_point",
+      transferEvidenceSource:
+        "viator_logistics_start_description:saga_haven_marina_6118_estate_frydenhoj:33976P2",
+      applicableBerthOrMeetingPoint:
+        "Saga Haven Marina — Aqua Marine Dive Center (6118 Estate Frydenhoj — 25m taxi from WICO Havensight / 35m from Crown Bay; 30m check-in cutoff)",
+      planningEstimateTransferMinutes: 25,
+      weatherDependent: true,
+      requiresClosedToeShoes: false,
+    },
+    channelOffers: [
+      {
+        channelId: "dcc",
+        provider: "viator",
+        providerProductCode: "33976P2",
+        capabilityTier: "live_check_referral",
+        commissionAuthorized: true,
+        fromPriceCents: 11500,
+        priceBasis: "per_person",
+        currency: "USD",
+        freeCancellation: true,
+        cancellationCutoffHours: 24,
+        cancellationSummary: "Free cancellation up to 24 hours before scheduled departure.",
+        inclusions: [
+          "3.5-hour two-stop coral reef & turtle snorkel boat tour",
+          "Snorkel gear, rum punch, water, and light snacks",
+        ],
+        exclusions: ["Round-trip taxi to Saga Haven Marina (6118 Estate Frydenhoj)", "Gratuities"],
+        bookingUrl:
+          "https://www.viator.com/tours/St-Thomas/Snorkeling-Adventure-in-St-Thomas/d965-33976P2?mcid=42383&pid=P00306962&medium=api&api_version=2.0&campaign=dcc-st-thomas-33976p2&utm_source=destinationcommandcenter&utm_medium=affiliate&utm_campaign=cities&locale=en-US",
+      },
+    ],
+    productOptions: [
+      {
+        optionCode: "DEFAULT",
+        title: "Morning Two-Stop Reef & Turtle Snorkel (9:00 AM • Meet at Saga Haven Marina)",
+        description:
+          "210-minute powerboat snorkel departing from Saga Haven Marina (6118 Estate Frydenhoj; check in 30 minutes prior at 8:30 AM; 25m taxi from WICO).",
+        includesPickup: false,
+        pickupFulfillmentType: "self_drive",
+        meetingPointName:
+          "Saga Haven Marina — Aqua Marine Dive Center (6118 Estate Frydenhoj, St. Thomas, VI 00802)",
+        meetingPointLat: 18.3239,
+        meetingPointLng: -64.8647,
+        transferBeforeMinutes: 25,
+        transferAfterMinutes: 25,
+        transferTimeSource: "verified_meeting_point",
+        transferEvidenceSource:
+          "viator_logistics_start_description:saga_haven_marina_6118_estate_frydenhoj:33976P2",
+        applicableBerthOrMeetingPoint:
+          "Saga Haven Marina (6118 Estate Frydenhoj — 25m taxi from WICO / 35m from Crown Bay; 30m check-in cutoff)",
+        planningEstimateTransferMinutes: 25,
+        durationMinutes: 210,
+        fromPriceCents: 11500,
+        priceBasis: "per_person",
+        scheduledStartTimes: ["09:00", "13:00"],
+      },
+    ],
+    serviceDetails: {
+      pickupFulfillmentType: "self_drive",
+      viatorProductCode: "33976P2",
+      verifiedPortSlug: "st-thomas",
+      checkInCutoffMinutes: 30,
+      checkInEvidenceSource:
+        "viator_logistics_start_description:saga_haven_marina_30m_prior_checkin",
+    },
+    inclusions: [
+      "3.5-hour two-stop coral reef & turtle snorkel boat tour",
+      "Snorkel gear, rum punch, water, and light snacks",
+    ],
+    exclusions: ["Round-trip taxi to Saga Haven Marina", "Gratuities"],
+    primaryImageUrl: null,
+    ratingAverage: 4.88,
+    reviewCount: 283,
+    bookingUrl:
+      "https://www.viator.com/tours/St-Thomas/Snorkeling-Adventure-in-St-Thomas/d965-33976P2?mcid=42383&pid=P00306962&medium=api&api_version=2.0&campaign=dcc-st-thomas-33976p2&utm_source=destinationcommandcenter&utm_medium=affiliate&utm_campaign=cities&locale=en-US",
+    provenance: {
+      sourceSystem: "viator_partner_v2_live",
+      sourceEndpoint: "https://api.viator.com/partner/products/33976P2",
+      fetchedAt: "2026-11-08T10:00:00.000Z",
+      contentSha256: "viator_33976p2_st_thomas_saga_haven_marina_verified",
+      rawFieldsVerified: {
+        durationKnown: true,
+        cancellationKnown: true,
+        pickupKnown: true,
+        meetingCoordinatesKnown: true,
+        ageBandsKnown: true,
+      },
+    },
+    quarantined: false,
+    quarantineReason: null,
+    active: true,
+    lastVerifiedAt: "2026-11-08T10:00:00.000Z",
+    updatedAt: "2026-11-08T10:00:00.000Z",
+    createdAt: "2026-11-08T10:00:00.000Z",
+  },
+  {
+    tourId: "dcc:tour:viator:5304HAVANA",
+    compatibilityAliases: [
+      "5304HAVANA",
+      "viator:5304HAVANA",
+      "miami-little-havana-food-walking-tour-5304havana",
+    ],
+    destinationSlug: "miami",
+    portSlug: "miami",
+    earthosDestinationNodeId: "earthos:node:us-fl-miami",
+    timeZone: "America/New_York",
+    title: "Little Havana Food and Walking Tour in Miami",
+    summary:
+      "2.5-hour (150-minute) guided Cuban culinary and cultural walking tour along Calle Ocho in Little Havana, meeting at MDC's Tower Theater (1508 SW 8th St, Miami, FL 33135; 20-minute taxi/rideshare from PortMiami Cruise Terminals; mandatory 15-minute check-in cutoff before departure).",
+    category: "Food & Cultural Walking",
+    tags: [
+      "little-havana",
+      "calle-ocho",
+      "food-tour",
+      "walking-tour",
+      "miami",
+      "meeting-point",
+      "viator",
+    ],
+    primaryProvider: "viator",
+    providerProductCode: "5304HAVANA",
+    operatorName: "Miami Culinary Tours",
+    operatorCode: "miami-culinary-tours",
+    capabilityTier: "live_check_referral",
+    commissionAuthorized: true,
+    durationMinutes: 150,
+    durationRawText:
+      "2 hours 30 minutes (150 minutes) plus 20-minute taxi/rideshare each way from PortMiami Cruise Terminals and 15-minute check-in cutoff at Tower Theater (1508 SW 8th St)",
+    fromPriceCents: 6900,
+    priceBasis: "per_person",
+    currency: "USD",
+    freeCancellation: true,
+    cancellationPolicyType: "STANDARD",
+    cancellationCutoffHours: 24,
+    cancellationSummary: "Free cancellation up to 24 hours before scheduled departure.",
+    hasHotelPickup: false,
+    lowestPriceIncludesPickup: false,
+    pickupFulfillmentType: "self_drive",
+    pickupType: "MEETING_POINT_ONLY",
+    pickupSummary:
+      "Meet outside MDC's Tower Theater (1508 SW 8th St, Miami, FL 33135) 15 minutes before departure (20-minute taxi/rideshare each way from PortMiami Cruise Terminals).",
+    meetingPointName: "MDC's Tower Theater — Calle Ocho (1508 SW 8th St, Miami, FL 33135)",
+    meetingPointAddress: "1508 SW 8th St, Miami, FL 33135",
+    meetingPointLat: 25.7656,
+    meetingPointLng: -80.2202,
+    locationPrecision: "exact",
+    pickupLocations: [],
+    ageBands: [
+      {
+        ageBand: "ADULT",
+        startAge: 13,
+        endAge: 99,
+        minTravelersPerBooking: 1,
+        maxTravelersPerBooking: 14,
+      },
+      {
+        ageBand: "CHILD",
+        startAge: 4,
+        endAge: 12,
+        minTravelersPerBooking: 0,
+        maxTravelersPerBooking: 14,
+      },
+    ],
+    constraints: {
+      wheelchairAccessible: true,
+      minAgeYears: 0,
+      physicalDifficulty: "EASY",
+      cruiseBufferBeforeMinutes: 20,
+      cruiseBufferAfterMinutes: 20,
+      transferTimeSource: "verified_meeting_point",
+      transferEvidenceSource:
+        "viator_logistics_start_description:mdc_tower_theater_1508_sw_8th_st:5304HAVANA",
+      applicableBerthOrMeetingPoint:
+        "PortMiami Cruise Terminals <-> MDC's Tower Theater (1508 SW 8th St, Little Havana — 20m transfer each way; 15m check-in cutoff)",
+      planningEstimateTransferMinutes: 20,
+      weatherDependent: false,
+      requiresClosedToeShoes: false,
+    },
+    channelOffers: [
+      {
+        channelId: "cruisepromenade",
+        provider: "viator",
+        providerProductCode: "5304HAVANA",
+        capabilityTier: "live_check_referral",
+        commissionAuthorized: true,
+        fromPriceCents: 6900,
+        priceBasis: "per_person",
+        currency: "USD",
+        freeCancellation: true,
+        cancellationCutoffHours: 24,
+        cancellationSummary: "Free cancellation up to 24 hours before scheduled departure.",
+        inclusions: [
+          "2.5-hour Little Havana food & cultural walking tour along Calle Ocho",
+          "All Cuban food tastings, cortadito coffee, and mojito/guava pastry stops",
+        ],
+        exclusions: ["Round-trip taxi/rideshare from PortMiami (20m each way)", "Gratuities"],
+        bookingUrl:
+          "https://www.viator.com/tours/Miami/Little-Havana-Food-Tour/d662-5304HAVANA?mcid=42383&pid=P00306962&medium=api&api_version=2.0&campaign=cp-miami-5304havana&utm_source=destinationcommandcenter&utm_medium=affiliate&utm_campaign=cities&locale=en-US",
+      },
+      {
+        channelId: "dcc",
+        provider: "viator",
+        providerProductCode: "5304HAVANA",
+        capabilityTier: "live_check_referral",
+        commissionAuthorized: true,
+        fromPriceCents: 6900,
+        priceBasis: "per_person",
+        currency: "USD",
+        freeCancellation: true,
+        cancellationCutoffHours: 24,
+        cancellationSummary: "Free cancellation up to 24 hours before scheduled departure.",
+        inclusions: [
+          "2.5-hour Little Havana food & cultural walking tour along Calle Ocho",
+          "All Cuban food tastings, cortadito coffee, and mojito/guava pastry stops",
+        ],
+        exclusions: ["Round-trip taxi/rideshare from PortMiami (20m each way)", "Gratuities"],
+        bookingUrl:
+          "https://www.viator.com/tours/Miami/Little-Havana-Food-Tour/d662-5304HAVANA?mcid=42383&pid=P00306962&medium=api&api_version=2.0&campaign=dcc-miami-5304havana&utm_source=destinationcommandcenter&utm_medium=affiliate&utm_campaign=cities&locale=en-US",
+      },
+    ],
+    productOptions: [
+      {
+        optionCode: "TG1",
+        title: "Little Havana Food & Walking Tour (11:30 AM / 12:30 PM • Tower Theater Calle Ocho)",
+        description:
+          "150-minute guided Cuban culinary and cultural walking tour meeting at MDC's Tower Theater (1508 SW 8th St; 20m transfer from PortMiami; 15m check-in cutoff).",
+        includesPickup: false,
+        pickupFulfillmentType: "self_drive",
+        meetingPointName: "MDC's Tower Theater — Calle Ocho (1508 SW 8th St, Miami, FL 33135)",
+        meetingPointLat: 25.7656,
+        meetingPointLng: -80.2202,
+        transferBeforeMinutes: 20,
+        transferAfterMinutes: 20,
+        transferTimeSource: "verified_meeting_point",
+        transferEvidenceSource:
+          "viator_logistics_start_description:mdc_tower_theater_1508_sw_8th_st:5304HAVANA",
+        applicableBerthOrMeetingPoint:
+          "PortMiami Cruise Terminals <-> MDC's Tower Theater (1508 SW 8th St — 20m transfer each way; 15m check-in cutoff)",
+        planningEstimateTransferMinutes: 20,
+        durationMinutes: 150,
+        fromPriceCents: 6900,
+        priceBasis: "per_person",
+        scheduledStartTimes: ["10:30", "11:30", "12:30", "14:00"],
+      },
+    ],
+    serviceDetails: {
+      pickupFulfillmentType: "self_drive",
+      viatorProductCode: "5304HAVANA",
+      verifiedPortSlug: "miami",
+      checkInCutoffMinutes: 15,
+      checkInEvidenceSource:
+        "viator_logistics_start_description:tower_theater_1508_sw_8th_st_15m_prior",
+    },
+    inclusions: [
+      "2.5-hour Little Havana food & cultural walking tour",
+      "All Cuban tastings at family-owned Calle Ocho restaurants",
+    ],
+    exclusions: ["Round-trip taxi/rideshare from PortMiami", "Gratuities"],
+    primaryImageUrl: null,
+    ratingAverage: 4.94,
+    reviewCount: 9972,
+    bookingUrl:
+      "https://www.viator.com/tours/Miami/Little-Havana-Food-Tour/d662-5304HAVANA?mcid=42383&pid=P00306962&medium=api&api_version=2.0&campaign=dcc-miami-5304havana&utm_source=destinationcommandcenter&utm_medium=affiliate&utm_campaign=cities&locale=en-US",
+    provenance: {
+      sourceSystem: "viator_partner_v2_live",
+      sourceEndpoint: "https://api.viator.com/partner/products/5304HAVANA",
+      fetchedAt: "2026-11-08T10:00:00.000Z",
+      contentSha256: "viator_5304havana_miami_tower_theater_verified",
+      rawFieldsVerified: {
+        durationKnown: true,
+        cancellationKnown: true,
+        pickupKnown: true,
+        meetingCoordinatesKnown: true,
+        ageBandsKnown: true,
+      },
+    },
+    quarantined: false,
+    quarantineReason: null,
+    active: true,
+    lastVerifiedAt: "2026-11-08T10:00:00.000Z",
+    updatedAt: "2026-11-08T10:00:00.000Z",
+    createdAt: "2026-11-08T10:00:00.000Z",
+  },
+  {
+    tourId: "dcc:tour:viator:28744P2",
+    compatibilityAliases: [
+      "28744P2",
+      "viator:28744P2",
+      "miami-millionaires-sightseeing-cruise-28744p2",
+    ],
+    destinationSlug: "miami",
+    portSlug: "miami",
+    earthosDestinationNodeId: "earthos:node:us-fl-miami",
+    timeZone: "America/New_York",
+    title: "Miami Millionaires Sightseeing Cruise",
+    summary:
+      "90-minute bilingual Biscayne Bay, Star Island, Fisher Island, and Millionaire's Row sightseeing boat cruise departing from Bayride Tours at Bayside Marketplace Marina (401 Biscayne Blvd, Miami, FL 33132; 15-minute transfer across the PortMiami bridge; mandatory 20-minute boarding check-in cutoff before departure).",
+    category: "Sightseeing & Harbor Cruises",
+    tags: [
+      "biscayne-bay",
+      "millionaires-row",
+      "bayside-marketplace",
+      "sightseeing-cruise",
+      "miami",
+      "meeting-point",
+      "viator",
+    ],
+    primaryProvider: "viator",
+    providerProductCode: "28744P2",
+    operatorName: "Bayride Tours Miami",
+    operatorCode: "bayride-tours-miami",
+    capabilityTier: "live_check_referral",
+    commissionAuthorized: true,
+    durationMinutes: 90,
+    durationRawText:
+      "1 hour 30 minutes (90 minutes) on water plus 15-minute transfer each way from PortMiami Cruise Terminals to Bayside Marketplace Marina and 20-minute boarding check-in cutoff",
+    fromPriceCents: 2999,
+    priceBasis: "per_person",
+    currency: "USD",
+    freeCancellation: true,
+    cancellationPolicyType: "STANDARD",
+    cancellationCutoffHours: 24,
+    cancellationSummary: "Free cancellation up to 24 hours before scheduled departure.",
+    hasHotelPickup: false,
+    lowestPriceIncludesPickup: false,
+    pickupFulfillmentType: "self_drive",
+    pickupType: "MEETING_POINT_ONLY",
+    pickupSummary:
+      "Redeem voucher at the Bayride Tours Booth behind Victoria's Secret at Bayside Marketplace Marina (401 Biscayne Blvd, Miami, FL 33132) at least 20 minutes before departure (15-minute taxi/shuttle from PortMiami Cruise Terminals).",
+    meetingPointName:
+      "Bayside Marketplace Marina — Bayride Tours Dock (401 Biscayne Blvd, Miami, FL 33132)",
+    meetingPointAddress: "401 Biscayne Blvd, Miami, FL 33132",
+    meetingPointLat: 25.7781,
+    meetingPointLng: -80.186,
+    locationPrecision: "exact",
+    pickupLocations: [],
+    ageBands: [
+      {
+        ageBand: "ADULT",
+        startAge: 13,
+        endAge: 99,
+        minTravelersPerBooking: 1,
+        maxTravelersPerBooking: 15,
+      },
+      {
+        ageBand: "CHILD",
+        startAge: 4,
+        endAge: 12,
+        minTravelersPerBooking: 0,
+        maxTravelersPerBooking: 15,
+      },
+    ],
+    constraints: {
+      wheelchairAccessible: true,
+      minAgeYears: 0,
+      physicalDifficulty: "EASY",
+      cruiseBufferBeforeMinutes: 15,
+      cruiseBufferAfterMinutes: 15,
+      transferTimeSource: "verified_meeting_point",
+      transferEvidenceSource:
+        "viator_logistics_start_description:bayside_marketplace_marina_401_biscayne_blvd:28744P2",
+      applicableBerthOrMeetingPoint:
+        "PortMiami Cruise Terminals <-> Bayside Marketplace Marina (401 Biscayne Blvd — 15m transfer each way across Port Blvd bridge; 20m check-in cutoff)",
+      planningEstimateTransferMinutes: 15,
+      weatherDependent: true,
+      requiresClosedToeShoes: false,
+    },
+    channelOffers: [
+      {
+        channelId: "dcc",
+        provider: "viator",
+        providerProductCode: "28744P2",
+        capabilityTier: "live_check_referral",
+        commissionAuthorized: true,
+        fromPriceCents: 2999,
+        priceBasis: "per_person",
+        currency: "USD",
+        freeCancellation: true,
+        cancellationCutoffHours: 24,
+        cancellationSummary: "Free cancellation up to 24 hours before scheduled departure.",
+        inclusions: [
+          "90-minute Biscayne Bay & Millionaire's Row sightseeing cruise",
+          "Live bilingual English/Spanish guide",
+        ],
+        exclusions: ["Round-trip taxi/rideshare from PortMiami (15m each way)", "Drinks and snacks onboard"],
+        bookingUrl:
+          "https://www.viator.com/tours/Miami/Miami-Sightseeing-Cruise/d662-28744P2?mcid=42383&pid=P00306962&medium=api&api_version=2.0&campaign=dcc-miami-28744p2&utm_source=destinationcommandcenter&utm_medium=affiliate&utm_campaign=cities&locale=en-US",
+      },
+    ],
+    productOptions: [
+      {
+        optionCode: "TG1",
+        title: "90-Minute Millionaire's Row & Biscayne Bay Cruise (Bayside Marketplace Marina)",
+        description:
+          "90-minute sightseeing cruise departing hourly from Bayside Marketplace Marina (401 Biscayne Blvd; 15m transfer from PortMiami; check in 20m before departure).",
+        includesPickup: false,
+        pickupFulfillmentType: "self_drive",
+        meetingPointName:
+          "Bayside Marketplace Marina — Bayride Tours Dock (401 Biscayne Blvd, Miami, FL 33132)",
+        meetingPointLat: 25.7781,
+        meetingPointLng: -80.186,
+        transferBeforeMinutes: 15,
+        transferAfterMinutes: 15,
+        transferTimeSource: "verified_meeting_point",
+        transferEvidenceSource:
+          "viator_logistics_start_description:bayside_marketplace_marina_401_biscayne_blvd:28744P2",
+        applicableBerthOrMeetingPoint:
+          "PortMiami Cruise Terminals <-> Bayside Marketplace Marina (401 Biscayne Blvd — 15m transfer each way; 20m check-in cutoff)",
+        planningEstimateTransferMinutes: 15,
+        durationMinutes: 90,
+        fromPriceCents: 2999,
+        priceBasis: "per_person",
+        scheduledStartTimes: ["10:30", "11:30", "12:30", "13:30", "14:30", "15:30"],
+      },
+    ],
+    serviceDetails: {
+      pickupFulfillmentType: "self_drive",
+      viatorProductCode: "28744P2",
+      verifiedPortSlug: "miami",
+      checkInCutoffMinutes: 20,
+      checkInEvidenceSource:
+        "viator_logistics_start_description:bayside_marketplace_bayride_booth_20m_prior",
+    },
+    inclusions: [
+      "90-minute Biscayne Bay & Millionaire's Row sightseeing cruise",
+      "Bilingual tour guide",
+    ],
+    exclusions: ["Round-trip transfer from PortMiami", "Gratuities"],
+    primaryImageUrl: null,
+    ratingAverage: 4.3,
+    reviewCount: 2085,
+    bookingUrl:
+      "https://www.viator.com/tours/Miami/Miami-Sightseeing-Cruise/d662-28744P2?mcid=42383&pid=P00306962&medium=api&api_version=2.0&campaign=dcc-miami-28744p2&utm_source=destinationcommandcenter&utm_medium=affiliate&utm_campaign=cities&locale=en-US",
+    provenance: {
+      sourceSystem: "viator_partner_v2_live",
+      sourceEndpoint: "https://api.viator.com/partner/products/28744P2",
+      fetchedAt: "2026-11-08T10:00:00.000Z",
+      contentSha256: "viator_28744p2_miami_bayside_marina_verified",
+      rawFieldsVerified: {
+        durationKnown: true,
+        cancellationKnown: true,
+        pickupKnown: true,
+        meetingCoordinatesKnown: true,
+        ageBandsKnown: true,
+      },
+    },
+    quarantined: false,
+    quarantineReason: null,
+    active: true,
+    lastVerifiedAt: "2026-11-08T10:00:00.000Z",
+    updatedAt: "2026-11-08T10:00:00.000Z",
+    createdAt: "2026-11-08T10:00:00.000Z",
+  },
 ];
 
 function mergePilotVerifiedRecords(records: DurableTourRecord[]): DurableTourRecord[] {
@@ -3849,7 +4584,7 @@ function buildSqlOrderByClause(sortBy: DurableCatalogSortBy = "recommended"): st
       return "LOWER(title) ASC, tour_id ASC";
     case "recommended":
     default:
-      return "destination_slug ASC, commission_authorized DESC, COALESCE(rating_average, 0) DESC, COALESCE(review_count, 0) DESC, from_price_cents ASC NULLS LAST, tour_id ASC";
+      return "destination_slug ASC, commission_authorized DESC, CASE WHEN meeting_point_name IS NOT NULL AND duration_minutes IS NOT NULL AND duration_minutes > 0 AND duration_minutes <= 360 AND COALESCE(constraints_json->>'transferTimeSource', '') IN ('verified_pier_pickup', 'verified_meeting_point') AND COALESCE(service_details_json->>'checkInCutoffMinutes', '') <> '' THEN 0 WHEN meeting_point_name IS NOT NULL AND duration_minutes IS NOT NULL AND duration_minutes > 0 AND COALESCE(constraints_json->>'transferTimeSource', '') IN ('verified_pier_pickup', 'verified_meeting_point') AND COALESCE(service_details_json->>'checkInCutoffMinutes', '') <> '' THEN 1 ELSE 2 END ASC, COALESCE(rating_average, 0) DESC, COALESCE(review_count, 0) DESC, from_price_cents ASC NULLS LAST, tour_id ASC";
   }
 }
 
@@ -3895,6 +4630,18 @@ function sortCatalogRecordsInJs(
         if (destCmp !== 0) return destCmp;
         if (a.commissionAuthorized !== b.commissionAuthorized) {
           return a.commissionAuthorized ? -1 : 1;
+        }
+        const va = hasVerifiedCruisePortLogistics(a);
+        const vb = hasVerifiedCruisePortLogistics(b);
+        if (va !== vb) {
+          return va ? -1 : 1;
+        }
+        if (va && vb) {
+          const halfDayA = (a.durationMinutes ?? 999) <= 360;
+          const halfDayB = (b.durationMinutes ?? 999) <= 360;
+          if (halfDayA !== halfDayB) {
+            return halfDayA ? -1 : 1;
+          }
         }
         const ra = a.ratingAverage ?? 0;
         const rb = b.ratingAverage ?? 0;

@@ -155,17 +155,21 @@ export default function DevelopersPage() {
             </span>
           </div>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-white/60">
-            Standard MCP clients connect to <code className="text-emerald-200">/api/v1/mcp</code> (<code className="text-emerald-200">initialize</code> → <code className="text-emerald-200">notifications/initialized</code> → <code className="text-emerald-200">tools/list</code> → <code className="text-emerald-200">tools/call</code>) or call the REST endpoint <code className="text-emerald-200">/api/v1/cruise/port-day-excursions</code> directly. Timing fit (<code className="text-emerald-200">fits</code>, <code className="text-emerald-200">runs_too_late</code>, <code className="text-emerald-200">needs_verification</code>) is evaluated deterministically and kept strictly separate from live seat/price availability (<code className="text-emerald-200">remainingSeats: null</code> when seat count is unknown).
+            Standard MCP clients connect to <code className="text-emerald-200">/api/v1/mcp</code> (<code className="text-emerald-200">initialize</code> → <code className="text-emerald-200">notifications/initialized</code> → <code className="text-emerald-200">tools/list</code> → <code className="text-emerald-200">tools/call</code>) or call the REST endpoint <code className="text-emerald-200">/api/v1/cruise/port-day-excursions</code> directly. Timing fit (<code className="text-emerald-200">fits</code>, <code className="text-emerald-200">runs_too_late</code>, <code className="text-emerald-200">needs_verification</code>) is evaluated deterministically and kept strictly separate from read-only live seat/price availability (<code className="text-emerald-200">remainingSeats: null</code> when seat count is unknown). Checkout handoffs are created only when the traveler explicitly chooses <strong>Continue to checkout</strong> via <code className="text-emerald-200">dcc_prepare_tour_checkout</code>.
           </p>
 
-          <div className="mt-6 grid gap-4 sm:grid-cols-2">
+          <div className="mt-6 grid gap-4 sm:grid-cols-3">
             <div className="rounded-2xl border border-white/10 bg-black/30 p-4">
               <span className="text-[10px] font-mono uppercase tracking-wider text-emerald-300">GET /api/v1/cruise/port-day-excursions · MCP: dcc_search_port_excursions</span>
               <p className="mt-1 text-xs text-white/60">SQL-backed port-day excursion search and sailing-window timing fit evaluator. Labels blank all-aboard times as port estimates with <code className="text-emerald-200">needs_verification</code>.</p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-black/30 p-4">
               <span className="text-[10px] font-mono uppercase tracking-wider text-emerald-300">POST /api/v1/cruise/port-day-excursions · MCP: dcc_check_tour_availability</span>
-              <p className="mt-1 text-xs text-white/60">Live availability check for an exact product option, date, departure time, and party size. Preserves unknown seat counts (<code className="text-emerald-200">remainingSeats: null</code>).</p>
+              <p className="mt-1 text-xs text-white/60">Strictly read-only (<code className="text-emerald-200">readOnly: true</code>) live availability check for an exact product option, date, departure time, and party size. Never creates a commercial handoff.</p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-black/30 p-4">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-emerald-300">MCP: dcc_prepare_tour_checkout (New Orleans 15200P6 / TG10)</span>
+              <p className="mt-1 text-xs text-white/60">After the traveler approves checkout, validates timing fit and live availability, resolves provider URL and affiliate account server-side, and returns <code className="text-emerald-200">handoffId</code>, <code className="text-emerald-200">clickId</code>, and the durable record&apos;s absolute <code className="text-emerald-200">outboundAffiliateUrl</code>.</p>
             </div>
           </div>
 
@@ -181,10 +185,10 @@ curl -s "https://www.destinationcommandcenter.com/api/v1/cruise/port-day-excursi
 # C) Blank All Aboard -> status: "needs_verification", shipAllAboardTimeLabel: "15:30 (port estimate)"
 curl -s "https://www.destinationcommandcenter.com/api/v1/cruise/port-day-excursions?port=new-orleans&date=2027-07-15&shipArrival=07:00&partySize=2&productCode=15200P6"
 
-# D) Live Availability Check (Option TG10, 2027-07-15, 08:00, Party Size 2 — separate from timing fit)
+# D) Read-Only Live Availability Check (Option TG10, 2027-07-15, 08:00, Party Size 3 — separate from timing fit)
 curl -s -X POST "https://www.destinationcommandcenter.com/api/v1/cruise/port-day-excursions" \\
   -H "Content-Type: application/json" \\
-  -d '{"port":"new-orleans","productCode":"15200P6","optionCode":"TG10","date":"2027-07-15","departureTime":"08:00","partySize":2}'`}</pre>
+  -d '{"port":"new-orleans","productCode":"15200P6","optionCode":"TG10","date":"2027-07-15","departureTime":"08:00","partySize":3}'`}</pre>
             </div>
 
             <div className="rounded-2xl border border-white/10 bg-black/40 p-4">
@@ -199,7 +203,7 @@ curl -s -X POST "https://www.destinationcommandcenter.com/api/v1/mcp" \\
   -H "Content-Type: application/json" \\
   -d '{"jsonrpc":"2.0","method":"notifications/initialized"}'
 
-# 3. List tools (includes dcc_search_port_excursions and dcc_check_tour_availability)
+# 3. List tools (includes dcc_search_port_excursions, dcc_check_tour_availability, and dcc_prepare_tour_checkout)
 curl -s -X POST "https://www.destinationcommandcenter.com/api/v1/mcp" \\
   -H "Content-Type: application/json" \\
   -d '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}'
@@ -207,12 +211,72 @@ curl -s -X POST "https://www.destinationcommandcenter.com/api/v1/mcp" \\
 # 4. Call dcc_search_port_excursions (1:15 p.m. -> fits | 1:14 p.m. -> runs_too_late | blank -> needs_verification)
 curl -s -X POST "https://www.destinationcommandcenter.com/api/v1/mcp" \\
   -H "Content-Type: application/json" \\
-  -d '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"dcc_search_port_excursions","arguments":{"port":"new-orleans","date":"2027-07-15","shipArrival":"07:00","allAboard":"1:15 p.m.","partySize":2,"productCode":"15200P6"}}}'
+  -d '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"dcc_search_port_excursions","arguments":{"port":"new-orleans","date":"2027-07-15","shipArrival":"07:00","allAboard":"1:15 p.m.","partySize":3,"productCode":"15200P6"}}}'
 
-# 5. Call dcc_check_tour_availability (Option TG10, 2027-07-15, 08:00, partySize 2)
+# 5. Call dcc_check_tour_availability (Read-only — Option TG10, 2027-07-15, 08:00, partySize 3)
 curl -s -X POST "https://www.destinationcommandcenter.com/api/v1/mcp" \\
   -H "Content-Type: application/json" \\
-  -d '{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"dcc_check_tour_availability","arguments":{"port":"new-orleans","productCode":"15200P6","optionCode":"TG10","date":"2027-07-15","departureTime":"08:00","partySize":2}}}'`}</pre>
+  -d '{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"dcc_check_tour_availability","arguments":{"port":"new-orleans","productCode":"15200P6","optionCode":"TG10","date":"2027-07-15","departureTime":"08:00","partySize":3}}}'
+
+# 6. Call dcc_prepare_tour_checkout (Continue to checkout — idempotent, returns handoffId, clickId, and absolute outboundAffiliateUrl)
+curl -s -X POST "https://www.destinationcommandcenter.com/api/v1/mcp" \\
+  -H "Content-Type: application/json" \\
+  -d '{"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"dcc_prepare_tour_checkout","arguments":{"port":"new-orleans","productCode":"15200P6","optionCode":"TG10","date":"2027-07-15","departureTime":"08:00","partySize":3,"shipArrival":"07:00","allAboard":"15:30","travelerApprovedCheckout":true,"idempotencyKey":"nola-15200p6-tg10-2027-07-15-p3-001"}}}'`}</pre>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="rounded-2xl border border-white/10 bg-black/40 p-4">
+                <p className="text-xs font-bold uppercase tracking-wider text-emerald-200">3A. Claude Remote MCP Connector</p>
+                <p className="mt-2 text-xs leading-5 text-white/65">
+                  In Claude Desktop or Claude Web (<a href="https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp" className="underline text-cyan-200">Custom Connectors using Remote MCP</a>), open <strong>Settings → Integrations / Connectors → Add Custom Connector</strong> and enter:
+                </p>
+                <pre className="mt-3 overflow-x-auto rounded-lg bg-black/50 p-2.5 text-[11px] leading-5 text-cyan-100">{`Name: Destination Command Center
+Remote MCP URL:
+https://www.destinationcommandcenter.com/api/v1/mcp`}</pre>
+                <p className="mt-2 text-[11px] leading-4 text-white/50">
+                  Tested with Streamable HTTP JSON-RPC 2.0 (<code className="text-emerald-200">2025-03-26</code>). Read tools work without credentials; pass <code className="text-emerald-200">Authorization: Bearer &lt;token&gt;</code> for higher partner rate tiers.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-white/10 bg-black/40 p-4">
+                <p className="text-xs font-bold uppercase tracking-wider text-emerald-200">3B. Cursor MCP Configuration</p>
+                <p className="mt-2 text-xs leading-5 text-white/65">
+                  Add DCC&apos;s remote Streamable HTTP MCP server to <code className="text-cyan-200">.cursor/mcp.json</code> (or global <code className="text-cyan-200">~/.cursor/mcp.json</code>):
+                </p>
+                <pre className="mt-3 overflow-x-auto rounded-lg bg-black/50 p-2.5 text-[11px] leading-5 text-cyan-100">{`{
+  "mcpServers": {
+    "destination-command-center": {
+      "url": "https://www.destinationcommandcenter.com/api/v1/mcp"
+    }
+  }
+}`}</pre>
+                <p className="mt-2 text-[11px] leading-4 text-white/50">
+                  Cursor automatically runs <code className="text-emerald-200">initialize</code>, <code className="text-emerald-200">notifications/initialized</code>, and <code className="text-emerald-200">tools/list</code> and exposes <code className="text-emerald-200">dcc_search_port_excursions</code>, <code className="text-emerald-200">dcc_check_tour_availability</code>, and <code className="text-emerald-200">dcc_prepare_tour_checkout</code>.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-white/10 bg-black/40 p-4">
+                <p className="text-xs font-bold uppercase tracking-wider text-emerald-200">3C. OpenAI Plugins &amp; Remote MCP</p>
+                <p className="mt-2 text-xs leading-5 text-white/65">
+                  Designed around OpenAI&apos;s transition from legacy Custom GPT Actions toward first-class <strong>MCP / Plugin Connectors</strong> in the Responses API and ChatGPT connectors:
+                </p>
+                <pre className="mt-3 overflow-x-auto rounded-lg bg-black/50 p-2.5 text-[11px] leading-5 text-cyan-100">{`{
+  "type": "mcp",
+  "server_label": "dcc_port_excursions",
+  "server_url": "https://www.destinationcommandcenter.com/api/v1/mcp",
+  "require_approval": {
+    "never": {
+      "tool_names": [
+        "dcc_search_port_excursions",
+        "dcc_check_tour_availability"
+      ]
+    }
+  }
+}`}</pre>
+                <p className="mt-2 text-[11px] leading-4 text-white/50">
+                  Keep <code className="text-emerald-200">dcc_prepare_tour_checkout</code> gated behind traveler confirmation, or import <code className="text-emerald-200">/openapi.json</code> for REST plugin runtimes.
+                </p>
+              </div>
             </div>
           </div>
         </section>

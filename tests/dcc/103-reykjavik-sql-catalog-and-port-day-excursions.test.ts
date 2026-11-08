@@ -809,11 +809,323 @@ test("103.11: Standard MCP client lifecycle on /api/v1/mcp supports initialize, 
   assert.equal(availRes.json.result.isError, false);
   const availPayload = availRes.json.result.structuredContent;
   assert.equal(availPayload.ok, true);
+  assert.equal(availPayload.readOnly, true);
+  assert.equal(availPayload.createsCommercialHandoff, false);
   assert.equal(availPayload.timingFitIncluded, false);
   assert.equal(availPayload.seatCountStatus, "unknown");
   assert.equal(availPayload.seatAvailability.remainingSeats, null);
   assert.ok(!("timeFit" in availPayload));
 });
+
+test("103.12: dcc_prepare_tour_checkout for New Orleans 15200P6 / TG10 enforces traveler approval and timing fit, returns idempotent handoffId/clickId/outboundAffiliateUrl for partySize=3, and records separate funnel stages with QA exclusion and provider outcome matching", async () => {
+  const { POST } = await import("@/app/api/v1/mcp/route");
+  const {
+    countCommercialHandoffsByIdempotencyKey,
+    getMachineCommerceFunnelSummary,
+    recordCommercialOutcome,
+  } = await import("@/lib/dcc/commerce");
+
+  async function callMcp(payload: Record<string, unknown>) {
+    const req = new Request("https://www.destinationcommandcenter.com/api/v1/mcp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const res = await POST(req);
+    const json = await res.json();
+    return { status: res.status, json };
+  }
+
+  // 1. Rejects when travelerApprovedCheckout is false
+  const unapprovedRes = await callMcp({
+    jsonrpc: "2.0",
+    id: 101,
+    method: "tools/call",
+    params: {
+      name: "dcc_prepare_tour_checkout",
+      arguments: {
+        port: "new-orleans",
+        productCode: "15200P6",
+        optionCode: "TG10",
+        date: "2027-07-15",
+        departureTime: "08:00",
+        partySize: 3,
+        shipArrival: "07:00",
+        allAboard: "15:30",
+        travelerApprovedCheckout: false,
+        idempotencyKey: "unit-unapproved-001",
+      },
+    },
+  });
+  assert.equal(unapprovedRes.status, 200);
+  assert.equal(unapprovedRes.json.result.isError, true);
+  assert.equal(
+    unapprovedRes.json.result.structuredContent.errorCode,
+    "TRAVELER_APPROVAL_REQUIRED"
+  );
+
+  // 2. Rejects when timing is runs_too_late (1:14 p.m. all aboard)
+  const tooLateCheckoutRes = await callMcp({
+    jsonrpc: "2.0",
+    id: 102,
+    method: "tools/call",
+    params: {
+      name: "dcc_prepare_tour_checkout",
+      arguments: {
+        port: "new-orleans",
+        productCode: "15200P6",
+        optionCode: "TG10",
+        date: "2027-07-15",
+        departureTime: "08:00",
+        partySize: 3,
+        shipArrival: "07:00",
+        allAboard: "1:14 p.m.",
+        travelerApprovedCheckout: true,
+        idempotencyKey: "unit-toolate-001",
+      },
+    },
+  });
+  assert.equal(tooLateCheckoutRes.status, 200);
+  assert.equal(tooLateCheckoutRes.json.result.isError, true);
+  assert.equal(
+    tooLateCheckoutRes.json.result.structuredContent.errorCode,
+    "SAILING_FIT_NOT_VERIFIED"
+  );
+  assert.equal(
+    tooLateCheckoutRes.json.result.structuredContent.timeFit.status,
+    "runs_too_late"
+  );
+
+  // 3. Rejects when all-aboard is blank (needs_verification)
+  const blankAllAboardCheckoutRes = await callMcp({
+    jsonrpc: "2.0",
+    id: 103,
+    method: "tools/call",
+    params: {
+      name: "dcc_prepare_tour_checkout",
+      arguments: {
+        port: "new-orleans",
+        productCode: "15200P6",
+        optionCode: "TG10",
+        date: "2027-07-15",
+        departureTime: "08:00",
+        partySize: 3,
+        shipArrival: "07:00",
+        travelerApprovedCheckout: true,
+        idempotencyKey: "unit-blank-001",
+      },
+    },
+  });
+  assert.equal(blankAllAboardCheckoutRes.status, 200);
+  assert.equal(blankAllAboardCheckoutRes.json.result.isError, true);
+  assert.equal(
+    blankAllAboardCheckoutRes.json.result.structuredContent.errorCode,
+    "SAILING_FIT_NOT_VERIFIED"
+  );
+  assert.equal(
+    blankAllAboardCheckoutRes.json.result.structuredContent.timeFit.status,
+    "needs_verification"
+  );
+
+  // 4. Snapshot funnel before production-flagged checkout sequence
+  const funnelBefore = await getMachineCommerceFunnelSummary({
+    portSlug: "new-orleans",
+    productCode: "15200P6",
+  });
+
+  // 5. Run production-flagged search -> availability_check -> prepare_tour_checkout (partySize: 3)
+  const prodIdempotencyKey = `nola-15200p6-tg10-p3-${Date.now()}`;
+  await callMcp({
+    jsonrpc: "2.0",
+    id: 104,
+    method: "tools/call",
+    params: {
+      name: "dcc_search_port_excursions",
+      arguments: {
+        port: "new-orleans",
+        date: "2027-07-15",
+        shipArrival: "07:00",
+        allAboard: "15:30",
+        partySize: 3,
+        productCode: "15200P6",
+      },
+    },
+  });
+
+  const avail3Res = await callMcp({
+    jsonrpc: "2.0",
+    id: 105,
+    method: "tools/call",
+    params: {
+      name: "dcc_check_tour_availability",
+      arguments: {
+        port: "new-orleans",
+        productCode: "15200P6",
+        optionCode: "TG10",
+        date: "2027-07-15",
+        departureTime: "08:00",
+        partySize: 3,
+      },
+    },
+  });
+  assert.equal(avail3Res.json.result.structuredContent.readOnly, true);
+  assert.equal(avail3Res.json.result.structuredContent.createsCommercialHandoff, false);
+
+  const checkout1Res = await callMcp({
+    jsonrpc: "2.0",
+    id: 106,
+    method: "tools/call",
+    params: {
+      name: "dcc_prepare_tour_checkout",
+      arguments: {
+        port: "new-orleans",
+        productCode: "15200P6",
+        optionCode: "TG10",
+        date: "2027-07-15",
+        departureTime: "08:00",
+        partySize: 3,
+        shipArrival: "07:00",
+        allAboard: "15:30",
+        travelerApprovedCheckout: true,
+        idempotencyKey: prodIdempotencyKey,
+      },
+    },
+  });
+  assert.equal(checkout1Res.status, 200);
+  assert.equal(checkout1Res.json.result.isError, false);
+  const c1 = checkout1Res.json.result.structuredContent;
+  assert.equal(c1.ok, true);
+  assert.equal(c1.checkoutPrepared, true);
+  assert.equal(c1.validatedSelection.productCode, "15200P6");
+  assert.equal(c1.validatedSelection.optionCode, "TG10");
+  assert.equal(c1.validatedSelection.partySize, 3);
+  assert.equal(c1.duplicateSubmission, false);
+  assert.equal(c1.durableRecordCount, 1);
+  assert.ok(c1.handoffId.startsWith("hndf_"));
+  assert.ok(c1.clickId.startsWith("clk_"));
+  assert.ok(
+    c1.outboundAffiliateUrl.startsWith(
+      "https://www.viator.com/tours/New-Orleans/New-Orleans-Swamp-Tour-Boat-Adventure-With-Pickup/d675-15200P6?"
+    )
+  );
+  assert.ok(!c1.outboundAffiliateUrl.includes("/go/out"));
+  assert.ok(c1.outboundAffiliateUrl.includes("pid=P00306962"));
+  assert.ok(c1.outboundAffiliateUrl.includes("mcid=42383"));
+  assert.ok(c1.outboundAffiliateUrl.includes(`__${c1.handoffId}`));
+  assert.ok(c1.outboundAffiliateUrl.includes(`click_id=${c1.clickId}`));
+  assert.ok(c1.outboundAffiliateUrl.includes("startDate=2027-07-15"));
+  assert.ok(c1.outboundAffiliateUrl.includes("numTravelers=3"));
+  assert.equal(c1.pricing.priceBasis, "per_person");
+  assert.equal(c1.pricing.currency, "USD");
+  assert.ok(typeof c1.pricing.unitPriceUsd === "number" && c1.pricing.unitPriceUsd > 0);
+  assert.equal(
+    c1.pricing.totalPriceUsd,
+    Number((c1.pricing.unitPriceUsd * 3).toFixed(2))
+  );
+  assert.ok(c1.pricing.timeChecked);
+
+  // 6. Retry the exact same request with the same idempotencyKey -> identical IDs and 1 durable record
+  const checkout2Res = await callMcp({
+    jsonrpc: "2.0",
+    id: 107,
+    method: "tools/call",
+    params: {
+      name: "dcc_prepare_tour_checkout",
+      arguments: {
+        port: "new-orleans",
+        productCode: "15200P6",
+        optionCode: "TG10",
+        date: "2027-07-15",
+        departureTime: "08:00",
+        partySize: 3,
+        shipArrival: "07:00",
+        allAboard: "15:30",
+        travelerApprovedCheckout: true,
+        idempotencyKey: prodIdempotencyKey,
+      },
+    },
+  });
+  assert.equal(checkout2Res.status, 200);
+  assert.equal(checkout2Res.json.result.isError, false);
+  const c2 = checkout2Res.json.result.structuredContent;
+  assert.equal(c2.handoffId, c1.handoffId);
+  assert.equal(c2.clickId, c1.clickId);
+  assert.equal(c2.outboundAffiliateUrl, c1.outboundAffiliateUrl);
+  assert.equal(c2.duplicateSubmission, true);
+  assert.equal(c2.durableRecordCount, 1);
+
+  const countInLedger = await countCommercialHandoffsByIdempotencyKey({
+    callerClientId: c1.authenticatedCallerClientId,
+    originatingSite: "destinationcommandcenter.com",
+    idempotencyKey: prodIdempotencyKey,
+  });
+  assert.equal(countInLedger.durableRecordCount, 1);
+
+  // 7. Match a confirmed booking outcome via provider reporting (clickId resolution)
+  const outcomeRes = await recordCommercialOutcome({
+    reporterClientId: "viator_modified_since_poller",
+    reporterProvenance: "authenticated_api_reporter",
+    provider: "viator",
+    providerAccount: "P00306962",
+    providerBookingRef: `VIA-15200P6-${Date.now()}`,
+    eventType: "BOOKING_CONFIRMED",
+    clickId: c1.clickId,
+    bookedProductCode: "15200P6",
+    bookedDate: "2027-07-15",
+    bookedPartySize: 3,
+    bookingValueAmount: c1.pricing.totalPriceUsd,
+    bookingValueCurrency: "USD",
+    estimatedCommissionAmount: Number((c1.pricing.totalPriceUsd * 0.08).toFixed(2)),
+  });
+  assert.equal(outcomeRes.handoffId, c1.handoffId);
+  assert.equal(outcomeRes.reconciliationStatus, "matched");
+
+  // 8. Run QA-flagged traffic and verify it is excluded from production funnel counts
+  await callMcp({
+    jsonrpc: "2.0",
+    id: 108,
+    method: "tools/call",
+    params: {
+      name: "dcc_prepare_tour_checkout",
+      arguments: {
+        port: "new-orleans",
+        productCode: "15200P6",
+        optionCode: "TG10",
+        date: "2027-07-15",
+        departureTime: "08:00",
+        partySize: 3,
+        shipArrival: "07:00",
+        allAboard: "15:30",
+        travelerApprovedCheckout: true,
+        idempotencyKey: `qa-test-${Date.now()}`,
+        isQaTraffic: true,
+      },
+    },
+  });
+
+  const funnelAfter = await getMachineCommerceFunnelSummary({
+    portSlug: "new-orleans",
+    productCode: "15200P6",
+  });
+  assert.ok(funnelAfter.searchEvents >= funnelBefore.searchEvents + 1);
+  assert.ok(
+    funnelAfter.availabilityCheckEvents >=
+      funnelBefore.availabilityCheckEvents + 1
+  );
+  assert.equal(
+    funnelAfter.checkoutHandoffEvents,
+    funnelBefore.checkoutHandoffEvents + 1
+  );
+  assert.ok(
+    funnelAfter.matchedConfirmedBookings >=
+      funnelBefore.matchedConfirmedBookings + 1
+  );
+  assert.ok(
+    funnelAfter.qaExcludedEvents.checkoutHandoffEvents >=
+      funnelBefore.qaExcludedEvents.checkoutHandoffEvents + 1
+  );
+});
+
 
 
 
