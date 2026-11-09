@@ -1,13 +1,37 @@
 try {
+  const getBuiltin =
+    typeof process !== "undefined" && typeof (process as any).getBuiltinModule === "function"
+      ? (process as any).getBuiltinModule.bind(process)
+      : null;
+  const fsMod = getBuiltin ? getBuiltin("node:fs") : null;
   if (
+    fsMod &&
     typeof process !== "undefined" &&
     process.env &&
     !process.env.VIATOR_API_KEY &&
     !process.env.VIATOR_API &&
-    !process.env.VIATOR_KEY &&
-    typeof process.loadEnvFile === "function"
+    !process.env.VIATOR_KEY
   ) {
-    process.loadEnvFile(".env.local");
+    const rawEnv = fsMod.readFileSync(".env.local", "utf8");
+    for (const line of rawEnv.split(/\r?\n/)) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith("#")) continue;
+      const eqIdx = trimmed.indexOf("=");
+      if (eqIdx <= 0) continue;
+      const key = trimmed.slice(0, eqIdx).trim();
+      if (!key.startsWith("VIATOR_") && !key.startsWith("NEXT_PUBLIC_VIATOR_")) {
+        continue;
+      }
+      if (process.env[key] !== undefined && process.env[key] !== "") continue;
+      let val = trimmed.slice(eqIdx + 1).trim();
+      if (
+        (val.startsWith('"') && val.endsWith('"')) ||
+        (val.startsWith("'") && val.endsWith("'"))
+      ) {
+        val = val.slice(1, -1);
+      }
+      process.env[key] = val;
+    }
   }
 } catch {
   // Ignore if .env.local cannot be read

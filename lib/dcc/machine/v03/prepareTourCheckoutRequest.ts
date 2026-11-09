@@ -32,7 +32,9 @@ export function prepareTourCheckoutFromRequest(
     originatingSite:
       str(args.originatingSite) === "cruisepromenade.com"
         ? "cruisepromenade.com"
-        : "destinationcommandcenter.com",
+        : str(args.originatingSite) === "welcometoneworleanstours.com"
+          ? "welcometoneworleanstours.com"
+          : "destinationcommandcenter.com",
     surface,
     isQaTraffic: args.isQaTraffic === true || args.qaTraffic === true || args.isTest === true,
     simulateTimeout: args.simulateTimeout === true,

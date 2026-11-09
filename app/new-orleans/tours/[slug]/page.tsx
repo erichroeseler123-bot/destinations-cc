@@ -7,9 +7,11 @@ import {
   getFareHarborUrl,
   getProductPrimaryBookingHref,
   getProductActiveBookingVariants,
+  getProductViatorCanonicalInfo,
   getProductViatorReselectionNote,
   NEW_ORLEANS_TOURS_PATH,
 } from "../pageConfig";
+import LargeAirboat15200P1CheckCard from "./LargeAirboat15200P1CheckCard";
 import JsonLd from "@/app/components/dcc/JsonLd";
 import { buildBreadcrumbJsonLd, buildWebPageJsonLd } from "@/lib/dcc/jsonld";
 import WikimediaImageCredit from "../../components/WikimediaImageCredit";
@@ -127,18 +129,41 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
     engineId,
     callerClientId: `ssr:${siteDomain}`,
   });
+  const rawPartySizeParam = Array.isArray(resolvedSearchParams.partySize)
+    ? resolvedSearchParams.partySize[0]
+    : resolvedSearchParams.partySize ||
+      (Array.isArray(resolvedSearchParams.party_size)
+        ? resolvedSearchParams.party_size[0]
+        : resolvedSearchParams.party_size);
+  const resolvedPartySize =
+    carriedContext.payload.partySize ||
+    (typeof rawPartySizeParam === "string" && Number(rawPartySizeParam) > 0
+      ? Math.round(Number(rawPartySizeParam))
+      : null);
+  const rawOptionParam = Array.isArray(resolvedSearchParams.option)
+    ? resolvedSearchParams.option[0]
+    : resolvedSearchParams.option ||
+      (Array.isArray(resolvedSearchParams.optionCode)
+        ? resolvedSearchParams.optionCode[0]
+        : resolvedSearchParams.optionCode);
+  const viatorInfo = getProductViatorCanonicalInfo(product);
+  const fhAccount =
+    product.companyShortname === "neworleanssteamboatcompany"
+      ? "welcometoneworleanstours"
+      : "aktourcenter";
+  const fhItemCode = product.itemId || product.bookingVariants?.[0]?.itemId || slug;
   const fhHandoffHref = buildPortfolioHandoffUrl({
     originatingSite: siteDomain,
     provider: "fareharbor",
-    providerAccount: "aktourcenter",
-    productCode: slug,
+    providerAccount: fhAccount,
+    productCode: fhItemCode,
     destinationUrl: fareHarborDirectHref,
     campaign: `${isWto ? "wno" : "dcc"}-${slug}`,
     contextId: carriedContext.contextId,
     evaluationRunId: assurance.evaluationRunId,
     receiptId: assurance.receiptId,
     intendedDate: carriedContext.payload.date || null,
-    partySize: carriedContext.payload.partySize || null,
+    partySize: resolvedPartySize,
     useRelativePath: !isWto,
   });
   const viatorHandoffHref = fallbackHref.startsWith("/api/v1/ads/click")
@@ -146,15 +171,19 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
     : buildPortfolioHandoffUrl({
         originatingSite: siteDomain,
         provider: "viator",
-        providerAccount: "P00306962",
-        productCode: product.viatorProductCode || slug,
-        destinationUrl: fallbackHref,
+        providerAccount: viatorInfo.providerAccount,
+        productCode: viatorInfo.productCode,
+        optionCode:
+          (typeof rawOptionParam === "string" && rawOptionParam.trim()) ||
+          viatorInfo.optionCode ||
+          null,
+        destinationUrl: viatorInfo.destinationUrl,
         campaign: `${isWto ? "wno" : "dcc"}-${slug}-viator`,
         contextId: carriedContext.contextId,
         evaluationRunId: assurance.evaluationRunId,
         receiptId: assurance.receiptId,
         intendedDate: carriedContext.payload.date || null,
-        partySize: carriedContext.payload.partySize || null,
+        partySize: resolvedPartySize,
         useRelativePath: !isWto,
       });
   const crossSiteParams = new URLSearchParams();
@@ -315,16 +344,16 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
           carriedContext={carriedContext}
           handoffActions={[
             {
-              label: `Book ${product.title} on Viator`,
+              label: `Book ${viatorInfo.title} (${viatorInfo.operatorName} · ${viatorInfo.productCode}${viatorInfo.optionCode ? ` · ${viatorInfo.optionCode}` : ""}) on Viator`,
               href: viatorHandoffHref,
               providerLabel: "Viator",
-              accountLabel: "pid=P00306962",
+              accountLabel: `pid=${viatorInfo.providerAccount}`,
             },
             {
-              label: `Operator Direct Fallback (FareHarbor)`,
+              label: `Book ${product.title} on FareHarbor (Item ${fhItemCode})`,
               href: fhHandoffHref,
               providerLabel: "FareHarbor",
-              accountLabel: "asn=aktourcenter",
+              accountLabel: `asn=${fhAccount}`,
             },
           ]}
           crossSiteLinks={[
@@ -342,6 +371,19 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
             },
           ]}
         />
+
+        {(slug === "ragin-cajun-airboat-options" || product.viatorProductCode === "15200P1") && (
+          <LargeAirboat15200P1CheckCard
+            siteDomain={siteDomain}
+            initialDate={carriedContext.payload.date || null}
+            initialPartySize={resolvedPartySize}
+            initialOptionCode={
+              typeof rawOptionParam === "string" && rawOptionParam.trim()
+                ? rawOptionParam.trim()
+                : "TG9"
+            }
+          />
+        )}
 
         <div className={styles.main}>
           <div className={styles.content}>

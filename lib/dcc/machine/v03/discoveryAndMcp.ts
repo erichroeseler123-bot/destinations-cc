@@ -1114,7 +1114,7 @@ export function buildMcpDiscoveryDocument(baseUrl = DCC_V03_SITE_URL) {
         name: "dcc_prepare_tour_checkout",
         requiredScope: "dcc:commerce:handoff",
         description:
-          "Prepares an attributed checkout handoff for live Viator product New Orleans 15200P6 / TG10 AFTER the traveler explicitly approves 'Continue to checkout' (travelerApprovedCheckout: true). Validates the exact option (TG10), date, departure time (08:00), and party size; resolves the sailing window from a matched sailing or supplied arrival and all-aboard times; reuses sailing-fit and live availability checks; shows priceBasis, currency, and timeChecked when the provider supplies them; resolves the canonical provider URL and affiliate account (P00306962 / mcid 42383) server-side; reuses createCommercialHandoff with the authenticated client ID and idempotencyKey; and returns handoffId, clickId, and the record's absolute outboundAffiliateUrl.",
+          "Prepares an attributed checkout handoff for live Viator products New Orleans 15200P6 (TG10) or 15200P1 (TG9, TG2, TG6, TG7) AFTER the traveler explicitly approves 'Continue to checkout' (travelerApprovedCheckout: true). Validates the exact option, date, departure time, and party size; resolves the sailing window from a matched sailing or supplied arrival and all-aboard times; reuses sailing-fit and live availability checks; shows priceBasis, currency, and timeChecked when the provider supplies them; resolves the canonical provider URL and affiliate account (P00306962 / mcid 42383) server-side; reuses createCommercialHandoff with the authenticated client ID and idempotencyKey; and returns handoffId, clickId, and the record's absolute outboundAffiliateUrl.",
         inputSchema: {
           type: "object",
           required: [
@@ -1136,13 +1136,13 @@ export function buildMcpDiscoveryDocument(baseUrl = DCC_V03_SITE_URL) {
             },
             productCode: {
               type: "string",
-              enum: ["15200P6"],
-              description: "Exact live Viator product code ('15200P6').",
+              enum: ["15200P6", "15200P1"],
+              description: "Exact live Viator product code ('15200P6' or '15200P1').",
             },
             optionCode: {
               type: "string",
-              enum: ["TG10"],
-              description: "Exact Viator product option code ('TG10' — Swamp Tour with Pickup 8:00 AM).",
+              enum: ["TG10", "TG9", "TG2", "TG6", "TG7"],
+              description: "Exact Viator product option code ('TG10' for 15200P6; 'TG9', 'TG2', 'TG6', 'TG7' for 15200P1).",
             },
             date: {
               type: "string",
@@ -1150,13 +1150,13 @@ export function buildMcpDiscoveryDocument(baseUrl = DCC_V03_SITE_URL) {
             },
             departureTime: {
               type: "string",
-              description: "Exact departure time in HH:MM format ('08:00').",
+              description: "Exact departure time in HH:MM format (e.g. '08:00', '09:40', '12:10', '14:10', '16:15').",
             },
             partySize: {
               type: "integer",
               minimum: 1,
-              maximum: 15,
-              description: "Number of guests (e.g. 3).",
+              maximum: 16,
+              description: "Number of guests (e.g. 3 or 8).",
             },
             travelerApprovedCheckout: {
               type: "boolean",

@@ -195,12 +195,29 @@ export function buildPortfolioHandoffUrl(params: {
   const base = params.useRelativePath
     ? "/go/commerce/handoff"
     : `${DEFAULT_DCC_ORIGIN}/go/commerce/handoff`;
+  let resolvedDestinationUrl = params.destinationUrl;
+  if (params.provider === "viator" && /fareharbor\.com/i.test(resolvedDestinationUrl)) {
+    const code = (params.productCode || "").trim().toUpperCase();
+    const canonicalViatorUrlByCode: Record<string, string> = {
+      "15200P1":
+        "https://www.viator.com/tours/New-Orleans/Large-Airboat-Swamp-Tour/d675-15200P1?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+      "15200P5":
+        "https://www.viator.com/tours/New-Orleans/New-Orleans-Covered-Boat-Swamp-Tour/d675-15200P5?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+      "15200P6":
+        "https://www.viator.com/tours/New-Orleans/New-Orleans-Swamp-Tour-Boat-Adventure-with-Transportation/d675-15200P6?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+      "15200P9":
+        "https://www.viator.com/tours/New-Orleans/Swamp-and-Plantation-Combo-Tour-from-New-Orleans/d675-15200P9?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+    };
+    resolvedDestinationUrl =
+      canonicalViatorUrlByCode[code] ||
+      `https://www.viator.com/searchResults/all?text=${encodeURIComponent(code || "New Orleans")}&pid=${encodeURIComponent(params.providerAccount || "P00306962")}&mcid=42383&medium=api&api_version=2.0`;
+  }
   const qs = new URLSearchParams();
   qs.set("site", params.originatingSite);
   qs.set("provider", params.provider === "direct_operator" ? "direct" : params.provider);
   if (params.providerAccount) qs.set("account", params.providerAccount);
   if (params.productCode) qs.set("product", params.productCode);
-  qs.set("url", params.destinationUrl);
+  qs.set("url", resolvedDestinationUrl);
   if (params.campaign) qs.set("campaign", params.campaign);
   if (params.contextId) qs.set("ctx", params.contextId);
   if (params.evaluationRunId) qs.set("evaluationRunId", params.evaluationRunId);

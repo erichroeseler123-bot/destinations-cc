@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import {
   buildFareHarborLightframeOptions,
   getExpectedFareHarborAsn,
+  getRaginCajunWnoRef,
   normalizeFareHarborFallbackHref,
   type FareHarborSource,
 } from "../lib/fareHarborAttribution";
@@ -52,13 +53,23 @@ export default function FareHarborBookingButton({
 }: FareHarborBookingButtonProps) {
   const buttonRef = useRef<HTMLAnchorElement>(null);
   const effectiveAsn = getExpectedFareHarborAsn(shortname, asn);
+  const effectiveRefCode = useMemo(
+    () =>
+      shortname === "ragincajuntours"
+        ? getRaginCajunWnoRef({ itemId, productSlug, href: fallbackHref }) || refCode
+        : refCode,
+    [fallbackHref, itemId, productSlug, refCode, shortname],
+  );
   const effectiveFallbackHref = useMemo(
     () => normalizeFareHarborFallbackHref({
       href: fallbackHref,
       shortname,
       requestedAsn: effectiveAsn,
+      itemId,
+      productSlug,
+      requestedRef: String(effectiveRefCode),
     }),
-    [fallbackHref, shortname, effectiveAsn],
+    [fallbackHref, shortname, effectiveAsn, itemId, productSlug, effectiveRefCode],
   );
 
   const trackEvent = useCallback((eventName: string) => {
@@ -70,7 +81,7 @@ export default function FareHarborBookingButton({
       shortname,
       itemId,
       flowId,
-      ref: refCode,
+      ref: effectiveRefCode,
       bookingUrl: effectiveFallbackHref,
     };
 
@@ -80,7 +91,7 @@ export default function FareHarborBookingButton({
       dataLayer.push({ event: eventName, ...eventData });
       (window as any).gtag?.("event", eventName, eventData);
     }
-  }, [effectiveFallbackHref, flowId, itemId, placement, productSlug, productTitle, refCode, shortname]);
+  }, [effectiveFallbackHref, effectiveRefCode, flowId, itemId, placement, productSlug, productTitle, shortname]);
 
   useEffect(() => {
     if (!buttonRef.current) return;
@@ -160,7 +171,7 @@ export default function FareHarborBookingButton({
         asn: effectiveAsn,
         itemId,
         flowId,
-        source: refCode,
+        source: effectiveRefCode,
         scheduleUuid,
         fullItems,
       }));
@@ -188,6 +199,10 @@ export default function FareHarborBookingButton({
       data-wno-managed-click="true"
       data-wno-product={productSlug}
       data-cta-location={placement}
+      data-fareharbor-shortname={shortname}
+      data-fareharbor-item={itemId ? String(itemId) : undefined}
+      data-fareharbor-asn={effectiveAsn}
+      data-fareharbor-ref={String(effectiveRefCode)}
       className={className}
     >
       {children}

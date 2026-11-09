@@ -70,11 +70,14 @@ const BASE = "https://fareharbor.com/api/external/v1";
  */
 export function getWnoFareHarborHeaders() {
   const appKey = String(
-    process.env.FAREHARBOR_API_APP_KEY ||
+    process.env.FAREHARBOR_WNO_APP_KEY ||
+      process.env.FAREHARBOR_API_APP_KEY ||
       process.env.FAREHARBOR_APP_KEY ||
       "5e9c301c-ec01-4ee7-ac74-b5be2dc774d7",
   ).trim();
-  const wnoUserKey = String(process.env.DCC_FH_API || "").trim();
+  const wnoUserKey = String(
+    process.env.DCC_FH_API || process.env.FAREHARBOR_WNO_USER_KEY || "",
+  ).trim();
 
   if (!wnoUserKey) {
     throw new Error("Missing WNO FareHarbor API user key (DCC_FH_API)");

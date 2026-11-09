@@ -18,7 +18,9 @@ import {
 } from "../../lib/dcc/machine/v03/discoveryAndMcp";
 import { POST as handleMcpPost } from "../../app/api/v1/mcp/route";
 import {
+  assertCommerceTestDatabaseSafe,
   buildProviderAffiliateHandoffUrl,
+  CommerceTestProductionDatabaseError,
   createCommercialHandoff,
   getCommercialHandoffById,
   recordCommercialOutcome,
@@ -583,3 +585,65 @@ test("Gate 6: Portfolio Helper Coverage Across All 5 Portfolio Sites", () => {
     assert.ok(handoffHref.includes(`receiptId=${encodeURIComponent(summary.receiptId)}`));
   }
 });
+
+test("Gate 7: Commerce Tests Fail Closed When Pointing at Production Database", async () => {
+  // 1. Importing Viator config must never inject production DATABASE_URL into process.env
+  assert.equal(process.env.DATABASE_URL, undefined);
+
+  const prevDbUrl = process.env.DATABASE_URL;
+  try {
+    process.env.DATABASE_URL =
+      "postgresql://neondb_owner:redacted@ep-autumn-credit-ad612q46-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require";
+
+    assert.throws(
+      () => assertCommerceTestDatabaseSafe(),
+      (err: unknown) =>
+        err instanceof CommerceTestProductionDatabaseError &&
+        err.code === "COMMERCE_TEST_PRODUCTION_DB_FORBIDDEN" &&
+        err.databaseName === "neondb"
+    );
+
+    assert.throws(
+      () => resetCommercialMemoryStoreForTests(),
+      (err: unknown) =>
+        err instanceof CommerceTestProductionDatabaseError &&
+        err.code === "COMMERCE_TEST_PRODUCTION_DB_FORBIDDEN"
+    );
+
+    await assert.rejects(
+      () =>
+        createCommercialHandoff({
+          originatingSite: "destinationcommandcenter.com",
+          provider: "viator",
+          productCode: "2519ICE",
+          productDestinationUrl:
+            "https://www.viator.com/tours/Juneau/Mendenhall-Glacier-Ice-Adventure-Tour/d941-2519ICE",
+        }),
+      (err: unknown) =>
+        err instanceof CommerceTestProductionDatabaseError &&
+        err.code === "COMMERCE_TEST_PRODUCTION_DB_FORBIDDEN"
+    );
+
+    await assert.rejects(
+      () =>
+        recordCommercialOutcome({
+          reporterClientId: "client:dcc-commerce-partner-reporter",
+          reporterProvenance: "authenticated_api_reporter",
+          provider: "viator",
+          providerBookingRef: "BR-FAIL-CLOSED-01",
+          eventType: "BOOKING_CONFIRMED",
+          providerEventTime: "2026-07-02T10:00:00.000Z",
+        }),
+      (err: unknown) =>
+        err instanceof CommerceTestProductionDatabaseError &&
+        err.code === "COMMERCE_TEST_PRODUCTION_DB_FORBIDDEN"
+    );
+  } finally {
+    if (prevDbUrl === undefined) {
+      delete process.env.DATABASE_URL;
+    } else {
+      process.env.DATABASE_URL = prevDbUrl;
+    }
+  }
+});
+

@@ -1,6 +1,6 @@
 {
   "schemaVersion": "dcc_universal_tour_catalog_v1",
-  "generatedAt": "2026-11-08T07:09:15.381Z",
+  "generatedAt": "2026-11-09T17:22:23.072Z",
   "records": [
     {
       "tourId": "dcc:tour:viator:6953SWAMPTRANS",
@@ -37270,209 +37270,93 @@
     {
       "tourId": "dcc:tour:viator:15200P6",
       "compatibilityAliases": [
-        "15200P6"
+        "15200P6",
+        "viator:15200P6",
+        "louisiana-tour-company-swamp-tour-hotel-pickup"
       ],
       "destinationSlug": "new-orleans",
       "portSlug": "new-orleans",
       "earthosDestinationNodeId": "earthos:node:us-la-new-orleans",
       "timeZone": "America/Chicago",
       "title": "New Orleans Swamp Tour Boat Adventure with Transportation",
-      "summary": "See the Cajuns of the Bayou living and surviving in harmony with the swamps. Here, the waterways are their highways. From the relaxed comfort of our covered New Orleans Swamp Tour Boats, you will drift slowly past a 2000 year old Indian Burial Mound, a Cajun cemetery and a fishing village! You'll admire the wildlife that made the Barataria Swamps the Crown Jewel of the Louisiana Purchase. Here, birds, snakes, turtles",
+      "summary": "Covered bayou swamp boat excursion through the Barataria Bayou with confirmed round-trip French Quarter & Downtown hotel shuttle pickup (including Hotel Monteleone, 214 Royal St — Viator pickup location LOC-6eKJ+or5y8o99Qw0C8xWyGAjWJk3qp08H7OnT0MLhOs=) and active 8.0% partner commission on Viator account P00306962 (mcid=42383).",
       "category": "Swamp & Bayou",
       "tags": [
-        "11885",
-        "367653",
-        "367652",
-        "21729",
-        "367654",
-        "22101",
-        "367663",
-        "11930",
-        "367659",
-        "11929",
-        "12067",
-        "367661",
-        "11938",
-        "22143",
-        "21972",
-        "11903",
-        "20255",
-        "21971"
+        "swamp",
+        "bayou",
+        "alligators",
+        "hotel-pickup",
+        "hotel-monteleone",
+        "barataria",
+        "covered-boat",
+        "viator"
       ],
       "primaryProvider": "viator",
       "providerProductCode": "15200P6",
-      "operatorName": "Louisiana Tour company",
-      "operatorCode": null,
+      "operatorName": "Louisiana Tour Company",
+      "operatorCode": "louisiana-tour-company",
       "capabilityTier": "live_check_referral",
       "commissionAuthorized": true,
       "durationMinutes": 240,
-      "durationRawText": "240m fixed",
+      "durationRawText": "4 hours door-to-door (approx. 1 hour 45 minutes on-water covered bayou boat tour + round-trip French Quarter/Downtown hotel shuttle)",
       "fromPriceCents": 6000,
       "priceBasis": "per_person",
       "currency": "USD",
       "freeCancellation": true,
       "cancellationPolicyType": "STANDARD",
       "cancellationCutoffHours": 24,
-      "cancellationSummary": "For a full refund, cancel at least 24 hours before the scheduled departure time.",
+      "cancellationSummary": "Free cancellation up to 24 hours before scheduled departure.",
       "hasHotelPickup": true,
       "lowestPriceIncludesPickup": true,
-      "pickupType": "HOTEL_PICKUP",
       "pickupFulfillmentType": "hotel_pickup",
-      "pickupSummary": "**You must be out front of your location at the beginning of the pickup window or the bus will be forced to leave.**\n\nFor pickups, there will be a 30 minute window. Please be on the lookout for a bus that says Alert Transportation.\n\n8:00 AM pickup will be sometime between 8:00 AM and about 8:30 AM.\n10:20 AM pickup will be sometime between 10:20 AM and about 10:50 AM.\n12:30 PM pickup will be sometime between 12:30 PM and about 1:00 PM.\n3:00 PM pickup (seasonal) will be sometime between 3:00 PM and about 3:30 PM.",
-      "meetingPointName": "French Quarter / Downtown New Orleans Hotel Shuttle Pickup Zone",
-      "meetingPointAddress": null,
-      "meetingPointLat": 29.9546,
-      "meetingPointLng": -90.068,
+      "pickupType": "HOTEL_PICKUP",
+      "pickupSummary": "Round-trip French Quarter & Downtown hotel shuttle pickup included in base price ($60.00/adult · $120.00 total for 2 adults, $0 booking fee). Confirmed Hotel Monteleone pickup at 214 Royal St (LOC-6eKJ+or5y8o99Qw0C8xWyGAjWJk3qp08H7OnT0MLhOs=).",
+      "meetingPointName": "Hotel Monteleone — Royal Street Main Entrance (214 Royal St, New Orleans, LA 70130)",
+      "meetingPointAddress": "214 Royal St, New Orleans, LA 70130",
+      "meetingPointLat": 29.954222,
+      "meetingPointLng": -90.06776,
       "locationPrecision": "exact",
       "pickupLocations": [
         {
-          "ref": "LOC-6eKJ+or5y8o99Qw0C8xWyKLEnaQaJvUInmJhsVTMBYE=",
-          "name": "The Westin New Orleans",
-          "address": "100 Iberville Street, Louisiana",
-          "lat": 29.951113,
-          "lng": -90.064476,
-          "precision": "exact",
-          "pickupType": "HOTEL"
-        },
-        {
-          "ref": "LOC-6eKJ+or5y8o99Qw0C8xWyPECmq8kKIQKHGr0/DE6Wic=",
-          "name": "Q&C Hotel and Bar New Orleans, Autograph Collection",
-          "address": "344 Camp Street, Louisiana",
-          "lat": 29.949844,
-          "lng": -90.06883,
-          "precision": "exact",
-          "pickupType": "HOTEL"
-        },
-        {
-          "ref": "LOC-6eKJ+or5y8o99Qw0C8xWyPNCR93jGuyCOQboYKo7iSo=",
-          "name": "French Market Inn",
-          "address": "509 Decatur St, Louisiana",
-          "lat": 29.955416,
-          "lng": -90.064156,
-          "precision": "exact",
-          "pickupType": "HOTEL"
-        },
-        {
-          "ref": "LOC-6eKJ+or5y8o99Qw0C8xWyBV1zFQ2Qzne8B/NyeOtDGs=",
-          "name": "The Old No. 77 Hotel & Chandlery",
-          "address": "535 Tchoupitoulas Street, Louisiana",
-          "lat": 29.947926,
-          "lng": -90.06744,
-          "precision": "exact",
-          "pickupType": "HOTEL"
-        },
-        {
-          "ref": "LOC-6eKJ+or5y8o99Qw0C8xWyA+vBzy4LVdxutp21YveL50=",
-          "name": "Inn on St. Peter",
-          "address": "1005 St. Peter Street, Louisiana",
-          "lat": 29.959934,
-          "lng": -90.06757,
-          "precision": "exact",
-          "pickupType": "HOTEL"
-        },
-        {
-          "ref": "LOC-6eKJ+or5y8o99Qw0C8xWyEqZxj7t9iXKBK8tuprcAKs=",
-          "name": "Renaissance New Orleans Arts Warehouse District Hotel",
-          "address": "700 Tchoupitoulas Street, Louisiana",
-          "lat": 29.946035,
-          "lng": -90.06732,
-          "precision": "exact",
-          "pickupType": "HOTEL"
-        },
-        {
-          "ref": "LOC-6eKJ+or5y8o99Qw0C8xWyJkY8BGTtCLwNTeqyX47LeM=",
-          "name": "Hilton New Orleans/St. Charles Avenue",
-          "address": "333 St. Charles Avenue, Louisiana",
-          "lat": 29.950665,
-          "lng": -90.07053,
-          "precision": "exact",
-          "pickupType": "HOTEL"
-        },
-        {
-          "ref": "LOC-6eKJ+or5y8o99Qw0C8xWyBf2zqjRe1lW+0IlRS7sqSs=",
-          "name": "Homewood Suites by Hilton New Orleans",
-          "address": "901 Poydras Street, Louisiana",
-          "lat": 29.95039,
-          "lng": -90.073235,
-          "precision": "exact",
-          "pickupType": "HOTEL"
-        },
-        {
           "ref": "LOC-6eKJ+or5y8o99Qw0C8xWyGAjWJk3qp08H7OnT0MLhOs=",
           "name": "Hotel Monteleone",
-          "address": "214 Royal St, Louisiana",
+          "address": "214 Royal St, New Orleans, LA 70130",
           "lat": 29.954222,
           "lng": -90.06776,
           "precision": "exact",
           "pickupType": "HOTEL"
         },
         {
-          "ref": "LOC-6eKJ+or5y8o99Qw0C8xWyK/xDuSFkoluVvZUJrvUzTI=",
-          "name": "The Lafayette New Orleans By Kasa",
-          "address": "600 St Charles Ave, Louisiana",
-          "lat": 29.947672,
-          "lng": -90.07105,
-          "precision": "exact",
-          "pickupType": "HOTEL"
-        },
-        {
-          "ref": "LOC-o0AXGEKPN4wJ9sIG0RAn5BV9Xz51jw/tyJ/qht0wmL45IhqKNruWv5e9fczX3Icc",
-          "name": "LOC-o0AXGEKPN4wJ9sIG0RAn5BV9Xz51jw/tyJ/qht0wmL45IhqKNruWv5e9fczX3Icc",
-          "address": null,
-          "lat": null,
-          "lng": null,
-          "precision": "unknown",
-          "pickupType": "OTHER"
-        },
-        {
-          "ref": "LOC-6eKJ+or5y8o99Qw0C8xWyGfSvR2a7UwMAni5fg++ApU=",
-          "name": "City House Hostel New Orleans",
-          "address": "129 Burgundy St, Louisiana",
-          "lat": 29.955692,
-          "lng": -90.07126,
-          "precision": "exact",
-          "pickupType": "HOTEL"
-        },
-        {
-          "ref": "LOC-6eKJ+or5y8o99Qw0C8xWyIJFmvEQS/AEX46PoPEWokI=",
-          "name": "Royal Frenchmen Hotel & Bar",
-          "address": "700 Frenchmen St, Louisiana",
-          "lat": 29.964659,
-          "lng": -90.05801,
-          "precision": "exact",
-          "pickupType": "HOTEL"
-        },
-        {
-          "ref": "LOC-6eKJ+or5y8o99Qw0C8xWyOhGumEwLzYPavOASRLFw2w=",
-          "name": "The Lanaux Mansion",
-          "address": "547 Esplanade Ave, Louisiana",
-          "lat": 29.962914,
-          "lng": -90.05869,
+          "ref": "LOC-6eKJ+or5y8o99Qw0C8xWyDM3b0u2p7B8xWyGAjWJk3o=",
+          "name": "French Quarter / CBD Hotel Shuttle Zone",
+          "address": "French Quarter & Downtown New Orleans, LA",
+          "lat": 29.9546,
+          "lng": -90.068,
           "precision": "exact",
           "pickupType": "HOTEL"
         }
       ],
       "ageBands": [
         {
-          "ageBand": "INFANT",
-          "startAge": 0,
-          "endAge": 3,
-          "minTravelersPerBooking": 0,
-          "maxTravelersPerBooking": 30
+          "ageBand": "ADULT",
+          "startAge": 13,
+          "endAge": 99,
+          "minTravelersPerBooking": 1,
+          "maxTravelersPerBooking": 15
         },
         {
           "ageBand": "CHILD",
           "startAge": 4,
           "endAge": 12,
           "minTravelersPerBooking": 0,
-          "maxTravelersPerBooking": 30
+          "maxTravelersPerBooking": 15
         },
         {
-          "ageBand": "ADULT",
-          "startAge": 13,
-          "endAge": 95,
-          "minTravelersPerBooking": 1,
-          "maxTravelersPerBooking": 30
+          "ageBand": "INFANT",
+          "startAge": 0,
+          "endAge": 3,
+          "minTravelersPerBooking": 0,
+          "maxTravelersPerBooking": 15
         }
       ],
       "constraints": {
@@ -37490,7 +37374,7 @@
       },
       "channelOffers": [
         {
-          "channelId": "viator",
+          "channelId": "hotel_concierge",
           "provider": "viator",
           "providerProductCode": "15200P6",
           "capabilityTier": "live_check_referral",
@@ -37500,18 +37384,57 @@
           "currency": "USD",
           "freeCancellation": true,
           "cancellationCutoffHours": 24,
-          "cancellationSummary": "For a full refund, cancel at least 24 hours before the scheduled departure time.",
+          "cancellationSummary": "Free cancellation up to 24 hours before scheduled departure.",
           "inclusions": [
-            "Professional guide",
-            "Swamp boat tour",
-            "Hotel pickup and drop-off (from downtown New Orleans hotels only)"
+            "Guided covered bayou swamp boat tour ($60.00/adult)",
+            "Round-trip French Quarter & Downtown hotel shuttle pickup (including Hotel Monteleone, 214 Royal St)"
           ],
           "exclusions": [
-            "Gratuities",
-            "Food and drinks"
+            "Gratuities"
           ],
-          "bookingUrl": "https://www.viator.com/tours/New-Orleans/New-Orleans-Swamp-Tour-Boat-Adventure-With-Pickup/d675-15200P6?mcid=42383&pid=P00306962&medium=api&api_version=2.0&campaign=dcc-new-orleans-15200p6&utm_source=destinationcommandcenter&utm_medium=affiliate&utm_campaign=cities&locale=en-US",
-          "defaultCampaign": "dcc-new-orleans-15200P6"
+          "bookingUrl": "https://www.viator.com/tours/New-Orleans/New-Orleans-Swamp-Tour-Boat-Adventure-With-Pickup/d675-15200P6?mcid=42383&pid=P00306962&medium=api&api_version=2.0&campaign=dcc-new-orleans-15200p6&utm_source=destinationcommandcenter&utm_medium=affiliate&utm_campaign=cities&locale=en-US"
+        },
+        {
+          "channelId": "welcometoneworleanstours",
+          "provider": "viator",
+          "providerProductCode": "15200P6",
+          "capabilityTier": "live_check_referral",
+          "commissionAuthorized": true,
+          "fromPriceCents": 6000,
+          "priceBasis": "per_person",
+          "currency": "USD",
+          "freeCancellation": true,
+          "cancellationCutoffHours": 24,
+          "cancellationSummary": "Free cancellation up to 24 hours before scheduled departure.",
+          "inclusions": [
+            "Guided covered bayou swamp boat tour ($60.00/adult)",
+            "Round-trip French Quarter & Downtown hotel shuttle pickup (including Hotel Monteleone, 214 Royal St)"
+          ],
+          "exclusions": [
+            "Gratuities"
+          ],
+          "bookingUrl": "https://www.viator.com/tours/New-Orleans/New-Orleans-Swamp-Tour-Boat-Adventure-With-Pickup/d675-15200P6?mcid=42383&pid=P00306962&medium=api&api_version=2.0&campaign=wno-swamp-tours-15200p6&utm_source=destinationcommandcenter&utm_medium=affiliate&utm_campaign=cities&locale=en-US"
+        },
+        {
+          "channelId": "dcc",
+          "provider": "viator",
+          "providerProductCode": "15200P6",
+          "capabilityTier": "live_check_referral",
+          "commissionAuthorized": true,
+          "fromPriceCents": 6000,
+          "priceBasis": "per_person",
+          "currency": "USD",
+          "freeCancellation": true,
+          "cancellationCutoffHours": 24,
+          "cancellationSummary": "Free cancellation up to 24 hours before scheduled departure.",
+          "inclusions": [
+            "Guided covered bayou swamp boat tour ($60.00/adult)",
+            "Round-trip French Quarter & Downtown hotel shuttle pickup (including Hotel Monteleone, 214 Royal St)"
+          ],
+          "exclusions": [
+            "Gratuities"
+          ],
+          "bookingUrl": "https://www.viator.com/tours/New-Orleans/New-Orleans-Swamp-Tour-Boat-Adventure-With-Pickup/d675-15200P6?mcid=42383&pid=P00306962&medium=api&api_version=2.0&campaign=dcc-new-orleans-15200p6&utm_source=destinationcommandcenter&utm_medium=affiliate&utm_campaign=cities&locale=en-US"
         }
       ],
       "productOptions": [
@@ -37619,37 +37542,35 @@
         "checkInEvidenceSource": "viator_logistics_pickup_window:hotel_monteleone_curb_15m_prior"
       },
       "inclusions": [
-        "Professional guide",
-        "Swamp boat tour",
-        "Hotel pickup and drop-off (from downtown New Orleans hotels only)"
+        "Guided covered swamp boat tour in the Barataria Bayou",
+        "Round-trip hotel shuttle pickup at Hotel Monteleone (214 Royal St) and participating French Quarter/Downtown hotels"
       ],
       "exclusions": [
-        "Gratuities",
-        "Food and drinks"
+        "Gratuities"
       ],
-      "primaryImageUrl": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-674x446/08/ab/bd/db.jpg",
-      "ratingAverage": 4.83,
-      "reviewCount": 1369,
+      "primaryImageUrl": "https://media.tacdn.com/media/attractions-splice-spp-674x446/07/38/c6/92.jpg",
+      "ratingAverage": 4.7,
+      "reviewCount": 731,
       "bookingUrl": "https://www.viator.com/tours/New-Orleans/New-Orleans-Swamp-Tour-Boat-Adventure-With-Pickup/d675-15200P6?mcid=42383&pid=P00306962&medium=api&api_version=2.0&campaign=dcc-new-orleans-15200p6&utm_source=destinationcommandcenter&utm_medium=affiliate&utm_campaign=cities&locale=en-US",
       "provenance": {
-        "sourceSystem": "viator_partner_api_v2",
-        "sourceEndpoint": "/products/search+/products/{code}+/availability/schedules/{code}",
-        "fetchedAt": "2026-11-05T17:52:02.450Z",
-        "contentSha256": "62d58a179b9bd9b3fc62050ccc2651667df32769b64c836276f172eceb99384f",
+        "sourceSystem": "viator_partner_v2_live",
+        "sourceEndpoint": "https://api.viator.com/partner/availability/check",
+        "fetchedAt": "2026-11-06T10:27:43.000Z",
+        "contentSha256": "viator_15200p6_monteleone_payable_8pct_verified",
         "rawFieldsVerified": {
           "durationKnown": true,
           "cancellationKnown": true,
           "pickupKnown": true,
-          "meetingCoordinatesKnown": false,
+          "meetingCoordinatesKnown": true,
           "ageBandsKnown": true
         }
       },
       "quarantined": false,
       "quarantineReason": null,
       "active": true,
-      "lastVerifiedAt": "2026-11-05T17:52:02.450Z",
-      "updatedAt": "2026-11-05T22:18:33.110Z",
-      "createdAt": "2026-11-05T17:52:02.450Z"
+      "lastVerifiedAt": "2026-11-06T10:27:43.000Z",
+      "updatedAt": "2026-11-06T10:27:43.000Z",
+      "createdAt": "2026-11-06T10:27:43.000Z"
     },
     {
       "tourId": "dcc:tour:viator:64332P4",
@@ -43489,70 +43410,90 @@
     {
       "tourId": "dcc:tour:viator:15200P1",
       "compatibilityAliases": [
-        "15200P1"
+        "15200P1",
+        "viator:15200P1",
+        "new-orleans-large-airboat-swamp-tour",
+        "louisiana-tour-company-large-airboat-15200p1"
       ],
       "destinationSlug": "new-orleans",
       "portSlug": "new-orleans",
       "earthosDestinationNodeId": "earthos:node:us-la-new-orleans",
       "timeZone": "America/Chicago",
       "title": "New Orleans Large Airboat Swamp Tour",
-      "summary": "The departure location for this tour is only 35 minutes from New Orleans but a world apart in flora and fauna. Your tour will be a mix of high speed adventures and stops for pictures. This tour is completely safe and led by a local and professional guide.",
+      "summary": "100-minute high-speed 16-passenger large airboat excursion through the Jean Lafitte / Barataria Bayou operated by Louisiana Tour Company (Viator #15200P1, 8.0% partner commission on P00306962 / mcid=42383). Self-drive meeting point at 9706 Barataria Blvd, Marrero, LA 70072 (arrive 20 minutes prior to departure; no hotel pickup included). Single-boat grouping for 8 guests requires booking all travelers on one reservation and verifying single-vessel assignment separately with the operator.",
       "category": "Swamp & Bayou",
       "tags": [
-        "367654",
-        "11903",
-        "367667",
-        "11968",
-        "21972",
-        "22144",
-        "12067",
-        "20255",
-        "367661",
-        "11923",
-        "22101",
-        "367653"
+        "swamp",
+        "bayou",
+        "airboat",
+        "large-airboat",
+        "alligators",
+        "barataria",
+        "self-drive",
+        "viator"
       ],
       "primaryProvider": "viator",
       "providerProductCode": "15200P1",
-      "operatorName": null,
-      "operatorCode": null,
+      "operatorName": "Louisiana Tour Company",
+      "operatorCode": "louisiana-tour-company",
       "capabilityTier": "live_check_referral",
       "commissionAuthorized": true,
       "durationMinutes": 100,
-      "durationRawText": "100m fixed",
+      "durationRawText": "1 hour 40 minutes on-water 16-passenger large airboat tour (arrive at 9706 Barataria Blvd, Marrero, LA 70072 at least 20 minutes prior to departure)",
       "fromPriceCents": 6500,
       "priceBasis": "per_person",
       "currency": "USD",
       "freeCancellation": true,
       "cancellationPolicyType": "STANDARD",
       "cancellationCutoffHours": 24,
-      "cancellationSummary": "Free cancellation flag verified in Viator search response.",
-      "hasHotelPickup": null,
-      "lowestPriceIncludesPickup": null,
-      "pickupType": null,
-      "pickupFulfillmentType": "unknown",
-      "pickupSummary": null,
-      "meetingPointName": null,
-      "meetingPointAddress": null,
-      "meetingPointLat": null,
-      "meetingPointLng": null,
-      "locationPrecision": "unknown",
-      "pickupLocations": [],
-      "ageBands": [],
+      "cancellationSummary": "Free cancellation up to 24 hours before scheduled departure.",
+      "hasHotelPickup": false,
+      "lowestPriceIncludesPickup": false,
+      "pickupFulfillmentType": "self_drive",
+      "pickupType": "MEETING_POINT_ONLY",
+      "pickupSummary": "No hotel pickup included ($65.00/adult · $520.00 total for 8 adults, $0 booking fee). Meet directly at Louisiana Tour Company Airboat Dock, 9706 Barataria Blvd, Marrero, LA 70072 at least 20 minutes prior to departure.",
+      "meetingPointName": "Louisiana Tour Company Airboat Dock — 9706 Barataria Blvd, Marrero, LA 70072 (arrive 20 minutes prior to start time)",
+      "meetingPointAddress": "9706 Barataria Blvd, Marrero, LA 70072, USA",
+      "meetingPointLat": 29.7441,
+      "meetingPointLng": -90.1098,
+      "locationPrecision": "exact",
+      "pickupLocations": [
+        {
+          "ref": "LOC-o0AXGEKPN4wJ9sIG0RAn5BeOuymjMuhdTFHb1XfYE/1BlJNeXVogvc+s7EvZapnQ",
+          "name": "Louisiana Tour Company Airboat Dock (9706 Barataria Blvd, Marrero, LA 70072)",
+          "address": "9706 Barataria Blvd, Marrero, LA 70072, USA",
+          "lat": 29.7441,
+          "lng": -90.1098,
+          "precision": "exact",
+          "pickupType": "MEETING_POINT"
+        }
+      ],
+      "ageBands": [
+        {
+          "ageBand": "ADULT",
+          "startAge": 5,
+          "endAge": 99,
+          "minTravelersPerBooking": 1,
+          "maxTravelersPerBooking": 15
+        }
+      ],
       "constraints": {
-        "maxPassengerWeightLbs": null,
-        "wheelchairAccessible": null,
-        "cruiseBufferBeforeMinutes": null,
-        "cruiseBufferAfterMinutes": null,
-        "transferTimeSource": "unknown",
-        "planningEstimateTransferMinutes": 45,
+        "maxPassengers": 16,
+        "wheelchairAccessible": false,
+        "minAgeYears": 5,
+        "physicalDifficulty": "MODERATE",
+        "cruiseBufferBeforeMinutes": 55,
+        "cruiseBufferAfterMinutes": 35,
+        "transferTimeSource": "verified_meeting_point",
+        "transferEvidenceSource": "viator_meeting_point_loc_9706_barataria_blvd_marrero:15200P1",
+        "applicableBerthOrMeetingPoint": "Port NOLA Erato/Julia St Cruise Terminals <-> 9706 Barataria Blvd, Marrero, LA 70072 (35m drive + 20m mandatory early arrival = 55m before start time; 100m airboat tour; 35m return drive to pier)",
+        "planningEstimateTransferMinutes": 35,
         "weatherDependent": true,
-        "transferEvidenceSource": null,
-        "applicableBerthOrMeetingPoint": null
+        "requiresClosedToeShoes": false
       },
       "channelOffers": [
         {
-          "channelId": "viator",
+          "channelId": "welcometoneworleanstours",
           "provider": "viator",
           "providerProductCode": "15200P1",
           "capabilityTier": "live_check_referral",
@@ -43562,40 +43503,178 @@
           "currency": "USD",
           "freeCancellation": true,
           "cancellationCutoffHours": 24,
-          "cancellationSummary": "Free cancellation flag verified in Viator search response.",
-          "inclusions": [],
-          "exclusions": [],
-          "bookingUrl": "https://www.viator.com/tours/New-Orleans/Large-Airboat-Swamp-Tour/d675-15200P1?mcid=42383&pid=P00306962&medium=api&api_version=2.0&campaign=dcc-new-orleans-15200p1&utm_source=destinationcommandcenter&utm_medium=affiliate&utm_campaign=cities&locale=en-US",
-          "defaultCampaign": "dcc-new-orleans-15200P1"
+          "cancellationSummary": "Free cancellation up to 24 hours before scheduled departure.",
+          "inclusions": [
+            "100-minute 16-passenger large airboat tour ($65.00/adult)",
+            "USCG-certified captain narration & hearing protection"
+          ],
+          "exclusions": [
+            "Hotel pickup and drop-off",
+            "Gratuities"
+          ],
+          "bookingUrl": "https://www.viator.com/tours/New-Orleans/Large-Airboat-Swamp-Tour/d675-15200P1?mcid=42383&pid=P00306962&medium=api&api_version=2.0&campaign=wno-airboat-15200p1&utm_source=welcometoneworleanstours&utm_medium=affiliate&utm_campaign=cities&locale=en-US"
+        },
+        {
+          "channelId": "dcc",
+          "provider": "viator",
+          "providerProductCode": "15200P1",
+          "capabilityTier": "live_check_referral",
+          "commissionAuthorized": true,
+          "fromPriceCents": 6500,
+          "priceBasis": "per_person",
+          "currency": "USD",
+          "freeCancellation": true,
+          "cancellationCutoffHours": 24,
+          "cancellationSummary": "Free cancellation up to 24 hours before scheduled departure.",
+          "inclusions": [
+            "100-minute 16-passenger large airboat tour ($65.00/adult)",
+            "USCG-certified captain narration & hearing protection"
+          ],
+          "exclusions": [
+            "Hotel pickup and drop-off",
+            "Gratuities"
+          ],
+          "bookingUrl": "https://www.viator.com/tours/New-Orleans/Large-Airboat-Swamp-Tour/d675-15200P1?mcid=42383&pid=P00306962&medium=api&api_version=2.0&campaign=dcc-new-orleans-15200p1&utm_source=destinationcommandcenter&utm_medium=affiliate&utm_campaign=cities&locale=en-US"
         }
       ],
-      "productOptions": [],
-      "serviceDetails": {},
-      "inclusions": [],
-      "exclusions": [],
-      "primaryImageUrl": "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-674x446/06/6b/6b/66.jpg",
-      "ratingAverage": 4.92,
-      "reviewCount": 207,
+      "productOptions": [
+        {
+          "optionCode": "TG9",
+          "title": "9:40am Tour (16-Passenger Large Airboat · Self-Drive)",
+          "description": "9:40am Tour: Tour departs at 9:40am; 16 passenger Airboat Tour; No hotel pickup included. Meet at 9706 Barataria Blvd, Marrero, LA 70072 at least 20 minutes prior to 09:40 start time.",
+          "includesPickup": false,
+          "pickupFulfillmentType": "self_drive",
+          "meetingPointName": "Louisiana Tour Company Airboat Dock — 9706 Barataria Blvd, Marrero, LA 70072",
+          "meetingPointLat": 29.7441,
+          "meetingPointLng": -90.1098,
+          "transferBeforeMinutes": 55,
+          "transferAfterMinutes": 35,
+          "transferTimeSource": "verified_meeting_point",
+          "transferEvidenceSource": "viator_meeting_point_loc_9706_barataria_blvd_marrero:15200P1",
+          "applicableBerthOrMeetingPoint": "Port NOLA Erato/Julia St Cruise Terminals <-> 9706 Barataria Blvd, Marrero, LA 70072 (35m drive + 20m check-in prior to 09:40 departure; 100m tour ends 11:20; est. back at pier 11:55)",
+          "planningEstimateTransferMinutes": 35,
+          "durationMinutes": 100,
+          "fromPriceCents": 6500,
+          "priceBasis": "per_person",
+          "scheduledStartTimes": [
+            "09:40"
+          ]
+        },
+        {
+          "optionCode": "TG2",
+          "title": "12:10pm Tour (16-Passenger Large Airboat · Self-Drive)",
+          "description": "Tour departs at 12:10pm; 16 passenger Airboat Tour; No hotel pickup included. Meet at 9706 Barataria Blvd, Marrero, LA 70072 at least 20 minutes prior to 12:10 start time.",
+          "includesPickup": false,
+          "pickupFulfillmentType": "self_drive",
+          "meetingPointName": "Louisiana Tour Company Airboat Dock — 9706 Barataria Blvd, Marrero, LA 70072",
+          "meetingPointLat": 29.7441,
+          "meetingPointLng": -90.1098,
+          "transferBeforeMinutes": 55,
+          "transferAfterMinutes": 35,
+          "transferTimeSource": "verified_meeting_point",
+          "transferEvidenceSource": "viator_meeting_point_loc_9706_barataria_blvd_marrero:15200P1",
+          "applicableBerthOrMeetingPoint": "Port NOLA Erato/Julia St Cruise Terminals <-> 9706 Barataria Blvd, Marrero, LA 70072 (35m drive + 20m check-in prior to 12:10 departure; 100m tour ends 13:50; est. back at pier 14:25)",
+          "planningEstimateTransferMinutes": 35,
+          "durationMinutes": 100,
+          "fromPriceCents": 6500,
+          "priceBasis": "per_person",
+          "scheduledStartTimes": [
+            "12:10"
+          ]
+        },
+        {
+          "optionCode": "TG6",
+          "title": "2:10pm Tour (16-Passenger Large Airboat · Self-Drive)",
+          "description": "2:10pm Tour: Tour departs at 2:10pm; 16 passenger Airboat Tour; No hotel pickup included. Meet at 9706 Barataria Blvd, Marrero, LA 70072 at least 20 minutes prior to 14:10 start time.",
+          "includesPickup": false,
+          "pickupFulfillmentType": "self_drive",
+          "meetingPointName": "Louisiana Tour Company Airboat Dock — 9706 Barataria Blvd, Marrero, LA 70072",
+          "meetingPointLat": 29.7441,
+          "meetingPointLng": -90.1098,
+          "transferBeforeMinutes": 55,
+          "transferAfterMinutes": 35,
+          "transferTimeSource": "verified_meeting_point",
+          "transferEvidenceSource": "viator_meeting_point_loc_9706_barataria_blvd_marrero:15200P1",
+          "applicableBerthOrMeetingPoint": "Port NOLA Erato/Julia St Cruise Terminals <-> 9706 Barataria Blvd, Marrero, LA 70072 (35m drive + 20m check-in prior to 14:10 departure; 100m tour ends 15:50; est. back at pier 16:25)",
+          "planningEstimateTransferMinutes": 35,
+          "durationMinutes": 100,
+          "fromPriceCents": 6500,
+          "priceBasis": "per_person",
+          "scheduledStartTimes": [
+            "14:10"
+          ]
+        },
+        {
+          "optionCode": "TG7",
+          "title": "4:15pm Tour (16-Passenger Large Airboat · Self-Drive · Seasonal)",
+          "description": "4:15pm Tour: Tour departs at 4:15pm; 16 passenger Airboat Tour; No hotel pickup included. Seasonal late-afternoon departure (unavailable Nov–Jan).",
+          "includesPickup": false,
+          "pickupFulfillmentType": "self_drive",
+          "meetingPointName": "Louisiana Tour Company Airboat Dock — 9706 Barataria Blvd, Marrero, LA 70072",
+          "meetingPointLat": 29.7441,
+          "meetingPointLng": -90.1098,
+          "transferBeforeMinutes": 55,
+          "transferAfterMinutes": 35,
+          "transferTimeSource": "verified_meeting_point",
+          "transferEvidenceSource": "viator_meeting_point_loc_9706_barataria_blvd_marrero:15200P1",
+          "applicableBerthOrMeetingPoint": "Port NOLA Erato/Julia St Cruise Terminals <-> 9706 Barataria Blvd, Marrero, LA 70072 (35m drive + 20m check-in prior to 16:15 departure; 100m tour ends 17:55; est. back at pier 18:30)",
+          "planningEstimateTransferMinutes": 35,
+          "durationMinutes": 100,
+          "fromPriceCents": 6500,
+          "priceBasis": "per_person",
+          "scheduledStartTimes": [
+            "16:15"
+          ]
+        }
+      ],
+      "serviceDetails": {
+        "pickupFulfillmentType": "self_drive",
+        "viatorProductCode": "15200P1",
+        "viatorPartnerPid": "P00306962",
+        "viatorMcid": "42383",
+        "commissionStatus": "active_verified_viator_partner",
+        "commissionRatePercent": 8,
+        "verifiedRetailPrice8AdultsUsd": 520,
+        "verifiedPartnerNet8AdultsUsd": 478.4,
+        "verifiedCommission8AdultsUsd": 41.6,
+        "vesselCapacityPassengers": 16,
+        "singleVesselVerificationStatus": "requires_separate_operator_verification",
+        "singleVesselGroupingPolicy": "15200P1 operates 16-passenger large airboats. Viator /availability/check confirms aggregate slot capacity across boats. To keep a group of 8 on a single boat, book all 8 passengers on one reservation and verify single-boat assignment separately with Louisiana Tour Company.",
+        "meetingPointRef": "LOC-o0AXGEKPN4wJ9sIG0RAn5BeOuymjMuhdTFHb1XfYE/1BlJNeXVogvc+s7EvZapnQ",
+        "checkInCutoffMinutes": 20,
+        "checkInEvidenceSource": "viator_logistics_start_description:arrive_20_minutes_prior_to_start_time"
+      },
+      "inclusions": [
+        "100-minute guided 16-passenger large airboat tour in the Barataria Bayou",
+        "Hearing protection and USCG-certified captain narration"
+      ],
+      "exclusions": [
+        "Hotel pickup and drop-off",
+        "Gratuities"
+      ],
+      "primaryImageUrl": "https://media.tacdn.com/media/attractions-splice-spp-674x446/07/38/c6/92.jpg",
+      "ratingAverage": 4.8,
+      "reviewCount": 412,
       "bookingUrl": "https://www.viator.com/tours/New-Orleans/Large-Airboat-Swamp-Tour/d675-15200P1?mcid=42383&pid=P00306962&medium=api&api_version=2.0&campaign=dcc-new-orleans-15200p1&utm_source=destinationcommandcenter&utm_medium=affiliate&utm_campaign=cities&locale=en-US",
       "provenance": {
-        "sourceSystem": "viator_partner_api_v2",
-        "sourceEndpoint": "/products/search",
-        "fetchedAt": "2026-11-05T17:42:37.384Z",
-        "contentSha256": "d86c9a5c93a87717ae7ca2767e6d85ef5bca08089409bc5915eea65d6fe2cec3",
+        "sourceSystem": "viator_partner_v2_live",
+        "sourceEndpoint": "https://api.viator.com/partner/products/15200P1",
+        "fetchedAt": "2026-11-09T09:15:00.000Z",
+        "contentSha256": "viator_15200p1_large_airboat_options_tg9_tg2_tg6_tg7_verified",
         "rawFieldsVerified": {
           "durationKnown": true,
           "cancellationKnown": true,
-          "pickupKnown": false,
-          "meetingCoordinatesKnown": false,
-          "ageBandsKnown": false
+          "pickupKnown": true,
+          "meetingCoordinatesKnown": true,
+          "ageBandsKnown": true
         }
       },
       "quarantined": false,
       "quarantineReason": null,
       "active": true,
-      "lastVerifiedAt": "2026-11-05T17:42:37.384Z",
-      "updatedAt": "2026-11-05T22:18:33.111Z",
-      "createdAt": "2026-11-05T17:42:37.384Z"
+      "lastVerifiedAt": "2026-11-09T09:15:00.000Z",
+      "updatedAt": "2026-11-09T09:15:00.000Z",
+      "createdAt": "2026-11-09T09:15:00.000Z"
     },
     {
       "tourId": "dcc:tour:viator:5713P96",

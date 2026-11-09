@@ -55,6 +55,49 @@ const EXPECTED_ASN_BY_SHORTNAME: Record<string, string> = {
 
 const CANONICAL_STEAMBOAT_REF = "WelcomeToNewOrleansTours";
 
+export const RAGIN_CAJUN_WNO_REFS = {
+  coveredTourBoat: "wno-ragin-cajun-covered-boat",
+  airboatOptions: "wno-ragin-cajun-airboat-options",
+  coveredPlantationCombo: "wno-ragin-cajun-covered-plantation-combo",
+} as const;
+
+export function getRaginCajunWnoRef(params: {
+  itemId?: string | number | null;
+  productSlug?: string | null;
+  href?: string | null;
+}): string | undefined {
+  const slug = (params.productSlug || "").trim().toLowerCase();
+  const item = String(params.itemId || "").trim();
+  const href = (params.href || "").trim().toLowerCase();
+
+  if (
+    slug === "covered-tour-boat" ||
+    item === "590176" ||
+    href.includes("/items/590176")
+  ) {
+    return RAGIN_CAJUN_WNO_REFS.coveredTourBoat;
+  }
+  if (
+    slug === "ragin-cajun-airboat-options" ||
+    item === "228561" ||
+    item === "228524" ||
+    item === "448291" ||
+    href.includes("/items/228561") ||
+    href.includes("/items/228524") ||
+    href.includes("/items/448291")
+  ) {
+    return RAGIN_CAJUN_WNO_REFS.airboatOptions;
+  }
+  if (
+    slug === "covered-boat-plantation-combo" ||
+    item === "603090" ||
+    href.includes("/items/603090")
+  ) {
+    return RAGIN_CAJUN_WNO_REFS.coveredPlantationCombo;
+  }
+  return undefined;
+}
+
 const DEFAULT_DETAIL_SOURCE_BY_SLUG: Record<ApprovedProductSlug, FareHarborSource> = {
   "louisiana-tour-company-swamp-tour-hotel-pickup": FAREHARBOR_SOURCES.detailCovered,
   "jeanlafitte-swamp-tour-with-hotel-pickup": FAREHARBOR_SOURCES.detailCovered,
@@ -107,10 +150,16 @@ export function normalizeFareHarborFallbackHref({
   href,
   shortname,
   requestedAsn,
+  itemId,
+  productSlug,
+  requestedRef,
 }: {
   href: string;
   shortname: string;
   requestedAsn: string;
+  itemId?: string | number;
+  productSlug?: string;
+  requestedRef?: string;
 }): string {
   try {
     const url = new URL(href);
@@ -122,6 +171,14 @@ export function normalizeFareHarborFallbackHref({
 
     if (shortname === "neworleanssteamboatcompany") {
       url.searchParams.set("ref", CANONICAL_STEAMBOAT_REF);
+    } else if (shortname === "ragincajuntours") {
+      const raginRef =
+        getRaginCajunWnoRef({ itemId, productSlug, href }) ||
+        url.searchParams.get("ref") ||
+        requestedRef;
+      if (raginRef) {
+        url.searchParams.set("ref", raginRef);
+      }
     }
 
     return url.toString();
@@ -179,6 +236,10 @@ export function buildFareHarborLightframeOptions({
   scheduleUuid?: string;
   fullItems?: string;
 }) {
+  const effectiveRef =
+    shortname === "ragincajuntours"
+      ? getRaginCajunWnoRef({ itemId }) || source
+      : source;
   const options: {
     shortname: string;
     asn: string;
@@ -190,7 +251,7 @@ export function buildFareHarborLightframeOptions({
   } = {
     shortname,
     asn: getExpectedFareHarborAsn(shortname, asn),
-    ref: source,
+    ref: effectiveRef,
   };
 
   if (itemId) {

@@ -1897,6 +1897,153 @@ test("101.10 — Reykjavík: Neon catalog filtering & pagination, crawlable /por
   );
 });
 
+test("101.11 — WNO Booking Link Agreement & Louisiana Tour Company Viator 15200P1 (8 Guests, America/Chicago, Unavailable Case, Single-Boat Verification & QA Handoff Retry)", async () => {
+  const {
+    STOREFRONT_PRODUCTS,
+    getProductPrimaryBookingHref,
+    getProductViatorCanonicalInfo,
+  } = await import("@/app/new-orleans/tours/pageConfig");
+  const { buildPortfolioHandoffUrl } = await import("@/lib/dcc/commerce/portfolio");
+  const {
+    verifyLiveExcursionAvailability,
+    preparePortDayTourCheckout,
+  } = await import("@/lib/dcc/cruisePortExcursionCatalogEngine");
+
+  // 1. WNO booking link agreement: Viator 15200P1 link must point to Viator d675-15200P1, never FareHarbor 228561
+  const airboatProduct = STOREFRONT_PRODUCTS.find((p) => p.slug === "ragin-cajun-airboat-options");
+  assert.ok(airboatProduct);
+  const viatorInfo = getProductViatorCanonicalInfo(airboatProduct);
+  assert.ok(viatorInfo);
+  assert.equal(viatorInfo.productCode, "15200P1");
+  assert.equal(viatorInfo.optionCode, "TG9");
+  assert.equal(viatorInfo.operatorName, "Louisiana Tour Company");
+  assert.ok(viatorInfo.destinationUrl.includes("viator.com/tours/New-Orleans/Large-Airboat-Swamp-Tour/d675-15200P1"));
+  assert.ok(!viatorInfo.destinationUrl.includes("fareharbor.com"));
+
+  const wnoViatorHandoff = buildPortfolioHandoffUrl({
+    originatingSite: "welcometoneworleanstours.com",
+    provider: "viator",
+    providerAccount: viatorInfo.providerAccount,
+    productCode: viatorInfo.productCode,
+    optionCode: viatorInfo.optionCode || null,
+    destinationUrl: viatorInfo.destinationUrl,
+    campaign: "wno-ragin-cajun-airboat-options-viator",
+    partySize: 8,
+  });
+  const parsedViatorHandoff = new URL(wnoViatorHandoff, "https://www.welcometoneworleanstours.com");
+  assert.equal(parsedViatorHandoff.searchParams.get("provider"), "viator");
+  assert.equal(parsedViatorHandoff.searchParams.get("account"), "P00306962");
+  assert.equal(parsedViatorHandoff.searchParams.get("product"), "15200P1");
+  assert.equal(parsedViatorHandoff.searchParams.get("option"), "TG9");
+  assert.ok(
+    (parsedViatorHandoff.searchParams.get("url") || "").includes("d675-15200P1"),
+    "Viator handoff destination URL must target Viator d675-15200P1",
+  );
+  assert.ok(
+    !(parsedViatorHandoff.searchParams.get("url") || "").includes("fareharbor.com"),
+    "Viator handoff destination URL must never target fareharbor.com",
+  );
+
+  // Ragin Cajun FareHarbor links keep their existing WNO ref
+  const fhAirboatHref = getProductPrimaryBookingHref(airboatProduct);
+  assert.ok(fhAirboatHref.includes("fareharbor.com/embeds/book/ragincajuntours/items/228561/"));
+  assert.ok(fhAirboatHref.includes("asn=aktourcenter"));
+  assert.ok(fhAirboatHref.includes("ref=wno-ragin-cajun-airboat-options"));
+
+  const coveredProduct = STOREFRONT_PRODUCTS.find((p) => p.id === "ragincajun-covered-boat");
+  assert.ok(coveredProduct);
+  const fhCoveredHref = getProductPrimaryBookingHref(coveredProduct);
+  assert.ok(fhCoveredHref.includes("fareharbor.com/embeds/book/ragincajuntours/items/590176/"));
+  assert.ok(fhCoveredHref.includes("asn=aktourcenter"));
+  assert.ok(fhCoveredHref.includes("ref=wno-ragin-cajun-covered-boat"));
+
+  // 2. Unknown / timeout case returns "Check availability at the provider"
+  const unknownSeat = await verifyLiveExcursionAvailability({
+    portSlug: "new-orleans",
+    productCode: "15200P1",
+    optionCode: "TG9",
+    date: "2027-01-12",
+    partySize: 8,
+    departureTime: "09:40",
+    simulateTimeout: true,
+  });
+  assert.equal(unknownSeat.status, "check_availability");
+  assert.equal(
+    unknownSeat.availabilityDisplayLabel,
+    "Check availability at the provider",
+  );
+  assert.equal(unknownSeat.checkedTimeZone, "America/Chicago");
+  assert.equal(
+    unknownSeat.singleVesselVerification?.singleVesselVerificationStatus,
+    "requires_separate_operator_verification",
+  );
+
+  // 3. Past departure in America/Chicago is rejected (unavailable)
+  const pastSeat = await verifyLiveExcursionAvailability({
+    portSlug: "new-orleans",
+    productCode: "15200P1",
+    optionCode: "TG9",
+    date: "2020-01-12",
+    partySize: 8,
+    departureTime: "09:40",
+  });
+  assert.equal(pastSeat.pastDepartureRejected, true);
+  assert.ok(
+    (pastSeat.availabilityDisplayLabel || "").startsWith("Unavailable for 8 when checked"),
+  );
+
+  // 4. QA checkout handoff + retry with same idempotencyKey creates 1 QA record when Viator API is configured, or safely gates when unconfirmed
+  const qaKey = `qa-test-15200P1-tg9-8pax-${Date.now()}`;
+  const firstHandoff = await preparePortDayTourCheckout({
+    portSlug: "new-orleans",
+    productCode: "15200P1",
+    optionCode: "TG9",
+    date: "2027-01-12",
+    departureTime: "09:40",
+    partySize: 8,
+    shipArrivalTime: "07:00",
+    shipAllAboardTime: "15:30",
+    idempotencyKey: qaKey,
+    travelerApprovedCheckout: true,
+    isQaTraffic: true,
+    originatingSite: "welcometoneworleanstours.com",
+    surface: "wno_large_airboat_15200p1",
+  });
+  assert.equal(firstHandoff.timeFit?.estimatedBackAtPierTime, "11:55");
+  if (firstHandoff.ok) {
+    assert.equal(firstHandoff.duplicateSubmission, false);
+    assert.ok(firstHandoff.outboundAffiliateUrl?.includes("d675-15200P1"));
+
+    const retryHandoff = await preparePortDayTourCheckout({
+      portSlug: "new-orleans",
+      productCode: "15200P1",
+      optionCode: "TG9",
+      date: "2027-01-12",
+      departureTime: "09:40",
+      partySize: 8,
+      shipArrivalTime: "07:00",
+      shipAllAboardTime: "15:30",
+      idempotencyKey: qaKey,
+      travelerApprovedCheckout: true,
+      isQaTraffic: true,
+      originatingSite: "welcometoneworleanstours.com",
+      surface: "wno_large_airboat_15200p1",
+    });
+    assert.equal(retryHandoff.ok, true);
+    assert.equal(retryHandoff.duplicateSubmission, true);
+    assert.equal(retryHandoff.handoffId, firstHandoff.handoffId);
+    assert.equal(retryHandoff.clickId, firstHandoff.clickId);
+    assert.equal(retryHandoff.durableRecordCount, 1);
+  } else {
+    assert.ok(
+      firstHandoff.errorCode === "AVAILABILITY_NOT_CONFIRMED" ||
+        firstHandoff.errorCode === "DURABLE_HANDOFF_UNAVAILABLE",
+      `Expected AVAILABILITY_NOT_CONFIRMED or DURABLE_HANDOFF_UNAVAILABLE offline, got ${firstHandoff.errorCode}`,
+    );
+  }
+});
+
+
 
 
 

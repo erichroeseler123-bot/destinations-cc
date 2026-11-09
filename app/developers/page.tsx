@@ -154,6 +154,9 @@ export default function DevelopersPage() {
               MCP 2025-03-26 · REST + JSON-RPC 2.0
             </span>
           </div>
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-white/75">
+            Destination Command Center helps travelers decide what fits their trip. At supported cruise ports, you can search shore excursions, check whether they fit your ship’s all-aboard deadline, and see what still needs verification. Where the provider supports it, you can check live availability for your group and continue to the provider to book. Developers can access excursion search, timing checks, and availability through DCC’s API and MCP server.
+          </p>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-white/60">
             Standard MCP clients connect to <code className="text-emerald-200">/api/v1/mcp</code> (<code className="text-emerald-200">initialize</code> → <code className="text-emerald-200">notifications/initialized</code> → <code className="text-emerald-200">tools/list</code> → <code className="text-emerald-200">tools/call</code>) or call the REST endpoint <code className="text-emerald-200">/api/v1/cruise/port-day-excursions</code> directly. Timing fit (<code className="text-emerald-200">fits</code>, <code className="text-emerald-200">runs_too_late</code>, <code className="text-emerald-200">needs_verification</code>) is evaluated deterministically and kept strictly separate from read-only live seat/price availability (<code className="text-emerald-200">remainingSeats: null</code> when seat count is unknown). Checkout handoffs are created only when the traveler explicitly chooses <strong>Continue to checkout</strong> via <code className="text-emerald-200">dcc_prepare_tour_checkout</code>.
           </p>
@@ -193,6 +196,9 @@ curl -s -X POST "https://www.destinationcommandcenter.com/api/v1/cruise/port-day
 
             <div id="show-hn-demo" className="rounded-2xl border border-white/10 bg-black/40 p-4">
               <p className="text-xs font-bold uppercase tracking-wider text-emerald-200">2. Show HN Demo — Read-Only MCP Example for 5 Travelers (New Orleans 15200P6 / TG10 · POST /api/v1/mcp)</p>
+              <p className="mt-2 text-xs leading-5 text-white/65">
+                Destination Command Center helps travelers decide what fits their trip. At supported cruise ports, you can search shore excursions, check whether they fit your ship’s all-aboard deadline, and see what still needs verification. Where the provider supports it, you can check live availability for your group and continue to the provider to book. Developers can access excursion search, timing checks, and availability through DCC’s API and MCP server.
+              </p>
               <pre className="mt-3 overflow-x-auto text-xs leading-5 text-cyan-100">{`# One-command read-only MCP demo for 5 travelers (60m fits -> 59m runs_too_late -> missing allAboard needs_verification -> separate live availability)
 node -e '
 const url = "https://www.destinationcommandcenter.com/api/v1/mcp";

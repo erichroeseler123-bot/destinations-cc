@@ -121,7 +121,12 @@ export function getProductBookingChannelLabel(
   return WNO_FAREHARBOR_BOOKING_CHANNEL_LABEL;
 }
 
-export const getFareHarborUrl = (companyShortname: string, itemId?: string | number, flowId?: string | number) => {
+export const getFareHarborUrl = (
+  companyShortname: string,
+  itemId?: string | number,
+  flowId?: string | number,
+  refCode?: string,
+) => {
   let url = `https://fareharbor.com/embeds/book/${companyShortname}/`;
   if (itemId) {
     url += `items/${itemId}/`;
@@ -130,6 +135,20 @@ export const getFareHarborUrl = (companyShortname: string, itemId?: string | num
   params.append("asn", FAREHARBOR_ASN);
   if (flowId) {
     params.append("flow", String(flowId));
+  }
+  const resolvedRef =
+    refCode ||
+    (companyShortname === "ragincajuntours"
+      ? String(itemId) === "590176"
+        ? "wno-ragin-cajun-covered-boat"
+        : String(itemId) === "228561" || String(itemId) === "228524" || String(itemId) === "448291"
+          ? "wno-ragin-cajun-airboat-options"
+          : String(itemId) === "603090"
+            ? "wno-ragin-cajun-covered-plantation-combo"
+            : undefined
+      : undefined);
+  if (resolvedRef) {
+    params.append("ref", resolvedRef);
   }
   params.append("full-items", "yes");
   return `${url}?${params.toString()}`;
@@ -231,6 +250,87 @@ export function getProductPrimaryBookingHref(
     canonical.bookingVariants?.[0]?.bookingUrl ||
     getFareHarborUrl(canonical.companyShortname, canonical.itemId, canonical.flowId)
   );
+}
+
+export interface ViatorCanonicalProductInfo {
+  productCode: string;
+  optionCode?: string;
+  departureTime?: string;
+  title: string;
+  operatorName: string;
+  destinationUrl: string;
+  providerAccount: "P00306962";
+}
+
+const VIATOR_CANONICAL_PRODUCT_MAP: Record<
+  string,
+  Omit<ViatorCanonicalProductInfo, "providerAccount">
+> = {
+  "15200P1": {
+    productCode: "15200P1",
+    optionCode: "TG9",
+    departureTime: "09:40",
+    title: "New Orleans Large Airboat Swamp Tour",
+    operatorName: "Louisiana Tour Company",
+    destinationUrl:
+      "https://www.viator.com/tours/New-Orleans/Large-Airboat-Swamp-Tour/d675-15200P1?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+  },
+  "15200P5": {
+    productCode: "15200P5",
+    title: "New Orleans Covered Boat Swamp Tour",
+    operatorName: "Louisiana Tour Company",
+    destinationUrl:
+      "https://www.viator.com/tours/New-Orleans/New-Orleans-Covered-Boat-Swamp-Tour/d675-15200P5?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+  },
+  "15200P6": {
+    productCode: "15200P6",
+    optionCode: "TG10",
+    departureTime: "08:00",
+    title: "New Orleans Swamp Tour Boat Adventure with Transportation",
+    operatorName: "Louisiana Tour Company",
+    destinationUrl:
+      "https://www.viator.com/tours/New-Orleans/New-Orleans-Swamp-Tour-Boat-Adventure-with-Transportation/d675-15200P6?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+  },
+  "15200P9": {
+    productCode: "15200P9",
+    title: "Swamp and Plantation Combo Tour from New Orleans",
+    operatorName: "Louisiana Tour Company",
+    destinationUrl:
+      "https://www.viator.com/tours/New-Orleans/Swamp-and-Plantation-Combo-Tour-from-New-Orleans/d675-15200P9?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+  },
+};
+
+export function getProductViatorCanonicalInfo(
+  product: Pick<
+    NolaFareHarborProduct,
+    | "slug"
+    | "title"
+    | "operatorName"
+    | "viatorProductCode"
+    | "viatorOptionCode"
+    | "viatorDepartureTime"
+  >,
+): ViatorCanonicalProductInfo {
+  const canonical = STOREFRONT_PRODUCTS.find((p) => p.slug === product.slug) || product;
+  const code = (canonical.viatorProductCode || "15200P6").trim().toUpperCase();
+  const mapped = VIATOR_CANONICAL_PRODUCT_MAP[code];
+  if (mapped) {
+    return {
+      ...mapped,
+      optionCode: canonical.viatorOptionCode || mapped.optionCode,
+      departureTime: canonical.viatorDepartureTime || mapped.departureTime,
+      providerAccount: "P00306962",
+    };
+  }
+  return {
+    productCode: code,
+    optionCode: canonical.viatorOptionCode,
+    departureTime: canonical.viatorDepartureTime,
+    title: canonical.title,
+    operatorName: canonical.operatorName,
+    destinationUrl: `https://www.viator.com/searchResults/all?text=${encodeURIComponent(code)}&pid=P00306962&mcid=42383&medium=api&api_version=2.0`,
+    providerAccount: "P00306962",
+  };
 }
 
 export function getProductViatorReselectionNote(
@@ -563,19 +663,19 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
         label: "Check dates and prices on FareHarbor — Large Airboat (Item 228561 · $65 self-drive / $90 with hotel pickup pre-tax estimate)",
         itemId: "228561",
         flowId: "940162",
-        bookingUrl: "https://fareharbor.com/embeds/book/ragincajuntours/items/228561/?asn=aktourcenter&flow=940162&full-items=yes",
+        bookingUrl: "https://fareharbor.com/embeds/book/ragincajuntours/items/228561/?asn=aktourcenter&flow=940162&ref=wno-ragin-cajun-airboat-options&full-items=yes",
       },
       {
         label: "Check dates and prices on FareHarbor — Standard 10-Passenger Airboat (Item 228524 · $85 self-drive / $110 with hotel pickup pre-tax estimate)",
         itemId: "228524",
         flowId: "940162",
-        bookingUrl: "https://fareharbor.com/embeds/book/ragincajuntours/items/228524/?asn=aktourcenter&flow=940162&full-items=yes",
+        bookingUrl: "https://fareharbor.com/embeds/book/ragincajuntours/items/228524/?asn=aktourcenter&flow=940162&ref=wno-ragin-cajun-airboat-options&full-items=yes",
       },
       {
         label: "Check dates and prices on FareHarbor — Premium Small 6-Passenger Airboat (Item 448291 · $95 self-drive / $120 with hotel pickup pre-tax estimate)",
         itemId: "448291",
         flowId: "940162",
-        bookingUrl: "https://fareharbor.com/embeds/book/ragincajuntours/items/448291/?asn=aktourcenter&flow=940162&full-items=yes",
+        bookingUrl: "https://fareharbor.com/embeds/book/ragincajuntours/items/448291/?asn=aktourcenter&flow=940162&ref=wno-ragin-cajun-airboat-options&full-items=yes",
       },
     ],
     viatorVariants: [

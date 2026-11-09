@@ -2496,12 +2496,18 @@ export async function buildBaselinePortfolioSupplierConnections(
       product.bookingVariants && product.bookingVariants.length > 1
         ? product.bookingVariants.map((v) => `#${v.itemId}`).join(" / ")
         : `#${product.itemId || product.id}`;
+    const wnoRef =
+      product.slug === "covered-tour-boat"
+        ? "wno-ragin-cajun-covered-boat"
+        : product.slug === "ragin-cajun-airboat-options"
+          ? "wno-ragin-cajun-airboat-options"
+          : "wno-ragin-cajun-covered-plantation-combo";
     return {
       productId: product.id,
       title: product.title,
       dccPageHref: `/new-orleans/tours/${product.slug}`,
       bookingHref: getProductPrimaryBookingHref(product),
-      bookingLinkLabel: `FareHarbor checkout referral ${variantItemIds} (asn=aktourcenter)`,
+      bookingLinkLabel: `FareHarbor checkout referral ${variantItemIds} (asn=aktourcenter, ref=${wnoRef})`,
       itemId: product.itemId || null,
       flowId: product.flowId || null,
       attributionTag: "asn=aktourcenter",

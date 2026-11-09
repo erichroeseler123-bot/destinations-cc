@@ -229,6 +229,8 @@ export interface PortDayTimeFitEvaluation {
 export interface PortDaySeatAvailabilityEvaluation {
   status: PortDaySeatAvailabilityStatus;
   statusLabel: string;
+  availabilityDisplayLabel?: string;
+  checkedTimeZone?: string;
   supportsLiveCheck: boolean;
   liveCheckedAt: string | null;
   checkedDate: string | null;
@@ -257,6 +259,13 @@ export interface PortDaySeatAvailabilityEvaluation {
     | "unconfigured"
     | "error"
     | "unverified";
+  singleVesselVerification?: {
+    vesselCapacityPassengers: number | null;
+    partyFitsSingleVesselCapacity: boolean | null;
+    singleVesselVerificationStatus: "requires_separate_operator_verification" | "not_applicable";
+    statusLabel: string;
+    detailNote: string;
+  } | null;
   options: Array<{
     optionCode: string;
     title: string;
@@ -2644,6 +2653,30 @@ export async function verifyLiveExcursionAvailability(params: {
     surface: params.surface,
   });
 
+  const singleVesselVerification: PortDaySeatAvailabilityEvaluation["singleVesselVerification"] =
+    code.toUpperCase() === "15200P1" ||
+    (rec?.serviceDetails as any)?.singleVesselVerificationStatus ===
+      "requires_separate_operator_verification"
+      ? {
+          status: "requires_separate_operator_verification" as const,
+          vesselCapacityPassengers:
+            rec?.constraints?.maxPassengers ??
+            (typeof (rec?.serviceDetails as any)?.vesselCapacityPassengers === "number"
+              ? (rec?.serviceDetails as any).vesselCapacityPassengers
+              : 16),
+          partyFitsSingleVesselCapacity:
+            partySize <=
+            (rec?.constraints?.maxPassengers ??
+              (typeof (rec?.serviceDetails as any)?.vesselCapacityPassengers === "number"
+                ? (rec?.serviceDetails as any).vesselCapacityPassengers
+                : 16)),
+          singleVesselVerificationStatus: "requires_separate_operator_verification",
+          statusLabel: "If the group wants one boat, verify that separately with the operator",
+          detailNote:
+            "15200P1 operates 16-passenger large airboats. Viator /availability/check confirms aggregate slot capacity across boats. To keep a group on a single boat, book all passengers on one reservation and verify single-boat assignment separately with Louisiana Tour Company.",
+        }
+      : null;
+
   const pastCheck = evaluateDeparturePastStatus({
     date: checkedDate,
     departureTime: requestedDepartureTime,
@@ -2654,6 +2687,8 @@ export async function verifyLiveExcursionAvailability(params: {
     return {
       status: "check_availability",
       statusLabel: "Check availability",
+      availabilityDisplayLabel: `Unavailable for ${partySize} when checked (past departure in ${timeZone})`,
+      checkedTimeZone: timeZone,
       supportsLiveCheck: true,
       liveCheckedAt: new Date().toISOString(),
       checkedDate: checkedDate || null,
@@ -2670,6 +2705,7 @@ export async function verifyLiveExcursionAvailability(params: {
       pastDepartureRejected: true,
       rejectionReason: pastCheck.reason,
       providerStatus: "past_departure_rejected",
+      singleVesselVerification,
       options: [],
       detailNote:
         pastCheck.reason ||
@@ -2689,6 +2725,8 @@ export async function verifyLiveExcursionAvailability(params: {
   ): PortDaySeatAvailabilityEvaluation => ({
     status: "check_availability",
     statusLabel: "Check availability",
+    availabilityDisplayLabel: "Check availability at the provider",
+    checkedTimeZone: timeZone,
     supportsLiveCheck: true,
     liveCheckedAt: new Date().toISOString(),
     checkedDate: checkedDate || null,
@@ -2705,6 +2743,7 @@ export async function verifyLiveExcursionAvailability(params: {
     pastDepartureRejected: false,
     rejectionReason: null,
     providerStatus,
+    singleVesselVerification,
     options: [],
     detailNote,
   });
@@ -2758,6 +2797,8 @@ export async function verifyLiveExcursionAvailability(params: {
           return {
             status: "sold_out",
             statusLabel: "Sold out",
+            availabilityDisplayLabel: `Unavailable for ${partySize} when checked`,
+            checkedTimeZone: timeZone,
             supportsLiveCheck: true,
             liveCheckedAt: new Date().toISOString(),
             checkedDate,
@@ -2774,6 +2815,7 @@ export async function verifyLiveExcursionAvailability(params: {
             pastDepartureRejected: false,
             rejectionReason: null,
             providerStatus: "live_confirmed",
+            singleVesselVerification,
             options: [],
             detailNote: `Provider confirmed ${cap} remaining seats for ${requestedDepartureTime} on ${checkedDate} (party size ${partySize}).`,
           };
@@ -2781,7 +2823,9 @@ export async function verifyLiveExcursionAvailability(params: {
         if (cap !== null && cap >= partySize) {
           return {
             status: "live_verified",
-            statusLabel: "Live verified",
+            statusLabel: `Available for ${partySize} when checked`,
+            availabilityDisplayLabel: `Available for ${partySize} when checked`,
+            checkedTimeZone: timeZone,
             supportsLiveCheck: true,
             liveCheckedAt: new Date().toISOString(),
             checkedDate,
@@ -2798,6 +2842,7 @@ export async function verifyLiveExcursionAvailability(params: {
             pastDepartureRejected: false,
             rejectionReason: null,
             providerStatus: "live_confirmed",
+            singleVesselVerification,
             options: [
               {
                 optionCode: requestedOptionCode,
@@ -2872,6 +2917,8 @@ export async function verifyLiveExcursionAvailability(params: {
         return {
           status: "sold_out",
           statusLabel: "Sold out",
+          availabilityDisplayLabel: `Unavailable for ${partySize} when checked`,
+          checkedTimeZone: timeZone,
           supportsLiveCheck: true,
           liveCheckedAt: new Date().toISOString(),
           checkedDate,
@@ -2891,6 +2938,7 @@ export async function verifyLiveExcursionAvailability(params: {
           pastDepartureRejected: false,
           rejectionReason: null,
           providerStatus: "live_confirmed",
+          singleVesselVerification,
           options: [
             {
               optionCode: String(exactItem.productOptionCode || requestedOptionCode),
@@ -2901,7 +2949,7 @@ export async function verifyLiveExcursionAvailability(params: {
               priceUsd: null,
             },
           ],
-          detailNote: `Live Viator Partner API confirmed option ${requestedOptionCode} at ${requestedDepartureTime} on ${checkedDate} is sold out for ${partySize} guests.`,
+          detailNote: `Live Viator Partner API confirmed option ${requestedOptionCode} at ${requestedDepartureTime} on ${checkedDate} is sold out / unavailable for ${partySize} guests${exactItem.unavailableReason ? ` (${exactItem.unavailableReason})` : ""}.`,
         };
       }
 
@@ -2930,12 +2978,9 @@ export async function verifyLiveExcursionAvailability(params: {
 
         return {
           status: "live_verified",
-          statusLabel:
-            providerRemainingSeats !== null
-              ? `Live Verified — ${providerRemainingSeats} seats for ${partySize} guests (${matchedOptionCode} · ${matchedStartTime} on ${checkedDate})`
-              : `Live Verified — Available for ${partySize} ${
-                  partySize === 1 ? "guest" : "guests"
-                } (${matchedOptionCode} · ${matchedStartTime} on ${checkedDate})`,
+          statusLabel: `Available for ${partySize} when checked (${matchedOptionCode} · ${matchedStartTime} on ${checkedDate})`,
+          availabilityDisplayLabel: `Available for ${partySize} when checked`,
+          checkedTimeZone: timeZone,
           supportsLiveCheck: true,
           liveCheckedAt: new Date().toISOString(),
           checkedDate,
@@ -2955,6 +3000,7 @@ export async function verifyLiveExcursionAvailability(params: {
           pastDepartureRejected: false,
           rejectionReason: null,
           providerStatus: "live_confirmed",
+          singleVesselVerification,
           options: [
             {
               optionCode: matchedOptionCode,
@@ -2965,13 +3011,13 @@ export async function verifyLiveExcursionAvailability(params: {
               priceUsd: perPersonPriceUsd,
             },
           ],
-          detailNote: `Provider-confirmed via Viator Partner API /availability/check for ${code} (option ${matchedOptionCode}, departure ${matchedStartTime}, date ${checkedDate}, party size ${partySize}${
+          detailNote: `Available for ${partySize} when checked — Provider-confirmed via Viator Partner API /availability/check for ${code} (option ${matchedOptionCode}, departure ${matchedStartTime} in ${timeZone}, date ${checkedDate}, party size ${partySize}${
             totalPriceUsd !== null ? `, $${totalPriceUsd.toFixed(2)} total` : ""
-          }). Seat count is ${
-            providerRemainingSeats !== null
-              ? providerRemainingSeats
-              : "unknown (not returned by provider)"
-          }.`,
+          }).${
+            singleVesselVerification
+              ? ` ${singleVesselVerification.statusLabel}.`
+              : ""
+          }`,
         };
       }
     } catch (err: any) {
@@ -3147,6 +3193,10 @@ export async function queryPortDayExcursionCatalog(params: {
       seatAvailability: {
         status: "check_availability",
         statusLabel: "Check availability",
+        availabilityDisplayLabel: pastDepCheck.isPast
+          ? `Unavailable for ${partySize} when checked (past departure)`
+          : "Check availability at the provider",
+        checkedTimeZone: rec.timeZone || "America/Chicago",
         supportsLiveCheck,
         liveCheckedAt: null,
         checkedDate: sailingDate,
@@ -3163,14 +3213,29 @@ export async function queryPortDayExcursionCatalog(params: {
         pastDepartureRejected: pastDepCheck.isPast,
         rejectionReason: pastDepCheck.reason,
         providerStatus: pastDepCheck.isPast ? "past_departure_rejected" : "unverified",
+        singleVesselVerification:
+          codeUpper === "15200P1" ||
+          (rec.serviceDetails as any)?.singleVesselVerificationStatus ===
+            "requires_separate_operator_verification"
+            ? {
+                vesselCapacityPassengers: rec.constraints?.maxPassengers ?? 16,
+                partyFitsSingleVesselCapacity:
+                  partySize <= (rec.constraints?.maxPassengers ?? 16),
+                singleVesselVerificationStatus: "requires_separate_operator_verification",
+                statusLabel:
+                  "If the group wants one boat, verify that separately with the operator",
+                detailNote:
+                  "15200P1 operates 16-passenger large airboats. Viator /availability/check confirms aggregate slot capacity across boats. To keep a group on a single boat, book all passengers on one reservation and verify single-boat assignment separately with Louisiana Tour Company.",
+              }
+            : null,
         options: [],
         detailNote: pastDepCheck.isPast
           ? pastDepCheck.reason || "Past departure rejected."
           : supportsLiveCheck
-            ? `Check live availability for option ${
+            ? `Check availability at the provider for option ${
                 chosenOptionCode || "default"
               } (${timeFit.selectedDepartureTime || "select time"}) on ${sailingDate} for ${partySize} guests, or open the exact product link. Time fit and seat availability are tracked separately.`
-            : "Check availability on the exact product link for your date and group size.",
+            : "Check availability at the provider on the exact product link for your date and group size.",
       },
       handoff,
     };
@@ -3582,16 +3647,34 @@ export async function preparePortDayTourCheckout(
   const departureMinutes = parseHhMm(params.departureTime);
   const departureTime = departureMinutes === null ? null : formatHhMm(departureMinutes);
   const partySize = params.partySize;
-  if (port !== "new-orleans" || productCode !== "15200P6") {
-    return reject("UNSUPPORTED_CHECKOUT_PRODUCT", "Checkout is available for New Orleans 15200P6 / TG10.");
+  const ALLOWED_15200P1_OPTIONS: Record<string, string> = {
+    TG9: "09:40",
+    TG2: "12:10",
+    TG6: "14:10",
+    TG7: "16:15",
+  };
+  if (port !== "new-orleans" || (productCode !== "15200P6" && productCode !== "15200P1")) {
+    return reject(
+      "UNSUPPORTED_CHECKOUT_PRODUCT",
+      "Checkout is available for New Orleans 15200P6 / TG10 and 15200P1 (TG9, TG2, TG6, TG7)."
+    );
   }
+  const isValid15200P6 = productCode === "15200P6" && optionCode === "TG10" && departureTime === "08:00";
+  const isValid15200P1 =
+    productCode === "15200P1" &&
+    Boolean(optionCode && ALLOWED_15200P1_OPTIONS[optionCode] === departureTime);
   if (
-    optionCode !== "TG10" || departureTime !== "08:00" ||
+    (!isValid15200P6 && !isValid15200P1) ||
     !/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isFinite(dateAtUtcMidnight.getTime()) ||
     dateAtUtcMidnight.toISOString().slice(0, 10) !== date ||
     typeof partySize !== "number" || !Number.isInteger(partySize) || partySize < 1 || partySize > 15
   ) {
-    return reject("INVALID_CHECKOUT_SELECTION", "Provide TG10, a valid port date, the 08:00 departure, and 1 to 15 adult travelers.");
+    return reject(
+      "INVALID_CHECKOUT_SELECTION",
+      productCode === "15200P1"
+        ? "Provide a verified 15200P1 option (TG9 at 09:40, TG2 at 12:10, TG6 at 14:10, or TG7 at 16:15), a valid port date, and 1 to 15 adult travelers."
+        : "Provide TG10, a valid port date, the 08:00 departure, and 1 to 15 adult travelers."
+    );
   }
 
   const profile = resolveCruisePortExcursionProfile(port)!;
@@ -3694,8 +3777,11 @@ export async function preparePortDayTourCheckout(
       },
       viatorCheckoutFieldCarryover: {
         carriedInAffiliateUrlQuery: ["pid", "mcid", "medium", "campaign", "click_id", "startDate", "numTravelers"],
-        preboundByViatorWebLanding: ["Exact Viator product 15200P6"],
-        requiresTravelerConfirmationInViatorWidget: ["date", "optionCode", "departureTime", "partySize", "pickup point"],
+        preboundByViatorWebLanding: [`Exact Viator product ${productCode}`],
+        requiresTravelerConfirmationInViatorWidget:
+          productCode === "15200P1"
+            ? ["date", "optionCode", "departureTime", "partySize", "meeting point (9706 Barataria Blvd, Marrero)", "single-boat grouping with operator if group wants one boat"]
+            : ["date", "optionCode", "departureTime", "partySize", "pickup point"],
       },
     };
   }
@@ -3729,7 +3815,10 @@ export async function preparePortDayTourCheckout(
     }
 
     const affiliate = getViatorPublicConfig();
-    const canonicalProductUrl = "https://www.viator.com/tours/New-Orleans/New-Orleans-Swamp-Tour-Boat-Adventure-With-Pickup/d675-15200P6";
+    const canonicalProductUrl =
+      productCode === "15200P1"
+        ? "https://www.viator.com/tours/New-Orleans/Large-Airboat-Swamp-Tour/d675-15200P1"
+        : "https://www.viator.com/tours/New-Orleans/New-Orleans-Swamp-Tour-Boat-Adventure-With-Pickup/d675-15200P6";
     const destinationUrl = new URL(canonicalProductUrl);
     destinationUrl.searchParams.set("mcid", affiliate.mcid);
     const retailTotal = seatAvailability.providerRetailTotal ?? null;
@@ -3779,7 +3868,10 @@ export async function preparePortDayTourCheckout(
     return await replayOrReturn(handoff);
   } catch (error) {
     if (error instanceof CommercialHandoffStorageError) {
-      return reject("DURABLE_HANDOFF_UNAVAILABLE", error.message);
+      return reject("DURABLE_HANDOFF_UNAVAILABLE", error.message, {
+        sailingWindow,
+        timeFit,
+      });
     }
     throw error;
   }

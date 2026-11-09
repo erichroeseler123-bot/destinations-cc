@@ -705,7 +705,172 @@ const memoryCheckpoints = new Map<string, PollerCheckpointRecord>();
 const memoryActiveLeases = new Map<string, { holderId: string; expiresAtMs: number }>();
 const memoryMachineFunnelEvents = new Map<string, MachineFunnelEventRecord>();
 
+export class CommerceTestProductionDatabaseError extends Error {
+  readonly code = "COMMERCE_TEST_PRODUCTION_DB_FORBIDDEN";
+  readonly statusCode = 500;
+  readonly databaseName: string;
+  readonly databaseRole: string;
+  readonly host: string;
+
+  constructor(details: {
+    reason: string;
+    databaseName: string;
+    databaseRole: string;
+    host: string;
+  }) {
+    super(
+      `COMMERCE_TEST_PRODUCTION_DB_FORBIDDEN: Commerce test refused to run while pointing at production database (${details.reason}; host=${details.host || "unknown"}, db=${details.databaseName || "unknown"}, role=${details.databaseRole || "unknown"}). Point tests at an isolated non-production test database or unset DATABASE_URL.`
+    );
+    this.name = "CommerceTestProductionDatabaseError";
+    this.databaseName = details.databaseName;
+    this.databaseRole = details.databaseRole;
+    this.host = details.host;
+  }
+}
+
+export function isAutomatedCommerceTestRuntime(): boolean {
+  if (typeof process === "undefined") return false;
+  const nodeEnv = (process.env?.NODE_ENV || "").trim().toLowerCase();
+  if (nodeEnv === "test" || process.env?.DCC_COMMERCE_TEST_MODE === "1") {
+    return true;
+  }
+  if (
+    Array.isArray(process.execArgv) &&
+    process.execArgv.some((arg) => arg === "--test" || arg.startsWith("--test-"))
+  ) {
+    return true;
+  }
+  if (
+    Array.isArray(process.argv) &&
+    process.argv.some(
+      (arg) =>
+        arg === "--test" ||
+        arg.includes(".test.") ||
+        arg.includes("/tests/") ||
+        arg.includes("\\tests\\")
+    )
+  ) {
+    return true;
+  }
+  return false;
+}
+
+export function isProductionCommerceDatabaseUrl(rawUrl?: string | null): {
+  isProduction: boolean;
+  reason: string;
+  databaseName: string;
+  databaseRole: string;
+  host: string;
+} {
+  const candidate = (
+    rawUrl ??
+    (process.env?.DATABASE_URL ||
+      process.env?.DCC_DATABASE_URL ||
+      process.env?.POSTGRES_URL ||
+      process.env?.DCC_PRODUCTION_DATABASE_URL ||
+      "")
+  ).trim();
+
+  if (!candidate) {
+    return {
+      isProduction: false,
+      reason: "no_database_url_configured",
+      databaseName: "",
+      databaseRole: "",
+      host: "",
+    };
+  }
+
+  try {
+    const parsed = new URL(candidate);
+    const databaseName = parsed.pathname.replace(/^\//, "").trim();
+    const databaseRole = decodeURIComponent(parsed.username || "").trim().toLowerCase();
+    const host = (parsed.hostname || "").trim().toLowerCase();
+    const isIsolatedNonprodDb =
+      (databaseName === "neondb_nonprod" ||
+        databaseName.endsWith("_nonprod") ||
+        databaseName.endsWith("_test")) &&
+      databaseRole !== "neondb_owner";
+
+    if (databaseName === "neondb") {
+      return {
+        isProduction: true,
+        reason: "database_name_is_neondb",
+        databaseName,
+        databaseRole,
+        host,
+      };
+    }
+    if (databaseRole === "neondb_owner") {
+      return {
+        isProduction: true,
+        reason: "database_role_is_neondb_owner",
+        databaseName,
+        databaseRole,
+        host,
+      };
+    }
+    if (host.endsWith(".neon.tech") && !isIsolatedNonprodDb) {
+      return {
+        isProduction: true,
+        reason: "neon_endpoint_not_isolated_nonprod",
+        databaseName,
+        databaseRole,
+        host,
+      };
+    }
+    if (
+      (process.env?.DCC_TARGET_DB || "").trim().toLowerCase() === "production" ||
+      (process.env?.VERCEL_ENV || "").trim().toLowerCase() === "production" ||
+      Boolean((process.env?.DCC_PRODUCTION_DATABASE_URL || "").trim())
+    ) {
+      return {
+        isProduction: true,
+        reason: "environment_target_is_production",
+        databaseName,
+        databaseRole,
+        host,
+      };
+    }
+
+    return {
+      isProduction: false,
+      reason: "isolated_nonprod_database",
+      databaseName,
+      databaseRole,
+      host,
+    };
+  } catch {
+    const lower = candidate.toLowerCase();
+    const looksProd =
+      lower.includes("/neondb") ||
+      lower.includes("neondb_owner") ||
+      lower.includes(".neon.tech");
+    return {
+      isProduction: looksProd,
+      reason: looksProd ? "unparsed_production_database_url" : "non_production_url",
+      databaseName: looksProd ? "neondb" : "unknown",
+      databaseRole: lower.includes("neondb_owner") ? "neondb_owner" : "unknown",
+      host: "unknown",
+    };
+  }
+}
+
+export function assertCommerceTestDatabaseSafe(options?: {
+  forceTestCheck?: boolean;
+  databaseUrl?: string | null;
+}): void {
+  if (!options?.forceTestCheck && !isAutomatedCommerceTestRuntime()) {
+    return;
+  }
+  const check = isProductionCommerceDatabaseUrl(options?.databaseUrl);
+  if (check.isProduction) {
+    throw new CommerceTestProductionDatabaseError(check);
+  }
+}
+
 export function resetCommercialMemoryStoreForTests(): void {
+  assertCommerceTestDatabaseSafe({ forceTestCheck: true });
   memoryHandoffs.clear();
   memoryOutcomesByDedupeKey.clear();
   memoryOutcomesById.clear();
@@ -719,6 +884,7 @@ let commercePool: Pool | null = null;
 let commerceSchemaReadyPromise: Promise<boolean> | null = null;
 
 function getCommercePool(): Pool | null {
+  assertCommerceTestDatabaseSafe();
   const url = process.env.DATABASE_URL;
   if (!url || process.env.DCC_DISABLE_NEON_COMMERCE === "1") {
     return null;
@@ -735,6 +901,7 @@ function getCommercePool(): Pool | null {
 }
 
 export async function ensureCommerceTables(): Promise<boolean> {
+  assertCommerceTestDatabaseSafe();
   const pool = getCommercePool();
   if (!pool) return false;
   if (commerceSchemaReadyPromise) {
@@ -1028,6 +1195,23 @@ export function buildProviderAffiliateHandoffUrl(params: {
   };
 
   if (params.provider === "viator") {
+    const resolvedViatorCode = (params.viatorProductCode || params.productCode || "").trim().toUpperCase();
+    if (url.hostname === "fareharbor.com" || url.hostname.endsWith(".fareharbor.com")) {
+      const canonicalViatorUrlByCode: Record<string, string> = {
+        "15200P1":
+          "https://www.viator.com/tours/New-Orleans/Large-Airboat-Swamp-Tour/d675-15200P1?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+        "15200P5":
+          "https://www.viator.com/tours/New-Orleans/New-Orleans-Covered-Boat-Swamp-Tour/d675-15200P5?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+        "15200P6":
+          "https://www.viator.com/tours/New-Orleans/New-Orleans-Swamp-Tour-Boat-Adventure-with-Transportation/d675-15200P6?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+        "15200P9":
+          "https://www.viator.com/tours/New-Orleans/Swamp-and-Plantation-Combo-Tour-from-New-Orleans/d675-15200P9?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+      };
+      url = new URL(
+        canonicalViatorUrlByCode[resolvedViatorCode] ||
+          `https://www.viator.com/searchResults/all?text=${encodeURIComponent(resolvedViatorCode || "New Orleans Swamp Tour")}&pid=P00306962&mcid=42383&medium=api&api_version=2.0`,
+      );
+    }
     const pid =
       params.providerAccount?.trim() ||
       url.searchParams.get("pid") ||
@@ -1066,12 +1250,21 @@ export function buildProviderAffiliateHandoffUrl(params: {
       params.providerAccount?.trim() ||
       url.searchParams.get("asn") ||
       siteDefaults.fareharborAsn;
-    const refValue = `${baseCampaign}__${params.handoffId}`;
+    const existingRef = url.searchParams.get("ref")?.trim() || "";
+    const preserveExistingWnoRaginCajunRef =
+      url.pathname.includes("/ragincajuntours/") &&
+      /^wno-ragin-cajun-(?:airboat-options|covered-boat|covered-plantation-combo)$/i.test(existingRef);
+    const refValue = preserveExistingWnoRaginCajunRef
+      ? existingRef
+      : `${baseCampaign}__${params.handoffId}`;
 
     if (asn) {
       url.searchParams.set("asn", asn);
     }
     url.searchParams.set("ref", refValue);
+    if (preserveExistingWnoRaginCajunRef) {
+      url.searchParams.set("handoff_id", params.handoffId);
+    }
     if (!url.searchParams.has("full-items")) {
       url.searchParams.set("full-items", "yes");
     }
@@ -1391,6 +1584,7 @@ export async function resolveVersionedCandidatePolicy(
 export async function createCommercialHandoff(
   input: CreateCommercialHandoffInput
 ): Promise<CommercialHandoffRecord> {
+  assertCommerceTestDatabaseSafe();
   const originatingSite = normalizeOriginatingSite(input.originatingSite);
   const callerClientId = input.callerClientId?.trim() || "public_traveler_browser";
   const rawIdempotencyKey =
@@ -1930,6 +2124,7 @@ export async function recordMachineFunnelEvent(input: {
   simulateTimeout?: boolean | null;
   metadata?: Record<string, unknown> | null;
 }): Promise<MachineFunnelEventRecord> {
+  assertCommerceTestDatabaseSafe();
   const originatingSite = normalizeOriginatingSite(
     input.originatingSite || "destinationcommandcenter.com"
   );
@@ -2292,6 +2487,7 @@ export function computeOutcomeDedupeKey(input: {
 export async function recordCommercialOutcome(
   input: RecordCommercialOutcomeInput
 ): Promise<CommercialOutcomeRecord> {
+  assertCommerceTestDatabaseSafe();
   const normalizedReporterClientId = (input.reporterClientId ?? "").trim().toLowerCase();
   if (
     normalizedReporterClientId.startsWith("partner:welcome-to-alaska:") ||
@@ -2845,6 +3041,7 @@ export async function pollViatorModifiedSinceWithCheckpoint(options?: {
     modifiedSince?: string;
   }) => Promise<Record<string, unknown>>;
 }): Promise<ViatorPollerRunResult> {
+  assertCommerceTestDatabaseSafe();
   const capabilities = getViatorAccessCapabilities();
   const pollerId = options?.pollerId || "viator_modified_since_primary";
   const providerAccount =
