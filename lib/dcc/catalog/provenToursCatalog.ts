@@ -20,6 +20,7 @@ export interface ApprovedTourOptionSpec {
   optionCode: string;
   departureTime: string; // HH:mm in local timeZone
   startTime: string; // alias for departureTime (HH:mm)
+  scheduledStartTimes?: string[];
   displayTime: string; // e.g. "2:10 p.m."
   title: string;
   durationMinutes: number;
@@ -33,21 +34,35 @@ export interface ApprovedTourOptionSpec {
   seasonalNote?: string;
 }
 
+export type ApprovedCatalogProductCode = "15200P6" | "15200P1" | "103974P5";
+export type ApprovedCatalogPortSlug = "new-orleans" | "cozumel";
+export type ApprovedCatalogTimeZone = "America/Chicago" | "America/Cancun";
+
 export interface ProvenCatalogTourSpec {
   tourId: string;
   provider: "viator";
   providerAccount: string;
   mcid: string;
-  productCode: "15200P6" | "15200P1";
+  productCode: ApprovedCatalogProductCode;
   title: string;
   operatorName: string;
-  portSlug: "new-orleans";
-  timeZone: "America/Chicago";
+  portSlug: ApprovedCatalogPortSlug;
+  timeZone: ApprovedCatalogTimeZone;
   vesselCapacityPassengers: number;
-  singleVesselPolicy: "requires_separate_operator_verification";
+  singleVesselPolicy: "requires_separate_operator_verification" | "standard_group_capacity";
   singleVesselNote: string;
   fromPriceUsd: number;
   canonicalProductUrl: string;
+  checkoutLandingUrl?: string;
+  expectedUrlPathToken?: string;
+  defaultCampaign?: string;
+  originatingPage?: string;
+  approvedCheckoutOptionCodes?: string[];
+  approvedDeparturesByOption?: Record<string, string[]>;
+  requiresTravelerConfirmationFields?: string[];
+  preparedCheckoutGatedByDefault?: boolean;
+  preparedCheckoutGateEnvVar?: string;
+  preparedCheckoutGateReason?: string;
   options: ApprovedTourOptionSpec[];
 }
 
@@ -69,11 +84,28 @@ export const PROVEN_NEW_ORLEANS_TOURS: Record<"15200P6" | "15200P1", ProvenCatal
     fromPriceUsd: 97,
     canonicalProductUrl:
       "https://www.viator.com/tours/New-Orleans/High-Speed-16-Passenger-Airboat-Ride/d675-15200P6?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+    checkoutLandingUrl:
+      "https://www.viator.com/tours/New-Orleans/New-Orleans-Swamp-Tour-Boat-Adventure-With-Pickup/d675-15200P6",
+    expectedUrlPathToken: "/d675-15200P6",
+    defaultCampaign: "dcc_nola_tour",
+    originatingPage: "/ports/new-orleans",
+    approvedCheckoutOptionCodes: ["TG10"],
+    approvedDeparturesByOption: {
+      TG10: ["08:00"],
+    },
+    requiresTravelerConfirmationFields: [
+      "date",
+      "optionCode",
+      "departureTime",
+      "partySize",
+      "pickup point",
+    ],
     options: [
       {
         optionCode: "TG10",
         departureTime: "08:00",
         startTime: "08:00",
+        scheduledStartTimes: ["08:00"],
         displayTime: "8:00 a.m.",
         title: "8:00 AM Tour with French Quarter Hotel Pickup (Hotel Monteleone — 214 Royal St)",
         durationMinutes: 240,
@@ -90,6 +122,7 @@ export const PROVEN_NEW_ORLEANS_TOURS: Record<"15200P6" | "15200P1", ProvenCatal
         optionCode: "TG1",
         departureTime: "10:15",
         startTime: "10:15",
+        scheduledStartTimes: ["10:15"],
         displayTime: "10:15 a.m.",
         title: "10:15 AM Airboat & Swamp Tour with Pickup",
         durationMinutes: 225,
@@ -121,11 +154,32 @@ export const PROVEN_NEW_ORLEANS_TOURS: Record<"15200P6" | "15200P1", ProvenCatal
     fromPriceUsd: 65,
     canonicalProductUrl:
       "https://www.viator.com/tours/New-Orleans/Large-Airboat-Swamp-Tour/d675-15200P1?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+    checkoutLandingUrl:
+      "https://www.viator.com/tours/New-Orleans/Large-Airboat-Swamp-Tour/d675-15200P1",
+    expectedUrlPathToken: "/d675-15200P1",
+    defaultCampaign: "dcc_nola_tour",
+    originatingPage: "/ports/new-orleans",
+    approvedCheckoutOptionCodes: ["TG9", "TG2", "TG6", "TG7"],
+    approvedDeparturesByOption: {
+      TG9: ["09:40"],
+      TG2: ["12:10"],
+      TG6: ["14:10"],
+      TG7: ["16:15"],
+    },
+    requiresTravelerConfirmationFields: [
+      "date",
+      "optionCode",
+      "departureTime",
+      "partySize",
+      "meeting point (9706 Barataria Blvd, Marrero)",
+      "single-boat grouping with operator if group wants one boat",
+    ],
     options: [
       {
         optionCode: "TG9",
         departureTime: "09:40",
         startTime: "09:40",
+        scheduledStartTimes: ["09:40"],
         displayTime: "9:40 a.m.",
         title: "9:40 AM Large Airboat Swamp Tour (Self-Drive · 9706 Barataria Blvd)",
         durationMinutes: 100,
@@ -142,6 +196,7 @@ export const PROVEN_NEW_ORLEANS_TOURS: Record<"15200P6" | "15200P1", ProvenCatal
         optionCode: "TG2",
         departureTime: "12:10",
         startTime: "12:10",
+        scheduledStartTimes: ["12:10"],
         displayTime: "12:10 p.m.",
         title: "12:10 PM Large Airboat Swamp Tour (Self-Drive · 9706 Barataria Blvd)",
         durationMinutes: 100,
@@ -158,6 +213,7 @@ export const PROVEN_NEW_ORLEANS_TOURS: Record<"15200P6" | "15200P1", ProvenCatal
         optionCode: "TG6",
         departureTime: "14:10",
         startTime: "14:10",
+        scheduledStartTimes: ["14:10"],
         displayTime: "2:10 p.m.",
         title: "2:10 PM Large Airboat Swamp Tour (Self-Drive · 9706 Barataria Blvd)",
         durationMinutes: 100,
@@ -174,6 +230,7 @@ export const PROVEN_NEW_ORLEANS_TOURS: Record<"15200P6" | "15200P1", ProvenCatal
         optionCode: "TG7",
         departureTime: "16:15",
         startTime: "16:15",
+        scheduledStartTimes: ["16:15"],
         displayTime: "4:15 p.m.",
         title: "4:15 PM Large Airboat Swamp Tour (Seasonal — Unavailable in Winter)",
         durationMinutes: 100,
@@ -191,6 +248,275 @@ export const PROVEN_NEW_ORLEANS_TOURS: Record<"15200P6" | "15200P1", ProvenCatal
     ],
   },
 };
+
+export const APPROVED_CATALOG_CHECKOUT_TOURS: Record<
+  ApprovedCatalogProductCode,
+  ProvenCatalogTourSpec
+> = {
+  ...PROVEN_NEW_ORLEANS_TOURS,
+  "103974P5": {
+    tourId: "dcc:tour:viator:103974P5",
+    provider: "viator",
+    providerAccount: "P00306962",
+    mcid: "42383",
+    productCode: "103974P5",
+    title: "Cozumel Snorkeling Tour: Palancar, Columbia and El Cielo Reefs",
+    operatorName: "Cozumel Tours and Excursions",
+    portSlug: "cozumel",
+    timeZone: "America/Cancun",
+    vesselCapacityPassengers: 15,
+    singleVesselPolicy: "standard_group_capacity",
+    singleVesselNote:
+      "Supplier: Cozumel Tours and Excursions (SUPPLIER-7gEFhAbRfACoB8LX7J7y1g==). Check-in cutoff is 10 minutes before tour time at MARINA ASIPONA COZUMEL (Formerly Known as Marina Fonatur), Google Place ChIJhUJKipFXTo8RVdFGMuytpuI (Viator start description lists 'COZUMEL TOURS office located next to the Tequila store'; redemption specialInstructions lists 'MAYBE-TOURS office located next to the Tequila store'). Mandatory $11 USD/pp Marine Fee paid in destination.",
+    fromPriceUsd: 65,
+    canonicalProductUrl:
+      "https://www.viator.com/tours/Cozumel/Cozumel-Snorkel-tour-Palancar-reef-Columbia-reef-and-El-Cielo-Sandbar/d632-103974P5?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+    checkoutLandingUrl:
+      "https://www.viator.com/tours/Cozumel/Cozumel-Snorkel-tour-Palancar-reef-Columbia-reef-and-El-Cielo-Sandbar/d632-103974P5",
+    expectedUrlPathToken: "/d632-103974P5",
+    defaultCampaign: "dcc_cozumel_tour",
+    originatingPage: "/cruise-ships/symphony-of-the-seas/cozumel-shore-excursions",
+    approvedCheckoutOptionCodes: ["TG1"],
+    approvedDeparturesByOption: {
+      TG1: ["10:00", "12:00", "14:00"],
+    },
+    requiresTravelerConfirmationFields: [
+      "date",
+      "optionCode",
+      "departureTime",
+      "partySize",
+      "meeting point (MARINA ASIPONA COZUMEL / ex-Marina Fonatur — Cozumel Tours / Maybe-Tours office next to Tequila store)",
+    ],
+    preparedCheckoutGatedByDefault: true,
+    preparedCheckoutGateEnvVar: "DCC_ENABLE_COZUMEL_103974P5_CHECKOUT",
+    preparedCheckoutGateReason:
+      "Cozumel 103974P5 / TG1 prepared checkout is gated while verifying: (1) supplier's exact meeting pin at MARINA ASIPONA COZUMEL (Google Place ChIJhUJKipFXTo8RVdFGMuytpuI; Cozumel Tours vs Maybe-Tours office next to Tequila store), (2) outbound and return transfers from Symphony of the Seas' assigned berth (International Pier SSA vs Puerta Maya), and (3) actual all-aboard cutoff on 2027-01-08.",
+    options: [
+      {
+        optionCode: "TG1",
+        departureTime: "10:00",
+        startTime: "10:00",
+        scheduledStartTimes: ["10:00", "12:00", "14:00"],
+        displayTime: "10:00 a.m.",
+        title: "Cozumel Snorkel Tour: Palancar, Columbia and Cielo Reefs",
+        durationMinutes: 240,
+        checkInCutoffMinutes: 10,
+        pickupFulfillmentType: "self_drive_meeting_point",
+        meetingPointName:
+          "MARINA ASIPONA COZUMEL (Formerly Known as Marina Fonatur) — Cozumel Tours / Maybe-Tours office next to the Tequila store (Google Place ChIJhUJKipFXTo8RVdFGMuytpuI)",
+        meetingPointAddress:
+          "Carretera Costera Sur Km 6.0, Marina ASIPONA Cozumel (ex-Marina Fonatur), 77600 Cozumel, Q.R., Mexico",
+        pierToMeetingMinutes: 5,
+        meetingToPierMinutes: 5,
+        operatingMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+      },
+    ],
+  },
+};
+
+export function isCatalogTourPreparedCheckoutEnabled(
+  productCodeOrTourId: string | null | undefined
+): boolean {
+  const spec = getApprovedCatalogTourSpec(productCodeOrTourId);
+  if (!spec) return false;
+  if (!spec.preparedCheckoutGatedByDefault) return true;
+  if (spec.preparedCheckoutGateEnvVar) {
+    const val = String(process.env[spec.preparedCheckoutGateEnvVar] || "")
+      .trim()
+      .toLowerCase();
+    return val === "true" || val === "1";
+  }
+  return false;
+}
+
+export interface CatalogCheckoutApprovalResolution {
+  productApproved: boolean;
+  selectionApproved: boolean;
+  preparedCheckoutEnabled: boolean;
+  checkoutGateReason: string | null;
+  spec: ProvenCatalogTourSpec | null;
+  optionSpec: ApprovedTourOptionSpec | null;
+  allowedOptionCodes: string[];
+  allowedDeparturesForOption: string[];
+  checkoutDestinationUrl: string | null;
+  validationMessage: string;
+  // Direct spec convenience fields when called with a productCode string:
+  provider?: "viator";
+  providerAccount?: string;
+  mcid?: string;
+  productCode?: ApprovedCatalogProductCode;
+  portSlug?: ApprovedCatalogPortSlug;
+  portTimezone?: ApprovedCatalogTimeZone;
+  canonicalProductUrl?: string;
+  defaultCampaign?: string;
+  pickupLocationSummary?: string;
+}
+
+export function getApprovedCatalogTourSpec(
+  productCodeOrTourId: string | null | undefined
+): ProvenCatalogTourSpec | null {
+  const raw = String(productCodeOrTourId || "").trim().toUpperCase();
+  if (!raw) return null;
+  const cleaned = raw.replace(/^DCC:TOUR:VIATOR:/, "") as ApprovedCatalogProductCode;
+  return APPROVED_CATALOG_CHECKOUT_TOURS[cleaned] || null;
+}
+
+export function resolveApprovedCatalogCheckoutSpec(
+  paramsOrProductCode:
+    | string
+    | null
+    | undefined
+    | {
+        portSlug?: string | null;
+        productCode?: string | null;
+        optionCode?: string | null;
+        departureTime?: string | null;
+      }
+): CatalogCheckoutApprovalResolution {
+  if (typeof paramsOrProductCode === "string" || !paramsOrProductCode) {
+    const spec = getApprovedCatalogTourSpec(paramsOrProductCode);
+    if (!spec) {
+      return {
+        productApproved: false,
+        selectionApproved: false,
+        preparedCheckoutEnabled: false,
+        checkoutGateReason: null,
+        spec: null,
+        optionSpec: null,
+        allowedOptionCodes: [],
+        allowedDeparturesForOption: [],
+        checkoutDestinationUrl: null,
+        validationMessage:
+          "Checkout is available for catalog-approved tours: New Orleans 15200P6 / TG10, New Orleans 15200P1 (TG9, TG2, TG6, TG7), and Cozumel 103974P5 / TG1.",
+      };
+    }
+    const allowedOptionCodes =
+      spec.approvedCheckoutOptionCodes || spec.options.map((o) => o.optionCode);
+    const preparedCheckoutEnabled = isCatalogTourPreparedCheckoutEnabled(spec.productCode);
+    return {
+      productApproved: true,
+      selectionApproved: true,
+      preparedCheckoutEnabled,
+      checkoutGateReason: preparedCheckoutEnabled
+        ? null
+        : spec.preparedCheckoutGateReason || null,
+      spec,
+      optionSpec: spec.options[0] || null,
+      allowedOptionCodes,
+      allowedDeparturesForOption:
+        (spec.options[0] &&
+          (spec.approvedDeparturesByOption?.[spec.options[0].optionCode] ||
+            spec.options[0].scheduledStartTimes || [spec.options[0].departureTime])) ||
+        [],
+      checkoutDestinationUrl: spec.checkoutLandingUrl || spec.canonicalProductUrl,
+      validationMessage: `Approved catalog product ${spec.productCode} in ${spec.portSlug}.`,
+      provider: spec.provider,
+      providerAccount: spec.providerAccount,
+      mcid: spec.mcid,
+      productCode: spec.productCode,
+      portSlug: spec.portSlug,
+      portTimezone: spec.timeZone,
+      canonicalProductUrl: spec.checkoutLandingUrl || spec.canonicalProductUrl,
+      defaultCampaign: spec.defaultCampaign,
+      pickupLocationSummary: spec.options[0]?.meetingPointName || "",
+    };
+  }
+
+  const params = paramsOrProductCode;
+  const normPort = String(params.portSlug || "").trim().toLowerCase();
+  const spec = getApprovedCatalogTourSpec(params.productCode);
+  const normCode = spec?.productCode;
+  const normOption = String(params.optionCode || "").trim().toUpperCase();
+  const normDep = params.departureTime ? String(params.departureTime).trim() : "";
+
+  if (!spec || (normPort && spec.portSlug !== normPort)) {
+    return {
+      productApproved: false,
+      selectionApproved: false,
+      preparedCheckoutEnabled: false,
+      checkoutGateReason: null,
+      spec: null,
+      optionSpec: null,
+      allowedOptionCodes: [],
+      allowedDeparturesForOption: [],
+      checkoutDestinationUrl: null,
+      validationMessage:
+        "Checkout is available for catalog-approved tours: New Orleans 15200P6 / TG10, New Orleans 15200P1 (TG9, TG2, TG6, TG7), and Cozumel 103974P5 / TG1.",
+    };
+  }
+
+  const preparedCheckoutEnabled = isCatalogTourPreparedCheckoutEnabled(spec.productCode);
+  const checkoutGateReason = preparedCheckoutEnabled
+    ? null
+    : spec.preparedCheckoutGateReason || null;
+  const allowedOptionCodes =
+    spec.approvedCheckoutOptionCodes || spec.options.map((o) => o.optionCode);
+  const allowedDeparturesByOption = spec.approvedDeparturesByOption || {};
+  const allowedDeparturesForOption = normOption
+    ? allowedDeparturesByOption[normOption] || []
+    : [];
+  const optionSpec =
+    spec.options.find((o) => o.optionCode.toUpperCase() === normOption) || null;
+  const isOptionAllowed = Boolean(
+    normOption &&
+      allowedOptionCodes.includes(normOption) &&
+      optionSpec &&
+      normDep &&
+      allowedDeparturesForOption.includes(normDep),
+  );
+
+  if (!isOptionAllowed) {
+    const invalidMsg =
+      normCode === "15200P1"
+        ? "Provide a verified 15200P1 option (TG9 at 09:40, TG2 at 12:10, TG6 at 14:10, or TG7 at 16:15), a valid port date, and 1 to 15 adult travelers."
+        : normCode === "103974P5"
+          ? "Provide verified Cozumel 103974P5 option TG1 (departure 10:00, 12:00, or 14:00), a valid port date, and 1 to 15 adult travelers."
+          : "Provide TG10, a valid port date, the 08:00 departure, and 1 to 15 adult travelers.";
+    return {
+      productApproved: true,
+      selectionApproved: false,
+      preparedCheckoutEnabled,
+      checkoutGateReason,
+      spec,
+      optionSpec,
+      allowedOptionCodes,
+      allowedDeparturesForOption,
+      checkoutDestinationUrl: spec.checkoutLandingUrl || spec.canonicalProductUrl,
+      validationMessage: invalidMsg,
+      provider: spec.provider,
+      providerAccount: spec.providerAccount,
+      mcid: spec.mcid,
+      productCode: spec.productCode,
+      portSlug: spec.portSlug,
+      portTimezone: spec.timeZone,
+      canonicalProductUrl: spec.checkoutLandingUrl || spec.canonicalProductUrl,
+      defaultCampaign: spec.defaultCampaign,
+      pickupLocationSummary: optionSpec?.meetingPointName || spec.options[0]?.meetingPointName || "",
+    };
+  }
+
+  return {
+    productApproved: true,
+    selectionApproved: true,
+    preparedCheckoutEnabled,
+    checkoutGateReason,
+    spec,
+    optionSpec,
+    allowedOptionCodes,
+    allowedDeparturesForOption,
+    checkoutDestinationUrl: spec.checkoutLandingUrl || spec.canonicalProductUrl,
+    validationMessage: `Approved catalog checkout selection ${spec.productCode} / ${normOption} at ${normDep} in ${spec.portSlug}.`,
+    provider: spec.provider,
+    providerAccount: spec.providerAccount,
+    mcid: spec.mcid,
+    productCode: spec.productCode,
+    portSlug: spec.portSlug,
+    portTimezone: spec.timeZone,
+    canonicalProductUrl: spec.checkoutLandingUrl || spec.canonicalProductUrl,
+    defaultCampaign: spec.defaultCampaign,
+    pickupLocationSummary: optionSpec?.meetingPointName || spec.options[0]?.meetingPointName || "",
+  };
+}
 
 export function parseHhMmToMinutes(hhmm: string | null | undefined): number | null {
   if (!hhmm) return null;
@@ -262,7 +588,7 @@ export function getLocalNowInTimeZone(
 }
 
 export interface NextEligibleDepartureResolution {
-  productCode: "15200P6" | "15200P1";
+  productCode: ApprovedCatalogProductCode;
   resolvedDate: string;
   selectedOption: ApprovedTourOptionSpec;
   autoAdvancedFromPastOption: boolean;
@@ -273,19 +599,19 @@ export interface NextEligibleDepartureResolution {
   eligibleOptionsForDate: ApprovedTourOptionSpec[];
   localNowDate: string;
   localNowTime: string;
-  timeZone: "America/Chicago";
+  timeZone: ApprovedCatalogTimeZone;
   returnAtPierTime: string;
   returnAtPierDisplayTime: string;
   reason: string;
 }
 
 /**
- * Resolves the next eligible departure in `America/Chicago` for a given date (or today).
- * - If `date` is today in `America/Chicago` and no explicit option was pinned (or `autoAdvanceIfPast` is true),
+ * Resolves the next eligible departure in the product's local timeZone for a given date (or today).
+ * - If `date` is today in the local timeZone and no explicit option was pinned (or `autoAdvanceIfPast` is true),
  *   automatically skips departures that have already passed today (e.g. skipping 9:40 a.m. TG9 and 12:10 p.m. TG2
  *   at 12:18 p.m. CST and selecting 2:10 p.m. TG6).
- * - If no `date` is provided, defaults to today in `America/Chicago` when today still has an eligible future departure,
- *   or tomorrow in `America/Chicago` if all of today's departures have passed.
+ * - If no `date` is provided, defaults to today in the local timeZone when today still has an eligible future departure,
+ *   or tomorrow if all of today's departures have passed.
  */
 export function resolveNextEligibleTourOption(params: {
   productCode?: string | null;
@@ -294,13 +620,16 @@ export function resolveNextEligibleTourOption(params: {
   autoAdvanceIfPast?: boolean;
   now?: Date;
 }): NextEligibleDepartureResolution {
-  const normalizedCode =
-    String(params.productCode || "15200P1")
-      .trim()
-      .toUpperCase() === "15200P6"
+  const upperCode = String(params.productCode || "15200P1")
+    .trim()
+    .toUpperCase();
+  const normalizedCode: ApprovedCatalogProductCode =
+    upperCode === "15200P6"
       ? "15200P6"
-      : "15200P1";
-  const spec = PROVEN_NEW_ORLEANS_TOURS[normalizedCode];
+      : upperCode === "103974P5"
+        ? "103974P5"
+        : "15200P1";
+  const spec = APPROVED_CATALOG_CHECKOUT_TOURS[normalizedCode];
   const localNow = getLocalNowInTimeZone(spec.timeZone, params.now);
 
   const rawDate = String(params.date || "").trim();
@@ -407,6 +736,10 @@ export function resolveNextEligibleTourOption(params: {
 
 export interface CatalogCheckoutValidationResult {
   valid: boolean;
+  approved: boolean;
+  errorCode: "UNSUPPORTED_CHECKOUT_PRODUCT" | "INVALID_CHECKOUT_SELECTION" | null;
+  reason: string | null;
+  matchedOption: ApprovedTourOptionSpec | null;
   provider: "viator" | "fareharbor";
   providerAccount: string;
   productCode: string;
@@ -416,51 +749,131 @@ export interface CatalogCheckoutValidationResult {
 }
 
 /**
- * Validates that provider, providerAccount, productCode, optionCode, and checkoutDestinationUrl
- * agree before rendering or executing a checkout handoff.
+ * Validates that provider, providerAccount, productCode, optionCode, departureTime, and checkoutDestinationUrl
+ * agree with the catalog-backed checkout approval before rendering or executing a checkout handoff.
  */
 export function validateCatalogCheckoutBinding(params: {
   provider: "viator" | "fareharbor";
   providerAccount: string;
+  mcid?: string | null;
+  portSlug?: string | null;
   productCode: string;
   optionCode?: string | null;
+  departureTime?: string | null;
   checkoutDestinationUrl: string;
 }): CatalogCheckoutValidationResult {
   const errors: string[] = [];
   const url = String(params.checkoutDestinationUrl || "").trim();
   const code = String(params.productCode || "").trim();
+  const codeUpper = code.toUpperCase();
+  const optionUpper = params.optionCode ? String(params.optionCode).trim().toUpperCase() : null;
+  const account = String(params.providerAccount || "").trim();
+  let matchedOption: ApprovedTourOptionSpec | null = null;
+  let errorCode: "UNSUPPORTED_CHECKOUT_PRODUCT" | "INVALID_CHECKOUT_SELECTION" | null = null;
 
   if (params.provider === "viator") {
     if (!url.includes("viator.com/")) {
       errors.push(
         `Provider 'viator' (${code}) cannot target non-Viator checkout URL: ${url}`
       );
+      errorCode = "UNSUPPORTED_CHECKOUT_PRODUCT";
     }
     if (url.includes("fareharbor.com")) {
       errors.push(
         `Provider 'viator' (${code}) must never target a FareHarbor URL: ${url}`
       );
+      errorCode = "UNSUPPORTED_CHECKOUT_PRODUCT";
     }
-    if (code && !url.toUpperCase().includes(code.toUpperCase())) {
+    if (code && !url.toUpperCase().includes(codeUpper)) {
       errors.push(
         `Viator checkout URL (${url}) does not contain productCode ${code}`
       );
+      errorCode = "UNSUPPORTED_CHECKOUT_PRODUCT";
+    }
+    const approvedSpec =
+      APPROVED_CATALOG_CHECKOUT_TOURS[codeUpper as ApprovedCatalogProductCode] || null;
+    if (approvedSpec) {
+      if (account && account !== approvedSpec.providerAccount) {
+        errors.push(
+          `Provider account '${account}' does not match approved Viator account '${approvedSpec.providerAccount}' for ${codeUpper}`
+        );
+        errorCode = errorCode || "UNSUPPORTED_CHECKOUT_PRODUCT";
+      }
+      if (params.mcid && String(params.mcid).trim() !== approvedSpec.mcid) {
+        errors.push(
+          `Viator mcid '${params.mcid}' does not match approved mcid '${approvedSpec.mcid}' for ${codeUpper}`
+        );
+        errorCode = errorCode || "UNSUPPORTED_CHECKOUT_PRODUCT";
+      }
+      if (
+        params.portSlug &&
+        String(params.portSlug).trim().toLowerCase() !== approvedSpec.portSlug
+      ) {
+        errors.push(
+          `Port '${params.portSlug}' does not match approved catalog port '${approvedSpec.portSlug}' for ${codeUpper}`
+        );
+        errorCode = errorCode || "UNSUPPORTED_CHECKOUT_PRODUCT";
+      }
+      if (
+        approvedSpec.expectedUrlPathToken &&
+        !url.toUpperCase().includes(approvedSpec.expectedUrlPathToken.toUpperCase())
+      ) {
+        errors.push(
+          `Viator checkout URL (${url}) does not contain canonical path token '${approvedSpec.expectedUrlPathToken}' for ${codeUpper}`
+        );
+        errorCode = errorCode || "UNSUPPORTED_CHECKOUT_PRODUCT";
+      }
+      if (optionUpper) {
+        const allowedOptionCodes =
+          approvedSpec.approvedCheckoutOptionCodes ||
+          approvedSpec.options.map((o) => o.optionCode.toUpperCase());
+        matchedOption =
+          approvedSpec.options.find(
+            (o) => o.optionCode.toUpperCase() === optionUpper
+          ) || null;
+        if (!allowedOptionCodes.includes(optionUpper) || !matchedOption) {
+          errors.push(
+            `Option '${optionUpper}' is not an approved catalog checkout option for ${codeUpper}`
+          );
+          errorCode = errorCode || "INVALID_CHECKOUT_SELECTION";
+        }
+        if (params.departureTime) {
+          const allowedDeps =
+            approvedSpec.approvedDeparturesByOption?.[optionUpper] ||
+            approvedSpec.options
+              .filter((o) => o.optionCode.toUpperCase() === optionUpper)
+              .flatMap((o) => o.scheduledStartTimes || [o.departureTime]);
+          if (!allowedDeps.includes(String(params.departureTime).trim())) {
+            errors.push(
+              `Departure time '${params.departureTime}' is not approved for ${codeUpper} / ${optionUpper}`
+            );
+            errorCode = errorCode || "INVALID_CHECKOUT_SELECTION";
+          }
+        }
+      }
     }
   } else if (params.provider === "fareharbor") {
     if (!url.includes("fareharbor.com/")) {
       errors.push(
         `Provider 'fareharbor' (${code}) must target a fareharbor.com URL: ${url}`
       );
+      errorCode = "UNSUPPORTED_CHECKOUT_PRODUCT";
     }
     if (code && /^\d+$/.test(code) && !url.includes(`/items/${code}`)) {
       errors.push(
         `FareHarbor checkout URL (${url}) does not match item ${code}`
       );
+      errorCode = "UNSUPPORTED_CHECKOUT_PRODUCT";
     }
   }
 
+  const valid = errors.length === 0;
   return {
-    valid: errors.length === 0,
+    valid,
+    approved: valid,
+    errorCode: valid ? null : errorCode || "INVALID_CHECKOUT_SELECTION",
+    reason: valid ? null : errors[0] || "Invalid checkout selection.",
+    matchedOption,
     provider: params.provider,
     providerAccount: params.providerAccount,
     productCode: code,

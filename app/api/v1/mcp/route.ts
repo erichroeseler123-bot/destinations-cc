@@ -378,6 +378,18 @@ export async function POST(request: Request) {
           args.qaTraffic === true ||
           args.isTest === true;
 
+        const rawDatedBerth = args.datedBerth ?? args.berth ?? undefined;
+        const datedBerth =
+          typeof rawDatedBerth === "string" && rawDatedBerth.trim()
+            ? rawDatedBerth.trim()
+            : undefined;
+
+        const rawTransfers = args.transfers ?? args.transferEvidence ?? undefined;
+        const transfers =
+          typeof rawTransfers === "string" && rawTransfers.trim()
+            ? rawTransfers.trim()
+            : undefined;
+
         await recordMachineFunnelEvent({
           stage: "search",
           originatingSite,
@@ -402,6 +414,8 @@ export async function POST(request: Request) {
           sailingId,
           partySize,
           ship: shipSlug,
+          datedBerth,
+          transfers,
           limit,
           offset,
           sortBy,

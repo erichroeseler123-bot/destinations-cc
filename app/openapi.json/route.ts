@@ -378,9 +378,9 @@ export async function GET() {
       "/api/v1/cruise/port-day-excursions": {
         get: {
           operationId: "searchPortDayExcursions",
-          summary: "Search cruise port-day shore excursions and evaluate deterministic sailing-window timing fit",
+          summary: "Search cruise port-day shore excursions across all 632 connected ports and evaluate deterministic sailing-window timing fit",
           description:
-            "Queries DCC's SQL-backed cruise port excursion catalog and evaluates each tour against the ship arrival and all-aboard window (`status`: `fits`, `runs_too_late`, or `needs_verification`). When `allAboard` is omitted and no matching sailing schedule supplies it, labels the port default as a port estimate (`15:30 (port estimate)`) and returns `status: needs_verification`. Keeps timing fit strictly separate from live seat availability.",
+            "Queries DCC's SQL-backed cruise port excursion catalog across all 632 connected cruise ports, returns the port profile and any catalog entries from approved provider mappings, and evaluates each tour against the ship arrival and all-aboard window (`status`: `fits`, `runs_too_late`, or `needs_verification`). Uses `status: needs_verification` when the dated berth (`datedBerth`), route transfers (`transfers`), or all-aboard cutoff (`allAboard`) are missing. Coordinates (`berthCoordinates`, `meetingPointCoordinates`) help identify the endpoints, while the timing verdict requires evidence for the actual route and sailing. Public search returns approved affiliate links without creating checkout records.",
           parameters: [
             {
               name: "port",
@@ -388,7 +388,7 @@ export async function GET() {
               required: false,
               schema: { type: "string", default: "reykjavik" },
               description:
-                "Cruise port slug or alias (`new-orleans`, `reykjavik`, `kahului`, `juneau`, `skagway`, `ketchikan`, `seward`, `miami`, `tampa`, `seattle`, `cozumel`, `roatan`, `nassau`, `st-thomas`, `grand-cayman`).",
+                "Any of the 632 connected cruise port slugs or aliases (`new-orleans`, `cozumel`, `reykjavik`, `kahului`, `juneau`, `skagway`, `ketchikan`, `seward`, `miami`, `tampa`, `seattle`, `roatan`, `nassau`, `st-thomas`, `grand-cayman`, `civitavecchia`, `barcelona`, etc.).",
             },
             {
               name: "viewMode",
@@ -427,7 +427,7 @@ export async function GET() {
               required: false,
               schema: { type: "string", example: "13:15" },
               description:
-                "Traveler or schedule all-aboard deadline (`HH:MM` or `h:mm a.m./p.m.`, e.g. `13:15`, `1:15 p.m.`, `13:14`, `1:14 p.m.`). If omitted/blank and no sailing schedule matches, labeled as a port estimate (`15:30 (port estimate)`) with `status: needs_verification`.",
+                "Traveler or schedule all-aboard deadline (`HH:MM` or `h:mm a.m./p.m.`, e.g. `13:15`, `1:15 p.m.`, `17:00`). If omitted/blank and no confirmed sailing schedule supplies it, labeled as a port estimate with `status: needs_verification`.",
             },
             {
               name: "shipDeparture",
@@ -437,10 +437,24 @@ export async function GET() {
               description: "Optional scheduled ship departure time (`HH:MM`).",
             },
             {
+              name: "datedBerth",
+              in: "query",
+              required: false,
+              schema: { type: "string" },
+              description: "Optional dated berth confirmation or status (`missing` / `unknown` forces `status: needs_verification`).",
+            },
+            {
+              name: "transfers",
+              in: "query",
+              required: false,
+              schema: { type: "string" },
+              description: "Optional route transfer confirmation (`missing` / `unknown` forces `status: needs_verification`).",
+            },
+            {
               name: "sailing",
               in: "query",
               required: false,
-              schema: { type: "string", example: "INDY-2027-01-24" },
+              schema: { type: "string", example: "royal-caribbean-symphony-of-the-seas-2027-01-03" },
               description: "Optional sailing ID to resolve scheduled arrival, all-aboard, and departure times.",
             },
             {
@@ -461,7 +475,7 @@ export async function GET() {
               in: "query",
               required: false,
               schema: { type: "string", example: "15200P6" },
-              description: "Filter by exact provider product code (e.g. `15200P6`).",
+              description: "Filter by exact provider product code (e.g. `15200P6`, `15200P1`, `103974P5`).",
             },
             {
               name: "search",
@@ -524,6 +538,18 @@ export async function GET() {
                         missingFields: ["allAboard"],
                       },
                     },
+                    cozumelSymphonyOfTheSeasJan8NeedsVerificationUntilConfirmed: {
+                      summary: "Cozumel 103974P5 / TG1 on Jan 8, 2027 Symphony of the Seas — needs_verification while Marina ASIPONA meeting pin, berth transfers, and all-aboard cutoff are pending confirmation",
+                      value: {
+                        url: "https://www.destinationcommandcenter.com/api/v1/cruise/port-day-excursions?port=cozumel&sailing=royal-caribbean-symphony-of-the-seas-2027-01-03&date=2027-01-08&partySize=8&productCode=103974P5",
+                        status: "needs_verification",
+                        statusLabel: "Needs verification",
+                        fitsSailing: false,
+                        selectedOptionCode: "TG1",
+                        selectedDepartureTime: "10:00",
+                        missingFields: ["datedBerth", "meetingPoint", "transfers", "returnBuffer", "allAboard"],
+                      },
+                    },
                   },
                 },
               },
@@ -533,9 +559,9 @@ export async function GET() {
         },
         post: {
           operationId: "checkPortDayExcursionAvailability",
-          summary: "Check live availability or prepare an approved New Orleans checkout handoff",
+          summary: "Check live availability or prepare a catalog-approved checkout handoff",
           description:
-            "The default request only checks availability. Set action=prepare_checkout after traveler approval to prepare a durable checkout handoff for New Orleans 15200P6 / TG10. Checkout requires a configured API key scoped to dcc:commerce:handoff, travelerApprovedCheckout=true, an idempotency key, and a matching sailing or supplied arrival and all-aboard times. Reuse the key for the same approved selection.",
+            "The default request is read-only and returns live availability plus approved affiliate links without creating checkout records. Set action=prepare_checkout after traveler approval to prepare a durable checkout handoff for catalog-approved Viator options (New Orleans 15200P6 / TG10, New Orleans 15200P1 / TG9, TG2, TG6, TG7, or Cozumel 103974P5 / TG1 [gated behind DCC_ENABLE_COZUMEL_103974P5_CHECKOUT=true while Marina ASIPONA meeting pin, berth transfers, and all-aboard cutoff are verified]). Checkout requires a configured server credential scoped to dcc:commerce:handoff, travelerApprovedCheckout=true, an idempotencyKey, and verified sailing fit (all-aboard cutoff, dated berth, and transfers) plus live availability.",
           requestBody: {
             required: true,
             content: {
@@ -545,29 +571,32 @@ export async function GET() {
                   required: ["port", "productCode", "date", "partySize"],
                   properties: {
                     action: { type: "string", enum: ["prepare_checkout"] },
-                    port: { type: "string", example: "new-orleans" },
-                    productCode: { type: "string", example: "15200P6" },
+                    port: { type: "string", example: "cozumel" },
+                    productCode: { type: "string", example: "103974P5" },
                     tourId: { type: "string" },
-                    optionCode: { type: "string", example: "TG10" },
-                    date: { type: "string", format: "date", example: "2027-07-15" },
-                    departureTime: { type: "string", example: "08:00" },
-                    partySize: { type: "integer", minimum: 1, example: 2 },
+                    optionCode: { type: "string", example: "TG1" },
+                    date: { type: "string", format: "date", example: "2027-01-08" },
+                    departureTime: { type: "string", example: "10:00" },
+                    partySize: { type: "integer", minimum: 1, example: 8 },
                     travelerApprovedCheckout: { type: "boolean", const: true },
                     idempotencyKey: { type: "string", maxLength: 128 },
-                    shipArrival: { type: "string", example: "07:00" },
-                    allAboard: { type: "string", example: "13:15" },
-                    sailing: { type: "string" },
+                    shipArrival: { type: "string", example: "08:00" },
+                    allAboard: { type: "string", example: "17:00" },
+                    shipDeparture: { type: "string", example: "18:00" },
+                    datedBerth: { type: "string", example: "International Pier (SSA Mexico)" },
+                    transfers: { type: "string", example: "5" },
+                    sailing: { type: "string", example: "royal-caribbean-symphony-of-the-seas-2027-01-03" },
                     isQaTraffic: { type: "boolean" },
                     timeoutMs: { type: "integer", minimum: 1, maximum: 15000, default: 6000 },
                   },
                 },
                 example: {
-                  port: "new-orleans",
-                  productCode: "15200P6",
-                  optionCode: "TG10",
-                  date: "2027-07-15",
-                  departureTime: "08:00",
-                  partySize: 2,
+                  port: "cozumel",
+                  productCode: "103974P5",
+                  optionCode: "TG1",
+                  date: "2027-01-08",
+                  departureTime: "10:00",
+                  partySize: 4,
                 },
               },
             },
@@ -610,7 +639,7 @@ export async function GET() {
           responses: {
             "200": {
               description:
-                "MCP discovery manifest including dcc_search_port_excursions, dcc_check_tour_availability (read-only), and dcc_prepare_tour_checkout",
+                "MCP discovery manifest including dcc_search_port_excursions (632 connected ports), dcc_check_tour_availability (read-only), and catalog-backed dcc_prepare_tour_checkout",
             },
           },
         },
@@ -625,7 +654,7 @@ export async function GET() {
           operationId: "callMcpJsonRpc",
           summary: "Execute standard MCP JSON-RPC 2.0 requests (initialize, notifications/initialized, ping, tools/list, tools/call)",
           description:
-            "Standard MCP Streamable HTTP JSON-RPC 2.0 endpoint supporting `initialize`, `notifications/initialized`, `ping`, `tools/list`, and `tools/call` (including `dcc_search_port_excursions`, read-only `dcc_check_tour_availability`, and `dcc_prepare_tour_checkout` for New Orleans `15200P6` / `TG10` checkout handoff).",
+            "Standard MCP Streamable HTTP JSON-RPC 2.0 endpoint supporting `initialize`, `notifications/initialized`, `ping`, `tools/list`, and `tools/call` (including `dcc_search_port_excursions` across all 632 ports, read-only `dcc_check_tour_availability`, and catalog-backed `dcc_prepare_tour_checkout` for New Orleans `15200P6` / `TG10`, New Orleans `15200P1` / `TG9, TG2, TG6, TG7`, and Cozumel `103974P5` / `TG1`).",
           responses: {
             "200": { description: "JSON-RPC 2.0 response" },
             "202": { description: "JSON-RPC 2.0 notification accepted (e.g. notifications/initialized)" },

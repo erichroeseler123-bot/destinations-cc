@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   queryPortDayExcursionCatalog,
   verifyLiveExcursionAvailability,
+  CONNECTED_CRUISE_PORT_COUNT,
   MAPPED_CRUISE_PORT_EXCURSION_PROFILES,
   MAPPED_CRUISE_PORT_BATCH_SUMMARY,
   type PortDayExcursionViewMode,
@@ -10,7 +11,10 @@ import {
 import { recordMachineFunnelEvent } from "@/lib/dcc/commerce";
 import { enforceEvaluationRequestSizeLimit, MachineSecurityLimitError } from "@/lib/dcc/machine/securityLimits";
 import { prepareTourCheckoutFromRequest } from "@/lib/dcc/machine/v03/prepareTourCheckoutRequest";
-import { getLocalNowInTimeZone } from "@/lib/dcc/catalog/provenToursCatalog";
+import {
+  getLocalNowInTimeZone,
+  resolveApprovedCatalogCheckoutSpec,
+} from "@/lib/dcc/catalog/provenToursCatalog";
 
 export const dynamic = "force-dynamic";
 
@@ -37,6 +41,7 @@ export async function GET(request: NextRequest) {
           ok: true,
           generatedAt: new Date().toISOString(),
           totalMappedPorts: MAPPED_CRUISE_PORT_EXCURSION_PROFILES.length,
+          totalConnectedDiscoveryPorts: CONNECTED_CRUISE_PORT_COUNT,
           batches: MAPPED_CRUISE_PORT_BATCH_SUMMARY,
           ports: MAPPED_CRUISE_PORT_EXCURSION_PROFILES,
         },
@@ -127,6 +132,14 @@ export async function GET(request: NextRequest) {
       searchParams.get("berthType") ||
       searchParams.get("tender") ||
       undefined;
+    const datedBerth =
+      searchParams.get("datedBerth") ??
+      searchParams.get("berth") ??
+      undefined;
+    const transfers =
+      searchParams.get("transfers") ??
+      searchParams.get("transferEvidence") ??
+      undefined;
     const tenderTravelRaw =
       searchParams.get("tenderTravelMinutes") ?? searchParams.get("tenderMinutes");
     const tenderCutoffRaw = searchParams.get("tenderCutoffMinutes");
@@ -183,6 +196,8 @@ export async function GET(request: NextRequest) {
       ship,
       cruiseSailDate,
       dockOrTender,
+      datedBerth,
+      transfers,
       tenderTravelMinutes,
       tenderCutoffMinutes,
       limit,
@@ -198,6 +213,7 @@ export async function GET(request: NextRequest) {
         {
           ok: false,
           error: `Unsupported or unmapped cruise port slug: ${portSlug}`,
+          totalConnectedDiscoveryPorts: CONNECTED_CRUISE_PORT_COUNT,
           supportedPorts: MAPPED_CRUISE_PORT_EXCURSION_PROFILES.map((p) => p.portSlug),
         },
         { status: 404, headers: CORS_HEADERS }
@@ -256,11 +272,16 @@ export async function POST(request: NextRequest) {
     const optionCode =
       body.optionCode || body.option ? String(body.optionCode || body.option) : null;
     const rawDateInput = body.date || body.sailingDate ? String(body.date || body.sailingDate).trim() : "";
+    const approvedSpec = resolveApprovedCatalogCheckoutSpec(productCode || tourId);
     const date =
       !rawDateInput || rawDateInput.toLowerCase() === "today"
-        ? portSlug === "new-orleans" || (productCode && productCode.toUpperCase().startsWith("15200P"))
-          ? getLocalNowInTimeZone("America/Chicago").dateIso
-          : "2027-07-15"
+        ? approvedSpec
+          ? getLocalNowInTimeZone(approvedSpec.portTimezone).dateIso
+          : portSlug === "new-orleans" || (productCode && productCode.toUpperCase().startsWith("15200P"))
+            ? getLocalNowInTimeZone("America/Chicago").dateIso
+            : portSlug === "cozumel"
+              ? getLocalNowInTimeZone("America/Cancun").dateIso
+              : "2027-07-15"
         : rawDateInput;
     const partySize = Math.max(1, Number(body.partySize) || 2);
     const departureTime =

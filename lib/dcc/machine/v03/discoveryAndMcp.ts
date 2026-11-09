@@ -983,7 +983,7 @@ export function buildMcpDiscoveryDocument(baseUrl = DCC_V03_SITE_URL) {
         name: "dcc_search_port_excursions",
         requiredScope: "dcc:read:public",
         description:
-          "Searches DCC's SQL-backed cruise port-day shore excursion catalog and evaluates deterministic sailing-window timing fit (status: 'fits', 'runs_too_late', or 'needs_verification') using verified departure times, check-in cutoffs, meeting point coordinates, round-trip pier transfers, and port return buffers. When allAboard is blank and no matching sailing schedule supplies it, labels the port default as a port estimate and returns 'needs_verification'. Keeps timing fit strictly separate from live seat availability.",
+          "Searches DCC's SQL-backed cruise port-day shore excursion catalog across all 632 connected cruise ports and evaluates deterministic sailing-window timing fit (status: 'fits', 'runs_too_late', or 'needs_verification') using verified departure times, check-in cutoffs, meeting point coordinates, round-trip pier transfers, and port return buffers. Returns the port profile and any catalog entries from approved provider mappings. Uses 'needs_verification' when the dated berth, transfers for the actual route, or all-aboard cutoff are missing. Coordinates identify the berth and meeting-point endpoints while the timing verdict requires route and sailing evidence. Public search returns approved affiliate links without creating checkout records.",
         inputSchema: {
           type: "object",
           required: ["port"],
@@ -991,7 +991,7 @@ export function buildMcpDiscoveryDocument(baseUrl = DCC_V03_SITE_URL) {
             port: {
               type: "string",
               description:
-                "Cruise port slug or name (e.g. 'new-orleans', 'reykjavik', 'kahului', 'juneau', 'skagway', 'ketchikan', 'seward', 'miami', 'tampa', 'seattle', 'cozumel', 'roatan', 'nassau', 'st-thomas', 'grand-cayman').",
+                "Any of the 632 connected cruise port slugs or names (e.g. 'new-orleans', 'cozumel', 'reykjavik', 'kahului', 'juneau', 'skagway', 'ketchikan', 'seward', 'miami', 'tampa', 'seattle', 'roatan', 'nassau', 'st-thomas', 'grand-cayman', 'civitavecchia', 'barcelona').",
             },
             viewMode: {
               type: "string",
@@ -1007,7 +1007,7 @@ export function buildMcpDiscoveryDocument(baseUrl = DCC_V03_SITE_URL) {
             },
             date: {
               type: "string",
-              description: "Port call date in YYYY-MM-DD format (e.g. '2027-07-15').",
+              description: "Port call date in YYYY-MM-DD format (e.g. '2027-07-15' or '2027-01-08').",
             },
             shipArrival: {
               type: "string",
@@ -1016,19 +1016,29 @@ export function buildMcpDiscoveryDocument(baseUrl = DCC_V03_SITE_URL) {
             allAboard: {
               type: "string",
               description:
-                "All-aboard deadline in HH:MM or 12-hour format (e.g. '13:15', '1:15 p.m.', '13:14', '1:14 p.m.'). If omitted/blank and no sailing schedule matches, defaults to a labeled port estimate and returns status='needs_verification'.",
+                "All-aboard deadline in HH:MM or 12-hour format (e.g. '13:15', '1:15 p.m.', '17:00'). If omitted/blank and no confirmed sailing schedule supplies it, defaults to a labeled port estimate and returns status='needs_verification'.",
             },
             shipDeparture: {
               type: "string",
               description: "Optional scheduled ship departure time in HH:MM or 12-hour format.",
             },
+            datedBerth: {
+              type: "string",
+              description:
+                "Optional dated berth evidence status or berth identifier. When dated berth evidence is missing or unverified for the port/sailing, returns status='needs_verification'.",
+            },
+            transfers: {
+              type: "string",
+              description:
+                "Optional pier-to-meeting and meeting-to-pier transfer evidence status for the actual route. When transfer timing is missing or mapped from another port without route transfer evidence, returns status='needs_verification'.",
+            },
             sailing: {
               type: "string",
-              description: "Optional sailing ID (e.g. 'INDY-2027-01-24') to resolve scheduled arrival, all-aboard, and departure times.",
+              description: "Optional sailing ID (e.g. 'INDY-2027-01-24' or 'royal-caribbean-symphony-of-the-seas-2027-01-03') to resolve scheduled arrival, all-aboard, and departure times.",
             },
             ship: {
               type: "string",
-              description: "Optional ship slug or name (e.g. 'independence-of-the-seas').",
+              description: "Optional ship slug or name (e.g. 'independence-of-the-seas' or 'symphony-of-the-seas').",
             },
             partySize: {
               type: "integer",
@@ -1037,7 +1047,7 @@ export function buildMcpDiscoveryDocument(baseUrl = DCC_V03_SITE_URL) {
             },
             productCode: {
               type: "string",
-              description: "Optional exact provider product code filter (e.g. '15200P6').",
+              description: "Optional exact provider product code filter (e.g. '15200P6', '15200P1', '103974P5').",
             },
             search: {
               type: "string",
@@ -1066,18 +1076,18 @@ export function buildMcpDiscoveryDocument(baseUrl = DCC_V03_SITE_URL) {
         name: "dcc_check_tour_availability",
         requiredScope: "dcc:read:public",
         description:
-          "Read-only live seat and price availability check for a specific cruise port excursion option, date, departure time, and party size using DCC's upstream availability handler (POST /api/v1/cruise/port-day-excursions). Strictly read-only (never creates a commercial handoff record). Keeps availability separate from sailing-window timing fit and preserves unknown seat counts (remainingSeats: null) when the provider does not report exact remaining capacity.",
+          "Read-only live seat and price availability check for a specific cruise port excursion option, date, departure time, and party size using DCC's upstream availability handler (POST /api/v1/cruise/port-day-excursions). Strictly read-only: returns approved affiliate links (exactProductUrl, dccTrackedHref) without creating commercial handoff records (createsCommercialHandoff: false). Keeps availability separate from sailing-window timing fit and preserves unknown seat counts (remainingSeats: null) when the provider does not report exact remaining capacity.",
         inputSchema: {
           type: "object",
           required: ["port", "productCode", "date", "partySize"],
           properties: {
             port: {
               type: "string",
-              description: "Cruise port slug (e.g. 'new-orleans').",
+              description: "Cruise port slug (e.g. 'new-orleans', 'cozumel').",
             },
             productCode: {
               type: "string",
-              description: "Exact provider product code (e.g. '15200P6').",
+              description: "Exact provider product code (e.g. '15200P6', '15200P1', '103974P5').",
             },
             tourId: {
               type: "string",
@@ -1085,21 +1095,21 @@ export function buildMcpDiscoveryDocument(baseUrl = DCC_V03_SITE_URL) {
             },
             optionCode: {
               type: "string",
-              description: "Exact product option code (e.g. 'TG10').",
+              description: "Exact product option code (e.g. 'TG10', 'TG9', 'TG1').",
             },
             date: {
               type: "string",
-              description: "Travel date in YYYY-MM-DD format (e.g. '2027-07-15').",
+              description: "Travel date in YYYY-MM-DD format (e.g. '2027-07-15' or '2027-01-08').",
             },
             departureTime: {
               type: "string",
-              description: "Exact departure start time in HH:MM format (e.g. '08:00').",
+              description: "Exact departure start time in HH:MM format (e.g. '08:00' or '10:00').",
             },
             partySize: {
               type: "integer",
               minimum: 1,
               default: 2,
-              description: "Number of travelers (e.g. 2).",
+              description: "Number of travelers (e.g. 2 or 4).",
             },
             timeoutMs: {
               type: "integer",
@@ -1114,7 +1124,7 @@ export function buildMcpDiscoveryDocument(baseUrl = DCC_V03_SITE_URL) {
         name: "dcc_prepare_tour_checkout",
         requiredScope: "dcc:commerce:handoff",
         description:
-          "Prepares an attributed checkout handoff for live Viator products New Orleans 15200P6 (TG10) or 15200P1 (TG9, TG2, TG6, TG7) AFTER the traveler explicitly approves 'Continue to checkout' (travelerApprovedCheckout: true). Validates the exact option, date, departure time, and party size; resolves the sailing window from a matched sailing or supplied arrival and all-aboard times; reuses sailing-fit and live availability checks; shows priceBasis, currency, and timeChecked when the provider supplies them; resolves the canonical provider URL and affiliate account (P00306962 / mcid 42383) server-side; reuses createCommercialHandoff with the authenticated client ID and idempotencyKey; and returns handoffId, clickId, and the record's absolute outboundAffiliateUrl.",
+          "Prepares a catalog-approved attributed checkout handoff for live Viator products (New Orleans 15200P6 [TG10], New Orleans 15200P1 [TG9, TG2, TG6, TG7], or Cozumel 103974P5 [TG1 @ 10:00, 12:00, 14:00 — gated behind DCC_ENABLE_COZUMEL_103974P5_CHECKOUT=true while Marina ASIPONA Cozumel meeting pin, berth transfers, and 2027-01-08 all-aboard cutoff are verified]) AFTER the traveler explicitly approves 'Continue to checkout' (travelerApprovedCheckout: true). Approves the exact provider ('viator'), account (P00306962 / mcid 42383), product, option, departure time, and checkout destination server-side; resolves the sailing window and stops the handoff if the all-aboard cutoff, dated berth, or route transfer evidence is missing; verifies live availability for the group; preserves idempotent retries via idempotencyKey; and returns handoffId, clickId, and the record's absolute outboundAffiliateUrl.",
         inputSchema: {
           type: "object",
           required: [
@@ -1130,33 +1140,33 @@ export function buildMcpDiscoveryDocument(baseUrl = DCC_V03_SITE_URL) {
           properties: {
             port: {
               type: "string",
-              enum: ["new-orleans"],
+              enum: ["new-orleans", "cozumel"],
               default: "new-orleans",
-              description: "Cruise port slug ('new-orleans').",
+              description: "Catalog-approved cruise port slug ('new-orleans' or 'cozumel').",
             },
             productCode: {
               type: "string",
-              enum: ["15200P6", "15200P1"],
-              description: "Exact live Viator product code ('15200P6' or '15200P1').",
+              enum: ["15200P6", "15200P1", "103974P5"],
+              description: "Catalog-approved live Viator product code ('15200P6', '15200P1', or '103974P5').",
             },
             optionCode: {
               type: "string",
-              enum: ["TG10", "TG9", "TG2", "TG6", "TG7"],
-              description: "Exact Viator product option code ('TG10' for 15200P6; 'TG9', 'TG2', 'TG6', 'TG7' for 15200P1).",
+              enum: ["TG10", "TG9", "TG2", "TG6", "TG7", "TG1"],
+              description: "Catalog-approved Viator product option code ('TG10' for 15200P6; 'TG9', 'TG2', 'TG6', 'TG7' for 15200P1; 'TG1' for 103974P5).",
             },
             date: {
               type: "string",
-              description: "Port call date in YYYY-MM-DD format (e.g. '2027-07-15').",
+              description: "Port call date in YYYY-MM-DD format (e.g. '2027-07-15' or '2027-01-08').",
             },
             departureTime: {
               type: "string",
-              description: "Exact departure time in HH:MM format (e.g. '08:00', '09:40', '12:10', '14:10', '16:15').",
+              description: "Exact departure time in HH:MM format (e.g. '08:00', '09:40', '12:10', '14:10', '16:15', '10:00', '12:00', '14:00').",
             },
             partySize: {
               type: "integer",
               minimum: 1,
               maximum: 16,
-              description: "Number of guests (e.g. 3 or 8).",
+              description: "Number of guests (e.g. 3, 4, or 8).",
             },
             travelerApprovedCheckout: {
               type: "boolean",
@@ -1170,7 +1180,7 @@ export function buildMcpDiscoveryDocument(baseUrl = DCC_V03_SITE_URL) {
             },
             sailing: {
               type: "string",
-              description: "Optional matched sailing ID (e.g. 'carnival-liberty-20270516').",
+              description: "Optional matched sailing ID (e.g. 'carnival-liberty-20270516' or 'royal-caribbean-symphony-of-the-seas-2027-01-03').",
             },
             ship: {
               type: "string",
@@ -1178,15 +1188,23 @@ export function buildMcpDiscoveryDocument(baseUrl = DCC_V03_SITE_URL) {
             },
             shipArrival: {
               type: "string",
-              description: "Ship arrival time in HH:MM or 12-hour format (e.g. '07:00').",
+              description: "Ship arrival time in HH:MM or 12-hour format (e.g. '07:00' or '08:00').",
             },
             allAboard: {
               type: "string",
-              description: "All-aboard deadline in HH:MM or 12-hour format (e.g. '15:30' or '1:15 p.m.').",
+              description: "All-aboard deadline in HH:MM or 12-hour format (e.g. '15:30', '1:15 p.m.', or '17:00').",
             },
             shipDeparture: {
               type: "string",
               description: "Optional scheduled ship departure time in HH:MM or 12-hour format.",
+            },
+            datedBerth: {
+              type: "string",
+              description: "Optional confirmed dated berth identifier or status ('missing' stops prepared checkout).",
+            },
+            transfers: {
+              type: "string",
+              description: "Optional confirmed pier-to-meeting and meeting-to-pier transfer minutes or status ('missing' stops prepared checkout).",
             },
           },
         },
@@ -1427,6 +1445,32 @@ export function buildMcpDiscoveryDocument(baseUrl = DCC_V03_SITE_URL) {
               allAboard: "15:30",
               travelerApprovedCheckout: true,
               idempotencyKey: "nola-15200p6-tg10-20270715-party3",
+            },
+          },
+        },
+      },
+      prepareCozumelTourCheckout: {
+        endpoint: `${base}/api/v1/mcp`,
+        method: "POST",
+        body: {
+          jsonrpc: "2.0",
+          id: 7,
+          method: "tools/call",
+          params: {
+            name: "dcc_prepare_tour_checkout",
+            arguments: {
+              port: "cozumel",
+              productCode: "103974P5",
+              optionCode: "TG1",
+              date: "2027-01-08",
+              departureTime: "10:00",
+              partySize: 4,
+              sailing: "royal-caribbean-symphony-of-the-seas-2027-01-03",
+              shipArrival: "08:00",
+              allAboard: "17:00",
+              shipDeparture: "18:00",
+              travelerApprovedCheckout: true,
+              idempotencyKey: "cozumel-103974p5-tg1-20270108-party4",
             },
           },
         },

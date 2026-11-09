@@ -4616,6 +4616,201 @@ export const PILOT_VERIFIED_TOUR_RECORDS: DurableTourRecord[] = [
     updatedAt: "2026-11-08T10:00:00.000Z",
     createdAt: "2026-11-08T10:00:00.000Z",
   },
+  {
+    tourId: "dcc:tour:viator:103974P5",
+    compatibilityAliases: [
+      "103974P5",
+      "viator:103974P5",
+      "cozumel-snorkeling-palancar-columbia-el-cielo-103974p5",
+    ],
+    destinationSlug: "cozumel",
+    portSlug: "cozumel",
+    earthosDestinationNodeId: "earthos:node:mx-roo-cozumel",
+    timeZone: "America/Cancun",
+    title: "Cozumel Snorkeling Tour: Palancar, Columbia and El Cielo Reefs",
+    summary:
+      "Award Winning Snorkeling Trip!\n\nSet off for a great Adventure to the Caribbean and admire the Spectacular marine life on this awarded Cozumel Snorkeling trip. Enjoy Cozumel's top attractions and most visited reefs in the Caribbean.\n\nPalancar reef, known by it's variety of abundant sea life, Columbia reef, full of brightly colored fish and coral formations, El Cielo reef, surrounded by amazing starfish all over it's w",
+    category: "Whale Watching & Marine Wildlife",
+    tags: [
+      "367661",
+      "21972",
+      "21768",
+      "21442",
+      "367654",
+      "12056",
+      "367653",
+      "11912",
+      "367659",
+      "367663",
+      "21469",
+      "11923",
+      "11888",
+      "12021",
+      "367652",
+      "11903",
+      "22143",
+      "367650",
+    ],
+    primaryProvider: "viator",
+    providerProductCode: "103974P5",
+    operatorName: "Cozumel Tours and Excursions",
+    operatorCode: "SUPPLIER-7gEFhAbRfACoB8LX7J7y1g==",
+    capabilityTier: "live_check_referral",
+    commissionAuthorized: true,
+    durationMinutes: 240,
+    durationRawText: "240m fixed",
+    fromPriceCents: 6500,
+    priceBasis: "per_person",
+    currency: "USD",
+    freeCancellation: true,
+    cancellationPolicyType: "STANDARD",
+    cancellationCutoffHours: 24,
+    cancellationSummary:
+      "For a full refund, cancel at least 24 hours before the scheduled departure time.",
+    hasHotelPickup: false,
+    lowestPriceIncludesPickup: false,
+    pickupType: "MEETING_POINT_ONLY",
+    pickupFulfillmentType: "self_drive",
+    pickupSummary:
+      "Meeting time is 10 minutes before your Tour time at the MARINA ASIPONA COZUMEL (Formerly Known as Marina Fonatur) located 5 minutes by taxi from SSA and PUERTA MAYA cruise ports and 10 minutes from Downtown. Upon arrival look for our COZUMEL TOURS / MAYBE-TOURS office located next to the Tequila store (Google Place ChIJhUJKipFXTo8RVdFGMuytpuI).",
+    meetingPointName:
+      "MARINA ASIPONA COZUMEL (Formerly Known as Marina Fonatur) — Cozumel Tours / Maybe-Tours office next to the Tequila store (Google Place ChIJhUJKipFXTo8RVdFGMuytpuI)",
+    meetingPointAddress:
+      "Carretera Costera Sur Km 6.0, Marina ASIPONA Cozumel (ex-Marina Fonatur), 77600 Cozumel, Q.R., Mexico",
+    meetingPointLat: 20.4614,
+    meetingPointLng: -86.9792,
+    locationPrecision: "approximate",
+    pickupLocations: [],
+    ageBands: [
+      {
+        ageBand: "CHILD",
+        startAge: 3,
+        endAge: 10,
+        minTravelersPerBooking: 0,
+        maxTravelersPerBooking: 15,
+      },
+      {
+        ageBand: "ADULT",
+        startAge: 11,
+        endAge: 99,
+        minTravelersPerBooking: 1,
+        maxTravelersPerBooking: 15,
+      },
+    ],
+    constraints: {
+      maxPassengerWeightLbs: null,
+      wheelchairAccessible: null,
+      cruiseBufferBeforeMinutes: 5,
+      cruiseBufferAfterMinutes: 5,
+      transferTimeSource: "verified_meeting_point",
+      planningEstimateTransferMinutes: 5,
+      weatherDependent: false,
+      transferEvidenceSource:
+        "viator_logistics_start_description:marina_asipona_cozumel_5m_taxi_from_ssa_and_puerta_maya:103974P5",
+      applicableBerthOrMeetingPoint:
+        "International Pier (SSA México) / Puerta Maya <-> MARINA ASIPONA COZUMEL (ex-Marina Fonatur, Google Place ChIJhUJKipFXTo8RVdFGMuytpuI — 5m stated taxi; berth & exact office pin verification gate)",
+    },
+    channelOffers: [
+      {
+        channelId: "viator",
+        provider: "viator",
+        providerProductCode: "103974P5",
+        capabilityTier: "live_check_referral",
+        commissionAuthorized: true,
+        fromPriceCents: 6500,
+        priceBasis: "per_person",
+        currency: "USD",
+        freeCancellation: true,
+        cancellationCutoffHours: 24,
+        cancellationSummary:
+          "For a full refund, cancel at least 24 hours before the scheduled departure time.",
+        inclusions: [
+          "Insured Shaded Boat",
+          "Experienced trained guides",
+          "Visit to Palancar and Columbia reefs, El Cielo Sandbar and El Cielito Beach",
+          "Guided snorkeling tour",
+          "Snorkel gear: Vest, Mask, New tube",
+          "Drinks: Beers, Water, Sodas and a Snack",
+        ],
+        exclusions: ["Marine Fee $11 USD pp"],
+        bookingUrl:
+          "https://www.viator.com/tours/Cozumel/Cozumel-Snorkel-tour-Palancar-reef-Columbia-reef-and-El-Cielo-Sandbar/d632-103974P5?mcid=42383&pid=P00306962&medium=api&api_version=2.0&campaign=dcc-cozumel-103974p5&utm_source=destinationcommandcenter&utm_medium=affiliate&utm_campaign=cities&locale=en-US",
+        defaultCampaign: "dcc-cozumel-103974P5",
+      },
+    ],
+    productOptions: [
+      {
+        optionCode: "TG1",
+        title: "Cozumel Snorkel Tour: Palancar, Columbia and Cielo Reefs",
+        description:
+          "4-hour reef & El Cielo snorkeling excursion departing from MARINA ASIPONA COZUMEL (ex-Marina Fonatur, Google Place ChIJhUJKipFXTo8RVdFGMuytpuI). Check in 10 minutes before tour time.",
+        includesPickup: false,
+        pickupFulfillmentType: "self_drive",
+        meetingPointName:
+          "MARINA ASIPONA COZUMEL (Formerly Known as Marina Fonatur) — Cozumel Tours / Maybe-Tours office next to the Tequila store (Google Place ChIJhUJKipFXTo8RVdFGMuytpuI)",
+        meetingPointLat: 20.4614,
+        meetingPointLng: -86.9792,
+        transferBeforeMinutes: 5,
+        transferAfterMinutes: 5,
+        transferTimeSource: "verified_meeting_point",
+        planningEstimateTransferMinutes: 5,
+        durationMinutes: 240,
+        fromPriceCents: 6500,
+        priceBasis: "per_person",
+        scheduledStartTimes: ["10:00", "12:00", "14:00"],
+        transferEvidenceSource:
+          "viator_logistics_start_description:marina_asipona_cozumel_5m_taxi_from_ssa_and_puerta_maya:103974P5",
+        applicableBerthOrMeetingPoint:
+          "International Pier (SSA México) / Puerta Maya <-> MARINA ASIPONA COZUMEL (ex-Marina Fonatur, Google Place ChIJhUJKipFXTo8RVdFGMuytpuI — 5m stated taxi; berth & exact office pin verification gate)",
+      },
+    ],
+    serviceDetails: {
+      checkInCutoffMinutes: 10,
+      checkInEvidenceSource:
+        "viator_logistics_start_description:meeting_time_is_10_minutes_before_your_tour_time",
+      viatorLocationRef:
+        "LOC-o0AXGEKPN4wJ9sIG0RAn5Iw1FSMGuIKE7oOiqtc3wSmJ0mDxtTQz4M7JaC11LfKD",
+      googlePlaceId: "ChIJhUJKipFXTo8RVdFGMuytpuI",
+      supplierOfficeSignDiscrepancy:
+        "logistics.start.description states 'COZUMEL TOURS office located next to the Tequila store' while logistics.redemption.specialInstructions states 'MAYBE-TOURS office located next to the Tequila store'",
+    },
+    inclusions: [
+      "Insured Shaded Boat",
+      "Experienced trained guides",
+      "Visit to Palancar and Columbia reefs, El Cielo Sandbar and El Cielito Beach",
+      "Guided snorkeling tour",
+      "Snorkel gear: Vest, Mask, New tube",
+      "Drinks: Beers, Water, Sodas and a Snack",
+    ],
+    exclusions: ["Marine Fee $11 USD pp"],
+    primaryImageUrl:
+      "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-674x446/0b/af/81/91.jpg",
+    ratingAverage: 4.33,
+    reviewCount: 1647,
+    bookingUrl:
+      "https://www.viator.com/tours/Cozumel/Cozumel-Snorkel-tour-Palancar-reef-Columbia-reef-and-El-Cielo-Sandbar/d632-103974P5?mcid=42383&pid=P00306962&medium=api&api_version=2.0&campaign=dcc-cozumel-103974p5&utm_source=destinationcommandcenter&utm_medium=affiliate&utm_campaign=cities&locale=en-US",
+    provenance: {
+      sourceSystem: "viator_partner_api_v2",
+      sourceEndpoint:
+        "/products/search+/products/{code}+/availability/schedules/{code}",
+      fetchedAt: "2026-11-05T17:52:23.905Z",
+      contentSha256:
+        "1a03a7a601fa8fa13394d73f1fa9d2681b551531ac4d32e93cc7b03b9bc93b61",
+      rawFieldsVerified: {
+        durationKnown: true,
+        cancellationKnown: true,
+        pickupKnown: true,
+        meetingCoordinatesKnown: true,
+        ageBandsKnown: true,
+      },
+    },
+    quarantined: false,
+    quarantineReason: null,
+    active: true,
+    lastVerifiedAt: "2026-11-05T17:52:23.905Z",
+    updatedAt: "2026-11-08T06:39:59.691Z",
+    createdAt: "2026-11-05T17:52:23.905Z",
+  },
 ];
 
 function mergePilotVerifiedRecords(records: DurableTourRecord[]): DurableTourRecord[] {

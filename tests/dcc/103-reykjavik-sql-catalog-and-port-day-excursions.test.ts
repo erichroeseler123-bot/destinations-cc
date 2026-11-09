@@ -1329,5 +1329,469 @@ test("103.15 Two-hour shortlist: 120m vs 119m on 15200P6 / TG10, full return tri
   );
 });
 
+test("103.16: Catalog-backed checkout approval, all 632 ports connected for discovery, and Jan 8 Symphony of the Seas Cozumel 103974P5 / TG1 proof with MCP + OpenAPI sync", async (t) => {
+  const {
+    CONNECTED_CRUISE_PORT_COUNT,
+    getConnectedCruisePortProfiles,
+    resolveCruisePortExcursionProfile,
+    queryPortDayExcursionCatalog,
+    verifyLiveExcursionAvailability,
+    preparePortDayTourCheckout,
+  } = await import("@/lib/dcc/cruisePortExcursionCatalogEngine");
+  const { getCruisePortDirectory } = await import("@/lib/dcc/cruisePortDirectory");
+  const {
+    APPROVED_CATALOG_CHECKOUT_TOURS,
+    resolveApprovedCatalogCheckoutSpec,
+    validateCatalogCheckoutBinding,
+    buildViatorCarryoverTruth,
+  } = await import("@/lib/dcc/catalog/provenToursCatalog");
+  const { POST: mcpPost, GET: mcpGet } = await import("@/app/api/v1/mcp/route");
+  const { GET: openApiGet } = await import("@/app/openapi.json/route");
+
+  const previousKeys = process.env.DCC_MACHINE_API_KEYS_JSON;
+  const key = "test-catalog-checkout-client-v03";
+  process.env.DCC_MACHINE_API_KEYS_JSON = JSON.stringify({
+    [key]: ["dcc:commerce:handoff", "dcc:read:public"],
+  });
+  t.after(() => {
+    if (previousKeys === undefined) delete process.env.DCC_MACHINE_API_KEYS_JSON;
+    else process.env.DCC_MACHINE_API_KEYS_JSON = previousKeys;
+  });
+
+  // ---------------------------------------------------------------------------
+  // 1. All 632 ports connected for discovery + approved provider mappings + needs_verification
+  // ---------------------------------------------------------------------------
+  const directory = getCruisePortDirectory();
+  assert.equal(directory.length, 632);
+  assert.equal(CONNECTED_CRUISE_PORT_COUNT, 632);
+
+  const connectedProfiles = getConnectedCruisePortProfiles();
+  assert.equal(connectedProfiles.length, 632);
+
+  // Every single one of the 632 directory ports resolves a profile
+  for (const entry of directory) {
+    const profile = resolveCruisePortExcursionProfile(entry.slug);
+    assert.ok(profile, `Expected cruise port directory slug '${entry.slug}' to resolve`);
+  }
+
+  // Discovery port mapped to an approved provider destination (e.g. port-everglades -> miami, lahaina -> kahului)
+  const portEvergladesCatalog = await queryPortDayExcursionCatalog({
+    portSlug: "port-everglades",
+    viewMode: "browse_all",
+    shipArrivalTime: "07:00",
+    shipAllAboardTime: "16:30",
+    sailingDate: "2027-07-15",
+    partySize: 2,
+    limit: 5,
+  });
+  assert.ok(portEvergladesCatalog);
+  assert.equal(portEvergladesCatalog.port.portSlug, "port-everglades");
+  assert.equal(portEvergladesCatalog.port.destinationSlug, "miami");
+  assert.equal(portEvergladesCatalog.port.hasDatedBerthEvidence, false);
+  assert.ok(portEvergladesCatalog.tours.length > 0);
+  // Because port-everglades lacks a dated berth and routes to Miami inventory without route transfer evidence:
+  for (const tour of portEvergladesCatalog.tours) {
+    assert.equal(tour.timeFit.status, "needs_verification");
+    assert.equal(tour.timeFit.fitsSailing, false);
+    assert.ok(tour.timeFit.missingFields.includes("datedBerth"));
+    assert.ok(tour.timeFit.missingFields.includes("transfers"));
+    // Coordinates identify endpoints even when timing verdict is needs_verification
+    assert.ok(tour.timeFit.evidenceReviewPriority?.berthCoordinates);
+  }
+
+  // Civitavecchia resolves for discovery (mapped to Rome) and reports missing timing evidence as needs_verification
+  const civitavecchiaCatalog = await queryPortDayExcursionCatalog({
+    portSlug: "civitavecchia",
+    viewMode: "browse_all",
+    sailingDate: "2027-07-15",
+    partySize: 2,
+    limit: 5,
+  });
+  assert.ok(civitavecchiaCatalog);
+  assert.equal(civitavecchiaCatalog.port.portSlug, "civitavecchia");
+  assert.equal(civitavecchiaCatalog.port.destinationSlug, "rome");
+  assert.equal(civitavecchiaCatalog.port.hasDatedBerthEvidence, false);
+  assert.equal(civitavecchiaCatalog.sailingWindow.timingStatus, "needs_verification");
+  assert.deepEqual(civitavecchiaCatalog.sailingWindow.missingTimingEvidence, [
+    "datedBerth",
+    "transfers",
+    "allAboard",
+  ]);
+
+  // Even on a berth-verified port (Cozumel), missing datedBerth or missing transfers forces needs_verification
+  const cozumelMissingBerth = await queryPortDayExcursionCatalog({
+    portSlug: "cozumel",
+    sailingId: "royal-caribbean-symphony-of-the-seas-2027-01-03",
+    sailingDate: "2027-01-08",
+    shipArrivalTime: "08:00",
+    shipAllAboardTime: "17:00",
+    datedBerth: "missing",
+    search: "103974P5",
+  });
+  assert.ok(cozumelMissingBerth);
+  assert.equal(cozumelMissingBerth.tours[0].timeFit.status, "needs_verification");
+  assert.ok(cozumelMissingBerth.tours[0].timeFit.missingFields.includes("datedBerth"));
+
+  const cozumelMissingTransfers = await queryPortDayExcursionCatalog({
+    portSlug: "cozumel",
+    sailingId: "royal-caribbean-symphony-of-the-seas-2027-01-03",
+    sailingDate: "2027-01-08",
+    shipArrivalTime: "08:00",
+    shipAllAboardTime: "17:00",
+    transfers: "missing",
+    search: "103974P5",
+  });
+  assert.ok(cozumelMissingTransfers);
+  assert.equal(cozumelMissingTransfers.tours[0].timeFit.status, "needs_verification");
+  assert.ok(cozumelMissingTransfers.tours[0].timeFit.missingFields.includes("transfers"));
+
+  // ---------------------------------------------------------------------------
+  // 2. Catalog-backed checkout approval replaces two-product hardcode
+  // ---------------------------------------------------------------------------
+  assert.deepEqual(Object.keys(APPROVED_CATALOG_CHECKOUT_TOURS), [
+    "15200P6",
+    "15200P1",
+    "103974P5",
+  ]);
+  delete process.env.DCC_ENABLE_COZUMEL_103974P5_CHECKOUT;
+  delete process.env.CP_ENABLE_COZUMEL_103974P5_CHECKOUT;
+
+  const cozumelSpecGated = resolveApprovedCatalogCheckoutSpec({
+    portSlug: "cozumel",
+    productCode: "103974P5",
+    optionCode: "TG1",
+    departureTime: "10:00",
+  });
+  assert.equal(cozumelSpecGated.productApproved, true);
+  assert.equal(cozumelSpecGated.selectionApproved, true);
+  assert.equal(cozumelSpecGated.preparedCheckoutEnabled, false);
+  assert.ok(cozumelSpecGated.checkoutGateReason?.includes("MARINA ASIPONA COZUMEL"));
+  assert.equal(cozumelSpecGated.provider, "viator");
+  assert.equal(cozumelSpecGated.providerAccount, "P00306962");
+  assert.equal(cozumelSpecGated.mcid, "42383");
+
+  const validCozumelBinding = validateCatalogCheckoutBinding({
+    provider: "viator",
+    providerAccount: "P00306962",
+    mcid: "42383",
+    portSlug: "cozumel",
+    productCode: "103974P5",
+    optionCode: "TG1",
+    departureTime: "10:00",
+    checkoutDestinationUrl:
+      "https://www.viator.com/tours/Cozumel/Cozumel-Snorkel-tour-Palancar-reef-Columbia-reef-and-El-Cielo-Sandbar/d632-103974P5?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+  });
+  assert.equal(validCozumelBinding.approved, true);
+
+  // ---------------------------------------------------------------------------
+  // 3. Prove Cozumel 103974P5 / TG1 on Jan 8, 2027 Symphony of the Seas
+  // ---------------------------------------------------------------------------
+  // 3a. Default gated state: even with shipAllAboardTime="17:00", Cozumel 103974P5 / TG1 stays needs_verification and prepared checkout is gated
+  const jan8GatedDefault = await queryPortDayExcursionCatalog({
+    portSlug: "cozumel",
+    sailingId: "royal-caribbean-symphony-of-the-seas-2027-01-03",
+    sailingDate: "2027-01-08",
+    shipArrivalTime: "08:00",
+    shipAllAboardTime: "17:00",
+    shipDepartureTime: "18:00",
+    partySize: 4,
+    search: "103974P5",
+  });
+  assert.ok(jan8GatedDefault);
+  const candidateGated = jan8GatedDefault.tours[0];
+  assert.equal(candidateGated.productCode, "103974P5");
+  assert.equal(candidateGated.timeFit.status, "needs_verification");
+  assert.ok(candidateGated.timeFit.missingFields.includes("datedBerth"));
+  assert.ok(candidateGated.timeFit.missingFields.includes("meetingPoint"));
+  assert.ok(candidateGated.timeFit.missingFields.includes("transfers"));
+  assert.ok(candidateGated.seatAvailability.exactProductUrl.includes("d632-103974P5"));
+  assert.ok(candidateGated.seatAvailability.exactProductUrl.includes("pid=P00306962"));
+
+  const stoppedWhileGated = await preparePortDayTourCheckout({
+    portSlug: "cozumel",
+    productCode: "103974P5",
+    optionCode: "TG1",
+    date: "2027-01-08",
+    departureTime: "10:00",
+    partySize: 4,
+    sailingId: "royal-caribbean-symphony-of-the-seas-2027-01-03",
+    shipArrivalTime: "08:00",
+    shipAllAboardTime: "17:00",
+    shipDepartureTime: "18:00",
+    travelerApprovedCheckout: true,
+    idempotencyKey: `qa-cozumel-gated-default-${Date.now()}`,
+    isQaTraffic: true,
+  });
+  assert.equal(stoppedWhileGated.ok, false);
+  assert.equal(stoppedWhileGated.errorCode, "SAILING_FIT_NOT_VERIFIED");
+  assert.equal(stoppedWhileGated.outboundAffiliateUrl, null);
+  assert.equal(stoppedWhileGated.durableRecordCount, 0);
+
+  // 3b. Enable Cozumel 103974P5 / TG1 prepared checkout flag to test post-confirmation behavior
+  process.env.DCC_ENABLE_COZUMEL_103974P5_CHECKOUT = "true";
+  t.after(() => {
+    delete process.env.DCC_ENABLE_COZUMEL_103974P5_CHECKOUT;
+  });
+
+  // When all-aboard cutoff is unconfirmed on the Jan 8 Symphony of the Seas sailing, status is still needs_verification
+  const jan8UnconfirmedCutoff = await queryPortDayExcursionCatalog({
+    portSlug: "cozumel",
+    sailingId: "royal-caribbean-symphony-of-the-seas-2027-01-03",
+    sailingDate: "2027-01-08",
+    partySize: 4,
+    search: "103974P5",
+  });
+  assert.ok(jan8UnconfirmedCutoff);
+  assert.equal(jan8UnconfirmedCutoff.sailingWindow.shipName, "Symphony of the Seas");
+  assert.equal(jan8UnconfirmedCutoff.sailingWindow.shipArrivalTime, "08:00");
+  assert.equal(jan8UnconfirmedCutoff.sailingWindow.shipDepartureTime, "18:00");
+  assert.equal(jan8UnconfirmedCutoff.sailingWindow.allAboardTimeSource, "port_estimate");
+  const candidateUnconfirmed = jan8UnconfirmedCutoff.tours[0];
+  assert.equal(candidateUnconfirmed.productCode, "103974P5");
+  assert.equal(candidateUnconfirmed.timeFit.status, "needs_verification");
+  assert.ok(candidateUnconfirmed.timeFit.missingFields.includes("allAboard"));
+
+  // When enabled and all-aboard cutoff is confirmed (17:00), confirm departure, pickup, return route, and fit
+  const jan8Confirmed = await queryPortDayExcursionCatalog({
+    portSlug: "cozumel",
+    sailingId: "royal-caribbean-symphony-of-the-seas-2027-01-03",
+    sailingDate: "2027-01-08",
+    shipArrivalTime: "08:00",
+    shipAllAboardTime: "17:00",
+    shipDepartureTime: "18:00",
+    partySize: 4,
+    search: "103974P5",
+  });
+  assert.ok(jan8Confirmed);
+  const cozumelCandidate = jan8Confirmed.tours[0];
+  assert.equal(cozumelCandidate.productCode, "103974P5");
+  assert.equal(cozumelCandidate.optionCode, "TG1");
+  assert.equal(cozumelCandidate.timeFit.status, "fits");
+  assert.equal(cozumelCandidate.timeFit.fitsSailing, true);
+  assert.equal(cozumelCandidate.timeFit.selectedOptionCode, "TG1");
+  assert.equal(cozumelCandidate.timeFit.selectedDepartureTime, "10:00");
+  assert.deepEqual(cozumelCandidate.timeFit.availableDepartureTimes, ["10:00", "12:00", "14:00"]);
+  assert.deepEqual(cozumelCandidate.timeFit.fittingDepartureTimes, ["10:00"]);
+  assert.deepEqual(cozumelCandidate.timeFit.tooLateDepartureTimes, ["12:00", "14:00"]);
+  assert.equal(cozumelCandidate.timeFit.checkInCutoffMinutes, 10);
+  assert.equal(cozumelCandidate.timeFit.latestCheckInTime, "09:50");
+  assert.equal(cozumelCandidate.timeFit.leavePierByTime, "09:45");
+  assert.equal(
+    cozumelCandidate.timeFit.meetingPointName,
+    "MARINA ASIPONA COZUMEL (Formerly Known as Marina Fonatur) — Cozumel Tours / Maybe-Tours office next to the Tequila store (Google Place ChIJhUJKipFXTo8RVdFGMuytpuI)"
+  );
+  assert.equal(cozumelCandidate.timeFit.pierToMeetingMinutes, 5);
+  assert.equal(cozumelCandidate.timeFit.meetingToPierMinutes, 5);
+  assert.equal(cozumelCandidate.timeFit.roundTripTransferMinutes, 10);
+  assert.equal(cozumelCandidate.timeFit.durationMinutes, 240);
+  assert.equal(cozumelCandidate.timeFit.tourEndTime, "14:00");
+  assert.equal(cozumelCandidate.timeFit.estimatedBackAtPierTime, "14:05");
+  assert.equal(cozumelCandidate.timeFit.bufferBeforeAllAboardMinutes, 175);
+  assert.equal(cozumelCandidate.timeFit.bufferBeforeShipDepartureMinutes, 235);
+
+  // 3c. Read-only live availability for the group (partySize=4) returns approved affiliate links without creating checkout records
+  const liveAvail = await verifyLiveExcursionAvailability({
+    portSlug: "cozumel",
+    productCode: "103974P5",
+    optionCode: "TG1",
+    date: "2027-01-08",
+    departureTime: "10:00",
+    partySize: 4,
+  });
+  assert.ok(liveAvail.exactProductUrl.includes("d632-103974P5"));
+  assert.ok(liveAvail.exactProductUrl.includes("pid=P00306962"));
+  assert.ok(liveAvail.exactProductUrl.includes("mcid=42383"));
+
+  // 3d. Missing cutoff or mismatched option stops prepared handoff
+  const stoppedMissingCutoff = await preparePortDayTourCheckout({
+    portSlug: "cozumel",
+    productCode: "103974P5",
+    optionCode: "TG1",
+    date: "2027-01-08",
+    departureTime: "10:00",
+    partySize: 4,
+    sailingId: "royal-caribbean-symphony-of-the-seas-2027-01-03",
+    shipArrivalTime: "08:00",
+    // shipAllAboardTime omitted -> scheduled call has unconfirmed cutoff -> port_estimate -> stops handoff
+    travelerApprovedCheckout: true,
+    idempotencyKey: `qa-cozumel-missing-cutoff-${Date.now()}`,
+    isQaTraffic: true,
+  });
+  assert.equal(stoppedMissingCutoff.ok, false);
+  assert.equal(stoppedMissingCutoff.errorCode, "SAILING_FIT_NOT_VERIFIED");
+  assert.equal(stoppedMissingCutoff.outboundAffiliateUrl, null);
+  assert.equal(stoppedMissingCutoff.durableRecordCount, 0);
+
+  const stoppedMismatchedOption = await preparePortDayTourCheckout({
+    portSlug: "cozumel",
+    productCode: "103974P5",
+    optionCode: "TG999",
+    date: "2027-01-08",
+    departureTime: "10:00",
+    partySize: 4,
+    sailingId: "royal-caribbean-symphony-of-the-seas-2027-01-03",
+    shipArrivalTime: "08:00",
+    shipAllAboardTime: "17:00",
+    travelerApprovedCheckout: true,
+    idempotencyKey: `qa-cozumel-bad-option-${Date.now()}`,
+    isQaTraffic: true,
+  });
+  assert.equal(stoppedMismatchedOption.ok, false);
+  assert.equal(stoppedMismatchedOption.errorCode, "INVALID_CHECKOUT_SELECTION");
+  assert.equal(stoppedMismatchedOption.outboundAffiliateUrl, null);
+  assert.equal(stoppedMismatchedOption.durableRecordCount, 0);
+
+  const stoppedMismatchedDeparture = await preparePortDayTourCheckout({
+    portSlug: "cozumel",
+    productCode: "103974P5",
+    optionCode: "TG1",
+    date: "2027-01-08",
+    departureTime: "08:00",
+    partySize: 4,
+    sailingId: "royal-caribbean-symphony-of-the-seas-2027-01-03",
+    shipArrivalTime: "08:00",
+    shipAllAboardTime: "17:00",
+    travelerApprovedCheckout: true,
+    idempotencyKey: `qa-cozumel-bad-dep-${Date.now()}`,
+    isQaTraffic: true,
+  });
+  assert.equal(stoppedMismatchedDeparture.ok, false);
+  assert.equal(stoppedMismatchedDeparture.errorCode, "INVALID_CHECKOUT_SELECTION");
+  assert.equal(stoppedMismatchedDeparture.outboundAffiliateUrl, null);
+  assert.equal(stoppedMismatchedDeparture.durableRecordCount, 0);
+
+  // 3e. Prepared checkout handoff + retry with same idempotencyKey creates 1 durable record
+  const cozumelIdempotencyKey = `qa-cozumel-103974p5-tg1-20270108-${Date.now()}`;
+  const firstCozumelHandoff = await preparePortDayTourCheckout({
+    portSlug: "cozumel",
+    productCode: "103974P5",
+    optionCode: "TG1",
+    date: "2027-01-08",
+    departureTime: "10:00",
+    partySize: 4,
+    sailingId: "royal-caribbean-symphony-of-the-seas-2027-01-03",
+    shipArrivalTime: "08:00",
+    shipAllAboardTime: "17:00",
+    shipDepartureTime: "18:00",
+    travelerApprovedCheckout: true,
+    idempotencyKey: cozumelIdempotencyKey,
+    isQaTraffic: true,
+    originatingSite: "cruisepromenade.com",
+    surface: "cp_symphony_cozumel_2027_01_08",
+  });
+  assert.equal(firstCozumelHandoff.timeFit?.estimatedBackAtPierTime, "14:05");
+  if (firstCozumelHandoff.ok) {
+    assert.equal(firstCozumelHandoff.checkoutPrepared, true);
+    assert.equal(firstCozumelHandoff.duplicateSubmission, false);
+    assert.equal(firstCozumelHandoff.durableRecordCount, 1);
+    assert.ok(firstCozumelHandoff.outboundAffiliateUrl?.includes("/d632-103974P5"));
+    assert.ok(firstCozumelHandoff.outboundAffiliateUrl?.includes("pid=P00306962"));
+    assert.ok(firstCozumelHandoff.outboundAffiliateUrl?.includes("mcid=42383"));
+    assert.ok(firstCozumelHandoff.outboundAffiliateUrl?.includes("startDate=2027-01-08"));
+    assert.ok(firstCozumelHandoff.outboundAffiliateUrl?.includes("numTravelers=4"));
+    assert.deepEqual(
+      firstCozumelHandoff.viatorCheckoutFieldCarryover?.preboundByViatorWebLanding,
+      ["Exact Viator product 103974P5"]
+    );
+
+    const retryCozumelHandoff = await preparePortDayTourCheckout({
+      portSlug: "cozumel",
+      productCode: "103974P5",
+      optionCode: "TG1",
+      date: "2027-01-08",
+      departureTime: "10:00",
+      partySize: 4,
+      sailingId: "royal-caribbean-symphony-of-the-seas-2027-01-03",
+      shipArrivalTime: "08:00",
+      shipAllAboardTime: "17:00",
+      shipDepartureTime: "18:00",
+      travelerApprovedCheckout: true,
+      idempotencyKey: cozumelIdempotencyKey,
+      isQaTraffic: true,
+      originatingSite: "cruisepromenade.com",
+      surface: "cp_symphony_cozumel_2027_01_08",
+    });
+    assert.equal(retryCozumelHandoff.ok, true);
+    assert.equal(retryCozumelHandoff.duplicateSubmission, true);
+    assert.equal(retryCozumelHandoff.durableRecordCount, 1);
+    assert.equal(retryCozumelHandoff.handoffId, firstCozumelHandoff.handoffId);
+    assert.equal(retryCozumelHandoff.clickId, firstCozumelHandoff.clickId);
+    assert.equal(retryCozumelHandoff.outboundAffiliateUrl, firstCozumelHandoff.outboundAffiliateUrl);
+  }
+
+  const cozumelCarryover = buildViatorCarryoverTruth({
+    productCode: "103974P5",
+    optionCode: "TG1",
+    optionTitle: "Cozumel Snorkel Tour: Palancar, Columbia and Cielo Reefs",
+    startTime: "10:00",
+    date: "2027-01-08",
+    partySize: 4,
+    groupTotalUsd: 260,
+  });
+  assert.equal(cozumelCarryover.carriesOverAutomatically.productCode, "103974P5");
+  assert.equal(cozumelCarryover.carriesOverAutomatically.departureTimeOptionPreselectedOnViatorWeb, false);
+  assert.equal(cozumelCarryover.requiresTravelerConfirmationOnViator.optionCode, "TG1");
+  assert.equal(cozumelCarryover.requiresTravelerConfirmationOnViator.displayTime, "10:00 a.m.");
+
+  // ---------------------------------------------------------------------------
+  // 4. Both New Orleans paths (15200P6 / TG10 and 15200P1 / TG9) continue passing
+  // ---------------------------------------------------------------------------
+  const nola15200P6 = resolveApprovedCatalogCheckoutSpec({
+    portSlug: "new-orleans",
+    productCode: "15200P6",
+    optionCode: "TG10",
+    departureTime: "08:00",
+  });
+  assert.equal(nola15200P6.selectionApproved, true);
+
+  const nola15200P1 = resolveApprovedCatalogCheckoutSpec({
+    portSlug: "new-orleans",
+    productCode: "15200P1",
+    optionCode: "TG9",
+    departureTime: "09:40",
+  });
+  assert.equal(nola15200P1.selectionApproved, true);
+
+  // ---------------------------------------------------------------------------
+  // 5. MCP and OpenAPI updated together
+  // ---------------------------------------------------------------------------
+  const mcpDocRes = await mcpGet(new Request("https://www.destinationcommandcenter.com/api/v1/mcp"));
+  const mcpDoc = await mcpDocRes.json();
+  const mcpSearchTool = mcpDoc.tools.find((t: any) => t.name === "dcc_search_port_excursions");
+  const mcpCheckoutTool = mcpDoc.tools.find((t: any) => t.name === "dcc_prepare_tour_checkout");
+  assert.ok(mcpSearchTool.description.includes("632"));
+  assert.ok(mcpSearchTool.inputSchema.properties.datedBerth);
+  assert.ok(mcpSearchTool.inputSchema.properties.transfers);
+  assert.deepEqual(mcpCheckoutTool.inputSchema.properties.port.enum, ["new-orleans", "cozumel"]);
+  assert.deepEqual(mcpCheckoutTool.inputSchema.properties.productCode.enum, [
+    "15200P6",
+    "15200P1",
+    "103974P5",
+  ]);
+  assert.deepEqual(mcpCheckoutTool.inputSchema.properties.optionCode.enum, [
+    "TG10",
+    "TG9",
+    "TG2",
+    "TG6",
+    "TG7",
+    "TG1",
+  ]);
+  assert.ok(mcpDoc.runnableExamples.prepareCozumelTourCheckout);
+
+  const openApiRes = await openApiGet();
+  const openApiDoc = await openApiRes.json();
+  const getExcursionsOp = openApiDoc.paths["/api/v1/cruise/port-day-excursions"].get;
+  const postExcursionsOp = openApiDoc.paths["/api/v1/cruise/port-day-excursions"].post;
+  assert.ok(getExcursionsOp.summary.includes("632"));
+  assert.ok(getExcursionsOp.parameters.some((p: any) => p.name === "datedBerth"));
+  assert.ok(getExcursionsOp.parameters.some((p: any) => p.name === "transfers"));
+  assert.ok(
+    getExcursionsOp.responses["200"].content["application/json"].examples
+      .cozumelSymphonyOfTheSeasJan8NeedsVerificationUntilConfirmed
+  );
+  assert.ok(postExcursionsOp.description.includes("103974P5 / TG1"));
+});
+
+
 
 

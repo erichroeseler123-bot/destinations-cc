@@ -26,12 +26,20 @@ import { HREYFILL_REYKJAVIK_SHORE_EXCURSION_QUALIFICATION } from "@/lib/dcc/corr
 import { JUNEAU_PRODUCT_SUPPLIER_RECONCILIATION } from "@/lib/dcc/machine/v03/operatorDirectCheckout";
 import { fetchAvailabilitiesForItem } from "@/lib/dcc/liveSlots/fareharbor";
 import {
+  APPROVED_CATALOG_CHECKOUT_TOURS,
   PROVEN_NEW_ORLEANS_TOURS,
+  isCatalogTourPreparedCheckoutEnabled,
+  resolveApprovedCatalogCheckoutSpec,
   resolveNextEligibleTourOption,
   validateCatalogCheckoutBinding,
   buildViatorCarryoverTruth,
   type ViatorCarryoverTruth,
 } from "@/lib/dcc/catalog/provenToursCatalog";
+import {
+  getCruisePortDirectory,
+  getCruisePortViatorSearch,
+} from "@/lib/dcc/cruisePortDirectory";
+import portTourDestinations from "@/data/port-tour-destinations.json";
 
 export type PortDayExcursionViewMode = "browse_all" | "fits_sailing" | "shortlist_2h";
 
@@ -104,7 +112,8 @@ export interface CruisePortExcursionProfile {
     | "batch_1_reykjavik_maui"
     | "batch_2_alaska"
     | "batch_3_us_mainland_gulf"
-    | "batch_4_caribbean";
+    | "batch_4_caribbean"
+    | "batch_5_global_632_discovery";
   batchLabel: string;
   destinationSlug: string;
   viatorDestinationId: number;
@@ -113,6 +122,14 @@ export interface CruisePortExcursionProfile {
   defaultPierAddress: string;
   berthLat?: number;
   berthLng?: number;
+  hasDatedBerthEvidence?: boolean;
+  viatorSearchUrl?: string;
+  approvedProviderMapping?: {
+    provider: "viator";
+    destinationSlug: string;
+    viatorDestinationId: number | null;
+    viatorDestinationName: string | null;
+  };
   defaultSailingDate: string;
   defaultShipArrivalTime: string;
   defaultShipAllAboardTime: string;
@@ -350,6 +367,8 @@ export interface PortDayExcursionCatalogResponse {
     shipSlug?: string | null;
     shipName?: string | null;
     sailingId?: string | null;
+    timingStatus?: "verified" | "needs_verification";
+    missingTimingEvidence?: string[];
   };
   viewMode: PortDayExcursionViewMode;
   category: PortDayExcursionCategoryFilter;
@@ -857,6 +876,150 @@ export const AUTHORITATIVE_PORT_PROVIDER_COUNTS: Record<
   },
 };
 
+export const APPROVED_PORT_PROVIDER_DESTINATION_MAPPINGS: Record<string, string> = {
+  ...(portTourDestinations as Record<string, string>),
+  "fort-lauderdale": "miami",
+  "port-everglades": "miami",
+  "port-canaveral": "orlando",
+  anchorage: "seward",
+  whittier: "seward",
+  lahaina: "kahului",
+};
+
+const PORT_BERTH_COORDINATES: Record<string, { lat: number; lng: number }> = {
+  reykjavik: { lat: 64.1558, lng: -21.8697 }, // Skarfabakki Berths 312/313
+  kahului: { lat: 20.8961, lng: -156.4728 }, // Kahului Harbor Cruise Terminal Pier 1/2
+  lahaina: { lat: 20.8731, lng: -156.6791 }, // Lahaina Harbor Tender Pier
+  juneau: { lat: 58.2994, lng: -134.4067 }, // Juneau Cruise Ship Docks
+  skagway: { lat: 59.4506, lng: -135.3219 }, // Skagway Cruise Docks
+  ketchikan: { lat: 55.3422, lng: -131.6461 }, // Ketchikan Downtown Berths 1–4
+  seward: { lat: 60.1211, lng: -149.4339 }, // Seward Cruise Ship Terminal
+  anchorage: { lat: 61.2271, lng: -149.8926 }, // Port of Alaska (Anchorage)
+  whittier: { lat: 60.7746, lng: -148.6838 }, // Whittier Cruise Terminal
+  sitka: { lat: 57.0531, lng: -135.33 }, // Sitka Sound Cruise Terminal
+  "new-orleans": { lat: 29.9389, lng: -90.0619 }, // Erato/Julia Cruise Terminals (Port NOLA)
+  miami: { lat: 25.7781, lng: -80.1704 }, // PortMiami Dodge Island
+  "port-everglades": { lat: 26.0912, lng: -80.1189 }, // Port Everglades (Fort Lauderdale)
+  "fort-lauderdale": { lat: 26.0912, lng: -80.1189 }, // Port Everglades (Fort Lauderdale)
+  "port-canaveral": { lat: 28.4105, lng: -80.6186 }, // Port Canaveral Cruise Terminals
+  tampa: { lat: 27.9438, lng: -82.4452 }, // Port Tampa Bay Channelside
+  seattle: { lat: 47.6122, lng: -122.3508 }, // Pier 66 / Pier 91
+  vancouver: { lat: 49.2888, lng: -123.1111 }, // Canada Place Cruise Terminal
+  cozumel: { lat: 20.4767, lng: -86.9736 }, // Puerta Maya / International Pier
+  "costa-maya": { lat: 18.7161, lng: -87.7072 }, // Puerto Costa Maya Pier
+  progreso: { lat: 21.2892, lng: -89.6644 }, // Progreso Cruise Terminal
+  roatan: { lat: 16.3176, lng: -86.5378 }, // Port of Roatán / Mahogany Bay
+  nassau: { lat: 25.0805, lng: -77.3408 }, // Nassau Cruise Port (Prince George Wharf)
+  "st-thomas": { lat: 18.3315, lng: -64.9219 }, // WICO Havensight / Crown Bay
+  "grand-cayman": { lat: 19.2952, lng: -81.3831 }, // Royal Watler Tender Terminal
+  civitavecchia: { lat: 42.0942, lng: 11.7876 }, // Port of Civitavecchia (Rome)
+  livorno: { lat: 43.5536, lng: 10.3025 }, // Port of Livorno (Florence/Pisa)
+  piraeus: { lat: 37.9406, lng: 23.6331 }, // Port of Piraeus (Athens)
+  kusadasi: { lat: 37.8617, lng: 27.2564 }, // Ege Port Kuşadası (Ephesus)
+  "a-coruna": { lat: 43.3688, lng: -8.3973 }, // Muelle de Trasatlánticos, La Coruña
+};
+
+export const CONNECTED_CRUISE_PORT_COUNT = 632;
+
+let cachedConnectedPortProfiles: CruisePortExcursionProfile[] | null = null;
+
+export function getConnectedCruisePortProfiles(): CruisePortExcursionProfile[] {
+  if (cachedConnectedPortProfiles) {
+    return cachedConnectedPortProfiles;
+  }
+  const batchBySlug = new Map(
+    MAPPED_CRUISE_PORT_EXCURSION_PROFILES.map((p) => [p.portSlug, p])
+  );
+  batchBySlug.set(
+    "portmiami",
+    MAPPED_CRUISE_PORT_EXCURSION_PROFILES.find((p) => p.portSlug === "miami")!
+  );
+  batchBySlug.set(
+    "george-town-grand-cayman",
+    MAPPED_CRUISE_PORT_EXCURSION_PROFILES.find((p) => p.portSlug === "grand-cayman")!
+  );
+  const directoryEntries = getCruisePortDirectory();
+  const connected: CruisePortExcursionProfile[] = directoryEntries.map((entry) => {
+    const batchProfile = batchBySlug.get(entry.slug);
+    const viatorSearchUrl = getCruisePortViatorSearch(entry);
+    if (batchProfile) {
+      const coords = PORT_BERTH_COORDINATES[batchProfile.portSlug];
+      return {
+        ...batchProfile,
+        berthLat: batchProfile.berthLat ?? coords?.lat ?? entry.lat,
+        berthLng: batchProfile.berthLng ?? coords?.lng ?? entry.lon ?? entry.lng,
+        hasDatedBerthEvidence: true,
+        viatorSearchUrl,
+        approvedProviderMapping: {
+          provider: "viator",
+          destinationSlug: batchProfile.destinationSlug,
+          viatorDestinationId: batchProfile.viatorDestinationId,
+          viatorDestinationName: batchProfile.viatorDestinationName,
+        },
+      };
+    }
+
+    const mappedDestinationSlug =
+      APPROVED_PORT_PROVIDER_DESTINATION_MAPPINGS[entry.slug] ||
+      resolveEarthOSDestinationNode(entry.slug)?.destinationSlug ||
+      entry.slug;
+    const mappedBatch = MAPPED_CRUISE_PORT_EXCURSION_PROFILES.find(
+      (p) => p.destinationSlug === mappedDestinationSlug
+    );
+    const coords =
+      PORT_BERTH_COORDINATES[entry.slug] ||
+      (typeof entry.lat === "number" && typeof (entry.lon ?? entry.lng) === "number"
+        ? { lat: entry.lat, lng: (entry.lon ?? entry.lng)! }
+        : PORT_BERTH_COORDINATES[mappedDestinationSlug]);
+    const viatorDestId =
+      entry.viatorDestination?.id ?? mappedBatch?.viatorDestinationId ?? 0;
+    const viatorDestName =
+      entry.viatorDestination?.name ?? mappedBatch?.viatorDestinationName ?? entry.name;
+
+    return {
+      portSlug: entry.slug,
+      portName: entry.name,
+      country: entry.country || entry.area || "International",
+      batch: "batch_5_global_632_discovery",
+      batchLabel: "Batch 5 — Global 632-Port Discovery Directory",
+      destinationSlug: mappedDestinationSlug,
+      viatorDestinationId: viatorDestId,
+      viatorDestinationName: viatorDestName,
+      defaultPierName: `${entry.name} Cruise Terminal (Dated Berth Needs Verification)`,
+      defaultPierAddress: `${entry.name}${entry.country ? `, ${entry.country}` : ""}`,
+      berthLat: coords?.lat,
+      berthLng: coords?.lng,
+      hasDatedBerthEvidence: false,
+      viatorSearchUrl,
+      approvedProviderMapping: {
+        provider: "viator",
+        destinationSlug: mappedDestinationSlug,
+        viatorDestinationId: viatorDestId > 0 ? viatorDestId : null,
+        viatorDestinationName: viatorDestName || null,
+      },
+      defaultSailingDate: mappedBatch?.defaultSailingDate || "2027-07-15",
+      defaultShipArrivalTime: mappedBatch?.defaultShipArrivalTime || "08:00",
+      defaultShipAllAboardTime: mappedBatch?.defaultShipAllAboardTime || "16:30",
+      defaultShipDepartureTime: mappedBatch?.defaultShipDepartureTime || "17:00",
+      defaultOneWayPierTransferMinutes: mappedBatch?.defaultOneWayPierTransferMinutes || 20,
+      defaultCheckInCutoffMinutes: mappedBatch?.defaultCheckInCutoffMinutes || 15,
+      requiredReturnBufferMinutes: mappedBatch?.requiredReturnBufferMinutes || 60,
+    };
+  });
+
+  cachedConnectedPortProfiles = connected;
+  return connected;
+}
+
+function normalizePortLookupToken(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 export function resolveCruisePortExcursionProfile(
   rawPortSlugOrAlias: string | undefined | null
 ): CruisePortExcursionProfile | null {
@@ -867,61 +1030,88 @@ export function resolveCruisePortExcursionProfile(
     .toLowerCase();
   if (!s) return null;
 
-  const direct = MAPPED_CRUISE_PORT_EXCURSION_PROFILES.find((p) => p.portSlug === s);
+  const allProfiles = getConnectedCruisePortProfiles();
+  const normalizedSlug = normalizePortLookupToken(s);
+
+  // 1. Exact slug match in the 632-port connected directory (including the 15 batch ports)
+  const direct =
+    allProfiles.find((p) => p.portSlug === s) ||
+    allProfiles.find((p) => p.portSlug === normalizedSlug);
   if (direct) return direct;
 
+  // 2. Common aliases for the 15 berth-verified batch ports
   if (s.includes("reykjavik")) {
-    return MAPPED_CRUISE_PORT_EXCURSION_PROFILES.find((p) => p.portSlug === "reykjavik")!;
+    return allProfiles.find((p) => p.portSlug === "reykjavik")!;
   }
-  if (s.includes("kahului") || s.includes("maui")) {
-    return MAPPED_CRUISE_PORT_EXCURSION_PROFILES.find((p) => p.portSlug === "kahului")!;
+  if (s.includes("kahului") || s === "maui" || s === "maui-kahului") {
+    return allProfiles.find((p) => p.portSlug === "kahului")!;
   }
   if (s.includes("juneau")) {
-    return MAPPED_CRUISE_PORT_EXCURSION_PROFILES.find((p) => p.portSlug === "juneau")!;
+    return allProfiles.find((p) => p.portSlug === "juneau")!;
   }
   if (s.includes("skagway")) {
-    return MAPPED_CRUISE_PORT_EXCURSION_PROFILES.find((p) => p.portSlug === "skagway")!;
+    return allProfiles.find((p) => p.portSlug === "skagway")!;
   }
   if (s.includes("ketchikan")) {
-    return MAPPED_CRUISE_PORT_EXCURSION_PROFILES.find((p) => p.portSlug === "ketchikan")!;
+    return allProfiles.find((p) => p.portSlug === "ketchikan")!;
   }
   if (s.includes("seward")) {
-    return MAPPED_CRUISE_PORT_EXCURSION_PROFILES.find((p) => p.portSlug === "seward")!;
+    return allProfiles.find((p) => p.portSlug === "seward")!;
   }
   if (s.includes("new-orleans") || s.includes("new orleans") || s === "nola") {
-    return MAPPED_CRUISE_PORT_EXCURSION_PROFILES.find((p) => p.portSlug === "new-orleans")!;
+    return allProfiles.find((p) => p.portSlug === "new-orleans")!;
   }
   if (s.includes("miami")) {
-    return MAPPED_CRUISE_PORT_EXCURSION_PROFILES.find((p) => p.portSlug === "miami")!;
+    return allProfiles.find((p) => p.portSlug === "miami")!;
   }
   if (s.includes("tampa")) {
-    return MAPPED_CRUISE_PORT_EXCURSION_PROFILES.find((p) => p.portSlug === "tampa")!;
+    return allProfiles.find((p) => p.portSlug === "tampa")!;
   }
   if (s.includes("seattle")) {
-    return MAPPED_CRUISE_PORT_EXCURSION_PROFILES.find((p) => p.portSlug === "seattle")!;
+    return allProfiles.find((p) => p.portSlug === "seattle")!;
   }
   if (s.includes("cozumel")) {
-    return MAPPED_CRUISE_PORT_EXCURSION_PROFILES.find((p) => p.portSlug === "cozumel")!;
+    return allProfiles.find((p) => p.portSlug === "cozumel")!;
   }
   if (s.includes("roatan")) {
-    return MAPPED_CRUISE_PORT_EXCURSION_PROFILES.find((p) => p.portSlug === "roatan")!;
+    return allProfiles.find((p) => p.portSlug === "roatan")!;
   }
   if (s.includes("nassau")) {
-    return MAPPED_CRUISE_PORT_EXCURSION_PROFILES.find((p) => p.portSlug === "nassau")!;
+    return allProfiles.find((p) => p.portSlug === "nassau")!;
   }
   if (s.includes("st-thomas") || s.includes("st thomas") || s.includes("charlotte amalie")) {
-    return MAPPED_CRUISE_PORT_EXCURSION_PROFILES.find((p) => p.portSlug === "st-thomas")!;
+    return allProfiles.find((p) => p.portSlug === "st-thomas")!;
   }
   if (s.includes("grand-cayman") || s.includes("grand cayman") || s.includes("george town")) {
-    return MAPPED_CRUISE_PORT_EXCURSION_PROFILES.find((p) => p.portSlug === "grand-cayman")!;
+    return allProfiles.find((p) => p.portSlug === "grand-cayman")!;
+  }
+
+  // 3. Name, alias, or portCode lookup across all 632 directory entries
+  const directoryEntries = getCruisePortDirectory();
+  for (const entry of directoryEntries) {
+    if (normalizePortLookupToken(entry.name) === normalizedSlug) {
+      return allProfiles.find((p) => p.portSlug === entry.slug) || null;
+    }
+    if (
+      Array.isArray(entry.aliases) &&
+      entry.aliases.some(
+        (a) => a.trim().toLowerCase() === s || normalizePortLookupToken(a) === normalizedSlug
+      )
+    ) {
+      return allProfiles.find((p) => p.portSlug === entry.slug) || null;
+    }
+    if (
+      Array.isArray(entry.sources) &&
+      entry.sources.some((src) => src.portCode?.trim().toLowerCase() === s)
+    ) {
+      return allProfiles.find((p) => p.portSlug === entry.slug) || null;
+    }
   }
 
   const node = resolveEarthOSDestinationNode(s);
   if (node) {
     return (
-      MAPPED_CRUISE_PORT_EXCURSION_PROFILES.find(
-        (p) => p.destinationSlug === node.destinationSlug
-      ) || null
+      allProfiles.find((p) => p.destinationSlug === node.destinationSlug) || null
     );
   }
   return null;
@@ -1069,24 +1259,6 @@ function extractVerifiedCandidateDepartures(
     departureEvidenceSource: evidenceSource,
   };
 }
-
-const PORT_BERTH_COORDINATES: Record<string, { lat: number; lng: number }> = {
-  reykjavik: { lat: 64.1558, lng: -21.8697 }, // Skarfabakki Berths 312/313
-  kahului: { lat: 20.8961, lng: -156.4728 }, // Kahului Harbor Cruise Terminal Pier 1/2
-  juneau: { lat: 58.2994, lng: -134.4067 }, // Juneau Cruise Ship Docks
-  skagway: { lat: 59.4506, lng: -135.3219 }, // Skagway Cruise Docks
-  ketchikan: { lat: 55.3422, lng: -131.6461 }, // Ketchikan Downtown Berths 1–4
-  seward: { lat: 60.1211, lng: -149.4339 }, // Seward Cruise Ship Terminal
-  "new-orleans": { lat: 29.9389, lng: -90.0619 }, // Erato/Julia Cruise Terminals (Port NOLA)
-  miami: { lat: 25.7781, lng: -80.1704 }, // PortMiami Dodge Island
-  tampa: { lat: 27.9438, lng: -82.4452 }, // Port Tampa Bay Channelside
-  seattle: { lat: 47.6122, lng: -122.3508 }, // Pier 66 / Pier 91
-  cozumel: { lat: 20.4767, lng: -86.9736 }, // Puerta Maya / International Pier
-  roatan: { lat: 16.3176, lng: -86.5378 }, // Port of Roatán / Mahogany Bay
-  nassau: { lat: 25.0805, lng: -77.3408 }, // Nassau Cruise Port (Prince George Wharf)
-  "st-thomas": { lat: 18.3315, lng: -64.9219 }, // WICO Havensight / Crown Bay
-  "grand-cayman": { lat: 19.2952, lng: -81.3831 }, // Royal Watler Tender Terminal
-};
 
 export function resolvePortBerthCoordinates(profile: CruisePortExcursionProfile): {
   lat: number;
@@ -1529,6 +1701,23 @@ export const SCHEDULED_CRUISE_PORT_CALLS: ScheduledCruisePortCall[] = [
     allAboardTime: "16:30",
     departureTime: "17:00",
   },
+  // Symphony of the Seas — 7-Night Western Caribbean (Jan 3, 2027 sailing, Day 6 Cozumel on Jan 8, 2027; arrival 08:00, departure 18:00, all-aboard cutoff requires confirmation)
+  {
+    sailingId: "royal-caribbean-symphony-of-the-seas-2027-01-03",
+    sailingAliases: [
+      "SYMPHONY-2027-01-03",
+      "symphony-of-the-seas-2027-01-03",
+      "symphony-of-the-seas-2027-01-08",
+      "symphony-of-the-seas-20270103",
+    ],
+    shipName: "Symphony of the Seas",
+    shipSlug: "symphony-of-the-seas",
+    portSlug: "cozumel",
+    sailingDate: "2027-01-08",
+    arrivalTime: "08:00",
+    allAboardTime: "",
+    departureTime: "18:00",
+  },
 ];
 
 function normalizeShipSlug(input: string | undefined | null): string {
@@ -1537,6 +1726,18 @@ function normalizeShipSlug(input: string | undefined | null): string {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
+}
+
+function isExplicitMissingToken(value: string | undefined | null): boolean {
+  if (typeof value !== "string") return false;
+  const norm = value.trim().toLowerCase();
+  return (
+    norm === "missing" ||
+    norm === "unknown" ||
+    norm === "unverified" ||
+    norm === "pending_confirmation" ||
+    norm === "none"
+  );
 }
 
 export function resolveScheduledPortCall(params: {
@@ -1570,6 +1771,7 @@ export function resolveScheduledPortCall(params: {
   const rawDate = params.sailingDate ? String(params.sailingDate).trim() : null;
   const explicitArrivalMin = parseHhMm(params.shipArrivalTime);
   const explicitAllAboardMin = parseHhMm(params.shipAllAboardTime);
+  const explicitAllAboardMissing = isExplicitMissingToken(params.shipAllAboardTime);
   const explicitDepartureMin = parseHhMm(params.shipDepartureTime);
   const hasExplicitDepartureParam =
     typeof params.shipDepartureTime === "string" && params.shipDepartureTime.trim().length > 0;
@@ -1603,17 +1805,21 @@ export function resolveScheduledPortCall(params: {
   if (rawSailingId || rawShipSlug || rawDate) {
     if (candidates.length === 1) {
       const candidate = candidates[0];
+      const candidateArrivalMin = parseHhMm(candidate.arrivalTime);
+      const candidateAllAboardMin = parseHhMm(candidate.allAboardTime);
       // If only date was provided (no sailingId/shipSlug) and caller passed custom arrival/all-aboard that conflict with the candidate, do not assume that ship's schedule
       const arrivalConflict =
         !rawSailingId &&
         !rawShipSlug &&
         explicitArrivalMin !== null &&
-        parseHhMm(candidate.arrivalTime) !== explicitArrivalMin;
+        candidateArrivalMin !== null &&
+        candidateArrivalMin !== explicitArrivalMin;
       const allAboardConflict =
         !rawSailingId &&
         !rawShipSlug &&
         explicitAllAboardMin !== null &&
-        parseHhMm(candidate.allAboardTime) !== explicitAllAboardMin;
+        candidateAllAboardMin !== null &&
+        candidateAllAboardMin !== explicitAllAboardMin;
       if (!arrivalConflict && !allAboardConflict) {
         matchedPortCall = candidate;
       }
@@ -1634,8 +1840,9 @@ export function resolveScheduledPortCall(params: {
       : matchedPortCall?.arrivalTime
         ? "scheduled_port_call"
         : "port_estimate";
-  const allAboardTimeSource: PortDayWindowTimeSource =
-    explicitAllAboardMin !== null
+  const allAboardTimeSource: PortDayWindowTimeSource = explicitAllAboardMissing
+    ? "port_estimate"
+    : explicitAllAboardMin !== null
       ? "request_param"
       : matchedPortCall?.allAboardTime
         ? "scheduled_port_call"
@@ -1645,8 +1852,9 @@ export function resolveScheduledPortCall(params: {
     explicitArrivalMin !== null
       ? formatHhMm(explicitArrivalMin)
       : matchedPortCall?.arrivalTime || profile.defaultShipArrivalTime;
-  const resolvedAllAboardTime =
-    explicitAllAboardMin !== null
+  const resolvedAllAboardTime = explicitAllAboardMissing
+    ? profile.defaultShipAllAboardTime
+    : explicitAllAboardMin !== null
       ? formatHhMm(explicitAllAboardMin)
       : matchedPortCall?.allAboardTime || profile.defaultShipAllAboardTime;
   const shipArrivalTimeLabel =
@@ -1743,19 +1951,27 @@ export function evaluateTourPortDayTimeFit(params: {
   shipDepartureTime?: string | null;
   departureTimeSource?: PortDayDepartureTimeSource;
   optionCode?: string | null;
+  requestedDepartureTime?: string | null;
   sailingDate?: string | null;
+  datedBerth?: string | null;
+  transfers?: string | null;
   dockOrTender?: PortDayDockOrTender | string | null;
   tenderTravelMinutes?: number | null;
   tenderCutoffMinutes?: number | null;
 }): PortDayTimeFitEvaluation {
   const { rec, profile } = params;
   const arrivalTime = params.shipArrivalTime || profile.defaultShipArrivalTime;
-  const allAboardTime = params.shipAllAboardTime || profile.defaultShipAllAboardTime;
+  const explicitMissingAllAboard = isExplicitMissingToken(params.shipAllAboardTime);
+  const allAboardTime =
+    !explicitMissingAllAboard && params.shipAllAboardTime
+      ? params.shipAllAboardTime
+      : profile.defaultShipAllAboardTime;
   const arrivalTimeSource: PortDayWindowTimeSource =
     params.arrivalTimeSource || (params.shipArrivalTime ? "request_param" : "port_estimate");
-  const allAboardTimeSource: PortDayWindowTimeSource =
-    params.allAboardTimeSource ||
-    (params.shipAllAboardTime ? "request_param" : "port_estimate");
+  const allAboardTimeSource: PortDayWindowTimeSource = explicitMissingAllAboard
+    ? "port_estimate"
+    : params.allAboardTimeSource ||
+      (params.shipAllAboardTime ? "request_param" : "port_estimate");
   const shipArrivalTimeLabel =
     arrivalTimeSource === "port_estimate"
       ? `${arrivalTime} (port estimate)`
@@ -1835,7 +2051,7 @@ export function evaluateTourPortDayTimeFit(params: {
 
   const recCodeUpper = String(rec.providerProductCode || "").trim().toUpperCase();
   const autoResolvedOptionCode =
-    !params.optionCode && (recCodeUpper === "15200P1" || recCodeUpper === "15200P6")
+    !params.optionCode && Boolean(resolveApprovedCatalogCheckoutSpec(recCodeUpper))
       ? resolveNextEligibleTourOption({
           productCode: recCodeUpper,
           date: params.sailingDate || null,
@@ -1881,7 +2097,13 @@ export function evaluateTourPortDayTimeFit(params: {
     Number.isFinite(checkInCutoffMinutes) &&
     Boolean(checkInEvidenceSource);
 
-  // 3. Exact meeting point evidence (never fall back to port profile default pier)
+  // 3. Exact meeting point & dated berth evidence (never fall back to port profile default pier)
+  const isGatedCozumel103974P5 =
+    recCodeUpper === "103974P5" && !isCatalogTourPreparedCheckoutEnabled("103974P5");
+  const hasDatedBerth =
+    !isGatedCozumel103974P5 &&
+    profile.hasDatedBerthEvidence !== false &&
+    !isExplicitMissingToken(params.datedBerth);
   const rawMeetingPointName =
     chosenOption?.meetingPointName ||
     rec.meetingPointName ||
@@ -1896,6 +2118,7 @@ export function evaluateTourPortDayTimeFit(params: {
       ? rec.meetingPointAddress.trim()
       : null;
   const hasVerifiedMeetingPoint =
+    !isGatedCozumel103974P5 &&
     Boolean(meetingPointName) &&
     Boolean(
       (chosenOption?.applicableBerthOrMeetingPoint &&
@@ -1910,16 +2133,25 @@ export function evaluateTourPortDayTimeFit(params: {
     ? `product_logistics_meeting_point:${rec.providerProductCode || rec.tourId}`
     : null;
 
-  // 4. Exact pier <-> meeting point transfer evidence (never fall back to planningEstimate or port default)
+  // 4. Exact pier <-> meeting point transfer evidence for the actual route (never fall back to planningEstimate, port default, or coordinate proximity alone)
   const sd = (rec.serviceDetails || {}) as Record<string, any>;
   const transferSource =
     chosenOption?.transferTimeSource || rec.constraints?.transferTimeSource || "unknown";
+  const explicitTransferOverride =
+    params.transfers &&
+    !isExplicitMissingToken(params.transfers) &&
+    Number.isFinite(Number(params.transfers)) &&
+    Number(params.transfers) >= 0
+      ? Math.round(Number(params.transfers))
+      : null;
   const rawTransferBefore =
+    explicitTransferOverride ??
     chosenOption?.transferBeforeMinutes ??
     sd.transferBeforeMinutes ??
     rec.constraints?.cruiseBufferBeforeMinutes ??
     null;
   const rawTransferAfter =
+    explicitTransferOverride ??
     chosenOption?.transferAfterMinutes ??
     sd.transferAfterMinutes ??
     rec.constraints?.cruiseBufferAfterMinutes ??
@@ -1930,7 +2162,14 @@ export function evaluateTourPortDayTimeFit(params: {
     rec.constraints?.transferEvidenceSource ||
     null;
 
+  const hasRoutePortMatch =
+    (!rec.portSlug || rec.portSlug.toLowerCase() === profile.portSlug.toLowerCase()) &&
+    !isExplicitMissingToken(params.transfers);
+
   const hasVerifiedTransfer =
+    !isGatedCozumel103974P5 &&
+    hasDatedBerth &&
+    hasRoutePortMatch &&
     (transferSource === "verified_pier_pickup" ||
       transferSource === "verified_meeting_point") &&
     typeof rawTransferBefore === "number" &&
@@ -1957,6 +2196,9 @@ export function evaluateTourPortDayTimeFit(params: {
         : null;
 
   const missingFields: string[] = [];
+  if (!hasDatedBerth) {
+    missingFields.push("datedBerth");
+  }
   if (!hasVerifiedDeparture) {
     missingFields.push("departure");
   }
@@ -1990,6 +2232,7 @@ export function evaluateTourPortDayTimeFit(params: {
       tenderCutoffMinutes !== null);
 
   const hasVerifiedReturnBuffer =
+    hasDatedBerth &&
     hasVerifiedDeparture &&
     hasVerifiedCheckIn &&
     hasVerifiedMeetingPoint &&
@@ -2162,7 +2405,14 @@ export function evaluateTourPortDayTimeFit(params: {
     }
   }
 
-  const selectedDep = fittingDepartures[0] || departures[0];
+  const normalizedRequestedDep =
+    params.requestedDepartureTime && parseHhMm(params.requestedDepartureTime) !== null
+      ? formatHhMm(parseHhMm(params.requestedDepartureTime)!)
+      : null;
+  const selectedDep =
+    normalizedRequestedDep && departures.includes(normalizedRequestedDep)
+      ? normalizedRequestedDep
+      : fittingDepartures[0] || departures[0];
   const selectedDepMin = parseHhMm(selectedDep) ?? 540;
   const checkInMin = selectedDepMin - checkInCutoffMinutes;
   const leavePierMin = checkInMin - pierToMeetingMinutes;
@@ -2632,12 +2882,12 @@ export async function verifyLiveExcursionAvailability(params: {
   const partySize = Math.max(1, Number(params.partySize) || 2);
   const rawDate = String(params.date || "").trim();
 
-  const isProvenNolaTour = codeUpper === "15200P1" || codeUpper === "15200P6";
+  const isCatalogApprovedTour = Boolean(resolveApprovedCatalogCheckoutSpec(codeUpper));
   const shouldAutoResolveOption =
-    isProvenNolaTour &&
+    isCatalogApprovedTour &&
     (params.autoSelectNextDeparture === true || (!params.optionCode && !params.departureTime));
 
-  const nextEligibleResolution = isProvenNolaTour
+  const nextEligibleResolution = isCatalogApprovedTour
     ? resolveNextEligibleTourOption({
         productCode: codeUpper,
         date: rawDate || null,
@@ -3155,6 +3405,8 @@ export async function queryPortDayExcursionCatalog(params: {
   partySize?: number;
   ship?: string;
   cruiseSailDate?: string;
+  datedBerth?: string | null;
+  transfers?: string | null;
   dockOrTender?: PortDayDockOrTender | string | null;
   tenderTravelMinutes?: number | null;
   tenderCutoffMinutes?: number | null;
@@ -3225,6 +3477,8 @@ export async function queryPortDayExcursionCatalog(params: {
       allAboardTimeSource: portCallResolution.allAboardTimeSource,
       shipDepartureTime,
       departureTimeSource,
+      datedBerth: params.datedBerth,
+      transfers: params.transfers,
       dockOrTender: params.dockOrTender,
       tenderTravelMinutes: params.tenderTravelMinutes,
       tenderCutoffMinutes: params.tenderCutoffMinutes,
@@ -3440,6 +3694,21 @@ export async function queryPortDayExcursionCatalog(params: {
           currentActiveInventoryExplanation: `Live SQL inventory in dcc_tour_catalog has ${totalImportedForPort} active products (${activeViatorCount} Viator + ${activeOperatorDirectCount} operator_direct out of ${authorizedSourceTotal} authorized source products; coverage ${coveragePercent}%).`,
         };
 
+  const portHasDatedBerth =
+    profile.hasDatedBerthEvidence !== false &&
+    !isExplicitMissingToken(params.datedBerth);
+  const portHasTransfers =
+    portHasDatedBerth &&
+    profile.destinationSlug === profile.portSlug &&
+    !isExplicitMissingToken(params.transfers);
+  const portHasConfirmedAllAboard =
+    portCallResolution.allAboardTimeSource !== "port_estimate" &&
+    !isExplicitMissingToken(params.shipAllAboardTime);
+  const portMissingTimingEvidence: string[] = [];
+  if (!portHasDatedBerth) portMissingTimingEvidence.push("datedBerth");
+  if (!portHasTransfers) portMissingTimingEvidence.push("transfers");
+  if (!portHasConfirmedAllAboard) portMissingTimingEvidence.push("allAboard");
+
   return {
     ok: true,
     generatedAt: new Date().toISOString(),
@@ -3459,6 +3728,9 @@ export async function queryPortDayExcursionCatalog(params: {
       shipSlug: portCallResolution.shipSlug,
       shipName: portCallResolution.shipName,
       sailingId: portCallResolution.sailingId,
+      timingStatus:
+        portMissingTimingEvidence.length > 0 ? "needs_verification" : "verified",
+      missingTimingEvidence: portMissingTimingEvidence,
     },
     viewMode,
     category,
@@ -3641,6 +3913,8 @@ export interface PreparePortDayTourCheckoutParams {
   shipArrivalTime?: string | null;
   shipAllAboardTime?: string | null;
   shipDepartureTime?: string | null;
+  datedBerth?: string | null;
+  transfers?: string | null;
   callerClientId?: string | null;
   originatingSite?: string | null;
   surface?: string | null;
@@ -3743,49 +4017,79 @@ export async function preparePortDayTourCheckout(
     return reject("IDEMPOTENCY_KEY_REQUIRED", "Provide an idempotency key of at most 128 characters.");
   }
 
-  const port = params.portSlug?.trim().toLowerCase();
-  const productCode = params.productCode?.trim().toUpperCase();
-  const optionCode = params.optionCode?.trim().toUpperCase();
+  const port = params.portSlug?.trim().toLowerCase() || "";
+  const productCode = params.productCode?.trim().toUpperCase() || "";
+  const optionCode = params.optionCode?.trim().toUpperCase() || "";
   const date = params.date?.trim() || "";
   const dateAtUtcMidnight = new Date(`${date}T00:00:00Z`);
   const departureMinutes = parseHhMm(params.departureTime);
   const departureTime = departureMinutes === null ? null : formatHhMm(departureMinutes);
   const partySize = params.partySize;
-  const ALLOWED_15200P1_OPTIONS: Record<string, string> = {
-    TG9: "09:40",
-    TG2: "12:10",
-    TG6: "14:10",
-    TG7: "16:15",
-  };
-  if (port !== "new-orleans" || (productCode !== "15200P6" && productCode !== "15200P1")) {
+
+  const approvedSpec = resolveApprovedCatalogCheckoutSpec(productCode);
+  if (
+    !port ||
+    !productCode ||
+    !approvedSpec ||
+    !approvedSpec.productApproved ||
+    approvedSpec.portSlug !== port ||
+    !approvedSpec.canonicalProductUrl ||
+    !approvedSpec.provider
+  ) {
     return reject(
       "UNSUPPORTED_CHECKOUT_PRODUCT",
-      "Checkout is available for New Orleans 15200P6 / TG10 and 15200P1 (TG9, TG2, TG6, TG7)."
+      "Checkout is available for catalog-approved products: New Orleans 15200P6 (TG10), New Orleans 15200P1 (TG9, TG2, TG6, TG7), and Cozumel 103974P5 (TG1)."
     );
   }
-  const isValid15200P6 = productCode === "15200P6" && optionCode === "TG10" && departureTime === "08:00";
-  const isValid15200P1 =
-    productCode === "15200P1" &&
-    Boolean(optionCode && ALLOWED_15200P1_OPTIONS[optionCode] === departureTime);
+
+  const affiliate = getViatorPublicConfig();
+  const destinationUrl = new URL(approvedSpec.canonicalProductUrl);
+  destinationUrl.searchParams.set("mcid", affiliate.mcid);
+
+  const catalogBinding = validateCatalogCheckoutBinding({
+    provider: approvedSpec.provider,
+    providerAccount: affiliate.pid,
+    mcid: affiliate.mcid,
+    portSlug: port,
+    productCode,
+    optionCode,
+    departureTime,
+    checkoutDestinationUrl: destinationUrl.toString(),
+  });
+
   if (
     !optionCode ||
     !departureTime ||
-    (!isValid15200P6 && !isValid15200P1) ||
-    !/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isFinite(dateAtUtcMidnight.getTime()) ||
+    !catalogBinding.approved ||
+    !/^\d{4}-\d{2}-\d{2}$/.test(date) ||
+    !Number.isFinite(dateAtUtcMidnight.getTime()) ||
     dateAtUtcMidnight.toISOString().slice(0, 10) !== date ||
-    typeof partySize !== "number" || !Number.isInteger(partySize) || partySize < 1 || partySize > 15
+    typeof partySize !== "number" ||
+    !Number.isInteger(partySize) ||
+    partySize < 1 ||
+    partySize > 15
   ) {
     return reject(
-      "INVALID_CHECKOUT_SELECTION",
-      productCode === "15200P1"
-        ? "Provide a verified 15200P1 option (TG9 at 09:40, TG2 at 12:10, TG6 at 14:10, or TG7 at 16:15), a valid port date, and 1 to 15 adult travelers."
-        : "Provide TG10, a valid port date, the 08:00 departure, and 1 to 15 adult travelers."
+      catalogBinding.errorCode === "UNSUPPORTED_CHECKOUT_PRODUCT"
+        ? "UNSUPPORTED_CHECKOUT_PRODUCT"
+        : "INVALID_CHECKOUT_SELECTION",
+      catalogBinding.reason ||
+        (productCode === "15200P1"
+          ? "Provide a verified 15200P1 option (TG9 at 09:40, TG2 at 12:10, TG6 at 14:10, or TG7 at 16:15), a valid port date, and 1 to 15 adult travelers."
+          : productCode === "103974P5"
+            ? "Provide Cozumel 103974P5 option TG1 (at 10:00, 12:00, or 14:00), a valid port date, and 1 to 15 adult travelers."
+            : "Provide TG10, a valid port date, the 08:00 departure, and 1 to 15 adult travelers.")
     );
   }
 
   const profile = resolveCruisePortExcursionProfile(port)!;
   const rec = await getDurableTourByIdOrAlias(productCode);
-  if (!rec?.active || rec.primaryProvider !== "viator" || rec.providerProductCode !== productCode || !rec.commissionAuthorized) {
+  if (
+    !rec?.active ||
+    rec.primaryProvider !== approvedSpec.provider ||
+    rec.providerProductCode !== approvedSpec.productCode ||
+    !rec.commissionAuthorized
+  ) {
     return reject("UNSUPPORTED_CHECKOUT_PRODUCT", "The authorized Viator product is unavailable in the catalog.");
   }
 
@@ -3816,15 +4120,45 @@ export async function preparePortDayTourCheckout(
     sailingId: window.sailingId,
   };
 
-  const timeFit = evaluateTourPortDayTimeFit({ rec, profile, ...sailingWindow, optionCode });
-  const hasMatchedSailing = Boolean(window.matchedPortCall && (params.sailingId || params.shipSlug || params.ship));
-  const hasSuppliedTimes = parseHhMm(params.shipArrivalTime) !== null && parseHhMm(params.shipAllAboardTime) !== null;
+  const timeFit = evaluateTourPortDayTimeFit({
+    rec,
+    profile,
+    ...sailingWindow,
+    optionCode,
+    requestedDepartureTime: departureTime,
+    datedBerth: params.datedBerth,
+    transfers: params.transfers,
+  });
+  const hasMatchedSailing = Boolean(
+    window.matchedPortCall && (params.sailingId || params.shipSlug || params.ship)
+  );
+  const hasSuppliedTimes =
+    parseHhMm(params.shipArrivalTime) !== null &&
+    parseHhMm(params.shipAllAboardTime) !== null &&
+    !isExplicitMissingToken(params.shipAllAboardTime);
+  const hasConfirmedAllAboardCutoff =
+    window.allAboardTimeSource !== "port_estimate" &&
+    !isExplicitMissingToken(params.shipAllAboardTime);
+  if (!approvedSpec.preparedCheckoutEnabled) {
+    return reject(
+      "SAILING_FIT_NOT_VERIFIED",
+      approvedSpec.checkoutGateReason ||
+        "Prepared checkout for this catalog product is gated until meeting pin, berth transfer, and all-aboard timing evidence are confirmed.",
+      { sailingWindow, timeFit }
+    );
+  }
   if (
     (!hasMatchedSailing && !hasSuppliedTimes) ||
-    timeFit.status !== "fits" || timeFit.selectedOptionCode !== optionCode ||
+    !hasConfirmedAllAboardCutoff ||
+    timeFit.status !== "fits" ||
+    timeFit.selectedOptionCode !== optionCode ||
     timeFit.selectedDepartureTime !== departureTime
   ) {
-    return reject("SAILING_FIT_NOT_VERIFIED", "This departure requires a verified sailing window and time fit.", { sailingWindow, timeFit });
+    return reject(
+      "SAILING_FIT_NOT_VERIFIED",
+      "This departure requires a verified sailing window, confirmed all-aboard cutoff, and time fit.",
+      { sailingWindow, timeFit }
+    );
   }
   if (evaluateDeparturePastStatus({ date, departureTime, timeZone: rec.timeZone }).isPast) {
     return reject("INVALID_CHECKOUT_SELECTION", "Choose a future departure.");
@@ -3887,7 +4221,9 @@ export async function preparePortDayTourCheckout(
         requiresTravelerConfirmationInViatorWidget:
           productCode === "15200P1"
             ? ["date", "optionCode", "departureTime", "partySize", "meeting point (9706 Barataria Blvd, Marrero)", "single-boat grouping with operator if group wants one boat"]
-            : ["date", "optionCode", "departureTime", "partySize", "pickup point"],
+            : productCode === "103974P5"
+              ? ["date", "optionCode", "departureTime", "partySize", "meeting point (MARINA ASIPONA COZUMEL / ex-Marina Fonatur — Cozumel Tours / Maybe-Tours office next to Tequila store, check in 10m before departure)"]
+              : ["date", "optionCode", "departureTime", "partySize", "pickup point"],
       },
     };
   }
@@ -3920,13 +4256,6 @@ export async function preparePortDayTourCheckout(
       });
     }
 
-    const affiliate = getViatorPublicConfig();
-    const canonicalProductUrl =
-      productCode === "15200P1"
-        ? "https://www.viator.com/tours/New-Orleans/Large-Airboat-Swamp-Tour/d675-15200P1"
-        : "https://www.viator.com/tours/New-Orleans/New-Orleans-Swamp-Tour-Boat-Adventure-With-Pickup/d675-15200P6";
-    const destinationUrl = new URL(canonicalProductUrl);
-    destinationUrl.searchParams.set("mcid", affiliate.mcid);
     const retailTotal = seatAvailability.providerRetailTotal ?? null;
     const pricing: PreparePortDayTourCheckoutResult["pricing"] = {
       priceBasis: retailTotal === null ? "unknown" : "per_person",
@@ -3938,8 +4267,8 @@ export async function preparePortDayTourCheckout(
     const snapshot: Snapshot = {
       validatedSelection: {
         portSlug: port, productCode, optionCode, date, departureTime, partySize,
-        optionTitle: timeFit.selectedOptionTitle || optionCode,
-        pickupLocation: timeFit.meetingPointName || "",
+        optionTitle: timeFit.selectedOptionTitle || catalogBinding.matchedOption?.title || optionCode,
+        pickupLocation: timeFit.meetingPointName || approvedSpec.pickupLocationSummary || "",
       },
       pricing, sailingWindow, timeFit, seatAvailability,
     };
@@ -3947,13 +4276,13 @@ export async function preparePortDayTourCheckout(
       ...key,
       requireDurableRecord: true,
       targetSite: "viator.com",
-      provider: "viator",
+      provider: approvedSpec.provider,
       providerAccount: affiliate.pid,
       viatorProductCode: productCode,
       productCode,
       productTitle: rec.title,
       productDestinationUrl: destinationUrl.toString(),
-      campaign: "dcc_nola_tour",
+      campaign: approvedSpec.defaultCampaign,
       intendedDate: date,
       intendedOption: optionCode,
       intendedDepartureTime: departureTime,
@@ -3967,7 +4296,10 @@ export async function preparePortDayTourCheckout(
         portSlug: port,
         surface,
         isQaTraffic,
-        originatingPage: "/ports/new-orleans",
+        originatingPage:
+          originatingSite.includes("cruisepromenade") && port === "cozumel"
+            ? "/cruise-ships/symphony-of-the-seas/cozumel-shore-excursions"
+            : `/ports/${port}`,
         portDayCheckoutSelection: { requestHash, snapshot },
       },
     });
@@ -3981,6 +4313,5 @@ export async function preparePortDayTourCheckout(
     }
     throw error;
   }
-
 }
 

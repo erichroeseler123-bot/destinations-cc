@@ -28,6 +28,8 @@ export function prepareTourCheckoutFromRequest(
     shipArrivalTime: str(args.shipArrival ?? args.shipArrivalTime),
     shipAllAboardTime: str(args.allAboard ?? args.shipAllAboardTime),
     shipDepartureTime: str(args.shipDeparture ?? args.shipDepartureTime),
+    datedBerth: str(args.datedBerth ?? args.berth),
+    transfers: str(args.transfers ?? args.transferEvidence),
     callerClientId: auth.clientId,
     originatingSite:
       str(args.originatingSite) === "cruisepromenade.com"
