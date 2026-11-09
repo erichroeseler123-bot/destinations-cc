@@ -267,7 +267,7 @@ export const APPROVED_CATALOG_CHECKOUT_TOURS: Record<
     vesselCapacityPassengers: 15,
     singleVesselPolicy: "standard_group_capacity",
     singleVesselNote:
-      "Supplier: Cozumel Tours and Excursions (SUPPLIER-7gEFhAbRfACoB8LX7J7y1g==). Check-in cutoff is 10 minutes before tour time at MARINA ASIPONA COZUMEL (Formerly Known as Marina Fonatur), Google Place ChIJhUJKipFXTo8RVdFGMuytpuI (Viator start description lists 'COZUMEL TOURS office located next to the Tequila store'; redemption specialInstructions lists 'MAYBE-TOURS office located next to the Tequila store'). Mandatory $11 USD/pp Marine Fee paid in destination.",
+      "Supplier: Cozumel Tours and Excursions (SUPPLIER-7gEFhAbRfACoB8LX7J7y1g==). Check-in is 10 minutes before departure (9:50 a.m. for the 10:00 a.m. TG1 tour in Cozumel local time, America/Cancun) at the Cozumel Tours office next to the tequila store at Marina ASIPONA Cozumel (formerly Marina Fonatur, Google Place ChIJhUJKipFXTo8RVdFGMuytpuI). The Maybe-Tours directions appear on a separate private-tour listing; ask the supplier for the exact office pin and expected return time for TG1. Mandatory $11 USD/pp marine fee ($88 for 8 guests) is excluded from the $520 quote; verify how it is collected before showing a combined trip total.",
     fromPriceUsd: 65,
     canonicalProductUrl:
       "https://www.viator.com/tours/Cozumel/Cozumel-Snorkel-tour-Palancar-reef-Columbia-reef-and-El-Cielo-Sandbar/d632-103974P5?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
@@ -285,12 +285,12 @@ export const APPROVED_CATALOG_CHECKOUT_TOURS: Record<
       "optionCode",
       "departureTime",
       "partySize",
-      "meeting point (MARINA ASIPONA COZUMEL / ex-Marina Fonatur — Cozumel Tours / Maybe-Tours office next to Tequila store)",
+      "meeting point (Cozumel Tours office next to the tequila store at Marina ASIPONA Cozumel, 10 minutes before departure / 9:50 a.m. for 10:00 a.m. TG1)",
     ],
     preparedCheckoutGatedByDefault: true,
     preparedCheckoutGateEnvVar: "DCC_ENABLE_COZUMEL_103974P5_CHECKOUT",
     preparedCheckoutGateReason:
-      "Cozumel 103974P5 / TG1 prepared checkout is gated while verifying: (1) supplier's exact meeting pin at MARINA ASIPONA COZUMEL (Google Place ChIJhUJKipFXTo8RVdFGMuytpuI; Cozumel Tours vs Maybe-Tours office next to Tequila store), (2) outbound and return transfers from Symphony of the Seas' assigned berth (International Pier SSA vs Puerta Maya), and (3) actual all-aboard cutoff on 2027-01-08.",
+      "Cozumel 103974P5 / TG1 prepared checkout is gated while verifying: (1) Berth: APIQROO lists Symphony of the Seas at SSA International Pier on Nov. 6, 2026, while Jan. 8, 2027 terminal assignment is pending confirmation from APIQROO or Royal Caribbean; (2) Check-in & Return: Viator 103974P5 directs guests to the Cozumel Tours office next to the tequila store at MARINA ASIPONA COZUMEL (Google Place ChIJhUJKipFXTo8RVdFGMuytpuI) 10 minutes before departure (9:50 a.m. for the 10:00 a.m. tour; Maybe-Tours directions appear on a separate private-tour listing) — exact office pin and expected TG1 return time pending supplier confirmation; (3) All Aboard: Royal Caribbean publishes 8:00 a.m.–6:00 p.m. as the dock window and advises verifying all-aboard onboard (the 5:00 p.m. cutoff and 175-minute margin are test assumptions; record actual cutoff and whether in ship time or Cozumel local time); (4) Transfers: once berth, cutoff, and office pin are confirmed, calculate both transfers including taxi pickup and the walk back to the gangway, then rerun timing fit and live availability for eight; (5) Marine Fee: verify how the $11-per-person marine fee ($88 for 8) is collected alongside the $520 quote before showing a combined trip total.",
     options: [
       {
         optionCode: "TG1",
@@ -303,7 +303,7 @@ export const APPROVED_CATALOG_CHECKOUT_TOURS: Record<
         checkInCutoffMinutes: 10,
         pickupFulfillmentType: "self_drive_meeting_point",
         meetingPointName:
-          "MARINA ASIPONA COZUMEL (Formerly Known as Marina Fonatur) — Cozumel Tours / Maybe-Tours office next to the Tequila store (Google Place ChIJhUJKipFXTo8RVdFGMuytpuI)",
+          "Cozumel Tours office next to the tequila store at Marina ASIPONA Cozumel (Formerly Known as Marina Fonatur, Google Place ChIJhUJKipFXTo8RVdFGMuytpuI)",
         meetingPointAddress:
           "Carretera Costera Sur Km 6.0, Marina ASIPONA Cozumel (ex-Marina Fonatur), 77600 Cozumel, Q.R., Mexico",
         pierToMeetingMinutes: 5,

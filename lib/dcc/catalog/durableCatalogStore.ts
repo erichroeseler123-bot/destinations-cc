@@ -4672,9 +4672,9 @@ export const PILOT_VERIFIED_TOUR_RECORDS: DurableTourRecord[] = [
     pickupType: "MEETING_POINT_ONLY",
     pickupFulfillmentType: "self_drive",
     pickupSummary:
-      "Meeting time is 10 minutes before your Tour time at the MARINA ASIPONA COZUMEL (Formerly Known as Marina Fonatur) located 5 minutes by taxi from SSA and PUERTA MAYA cruise ports and 10 minutes from Downtown. Upon arrival look for our COZUMEL TOURS / MAYBE-TOURS office located next to the Tequila store (Google Place ChIJhUJKipFXTo8RVdFGMuytpuI).",
+      "Check-in is 10 minutes before departure (9:50 a.m. for the 10:00 a.m. TG1 tour in Cozumel local time, America/Cancun) at the Cozumel Tours office next to the tequila store at MARINA ASIPONA COZUMEL (Formerly Known as Marina Fonatur, Google Place ChIJhUJKipFXTo8RVdFGMuytpuI), located 5 minutes by taxi from SSA International Pier and Puerta Maya cruise ports. The Maybe-Tours directions appear on a separate private-tour listing; exact office pin and expected TG1 return time require supplier confirmation.",
     meetingPointName:
-      "MARINA ASIPONA COZUMEL (Formerly Known as Marina Fonatur) — Cozumel Tours / Maybe-Tours office next to the Tequila store (Google Place ChIJhUJKipFXTo8RVdFGMuytpuI)",
+      "Cozumel Tours office next to the tequila store at Marina ASIPONA Cozumel (Formerly Known as Marina Fonatur, Google Place ChIJhUJKipFXTo8RVdFGMuytpuI)",
     meetingPointAddress:
       "Carretera Costera Sur Km 6.0, Marina ASIPONA Cozumel (ex-Marina Fonatur), 77600 Cozumel, Q.R., Mexico",
     meetingPointLat: 20.4614,
@@ -4708,7 +4708,7 @@ export const PILOT_VERIFIED_TOUR_RECORDS: DurableTourRecord[] = [
       transferEvidenceSource:
         "viator_logistics_start_description:marina_asipona_cozumel_5m_taxi_from_ssa_and_puerta_maya:103974P5",
       applicableBerthOrMeetingPoint:
-        "International Pier (SSA México) / Puerta Maya <-> MARINA ASIPONA COZUMEL (ex-Marina Fonatur, Google Place ChIJhUJKipFXTo8RVdFGMuytpuI — 5m stated taxi; berth & exact office pin verification gate)",
+        "APIQROO lists Symphony of the Seas at SSA International Pier on Nov. 6, 2026 (Jan. 8, 2027 terminal assignment pending confirmation from APIQROO or Royal Caribbean) <-> Cozumel Tours office next to the tequila store at Marina ASIPONA Cozumel (ex-Marina Fonatur, Google Place ChIJhUJKipFXTo8RVdFGMuytpuI; 9:50 a.m. check-in for 10:00 a.m. TG1; calculate both transfers including taxi pickup and walk back to gangway once berth, cutoff, and office pin are confirmed)",
     },
     channelOffers: [
       {
@@ -4743,11 +4743,11 @@ export const PILOT_VERIFIED_TOUR_RECORDS: DurableTourRecord[] = [
         optionCode: "TG1",
         title: "Cozumel Snorkel Tour: Palancar, Columbia and Cielo Reefs",
         description:
-          "4-hour reef & El Cielo snorkeling excursion departing from MARINA ASIPONA COZUMEL (ex-Marina Fonatur, Google Place ChIJhUJKipFXTo8RVdFGMuytpuI). Check in 10 minutes before tour time.",
+          "4-hour reef & El Cielo snorkeling excursion departing from the Cozumel Tours office next to the tequila store at Marina ASIPONA Cozumel (ex-Marina Fonatur, Google Place ChIJhUJKipFXTo8RVdFGMuytpuI). Check in 10 minutes before departure (9:50 a.m. for the 10:00 a.m. tour in Cozumel local time). Verify how the $11-per-person marine fee is collected alongside the $520 quote before showing a combined trip total.",
         includesPickup: false,
         pickupFulfillmentType: "self_drive",
         meetingPointName:
-          "MARINA ASIPONA COZUMEL (Formerly Known as Marina Fonatur) — Cozumel Tours / Maybe-Tours office next to the Tequila store (Google Place ChIJhUJKipFXTo8RVdFGMuytpuI)",
+          "Cozumel Tours office next to the tequila store at Marina ASIPONA Cozumel (Formerly Known as Marina Fonatur, Google Place ChIJhUJKipFXTo8RVdFGMuytpuI)",
         meetingPointLat: 20.4614,
         meetingPointLng: -86.9792,
         transferBeforeMinutes: 5,
@@ -4761,18 +4761,33 @@ export const PILOT_VERIFIED_TOUR_RECORDS: DurableTourRecord[] = [
         transferEvidenceSource:
           "viator_logistics_start_description:marina_asipona_cozumel_5m_taxi_from_ssa_and_puerta_maya:103974P5",
         applicableBerthOrMeetingPoint:
-          "International Pier (SSA México) / Puerta Maya <-> MARINA ASIPONA COZUMEL (ex-Marina Fonatur, Google Place ChIJhUJKipFXTo8RVdFGMuytpuI — 5m stated taxi; berth & exact office pin verification gate)",
+          "APIQROO lists Symphony of the Seas at SSA International Pier on Nov. 6, 2026 (Jan. 8, 2027 terminal assignment pending confirmation from APIQROO or Royal Caribbean) <-> Cozumel Tours office next to the tequila store at Marina ASIPONA Cozumel (ex-Marina Fonatur, Google Place ChIJhUJKipFXTo8RVdFGMuytpuI; 9:50 a.m. check-in for 10:00 a.m. TG1; calculate both transfers including taxi pickup and walk back to gangway once berth, cutoff, and office pin are confirmed)",
       },
     ],
     serviceDetails: {
       checkInCutoffMinutes: 10,
+      checkInTimeFor1000Departure: "09:50",
       checkInEvidenceSource:
         "viator_logistics_start_description:meeting_time_is_10_minutes_before_your_tour_time",
       viatorLocationRef:
         "LOC-o0AXGEKPN4wJ9sIG0RAn5Iw1FSMGuIKE7oOiqtc3wSmJ0mDxtTQz4M7JaC11LfKD",
       googlePlaceId: "ChIJhUJKipFXTo8RVdFGMuytpuI",
       supplierOfficeSignDiscrepancy:
-        "logistics.start.description states 'COZUMEL TOURS office located next to the Tequila store' while logistics.redemption.specialInstructions states 'MAYBE-TOURS office located next to the Tequila store'",
+        "Viator product 103974P5 directs guests to the Cozumel Tours office next to the tequila store at Marina ASIPONA, 10 minutes before departure (9:50 a.m. for the 10:00 a.m. tour). The Maybe-Tours directions appear on a separate private-tour listing (and redemption specialInstructions); ask the supplier for the exact office pin and expected return time for TG1.",
+      berthVerificationNote:
+        "APIQROO lists Symphony of the Seas at SSA International Pier on Nov. 6, 2026; terminal assignment for Jan. 8, 2027 is pending confirmation from APIQROO or Royal Caribbean.",
+      allAboardVerificationNote:
+        "Royal Caribbean publishes 8:00 a.m.–6:00 p.m. as the dock window and advises guests to verify all-aboard onboard. The 5:00 p.m. cutoff and 175-minute margin are test assumptions; record the actual cutoff and whether it is in ship time (America/Chicago) or Cozumel local time (America/Cancun).",
+      transferCalculationNote:
+        "Once the berth, cutoff, and office pin are confirmed, calculate both transfers, including taxi pickup and the walk back to the gangway, then rerun timing fit and live availability for eight.",
+      mandatoryDestinationFee: {
+        perPersonUsd: 11,
+        currency: "USD",
+        description: "Marine Fee $11 USD pp",
+        excludedFromProviderQuote: true,
+        collectionVerificationStatus: "pending_verification",
+        note: "Verify how the listing's $11-per-person marine fee ($88 for 8 guests) is collected alongside the $520 quote before showing a combined trip total.",
+      },
     },
     inclusions: [
       "Insured Shaded Boat",

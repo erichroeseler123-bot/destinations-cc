@@ -291,6 +291,16 @@ export interface PortDaySeatAvailabilityEvaluation {
     statusLabel: string;
     detailNote: string;
   } | null;
+  mandatoryDestinationFee?: {
+    perPersonUsd: number;
+    totalForPartyUsd: number;
+    currency: string;
+    description: string;
+    excludedFromProviderQuote: boolean;
+    collectionVerificationStatus: "pending_verification" | "verified";
+    combinedTripTotalUsd: number | null;
+    note: string;
+  } | null;
   nextEligibleOption?: {
     optionCode: string;
     departureTime: string;
@@ -2329,7 +2339,10 @@ export function evaluateTourPortDayTimeFit(params: {
       hasVerifiedDeparture,
       departureEvidenceSource,
       checkInCutoffMinutes: hasVerifiedCheckIn ? checkInCutoffMinutes : null,
-      latestCheckInTime: null,
+      latestCheckInTime:
+        hasVerifiedCheckIn && candidateDepMin !== null && checkInCutoffMinutes !== null
+          ? formatHhMm(candidateDepMin - checkInCutoffMinutes)
+          : null,
       hasVerifiedCheckIn,
       checkInEvidenceSource,
       leavePierByTime: null,
@@ -2366,7 +2379,9 @@ export function evaluateTourPortDayTimeFit(params: {
         bufferBeforeAllAboardMinutes: null,
         bufferBeforeShipDepartureMinutes: null,
         reconciliationNote: isAllAboardPortEstimate
-          ? `All Aboard time (${allAboardTime}) is a port estimate because no traveler all-aboard deadline or matching sailing schedule was provided. Tour fit requires returning to the pier at least ${profile.requiredReturnBufferMinutes}m before All Aboard and remains Needs verification until the all-aboard deadline and tour logistics are confirmed.`
+          ? recCodeUpper === "103974P5"
+            ? `Royal Caribbean publishes 8:00 a.m.–6:00 p.m. (08:00–18:00) as the dock window and advises guests to verify all-aboard onboard. The 5:00 p.m. (${allAboardTime}) cutoff and 175-minute margin are test assumptions; record the actual cutoff and whether it is in ship time (America/Chicago) or Cozumel local time (America/Cancun). Once the berth (APIQROO lists Symphony of the Seas at SSA International Pier on Nov. 6; Jan. 8, 2027 terminal assignment pending), cutoff, and office pin are confirmed, calculate both transfers including taxi pickup and the walk back to the gangway, then rerun timing fit and live availability for eight.`
+            : `All Aboard time (${allAboardTime}) is a port estimate because no traveler all-aboard deadline or matching sailing schedule was provided. Tour fit requires returning to the pier at least ${profile.requiredReturnBufferMinutes}m before All Aboard and remains Needs verification until the all-aboard deadline and tour logistics are confirmed.`
           : validShipDepartureTime !== null &&
               allAboardToShipDepartureMinutes !== null &&
               equivalentShipDepartureBufferMinutes !== null
@@ -2375,11 +2390,14 @@ export function evaluateTourPortDayTimeFit(params: {
       },
       hasVerifiedReturnBuffer: false,
       missingFields: effectiveMissingFields,
-      reasonSummary: `Needs verification: missing verified ${effectiveMissingFields.join(
-        ", "
-      )}${
-        isAllAboardPortEstimate ? ` (All Aboard ${allAboardTime} is a port estimate)` : ""
-      }. ${meetingContext} Confirm exact product/option departure, check-in, pier transfers, and return buffer before booking for your sailing.`,
+      reasonSummary:
+        recCodeUpper === "103974P5"
+          ? `Needs verification: missing verified ${effectiveMissingFields.join(", ")}. Check-in: Viator product 103974P5 directs guests to the Cozumel Tours office next to the tequila store at Marina ASIPONA, 10 minutes before departure (9:50 a.m. / 09:50 for the 10:00 a.m. TG1 tour; Maybe-Tours directions appear on a separate private-tour listing; exact office pin and expected TG1 return time pending supplier confirmation). Berth: APIQROO lists Symphony of the Seas at SSA International Pier on Nov. 6; Jan. 8, 2027 terminal assignment pending confirmation from APIQROO or Royal Caribbean. All Aboard: Royal Caribbean publishes 8:00 a.m.–6:00 p.m. as the dock window and advises verifying all-aboard onboard (the 5:00 p.m. cutoff and 175-minute margin are test assumptions; record actual cutoff and whether in ship time or Cozumel local time). Once berth, cutoff, and office pin are confirmed, calculate both transfers including taxi pickup and the walk back to the gangway, then rerun timing fit and live availability for eight.`
+          : `Needs verification: missing verified ${effectiveMissingFields.join(
+              ", "
+            )}${
+              isAllAboardPortEstimate ? ` (All Aboard ${allAboardTime} is a port estimate)` : ""
+            }. ${meetingContext} Confirm exact product/option departure, check-in, pier transfers, and return buffer before booking for your sailing.`,
       evidenceReviewPriority,
       twoHourShortlist,
     };
@@ -2999,6 +3017,22 @@ export async function verifyLiveExcursionAvailability(params: {
         }
       : null;
 
+  const buildMandatoryDestinationFee = (
+    quotedTotalUsd: number | null
+  ): PortDaySeatAvailabilityEvaluation["mandatoryDestinationFee"] =>
+    codeUpper === "103974P5"
+      ? {
+          perPersonUsd: 11,
+          totalForPartyUsd: Number((11 * partySize).toFixed(2)),
+          currency: "USD",
+          description: "Marine Fee $11 USD pp",
+          excludedFromProviderQuote: true,
+          collectionVerificationStatus: "pending_verification",
+          combinedTripTotalUsd: null,
+          note: `Before showing a combined trip total, verify how the listing's $11-per-person marine fee ($${(11 * partySize).toFixed(0)} for ${partySize} guests) is collected alongside the ${quotedTotalUsd !== null ? `$${quotedTotalUsd.toFixed(0)} ` : ""}quote.`,
+        }
+      : null;
+
   const pastCheck = evaluateDeparturePastStatus({
     date: checkedDate,
     departureTime: requestedDepartureTime,
@@ -3028,6 +3062,7 @@ export async function verifyLiveExcursionAvailability(params: {
       rejectionReason: pastCheck.reason,
       providerStatus: "past_departure_rejected",
       singleVesselVerification,
+      mandatoryDestinationFee: buildMandatoryDestinationFee(null),
       nextEligibleOption: nextEligibleOptionSummary,
       options: [],
       detailNote:
@@ -3067,6 +3102,7 @@ export async function verifyLiveExcursionAvailability(params: {
     rejectionReason: null,
     providerStatus,
     singleVesselVerification,
+    mandatoryDestinationFee: buildMandatoryDestinationFee(null),
     nextEligibleOption: nextEligibleOptionSummary,
     viatorCarryoverTruth:
       code && requestedOptionCode && requestedDepartureTime && checkedDate
@@ -3274,6 +3310,7 @@ export async function verifyLiveExcursionAvailability(params: {
           rejectionReason: null,
           providerStatus: "live_confirmed",
           singleVesselVerification,
+          mandatoryDestinationFee: buildMandatoryDestinationFee(null),
           nextEligibleOption: nextEligibleOptionSummary,
           viatorCarryoverTruth: buildViatorCarryoverTruth({
             productCode: code,
@@ -3319,6 +3356,7 @@ export async function verifyLiveExcursionAvailability(params: {
 
         const matchedOptionCode = String(exactItem.productOptionCode || requestedOptionCode);
         const matchedStartTime = String(exactItem.startTime || requestedDepartureTime).slice(0, 5);
+        const mandatoryDestinationFee = buildMandatoryDestinationFee(totalPriceUsd);
 
         return {
           status: "live_verified",
@@ -3345,6 +3383,7 @@ export async function verifyLiveExcursionAvailability(params: {
           rejectionReason: null,
           providerStatus: "live_confirmed",
           singleVesselVerification,
+          mandatoryDestinationFee,
           nextEligibleOption: nextEligibleOptionSummary,
           viatorCarryoverTruth: buildViatorCarryoverTruth({
             productCode: code,
@@ -3369,6 +3408,10 @@ export async function verifyLiveExcursionAvailability(params: {
           }).${
             singleVesselVerification
               ? ` ${singleVesselVerification.statusLabel}.`
+              : ""
+          }${
+            mandatoryDestinationFee
+              ? ` ${mandatoryDestinationFee.note}`
               : ""
           }`,
         };
@@ -3586,13 +3629,30 @@ export async function queryPortDayExcursionCatalog(params: {
                   "15200P1 operates 16-passenger large airboats. Viator /availability/check confirms aggregate slot capacity across boats. To keep a group on a single boat, book all passengers on one reservation and verify single-boat assignment separately with Louisiana Tour Company.",
               }
             : null,
+        mandatoryDestinationFee:
+          codeUpper === "103974P5"
+            ? {
+                perPersonUsd: 11,
+                totalForPartyUsd: Number((11 * partySize).toFixed(2)),
+                currency: "USD",
+                description: "Marine Fee $11 USD pp",
+                excludedFromProviderQuote: true,
+                collectionVerificationStatus: "pending_verification",
+                combinedTripTotalUsd: null,
+                note: `Before showing a combined trip total, verify how the listing's $11-per-person marine fee ($${(11 * partySize).toFixed(0)} for ${partySize} guests) is collected alongside the quote.`,
+              }
+            : null,
         options: [],
         detailNote: pastDepCheck.isPast
           ? pastDepCheck.reason || "Past departure rejected."
           : supportsLiveCheck
             ? `Check availability at the provider for option ${
                 chosenOptionCode || "default"
-              } (${timeFit.selectedDepartureTime || "select time"}) on ${sailingDate} for ${partySize} guests, or open the exact product link. Time fit and seat availability are tracked separately.`
+              } (${timeFit.selectedDepartureTime || "select time"}) on ${sailingDate} for ${partySize} guests, or open the exact product link. Time fit and seat availability are tracked separately.${
+                codeUpper === "103974P5"
+                  ? ` Before showing a combined trip total, verify how the listing's $11-per-person marine fee ($${(11 * partySize).toFixed(0)} for ${partySize} guests) is collected alongside the quote.`
+                  : ""
+              }`
             : "Check availability at the provider on the exact product link for your date and group size.",
       },
       handoff,

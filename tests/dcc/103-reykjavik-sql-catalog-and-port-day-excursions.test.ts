@@ -1501,9 +1501,18 @@ test("103.16: Catalog-backed checkout approval, all 632 ports connected for disc
   const candidateGated = jan8GatedDefault.tours[0];
   assert.equal(candidateGated.productCode, "103974P5");
   assert.equal(candidateGated.timeFit.status, "needs_verification");
+  assert.equal(candidateGated.timeFit.checkInCutoffMinutes, 10);
+  assert.equal(candidateGated.timeFit.latestCheckInTime, "09:50");
+  assert.equal(
+    candidateGated.timeFit.meetingPointName,
+    "Cozumel Tours office next to the tequila store at Marina ASIPONA Cozumel (Formerly Known as Marina Fonatur, Google Place ChIJhUJKipFXTo8RVdFGMuytpuI)"
+  );
   assert.ok(candidateGated.timeFit.missingFields.includes("datedBerth"));
   assert.ok(candidateGated.timeFit.missingFields.includes("meetingPoint"));
   assert.ok(candidateGated.timeFit.missingFields.includes("transfers"));
+  assert.equal(candidateGated.seatAvailability.mandatoryDestinationFee?.perPersonUsd, 11);
+  assert.equal(candidateGated.seatAvailability.mandatoryDestinationFee?.totalForPartyUsd, 44);
+  assert.equal(candidateGated.seatAvailability.mandatoryDestinationFee?.combinedTripTotalUsd, null);
   assert.ok(candidateGated.seatAvailability.exactProductUrl.includes("d632-103974P5"));
   assert.ok(candidateGated.seatAvailability.exactProductUrl.includes("pid=P00306962"));
 
@@ -1578,7 +1587,7 @@ test("103.16: Catalog-backed checkout approval, all 632 ports connected for disc
   assert.equal(cozumelCandidate.timeFit.leavePierByTime, "09:45");
   assert.equal(
     cozumelCandidate.timeFit.meetingPointName,
-    "MARINA ASIPONA COZUMEL (Formerly Known as Marina Fonatur) — Cozumel Tours / Maybe-Tours office next to the Tequila store (Google Place ChIJhUJKipFXTo8RVdFGMuytpuI)"
+    "Cozumel Tours office next to the tequila store at Marina ASIPONA Cozumel (Formerly Known as Marina Fonatur, Google Place ChIJhUJKipFXTo8RVdFGMuytpuI)"
   );
   assert.equal(cozumelCandidate.timeFit.pierToMeetingMinutes, 5);
   assert.equal(cozumelCandidate.timeFit.meetingToPierMinutes, 5);
@@ -1589,18 +1598,21 @@ test("103.16: Catalog-backed checkout approval, all 632 ports connected for disc
   assert.equal(cozumelCandidate.timeFit.bufferBeforeAllAboardMinutes, 175);
   assert.equal(cozumelCandidate.timeFit.bufferBeforeShipDepartureMinutes, 235);
 
-  // 3c. Read-only live availability for the group (partySize=4) returns approved affiliate links without creating checkout records
+  // 3c. Read-only live availability for the group (partySize=8) returns approved affiliate links and marine fee metadata without creating checkout records
   const liveAvail = await verifyLiveExcursionAvailability({
     portSlug: "cozumel",
     productCode: "103974P5",
     optionCode: "TG1",
     date: "2027-01-08",
     departureTime: "10:00",
-    partySize: 4,
+    partySize: 8,
   });
   assert.ok(liveAvail.exactProductUrl.includes("d632-103974P5"));
   assert.ok(liveAvail.exactProductUrl.includes("pid=P00306962"));
   assert.ok(liveAvail.exactProductUrl.includes("mcid=42383"));
+  assert.equal(liveAvail.mandatoryDestinationFee?.perPersonUsd, 11);
+  assert.equal(liveAvail.mandatoryDestinationFee?.totalForPartyUsd, 88);
+  assert.equal(liveAvail.mandatoryDestinationFee?.combinedTripTotalUsd, null);
 
   // 3d. Missing cutoff or mismatched option stops prepared handoff
   const stoppedMissingCutoff = await preparePortDayTourCheckout({
