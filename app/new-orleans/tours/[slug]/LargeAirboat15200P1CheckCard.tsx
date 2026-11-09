@@ -203,32 +203,55 @@ export default function LargeAirboat15200P1CheckCard({
         return;
       }
 
+      const isConfirmedAvailable =
+        (seat.status === "live_verified" || seat.status === "available_for_party") &&
+        (seat.available === true || seat.bookable === true);
+      const isConfirmedUnavailable =
+        seat.status === "sold_out" ||
+        seat.status === "unavailable_for_party" ||
+        seat.available === false ||
+        seat.bookable === false ||
+        seat.pastDepartureRejected === true;
+      const normalizedStatus: LiveCheckState["status"] = isConfirmedAvailable
+        ? "available_for_party"
+        : isConfirmedUnavailable
+          ? "unavailable_for_party"
+          : "unknown";
       const resolvedDisplayLabel =
         seat.availabilityDisplayLabel ||
-        (seat.status === "available_for_party" && seat.bookable === true
+        (isConfirmedAvailable
           ? `Available for ${targetPartySize} when checked`
-          : seat.status === "unavailable_for_party" || seat.bookable === false
+          : isConfirmedUnavailable
             ? `Unavailable for ${targetPartySize} when checked`
             : "Check availability at the provider");
+      const resolvedTotalPriceCents =
+        typeof seat.totalPriceCents === "number"
+          ? seat.totalPriceCents
+          : typeof seat.totalPriceUsd === "number"
+            ? Math.round(seat.totalPriceUsd * 100)
+            : null;
 
       setCheckState({
         loading: false,
         checked: true,
         error: null,
-        status: seat.status,
+        status: normalizedStatus,
         availabilityDisplayLabel: resolvedDisplayLabel,
-        bookable: typeof seat.bookable === "boolean" ? seat.bookable : null,
-        totalPriceCents: typeof seat.totalPriceCents === "number" ? seat.totalPriceCents : null,
+        bookable: isConfirmedAvailable ? true : isConfirmedUnavailable ? false : null,
+        totalPriceCents: resolvedTotalPriceCents,
         currency: seat.currency || "USD",
-        priceBasis: seat.priceBasis || null,
-        timeChecked: seat.checkedAt || new Date().toISOString(),
+        priceBasis: seat.priceBasis || (seat.fromPriceUsd ? `$${seat.fromPriceUsd}/adult` : null),
+        timeChecked: seat.liveCheckedAt || seat.checkedAt || new Date().toISOString(),
         checkedTimeZone: seat.checkedTimeZone || "America/Chicago",
-        note: seat.note || "",
+        note: seat.detailNote || seat.note || "",
         providerEndpoint: seat.providerEndpoint || "POST /availability/check",
         singleVesselStatus:
-          seat.singleVesselVerification?.status || "requires_separate_operator_verification",
+          seat.singleVesselVerification?.singleVesselVerificationStatus ||
+          seat.singleVesselVerification?.status ||
+          "requires_separate_operator_verification",
         singleVesselCapacity: seat.singleVesselVerification?.vesselCapacityPassengers || 16,
         singleVesselNote:
+          seat.singleVesselVerification?.detailNote ||
           seat.singleVesselVerification?.note ||
           `Live Viator availability confirms ${targetPartySize} seats on the scheduled departure across Louisiana Tour Company's fleet (16-passenger large airboats), not guaranteed single-boat assignment. If the group wants one boat, verify single-vessel grouping separately with Louisiana Tour Company.`,
       });

@@ -80,6 +80,16 @@ export async function GET(request: Request) {
 
   const partnerId = sp.get("partnerId")?.trim() || sp.get("partner")?.trim() || null;
   const targetSite = sp.get("targetSite")?.trim() || null;
+  const idempotencyKey =
+    sp.get("idempotencyKey")?.trim() || sp.get("idempotency_key")?.trim() || null;
+  const intendedDepartureTime =
+    sp.get("departureTime")?.trim() || sp.get("time")?.trim() || null;
+  const isQaTraffic =
+    sp.get("qa") === "1" ||
+    sp.get("qa") === "true" ||
+    sp.get("isQaTraffic") === "1" ||
+    sp.get("isQaTraffic") === "true" ||
+    Boolean(idempotencyKey && /^qa[_-]/i.test(idempotencyKey));
 
   const handoff = await createCommercialHandoff({
     originatingSite,
@@ -93,8 +103,10 @@ export async function GET(request: Request) {
     contextId,
     evaluationRunId,
     receiptId,
+    idempotencyKey,
     intendedDate,
     intendedOption,
+    intendedDepartureTime,
     partySize,
     partyDetails: partySize
       ? {
@@ -106,8 +118,11 @@ export async function GET(request: Request) {
     quotedPriceAmount,
     quotedPriceCurrency: quotedPriceAmount !== null ? "USD" : null,
     approvedPartnerAttribution: partnerId ? { partnerId } : null,
-    callerClientId: "client:public_traveler_browser",
+    callerClientId: isQaTraffic
+      ? "qa:public_traveler_browser"
+      : "client:public_traveler_browser",
     traceparent,
+    metadata: isQaTraffic ? { isQaTraffic: true } : null,
   });
   await syncDurableLedgerWithPostgres({ forcePushLocal: true });
 
@@ -117,6 +132,8 @@ export async function GET(request: Request) {
         ok: true,
         handoff_id: handoff.handoffId,
         click_id: handoff.clickId,
+        duplicateSubmission: Boolean(handoff.duplicateSubmission),
+        isQaTraffic,
         handoff,
         redirectTarget: handoff.outboundAffiliateUrl,
         traceparent,
