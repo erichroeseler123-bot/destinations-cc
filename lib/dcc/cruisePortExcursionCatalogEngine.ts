@@ -281,6 +281,7 @@ export interface PortDaySeatAvailabilityEvaluation {
     resolvedDate: string;
     autoAdvancedFromPastOption: boolean;
     previousPastOptionsSkipped: string[];
+    reason?: string;
   } | null;
   viatorCarryoverTruth?: ViatorCarryoverTruth | null;
   options: Array<{
@@ -2696,6 +2697,7 @@ export async function verifyLiveExcursionAvailability(params: {
           resolvedDate: nextEligibleResolution.resolvedDate,
           autoAdvancedFromPastOption: nextEligibleResolution.autoAdvancedFromPastOption,
           previousPastOptionsSkipped: nextEligibleResolution.previousPastOptionsSkipped,
+          reason: nextEligibleResolution.reason,
         }
       : null;
 
