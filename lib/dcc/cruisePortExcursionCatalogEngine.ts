@@ -260,6 +260,7 @@ export interface PortDaySeatAvailabilityEvaluation {
     | "error"
     | "unverified";
   singleVesselVerification?: {
+    status?: "requires_separate_operator_verification" | "not_applicable";
     vesselCapacityPassengers: number | null;
     partyFitsSingleVesselCapacity: boolean | null;
     singleVesselVerificationStatus: "requires_separate_operator_verification" | "not_applicable";
@@ -3664,6 +3665,8 @@ export async function preparePortDayTourCheckout(
     productCode === "15200P1" &&
     Boolean(optionCode && ALLOWED_15200P1_OPTIONS[optionCode] === departureTime);
   if (
+    !optionCode ||
+    !departureTime ||
     (!isValid15200P6 && !isValid15200P1) ||
     !/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isFinite(dateAtUtcMidnight.getTime()) ||
     dateAtUtcMidnight.toISOString().slice(0, 10) !== date ||
