@@ -323,15 +323,32 @@ function resolveConfiguredApiKeys(allowDefaultApiKeys = true): RegisteredMachine
       revoked: false,
     });
   }
-  const cpServiceToken =
-    process.env.DCC_CP_SERVICE_SECRET?.trim() ||
-    process.env.INTERNAL_API_SECRET?.trim();
-  if (cpServiceToken && cpServiceToken.length >= 16) {
+  const cpServiceToken = [
+    process.env.DCC_CP_SERVICE_SECRET?.trim(),
+    process.env.INTERNAL_API_SECRET?.trim(),
+  ].find((token) => Boolean(token && token.length >= 16));
+  if (cpServiceToken) {
     dynamicKeys.push({
       keyId: "key:cruisepromenade-service",
       clientId: "partner:cruisepromenade:live",
       secretToken: cpServiceToken,
       owner: "cruisepromenade-service",
+      scopes: ["dcc:read:public", "dcc:commerce:handoff", "dcc:commerce:read"],
+      maxRequestsPerMinute: 300,
+      revoked: false,
+    });
+  }
+  const internalServiceToken = process.env.INTERNAL_API_SECRET?.trim();
+  if (
+    internalServiceToken &&
+    internalServiceToken.length >= 16 &&
+    internalServiceToken !== cpServiceToken
+  ) {
+    dynamicKeys.push({
+      keyId: "key:dcc-internal-service",
+      clientId: "partner:dcc-internal:live",
+      secretToken: internalServiceToken,
+      owner: "dcc-internal-service",
       scopes: ["dcc:read:public", "dcc:commerce:handoff", "dcc:commerce:read"],
       maxRequestsPerMinute: 300,
       revoked: false,
