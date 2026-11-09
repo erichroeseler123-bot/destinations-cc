@@ -57,11 +57,16 @@ export async function GET(request: NextRequest) {
       .trim()
       .toLowerCase();
     const viewMode: PortDayExcursionViewMode =
-      rawViewMode === "fits_sailing" ||
-      rawViewMode === "fits_my_sailing" ||
-      rawViewMode === "fits"
-        ? "fits_sailing"
-        : "browse_all";
+      rawViewMode === "shortlist_2h" ||
+      rawViewMode === "two_hour_shortlist" ||
+      rawViewMode === "estimated_back_2h_plus" ||
+      rawViewMode === "2h"
+        ? "shortlist_2h"
+        : rawViewMode === "fits_sailing" ||
+            rawViewMode === "fits_my_sailing" ||
+            rawViewMode === "fits"
+          ? "fits_sailing"
+          : "browse_all";
 
     const rawCategory = (searchParams.get("category") || "all").toLowerCase();
     const allowedCategories = new Set<PortDayExcursionCategoryFilter>([
@@ -116,6 +121,24 @@ export async function GET(request: NextRequest) {
       searchParams.get("cruiseSailDate") ||
       undefined;
 
+    const dockOrTender =
+      searchParams.get("dockOrTender") ||
+      searchParams.get("berthType") ||
+      searchParams.get("tender") ||
+      undefined;
+    const tenderTravelRaw =
+      searchParams.get("tenderTravelMinutes") ?? searchParams.get("tenderMinutes");
+    const tenderCutoffRaw = searchParams.get("tenderCutoffMinutes");
+    const parseOptionalMinutes = (val: string | null): number | null | undefined => {
+      if (val === null) return undefined;
+      const trimmed = val.trim().toLowerCase();
+      if (!trimmed || trimmed === "missing" || trimmed === "unknown") return -1;
+      const n = Number(trimmed);
+      return Number.isFinite(n) ? n : -1;
+    };
+    const tenderTravelMinutes = parseOptionalMinutes(tenderTravelRaw);
+    const tenderCutoffMinutes = parseOptionalMinutes(tenderCutoffRaw);
+
     const limitRaw = searchParams.get("limit");
     const limit = limitRaw ? Math.max(1, Math.min(100, Number(limitRaw) || 12)) : 12;
 
@@ -158,6 +181,9 @@ export async function GET(request: NextRequest) {
       partySize,
       ship,
       cruiseSailDate,
+      dockOrTender,
+      tenderTravelMinutes,
+      tenderCutoffMinutes,
       limit,
       offset,
       sortBy,

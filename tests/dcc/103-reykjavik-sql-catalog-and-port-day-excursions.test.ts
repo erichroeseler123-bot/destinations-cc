@@ -1139,3 +1139,195 @@ test("103.13: Show HN 5-traveler MCP demo (60m fits, 59m runs_too_late, missing 
   assert.equal(summaryAfterSettle.machineFunnel?.paidCommissionsUsd, 24);
 });
 
+test("103.14: Commerce tests fail closed when pointing at the production database", async () => {
+  const {
+    assertCommerceTestDatabaseSafe,
+    CommerceTestProductionDatabaseError,
+    createCommercialHandoff,
+    resetCommercialMemoryStoreForTests,
+  } = await import("../../lib/dcc/commerce");
+
+  assert.equal(process.env.DATABASE_URL, undefined);
+
+  const prevDbUrl = process.env.DATABASE_URL;
+  try {
+    process.env.DATABASE_URL =
+      "postgresql://neondb_owner:redacted@ep-autumn-credit-ad612q46-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require";
+
+    assert.throws(
+      () => assertCommerceTestDatabaseSafe(),
+      (err: unknown) =>
+        err instanceof CommerceTestProductionDatabaseError &&
+        err.code === "COMMERCE_TEST_PRODUCTION_DB_FORBIDDEN" &&
+        err.databaseName === "neondb" &&
+        err.databaseRole === "neondb_owner"
+    );
+
+    assert.throws(
+      () => resetCommercialMemoryStoreForTests(),
+      (err: unknown) =>
+        err instanceof CommerceTestProductionDatabaseError &&
+        err.code === "COMMERCE_TEST_PRODUCTION_DB_FORBIDDEN"
+    );
+
+    await assert.rejects(
+      () =>
+        createCommercialHandoff({
+          originatingSite: "cruisepromenade.com",
+          callerClientId: "client:cruisepromenade_port_day",
+          provider: "viator",
+          providerAccount: "P00306962",
+          productCode: "7090P9",
+          productDestinationUrl:
+            "https://www.viator.com/tours/Reykjavik/Classic-Whale-Watching-from-Reykjavik/d905-7090P9",
+        }),
+      (err: unknown) =>
+        err instanceof CommerceTestProductionDatabaseError &&
+        err.code === "COMMERCE_TEST_PRODUCTION_DB_FORBIDDEN"
+    );
+  } finally {
+    if (prevDbUrl === undefined) {
+      delete process.env.DATABASE_URL;
+    } else {
+      process.env.DATABASE_URL = prevDbUrl;
+    }
+  }
+});
+
+test("103.15 Two-hour shortlist: 120m vs 119m on 15200P6 / TG10, full return trip with tender + cutoff, Needs verification, and See other tours that fit", async () => {
+  // 1. 120 minutes buffer (allAboard = 14:15, return = 12:15) -> Estimated back 2+ hours before all aboard
+  const shortlist120 = await queryPortDayExcursionCatalog({
+    portSlug: "new-orleans",
+    viewMode: "shortlist_2h",
+    shipArrivalTime: "07:00",
+    shipAllAboardTime: "14:15",
+    sailingDate: "2027-01-12",
+    partySize: 5,
+    search: "15200P6",
+  });
+  assert.ok(shortlist120);
+  assert.equal(shortlist120.viewMode, "shortlist_2h");
+  assert.equal(shortlist120.tours.length, 1);
+  const card120 = shortlist120.tours[0];
+  assert.equal(card120.productCode, "15200P6");
+  assert.equal(card120.timeFit.selectedOptionCode, "TG10");
+  assert.equal(card120.timeFit.selectedDepartureTime, "08:00");
+  assert.equal(card120.timeFit.status, "fits");
+  assert.equal(card120.timeFit.returnEstimateTime, "12:15");
+  assert.equal(card120.timeFit.shipAllAboardTime, "14:15");
+  assert.equal(card120.timeFit.bufferBeforeAllAboardMinutes, 120);
+  assert.ok(card120.timeFit.twoHourShortlist);
+  assert.equal(card120.timeFit.twoHourShortlist.qualifies, true);
+  assert.equal(
+    card120.timeFit.twoHourShortlist.statusLabel,
+    "Estimated back 2+ hours before all aboard"
+  );
+  assert.equal(card120.timeFit.twoHourShortlist.returnEstimateTime, "12:15");
+  assert.equal(card120.timeFit.twoHourShortlist.deadlineTime, "14:15");
+  assert.equal(card120.timeFit.twoHourShortlist.bufferBeforeAllAboardMinutes, 120);
+
+  // 2. 119 minutes buffer (allAboard = 14:14, return = 12:15) -> excluded from shortlist_2h, offered under See other tours that fit (fits_sailing)
+  const shortlist119 = await queryPortDayExcursionCatalog({
+    portSlug: "new-orleans",
+    viewMode: "shortlist_2h",
+    shipArrivalTime: "07:00",
+    shipAllAboardTime: "14:14",
+    sailingDate: "2027-01-12",
+    partySize: 5,
+    search: "15200P6",
+  });
+  assert.ok(shortlist119);
+  assert.equal(shortlist119.tours.length, 0);
+  assert.equal(shortlist119.shortlistSummary?.shortlist2hCountOnPage, 0);
+  assert.equal(shortlist119.shortlistSummary?.otherFittingCountOnPage, 1);
+  assert.equal(shortlist119.shortlistSummary?.offerSeeOtherToursThatFit, true);
+  assert.equal(
+    shortlist119.shortlistSummary?.seeOtherToursThatFitLabel,
+    "See other tours that fit"
+  );
+
+  const otherTours119 = await queryPortDayExcursionCatalog({
+    portSlug: "new-orleans",
+    viewMode: "fits_sailing",
+    shipArrivalTime: "07:00",
+    shipAllAboardTime: "14:14",
+    sailingDate: "2027-01-12",
+    partySize: 5,
+    search: "15200P6",
+  });
+  assert.ok(otherTours119);
+  assert.equal(otherTours119.tours.length, 1);
+  const card119 = otherTours119.tours[0];
+  assert.equal(card119.timeFit.status, "fits");
+  assert.equal(card119.timeFit.bufferBeforeAllAboardMinutes, 119);
+  assert.equal(card119.timeFit.twoHourShortlist?.qualifies, false);
+  assert.equal(
+    card119.timeFit.twoHourShortlist?.statusLabel,
+    "See other tours that fit"
+  );
+
+  // 3. Full return trip with tender (15m) + tender cutoff (15m) -> returnEstimateTime = 12:45
+  const tender120 = await queryPortDayExcursionCatalog({
+    portSlug: "new-orleans",
+    viewMode: "shortlist_2h",
+    shipArrivalTime: "07:00",
+    shipAllAboardTime: "14:45",
+    sailingDate: "2027-01-12",
+    partySize: 5,
+    dockOrTender: "tender",
+    tenderTravelMinutes: 15,
+    tenderCutoffMinutes: 15,
+    search: "15200P6",
+  });
+  assert.ok(tender120);
+  assert.equal(tender120.tours.length, 1);
+  const tenderCard120 = tender120.tours[0];
+  assert.equal(tenderCard120.timeFit.returnAtPierTime, "12:15");
+  assert.equal(tenderCard120.timeFit.returnEstimateTime, "12:45");
+  assert.equal(tenderCard120.timeFit.lastTenderCutoffTime, "14:30");
+  assert.equal(tenderCard120.timeFit.fullReturnTripMinutes, 45);
+  assert.equal(tenderCard120.timeFit.bufferBeforeAllAboardMinutes, 120);
+  assert.equal(tenderCard120.timeFit.twoHourShortlist?.qualifies, true);
+
+  const tender119 = await queryPortDayExcursionCatalog({
+    portSlug: "new-orleans",
+    viewMode: "shortlist_2h",
+    shipArrivalTime: "07:00",
+    shipAllAboardTime: "14:44",
+    sailingDate: "2027-01-12",
+    partySize: 5,
+    dockOrTender: "tender",
+    tenderTravelMinutes: 15,
+    tenderCutoffMinutes: 15,
+    search: "15200P6",
+  });
+  assert.ok(tender119);
+  assert.equal(tender119.tours.length, 0);
+  assert.equal(tender119.shortlistSummary?.otherFittingCountOnPage, 1);
+
+  // 4. Missing tender cutoff on tender call -> Needs verification
+  const tenderMissingCutoff = await queryPortDayExcursionCatalog({
+    portSlug: "new-orleans",
+    viewMode: "browse_all",
+    shipArrivalTime: "07:00",
+    shipAllAboardTime: "14:45",
+    sailingDate: "2027-01-12",
+    partySize: 5,
+    dockOrTender: "tender",
+    tenderTravelMinutes: 15,
+    tenderCutoffMinutes: null,
+    search: "15200P6",
+  });
+  assert.ok(tenderMissingCutoff);
+  assert.equal(tenderMissingCutoff.tours.length, 1);
+  assert.equal(tenderMissingCutoff.tours[0].timeFit.status, "needs_verification");
+  assert.equal(tenderMissingCutoff.tours[0].timeFit.statusLabel, "Needs verification");
+  assert.ok(tenderMissingCutoff.tours[0].timeFit.missingFields.includes("tenderCutoff"));
+  assert.equal(
+    tenderMissingCutoff.tours[0].timeFit.twoHourShortlist?.statusLabel,
+    "Needs verification"
+  );
+});
+
+
+
