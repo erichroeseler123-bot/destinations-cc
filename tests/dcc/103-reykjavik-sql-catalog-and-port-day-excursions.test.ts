@@ -381,10 +381,17 @@ test("103.6: Batch 3 ports (New Orleans, Miami, Tampa, Seattle) reconcile provid
   }
 });
 
-test("103.7: Shared handoff ledger records Cruise Promenade as originatingSite, attaches matching campaign and click_id with P00306962, and reports redirects, confirmed bookings, and earned commissions separately", async () => {
-  const { createCommercialHandoff, getSharedHandoffLedgerSummary } = await import(
+test("103.7: Shared handoff ledger records Cruise Promenade as originatingSite, attaches matching campaign and click_id with P00306962, and reports redirects, confirmed bookings, and earned commissions separately", async (t) => {
+  const { createCommercialHandoff, getSharedHandoffLedgerSummary, resetCommercialMemoryStoreForTests } = await import(
     "@/lib/dcc/commerce"
   );
+  const prevDisable = process.env.DCC_DISABLE_NEON_COMMERCE;
+  process.env.DCC_DISABLE_NEON_COMMERCE = "1";
+  t.after(() => {
+    if (prevDisable === undefined) delete process.env.DCC_DISABLE_NEON_COMMERCE;
+    else process.env.DCC_DISABLE_NEON_COMMERCE = prevDisable;
+  });
+  resetCommercialMemoryStoreForTests();
 
   const handoff = await createCommercialHandoff({
     originatingSite: "cruisepromenade.com",
@@ -869,3 +876,266 @@ test("103.12: checkout requires a configured client, explicit approval, verified
     assert.equal(rpc.result.structuredContent.durableRecordCount, 0);
   }
 });
+
+test("103.13: Show HN 5-traveler MCP demo (60m fits, 59m runs_too_late, missing all-aboard needs_verification, separate read-only availability) and Viator reporting import campaignValue matching with QA excluded and confirmed bookings vs paid commissions separated", async (t) => {
+  const { POST } = await import("@/app/api/v1/mcp/route");
+  const {
+    createCommercialHandoff,
+    pollViatorModifiedSinceWithCheckpoint,
+    getSharedHandoffLedgerSummary,
+    resetCommercialMemoryStoreForTests,
+  } = await import("@/lib/dcc/commerce");
+  const prevDisable = process.env.DCC_DISABLE_NEON_COMMERCE;
+  process.env.DCC_DISABLE_NEON_COMMERCE = "1";
+  t.after(() => {
+    if (prevDisable === undefined) delete process.env.DCC_DISABLE_NEON_COMMERCE;
+    else process.env.DCC_DISABLE_NEON_COMMERCE = prevDisable;
+  });
+
+  async function callMcp(payload: Record<string, unknown>) {
+    const req = new Request("https://www.destinationcommandcenter.com/api/v1/mcp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const res = await POST(req);
+    const json = await res.json();
+    return { status: res.status, json };
+  }
+
+  // Part A: Show HN read-only MCP demo for 5 travelers on New Orleans 15200P6 / TG10 (08:00 departure)
+  const baseArgs = {
+    port: "new-orleans",
+    productCode: "15200P6",
+    date: "2027-07-15",
+    shipArrival: "07:00",
+    partySize: 5,
+  };
+
+  // 1) 60 minutes before all-aboard (1:15 p.m. / 13:15) -> fits
+  const fits60Res = await callMcp({
+    jsonrpc: "2.0",
+    id: 101,
+    method: "tools/call",
+    params: {
+      name: "dcc_search_port_excursions",
+      arguments: { ...baseArgs, allAboard: "1:15 p.m." },
+    },
+  });
+  assert.equal(fits60Res.status, 200);
+  const fits60Tour = fits60Res.json.result.structuredContent.tours[0];
+  assert.equal(fits60Tour.productCode, "15200P6");
+  assert.equal(fits60Tour.timeFit.status, "fits");
+  assert.equal(fits60Tour.timeFit.selectedOptionCode, "TG10");
+  assert.equal(fits60Tour.timeFit.selectedDepartureTime, "08:00");
+  assert.equal(fits60Tour.timeFit.estimatedBackAtPierTime, "12:15");
+  assert.equal(fits60Tour.timeFit.bufferBeforeAllAboardMinutes, 60);
+  assert.equal(fits60Tour.timeFit.requiredReturnBufferMinutes, 60);
+
+  // 2) 59 minutes before all-aboard (1:14 p.m. / 13:14) -> runs_too_late
+  const late59Res = await callMcp({
+    jsonrpc: "2.0",
+    id: 102,
+    method: "tools/call",
+    params: {
+      name: "dcc_search_port_excursions",
+      arguments: { ...baseArgs, allAboard: "1:14 p.m." },
+    },
+  });
+  assert.equal(late59Res.status, 200);
+  const late59Tour = late59Res.json.result.structuredContent.tours[0];
+  assert.equal(late59Tour.productCode, "15200P6");
+  assert.equal(late59Tour.timeFit.status, "runs_too_late");
+  assert.equal(late59Tour.timeFit.selectedOptionCode, "TG10");
+  assert.equal(late59Tour.timeFit.selectedDepartureTime, "08:00");
+  assert.equal(late59Tour.timeFit.estimatedBackAtPierTime, "12:15");
+  assert.equal(late59Tour.timeFit.bufferBeforeAllAboardMinutes, 59);
+  assert.equal(late59Tour.timeFit.requiredReturnBufferMinutes, 60);
+
+  // 3) Missing all-aboard time -> needs_verification (15:30 port estimate)
+  const missingRes = await callMcp({
+    jsonrpc: "2.0",
+    id: 103,
+    method: "tools/call",
+    params: {
+      name: "dcc_search_port_excursions",
+      arguments: baseArgs,
+    },
+  });
+  assert.equal(missingRes.status, 200);
+  const missingTour = missingRes.json.result.structuredContent.tours[0];
+  assert.equal(missingTour.productCode, "15200P6");
+  assert.equal(missingTour.timeFit.status, "needs_verification");
+  assert.equal(missingTour.timeFit.shipAllAboardTimeLabel, "15:30 (port estimate)");
+  assert.equal(missingTour.timeFit.allAboardTimeSource, "port_estimate");
+  assert.ok(missingTour.timeFit.missingFields.includes("allAboard"));
+
+  // 4) Separate read-only availability check for 5 travelers
+  const avail5Res = await callMcp({
+    jsonrpc: "2.0",
+    id: 104,
+    method: "tools/call",
+    params: {
+      name: "dcc_check_tour_availability",
+      arguments: {
+        port: "new-orleans",
+        productCode: "15200P6",
+        optionCode: "TG10",
+        date: "2027-07-15",
+        departureTime: "08:00",
+        partySize: 5,
+        simulateTimeout: true,
+      },
+    },
+  });
+  assert.equal(avail5Res.status, 200);
+  const avail5 = avail5Res.json.result.structuredContent;
+  assert.equal(avail5.ok, true);
+  assert.equal(avail5.readOnly, true);
+  assert.equal(avail5.createsCommercialHandoff, false);
+  assert.equal(avail5.timingFitIncluded, false);
+  assert.equal(avail5.partySize, 5);
+  assert.equal(avail5.seatAvailability.remainingSeats, null);
+  assert.ok(!("timeFit" in avail5));
+
+  // Part B: Verify Viator reporting import matches production account P00306962 campaignValue to stored handoff,
+  // excludes QA traffic, and reports confirmed bookings and paid commissions separately.
+  resetCommercialMemoryStoreForTests();
+
+  const prodHandoff = await createCommercialHandoff({
+    idempotencyKey: "prod-nola-15200p6-5p-001",
+    callerClientId: "cruisepromenade",
+    originatingSite: "cruisepromenade.com",
+    provider: "viator",
+    providerAccount: "P00306962",
+    campaign: "dcc-cruisepromenade-nola",
+    viatorProductCode: "15200P6",
+    productCode: "15200P6",
+    productTitle: "Small-Group Swamp Tour by Boat From New Orleans with Pickup",
+    productDestinationUrl:
+      "https://www.viator.com/tours/New-Orleans/New-Orleans-Swamp-Tour-and-Wetlands-Adventure/d675-15200P6",
+    intendedDate: "2027-07-15",
+    intendedOption: "TG10",
+    intendedDepartureTime: "08:00",
+    partySize: 5,
+    quotedPriceAmount: 300,
+    quotedPriceCurrency: "USD",
+    metadata: {
+      portSlug: "new-orleans",
+      isQaTraffic: false,
+    },
+  });
+
+  const qaHandoff = await createCommercialHandoff({
+    idempotencyKey: "qa-nola-15200p6-5p-001",
+    callerClientId: "qa-runner",
+    originatingSite: "cruisepromenade.com",
+    provider: "viator",
+    providerAccount: "P00306962",
+    campaign: "dcc-cruisepromenade-nola",
+    viatorProductCode: "15200P6",
+    productCode: "15200P6",
+    productTitle: "Small-Group Swamp Tour by Boat From New Orleans with Pickup",
+    productDestinationUrl:
+      "https://www.viator.com/tours/New-Orleans/New-Orleans-Swamp-Tour-and-Wetlands-Adventure/d675-15200P6",
+    intendedDate: "2027-07-15",
+    intendedOption: "TG10",
+    intendedDepartureTime: "08:00",
+    partySize: 5,
+    quotedPriceAmount: 300,
+    quotedPriceCurrency: "USD",
+    metadata: {
+      portSlug: "new-orleans",
+      isQaTraffic: true,
+    },
+  });
+
+  // Poll 1: Viator returns BOOKING_CONFIRMED with campaignValue for both prod and QA handoffs (estimated commission only, no paid commission yet)
+  const pollConfirmed = await pollViatorModifiedSinceWithCheckpoint({
+    pollerId: "viator_prod_campaign_value_test",
+    providerAccount: "P00306962",
+    customFetchPage: async () => ({
+      nextCursor: "cursor_after_confirmed",
+      bookings: [
+        {
+          bookingRef: "BR-PROD-15200P6-01",
+          eventType: "BOOKING_CONFIRMED",
+          lastUpdated: "2027-07-01T12:00:00.000Z",
+          campaignValue: prodHandoff.attributionParameterValue,
+          productCode: "15200P6",
+          tourGradeCode: "TG10",
+          travelDate: "2027-07-15",
+          partySize: 5,
+          bookingValue: 300,
+          estimatedCommission: 24,
+          currency: "USD",
+        },
+        {
+          bookingRef: "BR-QA-15200P6-01",
+          eventType: "BOOKING_CONFIRMED",
+          lastUpdated: "2027-07-01T12:01:00.000Z",
+          campaignValue: qaHandoff.attributionParameterValue,
+          productCode: "15200P6",
+          tourGradeCode: "TG10",
+          travelDate: "2027-07-15",
+          partySize: 5,
+          bookingValue: 300,
+          estimatedCommission: 24,
+          currency: "USD",
+        },
+      ],
+    }),
+  });
+  assert.equal(pollConfirmed.matchedCount, 2);
+
+  // Verify ledger summary after BOOKING_CONFIRMED: QA excluded, 1 confirmed booking, $24 estimated commission, 0 paid commissions ($0 settled)
+  const summaryAfterConfirm = await getSharedHandoffLedgerSummary({
+    originatingSite: "cruisepromenade.com",
+    portSlug: "new-orleans",
+  });
+  assert.equal(summaryAfterConfirm.providerConfirmedBookings.confirmedCount, 1);
+  assert.equal(summaryAfterConfirm.estimatedCommissions.estimatedCommissionUsd, 24);
+  assert.equal(summaryAfterConfirm.payouts.paidCommissionsCount, 0);
+  assert.equal(summaryAfterConfirm.payouts.settledPaidUsd, 0);
+  assert.equal(summaryAfterConfirm.machineFunnel?.matchedConfirmedBookings, 1);
+  assert.equal(summaryAfterConfirm.machineFunnel?.paidCommissionsCount, 0);
+  assert.equal(summaryAfterConfirm.machineFunnel?.paidCommissionsUsd, 0);
+
+  // Poll 2: Viator returns COMMISSION_RECONCILED with paidCommission: 24 for the production booking
+  const pollSettled = await pollViatorModifiedSinceWithCheckpoint({
+    pollerId: "viator_prod_campaign_value_test",
+    providerAccount: "P00306962",
+    customFetchPage: async () => ({
+      nextCursor: "cursor_after_settled",
+      bookings: [
+        {
+          bookingRef: "BR-PROD-15200P6-01",
+          eventType: "COMMISSION_RECONCILED",
+          lastUpdated: "2027-07-20T12:00:00.000Z",
+          campaignValue: prodHandoff.attributionParameterValue,
+          productCode: "15200P6",
+          tourGradeCode: "TG10",
+          travelDate: "2027-07-15",
+          partySize: 5,
+          bookingValue: 300,
+          paidCommission: 24,
+          currency: "USD",
+        },
+      ],
+    }),
+  });
+  assert.equal(pollSettled.matchedCount, 1);
+
+  // Verify ledger summary after COMMISSION_RECONCILED: still 1 confirmed booking (not double-counted!), and 1 paid commission ($24 settled) reported separately
+  const summaryAfterSettle = await getSharedHandoffLedgerSummary({
+    originatingSite: "cruisepromenade.com",
+    portSlug: "new-orleans",
+  });
+  assert.equal(summaryAfterSettle.providerConfirmedBookings.confirmedCount, 1);
+  assert.equal(summaryAfterSettle.payouts.paidCommissionsCount, 1);
+  assert.equal(summaryAfterSettle.payouts.settledPaidUsd, 24);
+  assert.equal(summaryAfterSettle.machineFunnel?.matchedConfirmedBookings, 1);
+  assert.equal(summaryAfterSettle.machineFunnel?.paidCommissionsCount, 1);
+  assert.equal(summaryAfterSettle.machineFunnel?.paidCommissionsUsd, 24);
+});
+

@@ -545,6 +545,9 @@ export async function POST(request: Request) {
           tourId: tourId || null,
           productCode,
           optionCode: seatAvailability.selectedOptionCode ?? optionCode,
+          date,
+          departureTime: seatAvailability.selectedDepartureTime ?? departureTime,
+          partySize,
           timingFitIncluded: false,
           seatCountStatus:
             seatAvailability.remainingSeats !== null ? "reported_by_provider" : "unknown",

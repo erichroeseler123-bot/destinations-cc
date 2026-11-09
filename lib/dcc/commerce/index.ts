@@ -523,7 +523,9 @@ export function deriveHandoffOutcomeStateFromOutcome(
           ? "amended"
           : evt.includes("PEND")
             ? "pending"
-            : evt.includes("CONFIRM") || evt.includes("COMMISSION_RECONCILED")
+            : evt.includes("CONFIRM") ||
+                evt.includes("COMMISSION_RECONCILED") ||
+                evt.includes("COMMISSION_SETTLED")
               ? "confirmed"
               : "unknown";
 
@@ -609,6 +611,8 @@ export interface MachineCommerceFunnelSummary {
   availabilityCheckEvents: number;
   checkoutHandoffEvents: number;
   matchedConfirmedBookings: number;
+  paidCommissionsCount: number;
+  paidCommissionsUsd: number;
   qaExcludedEvents: {
     searchEvents: number;
     availabilityCheckEvents: number;
@@ -2928,8 +2932,15 @@ export async function pollViatorModifiedSinceWithCheckpoint(options?: {
             : null;
 
       const campaignValue =
-        [item.campaignValue, item.campaign, item.partnerBookingRef]
-          .find((value) => typeof value === "string" && value.trim())?.trim() ?? null;
+        [
+          item.campaignValue,
+          (item as Record<string, unknown>)["campaign-value"],
+          item.campaign,
+          item.partnerBookingRef,
+          (item.bookedItem as Record<string, unknown> | undefined)?.campaignValue,
+        ]
+          .find((value): value is string => typeof value === "string" && Boolean(value.trim()))
+          ?.trim() ?? null;
 
       const currency = typeof item.currency === "string" ? item.currency : "USD";
       const bookingValueAmount =
@@ -4042,6 +4053,8 @@ export interface SharedHandoffLedgerSummary {
   };
   payouts: {
     displayValue: number | "unknown";
+    paidCommissionsCount?: number;
+    forOriginatingSitePaidCommissionsCount?: number;
     settledPaidUsd: number;
     forOriginatingSitePayoutsUsd: number;
     reportingStatus: "reported" | "unknown";
@@ -4137,14 +4150,28 @@ export async function getMachineCommerceFunnelSummary(options?: {
     applyEvent(evt);
   }
 
-  const outcomes = await listCommercialOutcomes({ limit: 200 });
-  let matchedConfirmedBookings = 0;
+  for (const h of memoryHandoffs.values()) {
+    if (h.metadata.isQaTraffic === true) continue;
+    const orig = normalizeOriginatingSite(h.originatingSite || "destinationcommandcenter.com");
+    if (siteFilter && orig !== siteFilter) continue;
+    const hPort = typeof h.metadata.portSlug === "string" ? h.metadata.portSlug.toLowerCase() : null;
+    if (portFilter && hPort && hPort !== portFilter) continue;
+    if (prodFilter && (h.productCode || "").toUpperCase() !== prodFilter) continue;
+    nonQaHandoffIds.add(h.handoffId);
+  }
+
+  const outcomes = await listCommercialOutcomes({ limit: 200, excludeQa: true });
+  const confirmedBookingKeys = new Set<string>();
+  const paidCommissionKeys = new Set<string>();
+  let paidCommissionsUsd = 0;
+
   for (const out of outcomes) {
     const evtType = out.eventType.toUpperCase();
     const isConfirmed =
       evtType.includes("CONFIRM") ||
       evtType.includes("FULFILL") ||
-      evtType.includes("COMMISSION_RECONCILED");
+      evtType.includes("COMMISSION_RECONCILED") ||
+      evtType.includes("COMMISSION_SETTLED");
     if (!isConfirmed) continue;
     if (
       !hasAuthenticatedProviderPaymentOrOperationalEvidence({
@@ -4156,7 +4183,16 @@ export async function getMachineCommerceFunnelSummary(options?: {
       continue;
     }
     if (out.handoffId && nonQaHandoffIds.has(out.handoffId)) {
-      matchedConfirmedBookings += 1;
+      const bookingKey = `${out.handoffId}::${out.provider}:${out.providerBookingRef}`;
+      confirmedBookingKeys.add(bookingKey);
+      const paid = out.paidCommission.amount ?? 0;
+      if (
+        (evtType.includes("COMMISSION_RECONCILED") || evtType.includes("COMMISSION_SETTLED")) &&
+        paid > 0
+      ) {
+        paidCommissionKeys.add(bookingKey);
+        paidCommissionsUsd = Number((paidCommissionsUsd + paid).toFixed(2));
+      }
     }
   }
 
@@ -4164,7 +4200,9 @@ export async function getMachineCommerceFunnelSummary(options?: {
     searchEvents,
     availabilityCheckEvents,
     checkoutHandoffEvents,
-    matchedConfirmedBookings,
+    matchedConfirmedBookings: confirmedBookingKeys.size,
+    paidCommissionsCount: paidCommissionKeys.size,
+    paidCommissionsUsd,
     qaExcludedEvents: {
       searchEvents: qaSearch,
       availabilityCheckEvents: qaAvail,
@@ -4342,8 +4380,10 @@ export async function getSharedHandoffLedgerSummary(options?: {
 
   // 4. Summarize authenticated provider-confirmed outcomes, estimated commissions, confirmed earnings, and payouts separately
   const outcomes = await listCommercialOutcomes({ limit: 100, excludeQa: true });
-  let confirmedCount = 0;
-  let forOriginatingSiteConfirmedCount = 0;
+  const seenConfirmedBookingKeys = new Set<string>();
+  const seenSiteConfirmedBookingKeys = new Set<string>();
+  const seenPaidCommissionKeys = new Set<string>();
+  const seenSitePaidCommissionKeys = new Set<string>();
   let estimatedCommissionUsd = 0;
   let confirmedEarnedUsd = 0;
   let settledPaidUsd = 0;
@@ -4357,7 +4397,10 @@ export async function getSharedHandoffLedgerSummary(options?: {
     }
     const evt = out.eventType.toUpperCase();
     const isConfirmed =
-      evt.includes("CONFIRM") || evt.includes("FULFILL") || evt.includes("COMMISSION_RECONCILED");
+      evt.includes("CONFIRM") ||
+      evt.includes("FULFILL") ||
+      evt.includes("COMMISSION_RECONCILED") ||
+      evt.includes("COMMISSION_SETTLED");
     if (!isConfirmed) continue;
     if (
       !hasAuthenticatedProviderPaymentOrOperationalEvidence({
@@ -4368,13 +4411,25 @@ export async function getSharedHandoffLedgerSummary(options?: {
     ) {
       continue;
     }
-    confirmedCount += 1;
+    const bookingKey = `${out.handoffId ?? "unmatched"}::${out.provider}:${out.providerBookingRef}`;
+    seenConfirmedBookingKeys.add(bookingKey);
     const est = out.estimatedCommission.amount ?? 0;
     const paid = out.paidCommission.amount ?? 0;
     // Never include an unconfirmed estimate in confirmedEarnedUsd or settledPaidUsd!
     const earned =
-      (evt.includes("FULFILL") || evt.includes("COMMISSION_RECONCILED")) && paid > 0 ? paid : 0;
-    const payout = evt.includes("COMMISSION_RECONCILED") && paid > 0 ? paid : 0;
+      (evt.includes("FULFILL") ||
+        evt.includes("COMMISSION_RECONCILED") ||
+        evt.includes("COMMISSION_SETTLED")) &&
+      paid > 0
+        ? paid
+        : 0;
+    const payout =
+      (evt.includes("COMMISSION_RECONCILED") || evt.includes("COMMISSION_SETTLED")) && paid > 0
+        ? paid
+        : 0;
+    if (payout > 0) {
+      seenPaidCommissionKeys.add(bookingKey);
+    }
 
     estimatedCommissionUsd = Number((estimatedCommissionUsd + est).toFixed(2));
     confirmedEarnedUsd = Number((confirmedEarnedUsd + earned).toFixed(2));
@@ -4382,13 +4437,20 @@ export async function getSharedHandoffLedgerSummary(options?: {
 
     const matchedOrig = out.handoffId ? handoffOriginById.get(out.handoffId) : null;
     if (!siteFilter || matchedOrig === siteFilter) {
-      forOriginatingSiteConfirmedCount += 1;
+      seenSiteConfirmedBookingKeys.add(bookingKey);
+      if (payout > 0) {
+        seenSitePaidCommissionKeys.add(bookingKey);
+      }
       forOriginatingSiteEstimatedUsd = Number((forOriginatingSiteEstimatedUsd + est).toFixed(2));
       forOriginatingSiteEarnedUsd = Number((forOriginatingSiteEarnedUsd + earned).toFixed(2));
       forOriginatingSitePayoutsUsd = Number((forOriginatingSitePayoutsUsd + payout).toFixed(2));
     }
   }
 
+  const confirmedCount = seenConfirmedBookingKeys.size;
+  const forOriginatingSiteConfirmedCount = seenSiteConfirmedBookingKeys.size;
+  const paidCommissionsCount = seenPaidCommissionKeys.size;
+  const forOriginatingSitePaidCommissionsCount = seenSitePaidCommissionKeys.size;
   const effectiveConfirmedCount = siteFilter ? forOriginatingSiteConfirmedCount : confirmedCount;
   const effectiveEstimatedUsd = siteFilter ? forOriginatingSiteEstimatedUsd : estimatedCommissionUsd;
   const effectiveEarnedUsd = siteFilter ? forOriginatingSiteEarnedUsd : confirmedEarnedUsd;
@@ -4451,6 +4513,8 @@ export async function getSharedHandoffLedgerSummary(options?: {
     payouts: {
       displayValue:
         effectivePayoutsUsd > 0 ? effectivePayoutsUsd : hasUnreported ? "unknown" : 0,
+      paidCommissionsCount,
+      forOriginatingSitePaidCommissionsCount,
       settledPaidUsd,
       forOriginatingSitePayoutsUsd,
       reportingStatus: hasUnreported ? "unknown" : "reported",

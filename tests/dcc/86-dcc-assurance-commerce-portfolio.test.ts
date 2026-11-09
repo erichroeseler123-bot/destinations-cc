@@ -261,11 +261,18 @@ test("Gate 3: Cross-Site Context Service — Short-Lived Redemption vs Longer-Li
       assert.equal(inspectedAfter.schedule.travelers, 4);
     }
   } finally {
-    process.env.DATABASE_URL = prevDbUrl;
+    if (prevDbUrl === undefined) delete process.env.DATABASE_URL;
+    else process.env.DATABASE_URL = prevDbUrl;
   }
 });
 
-test("Gate 4: Provider-Specific Affiliate URL Construction & Lightweight Handoffs (Shadow Mode Preserved)", async () => {
+test("Gate 4: Provider-Specific Affiliate URL Construction & Lightweight Handoffs (Shadow Mode Preserved)", async (t) => {
+  const prevDisable = process.env.DCC_DISABLE_NEON_COMMERCE;
+  process.env.DCC_DISABLE_NEON_COMMERCE = "1";
+  t.after(() => {
+    if (prevDisable === undefined) delete process.env.DCC_DISABLE_NEON_COMMERCE;
+    else process.env.DCC_DISABLE_NEON_COMMERCE = prevDisable;
+  });
   resetCommercialMemoryStoreForTests();
 
   // 1. Viator affiliate URL preserves pid + mcid + campaign__handoffId
@@ -353,7 +360,13 @@ test("Gate 4: Provider-Specific Affiliate URL Construction & Lightweight Handoff
   assert.equal(loaded.partySize, 4);
 });
 
-test("Gate 5: Outcome Reporting, Deduplication, Unmatched Preservation, Value/Commission Separation & Viator Cursor Recovery", async () => {
+test("Gate 5: Outcome Reporting, Deduplication, Unmatched Preservation, Value/Commission Separation & Viator Cursor Recovery", async (t) => {
+  const prevDisable = process.env.DCC_DISABLE_NEON_COMMERCE;
+  process.env.DCC_DISABLE_NEON_COMMERCE = "1";
+  t.after(() => {
+    if (prevDisable === undefined) delete process.env.DCC_DISABLE_NEON_COMMERCE;
+    else process.env.DCC_DISABLE_NEON_COMMERCE = prevDisable;
+  });
   resetCommercialMemoryStoreForTests();
 
   // 1. Verify Viator capability check allows booking reporting on Full Access without Booking

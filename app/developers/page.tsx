@@ -175,24 +175,61 @@ export default function DevelopersPage() {
 
           <div className="mt-6 space-y-4">
             <div className="rounded-2xl border border-white/10 bg-black/40 p-4">
-              <p className="text-xs font-bold uppercase tracking-wider text-emerald-200">1. Runnable REST Examples (New Orleans · Product 15200P6 · Option TG10 · 08:00 Departure)</p>
-              <pre className="mt-3 overflow-x-auto text-xs leading-5 text-cyan-100">{`# A) 1:15 p.m. (13:15) All Aboard -> status: "fits" (returns to pier at 12:15 with +60m buffer)
-curl -s "https://www.destinationcommandcenter.com/api/v1/cruise/port-day-excursions?port=new-orleans&date=2027-07-15&shipArrival=07:00&allAboard=13:15&partySize=2&productCode=15200P6"
+              <p className="text-xs font-bold uppercase tracking-wider text-emerald-200">1. Runnable REST Examples (New Orleans · Product 15200P6 · Option TG10 · 08:00 Departure · 5 Travelers)</p>
+              <pre className="mt-3 overflow-x-auto text-xs leading-5 text-cyan-100">{`# A) 60m before All Aboard (1:15 p.m. / 13:15) -> status: "fits" (returns to pier at 12:15 with +60m buffer)
+curl -s "https://www.destinationcommandcenter.com/api/v1/cruise/port-day-excursions?port=new-orleans&date=2027-07-15&shipArrival=07:00&allAboard=13:15&partySize=5&productCode=15200P6"
 
-# B) 1:14 p.m. (13:14) All Aboard -> status: "runs_too_late" (+59m buffer < 60m required)
-curl -s "https://www.destinationcommandcenter.com/api/v1/cruise/port-day-excursions?port=new-orleans&date=2027-07-15&shipArrival=07:00&allAboard=13:14&partySize=2&productCode=15200P6"
+# B) 59m before All Aboard (1:14 p.m. / 13:14) -> status: "runs_too_late" (+59m buffer < 60m required)
+curl -s "https://www.destinationcommandcenter.com/api/v1/cruise/port-day-excursions?port=new-orleans&date=2027-07-15&shipArrival=07:00&allAboard=13:14&partySize=5&productCode=15200P6"
 
-# C) Blank All Aboard -> status: "needs_verification", shipAllAboardTimeLabel: "15:30 (port estimate)"
-curl -s "https://www.destinationcommandcenter.com/api/v1/cruise/port-day-excursions?port=new-orleans&date=2027-07-15&shipArrival=07:00&partySize=2&productCode=15200P6"
+# C) Missing All Aboard -> status: "needs_verification", shipAllAboardTimeLabel: "15:30 (port estimate)"
+curl -s "https://www.destinationcommandcenter.com/api/v1/cruise/port-day-excursions?port=new-orleans&date=2027-07-15&shipArrival=07:00&partySize=5&productCode=15200P6"
 
-# D) Read-Only Live Availability Check (Option TG10, 2027-07-15, 08:00, Party Size 3 — separate from timing fit)
+# D) Read-Only Live Availability Check (Option TG10, 2027-07-15, 08:00, Party Size 5 — separate from timing fit)
 curl -s -X POST "https://www.destinationcommandcenter.com/api/v1/cruise/port-day-excursions" \\
   -H "Content-Type: application/json" \\
-  -d '{"port":"new-orleans","productCode":"15200P6","optionCode":"TG10","date":"2027-07-15","departureTime":"08:00","partySize":3}'`}</pre>
+  -d '{"port":"new-orleans","productCode":"15200P6","optionCode":"TG10","date":"2027-07-15","departureTime":"08:00","partySize":5}'`}</pre>
+            </div>
+
+            <div id="show-hn-demo" className="rounded-2xl border border-white/10 bg-black/40 p-4">
+              <p className="text-xs font-bold uppercase tracking-wider text-emerald-200">2. Show HN Demo — Read-Only MCP Example for 5 Travelers (New Orleans 15200P6 / TG10 · POST /api/v1/mcp)</p>
+              <pre className="mt-3 overflow-x-auto text-xs leading-5 text-cyan-100">{`# One-command read-only MCP demo for 5 travelers (60m fits -> 59m runs_too_late -> missing allAboard needs_verification -> separate live availability)
+node -e '
+const url = "https://www.destinationcommandcenter.com/api/v1/mcp";
+const rpc = (id, name, arguments) => fetch(url, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ jsonrpc: "2.0", id, method: "tools/call", params: { name, arguments } })
+}).then(r => r.json()).then(j => j.result.structuredContent);
+
+(async () => {
+  const base = { port: "new-orleans", productCode: "15200P6", date: "2027-07-15", shipArrival: "07:00", partySize: 5 };
+  const fits60 = (await rpc(1, "dcc_search_port_excursions", { ...base, allAboard: "1:15 p.m." })).tours[0].timeFit;
+  const late59 = (await rpc(2, "dcc_search_port_excursions", { ...base, allAboard: "1:14 p.m." })).tours[0].timeFit;
+  const missing = (await rpc(3, "dcc_search_port_excursions", base)).tours[0].timeFit;
+  const avail = await rpc(4, "dcc_check_tour_availability", {
+    port: "new-orleans", productCode: "15200P6", optionCode: "TG10", date: "2027-07-15", departureTime: "08:00", partySize: 5
+  });
+  console.log(JSON.stringify({
+    timingVerdicts: {
+      buffer60m_1315: { status: fits60.status, option: fits60.selectedOptionCode, dep: fits60.selectedDepartureTime, backAtPier: fits60.estimatedBackAtPierTime, bufferMin: fits60.bufferBeforeAllAboardMinutes, requiredBufferMin: fits60.requiredReturnBufferMinutes },
+      buffer59m_1314: { status: late59.status, option: late59.selectedOptionCode, dep: late59.selectedDepartureTime, backAtPier: late59.estimatedBackAtPierTime, bufferMin: late59.bufferBeforeAllAboardMinutes, requiredBufferMin: late59.requiredReturnBufferMinutes },
+      missingAllAboard: { status: missing.status, allAboardLabel: missing.shipAllAboardTimeLabel, source: missing.allAboardTimeSource, missingFields: missing.missingFields }
+    },
+    availabilitySeparateFromTiming: {
+      readOnly: avail.readOnly,
+      createsCommercialHandoff: avail.createsCommercialHandoff,
+      timingFitIncluded: avail.timingFitIncluded,
+      partySize: avail.partySize,
+      seatAvailability: avail.seatAvailability
+    }
+  }, null, 2));
+})();
+'`}</pre>
             </div>
 
             <div className="rounded-2xl border border-white/10 bg-black/40 p-4">
-              <p className="text-xs font-bold uppercase tracking-wider text-emerald-200">2. Runnable MCP Client Handshake &amp; Tool Calls (POST /api/v1/mcp)</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-emerald-200">2B. Full MCP Client Handshake &amp; Tool Calls (POST /api/v1/mcp)</p>
               <pre className="mt-3 overflow-x-auto text-xs leading-5 text-cyan-100">{`# 1. Initialize MCP session
 curl -s -X POST "https://www.destinationcommandcenter.com/api/v1/mcp" \\
   -H "Content-Type: application/json" \\
@@ -208,21 +245,31 @@ curl -s -X POST "https://www.destinationcommandcenter.com/api/v1/mcp" \\
   -H "Content-Type: application/json" \\
   -d '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}'
 
-# 4. Call dcc_search_port_excursions (1:15 p.m. -> fits | 1:14 p.m. -> runs_too_late | blank -> needs_verification)
+# 4A. Call dcc_search_port_excursions — 60 minutes before all-aboard (1:15 p.m.) -> status: "fits"
 curl -s -X POST "https://www.destinationcommandcenter.com/api/v1/mcp" \\
   -H "Content-Type: application/json" \\
-  -d '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"dcc_search_port_excursions","arguments":{"port":"new-orleans","date":"2027-07-15","shipArrival":"07:00","allAboard":"1:15 p.m.","partySize":3,"productCode":"15200P6"}}}'
+  -d '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"dcc_search_port_excursions","arguments":{"port":"new-orleans","date":"2027-07-15","shipArrival":"07:00","allAboard":"1:15 p.m.","partySize":5,"productCode":"15200P6"}}}'
 
-# 5. Call dcc_check_tour_availability (Read-only — Option TG10, 2027-07-15, 08:00, partySize 3)
+# 4B. Call dcc_search_port_excursions — 59 minutes before all-aboard (1:14 p.m.) -> status: "runs_too_late"
 curl -s -X POST "https://www.destinationcommandcenter.com/api/v1/mcp" \\
   -H "Content-Type: application/json" \\
-  -d '{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"dcc_check_tour_availability","arguments":{"port":"new-orleans","productCode":"15200P6","optionCode":"TG10","date":"2027-07-15","departureTime":"08:00","partySize":3}}}'
+  -d '{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"dcc_search_port_excursions","arguments":{"port":"new-orleans","date":"2027-07-15","shipArrival":"07:00","allAboard":"1:14 p.m.","partySize":5,"productCode":"15200P6"}}}'
+
+# 4C. Call dcc_search_port_excursions — missing all-aboard time -> status: "needs_verification"
+curl -s -X POST "https://www.destinationcommandcenter.com/api/v1/mcp" \\
+  -H "Content-Type: application/json" \\
+  -d '{"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"dcc_search_port_excursions","arguments":{"port":"new-orleans","date":"2027-07-15","shipArrival":"07:00","partySize":5,"productCode":"15200P6"}}}'
+
+# 5. Call dcc_check_tour_availability (Read-only — Option TG10, 2027-07-15, 08:00, partySize 5 — separate from timing verdict)
+curl -s -X POST "https://www.destinationcommandcenter.com/api/v1/mcp" \\
+  -H "Content-Type: application/json" \\
+  -d '{"jsonrpc":"2.0","id":6,"method":"tools/call","params":{"name":"dcc_check_tour_availability","arguments":{"port":"new-orleans","productCode":"15200P6","optionCode":"TG10","date":"2027-07-15","departureTime":"08:00","partySize":5}}}'
 
 # 6. Call dcc_prepare_tour_checkout (Continue to checkout — idempotent, returns handoffId, clickId, and absolute outboundAffiliateUrl)
 curl -s -X POST "https://www.destinationcommandcenter.com/api/v1/mcp" \\
   -H "Content-Type: application/json" \\
   -H "Authorization: Bearer $DCC_COMMERCE_API_KEY" \\
-  -d '{"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"dcc_prepare_tour_checkout","arguments":{"port":"new-orleans","productCode":"15200P6","optionCode":"TG10","date":"2027-07-15","departureTime":"08:00","partySize":3,"shipArrival":"07:00","allAboard":"15:30","travelerApprovedCheckout":true,"idempotencyKey":"nola-15200p6-tg10-2027-07-15-p3-001"}}}'`}</pre>
+  -d '{"jsonrpc":"2.0","id":7,"method":"tools/call","params":{"name":"dcc_prepare_tour_checkout","arguments":{"port":"new-orleans","productCode":"15200P6","optionCode":"TG10","date":"2027-07-15","departureTime":"08:00","partySize":3,"shipArrival":"07:00","allAboard":"15:30","travelerApprovedCheckout":true,"idempotencyKey":"nola-15200p6-tg10-2027-07-15-p3-001"}}}'`}</pre>
             </div>
 
             <div className="grid gap-4 md:grid-cols-3">

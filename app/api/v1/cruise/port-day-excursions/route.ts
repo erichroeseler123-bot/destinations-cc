@@ -320,6 +320,9 @@ export async function POST(request: NextRequest) {
         tourId,
         productCode,
         optionCode: seatAvailability.selectedOptionCode ?? optionCode,
+        date,
+        departureTime: seatAvailability.selectedDepartureTime ?? departureTime,
+        partySize,
         seatAvailability,
       },
       { headers: CORS_HEADERS }
