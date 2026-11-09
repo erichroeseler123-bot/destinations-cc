@@ -25,6 +25,13 @@ import {
 import { HREYFILL_REYKJAVIK_SHORE_EXCURSION_QUALIFICATION } from "@/lib/dcc/corridors/internationalCorridorQualifications";
 import { JUNEAU_PRODUCT_SUPPLIER_RECONCILIATION } from "@/lib/dcc/machine/v03/operatorDirectCheckout";
 import { fetchAvailabilitiesForItem } from "@/lib/dcc/liveSlots/fareharbor";
+import {
+  PROVEN_NEW_ORLEANS_TOURS,
+  resolveNextEligibleTourOption,
+  validateCatalogCheckoutBinding,
+  buildViatorCarryoverTruth,
+  type ViatorCarryoverTruth,
+} from "@/lib/dcc/catalog/provenToursCatalog";
 
 export type PortDayExcursionViewMode = "browse_all" | "fits_sailing" | "shortlist_2h";
 
@@ -267,6 +274,15 @@ export interface PortDaySeatAvailabilityEvaluation {
     statusLabel: string;
     detailNote: string;
   } | null;
+  nextEligibleOption?: {
+    optionCode: string;
+    departureTime: string;
+    displayTime: string;
+    resolvedDate: string;
+    autoAdvancedFromPastOption: boolean;
+    previousPastOptionsSkipped: string[];
+  } | null;
+  viatorCarryoverTruth?: ViatorCarryoverTruth | null;
   options: Array<{
     optionCode: string;
     title: string;
@@ -1726,6 +1742,7 @@ export function evaluateTourPortDayTimeFit(params: {
   shipDepartureTime?: string | null;
   departureTimeSource?: PortDayDepartureTimeSource;
   optionCode?: string | null;
+  sailingDate?: string | null;
   dockOrTender?: PortDayDockOrTender | string | null;
   tenderTravelMinutes?: number | null;
   tenderCutoffMinutes?: number | null;
@@ -1815,10 +1832,21 @@ export function evaluateTourPortDayTimeFit(params: {
       ? profile.requiredReturnBufferMinutes + allAboardToShipDepartureMinutes
       : null;
 
+  const recCodeUpper = String(rec.providerProductCode || "").trim().toUpperCase();
+  const autoResolvedOptionCode =
+    !params.optionCode && (recCodeUpper === "15200P1" || recCodeUpper === "15200P6")
+      ? resolveNextEligibleTourOption({
+          productCode: recCodeUpper,
+          date: params.sailingDate || null,
+          autoAdvanceIfPast: true,
+        }).selectedOption.optionCode
+      : null;
+  const effectiveRequestedOptionCode = params.optionCode || autoResolvedOptionCode;
+
   const chosenOption: TourProductOptionRecord | null =
-    (params.optionCode &&
+    (effectiveRequestedOptionCode &&
       rec.productOptions?.find(
-        (o) => o.optionCode.toUpperCase() === params.optionCode!.toUpperCase()
+        (o) => o.optionCode.toUpperCase() === effectiveRequestedOptionCode.toUpperCase()
       )) ||
     rec.productOptions?.find(
       (o) =>
@@ -2580,6 +2608,7 @@ export async function verifyLiveExcursionAvailability(params: {
   date: string;
   partySize: number;
   departureTime?: string | null;
+  autoSelectNextDeparture?: boolean;
   timeoutMs?: number;
   simulateTimeout?: boolean;
   retailOnly?: boolean;
@@ -2598,13 +2627,37 @@ export async function verifyLiveExcursionAvailability(params: {
   const timeZone = rec?.timeZone || node?.timeZone || "UTC";
 
   const code = (params.productCode || rec?.providerProductCode || params.tourId || "").trim();
+  const codeUpper = code.toUpperCase();
   const partySize = Math.max(1, Number(params.partySize) || 2);
-  const checkedDate = String(params.date || "").trim();
+  const rawDate = String(params.date || "").trim();
+
+  const isProvenNolaTour = codeUpper === "15200P1" || codeUpper === "15200P6";
+  const shouldAutoResolveOption =
+    isProvenNolaTour &&
+    (params.autoSelectNextDeparture === true || (!params.optionCode && !params.departureTime));
+
+  const nextEligibleResolution = isProvenNolaTour
+    ? resolveNextEligibleTourOption({
+        productCode: codeUpper,
+        date: rawDate || null,
+        explicitOptionCode: params.optionCode,
+        autoAdvanceIfPast: shouldAutoResolveOption,
+      })
+    : null;
+
+  const checkedDate =
+    !rawDate || rawDate.toLowerCase() === "today"
+      ? nextEligibleResolution?.resolvedDate || rawDate
+      : rawDate;
+
+  const effectiveExplicitOptionCode = shouldAutoResolveOption
+    ? nextEligibleResolution?.selectedOption.optionCode || params.optionCode
+    : params.optionCode;
 
   const chosenOption =
-    (params.optionCode &&
+    (effectiveExplicitOptionCode &&
       rec?.productOptions?.find(
-        (o) => o.optionCode.toUpperCase() === params.optionCode!.toUpperCase()
+        (o) => o.optionCode.toUpperCase() === effectiveExplicitOptionCode!.toUpperCase()
       )) ||
     rec?.productOptions?.find(
       (o) =>
@@ -2616,7 +2669,7 @@ export async function verifyLiveExcursionAvailability(params: {
 
   const requestedOptionCode =
     (
-      params.optionCode ||
+      effectiveExplicitOptionCode ||
       chosenOption?.optionCode ||
       (typeof (rec?.serviceDetails as any)?.optionCode === "string"
         ? (rec?.serviceDetails as any).optionCode
@@ -2626,10 +2679,25 @@ export async function verifyLiveExcursionAvailability(params: {
 
   const requestedDepartureTime =
     (
-      params.departureTime ||
+      (shouldAutoResolveOption
+        ? nextEligibleResolution?.selectedOption.departureTime
+        : params.departureTime) ||
       chosenOption?.scheduledStartTimes?.find((t) => t && t !== "00:00") ||
+      nextEligibleResolution?.selectedOption.departureTime ||
       null
     )?.trim() || null;
+
+  const nextEligibleOptionSummary: PortDaySeatAvailabilityEvaluation["nextEligibleOption"] =
+    nextEligibleResolution
+      ? {
+          optionCode: nextEligibleResolution.selectedOption.optionCode,
+          departureTime: nextEligibleResolution.selectedOption.departureTime,
+          displayTime: nextEligibleResolution.selectedOption.displayTime,
+          resolvedDate: nextEligibleResolution.resolvedDate,
+          autoAdvancedFromPastOption: nextEligibleResolution.autoAdvancedFromPastOption,
+          previousPastOptionsSkipped: nextEligibleResolution.previousPastOptionsSkipped,
+        }
+      : null;
 
   const fallbackRecord: DurableTourRecord =
     rec ||
@@ -2655,7 +2723,8 @@ export async function verifyLiveExcursionAvailability(params: {
   });
 
   const singleVesselVerification: PortDaySeatAvailabilityEvaluation["singleVesselVerification"] =
-    code.toUpperCase() === "15200P1" ||
+    codeUpper === "15200P1" ||
+    codeUpper === "15200P6" ||
     (rec?.serviceDetails as any)?.singleVesselVerificationStatus ===
       "requires_separate_operator_verification"
       ? {
@@ -2707,6 +2776,7 @@ export async function verifyLiveExcursionAvailability(params: {
       rejectionReason: pastCheck.reason,
       providerStatus: "past_departure_rejected",
       singleVesselVerification,
+      nextEligibleOption: nextEligibleOptionSummary,
       options: [],
       detailNote:
         pastCheck.reason ||
@@ -2745,6 +2815,18 @@ export async function verifyLiveExcursionAvailability(params: {
     rejectionReason: null,
     providerStatus,
     singleVesselVerification,
+    nextEligibleOption: nextEligibleOptionSummary,
+    viatorCarryoverTruth:
+      code && requestedOptionCode && requestedDepartureTime && checkedDate
+        ? buildViatorCarryoverTruth({
+            productCode: code,
+            optionCode: requestedOptionCode,
+            departureTime: requestedDepartureTime,
+            date: checkedDate,
+            partySize,
+            groupTotalUsd: null,
+          })
+        : null,
     options: [],
     detailNote,
   });
@@ -2940,6 +3022,15 @@ export async function verifyLiveExcursionAvailability(params: {
           rejectionReason: null,
           providerStatus: "live_confirmed",
           singleVesselVerification,
+          nextEligibleOption: nextEligibleOptionSummary,
+          viatorCarryoverTruth: buildViatorCarryoverTruth({
+            productCode: code,
+            optionCode: String(exactItem.productOptionCode || requestedOptionCode),
+            optionTitle: chosenOption?.title || `Option ${requestedOptionCode}`,
+            startTime: String(exactItem.startTime || requestedDepartureTime).slice(0, 5),
+            date: checkedDate,
+            partySize,
+          }),
           options: [
             {
               optionCode: String(exactItem.productOptionCode || requestedOptionCode),
@@ -3002,6 +3093,15 @@ export async function verifyLiveExcursionAvailability(params: {
           rejectionReason: null,
           providerStatus: "live_confirmed",
           singleVesselVerification,
+          nextEligibleOption: nextEligibleOptionSummary,
+          viatorCarryoverTruth: buildViatorCarryoverTruth({
+            productCode: code,
+            optionCode: matchedOptionCode,
+            optionTitle: chosenOption?.title || `Option ${requestedOptionCode}`,
+            startTime: matchedStartTime,
+            date: checkedDate,
+            partySize,
+          }),
           options: [
             {
               optionCode: matchedOptionCode,
@@ -3116,6 +3216,7 @@ export async function queryPortDayExcursionCatalog(params: {
     const timeFit = evaluateTourPortDayTimeFit({
       rec,
       profile,
+      sailingDate,
       shipArrivalTime,
       arrivalTimeSource: portCallResolution.arrivalTimeSource,
       shipAllAboardTime,

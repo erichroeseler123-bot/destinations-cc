@@ -32,6 +32,8 @@ import {
   evaluatePortfolioAssuranceSummary,
   resolvePortfolioTripContext,
 } from "@/lib/dcc/commerce/portfolio";
+import { resolveNextEligibleTourOption } from "@/lib/dcc/catalog/provenToursCatalog";
+import { verifyLiveExcursionAvailability } from "@/lib/dcc/cruisePortExcursionCatalogEngine";
 import styles from "./tourDetail.module.css";
 
 interface Props {
@@ -146,6 +148,44 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
       (Array.isArray(resolvedSearchParams.optionCode)
         ? resolvedSearchParams.optionCode[0]
         : resolvedSearchParams.optionCode);
+  const isLargeAirboat15200P1Page =
+    slug === "ragin-cajun-airboat-options" || product.viatorProductCode === "15200P1";
+  const effective15200P1PartySize = resolvedPartySize && resolvedPartySize > 0 ? resolvedPartySize : 8;
+  const nextEligible15200P1 = isLargeAirboat15200P1Page
+    ? resolveNextEligibleTourOption({
+        productCode: "15200P1",
+        date: carriedContext.payload.date || null,
+        explicitOptionCode:
+          typeof rawOptionParam === "string" && rawOptionParam.trim()
+            ? rawOptionParam.trim()
+            : null,
+        autoAdvanceIfPast: !(typeof rawOptionParam === "string" && rawOptionParam.trim()),
+      })
+    : null;
+  const resolved15200P1Date =
+    nextEligible15200P1?.resolvedDate || carriedContext.payload.date || "2026-11-09";
+  const resolved15200P1OptionCode =
+    nextEligible15200P1?.selectedOption.optionCode ||
+    (typeof rawOptionParam === "string" && rawOptionParam.trim()
+      ? rawOptionParam.trim().toUpperCase()
+      : "TG9");
+
+  const initial15200P1SeatAvailability = isLargeAirboat15200P1Page
+    ? await verifyLiveExcursionAvailability({
+        portSlug: "new-orleans",
+        tourId: "dcc:tour:viator:15200P1",
+        productCode: "15200P1",
+        optionCode: resolved15200P1OptionCode,
+        date: resolved15200P1Date,
+        partySize: effective15200P1PartySize,
+        departureTime: nextEligible15200P1?.selectedOption.startTime || null,
+        autoSelectNextDeparture: !(typeof rawOptionParam === "string" && rawOptionParam.trim()),
+        timeoutMs: 3500,
+        originatingSite: siteDomain,
+        surface: pagePath,
+      }).catch(() => null)
+    : null;
+
   const viatorInfo = getProductViatorCanonicalInfo(product);
   const fhAccount =
     product.companyShortname === "neworleanssteamboatcompany"
@@ -162,8 +202,8 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
     contextId: carriedContext.contextId,
     evaluationRunId: assurance.evaluationRunId,
     receiptId: assurance.receiptId,
-    intendedDate: carriedContext.payload.date || null,
-    partySize: resolvedPartySize,
+    intendedDate: carriedContext.payload.date || (isLargeAirboat15200P1Page ? resolved15200P1Date : null),
+    partySize: resolvedPartySize || (isLargeAirboat15200P1Page ? effective15200P1PartySize : null),
     useRelativePath: !isWto,
   });
   const viatorHandoffHref = fallbackHref.startsWith("/api/v1/ads/click")
@@ -173,17 +213,20 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
         provider: "viator",
         providerAccount: viatorInfo.providerAccount,
         productCode: viatorInfo.productCode,
-        optionCode:
-          (typeof rawOptionParam === "string" && rawOptionParam.trim()) ||
-          viatorInfo.optionCode ||
-          null,
+        optionCode: isLargeAirboat15200P1Page
+          ? initial15200P1SeatAvailability?.selectedOptionCode || resolved15200P1OptionCode
+          : (typeof rawOptionParam === "string" && rawOptionParam.trim()) ||
+            viatorInfo.optionCode ||
+            null,
         destinationUrl: viatorInfo.destinationUrl,
         campaign: `${isWto ? "wno" : "dcc"}-${slug}-viator`,
         contextId: carriedContext.contextId,
         evaluationRunId: assurance.evaluationRunId,
         receiptId: assurance.receiptId,
-        intendedDate: carriedContext.payload.date || null,
-        partySize: resolvedPartySize,
+        intendedDate: isLargeAirboat15200P1Page
+          ? initial15200P1SeatAvailability?.checkedDate || resolved15200P1Date
+          : carriedContext.payload.date || null,
+        partySize: resolvedPartySize || (isLargeAirboat15200P1Page ? effective15200P1PartySize : null),
         useRelativePath: !isWto,
       });
   const crossSiteParams = new URLSearchParams();
@@ -344,7 +387,13 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
           carriedContext={carriedContext}
           handoffActions={[
             {
-              label: `Book ${viatorInfo.title} (${viatorInfo.operatorName} · ${viatorInfo.productCode}${viatorInfo.optionCode ? ` · ${viatorInfo.optionCode}` : ""}) on Viator`,
+              label: `Book ${viatorInfo.title} (${viatorInfo.operatorName} · ${viatorInfo.productCode}${
+                isLargeAirboat15200P1Page
+                  ? ` · ${initial15200P1SeatAvailability?.selectedOptionCode || resolved15200P1OptionCode} (${initial15200P1SeatAvailability?.selectedDepartureTime || nextEligible15200P1?.selectedOption.startTime || "14:10"})`
+                  : viatorInfo.optionCode
+                    ? ` · ${viatorInfo.optionCode}`
+                    : ""
+              }) on Viator`,
               href: viatorHandoffHref,
               providerLabel: "Viator",
               accountLabel: `pid=${viatorInfo.providerAccount}`,
@@ -372,17 +421,117 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
           ]}
         />
 
-        {(slug === "ragin-cajun-airboat-options" || product.viatorProductCode === "15200P1") && (
-          <LargeAirboat15200P1CheckCard
-            siteDomain={siteDomain}
-            initialDate={carriedContext.payload.date || null}
-            initialPartySize={resolvedPartySize}
-            initialOptionCode={
-              typeof rawOptionParam === "string" && rawOptionParam.trim()
-                ? rawOptionParam.trim()
-                : "TG9"
-            }
-          />
+        {isLargeAirboat15200P1Page && (
+          <>
+            <LargeAirboat15200P1CheckCard
+              siteDomain={siteDomain}
+              initialDate={resolved15200P1Date}
+              initialPartySize={effective15200P1PartySize}
+              initialOptionCode={resolved15200P1OptionCode}
+              initialAutoAdvancedReason={
+                nextEligible15200P1?.autoAdvancedFromPast
+                  ? nextEligible15200P1.reason
+                  : null
+              }
+              initialSeatAvailability={initial15200P1SeatAvailability}
+            />
+
+            <section
+              data-testid="wno-local-buying-questions"
+              aria-label="Local Buying Guide: Boat Size, Pickup Logistics & Group Departures"
+              style={{
+                maxWidth: 1120,
+                margin: "16px auto 24px",
+                padding: "20px 24px",
+                borderRadius: 14,
+                background: "#0f172a",
+                border: "1px solid rgba(148, 163, 184, 0.25)",
+                color: "#f8fafc",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: "0.74rem",
+                  fontWeight: 800,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  color: "#38bdf8",
+                }}
+              >
+                Local Buying Guide · Boat Size, Pickup &amp; Group Departures
+              </div>
+              <h2 style={{ fontSize: "1.2rem", fontWeight: 800, margin: "4px 0 12px", color: "#ffffff" }}>
+                Three Local Answers Before Your Group Books a New Orleans Airboat
+              </h2>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+                  gap: 14,
+                  fontSize: "0.84rem",
+                  color: "#cbd5e1",
+                }}
+              >
+                <div
+                  style={{
+                    padding: 14,
+                    borderRadius: 10,
+                    background: "rgba(30, 41, 59, 0.65)",
+                    border: "1px solid rgba(148, 163, 184, 0.2)",
+                  }}
+                >
+                  <h3 style={{ fontSize: "0.95rem", fontWeight: 800, color: "#f8fafc", marginBottom: 6 }}>
+                    1. Which Boat Size Fits 6–10+ Guests?
+                  </h3>
+                  <p style={{ margin: 0, lineHeight: 1.55 }}>
+                    <strong>6-Passenger Small Airboat</strong> (Ragin Cajun Item <code>228561</code> or Viator{" "}
+                    <code>15200P6</code>) caps at 6 guests per boat—groups of 7–10 are split across two boats.{" "}
+                    <strong>10-Passenger Airboat</strong> (Ragin Cajun Item <code>228560</code>) fits up to 10.{" "}
+                    <strong>16-Passenger Large Airboat</strong> (Louisiana Tour Company Viator <code>15200P1</code>,{" "}
+                    <strong>$65/adult</strong>) holds up to 16 passengers on a single stadium-seating hull; verify single-boat grouping with the operator after booking.
+                  </p>
+                </div>
+
+                <div
+                  style={{
+                    padding: 14,
+                    borderRadius: 10,
+                    background: "rgba(30, 41, 59, 0.65)",
+                    border: "1px solid rgba(148, 163, 184, 0.2)",
+                  }}
+                >
+                  <h3 style={{ fontSize: "0.95rem", fontWeight: 800, color: "#f8fafc", marginBottom: 6 }}>
+                    2. Hotel Pickup vs. Self-Drive Dock Arrival
+                  </h3>
+                  <p style={{ margin: 0, lineHeight: 1.55 }}>
+                    <strong>Viator <code>15200P1</code> (Large Airboat)</strong> is a{" "}
+                    <strong>self-drive / Uber</strong> option meeting at{" "}
+                    <strong>9706 Barataria Blvd, Marrero, LA 70072</strong> (~30 minutes from the French Quarter &amp; Erato/Julia cruise terminals; check in 30 minutes prior, 1h 40m on the water). Need{" "}
+                    <strong>downtown hotel pickup</strong> included? Use{" "}
+                    <strong>Viator <code>15200P6</code></strong> (<code>TG10</code> 8:00 a.m. pickup → 12:15 p.m. return, or <code>TG1</code> 10:15 a.m. pickup → 2:30 p.m. return; 3h 45m door-to-door).
+                  </p>
+                </div>
+
+                <div
+                  style={{
+                    padding: 14,
+                    borderRadius: 10,
+                    background: "rgba(30, 41, 59, 0.65)",
+                    border: "1px solid rgba(148, 163, 184, 0.2)",
+                  }}
+                >
+                  <h3 style={{ fontSize: "0.95rem", fontWeight: 800, color: "#f8fafc", marginBottom: 6 }}>
+                    3. Which Departures Can Take Your Group?
+                  </h3>
+                  <p style={{ margin: 0, lineHeight: 1.55 }}>
+                    Approved <code>15200P1</code> departures in New Orleans local time (<code>America/Chicago</code>):{" "}
+                    <strong>9:40 a.m.</strong> (<code>TG9</code>), <strong>12:10 p.m.</strong> (<code>TG2</code>), and{" "}
+                    <strong>2:10 p.m.</strong> (<code>TG6</code>), plus seasonal <strong>4:15 p.m.</strong> (<code>TG7</code>, unavailable Nov–Feb). Earlier departures that have already passed today are skipped automatically so your group starts on the first bookable time.
+                  </p>
+                </div>
+              </div>
+            </section>
+          </>
         )}
 
         <div className={styles.main}>

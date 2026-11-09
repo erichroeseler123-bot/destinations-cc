@@ -2043,6 +2043,94 @@ test("101.11 — WNO Booking Link Agreement & Louisiana Tour Company Viator 1520
   }
 });
 
+test("101.20 Today for eight (12:18 p.m. America/Chicago) auto-selects 2:10 p.m. TG6, validates checkout binding, and documents Viator carryover truth", async () => {
+  const {
+    PROVEN_NEW_ORLEANS_TOURS,
+    resolveNextEligibleTourOption,
+    validateCatalogCheckoutBinding,
+    buildViatorCarryoverTruth,
+  } = await import("../../lib/dcc/catalog/provenToursCatalog");
+
+  // 1. Both proven tours (15200P6 and 15200P1) are consolidated
+  assert.ok(PROVEN_NEW_ORLEANS_TOURS["15200P6"]);
+  assert.ok(PROVEN_NEW_ORLEANS_TOURS["15200P1"]);
+  assert.deepEqual(
+    PROVEN_NEW_ORLEANS_TOURS["15200P6"].options.map((o) => o.optionCode),
+    ["TG10", "TG1"],
+  );
+  assert.deepEqual(
+    PROVEN_NEW_ORLEANS_TOURS["15200P1"].options.map((o) => o.optionCode),
+    ["TG9", "TG2", "TG6", "TG7"],
+  );
+
+  // 2. At 12:18 p.m. America/Chicago (18:18 UTC in CST) on 2026-11-09, 09:40 (TG9) and 12:10 (TG2) have passed -> selects 14:10 / 2:10 p.m. (TG6)
+  const now1218Cst = new Date("2026-11-09T18:18:00.000Z");
+  const nextAt1218 = resolveNextEligibleTourOption({
+    productCode: "15200P1",
+    date: "2026-11-09",
+    now: now1218Cst,
+    autoAdvanceIfPast: true,
+  });
+  assert.ok(nextAt1218);
+  assert.equal(nextAt1218.resolvedDate, "2026-11-09");
+  assert.equal(nextAt1218.selectedOption.optionCode, "TG6");
+  assert.equal(nextAt1218.selectedOption.startTime, "14:10");
+  assert.equal(nextAt1218.selectedOption.displayTime, "2:10 p.m.");
+  assert.equal(nextAt1218.autoAdvancedFromPast, true);
+  assert.deepEqual(nextAt1218.skippedPastOptions, ["TG9 (09:40)", "TG2 (12:10)"]);
+  assert.deepEqual(nextAt1218.skippedSeasonalOptions, ["TG7 (16:15)"]);
+
+  // Also when date is omitted (defaulting on WNO ?partySize=8) at 12:18 p.m. CST, it resolves today 2026-11-09 and TG6 14:10
+  const defaultTodayAt1218 = resolveNextEligibleTourOption({
+    productCode: "15200P1",
+    date: null,
+    now: now1218Cst,
+    autoAdvanceIfPast: true,
+  });
+  assert.ok(defaultTodayAt1218);
+  assert.equal(defaultTodayAt1218.resolvedDate, "2026-11-09");
+  assert.equal(defaultTodayAt1218.selectedOption.optionCode, "TG6");
+
+  // 3. Joint validation of provider, product, and checkout destination
+  const validBinding = validateCatalogCheckoutBinding({
+    provider: "viator",
+    providerAccount: "P00306962",
+    productCode: "15200P1",
+    optionCode: "TG6",
+    checkoutDestinationUrl:
+      "https://www.viator.com/tours/New-Orleans/Large-Airboat-Swamp-Tour/d675-15200P1?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+  });
+  assert.equal(validBinding.valid, true);
+  assert.equal(validBinding.errors.length, 0);
+
+  const mismatchedBinding = validateCatalogCheckoutBinding({
+    provider: "viator",
+    providerAccount: "P00306962",
+    productCode: "15200P1",
+    optionCode: "TG6",
+    checkoutDestinationUrl:
+      "https://fareharbor.com/embeds/book/ragincajuntours/items/228561/",
+  });
+  assert.equal(mismatchedBinding.valid, false);
+  assert.ok(mismatchedBinding.errors.length > 0);
+
+  // 4. Viator carryover truth explicitly distinguishes automatic URL params vs manual widget confirmation
+  const carryover = buildViatorCarryoverTruth({
+    productCode: "15200P1",
+    optionCode: "TG6",
+    optionTitle: "2:10 PM Large Airboat Swamp Tour (Self-Drive · 9706 Barataria Blvd)",
+    startTime: "14:10",
+    date: "2026-11-09",
+    partySize: 8,
+  });
+  assert.equal(carryover.carriesOverAutomatically.productCode, "15200P1");
+  assert.equal(carryover.carriesOverAutomatically.departureTimeOptionPreselectedOnViatorWeb, false);
+  assert.equal(carryover.requiresTravelerConfirmationOnViator.optionCode, "TG6");
+  assert.equal(carryover.requiresTravelerConfirmationOnViator.displayTime, "2:10 p.m.");
+  assert.equal(carryover.requiresTravelerConfirmationOnViator.partySize, 8);
+});
+
+
 
 
 

@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import {
+  resolveNextEligibleTourOption,
+  buildViatorCarryoverTruth,
+  validateCatalogCheckoutBinding,
+} from "@/lib/dcc/catalog/provenToursCatalog";
+import type { PortDaySeatAvailabilityEvaluation } from "@/lib/dcc/cruisePortExcursionCatalogEngine";
 
 export interface LargeAirboatOptionSpec {
   optionCode: "TG9" | "TG2" | "TG6" | "TG7";
@@ -46,6 +52,10 @@ export interface LargeAirboat15200P1CheckCardProps {
   initialDate?: string | null;
   initialPartySize?: number | null;
   initialOptionCode?: string | null;
+  initialAutoAdvancedReason?: string | null;
+  initialSeatAvailability?: PortDaySeatAvailabilityEvaluation | null;
+  initialAllAboardTime?: string | null;
+  initialAllAboardConfirmed?: boolean;
 }
 
 interface LiveCheckState {
@@ -65,6 +75,84 @@ interface LiveCheckState {
   singleVesselStatus: string;
   singleVesselCapacity: number;
   singleVesselNote: string;
+  autoAdvanceNote: string | null;
+}
+
+function hydrateCheckStateFromSeat(
+  seat: PortDaySeatAvailabilityEvaluation | null | undefined,
+  partySize: number,
+  autoAdvanceNote: string | null,
+): LiveCheckState {
+  if (!seat) {
+    return {
+      loading: false,
+      checked: false,
+      error: null,
+      status: "requires_live_check",
+      availabilityDisplayLabel: "Check availability at the provider",
+      bookable: null,
+      totalPriceCents: null,
+      currency: "USD",
+      priceBasis: null,
+      timeChecked: null,
+      checkedTimeZone: "America/Chicago",
+      note: "Checking next eligible departure with Viator in New Orleans local time (America/Chicago)...",
+      providerEndpoint: null,
+      singleVesselStatus: "requires_separate_operator_verification",
+      singleVesselCapacity: 16,
+      singleVesselNote:
+        "Live Viator availability confirms total seats on the scheduled departure across Louisiana Tour Company's fleet (16-passenger large airboats), not guaranteed single-boat assignment. If your group wants one boat together, verify single-vessel grouping directly with Louisiana Tour Company after booking.",
+      autoAdvanceNote,
+    };
+  }
+
+  const isConfirmedAvailable =
+    seat.status === "live_verified" && seat.available === true;
+  const isConfirmedUnavailable =
+    seat.status === "sold_out" ||
+    seat.available === false ||
+    seat.pastDepartureRejected === true;
+  const normalizedStatus: LiveCheckState["status"] = isConfirmedAvailable
+    ? "available_for_party"
+    : isConfirmedUnavailable
+      ? "unavailable_for_party"
+      : "unknown";
+  const resolvedDisplayLabel =
+    seat.availabilityDisplayLabel ||
+    (isConfirmedAvailable
+      ? `Available for ${partySize} when checked`
+      : isConfirmedUnavailable
+        ? `Unavailable for ${partySize} when checked`
+        : "Check availability at the provider");
+  const resolvedTotalPriceCents =
+    typeof seat.totalPriceUsd === "number"
+      ? Math.round(seat.totalPriceUsd * 100)
+      : null;
+
+  return {
+    loading: false,
+    checked: true,
+    error: null,
+    status: normalizedStatus,
+    availabilityDisplayLabel: resolvedDisplayLabel,
+    bookable: isConfirmedAvailable ? true : isConfirmedUnavailable ? false : null,
+    totalPriceCents: resolvedTotalPriceCents,
+    currency: seat.currency || "USD",
+    priceBasis: seat.fromPriceUsd ? `$${seat.fromPriceUsd.toFixed(2)}/adult` : null,
+    timeChecked: seat.liveCheckedAt || new Date().toISOString(),
+    checkedTimeZone: seat.checkedTimeZone || "America/Chicago",
+    note: seat.detailNote || "",
+    providerEndpoint: "POST /availability/check",
+    singleVesselStatus:
+      seat.singleVesselVerification?.status ||
+      "requires_separate_operator_verification",
+    singleVesselCapacity:
+      seat.singleVesselVerification?.vesselCapacityPassengers || 16,
+    singleVesselNote:
+      seat.singleVesselVerification?.detailNote ||
+      `Live Viator availability confirms ${partySize} seats on the scheduled departure across Louisiana Tour Company's fleet (16-passenger large airboats), not guaranteed single-boat assignment. If the group wants one boat, verify single-vessel grouping separately with Louisiana Tour Company.`,
+    autoAdvanceNote: seat.nextEligibleOption?.reason || autoAdvanceNote,
+  };
 }
 
 export default function LargeAirboat15200P1CheckCard({
@@ -72,39 +160,55 @@ export default function LargeAirboat15200P1CheckCard({
   initialDate,
   initialPartySize,
   initialOptionCode,
+  initialAutoAdvancedReason,
+  initialSeatAvailability,
+  initialAllAboardTime,
+  initialAllAboardConfirmed,
 }: LargeAirboat15200P1CheckCardProps) {
-  const [date, setDate] = useState<string>(initialDate?.trim() || "2027-01-12");
+  const initialResolution = useMemo(
+    () =>
+      resolveNextEligibleTourOption({
+        productCode: "15200P1",
+        date: initialDate || null,
+        explicitOptionCode: initialOptionCode || null,
+        autoAdvanceIfPast: true,
+      }),
+    [initialDate, initialOptionCode],
+  );
+
+  const [date, setDate] = useState<string>(
+    initialSeatAvailability?.checkedDate ||
+      initialDate?.trim() ||
+      initialResolution?.resolvedDate ||
+      "2026-11-09",
+  );
   const [partySize, setPartySize] = useState<number>(
     initialPartySize && initialPartySize > 0 ? initialPartySize : 8,
   );
   const [optionCode, setOptionCode] = useState<"TG9" | "TG2" | "TG6" | "TG7">(() => {
-    const normalized = (initialOptionCode || "").trim().toUpperCase();
-    if (normalized === "TG2" || normalized === "TG6" || normalized === "TG7") {
-      return normalized;
+    const candidate = (
+      initialSeatAvailability?.selectedOptionCode ||
+      initialOptionCode ||
+      initialResolution?.selectedOption.optionCode ||
+      "TG9"
+    )
+      .trim()
+      .toUpperCase();
+    if (candidate === "TG2" || candidate === "TG6" || candidate === "TG7") {
+      return candidate;
     }
     return "TG9";
   });
 
-  // Also read query string on mount in case SSR was cached or link supplied ?partySize=8
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const sp = new URLSearchParams(window.location.search);
-    const rawParty = sp.get("partySize") || sp.get("party_size");
-    if (rawParty) {
-      const parsed = Number(rawParty);
-      if (Number.isFinite(parsed) && parsed >= 1 && parsed <= 16) {
-        setPartySize(Math.round(parsed));
-      }
-    }
-    const rawDate = sp.get("date") || sp.get("port_date");
-    if (rawDate && /^\d{4}-\d{2}-\d{2}$/.test(rawDate.trim())) {
-      setDate(rawDate.trim());
-    }
-    const rawOption = (sp.get("option") || sp.get("optionCode") || "").trim().toUpperCase();
-    if (rawOption === "TG9" || rawOption === "TG2" || rawOption === "TG6" || rawOption === "TG7") {
-      setOptionCode(rawOption);
-    }
-  }, []);
+  const [checkState, setCheckState] = useState<LiveCheckState>(() =>
+    hydrateCheckStateFromSeat(
+      initialSeatAvailability,
+      initialPartySize && initialPartySize > 0 ? initialPartySize : 8,
+      initialAutoAdvancedReason ?? initialResolution?.reason ?? null,
+    ),
+  );
+
+  const didAutoCheckOnMount = useRef(false);
 
   const selectedOption = useMemo(
     () =>
@@ -113,43 +217,12 @@ export default function LargeAirboat15200P1CheckCard({
     [optionCode],
   );
 
-  const [checkState, setCheckState] = useState<LiveCheckState>({
-    loading: false,
-    checked: false,
-    error: null,
-    status: "requires_live_check",
-    availabilityDisplayLabel: "Check availability at the provider",
-    bookable: null,
-    totalPriceCents: null,
-    currency: "USD",
-    priceBasis: null,
-    timeChecked: null,
-    checkedTimeZone: "America/Chicago",
-    note: "Select your date, departure option, and party size to verify live seats with Viator in New Orleans local time (America/Chicago).",
-    providerEndpoint: null,
-    singleVesselStatus: "requires_separate_operator_verification",
-    singleVesselCapacity: 16,
-    singleVesselNote:
-      "Live Viator availability confirms total seats on the scheduled departure across Louisiana Tour Company's fleet (16-passenger large airboats), not guaranteed single-boat assignment. If your group wants one boat together, verify single-vessel grouping directly with Louisiana Tour Company after booking.",
-  });
-
-  // Reset confirmation state whenever product parameters change so we never show stale "Available for N when checked"
-  const handleParamChange = (updater: () => void) => {
-    updater();
-    setCheckState((prev) => ({
-      ...prev,
-      checked: false,
-      error: null,
-      status: "requires_live_check",
-      availabilityDisplayLabel: "Check availability at the provider",
-      bookable: null,
-    }));
-  };
-
   async function runLiveAvailabilityCheck(overrideParams?: {
     date?: string;
     optionCode?: "TG9" | "TG2" | "TG6" | "TG7";
     partySize?: number;
+    autoSelectNextDeparture?: boolean;
+    autoAdvanceNote?: string | null;
   }) {
     const targetDate = overrideParams?.date ?? date;
     const targetOptionCode = overrideParams?.optionCode ?? optionCode;
@@ -162,6 +235,10 @@ export default function LargeAirboat15200P1CheckCard({
       ...prev,
       loading: true,
       error: null,
+      autoAdvanceNote:
+        overrideParams?.autoAdvanceNote !== undefined
+          ? overrideParams.autoAdvanceNote
+          : prev.autoAdvanceNote,
     }));
 
     try {
@@ -182,9 +259,10 @@ export default function LargeAirboat15200P1CheckCard({
           tourId: "dcc:tour:viator:15200P1",
           productCode: "15200P1",
           sailingDate: targetDate,
-          selectedOptionCode: targetOpt.optionCode,
-          selectedDepartureTime: targetOpt.departureTime,
+          optionCode: targetOpt.optionCode,
+          departureTime: targetOpt.departureTime,
           partySize: targetPartySize,
+          autoSelectNextDeparture: overrideParams?.autoSelectNextDeparture ?? false,
         }),
       });
 
@@ -198,63 +276,31 @@ export default function LargeAirboat15200P1CheckCard({
           status: "unknown",
           availabilityDisplayLabel: "Check availability at the provider",
           bookable: null,
-          error: data?.error || "Live provider check did not return a verified result.",
+          error: data?.message || data?.error || "Live provider check did not return a verified result.",
         }));
         return;
       }
 
-      const isConfirmedAvailable =
-        (seat.status === "live_verified" || seat.status === "available_for_party") &&
-        (seat.available === true || seat.bookable === true);
-      const isConfirmedUnavailable =
-        seat.status === "sold_out" ||
-        seat.status === "unavailable_for_party" ||
-        seat.available === false ||
-        seat.bookable === false ||
-        seat.pastDepartureRejected === true;
-      const normalizedStatus: LiveCheckState["status"] = isConfirmedAvailable
-        ? "available_for_party"
-        : isConfirmedUnavailable
-          ? "unavailable_for_party"
-          : "unknown";
-      const resolvedDisplayLabel =
-        seat.availabilityDisplayLabel ||
-        (isConfirmedAvailable
-          ? `Available for ${targetPartySize} when checked`
-          : isConfirmedUnavailable
-            ? `Unavailable for ${targetPartySize} when checked`
-            : "Check availability at the provider");
-      const resolvedTotalPriceCents =
-        typeof seat.totalPriceCents === "number"
-          ? seat.totalPriceCents
-          : typeof seat.totalPriceUsd === "number"
-            ? Math.round(seat.totalPriceUsd * 100)
-            : null;
+      if (
+        seat.selectedOptionCode &&
+        (seat.selectedOptionCode === "TG9" ||
+          seat.selectedOptionCode === "TG2" ||
+          seat.selectedOptionCode === "TG6" ||
+          seat.selectedOptionCode === "TG7") &&
+        seat.selectedOptionCode !== targetOptionCode
+      ) {
+        setOptionCode(seat.selectedOptionCode);
+      }
 
-      setCheckState({
-        loading: false,
-        checked: true,
-        error: null,
-        status: normalizedStatus,
-        availabilityDisplayLabel: resolvedDisplayLabel,
-        bookable: isConfirmedAvailable ? true : isConfirmedUnavailable ? false : null,
-        totalPriceCents: resolvedTotalPriceCents,
-        currency: seat.currency || "USD",
-        priceBasis: seat.priceBasis || (seat.fromPriceUsd ? `$${seat.fromPriceUsd}/adult` : null),
-        timeChecked: seat.liveCheckedAt || seat.checkedAt || new Date().toISOString(),
-        checkedTimeZone: seat.checkedTimeZone || "America/Chicago",
-        note: seat.detailNote || seat.note || "",
-        providerEndpoint: seat.providerEndpoint || "POST /availability/check",
-        singleVesselStatus:
-          seat.singleVesselVerification?.singleVesselVerificationStatus ||
-          seat.singleVesselVerification?.status ||
-          "requires_separate_operator_verification",
-        singleVesselCapacity: seat.singleVesselVerification?.vesselCapacityPassengers || 16,
-        singleVesselNote:
-          seat.singleVesselVerification?.detailNote ||
-          seat.singleVesselVerification?.note ||
-          `Live Viator availability confirms ${targetPartySize} seats on the scheduled departure across Louisiana Tour Company's fleet (16-passenger large airboats), not guaranteed single-boat assignment. If the group wants one boat, verify single-vessel grouping separately with Louisiana Tour Company.`,
-      });
+      setCheckState((prev) =>
+        hydrateCheckStateFromSeat(
+          seat,
+          targetPartySize,
+          overrideParams?.autoAdvanceNote ??
+            seat.nextEligibleOption?.reason ??
+            prev.autoAdvanceNote,
+        ),
+      );
     } catch (err: any) {
       setCheckState((prev) => ({
         ...prev,
@@ -267,6 +313,106 @@ export default function LargeAirboat15200P1CheckCard({
       }));
     }
   }
+
+  // On mount: synchronize URL parameters, resolve next eligible departure in America/Chicago, and auto-check if not yet verified
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (didAutoCheckOnMount.current) return;
+    didAutoCheckOnMount.current = true;
+
+    const sp = new URLSearchParams(window.location.search);
+    let nextParty = partySize;
+    const rawParty = sp.get("partySize") || sp.get("party_size");
+    if (rawParty) {
+      const parsed = Number(rawParty);
+      if (Number.isFinite(parsed) && parsed >= 1 && parsed <= 16) {
+        nextParty = Math.round(parsed);
+        setPartySize(nextParty);
+      }
+    }
+
+    const rawDate = sp.get("date") || sp.get("port_date");
+    const rawOption = (sp.get("option") || sp.get("optionCode") || "").trim().toUpperCase();
+
+    const resolution = resolveNextEligibleTourOption({
+      productCode: "15200P1",
+      date: rawDate || date,
+      explicitOptionCode: rawOption || null,
+      autoAdvanceIfPast: !rawOption,
+    });
+
+    const nextDate = resolution?.resolvedDate || rawDate || date;
+    const nextOpt = (resolution?.selectedOption.optionCode ||
+      rawOption ||
+      optionCode) as "TG9" | "TG2" | "TG6" | "TG7";
+    const advanceReason = resolution?.autoAdvancedFromPast
+      ? resolution.reason
+      : checkState.autoAdvanceNote;
+
+    if (nextDate !== date) setDate(nextDate);
+    if (nextOpt !== optionCode) setOptionCode(nextOpt);
+
+    const needsInitialFetch =
+      !checkState.checked ||
+      nextDate !== date ||
+      nextOpt !== optionCode ||
+      nextParty !== partySize;
+
+    if (needsInitialFetch) {
+      void runLiveAvailabilityCheck({
+        date: nextDate,
+        optionCode: nextOpt,
+        partySize: nextParty,
+        autoSelectNextDeparture: !rawOption,
+        autoAdvanceNote: advanceReason,
+      });
+    }
+  }, []);
+
+  const handleDateChange = (newDate: string) => {
+    const resolution = resolveNextEligibleTourOption({
+      productCode: "15200P1",
+      date: newDate,
+      explicitOptionCode: optionCode,
+      autoAdvanceIfPast: true,
+    });
+    const resolvedOpt = (resolution?.selectedOption.optionCode ||
+      optionCode) as "TG9" | "TG2" | "TG6" | "TG7";
+    const advanceNote = resolution?.autoAdvancedFromPast ? resolution.reason : null;
+    setDate(newDate);
+    if (resolvedOpt !== optionCode) {
+      setOptionCode(resolvedOpt);
+    }
+    void runLiveAvailabilityCheck({
+      date: newDate,
+      optionCode: resolvedOpt,
+      partySize,
+      autoSelectNextDeparture: true,
+      autoAdvanceNote: advanceNote,
+    });
+  };
+
+  const handleOptionChange = (newOption: "TG9" | "TG2" | "TG6" | "TG7") => {
+    setOptionCode(newOption);
+    void runLiveAvailabilityCheck({
+      date,
+      optionCode: newOption,
+      partySize,
+      autoSelectNextDeparture: false,
+      autoAdvanceNote: null,
+    });
+  };
+
+  const handlePartySizeChange = (newPartySize: number) => {
+    const clamped = Math.max(1, Math.min(16, newPartySize || 8));
+    setPartySize(clamped);
+    void runLiveAvailabilityCheck({
+      date,
+      optionCode,
+      partySize: clamped,
+      autoSelectNextDeparture: false,
+    });
+  };
 
   const trackedViatorCheckoutHref = useMemo(() => {
     const isWto =
@@ -288,6 +434,49 @@ export default function LargeAirboat15200P1CheckCard({
     return `${base}?${qs.toString()}`;
   }, [siteDomain, selectedOption.optionCode, date, partySize]);
 
+  const checkoutBindingValidation = useMemo(
+    () =>
+      validateCatalogCheckoutBinding({
+        provider: "viator",
+        providerAccount: "P00306962",
+        productCode: "15200P1",
+        optionCode: selectedOption.optionCode,
+        checkoutDestinationUrl: CANONICAL_VIATOR_15200P1_URL,
+      }),
+    [selectedOption.optionCode],
+  );
+
+  const carryoverTruth = useMemo(
+    () =>
+      buildViatorCarryoverTruth({
+        productCode: "15200P1",
+        optionCode: selectedOption.optionCode,
+        optionTitle: selectedOption.title,
+        startTime: selectedOption.departureTime,
+        date,
+        partySize,
+      }),
+    [selectedOption.optionCode, selectedOption.title, selectedOption.departureTime, date, partySize],
+  );
+
+  // Estimate return back to port / French Quarter: start + 100m tour + 35m return transfer = +135m
+  const estimatedReturnLabel = useMemo(() => {
+    const [h, m] = selectedOption.departureTime.split(":").map(Number);
+    const totalMins = (h || 0) * 60 + (m || 0) + 135;
+    const retH24 = Math.floor(totalMins / 60) % 24;
+    const retM = totalMins % 60;
+    const suffix = retH24 >= 12 ? "p.m." : "a.m.";
+    const retH12 = retH24 % 12 || 12;
+    return `${retH12}:${String(retM).padStart(2, "0")} ${suffix}`;
+  }, [selectedOption.departureTime]);
+
+  const fitsSailingBadgeLabel = useMemo(() => {
+    if (initialAllAboardConfirmed && initialAllAboardTime) {
+      return `Fits the sailing (est. back ${estimatedReturnLabel} vs ${initialAllAboardTime} all-aboard)`;
+    }
+    return `Schedule window: ${selectedOption.displayTime}–${estimatedReturnLabel} (confirm all-aboard if cruising)`;
+  }, [initialAllAboardConfirmed, initialAllAboardTime, selectedOption.displayTime, estimatedReturnLabel]);
+
   return (
     <section
       data-testid="wno-large-airboat-15200p1-card"
@@ -306,7 +495,7 @@ export default function LargeAirboat15200P1CheckCard({
         style={{
           display: "flex",
           flexWrap: "wrap",
-          alignItems: "center",
+          alignItems: "flex-start",
           justifyContent: "space-between",
           gap: 12,
           marginBottom: 14,
@@ -322,48 +511,113 @@ export default function LargeAirboat15200P1CheckCard({
               color: "#d4af37",
             }}
           >
-            Authorized Provider Option · Live Viator Partner API v2
+            First Eligible Group Option · Live Viator Partner API v2
           </div>
           <h2 style={{ fontSize: "1.25rem", fontWeight: 800, margin: "4px 0 2px", color: "#ffffff" }}>
             New Orleans Large Airboat Swamp Tour (Viator <code>15200P1</code> · Louisiana Tour Company)
           </h2>
           <div style={{ fontSize: "0.83rem", color: "#cbd5e1" }}>
-            16-Passenger Large Airboat · 1h 40m · Self-Drive Meeting Point: 9706 Barataria Blvd, Marrero, LA 70072 · New Orleans Local Time (<code>America/Chicago</code>)
+            16-Passenger Large Airboat · 1h 40m on water · Self-Drive Meeting Point:{" "}
+            <strong>9706 Barataria Blvd, Marrero, LA 70072</strong> (check in 30 min prior) · New Orleans Local Time (<code>America/Chicago</code>)
           </div>
         </div>
 
-        <span
-          data-testid="wno-15200p1-availability-badge"
-          data-availability-status={checkState.status}
+        {/* Three Strictly Separate Status Badges: 1) Fits Sailing, 2) Available for N, 3) One Boat Confirmed */}
+        <div
           style={{
-            display: "inline-block",
-            padding: "6px 14px",
-            borderRadius: 999,
-            fontSize: "0.82rem",
-            fontWeight: 800,
-            background:
-              checkState.status === "available_for_party"
-                ? "rgba(16, 185, 129, 0.2)"
-                : checkState.status === "unavailable_for_party"
-                  ? "rgba(239, 68, 68, 0.2)"
-                  : "rgba(245, 158, 11, 0.2)",
-            color:
-              checkState.status === "available_for_party"
-                ? "#6ee7b7"
-                : checkState.status === "unavailable_for_party"
-                  ? "#fca5a5"
-                  : "#fde68a",
-            border:
-              checkState.status === "available_for_party"
-                ? "1px solid rgba(16, 185, 129, 0.45)"
-                : checkState.status === "unavailable_for_party"
-                  ? "1px solid rgba(239, 68, 68, 0.45)"
-                  : "1px solid rgba(245, 158, 11, 0.45)",
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 8,
+            alignItems: "center",
           }}
         >
-          {checkState.availabilityDisplayLabel}
-        </span>
+          <span
+            data-testid="wno-15200p1-fits-sailing-badge"
+            style={{
+              display: "inline-block",
+              padding: "6px 12px",
+              borderRadius: 999,
+              fontSize: "0.78rem",
+              fontWeight: 800,
+              background: initialAllAboardConfirmed
+                ? "rgba(16, 185, 129, 0.16)"
+                : "rgba(148, 163, 184, 0.18)",
+              color: initialAllAboardConfirmed ? "#6ee7b7" : "#e2e8f0",
+              border: initialAllAboardConfirmed
+                ? "1px solid rgba(16, 185, 129, 0.4)"
+                : "1px solid rgba(148, 163, 184, 0.35)",
+            }}
+          >
+            {fitsSailingBadgeLabel}
+          </span>
+
+          <span
+            data-testid="wno-15200p1-availability-badge"
+            data-availability-status={checkState.status}
+            style={{
+              display: "inline-block",
+              padding: "6px 14px",
+              borderRadius: 999,
+              fontSize: "0.82rem",
+              fontWeight: 800,
+              background:
+                checkState.status === "available_for_party"
+                  ? "rgba(16, 185, 129, 0.2)"
+                  : checkState.status === "unavailable_for_party"
+                    ? "rgba(239, 68, 68, 0.2)"
+                    : "rgba(245, 158, 11, 0.2)",
+              color:
+                checkState.status === "available_for_party"
+                  ? "#6ee7b7"
+                  : checkState.status === "unavailable_for_party"
+                    ? "#fca5a5"
+                    : "#fde68a",
+              border:
+                checkState.status === "available_for_party"
+                  ? "1px solid rgba(16, 185, 129, 0.45)"
+                  : checkState.status === "unavailable_for_party"
+                    ? "1px solid rgba(239, 68, 68, 0.45)"
+                    : "1px solid rgba(245, 158, 11, 0.45)",
+            }}
+          >
+            {checkState.availabilityDisplayLabel}
+          </span>
+
+          <span
+            data-testid="wno-15200p1-one-boat-badge"
+            style={{
+              display: "inline-block",
+              padding: "6px 12px",
+              borderRadius: 999,
+              fontSize: "0.78rem",
+              fontWeight: 800,
+              background: "rgba(56, 189, 248, 0.15)",
+              color: "#bae6fd",
+              border: "1px solid rgba(56, 189, 248, 0.4)",
+            }}
+          >
+            One boat: verify separately ({checkState.singleVesselCapacity}-seat capacity)
+          </span>
+        </div>
       </div>
+
+      {/* Auto-selected next eligible departure notice */}
+      {checkState.autoAdvanceNote && (
+        <div
+          data-testid="wno-15200p1-next-eligible-banner"
+          style={{
+            padding: "9px 14px",
+            borderRadius: 8,
+            background: "rgba(16, 185, 129, 0.12)",
+            border: "1px solid rgba(16, 185, 129, 0.35)",
+            marginBottom: 14,
+            fontSize: "0.8rem",
+            color: "#d1fae5",
+          }}
+        >
+          <strong>Next Eligible Departure Auto-Selected:</strong> {checkState.autoAdvanceNote}
+        </div>
+      )}
 
       {/* Controls */}
       <div
@@ -384,9 +638,7 @@ export default function LargeAirboat15200P1CheckCard({
             data-testid="wno-15200p1-option-select"
             value={optionCode}
             onChange={(e) =>
-              handleParamChange(() =>
-                setOptionCode(e.target.value as "TG9" | "TG2" | "TG6" | "TG7"),
-              )
+              handleOptionChange(e.target.value as "TG9" | "TG2" | "TG6" | "TG7")
             }
             style={{
               padding: "8px 10px",
@@ -411,7 +663,7 @@ export default function LargeAirboat15200P1CheckCard({
             data-testid="wno-15200p1-date-input"
             type="date"
             value={date}
-            onChange={(e) => handleParamChange(() => setDate(e.target.value))}
+            onChange={(e) => handleDateChange(e.target.value)}
             style={{
               padding: "7px 10px",
               borderRadius: 6,
@@ -431,11 +683,7 @@ export default function LargeAirboat15200P1CheckCard({
             min={1}
             max={16}
             value={partySize}
-            onChange={(e) =>
-              handleParamChange(() =>
-                setPartySize(Math.max(1, Math.min(16, Number(e.target.value) || 8))),
-              )
-            }
+            onChange={(e) => handlePartySizeChange(Number(e.target.value) || 8)}
             style={{
               padding: "7px 10px",
               borderRadius: 6,
@@ -471,6 +719,68 @@ export default function LargeAirboat15200P1CheckCard({
         </div>
       </div>
 
+      {/* Exact Time, Pickup, Group Total, and Checked Timestamp */}
+      <div
+        data-testid="wno-15200p1-provider-response"
+        style={{
+          padding: "14px 16px",
+          borderRadius: 10,
+          background: "rgba(15, 23, 42, 0.72)",
+          border: "1px solid rgba(148, 163, 184, 0.24)",
+          marginBottom: 14,
+          fontSize: "0.82rem",
+          color: "#cbd5e1",
+        }}
+      >
+        <div style={{ fontWeight: 700, color: "#f8fafc", marginBottom: 8 }}>
+          First Useful Option Summary — Exact Time, Pickup, Group Total &amp; Live Verification:
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 10 }}>
+          <div>
+            <strong>Exact Departure Time:</strong>{" "}
+            <strong style={{ color: "#ffffff" }}>{selectedOption.displayTime}</strong> (
+            <code>{selectedOption.departureTime}</code> <code>America/Chicago</code> · Option{" "}
+            <code>{selectedOption.optionCode}</code> on <code>{date}</code>)
+          </div>
+          <div>
+            <strong>Pickup / Meeting Point:</strong>{" "}
+            <span style={{ color: "#f8fafc" }}>
+              Self-drive meeting point at 9706 Barataria Blvd, Marrero, LA 70072
+            </span>{" "}
+            (no hotel pickup on <code>15200P1</code>; check in 30 min prior)
+          </div>
+          <div>
+            <strong>Group Total ({partySize} Guests):</strong>{" "}
+            {checkState.totalPriceCents !== null ? (
+              <strong style={{ color: "#6ee7b7", fontSize: "0.92rem" }}>
+                ${(checkState.totalPriceCents / 100).toFixed(2)} {checkState.currency}
+              </strong>
+            ) : (
+              <span>Verify on provider</span>
+            )}{" "}
+            {checkState.priceBasis ? <span>({checkState.priceBasis})</span> : <span>($65.00/adult)</span>}
+          </div>
+          <div>
+            <strong>When Availability Was Checked:</strong>{" "}
+            <code data-testid="wno-15200p1-provider-status">{checkState.status}</code>
+            {checkState.timeChecked ? (
+              <span>
+                {" "}
+                at <code>{checkState.timeChecked}</code>
+              </span>
+            ) : (
+              <span> (live check in progress)</span>
+            )}
+          </div>
+        </div>
+        <div style={{ marginTop: 8, color: "#94a3b8", fontSize: "0.77rem" }}>
+          {checkState.note}
+          {checkState.timeChecked && (
+            <span> · Verified via <code>{checkState.providerEndpoint}</code></span>
+          )}
+        </div>
+      </div>
+
       {/* Separate One-Boat Verification Notice */}
       <div
         data-testid="wno-15200p1-single-vessel-verification"
@@ -488,91 +798,74 @@ export default function LargeAirboat15200P1CheckCard({
         {checkState.singleVesselNote}
       </div>
 
-      {/* Live Provider Response Details */}
-      <div
-        data-testid="wno-15200p1-provider-response"
-        style={{
-          padding: "12px 14px",
-          borderRadius: 10,
-          background: "rgba(15, 23, 42, 0.65)",
-          border: "1px solid rgba(148, 163, 184, 0.2)",
-          marginBottom: 14,
-          fontSize: "0.8rem",
-          color: "#cbd5e1",
-        }}
-      >
-        <div style={{ fontWeight: 700, color: "#f8fafc", marginBottom: 6 }}>
-          Selection &amp; Provider Verification Summary:
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 8 }}>
-          <div>
-            <strong>Product:</strong> <code>15200P1</code> (New Orleans Large Airboat Swamp Tour)
-          </div>
-          <div>
-            <strong>Option &amp; Time:</strong> <code>{selectedOption.optionCode}</code> ·{" "}
-            <code>{selectedOption.departureTime}</code> ({selectedOption.displayTime} <code>America/Chicago</code>)
-          </div>
-          <div>
-            <strong>Date &amp; Party Size:</strong> <code>{date}</code> · <code>{partySize}</code> guests
-          </div>
-          <div>
-            <strong>Provider Result:</strong>{" "}
-            <code data-testid="wno-15200p1-provider-status">{checkState.status}</code>
-            {checkState.totalPriceCents !== null && (
-              <span>
-                {" "}
-                · <strong>${(checkState.totalPriceCents / 100).toFixed(2)} {checkState.currency}</strong> ($65.00/adult)
-              </span>
-            )}
-          </div>
-        </div>
-        <div style={{ marginTop: 6, color: "#94a3b8", fontSize: "0.77rem" }}>
-          {checkState.note}
-          {checkState.timeChecked && (
-            <span> · Checked at <code>{checkState.timeChecked}</code> via <code>{checkState.providerEndpoint}</code></span>
-          )}
-        </div>
-      </div>
-
-      {/* Exact Checkout Destination Agreement */}
+      {/* One Clear Button to Continue + Exact Checkout Destination & Viator Carryover Truth */}
       <div
         data-testid="wno-15200p1-checkout-destination"
         style={{
           display: "flex",
-          flexWrap: "wrap",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 12,
+          flexDirection: "column",
+          gap: 10,
+          padding: "14px 16px",
+          borderRadius: 10,
+          background: "rgba(2, 132, 199, 0.1)",
+          border: "1px solid rgba(2, 132, 199, 0.35)",
         }}
       >
-        <div style={{ fontSize: "0.78rem", color: "#94a3b8" }}>
-          <strong>Checkout Destination Agreement:</strong> Provider <code>viator</code> (<code>pid=P00306962</code>) · Product <code>15200P1</code> · Option <code>{selectedOption.optionCode}</code> (<code>{selectedOption.departureTime}</code>) →{" "}
-          <code style={{ color: "#cbd5e1" }}>viator.com/tours/New-Orleans/Large-Airboat-Swamp-Tour/d675-15200P1</code>
-        </div>
-
-        <a
-          data-testid="wno-15200p1-continue-viator-link"
-          href={trackedViatorCheckoutHref}
-          target="_blank"
-          rel="sponsored noopener noreferrer"
+        <div
           style={{
-            display: "inline-flex",
+            display: "flex",
+            flexWrap: "wrap",
             alignItems: "center",
-            gap: 6,
-            padding: "9px 16px",
-            borderRadius: 8,
-            background: "#0284c7",
-            color: "#ffffff",
-            fontWeight: 800,
-            fontSize: "0.82rem",
-            textDecoration: "none",
+            justifyContent: "space-between",
+            gap: 12,
           }}
         >
-          {checkState.status === "available_for_party"
-            ? `Continue to Viator Checkout (15200P1 · ${selectedOption.optionCode} · ${partySize} Guests) ↗`
-            : `Check Availability at Viator (15200P1 · ${selectedOption.optionCode} · ${partySize} Guests) ↗`}
-        </a>
+          <div style={{ fontSize: "0.8rem", color: "#e2e8f0" }}>
+            <strong>Validated Checkout Binding ({checkoutBindingValidation.valid ? "Verified" : "Check"}):</strong>{" "}
+            Provider <code>viator</code> (<code>pid=P00306962</code>) · Product <code>15200P1</code> · Option{" "}
+            <code>{selectedOption.optionCode}</code> (<code>{selectedOption.departureTime}</code> / {selectedOption.displayTime}) →{" "}
+            <code style={{ color: "#bae6fd" }}>viator.com/tours/New-Orleans/Large-Airboat-Swamp-Tour/d675-15200P1</code>
+          </div>
+
+          <a
+            data-testid="wno-15200p1-continue-viator-link"
+            href={trackedViatorCheckoutHref}
+            target="_blank"
+            rel="sponsored noopener noreferrer"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "11px 18px",
+              borderRadius: 8,
+              background: "#0284c7",
+              color: "#ffffff",
+              fontWeight: 800,
+              fontSize: "0.86rem",
+              textDecoration: "none",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {checkState.status === "available_for_party"
+              ? `Continue to Viator (${selectedOption.displayTime} · ${selectedOption.optionCode} · ${partySize} Guests · $${((checkState.totalPriceCents || partySize * 6500) / 100).toFixed(0)}) ↗`
+              : `Continue to Viator (${selectedOption.displayTime} · ${selectedOption.optionCode} · ${partySize} Guests) ↗`}
+          </a>
+        </div>
+
+        <div
+          data-testid="wno-15200p1-viator-carryover-truth"
+          style={{
+            fontSize: "0.76rem",
+            color: "#cbd5e1",
+            borderTop: "1px solid rgba(148, 163, 184, 0.2)",
+            paddingTop: 8,
+          }}
+        >
+          <strong>What carries over to Viator vs. what to confirm on Viator:</strong>{" "}
+          {carryoverTruth.travelerInstruction}
+        </div>
       </div>
     </section>
   );
 }
+

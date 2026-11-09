@@ -10,6 +10,7 @@ import {
 import { recordMachineFunnelEvent } from "@/lib/dcc/commerce";
 import { enforceEvaluationRequestSizeLimit, MachineSecurityLimitError } from "@/lib/dcc/machine/securityLimits";
 import { prepareTourCheckoutFromRequest } from "@/lib/dcc/machine/v03/prepareTourCheckoutRequest";
+import { getLocalNowInTimeZone } from "@/lib/dcc/catalog/provenToursCatalog";
 
 export const dynamic = "force-dynamic";
 
@@ -254,12 +255,22 @@ export async function POST(request: NextRequest) {
     const productCode = body.productCode ? String(body.productCode) : null;
     const optionCode =
       body.optionCode || body.option ? String(body.optionCode || body.option) : null;
-    const date = String(body.date || body.sailingDate || "2027-07-15");
+    const rawDateInput = body.date || body.sailingDate ? String(body.date || body.sailingDate).trim() : "";
+    const date =
+      !rawDateInput || rawDateInput.toLowerCase() === "today"
+        ? portSlug === "new-orleans" || (productCode && productCode.toUpperCase().startsWith("15200P"))
+          ? getLocalNowInTimeZone("America/Chicago").dateIso
+          : "2027-07-15"
+        : rawDateInput;
     const partySize = Math.max(1, Number(body.partySize) || 2);
     const departureTime =
       body.departureTime || body.selectedDepartureTime
         ? String(body.departureTime || body.selectedDepartureTime)
         : null;
+    const autoSelectNextDeparture =
+      body.autoSelectNextDeparture === true ||
+      body.autoSelectNextDeparture === "true" ||
+      (!optionCode && !departureTime);
     const timeoutMs =
       body.timeoutMs !== undefined && Number.isFinite(Number(body.timeoutMs))
         ? Number(body.timeoutMs)
@@ -290,6 +301,7 @@ export async function POST(request: NextRequest) {
       date,
       partySize,
       departureTime,
+      autoSelectNextDeparture,
       timeoutMs,
       simulateTimeout,
       originatingSite,
