@@ -170,21 +170,63 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
       ? rawOptionParam.trim().toUpperCase()
       : "TG9");
 
-  const initial15200P1SeatAvailability = isLargeAirboat15200P1Page
+  const explicitOptionParam =
+    typeof rawOptionParam === "string" && rawOptionParam.trim()
+      ? rawOptionParam.trim().toUpperCase()
+      : null;
+
+  let initial15200P1SeatAvailability = isLargeAirboat15200P1Page
     ? await verifyLiveExcursionAvailability({
         portSlug: "new-orleans",
         tourId: "dcc:tour:viator:15200P1",
         productCode: "15200P1",
-        optionCode: resolved15200P1OptionCode,
+        optionCode: explicitOptionParam,
         date: resolved15200P1Date,
         partySize: effective15200P1PartySize,
-        departureTime: nextEligible15200P1?.selectedOption.startTime || null,
-        autoSelectNextDeparture: !(typeof rawOptionParam === "string" && rawOptionParam.trim()),
+        departureTime: explicitOptionParam ? nextEligible15200P1?.selectedOption.startTime || null : null,
+        autoSelectNextDeparture: !explicitOptionParam,
         timeoutMs: 3500,
         originatingSite: siteDomain,
         surface: pagePath,
       }).catch(() => null)
     : null;
+
+  if (
+    isLargeAirboat15200P1Page &&
+    (!initial15200P1SeatAvailability ||
+      initial15200P1SeatAvailability.status === "check_availability") &&
+    !process.env.VIATOR_API_KEY
+  ) {
+    try {
+      const dccHubRes = await fetch(
+        "https://www.destinationcommandcenter.com/api/v1/cruise/port-day-excursions",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            portSlug: "new-orleans",
+            tourId: "dcc:tour:viator:15200P1",
+            productCode: "15200P1",
+            optionCode: explicitOptionParam,
+            date: resolved15200P1Date,
+            partySize: effective15200P1PartySize,
+            autoSelectNextDeparture: !explicitOptionParam,
+            originatingSite: siteDomain,
+            surface: pagePath,
+          }),
+          cache: "no-store",
+        }
+      );
+      if (dccHubRes.ok) {
+        const dccHubData = await dccHubRes.json();
+        if (dccHubData?.seatAvailability) {
+          initial15200P1SeatAvailability = dccHubData.seatAvailability;
+        }
+      }
+    } catch {
+      // Fall back to initial15200P1SeatAvailability if hub fetch fails
+    }
+  }
 
   const viatorInfo = getProductViatorCanonicalInfo(product);
   const fhAccount =
