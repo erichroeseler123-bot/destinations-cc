@@ -61,8 +61,62 @@ export default function PortsSearchClient({ ports }: { ports: Port[] }) {
   );
   const visibleAreas = areas.length;
 
+  const featuredSlugs = [
+    "new-orleans",
+    "juneau",
+    "cozumel",
+    "nassau",
+    "st-thomas",
+    "reykjavik",
+    "grand-cayman",
+    "skagway",
+    "ketchikan",
+  ];
+  const featuredPorts = useMemo(
+    () =>
+      featuredSlugs
+        .map((slug) => ports.find((p) => p.slug === slug))
+        .filter((p): p is Port => Boolean(p)),
+    [ports]
+  );
+
   return (
     <section className="space-y-6">
+      {!q && featuredPorts.length > 0 ? (
+        <div className="rounded-2xl border border-emerald-400/25 bg-emerald-950/15 p-5 space-y-4">
+          <div className="space-y-1">
+            <p className="text-xs uppercase tracking-[0.22em] text-emerald-300">
+              Featured Cruise Ports
+            </p>
+            <h3 className="text-2xl font-bold text-white">
+              Popular embarkation and shore excursion ports
+            </h3>
+            <p className="max-w-3xl text-sm text-zinc-300">
+              Start with our most-requested cruise ports to compare shore excursions, terminal transfers, and sailing fit.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {featuredPorts.map((p) => (
+              <Link
+                key={`featured-${p.slug}`}
+                href={`/ports/${p.slug}`}
+                className="rounded-2xl border border-emerald-400/25 bg-black/35 p-4 hover:bg-white/[0.08] transition flex flex-col justify-between"
+              >
+                <div>
+                  <div className="text-base font-bold text-white">{p.name}</div>
+                  <div className="mt-1 text-xs text-zinc-400">
+                    {[...new Set([p.city, p.area, p.country].filter(Boolean))].join(" • ") || "Cruise port"}
+                  </div>
+                </div>
+                <div className="mt-3 text-xs font-bold text-emerald-300">
+                  Open port &amp; excursions →
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
       <div className="rounded-2xl border border-white/10 bg-white/5 p-5 space-y-4">
         <div className="space-y-1">
           <p className="text-xs uppercase tracking-[0.22em] text-cyan-300">Browse ports</p>
@@ -125,7 +179,7 @@ export default function PortsSearchClient({ ports }: { ports: Port[] }) {
                       {[...new Set([p.city, p.area, p.country].filter(Boolean))].join(" • ") || "Cruise port"}
                     </div>
                     <div className="mt-3 inline-flex rounded-full border border-white/10 bg-black/20 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-zinc-400">
-                      /ports/{p.slug}
+                      {p.coverage === "reference" ? "Port reference" : "Port guide & excursions"}
                     </div>
                     <div className="mt-4 text-sm text-cyan-300">
                       {p.coverage === "reference" ? "Open port reference →" : "Open guide →"}

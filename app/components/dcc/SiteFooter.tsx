@@ -13,19 +13,23 @@ type FooterLink = {
 };
 
 const ENGINE_LINKS: FooterLink[] = [
-  { href: "/juneau", label: "Juneau Reference" },
-  { href: "/red-rocks", label: "Red Rocks Reference" },
-  { href: "/routes/denver-breckenridge", label: "Denver–Breckenridge Corridor" },
+  { href: "/tours", label: "Find Tours & Activities" },
+  { href: "/cruises/fit", label: "Help Me Choose a Cruise" },
   { href: "/ports", label: "Cruise Ports" },
-  { href: "/venues", label: "Venues" },
-  { href: "/transportation/colorado", label: "Colorado Transit" },
+  { href: "/go/dcc-to-cruise-promenade", label: "Plan a Cruise with My Group" },
+  { href: "/routes/denver-breckenridge", label: "Denver–Breckenridge Ride Guide" },
+  { href: "/new-orleans/tours", label: "New Orleans Tours" },
+  { href: "/las-vegas/tours", label: "Las Vegas Tours" },
+  { href: "/ports/juneau", label: "Juneau Port Guide" },
+  { href: "/red-rocks", label: "Red Rocks Guide" },
 ];
 
 const SYSTEM_LINKS: FooterLink[] = [
-  { href: "/about", label: "About & Capability Matrix" },
+  { href: "/about", label: "How We Check & Sources" },
   { href: "/operators", label: "For tour operators" },
-  { href: "/widget", label: "Venue Widget" },
-  { href: "/developers", label: "Coordinate API" },
+  { href: "/operators/onboarding", label: "Operator Onboarding" },
+  { href: "/developers", label: "Developers & OpenAPI" },
+  { href: "/openapi.json", label: "OpenAPI 3.1 Spec" },
   { href: "/scope.json", label: "Scope Contract" },
   { href: "/agent.json", label: "Agent Manifest" },
   { href: "/llms.txt", label: "LLM Guidance" },

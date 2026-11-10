@@ -37,13 +37,6 @@ export const metadata: Metadata = {
 export default async function RedRocksPage() {
   const imageSet = getLocalFallbackImageSetForEntity("venue", "red-rocks-amphitheatre");
   const redRocksReference = await getPublishedTravelReferenceNodeById("red-rocks");
-  const redRocksRecheck = evaluateRedRocksRideHomeRecheck({
-    date: "2026-07-18",
-    eventName: "Red Rocks Headline Concert",
-    encoreCutoffLocal: "23:15",
-    partySize: 4,
-  });
-
   return (
     <div className="bg-[#060b12] text-white">
       <JsonLd
@@ -81,12 +74,6 @@ export default async function RedRocksPage() {
           ],
         }}
       />
-      <div className="mx-auto max-w-6xl px-4 pt-6 sm:px-6">
-        <SharedTripRecheckCard
-          card={redRocksRecheck.recheckCard}
-          testId="dcc-red-rocks-ride-home-recheck-card"
-        />
-      </div>
       {redRocksReference ? <TravelReferenceExperience node={redRocksReference} embedded /> : null}
       <RedRocksAuthorityPage
         eyebrow="DCC Red Rocks Hub"

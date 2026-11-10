@@ -39,6 +39,10 @@ export async function GET(request: Request) {
     incoming.searchParams.get("tour_code") || incoming.searchParams.get("productCode"),
     40,
   );
+  const mode = clean(
+    incoming.searchParams.get("mode") || incoming.searchParams.get("flow"),
+    32,
+  );
   const existingHandoffId = clean(
     incoming.searchParams.get("dcc_handoff_id") ||
       incoming.searchParams.get("referral_id") ||
@@ -56,6 +60,7 @@ export async function GET(request: Request) {
     target.searchParams.set("party_size", partySize);
   }
   if (tourCode) target.searchParams.set("tour_code", tourCode);
+  if (mode === "import") target.searchParams.set("mode", "import");
   target.searchParams.set("dcc_handoff_id", handoffId);
 
   const response = NextResponse.redirect(target, 302);

@@ -245,7 +245,7 @@ export default async function NewOrleansToursPage({
                       Gray Line / New Orleans Steamboat Co.
                     </p>
                     <p className="text-[11px] text-white/65">
-                      Preserved tracking: <code>asn=welcometoneworleanstours&amp;ref=WelcomeToNewOrleansTours</code>
+                      French Quarter &amp; Toulouse St. Wharf departures
                     </p>
                     <ul className="space-y-1.5 text-white/90">
                       <li>
@@ -254,7 +254,7 @@ export default async function NewOrleansToursPage({
                           data-testid="dcc-wno-offer-grayline-swamp"
                           className="text-emerald-300 hover:underline font-semibold"
                         >
-                          Swamp &amp; Bayou Tour ($65 · Item 561484) →
+                          Swamp &amp; Bayou Tour ($65) →
                         </a>
                       </li>
                       <li>
@@ -263,7 +263,7 @@ export default async function NewOrleansToursPage({
                           data-testid="dcc-wno-offer-grayline-small-airboat"
                           className="text-emerald-300 hover:underline font-semibold"
                         >
-                          Small Airboat Swamp Adventure ($119 · Item 561547) →
+                          Small Airboat Swamp Adventure ($119) →
                         </a>
                       </li>
                       <li>
@@ -272,7 +272,7 @@ export default async function NewOrleansToursPage({
                           data-testid="dcc-wno-offer-grayline-large-airboat"
                           className="text-emerald-300 hover:underline font-semibold"
                         >
-                          Large Airboat Swamp Adventure ($90 · Item 562175) →
+                          Large Airboat Swamp Adventure ($90) →
                         </a>
                       </li>
                       <li>
@@ -281,7 +281,7 @@ export default async function NewOrleansToursPage({
                           data-testid="dcc-wno-offer-grayline-oak-alley"
                           className="text-emerald-300 hover:underline font-semibold"
                         >
-                          Oak Alley Plantation Tour ($89 · Item 561477) →
+                          Oak Alley Plantation Tour ($89) →
                         </a>
                       </li>
                       <li>
@@ -290,7 +290,7 @@ export default async function NewOrleansToursPage({
                           data-testid="dcc-wno-offer-grayline-whitney"
                           className="text-emerald-300 hover:underline font-semibold"
                         >
-                          Whitney Plantation Tour ($89 · Item 561539) →
+                          Whitney Plantation Tour ($89) →
                         </a>
                       </li>
                       <li>
@@ -299,7 +299,7 @@ export default async function NewOrleansToursPage({
                           data-testid="dcc-wno-offer-grayline-evening-jazz"
                           className="text-emerald-300 hover:underline font-semibold"
                         >
-                          Evening Jazz Cruise ($58 · Item 560825) →
+                          Evening Jazz Cruise ($58) →
                         </a>
                       </li>
                       <li>
@@ -319,7 +319,7 @@ export default async function NewOrleansToursPage({
                       Ragin Cajun Tours
                     </p>
                     <p className="text-[11px] text-white/65">
-                      Preserved tracking: <code>company=ragincajuntours&amp;asn=aktourcenter</code>
+                      Covered tour boats &amp; marsh airboats
                     </p>
                     <ul className="space-y-1.5 text-white/90">
                       <li>
@@ -328,7 +328,7 @@ export default async function NewOrleansToursPage({
                           data-testid="dcc-wno-offer-ragincajun-covered-boat"
                           className="text-emerald-300 hover:underline font-semibold"
                         >
-                          Covered Tour Boat ($35 · Item 590176 / Flow 392449) →
+                          Covered Tour Boat ($35) →
                         </a>
                       </li>
                       <li>
@@ -337,7 +337,7 @@ export default async function NewOrleansToursPage({
                           data-testid="dcc-wno-offer-ragincajun-airboat"
                           className="text-emerald-300 hover:underline font-semibold"
                         >
-                          Ragin Cajun Airboat Options ($65 · Flow 940162) →
+                          Ragin Cajun Airboat Options ($65) →
                         </a>
                       </li>
                       <li>
@@ -346,7 +346,7 @@ export default async function NewOrleansToursPage({
                           data-testid="dcc-wno-offer-ragincajun-combo"
                           className="text-emerald-300 hover:underline font-semibold"
                         >
-                          Covered Boat + Plantation Combo ($130 · Item 603090) →
+                          Covered Boat + Plantation Combo ($130) →
                         </a>
                       </li>
                     </ul>
@@ -357,7 +357,7 @@ export default async function NewOrleansToursPage({
                       Southern Style Tours
                     </p>
                     <p className="text-[11px] text-white/65">
-                      Preserved tracking: <code>company=southernstyletours&amp;asn=aktourcenter&amp;flow=4344</code>
+                      Minibus city &amp; River Road plantation tours
                     </p>
                     <ul className="space-y-1.5 text-white/90">
                       <li>

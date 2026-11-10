@@ -1461,6 +1461,78 @@ export const PORT_AUTHORITY_CONFIG: Record<string, PortAuthorityConfig> = {
     cruisePortHref: "https://cruisepromenade.com/ports/reykjavik",
     canonicalCruisePortSlug: "reykjavik",
   },
+  "new-orleans": {
+    updatedAt: "2026-11-09",
+    refreshIntervalDays: 60,
+    heroTitle: "Port of New Orleans (Erato & Julia Street Cruise Terminals)",
+    summary:
+      "Compare New Orleans shore excursions, swamp tours, Mississippi riverboat cruises, and French Quarter sightseeing from the Erato Street and Julia Street terminals.",
+    cruiseRelevance:
+      "Browse all available New Orleans tours below, or enter your ship's arrival and all-aboard times to filter for excursions that fit your sailing window.",
+    tripPlanningSnapshot: [
+      { label: "Cruise terminals", value: "Erato Street Cruise Terminal and Julia Street Cruise Terminal along the Warehouse District riverfront." },
+      { label: "Typical excursion window", value: "2 to 4.5 hours for French Quarter tours, riverboats, and Jean Lafitte / Marrero swamp tours." },
+      { label: "Good for", value: "Swamp airboats & covered boats • Mississippi paddlewheelers • French Quarter history & food" },
+      { label: "Getting to French Quarter", value: "10–15 minute taxi/rideshare or riverfront streetcar/walk from Julia and Erato Street terminals." },
+      { label: "Swamp tour logistics", value: "Compare French Quarter hotel shuttle pickup (~3.75h total) vs. self-drive/Uber to Marrero (~1.75h on water)." },
+      { label: "Timing tip", value: "Confirm your ship's all-aboard cutoff or flight departure time before booking half-day bayou transfers." },
+    ],
+    tenderDock: "Dock port at Erato Street and Julia Street terminals on the Mississippi River.",
+    excursionLength: "2 to 4.5 hours for riverboats, walking tours, and swamp excursions.",
+    nearbyTown: "Warehouse District, Riverwalk, and the French Quarter.",
+    excursionCategories: [
+      category("Swamp & bayou tours", "New Orleans swamp tour"),
+      category("Riverboat cruises", "New Orleans steamboat cruise"),
+      category("French Quarter walking tours", "New Orleans French Quarter walking tour"),
+      category("Food & history tours", "New Orleans food tour"),
+    ],
+    cruiseSeason: "Year-round homeport and port of call for Western Caribbean and Mississippi River itineraries.",
+    knownFor: [
+      "Jean Lafitte and Honey Island swamp airboats and covered boats",
+      "Steamboat Natchez and Creole Queen Mississippi River cruises",
+      "Walkable Warehouse District and French Quarter access",
+      "Pre- and post-cruise turnaround day excursions",
+    ],
+    nearbyZones: [
+      "Erato Street Terminal",
+      "Julia Street Terminal",
+      "French Quarter",
+      "Toulouse Street Wharf & Canal Street Dock",
+      "Jean Lafitte / Barataria Preserve (Marrero)",
+    ],
+    logistics: [
+      "Erato Street and Julia Street terminals sit directly adjacent to the Convention Center and Riverwalk.",
+      "Swamp tours with French Quarter pickup require a short transfer from the cruise terminal to a designated downtown hotel stop.",
+      "When your ship's arrival and all-aboard times aren't entered yet, tours are shown in Browse All mode with Sailing fit unverified.",
+    ],
+    faq: [
+      {
+        question: "How far are the New Orleans cruise terminals from the French Quarter?",
+        answer:
+          "Julia Street and Erato Street terminals are about 1 to 1.5 miles upriver from Jackson Square—roughly a 10-minute taxi or rideshare, or a 20–25 minute walk via the Riverwalk.",
+      },
+      {
+        question: "Should I book a swamp tour with hotel pickup or drive to the dock?",
+        answer:
+          "If you do not have a car, choose an option with downtown hotel pickup (plan ~3.75 to 4 hours door-to-door). If you take a taxi/rideshare directly to the Marrero dock, the tour itself is ~1 hour 45 minutes.",
+      },
+      {
+        question: "How do I check if a New Orleans excursion fits my ship schedule?",
+        answer:
+          "Enter your ship's arrival and all-aboard times in the excursion catalog above to verify transfer margins, or browse all tours if you have not confirmed your sailing window yet.",
+      },
+    ],
+    relatedLinks: [
+      { label: "New Orleans Tours Guide", href: "/new-orleans/tours" },
+      { label: "New Orleans Swamp Tours Comparison", href: "/new-orleans/swamp-tours" },
+      { label: "Plan on Cruise Promenade", href: "/go/dcc-to-cruise-promenade?port=new-orleans" },
+      { label: "Ports directory", href: "/ports" },
+    ],
+    excursionCtaLabel: "Compare New Orleans Tours",
+    excursionCtaHref: "/new-orleans/tours",
+    cruisePortHref: "https://cruisepromenade.com/ports/new-orleans",
+    canonicalCruisePortSlug: "new-orleans",
+  },
 };
 
 function titleFromPortName(name: string): string {
@@ -1490,49 +1562,49 @@ export function getPortAuthorityConfig(port: {
   const region = regionLabel(port);
 
   return {
-    updatedAt: "2026-03-11",
+    updatedAt: "2026-11-09",
     refreshIntervalDays: 30,
     heroTitle: titleFromPortName(port.name),
-    summary: `${portName} is in the port authority layer, but the full destination brief is still being expanded.`,
-    cruiseRelevance: `Use the cruise explorer for live sailing context while this ${portName} authority page is still being filled out.`,
-    tenderDock: "Port handling details are still being enriched.",
-    excursionLength: "Check live cruise schedules and leave conservative buffer until port-specific notes are published.",
-    nearbyTown: `${portName} cruise zone and surrounding visitor areas.`,
+    summary: `Browse shore excursions, port transfers, and local activities for ${portName}.`,
+    cruiseRelevance: `Browse all available tours for ${portName}, or enter your ship's arrival and all-aboard times when confirmed to check schedule fit.`,
+    tenderDock: "Check your cruise line's daily program for berth or tender assignment.",
+    excursionLength: "2 to 5 hours for most half-day shore excursions; confirm your ship's all-aboard cutoff before booking.",
+    nearbyTown: `${portName} cruise port area and nearby visitor districts.`,
     excursionCategories: [
       category("Shore excursions", `${portName} shore excursions`),
       category("Port transfers", `${portName} cruise transfer`),
       category("Top things to do", `${portName} top things to do`),
     ],
-    cruiseSeason: `Cruise season detail for ${region} is still being enriched.`,
+    cruiseSeason: `Active cruise port in ${region}; check your sailing itinerary for seasonal call dates.`,
     knownFor: [
-      "Port timing and transfer decisions",
-      "Shore excursion research before booking",
+      "Port timing and transfer comparisons",
+      "Shore excursion browsing before you book",
       "Cruise-day routing and return buffer planning",
     ],
-    nearbyZones: [`${portName} cruise zone`, "Nearby visitor district", "Transfer pickup area"],
+    nearbyZones: [`${portName} cruise terminal area`, "Town center", "Excursion meeting zone"],
     logistics: [
-      "Port-specific logistics are still loading; use the linked cruise view for current schedule context.",
-      "Keep conservative buffer before all-aboard until this port note set is fully enriched.",
+      "Verify whether your ship docks or tenders on your specific call date.",
+      "Without a confirmed ship window, excursions are labeled Sailing fit unverified so you can still browse provider links.",
     ],
     faq: [
       {
-        question: `Is this ${portName} page fully built yet?`,
+        question: `What can I check on this ${portName} port page?`,
         answer:
-          "Not yet. The full authority brief is still being expanded, so use the cruise explorer and linked tour results in the meantime.",
+          "You can browse shore excursions and category links now, and enter your ship's arrival and all-aboard times to check schedule fit.",
       },
       {
-        question: `Can you still browse excursions for ${portName}?`,
+        question: `Why are some ${portName} tours labeled Sailing fit unverified?`,
         answer:
-          "Yes. You can still jump into shore excursion and transfer discovery while the authority content layer is being completed.",
+          "Until your ship's arrival time, berth, and all-aboard cutoff are confirmed, we show tours for browsing without claiming they fit a specific sailing window.",
       },
       {
-        question: `Where should you go for live cruise context for ${portName}?`,
+        question: `How can I plan ${portName} with my group?`,
         answer:
-          "Use the cruise explorer and any linked cruise-port schedule route if available.",
+          "Use the Cruise Promenade group planner to coordinate shore excursions and upload your sailing itinerary.",
       },
     ],
     relatedLinks: [
-      { label: "Cruise explorer", href: "/cruises" },
+      { label: "Choose a cruise", href: "/cruises/fit" },
       { label: "Ports directory", href: "/ports" },
       { label: `Browse ${portName} tours`, href: toursHref(`${portName} shore excursions`) },
     ],

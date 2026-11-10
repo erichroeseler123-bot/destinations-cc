@@ -59,6 +59,10 @@ export default function PortableTripNetworkBar({
 
   const secondPurchases = buildSecondPurchaseRecommendations(marketId, trip);
 
+  const hasExplicitDate = Boolean(
+    searchParams?.date || searchParams?.arrivalDate || searchParams?.sailing_date
+  );
+
   return (
     <section
       data-testid="dcc-portable-trip-network-bar"
@@ -70,21 +74,14 @@ export default function PortableTripNetworkBar({
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-full bg-cyan-500/20 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-cyan-300">
-              Shared Market Template • {template.marketLabel}
-            </span>
-            <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 font-mono text-[11px] text-emerald-300">
-              {trip.contextId}
-            </span>
-            <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-amber-200">
-              Purchase Step #{trip.purchaseStep}
+              {template.marketLabel}
             </span>
           </div>
           <h2 className="mt-2 text-lg font-bold text-white">
-            Portable Trip Details Pass — Use Across Storefronts Without Starting Over
+            Keep your group size and pickup details as you compare options
           </h2>
           <p className="mt-0.5 text-xs text-slate-300">
-            Your date, group size, pickup/berth, and {template.dccAuthority.safetyBufferFloorMinutes}-minute safety buffer travel with{" "}
-            <code className="text-cyan-300">{trip.contextId}</code> from Purchase #1 into Purchase #2 across the network.
+            Carry your selected date, party size, and {template.dccAuthority.safetyBufferFloorMinutes}-minute return buffer into the storefront when you are ready.
           </p>
         </div>
 
@@ -93,15 +90,17 @@ export default function PortableTripNetworkBar({
           data-testid="dcc-portable-primary-storefront-cta"
           className="inline-flex items-center gap-2 rounded-xl bg-cyan-400 px-4 py-2.5 text-xs font-extrabold uppercase tracking-wider text-slate-950 transition hover:bg-cyan-300"
         >
-          Carry Trip to {template.storefrontSurface.primaryStorefrontDomain} →
+          Open {template.storefrontSurface.primaryStorefrontDomain} →
         </a>
       </div>
 
       {/* Carried Trip Summary Pills */}
       <div className="mt-3 flex flex-wrap gap-2 text-xs">
-        <span className="rounded-lg border border-white/10 bg-black/30 px-2.5 py-1 text-slate-200">
-          <strong className="text-slate-400">Date:</strong> {trip.date}
-        </span>
+        {hasExplicitDate && (
+          <span className="rounded-lg border border-white/10 bg-black/30 px-2.5 py-1 text-slate-200">
+            <strong className="text-slate-400">Date:</strong> {trip.date}
+          </span>
+        )}
         <span className="rounded-lg border border-white/10 bg-black/30 px-2.5 py-1 text-slate-200">
           <strong className="text-slate-400">Party Size:</strong> {trip.partySize}{" "}
           {trip.partySize === 1 ? "traveler" : "travelers"}
@@ -135,71 +134,16 @@ export default function PortableTripNetworkBar({
             {trip.skiBagsCount}
           </span>
         )}
-        {trip.partnerId && (
-          <span className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-emerald-200">
-            <strong className="text-emerald-300">Partner Desk:</strong>{" "}
-            {trip.partnerId}
-          </span>
-        )}
         <span className="rounded-lg border border-cyan-500/25 bg-cyan-500/10 px-2.5 py-1 text-cyan-200">
-          <strong className="text-cyan-300">Safety Buffer:</strong>{" "}
-          {template.dccAuthority.safetyBufferFloorMinutes}m floor
+          <strong className="text-cyan-300">Return Buffer:</strong>{" "}
+          {template.dccAuthority.safetyBufferFloorMinutes}m minimum
         </span>
       </div>
 
-      {/* 5-Stage Responsibility Strip */}
-      <div className="mt-4 grid gap-2 sm:grid-cols-5">
-        <div className="rounded-xl border border-white/10 bg-black/25 p-2.5 text-xs">
-          <div className="font-bold uppercase tracking-wider text-cyan-300">
-            1. DCC Authority
-          </div>
-          <p className="mt-1 text-[11px] text-slate-300">
-            {template.dccAuthority.safetyBufferSummary}
-          </p>
-        </div>
-        <div className="rounded-xl border border-white/10 bg-black/25 p-2.5 text-xs">
-          <div className="font-bold uppercase tracking-wider text-cyan-300">
-            2. Partner & Recovery
-          </div>
-          <p className="mt-1 text-[11px] text-slate-300">
-            {template.partnerAndRecovery.supportedPartnerRoles.join(" + ")} •{" "}
-            {template.partnerAndRecovery.liveRecoveryEvaluatorSymbol}
-          </p>
-        </div>
-        <div className="rounded-xl border border-white/10 bg-black/25 p-2.5 text-xs">
-          <div className="font-bold uppercase tracking-wider text-cyan-300">
-            3. Storefront Fit
-          </div>
-          <p className="mt-1 text-[11px] text-slate-300">
-            {template.storefrontSurface.primaryStorefrontDomain} (
-            {template.storefrontSurface.continuityCookieName})
-          </p>
-        </div>
-        <div className="rounded-xl border border-white/10 bg-black/25 p-2.5 text-xs">
-          <div className="font-bold uppercase tracking-wider text-cyan-300">
-            4. Checkout & Ledger
-          </div>
-          <p className="mt-1 text-[11px] text-slate-300">
-            {template.checkoutAndLedger.monetizationModel === "owned_operated"
-              ? "Owned & Operated Fleet (100% gross)"
-              : "Partner Commission (10% direct / ASN)"}{" "}
-            • 15m hold
-          </p>
-        </div>
-        <div className="rounded-xl border border-white/10 bg-black/25 p-2.5 text-xs">
-          <div className="font-bold uppercase tracking-wider text-cyan-300">
-            5. Multi-Purchase
-          </div>
-          <p className="mt-1 text-[11px] text-slate-300">
-            Carries <code className="text-emerald-300">dcc_ctx_</code> into companion & cross-site bookings.
-          </p>
-        </div>
-      </div>
-
-      {/* Purchase #2 Recommendations */}
+      {/* Companion Trip Ideas */}
       <div className="mt-4 border-t border-white/10 pt-4">
-        <div className="text-xs font-bold uppercase tracking-wider text-amber-300">
-          Use Your Portable Trip Details for a 2nd Purchase Across the Network
+        <div className="text-xs font-bold uppercase tracking-wider text-cyan-300">
+          Related experiences for this trip
         </div>
         <div className="mt-2.5 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
           {secondPurchases.map((rec) => (
@@ -213,11 +157,6 @@ export default function PortableTripNetworkBar({
                   <span className="font-semibold text-cyan-300">
                     {rec.targetDomain}
                   </span>
-                  <span className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] uppercase text-slate-300">
-                    {rec.relationship === "cross_site_network"
-                      ? "Cross-Site Network"
-                      : "Same-Market Companion"}
-                  </span>
                 </div>
                 <div className="mt-1 text-xs font-bold text-white">
                   {rec.label}
@@ -226,15 +165,12 @@ export default function PortableTripNetworkBar({
                   {rec.whyItFitsNext}
                 </p>
               </div>
-              <div className="mt-3 flex items-center justify-between gap-2 pt-2">
-                <span className="font-mono text-[10px] text-slate-400">
-                  Carries: {rec.reusedTripFields.join(", ")}
-                </span>
+              <div className="mt-3 flex items-center justify-end gap-2 pt-2">
                 <a
                   href={rec.portableHref}
                   className="rounded-lg bg-emerald-400 px-3 py-1.5 text-[11px] font-bold text-slate-950 hover:bg-emerald-300"
                 >
-                  Open Purchase #2 →
+                  Explore option →
                 </a>
               </div>
             </div>

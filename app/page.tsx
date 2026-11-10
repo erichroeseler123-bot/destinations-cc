@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import DccMachineContractExplainer from "@/app/components/dcc/DccMachineContractExplainer";
 import LocationFirstHomeFast from "@/app/components/dcc/LocationFirstHomeFast";
 import { getCruisePortDirectory } from "@/lib/dcc/cruisePortDirectory";
 import { getOrganizationSchema, getWebsiteSchema } from "@/src/data/site-identity";
@@ -7,15 +6,15 @@ import { getOrganizationSchema, getWebsiteSchema } from "@/src/data/site-identit
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "Destination Command Center | Source-Backed Travel Decision Engine",
+  title: "Destination Command Center | What Fits Your Trip?",
   description:
-    "Source-backed travel decision engine. Check destination knowledge, schedule constraints, cited evidence, and live environmental conditions. Compare public transport, free activities, direct operator options, and marketplace options—or use DCC without buying anything.",
+    "Compare tours, choose a cruise, find a ride, and check local conditions before you book. Source-backed travel guidance with no account needed.",
   alternates: { canonical: "https://destinationcommandcenter.com/" },
   robots: { index: true, follow: true },
   openGraph: {
-    title: "Destination Command Center | Source-Backed Travel Decision Engine",
+    title: "Destination Command Center | What Fits Your Trip?",
     description:
-      "Understand destinations, check practical constraints and evidence, and compare public transport, free activities, direct operators, and marketplace options.",
+      "Compare tours, choose a cruise, find a ride, and check local conditions before you book.",
     url: "https://destinationcommandcenter.com",
     type: "website",
   },
@@ -38,7 +37,6 @@ export default function HomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <LocationFirstHomeFast cruisePortCount={cruisePortCount} />
-      <DccMachineContractExplainer />
     </>
   );
 }

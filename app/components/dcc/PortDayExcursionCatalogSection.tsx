@@ -67,8 +67,10 @@ export default function PortDayExcursionCatalogSection({
   );
   const [allAboard, setAllAboard] = useState<string>(
     initialShipAllAboardTime ||
-      initialCatalogData?.sailingWindow.shipAllAboardTime ||
-      "17:30"
+      (initialCatalogData?.sailingWindow.allAboardTimeSource &&
+      initialCatalogData.sailingWindow.allAboardTimeSource !== "port_estimate"
+        ? initialCatalogData.sailingWindow.shipAllAboardTime
+        : "")
   );
   const [shipDeparture] = useState<string | null>(
     initialShipDepartureTime ??
@@ -141,18 +143,21 @@ export default function PortDayExcursionCatalogSection({
       setLoading(true);
       setError(null);
       try {
+        const nextAllAboardVal = (opts?.nextAllAboard ?? allAboard).trim();
         const params = new URLSearchParams({
           port: portSlug,
           viewMode: opts?.nextViewMode ?? viewMode,
           category: opts?.nextCategory ?? category,
           shipArrival: opts?.nextShipArrival ?? shipArrival,
-          allAboard: opts?.nextAllAboard ?? allAboard,
           date: opts?.nextSailingDate ?? sailingDate,
           partySize: String(opts?.nextPartySize ?? partySize),
           limit: String(limit),
           offset: String(opts?.nextOffset ?? offset),
           sortBy: opts?.nextSortBy ?? sortBy,
         });
+        if (nextAllAboardVal) {
+          params.set("allAboard", nextAllAboardVal);
+        }
         const nextShipVal = (opts?.nextShip ?? (ship || shipSlug || "")).trim();
         const nextCruiseSailDateVal = (
           opts?.nextCruiseSailingDate ?? cruiseSailingDate
@@ -255,32 +260,26 @@ export default function PortDayExcursionCatalogSection({
       data-testid="shared-port-day-excursion-catalog"
       className="mx-auto max-w-6xl space-y-6 rounded-3xl border border-cyan-500/30 bg-slate-950/95 p-6 text-slate-100 shadow-2xl"
     >
-      {/* Header & Provider Reconciliation Summary */}
+      {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-4 border-b border-white/10 pb-5">
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-full border border-cyan-400/40 bg-cyan-500/15 px-3 py-1 text-xs font-bold uppercase tracking-wider text-cyan-300">
-              Shared Shore-Excursion Catalog · {portProfile?.batchLabel || "Cruise Port Rollout"}
+              Port-Day Shore Excursions · {portProfile?.portName || portSlug}
             </span>
-            {portProfile?.viatorDestinationId ? (
-              <span className="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-300">
-                Viator Destination ID: {portProfile.viatorDestinationId} ({portProfile.viatorDestinationName})
-              </span>
-            ) : null}
             {data?.pagination ? (
               <span
                 data-testid="sql-pagination-telemetry"
-                className="rounded-full border border-violet-400/30 bg-violet-500/10 px-3 py-1 text-xs font-mono text-violet-200"
+                className="hidden"
+                aria-hidden="true"
               >
-                SQL Query: {data.pagination.sqlQueryMs}ms · Rows loaded into app:{" "}
-                {data.pagination.rowsLoadedIntoApp} / {data.pagination.totalMatchedInSql} ·
-                Full catalog in app: {String(data.pagination.fullCatalogLoadedIntoApp)}
+                {data.pagination.sqlQueryMs}ms · {data.pagination.rowsLoadedIntoApp} / {data.pagination.totalMatchedInSql}
               </span>
             ) : null}
           </div>
 
           <h2 className="text-2xl font-black tracking-tight text-white sm:text-3xl">
-            {portProfile?.portName || portSlug} Port-Day Shore Excursions & All-Aboard Fit Checker
+            {portProfile?.portName || portSlug} Shore Excursions & All-Aboard Fit Checker
           </h2>
 
           <p className="max-w-3xl text-sm text-slate-300">
@@ -289,84 +288,22 @@ export default function PortDayExcursionCatalogSection({
               {portProfile?.defaultPierName || "Cruise Terminal"}
             </strong>{" "}
             ({portProfile?.defaultPierAddress || "Port arrival berth"}). Evaluates departure
-            times, check-in cutoffs, meeting points, round-trip pier transfers, and return
-            buffers against your ship&apos;s all-aboard time while keeping{" "}
+            times, check-in cutoffs, meeting points, and round-trip pier transfers against
+            your confirmed ship all-aboard time while keeping{" "}
             <strong className="text-cyan-300">Time Fit</strong> and{" "}
-            <strong className="text-emerald-300">Seat Availability</strong> strictly separate.
+            <strong className="text-emerald-300">Seat Availability</strong> separate.
           </p>
         </div>
 
-        {/* Provider Count Reconciliation Box */}
+        {/* Internal Provider Count Reconciliation Box (kept hidden from traveler view) */}
         {data?.providerCounts ? (
           <div
             data-testid="provider-reconciliation-box"
-            className="min-w-[290px] max-w-[440px] rounded-2xl border border-white/10 bg-slate-900/90 p-4 text-xs"
+            className="hidden"
+            aria-hidden="true"
           >
-            <div className="font-bold uppercase tracking-wider text-cyan-300">
-              Active SQL Inventory &amp; Authorized Catalog Reconciliation
-            </div>
-            <div className="mt-2 grid grid-cols-4 gap-2 text-center">
-              <div className="rounded-xl bg-slate-950/80 p-2">
-                <div className="text-[11px] text-slate-400">Viator SQL</div>
-                <div className="text-base font-black text-white">
-                  {data.providerCounts.viator.toLocaleString()}
-                </div>
-              </div>
-              <div className="rounded-xl bg-slate-950/80 p-2">
-                <div className="text-[11px] text-slate-400">Direct Op</div>
-                <div className="text-base font-black text-emerald-300">
-                  {data.providerCounts.operator_direct.toLocaleString()}
-                </div>
-              </div>
-              <div className="rounded-xl bg-slate-950/80 p-2">
-                <div className="text-[11px] text-slate-400">Active Total</div>
-                <div className="text-base font-black text-cyan-300">
-                  {data.providerCounts.total.toLocaleString()}
-                </div>
-              </div>
-              <div className="rounded-xl bg-slate-950/80 p-2">
-                <div className="text-[11px] text-slate-400">Source Total</div>
-                <div className="text-base font-black text-violet-300">
-                  {data.providerCounts.authorizedSourceTotal.toLocaleString()}
-                </div>
-              </div>
-            </div>
-            {data.providerCounts.reconciliationBreakdown?.currentActiveInventoryExplanation ? (
-              <div className="mt-2 text-[11px] leading-snug text-slate-300">
-                {data.providerCounts.reconciliationBreakdown.currentActiveInventoryExplanation}
-              </div>
-            ) : null}
             {data.sharedHandoffLedgerSummary ? (
-              <div
-                data-testid="shared-handoff-ledger-summary"
-                className="mt-2.5 flex flex-wrap gap-x-3 gap-y-1 border-t border-white/10 pt-2 text-[11px] text-slate-300"
-              >
-                <span>
-                  <strong className="text-cyan-300">Redirects:</strong>{" "}
-                  {data.sharedHandoffLedgerSummary.redirects.total}
-                </span>
-                <span>
-                  <strong className="text-emerald-300">Confirmed Bookings:</strong>{" "}
-                  {String(
-                    data.sharedHandoffLedgerSummary.providerConfirmedBookings.displayValue
-                  )}
-                </span>
-                <span>
-                  <strong className="text-amber-300">Earned Commissions:</strong>{" "}
-                  {typeof data.sharedHandoffLedgerSummary.earnedCommissions
-                    .displayValue === "number"
-                    ? `$${data.sharedHandoffLedgerSummary.earnedCommissions.displayValue.toFixed(
-                        2
-                      )}`
-                    : data.sharedHandoffLedgerSummary.earnedCommissions.displayValue}
-                </span>
-              </div>
-            ) : null}
-            {data.providerCounts.pendingOperatorNotes &&
-            data.providerCounts.pendingOperatorNotes.length > 0 ? (
-              <div className="mt-2.5 rounded-xl border border-amber-400/30 bg-amber-950/40 p-2 text-[11px] leading-relaxed text-amber-200">
-                {data.providerCounts.pendingOperatorNotes[0]}
-              </div>
+              <div data-testid="shared-handoff-ledger-summary" />
             ) : null}
           </div>
         ) : null}
@@ -546,7 +483,7 @@ export default function PortDayExcursionCatalogSection({
         </div>
 
         <div className="flex items-center gap-2 text-xs">
-          <span className="text-slate-400">Sort in SQL:</span>
+          <span className="text-slate-400">Sort by:</span>
           <select
             value={sortBy}
             onChange={(e) => {
@@ -585,7 +522,7 @@ export default function PortDayExcursionCatalogSection({
             </strong>
           </div>
           <div>
-            <span className="text-slate-400">Needs Verification:</span>{" "}
+            <span className="text-slate-400">Sailing Fit Unverified:</span>{" "}
             <strong className="text-amber-300">
               {data.summary.needsVerificationCountOnPage ??
                 data.summary.missingOperatorInfoCountOnPage}
@@ -608,7 +545,7 @@ export default function PortDayExcursionCatalogSection({
 
       {loading ? (
         <div className="py-12 text-center text-sm text-slate-400">
-          Querying Neon SQL excursion catalog and evaluating port-day timing fit…
+          Loading shore excursions and checking port-day timing fit…
         </div>
       ) : tours.length === 0 ? (
         <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-8 text-center text-sm text-slate-300">
@@ -652,6 +589,15 @@ export default function PortDayExcursionCatalogSection({
                   ? "border-rose-400/40 bg-rose-500/15 text-rose-200"
                   : "border-sky-400/40 bg-sky-500/15 text-sky-200";
 
+            const fitStatusText =
+              tour.timeFit.status === "fits" || tour.timeFit.status === "runs_too_late"
+                ? tour.timeFit.statusLabel
+                : "Sailing fit unverified";
+
+            const isAllAboardEstimate =
+              tour.timeFit.allAboardTimeSource === "port_estimate" ||
+              tour.timeFit.bufferBeforeAllAboardMinutes === null;
+
             return (
               <article
                 key={tour.tourId}
@@ -665,7 +611,7 @@ export default function PortDayExcursionCatalogSection({
                       <span className="rounded-lg border border-white/15 bg-slate-950 px-2.5 py-1 font-semibold text-cyan-300">
                         {tour.provider === "operator_direct"
                           ? `Direct Operator · ${tour.operatorName}`
-                          : `Viator Partner API · ${tour.productCode}`}
+                          : `Viator · ${tour.productCode}`}
                       </span>
                       {tour.categories.map((c) => (
                         <span
@@ -714,7 +660,7 @@ export default function PortDayExcursionCatalogSection({
                       <div className="text-[10px] font-bold uppercase tracking-wider opacity-80">
                         1. Sailing Time Fit (Separate from Seats)
                       </div>
-                      <div className="mt-0.5 font-bold">{tour.timeFit.statusLabel}</div>
+                      <div className="mt-0.5 font-bold">{fitStatusText}</div>
                     </div>
 
                     <div
@@ -739,7 +685,7 @@ export default function PortDayExcursionCatalogSection({
                                 ? ` (Option ${tour.timeFit.selectedOptionCode})`
                                 : ""
                             }`
-                          : "Needs verification (missing departure time)"}
+                          : "Sailing fit unverified (missing departure time)"}
                         {tour.timeFit.fittingDepartureTimes.length > 1
                           ? ` (Fits: ${tour.timeFit.fittingDepartureTimes.join(", ")})`
                           : ""}
@@ -754,14 +700,14 @@ export default function PortDayExcursionCatalogSection({
                                 ? ` (Check in by ${tour.timeFit.latestCheckInTime})`
                                 : ""
                             }`
-                          : "Needs verification (missing check-in cutoff)"}
+                          : "Sailing fit unverified (missing check-in cutoff)"}
                       </span>
                     </div>
                     <div className="flex flex-wrap justify-between gap-2">
                       <span className="text-slate-400">Meeting Point / Pickup:</span>
                       <span className="font-semibold text-white">
                         {tour.timeFit.meetingPointName ||
-                          "Needs verification (missing operator meeting point)"}
+                          "Sailing fit unverified (missing operator meeting point)"}
                       </span>
                     </div>
                     <div className="flex flex-wrap justify-between gap-2">
@@ -769,7 +715,7 @@ export default function PortDayExcursionCatalogSection({
                       <span className="font-semibold text-white">
                         {tour.timeFit.roundTripTransferMinutes !== null
                           ? `${tour.timeFit.oneWayTransferMinutes}m each way (${tour.timeFit.roundTripTransferMinutes}m round-trip)`
-                          : "Needs verification (missing verified pier transfer)"}
+                          : "Sailing fit unverified (missing verified pier transfer)"}
                       </span>
                     </div>
                     <div className="flex flex-wrap justify-between gap-2">
@@ -783,12 +729,12 @@ export default function PortDayExcursionCatalogSection({
                               : "text-amber-300"
                         }`}
                       >
-                        {tour.timeFit.estimatedBackAtPierTime
+                        {tour.timeFit.estimatedBackAtPierTime && !isAllAboardEstimate
                           ? `Back at pier ${tour.timeFit.estimatedBackAtPierTime} (${
                               (tour.timeFit.bufferBeforeAllAboardMinutes ?? 0) >= 0
                                 ? `+${tour.timeFit.bufferBeforeAllAboardMinutes}m buffer`
                                 : `${tour.timeFit.bufferBeforeAllAboardMinutes}m past`
-                            } vs ${allAboard}${
+                            } vs ${tour.timeFit.shipAllAboardTime}${
                               tour.timeFit.shipDepartureTime &&
                               tour.timeFit.returnBufferReconciliation
                                 ?.bufferBeforeShipDepartureMinutes !== null &&
@@ -797,7 +743,9 @@ export default function PortDayExcursionCatalogSection({
                                 ? ` · +${tour.timeFit.returnBufferReconciliation.bufferBeforeShipDepartureMinutes}m vs ${tour.timeFit.shipDepartureTime} departure`
                                 : ""
                             })`
-                          : "Needs verification (cannot compute return buffer without full evidence)"}
+                          : tour.timeFit.estimatedBackAtPierTime
+                            ? `Back at pier ~${tour.timeFit.estimatedBackAtPierTime} · Sailing fit unverified (confirm ship all-aboard time)`
+                            : "Sailing fit unverified (confirm ship window and operator return timing)"}
                       </span>
                     </div>
                     <p className="pt-1 text-[11px] leading-relaxed text-slate-400">
@@ -871,7 +819,7 @@ export default function PortDayExcursionCatalogSection({
                   </div>
                 </div>
 
-                {/* Exact Tour / Option Handoff Actions (Tracked Separately from Confirmed Bookings) */}
+                {/* Exact Tour / Option Handoff Actions */}
                 <div className="mt-4 space-y-2 border-t border-white/10 pt-3">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <a
@@ -884,7 +832,7 @@ export default function PortDayExcursionCatalogSection({
                     >
                       {seatState.supportsLiveCheck && seatState.status !== "live_verified"
                         ? `Check Availability & Book Exact Tour (${tour.productCode || tour.optionCode || "Direct"}) ↗`
-                        : `Open Exact Tour Checkout (${tour.productCode || tour.optionCode || "Direct"}) ↗`}
+                        : `Open Exact Tour (${tour.productCode || tour.optionCode || "Direct"}) ↗`}
                     </a>
                     <a
                       href={`/tours/${encodeURIComponent(tour.productCode || tour.tourId)}`}
@@ -902,24 +850,11 @@ export default function PortDayExcursionCatalogSection({
                     </a>
                   </div>
 
-                  <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400">
-                    <span>
-                      Handoff tracking:{" "}
-                      <code className="text-slate-300">
-                        {tour.handoff.handoffTrackingTag}
-                      </code>{" "}
-                      (tracked separately from confirmed bookings · credit:{" "}
-                      <code className="text-cyan-300">
-                        {tour.handoff.referralCreditStatus}
-                      </code>
-                      )
-                    </span>
-                    {handoffTimestamp ? (
-                      <span className="font-semibold text-emerald-300">
-                        ✓ Handoff recorded ({handoffTimestamp})
-                      </span>
-                    ) : null}
-                  </div>
+                  {handoffTimestamp ? (
+                    <div className="text-right text-[11px] font-semibold text-emerald-300">
+                      ✓ Opened provider link ({handoffTimestamp})
+                    </div>
+                  ) : null}
                 </div>
               </article>
             );
@@ -927,16 +862,22 @@ export default function PortDayExcursionCatalogSection({
         </div>
       )}
 
-      {/* SQL Pagination Footer */}
+      {/* Pagination Footer */}
       {data?.pagination ? (
         <div className="flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-4 text-xs text-slate-300">
           <div>
-            Showing offset <strong>{data.pagination.offset}</strong> –{" "}
+            Showing{" "}
+            <strong>
+              {data.pagination.rowsLoadedIntoApp > 0
+                ? data.pagination.offset + 1
+                : 0}
+            </strong>
+            –
             <strong>
               {data.pagination.offset + data.pagination.rowsLoadedIntoApp}
             </strong>{" "}
             of <strong>{data.pagination.totalMatchedInSql.toLocaleString()}</strong>{" "}
-            SQL-matched tours in Neon (`dcc_tour_catalog`).
+            tours.
           </div>
           <div className="flex items-center gap-2">
             <button

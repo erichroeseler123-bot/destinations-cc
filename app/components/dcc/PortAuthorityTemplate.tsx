@@ -65,11 +65,14 @@ export default function PortAuthorityTemplate({
           <p className="max-w-3xl text-lg text-zinc-200">{config.summary}</p>
           <p className="max-w-3xl text-sm text-zinc-400">{config.cruiseRelevance}</p>
           {config.isFallback ? (
-            <div className="rounded-2xl border border-amber-300/20 bg-amber-500/10 px-4 py-4 text-sm text-amber-100">
-              Port details loading. Check back soon for a full authority brief, or use the cruise explorer now.
-              <div className="mt-3">
-                <Link href="/cruises" className="font-semibold text-amber-200 hover:text-amber-100">
-                  Open Cruise Explorer →
+            <div className="rounded-2xl border border-cyan-400/20 bg-cyan-500/10 px-4 py-4 text-sm text-cyan-100">
+              Browse shore excursions and port category links below. Terminal-specific transfer timing for {plainPortName} is not yet pre-loaded, so options are shown for browsing as <strong>Sailing fit unverified</strong> until you confirm your ship window.
+              <div className="mt-3 flex flex-wrap gap-4">
+                <a href={`/go/dcc-to-cruise-promenade?port=${encodeURIComponent(port.slug)}`} className="font-semibold text-cyan-200 hover:text-white underline underline-offset-4">
+                  Plan {plainPortName} with your group →
+                </a>
+                <Link href="/ports" className="font-semibold text-white/80 hover:text-white">
+                  Browse all ports →
                 </Link>
               </div>
             </div>

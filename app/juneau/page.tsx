@@ -94,16 +94,41 @@ export default async function JuneauCommercialHubPage({
     );
   }
 
+  const hasActiveReplanQuery = Boolean(
+    sp.ship || sp.arrival || sp.all_aboard || sp.flight_canceled || sp.date || sp.berth
+  );
   const juneauReference = await getPublishedTravelReferenceNodeById("juneau");
 
   return (
     <main className="min-h-screen overflow-hidden bg-[#041018] text-white">
       <JsonLdGraph />
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
-        <JuneauLowBandwidthReplanView
-          searchParams={sp}
-          actionPath="/juneau"
-        />
+        {hasActiveReplanQuery ? (
+          <JuneauLowBandwidthReplanView
+            searchParams={sp}
+            actionPath="/juneau"
+          />
+        ) : (
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-cyan-400/25 bg-[#071521] px-5 py-3.5 text-xs text-zinc-200">
+            <span>
+              <strong>Already on ship Wi-Fi or dealing with a schedule change?</strong> Check excursion timing or flight-cancellation backups in our lightweight replanner.
+            </span>
+            <div className="flex flex-wrap items-center gap-2">
+              <Link
+                href="/ports/juneau#shared-port-day-excursion-catalog"
+                className="rounded-lg bg-cyan-400 px-3.5 py-1.5 font-black uppercase tracking-wider text-slate-950 hover:bg-cyan-300"
+              >
+                Browse Juneau Excursions →
+              </Link>
+              <Link
+                href="/juneau/replan"
+                className="rounded-lg border border-cyan-300/40 bg-cyan-500/15 px-3.5 py-1.5 font-bold text-cyan-100 hover:bg-cyan-500/25"
+              >
+                Open Ship-Delay Replanner →
+              </Link>
+            </div>
+          </div>
+        )}
         {juneauReference ? (
           <TravelReferenceExperience
             node={juneauReference}

@@ -16,12 +16,11 @@ const PRIMARY_NAV_CONSOLE: NavItem[] = [
 ];
 
 const PRIMARY_NAV_PUBLIC: NavItem[] = [
-  { href: "/ask", label: "ASK DCC" },
-  { href: "/juneau", label: "JUNEAU DECISION ENGINE" },
-  { href: "/red-rocks", label: "RED ROCKS" },
-  { href: "/routes/denver-breckenridge", label: "I-70 CORRIDOR" },
-  { href: "/ports", label: "PORTS" },
-  { href: "/about", label: "SOURCES & METHODOLOGY" },
+  { href: "/tours", label: "Tours" },
+  { href: "/ports", label: "Cruises & Ports" },
+  { href: "/routes/denver-breckenridge", label: "Rides" },
+  { href: "/#local-conditions", label: "Local Conditions" },
+  { href: "/ask", label: "Ask DCC" },
 ];
 
 export default function SiteHeader() {
@@ -49,7 +48,10 @@ export default function SiteHeader() {
 
         <nav className="dcc-site-header__nav" aria-label="Primary">
           {navItems.map((item, index) => {
-            const isActive = item.href === "/" ? pathname === "/" : pathname?.startsWith(item.href);
+            const isActive =
+              item.href === "/"
+                ? pathname === "/"
+                : !item.href.startsWith("/#") && pathname?.startsWith(item.href);
             return (
               <span key={item.href} className="dcc-site-header__nav-slot">
                 {index > 0 ? <span className="dcc-site-header__divider">/</span> : null}
@@ -62,8 +64,8 @@ export default function SiteHeader() {
         </nav>
 
         <div className="dcc-site-header__actions">
-          <Link href="/operators" className="dcc-site-header__login">
-            For tour operators
+          <Link href="/#how-we-check" className="dcc-site-header__login">
+            How we check
           </Link>
           {isConsoleView && (
             <Link href="/command" className="dcc-site-header__button">

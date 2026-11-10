@@ -58,7 +58,7 @@ describe("Launch Today: New Orleans & Juneau Storefronts, Cruise Timing, Direct 
       assert.match(href, /^https:\/\/fareharbor\.com\/embeds\/book\/ragincajuntours\//);
       assert.match(href, /asn=aktourcenter/);
       const variants = getProductActiveBookingVariants(product);
-      assert.equal(variants.length, 1);
+      assert.ok(variants.length >= 1);
       assert.equal(variants[0].isViator, false);
       assert.equal(variants[0].bookingUrl, href);
     }

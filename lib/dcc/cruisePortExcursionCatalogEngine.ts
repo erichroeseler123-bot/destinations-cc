@@ -2466,11 +2466,11 @@ export function evaluateTourPortDayTimeFit(params: {
       returnEstimateTime,
       deadlineTime: shipAllAboardTimeLabel,
       effectiveDeadlineTime: lastTenderCutoffTime || allAboardTime,
-      bufferBeforeAllAboardMinutes: bufferBeforeAllAboard,
+      bufferBeforeAllAboardMinutes: null,
       missingFields: ["allAboard"],
       offerSeeOtherToursThatFit: true,
       seeOtherToursThatFitLabel: "See other tours that fit",
-      summaryText: `Needs verification: All Aboard (${allAboardTime}) is a port estimate. Return estimate ${returnEstimateTime} (${bufferBeforeAllAboard}m before ${allAboardTime} port estimate). Confirm your ship's all-aboard deadline to verify the 2+ hour buffer.`,
+      summaryText: `Sailing fit unverified: All Aboard (${allAboardTime}) is a port estimate. Return estimate ${returnEstimateTime}. Confirm your ship's all-aboard deadline to verify the 2+ hour buffer.`,
     };
     return {
       status: "needs_verification",
@@ -2520,8 +2520,8 @@ export function evaluateTourPortDayTimeFit(params: {
       tourEndTime: formatHhMm(tourEndMin),
       estimatedBackAtPierTime: returnEstimateTime,
       requiredReturnBufferMinutes: profile.requiredReturnBufferMinutes,
-      bufferBeforeAllAboardMinutes: bufferBeforeAllAboard,
-      bufferBeforeShipDepartureMinutes: bufferBeforeShipDeparture,
+      bufferBeforeAllAboardMinutes: null,
+      bufferBeforeShipDepartureMinutes: null,
       returnBufferReconciliation: {
         requiredAllAboardBufferMinutes: profile.requiredReturnBufferMinutes,
         allAboardTimeSource,
@@ -2529,21 +2529,19 @@ export function evaluateTourPortDayTimeFit(params: {
         shipDepartureTime: validShipDepartureTime,
         allAboardToShipDepartureMinutes,
         equivalentShipDepartureBufferMinutes,
-        bufferBeforeAllAboardMinutes: bufferBeforeAllAboard,
-        bufferBeforeShipDepartureMinutes: bufferBeforeShipDeparture,
-        reconciliationNote: `All Aboard time (${allAboardTime}) is a port estimate because no traveler all-aboard deadline or matching sailing schedule was provided. This tour returns to the pier at ${returnEstimateTime} (${bufferBeforeAllAboard}m before the ${allAboardTime} port estimate; port requires ${
+        bufferBeforeAllAboardMinutes: null,
+        bufferBeforeShipDepartureMinutes: null,
+        reconciliationNote: `All Aboard time (${allAboardTime}) is a port estimate because no traveler all-aboard deadline or matching sailing schedule was provided. This tour returns to the pier at ${returnEstimateTime} (port requires ${
           profile.requiredReturnBufferMinutes
-        }m before All Aboard). Sailing fit is Needs verification until the traveler supplies the all-aboard deadline or the sailing schedule provides it.`,
+        }m before All Aboard). Sailing fit is unverified until the traveler supplies the all-aboard deadline or the sailing schedule provides it.`,
       },
       hasVerifiedReturnBuffer: true,
       missingFields: ["allAboard"],
-      reasonSummary: `Needs verification: All Aboard time (${allAboardTime}) is a port estimate. Departs ${selectedDep} (option ${
+      reasonSummary: `Sailing fit unverified: All Aboard time (${allAboardTime}) is a port estimate. Departs ${selectedDep} (option ${
         selectedOptionCode || "default"
       }, check in by ${formatHhMm(
         checkInMin
-      )} at ${meetingPointName}), ${roundTripTransferMinutes}m round-trip transfer, returns to pier at ${returnEstimateTime} (${bufferBeforeAllAboard}m before ${allAboardTime} port estimate; requires +${
-        profile.requiredReturnBufferMinutes
-      }m before confirmed all-aboard). Supply your all-aboard deadline or select a sailing schedule to confirm sailing fit.`,
+      )} at ${meetingPointName}), ${roundTripTransferMinutes}m round-trip transfer, returns to pier at ${returnEstimateTime}. Supply your all-aboard deadline or select a sailing schedule to confirm sailing fit.`,
       evidenceReviewPriority,
       twoHourShortlist,
     };
