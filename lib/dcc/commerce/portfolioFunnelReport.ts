@@ -306,6 +306,11 @@ const PRESET_LABELS: Record<PortfolioReportingWindowPreset, string> = {
   all: "All recorded production history (unified across all active spokes)",
 };
 
+const SYNTHETIC_SEED_ORDER_REFS = new Set([
+  "gosno-wp-out-1001",
+  "gosno-wp-rt-1002",
+]);
+
 export function isSyntheticInspectionId(id: string | null | undefined): boolean {
   if (!id) return false;
   const lower = id.trim().toLowerCase();
@@ -318,6 +323,36 @@ export function isSyntheticInspectionId(id: string | null | undefined): boolean 
     lower.includes("inspect_unmatched") ||
     lower.includes("synthetic")
   );
+}
+
+export function isSyntheticSeedOrderRef(
+  ref: string | null | undefined,
+): boolean {
+  if (!ref) return false;
+  const trimmed = ref.trim();
+  if (!trimmed) return false;
+  const lower = trimmed.toLowerCase();
+  if (SYNTHETIC_SEED_ORDER_REFS.has(lower)) return true;
+  if (/^test[-_]/i.test(trimmed)) return true;
+  return isSyntheticInspectionId(trimmed);
+}
+
+export function isSyntheticSeedOrTestOutcome(
+  rec:
+    | Partial<
+        Pick<
+          OpaqueClickReconciledOutcome,
+          "isTest" | "trafficClass" | "clickId" | "providerBookingRef"
+        >
+      >
+    | null
+    | undefined,
+): boolean {
+  if (!rec) return true;
+  if (rec.isTest === true || rec.trafficClass === "test") return true;
+  if (isSyntheticInspectionId(rec.clickId)) return true;
+  if (isSyntheticSeedOrderRef(rec.providerBookingRef)) return true;
+  return false;
 }
 
 function loadProductionOrActiveLedgerState(): DurableLedgerState {
@@ -615,13 +650,15 @@ export async function buildUnifiedPortfolioFunnelReport(options?: {
   nowIso?: string;
   startIso?: string;
   endIso?: string;
+  ledgerStateOverride?: DurableLedgerState;
 }): Promise<UnifiedPortfolioFunnelReport> {
   const reportingWindow = resolvePortfolioReportingWindow(options);
   const startMs = Date.parse(reportingWindow.startIso);
   const endMs = Date.parse(reportingWindow.endIso);
 
   // 1. Read all 4 underlying stores and apply the single shared reporting window
-  const ledgerState = loadProductionOrActiveLedgerState();
+  const ledgerState =
+    options?.ledgerStateOverride || loadProductionOrActiveLedgerState();
   const [allCorridorEvents, allCommercialOutcomes] = await Promise.all([
     listRecentProductionCorridorEvents(5000).catch(() => [] as DccCorridorEventRow[]),
     listCommercialOutcomes({ limit: 100, excludeQa: true }).catch(() => [] as CommercialOutcomeRecord[]),
@@ -655,15 +692,36 @@ export async function buildUnifiedPortfolioFunnelReport(options?: {
       isWithinWindow(c.followedAt || c.createdAt, startMs, endMs)
   );
 
+  const excludedSyntheticSeedsByRef = new Map<
+    string,
+    { providerBookingRef: string; grossRevenueUsd: number }
+  >();
+  const recordExcludedSeedIfApplicable = (
+    rec: OpaqueClickReconciledOutcome | null | undefined,
+  ) => {
+    if (!rec || rec.eventType !== "BOOKING_CONFIRMED") return;
+    if (!isWithinWindow(rec.reconciledAt, startMs, endMs)) return;
+    if (!isSyntheticSeedOrTestOutcome(rec)) return;
+    const ref = (rec.providerBookingRef || "").trim();
+    if (!ref) return;
+    if (!excludedSyntheticSeedsByRef.has(ref)) {
+      excludedSyntheticSeedsByRef.set(ref, {
+        providerBookingRef: ref,
+        grossRevenueUsd: rec.grossRevenueUsd || 0,
+      });
+    }
+  };
+
+  for (const rawRec of Object.values(ledgerState.reconciliationByDedupeKey || {})) {
+    recordExcludedSeedIfApplicable(rawRec);
+  }
+
   const reconciliationsInWindow: OpaqueClickReconciledOutcome[] = Object.values(
     ledgerState.reconciliationByDedupeKey || {}
   ).filter(
     (r) =>
       r &&
-      !r.isTest &&
-      r.trafficClass !== "test" &&
-      !isSyntheticInspectionId(r.clickId) &&
-      !isSyntheticInspectionId(r.providerBookingRef) &&
+      !isSyntheticSeedOrTestOutcome(r) &&
       isWithinWindow(r.reconciledAt, startMs, endMs)
   );
 
@@ -723,7 +781,10 @@ export async function buildUnifiedPortfolioFunnelReport(options?: {
     const existing = confirmedReconciliationsByClickId.get(click.clickId) || [];
     const existingSettled = settledReconciliationsByClickId.get(click.clickId) || [];
     for (const inlineRec of click.reconciledOutcomes) {
-      if (inlineRec.isTest || inlineRec.trafficClass === "test") continue;
+      if (isSyntheticSeedOrTestOutcome(inlineRec)) {
+        recordExcludedSeedIfApplicable(inlineRec);
+        continue;
+      }
       if (
         inlineRec.eventType === "BOOKING_CONFIRMED" &&
         !existing.some((e) => e.providerBookingRef === inlineRec.providerBookingRef)
@@ -753,7 +814,7 @@ export async function buildUnifiedPortfolioFunnelReport(options?: {
   const commercialOutcomesInWindow = allCommercialOutcomes.filter(
     (o) =>
       !isSyntheticInspectionId(o.outcomeId) &&
-      !isSyntheticInspectionId(o.providerBookingRef) &&
+      !isSyntheticSeedOrderRef(o.providerBookingRef) &&
       isWithinWindow(o.providerEventTime || o.dccRecordedAt, startMs, endMs)
   );
   const unmatchedCommercialOutcomes = commercialOutcomesInWindow.filter(
@@ -1593,6 +1654,23 @@ export async function buildUnifiedPortfolioFunnelReport(options?: {
     })
     .sort((a, b) => b.overlappingClicks - a.overlappingClicks || b.overlappingVisitors - a.overlappingVisitors);
 
+  const excludedSyntheticSeeds = Array.from(excludedSyntheticSeedsByRef.values());
+  const excludedSyntheticGrossUsd = excludedSyntheticSeeds.reduce(
+    (sum, item) => sum + item.grossRevenueUsd,
+    0,
+  );
+  const excludedSeedExplanationClause =
+    excludedSyntheticSeeds.length > 0
+      ? ` Excluded ${excludedSyntheticSeeds.length} synthetic test seed fixture${
+          excludedSyntheticSeeds.length === 1 ? "" : "s"
+        } (${excludedSyntheticSeeds
+          .map(
+            (s) =>
+              `${s.providerBookingRef} $${s.grossRevenueUsd.toLocaleString()}`,
+          )
+          .join(" + ")}; $${excludedSyntheticGrossUsd.toLocaleString()} total) from production revenue without deleting stored ledger records.`
+      : "";
+
   const reconciliation: PortfolioReconciliationExplanation = {
     visitorsAndPageviews: {
       portfolioUniqueVisitors: allPortfolioVisitors.size,
@@ -1624,7 +1702,7 @@ export async function buildUnifiedPortfolioFunnelReport(options?: {
       pendingOwnedSettlementUsd: totalPendingOwnedSettlementUsd,
       unreportedAffiliateAndReferralClicksCount: unreportedProviderUnknownCount,
       affiliateOutcomesStatus: "unknown",
-      explanation: `Owned gross sales ($${totalOwnedGrossSalesUsd.toLocaleString()}) reflect ${totalConfirmedBookings} BOOKING_CONFIRMED records on GoSno (GOSNO-WP-OUT-1001 $349 + GOSNO-WP-RT-1002 $998). Payouts received count ONLY confirmed settlement records (BOOKING_FULFILLED / PAYOUT_SETTLED / paidCommissionUsd > 0): $${totalReportedPayoutsUsd} settled (${totalConfirmedSettlements} settlement records; $${totalPendingOwnedSettlementUsd.toLocaleString()} owned gross pending settlement). All ${unreportedProviderUnknownCount} affiliate and FareHarbor checkout referral clicks have unknown provider outcomes and are shown as unknown.`,
+      explanation: `Owned gross sales ($${totalOwnedGrossSalesUsd.toLocaleString()}) reflect ${totalConfirmedBookings} production BOOKING_CONFIRMED record${totalConfirmedBookings === 1 ? "" : "s"}.${excludedSeedExplanationClause} Payouts received count ONLY confirmed settlement records (BOOKING_FULFILLED / PAYOUT_SETTLED / paidCommissionUsd > 0): $${totalReportedPayoutsUsd} settled (${totalConfirmedSettlements} settlement records; $${totalPendingOwnedSettlementUsd.toLocaleString()} owned gross pending settlement). All ${unreportedProviderUnknownCount} affiliate and FareHarbor checkout referral clicks have unknown provider outcomes and are shown as unknown.`,
     },
   };
 

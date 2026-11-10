@@ -53,11 +53,11 @@ export async function POST(req: NextRequest) {
 
   const formData = await req.formData();
   const key = String(formData.get("key") || "");
-  const nextPathRaw = String(formData.get("next") || "/admin/argo-waitlist");
+  const nextPathRaw = String(formData.get("next") || "/admin/inbox");
   const nextPath =
     nextPathRaw.startsWith("/admin") || nextPathRaw.startsWith("/internal/dashboard")
       ? nextPathRaw
-      : "/admin/argo-waitlist";
+      : "/admin/inbox";
 
   const redirectUrl = new URL(nextPath, req.url);
   if (!isValidAdminAccessKey(key)) {

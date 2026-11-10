@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import type { ReactNode } from "react";
+import AdminUnlockNextInput from "./AdminUnlockNextInput";
 import PortfolioVisitLoader from "./PortfolioVisitLoader";
 import {
   ADMIN_SESSION_COOKIE,
@@ -34,7 +35,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           <h1 className="text-3xl font-black">Admin Unlock</h1>
           <p className="mt-2 text-zinc-300">Enter your admin access key to continue.</p>
           <form action="/admin/unlock" method="post" className="mt-6 space-y-3">
-            <input type="hidden" name="next" value="/admin/portfolio" />
+            <AdminUnlockNextInput defaultNext="/admin/inbox" />
             <input
               type="password"
               name="key"
@@ -60,6 +61,12 @@ export default async function AdminLayout({ children }: { children: ReactNode })
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-4">
             <span>Admin area</span>
+            <Link
+              href="/admin/inbox"
+              className="rounded-lg border border-amber-400/35 bg-amber-500/15 px-2.5 py-1 font-semibold text-[#f5c66c] hover:bg-amber-500/25 hover:text-white"
+            >
+              Operator Inbox
+            </Link>
             <Link href="/admin/portfolio" className="font-semibold text-[#f5c66c] hover:text-white">
               Portfolio Desktop
             </Link>
