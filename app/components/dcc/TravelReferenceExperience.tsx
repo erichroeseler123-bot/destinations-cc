@@ -143,6 +143,28 @@ export default async function TravelReferenceExperience({
   const gosnoBreckPricing = getGoSnoRouteSnapshotDisplayPricing({
     routeId: "DEN-BRECKENRIDGE",
   });
+  const gosnoResortRoutes: Array<{ resort: string; routeId: string }> = [
+    { resort: "Breckenridge", routeId: "DEN-BRECKENRIDGE" },
+    { resort: "Vail", routeId: "DEN-VAIL" },
+    { resort: "Beaver Creek", routeId: "DEN-BEAVER-CREEK" },
+    { resort: "Keystone", routeId: "DEN-KEYSTONE" },
+    { resort: "Copper Mountain", routeId: "DEN-COPPER" },
+    { resort: "Winter Park", routeId: "DEN-WINTER-PARK" },
+    { resort: "Steamboat Springs", routeId: "DEN-STEAMBOAT" },
+    { resort: "Aspen", routeId: "DEN-ASPEN" },
+    { resort: "Snowmass", routeId: "DEN-SNOWMASS" },
+  ];
+  const gosnoPricingByResort: Record<
+    string,
+    { suvUsd: number | null; vanUsd: number | null }
+  > = {};
+  for (const item of gosnoResortRoutes) {
+    const p = getGoSnoRouteSnapshotDisplayPricing({ routeId: item.routeId });
+    gosnoPricingByResort[item.resort] = {
+      suvUsd: p.suvFare.amountUsd,
+      vanUsd: p.vanFare.amountUsd,
+    };
+  }
   const isEmbedded = embeddedMode || embedded;
   const evidenceMap: Record<string, EvidenceCitation> = {};
   for (const item of node.evidenceRegistry) {
@@ -724,6 +746,7 @@ export default async function TravelReferenceExperience({
             nodeId={node.id}
             initialContext={initialContext}
             gosnoVanOneWayLabel={gosnoBreckPricing.vanOneWayLabel}
+            gosnoPricingByResort={gosnoPricingByResort}
           />
         </React.Suspense>
       </section>

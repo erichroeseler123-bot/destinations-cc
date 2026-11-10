@@ -23,6 +23,26 @@ import {
 
 export const dynamic = "force-dynamic";
 
+function redactOutcomePii<T>(item: T): T {
+  if (!item || typeof item !== "object" || Array.isArray(item)) return item;
+  const clone = { ...(item as Record<string, unknown>) };
+  for (const piiKey of [
+    "email",
+    "customerEmail",
+    "phone",
+    "customerPhone",
+    "name",
+    "customerName",
+    "traveler",
+    "notes",
+  ]) {
+    if (piiKey in clone) {
+      delete clone[piiKey];
+    }
+  }
+  return clone as T;
+}
+
 export async function GET(request: Request) {
   const traceparent = resolveOrGenerateW3cTraceparent(request);
   const url = new URL(request.url);
@@ -37,13 +57,6 @@ export async function GET(request: Request) {
   const pollerId =
     url.searchParams.get("pollerId")?.trim() || "viator_modified_since_primary";
 
-  const outcomes = await listCommercialOutcomes({
-    handoffId,
-    receiptId,
-    provider,
-  });
-  const checkpoint = await getPollerCheckpoint(pollerId);
-
   const adminSecret =
     process.env.DCC_COMMERCE_ADMIN_SECRET?.trim() ||
     process.env.DCC_INTERNAL_API_KEY?.trim() ||
@@ -54,8 +67,51 @@ export async function GET(request: Request) {
     request.headers.get("authorization")?.replace(/^Bearer\s+/i, "").trim() ||
     "";
   const isAdminCaller = Boolean(adminSecret && suppliedToken === adminSecret);
-  const sanitizedOutcomes =
-    isAdminCaller || handoffId || receiptId ? outcomes : [];
+
+  if (!handoffId && !receiptId && !isAdminCaller) {
+    try {
+      verifyEvaluationAuthAndRateLimit({
+        headers: request.headers,
+        requiredScope: "dcc:commerce:report_outcome",
+        requireExplicitApiKey: true,
+      });
+    } catch (err) {
+      if (err instanceof MachineSecurityLimitError) {
+        return buildMachineJsonResponse(
+          {
+            ok: false,
+            error: {
+              code: err.code,
+              message: err.message,
+            },
+            traceparent,
+          },
+          { status: err.statusCode, cacheControl: "no-store", extraHeaders: { traceparent } },
+        );
+      }
+      return buildMachineJsonResponse(
+        {
+          ok: false,
+          error: {
+            code: "API_KEY_REQUIRED",
+            message: "Explicit API key required to enumerate commercial outcomes.",
+          },
+          traceparent,
+        },
+        { status: 401, cacheControl: "no-store", extraHeaders: { traceparent } },
+      );
+    }
+  }
+
+  const outcomes = await listCommercialOutcomes({
+    handoffId,
+    receiptId,
+    provider,
+  });
+  const checkpoint = await getPollerCheckpoint(pollerId);
+  const sanitizedOutcomes = isAdminCaller
+    ? outcomes
+    : outcomes.map((outcome) => redactOutcomePii(outcome));
 
   return buildMachineJsonResponse(
     {

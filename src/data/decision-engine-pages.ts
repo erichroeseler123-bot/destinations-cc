@@ -711,7 +711,7 @@ const pages: DecisionEnginePage[] = [
         "Winter and spring bring statutory traction laws and avalanche mitigation holds; summer brings afternoon convective thunderstorms above treeline.",
     },
     howToGetThere: [
-      "Private & Shared Airport Transfers from DEN Level 5: GoSno (100% private AWD SUVs up to 6 pax at $399 one-way or private vans up to 10 pax at $599 published / quoteOnly: true on /api/availability, subject to luggage and ski-gear fit; 11+ passengers exceed a single GoSno van) and Epic Mountain Express / Summit Express (per-seat shared shuttles and private charters).",
+      "Private & Shared Airport Transfers from DEN Level 5: GoSno (100% private AWD SUVs up to 6 pax at $499 one-way or private vans up to 10 pax at $799 published / quoteOnly: true on /api/availability, subject to luggage and ski-gear fit; 11+ passengers exceed a single GoSno van) and Epic Mountain Express / Summit Express (per-seat shared shuttles and private charters).",
       "Public Transit: RTD A-Line from DEN to Denver Union Station, CDOT Bustang West Line or Pegasus to Frisco Transit Center, and free Summit Stage bus to Breckenridge.",
       "Self-Drive via I-70 West & CO-9 South: Only with verified 4WD/AWD or 3PMSF/M+S tires with at least 3/16-inch tread depth.",
       "Always check official CDOT COtrip.org before departing Denver or Frisco for active Code 15 / Code 16 restrictions and tunnel holds.",
@@ -778,7 +778,7 @@ const pages: DecisionEnginePage[] = [
     ],
     executionCtas: [
       { label: "Compare Colorado transfer options", href: "/transportation/colorado", kind: "internal" },
-      { label: "Open GoSno Breckenridge private transfer handoff", href: "https://gosno.co/breckenridge?origin=DEN&destination=Breckenridge", kind: "external" },
+      { label: "Open GoSno Breckenridge private transfer handoff", href: "https://gosno.co/breckenridge?origin=DEN&destination=Breckenridge&vehicleClass=suv&publishedPrice=499", kind: "external" },
     ],
     faq: [
       {
@@ -831,6 +831,30 @@ export const DECISION_ENGINE_PAGES: DecisionEnginePage[] = pages.map((entry) => 
           "Public Transit: RTD A-Line from DEN to Denver Union Station, CDOT Bustang West Line or Pegasus to Frisco Transit Center, and free Summit Stage bus to Breckenridge.",
           "Self-Drive via I-70 West & CO-9 South: Only with verified 4WD/AWD or 3PMSF/M+S tires with at least 3/16-inch tread depth.",
           "Always check official CDOT COtrip.org before departing Denver or Frisco for active Code 15 / Code 16 restrictions and tunnel holds.",
+        ];
+      },
+    });
+    Object.defineProperty(parsed, "executionCtas", {
+      enumerable: true,
+      get() {
+        const breck = getGoSnoRouteSnapshotDisplayPricing({
+          routeId: "DEN-BRECKENRIDGE",
+        });
+        const priceParam =
+          breck.suvFare.amountUsd !== null
+            ? `&publishedPrice=${breck.suvFare.amountUsd}`
+            : "";
+        return [
+          {
+            label: "Compare Colorado transfer options",
+            href: "/transportation/colorado",
+            kind: "internal" as const,
+          },
+          {
+            label: "Open GoSno Breckenridge private transfer handoff",
+            href: `https://gosno.co/breckenridge?origin=DEN&destination=Breckenridge&vehicleClass=suv${priceParam}`,
+            kind: "external" as const,
+          },
         ];
       },
     });

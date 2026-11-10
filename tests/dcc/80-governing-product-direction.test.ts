@@ -638,7 +638,7 @@ test("Proof 9: Production execution path contains zero sample reviews and shows 
     { node: juneauNode, now: NOW },
   );
 
-  assert.equal(prodEval.options.length, 7);
+  assert.equal(prodEval.options.length, 8);
   for (const opt of prodEval.options) {
     assert.equal(
       opt.recentReviewSummary.state,
@@ -740,7 +740,7 @@ test("Proof 10: Seven-option factual audit, non-double-counted duration decompos
     "accessibility",
     "booking_and_cancellation",
   ];
-  assert.equal(evalStandard.options.length, 7);
+  assert.equal(evalStandard.options.length, 8);
   for (const opt of evalStandard.options) {
     assert.equal(
       opt.timing.durationAudit.doubleCountingStatus,

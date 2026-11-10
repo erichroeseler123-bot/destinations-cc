@@ -28,18 +28,35 @@ export async function POST(request: Request) {
     const clientIp = body.clientIp || extractClientIp(request);
     const userAgent = request.headers.get("user-agent") || null;
 
+    const environment = (process.env.VERCEL_ENV || "production").trim();
+    const isTest = Boolean((body as Record<string, unknown>)?.isTest);
+
     const result = await submitFactualErrorReport({
-      pagePath: String(body.pagePath || ""),
+      pagePath: String(body.pagePath || "/contact"),
       nodeId: body.nodeId ?? null,
       citationId: body.citationId ?? null,
       optionId: body.optionId ?? null,
-      disputedClaim: String(body.disputedClaim || ""),
-      explanation: String(body.explanation || ""),
+      disputedClaim: String(
+        body.disputedClaim ||
+          (body as Record<string, unknown>)?.subject ||
+          "",
+      ),
+      explanation: String(
+        body.explanation ||
+          (body as Record<string, unknown>)?.message ||
+          "",
+      ),
       sourceUrl: body.sourceUrl ?? null,
-      contactInfo: body.contactInfo ?? null,
+      contactInfo:
+        body.contactInfo ??
+        ((body as Record<string, unknown>)?.email
+          ? String((body as Record<string, unknown>).email)
+          : null),
       websiteUrl: body.websiteUrl ?? null,
       clientIp,
       userAgent,
+      environment,
+      isTest,
       sendNotification: body.sendNotification,
     });
 
@@ -49,10 +66,13 @@ export async function POST(request: Request) {
           ok: false,
           error: result.error,
           message: result.message,
+          emailSent: false,
         },
         { status: result.statusCode },
       );
     }
+
+    const emailSent = result.report.notificationStatus === "sent";
 
     return NextResponse.json(
       {
@@ -64,7 +84,10 @@ export async function POST(request: Request) {
         submittedAt: result.report.submittedAt,
         pagePath: result.report.pagePath,
         nodeId: result.report.nodeId,
+        environment: result.report.environment || environment,
+        isTest: Boolean(result.report.isTest ?? isTest),
         notificationStatus: result.report.notificationStatus,
+        emailSent,
       },
       { status: 201 },
     );

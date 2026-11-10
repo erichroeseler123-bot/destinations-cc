@@ -16,15 +16,49 @@ const ALLOWED_GOSNO_DESTINATIONS = new Set([
   "beaver-creek",
   "keystone",
   "copper",
-  "copper-mountain",
   "winter-park",
-  "aspen",
-  "snowmass",
+  "aspen-snowmass",
   "steamboat",
-  "steamboat-springs",
+  "arapahoe-basin",
+  "loveland",
   "crested-butte",
   "big-sky",
 ]);
+
+const GOSNO_DESTINATION_CANONICAL_SLUG_MAP: Record<string, string> = {
+  breckenridge: "breckenridge",
+  breck: "breckenridge",
+  vail: "vail",
+  "beaver-creek": "beaver-creek",
+  beavercreek: "beaver-creek",
+  keystone: "keystone",
+  copper: "copper",
+  "copper-mountain": "copper",
+  coppermountain: "copper",
+  "winter-park": "winter-park",
+  winterpark: "winter-park",
+  "aspen-snowmass": "aspen-snowmass",
+  aspensnowmass: "aspen-snowmass",
+  aspen: "aspen-snowmass",
+  snowmass: "aspen-snowmass",
+  "snowmass-village": "aspen-snowmass",
+  steamboat: "steamboat",
+  "steamboat-springs": "steamboat",
+  steamboatsprings: "steamboat",
+  "arapahoe-basin": "arapahoe-basin",
+  arapahoebasin: "arapahoe-basin",
+  "a-basin": "arapahoe-basin",
+  abasin: "arapahoe-basin",
+  loveland: "loveland",
+  "loveland-ski-area": "loveland",
+  lovelandskiarea: "loveland",
+  "crested-butte": "crested-butte",
+  crestedbutte: "crested-butte",
+  "mt-crested-butte": "crested-butte",
+  "big-sky": "big-sky",
+  bigsky: "big-sky",
+  "big-sky-resort": "big-sky",
+};
 
 const DESTINATION_DISPLAY_MAP: Record<string, string> = {
   breckenridge: "Breckenridge",
@@ -34,10 +68,17 @@ const DESTINATION_DISPLAY_MAP: Record<string, string> = {
   copper: "Copper Mountain",
   "copper-mountain": "Copper Mountain",
   "winter-park": "Winter Park",
+  "aspen-snowmass": "Aspen / Snowmass",
   aspen: "Aspen",
   snowmass: "Snowmass",
+  "snowmass-village": "Snowmass",
   steamboat: "Steamboat Springs",
   "steamboat-springs": "Steamboat Springs",
+  "arapahoe-basin": "Arapahoe Basin",
+  "a-basin": "Arapahoe Basin",
+  abasin: "Arapahoe Basin",
+  loveland: "Loveland",
+  "loveland-ski-area": "Loveland",
   "crested-butte": "Crested Butte",
   "big-sky": "Big Sky",
 };
@@ -50,13 +91,32 @@ function clean(value: string | null, max = 120) {
 }
 
 function slug(value: string | null) {
-  return clean(value, 64).toLowerCase().replace(/[^a-z0-9-]/g, "");
+  return clean(value, 64)
+    .toLowerCase()
+    .replace(/[\s_/&+]+/g, "-")
+    .replace(/[^a-z0-9-]/g, "")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+function canonicalizeDestination(value: string | null): {
+  canonicalSlug: string;
+  normalizedSlug: string;
+} {
+  const normalizedSlug = slug(value);
+  const canonicalSlug =
+    GOSNO_DESTINATION_CANONICAL_SLUG_MAP[normalizedSlug] || normalizedSlug;
+  return { canonicalSlug, normalizedSlug };
 }
 
 export async function GET(request: Request) {
   await syncDurableLedgerWithPostgres();
   const incoming = new URL(request.url);
-  const destination = slug(incoming.searchParams.get("destination"));
+  const { canonicalSlug: destination, normalizedSlug: rawDestinationSlug } =
+    canonicalizeDestination(
+      incoming.searchParams.get("destination") ||
+        incoming.searchParams.get("resort"),
+    );
 
   // DCC is coordinate intelligence, not a generic travel referral funnel.
   // A GoSno handoff must represent an explicit supported mountain-transfer
@@ -122,7 +182,8 @@ export async function GET(request: Request) {
   const isBigSky = destination === "big-sky";
   const requestedVehicleType = slug(
     incoming.searchParams.get("vehicle_type") ||
-      incoming.searchParams.get("vehicleClass"),
+      incoming.searchParams.get("vehicleClass") ||
+      incoming.searchParams.get("vehicle"),
   );
   const maxSingleVehiclePassengers = isBigSky
     ? GOSNO_MAX_SUV_PASSENGERS
@@ -160,7 +221,9 @@ export async function GET(request: Request) {
       ? "corridor:denver-breckenridge-i70"
       : "corridor:denver-vail-i70";
   const displayDestination =
-    DESTINATION_DISPLAY_MAP[destination] || destination;
+    DESTINATION_DISPLAY_MAP[rawDestinationSlug] ||
+    DESTINATION_DISPLAY_MAP[destination] ||
+    destination;
   const directionRaw = clean(incoming.searchParams.get("direction"), 16).toUpperCase();
   const tripTypeRaw = clean(
     incoming.searchParams.get("tripType") || incoming.searchParams.get("trip_type"),
@@ -180,7 +243,9 @@ export async function GET(request: Request) {
     ) || undefined;
   const offerId =
     clean(
-      incoming.searchParams.get("offer_id") || incoming.searchParams.get("offerId"),
+      incoming.searchParams.get("offer_id") ||
+        incoming.searchParams.get("offerId") ||
+        incoming.searchParams.get("route"),
       64,
     ) || undefined;
   const returnRouteId =

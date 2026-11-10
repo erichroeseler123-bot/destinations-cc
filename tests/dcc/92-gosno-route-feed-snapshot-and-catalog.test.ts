@@ -98,7 +98,7 @@ test("1. Duplicate GoSno fare tables and hardcoded fallback fares are removed fr
   );
 });
 
-test("2. Copper Mountain: DEN-COPPER and COPPER-DEN each show $349 SUV / $599 van, and outbound, return, SUV, and van stay distinct", async () => {
+test("2. Copper Mountain: DEN-COPPER and COPPER-DEN each show $449 SUV / $799 van, and outbound, return, SUV, and van stay distinct", async () => {
   resetGoSnoRouteFeedSnapshotToBaseline();
 
   // 2a. Outbound DEN-COPPER via compileApplicableDecisionContext & POST /api/v1/applicability/evaluate
@@ -143,13 +143,13 @@ test("2. Copper Mountain: DEN-COPPER and COPPER-DEN each show $349 SUV / $599 va
   assert.ok(denCopperVan);
   assert.equal(denCopperSuv.pricingResolution.matchedOfferId, "DEN-COPPER-SUV");
   assert.equal(denCopperSuv.pricingResolution.matchedRouteId, "DEN-COPPER");
-  assert.equal(denCopperSuv.pricingResolution.fixedRateOneWayUsd, 349);
-  assert.equal(denCopperSuv.pricingResolution.priceDisplay, "$349");
+  assert.equal(denCopperSuv.pricingResolution.fixedRateOneWayUsd, 449);
+  assert.equal(denCopperSuv.pricingResolution.priceDisplay, "$449");
 
   assert.equal(denCopperVan.pricingResolution.matchedOfferId, "DEN-COPPER-VAN");
   assert.equal(denCopperVan.pricingResolution.matchedRouteId, "DEN-COPPER");
-  assert.equal(denCopperVan.pricingResolution.fixedRateOneWayUsd, 599);
-  assert.equal(denCopperVan.pricingResolution.priceDisplay, "$599");
+  assert.equal(denCopperVan.pricingResolution.fixedRateOneWayUsd, 799);
+  assert.equal(denCopperVan.pricingResolution.priceDisplay, "$799");
   assert.equal(denCopperVan.pricingResolution.quoteOnly, true);
 
   // 2b. Return COPPER-DEN via compileApplicableDecisionContext & POST /api/v1/applicability/evaluate
@@ -194,13 +194,13 @@ test("2. Copper Mountain: DEN-COPPER and COPPER-DEN each show $349 SUV / $599 va
   assert.ok(copperDenVan);
   assert.equal(copperDenSuv.pricingResolution.matchedOfferId, "COPPER-DEN-SUV");
   assert.equal(copperDenSuv.pricingResolution.matchedRouteId, "COPPER-DEN");
-  assert.equal(copperDenSuv.pricingResolution.fixedRateOneWayUsd, 349);
-  assert.equal(copperDenSuv.pricingResolution.priceDisplay, "$349");
+  assert.equal(copperDenSuv.pricingResolution.fixedRateOneWayUsd, 449);
+  assert.equal(copperDenSuv.pricingResolution.priceDisplay, "$449");
 
   assert.equal(copperDenVan.pricingResolution.matchedOfferId, "COPPER-DEN-VAN");
   assert.equal(copperDenVan.pricingResolution.matchedRouteId, "COPPER-DEN");
-  assert.equal(copperDenVan.pricingResolution.fixedRateOneWayUsd, 599);
-  assert.equal(copperDenVan.pricingResolution.priceDisplay, "$599");
+  assert.equal(copperDenVan.pricingResolution.fixedRateOneWayUsd, 799);
+  assert.equal(copperDenVan.pricingResolution.priceDisplay, "$799");
   assert.equal(copperDenVan.pricingResolution.quoteOnly, true);
 
   // 2c. Verify that outbound, return, SUV, and van prices stay strictly distinct when priced differently in the feed
@@ -260,10 +260,10 @@ test("2. Copper Mountain: DEN-COPPER and COPPER-DEN each show $349 SUV / $599 va
   }
 });
 
-test("3. Vail: $599 published van fare still leads to a quote where required; 11-person group is ineligible for a single van; 16- and 20-person cases reach group quote flow", async () => {
+test("3. Vail: $799 published van fare still leads to a quote where required; 11-person group is ineligible for a single van; 16- and 20-person cases reach group quote flow", async () => {
   resetGoSnoRouteFeedSnapshotToBaseline();
 
-  // 3a. 8 passengers to Vail -> recommends GoSno van showing $599 published fare while keeping quoteOnly: true and quoteUrl
+  // 3a. 8 passengers to Vail -> recommends GoSno van showing $799 published fare while keeping quoteOnly: true and quoteUrl
   const vail8Outcome = compileApplicableDecisionContext({
     corridorId: "corridor:denver-vail-i70",
     routeId: "DEN-VAIL",
@@ -284,12 +284,12 @@ test("3. Vail: $599 published van fare still leads to a quote where required; 11
     (v) => v.vehicleClassId === "veh:private-transit-van-10",
   )!;
   assert.equal(vailVanEval.pricingResolution.matchedOfferId, "DEN-VAIL-VAN");
-  assert.equal(vailVanEval.pricingResolution.fixedRateOneWayUsd, 599);
-  assert.equal(vailVanEval.pricingResolution.priceDisplay, "$599");
+  assert.equal(vailVanEval.pricingResolution.fixedRateOneWayUsd, 799);
+  assert.equal(vailVanEval.pricingResolution.priceDisplay, "$799");
   assert.equal(vailVanEval.pricingResolution.quoteOnly, true);
   assert.match(
     vailVanEval.pricingResolution.compiledPricingNote,
-    /\$599 one-way published van rate on gosno\.co; live availability API returns quoteOnly: true/,
+    /\$799 one-way published van rate on gosno\.co; live availability API returns quoteOnly: true/,
   );
   assert.match(
     vailVanEval.pricingResolution.quoteUrl || "",
@@ -329,7 +329,7 @@ test("3. Vail: $599 published van fare still leads to a quote where required; 11
   assert.ok(vail11Json.outcome.privateGroupInquiryOption);
   assert.equal(
     vail11Json.outcome.privateGroupInquiryOption.referenceCombinedOneWayUsd,
-    1098, // 1 van ($599) + 1 Suburban ($499)
+    1398, // 1 van ($799) + 1 Suburban ($599)
   );
 
   // 3c. 16-person and 20-person groups reach GoSno group quote flow with route-feed fares
@@ -345,7 +345,7 @@ test("3. Vail: $599 published van fare still leads to a quote where required; 11
   assert.ok(vail16Option);
   assert.equal(vail16Option.vehicleSuggestion.vanCount, 1);
   assert.equal(vail16Option.vehicleSuggestion.suvCount, 1);
-  assert.equal(vail16Option.referenceCombinedOneWayUsd, 1098); // $599 + $499
+  assert.equal(vail16Option.referenceCombinedOneWayUsd, 1398); // $799 + $599
   assert.match(vail16Option.inquiryUrl, /^https:\/\/gosno\.co\/request-quote\?/);
 
   const vail20Option = buildGoSnoPrivateGroupInquiryOption({
@@ -360,7 +360,7 @@ test("3. Vail: $599 published van fare still leads to a quote where required; 11
   assert.ok(vail20Option);
   assert.equal(vail20Option.vehicleSuggestion.vanCount, 2);
   assert.equal(vail20Option.vehicleSuggestion.suvCount, 0);
-  assert.equal(vail20Option.referenceCombinedOneWayUsd, 1198); // 2 * $599
+  assert.equal(vail20Option.referenceCombinedOneWayUsd, 1598); // 2 * $799
   assert.match(vail20Option.inquiryUrl, /^https:\/\/gosno\.co\/request-quote\?/);
 });
 
@@ -411,7 +411,7 @@ test("4. Feed failure, invalid data, expired snapshot, and missing group compone
       outcomeAfterUnavailable.vehicleClassEvaluations.find(
         (v) => v.vehicleClassId === "veh:awd-full-size-suv",
       )!;
-    assert.equal(suvAfterUnavailable.pricingResolution.fixedRateOneWayUsd, 349);
+    assert.equal(suvAfterUnavailable.pricingResolution.fixedRateOneWayUsd, 449);
     assert.equal(
       outcomeAfterUnavailable.gosnoPricingSnapshot?.freshnessStatus,
       "retained_after_failed_refresh",
@@ -542,7 +542,7 @@ test("4. Feed failure, invalid data, expired snapshot, and missing group compone
       /^https:\/\/gosno\.co\/request-quote\?/,
     );
 
-    // 4d. Group estimate missing a component fare (e.g. Crested Butte 16-person group where SUV is $699 but Van fare is null)
+    // 4d. Group estimate missing a component fare (e.g. Crested Butte 16-person group where route fares are null in seasonal cancellation)
     saveGoSnoRouteFeedSnapshot(seededValidSnapshot);
     const crestedButte16Group = buildGoSnoPrivateGroupInquiryOption({
       corridorId: "corridor:denver-vail-i70",
@@ -555,7 +555,7 @@ test("4. Feed failure, invalid data, expired snapshot, and missing group compone
       nowMs: baseNowMs,
     });
     assert.ok(crestedButte16Group);
-    assert.equal(crestedButte16Group.componentFares.suvOneWayUsd, 699);
+    assert.equal(crestedButte16Group.componentFares.suvOneWayUsd, null);
     assert.equal(crestedButte16Group.componentFares.vanOneWayUsd, null);
     assert.equal(crestedButte16Group.componentFares.missingComponentFare, true);
     assert.equal(
@@ -851,7 +851,7 @@ test("6. Authenticated scheduled refresh job runs before expiry while public tri
         (v: { vehicleClassId: string }) =>
           v.vehicleClassId === "veh:awd-full-size-suv",
       );
-      assert.equal(suvEval.pricingResolution.fixedRateOneWayUsd, 349);
+      assert.equal(suvEval.pricingResolution.fixedRateOneWayUsd, 449);
     } finally {
       if (prevCronSecret === undefined) {
         delete process.env.CRON_SECRET;
@@ -1038,8 +1038,8 @@ test("7. Server time governs current fare freshness (including bundled snapshot 
     const replayedVailSuv = replayedOutcome.vehicleClassEvaluations.find(
       (v) => v.vehicleClassId === "veh:awd-full-size-suv",
     )!;
-    assert.equal(replayedVailSuv.pricingResolution.fixedRateOneWayUsd, 499);
-    assert.equal(replayedVailSuv.pricingResolution.priceDisplay, "$499");
+    assert.equal(replayedVailSuv.pricingResolution.fixedRateOneWayUsd, 599);
+    assert.equal(replayedVailSuv.pricingResolution.priceDisplay, "$599");
   });
 });
 
@@ -1048,34 +1048,42 @@ test("8. DCC guide copy and evaluator agree after a fixture fare change, and a f
     const baseline = getBaselineGoSnoRouteFeedSnapshot();
     const nowIso = new Date().toISOString();
 
-    // Seed fresh baseline snapshot ($499 Vail SUV / $599 Vail Van)
+    // Seed fresh baseline snapshot ($599 Vail SUV / $799 Vail Van)
     const freshBaselineSnapshot = createGoSnoRouteFeedSnapshot(baseline.feed, {
       fetchedAt: nowIso,
       ttlMs: 24 * 60 * 60 * 1000,
     });
     saveGoSnoRouteFeedSnapshot(freshBaselineSnapshot);
 
-    // 8a. Verify baseline Vail guide copy and shuttle guide page model reflect $499 SUV and $599 van
+    // 8a. Verify baseline Vail guide copy and shuttle guide page model reflect $599 SUV and $799 van
     const baselineVailGuide = getPublishedDecisionGuide(
       "denver-airport-to-vail-rental-car-vs-private-transfer",
     )!;
     assert.ok(baselineVailGuide);
-    assert.match(baselineVailGuide.answer, /\$499/);
     assert.match(baselineVailGuide.answer, /\$599/);
+    assert.match(baselineVailGuide.answer, /\$799/);
 
     const baselineShuttleModel = buildDenverToVailShuttleGuidePageModel();
-    assert.equal(baselineShuttleModel.vailPricing.suvPriceLabel, "$499");
-    assert.equal(baselineShuttleModel.vailPricing.vanPriceLabel, "$599");
+    assert.equal(baselineShuttleModel.vailPricing.suvPriceLabel, "$599");
+    assert.equal(baselineShuttleModel.vailPricing.vanPriceLabel, "$799");
     assert.equal(
       baselineShuttleModel.vailPricing.roundTripSuvPriceLabel,
-      "$998",
+      "$1198",
     );
     assert.equal(
       baselineShuttleModel.vailPricing.roundTripVanFare.priceDisplay,
-      "$1198",
+      "$1598",
+    );
+    assert.match(
+      baselineShuttleModel.actions[0]?.href || "",
+      /publishedPrice=799/,
+    );
+    assert.match(
+      baselineShuttleModel.basePartnerDestinationUrl,
+      /publishedPrice=799/,
     );
 
-    // 8b. Modify DEN-VAIL fares in a test fixture ($499 -> $479 SUV, $599 -> $649 Van) and run refreshGoSnoRouteFeedSnapshot
+    // 8b. Modify DEN-VAIL fares in a test fixture ($599 -> $479 SUV, $799 -> $649 Van) and run refreshGoSnoRouteFeedSnapshot
     const modifiedFeed: GoSnoRouteFeedPayload = structuredClone(baseline.feed);
     for (const route of modifiedFeed.routes) {
       if (route.route_id === "DEN-VAIL" || route.route_id === "VAIL-DEN") {
@@ -1135,8 +1143,8 @@ test("8. DCC guide copy and evaluator agree after a fixture fare change, and a f
 
     assert.match(updatedVailGuide.answer, /\$479/);
     assert.match(updatedVailGuide.answer, /\$649/);
-    assert.equal(updatedVailGuide.answer.includes("$499"), false);
     assert.equal(updatedVailGuide.answer.includes("$599"), false);
+    assert.equal(updatedVailGuide.answer.includes("$799"), false);
     assert.match(
       JSON.stringify(updatedVailGuide.optionComparison),
       /\$479/,
@@ -1353,16 +1361,21 @@ test("9. Proxy CRON_SECRET authorization and DEN-BRECKENRIDGE shared snapshot fa
       (o) => o.id === "handoff-gosno-breck",
     )!;
 
-    assert.match(breckDecisionPage.howToGetThere[0] || "", /\$399 one-way/);
-    assert.match(breckDecisionPage.howToGetThere[0] || "", /\$599/);
-    assert.match(breckShuttleMode.routeOrCoverage, /\$399 one-way/);
-    assert.match(breckShuttleMode.routeOrCoverage, /\$599 one-way/);
-    assert.match(breckShuttleMode.pricingModel || "", /\$399 one-way/);
-    assert.match(breckShuttleMode.pricingModel || "", /\$599 one-way/);
-    assert.match(breckShuttleMode.practicalConstraints[0] || "", /\$399 one-way/);
-    assert.match(breckShuttleMode.practicalConstraints[0] || "", /\$599 one-way/);
-    assert.match(breckHandoff.description, /\$399 one-way/);
-    assert.match(breckHandoff.description, /\$599 one-way/);
+    assert.match(breckDecisionPage.howToGetThere[0] || "", /\$499 one-way/);
+    assert.match(breckDecisionPage.howToGetThere[0] || "", /\$799/);
+    assert.match(
+      breckDecisionPage.executionCtas?.[1]?.href || "",
+      /publishedPrice=499/,
+    );
+    assert.match(breckShuttleMode.routeOrCoverage, /\$499 one-way/);
+    assert.match(breckShuttleMode.routeOrCoverage, /\$799 one-way/);
+    assert.match(breckShuttleMode.pricingModel || "", /\$499 one-way/);
+    assert.match(breckShuttleMode.pricingModel || "", /\$799 one-way/);
+    assert.match(breckShuttleMode.practicalConstraints[0] || "", /\$499 one-way/);
+    assert.match(breckShuttleMode.practicalConstraints[0] || "", /\$799 one-way/);
+    assert.match(breckHandoff.description, /\$499 one-way/);
+    assert.match(breckHandoff.description, /\$799 one-way/);
+    assert.equal(breckHandoff.defaultParams?.publishedPrice, "499");
 
     const breckEval = compileApplicableDecisionContext({
       corridorId: "corridor:denver-breckenridge-i70",
@@ -1379,8 +1392,8 @@ test("9. Proxy CRON_SECRET authorization and DEN-BRECKENRIDGE shared snapshot fa
     const breckEvalVan = breckEval.vehicleClassEvaluations.find(
       (v) => v.vehicleClassId === "veh:private-transit-van-10",
     )!;
-    assert.equal(breckEvalSuv.pricingResolution.priceDisplay, "$399");
-    assert.equal(breckEvalVan.pricingResolution.priceDisplay, "$599");
+    assert.equal(breckEvalSuv.pricingResolution.priceDisplay, "$499");
+    assert.equal(breckEvalVan.pricingResolution.priceDisplay, "$799");
 
     // Mutate DEN-BRECKENRIDGE fares in a test fixture and verify guide, reference node, and evaluator agree
     const modifiedFeed = structuredClone(baseSnap.feed);
@@ -1576,8 +1589,8 @@ test("10. Production guard enforces canonical GoSno route feed URL and configure
       });
       assert.equal(
         vailVanAfterProdRefresh?.amountUsd,
-        599,
-        "Production refresh must ignore query-param fare overrides and use canonical GoSno feed fare ($599)",
+        799,
+        "Production refresh must ignore query-param fare overrides and use canonical GoSno feed fare ($799)",
       );
     } finally {
       globalThis.fetch = originalFetch;

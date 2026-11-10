@@ -5,7 +5,10 @@ function clean(value: string | null, max = 120) {
 }
 
 function slug(value: string | null) {
-  return clean(value, 80).toLowerCase().replace(/[^a-z0-9-]/g, "");
+  return clean(value, 80)
+    .toLowerCase()
+    .replace(/[\s_]+/g, "-")
+    .replace(/[^a-z0-9-]/g, "");
 }
 
 export async function GET(request: Request) {
@@ -30,9 +33,14 @@ export async function GET(request: Request) {
 
   const path = interest.includes("whale")
     ? "/juneau-whale-watching-tours"
-    : interest.includes("helicopter") || interest.includes("flight")
-      ? "/helicopter"
-      : "/juneau";
+    : interest.includes("dogsled") ||
+        interest.includes("dog-sled") ||
+        interest.includes("mushing") ||
+        interest.includes("husky")
+      ? "/juneau-dogsled-helicopter-tours"
+      : interest.includes("helicopter") || interest.includes("flight")
+        ? "/helicopter"
+        : "/";
   const target = new URL(path, incoming.origin);
 
   if (ship) {

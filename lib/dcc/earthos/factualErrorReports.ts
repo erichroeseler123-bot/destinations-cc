@@ -36,6 +36,8 @@ export type FactualErrorReportInput = {
   clientIp?: string | null;
   userAgent?: string | null;
   environmentScope?: EarthosEnvironmentScope;
+  environment?: string;
+  isTest?: boolean;
   sendNotification?: boolean;
   forceNotificationFailureForTest?: boolean;
 };
@@ -44,6 +46,8 @@ export type FactualErrorReportRecord = {
   reportId: string;
   findingId: string;
   environmentScope: EarthosEnvironmentScope;
+  environment?: string;
+  isTest?: boolean;
   pagePath: string;
   nodeId: string | null;
   citationId: string | null;
@@ -73,7 +77,7 @@ export type SubmitFactualErrorReportResult =
     }
   | {
       ok: false;
-      statusCode: 400 | 429 | 500;
+      statusCode: 400 | 429 | 500 | 503;
       error:
         | "spam_detected_honeypot"
         | "spam_detected_content"
@@ -459,6 +463,8 @@ export async function submitFactualErrorReport(
     reportId,
     findingId,
     environmentScope: scope,
+    environment: (input.environment || process.env.VERCEL_ENV || "production").trim(),
+    isTest: Boolean(input.isTest),
     pagePath,
     nodeId: inferredNodeId,
     citationId,
@@ -524,14 +530,29 @@ export async function submitFactualErrorReport(
         controlSurface: pagePath,
         metadata: record as unknown as Record<string, unknown>,
       });
+    } else if (
+      process.env.VERCEL === "1" ||
+      process.env.VERCEL_ENV === "production" ||
+      process.env.VERCEL_ENV === "preview"
+    ) {
+      return {
+        ok: false,
+        statusCode: 503,
+        error: "persistence_failed",
+        message: "Durable database persistence is unavailable in serverless runtime.",
+      };
     } else {
       const localList = readLocalFallbackReports();
       writeLocalFallbackReports([record, ...localList]);
     }
   } catch (err) {
+    const isServerless =
+      process.env.VERCEL === "1" ||
+      process.env.VERCEL_ENV === "production" ||
+      process.env.VERCEL_ENV === "preview";
     return {
       ok: false,
-      statusCode: 500,
+      statusCode: isServerless ? 503 : 500,
       error: "persistence_failed",
       message:
         err instanceof Error

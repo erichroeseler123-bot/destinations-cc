@@ -12,6 +12,7 @@ import { getTravelReferenceNodeById } from "@/lib/dcc/travelReference";
 import { getTransportEntriesByRegion } from "@/src/data/transport-directory";
 
 import { getPublicationManifestEntry } from "@/src/data/publication-manifest";
+import { getGoSnoRouteSnapshotDisplayPricing } from "@/lib/dcc/applicability";
 import PartnerSharePlanningBar from "@/app/components/dcc/PartnerSharePlanningBar";
 import PortableTripNetworkBar from "@/app/components/dcc/PortableTripNetworkBar";
 import ColoradoFactComparisonTable from "@/app/components/dcc/ColoradoFactComparisonTable";
@@ -66,6 +67,20 @@ export default async function ColoradoTransportationPage({
   const firstStr = (v: string | string[] | undefined) =>
     Array.isArray(v) ? v[0] : v;
   await syncDurableLedgerWithPostgres();
+  const vailPricing = getGoSnoRouteSnapshotDisplayPricing({
+    routeId: "DEN-VAIL",
+  });
+  const breckPricing = getGoSnoRouteSnapshotDisplayPricing({
+    routeId: "DEN-BRECKENRIDGE",
+  });
+  const vailVanPriceParam =
+    vailPricing.vanFare.amountUsd !== null
+      ? `&publishedPrice=${vailPricing.vanFare.amountUsd}`
+      : "";
+  const breckSuvPriceParam =
+    breckPricing.suvFare.amountUsd !== null
+      ? `&publishedPrice=${breckPricing.suvFare.amountUsd}`
+      : "";
   const actions = getColoradoTransferRecommendationActions();
   const entries = getTransportEntriesByRegion("Colorado");
   const bySlug = new Map(entries.map((entry) => [entry.slug, entry]));
@@ -154,7 +169,7 @@ export default async function ColoradoTransportationPage({
                 2. 1–4 Pax (or up to 6 Light) → Private SUV
               </p>
               <p className="text-zinc-200 leading-6">
-                A 100% private AWD SUV on <strong>GoSno</strong> caps at <strong>6 passengers max</strong> ($499 DEN–Vail one-way baseline) with an experienced mountain driver and optional 20–30 min grocery stop on advance request.
+                A 100% private AWD SUV on <strong>GoSno</strong> caps at <strong>6 passengers max</strong> ({vailPricing.suvPriceLabel} DEN–Vail one-way baseline) with an experienced mountain driver and optional 20–30 min grocery stop on advance request.
               </p>
             </article>
             <article className="rounded-2xl border border-white/10 bg-black/35 p-4 space-y-2">
@@ -186,7 +201,7 @@ export default async function ColoradoTransportationPage({
             </div>
             <div className="flex flex-wrap gap-2.5">
               <a
-                href="https://gosno.co/vail?origin=DEN&destination=Vail&passengers=7&passengerCount=7&vehicleClass=van&src=dcc-authority-colorado"
+                href={`https://gosno.co/vail?origin=DEN&destination=Vail&passengers=7&passengerCount=7&vehicleClass=van${vailVanPriceParam}&src=dcc-authority-colorado`}
                 data-testid="dcc-authority-to-gosno-vail"
                 data-dcc-next-step="gosno"
                 className="rounded-xl bg-emerald-400 px-4 py-2.5 text-xs font-black uppercase tracking-wider text-[#04120a] hover:bg-emerald-300 transition"
@@ -194,7 +209,7 @@ export default async function ColoradoTransportationPage({
                 Open GoSno Vail Private Van / SUV →
               </a>
               <a
-                href="https://gosno.co/breckenridge?origin=DEN&destination=Breckenridge&passengers=6&passengerCount=6&vehicleClass=suv&src=dcc-authority-colorado"
+                href={`https://gosno.co/breckenridge?origin=DEN&destination=Breckenridge&passengers=6&passengerCount=6&vehicleClass=suv${breckSuvPriceParam}&src=dcc-authority-colorado`}
                 data-testid="dcc-authority-to-gosno-breck"
                 data-dcc-next-step="gosno"
                 className="rounded-xl border border-cyan-300/40 bg-cyan-500/15 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-cyan-100 hover:bg-cyan-500/25 transition"

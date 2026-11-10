@@ -6,10 +6,10 @@ export type GoSnoDisplayPricingLabels = {
   vanQuoteRequired: boolean;
   roundTripSuvPriceLabel?: string;
   snapshotState?: unknown;
-  suvFare?: unknown;
-  vanFare?: unknown;
-  roundTripSuvFare?: unknown;
-  roundTripVanFare?: unknown;
+  suvFare?: { amountUsd: number | null };
+  vanFare?: { amountUsd: number | null };
+  roundTripSuvFare?: { totalAmountUsd: number | null };
+  roundTripVanFare?: { totalAmountUsd: number | null };
 };
 
 type GoSnoDisplayPricingResolver = (input: {
@@ -2808,12 +2808,24 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
             "Forwards your selected date, party size, vehicle class, and pickup origin to GoSno. Reference information on this page requires no purchase.",
           baseUrl: "https://gosno.co/breckenridge",
           supportedContextParams: ["date", "partySize", "direction"],
-          defaultParams: {
-            origin: "DEN",
-            destination: "Breckenridge",
-            route: "denver-breckenridge",
-            dropoff: "breckenridge",
-            source_surface: "dcc_denver_breckenridge_reference",
+          get defaultParams(): Record<string, string> {
+            const breck = resolveRegisteredGoSnoDisplayPricing({
+              routeId: "DEN-BRECKENRIDGE",
+            });
+            const params: Record<string, string> = {
+              origin: "DEN",
+              destination: "Breckenridge",
+              route: "denver-breckenridge",
+              dropoff: "breckenridge",
+              source_surface: "dcc_denver_breckenridge_reference",
+            };
+            if (
+              breck.suvFare &&
+              typeof breck.suvFare.amountUsd === "number"
+            ) {
+              params.publishedPrice = String(breck.suvFare.amountUsd);
+            }
+            return params;
           },
           expectedProductMarkers: ["Breckenridge", "Denver", "GoSno"],
         },

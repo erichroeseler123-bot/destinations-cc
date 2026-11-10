@@ -319,6 +319,22 @@ export function buildSharedGoSnoHandoffUrlAndDetails(
       parsed.searchParams.set("outboundDate", input.travelDate);
     }
     parsed.searchParams.set("vehicleType", input.vehicleClass);
+  } else {
+    const effectivePublishedPriceUsd = isRoundTrip
+      ? matchedRoundTripOffer.totalAmountUsd
+      : matchedOneWayOffer.amountUsd;
+    if (
+      typeof effectivePublishedPriceUsd === "number" &&
+      Number.isFinite(effectivePublishedPriceUsd) &&
+      effectivePublishedPriceUsd > 0
+    ) {
+      parsed.searchParams.set(
+        "publishedPrice",
+        String(effectivePublishedPriceUsd),
+      );
+    } else {
+      parsed.searchParams.delete("publishedPrice");
+    }
   }
 
   const tripDetails: HandoffTripDetails = {

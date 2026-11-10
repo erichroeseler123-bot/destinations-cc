@@ -108,6 +108,11 @@ export const CDOT_I70_VERIFIED_FACTS: CdotVerifiedCorridorFacts = {
 const SHARED_I70_ROAD_CELL =
   "Same road (I-70 / EJMT): 1h 45m–2h 15m clear highway drive; 3.5–4.5+ hrs during winter storms or CDOT EJMT tunnel metering (metering stops traffic entering the affected tunnel for all vehicles).";
 
+import {
+  getGoSnoRouteSnapshotDisplayPricing,
+  resolveGoSnoOneWayFare,
+} from "@/lib/dcc/applicability/gosnoRouteFeedSnapshot";
+
 export const COLORADO_TRANSFER_FACT_COMPARISON: ColoradoTransferOptionFactRow[] =
   [
     {
@@ -122,13 +127,29 @@ export const COLORADO_TRANSFER_FACT_COMPARISON: ColoradoTransferOptionFactRow[] 
         "$0 overnight resort parking (direct lodge drop-off; use free Breck Free Ride, Summit Stage, or Town of Vail buses in town).",
       vehicleAndGearFit:
         "Verified seating_limit: 6 passengers max. With 5–6 passengers + 170–190 cm ski bags, internal cargo requires folding part of the 3rd row or confirming a roof box (requires_operator_confirmation). Skis, snowboards, and standard luggage included at no extra charge when fitting safely.",
-      confirmedPricing:
-        "Flat private SUV one-way from DEN: $349 Winter Park / Keystone / Copper · $399 Breckenridge · $499 Vail · $549 Beaver Creek · $599 Steamboat · $699 Aspen / Snowmass / Crested Butte.",
-      availability:
-        "Online bookable (available_for_online_booking, online_bookable: true) on 9 Colorado resort routes via gosno.co; Crested Butte ($699) and BZN–Big Sky ($299) are quote_only.",
+      get confirmedPricing() {
+        const wp = getGoSnoRouteSnapshotDisplayPricing({ routeId: "DEN-WINTER-PARK" });
+        const breck = getGoSnoRouteSnapshotDisplayPricing({ routeId: "DEN-BRECKENRIDGE" });
+        const vail = getGoSnoRouteSnapshotDisplayPricing({ routeId: "DEN-VAIL" });
+        const bc = getGoSnoRouteSnapshotDisplayPricing({ routeId: "DEN-BEAVER-CREEK" });
+        const steamboat = getGoSnoRouteSnapshotDisplayPricing({ routeId: "DEN-STEAMBOAT" });
+        const aspen = getGoSnoRouteSnapshotDisplayPricing({ routeId: "DEN-ASPEN" });
+        return `Flat private SUV one-way from DEN: ${wp.suvPriceLabel} Winter Park / Keystone / Copper · ${breck.suvPriceLabel} Breckenridge · ${vail.suvPriceLabel} Vail · ${bc.suvPriceLabel} Beaver Creek · ${steamboat.suvPriceLabel} Steamboat · ${aspen.suvPriceLabel} Aspen / Snowmass (Crested Butte & BZN–Big Sky currently unavailable this winter).`;
+      },
+      get availability() {
+        const cb = resolveGoSnoOneWayFare({ routeId: "DEN-CRESTED-BUTTE", vehicleClass: "suv" });
+        const bigSky = resolveGoSnoOneWayFare({ routeId: "BZN-BIG-SKY", vehicleClass: "suv" });
+        return `Online bookable (available_for_online_booking, online_bookable: true) on 9 Colorado resort routes via gosno.co; Crested Butte (${cb.status}) and BZN–Big Sky (${bigSky.status}) are unavailable this winter season.`;
+      },
       sharedRoadConditions: SHARED_I70_ROAD_CELL,
-      nextStepUrl:
-        "https://gosno.co/breckenridge?origin=DEN&destination=Breckenridge&passengers=4&passengerCount=4&vehicleClass=suv&src=dcc-colorado-fact-table",
+      get nextStepUrl() {
+        const breck = getGoSnoRouteSnapshotDisplayPricing({ routeId: "DEN-BRECKENRIDGE" });
+        const priceParam =
+          breck.suvFare.amountUsd !== null
+            ? `&publishedPrice=${breck.suvFare.amountUsd}`
+            : "";
+        return `https://gosno.co/breckenridge?origin=DEN&destination=Breckenridge&passengers=4&passengerCount=4&vehicleClass=suv${priceParam}&src=dcc-colorado-fact-table`;
+      },
       nextStepLabel: "Book Private SUV on GoSno →",
     },
     {
@@ -143,13 +164,23 @@ export const COLORADO_TRANSFER_FACT_COMPARISON: ColoradoTransferOptionFactRow[] 
         "$0 overnight resort parking (eliminates paying $80–$130+/night total to park two separate rental SUVs in Vail or Breckenridge).",
       vehicleAndGearFit:
         "Verified seating_limit: 10 passengers max, subject to luggage and ski-gear fit. Groups of 11+ passengers exceed a single GoSno van and require a multi-vehicle quote (gosno.co/request-quote). Van interior barrier and ski racks depend on physical vehicle assignment (requires_operator_confirmation).",
-      confirmedPricing:
-        "Flat private van one-way from DEN: $499 Winter Park / Keystone · $599 Copper / Breckenridge / Vail · $649 Beaver Creek · $899 Steamboat / Aspen / Snowmass.",
+      get confirmedPricing() {
+        const vail = getGoSnoRouteSnapshotDisplayPricing({ routeId: "DEN-VAIL" });
+        const bc = getGoSnoRouteSnapshotDisplayPricing({ routeId: "DEN-BEAVER-CREEK" });
+        const steamboat = getGoSnoRouteSnapshotDisplayPricing({ routeId: "DEN-STEAMBOAT" });
+        return `Flat private van one-way from DEN: ${vail.vanPriceLabel} Winter Park / Keystone / Copper / Breckenridge / Vail · ${bc.vanPriceLabel} Beaver Creek · ${steamboat.vanPriceLabel} Steamboat / Aspen / Snowmass.`;
+      },
       availability:
-        "Published route fares on gosno.co (available_for_online_booking in route feed; live /api/availability marks van requests quoteOnly: true to confirm date/time slot and ski-gear fit; Crested Butte quote_only; Big Sky van currently_unavailable).",
+        "Published route fares on gosno.co (available_for_online_booking in route feed; live /api/availability marks van requests quoteOnly: true to confirm date/time slot and ski-gear fit; Crested Butte and Big Sky currently_unavailable this winter).",
       sharedRoadConditions: SHARED_I70_ROAD_CELL,
-      nextStepUrl:
-        "https://gosno.co/vail?origin=DEN&destination=Vail&passengers=7&passengerCount=7&vehicleClass=van&src=dcc-colorado-fact-table",
+      get nextStepUrl() {
+        const vail = getGoSnoRouteSnapshotDisplayPricing({ routeId: "DEN-VAIL" });
+        const priceParam =
+          vail.vanFare.amountUsd !== null
+            ? `&publishedPrice=${vail.vanFare.amountUsd}`
+            : "";
+        return `https://gosno.co/vail?origin=DEN&destination=Vail&passengers=7&passengerCount=7&vehicleClass=van${priceParam}&src=dcc-colorado-fact-table`;
+      },
       nextStepLabel: "Open GoSno 10-Pax Van / Confirm Fit →",
     },
     {

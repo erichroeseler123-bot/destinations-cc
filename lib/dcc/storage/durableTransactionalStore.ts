@@ -736,11 +736,29 @@ export async function syncDurableLedgerWithPostgres(options?: {
         localDraft.stewardLatestSnapshotId = remoteState.stewardLatestSnapshotId;
       }
       if (remoteState.gosnoRouteFeedSnapshot) {
-        localDraft.gosnoRouteFeedSnapshot = remoteState.gosnoRouteFeedSnapshot;
+        const existingSnap = localDraft.gosnoRouteFeedSnapshot;
+        if (
+          !existingSnap ||
+          (!options?.forcePushLocal &&
+            (Date.parse(remoteState.gosnoRouteFeedSnapshot.fetchedAt || "") || 0) >=
+              (Date.parse(existingSnap.fetchedAt || "") || 0))
+        ) {
+          localDraft.gosnoRouteFeedSnapshot = remoteState.gosnoRouteFeedSnapshot;
+        }
       }
       if (remoteState.gosnoRouteFeedRefreshMeta) {
-        localDraft.gosnoRouteFeedRefreshMeta =
-          remoteState.gosnoRouteFeedRefreshMeta;
+        const existingMeta = localDraft.gosnoRouteFeedRefreshMeta;
+        if (
+          !existingMeta ||
+          (!options?.forcePushLocal &&
+            (Date.parse(
+              remoteState.gosnoRouteFeedRefreshMeta.lastRefreshAttemptAt || "",
+            ) || 0) >=
+              (Date.parse(existingMeta.lastRefreshAttemptAt || "") || 0))
+        ) {
+          localDraft.gosnoRouteFeedRefreshMeta =
+            remoteState.gosnoRouteFeedRefreshMeta;
+        }
       }
       const timelineById = new Map<string, PublicMaterialChangeEntry>();
       for (const entry of [
@@ -761,3 +779,13 @@ export async function syncDurableLedgerWithPostgres(options?: {
     return readDurableLedgerState();
   }
 }
+
+export {
+  isServerlessRuntimeEnvironment,
+  persistDurableTransactionalSubmission,
+  readDurableTransactionalSubmission,
+  resolveRuntimeEnvironmentTag,
+  type DurableTransactionalSubmissionInput,
+  type DurableTransactionalSubmissionResult,
+  type TransactionalSubmissionChannel,
+} from "./transactionalSubmissions";

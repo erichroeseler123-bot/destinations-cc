@@ -17,7 +17,7 @@ const SYNONYMS: Record<string, string[]> = {
   denver: ["den", "colorado"],
   vail: ["mountain", "resort", "ski"],
   breckenridge: ["mountain", "resort", "ski"],
-  juneau: ["alaska", "cruise", "helicopter", "glacier"],
+  juneau: ["alaska", "cruise"],
   helicopter: ["flight", "flightseeing", "glacier", "juneau"],
   whale: ["whales", "watching", "juneau", "alaska"],
   swamp: ["bayou", "wetlands", "new", "orleans"],

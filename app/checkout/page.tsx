@@ -41,6 +41,31 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
     redirect(buildParrPrivateRedRocksUrl(Object.fromEntries(redirectParams.entries())));
   }
 
+  if (route === "parr-shared") {
+    const target = new URL(
+      "https://www.partyatredrocks.com/book/red-rocks-amphitheatre/custom/shared",
+    );
+    const date = readFirst(resolvedSearchParams.date);
+    const event = readFirst(resolvedSearchParams.event);
+    const artist = readFirst(resolvedSearchParams.artist);
+    const qty = readFirst(resolvedSearchParams.qty);
+    const pickup = readFirst(resolvedSearchParams.pickup);
+    const dccHandoffId =
+      readFirst(resolvedSearchParams.dcc_handoff_id) ||
+      readFirst(resolvedSearchParams.handoffId);
+    const dccReturn = readFirst(resolvedSearchParams.dcc_return);
+
+    if (date) target.searchParams.set("date", date);
+    if (event) target.searchParams.set("event", event);
+    if (artist) target.searchParams.set("artist", artist);
+    if (qty) target.searchParams.set("qty", qty);
+    if (pickup) target.searchParams.set("pickup", pickup);
+    if (dccHandoffId) target.searchParams.set("dcc_handoff_id", dccHandoffId);
+    if (dccReturn) target.searchParams.set("dcc_return", dccReturn);
+
+    redirect(target.toString());
+  }
+
   const routeConfig = getCheckoutRouteConfig(route);
 
   let initialSnapshot = null;

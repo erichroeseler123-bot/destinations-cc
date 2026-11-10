@@ -1,4 +1,4 @@
-import { randomUUID } from "crypto";
+import { createHash, randomUUID } from "crypto";
 import { NextRequest } from "next/server";
 import { SquareClient, SquareEnvironment } from "square";
 import { appendCorridorEventDurably } from "@/lib/dcc/telemetry/corridorEvents";
@@ -35,10 +35,32 @@ type CreateSquarePaymentBody = {
   customerPhone?: string;
   specialRequests?: string;
   sourceId?: string;
+  idempotencyKey?: string;
   handoffId?: string;
   sessionId?: string;
   sourcePage?: string;
 };
+
+function deriveSquareIdempotencyKey(input: {
+  clientIdempotencyKey?: string;
+  route: string;
+  productKey: string;
+  date: string;
+  emailOrPhone: string;
+  sourceId: string;
+  amountCents: number;
+}): string {
+  const clientKey = (input.clientIdempotencyKey || "").trim();
+  const seed =
+    clientKey ||
+    `${input.route}|${input.productKey}|${input.date}|${input.emailOrPhone.toLowerCase()}|${input.sourceId}|${input.amountCents}`;
+  const digest = createHash("sha256").update(seed).digest("hex");
+  return `sq_${digest.slice(0, 40)}`;
+}
+
+function hasDurableDbOrderPersistence(): boolean {
+  return process.env.ENABLE_DURABLE_DB_ORDER_PERSISTENCE === "true";
+}
 
 type AvailabilityRow = {
   productKey: string;
@@ -171,6 +193,28 @@ async function getAvailabilityForRoute(route: string, date: string): Promise<Ava
 }
 
 export async function POST(req: NextRequest) {
+  if (process.env.ENABLE_PARR_PRIVATE_PAYMENTS !== "true") {
+    return Response.json(
+      {
+        ok: false,
+        error:
+          "Direct Square payment on Destination Command Center is disabled. Please complete your booking on Party at Red Rocks.",
+      },
+      { status: 503 },
+    );
+  }
+
+  if (process.env.VERCEL === "1" && !hasDurableDbOrderPersistence()) {
+    return Response.json(
+      {
+        ok: false,
+        error:
+          "Durable database order persistence is not configured on serverless runtime; refusing to capture payment.",
+      },
+      { status: 503 },
+    );
+  }
+
   const appId = getSquareApplicationId();
   const locationId = getSquareLocationId();
   const accessToken = getSquareAccessToken();
@@ -237,9 +281,19 @@ export async function POST(req: NextRequest) {
     environment: getSquareEnvironmentValue(getSquareEnvironment()),
   });
 
+  const idempotencyKey = deriveSquareIdempotencyKey({
+    clientIdempotencyKey: body.idempotencyKey,
+    route,
+    productKey: product.key,
+    date: body.date || "",
+    emailOrPhone: (body.customerEmail || customerPhone).trim(),
+    sourceId,
+    amountCents: amountPaidCents,
+  });
+
   const paymentResponse = await client.payments.create({
     sourceId,
-    idempotencyKey: randomUUID(),
+    idempotencyKey,
     locationId,
     amountMoney: {
       amount: BigInt(amountPaidCents),

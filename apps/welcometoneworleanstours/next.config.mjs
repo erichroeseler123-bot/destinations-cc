@@ -23,6 +23,7 @@ const nextConfig = {
         destination: "https://www.welcometoneworleanstours.com/:path*",
         permanent: true,
       },
+      { source: "/things-to-do-in-new-orleans-today", destination: "/guides/things-to-do-in-new-orleans-today", permanent: true },
       { source: "/guides/null", destination: "/guides", permanent: true },
       { source: "/categories/swamp-tours", destination: "/swamp-tours", permanent: true },
       { source: "/categories/food-and-cocktail-tours", destination: "/food-tours", permanent: true },

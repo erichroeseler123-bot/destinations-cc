@@ -57,6 +57,11 @@ const WTONOT_HOSTS = new Set([
   "destinations-cc-new-orleans-preview.vercel.app",
 ]);
 
+function isWtonotHost(rawHost: string): boolean {
+  const host = rawHost.split(":")[0].toLowerCase();
+  return WTONOT_HOSTS.has(host) || host.includes("welcometoneworleanstours");
+}
+
 const LFSE_HOSTS = new Set([
   "lastfrontiershoreexcursions.com",
   "www.lastfrontiershoreexcursions.com",
@@ -80,7 +85,7 @@ const SAVE_ON_THE_STRIP_HOSTS = new Set([
 export function resolveTenantFromHost(rawHost: string): string | null {
   const host = rawHost.split(":")[0].toLowerCase();
   if (SOMERSET_HOSTS.has(host)) return "somerset";
-  if (WTONOT_HOSTS.has(host)) return "wtonot";
+  if (isWtonotHost(host)) return "wtonot";
   if (LFSE_HOSTS.has(host)) return "lfse";
   if (JFD_HOSTS.has(host)) return "juneauflightdeck";
   if (DELLS_HOSTS.has(host)) return "welcometothedells";
@@ -176,8 +181,8 @@ export function handleSomersetHost(request: NextRequest) {
 
 export function getWtonotHostRewrite(request: NextRequest) {
   const hostHeader = request.headers.get("x-forwarded-host") || request.nextUrl.hostname;
-  const host = hostHeader.split(":")[0];
-  if (!WTONOT_HOSTS.has(host)) return null;
+  const host = hostHeader.split(":")[0].toLowerCase();
+  if (!isWtonotHost(host)) return null;
 
   const pathname = request.nextUrl.pathname;
 
@@ -983,11 +988,20 @@ export async function proxy(request: NextRequest, event: NextFetchEvent) {
     return dellsResponse;
   }
 
-  if (WTONOT_HOSTS.has(host.toLowerCase())) {
+  if (request.nextUrl.pathname === "/things-to-do-in-new-orleans-today") {
+    const targetUrl = new URL("/guides/things-to-do-in-new-orleans-today", request.url);
+    targetUrl.search = request.nextUrl.search;
+    return NextResponse.redirect(targetUrl, 308);
+  }
+
+  if (isWtonotHost(host.toLowerCase())) {
     if (host.toLowerCase() === "welcometoneworleanstours.com") {
       const targetUrl = new URL(request.url);
       targetUrl.hostname = "www.welcometoneworleanstours.com";
       targetUrl.protocol = "https:";
+      if (targetUrl.pathname === "/things-to-do-in-new-orleans-today") {
+        targetUrl.pathname = "/guides/things-to-do-in-new-orleans-today";
+      }
       return NextResponse.redirect(targetUrl, 308);
     }
 
@@ -1032,63 +1046,66 @@ export async function proxy(request: NextRequest, event: NextFetchEvent) {
     return response;
   }
 
-  // Rewrite WTONOT-only root paths when accessed on the DCC host from /new-orleans or /new-orleans/tours
-  const dccPathname = request.nextUrl.pathname;
-  const wtonotOnlySupportPaths = new Set([
-    "/french-quarter-welcome-stop",
-    "/help-me-choose",
-    "/booking-help",
-    "/cancellation-policy",
-    "/accessibility",
-    "/how-we-choose",
-    "/faq",
-  ]);
-  const wtonotOnlyCategories = new Set([
-    "city-tours",
-    "swamp-tours",
-    "airboat-tours",
-    "covered-swamp-boat-tours",
-    "plantation-tours",
-    "ghost-tours",
-    "cemetery-tours",
-    "cooking-classes",
-    "riverboat-cruises",
-    "food-tours",
-    "walking-tours",
-    "private-tours",
-    "night-tours",
-  ]);
-  const dccPathParts = dccPathname.split("/").filter(Boolean);
-  if (
-    wtonotOnlySupportPaths.has(dccPathname) ||
-    dccPathname === "/compare" ||
-    dccPathname.startsWith("/compare/") ||
-    dccPathname.startsWith("/tours-for/")
-  ) {
-    const rewriteUrl = request.nextUrl.clone();
-    rewriteUrl.pathname = `/new-orleans${dccPathname}`;
-    return NextResponse.rewrite(rewriteUrl);
-  }
-  if (
-    dccPathParts.length >= 1 &&
-    dccPathParts.length <= 2 &&
-    wtonotOnlyCategories.has(dccPathParts[0])
-  ) {
-    const rewriteUrl = request.nextUrl.clone();
-    rewriteUrl.pathname = `/new-orleans/marketplace-category${dccPathname}`;
-    return NextResponse.rewrite(rewriteUrl);
-  }
-  if (
-    dccPathname.startsWith("/tours/") &&
-    (request.nextUrl.searchParams.get("src")?.startsWith("wtonot") ||
-      dccPathname === "/tours/airboat-adventures" ||
-      dccPathname === "/tours/nola-ghost-riders")
-  ) {
-    const slug = dccPathname.slice(7);
-    if (slug && !slug.includes("/")) {
+  // Scope WTONOT-only bare root path rewrites strictly to welcometoneworleanstours hostnames
+  // so destinationcommandcenter.com (and DCC preview deployments) never rewrite /faq, /compare, /accessibility, etc.
+  if (isWtonotHost(host.toLowerCase())) {
+    const dccPathname = request.nextUrl.pathname;
+    const wtonotOnlySupportPaths = new Set([
+      "/french-quarter-welcome-stop",
+      "/help-me-choose",
+      "/booking-help",
+      "/cancellation-policy",
+      "/accessibility",
+      "/how-we-choose",
+      "/faq",
+    ]);
+    const wtonotOnlyCategories = new Set([
+      "city-tours",
+      "swamp-tours",
+      "airboat-tours",
+      "covered-swamp-boat-tours",
+      "plantation-tours",
+      "ghost-tours",
+      "cemetery-tours",
+      "cooking-classes",
+      "riverboat-cruises",
+      "food-tours",
+      "walking-tours",
+      "private-tours",
+      "night-tours",
+    ]);
+    const dccPathParts = dccPathname.split("/").filter(Boolean);
+    if (
+      wtonotOnlySupportPaths.has(dccPathname) ||
+      dccPathname === "/compare" ||
+      dccPathname.startsWith("/compare/") ||
+      dccPathname.startsWith("/tours-for/")
+    ) {
       const rewriteUrl = request.nextUrl.clone();
-      rewriteUrl.pathname = `/new-orleans/tours/${slug}`;
+      rewriteUrl.pathname = `/new-orleans${dccPathname}`;
       return NextResponse.rewrite(rewriteUrl);
+    }
+    if (
+      dccPathParts.length >= 1 &&
+      dccPathParts.length <= 2 &&
+      wtonotOnlyCategories.has(dccPathParts[0])
+    ) {
+      const rewriteUrl = request.nextUrl.clone();
+      rewriteUrl.pathname = `/new-orleans/marketplace-category${dccPathname}`;
+      return NextResponse.rewrite(rewriteUrl);
+    }
+    if (
+      dccPathname.startsWith("/tours/") &&
+      (request.nextUrl.searchParams.get("src")?.startsWith("wtonot") ||
+        dccPathname === "/tours/airboat-adventures" ||
+        dccPathname === "/tours/nola-ghost-riders")
+    ) {
+      const slug = dccPathname.slice(7);
+      if (slug && !slug.includes("/")) {
+        const rewriteUrl = request.nextUrl.clone();
+        rewriteUrl.pathname = `/new-orleans/tours/${slug}`;
+        return NextResponse.rewrite(rewriteUrl);
+      }
     }
   }
 

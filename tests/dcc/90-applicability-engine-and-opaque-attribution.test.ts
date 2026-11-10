@@ -697,7 +697,7 @@ test("7. GoSno 10-passenger vs. 11-passenger capacity boundaries, gear-fit rules
     vail10Van.constraintCodes.includes("TEN_PASSENGER_MAX_CAPACITY_GEAR_FIT_CHECK_REQUIRED"),
     true,
   );
-  assert.equal(vail10Van.pricingResolution.fixedRateOneWayUsd, 599);
+  assert.equal(vail10Van.pricingResolution.fixedRateOneWayUsd, 799);
   assert.equal(vail10Van.pricingResolution.quoteOnly, true);
 
   // Verify Vail handoff URL carries exact route and trip parameters
@@ -712,6 +712,7 @@ test("7. GoSno 10-passenger vs. 11-passenger capacity boundaries, gear-fit rules
   assert.equal(vailHandoffUrl.searchParams.get("standardBags"), "8");
   assert.equal(vailHandoffUrl.searchParams.get("skiBags"), "6");
   assert.equal(vailHandoffUrl.searchParams.get("vehicleClass"), "van");
+  assert.equal(vailHandoffUrl.searchParams.get("publishedPrice"), "799");
   assert.match(vailHandoffUrl.searchParams.get("click_id") ?? "", /^clk_[0-9a-f]{24}$/);
 
   // 7b. 10 passengers exceeding luggage/ski-gear fit -> disqualified for single GoSno van
@@ -773,7 +774,7 @@ test("7. GoSno 10-passenger vs. 11-passenger capacity boundaries, gear-fit rules
     "11-passenger group must not be handed off to a single GoSno van",
   );
 
-  // 7d. Breckenridge handoff verification (5 passengers in SUV at $399 one-way, and 10 passengers in van)
+  // 7d. Breckenridge handoff verification (5 passengers in SUV at $499 one-way, and 10 passengers in van)
   const breck5EvalRes = await evaluateApplicabilityPost(
     new Request("https://destinationcommandcenter.com/api/v1/applicability/evaluate", {
       method: "POST",
@@ -794,7 +795,7 @@ test("7. GoSno 10-passenger vs. 11-passenger capacity boundaries, gear-fit rules
   const breckSuv = breck5Json.outcome.vehicleClassEvaluations.find(
     (v: any) => v.vehicleClassId === "veh:awd-full-size-suv",
   );
-  assert.equal(breckSuv.pricingResolution.fixedRateOneWayUsd, 399);
+  assert.equal(breckSuv.pricingResolution.fixedRateOneWayUsd, 499);
 
   const breckHandoffUrl = new URL(breck5Json.opaqueAttribution.outboundPartnerUrl);
   assert.equal(breckHandoffUrl.origin + breckHandoffUrl.pathname, "https://gosno.co/breckenridge");
@@ -807,8 +808,9 @@ test("7. GoSno 10-passenger vs. 11-passenger capacity boundaries, gear-fit rules
   assert.equal(breckHandoffUrl.searchParams.get("standardBags"), "4");
   assert.equal(breckHandoffUrl.searchParams.get("skiBags"), "0");
   assert.equal(breckHandoffUrl.searchParams.get("vehicleClass"), "suv");
+  assert.equal(breckHandoffUrl.searchParams.get("publishedPrice"), "499");
 
-  // 7e. 16 passengers (DEN -> Breckenridge) -> single vehicles ineligible; offers GoSno group inquiry suggesting a van plus a Suburban ($998 reference)
+  // 7e. 16 passengers (DEN -> Breckenridge) -> single vehicles ineligible; offers GoSno group inquiry suggesting a van plus a Suburban ($1,298 reference)
   const breck16EvalRes = await evaluateApplicabilityPost(
     new Request("https://destinationcommandcenter.com/api/v1/applicability/evaluate", {
       method: "POST",
@@ -834,7 +836,7 @@ test("7. GoSno 10-passenger vs. 11-passenger capacity boundaries, gear-fit rules
     breck16Group.vehicleSuggestion.shortLabel,
     "1 Private Passenger Van + 1 Private Chevrolet Suburban",
   );
-  assert.equal(breck16Group.referenceCombinedOneWayUsd, 998);
+  assert.equal(breck16Group.referenceCombinedOneWayUsd, 1298);
   assert.equal(
     breck16Group.confirmationPolicy,
     "GoSno confirms gear fit, availability, and one group total.",
@@ -851,7 +853,7 @@ test("7. GoSno 10-passenger vs. 11-passenger capacity boundaries, gear-fit rules
     "1 Private Passenger Van + 1 Private Chevrolet Suburban",
   );
 
-  // 7f. 20 passengers (DEN -> Vail) -> single vehicles ineligible; offers GoSno group inquiry suggesting two vans ($1,198 reference)
+  // 7f. 20 passengers (DEN -> Vail) -> single vehicles ineligible; offers GoSno group inquiry suggesting two vans ($1,598 reference)
   const vail20EvalRes = await evaluateApplicabilityPost(
     new Request("https://destinationcommandcenter.com/api/v1/applicability/evaluate", {
       method: "POST",
@@ -877,7 +879,7 @@ test("7. GoSno 10-passenger vs. 11-passenger capacity boundaries, gear-fit rules
     vail20Group.vehicleSuggestion.shortLabel,
     "2 Private Passenger Vans",
   );
-  assert.equal(vail20Group.referenceCombinedOneWayUsd, 1198);
+  assert.equal(vail20Group.referenceCombinedOneWayUsd, 1598);
   assert.equal(
     vail20Group.confirmationPolicy,
     "GoSno confirms gear fit, availability, and one group total.",
@@ -894,7 +896,7 @@ test("7. GoSno 10-passenger vs. 11-passenger capacity boundaries, gear-fit rules
     "2 Private Passenger Vans",
   );
 
-  // 7g. 16 to Winter Park: 16 regular bags, 12 ski bags, one van plus one Suburban suggested ($848 combined reference)
+  // 7g. 16 to Winter Park: 16 regular bags, 12 ski bags, one van plus one Suburban suggested ($1,248 combined reference)
   const wp16EvalRes = await evaluateApplicabilityPost(
     new Request("https://destinationcommandcenter.com/api/v1/applicability/evaluate", {
       method: "POST",
@@ -924,7 +926,7 @@ test("7. GoSno 10-passenger vs. 11-passenger capacity boundaries, gear-fit rules
     wp16Group.vehicleSuggestion.shortLabel,
     "1 Private Passenger Van + 1 Private Chevrolet Suburban",
   );
-  assert.equal(wp16Group.referenceCombinedOneWayUsd, 848);
+  assert.equal(wp16Group.referenceCombinedOneWayUsd, 1248);
   const wp16Url = new URL(wp16Group.inquiryUrl);
   assert.equal(wp16Url.searchParams.get("destination"), "Winter Park");
   assert.equal(wp16Url.searchParams.get("passengers"), "16");
@@ -936,7 +938,7 @@ test("7. GoSno 10-passenger vs. 11-passenger capacity boundaries, gear-fit rules
     "1 Private Passenger Van + 1 Private Chevrolet Suburban",
   );
 
-  // 7h. 20 to Steamboat: 20 regular bags, 16 ski bags throughout, two vans suggested ($1,798 combined reference)
+  // 7h. 20 to Steamboat: 20 regular bags, 16 ski bags throughout, two vans suggested ($2,398 combined reference)
   const sb20EvalRes = await evaluateApplicabilityPost(
     new Request("https://destinationcommandcenter.com/api/v1/applicability/evaluate", {
       method: "POST",
@@ -963,7 +965,7 @@ test("7. GoSno 10-passenger vs. 11-passenger capacity boundaries, gear-fit rules
   assert.equal(sb20Group.skiOrOversizeBagCount, 16);
   assert.equal(sb20Group.luggageSummary, "20 standard bags, 16 ski bags");
   assert.equal(sb20Group.vehicleSuggestion.shortLabel, "2 Private Passenger Vans");
-  assert.equal(sb20Group.referenceCombinedOneWayUsd, 1798);
+  assert.equal(sb20Group.referenceCombinedOneWayUsd, 2398);
   const sb20Url = new URL(sb20Group.inquiryUrl);
   assert.equal(sb20Url.searchParams.get("destination"), "Steamboat Springs");
   assert.equal(sb20Url.searchParams.get("passengers"), "20");
@@ -972,7 +974,7 @@ test("7. GoSno 10-passenger vs. 11-passenger capacity boundaries, gear-fit rules
   assert.equal(sb20Url.searchParams.get("luggage"), "20 standard bags, 16 ski bags");
   assert.equal(sb20Url.searchParams.get("vehicleSuggestion"), "2 Private Passenger Vans");
 
-  // 7i. Copper Mountain DEN SUV approved rate is $349 (so 16 to Copper = $599 Van + $349 SUV = $948)
+  // 7i. Copper Mountain DEN SUV approved rate is $449 (so 16 to Copper = $799 Van + $449 SUV = $1,248)
   const copper16EvalRes = await evaluateApplicabilityPost(
     new Request("https://destinationcommandcenter.com/api/v1/applicability/evaluate", {
       method: "POST",
@@ -991,7 +993,7 @@ test("7. GoSno 10-passenger vs. 11-passenger capacity boundaries, gear-fit rules
   const copper16Json = (await copper16EvalRes.json()) as any;
   assert.equal(
     copper16Json.outcome.privateGroupInquiryOption.referenceCombinedOneWayUsd,
-    948,
+    1248,
   );
 });
 
@@ -1015,7 +1017,7 @@ test("8. Winter Park Outbound, Return, and Round-Trip DCC -> GoSno handoffs pres
     (o) => o.optionId === "co-mtn-gosno-private-suv",
   );
   assert.ok(wpOutboundSuv);
-  assert.equal(wpOutboundSuv.indicativePriceUsd.min, 349);
+  assert.equal(wpOutboundSuv.indicativePriceUsd.min, 449);
   const wpOutboundEngineUrl = new URL(wpOutboundSuv.bookingDestinations[0].url);
   assert.equal(
     wpOutboundEngineUrl.origin + wpOutboundEngineUrl.pathname,
@@ -1030,6 +1032,7 @@ test("8. Winter Park Outbound, Return, and Round-Trip DCC -> GoSno handoffs pres
   assert.equal(wpOutboundEngineUrl.searchParams.get("standardBags"), "4");
   assert.equal(wpOutboundEngineUrl.searchParams.get("skiBags"), "4");
   assert.equal(wpOutboundEngineUrl.searchParams.get("luggage"), "8");
+  assert.equal(wpOutboundEngineUrl.searchParams.get("publishedPrice"), "449");
   assert.equal(
     wpOutboundEngineUrl.searchParams.get("originatingPage"),
     "/transportation/colorado/winter-park",
@@ -1050,7 +1053,7 @@ test("8. Winter Park Outbound, Return, and Round-Trip DCC -> GoSno handoffs pres
     (o) => o.optionId === "co-mtn-gosno-private-suv",
   );
   assert.ok(wpReturnSuv);
-  assert.equal(wpReturnSuv.indicativePriceUsd.min, 349);
+  assert.equal(wpReturnSuv.indicativePriceUsd.min, 449);
   const wpReturnEngineUrl = new URL(wpReturnSuv.bookingDestinations[0].url);
   assert.equal(
     wpReturnEngineUrl.origin + wpReturnEngineUrl.pathname,
@@ -1063,6 +1066,7 @@ test("8. Winter Park Outbound, Return, and Round-Trip DCC -> GoSno handoffs pres
   assert.equal(wpReturnEngineUrl.searchParams.get("passengers"), "4");
   assert.equal(wpReturnEngineUrl.searchParams.get("standardBags"), "4");
   assert.equal(wpReturnEngineUrl.searchParams.get("skiBags"), "4");
+  assert.equal(wpReturnEngineUrl.searchParams.get("publishedPrice"), "449");
   assert.equal(
     wpReturnEngineUrl.searchParams.get("originatingPage"),
     "/transportation/colorado/winter-park",
@@ -1085,7 +1089,7 @@ test("8. Winter Park Outbound, Return, and Round-Trip DCC -> GoSno handoffs pres
     (o) => o.optionId === "co-mtn-gosno-private-van",
   );
   assert.ok(wpRoundTripVan);
-  assert.equal(wpRoundTripVan.indicativePriceUsd.min, 998);
+  assert.equal(wpRoundTripVan.indicativePriceUsd.min, 1598);
   const wpRoundTripEngineUrl = new URL(wpRoundTripVan.bookingDestinations[0].url);
   assert.equal(
     wpRoundTripEngineUrl.origin + wpRoundTripEngineUrl.pathname,
@@ -1104,6 +1108,7 @@ test("8. Winter Park Outbound, Return, and Round-Trip DCC -> GoSno handoffs pres
   assert.equal(wpRoundTripEngineUrl.searchParams.get("passengers"), "7");
   assert.equal(wpRoundTripEngineUrl.searchParams.get("standardBags"), "7");
   assert.equal(wpRoundTripEngineUrl.searchParams.get("skiBags"), "6");
+  assert.equal(wpRoundTripEngineUrl.searchParams.get("publishedPrice"), "1598");
   assert.equal(
     wpRoundTripEngineUrl.searchParams.get("originatingPage"),
     "/transportation/colorado/winter-park",
@@ -1137,7 +1142,7 @@ test("8. Winter Park Outbound, Return, and Round-Trip DCC -> GoSno handoffs pres
   );
   assert.equal(
     outboundApiJson.outcome.gosnoPricingSnapshot.suvOffer.amountCents,
-    34900,
+    44900,
   );
   assert.equal(
     outboundApiJson.outcome.gosnoPricingSnapshot.suvOffer.rezdyProductCode,
@@ -1156,6 +1161,7 @@ test("8. Winter Park Outbound, Return, and Round-Trip DCC -> GoSno handoffs pres
   assert.equal(outboundHandoffUrl.searchParams.get("passengers"), "4");
   assert.equal(outboundHandoffUrl.searchParams.get("standardBags"), "4");
   assert.equal(outboundHandoffUrl.searchParams.get("skiBags"), "2");
+  assert.equal(outboundHandoffUrl.searchParams.get("publishedPrice"), "799");
   assert.equal(
     outboundHandoffUrl.searchParams.get("originatingPage"),
     "/transportation/colorado",
@@ -1192,7 +1198,7 @@ test("8. Winter Park Outbound, Return, and Round-Trip DCC -> GoSno handoffs pres
   );
   assert.equal(
     returnApiJson.outcome.gosnoPricingSnapshot.suvOffer.amountCents,
-    34900,
+    44900,
   );
   assert.equal(
     returnApiJson.outcome.gosnoPricingSnapshot.suvOffer.rezdyProductCode,
@@ -1212,6 +1218,7 @@ test("8. Winter Park Outbound, Return, and Round-Trip DCC -> GoSno handoffs pres
   assert.equal(returnHandoffUrl.searchParams.get("passengers"), "4");
   assert.equal(returnHandoffUrl.searchParams.get("standardBags"), "4");
   assert.equal(returnHandoffUrl.searchParams.get("skiBags"), "2");
+  assert.equal(returnHandoffUrl.searchParams.get("publishedPrice"), "799");
   assert.equal(
     returnHandoffUrl.searchParams.get("originatingPage"),
     "/transportation/colorado",
@@ -1254,7 +1261,7 @@ test("8. Winter Park Outbound, Return, and Round-Trip DCC -> GoSno handoffs pres
   );
   assert.equal(
     roundTripApiJson.outcome.gosnoPricingSnapshot.roundTripVanOffer.totalAmountCents,
-    99800,
+    159800,
   );
   assert.equal(
     roundTripApiJson.outcome.gosnoPricingSnapshot.roundTripVanOffer.outboundRezdyProductCode,
@@ -1287,6 +1294,7 @@ test("8. Winter Park Outbound, Return, and Round-Trip DCC -> GoSno handoffs pres
   assert.equal(roundTripHandoffUrl.searchParams.get("passengers"), "8");
   assert.equal(roundTripHandoffUrl.searchParams.get("standardBags"), "8");
   assert.equal(roundTripHandoffUrl.searchParams.get("skiBags"), "6");
+  assert.equal(roundTripHandoffUrl.searchParams.get("publishedPrice"), "1598");
   assert.equal(
     roundTripHandoffUrl.searchParams.get("originatingPage"),
     "/transportation/colorado",

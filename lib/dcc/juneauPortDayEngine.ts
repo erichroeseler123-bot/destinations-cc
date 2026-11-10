@@ -546,11 +546,228 @@ export type RawJuneauOptionDefinition = {
   bookingTransparency: JuneauOptionBookingTransparency;
 };
 
+export const JUNEAU_DOGSLED_OPTION_DEFINITION: RawJuneauOptionDefinition = {
+  optionId: "jun-opt-heli-dogsled-camp",
+  title: "Helicopter + Upper Glacier Dog Sled Camp (JNU Airport Base)",
+  shortLabel: "Helicopter Glacier Dog Sled Camp",
+  category: "guided_single_activity",
+  corridor: "Juneau International Airport (JNU) & Upper Icefield Snow Camp",
+  viatorProductCode: "5849JNU_DOGSLED",
+  advertisedDockToDockMinutes: 205,
+  advertisedRangeMinutes: { min: 205, max: 230 },
+  checkInLeadMinutes: 45,
+  outboundTransferMinutes: 25,
+  outboundTransferRangeMinutes: { min: 20, max: 35 },
+  activityDurationMinutes: 110,
+  interActivityTransferMinutes: 0,
+  returnTransferMinutes: 25,
+  returnTransferRangeMinutes: { min: 20, max: 35 },
+  decompositionNote:
+    "Planning estimate modeled on TEMSCO / Coastal / NorthStar upper-elevation glacier dog sled camp departures (205 min / 3h 25m baseline; 205–230 min dock-to-dock range): 45m check-in, weight verification, and overboot fitting + 25m outbound shuttle to JNU heliport (20–35m range) + 110m round-trip helicopter flight and upper snow camp mushing (~30m flight + ~60–80m on snow at dog camp) + 0m inter-activity transfer + 25m return shuttle (20–35m range).",
+  transferAndReturnUncertaintyNote:
+    "Upper-elevation snow camps (Norris, Herbert, or Mendenhall upper accumulation zones at 3,200–4,200 ft) operate May through late August only and experience higher low-ceiling weather holds than lower-glacier walkabouts.",
+  operatingMonths: [5, 6, 7, 8],
+  minimumMobility: "light_walking_1mi",
+  accessibilityDetails: {
+    walkingAndTerrain:
+      "Walking on deep, uneven snow around dog sled runners and kennel lines at 3,200–4,200 ft elevation wearing provided snow overboots.",
+    boardingAndTransfer:
+      "Requires stepping ~18–24 inches into the helicopter cabin and standing or sitting on dog sled runners on snow.",
+    wheelchairAndMobilitySupport:
+      "Upper snow camp terrain and dog sled boarding require steadiness on snow; operator confirmation is required for guests with limited mobility.",
+    confirmationStatus: "operator_and_departure_confirmation_required",
+    confirmationNote:
+      "Confirm upper-camp snow conditions, mobility support, and strict 250–260 lb fully clothed weight-balance thresholds directly with the FAA Part 135 helicopter operator.",
+  },
+  weatherCeilingSensitive: true,
+  dependsOnCitationIds: [
+    "jun-operator-heli-icefield",
+    "jun-airport-official",
+    "jun-noaa-aviation",
+    "jun-cbj-harbors",
+  ],
+  inputAudit: [
+    {
+      field: "price",
+      label: "Helicopter Dog Sled Camp Rate Range",
+      valueSummary: "$679–$749 per person (upper glacier dog sled camp)",
+      basisType: "operator_estimate",
+      citationIds: ["jun-operator-heli-icefield"],
+      verificationNote:
+        "Modeled on published Juneau helicopter dog sled camp rates; exact fare and weight-balance surcharge rules vary by operator.",
+    },
+    {
+      field: "activity_duration",
+      label: "Flight + Upper Glacier Dog Camp Duration",
+      valueSummary:
+        "110 min flight and upper snow camp mushing baseline (205–230 min dock-to-dock including 45m check-in and 50m round-trip JNU shuttle)",
+      basisType: "operator_estimate",
+      citationIds: ["jun-operator-heli-icefield"],
+      verificationNote:
+        "Separates 45m check-in/gear fitting and 25m each way JNU shuttle from 110m flight and snow-camp activity without double-counting.",
+    },
+    {
+      field: "transfers",
+      label: "Downtown to JNU Heliport Transfer",
+      valueSummary:
+        "20–35 min each way (25 min planning baseline across 8.5 miles via Egan Drive between downtown cruise docks and JNU heliport)",
+      basisType: "operator_estimate",
+      citationIds: ["jun-airport-official", "jun-cbj-harbors"],
+      verificationNote:
+        "Included round-trip operator shuttle between Marine Park kiosks and JNU heliport.",
+    },
+    {
+      field: "meeting_point",
+      label: "Dockside Meeting Point",
+      valueSummary:
+        "Marine Park / Goldbelt Tramway parking lot helicopter operator shuttle booths",
+      basisType: "sourced_fact",
+      citationIds: ["jun-cbj-harbors", "jun-operator-heli-icefield"],
+      verificationNote:
+        "Permitted downtown cruise dock staging zone for JNU helicopter operator shuttles.",
+    },
+    {
+      field: "check_in_deadline",
+      label: "Check-In & Weight Manifest Cutoff",
+      valueSummary:
+        "45 min before flight departure for manifest weight check, safety briefing, and snow overboot fitting",
+      basisType: "operator_estimate",
+      citationIds: ["jun-operator-heli-icefield"],
+      verificationNote:
+        "FAA Part 135 weight-and-balance verification and glacier overboot fitting precede flight boarding.",
+    },
+    {
+      field: "operating_season",
+      label: "Upper Snow Camp Operating Season",
+      valueSummary: "May through late August (months 5–8 only)",
+      basisType: "sourced_fact",
+      citationIds: ["jun-operator-heli-icefield"],
+      verificationNote:
+        "Upper-icefield dog sled camps demobilize in late August as snow pack thins, even while regular glacier landings continue into September.",
+    },
+    {
+      field: "accessibility",
+      label: "Upper Snow Camp Mobility & Weight Rules",
+      valueSummary:
+        "Requires stepping into helicopter cabin and walking on uneven snow at 3,200–4,200 ft; 250–260 lb weight-balance surcharge threshold applies",
+      basisType: "operator_estimate",
+      citationIds: ["jun-operator-heli-icefield"],
+      verificationNote:
+        "Operator confirmation is required for limited-mobility guests and FAA Part 135 cabin weight distribution.",
+    },
+    {
+      field: "booking_and_cancellation",
+      label: "Booking & Weather Cancellation Policy",
+      valueSummary:
+        "100% refund if canceled by FAA Part 135 operator for upper-camp ceiling/visibility holds; advance customer cutoff typically 24–48 hours",
+      basisType: "operator_estimate",
+      citationIds: ["jun-operator-heli-icefield", "jun-noaa-aviation"],
+      verificationNote:
+        "Upper snow camps at 3,200–4,200 ft experience higher ceiling holds than lower glacier landings; verify exact operator cutoff before booking.",
+    },
+  ],
+  supportedReasonsAndTradeoffs: [
+    "Dedicated upper-icefield snow camp mushing experience (~60–80 min at dog camp plus ~30 min round-trip flight).",
+    "Shorter total dock-to-dock window (205 min baseline) than a 2-activity Helicopter + Mendenhall combo (280 min), since there is no 15-minute inter-activity bus transfer or second venue stop.",
+    "Tradeoff: Strict May–August operating season (closed in September) and higher cloud-ceiling requirement (3,500+ ft) than lower-elevation glacier landings.",
+  ],
+  baseAssumptions: [
+    "45 min check-in, safety briefing, and snow overboot fitting lead time.",
+    "25 min each way shuttle transfer between downtown cruise docks and JNU Airport / heliport (20–35 min range).",
+    "110 min combined helicopter flight and upper glacier dog sled camp duration (0 min inter-activity transfer).",
+  ],
+  baseUncertainties: [
+    "Upper snow camp operations are limited to May–August and close before September sailings.",
+    "Higher weather cancellation rate than lower-elevation glacier landings due to 3,200–4,200 ft camp elevation.",
+  ],
+  bookingTransparency: {
+    actualOperators: [
+      "TEMSCO Helicopters / Coastal Helicopters / NorthStar Trekking (Permitted Upper Icefield Dog Sled Camps)",
+    ],
+    inclusions: [
+      "Round-trip shuttle transfer from downtown Juneau cruise docks to JNU heliport",
+      "Round-trip glacier helicopter flight to upper snow camp",
+      "Guided dog sled camp tour and snow mushing experience with overboots",
+    ],
+    exclusions: [
+      "Mendenhall Visitor Center stop (this is a dedicated upper-glacier dog sled camp tour, not a Mendenhall combo)",
+      "Weight-balance seat surcharge for guests exceeding 250–260 lbs fully clothed",
+    ],
+    durationLabel:
+      "3 hr 25 min planning estimate (205–230 min dock-to-dock: 45m check-in + 25m outbound transfer + 110m flight/dog camp + 25m return transfer)",
+    meetingArrangements:
+      "Marine Park / Mount Roberts Tramway lot helicopter operator shuttle booths",
+    priceBasis:
+      "Multi-operator planning range $679–$749 per person (confirm exact fare and weight policy at checkout)",
+    indicativePriceRangePerPersonUsd: { min: 679, max: 749 },
+    cancellationConditions:
+      "100% refund if canceled by FAA Part 135 operator for upper-camp ceiling/visibility holds.",
+    detailsVerifiedAt: "2026-10-23",
+    detailsFreshnessNote:
+      "Modeled from Juneau helicopter dog sled camp specifications (May–August snow camp season).",
+    channels: [
+      {
+        channelType: "specialist_comparison",
+        label: "Juneau Flight Deck — Helicopter Dog Sled Camp Comparison",
+        operatorOrProviderName: "Juneau Flight Deck",
+        url: "https://juneauflightdeck.com/juneau-dogsled-helicopter-tours",
+        relationshipDisclosure:
+          "DCC specialist helicopter planning hub; commercial relationship does not affect timing or seasonality math.",
+        isCommercialPartner: true,
+        commissionInfluenceOnRanking: 0,
+      },
+    ],
+  },
+};
+
+export const JUNEAU_DOGSLED_TERMS = [
+  "dogsled",
+  "dog sled",
+  "dog-sled",
+  "mushing",
+  "husky",
+] as const;
+
 /**
- * Production definitions for the 7 Juneau port-day options.
- * Contains ZERO invented or sample review records. In production, review summaries
- * are loaded strictly from the verified local review cache (`data/viator-reviews/{code}.json`).
+ * Resolves traveler/partner query or option slugs to canonical Juneau Port-Day Engine option IDs,
+ * ensuring dogsled/mushing/husky queries always map to `jun-opt-heli-dogsled-camp` rather than
+ * `jun-opt-combo-heli-and-mendenhall` (`jun-opt-heli-mendenhall`) or standard glacier walkabout.
  */
+export function resolveJuneauOptionIdFromQuery(
+  rawInput: string | null | undefined,
+): string | null {
+  if (!rawInput) return null;
+  const normalized = rawInput.trim().toLowerCase();
+  if (!normalized) return null;
+
+  const directMatch = JUNEAU_OPTION_DEFINITIONS.find(
+    (def) => def.optionId === normalized,
+  );
+  if (directMatch) return directMatch.optionId;
+
+  const compact = normalized.replace(/[_\s]+/g, " ");
+  if (
+    JUNEAU_DOGSLED_TERMS.some(
+      (term) => normalized.includes(term) || compact.includes(term),
+    )
+  ) {
+    return "jun-opt-heli-dogsled-camp";
+  }
+
+  const aliasMap: Record<string, string> = {
+    "jun-opt-heli-mendenhall": "jun-opt-combo-heli-and-mendenhall",
+    "heli-mendenhall-combo": "jun-opt-combo-heli-and-mendenhall",
+    "glacier-helicopter-walkabout": "jun-opt-heli-icefield-walkabout",
+    "helicopter-glacier-walk": "jun-opt-heli-icefield-walkabout",
+    "jun-opt-heli-glacier-walkabout": "jun-opt-heli-icefield-walkabout",
+    "jun-opt-helicopter-glacier-landing": "jun-opt-heli-icefield-walkabout",
+    "whale-watching": "jun-opt-auke-bay-whale-direct",
+    "whale-mendenhall-combo": "jun-opt-combo-whale-and-mendenhall",
+    "mendenhall-glacier-shuttle": "jun-opt-usfs-mendenhall-shuttle",
+  };
+
+  return aliasMap[normalized] || null;
+}
 export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
   {
     optionId: "jun-opt-usfs-mendenhall-shuttle",
@@ -1900,6 +2117,7 @@ export const JUNEAU_OPTION_DEFINITIONS: RawJuneauOptionDefinition[] = [
       ],
     },
   },
+  JUNEAU_DOGSLED_OPTION_DEFINITION,
 ];
 
 function parseStrictClockMinutes(value: string): number | null {

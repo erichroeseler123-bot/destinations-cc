@@ -32,8 +32,55 @@ export default function ContactPage() {
 
         <section className="grid gap-4 md:grid-cols-2">
           <article className="rounded-3xl border border-white/10 bg-white/[0.05] p-6 text-zinc-300">
-            <h2 className="text-2xl font-bold text-white">Operations Base</h2>
-            <p className="mt-2">Denver, Colorado · <a href="mailto:support@destinationcommandcenter.com" className="text-cyan-300 underline underline-offset-4">support@destinationcommandcenter.com</a></p>
+            <h2 className="text-2xl font-bold text-white">Operations Base &amp; Specialist Desks</h2>
+            <p className="mt-2">
+              Denver, Colorado · Submit DCC reference updates via the{" "}
+              <a
+                href="/report-error#report-factual-error"
+                className="text-cyan-300 underline underline-offset-4"
+              >
+                in-app factual-error report form
+              </a>
+              .
+            </p>
+            <ul className="mt-3 space-y-1 text-sm text-zinc-400">
+              <li>
+                Red Rocks rides:{" "}
+                <a
+                  href="mailto:hello@partyatredrocks.com"
+                  className="text-cyan-300 underline underline-offset-4"
+                >
+                  hello@partyatredrocks.com
+                </a>
+              </li>
+              <li>
+                Colorado mountain transfers:{" "}
+                <a
+                  href="mailto:dispatch@gosno.co"
+                  className="text-cyan-300 underline underline-offset-4"
+                >
+                  dispatch@gosno.co
+                </a>
+              </li>
+              <li>
+                Cruise port planning:{" "}
+                <a
+                  href="mailto:concierge@cruisepromenade.com"
+                  className="text-cyan-300 underline underline-offset-4"
+                >
+                  concierge@cruisepromenade.com
+                </a>
+              </li>
+              <li>
+                New Orleans tours:{" "}
+                <a
+                  href="mailto:help@welcometoneworleanstours.com"
+                  className="text-cyan-300 underline underline-offset-4"
+                >
+                  help@welcometoneworleanstours.com
+                </a>
+              </li>
+            </ul>
           </article>
           <article className="rounded-3xl border border-white/10 bg-white/[0.05] p-6 text-zinc-300">
             <h2 className="text-2xl font-bold text-white">How Reports Are Handled</h2>

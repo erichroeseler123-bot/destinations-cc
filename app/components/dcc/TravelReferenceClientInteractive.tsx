@@ -270,6 +270,7 @@ export function SpecialistHandoffInteractive({
   nodeId,
   initialContext,
   gosnoVanOneWayLabel = "Check current price with GoSno",
+  gosnoPricingByResort,
 }: {
   config: TravelReferenceNode["specialistHandoffs"];
   nodeId?: string;
@@ -279,6 +280,10 @@ export function SpecialistHandoffInteractive({
     customChoice?: string;
   };
   gosnoVanOneWayLabel?: string;
+  gosnoPricingByResort?: Record<
+    string,
+    { suvUsd: number | null; vanUsd: number | null }
+  >;
 }) {
   const corridorId = nodeId || "ask-dcc";
   const [travelDate, setTravelDate] = useState<string>(
@@ -370,7 +375,8 @@ export function SpecialistHandoffInteractive({
     }
 
     if (option.baseUrl.includes("gosno.co")) {
-      url.searchParams.set("vehicleClass", numericParty > 6 ? "van" : "suv");
+      const isVan = numericParty > 6;
+      url.searchParams.set("vehicleClass", isVan ? "van" : "suv");
       const fallbackDest = option.baseUrl.includes("/vail") ? "Vail" : "Breckenridge";
       const effectiveDest = resortDestination || fallbackDest;
       if (customChoice === "breckenridge-to-den") {
@@ -385,6 +391,17 @@ export function SpecialistHandoffInteractive({
         url.searchParams.set("origin", "DEN");
         url.searchParams.set("destination", effectiveDest);
         url.searchParams.set("direction", "westbound");
+      }
+      if (gosnoPricingByResort) {
+        const resortPrices = gosnoPricingByResort[effectiveDest];
+        const matchedPrice = isVan
+          ? resortPrices?.vanUsd ?? null
+          : resortPrices?.suvUsd ?? null;
+        if (typeof matchedPrice === "number" && matchedPrice > 0) {
+          url.searchParams.set("publishedPrice", String(matchedPrice));
+        } else {
+          url.searchParams.delete("publishedPrice");
+        }
       }
     }
 

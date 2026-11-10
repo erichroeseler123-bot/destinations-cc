@@ -704,14 +704,14 @@ export const DENVER_MOUNTAIN_SOURCE_RECORDS: SourceRecord[] = [
     sourceId: "src-gosno-colorado-tariff-2026",
     sourceOrganization: "GoSno LLC (CO PUC LL-03577)",
     sourceTitle:
-      "GoSno Public Route Feed Snapshot v1.0 (evsnap:gosno-route-feed:v1.0:295ccba41219) — DEN One-Way Fares: $349 SUV / $499 Van (Winter Park, Keystone), $349 SUV / $599 Van (Copper), $399 SUV / $599 Van (Breckenridge), $499 SUV / $599 Van (Vail), $549 SUV / $649 Van (Beaver Creek), $599 SUV / $899 Van (Steamboat), $699 SUV / $899 Van (Aspen, Snowmass); Reconciled Services: Crested Butte ($699 SUV quote_only / Van quote_only), Big Sky ($299 SUV quote_only / Van currently_unavailable)",
+      "GoSno Public Route Feed Snapshot v1.0 (evsnap:gosno-route-feed:v1.0:a66e6a578d04) — DEN One-Way Fares: $449 SUV / $799 Van (Winter Park, Keystone, Copper), $499 SUV / $799 Van (Breckenridge), $599 SUV / $799 Van (Vail), $649 SUV / $849 Van (Beaver Creek), $799 SUV / $1199 Van (Steamboat), $899 SUV / $1199 Van (Aspen, Snowmass); Reconciled Services: Crested Butte & Big Sky currently_unavailable",
     sourceUrl: "https://gosno.co/api/public/route-feed",
     claimsSupported: [
       "claim-co-gosno-suv-capacity-and-gear",
       "claim-co-gosno-van-capacity-and-quote",
     ],
-    retrievedAt: "2026-11-04T14:05:00.000Z",
-    verifiedAt: "2026-11-04T14:05:00.000Z",
+    retrievedAt: "2026-11-10T03:03:00.744Z",
+    verifiedAt: "2026-11-10T03:03:00.744Z",
     expiresAt: "2027-05-31T00:00:00.000Z",
     freshnessCategory: "operator_tariff_and_policy",
     status: "current",
@@ -761,7 +761,7 @@ export const DENVER_MOUNTAIN_EVIDENCE_CLAIMS: EvidenceClaim[] = [
     claimId: "claim-co-gosno-suv-capacity-and-gear",
     classification: "operator_published_fact",
     statement:
-      "GoSno LLC (CO PUC LL-03577) operates 100% private door-to-door mountain transfers (never shared per-seat shuttles). Full-size AWD/4WD SUVs have a verified seating_limit of 6 passengers. Published DEN one-way SUV fares in route-feed.snapshot.json (v1.0) are $349 for Winter Park (DEN-WINTER-PARK-SUV, Rezdy P360K5), Keystone (DEN-KEYSTONE-SUV, Rezdy P9PQRN), and Copper Mountain (DEN-COPPER-SUV, Rezdy PHCYQL); $399 for Breckenridge (DEN-BRECKENRIDGE-SUV, Rezdy P7477S); $499 for Vail (DEN-VAIL-SUV, Rezdy PXFGPP); $549 for Beaver Creek (DEN-BEAVER-CREEK-SUV, Rezdy P9AP71); $599 for Steamboat Springs (DEN-STEAMBOAT-SUV, Rezdy PEZN8V); and $699 for Aspen (DEN-ASPEN-SUV, Rezdy P11TWN) and Snowmass (DEN-SNOWMASS-SUV, Rezdy PP1A72)—all with status 'available_for_online_booking' and online_bookable: true—while Crested Butte ($699 SUV) and Big Sky ($299 SUV from BZN) are status 'quote_only' (online_bookable: false). Under GoSno's gear_policy and equipment.specific_hardware_layout (verification_state: 'requires_operator_confirmation'), skis, snowboards, boots, and standard luggage are included at no extra charge when they fit safely inside the reserved private vehicle or cargo carrier, and specific ski racks or roof cargo boxes depend on physical vehicle assignment; customers provide accurate passenger, suitcase, and ski-bag counts so GoSno can confirm vehicle fit.",
+      "GoSno LLC (CO PUC LL-03577) operates 100% private door-to-door mountain transfers (never shared per-seat shuttles). Full-size AWD/4WD SUVs have a verified seating_limit of 6 passengers. Published DEN one-way SUV fares in route-feed.snapshot.json (v1.0) are $449 for Winter Park (DEN-WINTER-PARK-SUV, Rezdy P360K5), Keystone (DEN-KEYSTONE-SUV, Rezdy P9PQRN), and Copper Mountain (DEN-COPPER-SUV, Rezdy PHCYQL); $499 for Breckenridge (DEN-BRECKENRIDGE-SUV, Rezdy P7477S); $599 for Vail (DEN-VAIL-SUV, Rezdy PXFGPP); $649 for Beaver Creek (DEN-BEAVER-CREEK-SUV, Rezdy P9AP71); $799 for Steamboat Springs (DEN-STEAMBOAT-SUV, Rezdy PEZN8V); and $899 for Aspen (DEN-ASPEN-SUV, Rezdy P11TWN) and Snowmass (DEN-SNOWMASS-SUV, Rezdy PP1A72)—all with status 'available_for_online_booking' and online_bookable: true—while Crested Butte and Big Sky are status 'currently_unavailable' (online_bookable: false). Under GoSno's gear_policy and equipment.specific_hardware_layout (verification_state: 'requires_operator_confirmation'), skis, snowboards, boots, and standard luggage are included at no extra charge when they fit safely inside the reserved private vehicle or cargo carrier, and specific ski racks or roof cargo boxes depend on physical vehicle assignment; customers provide accurate passenger, suitcase, and ski-bag counts so GoSno can confirm vehicle fit.",
     fieldsSupported: [
       "groupCapacityRange",
       "skiAndLuggageBagCount",
@@ -770,18 +770,18 @@ export const DENVER_MOUNTAIN_EVIDENCE_CLAIMS: EvidenceClaim[] = [
     sourceIds: ["src-gosno-colorado-tariff-2026"],
     isDecisionChanging: true,
     verificationNote:
-      "Verified against data/network/audit/satellite/gosno/route-feed.snapshot.json (evsnap:gosno-route-feed:v1.0:295ccba41219).",
+      "Verified against data/network/audit/satellite/gosno/route-feed.snapshot.json (evsnap:gosno-route-feed:v1.0:a66e6a578d04).",
   },
   {
     claimId: "claim-co-gosno-van-capacity-and-quote",
     classification: "operator_published_fact",
     statement:
-      "GoSno private passenger vans have a verified seating_limit of 10 passengers (groups of 11+ passengers exceed a single van and require multi-vehicle coordination via https://gosno.co/request-quote). Published DEN one-way van fares in route-feed.snapshot.json (v1.0) are $499 for Winter Park (DEN-WINTER-PARK-VAN, Rezdy PDU6A0) and Keystone (DEN-KEYSTONE-VAN, Rezdy PMXKMU); $599 for Copper Mountain (DEN-COPPER-VAN, Rezdy PL1Q5B), Breckenridge (DEN-BRECKENRIDGE-VAN, Rezdy PKQDPG), and Vail (DEN-VAIL-VAN, Rezdy P71R37); $649 for Beaver Creek (DEN-BEAVER-CREEK-VAN, Rezdy PL6NBQ); and $899 for Steamboat Springs (DEN-STEAMBOAT-VAN, Rezdy P5BRTS), Aspen (DEN-ASPEN-VAN, Rezdy PALHVX), and Snowmass (DEN-SNOWMASS-VAN, Rezdy PU8KPD)—all with feed status 'available_for_online_booking' and online_bookable: true (with live slot/gear confirmation via /api/availability)—whereas Crested Butte Van (DEN-CRESTED-BUTTE-VAN) is 'quote_only' (referencePriceUsd: null, online_bookable: false) and Big Sky Van (BZN-BIG-SKY-VAN) is 'currently_unavailable'. Van interior luggage barriers and ski cargo racks depend on physical vehicle assignment (verification_state: 'requires_operator_confirmation').",
+      "GoSno private passenger vans have a verified seating_limit of 10 passengers (groups of 11+ passengers exceed a single van and require multi-vehicle coordination via https://gosno.co/request-quote). Published DEN one-way van fares in route-feed.snapshot.json (v1.0) are $799 for Winter Park (DEN-WINTER-PARK-VAN, Rezdy PDU6A0), Keystone (DEN-KEYSTONE-VAN, Rezdy PMXKMU), Copper Mountain (DEN-COPPER-VAN, Rezdy PL1Q5B), Breckenridge (DEN-BRECKENRIDGE-VAN, Rezdy PKQDPG), and Vail (DEN-VAIL-VAN, Rezdy P71R37); $849 for Beaver Creek (DEN-BEAVER-CREEK-VAN, Rezdy PL6NBQ); and $1199 for Steamboat Springs (DEN-STEAMBOAT-VAN, Rezdy P5BRTS), Aspen (DEN-ASPEN-VAN, Rezdy PALHVX), and Snowmass (DEN-SNOWMASS-VAN, Rezdy PU8KPD)—all with feed status 'available_for_online_booking' and online_bookable: true (with live slot/gear confirmation via /api/availability)—whereas Crested Butte Van (DEN-CRESTED-BUTTE-VAN) and Big Sky Van (BZN-BIG-SKY-VAN) are 'currently_unavailable'. Van interior luggage barriers and ski cargo racks depend on physical vehicle assignment (verification_state: 'requires_operator_confirmation').",
     fieldsSupported: ["groupCapacityRange", "indicativePriceUsd"],
     sourceIds: ["src-gosno-colorado-tariff-2026"],
     isDecisionChanging: true,
     verificationNote:
-      "Verified against data/network/audit/satellite/gosno/route-feed.snapshot.json (evsnap:gosno-route-feed:v1.0:295ccba41219).",
+      "Verified against data/network/audit/satellite/gosno/route-feed.snapshot.json (evsnap:gosno-route-feed:v1.0:a66e6a578d04).",
   },
   {
     claimId: "claim-co-eme-shared-shuttle-rates-and-baggage",
@@ -811,7 +811,7 @@ export const DENVER_MOUNTAIN_CANDIDATE_OPTIONS: CandidateOption[] = [
   {
     optionId: "co-mtn-gosno-private-suv",
     title:
-      "GoSno Private Full-Size AWD/4WD SUV ($349 Winter Park / Keystone / Copper, $399 Breckenridge, $499 Vail, Up to 6 Pax)",
+      "GoSno Private Full-Size AWD/4WD SUV ($449 Winter Park / Keystone / Copper, $499 Breckenridge, $599 Vail, Up to 6 Pax)",
     shortLabel: "GoSno Private SUV (1–6 Pax)",
     optionKind: "owned_specialist_comparison",
     actualOperators: ["GoSno LLC (CO PUC LL-03577)"],
@@ -872,10 +872,10 @@ export const DENVER_MOUNTAIN_CANDIDATE_OPTIONS: CandidateOption[] = [
     whaleSightingOrReRidePolicy:
       "Dedicated driver tracks arriving flights at DEN and dispatches only for your party.",
     indicativePriceUsd: {
-      min: 349,
-      max: 699,
+      min: 449,
+      max: 899,
       basisLabel:
-        "per private SUV one-way from DEN ($349 Winter Park/Keystone/Copper, $399 Breckenridge, $499 Vail, $549 Beaver Creek, $599 Steamboat, $699 Aspen/Snowmass/Crested Butte; $299 BZN–Big Sky)",
+        "per private SUV one-way from DEN ($449 Winter Park/Keystone/Copper, $499 Breckenridge, $599 Vail, $649 Beaver Creek, $799 Steamboat, $899 Aspen/Snowmass; Crested Butte & BZN–Big Sky currently_unavailable)",
     },
     comparisonValues: {
       vehicleFormat: "100% Private Full-Size AWD/4WD SUV (1–6 Pax)",
@@ -888,7 +888,7 @@ export const DENVER_MOUNTAIN_CANDIDATE_OPTIONS: CandidateOption[] = [
     tradeoffs: {
       strengths: [
         "100% private door-to-door transfer from DEN curbside or downtown straight to your mountain lodging",
-        "At 4–6 passengers ($58.17–$87.25/person at $349 for Winter Park/Keystone/Copper or $66.50–$99.75/person at $399 for Breckenridge), per-person cost matches or beats door-to-door shared shuttles while saving 60–90 minutes of airport staging",
+        "At 4–6 passengers ($74.83–$112.25/person at $449 for Winter Park/Keystone/Copper or $83.17–$124.75/person at $499 for Breckenridge), per-person cost matches or beats door-to-door shared shuttles while saving 60–90 minutes of airport staging",
         "Fully compliant with statutory C.R.S. § 42-4-106 Code 15/16 winter traction requirements",
       ],
       limitations: [
@@ -924,7 +924,7 @@ export const DENVER_MOUNTAIN_CANDIDATE_OPTIONS: CandidateOption[] = [
   {
     optionId: "co-mtn-gosno-private-van",
     title:
-      "GoSno Private 10-Passenger Mountain Van ($499 Winter Park / Keystone, $599 Copper / Breck / Vail, $649 Beaver Creek, Up to 10 Pax)",
+      "GoSno Private 10-Passenger Mountain Van ($799 Winter Park / Keystone / Copper / Breck / Vail, $849 Beaver Creek, Up to 10 Pax)",
     shortLabel: "GoSno Private Van (Up to 10 Pax)",
     optionKind: "private_charter",
     actualOperators: ["GoSno LLC (CO PUC LL-03577)"],
@@ -985,10 +985,10 @@ export const DENVER_MOUNTAIN_CANDIDATE_OPTIONS: CandidateOption[] = [
     whaleSightingOrReRidePolicy:
       "Dedicated driver tracks arriving flights at DEN; groups of 11+ use multi-vehicle quote flow.",
     indicativePriceUsd: {
-      min: 499,
-      max: 899,
+      min: 799,
+      max: 1199,
       basisLabel:
-        "per private van one-way from DEN ($499 Winter Park/Keystone, $599 Copper/Breck/Vail, $649 Beaver Creek, $899 Steamboat/Aspen/Snowmass; Crested Butte quote_only; Big Sky van currently_unavailable)",
+        "per private van one-way from DEN ($799 Winter Park/Keystone/Copper/Breck/Vail, $849 Beaver Creek, $1199 Steamboat/Aspen/Snowmass; Crested Butte & Big Sky currently_unavailable)",
     },
     comparisonValues: {
       vehicleFormat: "100% Private 10-Pax Mountain Van",
@@ -1000,12 +1000,12 @@ export const DENVER_MOUNTAIN_CANDIDATE_OPTIONS: CandidateOption[] = [
     },
     tradeoffs: {
       strengths: [
-        "Keeps groups of 7–10 together in a single private door-to-door vehicle ($49.90–$71.29/person at $499 for Winter Park/Keystone or $59.90–$85.57/person at $599 for Copper/Breckenridge/Vail)",
+        "Keeps groups of 7–10 together in a single private door-to-door vehicle ($79.90–$114.14/person at $799 for Winter Park/Keystone/Copper/Breckenridge/Vail)",
         "Safer and often cheaper than renting two separate AWD SUVs during I-70 winter storms",
       ],
       limitations: [
         "Van seating rows, interior luggage barrier, and dedicated ski cargo racks depend on physical vehicle assignment (verification_state: requires_operator_confirmation); live slot/cargo fit confirmed at booking or via quote",
-        "Strict 10-passenger single-van ceiling (groups of 11+ passengers require multi-vehicle coordination at https://gosno.co/request-quote); unavailable on Big Sky routes",
+        "Strict 10-passenger single-van ceiling (groups of 11+ passengers require multi-vehicle coordination at https://gosno.co/request-quote); unavailable on Big Sky and Crested Butte routes",
       ],
     },
     claimIds: [
@@ -1109,7 +1109,7 @@ export const DENVER_MOUNTAIN_CANDIDATE_OPTIONS: CandidateOption[] = [
         "Includes 2 baggage items (including a ski/snowboard bag) + 1 personal item per passenger",
       ],
       limitations: [
-        "For 4–6 travelers ($276–$834 total door-to-door), total per-seat cost approaches or exceeds a private GoSno SUV ($349–$549) while adding airport hold times and multi-hotel stops",
+        "For 4–6 travelers ($276–$834 total door-to-door), total per-seat cost approaches or exceeds a private GoSno SUV ($449–$649) while adding airport hold times and multi-hotel stops",
         "Does not serve Winter Park, Steamboat Springs, Aspen, Snowmass, Crested Butte, or Big Sky on Summit/Eagle County shared routes",
       ],
     },
@@ -1249,7 +1249,7 @@ export const DENVER_MOUNTAIN_QUESTIONS: QuestionDefinition[] = [
     inputType: "select",
     requiredForPersonalizedVerdict: true,
     decisionImpactExplanation:
-      "Determines exact GoSno route-feed pricing and online-booking eligibility ($349 SUV / $499 Van for Winter Park & Keystone; $349 SUV / $599 Van for Copper; $399 SUV / $599 Van for Breckenridge; $499 SUV / $599 Van for Vail; $549 SUV / $649 Van for Beaver Creek; $599 SUV / $899 Van for Steamboat; $699 SUV / $899 Van for Aspen & Snowmass; quote_only for Crested Butte & Big Sky SUV; currently_unavailable for Big Sky Van).",
+      "Determines exact GoSno route-feed pricing and online-booking eligibility ($449 SUV / $799 Van for Winter Park, Keystone & Copper; $499 SUV / $799 Van for Breckenridge; $599 SUV / $799 Van for Vail; $649 SUV / $849 Van for Beaver Creek; $799 SUV / $1,199 Van for Steamboat; $899 SUV / $1,199 Van for Aspen & Snowmass; currently_unavailable for Crested Butte & Big Sky).",
     drivenByClaimIds: [
       "claim-co-gosno-suv-capacity-and-gear",
       "claim-co-gosno-van-capacity-and-quote",
@@ -1259,51 +1259,51 @@ export const DENVER_MOUNTAIN_QUESTIONS: QuestionDefinition[] = [
       {
         value: "winter_park",
         label:
-          "Winter Park ($349 GoSno SUV / $499 Van — Online Bookable)",
+          "Winter Park ($449 GoSno SUV / $799 Van — Online Bookable)",
       },
       {
         value: "keystone",
-        label: "Keystone ($349 GoSno SUV / $499 Van — Online Bookable)",
+        label: "Keystone ($449 GoSno SUV / $799 Van — Online Bookable)",
       },
       {
         value: "copper",
         label:
-          "Copper Mountain ($349 GoSno SUV / $599 Van — Online Bookable)",
+          "Copper Mountain ($449 GoSno SUV / $799 Van — Online Bookable)",
       },
       {
         value: "breckenridge",
-        label: "Breckenridge ($399 GoSno SUV / $599 Van — Online Bookable)",
+        label: "Breckenridge ($499 GoSno SUV / $799 Van — Online Bookable)",
       },
       {
         value: "vail",
-        label: "Vail ($499 GoSno SUV / $599 Van — Online Bookable)",
+        label: "Vail ($599 GoSno SUV / $799 Van — Online Bookable)",
       },
       {
         value: "beaver_creek",
-        label: "Beaver Creek ($549 GoSno SUV / $649 Van — Online Bookable)",
+        label: "Beaver Creek ($649 GoSno SUV / $849 Van — Online Bookable)",
       },
       {
         value: "steamboat",
         label:
-          "Steamboat Springs ($599 GoSno SUV / $899 Van — Online Bookable)",
+          "Steamboat Springs ($799 GoSno SUV / $1,199 Van — Online Bookable)",
       },
       {
         value: "aspen",
-        label: "Aspen ($699 GoSno SUV / $899 Van — Online Bookable)",
+        label: "Aspen ($899 GoSno SUV / $1,199 Van — Online Bookable)",
       },
       {
         value: "snowmass",
-        label: "Snowmass ($699 GoSno SUV / $899 Van — Online Bookable)",
+        label: "Snowmass ($899 GoSno SUV / $1,199 Van — Online Bookable)",
       },
       {
         value: "crested_butte",
         label:
-          "Crested Butte ($699 GoSno SUV Quote-Only / Van Quote-Only)",
+          "Crested Butte (GoSno SUV & Van Currently Unavailable)",
       },
       {
         value: "big_sky",
         label:
-          "Big Sky via BZN ($299 GoSno SUV Quote-Only / Van Unavailable)",
+          "Big Sky via BZN (GoSno SUV & Van Currently Unavailable)",
       },
     ],
     defaultValue: DENVER_MOUNTAIN_DEFAULT_EXAMPLE_INPUT.destinationResort,
@@ -1594,7 +1594,7 @@ export const DENVER_MOUNTAIN_HARD_CONSTRAINT_RULES: HardConstraintRule<DenverMou
               passed: false,
               eliminationReason: `${option.shortLabel} has status 'currently_unavailable' on ${vehicleOffer.routeId} (${vehicleOffer.notes || "vehicle class unavailable on this route"}).`,
               whatInputChangeWouldAlterResult:
-                "Select GoSno Private SUV (up to 6 passengers per Suburban; groups over 6 use multiple Suburbans on Big Sky routes via https://gosno.co/request-quote).",
+                "Select an active Colorado mountain corridor (Winter Park, Keystone, Copper, Breckenridge, Vail, Beaver Creek, Steamboat Springs, Aspen, or Snowmass) or submit a custom inquiry at https://gosno.co/request-quote.",
             };
           }
 
@@ -1816,8 +1816,8 @@ export const DENVER_MOUNTAIN_PREFERENCE_RULES: PreferenceRule<DenverMountainTran
           input.destinationResort,
           { now: context.now },
         );
-        const suvUsd = gosnoResolution.suv.oneWayAmountUsd ?? 399;
-        const vanUsd = gosnoResolution.van.oneWayAmountUsd ?? 599;
+        const suvUsd = gosnoResolution.suv.oneWayAmountUsd ?? 499;
+        const vanUsd = gosnoResolution.van.oneWayAmountUsd ?? 799;
 
         if (input.priorityMode === "door_to_door_private") {
           if (
@@ -1957,6 +1957,14 @@ function appendGoSnoHandoffTripParams(
     parsed.searchParams.set("routeId", offer.routeId);
     parsed.searchParams.set("offerId", offer.offerId);
     parsed.searchParams.set("vehicleClass", offer.vehicleClass);
+    if (offer.effectiveTripAmountUsd !== null && offer.effectiveTripAmountUsd > 0) {
+      parsed.searchParams.set(
+        "publishedPrice",
+        String(offer.effectiveTripAmountUsd),
+      );
+    } else {
+      parsed.searchParams.delete("publishedPrice");
+    }
     if (input) {
       if (input.travelDate) {
         parsed.searchParams.set("date", input.travelDate);
@@ -2091,7 +2099,7 @@ export const DENVER_MOUNTAIN_DECISION_ENGINE: DecisionEngineDefinition<DenverMou
       "Denver (DEN / Union Station) to Winter Park, Keystone, Copper, Breckenridge, Vail, Beaver Creek, Steamboat, Aspen, Snowmass & Crested Butte",
     categoryName: "Mountain Corridor Transportation",
     heroQuestion:
-      "Should your group book a 100% private GoSno SUV ($349–$699 from DEN) or 10-passenger Van ($499–$899 from DEN), per-seat Epic Mountain Express shuttle ($59–$139/guest), or RTD A-Line + CDOT Bustang public transit ($27.50 DEN–Vail)?",
+      "Should your group book a 100% private GoSno SUV ($449–$899 from DEN) or 10-passenger Van ($799–$1,199 from DEN), per-seat Epic Mountain Express shuttle ($59–$139/guest), or RTD A-Line + CDOT Bustang public transit ($27.50 DEN–Vail)?",
     summaryDescription:
       "Deterministic I-70 & US-40 mountain transfer evaluator reconciled against GoSno's route-feed snapshot (v1.0), enforcing statutory C.R.S. § 42-4-106 traction rules, verified seating limits (6 SUV / 10 Van), operator-confirmed roof-box/luggage policies, Epic Mountain Express per-seat rates, and RTD A-Line + Bustang public transit math.",
     referenceGuide: {
@@ -2100,7 +2108,7 @@ export const DENVER_MOUNTAIN_DECISION_ENGINE: DecisionEngineDefinition<DenverMou
           title:
             "Per-Seat Shared Shuttle vs. Flat Private SUV Economics at 4–6 Travelers",
           detail:
-            "Epic Mountain Express shared shuttles charge $59–$129/guest (transfer center) or $69–$139/guest (door-to-door). Once a group reaches 4–6 travelers ($276–$834 total), a 100% private GoSno SUV ($349 Winter Park/Keystone/Copper, $399 Breckenridge, $499 Vail, $549 Beaver Creek) often costs less or the same while saving 60–90 minutes of airport holding and hotel stops.",
+            "Epic Mountain Express shared shuttles charge $59–$129/guest (transfer center) or $69–$139/guest (door-to-door). Once a group reaches 4–6 travelers ($276–$834 total), a 100% private GoSno SUV ($449 Winter Park/Keystone/Copper, $499 Breckenridge, $599 Vail, $649 Beaver Creek) often costs less or the same while saving 60–90 minutes of airport holding and hotel stops.",
           sourceIds: [
             "src-gosno-colorado-tariff-2026",
             "src-epic-mountain-express-rates-2026",
@@ -2124,7 +2132,7 @@ export const DENVER_MOUNTAIN_DECISION_ENGINE: DecisionEngineDefinition<DenverMou
         {
           typeName: "GoSno Private Full-Size AWD/4WD SUV (1–6 Passengers)",
           capacityAndStability:
-            "1–6 passengers (verified seating_limit: 6); commercial AWD/4WD with winter tires ($349 Winter Park/Keystone/Copper, $399 Breckenridge, $499 Vail, $549 Beaver Creek, $599 Steamboat, $699 Aspen/Snowmass/Crested Butte)",
+            "1–6 passengers (verified seating_limit: 6); commercial AWD/4WD with winter tires ($449 Winter Park/Keystone/Copper, $499 Breckenridge, $599 Vail, $649 Beaver Creek, $799 Steamboat, $899 Aspen/Snowmass; Crested Butte & Big Sky currently unavailable)",
           bestFor:
             "Families and groups of 3–6 wanting direct DEN curbside pickup straight to their lodge door",
           limitations:
@@ -2134,7 +2142,7 @@ export const DENVER_MOUNTAIN_DECISION_ENGINE: DecisionEngineDefinition<DenverMou
         {
           typeName: "GoSno Private 10-Passenger Mountain Van (Up to 10 Pax)",
           capacityAndStability:
-            "Up to 10 passengers (verified seating_limit: 10); $499 Winter Park/Keystone, $599 Copper/Breckenridge/Vail, $649 Beaver Creek, $899 Steamboat/Aspen/Snowmass (online_bookable: true on 9 Colorado routes; Crested Butte quote_only; Big Sky unavailable)",
+            "Up to 10 passengers (verified seating_limit: 10); $799 Winter Park/Keystone/Copper/Breckenridge/Vail, $849 Beaver Creek, $1,199 Steamboat/Aspen/Snowmass (online_bookable: true on 9 Colorado routes; Crested Butte & Big Sky currently unavailable)",
           bestFor:
             "Groups of 7–10 wanting a single private vehicle instead of splitting into two SUVs",
           limitations:
@@ -2187,7 +2195,7 @@ export const DENVER_MOUNTAIN_DECISION_ENGINE: DecisionEngineDefinition<DenverMou
         {
           tradeoff: "Shared Per-Seat Shuttle vs. Private GoSno SUV",
           explanation:
-            "Shared shuttles save money for 1–2 guests ($59–$139/guest), but at 4–6 guests a private GoSno SUV ($349–$549 flat on I-70/US-40) costs roughly the same per person and leaves immediately for your condo door.",
+            "Shared shuttles save money for 1–2 guests ($59–$139/guest), but at 4–6 guests a private GoSno SUV ($449–$649 flat on I-70/US-40) costs roughly the same per person and leaves immediately for your condo door.",
         },
         {
           tradeoff: "CDOT Bustang Public Transit vs. Door-to-Door Transfer",
@@ -2207,7 +2215,7 @@ export const DENVER_MOUNTAIN_DECISION_ENGINE: DecisionEngineDefinition<DenverMou
       methodologySteps: [
         "Resolve exact route-specific fares and booking_eligibility from GoSno's route-feed snapshot (v1.0).",
         "Enforce operator-verified passenger seating limits (max 6 pax in SUV, max 10 pax in single van) as hard constraints while surfacing operator_confirmation_required warnings for roof-box and heavy ski-luggage loads per GoSno's gear_policy.",
-        "Compare flat-rate private vehicle pricing ($349–$699 SUV, $499–$899 Van) against per-seat Epic Mountain Express ($59–$139/guest) and public transit ($12–$27.50) with zero commercial bias.",
+        "Compare flat-rate private vehicle pricing ($449–$899 SUV, $799–$1,199 Van) against per-seat Epic Mountain Express ($59–$139/guest) and public transit ($12–$27.50) with zero commercial bias.",
       ],
     },
     questions: DENVER_MOUNTAIN_QUESTIONS,

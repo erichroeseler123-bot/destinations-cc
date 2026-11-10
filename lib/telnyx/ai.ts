@@ -18,7 +18,7 @@ export function getTelnyxKeywordResponse(message: string): string | null {
     return "You’re opted back in for DCC text updates. Reply HELP for support.";
   }
   if (HELP_KEYWORDS.has(normalized)) {
-    return "DCC support: reply with your question and our automated assistant will help. For urgent issues email support@destinationcommandcenter.com.";
+    return "DCC support: reply with your question and our automated assistant will help, or submit an issue at https://www.destinationcommandcenter.com/report-error.";
   }
   return null;
 }

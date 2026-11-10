@@ -12,6 +12,7 @@ describe("DCC to GoSno handoff", () => {
     assert.ok(location.includes("airport=DEN"));
     assert.ok(location.includes("party_size=5"));
     assert.ok(location.includes("vehicle_type=suv"));
+    assert.ok(location.includes("publishedPrice=499"));
     assert.ok(location.includes("dcc_handoff_id=ho_"));
   });
 
@@ -24,6 +25,7 @@ describe("DCC to GoSno handoff", () => {
     assert.ok(location.includes("airport=DEN"));
     assert.ok(location.includes("party_size=10"));
     assert.ok(location.includes("vehicle_type=van"));
+    assert.ok(location.includes("publishedPrice=799"));
     assert.ok(location.includes("fit_note=subject_to_luggage_and_ski_gear_fit_and_availability"));
   });
 
@@ -79,30 +81,30 @@ describe("DCC to GoSno handoff", () => {
     assert.ok(parsed.searchParams.get("click_id")?.startsWith("clk_"));
   });
 
-  it("reconciles Winter Park ($349 SUV / $499 Van), Steamboat ($599 SUV / $899 Van), and Big Sky ($299 Suburban only, no vans)", async () => {
-    // Winter Park 16 passengers -> 1 Van ($499) + 1 Suburban ($349) = $848
+  it("reconciles Winter Park ($449 SUV / $799 Van), Steamboat ($799 SUV / $1,199 Van), and Big Sky (currently unavailable)", async () => {
+    // Winter Park 16 passengers -> 1 Van ($799) + 1 Suburban ($449) = $1,248
     const wp16 = await GET(new Request("https://www.destinationcommandcenter.com/go/dcc-to-gosno?destination=winter-park&airport=den&date=2026-12-20&party_size=16&standardBags=16&skiBags=12"));
     assert.equal(wp16.status, 422);
     const wp16Body = await wp16.json();
     assert.equal(wp16Body.privateGroupInquiryOption.destination, "Winter Park");
-    assert.equal(wp16Body.privateGroupInquiryOption.referenceCombinedOneWayUsd, 848);
+    assert.equal(wp16Body.privateGroupInquiryOption.referenceCombinedOneWayUsd, 1248);
     assert.equal(
       wp16Body.privateGroupInquiryOption.vehicleSuggestion.summaryLabel,
       "a van plus a Suburban",
     );
 
-    // Steamboat Springs 20 passengers -> 2 Vans ($899 each) = $1,798
+    // Steamboat Springs 20 passengers -> 2 Vans ($1,199 each) = $2,398
     const sb20 = await GET(new Request("https://www.destinationcommandcenter.com/go/dcc-to-gosno?destination=steamboat&airport=den&date=2026-12-22&party_size=20&standardBags=20&skiBags=16"));
     assert.equal(sb20.status, 422);
     const sb20Body = await sb20.json();
     assert.equal(sb20Body.privateGroupInquiryOption.destination, "Steamboat Springs");
-    assert.equal(sb20Body.privateGroupInquiryOption.referenceCombinedOneWayUsd, 1798);
+    assert.equal(sb20Body.privateGroupInquiryOption.referenceCombinedOneWayUsd, 2398);
     assert.equal(
       sb20Body.privateGroupInquiryOption.vehicleSuggestion.summaryLabel,
       "two vans",
     );
 
-    // Big Sky van request -> currently unavailable (Suburban only up to 6 pax)
+    // Big Sky van request -> currently unavailable
     const bsVan = await GET(new Request("https://www.destinationcommandcenter.com/go/dcc-to-gosno?destination=big-sky&airport=bzn&date=2026-12-20&party_size=5&vehicle_type=van"));
     assert.equal(bsVan.status, 422);
     const bsVanBody = await bsVan.json();
@@ -110,13 +112,13 @@ describe("DCC to GoSno handoff", () => {
     assert.equal(bsVanBody.nextStep, "currently unavailable");
     assert.equal(bsVanBody.maxAllowedPassengers, 6);
 
-    // Big Sky 8 passengers -> exceeds 6-passenger Suburban limit, offers 2 Suburbans ($598 reference)
+    // Big Sky 8 passengers -> exceeds 6-passenger Suburban limit, offers 2 Suburbans (null reference fare while seasonally unavailable)
     const bs8 = await GET(new Request("https://www.destinationcommandcenter.com/go/dcc-to-gosno?destination=big-sky&airport=bzn&date=2026-12-20&party_size=8&standardBags=8&skiBags=6"));
     assert.equal(bs8.status, 422);
     const bs8Body = await bs8.json();
     assert.equal(bs8Body.maxAllowedPassengers, 6);
     assert.equal(bs8Body.privateGroupInquiryOption.origin, "BZN");
-    assert.equal(bs8Body.privateGroupInquiryOption.referenceCombinedOneWayUsd, 598);
+    assert.equal(bs8Body.privateGroupInquiryOption.referenceCombinedOneWayUsd, null);
     assert.equal(
       bs8Body.privateGroupInquiryOption.vehicleSuggestion.shortLabel,
       "2 Private Chevrolet Suburbans (up to 6 passengers each)",
@@ -145,6 +147,7 @@ describe("DCC to GoSno handoff", () => {
     assert.equal(parsed.searchParams.get("returnPickupTime"), "08:00");
     assert.equal(parsed.searchParams.get("standardBags"), "4");
     assert.equal(parsed.searchParams.get("skiBags"), "4");
+    assert.equal(parsed.searchParams.get("publishedPrice"), "898");
     assert.equal(parsed.searchParams.get("email"), null);
     assert.equal(parsed.searchParams.get("phone"), null);
 
@@ -160,6 +163,40 @@ describe("DCC to GoSno handoff", () => {
     assert.equal(record.tripDetails?.returnDate, "2026-12-27");
     assert.ok(record.strippedPiiParams?.includes("email"));
     assert.ok(record.strippedPiiParams?.includes("phone"));
+  });
+
+  it("normalizes multi-word destination inputs to GoSno canonical route slugs instead of stripping spaces", async () => {
+    const cases: Array<{
+      input: string;
+      expectedSlug: string;
+      expectedPrice?: string;
+    }> = [
+      { input: "Copper Mountain", expectedSlug: "copper", expectedPrice: "449" },
+      { input: "Winter Park", expectedSlug: "winter-park", expectedPrice: "449" },
+      { input: "Beaver Creek", expectedSlug: "beaver-creek", expectedPrice: "649" },
+      { input: "Steamboat Springs", expectedSlug: "steamboat", expectedPrice: "799" },
+      { input: "Aspen / Snowmass", expectedSlug: "aspen-snowmass", expectedPrice: "899" },
+      { input: "Arapahoe Basin", expectedSlug: "arapahoe-basin" },
+      { input: "Loveland", expectedSlug: "loveland" },
+      { input: "winter_park", expectedSlug: "winter-park", expectedPrice: "449" },
+    ];
+
+    for (const c of cases) {
+      const response = await GET(
+        new Request(
+          `https://www.destinationcommandcenter.com/go/dcc-to-gosno?destination=${encodeURIComponent(c.input)}&airport=DEN&date=2026-12-20&party_size=4&vehicle_type=suv&isTest=1`,
+        ),
+      );
+      assert.equal(response.status, 302, `Expected 302 for destination="${c.input}"`);
+      const parsed = new URL(response.headers.get("location") || "");
+      assert.equal(parsed.origin + parsed.pathname, "https://gosno.co/handoff/dcc");
+      assert.equal(parsed.searchParams.get("destination"), c.expectedSlug);
+      if (c.expectedPrice) {
+        assert.equal(parsed.searchParams.get("publishedPrice"), c.expectedPrice);
+      } else {
+        assert.equal(parsed.searchParams.get("publishedPrice"), null);
+      }
+    }
   });
 });
 

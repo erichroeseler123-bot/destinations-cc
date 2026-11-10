@@ -895,6 +895,16 @@ const RESORT_CANONICAL_AND_CODE: ReadonlyArray<{
     aliases: ["crested butte", "crested-butte", "mt crested butte"],
   },
   {
+    canonicalName: "Arapahoe Basin",
+    routeCode: "ARAPAHOE-BASIN",
+    aliases: ["arapahoe basin", "arapahoe-basin", "a-basin", "abasin"],
+  },
+  {
+    canonicalName: "Loveland",
+    routeCode: "LOVELAND",
+    aliases: ["loveland", "loveland ski area", "loveland-ski-area"],
+  },
+  {
     canonicalName: "Big Sky",
     routeCode: "BIG-SKY",
     aliases: ["big sky", "big sky resort", "big-sky"],

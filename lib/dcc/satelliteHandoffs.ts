@@ -297,7 +297,15 @@ export function resolveSatelliteWebhookToken(satelliteId: DccSatelliteId) {
 
 export function verifySatelliteWebhookToken(satelliteId: DccSatelliteId, token: string | null | undefined) {
   const expected = resolveSatelliteWebhookToken(satelliteId);
-  if (!expected) return true;
+  if (!expected) {
+    if (
+      process.env.VERCEL_ENV === "production" ||
+      process.env.NODE_ENV === "production"
+    ) {
+      return false;
+    }
+    return true;
+  }
   return token === expected;
 }
 

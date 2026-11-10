@@ -9,6 +9,11 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(targetUrl, 308);
   }
 
+  if (request.nextUrl.pathname === "/things-to-do-in-new-orleans-today") {
+    const targetUrl = new URL("/guides/things-to-do-in-new-orleans-today", request.url);
+    targetUrl.search = request.nextUrl.search;
+    return NextResponse.redirect(targetUrl, 308);
+  }
   if (request.nextUrl.pathname === "/guides/tour-catalog") {
     return NextResponse.redirect(new URL("/tours", request.url), 308);
   }

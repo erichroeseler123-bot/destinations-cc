@@ -31,11 +31,16 @@ export function buildDenverToVailShuttleGuidePageModel() {
     "corridor:denver-vail-i70",
   );
 
+  const vailVanPriceParam =
+    vailPricing.vanFare.amountUsd !== null
+      ? `&publishedPrice=${vailPricing.vanFare.amountUsd}`
+      : "";
+
   const actions: RecommendationAction[] = [
     {
       id: "gosno-vail",
       label: "Continue to GoSno Vail Corridor Page",
-      href: "https://gosno.co/vail?origin=DEN&destination=Vail&passengers=7&passengerCount=7&vehicleClass=van",
+      href: `https://gosno.co/vail?origin=DEN&destination=Vail&passengers=7&passengerCount=7&vehicleClass=van${vailVanPriceParam}`,
       kind: "external",
       score: 3,
       reason:
@@ -69,8 +74,7 @@ export function buildDenverToVailShuttleGuidePageModel() {
     },
   ];
 
-  const basePartnerDestinationUrl =
-    "https://gosno.co/vail?origin=DEN&destination=Vail&date=2026-12-15&passengers=6&passengerCount=6&party_size=6&standardBags=6&skiBags=2&vehicleClass=van";
+  const basePartnerDestinationUrl = `https://gosno.co/vail?origin=DEN&destination=Vail&date=2026-12-15&passengers=6&passengerCount=6&party_size=6&standardBags=6&skiBags=2&vehicleClass=van${vailVanPriceParam}`;
 
   const initialOutcome = compileApplicableDecisionContext({
     corridorId: "corridor:denver-vail-i70",
