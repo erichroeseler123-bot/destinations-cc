@@ -33,7 +33,7 @@ export default function ContactPage() {
         <section className="grid gap-4 md:grid-cols-2">
           <article className="rounded-3xl border border-white/10 bg-white/[0.05] p-6 text-zinc-300">
             <h2 className="text-2xl font-bold text-white">Operations Base</h2>
-            <p className="mt-2">Denver, Colorado</p>
+            <p className="mt-2">Denver, Colorado · <a href="mailto:support@destinationcommandcenter.com" className="text-cyan-300 underline underline-offset-4">support@destinationcommandcenter.com</a></p>
           </article>
           <article className="rounded-3xl border border-white/10 bg-white/[0.05] p-6 text-zinc-300">
             <h2 className="text-2xl font-bold text-white">How Reports Are Handled</h2>

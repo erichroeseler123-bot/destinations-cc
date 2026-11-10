@@ -2130,9 +2130,99 @@ test("101.20 Today for eight (12:18 p.m. America/Chicago) auto-selects 2:10 p.m.
   assert.equal(carryover.requiresTravelerConfirmationOnViator.partySize, 8);
 });
 
+test("101.18 — Juneau Dogsled Mapping & Activity Meaning (Duration, Transfers, Seasonality, and Fail-Closed Verification)", () => {
+  // 1. Dogsled in July (month 7, inside May-Aug snow camp season) resolves to jun-opt-heli-dogsled-camp, NOT jun-opt-combo-heli-and-mendenhall
+  const dogsledJuly = recheckSavedJuneauTripContextBeforeCheckout({
+    date: "2027-07-15",
+    ship: "Royal Princess",
+    berthCode: "FKL",
+    arrivalTime: "08:00",
+    allAboardTime: "16:30",
+    partySize: 2,
+    optionId: "dogsled-glacier-camp",
+  });
+  assert.equal(dogsledJuly.checkoutAllowed, true);
+  assert.ok(dogsledJuly.matchedOption);
+  assert.equal(dogsledJuly.matchedOption.optionId, "jun-opt-heli-dogsled-camp");
+  assert.notEqual(dogsledJuly.matchedOption.optionId, "jun-opt-combo-heli-and-mendenhall");
+  assert.match(dogsledJuly.matchedOption.title, /Dog Sled Camp/i);
+  assert.equal(dogsledJuly.matchedOption.shortLabel, "Helicopter Glacier Dog Sled Camp");
+  assert.equal(dogsledJuly.matchedOption.category, "guided_single_activity");
 
+  // Verify dogsled activity duration and transfer decomposition (45m check-in, 25m outbound, 110m activity, 0m inter-activity, 25m return = 205m dock-to-dock)
+  assert.equal(dogsledJuly.matchedOption.timeFit.checkInMinutes, 45);
+  assert.equal(dogsledJuly.matchedOption.timeFit.outboundTransferMinutes, 25);
+  assert.equal(dogsledJuly.matchedOption.timeFit.activityDurationMinutes, 110);
+  assert.equal(dogsledJuly.matchedOption.timeFit.interActivityTransferMinutes, 0);
+  assert.equal(dogsledJuly.matchedOption.timeFit.returnTransferMinutes, 25);
+  assert.ok(
+    dogsledJuly.matchedOption.directBookingOrQuoteUrl.includes("juneau-dogsled-helicopter-tours"),
+    "Dogsled direct href must route to juneau-dogsled-helicopter-tours"
+  );
+  assert.ok(
+    dogsledJuly.allowedNextStepHref.includes("engine_option_id=jun-opt-heli-dogsled-camp") &&
+      dogsledJuly.allowedNextStepHref.includes("interest=dogsled"),
+    "Dogsled handoff must preserve engine_option_id=jun-opt-heli-dogsled-camp and interest=dogsled"
+  );
 
+  // Contrast with Helicopter + Mendenhall Combo (30m check-in, 20m outbound, 205m activity, 15m inter-activity, 25m return = 295m)
+  const comboJuly = recheckSavedJuneauTripContextBeforeCheckout({
+    date: "2027-07-15",
+    ship: "Royal Princess",
+    berthCode: "FKL",
+    arrivalTime: "08:00",
+    allAboardTime: "16:30",
+    partySize: 2,
+    optionId: "jun-opt-combo-heli-and-mendenhall",
+  });
+  assert.equal(comboJuly.checkoutAllowed, true);
+  assert.ok(comboJuly.matchedOption);
+  assert.equal(comboJuly.matchedOption.optionId, "jun-opt-combo-heli-and-mendenhall");
+  assert.equal(comboJuly.matchedOption.timeFit.activityDurationMinutes, 205);
+  assert.equal(comboJuly.matchedOption.timeFit.interActivityTransferMinutes, 20);
+  assert.equal(comboJuly.matchedOption.legacyReplanId, "heli-mendenhall-combo");
 
+  // 2. Dogsled in September (month 9, after upper snow camps close in late August) MUST fail out_of_season, even though Heli+Mendenhall combo is still open in September!
+  const dogsledSeptember = recheckSavedJuneauTripContextBeforeCheckout({
+    date: "2027-09-15",
+    ship: "Royal Princess",
+    berthCode: "FKL",
+    arrivalTime: "08:00",
+    allAboardTime: "16:30",
+    partySize: 2,
+    optionId: "helicopter-dogsled",
+  });
+  assert.equal(dogsledSeptember.checkoutAllowed, false);
+  assert.ok(dogsledSeptember.matchedOption);
+  assert.equal(dogsledSeptember.matchedOption.optionId, "jun-opt-heli-dogsled-camp");
+  assert.equal(dogsledSeptember.matchedOption.operatingStatus.status, "out_of_season");
+  assert.match(dogsledSeptember.reasonSummary, /Closed for the season in month 9/i);
 
+  const comboSeptember = recheckSavedJuneauTripContextBeforeCheckout({
+    date: "2027-09-15",
+    ship: "Royal Princess",
+    berthCode: "FKL",
+    arrivalTime: "08:00",
+    allAboardTime: "16:30",
+    partySize: 2,
+    optionId: "jun-opt-combo-heli-and-mendenhall",
+  });
+  assert.equal(comboSeptember.checkoutAllowed, true);
+  assert.equal(comboSeptember.matchedOption?.operatingStatus.status, "operator_dispatch_required");
 
+  // 3. Unmodeled option ID fails closed (needs_verification) without issuing an affirmative checkout-fit verdict using another activity
+  const unknownOptionCheck = recheckSavedJuneauTripContextBeforeCheckout({
+    date: "2027-07-15",
+    ship: "Royal Princess",
+    berthCode: "FKL",
+    arrivalTime: "08:00",
+    allAboardTime: "16:30",
+    partySize: 2,
+    optionId: "unmodeled-glacier-zipline",
+  });
+  assert.equal(unknownOptionCheck.checkoutAllowed, false);
+  assert.equal(unknownOptionCheck.matchedOption, null);
+  assert.equal(unknownOptionCheck.allowedNextStepType, "view_options_that_fit");
+  assert.match(unknownOptionCheck.reasonSummary, /needs_verification/i);
+});
 

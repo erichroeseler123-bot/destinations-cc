@@ -1404,9 +1404,16 @@ function directCheckoutPreferenceRank(tier: TourCapabilityTier): number {
 
 export async function matchToursForTrip(input: TripMatchRequest): Promise<TripMatchResponse> {
   const tStart = Date.now();
-  const node =
-    resolveEarthOSDestinationNode(input.destination || input.portSlug || "new-orleans") ||
-    resolveEarthOSDestinationNode("new-orleans")!;
+  const rawDest = input.destination || input.portSlug || "new-orleans";
+  const node = resolveEarthOSDestinationNode(rawDest);
+  if (!node) {
+    const err = new Error(
+      `Unsupported destination '${rawDest}'. Specify a supported destination or port slug.`,
+    ) as Error & { code?: string; statusCode?: number };
+    err.code = "UNSUPPORTED_DESTINATION";
+    err.statusCode = 400;
+    throw err;
+  }
 
   const dateValidation = validateTravelDateNotPast(input.date, node.timeZone);
   if (!dateValidation.valid) {

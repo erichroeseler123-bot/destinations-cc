@@ -54,7 +54,7 @@ export default function DevelopersPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#070b10] text-white">
+    <main className="min-h-screen overflow-x-hidden bg-[#070b10] text-white">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -279,12 +279,12 @@ curl -s -X POST "https://www.destinationcommandcenter.com/api/v1/mcp" \\
             </div>
 
             <div className="grid gap-4 md:grid-cols-3">
-              <div className="rounded-2xl border border-white/10 bg-black/40 p-4">
+              <div className="min-w-0 rounded-2xl border border-white/10 bg-black/40 p-4">
                 <p className="text-xs font-bold uppercase tracking-wider text-emerald-200">3A. Claude Remote MCP Connector</p>
                 <p className="mt-2 text-xs leading-5 text-white/65">
                   In Claude Desktop or Claude Web (<a href="https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp" className="underline text-cyan-200">Custom Connectors using Remote MCP</a>), open <strong>Settings → Integrations / Connectors → Add Custom Connector</strong> and enter:
                 </p>
-                <pre className="mt-3 overflow-x-auto rounded-lg bg-black/50 p-2.5 text-[11px] leading-5 text-cyan-100">{`Name: Destination Command Center
+                <pre className="mt-3 max-w-full overflow-x-auto rounded-lg bg-black/50 p-2.5 text-[11px] leading-5 text-cyan-100">{`Name: Destination Command Center
 Remote MCP URL:
 https://www.destinationcommandcenter.com/api/v1/mcp`}</pre>
                 <p className="mt-2 text-[11px] leading-4 text-white/50">
@@ -292,12 +292,12 @@ https://www.destinationcommandcenter.com/api/v1/mcp`}</pre>
                 </p>
               </div>
 
-              <div className="rounded-2xl border border-white/10 bg-black/40 p-4">
+              <div className="min-w-0 rounded-2xl border border-white/10 bg-black/40 p-4">
                 <p className="text-xs font-bold uppercase tracking-wider text-emerald-200">3B. Cursor MCP Configuration</p>
                 <p className="mt-2 text-xs leading-5 text-white/65">
                   Add DCC&apos;s remote Streamable HTTP MCP server to <code className="text-cyan-200">.cursor/mcp.json</code> (or global <code className="text-cyan-200">~/.cursor/mcp.json</code>):
                 </p>
-                <pre className="mt-3 overflow-x-auto rounded-lg bg-black/50 p-2.5 text-[11px] leading-5 text-cyan-100">{`{
+                <pre className="mt-3 max-w-full overflow-x-auto rounded-lg bg-black/50 p-2.5 text-[11px] leading-5 text-cyan-100">{`{
   "mcpServers": {
     "destination-command-center": {
       "url": "https://www.destinationcommandcenter.com/api/v1/mcp"
@@ -309,12 +309,12 @@ https://www.destinationcommandcenter.com/api/v1/mcp`}</pre>
                 </p>
               </div>
 
-              <div className="rounded-2xl border border-white/10 bg-black/40 p-4">
+              <div className="min-w-0 rounded-2xl border border-white/10 bg-black/40 p-4">
                 <p className="text-xs font-bold uppercase tracking-wider text-emerald-200">3C. OpenAI Plugins &amp; Remote MCP</p>
                 <p className="mt-2 text-xs leading-5 text-white/65">
                   Designed around OpenAI&apos;s transition from legacy Custom GPT Actions toward first-class <strong>MCP / Plugin Connectors</strong> in the Responses API and ChatGPT connectors:
                 </p>
-                <pre className="mt-3 overflow-x-auto rounded-lg bg-black/50 p-2.5 text-[11px] leading-5 text-cyan-100">{`{
+                <pre className="mt-3 max-w-full overflow-x-auto rounded-lg bg-black/50 p-2.5 text-[11px] leading-5 text-cyan-100">{`{
   "type": "mcp",
   "server_label": "dcc_port_excursions",
   "server_url": "https://www.destinationcommandcenter.com/api/v1/mcp",
@@ -350,9 +350,9 @@ https://www.destinationcommandcenter.com/api/v1/mcp`}</pre>
               ["OCTO Participant Registry", "/api/octo/participants"],
               ["Authorized Operators", "/operators"],
             ].map(([label, href]) => (
-              <a key={href} href={href} className="rounded-2xl border border-white/10 bg-black/20 p-4 transition hover:bg-white/[0.05]">
+              <a key={href} href={href} className="min-w-0 rounded-2xl border border-white/10 bg-black/20 p-4 transition hover:bg-white/[0.05]">
                 <strong className="text-sm text-white">{label}</strong>
-                <code className="mt-2 block text-xs text-white/42">{href}</code>
+                <code className="mt-2 block break-all text-xs text-white/42">{href}</code>
               </a>
             ))}
           </div>

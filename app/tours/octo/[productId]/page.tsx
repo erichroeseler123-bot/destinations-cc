@@ -62,7 +62,7 @@ export default async function OctoProductDetailPage({
                   OCTO Core Connection
                 </span>
                 <span className="rounded-md border border-emerald-400/30 bg-emerald-400/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-300">
-                  Authoritative Operator
+                  OCTO Sandbox Preview · Pilot Integration
                 </span>
                 <span className="text-xs text-white/40 font-mono">
                   {product.reference}

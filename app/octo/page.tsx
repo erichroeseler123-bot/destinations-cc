@@ -138,7 +138,7 @@ export default async function OctoDirectoryPage() {
 
                 <div className="mt-6 flex items-center justify-between border-t border-white/10 pt-4">
                   <span className="text-xs font-mono text-cyan-400">
-                    {s.agreedCommissionPercent}% DCC Take-Rate
+                    {typeof s.agreedCommissionPercent === "number" ? `${s.agreedCommissionPercent}% DCC Take-Rate` : "Commission Terms Pending"}
                   </span>
                   <Link
                     href={`/tours?q=${encodeURIComponent(s.name)}`}

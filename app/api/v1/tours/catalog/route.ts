@@ -96,8 +96,15 @@ export async function GET(request: NextRequest) {
       .map((s) => s.trim())
       .filter(Boolean);
 
+    const isExceptionsRequest = sp.get("exceptions") === "true" || sp.get("exceptions") === "1";
     const limitRaw = sp.get("limit");
-    const limit = limitRaw ? Number(limitRaw) : undefined;
+    const parsedLimit = limitRaw ? Number(limitRaw) : undefined;
+    const limit =
+      parsedLimit !== undefined && Number.isFinite(parsedLimit) && parsedLimit > 0
+        ? Math.min(parsedLimit, 500)
+        : isExceptionsRequest
+          ? undefined
+          : 100;
     const offsetRaw = sp.get("offset");
     const offset = offsetRaw ? Number(offsetRaw) : undefined;
     const pageRaw = sp.get("page");
@@ -106,7 +113,11 @@ export async function GET(request: NextRequest) {
     const searchQuery = sp.get("q") || sp.get("search") || undefined;
 
     const result = await queryDurableTourCatalog({
-      destinationSlug: sp.get("destination") || sp.get("destinationSlug") || undefined,
+      destinationSlug:
+        sp.get("destination") ||
+        sp.get("destinationSlug") ||
+        sp.get("market") ||
+        undefined,
       portSlug: sp.get("port") || sp.get("portSlug") || undefined,
       earthosDestinationNodeId: sp.get("earthosNodeId") || undefined,
       provider: sp.get("provider") || undefined,

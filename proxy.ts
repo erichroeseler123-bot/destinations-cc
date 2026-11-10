@@ -1032,6 +1032,66 @@ export async function proxy(request: NextRequest, event: NextFetchEvent) {
     return response;
   }
 
+  // Rewrite WTONOT-only root paths when accessed on the DCC host from /new-orleans or /new-orleans/tours
+  const dccPathname = request.nextUrl.pathname;
+  const wtonotOnlySupportPaths = new Set([
+    "/french-quarter-welcome-stop",
+    "/help-me-choose",
+    "/booking-help",
+    "/cancellation-policy",
+    "/accessibility",
+    "/how-we-choose",
+    "/faq",
+  ]);
+  const wtonotOnlyCategories = new Set([
+    "city-tours",
+    "swamp-tours",
+    "airboat-tours",
+    "covered-swamp-boat-tours",
+    "plantation-tours",
+    "ghost-tours",
+    "cemetery-tours",
+    "cooking-classes",
+    "riverboat-cruises",
+    "food-tours",
+    "walking-tours",
+    "private-tours",
+    "night-tours",
+  ]);
+  const dccPathParts = dccPathname.split("/").filter(Boolean);
+  if (
+    wtonotOnlySupportPaths.has(dccPathname) ||
+    dccPathname === "/compare" ||
+    dccPathname.startsWith("/compare/") ||
+    dccPathname.startsWith("/tours-for/")
+  ) {
+    const rewriteUrl = request.nextUrl.clone();
+    rewriteUrl.pathname = `/new-orleans${dccPathname}`;
+    return NextResponse.rewrite(rewriteUrl);
+  }
+  if (
+    dccPathParts.length >= 1 &&
+    dccPathParts.length <= 2 &&
+    wtonotOnlyCategories.has(dccPathParts[0])
+  ) {
+    const rewriteUrl = request.nextUrl.clone();
+    rewriteUrl.pathname = `/new-orleans/marketplace-category${dccPathname}`;
+    return NextResponse.rewrite(rewriteUrl);
+  }
+  if (
+    dccPathname.startsWith("/tours/") &&
+    (request.nextUrl.searchParams.get("src")?.startsWith("wtonot") ||
+      dccPathname === "/tours/airboat-adventures" ||
+      dccPathname === "/tours/nola-ghost-riders")
+  ) {
+    const slug = dccPathname.slice(7);
+    if (slug && !slug.includes("/")) {
+      const rewriteUrl = request.nextUrl.clone();
+      rewriteUrl.pathname = `/new-orleans/tours/${slug}`;
+      return NextResponse.rewrite(rewriteUrl);
+    }
+  }
+
   const tenantGuideRewrite = getTenantRouteGroupRewrite(request);
   if (tenantGuideRewrite) {
     const response = NextResponse.rewrite(tenantGuideRewrite);

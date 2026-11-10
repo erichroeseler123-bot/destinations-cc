@@ -93,7 +93,7 @@ export default function AboutDccPage() {
         <section className="rounded-3xl border border-cyan-400/20 bg-cyan-400/[0.04] p-6">
           <h2 className="text-2xl font-bold">Flagship Destination Reference Releases</h2>
           <p className="mt-2 text-sm text-zinc-300">
-            Explore our three place-adapted destination reference experiences connected bidirectionally to their coordinate nodes:
+            Explore our five place-adapted destination reference experiences connected bidirectionally to their coordinate nodes:
           </p>
           <div className="mt-5 grid gap-4 md:grid-cols-3">
             {referenceNodes.map((node) => (

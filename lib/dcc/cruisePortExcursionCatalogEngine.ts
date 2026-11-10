@@ -2061,7 +2061,7 @@ export function evaluateTourPortDayTimeFit(params: {
 
   const recCodeUpper = String(rec.providerProductCode || "").trim().toUpperCase();
   const autoResolvedOptionCode =
-    !params.optionCode && Boolean(resolveApprovedCatalogCheckoutSpec(recCodeUpper))
+    !params.optionCode && resolveApprovedCatalogCheckoutSpec(recCodeUpper).productApproved
       ? resolveNextEligibleTourOption({
           productCode: recCodeUpper,
           date: params.sailingDate || null,
@@ -2898,7 +2898,7 @@ export async function verifyLiveExcursionAvailability(params: {
   const partySize = Math.max(1, Number(params.partySize) || 2);
   const rawDate = String(params.date || "").trim();
 
-  const isCatalogApprovedTour = Boolean(resolveApprovedCatalogCheckoutSpec(codeUpper));
+  const isCatalogApprovedTour = resolveApprovedCatalogCheckoutSpec(codeUpper).productApproved;
   const shouldAutoResolveOption =
     isCatalogApprovedTour &&
     (params.autoSelectNextDeparture === true || (!params.optionCode && !params.departureTime));

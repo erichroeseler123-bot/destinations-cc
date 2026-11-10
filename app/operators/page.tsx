@@ -19,7 +19,7 @@ export default function OperatorsDirectoryPage() {
   const pilot = GOSNO_DIRECT_PILOT_MANIFEST.directPilot!;
 
   return (
-    <main className="min-h-screen bg-[#070b10] text-white">
+    <main className="min-h-screen overflow-x-hidden bg-[#070b10] text-white">
       {/* Hero: Operator Partnership Offer & Worldwide Eligibility */}
       <section className="border-b border-white/10 bg-gradient-to-b from-cyan-950/20 via-black/40 to-transparent">
         <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-20">
@@ -177,14 +177,14 @@ export default function OperatorsDirectoryPage() {
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-2xl border border-white/10 bg-black/40 p-5 space-y-3">
+            <div className="min-w-0 rounded-2xl border border-white/10 bg-black/40 p-5 space-y-3">
               <p className="text-xs font-mono font-bold uppercase text-emerald-300">
                 1 · Existing GoSno Storefront Integration (gosno.co — Operational &amp; Unchanged)
               </p>
               <p className="text-sm text-white/80 leading-6">
                 {pilot.workingCheckoutStatus}
               </p>
-              <div className="rounded-xl border border-white/10 bg-black/50 p-3 text-[11px] font-mono text-white/75 space-y-1">
+              <div className="rounded-xl border border-white/10 bg-black/50 p-3 text-[11px] font-mono text-white/75 space-y-1 break-words">
                 <p className="text-cyan-300 font-bold">
                   Captured Live Endpoint Evidence ({pilot.storefrontIntegration.capturedAt}):
                 </p>

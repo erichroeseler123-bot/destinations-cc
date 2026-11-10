@@ -483,10 +483,27 @@ export function listAllSatelliteHandoffSummaries(limit = 100) {
 
 export function buildDccReturnUrl(returnPath?: string, handoffId?: string) {
   const base = trimValue(process.env.DCC_PUBLIC_BASE_URL) || DCC_BASE_URL;
-  const normalizedPath = trimValue(returnPath)?.startsWith("/")
-    ? trimValue(returnPath)
-    : "/";
-  const url = new URL(normalizedPath || "/", base);
+  const baseOriginUrl = new URL(base);
+  const raw = trimValue(returnPath);
+  const isSafeRelativePath =
+    Boolean(raw) &&
+    raw!.startsWith("/") &&
+    !raw!.startsWith("//") &&
+    !raw!.startsWith("/\\") &&
+    !/[\r\n\t]/.test(raw!);
+
+  let url: URL;
+  try {
+    const candidate = new URL(isSafeRelativePath ? raw! : "/", baseOriginUrl.origin);
+    url = candidate.origin === baseOriginUrl.origin ? candidate : new URL("/", baseOriginUrl.origin);
+  } catch {
+    url = new URL("/", baseOriginUrl.origin);
+  }
+
+  if (url.pathname === "/red-rocks-amphitheatre" || url.pathname === "/red-rocks-amphitheatre/") {
+    url.pathname = "/red-rocks";
+  }
+
   if (handoffId) {
     url.searchParams.set("dcc_handoff_id", handoffId);
   }

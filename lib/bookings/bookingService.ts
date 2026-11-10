@@ -1046,8 +1046,28 @@ export class DccBookingService {
         return inFlight.promise;
       }
 
-      // 2. When DB is not active, check local/durable idempotency store
+      // 2. When DB is not active, require durable store in non-test production or check local/durable idempotency store
       if (!db) {
+        const isAutomatedTest =
+          process.env.NODE_ENV === "test" ||
+          process.env.DCC_COMMERCE_TEST_MODE === "1" ||
+          (Array.isArray(process.execArgv) &&
+            process.execArgv.some((arg) => arg === "--test" || arg.startsWith("--test-"))) ||
+          (Array.isArray(process.argv) &&
+            process.argv.some(
+              (arg) =>
+                arg === "--test" ||
+                arg.includes(".test.") ||
+                arg.includes("/tests/") ||
+                arg.includes("\\tests\\")
+            ));
+        if (!isAutomatedTest && !getDurableBookingStorePath()) {
+          throw new OctoApiError(
+            503,
+            "DISTRIBUTED_IDEMPOTENCY_UNAVAILABLE",
+            "Distributed storage (PostgreSQL or durable store) is unavailable; idempotent commercial booking actions fail closed."
+          );
+        }
         const existing = loadIdempotencyFromFallbackOrDurable(params.idempotencyKey);
         if (existing) {
           if (existing.payloadHash !== payloadHash) {
@@ -1439,6 +1459,28 @@ export class DccBookingService {
     params: DccBookingConfirmRequest & { supplierConnectionId?: string }
   ): Promise<OctoBookingResult> {
     const db = getDb();
+    if (params.idempotencyKey && !db) {
+      const isAutomatedTest =
+        process.env.NODE_ENV === "test" ||
+        process.env.DCC_COMMERCE_TEST_MODE === "1" ||
+        (Array.isArray(process.execArgv) &&
+          process.execArgv.some((arg) => arg === "--test" || arg.startsWith("--test-"))) ||
+        (Array.isArray(process.argv) &&
+          process.argv.some(
+            (arg) =>
+              arg === "--test" ||
+              arg.includes(".test.") ||
+              arg.includes("/tests/") ||
+              arg.includes("\\tests\\")
+          ));
+      if (!isAutomatedTest && !getDurableBookingStorePath()) {
+        throw new OctoApiError(
+          503,
+          "DISTRIBUTED_IDEMPOTENCY_UNAVAILABLE",
+          "Distributed storage (PostgreSQL or durable store) is unavailable; idempotent commercial booking actions fail closed."
+        );
+      }
+    }
     let bookingRecord: any = null;
 
     if (db) {

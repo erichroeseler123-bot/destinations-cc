@@ -4,6 +4,7 @@ import {
   ClientSuppliedKnownAtForbiddenError,
   enforceEvaluationRequestSizeLimit,
   enforceMachineLayerFeatureFlag,
+  getV03RuntimeStore,
   handleV03EvaluateRequest,
   MachineSecurityLimitError,
   recordSecurityAuditEvent,
@@ -40,16 +41,6 @@ const ENGINE_ALIAS_MAP: Record<string, string> = {
   "juneau-port-day-recheck": "juneau-helicopter-tours",
   "den-arrival-recheck": "denver-to-mountain-transportation",
   "red-rocks-ride-home-recheck": "denver-to-mountain-transportation",
-  "delhi-to-agra": "juneau-helicopter-tours",
-  "delhi-to-agra-recheck": "juneau-helicopter-tours",
-  "dcc-412": "juneau-helicopter-tours",
-  "keflavik-to-vik": "juneau-helicopter-tours",
-  "keflavik-to-vik-recheck": "juneau-helicopter-tours",
-  "iceland-kef-to-vik": "juneau-helicopter-tours",
-  "iceland-kef-vik": "juneau-helicopter-tours",
-  "cusco-ollantaytambo-machu-picchu": "juneau-helicopter-tours",
-  "peru-machu-picchu": "juneau-helicopter-tours",
-  "machu-picchu": "juneau-helicopter-tours",
 };
 
 export async function POST(request: Request) {
@@ -657,6 +648,19 @@ export async function POST(request: Request) {
           traceHash,
           epistemicLimitationStatement:
             "Evaluated via sharedTripRecheck with explicit leg provenance (source, timestamp, and expiry).",
+        });
+      }
+      if (signedReceipt) {
+        const store = getV03RuntimeStore();
+        store.receiptsById.set(signedReceipt.receiptId, {
+          receipt: signedReceipt,
+          inputs: rawInputs,
+          evaluationResult:
+            evalRes ??
+            ({
+              receiptId: signedReceipt.receiptId,
+              receipt: signedReceipt,
+            } as any),
         });
       }
     }

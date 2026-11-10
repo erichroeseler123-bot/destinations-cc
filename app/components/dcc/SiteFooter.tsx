@@ -143,6 +143,8 @@ export default function SiteFooter() {
             <Link href="/privacy">Privacy</Link>
             <span className="dcc-site-footer__divider">/</span>
             <Link href="/terms">Terms of Service</Link>
+            <span className="dcc-site-footer__divider">/</span>
+            <Link href="/contact">Contact &amp; Corrections</Link>
           </div>
         </div>
       </div>

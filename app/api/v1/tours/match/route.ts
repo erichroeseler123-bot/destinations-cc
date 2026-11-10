@@ -46,7 +46,13 @@ export async function GET(request: NextRequest) {
       .filter(Boolean);
 
     const matchReq: TripMatchRequest = {
-      destination: sp.get("destination") || sp.get("port") || sp.get("portSlug") || "new-orleans",
+      destination:
+        sp.get("destination") ||
+        sp.get("destinationSlug") ||
+        sp.get("port") ||
+        sp.get("portSlug") ||
+        sp.get("market") ||
+        "new-orleans",
       portSlug: sp.get("portSlug") || sp.get("port") || undefined,
       date: sp.get("date") || undefined,
       adults: parseNumberParam(sp.get("adults")),

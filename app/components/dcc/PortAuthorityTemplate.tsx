@@ -60,7 +60,9 @@ export default function PortAuthorityTemplate({
     <main className="max-w-6xl mx-auto px-6 py-14 space-y-10">
       <header className="rounded-3xl border border-cyan-400/20 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.18),transparent_40%),linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] p-8 shadow-[0_18px_70px_rgba(0,0,0,0.35)]">
         <div className="max-w-4xl space-y-4">
-          <p className="text-xs uppercase tracking-[0.22em] text-cyan-300">Port Authority Node</p>
+          <p className="text-xs uppercase tracking-[0.22em] text-cyan-300">
+            {config.isFallback ? "Port Reference · Sailing Fit Unverified" : "Port Authority Node"}
+          </p>
           <h1 className="text-4xl font-black tracking-tight md:text-5xl">{config.heroTitle || `${port.name} Cruise Port`}</h1>
           <p className="max-w-3xl text-lg text-zinc-200">{config.summary}</p>
           <p className="max-w-3xl text-sm text-zinc-400">{config.cruiseRelevance}</p>
@@ -78,6 +80,9 @@ export default function PortAuthorityTemplate({
             </div>
           ) : null}
           <div className="flex flex-wrap gap-3 text-sm text-zinc-300">
+            <span className="rounded-full border border-cyan-400/30 bg-cyan-500/10 px-3 py-1 text-cyan-200">
+              {config.isFallback ? "Port reference" : "Port guide & excursions"}
+            </span>
             <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1">{country}</span>
             <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1">{region}</span>
             {port.tags?.length ? (

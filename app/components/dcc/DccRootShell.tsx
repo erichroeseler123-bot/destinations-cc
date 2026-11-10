@@ -20,7 +20,8 @@ export default function DccRootShell({
   const pathname = usePathname() || "/";
   const isHomepage = pathname === "/" || pathname === "/t/dcc";
   const isBareShell =
-    pathname === "/new-orleans/tours" ||
+    pathname === "/new-orleans" ||
+    pathname.startsWith("/new-orleans/") ||
     pathname.startsWith("/somerset-wi") ||
     pathname.startsWith("/juneau-flight-deck") ||
     pathname.startsWith("/wisconsin-dells-brand") ||

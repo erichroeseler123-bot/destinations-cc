@@ -155,7 +155,18 @@ export default async function TourDetailPage({
     durableMappedTour ||
     (productDetail ? buildFallbackTourFromDetail(resolvedParams.id, productDetail) : null);
 
-  if (!tour) return notFound();
+  if (!tour) {
+    const { STOREFRONT_PRODUCTS } = await import("@/app/new-orleans/tours/pageConfig");
+    if (
+      resolvedParams.id === "airboat-adventures" ||
+      resolvedParams.id === "nola-ghost-riders" ||
+      STOREFRONT_PRODUCTS.some((p) => p.slug === resolvedParams.id)
+    ) {
+      const { redirect } = await import("next/navigation");
+      redirect(`/new-orleans/tours/${resolvedParams.id}`);
+    }
+    return notFound();
+  }
   const reviewCacheStatus = getProductCacheStatus(productDetail?.product_code || tour.product_code || null);
 
   // --- 1. DATA CALCULATIONS (No fabricated rating, review count, or reliability defaults) ---

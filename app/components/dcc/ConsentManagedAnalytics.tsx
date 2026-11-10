@@ -67,19 +67,31 @@ export default function ConsentManagedAnalytics({
     return () => window.removeEventListener("dcc-consent-change", handleConsentEvent);
   }, []);
 
+  useEffect(() => {
+    if (typeof window === "undefined" || !gaMeasurementId) return;
+    const w = window as unknown as Record<string, unknown>;
+    w[`ga-disable-${gaMeasurementId}`] = consent !== "accepted";
+  }, [consent, gaMeasurementId]);
+
   const handleAccept = () => {
+    if (typeof window !== "undefined" && gaMeasurementId) {
+      (window as unknown as Record<string, unknown>)[`ga-disable-${gaMeasurementId}`] = false;
+    }
     writeStoredDccConsent("accepted");
     setConsent("accepted");
   };
 
   const handleDecline = () => {
+    if (typeof window !== "undefined" && gaMeasurementId) {
+      (window as unknown as Record<string, unknown>)[`ga-disable-${gaMeasurementId}`] = true;
+    }
     writeStoredDccConsent("declined");
     setConsent("declined");
   };
 
   return (
     <>
-      {hydrated && gaMeasurementId ? (
+      {hydrated && consent === "accepted" && gaMeasurementId ? (
         <>
           <Script
             id="dcc-ga-init"

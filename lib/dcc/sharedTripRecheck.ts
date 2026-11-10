@@ -14,12 +14,14 @@
 
 import {
   evaluateJuneauPortDayScenario,
+  JUNEAU_OPTION_DEFINITIONS,
   type JuneauArrivalDock,
   type JuneauEvaluatedCandidateDeparture,
   type JuneauEvaluatedDecisionOption,
   type JuneauEvaluatedOfferBeforeCheckout,
   type JuneauPortDayEvaluationResult,
   type JuneauTripVerdictBeforeCheckout,
+  type RawJuneauOptionDefinition,
 } from "@/lib/dcc/juneauPortDayEngine";
 import {
   CLAA_JUNEAU_PORT_SCHEDULE,
@@ -520,10 +522,18 @@ const OPTION_METADATA_MAP: Record<
     directPath: "https://juneauflightdeck.com/juneau-whale-watching-tours",
   },
   "jun-opt-combo-heli-and-mendenhall": {
-    legacyReplanId: "helicopter-dogsled",
+    legacyReplanId: "heli-mendenhall-combo",
     priceFromLabel: "From $440–$595 / person",
     weatherResilienceLabel:
       "Requires FAA Part 135 icefield flight dispatch + 4.5-mi valley link to Mendenhall",
+    flightDeckInterest: "helicopter",
+    directPath: "https://juneauflightdeck.com/helicopter",
+  },
+  "jun-opt-heli-dogsled-camp": {
+    legacyReplanId: "helicopter-dogsled",
+    priceFromLabel: "From $679–$749 / person",
+    weatherResilienceLabel:
+      "Upper-elevation snow camp (May–Aug only); PAJN weather is context only and FAA Part 135 operator governs dispatch",
     flightDeckInterest: "dogsled",
     directPath: "https://juneauflightdeck.com/juneau-dogsled-helicopter-tours",
   },
@@ -544,6 +554,131 @@ const OPTION_METADATA_MAP: Record<
     flightDeckInterest: "weather-backup",
     directPath:
       "https://juneauflightdeck.com/juneau/what-to-do-if-helicopter-tour-canceled",
+  },
+};
+
+export const JUNEAU_DOGSLED_OPTION_DEFINITION: RawJuneauOptionDefinition = {
+  optionId: "jun-opt-heli-dogsled-camp",
+  title:
+    "Helicopter + Upper Glacier Dog Sled Camp (JNU Airport Base)",
+  shortLabel: "Helicopter Glacier Dog Sled Camp",
+  category: "guided_single_activity",
+  corridor: "Juneau International Airport (JNU) & Upper Icefield Snow Camp",
+  viatorProductCode: "5849JNU_DOGSLED",
+  advertisedDockToDockMinutes: 205,
+  advertisedRangeMinutes: { min: 205, max: 230 },
+  checkInLeadMinutes: 45,
+  outboundTransferMinutes: 25,
+  outboundTransferRangeMinutes: { min: 20, max: 35 },
+  activityDurationMinutes: 110,
+  interActivityTransferMinutes: 0,
+  returnTransferMinutes: 25,
+  returnTransferRangeMinutes: { min: 20, max: 35 },
+  decompositionNote:
+    "Planning estimate modeled on TEMSCO / Coastal / NorthStar upper-elevation glacier dog sled camp departures (205 min / 3h 25m baseline; 205–230 min dock-to-dock range): 45m check-in, weight verification, and overboot fitting + 25m outbound shuttle to JNU heliport (20–35m range) + 110m round-trip helicopter flight and upper snow camp mushing (~30m flight + ~60–80m on snow at dog camp) + 0m inter-activity transfer + 25m return shuttle (20–35m range).",
+  transferAndReturnUncertaintyNote:
+    "Upper-elevation snow camps (Norris, Herbert, or Mendenhall upper accumulation zones at 3,200–4,200 ft) operate May through late August only and experience higher low-ceiling weather holds than lower-glacier walkabouts.",
+  operatingMonths: [5, 6, 7, 8],
+  minimumMobility: "light_walking_1mi",
+  accessibilityDetails: {
+    walkingAndTerrain:
+      "Walking on deep, uneven snow around dog sled runners and kennel lines at 3,200–4,200 ft elevation wearing provided snow overboots.",
+    boardingAndTransfer:
+      "Requires stepping ~18–24 inches into the helicopter cabin and standing or sitting on dog sled runners on snow.",
+    wheelchairAndMobilitySupport:
+      "Upper snow camp terrain and dog sled boarding require steadiness on snow; operator confirmation is required for guests with limited mobility.",
+    confirmationStatus: "operator_and_departure_confirmation_required",
+    confirmationNote:
+      "Confirm upper-camp snow conditions, mobility support, and strict 250–260 lb fully clothed weight-balance thresholds directly with the FAA Part 135 helicopter operator.",
+  },
+  weatherCeilingSensitive: true,
+  dependsOnCitationIds: [
+    "jun-operator-heli-icefield",
+    "jun-airport-official",
+    "jun-noaa-aviation",
+    "jun-cbj-harbors",
+  ],
+  inputAudit: [
+    {
+      field: "price",
+      label: "Helicopter Dog Sled Camp Rate Range",
+      valueSummary: "$679–$749 per person (upper glacier dog sled camp)",
+      basisType: "operator_estimate",
+      citationIds: ["jun-operator-heli-icefield"],
+      verificationNote:
+        "Modeled on published Juneau helicopter dog sled camp rates; exact fare and weight-balance surcharge rules vary by operator.",
+    },
+    {
+      field: "activity_duration",
+      label: "Flight + Upper Glacier Dog Camp Duration",
+      valueSummary:
+        "110 min flight and upper snow camp mushing baseline (205–230 min dock-to-dock including 45m check-in and 50m round-trip JNU shuttle)",
+      basisType: "operator_estimate",
+      citationIds: ["jun-operator-heli-icefield"],
+      verificationNote:
+        "Separates 45m check-in/gear fitting and 25m each way JNU shuttle from 110m flight and snow-camp activity.",
+    },
+    {
+      field: "operating_season",
+      label: "Upper Snow Camp Operating Season",
+      valueSummary: "May through late August (months 5–8 only)",
+      basisType: "sourced_fact",
+      citationIds: ["jun-operator-heli-icefield"],
+      verificationNote:
+        "Upper-icefield dog sled camps demobilize in late August as snow pack thins, even while regular glacier landings continue into September.",
+    },
+  ],
+  supportedReasonsAndTradeoffs: [
+    "Dedicated upper-icefield snow camp mushing experience (~60–80 min at dog camp plus ~30 min round-trip flight).",
+    "Shorter total dock-to-dock window (205 min baseline) than a 2-activity Helicopter + Mendenhall combo (280 min), since there is no 15-minute inter-activity bus transfer or second venue stop.",
+    "Tradeoff: Strict May–August operating season (closed in September) and higher cloud-ceiling requirement (3,500+ ft) than lower-elevation glacier landings.",
+  ],
+  baseAssumptions: [
+    "45 min check-in, safety briefing, and snow overboot fitting lead time.",
+    "25 min each way shuttle transfer between downtown cruise docks and JNU Airport / heliport (20–35 min range).",
+    "110 min combined helicopter flight and upper glacier dog sled camp duration (0 min inter-activity transfer).",
+  ],
+  baseUncertainties: [
+    "Upper snow camp operations are limited to May–August and close before September sailings.",
+    "Higher weather cancellation rate than lower-elevation glacier landings due to 3,200–4,200 ft camp elevation.",
+  ],
+  bookingTransparency: {
+    actualOperators: [
+      "TEMSCO Helicopters / Coastal Helicopters / NorthStar Trekking (Permitted Upper Icefield Dog Sled Camps)",
+    ],
+    inclusions: [
+      "Round-trip shuttle transfer from downtown Juneau cruise docks to JNU heliport",
+      "Round-trip glacier helicopter flight to upper snow camp",
+      "Guided dog sled camp tour and snow mushing experience with overboots",
+    ],
+    exclusions: [
+      "Mendenhall Visitor Center stop (this is a dedicated upper-glacier dog sled camp tour, not a Mendenhall combo)",
+      "Weight-balance seat surcharge for guests exceeding 250–260 lbs fully clothed",
+    ],
+    durationLabel:
+      "3 hr 25 min planning estimate (205–230 min dock-to-dock: 45m check-in + 25m outbound transfer + 110m flight/dog camp + 25m return transfer)",
+    meetingArrangements:
+      "Marine Park / Mount Roberts Tramway lot helicopter operator shuttle booths",
+    priceBasis:
+      "Multi-operator planning range $679–$749 per person (confirm exact fare and weight policy at checkout)",
+    indicativePriceRangePerPersonUsd: { min: 679, max: 749 },
+    cancellationConditions:
+      "100% refund if canceled by FAA Part 135 operator for upper-camp ceiling/visibility holds.",
+    detailsVerifiedAt: "2026-10-23",
+    detailsFreshnessNote:
+      "Modeled from Juneau helicopter dog sled camp specifications (May–August snow camp season).",
+    channels: [
+      {
+        channelType: "specialist_comparison",
+        label: "Juneau Flight Deck — Helicopter Dog Sled Camp Comparison",
+        operatorOrProviderName: "Juneau Flight Deck",
+        url: "https://juneauflightdeck.com/juneau-dogsled-helicopter-tours",
+        relationshipDisclosure:
+          "DCC specialist helicopter planning hub; commercial relationship does not affect timing or seasonality math.",
+        isCommercialPartner: true,
+        commissionInfluenceOnRanking: 0,
+      },
+    ],
   },
 };
 
@@ -641,22 +776,30 @@ export function evaluateUnifiedJuneauTripRecheckSync(
     raw.providerConfirmedSeatsByOptionId || {};
 
   // 1. Run the ONE canonical calculation: `evaluateJuneauPortDayScenario`
-  const underlyingEngineEvaluation = evaluateJuneauPortDayScenario({
-    travelDate: date,
-    shipArrivalTime: arrivalTime,
-    allAboardTime: effectiveAllAboardForMath,
-    overnightPortCall: false,
-    arrivalDock: berthMapping.engineDock,
-    returnBufferMinutes: configuredReturnBufferMinutes,
-    goalMode: "any_single_or_combo",
-    mobilityLevel: "unspecified",
-    weatherCondition: simulateNoaaTimeout
-      ? "provider_telemetry_unavailable"
-      : flightCanceled
-        ? "low_ceiling_rain_fog"
-        : "unknown_or_forecast_only",
-    budgetMaxPerPersonUsd: null,
-  });
+  const underlyingEngineEvaluation = evaluateJuneauPortDayScenario(
+    {
+      travelDate: date,
+      shipArrivalTime: arrivalTime,
+      allAboardTime: effectiveAllAboardForMath,
+      overnightPortCall: false,
+      arrivalDock: berthMapping.engineDock,
+      returnBufferMinutes: configuredReturnBufferMinutes,
+      goalMode: "any_single_or_combo",
+      mobilityLevel: "unspecified",
+      weatherCondition: simulateNoaaTimeout
+        ? "provider_telemetry_unavailable"
+        : flightCanceled
+          ? "low_ceiling_rain_fog"
+          : "unknown_or_forecast_only",
+      budgetMaxPerPersonUsd: null,
+    },
+    {
+      optionDefinitionsOverride: [
+        ...JUNEAU_OPTION_DEFINITIONS,
+        JUNEAU_DOGSLED_OPTION_DEFINITION,
+      ],
+    },
+  );
 
   // 2. Build NOAA Station 9452210 (Juneau, AK) tide telemetry for the selected date
   const tides = buildJuneauTideTelemetryState({
@@ -1648,14 +1791,29 @@ export function recheckSavedJuneauTripContextBeforeCheckout(
       null;
   }
   if (!matchedOption && requestedOptionId) {
+    const optAliasMap: Record<string, string> = {
+      "dogsled-glacier-camp": "jun-opt-heli-dogsled-camp",
+      "helicopter-dogsled": "jun-opt-heli-dogsled-camp",
+      "jun-opt-heli-dogsled-camp": "jun-opt-heli-dogsled-camp",
+      "jun-opt-heli-dogsled-combo": "jun-opt-heli-dogsled-camp",
+      "jnu-heli-dogsled-camp": "jun-opt-heli-dogsled-camp",
+      "heli-mendenhall-combo": "jun-opt-combo-heli-and-mendenhall",
+      "glacier-helicopter-walkabout": "jun-opt-heli-icefield-walkabout",
+      "helicopter-glacier-walk": "jun-opt-heli-icefield-walkabout",
+      "jun-opt-heli-glacier-walkabout": "jun-opt-heli-icefield-walkabout",
+      "whale-watching": "jun-opt-auke-bay-whale-direct",
+      "mendenhall-glacier-shuttle": "jun-opt-usfs-mendenhall-shuttle",
+    };
+    const mappedOptionId = optAliasMap[requestedOptionId] || requestedOptionId;
     matchedOption =
       recheckResult.options.find(
         (o) =>
           o.legacyReplanId === requestedOptionId ||
-          o.optionId === requestedOptionId,
+          o.optionId === requestedOptionId ||
+          o.optionId === mappedOptionId,
       ) || null;
   }
-  if (!matchedOption && requestedInterest) {
+  if (!matchedOption && !requestedOptionId && !requestedEngineOptionId && requestedInterest) {
     if (requestedInterest === "whale-watching") {
       matchedOption =
         recheckResult.options.find(
@@ -1664,18 +1822,38 @@ export function recheckSavedJuneauTripContextBeforeCheckout(
     } else if (requestedInterest === "dogsled") {
       matchedOption =
         recheckResult.options.find(
-          (o) => o.optionId === "jun-opt-heli-dogsled-combo",
+          (o) => o.optionId === "jun-opt-heli-dogsled-camp",
         ) || null;
     } else if (requestedInterest === "helicopter") {
       matchedOption =
         recheckResult.options.find(
-          (o) => o.optionId === "jun-opt-heli-glacier-walkabout",
+          (o) => o.optionId === "jun-opt-heli-icefield-walkabout",
         ) || null;
     }
   }
 
+  // Never evaluate fit for an explicitly requested option using another activity's duration, transfers, or seasonality
+  if ((requestedOptionId || requestedEngineOptionId) && !matchedOption) {
+    const requestedLabel = requestedOptionId || requestedEngineOptionId;
+    const unmodeledHref = `/juneau/replan?date=${encodeURIComponent(date)}&party_size=${partySize}&ship=${encodeURIComponent(ship)}&berth=${encodeURIComponent(recheckResult.input.berthCode)}&arrival=${encodeURIComponent(arrivalTime)}&claa_arrival=${encodeURIComponent(arrivalTime)}&all_aboard=${encodeURIComponent(allAboardTime)}&filter=fits_only&requested_option=${encodeURIComponent(requestedLabel)}#fitting-options`;
+    return {
+      checkoutAllowed: false,
+      evaluatedAt: recheckResult.evaluatedAt,
+      matchedOption: null,
+      allowedNextStepType: "view_options_that_fit",
+      allowedNextStepLabel: "View options that fit",
+      allowedNextStepHref: unmodeledHref,
+      reasonSummary: `Saved trip recheck requires verification (needs_verification) for '${requestedLabel}': option is not modeled in the Juneau port-day engine, so DCC refuses to issue an affirmative checkout-fit verdict using another activity's duration or seasonality.`,
+      recheckResult,
+    };
+  }
+
   // If a specific option was selected and fails recheck, block checkout and return 'View options that fit'
   if (matchedOption && !matchedOption.fitsOverallForSelection) {
+    const failureDetail =
+      matchedOption.operatingStatus.status === "out_of_season"
+        ? matchedOption.operatingStatus.summary
+        : matchedOption.timeFit.statusBadgeLabel;
     return {
       checkoutAllowed: false,
       evaluatedAt: recheckResult.evaluatedAt,
@@ -1683,7 +1861,7 @@ export function recheckSavedJuneauTripContextBeforeCheckout(
       allowedNextStepType: "view_options_that_fit",
       allowedNextStepLabel: "View options that fit",
       allowedNextStepHref: matchedOption.allowedNextStepHref,
-      reasonSummary: `Saved trip recheck blocked checkout for ${matchedOption.shortLabel}: ${matchedOption.timeFit.statusBadgeLabel}. Redirecting to View options that fit with trip details preserved.`,
+      reasonSummary: `Saved trip recheck blocked checkout for ${matchedOption.shortLabel}: ${failureDetail}. Redirecting to View options that fit with trip details preserved.`,
       recheckResult,
     };
   }
@@ -1692,9 +1870,16 @@ export function recheckSavedJuneauTripContextBeforeCheckout(
   const anyFitting = recheckResult.options.some((o) => o.fitsOverallForSelection);
   if (!anyFitting) {
     const fallbackFailed = matchedOption || recheckResult.options[0] || null;
-    const fallbackHref =
+    const baseFallbackHref =
       fallbackFailed?.allowedNextStepHref ||
       `/juneau/replan?date=${encodeURIComponent(date)}&party_size=${partySize}&ship=${encodeURIComponent(ship)}&berth=${encodeURIComponent(recheckResult.input.berthCode)}&arrival=${encodeURIComponent(arrivalTime)}&claa_arrival=${encodeURIComponent(arrivalTime)}&all_aboard=${encodeURIComponent(allAboardTime)}&filter=fits_only#fitting-options`;
+    const fallbackHref =
+      requestedOptionId && !baseFallbackHref.includes("requested_option=")
+        ? baseFallbackHref.replace(
+            "#fitting-options",
+            `&requested_option=${encodeURIComponent(requestedOptionId)}#fitting-options`,
+          )
+        : baseFallbackHref;
     return {
       checkoutAllowed: false,
       evaluatedAt: recheckResult.evaluatedAt,

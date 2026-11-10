@@ -258,6 +258,109 @@ export function resolveInitialRedRocksShow(params?: {
   return resolveRedRocksShow(params);
 }
 
+const ALLOWED_DCC_RETURN_HOSTS = new Set([
+  "destinationcommandcenter.com",
+  "www.destinationcommandcenter.com",
+]);
+
+export function sanitizeRedRocksEventId(
+  rawEvent?: string | null,
+  rawArtist?: string | null,
+  rawDate?: string | null,
+): string | null {
+  const cleanedEvent = String(rawEvent || "").trim();
+  const cleanedArtist = String(rawArtist || "").trim().toLowerCase().replace(/\.$/, "");
+  const cleanedDate = String(rawDate || "").trim();
+
+  if (
+    cleanedEvent.toLowerCase() === "rr-2026-11-14-mike" ||
+    ((cleanedEvent.toLowerCase().replace(/\.$/, "") === "mike" || cleanedArtist === "mike") &&
+      (!cleanedDate || cleanedDate === "2026-11-14"))
+  ) {
+    return RED_ROCKS_MIKE_NOV_14_SHOW.eventId;
+  }
+
+  if (cleanedEvent && /^[a-zA-Z0-9._-]{1,80}$/.test(cleanedEvent) && !cleanedEvent.includes("..")) {
+    return cleanedEvent;
+  }
+
+  return null;
+}
+
+export function validateRedRocksDccReturnUrl(
+  rawReturnUrl?: string | null,
+  show?: Partial<Pick<RedRocksShowRecord, "date" | "eventId" | "artist">>,
+): string | null {
+  const trimmed = String(rawReturnUrl || "").trim();
+  let parsed: URL;
+
+  if (!trimmed) {
+    parsed = new URL("/red-rocks", "https://www.destinationcommandcenter.com");
+  } else {
+    if (
+      trimmed.startsWith("//") ||
+      trimmed.startsWith("/\\") ||
+      trimmed.startsWith("\\") ||
+      /[\r\n\t]/.test(trimmed)
+    ) {
+      return null;
+    }
+    try {
+      parsed = trimmed.startsWith("/")
+        ? new URL(trimmed, "https://www.destinationcommandcenter.com")
+        : new URL(trimmed);
+    } catch {
+      return null;
+    }
+    if (
+      parsed.protocol !== "https:" ||
+      Boolean(parsed.username || parsed.password) ||
+      (Boolean(parsed.port) && parsed.port !== "443") ||
+      !ALLOWED_DCC_RETURN_HOSTS.has(parsed.hostname.toLowerCase())
+    ) {
+      return null;
+    }
+  }
+
+  if (
+    parsed.pathname === "/red-rocks-amphitheatre" ||
+    parsed.pathname === "/red-rocks-amphitheatre/"
+  ) {
+    parsed.pathname = "/red-rocks";
+  }
+
+  const candidateDate = show?.date || parsed.searchParams.get("date") || "";
+  const validDate = /^\d{4}-\d{2}-\d{2}$/.test(candidateDate.trim())
+    ? candidateDate.trim()
+    : undefined;
+  const candidateArtist = show?.artist || parsed.searchParams.get("artist") || undefined;
+  const validEventId = sanitizeRedRocksEventId(
+    show?.eventId || parsed.searchParams.get("event"),
+    candidateArtist,
+    validDate,
+  );
+
+  if (validDate) {
+    parsed.searchParams.set("date", validDate);
+  }
+  if (validEventId) {
+    parsed.searchParams.set("event", validEventId);
+  } else if (parsed.searchParams.has("event")) {
+    parsed.searchParams.delete("event");
+  }
+  if (
+    candidateArtist &&
+    candidateArtist.trim().length <= 80 &&
+    !/[\r\n<>]/.test(candidateArtist)
+  ) {
+    parsed.searchParams.set("artist", candidateArtist.trim());
+  } else if (validEventId === RED_ROCKS_MIKE_NOV_14_SHOW.eventId) {
+    parsed.searchParams.set("artist", RED_ROCKS_MIKE_NOV_14_SHOW.artist);
+  }
+
+  return parsed.toString();
+}
+
 export function resolveRedRocksShow(params?: {
   artist?: string | null;
   date?: string | null;
@@ -272,7 +375,8 @@ export function resolveRedRocksShow(params?: {
   const isMikeNov14 =
     (!artistParam && !dateParam && !eventParam) ||
     eventParam.toLowerCase() === "rr-2026-11-14-mike" ||
-    (artistParam.toLowerCase().replace(/\.$/, "") === "mike" &&
+    ((artistParam.toLowerCase().replace(/\.$/, "") === "mike" ||
+      eventParam.toLowerCase().replace(/\.$/, "") === "mike") &&
       (!dateParam || dateParam === "2026-11-14"));
 
   if (isMikeNov14) {
@@ -287,9 +391,12 @@ export function resolveRedRocksShow(params?: {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
+  const validatedEventId =
+    sanitizeRedRocksEventId(eventParam, resolvedArtist, resolvedDate) ||
+    `rr-${resolvedDate}-${slugArtist || "show"}`;
 
   return {
-    eventId: eventParam || `rr-${resolvedDate}-${slugArtist || "show"}`,
+    eventId: validatedEventId,
     artist: resolvedArtist,
     date: resolvedDate,
     dateDisplay: formatDateDisplay(resolvedDate),
@@ -434,6 +541,10 @@ export function evaluateRedRocksRidePlan(input: {
 
   // Build tracked handoff URL to Party at Red Rocks carrying ONLY show, date, and referral attribution.
   // Never include GPS coordinates or lodging details in outbound URLs.
+  const validatedReturnUrl =
+    validateRedRocksDccReturnUrl("/red-rocks", show) ||
+    `https://www.destinationcommandcenter.com/red-rocks?date=${encodeURIComponent(show.date)}&event=${encodeURIComponent(show.eventId)}&artist=${encodeURIComponent(show.artist)}`;
+
   const buildHandoffParams = () => {
     const sp = new URLSearchParams();
     sp.set("artist", show.artist);
@@ -443,6 +554,7 @@ export function evaluateRedRocksRidePlan(input: {
     sp.set("utm_source", "destinationcommandcenter");
     sp.set("utm_medium", "referral");
     sp.set("utm_campaign", "red-rocks-ride-planner");
+    sp.set("dcc_return", validatedReturnUrl);
     return sp.toString();
   };
 

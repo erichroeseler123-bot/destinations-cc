@@ -120,7 +120,7 @@ export const juneauDecisionCards: JuneauDecisionCard[] = [
     weather_risk: "low",
     return_to_ship_confidence: "medium",
     provider_type: "internal",
-    cta_href: withDecisionParams("/juneau/mendenhall", {
+    cta_href: withDecisionParams("/juneau/cruise-excursions-what-to-do", {
       decision_action: "open-mendenhall-land-plan",
       decision_option: "mendenhall-land-fallback",
       decision_product: "juneau-mendenhall-plan",
@@ -195,19 +195,19 @@ export const juneauTrustSignals = [
 
 export const juneauGuideLinks = [
   {
-    href: "/juneau/helicopter-vs-whale-watching",
-    label: "Helicopter vs whale watching",
+    href: "/juneau/helicopter-tours",
+    label: "Juneau helicopter & glacier flightseeing",
   },
   {
-    href: "/juneau/helicopter-tour-weather-risk",
-    label: "Helicopter weather risk",
+    href: "/juneau/what-to-do-if-helicopter-tour-canceled",
+    label: "Helicopter weather risk & cancellation recovery",
   },
   {
-    href: "/juneau/whale-watching-worth-it",
-    label: "Is whale watching worth it?",
+    href: "/juneau/whale-watching-tours",
+    label: "Juneau whale watching tours & timing",
   },
   {
-    href: "/juneau/whale-watch-and-dogsled-same-day",
-    label: "Whale watch and dogsled same day",
+    href: "/juneau/cruise-excursions-what-to-do",
+    label: "Cruise excursions & Mendenhall land plan",
   },
 ] as const;

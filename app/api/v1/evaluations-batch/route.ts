@@ -74,6 +74,18 @@ export async function POST(request: Request) {
   }
 
   const payload = body as Record<string, unknown>;
+  if (!Array.isArray(payload.items)) {
+    return buildMachineJsonResponse(
+      {
+        ok: false,
+        error: {
+          code: "INVALID_BATCH_REQUEST",
+          message: "Field 'items' must be a non-empty array of evaluation requests.",
+        },
+      },
+      { status: 400, cacheControl: "no-store" },
+    );
+  }
   try {
     enforceBatchItemCountLimit(payload.items as unknown[]);
   } catch (err) {

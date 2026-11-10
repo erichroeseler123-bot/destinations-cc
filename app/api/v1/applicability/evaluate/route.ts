@@ -321,6 +321,7 @@ export async function POST(request: Request) {
         ? "gosno-multi-vehicle-group"
         : effectiveOfferId || outcome.recommendedVehicleClassId || corridorId,
       productDestinationUrl: basePartnerUrl,
+      recordStage: "recommendation",
     });
 
     const privateGroupInquiryAttribution = outcome.privateGroupInquiryOption
@@ -352,6 +353,7 @@ export async function POST(request: Request) {
               productCode: "gosno-multi-vehicle-group",
               productDestinationUrl:
                 outcome.privateGroupInquiryOption!.inquiryUrl,
+              recordStage: "recommendation",
             });
             return {
               clickId: groupOpaque.clickId,

@@ -275,7 +275,7 @@ export async function POST(request: NextRequest) {
     const approvedSpec = resolveApprovedCatalogCheckoutSpec(productCode || tourId);
     const date =
       !rawDateInput || rawDateInput.toLowerCase() === "today"
-        ? approvedSpec
+        ? approvedSpec.productApproved
           ? getLocalNowInTimeZone(approvedSpec.portTimezone).dateIso
           : portSlug === "new-orleans" || (productCode && productCode.toUpperCase().startsWith("15200P"))
             ? getLocalNowInTimeZone("America/Chicago").dateIso

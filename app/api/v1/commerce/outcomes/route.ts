@@ -44,11 +44,24 @@ export async function GET(request: Request) {
   });
   const checkpoint = await getPollerCheckpoint(pollerId);
 
+  const adminSecret =
+    process.env.DCC_COMMERCE_ADMIN_SECRET?.trim() ||
+    process.env.DCC_INTERNAL_API_KEY?.trim() ||
+    "";
+  const suppliedToken =
+    request.headers.get("x-dcc-internal-key")?.trim() ||
+    request.headers.get("x-dcc-api-key")?.trim() ||
+    request.headers.get("authorization")?.replace(/^Bearer\s+/i, "").trim() ||
+    "";
+  const isAdminCaller = Boolean(adminSecret && suppliedToken === adminSecret);
+  const sanitizedOutcomes =
+    isAdminCaller || handoffId || receiptId ? outcomes : [];
+
   return buildMachineJsonResponse(
     {
       ok: true,
-      outcomesCount: outcomes.length,
-      outcomes,
+      outcomesCount: sanitizedOutcomes.length,
+      outcomes: sanitizedOutcomes,
       pollerCheckpoint: checkpoint,
       missingOutcomePolicy: "missing_outcome_is_unreported_never_classified_as_failed_booking",
       traceparent,

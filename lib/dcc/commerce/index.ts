@@ -1043,6 +1043,9 @@ function durableHandoffId(key: DurableHandoffKey): string {
 }
 
 export class CommercialHandoffStorageError extends Error {
+  readonly code = "DURABLE_HANDOFF_UNAVAILABLE";
+  readonly statusCode = 503;
+
   constructor() {
     super("Durable checkout handoff storage is unavailable. Retry with the same idempotency key.");
   }
@@ -1594,9 +1597,13 @@ export async function createCommercialHandoff(
     input.metadata.idempotencyKey.trim()) ||
     null;
 
+  const requiresDurableIdempotency =
+    Boolean(input.requireDurableRecord) ||
+    (Boolean(rawIdempotencyKey) && !isAutomatedCommerceTestRuntime());
+
   let durableId: string | null = null;
-  if (input.requireDurableRecord) {
-    if (!rawIdempotencyKey || !input.callerClientId) throw new CommercialHandoffStorageError();
+  if (requiresDurableIdempotency) {
+    if (!rawIdempotencyKey || !callerClientId) throw new CommercialHandoffStorageError();
     durableId = durableHandoffId({ originatingSite, callerClientId, idempotencyKey: rawIdempotencyKey });
     const existing = await getCommercialHandoffById(durableId, { durableOnly: true });
     if (existing) return { ...existing, duplicateSubmission: true };
@@ -1858,7 +1865,11 @@ export async function createCommercialHandoff(
           viatorWorryFreeShoreExcursion,
           travelerReselectionRequirements: input.metadata?.portDayCheckoutSelection
             ? ["Select the saved date, option, departure time, and travelers on Viator."]
-            : [...JUNEAU_VIATOR_RESELECTION_REQUIREMENTS],
+            : String(viatorProductCode || "").toUpperCase().startsWith("2519") ||
+                String(input.productTitle || input.productCode || "").toLowerCase().includes("heli") ||
+                String(input.originatingSite || "").toLowerCase().includes("juneauflightdeck")
+              ? [...JUNEAU_VIATOR_RESELECTION_REQUIREMENTS]
+              : ["Select the saved date, option, departure time, and travelers on the provider checkout page."],
           operatorSourceUrl: versionedCandidate?.operatorSourceUrl ?? null,
           operatorFaqUrl: versionedCandidate?.operatorFaqUrl ?? null,
           operatorShortname:

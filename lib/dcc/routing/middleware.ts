@@ -691,18 +691,48 @@ function encodeBase64Url(input: string) {
 }
 
 function buildDccReturnUrl(returnPath?: string, handoffId?: string) {
-  const url = new URL(returnPath?.startsWith("/") ? returnPath : "/", DCC_PUBLIC_BASE_URL);
+  const baseOriginUrl = new URL(DCC_PUBLIC_BASE_URL);
+  const raw = returnPath?.trim();
+  const isSafeRelativePath =
+    Boolean(raw) &&
+    raw!.startsWith("/") &&
+    !raw!.startsWith("//") &&
+    !raw!.startsWith("/\\") &&
+    !/[\r\n\t]/.test(raw!);
+
+  let url: URL;
+  try {
+    const candidate = new URL(isSafeRelativePath ? raw! : "/", baseOriginUrl.origin);
+    url = candidate.origin === baseOriginUrl.origin ? candidate : new URL("/", baseOriginUrl.origin);
+  } catch {
+    url = new URL("/", baseOriginUrl.origin);
+  }
+
+  if (url.pathname === "/red-rocks-amphitheatre" || url.pathname === "/red-rocks-amphitheatre/") {
+    url.pathname = "/red-rocks";
+  }
+
   if (handoffId) {
     url.searchParams.set("dcc_handoff_id", handoffId);
   }
   return url.toString();
 }
 
-function buildEdgeSafeJuneauFlightDeckUrl(input: { date?: string }) {
+function buildEdgeSafeJuneauFlightDeckUrl(input: {
+  date?: string;
+  partySize?: string;
+  ship?: string;
+  berth?: string;
+  allAboard?: string;
+}) {
   const url = new URL("/helicopter", JFD_PUBLIC_BASE_URL);
   if (input.date && /^\d{4}-\d{2}-\d{2}$/.test(input.date.trim())) {
     url.searchParams.set("date", input.date.trim());
   }
+  if (input.partySize) url.searchParams.set("partySize", input.partySize.trim());
+  if (input.ship) url.searchParams.set("ship", input.ship.trim());
+  if (input.berth) url.searchParams.set("berth", input.berth.trim());
+  if (input.allAboard) url.searchParams.set("all_aboard", input.allAboard.trim());
   return url.toString();
 }
 
@@ -735,6 +765,8 @@ function buildEdgeSafeWtsPlanUrl(input: {
   topic?: string;
   subtype?: string;
   context?: string;
+  date?: string;
+  partySize?: string;
   returnPath?: string;
 }) {
   const url = new URL("/plan", WTS_PUBLIC_BASE_URL);
@@ -744,6 +776,10 @@ function buildEdgeSafeWtsPlanUrl(input: {
   url.searchParams.set("sourcePage", input.sourcePage || "/new-orleans/swamp-tours");
   if (input.subtype) url.searchParams.set("subtype", input.subtype);
   if (input.context) url.searchParams.set("context", input.context);
+  if (input.date && /^\d{4}-\d{2}-\d{2}$/.test(input.date.trim())) {
+    url.searchParams.set("date", input.date.trim());
+  }
+  if (input.partySize) url.searchParams.set("partySize", input.partySize.trim());
   url.searchParams.set("dcc_handoff_id", input.handoffId);
   url.searchParams.set("dcc_return", buildDccReturnUrl(input.returnPath, input.handoffId));
   return url.toString();
@@ -882,6 +918,13 @@ export function resolveGoRedirect(input: {
           )}${redirectDate ? `&date=${encodeURIComponent(redirectDate)}` : ""}`
         : buildEdgeSafeJuneauFlightDeckUrl({
             date: redirectDate,
+            partySize: params.partySize || params.qty,
+            ship: readSearchParam(input.searchParams, "ship") || undefined,
+            berth: readSearchParam(input.searchParams, "berth") || undefined,
+            allAboard:
+              readSearchParam(input.searchParams, "all_aboard") ||
+              readSearchParam(input.searchParams, "allAboard") ||
+              undefined,
           });
 
     return {
@@ -917,6 +960,8 @@ export function resolveGoRedirect(input: {
             topic: params.topic,
             subtype: params.subtype,
             context: params.context,
+            date: params.date,
+            partySize: params.partySize || params.qty,
             returnPath: params.sourcePage || "/new-orleans/swamp-tours",
           });
 

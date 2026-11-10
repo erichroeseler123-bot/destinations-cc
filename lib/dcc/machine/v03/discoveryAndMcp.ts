@@ -1322,6 +1322,32 @@ export function buildMcpDiscoveryDocument(baseUrl = DCC_V03_SITE_URL) {
           },
         },
       },
+      {
+        name: "dcc_replay_receipt",
+        requiredScope: "dcc:read:public",
+        description:
+          "Replays a signed v0.3 decision receipt against its pinned inputs and IR bundle to verify deterministic reproduction and JWS integrity.",
+        inputSchema: {
+          type: "object",
+          required: ["receiptId"],
+          properties: {
+            receiptId: { type: "string" },
+          },
+        },
+      },
+      {
+        name: "dcc_resolve_citation",
+        requiredScope: "dcc:read:public",
+        description:
+          "Resolves a canonical DCC citation or claim ID to its primary agency or operator source record, verification timestamp, and authority category.",
+        inputSchema: {
+          type: "object",
+          required: ["citationId"],
+          properties: {
+            citationId: { type: "string" },
+          },
+        },
+      },
     ],
     runnableExamples: {
       initialize: {
@@ -1487,6 +1513,7 @@ export function buildReceiptVerificationDocumentation(baseUrl = DCC_V03_SITE_URL
     standardsUsed: [
       "RFC 8785 — JSON Canonicalization Scheme (JCS)",
       "RFC 7515 — JSON Web Signature (JWS Compact Serialization)",
+      "RFC 7518 — JSON Web Algorithms (ES256 / P-256 ECDSA via Vercel KMS and EdDSA / Ed25519)",
       "RFC 8037 — CFRG Elliptic Curve Diffie-Hellman (ECDH) and Signatures in JOSE (EdDSA / Ed25519)",
       "RFC 7517 — JSON Web Key (JWK) & JSON Web Key Set (JWKS)",
       "RFC 7638 — JSON Web Key (JWK) Thumbprint",
@@ -1506,7 +1533,6 @@ export function buildReceiptVerificationDocumentation(baseUrl = DCC_V03_SITE_URL
         "executionClass",
         "isSynthetic",
         "syntheticWatermark",
-        "evaluationFingerprint",
         "engineId",
         "engineVersion",
         "compilerVersion",
@@ -1514,21 +1540,13 @@ export function buildReceiptVerificationDocumentation(baseUrl = DCC_V03_SITE_URL
         "candidateUniverseId",
         "candidateUniverseVersion",
         "candidateUniverseHash",
-        "pinnedRuleVersionHashes",
-        "pinnedClaimEventHashes",
-        "pinnedEvidenceHashes",
-        "pinnedSchemaHashes",
         "normalizedInputHash",
         "validAt",
         "knowledgeCutoff",
         "decisionState",
         "recommendedCandidateDccId",
-        "candidateDispositions",
         "resultHash",
         "traceHash",
-        "epistemicLimitationStatement",
-        "jwksUri",
-        "revocationCheckEndpoint",
       ],
       excludedFromReceiptIdHash: [
         "receiptId",
@@ -1554,10 +1572,10 @@ export function buildReceiptVerificationDocumentation(baseUrl = DCC_V03_SITE_URL
     },
     verificationSteps: [
       "1. Parse the JWS Compact string (header.payload.signature) and decode the protected header.",
-      "2. Confirm header.alg === 'EdDSA', header.typ === 'application/dcc-decision-receipt+jws', and header.kid is a non-empty string.",
+      "2. Confirm header.alg is 'ES256' (Vercel KMS P-256 ECDSA) or 'EdDSA' (Ed25519), header.typ === 'application/dcc-decision-receipt+jws', and header.kid is a non-empty string.",
       "3. Fetch /.well-known/jwks.json and locate the key matching header.kid.",
       "4. Enforce key lifecycle policy: if key.status === 'revoked', fail closed immediately (KEY_REVOKED). If key.status === 'retired_verify_only', allow verification of historical receipts issued before key.retiredAt.",
-      "5. Verify the Ed25519 signature over ASCII(BASE64URL(header) + '.' + BASE64URL(payload)) using standard JWS verification.",
+      "5. Verify the ES256 (P-256 ECDSA) or EdDSA (Ed25519) signature over ASCII(BASE64URL(header) + '.' + BASE64URL(payload)) using standard JWS verification.",
       "6. Decode the payload UTF-8 bytes, parse JSON, re-serialize with RFC 8785 JCS, and confirm byte-for-byte equality with the signed payload bytes.",
       "7. Recompute SHA-256 over RFC 8785 JCS of deterministicIdentityCore (excluding receiptId, issuedAt, evaluationRunId, traceRunId, and signature bytes) and confirm equality with receiptId.",
       "8. Confirm payload.knowledgeCutoff was server-established and check payload.isSynthetic === false before treating the receipt as operational evidence.",

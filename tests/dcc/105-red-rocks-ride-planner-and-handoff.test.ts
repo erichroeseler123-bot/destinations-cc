@@ -21,7 +21,9 @@ import {
   resolveRedRocksShow,
   trackRedRocksProviderClick,
   trackRedRocksRideComparison,
+  validateRedRocksDccReturnUrl,
 } from "@/lib/dcc/redRocksRidePlanner";
+import { buildDccReturnUrl } from "@/lib/dcc/satelliteHandoffs";
 
 test("1. Red Rocks guide and ride comparison fix outdated $65 shared shuttle, Entrance 4, and 2:00 AM claims", () => {
   const rrNode = getTravelReferenceNodeById("red-rocks");
@@ -390,5 +392,56 @@ test("4. Main private ride button routes 1-6 guests to Suburban, 7-10 to Van, an
       /stayingLocation|stayingLat|stayingLng|Sheraton|1550|39\.7422|-104\.9892/i,
     );
   }
+
+  // Verify outbound handoff carries validated dcc_return with date and valid event ID
+  const dccReturn6 = url6.searchParams.get("dcc_return");
+  assert.ok(dccReturn6, "Expected dcc_return parameter on Suburban handoff URL");
+  const parsedReturn6 = new URL(dccReturn6!);
+  assert.equal(parsedReturn6.origin, "https://www.destinationcommandcenter.com");
+  assert.equal(parsedReturn6.pathname, "/red-rocks");
+  assert.equal(parsedReturn6.searchParams.get("date"), "2026-11-14");
+  assert.equal(parsedReturn6.searchParams.get("event"), "rr-2026-11-14-mike");
+  assert.equal(parsedReturn6.searchParams.get("artist"), "mike.");
 });
+
+test("5. Red Rocks return URL preserves selected date and valid event ID, normalizes /red-rocks-amphitheatre, and rejects open-redirect destinations", () => {
+  // Normalizes legacy /red-rocks-amphitheatre?date=2026-11-14&event=mike. to /red-rocks with valid event ID
+  const normalized = validateRedRocksDccReturnUrl(
+    "https://www.destinationcommandcenter.com/red-rocks-amphitheatre?date=2026-11-14&event=mike.",
+  );
+  assert.equal(
+    normalized,
+    "https://www.destinationcommandcenter.com/red-rocks?date=2026-11-14&event=rr-2026-11-14-mike&artist=mike.",
+  );
+
+  // resolveRedRocksShow resolves mike. when event=mike. on 2026-11-14 without artist param
+  const resolvedFromEventOnly = resolveRedRocksShow({
+    date: "2026-11-14",
+    event: "mike.",
+  });
+  assert.equal(resolvedFromEventOnly.eventId, "rr-2026-11-14-mike");
+  assert.equal(resolvedFromEventOnly.artist, "mike.");
+  assert.equal(resolvedFromEventOnly.venueTimesVerified, true);
+
+  // Rejects open-redirect payloads
+  assert.equal(validateRedRocksDccReturnUrl("https://evil.example.com/red-rocks"), null);
+  assert.equal(validateRedRocksDccReturnUrl("//evil.example.com/red-rocks"), null);
+  assert.equal(validateRedRocksDccReturnUrl("/\\evil.example.com/red-rocks"), null);
+  assert.equal(validateRedRocksDccReturnUrl("javascript:alert(1)"), null);
+  assert.equal(
+    validateRedRocksDccReturnUrl("https://user:pass@www.destinationcommandcenter.com/red-rocks"),
+    null,
+  );
+
+  // Hardened buildDccReturnUrl in satelliteHandoffs
+  assert.equal(
+    buildDccReturnUrl("//evil.example.com/phish", "ho-123"),
+    "https://destinationcommandcenter.com/?dcc_handoff_id=ho-123",
+  );
+  assert.equal(
+    buildDccReturnUrl("/red-rocks-amphitheatre?date=2026-11-14", "ho-123"),
+    "https://destinationcommandcenter.com/red-rocks?date=2026-11-14&dcc_handoff_id=ho-123",
+  );
+});
+
 

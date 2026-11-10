@@ -1,4 +1,5 @@
 import legacyPortsData from "@/data/ports.generated.json";
+import cruisePortDirectoryData from "@/data/cruise-port-directory.json";
 import type { DccNode } from "./schema";
 import {
   getNodeBySlugInClass,
@@ -142,6 +143,29 @@ export function getPortBySlug(slug: string): PortView | null {
         name: "Grand Cayman (George Town)",
       };
     }
+  }
+  const dirEntry = (
+    cruisePortDirectoryData.ports as Array<{
+      slug: string;
+      name: string;
+      area?: string;
+      country?: string;
+    }>
+  ).find((p) => p.slug === slug);
+  if (dirEntry) {
+    const fallback = PORT_GEO_FALLBACK_BY_SLUG[dirEntry.slug];
+    return {
+      slug: dirEntry.slug,
+      name: dirEntry.name,
+      area: dirEntry.area || dirEntry.country || "Cruise Port",
+      region: dirEntry.area || dirEntry.country || "Cruise Port",
+      city: dirEntry.name,
+      country: dirEntry.country || "Unknown",
+      tags: ["port-reference"],
+      lat: fallback?.lat,
+      lon: fallback?.lon,
+      lng: fallback?.lon,
+    };
   }
   return null;
 }

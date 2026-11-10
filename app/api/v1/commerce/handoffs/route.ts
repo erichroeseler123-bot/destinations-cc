@@ -7,6 +7,7 @@ import {
 } from "@/lib/dcc/machine";
 import { getV03ReceiptWithFallback } from "@/lib/dcc/machine/v03/runtimeStoreV03";
 import {
+  CommercialHandoffStorageError,
   createCommercialHandoff,
   enforceAndResolveWtaAffiliateAttribution,
   getCommercialHandoffById,
@@ -435,6 +436,18 @@ export async function POST(request: Request) {
           : null,
     });
   } catch (err) {
+    if (err instanceof CommercialHandoffStorageError) {
+      return buildMachineJsonResponse(
+        {
+          ok: false,
+          error: {
+            code: err.code,
+            message: err.message,
+          },
+        },
+        { status: err.statusCode, cacheControl: "no-store", extraHeaders: { traceparent } },
+      );
+    }
     return buildMachineJsonResponse(
       {
         ok: false,
