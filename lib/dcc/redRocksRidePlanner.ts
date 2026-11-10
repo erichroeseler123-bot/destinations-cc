@@ -31,10 +31,12 @@ export interface RedRocksShowRecord {
   supportActs?: string;
   date: string; // YYYY-MM-DD
   dateDisplay: string;
-  venueDoorsLocal: string; // HH:mm (24h)
-  venueDoorsDisplay: string; // e.g. "6:00 p.m."
-  venueShowtimeLocal: string; // HH:mm (24h)
-  venueShowtimeDisplay: string; // e.g. "7:15 p.m."
+  venueTimesVerified: boolean;
+  venueDoorsLocal: string | null; // HH:mm (24h) when verified
+  venueDoorsDisplay: string | null; // e.g. "6:00 p.m." when verified
+  venueShowtimeLocal: string | null; // HH:mm (24h) when verified
+  venueShowtimeDisplay: string | null; // e.g. "7:15 p.m." when verified
+  venueTimeSummaryDisplay: string; // "Doors 6:00 p.m. · Show 7:15 p.m." or "Check the venue for doors and showtime"
   parrListingTimeDisplay: string | null; // e.g. "7:00 p.m."
   officialEventUrl: string;
   parrPrivateBookingBaseUrl: string;
@@ -48,10 +50,12 @@ export const RED_ROCKS_MIKE_NOV_14_SHOW: RedRocksShowRecord = {
   supportActs: "with opening DJ set from Stevie Daniels",
   date: "2026-11-14",
   dateDisplay: "Saturday, Nov. 14, 2026",
+  venueTimesVerified: true,
   venueDoorsLocal: "18:00",
   venueDoorsDisplay: "6:00 p.m.",
   venueShowtimeLocal: "19:15",
   venueShowtimeDisplay: "7:15 p.m.",
+  venueTimeSummaryDisplay: "Doors 6:00 p.m. · Show 7:15 p.m.",
   parrListingTimeDisplay: "7:00 p.m.",
   officialEventUrl: "https://www.redrocksonline.com/events/mike-1239116/",
   parrPrivateBookingBaseUrl:
@@ -218,17 +222,6 @@ export function buildRedRocksStayingPlace(input: {
   };
 }
 
-function format12HourDisplay(hhmm: string): string {
-  const match = /^(\d{1,2}):(\d{2})$/.exec(hhmm.trim());
-  if (!match) return hhmm;
-  const hour24 = Number(match[1]);
-  const mins = match[2];
-  if (!Number.isFinite(hour24)) return hhmm;
-  const period = hour24 >= 12 ? "p.m." : "a.m.";
-  const hour12 = hour24 % 12 === 0 ? 12 : hour24 % 12;
-  return `${hour12}:${mins} ${period}`;
-}
-
 function formatDateDisplay(ymd: string): string {
   const parsed = new Date(`${ymd}T12:00:00Z`);
   if (Number.isNaN(parsed.getTime())) return ymd;
@@ -280,8 +273,7 @@ export function resolveRedRocksShow(params?: {
     (!artistParam && !dateParam && !eventParam) ||
     eventParam.toLowerCase() === "rr-2026-11-14-mike" ||
     (artistParam.toLowerCase().replace(/\.$/, "") === "mike" &&
-      (!dateParam || dateParam === "2026-11-14")) ||
-    (dateParam === "2026-11-14" && !artistParam);
+      (!dateParam || dateParam === "2026-11-14"));
 
   if (isMikeNov14) {
     return RED_ROCKS_MIKE_NOV_14_SHOW;
@@ -291,8 +283,6 @@ export function resolveRedRocksShow(params?: {
   const resolvedDate = /^\d{4}-\d{2}-\d{2}$/.test(dateParam)
     ? dateParam
     : "2026-11-14";
-  const resolvedDoorsLocal = params?.doors?.trim() || "18:00";
-  const resolvedShowtimeLocal = params?.showtime?.trim() || "19:15";
   const slugArtist = resolvedArtist
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
@@ -303,16 +293,18 @@ export function resolveRedRocksShow(params?: {
     artist: resolvedArtist,
     date: resolvedDate,
     dateDisplay: formatDateDisplay(resolvedDate),
-    venueDoorsLocal: resolvedDoorsLocal,
-    venueDoorsDisplay: format12HourDisplay(resolvedDoorsLocal),
-    venueShowtimeLocal: resolvedShowtimeLocal,
-    venueShowtimeDisplay: format12HourDisplay(resolvedShowtimeLocal),
+    venueTimesVerified: false,
+    venueDoorsLocal: null,
+    venueDoorsDisplay: null,
+    venueShowtimeLocal: null,
+    venueShowtimeDisplay: null,
+    venueTimeSummaryDisplay: "Check the venue for doors and showtime",
     parrListingTimeDisplay: null,
     officialEventUrl: "https://www.redrocksonline.com/events/",
     parrPrivateBookingBaseUrl:
       "https://www.partyatredrocks.com/book/red-rocks-amphitheatre/private",
     timeSeparationNote:
-      "Show time and pickup time are separate. DCC displays the venue's doors and showtime; confirm your pickup deadline directly with the operator.",
+      "Check the venue for doors and showtime. Show time and pickup time are separate; confirm your pickup deadline directly with the operator.",
     pickupDeadlineGuidance:
       "Get any pickup deadline and exact pickup window from the operator (Party at Red Rocks: 720-369-6292 or contact@partyatredrocks.com).",
   };
@@ -349,11 +341,14 @@ export interface RedRocksRidePlanEvaluation {
   staying: RedRocksStayingPlace;
   partySize: number;
   scheduleSeparation: {
-    venueDoorsDisplay: string;
-    venueShowtimeDisplay: string;
+    venueTimesVerified: boolean;
+    venueDoorsDisplay: string | null;
+    venueShowtimeDisplay: string | null;
+    venueTimeSummaryDisplay: string;
     parrListingTimeDisplay: string | null;
     usesVenueTime: true;
     showTimeAndPickupTimeSeparate: true;
+    clockBasedDepartureAdviceSuppressed: boolean;
     pickupDeadlineInstruction: string;
     explanation: string;
   };
@@ -519,6 +514,22 @@ export function evaluateRedRocksRidePlan(input: {
   const carsNeededForParking = partySize <= 5 ? 1 : Math.ceil(partySize / 5);
   const ridesharesNeeded = partySize <= 6 ? 1 : Math.ceil(partySize / 6);
 
+  const parkingShowVsPickupNote = show.venueTimesVerified
+    ? `Venue Doors ${show.venueDoorsDisplay} · Showtime ${show.venueShowtimeDisplay}. Plan to leave ${staying.name} (${staying.straightLineDistanceLabel}; ${staying.estimatedPreShowDriveMinutes.label}) by 4:00–4:30 p.m. for Upper lots.`
+    : `Check the venue for doors and showtime. Typical drive from ${staying.name}: ${staying.estimatedPreShowDriveMinutes.label} (${staying.straightLineDistanceLabel}); official lots open 2 hours before doors.`;
+
+  const rideshareShowVsPickupNote = show.venueTimesVerified
+    ? `Venue Doors ${show.venueDoorsDisplay} · Showtime ${show.venueShowtimeDisplay}. Request outbound ride from ${staying.name} ${staying.estimatedPreShowDriveMinutes.max + 20} min before your target gate arrival.`
+    : `Check the venue for doors and showtime. Typical drive from ${staying.name}: ${staying.estimatedPreShowDriveMinutes.label} (${staying.straightLineDistanceLabel}).`;
+
+  const parrShowVsPickupNote = show.venueTimesVerified
+    ? `Venue time: Doors ${show.venueDoorsDisplay} · Showtime ${show.venueShowtimeDisplay}${show.parrListingTimeDisplay ? ` (Party at Red Rocks listing shows ${show.parrListingTimeDisplay})` : ""}. Keep show time and pickup time separate—get any pickup deadline from the operator.`
+    : "Check the venue for doors and showtime. Keep show time and pickup time separate—get any pickup deadline from the operator.";
+
+  const parrTimingBullet = show.venueTimesVerified
+    ? `Show time (Doors ${show.venueDoorsDisplay} · Showtime ${show.venueShowtimeDisplay}) and pickup time are separate—get any pickup deadline from the operator.`
+    : "Check the venue for doors and showtime. Keep show time and pickup time separate—get any pickup deadline from the operator.";
+
   const parkingCard: RedRocksRideComparisonCard = {
     modeId: "parking",
     title: "Drive & Park at Red Rocks",
@@ -530,7 +541,7 @@ export function evaluateRedRocksRidePlan(input: {
         : `${carsNeededForParking} vehicles needed for ${partySize} guests`,
     availabilityNote:
       "Official lots open 2 hours before doors; Upper lots fill 60–90+ min before doors.",
-    showTimeVsPickupNote: `Venue Doors ${show.venueDoorsDisplay} · Showtime ${show.venueShowtimeDisplay}. Plan to leave ${staying.name} (${staying.straightLineDistanceLabel}; ${staying.estimatedPreShowDriveMinutes.label}) by 4:00–4:30 p.m. for Upper lots.`,
+    showTimeVsPickupNote: parkingShowVsPickupNote,
     postShowPickupSummary:
       "35–60 minute single-lane canyon exit from park lots after the encore.",
     overnightOrLotRule:
@@ -563,7 +574,7 @@ export function evaluateRedRocksRidePlan(input: {
         : `Group of ${partySize} must split into ${ridesharesNeeded} separate rideshares`,
     availabilityNote:
       "On-demand app dispatch; no guaranteed return vehicle after the encore.",
-    showTimeVsPickupNote: `Venue Doors ${show.venueDoorsDisplay} · Showtime ${show.venueShowtimeDisplay}. Request outbound ride from ${staying.name} ${staying.estimatedPreShowDriveMinutes.max + 20} min before your target gate arrival.`,
+    showTimeVsPickupNote: rideshareShowVsPickupNote,
     postShowPickupSummary:
       "Venue puts general post-show pickup at Jurassic Lot by Entrance 2 (Upper North & Top Circle are closed to post-show rideshare pickup).",
     overnightOrLotRule:
@@ -603,7 +614,7 @@ export function evaluateRedRocksRidePlan(input: {
         : `Multi-vehicle coordination for ${partySize} guests · Subject to availability`,
     availabilityNote:
       "Party at Red Rocks currently offers private rides and publishes $399 for a Suburban up to 6 and $599 for a van up to 10, subject to availability.",
-    showTimeVsPickupNote: `Venue time: Doors ${show.venueDoorsDisplay} · Showtime ${show.venueShowtimeDisplay}${show.parrListingTimeDisplay ? ` (Party at Red Rocks listing shows ${show.parrListingTimeDisplay})` : ""}. Keep show time and pickup time separate—get any pickup deadline from the operator.`,
+    showTimeVsPickupNote: parrShowVsPickupNote,
     postShowPickupSummary:
       "Dedicated private vehicle waits on-site through the encore, bypassing the general rideshare queue at Jurassic Lot by Entrance 2.",
     overnightOrLotRule:
@@ -615,7 +626,7 @@ export function evaluateRedRocksRidePlan(input: {
         : `Groups of 11+ exceed a single 10-passenger van and go to a custom multi-vehicle quote.`,
     bullets: [
       "Published rates: $399 for a Suburban up to 6 and $599 for a van up to 10, subject to availability.",
-      `Show time (Doors ${show.venueDoorsDisplay} · Showtime ${show.venueShowtimeDisplay}) and pickup time are separate—get any pickup deadline from the operator.`,
+      parrTimingBullet,
       `Carries ${show.artist} (${show.date}) into checkout. Enter pickup details in checkout.`,
     ],
     ctaLabel: isSuburbanFit
@@ -634,11 +645,14 @@ export function evaluateRedRocksRidePlan(input: {
     staying,
     partySize,
     scheduleSeparation: {
+      venueTimesVerified: show.venueTimesVerified,
       venueDoorsDisplay: show.venueDoorsDisplay,
       venueShowtimeDisplay: show.venueShowtimeDisplay,
+      venueTimeSummaryDisplay: show.venueTimeSummaryDisplay,
       parrListingTimeDisplay: show.parrListingTimeDisplay,
       usesVenueTime: true,
       showTimeAndPickupTimeSeparate: true,
+      clockBasedDepartureAdviceSuppressed: !show.venueTimesVerified,
       pickupDeadlineInstruction: show.pickupDeadlineGuidance,
       explanation: show.timeSeparationNote,
     },
@@ -687,8 +701,8 @@ export interface RedRocksPlannerTelemetryEvent {
   artist: string;
   date: string;
   showEventId: string;
-  venueDoors: string;
-  venueShowtime: string;
+  venueDoors: string | null;
+  venueShowtime: string | null;
   partySize: number;
   recommendedVehicle: "suburban" | "van" | "quote";
   publishedPriceUsd: number | null;
@@ -792,4 +806,5 @@ export function trackRedRocksProviderClick(
   dispatchBrowserAnalytics(evt);
   return evt;
 }
+
 

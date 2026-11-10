@@ -389,9 +389,11 @@ export function RedRocksConcertRidePlanner() {
                     <div className="text-[11px] font-medium uppercase tracking-wide text-slate-500">
                       Official Venue Time
                     </div>
-                    <div className="mt-0.5 text-sm font-bold text-slate-900">
-                      Doors {plan.show.venueDoorsDisplay} · Show{" "}
-                      {plan.show.venueShowtimeDisplay}
+                    <div
+                      data-testid="official-venue-time-value"
+                      className="mt-0.5 text-sm font-bold text-slate-900"
+                    >
+                      {plan.show.venueTimeSummaryDisplay}
                     </div>
                     {plan.show.parrListingTimeDisplay ? (
                       <div className="mt-0.5 text-[11px] text-slate-500">

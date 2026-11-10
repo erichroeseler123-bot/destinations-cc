@@ -105,7 +105,7 @@ test("1. Red Rocks guide and ride comparison fix outdated $65 shared shuttle, En
   );
 });
 
-test("2. Plain /red-rocks visit prompts for a show; incoming Nov. 14 mike. link selects it and keeps venue time and pickup time separate", () => {
+test("2. Plain /red-rocks visit prompts for a show; incoming Nov. 14 mike. link uses verified venue time; custom shows display 'Check the venue for doors and showtime' and suppress clock-based departure advice", () => {
   // Plain /red-rocks visit with no show query params -> prompts for a show (returns null)
   assert.equal(hasIncomingRedRocksShowParams({}), false);
   assert.equal(
@@ -131,10 +131,15 @@ test("2. Plain /red-rocks visit prompts for a show; incoming Nov. 14 mike. link 
   assert.ok(show, "Expected incoming Nov. 14 link to select the show");
   assert.equal(show.artist, "mike.");
   assert.equal(show.date, "2026-11-14");
+  assert.equal(show.venueTimesVerified, true);
   assert.equal(show.venueDoorsLocal, "18:00");
   assert.equal(show.venueDoorsDisplay, "6:00 p.m.");
   assert.equal(show.venueShowtimeLocal, "19:15");
   assert.equal(show.venueShowtimeDisplay, "7:15 p.m.");
+  assert.equal(
+    show.venueTimeSummaryDisplay,
+    "Doors 6:00 p.m. · Show 7:15 p.m.",
+  );
   assert.equal(show.parrListingTimeDisplay, "7:00 p.m.");
   assert.equal(
     show.officialEventUrl,
@@ -146,6 +151,11 @@ test("2. Plain /red-rocks visit prompts for a show; incoming Nov. 14 mike. link 
     partySize: 6,
   });
 
+  assert.equal(plan.scheduleSeparation.venueTimesVerified, true);
+  assert.equal(
+    plan.scheduleSeparation.clockBasedDepartureAdviceSuppressed,
+    false,
+  );
   assert.equal(plan.scheduleSeparation.usesVenueTime, true);
   assert.equal(plan.scheduleSeparation.showTimeAndPickupTimeSeparate, true);
   assert.equal(plan.scheduleSeparation.venueDoorsDisplay, "6:00 p.m.");
@@ -155,6 +165,52 @@ test("2. Plain /red-rocks visit prompts for a show; incoming Nov. 14 mike. link 
     plan.scheduleSeparation.pickupDeadlineInstruction,
     /pickup deadline/i,
   );
+
+  // Custom show (unverified times) -> displays "Check the venue for doors and showtime" and suppresses clock-based departure advice
+  const customShow = resolveRedRocksShow({
+    artist: "Khruangbin",
+    date: "2026-11-20",
+  });
+  assert.equal(customShow.artist, "Khruangbin");
+  assert.equal(customShow.date, "2026-11-20");
+  assert.equal(customShow.venueTimesVerified, false);
+  assert.equal(customShow.venueDoorsDisplay, null);
+  assert.equal(customShow.venueShowtimeDisplay, null);
+  assert.equal(
+    customShow.venueTimeSummaryDisplay,
+    "Check the venue for doors and showtime",
+  );
+
+  const customPlan = evaluateRedRocksRidePlan({
+    show: customShow,
+    partySize: 6,
+  });
+  assert.equal(customPlan.scheduleSeparation.venueTimesVerified, false);
+  assert.equal(
+    customPlan.scheduleSeparation.clockBasedDepartureAdviceSuppressed,
+    true,
+  );
+  assert.equal(
+    customPlan.scheduleSeparation.venueTimeSummaryDisplay,
+    "Check the venue for doors and showtime",
+  );
+
+  for (const card of customPlan.comparisonCards) {
+    assert.match(
+      card.showTimeVsPickupNote,
+      /Check the venue for doors and showtime/,
+    );
+    assert.doesNotMatch(
+      card.showTimeVsPickupNote,
+      /6:00 p\.m\.|7:15 p\.m\.|4:00–4:30 p\.m\.|before your target gate arrival/i,
+    );
+    for (const bullet of card.bullets) {
+      assert.doesNotMatch(
+        bullet,
+        /6:00 p\.m\.|7:15 p\.m\.|4:00–4:30 p\.m\./i,
+      );
+    }
+  }
 });
 
 test("3. DCC location lookup prioritizes Denver/Colorado places and computes labeled straight-line distance to Red Rocks", async () => {
