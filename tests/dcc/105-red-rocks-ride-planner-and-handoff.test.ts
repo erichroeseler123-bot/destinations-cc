@@ -14,8 +14,10 @@ import {
   clearRecordedRedRocksPlannerEvents,
   evaluateRedRocksRidePlan,
   getRecordedRedRocksPlannerEvents,
+  hasIncomingRedRocksShowParams,
   RED_ROCKS_MIKE_NOV_14_SHOW,
   RED_ROCKS_STAYING_PRESETS,
+  resolveInitialRedRocksShow,
   resolveRedRocksShow,
   trackRedRocksProviderClick,
   trackRedRocksRideComparison,
@@ -103,13 +105,30 @@ test("1. Red Rocks guide and ride comparison fix outdated $65 shared shuttle, En
   );
 });
 
-test("2. Nov. 14 mike. show uses official venue time (Doors 6:00 p.m., Showtime 7:15 p.m.) and keeps show time and pickup time separate", () => {
-  const show = resolveRedRocksShow({
+test("2. Plain /red-rocks visit prompts for a show; incoming Nov. 14 mike. link selects it and keeps venue time and pickup time separate", () => {
+  // Plain /red-rocks visit with no show query params -> prompts for a show (returns null)
+  assert.equal(hasIncomingRedRocksShowParams({}), false);
+  assert.equal(
+    hasIncomingRedRocksShowParams({ artist: null, date: null, event: null }),
+    false,
+  );
+  assert.equal(resolveInitialRedRocksShow({}), null);
+
+  // Incoming link selecting Nov. 14 mike. show -> pre-fills RED_ROCKS_MIKE_NOV_14_SHOW
+  assert.equal(
+    hasIncomingRedRocksShowParams({
+      artist: "mike.",
+      date: "2026-11-14",
+      event: "rr-2026-11-14-mike",
+    }),
+    true,
+  );
+  const show = resolveInitialRedRocksShow({
     artist: "mike.",
     date: "2026-11-14",
     event: "rr-2026-11-14-mike",
   });
-
+  assert.ok(show, "Expected incoming Nov. 14 link to select the show");
   assert.equal(show.artist, "mike.");
   assert.equal(show.date, "2026-11-14");
   assert.equal(show.venueDoorsLocal, "18:00");
@@ -161,11 +180,14 @@ test("3. DCC location lookup prioritizes Denver/Colorado places and computes lab
     lng: top.lng,
     source: "search",
   });
-  assert.ok(staying.straightLineMilesToRedRocks > 10 && staying.straightLineMilesToRedRocks < 20);
+  assert.ok(
+    staying.straightLineMilesToRedRocks > 10 &&
+      staying.straightLineMilesToRedRocks < 20,
+  );
   assert.match(staying.straightLineDistanceLabel, /straight-line distance/i);
 });
 
-test("4. Proves handoff for groups of 6 ($399 Suburban) and 8 ($599 Van), verifies populated arrival fields, and tracks ride comparison and provider click separately", () => {
+test("4. Main private ride button routes 1-6 guests to Suburban, 7-10 to Van, and 11+ to Quote; keeps GPS & lodging out of analytics and outbound URLs; audits arrival fields", () => {
   clearRecordedRedRocksPlannerEvents();
 
   const stayingSheraton = buildRedRocksStayingPlace({
@@ -173,7 +195,7 @@ test("4. Proves handoff for groups of 6 ($399 Suburban) and 8 ($599 Van), verifi
     source: "preset",
   });
 
-  // Group of 6
+  // 4a. Group of 6 (1–6 guests -> Suburban /book/red-rocks-amphitheatre/private/suv)
   const plan6 = evaluateRedRocksRidePlan({
     show: RED_ROCKS_MIKE_NOV_14_SHOW,
     staying: stayingSheraton,
@@ -185,25 +207,30 @@ test("4. Proves handoff for groups of 6 ($399 Suburban) and 8 ($599 Van), verifi
   assert.equal(plan6.parrRecommendation.publishedPriceUsd, 399);
   assert.equal(plan6.parrRecommendation.maxCapacityPerVehicle, 6);
   assert.equal(plan6.parrRecommendation.perPersonUsd, 66.5);
-  assert.equal(plan6.parrRecommendation.subjectToAvailability, true);
+  assert.equal(plan6.handoff.destinationKind, "suburban_checkout");
 
-  const url6 = new URL(plan6.handoff.privateOverviewUrl);
+  const parrCard6 = plan6.comparisonCards.find(
+    (c) => c.modeId === "parr_private",
+  )!;
+  assert.equal(parrCard6.ctaHref, plan6.handoff.checkoutUrl);
+
+  const url6 = new URL(parrCard6.ctaHref);
   assert.equal(url6.origin, "https://www.partyatredrocks.com");
-  assert.equal(url6.pathname, "/book/red-rocks-amphitheatre/private");
+  assert.equal(url6.pathname, "/book/red-rocks-amphitheatre/private/suv");
   assert.equal(url6.searchParams.get("artist"), "mike.");
   assert.equal(url6.searchParams.get("date"), "2026-11-14");
   assert.equal(url6.searchParams.get("event"), "rr-2026-11-14-mike");
-  assert.equal(url6.searchParams.get("qty"), "1");
-  assert.equal(url6.searchParams.get("partySize"), "6");
-  assert.equal(url6.searchParams.get("vehicle"), "suburban");
+  assert.equal(url6.searchParams.get("src"), "dcc-red-rocks-ride-planner");
+  assert.equal(url6.searchParams.get("utm_source"), "destinationcommandcenter");
+  assert.equal(url6.searchParams.get("utm_medium"), "referral");
+  assert.equal(url6.searchParams.get("utm_campaign"), "red-rocks-ride-planner");
+  // Ensure NO lodging details or GPS coordinates in outbound URL
+  assert.equal(url6.searchParams.get("staying"), null);
+  assert.equal(url6.searchParams.get("lat"), null);
+  assert.equal(url6.searchParams.get("lng"), null);
+  assert.doesNotMatch(parrCard6.ctaHref, /Sheraton|1550|39\.7422|-104\.9892/i);
 
-  const directUrl6 = new URL(plan6.handoff.directVehicleOptionUrl);
-  assert.equal(
-    directUrl6.pathname,
-    "/book/red-rocks-amphitheatre/private/suv",
-  );
-
-  // Group of 8
+  // 4b. Group of 8 (7–10 guests -> Van /book/red-rocks-amphitheatre/private/van)
   const plan8 = evaluateRedRocksRidePlan({
     show: RED_ROCKS_MIKE_NOV_14_SHOW,
     staying: stayingSheraton,
@@ -215,61 +242,97 @@ test("4. Proves handoff for groups of 6 ($399 Suburban) and 8 ($599 Van), verifi
   assert.equal(plan8.parrRecommendation.publishedPriceUsd, 599);
   assert.equal(plan8.parrRecommendation.maxCapacityPerVehicle, 10);
   assert.equal(plan8.parrRecommendation.perPersonUsd, 74.88);
-  assert.equal(plan8.parrRecommendation.subjectToAvailability, true);
+  assert.equal(plan8.handoff.destinationKind, "van_checkout");
 
-  const url8 = new URL(plan8.handoff.privateOverviewUrl);
+  const parrCard8 = plan8.comparisonCards.find(
+    (c) => c.modeId === "parr_private",
+  )!;
+  assert.equal(parrCard8.ctaHref, plan8.handoff.checkoutUrl);
+
+  const url8 = new URL(parrCard8.ctaHref);
   assert.equal(url8.origin, "https://www.partyatredrocks.com");
-  assert.equal(url8.pathname, "/book/red-rocks-amphitheatre/private");
+  assert.equal(url8.pathname, "/book/red-rocks-amphitheatre/private/van");
   assert.equal(url8.searchParams.get("artist"), "mike.");
   assert.equal(url8.searchParams.get("date"), "2026-11-14");
   assert.equal(url8.searchParams.get("event"), "rr-2026-11-14-mike");
-  assert.equal(url8.searchParams.get("qty"), "1");
-  assert.equal(url8.searchParams.get("partySize"), "8");
-  assert.equal(url8.searchParams.get("vehicle"), "van");
+  assert.equal(url8.searchParams.get("src"), "dcc-red-rocks-ride-planner");
+  assert.equal(url8.searchParams.get("utm_source"), "destinationcommandcenter");
+  assert.equal(url8.searchParams.get("staying"), null);
+  assert.equal(url8.searchParams.get("lat"), null);
+  assert.equal(url8.searchParams.get("lng"), null);
+  assert.doesNotMatch(parrCard8.ctaHref, /Sheraton|1550|39\.7422|-104\.9892/i);
 
-  const directUrl8 = new URL(plan8.handoff.directVehicleOptionUrl);
-  assert.equal(
-    directUrl8.pathname,
-    "/book/red-rocks-amphitheatre/private/van",
-  );
+  // 4c. Group of 12 (11+ guests -> Quote /contact)
+  const plan12 = evaluateRedRocksRidePlan({
+    show: RED_ROCKS_MIKE_NOV_14_SHOW,
+    staying: stayingSheraton,
+    partySize: 12,
+  });
 
-  // Verify field population audit
+  assert.equal(plan12.partySize, 12);
+  assert.equal(plan12.parrRecommendation.vehicleType, "quote");
+  assert.equal(plan12.parrRecommendation.publishedPriceUsd, null);
+  assert.equal(plan12.handoff.destinationKind, "group_quote");
+
+  const parrCard12 = plan12.comparisonCards.find(
+    (c) => c.modeId === "parr_private",
+  )!;
+  const url12 = new URL(parrCard12.ctaHref);
+  assert.equal(url12.origin, "https://www.partyatredrocks.com");
+  assert.equal(url12.pathname, "/contact");
+  assert.equal(url12.searchParams.get("artist"), "mike.");
+  assert.equal(url12.searchParams.get("date"), "2026-11-14");
+  assert.equal(url12.searchParams.get("event"), "rr-2026-11-14-mike");
+  assert.equal(url12.searchParams.get("src"), "dcc-red-rocks-ride-planner");
+  assert.equal(url12.searchParams.get("staying"), null);
+
+  // 4d. Handoff field audit in tests (verifying what populates on arrival vs entered in checkout)
   const artistAudit = plan8.handoff.fieldsAudit.find(
     (f) => f.queryParam === "artist",
   )!;
   const dateAudit = plan8.handoff.fieldsAudit.find(
     (f) => f.queryParam === "date",
   )!;
-  const qtyAudit = plan8.handoff.fieldsAudit.find(
-    (f) => f.queryParam === "qty",
+  const eventAudit = plan8.handoff.fieldsAudit.find(
+    (f) => f.queryParam === "event",
   )!;
-  const stayingAudit = plan8.handoff.fieldsAudit.find(
-    (f) => f.queryParam === "staying",
+  const pickupAudit = plan8.handoff.fieldsAudit.find((f) =>
+    f.field.includes("Pickup Location"),
   )!;
   assert.equal(artistAudit.populatesOnArrival, true);
   assert.equal(dateAudit.populatesOnArrival, true);
-  assert.equal(qtyAudit.populatesOnArrival, true);
-  assert.equal(stayingAudit.populatesOnArrival, false);
+  assert.equal(eventAudit.populatesOnArrival, true);
+  assert.equal(pickupAudit.populatesOnArrival, false);
 
-  // Verify separate event tracking for ride comparison vs provider click
+  // 4e. Separate event tracking with zero GPS coordinates or lodging details in analytics
   const cmpEvt6 = trackRedRocksRideComparison(plan6);
-  const clkEvt6 = trackRedRocksProviderClick(plan6, "private_overview");
+  const clkEvt6 = trackRedRocksProviderClick(plan6);
   const cmpEvt8 = trackRedRocksRideComparison(plan8);
-  const clkEvt8 = trackRedRocksProviderClick(plan8, "direct_vehicle_option");
+  const clkEvt8 = trackRedRocksProviderClick(plan8);
 
   assert.equal(cmpEvt6.eventName, "red_rocks_ride_comparison");
   assert.equal(clkEvt6.eventName, "red_rocks_provider_click");
   assert.notEqual(cmpEvt6.eventId, clkEvt6.eventId);
   assert.equal(cmpEvt6.partySize, 6);
+  assert.equal(cmpEvt6.recommendedVehicle, "suburban");
   assert.equal(cmpEvt6.publishedPriceUsd, 399);
-  assert.equal(clkEvt6.targetUrl, plan6.handoff.privateOverviewUrl);
+  assert.equal(clkEvt6.targetUrl, plan6.handoff.checkoutUrl);
 
   assert.equal(cmpEvt8.eventName, "red_rocks_ride_comparison");
   assert.equal(clkEvt8.eventName, "red_rocks_provider_click");
   assert.equal(cmpEvt8.partySize, 8);
+  assert.equal(cmpEvt8.recommendedVehicle, "van");
   assert.equal(cmpEvt8.publishedPriceUsd, 599);
-  assert.equal(clkEvt8.targetUrl, plan8.handoff.directVehicleOptionUrl);
+  assert.equal(clkEvt8.targetUrl, plan8.handoff.checkoutUrl);
 
   const recorded = getRecordedRedRocksPlannerEvents();
   assert.equal(recorded.length, 4);
+  for (const evt of recorded) {
+    const serialized = JSON.stringify(evt);
+    assert.doesNotMatch(
+      serialized,
+      /stayingLocation|stayingLat|stayingLng|Sheraton|1550|39\.7422|-104\.9892/i,
+    );
+  }
 });
+

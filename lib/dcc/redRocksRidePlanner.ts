@@ -241,6 +241,30 @@ function formatDateDisplay(ymd: string): string {
   });
 }
 
+export function hasIncomingRedRocksShowParams(params?: {
+  artist?: string | null;
+  date?: string | null;
+  event?: string | null;
+}): boolean {
+  const artistParam = params?.artist?.trim() || "";
+  const dateParam = params?.date?.trim() || "";
+  const eventParam = params?.event?.trim() || "";
+  return Boolean(artistParam || dateParam || eventParam);
+}
+
+export function resolveInitialRedRocksShow(params?: {
+  artist?: string | null;
+  date?: string | null;
+  event?: string | null;
+  doors?: string | null;
+  showtime?: string | null;
+}): RedRocksShowRecord | null {
+  if (!hasIncomingRedRocksShowParams(params)) {
+    return null;
+  }
+  return resolveRedRocksShow(params);
+}
+
 export function resolveRedRocksShow(params?: {
   artist?: string | null;
   date?: string | null;
@@ -308,8 +332,7 @@ export interface RedRocksRideComparisonCard {
   bullets: string[];
   ctaLabel: string;
   ctaHref: string;
-  secondaryCtaLabel?: string;
-  secondaryCtaHref?: string;
+  checkoutNote?: string;
   isExternalProviderHandoff: boolean;
 }
 
@@ -336,12 +359,12 @@ export interface RedRocksRidePlanEvaluation {
   };
   venueFacts: typeof RED_ROCKS_VENUE_FACTS;
   parrRecommendation: {
-    vehicleType: "suburban" | "van" | "multi_vehicle";
+    vehicleType: "suburban" | "van" | "quote";
     vehicleLabel: string;
-    publishedPriceUsd: number;
+    publishedPriceUsd: number | null;
     vehicleQty: number;
-    maxCapacityPerVehicle: number;
-    perPersonUsd: number;
+    maxCapacityPerVehicle: number | null;
+    perPersonUsd: number | null;
     subjectToAvailability: true;
     summary: string;
   };
@@ -351,8 +374,8 @@ export interface RedRocksRidePlanEvaluation {
     RedRocksRideComparisonCard,
   ];
   handoff: {
-    privateOverviewUrl: string;
-    directVehicleOptionUrl: string;
+    checkoutUrl: string;
+    destinationKind: "suburban_checkout" | "van_checkout" | "group_quote";
     selectedShowAndDatePopulatedOnArrival: true;
     fieldsAudit: RedRocksHandoffFieldAudit[];
     operatorContact: {
@@ -377,45 +400,50 @@ export function evaluateRedRocksRidePlan(input: {
     });
   const partySize = Math.max(1, Math.min(20, Math.round(input.partySize || 6)));
 
-  // Determine Party at Red Rocks private vehicle fit
-  const isSuburbanFit = partySize <= 6;
-  const isSingleVanFit = partySize > 6 && partySize <= 10;
-  const vehicleType: "suburban" | "van" | "multi_vehicle" = isSuburbanFit
+  // Determine Party at Red Rocks routing:
+  // 1-6 guests -> Suburban ($399)
+  // 7-10 guests -> Van ($599)
+  // 11+ guests -> Quote
+  const isSuburbanFit = partySize >= 1 && partySize <= 6;
+  const isSingleVanFit = partySize >= 7 && partySize <= 10;
+  const vehicleType: "suburban" | "van" | "quote" = isSuburbanFit
     ? "suburban"
     : isSingleVanFit
       ? "van"
-      : "multi_vehicle";
+      : "quote";
 
   const vehicleQty = partySize <= 10 ? 1 : Math.ceil(partySize / 10);
   const publishedPriceUsd = isSuburbanFit
     ? RED_ROCKS_VENUE_FACTS.parrSuburbanPriceUsd
     : isSingleVanFit
       ? RED_ROCKS_VENUE_FACTS.parrVanPriceUsd
-      : RED_ROCKS_VENUE_FACTS.parrVanPriceUsd * vehicleQty;
-  const maxCapacityPerVehicle = isSuburbanFit ? 6 : 10;
-  const perPersonUsd = Math.round((publishedPriceUsd / partySize) * 100) / 100;
+      : null;
+  const maxCapacityPerVehicle = isSuburbanFit ? 6 : isSingleVanFit ? 10 : null;
+  const perPersonUsd =
+    publishedPriceUsd !== null
+      ? Math.round((publishedPriceUsd / partySize) * 100) / 100
+      : null;
 
   const vehicleLabel = isSuburbanFit
     ? "Private Suburban (up to 6)"
     : isSingleVanFit
       ? "Private Van (up to 10)"
-      : `${vehicleQty} Private Vans (up to ${vehicleQty * 10})`;
+      : "Custom Multi-Vehicle Group Quote (11+ guests)";
 
-  const optionSlug = isSuburbanFit ? "suv" : "van";
+  const destinationKind: "suburban_checkout" | "van_checkout" | "group_quote" =
+    isSuburbanFit
+      ? "suburban_checkout"
+      : isSingleVanFit
+        ? "van_checkout"
+        : "group_quote";
 
-  // Build tracked handoff URLs to Party at Red Rocks
+  // Build tracked handoff URL to Party at Red Rocks carrying ONLY show, date, and referral attribution.
+  // Never include GPS coordinates or lodging details in outbound URLs.
   const buildHandoffParams = () => {
     const sp = new URLSearchParams();
     sp.set("artist", show.artist);
     sp.set("date", show.date);
     sp.set("event", show.eventId);
-    sp.set("qty", String(vehicleQty));
-    sp.set("partySize", String(partySize));
-    sp.set("guests", String(partySize));
-    sp.set("vehicle", isSuburbanFit ? "suburban" : "van");
-    sp.set("staying", staying.name);
-    sp.set("doors", show.venueDoorsLocal);
-    sp.set("showtime", show.venueShowtimeLocal);
     sp.set("src", "dcc-red-rocks-ride-planner");
     sp.set("utm_source", "destinationcommandcenter");
     sp.set("utm_medium", "referral");
@@ -424,8 +452,11 @@ export function evaluateRedRocksRidePlan(input: {
   };
 
   const queryString = buildHandoffParams();
-  const privateOverviewUrl = `https://www.partyatredrocks.com/book/red-rocks-amphitheatre/private?${queryString}`;
-  const directVehicleOptionUrl = `https://www.partyatredrocks.com/book/red-rocks-amphitheatre/private/${optionSlug}?${queryString}`;
+  const checkoutUrl = isSuburbanFit
+    ? `https://www.partyatredrocks.com/book/red-rocks-amphitheatre/private/suv?${queryString}`
+    : isSingleVanFit
+      ? `https://www.partyatredrocks.com/book/red-rocks-amphitheatre/private/van?${queryString}`
+      : `https://www.partyatredrocks.com/contact?${queryString}`;
 
   const fieldsAudit: RedRocksHandoffFieldAudit[] = [
     {
@@ -434,7 +465,7 @@ export function evaluateRedRocksRidePlan(input: {
       valueSent: show.artist,
       populatesOnArrival: true,
       behaviorOnPartyAtRedRocks:
-        'Populates the "Selected Night" banner on arrival (e.g. "mike. · Saturday, November 14, 2026") and attaches to Rezdy booking telemetry.',
+        'Populates the Selected Night / Quick ride selection banner on arrival (e.g. "mike." on Saturday, November 14, 2026) and attaches to booking telemetry.',
     },
     {
       field: "Concert Date",
@@ -442,15 +473,7 @@ export function evaluateRedRocksRidePlan(input: {
       valueSent: show.date,
       populatesOnArrival: true,
       behaviorOnPartyAtRedRocks:
-        'Populates the formatted date in the "Selected Night" banner on arrival and attaches to Rezdy booking telemetry.',
-    },
-    {
-      field: "Vehicle Quantity",
-      queryParam: "qty",
-      valueSent: String(vehicleQty),
-      populatesOnArrival: true,
-      behaviorOnPartyAtRedRocks:
-        "Populates vehicleQty on the Party at Red Rocks private booking page.",
+        "Populates the formatted date on arrival and attaches to booking telemetry.",
     },
     {
       field: "Event Identifier",
@@ -461,29 +484,35 @@ export function evaluateRedRocksRidePlan(input: {
         "Captured in the booking_opened analytics payload on arrival.",
     },
     {
-      field: "Group Size & Vehicle Tier",
-      queryParam: "partySize / guests / vehicle",
-      valueSent: `${partySize} guests (${isSuburbanFit ? "Suburban $399 up to 6" : "Van $599 up to 10"})`,
-      populatesOnArrival: false,
+      field: "Referral Attribution",
+      queryParam: "src / utm_source / utm_medium / utm_campaign",
+      valueSent: "dcc-red-rocks-ride-planner / destinationcommandcenter",
+      populatesOnArrival: true,
+      behaviorOnPartyAtRedRocks:
+        "Preserves referral attribution on arrival at Party at Red Rocks.",
+    },
+    {
+      field: "Vehicle Tier Route",
+      queryParam: "pathname",
+      valueSent: isSuburbanFit
+        ? "/book/red-rocks-amphitheatre/private/suv"
+        : isSingleVanFit
+          ? "/book/red-rocks-amphitheatre/private/van"
+          : "/contact",
+      populatesOnArrival: true,
       behaviorOnPartyAtRedRocks: isSuburbanFit
-        ? "The /private landing page displays Step 1: Private Suburban ($399 up to 6) by default; guest details are entered in the Rezdy checkout form."
-        : "The /private overview page highlights Step 1 ($399 Suburban) with a +$200 Van Upgrade link to /private/van ($599 up to 10). Using the direct /private/van link opens the $599 10-Passenger Van checkout directly.",
+        ? "Opens the Private Suburban Booking ($399 • Up to 6 guests) checkout directly."
+        : isSingleVanFit
+          ? "Opens the Upgrade to Private Van Booking ($599 • Up to 10 Guests) checkout directly."
+          : "Opens the Party at Red Rocks quote/contact page for groups of 11+.",
     },
     {
-      field: "Where the Group Is Staying (Pickup Location)",
-      queryParam: "staying",
-      valueSent: staying.name,
+      field: "Pickup Location & Lodging Details",
+      queryParam: "(omitted from URL)",
+      valueSent: "(not sent in URL or analytics)",
       populatesOnArrival: false,
       behaviorOnPartyAtRedRocks:
-        "Does not pre-fill a form input on arrival; enter your pickup address in the Rezdy checkout form and confirm pickup deadline with the operator.",
-    },
-    {
-      field: "Venue Show Time vs. Pickup Time",
-      queryParam: "doors / showtime",
-      valueSent: `Doors ${show.venueDoorsDisplay} · Showtime ${show.venueShowtimeDisplay}`,
-      populatesOnArrival: false,
-      behaviorOnPartyAtRedRocks:
-        "Show time and pickup time are kept separate. Confirm your exact pickup time and deadline directly with Party at Red Rocks.",
+        "Kept out of outbound URLs and analytics; the traveler enters pickup details in checkout.",
     },
   ];
 
@@ -559,39 +588,44 @@ export function evaluateRedRocksRidePlan(input: {
     modeId: "parr_private",
     title: "Party at Red Rocks — Private Tailgate & Ride",
     badge: isSuburbanFit
-      ? "Recommended for Up to 6 · Private Suburban"
-      : "Recommended for 7–10 · Private Van",
+      ? "1–6 Guests · Private Suburban"
+      : isSingleVanFit
+        ? "7–10 Guests · Private Van"
+        : "11+ Guests · Custom Group Quote",
     priceHeadline: isSuburbanFit
       ? "$399 Suburban (up to 6)"
       : isSingleVanFit
         ? "$599 Van (up to 10)"
-        : `$${publishedPriceUsd} (${vehicleQty} Vans)`,
-    perPersonLabel: `$${perPersonUsd.toFixed(2)}/person for ${partySize} guests · Subject to availability`,
+        : "Custom Quote (11+ Guests)",
+    perPersonLabel:
+      perPersonUsd !== null
+        ? `$${perPersonUsd.toFixed(2)}/person for ${partySize} guests · Subject to availability`
+        : `Multi-vehicle coordination for ${partySize} guests · Subject to availability`,
     availabilityNote:
       "Party at Red Rocks currently offers private rides and publishes $399 for a Suburban up to 6 and $599 for a van up to 10, subject to availability.",
     showTimeVsPickupNote: `Venue time: Doors ${show.venueDoorsDisplay} · Showtime ${show.venueShowtimeDisplay}${show.parrListingTimeDisplay ? ` (Party at Red Rocks listing shows ${show.parrListingTimeDisplay})` : ""}. Keep show time and pickup time separate—get any pickup deadline from the operator.`,
     postShowPickupSummary:
       "Dedicated private vehicle waits on-site through the encore, bypassing the general rideshare queue at Jurassic Lot by Entrance 2.",
     overnightOrLotRule:
-      "Includes private pickup from where your group is staying, pre-show tailgate time, cooler storage during the show, and direct ride home.",
+      "Includes private pickup, pre-show tailgate time, cooler storage during the show, and direct ride home. Enter your pickup details in checkout.",
     groupFitSummary: isSuburbanFit
-      ? `Your group of ${partySize} fits in 1 Private Suburban ($399 up to 6, subject to availability).`
+      ? `Your group of ${partySize} goes straight to the Private Suburban checkout ($399 up to 6, subject to availability).`
       : isSingleVanFit
-        ? `Your group of ${partySize} exceeds the 6-seat Suburban limit and fits in 1 Private Van ($599 up to 10, subject to availability).`
-        : `Your group of ${partySize} requires ${vehicleQty} private vehicles (subject to availability).`,
+        ? `Your group of ${partySize} goes straight to the Private Van checkout ($599 up to 10, subject to availability).`
+        : `Groups of 11+ exceed a single 10-passenger van and go to a custom multi-vehicle quote.`,
     bullets: [
-      `Published rate: ${isSuburbanFit ? "$399 for a Suburban up to 6" : "$599 for a van up to 10"}, subject to availability ($399 Suburban up to 6 / $599 van up to 10).`,
+      "Published rates: $399 for a Suburban up to 6 and $599 for a van up to 10, subject to availability.",
       `Show time (Doors ${show.venueDoorsDisplay} · Showtime ${show.venueShowtimeDisplay}) and pickup time are separate—get any pickup deadline from the operator.`,
-      `Handoff carries ${show.artist} (${show.date}) into Party at Red Rocks' Selected Night banner.`,
+      `Carries ${show.artist} (${show.date}) into checkout. Enter pickup details in checkout.`,
     ],
     ctaLabel: isSuburbanFit
-      ? `Book Private Suburban ($399 up to 6) →`
-      : `Book Private Van ($599 up to 10) →`,
-    ctaHref: privateOverviewUrl,
-    secondaryCtaLabel: isSuburbanFit
-      ? "Open Direct Suburban Checkout (/private/suv) ↗"
-      : "Open Direct $599 Van Checkout (/private/van) ↗",
-    secondaryCtaHref: directVehicleOptionUrl,
+      ? "Book Private Suburban ($399 up to 6) →"
+      : isSingleVanFit
+        ? "Book Private Van ($599 up to 10) →"
+        : "Request Group Quote (11+ Guests) →",
+    ctaHref: checkoutUrl,
+    checkoutNote:
+      "Carries your selected show and date into Party at Red Rocks. Enter your pickup details in checkout.",
     isExternalProviderHandoff: true,
   };
 
@@ -617,12 +651,15 @@ export function evaluateRedRocksRidePlan(input: {
       maxCapacityPerVehicle,
       perPersonUsd,
       subjectToAvailability: true,
-      summary: `Party at Red Rocks currently offers private rides and publishes $399 for a Suburban up to 6 and $599 for a van up to 10, subject to availability. For ${partySize} guests staying near ${staying.name}, ${vehicleLabel} is $${publishedPriceUsd} ($${perPersonUsd.toFixed(2)}/person).`,
+      summary:
+        publishedPriceUsd !== null && perPersonUsd !== null
+          ? `Party at Red Rocks currently offers private rides and publishes $399 for a Suburban up to 6 and $599 for a van up to 10, subject to availability. For ${partySize} guests, ${vehicleLabel} is $${publishedPriceUsd} ($${perPersonUsd.toFixed(2)}/person).`
+          : `Party at Red Rocks currently offers private rides and publishes $399 for a Suburban up to 6 and $599 for a van up to 10, subject to availability. Groups of ${partySize} require a custom multi-vehicle quote.`,
     },
     comparisonCards: [parkingCard, rideshareCard, parrCard],
     handoff: {
-      privateOverviewUrl,
-      directVehicleOptionUrl,
+      checkoutUrl,
+      destinationKind,
       selectedShowAndDatePopulatedOnArrival: true,
       fieldsAudit,
       operatorContact: {
@@ -636,6 +673,7 @@ export function evaluateRedRocksRidePlan(input: {
 
 // ============================================================================
 // Separate Event Tracking for Ride Comparison vs. Provider Click
+// (Sanitized: NO precise GPS coordinates or lodging details in analytics)
 // ============================================================================
 
 export type RedRocksPlannerTelemetryEventName =
@@ -651,15 +689,10 @@ export interface RedRocksPlannerTelemetryEvent {
   showEventId: string;
   venueDoors: string;
   venueShowtime: string;
-  stayingLocation: string;
-  stayingLat: number;
-  stayingLng: number;
-  straightLineMiles: number;
   partySize: number;
-  recommendedVehicle: "suburban" | "van" | "multi_vehicle";
-  publishedPriceUsd: number;
+  recommendedVehicle: "suburban" | "van" | "quote";
+  publishedPriceUsd: number | null;
   targetUrl?: string;
-  targetSurface?: "private_overview" | "direct_vehicle_option";
 }
 
 const plannerTelemetryRingBuffer: RedRocksPlannerTelemetryEvent[] = [];
@@ -694,13 +727,12 @@ function dispatchBrowserAnalytics(event: RedRocksPlannerTelemetryEvent): void {
         body: JSON.stringify({
           event: "red_rocks_provider_click",
           page: "/red-rocks",
-          cta: event.targetSurface || "private_overview",
+          cta: event.recommendedVehicle,
           destinationUrl: event.targetUrl || "",
           timestamp: event.timestampIso,
           artist: event.artist,
           date: event.date,
           partySize: event.partySize,
-          stayingLocation: event.stayingLocation,
           recommendedVehicle: event.recommendedVehicle,
           publishedPriceUsd: event.publishedPriceUsd,
         }),
@@ -724,10 +756,6 @@ export function trackRedRocksRideComparison(
     showEventId: plan.show.eventId,
     venueDoors: plan.show.venueDoorsDisplay,
     venueShowtime: plan.show.venueShowtimeDisplay,
-    stayingLocation: plan.staying.name,
-    stayingLat: plan.staying.lat,
-    stayingLng: plan.staying.lng,
-    straightLineMiles: plan.staying.straightLineMilesToRedRocks,
     partySize: plan.partySize,
     recommendedVehicle: plan.parrRecommendation.vehicleType,
     publishedPriceUsd: plan.parrRecommendation.publishedPriceUsd,
@@ -742,13 +770,7 @@ export function trackRedRocksRideComparison(
 
 export function trackRedRocksProviderClick(
   plan: RedRocksRidePlanEvaluation,
-  targetSurface: "private_overview" | "direct_vehicle_option" = "private_overview",
 ): RedRocksPlannerTelemetryEvent {
-  const targetUrl =
-    targetSurface === "direct_vehicle_option"
-      ? plan.handoff.directVehicleOptionUrl
-      : plan.handoff.privateOverviewUrl;
-
   const evt: RedRocksPlannerTelemetryEvent = {
     eventId: `rr_clk_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
     eventName: "red_rocks_provider_click",
@@ -758,15 +780,10 @@ export function trackRedRocksProviderClick(
     showEventId: plan.show.eventId,
     venueDoors: plan.show.venueDoorsDisplay,
     venueShowtime: plan.show.venueShowtimeDisplay,
-    stayingLocation: plan.staying.name,
-    stayingLat: plan.staying.lat,
-    stayingLng: plan.staying.lng,
-    straightLineMiles: plan.staying.straightLineMilesToRedRocks,
     partySize: plan.partySize,
     recommendedVehicle: plan.parrRecommendation.vehicleType,
     publishedPriceUsd: plan.parrRecommendation.publishedPriceUsd,
-    targetUrl,
-    targetSurface,
+    targetUrl: plan.handoff.checkoutUrl,
   };
   plannerTelemetryRingBuffer.push(evt);
   if (plannerTelemetryRingBuffer.length > 200) {
@@ -775,3 +792,4 @@ export function trackRedRocksProviderClick(
   dispatchBrowserAnalytics(evt);
   return evt;
 }
+
