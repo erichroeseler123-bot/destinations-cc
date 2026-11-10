@@ -196,18 +196,20 @@ export default function VailBusCatchChecker({
           onClick={() =>
             applyPreset({
               arrivalDate: "2026-11-26",
-              arrivalTime: "15:10",
-              luggage: "skis_and_checked",
+              arrivalTime: "16:05",
+              luggage: "skis_and_personal",
               baggageEstimateMinutes: 45,
             })
           }
           className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
-            arrivalDate === "2026-11-26"
+            arrivalDate === "2026-11-26" &&
+            arrivalTime === "16:05" &&
+            luggage === "skis_and_personal"
               ? "border-cyan-400 bg-cyan-500/20 text-cyan-100"
               : "border-white/15 bg-white/[0.04] text-zinc-300 hover:bg-white/10"
           }`}
         >
-          Thanksgiving (Nov. 26)
+          Thanksgiving · 4:05 p.m. (Pegasus unavailable)
         </button>
         <button
           type="button"
@@ -215,18 +217,41 @@ export default function VailBusCatchChecker({
           onClick={() =>
             applyPreset({
               arrivalDate: "2026-12-25",
-              arrivalTime: "15:10",
+              arrivalTime: "16:05",
+              luggage: "skis_and_personal",
+              baggageEstimateMinutes: 45,
+            })
+          }
+          className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
+            arrivalDate === "2026-12-25" &&
+            arrivalTime === "16:05" &&
+            luggage === "skis_and_personal"
+              ? "border-cyan-400 bg-cyan-500/20 text-cyan-100"
+              : "border-white/15 bg-white/[0.04] text-zinc-300 hover:bg-white/10"
+          }`}
+        >
+          Christmas · 4:05 p.m. (Pegasus unavailable)
+        </button>
+        <button
+          type="button"
+          data-testid="preset-christmas-1300-west-1630"
+          onClick={() =>
+            applyPreset({
+              arrivalDate: "2026-12-25",
+              arrivalTime: "13:00",
               luggage: "skis_and_checked",
               baggageEstimateMinutes: 45,
             })
           }
           className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
-            arrivalDate === "2026-12-25"
-              ? "border-cyan-400 bg-cyan-500/20 text-cyan-100"
+            arrivalDate === "2026-12-25" &&
+            arrivalTime === "13:00" &&
+            luggage === "skis_and_checked"
+              ? "border-emerald-400 bg-emerald-500/20 text-emerald-100"
               : "border-white/15 bg-white/[0.04] text-zinc-300 hover:bg-white/10"
           }`}
         >
-          Christmas (Dec. 25)
+          Christmas · 1:00 p.m. (4:30 p.m. West Line)
         </button>
         <button
           type="button"
@@ -429,7 +454,7 @@ export default function VailBusCatchChecker({
             Pegasus:{" "}
             <strong>
               {pegaCal.inFeedWindow
-                ? pegaCal.activeRouteServiceIds.join("+") || "none"
+                ? pegaCal.activeRouteServiceIds.join("+") || "unavailable"
                 : "out of window"}
             </strong>
             {pegaCal.holidayExceptionSummary

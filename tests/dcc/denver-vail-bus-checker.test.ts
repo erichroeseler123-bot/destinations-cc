@@ -83,83 +83,88 @@ describe("DEN -> Union Station -> Vail bus catch checker", () => {
     assert.ok(!res.gosnoAvailabilityUrl.includes("skiBags="));
   });
 
-  it("applies RTD, Bustang West Line, and Pegasus service calendars and holiday exceptions separately on Thanksgiving (2026-11-26), Christmas (2026-12-25), and New Year's Day (2027-01-01)", () => {
-    // 1. Thanksgiving (Thursday 2026-11-26)
-    const thanksgiving = evaluateDenverVailBusCheck({
+  it("reconciles Bustang GTFS with published holiday schedules on Thanksgiving (2026-11-26), Christmas (2026-12-25), and New Year's Day (2027-01-01)", () => {
+    // 1. Thanksgiving (2026-11-26): 4:05 p.m. landing with skis + compact bag -> Pegasus unavailable, verdict misses
+    const thanksgiving1605 = evaluateDenverVailBusCheck({
       arrivalDate: "2026-11-26",
-      arrivalTime: "15:10",
-      luggage: "skis_and_checked",
+      arrivalTime: "16:05",
+      luggage: "skis_and_personal",
     });
-    assert.equal(thanksgiving.scheduleStatusLabel, "scheduled");
-    assert.equal(thanksgiving.verdict, "fits");
+    assert.equal(thanksgiving1605.scheduleStatusLabel, "scheduled");
+    assert.equal(thanksgiving1605.verdict, "misses");
+    assert.equal(thanksgiving1605.missReason, "arrives_after_last_bus");
+    assert.equal(thanksgiving1605.pegasusConnection, null);
+    assert.equal(thanksgiving1605.serviceCalendars.pegasus.trips.length, 0);
     assert.deepEqual(
-      thanksgiving.serviceCalendars.rtdALine.removedExceptionServiceIds,
+      thanksgiving1605.serviceCalendars.pegasus.activeRouteServiceIds,
+      [],
+    );
+    assert.equal(
+      thanksgiving1605.serviceCalendars.pegasus.sourcedHolidayOverride?.mode,
+      "no_holiday_service",
+    );
+    assert.equal(
+      thanksgiving1605.serviceCalendars.bustangWest.trips.length,
+      10,
+    );
+    assert.deepEqual(
+      thanksgiving1605.serviceCalendars.rtdALine.removedExceptionServiceIds,
       ["MT", "P_Fri", "WK"],
     );
     assert.deepEqual(
-      thanksgiving.serviceCalendars.rtdALine.addedExceptionServiceIds,
+      thanksgiving1605.serviceCalendars.rtdALine.addedExceptionServiceIds,
       ["SU"],
     );
-    assert.deepEqual(
-      thanksgiving.serviceCalendars.rtdALine.activeRouteServiceIds,
-      ["SU"],
-    );
-    assert.deepEqual(
-      thanksgiving.serviceCalendars.bustangWest.removedExceptionServiceIds,
-      ["WK"],
-    );
-    assert.deepEqual(
-      thanksgiving.serviceCalendars.bustangWest.addedExceptionServiceIds,
-      ["SU"],
-    );
-    assert.deepEqual(
-      thanksgiving.serviceCalendars.bustangWest.activeRouteServiceIds,
-      ["SU"],
-    );
-    assert.deepEqual(
-      thanksgiving.serviceCalendars.pegasus.removedExceptionServiceIds,
-      ["WK"],
-    );
-    assert.deepEqual(
-      thanksgiving.serviceCalendars.pegasus.addedExceptionServiceIds,
-      ["SU"],
-    );
-    // Sunday trip IDs on Thanksgiving instead of weekday MT/WK trip IDs
-    assert.equal(thanksgiving.aLineTrain?.tripId, "115891073");
-    assert.equal(thanksgiving.bustangWestConnection?.tripId, "116053701");
 
-    // 2. Christmas (Friday 2026-12-25)
-    const christmas = evaluateDenverVailBusCheck({
+    // 2. Christmas (2026-12-25): 4:05 p.m. landing with skis + compact bag -> Pegasus unavailable, verdict misses
+    const christmas1605 = evaluateDenverVailBusCheck({
       arrivalDate: "2026-12-25",
       arrivalTime: "16:05",
       luggage: "skis_and_personal",
     });
-    assert.equal(christmas.scheduleStatusLabel, "scheduled");
-    assert.equal(christmas.verdict, "fits_pegasus_only");
+    assert.equal(christmas1605.scheduleStatusLabel, "scheduled");
+    assert.equal(christmas1605.verdict, "misses");
+    assert.equal(christmas1605.missReason, "arrives_after_last_bus");
+    assert.equal(christmas1605.pegasusConnection, null);
+    assert.equal(christmas1605.serviceCalendars.pegasus.trips.length, 0);
     assert.deepEqual(
-      christmas.serviceCalendars.rtdALine.removedExceptionServiceIds,
+      christmas1605.serviceCalendars.pegasus.activeRouteServiceIds,
+      [],
+    );
+    assert.equal(
+      christmas1605.serviceCalendars.pegasus.sourcedHolidayOverride?.mode,
+      "no_holiday_service",
+    );
+    assert.deepEqual(
+      christmas1605.serviceCalendars.rtdALine.removedExceptionServiceIds,
       ["FR", "P_Fri", "WK"],
     );
     assert.deepEqual(
-      christmas.serviceCalendars.rtdALine.addedExceptionServiceIds,
+      christmas1605.serviceCalendars.rtdALine.addedExceptionServiceIds,
       ["SU"],
     );
-    assert.deepEqual(
-      christmas.serviceCalendars.bustangWest.removedExceptionServiceIds,
-      ["WK"],
-    );
-    assert.deepEqual(
-      christmas.serviceCalendars.pegasus.removedExceptionServiceIds,
-      ["P_Fri", "WK"],
-    );
-    assert.deepEqual(
-      christmas.serviceCalendars.pegasus.addedExceptionServiceIds,
-      ["SU"],
-    );
-    assert.equal(christmas.pegasusConnection?.trip.serviceId, "SU");
-    assert.equal(christmas.pegasusConnection?.trip.tripId, "116053064");
 
-    // 3. New Year's Day (Friday 2027-01-01)
+    // 3. Christmas (2026-12-25): 1:00 p.m. landing with skis + checked suitcase -> West Line result is 4:30 p.m.
+    // (2:45 p.m. and 3:30 p.m. Sunday runs are excluded on Bustang's published Westbound - Holidays schedule)
+    const christmas1300 = evaluateDenverVailBusCheck({
+      arrivalDate: "2026-12-25",
+      arrivalTime: "13:00",
+      luggage: "skis_and_checked",
+    });
+    assert.equal(christmas1300.scheduleStatusLabel, "scheduled");
+    assert.equal(christmas1300.verdict, "fits");
+    assert.equal(christmas1300.denPlatformReadyTime12h, "1:45 p.m.");
+    assert.equal(christmas1300.aLineTrain?.dep12h, "1:57 p.m.");
+    assert.equal(christmas1300.aLineTrain?.arr12h, "2:34 p.m.");
+    assert.equal(christmas1300.bustangWestConnection?.dep12h, "4:30 p.m.");
+    assert.equal(christmas1300.bustangWestConnection?.dep24h, "16:30");
+    assert.equal(christmas1300.bustangWestConnection?.tripId, "116053703");
+    assert.equal(christmas1300.gateB19Transfer.minutes, 116);
+    assert.equal(christmas1300.scheduledVailArrival12h, "7:05 p.m.");
+    assert.equal(christmas1300.scheduledVailArrival24h, "19:05");
+    assert.equal(christmas1300.pegasusConnection, null);
+
+    // 4. New Year's Day (Friday 2027-01-01): uses GTFS SU schedule
     const newYearsDay = evaluateDenverVailBusCheck({
       arrivalDate: "2027-01-01",
       arrivalTime: "15:40",
@@ -186,7 +191,7 @@ describe("DEN -> Union Station -> Vail bus catch checker", () => {
       "https://gosno.co/vail?origin=DEN&destination=Vail&date=2027-01-01",
     );
 
-    // 4. Regular Friday (2026-12-18) uses FR for RTD, WK for Bustang West, and P_Fri+WK for Pegasus
+    // 5. Regular Friday (2026-12-18) uses FR for RTD, WK for Bustang West, and P_Fri+WK for Pegasus
     const regularFriday = evaluateDenverVailBusCheck({
       arrivalDate: "2026-12-18",
       arrivalTime: "13:10",

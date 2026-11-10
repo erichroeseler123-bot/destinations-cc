@@ -6,6 +6,10 @@ import {
   PEGASUS_SCHEDULE_BUNDLE,
   RTD_A_LINE_SCHEDULE_BUNDLE,
 } from "./denverVailGtfsScheduleData";
+import {
+  applySourcedHolidayOverrideToTrips,
+  type SourcedOperatorHolidayOverride,
+} from "./denverVailSourcedHolidayOverrides";
 
 export const DENVER_VAIL_GTFS_METADATA_PUBLIC = DENVER_VAIL_GTFS_METADATA;
 export const MIN_UNION_STATION_TRANSFER_MINUTES = 15;
@@ -110,6 +114,7 @@ export interface ResolvedOperatorSchedule {
   activeCalendarServiceIds: string[];
   activeRouteServiceIds: string[];
   holidayExceptionSummary: string | null;
+  sourcedHolidayOverride: SourcedOperatorHolidayOverride | null;
   trips: FormattedTripLeg[];
 }
 
@@ -274,6 +279,7 @@ export function resolveOperatorScheduleForDate(
     activeCalendarServiceIds: [],
     activeRouteServiceIds: [],
     holidayExceptionSummary: null,
+    sourcedHolidayOverride: null,
     trips: [],
   };
 
@@ -325,20 +331,33 @@ export function resolveOperatorScheduleForDate(
   }
 
   const activeCalendarServiceIds = [...activeSet];
-  const activeRouteServiceIds = activeCalendarServiceIds.filter(
+  const rawRouteServiceIds = activeCalendarServiceIds.filter(
     (svc) => (bundle.tripsByService[svc]?.length ?? 0) > 0,
   );
 
-  const rawTrips = activeRouteServiceIds.flatMap(
+  const rawTrips = rawRouteServiceIds.flatMap(
     (svc) => bundle.tripsByService[svc] ?? [],
   );
-  const trips = rawTrips
+
+  const { trips: reconciledRawTrips, override: sourcedHolidayOverride } =
+    applySourcedHolidayOverrideToTrips({
+      operatorId: bundle.operatorId,
+      arrivalDate,
+      rawTrips,
+    });
+
+  const activeRouteServiceIds =
+    sourcedHolidayOverride?.mode === "no_holiday_service"
+      ? []
+      : rawRouteServiceIds;
+
+  const trips = reconciledRawTrips
     .map((t) =>
       toFormattedLeg(t, originStopId, originStopName, destStopId, destStopName),
     )
     .sort((a, b) => a.depMin - b.depMin);
 
-  let holidayExceptionSummary: string | null = null;
+  const exceptionSummaryParts: string[] = [];
   if (
     addedExceptionServiceIds.length > 0 ||
     removedExceptionServiceIds.length > 0
@@ -350,8 +369,18 @@ export function resolveOperatorScheduleForDate(
     if (addedExceptionServiceIds.length > 0) {
       parts.push(`added ${addedExceptionServiceIds.join(", ")}`);
     }
-    holidayExceptionSummary = `calendar_dates.txt exception on ${arrivalDate}: ${parts.join("; ")}`;
+    exceptionSummaryParts.push(
+      `calendar_dates.txt exception on ${arrivalDate}: ${parts.join("; ")}`,
+    );
   }
+  if (sourcedHolidayOverride) {
+    exceptionSummaryParts.push(sourcedHolidayOverride.reconciliationSummary);
+  }
+
+  const holidayExceptionSummary =
+    exceptionSummaryParts.length > 0
+      ? exceptionSummaryParts.join(" · ")
+      : null;
 
   return {
     operatorId: bundle.operatorId,
@@ -367,6 +396,7 @@ export function resolveOperatorScheduleForDate(
     activeCalendarServiceIds,
     activeRouteServiceIds,
     holidayExceptionSummary,
+    sourcedHolidayOverride,
     trips,
   };
 }
@@ -612,8 +642,8 @@ export function evaluateDenverVailBusCheck(
     verdictBadge = "Fits (scheduled)";
     scheduledVailArrival12h = matchingWestTrip.arr12h;
     scheduledVailArrival24h = matchingWestTrip.arr24h;
-    scheduledVailArrivalRouteLabel = `CDOT Bustang West Line (trip ${matchingWestTrip.tripId})`;
-    verdictSummary = `${arrivalTime12h} landing reaches DEN Station (#34476) by ${denPlatformReadyTime12h}, boards the ${aLineTrain.dep12h} A Line to Union Station Track 1 (${aLineTrain.arr12h}), leaves ${rawTransferToReferenceMin} minutes to transfer to Gate B19 (≥ ${MIN_UNION_STATION_TRANSFER_MINUTES}-minute minimum), and arrives in Vail at ${matchingWestTrip.arr12h}.`;
+    scheduledVailArrivalRouteLabel = `CDOT Bustang West Line (${matchingWestTrip.dep12h} from Gate B19 · trip ${matchingWestTrip.tripId})`;
+    verdictSummary = `${arrivalTime12h} landing reaches DEN Station (#34476) by ${denPlatformReadyTime12h}, boards the ${aLineTrain.dep12h} A Line to Union Station Track 1 (${aLineTrain.arr12h}), leaves ${rawTransferToReferenceMin} minutes to transfer to Gate B19 (≥ ${MIN_UNION_STATION_TRANSFER_MINUTES}-minute minimum) for the ${matchingWestTrip.dep12h} Bustang West Line, and arrives in Vail at ${matchingWestTrip.arr12h}.`;
   } else if (pegasusConnection && aLineTrain) {
     verdict = "fits_pegasus_only";
     verdictBadge = "Fits via Pegasus (scheduled)";
@@ -640,7 +670,12 @@ export function evaluateDenverVailBusCheck(
       missReason = "arrives_after_last_bus";
       const minutesAfter = Math.abs(rawTransferToReferenceMin);
       verdictBadge = "Misses last bus (scheduled)";
-      verdictSummary = `${arrivalTime12h} landing reaches DEN Station (#34476) at ${denPlatformReadyTime12h}. The earliest reachable A Line (${aLineTrain.dep12h}) arrives at Union Station Track 1 at ${aLineTrain.arr12h}—${minutesAfter} minutes after the last ${lastBustangWestTrip.dep12h} Bustang West Line has departed Gate B19.`;
+      const pegasusHolidayNote =
+        luggageSpec.pegasusAllowed &&
+        resolved.pegasus.sourcedHolidayOverride?.mode === "no_holiday_service"
+          ? ` CDOT Pegasus is unavailable on ${resolved.pegasus.sourcedHolidayOverride.holidayName} per Bustang's published schedule.`
+          : "";
+      verdictSummary = `${arrivalTime12h} landing reaches DEN Station (#34476) at ${denPlatformReadyTime12h}. The earliest reachable A Line (${aLineTrain.dep12h}) arrives at Union Station Track 1 at ${aLineTrain.arr12h}—${minutesAfter} minutes after the last ${lastBustangWestTrip.dep12h} Bustang West Line has departed Gate B19.${pegasusHolidayNote}`;
     } else {
       missReason = "after_last_a_line";
       verdictBadge = "Misses last bus (scheduled)";
@@ -658,11 +693,24 @@ export function evaluateDenverVailBusCheck(
       ? ` (${resolved.bustangWest.holidayExceptionSummary})`
       : ""
   }`;
-  const pegaSvcLabel = `${resolved.pegasus.activeRouteServiceIds.join("+") || "none"}${
+  const pegaSvcLabel = `${resolved.pegasus.activeRouteServiceIds.join("+") || "no service"}${
     resolved.pegasus.holidayExceptionSummary
       ? ` (${resolved.pegasus.holidayExceptionSummary})`
       : ""
   }`;
+
+  const bustangAssumptionText = matchingWestTrip
+    ? `Bustang West Line calendar (${westSvcLabel}, matched coach trip ${matchingWestTrip.tripId}): departs Union Station Gate B19 (#34316) at ${matchingWestTrip.dep12h} (${matchingWestTrip.dep24h}) → arrives Vail Transportation Center (#35174) at ${matchingWestTrip.arr12h} (${matchingWestTrip.arr24h}); last coach of the day departs at ${lastBustangWestTrip?.dep12h ?? "5:15 p.m."}.`
+    : `Bustang West Line calendar (${westSvcLabel}, last coach trip ${lastBustangWestTrip?.tripId ?? "N/A"}): departs Union Station Gate B19 (#34316) at ${lastBustangWestTrip?.dep12h ?? "5:15 p.m."} (${lastBustangWestTrip?.dep24h ?? "17:15"}) → arrives Vail Transportation Center (#35174) at ${lastBustangWestTrip?.arr12h ?? "7:35 p.m."} (${lastBustangWestTrip?.arr24h ?? "19:35"}).`;
+
+  const pegasusAssumptionText =
+    resolved.pegasus.sourcedHolidayOverride?.mode === "no_holiday_service"
+      ? `CDOT Pegasus calendar (${pegaSvcLabel}): unavailable on ${resolved.pegasus.sourcedHolidayOverride.holidayName} (${resolved.pegasus.sourcedHolidayOverride.sourceUrl}).`
+      : luggageSpec.pegasusAllowed
+        ? pegasusConnection
+          ? `CDOT Pegasus calendar (${pegaSvcLabel}, trip ${pegasusConnection.trip.tripId}): shown because ${luggageSpec.shortLabel} meets Pegasus's ≤ 16"×16"×12" personal-item rule and the ${pegasusConnection.trip.dep12h} departure from Wewatta St & 17th St (#34385) has a ${pegasusConnection.transferMinutes}-minute transfer (≥ ${MIN_UNION_STATION_TRANSFER_MINUTES} min).`
+          : `CDOT Pegasus calendar (${pegaSvcLabel}): luggage rules fit (${luggageSpec.shortLabel}), but no Pegasus departure has ≥ ${MIN_UNION_STATION_TRANSFER_MINUTES} minutes after A Line arrival.`
+        : `CDOT Pegasus calendar (${pegaSvcLabel}, 7:30 p.m. from Wewatta St & 17th St #34385): hidden/excluded because ${luggageSpec.shortLabel} includes a full-size checked suitcase exceeding Pegasus's 16"×16"×12" under-seat limit.`;
 
   const assumptions: string[] = [
     `DEN touchdown to A Line platform (#34476): ${rawEstimate} min ${isCustomBaggageEstimate ? "(custom estimate)" : `(default for ${luggageSpec.shortLabel}: ${luggageSpec.baggageBreakdownLabel})`} → ready at ${denPlatformReadyTime12h} (${denPlatformReadyTime24h}).`,
@@ -670,12 +718,8 @@ export function evaluateDenverVailBusCheck(
       ? `RTD A Line calendar (${rtdSvcLabel}, trip ${aLineTrain.tripId}): departs Denver Airport Station (#34476) at ${aLineTrain.dep12h} (${aLineTrain.dep24h}) → arrives Union Station Track 1 (#34667) at ${aLineTrain.arr12h} (${aLineTrain.arr24h}, 37 min scheduled).`
       : `RTD A Line calendar (${rtdSvcLabel}): no remaining departure before the final Vail bus connection.`,
     `Union Station transfer rule: ${MIN_UNION_STATION_TRANSFER_MINUTES}-minute minimum applied consistently (${UNION_STATION_TRACK1_TO_B19_WALK_MINUTES} min walk from Track 1 #34667 to Underground Bus Concourse Gate B19 #34316 + ${BUSTANG_COACH_BAY_LOADING_CUTOFF_MINUTES} min under-coach ski/luggage bay loading cutoff).`,
-    `Bustang West Line calendar (${westSvcLabel}, last coach trip ${lastBustangWestTrip?.tripId ?? "N/A"}): departs Union Station Gate B19 (#34316) at ${lastBustangWestTrip?.dep12h ?? "5:15 p.m."} (${lastBustangWestTrip?.dep24h ?? "17:15"}) → arrives Vail Transportation Center (#35174) at ${lastBustangWestTrip?.arr12h ?? "7:35 p.m."} (${lastBustangWestTrip?.arr24h ?? "19:35"}).`,
-    luggageSpec.pegasusAllowed
-      ? pegasusConnection
-        ? `CDOT Pegasus calendar (${pegaSvcLabel}, trip ${pegasusConnection.trip.tripId}): shown because ${luggageSpec.shortLabel} meets Pegasus's ≤ 16"×16"×12" personal-item rule and the ${pegasusConnection.trip.dep12h} departure from Wewatta St & 17th St (#34385) has a ${pegasusConnection.transferMinutes}-minute transfer (≥ ${MIN_UNION_STATION_TRANSFER_MINUTES} min).`
-        : `CDOT Pegasus calendar (${pegaSvcLabel}): luggage rules fit (${luggageSpec.shortLabel}), but no Pegasus departure has ≥ ${MIN_UNION_STATION_TRANSFER_MINUTES} minutes after A Line arrival.`
-      : `CDOT Pegasus calendar (${pegaSvcLabel}, 7:30 p.m. from Wewatta St & 17th St #34385): hidden/excluded because ${luggageSpec.shortLabel} includes a full-size checked suitcase exceeding Pegasus's 16"×16"×12" under-seat limit.`,
+    bustangAssumptionText,
+    pegasusAssumptionText,
   ];
 
   return {
