@@ -86,9 +86,9 @@ export default async function AdminLayout({ children }: { children: ReactNode })
               Command View
             </Link>
           </div>
-          <Link href="/admin/logout" className="shrink-0 text-zinc-200 hover:text-white">
+          <a href="/admin/logout" className="shrink-0 text-zinc-200 hover:text-white">
             Log out
-          </Link>
+          </a>
         </div>
       </div>
       <PortfolioVisitLoader />

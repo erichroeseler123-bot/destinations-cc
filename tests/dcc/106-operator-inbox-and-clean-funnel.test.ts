@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { NextRequest } from "next/server";
 import { ADMIN_SESSION_COOKIE, buildAdminSessionValue } from "@/lib/adminAccess";
+import { GET as adminLogoutGet } from "@/app/admin/logout/route";
 import {
   buildUnifiedPortfolioFunnelReport,
   isSyntheticSeedOrderRef,
@@ -552,4 +554,23 @@ test("106e. Clean Funnel Telemetry excludes synthetic GOSNO-WP-OUT-1001 ($349), 
   });
   assert.equal(reportWithReal.totals.ownedGrossSalesUsd, 449);
   assert.equal(reportWithReal.totals.confirmedBookingsCount, 1);
+});
+
+test("106f. /admin/logout ignores Next.js RSC/link prefetch requests so unlocking /admin/inbox never self-invalidates session", async () => {
+  const prefetchRes = await adminLogoutGet(
+    new NextRequest("https://destinationcommandcenter.com/admin/logout?_rsc=abc12", {
+      headers: { "next-router-prefetch": "1" },
+    }),
+  );
+  assert.equal(prefetchRes.status, 204);
+  assert.equal(prefetchRes.headers.get("set-cookie"), null);
+
+  const realLogoutRes = await adminLogoutGet(
+    new NextRequest("https://destinationcommandcenter.com/admin/logout"),
+  );
+  assert.equal(realLogoutRes.status, 307);
+  assert.match(
+    realLogoutRes.headers.get("set-cookie") || "",
+    new RegExp(`${ADMIN_SESSION_COOKIE}=;.*Max-Age=0`),
+  );
 });
