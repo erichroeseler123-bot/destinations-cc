@@ -1408,15 +1408,15 @@ export interface RedRocksRideHomeRecheckResult {
     eventName: string;
     encoreCutoffLocal: string;
     shuttleFinalDepartureLocal: string;
-    overnightVehicleRemovalRuleLocal: "02:00";
+    overnightVehicleRemovalRuleLocal: "10:00";
     partySize: number;
     pickupPreference: "private_tailgate_and_ride" | "shared_shuttle" | "rideshare_comparison";
   };
   venuePickupRules: {
     upperNorthAndTopCircleRideshareProhibited: true;
-    rideshareGeofenceLot: "Jurassic Lot (Entrance 4 on CO-93)";
+    rideshareGeofenceLot: "Jurassic Lot by Entrance 2";
     sharedShuttleDepartureRule: "Departs 30 minutes after final encore";
-    overnightVehicleDeadline: "2:00 AM following concert nights";
+    overnightVehicleDeadline: "Before 10:00 a.m. the next day";
   };
   recheckCard: CompactTripRecheckCardModel;
 }
@@ -1427,44 +1427,32 @@ export function evaluateRedRocksRideHomeRecheck(
   const date =
     raw.date && /^\d{4}-\d{2}-\d{2}$/.test(raw.date.trim())
       ? raw.date.trim()
-      : "2026-07-18";
+      : "2026-11-14";
   const eventName = raw.eventName?.trim() || "Red Rocks Headline Concert";
   const encoreCutoffLocal = raw.encoreCutoffLocal?.trim() || "23:15";
-  const partySize = Math.max(1, Math.round(raw.partySize || 4));
+  const partySize = Math.max(1, Math.round(raw.partySize || 6));
   const pickupPreference =
-    raw.pickupPreference ||
-    (partySize >= 5 ? "private_tailgate_and_ride" : "shared_shuttle");
+    raw.pickupPreference || "private_tailgate_and_ride";
 
   const encoreMins = parseClockMinutesSimple(encoreCutoffLocal);
   const shuttleFinalDepartureLocal = formatClockMinutesSimple(encoreMins + 30);
 
-  const isPrivatePreferred =
-    pickupPreference === "private_tailgate_and_ride" || partySize >= 6;
+  const primaryHref = `https://www.partyatredrocks.com/book/red-rocks-amphitheatre/private?date=${encodeURIComponent(date)}&guests=${partySize}&partySize=${partySize}&event=${encodeURIComponent(eventName)}&encore_cutoff=${encodeURIComponent(encoreCutoffLocal)}&src=dcc-red-rocks-recheck`;
 
-  const primaryHref = isPrivatePreferred
-    ? `https://www.partyatredrocks.com/book/red-rocks-amphitheatre/private?date=${encodeURIComponent(date)}&guests=${partySize}&event=${encodeURIComponent(eventName)}&encore_cutoff=${encodeURIComponent(encoreCutoffLocal)}&src=dcc-red-rocks-recheck`
-    : `https://www.partyatredrocks.com/book/red-rocks-amphitheatre/custom/shared?date=${encodeURIComponent(date)}&guests=${partySize}&event=${encodeURIComponent(eventName)}&encore_cutoff=${encodeURIComponent(encoreCutoffLocal)}&src=dcc-red-rocks-recheck`;
+  const secondaryHref = `/red-rocks?date=${encodeURIComponent(date)}&partySize=${partySize}#ride-planner`;
 
-  const secondaryHref = isPrivatePreferred
-    ? `https://www.partyatredrocks.com/book/red-rocks-amphitheatre/custom/shared?date=${encodeURIComponent(date)}&guests=${partySize}&event=${encodeURIComponent(eventName)}&src=dcc-red-rocks-recheck`
-    : `https://www.partyatredrocks.com/book/red-rocks-amphitheatre/private?date=${encodeURIComponent(date)}&guests=${partySize}&event=${encodeURIComponent(eventName)}&src=dcc-red-rocks-recheck`;
-
-  const whatChanged = `Event departure window for ${eventName} (${date}): encore ends ~${encoreCutoffLocal} MT; shared shuttle boarding closes at ${shuttleFinalDepartureLocal} MT (+30 min post-encore). Upper North & Top Circle are closed to Uber/Lyft pickups (all rideshares geofenced to Jurassic Lot on Hwy 93).`;
+  const whatChanged = `Event departure window for ${eventName} (${date}): encore ends ~${encoreCutoffLocal} MT. The venue puts general post-show pickup at Jurassic Lot by Entrance 2 (Upper North & Top Circle are closed to Uber/Lyft pickups) and states that overnight vehicles should be moved before 10:00 a.m. the next day.`;
 
   const whatStillFits =
     partySize <= 6
-      ? `Party at Red Rocks Private SUV Tailgate & Ride ($499 up to 6 guests), Private 14-Pax Sprinter ($599), and $65/person round-trip concert shuttle (departing by ${shuttleFinalDepartureLocal} MT) all fit your group of ${partySize}.`
-      : partySize <= 14
-        ? `Party at Red Rocks Private 14-Pax Sprinter Tailgate & Ride ($599 flat) and $65/person round-trip shuttle fit your group of ${partySize} (exceeds 6-seat SUV limit).`
-        : `For ${partySize} guests, book multiple Party at Red Rocks vehicles or per-seat $65 round-trip shuttles before the ${shuttleFinalDepartureLocal} MT post-encore cutoff.`;
+      ? `Party at Red Rocks currently offers private rides and publishes $399 for a Suburban up to 6 and $599 for a van up to 10, subject to availability. A $399 Suburban fits your group of ${partySize}.`
+      : partySize <= 10
+        ? `Party at Red Rocks currently offers private rides and publishes $399 for a Suburban up to 6 and $599 for a van up to 10, subject to availability. A $599 van fits your group of ${partySize} (exceeds 6-seat Suburban limit).`
+        : `Party at Red Rocks currently offers private rides and publishes $399 for a Suburban up to 6 and $599 for a van up to 10, subject to availability. For ${partySize} guests, book multiple private vehicles.`;
 
-  const primaryLabel = isPrivatePreferred
-    ? `Book Party at Red Rocks Private Tailgate & Ride (${partySize <= 6 ? "$499 SUV" : "$599 14-Pax Sprinter"}) →`
-    : `Book Party at Red Rocks $65/Person Concert Shuttle (Departs ${shuttleFinalDepartureLocal}) →`;
+  const primaryLabel = `Book Party at Red Rocks Private Tailgate & Ride (${partySize <= 6 ? "$399 Suburban up to 6" : "$599 Van up to 10"}, subject to availability) →`;
 
-  const secondaryLabel = isPrivatePreferred
-    ? "Compare $65/Person Shared Concert Shuttle ↗"
-    : "Upgrade to Private Tailgate & Ride ($499 SUV / $599 Sprinter) ↗";
+  const secondaryLabel = "Compare Parking, Rideshare & Private Ride on DCC →";
 
   return {
     corridorId: "red-rocks-ride-home",
@@ -1474,21 +1462,21 @@ export function evaluateRedRocksRideHomeRecheck(
       eventName,
       encoreCutoffLocal,
       shuttleFinalDepartureLocal,
-      overnightVehicleRemovalRuleLocal: "02:00",
+      overnightVehicleRemovalRuleLocal: "10:00",
       partySize,
       pickupPreference,
     },
     venuePickupRules: {
       upperNorthAndTopCircleRideshareProhibited: true,
-      rideshareGeofenceLot: "Jurassic Lot (Entrance 4 on CO-93)",
+      rideshareGeofenceLot: "Jurassic Lot by Entrance 2",
       sharedShuttleDepartureRule: "Departs 30 minutes after final encore",
-      overnightVehicleDeadline: "2:00 AM following concert nights",
+      overnightVehicleDeadline: "Before 10:00 a.m. the next day",
     },
     recheckCard: {
       corridorId: "red-rocks-ride-home",
       whatChanged,
       whatStillFits,
-      nextStep: `${primaryLabel.replace(" →", "")} (bypasses the Jurassic Lot Hwy 93 rideshare geofence queue; all vehicles must clear Red Rocks Park by 2:00 AM).`,
+      nextStep: `${primaryLabel.replace(" →", "")} (bypasses the Jurassic Lot by Entrance 2 post-show pickup queue; overnight vehicles should be moved before 10:00 a.m. the next day).`,
       primaryNextActionLabel: primaryLabel,
       primaryNextActionHref: primaryHref,
       secondaryNextActionLabel: secondaryLabel,

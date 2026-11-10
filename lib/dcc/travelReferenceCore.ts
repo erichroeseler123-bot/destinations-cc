@@ -1897,25 +1897,25 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
       citationIds: ["rr-official-rules", "rr-parking-getting-here", "rr-denver-mountain-parks"],
     },
     gettingThereAndAround: {
-      sectionTitle: "Getting There & Getting Around: Lots, Shuttles, Driving & Rideshare Realities",
+      sectionTitle: "Getting There & Getting Around: Lots, Private Rides, Driving & Rideshare Realities",
       leadSummary:
-        "There is no train or public bus into Red Rocks Park. Every concertgoer must choose between driving and parking in one of five tiered lots, riding a dedicated round-trip event shuttle from Denver/Golden, or using rideshare/private drop-off at designated lower perimeter zones.",
+        "There is no train or public bus into Red Rocks Park. Every concertgoer must choose between driving and parking in one of five tiered lots (overnight vehicles should be moved before 10:00 a.m. the next day), booking a private tailgate and ride (Party at Red Rocks publishes $399 for a Suburban up to 6 and $599 for a van up to 10, subject to availability), or using rideshare/general post-show pickup at Jurassic Lot by Entrance 2.",
       modes: [
         {
           id: "rr-shuttle-transfer",
-          modeName: "Dedicated Round-Trip Concert Shuttles (Denver / Golden Pickup Hubs)",
+          modeName: "Party at Red Rocks Private Tailgate & Ride ($399 Suburban up to 6 / $599 Van up to 10)",
           category: "shuttle_transfer",
-          operatorOrAuthority: "Permitted Commercial Operators (including Party at Red Rocks & Official Venue Partners)",
-          routeOrCoverage: "Round-trip motorcoach and sprinter transfers between Downtown Denver (Union Station / Colfax / RiNo) or Golden and designated Red Rocks commercial loading zones.",
+          operatorOrAuthority: "Party at Red Rocks (Private Rides, Subject to Availability) & Permitted Operators",
+          routeOrCoverage: "Private door-to-door round-trip transfers from your Denver, Golden, or metro lodging to Red Rocks Amphitheatre with pre-show tailgate time and post-encore return.",
           scheduleAndStatusIntegration: "curated_with_official_link",
           whatWorksInPractice:
-            "For travelers staying in Denver without a car—or groups who want to avoid designated-driver duties and post-show rideshare surge—pre-booked round-trip shuttles eliminate the two hardest parts of Red Rocks: climbing from distant roadside overflow parking and waiting 60–90 minutes in the Jurassic Lot rideshare queue at 11:30 PM.",
+            "Party at Red Rocks currently offers private rides and publishes $399 for a Suburban up to 6 and $599 for a van up to 10, subject to availability. Pre-booked private rides eliminate designated-driver duties, uphill hikes from distant overflow parking, and waiting 60–90+ minutes in the Jurassic Lot by Entrance 2 post-show pickup queue.",
           practicalConstraints: [
-            "Shuttles depart post-show on a strict countdown (typically 30 minutes after the final encore); know which lot your operator stages in before the headliner ends.",
-            "Commercial shuttle seats sell out early on multi-night EDM, jam-band, and weekend headliner runs.",
+            "Private Suburbans ($399 up to 6) and vans ($599 up to 10) are subject to availability on concert nights—confirm availability for your show date.",
+            "Show time and pickup time are separate: use the venue's official doors and showtime, and get any pickup deadline from the operator.",
           ],
           officialResourceUrl: "https://www.redrocksonline.com/plan-your-visit/getting-here/",
-          officialResourceLabel: "Red Rocks Official Getting Here & Shuttle Info",
+          officialResourceLabel: "Red Rocks Official Getting Here & Transport Info",
           citationIds: ["rr-parking-getting-here"],
         },
         {
@@ -1929,7 +1929,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
             "General parking in official Red Rocks lots is included with concert admission, and lots open 2 hours before doors. However, once Upper North and Upper South fill (often 90+ minutes before doors on sold-out nights), flaggers direct cars to Lower South, Jurassic Lot, or roadside shoulders—adding a steep 15-to-25-minute uphill hike at altitude.",
           practicalConstraints: [
             "Post-show vehicle exit from Upper lots can take 45–60 minutes as single-file canyon roads merge toward I-70 and C-470.",
-            "Overnight vehicle parking is limited; cars left after show nights must be retrieved by mid-morning the next day per venue rules.",
+            "The venue states that overnight vehicles should be moved before 10:00 a.m. the next day.",
           ],
           officialResourceUrl: "https://www.redrocksonline.com/plan-your-visit/getting-here/",
           officialResourceLabel: "Red Rocks Official Parking Map & Lot Guide",
@@ -1937,16 +1937,16 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         },
         {
           id: "rr-rideshare",
-          modeName: "Rideshare (Uber / Lyft) & Passenger Drop-Off / Pickup",
+          modeName: "Rideshare (Uber / Lyft) & General Post-Show Pickup at Jurassic Lot by Entrance 2",
           category: "rideshare_pedestrian",
           operatorOrAuthority: "Red Rocks Traffic Control / Jefferson County Sheriff",
-          routeOrCoverage: "Designated Rideshare Drop-Off & Post-Show Pickup at Jurassic Lot (near Entrance 2) and Lower South Lot.",
+          routeOrCoverage: "Venue puts general post-show pickup at Jurassic Lot by Entrance 2 (plus Lower South Lot).",
           scheduleAndStatusIntegration: "curated_with_official_link",
           whatWorksInPractice:
-            "Rideshare works smoothly for pre-show arrival, though you will still walk uphill or catch the park shuttle from Jurassic Lot. Post-show egress is where rideshare frequently fails: 2,000+ people request cars simultaneously in a canyon with constrained cell tower bandwidth and one-way police traffic closures.",
+            "Rideshare works smoothly for pre-show arrival, though you will still walk uphill or catch the park shuttle from Jurassic Lot. Post-show egress is where rideshare frequently fails: the venue puts general post-show pickup at Jurassic Lot by Entrance 2, where 2,000+ people request cars simultaneously in a canyon with constrained cell tower bandwidth and one-way traffic routing.",
           practicalConstraints: [
             "Walking down dark two-lane highways (CO-74 or Alameda Pkwy) into Morrison town center to 'beat the surge' is dangerous—there are no continuous sidewalks or streetlamps outside park gates.",
-            "If using rideshare, either leave 15 minutes before the final encore or budget 60–90 minutes of waiting in the Jurassic Lot queue with warm layers.",
+            "General post-show pickup is at Jurassic Lot by Entrance 2; budget 60–90+ minutes of waiting in the post-encore queue with warm layers.",
           ],
           officialResourceUrl: "https://www.redrocksonline.com/plan-your-visit/getting-here/",
           officialResourceLabel: "Red Rocks Official Rideshare & Drop-Off Rules",
@@ -1970,7 +1970,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         },
       ],
       keyDecisionTakeaway:
-        "Solve your post-show exit before you leave Denver. Either book a round-trip shuttle with guaranteed staging, or drive your own car with a sober driver and arrive 90 minutes before doors to secure an Upper or mid-level lot.",
+        "Solve your post-show exit before you leave for the foothills. Compare free venue parking (overnight vehicles should be moved before 10:00 a.m. the next day), general post-show pickup at Jurassic Lot by Entrance 2, and Party at Red Rocks' private tailgate and ride ($399 for a Suburban up to 6 and $599 for a van up to 10, subject to availability).",
     },
     beforeYouGo: {
       sectionTitle: "Before You Go: Venue Rules, Altitude Health, Weather Exposure & Emergency Info",
@@ -2155,19 +2155,19 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
       ],
     },
     specialistHandoffs: {
-      sectionTitle: "Specialist Transport Guides & Context-Preserving Shuttle Handoffs",
+      sectionTitle: "Specialist Transport Guides & Context-Preserving Private Ride Handoffs",
       leadSummary:
-        "Whether you drive yourself using the lot strategy above or book a dedicated concert shuttle, resolve your return transport before heading into the foothills.",
+        "Whether you drive yourself using the lot strategy above or book a private tailgate and ride, resolve your return transport before heading into the foothills.",
       contextControls: {
         supportsDate: true,
         supportsPartySize: true,
-        customSelectorLabel: "Preferred Denver / Golden Pickup Hub",
+        customSelectorLabel: "Staying Area / Pickup Zone",
         customSelectorParam: "pickup_hub",
         customSelectorOptions: [
           { value: "denver_union_station", label: "Downtown Denver (Union Station / LoDo)" },
-          { value: "denver_colfax_capitol", label: "Capitol Hill / Colfax Corridor" },
+          { value: "denver_colfax_capitol", label: "Capitol Hill / Colfax / RiNo" },
           { value: "golden_foothills", label: "Golden / West Metro Foothills" },
-          { value: "private_suv_group", label: "Private Door-to-Door SUV / Sprinter" },
+          { value: "private_suv_group", label: "Private Door-to-Door Suburban ($399) / Van ($599)" },
         ],
       },
       options: [
@@ -2177,18 +2177,18 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
           partnerRole: "transport_operator",
           integrationMode: "context_handoff_link",
           description:
-            "Dedicated Red Rocks concert shuttle and private SUV/Sprinter operator with guaranteed post-show staging and Denver/Golden pickup hubs.",
+            "Party at Red Rocks currently offers private rides for Red Rocks show nights and publishes $399 for a Suburban up to 6 and $599 for a van up to 10, subject to availability.",
           whenItHelps:
-            "Best when you want to lock in round-trip concert transportation without risking post-show rideshare surge or long lower-lot walks.",
+            "Best when your group wants private door-to-door pickup, pre-show tailgate time, and a waiting vehicle after the show instead of the Jurassic Lot by Entrance 2 post-show pickup queue.",
           noPurchaseRequiredNote:
-            "Carries your date, party size, and pickup hub preference into Party at Red Rocks. Comparing schedules requires no purchase.",
-          baseUrl: "https://www.partyatredrocks.com/red-rocks/shuttle",
+            "Carries your selected show, date, and group context into Party at Red Rocks. Checking availability requires no purchase.",
+          baseUrl: "https://www.partyatredrocks.com/book/red-rocks-amphitheatre/private",
           supportedContextParams: ["date", "partySize", "pickupHub"],
           defaultParams: {
             source_surface: "dcc_red_rocks_reference",
             venue: "red-rocks-amphitheatre",
           },
-          expectedProductMarkers: ["Red Rocks", "Shuttle", "$59"],
+          expectedProductMarkers: ["Red Rocks", "Suburban", "$399", "$599"],
         },
         {
           id: "handoff-dcc-denver-red-rocks-route",
@@ -4202,19 +4202,19 @@ export const TRANSPORT_MODE_COMPARISON_BY_ID: Record<
 
   // Red Rocks
   "rr-shuttle-transfer": {
-    pricingModel: "Fixed per-seat round-trip fare (~$55–$65 shared coach) or flat private-charter rate; zero surge pricing.",
-    egressOrTransitTiming: "30–35 min from downtown Denver; fixed 30-min post-encore departure window from Upper North or Top Circle commercial zones.",
-    statutoryOrOperationalRule: "Permitted commercial motorcoaches stage in dedicated bus loops, bypassing the Jurassic Lot rideshare queue.",
+    pricingModel: "Party at Red Rocks currently offers private rides and publishes $399 for a Suburban up to 6 and $599 for a van up to 10, subject to availability; zero surge pricing.",
+    egressOrTransitTiming: "Door-to-door pickup from your hotel or residence (pickup time is separate from venue showtime; get any pickup deadline from operator); dedicated vehicle waits on-site through the encore.",
+    statutoryOrOperationalRule: "Permitted commercial and private charter vehicles stage in designated zones, bypassing the general post-show pickup queue at Jurassic Lot by Entrance 2.",
   },
   "rr-driving-parking": {
     pricingModel: "$0.00 general concert parking in official Park lots (included with concert admission unless VIP/reserved).",
     egressOrTransitTiming: "Arrive 90–120 min before doors for Upper Lots; post-encore canyon exit takes 35–60 min due to converging single-lane park roads.",
-    statutoryOrOperationalRule: "Denver Parks rule: vehicles left past 2:00 AM after concert nights are subject to ticketing/towing; Upper Lots close 60–90 min pre-doors.",
+    statutoryOrOperationalRule: "Venue rule: overnight vehicles should be moved before 10:00 a.m. the next day; Upper Lots typically close 60–90 min pre-doors.",
   },
   "rr-rideshare": {
     pricingModel: "Standard fare inbound (~$30–$45 from Denver); heavy post-show surge pricing ($85–$160+) at encore.",
-    egressOrTransitTiming: "60–90+ min post-encore wait in Jurassic Lot (Entrance 4 on Hwy 93) plus steeply graded downhill walk or transfer shuttle.",
-    statutoryOrOperationalRule: "Jefferson County Sheriff & Park Traffic Control prohibit post-show passenger pickups at Upper North or Top Circle; all rideshares geofenced to Jurassic Lot.",
+    egressOrTransitTiming: "60–90+ min post-encore wait at Jurassic Lot by Entrance 2 plus steeply graded downhill walk or transfer shuttle.",
+    statutoryOrOperationalRule: "Venue puts general post-show pickup at Jurassic Lot by Entrance 2; post-show passenger pickups are prohibited at Upper North and Top Circle.",
   },
   "rr-public-transit-reality": {
     pricingModel: "RTD standard local fare ($2.75), but NO service into Red Rocks Park or Amphitheatre.",

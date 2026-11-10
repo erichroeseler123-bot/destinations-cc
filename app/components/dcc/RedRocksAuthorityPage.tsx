@@ -251,21 +251,21 @@ export default function RedRocksAuthorityPage({
                   <article className="rounded-2xl border border-white/10 bg-[#090f1e] p-5 flex flex-col justify-between">
                     <div>
                       <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#ffb07c]">
-                        Option 1: Standard Broad-Fit
+                        Option 1: Groups up to 6 · Subject to Availability
                       </span>
-                      <h4 className="mt-2 text-lg font-bold text-white">Shared Shuttle seats</h4>
+                      <h4 className="mt-2 text-lg font-bold text-white">Private Suburban — $399 (Up to 6)</h4>
                       <p className="mt-3 text-xs leading-6 text-zinc-300">
-                        Round-trip seats from Sheraton Denver Downtown or Golden. Perfect for couples, solos, or groups who want zero parking hassles and direct hub transport.
+                        Party at Red Rocks currently offers private rides and publishes $399 for a Suburban up to 6, subject to availability. Includes private pickup, tailgate time, and return after the show without the Jurassic Lot by Entrance 2 post-show pickup queue.
                       </p>
                     </div>
                     <div className="mt-6">
                       <ParrCtaLink
-                        href={primaryCtaHref}
+                        href="https://www.partyatredrocks.com/book/red-rocks-amphitheatre/private"
                         page={sourcePath}
-                        cta="shuttle-segment-cta"
+                        cta="private-suburban-segment-cta"
                         className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-[#3df3ff] px-4 text-xs font-black uppercase tracking-[0.16em] text-[#07111d] transition hover:bg-[#62f6ff]"
                       >
-                        Book Shared Shuttle
+                        Check Suburban Availability ($399)
                       </ParrCtaLink>
                     </div>
                   </article>
@@ -273,21 +273,21 @@ export default function RedRocksAuthorityPage({
                   <article className="rounded-2xl border border-white/10 bg-[#090f1e] p-5 flex flex-col justify-between">
                     <div>
                       <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#ffb07c]">
-                        Option 2: Premium Private
+                        Option 2: Groups up to 10 · Subject to Availability
                       </span>
-                      <h4 className="mt-2 text-lg font-bold text-white">Private Suburban / Passenger Van</h4>
+                      <h4 className="mt-2 text-lg font-bold text-white">Private Van — $599 (Up to 10)</h4>
                       <p className="mt-3 text-xs leading-6 text-zinc-300">
-                        Dedicated private ride with custom pickup schedules. Ideal for larger parties, VIP groups, or anyone demanding absolute comfort and direct curb-to-curb service.
+                        Party at Red Rocks publishes $599 for a van up to 10, subject to availability. Keeps groups of 7 to 10 together in one dedicated private vehicle with custom pickup and post-encore return.
                       </p>
                     </div>
                     <div className="mt-6">
                       <ParrCtaLink
-                        href="https://www.partyatredrocks.com"
+                        href="https://www.partyatredrocks.com/book/red-rocks-amphitheatre/private/van"
                         page={sourcePath}
-                        cta="private-segment-cta"
+                        cta="private-van-segment-cta"
                         className="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-white/12 bg-white/6 px-4 text-xs font-black uppercase tracking-[0.16em] text-white transition hover:bg-white/10"
                       >
-                        Secure Private Ride
+                        Check Van Availability ($599)
                       </ParrCtaLink>
                     </div>
                   </article>

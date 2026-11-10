@@ -55,11 +55,11 @@ export const PARR_OPERATOR = {
   name: "Party at Red Rocks",
   website: "https://www.partyatredrocks.com",
   summary:
-    "Party at Red Rocks provides shared shuttle seats and private rides for Red Rocks show nights, with Denver and Golden pickup options plus private vehicles for groups.",
+    "Party at Red Rocks currently offers private rides for Red Rocks show nights and publishes $399 for a Suburban up to 6 and $599 for a van up to 10, subject to availability.",
   trustPoints: [
-    "Shared Denver and Golden pickup hubs",
-    "Private SUV, van, Sprinter, and party bus lineup",
-    "Return ride after the show",
+    "Private Suburban ($399 up to 6, subject to availability)",
+    "Private Van ($599 up to 10, subject to availability)",
+    "Private tailgate time and return ride after the show",
   ],
   supportLabel: "Questions about pickup, payment, or your ride?",
   supportDetail: `Questions about pickup, payment, or your ride? Text ${PARR_SUPPORT_PHONE_DISPLAY} or email ${PARR_SUPPORT_EMAIL}.`,

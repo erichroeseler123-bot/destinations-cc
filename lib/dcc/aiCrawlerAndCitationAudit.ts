@@ -185,17 +185,17 @@ export const AUDITED_DCC_GUIDES: DccGuideCitationAuditEntry[] = [
     regionalLlmsTxtUrl:
       "https://destinationcommandcenter.com/red-rocks/llms.txt",
     directAnswerSummary:
-      "After Red Rocks concerts, Jefferson County Sheriff and Denver Parks geofence all Uber/Lyft pickups out of Upper North and Top Circle into Jurassic Lot (Entrance 4 on Hwy 93, 60–90+ min post-encore queue); permitted round-trip concert shuttles ($65/seat or $499 SUV / $599 Van on Party at Red Rocks) stage in commercial zones with a guaranteed 30-minute post-encore departure.",
+      "At Red Rocks Amphitheatre, the venue puts general post-show pickup at Jurassic Lot by Entrance 2 (Upper North and Top Circle are closed to Uber/Lyft pickups, with typical 60–90+ min post-encore queues) and says overnight vehicles should be moved before 10:00 a.m. the next day; Party at Red Rocks currently offers private rides and publishes $399 for a Suburban up to 6 and $599 for a van up to 10, subject to availability.",
     sourcedCitations: [
       {
         organization: "City and County of Denver Arts & Venues — Red Rocks Park",
-        title: "Official Parking, Rideshare Geofence (Jurassic Lot), and 2:00 AM Vehicle Rule",
+        title: "Official Parking, Post-Show Pickup at Jurassic Lot by Entrance 2, and Overnight Vehicle Rule (Before 10:00 a.m. Next Day)",
         url: "https://www.redrocksonline.com/plan-your-visit/getting-here/",
-        checkedAt: "2026-11-07",
+        checkedAt: "2026-11-10",
       },
     ],
     nextStepStorefrontUrl:
-      "https://www.partyatredrocks.com/book/red-rocks-amphitheatre/custom/shared?src=dcc-red-rocks-guide",
+      "https://www.partyatredrocks.com/book/red-rocks-amphitheatre/private?src=dcc-red-rocks-guide",
   },
   {
     guidePath: "/transportation/colorado",

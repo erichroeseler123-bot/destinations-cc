@@ -1,11 +1,11 @@
+import React from "react";
 import type { Metadata } from "next";
 import RedRocksAuthorityPage from "@/app/components/dcc/RedRocksAuthorityPage";
+import { RedRocksConcertRidePlanner } from "@/app/components/dcc/RedRocksConcertRidePlanner";
 import TravelReferenceExperience from "@/app/components/dcc/TravelReferenceExperience";
-import SharedTripRecheckCard from "@/app/components/dcc/SharedTripRecheckCard";
 import JsonLd from "@/app/components/dcc/JsonLd";
 import { buildBreadcrumbJsonLd, buildEventVenueJsonLd } from "@/lib/dcc/jsonld";
 import { getPublishedTravelReferenceNodeById } from "@/lib/dcc/travelReference";
-import { evaluateRedRocksRideHomeRecheck } from "@/lib/dcc/sharedTripRecheck";
 import { PARR_OPERATOR } from "@/lib/parrOperator";
 import { getLocalFallbackImageSetForEntity } from "@/src/lib/media/source-local";
 
@@ -14,7 +14,7 @@ export const revalidate = 3600;
 export const metadata: Metadata = {
   title: "Red Rocks Amphitheatre & Park Travel Reference, Access & Concert Logistics | Destination Command Center",
   description:
-    "Comprehensive Red Rocks Park & Amphitheatre travel reference: geology, altitude prep, parking & shuttle logistics, operational lightning-hold boundaries, live NWS/Open-Meteo telemetry, and context-preserving shuttle handoffs.",
+    "Comprehensive Red Rocks Park & Amphitheatre travel reference: geology, altitude prep, parking & private ride comparison, operational lightning-hold boundaries, live NWS/Open-Meteo telemetry, and context-preserving ride handoffs.",
   alternates: { canonical: "https://destinationcommandcenter.com/red-rocks" },
   robots: { index: true, follow: true },
 
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Red Rocks Amphitheatre Travel Reference & Concert Logistics | Destination Command Center",
     description:
-      "Source-attributed Red Rocks guide combining park rules, ingress/egress strategy, live Morrison coordinate weather, and verified shuttle handoffs.",
+      "Source-attributed Red Rocks guide combining park rules, ingress/egress strategy, live Morrison coordinate weather, and verified ride handoffs.",
     url: "/red-rocks",
     type: "article",
   },
@@ -48,7 +48,7 @@ export default async function RedRocksPage() {
               name: "Red Rocks Park & Amphitheatre",
               description:
                 redRocksReference?.heroSummary ||
-                "Open-air amphitheatre at 6,450 ft in Morrison, Colorado, operated by Denver Arts & Venues with concert shuttle and parking logistics.",
+                "Open-air amphitheatre at 6,450 ft in Morrison, Colorado, operated by Denver Arts & Venues with concert parking and private ride logistics.",
               address: {
                 streetAddress: "18300 W Alameda Pkwy",
                 locality: "Morrison",
@@ -64,7 +64,7 @@ export default async function RedRocksPage() {
               containedInName: "Colorado",
               containedInPath: "/destinations/colorado",
               sameAs: ["https://www.redrocksonline.com/"],
-              touristTypes: ["Concert travelers", "Outdoor enthusiasts", "Red Rocks shuttle riders"],
+              touristTypes: ["Concert travelers", "Outdoor enthusiasts", "Red Rocks concert groups"],
             }),
             buildBreadcrumbJsonLd([
               { name: "Home", item: "/" },
@@ -74,6 +74,9 @@ export default async function RedRocksPage() {
           ],
         }}
       />
+      <React.Suspense fallback={null}>
+        <RedRocksConcertRidePlanner />
+      </React.Suspense>
       {redRocksReference ? <TravelReferenceExperience node={redRocksReference} embedded /> : null}
       <RedRocksAuthorityPage
         eyebrow="DCC Red Rocks Hub"
@@ -90,17 +93,17 @@ export default async function RedRocksPage() {
           },
           {
             title: "What a good Red Rocks plan actually solves",
-            body: "A strong Red Rocks plan solves ingress and egress before anything else. Once the route in and the ride home are handled, dinner, tailgating, and after-show plans get much easier. The mistake is treating transport like a detail you can improvise later.",
+            body: "A strong Red Rocks plan solves ingress and egress before anything else. Once the route in and the ride home are handled, dinner, tailgating, and after-show plans get much easier. Compare your three options using verified venue and operator rules:",
             bullets: [
-              "Parking only works cleanly if you accept the walk and the exit delay.",
-              "Rideshare is easier on the way in than the way out.",
-              "Shared shuttle is the best default for most Denver visitors.",
-              "Private ride is stronger when the group wants one pickup and one exact plan.",
+              "Parking is $0 in official venue lots (opening 2 hours before doors), requires a sober driver, and overnight vehicles should be moved before 10:00 a.m. the next day.",
+              "Rideshare is easier on the way in than the way out: the venue puts general post-show pickup at Jurassic Lot by Entrance 2, with a downhill walk and 60–90+ minute post-encore waits.",
+              "Party at Red Rocks currently offers private rides and publishes $399 for a Suburban up to 6 and $599 for a van up to 10, subject to availability.",
+              "Keep show time and pickup time separate: use the venue's official doors and showtime, and get any pickup deadline from the operator.",
             ],
           },
           {
             title: "Where the plan goes next",
-            body: "Use DCC to understand the tradeoffs, then move into Party at Red Rocks when the answer is obvious. That keeps the system clean: DCC explains the problem, and PARR executes the ride.",
+            body: "Use DCC to compare parking, rideshare, and private tailgate and ride options for your show, staying location, and group size, then continue to Party at Red Rocks with your selected show and date carried into checkout.",
           },
         ]}
       />
