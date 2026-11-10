@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
+import React from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import VailBusCatchChecker from "@/app/components/dcc/VailBusCatchChecker";
 import { buildDenverToVailShuttleGuidePageModel } from "@/app/transportation/colorado/denver-to-vail-shuttle-guide/model";
 import {
   buildDec15BenchmarkPreviewCases,
@@ -103,7 +106,7 @@ describe("DEN -> Union Station -> Vail bus catch checker", () => {
     assert.equal(missing.verdictBadge, "Schedule needs verification");
   });
 
-  it("wires the three Dec. 15 benchmark preview cases into the Vail shuttle guide page model", () => {
+  it("wires the three Dec. 15 benchmark preview cases into the Vail shuttle guide page model and renders the preview HTML", () => {
     const model = buildDenverToVailShuttleGuidePageModel();
     assert.equal(model.busCheckerPreviewCases.length, 3);
     const [fitsCase, elevenMinCase, missesCase] =
@@ -112,5 +115,19 @@ describe("DEN -> Union Station -> Vail bus catch checker", () => {
     assert.equal(elevenMinCase.result.gateB19Transfer.minutes, 11);
     assert.equal(elevenMinCase.result.verdict, "misses");
     assert.equal(missesCase.result.verdict, "misses");
+
+    const html = renderToStaticMarkup(
+      React.createElement(VailBusCatchChecker, {
+        basePartnerDestinationUrl: model.basePartnerDestinationUrl,
+        initialPreviewCases: model.busCheckerPreviewCases,
+      }),
+    );
+
+    assert.ok(html.includes("Can I still catch the bus to Vail?"));
+    assert.ok(html.includes("3:10 p.m. landing fits"));
+    assert.ok(html.includes("11 minutes at Union Station fails"));
+    assert.ok(html.includes("4:05 p.m. landing misses"));
+    assert.ok(html.includes("Check GoSno availability"));
+    assert.ok(html.includes("scheduled"));
   });
 });
