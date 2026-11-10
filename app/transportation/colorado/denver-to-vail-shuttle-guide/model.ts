@@ -4,6 +4,7 @@ import {
 } from "@/lib/dcc/applicability";
 import type { RecommendationAction } from "@/lib/dcc/handoffAnalytics";
 import { getPublicMaterialChangeTimeline } from "@/lib/dcc/stewardship";
+import { buildDec15BenchmarkPreviewCases } from "@/lib/dcc/transit/denverVailBusChecker";
 import { resolvePortfolioSiteContractByUrl } from "@/src/data/portfolio-site-contracts";
 import { getPublicationManifestEntry } from "@/src/data/publication-manifest";
 import { getPublishedDecisionGuide } from "@/src/data/published-decision-guides";
@@ -90,6 +91,8 @@ export function buildDenverToVailShuttleGuidePageModel() {
 
   const capacityRuleSummary = `On GoSno, private SUV transfers cap at up to 6 passengers (${vailPricing.suvOneWayLabel} DEN to Vail), while private passenger vans carry up to 10 passengers, subject to luggage and ski-gear fit and availability (GoSno publishes a ${vailPricing.vanOneWayLabel} DEN–Vail van rate on gosno.co/vail, while its live /api/availability endpoint marks van requests quoteOnly: true).`;
 
+  const busCheckerPreviewCases = buildDec15BenchmarkPreviewCases();
+
   return {
     vailGuide,
     vailPricing,
@@ -101,5 +104,6 @@ export function buildDenverToVailShuttleGuidePageModel() {
     basePartnerDestinationUrl,
     initialOutcome,
     capacityRuleSummary,
+    busCheckerPreviewCases,
   };
 }

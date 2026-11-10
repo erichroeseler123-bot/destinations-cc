@@ -5,6 +5,7 @@ import ColoradoFactComparisonTable from "@/app/components/dcc/ColoradoFactCompar
 import JsonLd from "@/app/components/dcc/JsonLd";
 import NextStepEngine from "@/app/components/dcc/NextStepEngine";
 import PublicMaterialChangeTimeline from "@/app/components/dcc/PublicMaterialChangeTimeline";
+import VailBusCatchChecker from "@/app/components/dcc/VailBusCatchChecker";
 import { issueOpaqueClickAttribution } from "@/lib/dcc/commerce/opaqueAttributionLedger";
 import {
   buildArticleJsonLd,
@@ -46,6 +47,7 @@ export default async function DenverToVailShuttleGuidePage() {
     actions,
     basePartnerDestinationUrl,
     initialOutcome,
+    busCheckerPreviewCases,
   } = buildDenverToVailShuttleGuidePageModel();
 
   const initialOpaqueRecord = issueOpaqueClickAttribution({
@@ -106,6 +108,11 @@ export default async function DenverToVailShuttleGuidePage() {
             rental vehicles, and public transit fairly—including when you do not need a rental car at all once in pedestrian Vail Village.
           </p>
         </header>
+
+        <VailBusCatchChecker
+          basePartnerDestinationUrl={basePartnerDestinationUrl}
+          initialPreviewCases={busCheckerPreviewCases}
+        />
 
         <ApplicableRouteDecisionPanel
           initialOutcome={initialOutcome}
