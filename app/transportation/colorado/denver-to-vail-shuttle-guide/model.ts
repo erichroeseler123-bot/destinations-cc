@@ -87,9 +87,7 @@ export function buildDenverToVailShuttleGuidePageModel() {
 
   const capacityRuleSummary = `On GoSno, private SUV transfers cap at up to 6 passengers (${vailPricing.suvOneWayLabel} DEN to Vail), while private passenger vans carry up to 10 passengers, subject to luggage and ski-gear fit and availability (GoSno publishes a ${vailPricing.vanOneWayLabel} DEN–Vail van rate on gosno.co/vail, while its live /api/availability endpoint marks van requests quoteOnly: true).`;
 
-  const busCheckerPreviewCases = buildDec15BenchmarkPreviewCases(
-    basePartnerDestinationUrl,
-  );
+  const busCheckerPreviewCases = buildDec15BenchmarkPreviewCases();
 
   return {
     vailGuide,

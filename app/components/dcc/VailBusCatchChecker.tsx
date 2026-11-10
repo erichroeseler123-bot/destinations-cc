@@ -12,12 +12,11 @@ import {
 } from "@/lib/dcc/transit/denverVailBusChecker";
 
 interface VailBusCatchCheckerProps {
-  basePartnerDestinationUrl: string;
+  basePartnerDestinationUrl?: string;
   initialPreviewCases?: Dec15PreviewCase[];
 }
 
 export default function VailBusCatchChecker({
-  basePartnerDestinationUrl,
   initialPreviewCases,
 }: VailBusCatchCheckerProps) {
   const [arrivalDate, setArrivalDate] = useState<string>("2026-12-15");
@@ -33,22 +32,13 @@ export default function VailBusCatchChecker({
         arrivalTime,
         luggage,
         baggageEstimateMinutes,
-        gosnoBaseUrl: basePartnerDestinationUrl,
       }),
-    [
-      arrivalDate,
-      arrivalTime,
-      luggage,
-      baggageEstimateMinutes,
-      basePartnerDestinationUrl,
-    ],
+    [arrivalDate, arrivalTime, luggage, baggageEstimateMinutes],
   );
 
   const previewCases = useMemo(
-    () =>
-      initialPreviewCases ??
-      buildDec15BenchmarkPreviewCases(basePartnerDestinationUrl),
-    [initialPreviewCases, basePartnerDestinationUrl],
+    () => initialPreviewCases ?? buildDec15BenchmarkPreviewCases(),
+    [initialPreviewCases],
   );
 
   function handleLuggageChange(nextLuggage: LuggageOptionId) {
@@ -72,6 +62,9 @@ export default function VailBusCatchChecker({
   }
 
   const defaultBaggageMinutes = LUGGAGE_OPTIONS[luggage].defaultBaggageMinutes;
+  const rtdCal = liveResult.serviceCalendars.rtdALine;
+  const westCal = liveResult.serviceCalendars.bustangWest;
+  const pegaCal = liveResult.serviceCalendars.pegasus;
 
   return (
     <section
@@ -105,8 +98,9 @@ export default function VailBusCatchChecker({
             <strong className="text-white">
               Denver Airport (DEN) → Union Station → Vail Transportation Center
             </strong>
-            . Uses published RTD A Line and CDOT Bustang schedules for your arrival
-            date and applies a strict{" "}
+            . Applies RTD A Line, CDOT Bustang West Line, and CDOT Pegasus service
+            calendars and holiday exceptions separately for your arrival date, with a
+            strict{" "}
             <strong className="text-emerald-300">
               {MIN_UNION_STATION_TRANSFER_MINUTES}-minute minimum transfer
             </strong>{" "}
@@ -120,7 +114,7 @@ export default function VailBusCatchChecker({
             {DENVER_VAIL_GTFS_METADATA_PUBLIC.validEndDate}
           </div>
           <div className="mt-0.5 text-zinc-400">
-            Last West Line coach: 5:15 p.m. (17:15) · Gate B19
+            Refresh before Jan. 2: <code>{DENVER_VAIL_GTFS_METADATA_PUBLIC.refreshCommand}</code>
           </div>
         </div>
       </div>
@@ -150,7 +144,7 @@ export default function VailBusCatchChecker({
               : "border-white/15 bg-white/[0.04] text-zinc-300 hover:bg-white/10"
           }`}
         >
-          Dec. 15 · 3:10 p.m. landing (Fits)
+          Dec. 15 · 3:10 p.m. (Fits)
         </button>
         <button
           type="button"
@@ -172,7 +166,7 @@ export default function VailBusCatchChecker({
               : "border-white/15 bg-white/[0.04] text-zinc-300 hover:bg-white/10"
           }`}
         >
-          Dec. 15 · 3:40 p.m. landing (11 min at Union Station fails)
+          Dec. 15 · 3:40 p.m. (11 min at Union Station fails)
         </button>
         <button
           type="button"
@@ -194,47 +188,83 @@ export default function VailBusCatchChecker({
               : "border-white/15 bg-white/[0.04] text-zinc-300 hover:bg-white/10"
           }`}
         >
-          Dec. 15 · 4:05 p.m. landing (Misses)
+          Dec. 15 · 4:05 p.m. (Misses)
         </button>
         <button
           type="button"
-          data-testid="preset-dec15-pegasus-fits"
+          data-testid="preset-thanksgiving-20261126"
           onClick={() =>
             applyPreset({
-              arrivalDate: "2026-12-15",
-              arrivalTime: "16:05",
-              luggage: "skis_and_personal",
-              baggageEstimateMinutes: 45,
-            })
-          }
-          className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
-            arrivalDate === "2026-12-15" &&
-            arrivalTime === "16:05" &&
-            luggage === "skis_and_personal"
-              ? "border-cyan-400 bg-cyan-500/20 text-cyan-100"
-              : "border-white/15 bg-white/[0.04] text-zinc-300 hover:bg-white/10"
-          }`}
-        >
-          Dec. 15 · 4:05 p.m. + Skis &amp; small bag (Pegasus fits)
-        </button>
-        <button
-          type="button"
-          data-testid="preset-missing-schedule"
-          onClick={() =>
-            applyPreset({
-              arrivalDate: "2027-03-15",
+              arrivalDate: "2026-11-26",
               arrivalTime: "15:10",
               luggage: "skis_and_checked",
               baggageEstimateMinutes: 45,
             })
           }
           className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
-            arrivalDate === "2027-03-15"
+            arrivalDate === "2026-11-26"
+              ? "border-cyan-400 bg-cyan-500/20 text-cyan-100"
+              : "border-white/15 bg-white/[0.04] text-zinc-300 hover:bg-white/10"
+          }`}
+        >
+          Thanksgiving (Nov. 26)
+        </button>
+        <button
+          type="button"
+          data-testid="preset-christmas-20261225"
+          onClick={() =>
+            applyPreset({
+              arrivalDate: "2026-12-25",
+              arrivalTime: "15:10",
+              luggage: "skis_and_checked",
+              baggageEstimateMinutes: 45,
+            })
+          }
+          className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
+            arrivalDate === "2026-12-25"
+              ? "border-cyan-400 bg-cyan-500/20 text-cyan-100"
+              : "border-white/15 bg-white/[0.04] text-zinc-300 hover:bg-white/10"
+          }`}
+        >
+          Christmas (Dec. 25)
+        </button>
+        <button
+          type="button"
+          data-testid="preset-newyears-20270101"
+          onClick={() =>
+            applyPreset({
+              arrivalDate: "2027-01-01",
+              arrivalTime: "15:10",
+              luggage: "skis_and_checked",
+              baggageEstimateMinutes: 45,
+            })
+          }
+          className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
+            arrivalDate === "2027-01-01"
+              ? "border-cyan-400 bg-cyan-500/20 text-cyan-100"
+              : "border-white/15 bg-white/[0.04] text-zinc-300 hover:bg-white/10"
+          }`}
+        >
+          New Year&rsquo;s Day (Jan. 1)
+        </button>
+        <button
+          type="button"
+          data-testid="preset-jan3-20270103-missing"
+          onClick={() =>
+            applyPreset({
+              arrivalDate: "2027-01-03",
+              arrivalTime: "15:10",
+              luggage: "skis_and_checked",
+              baggageEstimateMinutes: 45,
+            })
+          }
+          className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
+            arrivalDate === "2027-01-03"
               ? "border-amber-400 bg-amber-500/20 text-amber-100"
               : "border-white/15 bg-white/[0.04] text-zinc-300 hover:bg-white/10"
           }`}
         >
-          Unpublished date (Schedule needs verification)
+          Jan. 3 (Outside feed window)
         </button>
       </div>
 
@@ -368,6 +398,46 @@ export default function VailBusCatchChecker({
           )}
         </div>
 
+        {/* Per-Operator Service Calendar & Holiday Exception Strip */}
+        <div
+          data-testid="checker-operator-service-calendars"
+          className="mt-3 flex flex-wrap gap-2 text-[11px] font-mono"
+        >
+          <span className="rounded-lg border border-white/10 bg-black/35 px-2.5 py-1 text-zinc-200">
+            RTD A Line:{" "}
+            <strong>
+              {rtdCal.inFeedWindow
+                ? rtdCal.activeRouteServiceIds.join("+") || "none"
+                : "out of window"}
+            </strong>
+            {rtdCal.holidayExceptionSummary
+              ? ` · ${rtdCal.holidayExceptionSummary}`
+              : ""}
+          </span>
+          <span className="rounded-lg border border-white/10 bg-black/35 px-2.5 py-1 text-zinc-200">
+            Bustang West:{" "}
+            <strong>
+              {westCal.inFeedWindow
+                ? westCal.activeRouteServiceIds.join("+") || "none"
+                : "out of window"}
+            </strong>
+            {westCal.holidayExceptionSummary
+              ? ` · ${westCal.holidayExceptionSummary}`
+              : ""}
+          </span>
+          <span className="rounded-lg border border-white/10 bg-black/35 px-2.5 py-1 text-zinc-200">
+            Pegasus:{" "}
+            <strong>
+              {pegaCal.inFeedWindow
+                ? pegaCal.activeRouteServiceIds.join("+") || "none"
+                : "out of window"}
+            </strong>
+            {pegaCal.holidayExceptionSummary
+              ? ` · ${pegaCal.holidayExceptionSummary}`
+              : ""}
+          </span>
+        </div>
+
         <p className="mt-3 text-sm leading-6 text-zinc-100">
           {liveResult.verdictSummary}
         </p>
@@ -410,7 +480,8 @@ export default function VailBusCatchChecker({
                   <p className="mt-1 text-xs text-zinc-300">
                     DEN Station (#34476) → Union Station Track 1 (#34667) ·{" "}
                     <span className="font-mono">
-                      trip {liveResult.aLineTrain.tripId}
+                      svc {liveResult.aLineTrain.serviceId} · trip{" "}
+                      {liveResult.aLineTrain.tripId}
                     </span>
                   </p>
                 </>
@@ -483,10 +554,12 @@ export default function VailBusCatchChecker({
             className="mt-4 rounded-xl border border-amber-400/35 bg-black/35 p-4 text-xs text-amber-100"
           >
             <strong>Schedule needs verification:</strong> Published RTD A Line and
-            CDOT Bustang GTFS schedules in this build cover{" "}
+            CDOT Bustang/Pegasus GTFS schedules in this build cover{" "}
             <code>{DENVER_VAIL_GTFS_METADATA_PUBLIC.validStartDate}</code> through{" "}
-            <code>{DENVER_VAIL_GTFS_METADATA_PUBLIC.validEndDate}</code>. Select a
-            date within the current runboard or check GoSno availability below.
+            <code>{DENVER_VAIL_GTFS_METADATA_PUBLIC.validEndDate}</code>. Run{" "}
+            <code>{DENVER_VAIL_GTFS_METADATA_PUBLIC.refreshCommand}</code> (documented
+            in <code>{DENVER_VAIL_GTFS_METADATA_PUBLIC.refreshRunbookPath}</code>)
+            when RTD posts the post-Jan. 2 runboard, or check GoSno availability below.
           </div>
         )}
 
@@ -502,7 +575,8 @@ export default function VailBusCatchChecker({
                 scheduled)
               </strong>
               <span className="font-mono">
-                Trip {liveResult.pegasusConnection.trip.tripId} · $20.00 bus fare
+                Svc {liveResult.pegasusConnection.trip.serviceId} · Trip{" "}
+                {liveResult.pegasusConnection.trip.tripId} · $20.00 bus fare
               </span>
             </div>
             <p className="mt-1.5 leading-5">
@@ -536,8 +610,8 @@ export default function VailBusCatchChecker({
                   ? "Public transit to Vail does not fit this arrival:"
                   : "Transit schedule is not verified for this date:"}
               </strong>{" "}
-               Compare private door-to-door SUV/van pickup directly from DEN Level 5
-              baggage claim.
+              Carries your selected date ({liveResult.input.arrivalDate}) to GoSno so
+              you can enter group size and gear directly.
             </div>
             <a
               href={liveResult.gosnoAvailabilityUrl}
@@ -679,12 +753,13 @@ export default function VailBusCatchChecker({
                         {r.denPlatformReadyTime12h} at DEN Station #34476)
                       </li>
                       <li>
-                        • 37m A Line ride (trip {r.aLineTrain?.tripId}) to Union
-                        Station Track 1 (#34667)
+                        • 37m A Line ride (svc {r.aLineTrain?.serviceId}, trip{" "}
+                        {r.aLineTrain?.tripId}) to Union Station Track 1 (#34667)
                       </li>
                       <li>
                         • 15m minimum transfer (10m walk to Gate B19 #34316 + 5m
-                        coach bay cutoff) before 5:15 p.m. Bustang (#116053731)
+                        coach bay cutoff) before 5:15 p.m. Bustang (svc{" "}
+                        {r.activeServiceIds.bustangWest}, #116053731)
                       </li>
                       <li>
                         • Pegasus (7:30 p.m.) excluded: checked suitcase exceeds
@@ -697,6 +772,7 @@ export default function VailBusCatchChecker({
                 <div className="mt-4 flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-white/10">
                   <button
                     type="button"
+                    data-testid={`load-benchmark-${bench.id}`}
                     onClick={() => applyPreset(bench.input)}
                     className="text-xs font-semibold text-cyan-300 underline underline-offset-4 hover:text-cyan-200"
                   >
@@ -707,6 +783,7 @@ export default function VailBusCatchChecker({
                       href={r.gosnoAvailabilityUrl}
                       target="_blank"
                       rel="noopener noreferrer"
+                      data-testid={`benchmark-gosno-cta-${bench.id}`}
                       className="rounded-lg bg-cyan-400 px-3 py-1.5 text-[11px] font-black uppercase tracking-wider text-slate-950 hover:bg-cyan-300"
                     >
                       Check GoSno availability ↗
