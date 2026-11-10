@@ -544,7 +544,7 @@ export const RED_ROCKS_CONCERT_CANDIDATE_OPTIONS: CandidateOption[] = [
       hotelPickupAvailable: false,
       cruisePortShuttleAvailable: false,
       selfDriveParkingNote:
-        "General concert parking is $0.00; vehicles left overnight past 2:00 AM / next morning face ticketing or towing.",
+        "General concert parking is $0.00; overnight vehicles should be moved before 10:00 a.m. the next day.",
     },
     cancellationTerms: "Free public park access.",
     whaleSightingOrReRidePolicy: "Self-managed schedule.",
@@ -997,7 +997,7 @@ export const RED_ROCKS_CONCERT_DECISION_ENGINE: DecisionEngineDefinition<RedRock
           bestFor:
             "Groups with a committed 100% sober designated driver arriving 60–90+ minutes before doors",
           limitations:
-            "Late arrival forces a 150–380+ stair climb at 6,450 ft plus a 35–60 minute post-show canyon exit; overnight cars must vacate before 2:00 AM / next morning towing enforcement",
+            "Late arrival forces a 150–380+ stair climb at 6,450 ft plus a 35–60 minute post-show canyon exit; overnight vehicles should be moved before 10:00 a.m. the next day",
           sourceIds: ["src-red-rocks-official-parking-egress-2026"],
         },
       ],

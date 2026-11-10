@@ -89,10 +89,13 @@ export function buildTravelReferenceNodeLlmsTxt(node: TravelReferenceNode): stri
       "- **Elevation & Grade**: Amphitheatre sits at **6,450 ft**; Lower Lots require a steep uphill climb (~300–400 ft vertical gain) at altitude.",
     );
     lines.push(
-      "- **Rideshare Geofence (Jurassic Lot)**: Post-show Uber/Lyft pickups are prohibited at Upper North and Top Circle; all rideshares are routed to **Jurassic Lot (Entrance 4 on Hwy 93)** with typical **60–90+ minute** post-encore queues.",
+      "- **Post-Show Pickup & Rideshare Geofence (Jurassic Lot)**: Post-show Uber/Lyft pickups are prohibited at Upper North and Top Circle; the venue puts general post-show pickup at **Jurassic Lot by Entrance 2** with typical **60–90+ minute** post-encore queues.",
     );
     lines.push(
-      "- **Overnight Vehicle Rule**: Vehicles may not remain in Red Rocks Park past **2:00 AM** following concert nights.",
+      "- **Overnight Vehicle Rule**: The venue states that overnight vehicles should be moved **before 10:00 a.m. the next day**.",
+    );
+    lines.push(
+      "- **Party at Red Rocks Private Rides**: Party at Red Rocks currently offers private rides and publishes **$399 for a Suburban up to 6** and **$599 for a van up to 10**, subject to availability.",
     );
   } else if (node.id === "denver-breckenridge") {
     lines.push("");
