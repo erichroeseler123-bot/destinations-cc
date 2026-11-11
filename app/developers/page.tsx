@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { DCC_PRODUCT_SCOPE } from "@/lib/dcc/productScope";
 
 export const metadata: Metadata = {
   title: "DCC Developers | Dense Coordinate Location API",
@@ -10,22 +11,35 @@ export const metadata: Metadata = {
 const exampleLat = "39.66540";
 const exampleLng = "-105.20570";
 
-const MODULES = [
-  ["identity", "Coordinate, timezone, elevation and canonical identity"],
-  ["now", "Current weather and air-quality conditions"],
-  ["conditions", "12-hour weather/air outlook and three-day context"],
-  ["hazards", "Official alerts, recent earthquakes and NASA natural events"],
-  ["water", "Nearby NOAA river/flood gauges when applicable"],
-  ["official", "Official NWS forecast/zone context when applicable"],
-  ["events", "Configured nearby event feeds when available"],
-  ["machineFeeds", "Additional geographically mapped public machine feeds"],
-] as const;
+const MODULE_DESCRIPTIONS: Record<
+  (typeof DCC_PRODUCT_SCOPE.primaryProduct.allowedCoreModules)[number],
+  string
+> = {
+  identity: "Coordinate, timezone, elevation and canonical identity",
+  now: "Current weather and air-quality conditions",
+  conditions: "12-hour weather/air outlook and three-day context",
+  hazards: "Official alerts, recent earthquakes and NASA natural events",
+  water: "Nearby NOAA/USGS river, tide, and buoy telemetry when applicable",
+  official: "Official NOAA/NWS forecast and zone context when applicable",
+  events: "Configured nearby event feeds when available",
+  machineFeeds: "Additional geographically mapped public machine feeds",
+  providerSlots: "Governed operator/directory slots (quarantined when unverified)",
+  officialLiveLinks: "Primary agency and statutory external verification links",
+};
+
+const MODULES = DCC_PRODUCT_SCOPE.primaryProduct.allowedCoreModules.map(
+  (moduleId) => [moduleId, MODULE_DESCRIPTIONS[moduleId]] as const,
+);
 
 const SOURCES = [
-  "Open-Meteo weather",
+  "NOAA/NWS (api.weather.gov) forecasts + alerts",
+  "NOAA/NWS Aviation Weather Center (aviationweather.gov) METAR + TAF",
+  "NOAA CO-OPS tide & water-level stations",
+  "NOAA NDBC marine buoys",
+  "USGS Water Services & U.S. Geological Survey earthquakes",
+  "FAA WeatherCams aviation camera feeds",
+  "Open-Meteo weather & snow models",
   "Open-Meteo / Copernicus CAMS air quality",
-  "U.S. National Weather Service forecasts + alerts",
-  "U.S. Geological Survey earthquakes",
   "NASA EONET natural events",
   "NOAA National Water Prediction Service gauges",
 ] as const;
@@ -116,33 +130,32 @@ export default function DevelopersPage() {
 
         <section className="mt-8 rounded-[28px] border border-cyan-400/20 bg-cyan-500/[0.04] p-6 sm:p-8">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-2xl font-black text-white">OCTO Core API & Booking Distribution</h2>
-            <span className="rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-1 text-xs font-bold text-cyan-300">
-              5% Fixed DCC Share
+            <h2 className="text-2xl font-black text-white">OCTO Core API &amp; Protocol Sandbox</h2>
+            <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1 text-xs font-bold text-amber-200">
+              Protocol Sandbox · Non-Production (0 live_authorized)
             </span>
           </div>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-white/60">
-            DCC provides an authorized distribution layer built on the Open Connectivity for Tour Operators (OCTO) standard.
-            AI agents and applications query live operator availability and execute two-phase booking holds with explicit
-            <code className="text-cyan-200"> expirationMinutes</code>. Operators retain merchant-of-record status and direct fulfillment authority.
+            OCTO Core v1.2.0 endpoints on DCC are currently published as a <strong>protocol sandbox / non-production specification</strong> (<code>0</code> external operators are currently <code>live_authorized</code>).
+            In production, DCC performs suitability evaluation, inquiry routing, and disclosed handoffs — <strong>no autonomous booking or delegated payment capture</strong>. Operators retain merchant-of-record status and direct fulfillment authority.
           </p>
 
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
             <div className="rounded-2xl border border-white/10 bg-black/30 p-4">
               <span className="text-[10px] font-mono uppercase tracking-wider text-cyan-300">GET /api/octo/participants</span>
-              <p className="mt-1 text-xs text-white/60">Registry of authorized operators, booking systems, and tech partners.</p>
+              <p className="mt-1 text-xs text-white/60">Directory registry of onboarding/directory-only operators and tech partners (<code>0</code> external operators currently <code>live_authorized</code>).</p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-black/30 p-4">
               <span className="text-[10px] font-mono uppercase tracking-wider text-cyan-300">POST /api/octo/availability</span>
-              <p className="mt-1 text-xs text-white/60">Real-time availability check against upstream operator reservation systems.</p>
+              <p className="mt-1 text-xs text-white/60">Protocol sandbox / non-production availability check specification.</p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-black/30 p-4">
-              <span className="text-[10px] font-mono uppercase tracking-wider text-cyan-300">POST /api/octo/hold</span>
-              <p className="mt-1 text-xs text-white/60">Two-phase reservation hold reserving seats for a 15-minute checkout window.</p>
+              <span className="text-[10px] font-mono uppercase tracking-wider text-amber-300">POST /api/octo/hold · Sandbox Only</span>
+              <p className="mt-1 text-xs text-white/60">Protocol sandbox / non-production two-phase hold with explicit <code>expirationMinutes</code> (no production seat hold or payment capture).</p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-black/30 p-4">
-              <span className="text-[10px] font-mono uppercase tracking-wider text-cyan-300">POST /api/octo/confirm</span>
-              <p className="mt-1 text-xs text-white/60">Confirm held reservation, generate digital voucher, and record 5% settlement.</p>
+              <span className="text-[10px] font-mono uppercase tracking-wider text-amber-300">POST /api/octo/confirm · Sandbox Only</span>
+              <p className="mt-1 text-xs text-white/60">Protocol sandbox / non-production confirmation specification (DCC performs disclosed handoffs &amp; inquiry routing only).</p>
             </div>
           </div>
         </section>

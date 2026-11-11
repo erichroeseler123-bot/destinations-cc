@@ -79,6 +79,7 @@ export default function AboutPage() {
       <TrustDisclosure />
 
       <p style={{ marginTop: 28 }}>
+        <Link href="/contact">Multi-Cabin &amp; Port Logistics Inquiry →</Link> ·{" "}
         <Link href="/">← Back to Alaska shore-excursion planning</Link>
       </p>
     </main>

@@ -30,6 +30,9 @@ const SITE_OPTIONS = [
   { value: "somerset", label: "Shuttle to Somerset" },
   { value: "welcometothedells", label: "Welcome to the Dells" },
   { value: "saveonthestrip", label: "Save On The Strip" },
+  { value: "welcometotheswamp", label: "Welcome to the Swamp" },
+  { value: "gosno", label: "GoSno Mountain Transportation" },
+  { value: "partyatredrocks", label: "Party at Red Rocks" },
 ];
 
 const TRIAGE_STATUS_OPTIONS: Array<{

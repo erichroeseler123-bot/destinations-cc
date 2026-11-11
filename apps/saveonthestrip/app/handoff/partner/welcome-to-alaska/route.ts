@@ -1,26 +1,65 @@
 import { NextRequest, NextResponse } from "next/server";
-import { buildDccReturnUrl, emitDccEvent, getHandoffIdFromSearchParams } from "@/lib/dcc";
+import {
+  buildDccReturnUrl,
+  emitDccEvent,
+  getHandoffIdFromSearchParams,
+} from "../../../../lib/dcc";
+import { stripEdgePiiQueryParams } from "../../../../../../lib/dcc/shared/edgeContextAndPii";
+
+const VALID_LFSE_PORTS: Readonly<Record<string, string>> = {
+  juneau: "juneau",
+  "juneau-alaska": "juneau",
+  "juneau-ak": "juneau",
+  skagway: "skagway",
+  "skagway-alaska": "skagway",
+  "skagway-ak": "skagway",
+  ketchikan: "ketchikan",
+  "ketchikan-alaska": "ketchikan",
+  "ketchikan-ak": "ketchikan",
+  sitka: "sitka",
+  "sitka-alaska": "sitka",
+  "sitka-ak": "sitka",
+  "icy-strait-point": "icy-strait-point",
+  hoonah: "icy-strait-point",
+};
 
 export async function GET(request: NextRequest) {
-  const handoffId = getHandoffIdFromSearchParams(request.nextUrl.searchParams);
+  const cleanIncoming = new URL(request.url);
+  stripEdgePiiQueryParams(cleanIncoming);
+
+  const handoffId = getHandoffIdFromSearchParams(cleanIncoming.searchParams);
   if (!handoffId) {
-    return NextResponse.json({ ok: false, error: "missing_handoff_id" }, { status: 400 });
+    return NextResponse.json(
+      { ok: false, error: "missing_handoff_id" },
+      { status: 400 },
+    );
   }
 
-  const wtaUrl = new URL("https://welcometoalaskatours.com/handoff/dcc");
-  wtaUrl.searchParams.set("dcc_handoff_id", handoffId);
-  wtaUrl.searchParams.set("source", "dcc");
-  wtaUrl.searchParams.set("source_slug", "saveonthestrip-network-forward");
-  wtaUrl.searchParams.set("source_page", "/handoff/partner/welcome-to-alaska");
-  wtaUrl.searchParams.set("topic", "shore-excursions");
-  wtaUrl.searchParams.set("port", request.nextUrl.searchParams.get("port") || "juneau-alaska");
-  wtaUrl.searchParams.set("partner_satellite", "saveonthestrip");
-  wtaUrl.searchParams.set("partner_reason", "traveler_reuse");
-  wtaUrl.searchParams.set("partner_handoff_id", handoffId);
-  wtaUrl.searchParams.set(
-    "dcc_return",
-    request.nextUrl.searchParams.get("dcc_return") || buildDccReturnUrl("/vegas", handoffId)
+  const rawPort = (cleanIncoming.searchParams.get("port") || "juneau-alaska")
+    .trim()
+    .toLowerCase();
+  const normalizedLfsePort = VALID_LFSE_PORTS[rawPort] || null;
+  const targetPath = normalizedLfsePort ? `/ports/${normalizedLfsePort}` : "/";
+
+  const lfseUrl = new URL(
+    targetPath,
+    "https://www.lastfrontiershoreexcursions.com",
   );
+  lfseUrl.searchParams.set("dcc_handoff_id", handoffId);
+  lfseUrl.searchParams.set("source", "dcc");
+  lfseUrl.searchParams.set("source_slug", "saveonthestrip-network-forward");
+  lfseUrl.searchParams.set("source_page", "/handoff/partner/welcome-to-alaska");
+  lfseUrl.searchParams.set("topic", "shore-excursions");
+  lfseUrl.searchParams.set("port", rawPort);
+  lfseUrl.searchParams.set("partner_satellite", "saveonthestrip");
+  lfseUrl.searchParams.set("partner_reason", "traveler_reuse");
+  lfseUrl.searchParams.set("partner_handoff_id", handoffId);
+  lfseUrl.searchParams.set(
+    "dcc_return",
+    cleanIncoming.searchParams.get("dcc_return") ||
+      buildDccReturnUrl("/vegas", handoffId),
+  );
+  stripEdgePiiQueryParams(lfseUrl);
 
   await emitDccEvent({
     handoffId,
@@ -37,15 +76,15 @@ export async function GET(request: NextRequest) {
     },
     booking: {
       citySlug: "las-vegas",
-      portSlug: request.nextUrl.searchParams.get("port") || "juneau-alaska",
+      portSlug: rawPort,
     },
     partner: {
       fromSite: "saveonthestrip",
-      toSite: "welcome-to-alaska",
+      toSite: "last-frontier-shore-excursions",
       partnerHandoffId: handoffId,
       reason: "traveler_reuse",
     },
-  });
+  }).catch(() => null);
 
-  return NextResponse.redirect(wtaUrl);
+  return NextResponse.redirect(lfseUrl, { status: 308 });
 }

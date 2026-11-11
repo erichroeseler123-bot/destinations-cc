@@ -128,7 +128,7 @@ export default async function ToursPage({
   searchParams,
 }: {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
-} = {}) {
+}) {
   const resolved = searchParams ? await searchParams : {};
   const firstStr = (v: string | string[] | undefined) =>
     Array.isArray(v) ? v[0] : v;

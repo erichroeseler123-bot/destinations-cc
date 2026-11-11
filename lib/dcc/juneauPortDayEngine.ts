@@ -3112,7 +3112,7 @@ export function evaluateJuneauPortDayScenario(
       }
       if (normalizedInput.weatherCondition === "provider_telemetry_unavailable") {
         uncertainOrNeedsConfirmation.push(
-          `Verification limitation: Live NOAA/FAA weather telemetry is currently unavailable. Missing provider data is NEVER treated as zero hazards or an all-clear; check official FAA PAJN METAR and NWS Juneau advisories directly.`,
+          `Verification limitation: Live NOAA/NWS weather telemetry is currently unavailable. Missing provider data is NEVER treated as zero hazards or an all-clear; check official NOAA/NWS Aviation Weather Center PAJN METAR and NWS Juneau advisories directly.`,
         );
       } else if (
         def.weatherCeilingSensitive &&
@@ -3661,9 +3661,9 @@ export function evaluateJuneauPortDayScenario(
           headline:
             "Verification Limitation: Upstream Weather/Sensor Feed Unavailable",
           explanation:
-            "One or more live environmental feeds (NOAA CO-OPS 9452210, FAA PAJN METAR, or NWS Juneau) failed or timed out. A failed fetch establishes a verification limitation — it is NEVER converted into zero hazards, confirmed flight availability, or an all-clear.",
+            "One or more live environmental feeds (NOAA CO-OPS 9452210, NOAA/NWS Aviation Weather Center PAJN METAR, or NWS Juneau) failed or timed out. A failed fetch establishes a verification limitation — it is NEVER converted into zero hazards, confirmed flight availability, or an all-clear.",
           neverAllClearRule:
-            "Do not treat missing telemetry as safe operating conditions. Check FAA PAJN METAR and your operator's dispatch desk directly.",
+            "Do not treat missing telemetry as safe operating conditions. Check NOAA/NWS Aviation Weather Center PAJN METAR and your operator's dispatch desk directly.",
         }
       : normalizedInput.weatherCondition === "low_ceiling_rain_fog"
         ? {

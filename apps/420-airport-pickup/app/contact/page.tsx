@@ -6,13 +6,14 @@ export const metadata: Metadata = {
   description: "Reach 420 Friendly Airport Pickup for Denver arrival questions and site follow-up.",
 };
 
-export default function ContactPage({
+export default async function ContactPage({
   searchParams,
 }: {
-  searchParams?: { sent?: string; error?: string };
+  searchParams?: Promise<{ sent?: string; error?: string }>;
 }) {
-  const sent = searchParams?.sent === "1";
-  const error = searchParams?.error === "contact";
+  const sp = (await searchParams) || {};
+  const sent = sp.sent === "1";
+  const error = sp.error === "1" || sp.error === "contact";
 
   return (
     <main>

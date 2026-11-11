@@ -1,30 +1,29 @@
-# Last Frontier Shore Excursions — Standalone Vercel Deployment
+# Last Frontier Shore Excursions — Monorepo Vercel Deployment
 
-Production domain: `lastfrontiershoreexcursions.com`
+Production domains: `www.lastfrontiershoreexcursions.com` (canonical) and `lastfrontiershoreexcursions.com` (308 apex redirect to `www`).
 
-## Required Vercel project settings
+## Live Vercel project & Git link
 
-- Git repository: `erichroeseler123-bot/destinations-cc`
+- Git repository: `erichroeseler123-bot/destinations-cc` (monorepo)
 - Production branch: `main`
 - Framework preset: Next.js
 - Root Directory: `apps/last-frontier-shore-excursions`
+- Shared monorepo imports: `lib/dcc/shared/*` (enabled via `turbopack.root` / `outputFileTracingRoot` pointing to repo root and `scripts/vercel-ignore-monorepo.mjs`)
 - Node.js: 24.x
 
-## Domain cutover
+## Verified verification routes
 
-The production domain is currently attached to the shared `v0-code-review` Vercel project (`prj_NYmbSMRh4gwMnbc0u4jJjKrJwDYH`). Do not remove it from that project until the standalone Last Frontier project has a READY production deployment.
+Confirm the following routes return `200 OK` on preview/production deployments:
 
-Cutover sequence:
+- `/`, `/about`, `/contact`
+- `/ports/juneau`, `/ports/skagway`, `/ports/ketchikan`, `/ports/sitka`, `/ports/icy-strait-point`
+- `/cruise-ships`, `/tours`, `/sitemap.xml`, `/robots.txt`
 
-1. Create/import a dedicated Vercel project from the repo above.
-2. Set Root Directory to `apps/last-frontier-shore-excursions` before the first production deployment.
-3. Confirm `/`, `/ports/juneau`, `/ports/skagway`, `/ports/ketchikan`, `/ports/sitka`, `/ports/icy-strait-point`, `/sitemap.xml`, and `/robots.txt` return successfully on the Vercel project URL.
-4. Add `www.lastfrontiershoreexcursions.com` to the dedicated project.
-5. Add `lastfrontiershoreexcursions.com` and redirect apex to `www`.
-6. Only after the new aliases are active, remove both Last Frontier domains from `v0-code-review`.
+## Disclosed affiliate & operator boundaries
 
-## Affiliate isolation
+Last Frontier Shore Excursions operates as an independent Alaska cruise-excursion comparison and concierge guide (not a cruise line or merchant of record):
 
-This standalone app intentionally contains no FareHarbor integration. Its outbound tour layer uses the Last Frontier Viator helper and campaign namespace. If dedicated credentials are available, configure the app's Last Frontier-specific Viator environment variables in the dedicated Vercel project rather than inheriting unrelated provider credentials from the shared root project.
-
-The old shared host currently injects GetYourGuide partner analytics (`F2MMUUH`) through the root app. That script is not part of this standalone app and should not be copied unless ownership and attribution are intentionally confirmed.
+- **Viator Affiliate Attribution**: Uses `resolveViatorPid` (`NEXT_PUBLIC_VIATOR_PID` -> `NEXT_PUBLIC_LAST_FRONTIER_VIATOR_PID` -> `P00281144`, `mcid=42383`, `last-frontier-*` campaign tags).
+- **GetYourGuide Partner Attribution**: Uses disclosed partner ID `F2MMUUH`.
+- **FareHarbor Affiliate Network Attribution**: Selected direct Alaska operator comparison links (such as Allen Marine Tours on Juneau whale-watching comparison surfaces) use disclosed FareHarbor affiliate attribution `asn=welcometoalaskatours` so guests complete checkout directly with the local Alaska operator. Note that `welcometoalaskatours.com` (`wta-ui`) is a contained legacy domain and must never be linked as a public consumer destination.
+- **Concierge Inquiries (`POST /api/inquiries`)**: Forwards multi-cabin and port-window inquiries via `lib/dcc/shared/specialistInquiryClient.ts` (`channel: "lastfrontiershoreexcursions-inquiry"`) into the DCC Unified Operator Inbox.

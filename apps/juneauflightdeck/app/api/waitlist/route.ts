@@ -3,11 +3,11 @@ import {
   extractNonPiiAttribution,
   formatAttributionSummaryLine,
   isPreviewOrLocalRuntime,
-} from "@/lib/dcc/commercialAttribution";
+} from "../../../../../lib/dcc/commercialAttribution";
 import {
-  persistDurableTransactionalSubmission,
-  resolveRuntimeEnvironmentTag,
-} from "@/lib/dcc/storage/transactionalSubmissions";
+  forwardSpecialistInquiryToDcc,
+  type SpecialistNotificationStatus,
+} from "../../../../../lib/dcc/shared/specialistInquiryClient";
 import { saveWaitlistEntry, normalizeTourPreference, type WaitlistEntry } from "../../../lib/waitlistStore";
 import { dispatchWaitlistIntakeNotification } from "../../../lib/notificationDispatcher";
 
@@ -190,14 +190,18 @@ export async function POST(request: Request) {
       normalizedTourType === "dog_sledding" ? 649 : normalizedTourType === "ice_trek" ? 599 : 449;
 
     const previewRuntime = isPreviewOrLocalRuntime(request);
+    const hasTestMarker =
+      /\[test\]/i.test(String(name || "")) ||
+      /\[test\]/i.test(String(notes || ""));
     const effectiveIsTest = Boolean(
       isTest ||
+        hasTestMarker ||
         previewRuntime ||
         String(body.environment || "").trim().toLowerCase() === "preview",
     );
     const runtimeEnv = previewRuntime
       ? "preview"
-      : resolveRuntimeEnvironmentTag();
+      : (process.env.VERCEL_ENV || "").trim() || "production";
 
     const sourcePage =
       typeof body.sourcePage === "string" && body.sourcePage.trim()
@@ -256,12 +260,39 @@ export async function POST(request: Request) {
     await saveWaitlistEntry(entry);
 
     let notificationDispatched = false;
+    let emailReason: string | null = effectiveIsTest
+      ? "suppressed_test_submission"
+      : null;
+    const hasResendKey = Boolean(
+      (process.env.RESEND_API_KEY || process.env.DCC_RESEND_API_KEY || "").trim(),
+    );
+    let resolvedNotifStatus: SpecialistNotificationStatus = effectiveIsTest
+      ? "suppressed_test"
+      : hasResendKey
+        ? "not_configured"
+        : "not_configured";
+
     if (!effectiveIsTest) {
       try {
         const intakeNotification = await dispatchWaitlistIntakeNotification(entry);
-        notificationDispatched = Boolean(intakeNotification);
+        notificationDispatched = Boolean(intakeNotification?.status === "delivered");
+        if (notificationDispatched) {
+          resolvedNotifStatus = "sent";
+          emailReason = null;
+        } else if (intakeNotification?.status === "failed") {
+          resolvedNotifStatus = "failed";
+          emailReason = "resend_intake_dispatch_failed";
+        } else {
+          resolvedNotifStatus = "not_configured";
+          emailReason = "missing_email_config";
+        }
       } catch (notifErr) {
         console.warn("[WaitlistAPI] Intake notification dispatch error:", notifErr);
+        resolvedNotifStatus = hasResendKey ? "failed" : "not_configured";
+        emailReason =
+          notifErr instanceof Error
+            ? `intake_dispatch_error:${notifErr.message.slice(0, 120)}`
+            : "intake_dispatch_error";
       }
     }
 
@@ -278,146 +309,52 @@ export async function POST(request: Request) {
     const combinedNotes = [
       entry.notes,
       `Est. gross booking value: $${entry.estimatedValue?.toLocaleString() || 0} (no payment collected; qualified availability inquiry)`,
+      attrSummary ? `Attribution: ${attrSummary}` : null,
     ]
       .filter(Boolean)
       .join(" · ");
-    const resolvedNotifStatus = effectiveIsTest
-      ? "skipped_disabled"
-      : notificationDispatched
-        ? "delivered"
-        : "not_configured";
 
-    const inboxPersistence = await persistDurableTransactionalSubmission({
-      submissionId,
+    const forwardResult = await forwardSpecialistInquiryToDcc({
       channel: "juneauflightdeck-inquiry",
-      status: "captured",
-      summaryNote: `${headline}${attrSummary ? ` [${attrSummary}]` : ""}`,
-      payload: {
-        name: entry.name,
-        email: entry.email,
-        phone: entry.phone || null,
+      submissionId,
+      name: entry.name,
+      email: entry.email,
+      phone: entry.phone || null,
+      cruiseLine: entry.cruiseLine,
+      shipName: entry.shipName,
+      portDate: primaryPortDate,
+      dates: datesLabel,
+      partySize: parsedPartySize,
+      tourType: normalizedTourType,
+      bookingMode: normalizedMode,
+      notes: combinedNotes,
+      sourcePage,
+      sourcePath: sourcePage,
+      intendedDestination: "alerts@juneauflightdeck.com",
+      isTest: effectiveIsTest,
+      attribution: sanitizedAttribution as unknown as Record<string, unknown>,
+      emailSent: notificationDispatched,
+      emailReason,
+      notificationStatus: resolvedNotifStatus,
+      extraMetadata: {
         company: entry.cruiseLine,
         headline,
-        dates: datesLabel,
-        portDate: primaryPortDate,
-        sailDate: sanitizedAttribution.sailDate,
-        shipName: entry.shipName,
-        portCity: normalizedPortCity,
-        partySize: parsedPartySize,
         routeOrLocation: `${entry.shipName} · ${normalizedPortCity.toUpperCase()}`,
-        notes: combinedNotes,
-        sourcePath: sourcePage,
-        attribution: sanitizedAttribution,
+        environment: runtimeEnv,
         namespace: previewRuntime ? "preview" : "production",
-        intendedDestination: "alerts@juneauflightdeck.com",
-        notificationStatus: resolvedNotifStatus,
         notificationDelivered: notificationDispatched,
       },
-      environment: runtimeEnv,
-      isTest: effectiveIsTest,
-      createdAt: entry.createdAt,
     });
-
-    // Cross-container sync when DCC_SPECIALIST_INQUIRY_INGEST_URL is configured
-    // (e.g. isolated Vercel Preview where JFD and DCC use separate non-prod DBs)
-    // or when local serverless DB persistence is unavailable.
-    let remoteInboxPersisted = false;
-    let remoteFindingId: string | null = null;
-    const explicitDccIngestBase = (
-      process.env.DCC_SPECIALIST_INQUIRY_INGEST_URL || ""
-    )
-      .trim()
-      .replace(/\/+$/, "");
-    const fallbackDccIngestBase = !inboxPersistence.persisted
-      ? (
-          process.env.DCC_API_BASE_URL ||
-          "https://www.destinationcommandcenter.com"
-        )
-          .trim()
-          .replace(/\/+$/, "")
-      : "";
-    const targetDccBase = explicitDccIngestBase || fallbackDccIngestBase;
-
-    if (targetDccBase) {
-      try {
-        const upstreamHeaders: Record<string, string> = {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          "x-specialist-origin-host":
-            request.headers.get("host") || "juneauflightdeck.vercel.app",
-        };
-        const internalAuthSecret = (
-          process.env.DCC_INTERNAL_API_SECRET ||
-          process.env.INTERNAL_API_SECRET ||
-          process.env.ADMIN_ACCESS_KEY ||
-          ""
-        ).trim();
-        if (internalAuthSecret) {
-          upstreamHeaders["x-admin-access-key"] = internalAuthSecret;
-          upstreamHeaders["x-internal-secret"] = internalAuthSecret;
-          upstreamHeaders.Authorization = `Bearer ${internalAuthSecret}`;
-        }
-        const previewBypass = (
-          process.env.DCC_PREVIEW_BYPASS_SECRET ||
-          process.env.VERCEL_AUTOMATION_BYPASS_SECRET ||
-          ""
-        ).trim();
-        if (previewBypass && targetDccBase.includes(".vercel.app")) {
-          upstreamHeaders["x-vercel-protection-bypass"] = previewBypass;
-        }
-
-        const remoteRes = await fetch(
-          `${targetDccBase}/api/internal/specialist-inquiries`,
-          {
-            method: "POST",
-            headers: upstreamHeaders,
-            body: JSON.stringify({
-              channel: "juneauflightdeck-inquiry",
-              submissionId,
-              name: entry.name,
-              email: entry.email,
-              phone: entry.phone || null,
-              company: entry.cruiseLine,
-              headline,
-              dates: datesLabel,
-              partySize: parsedPartySize,
-              routeOrLocation: `${entry.shipName} · ${normalizedPortCity.toUpperCase()}`,
-              notes: combinedNotes,
-              sourcePath: sourcePage,
-              environment: runtimeEnv,
-              namespace: previewRuntime ? "preview" : "production",
-              isTest: effectiveIsTest,
-              notificationStatus: resolvedNotifStatus,
-              notificationDelivered: notificationDispatched,
-              attribution: sanitizedAttribution,
-            }),
-            cache: "no-store",
-          },
-        );
-        const remoteJson = (await remoteRes.json().catch(() => null)) as {
-          ok?: boolean;
-          persisted?: boolean;
-          findingId?: string;
-        } | null;
-        if (remoteRes.ok && remoteJson?.ok && remoteJson.persisted) {
-          remoteInboxPersisted = true;
-          remoteFindingId = remoteJson.findingId || null;
-        }
-      } catch (syncErr) {
-        console.warn("[WaitlistAPI] Remote DCC specialist ingest sync warning:", syncErr);
-      }
-    }
 
     return NextResponse.json({
       ok: true,
       id: submissionId,
       submissionId,
-      operatorInboxPersisted: Boolean(
-        inboxPersistence.persisted || remoteInboxPersisted,
-      ),
-      operatorInboxFindingId: remoteFindingId || inboxPersistence.findingId,
+      operatorInboxPersisted: Boolean(forwardResult.ok),
+      operatorInboxFindingId: forwardResult.findingId || null,
       environment: runtimeEnv,
       notificationDispatched,
+      notificationStatus: resolvedNotifStatus,
       bookingMode: entry.bookingMode,
       isTest: entry.isTest,
       attribution: sanitizedAttribution,

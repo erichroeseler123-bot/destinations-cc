@@ -1,19 +1,32 @@
 import { NextResponse } from "next/server";
 import {
+  getDccRegisteredSiteManifestV1,
   getDccSiteManifestV1,
   isExcludedPortfolioSite,
+  normalizeSiteIdentifier,
 } from "@/lib/dcc/portfolioNetworkRegistry";
 
 export const dynamic = "force-dynamic";
 
+function isDefaultLocalOrRootHost(host: string): boolean {
+  const normalized = normalizeSiteIdentifier(host);
+  return (
+    !normalized ||
+    normalized === "localhost" ||
+    normalized === "127.0.0.1" ||
+    normalized.endsWith(".vercel.app")
+  );
+}
+
 export async function GET(request: Request) {
   const url = new URL(request.url);
-  const requestedSite =
-    url.searchParams.get("site")?.trim() ||
+  const explicitSiteParam = url.searchParams.get("site")?.trim() || null;
+  const hostFallback =
     request.headers.get("x-forwarded-host")?.split(",")[0]?.trim() ||
     request.headers.get("host")?.trim() ||
     url.hostname ||
     "destinationcommandcenter.com";
+  const requestedSite = explicitSiteParam || hostFallback;
 
   if (isExcludedPortfolioSite(requestedSite)) {
     return NextResponse.json(
@@ -30,9 +43,25 @@ export async function GET(request: Request) {
     );
   }
 
-  const manifest =
-    getDccSiteManifestV1(requestedSite) ||
-    getDccSiteManifestV1("destinationcommandcenter.com")!;
+  let manifest = getDccRegisteredSiteManifestV1(requestedSite);
+  if (!manifest && !explicitSiteParam && isDefaultLocalOrRootHost(hostFallback)) {
+    manifest = getDccSiteManifestV1("destinationcommandcenter.com");
+  }
+
+  if (!manifest) {
+    return NextResponse.json(
+      {
+        error: "UNKNOWN_SITE",
+        message: `No DCC site manifest is registered for '${requestedSite}'.`,
+      },
+      {
+        status: 404,
+        headers: {
+          "Cache-Control": "no-store, max-age=0",
+        },
+      },
+    );
+  }
 
   const commitSha =
     process.env.VERCEL_GIT_COMMIT_SHA ||

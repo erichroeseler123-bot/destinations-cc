@@ -910,7 +910,7 @@ export const DCC_CAPABILITY_TRUTH_MATRIX: CapabilityTruthItem[] = [
     geographicScope: "Global for OSM physical points; ICAO airports for METAR/TAF",
     commonMisconceptionToAvoid:
       "OSM identifies physical bus stops, rail stations, and ferry terminals—it does NOT ingest live transit schedules, bus headways, service alerts, or ferry sailing cancellations.",
-    primarySources: ["OpenStreetMap Overpass API", "NOAA Aviation Weather Center (aviationweather.gov)"],
+    primarySources: ["OpenStreetMap Overpass API", "NOAA/NWS Aviation Weather Center (aviationweather.gov)"],
   },
   {
     capability: "Venue Lightning Holds, Concert Delays & Park Operating Status",
@@ -1074,7 +1074,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
           routeOrCoverage: "Located 8.5 miles northwest of downtown in the Mendenhall Valley; primary jet service via Alaska Airlines (Seattle, Anchorage, Sitka, Ketchikan, Petersburg, Wrangell) plus regional bush/floatplane operators.",
           scheduleAndStatusIntegration: "curated_with_official_link",
           whatWorksInPractice:
-            "DCC ingests live NOAA Aviation Weather (METAR/TAF) for PAJN to show ceiling, visibility, and wind conditions in the Mendenhall Valley. However, individual airline flight status and helicopter/floatplane dispatch decisions are made directly by carriers and FAA Part 135 operators.",
+            "DCC ingests live NOAA/NWS Aviation Weather Center (METAR/TAF) for PAJN to show ceiling, visibility, and wind conditions in the Mendenhall Valley. However, individual airline flight status and helicopter/floatplane dispatch decisions are made directly by carriers and FAA Part 135 operators.",
           practicalConstraints: [
             "Mountainous terrain requires specialized Required Navigation Performance (RNP) approaches originally pioneered at JNU.",
             "Helicopter glacier tour bases operate primarily from the airport perimeter (8.5 mi from cruise docks), requiring a 20-minute ground shuttle each way.",

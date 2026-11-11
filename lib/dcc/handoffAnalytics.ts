@@ -1492,17 +1492,19 @@ export function getPortRecommendationActions(portSlug: string): RecommendationAc
     },
     {
       id: "wta-execution",
-      label: "Welcome to Alaska Tours",
-      href: `https://welcometoalaskatours.com/ports/${portSlug}`,
+      label: "Last Frontier Shore Excursions",
+      href:
+        lfseDeepLink ||
+        `https://www.lastfrontiershoreexcursions.com/ports/${portSlug.replace(/-alaska$|-ak$/i, "")}`,
       kind: "external",
       score: wtaScore + partnerLoopScore - wtaPenalty - brokenPartnerCount * 4,
       laneState: wtaDegraded ? "degraded" : "healthy",
       reason:
         brokenPartnerCount > 0
-          ? "Partner handoffs from WTA are not being fully accepted downstream, so hold or reroute before sending more demand."
+          ? "Partner handoffs on this port lane are not being fully accepted downstream, so hold or reroute before sending more demand."
           : partnerLoopScore > 0
-            ? "Strong WTA to PARR downstream outcomes make this a proven multi-corridor partner lane."
-            : "Direct Welcome to Alaska Tours execution lane for port-day shore excursions.",
+            ? "Strong downstream partner outcomes make Last Frontier Shore Excursions a proven multi-corridor port lane."
+            : "Direct Last Frontier Shore Excursions specialist lane for Alaska port-day shore excursions.",
     },
   ];
 

@@ -102,6 +102,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Link href="/tours">All Tours</Link>
             <Link href="/decision/best-excursion-for-each-port">Decision Guides</Link>
             <Link href="/about">About</Link>
+            <Link href="/contact">Contact</Link>
           </nav>
         </header>
         {children}
@@ -122,6 +123,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <Link href="/decision/best-excursion-for-each-port">Best Excursions by Port</Link>
                   <Link href="/decision/excursions-safe-for-cruise-ship-window">The 45-Minute Safety Rule</Link>
                   <Link href="/about">About, Affiliate & Booking Boundaries</Link>
+                  <Link href="/contact">Multi-Cabin & Port Logistics Inquiry</Link>
                 </div>
               </div>
             </div>

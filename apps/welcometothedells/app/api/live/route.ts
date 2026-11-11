@@ -43,7 +43,8 @@ async function loadWeather() {
   if (!period) throw new Error("NWS hourly forecast unavailable");
 
   return {
-    source: "National Weather Service",
+    agency: "NOAA/NWS",
+    source: "NOAA/NWS National Weather Service",
     sourceUrl: "https://api.weather.gov",
     observedAt: period.startTime ?? null,
     temperatureF: numberOrNull(period.temperature),
@@ -151,7 +152,8 @@ export async function GET() {
       freshnessSeconds: 300,
       sources: [
         {
-          name: "National Weather Service API",
+          agency: "NOAA/NWS",
+          name: "NOAA/NWS National Weather Service API",
           url: "https://api.weather.gov",
           keyRequired: false,
         },

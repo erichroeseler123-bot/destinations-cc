@@ -1,4 +1,9 @@
+import { CONNECTED_CRUISE_PORT_COUNT } from "@/lib/dcc/cruisePortDirectory";
+
 export const dynamic = "force-static";
+
+const OCTO_SANDBOX_NOTE =
+  "Protocol sandbox / non-production: 0 external operators are currently live_authorized; DCC performs suitability evaluation, inquiry routing, and disclosed handoffs — no autonomous booking or delegated payment capture.";
 
 export async function GET() {
   const document = {
@@ -117,16 +122,18 @@ export async function GET() {
       "/octo/bookings": {
         post: {
           operationId: "createOctoBooking",
-          summary: "Create an OCTO reservation hold",
+          summary: "Create an OCTO reservation hold (protocol sandbox / non-production)",
+          description: OCTO_SANDBOX_NOTE,
           security: [{ BearerAuth: [] }],
           responses: {
-            "201": { description: "Booking hold created with utcHoldExpires" },
+            "201": { description: "Booking hold created with utcHoldExpires (sandbox only)" },
             "400": { description: "Invalid request or insufficient availability" },
           },
         },
         get: {
           operationId: "listOctoBookings",
-          summary: "List OCTO bookings",
+          summary: "List OCTO bookings (protocol sandbox / non-production)",
+          description: OCTO_SANDBOX_NOTE,
           security: [{ BearerAuth: [] }],
           responses: {
             "200": { description: "List of bookings" },
@@ -157,11 +164,12 @@ export async function GET() {
       "/octo/bookings/{bookingUuid}/confirm": {
         post: {
           operationId: "confirmOctoBookingByUuid",
-          summary: "Confirm on-hold booking",
+          summary: "Confirm on-hold booking (protocol sandbox / non-production)",
+          description: OCTO_SANDBOX_NOTE,
           parameters: [{ name: "bookingUuid", in: "path", required: true, schema: { type: "string" } }],
           security: [{ BearerAuth: [] }],
           responses: {
-            "200": { description: "Booking confirmed with voucher" },
+            "200": { description: "Booking confirmed with voucher (sandbox only)" },
             "410": { description: "Hold expired" },
           },
         },
@@ -190,8 +198,8 @@ export async function GET() {
       "/api/octo/availability": {
         post: {
           operationId: "checkOctoAvailability",
-          summary: "Query live availability directly from operator OCTO systems",
-          description: "Live availability check against upstream OCTO provider. Returns available departure times, remaining seat capacity, and dynamic pricing.",
+          summary: "Query OCTO availability (protocol sandbox / non-production)",
+          description: `Protocol sandbox availability specification. ${OCTO_SANDBOX_NOTE}`,
           responses: {
             "200": { description: "Available time slots and pricing" },
           },
@@ -200,20 +208,20 @@ export async function GET() {
       "/api/octo/hold": {
         post: {
           operationId: "createOctoBookingHold",
-          summary: "Reserve seats with explicit hold duration",
-          description: "Initiates a two-phase booking reservation hold enforcing expirationMinutes per the OCTO Core specification. Seats are held upstream in the operator reservation system.",
+          summary: "Reserve seats with explicit hold duration (protocol sandbox / non-production)",
+          description: `Protocol sandbox / non-production two-phase reservation hold enforcing expirationMinutes per the OCTO Core specification. ${OCTO_SANDBOX_NOTE}`,
           responses: {
-            "201": { description: "Hold created with utcHoldExpires timestamp" },
+            "201": { description: "Hold created with utcHoldExpires timestamp (sandbox only)" },
           },
         },
       },
       "/api/octo/confirm": {
         post: {
           operationId: "confirmOctoBooking",
-          summary: "Confirm held booking and issue digital voucher",
-          description: "Confirms an on-hold reservation with lead traveler details and authorized payment handoff. Records agreed commission in settlement ledger.",
+          summary: "Confirm held booking in OCTO sandbox (protocol sandbox / non-production)",
+          description: `Protocol sandbox / non-production confirmation endpoint. ${OCTO_SANDBOX_NOTE}`,
           responses: {
-            "200": { description: "Booking confirmed with voucher code" },
+            "200": { description: "Booking confirmed with voucher code (sandbox only)" },
             "410": { description: "Hold expired" },
           },
         },
@@ -378,9 +386,9 @@ export async function GET() {
       "/api/v1/cruise/port-day-excursions": {
         get: {
           operationId: "searchPortDayExcursions",
-          summary: "Search cruise port-day shore excursions across all 632 connected ports and evaluate deterministic sailing-window timing fit",
+          summary: `Search cruise port-day shore excursions across all ${CONNECTED_CRUISE_PORT_COUNT} connected ports and evaluate deterministic sailing-window timing fit`,
           description:
-            "Queries DCC's SQL-backed cruise port excursion catalog across all 632 connected cruise ports, returns the port profile and any catalog entries from approved provider mappings, and evaluates each tour against the ship arrival and all-aboard window (`status`: `fits`, `runs_too_late`, or `needs_verification`). Uses `status: needs_verification` when the dated berth (`datedBerth`), route transfers (`transfers`), or all-aboard cutoff (`allAboard`) are missing. Coordinates (`berthCoordinates`, `meetingPointCoordinates`) help identify the endpoints, while the timing verdict requires evidence for the actual route and sailing. Public search returns approved affiliate links without creating checkout records.",
+            `Queries DCC's SQL-backed cruise port excursion catalog across all ${CONNECTED_CRUISE_PORT_COUNT} connected cruise ports, returns the port profile and any catalog entries from approved provider mappings, and evaluates each tour against the ship arrival and all-aboard window (\`status\`: \`fits\`, \`runs_too_late\`, or \`needs_verification\`). Uses \`status: needs_verification\` when the dated berth (\`datedBerth\`), route transfers (\`transfers\`), or all-aboard cutoff (\`allAboard\`) are missing. Coordinates (\`berthCoordinates\`, \`meetingPointCoordinates\`) help identify the endpoints, while the timing verdict requires evidence for the actual route and sailing. Public search returns approved affiliate links without creating checkout records.`,
           parameters: [
             {
               name: "port",
@@ -388,7 +396,7 @@ export async function GET() {
               required: false,
               schema: { type: "string", default: "reykjavik" },
               description:
-                "Any of the 632 connected cruise port slugs or aliases (`new-orleans`, `cozumel`, `reykjavik`, `kahului`, `juneau`, `skagway`, `ketchikan`, `seward`, `miami`, `tampa`, `seattle`, `roatan`, `nassau`, `st-thomas`, `grand-cayman`, `civitavecchia`, `barcelona`, etc.).",
+                `Any of the ${CONNECTED_CRUISE_PORT_COUNT} connected cruise port slugs or aliases (\`new-orleans\`, \`cozumel\`, \`reykjavik\`, \`kahului\`, \`juneau\`, \`skagway\`, \`ketchikan\`, \`seward\`, \`miami\`, \`tampa\`, \`seattle\`, \`roatan\`, \`nassau\`, \`st-thomas\`, \`grand-cayman\`, \`civitavecchia\`, \`barcelona\`, etc.).`,
             },
             {
               name: "viewMode",
@@ -639,7 +647,7 @@ export async function GET() {
           responses: {
             "200": {
               description:
-                "MCP discovery manifest including dcc_search_port_excursions (632 connected ports), dcc_check_tour_availability (read-only), and catalog-backed dcc_prepare_tour_checkout",
+                `MCP discovery manifest including dcc_search_port_excursions (${CONNECTED_CRUISE_PORT_COUNT} connected ports), dcc_check_tour_availability (read-only), and catalog-backed dcc_prepare_tour_checkout`,
             },
           },
         },
@@ -654,7 +662,7 @@ export async function GET() {
           operationId: "callMcpJsonRpc",
           summary: "Execute standard MCP JSON-RPC 2.0 requests (initialize, notifications/initialized, ping, tools/list, tools/call)",
           description:
-            "Standard MCP Streamable HTTP JSON-RPC 2.0 endpoint supporting `initialize`, `notifications/initialized`, `ping`, `tools/list`, and `tools/call` (including `dcc_search_port_excursions` across all 632 ports, read-only `dcc_check_tour_availability`, and catalog-backed `dcc_prepare_tour_checkout` for New Orleans `15200P6` / `TG10`, New Orleans `15200P1` / `TG9, TG2, TG6, TG7`, and Cozumel `103974P5` / `TG1`).",
+            `Standard MCP Streamable HTTP JSON-RPC 2.0 endpoint supporting \`initialize\`, \`notifications/initialized\`, \`ping\`, \`tools/list\`, and \`tools/call\` (including \`dcc_search_port_excursions\` across all ${CONNECTED_CRUISE_PORT_COUNT} ports, read-only \`dcc_check_tour_availability\`, and catalog-backed \`dcc_prepare_tour_checkout\` for New Orleans \`15200P6\` / \`TG10\`, New Orleans \`15200P1\` / \`TG9, TG2, TG6, TG7\`, and Cozumel \`103974P5\` / \`TG1\`).`,
           responses: {
             "200": { description: "JSON-RPC 2.0 response" },
             "202": { description: "JSON-RPC 2.0 notification accepted (e.g. notifications/initialized)" },

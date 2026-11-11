@@ -17,6 +17,7 @@ type EventNote = {
 };
 
 type WeatherNote = {
+  agency: "NOAA/NWS";
   temperatureF: number | null;
   maxTemperatureF: number | null;
   precipitationChance: number | null;
@@ -143,6 +144,7 @@ async function getWeather(now: Date): Promise<WeatherNote | null> {
     const heatRisk: Risk = maxTemperatureF !== null && maxTemperatureF >= 95 ? "high" : maxTemperatureF !== null && maxTemperatureF >= 88 ? "elevated" : "low";
 
     return {
+      agency: "NOAA/NWS",
       temperatureF: Number.isFinite(Number(next48[0]?.temperature)) ? Number(next48[0].temperature) : null,
       maxTemperatureF,
       precipitationChance,
@@ -192,6 +194,7 @@ export async function GET() {
       sources: {
         events: NEW_ORLEANS_EVENTS_URL,
         weather: "https://www.weather.gov/documentation/services-web-api",
+        weatherAgency: "NOAA/NWS",
       },
     },
     { headers: { "Cache-Control": "public, s-maxage=900, stale-while-revalidate=1800" } },

@@ -36,6 +36,7 @@ import {
   type ViatorCarryoverTruth,
 } from "@/lib/dcc/catalog/provenToursCatalog";
 import {
+  CONNECTED_CRUISE_PORT_COUNT,
   getCruisePortDirectory,
   getCruisePortViatorSearch,
 } from "@/lib/dcc/cruisePortDirectory";
@@ -113,7 +114,7 @@ export interface CruisePortExcursionProfile {
     | "batch_2_alaska"
     | "batch_3_us_mainland_gulf"
     | "batch_4_caribbean"
-    | "batch_5_global_632_discovery";
+    | `batch_5_global_${number}_discovery`;
   batchLabel: string;
   destinationSlug: string;
   viatorDestinationId: number;
@@ -929,7 +930,7 @@ const PORT_BERTH_COORDINATES: Record<string, { lat: number; lng: number }> = {
   "a-coruna": { lat: 43.3688, lng: -8.3973 }, // Muelle de Trasatlánticos, La Coruña
 };
 
-export const CONNECTED_CRUISE_PORT_COUNT = 632;
+export { CONNECTED_CRUISE_PORT_COUNT };
 
 let cachedConnectedPortProfiles: CruisePortExcursionProfile[] | null = null;
 
@@ -990,8 +991,8 @@ export function getConnectedCruisePortProfiles(): CruisePortExcursionProfile[] {
       portSlug: entry.slug,
       portName: entry.name,
       country: entry.country || entry.area || "International",
-      batch: "batch_5_global_632_discovery",
-      batchLabel: "Batch 5 — Global 632-Port Discovery Directory",
+      batch: `batch_5_global_${CONNECTED_CRUISE_PORT_COUNT}_discovery`,
+      batchLabel: `Batch 5 — Global ${CONNECTED_CRUISE_PORT_COUNT}-Port Discovery Directory`,
       destinationSlug: mappedDestinationSlug,
       viatorDestinationId: viatorDestId,
       viatorDestinationName: viatorDestName,
@@ -1043,7 +1044,7 @@ export function resolveCruisePortExcursionProfile(
   const allProfiles = getConnectedCruisePortProfiles();
   const normalizedSlug = normalizePortLookupToken(s);
 
-  // 1. Exact slug match in the 632-port connected directory (including the 15 batch ports)
+  // 1. Exact slug match in the connected cruise port directory (including the 15 batch ports)
   const direct =
     allProfiles.find((p) => p.portSlug === s) ||
     allProfiles.find((p) => p.portSlug === normalizedSlug);
@@ -1096,7 +1097,7 @@ export function resolveCruisePortExcursionProfile(
     return allProfiles.find((p) => p.portSlug === "grand-cayman")!;
   }
 
-  // 3. Name, alias, or portCode lookup across all 632 directory entries
+  // 3. Name, alias, or portCode lookup across all connected directory entries
   const directoryEntries = getCruisePortDirectory();
   for (const entry of directoryEntries) {
     if (normalizePortLookupToken(entry.name) === normalizedSlug) {

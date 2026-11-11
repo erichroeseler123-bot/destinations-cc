@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  persistDurableTransactionalSubmission,
-  resolveRuntimeEnvironmentTag,
-} from "../../../../../lib/dcc/storage/transactionalSubmissions";
+  escapeHtml,
+  forwardSpecialistInquiryToDcc,
+  sendResendEmailSafe,
+  type SpecialistNotificationStatus,
+} from "../../../../../lib/dcc/shared/specialistInquiryClient";
 
 export const runtime = "nodejs";
 
@@ -16,12 +18,27 @@ const VALID_INQUIRY_TYPES = [
 
 type InquiryType = (typeof VALID_INQUIRY_TYPES)[number];
 
+function resolveRuntimeEnvironmentTag(): "production" | "preview" | "development" | "test" {
+  const vercelEnv = (process.env.VERCEL_ENV || "").trim().toLowerCase();
+  if (vercelEnv === "production") return "production";
+  if (vercelEnv === "preview") return "preview";
+  if (vercelEnv === "development") return "development";
+  const nodeEnv = (process.env.NODE_ENV || "").trim().toLowerCase();
+  if (nodeEnv === "test") return "test";
+  if (nodeEnv === "production") return "production";
+  return "development";
+}
+
+function hasTestMarker(...values: Array<string | null | undefined>): boolean {
+  return values.some((value) => typeof value === "string" && /\[test\]/i.test(value));
+}
+
 export async function GET() {
   return NextResponse.json({
     status: "active",
     service: "Welcome to the Dells Inquiries & Trip Desk API",
     supportedTypes: VALID_INQUIRY_TYPES,
-    version: "1.1.0",
+    version: "1.2.0",
   });
 }
 
@@ -48,6 +65,7 @@ export async function POST(request: NextRequest) {
       partySize,
       dates,
       contextTitle,
+      sourcePath,
       isTest: rawIsTest,
     } = body;
 
@@ -83,92 +101,112 @@ export async function POST(request: NextRequest) {
     const referenceId = `WTD-INQ-${refCode}`;
     const receivedAt = new Date().toISOString();
     const environment = resolveRuntimeEnvironmentTag();
-    const isTest = Boolean(rawIsTest);
 
-    const record = {
-      referenceId,
-      receivedAt,
-      name: name.trim(),
-      email: email.trim().toLowerCase(),
-      phone: phone ? String(phone).trim() : null,
-      inquiryType: finalType,
-      partySize: partySize ? String(partySize).trim() : null,
-      dates: dates ? String(dates).trim() : null,
-      contextTitle: contextTitle ? String(contextTitle).trim() : null,
-      message: message.trim(),
-      environment,
-      isTest,
-    };
+    const cleanName = name.trim();
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPhone = phone ? String(phone).trim() : null;
+    const cleanPartySize = partySize ? String(partySize).trim() : null;
+    const cleanDates = dates ? String(dates).trim() : null;
+    const cleanContextTitle = contextTitle ? String(contextTitle).trim() : null;
+    const cleanMessage = message.trim();
+    const cleanSourcePath =
+      typeof sourcePath === "string" && sourcePath.trim().startsWith("/")
+        ? sourcePath.trim()
+        : "/contact";
 
-    const persisted = await persistDurableTransactionalSubmission({
+    const isTest =
+      Boolean(rawIsTest) ||
+      environment === "test" ||
+      hasTestMarker(cleanName, cleanMessage, cleanContextTitle);
+
+    let emailSent = false;
+    let emailReason: string | null = null;
+    let emailProviderId: string | null = null;
+    let notificationStatus: SpecialistNotificationStatus = "not_configured";
+
+    if (isTest) {
+      notificationStatus = "suppressed_test";
+      emailReason = "suppressed_test";
+    } else {
+      const emailHtml = `
+        <h2>New Wisconsin Dells Visitor Inquiry</h2>
+        <p><strong>Reference ID:</strong> ${escapeHtml(referenceId)}</p>
+        <p><strong>Environment:</strong> ${escapeHtml(environment)}</p>
+        <p><strong>Type:</strong> ${escapeHtml(finalType)}</p>
+        <p><strong>Name:</strong> ${escapeHtml(cleanName)}</p>
+        <p><strong>Email:</strong> ${escapeHtml(cleanEmail)}</p>
+        <p><strong>Phone:</strong> ${escapeHtml(cleanPhone || "Not provided")}</p>
+        <p><strong>Party Size:</strong> ${escapeHtml(cleanPartySize || "Not specified")}</p>
+        <p><strong>Dates:</strong> ${escapeHtml(cleanDates || "Not specified")}</p>
+        <p><strong>Context/Activity:</strong> ${escapeHtml(cleanContextTitle || "General")}</p>
+        <hr />
+        <h3>Message / Request:</h3>
+        <p style="white-space: pre-wrap;">${escapeHtml(cleanMessage)}</p>
+        <hr />
+        <p style="font-size: 11px; color: #888;">Dispatched from Welcome to the Dells (welcometothedells.com)</p>
+      `;
+
+      const emailDispatch = await sendResendEmailSafe({
+        apiKey: process.env.RESEND_API_KEY,
+        from: "Welcome to the Dells <inquiries@welcometothedells.com>",
+        to: ["hello@welcometothedells.com"],
+        replyTo: cleanEmail,
+        subject: `[Dells Inquiry] ${finalType.toUpperCase()} - ${cleanName.replace(/[\r\n]+/g, " ")} (Ref: ${referenceId})`,
+        html: emailHtml,
+      });
+
+      emailSent = emailDispatch.emailSent;
+      emailReason = emailDispatch.emailReason;
+      emailProviderId = emailDispatch.emailProviderId;
+      notificationStatus = emailDispatch.notificationStatus;
+    }
+
+    const parsedPartySize =
+      cleanPartySize && /^\d+$/.test(cleanPartySize)
+        ? Number.parseInt(cleanPartySize, 10)
+        : undefined;
+
+    const forwarded = await forwardSpecialistInquiryToDcc({
       submissionId: referenceId,
       channel: "welcometothedells-inquiry",
-      status: "captured",
-      summaryNote: `Welcome to the Dells inquiry ${referenceId} (${finalType})`,
-      payload: record,
-      environment,
+      sourceSite: "welcometothedells.com",
+      sourcePath: cleanSourcePath,
+      name: cleanName,
+      email: cleanEmail,
+      phone: cleanPhone || undefined,
+      partySize: parsedPartySize,
+      travelDate: cleanDates || undefined,
+      tourInterest: cleanContextTitle || finalType,
+      notes: cleanMessage,
       isTest,
-      createdAt: receivedAt,
+      emailSent,
+      emailReason,
+      emailProviderId,
+      notificationStatus,
+      metadata: {
+        referenceId,
+        receivedAt,
+        inquiryType: finalType,
+        partySizeRaw: cleanPartySize,
+        datesRaw: cleanDates,
+        contextTitle: cleanContextTitle,
+        environment,
+      },
     });
 
-    if (!persisted.ok) {
+    if (!forwarded.ok) {
       return NextResponse.json(
         {
           ok: false,
           success: false,
           error:
             "Inquiry persistence is temporarily unavailable. Please try again shortly.",
-          emailSent: false,
-          emailDispatched: false,
+          emailSent,
+          emailDispatched: emailSent,
+          notificationStatus,
         },
         { status: 503 },
       );
-    }
-
-    let emailDispatched = false;
-    const resendApiKey = (process.env.RESEND_API_KEY || "").trim();
-
-    if (resendApiKey) {
-      try {
-        const emailHtml = `
-          <h2>New Wisconsin Dells Visitor Inquiry</h2>
-          <p><strong>Reference ID:</strong> ${referenceId}</p>
-          <p><strong>Environment:</strong> ${environment}${isTest ? " (TEST)" : ""}</p>
-          <p><strong>Type:</strong> ${finalType}</p>
-          <p><strong>Name:</strong> ${record.name}</p>
-          <p><strong>Email:</strong> ${record.email}</p>
-          <p><strong>Phone:</strong> ${record.phone || "Not provided"}</p>
-          <p><strong>Party Size:</strong> ${record.partySize || "Not specified"}</p>
-          <p><strong>Dates:</strong> ${record.dates || "Not specified"}</p>
-          <p><strong>Context/Activity:</strong> ${record.contextTitle || "General"}</p>
-          <hr />
-          <h3>Message / Request:</h3>
-          <p style="white-space: pre-wrap;">${record.message}</p>
-          <hr />
-          <p style="font-size: 11px; color: #888;">Dispatched from Welcome to the Dells (welcometothedells.com)</p>
-        `;
-
-        const resendRes = await fetch("https://api.resend.com/emails", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${resendApiKey}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            from: "Welcome to the Dells <inquiries@welcometothedells.com>",
-            to: ["hello@welcometothedells.com"],
-            subject: `[Dells Inquiry${isTest ? " TEST" : ""}] ${finalType.toUpperCase()} - ${record.name} (Ref: ${referenceId})`,
-            html: emailHtml,
-            reply_to: record.email,
-          }),
-        });
-
-        if (resendRes.ok) {
-          emailDispatched = true;
-        }
-      } catch {
-        emailDispatched = false;
-      }
     }
 
     return NextResponse.json({
@@ -178,8 +216,9 @@ export async function POST(request: NextRequest) {
       inquiryType: finalType,
       environment,
       isTest,
-      emailSent: Boolean(emailDispatched),
-      emailDispatched: Boolean(emailDispatched),
+      emailSent,
+      emailDispatched: emailSent,
+      notificationStatus,
       message:
         "Thank you! Your inquiry has been received. Our Wisconsin Dells planning desk will review and follow up shortly.",
       receivedAt,

@@ -17,14 +17,15 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ContactPage({
+export default async function ContactPage({
   searchParams,
 }: {
-  searchParams?: { sent?: string; error?: string };
+  searchParams?: Promise<{ sent?: string; error?: string }>;
 }) {
+  const sp = (await searchParams) || {};
   const brandKey = SITE_CONFIG.socialBrandKey;
-  const sent = searchParams?.sent === "1";
-  const error = searchParams?.error === "contact";
+  const sent = sp.sent === "1";
+  const error = sp.error === "1" || sp.error === "contact";
 
   return (
     <main style={{ display: "grid", gap: 20 }}>

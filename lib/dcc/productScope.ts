@@ -1,8 +1,77 @@
+import cruisePortDirectoryData from "@/data/cruise-port-directory.json";
 import { DCC_CAPABILITY_TRUTH_MATRIX } from "@/lib/dcc/travelReference";
+import type { DecisionEngineCategoryId } from "@/lib/dcc/decisionEngines/types";
+import type { RegionalHubSlug } from "@/lib/dcc/regionalHubs";
+
+const CONNECTED_CRUISE_PORT_COUNT = new Set(
+  cruisePortDirectoryData.ports.map((port) => port.slug),
+).size;
+
+const REGISTERED_MCP_TOOLS = [
+  "dcc_search_port_excursions",
+  "dcc_check_tour_availability",
+  "dcc_prepare_tour_checkout",
+  "dcc_evaluate_category",
+  "dcc_verify_receipt_jws",
+  "dcc_get_candidate_universe",
+  "dcc_issue_shadow_authorization",
+  "dcc_create_commercial_handoff",
+  "dcc_report_commercial_outcome",
+  "dcc_replay_receipt",
+  "dcc_resolve_citation",
+] as const;
+
+export const DCC_ACTIVE_DECISION_ENGINES = [
+  "juneau-helicopter-tours",
+  "hawaii-whale-watching",
+  "denver-to-mountain-transportation",
+  "alaska-shore-excursions",
+  "new-orleans-swamp-tours",
+  "new-orleans-city-tours",
+  "cruise-port-day-excursions",
+] as const;
+
+export const DCC_CATEGORY_DECISION_ENGINE_IDS = [
+  "juneau-helicopter-tours",
+  "hawaii-whale-watching",
+  "juneau-whale-watching",
+  "denver-to-mountain-transportation",
+  "red-rocks-concert-shuttle",
+  "new-orleans-swamp-tours",
+  "new-orleans-city-tours",
+  "denver-420-airport-transfers",
+  "cruise-port-private-drivers",
+  "vacation-rental-catering-spreads",
+  "alaska-shore-excursions",
+] as const satisfies readonly DecisionEngineCategoryId[];
+type AssertAllCategoryEnginesCovered =
+  Exclude<DecisionEngineCategoryId, (typeof DCC_CATEGORY_DECISION_ENGINE_IDS)[number]> extends never
+    ? true
+    : never;
+const ALL_CATEGORY_ENGINES_COVERED: AssertAllCategoryEnginesCovered = true;
+void ALL_CATEGORY_ENGINES_COVERED;
+export const DCC_REGIONAL_HUB_SLUGS = [
+  "colorado",
+  "alaska",
+  "louisiana",
+  "nevada",
+  "florida",
+  "montana",
+  "wisconsin",
+  "us-virgin-islands",
+] as const satisfies readonly RegionalHubSlug[];
+type AssertAllRegionalHubsCovered =
+  Exclude<RegionalHubSlug, (typeof DCC_REGIONAL_HUB_SLUGS)[number]> extends never
+    ? true
+    : never;
+const ALL_REGIONAL_HUBS_COVERED: AssertAllRegionalHubsCovered = true;
+void ALL_REGIONAL_HUBS_COVERED;
+const REGIONAL_HUB_SLUGS = DCC_REGIONAL_HUB_SLUGS;
 
 export const DCC_PRODUCT_SCOPE = {
   schemaVersion: 3,
-  version: "2026-10-23",
+  version: "2026-11-11",
+  machineLayerVersion: "0.3.0",
   platformIdentity: {
     name: "Destination Command Center",
     summary:
@@ -137,6 +206,29 @@ export const DCC_PRODUCT_SCOPE = {
     },
   ],
   capabilityTruthMatrix: DCC_CAPABILITY_TRUTH_MATRIX,
+  machineContractInventory: {
+    machineLayerVersion: "0.3.0",
+    connectedCruisePortCount: CONNECTED_CRUISE_PORT_COUNT,
+    decisionEngineCount: DCC_ACTIVE_DECISION_ENGINES.length,
+    decisionEngines: DCC_ACTIVE_DECISION_ENGINES,
+    categoryDecisionEngineCount: DCC_CATEGORY_DECISION_ENGINE_IDS.length,
+    categoryDecisionEngines: DCC_CATEGORY_DECISION_ENGINE_IDS,
+    registeredMcpToolCount: REGISTERED_MCP_TOOLS.length,
+    registeredMcpTools: REGISTERED_MCP_TOOLS,
+    flagshipNodeCount: 5,
+    flagshipNodes: [
+      "juneau",
+      "new-orleans",
+      "red-rocks",
+      "denver-breckenridge",
+      "las-vegas",
+    ],
+    regionalHubCount: REGIONAL_HUB_SLUGS.length,
+    regionalHubs: REGIONAL_HUB_SLUGS,
+    regionalHubLlmsPaths: REGIONAL_HUB_SLUGS.map(
+      (slug) => `/destinations/${slug}/llms.txt`,
+    ),
+  },
   outOfScopeAsPrimaryIdentity: [
     "closed proprietary booking gatekeeper",
     "arbitrary reseller markup agency",

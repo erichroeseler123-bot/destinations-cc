@@ -1,7 +1,12 @@
 export type SpecialistCommercialHost =
   | "juneauflightdeck.com"
   | "welcometoneworleanstours.com"
-  | "lastfrontiershoreexcursions.com";
+  | "lastfrontiershoreexcursions.com"
+  | "welcometothedells.com"
+  | "saveonthestrip.com"
+  | "welcometotheswamp.com"
+  | "gosno.co"
+  | "partyatredrocks.com";
 
 export interface SanitizedCommercialAttribution {
   source: string | null;
@@ -354,7 +359,7 @@ export function buildCruisePromenadeCoordinationHref(options: {
   const resolvedSlug = slugifyShipIdentifier(options.shipSlug || options.shipName);
   const validDate = normalizeIsoDate(options.sailDate);
   const query = new URLSearchParams();
-  query.set("utm_source", options.specialistSite.replace(/\.com$/i, ""));
+  query.set("utm_source", options.specialistSite.replace(/\.(com|co)$/i, ""));
   query.set("utm_medium", "specialist_return");
   query.set(
     "utm_campaign",

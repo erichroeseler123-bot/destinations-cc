@@ -214,7 +214,7 @@ const localAppSources: readonly LocalAppSource[] = [
 
 const SATELLITE_ROLE_OVERRIDES: Partial<Record<LocalAppSource["id"], SystemInventorySatellite["role"]>> = {
   saveonthestrip: "hybrid",
-  shuttleya: "operator",
+  shuttleya: "satellite",
   gosno: "operator",
 };
 
@@ -235,11 +235,10 @@ const GOSNO_ROUTE_URLS: Record<string, string> = {
 const OPERATOR_LABELS = {
   parr: "Party at Red Rocks",
   gosno: "GoSno",
-  argo: "Argo Shuttle",
   "420": "420 Friendly Airport Pickup",
 } as const;
 
-const EXECUTION_OPERATORS = ["parr", "gosno", "argo", "420"] as const;
+const EXECUTION_OPERATORS = ["parr", "gosno", "420"] as const;
 
 const rolloutByScopePath = new Map(
   [
@@ -323,39 +322,12 @@ const flows: SystemInventoryFlow[] = [];
 
 const bookingEndpoints: SystemInventoryBookingEndpoint[] = [
   {
-    id: "parr-shared-red-rocks",
-    operator: "parr",
-    flowId: "event-transport",
-    rideType: "shared",
-    url: "https://www.partyatredrocks.com/book/red-rocks-amphitheatre/custom/shared",
-    route: "red-rocks-amphitheatre",
-    executionAuthority: "external_operator",
-  },
-  {
     id: "parr-private-red-rocks",
     operator: "parr",
     flowId: "red-rocks-private",
     rideType: "private",
     url: "https://www.partyatredrocks.com/book/red-rocks-amphitheatre/private",
     route: "red-rocks-amphitheatre",
-    executionAuthority: "external_operator",
-  },
-  {
-    id: "argo-seat",
-    operator: "argo",
-    flowId: "argo-shuttle",
-    rideType: "shared",
-    url: "https://shuttleya.com/book/argo-shuttle?route=argo&product=argo-seat",
-    route: "argo",
-    executionAuthority: "external_operator",
-  },
-  {
-    id: "argo-suv",
-    operator: "argo",
-    flowId: "argo-shuttle",
-    rideType: "private",
-    url: "https://shuttleya.com/book/argo-shuttle?route=argo&product=argo-suv",
-    route: "argo",
     executionAuthority: "external_operator",
   },
   {
@@ -389,15 +361,6 @@ const bookingEndpoints: SystemInventoryBookingEndpoint[] = [
 
 const corridorExecutions: SystemInventoryCorridorExecution[] = [
   {
-    corridorId: "argo-day-transport",
-    label: "Mighty Argo Shuttle",
-    executionAuthority: "external_operator",
-    bookingSurface: "https://shuttleya.com/book/argo-shuttle",
-    operator: "argo",
-    pattern: "operator_execution",
-    notes: "DCC decides, then hands to the standalone Shuttleya operator surface. The embedded apps/shuttleya copy is quarantined and is not a production inventory source.",
-  },
-  {
     corridorId: "airport-420-pickup",
     label: "Denver Airport Pickup",
     executionAuthority: "external_operator",
@@ -413,7 +376,7 @@ const corridorExecutions: SystemInventoryCorridorExecution[] = [
     bookingSurface: "https://www.partyatredrocks.com/book/red-rocks-amphitheatre/private",
     operator: "parr",
     pattern: "operator_execution",
-    notes: "DCC decides, then hands directly into the Party At Red Rocks private booking surface.",
+    notes: "DCC decides, then hands directly into the Party At Red Rocks private booking surface (private transportation only; shared_seat_service: false).",
   },
   {
     corridorId: "denver-to-breckenridge",

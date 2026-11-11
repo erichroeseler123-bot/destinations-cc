@@ -75,7 +75,7 @@ export const AUDITED_DCC_GUIDES: DccGuideCitationAuditEntry[] = [
         checkedAt: "2026-11-07",
       },
       {
-        organization: "FAA / NWS Aviation Weather Center (PAJN)",
+        organization: "NOAA/NWS Aviation Weather Center (PAJN)",
         title: "Juneau International Airport (PAJN) METAR & VFR Ceiling Context",
         url: "https://aviationweather.gov/data/metar/?id=PAJN",
         checkedAt: "2026-11-07",

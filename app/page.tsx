@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import LocationFirstHomeFast from "@/app/components/dcc/LocationFirstHomeFast";
-import { getCruisePortDirectory } from "@/lib/dcc/cruisePortDirectory";
+import { CONNECTED_CRUISE_PORT_COUNT } from "@/lib/dcc/cruisePortDirectory";
 import { getOrganizationSchema, getWebsiteSchema } from "@/src/data/site-identity";
 
 export const revalidate = 3600;
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 };
 
 export default function HomePage() {
-  const cruisePortCount = getCruisePortDirectory().length;
+  const cruisePortCount = CONNECTED_CRUISE_PORT_COUNT;
   const jsonLd = {
     "@context": "https://schema.org",
     "@graph": [

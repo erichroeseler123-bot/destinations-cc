@@ -22,7 +22,7 @@ function locationPath(lat: number, lng: number) {
 }
 
 export default function LocationFirstHomeFast({
-  cruisePortCount = 632,
+  cruisePortCount = 629,
 }: {
   cruisePortCount?: number;
 }) {

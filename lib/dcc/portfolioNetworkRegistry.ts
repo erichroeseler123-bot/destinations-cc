@@ -1803,6 +1803,268 @@ export function getDccSiteManifestV1(siteIdOrDomain: string): DccSiteManifestV1 
   );
 }
 
+export type DccSupplementalSiteId =
+  | "welcometothedells"
+  | "saveonthestrip"
+  | "frenchquarterorientation";
+
+export type DccAnySiteManifestId = DccPortfolioSiteId | DccSupplementalSiteId;
+
+export interface DccSupplementalSiteManifestV1 extends Omit<DccSiteManifestV1, "site_id"> {
+  site_id: DccSupplementalSiteId;
+}
+
+export const DCC_SUPPLEMENTAL_SITE_MANIFESTS: readonly DccSupplementalSiteManifestV1[] = [
+  {
+    schema: DCC_SITE_MANIFEST_SCHEMA,
+    version: DCC_SITE_MANIFEST_VERSION,
+    site_id: "welcometothedells",
+    site_name: "Welcome to the Dells",
+    canonical_domains: ["welcometothedells.com", "www.welcometothedells.com"],
+    aliases: ["welcome-to-the-dells", "dells", "wisconsin-dells"],
+    consumer_role:
+      "Wisconsin Dells river-tour, boat-excursion, and family-planning decision-support surface with disclosed operator handoffs.",
+    dcc_universe_ids: ["wisconsin-dells-river-ops", "wisconsin-dells-signature"],
+    accepted_context_fields: ["date", "travelers", "hub", "corridor"],
+    emitted_context_fields: ["date", "travelers", "operator_slug", "handoff_id"],
+    booking_authority: {
+      primary: "direct_provider",
+      supported_authorities: ["direct_provider", "inquiry_only"],
+      takes_direct_payment: false,
+      autonomous_booking_enabled: false,
+      decision_authorization_mode: "shadow_only_no_side_effects",
+      universal_multi_provider_checkout: false,
+      finality_statement:
+        "Welcome to the Dells provides planning guidance and disclosed river/attraction operator handoffs; reservations and payment are finalized with the participating operator.",
+    },
+    natural_relationships: {
+      inbound: [
+        {
+          site_id: "destinationcommandcenter",
+          canonical_domain: "destinationcommandcenter.com",
+          journey_id: "dcc-wisconsin-to-dells-planner",
+          relationship_type: "regional_destination_handoff",
+          context_exchange: "opaque_dcc_ctx",
+        },
+      ],
+      outbound: [
+        {
+          site_id: "feastlyspread",
+          canonical_domain: "feastlyspread.com",
+          journey_id: "dells-trip-to-feastly-spread",
+          relationship_type: "group_stay_catering_handoff",
+          context_exchange: "opaque_dcc_ctx",
+        },
+      ],
+    },
+    commercial_channels: [
+      {
+        channel_id: "dells-river-operator-handoffs",
+        provider: "direct_provider",
+        attribution_parameter: "utm_source,utm_medium,utm_campaign",
+        outcome_reporting: "click_level_only",
+        notes: "Routes travelers via /out/wisconsin-dells/[slug] to verified local river and attraction operators.",
+      },
+      {
+        channel_id: "welcometothedells-inquiry",
+        provider: "inquiry_only",
+        attribution_parameter: "dcc_handoff_id",
+        outcome_reporting: "request_or_inquiry_only",
+        notes: "Forwards trip planning inquiries to DCC Unified Operator Inbox.",
+      },
+    ],
+    context_support: {
+      mode: "private_trip_context",
+      supports_private_trip_context: true,
+      supports_public_shared_plans: false,
+      cookie_name: "wtd_trip_ctx",
+      cookie_flags: "Secure; HttpOnly; SameSite=Lax",
+      strips_token_from_url: true,
+      url_pii_forbidden: true,
+      forbidden_url_fields: FORBIDDEN_URL_PII_FIELDS,
+    },
+    privacy_and_security: {
+      exposes_secrets: false,
+      exposes_customer_information: false,
+      exposes_private_evidence: false,
+      exposes_commission_terms: false,
+    },
+  },
+  {
+    schema: DCC_SITE_MANIFEST_SCHEMA,
+    version: DCC_SITE_MANIFEST_VERSION,
+    site_id: "saveonthestrip",
+    site_name: "Save On The Strip",
+    canonical_domains: ["saveonthestrip.com", "www.saveonthestrip.com"],
+    aliases: ["save-on-the-strip", "sots"],
+    consumer_role:
+      "Las Vegas Strip shows, attractions, and day-trip value comparison guide with disclosed provider exits and help-request intake.",
+    dcc_universe_ids: ["las-vegas-strip-value-routing"],
+    accepted_context_fields: ["date", "travelers", "category", "hotel_zone"],
+    emitted_context_fields: ["date", "travelers", "handoff_id", "category"],
+    booking_authority: {
+      primary: "viator_affiliate",
+      supported_authorities: ["viator_affiliate", "direct_provider", "inquiry_only"],
+      takes_direct_payment: false,
+      autonomous_booking_enabled: false,
+      decision_authorization_mode: "shadow_only_no_side_effects",
+      universal_multi_provider_checkout: false,
+      finality_statement:
+        "Save On The Strip compares Las Vegas shows, tours, and attractions and routes travelers to disclosed ticketing or tour providers where payment and fulfillment occur.",
+    },
+    natural_relationships: {
+      inbound: [
+        {
+          site_id: "destinationcommandcenter",
+          canonical_domain: "destinationcommandcenter.com",
+          journey_id: "dcc-vegas-to-saveonthestrip",
+          relationship_type: "flagship_destination_to_specialist",
+          context_exchange: "opaque_dcc_ctx",
+        },
+      ],
+      outbound: [
+        {
+          site_id: "lastfrontiershoreexcursions",
+          canonical_domain: "lastfrontiershoreexcursions.com",
+          journey_id: "sots-partner-to-last-frontier",
+          relationship_type: "cross_market_specialist_handoff",
+          context_exchange: "opaque_dcc_ctx",
+        },
+      ],
+    },
+    commercial_channels: [
+      {
+        channel_id: "saveonthestrip-provider-exits",
+        provider: "viator",
+        attribution_parameter: "pid,mcid,campaign",
+        outcome_reporting: "click_level_only",
+        notes: "Disclosed affiliate and provider exits for Las Vegas shows and day trips.",
+      },
+      {
+        channel_id: "saveonthestrip-help-request",
+        provider: "inquiry_only",
+        attribution_parameter: "dcc_handoff_id",
+        outcome_reporting: "request_or_inquiry_only",
+        notes: "Forwards traveler help requests to DCC Unified Operator Inbox.",
+      },
+    ],
+    context_support: {
+      mode: "private_trip_context",
+      supports_private_trip_context: true,
+      supports_public_shared_plans: false,
+      cookie_name: "sots_trip_ctx",
+      cookie_flags: "Secure; HttpOnly; SameSite=Lax",
+      strips_token_from_url: true,
+      url_pii_forbidden: true,
+      forbidden_url_fields: FORBIDDEN_URL_PII_FIELDS,
+    },
+    privacy_and_security: {
+      exposes_secrets: false,
+      exposes_customer_information: false,
+      exposes_private_evidence: false,
+      exposes_commission_terms: false,
+    },
+  },
+  {
+    schema: DCC_SITE_MANIFEST_SCHEMA,
+    version: DCC_SITE_MANIFEST_VERSION,
+    site_id: "frenchquarterorientation",
+    site_name: "French Quarter Orientation",
+    canonical_domains: ["frenchquarterorientation.com", "www.frenchquarterorientation.com"],
+    aliases: ["french-quarter-orientation", "fqo"],
+    consumer_role:
+      "30-minute first-hour French Quarter arrival orientation surface routing travelers to New Orleans tours and swamp specialists.",
+    dcc_universe_ids: ["new-orleans-first-hour-orientation"],
+    accepted_context_fields: ["date", "travelers", "arrival_window"],
+    emitted_context_fields: ["date", "travelers", "handoff_id"],
+    booking_authority: {
+      primary: "inquiry_only",
+      supported_authorities: ["inquiry_only", "fareharbor", "viator_affiliate"],
+      takes_direct_payment: false,
+      autonomous_booking_enabled: false,
+      decision_authorization_mode: "shadow_only_no_side_effects",
+      universal_multi_provider_checkout: false,
+      finality_statement:
+        "French Quarter Orientation provides 30-minute arrival orientation context and routes tour bookings to participating New Orleans specialist surfaces and operators.",
+    },
+    natural_relationships: {
+      inbound: [
+        {
+          site_id: "destinationcommandcenter",
+          canonical_domain: "destinationcommandcenter.com",
+          journey_id: "dcc-new-orleans-to-fqo",
+          relationship_type: "arrival_orientation_handoff",
+          context_exchange: "opaque_dcc_ctx",
+        },
+      ],
+      outbound: [
+        {
+          site_id: "welcometoneworleanstours",
+          canonical_domain: "welcometoneworleanstours.com",
+          journey_id: "fqo-to-wno-tours",
+          relationship_type: "orientation_to_tour_storefront",
+          context_exchange: "opaque_dcc_ctx",
+        },
+        {
+          site_id: "welcometotheswamp",
+          canonical_domain: "welcometotheswamp.com",
+          journey_id: "fqo-to-swamp-specialist",
+          relationship_type: "orientation_to_swamp_specialist",
+          context_exchange: "opaque_dcc_ctx",
+        },
+      ],
+    },
+    commercial_channels: [
+      {
+        channel_id: "fqo-specialist-handoffs",
+        provider: "inquiry_only",
+        attribution_parameter: "dcc_handoff_id,utm_source",
+        outcome_reporting: "click_level_only",
+        notes: "Routes first-hour visitors to Welcome to New Orleans Tours and Welcome to the Swamp.",
+      },
+    ],
+    context_support: {
+      mode: "private_trip_context",
+      supports_private_trip_context: true,
+      supports_public_shared_plans: false,
+      cookie_name: "fqo_trip_ctx",
+      cookie_flags: "Secure; HttpOnly; SameSite=Lax",
+      strips_token_from_url: true,
+      url_pii_forbidden: true,
+      forbidden_url_fields: FORBIDDEN_URL_PII_FIELDS,
+    },
+    privacy_and_security: {
+      exposes_secrets: false,
+      exposes_customer_information: false,
+      exposes_private_evidence: false,
+      exposes_commission_terms: false,
+    },
+  },
+] as const;
+
+export function getDccRegisteredSiteManifestV1(
+  siteIdOrDomain: string
+): DccSiteManifestV1 | DccSupplementalSiteManifestV1 | null {
+  const primary = getDccSiteManifestV1(siteIdOrDomain);
+  if (primary) return primary;
+  if (!siteIdOrDomain || isExcludedPortfolioSite(siteIdOrDomain)) {
+    return null;
+  }
+  const raw = siteIdOrDomain.trim().toLowerCase();
+  const normalized = normalizeSiteIdentifier(siteIdOrDomain);
+  return (
+    DCC_SUPPLEMENTAL_SITE_MANIFESTS.find(
+      (site) =>
+        site.site_id === raw ||
+        site.site_id === normalized ||
+        site.canonical_domains.some(
+          (d) => d.toLowerCase() === raw || d.toLowerCase().replace(/^www\./, "") === normalized
+        ) ||
+        site.aliases.some((a) => a.toLowerCase() === raw || a.toLowerCase() === normalized)
+    ) || null
+  );
+}
+
 export function isParticipatingPortfolioSite(siteIdOrDomain: string): boolean {
   return getDccSiteManifestV1(siteIdOrDomain) !== null;
 }

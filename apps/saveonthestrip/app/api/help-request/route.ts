@@ -1,11 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
 import { emitDccEvent } from "../../../lib/dcc";
 import {
-  persistDurableTransactionalSubmission,
-  resolveRuntimeEnvironmentTag,
-} from "../../../../../lib/dcc/storage/transactionalSubmissions";
+  escapeHtml,
+  forwardSpecialistInquiryToDcc,
+  sendResendEmailSafe,
+  type SpecialistNotificationStatus,
+} from "../../../../../lib/dcc/shared/specialistInquiryClient";
 
 export const runtime = "nodejs";
+
+function resolveRuntimeEnvironmentTag(): "production" | "preview" | "development" | "test" {
+  const vercelEnv = (process.env.VERCEL_ENV || "").trim().toLowerCase();
+  if (vercelEnv === "production") return "production";
+  if (vercelEnv === "preview") return "preview";
+  if (vercelEnv === "development") return "development";
+  const nodeEnv = (process.env.NODE_ENV || "").trim().toLowerCase();
+  if (nodeEnv === "test") return "test";
+  if (nodeEnv === "production") return "production";
+  return "development";
+}
+
+function hasTestMarker(...values: Array<string | null | undefined>): boolean {
+  return values.some((value) => typeof value === "string" && /\[test\]/i.test(value));
+}
 
 function readValue(formData: FormData, key: string) {
   const raw = formData.get(key);
@@ -58,81 +75,6 @@ async function parseHelpRequestInput(request: NextRequest): Promise<{
   };
 }
 
-async function maybeForwardHelpRequestEmail({
-  name,
-  email,
-  phone,
-  requestType,
-  notes,
-  sourcePath,
-  handoffId,
-  environment,
-  isTest,
-}: {
-  name: string;
-  email: string;
-  phone: string;
-  requestType: string;
-  notes: string;
-  sourcePath: string;
-  handoffId: string;
-  environment: string;
-  isTest: boolean;
-}) {
-  const resendKey = process.env.RESEND_API_KEY?.trim();
-  const fromEmail =
-    process.env.SOTS_CONTACT_FROM_EMAIL?.trim() ||
-    process.env.ARGO_FROM_EMAIL?.trim() ||
-    "contact@saveonthestrip.com";
-
-  if (!resendKey || !fromEmail) {
-    return { sent: false, reason: "missing_email_config" as const };
-  }
-
-  const lines = [
-    "New Save On The Strip contact request",
-    "",
-    `Environment: ${environment}${isTest ? " (TEST)" : ""}`,
-    `Name: ${name || "Not provided"}`,
-    `Email: ${email || "Not provided"}`,
-    `Phone: ${phone || "Not provided"}`,
-    `Request type: ${requestType || "general_help"}`,
-    `Source path: ${sourcePath}`,
-    `Handoff ID: ${handoffId}`,
-    "",
-    "Notes:",
-    notes || "No notes provided.",
-  ];
-
-  try {
-    const upstream = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${resendKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: fromEmail,
-        to: ["laurensanders123@gmail.com"],
-        subject: `Save On The Strip contact${isTest ? " [TEST]" : ""}: ${requestType || "general_help"}`,
-        reply_to: email || undefined,
-        text: lines.join("\n"),
-      }),
-      cache: "no-store",
-    });
-
-    return {
-      sent: upstream.ok,
-      reason: upstream.ok ? undefined : await upstream.text(),
-    };
-  } catch (err) {
-    return {
-      sent: false,
-      reason: err instanceof Error ? err.message : "email_dispatch_failed",
-    };
-  }
-}
-
 export async function POST(request: NextRequest) {
   const {
     isJsonRequest,
@@ -143,7 +85,7 @@ export async function POST(request: NextRequest) {
     notes,
     sourcePath,
     handoffId,
-    isTest,
+    isTest: rawIsTest,
   } = await parseHelpRequestInput(request);
 
   const environment = resolveRuntimeEnvironmentTag();
@@ -166,42 +108,118 @@ export async function POST(request: NextRequest) {
     return NextResponse.redirect(redirectUrl, { status: 303 });
   }
 
-  const createdAt = new Date().toISOString();
-  const persisted = await persistDurableTransactionalSubmission({
-    submissionId: handoffId,
-    channel: "saveonthestrip-help-request",
-    status: "captured",
-    summaryNote: `Save On The Strip help request ${handoffId} (${requestType})`,
-    payload: {
-      handoffId,
-      name: name || null,
-      email: email || null,
-      phone: phone || null,
-      requestType,
-      notes: notes || null,
-      sourcePath: safeSourcePath,
-      environment,
-      isTest,
-      createdAt,
-    },
-    environment,
-    isTest,
-    createdAt,
-  });
+  const isTest =
+    rawIsTest ||
+    environment === "test" ||
+    hasTestMarker(name, notes, requestType);
 
-  if (!persisted.ok) {
-    return NextResponse.json(
-      {
-        ok: false,
-        error:
-          "Help-request persistence is temporarily unavailable. Please try again shortly.",
-        emailSent: false,
-      },
-      { status: 503 },
-    );
+  let emailSent = false;
+  let emailReason: string | null = null;
+  let emailProviderId: string | null = null;
+  let notificationStatus: SpecialistNotificationStatus = "not_configured";
+
+  const fromEmail =
+    process.env.SOTS_CONTACT_FROM_EMAIL?.trim() ||
+    process.env.ARGO_FROM_EMAIL?.trim() ||
+    "contact@saveonthestrip.com";
+
+  if (isTest) {
+    notificationStatus = "suppressed_test";
+    emailReason = "suppressed_test";
+  } else {
+    const emailHtml = `
+      <h2>New Save On The Strip Contact Request</h2>
+      <p><strong>Environment:</strong> ${escapeHtml(environment)}</p>
+      <p><strong>Name:</strong> ${escapeHtml(name || "Not provided")}</p>
+      <p><strong>Email:</strong> ${escapeHtml(email || "Not provided")}</p>
+      <p><strong>Phone:</strong> ${escapeHtml(phone || "Not provided")}</p>
+      <p><strong>Request Type:</strong> ${escapeHtml(requestType || "general_help")}</p>
+      <p><strong>Source Path:</strong> ${escapeHtml(safeSourcePath)}</p>
+      <p><strong>Handoff ID:</strong> ${escapeHtml(handoffId)}</p>
+      <hr />
+      <h3>Notes</h3>
+      <p style="white-space: pre-wrap;">${escapeHtml(notes || "No notes provided.")}</p>
+    `;
+
+    const textLines = [
+      "New Save On The Strip contact request",
+      "",
+      `Environment: ${environment}`,
+      `Name: ${name || "Not provided"}`,
+      `Email: ${email || "Not provided"}`,
+      `Phone: ${phone || "Not provided"}`,
+      `Request type: ${requestType || "general_help"}`,
+      `Source path: ${safeSourcePath}`,
+      `Handoff ID: ${handoffId}`,
+      "",
+      "Notes:",
+      notes || "No notes provided.",
+    ];
+
+    const emailDispatch = await sendResendEmailSafe({
+      apiKey: process.env.RESEND_API_KEY,
+      from: fromEmail,
+      to: ["laurensanders123@gmail.com"],
+      replyTo: email || undefined,
+      subject: `Save On The Strip contact: ${(requestType || "general_help").replace(/[\r\n]+/g, " ")}`,
+      html: emailHtml,
+      text: textLines.join("\n"),
+    });
+
+    emailSent = emailDispatch.emailSent;
+    emailReason = emailDispatch.emailReason;
+    emailProviderId = emailDispatch.emailProviderId;
+    notificationStatus = emailDispatch.notificationStatus;
   }
 
-  const [, emailResult] = await Promise.all([
+  const normalizedEmail =
+    email && email.includes("@")
+      ? email.trim().toLowerCase()
+      : "phone-only-lead@saveonthestrip.com";
+
+  const forwarded = await forwardSpecialistInquiryToDcc({
+    submissionId: handoffId,
+    channel: "saveonthestrip-help-request",
+    sourceSite: "saveonthestrip.com",
+    sourcePath: safeSourcePath,
+    name: name || "Vegas Visitor",
+    email: normalizedEmail,
+    phone: phone || undefined,
+    handoffId,
+    tourInterest: requestType || "general_help",
+    notes: notes || (phone ? `Phone-only contact request: ${phone}` : undefined),
+    isTest,
+    emailSent,
+    emailReason,
+    emailProviderId,
+    notificationStatus,
+    metadata: {
+      handoffId,
+      requestType: requestType || "general_help",
+      emailProvided: Boolean(email),
+      phoneProvided: Boolean(phone),
+      environment,
+    },
+  });
+
+  if (!forwarded.ok) {
+    if (wantsJson) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error:
+            "Help-request persistence is temporarily unavailable. Please try again shortly.",
+          emailSent,
+          notificationStatus,
+        },
+        { status: 503 },
+      );
+    }
+    redirectUrl.searchParams.set("error", "1");
+    return NextResponse.redirect(redirectUrl, { status: 303 });
+  }
+
+  await Promise.all([
     emitDccEvent({
       handoffId,
       satelliteId: "saveonthestrip",
@@ -230,40 +248,30 @@ export async function POST(request: NextRequest) {
         networkHub: "dcc",
         environment,
         isTest,
+        notificationStatus,
       },
     }).catch(() => ({ ok: false, skipped: false })),
-    maybeForwardHelpRequestEmail({
-      name,
-      email,
-      phone,
-      requestType,
-      notes,
-      sourcePath: safeSourcePath,
+    emitDccEvent({
       handoffId,
-      environment,
-      isTest,
-    }),
+      satelliteId: "saveonthestrip",
+      eventType: "status_updated",
+      source: "saveonthestrip",
+      sourcePath: safeSourcePath,
+      status: emailSent ? "forwarded" : "captured",
+      stage: "help_request_followup",
+      message: emailSent
+        ? "Contact request emailed to Lauren."
+        : "Contact request captured durably without email forwarding.",
+      metadata: {
+        requestType: requestType || "general_help",
+        emailForwarded: emailSent,
+        emailForwardReason: emailReason,
+        notificationStatus,
+        environment,
+        isTest,
+      },
+    }).catch(() => null),
   ]);
-
-  await emitDccEvent({
-    handoffId,
-    satelliteId: "saveonthestrip",
-    eventType: "status_updated",
-    source: "saveonthestrip",
-    sourcePath: safeSourcePath,
-    status: emailResult.sent ? "forwarded" : "captured",
-    stage: "help_request_followup",
-    message: emailResult.sent
-      ? "Contact request emailed to Lauren."
-      : "Contact request captured durably without email forwarding.",
-    metadata: {
-      requestType: requestType || "general_help",
-      emailForwarded: Boolean(emailResult.sent),
-      emailForwardReason: emailResult.reason || null,
-      environment,
-      isTest,
-    },
-  }).catch(() => null);
 
   if (wantsJson) {
     return NextResponse.json(
@@ -272,7 +280,8 @@ export async function POST(request: NextRequest) {
         id: handoffId,
         environment,
         isTest,
-        emailSent: Boolean(emailResult.sent),
+        emailSent,
+        notificationStatus,
       },
       { status: 201 },
     );

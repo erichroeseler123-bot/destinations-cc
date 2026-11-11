@@ -248,6 +248,12 @@ async function buildLocalFeed(now = new Date()): Promise<Next48Feed> {
   return toFeed([...showItems, ...tourItems], now);
 }
 
+export const VEGAS_WHATS_LIVE_SOURCES = {
+  weatherAgency: "NOAA/NWS",
+  weatherApiUrl: "https://api.weather.gov",
+  coordinateContextSource: "Destination Command Center (NOAA/NWS Las Vegas WFO VEF)",
+} as const;
+
 export async function getVegasWhatsLiveFeed() {
   const now = new Date();
   const localFeed = await buildLocalFeed(now).catch(() => toFeed([], now));
@@ -262,7 +268,12 @@ export async function getVegasWhatsLiveFeed() {
     const payload = await response.json();
     if (response.ok && payload?.ok && payload?.feed) {
       const merged = mergeFeeds(payload.feed as Next48Feed, mergeFeeds(localFeed, curatedFeed));
-      return { ok: true, feed: takeTopItems(merged), fallback: false as const };
+      return {
+        ok: true,
+        feed: takeTopItems(merged),
+        fallback: false as const,
+        sources: VEGAS_WHATS_LIVE_SOURCES,
+      };
     }
   } catch {}
 
@@ -271,5 +282,6 @@ export async function getVegasWhatsLiveFeed() {
     ok: true,
     feed: takeTopItems(feedHasItems(mergedFallback) ? mergedFallback : curatedFeed),
     fallback: true as const,
+    sources: VEGAS_WHATS_LIVE_SOURCES,
   };
 }

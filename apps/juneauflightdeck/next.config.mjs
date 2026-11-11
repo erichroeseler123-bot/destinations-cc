@@ -1,7 +1,19 @@
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const appRoot = dirname(fileURLToPath(import.meta.url));
+const repoRoot = resolve(appRoot, "../..");
+
 /** @type {import('next').NextConfig} */
 // Dedicated Vercel app root; shared monorepo modules are intentionally allowed.
 const nextConfig = {
   reactStrictMode: true,
+  experimental: {
+    externalDir: true,
+  },
+  turbopack: {
+    root: repoRoot,
+  },
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -42,7 +54,7 @@ const nextConfig = {
       { protocol: "https", hostname: "destinationcommandcenter.com", pathname: "/**" },
     ],
   },
-  outputFileTracingRoot: '../../'
+  outputFileTracingRoot: repoRoot,
 };
 
 export default nextConfig;

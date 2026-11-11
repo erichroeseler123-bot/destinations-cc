@@ -420,7 +420,7 @@ export default async function DealsPage({
         </article>
       </section>
 
-      <HelpRequestForm sourcePath="/deals" sent={sp.sent === "1"} error={sp.error === "contact"} />
+      <HelpRequestForm sourcePath="/deals" sent={sp.sent === "1"} error={sp.error === "1" || sp.error === "contact"} />
     </main>
   );
 }

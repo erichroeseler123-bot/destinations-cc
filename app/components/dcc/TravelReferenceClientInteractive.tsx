@@ -1119,7 +1119,7 @@ export function LiveCoordinateTelemetryCards({
             {aviationStations[0] && (
               <div className="rounded-lg border border-sky-500/20 bg-sky-950/20 p-3">
                 <span className="font-bold text-sky-300 block">
-                  NOAA Aviation METAR ({aviationStations[0].airport?.icao})
+                  NOAA/NWS Aviation Weather Center ({aviationStations[0].airport?.icao})
                 </span>
                 <span className="text-zinc-200 mt-1 block font-mono text-[11px] break-words">
                   {aviationStations[0].metar?.rawOb ||

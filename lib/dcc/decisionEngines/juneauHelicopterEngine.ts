@@ -362,7 +362,7 @@ export const JUNEAU_HELICOPTER_CLAIMS: EvidenceClaim[] = [
     fieldsSupported: ["tradeoffs", "comparisonValues"],
     sourceIds: ["src-faa-pajn-weather-cams-2026"],
     isDecisionChanging: true,
-    verificationNote: "DCC operational decision boundary using FAA PAJN ceiling thresholds.",
+    verificationNote: "DCC operational decision boundary using NOAA/NWS Aviation Weather Center PAJN ceiling thresholds.",
   },
   {
     claimId: "claim-jnu-auke-bay-whale-backup",

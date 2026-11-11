@@ -6,6 +6,7 @@ import {
   isPreviewOrLocalRuntime,
   type SpecialistCommercialHost,
 } from "@/lib/dcc/commercialAttribution";
+import { resolveDccInternalSecret } from "@/lib/dcc/shared/envCompat";
 import {
   persistDurableTransactionalSubmission,
   resolveRuntimeEnvironmentTag,
@@ -15,12 +16,12 @@ import {
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const ALLOWED_SPECIALIST_CHANNELS: Record<
+export const ALLOWED_SPECIALIST_CHANNELS: Record<
   string,
   {
     channel: TransactionalSubmissionChannel;
     specialistSite: SpecialistCommercialHost;
-    defaultPortSlug: string;
+    defaultPortSlug: string | null;
     intendedDestination: string;
   }
 > = {
@@ -42,12 +43,90 @@ const ALLOWED_SPECIALIST_CHANNELS: Record<
     defaultPortSlug: "juneau",
     intendedDestination: "concierge@lastfrontiershoreexcursions.com",
   },
+  "welcometothedells-inquiry": {
+    channel: "welcometothedells-inquiry",
+    specialistSite: "welcometothedells.com",
+    defaultPortSlug: null,
+    intendedDestination: "hello@welcometothedells.com",
+  },
+  "saveonthestrip-help-request": {
+    channel: "saveonthestrip-help-request",
+    specialistSite: "saveonthestrip.com",
+    defaultPortSlug: null,
+    intendedDestination: "laurensanders123@gmail.com",
+  },
+  "welcometotheswamp-inquiry": {
+    channel: "welcometotheswamp-inquiry",
+    specialistSite: "welcometotheswamp.com",
+    defaultPortSlug: "new-orleans",
+    intendedDestination: "concierge@welcometotheswamp.com",
+  },
+  "gosno-dispatch": {
+    channel: "gosno-dispatch",
+    specialistSite: "gosno.co",
+    defaultPortSlug: null,
+    intendedDestination: "dispatch@gosno.co",
+  },
+  "parr-inquiry": {
+    channel: "parr-inquiry",
+    specialistSite: "partyatredrocks.com",
+    defaultPortSlug: null,
+    intendedDestination: "hello@partyatredrocks.com",
+  },
 };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+function readBearerToken(request: Request): string {
+  const auth = request.headers.get("authorization") || "";
+  const match = auth.match(/^Bearer\s+(.+)$/i);
+  return match ? match[1].trim() : "";
+}
+
+function authorizeSpecialistIngestRequest(request: Request): {
+  authorized: boolean;
+  error?: string;
+} {
+  const configuredSecret = resolveDccInternalSecret();
+  const dccHeaderSecret = request.headers.get("x-dcc-internal-secret")?.trim() || "";
+  const legacyHeaderSecret = request.headers.get("x-internal-secret")?.trim() || "";
+  const bearerSecret = readBearerToken(request);
+
+  if (configuredSecret) {
+    if (
+      configuredSecret === dccHeaderSecret ||
+      configuredSecret === legacyHeaderSecret ||
+      configuredSecret === bearerSecret
+    ) {
+      return { authorized: true };
+    }
+    return {
+      authorized: false,
+      error: "Invalid or missing specialist ingest secret.",
+    };
+  }
+
+  // Allow isolated local unit tests without a secret configured; fail closed elsewhere
+  if (process.env.DCC_ISOLATED_TEST_DB === "1") {
+    return { authorized: true };
+  }
+
+  return {
+    authorized: false,
+    error: "Internal API secret unconfigured.",
+  };
+}
+
 export async function POST(request: Request) {
   try {
+    const auth = authorizeSpecialistIngestRequest(request);
+    if (!auth.authorized) {
+      return NextResponse.json(
+        { ok: false, error: auth.error || "Unauthorized." },
+        { status: 401 },
+      );
+    }
+
     const body = (await request.json().catch(() => null)) as Record<
       string,
       unknown
@@ -73,15 +152,22 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           ok: false,
-          error:
-            "Unsupported specialist inquiry channel. Expected juneauflightdeck-inquiry, welcometoneworleanstours-inquiry, or lastfrontiershoreexcursions-inquiry.",
+          error: `Unsupported specialist inquiry channel. Expected one of: ${Object.keys(ALLOWED_SPECIALIST_CHANNELS).join(", ")}.`,
         },
         { status: 400 },
       );
     }
 
-    const name =
+    const rawName =
       typeof body.name === "string" ? body.name.trim().slice(0, 120) : "";
+    if (typeof body.name === "string" && rawName.length > 0 && rawName.length < 2) {
+      return NextResponse.json(
+        { ok: false, error: "Please provide your name (at least 2 characters)." },
+        { status: 400 },
+      );
+    }
+    const name = rawName || "Guest";
+
     const email =
       typeof body.email === "string"
         ? body.email.trim().toLowerCase().slice(0, 160)
@@ -91,12 +177,6 @@ export async function POST(request: Request) {
         ? body.phone.trim().slice(0, 40)
         : null;
 
-    if (name.length < 2) {
-      return NextResponse.json(
-        { ok: false, error: "Please provide your name (at least 2 characters)." },
-        { status: 400 },
-      );
-    }
     if (!email || !EMAIL_RE.test(email)) {
       return NextResponse.json(
         { ok: false, error: "Please provide a valid email address." },
@@ -104,9 +184,10 @@ export async function POST(request: Request) {
       );
     }
 
+    const rawPartySize = body.partySize ?? body.groupSize;
     const partySize =
-      body.partySize !== undefined && body.partySize !== null
-        ? Math.max(1, Math.min(200, Math.round(Number(body.partySize) || 2)))
+      rawPartySize !== undefined && rawPartySize !== null && String(rawPartySize).trim() !== ""
+        ? Math.max(1, Math.min(200, Math.round(Number(rawPartySize) || 2)))
         : 2;
 
     const previewContext =
@@ -152,7 +233,9 @@ export async function POST(request: Request) {
     const dates =
       typeof body.dates === "string" && body.dates.trim()
         ? body.dates.trim().slice(0, 80)
-        : sanitizedAttribution.portDate || sanitizedAttribution.sailDate || null;
+        : typeof body.portDate === "string" && body.portDate.trim()
+          ? body.portDate.trim().slice(0, 80)
+          : sanitizedAttribution.portDate || sanitizedAttribution.sailDate || null;
 
     const routeOrLocation =
       typeof body.routeOrLocation === "string" && body.routeOrLocation.trim()
@@ -165,10 +248,39 @@ export async function POST(request: Request) {
             .filter(Boolean)
             .join(" · ") || null;
 
-    const notes =
+    const notesRaw =
       typeof body.notes === "string" && body.notes.trim()
-        ? body.notes.trim().slice(0, 1200)
+        ? body.notes.trim()
+        : typeof body.message === "string" && body.message.trim()
+          ? body.message.trim()
+          : "";
+    const notes = notesRaw ? notesRaw.slice(0, 1200) : null;
+
+    const emailSent =
+      typeof body.emailSent === "boolean"
+        ? body.emailSent
+        : body.notificationDelivered === true;
+    const emailReason =
+      typeof body.emailReason === "string" && body.emailReason.trim()
+        ? body.emailReason.trim().slice(0, 240)
         : null;
+    const emailProviderId =
+      typeof body.emailProviderId === "string" && body.emailProviderId.trim()
+        ? body.emailProviderId.trim().slice(0, 120)
+        : null;
+    const notificationStatus =
+      typeof body.notificationStatus === "string" && body.notificationStatus.trim()
+        ? body.notificationStatus.trim()
+        : emailSent
+          ? "sent"
+          : isTest
+            ? "suppressed_test"
+            : "not_configured";
+
+    const intendedDestination =
+      typeof body.intendedDestination === "string" && body.intendedDestination.trim()
+        ? body.intendedDestination.trim().slice(0, 160)
+        : channelSpec.intendedDestination;
 
     const createdAt = new Date().toISOString();
     const attrSummary = formatAttributionSummaryLine(sanitizedAttribution);
@@ -185,7 +297,9 @@ export async function POST(request: Request) {
         company:
           typeof body.company === "string" && body.company.trim()
             ? body.company.trim().slice(0, 100)
-            : null,
+            : typeof body.cruiseLine === "string" && body.cruiseLine.trim()
+              ? body.cruiseLine.trim().slice(0, 100)
+              : null,
         headline,
         dates,
         portDate: sanitizedAttribution.portDate,
@@ -193,17 +307,29 @@ export async function POST(request: Request) {
         shipName: sanitizedAttribution.shipName,
         portCity: sanitizedAttribution.portSlug,
         partySize,
+        tourType:
+          typeof body.tourType === "string" && body.tourType.trim()
+            ? body.tourType.trim().slice(0, 80)
+            : null,
+        bookingMode:
+          typeof body.bookingMode === "string" && body.bookingMode.trim()
+            ? body.bookingMode.trim().slice(0, 80)
+            : null,
         routeOrLocation,
         notes,
         sourcePath: sanitizedAttribution.landingPath,
         attribution: sanitizedAttribution,
         namespace: previewContext ? "preview" : "production",
-        intendedDestination: channelSpec.intendedDestination,
-        notificationStatus:
-          typeof body.notificationStatus === "string"
-            ? body.notificationStatus
-            : "not_configured",
-        notificationDelivered: Boolean(body.notificationDelivered === true),
+        intendedDestination,
+        emailSent,
+        emailReason,
+        emailProviderId,
+        notificationStatus,
+        notificationDelivered: Boolean(
+          body.notificationDelivered === true ||
+            emailSent === true ||
+            notificationStatus === "sent",
+        ),
       },
       environment,
       isTest,
@@ -232,6 +358,7 @@ export async function POST(request: Request) {
         submissionId,
         environment,
         isTest,
+        classification: isTest ? "test" : "genuine",
         attribution: sanitizedAttribution,
       },
       { status: 200 },

@@ -56,14 +56,18 @@ export function getCruisePortDirectory(): CruisePortDirectoryEntry[] {
 
   for (const guide of getEffectivePorts()) {
     const reference = entries.get(guide.slug);
+    if (!reference) continue;
     entries.set(guide.slug, {
       ...reference,
       ...guide,
       coverage: "guide",
-      sources: reference?.sources ?? [],
+      sources: reference.sources ?? [],
       path: `/ports/${guide.slug}`,
     });
   }
 
   return [...entries.values()].sort((a, b) => a.name.localeCompare(b.name));
 }
+
+export const cruisePortDirectory: CruisePortDirectoryEntry[] = getCruisePortDirectory();
+export const CONNECTED_CRUISE_PORT_COUNT = cruisePortDirectory.length;

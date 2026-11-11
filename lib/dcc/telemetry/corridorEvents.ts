@@ -6,7 +6,7 @@ import { getDb } from "@/lib/db/client";
 import { dccCorridorCatalog, dccCorridorEvents, type DccCorridorEventRow } from "@/lib/db/schema";
 import { getCorridorCatalogEntry, LIVE_CORRIDOR_CATALOG } from "@/lib/dcc/telemetry/corridorCatalog";
 
-const EVENT_NAMES = [
+export const EVENT_NAMES = [
   "page_viewed",
   "recommendation_rendered",
   "handoff_viewed",
@@ -43,6 +43,11 @@ const EVENT_NAMES = [
   "verdict_shown",
   "operator_cta_clicked",
   "driver_dispatched",
+  "hub_selected",
+  "next_stop_viewed",
+  "support_opened",
+  "certainty_cta_clicked",
+  "entered_guided_flow",
 ] as const;
 
 export const CorridorEventPayloadSchema = z.object({

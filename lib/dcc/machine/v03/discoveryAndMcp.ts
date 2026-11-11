@@ -8,6 +8,11 @@ import {
   verifyRfc8785ConformanceVectors,
 } from "./rfc8785AndJws";
 import { inspectR2CredentialsFromEnv } from "./storageBoundary";
+import cruisePortDirectoryData from "../../../../data/cruise-port-directory.json";
+
+const CONNECTED_CRUISE_PORT_COUNT = new Set(
+  cruisePortDirectoryData.ports.map((port) => port.slug),
+).size;
 
 /**
  * DCC Machine Layer v0.3 — Standard Machine Discovery, API Catalog, MCP Tools,
@@ -983,7 +988,7 @@ export function buildMcpDiscoveryDocument(baseUrl = DCC_V03_SITE_URL) {
         name: "dcc_search_port_excursions",
         requiredScope: "dcc:read:public",
         description:
-          "Searches DCC's SQL-backed cruise port-day shore excursion catalog across all 632 connected cruise ports and evaluates deterministic sailing-window timing fit (status: 'fits', 'runs_too_late', or 'needs_verification') using verified departure times, check-in cutoffs, meeting point coordinates, round-trip pier transfers, and port return buffers. Returns the port profile and any catalog entries from approved provider mappings. Uses 'needs_verification' when the dated berth, transfers for the actual route, or all-aboard cutoff are missing. Coordinates identify the berth and meeting-point endpoints while the timing verdict requires route and sailing evidence. Public search returns approved affiliate links without creating checkout records.",
+          `Searches DCC's SQL-backed cruise port-day shore excursion catalog across all ${CONNECTED_CRUISE_PORT_COUNT} connected cruise ports and evaluates deterministic sailing-window timing fit (status: 'fits', 'runs_too_late', or 'needs_verification') using verified departure times, check-in cutoffs, meeting point coordinates, round-trip pier transfers, and port return buffers. Returns the port profile and any catalog entries from approved provider mappings. Uses 'needs_verification' when the dated berth, transfers for the actual route, or all-aboard cutoff are missing. Coordinates identify the berth and meeting-point endpoints while the timing verdict requires route and sailing evidence. Public search returns approved affiliate links without creating checkout records.`,
         inputSchema: {
           type: "object",
           required: ["port"],
@@ -991,7 +996,7 @@ export function buildMcpDiscoveryDocument(baseUrl = DCC_V03_SITE_URL) {
             port: {
               type: "string",
               description:
-                "Any of the 632 connected cruise port slugs or names (e.g. 'new-orleans', 'cozumel', 'reykjavik', 'kahului', 'juneau', 'skagway', 'ketchikan', 'seward', 'miami', 'tampa', 'seattle', 'roatan', 'nassau', 'st-thomas', 'grand-cayman', 'civitavecchia', 'barcelona').",
+                `Any of the ${CONNECTED_CRUISE_PORT_COUNT} connected cruise port slugs or names (e.g. 'new-orleans', 'cozumel', 'reykjavik', 'kahului', 'juneau', 'skagway', 'ketchikan', 'seward', 'miami', 'tampa', 'seattle', 'roatan', 'nassau', 'st-thomas', 'grand-cayman', 'civitavecchia', 'barcelona').`,
             },
             viewMode: {
               type: "string",

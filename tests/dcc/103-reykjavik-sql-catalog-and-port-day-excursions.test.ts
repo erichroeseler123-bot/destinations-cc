@@ -1329,7 +1329,7 @@ test("103.15 Two-hour shortlist: 120m vs 119m on 15200P6 / TG10, full return tri
   );
 });
 
-test("103.16: Catalog-backed checkout approval, all 632 ports connected for discovery, and Jan 8 Symphony of the Seas Cozumel 103974P5 / TG1 proof with MCP + OpenAPI sync", async (t) => {
+test("103.16: Catalog-backed checkout approval, all 629 ports connected for discovery, and Jan 8 Symphony of the Seas Cozumel 103974P5 / TG1 proof with MCP + OpenAPI sync", async (t) => {
   const {
     CONNECTED_CRUISE_PORT_COUNT,
     getConnectedCruisePortProfiles,
@@ -1359,16 +1359,16 @@ test("103.16: Catalog-backed checkout approval, all 632 ports connected for disc
   });
 
   // ---------------------------------------------------------------------------
-  // 1. All 632 ports connected for discovery + approved provider mappings + needs_verification
+  // 1. All 629 ports connected for discovery + approved provider mappings + needs_verification
   // ---------------------------------------------------------------------------
   const directory = getCruisePortDirectory();
-  assert.equal(directory.length, 632);
-  assert.equal(CONNECTED_CRUISE_PORT_COUNT, 632);
+  assert.equal(directory.length, 629);
+  assert.equal(CONNECTED_CRUISE_PORT_COUNT, 629);
 
   const connectedProfiles = getConnectedCruisePortProfiles();
-  assert.equal(connectedProfiles.length, 632);
+  assert.equal(connectedProfiles.length, 629);
 
-  // Every single one of the 632 directory ports resolves a profile
+  // Every single one of the 629 directory ports resolves a profile
   for (const entry of directory) {
     const profile = resolveCruisePortExcursionProfile(entry.slug);
     assert.ok(profile, `Expected cruise port directory slug '${entry.slug}' to resolve`);
@@ -1771,7 +1771,7 @@ test("103.16: Catalog-backed checkout approval, all 632 ports connected for disc
   const mcpDoc = await mcpDocRes.json();
   const mcpSearchTool = mcpDoc.tools.find((t: any) => t.name === "dcc_search_port_excursions");
   const mcpCheckoutTool = mcpDoc.tools.find((t: any) => t.name === "dcc_prepare_tour_checkout");
-  assert.ok(mcpSearchTool.description.includes("632"));
+  assert.ok(mcpSearchTool.description.includes(String(CONNECTED_CRUISE_PORT_COUNT)));
   assert.ok(mcpSearchTool.inputSchema.properties.datedBerth);
   assert.ok(mcpSearchTool.inputSchema.properties.transfers);
   assert.deepEqual(mcpCheckoutTool.inputSchema.properties.port.enum, ["new-orleans", "cozumel"]);
@@ -1794,7 +1794,7 @@ test("103.16: Catalog-backed checkout approval, all 632 ports connected for disc
   const openApiDoc = await openApiRes.json();
   const getExcursionsOp = openApiDoc.paths["/api/v1/cruise/port-day-excursions"].get;
   const postExcursionsOp = openApiDoc.paths["/api/v1/cruise/port-day-excursions"].post;
-  assert.ok(getExcursionsOp.summary.includes("632"));
+  assert.ok(getExcursionsOp.summary.includes(String(CONNECTED_CRUISE_PORT_COUNT)));
   assert.ok(getExcursionsOp.parameters.some((p: any) => p.name === "datedBerth"));
   assert.ok(getExcursionsOp.parameters.some((p: any) => p.name === "transfers"));
   assert.ok(

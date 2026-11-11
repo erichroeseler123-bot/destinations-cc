@@ -110,13 +110,14 @@ export async function GET() {
       core_public_sources: [
         "Open-Meteo weather & snow models",
         "Open-Meteo / CAMS air quality",
-        "U.S. National Weather Service forecasts and alerts when geographically applicable",
-        "U.S. Geological Survey earthquakes",
+        "NOAA/NWS (api.weather.gov) forecasts and alerts when geographically applicable",
+        "U.S. Geological Survey earthquakes & USGS Water Services",
         "NASA EONET natural events",
         "NOAA National Water Prediction Service gauges when geographically applicable",
         "NOAA CO-OPS tide & water-level stations when coastal",
         "NOAA NDBC marine buoys when coastal/offshore",
-        "FAA / NWS Aviation Weather Center METAR & TAF within 120 km",
+        "NOAA/NWS Aviation Weather Center METAR & TAF within 120 km",
+        "FAA WeatherCams aviation camera feeds where available",
       ],
       compatibility_aliases: ["weather", "alerts", "earthquakes", "events", "machineFeeds", "providerSlots", "travelReference"],
       source_rule:
@@ -193,7 +194,14 @@ export async function GET() {
       port_day_excursions_availability_api: `${SITE_URL}/api/v1/cruise/port-day-excursions`,
       mcp_discovery: `${SITE_URL}/.well-known/mcp.json`,
       mcp_jsonrpc_endpoint: `${SITE_URL}/api/v1/mcp`,
-      mcp_port_day_tools: ["dcc_search_port_excursions", "dcc_check_tour_availability"],
+      mcp_tools: DCC_PRODUCT_SCOPE.machineContractInventory.registeredMcpTools,
+      mcp_port_day_tools: [
+        "dcc_search_port_excursions",
+        "dcc_check_tour_availability",
+        "dcc_prepare_tour_checkout",
+      ],
+      connected_cruise_port_count:
+        DCC_PRODUCT_SCOPE.machineContractInventory.connectedCruisePortCount,
       port_day_runnable_examples: {
         fits_at_115pm_get: `${SITE_URL}/api/v1/cruise/port-day-excursions?port=new-orleans&date=2027-07-15&shipArrival=07:00&allAboard=13:15&partySize=2&productCode=15200P6`,
         runs_too_late_at_114pm_get: `${SITE_URL}/api/v1/cruise/port-day-excursions?port=new-orleans&date=2027-07-15&shipArrival=07:00&allAboard=13:14&partySize=2&productCode=15200P6`,
@@ -235,19 +243,41 @@ export async function GET() {
       reference_resolver_template: `${SITE_URL}/r/{id}`,
       immutable_reference_resolver_template: `${SITE_URL}/r/{id}/v/{version}`,
     },
+    machine_layer_version: "0.3.0",
     dcc_machine_layer: {
-      version: "0.2.0",
+      version: "0.3.0",
+      machine_layer_version: "0.3.0",
       ir_schema_version: "dcc-decision-ir/0.1",
       reference_envelope_spec: "dcc-reference-envelope/0.1",
       well_known: `${SITE_URL}/.well-known/dcc`,
       public_keys_well_known: `${SITE_URL}/.well-known/dcc/keys.json`,
+      jwks_well_known: `${SITE_URL}/.well-known/jwks.json`,
       universe_endpoint_template: `${SITE_URL}/api/v1/universes/{id}`,
       receipt_endpoint_template: `${SITE_URL}/api/v1/receipts/{id}`,
-      evaluate_endpoint: `${SITE_URL}/api/v1/evaluate`,
+      evaluate_endpoint: `${SITE_URL}/api/v1/v03/evaluate`,
+      legacy_evaluate_endpoint: `${SITE_URL}/api/v1/evaluate`,
       batch_evaluate_endpoint: `${SITE_URL}/api/v1/evaluations:batch`,
       reference_resolver: `${SITE_URL}/r/{id}`,
       immutable_reference_resolver: `${SITE_URL}/r/{id}/v/{version}`,
-      active_engines: ["juneau-helicopter-tours", "hawaii-whale-watching"],
+      connected_cruise_port_count:
+        DCC_PRODUCT_SCOPE.machineContractInventory.connectedCruisePortCount,
+      active_engines: DCC_PRODUCT_SCOPE.machineContractInventory.decisionEngines,
+      category_decision_engines:
+        DCC_PRODUCT_SCOPE.machineContractInventory.categoryDecisionEngines,
+      registered_mcp_tools:
+        DCC_PRODUCT_SCOPE.machineContractInventory.registeredMcpTools,
+      flagship_nodes: DCC_PRODUCT_SCOPE.machineContractInventory.flagshipNodes,
+      regional_hubs: DCC_PRODUCT_SCOPE.machineContractInventory.regionalHubs,
+      regional_llms_hubs: DCC_PRODUCT_SCOPE.machineContractInventory.regionalHubLlmsPaths.map(
+        (p) => `${SITE_URL}${p}`,
+      ),
+      node_llms_manifests: [
+        `${SITE_URL}/juneau/llms.txt`,
+        `${SITE_URL}/new-orleans/llms.txt`,
+        `${SITE_URL}/red-rocks/llms.txt`,
+        `${SITE_URL}/routes/denver-breckenridge/llms.txt`,
+        `${SITE_URL}/vegas/llms.txt`,
+      ],
     },
     network: {
       role: "canonical_directory_and_relationship_graph",

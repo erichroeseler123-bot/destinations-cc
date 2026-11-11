@@ -8,6 +8,7 @@ import {
   listMachineEngines,
   V03_JSON_SCHEMAS,
 } from "@/lib/dcc/machine";
+import { DCC_PRODUCT_SCOPE } from "@/lib/dcc/productScope";
 
 export const dynamic = "force-dynamic";
 
@@ -88,8 +89,15 @@ export async function GET() {
           departureTime: "08:00",
           partySize: 2,
         },
-        mcpTools: ["dcc_search_port_excursions", "dcc_check_tour_availability"],
+        mcpTools: [
+          "dcc_search_port_excursions",
+          "dcc_check_tour_availability",
+          "dcc_prepare_tour_checkout",
+        ],
+        connectedCruisePortCount:
+          DCC_PRODUCT_SCOPE.machineContractInventory.connectedCruisePortCount,
       },
+      machineContractInventory: DCC_PRODUCT_SCOPE.machineContractInventory,
       contentNegotiation: {
         referenceEndpoints: ["/r/{id}", "/r/{id}/v/{version}"],
         supportedMediaTypes: [

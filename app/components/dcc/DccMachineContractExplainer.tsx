@@ -27,7 +27,7 @@ export default function DccMachineContractExplainer() {
           <article className="rounded-2xl border border-white/10 bg-white/[0.035] p-5">
             <strong className="text-sm text-emerald-300">2. Verify Live Signals (Coordinate API)</strong>
             <p className="mt-2 text-sm leading-6 text-white/55">
-              Live public observations &amp; forecasts (Open-Meteo, NWS, USGS, NASA EONET, NOAA NWPS/CO-OPS/NDBC, FAA AWC) with explicit non-conflation safety boundaries.
+              Live public observations &amp; forecasts (Open-Meteo, NOAA/NWS, USGS, NASA EONET, NOAA NWPS/CO-OPS/NDBC, NOAA/NWS Aviation Weather Center) with explicit non-conflation safety boundaries.
             </p>
           </article>
           <article className="rounded-2xl border border-white/10 bg-white/[0.035] p-5">

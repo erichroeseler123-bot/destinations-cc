@@ -14,6 +14,7 @@ import {
   isValidAdminAccessKey,
   isValidAdminSession,
 } from "./lib/adminAccess";
+import { resolveDccInternalSecret } from "./lib/dcc/shared/envCompat";
 import {
   BRECKENRIDGE_SHARED_GO_PATH,
   JUNEAU_HELICOPTER_GO_PATH,
@@ -605,15 +606,20 @@ function checkInternalApiAuthorization(request: NextRequest): {
   }
 
   // 5. Internal secret header / Bearer fallback
-  const internalSecret = process.env.INTERNAL_API_SECRET?.trim();
+  const internalSecret = resolveDccInternalSecret();
   if (!internalSecret)
     return {
       authorized: false,
       statusCode: 401,
       error: "Internal API unconfigured.",
     };
-  const headerSecret = request.headers.get("x-internal-secret")?.trim() || "";
-  if (internalSecret === headerSecret || internalSecret === bearerSecret) {
+  const dccHeaderSecret = request.headers.get("x-dcc-internal-secret")?.trim() || "";
+  const legacyHeaderSecret = request.headers.get("x-internal-secret")?.trim() || "";
+  if (
+    internalSecret === dccHeaderSecret ||
+    internalSecret === legacyHeaderSecret ||
+    internalSecret === bearerSecret
+  ) {
     return { authorized: true };
   }
 

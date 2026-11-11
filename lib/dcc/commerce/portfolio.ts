@@ -66,7 +66,7 @@ export function evaluatePortfolioAssuranceSummary(params: {
       "45-minute all-aboard margin + pier shuttle transfer buffer required; live operator seat inventory and ship berth assignments remain confirmed at checkout.",
     ],
     "juneau-helicopter-tours": [
-      "FAA PAJN ceiling/visibility weather dispatch (evaluated within 1 hour of flight), 4-passenger minimum flight load, and live seat inventory remain confirmed at checkout.",
+      "NOAA/NWS Aviation Weather Center PAJN ceiling/visibility weather dispatch (evaluated within 1 hour of flight), 4-passenger minimum flight load, and live seat inventory remain confirmed at checkout.",
     ],
   };
 

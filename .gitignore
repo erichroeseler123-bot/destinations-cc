@@ -7,7 +7,10 @@ node_modules/
 .next/
 .env*
 !.env.example
-out/
+/out/
+!apps/**/app/out/
+!apps/**/app/out/**
+.cache/
 .next/
 .vercel
 .open-next/

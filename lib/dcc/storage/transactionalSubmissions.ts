@@ -10,7 +10,10 @@ export type TransactionalSubmissionChannel =
   | "request-invite"
   | "juneauflightdeck-inquiry"
   | "welcometoneworleanstours-inquiry"
-  | "lastfrontiershoreexcursions-inquiry";
+  | "lastfrontiershoreexcursions-inquiry"
+  | "welcometotheswamp-inquiry"
+  | "gosno-dispatch"
+  | "parr-inquiry";
 
 export interface DurableTransactionalSubmissionInput {
   submissionId: string;

@@ -50,7 +50,10 @@ export type OperatorInboxSourceSite =
   | "saveonthestrip"
   | "juneauflightdeck"
   | "welcometoneworleanstours"
-  | "lastfrontiershoreexcursions";
+  | "lastfrontiershoreexcursions"
+  | "welcometotheswamp"
+  | "gosno"
+  | "partyatredrocks";
 
 export interface CpConnectorStatus {
   connected: boolean;
@@ -182,6 +185,23 @@ export interface RawJfdWaitlistRowInput {
   raw_entry?: Record<string, unknown> | string | null;
 }
 
+export interface RawWtsWaitlistRowInput {
+  id: string;
+  created_at?: string | Date | null;
+  email?: string | null;
+  name?: string | null;
+  phone?: string | null;
+  travel_date?: string | Date | null;
+  adults?: number | string | null;
+  children_count?: number | string | null;
+  transportation?: string | null;
+  boat_type?: string | null;
+  time_window?: string | null;
+  specific_tour_id?: string | null;
+  status?: string | null;
+  raw_entry?: Record<string, unknown> | string | null;
+}
+
 export interface GetUnifiedOperatorInboxOptions {
   view?: string | null;
   site?: string | null;
@@ -192,6 +212,7 @@ export interface GetUnifiedOperatorInboxOptions {
   /** Optional test overrides so unit tests can inject deterministic fixtures without mutating remote stores */
   findingsOverride?: RawFindingRowInput[];
   jfdWaitlistOverride?: RawJfdWaitlistRowInput[];
+  wtsWaitlistOverride?: RawWtsWaitlistRowInput[];
   argoLegacyOverride?: Array<{
     createdAt: string;
     email: string;
@@ -403,6 +424,8 @@ function defaultIntendedDestinationForChannel(channel: string): string {
       );
     case "welcometoneworleanstours-inquiry":
       return "help@welcometoneworleanstours.com";
+    case "welcometotheswamp-inquiry":
+      return "concierge@welcometotheswamp.com";
     case "lastfrontiershoreexcursions-inquiry":
       return (
         process.env.EARTHOS_APPROVAL_TO?.trim() ||
@@ -453,6 +476,12 @@ export function normalizeInquiryNotificationStatus(
     (typeof meta.notificationError === "string" &&
       meta.notificationError.trim()) ||
     (typeof nestedNotif?.error === "string" && nestedNotif.error.trim()) ||
+    (typeof meta.emailReason === "string" &&
+      meta.emailReason.trim() &&
+      meta.emailReason !== "missing_email_config" &&
+      meta.emailReason !== "suppressed_test_submission"
+      ? meta.emailReason.trim()
+      : null) ||
     null;
 
   const rawStatus =
@@ -477,7 +506,7 @@ export function normalizeInquiryNotificationStatus(
     };
   }
 
-  // 2. Explicit skipped/unconfigured signals
+  // 2. Explicit skipped/unconfigured/test-suppressed signals
   if (
     rawStatus === "skipped_unconfigured" ||
     rawStatus === "not_configured" ||
@@ -490,6 +519,19 @@ export function normalizeInquiryNotificationStatus(
       failureReason:
         explicitError ||
         "Outbound email alert not configured (missing RESEND_API_KEY or target recipient env).",
+    };
+  }
+
+  if (
+    rawStatus === "suppressed_test" ||
+    meta.emailReason === "suppressed_test_submission"
+  ) {
+    return {
+      notificationStatus: "not_configured",
+      notificationChannel,
+      intendedDestination,
+      failureReason:
+        "Outbound email alert intentionally suppressed for test/preview submission.",
     };
   }
 
@@ -659,7 +701,32 @@ function toIsoTimestamp(val: unknown, fallbackIso: string): string {
   return fallbackIso;
 }
 
-function resolveSiteAndChannelMeta(channel: string): {
+export function resolveSpecialistHostForChannel(
+  channel: string,
+): SpecialistCommercialHost | null {
+  switch (channel) {
+    case "juneauflightdeck-inquiry":
+      return "juneauflightdeck.com";
+    case "welcometoneworleanstours-inquiry":
+      return "welcometoneworleanstours.com";
+    case "lastfrontiershoreexcursions-inquiry":
+      return "lastfrontiershoreexcursions.com";
+    case "welcometothedells-inquiry":
+      return "welcometothedells.com";
+    case "saveonthestrip-help-request":
+      return "saveonthestrip.com";
+    case "welcometotheswamp-inquiry":
+      return "welcometotheswamp.com";
+    case "gosno-dispatch":
+      return "gosno.co";
+    case "parr-inquiry":
+      return "partyatredrocks.com";
+    default:
+      return null;
+  }
+}
+
+export function resolveSiteAndChannelMeta(channel: string): {
   sourceSite: OperatorInboxSourceSite;
   sourceSiteLabel: string;
   channelLabel: string;
@@ -725,6 +792,24 @@ function resolveSiteAndChannelMeta(channel: string): {
         sourceSiteLabel: "Last Frontier Shore Excursions",
         channelLabel: "Multi-Port Alaska Excursion Inquiry",
       };
+    case "welcometotheswamp-inquiry":
+      return {
+        sourceSite: "welcometotheswamp",
+        sourceSiteLabel: "Welcome to the Swamp",
+        channelLabel: "Swamp Tour & Waitlist Concierge",
+      };
+    case "gosno-dispatch":
+      return {
+        sourceSite: "gosno",
+        sourceSiteLabel: "GoSno Mountain Transportation",
+        channelLabel: "Mountain Corridor Dispatch",
+      };
+    case "parr-inquiry":
+      return {
+        sourceSite: "partyatredrocks",
+        sourceSiteLabel: "Party at Red Rocks",
+        channelLabel: "Red Rocks Private Group Inquiry",
+      };
     default:
       return {
         sourceSite: "destinationcommandcenter",
@@ -734,7 +819,7 @@ function resolveSiteAndChannelMeta(channel: string): {
   }
 }
 
-function mapFindingRowToInboxItem(
+export function mapFindingRowToInboxItem(
   row: RawFindingRowInput,
   resendConfigured: boolean,
 ): OperatorInboxItem | null {
@@ -880,34 +965,45 @@ function mapFindingRowToInboxItem(
       ? (meta.attribution as Record<string, unknown>)
       : null;
 
-  const specialistHostForChannel: SpecialistCommercialHost | null =
-    channel === "juneauflightdeck-inquiry"
-      ? "juneauflightdeck.com"
-      : channel === "welcometoneworleanstours-inquiry"
-        ? "welcometoneworleanstours.com"
-        : channel === "lastfrontiershoreexcursions-inquiry"
-          ? "lastfrontiershoreexcursions.com"
-          : null;
+  const specialistHostForChannel = resolveSpecialistHostForChannel(channel);
+  const explicitAttributionHost: SpecialistCommercialHost | null =
+    specialistHostForChannel ||
+    (rawAttributionObj &&
+    typeof rawAttributionObj.specialistSite === "string" &&
+    (
+      [
+        "juneauflightdeck.com",
+        "welcometoneworleanstours.com",
+        "lastfrontiershoreexcursions.com",
+        "welcometothedells.com",
+        "saveonthestrip.com",
+        "welcometotheswamp.com",
+        "gosno.co",
+        "partyatredrocks.com",
+      ] as readonly string[]
+    ).includes(rawAttributionObj.specialistSite)
+      ? (rawAttributionObj.specialistSite as SpecialistCommercialHost)
+      : null);
 
-  const attribution =
-    rawAttributionObj || specialistHostForChannel
-      ? extractNonPiiAttribution(rawAttributionObj || meta, {
-          specialistSite:
-            specialistHostForChannel || "juneauflightdeck.com",
-          defaultPortSlug:
-            channel === "welcometoneworleanstours-inquiry"
-              ? "new-orleans"
-              : channel === "juneauflightdeck-inquiry"
-                ? "juneau"
-                : null,
-          landingPath:
-            typeof meta.sourcePath === "string"
-              ? meta.sourcePath
-              : typeof meta.sourcePage === "string"
-                ? meta.sourcePage
-                : null,
-        })
-      : null;
+  const attribution = explicitAttributionHost
+    ? extractNonPiiAttribution(rawAttributionObj || meta, {
+        specialistSite: explicitAttributionHost,
+        defaultPortSlug:
+          channel === "welcometoneworleanstours-inquiry" ||
+          channel === "welcometotheswamp-inquiry"
+            ? "new-orleans"
+            : channel === "juneauflightdeck-inquiry" ||
+                channel === "lastfrontiershoreexcursions-inquiry"
+              ? "juneau"
+              : null,
+        landingPath:
+          typeof meta.sourcePath === "string"
+            ? meta.sourcePath
+            : typeof meta.sourcePage === "string"
+              ? meta.sourcePage
+              : null,
+      })
+    : null;
 
   const datesOrMonth =
     (typeof meta.concertDate === "string" && meta.concertDate.trim()) ||
@@ -2104,6 +2200,181 @@ async function loadJfdWaitlistRowsFromPostgres(): Promise<
   return [];
 }
 
+async function loadWtsWaitlistRowsFromPostgres(): Promise<
+  RawWtsWaitlistRowInput[]
+> {
+  const dbUrls = resolveOperatorInboxDatabaseUrls();
+  for (const dbUrl of dbUrls) {
+    try {
+      const sql = neon(dbUrl);
+      const rows = (await sql`
+        SELECT
+          id,
+          created_at,
+          email,
+          name,
+          phone,
+          travel_date,
+          adults,
+          children_count,
+          transportation,
+          boat_type,
+          time_window,
+          specific_tour_id,
+          status,
+          raw_entry
+        FROM wts_waitlist_submissions
+        ORDER BY created_at DESC
+        LIMIT 200
+      `) as RawWtsWaitlistRowInput[];
+      return Array.isArray(rows) ? rows : [];
+    } catch {
+      // Table may not exist on isolated DB; ignore safely
+    }
+  }
+  return [];
+}
+
+function mapWtsWaitlistRowToInboxItem(
+  row: RawWtsWaitlistRowInput,
+  resendConfigured: boolean,
+): OperatorInboxItem | null {
+  const id = String(row.id || "").trim();
+  if (!id) return null;
+
+  const rawEntry = parseMetadataObject(row.raw_entry);
+  const name =
+    (typeof row.name === "string" && row.name.trim()) ||
+    (typeof rawEntry.name === "string" && rawEntry.name.trim()) ||
+    null;
+  const email =
+    (typeof row.email === "string" && row.email.trim().toLowerCase()) ||
+    (typeof rawEntry.email === "string" && rawEntry.email.trim().toLowerCase()) ||
+    null;
+  const phone =
+    (typeof row.phone === "string" && row.phone.trim()) ||
+    (typeof rawEntry.phone === "string" && rawEntry.phone.trim()) ||
+    null;
+  const travelDate =
+    formatDateColumn(row.travel_date) ||
+    formatDateColumn(rawEntry.travelDate) ||
+    null;
+  const adults = Number(row.adults ?? rawEntry.adults ?? 2) || 2;
+  const childrenCount =
+    Number(row.children_count ?? rawEntry.childrenCount ?? 0) || 0;
+  const partySize = adults + childrenCount;
+  const boatType =
+    (typeof row.boat_type === "string" && row.boat_type.trim()) ||
+    (typeof rawEntry.boatType === "string" && rawEntry.boatType.trim()) ||
+    "any";
+  const transportation =
+    (typeof row.transportation === "string" && row.transportation.trim()) ||
+    (typeof rawEntry.transportation === "string" &&
+      rawEntry.transportation.trim()) ||
+    "either";
+  const timeWindow =
+    (typeof row.time_window === "string" && row.time_window.trim()) ||
+    (typeof rawEntry.timeWindow === "string" && rawEntry.timeWindow.trim()) ||
+    "any";
+  const specificTourId =
+    (typeof row.specific_tour_id === "string" && row.specific_tour_id.trim()) ||
+    (typeof rawEntry.specificTourId === "string" &&
+      rawEntry.specificTourId.trim()) ||
+    null;
+
+  const submittedAt = toIsoTimestamp(
+    rawEntry.createdAt || row.created_at,
+    new Date().toISOString(),
+  );
+  const environment =
+    typeof rawEntry.environment === "string" && rawEntry.environment.trim()
+      ? rawEntry.environment.trim()
+      : "production";
+
+  const headline = `Swamp Seat Waitlist (${boatType.replace(/_/g, " ")}) — ${partySize} guests`;
+  const summaryNotes = [
+    `Adults: ${adults}`,
+    childrenCount > 0 ? `Children: ${childrenCount}` : null,
+    `Transport: ${transportation.replace(/_/g, " ")}`,
+    `Window: ${timeWindow}`,
+    specificTourId ? `Tour: ${specificTourId}` : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+  const cls = classifyOperatorInboxSubmission({
+    isTest: rawEntry.isTest === true,
+    environment,
+    email,
+    name,
+    notes: summaryNotes,
+    headline,
+    sourceId: id,
+  });
+
+  const attribution = extractNonPiiAttribution(
+    {
+      ...(rawEntry.attribution && typeof rawEntry.attribution === "object"
+        ? (rawEntry.attribution as Record<string, unknown>)
+        : {}),
+      portDate: travelDate,
+      port: "new-orleans",
+      partySize,
+    },
+    {
+      specialistSite: "welcometotheswamp.com",
+      defaultPortSlug: "new-orleans",
+      landingPath: "/waitlist",
+    },
+  );
+
+  const notif = normalizeInquiryNotificationStatus(
+    "welcometotheswamp-inquiry",
+    {
+      notificationStatus: rawEntry.notificationDispatchedAt
+        ? "sent"
+        : "not_configured",
+      intendedDestination: "concierge@welcometotheswamp.com",
+    },
+    resendConfigured,
+  );
+  const siteMeta = resolveSiteAndChannelMeta("welcometotheswamp-inquiry");
+
+  return {
+    itemKey: sanitizeItemKey(`wts:waitlist:${id}`),
+    sourceId: id,
+    findingId: null,
+    sourceSite: siteMeta.sourceSite,
+    sourceSiteLabel: siteMeta.sourceSiteLabel,
+    channel: "welcometotheswamp-inquiry",
+    channelLabel: siteMeta.channelLabel,
+    submittedAt,
+    environment,
+    contact: {
+      name,
+      email,
+      phone,
+      company: null,
+    },
+    tripDetails: {
+      headline,
+      datesOrMonth: travelDate,
+      partySize,
+      routeOrLocation: `New Orleans · ${transportation.replace(/_/g, " ")}`,
+      messageOrNotes: summaryNotes || null,
+      pageOrSourceUrl: "/waitlist",
+    },
+    attribution,
+    classification: cls.classification,
+    classificationReason: cls.classificationReason,
+    ...notif,
+    triageStatus: "new",
+    operatorNote: null,
+    triageUpdatedAt: null,
+    triageUpdatedBy: null,
+  };
+}
+
 export function clearInMemoryOperatorTriageForTests(): void {
   inMemoryTriageOverlays.clear();
   if (!isServerlessRuntimeEnvironment()) {
@@ -2129,7 +2400,7 @@ export async function getUnifiedOperatorInbox(
       ? (options.status.trim() as OperatorTriageStatus)
       : null;
 
-  const [dccData, argoLegacyEntries, cpData, jfdWaitlistRows] =
+  const [dccData, argoLegacyEntries, cpData, jfdWaitlistRows, wtsWaitlistRows] =
     await Promise.all([
       loadDccFindingRowsAndTriageOverlays(options.findingsOverride),
       options.argoLegacyOverride
@@ -2147,11 +2418,17 @@ export async function getUnifiedOperatorInbox(
         : options.findingsOverride
           ? Promise.resolve([] as RawJfdWaitlistRowInput[])
           : loadJfdWaitlistRowsFromPostgres(),
+      options.wtsWaitlistOverride
+        ? Promise.resolve(options.wtsWaitlistOverride)
+        : options.findingsOverride
+          ? Promise.resolve([] as RawWtsWaitlistRowInput[])
+          : loadWtsWaitlistRowsFromPostgres(),
     ]);
 
   const itemsByKey = new Map<string, OperatorInboxItem>();
   const argoDedupFingerprints = new Set<string>();
   const seenJfdSourceIds = new Set<string>();
+  const seenWtsSourceIds = new Set<string>();
 
   for (const row of dccData.submissionRows) {
     const item = mapFindingRowToInboxItem(row, resendConfigured);
@@ -2159,6 +2436,9 @@ export async function getUnifiedOperatorInbox(
     itemsByKey.set(item.itemKey, item);
     if (item.channel === "juneauflightdeck-inquiry" && item.sourceId) {
       seenJfdSourceIds.add(item.sourceId);
+    }
+    if (item.channel === "welcometotheswamp-inquiry" && item.sourceId) {
+      seenWtsSourceIds.add(item.sourceId);
     }
     if (item.channel === "argo-waitlist" && item.contact.email) {
       const minuteBucket = item.submittedAt.slice(0, 16);
@@ -2173,6 +2453,16 @@ export async function getUnifiedOperatorInbox(
     seenJfdSourceIds.add(jfdItem.sourceId);
     if (!itemsByKey.has(jfdItem.itemKey)) {
       itemsByKey.set(jfdItem.itemKey, jfdItem);
+    }
+  }
+
+  for (const wtsRow of wtsWaitlistRows) {
+    const wtsItem = mapWtsWaitlistRowToInboxItem(wtsRow, resendConfigured);
+    if (!wtsItem) continue;
+    if (seenWtsSourceIds.has(wtsItem.sourceId)) continue;
+    seenWtsSourceIds.add(wtsItem.sourceId);
+    if (!itemsByKey.has(wtsItem.itemKey)) {
+      itemsByKey.set(wtsItem.itemKey, wtsItem);
     }
   }
 

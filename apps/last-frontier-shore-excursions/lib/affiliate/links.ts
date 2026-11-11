@@ -1,4 +1,5 @@
 import { AffiliateSource } from "./types";
+import { resolveViatorPid } from "../../../../lib/dcc/shared/envCompat";
 
 const VIATOR_SEARCH_BASE = "https://www.viator.com/searchResults/all";
 const GYG_SEARCH_BASE = "https://www.getyourguide.com/s/";
@@ -25,7 +26,7 @@ export function buildViatorProductUrl(
       url = new URL(productUrlOrPath.startsWith("/") ? productUrlOrPath : `/${productUrlOrPath}`, "https://www.viator.com");
     }
 
-    const pid = process.env.NEXT_PUBLIC_LAST_FRONTIER_VIATOR_PID || process.env.NEXT_PUBLIC_VIATOR_PID || DEFAULT_VIATOR_PID;
+    const pid = resolveViatorPid(process.env, DEFAULT_VIATOR_PID);
     const mcid = process.env.NEXT_PUBLIC_LAST_FRONTIER_VIATOR_MCID || process.env.NEXT_PUBLIC_VIATOR_MCID || DEFAULT_VIATOR_MCID;
     const cleanCampaign = `last-frontier-${campaign.replace(/^last-frontier-/, "")}`;
 
@@ -47,7 +48,7 @@ export function buildViatorSearchUrl(query: string, campaign: string): string {
   const url = new URL(VIATOR_SEARCH_BASE);
   url.searchParams.set("text", query.trim() || "Alaska shore excursions");
 
-  const pid = process.env.NEXT_PUBLIC_LAST_FRONTIER_VIATOR_PID || process.env.NEXT_PUBLIC_VIATOR_PID || DEFAULT_VIATOR_PID;
+  const pid = resolveViatorPid(process.env, DEFAULT_VIATOR_PID);
   const mcid = process.env.NEXT_PUBLIC_LAST_FRONTIER_VIATOR_MCID || process.env.NEXT_PUBLIC_VIATOR_MCID || DEFAULT_VIATOR_MCID;
   const cleanCampaign = `last-frontier-${campaign.replace(/^last-frontier-/, "")}`;
 
