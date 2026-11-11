@@ -88,30 +88,58 @@ export default function JuneauDogSleddingPage() {
 
         {/* Hero Image Showcase */}
         <div
-          className="rounded-3xl overflow-hidden border border-white/10 mb-8 shadow-2xl relative"
-          style={{ maxWidth: "100%", aspectRatio: "16 / 9", maxHeight: 440 }}
+          style={{
+            position: "relative",
+            width: "100%",
+            maxWidth: "100%",
+            aspectRatio: "16 / 9",
+            maxHeight: 440,
+            borderRadius: 24,
+            overflow: "hidden",
+            border: "1px solid rgba(151, 211, 255, 0.18)",
+            marginBottom: 32,
+            boxShadow: "0 24px 64px rgba(0, 0, 0, 0.45)",
+          }}
         >
           <Image
             src="/images/tours/temsco-glacier-dog-sledding.jpg"
             alt="Alaskan husky sled dog team harnessed on an Alaska mountain snowfield at alpenglow"
-            width={1440}
-            height={900}
+            fill
             priority
+            sizes="(max-width: 1024px) 100vw, 1024px"
             style={{
-              width: "100%",
-              height: "100%",
-              maxWidth: "100%",
               objectFit: "cover",
               objectPosition: "55% 60%",
-              display: "block",
             }}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent flex items-end p-6 md:p-10">
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background: "linear-gradient(180deg, rgba(4, 17, 27, 0.08) 0%, rgba(4, 17, 27, 0.25) 48%, rgba(4, 17, 27, 0.88) 100%)",
+              display: "flex",
+              alignItems: "flex-end",
+              padding: "clamp(18px, 4vw, 32px)",
+            }}
+          >
             <div>
-              <span className="bg-amber-500/90 text-slate-950 font-black text-xs px-3 py-1 rounded-full uppercase tracking-wider mb-2 inline-block">
+              <span
+                style={{
+                  display: "inline-block",
+                  background: "rgba(240, 179, 91, 0.92)",
+                  color: "#04111b",
+                  fontWeight: 900,
+                  fontSize: "0.72rem",
+                  padding: "4px 12px",
+                  borderRadius: 999,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  marginBottom: 8,
+                }}
+              >
                 High Demand · Books Out 4-6 Months Ahead
               </span>
-              <h2 className="text-2xl md:text-3xl font-bold text-white">
+              <h2 style={{ margin: 0, fontSize: "clamp(1.35rem, 3vw, 1.85rem)", fontWeight: 800, color: "#ffffff", lineHeight: 1.2 }}>
                 Herbert Glacier &amp; Norris Glacier Alpine Camps
               </h2>
             </div>

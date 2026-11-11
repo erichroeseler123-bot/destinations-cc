@@ -1591,14 +1591,14 @@
     },
     {
       "id": "gosno-big-sky-lone-peak",
-      "subject": "Snow-covered 11,166-foot summit of Lone Peak at Big Sky, Montana",
+      "subject": "Snow-covered 11,166-foot summit of Lone Mountain above Big Sky, Montana in winter",
       "location": "Big Sky, Montana",
-      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Pablo%27s_Great_Journey_to_Lone_Peak_Mountain.jpg",
-      "photographer": "Pablo Gándara-Pizá",
-      "license": "CC BY-SA 4.0",
-      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-      "originalDimensions": "3985x2657",
-      "focalPointMobile": "50% 45%",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Lone_Mountain_in_winter.jpg",
+      "photographer": "Dennis Matheson",
+      "license": "CC BY-SA 2.5",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.5",
+      "originalDimensions": "2264x1398",
+      "focalPointMobile": "50% 42%",
       "truthfulnessLevel": "verified_destination_activity",
       "deployments": [
         {
@@ -1606,7 +1606,7 @@
           "publicPath": "/images/resorts/big-sky-lone-peak.webp",
           "width": 1440,
           "height": 900,
-          "bytes": 109014
+          "bytes": 166730
         }
       ]
     },
