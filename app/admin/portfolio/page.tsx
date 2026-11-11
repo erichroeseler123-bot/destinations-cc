@@ -166,7 +166,7 @@ export default async function PortfolioDesktopPage(props: {
 
   const parrHandoffs = snapshot.bySatellite.partyatredrocks || 0;
   const gosnoHandoffs = snapshot.bySatellite.gosno || 0;
-  const alaskaHandoffs = snapshot.bySatellite["welcome-to-alaska"] || 0;
+  const wtaPartnerHandoffs = snapshot.bySatellite["welcome-to-alaska"] || 0;
   const vegasHandoffs = snapshot.bySatellite.saveonthestrip || 0;
 
   const missionWaiting = missions.filter((mission: any) => mission.status === "waiting").length;
@@ -596,11 +596,15 @@ export default async function PortfolioDesktopPage(props: {
               source="DCC satellite handoff telemetry"
             />
             <SiteMetricCard
-              site="Alaska + Vegas satellites"
-              headline={`${alaskaHandoffs + vegasHandoffs} tracked handoffs`}
-              stats={[`Alaska: ${alaskaHandoffs}`, `Save On The Strip: ${vegasHandoffs}`, `Portfolio-network events: ${portfolioEvents.length}`]}
+              site="Vegas satellite + Protected Partner (WTA)"
+              headline={`${vegasHandoffs} owned Vegas handoffs · ${wtaPartnerHandoffs} Independent Protected Partner Property (WTA)`}
+              stats={[
+                `Save On The Strip (owned): ${vegasHandoffs}`,
+                `Independent Protected Partner Property (WTA — friend's property, containment 503): ${wtaPartnerHandoffs}`,
+                `Portfolio-network events: ${portfolioEvents.length}`,
+              ]}
               href="/admin/satellite-handoffs"
-              source="DCC satellite + portfolio telemetry"
+              source="DCC satellite + partner boundary telemetry"
             />
           </div>
         </section>

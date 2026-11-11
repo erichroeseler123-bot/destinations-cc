@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import TourDetailBookingAction from "./TourDetailBookingAction";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import {
   STOREFRONT_PRODUCTS,
   getFareHarborUrl,
@@ -40,6 +40,7 @@ import {
 } from "@/lib/dcc/commerce/portfolio";
 import { resolveNextEligibleTourOption } from "@/lib/dcc/catalog/provenToursCatalog";
 import { verifyLiveExcursionAvailability } from "@/lib/dcc/cruisePortExcursionCatalogEngine";
+import { buildAddToCruisePromenadeUrl } from "@/lib/dcc/shared/addToCruisePromenadeUrl";
 import styles from "./tourDetail.module.css";
 
 interface Props {
@@ -104,8 +105,19 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
   const childrenConsiderations = product.childrenConsiderations?.length ? product.childrenConsiderations : decisionCopy?.childrenConsiderations;
 
   const resolvedSearchParams = await searchParams;
+  let cookieCtx: string | null = null;
+  try {
+    const cookieStore = await cookies();
+    cookieCtx =
+      cookieStore.get("wtno_trip_ctx")?.value ||
+      cookieStore.get("dcc_trip_ctx")?.value ||
+      null;
+  } catch {
+    cookieCtx = null;
+  }
   const carriedContext = await resolvePortfolioTripContext({
     searchParams: resolvedSearchParams,
+    cookieContextId: cookieCtx,
     claimingOwner: siteDomain,
     issueIfParamsPresent: true,
     defaultPortSlug: "new-orleans",
@@ -323,6 +335,18 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
   const heldBanner =
     slug === HELD_JEAN_LAFITTE_SLUG ? HELD_JEAN_LAFITTE_BANNER : HELD_COMBO_BANNER;
 
+  const addToCruisePromenadeHref = buildAddToCruisePromenadeUrl({
+    title: product.title,
+    port: "new-orleans",
+    date: carriedContext.payload.date || null,
+    ship: carriedContext.payload.shipSlug || null,
+    partySize: resolvedPartySize,
+    operator: product.operatorName,
+    fitStatus: heldProduct ? "unavailable" : "needs_verification",
+    sourceSite: "welcometoneworleanstours.com",
+    productCode: product.viatorProductCode || product.slug,
+  });
+
   const bookingActions = (className: string) => {
     if (heldProduct) {
       return (
@@ -368,6 +392,15 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
             className={className}
           />
         )}
+        <a
+          href={addToCruisePromenadeHref}
+          data-testid="wno-detail-add-to-cp-plan"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-2 inline-flex items-center justify-center rounded border border-[#d4af37]/40 bg-[#1a1610]/80 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-[#f5d97e] hover:border-[#d4af37] hover:text-white transition"
+        >
+          + Add to Cruise Promenade Plan
+        </a>
         {viatorReselectionNote && (
           <p
             data-testid="wno-detail-reselection-note"

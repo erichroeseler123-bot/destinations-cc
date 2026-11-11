@@ -407,7 +407,8 @@ export const DCC_EXCLUDED_PORTFOLIO_SITES: readonly DccExcludedPortfolioSite[] =
     canonical_domains: ["welcometoalaskatours.com", "www.welcometoalaskatours.com"],
     aliases: ["welcome-to-alaska", "welcome-to-alaska-tours", "wta-renderer", "wta-ui"],
     status: "excluded_from_portfolio_network",
-    reason: "Welcome to Alaska Tours is explicitly excluded from the DCC portfolio network; Alaska shore excursion discovery routes through Last Frontier Shore Excursions and Juneau Flight Deck.",
+    reason:
+      "Independent Protected Partner Property (WTA — friend's independently owned property under 503_BOOKINGS_DISABLED containment dpl_D6yaKKQtgek7iEz4fcbLqSVTCViC). Never link consumer traffic, redirect, merge, or alter payouts without explicit partner approval; owned Alaska shore excursion discovery routes through Last Frontier Shore Excursions and Juneau Flight Deck.",
   },
 ] as const;
 

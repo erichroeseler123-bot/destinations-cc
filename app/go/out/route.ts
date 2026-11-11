@@ -41,6 +41,16 @@ const APPROVED_OUTBOUND_HOSTS = new Set([
   "www.gosno.co",
   "partyatredrocks.com",
   "www.partyatredrocks.com",
+  "originalwisconsinducks.com",
+  "www.originalwisconsinducks.com",
+  "dellsboats.com",
+  "www.dellsboats.com",
+  "jetboatadv.com",
+  "www.jetboatadv.com",
+  "dellsghostboat.com",
+  "www.dellsghostboat.com",
+  "wisdells.com",
+  "www.wisdells.com",
 ]);
 
 export async function GET(request: Request) {
@@ -75,9 +85,11 @@ export async function GET(request: Request) {
 
   const explicitOrigin =
     sp.get("originatingSite")?.trim() ||
+    sp.get("source_site")?.trim() ||
     sp.get("site")?.trim() ||
     sp.get("origin")?.trim() ||
     "";
+  const corridor = sp.get("corridor")?.trim() || null;
   const surfaceLower = surface.toLowerCase();
   const isCruisePromenadeOrigin =
     explicitOrigin.toLowerCase().includes("cruisepromenade") ||
@@ -187,6 +199,7 @@ export async function GET(request: Request) {
     traceparent,
     metadata: {
       portSlug,
+      corridor,
       optionCode,
       surface,
       trackingTag,

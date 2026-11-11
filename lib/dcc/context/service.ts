@@ -43,6 +43,10 @@ export function clearMemoryStore(): void {
   memoryContextsByIdempotencyKey.clear();
 }
 
+export function getMemoryContextCount(): number {
+  return memoryContextsByHash.size;
+}
+
 export interface IssueContextResult {
   success: true;
   contextId: string;

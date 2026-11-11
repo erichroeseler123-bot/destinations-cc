@@ -7,6 +7,7 @@ import {
   stripPrivateParamsFromSearch,
   type SanitizedCommercialAttribution,
 } from "@/lib/dcc/commercialAttribution";
+import { buildAddToCruisePromenadeUrl } from "@/lib/dcc/shared/addToCruisePromenadeUrl";
 import { sharePortDate } from "@/lib/portDate";
 import { ALASKA_CRUISE_FLEET } from "../../lib/alaskaCruiseFleet";
 import { sendJfdTelemetry } from "./DccNetworkBridge";
@@ -715,6 +716,40 @@ export default function JuneauPortAviationDecisionDesk() {
             }}
           >
             Check Live Seats &amp; Final Price on Viator (Partner Checkout) ↗
+          </a>
+
+          <a
+            href={buildAddToCruisePromenadeUrl({
+              title:
+                "Coastal Helicopters: Juneau Shore Excursion Helicopter Tour & Guided Icefield Walk",
+              port: "juneau",
+              date: portDate,
+              portDate,
+              ship: shipName,
+              sailDate: attribution?.sailDate || portDate,
+              durationMinutes: 135,
+              partySize,
+              operator: "Coastal Helicopters",
+              fitStatus: timingCalc
+                ? timingCalc.fits2HourIceWalk
+                  ? "fits"
+                  : "does_not_fit"
+                : "needs_verification",
+              sourceSite: "juneauflightdeck.com",
+              productCode: "6251SHOREXICEWALK",
+            })}
+            data-testid="jfd-add-to-cp-plan"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="button button-secondary"
+            style={{
+              fontSize: "0.82rem",
+              padding: "9px 14px",
+              borderColor: "rgba(147, 197, 253, 0.45)",
+              color: "#dbeafe",
+            }}
+          >
+            Add to Cruise Promenade Plan ↗
           </a>
 
           <a

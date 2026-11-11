@@ -35,7 +35,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           <h1 className="text-3xl font-black">Admin Unlock</h1>
           <p className="mt-2 text-zinc-300">Enter your admin access key to continue.</p>
           <form action="/admin/unlock" method="post" className="mt-6 space-y-3">
-            <AdminUnlockNextInput defaultNext="/admin/inbox" />
+            <AdminUnlockNextInput defaultNext="/admin" />
             <input
               type="password"
               name="key"
@@ -62,12 +62,21 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           <div className="flex flex-wrap items-center gap-4">
             <span>Admin area</span>
             <Link
+              href="/admin"
+              className="rounded-lg border border-emerald-400/40 bg-emerald-500/15 px-2.5 py-1 font-semibold text-emerald-200 hover:bg-emerald-500/25 hover:text-white"
+            >
+              Owner Control Center
+            </Link>
+            <Link
               href="/admin/inbox"
               className="rounded-lg border border-amber-400/35 bg-amber-500/15 px-2.5 py-1 font-semibold text-[#f5c66c] hover:bg-amber-500/25 hover:text-white"
             >
               Operator Inbox
             </Link>
-            <Link href="/admin/portfolio" className="font-semibold text-[#f5c66c] hover:text-white">
+            <Link
+              href="/admin/portfolio"
+              className="rounded-lg border border-cyan-400/30 bg-cyan-500/10 px-2.5 py-1 font-semibold text-cyan-200 hover:bg-cyan-500/20 hover:text-white"
+            >
               Portfolio Desktop
             </Link>
             <Link href="/admin/portfolio/activity" className="text-zinc-200 hover:text-white">

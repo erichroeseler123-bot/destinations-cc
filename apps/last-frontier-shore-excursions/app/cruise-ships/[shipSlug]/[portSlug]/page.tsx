@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAllAlaskaShips, getShipPortPair, getTrackedTourUrl } from "@/lib/alaska-ships";
 import { TrustDisclosure } from "@/components/TrustDisclosure";
+import { buildAddToCruisePromenadeUrl } from "../../../../../../lib/dcc/shared/addToCruisePromenadeUrl";
 
 const SITE = "https://www.lastfrontiershoreexcursions.com";
 
@@ -244,6 +245,35 @@ export default async function ShipPortExcursionsPage({ params }: ShipPortRoutePr
                         Partner checkout unavailable — check direct operator or ship excursion desk
                       </div>
                     )}
+                    <a
+                      href={buildAddToCruisePromenadeUrl({
+                        title: tour.title,
+                        port: port.portSlug,
+                        ship: ship.name,
+                        cruiseLine: ship.cruiseLine,
+                        durationMinutes: Math.round(tour.durationHours * 60),
+                        fitStatus: "fits",
+                        sourceSite: "lastfrontiershoreexcursions.com",
+                      })}
+                      data-testid="lfse-ship-port-add-to-cp-plan"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        marginTop: 8,
+                        padding: "7px 12px",
+                        borderRadius: 6,
+                        border: "1px solid var(--line)",
+                        background: "#f8fbfb",
+                        color: "var(--forest)",
+                        fontSize: 12,
+                        fontWeight: 600,
+                        textAlign: "center",
+                        textDecoration: "none",
+                        display: "block",
+                      }}
+                    >
+                      + Add to Cruise Promenade Plan
+                    </a>
                   </div>
                 </div>
               );

@@ -19,6 +19,8 @@ for (const fileName of [
   "envCompat.ts",
   "edgeContextAndPii.ts",
   "specialistInquiryClient.ts",
+  "canonicalFitStatus.ts",
+  "addToCruisePromenadeUrl.ts",
 ]) {
   const fullPath = path.join(sharedDir, fileName);
   if (!fs.existsSync(fullPath)) {
@@ -67,6 +69,7 @@ const result = spawnSync(
     "--env-file-if-exists=.env.test.local",
     "--test",
     "tests/dcc/ecosystem-coherence-and-contracts.test.ts",
+    "tests/dcc/north-star-control-center-and-graph.test.ts",
   ],
   {
     cwd: repoRoot,
@@ -80,7 +83,7 @@ const result = spawnSync(
 
 if (result.status !== 0) {
   fail(
-    `tests/dcc/ecosystem-coherence-and-contracts.test.ts exited with code ${result.status ?? 1}`,
+    `Release-gate contract test suite exited with code ${result.status ?? 1}`,
   );
 }
 

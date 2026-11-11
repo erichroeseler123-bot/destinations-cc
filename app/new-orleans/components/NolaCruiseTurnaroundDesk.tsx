@@ -7,6 +7,7 @@ import {
   stripPrivateParamsFromSearch,
   type SanitizedCommercialAttribution,
 } from "@/lib/dcc/commercialAttribution";
+import { buildAddToCruisePromenadeUrl } from "@/lib/dcc/shared/addToCruisePromenadeUrl";
 
 const WNO_ATTRIBUTION_STORAGE_KEY = "wno_commercial_attribution_v1";
 
@@ -257,6 +258,25 @@ export default function NolaCruiseTurnaroundDesk() {
         campaign: attribution?.utmCampaign || "wno_precruise_group_return",
       }),
     [shipName, attribution, sailDate],
+  );
+
+  const addToCpPlanHref = useMemo(
+    () =>
+      buildAddToCruisePromenadeUrl({
+        title:
+          timingScenario === "day_before_cruise"
+            ? "New Orleans Pre-Cruise Swamp or Riverboat Excursion"
+            : "New Orleans Cruise Turnaround Sightseeing",
+        port: "new-orleans",
+        date: sailDate,
+        ship: shipName,
+        sailDate,
+        partySize,
+        fitStatus:
+          suitability.regionalSwampTone === "safe" ? "fits" : "needs_verification",
+        sourceSite: "welcometoneworleanstours.com",
+      }),
+    [timingScenario, sailDate, shipName, partySize, suitability.regionalSwampTone],
   );
 
   const handleInquirySubmit = async (e: React.FormEvent) => {
@@ -681,15 +701,26 @@ export default function NolaCruiseTurnaroundDesk() {
             100% commission-neutral for organizers and guests.
           </p>
         </div>
-        <a
-          href={cpReturn.href}
-          data-testid="cp-group-return-link"
-          className="min-h-[40px] inline-flex items-center border border-[rgba(212,175,55,0.55)] bg-[#1c1812] px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-[#fdfbf7] hover:border-[var(--nola-gold)] hover:text-[var(--nola-gold)] transition"
-        >
-          {cpReturn.isExactSailingRollCall
-            ? `Return to ${shipName} Board on Cruise Promenade →`
-            : "Coordinate Group Plans on Cruise Promenade →"}
-        </a>
+        <div className="flex flex-wrap items-center gap-3">
+          <a
+            href={addToCpPlanHref}
+            data-testid="wno-turnaround-add-to-cp-plan"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="min-h-[40px] inline-flex items-center border border-[rgba(212,175,55,0.4)] bg-transparent px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-[#f5d97e] hover:border-[var(--nola-gold)] hover:text-white transition"
+          >
+            Add to Cruise Promenade Plan
+          </a>
+          <a
+            href={cpReturn.href}
+            data-testid="cp-group-return-link"
+            className="min-h-[40px] inline-flex items-center border border-[rgba(212,175,55,0.55)] bg-[#1c1812] px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-[#fdfbf7] hover:border-[var(--nola-gold)] hover:text-[var(--nola-gold)] transition"
+          >
+            {cpReturn.isExactSailingRollCall
+              ? `Return to ${shipName} Board on Cruise Promenade →`
+              : "Coordinate Group Plans on Cruise Promenade →"}
+          </a>
+        </div>
       </div>
     </section>
   );

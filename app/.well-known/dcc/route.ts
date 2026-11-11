@@ -52,6 +52,7 @@ export async function GET() {
         mcpEndpoint: `${SITE_URL}/api/v1/mcp`,
         portDayExcursionsCatalog: `${SITE_URL}/api/v1/cruise/port-day-excursions`,
         portDayExcursionAvailability: `${SITE_URL}/api/v1/cruise/port-day-excursions`,
+        travelGraphEvaluate: `${SITE_URL}/api/v1/travel-graph/evaluate`,
         agentManifest: `${SITE_URL}/agent.json`,
         openApi: `${SITE_URL}/openapi.json`,
         developers: `${SITE_URL}/developers`,

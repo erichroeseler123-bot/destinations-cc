@@ -38,8 +38,8 @@ export default async function SatelliteHandoffsAdminPage({
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h1 className="text-4xl font-black tracking-tight">Satellite Handoffs</h1>
-            <p className="mt-2 text-zinc-300">
-              Recent two-way handoff state across PARR, GOSNO, Juneau Flight Deck, Last Frontier, and Save On The Strip.
+              <p className="mt-2 text-zinc-300">
+              Recent two-way handoff state across owned satellites (PARR, GOSNO, Save On The Strip) plus legacy telemetry for Independent Protected Partner Property (WTA — Welcome to Alaska Tours, friend-owned, containment 503).
             </p>
           </div>
           <div className="flex gap-2">
@@ -63,9 +63,17 @@ export default async function SatelliteHandoffsAdminPage({
             <Link
               key={satelliteId}
               href={`/admin/satellite-handoffs?satellite=${encodeURIComponent(satelliteId)}`}
-              className={`rounded-full border px-4 py-2 text-sm ${activeSatellite === satelliteId ? "border-cyan-300/40 bg-cyan-400/10 text-cyan-100" : "border-white/10 bg-black/30 text-zinc-300"}`}
+              className={`rounded-full border px-4 py-2 text-sm ${
+                activeSatellite === satelliteId
+                  ? "border-cyan-300/40 bg-cyan-400/10 text-cyan-100"
+                  : satelliteId === "welcome-to-alaska"
+                    ? "border-amber-400/35 bg-amber-500/10 text-amber-200"
+                    : "border-white/10 bg-black/30 text-zinc-300"
+              }`}
             >
-              {satelliteId}
+              {satelliteId === "welcome-to-alaska"
+                ? "welcome-to-alaska · Independent Protected Partner Property (WTA)"
+                : satelliteId}
             </Link>
           ))}
         </div>
@@ -83,7 +91,7 @@ export default async function SatelliteHandoffsAdminPage({
               { label: "Partner revenue", value: `$${snapshot.partnerRevenue.toLocaleString()}` },
               { label: "Forwards / accepts", value: `${snapshot.forwardedToPartner} / ${snapshot.acceptedFromPartner}` },
               { label: "Partner outcomes", value: `${snapshot.partnerCompleted} / ${snapshot.partnerFailed}` },
-              { label: "PARR / JFD-LFSE / GOSNO / SOTS", value: `${snapshot.bySatellite.partyatredrocks} / ${snapshot.bySatellite["welcome-to-alaska"]} / ${snapshot.bySatellite.gosno} / ${snapshot.bySatellite.saveonthestrip}` },
+              { label: "PARR / Independent Protected Partner (WTA) / GOSNO / SOTS", value: `${snapshot.bySatellite.partyatredrocks} / ${snapshot.bySatellite["welcome-to-alaska"]} / ${snapshot.bySatellite.gosno} / ${snapshot.bySatellite.saveonthestrip}` },
               { label: "Urgent alerts", value: snapshot.urgentAlerts.length },
               { label: "Embed domains", value: snapshot.byEmbedDomain.length },
               { label: "Widget placements", value: snapshot.byWidgetPlacement.length },

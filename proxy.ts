@@ -569,10 +569,15 @@ function checkInternalApiAuthorization(request: NextRequest): {
   }
   const adminKeyHeader =
     request.headers.get("x-admin-access-key")?.trim() ||
+    request.headers.get("x-dcc-admin-key")?.trim() ||
     request.headers.get("x-earthos-admin-key")?.trim() ||
     "";
   const bearerSecret = readBearerToken(request);
   if (isValidAdminAccessKey(adminKeyHeader) || isValidAdminAccessKey(bearerSecret)) {
+    return { authorized: true };
+  }
+  const commerceAdminSecret = process.env.DCC_COMMERCE_ADMIN_SECRET?.trim();
+  if (commerceAdminSecret && (commerceAdminSecret === adminKeyHeader || commerceAdminSecret === bearerSecret)) {
     return { authorized: true };
   }
 
@@ -613,7 +618,10 @@ function checkInternalApiAuthorization(request: NextRequest): {
       statusCode: 401,
       error: "Internal API unconfigured.",
     };
-  const dccHeaderSecret = request.headers.get("x-dcc-internal-secret")?.trim() || "";
+  const dccHeaderSecret =
+    request.headers.get("x-dcc-internal-secret")?.trim() ||
+    request.headers.get("x-dcc-internal-key")?.trim() ||
+    "";
   const legacyHeaderSecret = request.headers.get("x-internal-secret")?.trim() || "";
   if (
     internalSecret === dccHeaderSecret ||
@@ -942,7 +950,10 @@ export async function proxy(request: NextRequest, event: NextFetchEvent) {
       request.nextUrl.pathname === "/api/internal/ingest-engagement") &&
     (request.method === "POST" || request.method === "OPTIONS");
 
-  if (request.nextUrl.pathname.startsWith("/api/internal/") && !isPublicVisitorEventCollector) {
+  if (
+    (request.nextUrl.pathname.startsWith("/api/internal/") && !isPublicVisitorEventCollector) ||
+    request.nextUrl.pathname.startsWith("/api/admin/")
+  ) {
     const auth = checkInternalApiAuthorization(request);
     if (!auth.authorized) {
       return NextResponse.json(

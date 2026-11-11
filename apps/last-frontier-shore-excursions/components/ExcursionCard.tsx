@@ -5,9 +5,11 @@ import { NormalizedAffiliateExcursion } from "@/lib/affiliate/types";
 import { buildAffiliateUrl } from "@/lib/affiliate/links";
 import { trackAffiliateEvent } from "@/lib/analytics";
 import { TrustDisclosure } from "./TrustDisclosure";
+import { buildAddToCruisePromenadeUrl } from "../../../lib/dcc/shared/addToCruisePromenadeUrl";
 
 interface ExcursionCardProps {
   excursion: NormalizedAffiliateExcursion;
+  shipName?: string;
   showCalculatedFit?: {
     status: "strong_fit" | "tight_fit" | "does_not_fit" | "unknown";
     label: string;
@@ -15,7 +17,21 @@ interface ExcursionCardProps {
   };
 }
 
-export function ExcursionCard({ excursion, showCalculatedFit }: ExcursionCardProps) {
+export function ExcursionCard({
+  excursion,
+  shipName,
+  showCalculatedFit,
+}: ExcursionCardProps) {
+  const addToCpPlanHref = buildAddToCruisePromenadeUrl({
+    title: excursion.title,
+    port: excursion.portSlug,
+    ship: shipName || null,
+    durationMinutes: excursion.durationMinutes,
+    fitStatus: showCalculatedFit?.status || "needs_verification",
+    operator: excursion.provider,
+    productCode: excursion.productId || excursion.activitySlug,
+    sourceSite: "lastfrontiershoreexcursions.com",
+  });
   const affiliateUrl = buildAffiliateUrl(
     excursion.source,
     excursion.officialUrl,
@@ -228,6 +244,28 @@ export function ExcursionCard({ excursion, showCalculatedFit }: ExcursionCardPro
         style={{ textAlign: "center", textDecoration: "none" }}
       >
         {ctaLabel}
+      </a>
+
+      <a
+        href={addToCpPlanHref}
+        data-testid="lfse-add-to-cp-plan"
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          marginTop: 8,
+          padding: "7px 12px",
+          borderRadius: 6,
+          border: "1px solid var(--line)",
+          background: "#f8fbfb",
+          color: "var(--forest)",
+          fontSize: 12,
+          fontWeight: 600,
+          textAlign: "center",
+          textDecoration: "none",
+          display: "block",
+        }}
+      >
+        + Add to Cruise Promenade Plan
       </a>
 
       <TrustDisclosure compact />

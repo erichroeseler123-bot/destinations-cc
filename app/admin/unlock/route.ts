@@ -53,11 +53,11 @@ export async function POST(req: NextRequest) {
 
   const formData = await req.formData();
   const key = String(formData.get("key") || "");
-  const nextPathRaw = String(formData.get("next") || "/admin/inbox");
+  const nextPathRaw = String(formData.get("next") || "/admin");
   const nextPath =
     nextPathRaw.startsWith("/admin") || nextPathRaw.startsWith("/internal/dashboard")
       ? nextPathRaw
-      : "/admin/inbox";
+      : "/admin";
 
   const redirectUrl = new URL(nextPath, req.url);
   if (!isValidAdminAccessKey(key)) {

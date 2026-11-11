@@ -2661,3 +2661,5 @@ export async function getUnifiedOperatorInbox(
     items: filteredItems,
   };
 }
+
+export const getOperatorInboxSnapshot = getUnifiedOperatorInbox;

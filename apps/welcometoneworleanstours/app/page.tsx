@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import CinematicHomepageTop from "./CinematicHomepageTop";
 import PortfolioAssuranceBanner from "@/app/components/dcc/PortfolioAssuranceBanner";
 import {
@@ -27,8 +28,19 @@ export default async function HomePage({
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const sp = (await searchParams) || {};
+  let cookieCtx: string | null = null;
+  try {
+    const cookieStore = await cookies();
+    cookieCtx =
+      cookieStore.get("wtno_trip_ctx")?.value ||
+      cookieStore.get("dcc_trip_ctx")?.value ||
+      null;
+  } catch {
+    cookieCtx = null;
+  }
   const carriedContext = await resolvePortfolioTripContext({
     searchParams: sp,
+    cookieContextId: cookieCtx,
     claimingOwner: "welcometoneworleanstours.com",
     issueIfParamsPresent: true,
     defaultPortSlug: "new-orleans",
