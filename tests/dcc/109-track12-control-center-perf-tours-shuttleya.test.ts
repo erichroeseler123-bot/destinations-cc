@@ -14,6 +14,12 @@ import { SHUTTLEYA_TRUTH } from "@/apps/shuttleya/lib/siteTruth";
 import { SHUTTLEYA_ROOT_TRUTH } from "@/lib/dcc/shuttleyaTruth";
 import { GET as getShuttleYaSubAppAgent } from "@/apps/shuttleya/app/agent.json/route";
 import { GET as getShuttleYaSubAppLlms } from "@/apps/shuttleya/app/llms.txt/route";
+import {
+  getSereneRezgoReadinessStatus,
+  inspectSereneRezgoInventoryReadOnly,
+} from "@/lib/dcc/liveSlots/rezgoReadOnly";
+import { THREE_MARKET_DIRECT_OPERATOR_PITCH_KITS } from "@/lib/dcc/commerce/directOperatorActivationKit";
+import { resolveProviderKeyFromBookingSystem } from "@/lib/dcc/operatorOnboardingStore";
 
 const ROOT = process.cwd();
 
@@ -338,4 +344,98 @@ test("Item 1.E: ShuttleYa removes dead redrocksdd.com and prototype vibearoundto
   const llmsRes = getShuttleYaSubAppLlms();
   const llmsBody = await llmsRes.text();
   assert.doesNotMatch(llmsBody, /redrocksdd\.com|vibearoundtown\.com/i);
+});
+
+test("Phase 2 Distribution & Revenue: 6-question daily cockpit, 3-market direct operator kits (incl. Colorado), and Serene isolated read-only Rezgo safety gate", async () => {
+  assert.equal(THREE_MARKET_DIRECT_OPERATOR_PITCH_KITS.length, 5);
+  assert.ok(
+    THREE_MARKET_DIRECT_OPERATOR_PITCH_KITS.some(
+      (k) => k.destinationPort === "Colorado (I-70 / Red Rocks)",
+    ),
+  );
+  assert.equal(resolveProviderKeyFromBookingSystem("Rezgo"), "rezgo");
+
+  // Default state: awaiting credentials, live booking strictly disallowed, isolated & secondary
+  const defaultRezgo = getSereneRezgoReadinessStatus({});
+  assert.equal(defaultRezgo.stage, "awaiting_credentials");
+  assert.equal(defaultRezgo.liveBookingAllowed, false);
+  assert.equal(defaultRezgo.isolatedSecondaryProperty, true);
+  assert.equal(defaultRezgo.influencesPrimaryDccRanking, false);
+
+  // Even if someone sets REZGO_SERENE_LIVE_BOOKING_ENABLED=true without passing upstream gates, liveBookingAllowed stays false!
+  const prematureRezgo = getSereneRezgoReadinessStatus({
+    REZGO_SERENE_CID: "99999",
+    REZGO_SERENE_API_KEY: "test_rezgo_secret_key_123",
+    REZGO_SERENE_LIVE_BOOKING_ENABLED: "true",
+  });
+  assert.equal(prematureRezgo.liveBookingAllowed, false);
+  assert.equal(prematureRezgo.stage, "ready_for_readonly_inspection");
+
+  // Read-only XML inspection makes GET-only company & search calls and parses items cleanly
+  const requestedUrls: string[] = [];
+  const inspected = await inspectSereneRezgoInventoryReadOnly({
+    env: {
+      REZGO_SERENE_CID: "99999",
+      REZGO_SERENE_API_KEY: "test_rezgo_secret_key_123",
+    },
+    searchDate: "2027-06-15",
+    fetchImpl: async (input) => {
+      const url = String(input);
+      requestedUrls.push(url);
+      if (url.includes("i=company")) {
+        return new Response(
+          "<response><company_name>Juneau Tours &amp; Whale Watch</company_name><domain>juneautours.rezgo.com</domain><currency>USD</currency></response>",
+          { status: 200 },
+        );
+      }
+      return new Response(
+        "<response><item><uid>1042</uid><com>5857P23</com><item><![CDATA[Ultimate Juneau Whale Watch]]></item><option><![CDATA[Morning Departure]]></option><duration>3 hours</duration><price_adult>169.00</price_adult><currency_base>USD</currency_base></item></response>",
+        { status: 200 },
+      );
+    },
+  });
+  assert.equal(inspected.ok, true);
+  assert.equal(inspected.readOnly, true);
+  assert.equal(inspected.mutatedRemoteState, false);
+  assert.equal(inspected.itemsCount, 1);
+  assert.equal(inspected.items[0].uid, "1042");
+  assert.equal(inspected.items[0].itemName, "Ultimate Juneau Whale Watch");
+  assert.equal(requestedUrls.length, 2);
+  assert.ok(requestedUrls.every((u) => u.includes("i=company") || u.includes("i=search")));
+
+  const snapshot = await buildOwnerControlCenterSnapshot({
+    env: { DCC_DISABLE_NEON_COMMERCE: "1" },
+  });
+  assert.equal(
+    snapshot.dailyBusinessCockpit.didWeMakeMoney.question,
+    "1. Did we make money?",
+  );
+  assert.equal(
+    snapshot.dailyBusinessCockpit.bookingsNeedingAttention.question,
+    "2. What bookings need attention?",
+  );
+  assert.equal(
+    snapshot.dailyBusinessCockpit.automationHealth.question,
+    "3. Did any automation fail?",
+  );
+  assert.equal(
+    snapshot.dailyBusinessCockpit.inquiriesNeedingReply.question,
+    "4. Which inquiries need a reply?",
+  );
+  assert.equal(
+    snapshot.dailyBusinessCockpit.linksProducingSales.question,
+    "5. Which links are producing sales?",
+  );
+  assert.equal(
+    snapshot.dailyBusinessCockpit.operatorAndOrganizerFollowUps.question,
+    "6. Which operator or organizer needs follow-up?",
+  );
+  assert.equal(
+    snapshot.dailyBusinessCockpit.linksProducingSales.wnoDiagnostic.diagnosticClickThreshold,
+    100,
+  );
+  assert.equal(
+    snapshot.dailyBusinessCockpit.operatorAndOrganizerFollowUps.directOperators3Markets.markets.length,
+    3,
+  );
 });

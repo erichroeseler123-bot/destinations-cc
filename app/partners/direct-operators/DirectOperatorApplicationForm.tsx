@@ -97,13 +97,13 @@ export default function DirectOperatorApplicationForm() {
         </label>
 
         <label className="block text-xs font-bold uppercase tracking-wider text-zinc-300">
-          <span>Destination / Port *</span>
+          <span>Destination / Market *</span>
           <input
             type="text"
             required
             value={destinationPort}
             onChange={(e) => setDestinationPort(e.target.value)}
-            placeholder="e.g., Juneau, AK or New Orleans, LA"
+            placeholder="e.g., Juneau, AK · New Orleans, LA · Colorado (I-70 / Red Rocks)"
             className="mt-1.5 w-full rounded-xl border border-white/15 bg-zinc-900 px-3.5 py-2.5 text-sm font-normal normal-case text-white"
           />
         </label>
@@ -116,6 +116,7 @@ export default function DirectOperatorApplicationForm() {
             className="mt-1.5 w-full rounded-xl border border-white/15 bg-zinc-900 px-3.5 py-2.5 text-sm font-normal normal-case text-white"
           >
             <option value="FareHarbor">FareHarbor</option>
+            <option value="Rezgo">Rezgo</option>
             <option value="Rezdy">Rezdy</option>
             <option value="Custom">Custom / Direct Hosted Checkout</option>
             <option value="OCTO">OCTO / Ventrata / Bokun</option>

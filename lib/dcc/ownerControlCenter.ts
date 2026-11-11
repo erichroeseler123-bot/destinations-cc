@@ -12,7 +12,18 @@ import {
   type TransactionRouteModelDefinition,
   type TransactionRouteModelId,
 } from "@/lib/dcc/commerce/affiliateOwnershipLedger";
-import { buildUnifiedPortfolioFunnelReport } from "@/lib/dcc/commerce/portfolioFunnelReport";
+import {
+  buildUnifiedPortfolioFunnelReport,
+  isSyntheticInspectionId,
+  isSyntheticSeedOrTestOutcome,
+} from "@/lib/dcc/commerce/portfolioFunnelReport";
+import { isDemoOrAutomatedVerificationTraffic } from "@/lib/dcc/commerce/opaqueAttributionLedger";
+import {
+  getSereneRezgoReadinessStatus,
+  type SereneRezgoReadinessStatus,
+} from "@/lib/dcc/liveSlots/rezgoReadOnly";
+import { listOperatorOnboardingReviewQueue } from "@/lib/dcc/operatorOnboardingStore";
+import { readDurableLedgerState } from "@/lib/dcc/storage/durableTransactionalStore";
 import { getMemoryContextCount } from "@/lib/dcc/context/service";
 import { getMachineStore } from "@/lib/dcc/machine";
 import {
@@ -129,11 +140,129 @@ export interface OwnedFleetProjectRow {
   rollbackTarget: string;
 }
 
+export interface ProductLinkSalesRow {
+  rowKey: string;
+  originatingSite: string;
+  originatingPage: string;
+  provider: string;
+  productSelected: string;
+  qualifiedHumanClicks: number;
+  confirmedBookings: number;
+  commissionAmountUsd: number;
+  payoutReceivedUsd: number;
+  lastClickedAt: string;
+}
+
+export interface WnoConversionDiagnostic {
+  postFixSinceIso: string;
+  qualifiedHumanProductClicks: number;
+  diagnosticClickThreshold: 100;
+  confirmedBookings: number;
+  commissionAmountUsd: number;
+  payoutReceivedUsd: number;
+  status:
+    | "collecting_sample"
+    | "converting"
+    | "offer_page_price_or_audience_problem";
+  summaryLabel: string;
+}
+
+export interface DirectMarketOperatorSlot {
+  marketId: "juneau" | "new-orleans" | "colorado";
+  marketLabel: string;
+  activeApiBookableCount: number;
+  pendingApplicationsCount: number;
+  milestoneMet: boolean;
+  statusSummary: string;
+}
+
+export interface DailyBusinessCockpit {
+  didWeMakeMoney: {
+    question: "1. Did we make money?";
+    paidMorGrossSalesUsd28d: number;
+    grossSalesNotProfitDisclosure: "Gross Merchant Sales — Not Profit; Excludes Operating Costs, Driver Pay, Processor Fees & Refunds";
+    netOperatingRevenueLabel: string;
+    settledAffiliateCommissionsUsd28d: number;
+    reportedPendingCommissionsUsd28d: number;
+    paidBookingsCount28d: number;
+    gosnoPaidOrders28d: number;
+    parrPaidOrders28d: number;
+  };
+  bookingsNeedingAttention: {
+    question: "2. What bookings need attention?";
+    totalAttentionOrdersCount: number;
+    gosnoNeedsReviewOrders: number;
+    parrNeedsReviewOrders: number;
+    confirmedUnpaidOrders28d: number;
+    confirmedUnpaidGrossUsd28d: number;
+    awaitingBalanceOrders28d: number;
+    awaitingBalanceGrossUsd28d: number;
+    openQuotes28d: number;
+    completeMoneyLoop: {
+      property: "GoSno (gosno.co)";
+      targetLoop: "Discovery → planning → checkout → payment → Rezdy → fulfilled ride → revenue reconciled";
+      automationSchedulesEnabled: boolean;
+      marcosManualOrderIsolationRule: "Marcos's manual order stays separate and is never counted as an automated Square → Rezdy test.";
+      statusSummary: string;
+    };
+  };
+  automationHealth: {
+    question: "3. Did any automation fail?";
+    totalAutomationFailures: number;
+    gosnoProvisioningExceptions: number;
+    parrProvisioningExceptions: number;
+    rezdyFailedCount: number;
+    rezdyUnknownResultCount: number;
+    rezdyStaleClaimedCount: number;
+    rezdyCronSchedulesEnabled: boolean | null;
+    genuineFailedNotificationsCount: number;
+    statusBadge: "All Clear" | "Action Needed";
+  };
+  inquiriesNeedingReply: {
+    question: "4. Which inquiries need a reply?";
+    untriagedGenuineCount: number;
+    actionableGenuineCount: number;
+    inboxHref: "/admin/inbox?view=genuine";
+    closedJfdPolicyNote: "Closed JFD items remain archived per owner decision.";
+  };
+  linksProducingSales: {
+    question: "5. Which links are producing sales?";
+    qualifiedHumanProductClicks28d: number;
+    confirmedBookingsFromLinks28d: number;
+    commissionAmountUsd28d: number;
+    payoutReceivedUsd28d: number;
+    wnoDiagnostic: WnoConversionDiagnostic;
+    topProductLinks: ProductLinkSalesRow[];
+  };
+  operatorAndOrganizerFollowUps: {
+    question: "6. Which operator or organizer needs follow-up?";
+    cruisePromenadeLaunch: {
+      organizersCount: number;
+      organizersTarget: 3;
+      passengersCount: number;
+      passengersTarget: 50;
+      needsAssistanceGuestsCount: number;
+      plannersWithSplitsCount: number;
+      groupsLaunchpadUrl: "https://cruisepromenade.com/groups";
+      statusSummary: string;
+    };
+    directOperators3Markets: {
+      marketsWithActiveApiBookableCount: number;
+      marketsTarget: 3;
+      pendingReviewApplicationsCount: number;
+      onboardingPortalHref: "/partners/direct-operators";
+      markets: DirectMarketOperatorSlot[];
+    };
+    sereneRezgoConnection: SereneRezgoReadinessStatus;
+  };
+}
+
 export interface OwnerControlCenterSnapshot {
   ok: true;
   generatedAt: string;
   operatorName: "Erich";
   dailyOperatingBudgetMinutes: 15;
+  dailyBusinessCockpit: DailyBusinessCockpit;
   triageQueue: {
     totalAttentionCount: number;
     untriagedInquiriesCount: number;
@@ -750,33 +879,43 @@ export async function buildOwnerControlCenterSnapshot(
     ""
   ).trim();
 
-  const [inbox, funnel, cpSummary, gosnoOps, parrOps, dccContextsCount] =
-    await Promise.all([
-      options?.inboxSnapshotOverride
-        ? Promise.resolve(options.inboxSnapshotOverride)
-        : getOperatorInboxSnapshot({ view: "genuine" }),
-      buildUnifiedPortfolioFunnelReport({ windowPreset: "28d" }),
-      fetchCruisePromenadeOwnerSummary({ env, fetchImpl: options?.fetchImpl }),
-      fetchDirectMorOwnerSummary({
-        siteId: "gosno",
-        siteName: "GoSno",
-        endpoint: "https://gosno.co/api/internal/owner-summary",
-        opsHref: "https://gosno.co/admin/operations-queue",
-        secret: gosnoSecret,
-        env,
-        fetchImpl: options?.fetchImpl,
-      }),
-      fetchDirectMorOwnerSummary({
-        siteId: "partyatredrocks",
-        siteName: "Party at Red Rocks",
-        endpoint: "https://www.partyatredrocks.com/api/internal/owner-summary",
-        opsHref: "https://www.partyatredrocks.com/admin/parr-inventory",
-        secret: parrSecret,
-        env,
-        fetchImpl: options?.fetchImpl,
-      }),
-      countRecentDccContexts(env),
-    ]);
+  const [
+    inbox,
+    funnel,
+    cpSummary,
+    gosnoOps,
+    parrOps,
+    dccContextsCount,
+    onboardingQueue,
+  ] = await Promise.all([
+    options?.inboxSnapshotOverride
+      ? Promise.resolve(options.inboxSnapshotOverride)
+      : getOperatorInboxSnapshot({ view: "genuine" }),
+    buildUnifiedPortfolioFunnelReport({ windowPreset: "28d" }),
+    fetchCruisePromenadeOwnerSummary({ env, fetchImpl: options?.fetchImpl }),
+    fetchDirectMorOwnerSummary({
+      siteId: "gosno",
+      siteName: "GoSno",
+      endpoint: "https://gosno.co/api/internal/owner-summary",
+      opsHref: "https://gosno.co/admin/operations-queue",
+      secret: gosnoSecret,
+      env,
+      fetchImpl: options?.fetchImpl,
+    }),
+    fetchDirectMorOwnerSummary({
+      siteId: "partyatredrocks",
+      siteName: "Party at Red Rocks",
+      endpoint: "https://www.partyatredrocks.com/api/internal/owner-summary",
+      opsHref: "https://www.partyatredrocks.com/admin/parr-inventory",
+      secret: parrSecret,
+      env,
+      fetchImpl: options?.fetchImpl,
+    }),
+    countRecentDccContexts(env),
+    env.DCC_DISABLE_NEON_COMMERCE === "1"
+      ? Promise.resolve([])
+      : listOperatorOnboardingReviewQueue({ limit: 50 }).catch(() => []),
+  ]);
 
   const moderationAlertEmailsConfigured = Boolean(
     env.MODERATION_ALERT_EMAILS?.trim(),
@@ -872,8 +1011,8 @@ export async function buildOwnerControlCenterSnapshot(
     id: "held-skus-and-partner-boundary",
     priority: partnerBoundaryReviews.length > 0 ? "medium" : "info",
     title: "Held Commercial SKUs & WTA Partner Payout Boundary",
-    countOrBadge: `${HELD_COMMERCIAL_SKUS.length} held SKU · ${partnerBoundaryReviews.length} partner boundary leaks`,
-    detail: `Held: ${HELD_COMMERCIAL_SKUS.map((s) => `${s.skuSlug} (${s.surfaceCode})`).join(", ")}. Partner boundary clean: 0 external partner ASNs on owned sites; Aleutian Ballad unheld on LFSE via GetYourGuide t598272 (partner_id=F2MMUUH).`,
+    countOrBadge: `${HELD_COMMERCIAL_SKUS.length} held SKUs · ${partnerBoundaryReviews.length} partner boundary leaks`,
+    detail: `Held: ${HELD_COMMERCIAL_SKUS.map((s) => `${s.skuSlug} (${s.surfaceCode})`).join(", ")}. Partner boundary clean: 0 external partner ASNs on owned sites; Aleutian Ballad (t598272) remains held on LFSE pending explicit owner release.`,
     actionHref: "/admin/portfolio",
     actionLabel: "Supplier & Funnel Audit →",
   });
@@ -1150,11 +1289,368 @@ export async function buildOwnerControlCenterSnapshot(
     },
   ];
 
+  // Build product-level click-to-sale leaderboard + WNO 100-legitimate-click diagnostic
+  const WNO_EXACT_LINKS_CUTOVER_ISO = "2026-11-11T18:35:00Z";
+  const wnoCutoverMs = Date.parse(WNO_EXACT_LINKS_CUTOVER_ISO);
+  const windowStartMs = Date.parse(funnel.reportingWindow.startIso);
+  const windowEndMs = Date.parse(funnel.reportingWindow.endIso);
+  const durableState = readDurableLedgerState();
+
+  const BOT_OR_CRAWLER_UA_RE =
+    /bot|crawler|spider|slurp|bingpreview|facebookexternalhit|whatsapp|headless|playwright|puppeteer|curl\/|python-requests|undici/i;
+
+  const isGenericMarketplaceUrl = (urlStr: string) =>
+    /\/New-Orleans\/d675-ttd(?:$|[/?#])|\/New-Orleans-tours\/Outdoor-Activities\/d675-g9-c36|getyourguide\.com\/new-orleans-l372\/?(?:$|[?#])|\/searchResults\/all/i.test(
+      urlStr || "",
+    );
+
+  const productLinkMap = new Map<string, ProductLinkSalesRow>();
+  let wnoPostFixClicks = 0;
+  let wnoPostFixBookings = 0;
+  let wnoPostFixCommissionUsd = 0;
+  let wnoPostFixPayoutUsd = 0;
+  let totalQualifiedHumanClicks28d = 0;
+  let totalLinkConfirmedBookings28d = 0;
+  let totalLinkCommissionUsd28d = 0;
+  let totalLinkPayoutUsd28d = 0;
+
+  for (const click of Object.values(durableState.opaqueClicksById || {})) {
+    if (!click) continue;
+    if (click.recordStage === "recommendation") continue;
+    if (click.isTest || click.trafficClass === "test") continue;
+    if (isSyntheticInspectionId(click.clickId)) continue;
+    if (
+      isDemoOrAutomatedVerificationTraffic({
+        clickId: click.clickId,
+        isTest: click.isTest,
+        originatingPage: click.originatingPage,
+        decisionReceiptId: click.decisionReceiptId,
+        handoffId: click.handoffId,
+        userAgent: click.userAgent,
+        referer: click.referer,
+      })
+    ) {
+      continue;
+    }
+    if (click.userAgent && BOT_OR_CRAWLER_UA_RE.test(click.userAgent)) {
+      continue;
+    }
+    const clickIso = click.followedAt || click.createdAt;
+    const clickMs = Date.parse(clickIso);
+    if (!Number.isFinite(clickMs) || clickMs < windowStartMs || clickMs > windowEndMs) {
+      continue;
+    }
+
+    const validOutcomes = (click.reconciledOutcomes || []).filter(
+      (o) => !isSyntheticSeedOrTestOutcome(o),
+    );
+    const confirmedForClick = validOutcomes.filter(
+      (o) => o.eventType === "BOOKING_CONFIRMED",
+    ).length;
+    const commissionForClick = validOutcomes.reduce(
+      (sum, o) =>
+        sum +
+        safeNumber(
+          o.paidCommissionUsd ?? o.estimatedCommissionUsd ?? 0,
+        ),
+      0,
+    );
+    const payoutForClick = validOutcomes.reduce(
+      (sum, o) => sum + safeNumber(o.paidCommissionUsd ?? 0),
+      0,
+    );
+
+    const normSite = (click.originatingSite || "destinationcommandcenter.com")
+      .replace(/^https?:\/\//i, "")
+      .replace(/^www\./i, "")
+      .split("/")[0]
+      .toLowerCase();
+    const normPage = (click.originatingPage || "/").split("?")[0] || "/";
+    const normProvider = (click.provider || "viator").toLowerCase();
+    const normProduct = (click.productCode || "unknown-sku").trim();
+    const rowKey = `${normSite}|${normProvider}|${normProduct}`;
+
+    totalQualifiedHumanClicks28d += 1;
+    totalLinkConfirmedBookings28d += confirmedForClick;
+    totalLinkCommissionUsd28d += commissionForClick;
+    totalLinkPayoutUsd28d += payoutForClick;
+
+    const existing = productLinkMap.get(rowKey);
+    if (existing) {
+      existing.qualifiedHumanClicks += 1;
+      existing.confirmedBookings += confirmedForClick;
+      existing.commissionAmountUsd =
+        Math.round((existing.commissionAmountUsd + commissionForClick) * 100) / 100;
+      existing.payoutReceivedUsd =
+        Math.round((existing.payoutReceivedUsd + payoutForClick) * 100) / 100;
+      if (Date.parse(clickIso) > Date.parse(existing.lastClickedAt)) {
+        existing.lastClickedAt = clickIso;
+        existing.originatingPage = normPage;
+      }
+    } else {
+      productLinkMap.set(rowKey, {
+        rowKey,
+        originatingSite: normSite,
+        originatingPage: normPage,
+        provider: normProvider,
+        productSelected: normProduct,
+        qualifiedHumanClicks: 1,
+        confirmedBookings: confirmedForClick,
+        commissionAmountUsd: Math.round(commissionForClick * 100) / 100,
+        payoutReceivedUsd: Math.round(payoutForClick * 100) / 100,
+        lastClickedAt: clickIso,
+      });
+    }
+
+    const isWnoOrSwamp =
+      normSite.includes("welcometoneworleanstours") ||
+      normSite.includes("welcometotheswamp") ||
+      normPage.startsWith("/new-orleans");
+    if (
+      isWnoOrSwamp &&
+      clickMs >= wnoCutoverMs &&
+      !isGenericMarketplaceUrl(click.outboundPartnerUrl)
+    ) {
+      wnoPostFixClicks += 1;
+      wnoPostFixBookings += confirmedForClick;
+      wnoPostFixCommissionUsd += commissionForClick;
+      wnoPostFixPayoutUsd += payoutForClick;
+    }
+  }
+
+  const topProductLinks = Array.from(productLinkMap.values())
+    .sort(
+      (a, b) =>
+        b.confirmedBookings - a.confirmedBookings ||
+        b.qualifiedHumanClicks - a.qualifiedHumanClicks,
+    )
+    .slice(0, 8);
+
+  const wnoDiagnosticStatus: WnoConversionDiagnostic["status"] =
+    wnoPostFixBookings > 0
+      ? "converting"
+      : wnoPostFixClicks >= 100
+        ? "offer_page_price_or_audience_problem"
+        : "collecting_sample";
+
+  const wnoDiagnostic: WnoConversionDiagnostic = {
+    postFixSinceIso: WNO_EXACT_LINKS_CUTOVER_ISO,
+    qualifiedHumanProductClicks: wnoPostFixClicks,
+    diagnosticClickThreshold: 100,
+    confirmedBookings: wnoPostFixBookings,
+    commissionAmountUsd: Math.round(wnoPostFixCommissionUsd * 100) / 100,
+    payoutReceivedUsd: Math.round(wnoPostFixPayoutUsd * 100) / 100,
+    status: wnoDiagnosticStatus,
+    summaryLabel:
+      wnoDiagnosticStatus === "converting"
+        ? `${wnoPostFixBookings} confirmed sale(s) from ${wnoPostFixClicks} post-fix exact product clicks`
+        : wnoDiagnosticStatus === "offer_page_price_or_audience_problem"
+          ? `${wnoPostFixClicks}/100 qualified clicks with 0 sales — audit offer, page, price, or audience (tracking is verified)`
+          : `${wnoPostFixClicks} / 100 post-fix qualified product clicks collected (0 generic links remaining)`,
+  };
+
+  // Rezdy detailed health fields
+  const rhObj = gosnoOps.rezdyHealth || {};
+  const rezdyFailedCount = safeNumber(rhObj.failedCount ?? rhObj.failedSyncCount24h);
+  const rezdyUnknownResultCount = safeNumber(rhObj.unknownResultCount);
+  const rezdyStaleClaimedCount = safeNumber(rhObj.staleClaimedCount);
+  const rezdyCronSchedulesEnabled =
+    typeof rhObj.cronSchedulesEnabled === "boolean"
+      ? rhObj.cronSchedulesEnabled
+      : null;
+
+  const totalAutomationFailures =
+    gosnoOps.provisioningExceptions +
+    parrOps.provisioningExceptions +
+    rezdyHealthAlertCount +
+    inbox.kpis.genuineFailedNotificationsCount;
+
+  // 3-Market Direct Operator Pipeline (Juneau, New Orleans, Colorado)
+  const nonTestOnboarding = onboardingQueue.filter(
+    (app) =>
+      !/@(?:example\.(?:com|org|net)|test\.com|localhost)$/i.test(
+        app.submitted?.contactEmail || "",
+      ) && !/\[test\]|qa[-_]/i.test(app.submitted?.companyName || ""),
+  );
+  const countMarketApps = (re: RegExp) =>
+    nonTestOnboarding.filter((app) =>
+      re.test(
+        `${app.submitted?.destinations || ""} ${app.checkoutOffer?.destinationSlug || ""}`,
+      ),
+    );
+  const juneauApps = countMarketApps(/juneau|alaska|ak\b/i);
+  const nolaApps = countMarketApps(/new[-_\s]?orleans|nola|louisiana|swamp/i);
+  const coloradoApps = countMarketApps(
+    /colorado|denver|vail|summit|breckenridge|winter[-_\s]?park|red[-_\s]?rocks|i-70/i,
+  );
+
+  const countActiveApi = (apps: typeof nonTestOnboarding) =>
+    apps.filter((a) => a.salesAuthorized && a.commercialTermsSigned).length;
+
+  const sereneRezgo = getSereneRezgoReadinessStatus(env);
+  const juneauActiveApi =
+    countActiveApi(juneauApps) + (sereneRezgo.liveBookingAllowed ? 1 : 0);
+  const nolaActiveApi = countActiveApi(nolaApps);
+  const coloradoActiveApi = countActiveApi(coloradoApps);
+
+  const directMarkets: DirectMarketOperatorSlot[] = [
+    {
+      marketId: "juneau",
+      marketLabel: "Juneau, AK",
+      activeApiBookableCount: juneauActiveApi,
+      pendingApplicationsCount: juneauApps.filter(
+        (a) => a.reviewQueueState === "pending_review",
+      ).length,
+      milestoneMet: juneauActiveApi >= 1,
+      statusSummary:
+        juneauActiveApi >= 1
+          ? `${juneauActiveApi} active API operator live`
+          : `0/1 active API live · Serene Rezgo: ${sereneRezgo.stage.replace(/_/g, " ")} · Pitch: Coastal / NorthStar`,
+    },
+    {
+      marketId: "new-orleans",
+      marketLabel: "New Orleans, LA",
+      activeApiBookableCount: nolaActiveApi,
+      pendingApplicationsCount: nolaApps.filter(
+        (a) => a.reviewQueueState === "pending_review",
+      ).length,
+      milestoneMet: nolaActiveApi >= 1,
+      statusSummary:
+        nolaActiveApi >= 1
+          ? `${nolaActiveApi} active API operator live`
+          : "0/1 active API live (hosted ASN embeds live; pitch Ragin' Cajun / Cajun Encounters for 10% API)",
+    },
+    {
+      marketId: "colorado",
+      marketLabel: "Colorado Transportation",
+      activeApiBookableCount: coloradoActiveApi,
+      pendingApplicationsCount: coloradoApps.filter(
+        (a) => a.reviewQueueState === "pending_review",
+      ).length,
+      milestoneMet: coloradoActiveApi >= 1,
+      statusSummary:
+        coloradoActiveApi >= 1
+          ? `${coloradoActiveApi} active API partner live`
+          : "0/1 external 10% shuttle API live (GoSno/PARR owned MoR live; pitch Peak 1 Express for shared shuttle API)",
+    },
+  ];
+
+  const cpOrganizersCount =
+    cpSummary.genuineSharedPlannersCount ?? cpSummary.sharedPlannersCount;
+  const pendingReviewAppsTotal = nonTestOnboarding.filter(
+    (a) => a.reviewQueueState === "pending_review",
+  ).length;
+
+  const dailyBusinessCockpit: DailyBusinessCockpit = {
+    didWeMakeMoney: {
+      question: "1. Did we make money?",
+      paidMorGrossSalesUsd28d: effectiveGrossMerchantSalesUsd28d,
+      grossSalesNotProfitDisclosure:
+        "Gross Merchant Sales — Not Profit; Excludes Operating Costs, Driver Pay, Processor Fees & Refunds",
+      netOperatingRevenueLabel: netOperatingRevenueStatusLabel,
+      settledAffiliateCommissionsUsd28d: totals.confirmedSettledPayoutsUsd,
+      reportedPendingCommissionsUsd28d: totals.revenue.reportedCommissionsEarnedUsd,
+      paidBookingsCount28d: totalPaidBookingsCount,
+      gosnoPaidOrders28d: gosnoOps.paidOrders28d,
+      parrPaidOrders28d: parrOps.paidOrders28d,
+    },
+    bookingsNeedingAttention: {
+      question: "2. What bookings need attention?",
+      totalAttentionOrdersCount:
+        gosnoOps.needsReviewOrders +
+        parrOps.needsReviewOrders +
+        totalConfirmedUnpaidBookingsCount +
+        totalAwaitingBalanceOrders28d,
+      gosnoNeedsReviewOrders: gosnoOps.needsReviewOrders,
+      parrNeedsReviewOrders: parrOps.needsReviewOrders,
+      confirmedUnpaidOrders28d: totalConfirmedUnpaidBookingsCount,
+      confirmedUnpaidGrossUsd28d: combinedConfirmedUnpaidGrossUsd28d,
+      awaitingBalanceOrders28d: totalAwaitingBalanceOrders28d,
+      awaitingBalanceGrossUsd28d: combinedAwaitingBalanceGrossUsd28d,
+      openQuotes28d: totalOpenQuotes28d,
+      completeMoneyLoop: {
+        property: "GoSno (gosno.co)",
+        targetLoop:
+          "Discovery → planning → checkout → payment → Rezdy → fulfilled ride → revenue reconciled",
+        automationSchedulesEnabled: rezdyCronSchedulesEnabled === true,
+        marcosManualOrderIsolationRule:
+          "Marcos's manual order stays separate and is never counted as an automated Square → Rezdy test.",
+        statusSummary:
+          gosnoOps.provisioningExceptions > 0
+            ? `${gosnoOps.provisioningExceptions} Rezdy provisioning exception(s) — inspect GoSno queue immediately`
+            : rezdyCronSchedulesEnabled === true
+              ? "Armed (`provision-rezdy` */5 live, 0 exceptions) — watching next real Square payment for 1 exact Rezdy reservation"
+              : `GoSno status: ${gosnoOps.status} (${gosnoOps.paidOrders28d} paid orders in 28d)`,
+      },
+    },
+    automationHealth: {
+      question: "3. Did any automation fail?",
+      totalAutomationFailures,
+      gosnoProvisioningExceptions: gosnoOps.provisioningExceptions,
+      parrProvisioningExceptions: parrOps.provisioningExceptions,
+      rezdyFailedCount,
+      rezdyUnknownResultCount,
+      rezdyStaleClaimedCount,
+      rezdyCronSchedulesEnabled,
+      genuineFailedNotificationsCount: inbox.kpis.genuineFailedNotificationsCount,
+      statusBadge: totalAutomationFailures > 0 ? "Action Needed" : "All Clear",
+    },
+    inquiriesNeedingReply: {
+      question: "4. Which inquiries need a reply?",
+      untriagedGenuineCount: inbox.kpis.needsTriageCount,
+      actionableGenuineCount: inbox.kpis.genuineActionableCount,
+      inboxHref: "/admin/inbox?view=genuine",
+      closedJfdPolicyNote: "Closed JFD items remain archived per owner decision.",
+    },
+    linksProducingSales: {
+      question: "5. Which links are producing sales?",
+      qualifiedHumanProductClicks28d: totalQualifiedHumanClicks28d,
+      confirmedBookingsFromLinks28d:
+        Math.max(completedMarketplaceOrDirectCount, totalLinkConfirmedBookings28d),
+      commissionAmountUsd28d:
+        Math.max(
+          totals.revenue.reportedCommissionsEarnedUsd,
+          Math.round(totalLinkCommissionUsd28d * 100) / 100,
+        ),
+      payoutReceivedUsd28d:
+        Math.max(
+          totals.confirmedSettledPayoutsUsd,
+          Math.round(totalLinkPayoutUsd28d * 100) / 100,
+        ),
+      wnoDiagnostic,
+      topProductLinks,
+    },
+    operatorAndOrganizerFollowUps: {
+      question: "6. Which operator or organizer needs follow-up?",
+      cruisePromenadeLaunch: {
+        organizersCount: cpOrganizersCount,
+        organizersTarget: 3,
+        passengersCount: cpSummary.trackedGuestsCount,
+        passengersTarget: 50,
+        needsAssistanceGuestsCount: cpSummary.needsAssistanceGuestsCount,
+        plannersWithSplitsCount: cpSummary.plannersWithSplitsCount,
+        groupsLaunchpadUrl: "https://cruisepromenade.com/groups",
+        statusSummary: `${cpOrganizersCount}/3 organizers · ${cpSummary.trackedGuestsCount}/50 passengers · ${cpSummary.plannersWithSplitsCount} split alert(s)`,
+      },
+      directOperators3Markets: {
+        marketsWithActiveApiBookableCount: directMarkets.filter(
+          (m) => m.milestoneMet,
+        ).length,
+        marketsTarget: 3,
+        pendingReviewApplicationsCount: pendingReviewAppsTotal,
+        onboardingPortalHref: "/partners/direct-operators",
+        markets: directMarkets,
+      },
+      sereneRezgoConnection: sereneRezgo,
+    },
+  };
+
   return {
     ok: true,
     generatedAt,
     operatorName: "Erich",
     dailyOperatingBudgetMinutes: 15,
+    dailyBusinessCockpit,
     triageQueue: {
       totalAttentionCount,
       untriagedInquiriesCount: inbox.kpis.needsTriageCount,

@@ -4,9 +4,9 @@ import DirectOperatorApplicationForm from "./DirectOperatorApplicationForm";
 
 export const metadata: Metadata = {
   title:
-    "Direct Tour & Flight Operator Partnerships (10% Direct / 5% Machine) | Destination Command Center",
+    "Direct Tour, Aviation & Shuttle Operator Partnerships (10% Direct / 5% Machine) | Destination Command Center",
   description:
-    "Connect your hosted FareHarbor, Rezdy, OCTO, or direct reservation system to Destination Command Center and specialist cruise-port desks on transparent 10% completed-booking terms.",
+    "Connect your hosted FareHarbor, Rezgo, Rezdy, OCTO, or direct reservation system in Juneau, New Orleans, or Colorado Transportation on transparent 10% completed-booking terms.",
 };
 
 export default function DirectOperatorsPartnerPage() {
@@ -25,14 +25,15 @@ export default function DirectOperatorsPartnerPage() {
             Keep 90%–95% of Every Port-Verified Direct Booking.
           </h1>
           <p className="max-w-3xl text-base leading-relaxed text-zinc-300">
-            Destination Command Center (DCC) and our specialist port guides —
-            including <strong>Juneau Flight Deck</strong>,{" "}
-            <strong>Last Frontier Shore Excursions</strong>,{" "}
-            <strong>Welcome to New Orleans Tours</strong>, and{" "}
+            Destination Command Center (DCC) and our specialist destination
+            desks — across <strong>Juneau</strong> (Juneau Flight Deck &amp; Last
+            Frontier Shore Excursions), <strong>New Orleans</strong> (Welcome to
+            New Orleans Tours), <strong>Colorado Transportation</strong> (DEN /
+            I-70 &amp; Red Rocks corridors), and{" "}
             <strong>Cruise Promenade</strong> — pre-screen travelers against
-            berth schedules, tender buffers, cabin weight rules, and luggage
-            constraints before sending high-intent guests directly to your
-            hosted checkout.
+            berth schedules, flight arrival buffers, cabin weight rules, and
+            ski/luggage constraints before sending high-intent guests directly
+            to your connected API or hosted checkout.
           </p>
         </header>
 
@@ -90,9 +91,9 @@ export default function DirectOperatorsPartnerPage() {
               </strong>
               <p className="mt-1">
                 Guests complete payment on your existing FareHarbor ASN
-                lightframe, Rezdy, OCTO, or custom checkout. You control your
-                live inventory, waivers, weight manifests, and refund execution
-                (settled via FareHarbor automated split or net-30 statement).
+                lightframe, Rezgo, Rezdy, OCTO, or custom checkout. You control
+                your live inventory, waivers, weight manifests, and refund
+                execution (settled via automated split or net-30 statement).
               </p>
             </div>
             <div className="rounded-xl border border-white/10 bg-black/35 p-4">

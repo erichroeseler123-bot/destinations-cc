@@ -3,7 +3,7 @@
 import { useState } from "react";
 import {
   DIRECT_OPERATOR_ONBOARDING_URL,
-  FLAGSHIP_DIRECT_OPERATOR_PITCH_KITS,
+  THREE_MARKET_DIRECT_OPERATOR_PITCH_KITS,
 } from "@/lib/dcc/commerce/directOperatorActivationKit";
 
 export default function DirectOperatorPitchPanel() {
@@ -28,7 +28,7 @@ export default function DirectOperatorPitchPanel() {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <div className="text-xs font-black uppercase tracking-[0.18em] text-emerald-300">
-            6 · Turnkey 10% Direct Operator Activation Kits (Juneau &amp; New Orleans)
+            Turnkey 10% Direct Operator Activation Kits (Juneau · New Orleans · Colorado Transportation)
           </div>
           <h2
             id="direct-operator-pitch-heading"
@@ -68,7 +68,7 @@ export default function DirectOperatorPitchPanel() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        {FLAGSHIP_DIRECT_OPERATOR_PITCH_KITS.map((kit) => (
+        {THREE_MARKET_DIRECT_OPERATOR_PITCH_KITS.map((kit) => (
           <div
             key={kit.id}
             className="flex flex-col justify-between rounded-2xl border border-white/10 bg-black/40 p-5"

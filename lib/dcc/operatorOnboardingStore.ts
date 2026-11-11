@@ -209,7 +209,14 @@ export type ProviderApprovalStep = {
 
 export type ProviderCheckoutNextAction = {
   bookingSystem: string;
-  providerKey: "fareharbor" | "rezdy" | "bokun" | "ventrata_octo" | "viator" | "other";
+  providerKey:
+    | "fareharbor"
+    | "rezgo"
+    | "rezdy"
+    | "bokun"
+    | "ventrata_octo"
+    | "viator"
+    | "other";
   availabilityState: "active_for_new_orleans_pilot" | "available_on_request";
   headline: string;
   operatorActionSummary: string;
@@ -349,6 +356,48 @@ export const PROVIDER_SPECIFIC_APPROVAL_GUIDES: Record<
     ],
     credentialSecurityPolicy:
       "Arrange any Rezdy API credentials strictly through Rezdy's approved secure partner process after commercial review.",
+  },
+  rezgo: {
+    bookingSystem: "Rezgo",
+    providerKey: "rezgo",
+    availabilityState: "available_on_request",
+    headline:
+      "Inspect Rezgo inventory read-only first, confirm SKU mapping & written 10% commission ownership, and test non-customer booking before live activation.",
+    operatorActionSummary:
+      "Share your active Rezgo CID and API key through our secure server-env channel (never in public forms); we run a read-only product & availability check before any booking test or live enablement.",
+    approvalSteps: [
+      {
+        stepNumber: 1,
+        title: "Store Rezgo CID + API key securely & inspect inventory read-only",
+        detail:
+          "Store active Rezgo credentials in server-only environment variables and run a zero-mutation read-only check (`i=company` & `i=search`) to inspect tours and availability.",
+        owner: "dcc_reviewer",
+      },
+      {
+        stepNumber: 2,
+        title: "Map Rezgo UIDs into DCC & confirm 10% commission ownership in writing",
+        detail:
+          "Map exact Rezgo item/option UIDs, cruise-dock meeting points, and confirm written 10% direct commission ownership while preserving isolated partner boundaries where promised.",
+        owner: "operator",
+      },
+      {
+        stepNumber: 3,
+        title: "Verify non-customer test booking flow before enabling live booking",
+        detail:
+          "Execute and void/cancel one non-customer test booking end-to-end before flipping live booking on.",
+        owner: "dcc_reviewer",
+      },
+    ],
+    reviewFieldsToRecord: [
+      "affiliateAccount",
+      "commissionRatePercent",
+      "refundTreatment",
+      "payoutTiming",
+      "bookingRecordDeliveryMethod",
+      "eligiblePickupStopsConfirmed",
+    ],
+    credentialSecurityPolicy:
+      "Never submit Rezgo API keys or CIDs in public forms; store only in server-scoped environment variables.",
   },
   bokun: {
     bookingSystem: "Bókun",
@@ -526,6 +575,7 @@ export function resolveProviderKeyFromBookingSystem(
 ): ProviderCheckoutNextAction["providerKey"] {
   const combined = `${bookingSystem || ""} ${checkoutLink || ""}`.toLowerCase();
   if (combined.includes("fareharbor")) return "fareharbor";
+  if (combined.includes("rezgo")) return "rezgo";
   if (combined.includes("rezdy")) return "rezdy";
   if (combined.includes("bokun") || combined.includes("bókun")) return "bokun";
   if (combined.includes("ventrata") || combined.includes("octo")) return "ventrata_octo";

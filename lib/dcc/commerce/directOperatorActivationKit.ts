@@ -15,14 +15,20 @@ export const AUTO_OUTREACH_DISPATCH_ENABLED = false as const;
 export const DIRECT_OPERATOR_ONBOARDING_URL =
   "https://www.destinationcommandcenter.com/partners/direct-operators";
 
+export type DirectOperatorTargetMarket =
+  | "Juneau, AK"
+  | "New Orleans, LA"
+  | "Colorado (I-70 / Red Rocks)";
+
 export interface DirectOperatorPitchKit {
   id:
     | "coastal-helicopters-juneau"
     | "northstar-helicopters-juneau"
     | "ragin-cajun-airboat-nola"
-    | "cajun-encounters-nola";
+    | "cajun-encounters-nola"
+    | "peak-1-express-colorado";
   operatorName: string;
-  destinationPort: "Juneau, AK" | "New Orleans, LA";
+  destinationPort: DirectOperatorTargetMarket;
   corridorLabel: string;
   flagshipSkus: readonly string[];
   bookingSystem: string;
@@ -185,15 +191,61 @@ Welcome to New Orleans Tours & Destination Command Center`,
     },
   ] as const;
 
+export const THREE_MARKET_DIRECT_OPERATOR_PITCH_KITS: readonly DirectOperatorPitchKit[] =
+  [
+    ...FLAGSHIP_DIRECT_OPERATOR_PITCH_KITS,
+    {
+      id: "peak-1-express-colorado",
+      operatorName: "Peak 1 Express (Colorado Mountain Transportation)",
+      destinationPort: "Colorado (I-70 / Red Rocks)",
+      corridorLabel:
+        "DEN Airport → Summit County / Vail I-70 Shared Shuttle & Charter Corridor",
+      flagshipSkus: [
+        "DEN Airport ↔ Breckenridge / Frisco / Keystone Shared Mountain Shuttle",
+        "DEN Airport ↔ Vail / Beaver Creek Door-to-Door Transfer & Ski-Bag Service",
+      ],
+      bookingSystem: "FareHarbor / Rezdy / Direct API",
+      proposedDirectRatePercent: 10,
+      proposedMachineRatePercent: 5,
+      setupFeeUsd: 0,
+      cancellationAndWeatherFeePercent: 0,
+      onboardingUrl: DIRECT_OPERATOR_ONBOARDING_URL,
+      emailSubject:
+        "Destination Command Center × Peak 1 Express — I-70 Ski-Bag & Flight-Buffer Verified Direct Referrals (10% Completed-Only)",
+      emailBody: `Hi Peak 1 Express Partnerships & Reservations Team,
+
+I run Destination Command Center (destinationcommandcenter.com/transportation/colorado), where winter travelers arriving at DEN compare I-70 shared shuttles vs. private SUVs by flight arrival window, ski/snowboard bag count, and CDOT traction-law conditions before booking.
+
+We are connecting one direct API-bookable shared-shuttle partner in Colorado alongside our private SUV corridor on simple, operator-first terms:
+
+• 10% referral commission strictly on completed, fulfilled rides booked via your connected API / hosted checkout (5% on machine/planner-distributed handoffs) — half the cost of 20%–30% OTA channels.
+• $0 setup fee, $0 monthly fee, and 0% commission on I-70 road-closure refunds, flight cancellations, or unbooked availability checks.
+• Peak 1 Express remains Merchant of Record for shared-shuttle inventory, live seat availability, and luggage rules.
+• Commission-neutral fit engine: flight-arrival timing and ski-bag capacity rules govern every recommendation.
+
+You can review our 1-page direct operator terms and start technical API/ASN review here:
+${DIRECT_OPERATOR_ONBOARDING_URL}
+
+Best regards,
+Erich Roeseler
+Founder, Destination Command Center`,
+      autoSendForbidden: true,
+    },
+  ] as const;
+
 export function listDirectOperatorPitchKits(): readonly DirectOperatorPitchKit[] {
   return FLAGSHIP_DIRECT_OPERATOR_PITCH_KITS;
+}
+
+export function listThreeMarketDirectOperatorPitchKits(): readonly DirectOperatorPitchKit[] {
+  return THREE_MARKET_DIRECT_OPERATOR_PITCH_KITS;
 }
 
 export function getDirectOperatorPitchKitById(
   id: string,
 ): DirectOperatorPitchKit | null {
   return (
-    FLAGSHIP_DIRECT_OPERATOR_PITCH_KITS.find((kit) => kit.id === id) ?? null
+    THREE_MARKET_DIRECT_OPERATOR_PITCH_KITS.find((kit) => kit.id === id) ?? null
   );
 }
 
