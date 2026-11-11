@@ -42,6 +42,15 @@ export default function HowWeChoosePage() {
           <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#d4af37]">Editorial & verification policy</p>
           <h1 className="mt-4 max-w-4xl font-serif text-4xl leading-tight md:text-6xl">How Welcome to New Orleans Tours chooses, verifies, and recommends</h1>
           <p className="mt-6 max-w-3xl text-lg leading-8 text-white/70">The goal is not to crown one universal “best tour.” The goal is to help a visitor choose the experience that fits their group, time, transportation, interests, and real operating constraints—and to be explicit about what WNO knows versus what still needs confirmation.</p>
+          <div className="mt-8 overflow-hidden rounded-xl border border-[#d4af37]/30 aspect-[16/9] max-h-[320px]">
+            <img
+              src="/images/portfolio/nola-covered-swamp-boat.webp"
+              alt="Covered swamp tour boat cruising past moss-draped cypress trees on a Louisiana bayou"
+              width={1280}
+              height={800}
+              className="h-full w-full object-cover"
+            />
+          </div>
         </div>
       </section>
 

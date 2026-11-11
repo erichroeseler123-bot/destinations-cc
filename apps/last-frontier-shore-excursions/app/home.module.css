@@ -782,6 +782,16 @@
     padding: 44px 0 56px;
   }
 
+  .heroMedia {
+    height: 360px !important;
+    bottom: auto !important;
+  }
+
+  .heroScrim {
+    background:
+      linear-gradient(180deg, rgba(11, 25, 44, 0.3) 0%, rgba(11, 25, 44, 0.78) 240px, #0b192c 350px, #0b192c 100%);
+  }
+
   .heroCtaRow .primaryBtn {
     width: 100%;
   }

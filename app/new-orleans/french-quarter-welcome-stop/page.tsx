@@ -19,6 +19,15 @@ export default function WelcomeStopPage() {
     <div className="bg-[var(--nola-bg-cream,#FAF5EC)] min-h-screen text-[var(--nola-walnut,#2C1810)] font-[var(--font-sans)]">
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
         <div className="bg-[#FAF5EC] p-8 md:p-12 border border-[#E2D7C3] shadow-sm rounded">
+          <div className="mb-8 overflow-hidden rounded-lg border border-[#E2D7C3] aspect-[16/9] max-h-[280px]">
+            <img
+              src="/images/portfolio/royal-street-balconies.webp"
+              alt="Historic sunlit wrought-iron balconies along Royal Street in the New Orleans French Quarter"
+              width={1440}
+              height={900}
+              className="w-full h-full object-cover"
+            />
+          </div>
           <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#C8831A] mb-3">
             Planning Help by Appointment
           </p>

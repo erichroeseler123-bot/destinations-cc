@@ -11,6 +11,25 @@ export default function ContactPage() {
   return (
     <main className="page-shell static-page-shell">
       <section className="static-page-card">
+        <div
+          style={{
+            marginBottom: 20,
+            borderRadius: 16,
+            overflow: "hidden",
+            border: "1px solid var(--line, #334155)",
+            aspectRatio: "16 / 9",
+            maxHeight: 280,
+            background: "#071626",
+          }}
+        >
+          <img
+            src="/images/juneau-helicopter-hero.jpg"
+            alt="Flightseeing helicopter soaring above an expansive Alaska glacier valley and snow-capped peaks"
+            width={1440}
+            height={900}
+            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 48%", display: "block" }}
+          />
+        </div>
         <p className="eyebrow">Juneau Flight Deck planning help</p>
         <h1 className="static-page-title">Let’s find the right experience for your port day.</h1>
         <p className="chooser-trust-line">Ask us about glacier tour choices, meeting points, cruise timing, or alternatives if weather changes your plans.</p>

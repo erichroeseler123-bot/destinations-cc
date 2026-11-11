@@ -673,7 +673,7 @@ export default async function CategoryPage({
             alt={heroAlt}
             width={1600}
             height={900}
-            className="absolute inset-0 -z-20 h-full w-full object-cover opacity-55"
+            className="absolute inset-x-0 top-0 -z-20 h-[360px] w-full object-cover opacity-55 md:inset-0 md:h-full"
           />
         )}
         <div className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(7,6,5,.28),rgba(11,10,9,.82)_58%,#0b0a09),radial-gradient(circle_at_50%_22%,rgba(201,168,106,.18),transparent_42%)]" />

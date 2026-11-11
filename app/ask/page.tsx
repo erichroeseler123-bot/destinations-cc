@@ -45,6 +45,15 @@ export default function AskDccPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <section className="mx-auto max-w-5xl px-5 pb-8 pt-16 text-center sm:px-8 md:pt-24">
+        <div className="mx-auto mb-8 max-w-3xl overflow-hidden rounded-3xl border border-slate-800 aspect-[16/9] max-h-[260px]">
+          <img
+            src="/images/portfolio/dcc-hero-corridor.webp"
+            alt="Destination Command Center multi-destination travel corridor landscape"
+            width={1600}
+            height={900}
+            className="h-full w-full object-cover"
+          />
+        </div>
         <p className="text-xs font-black uppercase tracking-[0.24em] text-cyan-300">Destination Command Center · conversational decision layer</p>
         <h1 className="mt-5 text-5xl font-black tracking-[-0.05em] text-white sm:text-6xl md:text-7xl">What are you trying to figure out?</h1>
         <p className="mx-auto mt-6 max-w-3xl text-lg leading-8 text-slate-300">Ask about the trip, the tradeoff, the group, the timing, or the thing you are worried about. DCC traces the published decision graph, explains the useful answer, shows the research it used, and only then offers the governed next step.</p>

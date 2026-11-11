@@ -47,6 +47,15 @@ export default function CruiseFitPage() {
       <div className="relative mx-auto flex max-w-5xl flex-col gap-8 px-6 py-16">
         <header className="space-y-4">
           <RouteHeroMark eyebrow="Destination Command Center" title="CRUISE FIT SATELLITE" tone="cyan" />
+          <div className="overflow-hidden rounded-2xl border border-white/10 aspect-[16/9] max-h-[300px]">
+            <img
+              src="/images/authority/ports/juneau/hero.webp"
+              alt="Cruise ships berthed along the scenic Juneau, Alaska coastal harbor corridor"
+              width={1280}
+              height={800}
+              className="h-full w-full object-cover"
+            />
+          </div>
           <p className="text-xs uppercase tracking-wider text-zinc-500">Choose before you compare</p>
           <h1 className="text-4xl font-black tracking-tight">Most people do not pick the wrong cruise line. They pick the wrong fit.</h1>
           <p className="max-w-3xl text-zinc-300">

@@ -51,6 +51,15 @@ export default function GuidesPage() {
     <main className="min-h-screen bg-[#090d13] text-slate-100">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <section className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-20">
+        <div className="mb-8 overflow-hidden rounded-3xl border border-slate-800 aspect-[16/9] max-h-[320px]">
+          <img
+            src="/images/portfolio/dcc-hero-corridor.webp"
+            alt="Mountain highway travel corridor beneath snow-capped peaks"
+            width={1600}
+            height={900}
+            className="h-full w-full object-cover"
+          />
+        </div>
         <p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-300">Destination Command Center</p>
         <h1 className="mt-4 max-w-4xl text-4xl font-black tracking-[-0.04em] text-white sm:text-6xl">
           The pages you need before you are ready to buy.

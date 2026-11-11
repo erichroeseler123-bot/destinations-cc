@@ -708,7 +708,14 @@
   }
 
   .heroImage {
+    height: 360px !important;
+    bottom: auto !important;
     object-position: 34% 48%;
+  }
+
+  .heroScrim {
+    background:
+      linear-gradient(180deg, rgba(6, 20, 34, 0.28) 0%, rgba(7, 22, 38, 0.72) 240px, #071626 350px, #071626 100%);
   }
 
   .heroPrimaryRow .primaryBtn {

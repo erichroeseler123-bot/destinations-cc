@@ -87,15 +87,24 @@ export default function JuneauDogSleddingPage() {
         </div>
 
         {/* Hero Image Showcase */}
-        <div className="rounded-3xl overflow-hidden border border-white/10 mb-8 shadow-2xl relative" style={{ maxWidth: "100%" }}>
+        <div
+          className="rounded-3xl overflow-hidden border border-white/10 mb-8 shadow-2xl relative"
+          style={{ maxWidth: "100%", aspectRatio: "16 / 9", maxHeight: 440 }}
+        >
           <Image
             src="/images/tours/temsco-glacier-dog-sledding.jpg"
             alt="Alaskan husky sled dog team harnessed on an Alaska mountain snowfield at alpenglow"
             width={1440}
             height={900}
             priority
-            className="w-full h-80 md:h-[450px] object-cover"
-            style={{ maxWidth: "100%", objectPosition: "55% 60%" }}
+            style={{
+              width: "100%",
+              height: "100%",
+              maxWidth: "100%",
+              objectFit: "cover",
+              objectPosition: "55% 60%",
+              display: "block",
+            }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent flex items-end p-6 md:p-10">
             <div>

@@ -22,6 +22,15 @@ export default function OperatorsPage() {
   return <main className="min-h-screen bg-[#080708] px-6 py-14 text-[#fdfbf7]">
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema).replace(/</g, "\u003c") }} />
     <div className="mx-auto max-w-6xl">
+      <div className="mb-8 overflow-hidden rounded-xl border border-white/15 aspect-[16/9] max-h-[320px]">
+        <img
+          src="/images/travel-markets/new-orleans/steamboat-natchez.jpg"
+          alt="Steamboat Natchez paddlewheeler cruising on the Mississippi River in New Orleans"
+          width={1600}
+          height={1036}
+          className="h-full w-full object-cover"
+        />
+      </div>
       <h1 className="font-serif text-4xl md:text-6xl">New Orleans tour operators</h1>
       <p className="mt-5 max-w-3xl text-lg leading-8 text-white/80">Compare swamp boats, airboats, ghost tours, sightseeing, food walks and kayaking in one place. Choose the experience that fits your group, then check the booking options for that operator.</p>
       <h2 className="mt-12 font-serif text-3xl">Tours available on our site</h2>

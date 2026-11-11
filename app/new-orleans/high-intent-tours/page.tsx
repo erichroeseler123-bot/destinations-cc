@@ -32,6 +32,15 @@ const links = [
 export default function Page() {
   return <div className="min-h-screen bg-[var(--nola-bg-charcoal)] px-6 py-16 text-[var(--nola-ivory)]">
     <div className="mx-auto max-w-5xl">
+      <div className="mb-8 overflow-hidden rounded-xl border border-white/15 aspect-[16/9] max-h-[320px]">
+        <img
+          src="/images/portfolio/garden-district-mansion.webp"
+          alt="Historic Greek Revival mansion and live oaks along Coliseum Street in the New Orleans Garden District"
+          width={1280}
+          height={800}
+          className="h-full w-full object-cover"
+        />
+      </div>
       <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--nola-gold)]">Start with your real constraint</p>
       <h1 className="mt-4 max-w-4xl font-serif text-4xl md:text-6xl">Pick a New Orleans tour based on the decision you need to make</h1>
       <p className="mt-6 max-w-3xl text-lg leading-8 text-[var(--nola-text-muted)]">You do not need another giant list of attractions. Start with how much time you have, who is with you, whether transportation matters, and whether you are trying to fit New Orleans around a cruise.</p>

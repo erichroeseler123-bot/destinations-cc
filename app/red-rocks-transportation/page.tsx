@@ -143,6 +143,15 @@ export default async function RedRocksTransportationPage({
       hideRecommendedFlow
       notice={
         <div className="space-y-6">
+          <div className="overflow-hidden rounded-[1.9rem] border border-white/10 aspect-[16/9] max-h-[340px]">
+            <img
+              src="/images/authority/venues/red-rocks-amphitheatre/hero.webp"
+              alt="Red Rocks Amphitheatre sandstone monoliths and open-air concert bowl in Morrison, Colorado"
+              width={1600}
+              height={900}
+              className="h-full w-full object-cover"
+            />
+          </div>
           <section className="rounded-[1.9rem] border border-[#3df3ff]/20 bg-[linear-gradient(180deg,rgba(16,33,43,0.96),rgba(7,15,21,0.96))] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
             <p className="text-xs uppercase tracking-[0.2em] text-cyan-300">Choose your entry point</p>
             <h2 className="mt-3 text-2xl font-bold text-white">Need help deciding, or already know you want the shuttle?</h2>

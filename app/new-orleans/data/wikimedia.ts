@@ -19,18 +19,18 @@ export interface WikimediaImage {
 export const WIKIMEDIA_IMAGES: Record<string, WikimediaImage> = {
   "oak-alley-front": {
     id: "oak-alley-front",
-    originalTitle: "Oak alley - view from front",
+    originalTitle: "Oak Alley Plantation House December 27, 2016",
     displayTitle: "Oak Alley Plantation",
     url: "/images/wikimedia/originals/oak-alley-front.jpg",
-    originalFileUrl: "https://upload.wikimedia.org/wikipedia/commons/e/ee/Oak_alley_-_view_from_front.jpg",
-    author: "Sven Krosse",
-    license: "CC BY-SA 3.0",
-    licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0",
-    sourceUrl: "https://commons.wikimedia.org/wiki/File:Oak_alley_-_view_from_front.jpg",
+    originalFileUrl: "https://upload.wikimedia.org/wikipedia/commons/5/56/Oak_Alley_Plantation_House_December_27%2C_2016.jpg",
+    author: "osseous",
+    license: "CC BY 2.0",
+    licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+    sourceUrl: "https://commons.wikimedia.org/wiki/File:Oak_Alley_Plantation_House_December_27,_2016.jpg",
     alt: "View of the antebellum Oak Alley Plantation house framed by 300-year-old oak trees",
     caption: "Oak Alley Plantation in Vacherie, Louisiana",
-    attributionText: "Sven Krosse",
-    changesMade: "Downloaded from original source."
+    attributionText: "osseous · CC BY 2.0",
+    changesMade: "Resized and compressed to 1600x1000 MozJPEG."
   },
   "st-louis-cemetery-1-gates": {
     id: "st-louis-cemetery-1-gates",

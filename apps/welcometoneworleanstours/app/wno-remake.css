@@ -823,6 +823,16 @@ body:has([data-wno-remake="v3"]) .wno-faq-item,
     padding: 44px 0 56px;
   }
 
+  .wno-hero-media {
+    height: 360px !important;
+    bottom: auto !important;
+  }
+
+  .wno-hero-scrim {
+    background:
+      linear-gradient(180deg, rgba(15, 41, 29, 0.3) 0%, rgba(22, 56, 40, 0.78) 240px, #163828 350px, #163828 100%) !important;
+  }
+
   .wno-hero-cta-row .wno-primary-btn {
     width: 100%;
   }

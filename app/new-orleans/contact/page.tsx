@@ -15,6 +15,15 @@ export default function NewOrleansContactPage() {
   return (
     <div className="bg-[var(--nola-bg-cream,#FAF5EC)] text-[var(--nola-walnut,#2C1810)] font-sans min-h-screen">
       <div className="max-w-4xl mx-auto px-6 py-16">
+        <div className="mb-10 overflow-hidden rounded-xl border border-[#E2D7C3] shadow-sm aspect-[16/9] max-h-[300px]">
+          <img
+            src="/images/portfolio/royal-street-balconies.webp"
+            alt="Historic sunlit wrought-iron balconies along Royal Street in the New Orleans French Quarter"
+            width={1440}
+            height={900}
+            className="w-full h-full object-cover"
+          />
+        </div>
         <div className="text-center mb-12">
           <h1 className="font-serif text-4xl md:text-5xl text-[#4A1A6B] mb-4">
             Contact Welcome to New Orleans Tours
