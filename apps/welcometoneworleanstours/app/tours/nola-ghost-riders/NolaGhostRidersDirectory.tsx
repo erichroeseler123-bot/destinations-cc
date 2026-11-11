@@ -70,7 +70,7 @@ const FEATURED_GHOSTRIDERS_TOURS: GhostRiderTour[] = [
     byob: false,
     cancellationText: "Free cancellation up to 24 hours before departure",
     cancellationType: "standard_24h",
-    image: "/images/wikimedia/originals/oak-alley-front.jpg",
+    image: "/images/portfolio/destrehan-plantation.webp",
     editorialSummary:
       "A rare opportunity to explore an authentic 1787 River Road estate in the pitch dark. Unlike standard daytime plantation tours, this evening experience illuminates Destrehan's ancient live oaks, 1811 slave tribunal history, and verified supernatural occurrences by candlelight and lantern glow.",
     highlights: [
@@ -241,7 +241,7 @@ const ADDITIONAL_GHOSTRIDERS_TOURS: GhostRiderTour[] = [
     byob: false,
     cancellationText: "Cancellation policy varies by experience (confirm during checkout)",
     cancellationType: "varies",
-    image: "/images/wikimedia/originals/oak-alley-front.jpg",
+    image: "/images/portfolio/destrehan-plantation.webp",
     editorialSummary:
       "A profound, necessary journey into American civil rights and resistance history. Destrehan Plantation was the focal point of the 1811 German Coast Uprising. This tour uncovers original trial documentation, preserved slave quarters, and the courageous leadership of Charles Deslondes.",
     highlights: [

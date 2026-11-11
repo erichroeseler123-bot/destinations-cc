@@ -78,6 +78,20 @@ export default async function JuneauCommercialHubPage() {
     <main className="min-h-screen overflow-hidden bg-[#041018] text-white">
       <JsonLdGraph />
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
+        <div className="overflow-hidden rounded-3xl border border-white/12 bg-black/40 shadow-2xl">
+          <img
+            src="/images/portfolio/juneau-mendenhall-hero.webp"
+            alt="Mendenhall Glacier blue ice face, Mendenhall Lake, and Coast Mountains in Juneau, Alaska"
+            width={1440}
+            height={810}
+            loading="eager"
+            className="h-56 w-full object-cover object-center sm:h-72 lg:h-80"
+          />
+          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/10 bg-black/60 px-5 py-2.5 text-xs text-white/75">
+            <span className="font-semibold text-cyan-200">Mendenhall Glacier &amp; Tongass National Forest · Juneau, AK</span>
+            <span>CLAA Berths · NOAA CO-OPS 9452210 · PAJN Aviation Weather</span>
+          </div>
+        </div>
         <Suspense fallback={<DefaultJuneauReplanBanner />}>
           <JuneauQueryReplanSlot />
         </Suspense>

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Juneau Flight Deck">
+  <rect width="64" height="64" rx="14" fill="#0f2942"/>
+  <path d="M12 18h40M32 18v8M20 44h24M24 38v6M36 38v6" stroke="#7dd3fc" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M18 32c0-5.5 5-9 12-9h6c5.5 0 10 3.5 10 8 0 3.8-3 7-7.5 7H22c-2.2 0-4-1.8-4-4v-2z" fill="#e0f2fe"/>
+  <path d="M10 30h8M10 26v8" stroke="#7dd3fc" stroke-width="3.5" stroke-linecap="round"/>
+</svg>

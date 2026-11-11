@@ -58,7 +58,7 @@ const waitlistServiceSchema = {
     "@type": "Organization",
     name: "Juneau Flight Deck",
     url: "https://juneauflightdeck.com",
-    logo: "https://juneauflightdeck.com/images/jfd-logo.png",
+    logo: "https://juneauflightdeck.com/favicon.svg",
   },
   areaServed: {
     "@type": "City",
@@ -110,7 +110,26 @@ export default function Page() {
           boxSizing: "border-box",
         }}
       >
-        <div style={{ textAlign: "center", marginBottom: 36 }}>
+        <div style={{ textAlign: "center", marginBottom: 32 }}>
+          <div
+            style={{
+              margin: "0 auto 24px",
+              borderRadius: 16,
+              overflow: "hidden",
+              border: "1px solid var(--line, rgba(151, 211, 255, 0.25))",
+              aspectRatio: "16 / 9",
+              maxHeight: 300,
+              background: "#071626",
+            }}
+          >
+            <img
+              src="/images/juneau-helicopter-hero.jpg"
+              alt="Flightseeing helicopter soaring over an Alaska glacier valley and snow-capped peaks"
+              width={1440}
+              height={900}
+              style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 46%", display: "block" }}
+            />
+          </div>
           <p className="eyebrow" style={{ color: "var(--accent, #f0b35b)", marginBottom: 8 }}>
             Cruise Logistics &amp; Excursion Planning
           </p>

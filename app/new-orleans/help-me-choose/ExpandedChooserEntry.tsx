@@ -86,8 +86,7 @@ export default function ExpandedChooserEntry() {
               >
                 <img
                   src={category.image}
-                  alt=""
-                  aria-hidden="true"
+                  alt={`${category.title} — ${category.description}`}
                   loading="lazy"
                   decoding="async"
                   className="absolute inset-0 h-full w-full object-cover opacity-35 transition duration-300 group-hover:scale-105 group-hover:opacity-45"

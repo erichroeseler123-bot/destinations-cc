@@ -21,6 +21,82 @@ import {
 } from "../../tours/pageConfig";
 import DailyBriefSignup from "../../components/DailyBriefSignup";
 import { resolveProductImage } from "../../lib/imageResolver";
+import { optimizedHeroImageUrl } from "../../lib/optimizedProductImage";
+
+const CATEGORY_HERO_IMAGES: Record<string, { src: string; alt: string }> = {
+  "swamp-tours": {
+    src: "/images/portfolio/nola-covered-swamp-boat.webp",
+    alt: "Covered swamp tour boat cruising past moss-draped cypress trees on a Louisiana bayou",
+  },
+  "covered-swamp-boat-tours": {
+    src: "/images/portfolio/nola-covered-swamp-boat.webp",
+    alt: "Shaded covered pontoon boat gliding across calm Louisiana bayou waters",
+  },
+  "airboat-tours": {
+    src: "/images/portfolio/louisiana-airboat-marsh.webp",
+    alt: "Open-air swamp airboat riding through coastal Louisiana marsh channels",
+  },
+  "plantation-tours": {
+    src: "/images/wikimedia/originals/oak-alley-front.jpg",
+    alt: "Historic Oak Alley Plantation manor framed by 300-year-old southern live oaks on River Road",
+  },
+  "riverboat-cruises": {
+    src: "/images/travel-markets/new-orleans/steamboat-natchez.jpg",
+    alt: "Steamboat Natchez paddlewheeler cruising on the Mississippi River in New Orleans",
+  },
+  "jazz-music-tours": {
+    src: "/images/travel-markets/new-orleans/new-orleans-live-music.jpg",
+    alt: "Live New Orleans brass band and jazz musicians performing in New Orleans",
+  },
+  "food-tours": {
+    src: "/images/portfolio/classic-cocktails-nola.webp",
+    alt: "Classic French Quarter craft cocktails and culinary pairings in New Orleans",
+  },
+  "cooking-classes": {
+    src: "/images/wikimedia/originals/gumbo-dish.jpg",
+    alt: "Traditional New Orleans Creole gumbo prepared in a Louisiana kitchen",
+  },
+  "ghost-tours": {
+    src: "/images/wikimedia/originals/french-quarter-night.jpg",
+    alt: "Historic French Quarter street architecture illuminated after dark in New Orleans",
+  },
+  "cemetery-tours": {
+    src: "/images/wikimedia/originals/st-louis-cemetery-1-gates.jpg",
+    alt: "Historic above-ground tombs and entrance gates at St. Louis Cemetery No. 1 in New Orleans",
+  },
+  "night-tours": {
+    src: "/images/wikimedia/originals/french-quarter-night.jpg",
+    alt: "Evening lights along a historic French Quarter street in New Orleans",
+  },
+  "garden-district-tours": {
+    src: "/images/portfolio/garden-district-mansion.webp",
+    alt: "Historic Greek Revival mansion and live oaks along Coliseum Street in the New Orleans Garden District",
+  },
+  "city-tours": {
+    src: "/images/portfolio/royal-street-balconies.webp",
+    alt: "Sunlit wrought-iron balconies along Royal Street in the New Orleans French Quarter",
+  },
+  "city-sightseeing-tours": {
+    src: "/images/portfolio/royal-street-balconies.webp",
+    alt: "Sunlit wrought-iron balconies along Royal Street in the New Orleans French Quarter",
+  },
+  "french-quarter-tours": {
+    src: "/images/portfolio/royal-street-balconies.webp",
+    alt: "Sunlit wrought-iron balconies along Royal Street in the New Orleans French Quarter",
+  },
+  "walking-tours": {
+    src: "/images/portfolio/royal-street-balconies.webp",
+    alt: "Sunlit wrought-iron balconies and pedestrian streetscape in the New Orleans French Quarter",
+  },
+  "walking-city-tours": {
+    src: "/images/portfolio/royal-street-balconies.webp",
+    alt: "Sunlit wrought-iron balconies and pedestrian streetscape in the New Orleans French Quarter",
+  },
+  "architecture-tours": {
+    src: "/images/portfolio/garden-district-mansion.webp",
+    alt: "Historic Greek Revival architecture in the New Orleans Garden District",
+  },
+};
 
 const CARD_EYEBROWS = [
   "Our first pick",
@@ -242,13 +318,23 @@ export default async function CategoryPage({
         callerClientId: "portfolio:welcometoneworleanstours.com",
       })
     : null;
-  const heroImage =
-    products
-      .map((product) => {
-        const sourceProduct = STOREFRONT_PRODUCTS.find((p) => p.slug === product.slug);
-        return resolveProductImage(sourceProduct || product)?.src;
-      })
-      .find(Boolean) || products.find((product) => product.imageUrl)?.imageUrl;
+  const explicitCategoryHero = CATEGORY_HERO_IMAGES[resolvedParams.categorySlug];
+  const fallbackProductResolved = products
+    .map((product) => {
+      const sourceProduct = STOREFRONT_PRODUCTS.find((p) => p.slug === product.slug);
+      return resolveProductImage(sourceProduct || product);
+    })
+    .find(Boolean);
+  const rawHeroSrc =
+    explicitCategoryHero?.src ||
+    fallbackProductResolved?.src ||
+    products.find((product) => product.imageUrl)?.imageUrl ||
+    "/images/portfolio/royal-street-balconies.webp";
+  const heroImage = optimizedHeroImageUrl(rawHeroSrc);
+  const heroAlt =
+    explicitCategoryHero?.alt ||
+    fallbackProductResolved?.alt ||
+    `${record.heroTitle} in New Orleans`;
   const layout = categoryLayout(resolvedParams.categorySlug);
   const copy = categoryCopy(layout);
 
@@ -584,8 +670,9 @@ export default async function CategoryPage({
         {heroImage && (
           <img
             src={heroImage}
-            alt=""
-            aria-hidden="true"
+            alt={heroAlt}
+            width={1600}
+            height={900}
             className="absolute inset-0 -z-20 h-full w-full object-cover opacity-55"
           />
         )}

@@ -3,7 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DECISION_PAGES, getDecisionPage } from "@/lib/decisionPages";
 import { buildAffiliateUrl } from "@/lib/affiliate/links";
-import { AFFILIATE_CATALOG, matchCatalogExcursion } from "@/lib/affiliate/catalog";
+import { matchCatalogExcursion } from "@/lib/affiliate/catalog";
+import { HERO_IMAGE } from "@/lib/images";
 import { CruiseWindowCalculator } from "@/components/CruiseWindowCalculator";
 import { TrustDisclosure } from "@/components/TrustDisclosure";
 
@@ -120,20 +121,53 @@ export default async function DecisionPage({
             <span>›</span>
             <span>{guide.slug}</span>
           </nav>
-          <p className="eyebrow" style={{ color: "#607078" }}>{guide.eyebrow}</p>
-          <h1>{guide.h1}</h1>
-          <p className="lead" style={{ color: "#485b63" }}>
-            {guide.lead}
-          </p>
-          <div className="cta-row">
-            <a className="button" href="#matrix">
-              View comparison matrix ↓
-            </a>
-            <a className="button secondary" href="#calculator">
-              Calculate ship-window fit
-            </a>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 32, alignItems: "center" }}>
+            <div>
+              <p className="eyebrow" style={{ color: "#607078" }}>{guide.eyebrow}</p>
+              <h1>{guide.h1}</h1>
+              <p className="lead" style={{ color: "#485b63" }}>
+                {guide.lead}
+              </p>
+              <div className="cta-row">
+                <a className="button" href="#matrix">
+                  View comparison matrix ↓
+                </a>
+                <a className="button secondary" href="#calculator">
+                  Calculate ship-window fit
+                </a>
+              </div>
+              <TrustDisclosure compact />
+            </div>
+            {(() => {
+              const firstTour = guide.recommendedTours[0];
+              const heroExcursion = firstTour
+                ? matchCatalogExcursion(firstTour.port, firstTour.name, firstTour.campaignTag)
+                : null;
+              const heroPhoto = heroExcursion?.permittedImages[0];
+              return (
+                <div
+                  style={{
+                    position: "relative",
+                    borderRadius: "14px",
+                    overflow: "hidden",
+                    border: "1px solid var(--line)",
+                    boxShadow: "var(--card-shadow)",
+                    aspectRatio: "16 / 10",
+                    background: "#eef5f6",
+                  }}
+                >
+                  <img
+                    src={heroPhoto?.url || HERO_IMAGE.url}
+                    alt={heroPhoto?.caption || HERO_IMAGE.alt}
+                    width={1280}
+                    height={800}
+                    loading="eager"
+                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                  />
+                </div>
+              );
+            })()}
           </div>
-          <TrustDisclosure compact />
         </div>
       </section>
 
@@ -247,6 +281,16 @@ export default async function DecisionPage({
 
               return (
                 <article className="card" key={tour.name} style={{ background: "white" }}>
+                  <div style={{ borderRadius: 12, overflow: "hidden", aspectRatio: "16 / 10", marginBottom: 14, background: "#eef5f6" }}>
+                    <img
+                      src={matched?.permittedImages[0]?.url || HERO_IMAGE.url}
+                      alt={matched?.permittedImages[0]?.caption || tour.name}
+                      width={640}
+                      height={400}
+                      loading="lazy"
+                      style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                    />
+                  </div>
                   <span className="badge badge-safety" style={{ alignSelf: "flex-start", marginBottom: 8 }}>
                     {tour.port} · {tour.duration}
                   </span>

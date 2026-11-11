@@ -115,22 +115,47 @@ export default function IntentTourPage({
     })),
   } : null;
 
+  const intentHero =
+    derivedKey === "swamp-tours"
+      ? { src: "/images/portfolio/nola-covered-swamp-boat.webp", alt: "Covered bayou swamp tour boat cruising past cypress trees in Louisiana" }
+      : derivedKey === "airboat-tours"
+        ? { src: "/images/portfolio/louisiana-airboat-marsh.webp", alt: "Open-air swamp airboat riding through coastal Louisiana marsh" }
+        : derivedKey === "plantation-tours"
+          ? { src: "/images/wikimedia/originals/oak-alley-front.jpg", alt: "Oak Alley Plantation live oak canopy along Louisiana's River Road" }
+          : derivedKey === "riverboat-cruises"
+            ? { src: "/images/travel-markets/new-orleans/steamboat-natchez.jpg", alt: "Steamboat Natchez paddlewheeler cruising on the Mississippi River" }
+            : derivedKey === "ghost-tours"
+              ? { src: "/images/wikimedia/originals/french-quarter-night.jpg", alt: "Historic French Quarter street illuminated after dark in New Orleans" }
+              : derivedKey === "garden-district-tours"
+                ? { src: "/images/portfolio/garden-district-mansion.webp", alt: "Historic Greek Revival mansion in the New Orleans Garden District" }
+                : { src: "/images/portfolio/royal-street-balconies.webp", alt: "Sunlit wrought-iron balconies along Royal Street in the New Orleans French Quarter" };
+
   return (
     <div data-wno-surface="intent-dark" className="bg-[var(--nola-bg-charcoal)] text-[#fdfbf7] min-h-screen">
       {faqSchema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />}
       <WnoBreadcrumbs items={activeBreadcrumbs} />
-      <section className="mx-auto max-w-6xl px-6 pb-12 pt-8 md:pt-14">
-        <p className="mb-4 text-xs font-bold uppercase tracking-[0.24em] text-[var(--nola-gold)]">{eyebrow}</p>
-        <h1 className="max-w-4xl font-serif text-4xl leading-tight text-[#fdfbf7] md:text-6xl">{title}</h1>
-        <p className="mt-6 max-w-3xl text-lg leading-8 text-[#dcd5ca]">{intro}</p>
-        <div className="mt-8 flex flex-wrap gap-3">
-          <Link href="#tour-options" className="bg-[var(--nola-gold)] px-5 py-3 text-xs font-bold uppercase tracking-widest text-[#171717] hover:bg-[#ffe494] transition">Check Tour Options</Link>
-          {conciergePlacementId && (
-            <Link href="/swamp-tours" className="border border-[var(--nola-gold)] bg-[#1c1812] px-5 py-3 text-xs font-bold uppercase tracking-widest text-[var(--nola-gold)] hover:bg-[var(--nola-gold)] hover:text-[#171717] transition">
-              Open Swamp Tours Storefront (Choose Date &amp; Party Size) →
-            </Link>
-          )}
-          <Link href="/help-me-choose" className="border border-[rgba(212,175,55,0.5)] px-5 py-3 text-xs font-bold uppercase tracking-widest text-[#fdfbf7] hover:border-[var(--nola-gold)] transition">Help Me Choose</Link>
+      <section className="relative isolate overflow-hidden border-b border-[var(--nola-border)]">
+        <img
+          src={intentHero.src}
+          alt={intentHero.alt}
+          width={1440}
+          height={900}
+          className="absolute inset-0 -z-20 h-full w-full object-cover opacity-35"
+        />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-[#0b0a09]/65 via-[#0b0a09]/85 to-[#12110e]" />
+        <div className="mx-auto max-w-6xl px-6 pb-12 pt-8 md:pt-14">
+          <p className="mb-4 text-xs font-bold uppercase tracking-[0.24em] text-[var(--nola-gold)]">{eyebrow}</p>
+          <h1 className="max-w-4xl font-serif text-4xl leading-tight text-[#fdfbf7] md:text-6xl">{title}</h1>
+          <p className="mt-6 max-w-3xl text-lg leading-8 text-[#dcd5ca]">{intro}</p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link href="#tour-options" className="bg-[var(--nola-gold)] px-5 py-3 text-xs font-bold uppercase tracking-widest text-[#171717] hover:bg-[#ffe494] transition">Check Tour Options</Link>
+            {conciergePlacementId && (
+              <Link href="/swamp-tours" className="border border-[var(--nola-gold)] bg-[#1c1812] px-5 py-3 text-xs font-bold uppercase tracking-widest text-[var(--nola-gold)] hover:bg-[var(--nola-gold)] hover:text-[#171717] transition">
+                Open Swamp Tours Storefront (Choose Date &amp; Party Size) →
+              </Link>
+            )}
+            <Link href="/help-me-choose" className="border border-[rgba(212,175,55,0.5)] px-5 py-3 text-xs font-bold uppercase tracking-widest text-[#fdfbf7] hover:border-[var(--nola-gold)] transition">Help Me Choose</Link>
+          </div>
         </div>
       </section>
 

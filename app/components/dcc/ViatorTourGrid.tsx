@@ -2,6 +2,7 @@ import { buildViatorSearchLink } from "@/utils/affiliateLinks";
 import type { ViatorActionProduct } from "@/lib/dcc/action/viator";
 import TravelerTakeaways from "@/app/components/dcc/TravelerTakeaways";
 import { summarizeGuestFeedback } from "@/lib/dcc/guestFeedback";
+import { upgradeViatorImageUrl } from "@/lib/viator/media";
 import { getViatorPolicy } from "@/lib/viator/policy";
 
 type FallbackIntent = {
@@ -67,7 +68,7 @@ export default function ViatorTourGrid({
           key: product.product_code,
           title: product.title,
           shortDescription: product.short_description || null,
-          imageUrl: product.image_url || null,
+          imageUrl: upgradeViatorImageUrl(product.image_url) || null,
           rating:
             typeof product.rating === "number"
               ? `${product.rating.toFixed(1)} provider aggregate${typeof product.review_count === "number" ? ` (${product.review_count.toLocaleString()} lifetime provider count)` : ""}`
@@ -148,6 +149,8 @@ export default function ViatorTourGrid({
                     <img
                       src={card.imageUrl}
                       alt={card.title}
+                      width={720}
+                      height={480}
                       className="h-full w-full object-cover"
                       loading="lazy"
                     />

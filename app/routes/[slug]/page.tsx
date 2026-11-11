@@ -77,8 +77,39 @@ export default async function RouteDecisionPage({
         ? await getPublishedTravelReferenceNodeById("red-rocks")
         : null;
 
+  const routeBanner =
+    slug === "denver-breckenridge"
+      ? {
+          src: "/images/portfolio/colorado-i70-corridor.webp",
+          alt: "Interstate 70 winter mountain corridor approaching the Eisenhower-Johnson Memorial Tunnel between Denver and Breckenridge",
+          width: 1440,
+          height: 810,
+        }
+      : slug === "denver-red-rocks"
+        ? {
+            src: "/images/authority/routes/denver-red-rocks/hero.webp",
+            alt: "Concert shuttle Sprinter along the Denver to Red Rocks Amphitheatre corridor",
+            width: 1280,
+            height: 720,
+          }
+        : null;
+
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
+      {routeBanner ? (
+        <div className="mx-auto max-w-6xl px-6 pt-10">
+          <div className="overflow-hidden rounded-3xl border border-white/12 bg-black/40 shadow-2xl">
+            <img
+              src={routeBanner.src}
+              alt={routeBanner.alt}
+              width={routeBanner.width}
+              height={routeBanner.height}
+              loading="eager"
+              className="h-52 w-full object-cover object-center sm:h-68"
+            />
+          </div>
+        </div>
+      ) : null}
       {referenceNode ? (
         <TravelReferenceExperience
           node={referenceNode}

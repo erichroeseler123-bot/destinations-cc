@@ -101,13 +101,32 @@ export default async function JuneauHelicopterCanceledPage({
             lineHeight: 1.6,
             color: "var(--muted, #94a3b8)",
             maxWidth: 780,
-            margin: "0 0 16px",
+            margin: "0 0 18px",
           }}
         >
           Southeast Alaska mountain weather can change quickly. Use your{" "}
           <strong>My flight was canceled</strong> selection or your operator&apos;s tracked cancellation link (<code>?cancel_ref=...</code>) below to open the same-day{" "}
           <strong>Whale Deck Backup Flow</strong>.
         </p>
+        <div
+          style={{
+            marginBottom: 22,
+            borderRadius: 16,
+            overflow: "hidden",
+            border: "1px solid var(--line, #334155)",
+            aspectRatio: "16 / 9",
+            maxHeight: 300,
+            background: "#071626",
+          }}
+        >
+          <img
+            src="/images/portfolio/mendenhall-glacier-overview.webp"
+            alt="Mendenhall Glacier face, icebergs, and Coast Mountains in Juneau, Alaska"
+            width={1440}
+            height={900}
+            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 48%", display: "block" }}
+          />
+        </div>
         <div
           data-testid="jfd-canceled-backup-panel"
           style={{

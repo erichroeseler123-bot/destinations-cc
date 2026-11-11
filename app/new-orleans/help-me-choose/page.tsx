@@ -42,7 +42,7 @@ export default function HelpMeChoosePage() {
         title="Tell us what kind of New Orleans day you want"
         script="we'll narrow it down"
         intro="Answer a few traveler questions and we’ll make a best-fit recommendation, explain why it fits, surface cautions and show a backup. We use timing, transportation, group fit, live context and practical constraints instead of forcing you through a giant catalog."
-        image="/images/new-orleans/hero-french-quarter-balcony.jpg"
+        image="/images/portfolio/royal-street-balconies.webp"
         actions={[
           { href: "#guided-planner", label: "Get My Recommendation", detail: "Answer a few questions", primary: true },
           { href: "#experience-types", label: "Browse by Mood", detail: "Start with an experience type" },

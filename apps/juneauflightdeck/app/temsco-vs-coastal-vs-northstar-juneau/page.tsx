@@ -107,6 +107,25 @@ export default function OperatorComparisonPage() {
         <p style={{ fontSize: "0.95rem", lineHeight: 1.6, color: "var(--muted, #94a3b8)", margin: 0 }}>
           Because each operator specializes in distinct experiences—from family-friendly gentle walkabouts to high-altitude dog sledding and crampon ice treks—this guide compares their specific tours across the five factors that actually affect your booking decision.
         </p>
+        <div
+          style={{
+            marginTop: 22,
+            borderRadius: 16,
+            overflow: "hidden",
+            border: "1px solid var(--line, #334155)",
+            aspectRatio: "16 / 9",
+            maxHeight: 340,
+            background: "#071626",
+          }}
+        >
+          <img
+            src="/images/juneau-helicopter-hero.jpg"
+            alt="Flightseeing helicopter soaring over an Alaska glacier valley and snow-capped peaks"
+            width={1440}
+            height={900}
+            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 46%", display: "block" }}
+          />
+        </div>
       </div>
 
       {/* Navigation Quick Bar */}

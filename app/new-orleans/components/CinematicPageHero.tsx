@@ -22,7 +22,7 @@ export default function CinematicPageHero({
   title,
   script,
   intro,
-  image = "/images/new-orleans/hero-french-quarter-balcony.jpg",
+  image = "/images/portfolio/royal-street-balconies.webp",
   actions = [],
 }: Props) {
   return (

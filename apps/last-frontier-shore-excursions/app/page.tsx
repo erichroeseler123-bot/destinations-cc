@@ -188,8 +188,8 @@ export default async function HomePage({
       statusBadge: "Inquiry-Only",
       portName: "All 5 Ports",
       portSlug: "juneau",
-      image: "/images/alaska/skagway-white-pass.jpg",
-      imageAlt: "Coastal mountain highway above Skagway and Southeast Alaska",
+      image: "/images/alaska/white-pass-train.jpg",
+      imageAlt: "White Pass narrow-gauge railway climbing coastal mountains above Skagway, Alaska",
       whatItIs: "Multi-Cabin Private Van & Custom Port-Day Planning",
       whereItGoes: "Juneau, Skagway, Ketchikan, Sitka & Icy Strait Point",
       dateAvailability: "By ship date for families & multi-cabin groups (6–24+ guests)",
@@ -209,8 +209,8 @@ export default async function HomePage({
       statusBadge: "Commercially Held",
       portName: "Ketchikan",
       portSlug: "ketchikan",
-      image: "/images/alaska/ketchikan-creek-street.jpg",
-      imageAlt: "Ketchikan waterfront and harbor vessels",
+      image: "/images/portfolio/ketchikan-fishing-vessel.webp",
+      imageAlt: "Commercial fishing vessel in Ketchikan harbor waters",
       whatItIs: "Bering Sea Crab Fishermen's Tour (Aleutian Ballad)",
       whereItGoes: "Ketchikan · Protected Waters of Tongass Narrows",
       dateAvailability: "Self-service checkout currently paused pending seasonal verification",
@@ -235,8 +235,8 @@ export default async function HomePage({
         <img
           src={HERO_IMAGE.url}
           alt={HERO_IMAGE.alt}
-          width={1024}
-          height={426}
+          width={1600}
+          height={900}
           loading="eager"
           className={styles.heroMedia}
         />

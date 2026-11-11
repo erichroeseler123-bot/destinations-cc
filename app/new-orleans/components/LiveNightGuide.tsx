@@ -23,6 +23,7 @@ const fallbackIdeas = [
     description: "Choose a New Orleans staple or Dining Partner, then build the rest of the evening around where you already plan to be.",
     cta: "Find dinner",
     image: "/images/wikimedia/originals/gumbo-dish.jpg",
+    alt: "Traditional bowl of New Orleans Creole gumbo",
   },
   {
     href: "/tours",
@@ -31,6 +32,7 @@ const fallbackIdeas = [
     description: "Compare river cruises, ghosts and spirits, cocktail walks, and other experiences that can work after the daytime sightseeing is done.",
     cta: "Browse tours",
     image: "/images/travel-markets/new-orleans/steamboat-natchez.jpg",
+    alt: "Steamboat Natchez paddlewheeler cruising on the Mississippi River in New Orleans",
   },
   {
     href: "/help-me-choose",
@@ -38,7 +40,8 @@ const fallbackIdeas = [
     title: "Tell us what kind of night you want",
     description: "Use the chooser to narrow the options by your group, pace, interests, timing, and how much structure you actually want.",
     cta: "Help me choose",
-    image: "/images/travel-markets/new-orleans/french-quarter-street.jpg",
+    image: "/images/portfolio/royal-street-balconies.webp",
+    alt: "Historic Royal Street wrought-iron balconies in the New Orleans French Quarter",
   },
 ] as const;
 
@@ -75,8 +78,8 @@ export default async function LiveNightGuide({
 
         <section className="grid items-start gap-7 lg:grid-cols-[0.72fr_1.28fr]">
           <aside data-wno-night-dinner className="overflow-hidden rounded-[18px] border border-[#d4af37]/45 bg-[linear-gradient(180deg,#151217,#0c0b0d)] p-7 shadow-2xl shadow-black/20 lg:sticky lg:top-24">
-            <div aria-hidden="true" className="-mx-7 -mt-7 mb-6 h-40 overflow-hidden border-b border-[#d4af37]/25">
-              <img src="/images/wikimedia/originals/gumbo-dish.jpg" alt="" className="h-full w-full object-cover" loading="lazy" />
+            <div className="-mx-7 -mt-7 mb-6 h-40 overflow-hidden border-b border-[#d4af37]/25">
+              <img src="/images/wikimedia/originals/gumbo-dish.jpg" alt="Classic New Orleans Creole gumbo bowl" className="h-full w-full object-cover" loading="lazy" />
             </div>
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#d4af37]">Make a night of it</p>
             <h2 className="mt-3 text-3xl font-black leading-tight text-[#fff8ec]">Dinner first.</h2>
@@ -111,7 +114,7 @@ export default async function LiveNightGuide({
                       className="group flex min-h-[330px] flex-col overflow-hidden rounded-[14px] border border-[#d4af37]/22 bg-[#111014] transition hover:-translate-y-1 hover:border-[#d4af37]"
                     >
                       <div className="relative h-36 shrink-0 overflow-hidden bg-[#171419]">
-                        <img src={idea.image} alt="" aria-hidden="true" loading="lazy" className="h-full w-full object-cover opacity-90 transition duration-500 group-hover:scale-105 group-hover:opacity-100" />
+                        <img src={idea.image} alt={idea.alt} loading="lazy" className="h-full w-full object-cover opacity-90 transition duration-500 group-hover:scale-105 group-hover:opacity-100" />
                         <div className="absolute inset-0 bg-gradient-to-t from-[#111014]/70 via-transparent to-transparent" />
                       </div>
                       <div className="flex flex-1 flex-col p-5">
@@ -136,7 +139,7 @@ export default async function LiveNightGuide({
               <div className="grid gap-5 md:grid-cols-2">
                 {events.slice(0, 16).map((event) => (
                   <article key={event.id} className="flex flex-col overflow-hidden rounded-[16px] border border-[#d4af37]/25 bg-[linear-gradient(180deg,#151217,#0c0b0d)] shadow-xl shadow-black/20">
-                    {event.image_url ? <img src={event.image_url} alt="" className="h-44 w-full object-cover" loading="lazy" /> : null}
+                    {event.image_url ? <img src={event.image_url} alt={event.name || "New Orleans live night event"} className="h-44 w-full object-cover" loading="lazy" /> : null}
                     <div className="flex flex-1 flex-col p-6">
                       <div className="mb-3 flex flex-wrap gap-2"><span className="rounded-full border border-[#d4af37]/40 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-[#d4af37]">{eventCategory(event)}</span></div>
                       <h3 className="text-2xl font-black leading-tight text-[#fff8ec]">{event.name}</h3>

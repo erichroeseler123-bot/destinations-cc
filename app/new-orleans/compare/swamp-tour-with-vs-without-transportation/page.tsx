@@ -57,8 +57,8 @@ export default function SwampTransportationComparisonPage() {
           <div className="flex flex-col justify-between border-2 border-[#d4af37] bg-[#1a1a1a] shadow-xl overflow-hidden">
             <div className="relative aspect-[16/10] w-full overflow-hidden border-b border-[#333] bg-[#121212]">
               <img
-                src="/images/travel-markets/new-orleans/hotel-pickup-swamp-boat.png"
-                alt="Coach transportation departing for New Orleans swamp tour"
+                src="/images/portfolio/jean-lafitte-bayou.webp"
+                alt="Cypress bayou scenery on a transported New Orleans swamp tour"
                 className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
                 loading="lazy"
               />
@@ -100,8 +100,8 @@ export default function SwampTransportationComparisonPage() {
           <div className="flex flex-col justify-between border-2 border-[#d4af37] bg-[#1a1a1a] shadow-xl overflow-hidden">
             <div className="relative aspect-[16/10] w-full overflow-hidden border-b border-[#333] bg-[#121212]">
               <img
-                src="/images/travel-markets/new-orleans/hotel-pickup-airboat.png"
-                alt="Hotel pickup shuttle for New Orleans airboat tour"
+                src="/images/portfolio/nola-covered-swamp-boat.webp"
+                alt="Covered swamp tour boat with French Quarter hotel shuttle pickup"
                 className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
                 loading="lazy"
               />
@@ -143,7 +143,7 @@ export default function SwampTransportationComparisonPage() {
           <div className="flex flex-col justify-between border-2 border-[#555] bg-[#1a1a1a] shadow-xl overflow-hidden">
             <div className="relative aspect-[16/10] w-full overflow-hidden border-b border-[#333] bg-[#121212]">
               <img
-                src="/images/travel-markets/new-orleans/covered-boat-swamp.png"
+                src="/images/wno/small-boat-swamp-tour.webp"
                 alt="Swamp tour boat at the bayou dock for self-drive visitors"
                 className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
                 loading="lazy"

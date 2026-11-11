@@ -92,9 +92,29 @@ export default function HelicopterWeightLimitsPage() {
       <h1 style={{ fontSize: "clamp(2rem, 4vw, 2.7rem)", fontWeight: 900, lineHeight: 1.2, margin: "10px 0 18px", color: "var(--text)" }}>
         Juneau Helicopter Tour Weight Limits, Surcharges &amp; Seating Math
       </h1>
-      <p style={{ fontSize: "1.1rem", lineHeight: 1.6, color: "var(--muted)", marginBottom: "32px" }}>
+      <p style={{ fontSize: "1.1rem", lineHeight: 1.6, color: "var(--muted)", marginBottom: "24px" }}>
         Weight and balance isn&apos;t just tour company policy—it is federal aviation law under FAA Part 135. Understanding how helicopter weight math works can save you money, prevent check-in surprises, and even uncover seats on flights that appear sold out.
       </p>
+
+      <div
+        style={{
+          marginBottom: 32,
+          borderRadius: 16,
+          overflow: "hidden",
+          border: "1px solid var(--line-strong, #334155)",
+          aspectRatio: "16 / 9",
+          maxHeight: 320,
+          background: "#071626",
+        }}
+      >
+        <img
+          src="/images/tours/temsco-mendenhall-glacier-walk.jpg"
+          alt="AS350 AStar turbine helicopter landed on Mendenhall Glacier snow and blue ice in Juneau, Alaska"
+          width={1280}
+          height={853}
+          style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 50%", display: "block" }}
+        />
+      </div>
 
       {/* Interactive Helicopter Cabin Payload Simulator */}
       <section style={{ marginBottom: "40px" }}>

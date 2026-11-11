@@ -64,7 +64,7 @@ export default async function ShipWaitlistPage({ params }: ShipWaitlistPageProps
       "@type": "Organization",
       name: "Juneau Flight Deck",
       url: "https://juneauflightdeck.com",
-      logo: "https://juneauflightdeck.com/images/jfd-logo.png",
+      logo: "https://juneauflightdeck.com/favicon.svg",
     },
     areaServed: {
       "@type": "City",
@@ -98,6 +98,25 @@ export default async function ShipWaitlistPage({ params }: ShipWaitlistPageProps
 
         {/* Hero Header */}
         <div className="text-center max-w-3xl mx-auto mb-8">
+          <div
+            style={{
+              margin: "0 auto 20px",
+              borderRadius: 16,
+              overflow: "hidden",
+              border: "1px solid rgba(148, 163, 184, 0.25)",
+              aspectRatio: "16 / 9",
+              maxHeight: 280,
+              background: "#071626",
+            }}
+          >
+            <img
+              src="/images/portfolio/mendenhall-glacier-overview.webp"
+              alt="Mendenhall Glacier blue ice face, icebergs, and Coast Mountains in Juneau, Alaska"
+              width={1440}
+              height={900}
+              style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 48%", display: "block" }}
+            />
+          </div>
           <div className="inline-flex items-center gap-2 bg-sky-500/10 border border-sky-500/30 rounded-full px-3.5 py-1 text-xs font-semibold text-sky-300 uppercase tracking-wider mb-3">
             <span>⚓ {ship.cruiseLine}</span>
             <span>•</span>

@@ -31,8 +31,8 @@ export default function PlantationHistoryFocusGuide() {
           <div className="overflow-hidden border border-[#333] bg-[#1a1a1a]">
             <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#111]">
               <img
-                src="https://upload.wikimedia.org/wikipedia/commons/3/30/The_Big_House_-_Whitney_Plantation%2C_Louisiana.jpg"
-                alt="Whitney Plantation historic grounds and Big House in Wallace, Louisiana"
+                src="/images/portfolio/whitney-plantation.webp"
+                alt="Whitney Plantation historic grounds and museum exhibits in Wallace, Louisiana"
                 className="h-full w-full object-cover"
                 loading="lazy"
               />

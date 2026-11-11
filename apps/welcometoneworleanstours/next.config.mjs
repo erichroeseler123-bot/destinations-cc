@@ -3,23 +3,25 @@ import { fileURLToPath } from "node:url";
 
 const appRoot = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(appRoot, "../..");
+const effectiveRoot = process.env.DCC_TURBOPACK_ROOT?.trim() || repoRoot;
 
 /** @type {import('next').NextConfig} */
 // Stage 2 Machine Contract Pilot Release
 const nextConfig = {
-  outputFileTracingRoot: repoRoot,
+  outputFileTracingRoot: effectiveRoot,
   experimental: {
     externalDir: true,
   },
   turbopack: {
-    root: repoRoot,
+    root: effectiveRoot,
   },
   typescript: {
     ignoreBuildErrors: true,
   },
   images: {
     formats: ["image/webp"],
-    qualities: [15, 30, 45, 55, 75],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1440, 1600, 1920],
+    qualities: [15, 30, 45, 55, 75, 80, 82],
     remotePatterns: [
       {
         protocol: "https",

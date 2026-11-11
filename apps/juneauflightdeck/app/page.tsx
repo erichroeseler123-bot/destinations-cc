@@ -130,8 +130,9 @@ export default async function HomePage({
       checkoutProcessor: "Checkout via Viator (Worry-Free Shore Excursion §20)",
       weatherRule: "100% refund if low clouds or winds cancel flight operations.",
       imageSrc: "/images/tours/coastal-icefield-landing.jpg",
-      imageAlt: "Aerial panorama of Juneau Icefield crevasses and glacier icefalls",
-      photoCredit: null,
+      imageAlt: "Herbert Glacier blue icefall and Coast Mountains in the Juneau Icefield, Alaska",
+      imagePosition: "50% 48%",
+      photoCredit: "Photo: Gillfoto / Wikimedia Commons (CC BY-SA 4.0)",
       ctaLabel: "Check availability →",
       ctaHref: coastalViatorHref,
       isExternal: true,
@@ -153,6 +154,7 @@ export default async function HomePage({
       weatherRule: "Full refund on operator weather cancellations; 48h advance change window.",
       imageSrc: "/images/tours/temsco-mendenhall-glacier-walk.jpg",
       imageAlt: "Helicopter landed on Mendenhall Glacier blue ice near Juneau, Alaska",
+      imagePosition: "50% 50%",
       photoCredit: "Photo: Robert Raines / Wikimedia Commons (CC BY-SA 2.0)",
       ctaLabel: "Check availability →",
       ctaHref: temscoDirectHref,
@@ -174,8 +176,9 @@ export default async function HomePage({
       checkoutProcessor: "Human Concierge Review → Official Operator Link",
       weatherRule: "High-elevation snow camp requires clear upper ceilings; 100% weather refund.",
       imageSrc: "/images/tours/temsco-glacier-dog-sledding.jpg",
-      imageAlt: "Alaskan husky dog sled team and musher on a Juneau glacier snowfield",
-      photoCredit: null,
+      imageAlt: "Alaskan husky sled dog team harnessed on an Alaska mountain snowfield at alpenglow",
+      imagePosition: "55% 62%",
+      photoCredit: "Photo: National Park Service (Public Domain)",
       ctaLabel: "Request this flight ↓",
       ctaHref: "#concierge-request",
       isExternal: false,
@@ -196,8 +199,9 @@ export default async function HomePage({
       checkoutProcessor: "Direct Operator Checkout (NorthStar Trekking)",
       weatherRule: "All boots, crampons & rain gear included; full refund if weather cancels.",
       imageSrc: "/images/tours/northstar-glacier-ice-trek.jpg",
-      imageAlt: "Guided mountaineering trek across blue glacier ice near Juneau",
-      photoCredit: null,
+      imageAlt: "Guided glacier hiker with crampons and trekking poles exploring sculpted blue glacier ice in Alaska",
+      imagePosition: "50% 42%",
+      photoCredit: "Photo: National Park Service, Alaska Region (Public Domain)",
       ctaLabel: "Check availability →",
       ctaHref: northStarDirectHref,
       isExternal: true,
@@ -209,8 +213,8 @@ export default async function HomePage({
       {/* SECTION 2: Strong Destination Hero with One Primary Action */}
       <section className={styles.hero} aria-labelledby="jfd-hero-heading">
         <Image
-          src="/images/tours/temsco-mendenhall-glacier-walk.jpg"
-          alt="Helicopter landed on ancient blue glacier ice beneath coastal peaks in Juneau, Alaska"
+          src="/images/juneau-helicopter-hero.jpg"
+          alt="Flightseeing helicopter soaring above an expansive Alaska glacier valley and snow-capped peaks"
           fill
           priority
           sizes="100vw"
@@ -278,7 +282,7 @@ export default async function HomePage({
           </aside>
         </div>
         <span className={styles.heroPhotoCredit}>
-          Photo: Robert Raines / Wikimedia Commons (CC BY-SA 2.0)
+          Photo: Adamcain62 / Wikimedia Commons (CC BY-SA 4.0)
         </span>
       </section>
 
@@ -366,8 +370,11 @@ export default async function HomePage({
                   <img
                     src={flight.imageSrc}
                     alt={flight.imageAlt}
+                    width={1440}
+                    height={900}
                     loading="lazy"
                     className={styles.flightImage}
+                    style={{ objectPosition: flight.imagePosition }}
                   />
                   <span className={styles.flightTypeBadge}>{flight.whatItIs}</span>
                   <span className={styles.flightOperatorPill}>{flight.operator}</span>

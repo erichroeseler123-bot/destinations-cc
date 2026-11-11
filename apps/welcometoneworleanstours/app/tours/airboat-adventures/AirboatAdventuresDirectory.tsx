@@ -77,7 +77,7 @@ const FEATURED_AIRBOAT_TOURS: AirboatTour[] = [
     transportation: "Roundtrip French Quarter / Downtown Hotel Pickup Available",
     cancellationText: "Free cancellation up to 24 hours before departure",
     cancellationType: "standard_24h",
-    image: "/images/travel-markets/new-orleans/airboat-swamp.png",
+    image: "/images/portfolio/louisiana-airboat-marsh.webp",
     editorialSummary:
       "For travelers seeking the most thrilling and personal swamp encounter. Smaller hulls allow sharper turns, faster acceleration, and access to narrow cypress trails where larger boats cannot fit. With only 6 to 10 passengers on board, every guest gets direct interaction with the captain and prime 360-degree photography angles.",
     highlights: [
@@ -107,7 +107,7 @@ const FEATURED_AIRBOAT_TOURS: AirboatTour[] = [
     transportation: "Self-Drive (Private Transport Inquire Upon Request)",
     cancellationText: "Free cancellation up to 24 hours before departure",
     cancellationType: "standard_24h",
-    image: "/images/travel-markets/new-orleans/small-group-airboat.png",
+    image: "/images/portfolio/bayou-alligator-tour.webp",
     editorialSummary:
       "Reserve an entire high-speed airboat exclusively for your family, private travel party, or VIP group. Tailor the cruising speed, focus on serious wildlife photography, or linger at alligator habitats with undivided attention from a Coast Guard-certified Cajun captain. Includes private dock check-in and hearing protection for all riders.",
     highlights: [

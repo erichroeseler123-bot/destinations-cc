@@ -42,11 +42,83 @@ function toursHref(query: string): string {
   return `/tours?q=${encodeURIComponent(query)}`;
 }
 
+const PORT_HERO_IMAGES: Record<string, { src: string; alt: string }> = {
+  juneau: {
+    src: "/images/authority/ports/juneau/hero.webp",
+    alt: "Mendenhall Glacier and mountain coastline near Juneau Cruise Port, Alaska",
+  },
+  skagway: {
+    src: "/images/authority/ports/skagway/hero.webp",
+    alt: "Skagway cruise harbor and White Pass mountain corridor in Alaska",
+  },
+  ketchikan: {
+    src: "/images/authority/ports/ketchikan/hero.webp",
+    alt: "Ketchikan cruise waterfront and Tongass Narrows in Alaska",
+  },
+  "icy-strait-point": {
+    src: "/images/travel-markets/last-frontier/icy-strait-whale-watching-boats.jpg",
+    alt: "Whale-watching vessels in Port Frederick near Icy Strait Point, Hoonah, Alaska",
+  },
+  sitka: {
+    src: "/images/travel-markets/last-frontier/sitka-harbor.jpg",
+    alt: "Sitka Sound harbor and coastal mountains in Sitka, Alaska",
+  },
+  haines: {
+    src: "/images/travel-markets/last-frontier/haines-chilkoot-lake.jpg",
+    alt: "Chilkoot Lake and Lynn Canal mountains near Haines, Alaska",
+  },
+  seward: {
+    src: "/images/travel-markets/last-frontier/seward-kenai-fjords.jpg",
+    alt: "Resurrection Bay and Kenai Fjords coastline at Seward Cruise Port, Alaska",
+  },
+  whittier: {
+    src: "/images/travel-markets/last-frontier/whittier-prince-william-sound-glaciers.jpg",
+    alt: "Tidewater glaciers in Prince William Sound near Whittier, Alaska",
+  },
+  cozumel: {
+    src: "/images/travel-markets/cozumel/cozumel-cruise-terminal.jpg",
+    alt: "Cruise ship terminal pier and clear Caribbean reef water in Cozumel, Mexico",
+  },
+  "key-west": {
+    src: "/images/travel-markets/key-west/key-west-cruise-port.jpg",
+    alt: "Key West harbor waterfront and cruise pier in the Florida Keys",
+  },
+  nassau: {
+    src: "/images/travel-markets/nassau/prince-george-wharf-cruise-port.jpg",
+    alt: "Cruise ships berthed at Prince George Wharf in Nassau, Bahamas",
+  },
+  "port-canaveral": {
+    src: "/images/travel-markets/port-canaveral/port-canaveral-cruise-ship.jpg",
+    alt: "Cruise ship departing Port Canaveral along Florida's Space Coast",
+  },
+  "port-everglades": {
+    src: "/images/travel-markets/port-everglades/port-everglades-cruise-ship.jpg",
+    alt: "Cruise ship berthed at Port Everglades in Fort Lauderdale, Florida",
+  },
+  "fort-lauderdale": {
+    src: "/images/travel-markets/port-everglades/port-everglades-cruise-ship.jpg",
+    alt: "Cruise ship berthed at Port Everglades in Fort Lauderdale, Florida",
+  },
+  miami: {
+    src: "/images/travel-markets/portmiami/portmiami-cruise-ship.jpg",
+    alt: "Cruise ship berthed along Biscayne Bay at PortMiami, Florida",
+  },
+  portmiami: {
+    src: "/images/travel-markets/portmiami/portmiami-cruise-ship.jpg",
+    alt: "Cruise ship berthed along Biscayne Bay at PortMiami, Florida",
+  },
+  "new-orleans": {
+    src: "/images/travel-markets/new-orleans/steamboat-natchez.jpg",
+    alt: "Mississippi Riverfront port corridor and riverboat in New Orleans, Louisiana",
+  },
+};
+
 export default function PortAuthorityTemplate({
   port,
   config,
 }: PortAuthorityTemplateProps) {
   const plainPortName = port.name.replace(/^Port of\s+/i, "");
+  const portHeroImage = PORT_HERO_IMAGES[port.slug] || null;
   const region = port.area || port.region || "Cruise region";
   const country = formatCountry(port.country);
   const excursionBrowseHref =
@@ -58,7 +130,18 @@ export default function PortAuthorityTemplate({
 
   return (
     <main className="max-w-6xl mx-auto px-6 py-14 space-y-10">
-      <header className="rounded-3xl border border-cyan-400/20 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.18),transparent_40%),linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] p-8 shadow-[0_18px_70px_rgba(0,0,0,0.35)]">
+      <header className="overflow-hidden rounded-3xl border border-cyan-400/20 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.18),transparent_40%),linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] shadow-[0_18px_70px_rgba(0,0,0,0.35)]">
+        {portHeroImage ? (
+          <img
+            src={portHeroImage.src}
+            alt={portHeroImage.alt}
+            width={1400}
+            height={800}
+            loading="eager"
+            className="h-56 w-full object-cover object-center border-b border-white/10 sm:h-72"
+          />
+        ) : null}
+        <div className="p-8">
         <div className="max-w-4xl space-y-4">
           <p className="text-xs uppercase tracking-[0.22em] text-cyan-300">
             {config.isFallback ? "Port Reference · Sailing Fit Unverified" : "Port Authority Node"}
@@ -91,6 +174,7 @@ export default function PortAuthorityTemplate({
               </span>
             ) : null}
           </div>
+        </div>
         </div>
       </header>
 

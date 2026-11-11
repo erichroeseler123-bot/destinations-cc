@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAllAlaskaShips, getShipPortPair, getTrackedTourUrl } from "@/lib/alaska-ships";
+import { matchCatalogExcursion } from "@/lib/affiliate/catalog";
+import { HERO_IMAGE, PORT_IMAGES } from "@/lib/images";
 import { TrustDisclosure } from "@/components/TrustDisclosure";
 import { buildAddToCruisePromenadeUrl } from "../../../../../../lib/dcc/shared/addToCruisePromenadeUrl";
 
@@ -135,15 +137,29 @@ export default async function ShipPortExcursionsPage({ params }: ShipPortRoutePr
       {/* Hero Section */}
       <section className="hero">
         <div className="shell">
-          <p className="eyebrow">
-            <Link href="/cruise-ships" style={{ color: "inherit", textDecoration: "none" }}>Cruise Ships</Link> /{" "}
-            <Link href={`/cruise-ships/${ship.slug}`} style={{ color: "inherit", textDecoration: "none" }}>{ship.name}</Link> /{" "}
-            {port.portName}
-          </p>
-          <h1>Best {port.portName} Shore Excursions from {ship.name}</h1>
-          <p className="lead">
-            Passengers sailing on the <strong>{ship.name}</strong> ({ship.cruiseLine}) have a dedicated port day in {port.portName}. Because port hours, dock assignments, and transit shuttles vary by ship, choosing excursions that match your vessel’s schedule ensures a smooth, worry-free day in Alaska.
-          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 32, alignItems: "center" }}>
+            <div>
+              <p className="eyebrow">
+                <Link href="/cruise-ships" style={{ color: "inherit", textDecoration: "none" }}>Cruise Ships</Link> /{" "}
+                <Link href={`/cruise-ships/${ship.slug}`} style={{ color: "inherit", textDecoration: "none" }}>{ship.name}</Link> /{" "}
+                {port.portName}
+              </p>
+              <h1>Best {port.portName} Shore Excursions from {ship.name}</h1>
+              <p className="lead">
+                Passengers sailing on the <strong>{ship.name}</strong> ({ship.cruiseLine}) have a dedicated port day in {port.portName}. Because port hours, dock assignments, and transit shuttles vary by ship, choosing excursions that match your vessel’s schedule ensures a smooth, worry-free day in Alaska.
+              </p>
+            </div>
+            <div style={{ borderRadius: 14, overflow: "hidden", border: "1px solid rgba(255,255,255,0.22)", aspectRatio: "16 / 10", background: "#102b34" }}>
+              <img
+                src={PORT_IMAGES[port.portSlug]?.url || "/images/portfolio/cruise-fleet-hero.webp"}
+                alt={PORT_IMAGES[port.portSlug]?.alt || `${port.portName} shore excursions for ${ship.name}`}
+                width={1440}
+                height={900}
+                loading="eager"
+                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+              />
+            </div>
+          </div>
 
           {/* Quick Ship Intel Box */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12, marginTop: 24, background: "rgba(255,255,255,0.12)", backdropFilter: "blur(6px)", padding: 18, borderRadius: 10, border: "1px solid rgba(255,255,255,0.2)" }}>
@@ -181,6 +197,19 @@ export default async function ShipPortExcursionsPage({ params }: ShipPortRoutePr
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 24 }}>
             {port.sampleTours.map((tour, idx) => {
               const trackedBookingUrl = getTrackedTourUrl(tour.title, port.portName, ship.slug);
+              const isCrabVessel = /Bering Sea Crab/i.test(tour.title);
+              const isHeliDogsled = /Dog Sledding & Helicopter/i.test(tour.title);
+              const matchedCatalog = matchCatalogExcursion(port.portSlug, tour.title, tour.activityType);
+              const tourImgUrl = isCrabVessel
+                ? "/images/portfolio/ketchikan-fishing-vessel.webp"
+                : isHeliDogsled
+                  ? "/images/alaska/glacier-flightseeing.jpg"
+                  : matchedCatalog?.permittedImages[0]?.url || PORT_IMAGES[port.portSlug]?.url || HERO_IMAGE.url;
+              const tourImgAlt = isCrabVessel
+                ? "Commercial fishing vessel in Ketchikan harbor waters"
+                : isHeliDogsled
+                  ? "Helicopter flightseeing above the Juneau Icefield"
+                  : matchedCatalog?.permittedImages[0]?.caption || tour.title;
 
               return (
                 <div
@@ -197,6 +226,16 @@ export default async function ShipPortExcursionsPage({ params }: ShipPortRoutePr
                   }}
                 >
                   <div>
+                    <div style={{ borderRadius: 10, overflow: "hidden", aspectRatio: "16 / 10", marginBottom: 14, background: "#eef5f6" }}>
+                      <img
+                        src={tourImgUrl}
+                        alt={tourImgAlt}
+                        width={640}
+                        height={400}
+                        loading="lazy"
+                        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                      />
+                    </div>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
                       <h3 style={{ fontSize: 20, margin: 0, color: "var(--deep)", lineHeight: 1.3 }}>{tour.title}</h3>
                       <span style={{ fontSize: 12, fontWeight: 700, background: "var(--ice)", color: "var(--forest)", padding: "3px 8px", borderRadius: 6, whiteSpace: "nowrap" }}>

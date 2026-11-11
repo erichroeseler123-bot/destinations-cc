@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { HERO_IMAGE } from "@/lib/images";
 import { TrustDisclosure } from "@/components/TrustDisclosure";
 
 export const metadata: Metadata = {
@@ -11,7 +12,17 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <main className="shell" style={{ paddingTop: 48, paddingBottom: 64 }}>
-      <p className="eyebrow">About &amp; Transparency</p>
+      <div style={{ borderRadius: 16, overflow: "hidden", border: "1px solid var(--line)", aspectRatio: "21 / 9", maxHeight: 300, marginBottom: 28, background: "#eef5f6" }}>
+        <img
+          src={HERO_IMAGE.url}
+          alt={HERO_IMAGE.alt}
+          width={1600}
+          height={900}
+          loading="eager"
+          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+        />
+      </div>
+      <p className="eyebrow" style={{ color: "var(--muted)" }}>About &amp; Transparency</p>
       <h1>Independent Alaska shore-excursion planning.</h1>
       <p className="lead" style={{ maxWidth: 820 }}>
         Last Frontier Shore Excursions is an independent Alaska cruise-excursion planning and comparison engine. We help cruise travelers compare experience types, port-day fit, duration, weather exposure, transportation, and return margins before continuing to the booking partner or tour operator that controls the reservation.

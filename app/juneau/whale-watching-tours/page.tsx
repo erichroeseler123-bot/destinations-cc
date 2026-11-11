@@ -187,7 +187,16 @@ export default async function JuneauWhaleWatchingToursPage({
     <main className="min-h-screen bg-[#05070b] px-6 py-10 text-white md:py-14">
       <JsonLdGraph />
       <div className="mx-auto max-w-5xl space-y-6">
-        <header className="rounded-[2.2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(245,179,75,0.12),transparent_28%),linear-gradient(180deg,#0d1118_0%,#06080d_100%)] p-8 md:p-10">
+        <header className="overflow-hidden rounded-[2.2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(245,179,75,0.12),transparent_28%),linear-gradient(180deg,#0d1118_0%,#06080d_100%)]">
+          <img
+            src="/images/travel-markets/juneau/alaska-whale-watching.jpg"
+            alt="Humpback whale watching in Auke Bay and Stephens Passage near Juneau, Alaska"
+            width={1280}
+            height={853}
+            loading="eager"
+            className="h-52 w-full object-cover object-center border-b border-white/10 sm:h-68"
+          />
+          <div className="p-8 md:p-10">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-[11px] uppercase tracking-[0.3em] text-[#f5b34b]">
               DCC Juneau Whale Command · Whale Deck Live
@@ -231,6 +240,7 @@ export default async function JuneauWhaleWatchingToursPage({
             >
               My flight was canceled → Open Backup Flow
             </a>
+          </div>
           </div>
         </header>
 

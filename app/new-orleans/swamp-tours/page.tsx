@@ -255,7 +255,16 @@ export default async function NewOrleansSwampToursPage(props: {
           defaultShipName={carriedContext.payload.shipSlug || null}
           defaultAllAboard={carriedAllAboard || null}
         />
-        <header className="rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(125,211,252,0.12),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(74,222,128,0.10),transparent_24%),linear-gradient(180deg,rgba(9,17,24,0.97),rgba(5,8,22,0.99))] p-8 shadow-[0_28px_90px_rgba(0,0,0,0.45)] md:p-10">
+        <header className="overflow-hidden rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(125,211,252,0.12),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(74,222,128,0.10),transparent_24%),linear-gradient(180deg,rgba(9,17,24,0.97),rgba(5,8,22,0.99))] shadow-[0_28px_90px_rgba(0,0,0,0.45)]">
+          <img
+            src="/images/portfolio/jean-lafitte-bayou.webp"
+            alt="Jean Lafitte Barataria Preserve cypress bayou and marsh near New Orleans, Louisiana"
+            width={1280}
+            height={800}
+            loading="eager"
+            className="h-52 w-full border-b border-white/10 object-cover object-center sm:h-68"
+          />
+          <div className="p-8 md:p-10">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-xs uppercase tracking-[0.24em] text-cyan-300">DCC swamp-tour lane</p>
             <div className="rounded-full border border-cyan-300/20 bg-white/5 px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-cyan-100">
@@ -316,6 +325,7 @@ export default async function NewOrleansSwampToursPage(props: {
               {carriedAllAboard && <span>· All-Aboard: {carriedAllAboard}</span>}
             </div>
           )}
+          </div>
         </header>
 
         <DccConciergeWidget

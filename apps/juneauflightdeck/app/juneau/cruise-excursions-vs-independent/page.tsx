@@ -77,6 +77,26 @@ export default function CruiseExcursionsVsIndependentPage() {
           </p>
         </div>
 
+        <div
+          style={{
+            marginBottom: 28,
+            borderRadius: 18,
+            overflow: "hidden",
+            border: "1px solid rgba(148, 163, 184, 0.25)",
+            aspectRatio: "16 / 9",
+            maxHeight: 340,
+            background: "#071626",
+          }}
+        >
+          <img
+            src="/images/juneau-helicopter-hero.jpg"
+            alt="Flightseeing helicopter over an Alaska glacier valley surrounded by snow-capped Coast Mountains"
+            width={1440}
+            height={900}
+            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 46%", display: "block" }}
+          />
+        </div>
+
         {/* The Core Truth Highlight */}
         <div className="p-6 md:p-8 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-200 mb-10">
           <h2 className="text-xl font-bold text-white mb-2">The Key Comparison Most Cruise Passengers Miss</h2>

@@ -178,8 +178,16 @@ export default async function VegasPage() {
       <JsonLd />
       <div className="mx-auto max-w-6xl px-6 py-12 md:py-16 space-y-8 md:space-y-10">
         <TravelReferenceExperience node={vegasReference} />
-        <header className="overflow-hidden rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_right,rgba(249,115,22,0.22),transparent_35%),linear-gradient(180deg,rgba(24,24,27,0.92),rgba(9,9,11,0.96))] p-6 md:p-8 shadow-[0_28px_80px_rgba(0,0,0,0.45)]">
-          <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
+        <header className="overflow-hidden rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_right,rgba(249,115,22,0.22),transparent_35%),linear-gradient(180deg,rgba(24,24,27,0.92),rgba(9,9,11,0.96))] shadow-[0_28px_80px_rgba(0,0,0,0.45)]">
+          <img
+            src="/images/travel-markets/las-vegas/las-vegas-strip-night.jpg"
+            alt="Las Vegas Strip resort corridor illuminated at night"
+            width={1280}
+            height={853}
+            loading="eager"
+            className="h-56 w-full object-cover object-center border-b border-white/10 sm:h-72"
+          />
+          <div className="p-6 md:p-8 grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
             <div className="space-y-5">
               <p className="text-xs uppercase tracking-[0.26em] text-amber-300">Las Vegas Guide</p>
               <div className="space-y-3">

@@ -23,6 +23,16 @@ export default function OperatorsDirectoryPage() {
       {/* Hero: Operator Partnership Offer & Worldwide Eligibility */}
       <section className="border-b border-white/10 bg-gradient-to-b from-cyan-950/20 via-black/40 to-transparent">
         <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-20">
+          <div className="mb-8 overflow-hidden rounded-3xl border border-white/12 bg-black/40 shadow-2xl">
+            <img
+              src="/images/portfolio/dcc-hero-corridor.webp"
+              alt="Mountain highway corridor representing Destination Command Center direct operator partnerships"
+              width={1440}
+              height={810}
+              loading="eager"
+              className="h-48 w-full object-cover object-center sm:h-64"
+            />
+          </div>
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-cyan-200">
               For Tour &amp; Transportation Operators Worldwide

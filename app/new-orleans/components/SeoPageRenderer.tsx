@@ -16,12 +16,32 @@ export default function SeoPageRenderer({ page }: { page: SeoPageRecord }) {
   const products = page.liveProductIds.map(id => getProductById(id)).filter(Boolean);
   const relatedPages = (page.relatedPageIds || []).map(id => SEO_PAGES[id]).filter(Boolean);
 
+  const heroBanner = page.publicRoute.includes("swamp")
+    ? { src: "/images/portfolio/nola-covered-swamp-boat.webp", alt: "Covered swamp tour boat on a Louisiana bayou" }
+    : page.publicRoute.includes("plantation")
+      ? { src: "/images/wikimedia/originals/oak-alley-front.jpg", alt: "Oak Alley Plantation live oak canopy on River Road" }
+      : page.publicRoute.includes("ghost") || page.publicRoute.includes("cemetery") || page.publicRoute.includes("haunted")
+        ? { src: "/images/wikimedia/originals/french-quarter-night.jpg", alt: "Historic French Quarter street at night in New Orleans" }
+        : page.publicRoute.includes("food") || page.publicRoute.includes("cooking") || page.publicRoute.includes("cocktail")
+          ? { src: "/images/portfolio/classic-cocktails-nola.webp", alt: "Classic French Quarter cocktails and culinary heritage in New Orleans" }
+          : page.publicRoute.includes("river") || page.publicRoute.includes("jazz")
+            ? { src: "/images/travel-markets/new-orleans/steamboat-natchez.jpg", alt: "Steamboat Natchez on the Mississippi River in New Orleans" }
+            : { src: "/images/portfolio/royal-street-balconies.webp", alt: "Historic Royal Street wrought-iron balconies in the New Orleans French Quarter" };
+
   const renderHero = () => (
-    <header className="p-8 md:p-16 lg:p-24 text-center border-b border-[#2a2a2a] bg-[#1a1a1a]">
+    <header className="relative isolate overflow-hidden p-8 md:p-16 lg:p-24 text-center border-b border-[#2a2a2a] bg-[#1a1a1a]">
+      <img
+        src={heroBanner.src}
+        alt={heroBanner.alt}
+        width={1440}
+        height={900}
+        className="absolute inset-0 -z-20 h-full w-full object-cover opacity-35"
+      />
+      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-[#12100e]/65 via-[#151310]/82 to-[#151515]" />
       <div className="max-w-3xl mx-auto">
         {page.heroEyebrow && <span className="block text-xs font-bold uppercase tracking-widest mb-4 text-[#d4af37]">{page.heroEyebrow}</span>}
         <h1 className="text-4xl md:text-5xl font-serif mb-6 leading-tight text-[#fdfbf7]">{page.heroTitle}</h1>
-        {page.heroSubtitle && <p className="text-xl font-light text-[#aaaaaa]">{page.heroSubtitle}</p>}
+        {page.heroSubtitle && <p className="text-xl font-light text-[#dad4ca]">{page.heroSubtitle}</p>}
       </div>
     </header>
   );

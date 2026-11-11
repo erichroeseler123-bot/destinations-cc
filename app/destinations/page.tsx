@@ -25,6 +25,24 @@ export default function DestinationsIndexPage() {
   const promotedHubs = listPromotedRegionalHubs();
   const allHubs = listRegionalHubs();
   const telemetryHubs = allHubs.filter((h) => h.referenceNodes.length === 0);
+  const hubImageBySlug: Record<string, { src: string; alt: string }> = {
+    colorado: {
+      src: "/images/portfolio/colorado-i70-corridor.webp",
+      alt: "Interstate 70 mountain corridor and Rockies peaks in Colorado",
+    },
+    alaska: {
+      src: "/images/portfolio/juneau-mendenhall-hero.webp",
+      alt: "Mendenhall Glacier and Coast Mountains in Juneau, Alaska",
+    },
+    louisiana: {
+      src: "/images/portfolio/royal-street-balconies.webp",
+      alt: "Historic Royal Street wrought-iron balconies in the French Quarter, New Orleans",
+    },
+    nevada: {
+      src: "/images/travel-markets/las-vegas/las-vegas-strip-night.jpg",
+      alt: "Las Vegas Strip resort corridor illuminated at night in Nevada",
+    },
+  };
 
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
@@ -52,21 +70,33 @@ export default function DestinationsIndexPage() {
       />
 
       <div className="mx-auto max-w-6xl px-4 sm:px-6 py-12 space-y-10">
-        <header className="space-y-3 max-w-3xl">
-          <span className="rounded-full border border-cyan-500/40 bg-cyan-500/15 px-3 py-1 text-xs font-bold uppercase tracking-wider text-cyan-300">
-            Manifest-Driven Regional Topic Clusters
-          </span>
-          <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white">
-            Regional Destination Hubs
-          </h1>
-          <p className="text-sm md:text-base text-zinc-300 leading-relaxed">
-            Every state hub below is compiled automatically from DCC&apos;s{" "}
-            <code className="text-cyan-300">PUBLICATION_MANIFEST</code>,
-            grouping authoritative travel reference guides, side-by-side transit
-            comparison tables, venues, cruise ports, coordinate telemetry pages,
-            and granular <code className="text-indigo-300">/llms.txt</code> AI
-            sub-manifests.
-          </p>
+        <header className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
+          <div className="space-y-3">
+            <span className="inline-block rounded-full border border-cyan-500/40 bg-cyan-500/15 px-3 py-1 text-xs font-bold uppercase tracking-wider text-cyan-300">
+              Manifest-Driven Regional Topic Clusters
+            </span>
+            <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white">
+              Regional Destination Hubs
+            </h1>
+            <p className="text-sm md:text-base text-zinc-300 leading-relaxed">
+              Every state hub below is compiled automatically from DCC&apos;s{" "}
+              <code className="text-cyan-300">PUBLICATION_MANIFEST</code>,
+              grouping authoritative travel reference guides, side-by-side transit
+              comparison tables, venues, cruise ports, coordinate telemetry pages,
+              and granular <code className="text-indigo-300">/llms.txt</code> AI
+              sub-manifests.
+            </p>
+          </div>
+          <div className="overflow-hidden rounded-3xl border border-white/12 bg-black/40 shadow-2xl">
+            <img
+              src="/images/portfolio/dcc-hero-corridor.webp"
+              alt="Alpine highway corridor representing Destination Command Center regional hubs"
+              width={1440}
+              height={810}
+              loading="eager"
+              className="aspect-[16/10] w-full object-cover"
+            />
+          </div>
         </header>
 
         <section className="space-y-4">
@@ -74,12 +104,25 @@ export default function DestinationsIndexPage() {
             Flagship Promoted State Hubs ({promotedHubs.length})
           </h2>
           <div className="grid gap-5 md:grid-cols-2">
-            {promotedHubs.map((hub) => (
+            {promotedHubs.map((hub) => {
+              const hubPhoto = hubImageBySlug[hub.slug];
+              return (
               <article
                 key={hub.slug}
-                className="rounded-3xl border border-cyan-500/30 bg-zinc-900/80 p-6 flex flex-col justify-between space-y-4 shadow-lg"
+                className="overflow-hidden rounded-3xl border border-cyan-500/30 bg-zinc-900/80 flex flex-col justify-between shadow-lg"
               >
-                <div className="space-y-2.5">
+                <div>
+                  {hubPhoto ? (
+                    <img
+                      src={hubPhoto.src}
+                      alt={hubPhoto.alt}
+                      width={1280}
+                      height={800}
+                      loading="lazy"
+                      className="h-44 w-full object-cover border-b border-white/10"
+                    />
+                  ) : null}
+                  <div className="p-6 pb-0 space-y-2.5">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <span className="rounded-full border border-cyan-400/40 bg-cyan-500/15 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-cyan-200">
                       {hub.stateCode}
@@ -102,10 +145,11 @@ export default function DestinationsIndexPage() {
                   <p className="text-xs md:text-sm text-zinc-300 leading-relaxed">
                     {hub.heroSummary}
                   </p>
+                  </div>
                 </div>
 
-                <div className="space-y-3 pt-3 border-t border-white/10">
-                  <div className="flex flex-wrap gap-2 text-[11px] text-zinc-400">
+                <div className="p-6 pt-4 space-y-3">
+                  <div className="pt-3 border-t border-white/10 flex flex-wrap gap-2 text-[11px] text-zinc-400">
                     <span>
                       <strong className="text-white">
                         {hub.referenceNodes.length}
@@ -139,7 +183,8 @@ export default function DestinationsIndexPage() {
                   </Link>
                 </div>
               </article>
-            ))}
+              );
+            })}
           </div>
         </section>
 

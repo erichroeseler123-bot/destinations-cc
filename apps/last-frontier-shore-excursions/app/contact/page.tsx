@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { HERO_IMAGE } from "@/lib/images";
 import { LfseInquiryForm } from "@/components/LfseInquiryForm";
 import { TrustDisclosure } from "@/components/TrustDisclosure";
 
@@ -13,7 +14,17 @@ export const metadata: Metadata = {
 export default function ContactPage() {
   return (
     <main className="shell" style={{ paddingTop: 48, paddingBottom: 64 }}>
-      <p className="eyebrow">Concierge &amp; Port Window Desk</p>
+      <div style={{ borderRadius: 16, overflow: "hidden", border: "1px solid var(--line)", aspectRatio: "21 / 9", maxHeight: 300, marginBottom: 28, background: "#eef5f6" }}>
+        <img
+          src={HERO_IMAGE.url}
+          alt={HERO_IMAGE.alt}
+          width={1600}
+          height={900}
+          loading="eager"
+          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+        />
+      </div>
+      <p className="eyebrow" style={{ color: "var(--muted)" }}>Concierge &amp; Port Window Desk</p>
       <h1>Alaska Multi-Cabin &amp; Port Logistics Inquiry</h1>
       <p className="lead" style={{ maxWidth: 820 }}>
         Coordinating multiple cabins across Juneau, Skagway, Ketchikan, Sitka, or Icy Strait Point? Share your ship schedule and party size below for human planning guidance on dock shuttles, 45-minute all-aboard buffers, and verified excursion options.

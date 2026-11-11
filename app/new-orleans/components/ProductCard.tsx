@@ -124,7 +124,7 @@ export default function ProductCard({
         </div>
       ) : (
         <div className={visualStyles.productCardFallback}>
-          <div className="absolute inset-0 bg-[url('/noise.png')] opacity-20 mix-blend-overlay"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-[#231f1a] via-[#181512] to-[#110f0d] opacity-60"></div>
           <div className="w-12 h-[1px] bg-[#d4af37] mb-4"></div>
           <span className="font-serif text-[#fdfbf7] text-xl tracking-wide leading-tight">{product.title}</span>
           <div className="w-12 h-[1px] bg-[#d4af37] mt-4"></div>

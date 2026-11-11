@@ -18,6 +18,7 @@ import WikimediaImageCredit from "../../components/WikimediaImageCredit";
 import TourDetailAnalytics from "./TourDetailAnalytics";
 import RelatedTourLink from "./RelatedTourLink";
 import { resolveProductImage } from "../../lib/imageResolver";
+import { optimizedHeroImageUrl } from "../../lib/optimizedProductImage";
 import RecommendationCallout from "./RecommendationCallout";
 import { getRecommendation, CHOOSER_CATEGORIES, CHOOSER_PREFERENCES, CategoryId } from "../../help-me-choose/recommendationRules";
 import TourLogisticsSummary from "../../components/TourLogisticsSummary";
@@ -456,7 +457,15 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
       <TourDetailAnalytics productId={product.id} operatorId={product.companyShortname} />
       <main id="main-content">
         <section className={`${styles.hero} ${!resolvedImage ? styles.noImageHero : ""}`}>
-          {resolvedImage && <img src={resolvedImage.src} alt={resolvedImage.alt} className={styles.heroImage} />}
+          {resolvedImage && (
+            <img
+              src={optimizedHeroImageUrl(resolvedImage.src)}
+              alt={resolvedImage.alt}
+              width={1600}
+              height={900}
+              className={styles.heroImage}
+            />
+          )}
           <div className={styles.heroShade} />
           <div className={styles.heroInner}>
             <div className={styles.heroCopy}>

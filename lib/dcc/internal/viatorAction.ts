@@ -15,6 +15,7 @@ import { getViatorPolicy as getViatorIntegrationPolicy } from "@/lib/viator/poli
 import { normalizeViatorActionProduct } from "@/lib/viator/schema";
 import { getViatorClient } from "@/lib/viator/client";
 import { getCachedViatorDestinationRows } from "@/lib/viator/destinations";
+import { selectBestViatorVariant, upgradeViatorImageUrl } from "@/lib/viator/media";
 
 export type ViatorPlaceInput = {
   slug: string;
@@ -74,17 +75,15 @@ function extractLiveImageUrl(product: Record<string, unknown>): string | null {
     const row = asRecord(image);
     if (!row) continue;
     const variants = Array.isArray(row.variants) ? row.variants : [];
-    for (const variant of variants) {
-      const v = asRecord(variant);
-      const url = firstString(v?.url, v?.secureUrl);
-      if (url) return url;
-    }
+    const bestVariant = selectBestViatorVariant(variants);
+    if (bestVariant?.url) return bestVariant.url;
     const direct = firstString(row.url, row.secureUrl, row.src);
-    if (direct) return direct;
+    if (direct) return upgradeViatorImageUrl(direct) || direct;
   }
 
   const primaryImage = asRecord(product.primaryImage);
-  return firstString(primaryImage?.url, primaryImage?.secureUrl);
+  const primaryUrl = firstString(primaryImage?.url, primaryImage?.secureUrl);
+  return upgradeViatorImageUrl(primaryUrl);
 }
 
 function extractLiveDescription(product: Record<string, unknown>): string | null {

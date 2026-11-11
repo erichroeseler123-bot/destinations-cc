@@ -190,8 +190,8 @@ export default function PlantationVsSwampGuide() {
               <div>
                 <div className="relative aspect-[4/3] w-full overflow-hidden bg-[#201a14]">
                   <img
-                    src="https://upload.wikimedia.org/wikipedia/commons/3/30/The_Big_House_-_Whitney_Plantation%2C_Louisiana.jpg"
-                    alt="Whitney Plantation museum Big House and memorial grounds"
+                    src="/images/portfolio/whitney-plantation.webp"
+                    alt="Whitney Plantation museum exhibits and memorial grounds"
                     className="h-full w-full object-cover transition duration-500 hover:scale-105"
                     loading="lazy"
                   />
@@ -218,7 +218,7 @@ export default function PlantationVsSwampGuide() {
               <div>
                 <div className="relative aspect-[4/3] w-full overflow-hidden bg-[#201a14]">
                   <img
-                    src="/images/travel-markets/new-orleans/airboat-swamp.png"
+                    src="/images/portfolio/louisiana-airboat-marsh.webp"
                     alt="Airboat tour gliding across Louisiana bayou"
                     className="h-full w-full object-cover transition duration-500 hover:scale-105"
                     loading="lazy"
@@ -246,7 +246,7 @@ export default function PlantationVsSwampGuide() {
               <div>
                 <div className="relative aspect-[4/3] w-full overflow-hidden bg-[#201a14]">
                   <img
-                    src="/images/travel-markets/new-orleans/swamp-plantation-combo.png"
+                    src="/images/portfolio/nola-covered-swamp-boat.webp"
                     alt="Swamp boat cruise combined with Oak Alley Plantation tour"
                     className="h-full w-full object-cover transition duration-500 hover:scale-105"
                     loading="lazy"
@@ -363,8 +363,8 @@ export default function PlantationVsSwampGuide() {
             </h2>
             <div className="mb-6 overflow-hidden rounded-xl border border-[#e2d5c0]">
               <img
-                src="/images/travel-markets/new-orleans/swamp-plantation-combo.png"
-                alt="Swamp boat cruise and Oak Alley Plantation combination tour"
+                src="/images/wikimedia/originals/oak-alley-front.jpg"
+                alt="Oak Alley Plantation live oak canopy paired with a Manchac Swamp boat cruise"
                 className="aspect-[21/9] w-full object-cover"
                 loading="lazy"
               />

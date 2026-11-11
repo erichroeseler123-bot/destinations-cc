@@ -31,17 +31,21 @@ export default function HelicopterDispatchBoard({
   initialPassengerCount = null,
 }: HelicopterDispatchBoardProps) {
   const isSkagway = portSlug === 'skagway';
-  const showArrivalHero = sourcePage === '/' && !isSkagway;
+  const showArrivalHero =
+    sourcePage === '/' ||
+    sourcePage === '/helicopter' ||
+    sourcePage === '/juneau/helicopter' ||
+    sourcePage === '/skagway/helicopter';
 
   const defaultHeadline = isSkagway
-    ? 'Match Your Skagway Glacier Flight to Your Ship Schedule'
+    ? 'Skagway & Juneau Corridor Glacier Flight Planning'
     : 'Compare & Book Juneau Helicopter & Glacier Excursions';
 
   const defaultSubhead = isSkagway
-    ? 'Compare Skagway glacier helicopter operators, review ship-safe return buffers, and plan your weather backup.'
+    ? 'Planning an Inside Passage sailing calling at Skagway and Juneau? TEMSCO operates Skagway flights (Denver Glacier), while Coastal and NorthStar fly exclusively from Juneau. Compare corridor options and ship-safe return buffers below.'
     : SITE_DESCRIPTION;
 
-  const defaultPrimaryCta = isSkagway ? 'Compare Skagway Flights' : 'Find Your Tour';
+  const defaultPrimaryCta = isSkagway ? 'Compare Corridor Flights' : 'Find Your Tour';
 
   const finalHeadline = headline || defaultHeadline;
   const finalSubhead = subhead || defaultSubhead;
@@ -52,10 +56,32 @@ export default function HelicopterDispatchBoard({
       {/* 1. Concise Hero Section */}
       <section className={`jfd-concise-hero ${showArrivalHero ? arrivalStyles.hero : ''}`}>
         {showArrivalHero && <>
-          <Image src="/images/tours/temsco-mendenhall-glacier-walk.jpg" alt="A helicopter on the glacier beneath snow-covered Alaska mountains" fill priority sizes="100vw" className={arrivalStyles.photo} />
+          <Image
+            src={isSkagway ? '/images/portfolio/skagway-corridor.webp' : '/images/juneau-helicopter-hero.jpg'}
+            alt={
+              isSkagway
+                ? 'Historic Broadway Avenue false-front buildings beneath snow-capped peaks in Skagway, Alaska'
+                : 'Flightseeing helicopter soaring above an expansive Alaska glacier valley and snow-capped peaks'
+            }
+            fill
+            priority
+            sizes="100vw"
+            className={arrivalStyles.photo}
+          />
           <div className={arrivalStyles.scrim} />
-          <HelicopterArrival />
-          <a className={arrivalStyles.credit} href="https://commons.wikimedia.org/wiki/File:Helicopter,_Mendenhall_Glacier,_Alaska.jpg" target="_blank" rel="noopener noreferrer">Photo: Robert Raines · CC BY-SA 2.0</a>
+          {!isSkagway && <HelicopterArrival />}
+          <a
+            className={arrivalStyles.credit}
+            href={
+              isSkagway
+                ? 'https://commons.wikimedia.org/wiki/File:Broadway_looking_northeast,_Skagway,_Alaska.jpg'
+                : 'https://commons.wikimedia.org/wiki/File:Alaska_helicopter_ice.jpg'
+            }
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {isSkagway ? 'Photo: Jet Lowe · Public Domain' : 'Photo: Adamcain62 · CC BY-SA 4.0'}
+          </a>
         </>}
         <div className={showArrivalHero ? arrivalStyles.copy : undefined}>
         <div
@@ -124,15 +150,32 @@ export default function HelicopterDispatchBoard({
       </section>
 
       {/* Featured Flights & Real-Time Filter Toolbar */}
+      {isSkagway && (
+        <div
+          style={{
+            maxWidth: 1120,
+            margin: '20px auto 0',
+            padding: '14px 20px',
+            borderRadius: 14,
+            border: '1px solid rgba(125, 211, 252, 0.3)',
+            background: 'rgba(8, 28, 44, 0.85)',
+            color: '#e0f2fe',
+            fontSize: '0.9rem',
+            lineHeight: 1.55,
+          }}
+        >
+          <strong>Skagway vs. Juneau Corridor Note:</strong> In Skagway, commercial glacier helicopter landings and Denver Glacier dog sledding are operated by <strong>TEMSCO Helicopters</strong> from the Skagway Waterfront Heliport. The catalog below also shows Juneau Icefield departures (TEMSCO, Coastal Helicopters, and NorthStar Trekking) so multi-port Inside Passage travelers can compare both port stops side by side.
+        </div>
+      )}
       <div id="tours">
         <ViatorFeaturedTours
           initialDate={initialDate}
           initialPassengerCount={initialPassengerCount}
           showHeader={false}
-          headline={isSkagway ? "Skagway Glacier Helicopter Options" : "Juneau Glacier Helicopter Flights & Landings"}
+          headline={isSkagway ? "Juneau & Skagway Corridor Glacier Helicopter Reference" : "Juneau Glacier Helicopter Flights & Landings"}
           subhead={
             isSkagway
-              ? "Compare live helicopter tours in Skagway with Part 135 safety standards and free 24-hour cancellation."
+              ? "Compare Inside Passage glacier flights across Skagway (TEMSCO) and Juneau (TEMSCO, Coastal, NorthStar) with Part 135 safety standards."
               : "Explore Juneau glacier landings, dog sledding camps, and ice treks. Check current dates, prices, and terms on the selected booking page."
           }
         />
@@ -245,8 +288,8 @@ export default function HelicopterDispatchBoard({
                       }}
                     >
                       <Image
-                        src="https://cdn.filestackcontent.com/GyqI6elSXKklaQiP9ULd"
-                        alt="TEMSCO Mendenhall Glacier landing helicopter tour in Juneau, Alaska"
+                        src="/images/tours/temsco-mendenhall-glacier-walk.jpg"
+                        alt="TEMSCO helicopter landed on Mendenhall Glacier ice near Juneau, Alaska"
                         fill
                         sizes="72px"
                         style={{ objectFit: 'cover' }}
@@ -317,8 +360,8 @@ export default function HelicopterDispatchBoard({
                       }}
                     >
                       <Image
-                        src="https://cdn.filestackcontent.com/NPg1gKoCQu6ewj2mnmsQ"
-                        alt="Coastal Helicopters Juneau icefield landing excursion in Alaska"
+                        src="/images/tours/coastal-icefield-landing.jpg"
+                        alt="Herbert Glacier blue icefall in the Juneau Icefield, Alaska"
                         fill
                         sizes="72px"
                         style={{ objectFit: 'cover' }}
@@ -389,8 +432,8 @@ export default function HelicopterDispatchBoard({
                       }}
                     >
                       <Image
-                        src="https://cdn.filestackcontent.com/cOhoNqnERLmiIhpPY4bu"
-                        alt="NorthStar Trekking glacier ice trek and climb in Juneau, Alaska"
+                        src="/images/tours/northstar-glacier-ice-trek.jpg"
+                        alt="Guided glacier hiker in crampons exploring sculpted blue glacier ice in Alaska"
                         fill
                         sizes="72px"
                         style={{ objectFit: 'cover' }}

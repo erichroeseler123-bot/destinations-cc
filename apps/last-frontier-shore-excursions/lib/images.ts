@@ -6,8 +6,8 @@ export interface ImageAsset {
 
 export const HERO_IMAGE: ImageAsset = {
   url: "/images/alaska/inside-passage-hero-generated.png",
-  alt: "Panoramic vista of a grand tidewater glacier flowing into the tranquil waters of the Alaska Inside Passage framed by snow-capped peaks and coastal evergreen forests",
-  caption: "Inside Passage & Tidewater Glacier",
+  alt: "Sightseeing vessel cruising tranquil Alaska Inside Passage fjord waters framed by snow-dusted coastal peaks and evergreen forest",
+  caption: "Alaska Inside Passage Fjord Waters",
 };
 
 export const PORT_IMAGES: Record<string, ImageAsset> = {
@@ -17,7 +17,7 @@ export const PORT_IMAGES: Record<string, ImageAsset> = {
     caption: "Mendenhall Glacier, Juneau",
   },
   skagway: {
-    url: "/images/alaska/skagway-white-pass.jpg",
+    url: "/images/alaska/white-pass-train.jpg",
     alt: "White Pass and Yukon Route railway navigating rugged mountain pass in Skagway, Alaska",
     caption: "White Pass and Yukon Route, Skagway",
   },
@@ -60,14 +60,14 @@ export const ACTIVITY_IMAGES: Record<string, ImageAsset> = {
     caption: "Helicopter Glacier Landing, Juneau Icefield",
   },
   flightseeing: {
-    url: "/images/alaska/glacier-flightseeing.jpg",
-    alt: "Scenic flightseeing aircraft surveying glaciated mountain fjords",
-    caption: "Glacial Icefield Flightseeing, Southeast Alaska",
+    url: "/images/portfolio/alaska-floatplane.webp",
+    alt: "Alaska floatplane operating on scenic glacial fjord waters in Southeast Alaska",
+    caption: "Floatplane Flightseeing, Southeast Alaska",
   },
   "floatplane-excursions": {
-    url: "/images/alaska/glacier-flightseeing.jpg",
-    alt: "Alaska floatplane and alpine aerial flightseeing",
-    caption: "Floatplane Scenery, Misty Fjords",
+    url: "/images/portfolio/alaska-floatplane.webp",
+    alt: "Floatplane excursion moored in alpine fjord waters near Ketchikan, Alaska",
+    caption: "Floatplane Excursion, Misty Fjords",
   },
   "dog-sledding": {
     url: "/images/alaska/glacier-dog-sled.jpg",
@@ -80,9 +80,9 @@ export const ACTIVITY_IMAGES: Record<string, ImageAsset> = {
     caption: "White Pass and Yukon Route Train, Skagway",
   },
   "scenic-mountain-routes": {
-    url: "/images/alaska/skagway-white-pass.jpg",
-    alt: "Scenic mountain pass and highway climbing into the Klondike Alpine",
-    caption: "Klondike Highway and White Pass Summit",
+    url: "/images/alaska/white-pass-train.jpg",
+    alt: "White Pass narrow-gauge railway climbing rugged coastal mountains above Skagway, Alaska",
+    caption: "White Pass Mountain Corridor, Skagway",
   },
   "excursions-by-duration-and-ship-window": {
     url: "/images/alaska/scenic-railway.jpg",
@@ -90,9 +90,9 @@ export const ACTIVITY_IMAGES: Record<string, ImageAsset> = {
     caption: "Skagway Excursion Routes by Ship Timing",
   },
   "yukon-excursions": {
-    url: "/images/alaska/skagway-white-pass.jpg",
-    alt: "Subalpine tundra and mountain pass leading into the Yukon Territory",
-    caption: "White Pass Summit into the Yukon",
+    url: "/images/alaska/yukon-emerald-lake.jpg",
+    alt: "Emerald Lake turquoise glacial waters along the Klondike Highway in the Yukon Territory",
+    caption: "Emerald Lake along the Klondike Highway, Yukon",
   },
   "gold-rush-tours": {
     url: "/images/alaska/scenic-railway.jpg",
@@ -100,9 +100,9 @@ export const ACTIVITY_IMAGES: Record<string, ImageAsset> = {
     caption: "Historic Klondike Trail Corridor, Skagway",
   },
   "misty-fjords-tours": {
-    url: "/images/alaska/ketchikan-creek-street.jpg",
-    alt: "Granite sea cliffs and marine gateway in Ketchikan",
-    caption: "Misty Fjords Gateway, Ketchikan",
+    url: "/images/alaska/misty-fjords.jpg",
+    alt: "Granite sea cliffs and deep fjord waters in Misty Fjords National Monument near Ketchikan",
+    caption: "Misty Fjords National Monument, Ketchikan",
   },
   "wildlife-and-rainforest-tours": {
     url: "/images/alaska/wildlife-bear.jpg",

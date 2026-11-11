@@ -4,6 +4,7 @@ import { PORTS } from "@/lib/ports";
 import { PORT_ACTIVITIES } from "@/lib/portActivities";
 import { DECISION_PAGES } from "@/lib/decisionPages";
 import { AFFILIATE_CATALOG } from "@/lib/affiliate/catalog";
+import { HERO_IMAGE, getActivityImage } from "@/lib/images";
 import { ExcursionFilters } from "@/components/ExcursionFilters";
 import { CruiseWindowCalculator } from "@/components/CruiseWindowCalculator";
 import { ExcursionComparisonTable } from "@/components/ExcursionComparisonTable";
@@ -27,12 +28,36 @@ export default function ToursCatalogPage() {
             <span>›</span>
             <span>All Tours</span>
           </nav>
-          <p className="eyebrow" style={{ color: "#607078" }}>Comprehensive Directory</p>
-          <h1>Alaska Shore Excursion Discovery Catalog</h1>
-          <p className="lead" style={{ color: "#485b63" }}>
-            Compare high-intent shore excursions across all major Southeast Alaska cruise ports, sorted by activity, duration, meeting point, and return-to-ship safety margin.
-          </p>
-          <TrustDisclosure compact />
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 32, alignItems: "center" }}>
+            <div>
+              <p className="eyebrow" style={{ color: "#607078" }}>Comprehensive Directory</p>
+              <h1>Alaska Shore Excursion Discovery Catalog</h1>
+              <p className="lead" style={{ color: "#485b63" }}>
+                Compare high-intent shore excursions across all major Southeast Alaska cruise ports, sorted by activity, duration, meeting point, and return-to-ship safety margin.
+              </p>
+              <TrustDisclosure compact />
+            </div>
+            <div
+              style={{
+                position: "relative",
+                borderRadius: "14px",
+                overflow: "hidden",
+                border: "1px solid var(--line)",
+                boxShadow: "var(--card-shadow)",
+                aspectRatio: "16 / 9",
+                background: "#eef5f6",
+              }}
+            >
+              <img
+                src={HERO_IMAGE.url}
+                alt={HERO_IMAGE.alt}
+                width={1600}
+                height={900}
+                loading="eager"
+                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+              />
+            </div>
+          </div>
         </div>
       </section>
 
@@ -101,21 +126,34 @@ export default function ToursCatalogPage() {
               </div>
 
               <div className="grid" style={{ marginTop: 20 }}>
-                {portActs.map((act) => (
-                  <Link className="card" href={`/${act.portSlug}/${act.slug}`} key={act.slug}>
-                    <span className="badge badge-safety" style={{ alignSelf: "flex-start", marginBottom: 8 }}>
-                      {act.typicalDuration}
-                    </span>
-                    <h3>{act.h1}</h3>
-                    <p>{act.metaDescription}</p>
-                    <div className="chips">
-                      <span className="chip">{act.returnMargin}</span>
-                      <span className="chip" style={{ color: act.weatherSensitivity === 'High' ? '#9e2323' : '#156d3a' }}>
-                        {act.weatherSensitivity} Sensitivity
+                {portActs.map((act) => {
+                  const actImg = getActivityImage(act.portSlug, act.slug);
+                  return (
+                    <Link className="card" href={`/${act.portSlug}/${act.slug}`} key={act.slug}>
+                      <div style={{ borderRadius: 12, overflow: "hidden", aspectRatio: "16 / 10", marginBottom: 14, background: "#eef5f6" }}>
+                        <img
+                          src={actImg.url}
+                          alt={actImg.alt}
+                          width={640}
+                          height={400}
+                          loading="lazy"
+                          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                        />
+                      </div>
+                      <span className="badge badge-safety" style={{ alignSelf: "flex-start", marginBottom: 8 }}>
+                        {act.typicalDuration}
                       </span>
-                    </div>
-                  </Link>
-                ))}
+                      <h3>{act.h1}</h3>
+                      <p>{act.metaDescription}</p>
+                      <div className="chips">
+                        <span className="chip">{act.returnMargin}</span>
+                        <span className="chip" style={{ color: act.weatherSensitivity === 'High' ? '#9e2323' : '#156d3a' }}>
+                          {act.weatherSensitivity} Sensitivity
+                        </span>
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
             </div>
           </section>

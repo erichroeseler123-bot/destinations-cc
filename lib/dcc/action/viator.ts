@@ -5,6 +5,7 @@ import vegasTours from "@/data/vegas.tours.json";
 import { slugify } from "@/lib/dcc/slug";
 import { getEnvNumber } from "@/lib/dcc/config/env";
 import { appendViatorAttribution, buildViatorCampaignFromParts, buildViatorSearchUrl } from "@/lib/viator/links";
+import { upgradeViatorImageUrl } from "@/lib/viator/media";
 import { getDisplayableViatorTags, normalizeViatorTagIds, scoreViatorMerchandisingSignals } from "@/lib/viator/tags";
 import { normalizeViatorActionProduct, type ViatorActionProduct } from "@/lib/viator/schema";
 
@@ -189,7 +190,7 @@ function mapToursToActionProducts(tours: Tour[], placeName: string): ViatorActio
         typeof tour.duration_minutes === "number"
           ? tour.duration_minutes
           : toDurationMinutes(tour.duration),
-      image_url: tour.image_url || null,
+      image_url: upgradeViatorImageUrl(tour.image_url) || null,
       supplier_name: tour.supplier_name || null,
       itinerary_type: tour.itinerary_type || null,
       booking_confirmation_type: tour.booking_confirmation_type || null,

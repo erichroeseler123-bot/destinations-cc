@@ -92,25 +92,44 @@ export default function LocationFirstHomeFast({
       {/* Traveler Front Door Hero */}
       <section className="border-b border-white/10 bg-[radial-gradient(circle_at_20%_0%,rgba(34,211,238,0.15),transparent_35%),radial-gradient(circle_at_90%_10%,rgba(16,185,129,0.1),transparent_30%),#070b10]">
         <div className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">
-          <div className="flex flex-wrap items-center gap-2">
-            <p className="text-[11px] font-black uppercase tracking-[0.24em] text-cyan-300">
-              Destination Command Center
-            </p>
-            <span className="rounded-full border border-cyan-400/30 bg-cyan-400/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-cyan-200">
-              Source-Backed Travel Decision Engine
-            </span>
-          </div>
+          <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-[11px] font-black uppercase tracking-[0.24em] text-cyan-300">
+                  Destination Command Center
+                </p>
+                <span className="rounded-full border border-cyan-400/30 bg-cyan-400/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-cyan-200">
+                  Source-Backed Travel Decision Engine
+                </span>
+              </div>
 
-          <h1 className="mt-3 max-w-4xl text-4xl font-black tracking-[-0.04em] sm:text-6xl lg:text-7xl">
-            What fits your trip?
-          </h1>
+              <h1 className="mt-3 max-w-4xl text-4xl font-black tracking-[-0.04em] sm:text-6xl lg:text-7xl">
+                What fits your trip?
+              </h1>
 
-          <p className="mt-4 max-w-3xl text-lg leading-8 text-white/85 sm:text-xl">
-            Compare tours, choose a cruise, find a ride, and check local conditions before you book.
-          </p>
+              <p className="mt-4 max-w-3xl text-lg leading-8 text-white/85 sm:text-xl">
+                Compare tours, choose a cruise, find a ride, and check local conditions before you book.
+              </p>
 
-          <div className="mt-7 max-w-4xl">
-            <AskDccEntry />
+              <div className="mt-7 max-w-4xl">
+                <AskDccEntry />
+              </div>
+            </div>
+
+            <div className="overflow-hidden rounded-3xl border border-white/15 bg-black/40 shadow-2xl">
+              <img
+                src="/images/portfolio/dcc-hero-corridor.webp"
+                alt="Scenic mountain highway corridor and alpine peaks for Destination Command Center trip planning"
+                width={1440}
+                height={810}
+                loading="eager"
+                className="aspect-[16/10] w-full object-cover"
+              />
+              <div className="flex items-center justify-between gap-2 border-t border-white/10 bg-black/60 px-4 py-2.5 text-[11px] text-white/75">
+                <span className="font-semibold text-cyan-200">Live Corridor, Port &amp; Venue Intelligence</span>
+                <span>NOAA · NWS · FAA · CDOT</span>
+              </div>
+            </div>
           </div>
 
           {/* Four Clear Ways to Start */}
@@ -453,108 +472,167 @@ export default function LocationFirstHomeFast({
           </div>
 
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            <article className="rounded-3xl border border-white/12 bg-white/[0.03] p-6 flex flex-col justify-between">
+            <article className="overflow-hidden rounded-3xl border border-white/12 bg-white/[0.03] flex flex-col justify-between">
               <div>
-                <span className="text-[10px] font-black uppercase tracking-wider text-cyan-300">
-                  Louisiana · Tours &amp; Port
-                </span>
-                <h3 className="mt-2 text-xl font-black text-white">New Orleans</h3>
-                <p className="mt-2 text-sm leading-6 text-white/70">
-                  Compare airboats vs. covered swamp boats, French Quarter hotel pickup, and Mississippi riverboats.
-                </p>
+                <img
+                  src="/images/portfolio/royal-street-balconies.webp"
+                  alt="Historic wrought-iron balconies along Royal Street in the French Quarter, New Orleans"
+                  width={1440}
+                  height={900}
+                  loading="lazy"
+                  className="aspect-[16/10] w-full object-cover border-b border-white/10"
+                />
+                <div className="p-6 pb-0">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-cyan-300">
+                    Louisiana · Tours &amp; Port
+                  </span>
+                  <h3 className="mt-2 text-xl font-black text-white">New Orleans</h3>
+                  <p className="mt-2 text-sm leading-6 text-white/70">
+                    Compare airboats vs. covered swamp boats, French Quarter hotel pickup, and Mississippi riverboats.
+                  </p>
+                </div>
               </div>
-              <div className="mt-5 pt-4 border-t border-white/10">
-                <Link
-                  href="/new-orleans/tours"
-                  className="inline-flex w-full items-center justify-between rounded-xl bg-cyan-400 px-4 py-2.5 text-xs font-black uppercase tracking-wider text-black hover:bg-cyan-300"
-                >
-                  <span>Explore New Orleans</span>
-                  <span>→</span>
-                </Link>
+              <div className="p-6 pt-5">
+                <div className="pt-4 border-t border-white/10">
+                  <Link
+                    href="/new-orleans/tours"
+                    className="inline-flex w-full items-center justify-between rounded-xl bg-cyan-400 px-4 py-2.5 text-xs font-black uppercase tracking-wider text-black hover:bg-cyan-300"
+                  >
+                    <span>Explore New Orleans</span>
+                    <span>→</span>
+                  </Link>
+                </div>
               </div>
             </article>
 
-            <article className="rounded-3xl border border-white/12 bg-white/[0.03] p-6 flex flex-col justify-between">
+            <article className="overflow-hidden rounded-3xl border border-white/12 bg-white/[0.03] flex flex-col justify-between">
               <div>
-                <span className="text-[10px] font-black uppercase tracking-wider text-cyan-300">
-                  Nevada · Tours &amp; Day Trips
-                </span>
-                <h3 className="mt-2 text-xl font-black text-white">Las Vegas</h3>
-                <p className="mt-2 text-sm leading-6 text-white/70">
-                  Compare Grand Canyon helicopter flights, Hoover Dam half-day trips, and Red Rock Canyon tours.
-                </p>
+                <img
+                  src="/images/travel-markets/las-vegas/las-vegas-strip-night.jpg"
+                  alt="Illuminated resort corridor along the Las Vegas Strip at night"
+                  width={1280}
+                  height={853}
+                  loading="lazy"
+                  className="aspect-[16/10] w-full object-cover border-b border-white/10"
+                />
+                <div className="p-6 pb-0">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-cyan-300">
+                    Nevada · Tours &amp; Day Trips
+                  </span>
+                  <h3 className="mt-2 text-xl font-black text-white">Las Vegas</h3>
+                  <p className="mt-2 text-sm leading-6 text-white/70">
+                    Compare Grand Canyon helicopter flights, Hoover Dam half-day trips, and Red Rock Canyon tours.
+                  </p>
+                </div>
               </div>
-              <div className="mt-5 pt-4 border-t border-white/10">
-                <Link
-                  href="/las-vegas/tours"
-                  className="inline-flex w-full items-center justify-between rounded-xl bg-cyan-400 px-4 py-2.5 text-xs font-black uppercase tracking-wider text-black hover:bg-cyan-300"
-                >
-                  <span>Explore Las Vegas</span>
-                  <span>→</span>
-                </Link>
+              <div className="p-6 pt-5">
+                <div className="pt-4 border-t border-white/10">
+                  <Link
+                    href="/las-vegas/tours"
+                    className="inline-flex w-full items-center justify-between rounded-xl bg-cyan-400 px-4 py-2.5 text-xs font-black uppercase tracking-wider text-black hover:bg-cyan-300"
+                  >
+                    <span>Explore Las Vegas</span>
+                    <span>→</span>
+                  </Link>
+                </div>
               </div>
             </article>
 
-            <article className="rounded-3xl border border-white/12 bg-white/[0.03] p-6 flex flex-col justify-between">
+            <article className="overflow-hidden rounded-3xl border border-white/12 bg-white/[0.03] flex flex-col justify-between">
               <div>
-                <span className="text-[10px] font-black uppercase tracking-wider text-cyan-300">
-                  Alaska · Cruise Port
-                </span>
-                <h3 className="mt-2 text-xl font-black text-white">Juneau</h3>
-                <p className="mt-2 text-sm leading-6 text-white/70">
-                  Check Auke Bay whale watching, Mendenhall Glacier timing, and dock or tender transfer windows.
-                </p>
+                <img
+                  src="/images/portfolio/juneau-mendenhall-hero.webp"
+                  alt="Mendenhall Glacier blue ice face, lake, and Coast Mountains in Juneau, Alaska"
+                  width={1440}
+                  height={810}
+                  loading="lazy"
+                  className="aspect-[16/10] w-full object-cover border-b border-white/10"
+                />
+                <div className="p-6 pb-0">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-cyan-300">
+                    Alaska · Cruise Port
+                  </span>
+                  <h3 className="mt-2 text-xl font-black text-white">Juneau</h3>
+                  <p className="mt-2 text-sm leading-6 text-white/70">
+                    Check Auke Bay whale watching, Mendenhall Glacier timing, and dock or tender transfer windows.
+                  </p>
+                </div>
               </div>
-              <div className="mt-5 pt-4 border-t border-white/10">
-                <Link
-                  href="/ports/juneau"
-                  className="inline-flex w-full items-center justify-between rounded-xl bg-cyan-400 px-4 py-2.5 text-xs font-black uppercase tracking-wider text-black hover:bg-cyan-300"
-                >
-                  <span>Open Juneau port guide</span>
-                  <span>→</span>
-                </Link>
+              <div className="p-6 pt-5">
+                <div className="pt-4 border-t border-white/10">
+                  <Link
+                    href="/ports/juneau"
+                    className="inline-flex w-full items-center justify-between rounded-xl bg-cyan-400 px-4 py-2.5 text-xs font-black uppercase tracking-wider text-black hover:bg-cyan-300"
+                  >
+                    <span>Open Juneau port guide</span>
+                    <span>→</span>
+                  </Link>
+                </div>
               </div>
             </article>
 
-            <article className="rounded-3xl border border-white/12 bg-white/[0.03] p-6 flex flex-col justify-between">
+            <article className="overflow-hidden rounded-3xl border border-white/12 bg-white/[0.03] flex flex-col justify-between">
               <div>
-                <span className="text-[10px] font-black uppercase tracking-wider text-cyan-300">
-                  Colorado · Mountain Rides
-                </span>
-                <h3 className="mt-2 text-xl font-black text-white">Denver–Breckenridge</h3>
-                <p className="mt-2 text-sm leading-6 text-white/70">
-                  Compare airport shuttles, Bustang/Pegasus coaches, private SUVs, and I-70 winter traction rules.
-                </p>
+                <img
+                  src="/images/portfolio/colorado-i70-corridor.webp"
+                  alt="Interstate 70 winter mountain corridor approaching the Eisenhower-Johnson Memorial Tunnel in Colorado"
+                  width={1440}
+                  height={810}
+                  loading="lazy"
+                  className="aspect-[16/10] w-full object-cover border-b border-white/10"
+                />
+                <div className="p-6 pb-0">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-cyan-300">
+                    Colorado · Mountain Rides
+                  </span>
+                  <h3 className="mt-2 text-xl font-black text-white">Denver–Breckenridge</h3>
+                  <p className="mt-2 text-sm leading-6 text-white/70">
+                    Compare airport shuttles, Bustang/Pegasus coaches, private SUVs, and I-70 winter traction rules.
+                  </p>
+                </div>
               </div>
-              <div className="mt-5 pt-4 border-t border-white/10">
-                <Link
-                  href="/routes/denver-breckenridge"
-                  className="inline-flex w-full items-center justify-between rounded-xl bg-cyan-400 px-4 py-2.5 text-xs font-black uppercase tracking-wider text-black hover:bg-cyan-300"
-                >
-                  <span>Open ride guide</span>
-                  <span>→</span>
-                </Link>
+              <div className="p-6 pt-5">
+                <div className="pt-4 border-t border-white/10">
+                  <Link
+                    href="/routes/denver-breckenridge"
+                    className="inline-flex w-full items-center justify-between rounded-xl bg-cyan-400 px-4 py-2.5 text-xs font-black uppercase tracking-wider text-black hover:bg-cyan-300"
+                  >
+                    <span>Open ride guide</span>
+                    <span>→</span>
+                  </Link>
+                </div>
               </div>
             </article>
           </div>
 
           <div className="mt-6 grid gap-5 md:grid-cols-3">
-            <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-5 flex flex-col justify-between">
+            <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.025] flex flex-col justify-between">
               <div>
-                <span className="text-2xl">🎸</span>
-                <h3 className="text-lg font-black text-white mt-3">Red Rocks Concert Amphitheatre</h3>
-                <p className="text-xs text-white/65 mt-1.5 leading-relaxed">
-                  Compare concert shuttle pickups, parking lot stairs, and show-night wind and weather conditions.
-                </p>
+                <img
+                  src="/images/authority/venues/red-rocks-amphitheatre/hero.webp"
+                  alt="Red Rocks Amphitheatre sandstone monoliths and concert seating in Morrison, Colorado"
+                  width={1280}
+                  height={720}
+                  loading="lazy"
+                  className="aspect-[16/9] w-full object-cover border-b border-white/10"
+                />
+                <div className="p-5 pb-0">
+                  <h3 className="text-lg font-black text-white">Red Rocks Concert Amphitheatre</h3>
+                  <p className="text-xs text-white/65 mt-1.5 leading-relaxed">
+                    Compare concert shuttle pickups, parking lot stairs, and show-night wind and weather conditions.
+                  </p>
+                </div>
               </div>
-              <div className="mt-4 pt-3 border-t border-white/10">
-                <Link
-                  href="/red-rocks"
-                  className="text-xs font-extrabold text-cyan-300 hover:underline inline-flex items-center gap-1"
-                >
-                  <span>Open Red Rocks guide</span>
-                  <span>→</span>
-                </Link>
+              <div className="p-5 pt-4">
+                <div className="pt-3 border-t border-white/10">
+                  <Link
+                    href="/red-rocks"
+                    className="text-xs font-extrabold text-cyan-300 hover:underline inline-flex items-center gap-1"
+                  >
+                    <span>Open Red Rocks guide</span>
+                    <span>→</span>
+                  </Link>
+                </div>
               </div>
             </div>
 

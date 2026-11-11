@@ -46,22 +46,34 @@ export function SupportPageShell({ eyebrow, title, intro, sections, updated }: S
   return (
     <div className="bg-[var(--nola-bg-charcoal)] text-[var(--nola-ivory)] font-sans min-h-screen">
       <div className="max-w-4xl mx-auto px-6 py-16">
-        <header className="border border-[var(--nola-border)] bg-[var(--nola-surface-strong)] p-8 md:p-10 mb-8">
-          <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--nola-gold)] mb-4">
-            {eyebrow}
-          </p>
-          <h1 className="font-serif text-4xl md:text-5xl text-[var(--nola-gold)] mb-5">
-            {title}
-          </h1>
-          <p className="text-lg text-[var(--nola-ivory)]/80 font-light leading-relaxed">
-            {intro}
-          </p>
-          <p className="mt-4 text-sm text-[var(--nola-ivory)]/60">
-            {WTONOT_SITE_NAME} is an independent visitor-help, tour recommendation, and affiliate site.
-          </p>
-          {updated ? (
-            <p className="mt-5 text-xs text-[var(--nola-ivory)]/55">Last updated: {updated}</p>
-          ) : null}
+        <header className="overflow-hidden border border-[var(--nola-border)] bg-[var(--nola-surface-strong)] mb-8">
+          <div className="relative h-48 md:h-60 w-full overflow-hidden border-b border-[var(--nola-border)]">
+            <img
+              src="/images/portfolio/royal-street-balconies.webp"
+              alt="Sunlit wrought-iron balconies along Royal Street in the New Orleans French Quarter"
+              width={1440}
+              height={900}
+              className="h-full w-full object-cover opacity-80"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#151311] via-transparent to-transparent" />
+          </div>
+          <div className="p-8 md:p-10">
+            <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--nola-gold)] mb-4">
+              {eyebrow}
+            </p>
+            <h1 className="font-serif text-4xl md:text-5xl text-[var(--nola-gold)] mb-5">
+              {title}
+            </h1>
+            <p className="text-lg text-[var(--nola-ivory)]/80 font-light leading-relaxed">
+              {intro}
+            </p>
+            <p className="mt-4 text-sm text-[var(--nola-ivory)]/60">
+              {WTONOT_SITE_NAME} is an independent visitor-help, tour recommendation, and affiliate site.
+            </p>
+            {updated ? (
+              <p className="mt-5 text-xs text-[var(--nola-ivory)]/55">Last updated: {updated}</p>
+            ) : null}
+          </div>
         </header>
 
         <div className="space-y-6">

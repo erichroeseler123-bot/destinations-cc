@@ -67,13 +67,13 @@ const dogSledFaqJsonLd = {
 
 export default function JuneauDogSleddingPage() {
   return (
-    <main className="page-shell py-8">
+    <main className="page-shell py-8" style={{ maxWidth: "100%", overflowX: "hidden" }}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(dogSledFaqJsonLd) }}
       />
 
-      <div className="site-shell max-w-5xl mx-auto px-4">
+      <div className="site-shell max-w-5xl mx-auto px-4" style={{ maxWidth: "100%", boxSizing: "border-box" }}>
         <div className="text-center max-w-3xl mx-auto mb-10">
           <p className="eyebrow">The Crown Jewel of Alaska Shore Excursions</p>
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-white mb-4">
@@ -87,14 +87,15 @@ export default function JuneauDogSleddingPage() {
         </div>
 
         {/* Hero Image Showcase */}
-        <div className="rounded-3xl overflow-hidden border border-white/10 mb-8 shadow-2xl relative">
+        <div className="rounded-3xl overflow-hidden border border-white/10 mb-8 shadow-2xl relative" style={{ maxWidth: "100%" }}>
           <Image
-            src="https://cdn.filestackcontent.com/mjmYVT8aSPiQ6M0h9hb5"
-            alt="Alaskan husky dog sled team on glacier snowfield in Juneau"
-            width={1600}
+            src="/images/tours/temsco-glacier-dog-sledding.jpg"
+            alt="Alaskan husky sled dog team harnessed on an Alaska mountain snowfield at alpenglow"
+            width={1440}
             height={900}
             priority
             className="w-full h-80 md:h-[450px] object-cover"
+            style={{ maxWidth: "100%", objectPosition: "55% 60%" }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent flex items-end p-6 md:p-10">
             <div>
@@ -115,16 +116,17 @@ export default function JuneauDogSleddingPage() {
             background: "linear-gradient(180deg, rgba(8, 28, 42, 0.95) 0%, rgba(5, 18, 28, 0.98) 100%)",
             border: "1px solid var(--line, rgba(151, 211, 255, 0.2))",
             borderRadius: "var(--radius-lg, 24px)",
-            padding: "26px 30px",
+            padding: "clamp(18px, 4vw, 26px) clamp(16px, 4vw, 30px)",
             marginBottom: "36px",
-            display: "flex",
-            flexWrap: "wrap",
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))",
             alignItems: "center",
-            justifyContent: "space-between",
             gap: 20,
+            maxWidth: "100%",
+            boxSizing: "border-box",
           }}
         >
-          <div style={{ maxWidth: 580 }}>
+          <div style={{ minWidth: 0 }}>
             <div
               style={{
                 display: "inline-flex",
@@ -153,17 +155,17 @@ export default function JuneauDogSleddingPage() {
             </p>
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10 }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 10, minWidth: 0, maxWidth: "100%" }}>
             <a
               href="https://www.viator.com/searchResults/all?text=Juneau+glacier+dog+sledding&pid=P00058396&mcid=42383&medium=api&campaign=jfd-dogsled-hero"
               target="_blank"
               rel="noopener noreferrer"
               className="button button-primary"
-              style={{ padding: "12px 22px", fontSize: "0.92rem", whiteSpace: "nowrap" }}
+              style={{ padding: "12px 22px", fontSize: "0.92rem", maxWidth: "100%", textAlign: "center" }}
             >
               Check Dog Sledding on Viator &rarr;
             </a>
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "flex-end" }}>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", maxWidth: "100%" }}>
               <a
                 href="https://www.viator.com/searchResults/all?text=Juneau+TEMSCO+dog+sledding&pid=P00058396&mcid=42383&medium=api&campaign=jfd-dogsled-temsco"
                 target="_blank"
@@ -254,7 +256,7 @@ export default function JuneauDogSleddingPage() {
             </h2>
           </div>
 
-          <div className="seo-table-container">
+          <div className="seo-table-container" style={{ maxWidth: "100%", overflowX: "auto" }}>
             <table className="seo-matrix-table">
               <thead>
                 <tr>

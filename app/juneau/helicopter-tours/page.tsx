@@ -162,7 +162,16 @@ export default async function JuneauHelicopterToursPage({
     <main className="min-h-screen bg-[#07131d] text-white">
       <JsonLdGraph />
       <div className="mx-auto max-w-6xl space-y-8 px-6 py-16">
-        <header className="rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(103,232,249,0.12),transparent_26%),radial-gradient(circle_at_bottom_right,rgba(96,165,250,0.10),transparent_24%),linear-gradient(180deg,rgba(9,17,24,0.97),rgba(5,8,22,0.99))] p-8 shadow-[0_28px_90px_rgba(0,0,0,0.45)] md:p-10">
+        <header className="overflow-hidden rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(103,232,249,0.12),transparent_26%),radial-gradient(circle_at_bottom_right,rgba(96,165,250,0.10),transparent_24%),linear-gradient(180deg,rgba(9,17,24,0.97),rgba(5,8,22,0.99))] shadow-[0_28px_90px_rgba(0,0,0,0.45)]">
+          <img
+            src="/images/travel-markets/juneau/eagle-glacier-flightseeing.jpg"
+            alt="Juneau Icefield glacier flightseeing corridor and Coast Mountains in Alaska"
+            width={1280}
+            height={853}
+            loading="eager"
+            className="h-52 w-full object-cover object-center border-b border-white/10 sm:h-68"
+          />
+          <div className="p-8 md:p-10">
           <p className="text-xs uppercase tracking-[0.24em] text-cyan-300">Juneau Aviation &amp; Port-Window Planning</p>
           <h1 className="mt-4 text-4xl font-black tracking-tight md:text-6xl">Juneau helicopter tours</h1>
           <p className="mt-4 text-base font-bold uppercase tracking-[0.18em] text-[#8df0cc]">
@@ -190,6 +199,7 @@ export default async function JuneauHelicopterToursPage({
             >
               Explore Hawaiʻi Whale Watching Engine
             </Link>
+          </div>
           </div>
         </header>
 

@@ -106,7 +106,7 @@ export default async function HomePage({
       priceSub: "per adult · $0 booking fee",
       scheduleFit: "✓ Fits morning or afternoon stays & pre-cruise mornings",
       checkoutProcessor: "Checkout via Viator (Louisiana Tour Co.)",
-      imageSrc: "/images/travel-markets/new-orleans/hotel-pickup-swamp-boat.png",
+      imageSrc: "/images/portfolio/nola-covered-swamp-boat.webp",
       imageAlt: "Covered tour boat cruising through cypress trees in a Louisiana bayou",
       ctaLabel: "View dates & pickup →",
       ctaHref: "/tours/louisiana-tour-company-swamp-tour-hotel-pickup?src=wtonot-home",
@@ -126,7 +126,7 @@ export default async function HomePage({
       priceSub: "self-drive · shuttle upgrade at checkout",
       scheduleFit: "✓ Shaded, calm ride ideal for families & mixed ages",
       checkoutProcessor: "Checkout via GetYourGuide",
-      imageSrc: "/images/travel-markets/new-orleans/covered-boat-swamp.png",
+      imageSrc: "/images/wno/small-boat-swamp-tour.webp",
       imageAlt: "Shaded pontoon boat gliding across calm Louisiana bayou waters",
       ctaLabel: "Check availability →",
       ctaHref: gygSwampCruiseHref,
@@ -147,7 +147,7 @@ export default async function HomePage({
       scheduleFit: "✓ Best Day-1 orientation or Port NOLA turnaround morning",
       checkoutProcessor: "Checkout via Viator (Southern Style Tours)",
       imageSrc: "/images/travel-markets/new-orleans/french-quarter-street.jpg",
-      imageAlt: "Wrought-iron balconies along a historic French Quarter street in New Orleans",
+      imageAlt: "Historic French Quarter street architecture and wrought-iron balconies in New Orleans",
       ctaLabel: "Check availability →",
       ctaHref: viatorCityTourHref,
       isExternal: true,
@@ -166,8 +166,8 @@ export default async function HomePage({
       priceSub: "per guest (ages 21+ · drinks purchased on route or upgrade)",
       scheduleFit: "✓ Easy afternoon fit before French Quarter dinner",
       checkoutProcessor: "Checkout via FareHarbor (Gray Line)",
-      imageSrc: "/images/wikimedia/originals/gumbo-dish.jpg",
-      imageAlt: "Classic New Orleans Creole gumbo and French Quarter culinary flavors",
+      imageSrc: "/images/portfolio/classic-cocktails-nola.webp",
+      imageAlt: "Classic whiskey and craft cocktails served on a French Quarter cocktail walking tour",
       ctaLabel: "View times & rates →",
       ctaHref: "/tours/cocktail-walking-tour?src=wtonot-home",
       isExternal: false,
@@ -206,8 +206,8 @@ export default async function HomePage({
       priceSub: "per adult · admission & coach included",
       scheduleFit: "✓ Half-day commitment · Returns mid-afternoon",
       checkoutProcessor: "Checkout via FareHarbor (Gray Line)",
-      imageSrc: "/images/wikimedia/originals/oak-alley-front.jpg",
-      imageAlt: "Canopy of centuries-old live oak trees along Louisiana's historic River Road",
+      imageSrc: "/images/portfolio/whitney-plantation.webp",
+      imageAlt: "Historic grounds and memorial architecture at Whitney Plantation on Louisiana's River Road",
       ctaLabel: "Compare & book →",
       ctaHref: "/tours/whitney-plantation-tour?src=wtonot-home",
       isExternal: false,
@@ -219,8 +219,10 @@ export default async function HomePage({
       {/* SECTION 2: Strong Destination Hero with One Primary Action */}
       <section className="wno-hero" aria-labelledby="wno-hero-heading">
         <img
-          src="/images/new-orleans/hero-french-quarter-balcony.jpg"
-          alt="Sunlit wrought-iron balconies and lush courtyard greenery in the New Orleans French Quarter"
+          src="/images/portfolio/royal-street-balconies.webp"
+          alt="Historic sunlit wrought-iron balconies along Royal Street in the New Orleans French Quarter"
+          width={1440}
+          height={900}
           className="wno-hero-media"
         />
         <div className="wno-hero-scrim" aria-hidden="true" />

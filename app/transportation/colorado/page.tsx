@@ -92,20 +92,30 @@ export default async function ColoradoTransportationPage() {
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
       <div className="mx-auto max-w-6xl px-6 py-16 space-y-8">
-        <header className="rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.14),transparent_24%),linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.03))] p-7 shadow-[0_20px_70px_rgba(0,0,0,0.35)]">
-          <p className="text-xs uppercase tracking-[0.24em] text-cyan-300">Colorado coverage & reference</p>
-          <h1 className="mt-3 text-4xl font-black tracking-tight md:text-5xl">Colorado transportation & corridor directory</h1>
-          <p className="mt-4 max-w-4xl text-base leading-8 text-zinc-300">
-            Colorado is DCC&apos;s flagship surface for venue and mountain-corridor transportation reference. Explore the full source-attributed{" "}
-            <Link href="/routes/denver-breckenridge" className="text-cyan-300 underline hover:text-cyan-100">
-              Denver–Breckenridge I-70 Mountain Corridor Reference
-            </Link>{" "}
-            and{" "}
-            <Link href="/red-rocks" className="text-cyan-300 underline hover:text-cyan-100">
-              Red Rocks Amphitheatre Reference
-            </Link>
-            , alongside staged Denver and Boulder venue pages.
-          </p>
+        <header className="overflow-hidden rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.14),transparent_24%),linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.03))] shadow-[0_20px_70px_rgba(0,0,0,0.35)]">
+          <img
+            src="/images/portfolio/colorado-i70-corridor.webp"
+            alt="Interstate 70 winter mountain corridor approaching the Eisenhower-Johnson Memorial Tunnel in Colorado"
+            width={1440}
+            height={810}
+            loading="eager"
+            className="h-56 w-full object-cover object-center border-b border-white/10 sm:h-72"
+          />
+          <div className="p-7">
+            <p className="text-xs uppercase tracking-[0.24em] text-cyan-300">Colorado coverage & reference</p>
+            <h1 className="mt-3 text-4xl font-black tracking-tight md:text-5xl">Colorado transportation & corridor directory</h1>
+            <p className="mt-4 max-w-4xl text-base leading-8 text-zinc-300">
+              Colorado is DCC&apos;s flagship surface for venue and mountain-corridor transportation reference. Explore the full source-attributed{" "}
+              <Link href="/routes/denver-breckenridge" className="text-cyan-300 underline hover:text-cyan-100">
+                Denver–Breckenridge I-70 Mountain Corridor Reference
+              </Link>{" "}
+              and{" "}
+              <Link href="/red-rocks" className="text-cyan-300 underline hover:text-cyan-100">
+                Red Rocks Amphitheatre Reference
+              </Link>
+              , alongside staged Denver and Boulder venue pages.
+            </p>
+          </div>
         </header>
 
         <Suspense

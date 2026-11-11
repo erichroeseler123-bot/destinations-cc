@@ -1,7 +1,7 @@
 import tours from "@/data/tours.json";
 import { getViatorClient } from "@/lib/viator/client";
 import { getCachedOrFetchViatorReviews, readViatorReviewCache } from "@/lib/viator/review-cache";
-import { splitSupplierAndTravelerMedia } from "@/lib/viator/media";
+import { selectBestViatorVariant, splitSupplierAndTravelerMedia, upgradeViatorImageUrl } from "@/lib/viator/media";
 import { normalizeViatorCurrency } from "@/lib/viator/config";
 import { buildViatorSearchUrl } from "@/lib/viator/links";
 import {
@@ -87,8 +87,9 @@ function toDurationMinutes(tour: LocalTour): number | null {
 }
 
 function toSupplierImages(tour: LocalTour): ViatorMediaAsset[] {
-  if (!tour.image_url) return [];
-  return [{ url: tour.image_url, source: "supplier" }];
+  const upgraded = upgradeViatorImageUrl(tour.image_url);
+  if (!upgraded) return [];
+  return [{ url: upgraded, source: "supplier" }];
 }
 
 function extractVariants(images: unknown, source: "supplier" | "traveler") {
@@ -98,24 +99,21 @@ function extractVariants(images: unknown, source: "supplier" | "traveler") {
     const record = image as Record<string, unknown>;
     const variants = Array.isArray(record.variants) ? record.variants : [];
     if (variants.length > 0) {
-      const normalized: ViatorMediaAsset[] = [];
-      for (const variant of variants) {
-        if (!variant || typeof variant !== "object") continue;
-        const row = variant as Record<string, unknown>;
-        const url = firstString(row.url, row.secureUrl);
-        if (!url) continue;
-        normalized.push({
-          url,
-          width: typeof row.width === "number" ? row.width : null,
-          height: typeof row.height === "number" ? row.height : null,
-          source,
-          provider: null,
-        });
+      const best = selectBestViatorVariant(variants);
+      if (best) {
+        return [
+          {
+            url: best.url,
+            width: best.width,
+            height: best.height,
+            source,
+            provider: null,
+          },
+        ];
       }
-      return normalized;
     }
 
-    const url = firstString(record.url, record.secureUrl);
+    const url = upgradeViatorImageUrl(firstString(record.url, record.secureUrl));
     return url ? [{ url, source, provider: null }] : [];
   });
 }
@@ -218,7 +216,7 @@ export function getLocalViatorProductDetail(productCodeOrId: string): ViatorProd
     price_from: typeof tour.price_from === "number" ? tour.price_from : null,
     currency: normalizeViatorCurrency(tour.currency),
     duration_minutes: toDurationMinutes(tour),
-    image_url: tour.image_url || null,
+    image_url: upgradeViatorImageUrl(tour.image_url) || null,
     supplier_name: tour.supplier_name || null,
     itinerary_type: tour.itinerary_type || null,
     booking_confirmation_type: tour.booking_confirmation_type || null,
@@ -302,7 +300,7 @@ export function normalizeLiveProductDetailResponse(raw: unknown, fallbackKey: st
         : typeof duration?.durationInMinutes === "number"
           ? duration.durationInMinutes
           : null,
-    image_url: firstString(product.primaryImageUrl) || null,
+    image_url: upgradeViatorImageUrl(firstString(product.primaryImageUrl)) || media.supplierImages[0]?.url || null,
     supplier_name: firstString(supplier?.name) || null,
     supplierImages: media.supplierImages,
     travelerImages: media.travelerImages,

@@ -697,7 +697,16 @@ export default async function ToursPage({
     <main className="relative min-h-screen overflow-hidden bg-zinc-950 text-white">
       <CinematicBackdrop />
       <div className="relative max-w-6xl mx-auto px-6 py-16 space-y-8">
-      <header className="space-y-3 rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(255,176,124,0.12),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(61,243,255,0.1),transparent_24%),linear-gradient(180deg,rgba(18,18,22,0.92),rgba(9,9,11,0.96))] p-8 shadow-[0_28px_80px_rgba(0,0,0,0.34)]">
+      <header className="overflow-hidden rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(255,176,124,0.12),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(61,243,255,0.1),transparent_24%),linear-gradient(180deg,rgba(18,18,22,0.92),rgba(9,9,11,0.96))] shadow-[0_28px_80px_rgba(0,0,0,0.34)]">
+        <img
+          src="/images/portfolio/juneau-mendenhall-hero.webp"
+          alt="Mendenhall Glacier and mountain waters representing Destination Command Center tours and shore excursions"
+          width={1440}
+          height={810}
+          loading="eager"
+          className="h-48 w-full object-cover object-center border-b border-white/10 sm:h-64"
+        />
+        <div className="space-y-3 p-8">
         <RouteHeroMark eyebrow="Destination Command Center" title="TOURS" tone="cyan" />
         <p className="text-xs uppercase tracking-wider text-zinc-500">Things to do vertical</p>
         <h1 className="text-4xl font-black tracking-tight">{heading}</h1>
@@ -751,6 +760,7 @@ export default async function ToursPage({
               Explore port tours →
             </Link>
           ) : null}
+        </div>
         </div>
       </header>
 

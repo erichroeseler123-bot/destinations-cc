@@ -79,6 +79,26 @@ export default function TemscoVsNorthstarPage() {
         Both TEMSCO and NorthStar fly to Mendenhall Glacier, but they cater to very different physical preferences and ice-time appetites. Rather than technical mountaineering alone, NorthStar also offers a 1-hour gentle <strong>Glacier Walkabout</strong> alongside its advanced crampon treks.
       </p>
 
+      <div
+        style={{
+          marginBottom: 28,
+          borderRadius: 16,
+          overflow: "hidden",
+          border: "1px solid var(--line, #334155)",
+          aspectRatio: "16 / 9",
+          maxHeight: 320,
+          background: "#071626",
+        }}
+      >
+        <img
+          src="/images/tours/northstar-glacier-ice-trek.jpg"
+          alt="Guided glacier hiker with crampons and trekking poles exploring sculpted blue glacier ice in Alaska"
+          width={1440}
+          height={900}
+          style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 42%", display: "block" }}
+        />
+      </div>
+
       {/* Side-by-Side Comparison Grid */}
       <section style={{ overflowX: "auto", marginBottom: "36px" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 700, background: "var(--panel, #0f172a)", borderRadius: 12, overflow: "hidden", border: "1px solid var(--line, #334155)", fontSize: "0.9rem" }}>

@@ -18,11 +18,11 @@ export type ResolvedProductImage = {
   attribution?: ResolvedAttribution;
 };
 
-// These products stay text-only until we have an image that accurately
-// represents the experience rather than a misleading or broken substitute.
+// Only held/unverified products remain text-only in commerce surfaces; all 21
+// bookable storefront products resolve verified subject-accurate photographs.
 const COMMERCE_IMAGE_BLOCKLIST = new Set([
-  "all-day-city-plantation-combo",
-  "city-cemetery-garden-district-tour",
+  "covered-boat-plantation-combo",
+  "jeanlafitte-swamp-tour-with-hotel-pickup",
 ]);
 
 function optimized(src: string) {

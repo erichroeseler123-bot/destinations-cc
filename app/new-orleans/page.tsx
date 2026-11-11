@@ -28,14 +28,14 @@ export const metadata = {
 };
 
 const categoryLinks = [
-  { href: "/city-tours", label: "City Tours", text: "Neighborhoods, stories & landmarks.", image: "/images/travel-markets/new-orleans/french-quarter-street.jpg" },
-  { href: "/swamp-tours", label: "Swamps & Airboats", text: "Get out into the bayou.", image: "/images/travel-markets/new-orleans/airboat-swamp.png" },
-  { href: "/riverboat-cruises", label: "River Cruises", text: "Jazz, brunch & Mississippi views.", image: "/images/travel-markets/new-orleans/steamboat-natchez.jpg" },
-  { href: "/plantation-tours", label: "Plantations", text: "History beneath the oaks.", image: "/images/wikimedia/originals/oak-alley-front.jpg" },
-  { href: "/food-tours", label: "Food & Cocktails", text: "Taste your way through the Quarter.", image: "/images/wikimedia/originals/gumbo-dish.jpg" },
-  { href: "/ghost-tours", label: "Ghosts & Spirits", text: "Strange stories after dark.", image: "/images/wikimedia/originals/lalaurie-mansion-1906.jpg" },
-  { href: "/city-tours", label: "Garden District", text: "Mansions, history & neighborhood character.", image: "/images/travel-markets/new-orleans/french-quarter-street.jpg" },
-  { href: "/tours#combo-tours", label: "Full-Day Combos", text: "Combine the city and plantation in one day.", image: "/images/travel-markets/new-orleans/steamboat-natchez.jpg" },
+  { href: "/city-tours", label: "City Tours", text: "Neighborhoods, stories & landmarks.", image: "/images/travel-markets/new-orleans/french-quarter-street.jpg", alt: "Sunlit historic architecture and balconies in the French Quarter, New Orleans" },
+  { href: "/swamp-tours", label: "Swamps & Airboats", text: "Get out into the bayou.", image: "/images/portfolio/louisiana-airboat-marsh.webp", alt: "Airboat skimming across coastal Louisiana marshland near New Orleans" },
+  { href: "/riverboat-cruises", label: "River Cruises", text: "Jazz, brunch & Mississippi views.", image: "/images/travel-markets/new-orleans/steamboat-natchez.jpg", alt: "Steamboat Natchez paddlewheeler cruising on the Mississippi River in New Orleans" },
+  { href: "/plantation-tours", label: "Plantations", text: "History beneath the oaks.", image: "/images/wikimedia/originals/oak-alley-front.jpg", alt: "Avenue of centuries-old live oaks leading to Oak Alley Plantation" },
+  { href: "/food-tours", label: "Food & Cocktails", text: "Taste your way through the Quarter.", image: "/images/wikimedia/originals/gumbo-dish.jpg", alt: "Traditional New Orleans gumbo served in the French Quarter" },
+  { href: "/ghost-tours", label: "Ghosts & Spirits", text: "Strange stories after dark.", image: "/images/wikimedia/originals/lalaurie-mansion-1906.jpg", alt: "Historic LaLaurie Mansion on Royal Street in the French Quarter" },
+  { href: "/city-tours", label: "Garden District", text: "Mansions, history & neighborhood character.", image: "/images/portfolio/garden-district-mansion.webp", alt: "Historic Greek Revival mansion shaded by live oaks in the Garden District" },
+  { href: "/tours#combo-tours", label: "Full-Day Combos", text: "Combine the city and plantation in one day.", image: "/images/portfolio/laura-plantation.webp", alt: "Colorful Creole architecture at Laura Plantation on a full-day New Orleans excursion" },
 ];
 
 const editorialPicks = [
@@ -152,7 +152,7 @@ export default async function NewOrleansHomePage() {
             {categoryLinks.map((category, index) => (
               <Link key={`${category.label}-${index}`} href={category.href} data-wno-event="intent_tile_clicked" data-wno-label={category.label} className={visualStyles.homeCategoryCard}>
                 <div className={visualStyles.homeCategoryMedia}>
-                  <img src={category.image} alt="" loading={index < 4 ? "eager" : "lazy"} />
+                  <img src={category.image} alt={category.alt} width={640} height={400} loading={index < 4 ? "eager" : "lazy"} />
                   <span className={visualStyles.homeCategoryIndex} aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
                   <span className={visualStyles.homeCategoryArrow} aria-hidden="true">↗</span>
                 </div>
@@ -239,11 +239,25 @@ export default async function NewOrleansHomePage() {
               const product = productBySlug(pick.slug);
               if (!product) return null;
               return (
-                <Link key={pick.slug} href={`/tours/${pick.slug}`} data-wno-event="editorial_pick_clicked" data-wno-product={pick.slug} data-wno-label={pick.kicker} className="group block border border-[var(--nola-border)] bg-[var(--nola-surface)] p-6 transition hover:border-[var(--nola-gold)]">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--nola-gold)]">{pick.kicker}</p>
-                  <h3 className={`mt-3 text-2xl text-[var(--nola-ivory)] ${visualStyles.accentFont}`}>{product.title}</h3>
-                  <p className="mt-2 text-sm leading-5 text-[var(--nola-text-muted)]">{pick.note}</p>
-                  <span className="mt-4 inline-block text-xs font-bold uppercase tracking-widest text-[var(--nola-gold)]">See Availability →</span>
+                <Link key={pick.slug} href={`/tours/${pick.slug}`} data-wno-event="editorial_pick_clicked" data-wno-product={pick.slug} data-wno-label={pick.kicker} className="group block overflow-hidden border border-[var(--nola-border)] bg-[var(--nola-surface)] transition hover:border-[var(--nola-gold)]">
+                  {product.imageUrl ? (
+                    <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#161411]">
+                      <img
+                        src={product.imageUrl}
+                        alt={product.imageAlt || product.title}
+                        width={640}
+                        height={400}
+                        loading="lazy"
+                        className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                      />
+                    </div>
+                  ) : null}
+                  <div className="p-6">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--nola-gold)]">{pick.kicker}</p>
+                    <h3 className={`mt-3 text-2xl text-[var(--nola-ivory)] ${visualStyles.accentFont}`}>{product.title}</h3>
+                    <p className="mt-2 text-sm leading-5 text-[var(--nola-text-muted)]">{pick.note}</p>
+                    <span className="mt-4 inline-block text-xs font-bold uppercase tracking-widest text-[var(--nola-gold)]">See Availability →</span>
+                  </div>
                 </Link>
               );
             })}

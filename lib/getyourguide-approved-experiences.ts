@@ -548,7 +548,7 @@ export const welcomeToTheSwampGetYourGuideApprovedExperiences: Experience[] = [
     meeting_point: "Self-transport meeting point or optional pickup confirmed by GetYourGuide.",
     price_from: 69,
     booking_url: "https://www.getyourguide.com/new-orleans-l375/new-orleans-airboat-swamp-adventure-t69191/",
-    image_url: "/images/travel-markets/new-orleans/airboat-swamp.png"
+    image_url: "/images/wno/airboat-swamp-tour.webp"
   },
   {
     id: "approved-getyourguide-wts-145626",
@@ -561,7 +561,7 @@ export const welcomeToTheSwampGetYourGuideApprovedExperiences: Experience[] = [
     meeting_point: "Self-transport to launch site or optional pickup confirmed by GetYourGuide.",
     price_from: 35,
     booking_url: "https://www.getyourguide.com/new-orleans-l375/new-orleans-manchac-bayou-swamp-cruise-t145626/",
-    image_url: "/images/travel-markets/new-orleans/swamp-boat.png"
+    image_url: "/images/wno/small-boat-swamp-tour.webp"
   },
   {
     id: "approved-getyourguide-wts-69191-pickup",
@@ -574,7 +574,7 @@ export const welcomeToTheSwampGetYourGuideApprovedExperiences: Experience[] = [
     meeting_point: "Roundtrip hotel transport from downtown New Orleans hotels included.",
     price_from: 85,
     booking_url: "https://www.getyourguide.com/new-orleans-l375/new-orleans-airboat-swamp-adventure-t69191/",
-    image_url: "/images/travel-markets/new-orleans/hotel-pickup-airboat.png"
+    image_url: "/images/portfolio/louisiana-airboat-marsh.webp"
   },
   {
     id: "approved-getyourguide-wts-519502",
@@ -587,7 +587,7 @@ export const welcomeToTheSwampGetYourGuideApprovedExperiences: Experience[] = [
     meeting_point: "Self-drive meeting point or optional pickup confirmed by GetYourGuide.",
     price_from: 95,
     booking_url: "https://www.getyourguide.com/new-orleans-l375/new-orleans-6-passenger-premium-airboat-swamp-tour-t519502/",
-    image_url: "/images/travel-markets/new-orleans/small-group-airboat.png"
+    image_url: "/images/portfolio/bayou-alligator-tour.webp"
   },
   {
     id: "approved-getyourguide-wts-20064",
@@ -600,7 +600,7 @@ export const welcomeToTheSwampGetYourGuideApprovedExperiences: Experience[] = [
     meeting_point: "Cajun Pride Swamp Tours launch site or optional pickup confirmed by GetYourGuide.",
     price_from: 32,
     booking_url: "https://www.getyourguide.com/new-orleans-l375/new-orleans-manchac-swamp-cruise-t20064/",
-    image_url: "/images/travel-markets/new-orleans/covered-boat-swamp.png"
+    image_url: "/images/portfolio/nola-covered-swamp-boat.webp"
   },
   {
     id: "approved-getyourguide-wts-20064-pickup",
@@ -613,7 +613,7 @@ export const welcomeToTheSwampGetYourGuideApprovedExperiences: Experience[] = [
     meeting_point: "Pickup from select French Quarter and downtown hotels included.",
     price_from: 59,
     booking_url: "https://www.getyourguide.com/new-orleans-l375/new-orleans-manchac-swamp-cruise-t20064/",
-    image_url: "/images/travel-markets/new-orleans/hotel-pickup-swamp-boat.png"
+    image_url: "/images/portfolio/jean-lafitte-bayou.webp"
   },
   {
     id: "approved-getyourguide-wts-145632",
@@ -626,7 +626,7 @@ export const welcomeToTheSwampGetYourGuideApprovedExperiences: Experience[] = [
     meeting_point: "Hotel pickup and drop-off from central New Orleans locations included.",
     price_from: 135,
     booking_url: "https://www.getyourguide.com/new-orleans-l375/oak-alley-plantation-airboat-swamp-combo-tour-t145632/",
-    image_url: "/images/travel-markets/new-orleans/swamp-plantation-combo.png"
+    image_url: "/images/wikimedia/originals/oak-alley-front.jpg"
   }
 ];
 

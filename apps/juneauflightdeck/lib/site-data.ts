@@ -46,16 +46,16 @@ export const curatedTours: CuratedTour[] = [
     experienceNote:
       "Best if you want the iconic glacier landing without committing your entire port day to one experience block.",
     heroImage:
-      "https://cdn.filestackcontent.com/GyqI6elSXKklaQiP9ULd",
+      "/images/tours/temsco-mendenhall-glacier-walk.jpg",
     imageAlt: "TEMSCO Mendenhall Glacier landing helicopter tour in Juneau, Alaska",
     gallery: [
       {
-        src: "https://cdn.filestackcontent.com/GyqI6elSXKklaQiP9ULd",
-        alt: "TEMSCO helicopter on Mendenhall Glacier landing zone in Alaska",
+        src: "/images/tours/temsco-mendenhall-glacier-walk.jpg",
+        alt: "Mendenhall Glacier walkabout terrain near Juneau, Alaska",
       },
       {
-        src: "https://cdn.filestackcontent.com/NPg1gKoCQu6ewj2mnmsQ",
-        alt: "Coastal Helicopters landing on Juneau Icefield, Alaska",
+        src: "/images/tours/coastal-icefield-landing.jpg",
+        alt: "Herbert Glacier and Juneau Icefield mountain terrain near Juneau, Alaska",
       },
     ],
     tourMatch: [/\bglacier\b.*\blanding\b/i, /\blanding\b.*\bglacier\b/i],
@@ -88,16 +88,16 @@ export const curatedTours: CuratedTour[] = [
     experienceNote:
       "This is the luxury-adventure choice when you want the highest ceiling memory and have enough port time to support it.",
     heroImage:
-      "https://cdn.filestackcontent.com/mjmYVT8aSPiQ6M0h9hb5",
-    imageAlt: "Glacier dog sledding camp team on Juneau Icefield, Alaska",
+      "/images/tours/temsco-glacier-dog-sledding.jpg",
+    imageAlt: "Sled dog team running across snowpack in Alaska",
     gallery: [
       {
-        src: "https://cdn.filestackcontent.com/mjmYVT8aSPiQ6M0h9hb5",
-        alt: "TEMSCO glacier dog sled team on Juneau Icefield",
+        src: "/images/tours/temsco-glacier-dog-sledding.jpg",
+        alt: "Sled dog team running across snowpack in Alaska",
       },
       {
-        src: "https://cdn.filestackcontent.com/MY7gLjORnauQs7dB2dOm",
-        alt: "Coastal Helicopters dog sled camp on glacier snowpack",
+        src: "/images/portfolio/mendenhall-glacier-overview.webp",
+        alt: "Mendenhall Glacier snowfield and icefield basin near Juneau, Alaska",
       },
     ],
     tourMatch: [/\bdog.?sled\b/i],
@@ -130,16 +130,16 @@ export const curatedTours: CuratedTour[] = [
     experienceNote:
       "Ideal for scenic-first travelers, shorter port windows, and anyone who values the flight itself over the landing.",
     heroImage:
-      "https://cdn.filestackcontent.com/NPg1gKoCQu6ewj2mnmsQ",
-    imageAlt: "Coastal Helicopters Juneau icefield flightseeing and glacier landing in Alaska",
+      "/images/tours/coastal-icefield-landing.jpg",
+    imageAlt: "Herbert Glacier and Juneau Icefield mountain terrain near Juneau, Alaska",
     gallery: [
       {
-        src: "https://cdn.filestackcontent.com/NPg1gKoCQu6ewj2mnmsQ",
-        alt: "Icefield aerial view for Juneau helicopter flightseeing",
+        src: "/images/tours/coastal-icefield-landing.jpg",
+        alt: "Herbert Glacier and Juneau Icefield aerial approach near Juneau, Alaska",
       },
       {
-        src: "https://cdn.filestackcontent.com/cOhoNqnERLmiIhpPY4bu",
-        alt: "NorthStar Trekking glacier helicopter landscape near Juneau, Alaska",
+        src: "/images/tours/northstar-glacier-ice-trek.jpg",
+        alt: "Guided glacier ice trekking terrain on the Juneau Icefield, Alaska",
       },
     ],
     tourMatch: [/\bicefield\b/i, /\bflightseeing\b/i, /\bhelicopter\b/i],
@@ -172,16 +172,16 @@ export const curatedTours: CuratedTour[] = [
     experienceNote:
       "Best when the goal is exclusivity, flexibility, or a more cinematic private moment on the ice.",
     heroImage:
-      "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=1600&q=80",
-    imageAlt: "Private helicopter experience above glacier scenery in Juneau",
+      "/images/juneau-helicopter-hero.jpg",
+    imageAlt: "Glacier flightseeing helicopter parked on snowfield in Alaska",
     gallery: [
       {
-        src: "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1200&q=80",
-        alt: "Premium Alaska scenery for a private helicopter charter",
+        src: "/images/portfolio/mendenhall-glacier-overview.webp",
+        alt: "Mendenhall Glacier basin and Coast Mountains near Juneau, Alaska",
       },
       {
-        src: "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=1200&q=80",
-        alt: "High-end aerial glacier landscape suited to a private helicopter tour",
+        src: "/images/portfolio/glacier-walkabout.webp",
+        alt: "Blue glacial ice and crevasse formations on an Alaska glacier",
       },
     ],
     tourMatch: [/\bprivate\b/i, /\bcharter\b/i],
@@ -190,15 +190,15 @@ export const curatedTours: CuratedTour[] = [
 
 export const sharedGallery = [
   {
-    src: "https://images.unsplash.com/photo-1472396961693-142e6e269027?auto=format&fit=crop&w=1400&q=80",
-    alt: "Helicopter tour mood image for Alaska adventure travel",
+    src: "/images/juneau-helicopter-hero.jpg",
+    alt: "Glacier flightseeing helicopter landed on snowfield in Alaska",
   },
   {
-    src: "https://images.unsplash.com/photo-1517821099601-3ecf4bf9db7b?auto=format&fit=crop&w=1400&q=80",
-    alt: "Cinematic glacier and mountain scene for Juneau helicopter marketing",
+    src: "/images/portfolio/mendenhall-glacier-overview.webp",
+    alt: "Mendenhall Glacier and surrounding peaks near Juneau, Alaska",
   },
   {
-    src: "https://images.unsplash.com/photo-1482192596544-9eb780fc7f66?auto=format&fit=crop&w=1400&q=80",
-    alt: "Glacier landing environment in Alaska",
+    src: "/images/tours/northstar-glacier-ice-trek.jpg",
+    alt: "Glacier ice trekking terrain in Alaska",
   },
 ];

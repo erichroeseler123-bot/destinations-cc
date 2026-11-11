@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAllAlaskaShips, getShipBySlug } from "@/lib/alaska-ships";
+import { PORT_IMAGES } from "@/lib/images";
 
 const SITE = "https://www.lastfrontiershoreexcursions.com";
 
@@ -78,21 +79,35 @@ export default async function ShipOverviewPage({ params }: ShipPageProps) {
 
       <section className="hero">
         <div className="shell">
-          <p className="eyebrow">
-            <Link href="/cruise-ships" style={{ color: "inherit", textDecoration: "none" }}>Cruise Ships</Link> / {ship.cruiseLine}
-          </p>
-          <h1>{ship.name} Alaska Shore Excursions</h1>
-          <p className="lead">{ship.summaryDescription}</p>
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 20 }}>
-            <span style={{ fontSize: 13, background: "rgba(255,255,255,0.15)", color: "white", padding: "4px 12px", borderRadius: 20, fontWeight: 700 }}>
-              {ship.shipClass}
-            </span>
-            <span style={{ fontSize: 13, background: "rgba(255,255,255,0.15)", color: "white", padding: "4px 12px", borderRadius: 20 }}>
-              Capacity: {ship.passengerCapacity.toLocaleString()} guests
-            </span>
-            <span style={{ fontSize: 13, background: "rgba(255,255,255,0.15)", color: "white", padding: "4px 12px", borderRadius: 20 }}>
-              Homeports: {ship.homeportOptions.join(", ")}
-            </span>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 32, alignItems: "center" }}>
+            <div>
+              <p className="eyebrow">
+                <Link href="/cruise-ships" style={{ color: "inherit", textDecoration: "none" }}>Cruise Ships</Link> / {ship.cruiseLine}
+              </p>
+              <h1>{ship.name} Alaska Shore Excursions</h1>
+              <p className="lead">{ship.summaryDescription}</p>
+              <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 20 }}>
+                <span style={{ fontSize: 13, background: "rgba(255,255,255,0.15)", color: "white", padding: "4px 12px", borderRadius: 20, fontWeight: 700 }}>
+                  {ship.shipClass}
+                </span>
+                <span style={{ fontSize: 13, background: "rgba(255,255,255,0.15)", color: "white", padding: "4px 12px", borderRadius: 20 }}>
+                  Capacity: {ship.passengerCapacity.toLocaleString()} guests
+                </span>
+                <span style={{ fontSize: 13, background: "rgba(255,255,255,0.15)", color: "white", padding: "4px 12px", borderRadius: 20 }}>
+                  Homeports: {ship.homeportOptions.join(", ")}
+                </span>
+              </div>
+            </div>
+            <div style={{ borderRadius: 14, overflow: "hidden", border: "1px solid rgba(255,255,255,0.22)", aspectRatio: "16 / 10", background: "#102b34" }}>
+              <img
+                src="/images/portfolio/cruise-fleet-hero.webp"
+                alt={`${ship.name} Alaska Inside Passage port guide`}
+                width={1440}
+                height={900}
+                loading="eager"
+                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+              />
+            </div>
           </div>
         </div>
       </section>
@@ -107,23 +122,37 @@ export default async function ShipOverviewPage({ params }: ShipPageProps) {
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 24 }}>
-          {portsList.map((port) => (
-            <Link
-              key={port.portSlug}
-              href={`/cruise-ships/${ship.slug}/${port.portSlug}-shore-excursions`}
-              style={{
-                background: "white",
-                border: "1px solid var(--line)",
-                borderRadius: 12,
-                padding: 24,
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
-                boxShadow: "var(--card-shadow)",
-              }}
-            >
-              <div>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+          {portsList.map((port) => {
+            const portImg = PORT_IMAGES[port.portSlug];
+            return (
+              <Link
+                key={port.portSlug}
+                href={`/cruise-ships/${ship.slug}/${port.portSlug}-shore-excursions`}
+                style={{
+                  background: "white",
+                  border: "1px solid var(--line)",
+                  borderRadius: 12,
+                  padding: 24,
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                  boxShadow: "var(--card-shadow)",
+                }}
+              >
+                <div>
+                  {portImg ? (
+                    <div style={{ borderRadius: 10, overflow: "hidden", aspectRatio: "16 / 10", marginBottom: 14, background: "#eef5f6" }}>
+                      <img
+                        src={portImg.url}
+                        alt={portImg.alt}
+                        width={640}
+                        height={400}
+                        loading="lazy"
+                        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                      />
+                    </div>
+                  ) : null}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
                   <h3 style={{ fontSize: 22, margin: 0, color: "var(--deep)" }}>{port.portName} Shore Excursions</h3>
                   <span style={{ fontSize: 12, fontWeight: 700, color: "var(--forest)", background: "var(--ice)", padding: "3px 8px", borderRadius: 6 }}>
                     {port.portRegion}
@@ -141,7 +170,8 @@ export default async function ShipOverviewPage({ params }: ShipPageProps) {
                 View {port.portName} Excursions for {ship.name} &rarr;
               </div>
             </Link>
-          ))}
+            );
+          })}
         </div>
 
         <section style={{ marginTop: 64, background: "var(--ice)", padding: 32, borderRadius: 12, border: "1px solid var(--line)" }}>

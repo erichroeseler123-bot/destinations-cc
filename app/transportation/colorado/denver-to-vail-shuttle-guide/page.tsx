@@ -95,18 +95,28 @@ export default async function DenverToVailShuttleGuidePage() {
     <main className="min-h-screen bg-zinc-950 text-white">
       <JsonLd data={jsonLdData} />
       <div className="mx-auto max-w-5xl px-6 py-16 space-y-8">
-        <header className="rounded-[2rem] border border-white/10 bg-white/5 p-7">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-xs uppercase tracking-[0.24em] text-cyan-300">Colorado ski-transfer authority</p>
-            <p className="text-xs text-zinc-400">Sources verified: {verifiedAt}</p>
+        <header className="overflow-hidden rounded-[2rem] border border-white/10 bg-white/5">
+          <img
+            src="/images/portfolio/colorado-i70-corridor.webp"
+            alt="Interstate 70 winter mountain corridor approaching the Eisenhower-Johnson Memorial Tunnel between Denver and Vail"
+            width={1440}
+            height={810}
+            loading="eager"
+            className="h-52 w-full object-cover object-center border-b border-white/10 sm:h-64"
+          />
+          <div className="p-7">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-xs uppercase tracking-[0.24em] text-cyan-300">Colorado ski-transfer authority</p>
+              <p className="text-xs text-zinc-400">Sources verified: {verifiedAt}</p>
+            </div>
+            <h1 className="mt-3 text-4xl font-black tracking-tight md:text-5xl">
+              Denver to Vail shuttle planning should solve passenger + ski-bag capacity and winter corridor risk before price-only comparison.
+            </h1>
+            <p className="mt-4 max-w-4xl text-base leading-8 text-zinc-300">
+              DCC’s job here is to separate passenger seats from ski-gear volume and compare private vans, per-seat shared shuttles,
+              rental vehicles, and public transit fairly—including when you do not need a rental car at all once in pedestrian Vail Village.
+            </p>
           </div>
-          <h1 className="mt-3 text-4xl font-black tracking-tight md:text-5xl">
-            Denver to Vail shuttle planning should solve passenger + ski-bag capacity and winter corridor risk before price-only comparison.
-          </h1>
-          <p className="mt-4 max-w-4xl text-base leading-8 text-zinc-300">
-            DCC’s job here is to separate passenger seats from ski-gear volume and compare private vans, per-seat shared shuttles,
-            rental vehicles, and public transit fairly—including when you do not need a rental car at all once in pedestrian Vail Village.
-          </p>
         </header>
 
         <VailBusCatchChecker

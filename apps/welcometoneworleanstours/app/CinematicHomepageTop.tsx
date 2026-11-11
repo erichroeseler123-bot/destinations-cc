@@ -2,14 +2,14 @@ import Link from "next/link";
 import styles from "./cinematic-home-gold.module.css";
 
 const categories = [
-  { href: "/city-tours", title: "City Tours", tag: "French Quarter", copy: "Explore the Big Easy", image: "/images/travel-markets/new-orleans/french-quarter-street.jpg", icon: "⚜", ribbon: "purple" },
-  { href: "/swamp-tours", title: "Swamps & Airboats", tag: "Bayou & Wilds", copy: "Wild. Mysterious. Unforgettable.", image: "/images/travel-markets/new-orleans/airboat-swamp.png", icon: "⌁", ribbon: "gold" },
+  { href: "/city-tours", title: "City Tours", tag: "French Quarter", copy: "Explore the Big Easy", image: "/images/portfolio/royal-street-balconies.webp", icon: "⚜", ribbon: "purple" },
+  { href: "/swamp-tours", title: "Swamps & Airboats", tag: "Bayou & Wilds", copy: "Wild. Mysterious. Unforgettable.", image: "/images/portfolio/louisiana-airboat-marsh.webp", icon: "⌁", ribbon: "gold" },
   { href: "/riverboat-cruises", title: "River Cruises", tag: "Mississippi", copy: "See the city from the water", image: "/images/travel-markets/new-orleans/steamboat-natchez.jpg", icon: "◉", ribbon: "green" },
   { href: "/plantation-tours", title: "Plantations", tag: "Historic River Road", copy: "History beneath the oaks", image: "/images/wikimedia/originals/oak-alley-front.jpg", icon: "▥", ribbon: "purple" },
   { href: "/food-tours", title: "Food & Cocktails", tag: "Creole Flavors", copy: "Savor the flavors of New Orleans", image: "/images/wikimedia/originals/gumbo-dish.jpg", icon: "✣", ribbon: "gold" },
-  { href: "/ghost-tours", title: "Ghosts & Cemetery", tag: "Haunted History", copy: "Haunted history. True stories.", image: "/images/wikimedia/originals/lalaurie-mansion-1906.jpg", icon: "✦", ribbon: "green" },
-  { href: "/garden-district-tours", title: "Garden District", tag: "Mansions & Oaks", copy: "Gorgeous homes. Timeless charm.", image: "/images/new-orleans/hero-french-quarter-balcony.jpg", icon: "❧", ribbon: "purple" },
-  { href: "/jazz-music-tours", title: "Jazz / Music", tag: "Live Sound", copy: "The soul of New Orleans", image: "/images/wikimedia/originals/french-quarter-night.jpg", icon: "♪", ribbon: "gold" },
+  { href: "/ghost-tours", title: "Ghosts & Cemetery", tag: "Haunted History", copy: "Haunted history. True stories.", image: "/images/wikimedia/originals/french-quarter-night.jpg", icon: "✦", ribbon: "green" },
+  { href: "/garden-district-tours", title: "Garden District", tag: "Mansions & Oaks", copy: "Gorgeous homes. Timeless charm.", image: "/images/portfolio/garden-district-mansion.webp", icon: "❧", ribbon: "purple" },
+  { href: "/jazz-music-tours", title: "Jazz / Music", tag: "Live Sound", copy: "The soul of New Orleans", image: "/images/travel-markets/new-orleans/new-orleans-live-music.jpg", icon: "♪", ribbon: "gold" },
 ];
 
 const popularDecisions = [

@@ -84,7 +84,16 @@ export default async function JuneauShortPortCallGuidePage({
       />
 
       <div className="mx-auto max-w-5xl space-y-7">
-        <header className="rounded-[2.2rem] border border-amber-400/30 bg-[#0c121d] p-8 md:p-10 space-y-5 shadow-2xl">
+        <header className="overflow-hidden rounded-[2.2rem] border border-amber-400/30 bg-[#0c121d] shadow-2xl">
+          <img
+            src="/images/travel-markets/juneau/juneau-waterfront-cruise.jpg"
+            alt="Cruise ship docked along the downtown Juneau waterfront with Coast Mountains backdrop"
+            width={1280}
+            height={853}
+            loading="eager"
+            className="h-52 w-full object-cover object-center border-b border-white/10 sm:h-64"
+          />
+          <div className="p-8 md:p-10 space-y-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-[11px] font-black uppercase tracking-[0.26em] text-[#f5b34b]">
               DCC Juneau Cruise Timing Authority · Short Port-Call Guide
@@ -134,6 +143,7 @@ export default async function JuneauShortPortCallGuidePage({
             >
               What If My Helicopter Flight Is Canceled? →
             </Link>
+          </div>
           </div>
         </header>
 

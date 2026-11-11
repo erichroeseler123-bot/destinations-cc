@@ -21,6 +21,25 @@ export default function AboutPage() {
     <main className="page-shell static-page-shell">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <section className="static-page-card">
+        <div
+          style={{
+            margin: "0 0 22px",
+            borderRadius: 16,
+            overflow: "hidden",
+            border: "1px solid var(--line, rgba(148, 163, 184, 0.25))",
+            aspectRatio: "16 / 9",
+            maxHeight: 300,
+            background: "#071626",
+          }}
+        >
+          <img
+            src="/images/juneau-helicopter-hero.jpg"
+            alt="Flightseeing helicopter over an Alaska glacier valley surrounded by snow-capped Coast Mountains"
+            width={1440}
+            height={900}
+            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 46%", display: "block" }}
+          />
+        </div>
         <p className="eyebrow">Why choose Juneau Flight Deck</p>
         <h1 className="static-page-title">A tour that fits your group, your ship, and your Juneau day.</h1>
         <p className="chooser-trust-line">{SITE_DESCRIPTION}</p>

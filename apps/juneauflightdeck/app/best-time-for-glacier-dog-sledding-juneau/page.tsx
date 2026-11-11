@@ -66,9 +66,29 @@ export default function BestTimeDogSleddingPage() {
       <h1 style={{ fontSize: "clamp(2rem, 4vw, 2.7rem)", fontWeight: 900, lineHeight: 1.2, margin: "10px 0 18px", color: "var(--text)" }}>
         Best Time for Glacier Dog Sledding in Juneau: Month-by-Month Guide
       </h1>
-      <p style={{ fontSize: "1.1rem", lineHeight: 1.6, color: "var(--muted)", marginBottom: "32px" }}>
+      <p style={{ fontSize: "1.1rem", lineHeight: 1.6, color: "var(--muted)", marginBottom: "24px" }}>
         Helicopter dog sledding is one of the most sought-after cruise excursions in Alaska. Because dog camps sit thousands of feet up on the Juneau Icefield, snowpack conditions, visibility requirements, and operating windows shift across the summer season.
       </p>
+
+      <div
+        style={{
+          marginBottom: 32,
+          borderRadius: 16,
+          overflow: "hidden",
+          border: "1px solid var(--line-strong, #334155)",
+          aspectRatio: "16 / 9",
+          maxHeight: 340,
+          background: "#071626",
+        }}
+      >
+        <img
+          src="/images/tours/temsco-glacier-dog-sledding.jpg"
+          alt="Alaskan husky sled dog team harnessed on an Alaska mountain snowfield at alpenglow"
+          width={1440}
+          height={900}
+          style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "55% 60%", display: "block" }}
+        />
+      </div>
 
       {/* Seasonal Overview Card */}
       <section

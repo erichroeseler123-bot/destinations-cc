@@ -91,7 +91,7 @@ export default async function PortsIndex() {
         }}
       />
       <div className="relative max-w-6xl mx-auto px-6 py-16 space-y-10">
-        <header className="space-y-3">
+        <header className="space-y-4">
           <RouteHeroMark eyebrow="Destination Command Center" title="PORTS" tone="emerald" />
           <p className="text-xs uppercase tracking-wider text-zinc-500">Cruise planning</p>
           <h1 className="text-4xl md:text-6xl font-black tracking-tight">
@@ -103,6 +103,24 @@ export default async function PortsIndex() {
           <p className="max-w-3xl text-sm text-zinc-500">
             {SITE_IDENTITY.name} helps travelers understand where they are going, what is nearby, and how to move through busy port areas.
           </p>
+          <div className="overflow-hidden rounded-3xl border border-white/12 bg-black/40 shadow-2xl">
+            <img
+              src={
+                isLfse
+                  ? "/images/travel-markets/juneau/juneau-waterfront-cruise.jpg"
+                  : "/images/travel-markets/portmiami/portmiami-cruise-ship.jpg"
+              }
+              alt={
+                isLfse
+                  ? "Cruise ship berthed along the Juneau, Alaska mountain waterfront"
+                  : "Cruise ships berthed along the PortMiami embarkation channel"
+              }
+              width={1280}
+              height={800}
+              loading="eager"
+              className="h-52 w-full object-cover object-center sm:h-68"
+            />
+          </div>
         </header>
 
         <section className="rounded-2xl border border-cyan-400/20 bg-cyan-500/10 p-6 space-y-4">

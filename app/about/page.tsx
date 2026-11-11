@@ -50,16 +50,26 @@ export default function AboutDccPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <div className="mx-auto max-w-6xl space-y-8 px-6 py-16">
-        <header className="rounded-[2rem] border border-white/10 bg-zinc-900 p-8">
-          <p className="text-xs font-bold uppercase tracking-[0.24em] text-cyan-300">
-            Destination Command Center · Travel Reference &amp; Coordinate Intelligence
-          </p>
-          <h1 className="mt-4 text-4xl font-black tracking-tight md:text-6xl">
-            Verifiable travel reference, supported by live coordinate intelligence.
-          </h1>
-          <p className="mt-5 max-w-3xl text-lg leading-8 text-zinc-300">
-            Destination Command Center (DCC) helps travelers, search engines, and AI assistants understand destinations, prepare for trips, compare practical transport and excursion options, and inspect live environmental conditions. We keep our coordinate platform (<code className="text-cyan-200">/location/lat/lng</code>), JSON API (<code className="text-cyan-200">/api/location/lat/lng</code>), and embeddable venue widgets (<code className="text-cyan-200">/widget</code>) at the core while connecting them to deep, source-attributed destination reference guides.
-          </p>
+        <header className="overflow-hidden rounded-[2rem] border border-white/10 bg-zinc-900">
+          <img
+            src="/images/portfolio/dcc-hero-corridor.webp"
+            alt="Alpine highway corridor representing Destination Command Center travel reference and coordinate intelligence"
+            width={1440}
+            height={810}
+            loading="eager"
+            className="h-52 w-full object-cover object-center border-b border-white/10 sm:h-68"
+          />
+          <div className="p-8">
+            <p className="text-xs font-bold uppercase tracking-[0.24em] text-cyan-300">
+              Destination Command Center · Travel Reference &amp; Coordinate Intelligence
+            </p>
+            <h1 className="mt-4 text-4xl font-black tracking-tight md:text-6xl">
+              Verifiable travel reference, supported by live coordinate intelligence.
+            </h1>
+            <p className="mt-5 max-w-3xl text-lg leading-8 text-zinc-300">
+              Destination Command Center (DCC) helps travelers, search engines, and AI assistants understand destinations, prepare for trips, compare practical transport and excursion options, and inspect live environmental conditions. We keep our coordinate platform (<code className="text-cyan-200">/location/lat/lng</code>), JSON API (<code className="text-cyan-200">/api/location/lat/lng</code>), and embeddable venue widgets (<code className="text-cyan-200">/widget</code>) at the core while connecting them to deep, source-attributed destination reference guides.
+            </p>
+          </div>
         </header>
 
         <section className="grid gap-6 md:grid-cols-2">

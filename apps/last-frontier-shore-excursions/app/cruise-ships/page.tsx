@@ -43,14 +43,28 @@ export default function CruiseShipsIndexPage() {
 
       <section className="hero">
         <div className="shell">
-          <p className="eyebrow">Alaska Fleet Directory · 2026/2027</p>
-          <h1>Alaska Cruise Ships & Port Excursion Guides</h1>
-          <p className="lead">
-            Every cruise ship in Alaska operates with distinct port windows, dock locations, and transit logistics. Choose your vessel below to view verified dock notes, transit margins, and excursions that fit your specific port day.
-          </p>
-          <div className="cta-row">
-            <Link className="button" href="/decision/best-excursion-for-each-port">View Best Excursions by Port</Link>
-            <Link className="button secondary" href="/tours">Browse All Tours</Link>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 32, alignItems: "center" }}>
+            <div>
+              <p className="eyebrow">Alaska Fleet Directory · 2026/2027</p>
+              <h1>Alaska Cruise Ships &amp; Port Excursion Guides</h1>
+              <p className="lead">
+                Every cruise ship in Alaska operates with distinct port windows, dock locations, and transit logistics. Choose your vessel below to view verified dock notes, transit margins, and excursions that fit your specific port day.
+              </p>
+              <div className="cta-row">
+                <Link className="button" href="/decision/best-excursion-for-each-port">View Best Excursions by Port</Link>
+                <Link className="button secondary" href="/tours">Browse All Tours</Link>
+              </div>
+            </div>
+            <div style={{ borderRadius: 14, overflow: "hidden", border: "1px solid rgba(255,255,255,0.22)", aspectRatio: "16 / 10", background: "#102b34" }}>
+              <img
+                src="/images/portfolio/cruise-fleet-hero.webp"
+                alt="Cruise ships berthed along the waterfront in Southeast Alaska against coastal mountain peaks"
+                width={1440}
+                height={900}
+                loading="eager"
+                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+              />
+            </div>
           </div>
         </div>
       </section>

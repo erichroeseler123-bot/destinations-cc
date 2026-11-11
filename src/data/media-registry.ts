@@ -520,22 +520,14 @@ export const MEDIA_REGISTRY: MediaRegistryEntry[] = [
   {
     key: "hotel:hard-rock-las-vegas",
     aliases: ["hotel:mirage-las-vegas"],
-    imageSet: buildWikimediaImageSet({
+    imageSet: buildOwnedImageSet({
       hero: {
-        src: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Mirage_Las_Vegas_December_2013.jpg/1280px-Mirage_Las_Vegas_December_2013.jpg",
-        alt: "The Mirage hotel exterior on the Las Vegas Strip at night",
-        attribution: "King of Hearts / CC BY-SA 3.0 via Wikimedia Commons",
-        license: "CC BY-SA 3.0",
-        licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0/",
-        sourceId: "File:Mirage_Las_Vegas_December_2013.jpg",
+        src: "/images/travel-markets/las-vegas/las-vegas-strip-skyline.jpg",
+        alt: "Las Vegas Strip central resort corridor skyline during Hard Rock Las Vegas redevelopment",
       },
       card: {
-        src: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Mirage_Las_Vegas_December_2013.jpg/1280px-Mirage_Las_Vegas_December_2013.jpg",
-        alt: "The Mirage hotel exterior on the Las Vegas Strip at night",
-        attribution: "King of Hearts / CC BY-SA 3.0 via Wikimedia Commons",
-        license: "CC BY-SA 3.0",
-        licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0/",
-        sourceId: "File:Mirage_Las_Vegas_December_2013.jpg",
+        src: "/images/travel-markets/las-vegas/las-vegas-strip-skyline.jpg",
+        alt: "Las Vegas Strip central resort corridor skyline during Hard Rock Las Vegas redevelopment",
       },
     }),
   },

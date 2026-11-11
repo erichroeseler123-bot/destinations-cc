@@ -574,7 +574,6 @@ const nextConfig = {
       "./scratch/**/*",
       "./apps/**/*",
       "./assets/raw/**/*",
-      "./public/images/**/*",
       "./data/memory/snapshots/**/*",
       "./docs/**/*",
       "./tests/**/*",
@@ -586,7 +585,6 @@ const nextConfig = {
       "./scratch/**/*",
       "./apps/**/*",
       "./assets/raw/**/*",
-      "./public/images/**/*",
       "./data/memory/snapshots/**/*",
       "./docs/**/*",
       "./tests/**/*",
@@ -606,6 +604,22 @@ const nextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'media.tacdn.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'media-cdn.tripadvisor.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.partyatredrocks.com',
+      },
+      {
+        protocol: 'https',
         hostname: 'upload.wikimedia.org',
       },
       {
@@ -613,7 +627,7 @@ const nextConfig = {
         hostname: 'commons.wikimedia.org',
       },
     ],
-    deviceSizes: [640, 750, 828, 1080, 1200],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1600, 1920],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
   async headers() {

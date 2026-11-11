@@ -14,21 +14,24 @@ import {
   getRecommendation,
 } from "../../app/new-orleans/help-me-choose/recommendationRules";
 
-test("WNO has exactly 21 approved parent experiences with unique detail slugs", () => {
-  assert.equal(STOREFRONT_PRODUCTS.length, 21);
-  assert.equal(APPROVED_PRODUCT_SLUGS.length, 21);
+test("WNO has exactly 23 approved parent experiences with unique detail slugs", () => {
+  assert.equal(STOREFRONT_PRODUCTS.length, 23);
+  assert.equal(APPROVED_PRODUCT_SLUGS.length, 23);
 
   const productSlugs = STOREFRONT_PRODUCTS.map((product) => product.slug);
-  assert.equal(new Set(productSlugs).size, 21);
+  assert.equal(new Set(productSlugs).size, 23);
   assert.deepEqual(new Set(productSlugs), new Set(APPROVED_PRODUCT_SLUGS));
 });
 
-test("WNO distinguishes self-service inventory from the held manual-confirmation product", () => {
+test("WNO distinguishes self-service inventory from held manual-confirmation products", () => {
   const bookableProducts = STOREFRONT_PRODUCTS.filter((product) => !isHeldProduct(product.slug));
   const heldProducts = STOREFRONT_PRODUCTS.filter((product) => isHeldProduct(product.slug));
 
-  assert.equal(bookableProducts.length, 20);
-  assert.deepEqual(heldProducts.map((product) => product.slug), ["covered-boat-plantation-combo"]);
+  assert.equal(bookableProducts.length, 21);
+  assert.deepEqual(
+    heldProducts.map((product) => product.slug),
+    ["covered-boat-plantation-combo", "jeanlafitte-swamp-tour-with-hotel-pickup"],
+  );
 });
 
 test("every quick chooser path resolves to governed self-service inventory", () => {

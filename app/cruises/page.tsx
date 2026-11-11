@@ -89,6 +89,16 @@ export default async function CruisesPage() {
               Explore Cruise Lanes
             </Link>
           </div>
+          <div className="overflow-hidden rounded-3xl border border-white/12 bg-black/40 shadow-2xl pt-0">
+            <img
+              src="/images/travel-markets/port-canaveral/port-canaveral-cruise-ship.jpg"
+              alt="Ocean cruise ship departing Port Canaveral embarkation channel"
+              width={1280}
+              height={800}
+              loading="eager"
+              className="h-52 w-full object-cover object-center sm:h-68"
+            />
+          </div>
         </header>
 
         <section className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">

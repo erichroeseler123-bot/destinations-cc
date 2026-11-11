@@ -703,8 +703,12 @@
 
 @media (max-width: 640px) {
   .hero {
-    min-height: auto;
+    min-height: 440px;
     padding: 44px 0 56px;
+  }
+
+  .heroImage {
+    object-position: 34% 48%;
   }
 
   .heroPrimaryRow .primaryBtn {

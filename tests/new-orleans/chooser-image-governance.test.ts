@@ -36,12 +36,10 @@ test("every chooser path resolves to live storefront inventory", () => {
   }
 });
 
-test("only unresolved combination products remain in the image replacement queue", () => {
+test("only held unverified products remain in the image replacement queue while all bookable products resolve photos", () => {
   const blockedSlugs = [
-    "all-day-city-plantation-combo",
     "covered-boat-plantation-combo",
-    "swamp-boat-oak-alley-combo",
-    "swamp-boat-whitney-combo",
+    "jeanlafitte-swamp-tour-with-hotel-pickup",
   ];
 
   assert.deepStrictEqual([...PRODUCT_IMAGE_REPLACEMENT_QUEUE].sort(), [...blockedSlugs].sort());
@@ -53,7 +51,15 @@ test("only unresolved combination products remain in the image replacement queue
     assert.strictEqual(
       resolveProductImage(product),
       null,
-      `${slug} must remain text-only until an accurate approved commerce image is available`,
+      `${slug} must remain text-only while held pending operator verification`,
+    );
+  }
+
+  for (const product of STOREFRONT_PRODUCTS) {
+    if (blockedSlugs.includes(product.slug)) continue;
+    assert.ok(
+      resolveProductImage(product),
+      `Bookable product ${product.slug} must resolve a verified commerce photograph`,
     );
   }
 });

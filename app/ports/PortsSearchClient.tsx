@@ -36,6 +36,33 @@ function tokenizePort(port: Port): string {
     .join(" "));
 }
 
+const FEATURED_PORT_IMAGES: Record<string, { src: string; alt: string }> = {
+  "new-orleans": {
+    src: "/images/travel-markets/new-orleans/steamboat-natchez.jpg",
+    alt: "Mississippi Riverfront cruise and steamboat corridor in New Orleans",
+  },
+  juneau: {
+    src: "/images/travel-markets/juneau/juneau-waterfront-cruise.jpg",
+    alt: "Cruise ship docked along the Juneau, Alaska mountain harbor",
+  },
+  cozumel: {
+    src: "/images/travel-markets/cozumel/cozumel-cruise-terminal.jpg",
+    alt: "Cruise terminal pier and turquoise Caribbean water in Cozumel, Mexico",
+  },
+  nassau: {
+    src: "/images/travel-markets/nassau/prince-george-wharf-cruise-port.jpg",
+    alt: "Cruise ships docked at Prince George Wharf in Nassau, Bahamas",
+  },
+  skagway: {
+    src: "/images/authority/ports/skagway/hero.webp",
+    alt: "Skagway cruise harbor and White Pass mountain corridor in Alaska",
+  },
+  ketchikan: {
+    src: "/images/authority/ports/ketchikan/hero.webp",
+    alt: "Ketchikan waterfront harbor and Tongass Narrows in Alaska",
+  },
+};
+
 export default function PortsSearchClient({ ports }: { ports: Port[] }) {
   const [query, setQuery] = useState("");
   const [limit, setLimit] = useState(PAGE_SIZE);
@@ -96,23 +123,38 @@ export default function PortsSearchClient({ ports }: { ports: Port[] }) {
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {featuredPorts.map((p) => (
-              <Link
-                key={`featured-${p.slug}`}
-                href={`/ports/${p.slug}`}
-                className="rounded-2xl border border-emerald-400/25 bg-black/35 p-4 hover:bg-white/[0.08] transition flex flex-col justify-between"
-              >
-                <div>
-                  <div className="text-base font-bold text-white">{p.name}</div>
-                  <div className="mt-1 text-xs text-zinc-400">
-                    {[...new Set([p.city, p.area, p.country].filter(Boolean))].join(" • ") || "Cruise port"}
+            {featuredPorts.map((p) => {
+              const photo = FEATURED_PORT_IMAGES[p.slug];
+              return (
+                <Link
+                  key={`featured-${p.slug}`}
+                  href={`/ports/${p.slug}`}
+                  className="overflow-hidden rounded-2xl border border-emerald-400/25 bg-black/35 hover:bg-white/[0.08] transition flex flex-col justify-between"
+                >
+                  <div>
+                    {photo ? (
+                      <img
+                        src={photo.src}
+                        alt={photo.alt}
+                        width={640}
+                        height={400}
+                        loading="lazy"
+                        className="h-36 w-full object-cover border-b border-white/10"
+                      />
+                    ) : null}
+                    <div className="p-4 pb-0">
+                      <div className="text-base font-bold text-white">{p.name}</div>
+                      <div className="mt-1 text-xs text-zinc-400">
+                        {[...new Set([p.city, p.area, p.country].filter(Boolean))].join(" • ") || "Cruise port"}
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div className="mt-3 text-xs font-bold text-emerald-300">
-                  Open port &amp; excursions →
-                </div>
-              </Link>
-            ))}
+                  <div className="p-4 pt-3 text-xs font-bold text-emerald-300">
+                    Open port &amp; excursions →
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </div>
       ) : null}

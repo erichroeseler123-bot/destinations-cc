@@ -36,7 +36,7 @@ export const AFFILIATE_CATALOG: NormalizedAffiliateExcursion[] = [
     mobileVoucher: true,
     tags: ["whale-watching", "wildlife", "marine", "photography"],
     permittedImages: [
-      { url: "/images/alaska/juneau-whale.jpg", caption: "Humpback whale tail fluke in Favorite Channel" },
+      { url: "/images/alaska/juneau-whale.jpg", caption: "Humpback whale breaching in Juneau coastal waters" },
     ],
     itinerary: [
       "Meet driver at Mount Roberts Tram Plaza",
@@ -299,7 +299,7 @@ export const AFFILIATE_CATALOG: NormalizedAffiliateExcursion[] = [
     mobileVoucher: true,
     tags: ["seaplane", "flightseeing", "taku-lodge", "salmon-bake", "wildlife"],
     permittedImages: [
-      { url: "/images/alaska/taku-lodge.jpg", caption: "Floatplane moored outside historic Taku Glacier Lodge" },
+      { url: "/images/alaska/taku-lodge.jpg", caption: "De Havilland DHC-3 Otter floatplane in Southeast Alaska waters" },
     ],
     itinerary: [
       "Check in at downtown floatplane dock on waterfront",
@@ -460,7 +460,7 @@ export const AFFILIATE_CATALOG: NormalizedAffiliateExcursion[] = [
     mobileVoucher: true,
     tags: ["history", "streetcar", "budget-friendly", "gold-rush", "short-duration"],
     permittedImages: [
-      { url: "/images/alaska/skagway-streetcar.jpg", caption: "Vintage yellow streetcar on Broadway, Skagway" },
+      { url: "/images/alaska/skagway-streetcar.jpg", caption: "Historic Broadway Gold Rush district in downtown Skagway, Alaska" },
     ],
     itinerary: [
       "Board streetcar at historic dockside terminal",
@@ -570,7 +570,7 @@ export const AFFILIATE_CATALOG: NormalizedAffiliateExcursion[] = [
     mobileVoucher: true,
     tags: ["misty-fjords", "boat-tour", "wildlife", "rain-safe", "catamaran"],
     permittedImages: [
-      { url: "/images/alaska/allen-marine-catamaran.jpg", caption: "Allen Marine catamaran approaching New Eddystone Rock" },
+      { url: "/images/alaska/allen-marine-catamaran.jpg", caption: "Wilderness sightseeing vessel cruising Southeast Alaska fjord waters" },
     ],
     itinerary: [
       "Board high-speed catamaran directly at downtown berth",

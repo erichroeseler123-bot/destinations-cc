@@ -92,7 +92,7 @@ export const CHOOSER_CATEGORIES: ChooserCategory[] = [
     id: "full-day-combos",
     title: "Full-Day Combos",
     description: "Combine major New Orleans experiences in one longer outing.",
-    image: "/images/travel-markets/new-orleans/french-quarter-street.jpg",
+    image: "/images/portfolio/laura-plantation.webp",
     skipPreferences: true,
   },
 ];
@@ -133,13 +133,13 @@ export function getRecommendation(
         return { primaryProductId: "ragincajun-airboat", alternativeProductIds: ["large-airboat-swamp-adventure"], explanation: "A high-speed airboat experience with direct local operator options shown first." };
       }
       if (preferenceId === "swamp-plantation") {
-        return { primaryProductId: "ragincajun-covered-plantation-combo", alternativeProductIds: ["swamp-boat-oak-alley-combo", "swamp-boat-whitney-combo"], explanation: "A full-day local operator combination, with additional Gray Line options available below." };
+        return { primaryProductId: "swamp-boat-oak-alley-combo", alternativeProductIds: ["swamp-boat-whitney-combo"], explanation: "A full-day combination pairing a Louisiana swamp boat tour with a historic River Road plantation." };
       }
       return { explanation: "Explore our swamp options.", fallbackMessage: "Please choose a specific swamp experience." };
 
     case "city-highlights":
       if (preferenceId === "city-sightseeing") {
-        return { primaryProductId: "city-cemetery-garden-district-tour", alternativeProductIds: ["city-tour-of-new-orleans"], explanation: "A comprehensive city overview." };
+        return { primaryProductId: "city-cemetery-garden-district-tour", alternativeProductIds: ["southernstyle-city-tour"], explanation: "A comprehensive city overview." };
       }
       if (preferenceId === "city-river") {
         return { primaryProductId: "evening-jazz-cruise", alternativeProductIds: ["daytime-jazz-cruise"], explanation: "Experience the Mississippi River." };
@@ -154,7 +154,7 @@ export function getRecommendation(
 
     case "plantations-history":
       if (preferenceId === "plantation-oak-alley") {
-        return { primaryProductId: "oak-alley-plantation-tour-grey-line", alternativeProductIds: ["oak-alley-or-laura-plantation-tour"], explanation: "Visit Oak Alley and compare the available historic-site options." };
+        return { primaryProductId: "oak-alley-plantation-tour-grey-line", alternativeProductIds: ["southernstyle-plantation"], explanation: "Visit Oak Alley and compare the available historic-site options." };
       }
       if (preferenceId === "plantation-whitney") {
         return { primaryProductId: "whitney-plantation-tour", explanation: "Choose an experience centered on Whitney Plantation." };

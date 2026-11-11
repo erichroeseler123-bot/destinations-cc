@@ -1,0 +1,1999 @@
+{
+  "schemaVersion": "2026-11-11.v1",
+  "generatedAt": "2026-11-11T21:46:56.029Z",
+  "governancePolicy": {
+    "truthfulnessMandate": "Every bookable or inquiry-based experience uses a verified product photo, a clearly appropriate destination-activity photo, or an honest designed placeholder — never an unrelated tour, wrong operator vehicle/vessel/aircraft, or AI-generated experience photo.",
+    "aiImageryBoundary": "AI-generated images are prohibited for operators, vehicles, aircraft, vessels, venues, or bookable experiences.",
+    "totalCuratedFamilies": 77
+  },
+  "assets": [
+    {
+      "id": "nola-honey-island-swamp-boat",
+      "subject": "Covered swamp tour boat navigating cypress bayou in Louisiana",
+      "location": "Louisiana Bayou / Honey Island, LA",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Honey_Island_Swamp_Tour,_Louisiana_July_2023_-_8.jpg",
+      "photographer": "Daniel Lobo",
+      "license": "CC0",
+      "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "originalDimensions": "4032x3024",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "cp",
+          "publicPath": "/images/portfolio/nola-swamp-boat.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 183344
+        },
+        {
+          "property": "wno",
+          "publicPath": "/images/portfolio/nola-covered-swamp-boat.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 183344
+        },
+        {
+          "property": "dcc",
+          "publicPath": "/images/portfolio/nola-covered-swamp-boat.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 183344
+        }
+      ]
+    },
+    {
+      "id": "nola-barataria-bayou-preserve",
+      "subject": "Jean Lafitte Barataria Preserve cypress bayou and marsh",
+      "location": "Jean Lafitte National Historical Park and Preserve, Marrero, LA",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Barataria_Preserve,_Jean_Lafitte_National_Historical_Park_and_Preserve,_Louisiana.jpg",
+      "photographer": "Ken Lund",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+      "originalDimensions": "2816x2112",
+      "focalPointMobile": "50% 48%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "wno",
+          "publicPath": "/images/travel-markets/new-orleans/louisiana-bayou-swamp.jpg",
+          "width": 1280,
+          "height": 853,
+          "bytes": 290088
+        },
+        {
+          "property": "wno",
+          "publicPath": "/images/portfolio/jean-lafitte-bayou.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 322718
+        },
+        {
+          "property": "dcc",
+          "publicPath": "/images/portfolio/jean-lafitte-bayou.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 322718
+        }
+      ]
+    },
+    {
+      "id": "nola-atchafalaya-alligator-bayou",
+      "subject": "Wild American alligator swimming in Louisiana cypress bayou waters",
+      "location": "Louisiana Bayou Corridor",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Aligator_on_Patrol_-_Flickr_-_Kevin_Crosby.jpg",
+      "photographer": "Kevin Crosby from Bartlett, TN, USA",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+      "originalDimensions": "6000x4000",
+      "focalPointMobile": "50% 52%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "wno",
+          "publicPath": "/images/portfolio/bayou-alligator-tour.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 327632
+        },
+        {
+          "property": "dcc",
+          "publicPath": "/images/portfolio/bayou-alligator-tour.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 327632
+        }
+      ]
+    },
+    {
+      "id": "nola-rockefeller-airboat-marsh",
+      "subject": "Airboat skimming across coastal Louisiana marshland",
+      "location": "Coastal Louisiana Wildlife Refuge",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Airboat_ride,_Rockefeller_Wildlife_Refuge_(7094167921).jpg",
+      "photographer": "U.S. Fish and Wildlife Service Headquarters",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:Airboat_ride,_Rockefeller_Wildlife_Refuge_(7094167921).jpg",
+      "originalDimensions": "3648x2736",
+      "focalPointMobile": "50% 55%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "wno",
+          "publicPath": "/images/portfolio/louisiana-airboat-marsh.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 196554
+        },
+        {
+          "property": "dcc",
+          "publicPath": "/images/portfolio/louisiana-airboat-marsh.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 196554
+        }
+      ]
+    },
+    {
+      "id": "nola-whitney-plantation-grounds",
+      "subject": "Historic grounds and memorial architecture at Whitney Plantation",
+      "location": "Wallace, Louisiana",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Whitney_Plantation,_June_2023_-_Exhibit.jpg",
+      "photographer": "Jeremy Thompson",
+      "license": "CC BY 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+      "originalDimensions": "2736x1824",
+      "focalPointMobile": "50% 45%",
+      "truthfulnessLevel": "verified_product",
+      "deployments": [
+        {
+          "property": "wno",
+          "publicPath": "/images/portfolio/whitney-plantation.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 93650
+        },
+        {
+          "property": "dcc",
+          "publicPath": "/images/portfolio/whitney-plantation.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 93650
+        }
+      ]
+    },
+    {
+      "id": "nola-destrehan-plantation-manor",
+      "subject": "Historic Destrehan Plantation manor house and live oaks",
+      "location": "Destrehan, St. Charles Parish, Louisiana",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Destrehan_Manor_House_20070706.jpg",
+      "photographer": "Photo by Michael Overton.",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "originalDimensions": "2975x1858",
+      "focalPointMobile": "50% 48%",
+      "truthfulnessLevel": "verified_product",
+      "deployments": [
+        {
+          "property": "wno",
+          "publicPath": "/images/portfolio/destrehan-plantation.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 239820
+        },
+        {
+          "property": "dcc",
+          "publicPath": "/images/portfolio/destrehan-plantation.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 239820
+        }
+      ]
+    },
+    {
+      "id": "nola-laura-creole-plantation",
+      "subject": "Colorful historic Creole building at Laura Plantation",
+      "location": "Vacherie, Louisiana",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Laura_Plantation_Office.jpg",
+      "photographer": "MeRyan",
+      "license": "CC BY 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+      "originalDimensions": "1600x1200",
+      "focalPointMobile": "50% 48%",
+      "truthfulnessLevel": "verified_product",
+      "deployments": [
+        {
+          "property": "wno",
+          "publicPath": "/images/portfolio/laura-plantation.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 72684
+        },
+        {
+          "property": "dcc",
+          "publicPath": "/images/portfolio/laura-plantation.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 72684
+        }
+      ]
+    },
+    {
+      "id": "nola-garden-district-mansion",
+      "subject": "Historic Greek Revival mansion and live oaks in the Garden District",
+      "location": "Garden District, New Orleans, LA",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Coliseum_Street,_Garden_District,_New_Orleans,_April_2023_-_Mansion.jpg",
+      "photographer": "Infrogmation of New Orleans",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "originalDimensions": "5184x3888",
+      "focalPointMobile": "50% 45%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "wno",
+          "publicPath": "/images/portfolio/garden-district-mansion.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 318630
+        },
+        {
+          "property": "dcc",
+          "publicPath": "/images/portfolio/garden-district-mansion.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 318630
+        }
+      ]
+    },
+    {
+      "id": "nola-st-louis-cemetery-tombs",
+      "subject": "Historic above-ground marble vaults at St. Louis Cemetery No. 1",
+      "location": "New Orleans, LA",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:St._Louis_Cemetery_No_1_New_Orleans,_27_August_2022_-_04.jpg",
+      "photographer": "Tom Hilton",
+      "license": "CC BY 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+      "originalDimensions": "5408x3600",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "wno",
+          "publicPath": "/images/wikimedia/originals/above-ground-tomb.jpg",
+          "width": 1400,
+          "height": 933,
+          "bytes": 198617
+        },
+        {
+          "property": "wno",
+          "publicPath": "/images/wikimedia/originals/st-louis-cemetery-1-gates.jpg",
+          "width": 1400,
+          "height": 933,
+          "bytes": 198617
+        },
+        {
+          "property": "dcc",
+          "publicPath": "/images/wikimedia/originals/above-ground-tomb.jpg",
+          "width": 1400,
+          "height": 933,
+          "bytes": 198617
+        },
+        {
+          "property": "dcc",
+          "publicPath": "/images/wikimedia/originals/st-louis-cemetery-1-gates.jpg",
+          "width": 1400,
+          "height": 933,
+          "bytes": 198617
+        }
+      ]
+    },
+    {
+      "id": "nola-lalaurie-mansion-royal",
+      "subject": "Exterior of the historic LaLaurie Mansion on Royal Street in the French Quarter",
+      "location": "French Quarter, New Orleans, LA",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:The_LaLaurie_Mansion.jpg",
+      "photographer": "Reading Tom",
+      "license": "CC BY 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+      "originalDimensions": "2560x1920",
+      "focalPointMobile": "50% 42%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "wno",
+          "publicPath": "/images/wikimedia/originals/lalaurie-mansion-1906.jpg",
+          "width": 1400,
+          "height": 933,
+          "bytes": 184973
+        },
+        {
+          "property": "dcc",
+          "publicPath": "/images/wikimedia/originals/lalaurie-mansion-1906.jpg",
+          "width": 1400,
+          "height": 933,
+          "bytes": 184973
+        }
+      ]
+    },
+    {
+      "id": "nola-city-of-new-orleans-riverboat",
+      "subject": "Riverboat City of New Orleans docked along Woldenberg Park on the Mississippi River",
+      "location": "Mississippi Riverfront, New Orleans, LA",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:City_of_New_Orleans_Riverboat_at_Woldenberg_Park,_New_Orleans,_January_2020_-_02.jpg",
+      "photographer": "Jesse James",
+      "license": "CC BY 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+      "originalDimensions": "6000x4000",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_product",
+      "deployments": [
+        {
+          "property": "wno",
+          "publicPath": "/images/portfolio/riverboat-city-of-nola.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 153378
+        },
+        {
+          "property": "dcc",
+          "publicPath": "/images/portfolio/riverboat-city-of-nola.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 153378
+        }
+      ]
+    },
+    {
+      "id": "nola-craft-cocktails-french-quarter",
+      "subject": "Classic whiskey cocktails served on a bar counter",
+      "location": "French Quarter Cocktail Walk, New Orleans, LA",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Rum,_Manhattan,_Tequila_Old_Fashioned.jpg",
+      "photographer": "Cocktailmarler",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "originalDimensions": "3424x2092",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "wno",
+          "publicPath": "/images/portfolio/classic-cocktails-nola.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 83124
+        },
+        {
+          "property": "dcc",
+          "publicPath": "/images/portfolio/classic-cocktails-nola.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 83124
+        }
+      ]
+    },
+    {
+      "id": "nola-preservation-hall-jazz",
+      "subject": "Traditional New Orleans brass and bass drum jazz heritage at Preservation Hall",
+      "location": "French Quarter, New Orleans, LA",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Preservation_Hall_Bass_Drum.jpg",
+      "photographer": "Infrogmation of New Orleans",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "originalDimensions": "3855x2891",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "wno",
+          "publicPath": "/images/travel-markets/new-orleans/new-orleans-live-music.jpg",
+          "width": 1280,
+          "height": 853,
+          "bytes": 197217
+        },
+        {
+          "property": "dcc",
+          "publicPath": "/images/portfolio/nola-jazz-music.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 181788
+        }
+      ]
+    },
+    {
+      "id": "nola-royal-street-daylight",
+      "subject": "Historic wrought-iron balconies along Royal Street in the French Quarter",
+      "location": "French Quarter, New Orleans, LA",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Royal_Street_French_Quarter_New_Orleans_11th_Nov_2019_01.jpg",
+      "photographer": "Infrogmation of New Orleans",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "originalDimensions": "4557x2841",
+      "focalPointMobile": "50% 45%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "wno",
+          "publicPath": "/images/portfolio/royal-street-balconies.webp",
+          "width": 1440,
+          "height": 900,
+          "bytes": 146486
+        },
+        {
+          "property": "dcc",
+          "publicPath": "/images/portfolio/royal-street-balconies.webp",
+          "width": 1440,
+          "height": 900,
+          "bytes": 146486
+        }
+      ]
+    },
+    {
+      "id": "juneau-mount-roberts-tramway",
+      "subject": "Mount Roberts Goldbelt Tramway aerial cabin ascending above Juneau harbor",
+      "location": "Downtown Cruise Docks, Juneau, Alaska",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Mount_Roberts_Tramway_in_Juneau,_Alaska.jpg",
+      "photographer": "Wknight94",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "originalDimensions": "3072x2304",
+      "focalPointMobile": "50% 45%",
+      "truthfulnessLevel": "verified_product",
+      "deployments": [
+        {
+          "property": "cp",
+          "publicPath": "/images/portfolio/juneau-tramway.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 72628
+        }
+      ]
+    },
+    {
+      "id": "juneau-mendenhall-glacier-clean",
+      "subject": "Mendenhall Glacier blue ice face, Mendenhall Lake, and surrounding Coast Mountains",
+      "location": "Tongass National Forest, Juneau, Alaska",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Glaciar_Mendenhall,_Juneau,_Alaska,_Estados_Unidos,_2017-08-17,_DD_01.jpg",
+      "photographer": "Diego Delso",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "originalDimensions": "4301x2450",
+      "focalPointMobile": "50% 48%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "lfse",
+          "publicPath": "/images/alaska/juneau-mendenhall.jpg",
+          "width": 1440,
+          "height": 900,
+          "bytes": 149896
+        },
+        {
+          "property": "lfse",
+          "publicPath": "/images/alaska/mendenhall-glacier.jpg",
+          "width": 1440,
+          "height": 900,
+          "bytes": 149896
+        },
+        {
+          "property": "dcc",
+          "publicPath": "/images/portfolio/juneau-mendenhall-hero.webp",
+          "width": 1440,
+          "height": 810,
+          "bytes": 117420
+        },
+        {
+          "property": "jfd",
+          "publicPath": "/images/portfolio/mendenhall-glacier-overview.webp",
+          "width": 1440,
+          "height": 900,
+          "bytes": 151148
+        }
+      ]
+    },
+    {
+      "id": "juneau-mendenhall-lake-view",
+      "subject": "Panoramic view of Mendenhall Glacier from Visitor Center shoreline",
+      "location": "Mendenhall Glacier Recreation Area, Juneau, Alaska",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Glaciar_Mendenhall,_Juneau,_Alaska,_Estados_Unidos,_2017-08-17,_DD_02.jpg",
+      "photographer": "Diego Delso",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "originalDimensions": "4300x2386",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "lfse",
+          "publicPath": "/images/alaska/mendenhall-visitor-center.jpg",
+          "width": 1280,
+          "height": 800,
+          "bytes": 126855
+        }
+      ]
+    },
+    {
+      "id": "juneau-herbert-glacier-icefield",
+      "subject": "Herbert Glacier icefield river of ice in the Juneau Icefield",
+      "location": "Herbert Glacier, Juneau Icefield, Alaska",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Herbert_Glacier_2019_568.jpg",
+      "photographer": "Gillfoto",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "originalDimensions": "3000x2003",
+      "focalPointMobile": "50% 48%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "jfd",
+          "publicPath": "/images/tours/coastal-icefield-landing.jpg",
+          "width": 1440,
+          "height": 900,
+          "bytes": 363281
+        },
+        {
+          "property": "lfse",
+          "publicPath": "/images/alaska/juneau-heli-glacier.jpg",
+          "width": 1280,
+          "height": 800,
+          "bytes": 281229
+        }
+      ]
+    },
+    {
+      "id": "alaska-glacier-ice-trekking-nps",
+      "subject": "Guided glacier hiker in helmet and gear exploring blue glacial ice formations",
+      "location": "Alaska Glacier Icefield (NPS)",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Jamie_on_the_Root_Glacier_(21607724031).jpg",
+      "photographer": "National Park Service, Alaska Region",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:Jamie_on_the_Root_Glacier_(21607724031).jpg",
+      "originalDimensions": "5760x3840",
+      "focalPointMobile": "50% 42%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "jfd",
+          "publicPath": "/images/tours/northstar-glacier-ice-trek.jpg",
+          "width": 1440,
+          "height": 900,
+          "bytes": 218178
+        },
+        {
+          "property": "jfd",
+          "publicPath": "/images/portfolio/glacier-walkabout.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 173136
+        }
+      ]
+    },
+    {
+      "id": "alaska-snow-sled-dogs-nps",
+      "subject": "Alaskan husky sled dog team harnessed on mountain snowfield at alpenglow",
+      "location": "Alaska Snowfield (National Park Service)",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Alpenglow_(64c5ea5b-c8f9-466c-a3fa-ff464a6cac71).JPG",
+      "photographer": "NPS Photo",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:Alpenglow_(64c5ea5b-c8f9-466c-a3fa-ff464a6cac71).JPG",
+      "originalDimensions": "4000x3000",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "jfd",
+          "publicPath": "/images/tours/temsco-glacier-dog-sledding.jpg",
+          "width": 1440,
+          "height": 900,
+          "bytes": 166223
+        },
+        {
+          "property": "dcc",
+          "publicPath": "/images/travel-markets/juneau/norris-glacier-dog-sled-team.jpg",
+          "width": 1280,
+          "height": 800,
+          "bytes": 125386
+        }
+      ]
+    },
+    {
+      "id": "juneau-summer-sled-dog-camp",
+      "subject": "Alaskan huskies and musher at Juneau Sled Dog Discovery summer forest camp",
+      "location": "Juneau, Alaska",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Sled_Dog_Discovery_%26_Musher%27s_Camp_8.jpg",
+      "photographer": "Wknight94",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "originalDimensions": "3072x2304",
+      "focalPointMobile": "50% 45%",
+      "truthfulnessLevel": "verified_product",
+      "deployments": [
+        {
+          "property": "lfse",
+          "publicPath": "/images/alaska/glacier-dog-sled.jpg",
+          "width": 1280,
+          "height": 800,
+          "bytes": 282698
+        }
+      ]
+    },
+    {
+      "id": "alaska-dehavilland-otter-floatplane",
+      "subject": "De Havilland DHC-3 Turbine Otter floatplane on coastal Alaska waters",
+      "location": "Coastal Alaska Seaplane Base",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:DHC-3_Otter_at_Homer.jpg",
+      "photographer": "Neal",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+      "originalDimensions": "2816x2112",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "lfse",
+          "publicPath": "/images/alaska/taku-lodge.jpg",
+          "width": 1280,
+          "height": 800,
+          "bytes": 189079
+        },
+        {
+          "property": "lfse",
+          "publicPath": "/images/portfolio/alaska-floatplane.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 187190
+        }
+      ]
+    },
+    {
+      "id": "ketchikan-misty-fjords-new-eddystone",
+      "subject": "New Eddystone Rock volcanic spire rising from Misty Fjords National Monument waters",
+      "location": "Misty Fjords National Monument, Ketchikan, Alaska",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Roca_de_New_Eddystone,_famoso_islote_de_referencia_en_el_fiordo_Misty._Monumento_Nacional_de_Alaska..jpg",
+      "photographer": "Ulises Icardi",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "originalDimensions": "3133x2110",
+      "focalPointMobile": "50% 45%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "lfse",
+          "publicPath": "/images/alaska/misty-fjords.jpg",
+          "width": 1440,
+          "height": 900,
+          "bytes": 255560
+        },
+        {
+          "property": "dcc",
+          "publicPath": "/images/authority/ports/ketchikan/hero.webp",
+          "width": 1440,
+          "height": 900,
+          "bytes": 272968
+        },
+        {
+          "property": "cp",
+          "publicPath": "/images/portfolio/port-ketchikan.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 213222
+        }
+      ]
+    },
+    {
+      "id": "alaska-fjord-cruising-vessel-nps",
+      "subject": "Sightseeing tour vessel cruising past steep glaciated fjord walls in Southeast Alaska",
+      "location": "Southeast Alaska Fjord Corridor (NPS)",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Views_of_Glacier_Bay_National_Park_and_Preserve,_Alaska_(7c457023-e1bc-4c2c-9557-cdf2f7225e42).jpg",
+      "photographer": "NPS staff",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:Views_of_Glacier_Bay_National_Park_and_Preserve,_Alaska_(7c457023-e1bc-4c2c-9557-cdf2f7225e42).jpg",
+      "originalDimensions": "3072x2048",
+      "focalPointMobile": "50% 55%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "lfse",
+          "publicPath": "/images/alaska/allen-marine-catamaran.jpg",
+          "width": 1280,
+          "height": 800,
+          "bytes": 205910
+        },
+        {
+          "property": "lfse",
+          "publicPath": "/images/alaska/inside-passage-hero-generated.png",
+          "width": 1600,
+          "height": 900,
+          "bytes": 925177
+        }
+      ]
+    },
+    {
+      "id": "sitka-sea-otter-floating",
+      "subject": "Wild sea otter floating on its back in calm coastal Alaska waters",
+      "location": "Southeast Alaska Coastal Waters",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Sea_otter._Enhydra_lutris_-_Flickr_-_gailhampshire.jpg",
+      "photographer": "gailhampshire from Cradley, Malvern, U.K",
+      "license": "CC BY 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+      "originalDimensions": "2152x1264",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "lfse",
+          "publicPath": "/images/alaska/sitka-sea-otter.jpg",
+          "width": 1280,
+          "height": 800,
+          "bytes": 52230
+        }
+      ]
+    },
+    {
+      "id": "sitka-sound-islands-panorama",
+      "subject": "Forested islands and mountain peaks across Sitka Sound",
+      "location": "Sitka Sound, Sitka, Alaska",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Sitka_Sound.jpg",
+      "photographer": "David Baron from Palo Alto, California, USA",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+      "originalDimensions": "3872x2592",
+      "focalPointMobile": "50% 48%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "lfse",
+          "publicPath": "/images/alaska/sitka-sound.jpg",
+          "width": 1440,
+          "height": 900,
+          "bytes": 209340
+        },
+        {
+          "property": "cp",
+          "publicPath": "/images/portfolio/port-sitka.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 166710
+        }
+      ]
+    },
+    {
+      "id": "sitka-alaska-raptor-center-eagle",
+      "subject": "Bald eagle perched at the Alaska Raptor Center in Sitka",
+      "location": "Alaska Raptor Center, Sitka, Alaska",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Raptor_center_(js)_3.jpg",
+      "photographer": "Jerzy Strzelecki",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "originalDimensions": "5607x3670",
+      "focalPointMobile": "50% 38%",
+      "truthfulnessLevel": "verified_product",
+      "deployments": [
+        {
+          "property": "lfse",
+          "publicPath": "/images/alaska/alaska-raptor-center.jpg",
+          "width": 1280,
+          "height": 800,
+          "bytes": 107132
+        }
+      ]
+    },
+    {
+      "id": "ketchikan-saxman-totem-park-color",
+      "subject": "Carved Tlingit totem poles standing in color at Saxman Totem Park",
+      "location": "Saxman Native Village, Ketchikan, Alaska",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Saxman_totem_park(js)02.jpg",
+      "photographer": "Jerzystrzelecki",
+      "license": "CC BY 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/3.0",
+      "originalDimensions": "5497x3107",
+      "focalPointMobile": "50% 40%",
+      "truthfulnessLevel": "verified_product",
+      "deployments": [
+        {
+          "property": "lfse",
+          "publicPath": "/images/alaska/saxman-totem.jpg",
+          "width": 1280,
+          "height": 800,
+          "bytes": 148358
+        },
+        {
+          "property": "lfse",
+          "publicPath": "/images/alaska/native-culture-totem.jpg",
+          "width": 1280,
+          "height": 800,
+          "bytes": 148358
+        }
+      ]
+    },
+    {
+      "id": "skagway-historic-broadway-avenue",
+      "subject": "Historic Gold Rush false-front buildings along Broadway Avenue in downtown Skagway",
+      "location": "Klondike Gold Rush National Historical Park, Skagway, Alaska",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Broadway_Avenue,_Skagway,_Alaska.jpg",
+      "photographer": "Jet Lowe",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:Broadway_Avenue,_Skagway,_Alaska.jpg",
+      "originalDimensions": "4229x3386",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "lfse",
+          "publicPath": "/images/alaska/skagway-streetcar.jpg",
+          "width": 1280,
+          "height": 800,
+          "bytes": 122287
+        },
+        {
+          "property": "dcc",
+          "publicPath": "/images/authority/ports/skagway/hero.webp",
+          "width": 1440,
+          "height": 900,
+          "bytes": 125288
+        },
+        {
+          "property": "cp",
+          "publicPath": "/images/portfolio/port-skagway.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 102024
+        },
+        {
+          "property": "jfd",
+          "publicPath": "/images/portfolio/skagway-corridor.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 102024
+        }
+      ]
+    },
+    {
+      "id": "yukon-emerald-lake-turquoise",
+      "subject": "Turquoise glacial mineral waters of Emerald Lake along the South Klondike Highway",
+      "location": "Yukon Territory, Canada (Skagway Corridor)",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Emerald_Lake,_Yukon_3.jpg",
+      "photographer": "Wknight94",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "originalDimensions": "3072x2304",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "lfse",
+          "publicPath": "/images/alaska/yukon-emerald-lake.jpg",
+          "width": 1280,
+          "height": 800,
+          "bytes": 171557
+        }
+      ]
+    },
+    {
+      "id": "ketchikan-commercial-fishing-vessel",
+      "subject": "Commercial Alaska fishing vessel moored in Ketchikan harbor",
+      "location": "Ketchikan Waterfront, Alaska",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Fishing_boat._Ketchikan._Alaska._(10568933184).jpg",
+      "photographer": "Bernard Spragg. NZ from Christchurch, New Zealand",
+      "license": "CC0",
+      "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "originalDimensions": "2400x1565",
+      "focalPointMobile": "50% 52%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "lfse",
+          "publicPath": "/images/portfolio/ketchikan-fishing-vessel.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 276976
+        }
+      ]
+    },
+    {
+      "id": "humpback-whale-noaa-sanctuary",
+      "subject": "Humpback whale surfacing in coastal marine sanctuary waters (NOAA)",
+      "location": "North Pacific Marine Waters (NOAA)",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Whale_Disentanglement_(37179732972).jpg",
+      "photographer": "National Marine Sanctuaries",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:Whale_Disentanglement_(37179732972).jpg",
+      "originalDimensions": "2268x1332",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "lfse",
+          "publicPath": "/images/alaska/isp-whale-watch.jpg",
+          "width": 1280,
+          "height": 800,
+          "bytes": 87411
+        },
+        {
+          "property": "cp",
+          "publicPath": "/images/portfolio/port-icy-strait-point.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 57324
+        }
+      ]
+    },
+    {
+      "id": "cp-port-san-juan-el-morro",
+      "subject": "Castillo San Felipe del Morro overlooking San Juan Bay harbor entrance",
+      "location": "Old San Juan, Puerto Rico",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:USA-2016-Puerto_Rico-San_Juan-Castillo_San_Felipe_del_Morro_(and_lighthouse)_03.jpg",
+      "photographer": "Godot13",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "originalDimensions": "6438x4292",
+      "focalPointMobile": "50% 48%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "cp",
+          "publicPath": "/images/portfolio/port-san-juan.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 228038
+        }
+      ]
+    },
+    {
+      "id": "cp-port-st-maarten-philipsburg",
+      "subject": "Cruise ship docked at Port St. Maarten overlooking Philipsburg bay",
+      "location": "Philipsburg, Sint Maarten",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Harmony_of_the_Seas_im_Hafen_von_Philipsburg.jpg",
+      "photographer": "Kiwi05",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "originalDimensions": "3008x2000",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "cp",
+          "publicPath": "/images/portfolio/port-st-maarten.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 157978
+        }
+      ]
+    },
+    {
+      "id": "cp-port-aruba-oranjestad",
+      "subject": "Colorful Oranjestad harborfront along the Caribbean Sea in Aruba",
+      "location": "Oranjestad, Aruba",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:CarlosnCharlies_Oranjestad,_Aruba_waterfront.jpg",
+      "photographer": "gailf548",
+      "license": "CC BY 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+      "originalDimensions": "2048x1365",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "cp",
+          "publicPath": "/images/portfolio/port-aruba.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 200144
+        }
+      ]
+    },
+    {
+      "id": "cp-port-curacao-handelskade",
+      "subject": "Colorful Dutch colonial waterfront buildings along Handelskade in Willemstad",
+      "location": "Willemstad, Curaçao",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Facades_of_Handelskade,_Willemstad,_Cura%C3%A7ao_-_February_2020.jpg",
+      "photographer": "Martin Falbisoner",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "originalDimensions": "5605x2584",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "cp",
+          "publicPath": "/images/portfolio/port-curacao.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 199796
+        }
+      ]
+    },
+    {
+      "id": "cp-port-barbados-bridgetown",
+      "subject": "Turquoise Caribbean shoreline and palms near Bridgetown, Barbados",
+      "location": "Bridgetown, Barbados",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Drill_Hall_Beach_Barbados.jpg",
+      "photographer": "Barry haynes",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "originalDimensions": "5120x3418",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "cp",
+          "publicPath": "/images/portfolio/port-barbados.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 263144
+        }
+      ]
+    },
+    {
+      "id": "cp-port-costa-maya",
+      "subject": "White sand shoreline and clear Caribbean waters at Mahahual, Costa Maya",
+      "location": "Costa Maya, Quintana Roo, Mexico",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Costa_maya_from_cruise_ship.jpg",
+      "photographer": "No machine-readable author provided. NormanEinstein assumed (based on copyright claims).",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "http://creativecommons.org/licenses/by-sa/3.0/",
+      "originalDimensions": "1200x900",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "cp",
+          "publicPath": "/images/portfolio/port-costa-maya.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 113532
+        }
+      ]
+    },
+    {
+      "id": "cp-port-puerto-plata",
+      "subject": "Lush Atlantic coastline and mountain backdrop at Puerto Plata",
+      "location": "Puerto Plata, Dominican Republic",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Dominican_Republic_(340231836).jpg",
+      "photographer": "Sandra Cohen-Rose and Colin Rose from Montreal, Canada",
+      "license": "CC BY 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+      "originalDimensions": "3096x2312",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "cp",
+          "publicPath": "/images/portfolio/port-puerto-plata.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 135402
+        }
+      ]
+    },
+    {
+      "id": "cp-port-cabo-san-lucas",
+      "subject": "El Arco rock formation where the Sea of Cortez meets the Pacific at Cabo San Lucas",
+      "location": "Cabo San Lucas, Baja California Sur, Mexico",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:A_Postcard_From_Cabo_San_Lucas_(56014870).jpeg",
+      "photographer": "Serge Freeman",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "originalDimensions": "2048x1350",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "cp",
+          "publicPath": "/images/portfolio/port-cabo-san-lucas.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 159890
+        }
+      ]
+    },
+    {
+      "id": "cp-port-ensenada-bay",
+      "subject": "Harbor and coastal hills overlooking Ensenada Bay on the Baja Peninsula",
+      "location": "Ensenada, Baja California, Mexico",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Ensenada_Bay.jpg",
+      "photographer": "Gabriel Flores Romero",
+      "license": "CC BY 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+      "originalDimensions": "1260x621",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "cp",
+          "publicPath": "/images/portfolio/port-ensenada.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 44256
+        }
+      ]
+    },
+    {
+      "id": "cp-port-cartagena-walls",
+      "subject": "Historic colonial stone fortifications and Caribbean seafront of Cartagena",
+      "location": "Cartagena, Colombia",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:City_walls_of_Cartagena_01.jpg",
+      "photographer": "Bernard Gagnon",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "originalDimensions": "5071x3380",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "cp",
+          "publicPath": "/images/portfolio/port-cartagena.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 221022
+        }
+      ]
+    },
+    {
+      "id": "cp-port-bermuda-horseshoe",
+      "subject": "Pink sand cove and turquoise Atlantic waters at Horseshoe Bay, Bermuda",
+      "location": "Bermuda",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Horseshoe_Bay_Beach_-Bermuda-19Aug2008.jpg",
+      "photographer": "Joshua Davis",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+      "originalDimensions": "3528x2352",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "cp",
+          "publicPath": "/images/portfolio/port-bermuda.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 95508
+        }
+      ]
+    },
+    {
+      "id": "cp-port-victoria-inner-harbour",
+      "subject": "Parliament Buildings and waterfront promenade along Victoria Inner Harbour",
+      "location": "Victoria, British Columbia, Canada",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Inner_Harbour,_Victoria_(4044177343).jpg",
+      "photographer": "Hardo Müller from Bonn, Germany",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+      "originalDimensions": "3876x2272",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "cp",
+          "publicPath": "/images/portfolio/port-victoria-bc.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 130320
+        }
+      ]
+    },
+    {
+      "id": "cp-port-vancouver-canada-place",
+      "subject": "White sails of Canada Place cruise terminal on Burrard Inlet in Vancouver",
+      "location": "Vancouver, British Columbia, Canada",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Vancouver_(BC,_Canada),_Canada_Place_--_2022_--_1871.jpg",
+      "photographer": "Dietmar Rabich",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "originalDimensions": "5225x3919",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "cp",
+          "publicPath": "/images/portfolio/port-vancouver.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 444994
+        }
+      ]
+    },
+    {
+      "id": "cp-port-miami-ship",
+      "subject": "Ocean cruise ship departing PortMiami channel along Biscayne Bay",
+      "location": "PortMiami, Miami, Florida",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Carnival_Glory_Cruise_Ship_in_PortMiami_Florida.jpg",
+      "photographer": "EgorovaSvetlana",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "originalDimensions": "4320x3240",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "cp",
+          "publicPath": "/images/portfolio/port-miami.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 58654
+        },
+        {
+          "property": "cp",
+          "publicPath": "/images/portfolio/fleet-hero.webp",
+          "width": 1440,
+          "height": 810,
+          "bytes": 68964
+        },
+        {
+          "property": "lfse",
+          "publicPath": "/images/portfolio/cruise-fleet-hero.webp",
+          "width": 1440,
+          "height": 810,
+          "bytes": 68964
+        }
+      ]
+    },
+    {
+      "id": "cp-port-new-orleans-river",
+      "subject": "Crescent bend of the Mississippi River along downtown New Orleans",
+      "location": "Port of New Orleans, Louisiana",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Mississippi_River_-_New_Orleans.jpg",
+      "photographer": "No machine-readable author provided. PRA assumed (based on copyright claims).",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "http://creativecommons.org/licenses/by-sa/3.0/",
+      "originalDimensions": "1600x1200",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "cp",
+          "publicPath": "/images/portfolio/port-new-orleans.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 96470
+        }
+      ]
+    },
+    {
+      "id": "cp-region-norwegian-fjords",
+      "subject": "Cruise ship anchored beneath steep waterfalls and cliffs in Geirangerfjord, Norway",
+      "location": "Geirangerfjord, Norway",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:00_7320_Geirangerfjorden_-_Cruise_ship.jpg",
+      "photographer": "W. Bulach",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "originalDimensions": "4500x3000",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "cp",
+          "publicPath": "/images/portfolio/region-norwegian-fjords.webp",
+          "width": 1600,
+          "height": 900,
+          "bytes": 369274
+        }
+      ]
+    },
+    {
+      "id": "cp-region-northern-europe",
+      "subject": "Historic colorful harbor gables and boats along Nyhavn canal in Copenhagen",
+      "location": "Copenhagen, Denmark",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Kopenhagen_(DK),_Nyhavn_--_2017_--_1538.jpg",
+      "photographer": "Dietmar Rabich",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "originalDimensions": "4788x3591",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "cp",
+          "publicPath": "/images/portfolio/region-northern-europe.webp",
+          "width": 1600,
+          "height": 900,
+          "bytes": 224734
+        }
+      ]
+    },
+    {
+      "id": "co-i70-eisenhower-tunnel",
+      "subject": "Eisenhower-Johnson Memorial Tunnel portal on Interstate 70 at the Continental Divide",
+      "location": "Interstate 70 Mountain Corridor, Colorado",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Eisenhower-Johnson_Memorial_Tunnel.jpg",
+      "photographer": "Benjamin Clark from Tallahassee, Florida, USA",
+      "license": "CC BY 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+      "originalDimensions": "3024x1998",
+      "focalPointMobile": "50% 52%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "dcc",
+          "publicPath": "/images/portfolio/colorado-i70-corridor.webp",
+          "width": 1440,
+          "height": 810,
+          "bytes": 91608
+        },
+        {
+          "property": "gosno",
+          "publicPath": "/images/portfolio/i70-eisenhower-corridor.webp",
+          "width": 1600,
+          "height": 900,
+          "bytes": 166204
+        },
+        {
+          "property": "gosno",
+          "publicPath": "/images/hero-suv.webp",
+          "width": 1600,
+          "height": 900,
+          "bytes": 166204
+        }
+      ]
+    },
+    {
+      "id": "gosno-black-suburban-vehicle",
+      "subject": "Full-size black Chevrolet Suburban SUV (representative vehicle class)",
+      "location": "Private Full-Size SUV Class",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Chevrolet_Suburban_GMT931_Black_(2).jpg",
+      "photographer": "Damian B Oh",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "originalDimensions": "3850x2888",
+      "focalPointMobile": "50% 55%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "gosno",
+          "publicPath": "/images/hero-suv.png",
+          "width": 1280,
+          "height": 800,
+          "bytes": 518343
+        },
+        {
+          "property": "gosno",
+          "publicPath": "/images/portfolio/fleet-suburban.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 148692
+        }
+      ]
+    },
+    {
+      "id": "gosno-ford-transit-passenger-van",
+      "subject": "High-roof extended-length Ford Transit 350HD passenger van (representative 10–14 passenger van class)",
+      "location": "Private High-Roof Passenger Van Class",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:2023_Ford_Transit_T-350HD_XL_high_roof_extended_length_passenger_van,_rear_left,_09-28-2024.jpg",
+      "photographer": "MercurySable99",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "originalDimensions": "4166x3298",
+      "focalPointMobile": "50% 55%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "gosno",
+          "publicPath": "/images/portfolio/fleet-passenger-van.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 128242
+        }
+      ]
+    },
+    {
+      "id": "gosno-denver-airport-jeppesen",
+      "subject": "Iconic peaked white roof of Jeppesen Terminal at Denver International Airport (DEN)",
+      "location": "Denver International Airport, Denver, CO",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Denver_International_Airport_Jeppesen_Terminal_2007.jpg",
+      "photographer": "imtn",
+      "license": "CC BY-SA 2.5",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.5",
+      "originalDimensions": "2592x1944",
+      "focalPointMobile": "50% 48%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "gosno",
+          "publicPath": "/images/portfolio/denver-airport-terminal.webp",
+          "width": 1440,
+          "height": 900,
+          "bytes": 83094
+        }
+      ]
+    },
+    {
+      "id": "gosno-vail-mountains",
+      "subject": "Snow-covered Gore Range and ski slopes at Vail, Colorado",
+      "location": "Vail, Colorado",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Mountains_of_Vail_Colorado.jpg",
+      "photographer": "Ort2233",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+      "originalDimensions": "2221x1685",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "gosno",
+          "publicPath": "/images/resorts/vail.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 84912
+        }
+      ]
+    },
+    {
+      "id": "gosno-breckenridge-resort",
+      "subject": "Tenmile Range peaks rising above historic Breckenridge, Colorado in winter",
+      "location": "Breckenridge, Colorado",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Breckenridge_Ski_Resort_from_town.jpg",
+      "photographer": "Jasen Miller from Colorado Springs, USA",
+      "license": "CC BY 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+      "originalDimensions": "3872x2592",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "gosno",
+          "publicPath": "/images/resorts/breckenridge.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 59994
+        }
+      ]
+    },
+    {
+      "id": "gosno-keystone-mountain",
+      "subject": "Snow-covered mountain peaks at Keystone Resort in Summit County, Colorado",
+      "location": "Keystone, Colorado",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Snow_covered_mountains_in_Keystone_Ski_Resort_(Unsplash).jpg",
+      "photographer": "Eric Miller _ericmiller",
+      "license": "CC0",
+      "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "originalDimensions": "2448x1836",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "gosno",
+          "publicPath": "/images/resorts/keystone.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 163352
+        }
+      ]
+    },
+    {
+      "id": "gosno-beaver-creek",
+      "subject": "Groomed winter alpine ski slopes at Beaver Creek Resort, Colorado",
+      "location": "Beaver Creek, Colorado",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Birds_of_Prey_(ski_course),_Beaver_Creek.jpg",
+      "photographer": "Rudi Riet from Washington, DC, United States",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+      "originalDimensions": "3264x2448",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "gosno",
+          "publicPath": "/images/resorts/beaver-creek.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 128592
+        }
+      ]
+    },
+    {
+      "id": "gosno-copper-mountain",
+      "subject": "Alpine bowls and winter trails at Copper Mountain, Colorado",
+      "location": "Copper Mountain, Colorado",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Copper_Mountain_-_4420147996.jpg",
+      "photographer": "SparkFunElectronics",
+      "license": "CC BY 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+      "originalDimensions": "3872x2592",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "gosno",
+          "publicPath": "/images/resorts/copper-mountain.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 211314
+        }
+      ]
+    },
+    {
+      "id": "gosno-winter-park",
+      "subject": "Snowy pine slopes and lifts at Winter Park Resort, Colorado",
+      "location": "Winter Park, Colorado",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Winter_Park_Ski_Resort_-_Colorado_(13843211033).jpg",
+      "photographer": "Murray Foubister",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+      "originalDimensions": "2121x1414",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "gosno",
+          "publicPath": "/images/resorts/winter-park.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 229896
+        }
+      ]
+    },
+    {
+      "id": "gosno-steamboat-resort",
+      "subject": "Champagne powder tree runs and Mount Werner slopes at Steamboat Resort",
+      "location": "Steamboat Springs, Colorado",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Steamboat_Springs_Ski_Resort_(8644072249).jpg",
+      "photographer": "Murray Foubister",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+      "originalDimensions": "2121x1414",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "gosno",
+          "publicPath": "/images/resorts/steamboat.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 239956
+        }
+      ]
+    },
+    {
+      "id": "gosno-aspen-hayden-peak",
+      "subject": "Winter Elk Mountains peaks near Aspen, Colorado",
+      "location": "Aspen, Colorado",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Hayden_Peak,_winter.jpg",
+      "photographer": "michael.stockton",
+      "license": "CC BY 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+      "originalDimensions": "2135x1583",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "gosno",
+          "publicPath": "/images/resorts/aspen.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 59464
+        }
+      ]
+    },
+    {
+      "id": "gosno-crested-butte",
+      "subject": "Prominent pyramid summit of Crested Butte Mountain Resort, Colorado",
+      "location": "Crested Butte, Colorado",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Crested_Butte_Mountain_Resort,_Crested_Butte,_Colorado_(14024048669).jpg",
+      "photographer": "Ken Lund from Reno, Nevada, USA",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+      "originalDimensions": "4000x3000",
+      "focalPointMobile": "50% 45%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "gosno",
+          "publicPath": "/images/resorts/crested-butte.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 256678
+        },
+        {
+          "property": "gosno",
+          "publicPath": "/images/resorts/snowmass.webp",
+          "width": 1280,
+          "height": 800,
+          "bytes": 256678
+        }
+      ]
+    },
+    {
+      "id": "gosno-big-sky-lone-peak",
+      "subject": "Snow-covered 11,166-foot summit of Lone Peak at Big Sky, Montana",
+      "location": "Big Sky, Montana",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Pablo%27s_Great_Journey_to_Lone_Peak_Mountain.jpg",
+      "photographer": "Pablo Gándara-Pizá",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "originalDimensions": "3985x2657",
+      "focalPointMobile": "50% 45%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "gosno",
+          "publicPath": "/images/resorts/big-sky-lone-peak.webp",
+          "width": 1440,
+          "height": 900,
+          "bytes": 109014
+        }
+      ]
+    },
+    {
+      "id": "gosno-big-sky-winter-slopes",
+      "subject": "Alpine winter ski terrain and evergreens at Big Sky Resort, Montana",
+      "location": "Big Sky, Montana",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Big_Sky_resort.jpg",
+      "photographer": "Jim from Lexington, KY, USA",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+      "originalDimensions": "2048x1365",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "gosno",
+          "publicPath": "/images/resorts/big-sky-slopes.webp",
+          "width": 1440,
+          "height": 900,
+          "bytes": 131294
+        }
+      ]
+    },
+    {
+      "id": "parr-red-rocks-stage-bowl",
+      "subject": "Sandstone monoliths and tiered seating bowl of Red Rocks Amphitheatre overlooking Denver",
+      "location": "Red Rocks Park and Amphitheatre, Morrison, CO",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Seating_area_of_the_amphitheatre_(6452953617).jpg",
+      "photographer": "Maarten Heerlien from Voorschoten, The Netherlands",
+      "license": "CC BY 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+      "originalDimensions": "3872x2592",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "parr",
+          "publicPath": "/hero/sprinter_red_rocks.webp",
+          "width": 1440,
+          "height": 810,
+          "bytes": 180156
+        },
+        {
+          "property": "parr",
+          "publicPath": "/hero/sprinter_red_rocks.jpg",
+          "width": 1440,
+          "height": 810,
+          "bytes": 213954
+        },
+        {
+          "property": "parr",
+          "publicPath": "/hero/sprinter_red_rocks_card.webp",
+          "width": 420,
+          "height": 236,
+          "bytes": 19926
+        },
+        {
+          "property": "parr",
+          "publicPath": "/hero/custom/tophalf_hero.jpg",
+          "width": 1280,
+          "height": 853,
+          "bytes": 186582
+        }
+      ]
+    },
+    {
+      "id": "parr-red-rocks-stage-perspective",
+      "subject": "View looking up the Red Rocks Amphitheatre seating rows from the stage",
+      "location": "Red Rocks Amphitheatre, Morrison, CO",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Me_on_stage_of_Red_Rock_amphitheatre_(6452957985).jpg",
+      "photographer": "Maarten Heerlien from Voorschoten, The Netherlands",
+      "license": "CC BY 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+      "originalDimensions": "3872x2592",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "parr",
+          "publicPath": "/hero/custom/red_rocks_25_hero.jpg",
+          "width": 1280,
+          "height": 853,
+          "bytes": 159566
+        },
+        {
+          "property": "parr",
+          "publicPath": "/hero/afterdark.jpg",
+          "width": 1280,
+          "height": 853,
+          "bytes": 159566
+        }
+      ]
+    },
+    {
+      "id": "parr-red-rocks-night-lights",
+      "subject": "Illuminated Red Rocks Amphitheatre and Foothills vista at night",
+      "location": "Morrison, Colorado",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Day_198_Cy365_View_From_Above_(77178493).jpeg",
+      "photographer": "Makia Minich",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "originalDimensions": "2048x1366",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "parr",
+          "publicPath": "/hero/hero_red_rocks.webp",
+          "width": 1440,
+          "height": 810,
+          "bytes": 142520
+        },
+        {
+          "property": "parr",
+          "publicPath": "/hero/hero_red_rocks.jpg",
+          "width": 1440,
+          "height": 810,
+          "bytes": 164695
+        },
+        {
+          "property": "parr",
+          "publicPath": "/hero/hero_red_rocks_card.webp",
+          "width": 420,
+          "height": 236,
+          "bytes": 14276
+        },
+        {
+          "property": "parr",
+          "publicPath": "/hero/price.jpg",
+          "width": 1280,
+          "height": 853,
+          "bytes": 145852
+        }
+      ]
+    },
+    {
+      "id": "parr-denver-union-station-pickup",
+      "subject": "Historic Denver Union Station illuminated plaza in Downtown Denver",
+      "location": "Downtown Denver Pickup Corridor, Denver, CO",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Denver_Union_Station_-_June_2022_-_Sarah_Stierch_02.jpg",
+      "photographer": "Missvain",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+      "originalDimensions": "4032x3024",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "parr",
+          "publicPath": "/hero/arrival.jpg",
+          "width": 1440,
+          "height": 960,
+          "bytes": 303574
+        },
+        {
+          "property": "parr",
+          "publicPath": "/hero/arrival_thumb.webp",
+          "width": 640,
+          "height": 416,
+          "bytes": 53968
+        },
+        {
+          "property": "parr",
+          "publicPath": "/og-default.jpg",
+          "width": 1200,
+          "height": 630,
+          "bytes": 185578
+        }
+      ]
+    },
+    {
+      "id": "parr-denver-skyline-rockies",
+      "subject": "Downtown Denver skyline with the snow-capped Front Range Rocky Mountains behind it",
+      "location": "Denver Metro Concert Corridor, CO",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Denver_Skyline_(15242286069).jpg",
+      "photographer": "USFWS Mountain-Prairie",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:Denver_Skyline_(15242286069).jpg",
+      "originalDimensions": "3008x2000",
+      "focalPointMobile": "50% 48%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "parr",
+          "publicPath": "/hero/custom/lower_east_hero.jpg",
+          "width": 1280,
+          "height": 853,
+          "bytes": 177705
+        },
+        {
+          "property": "parr",
+          "publicPath": "/images/venues/all-venues-collage.webp",
+          "width": 1280,
+          "height": 720,
+          "bytes": 176012
+        },
+        {
+          "property": "dcc",
+          "publicPath": "/images/portfolio/dcc-hero-corridor.webp",
+          "width": 1440,
+          "height": 810,
+          "bytes": 218390
+        }
+      ]
+    },
+    {
+      "id": "parr-venue-ball-arena",
+      "subject": "Exterior entrance plaza of Ball Arena in Downtown Denver",
+      "location": "Ball Arena, Denver, CO",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Ball_Arena_exterior_2022.jpg",
+      "photographer": "Troutfarm27",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "originalDimensions": "4032x2370",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_product",
+      "deployments": [
+        {
+          "property": "parr",
+          "publicPath": "/images/venues/ball-arena.webp",
+          "width": 1280,
+          "height": 720,
+          "bytes": 184026
+        },
+        {
+          "property": "parr",
+          "publicPath": "/images/venues/ball-arena.jpg",
+          "width": 1280,
+          "height": 720,
+          "bytes": 175462
+        }
+      ]
+    },
+    {
+      "id": "parr-venue-empower-field",
+      "subject": "Stadium exterior at Mile High in Denver, Colorado",
+      "location": "Empower Field at Mile High, Denver, CO",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:INVESCOFieldatMileHighRTD.JPG",
+      "photographer": "Jeffrey Beall",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "originalDimensions": "3456x2102",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_product",
+      "deployments": [
+        {
+          "property": "parr",
+          "publicPath": "/images/venues/empower-field.webp",
+          "width": 1280,
+          "height": 720,
+          "bytes": 91404
+        },
+        {
+          "property": "parr",
+          "publicPath": "/images/venues/empower-field-at-mile-high.jpg",
+          "width": 1280,
+          "height": 720,
+          "bytes": 103498
+        }
+      ]
+    },
+    {
+      "id": "parr-venue-paramount-theatre",
+      "subject": "Historic neon marquee of Paramount Theatre on Glenarm Place in Downtown Denver",
+      "location": "Paramount Theatre, Denver, CO",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Paramount-theatre-denver.jpg",
+      "photographer": "Dtobias",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "originalDimensions": "3000x2250",
+      "focalPointMobile": "50% 45%",
+      "truthfulnessLevel": "verified_product",
+      "deployments": [
+        {
+          "property": "parr",
+          "publicPath": "/images/venues/paramount-theatre.jpg",
+          "width": 1280,
+          "height": 800,
+          "bytes": 186103
+        }
+      ]
+    },
+    {
+      "id": "parr-venue-chautauqua-boulder",
+      "subject": "Historic wooden Chautauqua Auditorium in Boulder beneath the Flatirons",
+      "location": "Chautauqua Auditorium, Boulder, CO",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Colorado_Chautauqua_Auditorium_Boulder_CO.jpg",
+      "photographer": "Hustvedt",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "originalDimensions": "3464x1912",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_product",
+      "deployments": [
+        {
+          "property": "parr",
+          "publicPath": "/images/venues/chautauqua-auditorium.jpg",
+          "width": 1280,
+          "height": 800,
+          "bytes": 153242
+        }
+      ]
+    },
+    {
+      "id": "parr-venue-fox-theatre-boulder",
+      "subject": "Fox Theatre marquee on University Hill in Boulder, Colorado",
+      "location": "Fox Theatre, Boulder, CO",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Fox_Theater,_Boulder_CO.JPG",
+      "photographer": "Kvng",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "originalDimensions": "2911x2126",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_product",
+      "deployments": [
+        {
+          "property": "parr",
+          "publicPath": "/images/venues/fox-theatre.jpg",
+          "width": 1280,
+          "height": 800,
+          "bytes": 182253
+        }
+      ]
+    },
+    {
+      "id": "parr-venue-macky-auditorium",
+      "subject": "Sandstone towers of Macky Auditorium on the CU Boulder campus",
+      "location": "Macky Auditorium, Boulder, CO",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Macky_Auditorium_West_side.JPG",
+      "photographer": "Kvng",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "originalDimensions": "3648x2736",
+      "focalPointMobile": "50% 45%",
+      "truthfulnessLevel": "verified_product",
+      "deployments": [
+        {
+          "property": "parr",
+          "publicPath": "/images/venues/macky-auditorium.jpg",
+          "width": 1280,
+          "height": 800,
+          "bytes": 191400
+        }
+      ]
+    },
+    {
+      "id": "parr-venue-broadmoor-world-arena",
+      "subject": "Exterior of Broadmoor World Arena in Colorado Springs",
+      "location": "Colorado Springs, CO",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:The_Broadmoor_World_Arena.JPG",
+      "photographer": "Jeffrey Beall",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+      "originalDimensions": "5066x2734",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_product",
+      "deployments": [
+        {
+          "property": "parr",
+          "publicPath": "/images/venues/broadmoor-world-arena.jpg",
+          "width": 1280,
+          "height": 720,
+          "bytes": 135413
+        }
+      ]
+    },
+    {
+      "id": "parr-venue-colorado-springs-foothills",
+      "subject": "Colorado Springs Front Range sunset view",
+      "location": "Colorado Springs Concert Corridor, CO",
+      "sourcePageUrl": "https://commons.wikimedia.org/wiki/File:Sunset_in_Palmer_Park._Colorado_Springs2.jpg",
+      "photographer": "mark byzewski",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+      "originalDimensions": "6240x4160",
+      "focalPointMobile": "50% 50%",
+      "truthfulnessLevel": "verified_destination_activity",
+      "deployments": [
+        {
+          "property": "parr",
+          "publicPath": "/images/venues/ford-amphitheater-colorado-springs.jpg",
+          "width": 1280,
+          "height": 800,
+          "bytes": 70489
+        }
+      ]
+    }
+  ]
+}

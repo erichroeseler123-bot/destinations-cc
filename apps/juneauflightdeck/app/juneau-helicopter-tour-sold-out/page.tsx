@@ -88,6 +88,26 @@ export default function SoldOutGuidePage() {
       <p style={{ fontSize: "1rem", lineHeight: 1.6, color: "var(--muted)", marginBottom: "24px" }}>
         Glacier walkabouts and helicopter dog sledding are the first excursions to fill up in Alaska. If your cruise excursion desk says sold out, <strong>independent operator or partner allocations can differ from your cruise line&apos;s contracted block</strong> — though peak summer dates can reach full capacity across every aircraft.
       </p>
+      <div
+        style={{
+          marginBottom: 24,
+          borderRadius: 16,
+          overflow: "hidden",
+          border: "1px solid var(--line, #334155)",
+          aspectRatio: "16 / 9",
+          maxHeight: 320,
+          background: "#071626",
+        }}
+      >
+        <img
+          src="/images/portfolio/mendenhall-glacier-overview.webp"
+          alt="Mendenhall Glacier face, icebergs in Mendenhall Lake, and Coast Mountains in Juneau, Alaska"
+          width={1440}
+          height={900}
+          style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 48%", display: "block" }}
+        />
+      </div>
+
       <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "28px" }}>
         <Link href="#waitlist-form" className="primary-cta" style={{ fontSize: "0.9rem", padding: "10px 18px" }}>
           Request Free Availability Check →

@@ -51,7 +51,7 @@ export const PORTS: Port[] = [
     name: "Skagway",
     region: "Inside Passage",
     hook: "Gold Rush history, White Pass scenery, rail, road trips, and mountain views built for a port day.",
-    image: "/images/alaska/skagway-white-pass.jpg",
+    image: "/images/alaska/white-pass-train.jpg",
     imageAlt: "White Pass and Yukon Route railway navigating rugged mountain pass in Skagway, Alaska",
     imageCaption: "White Pass & Yukon Route, Skagway",
     dockLocations: [

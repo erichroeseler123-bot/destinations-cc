@@ -68,7 +68,16 @@ export default async function DccJuneauHelicopterCanceledGuidePage({
       />
 
       <div className="mx-auto max-w-5xl space-y-7">
-        <header className="rounded-[2.2rem] border border-cyan-400/35 bg-[#0a1320] p-8 md:p-10 space-y-5 shadow-2xl">
+        <header className="overflow-hidden rounded-[2.2rem] border border-cyan-400/35 bg-[#0a1320] shadow-2xl">
+          <img
+            src="/images/travel-markets/juneau/mendenhall-glacier-aerial.jpg"
+            alt="Mendenhall Glacier and Juneau mountain valley cloud ceiling view"
+            width={1280}
+            height={853}
+            loading="eager"
+            className="h-52 w-full object-cover object-center border-b border-white/10 sm:h-64"
+          />
+          <div className="p-8 md:p-10 space-y-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-[11px] font-black uppercase tracking-[0.26em] text-cyan-300">
               DCC Juneau Weather Recovery Authority · April 24 Dock Rollout
@@ -141,6 +150,7 @@ export default async function DccJuneauHelicopterCanceledGuidePage({
             >
               Check Short Port-Call All-Aboard Buffer →
             </Link>
+          </div>
           </div>
         </header>
 

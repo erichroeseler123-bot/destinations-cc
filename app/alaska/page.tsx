@@ -344,11 +344,21 @@ export default async function AlaskaPage() {
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
       <div className="max-w-5xl mx-auto px-6 py-16 space-y-10">
-        <header className="space-y-2">
+        <header className="space-y-4">
           <h1 className="text-4xl md:text-6xl font-black tracking-tight">Alaska Cruise and Shore Excursion Guide</h1>
           <p className="text-zinc-300 text-lg">
             Cruise ports, glaciers, wildlife, and excursion logistics that decide what is actually possible in port-day windows.
           </p>
+          <div className="overflow-hidden rounded-3xl border border-white/12 bg-black/40 shadow-2xl">
+            <img
+              src="/images/portfolio/juneau-mendenhall-hero.webp"
+              alt="Mendenhall Glacier blue ice face, lake, and Coast Mountains in Juneau, Alaska"
+              width={1440}
+              height={810}
+              loading="eager"
+              className="h-56 w-full object-cover object-center sm:h-72"
+            />
+          </div>
         </header>
 
         <section className="grid grid-cols-1 md:grid-cols-3 gap-4">

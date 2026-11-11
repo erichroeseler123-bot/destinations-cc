@@ -31,28 +31,28 @@ const cardStyle = { borderRadius: "18px" } as const;
 
 const COMPARISON_IMAGES: Record<string, { src: string; alt: string }> = {
   "whitney-vs-oak-alley": {
-    src: "/images/wikimedia/originals/oak-alley-front.jpg",
-    alt: "Whitney Plantation vs Oak Alley Plantation",
+    src: "/images/portfolio/whitney-plantation.webp",
+    alt: "Whitney Plantation vs Oak Alley Plantation on Louisiana's River Road",
   },
   "natchez-vs-city-of-new-orleans-riverboat": {
-    src: "/images/travel-markets/new-orleans/steamboat-natchez.jpg",
-    alt: "Steamboat NATCHEZ vs Riverboat CITY of NEW ORLEANS",
+    src: "/images/portfolio/riverboat-city-of-nola.webp",
+    alt: "Steamboat NATCHEZ vs Riverboat CITY of NEW ORLEANS on the Mississippi River",
   },
   "covered-swamp-boat-vs-airboat": {
-    src: "/images/travel-markets/new-orleans/airboat-swamp.png",
-    alt: "Covered Swamp Boat vs Airboat Tour",
+    src: "/images/wno/small-boat-swamp-tour.webp",
+    alt: "Covered Swamp Boat vs Airboat Tour on Louisiana bayou water",
   },
   "small-vs-large-airboat": {
-    src: "/images/travel-markets/new-orleans/small-group-airboat.png",
-    alt: "Small Airboat vs Large Airboat Swamp Excursion",
+    src: "/images/portfolio/louisiana-airboat-marsh.webp",
+    alt: "Small Airboat vs Large Airboat Swamp Excursion in South Louisiana",
   },
   "swamp-tour-with-vs-without-transportation": {
-    src: "/images/travel-markets/new-orleans/hotel-pickup-swamp-boat.png",
-    alt: "Swamp Tour With Transportation vs Self-Drive",
+    src: "/images/portfolio/nola-covered-swamp-boat.webp",
+    alt: "Swamp Tour With Transportation vs Self-Drive in New Orleans",
   },
   "best-new-orleans-tour-if-you-only-have-3-hours": {
-    src: "/images/travel-markets/new-orleans/french-quarter-street.jpg",
-    alt: "Best New Orleans Tours Under 3 Hours",
+    src: "/images/portfolio/royal-street-balconies.webp",
+    alt: "Best New Orleans Tours Under 3 Hours in the French Quarter",
   },
 };
 

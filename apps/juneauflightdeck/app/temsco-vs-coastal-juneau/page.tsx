@@ -79,6 +79,26 @@ export default function TemscoVsCoastalPage() {
         Both TEMSCO and Coastal Helicopters offer scenic flightseeing and gentle glacier landings where you step onto ancient ice in slip-on traction boots. Both also operate summer dog sledding camps on high snowfields. The key differences lie in <strong>landing glaciers, departure frequency, and published rates</strong>.
       </p>
 
+      <div
+        style={{
+          marginBottom: 28,
+          borderRadius: 16,
+          overflow: "hidden",
+          border: "1px solid var(--line, #334155)",
+          aspectRatio: "16 / 9",
+          maxHeight: 320,
+          background: "#071626",
+        }}
+      >
+        <img
+          src="/images/tours/coastal-icefield-landing.jpg"
+          alt="Herbert Glacier blue icefall and Coast Mountains in the Juneau Icefield, Alaska"
+          width={1440}
+          height={900}
+          style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 48%", display: "block" }}
+        />
+      </div>
+
       {/* Side-by-Side Comparison Table */}
       <section style={{ overflowX: "auto", marginBottom: "36px" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 640, background: "var(--panel, #0f172a)", borderRadius: 12, overflow: "hidden", border: "1px solid var(--line, #334155)", fontSize: "0.9rem" }}>

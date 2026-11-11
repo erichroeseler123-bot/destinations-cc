@@ -122,20 +122,20 @@ test("FareHarbor Lightframe attribution", async (t) => {
     );
   });
 
-  await t.test("keeps the six legacy generated raw URLs unchanged", () => {
+  await t.test("keeps the six legacy generated raw URLs canonical", () => {
     const expected = [
       "https://fareharbor.com/embeds/book/southernstyletours/items/51942/?asn=aktourcenter&flow=4344&full-items=yes",
       "https://fareharbor.com/embeds/book/southernstyletours/items/83002/?asn=aktourcenter&flow=4344&full-items=yes",
-      "https://fareharbor.com/embeds/book/ragincajuntours/items/590176/?asn=aktourcenter&flow=392449&full-items=yes",
-      "https://fareharbor.com/embeds/book/ragincajuntours/?asn=aktourcenter&flow=940162&full-items=yes",
+      "https://fareharbor.com/embeds/book/ragincajuntours/items/590176/?asn=aktourcenter&flow=392449&ref=wno-ragin-cajun-covered-boat&full-items=yes",
+      "https://fareharbor.com/embeds/book/ragincajuntours/items/228561/?asn=aktourcenter&flow=940162&ref=wno-ragin-cajun-airboat-options&full-items=yes",
       "https://fareharbor.com/embeds/book/southernstyletours/items/51953/?asn=aktourcenter&flow=4344&full-items=yes",
-      "https://fareharbor.com/embeds/book/ragincajuntours/items/603090/?asn=aktourcenter&flow=392449&full-items=yes",
+      "https://fareharbor.com/embeds/book/ragincajuntours/items/603090/?asn=aktourcenter&flow=392449&ref=wno-ragin-cajun-covered-plantation-combo&full-items=yes",
     ];
     const actual = STOREFRONT_PRODUCTS.slice(0, 6).map((product) =>
       getFareHarborUrl(product.companyShortname, product.itemId, product.flowId),
     );
     assert.deepStrictEqual(actual, expected);
-    assert.ok(actual.every((url) => !url.includes("src=") && !url.includes("ref=")));
+    assert.ok(actual.every((url) => !url.includes("src=")));
   });
 
   await t.test("wires catalog, live chooser surfaces, detail, and normalized booking sources", () => {

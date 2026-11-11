@@ -10,7 +10,7 @@ import DailyBriefSignup from "./DailyBriefSignup";
 
 import { resolveProductImage } from "../lib/imageResolver";
 
-const FALLBACK_IMAGE = "/images/new-orleans/hero-french-quarter-balcony.jpg";
+const FALLBACK_IMAGE = "/images/portfolio/royal-street-balconies.webp";
 
 function isLiveProduct(product: ReturnType<typeof getProductById>): product is LiveProductAdapter {
   return Boolean(product && product.status === "live" && "imageUrl" in product);

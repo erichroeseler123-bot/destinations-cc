@@ -3,7 +3,7 @@
    homepage remains untouched. */
 
 [data-wno-category] {
-  --wno-freeze-hero-image: url('/images/travel-markets/new-orleans/french-quarter-street.jpg');
+  --wno-freeze-hero-image: url('/images/portfolio/royal-street-balconies.webp');
 }
 
 /* Neighborhood and walking categories should explicitly inherit a real city image
@@ -11,12 +11,15 @@
 [data-wno-category="city-tours"],
 [data-wno-category="city-sightseeing-tours"],
 [data-wno-category="french-quarter-tours"],
-[data-wno-category="garden-district-tours"],
 [data-wno-category="architecture-tours"],
 [data-wno-category="walking-city-tours"],
 [data-wno-category="walking-tours"],
 [data-wno-category="private-tours"] {
-  --wno-freeze-hero-image: url('/images/travel-markets/new-orleans/french-quarter-street.jpg');
+  --wno-freeze-hero-image: url('/images/portfolio/royal-street-balconies.webp');
+}
+
+[data-wno-category="garden-district-tours"] {
+  --wno-freeze-hero-image: url('/images/portfolio/garden-district-mansion.webp');
 }
 
 [data-wno-category="plantation-tours"] {
@@ -25,11 +28,11 @@
 
 [data-wno-category="swamp-tours"],
 [data-wno-category="covered-swamp-boat-tours"] {
-  --wno-freeze-hero-image: url('/images/travel-markets/new-orleans/covered-boat-swamp.png');
+  --wno-freeze-hero-image: url('/images/portfolio/nola-covered-swamp-boat.webp');
 }
 
 [data-wno-category="airboat-tours"] {
-  --wno-freeze-hero-image: url('/images/travel-markets/new-orleans/airboat-swamp.png');
+  --wno-freeze-hero-image: url('/images/portfolio/louisiana-airboat-marsh.webp');
 }
 
 [data-wno-category="riverboat-cruises"] {
@@ -42,7 +45,7 @@
 
 [data-wno-category="food-tours"],
 [data-wno-category="cooking-classes"] {
-  --wno-freeze-hero-image: url('/images/wikimedia/originals/gumbo-dish.jpg');
+  --wno-freeze-hero-image: url('/images/portfolio/classic-cocktails-nola.webp');
 }
 
 [data-wno-category="ghost-tours"],
