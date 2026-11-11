@@ -8,8 +8,12 @@ import TrustBadges from "@/components/TrustBadges";
 import LfsTrustStrip from "@/components/LfsTrustStrip";
 import DccNetworkStrip from "@/components/DccNetworkStrip";
 import { notFound } from "next/navigation";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { buildViatorLink } from "@/utils/affiliateLinks";
+import {
+  ADMIN_SESSION_COOKIE,
+  canViewTourAdminDebugDiagnostics,
+} from "@/lib/dcc/tourAdminDebugGate";
 import Link from "next/link";
 import PoweredByViator from "@/app/components/dcc/PoweredByViator";
 import TravelerTakeaways from "@/app/components/dcc/TravelerTakeaways";
@@ -90,14 +94,18 @@ function buildDestinationTrail(
 }
 
 // NEXT.js 15 UPDATE: params is now a Promise
-export default async function TourDetailPage({ 
-  params 
-}: { 
-  params: Promise<{ id: string }> 
+export default async function TourDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   // Await params at the top of the component
   const resolvedParams = await params;
+  const resolvedSearchParams = searchParams ? await searchParams : {};
   let isLfse = false;
+  let adminSessionCookie: string | null = null;
   try {
     const reqHeaders = await headers();
     const hostHeader = reqHeaders.get("x-forwarded-host") || reqHeaders.get("host") || "";
@@ -106,6 +114,16 @@ export default async function TourDetailPage({
   } catch {
     isLfse = false;
   }
+  try {
+    const cookieStore = await cookies();
+    adminSessionCookie = cookieStore.get(ADMIN_SESSION_COOKIE)?.value || null;
+  } catch {
+    adminSessionCookie = null;
+  }
+  const showAdminDebugDiagnostics = canViewTourAdminDebugDiagnostics({
+    adminSessionCookie,
+    debugParam: resolvedSearchParams.debug,
+  });
   const seededTour = allTours.find((t) => String(t.id) === resolvedParams.id);
   const durableTour = seededTour ? null : await getDurableTourByIdOrAlias(resolvedParams.id);
   const durableDestinationLabel = durableTour
@@ -290,7 +308,10 @@ export default async function TourDetailPage({
                 Third-Party Activity Listing
               </span>
               <span className="text-zinc-400 text-[11px]">
-                Source: <span className="text-white font-semibold">{productDetailSource || "Catalog"}</span> · Optional convenience booking
+                Optional convenience booking · Direct &amp; public options stay independent
+                {showAdminDebugDiagnostics
+                  ? ` · Debug source: ${productDetailSource || "Catalog"}`
+                  : ""}
               </span>
             </div>
           )}
@@ -405,7 +426,9 @@ export default async function TourDetailPage({
               ) : null}
               {productDetail.durationText ? <p>Duration: {productDetail.durationText}</p> : null}
               {productDetail.operatedBy ? <p>Operated by: {productDetail.operatedBy}</p> : null}
-              <p className="text-zinc-500">Detail source: {productDetailSource}</p>
+              {showAdminDebugDiagnostics ? (
+                <p className="text-zinc-500">Detail source: {productDetailSource}</p>
+              ) : null}
             </div>
           </article>
           <div className="grid gap-6 md:grid-cols-2">
@@ -472,20 +495,30 @@ export default async function TourDetailPage({
         </section>
       ) : null}
 
-      <ViatorAvailabilityCheckCard
-        productCode={productDetail?.product_code || tour.product_code || null}
-        currency={productDetail?.currency || "USD"}
-      />
+      {showAdminDebugDiagnostics ? (
+        <section
+          data-testid="tour-detail-admin-viator-diagnostics"
+          className="mb-10 rounded-2xl border border-amber-500/35 bg-amber-950/20 p-4 space-y-2"
+        >
+          <p className="text-xs font-bold uppercase tracking-wider text-amber-300">
+            Admin / Partner Verification Diagnostics (Hidden from Customer HTML)
+          </p>
+          <ViatorAvailabilityCheckCard
+            productCode={productDetail?.product_code || tour.product_code || null}
+            currency={productDetail?.currency || "USD"}
+          />
 
-      <ViatorBookingQuestionsCard
-        productCode={productDetail?.product_code || tour.product_code || null}
-        questionRefs={productDetail?.bookingQuestionRefs || []}
-      />
+          <ViatorBookingQuestionsCard
+            productCode={productDetail?.product_code || tour.product_code || null}
+            questionRefs={productDetail?.bookingQuestionRefs || []}
+          />
 
-      <ViatorPrebookStateCard
-        productCode={productDetail?.product_code || tour.product_code || null}
-        currency={productDetail?.currency || "USD"}
-      />
+          <ViatorPrebookStateCard
+            productCode={productDetail?.product_code || tour.product_code || null}
+            currency={productDetail?.currency || "USD"}
+          />
+        </section>
+      ) : null}
 
       <PoweredByViator
         compact

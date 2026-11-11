@@ -67,7 +67,7 @@ export default function ShuttleYaHome() {
         <div className="mx-auto max-w-6xl px-5 py-14 sm:px-8 md:py-20">
           <p className="text-xs font-black uppercase tracking-[0.2em] text-emerald-300">Current operator handoffs</p>
           <h2 className="mt-3 text-3xl font-black tracking-tight text-white">Real services, clearly separated.</h2>
-          <div className="mt-8 grid gap-4 lg:grid-cols-5">
+          <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {truth.operator_handoffs.map((operator) => (
               <a key={operator.name} href={operator.url} className="rounded-2xl border border-white/10 bg-black/20 p-5 hover:border-emerald-300/40">
                 <h3 className="font-black text-white">{operator.name}</h3>

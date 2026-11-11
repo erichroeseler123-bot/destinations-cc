@@ -127,22 +127,28 @@ export default function LocationFirstHomeFast({
               <div className="flex flex-col justify-between rounded-3xl border border-white/12 bg-white/[0.04] p-5">
                 <div>
                   <span className="text-[11px] font-bold uppercase tracking-wider text-cyan-300">
-                    1 · Tours &amp; Activities
+                    1 · Destination Guides &amp; Tours
                   </span>
                   <h3 className="mt-1.5 text-xl font-black text-white">
-                    Find tours and activities
+                    Choose a destination guide
                   </h3>
                   <p className="mt-2 text-sm leading-6 text-white/70">
-                    Compare pickup locations, boat or vehicle types, and schedule fit before you book.
+                    Start with a destination hub to compare pickup logistics, boat or vehicle types, free/public options, and schedule fit before you book.
                   </p>
                   <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-white/75">
-                    <span className="text-white/50">Examples:</span>
+                    <span className="text-white/50">Top hubs:</span>
                     <Link
                       href="/new-orleans/tours"
                       data-testid="dcc-destination-nola-tours-guide-link"
                       className="rounded-full border border-white/15 bg-white/[0.05] px-2.5 py-1 font-bold text-cyan-200 hover:border-cyan-400 hover:text-white"
                     >
                       New Orleans
+                    </Link>
+                    <Link
+                      href="/juneau"
+                      className="rounded-full border border-white/15 bg-white/[0.05] px-2.5 py-1 font-bold text-cyan-200 hover:border-cyan-400 hover:text-white"
+                    >
+                      Juneau
                     </Link>
                     <Link
                       href="/las-vegas/tours"
@@ -154,11 +160,11 @@ export default function LocationFirstHomeFast({
                 </div>
                 <div className="mt-5 pt-3 border-t border-white/10">
                   <Link
-                    href="/tours"
+                    href="/destinations"
                     data-testid="dcc-start-find-tours"
                     className="inline-flex w-full items-center justify-between rounded-xl bg-cyan-400 px-4 py-3 text-xs font-black uppercase tracking-wider text-[#041217] transition hover:bg-cyan-300"
                   >
-                    <span>Browse tours</span>
+                    <span>Explore destinations</span>
                     <span>→</span>
                   </Link>
                 </div>
@@ -227,18 +233,24 @@ export default function LocationFirstHomeFast({
                     3 · Shuttles &amp; Transfers
                   </span>
                   <h3 className="mt-1.5 text-xl font-black text-white">
-                    Find a ride
+                    Plan airport, ski &amp; venue rides
                   </h3>
                   <p className="mt-2 text-sm leading-6 text-white/70">
-                    Compare shared shuttles, private SUVs, public buses, and winter road rules for your group size.
+                    Compare shared shuttles, private SUVs/vans, public buses, and winter road rules for your group size and ski gear.
                   </p>
                   <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-white/75">
-                    <span className="text-white/50">Also see:</span>
+                    <span className="text-white/50">Popular corridors:</span>
                     <Link
                       href="/transportation/colorado/denver-to-vail-shuttle-guide"
                       className="rounded-full border border-white/15 bg-white/[0.05] px-2.5 py-1 font-bold text-cyan-200 hover:border-cyan-400 hover:text-white"
                     >
                       DEN to Vail
+                    </Link>
+                    <Link
+                      href="/routes/denver-breckenridge"
+                      className="rounded-full border border-white/15 bg-white/[0.05] px-2.5 py-1 font-bold text-cyan-200 hover:border-cyan-400 hover:text-white"
+                    >
+                      Breckenridge
                     </Link>
                     <Link
                       href="/red-rocks-transportation"
@@ -250,11 +262,11 @@ export default function LocationFirstHomeFast({
                 </div>
                 <div className="mt-5 pt-3 border-t border-white/10">
                   <Link
-                    href="/routes/denver-breckenridge"
+                    href="/transportation/colorado"
                     data-testid="dcc-start-find-ride"
                     className="inline-flex w-full items-center justify-between rounded-xl bg-cyan-400 px-4 py-3 text-xs font-black uppercase tracking-wider text-[#041217] transition hover:bg-cyan-300"
                   >
-                    <span>Denver–Breckenridge guide</span>
+                    <span>Colorado &amp; I-70 ride planner</span>
                     <span>→</span>
                   </Link>
                 </div>

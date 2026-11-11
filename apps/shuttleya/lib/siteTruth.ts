@@ -1,6 +1,6 @@
 export const SHUTTLEYA_TRUTH = {
   dcc_id: "dcc:site:shuttleya",
-  verified_at: "2026-08-31",
+  verified_at: "2026-11-11",
   site: {
     id: "shuttleya",
     name: "ShuttleYa",
@@ -41,15 +41,14 @@ export const SHUTTLEYA_TRUTH = {
       href: "/cruise-port-transportation",
       eyebrow: "Ports",
       title: "Cruise-port transportation",
-      copy: "Start with local transportation intent and continue to a relevant local-driver or destination specialist.",
+      copy: "Start with ship-dock timing and port-day logistics, then continue to a verified destination port guide.",
     },
   ],
   operator_handoffs: [
     { name: "GoSno", url: "https://gosno.co/?utm_source=shuttleya&utm_medium=referral&utm_campaign=colorado_mountain_transport", scope: "DEN / COS ↔ Colorado mountain resorts" },
-    { name: "BigSky GoSno", url: "https://bigsky.gosno.co/?utm_source=shuttleya&utm_medium=referral&utm_campaign=big_sky_transport", scope: "BZN ↔ Big Sky private transportation" },
-    { name: "Party at Red Rocks", url: "https://partyatredrocks.com/?utm_source=shuttleya&utm_medium=referral&utm_campaign=red_rocks_private_transport", scope: "Private Red Rocks transportation" },
-    { name: "Red Rocks DD", url: "https://redrocksdd.com/?utm_source=shuttleya&utm_medium=referral&utm_campaign=red_rocks_designated_driver", scope: "Red Rocks designated-driver transportation" },
-    { name: "Vibe Around Town", url: "https://vibearoundtown.com/?utm_source=shuttleya&utm_medium=referral&utm_campaign=local_driver_discovery", scope: "USVI and launching-market local-driver discovery and private ride planning" },
+    { name: "BigSky GoSno", url: "https://bigsky.gosno.co/?utm_source=shuttleya&utm_medium=referral&utm_campaign=big_sky_transport", scope: "BZN ↔ Big Sky private transportation (opening Nov 15, 2026)" },
+    { name: "Party at Red Rocks", url: "https://partyatredrocks.com/?utm_source=shuttleya&utm_medium=referral&utm_campaign=red_rocks_private_transport", scope: "Shared & private Red Rocks concert transportation" },
+    { name: "Destination Command Center Ports", url: "https://www.destinationcommandcenter.com/ports?utm_source=shuttleya&utm_medium=referral&utm_campaign=cruise_port_planning", scope: "Cruise-port timing, dock buffers, and shore transportation planning" },
   ],
   legacy_service: {
     denver_to_mighty_argo_scheduled_shuttle: "retired_not_operating",

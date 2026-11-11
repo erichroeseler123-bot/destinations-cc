@@ -12,7 +12,7 @@ import type {
 export interface CategoryDecisionEngineExperienceProps {
   engineId: DecisionEngineCategoryId;
   initialAnswers?: Record<string, unknown>;
-  initialResult: DecisionResult<Record<string, unknown>>;
+  initialResult?: DecisionResult<Record<string, unknown>>;
 }
 
 function parseQuerySearchParamsForQuestions(
@@ -105,16 +105,16 @@ export default function CategoryDecisionEngineExperience({
     window.history.replaceState(null, "", nextUrl);
   }, [engine, answers]);
 
-  const evaluation = useMemo<DecisionResult<Record<string, unknown>>>(() => {
-    if (!engine) return initialResult;
+  const evaluation = useMemo<DecisionResult<Record<string, unknown>> | null>(() => {
+    if (!engine) return initialResult ?? null;
     try {
       return engine.evaluate(answers) as DecisionResult<Record<string, unknown>>;
     } catch {
-      return initialResult;
+      return initialResult ?? (engine.evaluate(engine.defaultExampleInput) as DecisionResult<Record<string, unknown>>);
     }
   }, [engine, answers, initialResult]);
 
-  if (!engine) {
+  if (!engine || !evaluation) {
     return null;
   }
 

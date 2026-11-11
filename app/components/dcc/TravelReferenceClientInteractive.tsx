@@ -97,7 +97,10 @@ export function EntryDependencyExplorer({
 }: {
   whyCoordinatesCannotAnswerEntry: string;
   scenarios: EntryScenarioRule[];
-  evidenceMap: Record<string, EvidenceCitation>;
+  evidenceMap: Record<
+    string,
+    Pick<EvidenceCitation, "issuingOrganization" | "lastCheckedAt">
+  >;
 }) {
   const [selectedId, setSelectedId] = useState<string>("all");
 

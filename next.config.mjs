@@ -561,7 +561,7 @@ const nextConfig = {
   env: buildProvenanceEnv,
   serverExternalPackages: ["ws"],
   turbopack: {
-    root: __dirname,
+    root: process.env.DCC_TURBOPACK_ROOT?.trim() || __dirname,
   },
   outputFileTracingIncludes: {
     "/juneau": ["./data/viator-reviews/**/*"],

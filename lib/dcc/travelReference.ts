@@ -1,9 +1,8 @@
 import { eq } from "drizzle-orm";
-import { hasConfiguredDatabaseUrl } from "@/lib/db/client";
+import { unstable_cache } from "next/cache";
+import { getDb, hasDb } from "@/lib/db/client";
 import { earthosControlMapFindings } from "@/lib/db/schema";
 import { getGoSnoRouteSnapshotDisplayPricing } from "@/lib/dcc/applicability";
-import { getRequiredEarthosDb } from "@/lib/dcc/earthos/ensureEarthosSchema";
-import { syncDurableLedgerWithPostgres } from "@/lib/dcc/storage/durableTransactionalStore";
 import {
   applyPublishedReferenceNodeOverride,
   buildReferenceOverrideFindingId,
@@ -20,27 +19,68 @@ registerGoSnoDisplayPricingResolver(getGoSnoRouteSnapshotDisplayPricing);
 
 export * from "./travelReferenceCore";
 
-export async function readPublishedReferenceNodeOverrideFromDb(
+const REFERENCE_OVERRIDE_DB_TIMEOUT_MS = 1200;
+
+async function queryPublishedReferenceNodeOverrideDirect(
   id: TravelReferenceNode["id"],
-  scope: EarthosEnvironmentScope = resolveEarthosEnvironmentScope(),
+  scope: EarthosEnvironmentScope,
 ): Promise<PublishedReferenceNodeOverride | null> {
-  if (!hasConfiguredDatabaseUrl()) {
+  if (
+    process.env.DCC_DISABLE_NEON_COMMERCE === "1" ||
+    !hasDb()
+  ) {
     return null;
   }
-  const db = await getRequiredEarthosDb();
 
-  const rows = await db
-    .select()
-    .from(earthosControlMapFindings)
-    .where(eq(earthosControlMapFindings.findingId, buildReferenceOverrideFindingId(id, scope)))
-    .limit(1);
+  const db = getDb();
+  if (!db) {
+    return null;
+  }
+
+  let rows: Array<typeof earthosControlMapFindings.$inferSelect>;
+  try {
+    rows = await Promise.race([
+      db
+        .select()
+        .from(earthosControlMapFindings)
+        .where(
+          eq(
+            earthosControlMapFindings.findingId,
+            buildReferenceOverrideFindingId(id, scope),
+          ),
+        )
+        .limit(1),
+      new Promise<never>((_, reject) =>
+        setTimeout(
+          () => reject(new Error("reference_override_db_timeout")),
+          REFERENCE_OVERRIDE_DB_TIMEOUT_MS,
+        ),
+      ),
+    ]);
+  } catch {
+    return null;
+  }
 
   const row = rows[0];
   if (!row || row.status !== "applied" || !row.metadata) {
     return null;
   }
 
-  const override = row.metadata as unknown as PublishedReferenceNodeOverride;
+  const rawMetadata =
+    typeof row.metadata === "string"
+      ? (() => {
+          try {
+            return JSON.parse(row.metadata) as unknown;
+          } catch {
+            return null;
+          }
+        })()
+      : (row.metadata as unknown);
+  if (!rawMetadata || typeof rawMetadata !== "object") {
+    return null;
+  }
+
+  const override = rawMetadata as PublishedReferenceNodeOverride;
   if (scope === "production") {
     if (override.environmentScope !== "production") {
       return null;
@@ -63,10 +103,30 @@ export async function readPublishedReferenceNodeOverrideFromDb(
   return override;
 }
 
+const getCachedProductionReferenceOverride = unstable_cache(
+  async (id: TravelReferenceNode["id"]) =>
+    queryPublishedReferenceNodeOverrideDirect(id, "production"),
+  ["dcc-published-reference-node-override-v1"],
+  { revalidate: 3600, tags: ["travel-reference-override"] },
+);
+
+export async function readPublishedReferenceNodeOverrideFromDb(
+  id: TravelReferenceNode["id"],
+  scope: EarthosEnvironmentScope = resolveEarthosEnvironmentScope(),
+): Promise<PublishedReferenceNodeOverride | null> {
+  if (scope === "production" && process.env.NODE_ENV !== "test") {
+    try {
+      return await getCachedProductionReferenceOverride(id);
+    } catch {
+      return queryPublishedReferenceNodeOverrideDirect(id, scope);
+    }
+  }
+  return queryPublishedReferenceNodeOverrideDirect(id, scope);
+}
+
 export async function getPublishedTravelReferenceNodeById(
   id: TravelReferenceNode["id"],
 ): Promise<TravelReferenceNode> {
-  await syncDurableLedgerWithPostgres();
   const override = await readPublishedReferenceNodeOverrideFromDb(id);
   return applyPublishedReferenceNodeOverride(getBaseTravelReferenceNodeById(id), override);
 }

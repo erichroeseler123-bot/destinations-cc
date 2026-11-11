@@ -28,6 +28,11 @@ export interface CruisePromenadeOwnerSummary {
   needsAssistanceGuestsCount: number;
   plannersWithSplitsCount: number;
   sharedPlannersCount: number;
+  sampledSharedPlannersCount: number;
+  genuineSharedPlannersCount: number | null;
+  testSharedPlannersCount: number;
+  confirmedSailDatesCount: number;
+  verifiedFullItinerarySailingsCount: number;
   trackedGuestsCount: number;
   note: string;
 }
@@ -38,11 +43,43 @@ export interface DirectMorOwnerSummary {
   endpoint: string;
   opsHref: string;
   status: RemoteOwnerSummaryStatus;
+  testRecordsExcluded28d: number;
+  genuineOrdersTotal28d: number;
+  paidOrders28d: number;
+  confirmedUnpaidOrders28d: number;
+  openQuoteRequests28d: number;
+  activeHoldsCount: number;
+  awaitingBalanceOrders28d: number;
+  paidGrossSalesUsd28d: number;
+  grossRevenueUsd28d: number;
+  confirmedUnpaidGrossUsd28d: number;
+  awaitingBalanceGrossUsd28d: number;
+  netOperatingRevenueUsd28d: number | null;
   provisioningExceptions: number;
   needsReviewOrders: number;
-  paidOrders28d: number;
-  grossRevenueUsd28d: number;
+  rezdyHealth: Record<string, unknown> | null;
   note: string;
+}
+
+export interface StrictSeparationMetricRow {
+  rowNumber: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
+  key:
+    | "test_records_excluded"
+    | "genuine_bookings"
+    | "paid_bookings"
+    | "confirmed_unpaid_bookings"
+    | "open_quotes"
+    | "active_holds"
+    | "awaiting_balance_orders"
+    | "gross_merchant_sales"
+    | "net_operating_revenue"
+    | "affiliate_commissions";
+  label: string;
+  headlineValue: string;
+  gosnoBreakdown: string;
+  parrBreakdown: string;
+  networkOrAffiliateBreakdown: string;
+  antiConflationDisclosure: string;
 }
 
 export interface RollCallBridgeStatus {
@@ -119,20 +156,30 @@ export interface OwnerControlCenterSnapshot {
     startIso: string;
     endIso: string;
     stages: ConnectedNetworkFunnelStage[];
+    strictSeparation10Way28d: StrictSeparationMetricRow[];
     strictlySeparatedRevenue: {
       commissionTrack: {
         label: "Affiliate / Direct 10% / Machine 5% Commissions";
         reportedCommissionsEarnedUsd: number;
         confirmedSettledPayoutsUsd: number;
+        affiliateClicks28d: number;
+        clicksDisclosure: "Clicks / Handoffs Only — Not Bookings or Revenue";
         outcomesStatus: "reported" | "awaiting_settlement_or_unknown";
         routesIncluded: readonly TransactionRouteModelId[];
       };
       directMorGrossTrack: {
         label: "GoSno + Party at Red Rocks Direct MoR Gross Revenue";
+        grossSalesDisclosure: "Gross Merchant Sales — Not Profit; Excludes Operating Costs, Driver Pay, Processor Fees & Refunds";
         portfolioOwnedGrossSalesUsd: number;
         pendingOwnedSettlementUsd: number;
         gosnoReportedGrossUsd28d: number;
         parrReportedGrossUsd28d: number;
+        combinedPaidGrossSalesUsd28d: number;
+        combinedConfirmedUnpaidGrossUsd28d: number;
+        combinedAwaitingBalanceGrossUsd28d: number;
+        gosnoNetOperatingRevenueUsd28d: number | null;
+        parrNetOperatingRevenueUsd28d: number | null;
+        netOperatingRevenueStatusLabel: string;
         routesIncluded: readonly ["direct_mor"];
         isolationRule: string;
       };
@@ -279,6 +326,72 @@ function safeNumber(v: unknown, fallback = 0): number {
   return Number.isFinite(n) && n >= 0 ? n : fallback;
 }
 
+function safeNullableSignedNumber(v: unknown): number | null {
+  if (v === null || v === undefined || v === "") return null;
+  const n = typeof v === "number" ? v : Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+function safeNullableNonNegativeNumber(v: unknown): number | null {
+  if (v === null || v === undefined || v === "") return null;
+  const n = typeof v === "number" ? v : Number(v);
+  return Number.isFinite(n) && n >= 0 ? n : null;
+}
+
+function emptyCruisePromenadeSummary(
+  status: RemoteOwnerSummaryStatus,
+  endpoint: string,
+  note: string,
+): CruisePromenadeOwnerSummary {
+  return {
+    status,
+    endpoint,
+    needsAssistanceGuestsCount: 0,
+    plannersWithSplitsCount: 0,
+    sharedPlannersCount: 0,
+    sampledSharedPlannersCount: 0,
+    genuineSharedPlannersCount: null,
+    testSharedPlannersCount: 0,
+    confirmedSailDatesCount: 0,
+    verifiedFullItinerarySailingsCount: 0,
+    trackedGuestsCount: 0,
+    note,
+  };
+}
+
+function emptyDirectMorOwnerSummary(options: {
+  siteId: "gosno" | "partyatredrocks";
+  siteName: string;
+  endpoint: string;
+  opsHref: string;
+  status: RemoteOwnerSummaryStatus;
+  note: string;
+}): DirectMorOwnerSummary {
+  return {
+    siteId: options.siteId,
+    siteName: options.siteName,
+    endpoint: options.endpoint,
+    opsHref: options.opsHref,
+    status: options.status,
+    testRecordsExcluded28d: 0,
+    genuineOrdersTotal28d: 0,
+    paidOrders28d: 0,
+    confirmedUnpaidOrders28d: 0,
+    openQuoteRequests28d: 0,
+    activeHoldsCount: 0,
+    awaitingBalanceOrders28d: 0,
+    paidGrossSalesUsd28d: 0,
+    grossRevenueUsd28d: 0,
+    confirmedUnpaidGrossUsd28d: 0,
+    awaitingBalanceGrossUsd28d: 0,
+    netOperatingRevenueUsd28d: null,
+    provisioningExceptions: 0,
+    needsReviewOrders: 0,
+    rezdyHealth: null,
+    note: options.note,
+  };
+}
+
 async function fetchCruisePromenadeOwnerSummary(options: {
   env: Record<string, string | undefined>;
   fetchImpl?: typeof fetch;
@@ -291,27 +404,19 @@ async function fetchCruisePromenadeOwnerSummary(options: {
   ).trim();
 
   if (!secret && !options.fetchImpl) {
-    return {
-      status: "unconfigured",
+    return emptyCruisePromenadeSummary(
+      "unconfigured",
       endpoint,
-      needsAssistanceGuestsCount: 0,
-      plannersWithSplitsCount: 0,
-      sharedPlannersCount: 0,
-      trackedGuestsCount: 0,
-      note: "Set DCC_CP_SERVICE_SECRET (or INTERNAL_API_SECRET) to pull live Cruise Promenade owner-summary counts.",
-    };
+      "Set DCC_CP_SERVICE_SECRET (or INTERNAL_API_SECRET) to pull live Cruise Promenade owner-summary counts.",
+    );
   }
 
   if (options.env.DCC_DISABLE_NEON_COMMERCE === "1" && !options.fetchImpl) {
-    return {
-      status: "pending_deploy",
+    return emptyCruisePromenadeSummary(
+      "pending_deploy",
       endpoint,
-      needsAssistanceGuestsCount: 0,
-      plannersWithSplitsCount: 0,
-      sharedPlannersCount: 0,
-      trackedGuestsCount: 0,
-      note: "Offline test mode (`DCC_DISABLE_NEON_COMMERCE=1`): remote CP owner-summary skipped.",
-    };
+      "Offline test mode (`DCC_DISABLE_NEON_COMMERCE=1`): remote CP owner-summary skipped.",
+    );
   }
 
   const fetchFn = options.fetchImpl ?? fetch;
@@ -327,53 +432,93 @@ async function fetchCruisePromenadeOwnerSummary(options: {
     });
 
     if (res.status === 404) {
-      return {
-        status: "pending_deploy",
+      return emptyCruisePromenadeSummary(
+        "pending_deploy",
         endpoint,
-        needsAssistanceGuestsCount: 0,
-        plannersWithSplitsCount: 0,
-        sharedPlannersCount: 0,
-        trackedGuestsCount: 0,
-        note: "Cruise Promenade `/api/internal/owner-summary` returned 404 (`pending_deploy`).",
-      };
+        "Cruise Promenade `/api/internal/owner-summary` returned 404 (`pending_deploy`).",
+      );
     }
 
     if (!res.ok) {
-      return {
-        status: "error",
+      return emptyCruisePromenadeSummary(
+        "error",
         endpoint,
-        needsAssistanceGuestsCount: 0,
-        plannersWithSplitsCount: 0,
-        sharedPlannersCount: 0,
-        trackedGuestsCount: 0,
-        note: `Cruise Promenade owner-summary returned HTTP ${res.status}.`,
-      };
+        `Cruise Promenade owner-summary returned HTTP ${res.status}.`,
+      );
     }
 
     const body = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+    const planners = (
+      body.planners && typeof body.planners === "object" ? body.planners : {}
+    ) as Record<string, unknown>;
+    const catalog = (
+      body.catalog && typeof body.catalog === "object" ? body.catalog : {}
+    ) as Record<string, unknown>;
+
+    const sampledSharedPlannersCount = safeNumber(
+      body.sampledSharedPlannersCount ??
+        planners.sampledSharedPlannersCount ??
+        body.sharedPlannersCount ??
+        planners.sharedPlannersCount ??
+        body.activePlannersCount ??
+        planners.activePlannersCount,
+    );
+    const genuineSharedPlannersCount = safeNullableNonNegativeNumber(
+      body.genuineSharedPlannersCount ?? planners.genuineSharedPlannersCount,
+    );
+    const testSharedPlannersCount = safeNumber(
+      body.testSharedPlannersCount ?? planners.testSharedPlannersCount,
+    );
+    const confirmedSailDatesCount = safeNumber(
+      catalog.confirmedSailDatesCount ?? body.confirmedSailDatesCount,
+    );
+    const verifiedFullItinerarySailingsCount = safeNumber(
+      catalog.verifiedFullItinerarySailingsCount ??
+        body.verifiedFullItinerarySailingsCount,
+    );
+    const sharedPlannersCount =
+      genuineSharedPlannersCount ?? sampledSharedPlannersCount;
+
+    const noteParts = [
+      genuineSharedPlannersCount !== null
+        ? `Genuine shared boards: ${genuineSharedPlannersCount} (KV sampled: ${sampledSharedPlannersCount}, test excluded: ${testSharedPlannersCount}).`
+        : `Sampled KV planner boards: ${sampledSharedPlannersCount} (unfiltered KV sample — not conflated with verified user groups).`,
+    ];
+    if (confirmedSailDatesCount > 0 || verifiedFullItinerarySailingsCount > 0) {
+      noteParts.push(
+        `Catalog: ${confirmedSailDatesCount} confirmed sail dates vs ${verifiedFullItinerarySailingsCount} verified full port itineraries.`,
+      );
+    }
+
     return {
       status: "live",
       endpoint,
-      needsAssistanceGuestsCount: safeNumber(body.needsAssistanceGuestsCount),
-      plannersWithSplitsCount: safeNumber(body.plannersWithSplitsCount),
-      sharedPlannersCount: safeNumber(
-        body.sharedPlannersCount ?? body.activePlannersCount,
+      needsAssistanceGuestsCount: safeNumber(
+        body.needsAssistanceGuestsCount ?? planners.needsAssistanceGuestsCount,
       ),
+      plannersWithSplitsCount: safeNumber(
+        body.plannersWithSplitsCount ?? planners.plannersWithSplitsCount,
+      ),
+      sharedPlannersCount,
+      sampledSharedPlannersCount,
+      genuineSharedPlannersCount,
+      testSharedPlannersCount,
+      confirmedSailDatesCount,
+      verifiedFullItinerarySailingsCount,
       trackedGuestsCount: safeNumber(
-        body.trackedGuestsCount ?? body.totalGuestsCount,
+        body.trackedGuestsCount ??
+          planners.trackedGuestsCount ??
+          body.totalGuestsCount ??
+          planners.totalGuestsCount,
       ),
-      note: "Live Cruise Promenade owner summary connected.",
+      note: noteParts.join(" "),
     };
   } catch {
-    return {
-      status: "pending_deploy",
+    return emptyCruisePromenadeSummary(
+      "pending_deploy",
       endpoint,
-      needsAssistanceGuestsCount: 0,
-      plannersWithSplitsCount: 0,
-      sharedPlannersCount: 0,
-      trackedGuestsCount: 0,
-      note: "Cruise Promenade owner-summary timed out or unreachable (`2.5s` bound).",
-    };
+      "Cruise Promenade owner-summary timed out or unreachable (`2.5s` bound).",
+    );
   }
 }
 
@@ -389,33 +534,25 @@ async function fetchDirectMorOwnerSummary(options: {
   const { siteId, siteName, endpoint, opsHref, secret, env } = options;
 
   if (!secret && !options.fetchImpl) {
-    return {
+    return emptyDirectMorOwnerSummary({
       siteId,
       siteName,
       endpoint,
       opsHref,
       status: "unconfigured",
-      provisioningExceptions: 0,
-      needsReviewOrders: 0,
-      paidOrders28d: 0,
-      grossRevenueUsd28d: 0,
       note: `${siteName} internal secret not configured; check ${siteName} admin queue directly when needed.`,
-    };
+    });
   }
 
   if (env.DCC_DISABLE_NEON_COMMERCE === "1" && !options.fetchImpl) {
-    return {
+    return emptyDirectMorOwnerSummary({
       siteId,
       siteName,
       endpoint,
       opsHref,
       status: "pending_deploy",
-      provisioningExceptions: 0,
-      needsReviewOrders: 0,
-      paidOrders28d: 0,
-      grossRevenueUsd28d: 0,
       note: `Offline test mode: remote ${siteName} owner-summary skipped.`,
-    };
+    });
   }
 
   const fetchFn = options.fetchImpl ?? fetch;
@@ -431,61 +568,132 @@ async function fetchDirectMorOwnerSummary(options: {
     });
 
     if (res.status === 404) {
-      return {
+      return emptyDirectMorOwnerSummary({
         siteId,
         siteName,
         endpoint,
         opsHref,
         status: "pending_deploy",
-        provisioningExceptions: 0,
-        needsReviewOrders: 0,
-        paidOrders28d: 0,
-        grossRevenueUsd28d: 0,
         note: `${siteName} \`/api/internal/owner-summary\` returned 404 (\`pending_deploy\`).`,
-      };
+      });
     }
 
     if (!res.ok) {
-      return {
+      return emptyDirectMorOwnerSummary({
         siteId,
         siteName,
         endpoint,
         opsHref,
         status: "error",
-        provisioningExceptions: 0,
-        needsReviewOrders: 0,
-        paidOrders28d: 0,
-        grossRevenueUsd28d: 0,
         note: `${siteName} owner-summary returned HTTP ${res.status}.`,
-      };
+      });
     }
 
     const body = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+    const m = (
+      body.metrics28d && typeof body.metrics28d === "object"
+        ? body.metrics28d
+        : {}
+    ) as Record<string, unknown>;
+
+    const paidOrders28d = safeNumber(
+      m.paidBookings ??
+        m.paidOrders ??
+        m.paidOrConfirmedBookings ??
+        body.paidOrders28d ??
+        body.confirmedOrdersCount,
+    );
+    const confirmedUnpaidOrders28d = safeNumber(
+      m.confirmedUnpaidBookings ??
+        m.confirmedUnpaidOrders ??
+        body.confirmedUnpaidOrders28d,
+    );
+    const genuineOrdersTotal28d = safeNumber(
+      m.genuineBookingsTotal ??
+        m.genuineOrdersTotal ??
+        m.bookingsTotal ??
+        m.ordersTotal ??
+        body.genuineOrdersTotal28d,
+      paidOrders28d + confirmedUnpaidOrders28d,
+    );
+    const testRecordsExcluded28d = safeNumber(
+      m.testRecordsExcluded ?? body.testRecordsExcluded28d ?? body.testRecordsExcluded,
+    );
+    const openQuoteRequests28d = safeNumber(
+      m.openQuoteRequests ?? body.openQuoteRequests28d ?? body.openQuoteRequests,
+    );
+    const activeHoldsCount = safeNumber(
+      m.activeVehicleHolds ??
+        m.activeHoldsCount ??
+        body.activeHoldsCount ??
+        body.activeVehicleHolds,
+    );
+    const awaitingBalanceOrders28d = safeNumber(
+      m.awaitingBalanceOrders ??
+        body.awaitingBalanceOrders28d ??
+        body.awaitingBalanceOrders,
+    );
+    const paidGrossSalesUsd28d = safeNumber(
+      m.paidGrossSalesUsd ??
+        m.ownedGrossRevenueUsd ??
+        body.paidGrossSalesUsd28d ??
+        body.grossRevenueUsd28d ??
+        body.grossSalesUsd,
+    );
+    const confirmedUnpaidGrossUsd28d = safeNumber(
+      m.confirmedUnpaidGrossUsd ?? body.confirmedUnpaidGrossUsd28d,
+    );
+    const awaitingBalanceGrossUsd28d = safeNumber(
+      m.awaitingBalanceGrossUsd ?? body.awaitingBalanceGrossUsd28d,
+    );
+    // CRITICAL: NEVER equate gross merchant sales or gross booking value with net operating revenue / profit!
+    const netOperatingRevenueUsd28d = safeNullableSignedNumber(
+      m.netOperatingRevenueUsd ?? body.netOperatingRevenueUsd28d ?? body.netOperatingRevenueUsd,
+    );
+    const provisioningExceptions = safeNumber(
+      m.provisioningExceptions ?? body.provisioningExceptions,
+    );
+    const needsReviewOrders = safeNumber(
+      m.needsReviewOrders ?? body.needsReviewOrders,
+    );
+    const rezdyHealthRaw = body.rezdyHealth ?? m.rezdyHealth ?? null;
+    const rezdyHealth =
+      rezdyHealthRaw && typeof rezdyHealthRaw === "object"
+        ? (rezdyHealthRaw as Record<string, unknown>)
+        : null;
+
     return {
       siteId,
       siteName,
       endpoint,
       opsHref,
       status: "live",
-      provisioningExceptions: safeNumber(body.provisioningExceptions),
-      needsReviewOrders: safeNumber(body.needsReviewOrders),
-      paidOrders28d: safeNumber(body.paidOrders28d ?? body.confirmedOrdersCount),
-      grossRevenueUsd28d: safeNumber(body.grossRevenueUsd28d ?? body.grossSalesUsd),
-      note: `Live ${siteName} MoR summary connected.`,
+      testRecordsExcluded28d,
+      genuineOrdersTotal28d,
+      paidOrders28d,
+      confirmedUnpaidOrders28d,
+      openQuoteRequests28d,
+      activeHoldsCount,
+      awaitingBalanceOrders28d,
+      paidGrossSalesUsd28d,
+      grossRevenueUsd28d: paidGrossSalesUsd28d,
+      confirmedUnpaidGrossUsd28d,
+      awaitingBalanceGrossUsd28d,
+      netOperatingRevenueUsd28d,
+      provisioningExceptions,
+      needsReviewOrders,
+      rezdyHealth,
+      note: `Live ${siteName} MoR summary connected (${paidOrders28d} paid, ${confirmedUnpaidOrders28d} confirmed-unpaid, ${testRecordsExcluded28d} test excluded).`,
     };
   } catch {
-    return {
+    return emptyDirectMorOwnerSummary({
       siteId,
       siteName,
       endpoint,
       opsHref,
       status: "pending_deploy",
-      provisioningExceptions: 0,
-      needsReviewOrders: 0,
-      paidOrders28d: 0,
-      grossRevenueUsd28d: 0,
       note: `${siteName} owner-summary timed out or unreachable (\`2.5s\` bound).`,
-    };
+    });
   }
 }
 
@@ -582,6 +790,20 @@ export async function buildOwnerControlCenterSnapshot(
   const decisionEvaluationsCount =
     dccContextsCount + machineStore.changeEvents.length;
 
+  const rezdyHealthAlertCount = (() => {
+    const rh = gosnoOps.rezdyHealth;
+    if (!rh) return 0;
+    const failedCount = safeNumber(
+      rh.failedSyncsCount ?? rh.failedCount ?? rh.exceptionsCount ?? rh.errorCount,
+    );
+    const staleCron =
+      rh.cronHealthy === false ||
+      rh.status === "degraded" ||
+      rh.status === "error" ||
+      rh.stale === true;
+    return failedCount + (staleCron ? 1 : 0);
+  })();
+
   const triageItems: TriageActionItem[] = [
     {
       id: "operator-inbox-triage",
@@ -615,13 +837,14 @@ export async function buildOwnerControlCenterSnapshot(
         gosnoOps.provisioningExceptions +
           gosnoOps.needsReviewOrders +
           parrOps.provisioningExceptions +
-          parrOps.needsReviewOrders >
+          parrOps.needsReviewOrders +
+          rezdyHealthAlertCount >
         0
           ? "high"
           : "info",
-      title: "Direct MoR Ops Exceptions (GoSno & Party at Red Rocks)",
-      countOrBadge: `GoSno: ${gosnoOps.provisioningExceptions + gosnoOps.needsReviewOrders} (${gosnoOps.status}) · PARR: ${parrOps.provisioningExceptions + parrOps.needsReviewOrders} (${parrOps.status})`,
-      detail: `${gosnoOps.note} ${parrOps.note}`,
+      title: "Direct MoR Ops Exceptions & Rezdy Health (GoSno & Party at Red Rocks)",
+      countOrBadge: `GoSno: ${gosnoOps.provisioningExceptions + gosnoOps.needsReviewOrders} (${gosnoOps.status}) · PARR: ${parrOps.provisioningExceptions + parrOps.needsReviewOrders} (${parrOps.status})${gosnoOps.rezdyHealth ? ` · Rezdy: ${String(gosnoOps.rezdyHealth.status ?? "reported")}` : ""}`,
+      detail: `${gosnoOps.note} ${parrOps.note}${gosnoOps.rezdyHealth ? ` Rezdy health: ${JSON.stringify(gosnoOps.rezdyHealth)}.` : ""}`,
       actionHref: gosnoOps.opsHref,
       actionLabel: "GoSno Queue ↗",
       external: true,
@@ -657,16 +880,176 @@ export async function buildOwnerControlCenterSnapshot(
     gosnoOps.provisioningExceptions +
     gosnoOps.needsReviewOrders +
     parrOps.provisioningExceptions +
-    parrOps.needsReviewOrders;
+    parrOps.needsReviewOrders +
+    rezdyHealthAlertCount;
 
   const totals = funnel.totals;
   const drops = funnel.unmatchedAttributionDrops;
 
   const completedMarketplaceOrDirectCount = totals.confirmedBookingsCount;
-  const totalCompletedBookingsCount =
+  const totalPaidBookingsCount =
     completedMarketplaceOrDirectCount +
     gosnoOps.paidOrders28d +
     parrOps.paidOrders28d;
+  const totalGenuineBookingsCount =
+    completedMarketplaceOrDirectCount +
+    gosnoOps.genuineOrdersTotal28d +
+    parrOps.genuineOrdersTotal28d;
+  const totalConfirmedUnpaidBookingsCount =
+    gosnoOps.confirmedUnpaidOrders28d + parrOps.confirmedUnpaidOrders28d;
+  const totalTestRecordsExcluded28d =
+    gosnoOps.testRecordsExcluded28d +
+    parrOps.testRecordsExcluded28d +
+    cpSummary.testSharedPlannersCount;
+  const totalOpenQuotes28d =
+    gosnoOps.openQuoteRequests28d + parrOps.openQuoteRequests28d;
+  const totalActiveHoldsCount =
+    gosnoOps.activeHoldsCount + parrOps.activeHoldsCount;
+  const totalAwaitingBalanceOrders28d =
+    gosnoOps.awaitingBalanceOrders28d + parrOps.awaitingBalanceOrders28d;
+
+  const combinedRemotePaidGrossUsd28d =
+    gosnoOps.paidGrossSalesUsd28d + parrOps.paidGrossSalesUsd28d;
+  const effectiveGrossMerchantSalesUsd28d = Math.max(
+    totals.ownedGrossSalesUsd,
+    combinedRemotePaidGrossUsd28d,
+  );
+  const combinedConfirmedUnpaidGrossUsd28d =
+    gosnoOps.confirmedUnpaidGrossUsd28d + parrOps.confirmedUnpaidGrossUsd28d;
+  const combinedAwaitingBalanceGrossUsd28d =
+    gosnoOps.awaitingBalanceGrossUsd28d + parrOps.awaitingBalanceGrossUsd28d;
+
+  const bothNetReconciled =
+    gosnoOps.netOperatingRevenueUsd28d !== null &&
+    parrOps.netOperatingRevenueUsd28d !== null;
+  const netOperatingRevenueStatusLabel = bothNetReconciled
+    ? `$${(gosnoOps.netOperatingRevenueUsd28d! + parrOps.netOperatingRevenueUsd28d!).toLocaleString()} reconciled`
+    : "Unreconciled in app DB";
+
+  const formatNetPart = (label: string, val: number | null) =>
+    val === null
+      ? `${label}: Unreconciled in app DB`
+      : `${label}: $${val.toLocaleString()}`;
+
+  const strictSeparation10Way28d: StrictSeparationMetricRow[] = [
+    {
+      rowNumber: 1,
+      key: "test_records_excluded",
+      label: "1. Test Records Excluded",
+      headlineValue: `${totalTestRecordsExcluded28d.toLocaleString()} excluded`,
+      gosnoBreakdown: `GoSno: ${gosnoOps.testRecordsExcluded28d.toLocaleString()}`,
+      parrBreakdown: `PARR: ${parrOps.testRecordsExcluded28d.toLocaleString()}`,
+      networkOrAffiliateBreakdown: `CP test boards: ${cpSummary.testSharedPlannersCount.toLocaleString()}`,
+      antiConflationDisclosure:
+        "Synthetic, smoke, and QA test bookings/boards are stripped before computing genuine operational or revenue counts.",
+    },
+    {
+      rowNumber: 2,
+      key: "genuine_bookings",
+      label: "2. Genuine Bookings",
+      headlineValue: `${totalGenuineBookingsCount.toLocaleString()} genuine bookings`,
+      gosnoBreakdown: `GoSno: ${gosnoOps.genuineOrdersTotal28d.toLocaleString()}`,
+      parrBreakdown: `PARR: ${parrOps.genuineOrdersTotal28d.toLocaleString()}`,
+      networkOrAffiliateBreakdown: `DCC reconciled outcomes: ${completedMarketplaceOrDirectCount.toLocaleString()}`,
+      antiConflationDisclosure:
+        "Real customer bookings (paid + confirmed-unpaid); excludes test records, open quotes, holds, and affiliate clicks.",
+    },
+    {
+      rowNumber: 3,
+      key: "paid_bookings",
+      label: "3. Paid Bookings",
+      headlineValue: `${totalPaidBookingsCount.toLocaleString()} paid bookings`,
+      gosnoBreakdown: `GoSno paid: ${gosnoOps.paidOrders28d.toLocaleString()}`,
+      parrBreakdown: `PARR paid: ${parrOps.paidOrders28d.toLocaleString()}`,
+      networkOrAffiliateBreakdown: `DCC reconciled paid outcomes: ${completedMarketplaceOrDirectCount.toLocaleString()}`,
+      antiConflationDisclosure:
+        "Settled/captured payment orders only (`paidOrders28d`); excludes confirmed-unpaid reservations and unpaid holds.",
+    },
+    {
+      rowNumber: 4,
+      key: "confirmed_unpaid_bookings",
+      label: "4. Confirmed But Unpaid Bookings",
+      headlineValue: `${totalConfirmedUnpaidBookingsCount.toLocaleString()} confirmed-unpaid ($${combinedConfirmedUnpaidGrossUsd28d.toLocaleString()})`,
+      gosnoBreakdown: `GoSno: ${gosnoOps.confirmedUnpaidOrders28d.toLocaleString()} ($${gosnoOps.confirmedUnpaidGrossUsd28d.toLocaleString()})`,
+      parrBreakdown: `PARR: ${parrOps.confirmedUnpaidOrders28d.toLocaleString()} ($${parrOps.confirmedUnpaidGrossUsd28d.toLocaleString()})`,
+      networkOrAffiliateBreakdown: "Isolated to Direct MoR reservation queues",
+      antiConflationDisclosure:
+        "Confirmed dispatch commitments where payment has NOT been captured yet — never counted as paid bookings or collected cash.",
+    },
+    {
+      rowNumber: 5,
+      key: "open_quotes",
+      label: "5. Open Quotes",
+      headlineValue: `${totalOpenQuotes28d.toLocaleString()} open quote requests`,
+      gosnoBreakdown: `GoSno quotes: ${gosnoOps.openQuoteRequests28d.toLocaleString()}`,
+      parrBreakdown: `PARR quotes: ${parrOps.openQuoteRequests28d.toLocaleString()}`,
+      networkOrAffiliateBreakdown: `Operator inbox untriaged: ${inbox.kpis.needsTriageCount.toLocaleString()}`,
+      antiConflationDisclosure:
+        "Unbooked custom/multi-vehicle quote requests (`openQuoteRequests28d`) — Pre-booking pipeline only, not bookings or revenue.",
+    },
+    {
+      rowNumber: 6,
+      key: "active_holds",
+      label: "6. Active Holds",
+      headlineValue: `${totalActiveHoldsCount.toLocaleString()} active vehicle holds`,
+      gosnoBreakdown: `GoSno holds: ${gosnoOps.activeHoldsCount.toLocaleString()}`,
+      parrBreakdown: `PARR holds: ${parrOps.activeHoldsCount.toLocaleString()}`,
+      networkOrAffiliateBreakdown: `Held SKUs: ${HELD_COMMERCIAL_SKUS.length}`,
+      antiConflationDisclosure:
+        "Temporary inventory/vehicle holds (`activeHoldsCount`) — Not completed orders or collected sales.",
+    },
+    {
+      rowNumber: 7,
+      key: "awaiting_balance_orders",
+      label: "7. Awaiting-Balance Orders",
+      headlineValue: `${totalAwaitingBalanceOrders28d.toLocaleString()} awaiting balance ($${combinedAwaitingBalanceGrossUsd28d.toLocaleString()})`,
+      gosnoBreakdown: `GoSno: ${gosnoOps.awaitingBalanceOrders28d.toLocaleString()} ($${gosnoOps.awaitingBalanceGrossUsd28d.toLocaleString()})`,
+      parrBreakdown: `PARR: ${parrOps.awaitingBalanceOrders28d.toLocaleString()} ($${parrOps.awaitingBalanceGrossUsd28d.toLocaleString()})`,
+      networkOrAffiliateBreakdown: `Pending ledger settlement: $${totals.pendingOwnedSettlementUsd.toLocaleString()}`,
+      antiConflationDisclosure:
+        "Deposit/partial orders with remaining balance due (`awaitingBalanceOrders28d`) — Remaining balance is uncollected.",
+    },
+    {
+      rowNumber: 8,
+      key: "gross_merchant_sales",
+      label: "8. Gross Merchant Sales (Direct MoR)",
+      headlineValue: `$${effectiveGrossMerchantSalesUsd28d.toLocaleString()}`,
+      gosnoBreakdown: `GoSno paid gross: $${gosnoOps.paidGrossSalesUsd28d.toLocaleString()}`,
+      parrBreakdown: `PARR paid gross: $${parrOps.paidGrossSalesUsd28d.toLocaleString()}`,
+      networkOrAffiliateBreakdown: `DCC ledger MoR gross: $${totals.ownedGrossSalesUsd.toLocaleString()}`,
+      antiConflationDisclosure:
+        "Gross Merchant Sales — Not Profit; Excludes Operating Costs, Driver Pay, Processor Fees & Refunds",
+    },
+    {
+      rowNumber: 9,
+      key: "net_operating_revenue",
+      label: "9. Net Operating Revenue",
+      headlineValue: netOperatingRevenueStatusLabel,
+      gosnoBreakdown: formatNetPart("GoSno", gosnoOps.netOperatingRevenueUsd28d),
+      parrBreakdown: formatNetPart("PARR", parrOps.netOperatingRevenueUsd28d),
+      networkOrAffiliateBreakdown: "Requires cost/payout/refund reconciliation",
+      antiConflationDisclosure:
+        "Displayed honestly as `Unreconciled in app DB` when `null` — Gross merchant sales or gross booking value is NEVER equated with profit.",
+    },
+    {
+      rowNumber: 10,
+      key: "affiliate_commissions",
+      label: "10. Affiliate Commissions",
+      headlineValue: `$${totals.confirmedSettledPayoutsUsd.toLocaleString()} settled ($${totals.revenue.reportedCommissionsEarnedUsd.toLocaleString()} reported)`,
+      gosnoBreakdown: "N/A (Direct MoR isolated)",
+      parrBreakdown: "N/A (Direct MoR isolated)",
+      networkOrAffiliateBreakdown: `${totals.outboundClicks.checkoutReferrals.toLocaleString()} affiliate clicks — Clicks / Handoffs Only — Not Bookings or Revenue`,
+      antiConflationDisclosure:
+        "$0 settled unless reconciled by provider outcome; outbound clicks/handoffs are Clicks / Handoffs Only — Not Bookings or Revenue.",
+    },
+  ];
+
+  const cpPlannerHeadline =
+    cpSummary.status !== "live"
+      ? `CP summary: ${cpSummary.status}`
+      : cpSummary.genuineSharedPlannersCount !== null
+        ? `${cpSummary.genuineSharedPlannersCount.toLocaleString()} genuine planners (${cpSummary.sampledSharedPlannersCount.toLocaleString()} KV sampled)`
+        : `${cpSummary.sampledSharedPlannersCount.toLocaleString()} sampled KV planners`;
 
   const stages: ConnectedNetworkFunnelStage[] = [
     {
@@ -695,35 +1078,32 @@ export async function buildOwnerControlCenterSnapshot(
       stageNumber: 3,
       stageId: "group_participation",
       label: "3. Group Participation",
-      headlineMetric:
-        cpSummary.status === "live"
-          ? `${cpSummary.sharedPlannersCount.toLocaleString()} shared planners`
-          : `CP summary: ${cpSummary.status}`,
+      headlineMetric: cpPlannerHeadline,
       subMetrics: [
-        `${cpSummary.trackedGuestsCount.toLocaleString()} tracked guests · ${cpSummary.plannersWithSplitsCount.toLocaleString()} planners w/ splits`,
-        `${cpSummary.needsAssistanceGuestsCount.toLocaleString()} guests flagged needs-assistance`,
+        `${cpSummary.trackedGuestsCount.toLocaleString()} tracked guests · ${cpSummary.plannersWithSplitsCount.toLocaleString()} planners w/ splits · ${cpSummary.testSharedPlannersCount.toLocaleString()} test excluded`,
+        `${cpSummary.needsAssistanceGuestsCount.toLocaleString()} guests need assistance · ${cpSummary.confirmedSailDatesCount.toLocaleString()} sail dates vs ${cpSummary.verifiedFullItinerarySailingsCount.toLocaleString()} full port itineraries`,
       ],
       statusBadge: cpSummary.status,
     },
     {
       stageNumber: 4,
       stageId: "booking_intent",
-      label: "4. Booking Intent",
+      label: "4. Booking Intent (Clicks / Handoffs Only)",
       headlineMetric: `${totals.outboundClicks.total.toLocaleString()} durable handoffs`,
       subMetrics: [
-        `${totals.outboundClicks.checkoutReferrals.toLocaleString()} checkout referrals (Viator ${totals.outboundClicks.viatorAffiliateClicks}, FH ${totals.outboundClicks.fareharborCheckoutReferrals}, GYG ${totals.outboundClicks.getyourguideAffiliateClicks})`,
-        `${totals.outboundClicks.ownedCheckoutClicks.toLocaleString()} owned MoR checkout clicks`,
+        `${totals.outboundClicks.checkoutReferrals.toLocaleString()} checkout referrals — Clicks / Handoffs Only — Not Bookings or Revenue (Viator ${totals.outboundClicks.viatorAffiliateClicks}, FH ${totals.outboundClicks.fareharborCheckoutReferrals}, GYG ${totals.outboundClicks.getyourguideAffiliateClicks})`,
+        `${totals.outboundClicks.ownedCheckoutClicks.toLocaleString()} owned MoR checkout clicks · ${totalOpenQuotes28d} open quotes · ${totalActiveHoldsCount} holds`,
       ],
-      statusBadge: "Tracked",
+      statusBadge: "Clicks Only",
     },
     {
       stageNumber: 5,
       stageId: "completed_booking",
-      label: "5. Completed Booking",
-      headlineMetric: `${totalCompletedBookingsCount.toLocaleString()} confirmed outcomes`,
+      label: "5. Paid vs Confirmed-Unpaid Bookings",
+      headlineMetric: `${totalPaidBookingsCount.toLocaleString()} paid · ${totalConfirmedUnpaidBookingsCount.toLocaleString()} confirmed-unpaid`,
       subMetrics: [
-        `DCC reconciled outcomes: ${completedMarketplaceOrDirectCount.toLocaleString()}`,
-        `Remote MoR 28d orders — GoSno: ${gosnoOps.paidOrders28d} · PARR: ${parrOps.paidOrders28d}`,
+        `Genuine bookings: ${totalGenuineBookingsCount.toLocaleString()} (${totalTestRecordsExcluded28d.toLocaleString()} test records excluded)`,
+        `Paid MoR — GoSno: ${gosnoOps.paidOrders28d} · PARR: ${parrOps.paidOrders28d} · Awaiting balance: ${totalAwaitingBalanceOrders28d}`,
       ],
       statusBadge:
         totals.affiliateOutcomesStatus === "reported"
@@ -744,11 +1124,11 @@ export async function buildOwnerControlCenterSnapshot(
     {
       stageNumber: 7,
       stageId: "revenue",
-      label: "7. Revenue (Strictly Separated)",
-      headlineMetric: `Commissions: $${totals.revenue.reportedCommissionsEarnedUsd.toLocaleString()} · MoR Gross: $${totals.ownedGrossSalesUsd.toLocaleString()}`,
+      label: "7. Revenue (Strictly Separated — Not Profit)",
+      headlineMetric: `Settled Comm: $${totals.confirmedSettledPayoutsUsd.toLocaleString()} · Paid MoR Gross: $${effectiveGrossMerchantSalesUsd28d.toLocaleString()}`,
       subMetrics: [
-        `Commission Track (Affiliate / 10% Direct / 5% Machine): $${totals.confirmedSettledPayoutsUsd.toLocaleString()} settled`,
-        `Direct MoR Gross (GoSno + PARR isolated): $${totals.ownedGrossSalesUsd.toLocaleString()} ($${totals.pendingOwnedSettlementUsd.toLocaleString()} pending)`,
+        `Affiliate Commissions: $${totals.confirmedSettledPayoutsUsd.toLocaleString()} settled ($${totals.revenue.reportedCommissionsEarnedUsd.toLocaleString()} reported)`,
+        `Gross Merchant Sales (Not Profit): $${effectiveGrossMerchantSalesUsd28d.toLocaleString()} · Net Operating Revenue: ${netOperatingRevenueStatusLabel}`,
       ],
       statusBadge: "Isolated Tracks",
     },
@@ -793,12 +1173,15 @@ export async function buildOwnerControlCenterSnapshot(
       startIso: funnel.reportingWindow.startIso,
       endIso: funnel.reportingWindow.endIso,
       stages,
+      strictSeparation10Way28d,
       strictlySeparatedRevenue: {
         commissionTrack: {
           label: "Affiliate / Direct 10% / Machine 5% Commissions",
           reportedCommissionsEarnedUsd:
             totals.revenue.reportedCommissionsEarnedUsd,
           confirmedSettledPayoutsUsd: totals.confirmedSettledPayoutsUsd,
+          affiliateClicks28d: totals.outboundClicks.checkoutReferrals,
+          clicksDisclosure: "Clicks / Handoffs Only — Not Bookings or Revenue",
           outcomesStatus:
             totals.commissionsEarnedUsd === "unknown"
               ? "awaiting_settlement_or_unknown"
@@ -811,13 +1194,21 @@ export async function buildOwnerControlCenterSnapshot(
         },
         directMorGrossTrack: {
           label: "GoSno + Party at Red Rocks Direct MoR Gross Revenue",
-          portfolioOwnedGrossSalesUsd: totals.ownedGrossSalesUsd,
+          grossSalesDisclosure:
+            "Gross Merchant Sales — Not Profit; Excludes Operating Costs, Driver Pay, Processor Fees & Refunds",
+          portfolioOwnedGrossSalesUsd: effectiveGrossMerchantSalesUsd28d,
           pendingOwnedSettlementUsd: totals.pendingOwnedSettlementUsd,
-          gosnoReportedGrossUsd28d: gosnoOps.grossRevenueUsd28d,
-          parrReportedGrossUsd28d: parrOps.grossRevenueUsd28d,
+          gosnoReportedGrossUsd28d: gosnoOps.paidGrossSalesUsd28d,
+          parrReportedGrossUsd28d: parrOps.paidGrossSalesUsd28d,
+          combinedPaidGrossSalesUsd28d: combinedRemotePaidGrossUsd28d,
+          combinedConfirmedUnpaidGrossUsd28d,
+          combinedAwaitingBalanceGrossUsd28d,
+          gosnoNetOperatingRevenueUsd28d: gosnoOps.netOperatingRevenueUsd28d,
+          parrNetOperatingRevenueUsd28d: parrOps.netOperatingRevenueUsd28d,
+          netOperatingRevenueStatusLabel,
           routesIncluded: ["direct_mor"],
           isolationRule:
-            "GoSno and Party at Red Rocks earn direct operating margin as Merchant of Record; MoR gross sales and customer liabilities are never blended with affiliate/10%/5% commissions.",
+            "Gross Merchant Sales — Not Profit; Excludes Operating Costs, Driver Pay, Processor Fees & Refunds. GoSno and Party at Red Rocks MoR gross sales and liabilities are never blended with affiliate commissions or profit.",
         },
       },
     },

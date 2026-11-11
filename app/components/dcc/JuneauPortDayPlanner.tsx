@@ -88,6 +88,8 @@ export default function JuneauPortDayPlanner({
   );
   const [showAdvancedAssumptions, setShowAdvancedAssumptions] = useState(false);
   const [copiedShareUrl, setCopiedShareUrl] = useState(false);
+  const [expandedAuditOptionIds, setExpandedAuditOptionIds] = useState<Record<string, boolean>>({});
+  const [expandedBookingOptionIds, setExpandedBookingOptionIds] = useState<Record<string, boolean>>({});
 
   // Sync from browser URL query params on mount so shared links re-evaluate against current evidence
   useEffect(() => {
@@ -871,6 +873,14 @@ export default function JuneauPortDayPlanner({
               <details
                 className="mt-3 rounded-xl border border-white/10 bg-slate-950/50 p-3 text-xs"
                 data-option-fact-audit={option.optionId}
+                onToggle={(e) => {
+                  const isOpen = (e.currentTarget as HTMLDetailsElement).open;
+                  if (isOpen) {
+                    setExpandedAuditOptionIds((prev) =>
+                      prev[option.optionId] ? prev : { ...prev, [option.optionId]: true },
+                    );
+                  }
+                }}
               >
                 <summary className="cursor-pointer font-semibold text-cyan-300 hover:text-cyan-200">
                   Time Breakdown, Planning Assumptions &amp; Source Audit (Est. Back at Dock{" "}
@@ -880,6 +890,7 @@ export default function JuneauPortDayPlanner({
                     : `${option.timing.netMarginMinutes} min deficit`}
                   )
                 </summary>
+                {expandedAuditOptionIds[option.optionId] ? (
                 <div className="mt-3 space-y-3 border-t border-white/10 pt-3 text-slate-300">
                   <div>
                     <div className="font-semibold text-white">
@@ -1031,6 +1042,7 @@ export default function JuneauPortDayPlanner({
                     </div>
                   </div>
                 </div>
+                ) : null}
               </details>
 
               {/* Trip Verdict Before Checkout (Mandatory Pre-Checkout Gate) */}
@@ -1220,11 +1232,22 @@ export default function JuneauPortDayPlanner({
               })()}
 
               {/* Expandable Section 2: Optional Booking & Official Provider Links (Strictly After Trip Verdict) */}
-              <details className="mt-2 rounded-xl border border-white/10 bg-slate-950/60 p-3 text-xs">
+              <details
+                className="mt-2 rounded-xl border border-white/10 bg-slate-950/60 p-3 text-xs"
+                onToggle={(e) => {
+                  const isOpen = (e.currentTarget as HTMLDetailsElement).open;
+                  if (isOpen) {
+                    setExpandedBookingOptionIds((prev) =>
+                      prev[option.optionId] ? prev : { ...prev, [option.optionId]: true },
+                    );
+                  }
+                }}
+              >
                 <summary className="cursor-pointer font-semibold text-slate-200 hover:text-white">
                   Optional Booking &amp; Direct Provider Links ({option.bookingTransparency.channels.length} options —{" "}
                   {option.bookingTransparency.priceBasis})
                 </summary>
+                {expandedBookingOptionIds[option.optionId] ? (
                 <div className="mt-3 space-y-2.5 border-t border-white/10 pt-3">
                   <div className="text-[11px] text-slate-300 space-y-1">
                     <div>
@@ -1365,6 +1388,7 @@ export default function JuneauPortDayPlanner({
                     </div>
                   )}
                 </div>
+                ) : null}
               </details>
             </article>
           );

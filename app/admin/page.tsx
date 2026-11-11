@@ -192,13 +192,17 @@ export default async function OwnerControlCenterPage() {
           <div className="grid gap-4 md:grid-cols-2">
             <div className="rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-5">
               <div className="text-[11px] font-black uppercase tracking-[0.16em] text-emerald-300">
-                Track A · Commission Revenue (Affiliate / 10% Direct / 5% Machine)
+                Track A · Affiliate Commissions (Settled vs Reported)
               </div>
               <div className="mt-2 text-2xl font-black text-white">
-                ${connectedFunnel28d.strictlySeparatedRevenue.commissionTrack.reportedCommissionsEarnedUsd.toLocaleString()} reported · $
-                {connectedFunnel28d.strictlySeparatedRevenue.commissionTrack.confirmedSettledPayoutsUsd.toLocaleString()} settled
+                ${connectedFunnel28d.strictlySeparatedRevenue.commissionTrack.confirmedSettledPayoutsUsd.toLocaleString()} settled · $
+                {connectedFunnel28d.strictlySeparatedRevenue.commissionTrack.reportedCommissionsEarnedUsd.toLocaleString()} reported
               </div>
-              <p className="mt-1.5 text-xs text-emerald-100/90">
+              <p className="mt-1.5 text-xs font-semibold text-amber-200">
+                {connectedFunnel28d.strictlySeparatedRevenue.commissionTrack.affiliateClicks28d.toLocaleString()} outbound referrals —{" "}
+                {connectedFunnel28d.strictlySeparatedRevenue.commissionTrack.clicksDisclosure} ($0 settled unless reconciled by provider outcome).
+              </p>
+              <p className="mt-1 text-xs text-emerald-100/90">
                 Status: <code>{connectedFunnel28d.strictlySeparatedRevenue.commissionTrack.outcomesStatus}</code> · Routes:{" "}
                 {connectedFunnel28d.strictlySeparatedRevenue.commissionTrack.routesIncluded.join(", ")}
               </p>
@@ -206,15 +210,132 @@ export default async function OwnerControlCenterPage() {
 
             <div className="rounded-2xl border border-indigo-400/30 bg-indigo-500/10 p-5">
               <div className="text-[11px] font-black uppercase tracking-[0.16em] text-indigo-300">
-                Track B · Isolated Direct MoR Operating Gross (GoSno + PARR)
+                Track B · Direct MoR Gross Merchant Sales (GoSno + PARR)
               </div>
               <div className="mt-2 text-2xl font-black text-white">
-                ${connectedFunnel28d.strictlySeparatedRevenue.directMorGrossTrack.portfolioOwnedGrossSalesUsd.toLocaleString()} confirmed gross ($
-                {connectedFunnel28d.strictlySeparatedRevenue.directMorGrossTrack.pendingOwnedSettlementUsd.toLocaleString()} pending)
+                ${connectedFunnel28d.strictlySeparatedRevenue.directMorGrossTrack.portfolioOwnedGrossSalesUsd.toLocaleString()} paid gross
               </div>
-              <p className="mt-1.5 text-xs text-indigo-100/90">
-                {connectedFunnel28d.strictlySeparatedRevenue.directMorGrossTrack.isolationRule}
+              <p className="mt-1 text-xs font-bold text-amber-200">
+                {connectedFunnel28d.strictlySeparatedRevenue.directMorGrossTrack.grossSalesDisclosure}
               </p>
+              <p className="mt-1.5 text-xs text-indigo-100/90">
+                Net Operating Revenue:{" "}
+                <strong className="text-white">
+                  {connectedFunnel28d.strictlySeparatedRevenue.directMorGrossTrack.netOperatingRevenueStatusLabel}
+                </strong>{" "}
+                · Confirmed-unpaid: $
+                {connectedFunnel28d.strictlySeparatedRevenue.directMorGrossTrack.combinedConfirmedUnpaidGrossUsd28d.toLocaleString()} · Awaiting balance: $
+                {connectedFunnel28d.strictlySeparatedRevenue.directMorGrossTrack.combinedAwaitingBalanceGrossUsd28d.toLocaleString()}
+              </p>
+            </div>
+          </div>
+
+          {/* Strict 10-Way Operational & Revenue Separation Ledger */}
+          <div
+            data-testid="strict-10-way-separation-ledger"
+            className="rounded-2xl border border-cyan-400/30 bg-white/[0.03] p-5 space-y-4"
+          >
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <div>
+                <div className="text-[11px] font-black uppercase tracking-[0.18em] text-cyan-300">
+                  Anti-Conflation Accounting · 28-Day Strict 10-Way Separation
+                </div>
+                <h3 className="mt-1 text-lg font-black text-white">
+                  Test Records, Bookings, Paid vs Unpaid, Quotes, Holds, Gross Sales, Net Operating Revenue &amp; Affiliate Commissions
+                </h3>
+              </div>
+              <span className="font-mono text-[11px] text-amber-200">
+                Gross Sales ≠ Profit · Clicks ≠ Bookings/Revenue
+              </span>
+            </div>
+
+            <div className="overflow-x-auto rounded-xl border border-white/10">
+              <table className="min-w-full text-left text-xs">
+                <thead className="border-b border-white/10 bg-black/50 text-zinc-300">
+                  <tr>
+                    <th className="px-3.5 py-2.5 font-semibold">Separated Metric</th>
+                    <th className="px-3.5 py-2.5 font-semibold">28d Value</th>
+                    <th className="px-3.5 py-2.5 font-semibold">GoSno (MoR)</th>
+                    <th className="px-3.5 py-2.5 font-semibold">PARR (MoR)</th>
+                    <th className="px-3.5 py-2.5 font-semibold">Network / Affiliate</th>
+                    <th className="px-3.5 py-2.5 font-semibold">Strict Accounting Rule</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {connectedFunnel28d.strictSeparation10Way28d.map((row) => (
+                    <tr
+                      key={row.key}
+                      data-testid={`strict-row-${row.key}`}
+                      className="border-b border-white/10 align-top"
+                    >
+                      <td className="px-3.5 py-2.5 font-bold text-white whitespace-nowrap">
+                        {row.label}
+                      </td>
+                      <td className="px-3.5 py-2.5 font-mono font-bold text-cyan-200 whitespace-nowrap">
+                        {row.headlineValue}
+                      </td>
+                      <td className="px-3.5 py-2.5 font-mono text-zinc-200">
+                        {row.gosnoBreakdown}
+                      </td>
+                      <td className="px-3.5 py-2.5 font-mono text-zinc-200">
+                        {row.parrBreakdown}
+                      </td>
+                      <td className="px-3.5 py-2.5 text-zinc-200">
+                        {row.networkOrAffiliateBreakdown}
+                      </td>
+                      <td className="px-3.5 py-2.5 text-zinc-300">
+                        {row.antiConflationDisclosure}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Cruise Promenade KV Sample vs Genuine & Sail Dates vs Verified Full Itineraries + GoSno Rezdy Health */}
+            <div className="grid gap-3 pt-1 md:grid-cols-2 text-xs">
+              <div
+                data-testid="cp-separation-card"
+                className="rounded-xl border border-white/10 bg-black/35 p-3.5 space-y-1"
+              >
+                <div className="font-bold text-emerald-200">
+                  Cruise Promenade Board &amp; Catalog Separation ({triageQueue.cruisePromenade.status})
+                </div>
+                <div className="text-zinc-200">
+                  Sampled KV Boards:{" "}
+                  <code>{triageQueue.cruisePromenade.sampledSharedPlannersCount}</code> · Genuine User Groups:{" "}
+                  <code>
+                    {triageQueue.cruisePromenade.genuineSharedPlannersCount !== null
+                      ? triageQueue.cruisePromenade.genuineSharedPlannersCount
+                      : "Unfiltered KV sample"}
+                  </code>{" "}
+                  · Test Boards Excluded:{" "}
+                  <code>{triageQueue.cruisePromenade.testSharedPlannersCount}</code>
+                </div>
+                <div className="text-zinc-300">
+                  Confirmed Sail Dates:{" "}
+                  <code>{triageQueue.cruisePromenade.confirmedSailDatesCount}</code> · Verified Full Port Itineraries:{" "}
+                  <code>{triageQueue.cruisePromenade.verifiedFullItinerarySailingsCount}</code>
+                </div>
+              </div>
+
+              <div
+                data-testid="gosno-rezdy-health-card"
+                className="rounded-xl border border-white/10 bg-black/35 p-3.5 space-y-1"
+              >
+                <div className="font-bold text-cyan-200">
+                  GoSno Rezdy Provisioning &amp; Cron Health
+                </div>
+                <div className="text-zinc-200 font-mono text-[11px] break-words">
+                  {triageQueue.gosnoOps.rezdyHealth
+                    ? JSON.stringify(triageQueue.gosnoOps.rezdyHealth)
+                    : `No Rezdy health payload reported (${triageQueue.gosnoOps.status})`}
+                </div>
+                <div className="text-zinc-400">
+                  Provisioning exceptions: <code>{triageQueue.gosnoOps.provisioningExceptions}</code> · Needs review:{" "}
+                  <code>{triageQueue.gosnoOps.needsReviewOrders}</code>
+                </div>
+              </div>
             </div>
           </div>
         </section>

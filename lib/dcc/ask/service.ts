@@ -17,6 +17,7 @@ const SYNONYMS: Record<string, string[]> = {
   denver: ["den", "colorado"],
   vail: ["mountain", "resort", "ski"],
   breckenridge: ["mountain", "resort", "ski"],
+  copper: ["mountain", "resort", "ski", "colorado", "denver", "transfer"],
   juneau: ["alaska", "cruise"],
   helicopter: ["flight", "flightseeing", "glacier", "juneau"],
   whale: ["whales", "watching", "juneau", "alaska"],
@@ -70,7 +71,7 @@ const DESTINATION_SCOPES = [
   { pattern: /\b(?:new orleans|nola|french quarter)\b/, categories: ["new-orleans"] },
   { pattern: /\b(?:juneau|mendenhall|gastineau)\b/, categories: ["alaska"] },
   { pattern: /\b(?:alaska|skagway|ketchikan|sitka)\b/, categories: ["alaska", "cruise"] },
-  { pattern: /\b(?:den|denver|vail|breckenridge|beaver creek|aspen|snowmass|keystone|winter park|steamboat|colorado|argo|idaho springs)\b/, categories: ["colorado", "transportation"] },
+  { pattern: /\b(?:den|denver|vail|breckenridge|beaver creek|copper|copper mountain|aspen|snowmass|keystone|winter park|steamboat|colorado|argo|idaho springs)\b/, categories: ["colorado", "transportation"] },
   { pattern: /\bred rocks\b/, categories: ["red-rocks", "colorado", "transportation"] },
   { pattern: /\b(?:wisconsin|dells)\b/, categories: ["wisconsin"] },
   { pattern: /\b(?:st thomas|saint thomas|st croix|saint croix|st john|saint john|usvi|virgin islands)\b/, categories: ["cruise"] },
@@ -225,7 +226,10 @@ function contextualizeHandoffHref(baseHref: string, normalizedQuery: string): st
       if (/\b(?:den|denver)\b/.test(normalizedQuery) && !url.searchParams.has("origin")) {
         url.searchParams.set("origin", "DEN");
       }
-      if (/\bvail\b/.test(normalizedQuery) && !url.searchParams.has("destination")) {
+      if (/\bcopper(?:\s+mountain)?\b/.test(normalizedQuery)) {
+        if (url.pathname === "/vail") url.pathname = "/";
+        url.searchParams.set("destination", "Copper Mountain");
+      } else if (/\bvail\b/.test(normalizedQuery) && !url.searchParams.has("destination")) {
         url.searchParams.set("destination", "Vail");
       }
       // gosno.co/vail client bundle parses `passengers` / `passengerCount` / `travelers` (1..10)

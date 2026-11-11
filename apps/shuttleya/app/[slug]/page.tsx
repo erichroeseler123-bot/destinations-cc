@@ -24,20 +24,19 @@ const DATA = {
   "concert-transportation": {
     title: "Concert transportation",
     intro: "Choose the transportation product that matches the event and group, then book with the company responsible for the trip.",
-    questions: ["Which venue and date?", "Do you need round-trip private transportation?", "Do you need a designated-driver style service?", "Where is your pickup location?"],
+    questions: ["Which venue and date?", "Do you need shared shuttle seats or round-trip private transportation?", "What is your post-show pickup window?", "Where is your pickup location?"],
     operators: [
-      { name: "Party at Red Rocks", scope: "Private Red Rocks transportation", href: "https://partyatredrocks.com" },
-      { name: "Red Rocks DD", scope: "Red Rocks designated-driver transportation", href: "https://redrocksdd.com" },
-      { name: "Destination Command Center", scope: "Broader venue transportation decision support", href: "https://www.destinationcommandcenter.com" },
+      { name: "Party at Red Rocks", scope: "Shared & private Red Rocks concert transportation", href: "https://partyatredrocks.com" },
+      { name: "Destination Command Center", scope: "Red Rocks & Denver venue transportation comparison", href: "https://www.destinationcommandcenter.com/red-rocks-transportation" },
     ],
   },
   "cruise-port-transportation": {
     title: "Cruise-port transportation",
-    intro: "Start with the port and the kind of local ride you need. ShuttleYa provides the discovery layer; the local operator controls the actual service.",
-    questions: ["Which port are you visiting?", "Is this point-to-point transportation or a private local experience?", "What is your ship timing?", "Which local provider is responsible for the ride?"],
+    intro: "Start with the port, berth buffer, and ship all-aboard window before selecting ground transportation or shore excursions.",
+    questions: ["Which port and berth are you arriving at?", "Is this a tender port or walk-off dock?", "What is your confirmed all-aboard time?", "Which verified local operator or municipal option fits your buffer?"],
     operators: [
-      { name: "Vibe Around Town", scope: "USVI local-driver discovery and private ride planning", href: "https://vibearoundtown.com" },
-      { name: "Destination Command Center", scope: "Port and destination decision support", href: "https://www.destinationcommandcenter.com" },
+      { name: "Destination Command Center Ports", scope: "Cruise-port timing gates, dock buffers, and shore transportation guides", href: "https://www.destinationcommandcenter.com/ports" },
+      { name: "Juneau Port & Excursion Hub (DCC)", scope: "Juneau berth buffers, Mendenhall ground transit, and whale/glacier logistics", href: "https://www.destinationcommandcenter.com/juneau" },
     ],
   },
 } as const;

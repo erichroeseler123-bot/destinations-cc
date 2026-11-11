@@ -1,13 +1,11 @@
+import React, { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import CategoryDecisionEngineExperience from "@/app/components/dcc/CategoryDecisionEngineExperience";
 import NextStepEngine from "@/app/components/dcc/NextStepEngine";
 import TravelReferenceExperience from "@/app/components/dcc/TravelReferenceExperience";
 import RideOptionsCard from "@/app/components/transportation/RideOptionsCard";
-import { DENVER_MOUNTAIN_DECISION_ENGINE } from "@/lib/dcc/decisionEngines/denverMountainTransportationEngine";
-import type { DecisionResult } from "@/lib/dcc/decisionEngines/types";
 import { getColoradoTransferRecommendationActions } from "@/lib/dcc/handoffAnalytics";
-import { syncDurableLedgerWithPostgres } from "@/lib/dcc/storage/durableTransactionalStore";
 import { getTravelReferenceNodeById } from "@/lib/dcc/travelReference";
 import { getTransportEntriesByRegion } from "@/src/data/transport-directory";
 
@@ -19,8 +17,12 @@ import ColoradoFactComparisonTable from "@/app/components/dcc/ColoradoFactCompar
 import ColoradoSeasonalSpotlightCard from "@/app/components/dcc/ColoradoSeasonalSpotlightCard";
 import SharedTripRecheckCard from "@/app/components/dcc/SharedTripRecheckCard";
 import { evaluateDenArrivalTripRecheck } from "@/lib/dcc/sharedTripRecheck";
+import {
+  ColoradoPartnerShareBarClient,
+  ColoradoQueryTopCardsClient,
+} from "@/app/components/dcc/ColoradoQueryContextSlots";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 900;
 
 const manifestEntry = getPublicationManifestEntry("/transportation/colorado");
 
@@ -58,15 +60,7 @@ const GROUPS = [
   },
 ];
 
-export default async function ColoradoTransportationPage({
-  searchParams,
-}: {
-  searchParams?: Promise<Record<string, string | string[] | undefined>>;
-}) {
-  const sp = searchParams ? await searchParams : {};
-  const firstStr = (v: string | string[] | undefined) =>
-    Array.isArray(v) ? v[0] : v;
-  await syncDurableLedgerWithPostgres();
+export default async function ColoradoTransportationPage() {
   const vailPricing = getGoSnoRouteSnapshotDisplayPricing({
     routeId: "DEN-VAIL",
   });
@@ -85,14 +79,14 @@ export default async function ColoradoTransportationPage({
   const entries = getTransportEntriesByRegion("Colorado");
   const bySlug = new Map(entries.map((entry) => [entry.slug, entry]));
   const corridorRef = getTravelReferenceNodeById("denver-breckenridge");
-  const denRecheck = evaluateDenArrivalTripRecheck({
-    date: firstStr(sp.date) || "2026-12-19",
-    flightNumber: firstStr(sp.flight) || "UA 1482",
-    scheduledEtaLocal: firstStr(sp.scheduled_eta) || "13:30",
-    revisedEtaLocal: firstStr(sp.revised_eta) || "14:45",
-    destination: firstStr(sp.destination) || "Vail",
-    partySize: Number(firstStr(sp.party_size) || firstStr(sp.passengers)) || 4,
-    skiBags: Number(firstStr(sp.ski_bags)) || 2,
+  const defaultDenRecheck = evaluateDenArrivalTripRecheck({
+    date: "2026-12-19",
+    flightNumber: "UA 1482",
+    scheduledEtaLocal: "13:30",
+    revisedEtaLocal: "14:45",
+    destination: "Vail",
+    partySize: 4,
+    skiBags: 2,
   });
 
   return (
@@ -114,27 +108,32 @@ export default async function ColoradoTransportationPage({
           </p>
         </header>
 
-        <PortableTripNetworkBar
-          marketId="gosno"
-          searchParams={sp}
-          defaultDate={firstStr(sp.date) || "2026-12-19"}
-          defaultPartySize={Number(firstStr(sp.party_size) || firstStr(sp.passengers)) || 4}
-          defaultPickupHub={firstStr(sp.origin) || "DEN (Denver International Airport)"}
-          defaultDestination={firstStr(sp.destination) || "Vail / Breckenridge"}
-        />
-
-        <ColoradoSeasonalSpotlightCard
-          initialDateOrMonth={firstStr(sp.date) || firstStr(sp.month) || null}
-          initialDestinationOrVenue={firstStr(sp.destination) || firstStr(sp.venue) || null}
-          initialPartySize={Number(firstStr(sp.party_size) || firstStr(sp.passengers)) || 4}
-          initialSkiBags={Number(firstStr(sp.ski_bags)) || 0}
-          initialTripIntent={firstStr(sp.intent) || "unspecified"}
-        />
-
-        <SharedTripRecheckCard
-          card={denRecheck.recheckCard}
-          testId="dcc-den-arrival-recheck-card"
-        />
+        <Suspense
+          fallback={
+            <>
+              <PortableTripNetworkBar
+                marketId="gosno"
+                defaultDate="2026-12-19"
+                defaultPartySize={4}
+                defaultPickupHub="DEN (Denver International Airport)"
+                defaultDestination="Vail / Breckenridge"
+              />
+              <ColoradoSeasonalSpotlightCard
+                initialDateOrMonth={null}
+                initialDestinationOrVenue={null}
+                initialPartySize={4}
+                initialSkiBags={0}
+                initialTripIntent="unspecified"
+              />
+              <SharedTripRecheckCard
+                card={defaultDenRecheck.recheckCard}
+                testId="dcc-den-arrival-recheck-card"
+              />
+            </>
+          }
+        >
+          <ColoradoQueryTopCardsClient />
+        </Suspense>
 
         <section
           data-testid="dcc-colorado-authority-brief"
@@ -238,13 +237,9 @@ export default async function ColoradoTransportationPage({
 
         <ColoradoFactComparisonTable />
 
-        <PartnerSharePlanningBar
-          market="colorado-mountain"
-          activePartnerParam={firstStr(sp.partner)}
-          activePartnerRoleParam={firstStr(sp.partner_role)}
-          activeCancelRefParam={firstStr(sp.cancel_ref)}
-          activeTrafficSourceParam={firstStr(sp.src)}
-        />
+        <Suspense fallback={<PartnerSharePlanningBar market="colorado-mountain" />}>
+          <ColoradoPartnerShareBarClient />
+        </Suspense>
 
         <section className="rounded-3xl border border-white/10 bg-white/5 p-6">
           <h2 className="text-2xl font-bold">Flagship Colorado Reference Guides</h2>
@@ -281,11 +276,6 @@ export default async function ColoradoTransportationPage({
 
         <CategoryDecisionEngineExperience
           engineId="denver-to-mountain-transportation"
-          initialResult={
-            DENVER_MOUNTAIN_DECISION_ENGINE.evaluate(
-              DENVER_MOUNTAIN_DECISION_ENGINE.defaultExampleInput,
-            ) as unknown as DecisionResult<Record<string, unknown>>
-          }
         />
 
         <RideOptionsCard

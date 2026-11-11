@@ -1,7 +1,11 @@
+import React, { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import JsonLd from "@/app/components/dcc/JsonLd";
 import TravelReferenceExperience from "@/app/components/dcc/TravelReferenceExperience";
+import JuneauQueryReplanSlot, {
+  DefaultJuneauReplanBanner,
+} from "@/app/components/dcc/JuneauQueryReplanSlot";
 import { getPublishedTravelReferenceNodeById } from "@/lib/dcc/travelReference";
 import {
   buildBreadcrumbJsonLd,
@@ -15,7 +19,7 @@ import {
 
 const PAGE_PATH = "/juneau";
 
-export const revalidate = 3600;
+export const revalidate = 900;
 
 export const metadata: Metadata = {
   title: "Juneau, Alaska Travel Reference, Port Logistics & Shore Excursion Guide | Destination Command Center",
@@ -67,73 +71,18 @@ function JsonLdGraph() {
   );
 }
 
-import JuneauLowBandwidthReplanView from "@/app/components/dcc/JuneauLowBandwidthReplanView";
-
-export default async function JuneauCommercialHubPage({
-  searchParams,
-}: {
-  searchParams?: Promise<Record<string, string | string[] | undefined>>;
-}) {
-  const sp = searchParams ? await searchParams : {};
-  const lowBwParam = Array.isArray(sp.low_bw) ? sp.low_bw[0] : sp.low_bw;
-  const modeParam = Array.isArray(sp.mode) ? sp.mode[0] : sp.mode;
-  const isTextFirstOnly =
-    lowBwParam === "1" || lowBwParam === "true" || modeParam === "replan";
-
-  if (isTextFirstOnly) {
-    return (
-      <main className="min-h-screen bg-[#041018] text-white">
-        <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
-          <JuneauLowBandwidthReplanView
-            searchParams={sp}
-            fullPageMode
-            actionPath="/juneau"
-          />
-        </div>
-      </main>
-    );
-  }
-
-  const hasActiveReplanQuery = Boolean(
-    sp.ship || sp.arrival || sp.all_aboard || sp.flight_canceled || sp.date || sp.berth
-  );
+export default async function JuneauCommercialHubPage() {
   const juneauReference = await getPublishedTravelReferenceNodeById("juneau");
 
   return (
     <main className="min-h-screen overflow-hidden bg-[#041018] text-white">
       <JsonLdGraph />
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
-        {hasActiveReplanQuery ? (
-          <JuneauLowBandwidthReplanView
-            searchParams={sp}
-            actionPath="/juneau"
-          />
-        ) : (
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-cyan-400/25 bg-[#071521] px-5 py-3.5 text-xs text-zinc-200">
-            <span>
-              <strong>Already on ship Wi-Fi or dealing with a schedule change?</strong> Check excursion timing or flight-cancellation backups in our lightweight replanner.
-            </span>
-            <div className="flex flex-wrap items-center gap-2">
-              <Link
-                href="/ports/juneau#shared-port-day-excursion-catalog"
-                className="rounded-lg bg-cyan-400 px-3.5 py-1.5 font-black uppercase tracking-wider text-slate-950 hover:bg-cyan-300"
-              >
-                Browse Juneau Excursions →
-              </Link>
-              <Link
-                href="/juneau/replan"
-                className="rounded-lg border border-cyan-300/40 bg-cyan-500/15 px-3.5 py-1.5 font-bold text-cyan-100 hover:bg-cyan-500/25"
-              >
-                Open Ship-Delay Replanner →
-              </Link>
-            </div>
-          </div>
-        )}
+        <Suspense fallback={<DefaultJuneauReplanBanner />}>
+          <JuneauQueryReplanSlot />
+        </Suspense>
         {juneauReference ? (
-          <TravelReferenceExperience
-            node={juneauReference}
-            initialSearchParams={sp}
-          />
+          <TravelReferenceExperience node={juneauReference} />
         ) : null}
       </div>
 

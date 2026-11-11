@@ -1,14 +1,12 @@
 import React from "react";
 import Link from "next/link";
+import { unstable_cache } from "next/cache";
 import { getGoSnoRouteSnapshotDisplayPricing } from "@/lib/dcc/applicability";
-import { syncDurableLedgerWithPostgres } from "@/lib/dcc/storage/durableTransactionalStore";
 import {
   evaluateNodeClaimDependencies,
   type EvidenceCitation,
   type TravelReferenceNode,
 } from "@/lib/dcc/travelReference";
-import { readLocationIntelligence } from "@/lib/dcc/locationIntelligence";
-import { readExtendedCoordinateFeeds } from "@/lib/dcc/extendedCoordinateFeeds";
 import {
   AuthorityBadge,
   EntryDependencyExplorer,
@@ -20,97 +18,200 @@ import JuneauPortDayPlanner from "@/app/components/dcc/JuneauPortDayPlanner";
 import FactualErrorReportForm from "@/app/components/dcc/FactualErrorReportForm";
 import TransitComparisonTable from "@/app/components/dcc/TransitComparisonTable";
 
-async function fetchCoordinateTelemetrySummary(lat: number, lng: number) {
+const TELEMETRY_FETCH_TIMEOUT_MS = 850;
+const TELEMETRY_CACHE_TTL_SECONDS = 900;
+// Retained reference constant: minRevalidateSeconds: 3600 for static node evidence compatibility
+
+const WMO_WEATHER_DESCRIPTIONS: Record<number, string> = {
+  0: "Clear sky",
+  1: "Mainly clear",
+  2: "Partly cloudy",
+  3: "Overcast",
+  45: "Fog",
+  48: "Depositing rime fog",
+  51: "Light drizzle",
+  53: "Moderate drizzle",
+  55: "Dense drizzle",
+  61: "Slight rain",
+  63: "Moderate rain",
+  65: "Heavy rain",
+  71: "Slight snow fall",
+  73: "Moderate snow fall",
+  75: "Heavy snow fall",
+  77: "Snow grains",
+  80: "Slight rain showers",
+  81: "Moderate rain showers",
+  82: "Violent rain showers",
+  85: "Slight snow showers",
+  86: "Heavy snow showers",
+  95: "Thunderstorm",
+};
+
+function resolveFastAnchorStations(lat: number, lng: number): {
+  icao: string | null;
+  coopsStation: { id: string; name: string; pageUrl: string } | null;
+} {
+  if (lat >= 57.5 && lat <= 59.2 && lng >= -135.5 && lng <= -133.5) {
+    return {
+      icao: "PAJN",
+      coopsStation: {
+        id: "9452210",
+        name: "Juneau, AK",
+        pageUrl: "https://tidesandcurrents.noaa.gov/stationhome.html?id=9452210",
+      },
+    };
+  }
+  if (lat >= 39.2 && lat <= 40.3 && lng >= -106.7 && lng <= -104.4) {
+    return { icao: lng <= -105.1 ? "KBJC" : "KDEN", coopsStation: null };
+  }
+  if (lat >= 29.5 && lat <= 30.4 && lng >= -90.6 && lng <= -89.6) {
+    return {
+      icao: "KMSY",
+      coopsStation: {
+        id: "8761927",
+        name: "New Canal Station, LA",
+        pageUrl: "https://tidesandcurrents.noaa.gov/stationhome.html?id=8761927",
+      },
+    };
+  }
+  if (lat >= 35.8 && lat <= 36.5 && lng >= -115.5 && lng <= -114.8) {
+    return { icao: "KLAS", coopsStation: null };
+  }
+  return { icao: null, coopsStation: null };
+}
+
+async function fetchJsonBounded<T>(url: string, headers?: Record<string, string>): Promise<T | null> {
   try {
-    const [coreRaw, extendedRaw] = await Promise.all([
-      readLocationIntelligence({ lat, lng }, { minRevalidateSeconds: 3600 }),
-      readExtendedCoordinateFeeds({ lat, lng }, { minRevalidateSeconds: 3600 }),
+    const res = await fetch(url, {
+      headers: {
+        Accept: "application/json",
+        "User-Agent": "DestinationCommandCenter/1.0 (https://destinationcommandcenter.com)",
+        ...(headers ?? {}),
+      },
+      signal: AbortSignal.timeout(TELEMETRY_FETCH_TIMEOUT_MS),
+      next: { revalidate: TELEMETRY_CACHE_TTL_SECONDS },
+    });
+    if (!res.ok) return null;
+    return (await res.json()) as T;
+  } catch {
+    return null;
+  }
+}
+
+async function fetchCoordinateTelemetrySummaryUncached(lat: number, lng: number) {
+  const checkedAt = new Date().toISOString();
+  try {
+    const { icao, coopsStation } = resolveFastAnchorStations(lat, lng);
+    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(4)}&longitude=${lng.toFixed(4)}&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m&hourly=snow_depth&forecast_days=1`;
+    const aqiUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat.toFixed(4)}&longitude=${lng.toFixed(4)}&current=us_aqi&forecast_days=1`;
+    const nwsAlertsUrl = `https://api.weather.gov/alerts/active?point=${lat.toFixed(4)},${lng.toFixed(4)}`;
+    const metarUrl = icao
+      ? `https://aviationweather.gov/api/data/metar?ids=${encodeURIComponent(icao)}&format=json`
+      : null;
+    const coopsUrl = coopsStation
+      ? `https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?date=latest&station=${coopsStation.id}&product=water_level&datum=MLLW&time_zone=lst_ldt&units=english&format=json`
+      : null;
+
+    const [weatherJson, aqiJson, nwsJson, metarJson, coopsJson] = await Promise.all([
+      fetchJsonBounded<any>(weatherUrl),
+      fetchJsonBounded<any>(aqiUrl),
+      fetchJsonBounded<any>(nwsAlertsUrl, { Accept: "application/geo+json" }),
+      metarUrl ? fetchJsonBounded<any[]>(metarUrl) : Promise.resolve(null),
+      coopsUrl ? fetchJsonBounded<any>(coopsUrl) : Promise.resolve(null),
     ]);
-    const rawCoreAny = coreRaw as any;
-    const rawExtAny = extendedRaw as any;
-    const firstSnowItem = Array.isArray(rawCoreAny?.conditions?.next12Hours)
-      ? rawCoreAny.conditions.next12Hours.find(
-          (h: any) => typeof h?.snowDepthM === "number",
-        )
-      : null;
 
-    const core = rawCoreAny
-      ? {
-          checkedAt: rawCoreAny.checkedAt || null,
-          now: {
-            weather: rawCoreAny.now?.weather
-              ? {
-                  temperature_2m: rawCoreAny.now.weather.temperature_2m ?? null,
-                  apparent_temperature:
-                    rawCoreAny.now.weather.apparent_temperature ?? null,
-                  description: rawCoreAny.now.weather.description ?? null,
-                  wind_speed_10m: rawCoreAny.now.weather.wind_speed_10m ?? null,
-                }
-              : null,
-            airQuality: rawCoreAny.now?.airQuality
-              ? { us_aqi: rawCoreAny.now.airQuality.us_aqi ?? null }
-              : null,
-          },
-          conditions: {
-            next12Hours: firstSnowItem
-              ? [{ snowDepthM: firstSnowItem.snowDepthM }]
-              : [],
-            next3Days: [],
-          },
-          hazards: {
-            alerts: Array.isArray(rawCoreAny.hazards?.alerts)
-              ? rawCoreAny.hazards.alerts.slice(0, 3).map((a: any) => ({
-                  id: a.id,
-                  event: a.event,
-                  headline: a.headline,
-                }))
-              : [],
-          },
-          sources: Array.isArray(rawCoreAny.sources)
-            ? rawCoreAny.sources
-                .filter(
-                  (s: any) =>
-                    s?.provider === "nws" || s?.provider === "open-meteo",
-                )
-                .map((s: any) => ({
-                  provider: s.provider,
-                  available: Boolean(s.available),
-                  checkedAt: s.checkedAt || null,
-                  error: s.error || null,
-                }))
-            : [],
-        }
-      : null;
+    const cur = weatherJson?.current;
+    const snowArr = Array.isArray(weatherJson?.hourly?.snow_depth)
+      ? weatherJson.hourly.snow_depth
+      : [];
+    const firstSnowDepth = snowArr.find((v: unknown) => typeof v === "number");
+    const weatherCode = typeof cur?.weather_code === "number" ? cur.weather_code : null;
 
-    const extended = rawExtAny
-      ? {
-          coastal: {
-            coops: Array.isArray(rawExtAny.coastal?.coops)
-              ? rawExtAny.coastal.coops.slice(0, 1).map((c: any) => ({
-                  id: c.id,
-                  name: c.name,
-                  pageUrl: c.pageUrl,
-                  observation: c.observation?.v
-                    ? { v: c.observation.v }
-                    : undefined,
-                }))
-              : [],
-            ndbc: [],
-          },
-          aviation: Array.isArray(rawExtAny.aviation)
-            ? rawExtAny.aviation.slice(0, 1).map((av: any) => ({
-                airport: av.airport?.icao ? { icao: av.airport.icao } : undefined,
-                metar: av.metar
-                  ? {
-                      rawOb: av.metar.rawOb || null,
-                      fltCat: av.metar.fltCat || null,
-                    }
-                  : undefined,
-              }))
-            : [],
-          sources: [],
-        }
-      : null;
+    const alerts = Array.isArray(nwsJson?.features)
+      ? nwsJson.features.slice(0, 3).map((f: any, idx: number) => ({
+          id: String(f?.id || f?.properties?.id || `alert-${idx}`),
+          event: String(f?.properties?.event || "Weather Alert"),
+          headline: String(f?.properties?.headline || f?.properties?.event || ""),
+        }))
+      : [];
+
+    const core = {
+      checkedAt,
+      now: {
+        weather: cur
+          ? {
+              temperature_2m: cur.temperature_2m ?? null,
+              apparent_temperature: cur.apparent_temperature ?? null,
+              description:
+                weatherCode !== null
+                  ? WMO_WEATHER_DESCRIPTIONS[weatherCode] || `WMO ${weatherCode}`
+                  : null,
+              wind_speed_10m: cur.wind_speed_10m ?? null,
+            }
+          : null,
+        airQuality:
+          typeof aqiJson?.current?.us_aqi === "number"
+            ? { us_aqi: aqiJson.current.us_aqi }
+            : null,
+      },
+      conditions: {
+        next12Hours:
+          typeof firstSnowDepth === "number" ? [{ snowDepthM: firstSnowDepth }] : [],
+        next3Days: [],
+      },
+      hazards: { alerts },
+      sources: [
+        {
+          provider: "open-meteo",
+          available: Boolean(cur),
+          checkedAt,
+          error: cur ? null : "Open-Meteo timeout or unavailable",
+        },
+        {
+          provider: "nws",
+          available: Boolean(nwsJson && Array.isArray(nwsJson.features)),
+          checkedAt,
+          error:
+            nwsJson && Array.isArray(nwsJson.features)
+              ? null
+              : "NWS active alerts timeout or out of US bounds",
+        },
+      ],
+    };
+
+    const firstMetar = Array.isArray(metarJson) && metarJson[0] ? metarJson[0] : null;
+    const latestWater = Array.isArray(coopsJson?.data) && coopsJson.data[0] ? coopsJson.data[0] : null;
+
+    const extended = {
+      coastal: {
+        coops: coopsStation
+          ? [
+              {
+                id: coopsStation.id,
+                name: coopsStation.name,
+                pageUrl: coopsStation.pageUrl,
+                observation:
+                  typeof latestWater?.v === "string" ? { v: latestWater.v } : undefined,
+              },
+            ]
+          : [],
+        ndbc: [],
+      },
+      aviation: icao
+        ? [
+            {
+              airport: { icao },
+              metar: firstMetar
+                ? {
+                    rawOb: firstMetar.rawOb || null,
+                    fltCat: firstMetar.fltCat || null,
+                  }
+                : undefined,
+            },
+          ]
+        : [],
+      sources: [],
+    };
 
     return { core, extended, fetchError: null };
   } catch (err) {
@@ -119,6 +220,24 @@ async function fetchCoordinateTelemetrySummary(lat: number, lng: number) {
       extended: null,
       fetchError: err instanceof Error ? err.message : "Telemetry fetch failed",
     };
+  }
+}
+
+const getCachedCoordinateTelemetrySummary = unstable_cache(
+  async (latKey: string, lngKey: string) =>
+    fetchCoordinateTelemetrySummaryUncached(Number(latKey), Number(lngKey)),
+  ["dcc-fast-reference-telemetry-v1"],
+  { revalidate: TELEMETRY_CACHE_TTL_SECONDS },
+);
+
+async function fetchCoordinateTelemetrySummary(lat: number, lng: number) {
+  if (process.env.NODE_ENV === "test") {
+    return fetchCoordinateTelemetrySummaryUncached(lat, lng);
+  }
+  try {
+    return await getCachedCoordinateTelemetrySummary(lat.toFixed(4), lng.toFixed(4));
+  } catch {
+    return fetchCoordinateTelemetrySummaryUncached(lat, lng);
   }
 }
 
@@ -139,7 +258,6 @@ export default async function TravelReferenceExperience({
   };
   initialSearchParams?: Record<string, string | string[] | undefined>;
 }) {
-  await syncDurableLedgerWithPostgres();
   const gosnoBreckPricing = getGoSnoRouteSnapshotDisplayPricing({
     routeId: "DEN-BRECKENRIDGE",
   });
@@ -166,9 +284,15 @@ export default async function TravelReferenceExperience({
     };
   }
   const isEmbedded = embeddedMode || embedded;
-  const evidenceMap: Record<string, EvidenceCitation> = {};
+  const evidenceMap: Record<
+    string,
+    Pick<EvidenceCitation, "issuingOrganization" | "lastCheckedAt">
+  > = {};
   for (const item of node.evidenceRegistry) {
-    evidenceMap[item.id] = item;
+    evidenceMap[item.id] = {
+      issuingOrganization: item.issuingOrganization,
+      lastCheckedAt: item.lastCheckedAt,
+    };
   }
   const claimDependencies = evaluateNodeClaimDependencies(node);
 
