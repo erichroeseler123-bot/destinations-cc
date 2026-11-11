@@ -37,13 +37,10 @@ export default function AboutPage() {
         </p>
         <ul style={{ margin: "12px 0 16px", paddingLeft: 24, fontSize: "15px", lineHeight: 1.6, color: "var(--ink)" }}>
           <li>
-            <strong>Viator Integration:</strong> Operates under approved <em>Basic Affiliate Access</em> using standard partner attribution tracking (tracking parameters <code>mcid=42383</code>, <code>medium=link</code>, campaign tags, and optional publisher ID). There is no automated server-to-server booking API key (<code>VIATOR_API_KEY</code>) enabled in production.
+            <strong>Viator Integration:</strong> Operates under approved <em>Affiliate Partner Access</em> using publisher ID <code>pid=P00281144</code> (tracking parameters <code>mcid=42383</code>, <code>medium=link</code>, and <code>last-frontier-*</code> campaign tags). There is no automated server-to-server booking API key (<code>VIATOR_API_KEY</code>) enabled in production.
           </li>
           <li>
-            <strong>GetYourGuide Integration:</strong> Operates under approved <em>Affiliate Partner Link Access</em> (Partner ID <code>F2MMUUH</code>). There is no live merchant API token (<code>GETYOURGUIDE_ACCESS_TOKEN</code>) enabled in production.
-          </li>
-          <li>
-            <strong>FareHarbor Affiliate Network Integration:</strong> Selected direct operator checkout links (such as Allen Marine Tours on Juneau whale-watching comparison pages) carry FareHarbor affiliate attribution (<code>asn=welcometoalaskatours</code>) so reservations are completed directly with the local Alaska operator.
+            <strong>GetYourGuide Integration:</strong> Operates under approved <em>Affiliate Partner Link Access</em> (<code>partner_id=F2MMUUH</code>), including verified exact-product listings such as Ketchikan&apos;s Bering Sea Crab Fishermen&apos;s Tour aboard the <em>Aleutian Ballad</em> (<code>t598272</code>). There is no live merchant API token (<code>GETYOURGUIDE_ACCESS_TOKEN</code>) enabled in production.
           </li>
           <li>
             <strong>Curated Editorial Data:</strong> Product listings, typical starting prices, sample departure schedules, and cancellation policies displayed across this site reflect manual editorial research and historical benchmarks rather than real-time automated API synchronization.

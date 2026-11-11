@@ -79,12 +79,18 @@ export default async function HomePage({
     intendedDate: carriedDate,
     partySize: carriedPartySize,
   });
-  const fhHandoffHref = buildDccHandoffAffiliateUrl({
-    source: "fareharbor",
-    destinationUrl:
-      "https://fareharbor.com/embeds/book/allenmarine/items/?asn=welcometoalaskatours&ref=last-frontier-home",
-    productCode: "juneau-allen-marine-whale",
-    campaign: "last-frontier-home-fh",
+  const aleutianBalladDest = buildAffiliateUrl(
+    "getyourguide",
+    "https://www.getyourguide.com/ketchikan-l32225/ketchikan-bering-sea-crab-fishermen-s-tour-t598272/",
+    "last-frontier-home-aleutian-ballad",
+    "Bering Sea Crab Fishermen's Tour (Aleutian Ballad)",
+    true,
+  );
+  const aleutianBalladHandoffHref = buildDccHandoffAffiliateUrl({
+    source: "getyourguide",
+    destinationUrl: aleutianBalladDest,
+    productCode: "t598272",
+    campaign: "last-frontier-home-aleutian-ballad",
     contextId: rawCtx,
     intendedDate: carriedDate,
     partySize: carriedPartySize,
@@ -250,15 +256,15 @@ export default async function HomePage({
                 Compare on GetYourGuide (partner_id=F2MMUUH)
               </a>
               <a
-                href={fhHandoffHref}
+                href={aleutianBalladHandoffHref}
                 data-dcc-handoff-link="true"
-                data-dcc-provider="FareHarbor"
-                data-dcc-account="asn=welcometoalaskatours"
+                data-dcc-provider="GetYourGuide"
+                data-dcc-account="partner_id=F2MMUUH"
                 target="_blank"
                 rel="sponsored noopener noreferrer"
                 style={{ padding: "6px 12px", borderRadius: 6, background: "#0f766e", color: "#fff", fontWeight: 700, fontSize: "12px", textDecoration: "none" }}
               >
-                Direct Alaska Operator via FareHarbor (asn=welcometoalaskatours)
+                Ketchikan Aleutian Ballad on GetYourGuide (partner_id=F2MMUUH)
               </a>
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 12, fontSize: "12px" }}>

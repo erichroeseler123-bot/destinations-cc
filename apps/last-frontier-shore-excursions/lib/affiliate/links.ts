@@ -117,7 +117,9 @@ export function buildAffiliateUrl(
         officialUrl &&
         !officialUrl.includes("searchResults") &&
         !officialUrl.includes("/s/?") &&
-        (officialUrl.includes("/tours/") || officialUrl.includes("getyourguide.com/activity/"))
+        (officialUrl.includes("/tours/") ||
+          officialUrl.includes("getyourguide.com/activity/") ||
+          (officialUrl.includes("getyourguide.com/") && /-t\d+\/?($|\?)/.test(officialUrl)))
       );
 
   // If not a verified exact product, always route to partner search with affiliate tracking
@@ -137,7 +139,7 @@ export function buildAffiliateUrl(
 }
 
 export function buildDccHandoffAffiliateUrl(params: {
-  source: AffiliateSource | "fareharbor";
+  source: AffiliateSource;
   destinationUrl: string;
   productCode?: string;
   campaign: string;
@@ -150,15 +152,18 @@ export function buildDccHandoffAffiliateUrl(params: {
   qs.set("site", "lastfrontiershoreexcursions.com");
   qs.set("provider", params.source);
   if (params.source === "viator") {
-    qs.set("account", DEFAULT_VIATOR_PID);
+    qs.set("account", resolveViatorPid(process.env, DEFAULT_VIATOR_PID));
   } else if (params.source === "getyourguide") {
-    qs.set("account", DEFAULT_GYG_PARTNER_ID);
-  } else if (params.source === "fareharbor") {
-    qs.set("account", "welcometoalaskatours");
+    qs.set(
+      "account",
+      process.env.NEXT_PUBLIC_GETYOURGUIDE_PARTNER_ID ||
+        process.env.GETYOURGUIDE_PARTNER_ID ||
+        DEFAULT_GYG_PARTNER_ID,
+    );
   }
   if (params.productCode) qs.set("product", params.productCode);
   qs.set("url", params.destinationUrl);
-  qs.set("campaign", params.campaign);
+  qs.set("campaign", `last-frontier-${params.campaign.replace(/^last-frontier-/, "")}`);
   if (params.contextId) qs.set("ctx", params.contextId);
   if (params.intendedDate) qs.set("date", params.intendedDate);
   if (params.partySize && params.partySize > 0) qs.set("partySize", String(params.partySize));

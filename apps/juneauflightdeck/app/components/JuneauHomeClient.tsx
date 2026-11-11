@@ -10,6 +10,7 @@ import { buildGuidedHref } from "@/lib/session/decisionMode";
 import { trackWidgetEvent, type DecisionWidget } from "@/lib/telemetry";
 import type { HandoffContext, InitialUiState } from "@/lib/handoff/types";
 import type { DecisionMode } from "@/types/session";
+import { buildJfdViatorHandoffUrl } from "../../lib/viator/handoff";
 
 type ResolutionDebug = {
   downgraded: boolean;
@@ -106,6 +107,13 @@ function normalizeQuery(value: string) {
 }
 
 function buildTrackedHref(href: string, handoffId: string) {
+  if (!href) return href;
+  if (href.includes("viator.com") || href.includes("/go/commerce/handoff")) {
+    return buildJfdViatorHandoffUrl(href, {
+      campaign: "jfd-home-client",
+      handoffId: handoffId || null,
+    });
+  }
   if (!handoffId) return href;
 
   try {

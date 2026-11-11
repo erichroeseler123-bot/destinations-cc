@@ -1,6 +1,13 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import {
+  buildGenericJfdConciergeTemplate,
+  buildHydratedConciergePreset,
+  extractPassengerFirstName,
+  resolveConciergePresetIdForSourceId,
+  type ConciergePresetId,
+} from "@/lib/dcc/conciergeReplyPresets";
 import type {
   OperatorInboxItem,
   OperatorInboxViewFilter,
@@ -104,6 +111,69 @@ type DraftRowState = {
   errorMessage: string | null;
 };
 
+type ReplyComposerState = {
+  open: boolean;
+  presetId: ConciergePresetId | null;
+  subject: string;
+  textBody: string;
+  dryRunSandbox: boolean;
+  sending: boolean;
+  sentMessage: string | null;
+  errorMessage: string | null;
+};
+
+function buildDefaultReplyComposerState(
+  item: OperatorInboxItem,
+): ReplyComposerState {
+  const matchedPreset = resolveConciergePresetIdForSourceId(item.sourceId);
+  if (matchedPreset) {
+    const hydrated = buildHydratedConciergePreset(matchedPreset, {
+      guestName: item.contact.name,
+    });
+    return {
+      open: false,
+      presetId: matchedPreset,
+      subject: hydrated.subject,
+      textBody: hydrated.textBody,
+      dryRunSandbox: false,
+      sending: false,
+      sentMessage: null,
+      errorMessage: null,
+    };
+  }
+
+  if (item.sourceSite === "juneauflightdeck") {
+    const tpl = buildGenericJfdConciergeTemplate({
+      guestName: item.contact.name,
+      shipName: item.attribution?.shipName || null,
+      datesOrMonth: item.tripDetails.datesOrMonth,
+      partySize: item.tripDetails.partySize,
+    });
+    return {
+      open: false,
+      presetId: null,
+      subject: tpl.subject,
+      textBody: tpl.textBody,
+      dryRunSandbox: false,
+      sending: false,
+      sentMessage: null,
+      errorMessage: null,
+    };
+  }
+
+  const firstName = extractPassengerFirstName(item.contact.name);
+  return {
+    open: false,
+    presetId: null,
+    subject: `Re: ${item.tripDetails.headline}`,
+    textBody: `Hi ${firstName},\n\nThank you for your inquiry through ${item.sourceSiteLabel}.\n\n`,
+    dryRunSandbox: false,
+    sending: false,
+    sentMessage: null,
+    errorMessage: null,
+  };
+}
+
 export default function OperatorInboxClient({
   initialData,
   initialCpPreviewUrl,
@@ -125,6 +195,7 @@ export default function OperatorInboxClient({
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
   const [drafts, setDrafts] = useState<Record<string, DraftRowState>>({});
+  const [replies, setReplies] = useState<Record<string, ReplyComposerState>>({});
 
   const fetchInbox = useCallback(
     async (
@@ -289,6 +360,131 @@ export default function OperatorInboxClient({
       }, 1800);
     } catch {
       // ignore clipboard permission blocks in headless contexts
+    }
+  };
+
+  const getReplyComposer = (item: OperatorInboxItem): ReplyComposerState => {
+    const existing = replies[item.itemKey];
+    if (existing) return existing;
+    return buildDefaultReplyComposerState(item);
+  };
+
+  const updateReplyComposer = (
+    item: OperatorInboxItem,
+    patch: Partial<ReplyComposerState>,
+  ) => {
+    setReplies((prev) => {
+      const current = prev[item.itemKey] || buildDefaultReplyComposerState(item);
+      return {
+        ...prev,
+        [item.itemKey]: {
+          ...current,
+          ...patch,
+        },
+      };
+    });
+  };
+
+  const handleApplyJfdPreset = (
+    item: OperatorInboxItem,
+    presetId: ConciergePresetId | "generic_jfd",
+  ) => {
+    if (presetId === "generic_jfd") {
+      const tpl = buildGenericJfdConciergeTemplate({
+        guestName: item.contact.name,
+        shipName: item.attribution?.shipName || null,
+        datesOrMonth: item.tripDetails.datesOrMonth,
+        partySize: item.tripDetails.partySize,
+      });
+      updateReplyComposer(item, {
+        presetId: null,
+        subject: tpl.subject,
+        textBody: tpl.textBody,
+        sentMessage: null,
+        errorMessage: null,
+      });
+      return;
+    }
+
+    const hydrated = buildHydratedConciergePreset(presetId, {
+      guestName: item.contact.name,
+    });
+    updateReplyComposer(item, {
+      presetId,
+      subject: hydrated.subject,
+      textBody: hydrated.textBody,
+      sentMessage: null,
+      errorMessage: null,
+    });
+  };
+
+  const handleSendConciergeReply = async (
+    item: OperatorInboxItem,
+    forceResend = false,
+  ) => {
+    const reply = getReplyComposer(item);
+    if (!item.contact.email && !reply.dryRunSandbox) return;
+
+    updateReplyComposer(item, {
+      sending: true,
+      sentMessage: null,
+      errorMessage: null,
+    });
+
+    try {
+      const res = await fetch("/api/admin/inbox/reply", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          itemKey: item.itemKey,
+          toEmail: item.contact.email || undefined,
+          guestFirstName: extractPassengerFirstName(item.contact.name),
+          subject: reply.subject,
+          textBody: reply.textBody,
+          fromBrand: item.sourceSite,
+          presetId: reply.presetId || undefined,
+          dryRunSandbox: reply.dryRunSandbox,
+          forceResend,
+        }),
+      });
+
+      const payload = (await res.json()) as {
+        ok?: boolean;
+        error?: string;
+        message?: string;
+        resendId?: string | null;
+        dispatchChannel?: string;
+        recipientUsed?: string;
+        dryRunSandbox?: boolean;
+      };
+
+      if (!res.ok || !payload.ok) {
+        throw new Error(
+          payload.message || payload.error || `Send failed (HTTP ${res.status})`,
+        );
+      }
+
+      updateReplyComposer(item, {
+        sending: false,
+        sentMessage: payload.dryRunSandbox
+          ? `Sandbox test sent to ${payload.recipientUsed} (${payload.resendId || "200 OK"})`
+          : `Sent to ${payload.recipientUsed} via ${payload.dispatchChannel} (${payload.resendId || "200 OK"})`,
+        errorMessage: null,
+      });
+
+      if (!payload.dryRunSandbox) {
+        await fetchInbox(activeView, siteFilter, statusFilter);
+      }
+    } catch (err) {
+      updateReplyComposer(item, {
+        sending: false,
+        sentMessage: null,
+        errorMessage:
+          err instanceof Error ? err.message : "Failed to send concierge reply.",
+      });
     }
   };
 
@@ -554,6 +750,10 @@ export default function OperatorInboxClient({
         ) : (
           items.map((item) => {
             const draft = getDraft(item);
+            const reply = getReplyComposer(item);
+            const mailtoHref = item.contact.email
+              ? `mailto:${encodeURIComponent(item.contact.email)}?subject=${encodeURIComponent(reply.subject)}&body=${encodeURIComponent(reply.textBody)}`
+              : null;
             return (
               <article
                 key={item.itemKey}
@@ -825,6 +1025,21 @@ export default function OperatorInboxClient({
                     {draft.saving ? "Saving…" : "Save Triage"}
                   </button>
 
+                  {item.contact.email ? (
+                    <button
+                      type="button"
+                      data-testid="concierge-reply-toggle"
+                      onClick={() =>
+                        updateReplyComposer(item, { open: !reply.open })
+                      }
+                      className="min-h-10 shrink-0 rounded-xl border border-[#f5c66c]/50 bg-[#f5c66c]/15 px-3.5 py-2 text-xs font-bold text-[#f5c66c] hover:bg-[#f5c66c]/25"
+                    >
+                      {reply.open
+                        ? "Close Concierge Quote"
+                        : "Reply / Send Concierge Quote"}
+                    </button>
+                  ) : null}
+
                   {draft.savedMessage ? (
                     <span
                       data-testid="triage-saved-indicator"
@@ -846,6 +1061,175 @@ export default function OperatorInboxClient({
                     </span>
                   ) : null}
                 </div>
+
+                {item.contact.email && reply.open ? (
+                  <div
+                    data-testid="concierge-reply-composer"
+                    className="mt-3 space-y-3 rounded-xl border border-[#f5c66c]/35 bg-black/50 p-4"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="text-xs text-zinc-300">
+                        <strong className="text-[#f5c66c]">
+                          Concierge Quote Composer
+                        </strong>{" "}
+                        → <span className="font-mono">{item.contact.email}</span>{" "}
+                        {item.sourceSite === "juneauflightdeck" ? (
+                          <span className="text-zinc-400">
+                            (Juneau Flight Deck sender — never PARR)
+                          </span>
+                        ) : null}
+                      </div>
+
+                      {item.sourceSite === "juneauflightdeck" ? (
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleApplyJfdPreset(
+                                item,
+                                "jfd_mvib0lba_2027_05_17",
+                              )
+                            }
+                            className="rounded-lg border border-cyan-400/35 bg-cyan-500/15 px-2.5 py-1 text-[11px] font-semibold text-cyan-200 hover:bg-cyan-500/25"
+                          >
+                            Prefill Preset: Royal Princess May 17–18 (MVIB0LBA)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleApplyJfdPreset(
+                                item,
+                                "jfd_mv1sadck_2027_06_14",
+                              )
+                            }
+                            className="rounded-lg border border-cyan-400/35 bg-cyan-500/15 px-2.5 py-1 text-[11px] font-semibold text-cyan-200 hover:bg-cyan-500/25"
+                          >
+                            Prefill Preset: Koningsdam June 14 (MV1SADCK)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleApplyJfdPreset(item, "generic_jfd")
+                            }
+                            className="rounded-lg border border-white/20 bg-white/5 px-2.5 py-1 text-[11px] font-semibold text-zinc-200 hover:bg-white/15"
+                          >
+                            Prefill General JFD Quote
+                          </button>
+                        </div>
+                      ) : null}
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor={`reply-subject-${item.itemKey}`}
+                        className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-zinc-400"
+                      >
+                        Subject
+                      </label>
+                      <input
+                        id={`reply-subject-${item.itemKey}`}
+                        data-testid="concierge-reply-subject"
+                        type="text"
+                        value={reply.subject}
+                        onChange={(e) =>
+                          updateReplyComposer(item, {
+                            subject: e.target.value,
+                            sentMessage: null,
+                          })
+                        }
+                        className="w-full rounded-lg border border-white/20 bg-zinc-950/80 px-3 py-2 text-xs text-white"
+                      />
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor={`reply-body-${item.itemKey}`}
+                        className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-zinc-400"
+                      >
+                        Message Body
+                      </label>
+                      <textarea
+                        id={`reply-body-${item.itemKey}`}
+                        data-testid="concierge-reply-body"
+                        rows={10}
+                        value={reply.textBody}
+                        onChange={(e) =>
+                          updateReplyComposer(item, {
+                            textBody: e.target.value,
+                            sentMessage: null,
+                          })
+                        }
+                        className="w-full rounded-lg border border-white/20 bg-zinc-950/80 px-3 py-2 font-mono text-xs leading-relaxed text-zinc-100"
+                      />
+                    </div>
+
+                    <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+                      <label className="inline-flex items-center gap-2 text-xs text-zinc-300">
+                        <input
+                          type="checkbox"
+                          checked={reply.dryRunSandbox}
+                          onChange={(e) =>
+                            updateReplyComposer(item, {
+                              dryRunSandbox: e.target.checked,
+                            })
+                          }
+                          className="rounded border-white/25 bg-black"
+                        />
+                        <span>
+                          Dry-run sandbox (<code>delivered@resend.dev</code>)
+                        </span>
+                      </label>
+
+                      <div className="flex flex-wrap items-center gap-2.5">
+                        {mailtoHref ? (
+                          <a
+                            href={mailtoHref}
+                            data-testid="concierge-mailto-fallback"
+                            className="inline-flex min-h-9 items-center rounded-lg border border-white/20 bg-white/5 px-3 py-1.5 text-xs font-semibold text-zinc-200 hover:bg-white/15"
+                          >
+                            Open in Mail App (mailto:)
+                          </a>
+                        ) : null}
+
+                        <button
+                          type="button"
+                          data-testid="concierge-send-resend-btn"
+                          disabled={reply.sending}
+                          onClick={() => void handleSendConciergeReply(item)}
+                          className="min-h-9 rounded-lg bg-[#f5c66c] px-4 py-1.5 text-xs font-bold text-zinc-950 hover:bg-[#ffe09e] disabled:opacity-50"
+                        >
+                          {reply.sending ? "Sending…" : "Send via Resend"}
+                        </button>
+                      </div>
+                    </div>
+
+                    {reply.sentMessage ? (
+                      <p
+                        data-testid="concierge-reply-sent"
+                        className="text-xs font-semibold text-emerald-300"
+                      >
+                        ✓ {reply.sentMessage}
+                      </p>
+                    ) : null}
+
+                    {reply.errorMessage ? (
+                      <div className="flex flex-wrap items-center gap-3 text-xs text-rose-300">
+                        <span>{reply.errorMessage}</span>
+                        {reply.errorMessage.includes("already delivered") ? (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              void handleSendConciergeReply(item, true)
+                            }
+                            className="rounded border border-amber-400/40 bg-amber-500/15 px-2.5 py-1 text-[11px] font-semibold text-amber-200 hover:bg-amber-500/25"
+                          >
+                            Force Resend Anyway
+                          </button>
+                        ) : null}
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
               </article>
             );
           })

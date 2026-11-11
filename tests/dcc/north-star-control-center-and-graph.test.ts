@@ -286,9 +286,13 @@ describe("North Star Slice 3: Canonical Fit/Ledger/Partner Modules, Travel-Graph
     );
 
     const reviewItems = listPartnerBoundaryReviewItems();
-    assert.equal(reviewItems.length, 1);
-    assert.equal(reviewItems[0].id, "welcometoalaskatours");
-    assert.equal(reviewItems[0].governanceStatus, "partner_boundary_review_required");
+    assert.equal(reviewItems.length, 0);
+    const wtaFrozen = FROZEN_AFFILIATE_IDENTIFIERS.find(
+      (r) => r.id === "welcometoalaskatours",
+    );
+    assert.ok(wtaFrozen);
+    assert.deepEqual(wtaFrozen.assignedSurfaces, []);
+    assert.equal(wtaFrozen.governanceStatus, "isolated_partner_unused");
 
     assert.equal(
       CANONICAL_SITE_PROVIDER_ACCOUNTS["lastfrontiershoreexcursions.com"].viatorPid,
@@ -303,14 +307,11 @@ describe("North Star Slice 3: Canonical Fit/Ledger/Partner Modules, Travel-Graph
       "P00058396",
     );
 
-    // 2 held commercial SKUs
-    assert.equal(HELD_COMMERCIAL_SKUS.length, 2);
+    // 1 held commercial SKU (WNO Jean Lafitte stays held; LFSE Aleutian Ballad unheld on GYG F2MMUUH)
+    assert.equal(HELD_COMMERCIAL_SKUS.length, 1);
     assert.deepEqual(
       HELD_COMMERCIAL_SKUS.map((s) => `${s.surfaceCode}:${s.skuSlug}`),
-      [
-        "WNO:jeanlafitte-swamp-tour-with-hotel-pickup",
-        "LFSE:aleutian-ballad",
-      ],
+      ["WNO:jeanlafitte-swamp-tour-with-hotel-pickup"],
     );
 
     // Protected Partner Property: Welcome to Alaska Tours
@@ -636,8 +637,8 @@ describe("North Star Slice 3: Canonical Fit/Ledger/Partner Modules, Travel-Graph
         snapshotLive.triageQueue.rollCallBridge.reminder || "",
         /MODERATION_ALERT_EMAILS/,
       );
-      assert.equal(snapshotLive.triageQueue.heldSkusCount, 2);
-      assert.equal(snapshotLive.triageQueue.partnerBoundaryReviewCount, 1);
+      assert.equal(snapshotLive.triageQueue.heldSkusCount, 1);
+      assert.equal(snapshotLive.triageQueue.partnerBoundaryReviewCount, 0);
 
       // 8-stage funnel & strictly separated revenue tracks
       assert.equal(snapshotLive.connectedFunnel28d.stages.length, 8);

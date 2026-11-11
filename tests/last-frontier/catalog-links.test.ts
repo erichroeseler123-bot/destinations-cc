@@ -18,17 +18,18 @@ const VERIFIED_PRODUCT_IDS = [
   "6459PRTKTNMISTY",
   "472133P3",
   "445368P5",
+  "t598272",
   "472133P4",
   "64781P20",
   "14707P1",
 ] as const;
 
-describe("Last Frontier Shore Excursions - Viator Direct Link Verification", () => {
-  it("contains exactly 15 catalog items", () => {
-    assert.equal(AFFILIATE_CATALOG.length, 15, "Catalog must contain exactly 15 tours");
+describe("Last Frontier Shore Excursions - Partner Direct Link & Handoff Verification", () => {
+  it("contains exactly 16 catalog items (15 Viator + 1 GetYourGuide Aleutian Ballad)", () => {
+    assert.equal(AFFILIATE_CATALOG.length, 16, "Catalog must contain exactly 16 tours");
   });
 
-  it("every catalog entry is an exact Viator product with a verified productId", () => {
+  it("every catalog entry is an exact Viator or GetYourGuide product with a verified productId", () => {
     const catalogProductIds = AFFILIATE_CATALOG.map((item) => item.productId);
 
     for (const expectedId of VERIFIED_PRODUCT_IDS) {
@@ -39,7 +40,10 @@ describe("Last Frontier Shore Excursions - Viator Direct Link Verification", () 
     }
 
     for (const item of AFFILIATE_CATALOG) {
-      assert.equal(item.source, "viator", `Item ${item.title} must have source 'viator'`);
+      assert.ok(
+        item.source === "viator" || item.source === "getyourguide",
+        `Item ${item.title} must have source 'viator' or 'getyourguide'`
+      );
       assert.equal(item.isExactProduct, true, `Item ${item.title} must have isExactProduct: true`);
       assert.ok(item.productId, `Item ${item.title} must have non-null productId`);
       assert.ok(
@@ -59,10 +63,17 @@ describe("Last Frontier Shore Excursions - Viator Direct Link Verification", () 
         !item.officialUrl.includes("/s/?"),
         `Item ${item.title} (${item.productId}) officialUrl contains search params: ${item.officialUrl}`
       );
-      assert.ok(
-        item.officialUrl.startsWith("https://www.viator.com/tours/"),
-        `Item ${item.title} (${item.productId}) must start with https://www.viator.com/tours/`
-      );
+      if (item.source === "getyourguide") {
+        assert.ok(
+          item.officialUrl.startsWith("https://www.getyourguide.com/"),
+          `Item ${item.title} (${item.productId}) must start with https://www.getyourguide.com/`
+        );
+      } else {
+        assert.ok(
+          item.officialUrl.startsWith("https://www.viator.com/tours/"),
+          `Item ${item.title} (${item.productId}) must start with https://www.viator.com/tours/`
+        );
+      }
       assert.ok(
         item.officialUrl.includes(item.productId!),
         `Item ${item.title} officialUrl must contain productId ${item.productId}: ${item.officialUrl}`
@@ -99,7 +110,7 @@ describe("Last Frontier Shore Excursions - Viator Direct Link Verification", () 
     );
   });
 
-  it("all 15 generated affiliate URLs are direct product URLs with full tracking parameters", () => {
+  it("all 16 generated affiliate URLs are direct product URLs with full tracking parameters", () => {
     for (const item of AFFILIATE_CATALOG) {
       const generatedUrl = buildAffiliateUrl(
         item.source,
@@ -113,54 +124,73 @@ describe("Last Frontier Shore Excursions - Viator Direct Link Verification", () 
 
       // Verify not a search result URL
       assert.ok(
-        !parsed.pathname.includes("searchResults"),
+        !parsed.pathname.includes("searchResults") && !parsed.pathname.startsWith("/s/"),
         `Generated URL for ${item.productId} must not be searchResults: ${generatedUrl}`
-      );
-      assert.ok(
-        parsed.pathname.startsWith("/tours/"),
-        `Generated URL for ${item.productId} must start with /tours/: ${generatedUrl}`
       );
       assert.ok(
         parsed.pathname.includes(item.productId!),
         `Generated URL path must include productId ${item.productId}: ${generatedUrl}`
       );
 
-      // Verify tracking parameters
-      assert.equal(
-        parsed.searchParams.get("mcid"),
-        "42383",
-        `Missing or incorrect mcid in ${generatedUrl}`
-      );
-      assert.equal(
-        parsed.searchParams.get("medium"),
-        "link",
-        `Missing or incorrect medium in ${generatedUrl}`
-      );
-      assert.ok(
-        parsed.searchParams.get("campaign")?.startsWith("last-frontier-"),
-        `Missing last-frontier- prefix in campaign for ${generatedUrl}`
-      );
-      assert.equal(
-        parsed.searchParams.get("utm_source"),
-        "lastfrontiershoreexcursions.com",
-        `Missing or incorrect utm_source in ${generatedUrl}`
-      );
-      assert.equal(
-        parsed.searchParams.get("utm_medium"),
-        "affiliate",
-        `Missing or incorrect utm_medium in ${generatedUrl}`
-      );
-      assert.ok(
-        parsed.searchParams.get("utm_campaign")?.startsWith("last-frontier-"),
-        `Missing last-frontier- prefix in utm_campaign for ${generatedUrl}`
-      );
-
-      // Verify PID is P00281144
-      assert.equal(
-        parsed.searchParams.get("pid"),
-        "P00281144",
-        `Expected pid=P00281144 in ${generatedUrl}`
-      );
+      if (item.source === "getyourguide") {
+        assert.equal(
+          parsed.searchParams.get("partner_id"),
+          "F2MMUUH",
+          `Expected partner_id=F2MMUUH in ${generatedUrl}`
+        );
+        assert.equal(
+          parsed.searchParams.get("utm_source"),
+          "lastfrontiershoreexcursions.com",
+          `Missing or incorrect utm_source in ${generatedUrl}`
+        );
+        assert.equal(
+          parsed.searchParams.get("utm_medium"),
+          "online_publisher",
+          `Missing or incorrect utm_medium in ${generatedUrl}`
+        );
+        assert.ok(
+          parsed.searchParams.get("utm_campaign")?.startsWith("last-frontier-"),
+          `Missing last-frontier- prefix in utm_campaign for ${generatedUrl}`
+        );
+      } else {
+        assert.ok(
+          parsed.pathname.startsWith("/tours/"),
+          `Generated URL for ${item.productId} must start with /tours/: ${generatedUrl}`
+        );
+        assert.equal(
+          parsed.searchParams.get("mcid"),
+          "42383",
+          `Missing or incorrect mcid in ${generatedUrl}`
+        );
+        assert.equal(
+          parsed.searchParams.get("medium"),
+          "link",
+          `Missing or incorrect medium in ${generatedUrl}`
+        );
+        assert.ok(
+          parsed.searchParams.get("campaign")?.startsWith("last-frontier-"),
+          `Missing last-frontier- prefix in campaign for ${generatedUrl}`
+        );
+        assert.equal(
+          parsed.searchParams.get("utm_source"),
+          "lastfrontiershoreexcursions.com",
+          `Missing or incorrect utm_source in ${generatedUrl}`
+        );
+        assert.equal(
+          parsed.searchParams.get("utm_medium"),
+          "affiliate",
+          `Missing or incorrect utm_medium in ${generatedUrl}`
+        );
+        assert.ok(
+          parsed.searchParams.get("utm_campaign")?.startsWith("last-frontier-"),
+          `Missing last-frontier- prefix in utm_campaign for ${generatedUrl}`
+        );
+        assert.equal(
+          parsed.searchParams.get("pid"),
+          "P00281144",
+          `Expected pid=P00281144 in ${generatedUrl}`
+        );
+      }
     }
   });
 
@@ -245,7 +275,7 @@ describe("Last Frontier Shore Excursions - Viator Direct Link Verification", () 
     }
   });
 
-  it("all 15 catalog items use verified exact canonical Viator URLs matching destination and product slug", () => {
+  it("all 16 catalog items use verified exact canonical partner URLs matching destination and product slug", () => {
     const VERIFIED_CANONICAL_URLS: Record<string, string> = {
       "331813P1": "https://www.viator.com/tours/Juneau/Whale-Tours-in-Juneau-Alaska/d941-331813P1",
       "466119P3": "https://www.viator.com/tours/Juneau/Mendenhall-Glacier-Waterfall-and-Whale-Watching-Tour/d941-466119P3",
@@ -259,6 +289,7 @@ describe("Last Frontier Shore Excursions - Viator Direct Link Verification", () 
       "6459PRTKTNMISTY": "https://www.viator.com/tours/Ketchikan/Ketchikan-Shore-Excursion-Misty-Fjords-National-Monument-Floatplane-Tour/d942-6459PRTKTNMISTY",
       "472133P3": "https://www.viator.com/tours/Ketchikan/Misty-Fjords-and-Wilderness-Explorer/d942-472133P3",
       "445368P5": "https://www.viator.com/tours/Ketchikan/Saxman-Native-Village-Ketchikan-Highlights-and-Lumberjack-Show/d942-445368P5",
+      "t598272": "https://www.getyourguide.com/ketchikan-l32225/ketchikan-bering-sea-crab-fishermen-s-tour-t598272/",
       "472133P4": "https://www.viator.com/tours/Sitka/Whale-Watch-and-Sea-Otter-Quest/d4153-472133P4",
       "64781P20": "https://www.viator.com/tours/Sitka/Simply-Amazing-Sitka-Tour/d4153-64781P20",
       "14707P1": "https://www.viator.com/tours/Hoonah/Whale-Watch-Adventure/d26215-14707P1",
@@ -275,7 +306,7 @@ describe("Last Frontier Shore Excursions - Viator Direct Link Verification", () 
     }
   });
 
-  it("cruise ship sample tours emit verified affiliate links, specialist aviation handoffs, or null (never guessed SKUs)", () => {
+  it("cruise ship sample tours emit verified DCC commerce handoff links, specialist aviation handoffs, or null (never guessed SKUs)", () => {
     const ships = getAllAlaskaShips();
     assert.ok(ships.length > 0, "Must have ships in fleet");
 
@@ -286,7 +317,19 @@ describe("Last Frontier Shore Excursions - Viator Direct Link Verification", () 
           const url = getTrackedTourUrl(tour.title, portLogistics.portName, ship.slug);
 
           if (/Bering Sea Crab/i.test(tour.title)) {
-            assert.equal(url, null, `Unverified Aleutian Ballad tour must disable CTA (return null): ${tour.title}`);
+            assert.ok(url, `Aleutian Ballad tour must resolve to verified GYG handoff: ${tour.title}`);
+            assert.ok(
+              url.startsWith("https://www.destinationcommandcenter.com/go/commerce/handoff?"),
+              `Expected DCC handoff URL for Aleutian Ballad, got ${url}`
+            );
+            const outer = new URL(url);
+            assert.equal(outer.searchParams.get("site"), "lastfrontiershoreexcursions.com");
+            assert.equal(outer.searchParams.get("provider"), "getyourguide");
+            assert.equal(outer.searchParams.get("account"), "F2MMUUH");
+            assert.equal(outer.searchParams.get("product"), "t598272");
+            const inner = new URL(outer.searchParams.get("url")!);
+            assert.ok(inner.pathname.includes("t598272"));
+            assert.equal(inner.searchParams.get("partner_id"), "F2MMUUH");
             continue;
           }
 
@@ -299,17 +342,27 @@ describe("Last Frontier Shore Excursions - Viator Direct Link Verification", () 
             continue;
           }
 
-          assert.ok(url.startsWith("https://www.viator.com/"), `URL must start with viator.com: ${url}`);
-          assert.ok(!url.includes("/searchResults/all"), `Must not fall back to unverified search query: ${url}`);
+          assert.ok(
+            url.startsWith("https://www.destinationcommandcenter.com/go/commerce/handoff?"),
+            `URL must route through DCC commerce handoff: ${url}`
+          );
+          const outer = new URL(url);
+          assert.equal(outer.searchParams.get("site"), "lastfrontiershoreexcursions.com");
+          assert.equal(outer.searchParams.get("provider"), "viator");
+          assert.equal(outer.searchParams.get("account"), "P00281144");
 
-          const parsed = new URL(url);
-          assert.equal(parsed.searchParams.get("pid"), "P00281144", `Expected pid=P00281144 in ${url}`);
-          assert.equal(parsed.searchParams.get("mcid"), "42383", `Expected mcid=42383 in ${url}`);
-          assert.equal(parsed.searchParams.get("medium"), "link", `Expected medium=link in ${url}`);
-          assert.ok(parsed.searchParams.get("campaign")?.startsWith("last-frontier-"), `Campaign missing prefix in ${url}`);
-          assert.equal(parsed.searchParams.get("utm_source"), "lastfrontiershoreexcursions.com", `Expected utm_source in ${url}`);
-          assert.equal(parsed.searchParams.get("utm_medium"), "affiliate", `Expected utm_medium in ${url}`);
-          assert.ok(parsed.searchParams.get("utm_campaign")?.startsWith("last-frontier-"), `utm_campaign missing prefix in ${url}`);
+          const innerUrl = outer.searchParams.get("url") || "";
+          assert.ok(innerUrl.startsWith("https://www.viator.com/"), `Inner URL must start with viator.com: ${innerUrl}`);
+          assert.ok(!innerUrl.includes("/searchResults/all"), `Must not fall back to unverified search query: ${innerUrl}`);
+
+          const parsed = new URL(innerUrl);
+          assert.equal(parsed.searchParams.get("pid"), "P00281144", `Expected pid=P00281144 in ${innerUrl}`);
+          assert.equal(parsed.searchParams.get("mcid"), "42383", `Expected mcid=42383 in ${innerUrl}`);
+          assert.equal(parsed.searchParams.get("medium"), "link", `Expected medium=link in ${innerUrl}`);
+          assert.ok(parsed.searchParams.get("campaign")?.startsWith("last-frontier-"), `Campaign missing prefix in ${innerUrl}`);
+          assert.equal(parsed.searchParams.get("utm_source"), "lastfrontiershoreexcursions.com", `Expected utm_source in ${innerUrl}`);
+          assert.equal(parsed.searchParams.get("utm_medium"), "affiliate", `Expected utm_medium in ${innerUrl}`);
+          assert.ok(parsed.searchParams.get("utm_campaign")?.startsWith("last-frontier-"), `utm_campaign missing prefix in ${innerUrl}`);
         }
       }
     }

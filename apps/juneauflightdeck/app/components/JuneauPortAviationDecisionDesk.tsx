@@ -10,6 +10,7 @@ import {
 import { buildAddToCruisePromenadeUrl } from "@/lib/dcc/shared/addToCruisePromenadeUrl";
 import { sharePortDate } from "@/lib/portDate";
 import { ALASKA_CRUISE_FLEET } from "../../lib/alaskaCruiseFleet";
+import { buildJfdViatorHandoffUrl } from "../../lib/viator/handoff";
 import { sendJfdTelemetry } from "./DccNetworkBridge";
 
 export const JFD_ATTRIBUTION_STORAGE_KEY = "jfd_commercial_attribution_v1";
@@ -202,15 +203,16 @@ export default function JuneauPortAviationDecisionDesk() {
     [shipName, attribution, portDate],
   );
 
-  // Preserve existing P00058396 affiliate ID untouched per guardrail
+  // Preserve existing P00058396 affiliate ID untouched per guardrail while routing via /go/commerce/handoff
   const verifiedViatorPartnerHref = useMemo(() => {
+    const campaign = attribution?.utmCampaign
+      ? `jfd-soldout-${attribution.utmCampaign}`
+      : "jfd-soldout-coastal-icefield";
     const q = new URLSearchParams({
       pid: "P00058396",
       mcid: "42383",
       medium: "api",
-      campaign: attribution?.utmCampaign
-        ? `jfd-soldout-${attribution.utmCampaign}`
-        : "jfd-soldout-coastal-icefield",
+      campaign,
     });
     if (/^\d{4}-\d{2}-\d{2}$/.test(portDate)) {
       q.set("startDate", portDate);
@@ -218,8 +220,15 @@ export default function JuneauPortAviationDecisionDesk() {
     if (partySize >= 1 && partySize <= 15) {
       q.set("numTravelers", String(partySize));
     }
-    return `https://www.viator.com/tours/Juneau/Juneau-Shore-Excursion-Helicopter-Tour-and-Guided-Icefield-Walk/d941-6251SHOREXICEWALK?${q.toString()}`;
-  }, [portDate, partySize, attribution]);
+    const rawViatorUrl = `https://www.viator.com/tours/Juneau/Juneau-Shore-Excursion-Helicopter-Tour-and-Guided-Icefield-Walk/d941-6251SHOREXICEWALK?${q.toString()}`;
+    return buildJfdViatorHandoffUrl(rawViatorUrl, {
+      productCode: "6251SHOREXICEWALK",
+      campaign,
+      date: portDate,
+      partySize,
+      cruiseShip: shipName || null,
+    });
+  }, [portDate, partySize, attribution, shipName]);
 
   const handlePartnerHandoffClick = () => {
     setHandoffClicked(true);

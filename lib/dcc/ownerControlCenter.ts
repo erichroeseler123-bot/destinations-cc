@@ -240,7 +240,7 @@ export const OWNED_ACTIVE_PRODUCTION_PROJECTS: readonly OwnedFleetProjectRow[] =
     ownershipModel: "owned_specialist_storefront",
     primaryRouteModel: "marketplace_affiliate",
     deploySurface: "Monorepo Sub-App (`prj_yDpBslt3bvKrvqNnzuQn684rLhAy`)",
-    rollbackTarget: "Promote previous LFSE deployment; keep `aleutian-ballad` held",
+    rollbackTarget: "Promote previous LFSE deployment; Viator `P00281144` & GetYourGuide `F2MMUUH` (`t598272`) verified",
   },
   {
     projectNumber: 5,
@@ -865,10 +865,10 @@ export async function buildOwnerControlCenterSnapshot(
 
   triageItems.push({
     id: "held-skus-and-partner-boundary",
-    priority: "medium",
+    priority: partnerBoundaryReviews.length > 0 ? "medium" : "info",
     title: "Held Commercial SKUs & WTA Partner Payout Boundary",
-    countOrBadge: `${HELD_COMMERCIAL_SKUS.length} held SKUs · ${partnerBoundaryReviews.length} partner boundary check`,
-    detail: `Held: ${HELD_COMMERCIAL_SKUS.map((s) => `${s.skuSlug} (${s.surfaceCode})`).join(", ")}. Review item: FareHarbor asn=welcometoalaskatours on LFSE Allen Marine comparison link (do NOT alter without owner + WTA partner review).`,
+    countOrBadge: `${HELD_COMMERCIAL_SKUS.length} held SKU · ${partnerBoundaryReviews.length} partner boundary leaks`,
+    detail: `Held: ${HELD_COMMERCIAL_SKUS.map((s) => `${s.skuSlug} (${s.surfaceCode})`).join(", ")}. Partner boundary clean: 0 external partner ASNs on owned sites; Aleutian Ballad unheld on LFSE via GetYourGuide t598272 (partner_id=F2MMUUH).`,
     actionHref: "/admin/portfolio",
     actionLabel: "Supplier & Funnel Audit →",
   });

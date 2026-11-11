@@ -37,6 +37,7 @@ import { readDurableLedgerState } from "../storage/durableTransactionalStore";
 export * from "./opaqueAttributionLedger";
 export * from "./wtaAffiliateEnrollment";
 export * from "./affiliateOwnershipLedger";
+export * from "./directOperatorActivationKit";
 
 export type CommercialProvider =
   | "viator"

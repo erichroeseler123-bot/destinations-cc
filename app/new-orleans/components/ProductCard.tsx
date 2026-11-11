@@ -177,7 +177,11 @@ export default function ProductCard({
               </Link>
               {!sourceProduct.companyShortname && bookingHref && (bookingHref.startsWith("/api/") || bookingHref.startsWith("http")) ? (
                 <a
-                  href={bookingHref}
+                  href={
+                    bookingHref.startsWith("http") && bookingHref.includes("viator.com")
+                      ? `https://www.destinationcommandcenter.com/go/commerce/handoff?site=welcometoneworleanstours.com&provider=viator&account=P00058396&product=${encodeURIComponent(sourceProduct.slug)}&campaign=${encodeURIComponent(`wno-card-${sourceProduct.slug}`)}&url=${encodeURIComponent(bookingHref)}`
+                      : bookingHref
+                  }
                   target="_blank"
                   rel="noopener noreferrer"
                   className={visualStyles.productCardCta}

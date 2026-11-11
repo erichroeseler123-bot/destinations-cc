@@ -134,6 +134,7 @@ export const TRANSACTION_ROUTE_MODELS: readonly TransactionRouteModelDefinition[
 export type AffiliateIdentifierGovernanceStatus =
   | "frozen_verified_owned"
   | "frozen_legacy_owned_alias"
+  | "isolated_partner_unused"
   | "partner_boundary_review_required";
 
 export interface FrozenAffiliateIdentifierRecord {
@@ -213,11 +214,11 @@ export const FROZEN_AFFILIATE_IDENTIFIERS: readonly FrozenAffiliateIdentifierRec
     id: "welcometoalaskatours",
     provider: "fareharbor",
     parameterName: "asn",
-    assignedSurfaces: ["lastfrontiershoreexcursions.com (Allen Marine comparison link)"],
-    governanceStatus: "partner_boundary_review_required",
+    assignedSurfaces: [],
+    governanceStatus: "isolated_partner_unused",
     immutableInCode: true,
     notes:
-      "Partner boundary review required: belongs to friend's independent Welcome to Alaska Tours (WTA) namespace while currently referenced on LFSE Allen Marine comparison link; do NOT alter without explicit owner + partner review.",
+      "Isolated external partner ASN belonging to friend's independent Welcome to Alaska Tours (WTA) namespace; removed from all owned LFSE/DCC surfaces (0 active boundary leaks).",
   },
   {
     id: "F2MMUUH",
@@ -244,6 +245,18 @@ export interface HeldCommercialSkuRecord {
   unholdPrerequisites: readonly string[];
 }
 
+export interface UnheldVerifiedSkuRecord {
+  skuSlug: string;
+  title: string;
+  surfaceCode: "WNO" | "LFSE";
+  canonicalDomain: string;
+  provider: "getyourguide" | "viator" | "fareharbor";
+  productId: string;
+  accountId: string;
+  unheldAt: string;
+  verificationSummary: string;
+}
+
 /**
  * Commercial SKUs intentionally held from direct self-serve checkout until verification gates clear.
  */
@@ -262,19 +275,23 @@ export const HELD_COMMERCIAL_SKUS: readonly HeldCommercialSkuRecord[] = [
       "End-to-end live price and seat parity check before re-enabling primary checkout CTA on WNO.",
     ],
   },
+] as const;
+
+/**
+ * Commercial SKUs cleared from held status with verified exact-product affiliate attribution.
+ */
+export const UNHELD_VERIFIED_SKUS: readonly UnheldVerifiedSkuRecord[] = [
   {
     skuSlug: "aleutian-ballad",
     title: "Bering Sea Crab Fishermen's Tour (Aleutian Ballad)",
     surfaceCode: "LFSE",
     canonicalDomain: "lastfrontiershoreexcursions.com",
-    status: "held",
-    holdReason:
-      "Aleutian Ballad direct/affiliate Ketchikan pier-window & seasonal operating schedule verification remains held on LFSE.",
-    unholdPrerequisites: [
-      "Confirm current season operating dates and Ward Cove vs. downtown Ketchikan shuttle buffer math.",
-      "Verify live Viator (`P00281144`) or authorized direct operator booking URL resolves to an active bookable departure.",
-      "Owner sign-off in LFSE truth audit before lifting held safeguard.",
-    ],
+    provider: "getyourguide",
+    productId: "t598272",
+    accountId: "F2MMUUH",
+    unheldAt: "2026-11-11",
+    verificationSummary:
+      "Verified exact GetYourGuide Ketchikan product listing (t598272, partner_id=F2MMUUH) departing Berth #3 Tender Float with explicit 25–30 min Ward Cove shuttle buffer guidance.",
   },
 ] as const;
 
