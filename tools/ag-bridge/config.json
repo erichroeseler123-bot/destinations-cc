@@ -1,0 +1,354 @@
+{
+  "queueRepo": "erichroeseler123-bot/destinations-cc",
+  "trustedAuthors": [
+    "erichroeseler123-bot"
+  ],
+  "commitAuthorName": "erichroeseler123-bot",
+  "commitAuthorEmail": "erichroeseler123@gmail.com",
+  "reviewBots": [
+    "chatgpt-codex-connector[bot]"
+  ],
+  "pollSeconds": 300,
+  "idlePollSeconds": 300,
+  "activePollSeconds": 60,
+  "maxBackoffSeconds": 1800,
+  "auditModel": "gemini-3.8-flash-high",
+  "auditEffort": "medium",
+  "skipUnchangedInstall": true,
+  "maxFixes": 3,
+  "maxTaskRetries": 2,
+  "retryCooldownMinutes": 15,
+  "recoveryVersion": "resilience-v7",
+  "reviewTimeoutMinutes": 60,
+  "autoDiscoverWhenEmpty": false,
+  "autoDiscoverIntervalMinutes": 360,
+  "sites": {
+    "jfd": {
+      "name": "Juneau Flight Deck",
+      "repo": "erichroeseler123-bot/destinations-cc",
+      "directory": "apps/juneauflightdeck",
+      "domain": "juneauflightdeck.com",
+      "project": "juneauflightdeck",
+      "allowedPaths": [
+        "apps/juneauflightdeck/"
+      ],
+      "checks": [
+        [
+          "npm",
+          "ci",
+          "--prefix",
+          "../..",
+          "--ignore-scripts"
+        ],
+        [
+          "npm",
+          "install",
+          "--ignore-scripts",
+          "--package-lock=false"
+        ],
+        [
+          "npm",
+          "run",
+          "typecheck"
+        ],
+        [
+          "npm",
+          "run",
+          "build"
+        ]
+      ]
+    },
+    "wno": {
+      "name": "Welcome to New Orleans Tours",
+      "repo": "erichroeseler123-bot/destinations-cc",
+      "directory": ".",
+      "domain": "www.welcometoneworleanstours.com",
+      "project": "welcometoneworleanstours",
+      "allowedPaths": [
+        "app/new-orleans/",
+        "apps/welcometoneworleanstours/"
+      ],
+      "checks": [
+        [
+          "npm",
+          "ci",
+          "--ignore-scripts"
+        ],
+        [
+          "npm",
+          "run",
+          "typecheck"
+        ],
+        [
+          "npm",
+          "run",
+          "test:wno"
+        ],
+        [
+          "npm",
+          "run",
+          "build:wno"
+        ]
+      ],
+      "mappingNote": "WNO serves via apps/welcometoneworleanstours backed by app/new-orleans and app/sitemap.xml."
+    },
+    "wta": {
+      "name": "Welcome to Alaska Tours",
+      "repo": "erichroeseler123-bot/wta-renderer",
+      "directory": ".",
+      "domain": "welcometoalaskatours.com",
+      "project": "wta-ui",
+      "allowedPaths": [
+        "app/",
+        "src/",
+        "lib/",
+        "components/",
+        "public/",
+        "scripts/",
+        "tests/",
+        "next-env.d.ts"
+      ],
+      "checks": [
+        [
+          "npm",
+          "ci",
+          "--ignore-scripts"
+        ],
+        [
+          "npm",
+          "run",
+          "test"
+        ],
+        [
+          "npm",
+          "run",
+          "build"
+        ]
+      ]
+    },
+    "swamp": {
+      "name": "Welcome to the Swamp",
+      "repo": "erichroeseler123-bot/destinations-cc",
+      "directory": "apps/welcometotheswamp",
+      "domain": "www.welcometotheswamp.com",
+      "project": "welcometotheswamp",
+      "allowedPaths": [
+        "apps/welcometotheswamp/"
+      ],
+      "checks": [
+        [
+          "npm",
+          "ci",
+          "--prefix",
+          "../..",
+          "--ignore-scripts"
+        ],
+        [
+          "npm",
+          "install",
+          "--ignore-scripts",
+          "--package-lock=false"
+        ],
+        [
+          "npm",
+          "run",
+          "typecheck"
+        ],
+        [
+          "npm",
+          "run",
+          "build"
+        ]
+      ]
+    },
+    "cruisepromenade": {
+      "name": "Cruise Promenade",
+      "repo": "erichroeseler123-bot/cruisepromenade",
+      "baseBranch": "phase31c-clean-rebuild",
+      "directory": ".",
+      "domain": "cruisepromenade.com",
+      "project": "cruisepromenade",
+      "vercelProjectId": "prj_lF43CnF3yQ8Re3NPeaUBRCwJhP9x",
+      "verified": true,
+      "mappingNote": "Verified 2026-10-15 against live deployment 6LJJLvEFN (commit 12e987ce7d4922fa854be09accedfe13505b8d7d from PR #61 on default/production branch phase31c-clean-rebuild; aliases cruisepromenade.com and miami/juneau/nassau/cozumel/galveston/portcanaveral subdomains).",
+      "allowedPaths": [
+        "src/",
+        "app/",
+        "components/",
+        "lib/",
+        "public/",
+        "tests/"
+      ],
+      "checks": [
+        [
+          "npm",
+          "ci",
+          "--ignore-scripts"
+        ],
+        [
+          "npm",
+          "run",
+          "typecheck"
+        ],
+        [
+          "npm",
+          "run",
+          "test"
+        ],
+        [
+          "npm",
+          "run",
+          "build"
+        ]
+      ]
+    },
+    "brinkberry": {
+      "name": "Brinkberry",
+      "repo": "erichroeseler123-bot/brinkberry",
+      "directory": ".",
+      "domain": "brinkberry.com",
+      "project": "brinkberry",
+      "allowedPaths": [
+        "api/",
+        "public/",
+        "src/",
+        "test/"
+      ],
+      "checks": [
+        [
+          "npm",
+          "ci",
+          "--ignore-scripts"
+        ],
+        [
+          "npm",
+          "run",
+          "test"
+        ]
+      ]
+    },
+    "dells": {
+      "name": "Welcome to the Dells",
+      "repo": "erichroeseler123-bot/destinations-cc",
+      "directory": "apps/welcometothedells",
+      "domain": "www.welcometothedells.com",
+      "project": "welcometothedells",
+      "allowedPaths": [
+        "apps/welcometothedells/"
+      ],
+      "checks": [
+        [
+          "npm",
+          "install",
+          "--ignore-scripts",
+          "--package-lock=false"
+        ],
+        [
+          "npm",
+          "run",
+          "typecheck"
+        ],
+        [
+          "npm",
+          "run",
+          "test"
+        ],
+        [
+          "npm",
+          "run",
+          "build"
+        ]
+      ]
+    },
+    "dcc": {
+      "name": "Destination Command Center",
+      "repo": "erichroeseler123-bot/destinations-cc",
+      "directory": ".",
+      "domain": "destinationcommandcenter.com",
+      "project": "destinations-cc",
+      "allowedPaths": [
+        "app/",
+        "components/",
+        "lib/",
+        "src/",
+        "public/"
+      ],
+      "checks": [
+        [
+          "npm",
+          "ci",
+          "--ignore-scripts"
+        ],
+        [
+          "npm",
+          "run",
+          "typecheck"
+        ],
+        [
+          "npm",
+          "run",
+          "test:dcc"
+        ],
+        [
+          "npm",
+          "run",
+          "build"
+        ]
+      ]
+    },
+    "socializor": {
+      "name": "Socializor",
+      "repo": "erichroeseler123-bot/socializor",
+      "directory": ".",
+      "domain": "socializor.app",
+      "project": "socializor",
+      "vercelProjectId": "prj_HAcGvbpgDo7j40IPlkLTgfrG6VYY",
+      "verified": true,
+      "mappingNote": "Verified 2026-10-15 against live deployment dpl_CEnPCQS6X9A1VzdxRaS73PW46ZDX (59/59 frontend/component/hook/migration files match SHA-1 byte-for-byte; connected to GitHub erichroeseler123-bot/socializor).",
+      "allowedPaths": [
+        "src/",
+        "api/",
+        "index.html",
+        "public/"
+      ],
+      "checks": [
+        [
+          "npm",
+          "ci",
+          "--ignore-scripts"
+        ],
+        [
+          "npm",
+          "run",
+          "build"
+        ]
+      ]
+    },
+    "oddjobs": {
+      "name": "Eau Claire Odd Jobs",
+      "repo": "erichroeseler123-bot/eauclaireoddjobs",
+      "directory": ".",
+      "domain": "eauclaireoddjobs.com",
+      "project": "eauclaireoddjobs",
+      "vercelProjectId": "prj_BlmPyHtlFGMKmuVOjGDEM49I8lgS",
+      "verified": true,
+      "mappingNote": "Verified 2026-10-15 against live deployment dpl_EQbP2v45EfwSggdCxLc239KsucB5 (30/30 files match SHA-1 byte-for-byte; connected to GitHub erichroeseler123-bot/eauclaireoddjobs).",
+      "allowedPaths": [
+        "src/",
+        "public/"
+      ],
+      "checks": [
+        [
+          "npm",
+          "ci",
+          "--ignore-scripts"
+        ],
+        [
+          "npm",
+          "run",
+          "build"
+        ]
+      ]
+    }
+  }
+}
