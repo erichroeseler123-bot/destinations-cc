@@ -72,9 +72,11 @@ export default async function OperatorInboxAdminPage({
             </h1>
             <p className="mt-1.5 max-w-3xl text-sm text-zinc-300">
               Aggregates durable web submissions across Destination Command
-              Center, Mighty Argo, Somerset, Welcome to the Dells, Save On The
-              Strip, and Cruise Promenade with outbound alert audits and
-              non-destructive triage overlays.
+              Center, Cruise Promenade, Juneau Flight Deck, Welcome to New
+              Orleans Tours, Last Frontier Shore Excursions, Mighty Argo,
+              Somerset, Welcome to the Dells, and Save On The Strip with
+              non-PII attribution, outbound alert audits, and non-destructive
+              triage overlays.
             </p>
           </div>
         </header>

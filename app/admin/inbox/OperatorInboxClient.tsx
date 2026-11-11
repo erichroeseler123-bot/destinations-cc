@@ -23,6 +23,9 @@ const SITE_OPTIONS = [
   { value: "all", label: "All Sites & Channels" },
   { value: "destinationcommandcenter", label: "Destination Command Center" },
   { value: "cruisepromenade", label: "Cruise Promenade" },
+  { value: "juneauflightdeck", label: "Juneau Flight Deck" },
+  { value: "welcometoneworleanstours", label: "Welcome to New Orleans Tours" },
+  { value: "lastfrontiershoreexcursions", label: "Last Frontier Shore Excursions" },
   { value: "mightyargo", label: "Mighty Argo Shuttle" },
   { value: "somerset", label: "Shuttle to Somerset" },
   { value: "welcometothedells", label: "Welcome to the Dells" },
@@ -697,6 +700,45 @@ export default function OperatorInboxClient({
                       <p className="mt-1.5 whitespace-pre-wrap break-words rounded-lg bg-black/35 p-2.5 text-zinc-200">
                         {item.tripDetails.messageOrNotes}
                       </p>
+                    ) : null}
+                    {item.attribution ? (
+                      <div
+                        data-testid="inbox-nonpii-attribution"
+                        className="mt-2 flex flex-wrap gap-1.5 pt-1"
+                      >
+                        <span className="rounded border border-amber-400/35 bg-amber-500/10 px-2 py-0.5 font-mono text-[11px] text-amber-200">
+                          specialist:{item.attribution.specialistSite}
+                        </span>
+                        {item.attribution.utmSource || item.attribution.source ? (
+                          <span className="rounded border border-sky-400/30 bg-sky-500/10 px-2 py-0.5 font-mono text-[11px] text-sky-200">
+                            source:{item.attribution.utmSource || item.attribution.source}
+                          </span>
+                        ) : null}
+                        {item.attribution.utmCampaign ? (
+                          <span className="rounded border border-purple-400/30 bg-purple-500/10 px-2 py-0.5 font-mono text-[11px] text-purple-200">
+                            campaign:{item.attribution.utmCampaign}
+                          </span>
+                        ) : null}
+                        {item.attribution.portSlug ? (
+                          <span className="rounded border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 font-mono text-[11px] text-emerald-200">
+                            port:{item.attribution.portSlug}
+                          </span>
+                        ) : null}
+                        {item.attribution.shipName || item.attribution.shipSlug ? (
+                          <span className="rounded border border-white/20 bg-white/5 px-2 py-0.5 font-mono text-[11px] text-zinc-200">
+                            sailing:
+                            {item.attribution.shipName || item.attribution.shipSlug}
+                            {item.attribution.sailDate || item.attribution.portDate
+                              ? `@${item.attribution.sailDate || item.attribution.portDate}`
+                              : ""}
+                          </span>
+                        ) : null}
+                        {item.attribution.strippedPrivateKeys.length > 0 ? (
+                          <span className="rounded border border-emerald-400/40 bg-emerald-950/60 px-2 py-0.5 font-mono text-[11px] text-emerald-300">
+                            PII scrubbed ({item.attribution.strippedPrivateKeys.join(",")})
+                          </span>
+                        ) : null}
+                      </div>
                     ) : null}
                   </div>
 

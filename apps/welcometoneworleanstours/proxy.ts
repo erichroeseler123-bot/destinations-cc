@@ -9,8 +9,17 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(targetUrl, 308);
   }
 
-  if (request.nextUrl.pathname === "/things-to-do-in-new-orleans-today") {
-    const targetUrl = new URL("/guides/things-to-do-in-new-orleans-today", request.url);
+  const legacyRootGuideRedirects: Record<string, string> = {
+    "/things-to-do-in-new-orleans-today": "/guides/things-to-do-in-new-orleans-today",
+    "/things-to-do-before-a-cruise-new-orleans": "/guides/things-to-do-before-a-cruise-new-orleans",
+    "/things-to-do-after-a-cruise-new-orleans": "/guides/things-to-do-after-a-cruise-new-orleans",
+    "/4-hours-in-new-orleans": "/guides/4-hours-in-new-orleans",
+    "/first-time-new-orleans-tours": "/guides/first-time-new-orleans-tours",
+  };
+
+  const legacyGuideDest = legacyRootGuideRedirects[request.nextUrl.pathname];
+  if (legacyGuideDest) {
+    const targetUrl = new URL(legacyGuideDest, request.url);
     targetUrl.search = request.nextUrl.search;
     return NextResponse.redirect(targetUrl, 308);
   }

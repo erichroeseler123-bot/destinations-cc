@@ -1,15 +1,17 @@
 import IntentTourPage from "../components/IntentTourPage";
+import NolaCruiseTurnaroundDesk from "../components/NolaCruiseTurnaroundDesk";
 
 export const metadata = {
-  title: "Things to Do in New Orleans Before a Cruise | Tour Options",
-  description: "Compare New Orleans tours for the day before or hours before a cruise, with an emphasis on timing, transportation and keeping a safe schedule buffer.",
+  title: "Things to Do in New Orleans Before a Cruise | Port NOLA Timing & Tour Options",
+  description: "Plan New Orleans tours for the day before or embarkation morning at Erato & Julia Street Cruise Terminals, with DCC schedule buffers, luggage rules, and concierge inquiry support.",
 };
 
 export default function Page() {
   return <IntentTourPage
-    eyebrow="Before your cruise"
+    eyebrow="Before your cruise · Port of New Orleans"
     title="Things to do in New Orleans before a cruise"
-    intro="New Orleans is a strong pre-cruise city because you can get a real sense of the destination without needing a full week. The key is choosing an experience that fits comfortably around hotel checkout, luggage, transportation and your cruise schedule."
+    intro="New Orleans is a strong pre-cruise city because the French Quarter and riverfront sit minutes from the Erato Street and Julia Street cruise terminals. Use the Port NOLA timing calculator below to verify safe buffers around hotel checkout, luggage storage, and final boarding before choosing an operator."
+    topSlot={<NolaCruiseTurnaroundDesk />}
     decisionTitle="Choose based on the time you truly have"
     decisionPoints={[
       "If you have only part of a day, favor city or river experiences over long regional day trips.",

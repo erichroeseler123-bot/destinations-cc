@@ -7,7 +7,10 @@ export type TransactionalSubmissionChannel =
   | "somerset-quote"
   | "welcometothedells-inquiry"
   | "saveonthestrip-help-request"
-  | "request-invite";
+  | "request-invite"
+  | "juneauflightdeck-inquiry"
+  | "welcometoneworleanstours-inquiry"
+  | "lastfrontiershoreexcursions-inquiry";
 
 export interface DurableTransactionalSubmissionInput {
   submissionId: string;

@@ -4,6 +4,12 @@ import path from "node:path";
 import { neon } from "@neondatabase/serverless";
 import { readArgoWaitlist } from "@/lib/argoWaitlist";
 import { resolveDatabaseUrl } from "@/lib/db/client";
+import {
+  extractNonPiiAttribution,
+  formatAttributionSummaryLine,
+  type SanitizedCommercialAttribution,
+  type SpecialistCommercialHost,
+} from "@/lib/dcc/commercialAttribution";
 import { isServerlessRuntimeEnvironment } from "@/lib/dcc/storage/transactionalSubmissions";
 
 export const ALLOWED_CP_BASE_URL_RE =
@@ -41,7 +47,10 @@ export type OperatorInboxSourceSite =
   | "mightyargo"
   | "somerset"
   | "welcometothedells"
-  | "saveonthestrip";
+  | "saveonthestrip"
+  | "juneauflightdeck"
+  | "welcometoneworleanstours"
+  | "lastfrontiershoreexcursions";
 
 export interface CpConnectorStatus {
   connected: boolean;
@@ -101,6 +110,7 @@ export interface OperatorInboxItem {
     messageOrNotes: string | null;
     pageOrSourceUrl: string | null;
   };
+  attribution?: SanitizedCommercialAttribution | null;
   classification: OperatorInboxClassification;
   classificationReason: string;
   notificationStatus: OperatorNotificationStatus;
@@ -150,6 +160,28 @@ export interface RawFindingRowInput {
   updated_at?: string | Date | null;
 }
 
+export interface RawJfdWaitlistRowInput {
+  id: string;
+  name?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  cruise_line?: string | null;
+  ship_name?: string | null;
+  port_city?: string | null;
+  port_date?: string | Date | null;
+  juneau_date?: string | Date | null;
+  skagway_date?: string | Date | null;
+  tour_type?: string | null;
+  party_size?: number | string | null;
+  booking_mode?: string | null;
+  status?: string | null;
+  notes?: string | null;
+  estimated_value?: number | string | null;
+  is_test?: boolean | null;
+  created_at?: string | Date | null;
+  raw_entry?: Record<string, unknown> | string | null;
+}
+
 export interface GetUnifiedOperatorInboxOptions {
   view?: string | null;
   site?: string | null;
@@ -159,6 +191,7 @@ export interface GetUnifiedOperatorInboxOptions {
   cpVercelProtectionBypass?: string | null;
   /** Optional test overrides so unit tests can inject deterministic fixtures without mutating remote stores */
   findingsOverride?: RawFindingRowInput[];
+  jfdWaitlistOverride?: RawJfdWaitlistRowInput[];
   argoLegacyOverride?: Array<{
     createdAt: string;
     email: string;
@@ -197,10 +230,20 @@ const LOCAL_DEV_TRIAGE_PATH = path.join(
 const inMemoryTriageOverlays = new Map<string, OperatorTriageOverlay>();
 
 const SYNTHETIC_EMAIL_DOMAIN_RE =
-  /@(?:example\.(?:com|org|net)|command\.com|test\.com|localhost)$|\.invalid$/i;
+  /@(?:example\.(?:com|org|net)|command\.com|test\.com|localhost|juneauflightdeck\.com|welcometoneworleanstours\.com|lastfrontiershoreexcursions\.com)$|\.invalid$/i;
+
+const JFD_SEED_DEMO_IDS = new Set([
+  "JFD-SCAN-JUL14-48291",
+  "JFD-SCAN-JUL22-19402",
+  "JFD-SCAN-AUG03-67319",
+  "JFD-SCAN-AUG18-90214",
+]);
+
+const FICTIONAL_555_PHONE_RE = /\b555[-.\s]?\d{4}\b/;
 
 const QA_PROBE_PATTERNS: Array<{ pattern: RegExp; reason: string }> = [
   { pattern: /\[PROD-VERIFICATION-TEST\]/i, reason: "qa_probe_marker" },
+  { pattern: /\[PREVIEW[-_\s]?TEST\]/i, reason: "qa_probe_marker" },
   { pattern: /\beleanor\s+vance\b/i, reason: "qa_probe_marker" },
   { pattern: /e2e\s+concierge\s+audit\s+test/i, reason: "qa_probe_marker" },
   { pattern: /\baudit[-_\s]?test\b/i, reason: "qa_probe_marker" },
@@ -353,6 +396,18 @@ function defaultIntendedDestinationForChannel(channel: string): string {
       return "dispatch@gosno.co";
     case "parr-inquiry":
       return "hello@partyatredrocks.com";
+    case "juneauflightdeck-inquiry":
+      return (
+        process.env.DEPLOY_TEST_EMAIL_TO?.trim() ||
+        "alerts@juneauflightdeck.com"
+      );
+    case "welcometoneworleanstours-inquiry":
+      return "help@welcometoneworleanstours.com";
+    case "lastfrontiershoreexcursions-inquiry":
+      return (
+        process.env.EARTHOS_APPROVAL_TO?.trim() ||
+        "concierge@lastfrontiershoreexcursions.com"
+      );
     case "request-invite":
     case "factual-error-report":
     default:
@@ -652,6 +707,24 @@ function resolveSiteAndChannelMeta(channel: string): {
         sourceSiteLabel: "Cruise Promenade",
         channelLabel: "Hosted Group Cruise Inquiry",
       };
+    case "juneauflightdeck-inquiry":
+      return {
+        sourceSite: "juneauflightdeck",
+        sourceSiteLabel: "Juneau Flight Deck",
+        channelLabel: "Glacier Aviation Availability Request",
+      };
+    case "welcometoneworleanstours-inquiry":
+      return {
+        sourceSite: "welcometoneworleanstours",
+        sourceSiteLabel: "Welcome to New Orleans Tours",
+        channelLabel: "Pre/Post-Cruise & Group Concierge",
+      };
+    case "lastfrontiershoreexcursions-inquiry":
+      return {
+        sourceSite: "lastfrontiershoreexcursions",
+        sourceSiteLabel: "Last Frontier Shore Excursions",
+        channelLabel: "Multi-Port Alaska Excursion Inquiry",
+      };
     default:
       return {
         sourceSite: "destinationcommandcenter",
@@ -802,10 +875,48 @@ function mapFindingRowToInboxItem(
       ? meta.company.trim()
       : null;
 
+  const rawAttributionObj =
+    meta.attribution && typeof meta.attribution === "object"
+      ? (meta.attribution as Record<string, unknown>)
+      : null;
+
+  const specialistHostForChannel: SpecialistCommercialHost | null =
+    channel === "juneauflightdeck-inquiry"
+      ? "juneauflightdeck.com"
+      : channel === "welcometoneworleanstours-inquiry"
+        ? "welcometoneworleanstours.com"
+        : channel === "lastfrontiershoreexcursions-inquiry"
+          ? "lastfrontiershoreexcursions.com"
+          : null;
+
+  const attribution =
+    rawAttributionObj || specialistHostForChannel
+      ? extractNonPiiAttribution(rawAttributionObj || meta, {
+          specialistSite:
+            specialistHostForChannel || "juneauflightdeck.com",
+          defaultPortSlug:
+            channel === "welcometoneworleanstours-inquiry"
+              ? "new-orleans"
+              : channel === "juneauflightdeck-inquiry"
+                ? "juneau"
+                : null,
+          landingPath:
+            typeof meta.sourcePath === "string"
+              ? meta.sourcePath
+              : typeof meta.sourcePage === "string"
+                ? meta.sourcePage
+                : null,
+        })
+      : null;
+
   const datesOrMonth =
     (typeof meta.concertDate === "string" && meta.concertDate.trim()) ||
     (typeof meta.dates === "string" && meta.dates.trim()) ||
+    (typeof meta.portDate === "string" && meta.portDate.trim()) ||
+    (typeof meta.sailDate === "string" && meta.sailDate.trim()) ||
     (typeof meta.preferredMonth === "string" && meta.preferredMonth.trim()) ||
+    attribution?.portDate ||
+    attribution?.sailDate ||
     null;
 
   const partySize =
@@ -813,20 +924,37 @@ function mapFindingRowToInboxItem(
       ? meta.groupSize
       : typeof meta.partySize === "number" || typeof meta.partySize === "string"
         ? meta.partySize
-        : null;
+        : attribution?.partySize ?? null;
 
   const routeOrLocation =
     (typeof meta.pickupCity === "string" && meta.pickupCity.trim()) ||
     (typeof meta.contextTitle === "string" && meta.contextTitle.trim()) ||
+    (typeof meta.routeOrLocation === "string" && meta.routeOrLocation.trim()) ||
+    (typeof meta.shipName === "string" && meta.shipName.trim()
+      ? `${meta.shipName.trim()}${
+          typeof meta.portCity === "string" && meta.portCity.trim()
+            ? ` · ${meta.portCity.trim()}`
+            : attribution?.portSlug
+              ? ` · ${attribution.portSlug}`
+              : ""
+        }`
+      : null) ||
     (typeof meta.source === "string" && meta.source.trim()) ||
     null;
 
-  const messageOrNotes =
+  const rawNotes =
     (typeof meta.message === "string" && meta.message.trim()) ||
     (typeof meta.notes === "string" && meta.notes.trim()) ||
     null;
 
+  const attrLine = formatAttributionSummaryLine(attribution);
+  const messageOrNotes =
+    rawNotes && attrLine
+      ? `${rawNotes}\n[Attribution] ${attrLine}`
+      : rawNotes || (attrLine ? `[Attribution] ${attrLine}` : null);
+
   const headline =
+    (typeof meta.headline === "string" && meta.headline.trim()) ||
     (typeof meta.artistOrEvent === "string" && meta.artistOrEvent.trim()) ||
     (typeof meta.happeningTitle === "string" && meta.happeningTitle.trim()) ||
     (typeof meta.inquiryType === "string" &&
@@ -838,19 +966,35 @@ function mapFindingRowToInboxItem(
 
   const pageOrSourceUrl =
     (typeof meta.sourcePath === "string" && meta.sourcePath.trim()) ||
+    (typeof meta.sourcePage === "string" && meta.sourcePage.trim()) ||
+    attribution?.landingPath ||
     (typeof meta.source === "string" && meta.source.trim()) ||
     null;
 
-  const cls = classifyOperatorInboxSubmission({
+  const baseCls = classifyOperatorInboxSubmission({
     isTest: meta.isTest,
     trafficClass: meta.trafficClass,
+    namespace: typeof meta.namespace === "string" ? meta.namespace : null,
     environment,
     email,
     name,
-    notes: messageOrNotes,
+    notes: rawNotes,
     headline,
     sourceId,
   });
+
+  const cls =
+    baseCls.classification === "test"
+      ? baseCls
+      : JFD_SEED_DEMO_IDS.has(sourceId) ||
+          (channel === "juneauflightdeck-inquiry" &&
+            phone &&
+            FICTIONAL_555_PHONE_RE.test(phone))
+        ? {
+            classification: "test" as const,
+            classificationReason: "seed_demo_fixture",
+          }
+        : baseCls;
 
   const notif = normalizeInquiryNotificationStatus(
     channel,
@@ -883,6 +1027,7 @@ function mapFindingRowToInboxItem(
       messageOrNotes,
       pageOrSourceUrl,
     },
+    attribution,
     classification: cls.classification,
     classificationReason: cls.classificationReason,
     ...notif,
@@ -1719,6 +1864,246 @@ export async function saveOperatorInboxTriageOverlay(input: {
   };
 }
 
+function formatDateColumn(val: unknown): string | null {
+  if (!val) return null;
+  if (val instanceof Date && !Number.isNaN(val.getTime())) {
+    return val.toISOString().slice(0, 10);
+  }
+  if (typeof val === "string" && val.trim()) {
+    return val.trim().slice(0, 10);
+  }
+  return null;
+}
+
+function mapJfdWaitlistRowToInboxItem(
+  row: RawJfdWaitlistRowInput,
+  resendConfigured: boolean,
+): OperatorInboxItem | null {
+  const id = String(row.id || "").trim();
+  if (!id) return null;
+
+  const rawEntry = parseMetadataObject(row.raw_entry);
+  const name =
+    (typeof row.name === "string" && row.name.trim()) ||
+    (typeof rawEntry.name === "string" && rawEntry.name.trim()) ||
+    null;
+  const email =
+    (typeof row.email === "string" && row.email.trim().toLowerCase()) ||
+    (typeof rawEntry.email === "string" && rawEntry.email.trim().toLowerCase()) ||
+    null;
+  const phone =
+    (typeof row.phone === "string" && row.phone.trim()) ||
+    (typeof rawEntry.phone === "string" && rawEntry.phone.trim()) ||
+    null;
+  const cruiseLine =
+    (typeof row.cruise_line === "string" && row.cruise_line.trim()) ||
+    (typeof rawEntry.cruiseLine === "string" && rawEntry.cruiseLine.trim()) ||
+    null;
+  const shipName =
+    (typeof row.ship_name === "string" && row.ship_name.trim()) ||
+    (typeof rawEntry.shipName === "string" && rawEntry.shipName.trim()) ||
+    null;
+  const portCity =
+    (typeof row.port_city === "string" && row.port_city.trim().toLowerCase()) ||
+    (typeof rawEntry.portCity === "string" &&
+      rawEntry.portCity.trim().toLowerCase()) ||
+    "juneau";
+  const portDate =
+    formatDateColumn(row.port_date) ||
+    formatDateColumn(rawEntry.portDate) ||
+    null;
+  const juneauDate =
+    formatDateColumn(row.juneau_date) ||
+    formatDateColumn(rawEntry.juneau_date ?? rawEntry.juneauDate) ||
+    null;
+  const skagwayDate =
+    formatDateColumn(row.skagway_date) ||
+    formatDateColumn(rawEntry.skagway_date ?? rawEntry.skagwayDate) ||
+    null;
+  const tourType =
+    (typeof row.tour_type === "string" && row.tour_type.trim()) ||
+    (typeof rawEntry.tourType === "string" && rawEntry.tourType.trim()) ||
+    "any";
+  const bookingMode =
+    (typeof row.booking_mode === "string" && row.booking_mode.trim()) ||
+    (typeof rawEntry.bookingMode === "string" && rawEntry.bookingMode.trim()) ||
+    "instant_alert";
+  const partySize =
+    row.party_size ??
+    (typeof rawEntry.partySize === "number" ||
+    typeof rawEntry.partySize === "string"
+      ? rawEntry.partySize
+      : null);
+  const estValue =
+    row.estimated_value !== undefined && row.estimated_value !== null
+      ? Number(row.estimated_value)
+      : typeof rawEntry.estimatedValue === "number"
+        ? rawEntry.estimatedValue
+        : null;
+  const notes =
+    (typeof row.notes === "string" && row.notes.trim()) ||
+    (typeof rawEntry.notes === "string" && rawEntry.notes.trim()) ||
+    null;
+
+  const submittedAt = toIsoTimestamp(
+    rawEntry.createdAt || row.created_at,
+    new Date().toISOString(),
+  );
+  const isExplicitTest = Boolean(
+    row.is_test === true ||
+      rawEntry.isTest === true ||
+      row.status === "test_excluded" ||
+      rawEntry.status === "test_excluded",
+  );
+  const environment =
+    typeof rawEntry.environment === "string" && rawEntry.environment.trim()
+      ? rawEntry.environment.trim()
+      : "production";
+
+  const headline = `Glacier ${tourType.replace(/_/g, " ")} (${bookingMode.replace(/_/g, " ")}) — ${shipName || "Cruise Passenger"}`;
+
+  const baseCls = classifyOperatorInboxSubmission({
+    isTest: isExplicitTest,
+    environment,
+    email,
+    name,
+    notes,
+    headline,
+    sourceId: id,
+  });
+
+  const finalCls =
+    baseCls.classification === "test"
+      ? baseCls
+      : JFD_SEED_DEMO_IDS.has(id) ||
+          (phone && FICTIONAL_555_PHONE_RE.test(phone))
+        ? {
+            classification: "test" as const,
+            classificationReason: "seed_demo_fixture",
+          }
+        : baseCls;
+
+  const attribution = extractNonPiiAttribution(
+    {
+      ...(rawEntry.attribution && typeof rawEntry.attribution === "object"
+        ? (rawEntry.attribution as Record<string, unknown>)
+        : {}),
+      shipName,
+      portDate: juneauDate || portDate,
+      port: portCity,
+      partySize,
+    },
+    {
+      specialistSite: "juneauflightdeck.com",
+      defaultPortSlug: portCity,
+      landingPath:
+        typeof rawEntry.sourcePage === "string"
+          ? rawEntry.sourcePage
+          : "/helicopter-waitlist",
+    },
+  );
+
+  const dateWindowParts: string[] = [];
+  if (juneauDate) dateWindowParts.push(`Juneau ${juneauDate}`);
+  if (skagwayDate) dateWindowParts.push(`Skagway ${skagwayDate}`);
+  if (dateWindowParts.length === 0 && portDate) dateWindowParts.push(portDate);
+
+  const valueNote =
+    estValue && Number.isFinite(estValue) && estValue > 0
+      ? `Est. gross booking value: $${estValue.toLocaleString()}`
+      : null;
+  const combinedNotes = [notes, valueNote].filter(Boolean).join(" · ") || null;
+
+  const notif = normalizeInquiryNotificationStatus(
+    "juneauflightdeck-inquiry",
+    {
+      notificationDelivered: Boolean(rawEntry.notificationDispatchedAt),
+      intendedDestination: "alerts@juneauflightdeck.com",
+    },
+    resendConfigured,
+  );
+  const siteMeta = resolveSiteAndChannelMeta("juneauflightdeck-inquiry");
+
+  return {
+    itemKey: sanitizeItemKey(`jfd:waitlist:${id}`),
+    sourceId: id,
+    findingId: null,
+    sourceSite: siteMeta.sourceSite,
+    sourceSiteLabel: siteMeta.sourceSiteLabel,
+    channel: "juneauflightdeck-inquiry",
+    channelLabel: siteMeta.channelLabel,
+    submittedAt,
+    environment,
+    contact: {
+      name,
+      email,
+      phone,
+      company: cruiseLine,
+    },
+    tripDetails: {
+      headline,
+      datesOrMonth: dateWindowParts.join(" / ") || null,
+      partySize,
+      routeOrLocation: [shipName, portCity.toUpperCase()]
+        .filter(Boolean)
+        .join(" · "),
+      messageOrNotes: combinedNotes,
+      pageOrSourceUrl:
+        typeof rawEntry.sourcePage === "string"
+          ? rawEntry.sourcePage
+          : "/helicopter-waitlist",
+    },
+    attribution,
+    classification: finalCls.classification,
+    classificationReason: finalCls.classificationReason,
+    ...notif,
+    triageStatus: "new",
+    operatorNote: null,
+    triageUpdatedAt: null,
+    triageUpdatedBy: null,
+  };
+}
+
+async function loadJfdWaitlistRowsFromPostgres(): Promise<
+  RawJfdWaitlistRowInput[]
+> {
+  const dbUrls = resolveOperatorInboxDatabaseUrls();
+  for (const dbUrl of dbUrls) {
+    try {
+      const sql = neon(dbUrl);
+      const rows = (await sql`
+        SELECT
+          id,
+          name,
+          email,
+          phone,
+          cruise_line,
+          ship_name,
+          port_city,
+          port_date,
+          juneau_date,
+          skagway_date,
+          tour_type,
+          party_size,
+          booking_mode,
+          status,
+          notes,
+          estimated_value,
+          is_test,
+          created_at,
+          raw_entry
+        FROM jfd_waitlist_submissions
+        ORDER BY created_at DESC
+        LIMIT 200
+      `) as RawJfdWaitlistRowInput[];
+      return Array.isArray(rows) ? rows : [];
+    } catch {
+      // Table may not exist on isolated DB; ignore safely
+    }
+  }
+  return [];
+}
+
 export function clearInMemoryOperatorTriageForTests(): void {
   inMemoryTriageOverlays.clear();
   if (!isServerlessRuntimeEnvironment()) {
@@ -1744,30 +2129,50 @@ export async function getUnifiedOperatorInbox(
       ? (options.status.trim() as OperatorTriageStatus)
       : null;
 
-  const [dccData, argoLegacyEntries, cpData] = await Promise.all([
-    loadDccFindingRowsAndTriageOverlays(options.findingsOverride),
-    options.argoLegacyOverride
-      ? Promise.resolve(options.argoLegacyOverride)
-      : readArgoWaitlist().catch(() => []),
-    fetchCruisePromenadeInquiries({
-      cpPreviewUrl: options.cpPreviewUrl,
-      cpAdminKey: options.cpAdminKey,
-      cpVercelProtectionBypass: options.cpVercelProtectionBypass,
-      resendConfigured,
-      fetchImpl: options.cpFetchOverride,
-    }),
-  ]);
+  const [dccData, argoLegacyEntries, cpData, jfdWaitlistRows] =
+    await Promise.all([
+      loadDccFindingRowsAndTriageOverlays(options.findingsOverride),
+      options.argoLegacyOverride
+        ? Promise.resolve(options.argoLegacyOverride)
+        : readArgoWaitlist().catch(() => []),
+      fetchCruisePromenadeInquiries({
+        cpPreviewUrl: options.cpPreviewUrl,
+        cpAdminKey: options.cpAdminKey,
+        cpVercelProtectionBypass: options.cpVercelProtectionBypass,
+        resendConfigured,
+        fetchImpl: options.cpFetchOverride,
+      }),
+      options.jfdWaitlistOverride
+        ? Promise.resolve(options.jfdWaitlistOverride)
+        : options.findingsOverride
+          ? Promise.resolve([] as RawJfdWaitlistRowInput[])
+          : loadJfdWaitlistRowsFromPostgres(),
+    ]);
 
   const itemsByKey = new Map<string, OperatorInboxItem>();
   const argoDedupFingerprints = new Set<string>();
+  const seenJfdSourceIds = new Set<string>();
 
   for (const row of dccData.submissionRows) {
     const item = mapFindingRowToInboxItem(row, resendConfigured);
     if (!item) continue;
     itemsByKey.set(item.itemKey, item);
+    if (item.channel === "juneauflightdeck-inquiry" && item.sourceId) {
+      seenJfdSourceIds.add(item.sourceId);
+    }
     if (item.channel === "argo-waitlist" && item.contact.email) {
       const minuteBucket = item.submittedAt.slice(0, 16);
       argoDedupFingerprints.add(`${item.contact.email}|${minuteBucket}`);
+    }
+  }
+
+  for (const jfdRow of jfdWaitlistRows) {
+    const jfdItem = mapJfdWaitlistRowToInboxItem(jfdRow, resendConfigured);
+    if (!jfdItem) continue;
+    if (seenJfdSourceIds.has(jfdItem.sourceId)) continue;
+    seenJfdSourceIds.add(jfdItem.sourceId);
+    if (!itemsByKey.has(jfdItem.itemKey)) {
+      itemsByKey.set(jfdItem.itemKey, jfdItem);
     }
   }
 

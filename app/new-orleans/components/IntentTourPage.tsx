@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import ProductCard from "./ProductCard";
 import { STOREFRONT_PRODUCTS } from "../tours/pageConfig";
 import GeoDirectAnswerCard from "./GeoDirectAnswerCard";
@@ -36,6 +37,7 @@ type IntentTourPageProps = {
   directAnswers?: DirectAnswerItem[];
   inquiryNotice?: InquiryNotice;
   breadcrumbs?: WnoBreadcrumbItem[];
+  topSlot?: ReactNode;
 };
 
 const GOVERNED_INTENT_PATHS = new Set([
@@ -72,6 +74,7 @@ export default function IntentTourPage({
   directAnswers,
   inquiryNotice,
   breadcrumbs,
+  topSlot,
 }: IntentTourPageProps) {
   const products = productSlugs
     .map((slug) => STOREFRONT_PRODUCTS.find((product) => product.slug === slug))
@@ -160,6 +163,8 @@ export default function IntentTourPage({
           </div>
         </section>
       )}
+
+      {topSlot}
 
       <section className="border-y border-[var(--nola-border)] bg-[var(--nola-surface-subtle)]">
         <div className="mx-auto grid max-w-6xl gap-8 px-6 py-10 md:grid-cols-[0.85fr_1.15fr]">

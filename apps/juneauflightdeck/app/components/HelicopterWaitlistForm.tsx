@@ -2,10 +2,15 @@
 
 import { useState, useEffect } from "react";
 import {
+  buildCruisePromenadeCoordinationHref,
+  type SanitizedCommercialAttribution,
+} from "@/lib/dcc/commercialAttribution";
+import {
   ALASKA_CRUISE_FLEET,
   type AlaskaShipData,
 } from "../../lib/alaskaCruiseFleet";
 import { sendJfdTelemetry } from "./DccNetworkBridge";
+import { getOrCaptureJfdAttribution } from "./JuneauPortAviationDecisionDesk";
 import { addPortDateListener, readSharedPortDate, sharePortDate } from "@/lib/portDate";
 
 const CRUISE_LINES = [
@@ -112,6 +117,7 @@ export default function HelicopterWaitlistForm({
 
   const [preselectedTour, setPreselectedTour] = useState<TourOption | null>(null);
   const [selectedShipData, setSelectedShipData] = useState<AlaskaShipData | null>(null);
+  const [attribution, setAttribution] = useState<SanitizedCommercialAttribution | null>(null);
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [submissionId, setSubmissionId] = useState("");
@@ -119,14 +125,26 @@ export default function HelicopterWaitlistForm({
   const [copiedLink, setCopiedLink] = useState(false);
   const [copyFeedback, setCopyFeedback] = useState("");
 
-  // Read URL search parameters on mount
+  // Read URL search parameters on mount (scrubbing any private PII params immediately)
   useEffect(() => {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
-    const shipParam = params.get("ship");
+    const capturedAttr = getOrCaptureJfdAttribution();
+    if (capturedAttr) {
+      setAttribution(capturedAttr);
+    }
+    const shipParam = params.get("ship") || capturedAttr?.shipName || null;
     const modeParam = params.get("mode");
     const tourParam = params.get("tour");
-    const sharedDate = readSharedPortDate();
+    const urlDate =
+      params.get("portDate") ||
+      params.get("date") ||
+      params.get("sailDate") ||
+      capturedAttr?.portDate ||
+      capturedAttr?.sailDate ||
+      null;
+    const urlParty = params.get("partySize") || (capturedAttr?.partySize ? String(capturedAttr.partySize) : null);
+    const sharedDate = urlDate || readSharedPortDate();
 
     if (tourParam) {
       const normalized = tourParam.toLowerCase().trim();
@@ -167,6 +185,11 @@ export default function HelicopterWaitlistForm({
 
     if (sharedDate) {
       setFormData((prev) => ({ ...prev, portDate: sharedDate }));
+    }
+
+    if (urlParty && /^\d+$/.test(urlParty)) {
+      const bounded = Math.max(1, Math.min(20, Number(urlParty)));
+      setFormData((prev) => ({ ...prev, partySize: String(bounded) }));
     }
 
     if (modeParam === "concierge" || modeParam === "concierge_dispatch") {
@@ -244,12 +267,16 @@ export default function HelicopterWaitlistForm({
         : formData.shipName || "Unspecified Ship";
 
     try {
+      const latestAttr = attribution || getOrCaptureJfdAttribution();
       const res = await fetch("/api/waitlist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
           shipName: finalShipName,
+          sailDate: latestAttr?.sailDate || formData.portDate,
+          sourcePage: window.location.pathname,
+          attribution: latestAttr,
           juneauDate: formData.portCity !== "skagway" ? formData.portDate : undefined,
           skagwayDate: formData.portCity !== "juneau" ? formData.skagwayDate : undefined,
         }),
@@ -257,17 +284,18 @@ export default function HelicopterWaitlistForm({
 
       const data = await res.json();
       if (!res.ok || !data.ok) {
-        throw new Error(data.error || "Unable to join waitlist. Please check inputs and try again.");
+        throw new Error(data.error || "Unable to submit availability request. Please check inputs and try again.");
       }
 
       setSubmissionId(data.submissionId);
       setStatus("success");
 
-      // Dispatch telemetry event for waitlist conversion
+      // Dispatch measurable conversion telemetry (both legacy + explicit commercial funnel event)
       const perSeat =
         formData.tourType === "dog_sledding" ? 649 : formData.tourType === "ice_trek" ? 599 : 449;
       const parsedParty = parseInt(String(formData.partySize), 10) || 2;
-      sendJfdTelemetry("waitlist_submitted", {
+      const conversionPayload = {
+        conversionEvent: "jfd_qualified_inquiry_submitted",
         submissionId: data.submissionId,
         tourType: formData.tourType,
         partySize: parsedParty,
@@ -278,7 +306,11 @@ export default function HelicopterWaitlistForm({
         portCity: formData.portCity,
         estimatedValue: parsedParty * perSeat,
         sourcePage: window.location.pathname,
-      });
+        utmSource: latestAttr?.utmSource || latestAttr?.source || "direct",
+        utmCampaign: latestAttr?.utmCampaign || null,
+      };
+      sendJfdTelemetry("jfd_qualified_inquiry_submitted", conversionPayload);
+      sendJfdTelemetry("waitlist_submitted", conversionPayload);
     } catch (err: any) {
       setErrorMessage(err.message || "Failed to submit request.");
       setStatus("error");
@@ -400,6 +432,8 @@ ${shareUrl}`;
 
       {status === "success" ? (
         <div
+          data-testid="jfd-inquiry-confirmation"
+          data-conversion-event="jfd_qualified_inquiry_submitted"
           className="waitlist-success-banner space-y-6"
           style={{ display: "grid", gap: 20, minWidth: 0 }}
         >
@@ -432,8 +466,44 @@ ${shareUrl}`;
             }}
           >
             {formData.bookingMode === "concierge_dispatch"
-              ? "🛎️ Request Logged: When an opening is detected during our daily availability check, our local dispatch team contacts you with direct flight checkout details."
-              : "📱 Request Logged: When an opening is detected during our daily availability check, a direct booking link is generated so you can complete checkout directly with the operator."}
+              ? "🛎️ Qualified Inquiry Logged (No Payment Collected): Our Juneau desk reviews local Part 135 operator schedules and contacts you directly with verified partner or direct operator checkout links if matching seats open."
+              : "📱 Qualified Inquiry Logged (No Payment Collected): When matching seats open on local Part 135 operator schedules for your port date, we email you direct operator or verified partner checkout links."}
+          </div>
+
+          <div
+            style={{
+              background: "rgba(12, 26, 44, 0.85)",
+              border: "1px solid rgba(147, 197, 253, 0.35)",
+              borderRadius: 12,
+              padding: 14,
+              display: "flex",
+              flexWrap: "wrap",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 10,
+              fontSize: "0.82rem",
+            }}
+          >
+            <span style={{ color: "#e2e8f0" }}>
+              Traveling with multiple cabins on <strong>{resolvedShipName}</strong>? Keep everyone aligned on Cruise Promenade (100% commission-neutral).
+            </span>
+            <a
+              href={
+                buildCruisePromenadeCoordinationHref({
+                  shipName: resolvedShipName,
+                  shipSlug: attribution?.shipSlug,
+                  sailDate: attribution?.sailDate || formData.portDate,
+                  portSlug: "juneau",
+                  specialistSite: "juneauflightdeck.com",
+                  campaign: attribution?.utmCampaign || "jfd_post_inquiry_return",
+                }).href
+              }
+              data-testid="jfd-confirmation-cp-return"
+              className="button button-secondary"
+              style={{ fontSize: "0.78rem", padding: "8px 14px", textDecoration: "none" }}
+            >
+              Open Cruise Promenade Group Board →
+            </a>
           </div>
 
           {/* Group Roll Call Share Box (Where Group Rules Allow) */}

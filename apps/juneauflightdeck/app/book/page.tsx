@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { cookies } from "next/headers";
 import SiteHeader from "../components/SiteHeader";
@@ -39,6 +40,12 @@ interface BookPageProps {
 }
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Juneau Helicopter Referral & Pre-Booking Review | Juneau Flight Deck",
+  robots: { index: false, follow: false },
+  alternates: { canonical: "https://juneauflightdeck.com/book" },
+};
 
 export default async function BookPage(props: BookPageProps) {
   const searchParams = await Promise.resolve(props.searchParams);

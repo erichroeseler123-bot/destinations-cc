@@ -180,6 +180,9 @@ export interface WaitlistEntry {
   operatorHoldExpiresAt?: string;
   notificationDispatchedAt?: string;
   notificationDeliveryId?: string;
+  environment?: string;
+  sourcePage?: string;
+  attribution?: Record<string, unknown>;
 }
 
 const SEED_ENTRIES: WaitlistEntry[] = [
@@ -291,7 +294,7 @@ const SEED_ENTRIES: WaitlistEntry[] = [
   },
 ];
 
-let inMemoryStore: WaitlistEntry[] = [...SEED_ENTRIES];
+let inMemoryStore: WaitlistEntry[] = [];
 
 export function getTodayAlaskaDate(): string {
   try {
