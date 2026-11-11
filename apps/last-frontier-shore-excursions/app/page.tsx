@@ -1,14 +1,68 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { PORTS } from "@/lib/ports";
-import { DECISION_PAGES } from "@/lib/decisionPages";
-import { PORT_ACTIVITIES } from "@/lib/portActivities";
 import { AFFILIATE_CATALOG } from "@/lib/affiliate/catalog";
 import { buildAffiliateUrl, buildDccHandoffAffiliateUrl } from "@/lib/affiliate/links";
-import { HERO_IMAGE, getActivityImage } from "@/lib/images";
+import { HERO_IMAGE } from "@/lib/images";
 import { CruiseWindowCalculator } from "@/components/CruiseWindowCalculator";
-import { ExcursionCard } from "@/components/ExcursionCard";
 import { TrustDisclosure } from "@/components/TrustDisclosure";
+import {
+  LfseExperienceShowcase,
+  type LfseStandardizedCardItem,
+} from "@/components/LfseExperienceShowcase";
+import { buildAddToCruisePromenadeUrl } from "../../../lib/dcc/shared/addToCruisePromenadeUrl";
+import styles from "./home.module.css";
+
+const FEATURED_BOOKABLE_IDS = [
+  "331813P1", // Juneau Small-Group Whale Watching
+  "5338PRTSGYCITY", // Skagway White Pass Summit Scenic Railway
+  "6459PRTKTNMISTY", // Ketchikan Misty Fjords Floatplane
+  "472133P4", // Sitka Sound Sea Otter & Marine Wildlife Quest
+  "14707P1", // Icy Strait Point / Point Adolphus Whale Watching
+] as const;
+
+const PORT_DISPLAY_NAMES: Record<string, string> = {
+  juneau: "Juneau",
+  skagway: "Skagway",
+  ketchikan: "Ketchikan",
+  sitka: "Sitka",
+  "icy-strait-point": "Icy Strait Point",
+};
+
+const PORT_DESTINATIONS: Record<string, string> = {
+  "331813P1": "Juneau · Auke Bay & Favorite Channel",
+  "5338PRTSGYCITY": "Skagway · White Pass Summit (2,865 ft)",
+  "6459PRTKTNMISTY": "Ketchikan · Misty Fjords National Monument",
+  "472133P4": "Sitka · Sitka Sound & Kelp Forests",
+  "14707P1": "Icy Strait Point · Point Adolphus Feeding Grounds",
+};
+
+const PORT_FIT_NOTES: Record<string, string> = {
+  "331813P1": "Fits 6+ hour Juneau port calls · Includes 20m shuttle + 45m all-aboard buffer",
+  "5338PRTSGYCITY": "Fits 5+ hour Skagway port calls · Direct Railroad Dock boarding + 45m buffer",
+  "6459PRTKTNMISTY": "Fits 5+ hour Ketchikan port calls · Add 20m shuttle margin if docked at Ward Cove",
+  "472133P4": "Fits 5+ hour Sitka port calls · Direct Old Sitka Cruise Terminal boarding + 45m buffer",
+  "14707P1": "Fits 5.5+ hour Hoonah port calls · Excursion Hub departure + 45m all-aboard buffer",
+};
+
+const FAQS = [
+  {
+    q: "How does Last Frontier verify if an excursion fits my cruise ship's port window?",
+    a: "We apply a strict 45-minute all-aboard margin on top of the full activity duration and local dock transfer time—including the 20-minute shuttle from Ward Cove in Ketchikan, the continuous shuttle from AJ Dock in Juneau, and Old Sitka shuttle transfers.",
+  },
+  {
+    q: "What is the difference between Bookable Now, Inquiry-Only, and Commercially Held listings?",
+    a: "Bookable Now tours take you straight to an exact Viator or GetYourGuide product page with live seat calendars. Inquiry-Only options connect you with a human planner for sold-out flightseeing dates or multi-cabin private vans. Commercially Held tours have self-service checkout paused while seasonal pier buffers or partner agreements are re-verified.",
+  },
+  {
+    q: "Who processes my payment and issues my shore excursion tickets?",
+    a: "Last Frontier Shore Excursions never collects credit cards on this site. You complete checkout directly with the named booking platform (such as Viator or GetYourGuide) or local Alaska operator, who issues your mobile voucher and manages cancellations.",
+  },
+  {
+    q: "What happens if my ship docks at Ward Cove (Ketchikan) or AJ Dock (Juneau)?",
+    a: "Ships at Ward Cove sit 7 miles north of downtown Ketchikan and require a complimentary 20-minute shuttle each way. Ships at AJ Dock sit 1 mile south of downtown Juneau with a 10–15 minute shuttle. Use the Port Window Check above to select your exact berth before booking.",
+  },
+];
 
 export default async function HomePage({
   searchParams,
@@ -38,6 +92,7 @@ export default async function HomePage({
   const carriedPartySize =
     rawParty && Number.isFinite(Number(rawParty)) ? Number(rawParty) : null;
   const carriedShip = typeof sp.ship === "string" ? sp.ship : null;
+
   const ctxQuery = rawCtx
     ? `?ctx=${encodeURIComponent(rawCtx)}`
     : carriedDate || carriedPartySize
@@ -47,350 +102,351 @@ export default async function HomePage({
       }).toString()}`
     : "";
 
-  const viatorSampleDest = buildAffiliateUrl(
-    "viator",
-    "https://www.viator.com/Juneau-tours/Port-Transfers/d941-g24-c4032",
-    "last-frontier-home-juneau",
-    "Juneau whale watching shore excursion",
-    false,
-  );
-  const viatorHandoffHref = buildDccHandoffAffiliateUrl({
-    source: "viator",
-    destinationUrl: viatorSampleDest,
-    productCode: "juneau-whale-mendenhall-combo",
-    campaign: "last-frontier-home-viator",
-    contextId: rawCtx,
-    intendedDate: carriedDate,
-    partySize: carriedPartySize,
-  });
-  const gygSampleDest = buildAffiliateUrl(
-    "getyourguide",
-    "https://www.getyourguide.com/s/?q=Alaska+shore+excursions",
-    "last-frontier-home-gyg",
-    "Alaska shore excursions",
-    false,
-  );
-  const gygHandoffHref = buildDccHandoffAffiliateUrl({
-    source: "getyourguide",
-    destinationUrl: gygSampleDest,
-    productCode: "alaska-gyg-catalog",
-    campaign: "last-frontier-home-gyg",
-    contextId: rawCtx,
-    intendedDate: carriedDate,
-    partySize: carriedPartySize,
+  const bookableCards: LfseStandardizedCardItem[] = FEATURED_BOOKABLE_IDS.map((pid) => {
+    const item = AFFILIATE_CATALOG.find((c) => c.productId === pid)!;
+    const partnerUrl = buildAffiliateUrl(
+      item.source,
+      item.officialUrl,
+      item.attributionCampaign,
+      item.title,
+      item.isExactProduct,
+    );
+    const handoffHref = buildDccHandoffAffiliateUrl({
+      source: item.source,
+      destinationUrl: partnerUrl,
+      productCode: item.productId || item.activitySlug,
+      campaign: item.attributionCampaign,
+      contextId: rawCtx,
+      intendedDate: carriedDate,
+      partySize: carriedPartySize,
+    });
+    const addToCpHref = buildAddToCruisePromenadeUrl({
+      title: item.title,
+      port: item.portSlug,
+      ship: carriedShip || null,
+      durationMinutes: item.durationMinutes,
+      fitStatus: "strong_fit",
+      operator: item.provider,
+      productCode: item.productId || item.activitySlug,
+      sourceSite: "lastfrontiershoreexcursions.com",
+    });
+    const partnerLabel = item.source === "viator" ? "Viator" : "GetYourGuide";
+    return {
+      id: item.productId || item.attributionCampaign,
+      category: "bookable",
+      statusBadge: "Bookable Now",
+      portName: PORT_DISPLAY_NAMES[item.portSlug] || item.portSlug,
+      portSlug: item.portSlug,
+      activitySlug: item.activitySlug,
+      productId: item.productId || undefined,
+      attributionCampaign: item.attributionCampaign,
+      image: item.permittedImages[0]?.url || HERO_IMAGE.url,
+      imageAlt: item.permittedImages[0]?.caption || item.title,
+      whatItIs: item.title,
+      whereItGoes: PORT_DESTINATIONS[pid] || `${PORT_DISPLAY_NAMES[item.portSlug]} Shore Excursion`,
+      dateAvailability: `May–Sep Alaska season (${item.datesAndTimeSlots.slice(0, 3).join(", ")})`,
+      duration: item.duration,
+      pickupLocation: item.meetingPoint,
+      priceLabel: `From $${item.priceFrom}`,
+      priceSubtext: "per person · check live rate",
+      scheduleFit: PORT_FIT_NOTES[pid] || `Includes ${item.transferBufferMinutes}m transfer + 45m return buffer`,
+      checkoutProcessor: `${partnerLabel} (${item.provider})`,
+      ctaLabel: `Check Availability on ${partnerLabel} →`,
+      ctaHref: handoffHref,
+      ctaExternal: true,
+      ctaSponsored: true,
+      providerName: item.provider,
+      addToCpHref,
+    };
   });
 
-  const topActivities = [
-    PORT_ACTIVITIES.find((a) => a.slug === "whale-watching" && a.portSlug === "juneau")!,
-    PORT_ACTIVITIES.find((a) => a.slug === "white-pass-railway-tours")!,
-    PORT_ACTIVITIES.find((a) => a.slug === "misty-fjords-tours")!,
-    PORT_ACTIVITIES.find((a) => a.slug === "helicopter-glacier-tours")!,
-    PORT_ACTIVITIES.find((a) => a.slug === "wildlife-and-historic-tours")!,
-    PORT_ACTIVITIES.find((a) => a.slug === "whale-and-wilderness-tours")!,
-  ].filter(Boolean);
+  const inquiryAndHeldCards: LfseStandardizedCardItem[] = [
+    {
+      id: "inquiry-juneau-flight-concierge",
+      category: "inquiry",
+      statusBadge: "Inquiry-Only",
+      portName: "Juneau",
+      portSlug: "juneau",
+      image: "/images/alaska/glacier-flightseeing.jpg",
+      imageAlt: "Helicopter landing on the Juneau Icefield",
+      whatItIs: "Juneau Glacier Helicopter & Dog Sled Concierge",
+      whereItGoes: "Juneau · Herbert, Norris, or Mendenhall Glacier Icefield",
+      dateAvailability: "May–Sep custom flight windows & sold-out ship-day checks",
+      duration: "2.25 to 3.25 hours dock-to-dock",
+      pickupLocation: "Downtown Juneau Cruise Pier / Tramway Shuttle",
+      priceLabel: "From $439",
+      priceSubtext: "per guest · verified before payment",
+      scheduleFit: "Matched manually to your ship's exact arrival & all-aboard window",
+      checkoutProcessor: "Human flight desk via Juneau Flight Deck (no card taken on request)",
+      ctaLabel: "Request flight availability →",
+      ctaHref: `https://juneauflightdeck.com/${ctxQuery}`,
+      ctaExternal: true,
+    },
+    {
+      id: "inquiry-multi-cabin-private-shore",
+      category: "inquiry",
+      statusBadge: "Inquiry-Only",
+      portName: "All 5 Ports",
+      portSlug: "juneau",
+      image: "/images/alaska/skagway-white-pass.jpg",
+      imageAlt: "Coastal mountain highway above Skagway and Southeast Alaska",
+      whatItIs: "Multi-Cabin Private Van & Custom Port-Day Planning",
+      whereItGoes: "Juneau, Skagway, Ketchikan, Sitka & Icy Strait Point",
+      dateAvailability: "By ship date for families & multi-cabin groups (6–24+ guests)",
+      duration: "Custom 3 to 6 hours around your gangway window",
+      pickupLocation: "Coordinated for Franklin, AJ Dock, Ward Cove, Railroad, or Old Sitka",
+      priceLabel: "Custom quote",
+      priceSubtext: "free port-window review",
+      scheduleFit: "Built specifically around multi-generational pace & 45m return rule",
+      checkoutProcessor: "Direct local Alaska operator after itinerary confirmation",
+      ctaLabel: "Request custom group plan →",
+      ctaHref: "/contact",
+      ctaExternal: false,
+    },
+    {
+      id: "held-ketchikan-crab-vessel",
+      category: "held",
+      statusBadge: "Commercially Held",
+      portName: "Ketchikan",
+      portSlug: "ketchikan",
+      image: "/images/alaska/ketchikan-creek-street.jpg",
+      imageAlt: "Ketchikan waterfront and harbor vessels",
+      whatItIs: "Bering Sea Crab Fishermen's Tour (Aleutian Ballad)",
+      whereItGoes: "Ketchikan · Protected Waters of Tongass Narrows",
+      dateAvailability: "Self-service checkout currently paused pending seasonal verification",
+      duration: "3.0 hours (plus dock transfer buffer)",
+      pickupLocation: "Downtown Ketchikan Berth vs. Ward Cove 20m shuttle under review",
+      priceLabel: "Checkout paused",
+      priceSubtext: "commercial & shuttle hold",
+      scheduleFit: "Held while Ward Cove shuttle timing & partner attribution are re-verified",
+      checkoutProcessor: "Online checkout paused · Ask our desk for verified Ketchikan alternatives",
+      ctaLabel: "Ask for Ketchikan alternatives →",
+      ctaHref: "/contact",
+      ctaExternal: false,
+    },
+  ];
 
-  const featuredTours = AFFILIATE_CATALOG.slice(0, 4);
+  const allShowcaseItems = [...bookableCards, ...inquiryAndHeldCards];
 
   return (
-    <main>
-      <section className="hero">
-        <div className="shell">
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 36, alignItems: "center" }}>
+    <main className={styles.page}>
+      {/* SECTION 2: Strong Destination Hero with One Primary Action */}
+      <section className={styles.hero}>
+        <img
+          src={HERO_IMAGE.url}
+          alt={HERO_IMAGE.alt}
+          width={1024}
+          height={426}
+          loading="eager"
+          className={styles.heroMedia}
+        />
+        <div className={styles.heroScrim} />
+
+        <div className={styles.container}>
+          <div className={styles.heroGrid}>
             <div>
-              <p className="eyebrow">Cruise-Safe Alaska Shore Excursions</p>
-              <h1 style={{ fontSize: "clamp(32px, 4.5vw, 54px)", lineHeight: 1.1 }}>Cruise-Safe Alaska Shore Excursions, Sorted by Port &amp; Timing</h1>
-              <p className="lead">
-                Your ship gives you hours. Alaska gives you too many choices. Compare curated shore excursions across Juneau, Skagway, Ketchikan, Sitka, and Icy Strait Point—with disciplined return margins, transparent pricing, and direct partner checkout.
+              <div className={styles.heroBadges}>
+                <span className={styles.pillIce}>45-Minute All-Aboard Buffer</span>
+                <span className={styles.pillNavy}>Juneau · Skagway · Ketchikan · Sitka · Icy Strait</span>
+              </div>
+
+              <h1 className={styles.heroTitle}>
+                Alaska shore excursions built around{" "}
+                <span className={styles.heroTitleAccent}>your ship&apos;s port window.</span>
+              </h1>
+
+              <p className={styles.heroLead}>
+                Check whether a tour truly fits your arrival, dock shuttle, and all-aboard time—with clear meeting points, real return buffers, and honest distinction between instant partner checkout, concierge requests, and paused listings.
               </p>
-              <div className="cta-row">
-                <a className="button" href="#calculator">Calculate your cruise window ↓</a>
-                <Link className="button secondary" href="/tours">
-                  Browse all tours catalog →
-                </Link>
-              </div>
-              <TrustDisclosure compact />
-            </div>
 
-            <div style={{ position: "relative" }}>
-              <div
-                style={{
-                  position: "relative",
-                  borderRadius: "16px",
-                  overflow: "hidden",
-                  border: "1px solid rgba(255, 255, 255, 0.2)",
-                  boxShadow: "0 16px 36px rgba(0, 0, 0, 0.25)",
-                  aspectRatio: "16 / 10",
-                  background: "#102b34",
-                }}
-              >
-                <img
-                  src={HERO_IMAGE.url}
-                  alt={HERO_IMAGE.alt}
-                  width={1024}
-                  height={426}
-                  loading="eager"
-                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                />
-                <div
-                  style={{
-                    position: "absolute",
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    padding: "24px 16px 12px",
-                    background: "linear-gradient(to top, rgba(14, 26, 31, 0.85) 0%, transparent 100%)",
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "flex-end",
-                  }}
-                >
-                  <span style={{ color: "#ffffff", fontSize: "12px", fontWeight: 600 }}>
-                    {HERO_IMAGE.caption}
-                  </span>
-                  <span style={{ color: "#d8e9ed", fontSize: "11px", opacity: 0.85 }}>
-                    Southeast Alaska
-                  </span>
+              {(carriedShip || carriedDate || carriedPartySize) && (
+                <div className={styles.carriedContextPill}>
+                  <strong>Trip window loaded:</strong>
+                  {carriedShip ? <span>Ship: {carriedShip}</span> : null}
+                  {carriedDate ? <span>· Date: {carriedDate}</span> : null}
+                  {carriedPartySize ? <span>· Party of {carriedPartySize}</span> : null}
                 </div>
+              )}
+
+              <div className={styles.heroCtaRow}>
+                <a href="#calculator" className={styles.primaryBtn}>
+                  Check my ship&apos;s port window ↓
+                </a>
+              </div>
+
+              <div className={styles.heroSublinks}>
+                <a href="#excursions">Browse featured shore excursions</a>
+                <span>·</span>
+                <Link href="/cruise-ships">Find my cruise ship schedule</Link>
               </div>
             </div>
+
+            <aside className={styles.heroPortCard} aria-label="Jump to Alaska cruise port">
+              <span className={styles.heroPortCardKicker}>Jump straight to your port</span>
+              <ul className={styles.heroPortList}>
+                <li>
+                  <Link href="/ports/juneau">
+                    <span>Juneau (Whales, Mendenhall &amp; Glaciers)</span>
+                    <span className={styles.heroPortMeta}>6 tours →</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/ports/skagway">
+                    <span>Skagway (White Pass Rail &amp; Yukon)</span>
+                    <span className={styles.heroPortMeta}>3 tours →</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/ports/ketchikan">
+                    <span>Ketchikan (Misty Fjords &amp; Totems)</span>
+                    <span className={styles.heroPortMeta}>3 tours →</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/ports/sitka">
+                    <span>Sitka (Sea Otters &amp; Raptor Center)</span>
+                    <span className={styles.heroPortMeta}>2 tours →</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/ports/icy-strait-point">
+                    <span>Icy Strait Point (Point Adolphus Whales)</span>
+                    <span className={styles.heroPortMeta}>1 tour →</span>
+                  </Link>
+                </li>
+              </ul>
+            </aside>
           </div>
         </div>
       </section>
 
-      {/* DCC v0.3 Decision Assurance & Commercial Attribution Boundary */}
-      <section
-        aria-label="DCC Decision Assurance & Attribution Disclosure"
-        data-dcc-assurance-banner="true"
-        data-dcc-site="lastfrontiershoreexcursions.com"
-        data-dcc-engine-id="alaska-shore-excursions"
-        data-dcc-classification="qualified"
-        data-dcc-context-id={rawCtx || ""}
-        style={{ background: "#0b1724", color: "#e2e8f0", padding: "20px 0", borderBottom: "1px solid rgba(148,163,184,0.25)" }}
-      >
-        <div className="shell" style={{ fontSize: "13.5px", lineHeight: 1.55 }}>
-          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 8 }}>
-            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8 }}>
-              <span
-                style={{
-                  padding: "3px 9px",
-                  borderRadius: 999,
-                  fontSize: "11px",
-                  fontWeight: 800,
-                  textTransform: "uppercase",
-                  background: "rgba(56, 189, 248, 0.16)",
-                  color: "#7dd3fc",
-                  border: "1px solid rgba(56, 189, 248, 0.35)",
-                }}
-              >
-                DCC v0.3 Classification: QUALIFIED
-              </span>
-              <span style={{ color: "#94a3b8", fontSize: "12px" }}>
-                Engine: <code>alaska-shore-excursions@0.3.0</code> · Isolated from commission &amp; routing priority
-              </span>
-            </div>
-            <a
-              href="https://www.destinationcommandcenter.com/api/v1/docs/receipt-verification"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: "#38bdf8", textDecoration: "underline", fontWeight: 600, fontSize: "12px" }}
-            >
-              Verify DCC Decision Receipt Boundary ↗
-            </a>
-          </div>
-          <div style={{ padding: "10px 14px", borderRadius: 8, background: "rgba(15, 23, 42, 0.75)", border: "1px solid rgba(148,163,184,0.18)", marginBottom: 10 }}>
-            <strong style={{ color: "#f8fafc" }}>Evidence-Bounded Classification &amp; Unresolved Requirements:</strong>{" "}
-            <span>
-              45-minute all-aboard margin + dock shuttle buffer (AJ Dock / Ward Cove) required. Live seat availability and ship-berth departure schedules remain unestablished until confirmed on the selected partner checkout.
-            </span>
-          </div>
-          {(rawCtx || carriedDate || carriedPartySize || carriedShip) && (
-            <div
-              data-dcc-carried-context="true"
-              style={{ padding: "8px 12px", borderRadius: 8, background: "rgba(16,185,129,0.12)", border: "1px solid rgba(16,185,129,0.3)", marginBottom: 10, color: "#d1fae5", fontSize: "12.5px" }}
-            >
-              <strong>Carried Trip Context:</strong>{" "}
-              {rawCtx && <span>Opaque Ref <code>{rawCtx}</code> </span>}
-              {carriedDate && <span>· Date: <strong>{carriedDate}</strong> </span>}
-              {carriedPartySize && <span>· Guests: <strong>{carriedPartySize}</strong> </span>}
-              {carriedShip && <span>· Ship: <strong>{carriedShip}</strong> </span>}
-            </div>
-          )}
-          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              <a
-                href={viatorHandoffHref}
-                data-dcc-handoff-link="true"
-                data-dcc-provider="Viator"
-                data-dcc-account="pid=P00281144"
-                target="_blank"
-                rel="sponsored noopener noreferrer"
-                style={{ padding: "6px 12px", borderRadius: 6, background: "#0284c7", color: "#fff", fontWeight: 700, fontSize: "12px", textDecoration: "none" }}
-              >
-                Check Alaska Excursions on Viator (pid=P00281144)
-              </a>
-              <a
-                href={gygHandoffHref}
-                data-dcc-handoff-link="true"
-                data-dcc-provider="GetYourGuide"
-                data-dcc-account="partner_id=F2MMUUH"
-                target="_blank"
-                rel="sponsored noopener noreferrer"
-                style={{ padding: "6px 12px", borderRadius: 6, background: "#0369a1", color: "#fff", fontWeight: 700, fontSize: "12px", textDecoration: "none" }}
-              >
-                Compare on GetYourGuide (partner_id=F2MMUUH)
-              </a>
-            </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 12, fontSize: "12px" }}>
-              <a
-                href={`https://juneauflightdeck.com/${ctxQuery}`}
-                data-dcc-cross-site-link="true"
-                style={{ color: "#93c5fd", textDecoration: "underline", fontWeight: 600 }}
-              >
-                Continue to Juneau Flight Deck (Helicopter Dispatch) →
-              </a>
-              <a
-                href={`https://cruisepromenade.com/planner${ctxQuery}`}
-                data-dcc-cross-site-link="true"
-                style={{ color: "#93c5fd", textDecoration: "underline", fontWeight: 600 }}
-              >
-                Return to Cruise Promenade Planner →
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* The 45-Minute All-Aboard Rule */}
-      <section className="section" style={{ padding: "40px 0 20px" }}>
-        <div className="shell">
-          <div className="rule">
-            <span className="badge badge-safety">The Last Frontier Standard</span>
-            <h2 style={{ marginTop: 8, fontSize: "28px" }}>The 45-Minute Cruise Safety Rule</h2>
-            <p style={{ fontSize: "16px", color: "#5a3e2e", lineHeight: 1.6 }}>
-              <strong>Tour end time + transfer buffer + 45 minutes must be no later than your ship's all-aboard time.</strong> Never book an excursion when return timing or pier transfer logistics are unknown. We calculate true gangway clearance, traffic bottlenecks (like AJ Dock and Ward Cove), and pier buffers so you never stress on the gangway.
+      {/* SECTION 3: Three-Step "How It Works" + Live Port-Window Calculator */}
+      <section id="calculator" className={styles.sectionWhite}>
+        <div className={styles.container}>
+          <div className={styles.sectionHeader}>
+            <p className={styles.eyebrow}>How It Works</p>
+            <h2 className={styles.sectionTitle}>Know you&apos;ll make all-aboard before you book</h2>
+            <p className={styles.sectionLead}>
+              Tour duration alone is misleading when your ship berths at Ward Cove, AJ Dock, or Old Sitka. Test your exact times in seconds.
             </p>
-            <div style={{ marginTop: 14 }}>
-              <Link href="/decision/excursions-safe-for-cruise-ship-window" style={{ color: "#8b4c25", fontWeight: 700, textDecoration: "underline" }}>
-                Read our complete port window calculation formula →
-              </Link>
-            </div>
           </div>
-        </div>
-      </section>
 
-      {/* Cruise Window Calculator */}
-      <section className="section" id="calculator" style={{ background: "#f8fbfb", padding: "20px 0 40px" }}>
-        <div className="shell">
+          <div className={styles.stepsGrid}>
+            <article className={styles.stepCard}>
+              <div className={styles.stepTop}>
+                <span className={styles.stepNum}>1</span>
+                <span className={styles.stepKicker}>Ship &amp; Berth</span>
+              </div>
+              <h3>Enter arrival, all-aboard &amp; dock</h3>
+              <p>
+                Select your berth so shuttle transfers—like Ketchikan&apos;s 20-minute Ward Cove bus or Juneau&apos;s AJ Dock loop—are counted automatically.
+              </p>
+            </article>
+
+            <article className={styles.stepCard}>
+              <div className={styles.stepTop}>
+                <span className={styles.stepNum}>2</span>
+                <span className={styles.stepKicker}>45-Minute Rule</span>
+              </div>
+              <h3>Verify a 45+ minute gangway buffer</h3>
+              <p>
+                Every recommended option must finish, complete return transit, and put you back at the pier at least 45 minutes before all-aboard.
+              </p>
+            </article>
+
+            <article className={styles.stepCard}>
+              <div className={styles.stepTop}>
+                <span className={styles.stepNum}>3</span>
+                <span className={styles.stepKicker}>Clear Booking Path</span>
+              </div>
+              <h3>Book direct or request group help</h3>
+              <p>
+                Reserve verified products directly on Viator or GetYourGuide, save picks to your Cruise Promenade board, or ask our desk for custom group plans.
+              </p>
+            </article>
+          </div>
+
           <CruiseWindowCalculator portSlug="juneau" defaultDurationMinutes={210} />
         </div>
       </section>
 
-      {/* Featured Partner Excursions */}
-      <section className="section" style={{ background: "#ffffff" }}>
-        <div className="shell">
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap" }}>
+      {/* SECTION 4: Featured Experiences — Standardized 9-Detail Cards Separating Bookable, Inquiry-Only & Held */}
+      <section id="excursions" className={styles.sectionIce}>
+        <div className={styles.container}>
+          <div className={styles.sectionHeaderRow}>
             <div>
-              <p className="eyebrow" style={{ color: "var(--muted)" }}>Curated Partner Options</p>
-              <h2>Top Alaska Cruise Excursions</h2>
+              <p className={styles.eyebrow}>Featured Shore Excursions</p>
+              <h2 className={styles.sectionTitle}>Clear timing, pier pickup &amp; booking status</h2>
+              <p className={styles.sectionLead}>
+                We separate excursions you can book immediately with verified partners from concierge-only requests and commercially paused listings.
+              </p>
             </div>
-            <Link href="/tours" style={{ color: "var(--forest)", fontWeight: 700 }}>
-              Compare all excursions in directory →
+            <Link href="/tours" style={{ color: "#0b192c", fontWeight: 800, fontSize: "14.5px", textDecoration: "underline" }}>
+              Compare all 15 bookable catalog excursions →
             </Link>
           </div>
 
-          <div className="grid" style={{ marginTop: 24 }}>
-            {featuredTours.map((tour) => (
-              <ExcursionCard key={tour.attributionCampaign || tour.title} excursion={tour} />
-            ))}
+          <LfseExperienceShowcase items={allShowcaseItems} />
+
+          <div style={{ marginTop: 24 }}>
+            <TrustDisclosure />
           </div>
-          <TrustDisclosure />
         </div>
       </section>
 
-      {/* Ports Grid */}
-      <section className="section" id="ports" style={{ background: "#fbfcfc", borderTop: "1px solid var(--line)" }}>
-        <div className="shell">
-          <p className="eyebrow" style={{ color: "#607078" }}>Port-First Architecture</p>
-          <h2>Start with where your ship docks</h2>
-          <p className="lead" style={{ color: "#607078" }}>
-            Select your port to review dock locations, tender status, and targeted excursion categories:
-          </p>
+      {/* SECTION 5: Clear Trust, Port-Timing Information & 5 Alaska Ports */}
+      <section id="ports" className={styles.sectionWhite}>
+        <div className={styles.container}>
+          <div className={styles.sectionHeader}>
+            <p className={styles.eyebrow}>Port Logistics &amp; Booking Boundaries</p>
+            <h2 className={styles.sectionTitle}>Built for real Alaska dock conditions</h2>
+            <p className={styles.sectionLead}>
+              Every Southeast Alaska port has different dock shuttles, weather backups, and gangway bottlenecks. Start with your port below.
+            </p>
+          </div>
 
-          <div className="grid" style={{ marginTop: 24 }}>
+          <div className={styles.trustGrid}>
+            <div className={styles.trustCard}>
+              <strong>45-Minute All-Aboard Standard</strong>
+              <p>
+                Tour end time plus return shuttle transit plus 45 minutes must fall before your ship&apos;s published all-aboard time.
+              </p>
+            </div>
+            <div className={styles.trustCard}>
+              <strong>Ward Cove &amp; AJ Dock Shuttles</strong>
+              <p>
+                NCL/Oceania/Regent ships at Ward Cove need 20 minutes each way into Ketchikan; AJ Dock in Juneau requires a 10–15 minute port shuttle.
+              </p>
+            </div>
+            <div className={styles.trustCard}>
+              <strong>Weather-Smart Backups</strong>
+              <p>
+                Helicopter and floatplane flights depend on ceiling visibility. Keep whale boats, White Pass rail, or totem walks in mind as low-ceiling backups.
+              </p>
+            </div>
+            <div className={styles.trustCard}>
+              <strong>Transparent Partner Checkout</strong>
+              <p>
+                We are an independent planning guide, not a cruise line or merchant of record. Viator, GetYourGuide, or your local operator handles checkout and tickets.
+              </p>
+            </div>
+          </div>
+
+          <div className={styles.portsGrid}>
             {PORTS.map((port) => (
-              <Link
-                className="card"
-                href={`/ports/${port.slug}`}
-                key={port.slug}
-                style={{
-                  padding: 0,
-                  overflow: "hidden",
-                  transition: "transform 0.15s ease, box-shadow 0.15s ease",
-                }}
-              >
-                <div
-                  style={{
-                    position: "relative",
-                    width: "100%",
-                    height: "175px",
-                    overflow: "hidden",
-                    background: "#eef5f6",
-                  }}
-                >
-                  <img
-                    src={port.image}
-                    alt={port.imageAlt}
-                    width={800}
-                    height={533}
-                    loading="lazy"
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      display: "block",
-                    }}
-                  />
-                  <span
-                    style={{
-                      position: "absolute",
-                      top: 10,
-                      left: 10,
-                      background: "rgba(14, 26, 31, 0.75)",
-                      backdropFilter: "blur(4px)",
-                      color: "#ffffff",
-                      fontSize: "11px",
-                      fontWeight: 700,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.06em",
-                      padding: "3px 8px",
-                      borderRadius: "4px",
-                    }}
-                  >
-                    {port.region}
-                  </span>
-                  <span
-                    style={{
-                      position: "absolute",
-                      bottom: 8,
-                      right: 10,
-                      background: "rgba(14, 26, 31, 0.65)",
-                      color: "#ffffff",
-                      fontSize: "10.5px",
-                      padding: "2px 6px",
-                      borderRadius: "3px",
-                    }}
-                  >
-                    {port.imageCaption}
-                  </span>
-                </div>
-                <div style={{ padding: 20, display: "flex", flexDirection: "column", flexGrow: 1 }}>
-                  <h3 style={{ marginTop: 0, fontSize: "20px" }}>{port.name}</h3>
-                  <p style={{ fontSize: "14px", flexGrow: 1, marginBottom: 14 }}>{port.hook}</p>
-                  <div className="chips">
-                    {port.bestFor.slice(0, 3).map((item) => (
-                      <span className="chip" key={item}>{item}</span>
-                    ))}
-                  </div>
+              <Link key={port.slug} href={`/ports/${port.slug}`} className={styles.portCard}>
+                <img
+                  src={port.image}
+                  alt={port.imageAlt}
+                  width={400}
+                  height={265}
+                  loading="lazy"
+                  className={styles.portCardImg}
+                />
+                <div className={styles.portCardBody}>
+                  <span className={styles.portCardHours}>{port.typicalPortHours.split("(")[0].trim()}</span>
+                  <h3>{port.name}</h3>
+                  <p>{port.hook}</p>
                 </div>
               </Link>
             ))}
@@ -398,82 +454,21 @@ export default async function HomePage({
         </div>
       </section>
 
-      {/* Featured Bucket-List Excursion Categories */}
-      <section className="section" style={{ background: "#ffffff", borderTop: "1px solid var(--line)", borderBottom: "1px solid var(--line)" }}>
-        <div className="shell">
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap" }}>
-            <div>
-              <p className="eyebrow" style={{ color: "var(--muted)" }}>In-Depth Guides</p>
-              <h2>Flagship Shore Excursion Categories</h2>
-            </div>
-            <Link href="/tours" style={{ color: "var(--forest)", fontWeight: 700 }}>
-              Browse all 20 excursion categories →
-            </Link>
+      {/* SECTION 6: Simple FAQ */}
+      <section id="faq" className={styles.sectionIce}>
+        <div className={styles.container}>
+          <div className={styles.sectionHeader}>
+            <p className={styles.eyebrow}>Common Questions</p>
+            <h2 className={styles.sectionTitle}>Before you book an independent shore excursion</h2>
           </div>
 
-          <div className="grid" style={{ marginTop: 24 }}>
-            {topActivities.map((act) => {
-              const actImg = getActivityImage(act.portSlug, act.slug);
-              return (
-                <Link
-                  className="card"
-                  href={`/${act.portSlug}/${act.slug}`}
-                  key={act.slug}
-                  style={{
-                    padding: 0,
-                    overflow: "hidden",
-                  }}
-                >
-                  <div
-                    style={{
-                      position: "relative",
-                      width: "100%",
-                      height: "150px",
-                      overflow: "hidden",
-                      background: "#eef5f6",
-                    }}
-                  >
-                    <img
-                      src={actImg.url}
-                      alt={actImg.alt}
-                      width={600}
-                      height={400}
-                      loading="lazy"
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                        display: "block",
-                      }}
-                    />
-                    <span
-                      style={{
-                        position: "absolute",
-                        top: 10,
-                        left: 10,
-                        background: "rgba(14, 26, 31, 0.75)",
-                        backdropFilter: "blur(4px)",
-                        color: "#ffffff",
-                        fontSize: "11px",
-                        fontWeight: 700,
-                        padding: "3px 8px",
-                        borderRadius: "4px",
-                      }}
-                    >
-                      {act.portName}
-                    </span>
-                  </div>
-                  <div style={{ padding: 18, display: "flex", flexDirection: "column", flexGrow: 1 }}>
-                    <h3 style={{ marginTop: 0, fontSize: "18px" }}>{act.h1}</h3>
-                    <p style={{ fontSize: "13px", flexGrow: 1, marginBottom: 12 }}>{act.metaDescription}</p>
-                    <div className="chips">
-                      <span className="chip" style={{ fontSize: "11px" }}>{act.returnMargin}</span>
-                      <span className="chip" style={{ fontSize: "11px" }}>{act.typicalDuration}</span>
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
+          <div className={styles.faqList}>
+            {FAQS.map((item) => (
+              <details key={item.q} className={styles.faqItem}>
+                <summary>{item.q}</summary>
+                <p>{item.a}</p>
+              </details>
+            ))}
           </div>
         </div>
       </section>

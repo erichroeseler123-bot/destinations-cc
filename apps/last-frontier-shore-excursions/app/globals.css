@@ -120,3 +120,141 @@ tr:hover td { background: #fdfefe; }
   .table-wrap { font-size: 13px; }
   th, td { padding: 10px 12px; }
 }
+
+/* Shared Design System — Midnight Navy (#0b192c), Ice Blue (#38bdf8), Glacier White (#ffffff), Salmon-Orange (#e86a4a) */
+.lfse-site-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: #0b192c;
+  color: #ffffff;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.25);
+  box-shadow: 0 8px 24px rgba(7, 17, 30, 0.22);
+}
+
+.lfse-header-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 20px;
+  padding-top: 14px;
+  padding-bottom: 14px;
+}
+
+.lfse-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-decoration: none;
+}
+
+.lfse-brand-title {
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #ffffff;
+}
+
+.lfse-brand-sub {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #7dd3fc;
+}
+
+.lfse-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 18px;
+}
+
+.lfse-nav a {
+  color: #e2e8f0;
+  font-size: 13.5px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.lfse-nav a:hover,
+.lfse-nav a:focus-visible {
+  color: #7dd3fc;
+}
+
+.lfse-nav a.lfse-nav-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: #e86a4a;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+  transition: background 0.15s ease;
+}
+
+.lfse-nav a.lfse-nav-cta:hover {
+  background: #d45838;
+  color: #ffffff;
+}
+
+.lfse-footer {
+  background: #0b192c;
+  color: #cbd5e1;
+  border-top: 3px solid #38bdf8;
+  padding: 38px 0 28px;
+  margin-top: 0;
+}
+
+.lfse-footer-top {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px 32px;
+}
+
+.lfse-footer-title {
+  display: block;
+  font-size: 15px;
+  font-weight: 850;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #ffffff;
+}
+
+.lfse-footer-copy {
+  margin: 8px 0 0;
+  font-size: 13.5px;
+  line-height: 1.58;
+  color: #94a3b8;
+}
+
+.lfse-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+}
+
+.lfse-footer-links a {
+  color: #7dd3fc;
+  font-size: 13.5px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.lfse-footer-bottom {
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(148, 163, 184, 0.18);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12.5px;
+  color: #94a3b8;
+}
