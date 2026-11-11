@@ -34,6 +34,16 @@ const nextConfig: NextConfig = {
         destination: "/ports/icy-strait-point",
         permanent: true,
       },
+      {
+        source: "/cruise-ships/:shipSlug/victoria-bc-shore-excursions",
+        destination: "/cruise-ships/:shipSlug",
+        permanent: true,
+      },
+      {
+        source: "/cruise-ships/:shipSlug/victoria-bc",
+        destination: "/cruise-ships/:shipSlug",
+        permanent: true,
+      },
     ];
   },
 };

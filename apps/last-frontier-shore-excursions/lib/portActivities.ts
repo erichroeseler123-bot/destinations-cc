@@ -483,7 +483,7 @@ export const PORT_ACTIVITIES: PortActivity[] = [
         "bestSuitedFor": "Families, dog lovers, and cruisers wanting genuine Iditarod mushing traditions",
         "meetingPoint": "Downtown Cruise Pier / Mt Roberts Tramway Area",
         "searchQuery": "Juneau sled dog discovery mushers camp",
-        "campaignTag": "juneau-heli-dog-sledding"
+        "campaignTag": "juneau-wheeled-sled-dog-camp"
       }
     ],
     "whatToBring": [

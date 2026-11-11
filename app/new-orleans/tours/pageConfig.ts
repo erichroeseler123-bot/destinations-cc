@@ -1,3 +1,5 @@
+import { HELD_JEAN_LAFITTE_SLUG, isHeldProduct } from "../data/truthPolicy";
+
 export type ProductBadgeType = 'urgency' | 'trust' | 'logistics' | 'concierge-pick';
 
 export interface ProductBadge {
@@ -230,6 +232,9 @@ export function getProductPrimaryBookingHref(
   },
 ): string {
   const canonical = STOREFRONT_PRODUCTS.find((p) => p.slug === product.slug) || product;
+  if (canonical.slug === HELD_JEAN_LAFITTE_SLUG) {
+    return "";
+  }
   if (canonical.fareharborAsnActive !== true && canonical.viatorProductCode) {
     return buildPayableViatorClickHref({
       offer: canonical.viatorProductCode,
@@ -245,6 +250,9 @@ export function getProductPrimaryBookingHref(
       src: overrides?.src,
       isTest: overrides?.isTest,
     });
+  }
+  if (canonical.fareharborAsnActive === false) {
+    return "";
   }
   return (
     canonical.bookingVariants?.[0]?.bookingUrl ||
@@ -312,7 +320,16 @@ export function getProductViatorCanonicalInfo(
   >,
 ): ViatorCanonicalProductInfo {
   const canonical = STOREFRONT_PRODUCTS.find((p) => p.slug === product.slug) || product;
-  const code = (canonical.viatorProductCode || "15200P6").trim().toUpperCase();
+  if (canonical.slug === HELD_JEAN_LAFITTE_SLUG || !canonical.viatorProductCode) {
+    return {
+      productCode: "",
+      title: canonical.title,
+      operatorName: canonical.operatorName,
+      destinationUrl: "",
+      providerAccount: "P00306962",
+    };
+  }
+  const code = canonical.viatorProductCode.trim().toUpperCase();
   const mapped = VIATOR_CANONICAL_PRODUCT_MAP[code];
   if (mapped) {
     return {
@@ -386,6 +403,9 @@ export function getProductActiveBookingVariants(
   reselectionNote?: string;
 }[] {
   const canonical = STOREFRONT_PRODUCTS.find((p) => p.slug === product.slug) || product;
+  if (canonical.slug === HELD_JEAN_LAFITTE_SLUG) {
+    return [];
+  }
   if (canonical.fareharborAsnActive !== true && canonical.viatorProductCode) {
     if (canonical.viatorVariants && canonical.viatorVariants.length > 0) {
       return canonical.viatorVariants.map((v) => ({
@@ -934,7 +954,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     imageUrl: "/images/travel-markets/new-orleans/hotel-pickup-swamp-boat.png",
     imageAlt: "Louisiana Tour Company covered swamp tour boat with French Quarter hotel pickup",
     slug: "louisiana-tour-company-swamp-tour-hotel-pickup",
-    relatedTourSlug: "jeanlafitte-swamp-tour-with-hotel-pickup",
+    relatedTourSlug: "covered-tour-boat",
     detailPageTitle: "New Orleans Swamp Tour Boat Adventure with Hotel Pickup | Welcome to New Orleans Tours",
     metaDescription: "Book the New Orleans Swamp Tour Boat Adventure with round-trip French Quarter & Downtown hotel pickup ($60/adult · $120.00 total for 2 adults, including Hotel Monteleone at 214 Royal St).",
     durationLabel: "4 hours door-to-door (~1h 45m on the water)",
@@ -971,70 +991,45 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     companyShortname: "jeanlafitteswamptour",
     itemId: "763318",
     flowId: "no",
-    viatorProductCode: "15200P6",
-    viatorOptionCode: "TG10",
-    viatorDepartureTime: "08:00",
-    viatorPlacementId: "fp-wno-swamp-tours",
     fareharborAsnActive: false,
-    viatorVariants: [
-      {
-        label: "BOOK COVERED SWAMP BOAT WITH HOTEL PICKUP ($60/ADULT · VIATOR #15200P6 · TG10)",
-        offer: "15200P6",
-        option: "TG10",
-        departureTime: "08:00",
-        placementId: "fp-wno-swamp-tours",
-      },
-      {
-        label: "BOOK JEAN LAFITTE 90-MIN SELF-DRIVE SWAMP TOUR ($32/ADULT · VIATOR #88100P4)",
-        offer: "88100P4",
-        placementId: "fp-wno-swamp-tours",
-      },
-    ],
     title: "Jean Lafitte Swamp Tour with Hotel Pickup",
     category: "Swamp Tours",
     operatorName: "Jean Lafitte Swamp Tours",
-    description: "Covered bayou swamp boat excursion through the Jean Lafitte National Historical Park & Preserve with round-trip French Quarter & Downtown hotel shuttle pickup (including Hotel Monteleone, 214 Royal St).",
+    description: "Covered bayou swamp boat excursion through the Jean Lafitte National Historical Park & Preserve. Self-service partner checkout on this listing is temporarily held pending direct operator confirmation.",
     bestFor: "Families, all ages & French Quarter guests without a car",
-    priceFrom: 62,
-    priceUnit: "adult ($65.72 w/ 6% fees · $131.44 total for 2 adults)",
-    isFlatRate: true,
     badges: [
-      { type: "concierge-pick", label: "🏆 Concierge Pick · Hotel Pickup" },
-      { type: "logistics", label: "🚐 $131.44 Total for 2 Adults (Incl. Fees)" },
+      { type: "logistics", label: "⏳ Operator Verification Pending" },
     ],
     imageUrl: "/images/travel-markets/new-orleans/hotel-pickup-swamp-boat.png",
     imageAlt: "Jean Lafitte covered swamp tour boat with hotel pickup from New Orleans",
     slug: "jeanlafitte-swamp-tour-with-hotel-pickup",
-    relatedTourSlug: "swamp-bayou-tour",
-    detailPageTitle: "Jean Lafitte Swamp Tour with Hotel Pickup | Welcome to New Orleans Tours",
-    metaDescription: "Book the Jean Lafitte Swamp Tour with round-trip French Quarter & Downtown New Orleans hotel shuttle pickup ($62/adult subtotal + 6% fees = $131.44 total for 2 adults).",
-    durationLabel: "3 hours 45 minutes door-to-door (~1h 45m on the water)",
-    transportationSummary: "Round-trip French Quarter & Downtown hotel shuttle pickup included",
-    pickupSummary: "Select your French Quarter or Downtown hotel during checkout (e.g., Hotel Monteleone — 214 Royal St, option #22056428). $124.00 subtotal + $7.44 (6% fees) = $131.44 total for 2 adults.",
+    relatedTourSlug: "louisiana-tour-company-swamp-tour-hotel-pickup",
+    detailPageTitle: "Jean Lafitte Swamp Tour with Hotel Pickup | Checkout Pending Verification",
+    metaDescription: "Direct Jean Lafitte Swamp Tours partner checkout and hotel-shuttle option mapping are temporarily held pending operator confirmation. Compare verified French Quarter hotel-pickup swamp boat options.",
+    durationLabel: "Confirm current itinerary with operator",
+    transportationSummary: "Hotel pickup availability & stops pending operator confirmation",
+    pickupSummary: "Self-service checkout disabled until direct Jean Lafitte partner pickup mapping is confirmed. Call 504-484-9687 or compare verified hotel-pickup swamp boat options.",
     highlights: [
-      "Round-trip shuttle pickup from French Quarter & Downtown hotels (including Hotel Monteleone, 214 Royal St)",
-      "Shaded, covered swamp boat through Jean Lafitte National Historical Park & Preserve",
-      "Transparent total pricing: $62.00/adult subtotal ($124.00 for 2 adults) + 6% ($7.44) fees = $131.44 checkout total"
+      "Covered swamp boat format in the Jean Lafitte bayou corridor",
+      "Self-service checkout intentionally disabled until direct operator partner configuration is verified"
     ],
-    detailSummary: "A 3h 45m covered bayou boat tour with round-trip French Quarter and Downtown hotel pickup operated by Jean Lafitte Swamp Tours (item #763318). Checkout total for 2 adults is $131.44 ($124.00 subtotal + $7.44 fees).",
+    detailSummary: "Covered bayou boat tour operated by Jean Lafitte Swamp Tours. Self-service checkout on this listing is temporarily held pending direct operator partner confirmation; compare verified hotel-pickup swamp boat options or call 504-484-9687.",
     bestFit: [
-      "French Quarter and Downtown hotel guests who want door-to-door shuttle pickup",
+      "French Quarter and Downtown hotel guests comparing covered swamp boat options",
       "Families, seniors, and all-ages groups seeking a shaded, calm bayou cruise"
     ],
     notIdealFor: [
       "Visitors strictly seeking a high-speed open-air airboat ride"
     ],
     childrenConsiderations: [
-      "All ages welcome on the covered swamp boat; select Adult and Child seats during checkout."
+      "All ages welcome on covered swamp boats; confirm current operator terms before booking."
     ],
     confirmedInclusions: [
-      "Round-trip hotel shuttle pickup from participating French Quarter & Downtown hotels",
-      "Guided covered swamp boat tour in the Jean Lafitte bayou"
+      "Confirm current departure schedule, hotel shuttle stops, and inclusions directly before booking"
     ],
     bookingConfirmations: [
-      "Departure slot (e.g. 8:30 AM pickup / 10:00 AM tour)",
-      "Selected hotel pickup stop (customFieldInstance12258400, e.g. Hotel Monteleone #22056428)",
-      "Total checkout price including 6% booking fees ($131.44 for 2 adults)"
+      "Current departure slot and hotel pickup stop",
+      "Operator pricing, fees, and cancellation terms"
     ],
   },
   {
@@ -1103,25 +1098,25 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
         label: "CHECK SIGHTSEEING AVAILABILITY",
         itemId: "560825",
         flowId: "1621291",
-        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/560825/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1621291"
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/560825/?ref=WelcomeToNewOrleansTours&asn=welcometoneworleanstours&full-items=yes&flow=1621291"
       },
       {
         label: "CHECK EARLY DINNER (6:00 PM)",
         itemId: "560778",
         flowId: "1621291",
-        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/560778/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1621291"
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/560778/?ref=WelcomeToNewOrleansTours&asn=welcometoneworleanstours&full-items=yes&flow=1621291"
       },
       {
         label: "CHECK LATE DINNER (7:45 PM)",
         itemId: "560822",
         flowId: "1621291",
-        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/560822/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1621291"
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/560822/?ref=WelcomeToNewOrleansTours&asn=welcometoneworleanstours&full-items=yes&flow=1621291"
       },
       {
         label: "CHECK SEASONAL PARTY PACKAGE",
         itemId: "560827",
         flowId: "1621291",
-        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/560827/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1621291"
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/560827/?ref=WelcomeToNewOrleansTours&asn=welcometoneworleanstours&full-items=yes&flow=1621291"
       }
     ]
   },
@@ -1198,37 +1193,31 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
         label: "CHECK SIGHTSEEING AVAILABILITY",
         itemId: "561220",
         flowId: "1621342",
-        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/561220/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1621342"
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/561220/?ref=WelcomeToNewOrleansTours&asn=welcometoneworleanstours&full-items=yes&flow=1621342"
       },
       {
         label: "CHECK 11:00 AM LUNCH SEATING",
         itemId: "561185",
         flowId: "1621342",
-        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/561185/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1621342"
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/561185/?ref=WelcomeToNewOrleansTours&asn=welcometoneworleanstours&full-items=yes&flow=1621342"
       },
       {
         label: "CHECK 12:15 PM LUNCH SEATING",
         itemId: "561216",
         flowId: "1621342",
-        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/561216/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1621342"
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/561216/?ref=WelcomeToNewOrleansTours&asn=welcometoneworleanstours&full-items=yes&flow=1621342"
       },
       {
         label: "CHECK 2:00 PM LUNCH SEATING",
         itemId: "566787",
         flowId: "1621342",
-        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/566787/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1621342"
-      },
-      {
-        label: "CHECK 3:15 PM LUNCH SEATING",
-        itemId: "566794",
-        flowId: "1621342",
-        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/566794/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1621342"
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/566787/?ref=WelcomeToNewOrleansTours&asn=welcometoneworleanstours&full-items=yes&flow=1621342"
       },
       {
         label: "CHECK SEASONAL PARTY PACKAGE",
         itemId: "561392",
         flowId: "1621342",
-        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/561392/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1621342"
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/561392/?ref=WelcomeToNewOrleansTours&asn=welcometoneworleanstours&full-items=yes&flow=1621342"
       }
     ]
   },
@@ -1281,19 +1270,19 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
         label: "CHECK SIGHTSEEING AVAILABILITY",
         itemId: "561369",
         flowId: "1621326",
-        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/561369/?ref=WelcomeToNewOrelansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1621326"
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/561369/?ref=WelcomeToNewOrleansTours&asn=welcometoneworleanstours&full-items=yes&flow=1621326"
       },
       {
         label: "CHECK BRUNCH AVAILABILITY",
         itemId: "561390",
         flowId: "1621326",
-        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/561390/?ref=WelcomeToNewOrelansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1621326"
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/561390/?ref=WelcomeToNewOrleansTours&asn=welcometoneworleanstours&full-items=yes&flow=1621326"
       },
       {
         label: "CHECK SEASONAL PARTY PACKAGE",
         itemId: "561403",
         flowId: "1621326",
-        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/561403/?ref=WelcomeToNewOrelansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1621326"
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/561403/?ref=WelcomeToNewOrleansTours&asn=welcometoneworleanstours&full-items=yes&flow=1621326"
       }
     ]
   },
@@ -1329,7 +1318,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
         label: "CHECK AVAILABILITY",
         itemId: "561477",
         flowId: "1578687",
-        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/561477/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1578687"
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/561477/?ref=WelcomeToNewOrleansTours&asn=welcometoneworleanstours&full-items=yes&flow=1578687"
       }
     ]
   },
@@ -1365,7 +1354,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
         label: "CHECK AVAILABILITY",
         itemId: "561539",
         flowId: "1578687",
-        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/561539/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1578687"
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/561539/?ref=WelcomeToNewOrleansTours&asn=welcometoneworleanstours&full-items=yes&flow=1578687"
       }
     ]
   },
@@ -1401,7 +1390,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
         label: "CHECK AVAILABILITY",
         itemId: "561484",
         flowId: "1220421",
-        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/561484/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1220421"
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/561484/?ref=WelcomeToNewOrleansTours&asn=welcometoneworleanstours&full-items=yes&flow=1220421"
       }
     ]
   },
@@ -1437,7 +1426,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
         label: "CHECK AVAILABILITY",
         itemId: "561547",
         flowId: "1220421",
-        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/561547/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1220421"
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/561547/?ref=WelcomeToNewOrleansTours&asn=welcometoneworleanstours&full-items=yes&flow=1220421"
       }
     ]
   },
@@ -1470,7 +1459,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
         label: "CHECK AVAILABILITY",
         itemId: "562175",
         flowId: "1220421",
-        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/562175/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1220421"
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/562175/?ref=WelcomeToNewOrleansTours&asn=welcometoneworleanstours&full-items=yes&flow=1220421"
       }
     ]
   },
@@ -1507,7 +1496,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
         label: "CHECK AVAILABILITY",
         itemId: "562191",
         flowId: "1220421",
-        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/562191/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1220421"
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/562191/?ref=WelcomeToNewOrleansTours&asn=welcometoneworleanstours&full-items=yes&flow=1220421"
       }
     ]
   },
@@ -1544,7 +1533,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
         label: "CHECK AVAILABILITY",
         itemId: "670738",
         flowId: "1220421",
-        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/670738/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1220421"
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/670738/?ref=WelcomeToNewOrleansTours&asn=welcometoneworleanstours&full-items=yes&flow=1220421"
       }
     ]
   },
@@ -1576,7 +1565,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
         label: "CHECK AVAILABILITY",
         itemId: "682856",
         flowId: "1578708",
-        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/682856/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1578708"
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/682856/?ref=WelcomeToNewOrleansTours&asn=welcometoneworleanstours&full-items=yes&flow=1578708"
       }
     ]
   },
@@ -1608,7 +1597,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
         label: "CHECK AVAILABILITY",
         itemId: "562204",
         flowId: "1578708",
-        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/562204/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1578708"
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/562204/?ref=WelcomeToNewOrleansTours&asn=welcometoneworleanstours&full-items=yes&flow=1578708"
       }
     ]
   },
@@ -1643,7 +1632,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
         label: "CHECK AVAILABILITY",
         itemId: "562250",
         flowId: "1578708",
-        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/562250/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1578708"
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/562250/?ref=WelcomeToNewOrleansTours&asn=welcometoneworleanstours&full-items=yes&flow=1578708"
       }
     ]
   },
@@ -1675,7 +1664,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
         label: "CHECK AVAILABILITY",
         itemId: "564661",
         flowId: "1578708",
-        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/564661/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1578708"
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/564661/?ref=WelcomeToNewOrleansTours&asn=welcometoneworleanstours&full-items=yes&flow=1578708"
       }
     ]
   },
@@ -1707,7 +1696,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
         label: "CHECK AVAILABILITY",
         itemId: "694782",
         flowId: "1621347",
-        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/694782/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1621347"
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/694782/?ref=WelcomeToNewOrleansTours&asn=welcometoneworleanstours&full-items=yes&flow=1621347"
       }
     ]
   }

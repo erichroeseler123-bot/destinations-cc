@@ -31,7 +31,6 @@ export default function TourDetailBookingAction({ product, refCode, fallbackHref
     const url = new URL(fallbackHref);
     if (url.searchParams.has("asn")) finalAsn = url.searchParams.get("asn")!;
     if (url.searchParams.has("ref")) finalRef = url.searchParams.get("ref")!;
-    if (url.searchParams.has("schedule-uuid")) scheduleUuid = url.searchParams.get("schedule-uuid")!;
     if (url.searchParams.has("full-items")) fullItems = url.searchParams.get("full-items")!;
     if (url.searchParams.has("flow")) finalFlow = url.searchParams.get("flow")!;
   } catch(e) {}

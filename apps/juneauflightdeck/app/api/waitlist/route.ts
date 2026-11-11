@@ -244,7 +244,7 @@ export async function POST(request: Request) {
       allowSplitParty: Boolean(allowSplitParty ?? body.allow_split_party ?? false),
       bookingMode: normalizedMode,
       notes: notes ? String(notes).trim() : undefined,
-      status: effectiveIsTest ? "test_excluded" : "active_scanning",
+      status: effectiveIsTest ? "test_excluded" : "concierge_review",
       isTest: effectiveIsTest,
       operatorHoldStatus: "not_held",
       estimatedValue: parsedPartySize * perSeat,

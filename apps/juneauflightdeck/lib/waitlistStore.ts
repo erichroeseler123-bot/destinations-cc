@@ -91,13 +91,18 @@ export const SCANNED_PRODUCTS: ScannedProduct[] = [
 ];
 
 export type WaitlistStatus =
-  | "active_scanning"    // Actively querying operator inventories
-  | "opening_detected"  // Seat opening detected by scanner for passenger's date/party
+  | "concierge_review"  // Queued for human concierge review against Part 135 & partner schedules
+  | "active_scanning"   // Legacy DB status normalized to human concierge review
+  | "opening_detected"  // Seat opening verified for passenger's date/party
   | "contact_pending"   // Notification/dispatch alert sent, awaiting passenger checkout
   | "held"              // ONLY when an operator hold is placed with holdReference and holdExpiresAt
   | "booking_confirmed" // Verified completed booking via checkout URL / operator confirmation
   | "cancelled"         // Passenger declined or expired
-  | "test_excluded";    // Test/synthetic request excluded from active scanning and business metrics
+  | "test_excluded";    // Test/synthetic request excluded from concierge queue and business metrics
+
+export function isPendingConciergeReviewStatus(status: WaitlistStatus): boolean {
+  return status === "concierge_review" || status === "active_scanning";
+}
 
 export function normalizeTourPreference(
   rawTourType?: string,
@@ -202,7 +207,7 @@ const SEED_ENTRIES: WaitlistEntry[] = [
     partySize: 4,
     notes: "Docking at Franklin Dock 1:00 PM. Dog sledding is top bucket list item!",
     bookingMode: "concierge_dispatch",
-    status: "active_scanning",
+    status: "concierge_review",
     operatorHoldStatus: "not_held",
     lastScannedAt: "2026-10-01T10:00:00.000Z",
     estimatedValue: 2596,
@@ -285,7 +290,7 @@ const SEED_ENTRIES: WaitlistEntry[] = [
     partySize: 3,
     notes: "Active hikers, seeking NorthStar Trekking crampon hike",
     bookingMode: "instant_alert",
-    status: "active_scanning",
+    status: "concierge_review",
     operatorHoldStatus: "not_held",
     lastScannedAt: "2026-10-01T10:00:00.000Z",
     estimatedValue: 1797,
@@ -502,7 +507,7 @@ export async function execute10AmDailySweep(options?: {
   const activeEntries = all.filter((e) => {
     const isTestAllowed = Boolean(options?.includeTests || options?.testMatch || options?.testSplitMatch);
     if (e.isTest && !isTestAllowed) return false;
-    const isScanningStatus = e.status === "active_scanning" || (e.isTest && isTestAllowed && e.status === "test_excluded");
+    const isScanningStatus = isPendingConciergeReviewStatus(e.status) || (e.isTest && isTestAllowed && e.status === "test_excluded");
     if (!isScanningStatus) return false;
     const targetDate = e.portDate || e.juneauDate || e.skagwayDate;
     if (targetDate && targetDate < today) return false;
@@ -531,7 +536,7 @@ export async function execute10AmDailySweep(options?: {
   for (const product of SCANNED_PRODUCTS) {
     // 1. Identify active entries that want this port AND match this tour type
     const candidateEntries = activeEntries.filter((entry) => {
-      if (entry.status !== "active_scanning" && !(entry.isTest && (options?.includeTests || options?.testMatch))) return false;
+      if (!isPendingConciergeReviewStatus(entry.status) && !(entry.isTest && (options?.includeTests || options?.testMatch))) return false;
 
       const wantsPort =
         entry.portCity === "either" ||
@@ -665,7 +670,7 @@ export async function execute10AmDailySweep(options?: {
 
         // Find candidate entries waiting specifically on this date for this port
         const matchingEntries = candidateEntries.filter((entry) => {
-          if (entry.status !== "active_scanning" && !(entry.isTest && (options?.includeTests || options?.testMatch))) return false;
+          if (!isPendingConciergeReviewStatus(entry.status) && !(entry.isTest && (options?.includeTests || options?.testMatch))) return false;
           const targetDate =
             product.port === "juneau"
               ? entry.juneauDate || (entry.portCity === "juneau" ? entry.portDate : undefined)
@@ -726,17 +731,17 @@ export async function execute10AmDailySweep(options?: {
           // or may evaluate alternative slots. Keep status as 'active_scanning' so subsequent sweeps continue.
           // ONLY transition to contact_pending if the FULL party was satisfied and delivered (or marked test).
           if (isSplitMatch) {
-            entry.status = "active_scanning";
+            entry.status = "concierge_review";
             entry.partialAlertsCount = (entry.partialAlertsCount || 0) + 1;
             entry.lastPartialAlertAt = notification.dispatchedAt;
             console.log(
-              `[DailySweep] Split-party match (${slot.capacity}/${entry.partySize} seats) for ${entry.id}; preserving active_scanning status so scans continue.`
+              `[DailySweep] Split-party match (${slot.capacity}/${entry.partySize} seats) for ${entry.id}; preserving concierge_review status.`
             );
           } else if (notification.status === "delivered" || entry.isTest) {
             entry.status = "contact_pending";
           } else {
             console.log(
-              `[DailySweep] Delivery status is ${notification.status} for ${entry.id}; preserving active_scanning status so scans continue.`
+              `[DailySweep] Delivery status is ${notification.status} for ${entry.id}; preserving pending review status.`
             );
           }
           entry.operatorHoldStatus = "not_held";
@@ -772,9 +777,9 @@ export async function execute10AmDailySweep(options?: {
     }
   }
 
-  // Update lastScannedAt on any entries that remain active_scanning
+  // Update lastScannedAt on any entries that remain in pending review
   for (const entry of activeEntries) {
-    if (entry.status === "active_scanning") {
+    if (isPendingConciergeReviewStatus(entry.status)) {
       entry.lastScannedAt = timestamp;
       await saveWaitlistEntry(entry);
     }

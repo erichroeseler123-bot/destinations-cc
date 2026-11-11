@@ -261,7 +261,9 @@ export async function GET(request: Request) {
     const productionEntries = allEntries.filter((e: WaitlistEntry) => !e.isTest && e.status !== "test_excluded");
     const testEntries = allEntries.filter((e: WaitlistEntry) => Boolean(e.isTest || e.status === "test_excluded"));
 
-    const activeEntries = productionEntries.filter((e: WaitlistEntry) => e.status === "active_scanning");
+    const activeEntries = productionEntries.filter(
+      (e: WaitlistEntry) => e.status === "concierge_review" || e.status === "active_scanning"
+    );
     const alertedEntries = productionEntries.filter(
       (e: WaitlistEntry) => e.status === "contact_pending" || e.status === "opening_detected" || e.status === "held"
     );
@@ -278,8 +280,11 @@ export async function GET(request: Request) {
 
     return NextResponse.json({
       ok: true,
+      scannerOperational: false,
+      reviewMode: "concierge_review",
       metrics: {
         totalWatches: productionEntries.length,
+        conciergeReview: activeEntries.length,
         activeScanning: activeEntries.length,
         contactPending: alertedEntries.length,
         confirmedBookings: confirmedEntries.length,

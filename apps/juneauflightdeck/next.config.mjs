@@ -13,6 +13,18 @@ const nextConfig = {
         destination: "https://juneauflightdeck.com/:path*",
         permanent: true,
       },
+      {
+        source: "/whale-deck",
+        missing: [{ type: "query", key: "flight_canceled" }],
+        destination: "https://www.lastfrontiershoreexcursions.com/juneau/whale-watching",
+        permanent: true,
+      },
+      {
+        source: "/juneau-whale-watching-tours",
+        missing: [{ type: "query", key: "flight_canceled" }],
+        destination: "https://www.lastfrontiershoreexcursions.com/juneau/whale-watching",
+        permanent: true,
+      },
     ];
   },
   images: {

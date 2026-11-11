@@ -166,10 +166,10 @@ hello@juneauflightdeck.com
         ? `<div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 14px 16px; margin: 16px 0; color: #166534; font-size: 14px; line-height: 1.5;">
             <strong>⚡ Split-Party Opening Detected:</strong> You indicated willingness to split your party across adjacent departure times. An open helicopter slot with <strong>${params.seatsAvailable} seat(s)</strong> matching your cruise port date on <strong>${params.shipName}</strong> has just been detected for your party of <strong>${params.partySize}</strong>.
             <div style="margin-top: 6px; font-size: 13px; color: #15803d;">
-              <em>We will continue active scanning for your remaining ${remainingSeats} seat(s).</em>
+              <em>Your request remains open in human concierge review for your remaining ${remainingSeats} seat(s).</em>
             </div>
           </div>`
-        : `<p>An open helicopter flight slot matching your cruise port date on <strong>${params.shipName}</strong> (${params.cruiseLine}) was detected during our daily availability check.</p>`
+        : `<p>An open helicopter flight slot matching your cruise port date on <strong>${params.shipName}</strong> (${params.cruiseLine}) was verified during human concierge review.</p>`
     }
     
     <div style="background-color: #f8fafc; border-left: 4px solid #0284c7; padding: 16px; margin: 20px 0; border-radius: 4px;">
@@ -370,8 +370,8 @@ Notes: ${entry.notes || "None"}
 
   const emailBodyHtml = `
 <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #081c2a; color: #eef6fb; border-radius: 14px;">
-  <h2 style="color: #f0b35b; margin-top: 0;">✈️ New Waitlist Request Received</h2>
-  <p style="font-size: 14px; color: #9ed9ff;">A new passenger availability-alert watch has been activated.</p>
+  <h2 style="color: #f0b35b; margin-top: 0;">✈️ New Concierge Availability Request</h2>
+  <p style="font-size: 14px; color: #9ed9ff;">A new passenger inquiry has entered the human concierge review queue.</p>
   <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin: 16px 0;">
     <tr><td style="padding: 6px 0; color: #94a3b8;">Request ID:</td><td style="font-weight: bold; color: #ffffff;">${entry.id}</td></tr>
     <tr><td style="padding: 6px 0; color: #94a3b8;">Passenger:</td><td style="font-weight: bold; color: #ffffff;">${entry.name}</td></tr>

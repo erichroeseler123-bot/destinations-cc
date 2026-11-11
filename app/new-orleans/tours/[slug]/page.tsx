@@ -25,6 +25,12 @@ import DailyBriefSignup from "../../components/DailyBriefSignup";
 import { TOUR_RECORDS } from "../../lib/tourRecommendationRules";
 import { TOUR_DECISION_COPY } from "../../data/tourDecisionCopy";
 import { isApprovedProductSlug, resolveFareHarborSource } from "../../lib/fareHarborAttribution";
+import {
+  HELD_COMBO_BANNER,
+  HELD_JEAN_LAFITTE_BANNER,
+  HELD_JEAN_LAFITTE_SLUG,
+  isHeldProduct,
+} from "../../data/truthPolicy";
 import { buildWnoBreadcrumbJsonLd, buildWnoWebPageJsonLd, generateProductSchemaGraph } from "../../lib/structuredData";
 import PortfolioAssuranceBanner from "@/app/components/dcc/PortfolioAssuranceBanner";
 import {
@@ -313,41 +319,66 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
     hasValidRecommendation: Boolean(recommendationExplanation),
   });
 
-  const bookingActions = (className: string) => (
-    <>
-      {activeVariants && activeVariants.length > 0 ? (
-        activeVariants.map((variant: any, idx: number) => (
+  const heldProduct = isHeldProduct(slug);
+  const heldBanner =
+    slug === HELD_JEAN_LAFITTE_SLUG ? HELD_JEAN_LAFITTE_BANNER : HELD_COMBO_BANNER;
+
+  const bookingActions = (className: string) => {
+    if (heldProduct) {
+      return (
+        <div
+          data-testid="held-product-booking-disabled"
+          className="w-full rounded border border-[#d4af37]/45 bg-[#171217] p-4 text-left text-xs leading-relaxed text-[#f6f1e8]"
+        >
+          <p className="font-bold uppercase tracking-wider text-[#d4af37]">
+            Operator verification pending
+          </p>
+          <p className="mt-1.5 text-white/80">{heldBanner}</p>
+          <a
+            href="tel:+15044849687"
+            className={`${className} mt-3 inline-flex w-full items-center justify-center text-center`}
+          >
+            Call 504-484-9687 to confirm
+          </a>
+        </div>
+      );
+    }
+    return (
+      <>
+        {activeVariants && activeVariants.length > 0 ? (
+          activeVariants.map((variant: any, idx: number) => (
+            <TourDetailBookingAction
+              key={idx}
+              product={product}
+              refCode={refCode}
+              fallbackHref={variant.bookingUrl || fallbackHref}
+              ctaText={variant.label}
+              variantLabel={variant.label}
+              itemId={variant.itemId}
+              flowId={variant.flowId}
+              className={className}
+            />
+          ))
+        ) : (
           <TourDetailBookingAction
-            key={idx}
             product={product}
             refCode={refCode}
-            fallbackHref={variant.bookingUrl || fallbackHref}
-            ctaText={variant.label}
-            variantLabel={variant.label}
-            itemId={variant.itemId}
-            flowId={variant.flowId}
+            fallbackHref={fallbackHref}
+            ctaText={ctaText}
             className={className}
           />
-        ))
-      ) : (
-        <TourDetailBookingAction
-          product={product}
-          refCode={refCode}
-          fallbackHref={fallbackHref}
-          ctaText={ctaText}
-          className={className}
-        />
-      )}
-      {viatorReselectionNote && (
-        <p
-          data-testid="wno-detail-reselection-note"
-          className="mt-2 w-full rounded border border-[#b8860b]/50 bg-[#fcf5e3] px-3 py-2 text-[11px] font-medium leading-relaxed !text-[#2b2110]"
-        >
-          {viatorReselectionNote}
-        </p>
-      )}
-    </>
-  );
+        )}
+        {viatorReselectionNote && (
+          <p
+            data-testid="wno-detail-reselection-note"
+            className="mt-2 w-full rounded border border-[#b8860b]/50 bg-[#fcf5e3] px-3 py-2 text-[11px] font-medium leading-relaxed !text-[#2b2110]"
+          >
+            {viatorReselectionNote}
+          </p>
+        )}
+      </>
+    );
+  };
 
   const identityGraph = isWto
     ? [
@@ -427,26 +458,38 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
           siteDomain={siteDomain}
           assurance={assurance}
           carriedContext={carriedContext}
-          handoffActions={[
-            {
-              label: `Book ${viatorInfo.title} (${viatorInfo.operatorName} · ${viatorInfo.productCode}${
-                isLargeAirboat15200P1Page
-                  ? ` · ${initial15200P1SeatAvailability?.selectedOptionCode || resolved15200P1OptionCode} (${initial15200P1SeatAvailability?.selectedDepartureTime || nextEligible15200P1?.selectedOption.startTime || "14:10"})`
-                  : viatorInfo.optionCode
-                    ? ` · ${viatorInfo.optionCode}`
-                    : ""
-              }) on Viator`,
-              href: viatorHandoffHref,
-              providerLabel: "Viator",
-              accountLabel: `pid=${viatorInfo.providerAccount}`,
-            },
-            {
-              label: `Book ${product.title} on FareHarbor (Item ${fhItemCode})`,
-              href: fhHandoffHref,
-              providerLabel: "FareHarbor",
-              accountLabel: `asn=${fhAccount}`,
-            },
-          ]}
+          handoffActions={
+            heldProduct
+              ? []
+              : [
+                  ...(viatorInfo.productCode && viatorInfo.destinationUrl
+                    ? [
+                        {
+                          label: `Book ${viatorInfo.title} (${viatorInfo.operatorName} · ${viatorInfo.productCode}${
+                            isLargeAirboat15200P1Page
+                              ? ` · ${initial15200P1SeatAvailability?.selectedOptionCode || resolved15200P1OptionCode} (${initial15200P1SeatAvailability?.selectedDepartureTime || nextEligible15200P1?.selectedOption.startTime || "14:10"})`
+                              : viatorInfo.optionCode
+                                ? ` · ${viatorInfo.optionCode}`
+                                : ""
+                          }) on Viator`,
+                          href: viatorHandoffHref,
+                          providerLabel: "Viator",
+                          accountLabel: `pid=${viatorInfo.providerAccount}`,
+                        },
+                      ]
+                    : []),
+                  ...(product.fareharborAsnActive !== false
+                    ? [
+                        {
+                          label: `Book ${product.title} on FareHarbor (Item ${fhItemCode})`,
+                          href: fhHandoffHref,
+                          providerLabel: "FareHarbor",
+                          accountLabel: `asn=${fhAccount}`,
+                        },
+                      ]
+                    : []),
+                ]
+          }
           crossSiteLinks={[
             {
               label: "Compare Swamp Airboats vs Boats on Welcome to the Swamp",

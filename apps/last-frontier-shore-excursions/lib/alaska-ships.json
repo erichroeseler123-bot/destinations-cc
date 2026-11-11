@@ -203,30 +203,6 @@
             "highlight": "No downtown shuttle required; paddle through protected Tongass National Forest bays."
           }
         ]
-      },
-      "victoria-bc": {
-        "portSlug": "victoria-bc",
-        "portName": "Victoria",
-        "portRegion": "Pacific / British Columbia",
-        "typicalDock": "Ogden Point Cruise Terminal",
-        "tenderRequired": false,
-        "typicalPortHours": "Approx. 4–5 hours (evening port call)",
-        "recommendedBufferMinutes": 60,
-        "maxTourDurationHours": 3,
-        "dockLogisticsNotes": "Evening service call in Victoria. Tours to The Butchart Gardens require dedicated direct motorcoach transit.",
-        "recommendedExcursionTypes": [
-          "The Butchart Gardens Illuminated Evening Tour",
-          "Victoria Inner Harbour Walk"
-        ],
-        "sampleTours": [
-          {
-            "title": "The Butchart Gardens Evening Illuminations Tour",
-            "durationHours": 3,
-            "activityType": "Botanical Gardens",
-            "meetingLogistics": "Coach pickup directly at Ogden Point Terminal.",
-            "highlight": "Experience the 55-acre world-renowned sunken garden under atmospheric evening light."
-          }
-        ]
       }
     }
   },
@@ -793,30 +769,6 @@
             "activityType": "Maritime Discovery",
             "meetingLogistics": "Waterfront dock boarding.",
             "highlight": "Authentic crabbing boat demonstration and wildlife encounters."
-          }
-        ]
-      },
-      "victoria-bc": {
-        "portSlug": "victoria-bc",
-        "portName": "Victoria",
-        "portRegion": "Pacific / British Columbia",
-        "typicalDock": "Ogden Point Cruise Terminal",
-        "tenderRequired": false,
-        "typicalPortHours": "Approx. 4–5 hours (evening call)",
-        "recommendedBufferMinutes": 60,
-        "maxTourDurationHours": 3,
-        "dockLogisticsNotes": "Evening stop in Victoria. Shuttles connect Ogden Point to the Inner Harbour in 10 minutes.",
-        "recommendedExcursionTypes": [
-          "The Butchart Gardens Evening Tour",
-          "Victoria Inner Harbour Highlights"
-        ],
-        "sampleTours": [
-          {
-            "title": "The Butchart Gardens Illuminated Tour",
-            "durationHours": 3,
-            "activityType": "Botanical Gardens",
-            "meetingLogistics": "Coach pickup at terminal.",
-            "highlight": "Stroll illuminated floral paths in the historic sunken quarry garden."
           }
         ]
       }

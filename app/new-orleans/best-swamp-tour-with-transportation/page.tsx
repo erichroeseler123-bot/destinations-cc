@@ -20,8 +20,8 @@ export default function Page() {
         },
         {
           query: "New Orleans swamp tour with hotel pickup",
-          tag: "Hotel Pickup Included ($131.44 for 2 incl. fees)",
-          answer: "Jean Lafitte Swamp Tours (item #763318) and Ragin Cajun Tours provide round-trip hotel shuttle pickup from major French Quarter and downtown New Orleans hotels (including Hotel Monteleone at 214 Royal St). For Jean Lafitte Swamp Tours with Hotel Pickup, 2 adults total $131.44 at checkout ($124.00 subtotal + $7.44 fees).",
+          tag: "Hotel Pickup Included",
+          answer: "Louisiana Tour Company (#15200P6) and Ragin Cajun Tours provide round-trip hotel shuttle pickup from participating French Quarter and downtown New Orleans hotels (including Hotel Monteleone at 214 Royal St). Confirm your exact hotel stop and pickup window during checkout.",
         },
         {
           query: "Covered boat swamp tour",
@@ -36,7 +36,7 @@ export default function Page() {
       ]}
       decisionTitle="Key differences that decide your tour"
       decisionPoints={[
-        "Transportation formats: Jean Lafitte Swamp Tours (#763318) and Ragin Cajun offer door-to-door French Quarter & Downtown hotel pickup; Gray Line departs non-stop from 400 Toulouse St in the French Quarter.",
+        "Transportation formats: Louisiana Tour Company and Ragin Cajun offer door-to-door French Quarter & Downtown hotel pickup; Gray Line departs non-stop from 400 Toulouse St in the French Quarter.",
         "Boat formats: Choose a covered boat for shade, calm cruising, and all ages; choose an airboat for high speed, open-air adventure, and shallow marsh access.",
         "Door-to-door time: Standard tours with transportation take approximately 3 hours 45 minutes (~40 min driving each way + 1.5 to 2 hours on the water).",
         "Rideshare alert: Never take an Uber or Lyft down to Lafitte on a self-drive ticket. Drivers will take you out, but return rides from the rural bayou back to New Orleans are not reliably available.",
@@ -45,7 +45,6 @@ export default function Page() {
       conciergePlacementId="fp-wno-swamp-tours"
       productSlugs={[
         "louisiana-tour-company-swamp-tour-hotel-pickup",
-        "jeanlafitte-swamp-tour-with-hotel-pickup",
         "swamp-bayou-tour",
         "covered-tour-boat",
         "small-airboat-swamp-adventure",

@@ -38,8 +38,8 @@ export async function generateMetadata({ params }: ShipWaitlistPageProps): Promi
 
   if (!ship) {
     return {
-      title: "Alaska Cruise Ship Helicopter Waitlist | Juneau Flight Deck",
-      description: "24/7 automated helicopter cancellation seat scanner for Alaska cruise ships in Juneau and Skagway.",
+      title: "Alaska Cruise Ship Helicopter Concierge Review | Juneau Flight Deck",
+      description: "Human concierge availability review and ship port timing guidance for Juneau and Skagway glacier helicopter excursions.",
     };
   }
 
@@ -108,7 +108,7 @@ export default async function ShipWaitlistPage({ params }: ShipWaitlistPageProps
             {ship.shipName} Juneau Helicopter Excursions &amp; Availability Alerts
           </h1>
           <p className="text-base md:text-lg text-slate-300 leading-relaxed mb-4">
-            Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability alerts for sold-out tours, and alternatives when weather disrupts plans. Tours are operated by the named local providers.
+            Juneau Flight Deck helps {ship.shipName} passengers compare and book glacier helicopter landings, ice treks, and glacier dog-sledding excursions in Juneau and Skagway, with human concierge availability reviews for sold-out port dates. Tours are operated by the named local providers.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-3 mt-4">
@@ -128,7 +128,7 @@ export default async function ShipWaitlistPage({ params }: ShipWaitlistPageProps
               href="#waitlist-form"
               className="inline-flex items-center px-4 py-2.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-sky-300 font-semibold text-sm border border-sky-500/30 transition-colors"
             >
-              Join 10 AM Seat Watch
+              Request Concierge Review
             </a>
           </div>
         </div>

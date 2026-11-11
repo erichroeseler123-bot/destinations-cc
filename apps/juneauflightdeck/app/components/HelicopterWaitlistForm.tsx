@@ -329,9 +329,9 @@ export default function HelicopterWaitlistForm({
 
   const rollCallPostText = `Hey everyone on ${resolvedShipName} for our ${formData.portDate || "upcoming"} port call in Juneau! 
 
-If you were looking for glacier helicopter landings or dog sledding and found them sold out through the ship's excursion desk, check out Juneau Flight Deck's daily availability check. 
+If you were looking for glacier helicopter landings or dog sledding and found them sold out through the ship's excursion desk, check out Juneau Flight Deck's human concierge availability review. 
 
-They provide operator comparisons, ship port timing guidance, and a daily availability check across local helicopter operators (TEMSCO, Coastal, NorthStar) with direct booking links:
+They provide operator comparisons, ship port timing guidance, and manual availability reviews across local helicopter operators (TEMSCO, Coastal, NorthStar) with verified booking links:
 ${shareUrl}`;
 
   const copyToClipboard = async (text: string, type: "rollcall" | "link") => {
@@ -371,13 +371,13 @@ ${shareUrl}`;
           }}
         >
           <span className="waitlist-pill-dot" />
-          <span>Daily Availability Check • Direct Operator Booking</span>
+          <span>Human Concierge Review • Direct &amp; Partner Booking</span>
         </div>
-        <h3>Sold Out on Your Ship? Request a Daily Availability Check.</h3>
+        <h3>Sold Out on Your Ship? Request Human Concierge Review.</h3>
         <p className="waitlist-explainer">
-          Helicopter companies experience frequent cancellations and group releases. 
-          We perform a daily availability check across local operators (TEMSCO, Coastal, NorthStar). 
-          When an open space appears on your ship&apos;s date, <strong>we alert you with direct booking links to secure open seats directly with the operator</strong>.
+          Helicopter operators sometimes release seats when group blocks adjust or travelers change plans. 
+          Our Juneau aviation desk reviews your ship&apos;s port window and checks verified operator &amp; partner listings (TEMSCO, Coastal, NorthStar). 
+          When matching options fit your schedule, <strong>we email you verified direct operator or partner checkout links—seats are not held until you complete provider checkout</strong>.
         </p>
       </div>
 
@@ -410,13 +410,13 @@ ${shareUrl}`;
       >
         <div className="how-step">
           <span className="step-num">01</span>
-          <h4>Daily Availability Check</h4>
-          <p>We check local operator schedules each day for released seats and cancellation openings.</p>
+          <h4>Human Concierge Review</h4>
+          <p>Our aviation desk manually reviews verified Part 135 operator and partner schedules for your port call.</p>
         </div>
         <div className="how-step">
           <span className="step-num">02</span>
-          <h4>Targeted Date &amp; Port Scan</h4>
-          <p>We check the exact passenger-supplied cruise dates for Juneau and Skagway.</p>
+          <h4>Ship &amp; Berth Fit Check</h4>
+          <p>We verify your passenger-supplied cruise dates and port timing for Juneau and Skagway.</p>
         </div>
         <div className="how-step">
           <span className="step-num">03</span>
@@ -425,8 +425,8 @@ ${shareUrl}`;
         </div>
         <div className="how-step">
           <span className="step-num">04</span>
-          <h4>Direct Operator Booking</h4>
-          <p>You receive an alert with a direct link to lock in open seats directly with the flight operator.</p>
+          <h4>Verified Checkout Links</h4>
+          <p>You receive an email with verified operator or partner links to book directly—no seats are pre-held.</p>
         </div>
       </div>
 
@@ -442,13 +442,13 @@ ${shareUrl}`;
             <h4 className="text-xl font-bold text-white" style={{ margin: "8px 0 4px" }}>
               {formData.bookingMode === "concierge_dispatch"
                 ? "Concierge Dispatch Request Received"
-                : "Daily Availability Check Request Received"}
+                : "Human Concierge Review Request Received"}
             </h4>
             <p className="text-slate-300 mt-1" style={{ margin: "4px 0" }}>
               Confirmation Code: <strong className="text-amber-400 font-mono" style={{ color: "var(--accent, #f0b35b)" }}>{submissionId}</strong>
             </p>
             <p className="text-sm text-slate-300 mt-2" style={{ margin: "8px 0 0", lineHeight: 1.55 }}>
-              Your request is saved. We check Southeast Alaska fleet availability for your date (<strong>{formData.portDate}</strong>
+              Your request is queued for human concierge review for your date (<strong>{formData.portDate}</strong>
               {formData.portCity === "either" && formData.skagwayDate ? ` and Skagway: ${formData.skagwayDate}` : ""}) 
               for <strong>{formData.partySize} guest(s)</strong> on <strong>{resolvedShipName}</strong> ({formData.cruiseLine}).
             </p>
@@ -682,15 +682,15 @@ ${shareUrl}`;
                       style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 6 }}
                     >
                       <strong className="text-white text-sm" style={{ fontSize: "0.9rem", color: "#ffffff" }}>
-                        📧 Daily Availability Alert
+                        📧 Email Availability Follow-Up
                       </strong>
-                      <span className="mode-badge-recommended">Direct Link</span>
+                      <span className="mode-badge-recommended">Verified Links</span>
                     </div>
                     <p
                       className="text-xs text-slate-300 mt-1 leading-relaxed"
                       style={{ margin: "6px 0 0", fontSize: "0.8rem", lineHeight: 1.5, color: "var(--muted)" }}
                     >
-                      <strong style={{ color: "#ffffff" }}>Free Email Alert.</strong> When seats open during our daily check, we send you a direct booking link to complete checkout with the flight operator.
+                      <strong style={{ color: "#ffffff" }}>Human Concierge Email Review.</strong> When our desk confirms matching availability for your ship window, we send verified booking links so you can book directly.
                     </p>
                   </div>
                 </div>
@@ -1136,11 +1136,11 @@ ${shareUrl}`;
               {status === "submitting"
                 ? "Submitting Request..."
                 : formData.bookingMode === "concierge_dispatch"
-                ? "Activate Concierge Dispatch Alert (Free) →"
-                : "Request Daily Availability Check (Free) →"}
+                ? "Request Concierge Dispatch Review (Free) →"
+                : "Request Human Concierge Review (Free) →"}
             </button>
             <p className="waitlist-legal-footnote">
-              🔒 100% Free Service. We perform daily availability checks across local operator schedules. Cancellation terms are operator-specific (TEMSCO: 48h full refund; Coastal: 7+ days full refund, 50% 4–6 days, non-refundable &lt;3 days). All operators provide 100% full refund for weather cancellations.
+              🔒 100% Free Inquiry Service (No Payment Collected). Requests are reviewed manually by our human concierge desk against verified operator &amp; partner schedules; seats are not held. Cancellation terms are operator-specific (TEMSCO: 48h full refund; Coastal: 7+ days full refund, 50% 4–6 days, non-refundable &lt;3 days). All operators provide 100% full refund for weather cancellations.
             </p>
           </div>
         </form>

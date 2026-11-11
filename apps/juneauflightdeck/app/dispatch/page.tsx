@@ -7,6 +7,7 @@ import ViatorFeaturedTours from "../components/ViatorFeaturedTours";
 
 interface AdminMetrics {
   totalWatches: number;
+  conciergeReview?: number;
   activeScanning: number;
   seatsClaimed: number;
   confirmedBookings: number;
@@ -21,8 +22,6 @@ export default function DispatchDashboardPage() {
   const [activeDates, setActiveDates] = useState<string[]>([]);
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [loading, setLoading] = useState(true);
-  const [sweeping, setSweeping] = useState(false);
-  const [sweepMessage, setSweepMessage] = useState<string | null>(null);
 
   const fetchDashboardData = async () => {
     try {
@@ -44,29 +43,6 @@ export default function DispatchDashboardPage() {
   useEffect(() => {
     fetchDashboardData();
   }, []);
-
-  const handleRunSweep = async () => {
-    try {
-      setSweeping(true);
-      setSweepMessage(null);
-      const res = await fetch("/api/waitlist/admin", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "run_sweep" }),
-      });
-      const data = await res.json();
-      if (data.ok) {
-        setSweepMessage(
-          `✓ 10:00 AM Sweep Complete: Checked ${data.sweepResult.totalDatesSwept} active watch dates. Found ${data.sweepResult.openingsFound} open seats!`
-        );
-        fetchDashboardData();
-      }
-    } catch {
-      setSweepMessage("Error executing sweep.");
-    } finally {
-      setSweeping(false);
-    }
-  };
 
   const handleUpdateStatus = async (id: string, newStatus: WaitlistEntry["status"]) => {
     try {
@@ -92,6 +68,9 @@ export default function DispatchDashboardPage() {
 
   const filteredEntries = entries.filter((e) => {
     if (filterStatus === "all") return true;
+    if (filterStatus === "concierge_review") {
+      return e.status === "concierge_review" || e.status === "active_scanning";
+    }
     return e.status === filterStatus;
   });
 
@@ -102,49 +81,34 @@ export default function DispatchDashboardPage() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 mb-8 border-b border-white/10">
           <div>
             <div className="flex items-center gap-3">
-              <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="w-3 h-3 rounded-full bg-amber-400" />
               <p className="eyebrow m-0 text-amber-400">Juneau Flight Deck · Operations Command</p>
             </div>
             <h1 className="text-3xl md:text-4xl font-bold text-white mt-1">
-              Helicopter Seat Watch &amp; Waitlist Dispatch
+              Helicopter Availability Concierge Queue
             </h1>
             <p className="text-sm text-slate-300 mt-1">
-              Viator Partner Channel (<code>P00058396</code>) · Monitoring TEMSCO, Coastal &amp; NorthStar
+              Human Concierge Review · Viator Partner Channel (<code>P00058396</code>) · TEMSCO, Coastal &amp; NorthStar
             </p>
           </div>
 
           <div className="flex items-center gap-3">
-            <button
-              onClick={handleRunSweep}
-              disabled={sweeping}
-              className="button button-primary whitespace-nowrap shadow-lg"
-            >
-              {sweeping ? "Scanning 10:00 AM Fleet..." : "▶ Run 10:00 AM Sweep Now"}
-            </button>
             <Link href="/" className="button button-secondary whitespace-nowrap">
               Public Site ↗
             </Link>
           </div>
         </div>
 
-        {/* Sweep Notification Alert */}
-        {sweepMessage && (
-          <div className="p-4 mb-6 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-200 text-sm font-semibold flex items-center justify-between">
-            <span>{sweepMessage}</span>
-            <button onClick={() => setSweepMessage(null)} className="text-xs opacity-75 hover:opacity-100">
-              Dismiss ✕
-            </button>
-          </div>
-        )}
-
         {/* Top Metric Cards */}
         {metrics && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             <div className="p-5 rounded-2xl bg-white/5 border border-white/10">
               <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider block mb-1">
-                Active Date Watches
+                Human Concierge Review
               </span>
-              <div className="text-3xl font-extrabold text-white">{metrics.activeScanning}</div>
+              <div className="text-3xl font-extrabold text-white">
+                {metrics.conciergeReview ?? metrics.activeScanning}
+              </div>
               <span className="text-xs text-amber-400 font-medium mt-1 block">
                 Across {metrics.uniqueWatchDates} cruise port days
               </span>
@@ -152,10 +116,10 @@ export default function DispatchDashboardPage() {
 
             <div className="p-5 rounded-2xl bg-white/5 border border-white/10">
               <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider block mb-1">
-                Seats Claimed &amp; Alerted
+                Contact Pending / Held
               </span>
               <div className="text-3xl font-extrabold text-emerald-400">{metrics.seatsClaimed}</div>
-              <span className="text-xs text-slate-400 mt-1 block">Held under 48h policy</span>
+              <span className="text-xs text-slate-400 mt-1 block">Awaiting guest checkout</span>
             </div>
 
             <div className="p-5 rounded-2xl bg-white/5 border border-white/10">
@@ -165,7 +129,7 @@ export default function DispatchDashboardPage() {
               <div className="text-3xl font-extrabold text-sky-400">
                 ${metrics.totalPotentialValue.toLocaleString()}
               </div>
-              <span className="text-xs text-slate-400 mt-1 block">Total waitlist tickets</span>
+              <span className="text-xs text-slate-400 mt-1 block">Total inquiry requests</span>
             </div>
 
             <div className="p-5 rounded-2xl bg-white/5 border border-white/10">
@@ -180,29 +144,29 @@ export default function DispatchDashboardPage() {
           </div>
         )}
 
-        {/* 10:00 AM Scanning Strategy Banner */}
+        {/* Human Concierge Review Status Banner */}
         <div className="p-6 rounded-2xl bg-sky-950/40 border border-sky-400/30 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <span className="text-xs font-bold text-sky-400 uppercase tracking-widest block mb-1">
-              Targeted 10:00 AM Scan Strategy
+            <span className="text-xs font-bold text-amber-300 uppercase tracking-widest block mb-1">
+              Human Concierge Review Mode (Automated Scanner Offline)
             </span>
             <h3 className="text-lg font-bold text-white mb-1">
-              Monitoring {activeDates.length} Specific Cruise Dates
+              Reviewing {activeDates.length} Requested Cruise Port Dates
             </h3>
             <p className="text-xs text-slate-300 max-w-2xl">
-              Dates currently queued for morning sweep:{" "}
+              Automated FareHarbor calendar polling is not currently active. Requests are reviewed manually against verified Part 135 operator schedules and Viator listings:{" "}
               {activeDates.length > 0 ? (
                 <span className="text-amber-300 font-mono font-bold">
                   {activeDates.join(" · ")}
                 </span>
               ) : (
-                "No active watch dates"
+                "No pending dates in queue"
               )}
             </p>
           </div>
           <div className="text-xs text-slate-300 border-l border-sky-400/20 pl-4 py-1">
-            <div>• Morning sweep: <strong>10:00 AM AKDT</strong></div>
-            <div>• Free cancellation cutoff: <strong>48 hours</strong></div>
+            <div>• Queue mode: <strong>Human Concierge Review</strong></div>
+            <div>• Operator terms: <strong>Published per provider</strong></div>
             <div>• Booking Channel: <strong>Viator Partner (P00058396)</strong></div>
           </div>
         </div>
@@ -212,11 +176,11 @@ export default function DispatchDashboardPage() {
           <div className="flex items-center gap-2">
             <span className="text-xs text-slate-400 font-bold uppercase mr-2">Filter:</span>
             {[
-              { id: "all", label: "All Watches" },
-              { id: "active_scanning", label: "Active Scanning" },
-              { id: "claimed", label: "Seats Claimed" },
-              { id: "alert_sent", label: "Alert Sent" },
-              { id: "confirmed", label: "Confirmed" },
+              { id: "all", label: "All Inquiries" },
+              { id: "concierge_review", label: "Human Concierge Review" },
+              { id: "contact_pending", label: "Contact Pending" },
+              { id: "held", label: "Held" },
+              { id: "booking_confirmed", label: "Confirmed" },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -337,13 +301,10 @@ export default function DispatchDashboardPage() {
                             : "bg-white/10 text-slate-300 border border-white/10"
                         }`}
                       >
-                        {entry.status.replace("_", " ")}
+                        {entry.status === "active_scanning" || entry.status === "concierge_review"
+                          ? "concierge review"
+                          : entry.status.replace("_", " ")}
                       </span>
-                      {entry.lastScannedAt && (
-                        <small className="text-slate-400 block text-[10px] mt-1">
-                          Scanned: 10:00 AM
-                        </small>
-                      )}
                     </td>
 
                     <td>
@@ -356,13 +317,13 @@ export default function DispatchDashboardPage() {
                           </span>
                         </div>
                       ) : (
-                        <span className="text-xs text-slate-500 italic">Scanning 10am</span>
+                        <span className="text-xs text-slate-500 italic">Pending concierge review</span>
                       )}
                     </td>
 
                     <td>
                       <div className="flex flex-col gap-1.5">
-                        {entry.status === "active_scanning" && (
+                        {(entry.status === "concierge_review" || entry.status === "active_scanning") && (
                           <button
                             onClick={() => handleUpdateStatus(entry.id, "contact_pending")}
                             className="text-xs px-2.5 py-1 bg-amber-400 text-slate-950 font-bold rounded hover:bg-amber-300"

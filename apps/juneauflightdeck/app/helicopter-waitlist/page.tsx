@@ -6,14 +6,14 @@ import CrossPortBackup from "../components/CrossPortBackup";
 import { ALASKA_CRUISE_FLEET } from "../../lib/alaskaCruiseFleet";
 
 export const metadata: Metadata = {
-  title: "Helicopter Tour Availability Check & Request | Juneau Flight Deck",
+  title: "Helicopter Tour Human Concierge Availability Review | Juneau Flight Deck",
   description:
-    "Compare and book Juneau excursions, and submit your ship, port date, tour preference, and party size for a helicopter availability request. We perform daily availability checks across TEMSCO, Coastal, and NorthStar.",
+    "Compare Juneau & Skagway glacier aviation excursions, and submit your ship, port date, tour preference, and party size for a human concierge availability review across TEMSCO, Coastal, and NorthStar.",
   alternates: { canonical: "https://juneauflightdeck.com/helicopter-waitlist" },
   openGraph: {
-    title: "Helicopter Tour Availability Check | Juneau Flight Deck",
+    title: "Helicopter Tour Human Concierge Review | Juneau Flight Deck",
     description:
-      "Daily availability checks for Juneau & Skagway helicopter glacier tours. Direct operator booking links and excursion coordination.",
+      "Human concierge availability review for Juneau & Skagway helicopter glacier tours. Verified operator & partner booking links and ship timing guidance.",
     url: "https://juneauflightdeck.com/helicopter-waitlist",
   },
 };
@@ -27,7 +27,7 @@ const waitlistFaqSchema = {
       name: "When do sold-out Juneau helicopter seats usually open up?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Seats can reopen when cruise line group blocks are adjusted, when other travelers change plans or cancel, or when dispatchers finalize aircraft weight and balance manifests. We conduct daily availability checks across local operator schedules to find matching openings.",
+        text: "Seats can reopen when cruise line group blocks are adjusted, when other travelers change plans or cancel, or when dispatchers finalize aircraft weight and balance manifests. Our human concierge desk reviews verified local operator and partner schedules against your ship's port window.",
       },
     },
     {
@@ -135,7 +135,7 @@ export default function Page() {
               margin: "0 auto 20px",
             }}
           >
-            Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability alerts for sold-out tours, and alternatives when weather disrupts plans. Tours are operated by the named local providers.
+            Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter glacier landings, ice treks, and glacier dog-sledding excursions across Juneau and Skagway. Submit your ship and port window for a human concierge availability review across named FAA Part 135 operators (TEMSCO, Coastal, NorthStar), or visit Last Frontier Shore Excursions for non-aviation port tours.
           </p>
           <div style={{ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap", marginBottom: 8 }}>
             <Link
@@ -219,7 +219,7 @@ export default function Page() {
                 textAlign: "center",
               }}
             >
-              Daily Availability Check ↓
+              Human Concierge Review ↓
             </a>
           </div>
         </div>

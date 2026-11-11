@@ -168,6 +168,7 @@ export function normalizeFareHarborFallbackHref({
     }
 
     url.searchParams.set("asn", getExpectedFareHarborAsn(shortname, requestedAsn));
+    url.searchParams.delete("schedule-uuid");
 
     if (shortname === "neworleanssteamboatcompany") {
       url.searchParams.set("ref", CANONICAL_STEAMBOAT_REF);

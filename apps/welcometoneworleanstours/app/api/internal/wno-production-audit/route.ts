@@ -1,5 +1,13 @@
 import { NextResponse } from "next/server";
-import { HELD_COMBO_BANNER, HELD_COMBO_REASON, HELD_COMBO_SLUG } from "@/app/new-orleans/data/truthPolicy";
+import {
+  HELD_COMBO_BANNER,
+  HELD_COMBO_REASON,
+  HELD_COMBO_SLUG,
+  HELD_JEAN_LAFITTE_BANNER,
+  HELD_JEAN_LAFITTE_REASON,
+  HELD_JEAN_LAFITTE_SLUG,
+  isHeldProduct,
+} from "@/app/new-orleans/data/truthPolicy";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -42,8 +50,9 @@ const TOURS: TourAuditConfig[] = [
   { slug: "ragin-cajun-airboat-options", flowId: "940162", expectedAsn: "aktourcenter" },
   { slug: "all-day-city-plantation-combo", itemId: "51953", flowId: "4344", expectedAsn: "aktourcenter" },
   { slug: HELD_COMBO_SLUG, itemId: "603090", flowId: "392449", expectedAsn: "aktourcenter" },
+  { slug: HELD_JEAN_LAFITTE_SLUG, expectedAsn: "aktourcenter" },
   { slug: "evening-jazz-cruise", variantCount: 4, expectedAsn: "welcometoneworleanstours", expectedRef: "WelcomeToNewOrleansTours" },
-  { slug: "daytime-jazz-cruise", variantCount: 6, expectedAsn: "welcometoneworleanstours", expectedRef: "WelcomeToNewOrleansTours" },
+  { slug: "daytime-jazz-cruise", variantCount: 5, expectedAsn: "welcometoneworleanstours", expectedRef: "WelcomeToNewOrleansTours" },
   { slug: "sunday-jazz-brunch-cruise", variantCount: 3, expectedAsn: "welcometoneworleanstours", expectedRef: "WelcomeToNewOrleansTours" },
   { slug: "oak-alley-plantation-tour-grey-line", itemId: "561477", flowId: "1578687", expectedAsn: "welcometoneworleanstours", expectedRef: "WelcomeToNewOrleansTours" },
   { slug: "whitney-plantation-tour", itemId: "561539", flowId: "1578687", expectedAsn: "welcometoneworleanstours", expectedRef: "WelcomeToNewOrleansTours" },
@@ -123,11 +132,15 @@ export async function GET() {
     TOURS.map(async (config) => {
       const result = await fetchPath(`/tours/${config.slug}`);
       const links = extractFareHarborLinks(result.text);
-      const held = config.slug === HELD_COMBO_SLUG;
+      const held = isHeldProduct(config.slug);
 
       if (held) {
-        const bannerOk = result.text.includes(HELD_COMBO_BANNER);
-        const reasonOk = result.text.includes(HELD_COMBO_REASON);
+        const expectedBanner =
+          config.slug === HELD_JEAN_LAFITTE_SLUG ? HELD_JEAN_LAFITTE_BANNER : HELD_COMBO_BANNER;
+        const expectedReason =
+          config.slug === HELD_JEAN_LAFITTE_SLUG ? HELD_JEAN_LAFITTE_REASON : HELD_COMBO_REASON;
+        const bannerOk = result.text.includes(expectedBanner);
+        const reasonOk = result.text.includes(expectedReason);
         const phoneOk = result.text.includes("tel:+15044849687") && result.text.includes("504-484-9687");
         const noSelfService = links.length === 0;
         return {

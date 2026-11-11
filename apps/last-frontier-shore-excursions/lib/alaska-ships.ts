@@ -1,5 +1,5 @@
 import alaskaShipsJson from "./alaska-ships.json";
-import { buildViatorProductUrl, buildViatorSearchUrl, buildAffiliateUrl } from "./affiliate/links";
+import { buildViatorProductUrl, buildAffiliateUrl } from "./affiliate/links";
 import { matchCatalogExcursion } from "./affiliate/catalog";
 
 export interface VerifiedTourHighlight {
@@ -12,7 +12,7 @@ export interface VerifiedTourHighlight {
 }
 
 export interface VerifiedPortLogistics {
-  portSlug: "juneau" | "skagway" | "ketchikan" | "sitka" | "icy-strait-point" | "victoria-bc";
+  portSlug: "juneau" | "skagway" | "ketchikan" | "sitka" | "icy-strait-point";
   portName: string;
   portRegion: string;
   typicalDock: string;
@@ -37,7 +37,9 @@ export interface AlaskaCruiseShip {
   ports: Record<string, VerifiedPortLogistics>;
 }
 
-// Product mapping to verified Viator product URLs in Last Frontier
+// Product mapping to verified Viator product URLs in Last Frontier.
+// Safeguards 1 & 2: Never map glacier helicopter dog sledding to wheeled dog-cart SKU 62390P4,
+// and never map Bering Sea Crab Fishermen's Tour (Aleutian Ballad) to Allen Marine Misty Fjords SKU 472133P3.
 const VIATOR_PRODUCT_MAPPINGS: Record<string, string> = {
   // Juneau
   "Mendenhall Glacier Helicopter Landing & Guided Ice Walk": "https://www.viator.com/tours/Juneau/Juneau-Shore-Excursion-Helicopter-Tour-and-Guided-Icefield-Walk/d941-6251SHOREXICEWALK",
@@ -51,8 +53,7 @@ const VIATOR_PRODUCT_MAPPINGS: Record<string, string> = {
   "Family-Friendly Auke Bay Whale Watching Cruise": "https://www.viator.com/tours/Juneau/Whale-Tours-in-Juneau-Alaska/d941-331813P1",
   "Mendenhall Glacier Visitor Center & Rainforest Trail": "https://www.viator.com/tours/Juneau/Round-Trip-Mendenhall-Glacier-Shuttle-Service/d941-5857SHUTTLE",
   "Auke Bay Whale Watching & Mendenhall Glacier Combo": "https://www.viator.com/tours/Juneau/Mendenhall-Glacier-Waterfall-and-Whale-Watching-Tour/d941-466119P3",
-  "Mendenhall Glacier Dog Sledding & Musher's Camp": "https://www.viator.com/tours/Juneau/Sled-Dog-Discovery-in-Juneau/d941-62390P4",
-  "Mendenhall Glacier Dog Sledding & Helicopter Flight": "https://www.viator.com/tours/Juneau/Sled-Dog-Discovery-in-Juneau/d941-62390P4",
+  "Juneau Sled Dog Discovery & Musher's Camp": "https://www.viator.com/tours/Juneau/Sled-Dog-Discovery-in-Juneau/d941-62390P4",
   "Taku Glacier Lodge Seaplane Flight & Salmon Feast": "https://www.viator.com/tours/Juneau/Taku-Lodge-Feast-and-5-Glacier-Seaplane-Discovery/d941-110048P1",
   "Juneau Whale Watching with Traditional Alaskan Salmon Bake": "https://www.viator.com/tours/Juneau/Whale-Tours-in-Juneau-Alaska/d941-331813P1",
 
@@ -78,15 +79,17 @@ const VIATOR_PRODUCT_MAPPINGS: Record<string, string> = {
   "Misty Fjords Wilderness Cruise by High-Speed Catamaran": "https://www.viator.com/tours/Ketchikan/Misty-Fjords-and-Wilderness-Explorer/d942-472133P3",
   "Saxman Native Village & Cultural Totem Park": "https://www.viator.com/tours/Ketchikan/Saxman-Native-Village-Ketchikan-Highlights-and-Lumberjack-Show/d942-445368P5",
   "Great Alaskan Lumberjack Show & Totem Discovery": "https://www.viator.com/tours/Ketchikan/Saxman-Native-Village-Ketchikan-Highlights-and-Lumberjack-Show/d942-445368P5",
-  "Bering Sea Crab Fishermen’s Tour aboard the Aleutian Ballad": "https://www.viator.com/tours/Ketchikan/Misty-Fjords-and-Wilderness-Explorer/d942-472133P3",
-  "Bering Sea Crab Fishermen’s Tour": "https://www.viator.com/tours/Ketchikan/Misty-Fjords-and-Wilderness-Explorer/d942-472133P3",
 
   // Sitka
   "Sitka Sound Wildlife Quest & Sea Otter Sanctuary": "https://www.viator.com/tours/Sitka/Whale-Watch-and-Sea-Otter-Quest/d4153-472133P4",
   "Fortress of the Bear & Alaska Raptor Center Tour": "https://www.viator.com/tours/Sitka/Simply-Amazing-Sitka-Tour/d4153-64781P20",
 
   // Icy Strait Point
-  "Point Adolphus Guaranteed Whale Watching Safari": "https://www.viator.com/tours/Hoonah/Whale-Watch-Adventure/d26215-14707P1"
+  "Point Adolphus Guaranteed Whale Watching Safari": "https://www.viator.com/tours/Hoonah/Whale-Watch-Adventure/d26215-14707P1",
+};
+
+const SPECIALIST_AVIATION_HANDOFF_PATHS: Record<string, string> = {
+  "Mendenhall Glacier Dog Sledding & Helicopter Flight": "/juneau-dogsled-helicopter-tours",
 };
 
 export const ALASKA_SHIPS_FLEET: Record<string, AlaskaCruiseShip> = alaskaShipsJson as unknown as Record<string, AlaskaCruiseShip>;
@@ -108,18 +111,40 @@ export function getShipPortPair(shipSlug: string, portSlug: string): { ship: Ala
   return { ship, port };
 }
 
-export function getTrackedTourUrl(tourTitle: string, portName: string, shipSlug: string): string {
+export function getTrackedTourUrl(tourTitle: string, portName: string, shipSlug: string): string | null {
   const campaign = `ship-${shipSlug}-${portName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+  const specialistPath = SPECIALIST_AVIATION_HANDOFF_PATHS[tourTitle];
+  if (specialistPath) {
+    const url = new URL(`https://juneauflightdeck.com${specialistPath}`);
+    url.searchParams.set("utm_source", "lastfrontiershoreexcursions.com");
+    url.searchParams.set("utm_medium", "specialist_handoff");
+    url.searchParams.set("utm_campaign", `last-frontier-${campaign}`);
+    url.searchParams.set("ship", shipSlug);
+    return url.toString();
+  }
+
   const directUrl = VIATOR_PRODUCT_MAPPINGS[tourTitle];
   if (directUrl) {
     return buildViatorProductUrl(directUrl, campaign);
   }
 
-  // If tour has a match in verified catalog
-  const matched = matchCatalogExcursion(portName, tourTitle, campaign);
-  if (matched && matched.isExactProduct && matched.officialUrl) {
-    return buildAffiliateUrl(matched.source, matched.officialUrl, campaign, matched.title, matched.isExactProduct);
+  // Safeguard 2: Never guess or fuzzy-match an unmapped excursion title to a different operator/activity.
+  // Only match AFFILIATE_CATALOG when the canonical title matches explicitly.
+  const exactCatalogItem = matchCatalogExcursion(portName, tourTitle, campaign);
+  if (
+    exactCatalogItem &&
+    exactCatalogItem.isExactProduct &&
+    exactCatalogItem.officialUrl &&
+    exactCatalogItem.title.trim().toLowerCase() === tourTitle.trim().toLowerCase()
+  ) {
+    return buildAffiliateUrl(
+      exactCatalogItem.source,
+      exactCatalogItem.officialUrl,
+      campaign,
+      exactCatalogItem.title,
+      exactCatalogItem.isExactProduct,
+    );
   }
 
-  return buildViatorSearchUrl(`${portName} Alaska shore excursions`, campaign);
+  return null;
 }

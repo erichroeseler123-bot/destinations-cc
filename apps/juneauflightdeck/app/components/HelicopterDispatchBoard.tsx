@@ -184,10 +184,10 @@ export default function HelicopterDispatchBoard({
                 03 · CONTINGENCY
               </div>
               <h2 className="jfd-compact-card-title">
-                Proactive Alternative Backup
+                Weather-Day Backup Guidance
               </h2>
               <p className="jfd-compact-card-body">
-                If weather deteriorates, we start securing alternative activities before your tour is even canceled, beating the dock rush.
+                Mountain ceilings can ground glacier flights on short notice. Compare refund terms and non-flight backup options in advance; backup tours depend on live capacity and are booked separately.
               </p>
             </div>
             <Link

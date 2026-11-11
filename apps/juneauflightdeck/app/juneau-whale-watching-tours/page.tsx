@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Juneau Whale Deck | Auke Bay Whale Watching Tours, CLAA Port Timing & Flight Backups | Juneau Flight Deck",
+  title: "Juneau Flight-Canceled Backup Options | Juneau Flight Deck",
   description:
-    "Launch the Juneau Whale Deck experience on Juneau Flight Deck. Check CLAA port-call timing and confirmed all-aboard 60–90 minute buffers, open the same-day flight cancellation backup flow with PAJN METAR weather context, and book approved Auke Bay whale watching checkout links.",
-  alternates: { canonical: "https://juneauflightdeck.com/juneau-whale-watching-tours" },
+    "Same-day weather-canceled helicopter backup timing and approved Auke Bay whale watching options for Juneau cruise passengers.",
+  robots: { index: false, follow: true },
+  alternates: { canonical: "https://www.lastfrontiershoreexcursions.com/juneau/whale-watching" },
   openGraph: {
     title: "Juneau Whale Deck | Auke Bay Excursions, CLAA Port Timing & Flight Backups",
     description:

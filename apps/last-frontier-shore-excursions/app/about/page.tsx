@@ -43,6 +43,9 @@ export default function AboutPage() {
             <strong>GetYourGuide Integration:</strong> Operates under approved <em>Affiliate Partner Link Access</em> (Partner ID <code>F2MMUUH</code>). There is no live merchant API token (<code>GETYOURGUIDE_ACCESS_TOKEN</code>) enabled in production.
           </li>
           <li>
+            <strong>FareHarbor Affiliate Network Integration:</strong> Selected direct operator checkout links (such as Allen Marine Tours on Juneau whale-watching comparison pages) carry FareHarbor affiliate attribution (<code>asn=welcometoalaskatours</code>) so reservations are completed directly with the local Alaska operator.
+          </li>
+          <li>
             <strong>Curated Editorial Data:</strong> Product listings, typical starting prices, sample departure schedules, and cancellation policies displayed across this site reflect manual editorial research and historical benchmarks rather than real-time automated API synchronization.
           </li>
           <li>

@@ -43,7 +43,7 @@ export async function ensureDbTables(): Promise<void> {
       tour_type text NOT NULL,
       party_size integer NOT NULL,
       booking_mode text NOT NULL,
-      status text NOT NULL DEFAULT 'active_scanning',
+      status text NOT NULL DEFAULT 'concierge_review',
       operator_hold_status text NOT NULL DEFAULT 'not_held',
       notes text,
       estimated_value integer,

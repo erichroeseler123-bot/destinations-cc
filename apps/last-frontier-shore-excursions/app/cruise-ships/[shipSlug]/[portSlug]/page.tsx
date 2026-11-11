@@ -214,15 +214,36 @@ export default async function ShipPortExcursionsPage({ params }: ShipPortRoutePr
                   </div>
 
                   <div style={{ marginTop: 20, borderTop: "1px solid var(--line)", paddingTop: 16 }}>
-                    <a
-                      href={trackedBookingUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="button small"
-                      style={{ width: "100%", display: "block", textAlign: "center" }}
-                    >
-                      Check Rates & Departures on Viator &rarr;
-                    </a>
+                    {trackedBookingUrl ? (
+                      <a
+                        href={trackedBookingUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="button small"
+                        style={{ width: "100%", display: "block", textAlign: "center" }}
+                      >
+                        {trackedBookingUrl.includes("juneauflightdeck.com")
+                          ? "Compare Glacier Aviation on Juneau Flight Deck \u2192"
+                          : "Check Rates & Departures on Viator \u2192"}
+                      </a>
+                    ) : (
+                      <div
+                        data-testid="lfse-unverified-cta-disabled"
+                        style={{
+                          width: "100%",
+                          padding: "10px 14px",
+                          borderRadius: 8,
+                          background: "var(--ice)",
+                          border: "1px solid var(--line)",
+                          color: "var(--muted)",
+                          fontSize: 13,
+                          fontWeight: 600,
+                          textAlign: "center",
+                        }}
+                      >
+                        Partner checkout unavailable — check direct operator or ship excursion desk
+                      </div>
+                    )}
                   </div>
                 </div>
               );

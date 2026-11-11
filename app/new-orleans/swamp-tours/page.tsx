@@ -183,20 +183,6 @@ export default async function NewOrleansSwampToursPage(props: {
     engineId: "new-orleans-swamp-tours",
     callerClientId: `ssr:${effectiveSiteDomain}`,
   });
-  const fhHandoffHref = buildPortfolioHandoffUrl({
-    originatingSite: effectiveSiteDomain,
-    provider: "fareharbor",
-    providerAccount: "aktourcenter",
-    productCode: "jeanlafitteswamptour:763318",
-    destinationUrl: `https://fareharbor.com/embeds/book/jeanlafitteswamptour/items/763318/?asn=aktourcenter&ref=${effectivePlacementId}&full-items=yes`,
-    campaign: effectivePlacementId,
-    contextId: carriedContext.contextId,
-    evaluationRunId: assurance.evaluationRunId,
-    receiptId: assurance.receiptId,
-    intendedDate: carriedContext.payload.date || null,
-    partySize: carriedContext.payload.partySize || null,
-    useRelativePath: true,
-  });
 
   const wno15200P6Date = carriedDate || "2026-11-18";
   const wno15200P6Adults = carriedContext.payload.partySize || 2;
@@ -247,12 +233,6 @@ export default async function NewOrleansSwampToursPage(props: {
               href: viatorHandoffHref,
               providerLabel: "Viator",
               accountLabel: "pid=P00306962",
-            },
-            {
-              label: "Book Jean Lafitte Swamp Tour w/ Hotel Pickup ($131.44 for 2 incl. fees)",
-              href: fhHandoffHref,
-              providerLabel: "FareHarbor",
-              accountLabel: "asn=aktourcenter",
             },
           ]}
           crossSiteLinks={[

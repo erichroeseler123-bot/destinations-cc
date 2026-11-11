@@ -275,16 +275,33 @@ describe("Last Frontier Shore Excursions - Viator Direct Link Verification", () 
     }
   });
 
-  it("all cruise ship sample tours produce valid affiliate links with tracking parameters", () => {
+  it("cruise ship sample tours emit verified affiliate links, specialist aviation handoffs, or null (never guessed SKUs)", () => {
     const ships = getAllAlaskaShips();
     assert.ok(ships.length > 0, "Must have ships in fleet");
 
     for (const ship of ships) {
       for (const [portKey, portLogistics] of Object.entries(ship.ports)) {
+        assert.notEqual(portKey, "victoria-bc", "victoria-bc must be retired from 5-port Alaska fleet");
         for (const tour of portLogistics.sampleTours) {
           const url = getTrackedTourUrl(tour.title, portLogistics.portName, ship.slug);
+
+          if (/Bering Sea Crab/i.test(tour.title)) {
+            assert.equal(url, null, `Unverified Aleutian Ballad tour must disable CTA (return null): ${tour.title}`);
+            continue;
+          }
+
+          if (tour.title === "Mendenhall Glacier Dog Sledding & Helicopter Flight") {
+            assert.ok(url && url.startsWith("https://juneauflightdeck.com/juneau-dogsled-helicopter-tours"), `Expected specialist JFD handoff, got ${url}`);
+            continue;
+          }
+
+          if (url === null) {
+            continue;
+          }
+
           assert.ok(url.startsWith("https://www.viator.com/"), `URL must start with viator.com: ${url}`);
-          
+          assert.ok(!url.includes("/searchResults/all"), `Must not fall back to unverified search query: ${url}`);
+
           const parsed = new URL(url);
           assert.equal(parsed.searchParams.get("pid"), "P00281144", `Expected pid=P00281144 in ${url}`);
           assert.equal(parsed.searchParams.get("mcid"), "42383", `Expected mcid=42383 in ${url}`);

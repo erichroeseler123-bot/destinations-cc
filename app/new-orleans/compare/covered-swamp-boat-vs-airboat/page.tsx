@@ -146,7 +146,7 @@ export default function CoveredBoatVsAirboatPage() {
         "Hotel pickup windows are established during checkout; confirm the exact departure time in your voucher.",
       ]}
       sources={[
-        { label: "Ragin Cajun Swamp Tours Official Guidelines", href: "https://fareharbor.com/embeds/book/ragincajuntours/" },
+        { label: "Ragin Cajun Swamp Tours Official Guidelines", href: "https://fareharbor.com/embeds/book/ragincajuntours/?asn=aktourcenter&flow=940162&ref=wno-ragin-cajun-airboat-options&full-items=yes" },
         { label: "Louisiana Department of Wildlife & Fisheries: Swamp Ecology", href: "https://www.wlf.louisiana.gov/" },
         { label: "Welcome to New Orleans Tours: Swamp Planning Guide", href: "/guides/best-new-orleans-swamp-tour" },
       ]}

@@ -78,7 +78,7 @@ export function buildShipFaqSchema(ship: AlaskaShipData) {
         name: `What happens if helicopter tours are sold out on ${ship.shipName}?`,
         acceptedAnswer: {
           "@type": "Answer",
-          text: `When ${ship.shipName} shows sold out through the cruise line excursion desk, independent operators (TEMSCO, Coastal, NorthStar) may still have direct availability. You can submit your ship, port date, tour preference, and party size for a helicopter availability request. We perform daily availability checks across local operator schedules and notify you by email when matching openings or alternatives are found.`,
+          text: `When ${ship.shipName} shows sold out through the cruise line excursion desk, independent operators (TEMSCO, Coastal, NorthStar) may still have direct or partner availability. Submit your ship, port date, tour preference, and party size for a human concierge availability review—we verify options that fit your port window and email you direct booking links.`,
         },
       },
       {

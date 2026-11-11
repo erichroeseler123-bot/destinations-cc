@@ -16,7 +16,6 @@ const coreHighIntentRoutes = [
   { path: "/juneau-glacier-flight-weather", changeFrequency: "daily" as const, priority: 0.9 },
   { path: "/juneau/cruise-excursions-vs-independent", changeFrequency: "weekly" as const, priority: 0.85 },
   { path: "/juneau/what-to-do-if-helicopter-tour-canceled", changeFrequency: "weekly" as const, priority: 0.85 },
-  { path: "/juneau-whale-watching-tours", changeFrequency: "weekly" as const, priority: 0.8 },
   { path: "/juneau/helicopter", changeFrequency: "weekly" as const, priority: 0.8 },
   { path: "/skagway/helicopter", changeFrequency: "daily" as const, priority: 0.85 },
   { path: "/what-to-do-in-juneau-cruise-port", changeFrequency: "weekly" as const, priority: 0.75 },

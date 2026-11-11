@@ -81,6 +81,8 @@ const WTONOT_NON_INDEXABLE_PATHS = new Set([
   "/guides/restaurant-partners",
   "/guides/tour-catalog",
   "/guides/visitor-rewards",
+  "/tours/covered-boat-plantation-combo",
+  "/tours/jeanlafitte-swamp-tour-with-hotel-pickup",
 ]);
 
 function xmlEscape(value: string): string { return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&apos;"); }

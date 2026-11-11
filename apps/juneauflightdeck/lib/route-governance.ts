@@ -5,7 +5,6 @@ import {
   type NetworkRole,
   type PublishState,
 } from "./route-governance-core";
-import { curatedTours } from "./site-data";
 
 export type RouteGovernanceEntry = {
   path: string;
@@ -25,7 +24,7 @@ const CORE_ROUTE_GOVERNANCE: RouteGovernanceEntry[] = [
     handoffPolicy: "bidirectional",
     priority: 1,
     changeFrequency: "weekly",
-    notes: "Primary Juneau helicopter chooser surface.",
+    notes: "Primary Juneau & Skagway glacier aviation decision surface.",
   },
   {
     path: "/helicopter",
@@ -43,7 +42,7 @@ const CORE_ROUTE_GOVERNANCE: RouteGovernanceEntry[] = [
     handoffPolicy: "bidirectional",
     priority: 0.9,
     changeFrequency: "weekly",
-    notes: "Juneau next-48-hours helicopter availability surface.",
+    notes: "Juneau glacier helicopter comparison surface.",
   },
   {
     path: "/skagway/helicopter",
@@ -52,43 +51,98 @@ const CORE_ROUTE_GOVERNANCE: RouteGovernanceEntry[] = [
     handoffPolicy: "bidirectional",
     priority: 0.88,
     changeFrequency: "weekly",
-    notes: "Skagway next-48-hours helicopter availability surface.",
+    notes: "Skagway glacier helicopter comparison surface.",
   },
   {
-    path: "/best-excursions-in-juneau",
+    path: "/juneau-helicopter-tour-sold-out",
+    publishState: "promoted",
+    networkRole: "satellite",
+    handoffPolicy: "bidirectional",
+    priority: 0.92,
+    changeFrequency: "weekly",
+    notes: "Sold-out recovery and human concierge availability review entry.",
+  },
+  {
+    path: "/helicopter-waitlist",
+    publishState: "promoted",
+    networkRole: "satellite",
+    handoffPolicy: "bidirectional",
+    priority: 0.9,
+    changeFrequency: "weekly",
+    notes: "Human concierge availability review request surface.",
+  },
+  {
+    path: "/juneau-dogsled-helicopter-tours",
+    publishState: "indexable",
+    networkRole: "operator",
+    handoffPolicy: "bidirectional",
+    priority: 0.85,
+    changeFrequency: "weekly",
+    notes: "Juneau & Skagway glacier helicopter dog-sledding decision surface.",
+  },
+  {
+    path: "/temsco-vs-coastal-vs-northstar-juneau",
     publishState: "indexable",
     networkRole: "satellite",
     handoffPolicy: "bidirectional",
-    priority: 0.86,
+    priority: 0.88,
     changeFrequency: "weekly",
-    notes: "Short decision entry for best Juneau excursions intent.",
   },
   {
-    path: "/juneau-whale-watching-tours",
+    path: "/temsco-vs-northstar-juneau",
     publishState: "indexable",
     networkRole: "satellite",
     handoffPolicy: "bidirectional",
-    priority: 0.86,
+    priority: 0.85,
     changeFrequency: "weekly",
-    notes: "Short decision entry for Juneau whale watching tour intent.",
   },
   {
-    path: "/helicopter-vs-whale-watching-juneau",
+    path: "/temsco-vs-coastal-juneau",
+    publishState: "indexable",
+    networkRole: "satellite",
+    handoffPolicy: "bidirectional",
+    priority: 0.85,
+    changeFrequency: "weekly",
+  },
+  {
+    path: "/best-time-for-glacier-dog-sledding-juneau",
     publishState: "indexable",
     networkRole: "satellite",
     handoffPolicy: "bidirectional",
     priority: 0.84,
     changeFrequency: "weekly",
-    notes: "Short comparison entry for helicopter vs whale watching intent.",
+  },
+  {
+    path: "/juneau-helicopter-tour-weight-limits-and-seating",
+    publishState: "indexable",
+    networkRole: "satellite",
+    handoffPolicy: "bidirectional",
+    priority: 0.84,
+    changeFrequency: "weekly",
+  },
+  {
+    path: "/juneau-glacier-flight-weather",
+    publishState: "indexable",
+    networkRole: "satellite",
+    handoffPolicy: "bidirectional",
+    priority: 0.84,
+    changeFrequency: "weekly",
+  },
+  {
+    path: "/tools",
+    publishState: "indexable",
+    networkRole: "satellite",
+    handoffPolicy: "bidirectional",
+    priority: 0.82,
+    changeFrequency: "weekly",
   },
   {
     path: "/what-to-do-in-juneau-cruise-port",
     publishState: "indexable",
     networkRole: "satellite",
     handoffPolicy: "bidirectional",
-    priority: 0.84,
+    priority: 0.78,
     changeFrequency: "weekly",
-    notes: "Short cruise-port entry for what to do in Juneau intent.",
   },
   {
     path: "/juneau/what-to-do-if-helicopter-tour-canceled",
@@ -106,28 +160,6 @@ const CORE_ROUTE_GOVERNANCE: RouteGovernanceEntry[] = [
     handoffPolicy: "outbound_only",
     priority: 0.8,
     changeFrequency: "weekly",
-    notes:
-      "Anchor decision page for Juneau cruise visitors choosing between ship excursions, independent tours, and self-guided port days.",
-  },
-  {
-    path: "/juneau/best-independent-excursions",
-    publishState: "indexable",
-    networkRole: "satellite",
-    handoffPolicy: "outbound_only",
-    priority: 0.8,
-    changeFrequency: "weekly",
-    notes:
-      "Money page ranking the few independent Juneau excursions worth surfacing for cruise visitors.",
-  },
-  {
-    path: "/juneau/what-happens-if-you-miss-the-ship",
-    publishState: "indexable",
-    networkRole: "satellite",
-    handoffPolicy: "outbound_only",
-    priority: 0.75,
-    changeFrequency: "weekly",
-    notes:
-      "Fear-removal page addressing the main objection to independent Juneau excursions for cruise passengers.",
   },
   {
     path: "/about",
@@ -169,50 +201,9 @@ const CORE_ROUTE_GOVERNANCE: RouteGovernanceEntry[] = [
     priority: 0.45,
     changeFrequency: "monthly",
   },
-  {
-    path: "/how-it-works",
-    publishState: "indexable",
-    networkRole: "operator",
-    handoffPolicy: "none",
-    priority: 0.7,
-    changeFrequency: "monthly",
-  },
-  {
-    path: "/juneau-helicopter-tours",
-    publishState: "indexable",
-    networkRole: "operator",
-    handoffPolicy: "bidirectional",
-    priority: 0.85,
-    changeFrequency: "weekly",
-  },
-  {
-    path: "/juneau-glacier-landing-tours",
-    publishState: "indexable",
-    networkRole: "operator",
-    handoffPolicy: "bidirectional",
-    priority: 0.8,
-    changeFrequency: "weekly",
-  },
-  {
-    path: "/juneau-dogsled-helicopter-tours",
-    publishState: "indexable",
-    networkRole: "operator",
-    handoffPolicy: "bidirectional",
-    priority: 0.8,
-    changeFrequency: "weekly",
-  },
 ];
 
-const CURATED_TOUR_GOVERNANCE: RouteGovernanceEntry[] = curatedTours.map((tour) => ({
-  path: `/tours/${tour.slug}`,
-  publishState: "indexable",
-  networkRole: "satellite",
-  handoffPolicy: "bidirectional",
-  priority: 0.8,
-  changeFrequency: "weekly",
-}));
-
-const JFD_ROUTE_GOVERNANCE = [...CORE_ROUTE_GOVERNANCE, ...CURATED_TOUR_GOVERNANCE] as const satisfies readonly RouteGovernanceEntry[];
+const JFD_ROUTE_GOVERNANCE = [...CORE_ROUTE_GOVERNANCE] as const satisfies readonly RouteGovernanceEntry[];
 
 const JFD_ROUTE_GOVERNANCE_INDEX = createRouteGovernanceIndex(JFD_ROUTE_GOVERNANCE);
 
