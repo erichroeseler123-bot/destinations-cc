@@ -7,6 +7,7 @@ import Image from 'next/image';
 import ViatorFeaturedTours from './ViatorFeaturedTours';
 import HelicopterArrival from './HelicopterArrival';
 import arrivalStyles from './HelicopterArrival.module.css';
+import { buildJfdViatorHandoffUrl } from '../../lib/viator/handoff';
 
 type PortSlug = 'juneau' | 'skagway';
 
@@ -266,7 +267,15 @@ export default function HelicopterDispatchBoard({
                 <td>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-start' }}>
                     <a
-                      href="https://www.viator.com/searchResults/all?text=Juneau+Mendenhall+Glacier+helicopter+tour&pid=P00058396&mcid=42383&medium=api&campaign=jfd-dispatch-temsco"
+                      href={buildJfdViatorHandoffUrl(
+                        "https://www.viator.com/searchResults/all?text=Juneau+Mendenhall+Glacier+helicopter+tour&pid=P00058396&mcid=42383&medium=api&campaign=jfd-dispatch-temsco",
+                        {
+                          productCode: "juneau-temsco-helicopter-search",
+                          campaign: "jfd-dispatch-temsco",
+                          date: initialDate,
+                          partySize: initialPassengerCount,
+                        }
+                      )}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="button button-primary"
@@ -330,7 +339,15 @@ export default function HelicopterDispatchBoard({
                 <td>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-start' }}>
                     <a
-                      href="https://www.viator.com/tours/Juneau/Juneau-Shore-Excursion-Helicopter-Tour-and-Guided-Icefield-Walk/d941-6251SHOREXICEWALK?pid=P00058396&mcid=42383&medium=api&campaign=jfd-dispatch-coastal"
+                      href={buildJfdViatorHandoffUrl(
+                        "https://www.viator.com/tours/Juneau/Juneau-Shore-Excursion-Helicopter-Tour-and-Guided-Icefield-Walk/d941-6251SHOREXICEWALK?pid=P00058396&mcid=42383&medium=api&campaign=jfd-dispatch-coastal",
+                        {
+                          productCode: "6251SHOREXICEWALK",
+                          campaign: "jfd-dispatch-coastal",
+                          date: initialDate,
+                          partySize: initialPassengerCount,
+                        }
+                      )}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="button button-primary"
@@ -394,7 +411,15 @@ export default function HelicopterDispatchBoard({
                 <td>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-start' }}>
                     <a
-                      href="https://www.viator.com/searchResults/all?text=Juneau+NorthStar+Glacier+Walkabout+helicopter&pid=P00058396&mcid=42383&medium=api&campaign=jfd-dispatch-northstar"
+                      href={buildJfdViatorHandoffUrl(
+                        "https://www.viator.com/searchResults/all?text=Juneau+NorthStar+Glacier+Walkabout+helicopter&pid=P00058396&mcid=42383&medium=api&campaign=jfd-dispatch-northstar",
+                        {
+                          productCode: "juneau-northstar-helicopter-search",
+                          campaign: "jfd-dispatch-northstar",
+                          date: initialDate,
+                          partySize: initialPassengerCount,
+                        }
+                      )}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="button button-primary"

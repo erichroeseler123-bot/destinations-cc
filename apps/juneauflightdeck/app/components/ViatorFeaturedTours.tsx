@@ -14,6 +14,7 @@ import type {
   ViatorTravelerReview,
 } from "@/lib/viator/types";
 import { addPortDateListener, buildDatedOperatorUrl, readSharedPortDate, sharePortDate } from "@/lib/portDate";
+import { buildJfdViatorHandoffUrl } from "../../lib/viator/handoff";
 
 interface ViatorFeaturedToursProps {
   initialDate?: string | null;
@@ -624,7 +625,12 @@ export default function ViatorFeaturedTours({
         </div>
 
         <a
-          href={browseHref}
+          href={buildJfdViatorHandoffUrl(browseHref, {
+            productCode: "juneau-helicopter-browse",
+            campaign: "jfd-viator-featured-browse",
+            date: dateFilter || null,
+            partySize: passengerCount,
+          })}
           target="_blank"
           rel="noopener noreferrer"
           style={{
@@ -846,10 +852,18 @@ export default function ViatorFeaturedTours({
               }}
             >
               <a
-                href={buildViatorBookingUrlWithPreferences(
-                  activeReviewProduct.bookHref,
-                  dateFilter,
-                  passengerCount
+                href={buildJfdViatorHandoffUrl(
+                  buildViatorBookingUrlWithPreferences(
+                    activeReviewProduct.bookHref,
+                    dateFilter,
+                    passengerCount
+                  ),
+                  {
+                    productCode: activeReviewProduct.productCode,
+                    campaign: `jfd-review-modal-${activeReviewProduct.productCode}`,
+                    date: dateFilter || null,
+                    partySize: passengerCount,
+                  }
                 )}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -880,13 +894,18 @@ export function TourCard({
 }) {
   const [imgError, setImgError] = useState(false);
 
-  // Preserve full API-returned URL with PID, MCID, etc., while safely appending date/pax preferences
+  // Preserve full API-returned URL with PID, MCID, etc., while routing via /go/commerce/handoff
   const finalBookingUrl = buildViatorBookingUrlWithPreferences(
     product.bookHref,
     selectedDate,
     passengerCount
   );
-  const primaryBookingUrl = finalBookingUrl;
+  const primaryBookingUrl = buildJfdViatorHandoffUrl(finalBookingUrl, {
+    productCode: product.productCode,
+    campaign: `jfd-tour-card-${product.productCode}`,
+    date: selectedDate || null,
+    partySize: passengerCount,
+  });
   const categoryLabel =
     product.tourType === "dog_sledding"
       ? "Glacier dog sledding"

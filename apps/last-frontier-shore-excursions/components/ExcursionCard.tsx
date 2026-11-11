@@ -2,7 +2,10 @@
 
 import React from "react";
 import { NormalizedAffiliateExcursion } from "@/lib/affiliate/types";
-import { buildAffiliateUrl } from "@/lib/affiliate/links";
+import {
+  buildAffiliateUrl,
+  buildDccHandoffAffiliateUrl,
+} from "@/lib/affiliate/links";
 import { trackAffiliateEvent } from "@/lib/analytics";
 import { TrustDisclosure } from "./TrustDisclosure";
 import { buildAddToCruisePromenadeUrl } from "../../../lib/dcc/shared/addToCruisePromenadeUrl";
@@ -39,6 +42,12 @@ export function ExcursionCard({
     excursion.title,
     excursion.isExactProduct
   );
+  const handoffHref = buildDccHandoffAffiliateUrl({
+    source: excursion.source,
+    destinationUrl: affiliateUrl,
+    productCode: excursion.productId || excursion.activitySlug,
+    campaign: excursion.attributionCampaign,
+  });
 
   const handleBookingClick = () => {
     trackAffiliateEvent({
@@ -48,7 +57,7 @@ export function ExcursionCard({
       provider: excursion.provider,
       productId: excursion.productId || undefined,
       tourTitle: excursion.title,
-      destinationUrl: affiliateUrl,
+      destinationUrl: handoffHref,
       placement: "card",
       isExactProduct: excursion.isExactProduct,
       campaign: excursion.attributionCampaign,
@@ -237,7 +246,7 @@ export function ExcursionCard({
       {/* Outbound Booking CTA */}
       <a
         className="button"
-        href={affiliateUrl}
+        href={handoffHref}
         target="_blank"
         rel="sponsored noopener noreferrer"
         onClick={handleBookingClick}

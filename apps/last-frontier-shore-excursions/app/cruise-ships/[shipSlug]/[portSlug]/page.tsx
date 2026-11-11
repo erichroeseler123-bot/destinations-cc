@@ -225,7 +225,10 @@ export default async function ShipPortExcursionsPage({ params }: ShipPortRoutePr
                       >
                         {trackedBookingUrl.includes("juneauflightdeck.com")
                           ? "Compare Glacier Aviation on Juneau Flight Deck \u2192"
-                          : "Check Rates & Departures on Viator \u2192"}
+                          : trackedBookingUrl.includes("provider=getyourguide") ||
+                              trackedBookingUrl.includes("getyourguide.com")
+                            ? "Check Rates & Departures on GetYourGuide \u2192"
+                            : "Check Rates & Departures on Viator \u2192"}
                       </a>
                     ) : (
                       <div

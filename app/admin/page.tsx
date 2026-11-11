@@ -7,6 +7,8 @@ import {
   isValidAdminSession,
 } from "@/lib/adminAccess";
 import { buildOwnerControlCenterSnapshot } from "@/lib/dcc/ownerControlCenter";
+import CommissionReconcilePanel from "./CommissionReconcilePanel";
+import DirectOperatorPitchPanel from "./DirectOperatorPitchPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -45,6 +47,16 @@ export default async function OwnerControlCenterPage() {
   const snapshot = await buildOwnerControlCenterSnapshot();
   const { triageQueue, connectedFunnel28d, fleetHealthAndRollback, commercialLedger } =
     snapshot;
+  const fareharborAuthReady = Boolean(
+    ((process.env.FAREHARBOR_WEBHOOK_TOKEN || "").trim().length >= 16 ||
+      (process.env.DCC_WTA_WEBHOOK_HMAC_SECRET || "").trim().length >= 16 ||
+      (process.env.FAREHARBOR_USER_KEY || "").trim().length >= 16) ||
+      ((process.env.FAREHARBOR_APP_KEY || "").trim() &&
+        (process.env.FAREHARBOR_USER_KEY || "").trim()),
+  );
+  const cruisePromenadeSyncReady = Boolean(
+    (process.env.DCC_CP_SERVICE_SECRET || "").trim(),
+  );
 
   return (
     <main
@@ -406,6 +418,15 @@ export default async function OwnerControlCenterPage() {
             ))}
           </div>
         </section>
+
+        {/* SECTION 5: 1-Click Commission CSV/JSON Reconcile Importer */}
+        <CommissionReconcilePanel
+          fareharborAuthReady={fareharborAuthReady}
+          cruisePromenadeSyncReady={cruisePromenadeSyncReady}
+        />
+
+        {/* SECTION 6: Turnkey 10% Direct Operator Pitch Panel */}
+        <DirectOperatorPitchPanel />
       </div>
     </main>
   );

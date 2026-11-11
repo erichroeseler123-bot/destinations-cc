@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { buildJfdViatorHandoffUrl } from "../../lib/viator/handoff";
 
 interface GlacierPoint {
   id: string;
@@ -648,7 +649,9 @@ export default function IcefieldGlacierMap() {
           </span>
           {point.isDirectLink ? (
             <a
-              href={point.primaryActionHref}
+              href={buildJfdViatorHandoffUrl(point.primaryActionHref, {
+                campaign: `jfd-map-${point.id}`,
+              })}
               target="_blank"
               rel="noopener noreferrer"
               className="button button-primary"
@@ -658,7 +661,9 @@ export default function IcefieldGlacierMap() {
             </a>
           ) : point.primaryActionHref.startsWith("http") ? (
             <a
-              href={point.primaryActionHref}
+              href={buildJfdViatorHandoffUrl(point.primaryActionHref, {
+                campaign: `jfd-map-${point.id}`,
+              })}
               target="_blank"
               rel="noopener noreferrer"
               className="button button-primary"

@@ -1,5 +1,10 @@
 import alaskaShipsJson from "./alaska-ships.json";
-import { buildViatorProductUrl, buildAffiliateUrl } from "./affiliate/links";
+import {
+  buildViatorProductUrl,
+  buildGetYourGuideProductUrl,
+  buildAffiliateUrl,
+  buildDccHandoffAffiliateUrl,
+} from "./affiliate/links";
 import { matchCatalogExcursion } from "./affiliate/catalog";
 
 export interface VerifiedTourHighlight {
@@ -88,9 +93,44 @@ const VIATOR_PRODUCT_MAPPINGS: Record<string, string> = {
   "Point Adolphus Guaranteed Whale Watching Safari": "https://www.viator.com/tours/Hoonah/Whale-Watch-Adventure/d26215-14707P1",
 };
 
+const GETYOURGUIDE_PRODUCT_MAPPINGS: Record<
+  string,
+  { url: string; productCode: string }
+> = {
+  "Bering Sea Crab Fishermen’s Tour aboard the Aleutian Ballad": {
+    url: "https://www.getyourguide.com/ketchikan-l32225/ketchikan-bering-sea-crab-fishermen-s-tour-t598272/",
+    productCode: "t598272",
+  },
+  "Bering Sea Crab Fishermen's Tour aboard the Aleutian Ballad": {
+    url: "https://www.getyourguide.com/ketchikan-l32225/ketchikan-bering-sea-crab-fishermen-s-tour-t598272/",
+    productCode: "t598272",
+  },
+  "Bering Sea Crab Fishermen's Tour (Aleutian Ballad)": {
+    url: "https://www.getyourguide.com/ketchikan-l32225/ketchikan-bering-sea-crab-fishermen-s-tour-t598272/",
+    productCode: "t598272",
+  },
+  "Bering Sea Crab Fishermen’s Tour (Aleutian Ballad)": {
+    url: "https://www.getyourguide.com/ketchikan-l32225/ketchikan-bering-sea-crab-fishermen-s-tour-t598272/",
+    productCode: "t598272",
+  },
+  "Bering Sea Crab Fishermen’s Tour": {
+    url: "https://www.getyourguide.com/ketchikan-l32225/ketchikan-bering-sea-crab-fishermen-s-tour-t598272/",
+    productCode: "t598272",
+  },
+  "Bering Sea Crab Fishermen's Tour": {
+    url: "https://www.getyourguide.com/ketchikan-l32225/ketchikan-bering-sea-crab-fishermen-s-tour-t598272/",
+    productCode: "t598272",
+  },
+};
+
 const SPECIALIST_AVIATION_HANDOFF_PATHS: Record<string, string> = {
   "Mendenhall Glacier Dog Sledding & Helicopter Flight": "/juneau-dogsled-helicopter-tours",
 };
+
+function extractViatorProductCodeFromUrl(viatorUrl: string): string | undefined {
+  const m = /\/d\d+-([A-Za-z0-9_]+)(?:[/?#]|$)/.exec(viatorUrl);
+  return m ? m[1] : undefined;
+}
 
 export const ALASKA_SHIPS_FLEET: Record<string, AlaskaCruiseShip> = alaskaShipsJson as unknown as Record<string, AlaskaCruiseShip>;
 
@@ -123,9 +163,26 @@ export function getTrackedTourUrl(tourTitle: string, portName: string, shipSlug:
     return url.toString();
   }
 
+  const gygMatch = GETYOURGUIDE_PRODUCT_MAPPINGS[tourTitle];
+  if (gygMatch) {
+    const gygDestinationUrl = buildGetYourGuideProductUrl(gygMatch.url, campaign);
+    return buildDccHandoffAffiliateUrl({
+      source: "getyourguide",
+      destinationUrl: gygDestinationUrl,
+      productCode: gygMatch.productCode,
+      campaign,
+    });
+  }
+
   const directUrl = VIATOR_PRODUCT_MAPPINGS[tourTitle];
   if (directUrl) {
-    return buildViatorProductUrl(directUrl, campaign);
+    const viatorDestinationUrl = buildViatorProductUrl(directUrl, campaign);
+    return buildDccHandoffAffiliateUrl({
+      source: "viator",
+      destinationUrl: viatorDestinationUrl,
+      productCode: extractViatorProductCodeFromUrl(directUrl),
+      campaign,
+    });
   }
 
   // Safeguard 2: Never guess or fuzzy-match an unmapped excursion title to a different operator/activity.
@@ -137,13 +194,19 @@ export function getTrackedTourUrl(tourTitle: string, portName: string, shipSlug:
     exactCatalogItem.officialUrl &&
     exactCatalogItem.title.trim().toLowerCase() === tourTitle.trim().toLowerCase()
   ) {
-    return buildAffiliateUrl(
+    const affiliateDestinationUrl = buildAffiliateUrl(
       exactCatalogItem.source,
       exactCatalogItem.officialUrl,
       campaign,
       exactCatalogItem.title,
       exactCatalogItem.isExactProduct,
     );
+    return buildDccHandoffAffiliateUrl({
+      source: exactCatalogItem.source,
+      destinationUrl: affiliateDestinationUrl,
+      productCode: exactCatalogItem.productId || exactCatalogItem.activitySlug,
+      campaign,
+    });
   }
 
   return null;

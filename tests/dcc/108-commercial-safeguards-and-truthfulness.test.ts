@@ -97,18 +97,26 @@ test("Safeguards 1e, 1f & 2 (LFSE): Dog-sled vs wheeled-cart & Aleutian Ballad m
   );
   assert.ok(!heliDogsledUrl.includes("62390P4"));
 
-  assert.equal(
-    getTrackedTourUrl(
-      "Bering Sea Crab Fishermen’s Tour aboard the Aleutian Ballad",
-      "Ketchikan",
-      "norwegian-jewel",
-    ),
-    null,
+  const balladJewel = getTrackedTourUrl(
+    "Bering Sea Crab Fishermen’s Tour aboard the Aleutian Ballad",
+    "Ketchikan",
+    "norwegian-jewel",
   );
-  assert.equal(
-    getTrackedTourUrl("Bering Sea Crab Fishermen’s Tour", "Ketchikan", "carnival-spirit"),
-    null,
+  assert.ok(balladJewel);
+  assert.match(balladJewel, /provider=getyourguide/);
+  assert.match(balladJewel, /account=F2MMUUH/);
+  assert.match(balladJewel, /t598272/);
+  assert.ok(!balladJewel.includes("472133P3"));
+
+  const balladSpirit = getTrackedTourUrl(
+    "Bering Sea Crab Fishermen’s Tour",
+    "Ketchikan",
+    "carnival-spirit",
   );
+  assert.ok(balladSpirit);
+  assert.match(balladSpirit, /provider=getyourguide/);
+  assert.match(balladSpirit, /t598272/);
+  assert.ok(!balladSpirit.includes("472133P3"));
   assert.equal(
     getTrackedTourUrl("Wilderness Sea Kayaking from Ward Cove", "Ketchikan", "norwegian-encore"),
     null,
@@ -182,9 +190,13 @@ test("Safeguard 3 & DCC /go/out: Affiliate identifiers frozen and specialist out
     fs.readFileSync(path.join(ROOT, "apps/last-frontier-shore-excursions/lib/affiliate/links.ts"), "utf8"),
     /F2MMUUH/,
   );
+  assert.doesNotMatch(
+    fs.readFileSync(path.join(ROOT, "apps/last-frontier-shore-excursions/app/page.tsx"), "utf8"),
+    /welcometoalaskatours/i,
+  );
   assert.match(
     fs.readFileSync(path.join(ROOT, "apps/last-frontier-shore-excursions/app/page.tsx"), "utf8"),
-    /welcometoalaskatours/,
+    /F2MMUUH/,
   );
   assert.ok(
     STOREFRONT_PRODUCTS.some((p) =>
