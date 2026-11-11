@@ -616,9 +616,14 @@ async function fetchDirectMorOwnerSummary(options: {
         body.genuineOrdersTotal28d,
       paidOrders28d + confirmedUnpaidOrders28d,
     );
-    const testRecordsExcluded28d = safeNumber(
-      m.testRecordsExcluded ?? body.testRecordsExcluded28d ?? body.testRecordsExcluded,
-    );
+    const rawTestExcluded =
+      m.testRecordsExcluded ?? body.testRecordsExcluded28d ?? body.testRecordsExcluded;
+    const testRecordsExcluded28d =
+      rawTestExcluded && typeof rawTestExcluded === "object"
+        ? safeNumber((rawTestExcluded as Record<string, unknown>).bookings28d) +
+          safeNumber((rawTestExcluded as Record<string, unknown>).quotes28d) +
+          safeNumber((rawTestExcluded as Record<string, unknown>).activeHolds)
+        : safeNumber(rawTestExcluded);
     const openQuoteRequests28d = safeNumber(
       m.openQuoteRequests ?? body.openQuoteRequests28d ?? body.openQuoteRequests,
     );

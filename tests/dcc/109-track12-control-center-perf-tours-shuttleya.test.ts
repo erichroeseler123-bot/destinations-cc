@@ -48,7 +48,11 @@ test("Item 1.A: Owner Control Center parses nested metrics28d (GoSno + PARR), CP
         return new Response(
           JSON.stringify({
             metrics28d: {
-              testRecordsExcluded: 9,
+              testRecordsExcluded: {
+                bookings28d: 4,
+                quotes28d: 5,
+                activeHolds: 0,
+              },
               genuineBookingsTotal: 7,
               paidBookings: 5,
               confirmedUnpaidBookings: 2,
