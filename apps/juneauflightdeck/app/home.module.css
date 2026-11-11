@@ -1,0 +1,731 @@
+/* Juneau Flight Deck — Shared Design System (Property 2)
+ * Palette: Glacier Blue (#38bdf8 / #e0f2fe), Deep Navy (#071626), Crisp White (#ffffff), Restrained Gold (#c89d54)
+ */
+
+.pageWrap {
+  background: #f4f8fb;
+  color: #071626;
+}
+
+.container {
+  width: min(calc(100% - 32px), 1200px);
+  margin: 0 auto;
+}
+
+/* Section 2: Destination Hero */
+.hero {
+  position: relative;
+  min-height: 600px;
+  display: flex;
+  align-items: center;
+  padding: 64px 0 72px;
+  background: #071626;
+  color: #ffffff;
+  overflow: hidden;
+}
+
+.heroImage {
+  object-fit: cover;
+  object-position: center 42%;
+  z-index: 0;
+}
+
+.heroScrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(90deg, rgba(6, 20, 34, 0.9) 0%, rgba(7, 22, 38, 0.72) 55%, rgba(7, 22, 38, 0.36) 100%),
+    linear-gradient(180deg, rgba(6, 20, 34, 0.35) 0%, rgba(6, 20, 34, 0.84) 100%);
+}
+
+.heroInner {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: 40px;
+  align-items: end;
+}
+
+.heroCopy {
+  max-width: 650px;
+}
+
+.heroBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.goldBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(200, 157, 84, 0.22);
+  border: 1px solid rgba(226, 184, 107, 0.55);
+  color: #f6dca6;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.glacierBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(56, 189, 248, 0.16);
+  border: 1px solid rgba(125, 211, 252, 0.4);
+  color: #e0f2fe;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.heroTitle {
+  margin: 0;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-size: clamp(2.35rem, 4.5vw, 3.65rem);
+  font-weight: 900;
+  line-height: 1.06;
+  letter-spacing: -0.03em;
+  color: #ffffff;
+}
+
+.heroTitleAccent {
+  display: block;
+  color: #7dd3fc;
+}
+
+.heroLead {
+  margin: 18px 0 0;
+  font-size: 17.5px;
+  line-height: 1.62;
+  color: #e2edf5;
+  max-width: 580px;
+}
+
+.heroPrimaryRow {
+  margin-top: 28px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+
+.primaryBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 54px;
+  padding: 0 28px;
+  border-radius: 999px;
+  background: #c89d54;
+  border: 1px solid #dfba77;
+  color: #071626 !important;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  box-shadow: 0 12px 28px rgba(7, 22, 38, 0.36);
+  transition: transform 0.16s ease, background 0.16s ease;
+  text-decoration: none !important;
+}
+
+.primaryBtn:hover {
+  background: #d7ae66;
+  transform: translateY(-1px);
+}
+
+.heroSecondaryLinks {
+  margin-top: 18px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  font-size: 14px;
+  color: rgba(224, 242, 254, 0.78);
+}
+
+.heroTextLink {
+  color: #ffffff;
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: rgba(200, 157, 84, 0.75);
+  text-underline-offset: 4px;
+}
+
+.heroTextLink:hover {
+  color: #f6dca6;
+}
+
+.heroFlightCard {
+  background: rgba(7, 22, 38, 0.86);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(125, 211, 252, 0.28);
+  border-radius: 20px;
+  padding: 22px 24px;
+  display: grid;
+  gap: 14px;
+  box-shadow: 0 24px 52px rgba(3, 11, 20, 0.44);
+}
+
+.heroCardEyebrow {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #e2b86b;
+}
+
+.heroFlightFacts {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.heroFlightFacts li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding-bottom: 9px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+  font-size: 13.5px;
+}
+
+.heroFlightFacts li:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.heroFlightFacts span {
+  color: #cbd5e1;
+}
+
+.heroFlightFacts strong {
+  color: #ffffff;
+  font-weight: 750;
+  text-align: right;
+}
+
+.heroPhotoCredit {
+  position: absolute;
+  right: 16px;
+  bottom: 10px;
+  z-index: 2;
+  font-size: 10.5px;
+  color: rgba(226, 232, 240, 0.75);
+  background: rgba(7, 22, 38, 0.62);
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+/* Shared Section Spacing & Typography */
+.howSection {
+  background: #ffffff;
+  padding: 72px 0;
+  border-bottom: 1px solid #dde7f0;
+}
+
+.featuredSection {
+  background: #f0f6fb;
+  padding: 76px 0;
+  border-bottom: 1px solid #dde7f0;
+}
+
+.trustSection {
+  background: #ffffff;
+  padding: 76px 0;
+  border-bottom: 1px solid #dde7f0;
+}
+
+.faqSection {
+  background: #f8fbfe;
+  padding: 72px 0 84px;
+}
+
+.sectionHeader {
+  max-width: 700px;
+  margin-bottom: 36px;
+}
+
+.sectionHeaderRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 20px;
+  margin-bottom: 36px;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #0369a1;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-size: clamp(1.85rem, 3.2vw, 2.5rem);
+  font-weight: 850;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+  color: #071626;
+}
+
+.sectionLead {
+  margin: 10px 0 0;
+  font-size: 16.5px;
+  line-height: 1.6;
+  color: #475569;
+  max-width: 640px;
+}
+
+.secondaryOutlineLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 999px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #071626 !important;
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.secondaryOutlineLink:hover {
+  border-color: #071626;
+}
+
+/* Section 3: 3-Step How It Works */
+.stepsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.stepCard {
+  background: #f8fbfe;
+  border: 1px solid #dce8f2;
+  border-radius: 18px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.stepTop {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.stepNum {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: #071626;
+  color: #f6dca6;
+  font-size: 14px;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.stepKicker {
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #0369a1;
+}
+
+.stepCard h3 {
+  margin: 4px 0 0;
+  font-size: 20px;
+  font-weight: 800;
+  color: #071626;
+}
+
+.stepCard p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #475569;
+}
+
+/* Section 4: Standardized 9-Detail Tour Cards */
+.flightGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.flightCard {
+  background: #ffffff;
+  border: 1px solid #d5e3ef;
+  border-radius: 20px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 12px 32px rgba(7, 22, 38, 0.06);
+}
+
+.flightImageWrap {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: #cfe4f5;
+  overflow: hidden;
+}
+
+.flightImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.flightTypeBadge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgba(7, 22, 38, 0.88);
+  backdrop-filter: blur(6px);
+  color: #ffffff;
+  font-size: 11.5px;
+  font-weight: 750;
+  padding: 5px 11px;
+  border-radius: 999px;
+}
+
+.flightOperatorPill {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(255, 255, 255, 0.94);
+  color: #071626;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.cardPhotoCredit {
+  position: absolute;
+  right: 10px;
+  bottom: 8px;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(7, 22, 38, 0.62);
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.flightBody {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.flightWhere {
+  margin: 0 0 6px;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #0369a1;
+}
+
+.flightTitle {
+  margin: 0 0 12px;
+  font-size: 20px;
+  font-weight: 850;
+  line-height: 1.28;
+  color: #071626;
+}
+
+.scheduleFitBanner {
+  margin-bottom: 14px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: #ecfeff;
+  border: 1px solid #bae6fd;
+  color: #0c4a6e;
+  font-size: 12.5px;
+  font-weight: 750;
+}
+
+.detailsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 14px;
+  margin: 0 0 16px;
+  padding: 14px 0;
+  border-top: 1px solid #e2edf5;
+  border-bottom: 1px solid #e2edf5;
+}
+
+.detailItem dt {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  margin-bottom: 2px;
+}
+
+.detailItem dd {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0f2438;
+  line-height: 1.38;
+}
+
+.weatherNote {
+  margin: 0 0 16px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #475569;
+}
+
+.cardFooter {
+  margin-top: auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.priceBlock {
+  display: flex;
+  flex-direction: column;
+}
+
+.priceValue {
+  font-size: 22px;
+  font-weight: 900;
+  color: #071626;
+  line-height: 1.1;
+}
+
+.priceSub {
+  font-size: 11.5px;
+  color: #64748b;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.cardActionBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0 20px;
+  border-radius: 999px;
+  background: #071626;
+  color: #ffffff !important;
+  font-size: 14px;
+  font-weight: 800;
+  text-decoration: none !important;
+  transition: background 0.15s ease;
+}
+
+.cardActionBtn:hover {
+  background: #0f2c47;
+}
+
+.cardActionSecondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0 20px;
+  border-radius: 999px;
+  background: #c89d54;
+  color: #071626 !important;
+  font-size: 14px;
+  font-weight: 800;
+  text-decoration: none !important;
+}
+
+/* Section 5: Trust, Weather & Concierge Request */
+.trustGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+  margin-bottom: 40px;
+}
+
+.trustCard {
+  background: #f8fbfe;
+  border: 1px solid #dce8f2;
+  border-radius: 16px;
+  padding: 22px;
+}
+
+.trustCard strong {
+  display: block;
+  font-size: 15px;
+  font-weight: 800;
+  color: #071626;
+  margin-bottom: 6px;
+}
+
+.trustCard p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.58;
+  color: #475569;
+}
+
+.conciergeDarkShell {
+  background: #071626;
+  color: #eef6fb;
+  border-radius: 24px;
+  padding: clamp(20px, 3.5vw, 36px);
+  box-shadow: 0 22px 54px rgba(7, 22, 38, 0.18);
+}
+
+.cruiseBanner {
+  margin-top: 28px;
+  background: #f0f6fb;
+  border: 1px solid #cfe0ee;
+  border-radius: 18px;
+  padding: 22px 26px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.cruiseBanner h3 {
+  margin: 0 0 4px;
+  font-size: 18px;
+  font-weight: 800;
+  color: #071626;
+}
+
+.cruiseBanner p {
+  margin: 0;
+  font-size: 14.5px;
+  color: #475569;
+}
+
+.cruiseBannerBtn {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 999px;
+  background: #071626;
+  color: #ffffff !important;
+  font-size: 13.5px;
+  font-weight: 800;
+}
+
+/* Section 6: Simple FAQ */
+.faqList {
+  display: grid;
+  gap: 12px;
+  max-width: 860px;
+}
+
+.faqItem {
+  background: #ffffff;
+  border: 1px solid #d8e4ef;
+  border-radius: 14px;
+  padding: 18px 22px;
+}
+
+.faqItem summary {
+  cursor: pointer;
+  font-size: 16.5px;
+  font-weight: 800;
+  color: #071626;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.faqItem summary::-webkit-details-marker {
+  display: none;
+}
+
+.faqItem summary::after {
+  content: "+";
+  font-size: 20px;
+  font-weight: 700;
+  color: #0369a1;
+  flex-shrink: 0;
+}
+
+.faqItem[open] summary::after {
+  content: "−";
+}
+
+.faqItem p {
+  margin: 12px 0 0;
+  font-size: 15px;
+  line-height: 1.62;
+  color: #475569;
+}
+
+@media (max-width: 1024px) {
+  .heroInner {
+    grid-template-columns: 1fr;
+  }
+
+  .stepsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .flightGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .trustGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .hero {
+    min-height: auto;
+    padding: 44px 0 56px;
+  }
+
+  .heroPrimaryRow .primaryBtn {
+    width: 100%;
+  }
+
+  .detailsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .trustGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .cardFooter {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .cardActionBtn,
+  .cardActionSecondary {
+    width: 100%;
+  }
+}

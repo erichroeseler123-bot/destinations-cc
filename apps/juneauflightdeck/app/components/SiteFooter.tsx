@@ -1,96 +1,79 @@
-import { SITE_DESCRIPTION, BOOKING_ROLES } from "@/lib/sitePositioning";
 import Link from "next/link";
 
 export default function SiteFooter() {
   return (
-    <footer className="site-footer" style={{ padding: "40px 0 28px" }}>
-      <div className="site-shell" style={{ display: "grid", gap: "32px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "28px" }}>
-          {/* Brand & Mission */}
-          <div className="site-footer-copy" style={{ maxWidth: "420px" }}>
-            <p className="eyebrow" style={{ color: "var(--accent-strong)", margin: "0 0 6px" }}>
-              Juneau Flight Deck • Cruise Excursion Booking &amp; Coordination
+    <footer className="site-footer" style={{ padding: "36px 0 28px" }}>
+      <div className="site-shell" style={{ display: "grid", gap: "22px" }}>
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            gap: "20px 32px",
+          }}
+        >
+          <div style={{ maxWidth: "460px" }}>
+            <p
+              style={{
+                fontSize: "0.82rem",
+                fontWeight: 800,
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                color: "#e2b86b",
+                margin: "0 0 6px",
+              }}
+            >
+              Juneau Flight Deck
             </p>
-            <p style={{ fontSize: "0.92rem", lineHeight: 1.6, margin: "0 0 10px", color: "var(--text)" }}>
-              {SITE_DESCRIPTION}
-            </p>
-            <p style={{ fontSize: "0.8rem", color: "var(--muted)", lineHeight: 1.5, margin: 0 }}>
-              {BOOKING_ROLES}
+            <p
+              style={{
+                fontSize: "0.9rem",
+                lineHeight: 1.55,
+                margin: 0,
+                color: "rgba(238, 246, 251, 0.85)",
+              }}
+            >
+              Independent Juneau glacier flight guide &amp; concierge desk. Compare FAA Part 135
+              operators (TEMSCO, Coastal &amp; NorthStar), check ship port timing, and book with
+              official providers.
             </p>
           </div>
 
-          {/* Essential Guides */}
-          <div>
-            <h4 style={{ fontSize: "0.85rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--ice)", margin: "0 0 12px" }}>
-              Insider Guides
-            </h4>
-            <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: "8px" }} className="site-footer-links">
-              <li>
-                <Link href="/juneau-helicopter-tour-sold-out">Sold Out Flights: How to Get Seats</Link>
-              </li>
-              <li>
-                <Link href="/temsco-vs-coastal-vs-northstar-juneau">TEMSCO vs Coastal vs NorthStar</Link>
-              </li>
-              <li>
-                <Link href="/best-time-for-glacier-dog-sledding-juneau">Best Time for Dog Sledding</Link>
-              </li>
-              <li>
-                <Link href="/juneau-helicopter-tour-weight-limits-and-seating">Weight Limits &amp; Seating Math</Link>
-              </li>
-              <li>
-                <Link href="/juneau/what-to-do-if-helicopter-tour-canceled">What to Do if Flight Cancels</Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Tours & Tools */}
-          <div>
-            <h4 style={{ fontSize: "0.85rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--ice)", margin: "0 0 12px" }}>
-              Excursions &amp; Tools
-            </h4>
-            <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: "8px" }} className="site-footer-links">
-              <li>
-                <Link href="/helicopter-waitlist">Helicopter Tour Waitlist</Link>
-              </li>
-              <li>
-                <Link href="/helicopter">Juneau Helicopter Tours</Link>
-              </li>
-              <li>
-                <Link href="/juneau-whale-watching-tours">Auke Bay Whale Watching</Link>
-              </li>
-              <li>
-                <Link href="/skagway/helicopter">Skagway Glacier Flights</Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Company & Support */}
-          <div>
-            <h4 style={{ fontSize: "0.85rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--ice)", margin: "0 0 12px" }}>
-              Information
-            </h4>
-            <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: "8px" }} className="site-footer-links">
-              <li>
-                <Link href="/about">About Our Service</Link>
-              </li>
-              <li>
-                <Link href="/faq">FAQ</Link>
-              </li>
-              <li>
-                <Link href="/contact">Contact Dispatch</Link>
-              </li>
-              <li>
-                <Link href="/privacy-policy">Privacy Policy</Link>
-              </li>
-              <li>
-                <Link href="/terms">Terms of Service</Link>
-              </li>
-            </ul>
-          </div>
+          <nav
+            aria-label="Footer"
+            className="site-footer-links"
+            style={{ display: "flex", flexWrap: "wrap", gap: "12px 20px", alignItems: "center" }}
+          >
+            <Link href="/helicopter">Glacier Flights</Link>
+            <Link href="/temsco-vs-coastal-vs-northstar-juneau">Compare Operators</Link>
+            <Link href="/helicopter-waitlist">Sold-Out Concierge</Link>
+            <Link href="/juneau/what-to-do-if-helicopter-tour-canceled">Weather Backups</Link>
+            <Link href="/faq">FAQ</Link>
+            <Link href="/contact">Contact</Link>
+            <Link href="/privacy-policy">Privacy</Link>
+            <Link href="/terms">Terms</Link>
+          </nav>
         </div>
 
-        <div style={{ paddingTop: "18px", borderTop: "1px solid rgba(151, 211, 255, 0.12)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px", fontSize: "0.8rem", color: "var(--muted)" }}>
-          <span>&copy; {new Date().getFullYear()} Juneau Flight Deck. Independent coordination &amp; official Viator partner.</span>
+        <div
+          style={{
+            paddingTop: "16px",
+            borderTop: "1px solid rgba(151, 211, 255, 0.14)",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: "10px",
+            fontSize: "0.78rem",
+            color: "rgba(228, 239, 246, 0.72)",
+          }}
+        >
+          <span>
+            &copy; {new Date().getFullYear()} Juneau Flight Deck · Official Viator Partner &amp;
+            Independent Concierge (we may earn a commission on partner bookings at no extra cost to
+            you).
+          </span>
           <span>Juneau, Alaska</span>
         </div>
       </div>

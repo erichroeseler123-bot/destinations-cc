@@ -4,14 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const NAV_ITEMS = [
-  { href: "/tools", label: "Planning Tools" },
-  { href: "/helicopter", label: "Book Tours" },
-  { href: "/temsco-vs-coastal-vs-northstar-juneau", label: "Compare Operators" },
-  { href: "/helicopter-waitlist", label: "Ship Port Timing" },
-  { href: "/juneau-helicopter-tour-sold-out", label: "Sold Out Alerts" },
-  { href: "/juneau/what-to-do-if-helicopter-tour-canceled", label: "Weather Backups" },
-  { href: "/about", label: "About" },
-  { href: "/contact", label: "Contact" },
+  { href: "/helicopter", label: "Glacier Flights", cta: false },
+  { href: "/temsco-vs-coastal-vs-northstar-juneau", label: "Compare Operators", cta: false },
+  { href: "/helicopter-waitlist", label: "Port Timing", cta: false },
+  { href: "/juneau/what-to-do-if-helicopter-tour-canceled", label: "Weather Backups", cta: false },
+  { href: "/#concierge-request", label: "Request a Flight", cta: true },
 ] as const;
 
 export default function SiteHeader() {
@@ -29,7 +26,7 @@ export default function SiteHeader() {
           aria-current={pathname === "/" ? "page" : undefined}
         >
           <span className="site-brand-title">Juneau Flight Deck</span>
-          <span className="site-brand-tag">Alaska cruise excursion booking &amp; flight coordination.</span>
+          <span className="site-brand-tag">Juneau Glacier Flights &amp; Concierge</span>
         </Link>
         <nav className="site-nav" aria-label="Primary">
           {NAV_ITEMS.map((item) => {
@@ -39,6 +36,7 @@ export default function SiteHeader() {
                 key={item.href}
                 href={item.href}
                 aria-current={active ? "page" : undefined}
+                className={item.cta ? "site-nav-cta" : undefined}
               >
                 {item.label}
               </Link>
