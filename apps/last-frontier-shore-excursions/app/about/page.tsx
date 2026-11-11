@@ -40,7 +40,7 @@ export default function AboutPage() {
             <strong>Viator Integration:</strong> Operates under approved <em>Affiliate Partner Access</em> using publisher ID <code>pid=P00281144</code> (tracking parameters <code>mcid=42383</code>, <code>medium=link</code>, and <code>last-frontier-*</code> campaign tags). There is no automated server-to-server booking API key (<code>VIATOR_API_KEY</code>) enabled in production.
           </li>
           <li>
-            <strong>GetYourGuide Integration:</strong> Operates under approved <em>Affiliate Partner Link Access</em> (<code>partner_id=F2MMUUH</code>), including verified exact-product listings such as Ketchikan&apos;s Bering Sea Crab Fishermen&apos;s Tour aboard the <em>Aleutian Ballad</em> (<code>t598272</code>). There is no live merchant API token (<code>GETYOURGUIDE_ACCESS_TOKEN</code>) enabled in production.
+            <strong>GetYourGuide Integration:</strong> Operates under approved <em>Affiliate Partner Link Access</em> (Partner ID <code>F2MMUUH</code>). Commercial SKUs pending pier-window or portal ownership sign-off (including Ketchikan&apos;s <em>Aleutian Ballad</em>) remain held from self-serve checkout until verified. There is no live merchant API token (<code>GETYOURGUIDE_ACCESS_TOKEN</code>) enabled in production.
           </li>
           <li>
             <strong>Curated Editorial Data:</strong> Product listings, typical starting prices, sample departure schedules, and cancellation policies displayed across this site reflect manual editorial research and historical benchmarks rather than real-time automated API synchronization.

@@ -252,6 +252,7 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
       ? "welcometoneworleanstours"
       : "aktourcenter";
   const fhItemCode = product.itemId || product.bookingVariants?.[0]?.itemId || slug;
+  const detailSourcePage = isWto ? `/tours/${slug}` : `/new-orleans/tours/${slug}`;
   const fhHandoffHref = buildPortfolioHandoffUrl({
     originatingSite: siteDomain,
     provider: "fareharbor",
@@ -259,6 +260,7 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
     productCode: fhItemCode,
     destinationUrl: fareHarborDirectHref,
     campaign: `${isWto ? "wno" : "dcc"}-${slug}`,
+    sourcePage: detailSourcePage,
     contextId: carriedContext.contextId,
     evaluationRunId: assurance.evaluationRunId,
     receiptId: assurance.receiptId,
@@ -280,6 +282,7 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
             null,
         destinationUrl: viatorInfo.destinationUrl,
         campaign: `${isWto ? "wno" : "dcc"}-${slug}-viator`,
+        sourcePage: detailSourcePage,
         contextId: carriedContext.contextId,
         evaluationRunId: assurance.evaluationRunId,
         receiptId: assurance.receiptId,

@@ -315,48 +315,24 @@ test("Move 2: LFSE has 0 occurrences of welcometoalaskatours, Aleutian Ballad un
     );
   }
 
-  // Verify Aleutian Ballad exact-product GetYourGuide entry in LFSE catalog
+  // Verify Aleutian Ballad remains held in LFSE catalog & ship-port pages while WTA has 0 leaks
   const ballad = AFFILIATE_CATALOG.find((e) => e.productId === "t598272");
-  assert.ok(ballad, "Expected Aleutian Ballad t598272 in LFSE AFFILIATE_CATALOG");
-  assert.equal(ballad.source, "getyourguide");
-  assert.equal(ballad.isExactProduct, true);
-  assert.equal(ballad.portSlug, "ketchikan");
-  assert.equal(ballad.durationMinutes, 180);
-
-  const builtGygUrl = buildAffiliateUrl(
-    ballad.source,
-    ballad.officialUrl,
-    "ketchikan-crab-test",
-    undefined,
-    ballad.isExactProduct,
-  );
-  assert.match(builtGygUrl, /getyourguide\.com\/ketchikan-l32225/);
-  assert.match(builtGygUrl, /partner_id=F2MMUUH/);
+  assert.equal(ballad, undefined, "Aleutian Ballad t598272 must remain held out of self-serve catalog");
 
   const shipPortBalladHref = getTrackedTourUrl(
     "Bering Sea Crab Fishermen’s Tour aboard the Aleutian Ballad",
     "Ketchikan",
     "royal-princess",
   );
-  assert.ok(shipPortBalladHref);
-  assert.ok(
-    shipPortBalladHref.startsWith(
-      "https://www.destinationcommandcenter.com/go/commerce/handoff?",
-    ),
-  );
-  assert.match(shipPortBalladHref, /provider=getyourguide/);
-  assert.match(shipPortBalladHref, /account=F2MMUUH/);
-  assert.match(shipPortBalladHref, /t598272/);
+  assert.equal(shipPortBalladHref, null);
 
-  // Verify ledger state: only WNO Jean Lafitte remains held, and 0 partner boundary leaks
-  assert.equal(HELD_COMMERCIAL_SKUS.length, 1);
-  assert.equal(
-    HELD_COMMERCIAL_SKUS[0]?.skuSlug,
-    "jeanlafitte-swamp-tour-with-hotel-pickup",
+  // Verify ledger state: both WNO Jean Lafitte and LFSE Aleutian Ballad remain held, and 0 partner boundary leaks
+  assert.equal(HELD_COMMERCIAL_SKUS.length, 2);
+  assert.deepEqual(
+    HELD_COMMERCIAL_SKUS.map((s) => s.skuSlug),
+    ["jeanlafitte-swamp-tour-with-hotel-pickup", "aleutian-ballad"],
   );
-  assert.ok(
-    UNHELD_VERIFIED_SKUS.some((s) => s.skuSlug === "aleutian-ballad"),
-  );
+  assert.equal(UNHELD_VERIFIED_SKUS.length, 0);
   assert.deepEqual(listPartnerBoundaryReviewItems(), []);
 });
 

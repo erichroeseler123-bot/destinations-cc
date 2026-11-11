@@ -1201,20 +1201,52 @@ export function buildProviderAffiliateHandoffUrl(params: {
 
   if (params.provider === "viator") {
     const resolvedViatorCode = (params.viatorProductCode || params.productCode || "").trim().toUpperCase();
-    if (url.hostname === "fareharbor.com" || url.hostname.endsWith(".fareharbor.com")) {
-      const canonicalViatorUrlByCode: Record<string, string> = {
-        "15200P1":
-          "https://www.viator.com/tours/New-Orleans/Large-Airboat-Swamp-Tour/d675-15200P1?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
-        "15200P5":
-          "https://www.viator.com/tours/New-Orleans/New-Orleans-Covered-Boat-Swamp-Tour/d675-15200P5?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
-        "15200P6":
-          "https://www.viator.com/tours/New-Orleans/New-Orleans-Swamp-Tour-Boat-Adventure-with-Transportation/d675-15200P6?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
-        "15200P9":
-          "https://www.viator.com/tours/New-Orleans/Swamp-and-Plantation-Combo-Tour-from-New-Orleans/d675-15200P9?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
-      };
+    const canonicalViatorUrlByCode: Record<string, string> = {
+      "15200P1": "https://www.viator.com/tours/New-Orleans/Large-Airboat-Swamp-Tour/d675-15200P1",
+      "15200P2": "https://www.viator.com/tours/New-Orleans/Large-Airboat-Swamp-Tour-with-Hotel-Pickup/d675-15200P2",
+      "15200P3": "https://www.viator.com/tours/New-Orleans/Small-Group-Airboat-Swamp-Tour/d675-15200P3",
+      "15200P4": "https://www.viator.com/tours/New-Orleans/Small-Group-Swamp-Tour-by-Airboat-With-Downtown-New-Orleans-Pickup/d675-15200P4",
+      "15200P5": "https://www.viator.com/tours/New-Orleans/New-Orleans-Swamp-Tour-Boat-Adventure/d675-15200P5",
+      "15200P6": "https://www.viator.com/tours/New-Orleans/New-Orleans-Swamp-Tour-Boat-Adventure-With-Pickup/d675-15200P6",
+      "15200P7": "https://www.viator.com/tours/New-Orleans/New-Orleans-City-Tour-Katrina-Garden-District-French-Quarter-Graveyard/d675-15200P7",
+      "15200P9": "https://www.viator.com/tours/New-Orleans/Combo-Oak-Alley-Plantation-and-Swamp-Boat-Tour/d675-15200P9",
+      "8013P1": "https://www.viator.com/tours/New-Orleans/Three-Hour-City-Tour-of-New-Orleans/d675-8013P1",
+      "8013P3": "https://www.viator.com/tours/New-Orleans/Combo-Oak-Alley-Plantation-and-New-Orleans-City-Tour/d675-8013P3",
+      "8013P8": "https://www.viator.com/tours/New-Orleans/Oak-Alley-or-Laura-Plantation-Tour-from-New-Orleans/d675-8013P8",
+      "3780STEAMDIN": "https://www.viator.com/tours/New-Orleans/Steamboat-Natchez-Jazz-Dinner-Cruise/d675-3780STEAMDIN",
+      "3780STEAM": "https://www.viator.com/tours/New-Orleans/Steamboat-Natchez-Harbor-Cruise/d675-3780STEAM",
+      "3780STEAMBRU": "https://www.viator.com/tours/New-Orleans/Steamboat-Natchez-Jazz-Brunch-Cruise-in-New-Orleans/d675-3780STEAMBRU",
+      "3780OAK": "https://www.viator.com/tours/New-Orleans/Tour-of-Oak-Alley-Plantation/d675-3780OAK",
+      "3780P41": "https://www.viator.com/tours/New-Orleans/Whitney-Plantation-Tour/d675-3780P41",
+      "3780SWAMP": "https://www.viator.com/tours/New-Orleans/Swamp-and-Bayou-Sightseeing-Tour-with-Boat-Ride-from-New-Orleans/d675-3780SWAMP",
+      "3780AIRBOAT": "https://www.viator.com/tours/New-Orleans/Airboat-Ride-with-Round-Trip-Transport-from-New-Orleans/d675-3780AIRBOAT",
+      "3780SWPL": "https://www.viator.com/tours/New-Orleans/Swamp-Boat-Ride-and-Southern-Plantation-Tour-from-New-Orleans/d675-3780SWPL",
+      "3780P91": "https://www.viator.com/tours/New-Orleans/Swamp-Boat-Ride-and-Whitney-Plantation-Tour-from-New-Orleans/d675-3780P91",
+      "3780ST": "https://www.viator.com/tours/New-Orleans/New-Orleans-Original-Cocktail-Walking-Tour/d675-3780ST",
+      "3780GHOSTS": "https://www.viator.com/tours/New-Orleans/New-Orleans-Ghosts-and-Spirits-Walking-Tour/d675-3780GHOSTS",
+      "3780HAUNT": "https://www.viator.com/tours/New-Orleans/New-Orleans-Cemetery-and-Voodoo-Walking-Tour/d675-3780HAUNT",
+      "3780P45": "https://www.viator.com/tours/New-Orleans/Mardi-Gras-Jazz-Brunch-Cruise/d675-3780P45",
+      "6953SWAMP": "https://www.viator.com/tours/New-Orleans/Honey-Island-Swamp-Tour/d675-6953SWAMP",
+      "6953SWAMPTRANS": "https://www.viator.com/tours/New-Orleans/Honey-Island-Swamp-Tour-With-Transport/d675-6953SWAMPTRANS",
+      "RAGINCAJUN-AIRBOAT": "https://www.viator.com/tours/New-Orleans/Large-Airboat-Swamp-Tour/d675-15200P1",
+      "RAGINCAJUN-COVERED-BOAT": "https://www.viator.com/tours/New-Orleans/New-Orleans-Swamp-Tour-Boat-Adventure/d675-15200P5",
+      "RAGINCAJUN-PRIVATE-BOAT": "https://www.viator.com/tours/New-Orleans/Small-Group-Airboat-Swamp-Tour/d675-15200P3",
+      "SOUTHERNSTYLE-SWAMP": "https://www.viator.com/tours/New-Orleans/Oak-Alley-or-Laura-Plantation-Tour-from-New-Orleans/d675-8013P8",
+      "SOUTHERNSTYLE-CITY-TOUR": "https://www.viator.com/tours/New-Orleans/Three-Hour-City-Tour-of-New-Orleans/d675-8013P1",
+    };
+    const isFareHarborOrGenericViator =
+      url.hostname === "fareharbor.com" ||
+      url.hostname.endsWith(".fareharbor.com") ||
+      (url.hostname.includes("viator.com") &&
+        (/\/d675-(?:ttd|g\d+)/i.test(url.pathname) || /\/searchResults\/all/i.test(url.pathname)));
+    if (isFareHarborOrGenericViator && canonicalViatorUrlByCode[resolvedViatorCode]) {
+      const existingPid = url.searchParams.get("pid") || "P00306962";
       url = new URL(
-        canonicalViatorUrlByCode[resolvedViatorCode] ||
-          `https://www.viator.com/searchResults/all?text=${encodeURIComponent(resolvedViatorCode || "New Orleans Swamp Tour")}&pid=P00306962&mcid=42383&medium=api&api_version=2.0`,
+        `${canonicalViatorUrlByCode[resolvedViatorCode]}?mcid=42383&pid=${encodeURIComponent(existingPid)}&medium=api&api_version=2.0`,
+      );
+    } else if (url.hostname === "fareharbor.com" || url.hostname.endsWith(".fareharbor.com")) {
+      url = new URL(
+        `https://www.viator.com/searchResults/all?text=${encodeURIComponent(resolvedViatorCode || "New Orleans Swamp Tour")}&pid=P00306962&mcid=42383&medium=api&api_version=2.0`,
       );
     }
     const pid =

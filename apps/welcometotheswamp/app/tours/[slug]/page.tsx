@@ -6,6 +6,7 @@ import {
   buildPortfolioHandoffUrl,
   evaluatePortfolioAssuranceSummary,
   resolvePortfolioTripContext,
+  VERIFIED_NOLA_VIATOR_CANONICAL_URLS,
 } from "@/lib/dcc/commerce/portfolio";
 import { SITE_CONFIG } from "@/app/site-config";
 import { notFound } from "next/navigation";
@@ -118,19 +119,26 @@ export default async function TourDetailPage({ params, searchParams }: PageProps
     productCode: productId,
     destinationUrl: directLink,
     campaign: `wts-detail-${slug}`,
+    sourcePage: `/tours/${slug}`,
     contextId: carriedContext.contextId,
     evaluationRunId: assurance.evaluationRunId,
     receiptId: assurance.receiptId,
     intendedDate: carriedContext.payload.date || null,
     partySize: carriedContext.payload.partySize || null,
   });
+  const canonicalViatorBase =
+    VERIFIED_NOLA_VIATOR_CANONICAL_URLS[productId.toUpperCase()] ||
+    VERIFIED_NOLA_VIATOR_CANONICAL_URLS["15200P1"];
+  const viatorCodeMatch = canonicalViatorBase.match(/\/d675-([A-Z0-9]+)$/i);
+  const resolvedViatorCode = viatorCodeMatch ? viatorCodeMatch[1] : productId;
   const viatorHandoffHref = buildPortfolioHandoffUrl({
     originatingSite: "welcometotheswamp.com",
     provider: "viator",
     providerAccount: "P00058396",
-    productCode: productId,
-    destinationUrl: "https://www.viator.com/New-Orleans-tours/Nature-and-Wildlife/d675-g9-c36?pid=P00058396&mcid=42383",
+    productCode: resolvedViatorCode,
+    destinationUrl: `${canonicalViatorBase}?pid=P00058396&mcid=42383&medium=link`,
     campaign: `wts-detail-${slug}-viator`,
+    sourcePage: `/tours/${slug}`,
     contextId: carriedContext.contextId,
     evaluationRunId: assurance.evaluationRunId,
     receiptId: assurance.receiptId,
@@ -192,7 +200,7 @@ export default async function TourDetailPage({ params, searchParams }: PageProps
             accountLabel: `asn=${asn}`,
           },
           {
-            label: "Compare Swamp Departures on Viator",
+            label: `Book ${product.title} on Viator`,
             href: viatorHandoffHref,
             providerLabel: "Viator",
             accountLabel: "pid=P00058396",

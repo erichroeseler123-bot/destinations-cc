@@ -84,12 +84,33 @@ export async function GET(request: Request) {
     sp.get("idempotencyKey")?.trim() || sp.get("idempotency_key")?.trim() || null;
   const intendedDepartureTime =
     sp.get("departureTime")?.trim() || sp.get("time")?.trim() || null;
+  let sourcePage =
+    sp.get("sourcePage")?.trim() || sp.get("originatingPage")?.trim() || null;
+  if (!sourcePage) {
+    const refererRaw = request.headers.get("referer")?.trim();
+    if (refererRaw) {
+      try {
+        const refUrl = new URL(refererRaw);
+        sourcePage = refUrl.pathname || "/";
+      } catch {
+        sourcePage = null;
+      }
+    }
+  }
   const isQaTraffic =
     sp.get("qa") === "1" ||
     sp.get("qa") === "true" ||
     sp.get("isQaTraffic") === "1" ||
     sp.get("isQaTraffic") === "true" ||
     Boolean(idempotencyKey && /^qa[_-]/i.test(idempotencyKey));
+
+  const handoffMetadata =
+    isQaTraffic || sourcePage
+      ? {
+          ...(isQaTraffic ? { isQaTraffic: true } : {}),
+          ...(sourcePage ? { originatingPage: sourcePage, sourcePage } : {}),
+        }
+      : null;
 
   const handoff = await createCommercialHandoff({
     originatingSite,
@@ -122,7 +143,7 @@ export async function GET(request: Request) {
       ? "qa:public_traveler_browser"
       : "client:public_traveler_browser",
     traceparent,
-    metadata: isQaTraffic ? { isQaTraffic: true } : null,
+    metadata: handoffMetadata,
   });
   await syncDurableLedgerWithPostgres({ forcePushLocal: true });
 

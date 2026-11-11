@@ -93,35 +93,11 @@ const VIATOR_PRODUCT_MAPPINGS: Record<string, string> = {
   "Point Adolphus Guaranteed Whale Watching Safari": "https://www.viator.com/tours/Hoonah/Whale-Watch-Adventure/d26215-14707P1",
 };
 
+// Held commercial SKUs (e.g., Aleutian Ballad / t598272) remain empty until explicit owner portal sign-off.
 const GETYOURGUIDE_PRODUCT_MAPPINGS: Record<
   string,
   { url: string; productCode: string }
-> = {
-  "Bering Sea Crab Fishermen’s Tour aboard the Aleutian Ballad": {
-    url: "https://www.getyourguide.com/ketchikan-l32225/ketchikan-bering-sea-crab-fishermen-s-tour-t598272/",
-    productCode: "t598272",
-  },
-  "Bering Sea Crab Fishermen's Tour aboard the Aleutian Ballad": {
-    url: "https://www.getyourguide.com/ketchikan-l32225/ketchikan-bering-sea-crab-fishermen-s-tour-t598272/",
-    productCode: "t598272",
-  },
-  "Bering Sea Crab Fishermen's Tour (Aleutian Ballad)": {
-    url: "https://www.getyourguide.com/ketchikan-l32225/ketchikan-bering-sea-crab-fishermen-s-tour-t598272/",
-    productCode: "t598272",
-  },
-  "Bering Sea Crab Fishermen’s Tour (Aleutian Ballad)": {
-    url: "https://www.getyourguide.com/ketchikan-l32225/ketchikan-bering-sea-crab-fishermen-s-tour-t598272/",
-    productCode: "t598272",
-  },
-  "Bering Sea Crab Fishermen’s Tour": {
-    url: "https://www.getyourguide.com/ketchikan-l32225/ketchikan-bering-sea-crab-fishermen-s-tour-t598272/",
-    productCode: "t598272",
-  },
-  "Bering Sea Crab Fishermen's Tour": {
-    url: "https://www.getyourguide.com/ketchikan-l32225/ketchikan-bering-sea-crab-fishermen-s-tour-t598272/",
-    productCode: "t598272",
-  },
-};
+> = {};
 
 const SPECIALIST_AVIATION_HANDOFF_PATHS: Record<string, string> = {
   "Mendenhall Glacier Dog Sledding & Helicopter Flight": "/juneau-dogsled-helicopter-tours",

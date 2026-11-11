@@ -79,22 +79,6 @@ export default async function HomePage({
     intendedDate: carriedDate,
     partySize: carriedPartySize,
   });
-  const aleutianBalladDest = buildAffiliateUrl(
-    "getyourguide",
-    "https://www.getyourguide.com/ketchikan-l32225/ketchikan-bering-sea-crab-fishermen-s-tour-t598272/",
-    "last-frontier-home-aleutian-ballad",
-    "Bering Sea Crab Fishermen's Tour (Aleutian Ballad)",
-    true,
-  );
-  const aleutianBalladHandoffHref = buildDccHandoffAffiliateUrl({
-    source: "getyourguide",
-    destinationUrl: aleutianBalladDest,
-    productCode: "t598272",
-    campaign: "last-frontier-home-aleutian-ballad",
-    contextId: rawCtx,
-    intendedDate: carriedDate,
-    partySize: carriedPartySize,
-  });
 
   const topActivities = [
     PORT_ACTIVITIES.find((a) => a.slug === "whale-watching" && a.portSlug === "juneau")!,
@@ -254,17 +238,6 @@ export default async function HomePage({
                 style={{ padding: "6px 12px", borderRadius: 6, background: "#0369a1", color: "#fff", fontWeight: 700, fontSize: "12px", textDecoration: "none" }}
               >
                 Compare on GetYourGuide (partner_id=F2MMUUH)
-              </a>
-              <a
-                href={aleutianBalladHandoffHref}
-                data-dcc-handoff-link="true"
-                data-dcc-provider="GetYourGuide"
-                data-dcc-account="partner_id=F2MMUUH"
-                target="_blank"
-                rel="sponsored noopener noreferrer"
-                style={{ padding: "6px 12px", borderRadius: 6, background: "#0f766e", color: "#fff", fontWeight: 700, fontSize: "12px", textDecoration: "none" }}
-              >
-                Ketchikan Aleutian Ballad on GetYourGuide (partner_id=F2MMUUH)
               </a>
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 12, fontSize: "12px" }}>

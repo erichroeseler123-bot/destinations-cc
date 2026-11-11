@@ -18,15 +18,14 @@ const VERIFIED_PRODUCT_IDS = [
   "6459PRTKTNMISTY",
   "472133P3",
   "445368P5",
-  "t598272",
   "472133P4",
   "64781P20",
   "14707P1",
 ] as const;
 
 describe("Last Frontier Shore Excursions - Partner Direct Link & Handoff Verification", () => {
-  it("contains exactly 16 catalog items (15 Viator + 1 GetYourGuide Aleutian Ballad)", () => {
-    assert.equal(AFFILIATE_CATALOG.length, 16, "Catalog must contain exactly 16 tours");
+  it("contains exactly 15 verified Viator catalog items (Aleutian Ballad held)", () => {
+    assert.equal(AFFILIATE_CATALOG.length, 15, "Catalog must contain exactly 15 tours");
   });
 
   it("every catalog entry is an exact Viator or GetYourGuide product with a verified productId", () => {
@@ -289,7 +288,6 @@ describe("Last Frontier Shore Excursions - Partner Direct Link & Handoff Verific
       "6459PRTKTNMISTY": "https://www.viator.com/tours/Ketchikan/Ketchikan-Shore-Excursion-Misty-Fjords-National-Monument-Floatplane-Tour/d942-6459PRTKTNMISTY",
       "472133P3": "https://www.viator.com/tours/Ketchikan/Misty-Fjords-and-Wilderness-Explorer/d942-472133P3",
       "445368P5": "https://www.viator.com/tours/Ketchikan/Saxman-Native-Village-Ketchikan-Highlights-and-Lumberjack-Show/d942-445368P5",
-      "t598272": "https://www.getyourguide.com/ketchikan-l32225/ketchikan-bering-sea-crab-fishermen-s-tour-t598272/",
       "472133P4": "https://www.viator.com/tours/Sitka/Whale-Watch-and-Sea-Otter-Quest/d4153-472133P4",
       "64781P20": "https://www.viator.com/tours/Sitka/Simply-Amazing-Sitka-Tour/d4153-64781P20",
       "14707P1": "https://www.viator.com/tours/Hoonah/Whale-Watch-Adventure/d26215-14707P1",
@@ -317,19 +315,7 @@ describe("Last Frontier Shore Excursions - Partner Direct Link & Handoff Verific
           const url = getTrackedTourUrl(tour.title, portLogistics.portName, ship.slug);
 
           if (/Bering Sea Crab/i.test(tour.title)) {
-            assert.ok(url, `Aleutian Ballad tour must resolve to verified GYG handoff: ${tour.title}`);
-            assert.ok(
-              url.startsWith("https://www.destinationcommandcenter.com/go/commerce/handoff?"),
-              `Expected DCC handoff URL for Aleutian Ballad, got ${url}`
-            );
-            const outer = new URL(url);
-            assert.equal(outer.searchParams.get("site"), "lastfrontiershoreexcursions.com");
-            assert.equal(outer.searchParams.get("provider"), "getyourguide");
-            assert.equal(outer.searchParams.get("account"), "F2MMUUH");
-            assert.equal(outer.searchParams.get("product"), "t598272");
-            const inner = new URL(outer.searchParams.get("url")!);
-            assert.ok(inner.pathname.includes("t598272"));
-            assert.equal(inner.searchParams.get("partner_id"), "F2MMUUH");
+            assert.equal(url, null, `Aleutian Ballad tour must remain held (null): ${tour.title}`);
             continue;
           }
 

@@ -24,6 +24,6 @@ Confirm the following routes return `200 OK` on preview/production deployments:
 Last Frontier Shore Excursions operates as an independent Alaska cruise-excursion comparison and concierge guide (not a cruise line or merchant of record):
 
 - **Viator Affiliate Attribution**: Active affiliate partner (`pid=P00281144`, `mcid=42383`, `last-frontier-*` campaign tags) via `resolveViatorPid` (`NEXT_PUBLIC_VIATOR_PID` -> `NEXT_PUBLIC_LAST_FRONTIER_VIATOR_PID` -> `P00281144`).
-- **GetYourGuide Partner Attribution**: Active affiliate partner (`partner_id=F2MMUUH`), including verified exact-product coverage such as Ketchikan's *Bering Sea Crab Fishermen's Tour (Aleutian Ballad)* (`t598272`).
+- **GetYourGuide Partner Attribution**: Active affiliate partner (`partner_id=F2MMUUH`). Held commercial SKUs (such as Ketchikan's *Aleutian Ballad*) remain gated from direct self-serve checkout until owner portal and pier-window sign-off.
 - **Partner Domain Boundary**: Last Frontier Shore Excursions uses only `Viator (pid=P00281144)` and `GetYourGuide (partner_id=F2MMUUH)` as active affiliate partners (`0` external FareHarbor partner ASNs on LFSE).
 - **Concierge Inquiries (`POST /api/inquiries`)**: Forwards multi-cabin and port-window inquiries via `lib/dcc/shared/specialistInquiryClient.ts` (`channel: "lastfrontiershoreexcursions-inquiry"`) into the DCC Unified Operator Inbox.

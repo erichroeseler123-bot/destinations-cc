@@ -58,10 +58,5 @@ test("LFSE tour highlights generate tracked partner deep links routed via DCC co
     "Ketchikan",
     "royal-princess"
   );
-  assert.ok(aleutianUrl, "Aleutian Ballad must be unheld with verified GYG link");
-  const aleutianOuter = new URL(aleutianUrl);
-  assert.equal(aleutianOuter.searchParams.get("provider"), "getyourguide");
-  assert.equal(aleutianOuter.searchParams.get("account"), "F2MMUUH");
-  assert.equal(aleutianOuter.searchParams.get("product"), "t598272");
-  assert.ok((aleutianOuter.searchParams.get("url") || "").includes("partner_id=F2MMUUH"));
+  assert.equal(aleutianUrl, null, "Aleutian Ballad must remain held (null) until owner sign-off");
 });

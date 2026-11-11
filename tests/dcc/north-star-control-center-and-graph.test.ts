@@ -307,11 +307,14 @@ describe("North Star Slice 3: Canonical Fit/Ledger/Partner Modules, Travel-Graph
       "P00058396",
     );
 
-    // 1 held commercial SKU (WNO Jean Lafitte stays held; LFSE Aleutian Ballad unheld on GYG F2MMUUH)
-    assert.equal(HELD_COMMERCIAL_SKUS.length, 1);
+    // 2 held commercial SKUs (WNO Jean Lafitte + LFSE Aleutian Ballad)
+    assert.equal(HELD_COMMERCIAL_SKUS.length, 2);
     assert.deepEqual(
       HELD_COMMERCIAL_SKUS.map((s) => `${s.surfaceCode}:${s.skuSlug}`),
-      ["WNO:jeanlafitte-swamp-tour-with-hotel-pickup"],
+      [
+        "WNO:jeanlafitte-swamp-tour-with-hotel-pickup",
+        "LFSE:aleutian-ballad",
+      ],
     );
 
     // Protected Partner Property: Welcome to Alaska Tours
@@ -637,7 +640,7 @@ describe("North Star Slice 3: Canonical Fit/Ledger/Partner Modules, Travel-Graph
         snapshotLive.triageQueue.rollCallBridge.reminder || "",
         /MODERATION_ALERT_EMAILS/,
       );
-      assert.equal(snapshotLive.triageQueue.heldSkusCount, 1);
+      assert.equal(snapshotLive.triageQueue.heldSkusCount, 2);
       assert.equal(snapshotLive.triageQueue.partnerBoundaryReviewCount, 0);
 
       // 8-stage funnel & strictly separated revenue tracks

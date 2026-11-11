@@ -17,6 +17,7 @@ import {
 import { normalizeFareHarborFallbackHref } from "@/app/new-orleans/lib/fareHarborAttribution";
 import { buildWtonotSitemapPaths } from "@/app/sitemap.xml/handler";
 import { GET as getDccGoOut } from "@/app/go/out/route";
+import { GET as getCommerceHandoff } from "@/app/go/commerce/handoff/route";
 import {
   getAllAlaskaShips,
   getTrackedTourUrl,
@@ -102,21 +103,14 @@ test("Safeguards 1e, 1f & 2 (LFSE): Dog-sled vs wheeled-cart & Aleutian Ballad m
     "Ketchikan",
     "norwegian-jewel",
   );
-  assert.ok(balladJewel);
-  assert.match(balladJewel, /provider=getyourguide/);
-  assert.match(balladJewel, /account=F2MMUUH/);
-  assert.match(balladJewel, /t598272/);
-  assert.ok(!balladJewel.includes("472133P3"));
+  assert.equal(balladJewel, null, "Aleutian Ballad must remain held (null) until owner sign-off");
 
   const balladSpirit = getTrackedTourUrl(
     "Bering Sea Crab Fishermen’s Tour",
     "Ketchikan",
     "carnival-spirit",
   );
-  assert.ok(balladSpirit);
-  assert.match(balladSpirit, /provider=getyourguide/);
-  assert.match(balladSpirit, /t598272/);
-  assert.ok(!balladSpirit.includes("472133P3"));
+  assert.equal(balladSpirit, null, "Aleutian Ballad must remain held (null) until owner sign-off");
   assert.equal(
     getTrackedTourUrl("Wilderness Sea Kayaking from Ward Cove", "Ketchikan", "norwegian-encore"),
     null,
@@ -194,10 +188,55 @@ test("Safeguard 3 & DCC /go/out: Affiliate identifiers frozen and specialist out
     fs.readFileSync(path.join(ROOT, "apps/last-frontier-shore-excursions/app/page.tsx"), "utf8"),
     /welcometoalaskatours/i,
   );
-  assert.match(
+  assert.doesNotMatch(
     fs.readFileSync(path.join(ROOT, "apps/last-frontier-shore-excursions/app/page.tsx"), "utf8"),
-    /F2MMUUH/,
+    /t598272/i,
   );
+
+  // WNO & WTS exact product checkout links (0 generic marketplace landing pages)
+  const wnoHomeSrc = fs.readFileSync(
+    path.join(ROOT, "apps/welcometoneworleanstours/app/page.tsx"),
+    "utf8",
+  );
+  assert.doesNotMatch(wnoHomeSrc, /d675-ttd/i);
+  assert.doesNotMatch(wnoHomeSrc, /new-orleans-l372/i);
+  assert.match(wnoHomeSrc, /d675-8013P1/);
+  assert.match(wnoHomeSrc, /t20064/);
+
+  const wtsHomeSrc = fs.readFileSync(
+    path.join(ROOT, "apps/welcometotheswamp/app/page.tsx"),
+    "utf8",
+  );
+  assert.doesNotMatch(wtsHomeSrc, /d675-g9-c36/i);
+  assert.match(wtsHomeSrc, /d675-15200P1/);
+
+  const wtsTourSrc = fs.readFileSync(
+    path.join(ROOT, "apps/welcometotheswamp/app/tours/[slug]/page.tsx"),
+    "utf8",
+  );
+  assert.doesNotMatch(wtsTourSrc, /d675-g9-c36/i);
+
+  // Verify all active non-held STOREFRONT_PRODUCTS with Viator codes resolve to /tours/New-Orleans/.../d675-<CODE>
+  for (const prod of STOREFRONT_PRODUCTS) {
+    if (isHeldProduct(prod.slug) || !prod.viatorProductCode) continue;
+    const info = getProductViatorCanonicalInfo(prod);
+    assert.ok(
+      info.destinationUrl.startsWith("https://www.viator.com/tours/New-Orleans/"),
+      `Expected exact Viator product URL for ${prod.slug} (${prod.viatorProductCode}), got ${info.destinationUrl}`,
+    );
+    assert.ok(!info.destinationUrl.includes("searchResults/all"));
+  }
+
+  // Verify /go/commerce/handoff records sourcePage into metadata.originatingPage
+  const handoffRes = await getCommerceHandoff(
+    new NextRequest(
+      "https://www.destinationcommandcenter.com/go/commerce/handoff?site=welcometoneworleanstours.com&provider=viator&account=P00058396&product=8013P1&sourcePage=%2Ftours%2Fcity-tour-three-hour&url=https%3A%2F%2Fwww.viator.com%2Ftours%2FNew-Orleans%2FThree-Hour-City-Tour-of-New-Orleans%2Fd675-8013P1&qa=1&mode=json",
+    ),
+  );
+  assert.equal(handoffRes.status, 200);
+  const handoffBody = await handoffRes.json();
+  assert.equal(handoffBody.handoff.metadata?.originatingPage, "/tours/city-tour-three-hour");
+  assert.match(handoffBody.redirectTarget, /\/tours\/New-Orleans\/Three-Hour-City-Tour-of-New-Orleans\/d675-8013P1/);
   assert.ok(
     STOREFRONT_PRODUCTS.some((p) =>
       p.bookingVariants?.some((v) => v.bookingUrl.includes("asn=aktourcenter")),

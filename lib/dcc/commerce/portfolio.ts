@@ -177,6 +177,40 @@ export async function resolvePortfolioTripContext(params: {
   };
 }
 
+export const VERIFIED_NOLA_VIATOR_CANONICAL_URLS: Record<string, string> = {
+  "15200P1": "https://www.viator.com/tours/New-Orleans/Large-Airboat-Swamp-Tour/d675-15200P1",
+  "15200P2": "https://www.viator.com/tours/New-Orleans/Large-Airboat-Swamp-Tour-with-Hotel-Pickup/d675-15200P2",
+  "15200P3": "https://www.viator.com/tours/New-Orleans/Small-Group-Airboat-Swamp-Tour/d675-15200P3",
+  "15200P4": "https://www.viator.com/tours/New-Orleans/Small-Group-Swamp-Tour-by-Airboat-With-Downtown-New-Orleans-Pickup/d675-15200P4",
+  "15200P5": "https://www.viator.com/tours/New-Orleans/New-Orleans-Swamp-Tour-Boat-Adventure/d675-15200P5",
+  "15200P6": "https://www.viator.com/tours/New-Orleans/New-Orleans-Swamp-Tour-Boat-Adventure-With-Pickup/d675-15200P6",
+  "15200P7": "https://www.viator.com/tours/New-Orleans/New-Orleans-City-Tour-Katrina-Garden-District-French-Quarter-Graveyard/d675-15200P7",
+  "15200P9": "https://www.viator.com/tours/New-Orleans/Combo-Oak-Alley-Plantation-and-Swamp-Boat-Tour/d675-15200P9",
+  "8013P1": "https://www.viator.com/tours/New-Orleans/Three-Hour-City-Tour-of-New-Orleans/d675-8013P1",
+  "8013P3": "https://www.viator.com/tours/New-Orleans/Combo-Oak-Alley-Plantation-and-New-Orleans-City-Tour/d675-8013P3",
+  "8013P8": "https://www.viator.com/tours/New-Orleans/Oak-Alley-or-Laura-Plantation-Tour-from-New-Orleans/d675-8013P8",
+  "3780STEAMDIN": "https://www.viator.com/tours/New-Orleans/Steamboat-Natchez-Jazz-Dinner-Cruise/d675-3780STEAMDIN",
+  "3780STEAM": "https://www.viator.com/tours/New-Orleans/Steamboat-Natchez-Harbor-Cruise/d675-3780STEAM",
+  "3780STEAMBRU": "https://www.viator.com/tours/New-Orleans/Steamboat-Natchez-Jazz-Brunch-Cruise-in-New-Orleans/d675-3780STEAMBRU",
+  "3780OAK": "https://www.viator.com/tours/New-Orleans/Tour-of-Oak-Alley-Plantation/d675-3780OAK",
+  "3780P41": "https://www.viator.com/tours/New-Orleans/Whitney-Plantation-Tour/d675-3780P41",
+  "3780SWAMP": "https://www.viator.com/tours/New-Orleans/Swamp-and-Bayou-Sightseeing-Tour-with-Boat-Ride-from-New-Orleans/d675-3780SWAMP",
+  "3780AIRBOAT": "https://www.viator.com/tours/New-Orleans/Airboat-Ride-with-Round-Trip-Transport-from-New-Orleans/d675-3780AIRBOAT",
+  "3780SWPL": "https://www.viator.com/tours/New-Orleans/Swamp-Boat-Ride-and-Southern-Plantation-Tour-from-New-Orleans/d675-3780SWPL",
+  "3780P91": "https://www.viator.com/tours/New-Orleans/Swamp-Boat-Ride-and-Whitney-Plantation-Tour-from-New-Orleans/d675-3780P91",
+  "3780ST": "https://www.viator.com/tours/New-Orleans/New-Orleans-Original-Cocktail-Walking-Tour/d675-3780ST",
+  "3780GHOSTS": "https://www.viator.com/tours/New-Orleans/New-Orleans-Ghosts-and-Spirits-Walking-Tour/d675-3780GHOSTS",
+  "3780HAUNT": "https://www.viator.com/tours/New-Orleans/New-Orleans-Cemetery-and-Voodoo-Walking-Tour/d675-3780HAUNT",
+  "3780P45": "https://www.viator.com/tours/New-Orleans/Mardi-Gras-Jazz-Brunch-Cruise/d675-3780P45",
+  "6953SWAMP": "https://www.viator.com/tours/New-Orleans/Honey-Island-Swamp-Tour/d675-6953SWAMP",
+  "6953SWAMPTRANS": "https://www.viator.com/tours/New-Orleans/Honey-Island-Swamp-Tour-With-Transport/d675-6953SWAMPTRANS",
+  "RAGINCAJUN-AIRBOAT": "https://www.viator.com/tours/New-Orleans/Large-Airboat-Swamp-Tour/d675-15200P1",
+  "RAGINCAJUN-COVERED-BOAT": "https://www.viator.com/tours/New-Orleans/New-Orleans-Swamp-Tour-Boat-Adventure/d675-15200P5",
+  "RAGINCAJUN-PRIVATE-BOAT": "https://www.viator.com/tours/New-Orleans/Small-Group-Airboat-Swamp-Tour/d675-15200P3",
+  "SOUTHERNSTYLE-SWAMP": "https://www.viator.com/tours/New-Orleans/Oak-Alley-or-Laura-Plantation-Tour-from-New-Orleans/d675-8013P8",
+  "SOUTHERNSTYLE-CITY-TOUR": "https://www.viator.com/tours/New-Orleans/Three-Hour-City-Tour-of-New-Orleans/d675-8013P1",
+};
+
 export function buildPortfolioHandoffUrl(params: {
   originatingSite: string;
   provider: CommercialProvider | "direct_operator";
@@ -184,6 +218,7 @@ export function buildPortfolioHandoffUrl(params: {
   productCode?: string;
   destinationUrl: string;
   campaign?: string;
+  sourcePage?: string | null;
   contextId?: string | null;
   evaluationRunId?: string | null;
   receiptId?: string | null;
@@ -196,21 +231,16 @@ export function buildPortfolioHandoffUrl(params: {
     ? "/go/commerce/handoff"
     : `${DEFAULT_DCC_ORIGIN}/go/commerce/handoff`;
   let resolvedDestinationUrl = params.destinationUrl;
-  if (params.provider === "viator" && /fareharbor\.com/i.test(resolvedDestinationUrl)) {
-    const code = (params.productCode || "").trim().toUpperCase();
-    const canonicalViatorUrlByCode: Record<string, string> = {
-      "15200P1":
-        "https://www.viator.com/tours/New-Orleans/Large-Airboat-Swamp-Tour/d675-15200P1?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
-      "15200P5":
-        "https://www.viator.com/tours/New-Orleans/New-Orleans-Covered-Boat-Swamp-Tour/d675-15200P5?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
-      "15200P6":
-        "https://www.viator.com/tours/New-Orleans/New-Orleans-Swamp-Tour-Boat-Adventure-with-Transportation/d675-15200P6?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
-      "15200P9":
-        "https://www.viator.com/tours/New-Orleans/Swamp-and-Plantation-Combo-Tour-from-New-Orleans/d675-15200P9?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
-    };
-    resolvedDestinationUrl =
-      canonicalViatorUrlByCode[code] ||
-      `https://www.viator.com/searchResults/all?text=${encodeURIComponent(code || "New Orleans")}&pid=${encodeURIComponent(params.providerAccount || "P00306962")}&mcid=42383&medium=api&api_version=2.0`;
+  const code = (params.productCode || "").trim().toUpperCase();
+  const isGenericViatorUrl =
+    /fareharbor\.com/i.test(resolvedDestinationUrl) ||
+    /\/d675-(?:ttd|g\d+)/i.test(resolvedDestinationUrl) ||
+    /\/searchResults\/all/i.test(resolvedDestinationUrl);
+  if (params.provider === "viator" && isGenericViatorUrl && VERIFIED_NOLA_VIATOR_CANONICAL_URLS[code]) {
+    const pid = encodeURIComponent(params.providerAccount || "P00306962");
+    resolvedDestinationUrl = `${VERIFIED_NOLA_VIATOR_CANONICAL_URLS[code]}?mcid=42383&pid=${pid}&medium=api&api_version=2.0`;
+  } else if (params.provider === "viator" && /fareharbor\.com/i.test(resolvedDestinationUrl)) {
+    resolvedDestinationUrl = `https://www.viator.com/searchResults/all?text=${encodeURIComponent(code || "New Orleans")}&pid=${encodeURIComponent(params.providerAccount || "P00306962")}&mcid=42383&medium=api&api_version=2.0`;
   }
   const qs = new URLSearchParams();
   qs.set("site", params.originatingSite);
@@ -219,6 +249,7 @@ export function buildPortfolioHandoffUrl(params: {
   if (params.productCode) qs.set("product", params.productCode);
   qs.set("url", resolvedDestinationUrl);
   if (params.campaign) qs.set("campaign", params.campaign);
+  if (params.sourcePage) qs.set("sourcePage", params.sourcePage);
   if (params.contextId) qs.set("ctx", params.contextId);
   if (params.evaluationRunId) qs.set("evaluationRunId", params.evaluationRunId);
   if (params.receiptId) qs.set("receiptId", params.receiptId);

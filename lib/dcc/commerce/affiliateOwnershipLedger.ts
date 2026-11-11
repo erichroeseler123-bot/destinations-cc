@@ -275,25 +275,26 @@ export const HELD_COMMERCIAL_SKUS: readonly HeldCommercialSkuRecord[] = [
       "End-to-end live price and seat parity check before re-enabling primary checkout CTA on WNO.",
     ],
   },
-] as const;
-
-/**
- * Commercial SKUs cleared from held status with verified exact-product affiliate attribution.
- */
-export const UNHELD_VERIFIED_SKUS: readonly UnheldVerifiedSkuRecord[] = [
   {
     skuSlug: "aleutian-ballad",
     title: "Bering Sea Crab Fishermen's Tour (Aleutian Ballad)",
     surfaceCode: "LFSE",
     canonicalDomain: "lastfrontiershoreexcursions.com",
-    provider: "getyourguide",
-    productId: "t598272",
-    accountId: "F2MMUUH",
-    unheldAt: "2026-11-11",
-    verificationSummary:
-      "Verified exact GetYourGuide Ketchikan product listing (t598272, partner_id=F2MMUUH) departing Berth #3 Tender Float with explicit 25–30 min Ward Cove shuttle buffer guidance.",
+    status: "held",
+    holdReason:
+      "Aleutian Ballad direct/affiliate Ketchikan pier-window, Ward Cove shuttle buffer, and GetYourGuide F2MMUUH / t598272 ownership verification remain held pending owner sign-off.",
+    unholdPrerequisites: [
+      "Confirm current season operating dates and Ward Cove vs. downtown Ketchikan shuttle buffer math.",
+      "Owner portal verification of GetYourGuide partner_id=F2MMUUH / t598272 or Viator P00281144 payout attribution.",
+      "Explicit owner sign-off before lifting held safeguard on LFSE.",
+    ],
   },
 ] as const;
+
+/**
+ * Commercial SKUs cleared from held status with verified exact-product affiliate attribution.
+ */
+export const UNHELD_VERIFIED_SKUS: readonly UnheldVerifiedSkuRecord[] = [] as const;
 
 export type ProhibitedPartnerAction =
   | "promote_301_redirect"

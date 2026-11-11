@@ -66,6 +66,7 @@ export default async function HomePage({
     destinationUrl:
       "https://fareharbor.com/embeds/book/ragincajuntours/items/228524/?asn=aktourcenter&ref=wts-home-airboat",
     campaign: "wts-home-airboat",
+    sourcePage: "/",
     contextId: carriedContext.contextId,
     evaluationRunId: assurance.evaluationRunId,
     receiptId: assurance.receiptId,
@@ -76,10 +77,11 @@ export default async function HomePage({
     originatingSite: "welcometotheswamp.com",
     provider: "viator",
     providerAccount: "P00058396",
-    productCode: "nola-swamp-viator",
+    productCode: "15200P1",
     destinationUrl:
-      "https://www.viator.com/New-Orleans-tours/Nature-and-Wildlife/d675-g9-c36?pid=P00058396&mcid=42383",
+      "https://www.viator.com/tours/New-Orleans/Large-Airboat-Swamp-Tour/d675-15200P1?pid=P00058396&mcid=42383&medium=link",
     campaign: "wts-home-viator",
+    sourcePage: "/",
     contextId: carriedContext.contextId,
     evaluationRunId: assurance.evaluationRunId,
     receiptId: assurance.receiptId,
@@ -201,7 +203,7 @@ export default async function HomePage({
               accountLabel: "asn=aktourcenter",
             },
             {
-              label: "Compare Swamp Departures on Viator",
+              label: "Book Large Airboat Swamp Tour on Viator",
               href: viatorHandoffHref,
               providerLabel: "Viator",
               accountLabel: "pid=P00058396",

@@ -283,12 +283,33 @@ const VIATOR_CANONICAL_PRODUCT_MAP: Record<
     destinationUrl:
       "https://www.viator.com/tours/New-Orleans/Large-Airboat-Swamp-Tour/d675-15200P1?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
   },
-  "15200P5": {
-    productCode: "15200P5",
-    title: "New Orleans Covered Boat Swamp Tour",
+  "15200P2": {
+    productCode: "15200P2",
+    title: "Large Airboat Swamp Tour with Transportation from New Orleans",
     operatorName: "Louisiana Tour Company",
     destinationUrl:
-      "https://www.viator.com/tours/New-Orleans/New-Orleans-Covered-Boat-Swamp-Tour/d675-15200P5?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+      "https://www.viator.com/tours/New-Orleans/Large-Airboat-Swamp-Tour-with-Hotel-Pickup/d675-15200P2?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+  },
+  "15200P3": {
+    productCode: "15200P3",
+    title: "New Orleans Small-Group Airboat Swamp Tour",
+    operatorName: "Louisiana Tour Company",
+    destinationUrl:
+      "https://www.viator.com/tours/New-Orleans/Small-Group-Airboat-Swamp-Tour/d675-15200P3?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+  },
+  "15200P4": {
+    productCode: "15200P4",
+    title: "Small-Group Airboat Swamp Tour with Downtown New Orleans Pickup",
+    operatorName: "Louisiana Tour Company",
+    destinationUrl:
+      "https://www.viator.com/tours/New-Orleans/Small-Group-Swamp-Tour-by-Airboat-With-Downtown-New-Orleans-Pickup/d675-15200P4?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+  },
+  "15200P5": {
+    productCode: "15200P5",
+    title: "New Orleans Swamp Tour Boat Adventure",
+    operatorName: "Louisiana Tour Company",
+    destinationUrl:
+      "https://www.viator.com/tours/New-Orleans/New-Orleans-Swamp-Tour-Boat-Adventure/d675-15200P5?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
   },
   "15200P6": {
     productCode: "15200P6",
@@ -297,14 +318,150 @@ const VIATOR_CANONICAL_PRODUCT_MAP: Record<
     title: "New Orleans Swamp Tour Boat Adventure with Transportation",
     operatorName: "Louisiana Tour Company",
     destinationUrl:
-      "https://www.viator.com/tours/New-Orleans/New-Orleans-Swamp-Tour-Boat-Adventure-with-Transportation/d675-15200P6?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+      "https://www.viator.com/tours/New-Orleans/New-Orleans-Swamp-Tour-Boat-Adventure-With-Pickup/d675-15200P6?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+  },
+  "15200P7": {
+    productCode: "15200P7",
+    title: "New Orleans City Tour: French Quarter, Garden District & Cemetery",
+    operatorName: "Louisiana Tour Company",
+    destinationUrl:
+      "https://www.viator.com/tours/New-Orleans/New-Orleans-City-Tour-Katrina-Garden-District-French-Quarter-Graveyard/d675-15200P7?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
   },
   "15200P9": {
     productCode: "15200P9",
-    title: "Swamp and Plantation Combo Tour from New Orleans",
+    title: "Oak Alley Plantation and Swamp Boat Tour from New Orleans",
     operatorName: "Louisiana Tour Company",
     destinationUrl:
-      "https://www.viator.com/tours/New-Orleans/Swamp-and-Plantation-Combo-Tour-from-New-Orleans/d675-15200P9?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+      "https://www.viator.com/tours/New-Orleans/Combo-Oak-Alley-Plantation-and-Swamp-Boat-Tour/d675-15200P9?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+  },
+  "8013P1": {
+    productCode: "8013P1",
+    title: "City Tour of New Orleans with Pickup",
+    operatorName: "Southern Style Tours",
+    destinationUrl:
+      "https://www.viator.com/tours/New-Orleans/Three-Hour-City-Tour-of-New-Orleans/d675-8013P1?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+  },
+  "8013P3": {
+    productCode: "8013P3",
+    title: "Oak Alley Plantation and New Orleans City Tour",
+    operatorName: "Southern Style Tours",
+    destinationUrl:
+      "https://www.viator.com/tours/New-Orleans/Combo-Oak-Alley-Plantation-and-New-Orleans-City-Tour/d675-8013P3?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+  },
+  "8013P8": {
+    productCode: "8013P8",
+    title: "Oak Alley or Laura Plantation with Transportation From downtown",
+    operatorName: "Southern Style Tours",
+    destinationUrl:
+      "https://www.viator.com/tours/New-Orleans/Oak-Alley-or-Laura-Plantation-Tour-from-New-Orleans/d675-8013P8?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+  },
+  "3780STEAMDIN": {
+    productCode: "3780STEAMDIN",
+    optionCode: "TG9",
+    title: "New Orleans Steamboat Natchez Jazz Cruise with Dinner Option",
+    operatorName: "New Orleans Steamboat Company",
+    destinationUrl:
+      "https://www.viator.com/tours/New-Orleans/Steamboat-Natchez-Jazz-Dinner-Cruise/d675-3780STEAMDIN?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+  },
+  "3780STEAM": {
+    productCode: "3780STEAM",
+    optionCode: "TG31",
+    title: "New Orleans Steamboat Natchez Jazz Cruise",
+    operatorName: "New Orleans Steamboat Company",
+    destinationUrl:
+      "https://www.viator.com/tours/New-Orleans/Steamboat-Natchez-Harbor-Cruise/d675-3780STEAM?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+  },
+  "3780STEAMBRU": {
+    productCode: "3780STEAMBRU",
+    title: "Jazz Brunch Cruise in New Orleans",
+    operatorName: "New Orleans Steamboat Company",
+    destinationUrl:
+      "https://www.viator.com/tours/New-Orleans/Steamboat-Natchez-Jazz-Brunch-Cruise-in-New-Orleans/d675-3780STEAMBRU?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+  },
+  "3780OAK": {
+    productCode: "3780OAK",
+    title: "Oak Alley Plantation Tour with Transportation from New Orleans",
+    operatorName: "Gray Line",
+    destinationUrl:
+      "https://www.viator.com/tours/New-Orleans/Tour-of-Oak-Alley-Plantation/d675-3780OAK?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+  },
+  "3780P41": {
+    productCode: "3780P41",
+    title: "Whitney Plantation Tour with Transportation from New Orleans",
+    operatorName: "Gray Line",
+    destinationUrl:
+      "https://www.viator.com/tours/New-Orleans/Whitney-Plantation-Tour/d675-3780P41?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+  },
+  "3780SWAMP": {
+    productCode: "3780SWAMP",
+    optionCode: "10:45AM",
+    title: "New Orleans Swamp and Bayou Alligator Tour",
+    operatorName: "Gray Line",
+    destinationUrl:
+      "https://www.viator.com/tours/New-Orleans/Swamp-and-Bayou-Sightseeing-Tour-with-Boat-Ride-from-New-Orleans/d675-3780SWAMP?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+  },
+  "3780AIRBOAT": {
+    productCode: "3780AIRBOAT",
+    title: "Airboat Ride with Optional Transportation from New Orleans",
+    operatorName: "Gray Line",
+    destinationUrl:
+      "https://www.viator.com/tours/New-Orleans/Airboat-Ride-with-Round-Trip-Transport-from-New-Orleans/d675-3780AIRBOAT?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+  },
+  "3780SWPL": {
+    productCode: "3780SWPL",
+    title: "Swamp Boat Ride and Oak Alley Plantation Tour from New Orleans",
+    operatorName: "Gray Line",
+    destinationUrl:
+      "https://www.viator.com/tours/New-Orleans/Swamp-Boat-Ride-and-Southern-Plantation-Tour-from-New-Orleans/d675-3780SWPL?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+  },
+  "3780P91": {
+    productCode: "3780P91",
+    title: "Swamp Boat Ride and Whitney Plantation Tour from New Orleans",
+    operatorName: "Gray Line",
+    destinationUrl:
+      "https://www.viator.com/tours/New-Orleans/Swamp-Boat-Ride-and-Whitney-Plantation-Tour-from-New-Orleans/d675-3780P91?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+  },
+  "3780ST": {
+    productCode: "3780ST",
+    title: "New Orleans Original Craft Cocktail Walking Tour",
+    operatorName: "Gray Line",
+    destinationUrl:
+      "https://www.viator.com/tours/New-Orleans/New-Orleans-Original-Cocktail-Walking-Tour/d675-3780ST?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+  },
+  "3780GHOSTS": {
+    productCode: "3780GHOSTS",
+    title: "French Quarter Ghosts and Spirits Tour with Augmented Reality",
+    operatorName: "Gray Line",
+    destinationUrl:
+      "https://www.viator.com/tours/New-Orleans/New-Orleans-Ghosts-and-Spirits-Walking-Tour/d675-3780GHOSTS?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+  },
+  "3780HAUNT": {
+    productCode: "3780HAUNT",
+    title: "New Orleans City and Cemetery Tour with Garden District Stroll",
+    operatorName: "Gray Line",
+    destinationUrl:
+      "https://www.viator.com/tours/New-Orleans/New-Orleans-Cemetery-and-Voodoo-Walking-Tour/d675-3780HAUNT?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+  },
+  "3780P45": {
+    productCode: "3780P45",
+    title: "New Orleans 75-Minute Riverboat Sightseeing Cruise",
+    operatorName: "New Orleans Steamboat Company",
+    destinationUrl:
+      "https://www.viator.com/tours/New-Orleans/Mardi-Gras-Jazz-Brunch-Cruise/d675-3780P45?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+  },
+  "6953SWAMP": {
+    productCode: "6953SWAMP",
+    title: "New Orleans Self-Transport Swamp and Bayou Boat Tour",
+    operatorName: "Cajun Encounters",
+    destinationUrl:
+      "https://www.viator.com/tours/New-Orleans/Honey-Island-Swamp-Tour/d675-6953SWAMP?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
+  },
+  "6953SWAMPTRANS": {
+    productCode: "6953SWAMPTRANS",
+    title: "New Orleans Swamp and Bayou Boat Tour with Transportation",
+    operatorName: "Cajun Encounters",
+    destinationUrl:
+      "https://www.viator.com/tours/New-Orleans/Honey-Island-Swamp-Tour-With-Transport/d675-6953SWAMPTRANS?mcid=42383&pid=P00306962&medium=api&api_version=2.0",
   },
 };
 
