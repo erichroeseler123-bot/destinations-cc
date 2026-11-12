@@ -1,0 +1,5475 @@
+{
+  "schemaVersion": "public-route-inventory.v1",
+  "authorityDocument": "NORTH_STAR_VISION.md",
+  "lockedDate": "2026-11-11",
+  "policy": {
+    "noPublicPageDeletionAllowed": true,
+    "destructiveRedirectsForbiddenWithoutOwnerApproval": true,
+    "wtaConsolidationRedirectsForbiddenWithoutPartnerAgreement": true
+  },
+  "fleetTotals": {
+    "ownedPropertyCount": 11,
+    "isolatedPartnerPropertyCount": 1,
+    "totalPropertiesRecorded": 12,
+    "ownedRoutesTotal": 988,
+    "ownedPublicPages": 800,
+    "ownedMachineContracts": 91,
+    "ownedBookingOrHandoffActions": 81,
+    "ownedOrderLookupRoutes": 16,
+    "partnerIsolatedRoutesTotal": 63,
+    "grandTotalRecordedRoutes": 1051
+  },
+  "properties": [
+    {
+      "propertyId": "destinations-cc",
+      "canonicalDomain": "destinationcommandcenter.com",
+      "ownership": "owned",
+      "repoLabel": "dcc-track12-2026-11-11",
+      "consolidationRedirectsForbiddenWithoutAgreement": true,
+      "counts": {
+        "total": 421,
+        "public_page": 333,
+        "machine_contract": 38,
+        "booking_or_handoff_action": 41,
+        "order_lookup": 9
+      },
+      "routes": [
+        {
+          "routePattern": "/",
+          "sourceFile": "app/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/.well-known/agent.json",
+          "sourceFile": "app/.well-known/agent.json/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/.well-known/api-catalog",
+          "sourceFile": "app/.well-known/api-catalog/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/.well-known/dcc",
+          "sourceFile": "app/.well-known/dcc/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/.well-known/dcc-site",
+          "sourceFile": "app/.well-known/dcc-site/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/.well-known/dcc/keys.json",
+          "sourceFile": "app/.well-known/dcc/keys.json/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/.well-known/jwks.json",
+          "sourceFile": "app/.well-known/jwks.json/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/.well-known/mcp.json",
+          "sourceFile": "app/.well-known/mcp.json/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/[city]",
+          "sourceFile": "app/[city]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/[city]/[attraction]",
+          "sourceFile": "app/[city]/[attraction]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/[city]/[attraction]/tours",
+          "sourceFile": "app/[city]/[attraction]/tours/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/[city]/attractions",
+          "sourceFile": "app/[city]/attractions/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/[city]/day-trips",
+          "sourceFile": "app/[city]/day-trips/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/[city]/food",
+          "sourceFile": "app/[city]/food/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/[city]/helicopter",
+          "sourceFile": "app/[city]/helicopter/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/[city]/shows",
+          "sourceFile": "app/[city]/shows/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/[city]/shows-this-week",
+          "sourceFile": "app/[city]/shows-this-week/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/[city]/shows/[eventSlug]",
+          "sourceFile": "app/[city]/shows/[eventSlug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/[city]/sports",
+          "sourceFile": "app/[city]/sports/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/[city]/things-to-do",
+          "sourceFile": "app/[city]/things-to-do/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/[city]/tours",
+          "sourceFile": "app/[city]/tours/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/[city]/watch/[district]",
+          "sourceFile": "app/[city]/watch/[district]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/about",
+          "sourceFile": "app/about/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/accessibility/[slug]",
+          "sourceFile": "app/accessibility/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/accessibility/[slug]/[city]",
+          "sourceFile": "app/accessibility/[slug]/[city]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/accessible-hotels-near/[slug]",
+          "sourceFile": "app/accessible-hotels-near/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/affiliate-disclosure",
+          "sourceFile": "app/affiliate-disclosure/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/agent.json",
+          "sourceFile": "app/agent.json/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/ai",
+          "sourceFile": "app/ai/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/airports",
+          "sourceFile": "app/airports/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/airports/[slug]",
+          "sourceFile": "app/airports/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/alaska",
+          "sourceFile": "app/alaska/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/alerts",
+          "sourceFile": "app/alerts/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/api/ask-dcc",
+          "sourceFile": "app/api/ask-dcc/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/dcc/viator/availability",
+          "sourceFile": "app/api/dcc/viator/availability/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/dcc/viator/link",
+          "sourceFile": "app/api/dcc/viator/link/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/my-trips",
+          "sourceFile": "app/api/my-trips/route.ts",
+          "kind": "order_lookup"
+        },
+        {
+          "routePattern": "/api/octo/availability",
+          "sourceFile": "app/api/octo/availability/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/octo/bookings/[id]",
+          "sourceFile": "app/api/octo/bookings/[id]/route.ts",
+          "kind": "order_lookup"
+        },
+        {
+          "routePattern": "/api/octo/confirm",
+          "sourceFile": "app/api/octo/confirm/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/octo/hold",
+          "sourceFile": "app/api/octo/hold/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/octo/onboarding",
+          "sourceFile": "app/api/octo/onboarding/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/octo/participants",
+          "sourceFile": "app/api/octo/participants/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/operators/onboarding",
+          "sourceFile": "app/api/operators/onboarding/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/orders/[orderId]",
+          "sourceFile": "app/api/orders/[orderId]/route.ts",
+          "kind": "order_lookup"
+        },
+        {
+          "routePattern": "/api/orders/checkout",
+          "sourceFile": "app/api/orders/checkout/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/partners/direct-operators/apply",
+          "sourceFile": "app/api/partners/direct-operators/apply/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/public/helicopter-watch",
+          "sourceFile": "app/api/public/helicopter-watch/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/public/helicopter-watch/manage",
+          "sourceFile": "app/api/public/helicopter-watch/manage/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/request-invite",
+          "sourceFile": "app/api/request-invite/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/somerset/quote",
+          "sourceFile": "app/api/somerset/quote/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/square/create-payment",
+          "sourceFile": "app/api/square/create-payment/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/square/pay-balance",
+          "sourceFile": "app/api/square/pay-balance/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/stripe/create-intent",
+          "sourceFile": "app/api/stripe/create-intent/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/transport/availability",
+          "sourceFile": "app/api/transport/availability/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/v1/applicability/evaluate",
+          "sourceFile": "app/api/v1/applicability/evaluate/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/api/v1/commerce/affiliates/wta",
+          "sourceFile": "app/api/v1/commerce/affiliates/wta/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/v1/commerce/click-attribution",
+          "sourceFile": "app/api/v1/commerce/click-attribution/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/v1/commerce/handoffs",
+          "sourceFile": "app/api/v1/commerce/handoffs/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/v1/commerce/handoffs/revalidate",
+          "sourceFile": "app/api/v1/commerce/handoffs/revalidate/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/v1/commerce/outcomes",
+          "sourceFile": "app/api/v1/commerce/outcomes/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/v1/mcp",
+          "sourceFile": "app/api/v1/mcp/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/api/v1/tours/catalog",
+          "sourceFile": "app/api/v1/tours/catalog/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/api/v1/tours/match",
+          "sourceFile": "app/api/v1/tours/match/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/api/v1/travel-graph/evaluate",
+          "sourceFile": "app/api/v1/travel-graph/evaluate/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/ask",
+          "sourceFile": "app/ask/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/atlas",
+          "sourceFile": "app/atlas/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/attractions-near/[slug]",
+          "sourceFile": "app/attractions-near/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/attractions/[slug]",
+          "sourceFile": "app/attractions/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/authority",
+          "sourceFile": "app/authority/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/best-transportation-options-denver-to-red-rocks",
+          "sourceFile": "app/best-transportation-options-denver-to-red-rocks/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/best-way-to-leave-red-rocks",
+          "sourceFile": "app/best-way-to-leave-red-rocks/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/book",
+          "sourceFile": "app/book/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/book/red-rocks",
+          "sourceFile": "app/book/red-rocks/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/book/red-rocks-amphitheatre",
+          "sourceFile": "app/book/red-rocks-amphitheatre/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/book/red-rocks-amphitheatre/private",
+          "sourceFile": "app/book/red-rocks-amphitheatre/private/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/bozeman-airport-to-big-sky",
+          "sourceFile": "app/bozeman-airport-to-big-sky/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/bozeman-airport-to-montage-big-sky",
+          "sourceFile": "app/bozeman-airport-to-montage-big-sky/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/bozeman-airport-to-moonlight-basin",
+          "sourceFile": "app/bozeman-airport-to-moonlight-basin/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/bozeman-airport-to-oneandonly-moonlight-basin",
+          "sourceFile": "app/bozeman-airport-to-oneandonly-moonlight-basin/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/bozeman-airport-to-spanish-peaks",
+          "sourceFile": "app/bozeman-airport-to-spanish-peaks/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/bozeman-airport-to-yellowstone-club",
+          "sourceFile": "app/bozeman-airport-to-yellowstone-club/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/cannabis/[city]",
+          "sourceFile": "app/cannabis/[city]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/casino/[slug]",
+          "sourceFile": "app/casino/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/casinos-near/[slug]",
+          "sourceFile": "app/casinos-near/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/checkout",
+          "sourceFile": "app/checkout/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/checkout/[itemId]",
+          "sourceFile": "app/checkout/[itemId]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/checkout/octo/[bookingId]",
+          "sourceFile": "app/checkout/octo/[bookingId]/page.tsx",
+          "kind": "order_lookup"
+        },
+        {
+          "routePattern": "/chicago/now",
+          "sourceFile": "app/chicago/now/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/cities",
+          "sourceFile": "app/cities/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/cities/[slug]",
+          "sourceFile": "app/cities/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/command",
+          "sourceFile": "app/command/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/contact",
+          "sourceFile": "app/contact/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/crawl-paths",
+          "sourceFile": "app/crawl-paths/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/cruise-ports/[marketSlug]/[[...path]]",
+          "sourceFile": "app/cruise-ports/[marketSlug]/[[...path]]/route.ts",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/cruises",
+          "sourceFile": "app/cruises/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/cruises/fit",
+          "sourceFile": "app/cruises/fit/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/cruises/from/[port]",
+          "sourceFile": "app/cruises/from/[port]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/cruises/line/[slug]",
+          "sourceFile": "app/cruises/line/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/cruises/port/[slug]",
+          "sourceFile": "app/cruises/port/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/cruises/preview/january-24-sailing",
+          "sourceFile": "app/cruises/preview/january-24-sailing/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/cruises/ship/[slug]",
+          "sourceFile": "app/cruises/ship/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/cruises/shore-excursions",
+          "sourceFile": "app/cruises/shore-excursions/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/cruises/tendering",
+          "sourceFile": "app/cruises/tendering/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/cruises/themed/[lane]",
+          "sourceFile": "app/cruises/themed/[lane]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/cruises/winter-excursion-planner",
+          "sourceFile": "app/cruises/winter-excursion-planner/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/data/sports-cities.json",
+          "sourceFile": "app/data/sports-cities.json/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/data/sports-teams.json",
+          "sourceFile": "app/data/sports-teams.json/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/data/sports-venues.json",
+          "sourceFile": "app/data/sports-venues.json/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/date-night/[city]",
+          "sourceFile": "app/date-night/[city]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/dcc-site-contract.schema.json",
+          "sourceFile": "app/dcc-site-contract.schema.json/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/dcc/cruise-ports/[marketId]",
+          "sourceFile": "app/dcc/cruise-ports/[marketId]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/demo",
+          "sourceFile": "app/demo/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/demo/concierge-widget",
+          "sourceFile": "app/demo/concierge-widget/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/denver-concert-shuttle",
+          "sourceFile": "app/denver-concert-shuttle/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/denver/concert-transportation",
+          "sourceFile": "app/denver/concert-transportation/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/denver/now",
+          "sourceFile": "app/denver/now/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/destinations",
+          "sourceFile": "app/destinations/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/destinations/[state]",
+          "sourceFile": "app/destinations/[state]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/destinations/[state]/llms.txt",
+          "sourceFile": "app/destinations/[state]/llms.txt/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/developers",
+          "sourceFile": "app/developers/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/diner/[slug]",
+          "sourceFile": "app/diner/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/diners-near/[slug]",
+          "sourceFile": "app/diners-near/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/embed/concierge",
+          "sourceFile": "app/embed/concierge/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/fremont-street",
+          "sourceFile": "app/fremont-street/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/french-quarter-orientation",
+          "sourceFile": "app/french-quarter-orientation/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/go/commerce/handoff",
+          "sourceFile": "app/go/commerce/handoff/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/go/cruise-promenade-to-last-frontier",
+          "sourceFile": "app/go/cruise-promenade-to-last-frontier/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/go/cruise-promenade-to-vibe-around",
+          "sourceFile": "app/go/cruise-promenade-to-vibe-around/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/go/dcc-to-cruise-promenade",
+          "sourceFile": "app/go/dcc-to-cruise-promenade/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/go/dcc-to-gosno",
+          "sourceFile": "app/go/dcc-to-gosno/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/go/dcc-to-juneau-flight-deck",
+          "sourceFile": "app/go/dcc-to-juneau-flight-deck/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/go/out",
+          "sourceFile": "app/go/out/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/governance",
+          "sourceFile": "app/governance/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/grand-canyon",
+          "sourceFile": "app/grand-canyon/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/group-friendly/[city]",
+          "sourceFile": "app/group-friendly/[city]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guide/local/denver-pickups",
+          "sourceFile": "app/guide/local/denver-pickups/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guides",
+          "sourceFile": "app/guides/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guides/[slug]",
+          "sourceFile": "app/guides/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guides/category/[category]",
+          "sourceFile": "app/guides/category/[category]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guides/juneau-glacier-landing-vs-scenic-flight",
+          "sourceFile": "app/guides/juneau-glacier-landing-vs-scenic-flight/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guides/things-to-do-in-new-orleans-today",
+          "sourceFile": "app/guides/things-to-do-in-new-orleans-today/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/hawaii/whale-watching",
+          "sourceFile": "app/hawaii/whale-watching/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/helicopter",
+          "sourceFile": "app/helicopter/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/helicopter-tours",
+          "sourceFile": "app/helicopter-tours/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/henderson-las-vegas",
+          "sourceFile": "app/henderson-las-vegas/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/hoover-dam",
+          "sourceFile": "app/hoover-dam/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/hotel/[slug]",
+          "sourceFile": "app/hotel/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/hotels-near/[slug]",
+          "sourceFile": "app/hotels-near/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/how-to-get-to-red-rocks-without-parking-hassle",
+          "sourceFile": "app/how-to-get-to-red-rocks-without-parking-hassle/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/juneau",
+          "sourceFile": "app/juneau/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/juneau-flight-deck",
+          "sourceFile": "app/juneau-flight-deck/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/juneau-flight-deck/helicopter",
+          "sourceFile": "app/juneau-flight-deck/helicopter/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/juneau-flightseeing",
+          "sourceFile": "app/juneau-flightseeing/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/juneau-whale-watching-from-port",
+          "sourceFile": "app/juneau-whale-watching-from-port/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/juneau/cruise-excursions-what-to-do",
+          "sourceFile": "app/juneau/cruise-excursions-what-to-do/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/juneau/helicopter",
+          "sourceFile": "app/juneau/helicopter/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/juneau/helicopter-tours",
+          "sourceFile": "app/juneau/helicopter-tours/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/juneau/helicopter-waitlist",
+          "sourceFile": "app/juneau/helicopter-waitlist/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/juneau/helicopter-watch/[id]",
+          "sourceFile": "app/juneau/helicopter-watch/[id]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/juneau/llms.txt",
+          "sourceFile": "app/juneau/llms.txt/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/juneau/replan",
+          "sourceFile": "app/juneau/replan/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/juneau/whale-watching-tours",
+          "sourceFile": "app/juneau/whale-watching-tours/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/juneau/what-to-do-if-helicopter-tour-canceled",
+          "sourceFile": "app/juneau/what-to-do-if-helicopter-tour-canceled/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/kid-friendly/[slug]",
+          "sourceFile": "app/kid-friendly/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/kid-friendly/[slug]/[city]",
+          "sourceFile": "app/kid-friendly/[slug]/[city]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/lake-mead",
+          "sourceFile": "app/lake-mead/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/las-vegas-arts-district",
+          "sourceFile": "app/las-vegas-arts-district/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/las-vegas-chinatown",
+          "sourceFile": "app/las-vegas-chinatown/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/las-vegas-strip",
+          "sourceFile": "app/las-vegas-strip/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/las-vegas/best-day-trips",
+          "sourceFile": "app/las-vegas/best-day-trips/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/las-vegas/casinos",
+          "sourceFile": "app/las-vegas/casinos/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/las-vegas/helicopter-tours",
+          "sourceFile": "app/las-vegas/helicopter-tours/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/las-vegas/hotels",
+          "sourceFile": "app/las-vegas/hotels/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/las-vegas/pools",
+          "sourceFile": "app/las-vegas/pools/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/las-vegas/things-to-do",
+          "sourceFile": "app/las-vegas/things-to-do/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/las-vegas/tours",
+          "sourceFile": "app/las-vegas/tours/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/llms.txt",
+          "sourceFile": "app/llms.txt/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/location/[lat]/[lng]",
+          "sourceFile": "app/location/[lat]/[lng]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/locations-sitemap.xml",
+          "sourceFile": "app/locations-sitemap.xml/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/luxury-hotels-las-vegas",
+          "sourceFile": "app/luxury-hotels-las-vegas/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/machine/inspector",
+          "sourceFile": "app/machine/inspector/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/miami",
+          "sourceFile": "app/miami/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/miami/beaches",
+          "sourceFile": "app/miami/beaches/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/mighty-argo",
+          "sourceFile": "app/mighty-argo/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/mighty-argo-shuttle",
+          "sourceFile": "app/mighty-argo-shuttle/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/mighty-argo/faq",
+          "sourceFile": "app/mighty-argo/faq/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/mighty-argo/mountain-biking",
+          "sourceFile": "app/mighty-argo/mountain-biking/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/mighty-argo/news",
+          "sourceFile": "app/mighty-argo/news/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/mighty-argo/stats",
+          "sourceFile": "app/mighty-argo/stats/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/mighty-argo/status",
+          "sourceFile": "app/mighty-argo/status/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/my-trips",
+          "sourceFile": "app/my-trips/page.tsx",
+          "kind": "order_lookup"
+        },
+        {
+          "routePattern": "/national-parks",
+          "sourceFile": "app/national-parks/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/national-parks/[slug]",
+          "sourceFile": "app/national-parks/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/network",
+          "sourceFile": "app/network/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/network-health",
+          "sourceFile": "app/network-health/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/network/[slug]",
+          "sourceFile": "app/network/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/network/graph.json",
+          "sourceFile": "app/network/graph.json/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/network/implementation",
+          "sourceFile": "app/network/implementation/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans",
+          "sourceFile": "app/new-orleans/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans-swamp-tours",
+          "sourceFile": "app/new-orleans-swamp-tours/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/4-hours-in-new-orleans",
+          "sourceFile": "app/new-orleans/4-hours-in-new-orleans/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/about",
+          "sourceFile": "app/new-orleans/about/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/accessibility",
+          "sourceFile": "app/new-orleans/accessibility/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/affiliate-disclosure",
+          "sourceFile": "app/new-orleans/affiliate-disclosure/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/areas/[slug]",
+          "sourceFile": "app/new-orleans/areas/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/best-swamp-tour-with-transportation",
+          "sourceFile": "app/new-orleans/best-swamp-tour-with-transportation/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/booking-help",
+          "sourceFile": "app/new-orleans/booking-help/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/cancellation-policy",
+          "sourceFile": "app/new-orleans/cancellation-policy/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/compare",
+          "sourceFile": "app/new-orleans/compare/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/compare/best-new-orleans-tour-if-you-only-have-3-hours",
+          "sourceFile": "app/new-orleans/compare/best-new-orleans-tour-if-you-only-have-3-hours/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/compare/covered-swamp-boat-vs-airboat",
+          "sourceFile": "app/new-orleans/compare/covered-swamp-boat-vs-airboat/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/compare/natchez-vs-city-of-new-orleans-riverboat",
+          "sourceFile": "app/new-orleans/compare/natchez-vs-city-of-new-orleans-riverboat/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/compare/small-vs-large-airboat",
+          "sourceFile": "app/new-orleans/compare/small-vs-large-airboat/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/compare/swamp-tour-with-vs-without-transportation",
+          "sourceFile": "app/new-orleans/compare/swamp-tour-with-vs-without-transportation/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/compare/whitney-vs-oak-alley",
+          "sourceFile": "app/new-orleans/compare/whitney-vs-oak-alley/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/contact",
+          "sourceFile": "app/new-orleans/contact/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/family-friendly",
+          "sourceFile": "app/new-orleans/family-friendly/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/faq",
+          "sourceFile": "app/new-orleans/faq/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/first-time-new-orleans-tours",
+          "sourceFile": "app/new-orleans/first-time-new-orleans-tours/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/food",
+          "sourceFile": "app/new-orleans/food/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/french-quarter-orientation",
+          "sourceFile": "app/new-orleans/french-quarter-orientation/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/french-quarter-walking-guide",
+          "sourceFile": "app/new-orleans/french-quarter-walking-guide/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/french-quarter-welcome-stop",
+          "sourceFile": "app/new-orleans/french-quarter-welcome-stop/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/guides",
+          "sourceFile": "app/new-orleans/guides/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/guides/[slug]",
+          "sourceFile": "app/new-orleans/guides/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/guides/4-hours-in-new-orleans",
+          "sourceFile": "app/new-orleans/guides/4-hours-in-new-orleans/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/guides/best-new-orleans-swamp-tour",
+          "sourceFile": "app/new-orleans/guides/best-new-orleans-swamp-tour/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/guides/best-new-orleans-tours-for-a-rainy-day",
+          "sourceFile": "app/new-orleans/guides/best-new-orleans-tours-for-a-rainy-day/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/guides/best-new-orleans-tours-if-you-arrive-at-noon",
+          "sourceFile": "app/new-orleans/guides/best-new-orleans-tours-if-you-arrive-at-noon/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/guides/best-new-orleans-tours-under-4-or-6-hours",
+          "sourceFile": "app/new-orleans/guides/best-new-orleans-tours-under-4-or-6-hours/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/guides/best-new-orleans-tours-with-kids-under-6",
+          "sourceFile": "app/new-orleans/guides/best-new-orleans-tours-with-kids-under-6/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/guides/best-swamp-tour-with-transportation",
+          "sourceFile": "app/new-orleans/guides/best-swamp-tour-with-transportation/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/guides/can-kids-ride-airboats-new-orleans",
+          "sourceFile": "app/new-orleans/guides/can-kids-ride-airboats-new-orleans/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/guides/first-time-new-orleans-tours",
+          "sourceFile": "app/new-orleans/guides/first-time-new-orleans-tours/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/guides/french-quarter-orientation",
+          "sourceFile": "app/new-orleans/guides/french-quarter-orientation/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/guides/french-quarter-tour-timing",
+          "sourceFile": "app/new-orleans/guides/french-quarter-tour-timing/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/guides/new-orleans-plantation-and-swamp-tour",
+          "sourceFile": "app/new-orleans/guides/new-orleans-plantation-and-swamp-tour/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/guides/new-orleans-swamp-tour-without-a-car",
+          "sourceFile": "app/new-orleans/guides/new-orleans-swamp-tour-without-a-car/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/guides/new-orleans-tours-for-families",
+          "sourceFile": "app/new-orleans/guides/new-orleans-tours-for-families/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/guides/new-orleans-tours-for-grandparents-and-kids",
+          "sourceFile": "app/new-orleans/guides/new-orleans-tours-for-grandparents-and-kids/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/guides/new-orleans-tours-limited-mobility",
+          "sourceFile": "app/new-orleans/guides/new-orleans-tours-limited-mobility/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/guides/new-orleans-tours-near-french-quarter",
+          "sourceFile": "app/new-orleans/guides/new-orleans-tours-near-french-quarter/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/guides/new-orleans-tours-that-fit-before-dinner",
+          "sourceFile": "app/new-orleans/guides/new-orleans-tours-that-fit-before-dinner/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/guides/new-orleans-tours-tonight",
+          "sourceFile": "app/new-orleans/guides/new-orleans-tours-tonight/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/guides/new-orleans-tours-under-50-dollars",
+          "sourceFile": "app/new-orleans/guides/new-orleans-tours-under-50-dollars/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/guides/new-orleans-tours-with-minimal-walking",
+          "sourceFile": "app/new-orleans/guides/new-orleans-tours-with-minimal-walking/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/guides/new-orleans-tours-with-transportation",
+          "sourceFile": "app/new-orleans/guides/new-orleans-tours-with-transportation/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/guides/new-orleans-tours-without-an-all-day-bus-ride",
+          "sourceFile": "app/new-orleans/guides/new-orleans-tours-without-an-all-day-bus-ride/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/guides/oak-alley-vs-whitney-plantation-vs-swamp-tour",
+          "sourceFile": "app/new-orleans/guides/oak-alley-vs-whitney-plantation-vs-swamp-tour/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/guides/plan-new-orleans-tours",
+          "sourceFile": "app/new-orleans/guides/plan-new-orleans-tours/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/guides/restaurant-partners",
+          "sourceFile": "app/new-orleans/guides/restaurant-partners/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/guides/things-to-do-after-a-cruise-new-orleans",
+          "sourceFile": "app/new-orleans/guides/things-to-do-after-a-cruise-new-orleans/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/guides/things-to-do-before-a-cruise-new-orleans",
+          "sourceFile": "app/new-orleans/guides/things-to-do-before-a-cruise-new-orleans/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/guides/things-to-do-in-new-orleans-today",
+          "sourceFile": "app/new-orleans/guides/things-to-do-in-new-orleans-today/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/guides/this-weekend",
+          "sourceFile": "app/new-orleans/guides/this-weekend/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/guides/tonight",
+          "sourceFile": "app/new-orleans/guides/tonight/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/guides/tour-catalog",
+          "sourceFile": "app/new-orleans/guides/tour-catalog/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/new-orleans/guides/visitor-rewards",
+          "sourceFile": "app/new-orleans/guides/visitor-rewards/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/guides/whats-happening",
+          "sourceFile": "app/new-orleans/guides/whats-happening/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/guides/where-to-eat",
+          "sourceFile": "app/new-orleans/guides/where-to-eat/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/guides/whitney-plantation-vs-oak-alley-history-focus",
+          "sourceFile": "app/new-orleans/guides/whitney-plantation-vs-oak-alley-history-focus/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/help-me-choose",
+          "sourceFile": "app/new-orleans/help-me-choose/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/high-intent-tours",
+          "sourceFile": "app/new-orleans/high-intent-tours/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/how-we-choose",
+          "sourceFile": "app/new-orleans/how-we-choose/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/llms.txt",
+          "sourceFile": "app/new-orleans/llms.txt/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/new-orleans/marketplace-category/[categorySlug]",
+          "sourceFile": "app/new-orleans/marketplace-category/[categorySlug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/marketplace-category/[categorySlug]/[comparisonSlug]",
+          "sourceFile": "app/new-orleans/marketplace-category/[categorySlug]/[comparisonSlug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/music",
+          "sourceFile": "app/new-orleans/music/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/neighborhoods",
+          "sourceFile": "app/new-orleans/neighborhoods/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/new-orleans-plantation-and-swamp-tour",
+          "sourceFile": "app/new-orleans/new-orleans-plantation-and-swamp-tour/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/new-orleans-tours-for-families",
+          "sourceFile": "app/new-orleans/new-orleans-tours-for-families/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/new-orleans-tours-tonight",
+          "sourceFile": "app/new-orleans/new-orleans-tours-tonight/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/new-orleans-tours-with-transportation",
+          "sourceFile": "app/new-orleans/new-orleans-tours-with-transportation/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/now",
+          "sourceFile": "app/new-orleans/now/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/operators",
+          "sourceFile": "app/new-orleans/operators/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/operators/[slug]",
+          "sourceFile": "app/new-orleans/operators/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/privacy",
+          "sourceFile": "app/new-orleans/privacy/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/restaurant-partners",
+          "sourceFile": "app/new-orleans/restaurant-partners/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/swamp-tours",
+          "sourceFile": "app/new-orleans/swamp-tours/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/swamp-tours/best-swamp-tours",
+          "sourceFile": "app/new-orleans/swamp-tours/best-swamp-tours/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/swamp-tours/best-time",
+          "sourceFile": "app/new-orleans/swamp-tours/best-time/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/swamp-tours/transportation",
+          "sourceFile": "app/new-orleans/swamp-tours/transportation/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/swamp-tours/types",
+          "sourceFile": "app/new-orleans/swamp-tours/types/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/swamp-tours/with-kids",
+          "sourceFile": "app/new-orleans/swamp-tours/with-kids/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/swamp-tours/worth-it",
+          "sourceFile": "app/new-orleans/swamp-tours/worth-it/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/terms",
+          "sourceFile": "app/new-orleans/terms/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/things-to-do",
+          "sourceFile": "app/new-orleans/things-to-do/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/things-to-do-after-a-cruise-new-orleans",
+          "sourceFile": "app/new-orleans/things-to-do-after-a-cruise-new-orleans/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/things-to-do-before-a-cruise-new-orleans",
+          "sourceFile": "app/new-orleans/things-to-do-before-a-cruise-new-orleans/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/things-to-do-in-new-orleans-today",
+          "sourceFile": "app/new-orleans/things-to-do-in-new-orleans-today/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/this-weekend",
+          "sourceFile": "app/new-orleans/this-weekend/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/tonight",
+          "sourceFile": "app/new-orleans/tonight/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/tours",
+          "sourceFile": "app/new-orleans/tours/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/tours-for/[slug]",
+          "sourceFile": "app/new-orleans/tours-for/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/tours/[slug]",
+          "sourceFile": "app/new-orleans/tours/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/tours/airboat-adventures",
+          "sourceFile": "app/new-orleans/tours/airboat-adventures/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/tours/nola-ghost-riders",
+          "sourceFile": "app/new-orleans/tours/nola-ghost-riders/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/visitor-rewards",
+          "sourceFile": "app/new-orleans/visitor-rewards/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/weekend-guide",
+          "sourceFile": "app/new-orleans/weekend-guide/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/new-orleans/whats-happening",
+          "sourceFile": "app/new-orleans/whats-happening/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/nodes/[slug]",
+          "sourceFile": "app/nodes/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/octo",
+          "sourceFile": "app/octo/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/octo/availability",
+          "sourceFile": "app/octo/availability/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/octo/availability/calendar",
+          "sourceFile": "app/octo/availability/calendar/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/octo/bookings",
+          "sourceFile": "app/octo/bookings/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/octo/bookings/[bookingUuid]",
+          "sourceFile": "app/octo/bookings/[bookingUuid]/route.ts",
+          "kind": "order_lookup"
+        },
+        {
+          "routePattern": "/octo/bookings/[bookingUuid]/cancel",
+          "sourceFile": "app/octo/bookings/[bookingUuid]/cancel/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/octo/bookings/[bookingUuid]/confirm",
+          "sourceFile": "app/octo/bookings/[bookingUuid]/confirm/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/octo/products",
+          "sourceFile": "app/octo/products/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/octo/products/[productId]",
+          "sourceFile": "app/octo/products/[productId]/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/octo/supplier",
+          "sourceFile": "app/octo/supplier/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/openapi.json",
+          "sourceFile": "app/openapi.json/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/operator",
+          "sourceFile": "app/operator/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/operators",
+          "sourceFile": "app/operators/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/operators/[slug]",
+          "sourceFile": "app/operators/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/operators/onboarding",
+          "sourceFile": "app/operators/onboarding/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/orlando",
+          "sourceFile": "app/orlando/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/partners/direct-operators",
+          "sourceFile": "app/partners/direct-operators/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/partners/share-links",
+          "sourceFile": "app/partners/share-links/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/pay-balance/[orderId]",
+          "sourceFile": "app/pay-balance/[orderId]/page.tsx",
+          "kind": "order_lookup"
+        },
+        {
+          "routePattern": "/penthouses/[city]",
+          "sourceFile": "app/penthouses/[city]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/pet-friendly/[slug]",
+          "sourceFile": "app/pet-friendly/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/pet-friendly/[slug]/[city]",
+          "sourceFile": "app/pet-friendly/[slug]/[city]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/ports",
+          "sourceFile": "app/ports/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/ports/[slug]",
+          "sourceFile": "app/ports/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/pricing",
+          "sourceFile": "app/pricing/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/privacy",
+          "sourceFile": "app/privacy/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/private-vs-shared-shuttles-to-red-rocks-denver-guide",
+          "sourceFile": "app/private-vs-shared-shuttles-to-red-rocks-denver-guide/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/r/[id]",
+          "sourceFile": "app/r/[id]/route.ts",
+          "kind": "order_lookup"
+        },
+        {
+          "routePattern": "/r/[id]/v/[version]",
+          "sourceFile": "app/r/[id]/v/[version]/route.ts",
+          "kind": "order_lookup"
+        },
+        {
+          "routePattern": "/red-rock-canyon",
+          "sourceFile": "app/red-rock-canyon/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks",
+          "sourceFile": "app/red-rocks/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks-amphitheatre",
+          "sourceFile": "app/red-rocks-amphitheatre/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks-complete-guide",
+          "sourceFile": "app/red-rocks-complete-guide/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks-concert-guide",
+          "sourceFile": "app/red-rocks-concert-guide/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks-events",
+          "sourceFile": "app/red-rocks-events/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks-parking",
+          "sourceFile": "app/red-rocks-parking/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks-shuttle",
+          "sourceFile": "app/red-rocks-shuttle/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks-shuttle-vs-uber",
+          "sourceFile": "app/red-rocks-shuttle-vs-uber/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks-transportation",
+          "sourceFile": "app/red-rocks-transportation/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks/llms.txt",
+          "sourceFile": "app/red-rocks/llms.txt/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/regions/[region]",
+          "sourceFile": "app/regions/[region]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/regions/[region]/llms.txt",
+          "sourceFile": "app/regions/[region]/llms.txt/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/regions/colorado",
+          "sourceFile": "app/regions/colorado/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/regions/colorado/idaho-springs",
+          "sourceFile": "app/regions/colorado/idaho-springs/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/report-error",
+          "sourceFile": "app/report-error/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/resort/[slug]",
+          "sourceFile": "app/resort/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/road-trips",
+          "sourceFile": "app/road-trips/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/road-trips/[slug]",
+          "sourceFile": "app/road-trips/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/roadside/[slug]",
+          "sourceFile": "app/roadside/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/robots.txt",
+          "sourceFile": "app/robots.txt/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/route-segment/[slug]",
+          "sourceFile": "app/route-segment/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/routes/[slug]",
+          "sourceFile": "app/routes/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/routes/[slug]/llms.txt",
+          "sourceFile": "app/routes/[slug]/llms.txt/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/routes/delhi-to-agra",
+          "sourceFile": "app/routes/delhi-to-agra/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/routes/hong-kong-to-macao",
+          "sourceFile": "app/routes/hong-kong-to-macao/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/routes/keflavik-to-vik",
+          "sourceFile": "app/routes/keflavik-to-vik/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/routing",
+          "sourceFile": "app/routing/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/scenic-drives/[slug]",
+          "sourceFile": "app/scenic-drives/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/scenic/[slug]",
+          "sourceFile": "app/scenic/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/scope.json",
+          "sourceFile": "app/scope.json/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/sedona/jeep-tours",
+          "sourceFile": "app/sedona/jeep-tours/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/shuttleya",
+          "sourceFile": "app/shuttleya/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/shuttleya/[slug]",
+          "sourceFile": "app/shuttleya/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/shuttleya/agent.json",
+          "sourceFile": "app/shuttleya/agent.json/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/shuttleya/llms.txt",
+          "sourceFile": "app/shuttleya/llms.txt/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/shuttleya/robots.txt",
+          "sourceFile": "app/shuttleya/robots.txt/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/shuttleya/sitemap.xml",
+          "sourceFile": "app/shuttleya/sitemap.xml/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/signals",
+          "sourceFile": "app/signals/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/signals/history",
+          "sourceFile": "app/signals/history/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/sitemap.xml",
+          "sourceFile": "app/sitemap.xml/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/smoker-friendly/[slug]",
+          "sourceFile": "app/smoker-friendly/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/smoker-friendly/[slug]/[city]",
+          "sourceFile": "app/smoker-friendly/[slug]/[city]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/smoking/[slug]",
+          "sourceFile": "app/smoking/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/smoking/[slug]/[city]",
+          "sourceFile": "app/smoking/[slug]/[city]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/snowmobiling",
+          "sourceFile": "app/snowmobiling/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/somerset-wi",
+          "sourceFile": "app/somerset-wi/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/somerset-wi/[slug]",
+          "sourceFile": "app/somerset-wi/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/somerset-wi/agent.json",
+          "sourceFile": "app/somerset-wi/agent.json/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/somerset-wi/llms.txt",
+          "sourceFile": "app/somerset-wi/llms.txt/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/somerset-wi/sitemap.xml",
+          "sourceFile": "app/somerset-wi/sitemap.xml/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/somerset-wi/somerset-amphitheater-parking-and-transportation",
+          "sourceFile": "app/somerset-wi/somerset-amphitheater-parking-and-transportation/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/somerset-wi/somerset-amphitheater-shuttle",
+          "sourceFile": "app/somerset-wi/somerset-amphitheater-shuttle/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/somerset-wi/somerset-concert-transportation",
+          "sourceFile": "app/somerset-wi/somerset-concert-transportation/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/sports",
+          "sourceFile": "app/sports/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/sports/[league]",
+          "sourceFile": "app/sports/[league]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/sports/game/[slug]",
+          "sourceFile": "app/sports/game/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/sports/team/[slug]",
+          "sourceFile": "app/sports/team/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/stations",
+          "sourceFile": "app/stations/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/stations/[slug]",
+          "sourceFile": "app/stations/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/stops-near/[slug]",
+          "sourceFile": "app/stops-near/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/suites/[city]",
+          "sourceFile": "app/suites/[city]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/summerlin",
+          "sourceFile": "app/summerlin/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/t/[tenantName]/guides/[slug]",
+          "sourceFile": "app/t/[tenantName]/guides/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/t/[tenantName]/ports/[slug]",
+          "sourceFile": "app/t/[tenantName]/ports/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/t/[tenantName]/transportation/colorado/[slug]",
+          "sourceFile": "app/t/[tenantName]/transportation/colorado/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/terms",
+          "sourceFile": "app/terms/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/things-to-do-on-the-strip",
+          "sourceFile": "app/things-to-do-on-the-strip/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/tour-finder",
+          "sourceFile": "app/tour-finder/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/tours",
+          "sourceFile": "app/tours/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/tours/[id]",
+          "sourceFile": "app/tours/[id]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/tours/octo/[productId]",
+          "sourceFile": "app/tours/octo/[productId]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/transportation",
+          "sourceFile": "app/transportation/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/transportation/colorado",
+          "sourceFile": "app/transportation/colorado/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/transportation/colorado/denver-to-vail-shuttle-guide",
+          "sourceFile": "app/transportation/colorado/denver-to-vail-shuttle-guide/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/transportation/montana",
+          "sourceFile": "app/transportation/montana/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/transportation/venues/[slug]",
+          "sourceFile": "app/transportation/venues/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/truck-stop/[slug]",
+          "sourceFile": "app/truck-stop/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/usa",
+          "sourceFile": "app/usa/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/valley-of-fire",
+          "sourceFile": "app/valley-of-fire/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/vegas",
+          "sourceFile": "app/vegas/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/vegas/llms.txt",
+          "sourceFile": "app/vegas/llms.txt/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/vegas/now",
+          "sourceFile": "app/vegas/now/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues",
+          "sourceFile": "app/venues/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/[slug]",
+          "sourceFile": "app/venues/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/vibe-around",
+          "sourceFile": "app/vibe-around/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/western-wisconsin",
+          "sourceFile": "app/western-wisconsin/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/widget",
+          "sourceFile": "app/widget/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/wisconsin-dells-brand",
+          "sourceFile": "app/wisconsin-dells-brand/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/wisconsin-dells-large-group-dinner",
+          "sourceFile": "app/wisconsin-dells-large-group-dinner/page.tsx",
+          "kind": "public_page"
+        }
+      ]
+    },
+    {
+      "propertyId": "cruisepromenade",
+      "canonicalDomain": "cruisepromenade.com",
+      "ownership": "owned",
+      "repoLabel": "cp-pilot10-2026-11-11",
+      "consolidationRedirectsForbiddenWithoutAgreement": true,
+      "counts": {
+        "total": 42,
+        "public_page": 31,
+        "machine_contract": 5,
+        "booking_or_handoff_action": 6,
+        "order_lookup": 0
+      },
+      "routes": [
+        {
+          "routePattern": "/",
+          "sourceFile": "src/app/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/.well-known/dcc-site",
+          "sourceFile": "src/app/.well-known/dcc-site/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/[guide]",
+          "sourceFile": "src/app/[guide]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/about",
+          "sourceFile": "src/app/about/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/agent.json",
+          "sourceFile": "src/app/agent.json/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/api/booking-clicks",
+          "sourceFile": "src/app/api/booking-clicks/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/dcc-handoff",
+          "sourceFile": "src/app/api/dcc-handoff/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/excursions/handoff",
+          "sourceFile": "src/app/api/excursions/handoff/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/group-inquiries",
+          "sourceFile": "src/app/api/group-inquiries/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/book",
+          "sourceFile": "src/app/book/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/cruise-lines",
+          "sourceFile": "src/app/cruise-lines/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/cruise-lines/[lineSlug]",
+          "sourceFile": "src/app/cruise-lines/[lineSlug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/cruise-ships",
+          "sourceFile": "src/app/cruise-ships/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/cruise-ships/[shipSlug]",
+          "sourceFile": "src/app/cruise-ships/[shipSlug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/cruise-ships/[shipSlug]/[portExcursionSlug]",
+          "sourceFile": "src/app/cruise-ships/[shipSlug]/[portExcursionSlug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/feedback",
+          "sourceFile": "src/app/feedback/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/go/getyourguide/[clickId]",
+          "sourceFile": "src/app/go/getyourguide/[clickId]/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/go/out",
+          "sourceFile": "src/app/go/out/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/group-cruise-example",
+          "sourceFile": "src/app/group-cruise-example/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/group-cruises",
+          "sourceFile": "src/app/group-cruises/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/groups",
+          "sourceFile": "src/app/groups/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/groups/[groupSlug]",
+          "sourceFile": "src/app/groups/[groupSlug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/llms.txt",
+          "sourceFile": "src/app/llms.txt/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/news",
+          "sourceFile": "src/app/news/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/organizer/[shareCode]",
+          "sourceFile": "src/app/organizer/[shareCode]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/organizer/demo-whale-watch-split",
+          "sourceFile": "src/app/organizer/demo-whale-watch-split/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/p/[shareCode]",
+          "sourceFile": "src/app/p/[shareCode]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/p/[shareCode]/invite-sheet",
+          "sourceFile": "src/app/p/[shareCode]/invite-sheet/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/planner",
+          "sourceFile": "src/app/planner/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/planner/add",
+          "sourceFile": "src/app/planner/add/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/planner/day/[dayNumber]",
+          "sourceFile": "src/app/planner/day/[dayNumber]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/planner/import",
+          "sourceFile": "src/app/planner/import/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/ports",
+          "sourceFile": "src/app/ports/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/ports/[slug]",
+          "sourceFile": "src/app/ports/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/privacy",
+          "sourceFile": "src/app/privacy/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/robots.txt",
+          "sourceFile": "src/app/robots.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/roll-call",
+          "sourceFile": "src/app/roll-call/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/roll-call/[shipSlug]/[sailDate]",
+          "sourceFile": "src/app/roll-call/[shipSlug]/[sailDate]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/sailings",
+          "sourceFile": "src/app/sailings/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/sailings/[shipSlug]/[sailDate]",
+          "sourceFile": "src/app/sailings/[shipSlug]/[sailDate]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/sitemap.xml",
+          "sourceFile": "src/app/sitemap.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/terms",
+          "sourceFile": "src/app/terms/page.tsx",
+          "kind": "public_page"
+        }
+      ]
+    },
+    {
+      "propertyId": "rollcallusa",
+      "canonicalDomain": "rollcallusa.com",
+      "ownership": "owned",
+      "repoLabel": "rc-cruise-2026-11-10",
+      "consolidationRedirectsForbiddenWithoutAgreement": true,
+      "counts": {
+        "total": 40,
+        "public_page": 34,
+        "machine_contract": 5,
+        "booking_or_handoff_action": 1,
+        "order_lookup": 0
+      },
+      "routes": [
+        {
+          "routePattern": "/",
+          "sourceFile": "src/app/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/.well-known/dcc-site",
+          "sourceFile": "src/app/.well-known/dcc-site/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/[conventionSlug]",
+          "sourceFile": "src/app/[conventionSlug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/about",
+          "sourceFile": "src/app/about/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/agent.json",
+          "sourceFile": "src/app/agent.json/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/api/cruise/hosted/[shareCode]/handoff",
+          "sourceFile": "src/app/api/cruise/hosted/[shareCode]/handoff/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/bars",
+          "sourceFile": "src/app/bars/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/change-what-the-internet-thinks-about-you",
+          "sourceFile": "src/app/change-what-the-internet-thinks-about-you/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/claim-your-name",
+          "sourceFile": "src/app/claim-your-name/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/college",
+          "sourceFile": "src/app/college/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/cruise/group/[shareCode]",
+          "sourceFile": "src/app/cruise/group/[shareCode]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/cruise/onboard/[shipSlug]/[sailDate]",
+          "sourceFile": "src/app/cruise/onboard/[shipSlug]/[sailDate]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/events",
+          "sourceFile": "src/app/events/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/forgot-password",
+          "sourceFile": "src/app/forgot-password/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/g/[code]",
+          "sourceFile": "src/app/g/[code]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/how-location-works",
+          "sourceFile": "src/app/how-location-works/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/llms.txt",
+          "sourceFile": "src/app/llms.txt/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/me",
+          "sourceFile": "src/app/me/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/me/links",
+          "sourceFile": "src/app/me/links/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/me/profiles/[id]",
+          "sourceFile": "src/app/me/profiles/[id]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/me/profiles/new",
+          "sourceFile": "src/app/me/profiles/new/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/messages",
+          "sourceFile": "src/app/messages/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/messages/[id]",
+          "sourceFile": "src/app/messages/[id]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/moderation",
+          "sourceFile": "src/app/moderation/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/notifications",
+          "sourceFile": "src/app/notifications/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/o/[slug]",
+          "sourceFile": "src/app/o/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/onboarding",
+          "sourceFile": "src/app/onboarding/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/organize",
+          "sourceFile": "src/app/organize/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/organize/[id]",
+          "sourceFile": "src/app/organize/[id]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/p/[id]",
+          "sourceFile": "src/app/p/[id]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/privacy",
+          "sourceFile": "src/app/privacy/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/reset-password",
+          "sourceFile": "src/app/reset-password/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/robots.txt",
+          "sourceFile": "src/app/robots.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/safety",
+          "sourceFile": "src/app/safety/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/sign-in",
+          "sourceFile": "src/app/sign-in/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/sign-up",
+          "sourceFile": "src/app/sign-up/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/sitemap.xml",
+          "sourceFile": "src/app/sitemap.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/suspended",
+          "sourceFile": "src/app/suspended/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/terms",
+          "sourceFile": "src/app/terms/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/walkthrough",
+          "sourceFile": "src/app/walkthrough/page.tsx",
+          "kind": "public_page"
+        }
+      ]
+    },
+    {
+      "propertyId": "last-frontier-shore-excursions",
+      "canonicalDomain": "lastfrontiershoreexcursions.com",
+      "ownership": "owned",
+      "repoLabel": "dcc-track12-2026-11-11/apps/last-frontier-shore-excursions",
+      "consolidationRedirectsForbiddenWithoutAgreement": true,
+      "counts": {
+        "total": 16,
+        "public_page": 10,
+        "machine_contract": 5,
+        "booking_or_handoff_action": 1,
+        "order_lookup": 0
+      },
+      "routes": [
+        {
+          "routePattern": "/",
+          "sourceFile": "apps/last-frontier-shore-excursions/app/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/.well-known/dcc-site",
+          "sourceFile": "apps/last-frontier-shore-excursions/app/.well-known/dcc-site/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/[port]/[activity]",
+          "sourceFile": "apps/last-frontier-shore-excursions/app/[port]/[activity]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/about",
+          "sourceFile": "apps/last-frontier-shore-excursions/app/about/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/agent.json",
+          "sourceFile": "apps/last-frontier-shore-excursions/app/agent.json/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/api/inquiries",
+          "sourceFile": "apps/last-frontier-shore-excursions/app/api/inquiries/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/contact",
+          "sourceFile": "apps/last-frontier-shore-excursions/app/contact/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/cruise-ships",
+          "sourceFile": "apps/last-frontier-shore-excursions/app/cruise-ships/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/cruise-ships/[shipSlug]",
+          "sourceFile": "apps/last-frontier-shore-excursions/app/cruise-ships/[shipSlug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/cruise-ships/[shipSlug]/[portSlug]",
+          "sourceFile": "apps/last-frontier-shore-excursions/app/cruise-ships/[shipSlug]/[portSlug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/decision/[slug]",
+          "sourceFile": "apps/last-frontier-shore-excursions/app/decision/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/llms.txt",
+          "sourceFile": "apps/last-frontier-shore-excursions/app/llms.txt/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/ports/[slug]",
+          "sourceFile": "apps/last-frontier-shore-excursions/app/ports/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/robots.txt",
+          "sourceFile": "apps/last-frontier-shore-excursions/app/robots.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/sitemap.xml",
+          "sourceFile": "apps/last-frontier-shore-excursions/app/sitemap.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/tours",
+          "sourceFile": "apps/last-frontier-shore-excursions/app/tours/page.tsx",
+          "kind": "public_page"
+        }
+      ]
+    },
+    {
+      "propertyId": "juneauflightdeck",
+      "canonicalDomain": "juneauflightdeck.com",
+      "ownership": "owned",
+      "repoLabel": "dcc-track12-2026-11-11/apps/juneauflightdeck",
+      "consolidationRedirectsForbiddenWithoutAgreement": true,
+      "counts": {
+        "total": 37,
+        "public_page": 29,
+        "machine_contract": 6,
+        "booking_or_handoff_action": 2,
+        "order_lookup": 0
+      },
+      "routes": [
+        {
+          "routePattern": "/",
+          "sourceFile": "apps/juneauflightdeck/app/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/.well-known/dcc-site",
+          "sourceFile": "apps/juneauflightdeck/app/.well-known/dcc-site/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/about",
+          "sourceFile": "apps/juneauflightdeck/app/about/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/agent.json",
+          "sourceFile": "apps/juneauflightdeck/app/agent.json/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/api/waitlist",
+          "sourceFile": "apps/juneauflightdeck/app/api/waitlist/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/best-time-for-glacier-dog-sledding-juneau",
+          "sourceFile": "apps/juneauflightdeck/app/best-time-for-glacier-dog-sledding-juneau/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/book",
+          "sourceFile": "apps/juneauflightdeck/app/book/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/contact",
+          "sourceFile": "apps/juneauflightdeck/app/contact/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/dispatch",
+          "sourceFile": "apps/juneauflightdeck/app/dispatch/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/faq",
+          "sourceFile": "apps/juneauflightdeck/app/faq/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/handoff/dcc",
+          "sourceFile": "apps/juneauflightdeck/app/handoff/dcc/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/helicopter",
+          "sourceFile": "apps/juneauflightdeck/app/helicopter/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/helicopter-waitlist",
+          "sourceFile": "apps/juneauflightdeck/app/helicopter-waitlist/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/helicopter-waitlist/[shipSlug]",
+          "sourceFile": "apps/juneauflightdeck/app/helicopter-waitlist/[shipSlug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/juneau-dogsled-helicopter-tours",
+          "sourceFile": "apps/juneauflightdeck/app/juneau-dogsled-helicopter-tours/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/juneau-glacier-flight-weather",
+          "sourceFile": "apps/juneauflightdeck/app/juneau-glacier-flight-weather/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/juneau-helicopter-tour-sold-out",
+          "sourceFile": "apps/juneauflightdeck/app/juneau-helicopter-tour-sold-out/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/juneau-helicopter-tour-weight-limits-and-seating",
+          "sourceFile": "apps/juneauflightdeck/app/juneau-helicopter-tour-weight-limits-and-seating/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/juneau-whale-watching-tours",
+          "sourceFile": "apps/juneauflightdeck/app/juneau-whale-watching-tours/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/juneau/cruise-excursions-vs-independent",
+          "sourceFile": "apps/juneauflightdeck/app/juneau/cruise-excursions-vs-independent/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/juneau/helicopter",
+          "sourceFile": "apps/juneauflightdeck/app/juneau/helicopter/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/juneau/what-to-do-if-helicopter-tour-canceled",
+          "sourceFile": "apps/juneauflightdeck/app/juneau/what-to-do-if-helicopter-tour-canceled/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/llms-full.txt",
+          "sourceFile": "apps/juneauflightdeck/app/llms-full.txt/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/llms.txt",
+          "sourceFile": "apps/juneauflightdeck/app/llms.txt/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/preview-cards",
+          "sourceFile": "apps/juneauflightdeck/app/preview-cards/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/privacy-policy",
+          "sourceFile": "apps/juneauflightdeck/app/privacy-policy/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/robots.txt",
+          "sourceFile": "apps/juneauflightdeck/app/robots.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/sitemap.xml",
+          "sourceFile": "apps/juneauflightdeck/app/sitemap.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/skagway/helicopter",
+          "sourceFile": "apps/juneauflightdeck/app/skagway/helicopter/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/temsco-vs-coastal-juneau",
+          "sourceFile": "apps/juneauflightdeck/app/temsco-vs-coastal-juneau/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/temsco-vs-coastal-vs-northstar-juneau",
+          "sourceFile": "apps/juneauflightdeck/app/temsco-vs-coastal-vs-northstar-juneau/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/temsco-vs-northstar-juneau",
+          "sourceFile": "apps/juneauflightdeck/app/temsco-vs-northstar-juneau/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/terms",
+          "sourceFile": "apps/juneauflightdeck/app/terms/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/tools",
+          "sourceFile": "apps/juneauflightdeck/app/tools/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/waitlist",
+          "sourceFile": "apps/juneauflightdeck/app/waitlist/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/whale-deck",
+          "sourceFile": "apps/juneauflightdeck/app/whale-deck/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/what-to-do-in-juneau-cruise-port",
+          "sourceFile": "apps/juneauflightdeck/app/what-to-do-in-juneau-cruise-port/page.tsx",
+          "kind": "public_page"
+        }
+      ]
+    },
+    {
+      "propertyId": "welcometoneworleanstours",
+      "canonicalDomain": "welcometoneworleanstours.com",
+      "ownership": "owned",
+      "repoLabel": "dcc-track12-2026-11-11/apps/welcometoneworleanstours",
+      "consolidationRedirectsForbiddenWithoutAgreement": true,
+      "counts": {
+        "total": 49,
+        "public_page": 43,
+        "machine_contract": 5,
+        "booking_or_handoff_action": 1,
+        "order_lookup": 0
+      },
+      "routes": [
+        {
+          "routePattern": "/",
+          "sourceFile": "apps/welcometoneworleanstours/app/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/.well-known/dcc-site",
+          "sourceFile": "apps/welcometoneworleanstours/app/.well-known/dcc-site/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/[categorySlug]",
+          "sourceFile": "apps/welcometoneworleanstours/app/[categorySlug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/about",
+          "sourceFile": "apps/welcometoneworleanstours/app/about/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/affiliate-disclosure",
+          "sourceFile": "apps/welcometoneworleanstours/app/affiliate-disclosure/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/agent.json",
+          "sourceFile": "apps/welcometoneworleanstours/app/agent.json/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/api/inquiries",
+          "sourceFile": "apps/welcometoneworleanstours/app/api/inquiries/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/areas/[slug]",
+          "sourceFile": "apps/welcometoneworleanstours/app/areas/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/booking-help",
+          "sourceFile": "apps/welcometoneworleanstours/app/booking-help/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/cancellation-policy",
+          "sourceFile": "apps/welcometoneworleanstours/app/cancellation-policy/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/compare",
+          "sourceFile": "apps/welcometoneworleanstours/app/compare/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/compare/[slug]",
+          "sourceFile": "apps/welcometoneworleanstours/app/compare/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/contact",
+          "sourceFile": "apps/welcometoneworleanstours/app/contact/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/faq",
+          "sourceFile": "apps/welcometoneworleanstours/app/faq/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/french-quarter-walking-guide",
+          "sourceFile": "apps/welcometoneworleanstours/app/french-quarter-walking-guide/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/french-quarter-welcome-stop",
+          "sourceFile": "apps/welcometoneworleanstours/app/french-quarter-welcome-stop/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guides",
+          "sourceFile": "apps/welcometoneworleanstours/app/guides/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guides/[slug]",
+          "sourceFile": "apps/welcometoneworleanstours/app/guides/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guides/best-new-orleans-swamp-tour",
+          "sourceFile": "apps/welcometoneworleanstours/app/guides/best-new-orleans-swamp-tour/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guides/best-new-orleans-tours-for-a-rainy-day",
+          "sourceFile": "apps/welcometoneworleanstours/app/guides/best-new-orleans-tours-for-a-rainy-day/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guides/best-new-orleans-tours-under-4-or-6-hours",
+          "sourceFile": "apps/welcometoneworleanstours/app/guides/best-new-orleans-tours-under-4-or-6-hours/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guides/best-swamp-tour-with-transportation",
+          "sourceFile": "apps/welcometoneworleanstours/app/guides/best-swamp-tour-with-transportation/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guides/first-time-new-orleans-tours",
+          "sourceFile": "apps/welcometoneworleanstours/app/guides/first-time-new-orleans-tours/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guides/french-quarter-orientation",
+          "sourceFile": "apps/welcometoneworleanstours/app/guides/french-quarter-orientation/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guides/new-orleans-plantation-and-swamp-tour",
+          "sourceFile": "apps/welcometoneworleanstours/app/guides/new-orleans-plantation-and-swamp-tour/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guides/new-orleans-tours-for-families",
+          "sourceFile": "apps/welcometoneworleanstours/app/guides/new-orleans-tours-for-families/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guides/new-orleans-tours-limited-mobility",
+          "sourceFile": "apps/welcometoneworleanstours/app/guides/new-orleans-tours-limited-mobility/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guides/new-orleans-tours-near-french-quarter",
+          "sourceFile": "apps/welcometoneworleanstours/app/guides/new-orleans-tours-near-french-quarter/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guides/new-orleans-tours-that-fit-before-dinner",
+          "sourceFile": "apps/welcometoneworleanstours/app/guides/new-orleans-tours-that-fit-before-dinner/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guides/new-orleans-tours-with-minimal-walking",
+          "sourceFile": "apps/welcometoneworleanstours/app/guides/new-orleans-tours-with-minimal-walking/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guides/new-orleans-tours-with-transportation",
+          "sourceFile": "apps/welcometoneworleanstours/app/guides/new-orleans-tours-with-transportation/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guides/new-orleans-tours-without-an-all-day-bus-ride",
+          "sourceFile": "apps/welcometoneworleanstours/app/guides/new-orleans-tours-without-an-all-day-bus-ride/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guides/oak-alley-vs-whitney-plantation-vs-swamp-tour",
+          "sourceFile": "apps/welcometoneworleanstours/app/guides/oak-alley-vs-whitney-plantation-vs-swamp-tour/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guides/things-to-do-in-new-orleans-today",
+          "sourceFile": "apps/welcometoneworleanstours/app/guides/things-to-do-in-new-orleans-today/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guides/tonight",
+          "sourceFile": "apps/welcometoneworleanstours/app/guides/tonight/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guides/whats-happening",
+          "sourceFile": "apps/welcometoneworleanstours/app/guides/whats-happening/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guides/where-to-eat",
+          "sourceFile": "apps/welcometoneworleanstours/app/guides/where-to-eat/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/help-me-choose",
+          "sourceFile": "apps/welcometoneworleanstours/app/help-me-choose/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/how-we-choose",
+          "sourceFile": "apps/welcometoneworleanstours/app/how-we-choose/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/llms.txt",
+          "sourceFile": "apps/welcometoneworleanstours/app/llms.txt/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/operators",
+          "sourceFile": "apps/welcometoneworleanstours/app/operators/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/operators/[slug]",
+          "sourceFile": "apps/welcometoneworleanstours/app/operators/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/robots.txt",
+          "sourceFile": "apps/welcometoneworleanstours/app/robots.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/sitemap.xml",
+          "sourceFile": "apps/welcometoneworleanstours/app/sitemap.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/tours",
+          "sourceFile": "apps/welcometoneworleanstours/app/tours/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/tours-for/[slug]",
+          "sourceFile": "apps/welcometoneworleanstours/app/tours-for/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/tours/[slug]",
+          "sourceFile": "apps/welcometoneworleanstours/app/tours/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/tours/airboat-adventures",
+          "sourceFile": "apps/welcometoneworleanstours/app/tours/airboat-adventures/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/tours/nola-ghost-riders",
+          "sourceFile": "apps/welcometoneworleanstours/app/tours/nola-ghost-riders/page.tsx",
+          "kind": "public_page"
+        }
+      ]
+    },
+    {
+      "propertyId": "welcometotheswamp",
+      "canonicalDomain": "welcometotheswamp.com",
+      "ownership": "owned",
+      "repoLabel": "dcc-track12-2026-11-11/apps/welcometotheswamp",
+      "consolidationRedirectsForbiddenWithoutAgreement": true,
+      "counts": {
+        "total": 29,
+        "public_page": 21,
+        "machine_contract": 5,
+        "booking_or_handoff_action": 3,
+        "order_lookup": 0
+      },
+      "routes": [
+        {
+          "routePattern": "/",
+          "sourceFile": "apps/welcometotheswamp/app/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/.well-known/dcc-site",
+          "sourceFile": "apps/welcometotheswamp/app/.well-known/dcc-site/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/about",
+          "sourceFile": "apps/welcometotheswamp/app/about/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/agent.json",
+          "sourceFile": "apps/welcometotheswamp/app/agent.json/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/airboat-vs-boat",
+          "sourceFile": "apps/welcometotheswamp/app/airboat-vs-boat/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/api/availability/confirm",
+          "sourceFile": "apps/welcometotheswamp/app/api/availability/confirm/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/waitlist/enroll",
+          "sourceFile": "apps/welcometotheswamp/app/api/waitlist/enroll/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/waitlist/unsubscribe",
+          "sourceFile": "apps/welcometotheswamp/app/api/waitlist/unsubscribe/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/best-time",
+          "sourceFile": "apps/welcometotheswamp/app/best-time/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/choose-the-right-tour",
+          "sourceFile": "apps/welcometotheswamp/app/choose-the-right-tour/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/from-new-orleans",
+          "sourceFile": "apps/welcometotheswamp/app/from-new-orleans/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/live-options",
+          "sourceFile": "apps/welcometotheswamp/app/live-options/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/llms.txt",
+          "sourceFile": "apps/welcometotheswamp/app/llms.txt/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/plan",
+          "sourceFile": "apps/welcometotheswamp/app/plan/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/plan-your-day",
+          "sourceFile": "apps/welcometotheswamp/app/plan-your-day/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/privacy",
+          "sourceFile": "apps/welcometotheswamp/app/privacy/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/robots.txt",
+          "sourceFile": "apps/welcometotheswamp/public/robots.txt",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/sitemap.xml",
+          "sourceFile": "apps/welcometotheswamp/public/sitemap.xml",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/start-here",
+          "sourceFile": "apps/welcometotheswamp/app/start-here/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/terms",
+          "sourceFile": "apps/welcometotheswamp/app/terms/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/tools",
+          "sourceFile": "apps/welcometotheswamp/app/tools/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/tours/[slug]",
+          "sourceFile": "apps/welcometotheswamp/app/tours/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/transportation",
+          "sourceFile": "apps/welcometotheswamp/app/transportation/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/types",
+          "sourceFile": "apps/welcometotheswamp/app/types/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/waitlist",
+          "sourceFile": "apps/welcometotheswamp/app/waitlist/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/weather-backups",
+          "sourceFile": "apps/welcometotheswamp/app/weather-backups/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/what-its-like",
+          "sourceFile": "apps/welcometotheswamp/app/what-its-like/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/with-kids",
+          "sourceFile": "apps/welcometotheswamp/app/with-kids/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/worth-it",
+          "sourceFile": "apps/welcometotheswamp/app/worth-it/page.tsx",
+          "kind": "public_page"
+        }
+      ]
+    },
+    {
+      "propertyId": "welcometothedells",
+      "canonicalDomain": "welcometothedells.com",
+      "ownership": "owned",
+      "repoLabel": "dcc-track12-2026-11-11/apps/welcometothedells",
+      "consolidationRedirectsForbiddenWithoutAgreement": true,
+      "counts": {
+        "total": 24,
+        "public_page": 17,
+        "machine_contract": 5,
+        "booking_or_handoff_action": 2,
+        "order_lookup": 0
+      },
+      "routes": [
+        {
+          "routePattern": "/",
+          "sourceFile": "apps/welcometothedells/app/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/.well-known/dcc-site",
+          "sourceFile": "apps/welcometothedells/app/.well-known/dcc-site/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/about",
+          "sourceFile": "apps/welcometothedells/app/about/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/adults",
+          "sourceFile": "apps/welcometothedells/app/adults/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/agent.json",
+          "sourceFile": "apps/welcometothedells/app/agent.json/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/api/inquiries",
+          "sourceFile": "apps/welcometothedells/app/api/inquiries/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/boat-tours",
+          "sourceFile": "apps/welcometothedells/app/boat-tours/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/contact",
+          "sourceFile": "apps/welcometothedells/app/contact/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/downtown",
+          "sourceFile": "apps/welcometothedells/app/downtown/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/families",
+          "sourceFile": "apps/welcometothedells/app/families/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/first-time",
+          "sourceFile": "apps/welcometothedells/app/first-time/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/lake-delton",
+          "sourceFile": "apps/welcometothedells/app/lake-delton/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/large-groups",
+          "sourceFile": "apps/welcometothedells/app/large-groups/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/llms.txt",
+          "sourceFile": "apps/welcometothedells/app/llms.txt/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/lounge",
+          "sourceFile": "apps/welcometothedells/app/lounge/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/out/wisconsin-dells/[slug]",
+          "sourceFile": "apps/welcometothedells/app/out/wisconsin-dells/[slug]/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/parkway",
+          "sourceFile": "apps/welcometothedells/app/parkway/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/rainy-day",
+          "sourceFile": "apps/welcometothedells/app/rainy-day/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/river-ops/jet-boat-adventures",
+          "sourceFile": "apps/welcometothedells/app/river-ops/jet-boat-adventures/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/robots.txt",
+          "sourceFile": "apps/welcometothedells/app/robots.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/sitemap.xml",
+          "sourceFile": "apps/welcometothedells/app/sitemap.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/things-to-do",
+          "sourceFile": "apps/welcometothedells/app/things-to-do/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/tonight",
+          "sourceFile": "apps/welcometothedells/app/tonight/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/waterparks",
+          "sourceFile": "apps/welcometothedells/app/waterparks/page.tsx",
+          "kind": "public_page"
+        }
+      ]
+    },
+    {
+      "propertyId": "saveonthestrip",
+      "canonicalDomain": "saveonthestrip.com",
+      "ownership": "owned",
+      "repoLabel": "dcc-track12-2026-11-11/apps/saveonthestrip",
+      "consolidationRedirectsForbiddenWithoutAgreement": true,
+      "counts": {
+        "total": 34,
+        "public_page": 25,
+        "machine_contract": 4,
+        "booking_or_handoff_action": 5,
+        "order_lookup": 0
+      },
+      "routes": [
+        {
+          "routePattern": "/",
+          "sourceFile": "apps/saveonthestrip/app/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/.well-known/dcc-site",
+          "sourceFile": "apps/saveonthestrip/app/.well-known/dcc-site/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/about",
+          "sourceFile": "apps/saveonthestrip/app/about/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/agent.json",
+          "sourceFile": "apps/saveonthestrip/app/agent.json/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/api/help-request",
+          "sourceFile": "apps/saveonthestrip/app/api/help-request/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/before-a-late-flight",
+          "sourceFile": "apps/saveonthestrip/app/before-a-late-flight/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/compare/grand-canyon-vs-hoover-dam",
+          "sourceFile": "apps/saveonthestrip/app/compare/grand-canyon-vs-hoover-dam/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/compare/sphere-vs-vegas-show",
+          "sourceFile": "apps/saveonthestrip/app/compare/sphere-vs-vegas-show/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/contact",
+          "sourceFile": "apps/saveonthestrip/app/contact/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/deals",
+          "sourceFile": "apps/saveonthestrip/app/deals/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/four-hours-in-vegas",
+          "sourceFile": "apps/saveonthestrip/app/four-hours-in-vegas/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/free-things",
+          "sourceFile": "apps/saveonthestrip/app/free-things/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/handoff/dcc",
+          "sourceFile": "apps/saveonthestrip/app/handoff/dcc/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/handoff/partner/partyatredrocks",
+          "sourceFile": "apps/saveonthestrip/app/handoff/partner/partyatredrocks/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/handoff/partner/welcome-to-alaska",
+          "sourceFile": "apps/saveonthestrip/app/handoff/partner/welcome-to-alaska/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/handoff/return",
+          "sourceFile": "apps/saveonthestrip/app/handoff/return/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/hotels",
+          "sourceFile": "apps/saveonthestrip/app/hotels/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/hotels/[slug]",
+          "sourceFile": "apps/saveonthestrip/app/hotels/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/llms.txt",
+          "sourceFile": "apps/saveonthestrip/app/llms.txt/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/near-your-hotel",
+          "sourceFile": "apps/saveonthestrip/app/near-your-hotel/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/privacy",
+          "sourceFile": "apps/saveonthestrip/app/privacy/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/shows",
+          "sourceFile": "apps/saveonthestrip/app/shows/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/shows/[slug]",
+          "sourceFile": "apps/saveonthestrip/app/shows/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/shows/sphere",
+          "sourceFile": "apps/saveonthestrip/app/shows/sphere/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/sitemap.xml",
+          "sourceFile": "apps/saveonthestrip/app/sitemap.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/terms",
+          "sourceFile": "apps/saveonthestrip/app/terms/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/timeshares",
+          "sourceFile": "apps/saveonthestrip/app/timeshares/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/timeshares/[slug]",
+          "sourceFile": "apps/saveonthestrip/app/timeshares/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/tonight",
+          "sourceFile": "apps/saveonthestrip/app/tonight/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/tours",
+          "sourceFile": "apps/saveonthestrip/app/tours/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/tours/[slug]",
+          "sourceFile": "apps/saveonthestrip/app/tours/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/under-100",
+          "sourceFile": "apps/saveonthestrip/app/under-100/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/what-to-skip-in-las-vegas",
+          "sourceFile": "apps/saveonthestrip/app/what-to-skip-in-las-vegas/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/worth-it",
+          "sourceFile": "apps/saveonthestrip/app/worth-it/page.tsx",
+          "kind": "public_page"
+        }
+      ]
+    },
+    {
+      "propertyId": "gosno",
+      "canonicalDomain": "gosno.co",
+      "ownership": "owned",
+      "repoLabel": "gosno-track12-2026-11-11",
+      "consolidationRedirectsForbiddenWithoutAgreement": true,
+      "counts": {
+        "total": 84,
+        "public_page": 64,
+        "machine_contract": 8,
+        "booking_or_handoff_action": 11,
+        "order_lookup": 1
+      },
+      "routes": [
+        {
+          "routePattern": "/",
+          "sourceFile": "src/app/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/.well-known/dcc",
+          "sourceFile": "src/app/.well-known/dcc/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/.well-known/dcc-site",
+          "sourceFile": "src/app/.well-known/dcc-site/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/.well-known/gosno-service.json",
+          "sourceFile": "src/app/.well-known/gosno-service.json/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/[slug]",
+          "sourceFile": "src/app/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/about",
+          "sourceFile": "src/app/about/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/agent.json",
+          "sourceFile": "src/app/agent.json/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/api/availability",
+          "sourceFile": "src/app/api/availability/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/big-sky/availability",
+          "sourceFile": "src/app/api/big-sky/availability/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/big-sky/pay",
+          "sourceFile": "src/app/api/big-sky/pay/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/big-sky/reservation",
+          "sourceFile": "src/app/api/big-sky/reservation/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/big-sky/route-status",
+          "sourceFile": "src/app/api/big-sky/route-status/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/big-sky/service",
+          "sourceFile": "src/app/api/big-sky/service/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/bookings/cancel",
+          "sourceFile": "src/app/api/bookings/cancel/route.ts",
+          "kind": "order_lookup"
+        },
+        {
+          "routePattern": "/api/checkout/promo",
+          "sourceFile": "src/app/api/checkout/promo/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/quote",
+          "sourceFile": "src/app/api/quote/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/big-sky",
+          "sourceFile": "src/app/big-sky/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/big-sky-airport-shuttle-vs-private-car",
+          "sourceFile": "src/app/big-sky-airport-shuttle-vs-private-car/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/big-sky-how-early-leave-for-bozeman-airport",
+          "sourceFile": "src/app/big-sky-how-early-leave-for-bozeman-airport/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/big-sky-road-conditions",
+          "sourceFile": "src/app/big-sky-road-conditions/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/big-sky-sitemap.xml",
+          "sourceFile": "public/big-sky-sitemap.xml",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/big-sky-to-bozeman-airport",
+          "sourceFile": "src/app/big-sky-to-bozeman-airport/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/big-sky/airport-shuttle",
+          "sourceFile": "src/app/big-sky/airport-shuttle/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/big-sky/big-sky-resort",
+          "sourceFile": "src/app/big-sky/big-sky-resort/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/big-sky/checkout",
+          "sourceFile": "src/app/big-sky/checkout/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/big-sky/lodging",
+          "sourceFile": "src/app/big-sky/lodging/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/big-sky/meadow-center",
+          "sourceFile": "src/app/big-sky/meadow-center/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/big-sky/moonlight-basin",
+          "sourceFile": "src/app/big-sky/moonlight-basin/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/big-sky/one-only-moonlight-basin",
+          "sourceFile": "src/app/big-sky/one-only-moonlight-basin/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/big-sky/reserve",
+          "sourceFile": "src/app/big-sky/reserve/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/big-sky/spanish-peaks",
+          "sourceFile": "src/app/big-sky/spanish-peaks/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/big-sky/town-center",
+          "sourceFile": "src/app/big-sky/town-center/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/big-sky/yellowstone-club",
+          "sourceFile": "src/app/big-sky/yellowstone-club/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/bozeman-airport-delayed-flight-to-big-sky",
+          "sourceFile": "src/app/bozeman-airport-delayed-flight-to-big-sky/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/bozeman-airport-to-big-sky",
+          "sourceFile": "src/app/bozeman-airport-to-big-sky/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/bozeman-airport-to-big-sky-cost",
+          "sourceFile": "src/app/bozeman-airport-to-big-sky-cost/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/bozeman-airport-to-big-sky-grocery-stop",
+          "sourceFile": "src/app/bozeman-airport-to-big-sky-grocery-stop/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/bozeman-airport-to-big-sky-guide",
+          "sourceFile": "src/app/bozeman-airport-to-big-sky-guide/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/bozeman-airport-to-big-sky-resort",
+          "sourceFile": "src/app/bozeman-airport-to-big-sky-resort/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/bozeman-airport-to-big-sky-winter-transportation",
+          "sourceFile": "src/app/bozeman-airport-to-big-sky-winter-transportation/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/bozeman-airport-to-big-sky-with-skis",
+          "sourceFile": "src/app/bozeman-airport-to-big-sky-with-skis/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/bozeman-airport-to-montage-big-sky",
+          "sourceFile": "src/app/bozeman-airport-to-montage-big-sky/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/bozeman-airport-to-moonlight-basin",
+          "sourceFile": "src/app/bozeman-airport-to-moonlight-basin/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/bozeman-airport-to-oneandonly-moonlight-basin",
+          "sourceFile": "src/app/bozeman-airport-to-oneandonly-moonlight-basin/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/bozeman-airport-to-spanish-peaks",
+          "sourceFile": "src/app/bozeman-airport-to-spanish-peaks/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/bozeman-airport-to-yellowstone-club",
+          "sourceFile": "src/app/bozeman-airport-to-yellowstone-club/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/bozeman-airport-transportation",
+          "sourceFile": "src/app/bozeman-airport-transportation/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/breckenridge",
+          "sourceFile": "src/app/breckenridge/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/cancellation-policy",
+          "sourceFile": "src/app/cancellation-policy/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/checkout",
+          "sourceFile": "src/app/checkout/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/colorado-ski-airport-transportation-cost",
+          "sourceFile": "src/app/colorado-ski-airport-transportation-cost/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/colorado-when-should-i-leave-for-denver-airport",
+          "sourceFile": "src/app/colorado-when-should-i-leave-for-denver-airport/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/concierge/[partnerId]",
+          "sourceFile": "src/app/concierge/[partnerId]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/contact",
+          "sourceFile": "src/app/contact/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/cripple-creek/[[...slug]]",
+          "sourceFile": "src/app/cripple-creek/[[...slug]]/route.ts",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/denver-airport-private-driver-pickup",
+          "sourceFile": "src/app/denver-airport-private-driver-pickup/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/denver-airport-to-ski-resorts-options",
+          "sourceFile": "src/app/denver-airport-to-ski-resorts-options/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/denver-to-breckenridge-shuttle-vs-uber-vs-rental-car",
+          "sourceFile": "src/app/denver-to-breckenridge-shuttle-vs-uber-vs-rental-car/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/dispatch",
+          "sourceFile": "src/app/dispatch/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/dispatch/operators",
+          "sourceFile": "src/app/dispatch/operators/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/eagle-airport-in-vail-colorado/[[...slug]]",
+          "sourceFile": "src/app/eagle-airport-in-vail-colorado/[[...slug]]/route.ts",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/early-morning-big-sky-to-bozeman-airport",
+          "sourceFile": "src/app/early-morning-big-sky-to-bozeman-airport/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/enterprise-logistics",
+          "sourceFile": "src/app/enterprise-logistics/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/faq",
+          "sourceFile": "src/app/faq/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/fleet",
+          "sourceFile": "src/app/fleet/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/handoff/dcc",
+          "sourceFile": "src/app/handoff/dcc/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/late-night-bozeman-airport-to-big-sky",
+          "sourceFile": "src/app/late-night-bozeman-airport-to-big-sky/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/llms.txt",
+          "sourceFile": "src/app/llms.txt/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/mountain-watch/unsubscribed",
+          "sourceFile": "src/app/mountain-watch/unsubscribed/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/news",
+          "sourceFile": "src/app/news/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/operator-offer/[token]",
+          "sourceFile": "src/app/operator-offer/[token]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/operators",
+          "sourceFile": "src/app/operators/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/pay",
+          "sourceFile": "src/app/pay/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/pay/cancel",
+          "sourceFile": "src/app/pay/cancel/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/privacy-policy",
+          "sourceFile": "src/app/privacy-policy/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/request-quote",
+          "sourceFile": "src/app/request-quote/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/robots.txt",
+          "sourceFile": "src/app/robots.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/schedule",
+          "sourceFile": "src/app/schedule/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/schedule/quotes",
+          "sourceFile": "src/app/schedule/quotes/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/services/airport-shuttle",
+          "sourceFile": "src/app/services/airport-shuttle/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/services/return-shuttle",
+          "sourceFile": "src/app/services/return-shuttle/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/services/round-trip",
+          "sourceFile": "src/app/services/round-trip/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/sitemap.xml",
+          "sourceFile": "src/app/sitemap.xml/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/terms-and-conditions",
+          "sourceFile": "src/app/terms-and-conditions/page.tsx",
+          "kind": "public_page"
+        }
+      ]
+    },
+    {
+      "propertyId": "partyatredrocks",
+      "canonicalDomain": "partyatredrocks.com",
+      "ownership": "owned",
+      "repoLabel": "parr-track12-2026-11-11",
+      "consolidationRedirectsForbiddenWithoutAgreement": true,
+      "counts": {
+        "total": 212,
+        "public_page": 193,
+        "machine_contract": 5,
+        "booking_or_handoff_action": 8,
+        "order_lookup": 6
+      },
+      "routes": [
+        {
+          "routePattern": "/",
+          "sourceFile": "app/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/.well-known/dcc-site",
+          "sourceFile": "app/.well-known/dcc-site/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/2026/red-rocks-concerts",
+          "sourceFile": "app/2026/red-rocks-concerts/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/about",
+          "sourceFile": "app/about/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/agent.json",
+          "sourceFile": "app/agent.json/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/api/booking/[token]/cancel",
+          "sourceFile": "app/api/booking/[token]/cancel/route.ts",
+          "kind": "order_lookup"
+        },
+        {
+          "routePattern": "/api/pay-balance",
+          "sourceFile": "app/api/pay-balance/route.ts",
+          "kind": "order_lookup"
+        },
+        {
+          "routePattern": "/api/private/checkout",
+          "sourceFile": "app/api/private/checkout/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/private/pay",
+          "sourceFile": "app/api/private/pay/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/shared/book",
+          "sourceFile": "app/api/shared/book/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/shared/checkout",
+          "sourceFile": "app/api/shared/checkout/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/shared/inventory",
+          "sourceFile": "app/api/shared/inventory/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/shared/pay",
+          "sourceFile": "app/api/shared/pay/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/artists/[artist]",
+          "sourceFile": "app/artists/[artist]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/artists/[artist]/[venue]",
+          "sourceFile": "app/artists/[artist]/[venue]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/bands",
+          "sourceFile": "app/bands/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/bands/[id]",
+          "sourceFile": "app/bands/[id]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/book",
+          "sourceFile": "app/book/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/book-all-venue",
+          "sourceFile": "app/book-all-venue/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/book-all-venues",
+          "sourceFile": "app/book-all-venues/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/book-shuttle",
+          "sourceFile": "app/book-shuttle/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/book/[venue]",
+          "sourceFile": "app/book/[venue]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/book/[venue]/custom/shared",
+          "sourceFile": "app/book/[venue]/custom/shared/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/book/[venue]/custom/shared/[pickup]",
+          "sourceFile": "app/book/[venue]/custom/shared/[pickup]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/book/[venue]/private",
+          "sourceFile": "app/book/[venue]/private/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/book/[venue]/private/[option]",
+          "sourceFile": "app/book/[venue]/private/[option]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/book/[venue]/shared",
+          "sourceFile": "app/book/[venue]/shared/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/book/[venue]/shared/[productCode]",
+          "sourceFile": "app/book/[venue]/shared/[productCode]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/book/[venue]/shared/success",
+          "sourceFile": "app/book/[venue]/shared/success/page.tsx",
+          "kind": "order_lookup"
+        },
+        {
+          "routePattern": "/booking",
+          "sourceFile": "app/booking/page.tsx",
+          "kind": "order_lookup"
+        },
+        {
+          "routePattern": "/booking/[token]",
+          "sourceFile": "app/booking/[token]/page.tsx",
+          "kind": "order_lookup"
+        },
+        {
+          "routePattern": "/calendar",
+          "sourceFile": "app/calendar/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/contact",
+          "sourceFile": "app/contact/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/dead-and-company-red-rocks",
+          "sourceFile": "app/dead-and-company-red-rocks/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/event-details/[[...slug]]",
+          "sourceFile": "app/event-details/[[...slug]]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/find",
+          "sourceFile": "app/find/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/gallery",
+          "sourceFile": "app/gallery/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guide",
+          "sourceFile": "app/guide/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guide/all",
+          "sourceFile": "app/guide/all/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guide/compare",
+          "sourceFile": "app/guide/compare/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guide/denver-concert-transportation",
+          "sourceFile": "app/guide/denver-concert-transportation/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guide/events/[slug]",
+          "sourceFile": "app/guide/events/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guide/events/2026-season-preview",
+          "sourceFile": "app/guide/events/2026-season-preview/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guide/events/tailgate-guide",
+          "sourceFile": "app/guide/events/tailgate-guide/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guide/events/zac-brown-band",
+          "sourceFile": "app/guide/events/zac-brown-band/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guide/local-music-intelligence",
+          "sourceFile": "app/guide/local-music-intelligence/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guide/local/[slug]",
+          "sourceFile": "app/guide/local/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guide/local/denver-pickups",
+          "sourceFile": "app/guide/local/denver-pickups/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guide/local/trailhead-taphouse",
+          "sourceFile": "app/guide/local/trailhead-taphouse/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guide/logistics/bag-policy",
+          "sourceFile": "app/guide/logistics/bag-policy/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guide/logistics/parking-comparison",
+          "sourceFile": "app/guide/logistics/parking-comparison/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guide/logistics/parking-lots",
+          "sourceFile": "app/guide/logistics/parking-lots/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guide/logistics/policies",
+          "sourceFile": "app/guide/logistics/policies/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guide/logistics/prohibited-items-2026",
+          "sourceFile": "app/guide/logistics/prohibited-items-2026/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guide/logistics/shuttle-vs-westracks-2026",
+          "sourceFile": "app/guide/logistics/shuttle-vs-westracks-2026/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guide/logistics/sold-out-survival",
+          "sourceFile": "app/guide/logistics/sold-out-survival/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guide/logistics/tailgating-rules",
+          "sourceFile": "app/guide/logistics/tailgating-rules/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guide/logistics/weather-prep",
+          "sourceFile": "app/guide/logistics/weather-prep/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guide/logistics/winter-survival",
+          "sourceFile": "app/guide/logistics/winter-survival/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guide/parking",
+          "sourceFile": "app/guide/parking/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guide/parking/best-lots",
+          "sourceFile": "app/guide/parking/best-lots/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guide/policies",
+          "sourceFile": "app/guide/policies/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guide/red-rocks-faq",
+          "sourceFile": "app/guide/red-rocks-faq/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guide/red-rocks-intelligence-hub",
+          "sourceFile": "app/guide/red-rocks-intelligence-hub/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guide/safety-and-legitimacy",
+          "sourceFile": "app/guide/safety-and-legitimacy/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guide/safety/standards",
+          "sourceFile": "app/guide/safety/standards/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guide/show-night-strategy",
+          "sourceFile": "app/guide/show-night-strategy/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guide/show-night-strategy/post-show-pickup-plan",
+          "sourceFile": "app/guide/show-night-strategy/post-show-pickup-plan/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guide/tailgate-faq",
+          "sourceFile": "app/guide/tailgate-faq/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guide/tailgating",
+          "sourceFile": "app/guide/tailgating/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guide/transportation",
+          "sourceFile": "app/guide/transportation/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guide/transportation/shuttle-vs-uber",
+          "sourceFile": "app/guide/transportation/shuttle-vs-uber/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guide/updates",
+          "sourceFile": "app/guide/updates/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/handoff/dcc",
+          "sourceFile": "app/handoff/dcc/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/handoff/return",
+          "sourceFile": "app/handoff/return/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/llms.txt",
+          "sourceFile": "app/llms.txt/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/mishawaka",
+          "sourceFile": "app/mishawaka/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/month/red-rocks",
+          "sourceFile": "app/month/red-rocks/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/other-venues",
+          "sourceFile": "app/other-venues/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/party-bus",
+          "sourceFile": "app/party-bus/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/pay-balance/[token]",
+          "sourceFile": "app/pay-balance/[token]/page.tsx",
+          "kind": "order_lookup"
+        },
+        {
+          "routePattern": "/phish-folsom",
+          "sourceFile": "app/phish-folsom/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/privacy",
+          "sourceFile": "app/privacy/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/private-suburban",
+          "sourceFile": "app/private-suburban/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/private-van",
+          "sourceFile": "app/private-van/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/quick-red-rocks",
+          "sourceFile": "app/quick-red-rocks/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks",
+          "sourceFile": "app/red-rocks/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks-live",
+          "sourceFile": "app/red-rocks-live/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks/[slug]",
+          "sourceFile": "app/red-rocks/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks/best-time-to-arrive",
+          "sourceFile": "app/red-rocks/best-time-to-arrive/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks/camping",
+          "sourceFile": "app/red-rocks/camping/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks/camping-nearby",
+          "sourceFile": "app/red-rocks/camping-nearby/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks/car-service",
+          "sourceFile": "app/red-rocks/car-service/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks/concert-guide",
+          "sourceFile": "app/red-rocks/concert-guide/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks/concerts",
+          "sourceFile": "app/red-rocks/concerts/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks/concerts/august",
+          "sourceFile": "app/red-rocks/concerts/august/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks/concerts/july",
+          "sourceFile": "app/red-rocks/concerts/july/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks/concerts/june",
+          "sourceFile": "app/red-rocks/concerts/june/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks/faq",
+          "sourceFile": "app/red-rocks/faq/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks/geology",
+          "sourceFile": "app/red-rocks/geology/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks/group-transportation",
+          "sourceFile": "app/red-rocks/group-transportation/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks/hiking-trails",
+          "sourceFile": "app/red-rocks/hiking-trails/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks/history",
+          "sourceFile": "app/red-rocks/history/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks/how-to-get-to-red-rocks",
+          "sourceFile": "app/red-rocks/how-to-get-to-red-rocks/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks/map",
+          "sourceFile": "app/red-rocks/map/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks/map/[slug]",
+          "sourceFile": "app/red-rocks/map/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks/parking",
+          "sourceFile": "app/red-rocks/parking/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks/red-rocks-shuttle",
+          "sourceFile": "app/red-rocks/red-rocks-shuttle/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks/rideshare-vs-shuttle",
+          "sourceFile": "app/red-rocks/rideshare-vs-shuttle/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks/shuttle",
+          "sourceFile": "app/red-rocks/shuttle/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks/trading-post-trail",
+          "sourceFile": "app/red-rocks/trading-post-trail/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks/transportation",
+          "sourceFile": "app/red-rocks/transportation/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks/transportation/is-shuttle-worth-it",
+          "sourceFile": "app/red-rocks/transportation/is-shuttle-worth-it/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks/transportation/parking-reality",
+          "sourceFile": "app/red-rocks/transportation/parking-reality/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks/transportation/post-show-pickup",
+          "sourceFile": "app/red-rocks/transportation/post-show-pickup/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks/transportation/private-vs-shared",
+          "sourceFile": "app/red-rocks/transportation/private-vs-shared/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks/transportation/shuttle-vs-driving",
+          "sourceFile": "app/red-rocks/transportation/shuttle-vs-driving/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks/transportation/shuttle-vs-uber",
+          "sourceFile": "app/red-rocks/transportation/shuttle-vs-uber/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks/transportation/shuttle-vs-uber-2026",
+          "sourceFile": "app/red-rocks/transportation/shuttle-vs-uber-2026/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks/visiting-guide",
+          "sourceFile": "app/red-rocks/visiting-guide/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks/weather",
+          "sourceFile": "app/red-rocks/weather/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks/what-to-wear",
+          "sourceFile": "app/red-rocks/what-to-wear/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/red-rocks/wildlife",
+          "sourceFile": "app/red-rocks/wildlife/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/robots.txt",
+          "sourceFile": "app/robots.txt/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/scene",
+          "sourceFile": "app/scene/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/scene/[scene]",
+          "sourceFile": "app/scene/[scene]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/scene/bluegrass/festivals",
+          "sourceFile": "app/scene/bluegrass/festivals/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/scene/jam/camping",
+          "sourceFile": "app/scene/jam/camping/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/scenes",
+          "sourceFile": "app/scenes/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/scenes/[genre]",
+          "sourceFile": "app/scenes/[genre]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/schedule",
+          "sourceFile": "app/schedule/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/search",
+          "sourceFile": "app/search/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/shows/[id]",
+          "sourceFile": "app/shows/[id]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/shuttles",
+          "sourceFile": "app/shuttles/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/shuttles/all-venue",
+          "sourceFile": "app/shuttles/all-venue/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/sitemap.xml",
+          "sourceFile": "app/sitemap.xml/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/social",
+          "sourceFile": "app/social/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/suv",
+          "sourceFile": "app/suv/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/terms",
+          "sourceFile": "app/terms/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues",
+          "sourceFile": "app/venues/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/[slug]",
+          "sourceFile": "app/venues/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/[slug]/best-time-to-arrive",
+          "sourceFile": "app/venues/[slug]/best-time-to-arrive/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/[slug]/transportation",
+          "sourceFile": "app/venues/[slug]/transportation/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/[slug]/what-to-wear",
+          "sourceFile": "app/venues/[slug]/what-to-wear/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/1stbank-center/best-time-to-arrive",
+          "sourceFile": "app/venues/1stbank-center/best-time-to-arrive/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/1stbank-center/concerts",
+          "sourceFile": "app/venues/1stbank-center/concerts/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/1stbank-center/concerts/[month]",
+          "sourceFile": "app/venues/1stbank-center/concerts/[month]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/1stbank-center/map",
+          "sourceFile": "app/venues/1stbank-center/map/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/1stbank-center/parking",
+          "sourceFile": "app/venues/1stbank-center/parking/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/1stbank-center/transportation",
+          "sourceFile": "app/venues/1stbank-center/transportation/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/ball-arena/best-time-to-arrive",
+          "sourceFile": "app/venues/ball-arena/best-time-to-arrive/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/ball-arena/concerts",
+          "sourceFile": "app/venues/ball-arena/concerts/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/ball-arena/concerts/[month]",
+          "sourceFile": "app/venues/ball-arena/concerts/[month]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/ball-arena/map",
+          "sourceFile": "app/venues/ball-arena/map/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/ball-arena/parking",
+          "sourceFile": "app/venues/ball-arena/parking/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/ball-arena/transportation",
+          "sourceFile": "app/venues/ball-arena/transportation/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/bluebird-theater/best-time-to-arrive",
+          "sourceFile": "app/venues/bluebird-theater/best-time-to-arrive/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/bluebird-theater/concerts",
+          "sourceFile": "app/venues/bluebird-theater/concerts/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/bluebird-theater/concerts/[month]",
+          "sourceFile": "app/venues/bluebird-theater/concerts/[month]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/bluebird-theater/map",
+          "sourceFile": "app/venues/bluebird-theater/map/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/bluebird-theater/parking",
+          "sourceFile": "app/venues/bluebird-theater/parking/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/bluebird-theater/transportation",
+          "sourceFile": "app/venues/bluebird-theater/transportation/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/fiddlers-green-amphitheatre/best-time-to-arrive",
+          "sourceFile": "app/venues/fiddlers-green-amphitheatre/best-time-to-arrive/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/fiddlers-green-amphitheatre/concerts",
+          "sourceFile": "app/venues/fiddlers-green-amphitheatre/concerts/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/fiddlers-green-amphitheatre/concerts/[month]",
+          "sourceFile": "app/venues/fiddlers-green-amphitheatre/concerts/[month]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/fiddlers-green-amphitheatre/map",
+          "sourceFile": "app/venues/fiddlers-green-amphitheatre/map/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/fiddlers-green-amphitheatre/parking",
+          "sourceFile": "app/venues/fiddlers-green-amphitheatre/parking/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/fiddlers-green-amphitheatre/transportation",
+          "sourceFile": "app/venues/fiddlers-green-amphitheatre/transportation/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/fillmore-auditorium/best-time-to-arrive",
+          "sourceFile": "app/venues/fillmore-auditorium/best-time-to-arrive/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/fillmore-auditorium/map",
+          "sourceFile": "app/venues/fillmore-auditorium/map/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/fillmore-auditorium/parking",
+          "sourceFile": "app/venues/fillmore-auditorium/parking/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/fillmore-auditorium/transportation",
+          "sourceFile": "app/venues/fillmore-auditorium/transportation/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/gothic-theatre/best-time-to-arrive",
+          "sourceFile": "app/venues/gothic-theatre/best-time-to-arrive/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/gothic-theatre/concerts",
+          "sourceFile": "app/venues/gothic-theatre/concerts/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/gothic-theatre/map",
+          "sourceFile": "app/venues/gothic-theatre/map/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/gothic-theatre/parking",
+          "sourceFile": "app/venues/gothic-theatre/parking/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/gothic-theatre/transportation",
+          "sourceFile": "app/venues/gothic-theatre/transportation/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/levitt-pavilion-denver/best-time-to-arrive",
+          "sourceFile": "app/venues/levitt-pavilion-denver/best-time-to-arrive/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/levitt-pavilion-denver/concerts",
+          "sourceFile": "app/venues/levitt-pavilion-denver/concerts/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/levitt-pavilion-denver/concerts/[month]",
+          "sourceFile": "app/venues/levitt-pavilion-denver/concerts/[month]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/levitt-pavilion-denver/map",
+          "sourceFile": "app/venues/levitt-pavilion-denver/map/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/levitt-pavilion-denver/parking",
+          "sourceFile": "app/venues/levitt-pavilion-denver/parking/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/levitt-pavilion-denver/transportation",
+          "sourceFile": "app/venues/levitt-pavilion-denver/transportation/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/mishawaka-amphitheatre",
+          "sourceFile": "app/venues/mishawaka-amphitheatre/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/mission-ballroom/best-time-to-arrive",
+          "sourceFile": "app/venues/mission-ballroom/best-time-to-arrive/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/mission-ballroom/concerts",
+          "sourceFile": "app/venues/mission-ballroom/concerts/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/mission-ballroom/concerts/[month]",
+          "sourceFile": "app/venues/mission-ballroom/concerts/[month]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/mission-ballroom/map",
+          "sourceFile": "app/venues/mission-ballroom/map/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/mission-ballroom/parking",
+          "sourceFile": "app/venues/mission-ballroom/parking/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/mission-ballroom/transportation",
+          "sourceFile": "app/venues/mission-ballroom/transportation/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/ogden-theatre/best-time-to-arrive",
+          "sourceFile": "app/venues/ogden-theatre/best-time-to-arrive/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/ogden-theatre/concerts",
+          "sourceFile": "app/venues/ogden-theatre/concerts/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/ogden-theatre/concerts/[month]",
+          "sourceFile": "app/venues/ogden-theatre/concerts/[month]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/ogden-theatre/map",
+          "sourceFile": "app/venues/ogden-theatre/map/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/ogden-theatre/parking",
+          "sourceFile": "app/venues/ogden-theatre/parking/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/ogden-theatre/transportation",
+          "sourceFile": "app/venues/ogden-theatre/transportation/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/paramount-theatre/best-time-to-arrive",
+          "sourceFile": "app/venues/paramount-theatre/best-time-to-arrive/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/paramount-theatre/concerts",
+          "sourceFile": "app/venues/paramount-theatre/concerts/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/paramount-theatre/concerts/[month]",
+          "sourceFile": "app/venues/paramount-theatre/concerts/[month]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/paramount-theatre/map",
+          "sourceFile": "app/venues/paramount-theatre/map/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/paramount-theatre/parking",
+          "sourceFile": "app/venues/paramount-theatre/parking/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/paramount-theatre/transportation",
+          "sourceFile": "app/venues/paramount-theatre/transportation/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/red-rocks-amphitheatre",
+          "sourceFile": "app/venues/red-rocks-amphitheatre/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/summit-music-hall/best-time-to-arrive",
+          "sourceFile": "app/venues/summit-music-hall/best-time-to-arrive/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/summit-music-hall/concerts",
+          "sourceFile": "app/venues/summit-music-hall/concerts/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/summit-music-hall/concerts/[month]",
+          "sourceFile": "app/venues/summit-music-hall/concerts/[month]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/summit-music-hall/map",
+          "sourceFile": "app/venues/summit-music-hall/map/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/summit-music-hall/parking",
+          "sourceFile": "app/venues/summit-music-hall/parking/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/venues/summit-music-hall/transportation",
+          "sourceFile": "app/venues/summit-music-hall/transportation/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/week",
+          "sourceFile": "app/week/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/week/red-rocks",
+          "sourceFile": "app/week/red-rocks/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/week/search",
+          "sourceFile": "app/week/search/page.tsx",
+          "kind": "public_page"
+        }
+      ]
+    },
+    {
+      "propertyId": "welcometoalaskatours",
+      "canonicalDomain": "welcometoalaskatours.com",
+      "ownership": "independent_partner",
+      "isOwnedByDcc": false,
+      "consumerTrafficLinkingAllowed": false,
+      "consolidationRedirectsForbiddenWithoutAgreement": true,
+      "repoLabel": "wta-rc-2026-11-10",
+      "gitRef": "origin/main",
+      "gitCommit": "a5d703b8e8fa99e0e6c88cf2521c2dc869518eff",
+      "counts": {
+        "total": 63,
+        "public_page": 40,
+        "machine_contract": 4,
+        "booking_or_handoff_action": 17,
+        "order_lookup": 2
+      },
+      "routes": [
+        {
+          "routePattern": "/",
+          "sourceFile": "app/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/[port]/[topic]",
+          "sourceFile": "app/[port]/[topic]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/about",
+          "sourceFile": "app/about/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/agent.json",
+          "sourceFile": "app/agent.json/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/api/affiliate/dcc-referral",
+          "sourceFile": "app/api/affiliate/dcc-referral/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/fareharbor/availabilities",
+          "sourceFile": "app/api/fareharbor/availabilities/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/fareharbor/availability",
+          "sourceFile": "app/api/fareharbor/availability/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/fareharbor/book",
+          "sourceFile": "app/api/fareharbor/book/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/fareharbor/booking",
+          "sourceFile": "app/api/fareharbor/booking/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/fareharbor/calendar",
+          "sourceFile": "app/api/fareharbor/calendar/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/fareharbor/cancel",
+          "sourceFile": "app/api/fareharbor/cancel/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/fareharbor/companies",
+          "sourceFile": "app/api/fareharbor/companies/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/fareharbor/items",
+          "sourceFile": "app/api/fareharbor/items/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/fareharbor/next-availability",
+          "sourceFile": "app/api/fareharbor/next-availability/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/fareharbor/price",
+          "sourceFile": "app/api/fareharbor/price/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/fareharbor/rebook",
+          "sourceFile": "app/api/fareharbor/rebook/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/receipt",
+          "sourceFile": "app/api/receipt/route.ts",
+          "kind": "order_lookup"
+        },
+        {
+          "routePattern": "/api/stripe/create-intent",
+          "sourceFile": "app/api/stripe/create-intent/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/api/stripe/finalize",
+          "sourceFile": "app/api/stripe/finalize/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/authors/erich",
+          "sourceFile": "app/authors/erich/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/categories/[slug]",
+          "sourceFile": "app/categories/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/checkout",
+          "sourceFile": "app/checkout/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/checkout/success",
+          "sourceFile": "app/checkout/success/page.tsx",
+          "kind": "order_lookup"
+        },
+        {
+          "routePattern": "/contact",
+          "sourceFile": "app/contact/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/contact-us",
+          "sourceFile": "app/contact-us/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/date-search",
+          "sourceFile": "app/date-search/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/editorial-policy",
+          "sourceFile": "app/editorial-policy/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guides",
+          "sourceFile": "app/guides/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guides/[slug]",
+          "sourceFile": "app/guides/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guides/alaska-nature-by-cruise-port",
+          "sourceFile": "app/guides/alaska-nature-by-cruise-port/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guides/best-alaska-cruise-ports-for-bird-watching",
+          "sourceFile": "app/guides/best-alaska-cruise-ports-for-bird-watching/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guides/best-shore-excursions-in-juneau",
+          "sourceFile": "app/guides/best-shore-excursions-in-juneau/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guides/best-things-to-do-in-skagway-4-6-hours",
+          "sourceFile": "app/guides/best-things-to-do-in-skagway-4-6-hours/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guides/cruise-ship-vs-independent-alaska-excursions",
+          "sourceFile": "app/guides/cruise-ship-vs-independent-alaska-excursions/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guides/easy-alaska-shore-excursions",
+          "sourceFile": "app/guides/easy-alaska-shore-excursions/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guides/first-time-in-ketchikan-shore-excursions",
+          "sourceFile": "app/guides/first-time-in-ketchikan-shore-excursions/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guides/how-much-do-alaska-shore-excursions-cost",
+          "sourceFile": "app/guides/how-much-do-alaska-shore-excursions-cost/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guides/how-to-get-to-mendenhall-glacier-from-cruise-port",
+          "sourceFile": "app/guides/how-to-get-to-mendenhall-glacier-from-cruise-port/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guides/juneau-private-whale-watching-charters",
+          "sourceFile": "app/guides/juneau-private-whale-watching-charters/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guides/juneau-whale-watching-vs-mendenhall",
+          "sourceFile": "app/guides/juneau-whale-watching-vs-mendenhall/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guides/private-premium-alaska-shore-excursions",
+          "sourceFile": "app/guides/private-premium-alaska-shore-excursions/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/guides/what-happens-if-my-alaska-tour-runs-late",
+          "sourceFile": "app/guides/what-happens-if-my-alaska-tour-runs-late/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/handoff/dcc",
+          "sourceFile": "app/handoff/dcc/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/handoff/partner/partyatredrocks",
+          "sourceFile": "app/handoff/partner/partyatredrocks/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/handoff/return",
+          "sourceFile": "app/handoff/return/route.ts",
+          "kind": "booking_or_handoff_action"
+        },
+        {
+          "routePattern": "/home",
+          "sourceFile": "app/home/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/hud-demo",
+          "sourceFile": "app/hud-demo/page.jsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/llms.txt",
+          "sourceFile": "app/llms.txt/route.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/plan",
+          "sourceFile": "app/plan/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/ports",
+          "sourceFile": "app/ports/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/ports/[slug]",
+          "sourceFile": "app/ports/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/privacy",
+          "sourceFile": "app/privacy/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/robots.txt",
+          "sourceFile": "app/robots.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/ships",
+          "sourceFile": "app/ships/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/ships/[slug]",
+          "sourceFile": "app/ships/[slug]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/sitemap.xml",
+          "sourceFile": "app/sitemap.ts",
+          "kind": "machine_contract"
+        },
+        {
+          "routePattern": "/terms",
+          "sourceFile": "app/terms/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/tours",
+          "sourceFile": "app/tours/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/tours/[company]/[item]",
+          "sourceFile": "app/tours/[company]/[item]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/tours/[company]/[item]/calendar",
+          "sourceFile": "app/tours/[company]/[item]/calendar/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/tours/[company]/[item]/calendar/[day]",
+          "sourceFile": "app/tours/[company]/[item]/calendar/[day]/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/widget",
+          "sourceFile": "app/widget/page.tsx",
+          "kind": "public_page"
+        },
+        {
+          "routePattern": "/widget/[company]/[item]",
+          "sourceFile": "app/widget/[company]/[item]/page.tsx",
+          "kind": "public_page"
+        }
+      ]
+    }
+  ]
+}
