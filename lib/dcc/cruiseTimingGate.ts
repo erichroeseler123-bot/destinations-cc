@@ -29,7 +29,7 @@ export interface ClaaJuneauScheduleEntry {
   confirmedAllAboardLocal: string | null; // HH:MM when ship cutoff is confirmed, null when unknown
   outboundBerthToCheckInMinutes: number | null;
   returnToGangwayMinutes: number | null;
-  requiredDccBufferMinutes: 60 | 90;
+  requiredDccBufferMinutes: 120 | 90 | 60;
 }
 
 /**
@@ -48,7 +48,7 @@ export const CLAA_JUNEAU_PORT_SCHEDULE: ClaaJuneauScheduleEntry[] = [
     confirmedAllAboardLocal: "13:00",
     outboundBerthToCheckInMinutes: 35,
     returnToGangwayMinutes: 25,
-    requiredDccBufferMinutes: 90,
+    requiredDccBufferMinutes: 120,
   },
   {
     scheduleId: "CLAA-JNU-2026-04-24-EURODAM",
@@ -62,7 +62,7 @@ export const CLAA_JUNEAU_PORT_SCHEDULE: ClaaJuneauScheduleEntry[] = [
     confirmedAllAboardLocal: "21:30",
     outboundBerthToCheckInMinutes: 20,
     returnToGangwayMinutes: 15,
-    requiredDccBufferMinutes: 60,
+    requiredDccBufferMinutes: 120,
   },
   {
     scheduleId: "CLAA-JNU-2026-04-24-ROYAL-PRINCESS",
@@ -76,7 +76,7 @@ export const CLAA_JUNEAU_PORT_SCHEDULE: ClaaJuneauScheduleEntry[] = [
     confirmedAllAboardLocal: "20:30",
     outboundBerthToCheckInMinutes: 20,
     returnToGangwayMinutes: 15,
-    requiredDccBufferMinutes: 60,
+    requiredDccBufferMinutes: 120,
   },
   {
     scheduleId: "CLAA-JNU-2026-04-24-OVATION",
@@ -90,7 +90,7 @@ export const CLAA_JUNEAU_PORT_SCHEDULE: ClaaJuneauScheduleEntry[] = [
     confirmedAllAboardLocal: null, // Ship all-aboard cutoff not yet confirmed -> triggers "Confirm ship timing"
     outboundBerthToCheckInMinutes: 25,
     returnToGangwayMinutes: 15,
-    requiredDccBufferMinutes: 60,
+    requiredDccBufferMinutes: 120,
   },
   {
     scheduleId: "CLAA-JNU-2026-05-04-KONINGSDAM",
@@ -104,7 +104,7 @@ export const CLAA_JUNEAU_PORT_SCHEDULE: ClaaJuneauScheduleEntry[] = [
     confirmedAllAboardLocal: "21:00",
     outboundBerthToCheckInMinutes: 50,
     returnToGangwayMinutes: 40,
-    requiredDccBufferMinutes: 90,
+    requiredDccBufferMinutes: 120,
   },
 ];
 
@@ -117,20 +117,29 @@ export interface CruiseTimingEvaluationInput {
   tourDepartureLocal?: string | null; // HH:MM
   tourDurationMinutes: number;
   returnToGangwayMinutes?: number | null;
-  requiredDccBufferMinutes?: 60 | 90 | number;
+  requiredDccBufferMinutes?: 120 | 90 | 60 | number;
   providerSeatCount?: number | null;
   providerConfirmedSeats?: boolean;
 }
 
 export interface CruiseTimingEvaluationResult {
-  status: "FITS_CRUISE_WINDOW" | "OUTSIDE_CRUISE_WINDOW" | "CONFIRM_SHIP_TIMING";
-  statusBadgeLabel: "Fits cruise window" | "Outside safe buffer" | "Confirm ship timing";
+  status:
+    | "FITS_CRUISE_WINDOW"
+    | "REDUCED_BUFFER_NOT_RECOMMENDED"
+    | "OUTSIDE_CRUISE_WINDOW"
+    | "CONFIRM_SHIP_TIMING";
+  statusBadgeLabel:
+    | "Fits cruise window"
+    | "Reduced buffer — not recommended"
+    | "Outside safe buffer"
+    | "Confirm ship timing";
   dccBufferMinutes: number;
   earliestCheckInLocal: string | null;
   estimatedGangwayReturnLocal: string | null;
   latestSafeGangwayReturnLocal: string | null;
   confirmedAllAboardLocal: string | null;
   marginBeforeAllAboardMinutes: number | null;
+  exactRemainingBufferHms: string | null;
   reason: string;
   seatCountDisplay: string | null; // Null unless provider explicitly confirms seat count
 }
@@ -153,22 +162,24 @@ function formatHhMm(totalMinutes: number): string {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
+function formatMinutesAsHms(totalMinutes: number): string {
+  const safeSec = Math.max(0, Math.round(totalMinutes * 60));
+  const h = Math.floor(safeSec / 3600);
+  const m = Math.floor((safeSec % 3600) / 60);
+  const s = safeSec % 60;
+  return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
+
 /**
  * Evaluates whether a passenger can transit from berth -> tour check-in,
  * complete the tour, and return to the gangway before confirmed all-aboard
- * with the applicable 60–90 minute DCC buffer.
+ * with DCC's 2-hour (1:59:59+ / 120-minute) recommended return buffer.
  */
 export function evaluateCruiseTimingWindow(
   input: CruiseTimingEvaluationInput,
 ): CruiseTimingEvaluationResult {
   const berth = (input.berthCode || "UNKNOWN").toUpperCase();
-  const isTenderOrShuttleOrMultiLeg =
-    berth === "TENDER" ||
-    berth === "AJ" ||
-    berth === "ACT" ||
-    input.tourDurationMinutes >= 300;
-  const dccBufferMinutes =
-    input.requiredDccBufferMinutes ?? (isTenderOrShuttleOrMultiLeg ? 90 : 60);
+  const dccBufferMinutes = input.requiredDccBufferMinutes ?? 120;
 
   // Seat count rule: show seat counts ONLY when the provider confirms them
   const seatCountDisplay =
@@ -233,6 +244,7 @@ export function evaluateCruiseTimingWindow(
           : null,
       confirmedAllAboardLocal: input.confirmedAllAboardLocal || null,
       marginBeforeAllAboardMinutes: null,
+      exactRemainingBufferHms: null,
       reason:
         confirmedAllAboardMins === null
           ? "Confirm ship timing — ship's confirmed all-aboard cutoff is required before locking departure."
@@ -261,6 +273,7 @@ export function evaluateCruiseTimingWindow(
       marginBeforeAllAboardMinutes:
         confirmedAllAboardMins -
         (effectiveTourStartMins + input.tourDurationMinutes + returnTransfer),
+      exactRemainingBufferHms: "0:00:00",
       reason: `Tour check-in (${formatHhMm(effectiveTourStartMins)}) is earlier than earliest berth-to-check-in arrival (${formatHhMm(earliestCheckInMins)}).`,
       seatCountDisplay,
     };
@@ -272,7 +285,7 @@ export function evaluateCruiseTimingWindow(
   const marginBeforeAllAboardMinutes =
     confirmedAllAboardMins - estimatedGangwayReturnMins;
 
-  if (estimatedGangwayReturnMins > latestSafeGangwayReturnMins) {
+  if (marginBeforeAllAboardMinutes <= 0) {
     return {
       status: "OUTSIDE_CRUISE_WINDOW",
       statusBadgeLabel: "Outside safe buffer",
@@ -282,7 +295,26 @@ export function evaluateCruiseTimingWindow(
       latestSafeGangwayReturnLocal: formatHhMm(latestSafeGangwayReturnMins),
       confirmedAllAboardLocal: formatHhMm(confirmedAllAboardMins),
       marginBeforeAllAboardMinutes,
-      reason: `Estimated gangway return (${formatHhMm(estimatedGangwayReturnMins)}) leaves ${marginBeforeAllAboardMinutes}m before confirmed all-aboard (${formatHhMm(confirmedAllAboardMins)}), short of the required ${dccBufferMinutes}-minute DCC buffer.`,
+      exactRemainingBufferHms: "0:00:00",
+      reason: `Blocked outside sailing window — estimated gangway return (${formatHhMm(estimatedGangwayReturnMins)}) is at or after confirmed all-aboard (${formatHhMm(confirmedAllAboardMins)}).`,
+      seatCountDisplay,
+    };
+  }
+
+  const exactRemainingBufferHms = formatMinutesAsHms(marginBeforeAllAboardMinutes);
+
+  if (estimatedGangwayReturnMins > latestSafeGangwayReturnMins) {
+    return {
+      status: "REDUCED_BUFFER_NOT_RECOMMENDED",
+      statusBadgeLabel: "Reduced buffer — not recommended",
+      dccBufferMinutes,
+      earliestCheckInLocal: formatHhMm(earliestCheckInMins),
+      estimatedGangwayReturnLocal: formatHhMm(estimatedGangwayReturnMins),
+      latestSafeGangwayReturnLocal: formatHhMm(latestSafeGangwayReturnMins),
+      confirmedAllAboardLocal: formatHhMm(confirmedAllAboardMins),
+      marginBeforeAllAboardMinutes,
+      exactRemainingBufferHms,
+      reason: `Reduced buffer (${exactRemainingBufferHms} remaining before ${formatHhMm(confirmedAllAboardMins)} all-aboard) — not recommended under DCC's ${dccBufferMinutes}-minute (1:59:59+) return policy.`,
       seatCountDisplay,
     };
   }
@@ -296,7 +328,8 @@ export function evaluateCruiseTimingWindow(
     latestSafeGangwayReturnLocal: formatHhMm(latestSafeGangwayReturnMins),
     confirmedAllAboardLocal: formatHhMm(confirmedAllAboardMins),
     marginBeforeAllAboardMinutes,
-    reason: `Cleared with ${marginBeforeAllAboardMinutes}m margin before confirmed all-aboard (${formatHhMm(confirmedAllAboardMins)}) — exceeds ${dccBufferMinutes}-minute DCC buffer.`,
+    exactRemainingBufferHms,
+    reason: `Recommended — cleared with ${exactRemainingBufferHms} (${marginBeforeAllAboardMinutes}m) margin before confirmed all-aboard (${formatHhMm(confirmedAllAboardMins)}), meeting DCC's ${dccBufferMinutes}-minute (1:59:59+) return policy.`,
     seatCountDisplay,
   };
 }

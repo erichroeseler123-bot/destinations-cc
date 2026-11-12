@@ -45,23 +45,33 @@ export function JuneauNormalizedSupplierFeedSection({
             </h2>
           </div>
           <span className="badge badge-warning">
-            Cruise-Safe Timing Unverified · Partner Fallback Checkout Active
+            Needs Verification · Cruise-Safe Timing Unverified · Partner Fallback Checkout Active
           </span>
         </div>
 
-        <p style={{ color: "var(--muted)", fontSize: "14px", maxWidth: 860, marginBottom: 18 }}>
-          Departures, durations, and published rates below reflect <strong>live operator availability</strong> normalized read-only through Destination Command Center from{" "}
+        <p style={{ color: "var(--muted)", fontSize: "14px", maxWidth: 880, marginBottom: 18 }}>
+          Departures, per-option seat counts, durations, and published rates below reflect{" "}
+          <strong>live operator availability</strong> normalized read-only through Destination Command Center from{" "}
           <strong>{feed.verifiedCompanyName || "Juneau Tours & Whale Watch"}</strong>
-          {feed.checkedAt ? ` (checked ${feed.checkedAt})` : ""}.{" "}
-          <strong>Not verified cruise-safe timing:</strong> operator booking cutoffs (for example, 2h prior to tour) apply only to ticket purchase and are never treated as DCC&apos;s 1:59:59+ cruise-return buffer. Exact meeting points, berth-transfer durations, operator return times, and dock pickup rules remain unconfirmed. Direct operator checkout remains disabled; matched listings route to our approved partner offers.
+          {feed.verifiedRezgoDomain ? ` (${feed.verifiedRezgoDomain})` : ""}
+          {feed.dateChecked ? ` for service date ${feed.dateChecked}` : ""}
+          {feed.checkedAt ? ` · Last checked ${feed.checkedAt}` : ""}.{" "}
+          <strong>Needs verification (not verified cruise-safe timing):</strong> operator booking cutoffs (for example, 2h prior to tour) apply only to ticket purchase and are never treated as our{" "}
+          <strong>1:59:59+ (2-hour) minimum recommended cruise-return buffer</strong>. Exact meeting points, berth-transfer durations, operator return times, and dock pickup rules remain unconfirmed. Direct Rezgo checkout remains disabled; matched listings route to our approved partner offers.
         </p>
 
-        <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}>
+        <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 16 }}>
           {feed.tours.map((tour) => {
             const reducedBufferOptions = (tour.optionWindowAssessments || []).filter(
               (a) => a.status === "reduced_buffer_not_recommended" && a.upperBoundRemainingBufferHmsLabel,
             );
             const blockedDepartures = tour.blockedOutsideWindowDepartures || [];
+            const depOptions = tour.departureOptions || [];
+            const effectiveServiceDate = tour.serviceDate ?? tour.dateChecked ?? feed.dateChecked;
+            const effectiveCheckedAt = tour.checkedAt ?? feed.checkedAt;
+            const allOptionsBlocked =
+              depOptions.length > 0 &&
+              depOptions.every((opt) => opt.windowAssessment?.blockedForSailingWindow === true);
 
             return (
               <article
@@ -78,11 +88,12 @@ export function JuneauNormalizedSupplierFeedSection({
                 <div>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 8 }}>
                     <span className="badge badge-warning">
-                      {tour.durationLabel || (tour.durationMinutes ? `${tour.durationMinutes} min` : "Verify duration")} · Timing unverified
+                      {tour.durationLabel || (tour.durationMinutes ? `${tour.durationMinutes} min` : "Verify duration")} · Needs verification
                     </span>
                     {tour.adultPriceUsd !== null && (
                       <strong style={{ color: "var(--forest)", fontSize: "15px" }}>
                         From ${tour.adultPriceUsd.toFixed(0)} {tour.currency}
+                        {tour.childPriceUsd !== null ? ` · Child $${tour.childPriceUsd.toFixed(0)}` : ""}
                       </strong>
                     )}
                   </div>
@@ -95,14 +106,24 @@ export function JuneauNormalizedSupplierFeedSection({
                   )}
 
                   <div className="chips" style={{ marginBottom: 10 }}>
+                    {tour.rezgoCom && (
+                      <span className="chip">
+                        COM {tour.rezgoCom}
+                      </span>
+                    )}
+                    {effectiveServiceDate && (
+                      <span className="chip">
+                        Service date: {effectiveServiceDate}
+                      </span>
+                    )}
                     {tour.departureTimes.length > 0 && (
                       <span className="chip">
                         Departures: {tour.departureTimes.slice(0, 4).join(", ")}
                       </span>
                     )}
-                    {tour.availableSpots !== null && tour.dateChecked && (
+                    {tour.availableSpots !== null && effectiveServiceDate && (
                       <span className="chip">
-                        {tour.availableSpots} spots ({tour.dateChecked})
+                        {tour.availableSpots} spots ({effectiveServiceDate})
                       </span>
                     )}
                     {typeof tour.supplierBookingCutoffHours === "number" && (
@@ -116,6 +137,65 @@ export function JuneauNormalizedSupplierFeedSection({
                       </span>
                     )}
                   </div>
+
+                  {depOptions.length > 0 && (
+                    <div
+                      style={{
+                        borderTop: "1px solid var(--line)",
+                        paddingTop: 8,
+                        marginBottom: 10,
+                        fontSize: "12px",
+                      }}
+                    >
+                      <strong style={{ display: "block", marginBottom: 4, color: "var(--deep)" }}>
+                        Per-Departure Options (Live Read-Only Feed):
+                      </strong>
+                      <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 4 }}>
+                        {depOptions.map((opt) => {
+                          const isBlocked = Boolean(opt.windowAssessment?.blockedForSailingWindow);
+                          const isReduced =
+                            opt.windowAssessment?.status === "reduced_buffer_not_recommended";
+                          return (
+                            <li
+                              key={opt.uid}
+                              style={{
+                                display: "flex",
+                                flexWrap: "wrap",
+                                justifyContent: "space-between",
+                                gap: 6,
+                                padding: "4px 6px",
+                                borderRadius: 6,
+                                background: isBlocked ? "#fef2f2" : "#ffffff",
+                                border: "1px solid var(--line)",
+                              }}
+                            >
+                              <span>
+                                <strong>{opt.departureTime || opt.optionName || "Departure"}</strong>{" "}
+                                <span style={{ color: "var(--muted)" }}>(UID {opt.uid})</span>
+                                {opt.availableSpots !== null ? ` · ${opt.availableSpots} seats` : ""}
+                              </span>
+                              <span
+                                style={{
+                                  fontWeight: 600,
+                                  color: isBlocked
+                                    ? "#9e2323"
+                                    : isReduced
+                                      ? "#875c00"
+                                      : "var(--muted)",
+                                }}
+                              >
+                                {isBlocked
+                                  ? "Outside sailing window — blocked"
+                                  : isReduced && opt.windowAssessment?.upperBoundRemainingBufferHmsLabel
+                                    ? `Reduced buffer (${opt.windowAssessment.upperBoundRemainingBufferHmsLabel} remaining) — not recommended`
+                                    : "Needs verification"}
+                              </span>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  )}
 
                   {reducedBufferOptions.length > 0 && (
                     <p style={{ fontSize: "12px", color: "#875c00", margin: "0 0 6px" }}>
@@ -133,28 +213,45 @@ export function JuneauNormalizedSupplierFeedSection({
                       Outside ship window: {blockedDepartures.join(", ")}
                     </p>
                   )}
+                  {effectiveCheckedAt && (
+                    <p style={{ fontSize: "11px", color: "var(--muted)", margin: "4px 0 6px" }}>
+                      Last checked: {effectiveCheckedAt}
+                    </p>
+                  )}
                 </div>
 
-                {tour.trackedFallbackHref ? (
-                  <a
-                    href={tour.trackedFallbackHref}
-                    target="_blank"
-                    rel="sponsored noopener noreferrer"
-                    style={{
-                      marginTop: 8,
-                      fontSize: "13px",
-                      fontWeight: 700,
-                      color: "var(--forest)",
-                      textDecoration: "underline",
-                    }}
-                  >
-                    Check approved partner listing (#{tour.matchedViatorProductCode}) →
-                  </a>
-                ) : (
-                  <span style={{ marginTop: 8, fontSize: "12px", color: "var(--muted)" }}>
-                    Live operator availability preview · Direct booking held pending mapping verification
-                  </span>
-                )}
+                <div>
+                  {tour.bookingProviderIdentity?.checkoutDisclosure && (
+                    <p style={{ fontSize: "11px", color: "var(--muted)", margin: "4px 0 6px" }}>
+                      {tour.bookingProviderIdentity.checkoutDisclosure}
+                    </p>
+                  )}
+                  {allOptionsBlocked ? (
+                    <span style={{ display: "inline-block", marginTop: 4, fontSize: "12px", fontWeight: 700, color: "#9e2323" }}>
+                      Blocked — Outside Sailing Window
+                    </span>
+                  ) : tour.trackedFallbackHref ? (
+                    <a
+                      href={tour.trackedFallbackHref}
+                      target="_blank"
+                      rel="sponsored noopener noreferrer"
+                      style={{
+                        display: "inline-block",
+                        marginTop: 4,
+                        fontSize: "13px",
+                        fontWeight: 700,
+                        color: "var(--forest)",
+                        textDecoration: "underline",
+                      }}
+                    >
+                      Check approved partner listing (#{tour.matchedViatorProductCode}) →
+                    </a>
+                  ) : (
+                    <span style={{ display: "inline-block", marginTop: 4, fontSize: "12px", color: "var(--muted)" }}>
+                      Live operator availability preview · Direct booking held pending mapping verification
+                    </span>
+                  )}
+                </div>
               </article>
             );
           })}

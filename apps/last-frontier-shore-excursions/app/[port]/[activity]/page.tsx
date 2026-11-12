@@ -365,11 +365,11 @@ export default async function ActivityPage({
                     color: "var(--deep)",
                   }}
                 >
-                  Confirm ship timing · 60–90m DCC Buffer
+                  Confirm ship timing · 2-Hour (1:59:59+) DCC Return Buffer
                 </span>
               </div>
               <p style={{ margin: "0 0 10px", fontSize: "14px", color: "var(--ink)", lineHeight: 1.6 }}>
-                We check whether passengers can get from their Juneau berth to tour check-in, complete the tour, and return to the gangway before all-aboard with a <strong>60–90 minute DCC buffer</strong> using the published <strong>CLAA Juneau calendar</strong> and the ship&apos;s <strong>confirmed all-aboard time</strong> (showing <strong>Confirm ship timing</strong> when the cutoff or transfer is unknown). Seat counts are displayed only when confirmed by the provider.
+                We check whether passengers can get from their Juneau berth to tour check-in, complete the tour, and return to the gangway before all-aboard with a <strong>2-hour (1:59:59+ / 120-minute) DCC recommended return buffer</strong> using the published <strong>CLAA Juneau calendar</strong> and the ship&apos;s <strong>confirmed all-aboard time</strong> (showing <strong>Confirm ship timing</strong> when the cutoff or transfer is unknown). Seat counts are displayed only when confirmed by the provider.
               </p>
               <p style={{ margin: "0 0 12px", fontSize: "13px", color: "#3d5159", lineHeight: 1.55 }}>
                 <strong>Supplier Reconciliation &amp; Pending Direct Referral Credit:</strong> Viator product <code>#466119P3</code> (<em>Mendenhall Glacier Waterfall and Whale Watching Tour</em>) lists <strong>Dolphin Jet Boat Tours</strong> as the verified supplier, while <strong>Juneau Tours &amp; Whale Watch</strong> operates Viator prefix <code>5857</code> (<code>#5857P22</code>, <code>#5857P23</code>, <code>#5857SHUTTLE</code>). Direct 10% Rezgo / seat-block referral credit for <strong>Juneau Tours &amp; Whale Watch</strong> remains <strong>pending until the operator match is confirmed</strong>. Today, book the approved Viator checkout links above (<code>#331813P1</code> by Alaska Galore Tours and <code>#466119P3</code> by Dolphin Jet Boat Tours) or open the{" "}
@@ -468,8 +468,8 @@ export default async function ActivityPage({
       <section className="section" id="safety" style={{ padding: "36px 0 0" }}>
         <div className="shell">
           <div className="rule">
-            <span className="badge badge-safety">The 45-Minute Safety Standard</span>
-            <h2 style={{ marginTop: 8, fontSize: "26px" }}>The Last Frontier Cruise Safety Standard</h2>
+            <span className="badge badge-safety">2-Hour (1:59:59+) Return Buffer Standard</span>
+            <h2 style={{ marginTop: 8, fontSize: "26px" }}>The Last Frontier Cruise Return Buffer Standard</h2>
             <p style={{ fontWeight: 600, fontSize: "16px", marginBottom: 12 }}>
               {item.cruiseSafetyRule}
             </p>

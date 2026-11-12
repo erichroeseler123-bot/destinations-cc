@@ -862,11 +862,32 @@ test("Rezgo Gate-2 advancement, supplier 2.00h cutoff vs DCC 1:59:59 return buff
       JuneauNormalizedSupplierFeedSection({ feed: lfseSecond }),
     );
     assert.match(html, /Live Operator Availability/);
-    assert.match(html, /Cruise-Safe Timing Unverified/);
+    assert.match(html, /Needs Verification|Cruise-Safe Timing Unverified/i);
     assert.match(html, /Supplier booking cutoff: 2h \(not ship buffer\)/);
-    assert.match(html, /Outside ship window: 14:30/);
+    assert.match(html, /Outside Sailing Window — Blocked|Outside ship window/i);
     assert.doesNotMatch(html, /Verified Operator Schedule/);
     assert.doesNotMatch(html, /badge-safety/);
+
+    // 5. DCC /juneau/whale-watching-tours public surface wires Juneau Tours — Live Operator Availability with approved fallback disclosure
+    assert.equal(whaleTour.departureOptions.length, 2);
+    assert.equal(whaleTour.departureOptions[0].uid, "32331");
+    assert.equal(whaleTour.departureOptions[0].departureTime, "09:30");
+    assert.equal(whaleTour.departureOptions[0].availableSpots, 20);
+    assert.equal(whaleTour.departureOptions[1].uid, "32339");
+    assert.equal(whaleTour.departureOptions[1].windowAssessment?.blockedForSailingWindow, true);
+    assert.match(whaleTour.dccCommerceWrapperHref || "", /\/go\/out\?.*product=5857P23/);
+    assert.match(whaleTour.dccCommerceWrapperHref || "", /P00306962/);
+    assert.equal(whaleTour.bookingProviderIdentity?.liveDirectRezgoCheckoutEnabled, false);
+    assert.equal(whaleTour.bookingProviderIdentity?.fallbackProductCode, "5857P23");
+
+    const dccWhalePageSrc = fs.readFileSync(
+      path.join(process.cwd(), "app/juneau/whale-watching-tours/page.tsx"),
+      "utf8",
+    );
+    assert.match(dccWhalePageSrc, /Juneau Tours — Live Operator Availability/);
+    assert.match(dccWhalePageSrc, /dcc-juneau-tours-live-availability/);
+    assert.match(dccWhalePageSrc, /buildNormalizedJuneauSupplierFeed/);
+    assert.match(dccWhalePageSrc, /Direct Rezgo checkout disabled/i);
   } finally {
     clearRezgoReadOnlyCacheForTesting();
     clearLfseJuneauSupplierFeedCacheForTesting();

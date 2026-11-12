@@ -169,7 +169,7 @@ export const JUNEAU_WHALE_CLAIMS: EvidenceClaim[] = [
     claimId: "clm-juneau-dock-to-auke-bay-transfer-penalty",
     classification: "operator_published_fact",
     statement:
-      "One-way ground transfer to Statter Harbor / Auke Bay is ~25 minutes from downtown berths (CT, FKL, AS), ~30 minutes from Alaska Steamship Dock (ACT), ~35 minutes from AJ Dock (including shuttle staging), and ~45 minutes when tendering ashore from the Franklin Dock anchorage (TENDER_FKL), plus a required 60-minute all-aboard ship buffer.",
+      "One-way ground transfer to Statter Harbor / Auke Bay is ~25 minutes from downtown berths (CT, FKL, AS), ~30 minutes from Alaska Steamship Dock (ACT), ~35 minutes from AJ Dock (including shuttle staging), and ~45 minutes when tendering ashore from the Franklin Dock anchorage (TENDER_FKL), plus DCC's recommended 2-hour (1:59:59+ / 120-minute) all-aboard ship buffer.",
     fieldsSupported: ["questions.arrivalDock", "questions.portCallHours"],
     sourceIds: ["src-allen-marine-juneau-whale"],
     isDecisionChanging: true,
@@ -216,13 +216,13 @@ export const JUNEAU_WHALE_QUESTIONS: QuestionDefinition[] = [
     questionId: "portCallHours",
     label: "Total ship time in port (hours from arrival to all-aboard)",
     helpText:
-      "Auke Bay whale watching requires ~3.7 hours (220m) dock-to-dock plus a 60-minute all-aboard buffer; the Whale + Mendenhall Glacier Combo requires ~5.25 hours (315m) plus buffer.",
+      "Auke Bay whale watching requires ~3.7 hours (220m) dock-to-dock plus DCC's 2-hour (1:59:59+ / 120-minute) recommended all-aboard buffer; the Whale + Mendenhall Glacier Combo requires ~5.25 hours (315m) plus buffer.",
     inputType: "number",
     min: 3,
     max: 14,
     requiredForPersonalizedVerdict: true,
     decisionImpactExplanation:
-      "Eliminates the 315-minute Whale + Mendenhall Combo or 220-minute Direct Auke Bay Whale Watch when your port window minus dock transfer and 60-minute ship buffer is too short.",
+      "Eliminates the 315-minute Whale + Mendenhall Combo or 220-minute Direct Auke Bay Whale Watch when your port window minus dock transfer and 2-hour (120-minute) recommended ship buffer is too short.",
     drivenByClaimIds: [
       "clm-auke-bay-direct-whale-specs",
       "clm-auke-bay-whale-mendenhall-combo-specs",
@@ -831,7 +831,7 @@ export function computeJuneauWhaleTiming(
     transferEachWay * 2 + interActivityTransfer;
   const checkInLeadMinutes = option.durationMinutes.checkInLead;
   const activityMinutes = option.durationMinutes.activity;
-  const returnBufferMinutes = isDowntownWalkable ? 30 : 60;
+  const returnBufferMinutes = isDowntownWalkable ? 60 : 120;
   const requiredTotalMinutes =
     checkInLeadMinutes +
     transferMinutesRoundTrip +
@@ -876,9 +876,9 @@ export const JUNEAU_WHALE_HARD_CONSTRAINTS: HardConstraintRule<JuneauWhaleAnswer
     },
     {
       ruleId: "hc-juneau-whale-port-window-and-dock",
-      label: "Cruise Port Call Window & 60-Minute Ship Buffer",
+      label: "Cruise Port Call Window & 2-Hour (120-Minute) Recommended Ship Buffer",
       description:
-        "Eliminates excursions whose total duration plus berth/tender transfer penalty and 60-minute all-aboard buffer exceeds the port call.",
+        "Eliminates excursions whose total duration plus berth/tender transfer penalty and 120-minute (1:59:59+) recommended all-aboard buffer exceeds the port call.",
       sourceIds: ["src-allen-marine-juneau-whale"],
       evaluate: (option, _input, context) => {
         const timing = context.computeTimingForOption(option);
@@ -1046,14 +1046,14 @@ export const JUNEAU_WHALE_DECISION_ENGINE: DecisionEngineDefinition<JuneauWhaleA
     heroQuestion:
       "Should you book a standalone 3 hr 40 min Auke Bay Whale Watch ($169–$229) or the 5 hr 15 min Whale + Mendenhall Glacier Combo ($219–$289) for your Juneau port call?",
     summaryDescription:
-      "Constraint-first port-day evaluator using verified Juneau berth transfer times (CT/FKL/AS 25m, ACT 30m, AJ 35m, TENDER_FKL 45m), a mandatory 60-minute all-aboard buffer, NOAA 50 CFR § 224.103(b) 100-yard humpback approach regulations, and NOAA Station 9452210 minus-tide Statter Harbor ramp slope advisories.",
+      "Constraint-first port-day evaluator using verified Juneau berth transfer times (CT/FKL/AS 25m, ACT 30m, AJ 35m, TENDER_FKL 45m), DCC's 2-hour (1:59:59+ / 120-minute) recommended all-aboard buffer, NOAA 50 CFR § 224.103(b) 100-yard humpback approach regulations, and NOAA Station 9452210 minus-tide Statter Harbor ramp slope advisories.",
     referenceGuide: {
       importantDecisionFactors: [
         {
           title:
             "220-Minute Standalone Whale Watch ($169–$229) vs. 315-Minute Whale + Mendenhall Combo ($219–$289)",
           detail:
-            "Direct Auke Bay whale watching takes 220 minutes (3 hr 40 min) baseline with 150 minutes on the water. Adding the Mendenhall Glacier Visitor Area extends the excursion to 315 minutes (5 hr 15 min) baseline (~135m on water + ~85m at Mendenhall + 25m inter-site bus transfer). Once you add the 60-minute all-aboard ship buffer and AJ/Tender dock penalties, port calls under 6.5 hours cannot safely run the Combo.",
+            "Direct Auke Bay whale watching takes 220 minutes (3 hr 40 min) baseline with 150 minutes on the water. Adding the Mendenhall Glacier Visitor Area extends the excursion to 315 minutes (5 hr 15 min) baseline (~135m on water + ~85m at Mendenhall + 25m inter-site bus transfer). Once you add DCC's 2-hour (1:59:59+ / 120-minute) recommended all-aboard ship buffer and AJ/Tender dock penalties, port calls under 7.25 hours cannot meet the full 2-hour recommended buffer for the Combo.",
           sourceIds: ["src-allen-marine-juneau-whale"],
         },
         {

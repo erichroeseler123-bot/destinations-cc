@@ -5,11 +5,12 @@ export interface LfseOptionSailingWindowAssessment {
   shipArrivalTime: string | null;
   shipAllAboardTime: string | null;
   allAboardConfirmed: boolean;
-  meetingPointAndReturnConfirmed: false;
+  meetingPointAndReturnConfirmed: boolean;
   estimatedTourEndWithoutTransferTime: string | null;
   upperBoundRemainingSecondsBeforeTransfer: number | null;
   upperBoundRemainingBufferHmsLabel: string | null;
   status:
+    | "recommended"
     | "outside_sailing_window_blocked"
     | "reduced_buffer_not_recommended"
     | "unverified_cruise_timing_pending_transfer_and_pickup";
@@ -17,10 +18,47 @@ export interface LfseOptionSailingWindowAssessment {
   displayLabel: string;
 }
 
+export interface LfseNormalizedJuneauDepartureOption {
+  uid: string;
+  rezgoCom: string | null;
+  optionName: string | null;
+  departureTime: string | null;
+  availableSpots: number | null;
+  availabilitySemantics:
+    | "rezgo_date_search_spots"
+    | "rezgo_catalog_overall"
+    | "unconfirmed_check_provider";
+  adultPriceUsd: number | null;
+  childPriceUsd: number | null;
+  serviceDate: string | null;
+  checkedAt: string;
+  dccCommerceWrapperHref: string | null;
+  trackedFallbackHref?: string | null;
+  windowAssessment: LfseOptionSailingWindowAssessment | null;
+}
+
+export interface LfseJuneauBookingProviderIdentity {
+  operatorId: "juneau-tours-whale-watch";
+  operatorName: string;
+  verifiedRezgoCompanyName: string | null;
+  verifiedRezgoDomain: string | null;
+  rezgoCom: string | null;
+  activeCheckoutProvider: "viator_approved_fallback" | "none_held_pending_mapping";
+  fallbackProductCode: string | null;
+  liveDirectRezgoCheckoutEnabled: false;
+  checkoutDisclosure: string;
+}
+
 export interface LfseNormalizedJuneauSupplierTour {
   normalizedTourId: string;
   rezgoUid: string;
   rezgoCom: string | null;
+  optionUids?: string[];
+  departureOptions?: LfseNormalizedJuneauDepartureOption[];
+  serviceDate?: string | null;
+  checkedAt?: string | null;
+  bookingProviderIdentity?: LfseJuneauBookingProviderIdentity;
+  dccCommerceWrapperHref?: string | null;
   operatorId: "juneau-tours-whale-watch";
   operatorName: string;
   verifiedRezgoCompanyName: string | null;
@@ -375,8 +413,13 @@ export async function loadLfseJuneauNormalizedSupplierFeed(options?: {
         : rawTours;
 
       const mappedTours: LfseNormalizedJuneauSupplierTour[] = filteredTours.map((t) => {
+        const allOptionsBlocked =
+          Array.isArray(t.departureOptions) &&
+          t.departureOptions.length > 0 &&
+          t.departureOptions.every((opt) => opt.windowAssessment?.blockedForSailingWindow === true);
+
         const trackedFallbackHref =
-          t.approvedFallbackViatorUrl && t.matchedViatorProductCode
+          t.approvedFallbackViatorUrl && t.matchedViatorProductCode && !allOptionsBlocked
             ? buildAffiliateUrl(
                 "viator",
                 t.approvedFallbackViatorUrl,
@@ -386,13 +429,40 @@ export async function loadLfseJuneauNormalizedSupplierFeed(options?: {
               )
             : null;
 
+        const mappedDepartureOptions: LfseNormalizedJuneauDepartureOption[] | undefined =
+          Array.isArray(t.departureOptions)
+            ? t.departureOptions.map((opt) => {
+                const optBlocked = Boolean(opt.windowAssessment?.blockedForSailingWindow);
+                const optTrackedHref =
+                  !optBlocked && t.approvedFallbackViatorUrl && t.matchedViatorProductCode
+                    ? buildAffiliateUrl(
+                        "viator",
+                        t.approvedFallbackViatorUrl,
+                        `juneau-normalized-${t.matchedViatorProductCode.toLowerCase()}-uid-${opt.uid.toLowerCase()}`,
+                        `${t.title}${opt.optionName ? ` (${opt.optionName})` : ""}`,
+                        true,
+                      )
+                    : null;
+                return {
+                  ...opt,
+                  dccCommerceWrapperHref: optBlocked ? null : (opt.dccCommerceWrapperHref ?? null),
+                  trackedFallbackHref: optTrackedHref,
+                };
+              })
+            : undefined;
+
         return {
           ...t,
+          optionUids: Array.isArray(t.optionUids) ? [...t.optionUids] : [t.rezgoUid],
+          departureOptions: mappedDepartureOptions,
+          serviceDate: t.serviceDate ?? t.dateChecked ?? upstream.dateChecked ?? null,
+          checkedAt: t.checkedAt ?? upstream.checkedAt ?? null,
+          dccCommerceWrapperHref: allOptionsBlocked ? null : (t.dccCommerceWrapperHref ?? null),
           cruiseTimingVerificationStatus:
             "live_operator_availability_only_unverified_cruise_timing",
           cruiseTimingStatusLabel:
             t.cruiseTimingStatusLabel ||
-            "Live operator availability · Cruise-safe timing unverified",
+            "Needs verification · Live operator availability · Cruise-safe timing unverified",
           trackedFallbackHref,
           liveDirectRezgoCheckoutEnabled: false,
           isolatedSecondaryProperty: true,

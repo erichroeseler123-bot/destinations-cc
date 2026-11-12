@@ -91,7 +91,7 @@ export default function CruiseShoreExcursionsPage() {
               </h2>
             </div>
             <span className="rounded-full border border-emerald-400/35 bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-200">
-              Verified Dock Clearance · 90m Buffer Rule · Cruise Promenade Handoff
+              Verified Dock Clearance · 2-Hour (1:59:59+) Buffer Rule · Cruise Promenade Handoff
             </span>
           </div>
 
@@ -101,7 +101,7 @@ export default function CruiseShoreExcursionsPage() {
                 1. Berth &amp; Tender Friction Changes Your Real Clock (Juneau / Ketchikan)
               </div>
               <p className="mt-2 text-sm leading-relaxed text-zinc-200">
-                In Juneau, downtown walk-off docks (<strong>CT, FKL, AS</strong>) clear in <strong>20–25 min</strong>, whereas <strong>AJ Dock requires a 35-min shuttle transfer</strong> and <strong>anchor/tender calls require ~50 min outbound + ~40 min return queue</strong>. Always deduct dock clearance + a <strong>mandatory 90-minute return-to-ship buffer</strong> before booking independent excursions.
+                In Juneau, downtown walk-off docks (<strong>CT, FKL, AS</strong>) clear in <strong>20–25 min</strong>, whereas <strong>AJ Dock requires a 35-min shuttle transfer</strong> and <strong>anchor/tender calls require ~50 min outbound + ~40 min return queue</strong>. Always deduct dock clearance + DCC&apos;s <strong>mandatory 2-hour (1:59:59+ / 120-minute) recommended return-to-ship buffer</strong> before booking independent excursions.
               </p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-black/35 p-4">

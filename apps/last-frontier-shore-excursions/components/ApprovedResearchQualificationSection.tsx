@@ -140,7 +140,7 @@ export function ApprovedResearchQualificationSection({
               DCC Research Review · Exact-Product Evidence & Port-Day Qualification
             </p>
             <h2 style={{ marginTop: 4, marginBottom: 8 }}>
-              Direct-Operator Verified Research & 45-Minute Return-Buffer Qualification
+              Direct-Operator Verified Research & 2-Hour (1:59:59+) Return-Buffer Qualification
             </h2>
             <p
               style={{
@@ -194,7 +194,7 @@ export function ApprovedResearchQualificationSection({
               marginBottom: 10,
             }}
           >
-            Test Direct-Operator Port Window Against the 45-Minute Return Buffer:
+            Test Direct-Operator Port Window Against the 2-Hour (1:59:59+ / 120-Minute) Return Buffer:
           </strong>
           <div
             style={{
@@ -373,9 +373,9 @@ export function ApprovedResearchQualificationSection({
                   >
                     Port-Day Fit:{" "}
                     {q.overallQualificationStatus === "qualified_for_port_day"
-                      ? "Qualified"
+                      ? "Qualified (Meets 1:59:59+ Buffer)"
                       : q.overallQualificationStatus === "does_not_fit"
-                        ? "Does Not Fit (Violates 45-Min Rule)"
+                        ? "Outside Sailing Window — Blocked"
                         : "Unknown / Needs Confirmation"}
                   </span>
                 </div>

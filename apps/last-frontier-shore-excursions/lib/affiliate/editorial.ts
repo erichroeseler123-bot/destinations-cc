@@ -17,7 +17,7 @@ export const PORT_EDITORIAL_INSIGHTS: Record<string, Partial<EditorialInsight>> 
     meetingPointExplanation: "Over 85% of independent Juneau shore excursions stage departures from the parking lot plaza beneath the Mount Roberts Tramway, located steps from Franklin Dock and 7 minutes walk from Marine Dock.",
     weatherReality: "Southeast Alaska is a temperate rainforest with over 60 inches of annual precipitation. Rain does not stop marine wildlife or ground excursions; however, low cloud ceilings frequently ground helicopter and floatplane operations over the icefield.",
     bestBackupOption: "If alpine flights cancel due to cloud ceiling, pivot immediately to a ground-based Mendenhall Glacier express shuttle or a downtown Juneau whale watching safari.",
-    methodology: "Every recommended excursion is evaluated against our Last Frontier 45-Minute Planning Standard: Tour end time + transfer buffer + 45 minutes must be earlier than your cruise ship's scheduled all-aboard time.",
+    methodology: "Every recommended excursion is evaluated against our Last Frontier 2-Hour (1:59:59+ / 120-Minute) Return Buffer Standard: Tour end time + transfer buffer + 2 hours (1:59:59+) must be earlier than your cruise ship's scheduled all-aboard time.",
     sourcesAndTimestamps: [
       { name: "City & Borough of Juneau Docks and Harbors", date: "2026-05-01" },
       { name: "U.S. Forest Service Tongass National Forest", date: "2026-04-15" },
@@ -30,7 +30,7 @@ export const PORT_EDITORIAL_INSIGHTS: Record<string, Partial<EditorialInsight>> 
     meetingPointExplanation: "Ships berthed at Railroad Dock have direct dockside train boarding. Ships at Ore Dock and Broadway Dock have a short 5- to 10-minute flat walk directly into the historic Broadway district.",
     weatherReality: "Skagway lies in the rain shadow of the Coast Mountains, receiving only 26 inches of rain annually. However, the 2,865-foot White Pass Summit frequently experiences dense mountain fog, high winds, and rapid temperature drops.",
     bestBackupOption: "If White Pass Summit visibility drops to zero, opt for a lower-elevation Klondike Gold Rush historic walking tour, streetcar tour, or a scenic drive staying below the cloud ceiling.",
-    methodology: "We calculate border clearance buffers and dockside track availability to ensure all rail and highway tours return travelers safely with at least 45 minutes of pier margin.",
+    methodology: "We calculate border clearance buffers and dockside track availability to ensure recommended rail and highway tours return travelers safely with at least 2 hours (1:59:59+ / 120 minutes) of pier margin before all-aboard.",
     sourcesAndTimestamps: [
       { name: "Municipality of Skagway Port Department", date: "2026-05-01" },
       { name: "White Pass & Yukon Route Railway Operations", date: "2026-04-10" },
@@ -43,7 +43,7 @@ export const PORT_EDITORIAL_INSIGHTS: Record<string, Partial<EditorialInsight>> 
     meetingPointExplanation: "Downtown Berths 1, 2, 3, and 4 drop travelers directly onto the Ketchikan boardwalk promenade near the Visitors Bureau and Creek Street. Ward Cove passengers disembark at the mill and take the shuttle to the downtown transit hub.",
     weatherReality: "With over 150 inches of annual rain, precipitation is very frequent. Rain gear is essential, but rain rarely cancels boat tours. Low maritime clouds over Behm Canal can delay or reroute Misty Fjords floatplane flights.",
     bestBackupOption: "If floatplanes are grounded by cloud cover, switch to a high-speed catamaran cruise into Misty Fjords or visit Saxman Native Village and Totem Bight State Historical Park.",
-    methodology: "Dock-specific routing logic differentiates downtown berths from Ward Cove shuttles to support disciplined compliance with the 45-minute return buffer.",
+    methodology: "Dock-specific routing logic differentiates downtown berths from Ward Cove shuttles to support disciplined compliance with the 2-hour (1:59:59+ / 120-minute) recommended return buffer.",
     sourcesAndTimestamps: [
       { name: "City of Ketchikan Port Operations", date: "2026-05-01" },
       { name: "U.S. Forest Service Misty Fjords National Monument", date: "2026-04-20" },
@@ -138,7 +138,7 @@ export function getEditorialInsight(portSlug: string, activitySlug: string): Edi
     whoShouldChoose,
     whoShouldAvoid,
     bestBackupOption: base.bestBackupOption || "Ground-based historic walking tour or museum.",
-    methodology: base.methodology || "Every tour evaluated against our Last Frontier 45-Minute Planning Standard.",
+    methodology: base.methodology || "Every tour evaluated against our Last Frontier 2-Hour (1:59:59+ / 120-Minute) Return Buffer Standard.",
     sourcesAndTimestamps: base.sourcesAndTimestamps || [
       { name: "Last Frontier Shore Excursions Editorial Board", date: "2026-09-13" },
     ],

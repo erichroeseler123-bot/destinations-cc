@@ -400,14 +400,14 @@ export default async function NewOrleansToursPage({
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-black uppercase tracking-wider text-amber-200">
-                      Port of New Orleans Cruise Timing Gate (60–90 Min DCC Buffer)
+                      Port of New Orleans Cruise Timing Gate (2-Hour / 1:59:59+ DCC Buffer)
                     </span>
                     <span className="rounded-full border border-amber-300/40 bg-black/40 px-2.5 py-0.5 text-[11px] font-bold text-amber-200">
                       {allAboardParam && berthParam ? "Fits cruise window" : "Confirm ship timing"}
                     </span>
                   </div>
                   <p className="text-white/85 leading-5">
-                    Passengers disembarking at Erato Street or Julia Street Cruise Terminals must complete berth-to-check-in transfer, the full excursion, and return to the gangway <strong>60–90 minutes before confirmed ship all-aboard</strong>. When your ship’s confirmed all-aboard cutoff or terminal transfer is not provided, DCC shows <strong>Confirm ship timing</strong>.
+                    Passengers disembarking at Erato Street or Julia Street Cruise Terminals must complete berth-to-check-in transfer, the full excursion, and return to the gangway at least <strong>1:59:59 (2 hours / 120 minutes) before confirmed ship all-aboard</strong> to be recommended. When your ship’s confirmed all-aboard cutoff or terminal transfer is not provided, DCC shows <strong>Confirm ship timing</strong>.
                   </p>
                 </div>
 

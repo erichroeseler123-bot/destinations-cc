@@ -345,6 +345,23 @@ export function evaluateLowBandwidthJuneauReplan(
         uOpt.timeFit.interActivityTransferMinutes +
         uOpt.timeFit.returnTransferMinutes;
 
+      const marginBeforeAllAboardMinutes =
+        uOpt.timeFit.confirmedAllAboardLocal !== null
+          ? uOpt.timeFit.remainingMinutesAfterBuffer +
+            uOpt.timeFit.configuredReturnBufferMinutes
+          : null;
+
+      const exactRemainingBufferHms =
+        marginBeforeAllAboardMinutes !== null
+          ? (() => {
+              const safeSec = Math.max(0, Math.round(marginBeforeAllAboardMinutes * 60));
+              const h = Math.floor(safeSec / 3600);
+              const m = Math.floor((safeSec % 3600) / 60);
+              const s = safeSec % 60;
+              return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+            })()
+          : null;
+
       const timing: CruiseTimingEvaluationResult = {
         status: statusMap,
         statusBadgeLabel:
@@ -353,17 +370,13 @@ export function evaluateLowBandwidthJuneauReplan(
             : statusMap === "FITS_CRUISE_WINDOW"
               ? "Fits cruise window"
               : "Outside safe buffer",
-        dccBufferMinutes:
-          uOpt.timeFit.configuredReturnBufferMinutes === 60 ? 60 : 90,
+        dccBufferMinutes: uOpt.timeFit.configuredReturnBufferMinutes,
         earliestCheckInLocal: uOpt.timeFit.earliestShoreReadyLocal,
         estimatedGangwayReturnLocal: uOpt.timeFit.estimatedBackAtDockLocal,
         latestSafeGangwayReturnLocal: uOpt.timeFit.targetAllAboardBufferCutoffLocal,
         confirmedAllAboardLocal: uOpt.timeFit.confirmedAllAboardLocal,
-        marginBeforeAllAboardMinutes:
-          uOpt.timeFit.confirmedAllAboardLocal !== null
-            ? uOpt.timeFit.remainingMinutesAfterBuffer +
-              uOpt.timeFit.configuredReturnBufferMinutes
-            : null,
+        marginBeforeAllAboardMinutes,
+        exactRemainingBufferHms,
         reason: uOpt.timeFit.reasonSummary,
         seatCountDisplay:
           uOpt.seatAvailability.confirmedSeatsCount !== null

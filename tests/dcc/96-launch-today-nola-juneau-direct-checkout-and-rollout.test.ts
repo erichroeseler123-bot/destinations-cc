@@ -102,8 +102,9 @@ describe("Launch Today: New Orleans & Juneau Storefronts, Cruise Timing, Direct 
     assert.match(dccNolaToursSrc, /welcometoneworleanstours\.com\/tours\/oak-alley-or-laura-plantation-tour/);
   });
 
-  it("2. Juneau Whale Deck & Cruise Timing: checks CLAA port-call + confirmed all-aboard with 60–90m buffer, shows Confirm ship timing when unknown, and shows seat counts only when provider-confirmed", () => {
-    // 1. Norwegian Bliss (AJ Dock, 07:00 arrival, 12:30 confirmed all-aboard, 90m buffer, 210m whale tour)
+  it("2. Juneau Whale Deck & Cruise Timing: checks CLAA port-call + confirmed all-aboard with 2-hour (1:59:59+ / 120m) buffer, shows exact remaining buffer when < 120m, shows Confirm ship timing when unknown, and shows seat counts only when provider-confirmed", () => {
+    // 1. Norwegian Bliss (AJ Dock, 07:00 arrival, 13:00 confirmed all-aboard, 120m buffer, 210m whale tour)
+    // Earliest check-in 07:35 + 210m = 11:05 + 25m return = 11:30 -> 90m (1:30:00) remaining (< 120m -> Reduced buffer — not recommended)
     const bliss = CLAA_JUNEAU_PORT_SCHEDULE.find((s) => s.shipName === "Norwegian Bliss")!;
     const blissEval = evaluateCruiseTimingWindow({
       claaArrivalLocal: bliss.claaArrivalLocal,
@@ -117,11 +118,30 @@ describe("Launch Today: New Orleans & Juneau Storefronts, Cruise Timing, Direct 
       providerConfirmedSeats: false,
       providerSeatCount: 14,
     });
-    assert.equal(blissEval.status, "FITS_CRUISE_WINDOW");
-    assert.equal(blissEval.statusBadgeLabel, "Fits cruise window");
-    assert.equal(blissEval.dccBufferMinutes, 90);
+    assert.equal(blissEval.status, "REDUCED_BUFFER_NOT_RECOMMENDED");
+    assert.equal(blissEval.statusBadgeLabel, "Reduced buffer — not recommended");
+    assert.equal(blissEval.dccBufferMinutes, 120);
+    assert.equal(blissEval.exactRemainingBufferHms, "1:30:00");
     // Unconfirmed provider seats must NOT be displayed
     assert.equal(blissEval.seatCountDisplay, null);
+
+    // 1a. Royal Princess (FKL Dock, 08:00 arrival, 20:30 confirmed all-aboard, 120m buffer, 210m whale tour) -> Fits cruise window
+    const royalPrincess = CLAA_JUNEAU_PORT_SCHEDULE.find((s) => s.shipName === "Royal Princess")!;
+    const princessEval = evaluateCruiseTimingWindow({
+      claaArrivalLocal: royalPrincess.claaArrivalLocal,
+      claaDepartureLocal: royalPrincess.claaDepartureLocal,
+      confirmedAllAboardLocal: royalPrincess.confirmedAllAboardLocal,
+      berthCode: royalPrincess.berthCode,
+      outboundBerthToCheckInMinutes: royalPrincess.outboundBerthToCheckInMinutes,
+      returnToGangwayMinutes: royalPrincess.returnToGangwayMinutes,
+      requiredDccBufferMinutes: royalPrincess.requiredDccBufferMinutes,
+      tourDurationMinutes: 210,
+      providerConfirmedSeats: false,
+      providerSeatCount: 14,
+    });
+    assert.equal(princessEval.status, "FITS_CRUISE_WINDOW");
+    assert.equal(princessEval.statusBadgeLabel, "Fits cruise window");
+    assert.equal(princessEval.dccBufferMinutes, 120);
 
     // 1b. 5.5-hour combo (330m) on Norwegian Bliss's short morning call -> Outside safe buffer
     const blissComboEval = evaluateCruiseTimingWindow({

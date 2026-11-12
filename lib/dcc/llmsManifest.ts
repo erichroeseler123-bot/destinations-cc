@@ -74,10 +74,10 @@ export function buildTravelReferenceNodeLlmsTxt(node: TravelReferenceNode): stri
       `- **Low-Bandwidth Replan Surface (Weak Wi-Fi / Dock Changes, <= 50 KB compressed target)**: ${ORIGIN}/juneau/replan and ${ORIGIN}/juneau?low_bw=1 — text-first replanning with ship arrival/all-aboard updates, offline last-saved plan snapshot, and direct continuation to Juneau Flight Deck via ${ORIGIN}/go/dcc-to-juneau-flight-deck.`,
     );
     lines.push(
-      "- **Docked Berths (CT, AS, FKL)**: Require **60–90 minute** return buffer before ship all-aboard time.",
+      "- **Recommended Ship-Return Buffer (All Berths — CT, AS, FKL, AJ, Tender)**: Require at least **1:59:59+ (2-hour / 120-minute)** return buffer after tour completion and confirmed return transfer before ship all-aboard time; options with `< 1:59:59` show exact remaining buffer and are not recommended, options outside the sailing window are blocked, and missing transfer/meeting evidence is marked **Needs verification**.",
     );
     lines.push(
-      "- **AJ Dock (1.2 mi south) & Anchored Tender Operations**: Require **90–120 minute** return buffer before last tender / all-aboard time due to shuttle queues and tender boat cycles.",
+      "- **AJ Dock (1.2 mi south) & Anchored Tender Operations**: Add shuttle queue (~25–35 min) or tender boat cycle (~40–50 min) on top of the **120-minute (2-hour)** recommended return buffer before last tender / all-aboard time.",
     );
     lines.push(
       "- **Mendenhall Glacier Access**: USFS Tongass National Forest enforces commercial visitor capacity caps; municipal Capital Transit bus stops 1.5 miles (30-min walk each way) from the Visitor Center.",

@@ -56,7 +56,7 @@ export function CruiseWindowCalculator({
       meetingTimeStr: meetingTime,
       durationMinutes: durationMinutes,
       dockKey: selectedDockKey,
-      planningMarginMinutes: 45,
+      planningMarginMinutes: 120,
     });
 
     if (onFitCalculated) {
@@ -111,7 +111,7 @@ export function CruiseWindowCalculator({
           <h3 style={{ margin: "8px 0 4px", fontSize: "22px" }}>Cruise-Window Fit Calculator</h3>
         </div>
         <span style={{ fontSize: "13px", color: "var(--muted)" }}>
-          Planning Rule: Tour End + Transfer + 45 Min Margin ≤ Ship All-Aboard
+          Planning Rule: Tour End + Transfer + 2-Hour (1:59:59+ / 120-Min) Recommended Buffer ≤ Ship All-Aboard
         </span>
       </div>
 

@@ -115,7 +115,7 @@ export const DECISION_PAGES: DecisionPage[] = [
     ],
     "cruiseSafetyAdvice": [
       "Always confirm your ship's docking location: AJ Dock in Juneau and Ward Cove in Ketchikan add 30-45 minutes of transit time.",
-      "Enforce the 45-Minute Rule: Your excursion must conclude at least 45 minutes before ship all-aboard.",
+      "Enforce the 2-Hour (1:59:59+) Return Buffer Rule: Recommended excursions conclude and return to the pier at least 1:59:59 (2 hours) before ship all-aboard.",
       "Keep digital and printed booking confirmations with direct local operator phone numbers."
     ],
     "recommendedTours": [
@@ -241,7 +241,7 @@ export const DECISION_PAGES: DecisionPage[] = [
           "The most common rookie mistake is booking multiple back-to-back excursions in a single port call. A 3-hour morning tour followed immediately by a 3-hour afternoon tour creates severe anxiety, leaves no buffer for delays, and eliminates the joy of strolling historic frontier streets.",
           "Pick ONE flagship experience in each port that matches the region's core strength. Dedicate the remainder of your time to wandering boardwalks, visiting local saloons, and watching harbor floatplanes."
         ],
-        "callout": "Golden Rule: Never cut your port window closer than 60 minutes before ship all-aboard."
+        "callout": "Golden Rule: Target our 2-hour (1:59:59+ / 120-minute) recommended return buffer before ship all-aboard; tighter windows are reduced-buffer and not recommended."
       },
       {
         "heading": "What to Prioritize if Budget is Limited",
@@ -488,7 +488,7 @@ export const DECISION_PAGES: DecisionPage[] = [
           "category": "Juneau",
           "col1": "Five-Glacier Seaplane Flightseeing",
           "col2": "1.5 hours",
-          "verdict": "Departs right from downtown waterfront docks; 90+ minutes return buffer."
+          "verdict": "Departs right from downtown waterfront docks; 120+ minutes (2+ hours) return buffer."
         },
         {
           "category": "Juneau",
@@ -537,7 +537,7 @@ export const DECISION_PAGES: DecisionPage[] = [
       }
     ],
     "cruiseSafetyAdvice": [
-      "Short excursions provide ample margin for compliance with the 45-minute planning standard.",
+      "Short excursions provide ample margin for compliance with the 2-hour (1:59:59+ / 120-minute) recommended return buffer standard.",
       "Confirm whether your short tour includes transportation back to the ship or concludes in the center of town.",
       "In Skagway and Ketchikan, town is right at the pier, so dropping off downtown means you are only a 5-to-10-minute walk from the gangway."
     ],
@@ -1320,12 +1320,12 @@ export const DECISION_PAGES: DecisionPage[] = [
   },
   {
     "slug": "excursions-safe-for-cruise-ship-window",
-    "title": "How to Book Cruise-Safe Alaska Shore Excursions | The 45-Minute Rule",
-    "metaDescription": "The definitive guide to cruise-safe Alaska shore excursions. Learn the 45-Minute All-Aboard Rule, calculate true port time, and avoid missing your ship.",
-    "h1": "How to Book Cruise-Safe Alaska Shore Excursions: The 45-Minute Rule",
+    "title": "How to Book Cruise-Safe Alaska Shore Excursions | The 2-Hour (1:59:59+) Return Buffer Rule",
+    "metaDescription": "The definitive guide to cruise-safe Alaska shore excursions. Learn the 2-Hour (1:59:59+) Recommended Return Buffer Rule, calculate true port time, and avoid missing your ship.",
+    "h1": "How to Book Cruise-Safe Alaska Shore Excursions: The 2-Hour (1:59:59+) Return Buffer Rule",
     "eyebrow": "Cruise Safety · Port Timing Mastery",
-    "lead": "Every cruise traveler shares one common fear: watching their ship sail away into the sunset while they are stranded on the pier. Cruise lines exploit this fear to charge inflated prices for shipboard tours. With our definitive 45-Minute Rule, you can safely book independent excursions with total confidence.",
-    "quickRule": "THE GOLDEN CRUISE-SAFE FORMULA: Tour End Time + 45 Minutes MUST be earlier than your ship's All-Aboard time. Never label an excursion cruise-safe when timing, meeting points, or return margins are unknown.",
+    "lead": "Every cruise traveler shares one common fear: watching their ship sail away into the sunset while they are stranded on the pier. Cruise lines exploit this fear to charge inflated prices for shipboard tours. With our unified 2-Hour (1:59:59+) Recommended Return Buffer Rule, you can plan independent excursions with disciplined margin awareness.",
+    "quickRule": "THE GOLDEN CRUISE-RETURN FORMULA: Tour End Time + Pier Transfer + 1:59:59 (2 Hours) MUST be at or earlier than your ship's confirmed All-Aboard time. Windows under 1:59:59 are flagged as reduced buffer (not recommended), departures outside the sailing window are blocked, and excursions with unconfirmed meeting points or transfer times require verification.",
     "comparisonMatrix": {
       "headers": [
         "Port Time Metric",
@@ -1350,13 +1350,13 @@ export const DECISION_PAGES: DecisionPage[] = [
           "category": "AJ Dock / Ward Cove",
           "col1": "Treated like standard port",
           "col2": "Requires 15–20 min coach shuttles each way to reach downtown",
-          "verdict": "Add 45 minutes of total transit buffer to your port day calculation."
+          "verdict": "Add full round-trip dock shuttle transfer time before evaluating your 2-hour return buffer."
         },
         {
-          "category": "Tour Finish Margin",
+          "category": "Recommended Return Margin",
           "col1": "N/A",
           "col2": "Traffic, harbor docking, and shuttle lines take time",
-          "verdict": "Require tour finish time + 45 mins to be prior to All-Aboard."
+          "verdict": "Require pier return + 1:59:59 (2 hours) prior to All-Aboard; < 1:59:59 is reduced buffer (not recommended)."
         }
       ]
     },
@@ -1370,16 +1370,16 @@ export const DECISION_PAGES: DecisionPage[] = [
         "heading": "Deconstructing Cruise Line Scare Tactics",
         "paragraphs": [
           "Cruise lines often claim: 'If you book an independent tour and it runs late, the ship won't wait for you.' While technically true that the ship is not obligated to wait for non-ship excursions, the reality is that independent Alaska tour operators are local businesses whose entire livelihoods depend on cruise passengers.",
-          "Professional independent tour operators track maritime AIS ship tracking data in real time. They know your ship's captain, schedule, and all-aboard times better than most shipboard staff. They deliberately calibrate their departure and return times to ensure you step onto the pier with 60 to 90 minutes of cushion."
+          "Professional independent tour operators track maritime AIS ship tracking data in real time. They know your ship's captain, schedule, and all-aboard times, and we additionally enforce a 2-hour (1:59:59+ / 120-minute) recommended pier-return buffer so any tighter margin is explicitly flagged as reduced buffer (not recommended)."
         ]
       },
       {
         "heading": "Step-by-Step: How to Calculate Your True Usable Port Window",
         "paragraphs": [
           "1. Start with your published port arrival time and ADD 30 minutes for gangway clearance (e.g., 7:00 AM arrival = 7:30 AM earliest tour meet time).",
-          "2. Take your published port departure time and SUBTRACT 45 minutes to find your All-Aboard deadline (e.g., 4:00 PM departure = 3:15 PM All-Aboard).",
-          "3. Apply our 45-Minute Safety Margin to the All-Aboard time (3:15 PM - 45 mins = 2:30 PM latest acceptable tour end time).",
-          "Result: A 7:00 AM to 4:00 PM port call provides a safe excursion window between 7:30 AM and 2:30 PM (7 hours of usable tour time)."
+          "2. Take your published port departure time and SUBTRACT 45 minutes to find your All-Aboard deadline (e.g., 5:00 PM departure = 4:15 PM All-Aboard).",
+          "3. Apply our 2-Hour (120-Minute / 1:59:59+) Recommended Return Buffer to the All-Aboard time (4:15 PM - 2 hours = 2:15 PM latest recommended pier-return time).",
+          "Result: A 7:00 AM to 5:00 PM port call provides a recommended excursion window between 7:30 AM and 2:15 PM (6.75 hours of usable tour + transfer time)."
         ]
       }
     ],
@@ -1393,7 +1393,7 @@ export const DECISION_PAGES: DecisionPage[] = [
         "port": "Juneau",
         "name": "Express Juneau Whale Watching Cruise",
         "duration": "3.5 hours",
-        "whyItFits": "Designed specifically with 75-90 minute pier return cushion for standard cruise windows",
+        "whyItFits": "Fits 6.5+ hour Juneau port calls with a 2-hour (1:59:59+) recommended pier-return cushion",
         "searchQuery": "Juneau express whale watching tour cruise safe",
         "campaignTag": "decision-cruisesafe-juneau-whale"
       },
@@ -1479,7 +1479,7 @@ export const DECISION_PAGES: DecisionPage[] = [
           "category": "Skagway",
           "col1": "White Pass Summit Railway (Morning / Afternoon loop)",
           "col2": "2.75 hours",
-          "verdict": "Boards directly at the Railroad Dock; returns you with 60 to 90 minutes to spare."
+          "verdict": "Boards directly at the Railroad Dock; target 2+ hours (120+ mins) before all-aboard on 5.5+ hour port calls."
         },
         {
           "category": "Ketchikan",
@@ -1498,7 +1498,7 @@ export const DECISION_PAGES: DecisionPage[] = [
     "keyTakeaways": [
       "Avoid combo excursions: Never attempt a combination whale watch + glacier hike on a port call under 7 hours.",
       "Stay within 15 minutes of the port: Choose activities centered around the immediate harbor or downtown road system.",
-      "Strict 45-Minute All-Aboard Rule: Always confirm that your chosen excursion finishes at least 45 minutes prior to ship all-aboard."
+      "2-Hour (1:59:59+) Recommended All-Aboard Buffer: Recommended excursions return you to the pier at least 1:59:59 (2 hours) prior to ship all-aboard; tighter windows are flagged as reduced buffer (not recommended)."
     ],
     "inDepthSections": [
       {

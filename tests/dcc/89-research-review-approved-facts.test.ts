@@ -642,14 +642,14 @@ test("DCC Research Review Approved-Fact Integration Suite", async (t) => {
         evaluated.all_evaluated_facts,
         { nowMs: nowDate.getTime() },
       );
-      assert.equal(LFSE_MANDATORY_RETURN_BUFFER_MINUTES, 45);
+      assert.equal(LFSE_MANDATORY_RETURN_BUFFER_MINUTES, 120);
       assert.equal(juneauQual.length, 3);
 
       const coastal = juneauQual.find(
         (c) => c.productId === "coastal-helicopters-icefield-excursion-direct",
       );
       assert.ok(coastal);
-      assert.equal(coastal.mandatoryReturnBufferMinutes, 45);
+      assert.equal(coastal.mandatoryReturnBufferMinutes, 120);
       assert.equal(coastal.verifiedFactCount, 1);
       assert.equal(coastal.constraints.duration.status, "verified");
       assert.equal(
@@ -679,7 +679,7 @@ test("DCC Research Review Approved-Fact Integration Suite", async (t) => {
       assert.equal(coastal.overallQualificationStatus, "needs_confirmation");
       assert.equal(
         coastal.constraints.returnBuffer.mandatoryBufferMinutes,
-        45,
+        120,
       );
       assert.equal(
         coastal.constraints.returnBuffer.dockTransferMinutesEachWay,

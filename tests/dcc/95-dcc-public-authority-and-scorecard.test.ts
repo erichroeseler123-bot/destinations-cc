@@ -78,7 +78,8 @@ describe("DCC Public Authority Release & 3-Stage Portfolio Scorecard", () => {
       "utf8",
     );
     assert.match(cruiseSrc, /data-testid="dcc-cruise-authority-brief"/);
-    assert.match(cruiseSrc, /90-minute return-to-ship buffer/);
+    assert.match(cruiseSrc, /1:59:59\+/);
+    assert.match(cruiseSrc, /120-minute/);
     assert.match(
       cruiseSrc,
       /https:\/\/cruisepromenade\.com\/p\/INDY-2027-01-24\?src=dcc-authority-cruise/,

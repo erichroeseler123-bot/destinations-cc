@@ -17,6 +17,8 @@
  *    `REZGO_SERENE_LIVE_BOOKING_ENABLED=true`.
  */
 
+import { appendViatorAttribution } from "@/lib/viator/links";
+
 export type SereneRezgoGateStage =
   | "awaiting_credentials"
   | "ready_for_readonly_inspection"
@@ -156,11 +158,12 @@ export interface RezgoOptionSailingWindowAssessment {
   shipArrivalTime: string | null;
   shipAllAboardTime: string | null;
   allAboardConfirmed: boolean;
-  meetingPointAndReturnConfirmed: false;
+  meetingPointAndReturnConfirmed: boolean;
   estimatedTourEndWithoutTransferTime: string | null;
   upperBoundRemainingSecondsBeforeTransfer: number | null;
   upperBoundRemainingBufferHmsLabel: string | null;
   status:
+    | "recommended"
     | "outside_sailing_window_blocked"
     | "reduced_buffer_not_recommended"
     | "unverified_cruise_timing_pending_transfer_and_pickup";
@@ -168,10 +171,46 @@ export interface RezgoOptionSailingWindowAssessment {
   displayLabel: string;
 }
 
+export interface NormalizedJuneauDepartureOption {
+  uid: string;
+  rezgoCom: string | null;
+  optionName: string | null;
+  departureTime: string | null;
+  availableSpots: number | null;
+  availabilitySemantics:
+    | "rezgo_date_search_spots"
+    | "rezgo_catalog_overall"
+    | "unconfirmed_check_provider";
+  adultPriceUsd: number | null;
+  childPriceUsd: number | null;
+  serviceDate: string | null;
+  checkedAt: string;
+  dccCommerceWrapperHref: string | null;
+  windowAssessment: RezgoOptionSailingWindowAssessment | null;
+}
+
+export interface JuneauBookingProviderIdentity {
+  operatorId: "juneau-tours-whale-watch";
+  operatorName: string;
+  verifiedRezgoCompanyName: string | null;
+  verifiedRezgoDomain: string | null;
+  rezgoCom: string | null;
+  activeCheckoutProvider: "viator_approved_fallback" | "none_held_pending_mapping";
+  fallbackProductCode: string | null;
+  liveDirectRezgoCheckoutEnabled: false;
+  checkoutDisclosure: string;
+}
+
 export interface NormalizedJuneauSupplierTour {
   normalizedTourId: string;
   rezgoUid: string;
   rezgoCom: string | null;
+  optionUids: string[];
+  departureOptions: NormalizedJuneauDepartureOption[];
+  serviceDate: string | null;
+  checkedAt: string;
+  bookingProviderIdentity: JuneauBookingProviderIdentity;
+  dccCommerceWrapperHref: string | null;
   operatorId: "juneau-tours-whale-watch";
   operatorName: string;
   verifiedRezgoCompanyName: string | null;
@@ -192,7 +231,7 @@ export interface NormalizedJuneauSupplierTour {
   supplierBookingCutoffHours: number | null;
   supplierBookingCutoffSemantics: "supplier_booking_cutoff_only_never_cruise_return_buffer";
   cruiseTimingVerificationStatus: "live_operator_availability_only_unverified_cruise_timing";
-  cruiseTimingStatusLabel: "Live operator availability · Cruise-safe timing unverified";
+  cruiseTimingStatusLabel: "Needs verification · Live operator availability · Cruise-safe timing unverified";
   cruiseTimingDisclosure: string;
   dccRequiredRecommendedReturnBufferSeconds: 7199;
   dccRequiredRecommendedReturnBufferLabel: "1:59:59+ before confirmed all-aboard";
@@ -1288,6 +1327,8 @@ export function assessRezgoDepartureAgainstShipWindow(params: {
   shipArrivalTime?: string | null;
   shipAllAboardTime?: string | null;
   allAboardConfirmed?: boolean;
+  confirmedReturnTransferMinutes?: number | null;
+  hasConfirmedMeetingPoint?: boolean;
 }): RezgoOptionSailingWindowAssessment {
   const depSec = parseClockToSeconds(params.departureTime);
   const arrSec = parseClockToSeconds(params.shipArrivalTime);
@@ -1295,6 +1336,13 @@ export function assessRezgoDepartureAgainstShipWindow(params: {
   const allAboardConfirmed = Boolean(params.allAboardConfirmed && allAboardSec !== null);
   const normArr = arrSec !== null ? formatSecondsAsClockHhMm(arrSec) : null;
   const normAllAboard = allAboardSec !== null ? formatSecondsAsClockHhMm(allAboardSec) : null;
+  const hasConfirmedTransfer =
+    typeof params.confirmedReturnTransferMinutes === "number" &&
+    Number.isFinite(params.confirmedReturnTransferMinutes) &&
+    params.confirmedReturnTransferMinutes >= 0;
+  const meetingPointAndReturnConfirmed = Boolean(
+    allAboardConfirmed && params.hasConfirmedMeetingPoint === true && hasConfirmedTransfer,
+  );
 
   if (depSec === null || params.durationMinutes === null || params.durationMinutes <= 0) {
     return {
@@ -1309,7 +1357,7 @@ export function assessRezgoDepartureAgainstShipWindow(params: {
       status: "unverified_cruise_timing_pending_transfer_and_pickup",
       blockedForSailingWindow: false,
       displayLabel:
-        "Live operator availability · Cruise-safe timing unverified (duration, meeting point & return transfer pending)",
+        "Needs verification — live operator availability · Cruise-safe timing unverified (duration, meeting point & return transfer pending)",
     };
   }
 
@@ -1322,14 +1370,67 @@ export function assessRezgoDepartureAgainstShipWindow(params: {
       shipArrivalTime: normArr,
       shipAllAboardTime: normAllAboard,
       allAboardConfirmed,
-      meetingPointAndReturnConfirmed: false,
+      meetingPointAndReturnConfirmed,
       estimatedTourEndWithoutTransferTime: endClock,
       upperBoundRemainingSecondsBeforeTransfer:
         allAboardSec !== null ? allAboardSec - endWithoutTransferSec : null,
       upperBoundRemainingBufferHmsLabel: null,
       status: "outside_sailing_window_blocked",
       blockedForSailingWindow: true,
-      displayLabel: `Outside ship window — departs ${params.departureTime} before ship arrival (${normArr})`,
+      displayLabel: `Outside ship window — blocked (departs ${params.departureTime} before ship arrival ${normArr})`,
+    };
+  }
+
+  if (meetingPointAndReturnConfirmed && allAboardSec !== null) {
+    const returnTransferSec = Math.round((params.confirmedReturnTransferMinutes || 0) * 60);
+    const backAtPierSec = endWithoutTransferSec + returnTransferSec;
+    const backAtPierClock = formatSecondsAsClockHhMm(backAtPierSec);
+    const remainingAfterTransferSec = allAboardSec - backAtPierSec;
+    if (remainingAfterTransferSec <= 0) {
+      return {
+        departureTime: params.departureTime,
+        shipArrivalTime: normArr,
+        shipAllAboardTime: normAllAboard,
+        allAboardConfirmed: true,
+        meetingPointAndReturnConfirmed: true,
+        estimatedTourEndWithoutTransferTime: endClock,
+        upperBoundRemainingSecondsBeforeTransfer: remainingAfterTransferSec,
+        upperBoundRemainingBufferHmsLabel: "0:00:00",
+        status: "outside_sailing_window_blocked",
+        blockedForSailingWindow: true,
+        displayLabel: `Outside ship window — blocked (returns ~${backAtPierClock} at/after ${normAllAboard} all-aboard)`,
+      };
+    }
+
+    const exactConfirmedHms = formatRemainingBufferHms(remainingAfterTransferSec);
+    if (remainingAfterTransferSec < 7199) {
+      return {
+        departureTime: params.departureTime,
+        shipArrivalTime: normArr,
+        shipAllAboardTime: normAllAboard,
+        allAboardConfirmed: true,
+        meetingPointAndReturnConfirmed: true,
+        estimatedTourEndWithoutTransferTime: endClock,
+        upperBoundRemainingSecondsBeforeTransfer: remainingAfterTransferSec,
+        upperBoundRemainingBufferHmsLabel: exactConfirmedHms,
+        status: "reduced_buffer_not_recommended",
+        blockedForSailingWindow: false,
+        displayLabel: `Reduced buffer (${exactConfirmedHms} remaining) — not recommended`,
+      };
+    }
+
+    return {
+      departureTime: params.departureTime,
+      shipArrivalTime: normArr,
+      shipAllAboardTime: normAllAboard,
+      allAboardConfirmed: true,
+      meetingPointAndReturnConfirmed: true,
+      estimatedTourEndWithoutTransferTime: endClock,
+      upperBoundRemainingSecondsBeforeTransfer: remainingAfterTransferSec,
+      upperBoundRemainingBufferHmsLabel: exactConfirmedHms,
+      status: "recommended",
+      blockedForSailingWindow: false,
+      displayLabel: `Recommended — returns ${exactConfirmedHms} before all-aboard (meets 1:59:59+ policy)`,
     };
   }
 
@@ -1347,7 +1448,7 @@ export function assessRezgoDepartureAgainstShipWindow(params: {
         upperBoundRemainingBufferHmsLabel: "0:00:00",
         status: "outside_sailing_window_blocked",
         blockedForSailingWindow: true,
-        displayLabel: `Outside ship window — activity ends ~${endClock} (before pier transfer) at/after ${normAllAboard} all-aboard`,
+        displayLabel: `Outside ship window — blocked (activity ends ~${endClock} before pier transfer, at/after ${normAllAboard} all-aboard)`,
       };
     }
 
@@ -1364,7 +1465,7 @@ export function assessRezgoDepartureAgainstShipWindow(params: {
         upperBoundRemainingBufferHmsLabel: exactHms,
         status: "reduced_buffer_not_recommended",
         blockedForSailingWindow: false,
-        displayLabel: `Reduced buffer (${exactHms} remaining before ${normAllAboard} all-aboard, excluding unconfirmed pier return transfer) — not recommended; cruise-safe timing unverified`,
+        displayLabel: `Reduced buffer (${exactHms} remaining before ${normAllAboard} all-aboard, excluding unconfirmed pier return transfer) — not recommended · Needs verification (Cruise-safe timing unverified)`,
       };
     }
 
@@ -1379,7 +1480,7 @@ export function assessRezgoDepartureAgainstShipWindow(params: {
       upperBoundRemainingBufferHmsLabel: exactHms,
       status: "unverified_cruise_timing_pending_transfer_and_pickup",
       blockedForSailingWindow: false,
-      displayLabel: `Live operator availability (${exactHms} max clock margin before ${normAllAboard} all-aboard, excluding unconfirmed berth transfer & pickup) · Cruise-safe timing unverified`,
+      displayLabel: `Needs verification — live operator availability (${exactHms} max clock margin before ${normAllAboard} all-aboard; missing confirmed meeting-point & return-transfer evidence; never treated as cruise-safe) · Cruise-safe timing unverified`,
     };
   }
 
@@ -1395,8 +1496,37 @@ export function assessRezgoDepartureAgainstShipWindow(params: {
     status: "unverified_cruise_timing_pending_transfer_and_pickup",
     blockedForSailingWindow: false,
     displayLabel:
-      "Live operator availability · Cruise-safe timing unverified (confirm ship all-aboard, meeting point, berth transfer & return time)",
+      "Needs verification — live operator availability (missing confirmed ship all-aboard, meeting-point & return-transfer evidence; never treated as cruise-safe) · Cruise-safe timing unverified",
   };
+}
+
+function buildJuneauRezgoDccCommerceWrapperHref(params: {
+  canonicalViatorUrl: string;
+  matchedCode: string;
+  optionRef: string;
+  serviceDate: string | null;
+}): string {
+  const attributedTargetUrl = appendViatorAttribution(params.canonicalViatorUrl, {
+    pid: "P00306962",
+    mcid: "42383",
+    medium: "link",
+    campaign: `dcc-juneau-rezgo-fallback-${params.matchedCode.toLowerCase()}`,
+  });
+  const wrapper = new URL("https://www.destinationcommandcenter.com/go/out");
+  wrapper.searchParams.set("u", attributedTargetUrl);
+  wrapper.searchParams.set("originatingSite", "destinationcommandcenter.com");
+  wrapper.searchParams.set("surface", "dcc_juneau_rezgo_live_availability");
+  wrapper.searchParams.set("port", "juneau");
+  wrapper.searchParams.set("product", params.matchedCode);
+  wrapper.searchParams.set("option", params.optionRef);
+  if (params.serviceDate) {
+    wrapper.searchParams.set("date", params.serviceDate);
+  }
+  wrapper.searchParams.set(
+    "trackingTag",
+    `dcc_juneau_rezgo_fallback_${params.matchedCode.toLowerCase()}_${params.optionRef.toLowerCase()}`,
+  );
+  return wrapper.toString();
 }
 
 function classifyJuneauTourActivity(
@@ -1448,6 +1578,7 @@ export async function buildNormalizedJuneauSupplierFeed(options?: {
       primaryUid: string;
       com: string | null;
       optionUids: string[];
+      rawItems: RezgoInspectedItemSummary[];
       title: string;
       optionLabels: string[];
       durationLabel: string | null;
@@ -1474,6 +1605,7 @@ export async function buildNormalizedJuneauSupplierFeed(options?: {
         primaryUid: item.com || item.uid || String(idx + 1),
         com: item.com,
         optionUids: [],
+        rawItems: [],
         title: item.itemName,
         optionLabels: [],
         durationLabel: item.duration,
@@ -1490,6 +1622,7 @@ export async function buildNormalizedJuneauSupplierFeed(options?: {
       };
       grouped.set(groupKey, entry);
     }
+    entry.rawItems.push(item);
     if (item.uid && !entry.optionUids.includes(item.uid)) {
       entry.optionUids.push(item.uid);
     }
@@ -1542,6 +1675,7 @@ export async function buildNormalizedJuneauSupplierFeed(options?: {
       const approvedSpec = matchedCode ? APPROVED_JUNEAU_5857_VIATOR_CATALOG[matchedCode] : null;
       const effectiveDurationMinutes = entry.durationMinutes ?? approvedSpec?.durationMinutes ?? null;
       const sortedDepartures = Array.from(entry.departureSet).sort();
+      const resolvedServiceDate = inspection.searchDate ?? null;
 
       const assessments = sortedDepartures.map((dep) =>
         assessRezgoDepartureAgainstShipWindow({
@@ -1552,6 +1686,7 @@ export async function buildNormalizedJuneauSupplierFeed(options?: {
           allAboardConfirmed: options?.allAboardConfirmed,
         }),
       );
+      const assessmentByDep = new Map(assessments.map((a) => [a.departureTime, a]));
 
       const allowedDepartures = assessments
         .filter((a) => !a.blockedForSailingWindow)
@@ -1559,6 +1694,112 @@ export async function buildNormalizedJuneauSupplierFeed(options?: {
       const blockedOutsideWindowDepartures = assessments
         .filter((a) => a.blockedForSailingWindow)
         .map((a) => a.departureTime);
+
+      const departureOptions: NormalizedJuneauDepartureOption[] = entry.rawItems.map((rawItem, rawIdx) => {
+        const rawDeps =
+          rawItem.departureTimes && rawItem.departureTimes.length > 0
+            ? rawItem.departureTimes
+            : rawItem.departureTime
+              ? [rawItem.departureTime]
+              : [];
+        const normalizedDep =
+          rawDeps.length > 0
+            ? normalizeRezgoClockTime(rawDeps[0]) || rawDeps[0]
+            : normalizeRezgoClockTime(rawItem.optionName);
+        const itemDuration = rawItem.durationMinutes ?? effectiveDurationMinutes;
+        const windowAssessment = normalizedDep
+          ? assessmentByDep.get(normalizedDep) ??
+            assessRezgoDepartureAgainstShipWindow({
+              departureTime: normalizedDep,
+              durationMinutes: itemDuration,
+              shipArrivalTime: options?.shipArrivalTime,
+              shipAllAboardTime: options?.shipAllAboardTime,
+              allAboardConfirmed: options?.allAboardConfirmed,
+            })
+          : null;
+
+        const hasDateSpots =
+          rawItem.availableSpotsOnSearchDate !== undefined &&
+          rawItem.availableSpotsOnSearchDate !== null;
+        const hasOverallSpots =
+          rawItem.availabilityOverall !== undefined &&
+          rawItem.availabilityOverall !== null;
+        const optAvailableSpots = hasDateSpots
+          ? rawItem.availableSpotsOnSearchDate!
+          : hasOverallSpots
+            ? rawItem.availabilityOverall!
+            : null;
+        const optAvailabilitySemantics: NormalizedJuneauDepartureOption["availabilitySemantics"] =
+          hasDateSpots
+            ? "rezgo_date_search_spots"
+            : hasOverallSpots
+              ? "rezgo_catalog_overall"
+              : "unconfirmed_check_provider";
+
+        const optionUid = rawItem.uid || `${entry.primaryUid}-${rawIdx + 1}`;
+        const optBlocked = Boolean(windowAssessment?.blockedForSailingWindow);
+        const optCommerceHref =
+          approvedSpec && matchedCode && !optBlocked
+            ? buildJuneauRezgoDccCommerceWrapperHref({
+                canonicalViatorUrl: approvedSpec.canonicalViatorUrl,
+                matchedCode,
+                optionRef: optionUid,
+                serviceDate: resolvedServiceDate,
+              })
+            : null;
+
+        return {
+          uid: optionUid,
+          rezgoCom: rawItem.com ?? entry.com,
+          optionName: rawItem.optionName,
+          departureTime: normalizedDep,
+          availableSpots: optAvailableSpots,
+          availabilitySemantics: optAvailabilitySemantics,
+          adultPriceUsd: parsePositivePrice(rawItem.adultPrice),
+          childPriceUsd: parsePositivePrice(rawItem.childPrice),
+          serviceDate: resolvedServiceDate,
+          checkedAt: inspection.checkedAt,
+          dccCommerceWrapperHref: optCommerceHref,
+          windowAssessment,
+        };
+      });
+
+      departureOptions.sort((a, b) =>
+        (a.departureTime || "99:99").localeCompare(b.departureTime || "99:99"),
+      );
+
+      const allDeparturesBlocked =
+        hasWindowInputs &&
+        assessments.length > 0 &&
+        allowedDepartures.length === 0 &&
+        blockedOutsideWindowDepartures.length > 0;
+
+      const tourCommerceWrapperHref =
+        approvedSpec && matchedCode && !allDeparturesBlocked
+          ? buildJuneauRezgoDccCommerceWrapperHref({
+              canonicalViatorUrl: approvedSpec.canonicalViatorUrl,
+              matchedCode,
+              optionRef: entry.com || entry.primaryUid,
+              serviceDate: resolvedServiceDate,
+            })
+          : null;
+
+      const resolvedOperatorName = inspection.companyName || "Juneau Tours & Whale Watch";
+      const bookingProviderIdentity: JuneauBookingProviderIdentity = {
+        operatorId: "juneau-tours-whale-watch",
+        operatorName: resolvedOperatorName,
+        verifiedRezgoCompanyName: inspection.companyName,
+        verifiedRezgoDomain: inspection.domain,
+        rezgoCom: entry.com,
+        activeCheckoutProvider:
+          approvedSpec && matchedCode ? "viator_approved_fallback" : "none_held_pending_mapping",
+        fallbackProductCode: approvedSpec && matchedCode ? matchedCode : null,
+        liveDirectRezgoCheckoutEnabled: false,
+        checkoutDisclosure:
+          approvedSpec && matchedCode
+            ? `Checkout uses approved Viator/DCC partner fallback (#${matchedCode}) — direct Rezgo checkout is not yet enabled.`
+            : "Read-only availability preview — direct Rezgo checkout disabled pending mapping verification.",
+      };
 
       const minAdult =
         entry.adultPrices.length > 0 ? Math.min(...entry.adultPrices) : null;
@@ -1591,8 +1832,14 @@ export async function buildNormalizedJuneauSupplierFeed(options?: {
         normalizedTourId: `dcc:rezgo:juneau-tours:${entry.primaryUid}`,
         rezgoUid: entry.optionUids[0] || entry.primaryUid,
         rezgoCom: entry.com,
+        optionUids: [...entry.optionUids],
+        departureOptions,
+        serviceDate: resolvedServiceDate,
+        checkedAt: inspection.checkedAt,
+        bookingProviderIdentity,
+        dccCommerceWrapperHref: tourCommerceWrapperHref,
         operatorId: "juneau-tours-whale-watch",
-        operatorName: inspection.companyName || "Juneau Tours & Whale Watch",
+        operatorName: resolvedOperatorName,
         verifiedRezgoCompanyName: inspection.companyName,
         title: entry.title,
         optionName: optionSummary,
@@ -1605,7 +1852,7 @@ export async function buildNormalizedJuneauSupplierFeed(options?: {
         departureTimes: allowedDepartures,
         blockedOutsideWindowDepartures,
         startingLocation: entry.startingLocation,
-        dateChecked: inspection.searchDate ?? null,
+        dateChecked: resolvedServiceDate,
         availableSpots: totalDateSpots ?? totalOverallSpots,
         availabilitySemantics:
           totalDateSpots !== null
@@ -1616,7 +1863,8 @@ export async function buildNormalizedJuneauSupplierFeed(options?: {
         supplierBookingCutoffHours: maxSupplierCutoffHours,
         supplierBookingCutoffSemantics: "supplier_booking_cutoff_only_never_cruise_return_buffer",
         cruiseTimingVerificationStatus: "live_operator_availability_only_unverified_cruise_timing",
-        cruiseTimingStatusLabel: "Live operator availability · Cruise-safe timing unverified",
+        cruiseTimingStatusLabel:
+          "Needs verification · Live operator availability · Cruise-safe timing unverified",
         cruiseTimingDisclosure: `${cutoffSentence}Exact meeting points, berth-transfer durations, operator return times, and dock pickup rules remain unconfirmed.`,
         dccRequiredRecommendedReturnBufferSeconds: 7199,
         dccRequiredRecommendedReturnBufferLabel: "1:59:59+ before confirmed all-aboard",

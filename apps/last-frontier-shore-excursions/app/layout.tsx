@@ -118,7 +118,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <nav className="lfse-footer-links" aria-label="Footer navigation">
                 <Link href="/cruise-ships">Ships &amp; Port Windows</Link>
                 <Link href="/tours">All Excursions</Link>
-                <Link href="/decision/excursions-safe-for-cruise-ship-window">45-Minute Safety Rule</Link>
+                <Link href="/decision/excursions-safe-for-cruise-ship-window">2-Hour Return Buffer Rule</Link>
                 <Link href="/about">About &amp; Disclosures</Link>
                 <Link href="/contact">Group &amp; Custom Help</Link>
               </nav>

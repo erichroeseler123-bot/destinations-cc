@@ -20,7 +20,7 @@
         "typicalDock": "AJ Dock (South Franklin)",
         "tenderRequired": false,
         "typicalPortHours": "Approx. 8–9 hours",
-        "recommendedBufferMinutes": 90,
+        "recommendedBufferMinutes": 120,
         "maxTourDurationHours": 5.5,
         "dockLogisticsNotes": "Norwegian Jewel commonly berths at the AJ Dock, positioned approximately 1 mile south of downtown Juneau. Shuttles or a 15–20 minute walk connect the dock to downtown tour staging areas.",
         "recommendedExcursionTypes": [
@@ -59,7 +59,7 @@
         "typicalDock": "Railroad Dock or Ore Dock",
         "tenderRequired": false,
         "typicalPortHours": "Approx. 10–12 hours",
-        "recommendedBufferMinutes": 60,
+        "recommendedBufferMinutes": 120,
         "maxTourDurationHours": 7,
         "dockLogisticsNotes": "The Jewel usually docks within flat, easy walking distance of historic Broadway Street and the White Pass & Yukon Route railway platform.",
         "recommendedExcursionTypes": [
@@ -91,7 +91,7 @@
         "typicalDock": "Berth 2 or Berth 3 (Downtown Waterfront)",
         "tenderRequired": false,
         "typicalPortHours": "Approx. 6–7 hours",
-        "recommendedBufferMinutes": 75,
+        "recommendedBufferMinutes": 120,
         "maxTourDurationHours": 4,
         "dockLogisticsNotes": "As a mid-sized ship, Norwegian Jewel often docks at downtown berths (Berth 2/3), allowing passengers to walk directly onto Front Street and Creek Street.",
         "recommendedExcursionTypes": [
@@ -137,7 +137,7 @@
         "typicalDock": "AJ Dock (South Franklin)",
         "tenderRequired": false,
         "typicalPortHours": "Approx. 8–9 hours",
-        "recommendedBufferMinutes": 90,
+        "recommendedBufferMinutes": 120,
         "maxTourDurationHours": 5.5,
         "dockLogisticsNotes": "Due to its large length, Norwegian Encore docks at AJ Dock. Plan for the AJ shuttle or a 15–20 minute waterfront stroll to reach downtown Juneau meeting points.",
         "recommendedExcursionTypes": [
@@ -162,7 +162,7 @@
         "typicalDock": "Railroad Dock Aft / Ore Dock",
         "tenderRequired": false,
         "typicalPortHours": "Approx. 11–13 hours",
-        "recommendedBufferMinutes": 75,
+        "recommendedBufferMinutes": 120,
         "maxTourDurationHours": 7,
         "dockLogisticsNotes": "Docks along the Railroad/Ore docks. Morning queues for the White Pass train can be long; pre-booking early departure slots is recommended.",
         "recommendedExcursionTypes": [
@@ -186,7 +186,7 @@
         "typicalDock": "Ward Cove Cruise Center (Approx. 7 miles north of downtown)",
         "tenderRequired": false,
         "typicalPortHours": "Approx. 6–8 hours",
-        "recommendedBufferMinutes": 90,
+        "recommendedBufferMinutes": 120,
         "maxTourDurationHours": 4,
         "dockLogisticsNotes": "CRITICAL LOGISTICS: Norwegian Encore typically docks at the Mill at Ward Cove, located 7 miles north of downtown Ketchikan. Complimentary shuttles (20–25 min ride) connect to Berth 4 in downtown Ketchikan. Allow extra transit time for downtown tours.",
         "recommendedExcursionTypes": [
@@ -225,7 +225,7 @@
         "typicalDock": "AJ Dock (South Franklin)",
         "tenderRequired": false,
         "typicalPortHours": "Approx. 8–9 hours",
-        "recommendedBufferMinutes": 90,
+        "recommendedBufferMinutes": 120,
         "maxTourDurationHours": 5.5,
         "dockLogisticsNotes": "Berths at AJ Dock. Take the port shuttle to the tram lot for fast connections to Auke Bay whale watch buses.",
         "recommendedExcursionTypes": [
@@ -249,7 +249,7 @@
         "typicalDock": "Railroad Dock or Ore Dock",
         "tenderRequired": false,
         "typicalPortHours": "Approx. 10–12 hours",
-        "recommendedBufferMinutes": 75,
+        "recommendedBufferMinutes": 120,
         "maxTourDurationHours": 6.5,
         "dockLogisticsNotes": "Docks along the Railroad/Ore docks. Direct rail access available for pre-ticketed White Pass departures.",
         "recommendedExcursionTypes": [
@@ -273,7 +273,7 @@
         "typicalDock": "Ward Cove Cruise Center (7 miles north of downtown)",
         "tenderRequired": false,
         "typicalPortHours": "Approx. 6–7 hours",
-        "recommendedBufferMinutes": 90,
+        "recommendedBufferMinutes": 120,
         "maxTourDurationHours": 4,
         "dockLogisticsNotes": "Docks at Ward Cove. Use complimentary NCL shuttles to reach downtown Creek Street and Misty Fjords seaplane docks.",
         "recommendedExcursionTypes": [
@@ -311,7 +311,7 @@
         "typicalDock": "Franklin Street Dock or AJ Dock",
         "tenderRequired": false,
         "typicalPortHours": "Approx. 9 hours",
-        "recommendedBufferMinutes": 90,
+        "recommendedBufferMinutes": 120,
         "maxTourDurationHours": 5,
         "dockLogisticsNotes": "Frequently berths at Franklin Dock (downtown) or AJ Dock. Afternoon port calls align well with evening whale watches and sunset glacier flights.",
         "recommendedExcursionTypes": [
@@ -336,7 +336,7 @@
         "typicalDock": "Ore Dock or Railroad Dock Aft",
         "tenderRequired": false,
         "typicalPortHours": "Approx. 10–12 hours",
-        "recommendedBufferMinutes": 60,
+        "recommendedBufferMinutes": 120,
         "maxTourDurationHours": 6.5,
         "dockLogisticsNotes": "Docked directly at Ore Dock with brief pedestrian path to historic downtown Broadway.",
         "recommendedExcursionTypes": [
@@ -360,7 +360,7 @@
         "typicalDock": "Sitka Sound Cruise Terminal (Old Harbor Road)",
         "tenderRequired": false,
         "typicalPortHours": "Approx. 8–9 hours",
-        "recommendedBufferMinutes": 75,
+        "recommendedBufferMinutes": 120,
         "maxTourDurationHours": 5,
         "dockLogisticsNotes": "Quantum berths at the Sitka Sound Cruise Terminal (5 miles north of town). High-capacity free shuttle buses run continuously (approx. 10–15 min) between the terminal and Harrigan Centennial Hall in downtown Sitka.",
         "recommendedExcursionTypes": [
@@ -406,7 +406,7 @@
         "typicalDock": "Franklin Street Dock or Steamship Wharf (Downtown)",
         "tenderRequired": false,
         "typicalPortHours": "Approx. 9–10 hours",
-        "recommendedBufferMinutes": 75,
+        "recommendedBufferMinutes": 120,
         "maxTourDurationHours": 6,
         "dockLogisticsNotes": "Princess ships frequently dock directly at Franklin Street Dock or Steamship Wharf in downtown Juneau, steps from Marine Park and tour bus staging areas.",
         "recommendedExcursionTypes": [
@@ -438,7 +438,7 @@
         "typicalDock": "Railroad Dock (Forward / Aft)",
         "tenderRequired": false,
         "typicalPortHours": "Approx. 12–14 hours",
-        "recommendedBufferMinutes": 60,
+        "recommendedBufferMinutes": 120,
         "maxTourDurationHours": 8,
         "dockLogisticsNotes": "Discovery Princess docks at the Railroad Dock with trackside boarding for the White Pass & Yukon Route train.",
         "recommendedExcursionTypes": [
@@ -462,7 +462,7 @@
         "typicalDock": "Berth 1 or Berth 2 (Downtown Waterfront)",
         "tenderRequired": false,
         "typicalPortHours": "Approx. 6–7 hours",
-        "recommendedBufferMinutes": 60,
+        "recommendedBufferMinutes": 120,
         "maxTourDurationHours": 4,
         "dockLogisticsNotes": "Docks right in downtown Ketchikan at Berth 1 or 2, allowing passengers to walk directly to Creek Street and floatplane docks.",
         "recommendedExcursionTypes": [
@@ -501,7 +501,7 @@
         "typicalDock": "Steamship Wharf or Marine Park Dock (Downtown)",
         "tenderRequired": false,
         "typicalPortHours": "Approx. 9–10 hours",
-        "recommendedBufferMinutes": 75,
+        "recommendedBufferMinutes": 120,
         "maxTourDurationHours": 6,
         "dockLogisticsNotes": "Koningsdam typically docks right at Steamship Wharf or Marine Park in the heart of downtown Juneau.",
         "recommendedExcursionTypes": [
@@ -533,7 +533,7 @@
         "typicalDock": "Broadway Dock or Ore Dock",
         "tenderRequired": false,
         "typicalPortHours": "Approx. 11–13 hours",
-        "recommendedBufferMinutes": 60,
+        "recommendedBufferMinutes": 120,
         "maxTourDurationHours": 7.5,
         "dockLogisticsNotes": "Broadway Dock provides immediate walk-up access to historic Broadway Street and the White Pass train platform.",
         "recommendedExcursionTypes": [
@@ -557,7 +557,7 @@
         "typicalDock": "Berth 1 or Berth 2 (Downtown)",
         "tenderRequired": false,
         "typicalPortHours": "Approx. 6–7 hours",
-        "recommendedBufferMinutes": 60,
+        "recommendedBufferMinutes": 120,
         "maxTourDurationHours": 4,
         "dockLogisticsNotes": "Docks directly downtown; immediate access to Creek Street and local harbors.",
         "recommendedExcursionTypes": [
@@ -596,7 +596,7 @@
         "typicalDock": "Franklin Street Dock or AJ Dock",
         "tenderRequired": false,
         "typicalPortHours": "Approx. 8–9 hours",
-        "recommendedBufferMinutes": 90,
+        "recommendedBufferMinutes": 120,
         "maxTourDurationHours": 5.5,
         "dockLogisticsNotes": "Berths at Franklin or AJ dock. Shuttles connect AJ dock to downtown tour gathering spots.",
         "recommendedExcursionTypes": [
@@ -620,7 +620,7 @@
         "typicalDock": "Railroad Dock or Ore Dock",
         "tenderRequired": false,
         "typicalPortHours": "Approx. 10–12 hours",
-        "recommendedBufferMinutes": 60,
+        "recommendedBufferMinutes": 120,
         "maxTourDurationHours": 6.5,
         "dockLogisticsNotes": "Easy flat walk to historic downtown Broadway and the railway depot.",
         "recommendedExcursionTypes": [
@@ -644,7 +644,7 @@
         "typicalDock": "Berth 3 or Berth 4",
         "tenderRequired": false,
         "typicalPortHours": "Approx. 6–7 hours",
-        "recommendedBufferMinutes": 60,
+        "recommendedBufferMinutes": 120,
         "maxTourDurationHours": 4,
         "dockLogisticsNotes": "Berths along the downtown boardwalk near the tunnel and lumberjack show grounds.",
         "recommendedExcursionTypes": [
@@ -668,7 +668,7 @@
         "typicalDock": "Wilderness Landing or Adventure Landing Dock",
         "tenderRequired": false,
         "typicalPortHours": "Approx. 7–8 hours",
-        "recommendedBufferMinutes": 60,
+        "recommendedBufferMinutes": 120,
         "maxTourDurationHours": 4.5,
         "dockLogisticsNotes": "Icy Strait Point (Hoonah) is a Native-owned port. Trams and gondolas connect Wilderness Landing to Adventure Landing.",
         "recommendedExcursionTypes": [
@@ -707,7 +707,7 @@
         "typicalDock": "AJ Dock or Marine Park Dock",
         "tenderRequired": false,
         "typicalPortHours": "Approx. 9–10 hours",
-        "recommendedBufferMinutes": 90,
+        "recommendedBufferMinutes": 120,
         "maxTourDurationHours": 5.5,
         "dockLogisticsNotes": "Carnival Spirit frequently berths at the AJ Dock. Take the port shuttle to the tram lot for fast connections to Auke Bay boat harbors.",
         "recommendedExcursionTypes": [
@@ -731,7 +731,7 @@
         "typicalDock": "Ore Dock or Railroad Dock",
         "tenderRequired": false,
         "typicalPortHours": "Approx. 10–12 hours",
-        "recommendedBufferMinutes": 60,
+        "recommendedBufferMinutes": 120,
         "maxTourDurationHours": 6.5,
         "dockLogisticsNotes": "Convenient walking access to town and railway platform.",
         "recommendedExcursionTypes": [
@@ -755,7 +755,7 @@
         "typicalDock": "Berth 1 or Berth 2",
         "tenderRequired": false,
         "typicalPortHours": "Approx. 6 hours",
-        "recommendedBufferMinutes": 60,
+        "recommendedBufferMinutes": 120,
         "maxTourDurationHours": 3.5,
         "dockLogisticsNotes": "Direct downtown berthing at Berth 1 or 2 right off Front Street.",
         "recommendedExcursionTypes": [
@@ -793,7 +793,7 @@
         "typicalDock": "Franklin Street Dock or Steamship Wharf",
         "tenderRequired": false,
         "typicalPortHours": "Approx. 9–10 hours",
-        "recommendedBufferMinutes": 75,
+        "recommendedBufferMinutes": 120,
         "maxTourDurationHours": 5.5,
         "dockLogisticsNotes": "Disney Wonder frequently docks right in downtown Juneau, making stroller access and family transfers straightforward.",
         "recommendedExcursionTypes": [
@@ -817,7 +817,7 @@
         "typicalDock": "Railroad Dock or Broadway Dock",
         "tenderRequired": false,
         "typicalPortHours": "Approx. 11–13 hours",
-        "recommendedBufferMinutes": 60,
+        "recommendedBufferMinutes": 120,
         "maxTourDurationHours": 6.5,
         "dockLogisticsNotes": "Steps from historic Skagway boardwalks and direct White Pass train boarding.",
         "recommendedExcursionTypes": [
@@ -840,7 +840,7 @@
         "typicalDock": "Berth 1 or Berth 2 (Downtown)",
         "tenderRequired": false,
         "typicalPortHours": "Approx. 6–7 hours",
-        "recommendedBufferMinutes": 60,
+        "recommendedBufferMinutes": 120,
         "maxTourDurationHours": 3.5,
         "dockLogisticsNotes": "Downtown docking next to the Great Alaskan Lumberjack Show arena.",
         "recommendedExcursionTypes": [
