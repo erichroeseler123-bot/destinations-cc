@@ -813,22 +813,38 @@ export async function inspectSereneRezgoInventoryReadOnly(options?: {
   };
 
   try {
+    const requestHeaders = {
+      Accept: "*/*",
+      "User-Agent": "DestinationCommandCenter-ReadOnlyInspector/1.0",
+    };
     const [companyRes, searchRes] = await Promise.all([
       fetchFn(buildReadOnlyUrl("company"), {
         method: "GET",
-        headers: { Accept: "application/xml, text/xml" },
+        headers: requestHeaders,
         cache: "no-store",
-        signal: AbortSignal.timeout(4500),
+        signal: AbortSignal.timeout(6500),
       }),
       fetchFn(buildReadOnlyUrl("search"), {
         method: "GET",
-        headers: { Accept: "application/xml, text/xml" },
+        headers: requestHeaders,
         cache: "no-store",
-        signal: AbortSignal.timeout(4500),
+        signal: AbortSignal.timeout(6500),
       }),
     ]);
 
+    const [companyXml, searchXml] = await Promise.all([
+      companyRes.text(),
+      searchRes.text(),
+    ]);
+
     if (!companyRes.ok || !searchRes.ok) {
+      const responseNoteRaw =
+        extractXmlTag(companyXml, "error") ||
+        extractXmlTag(searchXml, "error") ||
+        extractXmlTag(companyXml, "response") ||
+        extractXmlTag(searchXml, "response") ||
+        null;
+      const safeNote = sanitizeRezgoDiagnosticMessage(responseNoteRaw, [cid, apiKey]);
       const { supplierConflicts } = reconcileRezgoItemsAcrossSurfaces({
         items: [],
         companyName: null,
@@ -850,14 +866,11 @@ export async function inspectSereneRezgoInventoryReadOnly(options?: {
         reconciliation: [],
         supplierConflicts,
         writeCapabilitiesDisabled,
-        errorMessage: `Rezgo read-only GET returned HTTP ${companyRes.status} / ${searchRes.status}.`,
+        errorMessage: `Rezgo read-only GET returned HTTP ${companyRes.status} / ${searchRes.status}${
+          safeNote ? ` (${safeNote.slice(0, 140)})` : ""
+        }.`,
       };
     }
-
-    const [companyXml, searchXml] = await Promise.all([
-      companyRes.text(),
-      searchRes.text(),
-    ]);
 
     const xmlError =
       extractXmlTag(companyXml, "error") || extractXmlTag(searchXml, "error");
