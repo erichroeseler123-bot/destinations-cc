@@ -34,7 +34,19 @@ test("Cruise Promenade 8-stage conversion funnel aggregates genuine events, excl
       metadata: {
         site: "cruise-promenade",
         original_event_name: "start_board_selected",
-        context: { surface: "sailing_detail", ship: "Symphony of the Seas", sailDate: "2027-01-03" },
+        context: { surface: "cruise_finder", ship: "Symphony of the Seas", sailDate: "2027-01-03" },
+      },
+    },
+    {
+      corridorId: "portfolio-network",
+      eventName: "page_viewed",
+      sessionId: "cp_guest_1",
+      occurredAt: new Date("2026-11-12T01:09:30.000Z"),
+      sourcePage: "/p/FAM-7721",
+      metadata: {
+        site: "cruise-promenade",
+        original_event_name: "shared_plan_visited",
+        context: { shareCode: "FAM-7721", ship: "Symphony of the Seas", sailDate: "2027-01-03" },
       },
     },
     {
@@ -168,6 +180,10 @@ test("Cruise Promenade 8-stage conversion funnel aggregates genuine events, excl
     [...CRUISE_PROMENADE_FUNNEL_EVENTS],
   );
   assert.equal(summary.excludedSyntheticEvents28d, 1);
+  assert.equal(summary.findMySailingSelectionsCount28d, 1);
+  assert.equal(summary.findMySailingUniqueSessionsCount28d, 1);
+  assert.equal(summary.sharedLinkVisitsCount28d, 1);
+  assert.equal(summary.sharedLinkUniqueSessionsCount28d, 1);
   assert.equal(summary.stages[0].uniqueSessionsCount, 2); // sailing_page_viewed
   assert.equal(summary.stages[1].uniqueSessionsCount, 1); // start_board_selected
   assert.equal(summary.stages[2].uniqueSessionsCount, 2); // board_created

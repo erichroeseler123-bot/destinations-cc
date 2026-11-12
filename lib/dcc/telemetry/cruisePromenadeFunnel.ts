@@ -45,6 +45,10 @@ export interface CruisePromenadeConversionFunnelSummary {
   windowLabel: string;
   totalGenuineEvents28d: number;
   excludedSyntheticEvents28d: number;
+  findMySailingSelectionsCount28d: number;
+  findMySailingUniqueSessionsCount28d: number;
+  sharedLinkVisitsCount28d: number;
+  sharedLinkUniqueSessionsCount28d: number;
   stages: CruisePromenadeFunnelStageSummary[];
   startedWithoutInvitingCount: number;
   recentUninvitedStarts: UninvitedBoardStartItem[];
@@ -160,6 +164,10 @@ export function buildCruisePromenadeConversionFunnelSummary(params: {
 
   let totalGenuineEvents28d = 0;
   let excludedSyntheticEvents28d = 0;
+  let findMySailingSelectionsCount28d = 0;
+  const findMySailingSessions = new Set<string>();
+  const sharedLinkVisitDedupeKeys = new Set<string>();
+  const sharedLinkUniqueSessions = new Set<string>();
 
   for (const event of params.events) {
     const meta = asRecord(event.metadata);
@@ -189,16 +197,33 @@ export function buildCruisePromenadeConversionFunnelSummary(params: {
     totalGenuineEvents28d += 1;
 
     const rawOriginal = cleanStr(meta.original_event_name) || cleanStr(event.eventName) || "";
-    const mappedStage = normalizeLegacyOrCurrentEventName(rawOriginal);
-    if (!mappedStage) continue;
-
-    // Avoid double-counting if both `group_inquiry_submitted` and `charter_inquiry_submitted` fire in the same session for the same inquiryId
     const ctx = asRecord(meta.context);
     const sessionKey =
       cleanStr(event.sessionId) ||
       cleanStr(event.handoffId) ||
       cleanStr(event.eventId) ||
       `anon_${totalGenuineEvents28d}`;
+
+    if (rawOriginal === "shared_plan_visited" || rawOriginal === "shared_plan_viewed") {
+      const shareCodeOrPlan =
+        cleanStr(ctx.shareCode)?.toUpperCase() ||
+        cleanStr(ctx.plannerId)?.toLowerCase() ||
+        cleanStr(event.sourcePage) ||
+        "shared";
+      sharedLinkVisitDedupeKeys.add(`${sessionKey}::${shareCodeOrPlan}`);
+      sharedLinkUniqueSessions.add(sessionKey);
+      continue;
+    }
+
+    const mappedStage = normalizeLegacyOrCurrentEventName(rawOriginal);
+    if (!mappedStage) continue;
+
+    if (mappedStage === "start_board_selected" && cleanStr(ctx.surface) === "cruise_finder") {
+      findMySailingSelectionsCount28d += 1;
+      findMySailingSessions.add(sessionKey);
+    }
+
+    // Avoid double-counting if both `group_inquiry_submitted` and `charter_inquiry_submitted` fire in the same session for the same inquiryId
 
     if (
       rawOriginal === "group_inquiry_submitted" &&
@@ -319,12 +344,16 @@ export function buildCruisePromenadeConversionFunnelSummary(params: {
         b.startBoardCount - a.startBoardCount ||
         b.viewsCount - a.viewsCount,
     )
-    .slice(0, 11);
+    .slice(0, 53);
 
   return {
     windowLabel,
     totalGenuineEvents28d,
     excludedSyntheticEvents28d,
+    findMySailingSelectionsCount28d,
+    findMySailingUniqueSessionsCount28d: findMySailingSessions.size,
+    sharedLinkVisitsCount28d: sharedLinkVisitDedupeKeys.size,
+    sharedLinkUniqueSessionsCount28d: sharedLinkUniqueSessions.size,
     stages,
     startedWithoutInvitingCount: uninvitedStarts.length,
     recentUninvitedStarts: uninvitedStarts.slice(0, 8),
