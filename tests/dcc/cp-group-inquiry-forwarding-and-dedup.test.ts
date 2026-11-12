@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { NextRequest } from "next/server";
+import { proxy } from "@/proxy";
 import {
   clearCpGroupInquiryIdempotencyForTests,
   DELETE as cpInquiryDelete,
@@ -93,7 +95,25 @@ test("CP-Bridge 1: Auth rejection (503 when DCC_CP_SERVICE_SECRET unset, 401 on 
       assert.doesNotMatch(wrongText, new RegExp(TEST_SERVICE_SECRET));
     }
 
-    // 4. Both x-dcc-cp-service-secret and Authorization: Bearer <secret> succeed when valid
+    // 4. Both x-dcc-cp-service-secret and Authorization: Bearer <secret> pass proxy.ts AND succeed on route handler
+    const wrongProxyRes = await proxy(
+      new NextRequest("https://www.destinationcommandcenter.com/api/internal/cp-group-inquiries", {
+        method: "POST",
+        headers: { "x-dcc-cp-service-secret": "wrong_secret_123" },
+      }),
+      {} as never,
+    );
+    assert.equal(wrongProxyRes?.status, 401);
+
+    const allowedProxyRes = await proxy(
+      new NextRequest("https://www.destinationcommandcenter.com/api/internal/cp-group-inquiries", {
+        method: "POST",
+        headers: { "x-dcc-cp-service-secret": TEST_SERVICE_SECRET },
+      }),
+      {} as never,
+    );
+    assert.notEqual(allowedProxyRes?.status, 401);
+
     const validBearerRes = await cpInquiryPost(
       new Request("https://www.destinationcommandcenter.com/api/internal/cp-group-inquiries", {
         method: "POST",

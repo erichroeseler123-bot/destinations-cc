@@ -533,6 +533,17 @@ function checkInternalApiAuthorization(request: NextRequest): {
   if (request.nextUrl.pathname === "/api/internal/hydrate-pipeline") {
     return { authorized: true };
   }
+  if (request.nextUrl.pathname === "/api/internal/cp-group-inquiries") {
+    const cpServiceSecret = process.env.DCC_CP_SERVICE_SECRET?.trim() || "";
+    const headerSecret = request.headers.get("x-dcc-cp-service-secret")?.trim() || "";
+    const bearerCandidate = readBearerToken(request);
+    if (
+      cpServiceSecret &&
+      (headerSecret === cpServiceSecret || bearerCandidate === cpServiceSecret)
+    ) {
+      return { authorized: true };
+    }
+  }
 
   // 1. HMAC Signature verification (e.g. CP-to-DCC service requests)
   if (
