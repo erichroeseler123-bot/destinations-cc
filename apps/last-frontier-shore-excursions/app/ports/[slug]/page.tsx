@@ -71,7 +71,7 @@ export default async function PortPage({
       ? loadLfseApprovedPortFacts(slug, { revalidateSeconds: 60 })
       : Promise.resolve(null),
     slug === "juneau"
-      ? loadLfseJuneauNormalizedSupplierFeed({ revalidateSeconds: 120 })
+      ? loadLfseJuneauNormalizedSupplierFeed({ date: "2027-07-15", revalidateSeconds: 120 })
       : Promise.resolve(null),
   ]);
   const researchQualifications = researchLoad

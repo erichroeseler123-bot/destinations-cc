@@ -88,6 +88,7 @@ export default async function ActivityPage({
     port === "juneau" &&
     (activity === "whale-watching" || activity === "mendenhall-glacier-tours")
       ? loadLfseJuneauNormalizedSupplierFeed({
+          date: "2027-07-15",
           activitySlug: activity,
           revalidateSeconds: 120,
         })

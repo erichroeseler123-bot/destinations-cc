@@ -1951,3 +1951,614 @@ export async function buildNormalizedJuneauSupplierFeed(options?: {
     supplierConflicts: inspection.supplierConflicts || [],
   };
 }
+
+export type PublicJuneauTimingBucket =
+  | "recommended"
+  | "confirm_return_timing"
+  | "other_available_times"
+  | "does_not_fit_ship_day";
+
+export interface PublicJuneauSyncSelection {
+  operatorId: "juneau-tours-whale-watch";
+  operatorName: string;
+  rezgoCom: string | null;
+  rezgoUid: string;
+  optionCode: string;
+  optionTitle: string;
+  matchedViatorProductCode: string | null;
+  fallbackProductCode: string | null;
+  departureTime24: string;
+  serviceDate: string | null;
+  durationMinutes: number | null;
+  startingLocation: string | null;
+  adultPriceUsd: number | null;
+  currency: string;
+  fitStatus:
+    | "recommended"
+    | "outside_sailing_window_blocked"
+    | "reduced_buffer_not_recommended"
+    | "unverified_cruise_timing_pending_transfer_and_pickup";
+}
+
+export interface PublicJuneauDepartureButton {
+  selectionKey: string;
+  departureTime24: string;
+  timeLabel: string;
+  timingBucket: PublicJuneauTimingBucket;
+  timingStatusLabel: string;
+  reducedBufferHmsLabel: string | null;
+  requiresReducedBufferConfirmation: boolean;
+  checkoutHref: string | null;
+  plannerAddHref: string;
+  syncSelection: PublicJuneauSyncSelection;
+}
+
+export interface PublicJuneauOutsideWindowTime {
+  departureTime24: string;
+  timeLabel: string;
+}
+
+export interface PublicJuneauTourCardModel {
+  cardId: string;
+  title: string;
+  operatorName: string;
+  activityCategory: NormalizedJuneauSupplierTour["activityCategory"];
+  durationLabel: string | null;
+  durationMinutes: number | null;
+  startingAdultPriceUsd: number | null;
+  startingPriceLabel: string | null;
+  currency: string;
+  serviceDate: string | null;
+  partySizePrompt: "How many people are going?";
+  enteredPartySize: number | null;
+  partyAvailabilityLabel: string | null;
+  insufficientPartyMessage: string | null;
+  hasPositiveAvailabilityBeforePartyFilter: boolean;
+  recommendedDepartures: PublicJuneauDepartureButton[];
+  confirmTimingDepartures: PublicJuneauDepartureButton[];
+  otherAvailableTimes: PublicJuneauDepartureButton[];
+  doesNotFitShipDayTimes: PublicJuneauOutsideWindowTime[];
+  checkoutAvailable: boolean;
+  checkoutCtaLabel: "Book this tour";
+  secondaryCheckCtaLabel: "Check availability & book";
+  checkoutProviderLabel: string | null;
+  addToGroupPlanLabel: "Add to group plan";
+}
+
+export interface PublicJuneauLiveAvailabilityView {
+  ok: boolean;
+  operatorName: string;
+  serviceDate: string | null;
+  enteredPartySize: number | null;
+  partySizePrompt: "How many people are going?";
+  shipArrivalTime: string | null;
+  shipAllAboardTime: string | null;
+  cards: PublicJuneauTourCardModel[];
+}
+
+export function formatPublicClockTime12h(rawTime: string | null | undefined): string {
+  const norm = normalizeRezgoClockTime(rawTime);
+  if (!norm) return rawTime ? String(rawTime).trim() : "TBD";
+  const m = norm.match(/^(\d{2}):(\d{2})(?::(\d{2}))?$/);
+  if (!m) return norm;
+  const hour24 = Number(m[1]);
+  const minute = m[2];
+  const period = hour24 >= 12 ? "PM" : "AM";
+  const hour12 = hour24 % 12 === 0 ? 12 : hour24 % 12;
+  return `${hour12}:${minute} ${period}`;
+}
+
+function buildCruisePromenadeGroupPlanHref(params: {
+  title: string;
+  operatorName: string;
+  operatorId: "juneau-tours-whale-watch";
+  serviceDate: string | null;
+  departureTime24: string;
+  timeLabel: string;
+  durationMinutes: number | null;
+  startingLocation: string | null;
+  rezgoCom: string | null;
+  rezgoUid: string;
+  matchedViatorProductCode: string | null;
+  checkoutHref: string | null;
+  fitStatus: PublicJuneauSyncSelection["fitStatus"];
+  originSurface: "dcc" | "lfse" | "cp";
+  relativeForCruisePromenade?: boolean;
+}): string {
+  const qs = new URLSearchParams();
+  qs.set("title", params.title);
+  qs.set("optionTitle", `${params.timeLabel} Departure`);
+  qs.set("port", "juneau");
+  if (params.serviceDate) {
+    qs.set("date", params.serviceDate);
+    qs.set("serviceDate", params.serviceDate);
+  }
+  qs.set("startsAt", params.departureTime24);
+  if (typeof params.durationMinutes === "number" && params.durationMinutes > 0) {
+    qs.set("durationMinutes", String(params.durationMinutes));
+  }
+  qs.set("operator", params.operatorName);
+  qs.set("operatorId", params.operatorId);
+  qs.set("fitStatus", params.fitStatus);
+  qs.set(
+    "sourceSite",
+    params.originSurface === "lfse"
+      ? "lastfrontiershoreexcursions.com"
+      : params.originSurface === "cp"
+        ? "cruisepromenade.com"
+        : "destinationcommandcenter.com",
+  );
+  if (params.matchedViatorProductCode) {
+    qs.set("productCode", params.matchedViatorProductCode);
+    qs.set("matchedViatorProductCode", params.matchedViatorProductCode);
+    qs.set("fallbackProductCode", params.matchedViatorProductCode);
+    qs.set("bookingProviderIdentity", "Checkout via Viator");
+  }
+  if (params.rezgoCom) qs.set("rezgoCom", params.rezgoCom);
+  if (params.rezgoUid) {
+    qs.set("rezgoUid", params.rezgoUid);
+    qs.set("optionCode", params.rezgoUid);
+  }
+  if (params.startingLocation) {
+    qs.set("location", params.startingLocation);
+  }
+  if (params.checkoutHref) {
+    qs.set("bookingUrl", params.checkoutHref);
+  }
+  const pathWithQuery = `/planner/add?${qs.toString()}`;
+  return params.relativeForCruisePromenade
+    ? pathWithQuery
+    : `https://cruisepromenade.com${pathWithQuery}`;
+}
+
+export function buildPublicJuneauLiveAvailabilityView(
+  feed: NormalizedJuneauSupplierFeed,
+  options?: {
+    partySize?: number | null;
+    shipArrivalTime?: string | null;
+    shipAllAboardTime?: string | null;
+    allAboardConfirmed?: boolean;
+    originSurface?: "dcc" | "lfse" | "cp";
+    activitySlug?: string | null;
+    customCheckoutHrefBuilder?: (args: {
+      tour: NormalizedJuneauSupplierTour;
+      option: NormalizedJuneauDepartureOption;
+      partySize: number | null;
+    }) => string | null;
+  },
+): PublicJuneauLiveAvailabilityView {
+  const rawParty = options?.partySize;
+  const enteredPartySize =
+    typeof rawParty === "number" && Number.isFinite(rawParty) && rawParty >= 1
+      ? Math.min(99, Math.trunc(rawParty))
+      : null;
+
+  const originSurface = options?.originSurface ?? "dcc";
+  const operatorDisplayName = "Juneau Tours & Whale Watch";
+
+  const activityFilteredTours = options?.activitySlug
+    ? feed.tours.filter((t) => {
+        if (options.activitySlug === "whale-watching") {
+          return (
+            t.activityCategory === "whale-watching" ||
+            t.activityCategory === "combo-whale-glacier"
+          );
+        }
+        if (options.activitySlug === "mendenhall-glacier-tours") {
+          return (
+            t.activityCategory === "mendenhall-glacier-tours" ||
+            t.activityCategory === "combo-whale-glacier"
+          );
+        }
+        return true;
+      })
+    : feed.tours;
+
+  const cards: PublicJuneauTourCardModel[] = [];
+
+  for (const tour of activityFilteredTours) {
+    const depOptions = Array.isArray(tour.departureOptions) ? tour.departureOptions : [];
+    const tourServiceDate = tour.serviceDate ?? tour.dateChecked ?? feed.dateChecked ?? null;
+
+    // Requirement 1 & 2 & 6: Sold-out or non-positive availability NEVER appears publicly anywhere.
+    const positiveSpotsOptions = depOptions.filter(
+      (opt) =>
+        Boolean(opt.departureTime) &&
+        typeof opt.availableSpots === "number" &&
+        Number.isFinite(opt.availableSpots) &&
+        opt.availableSpots > 0,
+    );
+
+    if (positiveSpotsOptions.length === 0) {
+      // Tour has zero positive-availability departures -> hide completely from public view.
+      continue;
+    }
+
+    const evaluateOptionAssessment = (opt: NormalizedJuneauDepartureOption) => {
+      const depStr = opt.departureTime || "00:00";
+      if (options?.shipArrivalTime || options?.shipAllAboardTime) {
+        return assessRezgoDepartureAgainstShipWindow({
+          departureTime: depStr,
+          durationMinutes: tour.durationMinutes,
+          shipArrivalTime: options.shipArrivalTime,
+          shipAllAboardTime: options.shipAllAboardTime,
+          allAboardConfirmed: options.allAboardConfirmed,
+        });
+      }
+      return (
+        opt.windowAssessment ??
+        assessRezgoDepartureAgainstShipWindow({
+          departureTime: depStr,
+          durationMinutes: tour.durationMinutes,
+          shipArrivalTime: null,
+          shipAllAboardTime: null,
+          allAboardConfirmed: false,
+        })
+      );
+    };
+
+    const inWindowPositive = positiveSpotsOptions.filter(
+      (opt) => !evaluateOptionAssessment(opt).blockedForSailingWindow,
+    );
+
+    const qualifiedOptions =
+      enteredPartySize !== null
+        ? positiveSpotsOptions.filter(
+            (opt) =>
+              typeof opt.availableSpots === "number" &&
+              opt.availableSpots >= enteredPartySize,
+          )
+        : positiveSpotsOptions;
+
+    const recommendedDepartures: PublicJuneauDepartureButton[] = [];
+    const confirmTimingDepartures: PublicJuneauDepartureButton[] = [];
+    const otherAvailableTimes: PublicJuneauDepartureButton[] = [];
+    const doesNotFitShipDayTimes: PublicJuneauOutsideWindowTime[] = [];
+
+    for (const opt of qualifiedOptions) {
+      const dep24 = normalizeRezgoClockTime(opt.departureTime) || String(opt.departureTime);
+      const timeLabel = formatPublicClockTime12h(dep24);
+      const assessment = evaluateOptionAssessment(opt);
+
+      if (assessment.blockedForSailingWindow) {
+        doesNotFitShipDayTimes.push({
+          departureTime24: dep24,
+          timeLabel,
+        });
+        continue;
+      }
+
+      const checkoutHref = options?.customCheckoutHrefBuilder
+        ? options.customCheckoutHrefBuilder({
+            tour,
+            option: opt,
+            partySize: enteredPartySize,
+          })
+        : opt.dccCommerceWrapperHref;
+
+      let timingBucket: PublicJuneauTimingBucket = "confirm_return_timing";
+      let timingStatusLabel = "Confirm return timing";
+      let reducedBufferHmsLabel: string | null = null;
+      let requiresReducedBufferConfirmation = false;
+
+      if (assessment.status === "recommended") {
+        timingBucket = "recommended";
+        timingStatusLabel = "Recommended";
+      } else if (assessment.status === "reduced_buffer_not_recommended") {
+        timingBucket = "other_available_times";
+        reducedBufferHmsLabel = assessment.upperBoundRemainingBufferHmsLabel || null;
+        timingStatusLabel = reducedBufferHmsLabel
+          ? `${reducedBufferHmsLabel} buffer · Not recommended`
+          : "Reduced buffer · Not recommended";
+        requiresReducedBufferConfirmation = true;
+      } else {
+        timingBucket = "confirm_return_timing";
+        timingStatusLabel = "Confirm return timing";
+      }
+
+      const plannerAddHref = buildCruisePromenadeGroupPlanHref({
+        title: tour.title,
+        operatorName: operatorDisplayName,
+        operatorId: "juneau-tours-whale-watch",
+        serviceDate: opt.serviceDate || tourServiceDate,
+        departureTime24: dep24,
+        timeLabel,
+        durationMinutes: tour.durationMinutes,
+        startingLocation: tour.startingLocation,
+        rezgoCom: opt.rezgoCom ?? tour.rezgoCom,
+        rezgoUid: opt.uid,
+        matchedViatorProductCode: tour.matchedViatorProductCode,
+        checkoutHref,
+        fitStatus: assessment.status,
+        originSurface,
+        relativeForCruisePromenade: originSurface === "cp",
+      });
+
+      const button: PublicJuneauDepartureButton = {
+        selectionKey: `${tour.normalizedTourId}::${dep24}::${opt.uid}`,
+        departureTime24: dep24,
+        timeLabel,
+        timingBucket,
+        timingStatusLabel,
+        reducedBufferHmsLabel,
+        requiresReducedBufferConfirmation,
+        checkoutHref,
+        plannerAddHref,
+        syncSelection: {
+          operatorId: "juneau-tours-whale-watch",
+          operatorName: operatorDisplayName,
+          rezgoCom: opt.rezgoCom ?? tour.rezgoCom,
+          rezgoUid: opt.uid,
+          optionCode: opt.uid,
+          optionTitle: `${timeLabel} Departure`,
+          matchedViatorProductCode: tour.matchedViatorProductCode,
+          fallbackProductCode: tour.matchedViatorProductCode,
+          departureTime24: dep24,
+          serviceDate: opt.serviceDate || tourServiceDate,
+          durationMinutes: tour.durationMinutes,
+          startingLocation: tour.startingLocation,
+          adultPriceUsd: opt.adultPriceUsd ?? tour.adultPriceUsd,
+          currency: tour.currency || "USD",
+          fitStatus: assessment.status,
+        },
+      };
+
+      if (timingBucket === "recommended") {
+        recommendedDepartures.push(button);
+      } else if (timingBucket === "other_available_times") {
+        otherAvailableTimes.push(button);
+      } else {
+        confirmTimingDepartures.push(button);
+      }
+    }
+
+    const totalSelectableForParty =
+      recommendedDepartures.length +
+      confirmTimingDepartures.length +
+      otherAvailableTimes.length;
+
+    // If no party size was entered AND all positive options are outside the ship window with nothing selectable or collapsible, keep collapsible if outside-window exists
+    if (
+      enteredPartySize === null &&
+      totalSelectableForParty === 0 &&
+      doesNotFitShipDayTimes.length === 0
+    ) {
+      continue;
+    }
+
+    const partyNoun = enteredPartySize === 1 ? "person" : "people";
+    const partyAvailabilityLabel =
+      enteredPartySize !== null && totalSelectableForParty > 0
+        ? `Available for your group of ${enteredPartySize}`
+        : null;
+    const insufficientPartyMessage =
+      enteredPartySize !== null &&
+      totalSelectableForParty === 0 &&
+      inWindowPositive.length > 0
+        ? `No departure currently has enough availability for ${enteredPartySize} ${partyNoun}.`
+        : enteredPartySize !== null && totalSelectableForParty === 0
+          ? `No departure currently has enough availability for ${enteredPartySize} ${partyNoun}.`
+          : null;
+
+    const startingPriceLabel =
+      typeof tour.adultPriceUsd === "number" && tour.adultPriceUsd > 0
+        ? `From $${Number.isInteger(tour.adultPriceUsd) ? tour.adultPriceUsd.toFixed(0) : tour.adultPriceUsd.toFixed(2)} adult`
+        : null;
+
+    const hasApprovedPartnerCheckout = Boolean(tour.matchedViatorProductCode);
+
+    cards.push({
+      cardId: tour.normalizedTourId,
+      title: tour.title,
+      operatorName: operatorDisplayName,
+      activityCategory: tour.activityCategory,
+      durationLabel:
+        tour.durationLabel ||
+        (tour.durationMinutes ? `${Math.round((tour.durationMinutes / 60) * 100) / 100} hours` : null),
+      durationMinutes: tour.durationMinutes,
+      startingAdultPriceUsd: tour.adultPriceUsd,
+      startingPriceLabel,
+      currency: tour.currency || "USD",
+      serviceDate: tourServiceDate,
+      partySizePrompt: "How many people are going?",
+      enteredPartySize,
+      partyAvailabilityLabel,
+      insufficientPartyMessage,
+      hasPositiveAvailabilityBeforePartyFilter: inWindowPositive.length > 0,
+      recommendedDepartures,
+      confirmTimingDepartures,
+      otherAvailableTimes,
+      doesNotFitShipDayTimes,
+      checkoutAvailable: hasApprovedPartnerCheckout,
+      checkoutCtaLabel: "Book this tour",
+      secondaryCheckCtaLabel: "Check availability & book",
+      checkoutProviderLabel: hasApprovedPartnerCheckout ? "Checkout via Viator" : null,
+      addToGroupPlanLabel: "Add to group plan",
+    });
+  }
+
+  return {
+    ok: feed.ok,
+    operatorName: operatorDisplayName,
+    serviceDate: feed.dateChecked ?? null,
+    enteredPartySize,
+    partySizePrompt: "How many people are going?",
+    shipArrivalTime: options?.shipArrivalTime ?? null,
+    shipAllAboardTime: options?.shipAllAboardTime ?? null,
+    cards,
+  };
+}
+
+export interface RevalidatePublicJuneauCheckoutResult {
+  ok: boolean;
+  available: boolean;
+  partySize: number;
+  serviceDate: string | null;
+  departureTime24: string | null;
+  timeLabel: string | null;
+  partyAvailabilityLabel: string | null;
+  message: string;
+  checkoutHref: string | null;
+  checkoutProviderLabel: string | null;
+  requiresReducedBufferConfirmation: boolean;
+  reducedBufferWarningLabel: string | null;
+}
+
+export async function revalidatePublicJuneauDepartureBeforeCheckout(params: {
+  env?: Record<string, string | undefined>;
+  fetchImpl?: typeof fetch;
+  serviceDate: string;
+  partySize: number;
+  cardId?: string | null;
+  rezgoUid?: string | null;
+  departureTime24?: string | null;
+  shipArrivalTime?: string | null;
+  shipAllAboardTime?: string | null;
+  allAboardConfirmed?: boolean;
+}): Promise<RevalidatePublicJuneauCheckoutResult> {
+  const cleanPartySize = Math.max(1, Math.min(99, Math.trunc(Number(params.partySize) || 1)));
+  const partyNoun = cleanPartySize === 1 ? "person" : "people";
+
+  const freshFeed = await buildNormalizedJuneauSupplierFeed({
+    env: params.env,
+    fetchImpl: params.fetchImpl,
+    searchDate: params.serviceDate,
+    shipArrivalTime: params.shipArrivalTime || null,
+    shipAllAboardTime: params.shipAllAboardTime || null,
+    allAboardConfirmed: params.allAboardConfirmed ?? Boolean(params.shipAllAboardTime),
+    bypassCache: true,
+  });
+
+  if (!freshFeed.ok || freshFeed.tours.length === 0) {
+    return {
+      ok: false,
+      available: false,
+      partySize: cleanPartySize,
+      serviceDate: params.serviceDate,
+      departureTime24: params.departureTime24 ?? null,
+      timeLabel: params.departureTime24 ? formatPublicClockTime12h(params.departureTime24) : null,
+      partyAvailabilityLabel: null,
+      message: `No departure currently has enough availability for ${cleanPartySize} ${partyNoun}.`,
+      checkoutHref: null,
+      checkoutProviderLabel: null,
+      requiresReducedBufferConfirmation: false,
+      reducedBufferWarningLabel: null,
+    };
+  }
+
+  let matchedTour: NormalizedJuneauSupplierTour | null = null;
+  let matchedOpt: NormalizedJuneauDepartureOption | null = null;
+
+  for (const tour of freshFeed.tours) {
+    if (params.cardId && tour.normalizedTourId !== params.cardId) {
+      continue;
+    }
+    for (const opt of tour.departureOptions || []) {
+      const normDep = normalizeRezgoClockTime(opt.departureTime);
+      const uidMatches = Boolean(params.rezgoUid && opt.uid === params.rezgoUid);
+      const depMatches = Boolean(
+        params.departureTime24 &&
+          normDep &&
+          normDep === normalizeRezgoClockTime(params.departureTime24),
+      );
+      if (uidMatches || (!params.rezgoUid && depMatches)) {
+        matchedTour = tour;
+        matchedOpt = opt;
+        break;
+      }
+    }
+    if (matchedOpt) break;
+  }
+
+  if (!matchedTour || !matchedOpt) {
+    return {
+      ok: true,
+      available: false,
+      partySize: cleanPartySize,
+      serviceDate: params.serviceDate,
+      departureTime24: params.departureTime24 ?? null,
+      timeLabel: params.departureTime24 ? formatPublicClockTime12h(params.departureTime24) : null,
+      partyAvailabilityLabel: null,
+      message: `No departure currently has enough availability for ${cleanPartySize} ${partyNoun}.`,
+      checkoutHref: null,
+      checkoutProviderLabel: null,
+      requiresReducedBufferConfirmation: false,
+      reducedBufferWarningLabel: null,
+    };
+  }
+
+  const assessment =
+    matchedOpt.windowAssessment ??
+    assessRezgoDepartureAgainstShipWindow({
+      departureTime: matchedOpt.departureTime || "00:00",
+      durationMinutes: matchedTour.durationMinutes,
+      shipArrivalTime: params.shipArrivalTime,
+      shipAllAboardTime: params.shipAllAboardTime,
+      allAboardConfirmed: params.allAboardConfirmed,
+    });
+
+  const dep24 = normalizeRezgoClockTime(matchedOpt.departureTime) || matchedOpt.departureTime;
+  const timeLabel = dep24 ? formatPublicClockTime12h(dep24) : null;
+
+  if (assessment.blockedForSailingWindow) {
+    return {
+      ok: true,
+      available: false,
+      partySize: cleanPartySize,
+      serviceDate: params.serviceDate,
+      departureTime24: dep24,
+      timeLabel,
+      partyAvailabilityLabel: null,
+      message: "Doesn’t fit this ship day.",
+      checkoutHref: null,
+      checkoutProviderLabel: null,
+      requiresReducedBufferConfirmation: false,
+      reducedBufferWarningLabel: null,
+    };
+  }
+
+  const hasEnough =
+    typeof matchedOpt.availableSpots === "number" &&
+    Number.isFinite(matchedOpt.availableSpots) &&
+    matchedOpt.availableSpots >= cleanPartySize;
+
+  if (!hasEnough) {
+    return {
+      ok: true,
+      available: false,
+      partySize: cleanPartySize,
+      serviceDate: params.serviceDate,
+      departureTime24: dep24,
+      timeLabel,
+      partyAvailabilityLabel: null,
+      message: `No departure currently has enough availability for ${cleanPartySize} ${partyNoun}.`,
+      checkoutHref: null,
+      checkoutProviderLabel: null,
+      requiresReducedBufferConfirmation: false,
+      reducedBufferWarningLabel: null,
+    };
+  }
+
+  const isReduced = assessment.status === "reduced_buffer_not_recommended";
+  const reducedLabel =
+    isReduced && assessment.upperBoundRemainingBufferHmsLabel
+      ? `${assessment.upperBoundRemainingBufferHmsLabel} buffer · Not recommended`
+      : isReduced
+        ? "Reduced buffer · Not recommended"
+        : null;
+
+  return {
+    ok: true,
+    available: true,
+    partySize: cleanPartySize,
+    serviceDate: matchedOpt.serviceDate || params.serviceDate,
+    departureTime24: dep24,
+    timeLabel,
+    partyAvailabilityLabel: `Available for your group of ${cleanPartySize}`,
+    message: `Available for your group of ${cleanPartySize}`,
+    checkoutHref: matchedOpt.dccCommerceWrapperHref,
+    checkoutProviderLabel: matchedTour.matchedViatorProductCode ? "Checkout via Viator" : null,
+    requiresReducedBufferConfirmation: isReduced,
+    reducedBufferWarningLabel: reducedLabel,
+  };
+}

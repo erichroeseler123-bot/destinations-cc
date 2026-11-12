@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { NextRequest } from "next/server";
 import { ADMIN_SESSION_COOKIE, buildAdminSessionValue } from "@/lib/adminAccess";
@@ -18,12 +19,15 @@ import {
   MAX_REZGO_CACHE_ENTRIES,
   assessRezgoDepartureAgainstShipWindow,
   buildNormalizedJuneauSupplierFeed,
+  buildPublicJuneauLiveAvailabilityView,
   clearRezgoReadOnlyCacheForTesting,
   getRezgoReadOnlyCacheStatsForTesting,
   getSereneRezgoReadinessStatus,
   inspectSereneRezgoInventoryReadOnly,
+  revalidatePublicJuneauDepartureBeforeCheckout,
   sanitizeRezgoDiagnosticMessage,
 } from "@/lib/dcc/liveSlots/rezgoReadOnly";
+import { JuneauLiveAvailabilitySection } from "@/components/dcc/JuneauLiveAvailabilitySection";
 import {
   clearLfseJuneauSupplierFeedCacheForTesting,
   getLfseJuneauSupplierFeedCacheStatsForTesting,
@@ -859,16 +863,21 @@ test("Rezgo Gate-2 advancement, supplier 2.00h cutoff vs DCC 1:59:59 return buff
     assert.equal(getLfseJuneauSupplierFeedCacheStatsForTesting().entries, 1);
 
     const html = renderToStaticMarkup(
-      JuneauNormalizedSupplierFeedSection({ feed: lfseSecond }),
+      React.createElement(JuneauNormalizedSupplierFeedSection, { feed: lfseSecond }),
     );
     assert.match(html, /Live Operator Availability/);
-    assert.match(html, /Needs Verification|Cruise-Safe Timing Unverified/i);
-    assert.match(html, /Supplier booking cutoff: 2h \(not ship buffer\)/);
-    assert.match(html, /Outside Sailing Window — Blocked|Outside ship window/i);
+    assert.match(html, /How many people are going\?/);
+    assert.match(html, /Confirm return timing/);
+    assert.match(html, /Doesn’t fit this ship day/);
+    assert.match(html, /Book this tour/);
+    assert.match(html, /Add to group plan/);
+    assert.match(html, /Checkout via Viator/);
     assert.doesNotMatch(html, /Verified Operator Schedule/);
     assert.doesNotMatch(html, /badge-safety/);
+    assert.doesNotMatch(html, /20 seats|15 seats|35 spots|0 seats/i);
+    assert.doesNotMatch(html, /COM 32329|UID 32331|#5857P23/);
 
-    // 5. DCC /juneau/whale-watching-tours public surface wires Juneau Tours — Live Operator Availability with approved fallback disclosure
+    // 5. DCC /juneau/whale-watching-tours public surface wires JuneauLiveAvailabilitySection with simplified cards
     assert.equal(whaleTour.departureOptions.length, 2);
     assert.equal(whaleTour.departureOptions[0].uid, "32331");
     assert.equal(whaleTour.departureOptions[0].departureTime, "09:30");
@@ -884,10 +893,242 @@ test("Rezgo Gate-2 advancement, supplier 2.00h cutoff vs DCC 1:59:59 return buff
       path.join(process.cwd(), "app/juneau/whale-watching-tours/page.tsx"),
       "utf8",
     );
-    assert.match(dccWhalePageSrc, /Juneau Tours — Live Operator Availability/);
-    assert.match(dccWhalePageSrc, /dcc-juneau-tours-live-availability/);
+    const dccLiveSectionSrc = fs.readFileSync(
+      path.join(process.cwd(), "components/dcc/JuneauLiveAvailabilitySection.tsx"),
+      "utf8",
+    );
+    assert.match(dccWhalePageSrc, /JuneauLiveAvailabilitySection/);
     assert.match(dccWhalePageSrc, /buildNormalizedJuneauSupplierFeed/);
-    assert.match(dccWhalePageSrc, /Direct Rezgo checkout disabled/i);
+    assert.match(dccWhalePageSrc, /buildPublicJuneauLiveAvailabilityView/);
+    assert.match(dccLiveSectionSrc, /Juneau Tours — Live Operator Availability/);
+    assert.match(dccLiveSectionSrc, /dcc-juneau-tours-live-availability/);
+  } finally {
+    clearRezgoReadOnlyCacheForTesting();
+    clearLfseJuneauSupplierFeedCacheForTesting();
+  }
+});
+
+test("Simplified public Juneau live-availability interface hides seat counts, sold-out departures, insufficient-party-size departures, and technical IDs while preserving pre-checkout revalidation", async () => {
+  clearRezgoReadOnlyCacheForTesting();
+  clearLfseJuneauSupplierFeedCacheForTesting();
+
+  try {
+    const mockEnv = {
+      REZGO_SERENE_CID: "TEST_CID",
+      REZGO_SERENE_API_KEY: "TEST_KEY",
+    };
+
+    let currentSpotCounts: Record<string, number> = {
+      "31001": 0, // 08:30 AM — SOLD OUT (0 seats) -> must NEVER render publicly
+      "31002": 3, // 10:00 AM — 3 seats (in window, >= 2h margin -> Confirm return timing)
+      "31003": 8, // 01:00 PM — 8 seats (13:00 + 180m = 16:00 vs 17:30 all-aboard = 1:30:00 reduced buffer)
+      "31004": 12, // 03:00 PM — 12 seats (15:00 + 180m = 18:00 > 17:30 all-aboard -> Doesn't fit this ship day)
+      "31005": 0, // 04:00 PM — 0 seats AND outside window -> must NOT even appear in Doesn't fit this ship day!
+    };
+
+    const mockRezgoFetch: typeof fetch = async (input) => {
+      const url = String(input);
+      if (url.includes("i=company")) {
+        return new Response(
+          "<response><company_name>Juneau Tours</company_name><domain>juneauwhalewatch</domain><currency>USD</currency></response>",
+          { status: 200 },
+        );
+      }
+      return new Response(
+        `<response>
+          <item>
+            <id>1</id><uid>31001</uid><com>32329</com>
+            <item><![CDATA[Juneau Whale Watch]]></item><option><![CDATA[8:30 AM]]></option>
+            <duration>3 hours</duration><time>08:30 AM</time><cutoff>2.00</cutoff>
+            <price_adult>169.00</price_adult><currency_base>USD</currency_base>
+            <availability>${currentSpotCounts["31001"]}</availability>
+          </item>
+          <item>
+            <id>2</id><uid>31002</uid><com>32329</com>
+            <item><![CDATA[Juneau Whale Watch]]></item><option><![CDATA[10:00 AM]]></option>
+            <duration>3 hours</duration><time>10:00 AM</time><cutoff>2.00</cutoff>
+            <price_adult>169.00</price_adult><currency_base>USD</currency_base>
+            <availability>${currentSpotCounts["31002"]}</availability>
+          </item>
+          <item>
+            <id>3</id><uid>31003</uid><com>32329</com>
+            <item><![CDATA[Juneau Whale Watch]]></item><option><![CDATA[1:00 PM]]></option>
+            <duration>3 hours</duration><time>01:00 PM</time><cutoff>2.00</cutoff>
+            <price_adult>169.00</price_adult><currency_base>USD</currency_base>
+            <availability>${currentSpotCounts["31003"]}</availability>
+          </item>
+          <item>
+            <id>4</id><uid>31004</uid><com>32329</com>
+            <item><![CDATA[Juneau Whale Watch]]></item><option><![CDATA[3:00 PM]]></option>
+            <duration>3 hours</duration><time>03:00 PM</time><cutoff>2.00</cutoff>
+            <price_adult>169.00</price_adult><currency_base>USD</currency_base>
+            <availability>${currentSpotCounts["31004"]}</availability>
+          </item>
+          <item>
+            <id>5</id><uid>31005</uid><com>32329</com>
+            <item><![CDATA[Juneau Whale Watch]]></item><option><![CDATA[4:00 PM]]></option>
+            <duration>3 hours</duration><time>04:00 PM</time><cutoff>2.00</cutoff>
+            <price_adult>169.00</price_adult><currency_base>USD</currency_base>
+            <availability>${currentSpotCounts["31005"]}</availability>
+          </item>
+        </response>`,
+        { status: 200 },
+      );
+    };
+
+    const feed = await buildNormalizedJuneauSupplierFeed({
+      env: mockEnv,
+      fetchImpl: mockRezgoFetch,
+      searchDate: "2027-07-15",
+      shipArrivalTime: "08:00",
+      shipAllAboardTime: "17:30",
+      allAboardConfirmed: true,
+    });
+
+    // Backend feed still retains exact seat counts and COM/UIDs for owner/admin diagnostics
+    assert.equal(feed.tours[0].rezgoCom, "32329");
+    assert.equal(feed.tours[0].departureOptions[0].availableSpots, 0);
+    assert.equal(feed.tours[0].departureOptions[1].availableSpots, 3);
+
+    // 1. Before party size is entered (partySize = null):
+    // - Sold-out 8:30 AM (0 seats) and 4:00 PM (0 seats) are completely hidden
+    // - Positive departures 10:00 AM and 1:00 PM render time-only (no seat counts, no UIDs, no COM, no #5857P23)
+    // - 3:00 PM (12 seats, outside window) appears ONLY inside collapsed "Doesn’t fit this ship day"
+    // - Prompts "How many people are going?"
+    const unselectedView = buildPublicJuneauLiveAvailabilityView(feed, {
+      partySize: null,
+      shipArrivalTime: "08:00",
+      shipAllAboardTime: "17:30",
+      allAboardConfirmed: true,
+    });
+    const dccUnselectedHtml = renderToStaticMarkup(
+      React.createElement(JuneauLiveAvailabilitySection, {
+        initialView: unselectedView,
+        initialDate: "2027-07-15",
+        initialShipArrival: "08:00",
+        initialAllAboard: "17:30",
+        initialBerth: "CT",
+      }),
+    );
+
+    assert.match(dccUnselectedHtml, /How many people are going\?/);
+    assert.match(dccUnselectedHtml, /10:00 AM/);
+    assert.match(dccUnselectedHtml, /1:00 PM/);
+    assert.match(dccUnselectedHtml, /Other available times/);
+    assert.match(dccUnselectedHtml, /1:30:00 buffer · Not recommended/);
+    assert.match(dccUnselectedHtml, /Confirm return timing/);
+    assert.match(dccUnselectedHtml, /Doesn’t fit this ship day/);
+    assert.match(dccUnselectedHtml, /3:00 PM/);
+    assert.doesNotMatch(dccUnselectedHtml, /8:30 AM/);
+    assert.doesNotMatch(dccUnselectedHtml, /4:00 PM/);
+    assert.doesNotMatch(dccUnselectedHtml, /0 seats|3 seats|8 seats|12 seats|23 spots/i);
+    assert.doesNotMatch(dccUnselectedHtml, /31001|31002|31003|32329|#5857P23/);
+
+    // 2. After party size = 4 is entered:
+    // - 10:00 AM (only 3 seats < 4) is NOT rendered!
+    // - 1:00 PM (8 seats >= 4) IS rendered with "Available for your group of 4"
+    const partyOf4View = buildPublicJuneauLiveAvailabilityView(feed, {
+      partySize: 4,
+      shipArrivalTime: "08:00",
+      shipAllAboardTime: "17:30",
+      allAboardConfirmed: true,
+    });
+    const dccPartyOf4Html = renderToStaticMarkup(
+      React.createElement(JuneauLiveAvailabilitySection, {
+        initialView: partyOf4View,
+        initialDate: "2027-07-15",
+        initialShipArrival: "08:00",
+        initialAllAboard: "17:30",
+        initialBerth: "CT",
+      }),
+    );
+    assert.doesNotMatch(dccPartyOf4Html, /10:00 AM/);
+    assert.match(dccPartyOf4Html, /1:00 PM/);
+    assert.match(dccPartyOf4Html, /Available for your group of 4/);
+    assert.doesNotMatch(dccPartyOf4Html, /8 seats|seats remaining/i);
+
+    // Also verify Last Frontier renders identical filtering for partySize = 4 and partySize = 10
+    const lfseFeed = await loadLfseJuneauNormalizedSupplierFeed({
+      date: "2027-07-15",
+      bypassCache: true,
+      fetchImpl: async () =>
+        new Response(
+          JSON.stringify({
+            ok: true,
+            normalizedSupplierFeeds: { juneauToursWhaleWatch: feed },
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        ),
+    });
+    const lfseParty4Html = renderToStaticMarkup(
+      React.createElement(JuneauNormalizedSupplierFeedSection, {
+        feed: lfseFeed,
+        initialPartySize: 4,
+      }),
+    );
+    assert.doesNotMatch(lfseParty4Html, /8:30 AM/);
+    assert.doesNotMatch(lfseParty4Html, /10:00 AM/);
+    assert.match(lfseParty4Html, /1:00 PM/);
+    assert.match(lfseParty4Html, /Available for your group of 4/);
+    assert.doesNotMatch(lfseParty4Html, /#5857P23|COM 32329|UID 31003|8 seats/i);
+
+    // 3. When no in-window departure can accommodate partySize = 10 (max in-window is 8):
+    // - Renders exact message: "No departure currently has enough availability for 10 people."
+    const partyOf10View = buildPublicJuneauLiveAvailabilityView(feed, {
+      partySize: 10,
+      shipArrivalTime: "08:00",
+      shipAllAboardTime: "17:30",
+      allAboardConfirmed: true,
+    });
+    const dccParty10Html = renderToStaticMarkup(
+      React.createElement(JuneauLiveAvailabilitySection, {
+        initialView: partyOf10View,
+        initialDate: "2027-07-15",
+        initialShipArrival: "08:00",
+        initialAllAboard: "17:30",
+        initialBerth: "CT",
+      }),
+    );
+    assert.doesNotMatch(dccParty10Html, /10:00 AM/);
+    assert.doesNotMatch(dccParty10Html, /1:00 PM/);
+    assert.match(
+      dccParty10Html,
+      /No departure currently has enough availability for 10 people\./,
+    );
+
+    // 4. Pre-checkout live revalidation catches last-second inventory drop before opening checkout
+    const revalOk = await revalidatePublicJuneauDepartureBeforeCheckout({
+      env: mockEnv,
+      fetchImpl: mockRezgoFetch,
+      serviceDate: "2027-07-15",
+      partySize: 4,
+      rezgoUid: "31003",
+      shipArrivalTime: "08:00",
+      shipAllAboardTime: "17:30",
+      allAboardConfirmed: true,
+    });
+    assert.equal(revalOk.available, true);
+    assert.equal(revalOk.message, "Available for your group of 4");
+    assert.equal(revalOk.requiresReducedBufferConfirmation, true);
+
+    // Simulate seats dropping from 8 to 2 right before the traveler clicks "Book this tour"
+    currentSpotCounts = { ...currentSpotCounts, "31003": 2 };
+    const revalDropped = await revalidatePublicJuneauDepartureBeforeCheckout({
+      env: mockEnv,
+      fetchImpl: mockRezgoFetch,
+      serviceDate: "2027-07-15",
+      partySize: 4,
+      rezgoUid: "31003",
+      shipArrivalTime: "08:00",
+      shipAllAboardTime: "17:30",
+      allAboardConfirmed: true,
+    });
+    assert.equal(revalDropped.available, false);
+    assert.equal(revalDropped.checkoutHref, null);
+    assert.equal(
+      revalDropped.message,
+      "No departure currently has enough availability for 4 people.",
+    );
   } finally {
     clearRezgoReadOnlyCacheForTesting();
     clearLfseJuneauSupplierFeedCacheForTesting();

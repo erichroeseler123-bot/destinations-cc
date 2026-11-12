@@ -1,17 +1,188 @@
-import React from "react";
-import type { LfseJuneauNormalizedFeedResult } from "../lib/dccJuneauSupplierFeed";
+"use client";
+
+import React, { useMemo, useState } from "react";
+import {
+  buildLfsePublicJuneauAvailabilityView,
+  type LfseJuneauNormalizedFeedResult,
+  type LfsePublicDepartureButton,
+  type LfsePublicJuneauAvailabilityView,
+  type LfsePublicTourCardModel,
+} from "../lib/dccJuneauSupplierFeed";
 
 interface JuneauNormalizedSupplierFeedSectionProps {
-  feed: LfseJuneauNormalizedFeedResult;
+  feed?: LfseJuneauNormalizedFeedResult;
+  initialView?: LfsePublicJuneauAvailabilityView;
+  initialPartySize?: number | null;
+  activitySlug?: string;
 }
+
+const PARTY_SIZE_CHOICES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12];
 
 export function JuneauNormalizedSupplierFeedSection({
   feed,
+  initialView,
+  initialPartySize = null,
+  activitySlug,
 }: JuneauNormalizedSupplierFeedSectionProps) {
-  if (!feed.ok || feed.tours.length === 0) {
-    // Graceful fallback: when Rezgo is unavailable or returns 0 matching options,
-    // Last Frontier continues operating cleanly with its approved Viator offers.
+  const computedInitialView = useMemo(() => {
+    if (initialView) return initialView;
+    if (!feed) {
+      return {
+        ok: false,
+        operatorName: "Juneau Tours & Whale Watch",
+        serviceDate: null,
+        enteredPartySize: initialPartySize,
+        partySizePrompt: "How many people are going?" as const,
+        cards: [],
+      };
+    }
+    return buildLfsePublicJuneauAvailabilityView(feed, { partySize: initialPartySize });
+  }, [feed, initialView, initialPartySize]);
+
+  const [liveView, setLiveView] = useState<LfsePublicJuneauAvailabilityView | null>(null);
+  const view = liveView ?? computedInitialView;
+
+  const [serviceDate, setServiceDate] = useState<string>(
+    view.serviceDate || "2027-07-15",
+  );
+  const [partySize, setPartySize] = useState<number | null>(
+    view.enteredPartySize ?? initialPartySize,
+  );
+  const [loadingRecheck, setLoadingRecheck] = useState<boolean>(false);
+  const [selectedKeyByCard, setSelectedKeyByCard] = useState<Record<string, string>>({});
+  const [revalidatingCardId, setRevalidatingCardId] = useState<string | null>(null);
+  const [cardNoticeById, setCardNoticeById] = useState<Record<string, string>>({});
+  const [pendingReducedCheckout, setPendingReducedCheckout] = useState<{
+    cardId: string;
+    checkoutHref: string;
+    warningLabel: string;
+  } | null>(null);
+
+  if (!view.ok && view.cards.length === 0 && !liveView) {
     return null;
+  }
+
+  async function recheckAvailability(nextDate: string, nextPartySize: number | null) {
+    setLoadingRecheck(true);
+    try {
+      const qs = new URLSearchParams();
+      qs.set("date", nextDate);
+      if (activitySlug) qs.set("activity", activitySlug);
+      if (nextPartySize !== null && nextPartySize >= 1) {
+        qs.set("partySize", String(nextPartySize));
+      }
+      const res = await fetch(`/api/juneau-live-availability?${qs.toString()}`, {
+        method: "GET",
+        cache: "no-store",
+      });
+      if (res.ok) {
+        const nextView = (await res.json()) as LfsePublicJuneauAvailabilityView;
+        setLiveView(nextView);
+      }
+    } catch {
+      // Keep current view on transient network failure
+    } finally {
+      setLoadingRecheck(false);
+    }
+  }
+
+  function handlePartySizeChange(rawVal: string) {
+    const parsed = rawVal ? Number.parseInt(rawVal, 10) : NaN;
+    const nextParty = Number.isFinite(parsed) && parsed >= 1 ? parsed : null;
+    setPartySize(nextParty);
+    setCardNoticeById({});
+    setPendingReducedCheckout(null);
+    void recheckAvailability(serviceDate, nextParty);
+  }
+
+  function getActiveDeparture(card: LfsePublicTourCardModel): LfsePublicDepartureButton | null {
+    const allSelectable = [
+      ...card.recommendedDepartures,
+      ...card.confirmTimingDepartures,
+      ...card.otherAvailableTimes,
+    ];
+    if (allSelectable.length === 0) return null;
+    const chosenKey = selectedKeyByCard[card.cardId];
+    return allSelectable.find((b) => b.selectionKey === chosenKey) || allSelectable[0];
+  }
+
+  async function handleBookThisTour(
+    card: LfsePublicTourCardModel,
+    activeDep: LfsePublicDepartureButton | null,
+  ) {
+    if (!activeDep || !card.checkoutAvailable) return;
+
+    if (partySize === null || partySize < 1) {
+      setCardNoticeById((prev) => ({
+        ...prev,
+        [card.cardId]:
+          "How many people are going? Select your group size first so we can verify availability before checkout.",
+      }));
+      return;
+    }
+
+    setRevalidatingCardId(card.cardId);
+    setCardNoticeById((prev) => ({ ...prev, [card.cardId]: "" }));
+
+    try {
+      const res = await fetch("/api/juneau-live-availability", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          date: card.serviceDate || serviceDate,
+          partySize,
+          activity: activitySlug,
+          cardId: card.cardId,
+          rezgoUid: activeDep.rezgoUid,
+          departureTime24: activeDep.departureTime24,
+        }),
+      });
+      const json = (await res.json()) as {
+        ok?: boolean;
+        available?: boolean;
+        message?: string;
+        checkoutHref?: string | null;
+        requiresReducedBufferConfirmation?: boolean;
+        reducedBufferWarningLabel?: string | null;
+        refreshedView?: LfsePublicJuneauAvailabilityView;
+      };
+
+      if (json.refreshedView) {
+        setLiveView(json.refreshedView);
+      }
+
+      if (!json.available || !json.checkoutHref) {
+        const noun = partySize === 1 ? "person" : "people";
+        setCardNoticeById((prev) => ({
+          ...prev,
+          [card.cardId]:
+            json.message ||
+            `No departure currently has enough availability for ${partySize} ${noun}.`,
+        }));
+        return;
+      }
+
+      if (json.requiresReducedBufferConfirmation) {
+        setPendingReducedCheckout({
+          cardId: card.cardId,
+          checkoutHref: json.checkoutHref,
+          warningLabel:
+            json.reducedBufferWarningLabel ||
+            activeDep.timingStatusLabel ||
+            "Reduced buffer · Not recommended",
+        });
+        return;
+      }
+
+      window.open(json.checkoutHref, "_blank", "noopener,noreferrer");
+    } catch {
+      setCardNoticeById((prev) => ({
+        ...prev,
+        [card.cardId]: "Unable to verify live availability right now. Please try again.",
+      }));
+    } finally {
+      setRevalidatingCardId(null);
+    }
   }
 
   return (
@@ -31,231 +202,561 @@ export function JuneauNormalizedSupplierFeedSection({
             display: "flex",
             flexWrap: "wrap",
             justifyContent: "space-between",
-            alignItems: "center",
-            gap: 12,
-            marginBottom: 14,
+            alignItems: "flex-end",
+            gap: 14,
+            marginBottom: 18,
           }}
         >
           <div>
             <p className="eyebrow" style={{ color: "var(--muted)", marginBottom: 4 }}>
-              DCC Normalized Supplier Feed · Live Operator Availability Only
+              Live Operator Availability
             </p>
             <h2 style={{ margin: 0, fontSize: "22px" }}>
-              {feed.verifiedCompanyName || "Juneau Tours & Whale Watch"} — Live Operator Availability
+              {view.operatorName} — Live Operator Availability
             </h2>
+            <p style={{ color: "var(--muted)", fontSize: "14px", margin: "6px 0 0" }}>
+              Choose your sailing date and group size to see available departure times.
+            </p>
           </div>
-          <span className="badge badge-warning">
-            Needs Verification · Cruise-Safe Timing Unverified · Partner Fallback Checkout Active
-          </span>
-        </div>
 
-        <p style={{ color: "var(--muted)", fontSize: "14px", maxWidth: 880, marginBottom: 18 }}>
-          Departures, per-option seat counts, durations, and published rates below reflect{" "}
-          <strong>live operator availability</strong> normalized read-only through Destination Command Center from{" "}
-          <strong>{feed.verifiedCompanyName || "Juneau Tours & Whale Watch"}</strong>
-          {feed.verifiedRezgoDomain ? ` (${feed.verifiedRezgoDomain})` : ""}
-          {feed.dateChecked ? ` for service date ${feed.dateChecked}` : ""}
-          {feed.checkedAt ? ` · Last checked ${feed.checkedAt}` : ""}.{" "}
-          <strong>Needs verification (not verified cruise-safe timing):</strong> operator booking cutoffs (for example, 2h prior to tour) apply only to ticket purchase and are never treated as our{" "}
-          <strong>1:59:59+ (2-hour) minimum recommended cruise-return buffer</strong>. Exact meeting points, berth-transfer durations, operator return times, and dock pickup rules remain unconfirmed. Direct Rezgo checkout remains disabled; matched listings route to our approved partner offers.
-        </p>
-
-        <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 16 }}>
-          {feed.tours.map((tour) => {
-            const reducedBufferOptions = (tour.optionWindowAssessments || []).filter(
-              (a) => a.status === "reduced_buffer_not_recommended" && a.upperBoundRemainingBufferHmsLabel,
-            );
-            const blockedDepartures = tour.blockedOutsideWindowDepartures || [];
-            const depOptions = tour.departureOptions || [];
-            const effectiveServiceDate = tour.serviceDate ?? tour.dateChecked ?? feed.dateChecked;
-            const effectiveCheckedAt = tour.checkedAt ?? feed.checkedAt;
-            const allOptionsBlocked =
-              depOptions.length > 0 &&
-              depOptions.every((opt) => opt.windowAssessment?.blockedForSailingWindow === true);
-
-            return (
-              <article
-                className="card"
-                key={`${tour.normalizedTourId}-${tour.optionName || "default"}`}
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 10,
+              alignItems: "flex-end",
+            }}
+          >
+            <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: "12px", fontWeight: 700, color: "var(--deep)" }}>
+              Port Date
+              <input
+                type="date"
+                value={serviceDate}
+                onChange={(e) => {
+                  const nextDate = e.target.value;
+                  setServiceDate(nextDate);
+                  if (/^\d{4}-\d{2}-\d{2}$/.test(nextDate)) {
+                    void recheckAvailability(nextDate, partySize);
+                  }
+                }}
                 style={{
-                  background: "#f8fbfb",
+                  padding: "7px 10px",
+                  borderRadius: 8,
                   border: "1px solid var(--line)",
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "space-between",
+                  fontSize: "13px",
+                  background: "#ffffff",
+                }}
+              />
+            </label>
+            <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: "12px", fontWeight: 700, color: "var(--deep)" }}>
+              How many people are going?
+              <select
+                aria-label="How many people are going?"
+                value={partySize ?? ""}
+                onChange={(e) => handlePartySizeChange(e.target.value)}
+                style={{
+                  padding: "7px 10px",
+                  borderRadius: 8,
+                  border: "1px solid var(--forest)",
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  background: "#ffffff",
                 }}
               >
-                <div>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                    <span className="badge badge-warning">
-                      {tour.durationLabel || (tour.durationMinutes ? `${tour.durationMinutes} min` : "Verify duration")} · Needs verification
-                    </span>
-                    {tour.adultPriceUsd !== null && (
-                      <strong style={{ color: "var(--forest)", fontSize: "15px" }}>
-                        From ${tour.adultPriceUsd.toFixed(0)} {tour.currency}
-                        {tour.childPriceUsd !== null ? ` · Child $${tour.childPriceUsd.toFixed(0)}` : ""}
-                      </strong>
-                    )}
-                  </div>
+                <option value="">Select group size…</option>
+                {PARTY_SIZE_CHOICES.map((n) => (
+                  <option key={n} value={n}>
+                    {n} {n === 1 ? "person" : "people"}
+                  </option>
+                ))}
+              </select>
+            </label>
+            {loadingRecheck && (
+              <span style={{ fontSize: "12px", color: "var(--muted)", paddingBottom: 8 }}>
+                Checking…
+              </span>
+            )}
+          </div>
+        </div>
 
-                  <h3 style={{ fontSize: "17px", marginTop: 4, marginBottom: 6 }}>{tour.title}</h3>
-                  {tour.optionName && (
-                    <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--deep)", margin: "0 0 8px" }}>
-                      Option: {tour.optionName}
-                    </p>
-                  )}
+        {view.cards.length > 0 ? (
+          <div
+            className="grid"
+            style={{
+              gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 310px), 1fr))",
+              gap: 16,
+            }}
+          >
+            {view.cards.map((card) => {
+              const activeDep = getActiveDeparture(card);
+              const primaryDepartures = [
+                ...card.recommendedDepartures,
+                ...card.confirmTimingDepartures,
+              ];
+              const cardNotice = cardNoticeById[card.cardId];
+              const isRevalidating = revalidatingCardId === card.cardId;
+              const pendingReduced =
+                pendingReducedCheckout?.cardId === card.cardId ? pendingReducedCheckout : null;
 
-                  <div className="chips" style={{ marginBottom: 10 }}>
-                    {tour.rezgoCom && (
-                      <span className="chip">
-                        COM {tour.rezgoCom}
-                      </span>
-                    )}
-                    {effectiveServiceDate && (
-                      <span className="chip">
-                        Service date: {effectiveServiceDate}
-                      </span>
-                    )}
-                    {tour.departureTimes.length > 0 && (
-                      <span className="chip">
-                        Departures: {tour.departureTimes.slice(0, 4).join(", ")}
-                      </span>
-                    )}
-                    {tour.availableSpots !== null && effectiveServiceDate && (
-                      <span className="chip">
-                        {tour.availableSpots} spots ({effectiveServiceDate})
-                      </span>
-                    )}
-                    {typeof tour.supplierBookingCutoffHours === "number" && (
-                      <span className="chip">
-                        Supplier booking cutoff: {tour.supplierBookingCutoffHours}h (not ship buffer)
-                      </span>
-                    )}
-                    {tour.matchedViatorProductCode && (
-                      <span className="chip">
-                        Partner Ref: #{tour.matchedViatorProductCode}
-                      </span>
-                    )}
-                  </div>
-
-                  {depOptions.length > 0 && (
+              return (
+                <article
+                  className="card"
+                  key={card.cardId}
+                  data-testid="lfse-juneau-simplified-tour-card"
+                  style={{
+                    background: "#f8fbfb",
+                    border: "1px solid var(--line)",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                    gap: 14,
+                  }}
+                >
+                  <div>
                     <div
                       style={{
-                        borderTop: "1px solid var(--line)",
-                        paddingTop: 8,
-                        marginBottom: 10,
-                        fontSize: "12px",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
+                        gap: 8,
+                        marginBottom: 6,
                       }}
                     >
-                      <strong style={{ display: "block", marginBottom: 4, color: "var(--deep)" }}>
-                        Per-Departure Options (Live Read-Only Feed):
-                      </strong>
-                      <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 4 }}>
-                        {depOptions.map((opt) => {
-                          const isBlocked = Boolean(opt.windowAssessment?.blockedForSailingWindow);
-                          const isReduced =
-                            opt.windowAssessment?.status === "reduced_buffer_not_recommended";
-                          return (
-                            <li
-                              key={opt.uid}
-                              style={{
-                                display: "flex",
-                                flexWrap: "wrap",
-                                justifyContent: "space-between",
-                                gap: 6,
-                                padding: "4px 6px",
-                                borderRadius: 6,
-                                background: isBlocked ? "#fef2f2" : "#ffffff",
-                                border: "1px solid var(--line)",
-                              }}
-                            >
-                              <span>
-                                <strong>{opt.departureTime || opt.optionName || "Departure"}</strong>{" "}
-                                <span style={{ color: "var(--muted)" }}>(UID {opt.uid})</span>
-                                {opt.availableSpots !== null ? ` · ${opt.availableSpots} seats` : ""}
-                              </span>
-                              <span
+                      <div>
+                        <span
+                          style={{
+                            fontSize: "11.5px",
+                            fontWeight: 700,
+                            color: "var(--muted)",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.04em",
+                          }}
+                        >
+                          {card.operatorName}
+                        </span>
+                        <h3 style={{ fontSize: "17px", margin: "2px 0 4px" }}>{card.title}</h3>
+                      </div>
+                      {card.startingPriceLabel && (
+                        <strong style={{ color: "var(--forest)", fontSize: "14px", whiteSpace: "nowrap" }}>
+                          {card.startingPriceLabel}
+                        </strong>
+                      )}
+                    </div>
+
+                    <div
+                      style={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: 12,
+                        fontSize: "13px",
+                        color: "var(--muted)",
+                        marginBottom: 12,
+                      }}
+                    >
+                      {card.durationLabel && (
+                        <span>
+                          Duration: <strong style={{ color: "var(--ink)" }}>{card.durationLabel}</strong>
+                        </span>
+                      )}
+                      {card.serviceDate && (
+                        <span>
+                          Date: <strong style={{ color: "var(--ink)" }}>{card.serviceDate}</strong>
+                        </span>
+                      )}
+                    </div>
+
+                    <div
+                      style={{
+                        padding: "10px 12px",
+                        borderRadius: 8,
+                        background: "#ffffff",
+                        border: "1px solid var(--line)",
+                        marginBottom: 12,
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          flexWrap: "wrap",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          gap: 8,
+                        }}
+                      >
+                        <label style={{ fontSize: "12.5px", fontWeight: 700, color: "var(--deep)" }}>
+                          {card.partySizePrompt}
+                        </label>
+                        <select
+                          aria-label={`${card.title} — How many people are going?`}
+                          value={partySize ?? ""}
+                          onChange={(e) => handlePartySizeChange(e.target.value)}
+                          style={{
+                            padding: "5px 8px",
+                            borderRadius: 6,
+                            border: "1px solid var(--line)",
+                            fontSize: "12.5px",
+                            fontWeight: 600,
+                            background: "#f8fbfb",
+                          }}
+                        >
+                          <option value="">Select guests</option>
+                          {PARTY_SIZE_CHOICES.map((n) => (
+                            <option key={n} value={n}>
+                              {n} {n === 1 ? "person" : "people"}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      {card.partyAvailabilityLabel && (
+                        <p
+                          style={{
+                            margin: "6px 0 0",
+                            fontSize: "12.5px",
+                            fontWeight: 700,
+                            color: "#156d3a",
+                          }}
+                        >
+                          {card.partyAvailabilityLabel}
+                        </p>
+                      )}
+                      {card.insufficientPartyMessage && (
+                        <p
+                          style={{
+                            margin: "6px 0 0",
+                            fontSize: "12.5px",
+                            fontWeight: 700,
+                            color: "#875c00",
+                          }}
+                        >
+                          {card.insufficientPartyMessage}
+                        </p>
+                      )}
+                    </div>
+
+                    {primaryDepartures.length > 0 && (
+                      <div style={{ marginBottom: 10 }}>
+                        <span
+                          style={{
+                            display: "block",
+                            fontSize: "11.5px",
+                            fontWeight: 700,
+                            color: "var(--muted)",
+                            textTransform: "uppercase",
+                            marginBottom: 6,
+                          }}
+                        >
+                          Available departure times
+                        </span>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                          {primaryDepartures.map((dep) => {
+                            const selected = activeDep?.selectionKey === dep.selectionKey;
+                            return (
+                              <button
+                                key={dep.selectionKey}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedKeyByCard((prev) => ({
+                                    ...prev,
+                                    [card.cardId]: dep.selectionKey,
+                                  }));
+                                  setPendingReducedCheckout(null);
+                                }}
                                 style={{
-                                  fontWeight: 600,
-                                  color: isBlocked
-                                    ? "#9e2323"
-                                    : isReduced
-                                      ? "#875c00"
-                                      : "var(--muted)",
+                                  padding: "6px 11px",
+                                  borderRadius: 7,
+                                  fontSize: "12.5px",
+                                  fontWeight: 700,
+                                  cursor: "pointer",
+                                  border: selected
+                                    ? "2px solid var(--forest)"
+                                    : "1px solid var(--line)",
+                                  background: selected ? "#e8f4f1" : "#ffffff",
+                                  color: "var(--deep)",
                                 }}
                               >
-                                {isBlocked
-                                  ? "Outside sailing window — blocked"
-                                  : isReduced && opt.windowAssessment?.upperBoundRemainingBufferHmsLabel
-                                    ? `Reduced buffer (${opt.windowAssessment.upperBoundRemainingBufferHmsLabel} remaining) — not recommended`
-                                    : "Needs verification"}
-                              </span>
-                            </li>
-                          );
-                        })}
-                      </ul>
+                                {dep.timeLabel}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {card.otherAvailableTimes.length > 0 && (
+                      <div
+                        style={{
+                          borderTop: "1px solid var(--line)",
+                          paddingTop: 8,
+                          marginBottom: 10,
+                        }}
+                      >
+                        <span
+                          style={{
+                            display: "block",
+                            fontSize: "11.5px",
+                            fontWeight: 700,
+                            color: "#875c00",
+                            textTransform: "uppercase",
+                            marginBottom: 6,
+                          }}
+                        >
+                          Other available times
+                        </span>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 4 }}>
+                          {card.otherAvailableTimes.map((dep) => {
+                            const selected = activeDep?.selectionKey === dep.selectionKey;
+                            return (
+                              <button
+                                key={dep.selectionKey}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedKeyByCard((prev) => ({
+                                    ...prev,
+                                    [card.cardId]: dep.selectionKey,
+                                  }));
+                                  setPendingReducedCheckout(null);
+                                }}
+                                style={{
+                                  padding: "6px 11px",
+                                  borderRadius: 7,
+                                  fontSize: "12.5px",
+                                  fontWeight: 700,
+                                  cursor: "pointer",
+                                  border: selected ? "2px solid #875c00" : "1px solid #e2c893",
+                                  background: selected ? "#fef3c7" : "#fffbeb",
+                                  color: "#78350f",
+                                }}
+                              >
+                                {dep.timeLabel}
+                              </button>
+                            );
+                          })}
+                        </div>
+                        <p style={{ margin: 0, fontSize: "12px", color: "#875c00" }}>
+                          {card.otherAvailableTimes
+                            .map((d) => `${d.timeLabel}: ${d.timingStatusLabel}`)
+                            .join(" · ")}
+                        </p>
+                      </div>
+                    )}
+
+                    {activeDep && (
+                      <div
+                        style={{
+                          padding: "7px 10px",
+                          borderRadius: 7,
+                          background: "#ffffff",
+                          border: "1px solid var(--line)",
+                          fontSize: "12.5px",
+                          marginBottom: 8,
+                        }}
+                      >
+                        <span style={{ color: "var(--muted)" }}>
+                          Timing status ({activeDep.timeLabel}):{" "}
+                        </span>
+                        <strong
+                          style={{
+                            color:
+                              activeDep.timingBucket === "recommended"
+                                ? "#156d3a"
+                                : activeDep.timingBucket === "other_available_times"
+                                  ? "#875c00"
+                                  : "var(--deep)",
+                          }}
+                        >
+                          {activeDep.timingStatusLabel}
+                        </strong>
+                      </div>
+                    )}
+
+                    {card.doesNotFitShipDayTimes.length > 0 && (
+                      <details
+                        style={{
+                          padding: "6px 10px",
+                          borderRadius: 7,
+                          background: "#f1f5f9",
+                          border: "1px solid var(--line)",
+                          fontSize: "12px",
+                          color: "var(--muted)",
+                        }}
+                      >
+                        <summary style={{ cursor: "pointer", fontWeight: 600, color: "var(--deep)" }}>
+                          Doesn’t fit this ship day
+                        </summary>
+                        <p style={{ margin: "6px 0 0" }}>
+                          {card.doesNotFitShipDayTimes.map((t) => t.timeLabel).join(", ")} — outside
+                          your ship’s port window.
+                        </p>
+                      </details>
+                    )}
+
+                    {cardNotice && (
+                      <p
+                        role="status"
+                        style={{
+                          margin: "8px 0 0",
+                          padding: "7px 10px",
+                          borderRadius: 7,
+                          background: "#fffbeb",
+                          border: "1px solid #e2c893",
+                          fontSize: "12.5px",
+                          fontWeight: 600,
+                          color: "#78350f",
+                        }}
+                      >
+                        {cardNotice}
+                      </p>
+                    )}
+
+                    {pendingReduced && (
+                      <div
+                        role="alertdialog"
+                        style={{
+                          marginTop: 8,
+                          padding: "10px 12px",
+                          borderRadius: 8,
+                          background: "#fffbeb",
+                          border: "2px solid #d97706",
+                          fontSize: "12px",
+                          color: "#78350f",
+                        }}
+                      >
+                        <strong style={{ display: "block", marginBottom: 4 }}>
+                          {pendingReduced.warningLabel}
+                        </strong>
+                        <p style={{ margin: "0 0 8px" }}>
+                          Recommended excursions return at least 2 hours before all-aboard. Confirm
+                          if you want to continue to checkout.
+                        </p>
+                        <div style={{ display: "flex", gap: 8 }}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const href = pendingReduced.checkoutHref;
+                              setPendingReducedCheckout(null);
+                              window.open(href, "_blank", "noopener,noreferrer");
+                            }}
+                            style={{
+                              padding: "6px 10px",
+                              borderRadius: 6,
+                              border: "none",
+                              background: "#d97706",
+                              color: "#ffffff",
+                              fontWeight: 700,
+                              fontSize: "12px",
+                              cursor: "pointer",
+                            }}
+                          >
+                            Continue to checkout ↗
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setPendingReducedCheckout(null)}
+                            style={{
+                              padding: "6px 10px",
+                              borderRadius: 6,
+                              border: "1px solid var(--line)",
+                              background: "#ffffff",
+                              color: "var(--deep)",
+                              fontWeight: 600,
+                              fontSize: "12px",
+                              cursor: "pointer",
+                            }}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div style={{ borderTop: "1px solid var(--line)", paddingTop: 10 }}>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                      {card.checkoutAvailable && activeDep ? (
+                        <button
+                          type="button"
+                          disabled={isRevalidating}
+                          onClick={() => void handleBookThisTour(card, activeDep)}
+                          style={{
+                            flex: 1,
+                            padding: "9px 12px",
+                            borderRadius: 8,
+                            border: "none",
+                            background: "var(--forest)",
+                            color: "#ffffff",
+                            fontSize: "13px",
+                            fontWeight: 700,
+                            cursor: "pointer",
+                          }}
+                        >
+                          {isRevalidating ? "Checking…" : card.checkoutCtaLabel}
+                        </button>
+                      ) : (
+                        <span
+                          style={{
+                            flex: 1,
+                            textAlign: "center",
+                            padding: "9px 12px",
+                            borderRadius: 8,
+                            border: "1px solid var(--line)",
+                            background: "#ffffff",
+                            color: "var(--muted)",
+                            fontSize: "12.5px",
+                            fontWeight: 600,
+                          }}
+                        >
+                          {activeDep ? "Online booking unavailable" : "Select an available date"}
+                        </span>
+                      )}
+
+                      {activeDep && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (typeof window !== "undefined") {
+                              window.location.assign(activeDep.plannerAddHref);
+                            }
+                          }}
+                          style={{
+                            flex: 1,
+                            textAlign: "center",
+                            padding: "9px 12px",
+                            borderRadius: 8,
+                            border: "1px solid var(--forest)",
+                            background: "#ffffff",
+                            color: "var(--forest)",
+                            fontSize: "13px",
+                            fontWeight: 700,
+                            cursor: "pointer",
+                          }}
+                        >
+                          {card.addToGroupPlanLabel}
+                        </button>
+                      )}
                     </div>
-                  )}
-
-                  {reducedBufferOptions.length > 0 && (
-                    <p style={{ fontSize: "12px", color: "#875c00", margin: "0 0 6px" }}>
-                      Reduced buffer (not recommended):{" "}
-                      {reducedBufferOptions
-                        .map(
-                          (opt) =>
-                            `${opt.departureTime} (${opt.upperBoundRemainingBufferHmsLabel} max before all-aboard)`,
-                        )
-                        .join("; ")}
-                    </p>
-                  )}
-                  {blockedDepartures.length > 0 && (
-                    <p style={{ fontSize: "12px", color: "#9e2323", margin: "0 0 6px" }}>
-                      Outside ship window: {blockedDepartures.join(", ")}
-                    </p>
-                  )}
-                  {effectiveCheckedAt && (
-                    <p style={{ fontSize: "11px", color: "var(--muted)", margin: "4px 0 6px" }}>
-                      Last checked: {effectiveCheckedAt}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  {tour.bookingProviderIdentity?.checkoutDisclosure && (
-                    <p style={{ fontSize: "11px", color: "var(--muted)", margin: "4px 0 6px" }}>
-                      {tour.bookingProviderIdentity.checkoutDisclosure}
-                    </p>
-                  )}
-                  {allOptionsBlocked ? (
-                    <span style={{ display: "inline-block", marginTop: 4, fontSize: "12px", fontWeight: 700, color: "#9e2323" }}>
-                      Blocked — Outside Sailing Window
-                    </span>
-                  ) : tour.trackedFallbackHref ? (
-                    <a
-                      href={tour.trackedFallbackHref}
-                      target="_blank"
-                      rel="sponsored noopener noreferrer"
-                      style={{
-                        display: "inline-block",
-                        marginTop: 4,
-                        fontSize: "13px",
-                        fontWeight: 700,
-                        color: "var(--forest)",
-                        textDecoration: "underline",
-                      }}
-                    >
-                      Check approved partner listing (#{tour.matchedViatorProductCode}) →
-                    </a>
-                  ) : (
-                    <span style={{ display: "inline-block", marginTop: 4, fontSize: "12px", color: "var(--muted)" }}>
-                      Live operator availability preview · Direct booking held pending mapping verification
-                    </span>
-                  )}
-                </div>
-              </article>
-            );
-          })}
-        </div>
+                    {card.checkoutAvailable && card.checkoutProviderLabel && activeDep && (
+                      <p
+                        style={{
+                          fontSize: "11.5px",
+                          color: "var(--muted)",
+                          margin: "6px 0 0",
+                          textAlign: "center",
+                        }}
+                      >
+                        {card.checkoutProviderLabel} · Availability rechecked before checkout
+                      </p>
+                    )}
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        ) : (
+          <p style={{ color: "var(--muted)", fontSize: "14px", margin: 0 }}>
+            No live departures are currently available for {serviceDate}. Try another Alaska sailing
+            date between May and September.
+          </p>
+        )}
       </div>
     </section>
   );

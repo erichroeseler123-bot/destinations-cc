@@ -556,3 +556,321 @@ export async function loadLfseJuneauNormalizedSupplierFeed(options?: {
 
   return executeUpstreamFetch();
 }
+
+export type LfsePublicTimingBucket =
+  | "recommended"
+  | "confirm_return_timing"
+  | "other_available_times"
+  | "does_not_fit_ship_day";
+
+export interface LfsePublicDepartureButton {
+  selectionKey: string;
+  departureTime24: string;
+  timeLabel: string;
+  timingBucket: LfsePublicTimingBucket;
+  timingStatusLabel: string;
+  reducedBufferHmsLabel: string | null;
+  requiresReducedBufferConfirmation: boolean;
+  checkoutHref: string | null;
+  plannerAddHref: string;
+  rezgoUid: string;
+}
+
+export interface LfsePublicTourCardModel {
+  cardId: string;
+  title: string;
+  operatorName: string;
+  durationLabel: string | null;
+  startingPriceLabel: string | null;
+  serviceDate: string | null;
+  partySizePrompt: "How many people are going?";
+  enteredPartySize: number | null;
+  partyAvailabilityLabel: string | null;
+  insufficientPartyMessage: string | null;
+  recommendedDepartures: LfsePublicDepartureButton[];
+  confirmTimingDepartures: LfsePublicDepartureButton[];
+  otherAvailableTimes: LfsePublicDepartureButton[];
+  doesNotFitShipDayTimes: Array<{ departureTime24: string; timeLabel: string }>;
+  checkoutAvailable: boolean;
+  checkoutCtaLabel: "Book this tour";
+  checkoutProviderLabel: string | null;
+  addToGroupPlanLabel: "Add to group plan";
+}
+
+export interface LfsePublicJuneauAvailabilityView {
+  ok: boolean;
+  operatorName: string;
+  serviceDate: string | null;
+  enteredPartySize: number | null;
+  partySizePrompt: "How many people are going?";
+  cards: LfsePublicTourCardModel[];
+}
+
+function normalizeLfseClock24(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  const cleaned = raw.trim();
+  if (!cleaned) return null;
+  const ampm = cleaned.match(/^(\d{1,2})(?::(\d{2}))?(?::(\d{2}))?\s*(am|pm)$/i);
+  if (ampm) {
+    let h = Number(ampm[1]);
+    const m = Number(ampm[2] || "0");
+    const mer = ampm[4].toLowerCase();
+    if (mer === "pm" && h !== 12) h += 12;
+    if (mer === "am" && h === 12) h = 0;
+    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+  }
+  const hhmm = cleaned.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+  if (hhmm) {
+    return `${String(Number(hhmm[1])).padStart(2, "0")}:${hhmm[2]}`;
+  }
+  return cleaned;
+}
+
+export function formatLfseClock12h(raw: string | null | undefined): string {
+  const norm = normalizeLfseClock24(raw);
+  if (!norm) return raw ? raw.trim() : "TBD";
+  const m = norm.match(/^(\d{2}):(\d{2})$/);
+  if (!m) return norm;
+  const h24 = Number(m[1]);
+  const min = m[2];
+  const period = h24 >= 12 ? "PM" : "AM";
+  const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
+  return `${h12}:${min} ${period}`;
+}
+
+export function buildLfsePublicJuneauAvailabilityView(
+  feed: LfseJuneauNormalizedFeedResult,
+  options?: { partySize?: number | null },
+): LfsePublicJuneauAvailabilityView {
+  const rawParty = options?.partySize;
+  const enteredPartySize =
+    typeof rawParty === "number" && Number.isFinite(rawParty) && rawParty >= 1
+      ? Math.min(99, Math.trunc(rawParty))
+      : null;
+
+  const operatorName = "Juneau Tours & Whale Watch";
+  const cards: LfsePublicTourCardModel[] = [];
+
+  for (const tour of feed.tours) {
+    const rawDepOptions: LfseNormalizedJuneauDepartureOption[] =
+      Array.isArray(tour.departureOptions) && tour.departureOptions.length > 0
+        ? tour.departureOptions
+        : [
+            ...(tour.departureTimes || []).map((dep, idx) => ({
+              uid: tour.optionUids?.[idx] || `${tour.rezgoUid}-${idx + 1}`,
+              rezgoCom: tour.rezgoCom,
+              optionName: tour.optionName,
+              departureTime: dep,
+              availableSpots: tour.availableSpots,
+              availabilitySemantics: tour.availabilitySemantics,
+              adultPriceUsd: tour.adultPriceUsd,
+              childPriceUsd: tour.childPriceUsd,
+              serviceDate: tour.serviceDate ?? tour.dateChecked ?? feed.dateChecked,
+              checkedAt: tour.checkedAt ?? feed.checkedAt ?? "",
+              dccCommerceWrapperHref: tour.dccCommerceWrapperHref ?? null,
+              trackedFallbackHref: tour.trackedFallbackHref ?? null,
+              windowAssessment:
+                tour.optionWindowAssessments?.find((a) => a.departureTime === dep) ?? null,
+            })),
+            ...(tour.blockedOutsideWindowDepartures || []).map((dep, idx) => ({
+              uid: `${tour.rezgoUid}-blocked-${idx + 1}`,
+              rezgoCom: tour.rezgoCom,
+              optionName: tour.optionName,
+              departureTime: dep,
+              availableSpots: tour.availableSpots,
+              availabilitySemantics: tour.availabilitySemantics,
+              adultPriceUsd: tour.adultPriceUsd,
+              childPriceUsd: tour.childPriceUsd,
+              serviceDate: tour.serviceDate ?? tour.dateChecked ?? feed.dateChecked,
+              checkedAt: tour.checkedAt ?? feed.checkedAt ?? "",
+              dccCommerceWrapperHref: null,
+              trackedFallbackHref: null,
+              windowAssessment: {
+                departureTime: dep,
+                shipArrivalTime: null,
+                shipAllAboardTime: null,
+                allAboardConfirmed: true,
+                meetingPointAndReturnConfirmed: false,
+                estimatedTourEndWithoutTransferTime: null,
+                upperBoundRemainingSecondsBeforeTransfer: 0,
+                upperBoundRemainingBufferHmsLabel: "0:00:00",
+                status: "outside_sailing_window_blocked" as const,
+                blockedForSailingWindow: true,
+                displayLabel: "Outside ship window",
+              },
+            })),
+          ];
+
+    const positiveOptions = rawDepOptions.filter(
+      (opt) =>
+        Boolean(opt.departureTime) &&
+        typeof opt.availableSpots === "number" &&
+        Number.isFinite(opt.availableSpots) &&
+        opt.availableSpots > 0,
+    );
+
+    if (positiveOptions.length === 0) {
+      continue;
+    }
+
+    const qualifiedOptions =
+      enteredPartySize !== null
+        ? positiveOptions.filter(
+            (opt) =>
+              typeof opt.availableSpots === "number" &&
+              opt.availableSpots >= enteredPartySize,
+          )
+        : positiveOptions;
+
+    const recommendedDepartures: LfsePublicDepartureButton[] = [];
+    const confirmTimingDepartures: LfsePublicDepartureButton[] = [];
+    const otherAvailableTimes: LfsePublicDepartureButton[] = [];
+    const doesNotFitShipDayTimes: Array<{ departureTime24: string; timeLabel: string }> = [];
+
+    const serviceDate = tour.serviceDate ?? tour.dateChecked ?? feed.dateChecked ?? null;
+
+    for (const opt of qualifiedOptions) {
+      const dep24 = normalizeLfseClock24(opt.departureTime) || String(opt.departureTime);
+      const timeLabel = formatLfseClock12h(dep24);
+      const assessment = opt.windowAssessment;
+
+      if (assessment?.blockedForSailingWindow) {
+        doesNotFitShipDayTimes.push({ departureTime24: dep24, timeLabel });
+        continue;
+      }
+
+      let timingBucket: LfsePublicTimingBucket = "confirm_return_timing";
+      let timingStatusLabel = "Confirm return timing";
+      let reducedBufferHmsLabel: string | null = null;
+      let requiresReducedBufferConfirmation = false;
+
+      if (assessment?.status === "recommended") {
+        timingBucket = "recommended";
+        timingStatusLabel = "Recommended";
+      } else if (assessment?.status === "reduced_buffer_not_recommended") {
+        timingBucket = "other_available_times";
+        reducedBufferHmsLabel = assessment.upperBoundRemainingBufferHmsLabel || null;
+        timingStatusLabel = reducedBufferHmsLabel
+          ? `${reducedBufferHmsLabel} buffer · Not recommended`
+          : "Reduced buffer · Not recommended";
+        requiresReducedBufferConfirmation = true;
+      }
+
+      const checkoutHref = opt.trackedFallbackHref || tour.trackedFallbackHref || null;
+
+      const planQs = new URLSearchParams();
+      planQs.set("title", tour.title);
+      planQs.set("optionTitle", `${timeLabel} Departure`);
+      planQs.set("port", "juneau");
+      if (serviceDate) {
+        planQs.set("date", serviceDate);
+        planQs.set("serviceDate", serviceDate);
+      }
+      planQs.set("startsAt", dep24);
+      if (typeof tour.durationMinutes === "number" && tour.durationMinutes > 0) {
+        planQs.set("durationMinutes", String(tour.durationMinutes));
+      }
+      planQs.set("operator", operatorName);
+      planQs.set("operatorId", "juneau-tours-whale-watch");
+      planQs.set("sourceSite", "lastfrontiershoreexcursions.com");
+      if (tour.matchedViatorProductCode) {
+        planQs.set("productCode", tour.matchedViatorProductCode);
+        planQs.set("matchedViatorProductCode", tour.matchedViatorProductCode);
+        planQs.set("fallbackProductCode", tour.matchedViatorProductCode);
+        planQs.set("bookingProviderIdentity", "Checkout via Viator");
+      }
+      if (opt.rezgoCom ?? tour.rezgoCom) {
+        planQs.set("rezgoCom", String(opt.rezgoCom ?? tour.rezgoCom));
+      }
+      if (opt.uid) {
+        planQs.set("rezgoUid", opt.uid);
+        planQs.set("optionCode", opt.uid);
+      }
+      if (tour.startingLocation) {
+        planQs.set("location", tour.startingLocation);
+      }
+      if (checkoutHref) {
+        planQs.set("bookingUrl", checkoutHref);
+      }
+
+      const btn: LfsePublicDepartureButton = {
+        selectionKey: `${tour.normalizedTourId}::${dep24}::${opt.uid}`,
+        departureTime24: dep24,
+        timeLabel,
+        timingBucket,
+        timingStatusLabel,
+        reducedBufferHmsLabel,
+        requiresReducedBufferConfirmation,
+        checkoutHref,
+        plannerAddHref: `https://cruisepromenade.com/planner/add?${planQs.toString()}`,
+        rezgoUid: opt.uid,
+      };
+
+      if (timingBucket === "recommended") {
+        recommendedDepartures.push(btn);
+      } else if (timingBucket === "other_available_times") {
+        otherAvailableTimes.push(btn);
+      } else {
+        confirmTimingDepartures.push(btn);
+      }
+    }
+
+    const totalSelectable =
+      recommendedDepartures.length +
+      confirmTimingDepartures.length +
+      otherAvailableTimes.length;
+
+    if (enteredPartySize === null && totalSelectable === 0 && doesNotFitShipDayTimes.length === 0) {
+      continue;
+    }
+
+    const noun = enteredPartySize === 1 ? "person" : "people";
+    const partyAvailabilityLabel =
+      enteredPartySize !== null && totalSelectable > 0
+        ? `Available for your group of ${enteredPartySize}`
+        : null;
+    const insufficientPartyMessage =
+      enteredPartySize !== null && totalSelectable === 0
+        ? `No departure currently has enough availability for ${enteredPartySize} ${noun}.`
+        : null;
+
+    const startingPriceLabel =
+      typeof tour.adultPriceUsd === "number" && tour.adultPriceUsd > 0
+        ? `From $${Number.isInteger(tour.adultPriceUsd) ? tour.adultPriceUsd.toFixed(0) : tour.adultPriceUsd.toFixed(2)} adult`
+        : null;
+
+    const checkoutAvailable = Boolean(tour.matchedViatorProductCode && tour.trackedFallbackHref);
+
+    cards.push({
+      cardId: tour.normalizedTourId,
+      title: tour.title,
+      operatorName,
+      durationLabel:
+        tour.durationLabel ||
+        (tour.durationMinutes ? `${Math.round((tour.durationMinutes / 60) * 100) / 100} hours` : null),
+      startingPriceLabel,
+      serviceDate,
+      partySizePrompt: "How many people are going?",
+      enteredPartySize,
+      partyAvailabilityLabel,
+      insufficientPartyMessage,
+      recommendedDepartures,
+      confirmTimingDepartures,
+      otherAvailableTimes,
+      doesNotFitShipDayTimes,
+      checkoutAvailable,
+      checkoutCtaLabel: "Book this tour",
+      checkoutProviderLabel: checkoutAvailable ? "Checkout via Viator" : null,
+      addToGroupPlanLabel: "Add to group plan",
+    });
+  }
+
+  return {
+    ok: feed.ok,
+    operatorName,
+    serviceDate: feed.dateChecked ?? null,
+    enteredPartySize,
+    partySizePrompt: "How many people are going?",
+    cards,
+  };
+}

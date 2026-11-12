@@ -16,8 +16,10 @@ import {
 import { evaluateJuneauBackupFlow } from "@/lib/dcc/dockRolloutContext";
 import {
   buildNormalizedJuneauSupplierFeed,
+  buildPublicJuneauLiveAvailabilityView,
   type NormalizedJuneauSupplierTour,
 } from "@/lib/dcc/liveSlots/rezgoReadOnly";
+import { JuneauLiveAvailabilitySection } from "@/components/dcc/JuneauLiveAvailabilitySection";
 import PartnerSharePlanningBar from "@/app/components/dcc/PartnerSharePlanningBar";
 import PortableTripNetworkBar from "@/app/components/dcc/PortableTripNetworkBar";
 
@@ -149,14 +151,6 @@ const CATEGORY_SORT_PRIORITY: Record<NormalizedJuneauSupplierTour["activityCateg
   "juneau-sightseeing": 3,
 };
 
-function formatAvailabilitySemanticsLabel(
-  semantics: NormalizedJuneauSupplierTour["availabilitySemantics"],
-): string {
-  if (semantics === "rezgo_date_search_spots") return "Live Rezgo date-search seats";
-  if (semantics === "rezgo_catalog_overall") return "Rezgo catalog capacity";
-  return "Unconfirmed — check provider";
-}
-
 function resolveEffectiveJuneauServiceDate(
   dateParam: string | undefined,
   shipParam: string | undefined,
@@ -215,6 +209,24 @@ export default async function JuneauWhaleWatchingToursPage({
     (a, b) =>
       (CATEGORY_SORT_PRIORITY[a.activityCategory] ?? 9) -
       (CATEGORY_SORT_PRIORITY[b.activityCategory] ?? 9),
+  );
+  const rawPartyParam = firstStr(resolvedSearch.partySize || resolvedSearch.party_size);
+  const parsedPartyParam = rawPartyParam ? Number.parseInt(rawPartyParam, 10) : NaN;
+  const initialPartySize =
+    Number.isFinite(parsedPartyParam) && parsedPartyParam >= 1 ? parsedPartyParam : null;
+
+  const publicJuneauView = buildPublicJuneauLiveAvailabilityView(
+    {
+      ...juneauLiveFeed,
+      tours: sortedLiveTours,
+    },
+    {
+      partySize: initialPartySize,
+      shipArrivalTime: shipArrivalParam || null,
+      shipAllAboardTime: allAboardParam || null,
+      allAboardConfirmed: Boolean(allAboardParam),
+      originSurface: "dcc",
+    },
   );
 
   const timingEval = evaluateCruiseTimingWindow({
@@ -311,351 +323,16 @@ export default async function JuneauWhaleWatchingToursPage({
           defaultAllAboard={allAboardParam || "20:30"}
         />
 
-        {/* Juneau Tours — Live Operator Availability (Read-Only Rezgo Feed + Approved Partner Fallback) */}
-        <section
-          id="juneau-tours-live-availability"
-          data-testid="dcc-juneau-tours-live-availability"
-          className="rounded-[1.9rem] border border-amber-400/35 bg-[#0c121b] p-6 md:p-8 space-y-6"
-        >
-          <div className="flex flex-wrap items-start justify-between gap-4 border-b border-white/10 pb-5">
-            <div>
-              <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[#f5b34b]">
-                Read-Only Rezgo XML Inventory · Isolated Supplier Feed
-              </p>
-              <h2 className="mt-1 text-2xl font-black text-white md:text-3xl">
-                Juneau Tours — Live Operator Availability
-              </h2>
-              <p className="mt-2 max-w-3xl text-xs leading-6 text-white/75">
-                Verified operator:{" "}
-                <strong className="text-white">
-                  {juneauLiveFeed.verifiedCompanyName || "Juneau Tours & Whale Watch"}
-                </strong>{" "}
-                (domain: <code>{juneauLiveFeed.verifiedRezgoDomain || "juneauwhalewatch"}</code> ·{" "}
-                <code>operatorId: {juneauLiveFeed.cachePolicy.operatorKey}</code>) · Service date:{" "}
-                <strong className="text-amber-200">{effectiveServiceDate}</strong> · Last checked:{" "}
-                <code className="text-cyan-200">{juneauLiveFeed.checkedAt}</code>
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-full border border-amber-400/45 bg-amber-500/15 px-3.5 py-1 text-xs font-bold text-amber-200">
-                Needs verification · Never treated as cruise-safe
-              </span>
-              <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[11px] font-semibold text-white/80">
-                Direct Rezgo checkout disabled
-              </span>
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-amber-400/25 bg-amber-500/[0.07] p-4 text-xs leading-6 text-white/85">
-            <strong className="text-amber-200">Timing-Verification &amp; Cutoff Policy:</strong>{" "}
-            Rezgo&apos;s published <code>2h</code> (<code>2.00</code>) cutoff is a{" "}
-            <strong>supplier ticket-purchase cutoff only</strong> — it is{" "}
-            <strong>never</strong> DCC&apos;s{" "}
-            <strong>1:59:59+ (2-hour / 120-minute) minimum recommended ship-return buffer</strong>.
-            Because the live Rezgo feed does not include confirmed pier pickup points or dock
-            return-transfer durations, departures inside your ship window carry{" "}
-            <strong>Needs verification</strong>; departures with{" "}
-            <strong>&lt; 1:59:59 remaining</strong> before all-aboard show their exact remaining
-            buffer and are flagged <strong>not recommended</strong>; departures outside{" "}
-            <code>[shipArrival, allAboard]</code> are{" "}
-            <strong>blocked as outside the sailing window</strong>.
-          </div>
-
-          <form
-            method="GET"
-            action="/juneau/whale-watching-tours#juneau-tours-live-availability"
-            className="grid gap-3 rounded-2xl border border-white/10 bg-black/40 p-4 sm:grid-cols-2 md:grid-cols-5"
-          >
-            {flightCanceledParam ? (
-              <input type="hidden" name="flight_canceled" value={flightCanceledParam} />
-            ) : null}
-            {cancelRefParam ? (
-              <input type="hidden" name="cancel_ref" value={cancelRefParam} />
-            ) : null}
-            <label className="flex flex-col gap-1 text-[11px] font-semibold uppercase tracking-wider text-white/70">
-              Service Date
-              <input
-                type="date"
-                name="date"
-                defaultValue={effectiveServiceDate}
-                className="rounded-lg border border-white/15 bg-[#0b1017] px-2.5 py-1.5 text-xs font-normal text-white"
-              />
-            </label>
-            <label className="flex flex-col gap-1 text-[11px] font-semibold uppercase tracking-wider text-white/70">
-              Ship Arrival (AKDT)
-              <input
-                type="time"
-                name="claa_arrival"
-                defaultValue={shipArrivalParam || ""}
-                className="rounded-lg border border-white/15 bg-[#0b1017] px-2.5 py-1.5 text-xs font-normal text-white"
-              />
-            </label>
-            <label className="flex flex-col gap-1 text-[11px] font-semibold uppercase tracking-wider text-white/70">
-              Confirmed All-Aboard
-              <input
-                type="time"
-                name="all_aboard"
-                defaultValue={allAboardParam || ""}
-                className="rounded-lg border border-white/15 bg-[#0b1017] px-2.5 py-1.5 text-xs font-normal text-white"
-              />
-            </label>
-            <label className="flex flex-col gap-1 text-[11px] font-semibold uppercase tracking-wider text-white/70">
-              Cruise Berth
-              <select
-                name="berth"
-                defaultValue={berthParam || ""}
-                className="rounded-lg border border-white/15 bg-[#0b1017] px-2.5 py-1.5 text-xs font-normal text-white"
-              >
-                <option value="">Select berth (optional)</option>
-                <option value="FKL">FKL — South Franklin</option>
-                <option value="CT">CT — Cruise Terminal</option>
-                <option value="AS">AS — Alaska Steamship</option>
-                <option value="AJ">AJ — AJ Dock</option>
-                <option value="ACT">ACT — Anchor / Shuttle</option>
-                <option value="TENDER">TENDER — Marine Park</option>
-              </select>
-            </label>
-            <div className="flex items-end">
-              <button
-                type="submit"
-                className="w-full rounded-xl bg-[#f5b34b] px-4 py-2 text-xs font-black uppercase tracking-wider text-[#07111d] hover:bg-[#f7bf6a] transition"
-              >
-                Check Live Date
-              </button>
-            </div>
-          </form>
-
-          {sortedLiveTours.length > 0 ? (
-            <div className="grid gap-5 md:grid-cols-2">
-              {sortedLiveTours.map((tour) => {
-                const depOptions = tour.departureOptions || [];
-                const allBlocked =
-                  depOptions.length > 0 &&
-                  depOptions.every(
-                    (opt) => opt.windowAssessment?.blockedForSailingWindow === true,
-                  );
-                const nonBlockedOptions = depOptions.filter(
-                  (opt) => !opt.windowAssessment?.blockedForSailingWindow,
-                );
-                const firstReduced = nonBlockedOptions.find(
-                  (opt) => opt.windowAssessment?.status === "reduced_buffer_not_recommended",
-                );
-                const allReduced =
-                  nonBlockedOptions.length > 0 &&
-                  nonBlockedOptions.every(
-                    (opt) => opt.windowAssessment?.status === "reduced_buffer_not_recommended",
-                  );
-
-                const isHighlightedWhaleCategory =
-                  tour.activityCategory === "whale-watching" ||
-                  tour.activityCategory === "combo-whale-glacier";
-
-                const tourTimingBadge = allBlocked
-                  ? "Outside sailing window (blocked)"
-                  : allReduced && firstReduced?.windowAssessment?.upperBoundRemainingBufferHmsLabel
-                    ? `Reduced buffer (${firstReduced.windowAssessment.upperBoundRemainingBufferHmsLabel} remaining) — not recommended`
-                    : "Needs verification";
-
-                const tourServiceDate =
-                  tour.serviceDate || tour.dateChecked || effectiveServiceDate;
-
-                return (
-                  <article
-                    key={tour.normalizedTourId}
-                    data-testid={`dcc-juneau-live-tour-${tour.rezgoCom || tour.rezgoUid}`}
-                    className={`rounded-2xl border p-5 flex flex-col justify-between space-y-4 ${
-                      isHighlightedWhaleCategory
-                        ? "border-amber-400/35 bg-black/55"
-                        : "border-white/12 bg-black/40"
-                    }`}
-                  >
-                    <div className="space-y-3">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <span className="text-[11px] font-black uppercase tracking-wider text-[#f5b34b]">
-                          {tour.activityCategory === "whale-watching"
-                            ? "Whale Watching · Primary"
-                            : tour.activityCategory === "combo-whale-glacier"
-                              ? "Whale + Mendenhall Combo"
-                              : tour.activityCategory === "mendenhall-glacier-tours"
-                                ? "Mendenhall Glacier Shuttle"
-                                : "Juneau Sightseeing"}
-                        </span>
-                        <span
-                          className={`rounded-full px-3 py-0.5 text-[11px] font-bold ${
-                            allBlocked
-                              ? "border border-red-400/45 bg-red-500/15 text-red-200"
-                              : "border border-amber-400/45 bg-amber-500/15 text-amber-200"
-                          }`}
-                        >
-                          {tourTimingBadge}
-                        </span>
-                      </div>
-
-                      <div>
-                        <h3 className="text-lg font-black text-white">{tour.title}</h3>
-                        <p className="mt-1 text-xs text-white/70">
-                          Operator:{" "}
-                          <strong className="text-white/90">
-                            {tour.bookingProviderIdentity.verifiedRezgoCompanyName ||
-                              tour.bookingProviderIdentity.operatorName}
-                          </strong>{" "}
-                          (<code>{tour.bookingProviderIdentity.verifiedRezgoDomain || "juneauwhalewatch"}</code>{" "}
-                          · <code>{tour.bookingProviderIdentity.operatorId}</code> · Parent{" "}
-                          <code>COM {tour.rezgoCom || tour.rezgoUid}</code>)
-                        </p>
-                      </div>
-
-                      <div className="flex flex-wrap gap-2 text-[11px] text-white/85">
-                        <span className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1">
-                          Date: <strong>{tourServiceDate}</strong>
-                        </span>
-                        <span className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1">
-                          Adult:{" "}
-                          <strong>
-                            {tour.adultPriceUsd !== null
-                              ? `$${tour.adultPriceUsd.toFixed(2)} ${tour.currency}`
-                              : "Check provider"}
-                          </strong>
-                          {tour.childPriceUsd !== null
-                            ? ` · Child: $${tour.childPriceUsd.toFixed(2)} ${tour.currency}`
-                            : ""}
-                        </span>
-                        <span className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1">
-                          Seats:{" "}
-                          <strong>
-                            {tour.availableSpots !== null
-                              ? `${tour.availableSpots} (${formatAvailabilitySemanticsLabel(tour.availabilitySemantics)})`
-                              : "Unconfirmed"}
-                          </strong>
-                        </span>
-                        {tour.durationLabel && (
-                          <span className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1">
-                            Duration: <strong>{tour.durationLabel}</strong>
-                          </span>
-                        )}
-                        {typeof tour.supplierBookingCutoffHours === "number" && (
-                          <span className="rounded-lg border border-amber-400/25 bg-amber-500/10 px-2.5 py-1 text-amber-200">
-                            Supplier ticket cutoff: {tour.supplierBookingCutoffHours}h (not 1:59:59+ ship buffer)
-                          </span>
-                        )}
-                      </div>
-
-                      {depOptions.length > 0 && (
-                        <div className="space-y-1.5 rounded-xl border border-white/10 bg-white/[0.03] p-3">
-                          <p className="text-[11px] font-bold uppercase tracking-wider text-white/75">
-                            Scheduled Departures ({depOptions.length}{" "}
-                            {depOptions.length === 1 ? "option" : "options"}):
-                          </p>
-                          <ul className="space-y-1.5 text-xs">
-                            {depOptions.map((opt) => {
-                              const optBlocked = Boolean(
-                                opt.windowAssessment?.blockedForSailingWindow,
-                              );
-                              const optReduced =
-                                opt.windowAssessment?.status === "reduced_buffer_not_recommended";
-                              const optRecommended =
-                                opt.windowAssessment?.status === "recommended";
-                              const optBadge = optBlocked
-                                ? "Outside sailing window — blocked"
-                                : optReduced &&
-                                    opt.windowAssessment?.upperBoundRemainingBufferHmsLabel
-                                  ? `Reduced buffer (${opt.windowAssessment.upperBoundRemainingBufferHmsLabel} remaining) — not recommended`
-                                  : optRecommended &&
-                                      opt.windowAssessment?.upperBoundRemainingBufferHmsLabel
-                                    ? `Recommended (${opt.windowAssessment.upperBoundRemainingBufferHmsLabel} remaining)`
-                                    : "Needs verification";
-
-                              return (
-                                <li
-                                  key={opt.uid}
-                                  className={`flex flex-wrap items-center justify-between gap-2 rounded-lg border px-2.5 py-1.5 ${
-                                    optBlocked
-                                      ? "border-red-400/30 bg-red-500/10 text-red-100"
-                                      : "border-white/10 bg-black/40 text-white/90"
-                                  }`}
-                                >
-                                  <span>
-                                    <strong>{opt.departureTime || opt.optionName || "Departure"}</strong>{" "}
-                                    <span className="text-white/55">(UID {opt.uid})</span>
-                                    {opt.availableSpots !== null
-                                      ? ` · ${opt.availableSpots} seats`
-                                      : ""}
-                                    {opt.adultPriceUsd !== null
-                                      ? ` · $${opt.adultPriceUsd.toFixed(2)}`
-                                      : ""}
-                                  </span>
-                                  <span
-                                    className={`text-[11px] font-bold ${
-                                      optBlocked
-                                        ? "text-red-300"
-                                        : optReduced
-                                          ? "text-amber-300"
-                                          : "text-amber-200"
-                                    }`}
-                                  >
-                                    {optBadge}
-                                  </span>
-                                </li>
-                              );
-                            })}
-                          </ul>
-                        </div>
-                      )}
-
-                      <p className="text-[11px] text-white/55">
-                        Last checked (UTC): <code>{tour.checkedAt || juneauLiveFeed.checkedAt}</code>
-                      </p>
-                    </div>
-
-                    <div className="space-y-1.5 border-t border-white/10 pt-3">
-                      {allBlocked ? (
-                        <div
-                          data-testid={`dcc-juneau-live-cta-blocked-${tour.rezgoCom || tour.rezgoUid}`}
-                          className="w-full rounded-xl border border-red-400/40 bg-red-500/15 px-4 py-2.5 text-center text-xs font-black uppercase tracking-wider text-red-200"
-                        >
-                          Blocked — Outside Sailing Window
-                        </div>
-                      ) : tour.matchedViatorProductCode && tour.dccCommerceWrapperHref ? (
-                        <>
-                          <a
-                            href={tour.dccCommerceWrapperHref}
-                            target="_blank"
-                            rel="sponsored noopener noreferrer"
-                            data-testid={`dcc-juneau-live-fallback-cta-${tour.matchedViatorProductCode}`}
-                            className="block w-full rounded-xl bg-[#f5b34b] px-4 py-2.5 text-center text-xs font-black uppercase tracking-wider text-[#07111d] hover:bg-[#f7bf6a] transition"
-                          >
-                            Book via Approved Partner Fallback (#{tour.matchedViatorProductCode}) ↗
-                          </a>
-                          <p className="text-center text-[11px] text-white/65">
-                            Routes through approved Viator/DCC commerce wrapper · Direct Rezgo checkout disabled
-                          </p>
-                        </>
-                      ) : (
-                        <div
-                          data-testid={`dcc-juneau-live-preview-only-${tour.rezgoCom || tour.rezgoUid}`}
-                          className="rounded-xl border border-white/15 bg-white/5 px-3.5 py-2.5 text-center text-xs font-semibold text-white/75"
-                        >
-                          Read-only availability preview · Direct checkout disabled pending product mapping
-                        </div>
-                      )}
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="rounded-2xl border border-white/10 bg-black/45 p-5 text-xs leading-6 text-white/80">
-              <p>
-                <strong>Live Rezgo XML Status ({juneauLiveFeed.rezgoStatus}):</strong> No live
-                Rezgo departure rows were returned for <strong>{effectiveServiceDate}</strong>{" "}
-                (checked at <code>{juneauLiveFeed.checkedAt}</code> for{" "}
-                <code>operatorId: {juneauLiveFeed.cachePolicy.operatorKey}</code> · Timing status:{" "}
-                <strong>Needs verification</strong>). Approved Viator/DCC partner fallback offers
-                remain active below while direct Rezgo checkout stays disabled.
-              </p>
-            </div>
-          )}
-        </section>
+        {/* Juneau Tours — Live Operator Availability */}
+        <JuneauLiveAvailabilitySection
+          initialView={publicJuneauView}
+          initialDate={effectiveServiceDate}
+          initialShipArrival={shipArrivalParam || ""}
+          initialAllAboard={allAboardParam || ""}
+          initialBerth={berthParam || ""}
+          flightCanceledParam={flightCanceledParam}
+          cancelRefParam={cancelRefParam}
+        />
 
         {/* April 24 Dock Rollout: Flight Cancellation Backup Flow + PAJN METAR Weather Context */}
         <section
