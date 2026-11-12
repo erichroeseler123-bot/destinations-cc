@@ -33,6 +33,7 @@ import {
 import { listRecentProductionCorridorEvents } from "@/lib/dcc/telemetry/corridorEvents";
 import {
   buildCruisePromenadeConversionFunnelSummary,
+  CRUISE_PROMENADE_LAUNCH_EPOCH_ISO,
   type CruisePromenadeConversionFunnelSummary,
 } from "@/lib/dcc/telemetry/cruisePromenadeFunnel";
 import type { DccCorridorEventRow } from "@/lib/db/schema";
@@ -42,6 +43,13 @@ export type RemoteOwnerSummaryStatus = "live" | "pending_deploy" | "unconfigured
 export interface CruisePromenadeOwnerSummary {
   status: RemoteOwnerSummaryStatus;
   endpoint: string;
+  launchCohortEpochIso: string | null;
+  launchCohortBoardsCount: number | null;
+  launchCohortGuestsCount: number | null;
+  launchCohortNeedsAssistanceCount: number | null;
+  launchCohortSplitsCount: number | null;
+  preLaunchHistoricalBoardsCount: number;
+  preLaunchHistoricalGuestsCount: number;
   needsAssistanceGuestsCount: number;
   plannersWithSplitsCount: number;
   sharedPlannersCount: number;
@@ -243,12 +251,15 @@ export interface DailyBusinessCockpit {
   operatorAndOrganizerFollowUps: {
     question: "6. Which operator or organizer needs follow-up?";
     cruisePromenadeLaunch: {
+      launchCohortEpochIso: string;
       organizersCount: number;
       organizersTarget: 3;
       passengersCount: number;
       passengersTarget: 50;
       needsAssistanceGuestsCount: number;
       plannersWithSplitsCount: number;
+      preLaunchHistoricalBoardsExcludedCount: number;
+      preLaunchHistoricalGuestsExcludedCount: number;
       groupsLaunchpadUrl: "https://cruisepromenade.com/groups";
       statusSummary: string;
       conversionFunnel28d: CruisePromenadeConversionFunnelSummary;
@@ -482,6 +493,13 @@ function emptyCruisePromenadeSummary(
   return {
     status,
     endpoint,
+    launchCohortEpochIso: CRUISE_PROMENADE_LAUNCH_EPOCH_ISO,
+    launchCohortBoardsCount: null,
+    launchCohortGuestsCount: null,
+    launchCohortNeedsAssistanceCount: null,
+    launchCohortSplitsCount: null,
+    preLaunchHistoricalBoardsCount: 0,
+    preLaunchHistoricalGuestsCount: 0,
     needsAssistanceGuestsCount: 0,
     plannersWithSplitsCount: 0,
     sharedPlannersCount: 0,
@@ -590,6 +608,40 @@ async function fetchCruisePromenadeOwnerSummary(options: {
     const catalog = (
       body.catalog && typeof body.catalog === "object" ? body.catalog : {}
     ) as Record<string, unknown>;
+    const launchCohort = (
+      body.launchCohort && typeof body.launchCohort === "object"
+        ? body.launchCohort
+        : planners.launchCohort && typeof planners.launchCohort === "object"
+          ? planners.launchCohort
+          : null
+    ) as Record<string, unknown> | null;
+    const preLaunchHistorical = (
+      body.preLaunchHistorical && typeof body.preLaunchHistorical === "object"
+        ? body.preLaunchHistorical
+        : planners.preLaunchHistorical && typeof planners.preLaunchHistorical === "object"
+          ? planners.preLaunchHistorical
+          : null
+    ) as Record<string, unknown> | null;
+
+    const launchCohortEpochIso =
+      typeof body.launchCohortEpochIso === "string" && body.launchCohortEpochIso.trim()
+        ? body.launchCohortEpochIso.trim()
+        : typeof launchCohort?.epochIso === "string" && launchCohort.epochIso.trim()
+          ? launchCohort.epochIso.trim()
+          : CRUISE_PROMENADE_LAUNCH_EPOCH_ISO;
+
+    const launchCohortBoardsCount = launchCohort
+      ? safeNumber(launchCohort.boardsCreatedCount)
+      : null;
+    const launchCohortGuestsCount = launchCohort
+      ? safeNumber(launchCohort.trackedGuestsCount)
+      : null;
+    const launchCohortNeedsAssistanceCount = launchCohort
+      ? safeNumber(launchCohort.needsAssistanceGuestsCount)
+      : null;
+    const launchCohortSplitsCount = launchCohort
+      ? safeNumber(launchCohort.plannersWithSplitsCount)
+      : null;
 
     const sampledSharedPlannersCount = safeNumber(
       body.sampledSharedPlannersCount ??
@@ -614,11 +666,25 @@ async function fetchCruisePromenadeOwnerSummary(options: {
     );
     const sharedPlannersCount =
       genuineSharedPlannersCount ?? sampledSharedPlannersCount;
+    const trackedGuestsAllTime = safeNumber(
+      body.trackedGuestsCount ??
+        planners.trackedGuestsCount ??
+        body.totalGuestsCount ??
+        planners.totalGuestsCount,
+    );
+    const preLaunchHistoricalBoardsCount = preLaunchHistorical
+      ? safeNumber(preLaunchHistorical.boardsCount)
+      : sharedPlannersCount;
+    const preLaunchHistoricalGuestsCount = preLaunchHistorical
+      ? safeNumber(preLaunchHistorical.trackedGuestsCount)
+      : trackedGuestsAllTime;
 
     const noteParts = [
-      genuineSharedPlannersCount !== null
-        ? `Genuine shared boards: ${genuineSharedPlannersCount} (KV sampled: ${sampledSharedPlannersCount}, test excluded: ${testSharedPlannersCount}).`
-        : `Sampled KV planner boards: ${sampledSharedPlannersCount} (unfiltered KV sample — not conflated with verified user groups).`,
+      launchCohortBoardsCount !== null
+        ? `Launch Cohort (since ${launchCohortEpochIso}): ${launchCohortBoardsCount} boards · ${launchCohortGuestsCount ?? 0} guests (${preLaunchHistoricalBoardsCount} pre-launch historical system boards / ${preLaunchHistoricalGuestsCount} guests frozen & excluded from adoption; ${testSharedPlannersCount} synthetic QA excluded).`
+        : genuineSharedPlannersCount !== null
+          ? `Pre-launch historical KV boards: ${genuineSharedPlannersCount} (test excluded: ${testSharedPlannersCount}) — awaiting launchCohort endpoint.`
+          : `Sampled KV planner boards: ${sampledSharedPlannersCount} (unfiltered KV sample — not conflated with verified user groups).`,
     ];
     if (confirmedSailDatesCount > 0 || verifiedFullItinerarySailingsCount > 0) {
       noteParts.push(
@@ -629,6 +695,13 @@ async function fetchCruisePromenadeOwnerSummary(options: {
     return {
       status: "live",
       endpoint,
+      launchCohortEpochIso,
+      launchCohortBoardsCount,
+      launchCohortGuestsCount,
+      launchCohortNeedsAssistanceCount,
+      launchCohortSplitsCount,
+      preLaunchHistoricalBoardsCount,
+      preLaunchHistoricalGuestsCount,
       needsAssistanceGuestsCount: safeNumber(
         body.needsAssistanceGuestsCount ?? planners.needsAssistanceGuestsCount,
       ),
@@ -641,12 +714,7 @@ async function fetchCruisePromenadeOwnerSummary(options: {
       testSharedPlannersCount,
       confirmedSailDatesCount,
       verifiedFullItinerarySailingsCount,
-      trackedGuestsCount: safeNumber(
-        body.trackedGuestsCount ??
-          planners.trackedGuestsCount ??
-          body.totalGuestsCount ??
-          planners.totalGuestsCount,
-      ),
+      trackedGuestsCount: trackedGuestsAllTime,
       note: noteParts.join(" "),
     };
   } catch {
@@ -1205,9 +1273,7 @@ export async function buildOwnerControlCenterSnapshot(
   const cpPlannerHeadline =
     cpSummary.status !== "live"
       ? `CP summary: ${cpSummary.status}`
-      : cpSummary.genuineSharedPlannersCount !== null
-        ? `${cpSummary.genuineSharedPlannersCount.toLocaleString()} genuine planners (${cpSummary.sampledSharedPlannersCount.toLocaleString()} KV sampled)`
-        : `${cpSummary.sampledSharedPlannersCount.toLocaleString()} sampled KV planners`;
+      : `${(cpSummary.launchCohortBoardsCount ?? 0).toLocaleString()} Launch Cohort boards (${cpSummary.preLaunchHistoricalBoardsCount.toLocaleString()} pre-launch frozen)`;
 
   const stages: ConnectedNetworkFunnelStage[] = [
     {
@@ -1235,11 +1301,11 @@ export async function buildOwnerControlCenterSnapshot(
     {
       stageNumber: 3,
       stageId: "group_participation",
-      label: "3. Group Participation",
+      label: "3. Group Participation (Launch Cohort)",
       headlineMetric: cpPlannerHeadline,
       subMetrics: [
-        `${cpSummary.trackedGuestsCount.toLocaleString()} tracked guests · ${cpSummary.plannersWithSplitsCount.toLocaleString()} planners w/ splits · ${cpSummary.testSharedPlannersCount.toLocaleString()} test excluded`,
-        `${cpSummary.needsAssistanceGuestsCount.toLocaleString()} guests need assistance · ${cpSummary.confirmedSailDatesCount.toLocaleString()} sail dates vs ${cpSummary.verifiedFullItinerarySailingsCount.toLocaleString()} full port itineraries`,
+        `${(cpSummary.launchCohortGuestsCount ?? 0).toLocaleString()} Launch Cohort guests · ${(cpSummary.launchCohortSplitsCount ?? 0).toLocaleString()} splits (${cpSummary.preLaunchHistoricalGuestsCount.toLocaleString()} pre-launch historical guests frozen · ${cpSummary.testSharedPlannersCount.toLocaleString()} test excluded)`,
+        `${(cpSummary.launchCohortNeedsAssistanceCount ?? 0).toLocaleString()} Launch Cohort guests need assistance · ${cpSummary.confirmedSailDatesCount.toLocaleString()} sail dates vs ${cpSummary.verifiedFullItinerarySailingsCount.toLocaleString()} full port itineraries`,
       ],
       statusBadge: cpSummary.status,
     },
@@ -1549,8 +1615,14 @@ export async function buildOwnerControlCenterSnapshot(
     },
   ];
 
-  const cpOrganizersCount =
-    cpSummary.genuineSharedPlannersCount ?? cpSummary.sharedPlannersCount;
+  // Strict owner truth rule: never present pre-launch KV boards/guests as customer adoption.
+  // Report ONLY post-Launch-Cohort activity (`launchCohortEpochIso`, defaulting to `2026-11-12T12:35:00.000Z`).
+  const cpLaunchEpochIso =
+    cpSummary.launchCohortEpochIso || CRUISE_PROMENADE_LAUNCH_EPOCH_ISO;
+  const cpOrganizersCount = cpSummary.launchCohortBoardsCount ?? 0;
+  const cpPassengersCount = cpSummary.launchCohortGuestsCount ?? 0;
+  const cpNeedsAssistanceCount = cpSummary.launchCohortNeedsAssistanceCount ?? 0;
+  const cpSplitsCount = cpSummary.launchCohortSplitsCount ?? 0;
   const pendingReviewAppsTotal = nonTestOnboarding.filter(
     (a) => a.reviewQueueState === "pending_review",
   ).length;
@@ -1637,19 +1709,24 @@ export async function buildOwnerControlCenterSnapshot(
     operatorAndOrganizerFollowUps: {
       question: "6. Which operator or organizer needs follow-up?",
       cruisePromenadeLaunch: {
+        launchCohortEpochIso: cpLaunchEpochIso,
         organizersCount: cpOrganizersCount,
         organizersTarget: 3,
-        passengersCount: cpSummary.trackedGuestsCount,
+        passengersCount: cpPassengersCount,
         passengersTarget: 50,
-        needsAssistanceGuestsCount: cpSummary.needsAssistanceGuestsCount,
-        plannersWithSplitsCount: cpSummary.plannersWithSplitsCount,
+        needsAssistanceGuestsCount: cpNeedsAssistanceCount,
+        plannersWithSplitsCount: cpSplitsCount,
+        preLaunchHistoricalBoardsExcludedCount:
+          cpSummary.preLaunchHistoricalBoardsCount,
+        preLaunchHistoricalGuestsExcludedCount:
+          cpSummary.preLaunchHistoricalGuestsCount,
         groupsLaunchpadUrl: "https://cruisepromenade.com/groups",
-        statusSummary: `${cpOrganizersCount}/3 organizers · ${cpSummary.trackedGuestsCount}/50 passengers · ${cpSummary.plannersWithSplitsCount} split alert(s)`,
+        statusSummary: `${cpOrganizersCount}/3 organizers · ${cpPassengersCount}/50 passengers · ${cpSplitsCount} split alert(s) (Launch Cohort since Nov 12, 2026; ${cpSummary.preLaunchHistoricalBoardsCount} pre-launch boards frozen)`,
         conversionFunnel28d: buildCruisePromenadeConversionFunnelSummary({
           events: corridorEvents,
           startIso: funnel.reportingWindow.startIso,
           endIso: funnel.reportingWindow.endIso,
-          windowLabel: funnel.reportingWindow.label,
+          launchEpochIso: cpLaunchEpochIso,
         }),
       },
       directOperators3Markets: {

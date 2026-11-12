@@ -41,8 +41,21 @@ export interface TopSailingDemandRow {
   boardsCreatedCount: number;
 }
 
+export const CRUISE_PROMENADE_LAUNCH_EPOCH_ISO = "2026-11-12T12:35:00.000Z";
+
+export interface OutreachSourceAttributionRow {
+  sourceLabel: string;
+  sessionsCount: number;
+  sailingViewsCount: number;
+  startBoardCount: number;
+  boardsCreatedCount: number;
+  inquiriesSubmittedCount: number;
+}
+
 export interface CruisePromenadeConversionFunnelSummary {
   windowLabel: string;
+  launchEpochIso: string;
+  preLaunchHistoricalEventsExcluded: number;
   totalGenuineEvents28d: number;
   excludedSyntheticEvents28d: number;
   findMySailingSelectionsCount28d: number;
@@ -53,6 +66,7 @@ export interface CruisePromenadeConversionFunnelSummary {
   startedWithoutInvitingCount: number;
   recentUninvitedStarts: UninvitedBoardStartItem[];
   topSailingsByDemand: TopSailingDemandRow[];
+  outreachSourceBreakdown: OutreachSourceAttributionRow[];
 }
 
 const STAGE_LABELS: Record<CruisePromenadeFunnelEventName, string> = {
@@ -140,15 +154,56 @@ export type CorridorEventInput = Partial<DccCorridorEventRow> & {
   createdAt?: Date | string | null;
 };
 
+function extractOutreachSourceLabel(
+  event: CorridorEventInput,
+  ctx: Record<string, unknown>,
+): string {
+  const explicit =
+    cleanStr(ctx.utmSource) ||
+    cleanStr(ctx.utm_source) ||
+    cleanStr(ctx.src) ||
+    cleanStr(ctx.sourceLabel);
+  if (explicit) {
+    return explicit.toLowerCase().replace(/[^a-z0-9_.-]+/g, "-").slice(0, 64);
+  }
+  const sourcePage = cleanStr(event.sourcePage) || cleanStr(event.landingPath) || "";
+  if (sourcePage.includes("?")) {
+    try {
+      const qs = new URLSearchParams(sourcePage.slice(sourcePage.indexOf("?") + 1));
+      const qSrc = (qs.get("utm_source") || qs.get("src") || qs.get("ref") || "").trim();
+      if (qSrc) {
+        return qSrc.toLowerCase().replace(/[^a-z0-9_.-]+/g, "-").slice(0, 64);
+      }
+    } catch {
+      // ignore malformed query
+    }
+  }
+  const refHost = cleanStr(ctx.referrerHost);
+  if (refHost) {
+    return `ref:${refHost.toLowerCase().slice(0, 60)}`;
+  }
+  return "direct_or_unlabeled";
+}
+
 export function buildCruisePromenadeConversionFunnelSummary(params: {
   events: ReadonlyArray<CorridorEventInput>;
   startIso: string;
   endIso: string;
   windowLabel?: string;
+  launchEpochIso?: string | null;
 }): CruisePromenadeConversionFunnelSummary {
   const startMs = Date.parse(params.startIso);
   const endMs = Date.parse(params.endIso);
-  const windowLabel = params.windowLabel || "Last 28 Days";
+  const launchEpochIso =
+    params.launchEpochIso === undefined
+      ? CRUISE_PROMENADE_LAUNCH_EPOCH_ISO
+      : params.launchEpochIso || "";
+  const launchEpochMs = launchEpochIso ? Date.parse(launchEpochIso) : Number.NaN;
+  const windowLabel =
+    params.windowLabel ||
+    (Number.isFinite(launchEpochMs)
+      ? "Launch Cohort (Since Nov 12, 2026)"
+      : "Last 28 Days");
 
   const countsByStage = new Map<CruisePromenadeFunnelEventName, number>();
   const sessionsByStage = new Map<CruisePromenadeFunnelEventName, Set<string>>();
@@ -161,9 +216,20 @@ export function buildCruisePromenadeConversionFunnelSummary(params: {
   const invitedSessions = new Set<string>();
   const invitedShareCodes = new Set<string>();
   const sailingDemand = new Map<string, TopSailingDemandRow>();
+  const sourceStats = new Map<
+    string,
+    {
+      sessions: Set<string>;
+      sailingViewsCount: number;
+      startBoardCount: number;
+      boardsCreatedCount: number;
+      inquiriesSubmittedCount: number;
+    }
+  >();
 
   let totalGenuineEvents28d = 0;
   let excludedSyntheticEvents28d = 0;
+  let preLaunchHistoricalEventsExcluded = 0;
   let findMySailingSelectionsCount28d = 0;
   const findMySailingSessions = new Set<string>();
   const sharedLinkVisitDedupeKeys = new Set<string>();
@@ -187,9 +253,15 @@ export function buildCruisePromenadeConversionFunnelSummary(params: {
       if (Number.isFinite(startMs) && Number.isFinite(endMs) && Number.isFinite(ms)) {
         if (ms < startMs || ms > endMs) continue;
       }
-    }
-
-    if (isSyntheticCruisePromenadeEvent(event)) {
+      if (isSyntheticCruisePromenadeEvent(event)) {
+        excludedSyntheticEvents28d += 1;
+        continue;
+      }
+      if (Number.isFinite(launchEpochMs) && Number.isFinite(ms) && ms < launchEpochMs) {
+        preLaunchHistoricalEventsExcluded += 1;
+        continue;
+      }
+    } else if (isSyntheticCruisePromenadeEvent(event)) {
       excludedSyntheticEvents28d += 1;
       continue;
     }
@@ -240,6 +312,21 @@ export function buildCruisePromenadeConversionFunnelSummary(params: {
 
     countsByStage.set(mappedStage, (countsByStage.get(mappedStage) || 0) + 1);
     sessionsByStage.get(mappedStage)?.add(sessionKey);
+
+    const sourceLabel = extractOutreachSourceLabel(event, ctx);
+    const srcBucket = sourceStats.get(sourceLabel) || {
+      sessions: new Set<string>(),
+      sailingViewsCount: 0,
+      startBoardCount: 0,
+      boardsCreatedCount: 0,
+      inquiriesSubmittedCount: 0,
+    };
+    srcBucket.sessions.add(sessionKey);
+    if (mappedStage === "sailing_page_viewed") srcBucket.sailingViewsCount += 1;
+    if (mappedStage === "start_board_selected") srcBucket.startBoardCount += 1;
+    if (mappedStage === "board_created") srcBucket.boardsCreatedCount += 1;
+    if (mappedStage === "charter_inquiry_submitted") srcBucket.inquiriesSubmittedCount += 1;
+    sourceStats.set(sourceLabel, srcBucket);
 
     const shareCode = cleanStr(ctx.shareCode)?.toUpperCase() || null;
     const shipSlug =
@@ -346,8 +433,28 @@ export function buildCruisePromenadeConversionFunnelSummary(params: {
     )
     .slice(0, 53);
 
+  const outreachSourceBreakdown: OutreachSourceAttributionRow[] = Array.from(
+    sourceStats.entries(),
+  )
+    .map(([sourceLabel, val]) => ({
+      sourceLabel,
+      sessionsCount: val.sessions.size,
+      sailingViewsCount: val.sailingViewsCount,
+      startBoardCount: val.startBoardCount,
+      boardsCreatedCount: val.boardsCreatedCount,
+      inquiriesSubmittedCount: val.inquiriesSubmittedCount,
+    }))
+    .sort(
+      (a, b) =>
+        b.boardsCreatedCount - a.boardsCreatedCount ||
+        b.startBoardCount - a.startBoardCount ||
+        b.sessionsCount - a.sessionsCount,
+    );
+
   return {
     windowLabel,
+    launchEpochIso,
+    preLaunchHistoricalEventsExcluded,
     totalGenuineEvents28d,
     excludedSyntheticEvents28d,
     findMySailingSelectionsCount28d,
@@ -358,5 +465,6 @@ export function buildCruisePromenadeConversionFunnelSummary(params: {
     startedWithoutInvitingCount: uninvitedStarts.length,
     recentUninvitedStarts: uninvitedStarts.slice(0, 8),
     topSailingsByDemand,
+    outreachSourceBreakdown,
   };
 }

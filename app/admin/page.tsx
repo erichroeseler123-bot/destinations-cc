@@ -461,7 +461,7 @@ export default async function OwnerControlCenterPage() {
               <div className="rounded-xl border border-white/10 bg-black/40 p-4 space-y-2">
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-xs font-black uppercase tracking-wider text-cyan-300">
-                    Cruise Promenade Pilot
+                    Cruise Promenade Launch Cohort
                   </span>
                   <span className="font-mono text-xs font-bold text-white">
                     {q6.cruisePromenadeLaunch.organizersCount}/
@@ -476,7 +476,7 @@ export default async function OwnerControlCenterPage() {
                   <code>{q6.cruisePromenadeLaunch.plannersWithSplitsCount}</code>
                 </p>
                 <p className="text-[11px] text-zinc-400">
-                  Targets: gay cruises, music cruises, family reunions, wedding groups, travel agents, &amp; independent cruise communities (0% commission obligation).
+                  Cohort epoch: <code>{q6.cruisePromenadeLaunch.launchCohortEpochIso}</code> ({q6.cruisePromenadeLaunch.preLaunchHistoricalBoardsExcludedCount} pre-launch system boards / {q6.cruisePromenadeLaunch.preLaunchHistoricalGuestsExcludedCount} pax frozen &amp; never counted as adoption).
                 </p>
                 <div className="flex flex-wrap gap-2 pt-1 text-xs">
                   <a
@@ -568,7 +568,7 @@ export default async function OwnerControlCenterPage() {
                     Cruise Promenade 8-Stage Conversion Funnel ({q6.cruisePromenadeLaunch.conversionFunnel28d.windowLabel})
                   </span>
                   <p className="mt-0.5 text-[11px] text-zinc-400">
-                    Zero-PII telemetry across verified sailing pages, board creation, invite sharing, guest participation, and private group inquiries ({q6.cruisePromenadeLaunch.conversionFunnel28d.excludedSyntheticEvents28d} QA/test events excluded).
+                    Post-<code>{q6.cruisePromenadeLaunch.conversionFunnel28d.launchEpochIso}</code> Launch Cohort only ({q6.cruisePromenadeLaunch.conversionFunnel28d.preLaunchHistoricalEventsExcluded} pre-launch historical events frozen · {q6.cruisePromenadeLaunch.conversionFunnel28d.excludedSyntheticEvents28d} QA/test events excluded).
                   </p>
                 </div>
                 <span
@@ -623,6 +623,21 @@ export default async function OwnerControlCenterPage() {
                     .join(" · ")}
                 </div>
               ) : null}
+
+              <div
+                data-testid="cp-outreach-source-attribution"
+                className="rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2 text-[11px] text-zinc-300"
+              >
+                <strong className="text-cyan-200">Outreach Source Attribution:</strong>{" "}
+                {q6.cruisePromenadeLaunch.conversionFunnel28d.outreachSourceBreakdown.length > 0
+                  ? q6.cruisePromenadeLaunch.conversionFunnel28d.outreachSourceBreakdown
+                      .map(
+                        (src) =>
+                          `${src.sourceLabel}: ${src.sessionsCount} sess (${src.sailingViewsCount} views · ${src.boardsCreatedCount} boards · ${src.inquiriesSubmittedCount} inq)`,
+                      )
+                      .join(" · ")
+                  : "0 post-launch visits yet — awaiting first tagged outreach click (?utm_source=...)"}
+              </div>
             </div>
           </article>
         </section>
@@ -771,17 +786,13 @@ export default async function OwnerControlCenterPage() {
                     className="rounded-xl border border-white/10 bg-black/35 p-3.5 space-y-1"
                   >
                     <div className="font-bold text-emerald-200">
-                      Cruise Promenade Board &amp; Catalog Separation ({triageQueue.cruisePromenade.status})
+                      Cruise Promenade Launch Cohort vs. Frozen System History ({triageQueue.cruisePromenade.status})
                     </div>
                     <div className="text-zinc-200">
-                      Sampled KV Boards:{" "}
-                      <code>{triageQueue.cruisePromenade.sampledSharedPlannersCount}</code> · Genuine User Groups:{" "}
-                      <code>
-                        {triageQueue.cruisePromenade.genuineSharedPlannersCount !== null
-                          ? triageQueue.cruisePromenade.genuineSharedPlannersCount
-                          : "Unfiltered KV sample"}
-                      </code>{" "}
-                      · Test Boards Excluded:{" "}
+                      Launch Cohort Boards (post-<code>{triageQueue.cruisePromenade.launchCohortEpochIso ?? "2026-11-12T12:35:00.000Z"}</code>):{" "}
+                      <code>{triageQueue.cruisePromenade.launchCohortBoardsCount ?? 0}</code> (
+                      <code>{triageQueue.cruisePromenade.launchCohortGuestsCount ?? 0}</code> pax) · Frozen Pre-Launch System Boards:{" "}
+                      <code>{triageQueue.cruisePromenade.preLaunchHistoricalBoardsCount}</code> · Test Boards Excluded:{" "}
                       <code>{triageQueue.cruisePromenade.testSharedPlannersCount}</code>
                     </div>
                   </div>
