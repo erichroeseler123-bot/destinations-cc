@@ -26,6 +26,10 @@ import { HREYFILL_REYKJAVIK_SHORE_EXCURSION_QUALIFICATION } from "@/lib/dcc/corr
 import { JUNEAU_PRODUCT_SUPPLIER_RECONCILIATION } from "@/lib/dcc/machine/v03/operatorDirectCheckout";
 import { fetchAvailabilitiesForItem } from "@/lib/dcc/liveSlots/fareharbor";
 import {
+  buildNormalizedJuneauSupplierFeed,
+  type NormalizedJuneauSupplierFeed,
+} from "@/lib/dcc/liveSlots/rezgoReadOnly";
+import {
   APPROVED_CATALOG_CHECKOUT_TOURS,
   PROVEN_NEW_ORLEANS_TOURS,
   isCatalogTourPreparedCheckoutEnabled,
@@ -455,6 +459,9 @@ export interface PortDayExcursionCatalogResponse {
     missingOperatorInfoCountOnPage: number;
     liveAvailabilitySupportedCountOnPage: number;
     withinOneMileReviewQueueCountOnPage?: number;
+  };
+  normalizedSupplierFeeds?: {
+    juneauToursWhaleWatch?: NormalizedJuneauSupplierFeed;
   };
   tours: PortDayExcursionCard[];
 }
@@ -3490,7 +3497,7 @@ export async function queryPortDayExcursionCatalog(params: {
   const isShortlist2hMode = viewMode === "shortlist_2h";
   const isFitsSailingMode = viewMode === "fits_sailing" || isShortlist2hMode;
 
-  const [sqlRes, liveProviderCounts, sharedHandoffLedgerSummary] = await Promise.all([
+  const [sqlRes, liveProviderCounts, sharedHandoffLedgerSummary, juneauSupplierFeed] = await Promise.all([
     queryDurableTourCatalog({
       destinationSlug: profile.destinationSlug,
       category: category === "all" ? undefined : category,
@@ -3506,6 +3513,11 @@ export async function queryPortDayExcursionCatalog(params: {
       originatingSite: params.originatingSite || null,
       portSlug: profile.portSlug,
     }),
+    profile.portSlug === "juneau"
+      ? buildNormalizedJuneauSupplierFeed({
+          searchDate: sailingDate || undefined,
+        }).catch(() => null)
+      : Promise.resolve(null),
   ]);
 
   const evaluatedCards: PortDayExcursionCard[] = sqlRes.records.map((rec) => {
@@ -3885,6 +3897,13 @@ export async function queryPortDayExcursionCatalog(params: {
         (c) => c.timeFit.evidenceReviewPriority?.withinOneMileOfBerth
       ).length,
     },
+    ...(juneauSupplierFeed
+      ? {
+          normalizedSupplierFeeds: {
+            juneauToursWhaleWatch: juneauSupplierFeed,
+          },
+        }
+      : {}),
     tours: visibleTours,
   };
 }

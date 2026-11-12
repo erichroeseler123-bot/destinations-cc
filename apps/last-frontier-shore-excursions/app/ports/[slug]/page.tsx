@@ -10,6 +10,8 @@ import { CruiseWindowCalculator } from "@/components/CruiseWindowCalculator";
 import { ExcursionFilters } from "@/components/ExcursionFilters";
 import { TrustDisclosure } from "@/components/TrustDisclosure";
 import { ApprovedResearchQualificationSection } from "@/components/ApprovedResearchQualificationSection";
+import { JuneauNormalizedSupplierFeedSection } from "@/components/JuneauNormalizedSupplierFeedSection";
+import { loadLfseJuneauNormalizedSupplierFeed } from "@/lib/dccJuneauSupplierFeed";
 import {
   BLOCKED_KETCHIKAN_UMBRELLA_PRODUCTS,
   loadLfseApprovedPortFacts,
@@ -64,10 +66,14 @@ export default async function PortPage({
   const activities = getPortActivities(slug);
   const portExcursions = getExcursionsByPort(slug as PortSlug);
 
-  const researchLoad =
+  const [researchLoad, juneauNormalizedFeed] = await Promise.all([
     slug === "juneau" || slug === "ketchikan"
-      ? await loadLfseApprovedPortFacts(slug, { revalidateSeconds: 60 })
-      : null;
+      ? loadLfseApprovedPortFacts(slug, { revalidateSeconds: 60 })
+      : Promise.resolve(null),
+    slug === "juneau"
+      ? loadLfseJuneauNormalizedSupplierFeed({ revalidateSeconds: 120 })
+      : Promise.resolve(null),
+  ]);
   const researchQualifications = researchLoad
     ? qualifyLfsePortDirectContexts(slug, researchLoad.facts)
     : [];
@@ -279,6 +285,10 @@ export default async function PortPage({
           <TrustDisclosure />
         </div>
       </section>
+
+      {juneauNormalizedFeed && (
+        <JuneauNormalizedSupplierFeedSection feed={juneauNormalizedFeed} />
+      )}
 
       {/* Activity Clusters Cards */}
       <section className="section" style={{ background: "#ffffff" }}>

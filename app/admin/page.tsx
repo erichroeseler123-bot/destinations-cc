@@ -525,6 +525,16 @@ export default async function OwnerControlCenterPage() {
                   Written10%[{q6.sereneRezgoConnection.gates.writtenCommissionOwnershipConfirmed ? "✓" : "·"}]{" "}
                   TestFlow[{q6.sereneRezgoConnection.gates.nonCustomerTestBookingVerified ? "✓" : "·"}]
                 </div>
+                <div className="pt-1 text-xs">
+                  <a
+                    href="/api/admin/control-center?action=inspect_serene_rezgo&amp;rezgoDates=2027-05-15,2027-07-15"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center rounded-lg border border-amber-400/40 bg-amber-500/15 px-2.5 py-1 font-bold text-amber-100 hover:bg-amber-500/25"
+                  >
+                    Run Read-Only Rezgo Inspection ↗
+                  </a>
+                </div>
               </div>
 
               {/* Milestone 3: 3 Direct Operators (Juneau, New Orleans, Colorado) */}

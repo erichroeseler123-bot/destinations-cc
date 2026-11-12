@@ -15,9 +15,13 @@ import { SHUTTLEYA_ROOT_TRUTH } from "@/lib/dcc/shuttleyaTruth";
 import { GET as getShuttleYaSubAppAgent } from "@/apps/shuttleya/app/agent.json/route";
 import { GET as getShuttleYaSubAppLlms } from "@/apps/shuttleya/app/llms.txt/route";
 import {
+  buildNormalizedJuneauSupplierFeed,
+  clearRezgoReadOnlyCacheForTesting,
   getSereneRezgoReadinessStatus,
   inspectSereneRezgoInventoryReadOnly,
+  sanitizeRezgoDiagnosticMessage,
 } from "@/lib/dcc/liveSlots/rezgoReadOnly";
+import { loadLfseJuneauNormalizedSupplierFeed } from "@/apps/last-frontier-shore-excursions/lib/dccJuneauSupplierFeed";
 import { THREE_MARKET_DIRECT_OPERATOR_PITCH_KITS } from "@/lib/dcc/commerce/directOperatorActivationKit";
 import { resolveProviderKeyFromBookingSystem } from "@/lib/dcc/operatorOnboardingStore";
 
@@ -438,4 +442,174 @@ test("Phase 2 Distribution & Revenue: 6-question daily cockpit, 3-market direct 
     snapshot.dailyBusinessCockpit.operatorAndOrganizerFollowUps.directOperators3Markets.markets.length,
     3,
   );
+});
+
+test("Owner-only Rezgo inspection action, secret scrubbing, cross-surface reconciliation, and LFSE normalized feed fallback", async () => {
+  const prevAdminKey = process.env.ADMIN_ACCESS_KEY;
+  const prevCid = process.env.REZGO_SERENE_CID;
+  const prevApiKey = process.env.REZGO_SERENE_API_KEY;
+
+  process.env.ADMIN_ACCESS_KEY = "owner-inspect-test-secret";
+  process.env.REZGO_SERENE_CID = "SERENE_SECRET_CID_888";
+  process.env.REZGO_SERENE_API_KEY = "SERENE_SECRET_API_KEY_99999999";
+  clearRezgoReadOnlyCacheForTesting();
+
+  const origFetch = globalThis.fetch;
+
+  try {
+    // 1. Unauthenticated caller is strictly rejected (401)
+    const unauthReq = new NextRequest(
+      "https://www.destinationcommandcenter.com/api/admin/control-center?action=inspect_serene_rezgo",
+    );
+    const unauthRes = await getControlCenterRoute(unauthReq);
+    assert.equal(unauthRes.status, 401);
+
+    // 2. Diagnostic scrubber strips transcode, key, and raw secret values
+    const scrubbed = sanitizeRezgoDiagnosticMessage(
+      "Failed GET https://xml.rezgo.com/xml?transcode=SERENE_SECRET_CID_888&key=SERENE_SECRET_API_KEY_99999999&i=search (cid SERENE_SECRET_CID_888)",
+      ["SERENE_SECRET_CID_888", "SERENE_SECRET_API_KEY_99999999"],
+    );
+    assert.ok(scrubbed);
+    assert.doesNotMatch(scrubbed, /SERENE_SECRET_CID_888/);
+    assert.doesNotMatch(scrubbed, /SERENE_SECRET_API_KEY_99999999/);
+
+    // 3. Authenticated owner inspection returns company, UIDs, options, reconciliation, and conflicts with ZERO secret leakage
+    globalThis.fetch = async (input) => {
+      const url = String(input);
+      if (url.includes("i=company")) {
+        return new Response(
+          "<response><company_name>Juneau Tours &amp; Whale Watch</company_name><domain>juneautours.rezgo.com</domain><currency>USD</currency></response>",
+          { status: 200 },
+        );
+      }
+      if (url.includes("i=search")) {
+        return new Response(
+          `<response>
+            <item>
+              <id>1</id>
+              <uid>2001</uid>
+              <com>5857P22</com>
+              <item><![CDATA[Mendenhall Glacier & Whale Watch Combo]]></item>
+              <option><![CDATA[Standard Combo]]></option>
+              <duration>5 hours</duration>
+              <time>09:30 AM</time>
+              <price_adult>199.00</price_adult>
+              <price_child>159.00</price_child>
+              <currency_base>USD</currency_base>
+              <availability>18</availability>
+            </item>
+            <item>
+              <id>2</id>
+              <uid>2002</uid>
+              <com></com>
+              <item><![CDATA[Mendenhall Glacier Blue Bus Express Shuttle]]></item>
+              <option><![CDATA[Round-Trip Shuttle]]></option>
+              <duration>3 hours</duration>
+              <time>10:00 AM</time>
+              <price_adult>79.00</price_adult>
+              <currency_base>USD</currency_base>
+              <availability>24</availability>
+            </item>
+          </response>`,
+          { status: 200 },
+        );
+      }
+      return new Response("Not Found", { status: 404 });
+    };
+
+    const adminCookie = buildAdminSessionValue();
+    const authReq = new NextRequest(
+      "https://www.destinationcommandcenter.com/api/admin/control-center?action=inspect_serene_rezgo&fresh=1&rezgoDates=2027-07-15",
+      {
+        headers: { cookie: `${ADMIN_SESSION_COOKIE}=${adminCookie}` },
+      },
+    );
+    const authRes = await getControlCenterRoute(authReq);
+    assert.equal(authRes.status, 200);
+    const rawBody = await authRes.text();
+    assert.doesNotMatch(rawBody, /SERENE_SECRET_CID_888/);
+    assert.doesNotMatch(rawBody, /SERENE_SECRET_API_KEY_99999999/);
+
+    const payload = JSON.parse(rawBody);
+    assert.equal(payload.ok, true);
+    assert.equal(payload.readOnly, true);
+    assert.equal(payload.mutatedRemoteState, false);
+    assert.equal(payload.secretsExposed, false);
+    assert.equal(payload.credentialHolder, "destinations-cc");
+    assert.equal(payload.writeCapabilitiesDisabled.commitBookingDisabled, true);
+    assert.equal(payload.writeCapabilitiesDisabled.liveDirectCheckoutEnabled, false);
+    assert.equal(payload.catalogInspection.companyName, "Juneau Tours & Whale Watch");
+    assert.equal(payload.catalogInspection.itemsCount, 2);
+    assert.equal(payload.dateInspections.length, 1);
+
+    const comboRec = payload.catalogInspection.reconciliation.find(
+      (r: any) => r.rezgoUid === "2001",
+    );
+    assert.equal(comboRec.matchedDccCatalogProductCode, "5857P22");
+    assert.equal(
+      comboRec.supplierConflictStatus,
+      "conflicts_with_466119P3_dolphin_jet_boat",
+    );
+    assert.equal(comboRec.liveDirectRezgoCheckoutEnabled, false);
+
+    const shuttleRec = payload.catalogInspection.reconciliation.find(
+      (r: any) => r.rezgoUid === "2002",
+    );
+    assert.equal(shuttleRec.matchedDccCatalogProductCode, "5857SHUTTLE");
+    assert.equal(shuttleRec.matchedLastFrontierCatalogProductId, "5857SHUTTLE");
+
+    // 4. Last Frontier normalized feed consumer maps to P00281144 Viator fallback and fails open when Rezgo is unavailable
+    const lfseOk = await loadLfseJuneauNormalizedSupplierFeed({
+      activitySlug: "whale-watching",
+      fetchImpl: async () =>
+        new Response(
+          JSON.stringify({
+            ok: true,
+            normalizedSupplierFeeds: {
+              juneauToursWhaleWatch: payload.normalizedSupplierFeed,
+            },
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        ),
+    });
+    assert.equal(lfseOk.ok, true);
+    assert.equal(lfseOk.liveDirectRezgoCheckoutEnabled, false);
+    assert.equal(lfseOk.tours.length, 1);
+    assert.match(lfseOk.tours[0].trackedFallbackHref || "", /pid=P00281144/);
+    assert.match(lfseOk.tours[0].trackedFallbackHref || "", /5857P22/);
+
+    const lfseFallback = await loadLfseJuneauNormalizedSupplierFeed({
+      fetchImpl: async () => new Response("Service Unavailable", { status: 503 }),
+    });
+    assert.equal(lfseFallback.ok, false);
+    assert.equal(lfseFallback.fallbackActive, true);
+    assert.equal(lfseFallback.tours.length, 0);
+
+    // 5. buildNormalizedJuneauSupplierFeed fails open cleanly when Rezgo throws network error
+    const failedFeed = await buildNormalizedJuneauSupplierFeed({
+      env: {
+        REZGO_SERENE_CID: "SERENE_SECRET_CID_888",
+        REZGO_SERENE_API_KEY: "SERENE_SECRET_API_KEY_99999999",
+      },
+      fetchImpl: async () => {
+        throw new Error(
+          "Connection reset for https://xml.rezgo.com/xml?transcode=SERENE_SECRET_CID_888&key=SERENE_SECRET_API_KEY_99999999",
+        );
+      },
+    });
+    assert.equal(failedFeed.ok, false);
+    assert.equal(failedFeed.source, "dcc_approved_fallback");
+    assert.equal(failedFeed.liveDirectRezgoCheckoutEnabled, false);
+    assert.doesNotMatch(JSON.stringify(failedFeed), /SERENE_SECRET_CID_888/);
+    assert.doesNotMatch(JSON.stringify(failedFeed), /SERENE_SECRET_API_KEY_99999999/);
+  } finally {
+    globalThis.fetch = origFetch;
+    clearRezgoReadOnlyCacheForTesting();
+    if (prevAdminKey === undefined) delete process.env.ADMIN_ACCESS_KEY;
+    else process.env.ADMIN_ACCESS_KEY = prevAdminKey;
+    if (prevCid === undefined) delete process.env.REZGO_SERENE_CID;
+    else process.env.REZGO_SERENE_CID = prevCid;
+    if (prevApiKey === undefined) delete process.env.REZGO_SERENE_API_KEY;
+    else process.env.REZGO_SERENE_API_KEY = prevApiKey;
+  }
 });

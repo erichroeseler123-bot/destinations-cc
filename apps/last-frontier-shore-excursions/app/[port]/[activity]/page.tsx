@@ -13,6 +13,8 @@ import { ExcursionCard } from "@/components/ExcursionCard";
 import { ExcursionComparisonTable } from "@/components/ExcursionComparisonTable";
 import { TrustDisclosure } from "@/components/TrustDisclosure";
 import { ApprovedResearchQualificationSection } from "@/components/ApprovedResearchQualificationSection";
+import { JuneauNormalizedSupplierFeedSection } from "@/components/JuneauNormalizedSupplierFeedSection";
+import { loadLfseJuneauNormalizedSupplierFeed } from "@/lib/dccJuneauSupplierFeed";
 import {
   BLOCKED_KETCHIKAN_UMBRELLA_PRODUCTS,
   loadLfseApprovedPortFacts,
@@ -79,10 +81,18 @@ export default async function ActivityPage({
   const fallbackExcursions = matchedExcursions.length > 0 ? matchedExcursions : getExcursionsByPort(port as PortSlug).slice(0, 2);
   const activityImg = getActivityImage(port, activity);
 
-  const researchLoad =
+  const [researchLoad, juneauNormalizedFeed] = await Promise.all([
     port === "juneau" || port === "ketchikan"
-      ? await loadLfseApprovedPortFacts(port, { revalidateSeconds: 60 })
-      : null;
+      ? loadLfseApprovedPortFacts(port, { revalidateSeconds: 60 })
+      : Promise.resolve(null),
+    port === "juneau" &&
+    (activity === "whale-watching" || activity === "mendenhall-glacier-tours")
+      ? loadLfseJuneauNormalizedSupplierFeed({
+          activitySlug: activity,
+          revalidateSeconds: 120,
+        })
+      : Promise.resolve(null),
+  ]);
   const researchQualifications = researchLoad
     ? qualifyLfsePortDirectContexts(port, researchLoad.facts, {
         activitySlug: activity,
@@ -393,6 +403,10 @@ export default async function ActivityPage({
           <TrustDisclosure />
         </div>
       </section>
+
+      {juneauNormalizedFeed && (
+        <JuneauNormalizedSupplierFeedSection feed={juneauNormalizedFeed} />
+      )}
 
       {/* Editorial Depth & Port Day Guidance */}
       <section className="section" style={{ background: "#fbfcfc", borderTop: "1px solid var(--line)" }}>
