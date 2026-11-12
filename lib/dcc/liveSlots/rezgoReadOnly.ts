@@ -77,6 +77,8 @@ export interface RezgoInspectedItemSummary {
   maxAvailability?: number | null;
   searchDateChecked?: string | null;
   cutoffWindow?: string | null;
+  supplierBookingCutoffHours?: number | null;
+  supplierBookingCutoffSemantics?: "supplier_booking_cutoff_only_never_cruise_return_buffer";
   cancellationSummary?: string | null;
   dateSlots?: RezgoDateAvailabilitySlot[];
 }
@@ -149,6 +151,23 @@ export interface RezgoReadOnlyInspectionResult {
   errorMessage: string | null;
 }
 
+export interface RezgoOptionSailingWindowAssessment {
+  departureTime: string;
+  shipArrivalTime: string | null;
+  shipAllAboardTime: string | null;
+  allAboardConfirmed: boolean;
+  meetingPointAndReturnConfirmed: false;
+  estimatedTourEndWithoutTransferTime: string | null;
+  upperBoundRemainingSecondsBeforeTransfer: number | null;
+  upperBoundRemainingBufferHmsLabel: string | null;
+  status:
+    | "outside_sailing_window_blocked"
+    | "reduced_buffer_not_recommended"
+    | "unverified_cruise_timing_pending_transfer_and_pickup";
+  blockedForSailingWindow: boolean;
+  displayLabel: string;
+}
+
 export interface NormalizedJuneauSupplierTour {
   normalizedTourId: string;
   rezgoUid: string;
@@ -165,10 +184,20 @@ export interface NormalizedJuneauSupplierTour {
   childPriceUsd: number | null;
   currency: string;
   departureTimes: string[];
+  blockedOutsideWindowDepartures: string[];
   startingLocation: string | null;
   dateChecked: string | null;
   availableSpots: number | null;
   availabilitySemantics: "rezgo_date_search_spots" | "rezgo_catalog_overall" | "unconfirmed_check_provider";
+  supplierBookingCutoffHours: number | null;
+  supplierBookingCutoffSemantics: "supplier_booking_cutoff_only_never_cruise_return_buffer";
+  cruiseTimingVerificationStatus: "live_operator_availability_only_unverified_cruise_timing";
+  cruiseTimingStatusLabel: "Live operator availability · Cruise-safe timing unverified";
+  cruiseTimingDisclosure: string;
+  dccRequiredRecommendedReturnBufferSeconds: 7199;
+  dccRequiredRecommendedReturnBufferLabel: "1:59:59+ before confirmed all-aboard";
+  optionWindowAssessments: RezgoOptionSailingWindowAssessment[];
+  cacheKey: string;
   matchConfidence: "high_exact_code" | "medium_title_and_operator" | "unmatched_rezgo_only";
   matchedViatorProductCode: string | null;
   approvedFallbackViatorUrl: string | null;
@@ -183,6 +212,31 @@ export interface NormalizedJuneauSupplierFeed {
   generatedAt: string;
   checkedAt: string;
   dateChecked: string | null;
+  cachePolicy: {
+    scope: "operator_product_service_date";
+    operatorKey: "juneau-tours-whale-watch";
+    productKey: string;
+    serviceDateKey: string;
+    cacheKey: string;
+    maxEntriesBound: number;
+    cacheStatus: "hit" | "miss_fresh" | "bypassed";
+    cachedAt: string;
+    expiresAt: string;
+    ttlSeconds: number;
+  };
+  timingSafetyPolicy: {
+    feedClassification: "live_operator_availability_only";
+    verifiedCruiseSafeTiming: false;
+    supplierCutoffIsNeverCruiseReturnBuffer: true;
+    dccRecommendedReturnBufferMinimumSeconds: 7199;
+    dccRecommendedReturnBufferLabel: "At least 1:59:59 before ship's confirmed all-aboard time";
+    unconfirmedInputs: readonly [
+      "exact_meeting_points",
+      "berth_transfer_durations",
+      "operator_return_times",
+      "dock_pickup_rules",
+    ];
+  };
   readOnly: true;
   liveDirectRezgoCheckoutEnabled: false;
   isolatedSecondaryProperty: true;
@@ -346,24 +400,28 @@ function normalizeRezgoClockTime(rawTime: string | null | undefined): string | n
   const cleaned = rawTime.trim();
   if (!cleaned) return null;
 
-  // Handle "9:00 AM", "09:30 am", "1:15 PM", "13:30", "09:00:00"
-  const ampmMatch = cleaned.match(/^(\d{1,2})(?::(\d{2}))?(?::\d{2})?\s*(am|pm)$/i);
+  // Handle "9:00 AM", "09:30 am", "1:15 PM", "13:30", "09:00:00", "08:30:01"
+  const ampmMatch = cleaned.match(/^(\d{1,2})(?::(\d{2}))?(?::(\d{2}))?\s*(am|pm)$/i);
   if (ampmMatch) {
     let hour = Number(ampmMatch[1]);
     const min = Number(ampmMatch[2] || "0");
-    const mer = ampmMatch[3].toLowerCase();
-    if (hour < 1 || hour > 12 || min < 0 || min > 59) return cleaned;
+    const sec = ampmMatch[3] ? Number(ampmMatch[3]) : 0;
+    const mer = ampmMatch[4].toLowerCase();
+    if (hour < 1 || hour > 12 || min < 0 || min > 59 || sec < 0 || sec > 59) return cleaned;
     if (mer === "pm" && hour !== 12) hour += 12;
     if (mer === "am" && hour === 12) hour = 0;
-    return `${String(hour).padStart(2, "0")}:${String(min).padStart(2, "0")}`;
+    const base = `${String(hour).padStart(2, "0")}:${String(min).padStart(2, "0")}`;
+    return sec > 0 ? `${base}:${String(sec).padStart(2, "0")}` : base;
   }
 
-  const hhmmMatch = cleaned.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+  const hhmmMatch = cleaned.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
   if (hhmmMatch) {
     const hour = Number(hhmmMatch[1]);
     const min = Number(hhmmMatch[2]);
-    if (hour >= 0 && hour <= 23 && min >= 0 && min <= 59) {
-      return `${String(hour).padStart(2, "0")}:${String(min).padStart(2, "0")}`;
+    const sec = hhmmMatch[3] ? Number(hhmmMatch[3]) : 0;
+    if (hour >= 0 && hour <= 23 && min >= 0 && min <= 59 && sec >= 0 && sec <= 59) {
+      const base = `${String(hour).padStart(2, "0")}:${String(min).padStart(2, "0")}`;
+      return sec > 0 ? `${base}:${String(sec).padStart(2, "0")}` : base;
     }
   }
 
@@ -535,6 +593,11 @@ export function parseRezgoItemsXml(
       extractXmlTag(block, "cancellation_policy") ||
       null;
     const cancellationSummary = rawCancel ? stripHtmlTags(rawCancel).slice(0, 240) : null;
+    const rawCutoff = extractXmlTag(block, "cutoff");
+    const parsedCutoffHours =
+      rawCutoff !== null && rawCutoff.trim() !== "" && Number.isFinite(Number(rawCutoff))
+        ? Math.max(0, Number(rawCutoff))
+        : null;
 
     items.push({
       uid: uid || "unindexed",
@@ -556,7 +619,10 @@ export function parseRezgoItemsXml(
       availableSpotsOnSearchDate,
       maxAvailability,
       searchDateChecked: searchDate,
-      cutoffWindow: extractXmlTag(block, "cutoff"),
+      cutoffWindow: rawCutoff,
+      supplierBookingCutoffHours: parsedCutoffHours,
+      supplierBookingCutoffSemantics:
+        "supplier_booking_cutoff_only_never_cruise_return_buffer",
       cancellationSummary,
       ...(dateSlots.length > 0 ? { dateSlots } : {}),
     });
@@ -971,14 +1037,197 @@ export async function inspectSereneRezgoInventoryReadOnly(options?: {
 }
 
 interface CachedInspectionEntry {
+  cachedAtIso: string;
   expiresAtMs: number;
+  ttlSeconds: number;
   result: RezgoReadOnlyInspectionResult;
 }
 
+export const MAX_REZGO_CACHE_ENTRIES = 64;
+
 const rezgoReadOnlyCache = new Map<string, CachedInspectionEntry>();
+const rezgoInFlightRequests = new Map<string, Promise<RezgoReadOnlyInspectionResult>>();
+const rezgoNormalizedProductCache = new Map<
+  string,
+  {
+    cachedAtIso: string;
+    expiresAtMs: number;
+    ttlSeconds: number;
+    tour: NormalizedJuneauSupplierTour;
+  }
+>();
+
+function setBoundedMapEntry<V>(map: Map<string, V>, key: string, value: V, maxEntries: number): void {
+  if (map.has(key)) {
+    map.delete(key);
+  }
+  map.set(key, value);
+  while (map.size > maxEntries) {
+    const oldestKey = map.keys().next().value;
+    if (oldestKey === undefined) break;
+    map.delete(oldestKey);
+  }
+}
 
 export function clearRezgoReadOnlyCacheForTesting(): void {
   rezgoReadOnlyCache.clear();
+  rezgoInFlightRequests.clear();
+  rezgoNormalizedProductCache.clear();
+}
+
+export function getRezgoReadOnlyCacheStatsForTesting(): {
+  inspectionEntries: number;
+  productEntries: number;
+  maxEntries: number;
+} {
+  return {
+    inspectionEntries: rezgoReadOnlyCache.size,
+    productEntries: rezgoNormalizedProductCache.size,
+    maxEntries: MAX_REZGO_CACHE_ENTRIES,
+  };
+}
+
+export async function getCachedSereneRezgoInspectionWithMeta(options?: {
+  env?: Record<string, string | undefined>;
+  fetchImpl?: typeof fetch;
+  operatorId?: "juneau-tours-whale-watch";
+  productKey?: string | null;
+  searchDate?: string;
+  ttlMs?: number;
+  bypassCache?: boolean;
+}): Promise<{
+  result: RezgoReadOnlyInspectionResult;
+  cacheMeta: {
+    operatorKey: "juneau-tours-whale-watch";
+    productKey: string;
+    serviceDateKey: string;
+    cacheKey: string;
+    maxEntriesBound: number;
+    cacheStatus: "hit" | "miss_fresh" | "bypassed";
+    cachedAt: string;
+    expiresAt: string;
+    ttlSeconds: number;
+  };
+}> {
+  const operatorKey = options?.operatorId || "juneau-tours-whale-watch";
+  const normalizedProductKey = (options?.productKey || "all").trim().toUpperCase() || "all";
+  const serviceDateKey =
+    options?.searchDate && /^\d{4}-\d{2}-\d{2}$/.test(options.searchDate.trim())
+      ? options.searchDate.trim()
+      : "catalog";
+  // Upstream Rezgo i=search returns the operator's full day catalog in one XML payload,
+  // so we key upstream XML fetches by operator + serviceDate (while also bounding per-product
+  // normalized slices by operator + product + serviceDate) to prevent duplicate Rezgo hits.
+  const upstreamCacheKey = `rezgo:${operatorKey}:service-date:${serviceDateKey}`;
+  const logicalCacheKey = `rezgo:${operatorKey}:${normalizedProductKey}:${serviceDateKey}`;
+  const useCache = !options?.bypassCache;
+  const now = Date.now();
+
+  if (useCache) {
+    const existing = rezgoReadOnlyCache.get(upstreamCacheKey);
+    if (existing && existing.expiresAtMs > now) {
+      // Refresh LRU position
+      setBoundedMapEntry(rezgoReadOnlyCache, upstreamCacheKey, existing, MAX_REZGO_CACHE_ENTRIES);
+      return {
+        result: existing.result,
+        cacheMeta: {
+          operatorKey,
+          productKey: normalizedProductKey,
+          serviceDateKey,
+          cacheKey: logicalCacheKey,
+          maxEntriesBound: MAX_REZGO_CACHE_ENTRIES,
+          cacheStatus: "hit",
+          cachedAt: existing.cachedAtIso,
+          expiresAt: new Date(existing.expiresAtMs).toISOString(),
+          ttlSeconds: existing.ttlSeconds,
+        },
+      };
+    }
+
+    const inFlight = rezgoInFlightRequests.get(upstreamCacheKey);
+    if (inFlight) {
+      const sharedResult = await inFlight;
+      const populated = rezgoReadOnlyCache.get(upstreamCacheKey);
+      const ttlSeconds = populated?.ttlSeconds ?? (sharedResult.ok ? 180 : 30);
+      const cachedAt = populated?.cachedAtIso ?? sharedResult.checkedAt;
+      const expiresAt = populated
+        ? new Date(populated.expiresAtMs).toISOString()
+        : new Date(Date.now() + ttlSeconds * 1000).toISOString();
+      return {
+        result: sharedResult,
+        cacheMeta: {
+          operatorKey,
+          productKey: normalizedProductKey,
+          serviceDateKey,
+          cacheKey: logicalCacheKey,
+          maxEntriesBound: MAX_REZGO_CACHE_ENTRIES,
+          cacheStatus: "hit",
+          cachedAt,
+          expiresAt,
+          ttlSeconds,
+        },
+      };
+    }
+  }
+
+  const fetchPromise = inspectSereneRezgoInventoryReadOnly({
+    env: options?.env,
+    fetchImpl: options?.fetchImpl,
+    searchDate: serviceDateKey === "catalog" ? undefined : serviceDateKey,
+  });
+
+  if (useCache) {
+    rezgoInFlightRequests.set(upstreamCacheKey, fetchPromise);
+  }
+
+  let result: RezgoReadOnlyInspectionResult;
+  try {
+    result = await fetchPromise;
+  } finally {
+    if (useCache) {
+      rezgoInFlightRequests.delete(upstreamCacheKey);
+    }
+  }
+
+  const ttlMs =
+    typeof options?.ttlMs === "number" && Number.isFinite(options.ttlMs)
+      ? Math.max(5_000, options.ttlMs)
+      : result.ok
+        ? 180_000
+        : 30_000;
+  const ttlSeconds = Math.round(ttlMs / 1000);
+  const cachedAtMs = Date.now();
+  const cachedAtIso = new Date(cachedAtMs).toISOString();
+  const expiresAtMs = cachedAtMs + ttlMs;
+
+  if (useCache) {
+    setBoundedMapEntry(
+      rezgoReadOnlyCache,
+      upstreamCacheKey,
+      {
+        cachedAtIso,
+        expiresAtMs,
+        ttlSeconds,
+        result,
+      },
+      MAX_REZGO_CACHE_ENTRIES,
+    );
+  }
+
+  return {
+    result,
+    cacheMeta: {
+      operatorKey,
+      productKey: normalizedProductKey,
+      serviceDateKey,
+      cacheKey: logicalCacheKey,
+      maxEntriesBound: MAX_REZGO_CACHE_ENTRIES,
+      cacheStatus: useCache ? "miss_fresh" : "bypassed",
+      cachedAt: cachedAtIso,
+      expiresAt: new Date(expiresAtMs).toISOString(),
+      ttlSeconds,
+    },
+  };
 }
 
 export async function getCachedSereneRezgoInspection(options?: {
@@ -988,38 +1237,166 @@ export async function getCachedSereneRezgoInspection(options?: {
   ttlMs?: number;
   bypassCache?: boolean;
 }): Promise<RezgoReadOnlyInspectionResult> {
-  const useCache =
-    !options?.bypassCache && !options?.fetchImpl && (!options?.env || options.env === process.env);
-  const cacheKey = `serene:${options?.searchDate || "catalog"}`;
-  const now = Date.now();
-
-  if (useCache) {
-    const existing = rezgoReadOnlyCache.get(cacheKey);
-    if (existing && existing.expiresAtMs > now) {
-      return existing.result;
-    }
-  }
-
-  const result = await inspectSereneRezgoInventoryReadOnly({
-    env: options?.env,
-    fetchImpl: options?.fetchImpl,
-    searchDate: options?.searchDate,
-  });
-
-  if (useCache) {
-    const ttlMs =
-      typeof options?.ttlMs === "number" && Number.isFinite(options.ttlMs)
-        ? Math.max(5_000, options.ttlMs)
-        : result.ok
-          ? 120_000
-          : 30_000;
-    rezgoReadOnlyCache.set(cacheKey, {
-      expiresAtMs: now + ttlMs,
-      result,
-    });
-  }
-
+  const { result } = await getCachedSereneRezgoInspectionWithMeta(options);
   return result;
+}
+
+function parseClockToSeconds(clock: string | null | undefined): number | null {
+  if (!clock) return null;
+  const normalized = normalizeRezgoClockTime(clock);
+  if (!normalized) return null;
+  const m = normalized.match(/^(\d{2}):(\d{2})(?::(\d{2}))?$/);
+  if (!m) return null;
+  const hh = Number(m[1]);
+  const mm = Number(m[2]);
+  const ss = Number(m[3] || "0");
+  if (hh < 0 || hh > 23 || mm < 0 || mm > 59 || ss < 0 || ss > 59) return null;
+  return hh * 3600 + mm * 60 + ss;
+}
+
+function formatSecondsAsClockHhMm(totalSeconds: number): string {
+  const clamped = ((Math.floor(totalSeconds / 60) % 1440) + 1440) % 1440;
+  const hh = Math.floor(clamped / 60);
+  const mm = clamped % 60;
+  return `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
+}
+
+export function formatRemainingBufferHms(totalSeconds: number): string {
+  const safe = Math.max(0, Math.floor(totalSeconds));
+  const hours = Math.floor(safe / 3600);
+  const minutes = Math.floor((safe % 3600) / 60);
+  const seconds = safe % 60;
+  return `${hours}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}
+
+/**
+ * Evaluates a Rezgo departure option against an optional ship arrival / all-aboard window.
+ *
+ * Architectural Safeguard:
+ * - Rezgo's `<cutoff>` (e.g. `2.00` hours) is a SUPPLIER BOOKING CUTOFF and is NEVER used here.
+ * - DCC's separate rule requires at least `1:59:59` (`7,199` seconds) before the ship's confirmed
+ *   all-aboard time for a normally recommended excursion.
+ * - Options outside `[shipArrivalTime, shipAllAboardTime]` are blocked (`blockedForSailingWindow: true`).
+ * - Options returning inside the window with `< 1:59:59` remaining display the exact `H:MM:SS`
+ *   remaining buffer and are labeled reduced-buffer / not recommended.
+ * - Until exact meeting points, berth-transfer assumptions, operator return times, and pickup rules
+ *   are confirmed, NO Rezgo option is ever labeled verified cruise-safe timing.
+ */
+export function assessRezgoDepartureAgainstShipWindow(params: {
+  departureTime: string;
+  durationMinutes: number | null;
+  shipArrivalTime?: string | null;
+  shipAllAboardTime?: string | null;
+  allAboardConfirmed?: boolean;
+}): RezgoOptionSailingWindowAssessment {
+  const depSec = parseClockToSeconds(params.departureTime);
+  const arrSec = parseClockToSeconds(params.shipArrivalTime);
+  const allAboardSec = parseClockToSeconds(params.shipAllAboardTime);
+  const allAboardConfirmed = Boolean(params.allAboardConfirmed && allAboardSec !== null);
+  const normArr = arrSec !== null ? formatSecondsAsClockHhMm(arrSec) : null;
+  const normAllAboard = allAboardSec !== null ? formatSecondsAsClockHhMm(allAboardSec) : null;
+
+  if (depSec === null || params.durationMinutes === null || params.durationMinutes <= 0) {
+    return {
+      departureTime: params.departureTime,
+      shipArrivalTime: normArr,
+      shipAllAboardTime: normAllAboard,
+      allAboardConfirmed,
+      meetingPointAndReturnConfirmed: false,
+      estimatedTourEndWithoutTransferTime: null,
+      upperBoundRemainingSecondsBeforeTransfer: null,
+      upperBoundRemainingBufferHmsLabel: null,
+      status: "unverified_cruise_timing_pending_transfer_and_pickup",
+      blockedForSailingWindow: false,
+      displayLabel:
+        "Live operator availability · Cruise-safe timing unverified (duration, meeting point & return transfer pending)",
+    };
+  }
+
+  const endWithoutTransferSec = depSec + params.durationMinutes * 60;
+  const endClock = formatSecondsAsClockHhMm(endWithoutTransferSec);
+
+  if (arrSec !== null && depSec < arrSec) {
+    return {
+      departureTime: params.departureTime,
+      shipArrivalTime: normArr,
+      shipAllAboardTime: normAllAboard,
+      allAboardConfirmed,
+      meetingPointAndReturnConfirmed: false,
+      estimatedTourEndWithoutTransferTime: endClock,
+      upperBoundRemainingSecondsBeforeTransfer:
+        allAboardSec !== null ? allAboardSec - endWithoutTransferSec : null,
+      upperBoundRemainingBufferHmsLabel: null,
+      status: "outside_sailing_window_blocked",
+      blockedForSailingWindow: true,
+      displayLabel: `Outside ship window — departs ${params.departureTime} before ship arrival (${normArr})`,
+    };
+  }
+
+  if (allAboardSec !== null) {
+    const remainingSec = allAboardSec - endWithoutTransferSec;
+    if (remainingSec <= 0) {
+      return {
+        departureTime: params.departureTime,
+        shipArrivalTime: normArr,
+        shipAllAboardTime: normAllAboard,
+        allAboardConfirmed,
+        meetingPointAndReturnConfirmed: false,
+        estimatedTourEndWithoutTransferTime: endClock,
+        upperBoundRemainingSecondsBeforeTransfer: remainingSec,
+        upperBoundRemainingBufferHmsLabel: "0:00:00",
+        status: "outside_sailing_window_blocked",
+        blockedForSailingWindow: true,
+        displayLabel: `Outside ship window — activity ends ~${endClock} (before pier transfer) at/after ${normAllAboard} all-aboard`,
+      };
+    }
+
+    const exactHms = formatRemainingBufferHms(remainingSec);
+    if (remainingSec < 7199) {
+      return {
+        departureTime: params.departureTime,
+        shipArrivalTime: normArr,
+        shipAllAboardTime: normAllAboard,
+        allAboardConfirmed,
+        meetingPointAndReturnConfirmed: false,
+        estimatedTourEndWithoutTransferTime: endClock,
+        upperBoundRemainingSecondsBeforeTransfer: remainingSec,
+        upperBoundRemainingBufferHmsLabel: exactHms,
+        status: "reduced_buffer_not_recommended",
+        blockedForSailingWindow: false,
+        displayLabel: `Reduced buffer (${exactHms} remaining before ${normAllAboard} all-aboard, excluding unconfirmed pier return transfer) — not recommended; cruise-safe timing unverified`,
+      };
+    }
+
+    return {
+      departureTime: params.departureTime,
+      shipArrivalTime: normArr,
+      shipAllAboardTime: normAllAboard,
+      allAboardConfirmed,
+      meetingPointAndReturnConfirmed: false,
+      estimatedTourEndWithoutTransferTime: endClock,
+      upperBoundRemainingSecondsBeforeTransfer: remainingSec,
+      upperBoundRemainingBufferHmsLabel: exactHms,
+      status: "unverified_cruise_timing_pending_transfer_and_pickup",
+      blockedForSailingWindow: false,
+      displayLabel: `Live operator availability (${exactHms} max clock margin before ${normAllAboard} all-aboard, excluding unconfirmed berth transfer & pickup) · Cruise-safe timing unverified`,
+    };
+  }
+
+  return {
+    departureTime: params.departureTime,
+    shipArrivalTime: normArr,
+    shipAllAboardTime: null,
+    allAboardConfirmed: false,
+    meetingPointAndReturnConfirmed: false,
+    estimatedTourEndWithoutTransferTime: endClock,
+    upperBoundRemainingSecondsBeforeTransfer: null,
+    upperBoundRemainingBufferHmsLabel: null,
+    status: "unverified_cruise_timing_pending_transfer_and_pickup",
+    blockedForSailingWindow: false,
+    displayLabel:
+      "Live operator availability · Cruise-safe timing unverified (confirm ship all-aboard, meeting point, berth transfer & return time)",
+  };
 }
 
 function classifyJuneauTourActivity(
@@ -1039,12 +1416,20 @@ export async function buildNormalizedJuneauSupplierFeed(options?: {
   env?: Record<string, string | undefined>;
   fetchImpl?: typeof fetch;
   searchDate?: string;
+  productFilter?: string | null;
+  shipArrivalTime?: string | null;
+  shipAllAboardTime?: string | null;
+  allAboardConfirmed?: boolean;
+  ttlMs?: number;
   bypassCache?: boolean;
 }): Promise<NormalizedJuneauSupplierFeed> {
-  const inspection = await getCachedSereneRezgoInspection({
+  const { result: inspection, cacheMeta } = await getCachedSereneRezgoInspectionWithMeta({
     env: options?.env,
     fetchImpl: options?.fetchImpl,
+    operatorId: "juneau-tours-whale-watch",
+    productKey: options?.productFilter ?? null,
     searchDate: options?.searchDate,
+    ttlMs: options?.ttlMs,
     bypassCache: options?.bypassCache,
   });
 
@@ -1074,6 +1459,7 @@ export async function buildNormalizedJuneauSupplierFeed(options?: {
       startingLocation: string | null;
       spotsList: number[];
       overallList: number[];
+      cutoffHoursList: number[];
       rec: RezgoProductCrossSurfaceReconciliation | undefined;
     }
   >();
@@ -1099,6 +1485,7 @@ export async function buildNormalizedJuneauSupplierFeed(options?: {
         startingLocation: item.startingLocation,
         spotsList: [],
         overallList: [],
+        cutoffHoursList: [],
         rec,
       };
       grouped.set(groupKey, entry);
@@ -1125,13 +1512,54 @@ export async function buildNormalizedJuneauSupplierFeed(options?: {
     if (item.availabilityOverall !== undefined && item.availabilityOverall !== null) {
       entry.overallList.push(item.availabilityOverall);
     }
+    if (typeof item.supplierBookingCutoffHours === "number" && Number.isFinite(item.supplierBookingCutoffHours)) {
+      entry.cutoffHoursList.push(item.supplierBookingCutoffHours);
+    }
   }
 
-  const normalizedTours: NormalizedJuneauSupplierTour[] = Array.from(grouped.values()).map(
+  const normalizedFilter = (options?.productFilter || "").trim().toUpperCase();
+  const hasWindowInputs = Boolean(options?.shipArrivalTime || options?.shipAllAboardTime);
+  const nowMs = Date.now();
+
+  const allNormalizedTours: NormalizedJuneauSupplierTour[] = Array.from(grouped.values()).map(
     (entry) => {
       const matchedCode = entry.rec?.matchedDccCatalogProductCode ?? null;
+      const productSliceKey = `rezgo:juneau-tours-whale-watch:${matchedCode || entry.com || entry.primaryUid}:${cacheMeta.serviceDateKey}`;
+
+      if (!options?.bypassCache && !hasWindowInputs) {
+        const cachedSlice = rezgoNormalizedProductCache.get(productSliceKey);
+        if (cachedSlice && cachedSlice.expiresAtMs > nowMs) {
+          setBoundedMapEntry(
+            rezgoNormalizedProductCache,
+            productSliceKey,
+            cachedSlice,
+            MAX_REZGO_CACHE_ENTRIES,
+          );
+          return cachedSlice.tour;
+        }
+      }
+
       const approvedSpec = matchedCode ? APPROVED_JUNEAU_5857_VIATOR_CATALOG[matchedCode] : null;
+      const effectiveDurationMinutes = entry.durationMinutes ?? approvedSpec?.durationMinutes ?? null;
       const sortedDepartures = Array.from(entry.departureSet).sort();
+
+      const assessments = sortedDepartures.map((dep) =>
+        assessRezgoDepartureAgainstShipWindow({
+          departureTime: dep,
+          durationMinutes: effectiveDurationMinutes,
+          shipArrivalTime: options?.shipArrivalTime,
+          shipAllAboardTime: options?.shipAllAboardTime,
+          allAboardConfirmed: options?.allAboardConfirmed,
+        }),
+      );
+
+      const allowedDepartures = assessments
+        .filter((a) => !a.blockedForSailingWindow)
+        .map((a) => a.departureTime);
+      const blockedOutsideWindowDepartures = assessments
+        .filter((a) => a.blockedForSailingWindow)
+        .map((a) => a.departureTime);
+
       const minAdult =
         entry.adultPrices.length > 0 ? Math.min(...entry.adultPrices) : null;
       const minChild =
@@ -1144,6 +1572,8 @@ export async function buildNormalizedJuneauSupplierFeed(options?: {
         entry.overallList.length > 0
           ? entry.overallList.reduce((acc, v) => acc + v, 0)
           : null;
+      const maxSupplierCutoffHours =
+        entry.cutoffHoursList.length > 0 ? Math.max(...entry.cutoffHoursList) : null;
 
       const optionSummary =
         entry.optionLabels.length === 1
@@ -1152,7 +1582,12 @@ export async function buildNormalizedJuneauSupplierFeed(options?: {
             ? `${entry.optionLabels.length} daily departure options`
             : null;
 
-      return {
+      const cutoffSentence =
+        maxSupplierCutoffHours !== null
+          ? `Operator booking cutoff is ${maxSupplierCutoffHours}h prior to departure (supplier ticket-purchase cutoff only — never DCC's 1:59:59+ cruise-return buffer). `
+          : "Operator booking cutoffs apply only to ticket purchase — never DCC's 1:59:59+ cruise-return buffer. ";
+
+      const builtTour: NormalizedJuneauSupplierTour = {
         normalizedTourId: `dcc:rezgo:juneau-tours:${entry.primaryUid}`,
         rezgoUid: entry.optionUids[0] || entry.primaryUid,
         rezgoCom: entry.com,
@@ -1163,11 +1598,12 @@ export async function buildNormalizedJuneauSupplierFeed(options?: {
         optionName: optionSummary,
         activityCategory: classifyJuneauTourActivity(entry.title, optionSummary),
         durationLabel: entry.durationLabel,
-        durationMinutes: entry.durationMinutes ?? approvedSpec?.durationMinutes ?? null,
+        durationMinutes: effectiveDurationMinutes,
         adultPriceUsd: minAdult,
         childPriceUsd: minChild,
         currency: entry.currency,
-        departureTimes: sortedDepartures,
+        departureTimes: allowedDepartures,
+        blockedOutsideWindowDepartures,
         startingLocation: entry.startingLocation,
         dateChecked: inspection.searchDate ?? null,
         availableSpots: totalDateSpots ?? totalOverallSpots,
@@ -1177,6 +1613,15 @@ export async function buildNormalizedJuneauSupplierFeed(options?: {
             : totalOverallSpots !== null
               ? "rezgo_catalog_overall"
               : "unconfirmed_check_provider",
+        supplierBookingCutoffHours: maxSupplierCutoffHours,
+        supplierBookingCutoffSemantics: "supplier_booking_cutoff_only_never_cruise_return_buffer",
+        cruiseTimingVerificationStatus: "live_operator_availability_only_unverified_cruise_timing",
+        cruiseTimingStatusLabel: "Live operator availability · Cruise-safe timing unverified",
+        cruiseTimingDisclosure: `${cutoffSentence}Exact meeting points, berth-transfer durations, operator return times, and dock pickup rules remain unconfirmed.`,
+        dccRequiredRecommendedReturnBufferSeconds: 7199,
+        dccRequiredRecommendedReturnBufferLabel: "1:59:59+ before confirmed all-aboard",
+        optionWindowAssessments: assessments,
+        cacheKey: productSliceKey,
         matchConfidence: entry.rec?.matchConfidence ?? "unmatched_rezgo_only",
         matchedViatorProductCode: matchedCode,
         approvedFallbackViatorUrl: approvedSpec?.canonicalViatorUrl ?? null,
@@ -1184,8 +1629,35 @@ export async function buildNormalizedJuneauSupplierFeed(options?: {
         isolatedSecondaryProperty: true,
         influencesPrimaryDccRanking: false,
       };
+
+      if (!options?.bypassCache && !hasWindowInputs) {
+        setBoundedMapEntry(
+          rezgoNormalizedProductCache,
+          productSliceKey,
+          {
+            cachedAtIso: cacheMeta.cachedAt,
+            expiresAtMs: Date.parse(cacheMeta.expiresAt) || nowMs + cacheMeta.ttlSeconds * 1000,
+            ttlSeconds: cacheMeta.ttlSeconds,
+            tour: builtTour,
+          },
+          MAX_REZGO_CACHE_ENTRIES,
+        );
+      }
+
+      return builtTour;
     },
   );
+
+  const filteredTours = normalizedFilter
+    ? allNormalizedTours.filter(
+        (t) =>
+          (t.rezgoCom && t.rezgoCom.toUpperCase() === normalizedFilter) ||
+          t.rezgoUid.toUpperCase() === normalizedFilter ||
+          (t.matchedViatorProductCode &&
+            t.matchedViatorProductCode.toUpperCase() === normalizedFilter) ||
+          t.title.toUpperCase().includes(normalizedFilter),
+      )
+    : allNormalizedTours;
 
   return {
     ok: inspection.ok,
@@ -1193,6 +1665,31 @@ export async function buildNormalizedJuneauSupplierFeed(options?: {
     generatedAt: new Date().toISOString(),
     checkedAt: inspection.checkedAt,
     dateChecked: inspection.searchDate ?? null,
+    cachePolicy: {
+      scope: "operator_product_service_date",
+      operatorKey: cacheMeta.operatorKey,
+      productKey: cacheMeta.productKey,
+      serviceDateKey: cacheMeta.serviceDateKey,
+      cacheKey: cacheMeta.cacheKey,
+      maxEntriesBound: cacheMeta.maxEntriesBound,
+      cacheStatus: cacheMeta.cacheStatus,
+      cachedAt: cacheMeta.cachedAt,
+      expiresAt: cacheMeta.expiresAt,
+      ttlSeconds: cacheMeta.ttlSeconds,
+    },
+    timingSafetyPolicy: {
+      feedClassification: "live_operator_availability_only",
+      verifiedCruiseSafeTiming: false,
+      supplierCutoffIsNeverCruiseReturnBuffer: true,
+      dccRecommendedReturnBufferMinimumSeconds: 7199,
+      dccRecommendedReturnBufferLabel: "At least 1:59:59 before ship's confirmed all-aboard time",
+      unconfirmedInputs: [
+        "exact_meeting_points",
+        "berth_transfer_durations",
+        "operator_return_times",
+        "dock_pickup_rules",
+      ],
+    },
     readOnly: true,
     liveDirectRezgoCheckoutEnabled: false,
     isolatedSecondaryProperty: true,
@@ -1201,8 +1698,8 @@ export async function buildNormalizedJuneauSupplierFeed(options?: {
     verifiedCompanyName: inspection.companyName,
     verifiedRezgoDomain: inspection.domain,
     currency: inspection.currency || "USD",
-    toursCount: normalizedTours.length,
-    tours: normalizedTours,
+    toursCount: filteredTours.length,
+    tours: filteredTours,
     supplierConflicts: inspection.supplierConflicts || [],
   };
 }

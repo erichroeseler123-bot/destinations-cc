@@ -3516,6 +3516,12 @@ export async function queryPortDayExcursionCatalog(params: {
     profile.portSlug === "juneau"
       ? buildNormalizedJuneauSupplierFeed({
           searchDate: sailingDate || undefined,
+          productFilter: params.search || null,
+          shipArrivalTime:
+            portCallResolution.arrivalTimeSource !== "port_estimate" ? shipArrivalTime : null,
+          shipAllAboardTime:
+            portCallResolution.allAboardTimeSource !== "port_estimate" ? shipAllAboardTime : null,
+          allAboardConfirmed: portCallResolution.allAboardTimeSource !== "port_estimate",
         }).catch(() => null)
       : Promise.resolve(null),
   ]);

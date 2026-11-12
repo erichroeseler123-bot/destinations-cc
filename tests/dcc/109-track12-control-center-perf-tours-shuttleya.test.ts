@@ -15,13 +15,21 @@ import { SHUTTLEYA_ROOT_TRUTH } from "@/lib/dcc/shuttleyaTruth";
 import { GET as getShuttleYaSubAppAgent } from "@/apps/shuttleya/app/agent.json/route";
 import { GET as getShuttleYaSubAppLlms } from "@/apps/shuttleya/app/llms.txt/route";
 import {
+  MAX_REZGO_CACHE_ENTRIES,
+  assessRezgoDepartureAgainstShipWindow,
   buildNormalizedJuneauSupplierFeed,
   clearRezgoReadOnlyCacheForTesting,
+  getRezgoReadOnlyCacheStatsForTesting,
   getSereneRezgoReadinessStatus,
   inspectSereneRezgoInventoryReadOnly,
   sanitizeRezgoDiagnosticMessage,
 } from "@/lib/dcc/liveSlots/rezgoReadOnly";
-import { loadLfseJuneauNormalizedSupplierFeed } from "@/apps/last-frontier-shore-excursions/lib/dccJuneauSupplierFeed";
+import {
+  clearLfseJuneauSupplierFeedCacheForTesting,
+  getLfseJuneauSupplierFeedCacheStatsForTesting,
+  loadLfseJuneauNormalizedSupplierFeed,
+} from "@/apps/last-frontier-shore-excursions/lib/dccJuneauSupplierFeed";
+import { JuneauNormalizedSupplierFeedSection } from "@/apps/last-frontier-shore-excursions/components/JuneauNormalizedSupplierFeedSection";
 import { THREE_MARKET_DIRECT_OPERATOR_PITCH_KITS } from "@/lib/dcc/commerce/directOperatorActivationKit";
 import { resolveProviderKeyFromBookingSystem } from "@/lib/dcc/operatorOnboardingStore";
 
@@ -579,6 +587,7 @@ test("Owner-only Rezgo inspection action, secret scrubbing, cross-surface reconc
     assert.match(lfseOk.tours[0].trackedFallbackHref || "", /5857P22/);
 
     const lfseFallback = await loadLfseJuneauNormalizedSupplierFeed({
+      bypassCache: true,
       fetchImpl: async () => new Response("Service Unavailable", { status: 503 }),
     });
     assert.equal(lfseFallback.ok, false);
@@ -587,6 +596,7 @@ test("Owner-only Rezgo inspection action, secret scrubbing, cross-surface reconc
 
     // 5. buildNormalizedJuneauSupplierFeed fails open cleanly when Rezgo throws network error
     const failedFeed = await buildNormalizedJuneauSupplierFeed({
+      bypassCache: true,
       env: {
         REZGO_SERENE_CID: "SERENE_SECRET_CID_888",
         REZGO_SERENE_API_KEY: "SERENE_SECRET_API_KEY_99999999",
@@ -605,11 +615,260 @@ test("Owner-only Rezgo inspection action, secret scrubbing, cross-surface reconc
   } finally {
     globalThis.fetch = origFetch;
     clearRezgoReadOnlyCacheForTesting();
+    clearLfseJuneauSupplierFeedCacheForTesting();
     if (prevAdminKey === undefined) delete process.env.ADMIN_ACCESS_KEY;
     else process.env.ADMIN_ACCESS_KEY = prevAdminKey;
     if (prevCid === undefined) delete process.env.REZGO_SERENE_CID;
     else process.env.REZGO_SERENE_CID = prevCid;
     if (prevApiKey === undefined) delete process.env.REZGO_SERENE_API_KEY;
     else process.env.REZGO_SERENE_API_KEY = prevApiKey;
+  }
+});
+
+test("Rezgo Gate-2 advancement, supplier 2.00h cutoff vs DCC 1:59:59 return buffer, bounded caching, and live-availability-only UI labeling", async () => {
+  clearRezgoReadOnlyCacheForTesting();
+  clearLfseJuneauSupplierFeedCacheForTesting();
+
+  try {
+    // 1. Gate-2 only: REZGO_SERENE_READONLY_INSPECTED=true advances stage without unlocking live booking or downstream gates
+    const gate2Status = getSereneRezgoReadinessStatus({
+      REZGO_SERENE_CID: "CID_PRESENT",
+      REZGO_SERENE_API_KEY: "KEY_PRESENT",
+      REZGO_SERENE_READONLY_INSPECTED: "true",
+    });
+    assert.equal(
+      gate2Status.stage,
+      "readonly_inspected_awaiting_mapping_and_written_commission",
+    );
+    assert.equal(gate2Status.gates.credentialsStoredSecurelyInEnv, true);
+    assert.equal(gate2Status.gates.readOnlyInventoryInspected, true);
+    assert.equal(gate2Status.gates.dccProductMappingVerified, false);
+    assert.equal(gate2Status.gates.writtenCommissionOwnershipConfirmed, false);
+    assert.equal(gate2Status.gates.nonCustomerTestBookingVerified, false);
+    assert.equal(gate2Status.gates.liveBookingToggleEnabled, false);
+    assert.equal(gate2Status.liveBookingAllowed, false);
+
+    // 2. Architectural Detail #1: Rezgo 2.00h cutoff is supplier booking cutoff ONLY; DCC 1:59:59+ rule & outside-window blocking hold
+    // 1:59:59 remaining (e.g. 11:30:01 end vs 13:30:00 all-aboard = 7199s) -> meets clock upper bound (still unverified cruise timing!)
+    const exactBoundary = assessRezgoDepartureAgainstShipWindow({
+      departureTime: "08:30:01",
+      durationMinutes: 180,
+      shipArrivalTime: "08:00",
+      shipAllAboardTime: "13:30",
+      allAboardConfirmed: true,
+    });
+    assert.equal(exactBoundary.upperBoundRemainingSecondsBeforeTransfer, 7199);
+    assert.equal(exactBoundary.upperBoundRemainingBufferHmsLabel, "1:59:59");
+    assert.equal(
+      exactBoundary.status,
+      "unverified_cruise_timing_pending_transfer_and_pickup",
+    );
+    assert.equal(exactBoundary.blockedForSailingWindow, false);
+    assert.equal(exactBoundary.meetingPointAndReturnConfirmed, false);
+    assert.match(exactBoundary.displayLabel, /Cruise-safe timing unverified/);
+
+    // < 1:59:59 remaining (e.g. 12:00 departure + 180m = 15:00 end vs 16:30 all-aboard = 1:30:00 remaining) -> reduced_buffer_not_recommended with exact H:MM:SS
+    const reducedBuffer = assessRezgoDepartureAgainstShipWindow({
+      departureTime: "12:00",
+      durationMinutes: 180,
+      shipArrivalTime: "08:00",
+      shipAllAboardTime: "16:30",
+      allAboardConfirmed: true,
+    });
+    assert.equal(reducedBuffer.upperBoundRemainingSecondsBeforeTransfer, 5400);
+    assert.equal(reducedBuffer.upperBoundRemainingBufferHmsLabel, "1:30:00");
+    assert.equal(reducedBuffer.status, "reduced_buffer_not_recommended");
+    assert.equal(reducedBuffer.blockedForSailingWindow, false);
+    assert.match(reducedBuffer.displayLabel, /1:30:00 remaining/);
+
+    // Outside sailing window (14:00 departure + 180m = 17:00 end vs 16:30 all-aboard) -> blocked
+    const outsideLate = assessRezgoDepartureAgainstShipWindow({
+      departureTime: "14:00",
+      durationMinutes: 180,
+      shipArrivalTime: "08:00",
+      shipAllAboardTime: "16:30",
+      allAboardConfirmed: true,
+    });
+    assert.equal(outsideLate.status, "outside_sailing_window_blocked");
+    assert.equal(outsideLate.blockedForSailingWindow, true);
+    assert.match(outsideLate.displayLabel, /Outside ship window/);
+
+    // Outside sailing window early (07:30 departure vs 08:00 arrival) -> blocked
+    const outsideEarly = assessRezgoDepartureAgainstShipWindow({
+      departureTime: "07:30",
+      durationMinutes: 180,
+      shipArrivalTime: "08:00",
+      shipAllAboardTime: "16:30",
+      allAboardConfirmed: true,
+    });
+    assert.equal(outsideEarly.status, "outside_sailing_window_blocked");
+    assert.equal(outsideEarly.blockedForSailingWindow, true);
+
+    // 3. Architectural Detail #2: Bounded caching by operator, product, and service date + coalescing + freshness preservation
+    let upstreamFetchCalls = 0;
+    const mockRezgoFetch: typeof fetch = async (input) => {
+      upstreamFetchCalls += 1;
+      const url = String(input);
+      if (url.includes("i=company")) {
+        return new Response(
+          "<response><company_name>Juneau Tours</company_name><domain>juneauwhalewatch</domain><currency>USD</currency></response>",
+          { status: 200 },
+        );
+      }
+      return new Response(
+        `<response>
+          <item>
+            <id>10</id>
+            <uid>32331</uid>
+            <com>32329</com>
+            <item><![CDATA[Juneau Whale Watch]]></item>
+            <option><![CDATA[9:30 AM]]></option>
+            <duration>3.75 hours</duration>
+            <time>09:30 AM</time>
+            <cutoff>2.00</cutoff>
+            <price_adult>169.00</price_adult>
+            <currency_base>USD</currency_base>
+            <availability>20</availability>
+          </item>
+          <item>
+            <id>11</id>
+            <uid>32339</uid>
+            <com>32329</com>
+            <item><![CDATA[Juneau Whale Watch]]></item>
+            <option><![CDATA[2:30 PM]]></option>
+            <duration>3.75 hours</duration>
+            <time>02:30 PM</time>
+            <cutoff>2.00</cutoff>
+            <price_adult>169.00</price_adult>
+            <currency_base>USD</currency_base>
+            <availability>15</availability>
+          </item>
+        </response>`,
+        { status: 200 },
+      );
+    };
+
+    const mockEnv = {
+      REZGO_SERENE_CID: "TEST_CID",
+      REZGO_SERENE_API_KEY: "TEST_KEY",
+    };
+
+    // Concurrent calls for the same service date coalesce into ONE Rezgo inspection (2 HTTP GETs: i=company + i=search)
+    const [firstFeed, concurrentFeed] = await Promise.all([
+      buildNormalizedJuneauSupplierFeed({
+        env: mockEnv,
+        fetchImpl: mockRezgoFetch,
+        searchDate: "2027-07-15",
+        productFilter: "5857P23",
+        shipArrivalTime: "08:00",
+        shipAllAboardTime: "16:30",
+        allAboardConfirmed: true,
+      }),
+      buildNormalizedJuneauSupplierFeed({
+        env: mockEnv,
+        fetchImpl: mockRezgoFetch,
+        searchDate: "2027-07-15",
+        productFilter: "5857P23",
+        shipArrivalTime: "08:00",
+        shipAllAboardTime: "16:30",
+        allAboardConfirmed: true,
+      }),
+    ]);
+    assert.equal(upstreamFetchCalls, 2);
+    assert.equal(firstFeed.timingSafetyPolicy.feedClassification, "live_operator_availability_only");
+    assert.equal(firstFeed.timingSafetyPolicy.verifiedCruiseSafeTiming, false);
+    assert.equal(firstFeed.timingSafetyPolicy.supplierCutoffIsNeverCruiseReturnBuffer, true);
+    assert.equal(firstFeed.tours.length, 1);
+
+    const whaleTour = firstFeed.tours[0];
+    assert.equal(whaleTour.supplierBookingCutoffHours, 2);
+    assert.equal(
+      whaleTour.supplierBookingCutoffSemantics,
+      "supplier_booking_cutoff_only_never_cruise_return_buffer",
+    );
+    assert.equal(
+      whaleTour.cruiseTimingVerificationStatus,
+      "live_operator_availability_only_unverified_cruise_timing",
+    );
+    // 09:30 + 225m = 13:15 (fits inside 16:30 window); 14:30 + 225m = 18:15 (blocked outside 16:30 window!)
+    assert.deepEqual(whaleTour.departureTimes, ["09:30"]);
+    assert.deepEqual(whaleTour.blockedOutsideWindowDepartures, ["14:30"]);
+    assert.equal(concurrentFeed.checkedAt, firstFeed.checkedAt);
+
+    // Subsequent sequential call hits bounded cache with zero additional Rezgo fetches and preserves checkedAt freshness timestamp
+    const secondFeed = await buildNormalizedJuneauSupplierFeed({
+      env: mockEnv,
+      fetchImpl: mockRezgoFetch,
+      searchDate: "2027-07-15",
+      productFilter: "5857P23",
+    });
+    assert.equal(upstreamFetchCalls, 2);
+    assert.equal(secondFeed.cachePolicy.cacheStatus, "hit");
+    assert.equal(secondFeed.checkedAt, firstFeed.checkedAt);
+    assert.equal(
+      secondFeed.cachePolicy.cacheKey,
+      "rezgo:juneau-tours-whale-watch:5857P23:2027-07-15",
+    );
+
+    // Bounded eviction: inserting > MAX_REZGO_CACHE_ENTRIES service dates never exceeds MAX_REZGO_CACHE_ENTRIES
+    for (let i = 1; i <= MAX_REZGO_CACHE_ENTRIES + 10; i++) {
+      const day = String(((i - 1) % 28) + 1).padStart(2, "0");
+      const month = String((Math.floor((i - 1) / 28) % 9) + 1).padStart(2, "0");
+      await buildNormalizedJuneauSupplierFeed({
+        env: mockEnv,
+        fetchImpl: mockRezgoFetch,
+        searchDate: `2028-${month}-${day}`,
+      });
+    }
+    const cacheStats = getRezgoReadOnlyCacheStatsForTesting();
+    assert.ok(cacheStats.inspectionEntries <= MAX_REZGO_CACHE_ENTRIES);
+    assert.ok(cacheStats.productEntries <= MAX_REZGO_CACHE_ENTRIES);
+
+    // 4. Last Frontier bounded cache + UI rendering uses "Live Operator Availability" (never "Verified Operator Schedule" or badge-safety)
+    let lfseDccCalls = 0;
+    const lfseMockFetch: typeof fetch = async () => {
+      lfseDccCalls += 1;
+      return new Response(
+        JSON.stringify({
+          ok: true,
+          normalizedSupplierFeeds: {
+            juneauToursWhaleWatch: firstFeed,
+          },
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      );
+    };
+
+    const lfseFirst = await loadLfseJuneauNormalizedSupplierFeed({
+      date: "2027-07-15",
+      activitySlug: "whale-watching",
+      revalidateSeconds: 180,
+      fetchImpl: lfseMockFetch,
+    });
+    const lfseSecond = await loadLfseJuneauNormalizedSupplierFeed({
+      date: "2027-07-15",
+      activitySlug: "whale-watching",
+      revalidateSeconds: 180,
+      fetchImpl: lfseMockFetch,
+    });
+    assert.equal(lfseDccCalls, 1);
+    assert.equal(lfseFirst.cachePolicy.cacheStatus, "miss_fresh");
+    assert.equal(lfseSecond.cachePolicy.cacheStatus, "hit");
+    assert.equal(lfseSecond.checkedAt, lfseFirst.checkedAt);
+    assert.equal(lfseSecond.verifiedCruiseSafeTiming, false);
+    assert.equal(getLfseJuneauSupplierFeedCacheStatsForTesting().entries, 1);
+
+    const html = renderToStaticMarkup(
+      JuneauNormalizedSupplierFeedSection({ feed: lfseSecond }),
+    );
+    assert.match(html, /Live Operator Availability/);
+    assert.match(html, /Cruise-Safe Timing Unverified/);
+    assert.match(html, /Supplier booking cutoff: 2h \(not ship buffer\)/);
+    assert.match(html, /Outside ship window: 14:30/);
+    assert.doesNotMatch(html, /Verified Operator Schedule/);
+    assert.doesNotMatch(html, /badge-safety/);
+  } finally {
+    clearRezgoReadOnlyCacheForTesting();
+    clearLfseJuneauSupplierFeedCacheForTesting();
   }
 });
