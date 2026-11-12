@@ -8,6 +8,7 @@ export type TransactionalSubmissionChannel =
   | "welcometothedells-inquiry"
   | "saveonthestrip-help-request"
   | "request-invite"
+  | "cp-group-inquiry"
   | "juneauflightdeck-inquiry"
   | "welcometoneworleanstours-inquiry"
   | "lastfrontiershoreexcursions-inquiry"
@@ -48,6 +49,32 @@ const LOCAL_DEV_SUBMISSIONS_PATH = path.join(
 
 const inMemorySubmissions = new Map<string, Record<string, unknown>>();
 
+export function getInMemoryTransactionalSubmissions(): ReadonlyMap<
+  string,
+  Record<string, unknown>
+> {
+  return inMemorySubmissions;
+}
+
+export function setInMemoryTransactionalSubmission(
+  channel: TransactionalSubmissionChannel,
+  submissionId: string,
+  metadata: Record<string, unknown>,
+): void {
+  inMemorySubmissions.set(`${channel}:${submissionId}`, metadata);
+}
+
+export function removeInMemoryTransactionalSubmission(
+  channel: TransactionalSubmissionChannel,
+  submissionId: string,
+): boolean {
+  return inMemorySubmissions.delete(`${channel}:${submissionId}`);
+}
+
+export function clearInMemoryTransactionalSubmissionsForTests(): void {
+  inMemorySubmissions.clear();
+}
+
 export function resolveRuntimeEnvironmentTag(): string {
   const raw = (process.env.VERCEL_ENV || "").trim();
   return raw || "production";
@@ -62,6 +89,9 @@ export function isServerlessRuntimeEnvironment(): boolean {
 }
 
 function resolveTransactionalDatabaseUrl(): string | null {
+  if (process.env.DCC_ISOLATED_TEST_DB === "1") {
+    return null;
+  }
   const explicitTarget = (
     process.env.DCC_TARGET_DB ||
     process.env.DCC_EARTHOS_ENV ||
@@ -215,25 +245,27 @@ export async function persistDurableTransactionalSubmission(
 
   // Non-serverless local development / unit test fallback only
   inMemorySubmissions.set(`${input.channel}:${input.submissionId}`, enrichedMetadata);
-  try {
-    const dir = path.dirname(LOCAL_DEV_SUBMISSIONS_PATH);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
+  if (process.env.DCC_ISOLATED_TEST_DB !== "1") {
+    try {
+      const dir = path.dirname(LOCAL_DEV_SUBMISSIONS_PATH);
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+      let existing: Record<string, Record<string, unknown>> = {};
+      if (fs.existsSync(LOCAL_DEV_SUBMISSIONS_PATH)) {
+        existing = JSON.parse(
+          fs.readFileSync(LOCAL_DEV_SUBMISSIONS_PATH, "utf8"),
+        ) as Record<string, Record<string, unknown>>;
+      }
+      existing[`${input.channel}:${input.submissionId}`] = enrichedMetadata;
+      fs.writeFileSync(
+        LOCAL_DEV_SUBMISSIONS_PATH,
+        JSON.stringify(existing, null, 2),
+        "utf8",
+      );
+    } catch {
+      // inMemorySubmissions already holds local test state
     }
-    let existing: Record<string, Record<string, unknown>> = {};
-    if (fs.existsSync(LOCAL_DEV_SUBMISSIONS_PATH)) {
-      existing = JSON.parse(
-        fs.readFileSync(LOCAL_DEV_SUBMISSIONS_PATH, "utf8"),
-      ) as Record<string, Record<string, unknown>>;
-    }
-    existing[`${input.channel}:${input.submissionId}`] = enrichedMetadata;
-    fs.writeFileSync(
-      LOCAL_DEV_SUBMISSIONS_PATH,
-      JSON.stringify(existing, null, 2),
-      "utf8",
-    );
-  } catch {
-    // inMemorySubmissions already holds local test state
   }
 
   return {

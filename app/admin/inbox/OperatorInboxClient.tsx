@@ -68,6 +68,8 @@ function notificationBadgeClasses(status: OperatorInboxItem["notificationStatus"
       return "border-rose-400/45 bg-rose-500/20 text-rose-100";
     case "not_configured":
       return "border-amber-400/45 bg-amber-500/20 text-amber-100";
+    case "durable_storage_only":
+      return "border-sky-400/40 bg-sky-500/15 text-sky-200";
     case "unknown":
     default:
       return "border-zinc-500/35 bg-zinc-800/60 text-zinc-300";
@@ -82,6 +84,8 @@ function notificationBadgeLabel(status: OperatorInboxItem["notificationStatus"])
       return "Alert Failed";
     case "not_configured":
       return "Alert Unconfigured";
+    case "durable_storage_only":
+      return "Durable Storage Only";
     case "unknown":
     default:
       return "Receipt Unrecorded";
@@ -897,6 +901,14 @@ export default function OperatorInboxClient({
                           Location / Context:
                         </strong>{" "}
                         {item.tripDetails.routeOrLocation}
+                      </p>
+                    ) : null}
+                    {item.tripDetails.pageOrSourceUrl ? (
+                      <p className="break-all">
+                        <strong className="text-zinc-200">Source Page:</strong>{" "}
+                        <span className="font-mono text-[11px] text-zinc-300">
+                          {item.tripDetails.pageOrSourceUrl}
+                        </span>
                       </p>
                     ) : null}
                     {item.tripDetails.messageOrNotes ? (

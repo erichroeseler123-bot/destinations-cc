@@ -10,7 +10,10 @@ import {
   type SanitizedCommercialAttribution,
   type SpecialistCommercialHost,
 } from "@/lib/dcc/commercialAttribution";
-import { isServerlessRuntimeEnvironment } from "@/lib/dcc/storage/transactionalSubmissions";
+import {
+  getInMemoryTransactionalSubmissions,
+  isServerlessRuntimeEnvironment,
+} from "@/lib/dcc/storage/transactionalSubmissions";
 
 export const ALLOWED_CP_BASE_URL_RE =
   /^https:\/\/cruisepromenade(-[a-z0-9]+-erichroeseler123-bots-projects\.vercel\.app|\.com)$/;
@@ -32,6 +35,7 @@ export type OperatorNotificationStatus =
   | "delivered"
   | "failed"
   | "not_configured"
+  | "durable_storage_only"
   | "unknown";
 
 export type OperatorInboxViewFilter =
@@ -91,6 +95,7 @@ export interface OperatorTriageOverlay {
 
 export interface OperatorInboxItem {
   itemKey: string;
+  sourceSystem?: OperatorInboxSourceSite;
   sourceId: string;
   findingId: string | null;
   sourceSite: OperatorInboxSourceSite;
@@ -98,6 +103,8 @@ export interface OperatorInboxItem {
   channel: string;
   channelLabel: string;
   submittedAt: string;
+  requestedDate?: string | null;
+  partySize?: string | number | null;
   environment: string;
   contact: {
     name: string | null;
@@ -105,6 +112,16 @@ export interface OperatorInboxItem {
     phone: string | null;
     company: string | null;
   };
+  customerName?: string | null;
+  customerEmail?: string | null;
+  customerPhone?: string | null;
+  sailing?: string | null;
+  eventLabel?: string | null;
+  title?: string;
+  summary?: string | null;
+  rawSummary?: string | null;
+  detailFields?: Record<string, string | number | boolean | null>;
+  metadata?: Record<string, unknown>;
   tripDetails: {
     headline: string;
     datesOrMonth: string | null;
@@ -263,13 +280,14 @@ const JFD_SEED_DEMO_IDS = new Set([
 const FICTIONAL_555_PHONE_RE = /\b555[-.\s]?\d{4}\b/;
 
 const QA_PROBE_PATTERNS: Array<{ pattern: RegExp; reason: string }> = [
+  { pattern: /\[QA-SYNTHETIC/i, reason: "qa_probe_marker" },
   { pattern: /\[PROD-VERIFICATION-TEST\]/i, reason: "qa_probe_marker" },
   { pattern: /\[PREVIEW[-_\s]?TEST\]/i, reason: "qa_probe_marker" },
   { pattern: /\beleanor\s+vance\b/i, reason: "qa_probe_marker" },
   { pattern: /e2e\s+concierge\s+audit\s+test/i, reason: "qa_probe_marker" },
   { pattern: /\baudit[-_\s]?test\b/i, reason: "qa_probe_marker" },
   { pattern: /\bplaywright\b/i, reason: "qa_probe_marker" },
-  { pattern: /(?:^|[\s:_-])qa-[a-z0-9_-]*/i, reason: "qa_probe_marker" },
+  { pattern: /(?:^|[\s:_-])(?:gi_qa_|qa-)[a-z0-9_-]*/i, reason: "qa_probe_marker" },
   {
     pattern: /simulated notification service failure/i,
     reason: "qa_probe_marker",
@@ -323,7 +341,11 @@ export function validateCpBaseUrlOverride(
 }
 
 export function isLiveResendConfigured(): boolean {
-  const key = (process.env.RESEND_API_KEY || "").trim();
+  const key = (
+    process.env.DCC_RESEND_API_KEY ||
+    process.env.RESEND_API_KEY ||
+    ""
+  ).trim();
   return Boolean(key && key.startsWith("re_") && key.length > 15);
 }
 
@@ -487,7 +509,15 @@ export function normalizeInquiryNotificationStatus(
   const rawStatus =
     typeof meta.notificationStatus === "string"
       ? meta.notificationStatus.trim().toLowerCase()
-      : "";
+      : typeof meta.cpNotificationStatus === "string"
+        ? meta.cpNotificationStatus.trim().toLowerCase()
+        : "";
+  const rawChannel =
+    typeof nestedNotif?.channel === "string"
+      ? nestedNotif.channel.trim().toLowerCase()
+      : typeof meta.notificationChannel === "string"
+        ? meta.notificationChannel.trim().toLowerCase()
+        : "";
 
   // 1. Confirmed delivery signals
   if (
@@ -501,6 +531,26 @@ export function normalizeInquiryNotificationStatus(
     return {
       notificationStatus: "delivered",
       notificationChannel,
+      intendedDestination,
+      failureReason: null,
+    };
+  }
+
+  // 1b. Durable storage only (e.g. durable_storage_only or legacy kv_audit)
+  if (
+    rawStatus === "durable_storage_only" ||
+    rawStatus === "kv_audit" ||
+    ((rawChannel === "durable_storage_only" || rawChannel === "kv_audit") &&
+      !explicitError &&
+      rawStatus !== "failed" &&
+      rawStatus !== "not_configured")
+  ) {
+    return {
+      notificationStatus: "durable_storage_only",
+      notificationChannel:
+        rawChannel === "kv_audit" || !rawChannel
+          ? "durable_storage_only"
+          : notificationChannel,
       intendedDestination,
       failureReason: null,
     };
@@ -933,6 +983,7 @@ export function mapFindingRowToInboxItem(
   const sourceId = String(
     meta.submissionId ||
       meta.id ||
+      meta.inquiryId ||
       meta.referenceId ||
       meta.handoffId ||
       meta.quoteId ||
@@ -940,6 +991,25 @@ export function mapFindingRowToInboxItem(
       findingId,
   ).trim();
   const environment = String(meta.environment || envFromId).trim();
+
+  if (channel === "cp-group-inquiry") {
+    return mapCruisePromenadeInquiryToInboxItem(
+      {
+        ...meta,
+        id: sourceId,
+        submittedAt:
+          meta.submittedAt ||
+          meta.createdAt ||
+          meta.receivedAt ||
+          meta.timestamp ||
+          row.created_at,
+      },
+      environment,
+      resendConfigured,
+      findingId,
+    );
+  }
+
   const submittedAt = toIsoTimestamp(
     meta.createdAt || meta.receivedAt || meta.timestamp || row.created_at,
     nowIso,
@@ -1134,14 +1204,30 @@ export function mapFindingRowToInboxItem(
   };
 }
 
-function mapCruisePromenadeInquiryToInboxItem(
+function normalizeCpTextOrList(value: unknown): string | null {
+  if (Array.isArray(value)) {
+    const cleaned = value
+      .map((item) => (typeof item === "string" ? item.trim() : String(item ?? "").trim()))
+      .filter(Boolean);
+    return cleaned.length > 0 ? cleaned.join(", ") : null;
+  }
+  if (typeof value === "string" && value.trim()) {
+    return value.trim();
+  }
+  return null;
+}
+
+export function mapCruisePromenadeInquiryToInboxItem(
   inq: Record<string, unknown>,
   defaultNamespace: string,
   resendConfigured: boolean,
+  findingId: string | null = null,
 ): OperatorInboxItem {
   const nowIso = new Date().toISOString();
   const id = String(
     inq.id ||
+      inq.inquiryId ||
+      inq.submissionId ||
       `cp_${createHash("sha256").update(JSON.stringify(inq)).digest("hex").slice(0, 12)}`,
   ).trim();
   const namespace = String(
@@ -1151,22 +1237,64 @@ function mapCruisePromenadeInquiryToInboxItem(
     .toLowerCase();
 
   const name =
+    (typeof inq.organizerName === "string" && inq.organizerName.trim()) ||
     (typeof inq.contactName === "string" && inq.contactName.trim()) ||
     (typeof inq.name === "string" && inq.name.trim()) ||
     null;
   const email =
+    (typeof inq.email === "string" && inq.email.trim().toLowerCase()) ||
     (typeof inq.contactEmail === "string" &&
       inq.contactEmail.trim().toLowerCase()) ||
-    (typeof inq.email === "string" && inq.email.trim().toLowerCase()) ||
     null;
   const phone =
-    (typeof inq.contactPhone === "string" && inq.contactPhone.trim()) ||
     (typeof inq.phone === "string" && inq.phone.trim()) ||
+    (typeof inq.contactPhone === "string" && inq.contactPhone.trim()) ||
     null;
   const company =
     (typeof inq.organization === "string" && inq.organization.trim()) ||
     (typeof inq.groupName === "string" && inq.groupName.trim()) ||
+    (typeof inq.company === "string" && inq.company.trim()) ||
     null;
+
+  const ship =
+    (typeof inq.ship === "string" && inq.ship.trim()) ||
+    (typeof inq.shipName === "string" && inq.shipName.trim()) ||
+    null;
+  const sailDate =
+    (typeof inq.sailDate === "string" && inq.sailDate.trim()) || null;
+  const portsText =
+    normalizeCpTextOrList(inq.ports) ||
+    normalizeCpTextOrList(inq.port) ||
+    (typeof inq.departurePort === "string" && inq.departurePort.trim()) ||
+    null;
+  const desiredActivitiesText =
+    normalizeCpTextOrList(inq.desiredActivities) ||
+    normalizeCpTextOrList(inq.activity) ||
+    null;
+  const mobilityNeedsText =
+    typeof inq.mobilityNeeds === "string" && inq.mobilityNeeds.trim()
+      ? inq.mobilityNeeds.trim()
+      : null;
+  const paymentStructureText =
+    typeof inq.paymentStructure === "string" && inq.paymentStructure.trim()
+      ? inq.paymentStructure.trim()
+      : typeof inq.paymentStructure === "boolean"
+        ? inq.paymentStructure
+          ? "Requested"
+          : null
+        : null;
+  const privateTransportFlag =
+    typeof inq.privateTransport === "boolean"
+      ? inq.privateTransport
+      : typeof inq.privateTransport === "string" && inq.privateTransport.trim()
+        ? inq.privateTransport.trim()
+        : null;
+  const negotiatedRatesFlag =
+    typeof inq.negotiatedRates === "boolean"
+      ? inq.negotiatedRates
+      : typeof inq.negotiatedRates === "string" && inq.negotiatedRates.trim()
+        ? inq.negotiatedRates.trim()
+        : null;
 
   const groupType =
     (typeof inq.groupType === "string" && inq.groupType.trim()) ||
@@ -1178,37 +1306,115 @@ function mapCruisePromenadeInquiryToInboxItem(
     (typeof inq.cruiseLine === "string" && inq.cruiseLine.trim()) ||
     null;
   const sailWindow =
+    sailDate ||
     (typeof inq.sailWindow === "string" && inq.sailWindow.trim()) ||
     (typeof inq.preferredDates === "string" && inq.preferredDates.trim()) ||
     (typeof inq.targetMonth === "string" && inq.targetMonth.trim()) ||
     null;
-  const partySize =
-    typeof inq.estimatedGuests === "number" ||
-    typeof inq.estimatedGuests === "string"
-      ? inq.estimatedGuests
-      : typeof inq.cabinCount === "number" || typeof inq.cabinCount === "string"
-        ? `${inq.cabinCount} cabins`
-        : typeof inq.partySize === "number" || typeof inq.partySize === "string"
-          ? inq.partySize
-          : null;
-  const notes =
+
+  const parsedTravelerCount =
+    inq.travelerCount !== undefined &&
+    inq.travelerCount !== null &&
+    String(inq.travelerCount).trim() !== ""
+      ? Number(inq.travelerCount)
+      : inq.groupSize !== undefined &&
+          inq.groupSize !== null &&
+          String(inq.groupSize).trim() !== ""
+        ? Number(inq.groupSize)
+        : NaN;
+
+  const partySize: string | number | null = Number.isFinite(parsedTravelerCount)
+    ? parsedTravelerCount
+    : typeof inq.travelerCount === "string" && inq.travelerCount.trim()
+      ? inq.travelerCount.trim()
+      : typeof inq.estimatedGuests === "number" ||
+          typeof inq.estimatedGuests === "string"
+        ? inq.estimatedGuests
+        : typeof inq.cabinCount === "number" || typeof inq.cabinCount === "string"
+          ? `${inq.cabinCount} cabins`
+          : typeof inq.partySize === "number" || typeof inq.partySize === "string"
+            ? inq.partySize
+            : null;
+
+  const sailingLabel =
+    ship && sailDate
+      ? `${ship} (${sailDate})`
+      : ship || (sailDate ? `Sailing ${sailDate}` : null);
+
+  const explicitNotes =
     (typeof inq.notes === "string" && inq.notes.trim()) ||
     (typeof inq.message === "string" && inq.message.trim()) ||
     (typeof inq.specialRequests === "string" && inq.specialRequests.trim()) ||
     null;
 
-  const headline = destination
-    ? `${groupType} — ${destination}`
-    : `${groupType} Inquiry`;
+  const structuredSummaryParts: string[] = [];
+  if (sailingLabel) structuredSummaryParts.push(`Sailing: ${sailingLabel}`);
+  if (portsText) structuredSummaryParts.push(`Ports: ${portsText}`);
+  if (partySize !== null && partySize !== "") {
+    structuredSummaryParts.push(`Group Size: ${partySize}`);
+  }
+  if (desiredActivitiesText) {
+    structuredSummaryParts.push(`Activities: ${desiredActivitiesText}`);
+  }
+  if (mobilityNeedsText) {
+    structuredSummaryParts.push(`Mobility: ${mobilityNeedsText}`);
+  }
+  if (paymentStructureText) {
+    structuredSummaryParts.push(`Payment: ${paymentStructureText}`);
+  }
+  if (privateTransportFlag === true || typeof privateTransportFlag === "string") {
+    structuredSummaryParts.push(
+      `Private Transport: ${privateTransportFlag === true ? "Yes" : privateTransportFlag}`,
+    );
+  }
+  if (negotiatedRatesFlag === true || typeof negotiatedRatesFlag === "string") {
+    structuredSummaryParts.push(
+      `Negotiated Rates: ${negotiatedRatesFlag === true ? "Yes" : negotiatedRatesFlag}`,
+    );
+  }
+
+  const structuredSummary =
+    structuredSummaryParts.length > 0
+      ? structuredSummaryParts.join(" · ")
+      : null;
+  const notes =
+    explicitNotes && structuredSummary
+      ? `${structuredSummary}\n${explicitNotes}`
+      : structuredSummary || explicitNotes;
+
+  const sourcePage =
+    (typeof inq.sourcePage === "string" && inq.sourcePage.trim()) ||
+    (typeof inq.sourcePath === "string" && inq.sourcePath.trim()) ||
+    "/groups";
+
+  const headline = sailingLabel
+    ? `${sailingLabel}${portsText ? ` — ${portsText}` : ""}`
+    : destination
+      ? `${groupType} — ${destination}`
+      : `${groupType} Inquiry`;
+
+  const routeOrLocation =
+    [ship, portsText || destination].filter(Boolean).join(" · ") ||
+    portsText ||
+    destination;
 
   const cls = classifyOperatorInboxSubmission({
-    isTest: inq.isTest === true || inq.isGenuineLead === false ? (inq.isTest === true ? true : undefined) : undefined,
+    isTest:
+      inq.isTest === true ||
+      inq.isTest === "true" ||
+      inq.isGenuineLead === false
+        ? inq.isTest === true || inq.isTest === "true"
+          ? true
+          : undefined
+        : undefined,
     trafficClass: inq.trafficClass,
     namespace,
     environment: namespace,
     email,
     name,
-    notes,
+    notes: [notes, mobilityNeedsText, desiredActivitiesText, sourcePage]
+      .filter(Boolean)
+      .join(" \n "),
     headline,
     sourceId: id,
   });
@@ -1237,16 +1443,40 @@ function mapCruisePromenadeInquiryToInboxItem(
     resendConfigured,
   );
   const siteMeta = resolveSiteAndChannelMeta("cp-group-inquiry");
+  // Preserve original submittedAt before createdAt when both exist
+  const submittedAt = toIsoTimestamp(inq.submittedAt || inq.createdAt, nowIso);
+  const detailFields: Record<string, string | number | boolean | null> = {
+    sailing: sailingLabel,
+    ship,
+    sailDate,
+    port: portsText,
+    ports: portsText,
+    groupSize: partySize,
+    travelerCount: partySize,
+    activity: desiredActivitiesText,
+    desiredActivities: desiredActivitiesText,
+    mobilityNeeds: mobilityNeedsText,
+    sourcePage,
+    organizerName: name,
+    email,
+    phone,
+    paymentStructure: paymentStructureText,
+    privateTransport: privateTransportFlag,
+    negotiatedRates: negotiatedRatesFlag,
+  };
 
   return {
     itemKey: sanitizeItemKey(`cp:group-inquiry:${id}`),
+    sourceSystem: "cruisepromenade",
     sourceId: id,
-    findingId: null,
+    findingId,
     sourceSite: siteMeta.sourceSite,
     sourceSiteLabel: siteMeta.sourceSiteLabel,
     channel: "cp-group-inquiry",
     channelLabel: siteMeta.channelLabel,
-    submittedAt: toIsoTimestamp(inq.createdAt || inq.submittedAt, nowIso),
+    submittedAt,
+    requestedDate: sailWindow,
+    partySize,
     environment: namespace,
     contact: {
       name,
@@ -1254,17 +1484,26 @@ function mapCruisePromenadeInquiryToInboxItem(
       phone,
       company,
     },
+    customerName: name,
+    customerEmail: email,
+    customerPhone: phone,
+    sailing: sailingLabel,
+    eventLabel: sailingLabel || headline,
+    title: headline,
+    summary: notes,
+    rawSummary: notes,
+    detailFields,
+    metadata: {
+      ...detailFields,
+      inquiryId: id,
+    },
     tripDetails: {
       headline,
       datesOrMonth: sailWindow,
       partySize,
-      routeOrLocation:
-        (typeof inq.departurePort === "string" && inq.departurePort.trim()) ||
-        destination,
+      routeOrLocation,
       messageOrNotes: notes,
-      pageOrSourceUrl:
-        (typeof inq.sourcePage === "string" && inq.sourcePage.trim()) ||
-        "/groups",
+      pageOrSourceUrl: sourcePage,
     },
     classification: finalClassification.classification,
     classificationReason: finalClassification.classificationReason,
@@ -1455,10 +1694,12 @@ async function fetchCruisePromenadeInquiries(options: {
     .replace(/\/+$/, "");
   const baseUrl = validatedOverride.url || configuredBase;
 
+  const cpServiceSecret = (process.env.DCC_CP_SERVICE_SECRET || "").trim();
   const adminKey = (
     options.cpAdminKey ||
     process.env.CP_ADMIN_API_KEY ||
-    process.env.DCC_CP_SERVICE_SECRET ||
+    process.env.ADMIN_QUOTES_PASSWORD ||
+    cpServiceSecret ||
     ""
   ).trim();
 
@@ -1476,8 +1717,12 @@ async function fetchCruisePromenadeInquiries(options: {
       const endpoint = `${baseUrl}/api/group-inquiries?includeNotifications=1&includeFeedbackSummary=1&limit=100`;
       const headers: Record<string, string> = {
         "x-cp-admin-key": adminKey,
+        Authorization: `Bearer ${adminKey}`,
         Accept: "application/json",
       };
+      if (cpServiceSecret) {
+        headers["x-dcc-cp-service-secret"] = cpServiceSecret;
+      }
       const bypass = (
         options.cpVercelProtectionBypass ||
         process.env.CP_VERCEL_BYPASS_SECRET ||
@@ -1731,30 +1976,60 @@ async function loadDccFindingRowsAndTriageOverlays(
 
   // Non-serverless local dev / unit test fallbacks
   if (!isServerlessRuntimeEnvironment() && !postgresConnected) {
-    try {
-      if (fs.existsSync(LOCAL_DEV_SUBMISSIONS_PATH)) {
-        const rawMap = JSON.parse(
-          fs.readFileSync(LOCAL_DEV_SUBMISSIONS_PATH, "utf8"),
-        ) as Record<string, Record<string, unknown>>;
-        for (const [key, meta] of Object.entries(rawMap || {})) {
-          const channel = String(meta.channel || key.split(":")[0] || "general");
-          const subId = String(meta.submissionId || key.split(":").slice(1).join(":"));
-          const env = String(meta.environment || "development");
-          const fid = `control-map:transactional-submission:${env}:${channel}:${subId}`;
-          if (!submissionByFindingId.has(fid)) {
-            submissionByFindingId.set(fid, {
-              finding_id: fid,
-              status: String(meta.status || "captured"),
-              owner: `dcc:${channel}`,
-              metadata: meta,
-              created_at: String(meta.createdAt || new Date().toISOString()),
-              updated_at: String(meta.createdAt || new Date().toISOString()),
-            });
+    for (const [key, meta] of getInMemoryTransactionalSubmissions().entries()) {
+      const channel = String(meta.channel || key.split(":")[0] || "general");
+      const subId = String(
+        meta.submissionId || key.split(":").slice(1).join(":"),
+      );
+      const env = String(meta.environment || "production");
+      const fid =
+        typeof meta.findingId === "string" && meta.findingId.trim()
+          ? meta.findingId.trim()
+          : `control-map:transactional-submission:${env}:${channel}:${subId}`;
+      submissionByFindingId.set(fid, {
+        finding_id: fid,
+        status: String(meta.status || "captured"),
+        owner: `dcc:${channel}`,
+        metadata: meta,
+        created_at: String(
+          meta.submittedAt || meta.createdAt || new Date().toISOString(),
+        ),
+        updated_at: String(
+          meta.updatedAt || meta.createdAt || new Date().toISOString(),
+        ),
+      });
+    }
+
+    if (process.env.DCC_ISOLATED_TEST_DB !== "1") {
+      try {
+        if (fs.existsSync(LOCAL_DEV_SUBMISSIONS_PATH)) {
+          const rawMap = JSON.parse(
+            fs.readFileSync(LOCAL_DEV_SUBMISSIONS_PATH, "utf8"),
+          ) as Record<string, Record<string, unknown>>;
+          for (const [key, meta] of Object.entries(rawMap || {})) {
+            const channel = String(
+              meta.channel || key.split(":")[0] || "general",
+            );
+            const subId = String(
+              meta.submissionId || key.split(":").slice(1).join(":"),
+            );
+            const env = String(meta.environment || "development");
+            const fid = `control-map:transactional-submission:${env}:${channel}:${subId}`;
+            if (!submissionByFindingId.has(fid)) {
+              submissionByFindingId.set(fid, {
+                finding_id: fid,
+                status: String(meta.status || "captured"),
+                owner: `dcc:${channel}`,
+                metadata: meta,
+                created_at: String(meta.createdAt || new Date().toISOString()),
+                updated_at: String(meta.createdAt || new Date().toISOString()),
+              });
+            }
           }
         }
+      } catch {
+        // ignore local dev file parse error
       }
-    } catch {
-      // ignore local dev file parse error
     }
 
     try {
@@ -2429,10 +2704,19 @@ export async function getUnifiedOperatorInbox(
   const argoDedupFingerprints = new Set<string>();
   const seenJfdSourceIds = new Set<string>();
   const seenWtsSourceIds = new Set<string>();
+  const seenCpSourceIds = new Set<string>();
 
   for (const row of dccData.submissionRows) {
     const item = mapFindingRowToInboxItem(row, resendConfigured);
     if (!item) continue;
+    if (
+      (item.channel === "cp-group-inquiry" ||
+        item.sourceSite === "cruisepromenade") &&
+      item.sourceId
+    ) {
+      if (seenCpSourceIds.has(item.sourceId)) continue;
+      seenCpSourceIds.add(item.sourceId);
+    }
     itemsByKey.set(item.itemKey, item);
     if (item.channel === "juneauflightdeck-inquiry" && item.sourceId) {
       seenJfdSourceIds.add(item.sourceId);
@@ -2529,8 +2813,28 @@ export async function getUnifiedOperatorInbox(
     });
   }
 
-  // Merge Cruise Promenade inquiries
+  // Merge Cruise Promenade inquiries (cross-path deduplicated against durable findings & internal duplicates)
   for (const cpItem of cpData.items) {
+    if (cpItem.sourceId && seenCpSourceIds.has(cpItem.sourceId)) {
+      const existingDurable = itemsByKey.get(cpItem.itemKey);
+      if (
+        existingDurable &&
+        existingDurable.notificationStatus !== "delivered" &&
+        cpItem.notificationStatus === "delivered"
+      ) {
+        itemsByKey.set(cpItem.itemKey, {
+          ...existingDurable,
+          notificationStatus: "delivered",
+          notificationChannel: cpItem.notificationChannel,
+          intendedDestination: cpItem.intendedDestination,
+          failureReason: null,
+        });
+      }
+      continue;
+    }
+    if (cpItem.sourceId) {
+      seenCpSourceIds.add(cpItem.sourceId);
+    }
     if (!itemsByKey.has(cpItem.itemKey)) {
       itemsByKey.set(cpItem.itemKey, cpItem);
     }
@@ -2541,8 +2845,18 @@ export async function getUnifiedOperatorInbox(
     (item) => {
       const overlay = dccData.triageByItemKey.get(item.itemKey);
       if (!overlay) return item;
+      const reclassifyAsTest =
+        overlay.isTest &&
+        overlay.triageStatus === "archived" &&
+        item.classification !== "test";
       return {
         ...item,
+        ...(reclassifyAsTest
+          ? {
+              classification: "test" as const,
+              classificationReason: "triage_archived_test",
+            }
+          : {}),
         triageStatus: overlay.triageStatus,
         operatorNote: overlay.operatorNote,
         triageUpdatedAt: overlay.updatedAt,
