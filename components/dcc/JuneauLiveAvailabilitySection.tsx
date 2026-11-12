@@ -283,10 +283,6 @@ export function JuneauLiveAvailabilitySection({
         <div className="grid gap-5 md:grid-cols-2">
           {view.cards.map((card) => {
             const activeDep = getActiveDeparture(card);
-            const primaryDepartures = [
-              ...card.recommendedDepartures,
-              ...card.confirmTimingDepartures,
-            ];
             const cardNotice = cardNoticeById[card.cardId];
             const isRevalidating = revalidatingCardId === card.cardId;
             const pendingReduced =
@@ -358,13 +354,46 @@ export function JuneauLiveAvailabilitySection({
                   </div>
 
                   {/* 5. Available departure-time buttons (time only) */}
-                  {primaryDepartures.length > 0 && (
+                  {card.recommendedDepartures.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-300">
+                        Recommended times
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {card.recommendedDepartures.map((dep) => {
+                          const selected = activeDep?.selectionKey === dep.selectionKey;
+                          return (
+                            <button
+                              key={dep.selectionKey}
+                              type="button"
+                              onClick={() => {
+                                setSelectedKeyByCard((prev) => ({
+                                  ...prev,
+                                  [card.cardId]: dep.selectionKey,
+                                }));
+                                setPendingReducedCheckout(null);
+                              }}
+                              className={`rounded-lg px-3 py-1.5 text-xs font-bold transition ${
+                                selected
+                                  ? "border-2 border-emerald-400 bg-emerald-500/25 text-white"
+                                  : "border border-emerald-400/30 bg-emerald-500/10 text-emerald-100 hover:bg-emerald-500/20"
+                              }`}
+                            >
+                              {dep.timeLabel}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {card.confirmTimingDepartures.length > 0 && (
                     <div className="space-y-2">
                       <p className="text-[11px] font-bold uppercase tracking-wider text-white/70">
                         Available departure times
                       </p>
                       <div className="flex flex-wrap gap-2">
-                        {primaryDepartures.map((dep) => {
+                        {card.confirmTimingDepartures.map((dep) => {
                           const selected = activeDep?.selectionKey === dep.selectionKey;
                           return (
                             <button

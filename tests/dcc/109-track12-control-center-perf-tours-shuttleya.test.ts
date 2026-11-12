@@ -24,14 +24,18 @@ import {
   getRezgoReadOnlyCacheStatsForTesting,
   getSereneRezgoReadinessStatus,
   inspectSereneRezgoInventoryReadOnly,
+  resolveJuneauToursDockToDockProvenance,
   revalidatePublicJuneauDepartureBeforeCheckout,
   sanitizeRezgoDiagnosticMessage,
 } from "@/lib/dcc/liveSlots/rezgoReadOnly";
 import { JuneauLiveAvailabilitySection } from "@/components/dcc/JuneauLiveAvailabilitySection";
 import {
+  assessLfseJuneauDepartureAgainstShipWindow,
+  buildLfsePublicJuneauAvailabilityView,
   clearLfseJuneauSupplierFeedCacheForTesting,
   getLfseJuneauSupplierFeedCacheStatsForTesting,
   loadLfseJuneauNormalizedSupplierFeed,
+  resolveLfseJuneauToursDockToDockProvenance,
 } from "@/apps/last-frontier-shore-excursions/lib/dccJuneauSupplierFeed";
 import { JuneauNormalizedSupplierFeedSection } from "@/apps/last-frontier-shore-excursions/components/JuneauNormalizedSupplierFeedSection";
 import { THREE_MARKET_DIRECT_OPERATOR_PITCH_KITS } from "@/lib/dcc/commerce/directOperatorActivationKit";
@@ -790,9 +794,15 @@ test("Rezgo Gate-2 advancement, supplier 2.00h cutoff vs DCC 1:59:59 return buff
       whaleTour.supplierBookingCutoffSemantics,
       "supplier_booking_cutoff_only_never_cruise_return_buffer",
     );
+    assert.equal(whaleTour.durationScope, "dock_to_dock");
+    assert.equal(whaleTour.includedOperatorTransportationInPublishedDuration, true);
     assert.equal(
       whaleTour.cruiseTimingVerificationStatus,
-      "live_operator_availability_only_unverified_cruise_timing",
+      "dock_to_dock_confirmed_window_evaluated",
+    );
+    assert.equal(
+      whaleTour.cruiseTimingStatusLabel,
+      "Estimated back 2+ hours before all aboard",
     );
     // 09:30 + 225m = 13:15 (fits inside 16:30 window); 14:30 + 225m = 18:15 (blocked outside 16:30 window!)
     assert.deepEqual(whaleTour.departureTimes, ["09:30"]);
@@ -867,7 +877,9 @@ test("Rezgo Gate-2 advancement, supplier 2.00h cutoff vs DCC 1:59:59 return buff
     );
     assert.match(html, /Live Operator Availability/);
     assert.match(html, /How many people are going\?/);
-    assert.match(html, /Confirm return timing/);
+    // firstFeed had confirmed allAboard 16:30, so 9:30 AM + 225m = 13:15 -> 3:15:00 remaining -> Estimated back 2+ hours before all aboard!
+    assert.match(html, /Estimated back 2\+ hours before all aboard/);
+    assert.match(html, /Recommended times/);
     assert.match(html, /Doesn’t fit this ship day/);
     assert.match(html, /Book this tour/);
     assert.match(html, /Add to group plan/);
@@ -902,6 +914,330 @@ test("Rezgo Gate-2 advancement, supplier 2.00h cutoff vs DCC 1:59:59 return buff
     assert.match(dccWhalePageSrc, /buildPublicJuneauLiveAvailabilityView/);
     assert.match(dccLiveSectionSrc, /Juneau Tours — Live Operator Availability/);
     assert.match(dccLiveSectionSrc, /dcc-juneau-tours-live-availability/);
+  } finally {
+    clearRezgoReadOnlyCacheForTesting();
+    clearLfseJuneauSupplierFeedCacheForTesting();
+  }
+});
+
+test("Juneau Tours dock-to-dock timing correction: Celebrity Edge May 24 (13:30–21:30) 5-case verification matrix, 1:59:59 boundary, berth adjustments, and strict non-generalization", async () => {
+  clearRezgoReadOnlyCacheForTesting();
+  clearLfseJuneauSupplierFeedCacheForTesting();
+
+  try {
+    // 1. Strict provenance allowlist: confirmed Juneau Tours Rezgo products ONLY
+    const confirmedWhale = resolveJuneauToursDockToDockProvenance({
+      operatorId: "juneau-tours-whale-watch",
+      rezgoCom: "32329",
+      matchedViatorProductCode: "5857P23",
+      verifiedRezgoDomain: "juneauwhalewatch",
+      verifiedRezgoCompanyName: "Juneau Tours",
+      title: "Juneau Whale Watch",
+    });
+    assert.equal(confirmedWhale.durationScope, "dock_to_dock");
+    assert.equal(confirmedWhale.includedOperatorTransportationInPublishedDuration, true);
+    assert.equal(confirmedWhale.durationProvenance.additionalOperatorTransferMinutesAdded, 0);
+    assert.equal(confirmedWhale.durationProvenance.generalizedToOtherOperators, false);
+
+    // Must NEVER generalize to Dolphin Jet Boat Tours (466119P3), Alaska Galore (331813P1), or other operators
+    const dolphin = resolveJuneauToursDockToDockProvenance({
+      operatorId: "dolphin-jet-boat",
+      rezgoCom: "32329",
+      matchedViatorProductCode: "466119P3",
+      title: "Mendenhall Glacier Waterfall and Whale Watching Tour",
+    });
+    assert.equal(dolphin.durationScope, "activity_only_unverified");
+    assert.equal(dolphin.includedOperatorTransportationInPublishedDuration, false);
+
+    const mismatched5857 = resolveJuneauToursDockToDockProvenance({
+      operatorId: "juneau-tours-whale-watch",
+      matchedViatorProductCode: "466119P3",
+      title: "Dolphin Tour",
+    });
+    assert.equal(mismatched5857.durationScope, "activity_only_unverified");
+
+    const lfseDolphin = resolveLfseJuneauToursDockToDockProvenance({
+      operatorId: "alaska-galore",
+      matchedViatorProductCode: "331813P1",
+      title: "Whale Watching",
+    });
+    assert.equal(lfseDolphin.durationScope, "activity_only_unverified");
+
+    // 2. Canonical Celebrity Edge May 24 matrix (13:30 arrival, 21:30 confirmed all-aboard):
+    // - 13:30 3-hour (180m) whale tour -> returns 16:30 -> 5:00:00 remaining -> Recommended
+    const edge1330Whale = assessRezgoDepartureAgainstShipWindow({
+      departureTime: "13:30",
+      durationMinutes: 180,
+      shipArrivalTime: "13:30",
+      shipAllAboardTime: "21:30",
+      allAboardConfirmed: true,
+      durationScope: "dock_to_dock",
+    });
+    assert.equal(edge1330Whale.estimatedDockReturnTime, "16:30");
+    assert.equal(edge1330Whale.upperBoundRemainingSecondsBeforeTransfer, 5 * 3600);
+    assert.equal(edge1330Whale.upperBoundRemainingBufferHmsLabel, "5:00:00");
+    assert.equal(edge1330Whale.status, "recommended");
+    assert.equal(edge1330Whale.blockedForSailingWindow, false);
+    assert.equal(edge1330Whale.displayLabel, "Estimated back 2+ hours before all aboard");
+
+    // - 15:30 3-hour (180m) whale tour -> returns 18:30 -> 3:00:00 remaining -> Recommended
+    const edge1530Whale = assessRezgoDepartureAgainstShipWindow({
+      departureTime: "15:30",
+      durationMinutes: 180,
+      shipArrivalTime: "13:30",
+      shipAllAboardTime: "21:30",
+      allAboardConfirmed: true,
+      durationScope: "dock_to_dock",
+    });
+    assert.equal(edge1530Whale.estimatedDockReturnTime, "18:30");
+    assert.equal(edge1530Whale.upperBoundRemainingBufferHmsLabel, "3:00:00");
+    assert.equal(edge1530Whale.status, "recommended");
+    assert.equal(edge1530Whale.displayLabel, "Estimated back 2+ hours before all aboard");
+
+    // - 16:30 3-hour (180m) whale tour -> returns 19:30 -> 2:00:00 (7200s >= 7199s) remaining -> Recommended / qualifies!
+    const edge1630Whale = assessRezgoDepartureAgainstShipWindow({
+      departureTime: "16:30",
+      durationMinutes: 180,
+      shipArrivalTime: "13:30",
+      shipAllAboardTime: "21:30",
+      allAboardConfirmed: true,
+      durationScope: "dock_to_dock",
+    });
+    assert.equal(edge1630Whale.estimatedDockReturnTime, "19:30");
+    assert.equal(edge1630Whale.upperBoundRemainingSecondsBeforeTransfer, 7200);
+    assert.equal(edge1630Whale.upperBoundRemainingBufferHmsLabel, "2:00:00");
+    assert.equal(edge1630Whale.status, "recommended");
+    assert.equal(edge1630Whale.displayLabel, "Estimated back 2+ hours before all aboard");
+
+    // - 15:00 5-hour (300m) combo -> returns 20:00 -> 1:30:00 remaining -> Not recommended
+    const edge1500Combo = assessRezgoDepartureAgainstShipWindow({
+      departureTime: "15:00",
+      durationMinutes: 300,
+      shipArrivalTime: "13:30",
+      shipAllAboardTime: "21:30",
+      allAboardConfirmed: true,
+      durationScope: "dock_to_dock",
+    });
+    assert.equal(edge1500Combo.estimatedDockReturnTime, "20:00");
+    assert.equal(edge1500Combo.upperBoundRemainingSecondsBeforeTransfer, 5400);
+    assert.equal(edge1500Combo.upperBoundRemainingBufferHmsLabel, "1:30:00");
+    assert.equal(edge1500Combo.status, "reduced_buffer_not_recommended");
+    assert.equal(edge1500Combo.blockedForSailingWindow, false);
+    assert.equal(edge1500Combo.displayLabel, "1:30:00 buffer · Not recommended");
+
+    // - 15:30 5-hour (300m) combo -> returns 20:30 -> 1:00:00 remaining -> Not recommended
+    const edge1530Combo = assessRezgoDepartureAgainstShipWindow({
+      departureTime: "15:30",
+      durationMinutes: 300,
+      shipArrivalTime: "13:30",
+      shipAllAboardTime: "21:30",
+      allAboardConfirmed: true,
+      durationScope: "dock_to_dock",
+    });
+    assert.equal(edge1530Combo.estimatedDockReturnTime, "20:30");
+    assert.equal(edge1530Combo.upperBoundRemainingSecondsBeforeTransfer, 3600);
+    assert.equal(edge1530Combo.upperBoundRemainingBufferHmsLabel, "1:00:00");
+    assert.equal(edge1530Combo.status, "reduced_buffer_not_recommended");
+    assert.equal(edge1530Combo.displayLabel, "1:00:00 buffer · Not recommended");
+
+    // 3. Exact 1:59:59 (7199s) vs 1:59:58 (7198s) dock-to-dock boundary & documented berth adjustment
+    const boundary7199 = assessRezgoDepartureAgainstShipWindow({
+      departureTime: "16:30:01",
+      durationMinutes: 180,
+      shipArrivalTime: "13:30",
+      shipAllAboardTime: "21:30",
+      allAboardConfirmed: true,
+      durationScope: "dock_to_dock",
+    });
+    assert.equal(boundary7199.upperBoundRemainingSecondsBeforeTransfer, 7199);
+    assert.equal(boundary7199.upperBoundRemainingBufferHmsLabel, "1:59:59");
+    assert.equal(boundary7199.status, "recommended");
+
+    const boundary7198 = assessRezgoDepartureAgainstShipWindow({
+      departureTime: "16:30:02",
+      durationMinutes: 180,
+      shipArrivalTime: "13:30",
+      shipAllAboardTime: "21:30",
+      allAboardConfirmed: true,
+      durationScope: "dock_to_dock",
+    });
+    assert.equal(boundary7198.upperBoundRemainingSecondsBeforeTransfer, 7198);
+    assert.equal(boundary7198.upperBoundRemainingBufferHmsLabel, "1:59:58");
+    assert.equal(boundary7198.status, "reduced_buffer_not_recommended");
+
+    // Documented specific-berth return adjustment (e.g. AJD shuttle 15m beyond advertised downtown pickup)
+    const withDocumentedBerthReturn = assessRezgoDepartureAgainstShipWindow({
+      departureTime: "16:30",
+      durationMinutes: 180,
+      shipArrivalTime: "13:30",
+      shipAllAboardTime: "21:30",
+      allAboardConfirmed: true,
+      durationScope: "dock_to_dock",
+      documentedBerthReturnMinutes: 15,
+    });
+    assert.equal(withDocumentedBerthReturn.documentedBerthReturnMinutesApplied, 15);
+    assert.equal(withDocumentedBerthReturn.upperBoundRemainingBufferHmsLabel, "1:45:00");
+    assert.equal(withDocumentedBerthReturn.status, "reduced_buffer_not_recommended");
+
+    // Documented specific-berth pickup adjustment blocks 13:30 departure if passenger needs 15m from berth
+    const withDocumentedBerthPickup = assessRezgoDepartureAgainstShipWindow({
+      departureTime: "13:30",
+      durationMinutes: 180,
+      shipArrivalTime: "13:30",
+      shipAllAboardTime: "21:30",
+      allAboardConfirmed: true,
+      durationScope: "dock_to_dock",
+      documentedBerthPickupMinutes: 15,
+    });
+    assert.equal(withDocumentedBerthPickup.status, "outside_sailing_window_blocked");
+    assert.equal(withDocumentedBerthPickup.blockedForSailingWindow, true);
+
+    // 4. End-to-end DCC + Last Frontier public cards on Celebrity Edge May 24 (13:30–21:30)
+    const mockEdgeFetch: typeof fetch = async (input) => {
+      const url = String(input);
+      if (url.includes("i=company")) {
+        return new Response(
+          "<response><company_name>Juneau Tours</company_name><domain>juneauwhalewatch</domain><currency>USD</currency></response>",
+          { status: 200 },
+        );
+      }
+      return new Response(
+        `<response>
+          <item>
+            <id>101</id><uid>50001</uid><com>32329</com>
+            <item><![CDATA[Juneau Whale Watch]]></item><option><![CDATA[1:30 PM]]></option>
+            <duration>3 hours</duration><time>01:30 PM</time><cutoff>2.00</cutoff>
+            <price_adult>169.00</price_adult><currency_base>USD</currency_base><availability>24</availability>
+          </item>
+          <item>
+            <id>102</id><uid>50002</uid><com>32329</com>
+            <item><![CDATA[Juneau Whale Watch]]></item><option><![CDATA[3:30 PM]]></option>
+            <duration>3 hours</duration><time>03:30 PM</time><cutoff>2.00</cutoff>
+            <price_adult>169.00</price_adult><currency_base>USD</currency_base><availability>18</availability>
+          </item>
+          <item>
+            <id>103</id><uid>50003</uid><com>32329</com>
+            <item><![CDATA[Juneau Whale Watch]]></item><option><![CDATA[4:30 PM]]></option>
+            <duration>3 hours</duration><time>04:30 PM</time><cutoff>2.00</cutoff>
+            <price_adult>169.00</price_adult><currency_base>USD</currency_base><availability>12</availability>
+          </item>
+          <item>
+            <id>201</id><uid>60001</uid><com>31703</com>
+            <item><![CDATA[Juneau Mendenhall Glacier & Whale Watch Combo]]></item><option><![CDATA[3:00 PM]]></option>
+            <duration>5 hours</duration><time>03:00 PM</time><cutoff>2.00</cutoff>
+            <price_adult>219.00</price_adult><currency_base>USD</currency_base><availability>16</availability>
+          </item>
+          <item>
+            <id>202</id><uid>60002</uid><com>31703</com>
+            <item><![CDATA[Juneau Mendenhall Glacier & Whale Watch Combo]]></item><option><![CDATA[3:30 PM]]></option>
+            <duration>5 hours</duration><time>03:30 PM</time><cutoff>2.00</cutoff>
+            <price_adult>219.00</price_adult><currency_base>USD</currency_base><availability>10</availability>
+          </item>
+        </response>`,
+        { status: 200 },
+      );
+    };
+
+    const edgeFeed = await buildNormalizedJuneauSupplierFeed({
+      env: { REZGO_SERENE_CID: "TEST_CID", REZGO_SERENE_API_KEY: "TEST_KEY" },
+      fetchImpl: mockEdgeFetch,
+      searchDate: "2027-05-24",
+      shipArrivalTime: "13:30",
+      shipAllAboardTime: "21:30",
+      allAboardConfirmed: true,
+    });
+
+    const dccEdgeView = buildPublicJuneauLiveAvailabilityView(edgeFeed, {
+      partySize: 4,
+      shipArrivalTime: "13:30",
+      shipAllAboardTime: "21:30",
+      allAboardConfirmed: true,
+    });
+    assert.equal(dccEdgeView.cards.length, 2);
+    const whaleCard = dccEdgeView.cards.find((c) => c.title === "Juneau Whale Watch")!;
+    const comboCard = dccEdgeView.cards.find((c) => c.title.includes("Combo"))!;
+
+    assert.deepEqual(
+      whaleCard.recommendedDepartures.map((d) => d.departureTime24),
+      ["13:30", "15:30", "16:30"],
+    );
+    assert.equal(whaleCard.confirmTimingDepartures.length, 0);
+    assert.equal(whaleCard.otherAvailableTimes.length, 0);
+    for (const dep of whaleCard.recommendedDepartures) {
+      assert.equal(dep.timingStatusLabel, "Estimated back 2+ hours before all aboard");
+      assert.match(dep.plannerAddHref, /durationScope=dock_to_dock/);
+      assert.match(dep.plannerAddHref, /returnTransferMinutes=0/);
+      assert.match(dep.plannerAddHref, /fitStatus=recommended/);
+    }
+
+    assert.equal(comboCard.recommendedDepartures.length, 0);
+    assert.equal(comboCard.confirmTimingDepartures.length, 0);
+    assert.deepEqual(
+      comboCard.otherAvailableTimes.map((d) => `${d.departureTime24}:${d.timingStatusLabel}`),
+      [
+        "15:00:1:30:00 buffer · Not recommended",
+        "15:30:1:00:00 buffer · Not recommended",
+      ],
+    );
+
+    const dccEdgeHtml = renderToStaticMarkup(
+      React.createElement(JuneauLiveAvailabilitySection, {
+        initialView: dccEdgeView,
+        initialDate: "2027-05-24",
+        initialShipArrival: "13:30",
+        initialAllAboard: "21:30",
+        initialBerth: "CT",
+      }),
+    );
+    assert.match(dccEdgeHtml, /Estimated back 2\+ hours before all aboard/);
+    assert.match(dccEdgeHtml, /1:30:00 buffer · Not recommended/);
+    assert.match(dccEdgeHtml, /1:00:00 buffer · Not recommended/);
+    assert.doesNotMatch(dccEdgeHtml, /Confirm return timing/);
+
+    // Verify Last Frontier evaluator + SSR card view matches identically
+    const lfseEdgeCheck = assessLfseJuneauDepartureAgainstShipWindow({
+      departureTime: "16:30",
+      durationMinutes: 180,
+      shipArrivalTime: "13:30",
+      shipAllAboardTime: "21:30",
+      allAboardConfirmed: true,
+      durationScope: "dock_to_dock",
+    });
+    assert.equal(lfseEdgeCheck.status, "recommended");
+    assert.equal(lfseEdgeCheck.upperBoundRemainingBufferHmsLabel, "2:00:00");
+
+    const lfseEdgeFeed = await loadLfseJuneauNormalizedSupplierFeed({
+      date: "2027-05-24",
+      shipArrivalTime: "13:30",
+      shipAllAboardTime: "21:30",
+      bypassCache: true,
+      fetchImpl: async () =>
+        new Response(
+          JSON.stringify({
+            ok: true,
+            normalizedSupplierFeeds: { juneauToursWhaleWatch: edgeFeed },
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        ),
+    });
+    const lfseEdgeView = buildLfsePublicJuneauAvailabilityView(lfseEdgeFeed, {
+      partySize: 4,
+      shipArrivalTime: "13:30",
+      shipAllAboardTime: "21:30",
+      allAboardConfirmed: true,
+    });
+    const lfseEdgeHtml = renderToStaticMarkup(
+      React.createElement(JuneauNormalizedSupplierFeedSection, {
+        initialView: lfseEdgeView,
+        initialPartySize: 4,
+        initialShipArrival: "13:30",
+        initialAllAboard: "21:30",
+      }),
+    );
+    assert.match(lfseEdgeHtml, /Estimated back 2\+ hours before all aboard/);
+    assert.match(lfseEdgeHtml, /1:30:00 buffer · Not recommended/);
+    assert.match(lfseEdgeHtml, /1:00:00 buffer · Not recommended/);
+    assert.doesNotMatch(lfseEdgeHtml, /Confirm return timing/);
   } finally {
     clearRezgoReadOnlyCacheForTesting();
     clearLfseJuneauSupplierFeedCacheForTesting();
@@ -1014,9 +1350,11 @@ test("Simplified public Juneau live-availability interface hides seat counts, so
     assert.match(dccUnselectedHtml, /How many people are going\?/);
     assert.match(dccUnselectedHtml, /10:00 AM/);
     assert.match(dccUnselectedHtml, /1:00 PM/);
+    assert.match(dccUnselectedHtml, /Recommended times/);
     assert.match(dccUnselectedHtml, /Other available times/);
     assert.match(dccUnselectedHtml, /1:30:00 buffer · Not recommended/);
-    assert.match(dccUnselectedHtml, /Confirm return timing/);
+    assert.match(dccUnselectedHtml, /Estimated back 2\+ hours before all aboard/);
+    assert.doesNotMatch(dccUnselectedHtml, /Confirm return timing/);
     assert.match(dccUnselectedHtml, /Doesn’t fit this ship day/);
     assert.match(dccUnselectedHtml, /3:00 PM/);
     assert.doesNotMatch(dccUnselectedHtml, /8:30 AM/);

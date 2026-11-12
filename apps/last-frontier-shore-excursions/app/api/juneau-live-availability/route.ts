@@ -20,14 +20,25 @@ export async function GET(request: NextRequest) {
     typeof parsedParty === "number" && Number.isFinite(parsedParty) && parsedParty >= 1
       ? Math.min(99, parsedParty)
       : null;
+  const shipArrivalTime =
+    (searchParams.get("shipArrival") || searchParams.get("claa_arrival") || "").trim() || null;
+  const shipAllAboardTime =
+    (searchParams.get("allAboard") || searchParams.get("all_aboard") || "").trim() || null;
 
   const feed = await loadLfseJuneauNormalizedSupplierFeed({
     date,
     activitySlug,
+    shipArrivalTime: shipArrivalTime || undefined,
+    shipAllAboardTime: shipAllAboardTime || undefined,
     revalidateSeconds: 120,
   });
 
-  const view = buildLfsePublicJuneauAvailabilityView(feed, { partySize });
+  const view = buildLfsePublicJuneauAvailabilityView(feed, {
+    partySize,
+    shipArrivalTime,
+    shipAllAboardTime,
+    allAboardConfirmed: Boolean(shipAllAboardTime),
+  });
   return NextResponse.json(view, {
     status: 200,
     headers: { "Cache-Control": "no-store, max-age=0" },
@@ -50,15 +61,30 @@ export async function POST(request: NextRequest) {
     const rezgoUid = typeof body.rezgoUid === "string" ? body.rezgoUid.trim() : "";
     const departureTime24 =
       typeof body.departureTime24 === "string" ? body.departureTime24.trim() : "";
+    const shipArrivalTime =
+      typeof body.shipArrival === "string" && body.shipArrival.trim()
+        ? body.shipArrival.trim()
+        : null;
+    const shipAllAboardTime =
+      typeof body.allAboard === "string" && body.allAboard.trim()
+        ? body.allAboard.trim()
+        : null;
 
     // Bypass local cache right before opening checkout so we verify live availability
     const freshFeed = await loadLfseJuneauNormalizedSupplierFeed({
       date,
       activitySlug,
+      shipArrivalTime: shipArrivalTime || undefined,
+      shipAllAboardTime: shipAllAboardTime || undefined,
       bypassCache: true,
     });
 
-    const refreshedView = buildLfsePublicJuneauAvailabilityView(freshFeed, { partySize });
+    const refreshedView = buildLfsePublicJuneauAvailabilityView(freshFeed, {
+      partySize,
+      shipArrivalTime,
+      shipAllAboardTime,
+      allAboardConfirmed: Boolean(shipAllAboardTime),
+    });
     const matchedCard = refreshedView.cards.find((c) => c.cardId === cardId);
     const allQualifyingDeps = matchedCard
       ? [

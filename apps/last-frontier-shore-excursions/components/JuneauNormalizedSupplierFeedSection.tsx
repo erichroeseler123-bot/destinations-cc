@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   buildLfsePublicJuneauAvailabilityView,
   type LfseJuneauNormalizedFeedResult,
@@ -13,6 +13,8 @@ interface JuneauNormalizedSupplierFeedSectionProps {
   feed?: LfseJuneauNormalizedFeedResult;
   initialView?: LfsePublicJuneauAvailabilityView;
   initialPartySize?: number | null;
+  initialShipArrival?: string | null;
+  initialAllAboard?: string | null;
   activitySlug?: string;
 }
 
@@ -22,6 +24,8 @@ export function JuneauNormalizedSupplierFeedSection({
   feed,
   initialView,
   initialPartySize = null,
+  initialShipArrival = null,
+  initialAllAboard = null,
   activitySlug,
 }: JuneauNormalizedSupplierFeedSectionProps) {
   const computedInitialView = useMemo(() => {
@@ -33,11 +37,18 @@ export function JuneauNormalizedSupplierFeedSection({
         serviceDate: null,
         enteredPartySize: initialPartySize,
         partySizePrompt: "How many people are going?" as const,
+        shipArrivalTime: initialShipArrival,
+        shipAllAboardTime: initialAllAboard,
         cards: [],
       };
     }
-    return buildLfsePublicJuneauAvailabilityView(feed, { partySize: initialPartySize });
-  }, [feed, initialView, initialPartySize]);
+    return buildLfsePublicJuneauAvailabilityView(feed, {
+      partySize: initialPartySize,
+      shipArrivalTime: initialShipArrival,
+      shipAllAboardTime: initialAllAboard,
+      allAboardConfirmed: Boolean(initialAllAboard),
+    });
+  }, [feed, initialView, initialPartySize, initialShipArrival, initialAllAboard]);
 
   const [liveView, setLiveView] = useState<LfsePublicJuneauAvailabilityView | null>(null);
   const view = liveView ?? computedInitialView;
@@ -47,6 +58,12 @@ export function JuneauNormalizedSupplierFeedSection({
   );
   const [partySize, setPartySize] = useState<number | null>(
     view.enteredPartySize ?? initialPartySize,
+  );
+  const [shipArrival, setShipArrival] = useState<string>(
+    view.shipArrivalTime || initialShipArrival || "",
+  );
+  const [allAboard, setAllAboard] = useState<string>(
+    view.shipAllAboardTime || initialAllAboard || "",
   );
   const [loadingRecheck, setLoadingRecheck] = useState<boolean>(false);
   const [selectedKeyByCard, setSelectedKeyByCard] = useState<Record<string, string>>({});
@@ -58,11 +75,12 @@ export function JuneauNormalizedSupplierFeedSection({
     warningLabel: string;
   } | null>(null);
 
-  if (!view.ok && view.cards.length === 0 && !liveView) {
-    return null;
-  }
-
-  async function recheckAvailability(nextDate: string, nextPartySize: number | null) {
+  async function recheckAvailability(
+    nextDate: string,
+    nextPartySize: number | null,
+    nextArr?: string,
+    nextAboard?: string,
+  ) {
     setLoadingRecheck(true);
     try {
       const qs = new URLSearchParams();
@@ -71,6 +89,10 @@ export function JuneauNormalizedSupplierFeedSection({
       if (nextPartySize !== null && nextPartySize >= 1) {
         qs.set("partySize", String(nextPartySize));
       }
+      const effArr = (nextArr !== undefined ? nextArr : shipArrival).trim();
+      const effAboard = (nextAboard !== undefined ? nextAboard : allAboard).trim();
+      if (effArr) qs.set("shipArrival", effArr);
+      if (effAboard) qs.set("allAboard", effAboard);
       const res = await fetch(`/api/juneau-live-availability?${qs.toString()}`, {
         method: "GET",
         cache: "no-store",
@@ -84,6 +106,46 @@ export function JuneauNormalizedSupplierFeedSection({
     } finally {
       setLoadingRecheck(false);
     }
+  }
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const sp = new URLSearchParams(window.location.search);
+    const urlDate = (sp.get("date") || "").trim();
+    const urlPartyRaw = sp.get("partySize");
+    const urlArr = (sp.get("shipArrival") || sp.get("claa_arrival") || "").trim();
+    const urlAboard = (sp.get("allAboard") || sp.get("all_aboard") || "").trim();
+
+    const parsedUrlParty =
+      urlPartyRaw !== null && urlPartyRaw.trim() !== ""
+        ? Number.parseInt(urlPartyRaw.trim(), 10)
+        : null;
+    const cleanUrlParty =
+      typeof parsedUrlParty === "number" && Number.isFinite(parsedUrlParty) && parsedUrlParty >= 1
+        ? parsedUrlParty
+        : null;
+
+    const validUrlDate = /^\d{4}-\d{2}-\d{2}$/.test(urlDate) ? urlDate : null;
+    if (!validUrlDate && cleanUrlParty === null && !urlArr && !urlAboard) {
+      return;
+    }
+
+    const targetDate = validUrlDate || serviceDate;
+    const targetParty = cleanUrlParty !== null ? cleanUrlParty : partySize;
+    const targetArr = urlArr || shipArrival;
+    const targetAboard = urlAboard || allAboard;
+
+    if (validUrlDate) setServiceDate(validUrlDate);
+    if (cleanUrlParty !== null) setPartySize(cleanUrlParty);
+    if (urlArr) setShipArrival(urlArr);
+    if (urlAboard) setAllAboard(urlAboard);
+
+    void recheckAvailability(targetDate, targetParty, targetArr, targetAboard);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  if (!view.ok && view.cards.length === 0 && !liveView) {
+    return null;
   }
 
   function handlePartySizeChange(rawVal: string) {
@@ -135,6 +197,8 @@ export function JuneauNormalizedSupplierFeedSection({
           cardId: card.cardId,
           rezgoUid: activeDep.rezgoUid,
           departureTime24: activeDep.departureTime24,
+          shipArrival: shipArrival.trim() || undefined,
+          allAboard: allAboard.trim() || undefined,
         }),
       });
       const json = (await res.json()) as {
@@ -271,6 +335,46 @@ export function JuneauNormalizedSupplierFeedSection({
                 ))}
               </select>
             </label>
+            <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: "12px", fontWeight: 700, color: "var(--deep)" }}>
+              Ship Arrival
+              <input
+                type="time"
+                aria-label="Ship Arrival"
+                value={shipArrival}
+                onChange={(e) => {
+                  const nextArr = e.target.value;
+                  setShipArrival(nextArr);
+                  void recheckAvailability(serviceDate, partySize, nextArr, allAboard);
+                }}
+                style={{
+                  padding: "7px 10px",
+                  borderRadius: 8,
+                  border: "1px solid var(--line)",
+                  fontSize: "13px",
+                  background: "#ffffff",
+                }}
+              />
+            </label>
+            <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: "12px", fontWeight: 700, color: "var(--deep)" }}>
+              Confirmed All-Aboard
+              <input
+                type="time"
+                aria-label="Confirmed All-Aboard"
+                value={allAboard}
+                onChange={(e) => {
+                  const nextAboard = e.target.value;
+                  setAllAboard(nextAboard);
+                  void recheckAvailability(serviceDate, partySize, shipArrival, nextAboard);
+                }}
+                style={{
+                  padding: "7px 10px",
+                  borderRadius: 8,
+                  border: "1px solid var(--line)",
+                  fontSize: "13px",
+                  background: "#ffffff",
+                }}
+              />
+            </label>
             {loadingRecheck && (
               <span style={{ fontSize: "12px", color: "var(--muted)", paddingBottom: 8 }}>
                 Checking…
@@ -289,10 +393,6 @@ export function JuneauNormalizedSupplierFeedSection({
           >
             {view.cards.map((card) => {
               const activeDep = getActiveDeparture(card);
-              const primaryDepartures = [
-                ...card.recommendedDepartures,
-                ...card.confirmTimingDepartures,
-              ];
               const cardNotice = cardNoticeById[card.cardId];
               const isRevalidating = revalidatingCardId === card.cardId;
               const pendingReduced =
@@ -433,7 +533,56 @@ export function JuneauNormalizedSupplierFeedSection({
                       )}
                     </div>
 
-                    {primaryDepartures.length > 0 && (
+                    {card.recommendedDepartures.length > 0 && (
+                      <div style={{ marginBottom: 10 }}>
+                        <span
+                          style={{
+                            display: "block",
+                            fontSize: "11.5px",
+                            fontWeight: 700,
+                            color: "#156d3a",
+                            textTransform: "uppercase",
+                            marginBottom: 6,
+                          }}
+                        >
+                          Recommended times
+                        </span>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                          {card.recommendedDepartures.map((dep) => {
+                            const selected = activeDep?.selectionKey === dep.selectionKey;
+                            return (
+                              <button
+                                key={dep.selectionKey}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedKeyByCard((prev) => ({
+                                    ...prev,
+                                    [card.cardId]: dep.selectionKey,
+                                  }));
+                                  setPendingReducedCheckout(null);
+                                }}
+                                style={{
+                                  padding: "6px 11px",
+                                  borderRadius: 7,
+                                  fontSize: "12.5px",
+                                  fontWeight: 700,
+                                  cursor: "pointer",
+                                  border: selected
+                                    ? "2px solid #156d3a"
+                                    : "1px solid #9ad3b0",
+                                  background: selected ? "#dcfce7" : "#f0fdf4",
+                                  color: "#14532d",
+                                }}
+                              >
+                                {dep.timeLabel}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {card.confirmTimingDepartures.length > 0 && (
                       <div style={{ marginBottom: 10 }}>
                         <span
                           style={{
@@ -448,7 +597,7 @@ export function JuneauNormalizedSupplierFeedSection({
                           Available departure times
                         </span>
                         <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                          {primaryDepartures.map((dep) => {
+                          {card.confirmTimingDepartures.map((dep) => {
                             const selected = activeDep?.selectionKey === dep.selectionKey;
                             return (
                               <button
