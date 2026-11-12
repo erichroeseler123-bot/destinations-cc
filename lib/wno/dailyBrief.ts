@@ -1,7 +1,10 @@
-import "server-only";
-
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { appendCorridorEventDurably, listRecentCorridorEvents } from "@/lib/dcc/telemetry/corridorEvents";
+import {
+  isDeliverableMxRecipientAddress,
+  resolveSafeWnoFrom,
+  resolveSafeWnoReplyTo,
+} from "@/lib/mailer/brands";
 import { createResendClient, getResendApiKey } from "@/lib/mailer/resendClient";
 
 const WNO_BASE_URL = "https://www.welcometoneworleanstours.com";
@@ -52,7 +55,11 @@ export function localHour(date = new Date()) {
 function metadataEmail(metadata: unknown) {
   if (!metadata || typeof metadata !== "object") return undefined;
   const email = (metadata as Record<string, unknown>).email;
-  return typeof email === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email.toLowerCase() : undefined;
+  if (typeof email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return undefined;
+  }
+  const normalized = email.toLowerCase();
+  return isDeliverableMxRecipientAddress(normalized) ? normalized : undefined;
 }
 
 export async function listActiveSubscribers(): Promise<Subscriber[]> {
@@ -190,17 +197,52 @@ function buildBrief(context: LiveContext, email: string) {
   return { subject: subjectLead, html };
 }
 
+type DailyBriefDependenciesForTests = {
+  resendClient?: {
+    resend: {
+      emails: {
+        send: (payload: Record<string, unknown>) => Promise<{
+          data?: { id?: string } | null;
+          error?: { message?: string } | null;
+        }>;
+      };
+    };
+    source: "DCC_RESEND_API_KEY" | "RESEND_API_KEY";
+  } | null;
+  liveContext?: () => Promise<LiveContext>;
+  subscribers?: () => Promise<Subscriber[]>;
+  alreadySentToday?: (email: string) => Promise<boolean>;
+  recordSent?: (email: string, dateKey: string, messageId: string, signupSource?: string) => Promise<void>;
+};
+
+let dailyBriefTestOverrides: DailyBriefDependenciesForTests | null = null;
+
+export function setWnoDailyBriefOverridesForTests(
+  overrides: DailyBriefDependenciesForTests | null,
+): void {
+  dailyBriefTestOverrides = overrides;
+}
+
 export async function sendDailyBriefs() {
-  const clientInfo = createResendClient();
+  const clientInfo =
+    dailyBriefTestOverrides && "resendClient" in dailyBriefTestOverrides
+      ? dailyBriefTestOverrides.resendClient
+      : createResendClient();
   if (!clientInfo) {
     throw new Error("Resend API key is not configured (neither DCC_RESEND_API_KEY nor RESEND_API_KEY found)");
   }
   const { resend, source: keySource } = clientInfo;
   console.info("Initializing WNO daily brief send", { keySource });
 
-  const context = await getLiveContext();
-  const subscribers = await listActiveSubscribers();
+  const context = dailyBriefTestOverrides?.liveContext
+    ? await dailyBriefTestOverrides.liveContext()
+    : await getLiveContext();
+  const subscribers = dailyBriefTestOverrides?.subscribers
+    ? await dailyBriefTestOverrides.subscribers()
+    : await listActiveSubscribers();
   const dateKey = localDateKey();
+  const safeFrom = resolveSafeWnoFrom(process.env);
+  const safeReplyTo = resolveSafeWnoReplyTo(process.env);
   const result: { subscribers: number; sent: number; skipped: number; failed: number; localDate: string; keySource: string; lastError?: string } = {
     subscribers: subscribers.length,
     sent: 0,
@@ -211,15 +253,23 @@ export async function sendDailyBriefs() {
   };
 
   for (const subscriber of subscribers) {
-    if (await alreadySentToday(subscriber.email)) {
+    if (!isDeliverableMxRecipientAddress(subscriber.email)) {
+      result.skipped += 1;
+      continue;
+    }
+
+    const alreadySent = dailyBriefTestOverrides?.alreadySentToday
+      ? await dailyBriefTestOverrides.alreadySentToday(subscriber.email)
+      : await alreadySentToday(subscriber.email);
+    if (alreadySent) {
       result.skipped += 1;
       continue;
     }
 
     const brief = buildBrief(context, subscriber.email);
     const { data, error } = await resend.emails.send({
-      from: process.env.MAIL_FROM_WNO || "Welcome to New Orleans Tours <updates@destinationcommandcenter.com>",
-      replyTo: process.env.MAIL_REPLY_TO_WNO || "help@welcometoneworleanstours.com",
+      from: safeFrom,
+      replyTo: safeReplyTo,
       to: subscriber.email,
       subject: brief.subject,
       html: brief.html,
@@ -237,17 +287,26 @@ export async function sendDailyBriefs() {
       continue;
     }
 
-    await appendCorridorEventDurably({
-      corridor_id: CORRIDOR_ID,
-      event_name: "page_viewed",
-      subtype: SENT_SUBTYPE,
-      metadata: {
-        email: subscriber.email,
-        local_date: dateKey,
-        message_id: data.id,
-        signup_source: subscriber.signupSource,
-      },
-    });
+    if (dailyBriefTestOverrides?.recordSent) {
+      await dailyBriefTestOverrides.recordSent(
+        subscriber.email,
+        dateKey,
+        data.id,
+        subscriber.signupSource,
+      );
+    } else {
+      await appendCorridorEventDurably({
+        corridor_id: CORRIDOR_ID,
+        event_name: "page_viewed",
+        subtype: SENT_SUBTYPE,
+        metadata: {
+          email: subscriber.email,
+          local_date: dateKey,
+          message_id: data.id,
+          signup_source: subscriber.signupSource,
+        },
+      });
+    }
     result.sent += 1;
   }
 

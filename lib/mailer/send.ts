@@ -1,9 +1,13 @@
-import "server-only";
-
 import { createHash } from "node:crypto";
 import type { ReactElement } from "react";
 import { Resend } from "resend";
-import { brands, type BrandId } from "@/lib/mailer/brands";
+import {
+  brands,
+  extractEmailAddress,
+  isDeliverableMxRecipientAddress,
+  resolveSafeDccOwnerRecipients,
+  type BrandId,
+} from "@/lib/mailer/brands";
 import { createResendClient } from "@/lib/mailer/resendClient";
 
 type MissionTemplateFactory<TContext extends Record<string, unknown>> = (
@@ -31,8 +35,20 @@ export type SendMissionNotificationInput<TContext extends Record<string, unknown
 export function parseEmailList(value?: string): string[] {
   return (value || "")
     .split(",")
-    .map((item) => item.trim())
-    .filter(Boolean);
+    .map((item) => extractEmailAddress(item))
+    .filter((item): item is string => Boolean(item && isDeliverableMxRecipientAddress(item)));
+}
+
+let resendClientFactoryOverrideForTests:
+  | (() => { resend: Pick<Resend, "emails">; source: "DCC_RESEND_API_KEY" | "RESEND_API_KEY" } | null)
+  | null = null;
+
+export function setSendMissionResendFactoryForTests(
+  factory:
+    | (() => { resend: Pick<Resend, "emails">; source: "DCC_RESEND_API_KEY" | "RESEND_API_KEY" } | null)
+    | null,
+): void {
+  resendClientFactoryOverrideForTests = factory;
 }
 
 function hashRecipients(recipients: string[]): string {
@@ -58,7 +74,7 @@ export async function sendMissionNotification<TContext extends Record<string, un
   subject,
 }: SendMissionNotificationInput<TContext>): Promise<MissionNotificationResult> {
   const brand = brands[brandId];
-  const to = parseEmailList(process.env.EARTHOS_APPROVAL_TO);
+  const to = resolveSafeDccOwnerRecipients(process.env);
   const cc = parseEmailList(process.env.EARTHOS_APPROVAL_CC);
   const bcc = parseEmailList(process.env.EARTHOS_APPROVAL_BCC);
   const recipientsHash = hashRecipients([...to, ...cc, ...bcc]);
@@ -70,7 +86,9 @@ export async function sendMissionNotification<TContext extends Record<string, un
     recipientsHash,
   };
 
-  const resendInfo = createResendClient();
+  const resendInfo = resendClientFactoryOverrideForTests
+    ? resendClientFactoryOverrideForTests()
+    : createResendClient();
   if (!resendInfo) {
     return {
       success: false,

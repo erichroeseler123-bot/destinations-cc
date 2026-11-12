@@ -4,8 +4,22 @@ import {
   persistDurableTransactionalSubmission,
   resolveRuntimeEnvironmentTag,
 } from "@/lib/dcc/storage/durableTransactionalStore";
+import {
+  extractEmailAddress,
+  isDeliverableMxRecipientAddress,
+  resolveSafeSomersetFrom,
+  resolveSafeSomersetRecipients,
+} from "@/lib/mailer/brands";
 
 export const runtime = "nodejs";
+
+let customSomersetResendFetchForTests: typeof fetch | null = null;
+
+export function setSomersetQuoteResendFetchForTests(
+  fn: typeof fetch | null,
+): void {
+  customSomersetResendFetchForTests = fn;
+}
 
 interface QuoteRequestBody {
   name?: string;
@@ -40,28 +54,27 @@ async function maybeSendSomersetDispatchEmail(record: {
   environment: string;
   isTest: boolean;
 }): Promise<boolean> {
-  const resendKey = (process.env.RESEND_API_KEY || "").trim();
-  const fromEmail = (
-    process.env.SOMERSET_FROM_EMAIL ||
-    process.env.PARR_PRIVATE_FROM_EMAIL ||
-    process.env.ARGO_FROM_EMAIL ||
+  const resendKey = (
+    process.env.DCC_RESEND_API_KEY ||
+    process.env.RESEND_API_KEY ||
     ""
   ).trim();
-  const toEmail = (
-    process.env.SOMERSET_DISPATCH_TO_EMAIL ||
-    process.env.EARTHOS_APPROVAL_TO ||
-    ""
-  )
-    .split(",")
-    .map((v) => v.trim())
-    .filter(Boolean);
+  const fromEmail = resolveSafeSomersetFrom(process.env);
+  const toEmail = resolveSafeSomersetRecipients(process.env, record.email);
 
   if (!resendKey || !fromEmail || toEmail.length === 0) {
     return false;
   }
 
+  const candidateReplyTo = extractEmailAddress(record.email);
+  const safeReplyTo =
+    candidateReplyTo && isDeliverableMxRecipientAddress(candidateReplyTo)
+      ? candidateReplyTo
+      : undefined;
+  const fetchImpl = customSomersetResendFetchForTests || fetch;
+
   try {
-    const res = await fetch("https://api.resend.com/emails", {
+    const res = await fetchImpl("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${resendKey}`,
@@ -70,7 +83,7 @@ async function maybeSendSomersetDispatchEmail(record: {
       body: JSON.stringify({
         from: fromEmail,
         to: toEmail,
-        reply_to: record.email || undefined,
+        ...(safeReplyTo ? { reply_to: safeReplyTo } : {}),
         subject: `[Somerset Quote${record.isTest ? " TEST" : ""}] ${record.artistOrEvent} — ${record.name} (${record.id})`,
         text: [
           `Quote ID: ${record.id}`,

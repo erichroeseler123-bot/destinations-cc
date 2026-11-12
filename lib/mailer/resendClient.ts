@@ -1,6 +1,4 @@
-﻿import "server-only";
-
-import { Resend } from "resend";
+﻿import { Resend } from "resend";
 
 export type ResolvedResendKey = {
   key: string;

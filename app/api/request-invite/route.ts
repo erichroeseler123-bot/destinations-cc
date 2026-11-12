@@ -6,9 +6,23 @@ import {
   readDurableTransactionalSubmission,
   resolveRuntimeEnvironmentTag,
 } from "@/lib/dcc/storage/durableTransactionalStore";
+import {
+  extractEmailAddress,
+  isDeliverableMxRecipientAddress,
+  resolveSafeDccOwnerRecipients,
+  resolveSafeDccSystemFrom,
+} from "@/lib/mailer/brands";
 import { redis } from "@/lib/redis";
 
 export const runtime = "nodejs";
+
+let customInviteResendFetchForTests: typeof fetch | null = null;
+
+export function setRequestInviteResendFetchForTests(
+  fn: typeof fetch | null,
+): void {
+  customInviteResendFetchForTests = fn;
+}
 
 function isAuthorizedAdminInviteReader(request: Request): boolean {
   const bearer = (request.headers.get("authorization") || "")
@@ -57,23 +71,25 @@ async function maybeSendInviteNotificationEmail(record: {
     process.env.RESEND_API_KEY ||
     ""
   ).trim();
-  const fromEmail = (
-    process.env.MAIL_FROM_DCC ||
-    process.env.PARR_PRIVATE_FROM_EMAIL ||
-    process.env.ARGO_FROM_EMAIL ||
-    ""
-  ).trim();
-  const toEmails = (process.env.EARTHOS_APPROVAL_TO || "")
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
+  const fromEmail = resolveSafeDccSystemFrom(process.env);
+  const toEmails = resolveSafeDccOwnerRecipients(process.env, record.email);
 
   if (!resendKey || !fromEmail || toEmails.length === 0) {
     return false;
   }
 
+  const candidateReplyTo = extractEmailAddress(record.email);
+  const safeReplyTo =
+    candidateReplyTo && isDeliverableMxRecipientAddress(candidateReplyTo)
+      ? candidateReplyTo
+      : undefined;
+  const isUnmonitoredDccSender = /@destinationcommandcenter\.com>?$/i.test(
+    fromEmail,
+  );
+  const fetchImpl = customInviteResendFetchForTests || fetch;
+
   try {
-    const res = await fetch("https://api.resend.com/emails", {
+    const res = await fetchImpl("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${resendKey}`,
@@ -82,7 +98,7 @@ async function maybeSendInviteNotificationEmail(record: {
       body: JSON.stringify({
         from: fromEmail,
         to: toEmails,
-        reply_to: record.email || undefined,
+        ...(safeReplyTo ? { reply_to: safeReplyTo } : {}),
         subject: `[DCC Request Invite${record.isTest ? " TEST" : ""}] ${record.happeningTitle || record.company || record.name || record.id}`,
         text: [
           `Invite ID: ${record.id}`,
@@ -93,7 +109,12 @@ async function maybeSendInviteNotificationEmail(record: {
           `Email: ${record.email || "Not provided"}`,
           `Phone: ${record.phone || "Not provided"}`,
           `Notes: ${record.notes || "None"}`,
-        ].join("\n"),
+          isUnmonitoredDccSender
+            ? `\n---\nAutomated internal owner alert dispatched via ${fromEmail} (outbound-only system address; not a monitored reply mailbox).`
+            : null,
+        ]
+          .filter(Boolean)
+          .join("\n"),
       }),
     });
     return res.ok;

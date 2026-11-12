@@ -14,6 +14,12 @@ import {
   type EarthosEnvironmentScope,
   type TravelReferenceNode,
 } from "@/lib/dcc/travelReference";
+import {
+  extractEmailAddress,
+  isDeliverableMxRecipientAddress,
+  resolveSafeDccOwnerRecipients,
+  resolveSafeDccSystemFrom,
+} from "@/lib/mailer/brands";
 
 export type FactualErrorReportStatus = "open" | "triaged" | "resolved" | "dismissed";
 
@@ -233,6 +239,22 @@ function parseReportFromFindingRow(
   };
 }
 
+type FactualErrorResendSender = (payload: {
+  from: string;
+  to: string[];
+  replyTo?: string;
+  subject: string;
+  text: string;
+}) => Promise<{ data?: { id?: string | null } | null; error?: { message?: string } | null }>;
+
+let factualErrorResendSenderOverrideForTests: FactualErrorResendSender | null = null;
+
+export function setFactualErrorResendSenderForTests(
+  sender: FactualErrorResendSender | null,
+): void {
+  factualErrorResendSenderOverrideForTests = sender;
+}
+
 async function sendOptionalFactualErrorNotification(
   report: FactualErrorReportRecord,
   options: {
@@ -258,13 +280,16 @@ async function sendOptionalFactualErrorNotification(
       process.env.RESEND_API_KEY ||
       ""
     ).trim();
-    const approvalTo = (process.env.EARTHOS_APPROVAL_TO || "")
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
-    const mailFrom = (
-      process.env.MAIL_FROM_DCC || "DCC Ops <ops@destinationcommandcenter.com>"
-    ).trim();
+    const candidateContactEmail = extractEmailAddress(report.contactInfo);
+    const safeReplyTo =
+      candidateContactEmail && isDeliverableMxRecipientAddress(candidateContactEmail)
+        ? candidateContactEmail
+        : undefined;
+    const approvalTo = resolveSafeDccOwnerRecipients(
+      process.env,
+      safeReplyTo || null,
+    );
+    const mailFrom = resolveSafeDccSystemFrom(process.env);
 
     if (!resendKey || approvalTo.length === 0 || !mailFrom) {
       return {
@@ -274,11 +299,13 @@ async function sendOptionalFactualErrorNotification(
       };
     }
 
-    const { Resend } = await import("resend");
-    const resend = new Resend(resendKey);
-    const response = await resend.emails.send({
+    const isUnmonitoredDccSender = /@destinationcommandcenter\.com>?$/i.test(
+      mailFrom,
+    );
+    const payload = {
       from: mailFrom,
       to: approvalTo,
+      ...(safeReplyTo ? { replyTo: safeReplyTo } : {}),
       subject: `[DCC Factual Report] ${report.pagePath} — ${report.disputedClaim.slice(0, 72)}`,
       text: [
         `DCC Factual-Error Report (${report.reportId})`,
@@ -290,8 +317,21 @@ async function sendOptionalFactualErrorNotification(
         `Supporting URL: ${report.sourceUrl || "none provided"}`,
         `Contact: ${report.contactInfo || "anonymous"}`,
         `Submitted At: ${report.submittedAt}`,
-      ].join("\n"),
-    });
+        isUnmonitoredDccSender
+          ? `\n---\nAutomated internal owner alert dispatched via ${mailFrom} (outbound-only system address; not a monitored reply mailbox).`
+          : null,
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    };
+
+    const response = factualErrorResendSenderOverrideForTests
+      ? await factualErrorResendSenderOverrideForTests(payload)
+      : await (async () => {
+          const { Resend } = await import("resend");
+          const resend = new Resend(resendKey);
+          return resend.emails.send(payload);
+        })();
 
     if (response.error) {
       return {
