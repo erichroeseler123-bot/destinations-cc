@@ -258,25 +258,38 @@ function parseMetadataObject(raw: unknown): Record<string, unknown> {
   return {};
 }
 
-function parseOwnerAlertRecipients(customerEmail: string): string[] {
-  const raw = (
-    process.env.CP_OWNER_ALERT_TO_EMAIL ||
-    process.env.CP_CONCIERGE_ALERT_TO_EMAIL ||
-    process.env.EARTHOS_APPROVAL_TO ||
-    ""
-  ).trim();
-  if (!raw) return [];
+function parseOwnerAlertRecipients(
+  customerEmail: string,
+  upstreamDestinationInbox?: string | null,
+): string[] {
+  const candidateSources = [
+    process.env.CP_OWNER_ALERT_TO_EMAIL,
+    process.env.CP_CONCIERGE_ALERT_TO_EMAIL,
+    upstreamDestinationInbox,
+    process.env.EARTHOS_APPROVAL_TO,
+    "concierge@cruisepromenade.com",
+  ];
   const lowerCustomer = customerEmail.trim().toLowerCase();
-  return raw
-    .split(",")
-    .map((entry) => entry.trim())
-    .filter(
-      (entry) =>
-        entry.length > 0 &&
-        EMAIL_RE.test(entry) &&
-        entry.toLowerCase() !== lowerCustomer &&
-        !/destinationcommandcenter\.com$/i.test(entry), // 0 MX guard
-    );
+  for (const source of candidateSources) {
+    const raw = (source || "").trim();
+    if (!raw) continue;
+    const valid = raw
+      .split(",")
+      .map((entry) => entry.trim())
+      .filter(
+        (entry) =>
+          entry.length > 0 &&
+          EMAIL_RE.test(entry) &&
+          entry.toLowerCase() !== lowerCustomer &&
+          !/(?:^|@)(?:destinationcommandcenter\.com|destinations-cc\.com)$/i.test(
+            entry,
+          ), // 0-MX / unregistered domain guard
+      );
+    if (valid.length > 0) {
+      return valid;
+    }
+  }
+  return [];
 }
 
 async function maybeSendOwnerAlertEmailOnFirstIngest(params: {
@@ -296,6 +309,7 @@ async function maybeSendOwnerAlertEmailOnFirstIngest(params: {
   privateTransport: string | boolean | null;
   negotiatedRates: string | boolean | null;
   notes: string | null;
+  upstreamDestinationInbox?: string | null;
 }): Promise<{
   attempted: boolean;
   delivered: boolean;
@@ -308,7 +322,10 @@ async function maybeSendOwnerAlertEmailOnFirstIngest(params: {
     process.env.RESEND_API_KEY ||
     ""
   ).trim();
-  const ownerRecipients = parseOwnerAlertRecipients(params.customerEmail);
+  const ownerRecipients = parseOwnerAlertRecipients(
+    params.customerEmail,
+    params.upstreamDestinationInbox,
+  );
   const fromEmail = (
     process.env.MAIL_FROM_CP ||
     process.env.MAIL_FROM_DCC ||
@@ -821,6 +838,7 @@ export async function POST(request: Request) {
       privateTransport,
       negotiatedRates,
       notes,
+      upstreamDestinationInbox: normalizeTextField(body.destinationInbox, 160),
     });
     intendedDestination = emailAttempt.destination;
     if (emailAttempt.delivered) {
@@ -1291,7 +1309,10 @@ export async function GET(request: Request) {
     currentDeployTestFrom ||
     "Cruise Promenade <concierge@cruisepromenade.com>";
 
-  const ownerRecipients = parseOwnerAlertRecipients("");
+  const ownerRecipients = parseOwnerAlertRecipients(
+    "",
+    "concierge@cruisepromenade.com",
+  );
   const maskedRecipients = ownerRecipients.map((email) => {
     const [local, dom] = email.split("@");
     return `${(local || "").slice(0, 3)}***@${dom || ""}`;
