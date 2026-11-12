@@ -556,6 +556,74 @@ export default async function OwnerControlCenterPage() {
                 </div>
               </div>
             </div>
+
+            {/* Cruise Promenade 8-Stage Conversion Funnel & Uninvited Board Starts Watchpoint */}
+            <div
+              data-testid="cp-8stage-conversion-funnel"
+              className="rounded-xl border border-cyan-400/25 bg-black/40 p-4 space-y-3"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <span className="text-xs font-black uppercase tracking-wider text-cyan-300">
+                    Cruise Promenade 8-Stage Conversion Funnel ({q6.cruisePromenadeLaunch.conversionFunnel28d.windowLabel})
+                  </span>
+                  <p className="mt-0.5 text-[11px] text-zinc-400">
+                    Zero-PII telemetry across verified sailing pages, board creation, invite sharing, guest participation, and private group inquiries ({q6.cruisePromenadeLaunch.conversionFunnel28d.excludedSyntheticEvents28d} QA/test events excluded).
+                  </p>
+                </div>
+                <span
+                  data-testid="cp-uninvited-starts-badge"
+                  className={`rounded-full border px-2.5 py-0.5 font-mono text-[11px] font-bold ${
+                    q6.cruisePromenadeLaunch.conversionFunnel28d.startedWithoutInvitingCount > 0
+                      ? "border-amber-400/45 bg-amber-500/15 text-amber-200"
+                      : "border-white/15 bg-white/5 text-zinc-300"
+                  }`}
+                >
+                  Started w/o inviting:{" "}
+                  {q6.cruisePromenadeLaunch.conversionFunnel28d.startedWithoutInvitingCount}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-8">
+                {q6.cruisePromenadeLaunch.conversionFunnel28d.stages.map((st) => (
+                  <div
+                    key={st.eventName}
+                    data-testid={`cp-funnel-stage-${st.eventName}`}
+                    className="rounded-lg border border-white/10 bg-white/[0.03] p-2.5 flex flex-col justify-between"
+                  >
+                    <div className="text-[10px] font-semibold leading-tight text-zinc-300">
+                      {st.label}
+                    </div>
+                    <div className="mt-1.5">
+                      <div className="font-mono text-base font-black text-white">
+                        {st.uniqueSessionsCount}
+                      </div>
+                      <div className="font-mono text-[10px] text-zinc-400">
+                        {st.eventCount} evt
+                        {st.conversionFromPriorPct !== null
+                          ? ` · ${st.conversionFromPriorPct}%`
+                          : ""}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {q6.cruisePromenadeLaunch.conversionFunnel28d.recentUninvitedStarts.length > 0 ? (
+                <div
+                  data-testid="cp-uninvited-starts-list"
+                  className="rounded-lg border border-amber-400/25 bg-amber-500/[0.07] px-3 py-2 text-[11px] text-amber-100"
+                >
+                  <strong>Interview Follow-Up Queue (Started board, 0 invites copied/shared):</strong>{" "}
+                  {q6.cruisePromenadeLaunch.conversionFunnel28d.recentUninvitedStarts
+                    .map(
+                      (u) =>
+                        `${u.shareCode || "draft"} (${u.ship || "ship-tbd"} ${u.sailDate || ""})`.trim(),
+                    )
+                    .join(" · ")}
+                </div>
+              ) : null}
+            </div>
           </article>
         </section>
 

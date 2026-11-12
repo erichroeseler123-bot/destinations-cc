@@ -37,13 +37,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: false, error: "invalid_payload" }, { status: 400 });
     }
 
-    const mapped = eventName.includes("booking") || eventName.includes("checkout")
-      ? "booking_opened"
-      : eventName.includes("recommend") || eventName.includes("match") || eventName.includes("route")
-        ? "recommendation_rendered"
-        : eventName.includes("click") || eventName.includes("handoff")
-          ? "cta_clicked_primary"
-          : "page_viewed";
+    const mapped =
+      eventName === "charter_inquiry_submitted" || eventName === "group_inquiry_submitted"
+        ? "lead_captured"
+        : eventName === "board_created"
+          ? "plan_rendered"
+          : eventName === "first_guest_joined" || eventName === "first_activity_response"
+            ? "plan_modified"
+            : eventName === "start_board_selected" ||
+                eventName === "invite_link_copied_or_shared" ||
+                eventName === "charter_inquiry_opened"
+              ? "cta_clicked_primary"
+              : eventName.includes("booking") || eventName.includes("checkout")
+                ? "booking_opened"
+                : eventName.includes("recommend") || eventName.includes("match") || eventName.includes("route")
+                  ? "recommendation_rendered"
+                  : eventName.includes("click") || eventName.includes("handoff")
+                    ? "cta_clicked_primary"
+                    : "page_viewed";
 
     const context = cleanObject(body.context);
     const outcome = cleanObject(body.outcome);

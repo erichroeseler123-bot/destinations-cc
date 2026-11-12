@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getHandoffAnalyticsSnapshot } from "@/lib/dcc/handoffAnalytics";
 import { readRuntimeSignals, sweepExpiredSignals } from "@/lib/dcc/livePulse/store";
 import { listRecentProductionCorridorEvents } from "@/lib/dcc/telemetry/corridorEvents";
+import { buildCruisePromenadeConversionFunnelSummary } from "@/lib/dcc/telemetry/cruisePromenadeFunnel";
 import { listWorkflowMissions } from "@/lib/dcc/earthos/workflows/service";
 import {
   listPortfolioSupplierConnections,
@@ -146,14 +147,22 @@ export default async function PortfolioDesktopPage(props: {
   const wnoBooking = wno.filter((event: any) => event.eventName === "booking_opened");
 
   const cruise = portfolioEvents.filter((event: any) => siteOf(event) === "cruise-promenade");
-  const cruisePlannerSaves = cruise.filter((event: any) => originalName(event) === "planner_saved").length;
-  const cruisePlannerShares = cruise.filter((event: any) => originalName(event) === "planner_shared").length;
-  const cruiseSharedPlanOpens = cruise.filter(
-    (event: any) => originalName(event) === "shared_plan_visited" || originalName(event) === "shared_plan_viewed",
-  ).length;
-  const cruiseGuestRsvps = cruise.filter(
-    (event: any) => originalName(event) === "passenger_responded" || originalName(event) === "passenger_identified",
-  ).length;
+  const cpFunnel = buildCruisePromenadeConversionFunnelSummary({
+    events: windowedEvents,
+    startIso: unifiedFunnelReport.reportingWindow.startIso,
+    endIso: unifiedFunnelReport.reportingWindow.endIso,
+    windowLabel: unifiedFunnelReport.reportingWindow.label,
+  });
+  const cpStage = (name: string) =>
+    cpFunnel.stages.find((s) => s.eventName === name)?.uniqueSessionsCount ?? 0;
+  const cruiseSailingViews = cpStage("sailing_page_viewed");
+  const cruiseStartSelected = cpStage("start_board_selected");
+  const cruiseBoardsCreated = cpStage("board_created");
+  const cruiseInvitesShared = cpStage("invite_link_copied_or_shared");
+  const cruiseFirstGuestJoined = cpStage("first_guest_joined");
+  const cruiseFirstResponses = cpStage("first_activity_response");
+  const cruiseInquiriesOpened = cpStage("charter_inquiry_opened");
+  const cruiseInquiriesSubmitted = cpStage("charter_inquiry_submitted");
   const gosnoSpoke = unifiedFunnelReport.spokes.find((spoke) => spoke.siteId === "gosno");
   const gosnoConfirmedBookings =
     typeof gosnoSpoke?.providerConfirmations === "number" ? gosnoSpoke.providerConfirmations : 0;
@@ -557,15 +566,14 @@ export default async function PortfolioDesktopPage(props: {
             />
             <SiteMetricCard
               site="Cruise Promenade"
-              headline={`${cruisePlannerShares} plans shared (${cruisePlannerSaves} saved)`}
+              headline={`${cruiseBoardsCreated} boards created · ${cruiseInvitesShared} invites shared`}
               stats={[
-                `Guests opening shared plans: ${cruiseSharedPlanOpens} (guest responses: ${cruiseGuestRsvps})`,
-                `Network events: ${cruise.length}`,
-                "Planner shares, guest opens, and RSVPs flow into DCC",
+                `Top funnel: ${cruiseSailingViews} sailing views → ${cruiseStartSelected} start-board clicks → ${cruiseBoardsCreated} boards`,
+                `Activation: ${cruiseFirstGuestJoined} first guest joined → ${cruiseFirstResponses} first RSVP (${cpFunnel.startedWithoutInvitingCount} started w/o inviting)`,
+                `Group inquiries: ${cruiseInquiriesOpened} opened → ${cruiseInquiriesSubmitted} submitted (${cruise.length} raw network events)`,
               ]}
-              href="https://cruisepromenade.com/internal/dashboard/"
-              external
-              source="DCC portfolio telemetry (investor demand funnel)"
+              href="/admin"
+              source="DCC 8-stage Cruise Promenade conversion funnel (QA excluded)"
             />
             <SiteMetricCard
               site="Vibing Around"

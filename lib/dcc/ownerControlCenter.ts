@@ -30,6 +30,12 @@ import {
   getOperatorInboxSnapshot,
   type UnifiedOperatorInboxResult,
 } from "@/lib/dcc/operatorInbox";
+import { listRecentProductionCorridorEvents } from "@/lib/dcc/telemetry/corridorEvents";
+import {
+  buildCruisePromenadeConversionFunnelSummary,
+  type CruisePromenadeConversionFunnelSummary,
+} from "@/lib/dcc/telemetry/cruisePromenadeFunnel";
+import type { DccCorridorEventRow } from "@/lib/db/schema";
 
 export type RemoteOwnerSummaryStatus = "live" | "pending_deploy" | "unconfigured" | "error";
 
@@ -245,6 +251,7 @@ export interface DailyBusinessCockpit {
       plannersWithSplitsCount: number;
       groupsLaunchpadUrl: "https://cruisepromenade.com/groups";
       statusSummary: string;
+      conversionFunnel28d: CruisePromenadeConversionFunnelSummary;
     };
     directOperators3Markets: {
       marketsWithActiveApiBookableCount: number;
@@ -860,6 +867,7 @@ export interface BuildOwnerControlCenterOptions {
   env?: Record<string, string | undefined>;
   fetchImpl?: typeof fetch;
   inboxSnapshotOverride?: UnifiedOperatorInboxResult;
+  corridorEventsOverride?: ReadonlyArray<Partial<DccCorridorEventRow>>;
 }
 
 export async function buildOwnerControlCenterSnapshot(
@@ -887,6 +895,7 @@ export async function buildOwnerControlCenterSnapshot(
     parrOps,
     dccContextsCount,
     onboardingQueue,
+    corridorEvents,
   ] = await Promise.all([
     options?.inboxSnapshotOverride
       ? Promise.resolve(options.inboxSnapshotOverride)
@@ -915,6 +924,11 @@ export async function buildOwnerControlCenterSnapshot(
     env.DCC_DISABLE_NEON_COMMERCE === "1"
       ? Promise.resolve([])
       : listOperatorOnboardingReviewQueue({ limit: 50 }).catch(() => []),
+    options?.corridorEventsOverride
+      ? Promise.resolve(options.corridorEventsOverride)
+      : env.DCC_DISABLE_NEON_COMMERCE === "1"
+        ? Promise.resolve([])
+        : listRecentProductionCorridorEvents(5000).catch(() => []),
   ]);
 
   const moderationAlertEmailsConfigured = Boolean(
@@ -1631,6 +1645,12 @@ export async function buildOwnerControlCenterSnapshot(
         plannersWithSplitsCount: cpSummary.plannersWithSplitsCount,
         groupsLaunchpadUrl: "https://cruisepromenade.com/groups",
         statusSummary: `${cpOrganizersCount}/3 organizers · ${cpSummary.trackedGuestsCount}/50 passengers · ${cpSummary.plannersWithSplitsCount} split alert(s)`,
+        conversionFunnel28d: buildCruisePromenadeConversionFunnelSummary({
+          events: corridorEvents,
+          startIso: funnel.reportingWindow.startIso,
+          endIso: funnel.reportingWindow.endIso,
+          windowLabel: funnel.reportingWindow.label,
+        }),
       },
       directOperators3Markets: {
         marketsWithActiveApiBookableCount: directMarkets.filter(
