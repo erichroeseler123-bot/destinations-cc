@@ -589,6 +589,15 @@ export function reconcileRezgoItemsAcrossSurfaces(params: {
     } else if (APPROVED_JUNEAU_5857_VIATOR_CATALOG[uidUpper]) {
       matchConfidence = "high_exact_code";
       matchedViatorCode = uidUpper;
+    } else if (/six\s*passenger|private\s*charter|\bcharter\b/i.test(combinedTitle)) {
+      // COM 395337 ("Six Passenger Whale Watch Charter") is a private 6-pax charter,
+      // NOT the standard 40-passenger Ultimate Juneau Whale Watch (5857P23).
+      matchConfidence = "unmatched_rezgo_only";
+      matchedViatorCode = null;
+    } else if (/city\s*trolley/i.test(combinedTitle) && !/mendenhall|glacier/i.test(combinedTitle)) {
+      // COM 342080 ("City Trolley Tour", 1 hour, $50) is distinct from the 3-hour Mendenhall Glacier Shuttle/Trolley (5857SHUTTLE).
+      matchConfidence = "unmatched_rezgo_only";
+      matchedViatorCode = null;
     } else if (/crab|tracy/i.test(combinedTitle) && /whale/i.test(combinedTitle)) {
       matchConfidence = "medium_title_and_operator";
       matchedViatorCode = "5857P31";
@@ -1045,52 +1054,138 @@ export async function buildNormalizedJuneauSupplierFeed(options?: {
     recByUidAndOption.set(`${r.rezgoUid}|${r.rezgoOptionName || ""}`, r);
   }
 
-  const normalizedTours: NormalizedJuneauSupplierTour[] = inspection.items.map((item, idx) => {
-    const rec = recByUidAndOption.get(`${item.uid}|${item.optionName || ""}`);
-    const matchedCode = rec?.matchedDccCatalogProductCode ?? null;
-    const approvedSpec = matchedCode ? APPROVED_JUNEAU_5857_VIATOR_CATALOG[matchedCode] : null;
-    const spots =
-      item.availableSpotsOnSearchDate !== undefined && item.availableSpotsOnSearchDate !== null
-        ? item.availableSpotsOnSearchDate
-        : null;
-    const overallSpots =
-      item.availabilityOverall !== undefined && item.availabilityOverall !== null
-        ? item.availabilityOverall
-        : null;
+  // Consolidate per-departure option UIDs by parent Rezgo product (`com` + `itemName`)
+  // so downstream consumers (Last Frontier Shore Excursions) receive one clean normalized
+  // product per tour with all scheduled departure times, UIDs, and aggregate spot counts.
+  const grouped = new Map<
+    string,
+    {
+      primaryUid: string;
+      com: string | null;
+      optionUids: string[];
+      title: string;
+      optionLabels: string[];
+      durationLabel: string | null;
+      durationMinutes: number | null;
+      adultPrices: number[];
+      childPrices: number[];
+      currency: string;
+      departureSet: Set<string>;
+      startingLocation: string | null;
+      spotsList: number[];
+      overallList: number[];
+      rec: RezgoProductCrossSurfaceReconciliation | undefined;
+    }
+  >();
 
-    return {
-      normalizedTourId: `dcc:rezgo:juneau-tours:${item.uid || idx + 1}`,
-      rezgoUid: item.uid,
-      rezgoCom: item.com,
-      operatorId: "juneau-tours-whale-watch",
-      operatorName: inspection.companyName || "Juneau Tours & Whale Watch",
-      verifiedRezgoCompanyName: inspection.companyName,
-      title: item.itemName,
-      optionName: item.optionName,
-      activityCategory: classifyJuneauTourActivity(item.itemName, item.optionName),
-      durationLabel: item.duration,
-      durationMinutes: item.durationMinutes ?? approvedSpec?.durationMinutes ?? null,
-      adultPriceUsd: parsePositivePrice(item.adultPrice),
-      childPriceUsd: parsePositivePrice(item.childPrice),
-      currency: item.currency || inspection.currency || "USD",
-      departureTimes: item.departureTimes || (item.departureTime ? [item.departureTime] : []),
-      startingLocation: item.startingLocation,
-      dateChecked: inspection.searchDate ?? null,
-      availableSpots: spots ?? overallSpots,
-      availabilitySemantics:
-        spots !== null
-          ? "rezgo_date_search_spots"
-          : overallSpots !== null
-            ? "rezgo_catalog_overall"
-            : "unconfirmed_check_provider",
-      matchConfidence: rec?.matchConfidence ?? "unmatched_rezgo_only",
-      matchedViatorProductCode: matchedCode,
-      approvedFallbackViatorUrl: approvedSpec?.canonicalViatorUrl ?? null,
-      liveDirectRezgoCheckoutEnabled: false,
-      isolatedSecondaryProperty: true,
-      influencesPrimaryDccRanking: false,
-    };
-  });
+  for (let idx = 0; idx < inspection.items.length; idx++) {
+    const item = inspection.items[idx];
+    const rec = recByUidAndOption.get(`${item.uid}|${item.optionName || ""}`);
+    const groupKey = `${item.com || item.uid}|${item.itemName}`;
+    let entry = grouped.get(groupKey);
+    if (!entry) {
+      entry = {
+        primaryUid: item.com || item.uid || String(idx + 1),
+        com: item.com,
+        optionUids: [],
+        title: item.itemName,
+        optionLabels: [],
+        durationLabel: item.duration,
+        durationMinutes: item.durationMinutes ?? null,
+        adultPrices: [],
+        childPrices: [],
+        currency: item.currency || inspection.currency || "USD",
+        departureSet: new Set<string>(),
+        startingLocation: item.startingLocation,
+        spotsList: [],
+        overallList: [],
+        rec,
+      };
+      grouped.set(groupKey, entry);
+    }
+    if (item.uid && !entry.optionUids.includes(item.uid)) {
+      entry.optionUids.push(item.uid);
+    }
+    if (item.optionName && !entry.optionLabels.includes(item.optionName)) {
+      entry.optionLabels.push(item.optionName);
+    }
+    const adultNum = parsePositivePrice(item.adultPrice);
+    if (adultNum !== null) entry.adultPrices.push(adultNum);
+    const childNum = parsePositivePrice(item.childPrice);
+    if (childNum !== null) entry.childPrices.push(childNum);
+    for (const dep of item.departureTimes || (item.departureTime ? [item.departureTime] : [])) {
+      if (dep) entry.departureSet.add(dep);
+    }
+    if (!entry.startingLocation && item.startingLocation) {
+      entry.startingLocation = item.startingLocation;
+    }
+    if (item.availableSpotsOnSearchDate !== undefined && item.availableSpotsOnSearchDate !== null) {
+      entry.spotsList.push(item.availableSpotsOnSearchDate);
+    }
+    if (item.availabilityOverall !== undefined && item.availabilityOverall !== null) {
+      entry.overallList.push(item.availabilityOverall);
+    }
+  }
+
+  const normalizedTours: NormalizedJuneauSupplierTour[] = Array.from(grouped.values()).map(
+    (entry) => {
+      const matchedCode = entry.rec?.matchedDccCatalogProductCode ?? null;
+      const approvedSpec = matchedCode ? APPROVED_JUNEAU_5857_VIATOR_CATALOG[matchedCode] : null;
+      const sortedDepartures = Array.from(entry.departureSet).sort();
+      const minAdult =
+        entry.adultPrices.length > 0 ? Math.min(...entry.adultPrices) : null;
+      const minChild =
+        entry.childPrices.length > 0 ? Math.min(...entry.childPrices) : null;
+      const totalDateSpots =
+        entry.spotsList.length > 0
+          ? entry.spotsList.reduce((acc, v) => acc + v, 0)
+          : null;
+      const totalOverallSpots =
+        entry.overallList.length > 0
+          ? entry.overallList.reduce((acc, v) => acc + v, 0)
+          : null;
+
+      const optionSummary =
+        entry.optionLabels.length === 1
+          ? entry.optionLabels[0]
+          : entry.optionLabels.length > 1
+            ? `${entry.optionLabels.length} daily departure options`
+            : null;
+
+      return {
+        normalizedTourId: `dcc:rezgo:juneau-tours:${entry.primaryUid}`,
+        rezgoUid: entry.optionUids[0] || entry.primaryUid,
+        rezgoCom: entry.com,
+        operatorId: "juneau-tours-whale-watch",
+        operatorName: inspection.companyName || "Juneau Tours & Whale Watch",
+        verifiedRezgoCompanyName: inspection.companyName,
+        title: entry.title,
+        optionName: optionSummary,
+        activityCategory: classifyJuneauTourActivity(entry.title, optionSummary),
+        durationLabel: entry.durationLabel,
+        durationMinutes: entry.durationMinutes ?? approvedSpec?.durationMinutes ?? null,
+        adultPriceUsd: minAdult,
+        childPriceUsd: minChild,
+        currency: entry.currency,
+        departureTimes: sortedDepartures,
+        startingLocation: entry.startingLocation,
+        dateChecked: inspection.searchDate ?? null,
+        availableSpots: totalDateSpots ?? totalOverallSpots,
+        availabilitySemantics:
+          totalDateSpots !== null
+            ? "rezgo_date_search_spots"
+            : totalOverallSpots !== null
+              ? "rezgo_catalog_overall"
+              : "unconfirmed_check_provider",
+        matchConfidence: entry.rec?.matchConfidence ?? "unmatched_rezgo_only",
+        matchedViatorProductCode: matchedCode,
+        approvedFallbackViatorUrl: approvedSpec?.canonicalViatorUrl ?? null,
+        liveDirectRezgoCheckoutEnabled: false,
+        isolatedSecondaryProperty: true,
+        influencesPrimaryDccRanking: false,
+      };
+    },
+  );
 
   return {
     ok: inspection.ok,
