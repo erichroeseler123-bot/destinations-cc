@@ -81,9 +81,20 @@ function readBearerToken(request: Request): string {
 
 function authenticateCpServiceRequest(
   request: Request,
+  options?: { allowInternalKey?: boolean },
 ): { ok: true } | { ok: false; status: 401 | 503; error: string } {
-  const configuredSecret = (process.env.DCC_CP_SERVICE_SECRET || "").trim();
-  if (!configuredSecret) {
+  const cpServiceSecret = (process.env.DCC_CP_SERVICE_SECRET || "").trim();
+  const internalSecrets = options?.allowInternalKey
+    ? [
+        (process.env.INTERNAL_API_SECRET || "").trim(),
+        (process.env.DCC_INTERNAL_API_SECRET || "").trim(),
+      ].filter((s) => s.length > 0)
+    : [];
+  const configuredSecrets = [cpServiceSecret, ...internalSecrets].filter(
+    (s) => s.length > 0,
+  );
+
+  if (configuredSecrets.length === 0) {
     return {
       ok: false,
       status: 503,
@@ -92,12 +103,32 @@ function authenticateCpServiceRequest(
   }
 
   const headerSecret = (
-    request.headers.get("x-dcc-cp-service-secret") || ""
+    request.headers.get("x-dcc-cp-service-secret") ||
+    (options?.allowInternalKey
+      ? request.headers.get("x-dcc-internal-key") ||
+        request.headers.get("x-dcc-internal-secret") ||
+        ""
+      : "")
   ).trim();
   const bearerSecret = readBearerToken(request);
   const candidate = headerSecret || bearerSecret;
 
-  if (!candidate || !constantTimeSecretMatch(candidate, configuredSecret)) {
+  if (!candidate) {
+    return {
+      ok: false,
+      status: 401,
+      error: "Unauthorized.",
+    };
+  }
+
+  let matched = false;
+  for (const secret of configuredSecrets) {
+    if (constantTimeSecretMatch(candidate, secret)) {
+      matched = true;
+    }
+  }
+
+  if (!matched) {
     return {
       ok: false,
       status: 401,
@@ -296,6 +327,15 @@ async function maybeSendOwnerAlertEmailOnFirstIngest(params: {
   }
 
   const fetchImpl = customResendFetchForTests || fetch;
+  const trimmedReplyTo = (params.customerEmail || "").trim();
+  const hasValidReplyTo = Boolean(
+    trimmedReplyTo &&
+      EMAIL_RE.test(trimmedReplyTo) &&
+      !/destinationcommandcenter\.com$/i.test(trimmedReplyTo),
+  );
+  const isUnmonitoredDccSender = /@destinationcommandcenter\.com>?$/i.test(
+    fromEmail,
+  );
   try {
     const res = await fetchImpl("https://api.resend.com/emails", {
       method: "POST",
@@ -306,7 +346,7 @@ async function maybeSendOwnerAlertEmailOnFirstIngest(params: {
       body: JSON.stringify({
         from: fromEmail,
         to: ownerRecipients,
-        reply_to: params.customerEmail,
+        ...(hasValidReplyTo ? { reply_to: trimmedReplyTo } : {}),
         subject: `[Cruise Promenade Group Inquiry] ${params.ship} (${params.sailDate}) — ${params.travelerCount} guests`,
         text: [
           `Cruise Promenade Group Inquiry (${params.inquiryId})`,
@@ -325,6 +365,9 @@ async function maybeSendOwnerAlertEmailOnFirstIngest(params: {
           `Negotiated Rates: ${params.negotiatedRates ?? "Not specified"}`,
           `Source Page: ${params.sourcePage}`,
           params.notes ? `Notes: ${params.notes}` : null,
+          isUnmonitoredDccSender
+            ? `\n---\nAutomated internal owner alert dispatched via ${fromEmail} (outbound-only system address; not a monitored reply mailbox).${hasValidReplyTo ? ` Replying to this email addresses the organizer directly via Reply-To (${trimmedReplyTo}).` : ""}`
+            : null,
         ]
           .filter(Boolean)
           .join("\n"),
@@ -1216,6 +1259,135 @@ async function handleSyntheticQaMutation(
     },
     { status: 200, headers: NO_STORE_HEADERS },
   );
+}
+
+export async function GET(request: Request) {
+  const auth = authenticateCpServiceRequest(request, {
+    allowInternalKey: true,
+  });
+  if (!auth.ok) {
+    return NextResponse.json(
+      { ok: false, error: auth.error },
+      { status: auth.status, headers: NO_STORE_HEADERS },
+    );
+  }
+
+  const dccKey = (process.env.DCC_RESEND_API_KEY || "").trim();
+  const fallbackKey = (process.env.RESEND_API_KEY || "").trim();
+  const activeKey = dccKey || fallbackKey;
+  const activeKeySource = dccKey
+    ? "DCC_RESEND_API_KEY"
+    : fallbackKey
+      ? "RESEND_API_KEY"
+      : "none";
+
+  const currentMailFromCp = (process.env.MAIL_FROM_CP || "").trim() || null;
+  const currentMailFromDcc = (process.env.MAIL_FROM_DCC || "").trim() || null;
+  const currentDeployTestFrom =
+    (process.env.DEPLOY_TEST_EMAIL_FROM || "").trim() || null;
+  const effectiveFrom =
+    currentMailFromCp ||
+    currentMailFromDcc ||
+    currentDeployTestFrom ||
+    "Cruise Promenade <concierge@cruisepromenade.com>";
+
+  const ownerRecipients = parseOwnerAlertRecipients("");
+  const maskedRecipients = ownerRecipients.map((email) => {
+    const [local, dom] = email.split("@");
+    return `${(local || "").slice(0, 3)}***@${dom || ""}`;
+  });
+
+  if (!activeKey) {
+    return NextResponse.json(
+      {
+        ok: true,
+        resendConfigured: false,
+        activeKeySource,
+        senderConfig: {
+          MAIL_FROM_CP: currentMailFromCp,
+          MAIL_FROM_DCC: currentMailFromDcc,
+          DEPLOY_TEST_EMAIL_FROM: currentDeployTestFrom,
+          effectiveFrom,
+          maskedOwnerRecipients: maskedRecipients,
+        },
+        domains: [],
+      },
+      { status: 200, headers: NO_STORE_HEADERS },
+    );
+  }
+
+  const fetchImpl = customResendFetchForTests || fetch;
+  try {
+    const res = await fetchImpl("https://api.resend.com/domains", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${activeKey}`,
+        Accept: "application/json",
+      },
+      cache: "no-store",
+    });
+    const raw = (await res.json().catch(() => ({}))) as {
+      data?: Array<{
+        id?: string;
+        name?: string;
+        status?: string;
+        region?: string;
+        capabilities?: Record<string, unknown>;
+      }>;
+      message?: string;
+      name?: string;
+    };
+    const domains = Array.isArray(raw.data)
+      ? raw.data.map((d) => ({
+          name: d.name || null,
+          status: d.status || null,
+          region: d.region || null,
+          capabilities: d.capabilities || null,
+        }))
+      : [];
+    const dccDomainEntry =
+      domains.find(
+        (d) => (d.name || "").toLowerCase() === "destinationcommandcenter.com",
+      ) || null;
+
+    return NextResponse.json(
+      {
+        ok: res.ok,
+        resendHttpStatus: res.status,
+        activeKeySource,
+        destinationCommandCenterVerified:
+          Boolean(dccDomainEntry && dccDomainEntry.status === "verified"),
+        destinationCommandCenterDomain: dccDomainEntry,
+        domains,
+        errorMessage: !res.ok ? raw.message || raw.name || null : null,
+        senderConfig: {
+          MAIL_FROM_CP: currentMailFromCp,
+          MAIL_FROM_DCC: currentMailFromDcc,
+          DEPLOY_TEST_EMAIL_FROM: currentDeployTestFrom,
+          effectiveFrom,
+          maskedOwnerRecipients: maskedRecipients,
+        },
+      },
+      { status: 200, headers: NO_STORE_HEADERS },
+    );
+  } catch (err) {
+    return NextResponse.json(
+      {
+        ok: false,
+        activeKeySource,
+        errorMessage:
+          err instanceof Error ? err.message : "resend_domains_network_error",
+        senderConfig: {
+          MAIL_FROM_CP: currentMailFromCp,
+          MAIL_FROM_DCC: currentMailFromDcc,
+          DEPLOY_TEST_EMAIL_FROM: currentDeployTestFrom,
+          effectiveFrom,
+          maskedOwnerRecipients: maskedRecipients,
+        },
+      },
+      { status: 200, headers: NO_STORE_HEADERS },
+    );
+  }
 }
 
 export async function PATCH(request: Request) {
