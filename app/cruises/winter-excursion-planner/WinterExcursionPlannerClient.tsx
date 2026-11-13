@@ -204,10 +204,10 @@ export default function WinterExcursionPlannerClient({ initialData }: Props) {
               requires boarding at least <strong>30 minutes before departure (3:30 PM)</strong>, with
               the binding cutoff announced onboard in the daily <em>Cruise Compass</em> and at the
               gangway. The planner’s <strong>3:15 PM (15:15)</strong> cutoff is a{" "}
-              <strong>conditional 45-minute pre-departure planning heuristic</strong>, and the{" "}
-              <strong>60-minute return buffer</strong> (from the 2:15 PM return to Prince George
-              Wharf; 75 minutes before 3:30 PM) remains <strong>conditional</strong> until confirmed
-              onboard.
+              <strong>conditional 45-minute pre-departure planning heuristic</strong>, leaving a{" "}
+              <strong>60-minute actual margin</strong> before 3:15 PM (75 minutes before 3:30 PM),
+              which is tighter than our <strong>2-hour return buffer</strong> standard and remains{" "}
+              <strong>conditional</strong> until confirmed onboard.
             </div>
           </div>
 

@@ -88,25 +88,74 @@ export const SITE_IDENTITY = {
   ],
 } as const;
 
+export const DCC_CANONICAL_RELATIONSHIP =
+  "Destination Command Center is the travel-decision, destination-data, and port-timing layer. Cruise Promenade is the cruise itinerary and group-coordination application within the DCC network.";
+
+export const DCC_THREE_PART_POSITIONING = {
+  dcc: "DCC understands whether travel plans work.",
+  cruisePromenade:
+    "Cruise Promenade helps cruise groups decide and coordinate what they're doing.",
+  rollCallUsa: "RollCallUSA supplies the social conversation attached to that plan.",
+} as const;
+
 export function getOrganizationSchema() {
   return {
     "@type": "Organization",
+    "@id": "https://destinationcommandcenter.com/#organization",
     name: SITE_IDENTITY.name,
     url: SITE_IDENTITY.siteUrl,
-    description: SITE_IDENTITY.canonicalDescription,
+    description: `${SITE_IDENTITY.canonicalDescription} ${DCC_CANONICAL_RELATIONSHIP}`,
     alternateName: SITE_IDENTITY.alternateNames,
     additionalType: "https://schema.org/TravelAgency",
     disambiguatingDescription: SITE_IDENTITY.entityDisambiguation,
     knowsAbout: SITE_IDENTITY.knowsAbout,
+    subOrganization: {
+      "@type": "Organization",
+      "@id": "https://cruisepromenade.com/#organization",
+      name: "Cruise Promenade",
+      url: "https://cruisepromenade.com",
+      description: DCC_CANONICAL_RELATIONSHIP,
+      parentOrganization: {
+        "@id": "https://destinationcommandcenter.com/#organization",
+      },
+    },
   };
 }
 
 export function getWebsiteSchema() {
   return {
     "@type": "WebSite",
+    "@id": "https://destinationcommandcenter.com/#website",
     name: SITE_IDENTITY.name,
     url: SITE_IDENTITY.siteUrl,
-    description: SITE_IDENTITY.homepageDescription,
+    description: `${SITE_IDENTITY.homepageDescription} ${DCC_CANONICAL_RELATIONSHIP}`,
+    publisher: {
+      "@id": "https://destinationcommandcenter.com/#organization",
+    },
+    hasPart: [
+      {
+        "@type": "WebSite",
+        "@id": "https://cruisepromenade.com/#website",
+        name: "Cruise Promenade",
+        url: "https://cruisepromenade.com",
+        description: DCC_CANONICAL_RELATIONSHIP,
+        isPartOf: {
+          "@id": "https://destinationcommandcenter.com/#website",
+        },
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": "https://cruisepromenade.com/#app",
+        name: "Cruise Promenade",
+        applicationCategory: "TravelApplication",
+        operatingSystem: "All",
+        url: "https://cruisepromenade.com",
+        description: DCC_CANONICAL_RELATIONSHIP,
+        isPartOf: {
+          "@id": "https://destinationcommandcenter.com/#website",
+        },
+      },
+    ],
     about: {
       "@type": "Thing",
       name: SITE_IDENTITY.entityCategory,

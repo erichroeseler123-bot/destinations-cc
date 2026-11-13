@@ -374,10 +374,9 @@ export default function JuneauPortAviationDecisionDesk() {
         >
           Juneau&apos;s flight bases sit near Juneau International Airport (JNU),
           roughly <strong>15–20 minutes by operator shuttle</strong> from the
-          downtown cruise docks. DCC applies a{" "}
-          <strong>60-minute docked pier buffer</strong> (or{" "}
-          <strong>90-minute tender anchorage buffer</strong>) on top of shuttle
-          transit so you never race the gangway.
+          downtown cruise docks. DCC recommends a{" "}
+          <strong>2-hour return buffer</strong> before all-aboard on top of
+          shuttle transit so you never race the gangway.
         </p>
 
         <div

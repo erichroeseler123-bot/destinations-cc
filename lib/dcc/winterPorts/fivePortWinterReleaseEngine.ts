@@ -289,7 +289,7 @@ const NON_ST_THOMAS_WINTER_PORT_SPECS: Record<
       {
         gapType: "exact_departure",
         summary:
-          "Exact morning departure wave (e.g., 09:00 vs. 10:30 AM) and Paradise Island bridge return traffic between 2:30 PM and 4:30 PM must fit the ship's 60-minute all-aboard buffer.",
+          "Exact morning departure wave (e.g., 09:00 vs. 10:30 AM) and Paradise Island bridge return traffic between 2:30 PM and 4:30 PM must fit the ship's 2-hour return buffer.",
         status: "needs_confirmation",
       },
     ],
@@ -312,7 +312,7 @@ const NON_ST_THOMAS_WINTER_PORT_SPECS: Record<
         summary:
           "Nassau <-> Paradise Island water-taxi boats depart on fill-up rather than a guaranteed fixed timetable.",
         impactOnDecision:
-          "Travelers returning from Paradise Island or Montague afternoon boat tours should use regulated road taxis across the Sidney Poitier Bridge with a 60-minute ship buffer.",
+          "Travelers returning from Paradise Island or Montague afternoon boat tours should use regulated road taxis across the Sidney Poitier Bridge with a 2-hour return buffer.",
         sourceUrl: "https://www.nassaucruiseport.com/",
         checkedOn: "2026-11-06",
       },
@@ -819,7 +819,7 @@ const NON_ST_THOMAS_WINTER_PORT_SPECS: Record<
       {
         gapType: "exact_departure",
         summary:
-          "Roatán observes Central Standard Time (America/Tegucigalpa UTC-06:00 year-round) and single-lane Carretera Principal return traffic between West Bay and Mahogany Bay requires a strict 60-minute return buffer.",
+          "Roatán observes Central Standard Time (America/Tegucigalpa UTC-06:00 year-round) and single-lane Carretera Principal return traffic between West Bay and Mahogany Bay requires a strict 2-hour return buffer.",
         status: "verified",
       },
     ],

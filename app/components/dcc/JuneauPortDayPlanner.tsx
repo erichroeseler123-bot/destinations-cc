@@ -499,11 +499,10 @@ export default function JuneauPortDayPlanner({
               }
               className="mt-1.5 w-full rounded-xl border border-white/15 bg-slate-900 px-3 py-2 text-sm text-white"
             >
-              <option value={45}>45 min (Tight Cushion)</option>
-              <option value={60}>60 min (Standard Cushion)</option>
-              <option value={75}>75 min (Conservative)</option>
-              <option value={90}>90 min (Recommended Default)</option>
-              <option value={120}>120 min (Extra Cushion)</option>
+              <option value={60}>60 min (Tight Cushion)</option>
+              <option value={90}>90 min (Moderate Cushion)</option>
+              <option value={120}>120 min (2-Hour Return Buffer — Recommended)</option>
+              <option value={150}>150 min (Extra Cushion)</option>
             </select>
           </label>
 

@@ -207,7 +207,14 @@ export default function LocationFirstHomeFast({
                     Plan a cruise
                   </h3>
                   <p className="mt-2 text-sm leading-6 text-white/70">
-                    Choose the right ship style, check port-day shore excursions, or coordinate with your group.
+                    Choose the right ship style, check port-day shore excursions, or coordinate your group on{" "}
+                    <a
+                      href="https://cruisepromenade.com"
+                      className="font-semibold text-emerald-300 underline underline-offset-2 hover:text-emerald-200"
+                    >
+                      Cruise Promenade
+                    </a>
+                    .
                   </p>
                 </div>
                 <div className="mt-4 flex flex-col gap-2 pt-3 border-t border-white/10">
@@ -228,11 +235,11 @@ export default function LocationFirstHomeFast({
                     <span>→</span>
                   </Link>
                   <a
-                    href="/go/dcc-to-cruise-promenade"
+                    href="https://cruisepromenade.com"
                     data-testid="dcc-hero-plan-my-cruise"
                     className="inline-flex items-center justify-between rounded-xl bg-emerald-400 px-3.5 py-2.5 text-xs font-black uppercase tracking-wider text-[#04140e] transition hover:bg-emerald-300"
                   >
-                    <span>Plan with my group</span>
+                    <span>Open Cruise Promenade</span>
                     <span>→</span>
                   </a>
                   <a
@@ -672,6 +679,62 @@ export default function LocationFirstHomeFast({
                   <span>→</span>
                 </Link>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Prominent Cruise Promenade & DCC Network Relationship */}
+      <section
+        aria-label="Cruise Promenade and the DCC Network"
+        className="mx-auto max-w-7xl px-5 pb-10 sm:px-8"
+      >
+        <div className="rounded-3xl border border-emerald-400/25 bg-gradient-to-br from-emerald-950/40 via-slate-900/80 to-cyan-950/30 p-6 sm:p-8">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+            <div className="max-w-3xl">
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-300">
+                Connected Cruise Application · DCC Network
+              </span>
+              <h2 className="mt-2 text-2xl sm:text-3xl font-black text-white">
+                Cruise Promenade
+              </h2>
+              <p className="mt-3 text-sm sm:text-base leading-7 text-white/85">
+                Destination Command Center is the travel-decision, destination-data, and port-timing layer. Cruise Promenade is the cruise itinerary and group-coordination application within the DCC network.
+              </p>
+              <div className="mt-4 grid gap-3 sm:grid-cols-3 text-xs leading-5">
+                <div className="rounded-2xl border border-white/10 bg-black/30 p-3.5">
+                  <strong className="block text-cyan-300">Destination Command Center</strong>
+                  <span className="mt-1 block text-white/75">
+                    DCC understands whether travel plans work.
+                  </span>
+                </div>
+                <div className="rounded-2xl border border-emerald-400/25 bg-black/30 p-3.5">
+                  <strong className="block text-emerald-300">Cruise Promenade</strong>
+                  <span className="mt-1 block text-white/75">
+                    Cruise Promenade helps cruise groups decide and coordinate what they&apos;re doing.
+                  </span>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-black/30 p-3.5">
+                  <strong className="block text-indigo-300">RollCallUSA</strong>
+                  <span className="mt-1 block text-white/75">
+                    RollCallUSA supplies the social conversation attached to that plan.
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-col gap-2.5 sm:flex-row lg:flex-col shrink-0">
+              <a
+                href="https://cruisepromenade.com"
+                className="inline-flex items-center justify-center rounded-xl bg-emerald-400 px-5 py-3 text-xs font-black uppercase tracking-wider text-[#04140e] transition hover:bg-emerald-300"
+              >
+                Visit Cruise Promenade →
+              </a>
+              <a
+                href="https://rollcallusa.com"
+                className="inline-flex items-center justify-center rounded-xl border border-white/15 bg-white/[0.06] px-5 py-3 text-xs font-bold text-white transition hover:border-cyan-400 hover:bg-white/[0.1]"
+              >
+                Visit RollCallUSA →
+              </a>
             </div>
           </div>
         </div>

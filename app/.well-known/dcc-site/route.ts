@@ -72,6 +72,33 @@ export async function GET(request: Request) {
   return NextResponse.json(
     {
       ...manifest,
+      entity_graph: {
+        entity_id: "https://destinationcommandcenter.com/#website",
+        organization_id: "https://destinationcommandcenter.com/#organization",
+        relationship_statement:
+          "Destination Command Center is the travel-decision, destination-data, and port-timing layer. Cruise Promenade is the cruise itinerary and group-coordination application within the DCC network.",
+        three_part_positioning: {
+          dcc: "DCC understands whether travel plans work.",
+          cruise_promenade:
+            "Cruise Promenade helps cruise groups decide and coordinate what they're doing.",
+          rollcallusa: "RollCallUSA supplies the social conversation attached to that plan.",
+        },
+        hasPart: [
+          {
+            id: "cruise-promenade",
+            "@id": "https://cruisepromenade.com/#app",
+            website_id: "https://cruisepromenade.com/#website",
+            name: "Cruise Promenade",
+            url: "https://cruisepromenade.com",
+          },
+          {
+            id: "rollcallusa",
+            "@id": "https://rollcallusa.com/#website",
+            name: "RollCallUSA",
+            url: "https://rollcallusa.com",
+          },
+        ],
+      },
       build: {
         commitSha,
         shortCommitSha: commitSha.slice(0, 8),

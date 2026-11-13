@@ -283,6 +283,38 @@ export async function GET() {
     },
     network: {
       role: "canonical_directory_and_relationship_graph",
+      entity_id: "https://destinationcommandcenter.com/#website",
+      organization_id: "https://destinationcommandcenter.com/#organization",
+      relationship_statement:
+        "Destination Command Center is the travel-decision, destination-data, and port-timing layer. Cruise Promenade is the cruise itinerary and group-coordination application within the DCC network.",
+      three_part_positioning: {
+        dcc: "DCC understands whether travel plans work.",
+        cruise_promenade:
+          "Cruise Promenade helps cruise groups decide and coordinate what they're doing.",
+        rollcallusa: "RollCallUSA supplies the social conversation attached to that plan.",
+      },
+      hasPart: [
+        {
+          id: "cruise-promenade",
+          "@id": "https://cruisepromenade.com/#app",
+          website_id: "https://cruisepromenade.com/#website",
+          name: "Cruise Promenade",
+          url: "https://cruisepromenade.com",
+          llms_txt: "https://cruisepromenade.com/llms.txt",
+          agent_json: "https://cruisepromenade.com/agent.json",
+          scope_json: "https://cruisepromenade.com/scope.json",
+          well_known_dcc_site: "https://cruisepromenade.com/.well-known/dcc-site",
+          relationship:
+            "Destination Command Center is the travel-decision, destination-data, and port-timing layer. Cruise Promenade is the cruise itinerary and group-coordination application within the DCC network.",
+        },
+        {
+          id: "rollcallusa",
+          "@id": "https://rollcallusa.com/#website",
+          name: "RollCallUSA",
+          url: "https://rollcallusa.com",
+          relationship: "RollCallUSA supplies the social conversation attached to that plan.",
+        },
+      ],
       portfolio_feed: DCC_SITE_CONTRACT.registryUrl,
       truth_feed: DCC_SITE_CONTRACT.truthFeedUrl,
     },

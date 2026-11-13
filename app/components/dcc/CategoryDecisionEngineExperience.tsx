@@ -442,7 +442,7 @@ export default function CategoryDecisionEngineExperience({
                 data-testid="preset-hi-cruise-strict"
                 onClick={() => {
                   setPresetNote(
-                    "Scenario: Maui cruise passenger with 240-minute total window and strict 60-minute all-aboard buffer.",
+                    "Scenario: Maui cruise passenger with 240-minute total window and strict 2-hour return buffer.",
                   );
                   updateAnswersFromUser({
                     ...(engine.defaultExampleInput as Record<string, unknown>),

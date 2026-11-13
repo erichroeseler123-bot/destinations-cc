@@ -30,8 +30,22 @@ export default function AboutDccPage() {
         url: "https://destinationcommandcenter.com/about",
         name: "About Destination Command Center | Travel Reference & Capability Truth Matrix",
         description:
-          "Destination Command Center is a travel reference and decision platform supported by live, source-attributed coordinate intelligence.",
+          "Destination Command Center is a travel reference and decision platform supported by live, source-attributed coordinate intelligence. Destination Command Center is the travel-decision, destination-data, and port-timing layer. Cruise Promenade is the cruise itinerary and group-coordination application within the DCC network.",
         isPartOf: { "@id": "https://destinationcommandcenter.com/#website" },
+        hasPart: [
+          {
+            "@type": "WebSite",
+            "@id": "https://cruisepromenade.com/#website",
+            name: "Cruise Promenade",
+            url: "https://cruisepromenade.com",
+          },
+          {
+            "@type": "SoftwareApplication",
+            "@id": "https://cruisepromenade.com/#app",
+            name: "Cruise Promenade",
+            url: "https://cruisepromenade.com",
+          },
+        ],
       },
       {
         "@type": "BreadcrumbList",
@@ -71,6 +85,48 @@ export default function AboutDccPage() {
             </p>
           </div>
         </header>
+
+        <section className="rounded-3xl border border-emerald-400/25 bg-emerald-950/20 p-6">
+          <h2 className="text-2xl font-bold text-white">
+            Connected Network Applications: Cruise Promenade &amp; RollCallUSA
+          </h2>
+          <p className="mt-3 text-sm leading-7 text-zinc-200">
+            Destination Command Center is the travel-decision, destination-data, and port-timing layer.{" "}
+            <a
+              href="https://cruisepromenade.com"
+              className="font-bold text-emerald-300 underline underline-offset-4 hover:text-emerald-200"
+            >
+              Cruise Promenade
+            </a>{" "}
+            is the cruise itinerary and group-coordination application within the DCC network.
+          </p>
+          <div className="mt-4 grid gap-4 md:grid-cols-3 text-sm leading-6 text-zinc-300">
+            <div className="rounded-2xl border border-white/10 bg-black/30 p-4">
+              <strong className="block text-cyan-300">Destination Command Center</strong>
+              <span className="mt-1 block">DCC understands whether travel plans work.</span>
+            </div>
+            <div className="rounded-2xl border border-emerald-400/25 bg-black/30 p-4">
+              <strong className="block text-emerald-300">
+                <a href="https://cruisepromenade.com" className="hover:underline">
+                  Cruise Promenade →
+                </a>
+              </strong>
+              <span className="mt-1 block">
+                Cruise Promenade helps cruise groups decide and coordinate what they&apos;re doing.
+              </span>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-black/30 p-4">
+              <strong className="block text-indigo-300">
+                <a href="https://rollcallusa.com" className="hover:underline">
+                  RollCallUSA →
+                </a>
+              </strong>
+              <span className="mt-1 block">
+                RollCallUSA supplies the social conversation attached to that plan.
+              </span>
+            </div>
+          </div>
+        </section>
 
         <section className="grid gap-6 md:grid-cols-2">
           <div className="rounded-3xl border border-white/10 bg-white/[0.05] p-6">

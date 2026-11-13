@@ -205,6 +205,35 @@ export const DCC_PRODUCT_SCOPE = {
       status: "versioned_to_travel_reference_v3",
     },
   ],
+  networkPositioning: {
+    relationshipStatement:
+      "Destination Command Center is the travel-decision, destination-data, and port-timing layer. Cruise Promenade is the cruise itinerary and group-coordination application within the DCC network.",
+    threePartPositioning: {
+      dcc: "DCC understands whether travel plans work.",
+      cruisePromenade:
+        "Cruise Promenade helps cruise groups decide and coordinate what they're doing.",
+      rollCallUsa: "RollCallUSA supplies the social conversation attached to that plan.",
+    },
+    hasPart: [
+      {
+        id: "cruise-promenade",
+        entityId: "https://cruisepromenade.com/#app",
+        websiteId: "https://cruisepromenade.com/#website",
+        name: "Cruise Promenade",
+        url: "https://cruisepromenade.com",
+        llmsTxt: "https://cruisepromenade.com/llms.txt",
+        agentJson: "https://cruisepromenade.com/agent.json",
+        role: "cruise_itinerary_and_group_coordination_application",
+      },
+      {
+        id: "rollcallusa",
+        entityId: "https://rollcallusa.com/#website",
+        name: "RollCallUSA",
+        url: "https://rollcallusa.com",
+        role: "social_conversation_layer",
+      },
+    ],
+  },
   capabilityTruthMatrix: DCC_CAPABILITY_TRUTH_MATRIX,
   machineContractInventory: {
     machineLayerVersion: "0.3.0",
