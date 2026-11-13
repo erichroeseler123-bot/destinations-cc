@@ -1,8 +1,12 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { trackNetworkEvent } from "@/lib/dcc/telemetry/clientNetworkEvents";
+import {
+  getOrCreateJourneyId,
+  isQaTestMode,
+  trackNetworkEvent,
+} from "@/lib/dcc/telemetry/clientNetworkEvents";
 
 interface ContextualSpecialistReturnBannerProps {
   specialist: "parr" | "gosno";
@@ -12,11 +16,15 @@ function buildParrReturnUrl(params: {
   date?: string | null;
   partySize?: number;
   origin?: string | null;
+  journeyId?: string;
+  qaTest?: boolean;
 }): string {
   const vehicle = (params.partySize ?? 4) > 6 ? "van" : "suv";
   const url = new URL(`https://www.partyatredrocks.com/book/red-rocks-amphitheatre/private/${vehicle}`);
   url.searchParams.set("source", "dcc");
   url.searchParams.set("intent", "red-rocks-private-transfer");
+  if (params.journeyId) url.searchParams.set("journey_id", params.journeyId);
+  if (params.qaTest) url.searchParams.set("qa_test", "1");
   if (params.date) url.searchParams.set("date", params.date);
   if (params.partySize) url.searchParams.set("partySize", String(params.partySize));
   if (params.origin) url.searchParams.set("origin", params.origin);
@@ -29,11 +37,15 @@ function buildGosnoReturnUrl(params: {
   date?: string | null;
   partySize?: number;
   direction?: string | null;
+  journeyId?: string;
+  qaTest?: boolean;
 }): string {
   const slug = (params.resort || "breckenridge").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   const url = new URL(`https://gosno.co/${slug || "breckenridge"}`);
   url.searchParams.set("source", "dcc");
   url.searchParams.set("intent", "mountain-private-transfer");
+  if (params.journeyId) url.searchParams.set("journey_id", params.journeyId);
+  if (params.qaTest) url.searchParams.set("qa_test", "1");
   if (params.airport) url.searchParams.set("airport", params.airport);
   if (params.date) url.searchParams.set("date", params.date);
   if (params.partySize) url.searchParams.set("partySize", String(params.partySize));
@@ -53,6 +65,13 @@ export default function ContextualSpecialistReturnBanner({
   const airport = searchParams.get("airport");
   const resort = searchParams.get("resort");
   const direction = searchParams.get("direction");
+  const [journeyId, setJourneyId] = useState<string>("");
+  const [qaTest, setQaTest] = useState<boolean>(false);
+
+  useEffect(() => {
+    setJourneyId(getOrCreateJourneyId());
+    setQaTest(isQaTestMode());
+  }, []);
 
   const isContextualFromSpecialist =
     specialist === "parr"
@@ -65,6 +84,8 @@ export default function ContextualSpecialistReturnBanner({
         date,
         partySize: Number.isFinite(partySize) ? partySize : undefined,
         origin,
+        journeyId: journeyId || undefined,
+        qaTest,
       });
     }
     return buildGosnoReturnUrl({
@@ -73,8 +94,10 @@ export default function ContextualSpecialistReturnBanner({
       date,
       partySize: Number.isFinite(partySize) ? partySize : undefined,
       direction,
+      journeyId: journeyId || undefined,
+      qaTest,
     });
-  }, [specialist, date, partySize, origin, airport, resort, direction]);
+  }, [specialist, date, partySize, origin, airport, resort, direction, journeyId, qaTest]);
 
   useEffect(() => {
     trackNetworkEvent({
@@ -84,7 +107,7 @@ export default function ContextualSpecialistReturnBanner({
       travelIntent: specialist === "parr" ? "red-rocks-concert-planning" : "mountain-transfer-planning",
       campaignSource: source || "organic",
       date: date || undefined,
-      corridorId: specialist === "parr" ? "red-rocks-concert" : "den-breckenridge",
+      corridorId: specialist === "parr" ? "red-rocks" : "denver-breckenridge",
     });
   }, [specialist, source, date]);
 
@@ -96,7 +119,7 @@ export default function ContextualSpecialistReturnBanner({
       travelIntent: specialist === "parr" ? "red-rocks-private-transfer" : "mountain-private-transfer",
       campaignSource: source || "organic",
       date: date || undefined,
-      corridorId: specialist === "parr" ? "red-rocks-concert" : "den-breckenridge",
+      corridorId: specialist === "parr" ? "red-rocks" : "denver-breckenridge",
     });
   };
 

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import TrackedCruisePromenadeLink from "@/app/components/dcc/TrackedCruisePromenadeLink";
 import JsonLd from "@/app/components/dcc/JsonLd";
 import PageActionBar from "@/app/components/dcc/PageActionBar";
 import {
@@ -157,22 +158,20 @@ export default function CruiseShoreExcursionsPage() {
               </p>
             </div>
             <div className="flex flex-wrap gap-2.5">
-              <a
+              <TrackedCruisePromenadeLink
                 href="https://cruisepromenade.com/p/INDY-2027-01-24?src=dcc-authority-cruise&from=dcc-cruises-shore-excursions"
-                data-testid="dcc-authority-to-cp-indy"
-                data-dcc-next-step="cruisepromenade"
+                testId="dcc-authority-to-cp-indy"
                 className="inline-flex items-center gap-2 rounded-xl bg-emerald-400 px-4 py-2.5 text-xs font-black uppercase tracking-wider text-zinc-950 hover:bg-emerald-300"
               >
                 Open Cruise Promenade Sailing Plan (`INDY-2027-01-24`) →
-              </a>
-              <a
+              </TrackedCruisePromenadeLink>
+              <TrackedCruisePromenadeLink
                 href="https://cruisepromenade.com?src=dcc-authority-cruise&from=dcc-cruises-shore-excursions"
-                data-testid="dcc-authority-to-cp-home"
-                data-dcc-next-step="cruisepromenade"
+                testId="dcc-authority-to-cp-home"
                 className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-white hover:bg-white/15"
               >
                 Explore Cruise Promenade →
-              </a>
+              </TrackedCruisePromenadeLink>
             </div>
           </div>
         </section>

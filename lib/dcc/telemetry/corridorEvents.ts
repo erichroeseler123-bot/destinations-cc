@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { z } from "zod";
@@ -56,11 +57,16 @@ export const EVENT_NAMES = [
   "dcc_plan_opened",
   "cp_sailing_started",
   "cp_board_created",
+  "planner_view",
+  "organizer_copy_imported",
 ] as const;
 
 export const CorridorEventPayloadSchema = z.object({
   corridor_id: z.string().min(1),
   event_name: z.enum(EVENT_NAMES),
+  event_id: z.string().min(1).max(128).optional(),
+  journey_id: z.string().min(1).max(128).optional(),
+  is_test: z.boolean().optional(),
   occurred_at: z.string().datetime().optional(),
   handoff_id: z.string().min(1).optional(),
   session_id: z.string().min(1).optional(),
@@ -398,10 +404,24 @@ export async function ensureCorridorCatalogRows() {
   }
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function resolveDeterministicEventUuid(rawEventId?: string): string | undefined {
+  if (!rawEventId || !rawEventId.trim()) return undefined;
+  const trimmed = rawEventId.trim();
+  if (UUID_RE.test(trimmed)) return trimmed.toLowerCase();
+  const hash = crypto.createHash("sha256").update(trimmed).digest("hex");
+  const bytes = hash.slice(0, 32).split("");
+  bytes[12] = "4";
+  bytes[16] = ["8", "9", "a", "b"][parseInt(bytes[16], 16) % 4];
+  const hex = bytes.join("");
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20, 32)}`;
+}
+
 export async function appendCorridorEventDurably(input: CorridorEventPayload) {
   if (input.corridor_id === CRUISE_DEBUG_CORRIDOR_ID) {
     await appendCruiseDebugEvent(input);
-    return { ok: true as const, stored: true as const, corridorId: CRUISE_DEBUG_CORRIDOR_ID };
+    return { ok: true as const, stored: true as const, deduplicated: false, corridorId: CRUISE_DEBUG_CORRIDOR_ID };
   }
 
   const catalog = getCorridorCatalogEntry(input.corridor_id);
@@ -415,6 +435,7 @@ export async function appendCorridorEventDurably(input: CorridorEventPayload) {
     return {
       ok: true as const,
       stored: false as const,
+      deduplicated: false,
       reason: "no_database",
       corridorId: catalog.corridorId,
     };
@@ -422,38 +443,59 @@ export async function appendCorridorEventDurably(input: CorridorEventPayload) {
 
   await ensureCorridorCatalogRows();
 
-  await db.insert(dccCorridorEvents).values({
-    corridorId: catalog.corridorId,
-    family: catalog.family,
-    eventName: input.event_name,
-    occurredAt: input.occurred_at ? new Date(input.occurred_at) : new Date(),
-    handoffId: input.handoff_id ?? null,
-    sessionId: input.session_id ?? null,
-    userId: input.user_id ?? null,
-    sourcePage: input.source_page ?? null,
-    landingPath: input.landing_path ?? null,
-    targetPath: input.target_path ?? null,
-    requestedLane: input.requested_lane ?? null,
-    resolvedLane: input.resolved_lane ?? null,
-    topic: input.topic ?? null,
-    subtype: input.subtype ?? null,
-    port: input.port ?? null,
-    handoffDate: input.handoff_date ?? null,
-    defaultCardSlug: input.default_card_slug ?? null,
-    clickedProductSlug: input.clicked_product_slug ?? null,
-    routeTarget: input.route_target ?? null,
-    fitSignal: input.fit_signal ?? null,
-    urgency: input.urgency ?? null,
-    confidenceDowngraded: input.confidence_downgraded ?? false,
-    winningRuleIds: input.winning_rule_ids ?? [],
-    winningFields: input.winning_fields ?? {},
-    pageVariant: input.page_variant ?? null,
-    metadata: input.metadata ?? {},
-  });
+  const resolvedEventUuid = resolveDeterministicEventUuid(input.event_id);
+  const metaRecord = (input.metadata && typeof input.metadata === "object" ? input.metadata : {}) as Record<string, unknown>;
+  const journeyId =
+    input.journey_id ||
+    (typeof metaRecord.journey_id === "string" && metaRecord.journey_id.trim() ? metaRecord.journey_id.trim() : undefined) ||
+    input.handoff_id;
+  const isTest = Boolean(input.is_test || metaRecord.is_test === true || metaRecord.campaign_source === "qa_test" || metaRecord.campaign_source === "e2e_test");
 
-  await appendCruiseDebugEvent(input);
+  const inserted = await db
+    .insert(dccCorridorEvents)
+    .values({
+      ...(resolvedEventUuid ? { eventId: resolvedEventUuid } : {}),
+      corridorId: catalog.corridorId,
+      family: catalog.family,
+      eventName: input.event_name,
+      occurredAt: input.occurred_at ? new Date(input.occurred_at) : new Date(),
+      handoffId: input.handoff_id ?? journeyId ?? null,
+      sessionId: input.session_id ?? null,
+      userId: input.user_id ?? null,
+      sourcePage: input.source_page ?? null,
+      landingPath: input.landing_path ?? null,
+      targetPath: input.target_path ?? null,
+      requestedLane: input.requested_lane ?? null,
+      resolvedLane: input.resolved_lane ?? null,
+      topic: input.topic ?? null,
+      subtype: input.subtype ?? null,
+      port: input.port ?? null,
+      handoffDate: input.handoff_date ?? null,
+      defaultCardSlug: input.default_card_slug ?? null,
+      clickedProductSlug: input.clicked_product_slug ?? null,
+      routeTarget: input.route_target ?? null,
+      fitSignal: input.fit_signal ?? null,
+      urgency: input.urgency ?? null,
+      confidenceDowngraded: input.confidence_downgraded ?? false,
+      winningRuleIds: input.winning_rule_ids ?? [],
+      winningFields: input.winning_fields ?? {},
+      pageVariant: input.page_variant ?? null,
+      metadata: {
+        ...metaRecord,
+        ...(input.event_id ? { event_id: input.event_id } : {}),
+        ...(journeyId ? { journey_id: journeyId } : {}),
+        is_test: isTest,
+      },
+    })
+    .onConflictDoNothing({ target: dccCorridorEvents.eventId })
+    .returning({ eventId: dccCorridorEvents.eventId });
 
-  return { ok: true as const, stored: true as const, corridorId: catalog.corridorId };
+  const deduplicated = Boolean(resolvedEventUuid && inserted.length === 0);
+  if (!deduplicated) {
+    await appendCruiseDebugEvent(input);
+  }
+
+  return { ok: true as const, stored: !deduplicated, deduplicated, corridorId: catalog.corridorId };
 }
 
 export async function listRecentCorridorEvents(limit = 5000) {

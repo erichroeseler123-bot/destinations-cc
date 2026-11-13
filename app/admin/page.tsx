@@ -460,45 +460,59 @@ export default async function OwnerControlCenterPage() {
           >
             <h2 className="text-lg font-black text-white">{q6.question}</h2>
 
-            {/* Cross-Site Traffic Network Funnel (PARR + GoSno -> DCC -> Booking -> Cruise Promenade) */}
+            {/* Cross-Site Traffic Network Funnel (Journey-Based, QA/Test Excluded) */}
             <div
               data-testid="cross-site-network-funnel"
-              className="rounded-xl border border-cyan-400/25 bg-black/40 p-4 space-y-2"
+              className="rounded-xl border border-cyan-400/25 bg-black/40 p-4 space-y-3"
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="text-xs font-black uppercase tracking-wider text-cyan-300">
-                  Cross-Site Traffic Network Funnel ({crossSiteFunnel.windowDays}d)
+                  Cross-Site Journey Funnel ({crossSiteFunnel.windowDays}d · SQL Aggregated)
                 </span>
                 <span className="font-mono text-[11px] text-zinc-400">
-                  {crossSiteFunnel.totalEvents} shared network events
+                  {crossSiteFunnel.totalEvents} production events · {crossSiteFunnel.journeyToBookingPct}% journey-to-booking
                 </span>
               </div>
               <div className="grid gap-2 sm:grid-cols-6 text-xs">
                 <div className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2">
-                  <div className="text-[10px] text-zinc-400">PARR Visitors</div>
-                  <div className="font-mono font-bold text-white">{crossSiteFunnel.parrVisitors}</div>
+                  <div className="text-[10px] text-zinc-400">PARR Pageviews / Journeys</div>
+                  <div className="font-mono font-bold text-white">
+                    {crossSiteFunnel.parrPageviews} / {crossSiteFunnel.parrJourneys}
+                  </div>
+                  <div className="text-[10px] text-cyan-300">→ DCC: {crossSiteFunnel.parrToDccPct}%</div>
                 </div>
                 <div className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2">
-                  <div className="text-[10px] text-zinc-400">GoSno Visitors</div>
-                  <div className="font-mono font-bold text-white">{crossSiteFunnel.gosnoVisitors}</div>
+                  <div className="text-[10px] text-zinc-400">GoSno Pageviews / Journeys</div>
+                  <div className="font-mono font-bold text-white">
+                    {crossSiteFunnel.gosnoPageviews} / {crossSiteFunnel.gosnoJourneys}
+                  </div>
+                  <div className="text-[10px] text-cyan-300">→ DCC: {crossSiteFunnel.gosnoToDccPct}%</div>
                 </div>
                 <div className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2">
-                  <div className="text-[10px] text-zinc-400">DCC Plans Opened</div>
-                  <div className="font-mono font-bold text-cyan-200">{crossSiteFunnel.dccPlanningSessions}</div>
+                  <div className="text-[10px] text-zinc-400">DCC Plans (Journeys / Views)</div>
+                  <div className="font-mono font-bold text-cyan-200">
+                    {crossSiteFunnel.dccPlanningJourneys} / {crossSiteFunnel.dccPageviews}
+                  </div>
                 </div>
                 <div className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2">
                   <div className="text-[10px] text-zinc-400">Returned to Booking</div>
-                  <div className="font-mono font-bold text-emerald-200">{crossSiteFunnel.returnedToBooking}</div>
-                </div>
-                <div className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2">
-                  <div className="text-[10px] text-zinc-400">Completed Bookings</div>
-                  <div className="font-mono font-bold text-emerald-300">{crossSiteFunnel.completedBookings}</div>
-                </div>
-                <div className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2">
-                  <div className="text-[10px] text-zinc-400">CP Visits / Boards</div>
-                  <div className="font-mono font-bold text-white">
-                    {crossSiteFunnel.cruisePromenadeVisits} / {crossSiteFunnel.cruisePromenadeBoardsCreated}
+                  <div className="font-mono font-bold text-emerald-200">
+                    {crossSiteFunnel.returnedToBookingJourneys} journeys
                   </div>
+                  <div className="text-[10px] text-emerald-300">Return: {crossSiteFunnel.dccToSpecialistReturnPct}%</div>
+                </div>
+                <div className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2">
+                  <div className="text-[10px] text-zinc-400">Verified Bookings</div>
+                  <div className="font-mono font-bold text-emerald-300">
+                    {crossSiteFunnel.verifiedBookingJourneys} ({crossSiteFunnel.completedBookings} orders)
+                  </div>
+                </div>
+                <div className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2">
+                  <div className="text-[10px] text-zinc-400">CP Journeys / Sailings / Boards</div>
+                  <div className="font-mono font-bold text-white">
+                    {crossSiteFunnel.cpJourneys} / {crossSiteFunnel.cpSailingStartedJourneys} / {crossSiteFunnel.cpBoardsCreatedJourneys}
+                  </div>
+                  <div className="text-[10px] text-cyan-300">DCC → CP: {crossSiteFunnel.dccToCpPct}%</div>
                 </div>
               </div>
             </div>
