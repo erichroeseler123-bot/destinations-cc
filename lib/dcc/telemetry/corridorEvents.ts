@@ -418,6 +418,34 @@ function resolveDeterministicEventUuid(rawEventId?: string): string | undefined 
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20, 32)}`;
 }
 
+function sanitizeTelemetryPath(rawPath?: string | null): string | null {
+  if (!rawPath || typeof rawPath !== "string") return null;
+  const pathOnly = rawPath.split("?")[0].split("#")[0].trim();
+  if (!pathOnly) return null;
+  if (/^\/booking\/[^/]+/i.test(pathOnly)) return "/booking/[token]";
+  if (/^\/pay-balance\/[^/]+/i.test(pathOnly)) return "/pay-balance/[token]";
+  if (/^\/pay\/[^/]+/i.test(pathOnly)) return "/pay/[token]";
+  if (/^\/quote\/[^/]+/i.test(pathOnly)) return "/quote/[token]";
+  if (/^\/manage\/[^/]+/i.test(pathOnly)) return "/manage/[token]";
+  if (/^\/operator-offer\/[^/]+/i.test(pathOnly)) return "/operator-offer/[token]";
+  return pathOnly;
+}
+
+function sanitizeTelemetryEventId(rawEventId?: string | null): string | undefined {
+  if (!rawEventId || typeof rawEventId !== "string") return undefined;
+  const trimmed = rawEventId.trim();
+  if (!trimmed) return undefined;
+  if (/^(parr_booking_|gosno_booking_)/i.test(trimmed)) {
+    const secret =
+      process.env.TELEMETRY_HASH_SECRET?.trim() ||
+      process.env.DCC_PARR_WEBHOOK_TOKEN?.trim() ||
+      "dcc-telemetry-redact";
+    const digest = crypto.createHmac("sha256", secret).update(trimmed).digest("hex").slice(0, 24);
+    return `redacted_evt_${digest}`;
+  }
+  return trimmed;
+}
+
 export async function appendCorridorEventDurably(input: CorridorEventPayload) {
   if (input.corridor_id === CRUISE_DEBUG_CORRIDOR_ID) {
     await appendCruiseDebugEvent(input);
@@ -443,8 +471,25 @@ export async function appendCorridorEventDurably(input: CorridorEventPayload) {
 
   await ensureCorridorCatalogRows();
 
-  const resolvedEventUuid = resolveDeterministicEventUuid(input.event_id);
-  const metaRecord = (input.metadata && typeof input.metadata === "object" ? input.metadata : {}) as Record<string, unknown>;
+  const safeEventId = sanitizeTelemetryEventId(input.event_id);
+  const resolvedEventUuid = resolveDeterministicEventUuid(safeEventId);
+  const rawMeta = (input.metadata && typeof input.metadata === "object" ? input.metadata : {}) as Record<string, unknown>;
+  const metaRecord: Record<string, unknown> = { ...rawMeta };
+  if (typeof metaRecord.entry_page === "string") {
+    metaRecord.entry_page = sanitizeTelemetryPath(metaRecord.entry_page);
+  }
+  if (typeof metaRecord.source_page === "string") {
+    metaRecord.source_page = sanitizeTelemetryPath(metaRecord.source_page);
+  }
+  if (typeof metaRecord.landing_path === "string") {
+    metaRecord.landing_path = sanitizeTelemetryPath(metaRecord.landing_path);
+  }
+  if (typeof metaRecord.event_id === "string") {
+    metaRecord.event_id = sanitizeTelemetryEventId(metaRecord.event_id);
+  }
+  const safeSourcePage = sanitizeTelemetryPath(input.source_page);
+  const safeLandingPath = sanitizeTelemetryPath(input.landing_path);
+  const safeTargetPath = sanitizeTelemetryPath(input.target_path);
   const journeyId =
     input.journey_id ||
     (typeof metaRecord.journey_id === "string" && metaRecord.journey_id.trim() ? metaRecord.journey_id.trim() : undefined) ||
@@ -462,9 +507,9 @@ export async function appendCorridorEventDurably(input: CorridorEventPayload) {
       handoffId: input.handoff_id ?? journeyId ?? null,
       sessionId: input.session_id ?? null,
       userId: input.user_id ?? null,
-      sourcePage: input.source_page ?? null,
-      landingPath: input.landing_path ?? null,
-      targetPath: input.target_path ?? null,
+      sourcePage: safeSourcePage,
+      landingPath: safeLandingPath,
+      targetPath: safeTargetPath,
       requestedLane: input.requested_lane ?? null,
       resolvedLane: input.resolved_lane ?? null,
       topic: input.topic ?? null,
@@ -482,7 +527,7 @@ export async function appendCorridorEventDurably(input: CorridorEventPayload) {
       pageVariant: input.page_variant ?? null,
       metadata: {
         ...metaRecord,
-        ...(input.event_id ? { event_id: input.event_id } : {}),
+        ...(safeEventId ? { event_id: safeEventId } : {}),
         ...(journeyId ? { journey_id: journeyId } : {}),
         is_test: isTest,
       },
