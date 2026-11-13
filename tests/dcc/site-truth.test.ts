@@ -86,3 +86,21 @@ test("ShuttleYa truth keeps the retired Argo service retired everywhere", () => 
   assert.ok(read("apps/shuttleya/app/agent.json/route.ts").includes("SHUTTLEYA_TRUTH"));
   assert.ok(read("apps/shuttleya/app/llms.txt/route.ts").includes("SHUTTLEYA_TRUTH"));
 });
+
+test("Cruise Promenade truth records 2026-11-13 verification, 120-min return buffer, 57 vs 14,346 sailing tiers, and two-mode RollCall separation", () => {
+  const cp = getDccSiteTruth("cruise-promenade");
+  assert.ok(cp);
+  assert.equal(cp.provenance.last_verified, "2026-11-13");
+  assert.equal(cp.public_claims?.default_recommendation_return_buffer_minutes, 120);
+  assert.equal(cp.public_claims?.verified_complete_port_itineraries_count, 57);
+  assert.equal(cp.public_claims?.catalog_confirmed_ship_sail_dates_count, 14346);
+  assert.equal(
+    cp.public_claims?.hosted_group_rollcall_activation,
+    "immediate_upon_organizer_board_creation",
+  );
+  assert.equal(
+    cp.public_claims?.ship_wide_onboard_rollcall_window,
+    "24h_before_embarkation_to_24h_after_disembarkation",
+  );
+});
+

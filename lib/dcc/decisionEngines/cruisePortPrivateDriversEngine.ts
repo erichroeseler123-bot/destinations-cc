@@ -123,7 +123,7 @@ export const CRUISE_PORT_DRIVERS_EVIDENCE_CLAIMS: EvidenceClaim[] = [
     sourceIds: ["src-cruise-promenade-site-truth-2026"],
     isDecisionChanging: true,
     verificationNote:
-      "Verified in lib/dcc/siteTruth.ts (cruise-promenade, booking.authority: provider, takes_payment: false, last_verified 2026-09-10).",
+      "Verified in lib/dcc/siteTruth.ts (cruise-promenade, booking.authority: provider, takes_payment: false, last_verified 2026-11-13).",
   },
   {
     claimId: "claim-port-day-walkable-baseline",
