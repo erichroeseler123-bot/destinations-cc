@@ -15,10 +15,10 @@ export const RED_ROCKS_VENUE_FACTS = {
   overnightVehicleRule:
     "Overnight vehicles should be moved before 10:00 a.m. the next day.",
   parrOfferingSummary:
-    "Party at Red Rocks currently offers private rides and publishes $399 for a Suburban up to 6 and $599 for a van up to 10, subject to availability.",
-  parrSuburbanPriceUsd: 399,
+    "Party at Red Rocks offers standalone private rides (no ticket bundle required) at $499 flat round-trip for a Private Suburban up to 6 and $699 flat round-trip for a Private Van up to 10 (includes Denver pickup, Upper North Lot tailgating setup, and on-site driver wait; excludes concert admission), subject to availability.",
+  parrSuburbanPriceUsd: 499,
   parrSuburbanMaxGuests: 6,
-  parrVanPriceUsd: 599,
+  parrVanPriceUsd: 699,
   parrVanMaxGuests: 10,
   parrSubjectToAvailability: true,
   officialGettingHereUrl:
@@ -503,8 +503,8 @@ export function evaluateRedRocksRidePlan(input: {
   const partySize = Math.max(1, Math.min(20, Math.round(input.partySize || 6)));
 
   // Determine Party at Red Rocks routing:
-  // 1-6 guests -> Suburban ($399)
-  // 7-10 guests -> Van ($599)
+  // 1-6 guests -> Suburban ($499)
+  // 7-10 guests -> Van ($699)
   // 11+ guests -> Quote
   const isSuburbanFit = partySize >= 1 && partySize <= 6;
   const isSingleVanFit = partySize >= 7 && partySize <= 10;
@@ -608,9 +608,9 @@ export function evaluateRedRocksRidePlan(input: {
           : "/contact",
       populatesOnArrival: true,
       behaviorOnPartyAtRedRocks: isSuburbanFit
-        ? "Opens the Private Suburban Booking ($399 • Up to 6 guests) checkout directly."
+        ? "Opens the Private Suburban Booking ($499 • Up to 6 guests) checkout directly."
         : isSingleVanFit
-          ? "Opens the Upgrade to Private Van Booking ($599 • Up to 10 Guests) checkout directly."
+          ? "Opens the Upgrade to Private Van Booking ($699 • Up to 10 Guests) checkout directly."
           : "Opens the Party at Red Rocks quote/contact page for groups of 11+.",
     },
     {
@@ -716,35 +716,35 @@ export function evaluateRedRocksRidePlan(input: {
         ? "7–10 Guests · Private Van"
         : "11+ Guests · Custom Group Quote",
     priceHeadline: isSuburbanFit
-      ? "$399 Suburban (up to 6)"
+      ? "$499 Suburban (up to 6)"
       : isSingleVanFit
-        ? "$599 Van (up to 10)"
+        ? "$699 Van (up to 10)"
         : "Custom Quote (11+ Guests)",
     perPersonLabel:
       perPersonUsd !== null
         ? `$${perPersonUsd.toFixed(2)}/person for ${partySize} guests · Subject to availability`
         : `Multi-vehicle coordination for ${partySize} guests · Subject to availability`,
     availabilityNote:
-      "Party at Red Rocks currently offers private rides and publishes $399 for a Suburban up to 6 and $599 for a van up to 10, subject to availability.",
+      "Party at Red Rocks offers standalone private rides (no ticket bundle required) at $499 flat round-trip for a Private Suburban up to 6 and $699 flat round-trip for a Private Van up to 10, subject to availability.",
     showTimeVsPickupNote: parrShowVsPickupNote,
     postShowPickupSummary:
       "Dedicated private vehicle waits on-site through the encore, bypassing the general rideshare queue at Jurassic Lot by Entrance 2.",
     overnightOrLotRule:
-      "Includes private pickup, pre-show tailgate time, cooler storage during the show, and direct ride home. Enter your pickup details in checkout.",
+      "Includes Denver-area pickup, Upper North Lot tailgating setup (chairs, cooler, ice, speaker), on-site driver wait, and direct ride home. Excludes concert admission and gratuity.",
     groupFitSummary: isSuburbanFit
-      ? `Your group of ${partySize} goes straight to the Private Suburban checkout ($399 up to 6, subject to availability).`
+      ? `Your group of ${partySize} goes straight to the Private Suburban checkout ($499 flat round-trip up to 6, subject to availability).`
       : isSingleVanFit
-        ? `Your group of ${partySize} goes straight to the Private Van checkout ($599 up to 10, subject to availability).`
+        ? `Your group of ${partySize} goes straight to the Private Van checkout ($699 flat round-trip up to 10, subject to availability).`
         : `Groups of 11+ exceed a single 10-passenger van and go to a custom multi-vehicle quote.`,
     bullets: [
-      "Published rates: $399 for a Suburban up to 6 and $599 for a van up to 10, subject to availability.",
+      "Published 2027 flat round-trip rates: $499 for a Private Suburban up to 6 and $699 for a Private Van up to 10, subject to availability.",
       parrTimingBullet,
       `Carries ${show.artist} (${show.date}) into checkout. Enter pickup details in checkout.`,
     ],
     ctaLabel: isSuburbanFit
-      ? "Book Private Suburban ($399 up to 6) →"
+      ? "Book Private Suburban ($499 up to 6) →"
       : isSingleVanFit
-        ? "Book Private Van ($599 up to 10) →"
+        ? "Book Private Van ($699 up to 10) →"
         : "Request Group Quote (11+ Guests) →",
     ctaHref: checkoutUrl,
     checkoutNote:
@@ -779,8 +779,8 @@ export function evaluateRedRocksRidePlan(input: {
       subjectToAvailability: true,
       summary:
         publishedPriceUsd !== null && perPersonUsd !== null
-          ? `Party at Red Rocks currently offers private rides and publishes $399 for a Suburban up to 6 and $599 for a van up to 10, subject to availability. For ${partySize} guests, ${vehicleLabel} is $${publishedPriceUsd} ($${perPersonUsd.toFixed(2)}/person).`
-          : `Party at Red Rocks currently offers private rides and publishes $399 for a Suburban up to 6 and $599 for a van up to 10, subject to availability. Groups of ${partySize} require a custom multi-vehicle quote.`,
+          ? `Party at Red Rocks offers standalone private rides at $499 flat round-trip for a Private Suburban up to 6 and $699 flat round-trip for a Private Van up to 10, subject to availability. For ${partySize} guests, ${vehicleLabel} is $${publishedPriceUsd} ($${perPersonUsd.toFixed(2)}/person).`
+          : `Party at Red Rocks offers standalone private rides at $499 flat round-trip for a Private Suburban up to 6 and $699 flat round-trip for a Private Van up to 10, subject to availability. Groups of ${partySize} require a custom multi-vehicle quote.`,
     },
     comparisonCards: [parkingCard, rideshareCard, parrCard],
     handoff: {

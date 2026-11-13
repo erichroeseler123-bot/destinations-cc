@@ -253,19 +253,19 @@ export default function RedRocksAuthorityPage({
                       <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#ffb07c]">
                         Option 1: Groups up to 6 · Subject to Availability
                       </span>
-                      <h4 className="mt-2 text-lg font-bold text-white">Private Suburban — $399 (Up to 6)</h4>
+                      <h4 className="mt-2 text-lg font-bold text-white">Private Suburban — $499 flat round-trip (Up to 6)</h4>
                       <p className="mt-3 text-xs leading-6 text-zinc-300">
-                        Party at Red Rocks currently offers private rides and publishes $399 for a Suburban up to 6, subject to availability. Includes private pickup, tailgate time, and return after the show without the Jurassic Lot by Entrance 2 post-show pickup queue.
+                        Party at Red Rocks publishes $499 flat round-trip for a 2027 Private Suburban up to 6, subject to live provider availability. Includes Denver-area pickup, optional grocery/liquor stop, Upper North Lot tailgating setup (chairs, cooler, ice, speaker), a driver and vehicle that remain through the show, and your return ride home (excludes concert admission, optional purchases, gratuity, and additional unplanned stops).
                       </p>
                     </div>
                     <div className="mt-6">
                       <ParrCtaLink
-                        href="https://www.partyatredrocks.com/book/red-rocks-amphitheatre/private"
+                        href="https://www.partyatredrocks.com/book/red-rocks-amphitheatre/private/suv"
                         page={sourcePath}
                         cta="private-suburban-segment-cta"
                         className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-[#3df3ff] px-4 text-xs font-black uppercase tracking-[0.16em] text-[#07111d] transition hover:bg-[#62f6ff]"
                       >
-                        Check Suburban Availability ($399)
+                        Check Suburban Availability ($499)
                       </ParrCtaLink>
                     </div>
                   </article>
@@ -273,11 +273,11 @@ export default function RedRocksAuthorityPage({
                   <article className="rounded-2xl border border-white/10 bg-[#090f1e] p-5 flex flex-col justify-between">
                     <div>
                       <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#ffb07c]">
-                        Option 2: Groups up to 10 · Subject to Availability
+                        Option 2: Groups up to 10 · Independently Bookable
                       </span>
-                      <h4 className="mt-2 text-lg font-bold text-white">Private Van — $599 (Up to 10)</h4>
+                      <h4 className="mt-2 text-lg font-bold text-white">Private Van — $699 flat round-trip (Up to 10)</h4>
                       <p className="mt-3 text-xs leading-6 text-zinc-300">
-                        Party at Red Rocks publishes $599 for a van up to 10, subject to availability. Keeps groups of 7 to 10 together in one dedicated private vehicle with custom pickup and post-encore return.
+                        Party at Red Rocks publishes $699 flat round-trip for a 2027 Private Van up to 10, subject to live provider availability. Includes Denver-area pickup, Upper North Lot tailgating setup (chairs, cooler, ice, speaker), and one dedicated vehicle waiting through the show for your return ride home.
                       </p>
                     </div>
                     <div className="mt-6">
@@ -287,7 +287,7 @@ export default function RedRocksAuthorityPage({
                         cta="private-van-segment-cta"
                         className="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-white/12 bg-white/6 px-4 text-xs font-black uppercase tracking-[0.16em] text-white transition hover:bg-white/10"
                       >
-                        Check Van Availability ($599)
+                        Check Van Availability ($699)
                       </ParrCtaLink>
                     </div>
                   </article>

@@ -330,9 +330,9 @@ export function resolveColoradoSeasonalSpotlight(params?: {
           partnerId: "partyatredrocks" as const,
           partnerName: "Party at Red Rocks" as const,
           offerHeadline:
-            "Party at Red Rocks — Private Tailgate & Ride ($499 SUV / $599 14-Pax Sprinter) & Concert Shuttles ($65)",
+            "Party at Red Rocks — Private Tailgate & Ride ($499 Suburban / $699 10-Pax Van)",
           offerSummary:
-            "Dedicated Red Rocks show-night execution: book a private SUV ($499) or 14-passenger Sprinter ($599) for a private Upper/Lower lot tailgate and guaranteed post-encore pickup (bypassing the Jurassic Lot rideshare walk), or a $65/person round-trip shuttle.",
+            "Dedicated Red Rocks show-night execution: book a standalone Private Suburban ($499 flat round-trip) or 10-passenger Private Van ($699 flat round-trip) with Denver pickup, Upper North Lot tailgating setup (chairs, cooler, ice, speaker), and on-site driver wait through the encore.",
           primaryCtaLabel:
             "Open Party at Red Rocks Private Tailgate & Ride →",
           primaryCtaHref: `https://www.partyatredrocks.com/book/red-rocks-amphitheatre/private?date=${encodeURIComponent(dateParam)}&guests=${partySize}&src=dcc-colorado-seasonal`,

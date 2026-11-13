@@ -14,18 +14,27 @@ interface ContextualSpecialistReturnBannerProps {
 
 function buildParrReturnUrl(params: {
   date?: string | null;
+  artist?: string | null;
   partySize?: number;
   origin?: string | null;
+  vehicle?: string | null;
   journeyId?: string;
   qaTest?: boolean;
 }): string {
-  const vehicle = (params.partySize ?? 4) > 6 ? "van" : "suv";
+  const vehicle =
+    params.vehicle === "van" || params.vehicle === "suv"
+      ? params.vehicle
+      : (params.partySize ?? 4) > 6
+        ? "van"
+        : "suv";
   const url = new URL(`https://www.partyatredrocks.com/book/red-rocks-amphitheatre/private/${vehicle}`);
   url.searchParams.set("source", "dcc");
   url.searchParams.set("intent", "red-rocks-private-transfer");
+  url.searchParams.set("vehicle", vehicle);
   if (params.journeyId) url.searchParams.set("journey_id", params.journeyId);
   if (params.qaTest) url.searchParams.set("qa_test", "1");
   if (params.date) url.searchParams.set("date", params.date);
+  if (params.artist) url.searchParams.set("artist", params.artist);
   if (params.partySize) url.searchParams.set("partySize", String(params.partySize));
   if (params.origin) url.searchParams.set("origin", params.origin);
   return url.toString();
@@ -59,9 +68,11 @@ export default function ContextualSpecialistReturnBanner({
   const searchParams = useSearchParams();
   const source = searchParams.get("source");
   const date = searchParams.get("date");
+  const artist = searchParams.get("artist");
   const partySizeRaw = searchParams.get("partySize");
   const partySize = partySizeRaw ? Number.parseInt(partySizeRaw, 10) : undefined;
   const origin = searchParams.get("origin");
+  const vehicle = searchParams.get("vehicle");
   const airport = searchParams.get("airport");
   const resort = searchParams.get("resort");
   const direction = searchParams.get("direction");
@@ -82,8 +93,10 @@ export default function ContextualSpecialistReturnBanner({
     if (specialist === "parr") {
       return buildParrReturnUrl({
         date,
+        artist,
         partySize: Number.isFinite(partySize) ? partySize : undefined,
         origin,
+        vehicle,
         journeyId: journeyId || undefined,
         qaTest,
       });
@@ -97,7 +110,7 @@ export default function ContextualSpecialistReturnBanner({
       journeyId: journeyId || undefined,
       qaTest,
     });
-  }, [specialist, date, partySize, origin, airport, resort, direction, journeyId, qaTest]);
+  }, [specialist, date, artist, partySize, origin, vehicle, airport, resort, direction, journeyId, qaTest]);
 
   useEffect(() => {
     trackNetworkEvent({
@@ -180,7 +193,7 @@ export default function ContextualSpecialistReturnBanner({
                 <span aria-hidden="true">→</span>
               </a>
               <span className="text-[11px] text-slate-400">
-                Direct private SUV ($399) &amp; Sprinter van ($599) · Party at Red Rocks (DCC network)
+                2027 flat round-trip: Private Suburban ($499) &amp; Private Van ($699) · Upper North Lot tailgating &amp; on-site wait · Party at Red Rocks (independently bookable)
               </span>
             </div>
           </div>

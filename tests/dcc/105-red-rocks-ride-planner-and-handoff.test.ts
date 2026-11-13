@@ -43,9 +43,9 @@ test("1. Red Rocks guide and ride comparison fix outdated $65 shared shuttle, En
   const parkingComp = resolveTransportModeComparison(parkingMode);
   const rideshareComp = resolveTransportModeComparison(rideshareMode);
 
-  // 1a. Party at Red Rocks private rides ($399 Suburban up to 6 / $599 van up to 10, subject to availability)
-  assert.match(shuttleComp.pricingModel || "", /\$399 for a Suburban up to 6/);
-  assert.match(shuttleComp.pricingModel || "", /\$599 for a van up to 10/);
+  // 1a. Party at Red Rocks private rides ($499 Suburban up to 6 / $699 van up to 10, subject to availability)
+  assert.match(shuttleComp.pricingModel || "", /\$499.*Suburban up to 6/);
+  assert.match(shuttleComp.pricingModel || "", /\$699.*van up to 10/i);
   assert.match(shuttleComp.pricingModel || "", /subject to availability/i);
   assert.doesNotMatch(shuttleComp.pricingModel || "", /\$55–\$65|\$65/);
 
@@ -87,15 +87,15 @@ test("1. Red Rocks guide and ride comparison fix outdated $65 shared shuttle, En
     recheck.venuePickupRules.overnightVehicleDeadline,
     "Before 10:00 a.m. the next day",
   );
-  assert.match(recheck.recheckCard.whatStillFits, /\$399 for a Suburban up to 6/);
-  assert.match(recheck.recheckCard.whatStillFits, /\$599 for a van up to 10/);
+  assert.match(recheck.recheckCard.whatStillFits, /\$499.*Suburban up to 6/);
+  assert.match(recheck.recheckCard.whatStillFits, /\$699.*van up to 10/i);
   assert.doesNotMatch(recheck.recheckCard.whatStillFits, /\$65/);
 
   const llms = resolveLlmsTxtByRegionOrNodeSlug("red-rocks") || "";
   assert.match(llms, /Jurassic Lot by Entrance 2/);
   assert.match(llms, /before 10:00 a\.m\. the next day/i);
-  assert.match(llms, /\$399 for a Suburban up to 6/);
-  assert.match(llms, /\$599 for a van up to 10/);
+  assert.match(llms, /\$499.*Suburban up to 6/);
+  assert.match(llms, /\$699.*van up to 10/i);
   assert.doesNotMatch(llms, /past \*\*2:00 AM\*\*/);
 
   const selfDriveOption = RED_ROCKS_CONCERT_DECISION_ENGINE.candidateOptions.find(
@@ -262,9 +262,9 @@ test("4. Main private ride button routes 1-6 guests to Suburban, 7-10 to Van, an
 
   assert.equal(plan6.partySize, 6);
   assert.equal(plan6.parrRecommendation.vehicleType, "suburban");
-  assert.equal(plan6.parrRecommendation.publishedPriceUsd, 399);
+  assert.equal(plan6.parrRecommendation.publishedPriceUsd, 499);
   assert.equal(plan6.parrRecommendation.maxCapacityPerVehicle, 6);
-  assert.equal(plan6.parrRecommendation.perPersonUsd, 66.5);
+  assert.equal(plan6.parrRecommendation.perPersonUsd, 83.17);
   assert.equal(plan6.handoff.destinationKind, "suburban_checkout");
 
   const parrCard6 = plan6.comparisonCards.find(
@@ -297,9 +297,9 @@ test("4. Main private ride button routes 1-6 guests to Suburban, 7-10 to Van, an
 
   assert.equal(plan8.partySize, 8);
   assert.equal(plan8.parrRecommendation.vehicleType, "van");
-  assert.equal(plan8.parrRecommendation.publishedPriceUsd, 599);
+  assert.equal(plan8.parrRecommendation.publishedPriceUsd, 699);
   assert.equal(plan8.parrRecommendation.maxCapacityPerVehicle, 10);
-  assert.equal(plan8.parrRecommendation.perPersonUsd, 74.88);
+  assert.equal(plan8.parrRecommendation.perPersonUsd, 87.38);
   assert.equal(plan8.handoff.destinationKind, "van_checkout");
 
   const parrCard8 = plan8.comparisonCards.find(
@@ -373,14 +373,14 @@ test("4. Main private ride button routes 1-6 guests to Suburban, 7-10 to Van, an
   assert.notEqual(cmpEvt6.eventId, clkEvt6.eventId);
   assert.equal(cmpEvt6.partySize, 6);
   assert.equal(cmpEvt6.recommendedVehicle, "suburban");
-  assert.equal(cmpEvt6.publishedPriceUsd, 399);
+  assert.equal(cmpEvt6.publishedPriceUsd, 499);
   assert.equal(clkEvt6.targetUrl, plan6.handoff.checkoutUrl);
 
   assert.equal(cmpEvt8.eventName, "red_rocks_ride_comparison");
   assert.equal(clkEvt8.eventName, "red_rocks_provider_click");
   assert.equal(cmpEvt8.partySize, 8);
   assert.equal(cmpEvt8.recommendedVehicle, "van");
-  assert.equal(cmpEvt8.publishedPriceUsd, 599);
+  assert.equal(cmpEvt8.publishedPriceUsd, 699);
   assert.equal(clkEvt8.targetUrl, plan8.handoff.checkoutUrl);
 
   const recorded = getRecordedRedRocksPlannerEvents();

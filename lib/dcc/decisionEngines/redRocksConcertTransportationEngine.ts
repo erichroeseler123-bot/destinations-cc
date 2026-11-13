@@ -129,7 +129,7 @@ export const RED_ROCKS_CONCERT_SOURCE_RECORDS: SourceRecord[] = [
     sourceId: "src-party-at-red-rocks-tariff-2026",
     sourceOrganization: "Party at Red Rocks",
     sourceTitle:
-      "Party at Red Rocks Private Concert Charter Tariff ($399 Private Suburban up to 6 Guests / $599 Private Van up to 10 Guests; shared_seat_service: false)",
+      "Party at Red Rocks Private Concert Charter Tariff ($499 Private Suburban up to 6 Guests / $699 Private Van up to 10 Guests; shared_seat_service: false)",
     sourceUrl: "https://www.partyatredrocks.com",
     claimsSupported: ["claim-rr-parr-private-pricing-and-wait"],
     retrievedAt: "2026-10-20T00:00:00.000Z",
@@ -179,7 +179,7 @@ export const RED_ROCKS_CONCERT_EVIDENCE_CLAIMS: EvidenceClaim[] = [
     claimId: "claim-rr-parr-private-pricing-and-wait",
     classification: "operator_published_fact",
     statement:
-      "Party at Red Rocks operates 100% private round-trip concert transportation (shared_seat_service: false; $399 flat for a private full-size Chevrolet Suburban up to 6 guests, and $599 flat for a private van up to 10 guests) where the dedicated driver remains on-site through the final encore with tailgate cooler storage included.",
+      "Party at Red Rocks operates 100% private round-trip concert transportation (shared_seat_service: false; $499 flat for a private full-size Chevrolet Suburban up to 6 guests, and $699 flat for a private van up to 10 guests) including Upper North Lot tailgating setup (chairs, cooler, ice, speaker) and an on-site driver waiting through the final encore; excludes concert admission, optional purchases, gratuity, and additional unplanned stops.",
     fieldsSupported: [
       "groupSize",
       "wantsTailgateAndCoolerStorage",
@@ -188,7 +188,7 @@ export const RED_ROCKS_CONCERT_EVIDENCE_CLAIMS: EvidenceClaim[] = [
     sourceIds: ["src-party-at-red-rocks-tariff-2026"],
     isDecisionChanging: true,
     verificationNote:
-      "Verified against lib/dcc/siteTruth.ts (shared_seat_service: false, suburban_usd: 399, van_usd: 599) and src/data/pre-site-guides.ts.",
+      "Verified against lib/dcc/siteTruth.ts (shared_seat_service: false, suburban_usd: 499, van_usd: 699) and src/data/pre-site-guides.ts.",
   },
   {
     claimId: "claim-rr-rtd-no-park-bus",
@@ -207,8 +207,8 @@ export const RED_ROCKS_CONCERT_CANDIDATE_OPTIONS: CandidateOption[] = [
   {
     optionId: "rr-parr-private-suburban-6pax",
     title:
-      "Party at Red Rocks Private Full-Size Suburban ($399 Flat Round-Trip, 1–6 Guests)",
-    shortLabel: "Party at Red Rocks Private Suburban ($399 / 1–6 Pax)",
+      "Party at Red Rocks Private Full-Size Suburban ($499 Flat Round-Trip, 1–6 Guests)",
+    shortLabel: "Party at Red Rocks Private Suburban ($499 / 1–6 Pax)",
     optionKind: "owned_specialist_comparison",
     actualOperators: ["Party at Red Rocks"],
     islandsOrRegions: ["morrison_red_rocks"],
@@ -257,25 +257,25 @@ export const RED_ROCKS_CONCERT_CANDIDATE_OPTIONS: CandidateOption[] = [
     whaleSightingOrReRidePolicy:
       "Guaranteed waiting private vehicle on-site—even if the concert pauses for a lightning hold or runs past midnight.",
     indicativePriceUsd: {
-      min: 67,
-      max: 399,
+      min: 83,
+      max: 499,
       basisLabel:
-        "$399 flat round-trip for the private Suburban ($66.50/person at 6 guests)",
+        "$499 flat round-trip for the private Suburban ($83.17/person at 6 guests)",
     },
     comparisonValues: {
-      serviceModel: "100% Private Door-to-Door Suburban ($399 flat)",
+      serviceModel: "100% Private Door-to-Door Suburban ($499 flat)",
       postEncoreExit: "Dedicated Driver Parked On-Site (Zero Surge / Zero Queue)",
       lotAndStairImpact: "Upper Lot / Top Circle Drop-Off",
-      tailgateCoolerPolicy: "Coolers & Tailgate Gear Stowed in Vehicle",
+      tailgateCoolerPolicy: "Upper North Lot Tailgate Setup (Chairs, Cooler, Ice & Speaker) Included",
     },
     tradeoffs: {
       strengths: [
         "Eliminates the #1 Red Rocks failure mode: waiting 60–90+ minutes after midnight in the Jurassic Lot rideshare bottleneck",
-        "At 5–6 guests ($66.50–$79.80/person round-trip), delivers 100% private door-to-door service, cooler storage, and a guaranteed waiting driver",
+        "At 5–6 guests ($83.17–$99.80/person round-trip), delivers 100% private door-to-door service, Upper North Lot tailgating setup, and a guaranteed waiting driver",
       ],
       limitations: [
-        "Higher per-person cost for solo concertgoers or couples ($199.50/person for 2 guests)",
-        "Capped at 6 passengers (groups of 7–10 require the $599 private van)",
+        "Higher per-person cost for solo concertgoers or couples ($249.50/person for 2 guests)",
+        "Capped at 6 passengers (groups of 7–10 require the $699 private van); excludes concert admission and gratuity",
       ],
     },
     claimIds: [
@@ -294,7 +294,7 @@ export const RED_ROCKS_CONCERT_CANDIDATE_OPTIONS: CandidateOption[] = [
         sellerType: "dcc_owned_specialist",
         sellerName: "Party at Red Rocks",
         actualOperatorName: "Party at Red Rocks",
-        label: "Book Private $399 Suburban on Party at Red Rocks",
+        label: "Book Private $499 Suburban on Party at Red Rocks",
         url: "https://www.partyatredrocks.com/book/red-rocks-amphitheatre/private",
         supportedContextParams: ["date", "partySize"],
         relationshipDisclosure:
@@ -307,8 +307,8 @@ export const RED_ROCKS_CONCERT_CANDIDATE_OPTIONS: CandidateOption[] = [
   {
     optionId: "rr-parr-private-van-10pax",
     title:
-      "Party at Red Rocks Private Group Van ($599 Flat Round-Trip, 7–10 Guests)",
-    shortLabel: "Party at Red Rocks Private Van ($599 / Up to 10 Pax)",
+      "Party at Red Rocks Private Group Van ($699 Flat Round-Trip, 7–10 Guests)",
+    shortLabel: "Party at Red Rocks Private Van ($699 / Up to 10 Pax)",
     optionKind: "private_charter",
     actualOperators: ["Party at Red Rocks"],
     islandsOrRegions: ["morrison_red_rocks"],
@@ -320,11 +320,11 @@ export const RED_ROCKS_CONCERT_CANDIDATE_OPTIONS: CandidateOption[] = [
     operatingMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
     scheduleVerifiedThroughDate: "2027-10-31",
     vesselOrVehicleType:
-      "100% Private 10-Passenger Concert Van ($599 Flat Round-Trip)",
+      "100% Private 10-Passenger Concert Van ($699 Flat Round-Trip)",
     groupCapacityRange: {
       min: 1,
       max: 10,
-      label: "Up to 10 passengers ($59.90/person round-trip at 10 guests)",
+      label: "Up to 10 passengers ($69.90/person round-trip at 10 guests)",
     },
     rideComfortLevel: "high_stability",
     viewingSpaceDescription:
@@ -356,24 +356,24 @@ export const RED_ROCKS_CONCERT_CANDIDATE_OPTIONS: CandidateOption[] = [
     whaleSightingOrReRidePolicy:
       "Driver stays on-site for immediate shelter during lightning holds and post-show egress.",
     indicativePriceUsd: {
-      min: 60,
-      max: 599,
+      min: 70,
+      max: 699,
       basisLabel:
-        "$599 flat round-trip for the private van ($59.90/person at 10 guests)",
+        "$699 flat round-trip for the private van ($69.90/person at 10 guests)",
     },
     comparisonValues: {
-      serviceModel: "100% Private 10-Pax Group Van ($599 flat)",
+      serviceModel: "100% Private 10-Pax Group Van ($699 flat)",
       postEncoreExit: "Dedicated Driver Parked On-Site (Immediate Group Exit)",
       lotAndStairImpact: "Upper Lot Drop-Off & Tailgate Base",
-      tailgateCoolerPolicy: "Full Cooler & Tailgate Storage Included",
+      tailgateCoolerPolicy: "Upper North Lot Tailgate Setup (Chairs, Cooler, Ice & Speaker) Included",
     },
     tradeoffs: {
       strengths: [
-        "Keeps 7–10 concertgoers together in a single private door-to-door vehicle for $59.90–$85.57/person round-trip",
-        "Provides an on-site weather shelter if a lightning delay hits during the show",
+        "Keeps 7–10 concertgoers together in a single private door-to-door vehicle for $69.90–$99.86/person round-trip",
+        "Provides Upper North Lot tailgating setup and an on-site weather shelter if a lightning delay hits during the show",
       ],
       limitations: [
-        "Too large/expensive for solo travelers or couples",
+        "Too large/expensive for solo travelers or couples; excludes concert admission and gratuity",
         "Single-van capacity is capped at 10 guests",
       ],
     },
@@ -392,7 +392,7 @@ export const RED_ROCKS_CONCERT_CANDIDATE_OPTIONS: CandidateOption[] = [
         sellerType: "dcc_owned_specialist",
         sellerName: "Party at Red Rocks",
         actualOperatorName: "Party at Red Rocks",
-        label: "Book Private $599 Group Van on Party at Red Rocks",
+        label: "Book Private $699 Group Van on Party at Red Rocks",
         url: "https://www.partyatredrocks.com/book/red-rocks-amphitheatre/private",
         supportedContextParams: ["date", "partySize"],
         relationshipDisclosure:
@@ -598,11 +598,11 @@ export const RED_ROCKS_CONCERT_QUESTIONS: QuestionDefinition[] = [
     questionId: "groupSize",
     label: "Concert group size",
     helpText:
-      "Party at Red Rocks Private Suburbans ($399) fit up to 6 guests; Private Vans ($599) fit up to 10 guests.",
+      "Party at Red Rocks Private Suburbans ($499) fit up to 6 guests; Private Vans ($699) fit up to 10 guests.",
     inputType: "number",
     requiredForPersonalizedVerdict: true,
     decisionImpactExplanation:
-      "At 5–6 guests, a private $399 Suburban is $66.50–$79.80/person round-trip; at 7–10 guests, the $599 private van is $59.90–$85.57/person.",
+      "At 5–6 guests, a private $499 Suburban is $83.17–$99.80/person round-trip; at 7–10 guests, the $699 private van is $69.90–$99.86/person.",
     drivenByClaimIds: ["claim-rr-parr-private-pricing-and-wait"],
     min: 1,
     max: 10,
@@ -702,7 +702,7 @@ export const RED_ROCKS_CONCERT_COMPARISON_DIMENSIONS: ComparisonDimension[] = [
     dimensionId: "serviceModel",
     label: "Service Model & Verified Pricing",
     description:
-      "100% private flat-rate charter ($399 Suburban / $599 Van) vs. rideshare vs. $0.00 self-drive.",
+      "100% private flat-rate charter ($499 Suburban / $699 Van) vs. rideshare vs. $0.00 self-drive.",
   },
   {
     dimensionId: "postEncoreExit",
@@ -755,7 +755,7 @@ export const RED_ROCKS_CONCERT_HARD_CONSTRAINT_RULES: HardConstraintRule<RedRock
             passed: false,
             eliminationReason: `Group of ${input.groupSize} guests exceeds ${option.shortLabel} capacity of ${option.groupCapacityRange.max} guests.`,
             whatInputChangeWouldAlterResult:
-              "Select the 10-passenger Private Group Van ($599 flat round-trip) for groups of 7–10.",
+              "Select the 10-passenger Private Group Van ($699 flat round-trip) for groups of 7–10.",
           };
         }
         return { passed: true };
@@ -802,7 +802,7 @@ export const RED_ROCKS_CONCERT_HARD_CONSTRAINT_RULES: HardConstraintRule<RedRock
             eliminationReason:
               "On-demand Uber/Lyft drivers drop off and leave; hard coolers are prohibited inside Red Rocks Amphitheatre and cannot be stored without a dedicated vehicle on-site.",
             whatInputChangeWouldAlterResult:
-              "Choose a Party at Red Rocks private Suburban ($399) or Van ($599) where your cooler stays locked in your waiting vehicle, or disable cooler storage.",
+              "Choose a Party at Red Rocks private Suburban ($499) or Van ($699) where your cooler stays locked in your waiting vehicle, or disable cooler storage.",
           };
         }
         return { passed: true };
@@ -823,7 +823,7 @@ export const RED_ROCKS_CONCERT_HARD_CONSTRAINT_RULES: HardConstraintRule<RedRock
             passed: false,
             eliminationReason: `${option.shortLabel} does not provide step-free Top Circle post-show access (${option.accessibilityProfile.note}).`,
             whatInputChangeWouldAlterResult:
-              "Select the Private Suburban charter ($399, Top Circle drop-off supported) or self-drive with a valid state ADA placard.",
+              "Select the Private Suburban charter ($499, Top Circle drop-off supported) or self-drive with a valid state ADA placard.",
           };
         }
         return { passed: true };
@@ -880,20 +880,20 @@ export const RED_ROCKS_CONCERT_PREFERENCE_RULES: PreferenceRule<RedRocksConcertT
           input.groupSize <= 6 &&
           option.optionId === "rr-parr-private-suburban-6pax"
         ) {
-          const perPerson = Math.round((399 / input.groupSize) * 100) / 100;
+          const perPerson = Math.round((499 / input.groupSize) * 100) / 100;
           return {
             points: 35,
-            reason: `Right-sized 6-passenger private Suburban ($399 flat = $${perPerson}/person round-trip for ${input.groupSize} guest(s)).`,
+            reason: `Right-sized 6-passenger private Suburban ($499 flat = $${perPerson}/person round-trip for ${input.groupSize} guest(s)).`,
           };
         }
         if (
           input.groupSize >= 7 &&
           option.optionId === "rr-parr-private-van-10pax"
         ) {
-          const perPerson = Math.round((599 / input.groupSize) * 100) / 100;
+          const perPerson = Math.round((699 / input.groupSize) * 100) / 100;
           return {
             points: 35,
-            reason: `Right-sized 10-passenger private Van ($599 flat = $${perPerson}/person round-trip for ${input.groupSize} guests).`,
+            reason: `Right-sized 10-passenger private Van ($699 flat = $${perPerson}/person round-trip for ${input.groupSize} guests).`,
           };
         }
         return { points: 15, reason: "Fits group size." };
@@ -931,9 +931,9 @@ export const RED_ROCKS_CONCERT_DECISION_ENGINE: DecisionEngineDefinition<RedRock
     destinationName: "Red Rocks Park & Amphitheatre (Morrison / Denver, CO)",
     categoryName: "Concert Venue Transportation",
     heroQuestion:
-      "Should your group book a 100% private Party at Red Rocks Suburban ($399 up to 6 guests) or Van ($599 up to 10 guests), gamble on the Jurassic Lot Uber/Lyft queue ($85–$160+ post-show surge), or self-drive ($0.00 parking)?",
+      "Should your group book a 100% private Party at Red Rocks Suburban ($499 up to 6 guests) or Van ($699 up to 10 guests), gamble on the Jurassic Lot Uber/Lyft queue ($85–$160+ post-show surge), or self-drive ($0.00 parking)?",
     summaryDescription:
-      "Evidence-backed Red Rocks concert transportation evaluator modeling 6,450 ft elevation stair grades (150–380+ steps from lower lots), the Entrance 2 Jurassic Lot rideshare geofence, $0.00 official parking rules, and Party at Red Rocks private charters ($399 Suburban / $599 Van; shared_seat_service: false).",
+      "Evidence-backed Red Rocks concert transportation evaluator modeling 6,450 ft elevation stair grades (150–380+ steps from lower lots), the Entrance 2 Jurassic Lot rideshare geofence, $0.00 official parking rules, and Party at Red Rocks private charters ($499 Suburban / $699 Van; shared_seat_service: false).",
     referenceGuide: {
       importantDecisionFactors: [
         {
@@ -945,9 +945,9 @@ export const RED_ROCKS_CONCERT_DECISION_ENGINE: DecisionEngineDefinition<RedRock
         },
         {
           title:
-            "Party at Red Rocks Private Charter Truth ($399 Suburban / $599 Van; No Shared Seats)",
+            "Party at Red Rocks Private Charter Truth ($499 Suburban / $699 Van; No Shared Seats)",
           detail:
-            "Party at Red Rocks operates 100% private round-trip concert transportation (shared_seat_service: false): $399 flat for a full-size Suburban (up to 6 guests, $66.50/person at 6) and $599 flat for a private van (up to 10 guests, $59.90/person at 10), with cooler storage and a dedicated driver waiting on-site through the encore.",
+            "Party at Red Rocks operates 100% private round-trip concert transportation (shared_seat_service: false): $499 flat for a full-size Suburban (up to 6 guests, $83.17/person at 6) and $699 flat for a private van (up to 10 guests, $69.90/person at 10), including Upper North Lot tailgating setup (chairs, cooler, ice, speaker) and a dedicated driver waiting on-site through the encore.",
           sourceIds: ["src-party-at-red-rocks-tariff-2026"],
         },
         {
@@ -960,22 +960,22 @@ export const RED_ROCKS_CONCERT_DECISION_ENGINE: DecisionEngineDefinition<RedRock
       experienceAndVesselTypes: [
         {
           typeName:
-            "Party at Red Rocks Private Suburban ($399 Flat, 1–6 Guests)",
+            "Party at Red Rocks Private Suburban ($499 Flat, 1–6 Guests)",
           capacityAndStability:
-            "1–6 passengers in a 100% private full-size Chevrolet Suburban ($66.50/person at 6 guests)",
+            "1–6 passengers in a 100% private full-size Chevrolet Suburban ($83.17/person at 6 guests)",
           bestFor:
-            "Groups of 3–6 wanting door-to-door hotel/Airbnb pickup, tailgate cooler storage, and a dedicated driver waiting on-site after the encore",
-          limitations: "Capped at 6 guests; higher per-person cost for 1–2 riders",
+            "Groups of 3–6 wanting door-to-door Denver pickup, Upper North Lot tailgating setup, and a dedicated driver waiting on-site after the encore",
+          limitations: "Capped at 6 guests; higher per-person cost for 1–2 riders; excludes concert admission",
           sourceIds: ["src-party-at-red-rocks-tariff-2026"],
         },
         {
           typeName:
-            "Party at Red Rocks Private Group Van ($599 Flat, Up to 10 Guests)",
+            "Party at Red Rocks Private Group Van ($699 Flat, Up to 10 Guests)",
           capacityAndStability:
-            "Up to 10 passengers in a 100% private concert van ($59.90/person at 10 guests)",
+            "Up to 10 passengers in a 100% private concert van ($69.90/person at 10 guests)",
           bestFor:
-            "Groups of 7–10 wanting one private door-to-door vehicle and on-site shelter during weather holds",
-          limitations: "Single-van capacity capped at 10 guests",
+            "Groups of 7–10 wanting one private door-to-door vehicle, Upper North Lot tailgating setup, and on-site shelter during weather holds",
+          limitations: "Single-van capacity capped at 10 guests; excludes concert admission",
           sourceIds: ["src-party-at-red-rocks-tariff-2026"],
         },
         {
@@ -1006,7 +1006,7 @@ export const RED_ROCKS_CONCERT_DECISION_ENGINE: DecisionEngineDefinition<RedRock
           islandOrRegion: "Denver Metro & Golden",
           harborOrArea: "Door-to-Door Hotel / Residence Pickup",
           logisticsNote:
-            "Party at Red Rocks private Suburbans ($399) and Vans ($599) pick up directly at your hotel or residence.",
+            "Party at Red Rocks private Suburbans ($499) and Vans ($699) pick up directly at your hotel or residence.",
           sourceIds: ["src-party-at-red-rocks-tariff-2026"],
         },
         {
@@ -1021,7 +1021,7 @@ export const RED_ROCKS_CONCERT_DECISION_ENGINE: DecisionEngineDefinition<RedRock
       commonTradeoffs: [
         {
           tradeoff:
-            "Private $399 Suburban vs. Round-Trip Uber/Lyft for 4–6 People",
+            "Private $499 Suburban vs. Round-Trip Uber/Lyft for 4–6 People",
           explanation:
             "Once inbound ($30–$45) and post-show UberXL surge ($120–$160+) are combined, a group of 4–6 pays nearly half the cost of a private Suburban anyway—while still hiking down to the Jurassic Lot and waiting 60–90+ minutes.",
         },
@@ -1075,7 +1075,7 @@ export const RED_ROCKS_CONCERT_DECISION_ENGINE: DecisionEngineDefinition<RedRock
                   category: "missing_traveler_input",
                   summary: "Concert date not provided.",
                   impactOnDecision:
-                    "Private Suburban ($399) and Van ($599) availability on Party at Red Rocks requires confirming your specific concert date.",
+                    "Private Suburban ($499) and Van ($699) availability on Party at Red Rocks requires confirming your specific concert date.",
                   sourceIds: ["src-party-at-red-rocks-tariff-2026"],
                 },
               ]

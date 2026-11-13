@@ -185,7 +185,7 @@ export const AUDITED_DCC_GUIDES: DccGuideCitationAuditEntry[] = [
     regionalLlmsTxtUrl:
       "https://destinationcommandcenter.com/red-rocks/llms.txt",
     directAnswerSummary:
-      "At Red Rocks Amphitheatre, the venue puts general post-show pickup at Jurassic Lot by Entrance 2 (Upper North and Top Circle are closed to Uber/Lyft pickups, with typical 60–90+ min post-encore queues) and says overnight vehicles should be moved before 10:00 a.m. the next day; Party at Red Rocks currently offers private rides and publishes $399 for a Suburban up to 6 and $599 for a van up to 10, subject to availability.",
+      "At Red Rocks Amphitheatre, the venue puts general post-show pickup at Jurassic Lot by Entrance 2 (Upper North and Top Circle are closed to Uber/Lyft pickups, with typical 60–90+ min post-encore queues) and says overnight vehicles should be moved before 10:00 a.m. the next day; Party at Red Rocks offers standalone private round-trip rides at $499 for a Private Suburban up to 6 and $699 for a Private Van up to 10 (Upper North Lot tailgating setup and on-site driver wait included; concert admission excluded), subject to availability.",
     sourcedCitations: [
       {
         organization: "City and County of Denver Arts & Venues — Red Rocks Park",

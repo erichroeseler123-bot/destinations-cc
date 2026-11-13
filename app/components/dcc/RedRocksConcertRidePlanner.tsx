@@ -558,8 +558,8 @@ export function RedRocksConcertRidePlanner() {
                   2. How many are going?
                 </label>
                 <p className="mt-0.5 text-xs text-slate-600">
-                  Party at Red Rocks publishes $399 for a Suburban up to 6 and
-                  $599 for a van up to 10, subject to availability.
+                  Party at Red Rocks publishes $499 flat round-trip for a 2027 Suburban up to 6 and
+                  $699 flat round-trip for a 2027 van up to 10 (includes Upper North Lot tailgating setup &amp; on-site wait), subject to live provider availability.
                 </p>
 
                 <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -573,7 +573,7 @@ export function RedRocksConcertRidePlanner() {
                         : "border border-slate-300 bg-white text-slate-800 hover:bg-slate-50"
                     }`}
                   >
-                    Group of 6 ($399 Suburban)
+                    Group of 6 ($499 Suburban)
                   </button>
                   <button
                     type="button"
@@ -585,7 +585,7 @@ export function RedRocksConcertRidePlanner() {
                         : "border border-slate-300 bg-white text-slate-800 hover:bg-slate-50"
                     }`}
                   >
-                    Group of 8 ($599 Van)
+                    Group of 8 ($699 Van)
                   </button>
                   <select
                     id="rr-party-size-select"

@@ -154,8 +154,13 @@ export const DCC_SITE_TRUTH: readonly DccPortfolioTruthRecord[] = [
     booking: { authority: "site", takes_payment: true },
     public_claims: {
       shared_seat_service: false,
-      suburban_usd: 399,
-      van_usd: 599,
+      season: "2027",
+      suburban_usd: 499,
+      van_usd: 699,
+      pricing_type: "flat round-trip vehicle price",
+      included:
+        "Round-trip service, Denver-area pickup, coordinated arrival, Upper North Lot tailgating setup (chairs, cooler, ice, speaker), driver and vehicle waiting throughout the show, and return ride home.",
+      exclusions: "Concert admission, optional purchases, gratuity, and additional unplanned stops.",
     },
   },
   {

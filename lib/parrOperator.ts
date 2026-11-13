@@ -55,11 +55,11 @@ export const PARR_OPERATOR = {
   name: "Party at Red Rocks",
   website: "https://www.partyatredrocks.com",
   summary:
-    "Party at Red Rocks currently offers private rides for Red Rocks show nights and publishes $399 for a Suburban up to 6 and $599 for a van up to 10, subject to availability.",
+    "Party at Red Rocks offers private rides for Red Rocks show nights and publishes $499 flat round-trip for a 2027 Suburban up to 6 and $699 flat round-trip for a 2027 van up to 10 (includes Denver-area pickup, Upper North Lot tailgating setup with chairs, cooler, ice & speaker, and on-site wait), subject to live availability.",
   trustPoints: [
-    "Private Suburban ($399 up to 6, subject to availability)",
-    "Private Van ($599 up to 10, subject to availability)",
-    "Private tailgate time and return ride after the show",
+    "Private Suburban ($499 flat round-trip up to 6, subject to availability)",
+    "Private Van ($699 flat round-trip up to 10, subject to availability)",
+    "Upper North Lot tailgating setup (chairs, cooler, ice, speaker) and return ride after the show",
   ],
   supportLabel: "Questions about pickup, payment, or your ride?",
   supportDetail: `Questions about pickup, payment, or your ride? Text ${PARR_SUPPORT_PHONE_DISPLAY} or email ${PARR_SUPPORT_EMAIL}.`,

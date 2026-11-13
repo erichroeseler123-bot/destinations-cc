@@ -35,7 +35,7 @@ export default function PrivateVsSharedGuidePage() {
             {[
               ["Shared seats", "$59+"],
               ["Private SUV", "$499"],
-              ["10-Pass Van", "$599"],
+              ["10-Pass Van", "$699"],
               ["14-Pass Sprinter", "$799"],
             ].map(([label, price]) => (
               <div key={label} className="rounded-2xl border border-white/10 bg-black/20 p-4">

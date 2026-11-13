@@ -101,7 +101,7 @@ export default async function RedRocksPage() {
             bullets: [
               "Parking is $0 in official venue lots (opening 2 hours before doors), requires a sober driver, and overnight vehicles should be moved before 10:00 a.m. the next day.",
               "Rideshare is easier on the way in than the way out: the venue puts general post-show pickup at Jurassic Lot by Entrance 2, with a downhill walk and 60–90+ minute post-encore waits.",
-              "Party at Red Rocks currently offers private rides and publishes $399 for a Suburban up to 6 and $599 for a van up to 10, subject to availability.",
+              "Party at Red Rocks offers standalone private rides (no ticket bundle required) at $499 flat round-trip for a Private Suburban up to 6 and $699 flat round-trip for a Private Van up to 10 (includes Denver pickup, Upper North Lot tailgating setup, and on-site driver wait; excludes concert admission and gratuity), subject to availability.",
               "Keep show time and pickup time separate: use the venue's official doors and showtime, and get any pickup deadline from the operator.",
             ],
           },

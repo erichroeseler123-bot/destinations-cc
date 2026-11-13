@@ -1899,19 +1899,19 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
     gettingThereAndAround: {
       sectionTitle: "Getting There & Getting Around: Lots, Private Rides, Driving & Rideshare Realities",
       leadSummary:
-        "There is no train or public bus into Red Rocks Park. Every concertgoer must choose between driving and parking in one of five tiered lots (overnight vehicles should be moved before 10:00 a.m. the next day), booking a private tailgate and ride (Party at Red Rocks publishes $399 for a Suburban up to 6 and $599 for a van up to 10, subject to availability), or using rideshare/general post-show pickup at Jurassic Lot by Entrance 2.",
+        "There is no train or public bus into Red Rocks Park. Every concertgoer must choose between driving and parking in one of five tiered lots (overnight vehicles should be moved before 10:00 a.m. the next day), booking a standalone private tailgate and ride (Party at Red Rocks publishes $499 flat round-trip for a Private Suburban up to 6 and $699 flat round-trip for a Private Van up to 10, subject to availability), or using rideshare/general post-show pickup at Jurassic Lot by Entrance 2.",
       modes: [
         {
           id: "rr-shuttle-transfer",
-          modeName: "Party at Red Rocks Private Tailgate & Ride ($399 Suburban up to 6 / $599 Van up to 10)",
+          modeName: "Party at Red Rocks Private Tailgate & Ride ($499 Suburban up to 6 / $699 Van up to 10)",
           category: "shuttle_transfer",
           operatorOrAuthority: "Party at Red Rocks (Private Rides, Subject to Availability) & Permitted Operators",
-          routeOrCoverage: "Private door-to-door round-trip transfers from your Denver, Golden, or metro lodging to Red Rocks Amphitheatre with pre-show tailgate time and post-encore return.",
+          routeOrCoverage: "Private door-to-door round-trip transfers from your Denver-area lodging to Red Rocks Amphitheatre with Upper North Lot tailgating setup (chairs, cooler, ice, speaker), on-site driver wait, and post-encore return.",
           scheduleAndStatusIntegration: "curated_with_official_link",
           whatWorksInPractice:
-            "Party at Red Rocks currently offers private rides and publishes $399 for a Suburban up to 6 and $599 for a van up to 10, subject to availability. Pre-booked private rides eliminate designated-driver duties, uphill hikes from distant overflow parking, and waiting 60–90+ minutes in the Jurassic Lot by Entrance 2 post-show pickup queue.",
+            "Party at Red Rocks offers standalone private rides (no concert ticket bundle required) at $499 flat round-trip for a Private Suburban up to 6 and $699 flat round-trip for a Private Van up to 10, subject to availability. Pre-booked private rides include Upper North Lot tailgating setup and eliminate designated-driver duties, uphill hikes from distant overflow parking, and waiting 60–90+ minutes in the Jurassic Lot by Entrance 2 post-show pickup queue.",
           practicalConstraints: [
-            "Private Suburbans ($399 up to 6) and vans ($599 up to 10) are subject to availability on concert nights—confirm availability for your show date.",
+            "Private Suburbans ($499 up to 6) and Private Vans ($699 up to 10) are subject to availability on concert nights—confirm availability for your show date. Excludes concert admission, optional purchases, gratuity, and additional unplanned stops.",
             "Show time and pickup time are separate: use the venue's official doors and showtime, and get any pickup deadline from the operator.",
           ],
           officialResourceUrl: "https://www.redrocksonline.com/plan-your-visit/getting-here/",
@@ -1970,7 +1970,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         },
       ],
       keyDecisionTakeaway:
-        "Solve your post-show exit before you leave for the foothills. Compare free venue parking (overnight vehicles should be moved before 10:00 a.m. the next day), general post-show pickup at Jurassic Lot by Entrance 2, and Party at Red Rocks' private tailgate and ride ($399 for a Suburban up to 6 and $599 for a van up to 10, subject to availability).",
+        "Solve your post-show exit before you leave for the foothills. Compare free venue parking (overnight vehicles should be moved before 10:00 a.m. the next day), general post-show pickup at Jurassic Lot by Entrance 2, and Party at Red Rocks' standalone private tailgate and ride ($499 flat round-trip for a Private Suburban up to 6 and $699 flat round-trip for a Private Van up to 10, subject to availability).",
     },
     beforeYouGo: {
       sectionTitle: "Before You Go: Venue Rules, Altitude Health, Weather Exposure & Emergency Info",
@@ -2167,7 +2167,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
           { value: "denver_union_station", label: "Downtown Denver (Union Station / LoDo)" },
           { value: "denver_colfax_capitol", label: "Capitol Hill / Colfax / RiNo" },
           { value: "golden_foothills", label: "Golden / West Metro Foothills" },
-          { value: "private_suv_group", label: "Private Door-to-Door Suburban ($399) / Van ($599)" },
+          { value: "private_suv_group", label: "Private Door-to-Door Suburban ($499) / Van ($699)" },
         ],
       },
       options: [
@@ -2177,9 +2177,9 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
           partnerRole: "transport_operator",
           integrationMode: "context_handoff_link",
           description:
-            "Party at Red Rocks currently offers private rides for Red Rocks show nights and publishes $399 for a Suburban up to 6 and $599 for a van up to 10, subject to availability.",
+            "Party at Red Rocks offers standalone private rides (no ticket bundle required) for Red Rocks show nights at $499 flat round-trip for a Private Suburban up to 6 and $699 flat round-trip for a Private Van up to 10 (Upper North Lot tailgating setup & on-site driver wait included; concert admission excluded), subject to availability.",
           whenItHelps:
-            "Best when your group wants private door-to-door pickup, pre-show tailgate time, and a waiting vehicle after the show instead of the Jurassic Lot by Entrance 2 post-show pickup queue.",
+            "Best when your group wants private door-to-door pickup, Upper North Lot tailgate setup, and a waiting vehicle after the show instead of the Jurassic Lot by Entrance 2 post-show pickup queue.",
           noPurchaseRequiredNote:
             "Carries your selected show, date, and group context into Party at Red Rocks. Checking availability requires no purchase.",
           baseUrl: "https://www.partyatredrocks.com/book/red-rocks-amphitheatre/private",
@@ -2188,7 +2188,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
             source_surface: "dcc_red_rocks_reference",
             venue: "red-rocks-amphitheatre",
           },
-          expectedProductMarkers: ["Red Rocks", "Suburban", "$399", "$599"],
+          expectedProductMarkers: ["Red Rocks", "Suburban", "$499", "$699"],
         },
         {
           id: "handoff-dcc-denver-red-rocks-route",
@@ -4214,7 +4214,7 @@ export const TRANSPORT_MODE_COMPARISON_BY_ID: Record<
 
   // Red Rocks
   "rr-shuttle-transfer": {
-    pricingModel: "Party at Red Rocks currently offers private rides and publishes $399 for a Suburban up to 6 and $599 for a van up to 10, subject to availability; zero surge pricing.",
+    pricingModel: "Party at Red Rocks offers standalone private rides at $499 flat round-trip for a Private Suburban up to 6 and $699 flat round-trip for a Private Van up to 10 (Upper North Lot tailgating setup & on-site driver wait included; concert admission excluded), subject to availability; zero surge pricing.",
     egressOrTransitTiming: "Door-to-door pickup from your hotel or residence (pickup time is separate from venue showtime; get any pickup deadline from operator); dedicated vehicle waits on-site through the encore.",
     statutoryOrOperationalRule: "Permitted commercial and private charter vehicles stage in designated zones, bypassing the general post-show pickup queue at Jurassic Lot by Entrance 2.",
   },

@@ -95,7 +95,7 @@ export function buildTravelReferenceNodeLlmsTxt(node: TravelReferenceNode): stri
       "- **Overnight Vehicle Rule**: The venue states that overnight vehicles should be moved **before 10:00 a.m. the next day**.",
     );
     lines.push(
-      "- **Party at Red Rocks Private Rides**: Party at Red Rocks currently offers private rides and publishes **$399 for a Suburban up to 6** and **$599 for a van up to 10**, subject to availability.",
+      "- **Party at Red Rocks Private Rides**: Party at Red Rocks offers standalone private rides (no ticket bundle required) at **$499 flat round-trip for a Private Suburban up to 6** and **$699 flat round-trip for a Private Van up to 10** (includes Denver pickup, Upper North Lot tailgating setup, and on-site driver wait; excludes concert admission), subject to availability.",
     );
   } else if (node.id === "denver-breckenridge") {
     lines.push("");
