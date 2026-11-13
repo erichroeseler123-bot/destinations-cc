@@ -1252,8 +1252,8 @@ export function buildLfsePublicJuneauAvailabilityView(
     const cardIndex = cards.length;
     const whaleImagePool = [
       "/images/alaska/juneau-whale.jpg",
-      "/images/alaska/whale-watching.jpg",
       "/images/alaska/allen-marine-catamaran.jpg",
+      "/images/alaska/whale-watching.jpg",
     ];
     const imageUrl = isShuttle
       ? "/images/alaska/mendenhall-visitor-center.jpg"
