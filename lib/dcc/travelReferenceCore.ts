@@ -851,11 +851,11 @@ export const DCC_CAPABILITY_TRUTH_MATRIX: CapabilityTruthItem[] = [
     category: "weather_atmospheric",
     status: "live_integrated_global",
     actualImplementation:
-      "Live HTTP integration via Open-Meteo Forecast API (/api/location/{lat}/{lng}). Returns current temperature, wind, precipitation, weather codes, and gridded model snow_depth.",
-    geographicScope: "Global (any valid latitude/longitude coordinate)",
+      "Centralized DCC weather gateway (/api/location/{lat}/{lng} and /api/internal/weather): routes eligible U.S. coordinates to NOAA/NWS and international coordinates to Open-Meteo Commercial API when OPEN_METEO_API_KEY is configured, falling back to labeled cached snapshots or seasonal climatology.",
+    geographicScope: "Global (U.S. NOAA/NWS + International Open-Meteo Commercial or labeled climatology)",
     commonMisconceptionToAvoid:
       "Gridded model snow_depth is an atmospheric model estimate at the coordinate grid cell, not an official ski-area mid-mountain stake or SNOTEL avalanche telemetry reading.",
-    primarySources: ["Open-Meteo Forecast API (open-meteo.com)"],
+    primarySources: ["NOAA/NWS Forecast API (api.weather.gov)", "Open-Meteo Commercial API (when configured)"],
   },
   {
     capability: "Air Quality (US AQI, PM2.5, PM10, Ozone, UV Index)",

@@ -30,29 +30,30 @@ export function TimeshareMap({ query, label }: TimeshareMapProps) {
 
     async function loadMap() {
       try {
-        const url = new URL("https://nominatim.openstreetmap.org/search");
-        url.searchParams.set("format", "jsonv2");
-        url.searchParams.set("limit", "1");
-        url.searchParams.set("q", query);
-
-        const response = await fetch(url.toString(), {
-          headers: {
-            Accept: "application/json",
+        const response = await fetch(
+          `/api/public/location-resolve?q=${encodeURIComponent(query)}`,
+          {
+            headers: {
+              Accept: "application/json",
+            },
           },
-        });
+        );
 
         if (!response.ok) {
           throw new Error("geocode_failed");
         }
 
-        const data = (await response.json()) as GeocodeResult[];
-        const match = data[0];
+        const payload = (await response.json()) as {
+          ok?: boolean;
+          results?: Array<{ lat?: number | string | null; lng?: number | string | null; lon?: number | string | null }>;
+        };
+        const match = payload.results?.[0];
         if (!match) {
           throw new Error("no_match");
         }
 
         const lat = Number(match.lat);
-        const lon = Number(match.lon);
+        const lon = Number(match.lng ?? match.lon);
         if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
           throw new Error("bad_coords");
         }

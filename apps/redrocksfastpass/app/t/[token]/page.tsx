@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getBooking, HOLD_WINDOW_MINUTES } from "@/lib/bookings";
 import { canFinalizePaidBooking, finalizePaidBooking, markBookingNeedsReview } from "@/lib/finalizeBooking";
 import { getSquareRedirectTransactionId, getSquareTransaction } from "@/lib/payments";
+import { buildLocalQrSvgDataUri } from "@/lib/qrSvg";
 
 export const dynamic = "force-dynamic";
 
@@ -10,7 +11,7 @@ const BG_IMAGE =
   "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=1400&q=80";
 
 function buildQrImage(token: string) {
-  return `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(token)}`;
+  return buildLocalQrSvgDataUri(token, 240);
 }
 
 export default async function TicketPage({

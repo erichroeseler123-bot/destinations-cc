@@ -13,6 +13,7 @@ import {
   buildWebPageJsonLd,
 } from "@/lib/dcc/jsonld";
 import { buildSwampPlanHref } from "@/lib/dcc/warmTransfer";
+import { buildLocalQrSvgDataUri } from "@/lib/dcc/qrSvg";
 import PortfolioAssuranceBanner from "@/app/components/dcc/PortfolioAssuranceBanner";
 import PartnerSharePlanningBar from "@/app/components/dcc/PartnerSharePlanningBar";
 import PortableTripNetworkBar from "@/app/components/dcc/PortableTripNetworkBar";
@@ -216,7 +217,7 @@ export default async function NewOrleansSwampToursPage(props: {
     context: "first-time",
     sourcePage: PAGE_PATH,
   });
-  const mobileHandoffQr = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(PAGE_URL)}`;
+  const mobileHandoffQr = buildLocalQrSvgDataUri(PAGE_URL, 220);
 
   return (
     <main className="min-h-screen bg-[#050816] text-white" data-page-intent={PAGE_INTENT}>

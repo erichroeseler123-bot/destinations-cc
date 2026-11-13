@@ -1,4 +1,10 @@
 import { AsyncLocalStorage } from "node:async_hooks";
+import {
+  buildOpenMeteoCommercialUrl,
+  isUsNoaaEligibleCoordinate,
+  resolveCentralizedWeatherSummary,
+  resolveOpenMeteoCommercialKey,
+} from "@/lib/dcc/weatherGateway";
 
 export type Coordinate = { lat: number; lng: number };
 
@@ -160,122 +166,230 @@ function weatherDescription(code: number | null | undefined) {
 }
 
 export async function readGlobalWeather({ lat, lng }: Coordinate, options?: TelemetryReadOptions) {
-  return source("open-meteo", "Weather data: Open-Meteo", async () => {
-    const url = new URL("https://api.open-meteo.com/v1/forecast");
-    url.searchParams.set("latitude", String(lat));
-    url.searchParams.set("longitude", String(lng));
-    url.searchParams.set("timezone", "auto");
-    url.searchParams.set(
-      "current",
-      [
-        "temperature_2m",
-        "relative_humidity_2m",
-        "apparent_temperature",
-        "is_day",
-        "precipitation",
-        "rain",
-        "showers",
-        "snowfall",
-        "weather_code",
-        "cloud_cover",
-        "surface_pressure",
-        "wind_speed_10m",
-        "wind_direction_10m",
-        "wind_gusts_10m",
-      ].join(","),
-    );
-    url.searchParams.set(
-      "hourly",
-      [
-        "temperature_2m",
-        "apparent_temperature",
-        "precipitation_probability",
-        "precipitation",
-        "weather_code",
-        "visibility",
-        "wind_speed_10m",
-        "wind_gusts_10m",
-        "snow_depth",
-      ].join(","),
-    );
-    url.searchParams.set(
-      "daily",
-      [
-        "sunrise",
-        "sunset",
-        "uv_index_max",
-        "precipitation_sum",
-        "precipitation_probability_max",
-        "temperature_2m_max",
-        "temperature_2m_min",
-      ].join(","),
-    );
-    url.searchParams.set("forecast_days", "3");
-    const payload: any = await readJson(url.toString(), { revalidate: resolveRevalidate(300, options) });
-    const current = payload?.current || {};
-    const times: string[] = payload?.hourly?.time || [];
-    const currentIndex = Math.max(
-      0,
-      times.findIndex((time) => time >= (current.time || "")),
-    );
-    const slice = (values: any[]) => (Array.isArray(values) ? values.slice(currentIndex, currentIndex + 12) : []);
-    return {
-      timezone: payload?.timezone || null,
-      timezoneAbbreviation: payload?.timezone_abbreviation || null,
-      utcOffsetSeconds: payload?.utc_offset_seconds ?? null,
-      elevationM: payload?.elevation ?? null,
-      current: {
-        ...current,
-        description: weatherDescription(current.weather_code),
-      },
-      next12Hours: times.slice(currentIndex, currentIndex + 12).map((time, index) => ({
-        time,
-        temperatureC: slice(payload?.hourly?.temperature_2m || [])[index] ?? null,
-        apparentTemperatureC: slice(payload?.hourly?.apparent_temperature || [])[index] ?? null,
-        precipitationProbability: slice(payload?.hourly?.precipitation_probability || [])[index] ?? null,
-        precipitationMm: slice(payload?.hourly?.precipitation || [])[index] ?? null,
-        weatherCode: slice(payload?.hourly?.weather_code || [])[index] ?? null,
-        description: weatherDescription(slice(payload?.hourly?.weather_code || [])[index]),
-        visibilityM: slice(payload?.hourly?.visibility || [])[index] ?? null,
-        windKph: slice(payload?.hourly?.wind_speed_10m || [])[index] ?? null,
-        gustKph: slice(payload?.hourly?.wind_gusts_10m || [])[index] ?? null,
-        snowDepthM: slice(payload?.hourly?.snow_depth || [])[index] ?? null,
-      })),
-      next3Days: (payload?.daily?.time || []).map((date: string, index: number) => ({
-        date,
-        sunrise: payload?.daily?.sunrise?.[index] ?? null,
-        sunset: payload?.daily?.sunset?.[index] ?? null,
-        uvIndexMax: payload?.daily?.uv_index_max?.[index] ?? null,
-        precipitationMm: payload?.daily?.precipitation_sum?.[index] ?? null,
-        precipitationProbabilityMax: payload?.daily?.precipitation_probability_max?.[index] ?? null,
-        maxTemperatureC: payload?.daily?.temperature_2m_max?.[index] ?? null,
-        minTemperatureC: payload?.daily?.temperature_2m_min?.[index] ?? null,
-      })),
-      units: {
-        current: payload?.current_units || {},
-        hourly: payload?.hourly_units || {},
-        daily: payload?.daily_units || {},
-      },
-    };
-  });
+  const usNoaaEligible = isUsNoaaEligibleCoordinate(lat, lng);
+  const commercialKey = resolveOpenMeteoCommercialKey();
+
+  // Route eligible U.S. locations to NOAA/NWS via the centralized DCC weather gateway
+  if (usNoaaEligible || !commercialKey) {
+    const providerId = usNoaaEligible ? "noaa-nws" : "dcc-weather-gateway";
+    const attributionText = usNoaaEligible
+      ? "Public-domain forecast & alerts: U.S. National Weather Service (NOAA)"
+      : "DCC Seasonal Climatology / Verified Cache (Open-Meteo Commercial API key not configured)";
+
+    return source(providerId, attributionText, async () => {
+      const summary = await resolveCentralizedWeatherSummary({
+        lat,
+        lng,
+        label: "Coordinate Weather",
+      });
+
+      if (!summary.isCurrentConditions) {
+        // Hard invariant: never represent climatology or stale cached data as current conditions.
+        return {
+          timezone: null,
+          timezoneAbbreviation: null,
+          utcOffsetSeconds: null,
+          elevationM: null,
+          dataMode: summary.dataMode,
+          isCurrentConditions: false,
+          freshnessStatus: summary.freshnessStatus,
+          freshnessLabel: summary.freshnessLabel,
+          current: null,
+          cachedSnapshot:
+            summary.dataMode === "cached_snapshot"
+              ? {
+                  isCurrentConditions: false,
+                  observedAt: summary.observedAt,
+                  temperatureC: summary.temperatureC,
+                  temperatureF: summary.temperatureF,
+                  description: summary.condition,
+                }
+              : null,
+          climatology: summary.climatology,
+          next12Hours: [],
+          next3Days: [],
+          units: { current: {}, hourly: {}, daily: {} },
+        };
+      }
+
+      return {
+        timezone: null,
+        timezoneAbbreviation: null,
+        utcOffsetSeconds: null,
+        elevationM: null,
+        dataMode: summary.dataMode,
+        isCurrentConditions: true,
+        freshnessStatus: summary.freshnessStatus,
+        freshnessLabel: summary.freshnessLabel,
+        current: {
+          time: summary.observedAt,
+          temperature_2m: summary.temperatureC,
+          apparent_temperature: summary.apparentTemperatureC,
+          relative_humidity_2m: summary.humidityPercent,
+          wind_speed_10m: summary.windKph,
+          weather_code: summary.weatherCode,
+          description: summary.condition,
+        },
+        cachedSnapshot: null,
+        climatology: null,
+        next12Hours: summary.nextHours.map((h) => ({
+          time: h.startTime,
+          temperatureC: h.temperatureC,
+          apparentTemperatureC: h.temperatureC,
+          precipitationProbability: h.precipitationProbability,
+          precipitationMm: null,
+          weatherCode: null,
+          description: h.shortForecast,
+          visibilityM: null,
+          windKph: h.windMph != null ? Math.round(h.windMph * 1.60934) : null,
+          gustKph: null,
+          snowDepthM: null,
+        })),
+        next3Days: [],
+        units: { current: {}, hourly: {}, daily: {} },
+      };
+    });
+  }
+
+  return source(
+    "open-meteo-commercial",
+    "Weather data licensed via Open-Meteo Commercial API (customer-api.open-meteo.com)",
+    async () => {
+      const commercialUrl = buildOpenMeteoCommercialUrl("forecast", {
+        latitude: String(lat),
+        longitude: String(lng),
+        timezone: "auto",
+        current: [
+          "temperature_2m",
+          "relative_humidity_2m",
+          "apparent_temperature",
+          "is_day",
+          "precipitation",
+          "rain",
+          "showers",
+          "snowfall",
+          "weather_code",
+          "cloud_cover",
+          "surface_pressure",
+          "wind_speed_10m",
+          "wind_direction_10m",
+          "wind_gusts_10m",
+        ].join(","),
+        hourly: [
+          "temperature_2m",
+          "apparent_temperature",
+          "precipitation_probability",
+          "precipitation",
+          "weather_code",
+          "visibility",
+          "wind_speed_10m",
+          "wind_gusts_10m",
+          "snow_depth",
+        ].join(","),
+        daily: [
+          "sunrise",
+          "sunset",
+          "uv_index_max",
+          "precipitation_sum",
+          "precipitation_probability_max",
+          "temperature_2m_max",
+          "temperature_2m_min",
+        ].join(","),
+        forecast_days: "3",
+      });
+      if (!commercialUrl) {
+        throw new Error("OPEN_METEO_API_KEY_NOT_CONFIGURED");
+      }
+      const payload: any = await readJson(commercialUrl, {
+        revalidate: resolveRevalidate(300, options),
+      });
+      const current = payload?.current || {};
+      const times: string[] = payload?.hourly?.time || [];
+      const currentIndex = Math.max(
+        0,
+        times.findIndex((time) => time >= (current.time || "")),
+      );
+      const slice = (values: any[]) =>
+        Array.isArray(values) ? values.slice(currentIndex, currentIndex + 12) : [];
+      return {
+        timezone: payload?.timezone || null,
+        timezoneAbbreviation: payload?.timezone_abbreviation || null,
+        utcOffsetSeconds: payload?.utc_offset_seconds ?? null,
+        elevationM: payload?.elevation ?? null,
+        dataMode: "live_open_meteo_commercial" as const,
+        isCurrentConditions: true,
+        freshnessStatus: "fresh" as const,
+        freshnessLabel: "Commercial Open-Meteo model forecast",
+        current: {
+          ...current,
+          description: weatherDescription(current.weather_code),
+        },
+        cachedSnapshot: null,
+        climatology: null,
+        next12Hours: times.slice(currentIndex, currentIndex + 12).map((time, index) => ({
+          time,
+          temperatureC: slice(payload?.hourly?.temperature_2m || [])[index] ?? null,
+          apparentTemperatureC: slice(payload?.hourly?.apparent_temperature || [])[index] ?? null,
+          precipitationProbability:
+            slice(payload?.hourly?.precipitation_probability || [])[index] ?? null,
+          precipitationMm: slice(payload?.hourly?.precipitation || [])[index] ?? null,
+          weatherCode: slice(payload?.hourly?.weather_code || [])[index] ?? null,
+          description: weatherDescription(slice(payload?.hourly?.weather_code || [])[index]),
+          visibilityM: slice(payload?.hourly?.visibility || [])[index] ?? null,
+          windKph: slice(payload?.hourly?.wind_speed_10m || [])[index] ?? null,
+          gustKph: slice(payload?.hourly?.wind_gusts_10m || [])[index] ?? null,
+          snowDepthM: slice(payload?.hourly?.snow_depth || [])[index] ?? null,
+        })),
+        next3Days: (payload?.daily?.time || []).map((date: string, index: number) => ({
+          date,
+          sunrise: payload?.daily?.sunrise?.[index] ?? null,
+          sunset: payload?.daily?.sunset?.[index] ?? null,
+          uvIndexMax: payload?.daily?.uv_index_max?.[index] ?? null,
+          precipitationMm: payload?.daily?.precipitation_sum?.[index] ?? null,
+          precipitationProbabilityMax:
+            payload?.daily?.precipitation_probability_max?.[index] ?? null,
+          maxTemperatureC: payload?.daily?.temperature_2m_max?.[index] ?? null,
+          minTemperatureC: payload?.daily?.temperature_2m_min?.[index] ?? null,
+        })),
+        units: {
+          current: payload?.current_units || {},
+          hourly: payload?.hourly_units || {},
+          daily: payload?.daily_units || {},
+        },
+      };
+    },
+  );
 }
 
 export async function readAirQuality({ lat, lng }: Coordinate, options?: TelemetryReadOptions) {
   return source(
-    "open-meteo-air-quality",
-    "Air-quality data: Open-Meteo using Copernicus Atmosphere Monitoring Service (CAMS)",
+    "open-meteo-air-quality-commercial",
+    "Air-quality data licensed via Open-Meteo Commercial API (Copernicus CAMS)",
     async () => {
-      const url = new URL("https://air-quality-api.open-meteo.com/v1/air-quality");
-      url.searchParams.set("latitude", String(lat));
-      url.searchParams.set("longitude", String(lng));
-      url.searchParams.set("timezone", "auto");
-      url.searchParams.set(
-        "current",
-        ["us_aqi", "european_aqi", "pm10", "pm2_5", "carbon_monoxide", "nitrogen_dioxide", "sulphur_dioxide", "ozone", "uv_index"].join(","),
-      );
-      url.searchParams.set("hourly", "us_aqi,pm10,pm2_5,ozone,uv_index");
-      url.searchParams.set("forecast_hours", "12");
-      const payload: any = await readJson(url.toString(), { revalidate: resolveRevalidate(900, options) });
+      const commercialUrl = buildOpenMeteoCommercialUrl("air-quality", {
+        latitude: String(lat),
+        longitude: String(lng),
+        timezone: "auto",
+        current: [
+          "us_aqi",
+          "european_aqi",
+          "pm10",
+          "pm2_5",
+          "carbon_monoxide",
+          "nitrogen_dioxide",
+          "sulphur_dioxide",
+          "ozone",
+          "uv_index",
+        ].join(","),
+        hourly: "us_aqi,pm10,pm2_5,ozone,uv_index",
+        forecast_hours: "12",
+      });
+      if (!commercialUrl) {
+        throw new Error("OPEN_METEO_API_KEY_NOT_CONFIGURED");
+      }
+      const payload: any = await readJson(commercialUrl, {
+        revalidate: resolveRevalidate(900, options),
+      });
       return {
         timezone: payload?.timezone || null,
         current: payload?.current || null,

@@ -960,8 +960,13 @@ export function LiveCoordinateTelemetryCards({
 
   const nwsSourceState = primaryCore?.sources?.find((s: any) => s.provider === "nws");
   const weatherSourceState = primaryCore?.sources?.find(
-    (s: any) => s.provider === "open-meteo",
+    (s: any) =>
+      s.provider === "noaa-nws" ||
+      s.provider === "open-meteo-commercial" ||
+      s.provider === "dcc-weather-gateway" ||
+      s.provider === "open-meteo",
   );
+  const fallbackWeatherSummary = primaryCore?.fallbackSummary || null;
   const coopsStations = primaryExt?.coastal?.coops || [];
   const aviationStations = primaryExt?.aviation || [];
 
@@ -1043,10 +1048,35 @@ export function LiveCoordinateTelemetryCards({
               </span>
             </div>
           </div>
+        ) : fallbackWeatherSummary?.dataMode === "cached_snapshot" ? (
+          <div className="rounded-xl border border-amber-500/40 bg-amber-950/30 p-4 text-xs text-amber-100 space-y-1">
+            <strong>Cached Weather Snapshot — Not Current Conditions:</strong>{" "}
+            Last verified snapshot{" "}
+            {fallbackWeatherSummary.cachedTemperatureF != null
+              ? `${fallbackWeatherSummary.cachedTemperatureF}°F`
+              : ""}{" "}
+            {fallbackWeatherSummary.cachedConditionLabel
+              ? `(${fallbackWeatherSummary.cachedConditionLabel})`
+              : ""}{" "}
+            {fallbackWeatherSummary.observedAt
+              ? `observed ${new Date(fallbackWeatherSummary.observedAt).toISOString().slice(0, 16)}Z.`
+              : "."}{" "}
+            {fallbackWeatherSummary.attribution}
+          </div>
+        ) : fallbackWeatherSummary?.dataMode === "seasonal_climatology" &&
+          fallbackWeatherSummary.climatology ? (
+          <div className="rounded-xl border border-amber-500/40 bg-amber-950/30 p-4 text-xs text-amber-100 space-y-1">
+            <strong>Seasonal Climatology — Not Current Conditions:</strong>{" "}
+            Typical {fallbackWeatherSummary.climatology.monthName} range:{" "}
+            {fallbackWeatherSummary.climatology.typicalLowF}°F–
+            {fallbackWeatherSummary.climatology.typicalHighF}°F (
+            {fallbackWeatherSummary.climatology.typicalRainRiskLabel}). Live international
+            observations require commercial weather credentials.
+          </div>
         ) : (
           <div className="rounded-xl border border-rose-500/40 bg-rose-950/30 p-4 text-xs text-rose-200">
             <strong>Weather Feed Unavailable / Unverified:</strong> Upstream
-            Open-Meteo weather observation is currently unreachable (
+            weather observation is currently unreachable (
             {weatherSourceState?.error ||
               primaryTelemetry.fetchError ||
               refreshError ||

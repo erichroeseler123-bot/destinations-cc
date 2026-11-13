@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { buildDccReturnUrl, emitDccEvent, getOrCreateHandoffId } from "@/lib/dcc";
 import { getInventorySlot, usingDurableInventoryStore } from "@/lib/inventoryStore";
+import { buildLocalQrSvgDataUri } from "@/lib/qrSvg";
 
 export const dynamic = "force-dynamic";
 
@@ -42,7 +43,7 @@ export default async function CheckoutPage({
       ? `?slot=${encodeURIComponent(slotId)}&dcc_handoff_id=${encodeURIComponent(handoffId)}`
       : `?dcc_handoff_id=${encodeURIComponent(handoffId)}`
   }`;
-  const qrImage = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(currentUrl)}`;
+  const qrImage = buildLocalQrSvgDataUri(currentUrl, 260);
 
   if (slot && !reserved && !soldOut && !error) {
     await emitDccEvent({
@@ -81,7 +82,7 @@ export default async function CheckoutPage({
           <h2>Scan and finish.</h2>
           <p>Open this on your phone and finish in one minute.</p>
         </div>
-        <Image src={qrImage} alt="QR code for Red Rocks Fast Pass checkout" width={260} height={260} />
+        <Image src={qrImage} alt="QR code for Red Rocks Fast Pass checkout" width={260} height={260} unoptimized />
       </section>
 
       <div className="mobile-flow">

@@ -1,9 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
+import { redis } from "@/lib/redis";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const USER_AGENT = "DestinationCommandCenter/1.0 (https://destinationcommandcenter.com)";
+const USER_AGENT =
+  "DestinationCommandCenter/1.0 (https://destinationcommandcenter.com; geocoding-cache-v1)";
+const GEOCODE_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+const GEOCODE_CACHE_TTL_SECONDS = 7 * 24 * 60 * 60;
+const MIN_NOMINATIM_INTERVAL_MS = 1100; // <= 1 req/sec OSM policy compliance
+
+const memoryGeocodeCache = new Map<string, { expiresAt: number; data: unknown }>();
+const inFlightGeocodeRequests = new Map<string, Promise<unknown>>();
+let nextNominatimSlotMs = 0;
 
 function validCoordinate(value: string | null, min: number, max: number) {
   if (value == null || value.trim() === "") return null;
@@ -48,21 +57,73 @@ function normalizeResult(row: any) {
 }
 
 async function fetchNominatim(url: URL) {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 7000);
+  const cacheKey = `dcc:locres:v1:${url.toString()}`;
+  const now = Date.now();
+  const mem = memoryGeocodeCache.get(cacheKey);
+  if (mem && mem.expiresAt > now) {
+    return mem.data;
+  }
+
+  const inflight = inFlightGeocodeRequests.get(cacheKey);
+  if (inflight) {
+    return inflight;
+  }
+
+  const task = (async () => {
+    if (redis) {
+      try {
+        const cached = await redis.get(cacheKey);
+        if (cached) {
+          const parsed = typeof cached === "string" ? JSON.parse(cached) : cached;
+          memoryGeocodeCache.set(cacheKey, {
+            expiresAt: Date.now() + GEOCODE_CACHE_TTL_MS,
+            data: parsed,
+          });
+          return parsed;
+        }
+      } catch {
+        // Proceed on Redis cache miss/error
+      }
+    }
+
+    const waitMs = Math.max(0, nextNominatimSlotMs - Date.now());
+    nextNominatimSlotMs = Math.max(nextNominatimSlotMs, Date.now()) + MIN_NOMINATIM_INTERVAL_MS;
+    if (waitMs > 0) {
+      await new Promise((resolve) => setTimeout(resolve, Math.min(waitMs, 2500)));
+    }
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 7000);
+    try {
+      const response = await fetch(url.toString(), {
+        signal: controller.signal,
+        headers: {
+          "User-Agent": USER_AGENT,
+          Accept: "application/json",
+        },
+      });
+      if (!response.ok) throw new Error(`nominatim_${response.status}`);
+      const json = await response.json();
+      memoryGeocodeCache.set(cacheKey, {
+        expiresAt: Date.now() + GEOCODE_CACHE_TTL_MS,
+        data: json,
+      });
+      if (redis) {
+        redis
+          .set(cacheKey, JSON.stringify(json), { ex: GEOCODE_CACHE_TTL_SECONDS })
+          .catch(() => {});
+      }
+      return json;
+    } finally {
+      clearTimeout(timeout);
+    }
+  })();
+
+  inFlightGeocodeRequests.set(cacheKey, task);
   try {
-    const response = await fetch(url.toString(), {
-      cache: "no-store",
-      signal: controller.signal,
-      headers: {
-        "User-Agent": USER_AGENT,
-        Accept: "application/json",
-      },
-    });
-    if (!response.ok) throw new Error(`nominatim_${response.status}`);
-    return await response.json();
+    return await task;
   } finally {
-    clearTimeout(timeout);
+    inFlightGeocodeRequests.delete(cacheKey);
   }
 }
 

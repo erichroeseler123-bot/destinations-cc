@@ -1,4 +1,5 @@
 import { recordUpstreamFetchCall } from "@/lib/dcc/locationIntelligence";
+import { buildOpenMeteoCommercialUrl } from "@/lib/dcc/weatherGateway";
 
 export type Coordinate = { lat: number; lng: number };
 
@@ -88,43 +89,54 @@ export function normalizeGaugeStatuses<T extends { statusObserved?: unknown; sta
 }
 
 export async function readGlobalRiverDischarge({ lat, lng }: Coordinate) {
-  return source("open-meteo-flood", "Global river discharge: Open-Meteo / GloFAS", async () => {
-    const url = new URL("https://flood-api.open-meteo.com/v1/flood");
-    url.searchParams.set("latitude", String(lat));
-    url.searchParams.set("longitude", String(lng));
-    url.searchParams.set("daily", "river_discharge,river_discharge_mean,river_discharge_max,river_discharge_min");
-    url.searchParams.set("forecast_days", "7");
-    const payload: any = await readJson(url.toString(), 3600);
-    return {
-      grid: { lat: payload?.latitude ?? null, lng: payload?.longitude ?? null },
-      daily: (payload?.daily?.time || []).map((date: string, index: number) => ({
-        date,
-        riverDischarge: payload?.daily?.river_discharge?.[index] ?? null,
-        mean: payload?.daily?.river_discharge_mean?.[index] ?? null,
-        max: payload?.daily?.river_discharge_max?.[index] ?? null,
-        min: payload?.daily?.river_discharge_min?.[index] ?? null,
-      })),
-      units: payload?.daily_units || {},
-    };
-  });
+  return source(
+    "open-meteo-flood-commercial",
+    "Global river discharge licensed via Open-Meteo Commercial API (GloFAS)",
+    async () => {
+      const commercialUrl = buildOpenMeteoCommercialUrl("flood", {
+        latitude: String(lat),
+        longitude: String(lng),
+        daily: "river_discharge,river_discharge_mean,river_discharge_max,river_discharge_min",
+        forecast_days: "7",
+      });
+      if (!commercialUrl) {
+        throw new Error("OPEN_METEO_API_KEY_NOT_CONFIGURED");
+      }
+      const payload: any = await readJson(commercialUrl, 3600);
+      return {
+        grid: { lat: payload?.latitude ?? null, lng: payload?.longitude ?? null },
+        daily: (payload?.daily?.time || []).map((date: string, index: number) => ({
+          date,
+          riverDischarge: payload?.daily?.river_discharge?.[index] ?? null,
+          mean: payload?.daily?.river_discharge_mean?.[index] ?? null,
+          max: payload?.daily?.river_discharge_max?.[index] ?? null,
+          min: payload?.daily?.river_discharge_min?.[index] ?? null,
+        })),
+        units: payload?.daily_units || {},
+      };
+    },
+  );
 }
 
 export async function readMarine({ lat, lng }: Coordinate) {
-  return source("open-meteo-marine", "Marine conditions: Open-Meteo ocean/wave models", async () => {
-    const url = new URL("https://marine-api.open-meteo.com/v1/marine");
-    url.searchParams.set("latitude", String(lat));
-    url.searchParams.set("longitude", String(lng));
-    url.searchParams.set("timezone", "auto");
-    url.searchParams.set(
-      "current",
-      "wave_height,wave_direction,wave_period,sea_surface_temperature,ocean_current_velocity,ocean_current_direction,sea_level_height_msl",
-    );
-    url.searchParams.set(
-      "hourly",
-      "wave_height,wave_direction,wave_period,sea_surface_temperature,ocean_current_velocity,ocean_current_direction,sea_level_height_msl",
-    );
-    url.searchParams.set("forecast_hours", "12");
-    const payload: any = await readJson(url.toString(), 900);
+  return source(
+    "open-meteo-marine-commercial",
+    "Marine conditions licensed via Open-Meteo Commercial API",
+    async () => {
+      const commercialUrl = buildOpenMeteoCommercialUrl("marine", {
+        latitude: String(lat),
+        longitude: String(lng),
+        timezone: "auto",
+        current:
+          "wave_height,wave_direction,wave_period,sea_surface_temperature,ocean_current_velocity,ocean_current_direction,sea_level_height_msl",
+        hourly:
+          "wave_height,wave_direction,wave_period,sea_surface_temperature,ocean_current_velocity,ocean_current_direction,sea_level_height_msl",
+        forecast_hours: "12",
+      });
+      if (!commercialUrl) {
+        throw new Error("OPEN_METEO_API_KEY_NOT_CONFIGURED");
+      }
+      const payload: any = await readJson(commercialUrl, 900);
     const grid = { lat: Number(payload?.latitude), lng: Number(payload?.longitude) };
     const distanceToGridKm = haversineKm({ lat, lng }, grid);
     const current = payload?.current || {};

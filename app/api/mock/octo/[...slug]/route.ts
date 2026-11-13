@@ -4,7 +4,10 @@ import { MockOctoSupplierEngine } from "@/lib/octo/mockServer";
 export const dynamic = "force-dynamic";
 
 function checkProductionLock(): NextResponse | null {
-  if (process.env.NODE_ENV === "production" && process.env.ENABLE_OCTO_MOCK !== "true") {
+  if (
+    process.env.VERCEL_ENV === "production" ||
+    (process.env.NODE_ENV === "production" && process.env.ENABLE_OCTO_MOCK !== "true")
+  ) {
     return NextResponse.json(
       {
         error: "MOCK_DISABLED_IN_PRODUCTION",

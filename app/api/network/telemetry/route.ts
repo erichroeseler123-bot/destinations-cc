@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { appendCorridorEventDurably } from "@/lib/dcc/telemetry/corridorEvents";
+import {
+  sanitizeTelemetryMetadataObject,
+  sanitizeTelemetryPath,
+} from "@/lib/dcc/telemetry/privacyTelemetryGuard";
 
 const ALLOWED_SITES = new Set([
   "cruise-promenade",
@@ -44,28 +48,32 @@ export async function POST(request: NextRequest) {
           ? "plan_rendered"
           : eventName === "first_guest_joined" || eventName === "first_activity_response"
             ? "plan_modified"
-            : eventName === "start_board_selected" ||
-                eventName === "invite_link_copied_or_shared" ||
-                eventName === "charter_inquiry_opened"
-              ? "cta_clicked_primary"
-              : eventName.includes("booking") || eventName.includes("checkout")
+            : eventName === "tour_fit_interaction"
+              ? "recommendation_rendered"
+              : eventName === "booking_handoff_initiated"
                 ? "booking_opened"
-                : eventName.includes("recommend") || eventName.includes("match") || eventName.includes("route")
-                  ? "recommendation_rendered"
-                  : eventName.includes("click") || eventName.includes("handoff")
-                    ? "cta_clicked_primary"
-                    : "page_viewed";
+                : eventName === "start_board_selected" ||
+                    eventName === "invite_link_copied_or_shared" ||
+                    eventName === "charter_inquiry_opened"
+                  ? "cta_clicked_primary"
+                  : eventName.includes("booking") || eventName.includes("checkout")
+                    ? "booking_opened"
+                    : eventName.includes("recommend") || eventName.includes("match") || eventName.includes("route")
+                      ? "recommendation_rendered"
+                      : eventName.includes("click") || eventName.includes("handoff")
+                        ? "cta_clicked_primary"
+                        : "page_viewed";
 
-    const context = cleanObject(body.context);
-    const outcome = cleanObject(body.outcome);
+    const context = sanitizeTelemetryMetadataObject(cleanObject(body.context));
+    const outcome = sanitizeTelemetryMetadataObject(cleanObject(body.outcome));
 
     const stored = await appendCorridorEventDurably({
       corridor_id: "portfolio-network",
       event_name: mapped,
-      session_id: sessionId,
-      source_page: clean(body.sourcePage),
-      landing_path: clean(body.landingPath),
-      target_path: clean(body.targetPath),
+      session_id: sanitizeTelemetryPath(sessionId) || "anon",
+      source_page: sanitizeTelemetryPath(clean(body.sourcePage)),
+      landing_path: sanitizeTelemetryPath(clean(body.landingPath)),
+      target_path: sanitizeTelemetryPath(clean(body.targetPath)),
       metadata: {
         surface: "portfolio-network",
         site,

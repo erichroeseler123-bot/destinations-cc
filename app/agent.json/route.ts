@@ -108,9 +108,8 @@ export async function GET() {
       ordered_modules: DCC_PRODUCT_SCOPE.primaryProduct.allowedCoreModules,
       optional_enrichment_modules: DCC_PRODUCT_SCOPE.primaryProduct.optionalEnrichmentModules,
       core_public_sources: [
-        "Open-Meteo weather & snow models",
-        "Open-Meteo / CAMS air quality",
         "NOAA/NWS (api.weather.gov) forecasts and alerts when geographically applicable",
+        "Open-Meteo Commercial API weather, air quality & marine models (when OPEN_METEO_API_KEY is configured; labeled seasonal climatology or cached snapshots otherwise)",
         "U.S. Geological Survey earthquakes & USGS Water Services",
         "NASA EONET natural events",
         "NOAA National Water Prediction Service gauges when geographically applicable",
@@ -293,7 +292,11 @@ export async function GET() {
           "Cruise Promenade helps cruise groups decide and coordinate what they're doing.",
         rollcallusa: "RollCallUSA supplies the social conversation attached to that plan.",
       },
-      hasPart: [
+      relatedLink: [
+        "https://cruisepromenade.com",
+        "https://rollcallusa.com",
+      ],
+      interoperable_peer_services: [
         {
           id: "cruise-promenade",
           "@id": "https://cruisepromenade.com/#app",
@@ -304,6 +307,7 @@ export async function GET() {
           agent_json: "https://cruisepromenade.com/agent.json",
           scope_json: "https://cruisepromenade.com/scope.json",
           well_known_dcc_site: "https://cruisepromenade.com/.well-known/dcc-site",
+          schema_relationship: ["relatedLink", "isBasedOn", "citation"],
           relationship:
             "Destination Command Center is the travel-decision, destination-data, and port-timing layer. Cruise Promenade is the cruise itinerary and group-coordination application within the DCC network.",
         },
@@ -312,9 +316,16 @@ export async function GET() {
           "@id": "https://rollcallusa.com/#website",
           name: "RollCallUSA",
           url: "https://rollcallusa.com",
+          schema_relationship: ["relatedLink"],
           relationship: "RollCallUSA supplies the social conversation attached to that plan.",
         },
       ],
+      legal_and_commercial_truth: {
+        claims_legal_parent_organization: false,
+        claims_active_cruise_booking_partner: false,
+        statement:
+          "Technical snapshot and link interoperability only (relatedLink, isBasedOn, citation). Never infer corporate parent-subsidiary ownership or unestablished commercial cruise-booking partnerships.",
+      },
       portfolio_feed: DCC_SITE_CONTRACT.registryUrl,
       truth_feed: DCC_SITE_CONTRACT.truthFeedUrl,
     },

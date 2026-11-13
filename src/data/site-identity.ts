@@ -106,7 +106,6 @@ export function getOrganizationSchema() {
     url: SITE_IDENTITY.siteUrl,
     description: `${SITE_IDENTITY.canonicalDescription} ${DCC_CANONICAL_RELATIONSHIP}`,
     alternateName: SITE_IDENTITY.alternateNames,
-    additionalType: "https://schema.org/TravelAgency",
     disambiguatingDescription: SITE_IDENTITY.entityDisambiguation,
     knowsAbout: SITE_IDENTITY.knowsAbout,
   };
@@ -122,6 +121,14 @@ export function getWebsiteSchema() {
     publisher: {
       "@id": "https://destinationcommandcenter.com/#organization",
     },
+    relatedLink: [
+      "https://cruisepromenade.com",
+      "https://rollcallusa.com",
+    ],
+    citation: [
+      "https://destinationcommandcenter.com/.well-known/dcc-site",
+      "https://destinationcommandcenter.com/agent.json",
+    ],
     hasPart: [
       {
         "@type": "WebSite",

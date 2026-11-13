@@ -1,4 +1,5 @@
 import { redis } from "@/lib/redis";
+import { buildLocalTelemetryAvatarDataUri } from "@/lib/dcc/qrSvg";
 import { normalizeViatorProduct, normalizeTicketmasterEvent, normalizeGetYourGuideExperience, normalizeViatorExperience, normalizeGetYourGuideApiTour } from "@/lib/adapters";
 import { getApprovedExperiencesForPlace } from "@/lib/getyourguide-approved-experiences";
 import { getGetYourGuideServerConfig, hasGetYourGuideApiAccess } from "@/lib/getyourguide/config";
@@ -505,7 +506,7 @@ const WEBCAM_REGISTRY: Record<string, WebcamConfig> = {
     mediaType: "video",
     user: {
       name: "DOT Telemetry Gate 2",
-      avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=metro_cam",
+      avatar: buildLocalTelemetryAvatarDataUri("metro_cam"),
       handle: "metro_cam",
       provider: "google",
       isTelemetry: true
@@ -520,7 +521,7 @@ const WEBCAM_REGISTRY: Record<string, WebcamConfig> = {
     mediaType: "video",
     user: {
       name: "Port Authority Loop 4",
-      avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=port_monitor",
+      avatar: buildLocalTelemetryAvatarDataUri("port_monitor"),
       handle: "port_monitor",
       provider: "google",
       isTelemetry: true
@@ -535,7 +536,7 @@ const WEBCAM_REGISTRY: Record<string, WebcamConfig> = {
     mediaType: "video",
     user: {
       name: "Wisconsin Metro Radar 12",
-      avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=dot_telemetry",
+      avatar: buildLocalTelemetryAvatarDataUri("dot_telemetry"),
       handle: "dot_telemetry",
       provider: "google",
       isTelemetry: true
@@ -550,7 +551,7 @@ const WEBCAM_REGISTRY: Record<string, WebcamConfig> = {
     mediaType: "video",
     user: {
       name: "Waterfront Dock Eye 3",
-      avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=dock_eye",
+      avatar: buildLocalTelemetryAvatarDataUri("dock_eye"),
       handle: "dock_eye",
       provider: "google",
       isTelemetry: true
@@ -565,7 +566,7 @@ const WEBCAM_REGISTRY: Record<string, WebcamConfig> = {
     mediaType: "video",
     user: {
       name: "Bonnet Creek Ingress Gate",
-      avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=resort_cam",
+      avatar: buildLocalTelemetryAvatarDataUri("resort_cam"),
       handle: "resort_cam",
       provider: "google",
       isTelemetry: true

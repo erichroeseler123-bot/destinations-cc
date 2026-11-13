@@ -17,6 +17,10 @@ import {
 import JuneauPortDayPlanner from "@/app/components/dcc/JuneauPortDayPlanner";
 import FactualErrorReportForm from "@/app/components/dcc/FactualErrorReportForm";
 import TransitComparisonTable from "@/app/components/dcc/TransitComparisonTable";
+import {
+  buildOpenMeteoCommercialUrl,
+  resolveCentralizedWeatherSummary,
+} from "@/lib/dcc/weatherGateway";
 
 const TELEMETRY_FETCH_TIMEOUT_MS = 850;
 const TELEMETRY_CACHE_TTL_SECONDS = 900;
@@ -102,8 +106,18 @@ async function fetchCoordinateTelemetrySummaryUncached(lat: number, lng: number)
   const checkedAt = new Date().toISOString();
   try {
     const { icao, coopsStation } = resolveFastAnchorStations(lat, lng);
-    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(4)}&longitude=${lng.toFixed(4)}&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m&hourly=snow_depth&forecast_days=1`;
-    const aqiUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat.toFixed(4)}&longitude=${lng.toFixed(4)}&current=us_aqi&forecast_days=1`;
+    const commercialForecastUrl = buildOpenMeteoCommercialUrl("forecast", {
+      latitude: lat.toFixed(4),
+      longitude: lng.toFixed(4),
+      hourly: "snow_depth",
+      forecast_days: "1",
+    });
+    const aqiUrl = buildOpenMeteoCommercialUrl("air-quality", {
+      latitude: lat.toFixed(4),
+      longitude: lng.toFixed(4),
+      current: "us_aqi",
+      forecast_days: "1",
+    });
     const nwsAlertsUrl = `https://api.weather.gov/alerts/active?point=${lat.toFixed(4)},${lng.toFixed(4)}`;
     const metarUrl = icao
       ? `https://aviationweather.gov/api/data/metar?ids=${encodeURIComponent(icao)}&format=json`
@@ -112,20 +126,22 @@ async function fetchCoordinateTelemetrySummaryUncached(lat: number, lng: number)
       ? `https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?date=latest&station=${coopsStation.id}&product=water_level&datum=MLLW&time_zone=lst_ldt&units=english&format=json`
       : null;
 
-    const [weatherJson, aqiJson, nwsJson, metarJson, coopsJson] = await Promise.all([
-      fetchJsonBounded<any>(weatherUrl),
-      fetchJsonBounded<any>(aqiUrl),
-      fetchJsonBounded<any>(nwsAlertsUrl, { Accept: "application/geo+json" }),
-      metarUrl ? fetchJsonBounded<any[]>(metarUrl) : Promise.resolve(null),
-      coopsUrl ? fetchJsonBounded<any>(coopsUrl) : Promise.resolve(null),
-    ]);
+    const [weatherSummary, commercialHourlyJson, aqiJson, nwsJson, metarJson, coopsJson] =
+      await Promise.all([
+        resolveCentralizedWeatherSummary({ lat, lng }),
+        commercialForecastUrl ? fetchJsonBounded<any>(commercialForecastUrl) : Promise.resolve(null),
+        aqiUrl ? fetchJsonBounded<any>(aqiUrl) : Promise.resolve(null),
+        fetchJsonBounded<any>(nwsAlertsUrl, { Accept: "application/geo+json" }),
+        metarUrl ? fetchJsonBounded<any[]>(metarUrl) : Promise.resolve(null),
+        coopsUrl ? fetchJsonBounded<any>(coopsUrl) : Promise.resolve(null),
+      ]);
 
-    const cur = weatherJson?.current;
-    const snowArr = Array.isArray(weatherJson?.hourly?.snow_depth)
-      ? weatherJson.hourly.snow_depth
+    const snowArr = Array.isArray(commercialHourlyJson?.hourly?.snow_depth)
+      ? commercialHourlyJson.hourly.snow_depth
       : [];
     const firstSnowDepth = snowArr.find((v: unknown) => typeof v === "number");
-    const weatherCode = typeof cur?.weather_code === "number" ? cur.weather_code : null;
+    const isLiveWeather =
+      weatherSummary.isCurrentConditions === true && weatherSummary.temperatureC != null;
 
     const alerts = Array.isArray(nwsJson?.features)
       ? nwsJson.features.slice(0, 3).map((f: any, idx: number) => ({
@@ -138,15 +154,13 @@ async function fetchCoordinateTelemetrySummaryUncached(lat: number, lng: number)
     const core = {
       checkedAt,
       now: {
-        weather: cur
+        weather: isLiveWeather
           ? {
-              temperature_2m: cur.temperature_2m ?? null,
-              apparent_temperature: cur.apparent_temperature ?? null,
-              description:
-                weatherCode !== null
-                  ? WMO_WEATHER_DESCRIPTIONS[weatherCode] || `WMO ${weatherCode}`
-                  : null,
-              wind_speed_10m: cur.wind_speed_10m ?? null,
+              temperature_2m: weatherSummary.temperatureC,
+              apparent_temperature:
+                weatherSummary.apparentTemperatureC ?? weatherSummary.temperatureC,
+              description: weatherSummary.condition || "Observed",
+              wind_speed_10m: weatherSummary.windKph ?? null,
             }
           : null,
         airQuality:
@@ -154,6 +168,18 @@ async function fetchCoordinateTelemetrySummaryUncached(lat: number, lng: number)
             ? { us_aqi: aqiJson.current.us_aqi }
             : null,
       },
+      fallbackSummary: !isLiveWeather
+        ? {
+            dataMode: weatherSummary.dataMode,
+            isCurrentConditions: false,
+            freshnessStatus: weatherSummary.freshnessStatus,
+            attribution: weatherSummary.attribution,
+            observedAt: weatherSummary.observedAt,
+            cachedTemperatureF: weatherSummary.temperatureF,
+            cachedConditionLabel: weatherSummary.condition,
+            climatology: weatherSummary.climatology,
+          }
+        : null,
       conditions: {
         next12Hours:
           typeof firstSnowDepth === "number" ? [{ snowDepthM: firstSnowDepth }] : [],
@@ -162,10 +188,13 @@ async function fetchCoordinateTelemetrySummaryUncached(lat: number, lng: number)
       hazards: { alerts },
       sources: [
         {
-          provider: "open-meteo",
-          available: Boolean(cur),
+          provider: weatherSummary.provider,
+          available: isLiveWeather,
+          dataMode: weatherSummary.dataMode,
           checkedAt,
-          error: cur ? null : "Open-Meteo timeout or unavailable",
+          error: isLiveWeather
+            ? null
+            : weatherSummary.attribution || "Live current weather unavailable",
         },
         {
           provider: "nws",

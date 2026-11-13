@@ -13,33 +13,22 @@ type WeatherState =
   | { status: "idle" | "loading" }
   | {
       status: "ok";
-      tempF?: number;
-      windMph?: number;
-      code?: number;
-      fetchedAtISO: string;
+      dataMode: "live_noaa" | "live_open_meteo_commercial" | "cached_snapshot" | "seasonal_climatology";
+      isCurrentConditions: boolean;
+      freshnessLabel: string;
+      provider: string;
+      tempF?: number | null;
+      windMph?: number | null;
+      condition: string;
+      climatology?: {
+        monthName: string;
+        typicalLowF: number;
+        typicalHighF: number;
+        typicalRainRiskLabel: string;
+      } | null;
+      observedAt?: string | null;
     }
   | { status: "error"; message: string };
-
-function toF(c: number) {
-  return (c * 9) / 5 + 32;
-}
-
-function mpsToMph(mps: number) {
-  return mps * 2.236936;
-}
-
-function weatherLabel(code?: number) {
-  if (code == null) return "Weather";
-  if (code === 0) return "Clear";
-  if (code === 1 || code === 2) return "Mostly clear";
-  if (code === 3) return "Cloudy";
-  if (code >= 45 && code <= 48) return "Fog";
-  if (code >= 51 && code <= 67) return "Rain";
-  if (code >= 71 && code <= 77) return "Snow";
-  if (code >= 80 && code <= 82) return "Showers";
-  if (code >= 95) return "Thunder";
-  return "Conditions";
-}
 
 export default function LocalTimeWeather({ label, timezone, lat, lng }: Props) {
   const tz = timezone || "UTC";
@@ -74,18 +63,16 @@ export default function LocalTimeWeather({ label, timezone, lat, lng }: Props) {
     if (typeof lat !== "number" || typeof lng !== "number") return;
 
     let cancelled = false;
-    // Keep loading state explicit while requesting fresh weather for the current location.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setWx({ status: "loading" });
 
+    // Centralized DCC server gateway: ZERO browser-direct weather-provider requests.
     const url =
-      "https://api.open-meteo.com/v1/forecast" +
-      `?latitude=${encodeURIComponent(lat)}` +
-      `&longitude=${encodeURIComponent(lng)}` +
-      `&current=temperature_2m,wind_speed_10m,weather_code` +
-      `&temperature_unit=celsius` +
-      `&wind_speed_unit=ms` +
-      `&timezone=${encodeURIComponent(tz)}`;
+      "/api/internal/weather" +
+      `?lat=${encodeURIComponent(lat)}` +
+      `&lng=${encodeURIComponent(lng)}` +
+      `&tz=${encodeURIComponent(tz)}` +
+      (label ? `&label=${encodeURIComponent(label)}` : "");
 
     fetch(url)
       .then(async (r) => {
@@ -95,16 +82,17 @@ export default function LocalTimeWeather({ label, timezone, lat, lng }: Props) {
       .then((data) => {
         if (cancelled) return;
 
-        const c = data?.current?.temperature_2m;
-        const w = data?.current?.wind_speed_10m;
-        const code = data?.current?.weather_code;
-
         setWx({
           status: "ok",
-          tempF: typeof c === "number" ? Math.round(toF(c)) : undefined,
-          windMph: typeof w === "number" ? Math.round(mpsToMph(w)) : undefined,
-          code: typeof code === "number" ? code : undefined,
-          fetchedAtISO: new Date().toISOString(),
+          dataMode: data?.dataMode || "seasonal_climatology",
+          isCurrentConditions: data?.isCurrentConditions === true,
+          freshnessLabel: String(data?.freshnessLabel || ""),
+          provider: String(data?.provider || "DCC Weather Gateway"),
+          tempF: typeof data?.temperatureF === "number" ? data.temperatureF : null,
+          windMph: typeof data?.windMph === "number" ? data.windMph : null,
+          condition: String(data?.condition || "Weather guidance"),
+          climatology: data?.climatology || null,
+          observedAt: typeof data?.observedAt === "string" ? data.observedAt : null,
         });
       })
       .catch((e) => {
@@ -115,7 +103,7 @@ export default function LocalTimeWeather({ label, timezone, lat, lng }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [lat, lng, tz]);
+  }, [lat, lng, tz, label]);
 
   return (
     <section className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6 space-y-4">
@@ -132,7 +120,20 @@ export default function LocalTimeWeather({ label, timezone, lat, lng }: Props) {
         </div>
 
         <div className="rounded-xl border border-zinc-800 bg-black/20 p-4">
-          <div className="text-xs uppercase tracking-wider text-zinc-400">Weather</div>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="text-xs uppercase tracking-wider text-zinc-400">
+              {wx.status === "ok" && !wx.isCurrentConditions
+                ? wx.dataMode === "cached_snapshot"
+                  ? "Cached Snapshot (Not Live)"
+                  : "Seasonal Climatology (Not Live)"
+                : "Current Weather"}
+            </div>
+            {wx.status === "ok" && !wx.isCurrentConditions ? (
+              <span className="rounded-full border border-amber-400/40 bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-200">
+                Not Current Conditions
+              </span>
+            ) : null}
+          </div>
 
           {typeof lat !== "number" || typeof lng !== "number" ? (
             <div className="mt-2 text-sm text-zinc-400">Missing lat/lng for this location.</div>
@@ -140,12 +141,29 @@ export default function LocalTimeWeather({ label, timezone, lat, lng }: Props) {
             <div className="mt-2 text-sm text-zinc-400">Loading…</div>
           ) : wx.status === "error" ? (
             <div className="mt-2 text-sm text-zinc-400">{wx.message}</div>
-          ) : wx.status === "ok" ? (
+          ) : wx.status === "ok" && wx.isCurrentConditions ? (
             <div className="mt-1 space-y-1">
               <div className="text-2xl font-black">{wx.tempF != null ? `${wx.tempF}°F` : "—"}</div>
               <div className="text-sm text-zinc-400">
-                {weatherLabel(wx.code)}
+                {wx.condition}
                 {wx.windMph != null ? ` • Wind ${wx.windMph} mph` : ""}
+              </div>
+              <div className="text-[11px] text-zinc-500">{wx.provider}</div>
+            </div>
+          ) : wx.status === "ok" && wx.dataMode === "cached_snapshot" ? (
+            <div className="mt-1 space-y-1">
+              <div className="text-xl font-bold text-amber-200">
+                {wx.tempF != null ? `${wx.tempF}°F (cached)` : "Cached snapshot"}
+              </div>
+              <div className="text-xs text-zinc-400">{wx.freshnessLabel}</div>
+            </div>
+          ) : wx.status === "ok" && wx.climatology ? (
+            <div className="mt-1 space-y-1">
+              <div className="text-lg font-bold text-zinc-100">
+                Typical {wx.climatology.monthName}: {wx.climatology.typicalLowF}–{wx.climatology.typicalHighF}°F
+              </div>
+              <div className="text-xs text-zinc-400">
+                {wx.climatology.typicalRainRiskLabel} · Historical average, not live conditions.
               </div>
             </div>
           ) : (

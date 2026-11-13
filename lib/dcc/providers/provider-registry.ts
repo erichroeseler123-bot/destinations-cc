@@ -12,13 +12,14 @@ export const PROVIDERS = [
     tier: "primary",
     status: "active",
     volatility: "stable",
-    surfacePolicy: "indexable_allowed",
+    surfacePolicy: "attribution_non_indexable",
     env: {
       required: ["VIATOR_API_KEY"],
       optional: ["VIATOR_ACCESS_TIER", "VIATOR_SOURCE_POLICY"],
     },
     capabilities: ["search", "detail", "deeplink", "booking_lab"],
-    notes: "Durable discovery and outbound conversion backbone.",
+    notes:
+      "Attribution-only supplier discovery and outbound conversion backbone; raw supplier descriptions are non-indexable while DCC editorial fit analysis owns indexable pages.",
   },
   {
     key: "ticketmaster",
@@ -70,12 +71,13 @@ export const PROVIDERS = [
     tier: "secondary",
     status: "optional",
     volatility: "stable",
-    surfacePolicy: "indexable_allowed",
+    surfacePolicy: "attribution_non_indexable",
     env: {
       optional: ["GETYOURGUIDE_PARTNER_ID", "GETYOURGUIDE_ACCESS_TOKEN"],
     },
     capabilities: ["deeplink", "shortlist"],
-    notes: "Supplemental stable tour source when Viator is not the only fit.",
+    notes:
+      "Supplemental attribution-only tour source; raw supplier copy is never indexed as standalone pages.",
   },
   {
     key: "amadeus",

@@ -275,7 +275,13 @@ export class OctoRegistryService {
         .where(eq(octoSupplierConnections.onboardingStage, "bookable"));
 
       return rows
-        .filter((r) => r.healthStatus === "healthy")
+        .filter(
+          (r) =>
+            r.healthStatus === "healthy" &&
+            !r.isSandbox &&
+            r.id !== "conn_mock_alaska" &&
+            r.operatorSlug !== "alaska-premier-expeditions",
+        )
         .map((r) => ({
           id: r.id,
           operatorSlug: r.operatorSlug,

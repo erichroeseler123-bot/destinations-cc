@@ -43,7 +43,6 @@ const nextConfig = {
     unoptimized: true,
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com", pathname: "/**" },
-      { protocol: "https", hostname: "api.qrserver.com", pathname: "/**" },
       { protocol: "https", hostname: "media-cdn.tripadvisor.com", pathname: "/**" },
       { protocol: "https", hostname: "hare-media-cdn.tripadvisor.com", pathname: "/**" },
       { protocol: "https", hostname: "media.tacdn.com", pathname: "/**" },

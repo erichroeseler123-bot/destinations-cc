@@ -7,6 +7,7 @@ import { deriveCityNow } from "@/lib/dcc/liveCity/cityNow";
 import { deriveDistrictNow } from "@/lib/dcc/liveCity/districtNow";
 import { deriveDistrictIntents } from "@/lib/dcc/liveCity/districtIntent";
 import { getCityNetworkRoutesWithAffiliate } from "@/lib/dcc/networkRoutes";
+import { resolveCentralizedWeatherSummary } from "@/lib/dcc/weatherGateway";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -64,47 +65,62 @@ function weatherCodeLabel(code: unknown) {
 
 async function readGlobalWeather(lat: number, lng: number, timezone?: string | null) {
   try {
-    const url = new URL("https://api.open-meteo.com/v1/forecast");
-    url.searchParams.set("latitude", String(lat));
-    url.searchParams.set("longitude", String(lng));
-    url.searchParams.set("current", "temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,rain,showers,snowfall,weather_code,cloud_cover,wind_speed_10m");
-    url.searchParams.set("hourly", "temperature_2m,precipitation_probability,weather_code");
-    url.searchParams.set("forecast_hours", "8");
-    url.searchParams.set("temperature_unit", "fahrenheit");
-    url.searchParams.set("wind_speed_unit", "mph");
-    url.searchParams.set("timezone", timezone || "auto");
-
-    const data = await fetchJson(url.toString());
-    const current = data?.current || {};
-    const times: string[] = Array.isArray(data?.hourly?.time) ? data.hourly.time : [];
-    const temps: number[] = Array.isArray(data?.hourly?.temperature_2m) ? data.hourly.temperature_2m : [];
-    const precip: Array<number | null> = Array.isArray(data?.hourly?.precipitation_probability) ? data.hourly.precipitation_probability : [];
-    const codes: number[] = Array.isArray(data?.hourly?.weather_code) ? data.hourly.weather_code : [];
+    const summary = await resolveCentralizedWeatherSummary({
+      lat,
+      lng,
+      timezone,
+      label: "City Weather",
+    });
 
     return {
-      available: true,
-      provider: "Open-Meteo",
-      attribution: "Weather data by Open-Meteo",
-      observedAt: current.time || null,
-      current: {
-        temperatureF: typeof current.temperature_2m === "number" ? Math.round(current.temperature_2m) : null,
-        apparentTemperatureF: typeof current.apparent_temperature === "number" ? Math.round(current.apparent_temperature) : null,
-        description: weatherCodeLabel(current.weather_code),
-        windMph: typeof current.wind_speed_10m === "number" ? Math.round(current.wind_speed_10m) : null,
-        humidityPercent: typeof current.relative_humidity_2m === "number" ? Math.round(current.relative_humidity_2m) : null,
-        precipitationIn: typeof current.precipitation === "number" ? current.precipitation : null,
-        isDay: current.is_day === 1,
-      },
-      nextHours: times.slice(0, 8).map((time, index) => ({
-        startTime: time,
-        temperature: temps[index] ?? null,
-        temperatureUnit: "F",
-        shortForecast: weatherCodeLabel(codes[index]),
-        probabilityOfPrecipitation: precip[index] ?? null,
-      })),
+      available: summary.isCurrentConditions || summary.dataMode === "cached_snapshot",
+      dataMode: summary.dataMode,
+      isCurrentConditions: summary.isCurrentConditions,
+      freshnessStatus: summary.freshnessStatus,
+      freshnessLabel: summary.freshnessLabel,
+      provider: summary.provider,
+      attribution: summary.attribution,
+      observedAt: summary.observedAt,
+      // Never represent climatology or stale data as current conditions
+      current: summary.isCurrentConditions
+        ? {
+            temperatureF: summary.temperatureF,
+            apparentTemperatureF: summary.apparentTemperatureF,
+            description: summary.condition,
+            windMph: summary.windMph,
+            humidityPercent: summary.humidityPercent,
+            precipitationIn: null,
+            isDay: true,
+          }
+        : undefined,
+      cachedSnapshot:
+        summary.dataMode === "cached_snapshot"
+          ? {
+              isCurrentConditions: false,
+              observedAt: summary.observedAt,
+              temperatureF: summary.temperatureF,
+              description: summary.condition,
+              notice: summary.freshnessLabel,
+            }
+          : null,
+      climatology: summary.climatology,
+      nextHours: summary.isCurrentConditions
+        ? summary.nextHours.map((h) => ({
+            startTime: h.startTime,
+            temperature: h.temperatureF,
+            temperatureUnit: "F",
+            shortForecast: h.shortForecast,
+            probabilityOfPrecipitation: h.precipitationProbability,
+          }))
+        : [],
     };
   } catch {
-    return { available: false, provider: "Open-Meteo", attribution: "Weather data by Open-Meteo" };
+    return {
+      available: false,
+      isCurrentConditions: false,
+      provider: "DCC Weather Gateway",
+      attribution: "Weather unavailable",
+    };
   }
 }
 

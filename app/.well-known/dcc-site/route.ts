@@ -83,21 +83,39 @@ export async function GET(request: Request) {
             "Cruise Promenade helps cruise groups decide and coordinate what they're doing.",
           rollcallusa: "RollCallUSA supplies the social conversation attached to that plan.",
         },
-        hasPart: [
+        relatedLink: [
+          "https://cruisepromenade.com",
+          "https://rollcallusa.com",
+        ],
+        citation: [
+          "https://destinationcommandcenter.com/agent.json",
+          "https://destinationcommandcenter.com/api/public/truth-feed",
+        ],
+        interoperable_peer_services: [
           {
             id: "cruise-promenade",
             "@id": "https://cruisepromenade.com/#app",
             website_id: "https://cruisepromenade.com/#website",
             name: "Cruise Promenade",
             url: "https://cruisepromenade.com",
+            schema_relationship: ["relatedLink", "isBasedOn", "citation"],
+            data_contract: "consumes_signed_dcc_port_and_fit_snapshots",
           },
           {
             id: "rollcallusa",
             "@id": "https://rollcallusa.com/#website",
             name: "RollCallUSA",
             url: "https://rollcallusa.com",
+            schema_relationship: ["relatedLink"],
+            data_contract: "peer_social_coordination_layer",
           },
         ],
+        legal_and_commercial_truth: {
+          claims_legal_parent_organization: false,
+          claims_active_cruise_booking_partner: false,
+          statement:
+            "DCC, Cruise Promenade, and RollCallUSA interoperate via machine-readable technical contracts (relatedLink, isBasedOn, citation). No legal parent-subsidiary corporate hierarchy or unestablished commercial cruise-booking partnership is claimed.",
+        },
       },
       build: {
         commitSha,

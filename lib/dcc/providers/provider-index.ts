@@ -15,6 +15,7 @@ export type ProviderKind =
 
 export type SurfacePolicy =
   | "indexable_allowed"
+  | "attribution_non_indexable"
   | "live_lane_only"
   | "internal_only"
   | "disabled";
@@ -45,6 +46,7 @@ type ProviderIndex<T extends BaseProviderEntry> = {
   stableKeys: readonly string[];
   liveKeys: readonly string[];
   indexableAllowedKeys: readonly string[];
+  attributionNonIndexableKeys: readonly string[];
   liveLaneOnlyKeys: readonly string[];
   internalOnlyKeys: readonly string[];
   get: (key: string) => T | null;
@@ -94,6 +96,7 @@ export function createProviderIndex<T extends BaseProviderEntry>(
   const stableKeys: string[] = [];
   const liveKeys: string[] = [];
   const indexableAllowedKeys: string[] = [];
+  const attributionNonIndexableKeys: string[] = [];
   const liveLaneOnlyKeys: string[] = [];
   const internalOnlyKeys: string[] = [];
 
@@ -122,6 +125,9 @@ export function createProviderIndex<T extends BaseProviderEntry>(
     if (entry.volatility === "stable") stableKeys.push(entry.key);
     if (entry.volatility === "live") liveKeys.push(entry.key);
     if (entry.surfacePolicy === "indexable_allowed") indexableAllowedKeys.push(entry.key);
+    if (entry.surfacePolicy === "attribution_non_indexable") {
+      attributionNonIndexableKeys.push(entry.key);
+    }
     if (entry.surfacePolicy === "live_lane_only") liveLaneOnlyKeys.push(entry.key);
     if (entry.surfacePolicy === "internal_only") internalOnlyKeys.push(entry.key);
   }
@@ -167,6 +173,7 @@ export function createProviderIndex<T extends BaseProviderEntry>(
     stableKeys,
     liveKeys,
     indexableAllowedKeys,
+    attributionNonIndexableKeys,
     liveLaneOnlyKeys,
     internalOnlyKeys,
     get: (key) => byKey.get(key) ?? null,

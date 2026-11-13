@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { buildDccReturnUrl } from "@/lib/dcc";
 import { listInventory } from "@/lib/inventoryStore";
+import { buildLocalQrSvgDataUri } from "@/lib/qrSvg";
 
 export const dynamic = "force-dynamic";
 
@@ -54,7 +55,7 @@ export default async function HomePage({
         dccReturn ? `&dcc_return=${encodeURIComponent(dccReturn)}` : ""
       }`
     : PAGE_URL;
-  const qrImage = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(qrUrl)}`;
+  const qrImage = buildLocalQrSvgDataUri(qrUrl, 260);
 
   const grouped = slots.reduce<Map<string, InventorySlot[]>>((map, slot) => {
     const list = map.get(slot.dateLabel);
@@ -95,7 +96,7 @@ export default async function HomePage({
           <h2>Scan and go.</h2>
           <p>Easy daytime access to Red Rocks with transport included.</p>
         </div>
-        <Image src={qrImage} alt="QR code for Red Rocks Fast Pass" width={260} height={260} />
+        <Image src={qrImage} alt="QR code for Red Rocks Fast Pass" width={260} height={260} unoptimized />
       </section>
 
       <div className="mobile-flow">
