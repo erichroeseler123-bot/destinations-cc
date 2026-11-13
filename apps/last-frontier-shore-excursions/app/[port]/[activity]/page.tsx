@@ -76,6 +76,8 @@ export default async function ActivityPage({
 
   if (!item || !portData) notFound();
 
+  const isJuneauWhaleWatching = port === "juneau" && activity === "whale-watching";
+
   const editorial = getEditorialInsight(port, activity);
   const matchedExcursions = getExcursionsByActivity(port as PortSlug, activity);
   const fallbackExcursions = matchedExcursions.length > 0 ? matchedExcursions : getExcursionsByPort(port as PortSlug).slice(0, 2);
@@ -208,26 +210,43 @@ export default async function ActivityPage({
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 32, alignItems: "center" }}>
             <div>
               <p className="eyebrow" style={{ color: "#607078" }}>{item.eyebrow}</p>
-              <h1 style={{ marginTop: 6, marginBottom: 12 }}>{item.h1}</h1>
+              <h1 style={{ marginTop: 6, marginBottom: 12 }}>
+                {isJuneauWhaleWatching ? "Juneau Whale-Watching Tours" : item.h1}
+              </h1>
               <p className="lead" style={{ color: "#485b63", fontSize: "16px", marginBottom: 20 }}>
-                {item.overview[0]}
+                {isJuneauWhaleWatching
+                  ? "Compare local operators, choose your group size, and see departure times scheduled to return you to the ship at least two hours before all-aboard."
+                  : item.overview[0]}
               </p>
               <div className="cta-row">
-                <a
-                  className="button"
-                  href={primaryOutboundUrl}
-                  target="_blank"
-                  rel="sponsored noopener noreferrer"
-                >
-                  {hasExactProduct
-                    ? "Check live tour options & availability →"
-                    : "Browse more tours on Viator →"}
-                </a>
-                <Link className="button secondary" href="#calculator">
-                  Calculate ship-window fit ↓
-                </Link>
+                {isJuneauWhaleWatching ? (
+                  <>
+                    <a className="button" href="#available-whale-watching-tours">
+                      See available whale-watching tours
+                    </a>
+                    <a className="button secondary" href="#timing-methodology">
+                      How we check ship timing
+                    </a>
+                  </>
+                ) : (
+                  <>
+                    <a
+                      className="button"
+                      href={primaryOutboundUrl}
+                      target="_blank"
+                      rel="sponsored noopener noreferrer"
+                    >
+                      {hasExactProduct
+                        ? "Check live tour options & availability →"
+                        : "Browse more tours on Viator →"}
+                    </a>
+                    <Link className="button secondary" href="#calculator">
+                      Calculate ship-window fit ↓
+                    </Link>
+                  </>
+                )}
               </div>
-              <TrustDisclosure compact />
+              {!isJuneauWhaleWatching && <TrustDisclosure compact />}
             </div>
 
             <div style={{ position: "relative" }}>
@@ -276,7 +295,17 @@ export default async function ActivityPage({
         </div>
       </section>
 
+      {isJuneauWhaleWatching && juneauNormalizedFeed && (
+        <JuneauNormalizedSupplierFeedSection
+          feed={juneauNormalizedFeed}
+          activitySlug={activity}
+          isWhaleWatchingLanding
+        />
+      )}
+
       {/* Quick Specs Bar */}
+      {!isJuneauWhaleWatching && (
+      <>
       <section className="section" style={{ background: "#ffffff", borderBottom: "1px solid var(--line)", padding: "28px 0" }}>
         <div className="shell">
           <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
@@ -340,52 +369,8 @@ export default async function ActivityPage({
 
           <ExcursionComparisonTable excursions={fallbackExcursions} />
 
-          {port === "juneau" && activity === "whale-watching" && (
-            <div
-              data-testid="lfse-juneau-whale-deck-callout"
-              style={{
-                marginTop: 24,
-                padding: "20px 22px",
-                background: "#eef6f7",
-                borderRadius: "10px",
-                border: "1px solid #bcd4d8",
-              }}
-            >
-              <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                <strong style={{ color: "var(--deep)", fontSize: "15px" }}>
-                  Whale Deck &amp; Direct Operator Rollout · Juneau Tours &amp; Whale Watch
-                </strong>
-                <span
-                  style={{
-                    background: "#ffffff",
-                    border: "1px solid #9bbec4",
-                    borderRadius: "999px",
-                    padding: "4px 10px",
-                    fontSize: "12px",
-                    fontWeight: 700,
-                    color: "var(--deep)",
-                  }}
-                >
-                  Confirm ship timing · 2-Hour DCC Return Buffer
-                </span>
-              </div>
-              <p style={{ margin: "0 0 10px", fontSize: "14px", color: "var(--ink)", lineHeight: 1.6 }}>
-                We check whether passengers can get from their Juneau berth to tour check-in, complete the tour, and return to the gangway before all-aboard with a <strong>2-hour (120-minute) DCC recommended return buffer</strong> using the published <strong>CLAA Juneau calendar</strong> and the ship&apos;s <strong>confirmed all-aboard time</strong> (showing <strong>Confirm ship timing</strong> when the cutoff or transfer is unknown). Seat counts are displayed only when confirmed by the provider.
-              </p>
-              <p style={{ margin: "0 0 12px", fontSize: "13px", color: "#3d5159", lineHeight: 1.55 }}>
-                <strong>Supplier Reconciliation &amp; Pending Direct Referral Credit:</strong> Viator product <code>#466119P3</code> (<em>Mendenhall Glacier Waterfall and Whale Watching Tour</em>) lists <strong>Dolphin Jet Boat Tours</strong> as the verified supplier, while <strong>Juneau Tours &amp; Whale Watch</strong> operates Viator prefix <code>5857</code> (<code>#5857P22</code>, <code>#5857P23</code>, <code>#5857SHUTTLE</code>). Direct 10% Rezgo / seat-block referral credit for <strong>Juneau Tours &amp; Whale Watch</strong> remains <strong>pending until the operator match is confirmed</strong>. Today, book the approved Viator checkout links above (<code>#331813P1</code> by Alaska Galore Tours and <code>#466119P3</code> by Dolphin Jet Boat Tours) or open the{" "}
-                <a
-                  href="https://juneauflightdeck.com/juneau-whale-watching-tours?src=lfse-juneau-whale"
-                  style={{ color: "var(--forest)", fontWeight: 700, textDecoration: "underline" }}
-                >
-                  Juneau Flight Deck Whale Deck &amp; Flight-Canceled Backup Flow →
-                </a>
-              </p>
-            </div>
-          )}
-
           {/* Explicit Browse More Tours Fallback */}
-          <div style={{ marginTop: 24, marginBottom: 20, padding: "16px 20px", background: "#f8fbfb", borderRadius: "8px", border: "1px dashed var(--line)", textAlign: "center" }}>
+          <div style={{ marginTop: 24, marginBottom: 20, padding: "16px 20px", background: "#f8fbfb", borderRadius: "8px", border: "dashed var(--line) 1px", textAlign: "center" }}>
             <p style={{ margin: "0 0 8px", fontSize: "14px", color: "var(--muted)" }}>
               Looking for alternative departure times, private charters, or additional operators?
             </p>
@@ -408,6 +393,208 @@ export default async function ActivityPage({
       {juneauNormalizedFeed && (
         <JuneauNormalizedSupplierFeedSection feed={juneauNormalizedFeed} />
       )}
+      </>
+      )}
+
+      {isJuneauWhaleWatching ? (
+        <>
+          {/* Additional Curated Operator Options & Comparison */}
+          <section className="section" style={{ background: "#fbfcfc", padding: "28px 0" }}>
+            <div className="shell">
+              <p className="eyebrow" style={{ color: "var(--muted)" }}>More Local Operators</p>
+              <h2 style={{ marginBottom: 8 }}>Additional Curated Whale-Watching Options</h2>
+              <p style={{ color: "var(--muted)", fontSize: "14.5px", marginBottom: 18 }}>
+                Compare additional small-group catamaran and independent whale-watching options in Juneau.
+              </p>
+              <div className="grid">
+                {fallbackExcursions.map((excursion) => (
+                  <ExcursionCard
+                    key={excursion.attributionCampaign || excursion.title}
+                    excursion={excursion}
+                    hideDisclosure
+                  />
+                ))}
+              </div>
+
+              <details
+                style={{
+                  marginTop: 20,
+                  background: "#ffffff",
+                  border: "1px solid var(--line)",
+                  borderRadius: 10,
+                  padding: "14px 18px",
+                }}
+              >
+                <summary style={{ cursor: "pointer", fontWeight: 700, fontSize: "15px", color: "var(--deep)" }}>
+                  Compare tour details, meeting points &amp; cancellation policies
+                </summary>
+                <div style={{ marginTop: 14 }}>
+                  <ExcursionComparisonTable excursions={fallbackExcursions} />
+                </div>
+              </details>
+            </div>
+          </section>
+
+          {/* Progressively Collapsed Planning Details & Calculator */}
+          <section className="section" style={{ background: "#ffffff", borderTop: "1px solid var(--line)", padding: "28px 0" }}>
+            <div className="shell" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <h2 style={{ marginBottom: 4 }}>Whale-Watching Planning &amp; Port Timing Guide</h2>
+
+              <details
+                id="calculator"
+                style={{
+                  background: "#f8fbfb",
+                  border: "1px solid var(--line)",
+                  borderRadius: 10,
+                  padding: "14px 18px",
+                }}
+              >
+                <summary style={{ cursor: "pointer", fontWeight: 700, fontSize: "15px", color: "var(--deep)" }}>
+                  Detailed 2-hour return-buffer calculator
+                </summary>
+                <div style={{ marginTop: 14 }}>
+                  <CruiseWindowCalculator
+                    portSlug={port as PortSlug}
+                    defaultDurationMinutes={fallbackExcursions[0]?.durationMinutes || 210}
+                  />
+                </div>
+              </details>
+
+              <details
+                style={{
+                  background: "#f8fbfb",
+                  border: "1px solid var(--line)",
+                  borderRadius: 10,
+                  padding: "14px 18px",
+                }}
+              >
+                <summary style={{ cursor: "pointer", fontWeight: 700, fontSize: "15px", color: "var(--deep)" }}>
+                  Who should choose whale watching
+                </summary>
+                <div style={{ marginTop: 12 }}>
+                  <p style={{ fontSize: "15px", color: "var(--ink)", lineHeight: 1.65, marginBottom: 12 }}>
+                    {editorial.whyThisFits}
+                  </p>
+                  <div className="grid-2">
+                    <div>
+                      <h3 style={{ fontSize: "15px", marginBottom: 6 }}>Great fit if you want:</h3>
+                      <ul className="list">
+                        {editorial.whoShouldChoose.map((point, i) => (
+                          <li key={i}>{point}</li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div>
+                      <h3 style={{ fontSize: "15px", marginBottom: 6 }}>Consider other options if:</h3>
+                      <ul className="list">
+                        {editorial.whoShouldAvoid.map((point, i) => (
+                          <li key={i}>{point}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </details>
+
+              <details
+                style={{
+                  background: "#f8fbfb",
+                  border: "1px solid var(--line)",
+                  borderRadius: 10,
+                  padding: "14px 18px",
+                }}
+              >
+                <summary style={{ cursor: "pointer", fontWeight: 700, fontSize: "15px", color: "var(--deep)" }}>
+                  Weather guidance &amp; backup options
+                </summary>
+                <div style={{ marginTop: 12 }}>
+                  <p style={{ fontSize: "15px", color: "var(--ink)", lineHeight: 1.65, marginBottom: 10 }}>
+                    {editorial.weatherReality}
+                  </p>
+                  <p style={{ fontSize: "14.5px", color: "var(--ink)", lineHeight: 1.6, marginBottom: 10 }}>
+                    {item.weatherBackupAdvice}
+                  </p>
+                  <p style={{ fontSize: "14px", color: "var(--muted)", margin: 0 }}>
+                    <strong>Recommended backup:</strong> {editorial.bestBackupOption}
+                  </p>
+                </div>
+              </details>
+
+              <details
+                style={{
+                  background: "#f8fbfb",
+                  border: "1px solid var(--line)",
+                  borderRadius: 10,
+                  padding: "14px 18px",
+                }}
+              >
+                <summary style={{ cursor: "pointer", fontWeight: 700, fontSize: "15px", color: "var(--deep)" }}>
+                  What to bring
+                </summary>
+                <ul className="list" style={{ marginTop: 12 }}>
+                  {item.whatToBring.map((b, i) => (
+                    <li key={i}>{b}</li>
+                  ))}
+                </ul>
+              </details>
+
+              <details
+                style={{
+                  background: "#f8fbfb",
+                  border: "1px solid var(--line)",
+                  borderRadius: 10,
+                  padding: "14px 18px",
+                }}
+              >
+                <summary style={{ cursor: "pointer", fontWeight: 700, fontSize: "15px", color: "var(--deep)" }}>
+                  Meeting-point information &amp; pier transfers
+                </summary>
+                <div style={{ marginTop: 12 }}>
+                  <p style={{ fontSize: "15px", color: "var(--ink)", lineHeight: 1.65, marginBottom: 10 }}>
+                    {item.meetingLogistics}
+                  </p>
+                  <p style={{ fontSize: "14.5px", color: "var(--ink)", lineHeight: 1.6, margin: 0 }}>
+                    {editorial.meetingPointExplanation}
+                  </p>
+                </div>
+              </details>
+
+              <details
+                style={{
+                  background: "#f8fbfb",
+                  border: "1px solid var(--line)",
+                  borderRadius: 10,
+                  padding: "14px 18px",
+                }}
+              >
+                <summary style={{ cursor: "pointer", fontWeight: 700, fontSize: "15px", color: "var(--deep)" }}>
+                  Frequently asked questions
+                </summary>
+                <div className="faq-list" style={{ marginTop: 14 }}>
+                  {item.faqs.map((faq) => (
+                    <article className="faq-item" key={faq.question}>
+                      <h3>{faq.question}</h3>
+                      <p>{faq.answer}</p>
+                    </article>
+                  ))}
+                </div>
+              </details>
+            </div>
+          </section>
+
+          {/* Complete Methodology & Disclosure */}
+          <section id="timing-methodology" className="section" style={{ borderTop: "1px solid var(--line)", background: "#f8fbfb" }}>
+            <div className="shell">
+              <h3>How We Check Ship Timing &amp; Booking Disclosure</h3>
+              <p style={{ fontSize: "14px", color: "#485b63", lineHeight: 1.6, maxWidth: 820 }}>
+                {item.cruiseSafetyRule} {editorial.methodology} Our schedule checks verify that estimated dock return plus a 2-hour (120-minute) return buffer finishes no later than your ship&apos;s confirmed all-aboard time.
+              </p>
+              <TrustDisclosure />
+            </div>
+          </section>
+        </>
+      ) : (
+        <>
 
       {/* Editorial Depth & Port Day Guidance */}
       <section className="section" style={{ background: "#fbfcfc", borderTop: "1px solid var(--line)" }}>
@@ -572,6 +759,8 @@ export default async function ActivityPage({
           </div>
         </div>
       </section>
+        </>
+      )}
 
       {/* Internal Link Silo */}
       <section className="section" style={{ borderTop: "1px solid var(--line)" }}>

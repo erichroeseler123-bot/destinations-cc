@@ -16,9 +16,21 @@ interface JuneauNormalizedSupplierFeedSectionProps {
   initialShipArrival?: string | null;
   initialAllAboard?: string | null;
   activitySlug?: string;
+  isWhaleWatchingLanding?: boolean;
 }
 
 const PARTY_SIZE_CHOICES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12];
+
+function getOperatorInitials(name: string): string {
+  const words = name
+    .replace(/&/g, " ")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+  if (words.length === 0) return "LF";
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+  return `${words[0][0]}${words[1][0]}`.toUpperCase();
+}
 
 export function JuneauNormalizedSupplierFeedSection({
   feed,
@@ -27,7 +39,9 @@ export function JuneauNormalizedSupplierFeedSection({
   initialShipArrival = null,
   initialAllAboard = null,
   activitySlug,
+  isWhaleWatchingLanding = false,
 }: JuneauNormalizedSupplierFeedSectionProps) {
+  const isWhaleWatching = isWhaleWatchingLanding || activitySlug === "whale-watching";
   const computedInitialView = useMemo(() => {
     if (initialView) return initialView;
     if (!feed) {
@@ -66,6 +80,9 @@ export function JuneauNormalizedSupplierFeedSection({
     view.shipAllAboardTime || initialAllAboard || "",
   );
   const [loadingRecheck, setLoadingRecheck] = useState<boolean>(false);
+  const [hasCheckedAvailability, setHasCheckedAvailability] = useState<boolean>(
+    Boolean(view.enteredPartySize !== null && view.serviceDate),
+  );
   const [selectedKeyByCard, setSelectedKeyByCard] = useState<Record<string, string>>({});
   const [revalidatingCardId, setRevalidatingCardId] = useState<string | null>(null);
   const [cardNoticeById, setCardNoticeById] = useState<Record<string, string>>({});
@@ -100,6 +117,9 @@ export function JuneauNormalizedSupplierFeedSection({
       if (res.ok) {
         const nextView = (await res.json()) as LfsePublicJuneauAvailabilityView;
         setLiveView(nextView);
+        if (nextPartySize !== null && nextPartySize >= 1) {
+          setHasCheckedAvailability(true);
+        }
       }
     } catch {
       // Keep current view on transient network failure
@@ -249,52 +269,54 @@ export function JuneauNormalizedSupplierFeedSection({
     }
   }
 
+  const availableTourCount = view.cards.filter(
+    (c) =>
+      c.recommendedDepartures.length +
+        c.confirmTimingDepartures.length +
+        c.otherAvailableTimes.length >
+      0,
+  ).length;
+
+  const tourCountHeadingLabel =
+    hasCheckedAvailability && partySize !== null
+      ? `${availableTourCount} ${availableTourCount === 1 ? "whale-watching tour" : "whale-watching tours"} available`
+      : "Explore whale-watching tours";
+
   return (
     <section
+      id={isWhaleWatching ? "available-whale-watching-tours" : undefined}
       className="section"
       data-testid="lfse-juneau-normalized-supplier-feed"
       style={{
         background: "#ffffff",
         borderTop: "1px solid var(--line)",
         borderBottom: "1px solid var(--line)",
-        padding: "32px 0",
+        padding: "28px 0 36px",
       }}
     >
       <div className="shell">
         <div
           style={{
-            display: "flex",
-            flexWrap: "wrap",
-            justifyContent: "space-between",
-            alignItems: "flex-end",
-            gap: 14,
-            marginBottom: 18,
+            background: "#f4faf9",
+            border: "1px solid #cce3df",
+            borderRadius: 14,
+            padding: "16px 18px",
+            marginBottom: 22,
           }}
         >
-          <div>
-            <p className="eyebrow" style={{ color: "var(--muted)", marginBottom: 4 }}>
-              Live Operator Availability
-            </p>
-            <h2 style={{ margin: 0, fontSize: "22px" }}>
-              {view.operatorName} — Live Operator Availability
-            </h2>
-            <p style={{ color: "var(--muted)", fontSize: "14px", margin: "6px 0 0" }}>
-              Choose your sailing date and group size to see available departure times.
-            </p>
-          </div>
-
           <div
             style={{
-              display: "flex",
-              flexWrap: "wrap",
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
               gap: 10,
-              alignItems: "flex-end",
+              alignItems: "end",
             }}
           >
             <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: "12px", fontWeight: 700, color: "var(--deep)" }}>
-              Port Date
+              Port date
               <input
                 type="date"
+                aria-label="Port date"
                 value={serviceDate}
                 onChange={(e) => {
                   const nextDate = e.target.value;
@@ -304,7 +326,7 @@ export function JuneauNormalizedSupplierFeedSection({
                   }
                 }}
                 style={{
-                  padding: "7px 10px",
+                  padding: "8px 10px",
                   borderRadius: 8,
                   border: "1px solid var(--line)",
                   fontSize: "13px",
@@ -313,13 +335,51 @@ export function JuneauNormalizedSupplierFeedSection({
               />
             </label>
             <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: "12px", fontWeight: 700, color: "var(--deep)" }}>
-              How many people are going?
+              Ship arrival
+              <input
+                type="time"
+                aria-label="Ship arrival"
+                value={shipArrival}
+                onChange={(e) => {
+                  const nextArr = e.target.value;
+                  setShipArrival(nextArr);
+                }}
+                style={{
+                  padding: "8px 10px",
+                  borderRadius: 8,
+                  border: "1px solid var(--line)",
+                  fontSize: "13px",
+                  background: "#ffffff",
+                }}
+              />
+            </label>
+            <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: "12px", fontWeight: 700, color: "var(--deep)" }}>
+              Confirmed all-aboard
+              <input
+                type="time"
+                aria-label="Confirmed all-aboard"
+                value={allAboard}
+                onChange={(e) => {
+                  const nextAboard = e.target.value;
+                  setAllAboard(nextAboard);
+                }}
+                style={{
+                  padding: "8px 10px",
+                  borderRadius: 8,
+                  border: "1px solid var(--line)",
+                  fontSize: "13px",
+                  background: "#ffffff",
+                }}
+              />
+            </label>
+            <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: "12px", fontWeight: 700, color: "var(--deep)" }}>
+              Group size
               <select
-                aria-label="How many people are going?"
+                aria-label="Group size"
                 value={partySize ?? ""}
                 onChange={(e) => handlePartySizeChange(e.target.value)}
                 style={{
-                  padding: "7px 10px",
+                  padding: "8px 10px",
                   borderRadius: 8,
                   border: "1px solid var(--forest)",
                   fontSize: "13px",
@@ -327,7 +387,7 @@ export function JuneauNormalizedSupplierFeedSection({
                   background: "#ffffff",
                 }}
               >
-                <option value="">Select group size…</option>
+                <option value="">How many people are going?</option>
                 {PARTY_SIZE_CHOICES.map((n) => (
                   <option key={n} value={n}>
                     {n} {n === 1 ? "person" : "people"}
@@ -335,52 +395,58 @@ export function JuneauNormalizedSupplierFeedSection({
                 ))}
               </select>
             </label>
-            <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: "12px", fontWeight: 700, color: "var(--deep)" }}>
-              Ship Arrival
-              <input
-                type="time"
-                aria-label="Ship Arrival"
-                value={shipArrival}
-                onChange={(e) => {
-                  const nextArr = e.target.value;
-                  setShipArrival(nextArr);
-                  void recheckAvailability(serviceDate, partySize, nextArr, allAboard);
-                }}
+            <button
+              type="button"
+              onClick={() => void recheckAvailability(serviceDate, partySize, shipArrival, allAboard)}
+              disabled={loadingRecheck}
+              style={{
+                padding: "9px 14px",
+                borderRadius: 8,
+                border: "none",
+                background: "var(--forest)",
+                color: "#ffffff",
+                fontSize: "13px",
+                fontWeight: 700,
+                cursor: "pointer",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {loadingRecheck ? "Checking…" : "Find tours that fit my schedule"}
+            </button>
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 16 }}>
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              justifyContent: "space-between",
+              alignItems: "baseline",
+              gap: 10,
+            }}
+          >
+            <h2 style={{ margin: 0, fontSize: "24px" }}>
+              {isWhaleWatching
+                ? "Available whale-watching tours"
+                : `${view.operatorName} — Live Operator Availability`}
+            </h2>
+            {isWhaleWatching && (
+              <span
+                data-testid="lfse-juneau-tour-count-label"
                 style={{
-                  padding: "7px 10px",
-                  borderRadius: 8,
-                  border: "1px solid var(--line)",
-                  fontSize: "13px",
-                  background: "#ffffff",
+                  fontSize: "14px",
+                  fontWeight: 700,
+                  color: "var(--forest)",
                 }}
-              />
-            </label>
-            <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: "12px", fontWeight: 700, color: "var(--deep)" }}>
-              Confirmed All-Aboard
-              <input
-                type="time"
-                aria-label="Confirmed All-Aboard"
-                value={allAboard}
-                onChange={(e) => {
-                  const nextAboard = e.target.value;
-                  setAllAboard(nextAboard);
-                  void recheckAvailability(serviceDate, partySize, shipArrival, nextAboard);
-                }}
-                style={{
-                  padding: "7px 10px",
-                  borderRadius: 8,
-                  border: "1px solid var(--line)",
-                  fontSize: "13px",
-                  background: "#ffffff",
-                }}
-              />
-            </label>
-            {loadingRecheck && (
-              <span style={{ fontSize: "12px", color: "var(--muted)", paddingBottom: 8 }}>
-                Checking…
+              >
+                {tourCountHeadingLabel}
               </span>
             )}
           </div>
+          <p style={{ fontSize: "12px", color: "var(--muted)", margin: "6px 0 0", lineHeight: 1.45 }}>
+            <strong>Affiliate Disclosure:</strong> Booking is completed with the listed operator or booking partner. Last Frontier may earn an affiliate commission at no extra cost to you.
+          </p>
         </div>
 
         {view.cards.length > 0 ? (
@@ -404,66 +470,124 @@ export function JuneauNormalizedSupplierFeedSection({
                   key={card.cardId}
                   data-testid="lfse-juneau-simplified-tour-card"
                   style={{
-                    background: "#f8fbfb",
+                    background: "#ffffff",
                     border: "1px solid var(--line)",
+                    borderRadius: 14,
+                    overflow: "hidden",
                     display: "flex",
                     flexDirection: "column",
                     justifyContent: "space-between",
                     gap: 14,
+                    padding: 0,
                   }}
                 >
                   <div>
                     <div
                       style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "flex-start",
-                        gap: 8,
-                        marginBottom: 6,
+                        position: "relative",
+                        width: "100%",
+                        aspectRatio: "16 / 9",
+                        background: "#e8f0f2",
+                        overflow: "hidden",
                       }}
                     >
-                      <div>
-                        <span
-                          style={{
-                            fontSize: "11.5px",
-                            fontWeight: 700,
-                            color: "var(--muted)",
-                            textTransform: "uppercase",
-                            letterSpacing: "0.04em",
-                          }}
-                        >
-                          {card.operatorName}
-                        </span>
-                        <h3 style={{ fontSize: "17px", margin: "2px 0 4px" }}>{card.title}</h3>
+                      <img
+                        src={card.imageUrl || "/images/alaska/juneau-whale.jpg"}
+                        alt={card.imageAlt || card.title}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          display: "block",
+                        }}
+                      />
+                    </div>
+                    <div style={{ padding: "16px 18px 0" }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "flex-start",
+                          gap: 10,
+                          marginBottom: 8,
+                        }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <span
+                            aria-hidden="true"
+                            style={{
+                              width: 28,
+                              height: 28,
+                              borderRadius: 999,
+                              background: "#0f4c5c",
+                              color: "#ffffff",
+                              fontSize: "11px",
+                              fontWeight: 800,
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              flexShrink: 0,
+                            }}
+                          >
+                            {getOperatorInitials(card.operatorName)}
+                          </span>
+                          <span
+                            style={{
+                              fontSize: "12px",
+                              fontWeight: 700,
+                              color: "var(--deep)",
+                              letterSpacing: "0.02em",
+                            }}
+                          >
+                            {card.operatorName}
+                          </span>
+                        </div>
+                        {card.startingPriceLabel && (
+                          <strong style={{ color: "var(--forest)", fontSize: "14px", whiteSpace: "nowrap" }}>
+                            {card.startingPriceLabel}
+                          </strong>
+                        )}
                       </div>
-                      {card.startingPriceLabel && (
-                        <strong style={{ color: "var(--forest)", fontSize: "14px", whiteSpace: "nowrap" }}>
-                          {card.startingPriceLabel}
-                        </strong>
-                      )}
-                    </div>
 
-                    <div
-                      style={{
-                        display: "flex",
-                        flexWrap: "wrap",
-                        gap: 12,
-                        fontSize: "13px",
-                        color: "var(--muted)",
-                        marginBottom: 12,
-                      }}
-                    >
-                      {card.durationLabel && (
-                        <span>
-                          Duration: <strong style={{ color: "var(--ink)" }}>{card.durationLabel}</strong>
-                        </span>
+                      <h3 style={{ fontSize: "18px", margin: "0 0 6px", lineHeight: 1.25 }}>
+                        {card.title}
+                      </h3>
+
+                      {card.description && (
+                        <p style={{ margin: "0 0 10px", fontSize: "13.5px", color: "var(--muted)", lineHeight: 1.5 }}>
+                          {card.description}
+                        </p>
                       )}
-                      {card.serviceDate && (
-                        <span>
-                          Date: <strong style={{ color: "var(--ink)" }}>{card.serviceDate}</strong>
-                        </span>
-                      )}
-                    </div>
+
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 4,
+                          fontSize: "12.5px",
+                          color: "var(--muted)",
+                          marginBottom: 12,
+                        }}
+                      >
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+                          {card.durationLabel && (
+                            <span>
+                              Duration: <strong style={{ color: "var(--ink)" }}>{card.durationLabel}</strong>
+                            </span>
+                          )}
+                          {card.serviceDate && (
+                            <span>
+                              Date: <strong style={{ color: "var(--ink)" }}>{card.serviceDate}</strong>
+                            </span>
+                          )}
+                        </div>
+                        {card.pickupDropoffLabel && (
+                          <span>
+                            <strong style={{ color: "var(--ink)" }}>Pickup &amp; drop-off:</strong>{" "}
+                            {card.pickupDropoffLabel.replace(/^Round-trip pickup & drop-off:\s*/i, "")}
+                          </span>
+                        )}
+                      </div>
 
                     <div
                       style={{
@@ -692,17 +816,32 @@ export function JuneauNormalizedSupplierFeedSection({
                     {activeDep && (
                       <div
                         style={{
-                          padding: "7px 10px",
+                          padding: "8px 10px",
                           borderRadius: 7,
-                          background: "#ffffff",
-                          border: "1px solid var(--line)",
+                          background: activeDep.timingBucket === "recommended" ? "#f0fdf4" : "#f8fbfb",
+                          border:
+                            activeDep.timingBucket === "recommended"
+                              ? "1px solid #9ad3b0"
+                              : "1px solid var(--line)",
                           fontSize: "12.5px",
                           marginBottom: 8,
+                          display: "flex",
+                          flexWrap: "wrap",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          gap: 6,
                         }}
                       >
-                        <span style={{ color: "var(--muted)" }}>
-                          Timing status ({activeDep.timeLabel}):{" "}
-                        </span>
+                        <div>
+                          {activeDep.estimatedReturnLabel && (
+                            <span style={{ color: "var(--deep)", fontWeight: 600, marginRight: 8 }}>
+                              Estimated return: {activeDep.estimatedReturnLabel}
+                            </span>
+                          )}
+                          <span style={{ color: "var(--muted)" }}>
+                            ({activeDep.timeLabel} departure)
+                          </span>
+                        </div>
                         <strong
                           style={{
                             color:
@@ -713,7 +852,9 @@ export function JuneauNormalizedSupplierFeedSection({
                                   : "var(--deep)",
                           }}
                         >
-                          {activeDep.timingStatusLabel}
+                          {activeDep.timingBucket === "recommended"
+                            ? "Fits your ship schedule"
+                            : activeDep.timingStatusLabel}
                         </strong>
                       </div>
                     )}
@@ -817,9 +958,10 @@ export function JuneauNormalizedSupplierFeedSection({
                         </div>
                       </div>
                     )}
+                    </div>
                   </div>
 
-                  <div style={{ borderTop: "1px solid var(--line)", paddingTop: 10 }}>
+                  <div style={{ borderTop: "1px solid var(--line)", padding: "12px 18px 16px" }}>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                       {card.checkoutAvailable && activeDep ? (
                         <button

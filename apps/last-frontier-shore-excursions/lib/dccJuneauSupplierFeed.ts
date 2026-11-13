@@ -710,6 +710,7 @@ export interface LfsePublicDepartureButton {
   selectionKey: string;
   departureTime24: string;
   timeLabel: string;
+  estimatedReturnLabel: string | null;
   timingBucket: LfsePublicTimingBucket;
   timingStatusLabel: string;
   reducedBufferHmsLabel: string | null;
@@ -723,6 +724,10 @@ export interface LfsePublicTourCardModel {
   cardId: string;
   title: string;
   operatorName: string;
+  imageUrl: string;
+  imageAlt: string;
+  description: string;
+  pickupDropoffLabel: string;
   durationLabel: string | null;
   startingPriceLabel: string | null;
   serviceDate: string | null;
@@ -737,7 +742,7 @@ export interface LfsePublicTourCardModel {
   checkoutAvailable: boolean;
   checkoutCtaLabel: "Book this tour";
   checkoutProviderLabel: string | null;
-  addToGroupPlanLabel: "Add to group plan";
+  addToGroupPlanLabel: "Add to our cruise plan";
 }
 
 export interface LfsePublicJuneauAvailabilityView {
@@ -1184,10 +1189,15 @@ export function buildLfsePublicJuneauAvailabilityView(
         planQs.set("bookingUrl", checkoutHref);
       }
 
+      const estimatedReturnClock = assessment?.estimatedDockReturnTime
+        ? formatLfseClock12h(assessment.estimatedDockReturnTime)
+        : null;
+
       const btn: LfsePublicDepartureButton = {
         selectionKey: `${tour.normalizedTourId}::${dep24}::${opt.uid}`,
         departureTime24: dep24,
         timeLabel,
+        estimatedReturnLabel: estimatedReturnClock,
         timingBucket,
         timingStatusLabel,
         reducedBufferHmsLabel,
@@ -1234,10 +1244,45 @@ export function buildLfsePublicJuneauAvailabilityView(
       tour.matchedViatorProductCode && (tour.trackedFallbackHref || tour.approvedFallbackViatorUrl),
     );
 
+    const lowerTitle = tour.title.toLowerCase();
+    const isComboGlacier =
+      tour.activityCategory === "combo-whale-glacier" || lowerTitle.includes("mendenhall");
+    const isShuttle =
+      tour.activityCategory === "mendenhall-glacier-tours" || lowerTitle.includes("shuttle");
+    const cardIndex = cards.length;
+    const whaleImagePool = [
+      "/images/alaska/juneau-whale.jpg",
+      "/images/alaska/whale-watching.jpg",
+      "/images/alaska/allen-marine-catamaran.jpg",
+    ];
+    const imageUrl = isShuttle
+      ? "/images/alaska/mendenhall-visitor-center.jpg"
+      : isComboGlacier
+        ? "/images/alaska/mendenhall-glacier.jpg"
+        : whaleImagePool[cardIndex % whaleImagePool.length];
+    const imageAlt = isShuttle
+      ? "Mendenhall Glacier Visitor Center and shuttle access in Juneau, Alaska"
+      : isComboGlacier
+        ? "Mendenhall Glacier and Juneau whale-watching excursion"
+        : "Humpback whale watching excursion in Juneau coastal waters";
+    const description = isShuttle
+      ? "Direct round-trip motorcoach service between downtown Juneau cruise docks and the Mendenhall Glacier Recreation Area."
+      : isComboGlacier
+        ? "Guided Auke Bay whale-watching cruise paired with timed Mendenhall Glacier exploration and round-trip cruise-dock shuttle."
+        : "Guided humpback whale and marine wildlife cruise in Auke Bay with round-trip shuttle from downtown Juneau cruise docks.";
+    const pickupDropoffLabel =
+      tour.startingLocation && !/auke bay/i.test(tour.startingLocation)
+        ? `Round-trip pickup & drop-off: ${tour.startingLocation}`
+        : "Round-trip pickup & drop-off at Downtown Juneau Cruise Docks included";
+
     cards.push({
       cardId: tour.normalizedTourId,
       title: tour.title,
       operatorName,
+      imageUrl,
+      imageAlt,
+      description,
+      pickupDropoffLabel,
       durationLabel:
         tour.durationLabel ||
         (tour.durationMinutes ? `${Math.round((tour.durationMinutes / 60) * 100) / 100} hours` : null),
@@ -1254,7 +1299,7 @@ export function buildLfsePublicJuneauAvailabilityView(
       checkoutAvailable,
       checkoutCtaLabel: "Book this tour",
       checkoutProviderLabel: checkoutAvailable ? "Checkout via Viator" : null,
-      addToGroupPlanLabel: "Add to group plan",
+      addToGroupPlanLabel: "Add to our cruise plan",
     });
   }
 

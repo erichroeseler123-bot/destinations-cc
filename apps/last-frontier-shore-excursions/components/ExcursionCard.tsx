@@ -13,6 +13,7 @@ import { buildAddToCruisePromenadeUrl } from "../../../lib/dcc/shared/addToCruis
 interface ExcursionCardProps {
   excursion: NormalizedAffiliateExcursion;
   shipName?: string;
+  hideDisclosure?: boolean;
   showCalculatedFit?: {
     status: "strong_fit" | "tight_fit" | "does_not_fit" | "unknown";
     label: string;
@@ -23,6 +24,7 @@ interface ExcursionCardProps {
 export function ExcursionCard({
   excursion,
   shipName,
+  hideDisclosure = false,
   showCalculatedFit,
 }: ExcursionCardProps) {
   const addToCpPlanHref = buildAddToCruisePromenadeUrl({
@@ -277,7 +279,7 @@ export function ExcursionCard({
         + Add to Cruise Promenade Plan
       </a>
 
-      <TrustDisclosure compact />
+      {!hideDisclosure && <TrustDisclosure compact />}
     </article>
   );
 }

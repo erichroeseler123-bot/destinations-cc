@@ -873,21 +873,40 @@ test("Rezgo Gate-2 advancement, supplier 2.00h cutoff vs DCC 2-hour return buffe
     assert.equal(getLfseJuneauSupplierFeedCacheStatsForTesting().entries, 1);
 
     const html = renderToStaticMarkup(
-      React.createElement(JuneauNormalizedSupplierFeedSection, { feed: lfseSecond }),
+      React.createElement(JuneauNormalizedSupplierFeedSection, {
+        feed: lfseSecond,
+        activitySlug: "whale-watching",
+        isWhaleWatchingLanding: true,
+      }),
     );
-    assert.match(html, /Live Operator Availability/);
+    assert.match(html, /Available whale-watching tours/);
+    assert.match(html, /Explore whale-watching tours/);
+    assert.match(html, /Find tours that fit my schedule/);
     assert.match(html, /How many people are going\?/);
-    // firstFeed had confirmed allAboard 16:30, so 9:30 AM + 225m = 13:15 -> 3:15:00 remaining -> Estimated back 2+ hours before all aboard!
-    assert.match(html, /Estimated back 2\+ hours before all aboard/);
+    // firstFeed had confirmed allAboard 16:30, so 9:30 AM + 225m = 13:15 -> 3:15:00 remaining -> Fits your ship schedule!
+    assert.match(html, /Fits your ship schedule/);
+    assert.match(html, /Estimated return: 1:15 PM/);
     assert.match(html, /Recommended times/);
     assert.match(html, /Doesn’t fit this ship day/);
     assert.match(html, /Book this tour/);
-    assert.match(html, /Add to group plan/);
+    assert.match(html, /Add to our cruise plan/);
     assert.match(html, /Checkout via Viator/);
     assert.doesNotMatch(html, /Verified Operator Schedule/);
     assert.doesNotMatch(html, /badge-safety/);
     assert.doesNotMatch(html, /20 seats|15 seats|35 spots|0 seats/i);
     assert.doesNotMatch(html, /COM 32329|UID 32331|#5857P23/);
+
+    const lfseWhalePageSrc = fs.readFileSync(
+      path.join(process.cwd(), "apps/last-frontier-shore-excursions/app/[port]/[activity]/page.tsx"),
+      "utf8",
+    );
+    assert.match(lfseWhalePageSrc, /Juneau Whale-Watching Tours/);
+    assert.match(lfseWhalePageSrc, /See available whale-watching tours/);
+    assert.match(lfseWhalePageSrc, /#available-whale-watching-tours/);
+    assert.match(lfseWhalePageSrc, /How we check ship timing/);
+    assert.doesNotMatch(lfseWhalePageSrc, /Supplier Reconciliation/);
+    assert.doesNotMatch(lfseWhalePageSrc, /Pending Direct Referral Credit/);
+    assert.doesNotMatch(lfseWhalePageSrc, /#466119P3|#5857P22|#5857P23|#5857SHUTTLE|10% Rezgo/);
 
     // 5. DCC /juneau/whale-watching-tours public surface wires JuneauLiveAvailabilitySection with simplified cards
     assert.equal(whaleTour.departureOptions.length, 2);
@@ -1234,7 +1253,7 @@ test("Juneau Tours dock-to-dock timing correction: Celebrity Edge May 24 (13:30�
         initialAllAboard: "21:30",
       }),
     );
-    assert.match(lfseEdgeHtml, /Estimated back 2\+ hours before all aboard/);
+    assert.match(lfseEdgeHtml, /Fits your ship schedule/);
     assert.match(lfseEdgeHtml, /1:30:00 buffer · Not recommended/);
     assert.match(lfseEdgeHtml, /1:00:00 buffer · Not recommended/);
     assert.doesNotMatch(lfseEdgeHtml, /Confirm return timing/);
