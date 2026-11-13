@@ -359,8 +359,8 @@ export interface NormalizedJuneauSupplierTour {
     | "live_operator_availability_only_unverified_cruise_timing";
   cruiseTimingStatusLabel: string;
   cruiseTimingDisclosure: string;
-  dccRequiredRecommendedReturnBufferSeconds: 7199;
-  dccRequiredRecommendedReturnBufferLabel: "1:59:59+ before confirmed all-aboard";
+  dccRequiredRecommendedReturnBufferSeconds: 7200;
+  dccRequiredRecommendedReturnBufferLabel: "2-hour return buffer (120 minutes) before confirmed all-aboard";
   optionWindowAssessments: RezgoOptionSailingWindowAssessment[];
   cacheKey: string;
   matchConfidence: "high_exact_code" | "medium_title_and_operator" | "unmatched_rezgo_only";
@@ -393,8 +393,8 @@ export interface NormalizedJuneauSupplierFeed {
     feedClassification: "live_operator_availability_only";
     verifiedCruiseSafeTiming: false;
     supplierCutoffIsNeverCruiseReturnBuffer: true;
-    dccRecommendedReturnBufferMinimumSeconds: 7199;
-    dccRecommendedReturnBufferLabel: "At least 1:59:59 before ship's confirmed all-aboard time";
+    dccRecommendedReturnBufferMinimumSeconds: 7200;
+    dccRecommendedReturnBufferLabel: "At least a 2-hour return buffer (120 minutes) before ship's confirmed all-aboard time";
     unconfirmedInputs: readonly [
       "exact_meeting_points",
       "berth_transfer_durations",
@@ -1439,7 +1439,7 @@ export function formatRemainingBufferHms(totalSeconds: number): string {
  *
  * Architectural Safeguards:
  * - Rezgo's `<cutoff>` (e.g. `2.00` hours) is a SUPPLIER BOOKING CUTOFF and is NEVER used here.
- * - DCC's separate rule requires at least `1:59:59` (`7,199` seconds) before the ship's confirmed
+ * - DCC's separate rule requires at least a `2-hour return buffer` (`120` complete minutes / `7,200` seconds) before the ship's confirmed
  *   all-aboard time for a normally recommended excursion.
  * - Confirmed Juneau Tours Rezgo products (`durationScope: "dock_to_dock"`) already include
  *   outbound operator transportation, the activity, and return transportation to the dock /
@@ -1447,7 +1447,7 @@ export function formatRemainingBufferHms(totalSeconds: number): string {
  *   with ZERO duplicate Auke Bay / Mendenhall transfer added, plus an additional berth-access
  *   adjustment ONLY when a documented specific-berth adjustment is explicitly passed.
  * - Options outside `[shipArrivalTime, shipAllAboardTime]` are blocked (`blockedForSailingWindow: true`).
- * - Options returning inside the window with `< 1:59:59` remaining display the exact `H:MM:SS`
+ * - Options returning inside the window with `< 2-hour return buffer` remaining display the exact `H:MM:SS`
  *   remaining buffer and are labeled reduced-buffer / not recommended.
  */
 export function assessRezgoDepartureAgainstShipWindow(params: {
@@ -1571,7 +1571,7 @@ export function assessRezgoDepartureAgainstShipWindow(params: {
       }
 
       const exactHms = formatRemainingBufferHms(shipBufferSec);
-      if (shipBufferSec < 7199) {
+      if (Math.floor(shipBufferSec / 60) < 120) {
         return {
           departureTime: params.departureTime,
           shipArrivalTime: normArr,
@@ -1633,7 +1633,7 @@ export function assessRezgoDepartureAgainstShipWindow(params: {
       }
 
       const exactHms = formatRemainingBufferHms(unconfirmedRemainingSec);
-      if (unconfirmedRemainingSec < 7199) {
+      if (Math.floor(unconfirmedRemainingSec / 60) < 120) {
         return {
           departureTime: params.departureTime,
           shipArrivalTime: normArr,
@@ -1703,7 +1703,7 @@ export function assessRezgoDepartureAgainstShipWindow(params: {
     }
 
     const exactConfirmedHms = formatRemainingBufferHms(remainingAfterTransferSec);
-    if (remainingAfterTransferSec < 7199) {
+    if (Math.floor(remainingAfterTransferSec / 60) < 120) {
       return {
         departureTime: params.departureTime,
         shipArrivalTime: normArr,
@@ -1765,7 +1765,7 @@ export function assessRezgoDepartureAgainstShipWindow(params: {
     }
 
     const exactHms = formatRemainingBufferHms(remainingSec);
-    if (remainingSec < 7199) {
+    if (Math.floor(remainingSec / 60) < 120) {
       return {
         departureTime: params.departureTime,
         shipArrivalTime: normArr,
@@ -2159,8 +2159,8 @@ export async function buildNormalizedJuneauSupplierFeed(options?: {
 
       const cutoffSentence =
         maxSupplierCutoffHours !== null
-          ? `Operator booking cutoff is ${maxSupplierCutoffHours}h prior to departure (supplier ticket-purchase cutoff only — never DCC's 1:59:59+ cruise-return buffer). `
-          : "Operator booking cutoffs apply only to ticket purchase — never DCC's 1:59:59+ cruise-return buffer. ";
+          ? `Operator booking cutoff is ${maxSupplierCutoffHours}h prior to departure (supplier ticket-purchase cutoff only — never DCC's 2-hour return buffer). `
+          : "Operator booking cutoffs apply only to ticket purchase — never DCC's 2-hour return buffer. ";
 
       const hasRecommendedAssessment = assessments.some((a) => a.status === "recommended");
       const hasConfirmedWindowForDockToDock =
@@ -2228,8 +2228,8 @@ export async function buildNormalizedJuneauSupplierFeed(options?: {
           provenance.durationScope === "dock_to_dock"
             ? `${cutoffSentence}${provenance.durationProvenance.provenanceNote}`
             : `${cutoffSentence}Exact meeting points, berth-transfer durations, operator return times, and dock pickup rules remain unconfirmed.`,
-        dccRequiredRecommendedReturnBufferSeconds: 7199,
-        dccRequiredRecommendedReturnBufferLabel: "1:59:59+ before confirmed all-aboard",
+        dccRequiredRecommendedReturnBufferSeconds: 7200,
+        dccRequiredRecommendedReturnBufferLabel: "2-hour return buffer (120 minutes) before confirmed all-aboard",
         optionWindowAssessments: assessments,
         cacheKey: productSliceKey,
         matchConfidence: entry.rec?.matchConfidence ?? "unmatched_rezgo_only",
@@ -2291,8 +2291,8 @@ export async function buildNormalizedJuneauSupplierFeed(options?: {
       feedClassification: "live_operator_availability_only",
       verifiedCruiseSafeTiming: false,
       supplierCutoffIsNeverCruiseReturnBuffer: true,
-      dccRecommendedReturnBufferMinimumSeconds: 7199,
-      dccRecommendedReturnBufferLabel: "At least 1:59:59 before ship's confirmed all-aboard time",
+      dccRecommendedReturnBufferMinimumSeconds: 7200,
+      dccRecommendedReturnBufferLabel: "At least a 2-hour return buffer (120 minutes) before ship's confirmed all-aboard time",
       unconfirmedInputs: [
         "exact_meeting_points",
         "berth_transfer_durations",

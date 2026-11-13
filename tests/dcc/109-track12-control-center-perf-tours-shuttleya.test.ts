@@ -633,7 +633,7 @@ test("Owner-only Rezgo inspection action, secret scrubbing, cross-surface reconc
   }
 });
 
-test("Rezgo Gate-2 advancement, supplier 2.00h cutoff vs DCC 1:59:59 return buffer, bounded caching, and live-availability-only UI labeling", async () => {
+test("Rezgo Gate-2 advancement, supplier 2.00h cutoff vs DCC 2-hour return buffer return buffer, bounded caching, and live-availability-only UI labeling", async () => {
   clearRezgoReadOnlyCacheForTesting();
   clearLfseJuneauSupplierFeedCacheForTesting();
 
@@ -656,17 +656,17 @@ test("Rezgo Gate-2 advancement, supplier 2.00h cutoff vs DCC 1:59:59 return buff
     assert.equal(gate2Status.gates.liveBookingToggleEnabled, false);
     assert.equal(gate2Status.liveBookingAllowed, false);
 
-    // 2. Architectural Detail #1: Rezgo 2.00h cutoff is supplier booking cutoff ONLY; DCC 1:59:59+ rule & outside-window blocking hold
-    // 1:59:59 remaining (e.g. 11:30:01 end vs 13:30:00 all-aboard = 7199s) -> meets clock upper bound (still unverified cruise timing!)
+    // 2. Architectural Detail #1: Rezgo 2.00h cutoff is supplier booking cutoff ONLY; DCC 2-hour return buffer rule & outside-window blocking hold
+    // 120 complete minutes remaining (e.g. 11:30:00 end vs 13:30:00 all-aboard = 7200s) -> meets clock upper bound (still unverified cruise timing!)
     const exactBoundary = assessRezgoDepartureAgainstShipWindow({
-      departureTime: "08:30:01",
+      departureTime: "08:30:00",
       durationMinutes: 180,
       shipArrivalTime: "08:00",
       shipAllAboardTime: "13:30",
       allAboardConfirmed: true,
     });
-    assert.equal(exactBoundary.upperBoundRemainingSecondsBeforeTransfer, 7199);
-    assert.equal(exactBoundary.upperBoundRemainingBufferHmsLabel, "1:59:59");
+    assert.equal(exactBoundary.upperBoundRemainingSecondsBeforeTransfer, 7200);
+    assert.equal(exactBoundary.upperBoundRemainingBufferHmsLabel, "2:00:00");
     assert.equal(
       exactBoundary.status,
       "unverified_cruise_timing_pending_transfer_and_pickup",
@@ -675,7 +675,7 @@ test("Rezgo Gate-2 advancement, supplier 2.00h cutoff vs DCC 1:59:59 return buff
     assert.equal(exactBoundary.meetingPointAndReturnConfirmed, false);
     assert.match(exactBoundary.displayLabel, /Cruise-safe timing unverified/);
 
-    // < 1:59:59 remaining (e.g. 12:00 departure + 180m = 15:00 end vs 16:30 all-aboard = 1:30:00 remaining) -> reduced_buffer_not_recommended with exact H:MM:SS
+    // < 2-hour return buffer remaining (e.g. 12:00 departure + 180m = 15:00 end vs 16:30 all-aboard = 1:30:00 remaining) -> reduced_buffer_not_recommended with exact H:MM:SS
     const reducedBuffer = assessRezgoDepartureAgainstShipWindow({
       departureTime: "12:00",
       durationMinutes: 180,
@@ -920,7 +920,7 @@ test("Rezgo Gate-2 advancement, supplier 2.00h cutoff vs DCC 1:59:59 return buff
   }
 });
 
-test("Juneau Tours dock-to-dock timing correction: Celebrity Edge May 24 (13:30–21:30) 5-case verification matrix, 1:59:59 boundary, berth adjustments, and strict non-generalization", async () => {
+test("Juneau Tours dock-to-dock timing correction: Celebrity Edge May 24 (13:30–21:30) 5-case verification matrix, 2-hour return buffer boundary, berth adjustments, and strict non-generalization", async () => {
   clearRezgoReadOnlyCacheForTesting();
   clearLfseJuneauSupplierFeedCacheForTesting();
 
@@ -1040,30 +1040,30 @@ test("Juneau Tours dock-to-dock timing correction: Celebrity Edge May 24 (13:30�
     assert.equal(edge1530Combo.status, "reduced_buffer_not_recommended");
     assert.equal(edge1530Combo.displayLabel, "1:00:00 buffer · Not recommended");
 
-    // 3. Exact 1:59:59 (7199s) vs 1:59:58 (7198s) dock-to-dock boundary & documented berth adjustment
-    const boundary7199 = assessRezgoDepartureAgainstShipWindow({
-      departureTime: "16:30:01",
+    // 3. Exact 120 complete minutes (7200s) vs 119 minutes (7140s) dock-to-dock boundary & documented berth adjustment
+    const boundary120m = assessRezgoDepartureAgainstShipWindow({
+      departureTime: "16:30:00",
       durationMinutes: 180,
       shipArrivalTime: "13:30",
       shipAllAboardTime: "21:30",
       allAboardConfirmed: true,
       durationScope: "dock_to_dock",
     });
-    assert.equal(boundary7199.upperBoundRemainingSecondsBeforeTransfer, 7199);
-    assert.equal(boundary7199.upperBoundRemainingBufferHmsLabel, "1:59:59");
-    assert.equal(boundary7199.status, "recommended");
+    assert.equal(boundary120m.upperBoundRemainingSecondsBeforeTransfer, 7200);
+    assert.equal(boundary120m.upperBoundRemainingBufferHmsLabel, "2:00:00");
+    assert.equal(boundary120m.status, "recommended");
 
-    const boundary7198 = assessRezgoDepartureAgainstShipWindow({
-      departureTime: "16:30:02",
+    const boundary119m = assessRezgoDepartureAgainstShipWindow({
+      departureTime: "16:31:00",
       durationMinutes: 180,
       shipArrivalTime: "13:30",
       shipAllAboardTime: "21:30",
       allAboardConfirmed: true,
       durationScope: "dock_to_dock",
     });
-    assert.equal(boundary7198.upperBoundRemainingSecondsBeforeTransfer, 7198);
-    assert.equal(boundary7198.upperBoundRemainingBufferHmsLabel, "1:59:58");
-    assert.equal(boundary7198.status, "reduced_buffer_not_recommended");
+    assert.equal(boundary119m.upperBoundRemainingSecondsBeforeTransfer, 7140);
+    assert.equal(boundary119m.upperBoundRemainingBufferHmsLabel, "1:59:00");
+    assert.equal(boundary119m.status, "reduced_buffer_not_recommended");
 
     // Documented specific-berth return adjustment (e.g. AJD shuttle 15m beyond advertised downtown pickup)
     const withDocumentedBerthReturn = assessRezgoDepartureAgainstShipWindow({

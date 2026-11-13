@@ -27,7 +27,7 @@ export default function ContactPage() {
       <p className="eyebrow" style={{ color: "var(--muted)" }}>Concierge &amp; Port Window Desk</p>
       <h1>Alaska Multi-Cabin &amp; Port Logistics Inquiry</h1>
       <p className="lead" style={{ maxWidth: 820 }}>
-        Coordinating multiple cabins across Juneau, Skagway, Ketchikan, Sitka, or Icy Strait Point? Share your ship schedule and party size below for human planning guidance on dock shuttles, 2-hour (1:59:59+) recommended all-aboard return buffers, and verified excursion options.
+        Coordinating multiple cabins across Juneau, Skagway, Ketchikan, Sitka, or Icy Strait Point? Share your ship schedule and party size below for human planning guidance on dock shuttles, 2-hour recommended all-aboard return buffers, and verified excursion options.
       </p>
 
       <section className="card" style={{ marginTop: 22 }}>

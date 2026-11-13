@@ -14,7 +14,7 @@ import {
 
 export const metadata: Metadata = {
   title:
-    "Which Juneau Tours Fit a Short Port Call? | CLAA Port-Call Windows & 2-Hour (1:59:59+) All-Aboard Buffer | DCC",
+    "Which Juneau Tours Fit a Short Port Call? | CLAA Port-Call Windows & 2-Hour All-Aboard Buffer | DCC",
   description:
     "Direct DCC answer for short Juneau cruise port calls (5.5–6.5 hours): compare 3.5h Auke Bay whale watching (331813P1), 3.0h Mendenhall Express (5857SHUTTLE), and 5.5h Whale + Glacier Combo (466119P3) against your ship's confirmed all-aboard cutoff.",
   alternates: { canonical: "/juneau/cruise-excursions-what-to-do" },
@@ -68,7 +68,7 @@ export default async function JuneauShortPortCallGuidePage({
               path: "/juneau/cruise-excursions-what-to-do",
               name: "Which Juneau Tours Fit a Short Port Call? | DCC Authority",
               description:
-                "Verify which Juneau excursions fit a short 5.5–6.5 hour CLAA port call with DCC's 2-hour (1:59:59+ / 120-minute) recommended gangway return buffer before confirmed all-aboard.",
+                "Verify which Juneau excursions fit a short 5.5–6.5 hour CLAA port call with DCC's 2-hour (120-minute) recommended gangway return buffer before confirmed all-aboard.",
               dateModified: "2026-11-07",
               isPartOfPath: "/juneau",
             }),
@@ -115,7 +115,7 @@ export default async function JuneauShortPortCallGuidePage({
             <strong>Norwegian Bliss 07:00–13:30</strong> at AJ Dock or{" "}
             <strong>Norwegian Encore 14:30–21:00</strong>), you cannot safely stack a
             5.5-hour Whale + Glacier combo once you account for berth-to-check-in
-            shuttle transfers and DCC&apos;s <strong>2-hour (1:59:59+ / 120-minute) recommended gangway buffer</strong>.
+            shuttle transfers and DCC&apos;s <strong>2-hour (120-minute) recommended gangway buffer</strong>.
             Choose a single-activity <strong>3.0–3.5 hour excursion</strong> and verify exact remaining buffer before confirmed all-aboard.
           </p>
 

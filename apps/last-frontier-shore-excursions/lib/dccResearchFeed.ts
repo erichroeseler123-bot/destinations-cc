@@ -506,7 +506,7 @@ export function qualifyLfseDirectContext(
         summary: "Glacier surface duration is unconfirmed (unknown).",
       };
 
-  // 3. Return Buffer (LFSE 2-hour / 1:59:59+ / 120-minute recommended return buffer + dock transfer buffer)
+  // 3. Return Buffer (LFSE 2-hour return buffer / 120-minute recommended return buffer + dock transfer buffer)
   const dockKey = context?.dockKey || spec.defaultDockKey;
   const dockInfo = DOCK_TRANSFERS[dockKey] ?? {
     dockName: "Downtown Cruise Berth",
@@ -523,7 +523,7 @@ export function qualifyLfseDirectContext(
     | "unknown" = "unknown";
   let cruiseWindowCalculation: CruiseWindowCalculation | null = null;
   let returnBufferSummary =
-    "Port-day fit is unknown: a verified duration alone does not establish port-day fit. Enter ship arrival, all-aboard time, and tour departure time to evaluate the 2-hour (1:59:59+ / 120-minute) recommended return-to-pier buffer.";
+    "Port-day fit is unknown: a verified duration alone does not establish port-day fit. Enter ship arrival, all-aboard time, and tour departure time to evaluate the 2-hour (120-minute) recommended return-to-pier buffer.";
 
   if (
     durationMinutes !== null &&
@@ -635,7 +635,7 @@ export function qualifyLfseDirectContext(
     missingOrUnknownConstraints.push("mobility");
   }
 
-  // Critical rule: A verified duration alone NEVER establishes port-day fit, and reduced buffers (< 1:59:59 / 120m) are not recommended.
+  // Critical rule: A verified duration alone NEVER establishes port-day fit, and reduced buffers (< 2-hour return buffer / 120m) are not recommended.
   const fitsPortDayEstablished =
     durationQualification.status === "verified" &&
     returnBufferStatus === "strong_fit" &&
@@ -665,11 +665,11 @@ export function qualifyLfseDirectContext(
 
   const qualificationSummaryText =
     overallQualificationStatus === "does_not_fit"
-      ? `Outside sailing window under the ${LFSE_MANDATORY_RETURN_BUFFER_MINUTES}-minute (1:59:59+) return buffer rule: ${returnBufferSummary}`
+      ? `Outside sailing window under the ${LFSE_MANDATORY_RETURN_BUFFER_MINUTES}-minute (2-hour return buffer) return buffer rule: ${returnBufferSummary}`
       : returnBufferStatus === "tight_fit"
-        ? `Reduced buffer — not recommended under the ${LFSE_MANDATORY_RETURN_BUFFER_MINUTES}-minute (1:59:59+) return buffer standard: ${returnBufferSummary}`
+        ? `Reduced buffer — not recommended under the ${LFSE_MANDATORY_RETURN_BUFFER_MINUTES}-minute (2-hour return buffer) return buffer standard: ${returnBufferSummary}`
         : fitsPortDayEstablished
-          ? `All core constraints (duration, ${LFSE_MANDATORY_RETURN_BUFFER_MINUTES}-minute / 1:59:59+ return buffer, pickup, age, and mobility) are human-confirmed for this port window.`
+          ? `All core constraints (duration, ${LFSE_MANDATORY_RETURN_BUFFER_MINUTES}-minute / 2-hour return buffer, pickup, age, and mobility) are human-confirmed for this port window.`
           : durationQualification.status === "verified"
             ? `Human-confirmed total duration (${durationQualification.evidence?.value} ${durationQualification.evidence?.unit}, rev ${durationQualification.evidence?.revision}) is verified for ${spec.productName}, but port-day fit is not established until ${missingOrUnknownConstraints.join(", ")} are confirmed.`
             : `Unconfirmed constraints (${missingOrUnknownConstraints.join(", ")}) remain unknown and require human review confirmation.`;

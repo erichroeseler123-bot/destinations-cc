@@ -111,7 +111,7 @@ export function CruiseWindowCalculator({
           <h3 style={{ margin: "8px 0 4px", fontSize: "22px" }}>Cruise-Window Fit Calculator</h3>
         </div>
         <span style={{ fontSize: "13px", color: "var(--muted)" }}>
-          Planning Rule: Tour End + Transfer + 2-Hour (1:59:59+ / 120-Min) Recommended Buffer ≤ Ship All-Aboard
+          Planning Rule: Tour end + return transfer + 2-hour buffer must be no later than ship all-aboard.
         </span>
       </div>
 

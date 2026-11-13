@@ -254,7 +254,7 @@ test("4. Granular Regional AI Readmes (/[region]/llms.txt) serve lightweight, ru
   assert.equal(juneauRes.status, 200);
   const juneauText = await juneauRes.text();
   assert.match(juneauText, /Juneau Cruise Port-Day Buffer Math/);
-  assert.match(juneauText, /1:59:59\+/);
+  assert.match(juneauText, /2-hour return buffer/);
   assert.match(juneauText, /120-minute/);
   assert.doesNotMatch(juneauText, /42-4-106/, "Juneau llms.txt should not contain Colorado I-70 statute");
 

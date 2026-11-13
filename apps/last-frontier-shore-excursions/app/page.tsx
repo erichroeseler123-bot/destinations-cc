@@ -38,17 +38,17 @@ const PORT_DESTINATIONS: Record<string, string> = {
 };
 
 const PORT_FIT_NOTES: Record<string, string> = {
-  "331813P1": "Fits 6.5+ hour Juneau port calls · Includes 20m shuttle + 2-hour (1:59:59+) all-aboard buffer",
-  "5338PRTSGYCITY": "Fits 5.5+ hour Skagway port calls · Direct Railroad Dock boarding + 2-hour (1:59:59+) buffer",
+  "331813P1": "Fits 6.5+ hour Juneau port calls · Includes 20m shuttle + 2-hour all-aboard buffer",
+  "5338PRTSGYCITY": "Fits 5.5+ hour Skagway port calls · Direct Railroad Dock boarding + 2-hour buffer",
   "6459PRTKTNMISTY": "Fits 5.5+ hour Ketchikan port calls · Add 20m shuttle margin if docked at Ward Cove",
   "472133P4": "Fits 5.5+ hour Sitka port calls · Direct Old Sitka Cruise Terminal boarding + 2-hour buffer",
-  "14707P1": "Fits 6+ hour Hoonah port calls · Excursion Hub departure + 2-hour (1:59:59+) all-aboard buffer",
+  "14707P1": "Fits 6+ hour Hoonah port calls · Excursion Hub departure + 2-hour all-aboard buffer",
 };
 
 const FAQS = [
   {
     q: "How does Last Frontier verify if an excursion fits my cruise ship's port window?",
-    a: "We apply a recommended 2-hour (1:59:59+ / 120-minute) all-aboard return buffer on top of the full activity duration and local dock transfer time—including the 20-minute shuttle from Ward Cove in Ketchikan, the continuous shuttle from AJ Dock in Juneau, and Old Sitka shuttle transfers. Departures leaving less than 1:59:59 before all-aboard are flagged as reduced buffer (not recommended).",
+    a: "We apply a recommended 2-hour (120-minute) all-aboard return buffer on top of the full activity duration and local dock transfer time—including the 20-minute shuttle from Ward Cove in Ketchikan, the continuous shuttle from AJ Dock in Juneau, and Old Sitka shuttle transfers. Departures leaving less than 2-hour return buffer before all-aboard are flagged as reduced buffer (not recommended).",
   },
   {
     q: "What is the difference between Bookable Now, Inquiry-Only, and Commercially Held listings?",
@@ -149,7 +149,7 @@ export default async function HomePage({
       pickupLocation: item.meetingPoint,
       priceLabel: `From $${item.priceFrom}`,
       priceSubtext: "per person · check live rate",
-      scheduleFit: PORT_FIT_NOTES[pid] || `Includes ${item.transferBufferMinutes}m transfer + 2-hour (1:59:59+) return buffer`,
+      scheduleFit: PORT_FIT_NOTES[pid] || `Includes ${item.transferBufferMinutes}m transfer + 2-hour return buffer`,
       checkoutProcessor: `${partnerLabel} (${item.provider})`,
       ctaLabel: `Check Availability on ${partnerLabel} →`,
       ctaHref: handoffHref,
@@ -197,7 +197,7 @@ export default async function HomePage({
       pickupLocation: "Coordinated for Franklin, AJ Dock, Ward Cove, Railroad, or Old Sitka",
       priceLabel: "Custom quote",
       priceSubtext: "free port-window review",
-      scheduleFit: "Built specifically around multi-generational pace & 2-hour (1:59:59+) return buffer",
+      scheduleFit: "Built specifically around multi-generational pace & 2-hour return buffer",
       checkoutProcessor: "Direct local Alaska operator after itinerary confirmation",
       ctaLabel: "Request custom group plan →",
       ctaHref: "/contact",
@@ -246,7 +246,7 @@ export default async function HomePage({
           <div className={styles.heroGrid}>
             <div>
               <div className={styles.heroBadges}>
-                <span className={styles.pillIce}>2-Hour (1:59:59+) All-Aboard Buffer</span>
+                <span className={styles.pillIce}>2-Hour All-Aboard Buffer</span>
                 <span className={styles.pillNavy}>Juneau · Skagway · Ketchikan · Sitka · Icy Strait</span>
               </div>
 
@@ -348,9 +348,9 @@ export default async function HomePage({
                 <span className={styles.stepNum}>2</span>
                 <span className={styles.stepKicker}>2-Hour Buffer Rule</span>
               </div>
-              <h3>Verify a 2-hour (1:59:59+) gangway buffer</h3>
+              <h3>Verify a 2-hour gangway buffer</h3>
               <p>
-                Every recommended option must finish, complete return transit, and put you back at the pier at least 1:59:59 (2 hours) before all-aboard.
+                Every recommended option must finish, complete return transit, and put you back at the pier at least 2-hour return buffer (2 hours) before all-aboard.
               </p>
             </article>
 
@@ -407,9 +407,9 @@ export default async function HomePage({
 
           <div className={styles.trustGrid}>
             <div className={styles.trustCard}>
-              <strong>2-Hour (1:59:59+) All-Aboard Standard</strong>
+              <strong>2-Hour All-Aboard Standard</strong>
               <p>
-                Tour end time plus return shuttle transit plus 2 hours (1:59:59+) must fall before your ship&apos;s published all-aboard time; tighter windows are flagged as reduced buffer (not recommended).
+                Tour end time plus return shuttle transit plus 2 hours (2-hour return buffer) must fall before your ship&apos;s published all-aboard time; tighter windows are flagged as reduced buffer (not recommended).
               </p>
             </div>
             <div className={styles.trustCard}>

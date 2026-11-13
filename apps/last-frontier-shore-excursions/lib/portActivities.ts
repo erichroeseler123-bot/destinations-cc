@@ -49,10 +49,10 @@ export const PORT_ACTIVITIES: PortActivity[] = [
     "eyebrow": "Juneau, Alaska · Marine Wildlife",
     "typicalDuration": "3.5 to 4 hours total (2 to 2.5 hours on the water)",
     "meetingLogistics": "Most operators pick up at the Mount Roberts Tramway parking area (Franklin Dock/Cruise Terminal). If docked at AJ Dock, allow 15 minutes for the port shuttle to the tram lot.",
-    "returnMargin": "Requires minimum 6-hour port call. Returns you to the cruise dock parking area with at least 2 hours (1:59:59+ / 120 minutes) before confirmed ship all-aboard.",
+    "returnMargin": "Requires minimum 6-hour port call. Returns you to the cruise dock parking area with at least 2 hours (120 minutes) before confirmed ship all-aboard.",
     "weatherSensitivity": "Low",
     "weatherBackupAdvice": "Whales feed in Auke Bay rain or shine. Tour boats have heated enclosed cabins. Rain does not cancel whale watching; only gale-force winds or rare mechanical issues prompt cancellations.",
-    "cruiseSafetyRule": "Never book a 3.5-hour whale watch if your port window is under 6 hours. Pier shuttle traffic and harbor transfers require at least a 2-hour (1:59:59+ / 120-minute) return buffer before all-aboard.",
+    "cruiseSafetyRule": "Never book a 3.5-hour whale watch if your port window is under 6 hours. Pier shuttle traffic and harbor transfers require at least a 2-hour (120-minute) return buffer before all-aboard.",
     "overview": [
       "Juneau is widely regarded as the premier humpback whale feeding ground along the Inside Passage. Between May and September, hundreds of humpbacks migrate to the nutrient-rich waters of Auke Bay and Favorite Channel to gorge on herring and krill.",
       "Most independent Juneau whale tours operate out of Auke Bay Harbor, located 20 minutes north of downtown cruise docks. Operators provide round-trip coach or mini-bus transportation from the Mount Roberts Tram parking plaza directly to the boat slip.",
@@ -69,7 +69,7 @@ export const PORT_ACTIVITIES: PortActivity[] = [
       "travelToSite": "20–25 mins coach transit to Auke Bay Harbor",
       "activeExperience": "120–150 mins on water tracking pods and viewing wildlife",
       "returnTransit": "20–25 mins bus back to downtown Juneau cruise terminal",
-      "pierBuffer": "120+ mins (2-hour / 1:59:59+ recommended minimum) before ship all-aboard time"
+      "pierBuffer": "120+ mins (2-hour recommended minimum) before ship all-aboard time"
     },
     "sampleTours": [
       {
@@ -170,7 +170,7 @@ export const PORT_ACTIVITIES: PortActivity[] = [
       "travelToSite": "25 mins coach ride through Mendenhall Valley",
       "activeExperience": "90–150 mins hiking Nugget Falls trail and visiting center",
       "returnTransit": "25 mins coach return to downtown Juneau",
-      "pierBuffer": "120+ mins (2-hour / 1:59:59+ recommended minimum) remaining before all-aboard"
+      "pierBuffer": "120+ mins (2-hour recommended minimum) remaining before all-aboard"
     },
     "sampleTours": [
       {
@@ -251,7 +251,7 @@ export const PORT_ACTIVITIES: PortActivity[] = [
     "eyebrow": "Juneau, Alaska · Flightseeing & Ice Landings",
     "typicalDuration": "2.25 to 3 hours total (30–40 mins flight time + 25–40 mins walking on ice)",
     "meetingLogistics": "Helicopter operators provide direct van or bus pickup from the downtown Juneau cruise piers to the Juneau International Airport heliport.",
-    "returnMargin": "Requires minimum 5-hour port call. Returns you to downtown Juneau at least 2 hours (1:59:59+ / 120 minutes) before confirmed ship all-aboard.",
+    "returnMargin": "Requires minimum 5-hour port call. Returns you to downtown Juneau at least 2 hours (120 minutes) before confirmed ship all-aboard.",
     "weatherSensitivity": "High",
     "weatherBackupAdvice": "Aviation regulations require safe cloud ceiling and mountain pass visibility over the Juneau Icefield. If weather forces a cancellation, operators typically provide a refund per their published weather policy. Have a ground-based backup (whale watching or Mendenhall shuttle) ready.",
     "cruiseSafetyRule": "Book the earliest flight slot available during your port call. Morning flights encounter fewer thermal downdrafts and give you time to reschedule or shift to a boat tour if weather causes delays.",
@@ -271,7 +271,7 @@ export const PORT_ACTIVITIES: PortActivity[] = [
       "travelToSite": "20 mins van transit to heliport",
       "activeExperience": "35 mins flight + 30 mins guided walk on glacier ice",
       "returnTransit": "20 mins van back to cruise pier",
-      "pierBuffer": "120+ mins (2-hour / 1:59:59+ recommended minimum) buffer before all-aboard"
+      "pierBuffer": "120+ mins (2-hour recommended minimum) buffer before all-aboard"
     },
     "sampleTours": [
       {
@@ -372,7 +372,7 @@ export const PORT_ACTIVITIES: PortActivity[] = [
       "travelToSite": "5 mins pre-flight briefing and life vest fitting",
       "activeExperience": "40 mins 5-glacier flight (or 3 hours with Taku Lodge)",
       "returnTransit": "5 mins walk back to ship terminal",
-      "pierBuffer": "120+ mins (2-hour / 1:59:59+ recommended minimum) margin before all-aboard"
+      "pierBuffer": "120+ mins (2-hour recommended minimum) margin before all-aboard"
     },
     "sampleTours": [
       {
@@ -453,10 +453,10 @@ export const PORT_ACTIVITIES: PortActivity[] = [
     "eyebrow": "Juneau, Alaska · Iditarod Sled Dogs & Musher Camp",
     "typicalDuration": "2.25 to 2.75 hours total (including scenic transfer & musher camp experience)",
     "meetingLogistics": "Shuttle coaches pick up downtown outside the cruise piers for the short scenic transfer to the Sheep Creek Valley musher camp.",
-    "returnMargin": "Requires minimum 5-hour port call. Returns you downtown at least 2 hours (1:59:59+ / 120 minutes) before ship all-aboard.",
+    "returnMargin": "Requires minimum 5-hour port call. Returns you downtown at least 2 hours (120 minutes) before ship all-aboard.",
     "weatherSensitivity": "Low",
     "weatherBackupAdvice": "The musher camp operates in all typical Southeast Alaska summer weather. Raingear is recommended for light coastal rain.",
-    "cruiseSafetyRule": "Book your scheduled departure early to ensure a comfortable return margin of at least 2 hours (1:59:59+ / 120 minutes) before all-aboard.",
+    "cruiseSafetyRule": "Book your scheduled departure early to ensure a comfortable return margin of at least 2 hours (120 minutes) before all-aboard.",
     "overview": [
       "Experience the thrilling heritage of Alaska dog mushing at a scenic rainforest musher camp nestled in Sheep Creek Valley just outside downtown Juneau.",
       "Meet veteran Iditarod mushers and their energetic teams of Alaskan huskies. Discover authentic racing equipment, learn how dogs are trained for 1,000-mile winter treks across frozen wilderness, and cuddle summer litters of playful husky puppies.",
@@ -473,7 +473,7 @@ export const PORT_ACTIVITIES: PortActivity[] = [
       "travelToSite": "20 mins scenic shuttle along Gastineau Channel",
       "activeExperience": "75 mins musher presentation, dog-cart run, and puppy interaction",
       "returnTransit": "20 mins shuttle back to cruise pier",
-      "pierBuffer": "120+ mins (2-hour / 1:59:59+ recommended minimum) buffer before all-aboard"
+      "pierBuffer": "120+ mins (2-hour recommended minimum) buffer before all-aboard"
     },
     "sampleTours": [
       {
@@ -565,7 +565,7 @@ export const PORT_ACTIVITIES: PortActivity[] = [
       "travelToSite": "20 mins van transit to launch harbor",
       "activeExperience": "150–240 mins guided wildlife exploration",
       "returnTransit": "20 mins return drive to downtown pier",
-      "pierBuffer": "120+ mins (2-hour / 1:59:59+ recommended minimum) safety margin before all-aboard"
+      "pierBuffer": "120+ mins (2-hour recommended minimum) safety margin before all-aboard"
     },
     "sampleTours": [
       {
@@ -646,14 +646,14 @@ export const PORT_ACTIVITIES: PortActivity[] = [
     "eyebrow": "Juneau, Alaska · Port Logistics & Timing",
     "typicalDuration": "Customizable based on your ship's 5-hour, 7-hour, or 10-hour port stay",
     "meetingLogistics": "Includes breakdown of all 4 Juneau cruise docks: AJ Dock (requires shuttle), Franklin Dock, Marine Dock, and Steamship Dock.",
-    "returnMargin": "Recommended standard: Tour finish + transfer must return you at least 2 hours (1:59:59+ / 120 minutes) prior to ship all-aboard time.",
+    "returnMargin": "Recommended standard: Tour finish + transfer must return you at least 2 hours (120 minutes) prior to ship all-aboard time.",
     "weatherSensitivity": "Low",
     "weatherBackupAdvice": "Use our timing matrix to pair an early high-weather activity (helicopter) with an afternoon low-weather backup (glacier walk or downtown saloon tour).",
-    "cruiseSafetyRule": "Ship all-aboard is always 30 to 45 minutes prior to the published departure time. Always plan your 2-hour (1:59:59+) return buffer around the confirmed all-aboard time, NEVER the departure time.",
+    "cruiseSafetyRule": "Ship all-aboard is always 30 to 45 minutes prior to the published departure time. Always plan your 2-hour return buffer around the confirmed all-aboard time, NEVER the departure time.",
     "overview": [
       "One of the biggest mistakes cruise passengers make in Juneau is miscalculating port timing. A published port call of '1:00 PM to 9:00 PM' does NOT mean you have 8 hours of tour time.",
       "Ship clearance takes 20–30 minutes after tying up. Disembarking 3,000+ passengers down narrow gangways creates lines. If your ship docks at the AJ Dock (South Juneau), you must also board a city shuttle bus to reach the downtown tour departure hub.",
-      "This guide organizes Juneau excursions by actual usable port hours, factoring in our recommended rule: Tour End Time + Return Transfer + 2 Hours (1:59:59+ / 120 Minutes) must be before All-Aboard."
+      "This guide organizes Juneau excursions by actual usable port hours, factoring in our recommended rule: Tour End Time + Return Transfer + 2 Hours (2-hour return buffer / 120 Minutes) must be before All-Aboard."
     ],
     "keyHighlights": [
       "Clear docking breakdown for AJ Dock vs. Downtown Franklin, Marine, and Steamship berths",
@@ -664,9 +664,9 @@ export const PORT_ACTIVITIES: PortActivity[] = [
     "timingBreakdown": {
       "disembarkation": "Allow 30–45 mins from ship gangway opening to meeting your guide",
       "travelToSite": "Varies (5 mins downtown seaplane, 25 mins Auke Bay/Mendenhall)",
-      "activeExperience": "Calibrated to leave at least 120 mins (2-hour / 1:59:59+) pier buffer",
+      "activeExperience": "Calibrated to leave at least 120 mins (2-hour) pier buffer",
       "returnTransit": "Always add 15 mins for AJ Dock shuttle if berthed there",
-      "pierBuffer": "Recommended minimum 120 mins (2 hours / 1:59:59+) before all-aboard"
+      "pierBuffer": "Recommended minimum 120 mins (2 hours / 2-hour return buffer) before all-aboard"
     },
     "sampleTours": [
       {
@@ -705,7 +705,7 @@ export const PORT_ACTIVITIES: PortActivity[] = [
       },
       {
         "question": "What if my tour finishes only 30 minutes before ship departure?",
-        "answer": "Do not book it! Most ships set their all-aboard call 30 to 45 minutes before departure. A tour finishing 30 minutes prior to departure means the ship may already be pulling up gangways. Our recommended rule requires your tour and pier return to finish at least 2 hours (1:59:59+ / 120 minutes) before confirmed all-aboard; anything under 2 hours is flagged as reduced buffer and not recommended."
+        "answer": "Do not book it! Most ships set their all-aboard call 30 to 45 minutes before departure. A tour finishing 30 minutes prior to departure means the ship may already be pulling up gangways. Our recommended rule requires your tour and pier return to finish at least 2 hours (120 minutes) before confirmed all-aboard; anything under 2 hours is flagged as reduced buffer and not recommended."
       }
     ],
     "relatedActivities": [
@@ -747,7 +747,7 @@ export const PORT_ACTIVITIES: PortActivity[] = [
     "eyebrow": "Skagway, Alaska · Historic Mountain Rail",
     "typicalDuration": "2.75 to 3.5 hours for White Pass Summit; 8 hours for Bennett Lake",
     "meetingLogistics": "Trains board directly on the Skagway cruise ship piers (Railroad Dock) or downtown depot within a 5-minute flat walk.",
-    "returnMargin": "Summit train returns at least 2 hours (1:59:59+ / 120 minutes) before confirmed all-aboard on 6+ hour port calls.",
+    "returnMargin": "Summit train returns at least 2 hours (120 minutes) before confirmed all-aboard on 6+ hour port calls.",
     "weatherSensitivity": "Low to Moderate",
     "weatherBackupAdvice": "Trains run in rain, fog, and snow. Even if the summit is veiled in cloud, the lower canyon views, trestle bridges, and dramatic gorges remain fully visible.",
     "cruiseSafetyRule": "Train tracks run directly to the Railroad Dock where major cruise ships berth. It is the single most geographically cruise-safe tour in all of Alaska.",
@@ -767,7 +767,7 @@ export const PORT_ACTIVITIES: PortActivity[] = [
       "travelToSite": "0 mins (train boards directly at the pier)",
       "activeExperience": "150–180 mins round-trip scenic rail ride to White Pass Summit",
       "returnTransit": "0 mins (train drops off right back at the cruise dock)",
-      "pierBuffer": "120+ mins (2-hour / 1:59:59+ recommended minimum) remaining before all-aboard"
+      "pierBuffer": "120+ mins (2-hour recommended minimum) remaining before all-aboard"
     },
     "sampleTours": [
       {
@@ -848,7 +848,7 @@ export const PORT_ACTIVITIES: PortActivity[] = [
     "eyebrow": "Skagway, Alaska · Yukon Territory, Canada",
     "typicalDuration": "5.5 to 7.5 hours depending on Carcross vs. Emerald Lake turnaround",
     "meetingLogistics": "Small-group vans and comfortable mini-coaches pick up directly outside the Skagway cruise ship piers.",
-    "returnMargin": "Requires minimum 8-hour port call. Returns you to Skagway at least 2 hours (1:59:59+ / 120 minutes) before all-aboard.",
+    "returnMargin": "Requires minimum 8-hour port call. Returns you to Skagway at least 2 hours (120 minutes) before all-aboard.",
     "weatherSensitivity": "Moderate",
     "weatherBackupAdvice": "Once you cross the Coastal Mountains into Canada, the weather changes drastically. The Yukon sits in a sub-arctic rain shadow—meaning it is often bright, dry, and sunny while Skagway is overcast.",
     "cruiseSafetyRule": "Canada Customs clearance takes 10–20 minutes at Fraser. Reputable operators build dedicated Canadian and US customs buffer times into every Yukon itinerary.",
@@ -868,7 +868,7 @@ export const PORT_ACTIVITIES: PortActivity[] = [
       "travelToSite": "60 mins scenic mountain climb and Canada Customs clearance",
       "activeExperience": "180–240 mins exploring suspension bridge, Carcross, and viewpoints",
       "returnTransit": "75 mins return drive down Klondike Highway and US Customs check",
-      "pierBuffer": "120+ mins (2-hour / 1:59:59+ recommended minimum) buffer before all-aboard"
+      "pierBuffer": "120+ mins (2-hour recommended minimum) buffer before all-aboard"
     },
     "sampleTours": [
       {
@@ -1050,7 +1050,7 @@ export const PORT_ACTIVITIES: PortActivity[] = [
     "eyebrow": "Skagway, Alaska · Alpine Vistas & Drives",
     "typicalDuration": "2.5 to 4 hours round-trip",
     "meetingLogistics": "Vans meet directly at the foot of your ship gangway in Skagway.",
-    "returnMargin": "Requires 5 to 6-hour port window. Provides 2-hour (1:59:59+ / 120-minute) recommended margin before all-aboard.",
+    "returnMargin": "Requires 5 to 6-hour port window. Provides 2-hour (120-minute) recommended margin before all-aboard.",
     "weatherSensitivity": "Moderate",
     "weatherBackupAdvice": "Mountain highways offer high flexibility: if high summit passes are foggy, guides adjust stops to lower valley waterfalls, river gorges, and historic Dyea flats.",
     "cruiseSafetyRule": "Small-group passenger vans move faster and make more spontaneous photo stops than large 50-passenger coaches, maximizing your time ashore.",
@@ -1070,7 +1070,7 @@ export const PORT_ACTIVITIES: PortActivity[] = [
       "travelToSite": "20 mins climbing out of coastal Skagway valley",
       "activeExperience": "120–150 mins scenic drive with 4–6 dedicated scenic photo stops",
       "returnTransit": "25 mins descending back to sea level",
-      "pierBuffer": "120+ mins (2-hour / 1:59:59+ recommended minimum) buffer before all-aboard"
+      "pierBuffer": "120+ mins (2-hour recommended minimum) buffer before all-aboard"
     },
     "sampleTours": [
       {
@@ -1151,17 +1151,17 @@ export const PORT_ACTIVITIES: PortActivity[] = [
     "eyebrow": "Skagway, Alaska · Timing & Logistics",
     "typicalDuration": "Tailored to 6-hour, 8-hour, or 12-hour Skagway port schedules",
     "meetingLogistics": "Detailed walking and shuttle directions from Railroad Dock, Broadway Dock, and Ore Dock.",
-    "returnMargin": "Ensures Tour End Time + 2 Hours (1:59:59+ / 120 Minutes) meets our recommended return buffer ahead of ship all-aboard.",
+    "returnMargin": "Ensures Tour End Time + 2 Hours (2-hour return buffer / 120 Minutes) meets our recommended return buffer ahead of ship all-aboard.",
     "weatherSensitivity": "Low",
     "weatherBackupAdvice": "Always verify passport readiness before committing to a 6+ hour Yukon tour—lacking a physical passport will forfeit the tour on the spot.",
-    "cruiseSafetyRule": "Because Skagway docks are directly adjacent to town, it has the shortest transit overhead of any port. An 8-hour call allows 5.5-hour excursions with a full 2-hour (1:59:59+) return buffer.",
+    "cruiseSafetyRule": "Because Skagway docks are directly adjacent to town, it has the shortest transit overhead of any port. An 8-hour call allows 5.5-hour excursions with a full 2-hour return buffer.",
     "overview": [
       "Skagway is one of the easiest ports in Alaska to plan because cruise ships dock within walking distance of downtown. However, excursion durations in Skagway vary dramatically—from a quick 1-hour saloon walk to an 8-hour sub-arctic expedition into the Yukon Territory.",
       "Matching your desired activity to your specific ship arrival and departure hours is critical. A cruise call from 7:00 AM to 4:00 PM requires a vastly different plan than a long call from 7:00 AM to 8:00 PM.",
       "This guide breaks down exact schedules by cruise ship port window, giving you clear minimum hours needed for the White Pass Summit, Yukon excursions, and town walking tours."
     ],
     "keyHighlights": [
-      "Port timing formula: Arrive -> 30 min disembark -> Tour -> 120+ min (2-hr / 1:59:59+) return buffer -> All-Aboard",
+      "Port timing formula: Arrive -> 30 min disembark -> Tour -> 120+ min (2-hr / 2-hour return buffer) return buffer -> All-Aboard",
       "Analysis of dock locations: Railroad Dock (North/South), Broadway Dock, and Ore Dock",
       "Clear passport vs. non-passport excursion duration buckets",
       "Best excursion pairings for extended 10+ hour port days"
@@ -1171,7 +1171,7 @@ export const PORT_ACTIVITIES: PortActivity[] = [
       "travelToSite": "Minimal overhead (most tours depart right at the pier or depot)",
       "activeExperience": "Calibrated to your exact ship dock window",
       "returnTransit": "Under 10 mins back to the gangway from anywhere in town",
-      "pierBuffer": "Recommended minimum 120 mins (2 hours / 1:59:59+) prior to all-aboard"
+      "pierBuffer": "Recommended minimum 120 mins (2 hours / 2-hour return buffer) prior to all-aboard"
     },
     "sampleTours": [
       {
@@ -1210,7 +1210,7 @@ export const PORT_ACTIVITIES: PortActivity[] = [
       },
       {
         "question": "What time is all-aboard in Skagway?",
-        "answer": "All-aboard is almost universally scheduled 30 minutes before your ship's published departure time. For a 5:00 PM departure, all-aboard is 4:30 PM. To meet our recommended 2-hour (1:59:59+ / 120-minute) return buffer, your tour and dock walk should conclude by 2:30 PM (anything returning with less than 2 hours before all-aboard is reduced-buffer and not recommended)."
+        "answer": "All-aboard is almost universally scheduled 30 minutes before your ship's published departure time. For a 5:00 PM departure, all-aboard is 4:30 PM. To meet our recommended 2-hour (120-minute) return buffer, your tour and dock walk should conclude by 2:30 PM (anything returning with less than 2 hours before all-aboard is reduced-buffer and not recommended)."
       }
     ],
     "relatedActivities": [
@@ -1272,7 +1272,7 @@ export const PORT_ACTIVITIES: PortActivity[] = [
       "travelToSite": "5 mins taxiing out into Tongass Narrows",
       "activeExperience": "75–90 mins airborne flight and fjord landing",
       "returnTransit": "5 mins taxi back to harbor slip",
-      "pierBuffer": "120+ mins (2-hour / 1:59:59+ recommended minimum) margin before all-aboard"
+      "pierBuffer": "120+ mins (2-hour recommended minimum) margin before all-aboard"
     },
     "sampleTours": [
       {
@@ -1353,7 +1353,7 @@ export const PORT_ACTIVITIES: PortActivity[] = [
     "eyebrow": "Ketchikan, Alaska · Aviation & Aerial Vistas",
     "typicalDuration": "1.75 to 2.5 hours door-to-door",
     "meetingLogistics": "Floatplanes depart from dock facilities located along the downtown boardwalk, directly opposite the cruise ship berths.",
-    "returnMargin": "Requires minimum 4.5-hour port window. Generates 120+ minutes (2-hour / 1:59:59+ recommended minimum) of return buffer.",
+    "returnMargin": "Requires minimum 4.5-hour port window. Generates 120+ minutes (2-hour recommended minimum) of return buffer.",
     "weatherSensitivity": "Moderate to High",
     "weatherBackupAdvice": "Ketchikan pilots are among the most experienced bush aviators in the world. If low cloud ceilings prevent entering Misty Fjords, pilots often reroute to lower-elevation coastal wildlife straits or process a refund per operator terms.",
     "cruiseSafetyRule": "Downtown harbor takeoffs eliminate any vehicle transit. You step off your cruise ship gangway and onto the floatplane dock within 5 to 10 minutes.",
@@ -1373,7 +1373,7 @@ export const PORT_ACTIVITIES: PortActivity[] = [
       "travelToSite": "5 mins safety briefing and dockside boarding",
       "activeExperience": "60–75 mins flight and water landing on remote fjord",
       "returnTransit": "5 mins taxi back to downtown dock",
-      "pierBuffer": "120+ mins (2-hour / 1:59:59+ recommended minimum) margin before all-aboard"
+      "pierBuffer": "120+ mins (2-hour recommended minimum) margin before all-aboard"
     },
     "sampleTours": [
       {
@@ -1454,7 +1454,7 @@ export const PORT_ACTIVITIES: PortActivity[] = [
     "eyebrow": "Ketchikan, Alaska · Temperate Rainforest",
     "typicalDuration": "3 to 4 hours round-trip",
     "meetingLogistics": "Coaches and safari vans pick up at the Ketchikan cruise berth tour staging plazas.",
-    "returnMargin": "Requires 5.5-hour port window. Returns you with at least 2 hours (1:59:59+ / 120 minutes) of ship return buffer before all-aboard.",
+    "returnMargin": "Requires 5.5-hour port window. Returns you with at least 2 hours (120 minutes) of ship return buffer before all-aboard.",
     "weatherSensitivity": "Low",
     "weatherBackupAdvice": "The Tongass is a temperate rainforest—moss, ferns, towering western red cedars, and sitka spruce thrive in wet weather. Rain enhances the vibrant greenery and brings salmon upstream.",
     "cruiseSafetyRule": "Rainforest sanctuary tours follow paved roads south to Herring Cove (15 min drive). Transit times are predictable and reliable.",
@@ -1474,7 +1474,7 @@ export const PORT_ACTIVITIES: PortActivity[] = [
       "travelToSite": "15 mins scenic coastal drive to Herring Cove",
       "activeExperience": "120–150 mins guided forest walk, eagle sanctuary, and carver studio",
       "returnTransit": "15 mins drive back to downtown Ketchikan",
-      "pierBuffer": "120+ mins (2-hour / 1:59:59+ recommended minimum) margin before all-aboard"
+      "pierBuffer": "120+ mins (2-hour recommended minimum) margin before all-aboard"
     },
     "sampleTours": [
       {
@@ -1575,7 +1575,7 @@ export const PORT_ACTIVITIES: PortActivity[] = [
       "travelToSite": "45 mins floatplane flight to Anan Bay or Traitors Cove",
       "activeExperience": "150 mins guided boardwalk trail walk and bear platform viewing",
       "returnTransit": "45 mins floatplane return flight to Ketchikan",
-      "pierBuffer": "120+ mins (2-hour / 1:59:59+ recommended minimum) margin before all-aboard"
+      "pierBuffer": "120+ mins (2-hour recommended minimum) margin before all-aboard"
     },
     "sampleTours": [
       {
@@ -1656,7 +1656,7 @@ export const PORT_ACTIVITIES: PortActivity[] = [
     "eyebrow": "Ketchikan, Alaska · Native Heritage & Art",
     "typicalDuration": "2 to 3.5 hours round-trip",
     "meetingLogistics": "Vans and coaches meet at cruise ship berths; the downtown Totem Heritage Center is a 15-minute walk from the docks.",
-    "returnMargin": "Requires 4.5 to 5-hour port call. Generates at least 2 hours (1:59:59+ / 120 minutes) of return buffer.",
+    "returnMargin": "Requires 4.5 to 5-hour port call. Generates at least 2 hours (120 minutes) of return buffer.",
     "weatherSensitivity": "Low",
     "weatherBackupAdvice": "Cultural tours feature authentic indoor clan houses, carving sheds, and museum galleries. Perfect rainy-day shore excursion.",
     "cruiseSafetyRule": "Saxman Village is 3 miles south of town; Totem Bight is 10 miles north. Both have short, predictable road transit times with zero risk to ship departure.",
@@ -1676,7 +1676,7 @@ export const PORT_ACTIVITIES: PortActivity[] = [
       "travelToSite": "10–20 mins coastal drive to Saxman or Totem Bight",
       "activeExperience": "90–120 mins guided pole tour, clan house presentation, and carving shed",
       "returnTransit": "15 mins drive back to downtown Ketchikan",
-      "pierBuffer": "120+ mins (2-hour / 1:59:59+ recommended minimum) margin before all-aboard"
+      "pierBuffer": "120+ mins (2-hour recommended minimum) margin before all-aboard"
     },
     "sampleTours": [
       {
@@ -1757,7 +1757,7 @@ export const PORT_ACTIVITIES: PortActivity[] = [
     "eyebrow": "Ketchikan, Alaska · Bush Aviation",
     "typicalDuration": "1.75 to 3 hours round-trip",
     "meetingLogistics": "Direct boarding from the downtown Ketchikan waterfront floatplane facilities, steps from cruise berths.",
-    "returnMargin": "Requires minimum 4.5-hour port call. Produces 120+ minutes (2-hour / 1:59:59+ recommended minimum) of return buffer.",
+    "returnMargin": "Requires minimum 4.5-hour port call. Produces 120+ minutes (2-hour recommended minimum) of return buffer.",
     "weatherSensitivity": "Moderate to High",
     "weatherBackupAdvice": "If mountain passes into Misty Fjords are socked in with cloud, experienced bush pilots can pivot to coastal wildlife straits, or process a refund per operator terms.",
     "cruiseSafetyRule": "Always re-confirm whether your ship berths downtown or at Ward Cove. If at Ward Cove, take the complimentary shuttle to downtown 1 hour before flight check-in.",
@@ -1777,7 +1777,7 @@ export const PORT_ACTIVITIES: PortActivity[] = [
       "travelToSite": "5 mins pre-flight briefing and passenger boarding",
       "activeExperience": "75 mins scenic flying and wilderness water landing",
       "returnTransit": "5 mins taxi back to harbor dock",
-      "pierBuffer": "120+ mins (2-hour / 1:59:59+ recommended minimum) margin before all-aboard"
+      "pierBuffer": "120+ mins (2-hour recommended minimum) margin before all-aboard"
     },
     "sampleTours": [
       {
@@ -1858,7 +1858,7 @@ export const PORT_ACTIVITIES: PortActivity[] = [
     "eyebrow": "Sitka, Alaska · Island Wildlife & History",
     "typicalDuration": "3 to 4.5 hours round-trip",
     "meetingLogistics": "Most large cruise ships berth at the Sitka Sound Cruise Terminal (Old Sitka Dock), 5 miles north of downtown. Complimentary 10-minute terminal shuttles run continuously to Harrigan Centennial Hall downtown.",
-    "returnMargin": "Requires minimum 6-hour port window. Returns you to downtown shuttle with at least 2 hours (1:59:59+ / 120 minutes) before all-aboard.",
+    "returnMargin": "Requires minimum 6-hour port window. Returns you to downtown shuttle with at least 2 hours (120 minutes) before all-aboard.",
     "weatherSensitivity": "Low to Moderate",
     "weatherBackupAdvice": "Wildlife tour boats have heated enclosed main cabins with large viewing windows. Land-based attractions (Raptor Center, Fortress of the Bear) have indoor exhibits that operate seamlessly in heavy rain.",
     "cruiseSafetyRule": "If your ship docks at the Sitka Sound Cruise Terminal, always factor in the 15-minute terminal shuttle bus ride when calculating your return to ship.",
@@ -1878,7 +1878,7 @@ export const PORT_ACTIVITIES: PortActivity[] = [
       "travelToSite": "10 mins coach shuttle to Harrigan Centennial Hall downtown",
       "activeExperience": "150–210 mins marine wildlife cruise or bear/raptor sanctuary combo",
       "returnTransit": "15 mins shuttle back to Sitka Sound Cruise Terminal",
-      "pierBuffer": "120+ mins (2-hour / 1:59:59+ recommended minimum) margin before all-aboard"
+      "pierBuffer": "120+ mins (2-hour recommended minimum) margin before all-aboard"
     },
     "sampleTours": [
       {
@@ -1959,7 +1959,7 @@ export const PORT_ACTIVITIES: PortActivity[] = [
     "eyebrow": "Icy Strait Point, Alaska · Whales & Wilderness",
     "typicalDuration": "2.5 to 4 hours round-trip",
     "meetingLogistics": "Departures leave right from the Icy Strait Point Adventure Center or marina dock, just steps from the cruise berths.",
-    "returnMargin": "Requires 5 to 6-hour port window. Provides at least 2 hours (1:59:59+ / 120 minutes) return margin before all-aboard.",
+    "returnMargin": "Requires 5 to 6-hour port window. Provides at least 2 hours (120 minutes) return margin before all-aboard.",
     "weatherSensitivity": "Low to Moderate",
     "weatherBackupAdvice": "Point Adolphus marine waters are sheltered by Chichagof and Pleasant islands. Whales feed heavily in rain. Tour boats feature heated indoor salons.",
     "cruiseSafetyRule": "Icy Strait Point is privately owned by the Huna Totem Corporation. All excursions depart directly on-site, making transit times minimal and completely cruise-safe.",
@@ -1979,7 +1979,7 @@ export const PORT_ACTIVITIES: PortActivity[] = [
       "travelToSite": "15 mins boat cruise out to Point Adolphus feeding grounds",
       "activeExperience": "120 mins tracking humpback pods, sea lions, and orcas",
       "returnTransit": "15 mins boat return to Icy Strait Point marina",
-      "pierBuffer": "120+ mins (2-hour / 1:59:59+ recommended minimum) margin before all-aboard"
+      "pierBuffer": "120+ mins (2-hour recommended minimum) margin before all-aboard"
     },
     "sampleTours": [
       {

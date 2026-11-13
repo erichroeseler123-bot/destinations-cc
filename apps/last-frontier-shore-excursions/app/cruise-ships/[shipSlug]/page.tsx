@@ -177,8 +177,8 @@ export default async function ShipOverviewPage({ params }: ShipPageProps) {
         <section style={{ marginTop: 64, background: "var(--ice)", padding: 32, borderRadius: 12, border: "1px solid var(--line)" }}>
           <h2 style={{ fontSize: 24, margin: "0 0 12px", color: "var(--deep)" }}>The Last Frontier Planning Standard for {ship.name}</h2>
           <p style={{ color: "var(--ink)", lineHeight: 1.6, fontSize: 15 }}>
-            Every excursion recommendation on Last Frontier is evaluated against our <strong>2-Hour (1:59:59+ / 120-Minute) Return Buffer Standard</strong>:
-            tour end time + meeting logistics buffer + 2 hours (1:59:59+) must conclude before your ship’s scheduled all-aboard call; tighter windows are flagged as reduced buffer (not recommended).
+            Every excursion recommendation on Last Frontier is evaluated against our <strong>2-Hour (2-hour return buffer / 120-Minute) Return Buffer Standard</strong>:
+            tour end time + meeting logistics buffer + 2 hours (2-hour return buffer) must conclude before your ship’s scheduled all-aboard call; tighter windows are flagged as reduced buffer (not recommended).
           </p>
           <p style={{ color: "var(--muted)", lineHeight: 1.6, fontSize: 14, marginTop: 8 }}>
             Note: Berth locations and port times are assigned by local harbor masters and may adjust based on weather or sea conditions. Always check your daily ship planner on arrival.

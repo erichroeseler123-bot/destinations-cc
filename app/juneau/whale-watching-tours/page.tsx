@@ -26,7 +26,7 @@ import PortableTripNetworkBar from "@/app/components/dcc/PortableTripNetworkBar"
 export const metadata: Metadata = {
   title: "Juneau Whale Watching Tours & Whale Deck Authority | CLAA Port Timing & Flight Backups | DCC",
   description:
-    "Use DCC to check Juneau CLAA port-call timing, confirmed all-aboard 2-hour (1:59:59+) minimum recommended gangway return buffers, live Juneau Tours operator availability, PAJN METAR weather context, and route to Juneau Flight Deck Whale Deck or Last Frontier Shore Excursions.",
+    "Use DCC to check Juneau CLAA port-call timing, confirmed all-aboard 2-hour minimum recommended gangway return buffers, live Juneau Tours operator availability, PAJN METAR weather context, and route to Juneau Flight Deck Whale Deck or Last Frontier Shore Excursions.",
   alternates: { canonical: "/juneau/whale-watching-tours" },
 };
 
@@ -123,7 +123,7 @@ function JsonLdGraph() {
             path: "/juneau/whale-watching-tours",
             name: "Juneau Whale Watching Tours & Whale Deck Authority",
             description:
-              "DCC public authority for Juneau whale-watching, live Juneau Tours operator availability, CLAA port-call timing, 2-hour (1:59:59+) minimum recommended gangway return buffers, and flight-cancellation backup routing.",
+              "DCC public authority for Juneau whale-watching, live Juneau Tours operator availability, CLAA port-call timing, 2-hour minimum recommended gangway return buffers, and flight-cancellation backup routing.",
             dateModified: "2026-11-12",
             isPartOfPath: "/juneau",
           }),
@@ -283,7 +283,7 @@ export default async function JuneauWhaleWatchingToursPage({
             whale route first.
           </h1>
           <p className="mt-5 max-w-3xl text-base leading-8 text-white/75 md:text-lg">
-            DCC checks whether you can get from your Juneau cruise berth to Auke Bay check-in, complete the tour, and return to the gangway with DCC&apos;s <strong>2-hour (1:59:59+ / 120-minute) minimum recommended return buffer</strong> before your ship&apos;s confirmed all-aboard cutoff — then surfaces live read-only operator departures and routes you to <strong>Juneau Flight Deck (Whale Deck)</strong> or <strong>Last Frontier Shore Excursions</strong> to book.
+            DCC checks whether you can get from your Juneau cruise berth to Auke Bay check-in, complete the tour, and return to the gangway with DCC&apos;s <strong>2-hour (120-minute) minimum recommended return buffer</strong> before your ship&apos;s confirmed all-aboard cutoff — then surfaces live read-only operator departures and routes you to <strong>Juneau Flight Deck (Whale Deck)</strong> or <strong>Last Frontier Shore Excursions</strong> to book.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <a
@@ -397,7 +397,7 @@ export default async function JuneauWhaleWatchingToursPage({
           </div>
         </section>
 
-        {/* CLAA Juneau Port-Call Timing & 2-Hour (1:59:59+) DCC Return Buffer Gate */}
+        {/* CLAA Juneau Port-Call Timing & 2-Hour DCC Return Buffer Gate */}
         <section
           data-testid="dcc-juneau-claa-timing-section"
           className="rounded-[1.9rem] border border-white/10 bg-[#0b1017] p-6 md:p-8 space-y-5"
@@ -408,7 +408,7 @@ export default async function JuneauWhaleWatchingToursPage({
                 Published CLAA Calendar + Confirmed Ship All-Aboard Cutoff
               </p>
               <h2 className="mt-1 text-2xl font-black text-white">
-                Berth-to-Check-In, Tour Duration &amp; 2-Hour (1:59:59+) Gangway Return Buffer
+                Berth-to-Check-In, Tour Duration &amp; 2-Hour Gangway Return Buffer
               </h2>
             </div>
             <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-semibold text-white/80">

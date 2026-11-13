@@ -175,7 +175,7 @@ export default async function DecisionPage({
       <section className="section" style={{ background: "#ffffff", borderBottom: "1px solid var(--line)", padding: "24px 0" }}>
         <div className="shell">
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <span className="badge badge-safety">2-Hour (1:59:59+) Return Buffer Rule</span>
+            <span className="badge badge-safety">2-Hour Return Buffer Rule</span>
             <strong style={{ fontSize: "16px", color: "var(--deep)" }}>
               {guide.quickRule}
             </strong>

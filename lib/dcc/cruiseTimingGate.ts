@@ -173,7 +173,7 @@ function formatMinutesAsHms(totalMinutes: number): string {
 /**
  * Evaluates whether a passenger can transit from berth -> tour check-in,
  * complete the tour, and return to the gangway before confirmed all-aboard
- * with DCC's 2-hour (1:59:59+ / 120-minute) recommended return buffer.
+ * with DCC's 2-hour return buffer (120 minutes).
  */
 export function evaluateCruiseTimingWindow(
   input: CruiseTimingEvaluationInput,
@@ -314,7 +314,7 @@ export function evaluateCruiseTimingWindow(
       confirmedAllAboardLocal: formatHhMm(confirmedAllAboardMins),
       marginBeforeAllAboardMinutes,
       exactRemainingBufferHms,
-      reason: `Reduced buffer (${exactRemainingBufferHms} remaining before ${formatHhMm(confirmedAllAboardMins)} all-aboard) — not recommended under DCC's ${dccBufferMinutes}-minute (1:59:59+) return policy.`,
+      reason: `Reduced buffer (${exactRemainingBufferHms} remaining before ${formatHhMm(confirmedAllAboardMins)} all-aboard) — not recommended under DCC's ${dccBufferMinutes}-minute (2-hour return buffer) policy.`,
       seatCountDisplay,
     };
   }
@@ -329,7 +329,7 @@ export function evaluateCruiseTimingWindow(
     confirmedAllAboardLocal: formatHhMm(confirmedAllAboardMins),
     marginBeforeAllAboardMinutes,
     exactRemainingBufferHms,
-    reason: `Recommended — cleared with ${exactRemainingBufferHms} (${marginBeforeAllAboardMinutes}m) margin before confirmed all-aboard (${formatHhMm(confirmedAllAboardMins)}), meeting DCC's ${dccBufferMinutes}-minute (1:59:59+) return policy.`,
+    reason: `Recommended — cleared with ${exactRemainingBufferHms} (${marginBeforeAllAboardMinutes}m) margin before confirmed all-aboard (${formatHhMm(confirmedAllAboardMins)}), meeting DCC's ${dccBufferMinutes}-minute (2-hour return buffer) policy.`,
     seatCountDisplay,
   };
 }

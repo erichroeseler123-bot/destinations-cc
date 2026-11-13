@@ -31,7 +31,7 @@ export default function AboutPage() {
       <section className="card" style={{ marginTop: 28 }}>
         <h2>The Last Frontier Planning Standard</h2>
         <p>
-          Our planning method evaluates excursion feasibility against cruise all-aboard times: <strong>Tour end time + transfer buffer + 2-hour (1:59:59+ / 120-minute) recommended planning margin must be no later than your ship&apos;s scheduled all-aboard time</strong> (with windows under 1:59:59 flagged as reduced buffer / not recommended, and departures outside the sailing window blocked).
+          Our planning method evaluates excursion feasibility against cruise all-aboard times: <strong>Tour end time + transfer buffer + 2-hour (120-minute) recommended planning margin must be no later than your ship&apos;s scheduled all-aboard time</strong> (with windows under 2-hour return buffer flagged as reduced buffer / not recommended, and departures outside the sailing window blocked).
         </p>
         <p>
           We analyze port-specific dock logistics—such as AJ Dock in Juneau, Ward Cove Mill in Ketchikan, and Old Sitka Dock in Sitka—factoring in mandatory shuttle bus transit times and security clearance margins.

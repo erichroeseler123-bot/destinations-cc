@@ -82,7 +82,7 @@ export default async function ShipPortExcursionsPage({ params }: ShipPortRoutePr
     },
     {
       question: `Can ${ship.name} passengers book independent ${port.portName} shore excursions?`,
-      answer: `Yes. Independent shore excursions offer smaller groups and direct local operator rates. Confirm meeting logistics and allow at least ${port.recommendedBufferMinutes} minutes (2 hours / 1:59:59+) of recommended return buffer before your ship's scheduled all-aboard time.`
+      answer: `Yes. Independent shore excursions offer smaller groups and direct local operator rates. Confirm meeting logistics and allow at least ${port.recommendedBufferMinutes} minutes (2 hours / 2-hour return buffer) of recommended return buffer before your ship's scheduled all-aboard time.`
     },
     {
       question: `How much time do ${ship.name} guests have in ${port.portName}?`,
@@ -177,7 +177,7 @@ export default async function ShipPortExcursionsPage({ params }: ShipPortRoutePr
             </div>
             <div>
               <span style={{ fontSize: 11, color: "#d8e9ed", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 700 }}>Planning Margin</span>
-              <div style={{ fontWeight: 700, color: "#ffeedb", fontSize: 15 }}>{port.recommendedBufferMinutes} min (1:59:59+) buffer recommended</div>
+              <div style={{ fontWeight: 700, color: "#ffeedb", fontSize: 15 }}>{port.recommendedBufferMinutes} min (2-hour return buffer) buffer recommended</div>
             </div>
           </div>
         </div>
@@ -340,7 +340,7 @@ export default async function ShipPortExcursionsPage({ params }: ShipPortRoutePr
               <h3 style={{ fontSize: 16, margin: "0 0 8px", color: "var(--deep)" }}>Timing Guardrails</h3>
               <ul style={{ color: "var(--ink)", fontSize: 14, lineHeight: 1.6, paddingLeft: 18, margin: 0 }}>
                 <li><strong>Max Tour Duration:</strong> Up to {port.maxTourDurationHours} hours recommended.</li>
-                <li><strong>Return Buffer:</strong> Allow at least {port.recommendedBufferMinutes} minutes (2 hours / 1:59:59+) prior to all-aboard.</li>
+                <li><strong>Return Buffer:</strong> Allow at least {port.recommendedBufferMinutes} minutes (2 hours / 2-hour return buffer) prior to all-aboard.</li>
                 <li><strong>Tender Requirement:</strong> {port.tenderRequired ? "Tender boat operations required." : "Direct deepwater dock berthing under standard port schedules."}</li>
               </ul>
             </div>

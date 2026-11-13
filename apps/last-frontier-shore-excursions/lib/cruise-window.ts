@@ -137,12 +137,14 @@ export function formatMinutesToTime(minutes: number): string {
   return `${hours12}:${paddedMins} ${meridiem}`;
 }
 
-function formatBufferMinutesToHms(totalMinutes: number): string {
-  const safeSeconds = Math.max(0, Math.round(totalMinutes * 60));
-  const h = Math.floor(safeSeconds / 3600);
-  const m = Math.floor((safeSeconds % 3600) / 60);
-  const s = safeSeconds % 60;
-  return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+function formatHoursMinutesText(totalMinutes: number): string {
+  const whole = Math.max(0, Math.floor(totalMinutes));
+  const h = Math.floor(whole / 60);
+  const m = whole % 60;
+  const parts: string[] = [];
+  if (h > 0) parts.push(`${h} ${h === 1 ? "hour" : "hours"}`);
+  if (m > 0 || parts.length === 0) parts.push(`${m} ${m === 1 ? "minute" : "minutes"}`);
+  return parts.join(" ");
 }
 
 export function calculateCruiseWindow({
@@ -172,7 +174,7 @@ export function calculateCruiseWindow({
       tourEndTimeMinutes: 0,
       returnToPierMinutes: 0,
       allAboardMinutes: allAboardMinutes || 0,
-      summary: "Enter your ship's arrival time, confirmed all-aboard time, and tour departure time to evaluate our 2-hour (1:59:59+) recommended return buffer.",
+      summary: "Enter your ship's arrival time, confirmed all-aboard time, and tour departure time to evaluate our 2-hour return buffer.",
       reasons: ["Ship arrival or confirmed all-aboard time is missing or unparseable."],
     };
   }
@@ -232,35 +234,35 @@ export function calculateCruiseWindow({
   }
 
   if (safetyBufferMinutes < planningMarginMinutes) {
-    const exactHms = formatBufferMinutesToHms(safetyBufferMinutes);
+    const durationText = formatHoursMinutesText(safetyBufferMinutes);
     reasons.push(
-      `Calculated pier arrival is ${formatMinutesToTime(returnToPierMinutes)}, leaving ${exactHms} (${safetyBufferMinutes} mins) before ${formatMinutesToTime(allAboardMinutes)} all-aboard — below the ${planningMarginMinutes}-minute (1:59:59+) recommended return buffer.`
+      `Calculated pier arrival is ${formatMinutesToTime(returnToPierMinutes)}, leaving ${durationText} (${safetyBufferMinutes} minutes) before ${formatMinutesToTime(allAboardMinutes)} all-aboard — below our 2-hour return buffer (${planningMarginMinutes} minutes).`
     );
     return {
       status: "tight_fit",
-      statusLabel: `Reduced Buffer (${exactHms} remaining) — Not Recommended`,
+      statusLabel: `Reduced Buffer (${durationText} remaining) — Not Recommended`,
       safetyBufferMinutes,
       tourEndTimeMinutes,
       returnToPierMinutes,
       allAboardMinutes,
-      summary: `Reduced buffer (${exactHms} / ${safetyBufferMinutes} minutes remaining before ${formatMinutesToTime(allAboardMinutes)} all-aboard) — not recommended under our 2-hour (1:59:59+) return buffer standard.`,
+      summary: `Reduced buffer (${durationText} / ${safetyBufferMinutes} minutes remaining before ${formatMinutesToTime(allAboardMinutes)} all-aboard) — not recommended under our 2-hour return-buffer standard.`,
       reasons,
     };
   }
 
-  const exactRecommendedHms = formatBufferMinutesToHms(safetyBufferMinutes);
+  const recommendedDurationText = formatHoursMinutesText(safetyBufferMinutes);
   reasons.push(
-    `Meets 2-hour (1:59:59+) return standard: ${exactRecommendedHms} (${safetyBufferMinutes} minutes) between dock return at ${formatMinutesToTime(returnToPierMinutes)} and all-aboard at ${formatMinutesToTime(allAboardMinutes)}.`
+    `2-hour return buffer met: ${safetyBufferMinutes} minutes between the estimated dock return at ${formatMinutesToTime(returnToPierMinutes)} and all-aboard at ${formatMinutesToTime(allAboardMinutes)}.`
   );
 
   return {
     status: "strong_fit",
-    statusLabel: "Recommended (Meets 2-Hour / 1:59:59+ Buffer)",
+    statusLabel: "Recommended — Meets 2-Hour Return Buffer",
     safetyBufferMinutes,
     tourEndTimeMinutes,
     returnToPierMinutes,
     allAboardMinutes,
-    summary: `Recommended cruise-window fit: arrives back at the pier with ${exactRecommendedHms} (${safetyBufferMinutes} minutes) before all-aboard, meeting our 2-hour (1:59:59+) return buffer standard.`,
+    summary: `Estimated back at the pier ${recommendedDurationText} before all-aboard, comfortably meeting our 2-hour return-buffer standard.`,
     reasons,
   };
 }

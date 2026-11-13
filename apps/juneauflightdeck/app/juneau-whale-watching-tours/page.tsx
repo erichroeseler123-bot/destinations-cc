@@ -41,7 +41,7 @@ const CLAA_JUNEAU_CALLS = [
     claaWindow: "08:00–21:00",
     confirmedAllAboard: "20:30",
     dccBufferMinutes: 120,
-    whale35hStatus: "Fits cruise window (1:59:59+ buffer cleared)",
+    whale35hStatus: "Fits cruise window (2-hour return buffer cleared)",
   },
   {
     shipName: "Eurodam",
@@ -51,7 +51,7 @@ const CLAA_JUNEAU_CALLS = [
     claaWindow: "12:30–22:00",
     confirmedAllAboard: "21:30",
     dccBufferMinutes: 120,
-    whale35hStatus: "Fits cruise window (1:59:59+ buffer cleared)",
+    whale35hStatus: "Fits cruise window (2-hour return buffer cleared)",
   },
   {
     shipName: "Ovation of the Seas",
@@ -74,7 +74,7 @@ const whaleFaqSchema = {
       name: "How does Juneau Whale Deck check cruise ship timing?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "We check whether passengers can transit from their Juneau berth (CT, FKL, AS, AJ Dock, or Tender) to tour check-in, complete the excursion, and return to the gangway with at least a 1:59:59+ (2-hour / 120-minute) DCC safety buffer before the ship's confirmed all-aboard cutoff. Options with less than 1:59:59 remaining show the exact remaining buffer and are not recommended; options outside the sailing window are blocked; missing cutoff or transfer evidence shows 'Confirm ship timing' / 'Needs verification'.",
+        text: "We check whether passengers can transit from their Juneau berth (CT, FKL, AS, AJ Dock, or Tender) to tour check-in, complete the excursion, and return to the gangway with at least a 2-hour (120-minute) DCC safety buffer before the ship's confirmed all-aboard cutoff. Options with less than 2-hour return buffer remaining show the exact remaining buffer and are not recommended; options outside the sailing window are blocked; missing cutoff or transfer evidence shows 'Confirm ship timing' / 'Needs verification'.",
       },
     },
     {
@@ -182,7 +182,7 @@ export default async function WhaleWatchingPage({
           }}
         >
           Check whether your ship berth, tour check-in, and return gangway transfer fit inside the{" "}
-          <strong>2-hour (1:59:59+ / 120-minute) DCC recommended all-aboard buffer</strong> using the published{" "}
+          <strong>2-hour (120-minute) DCC recommended all-aboard buffer</strong> using the published{" "}
           <strong>CLAA Juneau calendar</strong>, then book approved Auke Bay whale-watching departures through{" "}
           <strong>Juneau Flight Deck</strong> or{" "}
           <a
@@ -270,7 +270,7 @@ export default async function WhaleWatchingPage({
 
         <p style={{ margin: "0 0 14px", fontSize: "0.92rem", color: "#e2e8f0", lineHeight: 1.6 }}>
           {isBackupFlowActive
-            ? "Your flight cancellation status is active. Surface whale-watching vessels in Auke Bay and Stephens Passage operate at sea level under marine visibility rules and remain available below when your ship's 2-hour (1:59:59+) recommended all-aboard buffer passes."
+            ? "Your flight cancellation status is active. Surface whale-watching vessels in Auke Bay and Stephens Passage operate at sea level under marine visibility rules and remain available below when your ship's 2-hour recommended all-aboard buffer passes."
             : "Select 'My flight was canceled' or use your flight operator's tracked cancellation link (?cancel_ref=...) to unlock priority same-day Auke Bay whale-watching backup departures."}
         </p>
 
@@ -362,7 +362,7 @@ export default async function WhaleWatchingPage({
 
               <div style={{ marginTop: "auto", paddingTop: 14, borderTop: "1px solid var(--line)", marginBottom: 16 }}>
                 <div style={{ fontSize: "0.82rem", color: "var(--ice)", marginBottom: 4 }}>
-                  ⏱ <strong>Duration:</strong> 3.5 hours (210 min) + 2h (1:59:59+) DCC recommended buffer
+                  ⏱ <strong>Duration:</strong> 3.5 hours (210 min) + 2h (2-hour return buffer) DCC recommended buffer
                 </div>
                 <div style={{ fontSize: "0.82rem", color: "var(--ice)", marginBottom: 4 }}>
                   🚐 <strong>Transfers:</strong> Round-trip shuttle from downtown Juneau cruise docks
@@ -420,7 +420,7 @@ export default async function WhaleWatchingPage({
 
               <div style={{ marginTop: "auto", paddingTop: 14, borderTop: "1px solid var(--line)", marginBottom: 16 }}>
                 <div style={{ fontSize: "0.82rem", color: "var(--ice)", marginBottom: 4 }}>
-                  ⏱ <strong>Duration:</strong> 5.5 hours (330 min) + 2h (1:59:59+) DCC recommended buffer
+                  ⏱ <strong>Duration:</strong> 5.5 hours (330 min) + 2h (2-hour return buffer) DCC recommended buffer
                 </div>
                 <div style={{ fontSize: "0.82rem", color: "var(--ice)", marginBottom: 4 }}>
                   🚐 <strong>Transfers:</strong> Mt. Roberts Tramway lower parking garage (Dolphin blue &amp; yellow sign)
@@ -524,11 +524,11 @@ export default async function WhaleWatchingPage({
             CLAA Juneau Port-Call Calendar &amp; Confirmed All-Aboard Buffer Check
           </h2>
           <span style={{ fontSize: "0.8rem", fontWeight: 800, color: "#ffd596" }}>
-            2-Hour (1:59:59+) DCC Recommended Buffer
+            2-Hour DCC Recommended Buffer
           </span>
         </div>
         <p style={{ lineHeight: 1.65, color: "var(--muted)", margin: "0 0 18px" }}>
-          We verify whether passengers can get from their Juneau berth to tour check-in, complete the tour, and return to the gangway before all-aboard with a <strong>2-hour (1:59:59+ / 120-minute) DCC recommended buffer</strong>. Options with less than 1:59:59 remaining show the exact remaining buffer and are not recommended; options outside the window are blocked. We use the <strong>published CLAA calendar</strong> for Juneau port-call times and the <strong>ship&apos;s confirmed all-aboard time</strong> for the actual cutoff, showing <strong>Confirm ship timing</strong> whenever unknown.
+          We verify whether passengers can get from their Juneau berth to tour check-in, complete the tour, and return to the gangway before all-aboard with a <strong>2-hour (120-minute) DCC recommended buffer</strong>. Options with less than 2-hour return buffer remaining show the exact remaining buffer and are not recommended; options outside the window are blocked. We use the <strong>published CLAA calendar</strong> for Juneau port-call times and the <strong>ship&apos;s confirmed all-aboard time</strong> for the actual cutoff, showing <strong>Confirm ship timing</strong> whenever unknown.
         </p>
 
         <div style={{ overflowX: "auto", marginBottom: 20 }}>

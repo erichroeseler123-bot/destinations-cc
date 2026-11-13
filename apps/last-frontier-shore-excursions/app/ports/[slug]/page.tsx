@@ -34,7 +34,7 @@ export async function generateMetadata({
   if (!port) return {};
   return {
     title: `${port.name} Shore Excursions | Cruise-Safe Port Guide & Tours`,
-    description: `Compare ${port.name} Alaska shore excursions by experience, port-day fit, duration, and weather backup. 2-hour (1:59:59+) recommended return-to-ship buffer.`,
+    description: `Compare ${port.name} Alaska shore excursions by experience, port-day fit, duration, and weather backup. 2-hour recommended return-to-ship buffer.`,
     alternates: { canonical: `${SITE}/ports/${port.slug}` },
     openGraph: {
       title: `${port.name} Shore Excursions | Last Frontier Shore Excursions`,
@@ -230,7 +230,7 @@ export default async function PortPage({
         <div className="shell">
           <h2>{port.name} Cruise Dock Logistics & Shuttle Transit</h2>
           <p style={{ color: "var(--muted)", maxWidth: 750 }}>
-            Know your dock location before selecting a tour. Terminal transfer times dictate whether an excursion complies with our 2-hour (1:59:59+) recommended return buffer:
+            Know your dock location before selecting a tour. Terminal transfer times dictate whether an excursion complies with our 2-hour recommended return buffer:
           </p>
           <div className="grid" style={{ marginTop: 20 }}>
             {port.dockLocations.map((dock, index) => (

@@ -876,7 +876,7 @@ export function assessLfseJuneauDepartureAgainstShipWindow(params: {
     }
 
     const hms = formatLfseRemainingBufferHms(remainingSec);
-    if (remainingSec < 7199) {
+    if (Math.floor(remainingSec / 60) < 120) {
       return {
         departureTime: params.departureTime,
         shipArrivalTime: normArr,

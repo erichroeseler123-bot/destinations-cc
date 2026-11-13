@@ -518,7 +518,7 @@ export default async function NewOrleansSwampToursPage(props: {
               className="rounded-xl border border-cyan-400/25 bg-black/45 p-3 text-xs text-white/85"
             >
               <strong className="text-cyan-300">April 24 Dock Rollout · NWS Flood &amp; Water-Level Bayou Monitor:</strong>{" "}
-              Active NWS New Orleans/Baton Rouge (<code>LIX</code>) flood warnings and USGS water-level observations at Bayou Barataria at Lafitte (<code>07380335</code>) and West Pearl River (<code>02492620</code>) automatically flag affected bayou departures for an <strong>operator check</strong> before dispatch. Cruise passengers without a confirmed all-aboard time and terminal transfer show <strong>Confirm ship timing</strong> (2-hour / 1:59:59+ DCC gangway buffer).
+              Active NWS New Orleans/Baton Rouge (<code>LIX</code>) flood warnings and USGS water-level observations at Bayou Barataria at Lafitte (<code>07380335</code>) and West Pearl River (<code>02492620</code>) automatically flag affected bayou departures for an <strong>operator check</strong> before dispatch. Cruise passengers without a confirmed all-aboard time and terminal transfer show <strong>Confirm ship timing</strong> (2-hour DCC gangway buffer).
             </div>
           </div>
 
