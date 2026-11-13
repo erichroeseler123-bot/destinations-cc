@@ -14,8 +14,15 @@ const rateBuckets = new Map<string, { count: number; resetAt: number }>();
 const BOT_USER_AGENT_RE =
   /bot\b|crawler|spider|slurp|bingpreview|lighthouse|pagespeed|headlesschrome|phantomjs|puppeteer|playwright|curl\/|wget\/|python-requests|go-http-client|ahrefs|semrush|gptbot|claudebot|bytespider|applebot|yandex/i;
 
-function withCors(response: NextResponse) {
-  response.headers.set("Access-Control-Allow-Origin", "*");
+function withCors(request: NextRequest, response: NextResponse) {
+  const origin = request.headers.get("origin");
+  if (origin && /^https?:\/\/([a-z0-9-]+\.)?(destinationcommandcenter\.com|cruisepromenade\.com|partyatredrocks\.com|gosno\.co|lastfrontiershoreexcursions\.com|localhost)(:\d+)?$/i.test(origin)) {
+    response.headers.set("Access-Control-Allow-Origin", origin);
+    response.headers.set("Access-Control-Allow-Credentials", "true");
+    response.headers.set("Vary", "Origin");
+  } else {
+    response.headers.set("Access-Control-Allow-Origin", "*");
+  }
   response.headers.set("Access-Control-Allow-Methods", "POST, OPTIONS");
   response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization, x-internal-secret, x-qa-test");
   return response;
@@ -43,8 +50,8 @@ function isRateLimited(key: string): boolean {
   return existing.count > RATE_LIMIT_MAX_EVENTS;
 }
 
-export async function OPTIONS() {
-  return withCors(new NextResponse(null, { status: 204 }));
+export async function OPTIONS(request: NextRequest) {
+  return withCors(request, new NextResponse(null, { status: 204 }));
 }
 
 export async function POST(request: NextRequest) {
@@ -52,23 +59,24 @@ export async function POST(request: NextRequest) {
   try {
     rawText = await request.text();
   } catch {
-    return withCors(NextResponse.json({ ok: false, error: "invalid_json" }, { status: 400 }));
+    return withCors(request, NextResponse.json({ ok: false, error: "invalid_json" }, { status: 400 }));
   }
 
   if (Buffer.byteLength(rawText, "utf8") > MAX_EVENT_BODY_BYTES) {
-    return withCors(NextResponse.json({ ok: false, error: "payload_too_large" }, { status: 413 }));
+    return withCors(request, NextResponse.json({ ok: false, error: "payload_too_large" }, { status: 413 }));
   }
 
   let body: unknown;
   try {
     body = JSON.parse(rawText);
   } catch {
-    return withCors(NextResponse.json({ ok: false, error: "invalid_json" }, { status: 400 }));
+    return withCors(request, NextResponse.json({ ok: false, error: "invalid_json" }, { status: 400 }));
   }
 
   const parsed = CorridorEventPayloadSchema.safeParse(body);
   if (!parsed.success) {
     return withCors(
+      request,
       NextResponse.json(
         { ok: false, error: "invalid_payload", details: parsed.error.flatten() },
         { status: 400 },
@@ -85,6 +93,7 @@ export async function POST(request: NextRequest) {
   const userAgent = request.headers.get("user-agent") || "";
   if (!isExplicitTest && (!userAgent.trim() || BOT_USER_AGENT_RE.test(userAgent))) {
     return withCors(
+      request,
       NextResponse.json({ ok: true, stored: false, reason: "bot_filtered" }, { status: 202 }),
     );
   }
@@ -93,7 +102,7 @@ export async function POST(request: NextRequest) {
   if (!isExplicitTest && isRateLimited(rateKey)) {
     const res = NextResponse.json({ ok: false, error: "rate_limited" }, { status: 429 });
     res.headers.set("Retry-After", "60");
-    return withCors(res);
+    return withCors(request, res);
   }
 
   try {
@@ -101,11 +110,12 @@ export async function POST(request: NextRequest) {
       ...parsed.data,
       is_test: isExplicitTest,
     });
-    return withCors(NextResponse.json(stored, { status: 200 }));
+    return withCors(request, NextResponse.json(stored, { status: 200 }));
   } catch (error) {
     const message = error instanceof Error ? error.message : "unknown_error";
     const status = message.startsWith("unknown_corridor:") ? 400 : 500;
     return withCors(
+      request,
       NextResponse.json({ ok: false, error: "event_storage_failed", message }, { status }),
     );
   }
