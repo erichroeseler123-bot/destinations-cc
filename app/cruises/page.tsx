@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import Link from "next/link";
 import DiagnosticsBlock from "@/app/components/DiagnosticsBlock";
 import StatGrid from "@/app/components/StatGrid";
 import StaleWarning from "@/app/components/StaleWarning";
 import CinematicBackdrop from "@/app/components/dcc/CinematicBackdrop";
+import ContextualCruiseReturnBanner from "@/app/components/dcc/ContextualCruiseReturnBanner";
+import CruiseJourneyStageStrip from "@/app/components/dcc/CruiseJourneyStageStrip";
 import JsonLd from "@/app/components/dcc/JsonLd";
 import RouteHeroMark from "@/app/components/dcc/RouteHeroMark";
 import {
@@ -68,6 +71,9 @@ export default async function CruisesPage() {
       />
       <CinematicBackdrop />
       <div className="relative mx-auto flex max-w-5xl flex-col gap-8 px-6 py-16">
+        <Suspense fallback={null}>
+          <ContextualCruiseReturnBanner />
+        </Suspense>
         <header className="space-y-4">
           <RouteHeroMark eyebrow="Destination Command Center" title="CRUISE DECISION HUB" tone="cyan" />
           <p className="dcc-hero-enter dcc-hero-enter-2 text-xs uppercase tracking-wider text-zinc-500">DCC Cruises</p>
@@ -100,6 +106,8 @@ export default async function CruisesPage() {
             />
           </div>
         </header>
+
+        <CruiseJourneyStageStrip />
 
         <section className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
           <div className="rounded-3xl border border-white/10 bg-white/5 p-6">

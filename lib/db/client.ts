@@ -509,10 +509,10 @@ function createInMemoryTestDb(): DccDb {
           return formatResult(matched, CONTEXT_COLS, options);
         }
         if (qLower.includes('"context_hash" =')) {
-          // Revocation update: SET status=$1, updated_at=$2 WHERE context_hash=$3 AND status=$4 RETURNING *
+          // Revocation update: SET status=$1, updated_at=$2 WHERE context_hash=$3 [AND status=$4] RETURNING *
           const [nextStatus, updatedAt, hash, reqStatus] = params;
           const matched = contexts.filter(
-            (c) => c.context_hash === hash && c.status === reqStatus
+            (c) => c.context_hash === hash && (reqStatus === undefined || c.status === reqStatus)
           );
           for (const c of matched) {
             c.status = nextStatus;

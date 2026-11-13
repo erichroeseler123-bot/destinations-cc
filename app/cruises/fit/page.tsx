@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import Link from "next/link";
 import CinematicBackdrop from "@/app/components/dcc/CinematicBackdrop";
+import ContextualCruiseReturnBanner from "@/app/components/dcc/ContextualCruiseReturnBanner";
 import CruiseFitWizard from "@/app/components/dcc/CruiseFitWizard";
 import JsonLd from "@/app/components/dcc/JsonLd";
 import RouteHeroMark from "@/app/components/dcc/RouteHeroMark";
@@ -45,6 +47,9 @@ export default function CruiseFitPage() {
       />
       <CinematicBackdrop />
       <div className="relative mx-auto flex max-w-5xl flex-col gap-8 px-6 py-16">
+        <Suspense fallback={null}>
+          <ContextualCruiseReturnBanner />
+        </Suspense>
         <header className="space-y-4">
           <RouteHeroMark eyebrow="Destination Command Center" title="CRUISE FIT SATELLITE" tone="cyan" />
           <div className="overflow-hidden rounded-2xl border border-white/10 aspect-[16/9] max-h-[300px]">

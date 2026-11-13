@@ -956,6 +956,14 @@ export async function proxy(request: NextRequest, event: NextFetchEvent) {
     }
   }
 
+  // Public GET/OPTIONS pass-through for Verified Cruise Journey Intelligence API
+  if (
+    request.nextUrl.pathname === "/api/v1/cruise/journey-intelligence" &&
+    (request.method === "GET" || request.method === "OPTIONS")
+  ) {
+    return NextResponse.next();
+  }
+
   const isPublicVisitorEventCollector =
     (request.nextUrl.pathname === "/api/internal/corridor-events" ||
       request.nextUrl.pathname === "/api/internal/ingest-engagement") &&

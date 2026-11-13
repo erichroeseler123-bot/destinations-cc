@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import Link from "next/link";
+import ContextualCruiseReturnBanner from "@/app/components/dcc/ContextualCruiseReturnBanner";
 import TrackedCruisePromenadeLink from "@/app/components/dcc/TrackedCruisePromenadeLink";
 import JsonLd from "@/app/components/dcc/JsonLd";
 import PageActionBar from "@/app/components/dcc/PageActionBar";
@@ -64,6 +66,9 @@ export default function CruiseShoreExcursionsPage() {
         }}
       />
       <div className="mx-auto max-w-5xl space-y-8 px-6 py-16">
+        <Suspense fallback={null}>
+          <ContextualCruiseReturnBanner />
+        </Suspense>
         <header className="space-y-5">
           <p className="text-xs uppercase tracking-[0.22em] text-emerald-300">DCC Cruise Excursions Guide</p>
           <h1 className="text-4xl font-black tracking-tight md:text-6xl">Cruise Shore Excursions Guide</h1>

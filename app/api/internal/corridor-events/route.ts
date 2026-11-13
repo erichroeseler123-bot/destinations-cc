@@ -16,7 +16,7 @@ const BOT_USER_AGENT_RE =
 
 function withCors(request: NextRequest, response: NextResponse) {
   const origin = request.headers.get("origin");
-  if (origin && /^https?:\/\/([a-z0-9-]+\.)?(destinationcommandcenter\.com|cruisepromenade\.com|partyatredrocks\.com|gosno\.co|lastfrontiershoreexcursions\.com|localhost)(:\d+)?$/i.test(origin)) {
+  if (origin && /^https?:\/\/([a-z0-9-]+\.)?(destinationcommandcenter\.com|cruisepromenade\.com|rollcallusa\.com|partyatredrocks\.com|gosno\.co|lastfrontiershoreexcursions\.com|localhost)(:\d+)?$/i.test(origin)) {
     response.headers.set("Access-Control-Allow-Origin", origin);
     response.headers.set("Access-Control-Allow-Credentials", "true");
     response.headers.set("Vary", "Origin");

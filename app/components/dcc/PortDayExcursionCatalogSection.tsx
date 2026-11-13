@@ -1,6 +1,11 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import {
+  getOrCreateJourneyId,
+  isQaTestMode,
+  trackNetworkEvent,
+} from "@/lib/dcc/telemetry/clientNetworkEvents";
 import type {
   PortDayExcursionCatalogResponse,
   PortDayExcursionCard,
@@ -41,7 +46,7 @@ const CATEGORY_OPTIONS: Array<{
 export default function PortDayExcursionCatalogSection({
   portSlug,
   initialCatalogData = null,
-  initialViewMode = "browse_all",
+  initialViewMode,
   initialCategory = "all",
   initialShipArrivalTime,
   initialShipAllAboardTime,
@@ -53,9 +58,15 @@ export default function PortDayExcursionCatalogSection({
   initialShip = "",
   initialCruiseSailingDate = "",
 }: PortDayExcursionCatalogSectionProps) {
+  const hasInitialScheduleTimes = Boolean(
+    (initialShipArrivalTime && initialShipAllAboardTime) || initialSailingId,
+  );
+  const resolvedDefaultViewMode: PortDayExcursionViewMode =
+    initialViewMode ||
+    (hasInitialScheduleTimes ? "shortlist_2h" : "browse_all");
   const [data, setData] = useState<PortDayExcursionCatalogResponse | null>(initialCatalogData);
   const [viewMode, setViewMode] = useState<PortDayExcursionViewMode>(
-    initialCatalogData?.viewMode || initialViewMode
+    initialCatalogData?.viewMode || resolvedDefaultViewMode
   );
   const [category, setCategory] = useState<PortDayExcursionCategoryFilter>(
     initialCatalogData?.category || initialCategory
@@ -109,6 +120,24 @@ export default function PortDayExcursionCatalogSection({
   >({});
   const [checkingTourIds, setCheckingTourIds] = useState<Record<string, boolean>>({});
   const [handoffLoggedIds, setHandoffLoggedIds] = useState<Record<string, string>>({});
+  const [journeyId, setJourneyId] = useState<string | null>(null);
+  const [qaTest, setQaTest] = useState<boolean>(false);
+
+  useEffect(() => {
+    const id = getOrCreateJourneyId();
+    if (id && id !== "ssr") setJourneyId(id);
+    setQaTest(isQaTestMode());
+  }, []);
+
+  const handleGroupHandoffClick = useCallback(() => {
+    trackNetworkEvent({
+      eventName: "network_handoff",
+      originatingSite: "dcc",
+      destinationSite: "cruisepromenade",
+      travelIntent: "cruise-group-planning",
+      corridorId: "portfolio-network",
+    });
+  }, []);
 
   const buildPlanWithMyGroupHref = useCallback(
     (tourCode?: string) => {
@@ -116,15 +145,30 @@ export default function PortDayExcursionCatalogSection({
         port: portSlug,
         port_date: sailingDate,
         party_size: String(partySize),
+        stage: "excursions",
       });
+      if (shipArrival.trim()) params.set("shipArrival", shipArrival.trim());
+      if (allAboard.trim()) params.set("allAboard", allAboard.trim());
       if (ship.trim()) params.set("ship", ship.trim());
       if (cruiseSailingDate.trim()) {
         params.set("sailing_date", cruiseSailingDate.trim());
       }
       if (tourCode) params.set("tour_code", tourCode);
+      if (journeyId) params.set("journey_id", journeyId);
+      if (qaTest) params.set("qa_test", "1");
       return `/go/dcc-to-cruise-promenade?${params.toString()}`;
     },
-    [portSlug, sailingDate, partySize, ship, cruiseSailingDate]
+    [
+      portSlug,
+      sailingDate,
+      partySize,
+      shipArrival,
+      allAboard,
+      ship,
+      cruiseSailingDate,
+      journeyId,
+      qaTest,
+    ]
   );
 
   const fetchCatalog = useCallback(
@@ -311,49 +355,88 @@ export default function PortDayExcursionCatalogSection({
 
       {/* View Mode Tabs & Sailing Window Controls */}
       <div className="space-y-3 rounded-2xl border border-white/10 bg-slate-900/70 p-4">
-        <div className="grid gap-4 lg:grid-cols-12 lg:items-end">
-          <div className="space-y-2 lg:col-span-5">
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-400">
-              Port-Day View Mode
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                data-testid="tab-browse-all-tours"
-                onClick={() => {
-                  setViewMode("browse_all");
-                  setOffset(0);
-                  void fetchCatalog({ nextViewMode: "browse_all", nextOffset: 0 });
-                }}
-                className={`rounded-xl px-4 py-2.5 text-xs font-bold transition ${
-                  viewMode === "browse_all"
-                    ? "bg-cyan-500 text-slate-950 shadow-lg"
-                    : "border border-white/15 bg-slate-950/70 text-slate-200 hover:bg-slate-800"
-                }`}
-              >
-                Browse all tours (
-                {data?.pagination.totalMatchedInSql?.toLocaleString() || "…"})
-              </button>
-              <button
-                type="button"
-                data-testid="tab-fits-my-sailing"
-                onClick={() => {
-                  setViewMode("fits_sailing");
-                  setOffset(0);
-                  void fetchCatalog({ nextViewMode: "fits_sailing", nextOffset: 0 });
-                }}
-                className={`rounded-xl px-4 py-2.5 text-xs font-bold transition ${
-                  viewMode === "fits_sailing"
-                    ? "bg-emerald-500 text-slate-950 shadow-lg"
-                    : "border border-white/15 bg-slate-950/70 text-slate-200 hover:bg-slate-800"
-                }`}
-              >
-                Fits my sailing ({data?.summary.fitsSailingCountOnPage ?? "…"} on page)
-              </button>
-            </div>
+        <div
+          data-testid="port-schedule-lead-banner"
+          className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-emerald-400/30 bg-emerald-950/30 px-3.5 py-2 text-xs text-emerald-100"
+        >
+          <div>
+            <strong className="text-emerald-300">
+              Available departures that match your port schedule
+            </strong>{" "}
+            — DCC prioritizes options with a{" "}
+            <strong>2-hour (120-minute) return buffer</strong> before all-aboard, showing timing cautions only on reduced-buffer (&lt;120 min) or unverified departures.
           </div>
+          <a
+            href={`/ports/${encodeURIComponent(portSlug)}/replan${
+              journeyId ? `?journey_id=${encodeURIComponent(journeyId)}` : ""
+            }`}
+            data-testid="port-low-bw-replan-link"
+            className="font-bold text-cyan-300 underline hover:text-cyan-200"
+          >
+            Ship-Wi-Fi Replan (&lt;50 KB) →
+          </a>
+        </div>
 
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-5 lg:col-span-7">
+        <div className="space-y-2">
+          <label className="block text-xs font-bold uppercase tracking-wider text-slate-400">
+            Port-Day View Mode
+          </label>
+          <div className="grid gap-2 sm:grid-cols-3">
+            <button
+              type="button"
+              data-testid="tab-shortlist-2h"
+              onClick={() => {
+                setViewMode("shortlist_2h");
+                setOffset(0);
+                void fetchCatalog({ nextViewMode: "shortlist_2h", nextOffset: 0 });
+              }}
+              className={`rounded-xl px-4 py-2.5 text-left text-xs font-bold transition ${
+                viewMode === "shortlist_2h"
+                  ? "bg-emerald-400 text-slate-950 shadow-lg"
+                  : "border border-emerald-400/35 bg-emerald-950/35 text-emerald-200 hover:bg-emerald-900/40"
+              }`}
+            >
+              Available departures that match your port schedule (2h+ Buffer:{" "}
+              {data?.summary.shortlist2hCountOnPage ?? "…"})
+            </button>
+            <button
+              type="button"
+              data-testid="tab-fits-my-sailing"
+              onClick={() => {
+                setViewMode("fits_sailing");
+                setOffset(0);
+                void fetchCatalog({ nextViewMode: "fits_sailing", nextOffset: 0 });
+              }}
+              className={`rounded-xl px-4 py-2.5 text-left text-xs font-bold transition ${
+                viewMode === "fits_sailing"
+                  ? "bg-emerald-500 text-slate-950 shadow-lg"
+                  : "border border-white/15 bg-slate-950/70 text-slate-200 hover:bg-slate-800"
+              }`}
+            >
+              Fits my sailing ({data?.summary.fitsSailingCountOnPage ?? "…"} on page)
+            </button>
+            <button
+              type="button"
+              data-testid="tab-browse-all-tours"
+              onClick={() => {
+                setViewMode("browse_all");
+                setOffset(0);
+                void fetchCatalog({ nextViewMode: "browse_all", nextOffset: 0 });
+              }}
+              className={`rounded-xl px-4 py-2.5 text-left text-xs font-bold transition ${
+                viewMode === "browse_all"
+                  ? "bg-cyan-500 text-slate-950 shadow-lg"
+                  : "border border-white/15 bg-slate-950/70 text-slate-200 hover:bg-slate-800"
+              }`}
+            >
+              Browse all tours (
+              {data?.pagination.totalMatchedInSql?.toLocaleString() || "…"})
+            </button>
+          </div>
+        </div>
+
+        <div className="grid gap-4 lg:grid-cols-12 lg:items-end">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-5 lg:col-span-12">
             <div>
               <label className="block text-[11px] font-semibold text-slate-400">
                 Ship Arrival
@@ -449,10 +532,11 @@ export default function PortDayExcursionCatalogSection({
           <div className="flex flex-wrap items-center gap-2">
             <a
               href={buildPlanWithMyGroupHref()}
+              onClick={handleGroupHandoffClick}
               data-testid="dcc-plan-with-my-group-cta"
               className="inline-flex items-center gap-2 rounded-xl border border-emerald-400/50 bg-emerald-500/20 px-4 py-2.5 text-xs font-bold text-emerald-200 hover:bg-emerald-500/30 transition shadow-sm"
             >
-              Plan with my group →
+              Plan with my group on Cruise Promenade →
             </a>
           </div>
         </div>
@@ -598,6 +682,23 @@ export default function PortDayExcursionCatalogSection({
               tour.timeFit.allAboardTimeSource === "port_estimate" ||
               tour.timeFit.bufferBeforeAllAboardMinutes === null;
 
+            const bufferMins = tour.timeFit.bufferBeforeAllAboardMinutes;
+            const isPreferred2hBuffer =
+              tour.timeFit.status === "fits" &&
+              (tour.timeFit.twoHourShortlist?.qualifies === true ||
+                (bufferMins !== null && bufferMins >= 120));
+            const isReducedBuffer =
+              tour.timeFit.status === "fits" &&
+              !isPreferred2hBuffer &&
+              bufferMins !== null &&
+              bufferMins < 120;
+            const showBufferWarning =
+              isReducedBuffer ||
+              tour.timeFit.status === "runs_too_late" ||
+              (viewMode !== "shortlist_2h" &&
+                (tour.timeFit.status === "needs_verification" ||
+                  tour.timeFit.status === "missing_operator_info"));
+
             return (
               <article
                 key={tour.tourId}
@@ -605,6 +706,25 @@ export default function PortDayExcursionCatalogSection({
                 className="flex flex-col justify-between rounded-2xl border border-white/10 bg-slate-900/90 p-5 shadow-lg"
               >
                 <div className="space-y-3">
+                  {isPreferred2hBuffer ? (
+                    <div
+                      data-testid={`preferred-2h-badge-${tour.productCode || tour.tourId}`}
+                      className="rounded-xl border border-emerald-400/35 bg-emerald-950/35 px-3 py-1.5 text-[11px] font-bold text-emerald-200"
+                    >
+                      ✓ Matches Port Schedule · Estimated back 2+ hours ({bufferMins ?? 120}m) before all-aboard
+                    </div>
+                  ) : showBufferWarning ? (
+                    <div
+                      data-testid={`buffer-caution-${tour.productCode || tour.tourId}`}
+                      className="rounded-xl border border-amber-400/35 bg-amber-950/35 px-3 py-1.5 text-[11px] text-amber-200"
+                    >
+                      {isReducedBuffer
+                        ? `Reduced return buffer (${bufferMins}m vs DCC's 120m standard). Verify pier/tender queue margin before selecting.`
+                        : tour.timeFit.status === "runs_too_late"
+                          ? "Departure returns after your ship's safe all-aboard cutoff."
+                          : "Timing needs verification: enter your ship's confirmed arrival & all-aboard times above to verify the 120-minute buffer."}
+                    </div>
+                  ) : null}
                   {/* Provider + Product Code + Categories */}
                   <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
                     <div className="flex flex-wrap items-center gap-1.5">
@@ -843,6 +963,7 @@ export default function PortDayExcursionCatalogSection({
                     </a>
                     <a
                       href={buildPlanWithMyGroupHref(tour.productCode || tour.tourId)}
+                      onClick={handleGroupHandoffClick}
                       data-testid={`dcc-card-plan-with-my-group-${tour.productCode || tour.tourId}`}
                       className="rounded-xl border border-emerald-400/40 bg-emerald-500/15 px-3 py-2.5 text-xs font-bold text-emerald-200 hover:bg-emerald-500/25 transition"
                     >

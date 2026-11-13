@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import ContextualCruiseReturnBanner from "@/app/components/dcc/ContextualCruiseReturnBanner";
 import AirportLinksSection from "@/app/components/dcc/AirportLinksSection";
 import StationLinksSection from "@/app/components/dcc/StationLinksSection";
 import JsonLd from "@/app/components/dcc/JsonLd";
@@ -395,10 +397,17 @@ export async function renderPortPage(
   const rawPartySize = query.partySize || query.party_size;
   const initialPartySize = rawPartySize ? Math.max(1, Number(rawPartySize) || 2) : 2;
   const resolvedPortDate = query.date || query.port_date || query.sailing_date;
+  const hasScheduleWindow = Boolean(query.shipArrival && query.allAboard);
   const initialViewMode =
-    query.viewMode === "fits_sailing" || query.viewMode === "fits"
-      ? "fits_sailing"
-      : "browse_all";
+    query.viewMode === "shortlist_2h" || query.viewMode === "2h"
+      ? "shortlist_2h"
+      : query.viewMode === "fits_sailing" || query.viewMode === "fits"
+        ? "fits_sailing"
+        : query.viewMode === "browse_all"
+          ? "browse_all"
+          : hasScheduleWindow
+            ? "shortlist_2h"
+            : "browse_all";
   const initialCatalogData = excursionProfile
     ? await queryPortDayExcursionCatalog({
         portSlug: excursionProfile.portSlug,
@@ -447,6 +456,11 @@ export async function renderPortPage(
           ],
         }}
       />
+      <Suspense fallback={null}>
+        <div className="mx-auto max-w-6xl px-6 pt-4">
+          <ContextualCruiseReturnBanner defaultPortSlug={port.slug} />
+        </div>
+      </Suspense>
       <PortAuthorityTemplate port={port} config={config} />
       {excursionProfile ? (
         <div className="max-w-6xl mx-auto px-6 pt-6">

@@ -31,6 +31,9 @@ export interface AddToCruisePromenadeParams {
   sourceSite?: string | null;
   productCode?: string | null;
   handoffId?: string | null;
+  journey_id?: string | null;
+  journeyId?: string | null;
+  stage?: string | null;
   shareCode?: string | null;
   baseOrigin?: string | null;
   [extraKey: string]: unknown;
@@ -50,19 +53,37 @@ const ALLOWED_NON_PII_OUTPUT_KEYS = [
   "sourceSite",
   "productCode",
   "handoffId",
+  "journey_id",
+  "journeyId",
+  "stage",
 ] as const;
 
 const SAFE_SHARE_CODE_RE = /^[A-Za-z0-9_-]{2,64}$/;
+const SAFE_JOURNEY_TOKEN_RE = /^[A-Za-z0-9_-]{4,64}$/;
+const SAFE_STAGE_TOKEN_RE = /^[A-Za-z0-9_-]{1,48}$/;
 const EMAIL_SUBSTRING_RE = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi;
 
 function sanitizeTextValue(raw: unknown, maxLen = 160): string | null {
   if (raw === null || raw === undefined) return null;
   const text = String(raw)
     .replace(EMAIL_SUBSTRING_RE, "")
+    .replace(/\bdcc_ctx_[a-z0-9_-]+/gi, "")
     .replace(/\s+/g, " ")
     .trim();
   if (!text) return null;
   return text.slice(0, maxLen);
+}
+
+function sanitizeJourneyToken(raw: unknown): string | null {
+  const cleaned = sanitizeTextValue(raw, 64);
+  if (!cleaned || cleaned.startsWith("dcc_ctx_")) return null;
+  return SAFE_JOURNEY_TOKEN_RE.test(cleaned) ? cleaned : null;
+}
+
+function sanitizeStageToken(raw: unknown): string | null {
+  const cleaned = sanitizeTextValue(raw, 48);
+  if (!cleaned || cleaned.startsWith("dcc_ctx_")) return null;
+  return SAFE_STAGE_TOKEN_RE.test(cleaned) ? cleaned : null;
 }
 
 function sanitizePositiveInt(raw: unknown, maxVal = 10000): string | null {
@@ -81,8 +102,8 @@ function sanitizePositiveInt(raw: unknown, maxVal = 10000): string | null {
  *    any accidental PII or `dcc_ctx_` token keys are stripped immediately.
  * 2. Emits only explicit non-PII itinerary fields (`title`, `port`, `date`, `ship`,
  *    `sailDate`, `cruiseLine`, `durationMinutes`, `partySize`, `operator`,
- *    `fitStatus`, `sourceSite`, `productCode`, `handoffId`, and a validated
- *    alphanumeric `shareCode` when explicitly supplied for an existing shared plan).
+ *    `fitStatus`, `sourceSite`, `productCode`, `handoffId`, `journey_id`, `journeyId`,
+ *    `stage`, and a validated alphanumeric `shareCode` when explicitly supplied).
  */
 export function buildAddToCruisePromenadeUrl(
   params: AddToCruisePromenadeParams,
@@ -101,6 +122,13 @@ export function buildAddToCruisePromenadeUrl(
     }
   }
   stripEdgePiiQueryParams(stagingUrl);
+
+  const sanitizedJourneySnake = sanitizeJourneyToken(
+    stagingUrl.searchParams.get("journey_id"),
+  );
+  const sanitizedJourneyCamel = sanitizeJourneyToken(
+    stagingUrl.searchParams.get("journeyId"),
+  );
 
   const normalizedEntries: Record<string, string | null> = {
     title: sanitizeTextValue(stagingUrl.searchParams.get("title"), 160),
@@ -126,6 +154,9 @@ export function buildAddToCruisePromenadeUrl(
       null,
     productCode: sanitizeTextValue(stagingUrl.searchParams.get("productCode"), 64),
     handoffId: sanitizeTextValue(stagingUrl.searchParams.get("handoffId"), 80),
+    journey_id: sanitizedJourneySnake ?? sanitizedJourneyCamel,
+    journeyId: sanitizedJourneyCamel,
+    stage: sanitizeStageToken(stagingUrl.searchParams.get("stage")),
   };
 
   const cleanUrl = new URL(CRUISE_PROMENADE_PLANNER_ADD_PATH, origin);

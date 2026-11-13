@@ -2,7 +2,9 @@ export const dynamicParams = true;
 export const revalidate = 3600;
 
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import Link from "next/link";
+import ContextualCruiseReturnBanner from "@/app/components/dcc/ContextualCruiseReturnBanner";
 import { getPortBySlug, getPortSlugs } from "@/lib/dcc/ports";
 import { getCruisePortReference, getCruisePortViatorSearch } from "@/lib/dcc/cruisePortDirectory";
 import {
@@ -90,10 +92,19 @@ export default async function PortPage({
       ? query.scenario
       : "all";
 
+  const hasScheduleWindow = Boolean(
+    (query.shipArrival && query.allAboard) || query.sailing,
+  );
   const initialViewMode: PortDayExcursionViewMode =
-    query.viewMode === "fits_sailing" || query.viewMode === "fits"
-      ? "fits_sailing"
-      : "browse_all";
+    query.viewMode === "shortlist_2h" || query.viewMode === "2h"
+      ? "shortlist_2h"
+      : query.viewMode === "fits_sailing" || query.viewMode === "fits"
+        ? "fits_sailing"
+        : query.viewMode === "browse_all"
+          ? "browse_all"
+          : hasScheduleWindow
+            ? "shortlist_2h"
+            : "browse_all";
 
   const initialCategory: PortDayExcursionCategoryFilter =
     query.category === "sightseeing" ||
@@ -130,6 +141,9 @@ export default async function PortPage({
 
   return (
     <main className="mx-auto max-w-6xl space-y-8 px-6 py-14 text-zinc-100">
+      <Suspense fallback={null}>
+        <ContextualCruiseReturnBanner defaultPortSlug={reference.slug} />
+      </Suspense>
       <Link href="/ports" className="text-sm text-cyan-300">← Browse cruise ports</Link>
       <header className="space-y-3">
         <p className="text-xs uppercase tracking-widest text-cyan-300">Cruise port reference</p>
