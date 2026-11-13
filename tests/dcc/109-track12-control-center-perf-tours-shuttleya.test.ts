@@ -908,6 +908,24 @@ test("Rezgo Gate-2 advancement, supplier 2.00h cutoff vs DCC 2-hour return buffe
     assert.doesNotMatch(lfseWhalePageSrc, /Pending Direct Referral Credit/);
     assert.doesNotMatch(lfseWhalePageSrc, /#466119P3|#5857P22|#5857P23|#5857SHUTTLE|10% Rezgo/);
 
+    const lfsePortPageSrc = fs.readFileSync(
+      path.join(process.cwd(), "apps/last-frontier-shore-excursions/app/ports/[slug]/page.tsx"),
+      "utf8",
+    );
+    assert.doesNotMatch(lfsePortPageSrc, /Curated Options/);
+    assert.match(lfsePortPageSrc, /getDistinctCategoryTourCount/);
+    assert.match(lfsePortPageSrc, /lfse-port-research-methodology-details/);
+    assert.ok(
+      lfsePortPageSrc.indexOf('id="excursion-categories"') <
+        lfsePortPageSrc.indexOf('id="calculator"'),
+      "Excursion categories must appear before the calculator on port landing pages",
+    );
+    assert.ok(
+      lfsePortPageSrc.indexOf('id="clusters"') <
+        lfsePortPageSrc.indexOf('lfse-port-research-methodology-details'),
+      "Excursion directory must appear before collapsed research methodology on port landing pages",
+    );
+
     // 5. DCC /juneau/whale-watching-tours public surface wires JuneauLiveAvailabilitySection with simplified cards
     assert.equal(whaleTour.departureOptions.length, 2);
     assert.equal(whaleTour.departureOptions[0].uid, "32331");

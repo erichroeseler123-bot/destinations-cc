@@ -20,6 +20,46 @@ import {
 
 const SITE = "https://www.lastfrontiershoreexcursions.com";
 
+function getDistinctCategoryTourCount(
+  activitySlug: string,
+  portExcursions: ReturnType<typeof getExcursionsByPort>,
+  liveFeedTours: Array<{
+    normalizedTourId: string;
+    activityCategory: string;
+    matchedViatorProductCode: string | null;
+    departureOptions?: Array<{ availableSpots: number | null }>;
+    availableSpots: number | null;
+  }>,
+): number {
+  const seenKeys = new Set<string>();
+  for (const ex of portExcursions) {
+    if (ex.activitySlug === activitySlug) {
+      seenKeys.add((ex.productId || ex.title).trim().toLowerCase());
+    }
+  }
+  for (const tour of liveFeedTours) {
+    const matchesActivity =
+      (activitySlug === "whale-watching" &&
+        (tour.activityCategory === "whale-watching" ||
+          tour.activityCategory === "combo-whale-glacier")) ||
+      (activitySlug === "mendenhall-glacier-tours" &&
+        (tour.activityCategory === "mendenhall-glacier-tours" ||
+          tour.activityCategory === "combo-whale-glacier")) ||
+      tour.activityCategory === activitySlug;
+    if (!matchesActivity) continue;
+    const hasPositive =
+      Array.isArray(tour.departureOptions) && tour.departureOptions.length > 0
+        ? tour.departureOptions.some(
+            (o) => typeof o.availableSpots === "number" && o.availableSpots > 0,
+          )
+        : typeof tour.availableSpots === "number" && tour.availableSpots > 0;
+    if (!hasPositive) continue;
+    const dedupKey = (tour.matchedViatorProductCode || tour.normalizedTourId).trim().toLowerCase();
+    seenKeys.add(dedupKey);
+  }
+  return seenKeys.size;
+}
+
 export function generateStaticParams() {
   return PORTS.map((port) => ({ slug: port.slug }));
 }
@@ -145,8 +185,8 @@ export default async function PortPage({
               <h1 style={{ marginTop: 6, marginBottom: 12 }}>{port.name} Shore Excursions</h1>
               <p className="lead" style={{ color: "#485b63", fontSize: "17px", marginBottom: 20 }}>{port.hook}</p>
               <div className="cta-row">
-                <a className="button" href={primaryBrowseUrl} target="_blank" rel="sponsored noopener noreferrer">
-                  Browse live tours on partner platforms →
+                <a className="button" href="#excursion-categories">
+                  Explore {port.name} excursions ↓
                 </a>
                 <a className="button secondary" href="#calculator">
                   Calculate {port.name} ship window
@@ -201,8 +241,78 @@ export default async function PortPage({
         </div>
       </section>
 
+      {/* Activity Clusters Cards (Before calculator & technical evidence) */}
+      <section className="section" id="excursion-categories" style={{ background: "#ffffff", padding: "32px 0" }}>
+        <div className="shell">
+          <h2>{port.name} Excursion Categories</h2>
+          <p className="lead" style={{ color: "var(--muted)" }}>
+            Choose an excursion category for timing breakdowns, return buffers, and available local operators in {port.name}:
+          </p>
+
+          <div className="grid" style={{ marginTop: 20 }}>
+            {activities.map((act) => {
+              const catCount = getDistinctCategoryTourCount(
+                act.slug,
+                portExcursions,
+                juneauNormalizedFeed?.tours ?? [],
+              );
+              return (
+                <Link className="card" href={`/${act.portSlug}/${act.slug}`} key={act.slug}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                    <span className="badge badge-safety" style={{ alignSelf: "flex-start" }}>
+                      {act.typicalDuration}
+                    </span>
+                    {catCount > 0 && (
+                      <span
+                        data-testid={`lfse-category-count-${act.slug}`}
+                        style={{ fontSize: "12.5px", fontWeight: 700, color: "var(--forest)", whiteSpace: "nowrap" }}
+                      >
+                        {catCount} {catCount === 1 ? "tour" : "tours"}
+                      </span>
+                    )}
+                  </div>
+                  <h3>{act.h1}</h3>
+                  <p>{act.metaDescription}</p>
+                  <div className="chips">
+                    <span className="chip">{act.returnMargin}</span>
+                    <span className="chip" style={{ color: act.weatherSensitivity === 'High' ? '#9e2323' : '#156d3a' }}>
+                      {act.weatherSensitivity} Sensitivity
+                    </span>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {juneauNormalizedFeed && (
+        <JuneauNormalizedSupplierFeedSection feed={juneauNormalizedFeed} />
+      )}
+
+      {/* Interactive Excursions Filter & Comparison */}
+      <section className="section" id="clusters" style={{ background: "#f8fbfb" }}>
+        <div className="shell">
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", marginBottom: 20 }}>
+            <div>
+              <p className="eyebrow" style={{ color: "var(--muted)" }}>Compare Port Excursions</p>
+              <h2>{port.name} Shore Excursion Directory</h2>
+            </div>
+            <span
+              data-testid="lfse-port-excursion-count"
+              style={{ fontSize: "14px", color: "var(--forest)", fontWeight: 700 }}
+            >
+              {portExcursions.length} {port.name} {portExcursions.length === 1 ? "excursion" : "excursions"}
+            </span>
+          </div>
+
+          <ExcursionFilters excursions={portExcursions} initialPort={slug as PortSlug} showPortFilter={false} />
+          <TrustDisclosure />
+        </div>
+      </section>
+
       {/* Dock & Tender Logistics Bar */}
-      <section className="section" style={{ background: "#ffffff", borderBottom: "1px solid var(--line)", padding: "28px 0" }}>
+      <section className="section" style={{ background: "#ffffff", borderTop: "1px solid var(--line)", borderBottom: "1px solid var(--line)", padding: "28px 0" }}>
         <div className="shell">
           <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}>
             <div>
@@ -255,69 +365,6 @@ export default async function PortPage({
         </div>
       </section>
 
-      {researchQualifications.length > 0 && (
-        <ApprovedResearchQualificationSection
-          portSlug={slug}
-          initialQualifications={researchQualifications}
-          initialLastSyncedAt={researchLoad?.lastSyncedAt ?? null}
-          blockedUmbrellaProducts={
-            slug === "ketchikan"
-              ? [...BLOCKED_KETCHIKAN_UMBRELLA_PRODUCTS]
-              : []
-          }
-        />
-      )}
-
-      {/* Interactive Excursions Filter & Comparison */}
-      <section className="section" id="clusters" style={{ background: "#f8fbfb" }}>
-        <div className="shell">
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", marginBottom: 20 }}>
-            <div>
-              <p className="eyebrow" style={{ color: "var(--muted)" }}>Compare Port Excursions</p>
-              <h2>{port.name} Shore Excursion Directory</h2>
-            </div>
-            <span style={{ fontSize: "14px", color: "var(--forest)", fontWeight: 700 }}>
-              {portExcursions.length} Curated Options
-            </span>
-          </div>
-
-          <ExcursionFilters excursions={portExcursions} initialPort={slug as PortSlug} showPortFilter={false} />
-          <TrustDisclosure />
-        </div>
-      </section>
-
-      {juneauNormalizedFeed && (
-        <JuneauNormalizedSupplierFeedSection feed={juneauNormalizedFeed} />
-      )}
-
-      {/* Activity Clusters Cards */}
-      <section className="section" style={{ background: "#ffffff" }}>
-        <div className="shell">
-          <h2>{port.name} Excursion Categories</h2>
-          <p className="lead" style={{ color: "var(--muted)" }}>
-            In-depth timing breakdowns, return buffers, and curated independent providers for every major {port.name} experience:
-          </p>
-
-          <div className="grid" style={{ marginTop: 24 }}>
-            {activities.map((act) => (
-              <Link className="card" href={`/${act.portSlug}/${act.slug}`} key={act.slug}>
-                <span className="badge badge-safety" style={{ alignSelf: "flex-start", marginBottom: 8 }}>
-                  {act.typicalDuration}
-                </span>
-                <h3>{act.h1}</h3>
-                <p>{act.metaDescription}</p>
-                <div className="chips">
-                  <span className="chip">{act.returnMargin}</span>
-                  <span className="chip" style={{ color: act.weatherSensitivity === 'High' ? '#9e2323' : '#156d3a' }}>
-                    {act.weatherSensitivity} Sensitivity
-                  </span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Weather Backup Section */}
       <section className="section" style={{ background: "#f8fbfb" }}>
         <div className="shell">
@@ -329,6 +376,38 @@ export default async function PortPage({
           </div>
         </div>
       </section>
+
+      {researchQualifications.length > 0 && (
+        <section className="section" style={{ background: "#ffffff", borderTop: "1px solid var(--line)", padding: "24px 0" }}>
+          <div className="shell">
+            <details
+              data-testid="lfse-port-research-methodology-details"
+              style={{
+                background: "#f8fbfb",
+                border: "1px solid var(--line)",
+                borderRadius: 10,
+                padding: "14px 18px",
+              }}
+            >
+              <summary style={{ cursor: "pointer", fontWeight: 700, fontSize: "15px", color: "var(--deep)" }}>
+                Research &amp; Operator Verification Methodology
+              </summary>
+              <div style={{ marginTop: 14 }}>
+                <ApprovedResearchQualificationSection
+                  portSlug={slug}
+                  initialQualifications={researchQualifications}
+                  initialLastSyncedAt={researchLoad?.lastSyncedAt ?? null}
+                  blockedUmbrellaProducts={
+                    slug === "ketchikan"
+                      ? [...BLOCKED_KETCHIKAN_UMBRELLA_PRODUCTS]
+                      : []
+                  }
+                />
+              </div>
+            </details>
+          </div>
+        </section>
+      )}
     </main>
   );
 }
