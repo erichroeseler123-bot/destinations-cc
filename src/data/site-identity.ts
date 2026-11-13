@@ -109,16 +109,6 @@ export function getOrganizationSchema() {
     additionalType: "https://schema.org/TravelAgency",
     disambiguatingDescription: SITE_IDENTITY.entityDisambiguation,
     knowsAbout: SITE_IDENTITY.knowsAbout,
-    subOrganization: {
-      "@type": "Organization",
-      "@id": "https://cruisepromenade.com/#organization",
-      name: "Cruise Promenade",
-      url: "https://cruisepromenade.com",
-      description: DCC_CANONICAL_RELATIONSHIP,
-      parentOrganization: {
-        "@id": "https://destinationcommandcenter.com/#organization",
-      },
-    },
   };
 }
 

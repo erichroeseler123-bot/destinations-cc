@@ -7,6 +7,7 @@ import {
   isValidAdminSession,
 } from "@/lib/adminAccess";
 import { buildOwnerControlCenterSnapshot } from "@/lib/dcc/ownerControlCenter";
+import { loadCrossSiteNetworkFunnelSummary } from "@/lib/dcc/telemetry/networkEvents";
 import CommissionReconcilePanel from "./CommissionReconcilePanel";
 import DirectOperatorPitchPanel from "./DirectOperatorPitchPanel";
 
@@ -44,7 +45,10 @@ export default async function OwnerControlCenterPage() {
     );
   }
 
-  const snapshot = await buildOwnerControlCenterSnapshot();
+  const [snapshot, crossSiteFunnel] = await Promise.all([
+    buildOwnerControlCenterSnapshot(),
+    loadCrossSiteNetworkFunnelSummary(30),
+  ]);
   const {
     dailyBusinessCockpit,
     triageQueue,
@@ -455,6 +459,49 @@ export default async function OwnerControlCenterPage() {
             className="rounded-2xl border border-emerald-400/30 bg-white/[0.03] p-5 space-y-4"
           >
             <h2 className="text-lg font-black text-white">{q6.question}</h2>
+
+            {/* Cross-Site Traffic Network Funnel (PARR + GoSno -> DCC -> Booking -> Cruise Promenade) */}
+            <div
+              data-testid="cross-site-network-funnel"
+              className="rounded-xl border border-cyan-400/25 bg-black/40 p-4 space-y-2"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="text-xs font-black uppercase tracking-wider text-cyan-300">
+                  Cross-Site Traffic Network Funnel ({crossSiteFunnel.windowDays}d)
+                </span>
+                <span className="font-mono text-[11px] text-zinc-400">
+                  {crossSiteFunnel.totalEvents} shared network events
+                </span>
+              </div>
+              <div className="grid gap-2 sm:grid-cols-6 text-xs">
+                <div className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2">
+                  <div className="text-[10px] text-zinc-400">PARR Visitors</div>
+                  <div className="font-mono font-bold text-white">{crossSiteFunnel.parrVisitors}</div>
+                </div>
+                <div className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2">
+                  <div className="text-[10px] text-zinc-400">GoSno Visitors</div>
+                  <div className="font-mono font-bold text-white">{crossSiteFunnel.gosnoVisitors}</div>
+                </div>
+                <div className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2">
+                  <div className="text-[10px] text-zinc-400">DCC Plans Opened</div>
+                  <div className="font-mono font-bold text-cyan-200">{crossSiteFunnel.dccPlanningSessions}</div>
+                </div>
+                <div className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2">
+                  <div className="text-[10px] text-zinc-400">Returned to Booking</div>
+                  <div className="font-mono font-bold text-emerald-200">{crossSiteFunnel.returnedToBooking}</div>
+                </div>
+                <div className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2">
+                  <div className="text-[10px] text-zinc-400">Completed Bookings</div>
+                  <div className="font-mono font-bold text-emerald-300">{crossSiteFunnel.completedBookings}</div>
+                </div>
+                <div className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2">
+                  <div className="text-[10px] text-zinc-400">CP Visits / Boards</div>
+                  <div className="font-mono font-bold text-white">
+                    {crossSiteFunnel.cruisePromenadeVisits} / {crossSiteFunnel.cruisePromenadeBoardsCreated}
+                  </div>
+                </div>
+              </div>
+            </div>
 
             <div className="grid gap-4 lg:grid-cols-3">
               {/* Milestone 1: Cruise Promenade 3 Organizers / 50 Passengers */}

@@ -246,7 +246,7 @@ export default async function PortPage({
         <div className="shell">
           <h2>{port.name} Excursion Categories</h2>
           <p className="lead" style={{ color: "var(--muted)" }}>
-            Choose an excursion category for timing breakdowns, return buffers, and available local operators in {port.name}:
+            Choose an excursion category for timing breakdowns, return buffers, and available local operators in {port.name}. Some excursions appear in more than one category.
           </p>
 
           <div className="grid" style={{ marginTop: 20 }}>
@@ -267,7 +267,7 @@ export default async function PortPage({
                         data-testid={`lfse-category-count-${act.slug}`}
                         style={{ fontSize: "12.5px", fontWeight: 700, color: "var(--forest)", whiteSpace: "nowrap" }}
                       >
-                        {catCount} {catCount === 1 ? "tour" : "tours"}
+                        {catCount} {catCount === 1 ? "matching excursion" : "matching excursions"}
                       </span>
                     )}
                   </div>

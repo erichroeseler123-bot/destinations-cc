@@ -48,6 +48,14 @@ export const EVENT_NAMES = [
   "support_opened",
   "certainty_cta_clicked",
   "entered_guided_flow",
+  "service_page_view",
+  "date_selected",
+  "availability_started",
+  "booking_handoff",
+  "network_handoff",
+  "dcc_plan_opened",
+  "cp_sailing_started",
+  "cp_board_created",
 ] as const;
 
 export const CorridorEventPayloadSchema = z.object({

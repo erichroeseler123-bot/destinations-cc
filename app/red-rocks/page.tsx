@@ -1,7 +1,8 @@
-import React from "react";
+import React, { Suspense } from "react";
 import type { Metadata } from "next";
 import RedRocksAuthorityPage from "@/app/components/dcc/RedRocksAuthorityPage";
 import { RedRocksConcertRidePlanner } from "@/app/components/dcc/RedRocksConcertRidePlanner";
+import ContextualSpecialistReturnBanner from "@/app/components/dcc/ContextualSpecialistReturnBanner";
 import TravelReferenceExperience from "@/app/components/dcc/TravelReferenceExperience";
 import JsonLd from "@/app/components/dcc/JsonLd";
 import { buildBreadcrumbJsonLd, buildEventVenueJsonLd } from "@/lib/dcc/jsonld";
@@ -77,6 +78,9 @@ export default async function RedRocksPage() {
       <React.Suspense fallback={null}>
         <RedRocksConcertRidePlanner />
       </React.Suspense>
+      <Suspense fallback={null}>
+        <ContextualSpecialistReturnBanner specialist="parr" />
+      </Suspense>
       {redRocksReference ? <TravelReferenceExperience node={redRocksReference} embedded /> : null}
       <RedRocksAuthorityPage
         eyebrow="DCC Red Rocks Hub"

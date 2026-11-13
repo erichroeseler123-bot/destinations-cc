@@ -1,6 +1,8 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import ContextualSpecialistReturnBanner from "@/app/components/dcc/ContextualSpecialistReturnBanner";
 import DecisionEngineTemplate from "@/app/components/dcc/DecisionEngineTemplate";
 import TravelReferenceExperience from "@/app/components/dcc/TravelReferenceExperience";
 import RideOptionsCard from "@/app/components/transportation/RideOptionsCard";
@@ -117,6 +119,11 @@ export default async function RouteDecisionPage({
         />
       ) : null}
       <div className="mx-auto max-w-6xl px-6 py-14 space-y-8">
+        {slug === "denver-breckenridge" ? (
+          <Suspense fallback={null}>
+            <ContextualSpecialistReturnBanner specialist="gosno" />
+          </Suspense>
+        ) : null}
         <DecisionEngineTemplate page={page} />
         {slug === "denver-red-rocks" ? (
           <RideOptionsCard
