@@ -62,11 +62,11 @@ export async function POST(req: NextRequest) {
   const redirectUrl = new URL(nextPath, req.url);
   if (!isValidAdminAccessKey(key)) {
     registerFailure(ip);
-    return NextResponse.redirect(redirectUrl);
+    return NextResponse.redirect(redirectUrl, 303);
   }
 
   clearFailures(ip);
-  const res = NextResponse.redirect(redirectUrl);
+  const res = NextResponse.redirect(redirectUrl, 303);
   res.cookies.set({
     name: ADMIN_SESSION_COOKIE,
     value: buildAdminSessionValue(),

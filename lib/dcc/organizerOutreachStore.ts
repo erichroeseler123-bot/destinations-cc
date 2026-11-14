@@ -800,7 +800,7 @@ function resolveOutreachDatabaseUrls(): string[] {
   const urls: string[] = [];
   for (const candidate of candidates) {
     const trimmed = (candidate || "").trim();
-    if (trimmed && !urls.includes(trimmed)) {
+    if (trimmed && /^postgres(ql)?:\/\//i.test(trimmed) && !urls.includes(trimmed)) {
       urls.push(trimmed);
       break;
     }

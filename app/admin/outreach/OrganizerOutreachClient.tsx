@@ -546,7 +546,7 @@ export default function OrganizerOutreachClient({
             <div
               key={lead.leadId}
               data-testid={`phone-queue-card-${lead.leadId}`}
-              className="flex flex-col justify-between rounded-xl border border-white/15 bg-black/55 p-4 space-y-3"
+              className="flex min-w-0 flex-col justify-between rounded-xl border border-white/15 bg-black/55 p-4 space-y-3"
             >
               <div className="space-y-1.5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
@@ -944,7 +944,7 @@ export default function OrganizerOutreachClient({
             <article
               key={lead.leadId}
               data-testid={`organizer-lead-card-${lead.leadId}`}
-              className="rounded-2xl border border-white/15 bg-white/[0.03] p-4 sm:p-6 space-y-4"
+              className="min-w-0 overflow-hidden rounded-2xl border border-white/15 bg-white/[0.03] p-4 sm:p-6 space-y-4"
             >
               {/* Header: 1. Name & Phone + 3. Qualification Status + 5. Call/Email Status */}
               <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
@@ -1043,7 +1043,7 @@ export default function OrganizerOutreachClient({
               {/* Core Details Grid: Contact, Hosted Cruise & Sailing, Qualification, What Value to Pitch */}
               <div className="grid gap-3 lg:grid-cols-3">
                 {/* Col 1: Name, Phone, Email & Channel */}
-                <div className="rounded-xl border border-white/10 bg-black/40 p-3.5 space-y-2">
+                <div className="min-w-0 rounded-xl border border-white/10 bg-black/40 p-3.5 space-y-2">
                   <div className="text-[10px] font-black uppercase tracking-wider text-zinc-400">
                     1. Name, Phone &amp; Verified Channels
                   </div>
@@ -1092,7 +1092,7 @@ export default function OrganizerOutreachClient({
                 </div>
 
                 {/* Col 2: Hosted Cruise & Sailing + Qualification Status */}
-                <div className="rounded-xl border border-white/10 bg-black/40 p-3.5 space-y-2">
+                <div className="min-w-0 rounded-xl border border-white/10 bg-black/40 p-3.5 space-y-2">
                   <div className="text-[10px] font-black uppercase tracking-wider text-zinc-400">
                     2. Hosted Cruise, Sailing &amp; Qualification
                   </div>
@@ -1141,7 +1141,7 @@ export default function OrganizerOutreachClient({
                 </div>
 
                 {/* Col 3: What Value to Pitch */}
-                <div className="rounded-xl border border-white/10 bg-black/40 p-3.5 space-y-2">
+                <div className="min-w-0 rounded-xl border border-white/10 bg-black/40 p-3.5 space-y-2">
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-[10px] font-black uppercase tracking-wider text-zinc-400">
                       4. What Value to Pitch
@@ -1194,9 +1194,9 @@ export default function OrganizerOutreachClient({
 
               {/* Expandable Full Call/Text Script & Email Draft */}
               {isPitchExpanded ? (
-                <div className="grid gap-3 rounded-xl border border-cyan-400/25 bg-zinc-950/90 p-3.5 lg:grid-cols-2">
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between gap-2">
+                <div className="grid min-w-0 gap-3 rounded-xl border border-cyan-400/25 bg-zinc-950/90 p-3.5 lg:grid-cols-2">
+                  <div className="min-w-0 space-y-1.5">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
                       <span className="text-[11px] font-bold text-cyan-200">
                         Phone / SMS Script
                       </span>
@@ -1208,21 +1208,21 @@ export default function OrganizerOutreachClient({
                             lead.phoneOrTextScript,
                           )
                         }
-                        className="text-[11px] font-semibold text-emerald-300 hover:underline"
+                        className="shrink-0 text-[11px] font-semibold text-emerald-300 hover:underline"
                       >
                         {copiedKey === `full_script_${lead.leadId}`
                           ? "Copied ✓"
                           : "Copy"}
                       </button>
                     </div>
-                    <pre className="whitespace-pre-wrap break-words rounded-lg border border-white/10 bg-black/60 p-3 font-sans text-xs leading-relaxed text-zinc-200">
+                    <pre className="max-w-full whitespace-pre-wrap break-all rounded-lg border border-white/10 bg-black/60 p-3 font-sans text-xs leading-relaxed text-zinc-200">
                       {lead.phoneOrTextScript}
                     </pre>
                   </div>
 
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-[11px] font-bold text-sky-200">
+                  <div className="min-w-0 space-y-1.5">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="min-w-0 break-words text-[11px] font-bold text-sky-200">
                         Email Draft — Subject: {lead.emailSubject}
                       </span>
                       <button
@@ -1233,14 +1233,14 @@ export default function OrganizerOutreachClient({
                             `Subject: ${lead.emailSubject}\n\n${lead.emailBody}`,
                           )
                         }
-                        className="text-[11px] font-semibold text-emerald-300 hover:underline"
+                        className="shrink-0 text-[11px] font-semibold text-emerald-300 hover:underline"
                       >
                         {copiedKey === `full_email_${lead.leadId}`
                           ? "Copied ✓"
                           : "Copy Subject + Body"}
                       </button>
                     </div>
-                    <pre className="max-h-52 overflow-y-auto whitespace-pre-wrap break-words rounded-lg border border-white/10 bg-black/60 p-3 font-sans text-xs leading-relaxed text-zinc-200">
+                    <pre className="max-h-52 max-w-full overflow-y-auto whitespace-pre-wrap break-all rounded-lg border border-white/10 bg-black/60 p-3 font-sans text-xs leading-relaxed text-zinc-200">
                       {lead.emailBody}
                     </pre>
                   </div>
@@ -1248,10 +1248,10 @@ export default function OrganizerOutreachClient({
               ) : null}
 
               {/* Editable CRM Controls: 5. Call/Email Status, 6. Follow-Up Date, 8. Board Created, 9. Travelers Joined, 7. Notes */}
-              <div className="rounded-xl border border-white/10 bg-black/50 p-3.5 space-y-3">
+              <div className="min-w-0 rounded-xl border border-white/10 bg-black/50 p-3.5 space-y-3">
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
                   {/* 5. Call/Email Status */}
-                  <label className="space-y-1 text-xs">
+                  <label className="min-w-0 space-y-1 text-xs">
                     <span className="font-bold text-zinc-300">
                       5. Call / Email Status
                     </span>
@@ -1281,7 +1281,7 @@ export default function OrganizerOutreachClient({
                   </label>
 
                   {/* 3b. Qualification Status Override */}
-                  <label className="space-y-1 text-xs">
+                  <label className="min-w-0 space-y-1 text-xs">
                     <span className="font-bold text-zinc-300">
                       3. Qualification Status
                     </span>
@@ -1318,7 +1318,7 @@ export default function OrganizerOutreachClient({
                   </label>
 
                   {/* 6. Follow-Up Date */}
-                  <div className="space-y-1 text-xs">
+                  <div className="min-w-0 space-y-1 text-xs">
                     <span className="font-bold text-zinc-300 block">
                       6. Follow-Up Date
                     </span>
@@ -1374,7 +1374,7 @@ export default function OrganizerOutreachClient({
                   </div>
 
                   {/* 8. Board Created */}
-                  <div className="space-y-1 text-xs">
+                  <div className="min-w-0 space-y-1 text-xs">
                     <span className="font-bold text-zinc-300 block">
                       8. Board Created
                     </span>
@@ -1424,7 +1424,7 @@ export default function OrganizerOutreachClient({
                   </div>
 
                   {/* 9. Travelers Joined */}
-                  <label className="space-y-1 text-xs">
+                  <label className="min-w-0 space-y-1 text-xs">
                     <span className="font-bold text-zinc-300">
                       9. Travelers Joined
                     </span>

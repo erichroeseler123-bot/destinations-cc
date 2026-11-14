@@ -25,8 +25,8 @@ export default async function OrganizerOutreachAdminPage() {
   const initialSnapshot = await getOrganizerOutreachDashboard();
 
   return (
-    <main className="min-h-screen bg-zinc-950 text-white">
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10">
+    <main className="min-h-screen overflow-x-clip bg-zinc-950 text-white">
+      <div className="mx-auto max-w-7xl min-w-0 px-4 py-8 sm:px-6 sm:py-10">
         <header className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-widest text-emerald-300">
