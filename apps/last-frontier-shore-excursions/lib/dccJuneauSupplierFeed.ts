@@ -496,6 +496,7 @@ export async function loadLfseJuneauNormalizedSupplierFeed(options?: {
             verifiedCompanyName?: string | null;
             verifiedRezgoDomain?: string | null;
             currency?: string;
+            liveDirectRezgoCheckoutEnabled?: boolean;
             tours?: Array<Omit<LfseNormalizedJuneauSupplierTour, "trackedFallbackHref">>;
             supplierConflicts?: LfseSupplierConflictSummary[];
           };
