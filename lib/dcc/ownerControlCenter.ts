@@ -36,6 +36,7 @@ import {
   CRUISE_PROMENADE_LAUNCH_EPOCH_ISO,
   type CruisePromenadeConversionFunnelSummary,
 } from "@/lib/dcc/telemetry/cruisePromenadeFunnel";
+import { getOrganizerOutreachDashboard } from "@/lib/dcc/organizerOutreachStore";
 import type { DccCorridorEventRow } from "@/lib/db/schema";
 
 export type RemoteOwnerSummaryStatus = "live" | "pending_deploy" | "unconfigured" | "error";
@@ -270,6 +271,21 @@ export interface DailyBusinessCockpit {
       pendingReviewApplicationsCount: number;
       onboardingPortalHref: "/partners/direct-operators";
       markets: DirectMarketOperatorSlot[];
+    };
+    organizerOutreachQueue: {
+      outreachHref: "/admin/outreach";
+      totalLeadsCount: number;
+      phoneLeadsCount: number;
+      qualifiedReadyCount: number;
+      outreachSentLeadsCount: number;
+      followUpsDueCount: number;
+      boardsCreatedCount: number;
+      travelersJoinedCount: number;
+      topImmediateCallLead: {
+        leadName: string;
+        phone: string | null;
+        statusLabel: string;
+      } | null;
     };
     sereneRezgoConnection: SereneRezgoReadinessStatus;
   };
@@ -1627,6 +1643,15 @@ export async function buildOwnerControlCenterSnapshot(
     (a) => a.reviewQueueState === "pending_review",
   ).length;
 
+  const organizerOutreach = await getOrganizerOutreachDashboard({
+    corridorEventsOverride: corridorEvents,
+  });
+  const topPhoneLead =
+    organizerOutreach.leads.find((l) => Boolean(l.phone) && !l.hasSentOutreach) ||
+    organizerOutreach.leads.find((l) => Boolean(l.phone)) ||
+    organizerOutreach.leads[0] ||
+    null;
+
   const dailyBusinessCockpit: DailyBusinessCockpit = {
     didWeMakeMoney: {
       question: "1. Did we make money?",
@@ -1737,6 +1762,23 @@ export async function buildOwnerControlCenterSnapshot(
         pendingReviewApplicationsCount: pendingReviewAppsTotal,
         onboardingPortalHref: "/partners/direct-operators",
         markets: directMarkets,
+      },
+      organizerOutreachQueue: {
+        outreachHref: "/admin/outreach",
+        totalLeadsCount: organizerOutreach.kpis.totalLeadsCount,
+        phoneLeadsCount: organizerOutreach.kpis.phoneLeadsCount,
+        qualifiedReadyCount: organizerOutreach.kpis.qualifiedReadyCount,
+        outreachSentLeadsCount: organizerOutreach.kpis.outreachSentLeadsCount,
+        followUpsDueCount: organizerOutreach.kpis.followUpsDueCount,
+        boardsCreatedCount: organizerOutreach.kpis.boardsCreatedCount,
+        travelersJoinedCount: organizerOutreach.kpis.travelersJoinedCount,
+        topImmediateCallLead: topPhoneLead
+          ? {
+              leadName: topPhoneLead.leadName,
+              phone: topPhoneLead.phone,
+              statusLabel: topPhoneLead.outreachStatusLabel,
+            }
+          : null,
       },
       sereneRezgoConnection: sereneRezgo,
     },

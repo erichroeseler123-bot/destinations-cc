@@ -74,6 +74,12 @@ export default async function AdminLayout({ children }: { children: ReactNode })
               Operator Inbox
             </Link>
             <Link
+              href="/admin/outreach"
+              className="rounded-lg border border-sky-400/40 bg-sky-500/15 px-2.5 py-1 font-semibold text-sky-200 hover:bg-sky-500/25 hover:text-white"
+            >
+              Organizer Outreach
+            </Link>
+            <Link
               href="/admin/portfolio"
               className="rounded-lg border border-cyan-400/30 bg-cyan-500/10 px-2.5 py-1 font-semibold text-cyan-200 hover:bg-cyan-500/20 hover:text-white"
             >

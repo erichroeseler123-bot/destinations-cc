@@ -517,6 +517,44 @@ export default async function OwnerControlCenterPage() {
               </div>
             </div>
 
+            {/* Actionable Hosted-Cruise Organizer Call & Email Strip */}
+            <div
+              data-testid="q6-organizer-outreach-strip"
+              className="flex flex-col gap-3 rounded-xl border border-sky-400/35 bg-sky-500/[0.08] p-4 sm:flex-row sm:items-center sm:justify-between"
+            >
+              <div className="space-y-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-xs font-black uppercase tracking-wider text-sky-200">
+                    Hosted-Cruise Organizer Leads &amp; Call Queue
+                  </span>
+                  <span className="rounded-full border border-sky-400/40 bg-black/40 px-2.5 py-0.5 font-mono text-[11px] font-bold text-white">
+                    {q6.organizerOutreachQueue.outreachSentLeadsCount}/
+                    {q6.organizerOutreachQueue.totalLeadsCount} contacted ·{" "}
+                    {q6.organizerOutreachQueue.phoneLeadsCount} phone leads ·{" "}
+                    {q6.organizerOutreachQueue.qualifiedReadyCount} pages live
+                  </span>
+                </div>
+                {q6.organizerOutreachQueue.topImmediateCallLead ? (
+                  <p className="text-xs text-zinc-200">
+                    <strong>First immediate call:</strong>{" "}
+                    {q6.organizerOutreachQueue.topImmediateCallLead.leadName}
+                    {q6.organizerOutreachQueue.topImmediateCallLead.phone
+                      ? ` — ${q6.organizerOutreachQueue.topImmediateCallLead.phone}`
+                      : ""}{" "}
+                    <span className="text-zinc-400">
+                      ({q6.organizerOutreachQueue.topImmediateCallLead.statusLabel})
+                    </span>
+                  </p>
+                ) : null}
+              </div>
+              <Link
+                href={q6.organizerOutreachQueue.outreachHref}
+                className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-xl bg-sky-300 px-4 py-2 text-xs font-black text-zinc-950 hover:bg-sky-200"
+              >
+                Open Organizer Outreach →
+              </Link>
+            </div>
+
             <div className="grid gap-4 lg:grid-cols-3">
               {/* Milestone 1: Cruise Promenade 3 Organizers / 50 Passengers */}
               <div className="rounded-xl border border-white/10 bg-black/40 p-4 space-y-2">
@@ -540,6 +578,12 @@ export default async function OwnerControlCenterPage() {
                   Cohort epoch: <code>{q6.cruisePromenadeLaunch.launchCohortEpochIso}</code> ({q6.cruisePromenadeLaunch.preLaunchHistoricalBoardsExcludedCount} pre-launch system boards / {q6.cruisePromenadeLaunch.preLaunchHistoricalGuestsExcludedCount} pax frozen &amp; never counted as adoption).
                 </p>
                 <div className="flex flex-wrap gap-2 pt-1 text-xs">
+                  <Link
+                    href="/admin/outreach"
+                    className="rounded-lg border border-sky-400/45 bg-sky-500/20 px-2.5 py-1 font-bold text-sky-100 hover:bg-sky-500/30"
+                  >
+                    Organizer Leads ({q6.organizerOutreachQueue.phoneLeadsCount} Phone) →
+                  </Link>
                   <a
                     href={q6.cruisePromenadeLaunch.groupsLaunchpadUrl}
                     target="_blank"
