@@ -27,6 +27,8 @@ const APPROVED_OUTBOUND_HOSTS = new Set([
   "allenmarine.com",
   "www.juneautours.com",
   "juneautours.com",
+  "juneauwhalewatch.rezgo.com",
+  "juneautours.rezgo.com",
   "coastalhelicopters.com",
   "www.coastalhelicopters.com",
   "juneauflightdeck.com",
@@ -166,12 +168,13 @@ export async function GET(request: Request) {
 
   const incomingPid = parsedTarget.searchParams.get("pid");
   const incomingAsn = parsedTarget.searchParams.get("asn");
+  const incomingRefId = parsedTarget.searchParams.get("refid");
   const providerAccount =
     provider === "viator"
       ? incomingPid && incomingPid !== "P00290915"
         ? incomingPid
         : process.env.NEXT_PUBLIC_VIATOR_PID || "P00306962"
-      : incomingAsn || null;
+      : incomingRefId || incomingAsn || null;
 
   if (provider === "viator") {
     parsedTarget.searchParams.set("pid", providerAccount || "P00306962");

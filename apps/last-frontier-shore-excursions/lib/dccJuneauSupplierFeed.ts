@@ -148,9 +148,12 @@ export interface LfseJuneauBookingProviderIdentity {
   verifiedRezgoCompanyName: string | null;
   verifiedRezgoDomain: string | null;
   rezgoCom: string | null;
-  activeCheckoutProvider: "viator_approved_fallback" | "none_held_pending_mapping";
+  activeCheckoutProvider:
+    | "rezgo_operator_hosted"
+    | "viator_approved_fallback"
+    | "none_held_pending_mapping";
   fallbackProductCode: string | null;
-  liveDirectRezgoCheckoutEnabled: false;
+  liveDirectRezgoCheckoutEnabled: boolean;
   checkoutDisclosure: string;
 }
 
@@ -208,7 +211,7 @@ export interface LfseNormalizedJuneauSupplierTour {
   matchedViatorProductCode: string | null;
   approvedFallbackViatorUrl: string | null;
   trackedFallbackHref: string | null;
-  liveDirectRezgoCheckoutEnabled: false;
+  liveDirectRezgoCheckoutEnabled: boolean;
   isolatedSecondaryProperty: true;
   influencesPrimaryDccRanking: false;
 }
@@ -244,7 +247,7 @@ export interface LfseJuneauNormalizedFeedResult {
   timingSafetyClassification: "live_operator_availability_only";
   verifiedCruiseSafeTiming: false;
   readOnly: true;
-  liveDirectRezgoCheckoutEnabled: false;
+  liveDirectRezgoCheckoutEnabled: boolean;
   verifiedCompanyName: string | null;
   verifiedRezgoDomain: string | null;
   currency: string;
@@ -359,9 +362,8 @@ function buildFallbackOnlyResult(params: {
  *   requests even when DCC's dynamic API endpoint sets `Cache-Control: no-store`.
  * - Rezgo results are strictly labeled as live operator availability (`verifiedCruiseSafeTiming: false`)
  *   and never as verified cruise-safe timing.
- * - Direct Rezgo checkout remains disabled (`liveDirectRezgoCheckoutEnabled: false`); any outbound
- *   booking CTA routes strictly to Last Frontier's approved Viator affiliate fallback (`P00281144`)
- *   only when an approved 5857* SKU is matched.
+ * - Direct Rezgo checkout is consumed only when DCC's authenticated commercial gates expose an
+ *   allowlisted operator-hosted URL; otherwise the existing approved Viator fallback remains active.
  * - If DCC or Rezgo is unavailable, fails open cleanly (`fallbackActive: true`, `tours: []`) so
  *   all existing approved Last Frontier pages and Viator offers continue operating unchanged.
  */
@@ -607,7 +609,7 @@ export async function loadLfseJuneauNormalizedSupplierFeed(options?: {
             t.cruiseTimingStatusLabel ||
             "Needs verification · Live operator availability · Cruise-safe timing unverified",
           trackedFallbackHref,
-          liveDirectRezgoCheckoutEnabled: false,
+          liveDirectRezgoCheckoutEnabled: Boolean(t.liveDirectRezgoCheckoutEnabled),
           isolatedSecondaryProperty: true,
           influencesPrimaryDccRanking: false,
         };
@@ -642,7 +644,7 @@ export async function loadLfseJuneauNormalizedSupplierFeed(options?: {
         timingSafetyClassification: "live_operator_availability_only",
         verifiedCruiseSafeTiming: false,
         readOnly: true,
-        liveDirectRezgoCheckoutEnabled: false,
+        liveDirectRezgoCheckoutEnabled: Boolean(upstream.liveDirectRezgoCheckoutEnabled),
         verifiedCompanyName: upstream.verifiedCompanyName ?? null,
         verifiedRezgoDomain: upstream.verifiedRezgoDomain ?? null,
         currency: upstream.currency || "USD",
@@ -1142,7 +1144,9 @@ export function buildLfsePublicJuneauAvailabilityView(
               true,
             )
           : null);
-      const checkoutHref = baseTrackedHref;
+      const checkoutHref = tour.liveDirectRezgoCheckoutEnabled
+        ? opt.dccCommerceWrapperHref || tour.dccCommerceWrapperHref || baseTrackedHref
+        : baseTrackedHref;
 
       const planQs = new URLSearchParams();
       planQs.set("title", tour.title);
@@ -1170,7 +1174,12 @@ export function buildLfsePublicJuneauAvailabilityView(
         planQs.set("productCode", tour.matchedViatorProductCode);
         planQs.set("matchedViatorProductCode", tour.matchedViatorProductCode);
         planQs.set("fallbackProductCode", tour.matchedViatorProductCode);
-        planQs.set("bookingProviderIdentity", "Checkout via Viator");
+        planQs.set(
+          "bookingProviderIdentity",
+          tour.liveDirectRezgoCheckoutEnabled
+            ? "Direct checkout with Juneau Tours"
+            : "Checkout via Viator",
+        );
       }
       if (opt.rezgoCom ?? tour.rezgoCom) {
         planQs.set("rezgoCom", String(opt.rezgoCom ?? tour.rezgoCom));
@@ -1298,7 +1307,11 @@ export function buildLfsePublicJuneauAvailabilityView(
       doesNotFitShipDayTimes,
       checkoutAvailable,
       checkoutCtaLabel: "Book this tour",
-      checkoutProviderLabel: checkoutAvailable ? "Checkout via Viator" : null,
+      checkoutProviderLabel: checkoutAvailable
+        ? tour.liveDirectRezgoCheckoutEnabled
+          ? "Direct checkout with Juneau Tours"
+          : "Checkout via Viator"
+        : null,
       addToGroupPlanLabel: "Add to our cruise plan",
     });
   }

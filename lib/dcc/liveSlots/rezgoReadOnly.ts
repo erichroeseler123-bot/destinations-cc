@@ -10,11 +10,11 @@
  *    payment, cancellation, or customer-message instructions exist in this module.
  * 3. Property isolation (`isolatedSecondaryProperty: true`, `influencesPrimaryDccRanking: false`)
  *    is hard-pinned in code so Serene's inventory remains isolated and secondary as promised.
- * 4. Live customer booking remains hard-locked (`liveBookingAllowed: false`) until ALL five
- *    upstream gates are explicitly confirmed (`credentials_stored_securely`,
- *    `readonly_inventory_inspected`, `dcc_product_mapping_verified`,
- *    `written_commission_ownership_confirmed`, `non_customer_booking_flow_tested`) AND
- *    `REZGO_SERENE_LIVE_BOOKING_ENABLED=true`.
+ * 4. Operator-hosted checkout never creates a Rezgo booking through DCC: Juneau Tours remains
+ *    merchant of record and receives customer funds. It requires verified mapping, written
+ *    commission terms, an alphanumeric Ref ID, and `REZGO_SERENE_DIRECT_HOSTED_CHECKOUT_ENABLED`.
+ *    The separate DCC-created API booking path remains hard-locked behind its reversible
+ *    non-customer test and `REZGO_SERENE_LIVE_BOOKING_ENABLED=true`.
  */
 
 import { appendViatorAttribution } from "@/lib/viator/links";
@@ -25,6 +25,7 @@ export type SereneRezgoGateStage =
   | "readonly_inspected_awaiting_mapping_and_written_commission"
   | "awaiting_non_customer_booking_test"
   | "ready_for_isolated_live_enablement"
+  | "direct_hosted_checkout_live_operator_mor"
   | "live_isolated_secondary";
 
 export interface SereneRezgoReadinessStatus {
@@ -34,12 +35,28 @@ export interface SereneRezgoReadinessStatus {
   isolatedSecondaryProperty: true;
   influencesPrimaryDccRanking: false;
   stage: SereneRezgoGateStage;
+  directHostedCommercialModel: {
+    merchantOfRecord: "operator";
+    customerFundsCapturedByDccOrCp: false;
+    settlementMode: "operator_mor_platform_invoices_commission";
+    commissionPercent: 10;
+    commissionEarnedOn: "completed_non_refunded_bookings";
+    noCommissionEvents: readonly [
+      "cancelled",
+      "refunded",
+      "disputed",
+      "chargeback",
+      "not_successfully_fulfilled",
+    ];
+  };
+  directHostedCheckoutAllowed: boolean;
   liveBookingAllowed: boolean;
   gates: {
     credentialsStoredSecurelyInEnv: boolean;
     readOnlyInventoryInspected: boolean;
     dccProductMappingVerified: boolean;
     writtenCommissionOwnershipConfirmed: boolean;
+    directHostedCheckoutToggleEnabled: boolean;
     nonCustomerTestBookingVerified: boolean;
     liveBookingToggleEnabled: boolean;
   };
@@ -109,7 +126,7 @@ export interface RezgoProductCrossSurfaceReconciliation {
   supplierConflictNote: string;
   activeSafeBookingFallbackProductCode: string | null;
   activeSafeBookingFallbackUrl: string | null;
-  liveDirectRezgoCheckoutEnabled: false;
+  liveDirectRezgoCheckoutEnabled: boolean;
 }
 
 export interface SupplierIdentityConflictReport {
@@ -315,9 +332,12 @@ export interface JuneauBookingProviderIdentity {
   verifiedRezgoCompanyName: string | null;
   verifiedRezgoDomain: string | null;
   rezgoCom: string | null;
-  activeCheckoutProvider: "viator_approved_fallback" | "none_held_pending_mapping";
+  activeCheckoutProvider:
+    | "rezgo_operator_hosted"
+    | "viator_approved_fallback"
+    | "none_held_pending_mapping";
   fallbackProductCode: string | null;
-  liveDirectRezgoCheckoutEnabled: false;
+  liveDirectRezgoCheckoutEnabled: boolean;
   checkoutDisclosure: string;
 }
 
@@ -366,7 +386,7 @@ export interface NormalizedJuneauSupplierTour {
   matchConfidence: "high_exact_code" | "medium_title_and_operator" | "unmatched_rezgo_only";
   matchedViatorProductCode: string | null;
   approvedFallbackViatorUrl: string | null;
-  liveDirectRezgoCheckoutEnabled: false;
+  liveDirectRezgoCheckoutEnabled: boolean;
   isolatedSecondaryProperty: true;
   influencesPrimaryDccRanking: false;
 }
@@ -403,7 +423,7 @@ export interface NormalizedJuneauSupplierFeed {
     ];
   };
   readOnly: true;
-  liveDirectRezgoCheckoutEnabled: false;
+  liveDirectRezgoCheckoutEnabled: boolean;
   isolatedSecondaryProperty: true;
   influencesPrimaryDccRanking: false;
   rezgoStatus: RezgoReadOnlyInspectionResult["status"];
@@ -460,6 +480,100 @@ const APPROVED_JUNEAU_5857_VIATOR_CATALOG: Record<
     durationMinutes: 270,
   },
 };
+
+const SERENE_DIRECT_HOSTED_PRODUCTS: Record<
+  string,
+  { matchedViatorProductCode: string; hostedSeoSlug: string }
+> = {
+  "32329": {
+    matchedViatorProductCode: "5857P22",
+    hostedSeoSlug: "mendenhall-glacier-juneau-whale-watching-combo-tour",
+  },
+  "31703": {
+    matchedViatorProductCode: "5857P23",
+    hostedSeoSlug: "juneau-whale-watch-tour",
+  },
+  "344494": {
+    matchedViatorProductCode: "5857SHUTTLE",
+    hostedSeoSlug: "glacier-shuttle-tour",
+  },
+  "141714": {
+    matchedViatorProductCode: "5857P31",
+    hostedSeoSlug: "juneau-whale-watching-tracys-crab-shack-combo-tour",
+  },
+};
+
+const APPROVED_JUNEAU_REZGO_HOSTED_DOMAINS = new Set([
+  "juneauwhalewatch.rezgo.com",
+  "juneautours.rezgo.com",
+]);
+
+function resolveApprovedJuneauRezgoHostedDomain(
+  rawDomain: string | null | undefined,
+): string | null {
+  const cleaned = (rawDomain || "juneauwhalewatch.rezgo.com")
+    .trim()
+    .toLowerCase()
+    .replace(/^https?:\/\//, "")
+    .replace(/\/.*$/, "");
+  const candidate = cleaned.includes(".") ? cleaned : `${cleaned}.rezgo.com`;
+  return APPROVED_JUNEAU_REZGO_HOSTED_DOMAINS.has(candidate) ? candidate : null;
+}
+
+export function buildDirectJuneauRezgoHostedCheckoutUrl(params: {
+  domain?: string | null;
+  rezgoCom: string;
+  optionUid: string;
+  serviceDate: string | null;
+  partySize?: number | null;
+  refId?: string | null;
+}): string | null {
+  const host = resolveApprovedJuneauRezgoHostedDomain(params.domain);
+  const product = SERENE_DIRECT_HOSTED_PRODUCTS[params.rezgoCom];
+  const refId = (params.refId || "").trim();
+  if (!host || !product || !/^[A-Za-z0-9]+$/.test(refId)) return null;
+  if (!/^\d+$/.test(params.optionUid)) return null;
+
+  const dateSegment =
+    params.serviceDate && /^\d{4}-\d{2}-\d{2}$/.test(params.serviceDate)
+      ? `/${params.serviceDate}`
+      : "";
+  const url = new URL(
+    `https://${host}/details/${params.rezgoCom}/${product.hostedSeoSlug}/${params.optionUid}${dateSegment}`,
+  );
+  url.searchParams.set("refid", refId);
+  if (
+    typeof params.partySize === "number" &&
+    Number.isFinite(params.partySize) &&
+    params.partySize >= 1
+  ) {
+    url.searchParams.set("adult_num", String(Math.min(99, Math.trunc(params.partySize))));
+  }
+  return url.toString();
+}
+
+function buildDirectJuneauRezgoDccWrapperHref(params: {
+  directRezgoUrl: string;
+  productCode: string;
+  optionRef: string;
+  serviceDate: string | null;
+  partySize?: number | null;
+}): string {
+  const wrapper = new URL("https://www.destinationcommandcenter.com/go/out");
+  wrapper.searchParams.set("u", params.directRezgoUrl);
+  wrapper.searchParams.set("originatingSite", "destinationcommandcenter.com");
+  wrapper.searchParams.set("surface", "dcc_juneau_rezgo_direct_checkout");
+  wrapper.searchParams.set("port", "juneau");
+  wrapper.searchParams.set("product", params.productCode);
+  wrapper.searchParams.set("option", params.optionRef);
+  if (params.serviceDate) wrapper.searchParams.set("date", params.serviceDate);
+  if (params.partySize) wrapper.searchParams.set("partySize", String(params.partySize));
+  wrapper.searchParams.set(
+    "trackingTag",
+    `dcc_juneau_rezgo_direct_${params.productCode.toLowerCase()}_${params.optionRef}`,
+  );
+  return wrapper.toString();
+}
 
 function isTruthyFlag(value: string | undefined): boolean {
   const norm = (value || "").trim().toLowerCase();
@@ -931,6 +1045,12 @@ export function getSereneRezgoReadinessStatus(
   const writtenCommissionOwnershipConfirmed =
     readOnlyInventoryInspected &&
     isTruthyFlag(env.REZGO_SERENE_WRITTEN_COMMISSION_CONFIRMED);
+  const refId = (env.REZGO_SERENE_REFID || "").trim();
+  const directHostedCheckoutToggleEnabled =
+    dccProductMappingVerified &&
+    writtenCommissionOwnershipConfirmed &&
+    /^[A-Za-z0-9]+$/.test(refId) &&
+    isTruthyFlag(env.REZGO_SERENE_DIRECT_HOSTED_CHECKOUT_ENABLED);
   const nonCustomerTestBookingVerified =
     dccProductMappingVerified &&
     writtenCommissionOwnershipConfirmed &&
@@ -947,6 +1067,10 @@ export function getSereneRezgoReadinessStatus(
     stage = "live_isolated_secondary";
     nextActionLabel =
       "Live isolated Rezgo connection active (secondary property boundary enforced).";
+  } else if (directHostedCheckoutToggleEnabled) {
+    stage = "direct_hosted_checkout_live_operator_mor";
+    nextActionLabel =
+      "Direct Rezgo checkout active: Juneau Tours collects customer payment; DCC/CP invoices 10% only on completed, non-refunded attributed bookings.";
   } else if (nonCustomerTestBookingVerified) {
     stage = "ready_for_isolated_live_enablement";
     nextActionLabel =
@@ -972,12 +1096,28 @@ export function getSereneRezgoReadinessStatus(
     isolatedSecondaryProperty: true,
     influencesPrimaryDccRanking: false,
     stage,
+    directHostedCommercialModel: {
+      merchantOfRecord: "operator",
+      customerFundsCapturedByDccOrCp: false,
+      settlementMode: "operator_mor_platform_invoices_commission",
+      commissionPercent: 10,
+      commissionEarnedOn: "completed_non_refunded_bookings",
+      noCommissionEvents: [
+        "cancelled",
+        "refunded",
+        "disputed",
+        "chargeback",
+        "not_successfully_fulfilled",
+      ],
+    },
+    directHostedCheckoutAllowed: directHostedCheckoutToggleEnabled,
     liveBookingAllowed: liveBookingToggleEnabled,
     gates: {
       credentialsStoredSecurelyInEnv,
       readOnlyInventoryInspected,
       dccProductMappingVerified,
       writtenCommissionOwnershipConfirmed,
+      directHostedCheckoutToggleEnabled,
       nonCustomerTestBookingVerified,
       liveBookingToggleEnabled,
     },
@@ -1877,6 +2017,9 @@ export async function buildNormalizedJuneauSupplierFeed(options?: {
   ttlMs?: number;
   bypassCache?: boolean;
 }): Promise<NormalizedJuneauSupplierFeed> {
+  const effectiveEnv = options?.env ?? process.env;
+  const readiness = getSereneRezgoReadinessStatus(effectiveEnv);
+  const directRefId = (effectiveEnv.REZGO_SERENE_REFID || "").trim();
   const { result: inspection, cacheMeta } = await getCachedSereneRezgoInspectionWithMeta({
     env: options?.env,
     fetchImpl: options?.fetchImpl,
@@ -1981,7 +2124,13 @@ export async function buildNormalizedJuneauSupplierFeed(options?: {
   const allNormalizedTours: NormalizedJuneauSupplierTour[] = Array.from(grouped.values()).map(
     (entry) => {
       const matchedCode = entry.rec?.matchedDccCatalogProductCode ?? null;
-      const productSliceKey = `rezgo:juneau-tours-whale-watch:${matchedCode || entry.com || entry.primaryUid}:${cacheMeta.serviceDateKey}`;
+      const directSpec = entry.com ? SERENE_DIRECT_HOSTED_PRODUCTS[entry.com] : null;
+      const tourDirectEnabled = Boolean(
+        readiness.directHostedCheckoutAllowed &&
+          directSpec &&
+          matchedCode === directSpec.matchedViatorProductCode,
+      );
+      const productSliceKey = `rezgo:juneau-tours-whale-watch:${matchedCode || entry.com || entry.primaryUid}:${cacheMeta.serviceDateKey}${tourDirectEnabled ? ":direct" : ""}`;
 
       if (!options?.bypassCache && !hasWindowInputs) {
         const cachedSlice = rezgoNormalizedProductCache.get(productSliceKey);
@@ -2072,15 +2221,33 @@ export async function buildNormalizedJuneauSupplierFeed(options?: {
 
         const optionUid = rawItem.uid || `${entry.primaryUid}-${rawIdx + 1}`;
         const optBlocked = Boolean(windowAssessment?.blockedForSailingWindow);
-        const optCommerceHref =
-          approvedSpec && matchedCode && !optBlocked
-            ? buildJuneauRezgoDccCommerceWrapperHref({
-                canonicalViatorUrl: approvedSpec.canonicalViatorUrl,
-                matchedCode,
+        const directHostedUrl =
+          tourDirectEnabled && entry.com
+            ? buildDirectJuneauRezgoHostedCheckoutUrl({
+                domain: inspection.domain,
+                rezgoCom: entry.com,
+                optionUid,
+                serviceDate: resolvedServiceDate,
+                refId: directRefId,
+              })
+            : null;
+        const optCommerceHref = optBlocked
+          ? null
+          : directHostedUrl && matchedCode
+            ? buildDirectJuneauRezgoDccWrapperHref({
+                directRezgoUrl: directHostedUrl,
+                productCode: matchedCode,
                 optionRef: optionUid,
                 serviceDate: resolvedServiceDate,
               })
-            : null;
+            : approvedSpec && matchedCode
+              ? buildJuneauRezgoDccCommerceWrapperHref({
+                  canonicalViatorUrl: approvedSpec.canonicalViatorUrl,
+                  matchedCode,
+                  optionRef: optionUid,
+                  serviceDate: resolvedServiceDate,
+                })
+              : null;
 
         return {
           uid: optionUid,
@@ -2108,15 +2275,33 @@ export async function buildNormalizedJuneauSupplierFeed(options?: {
         allowedDepartures.length === 0 &&
         blockedOutsideWindowDepartures.length > 0;
 
-      const tourCommerceWrapperHref =
-        approvedSpec && matchedCode && !allDeparturesBlocked
-          ? buildJuneauRezgoDccCommerceWrapperHref({
-              canonicalViatorUrl: approvedSpec.canonicalViatorUrl,
-              matchedCode,
-              optionRef: entry.com || entry.primaryUid,
+      const tourDirectHostedUrl =
+        tourDirectEnabled && entry.com
+          ? buildDirectJuneauRezgoHostedCheckoutUrl({
+              domain: inspection.domain,
+              rezgoCom: entry.com,
+              optionUid: entry.optionUids[0] || entry.primaryUid,
               serviceDate: resolvedServiceDate,
+              refId: directRefId,
             })
           : null;
+      const tourCommerceWrapperHref = allDeparturesBlocked
+        ? null
+        : tourDirectHostedUrl && matchedCode
+          ? buildDirectJuneauRezgoDccWrapperHref({
+              directRezgoUrl: tourDirectHostedUrl,
+              productCode: matchedCode,
+              optionRef: entry.optionUids[0] || entry.primaryUid,
+              serviceDate: resolvedServiceDate,
+            })
+          : approvedSpec && matchedCode
+            ? buildJuneauRezgoDccCommerceWrapperHref({
+                canonicalViatorUrl: approvedSpec.canonicalViatorUrl,
+                matchedCode,
+                optionRef: entry.com || entry.primaryUid,
+                serviceDate: resolvedServiceDate,
+              })
+            : null;
 
       const resolvedOperatorName = inspection.companyName || "Juneau Tours & Whale Watch";
       const bookingProviderIdentity: JuneauBookingProviderIdentity = {
@@ -2126,12 +2311,18 @@ export async function buildNormalizedJuneauSupplierFeed(options?: {
         verifiedRezgoDomain: inspection.domain,
         rezgoCom: entry.com,
         activeCheckoutProvider:
-          approvedSpec && matchedCode ? "viator_approved_fallback" : "none_held_pending_mapping",
+          tourDirectEnabled
+            ? "rezgo_operator_hosted"
+            : approvedSpec && matchedCode
+              ? "viator_approved_fallback"
+              : "none_held_pending_mapping",
         fallbackProductCode: approvedSpec && matchedCode ? matchedCode : null,
-        liveDirectRezgoCheckoutEnabled: false,
+        liveDirectRezgoCheckoutEnabled: tourDirectEnabled,
         checkoutDisclosure:
-          approvedSpec && matchedCode
-            ? `Checkout uses approved Viator/DCC partner fallback (#${matchedCode}) — direct Rezgo checkout is not yet enabled.`
+          tourDirectEnabled
+            ? "Checkout is hosted and paid directly through Juneau Tours' Rezgo account. Juneau Tours remains merchant of record; DCC/CP invoices only the agreed commission on completed, non-refunded attributed bookings."
+            : approvedSpec && matchedCode
+              ? `Checkout uses approved Viator/DCC partner fallback (#${matchedCode}) — direct Rezgo checkout is not yet enabled.`
             : "Read-only availability preview — direct Rezgo checkout disabled pending mapping verification.",
       };
 
@@ -2235,7 +2426,7 @@ export async function buildNormalizedJuneauSupplierFeed(options?: {
         matchConfidence: entry.rec?.matchConfidence ?? "unmatched_rezgo_only",
         matchedViatorProductCode: matchedCode,
         approvedFallbackViatorUrl: approvedSpec?.canonicalViatorUrl ?? null,
-        liveDirectRezgoCheckoutEnabled: false,
+        liveDirectRezgoCheckoutEnabled: tourDirectEnabled,
         isolatedSecondaryProperty: true,
         influencesPrimaryDccRanking: false,
       };
@@ -2301,7 +2492,7 @@ export async function buildNormalizedJuneauSupplierFeed(options?: {
       ],
     },
     readOnly: true,
-    liveDirectRezgoCheckoutEnabled: false,
+    liveDirectRezgoCheckoutEnabled: readiness.directHostedCheckoutAllowed,
     isolatedSecondaryProperty: true,
     influencesPrimaryDccRanking: false,
     rezgoStatus: inspection.status,
@@ -2351,6 +2542,7 @@ export interface PublicJuneauDepartureButton {
   reducedBufferHmsLabel: string | null;
   requiresReducedBufferConfirmation: boolean;
   checkoutHref: string | null;
+  directHostedCheckout: boolean;
   plannerAddHref: string;
   syncSelection: PublicJuneauSyncSelection;
 }
@@ -2424,6 +2616,7 @@ function buildCruisePromenadeGroupPlanHref(params: {
   rezgoUid: string;
   matchedViatorProductCode: string | null;
   checkoutHref: string | null;
+  directHostedCheckout: boolean;
   fitStatus: PublicJuneauSyncSelection["fitStatus"];
   originSurface: "dcc" | "lfse" | "cp";
   relativeForCruisePromenade?: boolean;
@@ -2459,7 +2652,12 @@ function buildCruisePromenadeGroupPlanHref(params: {
     qs.set("productCode", params.matchedViatorProductCode);
     qs.set("matchedViatorProductCode", params.matchedViatorProductCode);
     qs.set("fallbackProductCode", params.matchedViatorProductCode);
-    qs.set("bookingProviderIdentity", "Checkout via Viator");
+    qs.set(
+      "bookingProviderIdentity",
+      params.directHostedCheckout
+        ? "Direct checkout with Juneau Tours"
+        : "Checkout via Viator",
+    );
   }
   if (params.rezgoCom) qs.set("rezgoCom", params.rezgoCom);
   if (params.rezgoUid) {
@@ -2653,6 +2851,7 @@ export function buildPublicJuneauLiveAvailabilityView(
         rezgoUid: opt.uid,
         matchedViatorProductCode: tour.matchedViatorProductCode,
         checkoutHref,
+        directHostedCheckout: tour.liveDirectRezgoCheckoutEnabled,
         fitStatus: assessment.status,
         originSurface,
         relativeForCruisePromenade: originSurface === "cp",
@@ -2667,6 +2866,7 @@ export function buildPublicJuneauLiveAvailabilityView(
         reducedBufferHmsLabel,
         requiresReducedBufferConfirmation,
         checkoutHref,
+        directHostedCheckout: tour.liveDirectRezgoCheckoutEnabled,
         plannerAddHref,
         syncSelection: {
           operatorId: "juneau-tours-whale-watch",
@@ -2756,7 +2956,11 @@ export function buildPublicJuneauLiveAvailabilityView(
       checkoutAvailable: hasApprovedPartnerCheckout,
       checkoutCtaLabel: "Book this tour",
       secondaryCheckCtaLabel: "Check availability & book",
-      checkoutProviderLabel: hasApprovedPartnerCheckout ? "Checkout via Viator" : null,
+      checkoutProviderLabel: hasApprovedPartnerCheckout
+        ? tour.liveDirectRezgoCheckoutEnabled
+          ? "Direct checkout with Juneau Tours"
+          : "Checkout via Viator"
+        : null,
       addToGroupPlanLabel: "Add to group plan",
     });
   }
@@ -2800,11 +3004,12 @@ export async function revalidatePublicJuneauDepartureBeforeCheckout(params: {
   shipAllAboardTime?: string | null;
   allAboardConfirmed?: boolean;
 }): Promise<RevalidatePublicJuneauCheckoutResult> {
+  const effectiveEnv = params.env ?? process.env;
   const cleanPartySize = Math.max(1, Math.min(99, Math.trunc(Number(params.partySize) || 1)));
   const partyNoun = cleanPartySize === 1 ? "person" : "people";
 
   const freshFeed = await buildNormalizedJuneauSupplierFeed({
-    env: params.env,
+    env: effectiveEnv,
     fetchImpl: params.fetchImpl,
     searchDate: params.serviceDate,
     shipArrivalTime: params.shipArrivalTime || null,
@@ -2932,17 +3137,44 @@ export async function revalidatePublicJuneauDepartureBeforeCheckout(params: {
         ? "Reduced buffer · Not recommended"
         : null;
 
+  const effectiveServiceDate = matchedOpt.serviceDate || params.serviceDate;
+  const directHostedUrl =
+    matchedTour.liveDirectRezgoCheckoutEnabled && matchedOpt.rezgoCom
+      ? buildDirectJuneauRezgoHostedCheckoutUrl({
+          domain: matchedTour.bookingProviderIdentity.verifiedRezgoDomain,
+          rezgoCom: matchedOpt.rezgoCom,
+          optionUid: matchedOpt.uid,
+          serviceDate: effectiveServiceDate,
+          partySize: cleanPartySize,
+          refId: effectiveEnv.REZGO_SERENE_REFID,
+        })
+      : null;
+  const checkoutHref =
+    directHostedUrl && matchedTour.matchedViatorProductCode
+      ? buildDirectJuneauRezgoDccWrapperHref({
+          directRezgoUrl: directHostedUrl,
+          productCode: matchedTour.matchedViatorProductCode,
+          optionRef: matchedOpt.uid,
+          serviceDate: effectiveServiceDate,
+          partySize: cleanPartySize,
+        })
+      : matchedOpt.dccCommerceWrapperHref;
+
   return {
     ok: true,
     available: true,
     partySize: cleanPartySize,
-    serviceDate: matchedOpt.serviceDate || params.serviceDate,
+    serviceDate: effectiveServiceDate,
     departureTime24: dep24,
     timeLabel,
     partyAvailabilityLabel: `Available for your group of ${cleanPartySize}`,
     message: `Available for your group of ${cleanPartySize}`,
-    checkoutHref: matchedOpt.dccCommerceWrapperHref,
-    checkoutProviderLabel: matchedTour.matchedViatorProductCode ? "Checkout via Viator" : null,
+    checkoutHref,
+    checkoutProviderLabel: matchedTour.matchedViatorProductCode
+      ? matchedTour.liveDirectRezgoCheckoutEnabled
+        ? "Direct checkout with Juneau Tours"
+        : "Checkout via Viator"
+      : null,
     requiresReducedBufferConfirmation: isReduced,
     reducedBufferWarningLabel: reducedLabel,
   };

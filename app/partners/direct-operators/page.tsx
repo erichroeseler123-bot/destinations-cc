@@ -93,7 +93,9 @@ export default function DirectOperatorsPartnerPage() {
                 Guests complete payment on your existing FareHarbor ASN
                 lightframe, Rezgo, Rezdy, OCTO, or custom checkout. You control
                 your live inventory, waivers, weight manifests, and refund
-                execution (settled via automated split or net-30 statement).
+                execution. For tracked hosted-checkout referrals, you receive the
+                customer payment and DCC invoices only the written, agreed
+                commission afterward.
               </p>
             </div>
             <div className="rounded-xl border border-white/10 bg-black/35 p-4">

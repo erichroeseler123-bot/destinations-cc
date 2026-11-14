@@ -362,9 +362,9 @@ export const PROVIDER_SPECIFIC_APPROVAL_GUIDES: Record<
     providerKey: "rezgo",
     availabilityState: "available_on_request",
     headline:
-      "Inspect Rezgo inventory read-only first, confirm SKU mapping & written 10% commission ownership, and test non-customer booking before live activation.",
+      "Inspect Rezgo inventory read-only first, confirm SKU mapping, written commission terms, and authorized referral attribution before enabling operator-hosted checkout.",
     operatorActionSummary:
-      "Share your active Rezgo CID and API key through our secure server-env channel (never in public forms); we run a read-only product & availability check before any booking test or live enablement.",
+      "Share your active Rezgo CID and API key through our secure server-env channel (never in public forms); we verify products and availability read-only. Guests then pay you directly in Rezgo, and DCC invoices only the agreed tracked-booking commission.",
     approvalSteps: [
       {
         stepNumber: 1,
@@ -382,9 +382,9 @@ export const PROVIDER_SPECIFIC_APPROVAL_GUIDES: Record<
       },
       {
         stepNumber: 3,
-        title: "Verify non-customer test booking flow before enabling live booking",
+        title: "Enable attributed hosted checkout—or separately test API booking",
         detail:
-          "Execute and void/cancel one non-customer test booking end-to-end before flipping live booking on.",
+          "For Rezgo-hosted checkout, confirm the authorized refid and commission reconciliation process; the operator remains merchant of record. Only an API-created booking flow requires a separately authorized, reversible non-customer commit/cancel test.",
         owner: "dcc_reviewer",
       },
     ],
