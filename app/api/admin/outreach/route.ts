@@ -187,15 +187,29 @@ export async function POST(request: Request) {
       hostedCruiseAndSailing,
       contactName:
         typeof body.contactName === "string" ? body.contactName : null,
+      organizerRole:
+        typeof body.organizerRole === "string" ? body.organizerRole : null,
       phone: typeof body.phone === "string" ? body.phone : null,
       phoneInvitesText: Boolean(body.phoneInvitesText),
       email: typeof body.email === "string" ? body.email : null,
+      contactPageUrl:
+        typeof body.contactPageUrl === "string" ? body.contactPageUrl : null,
       officialUrl:
         typeof body.officialUrl === "string" ? body.officialUrl : null,
+      contactTimezone:
+        typeof body.contactTimezone === "string"
+          ? body.contactTimezone
+          : undefined,
+      bestCallingWindow:
+        typeof body.bestCallingWindow === "string"
+          ? body.bestCallingWindow
+          : undefined,
       cohortDescription:
         typeof body.cohortDescription === "string"
           ? body.cohortDescription
           : undefined,
+      cruiseLine:
+        typeof body.cruiseLine === "string" ? body.cruiseLine : undefined,
       shipName: typeof body.shipName === "string" ? body.shipName : undefined,
       sailDate: typeof body.sailDate === "string" ? body.sailDate : null,
       portWindowsSummary:
@@ -216,6 +230,10 @@ export async function POST(request: Request) {
       valueToPitchSummary:
         typeof body.valueToPitchSummary === "string"
           ? body.valueToPitchSummary
+          : undefined,
+      recommendedNextAction:
+        typeof body.recommendedNextAction === "string"
+          ? body.recommendedNextAction
           : undefined,
       outreachStatus: isValidOutreachStatus(body.outreachStatus)
         ? body.outreachStatus
@@ -290,6 +308,9 @@ export async function POST(request: Request) {
     ...(typeof body.qualificationDetail === "string"
       ? { qualificationDetail: body.qualificationDetail }
       : {}),
+    ...(typeof body.cruiseLine === "string"
+      ? { cruiseLine: body.cruiseLine }
+      : {}),
     ...(typeof body.hostedCruiseAndSailing === "string"
       ? { hostedCruiseAndSailing: body.hostedCruiseAndSailing }
       : {}),
@@ -312,6 +333,12 @@ export async function POST(request: Request) {
     ...(body.email !== undefined
       ? { email: typeof body.email === "string" ? body.email : null }
       : {}),
+    ...(body.contactPageUrl !== undefined
+      ? {
+          contactPageUrl:
+            typeof body.contactPageUrl === "string" ? body.contactPageUrl : null,
+        }
+      : {}),
     ...(body.officialUrl !== undefined
       ? {
           officialUrl:
@@ -324,17 +351,44 @@ export async function POST(request: Request) {
             typeof body.contactName === "string" ? body.contactName : null,
         }
       : {}),
+    ...(body.organizerRole !== undefined
+      ? {
+          organizerRole:
+            typeof body.organizerRole === "string" ? body.organizerRole : null,
+        }
+      : {}),
+    ...(typeof body.contactTimezone === "string"
+      ? { contactTimezone: body.contactTimezone }
+      : {}),
+    ...(typeof body.bestCallingWindow === "string"
+      ? { bestCallingWindow: body.bestCallingWindow }
+      : {}),
     ...(typeof body.valueToPitchSummary === "string"
       ? { valueToPitchSummary: body.valueToPitchSummary }
       : {}),
+    ...(typeof body.phoneOpeningScript === "string"
+      ? { phoneOpeningScript: body.phoneOpeningScript }
+      : {}),
+    ...(typeof body.voicemailScript === "string"
+      ? { voicemailScript: body.voicemailScript }
+      : {}),
     ...(typeof body.phoneOrTextScript === "string"
       ? { phoneOrTextScript: body.phoneOrTextScript }
+      : {}),
+    ...(typeof body.likelyObjection === "string"
+      ? { likelyObjection: body.likelyObjection }
+      : {}),
+    ...(typeof body.objectionResponse === "string"
+      ? { objectionResponse: body.objectionResponse }
       : {}),
     ...(typeof body.emailSubject === "string"
       ? { emailSubject: body.emailSubject }
       : {}),
     ...(typeof body.emailBody === "string"
       ? { emailBody: body.emailBody }
+      : {}),
+    ...(typeof body.recommendedNextAction === "string"
+      ? { recommendedNextAction: body.recommendedNextAction }
       : {}),
     ...(body.followUpDate !== undefined
       ? {

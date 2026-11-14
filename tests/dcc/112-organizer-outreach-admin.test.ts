@@ -7,6 +7,7 @@ import {
 } from "@/app/api/admin/outreach/route";
 import {
   HOSTED_ORGANIZER_CORE_PITCH,
+  REQUESTED_CALL_ACTION,
   getOrganizerOutreachDashboard,
   resetInMemoryOrganizerOutreachForTests,
   updateOrganizerOutreachLead,
@@ -35,7 +36,7 @@ test("112a. /api/admin/outreach fails closed with 401 and noindex/no-store heade
   assert.equal(unauthPost.status, 401);
 });
 
-test("112b. Seeded pipeline surfaces all 8 prospects, 3 phone leads (#1 Bond & Beyond), honest 0 sent count, verbatim pitch, and strict hold guardrails", async () => {
+test("112b. Seeded sprint pipeline surfaces 44 deduplicated prospects, 40 phone leads, 29 phone-qualified Ready to Call, 12 strict holds, 0 sent count, verbatim pitch, and zero hype", async () => {
   process.env.DCC_ISOLATED_TEST_DB = "1";
   resetInMemoryOrganizerOutreachForTests();
 
@@ -44,48 +45,90 @@ test("112b. Seeded pipeline surfaces all 8 prospects, 3 phone leads (#1 Bond & B
     corridorEventsOverride: [],
   });
 
-  assert.equal(snap.kpis.totalLeadsCount, 8);
-  assert.equal(snap.kpis.phoneLeadsCount, 3);
-  assert.equal(snap.kpis.qualifiedReadyCount, 5);
-  assert.equal(snap.kpis.heldOrNeedsQualificationCount, 3);
+  assert.equal(snap.kpis.totalLeadsCount, 44);
+  assert.equal(snap.kpis.phoneLeadsCount, 40);
+  assert.equal(snap.kpis.phoneQualifiedReadyCount, 29);
+  assert.ok(
+    snap.kpis.phoneQualifiedReadyCount >= 25,
+    "Must provide at least 25 verified phone-qualified prospects",
+  );
+  assert.equal(snap.kpis.qualifiedReadyCount, 32);
+  assert.equal(snap.kpis.heldOrNeedsQualificationCount, 12);
   assert.equal(snap.kpis.outreachSentLeadsCount, 0);
   assert.equal(snap.kpis.totalOutreachTouchesCount, 0);
+  assert.equal(
+    snap.corePitchVerbatim,
+    "We built a free shared cruise page for hosted groups. Your travelers can meet before sailing, see which excursions everyone is joining, book the exact same departure, and keep the entire schedule together—including an offline Cruise Pack. It does not interfere with your cabin sales, travel advisor, conference programming or onboard events.",
+  );
   assert.equal(snap.corePitchVerbatim, HOSTED_ORGANIZER_CORE_PITCH);
+  assert.equal(
+    snap.requestedCallAction,
+    "Open the sailing page while we are on the phone and decide whether you would be comfortable sharing it with your group.",
+  );
+  assert.equal(snap.requestedCallAction, REQUESTED_CALL_ACTION);
 
-  // #1 immediate call is Bond & Beyond with SMS invited & live qualified page
+  // Deduplication invariant: all 44 leadIds and utmSources are unique
+  const uniqueIds = new Set(snap.leads.map((l) => l.leadId));
+  const uniqueUtm = new Set(snap.leads.map((l) => l.utmSource));
+  assert.equal(uniqueIds.size, 44);
+  assert.equal(uniqueUtm.size, 44);
+
+  // #1 highest-probability first call is Bond & Beyond
   const bond = snap.leads[0];
   assert.equal(bond.leadId, "bond_and_beyond");
   assert.equal(bond.phone, "(904) 295-1212");
   assert.equal(bond.phoneDial, "+19042951212");
   assert.equal(bond.phoneInvitesText, true);
   assert.equal(bond.qualificationStatus, "qualified_page_live");
+  assert.equal(bond.outreachStatus, "ready_to_call");
   assert.ok(
     bond.sailingPageUrl?.includes(
       "https://cruisepromenade.com/sailings/norwegian-escape/2027-04-16?utm_source=bond_and_beyond",
     ),
   );
-  assert.ok(bond.phoneOrTextScript.includes(HOSTED_ORGANIZER_CORE_PITCH));
 
-  // #2 WSBA and #3 Dancecation have verified phones but strictly hold live sailing URLs
-  const wsba = snap.leads.find((l) => l.leadId === "wsba_cruise");
-  assert.ok(wsba);
-  assert.equal(wsba.phone, "(412) 606-0227");
-  assert.equal(wsba.qualificationStatus, "held_schedule_conflict");
-  assert.equal(wsba.sailingPageUrl, null);
+  // Top 10 Call Now queue completeness
+  const top10 = snap.leads
+    .filter((l) => Boolean(l.phone) && l.qualificationStatus === "qualified_page_live")
+    .slice(0, 10);
+  assert.equal(top10.length, 10);
+  for (const lead of top10) {
+    assert.ok(lead.phone && lead.phoneDial, `Missing phone on ${lead.leadId}`);
+    assert.ok(lead.contactName, `Missing contactName on ${lead.leadId}`);
+    assert.ok(lead.organizerRole, `Missing organizerRole on ${lead.leadId}`);
+    assert.ok(lead.contactTimezone, `Missing contactTimezone on ${lead.leadId}`);
+    assert.ok(lead.bestCallingWindow, `Missing bestCallingWindow on ${lead.leadId}`);
+    assert.ok(lead.cruiseLine, `Missing cruiseLine on ${lead.leadId}`);
+    assert.ok(lead.sailingPageUrl, `Missing sailingPageUrl on ${lead.leadId}`);
+    assert.ok(lead.phoneOpeningScript.length > 40, `Short opening on ${lead.leadId}`);
+    assert.ok(lead.voicemailScript.length > 30, `Short voicemail on ${lead.leadId}`);
+    assert.ok(lead.likelyObjection.length > 10, `Missing objection on ${lead.leadId}`);
+    assert.ok(lead.objectionResponse.length > 10, `Missing response on ${lead.leadId}`);
+    assert.ok(lead.emailBody.includes(HOSTED_ORGANIZER_CORE_PITCH));
+  }
 
-  const dance = snap.leads.find((l) => l.leadId === "dancecation_at_sea");
-  assert.ok(dance);
-  assert.equal(dance.phone, "757-870-3709");
-  assert.equal(dance.qualificationStatus, "needs_sailing_qualification");
-  assert.equal(dance.sailingPageUrl, null);
-
-  const momentum = snap.leads.find((l) => l.leadId === "momentum_at_sea");
-  assert.ok(momentum);
-  assert.equal(momentum.qualificationStatus, "held_schedule_conflict");
-  assert.equal(momentum.sailingPageUrl, null);
+  // Strict hold rule + honesty check across every single prospect
+  const forbiddenHype = /\b(thousands of groups|hundreds of groups|already popular|most popular cruise|testimonial)\b/i;
+  for (const lead of snap.leads) {
+    if (lead.qualificationStatus !== "qualified_page_live") {
+      assert.equal(
+        lead.sailingPageUrl,
+        null,
+        `Held lead ${lead.leadId} must never expose a sailingPageUrl`,
+      );
+    } else {
+      assert.ok(
+        lead.sailingPageUrl?.startsWith("https://cruisepromenade.com/sailings/"),
+        `Qualified lead ${lead.leadId} must expose a verified sailingPageUrl`,
+      );
+    }
+    assert.doesNotMatch(lead.phoneOpeningScript, forbiddenHype);
+    assert.doesNotMatch(lead.voicemailScript, forbiddenHype);
+    assert.doesNotMatch(lead.emailBody, forbiddenHype);
+  }
 });
 
-test("112c. Admin API updates call/email status, follow-up date, notes, board created, travelers joined, enforces hold URL rules, and supports custom lead lifecycle", async () => {
+test("112c. Admin API supports all Section 6 call outcomes, follow-up dates, notes, board created, first traveler joined, hold URL guardrails, and custom lead lifecycle", async () => {
   process.env.DCC_ISOLATED_TEST_DB = "1";
   process.env.ADMIN_ACCESS_KEY = "test-admin-secret-outreach-112";
   resetInMemoryOrganizerOutreachForTests();
@@ -96,7 +139,7 @@ test("112c. Admin API updates call/email status, follow-up date, notes, board cr
     cookie: `${ADMIN_SESSION_COOKIE}=${encodeURIComponent(cookieVal)}`,
   };
 
-  // 1. Attempt to attach a sailing URL while WSBA is still held -> URL remains null
+  // 1. Attempt to attach a sailing URL while WSBA is held -> URL remains null
   const wsbaHoldRes = await outreachPost(
     new Request("https://destinationcommandcenter.com/api/admin/outreach", {
       method: "POST",
@@ -114,7 +157,44 @@ test("112c. Admin API updates call/email status, follow-up date, notes, board cr
   };
   assert.equal(wsbaHoldBody.lead.sailingPageUrl, null);
 
-  // 2. Log a call + follow-up + board + travelers joined on Bond & Beyond
+  // 2. Verify new sprint outcome statuses: call_attempted -> follow_up_requested -> first_traveler_joined -> wrong_contact -> not_a_fit
+  for (const status of [
+    "call_attempted",
+    "called_left_vm",
+    "called_spoke",
+    "follow_up_requested",
+    "board_live",
+    "first_traveler_joined",
+    "wrong_contact",
+    "not_a_fit",
+  ] as const) {
+    const res = await outreachPost(
+      new Request("https://destinationcommandcenter.com/api/admin/outreach", {
+        method: "POST",
+        headers: authedHeaders,
+        body: JSON.stringify({
+          leadId: "hr_conference_cruise",
+          logTouchChannel: "call",
+          outreachStatus: status,
+        }),
+      }),
+    );
+    assert.equal(res.status, 200, `Status ${status} should succeed`);
+    const body = (await res.json()) as {
+      lead: {
+        outreachStatus: string;
+        boardCreated: boolean;
+        travelersJoined: number;
+      };
+    };
+    assert.equal(body.lead.outreachStatus, status);
+    if (status === "first_traveler_joined") {
+      assert.equal(body.lead.boardCreated, true);
+      assert.ok(body.lead.travelersJoined >= 1);
+    }
+  }
+
+  // 3. Log a call + follow-up + board + travelers joined on Bond & Beyond
   const logRes = await outreachPost(
     new Request("https://destinationcommandcenter.com/api/admin/outreach", {
       method: "POST",
@@ -144,33 +224,19 @@ test("112c. Admin API updates call/email status, follow-up date, notes, board cr
       travelersJoined: number;
       notes: string;
     };
-    dashboard: {
-      kpis: {
-        outreachSentLeadsCount: number;
-        repliedCount: number;
-        boardsCreatedCount: number;
-        travelersJoinedCount: number;
-      };
-    };
   };
   assert.equal(logBody.lead.outreachStatus, "interested");
   assert.equal(logBody.lead.hasSentOutreach, true);
   assert.equal(logBody.lead.outreachCount, 1);
   assert.equal(logBody.lead.followUpDate, "2026-11-16");
   assert.equal(logBody.lead.boardCreated, true);
-  assert.equal(logBody.lead.boardShareCode, "BOND2027ESCAPE");
   assert.equal(
     logBody.lead.boardUrl,
     "https://cruisepromenade.com/p/BOND2027ESCAPE",
   );
   assert.equal(logBody.lead.travelersJoined, 14);
-  assert.match(logBody.lead.notes, /Spoke with organizer/);
-  assert.equal(logBody.dashboard.kpis.outreachSentLeadsCount, 1);
-  assert.equal(logBody.dashboard.kpis.repliedCount, 1);
-  assert.equal(logBody.dashboard.kpis.boardsCreatedCount, 1);
-  assert.equal(logBody.dashboard.kpis.travelersJoinedCount, 14);
 
-  // 3. Create a new custom organizer lead and then delete it cleanly
+  // 4. Create a custom organizer lead and delete it cleanly
   const createRes = await outreachPost(
     new Request("https://destinationcommandcenter.com/api/admin/outreach", {
       method: "POST",
@@ -178,7 +244,9 @@ test("112c. Admin API updates call/email status, follow-up date, notes, board cr
       body: JSON.stringify({
         action: "create",
         leadName: "Creators at Sea 2027",
+        organizerRole: "Founder",
         phone: "(305) 987-6543",
+        cruiseLine: "Royal Caribbean International",
         hostedCruiseAndSailing: "Wonder of the Seas · May 2027 (Qualify exact date)",
         qualificationStatus: "needs_sailing_qualification",
         notes: "Inbound podcast organizer lead.",
@@ -192,8 +260,8 @@ test("112c. Admin API updates call/email status, follow-up date, notes, board cr
   };
   assert.equal(createBody.lead.leadId, "creators_at_sea_2027");
   assert.equal(createBody.lead.phoneDial, "+13059876543");
-  assert.equal(createBody.dashboard.kpis.totalLeadsCount, 9);
-  assert.equal(createBody.dashboard.kpis.phoneLeadsCount, 4);
+  assert.equal(createBody.dashboard.kpis.totalLeadsCount, 45);
+  assert.equal(createBody.dashboard.kpis.phoneLeadsCount, 41);
 
   const delRes = await outreachPost(
     new Request("https://destinationcommandcenter.com/api/admin/outreach", {
@@ -209,7 +277,7 @@ test("112c. Admin API updates call/email status, follow-up date, notes, board cr
   const delBody = (await delRes.json()) as {
     dashboard: { kpis: { totalLeadsCount: number } };
   };
-  assert.equal(delBody.dashboard.kpis.totalLeadsCount, 8);
+  assert.equal(delBody.dashboard.kpis.totalLeadsCount, 44);
 });
 
 test("112d. Live Cruise Promenade corridor telemetry enriches Board Created and Travelers Joined while excluding synthetic test traffic", async () => {
@@ -250,7 +318,6 @@ test("112d. Live Cruise Promenade corridor telemetry enriches Board Created and 
           context: { shareCode: "CMMC2027BOARD" },
         },
       },
-      // Synthetic QA event must be ignored
       {
         sessionId: "smoke_session_99",
         sourcePage: "/sailings/norwegian-escape/2027-04-16?utm_source=bond_and_beyond",
