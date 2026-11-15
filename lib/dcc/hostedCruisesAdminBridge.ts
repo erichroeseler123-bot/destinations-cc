@@ -27,6 +27,17 @@ export interface HostedCruisesAdminBridgeSnapshot {
     publicSummary: string;
     officialWebsiteUrl: string;
     claimedStatus: "unclaimed" | "pending_verification" | "verified";
+    hasWorkspaceKey?: boolean;
+    workspacePath?: string;
+    analytics?: {
+      pageViews: number;
+      officialBookingClicks: number;
+      questionsAsked: number;
+      officialAnswersPosted: number;
+      communityJoins: number;
+      reviewsSubmitted: number;
+      officialReviewResponses: number;
+    };
   }>;
   sailings: Array<{
     organizerSlug: string;
@@ -158,6 +169,19 @@ export interface HostedCruisesAdminBridgeSnapshot {
       reviewedAt?: string;
     }>;
   };
+  auditLog?: Array<{
+    auditId: string;
+    occurredAt: string;
+    actorType: "verified_organizer" | "dcc_owner";
+    actorLabel: string;
+    organizerSlug: string;
+    sailingSlug?: string | null;
+    action: string;
+    changedFields: string[];
+    summary: string;
+    canRollback: boolean;
+    rolledBackFromAuditId?: string;
+  }>;
 }
 
 export interface HostedCruisesBridgeResponse {

@@ -59,6 +59,11 @@ export default function HostedCruisesAdminClient({
     tone: "success" | "error";
     text: string;
   } | null>(null);
+  const [issuedWorkspaceCredential, setIssuedWorkspaceCredential] = useState<{
+    organizerSlug: string;
+    workspaceAccessKey: string;
+    workspaceUrl: string;
+  } | null>(null);
 
   const snapshot: HostedCruisesAdminBridgeSnapshot | null = bridge.snapshot;
   const sailings = snapshot?.sailings ?? [];
@@ -251,6 +256,21 @@ export default function HostedCruisesAdminClient({
           snapshot: data.snapshot,
         }));
       }
+      if (
+        data.actionResult &&
+        typeof data.actionResult.workspaceAccessKey === "string" &&
+        data.actionResult.workspaceAccessKey
+      ) {
+        const orgSlug =
+          typeof data.actionResult.organizerSlug === "string"
+            ? data.actionResult.organizerSlug
+            : activeOrganizer?.organizerSlug || "";
+        setIssuedWorkspaceCredential({
+          organizerSlug: orgSlug,
+          workspaceAccessKey: data.actionResult.workspaceAccessKey,
+          workspaceUrl: `${bridge.cpBaseUrl}/organizer/hosted/${orgSlug}`,
+        });
+      }
       setBanner({ tone: "success", text: successMessage });
     } catch {
       setBanner({
@@ -284,6 +304,43 @@ export default function HostedCruisesAdminClient({
           }`}
         >
           {banner.text}
+        </div>
+      )}
+
+      {issuedWorkspaceCredential && (
+        <div
+          data-testid="dcc-issued-workspace-credential-box"
+          className="rounded-2xl border border-emerald-400/50 bg-emerald-500/15 p-4 space-y-2 text-xs text-emerald-50"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <strong className="text-sm font-black text-emerald-200">
+              One-Time $0 Organizer Workspace Key Issued ({issuedWorkspaceCredential.organizerSlug})
+            </strong>
+            <button
+              type="button"
+              onClick={() => setIssuedWorkspaceCredential(null)}
+              className="rounded-lg border border-white/25 px-2.5 py-1 text-[11px] font-bold text-white hover:bg-white/10"
+            >
+              Dismiss
+            </button>
+          </div>
+          <p className="text-zinc-200">
+            Save or deliver this access key only after completing identity verification. Only its SHA-256 hash is stored on the server:
+          </p>
+          <div className="rounded-lg border border-white/20 bg-black/60 px-3 py-2 font-mono text-xs text-emerald-200 break-all">
+            {issuedWorkspaceCredential.workspaceAccessKey}
+          </div>
+          <div>
+            Workspace URL:{" "}
+            <a
+              href={issuedWorkspaceCredential.workspaceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline font-bold text-teal-200"
+            >
+              {issuedWorkspaceCredential.workspaceUrl}
+            </a>
+          </div>
         </div>
       )}
 
@@ -760,14 +817,46 @@ export default function HostedCruisesAdminClient({
                   : ""}
               </p>
             </div>
-            <a
-              href={`${bridge.cpBaseUrl}/hosted-cruises/${activeOrganizer.organizerSlug}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-xl border border-teal-400/40 bg-teal-500/15 px-3.5 py-1.5 text-xs font-bold text-teal-100 hover:bg-teal-500/25"
-            >
-              Open Organizer Page ↗
-            </a>
+            <div className="flex flex-wrap gap-2">
+              {activeOrganizer.claimedStatus === "verified" && (
+                <button
+                  type="button"
+                  data-testid="dcc-rotate-workspace-key-btn"
+                  disabled={busyKey !== null}
+                  onClick={() =>
+                    runAction(
+                      "rotate-ws-key",
+                      {
+                        action: "rotate_workspace_key",
+                        organizerSlug: activeOrganizer.organizerSlug,
+                      },
+                      `Rotated $0 Organizer Workspace key for ${activeOrganizer.organizerName}.`,
+                    )
+                  }
+                  className="rounded-xl border border-purple-400/40 bg-purple-500/15 px-3.5 py-1.5 text-xs font-bold text-purple-100 hover:bg-purple-500/25"
+                >
+                  {activeOrganizer.hasWorkspaceKey
+                    ? "Rotate $0 Workspace Key"
+                    : "Issue $0 Workspace Key"}
+                </button>
+              )}
+              <a
+                href={`${bridge.cpBaseUrl}/organizer/hosted/${activeOrganizer.organizerSlug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-xl border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-bold text-zinc-100 hover:bg-white/20"
+              >
+                $0 Workspace ↗
+              </a>
+              <a
+                href={`${bridge.cpBaseUrl}/hosted-cruises/${activeOrganizer.organizerSlug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-xl border border-teal-400/40 bg-teal-500/15 px-3.5 py-1.5 text-xs font-bold text-teal-100 hover:bg-teal-500/25"
+              >
+                Open Organizer Page ↗
+              </a>
+            </div>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
@@ -1538,6 +1627,123 @@ export default function HostedCruisesAdminClient({
                       className="rounded-lg border border-white/20 bg-white/10 px-3 py-1 font-bold text-white hover:bg-white/20"
                     >
                       Mark Reviewed
+                    </button>
+                  )}
+                </article>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* 6. Organizer Analytics & Append-Only Audit Log + One-Click Rollback */}
+      <section
+        data-testid="dcc-hosted-audit-and-analytics-panel"
+        aria-labelledby="audit-analytics-heading"
+        className="rounded-2xl border border-cyan-400/30 bg-cyan-500/[0.04] p-5 space-y-5"
+      >
+        <div>
+          <h2 id="audit-analytics-heading" className="text-lg font-black text-white">
+            6. $0 Workspace Analytics, Audit Trail &amp; One-Click Rollback
+          </h2>
+          <p className="text-xs text-zinc-300">
+            Every provider workspace edit and DCC admin change writes an immutable audit
+            entry. Clicking <strong>Rollback</strong> restores the prior snapshot and
+            appends a rollback record without deleting history.
+          </p>
+        </div>
+
+        {activeOrganizer?.analytics && (
+          <div className="grid gap-3 sm:grid-cols-5">
+            {[
+              { label: "Page Views", value: activeOrganizer.analytics.pageViews },
+              {
+                label: "Official Booking Clicks",
+                value: activeOrganizer.analytics.officialBookingClicks,
+              },
+              {
+                label: "Questions / Official Answers",
+                value: `${activeOrganizer.analytics.questionsAsked} / ${activeOrganizer.analytics.officialAnswersPosted}`,
+              },
+              {
+                label: "Community Joins",
+                value: activeOrganizer.analytics.communityJoins,
+              },
+              {
+                label: "Reviews / Host Replies",
+                value: `${activeOrganizer.analytics.reviewsSubmitted} / ${activeOrganizer.analytics.officialReviewResponses}`,
+              },
+            ].map((stat) => (
+              <div
+                key={stat.label}
+                className="rounded-xl border border-white/10 bg-black/45 p-3"
+              >
+                <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+                  {stat.label}
+                </div>
+                <div className="mt-1 text-base font-black text-white">{stat.value}</div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="space-y-2.5">
+          <h3 className="text-sm font-black text-cyan-100">
+            Recent Append-Only Audit Entries ({snapshot?.auditLog?.length ?? 0})
+          </h3>
+          {(snapshot?.auditLog?.length ?? 0) === 0 ? (
+            <p className="rounded-xl border border-white/10 bg-black/35 px-4 py-2.5 text-xs text-zinc-300">
+              No workspace or admin mutations recorded yet in this environment.
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {snapshot?.auditLog?.slice(0, 20).map((entry) => (
+                <article
+                  key={entry.auditId}
+                  data-testid={`dcc-audit-entry-${entry.auditId}`}
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/15 bg-black/50 p-3.5 text-xs"
+                >
+                  <div className="space-y-1">
+                    <div>
+                      <span
+                        className={`mr-2 rounded px-2 py-0.5 font-mono text-[10px] font-bold uppercase ${
+                          entry.actorType === "verified_organizer"
+                            ? "bg-purple-500/25 text-purple-200"
+                            : "bg-teal-500/25 text-teal-200"
+                        }`}
+                      >
+                        {entry.actorType === "verified_organizer"
+                          ? "Organizer Workspace"
+                          : "DCC Owner"}
+                      </span>
+                      <strong className="text-white">{entry.summary}</strong>
+                    </div>
+                    <div className="text-[11px] text-zinc-400">
+                      <code>{entry.auditId}</code> · {entry.organizerSlug}
+                      {entry.sailingSlug ? ` / ${entry.sailingSlug}` : " (Profile)"} · Fields:{" "}
+                      <code>{entry.changedFields.join(", ") || "state"}</code> ·{" "}
+                      {new Date(entry.occurredAt).toLocaleString()}
+                    </div>
+                  </div>
+
+                  {entry.canRollback && (
+                    <button
+                      type="button"
+                      data-testid={`dcc-rollback-btn-${entry.auditId}`}
+                      disabled={busyKey !== null}
+                      onClick={() =>
+                        runAction(
+                          `rollback-${entry.auditId}`,
+                          {
+                            action: "rollback_audit_entry",
+                            auditId: entry.auditId,
+                          },
+                          `Rolled back ${entry.auditId} to its previous state.`,
+                        )
+                      }
+                      className="rounded-lg border border-amber-400/50 bg-amber-500/20 px-3 py-1.5 font-bold text-amber-100 hover:bg-amber-500/30"
+                    >
+                      One-Click Rollback
                     </button>
                   )}
                 </article>
