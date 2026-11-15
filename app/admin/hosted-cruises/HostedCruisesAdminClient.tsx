@@ -63,6 +63,8 @@ export default function HostedCruisesAdminClient({
     organizerSlug: string;
     workspaceAccessKey: string;
     workspaceUrl: string;
+    handoffUrl?: string;
+    handoffExpiresAt?: string;
   } | null>(null);
 
   const snapshot: HostedCruisesAdminBridgeSnapshot | null = bridge.snapshot;
@@ -265,10 +267,21 @@ export default function HostedCruisesAdminClient({
           typeof data.actionResult.organizerSlug === "string"
             ? data.actionResult.organizerSlug
             : activeOrganizer?.organizerSlug || "";
+        const handoffPath =
+          typeof data.actionResult.handoffPath === "string" &&
+          data.actionResult.handoffPath
+            ? data.actionResult.handoffPath
+            : undefined;
+        const handoffExpiresAt =
+          typeof data.actionResult.handoffExpiresAt === "string"
+            ? data.actionResult.handoffExpiresAt
+            : undefined;
         setIssuedWorkspaceCredential({
           organizerSlug: orgSlug,
           workspaceAccessKey: data.actionResult.workspaceAccessKey,
           workspaceUrl: `${bridge.cpBaseUrl}/organizer/hosted/${orgSlug}`,
+          handoffUrl: handoffPath ? `${bridge.cpBaseUrl}${handoffPath}` : undefined,
+          handoffExpiresAt,
         });
       }
       setBanner({ tone: "success", text: successMessage });
@@ -324,8 +337,22 @@ export default function HostedCruisesAdminClient({
               Dismiss
             </button>
           </div>
+          {issuedWorkspaceCredential.handoffUrl && (
+            <div className="space-y-1">
+              <p className="font-bold text-teal-200">
+                Single-Use One-Time Welcome Link (burns immediately on first use
+                {issuedWorkspaceCredential.handoffExpiresAt
+                  ? `, expires ${new Date(issuedWorkspaceCredential.handoffExpiresAt).toLocaleString()}`
+                  : ""}
+                ):
+              </p>
+              <div className="rounded-lg border border-teal-400/35 bg-black/60 px-3 py-2 font-mono text-xs text-teal-100 break-all">
+                {issuedWorkspaceCredential.handoffUrl}
+              </div>
+            </div>
+          )}
           <p className="text-zinc-200">
-            Save or deliver this access key only after completing identity verification. Only its SHA-256 hash is stored on the server:
+            Organizer Passkey (shown once — share only after completing identity verification):
           </p>
           <div className="rounded-lg border border-white/20 bg-black/60 px-3 py-2 font-mono text-xs text-emerald-200 break-all">
             {issuedWorkspaceCredential.workspaceAccessKey}
@@ -819,26 +846,58 @@ export default function HostedCruisesAdminClient({
             </div>
             <div className="flex flex-wrap gap-2">
               {activeOrganizer.claimedStatus === "verified" && (
-                <button
-                  type="button"
-                  data-testid="dcc-rotate-workspace-key-btn"
-                  disabled={busyKey !== null}
-                  onClick={() =>
-                    runAction(
-                      "rotate-ws-key",
-                      {
-                        action: "rotate_workspace_key",
-                        organizerSlug: activeOrganizer.organizerSlug,
-                      },
-                      `Rotated $0 Organizer Workspace key for ${activeOrganizer.organizerName}.`,
-                    )
-                  }
-                  className="rounded-xl border border-purple-400/40 bg-purple-500/15 px-3.5 py-1.5 text-xs font-bold text-purple-100 hover:bg-purple-500/25"
-                >
-                  {activeOrganizer.hasWorkspaceKey
-                    ? "Rotate $0 Workspace Key"
-                    : "Issue $0 Workspace Key"}
-                </button>
+                <>
+                  <button
+                    type="button"
+                    data-testid="dcc-toggle-organizer-suspend-btn"
+                    disabled={busyKey !== null}
+                    onClick={() =>
+                      runAction(
+                        "toggle-org-suspend",
+                        {
+                          action: "set_organizer_suspension",
+                          organizerSlug: activeOrganizer.organizerSlug,
+                          suspended: !activeOrganizer.suspended,
+                          reason: activeOrganizer.suspended
+                            ? undefined
+                            : "Temporarily paused by DCC owner for review.",
+                        },
+                        activeOrganizer.suspended
+                          ? `Restored workspace editing for ${activeOrganizer.organizerName}.`
+                          : `Paused workspace editing for ${activeOrganizer.organizerName}.`,
+                      )
+                    }
+                    className={`rounded-xl border px-3.5 py-1.5 text-xs font-bold ${
+                      activeOrganizer.suspended
+                        ? "border-emerald-400/40 bg-emerald-500/15 text-emerald-100 hover:bg-emerald-500/25"
+                        : "border-amber-400/40 bg-amber-500/15 text-amber-100 hover:bg-amber-500/25"
+                    }`}
+                  >
+                    {activeOrganizer.suspended
+                      ? "Restore Organizer Access"
+                      : "Pause Organizer Access"}
+                  </button>
+                  <button
+                    type="button"
+                    data-testid="dcc-rotate-workspace-key-btn"
+                    disabled={busyKey !== null}
+                    onClick={() =>
+                      runAction(
+                        "rotate-ws-key",
+                        {
+                          action: "rotate_workspace_key",
+                          organizerSlug: activeOrganizer.organizerSlug,
+                        },
+                        `Rotated $0 Organizer Workspace key for ${activeOrganizer.organizerName}.`,
+                      )
+                    }
+                    className="rounded-xl border border-purple-400/40 bg-purple-500/15 px-3.5 py-1.5 text-xs font-bold text-purple-100 hover:bg-purple-500/25"
+                  >
+                    {activeOrganizer.hasWorkspaceKey
+                      ? "Rotate $0 Workspace Key"
+                      : "Issue $0 Workspace Key"}
+                  </button>
+                </>
               )}
               <a
                 href={`${bridge.cpBaseUrl}/organizer/hosted/${activeOrganizer.organizerSlug}`}

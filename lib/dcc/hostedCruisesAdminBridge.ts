@@ -29,6 +29,8 @@ export interface HostedCruisesAdminBridgeSnapshot {
     claimedStatus: "unclaimed" | "pending_verification" | "verified";
     hasWorkspaceKey?: boolean;
     workspacePath?: string;
+    suspended?: boolean;
+    suspendedReason?: string;
     analytics?: {
       pageViews: number;
       officialBookingClicks: number;
